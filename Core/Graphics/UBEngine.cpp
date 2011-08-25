@@ -1,0 +1,290 @@
+/* ***********************************************************
+@Copyright Alexsandr V. Bakhshiev, 2011.
+E-mail:        alexab@ailab.ru
+Url:           http://ailab.ru
+
+This file is part of the project: RDK
+
+File License:       New BSD License
+Project License:    New BSD License
+See file license.txt for more information
+*********************************************************** */
+#ifndef UBEngine_CPP
+#define UBEngine_CPP
+
+#include "UBEngine.h"
+#include "Libraries/Libraries.h"
+
+
+namespace RDK{
+
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+UBEngine::UBEngine(void)
+{
+}
+
+UBEngine::~UBEngine(void)
+{
+}
+// --------------------------
+
+// --------------------------
+// Методы управления параметрами инициализации
+// --------------------------
+// --------------------------
+
+// --------------------------
+// Методы доступа к переменным состояния
+// --------------------------
+// --------------------------
+
+
+// --------------------------
+// Методы доступа к данным
+// --------------------------
+// Возвращает указатель на среду
+UBAEnvironment* UBEngine::GetEnvironment(void)
+{
+ return dynamic_cast<UBAEnvironment* >(Environment);
+}
+// --------------------------
+
+// --------------------------
+// Методы управления счетом
+// --------------------------
+// Инициализирует данные движка
+bool UBEngine::Init(void)
+{
+ return UEngine::Init();
+}
+
+// Деинициализирует данные движка
+// и сохраняет текущие настройки
+bool UBEngine::UnInit(void)
+{
+ return UEngine::UnInit();
+}
+
+// Запускает систему
+bool UBEngine::Start(void)
+{
+ return UEngine::Start();
+}
+
+// Приостанавливает систему
+bool UBEngine::Pause(void)
+{
+ return UEngine::Pause();
+}
+
+// Останавливает систему
+bool UBEngine::Stop(void)
+{
+ return UEngine::Stop();
+}
+// --------------------------
+
+// --------------------------
+// Методы управления средой
+// --------------------------
+void UBEngine::Env_SetInputImage(int number, unsigned char* image, int width, int height,int cmodel)
+{
+ TempBmp.AttachBuffer(width,height,image,RDK::UBMColorModel(cmodel));
+ RDK::UBResizeEdges.SetNewWidth(GetEnvironment()->GetInputImageWidth(number));
+ RDK::UBResizeEdges.SetNewHeight(GetEnvironment()->GetInputImageHeight(number));
+ RDK::UBResizeEdges(TempBmp,TempBmp2);
+ GetEnvironment()->SetInputImage(number,TempBmp2);
+ TempBmp.DetachBuffer();
+}
+
+unsigned char* UBEngine::Env_GetInputImage(int index)
+{
+ return GetEnvironment()->GetInputImage(index).GetData();
+}
+
+unsigned char* UBEngine::Env_GetOutputImage(int index)
+{
+ GetEnvironment()->GetOutputImage(index).SetColorModel(RDK::ubmRGB24);
+ return GetEnvironment()->GetOutputImage(index).GetData();
+}
+
+unsigned char* UBEngine::Env_GetOutputImageY8(int index)
+{
+ GetEnvironment()->GetOutputImage(index).SetColorModel(RDK::ubmY8);
+ return GetEnvironment()->GetOutputImage(index).GetData();
+}
+
+// Возвращает указатель на выход с индексом 'index' компонента 'id'
+const RDK::UBitmap* const UBEngine::Env_GetComponentOutput(const char *stringid, int index)
+{
+ RDK::UBAbstract *model=dynamic_cast<RDK::UBAbstract *>(Environment->GetModel());
+
+ if(!model)
+  return 0;
+
+ RDK::ULongId id;
+
+ RDK::UBAbstract* cont=dynamic_cast<RDK::UBAbstract*>(model->GetComponentL(RDK::operator<<(id,stringid)));
+ if(!cont)
+  return 0;
+
+ if(index<0 || index >= cont->GetNumOutputs())
+  return 0;
+
+ return cont->GetOutputs()[index];
+}
+// --------------------------
+
+
+
+// --------------------------
+// Методы внутреннего управления движком
+// --------------------------
+// Загружает набор предустановленных библиотек
+int UBEngine::LoadPredefinedLibraries(void)
+{
+ if(!Storage)
+  return 1;
+
+ RDK::UBAStorage *bstorage=dynamic_cast<RDK::UBAStorage *>(Storage);
+
+ if(!bstorage)
+  return 2;
+
+ RDK::UBAbstract *filter=new RDK::UBAQLinearContrasting;
+ filter->Default();
+ filter->SetName("QLinerarContrasting");
+ bstorage->AddClass(filter,"QLinerarContrasting",1);
+
+ filter=new RDK::UBAQSolarize;
+ filter->Default();
+ filter->SetName("QSolarize");
+ bstorage->AddClass(filter,"QSolarize",2);
+
+ filter=new RDK::UBAQEqualizeHist;
+ filter->Default();
+ filter->SetName("QEqualizeHist");
+ bstorage->AddClass(filter,"QEqualizeHist",3);
+
+ filter=new RDK::UBAQCropHist;
+ filter->Default();
+ filter->SetName("QCropHist");
+ bstorage->AddClass(filter,"QCropHist",4);
+
+ filter=new RDK::UBAQModifyHist;
+ filter->Default();
+ filter->SetName("QModifyHist");
+ bstorage->AddClass(filter,"QModifyHist",5);
+
+ filter=new RDK::UBAQLocalEqualizeHist;
+ filter->Default();
+ filter->SetName("QLocalEqualizeHist");
+ bstorage->AddClass(filter,"QLocalEqualizeHist",6);
+
+ filter=new RDK::UBAQCombineHist;
+ filter->Default();
+ filter->SetName("QCombineHist");
+ bstorage->AddClass(filter,"QCombineHist",7);
+
+ filter=new RDK::UBPipeline;
+ filter->Default();
+ filter->SetName("Pipeline");
+ bstorage->AddClass(filter,"Pipeline",8);
+
+ filter=new RDK::UBParallelPipeline;
+ filter->Default();
+ filter->SetName("ParallelPipeline");
+ bstorage->AddClass(filter,"ParallelPipeline",9);
+
+ filter=new RDK::UBAResizeEdges;
+ filter->Default();
+ filter->SetName("ResizeEdges");
+ bstorage->AddClass(filter,"ResizeEdges",10);
+
+ filter=new RDK::UBAModel;
+ filter->Default();
+ filter->SetName("Model");
+ bstorage->AddClass(filter,"Model",11);
+
+ filter=new RDK::UBASource;
+ filter->Default();
+ filter->SetName("Source");
+ bstorage->AddClass(filter,"Source",12);
+
+ filter=new RDK::UBAReceiver;
+ filter->Default();
+ filter->SetName("Receiver");
+ bstorage->AddClass(filter,"Receiver",13);
+
+ filter=new RDK::UBAVideoSimulatorSimple;
+ filter->Default();
+ filter->SetName("VideoSimulatorSimple");
+ bstorage->AddClass(filter,"VideoSimulatorSimple",20);
+
+ filter=new RDK::UBADifferenceFrameSimple;
+ filter->Default();
+ filter->SetName("DifferenceFrameSimple");
+ bstorage->AddClass(filter,"DifferenceFrameSimple",31);
+
+ filter=new RDK::UBAMaskFilteringSimple;
+ filter->Default();
+ filter->SetName("MaskFilteringSimple");
+ bstorage->AddClass(filter,"MaskFilteringSimple",50);
+
+ return 0;
+}
+// --------------------------
+
+// --------------------------
+// Методы внутреннего управления консолью
+// --------------------------
+// --------------------------
+
+// --------------------------
+// Скрытые методы управления счетом
+// --------------------------
+// Восстановление настроек по умолчанию и сброс процесса счета
+bool UBEngine::ADefault(void)
+{
+ if(!UEngine::ADefault())
+  return false;
+
+ return true;
+}
+
+// Обеспечивает сборку внутренней структуры объекта
+// после настройки параметров
+// Автоматически вызывает метод Reset() и выставляет Ready в true
+// в случае успешной сборки
+bool UBEngine::ABuild(void)
+{
+ if(!UEngine::ABuild())
+  return false;
+
+ return true;
+}
+
+// Сброс процесса счета.
+bool UBEngine::AReset(void)
+{
+ if(!UEngine::AReset())
+  return false;
+
+ return true;
+}
+
+// Выполняет расчет этого объекта
+bool UBEngine::ACalculate(void)
+{
+ if(!UEngine::ACalculate())
+  return false;
+
+ return true;
+}
+// --------------------------
+
+}
+#endif
+

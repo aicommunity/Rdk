@@ -1,0 +1,330 @@
+/* ***********************************************************
+@Copyright Alexsandr V. Bakhshiev, 2010.
+E-mail:        alexab@ailab.ru
+Url:           http://ailab.ru
+
+This file is part of the project: RDK
+
+File License:       New BSD License
+Project License:    New BSD License
+See file license.txt for more information
+*********************************************************** */
+#ifndef MUSERIALIZE_H
+#define MUSERIALIZE_H
+
+#include <iostream>
+#include "../Serialize/Serialize.h"
+#include "MVector.h"
+#include "MDyad.h"
+#include "MTensor.h"
+#include "MTheormec.h"
+#include "MBody.h"
+#include "MGeometry.h"
+#include "MCSystem.h"
+
+namespace RDK {
+namespace Serialize {
+
+// MVector
+template<typename T>
+USerStorageBinary& operator << (USerStorageBinary& storage, const MVector<T> &data)
+{
+ operator <<(storage,data.x);
+ operator <<(storage,data.y);
+ operator <<(storage,data.z);
+ return storage;
+}
+
+template<typename T>
+USerStorageBinary& operator >> (USerStorageBinary& storage, MVector<T> &data)
+{
+ operator >>(storage,data.x);
+ operator >>(storage,data.y);
+ operator >>(storage,data.z);
+ return storage;
+}
+
+// MDyad
+template<typename T>
+USerStorageBinary& operator << (USerStorageBinary& storage, const MDyad<T> &data)
+{
+ operator <<(storage,data.v1);
+ operator <<(storage,data.v2);
+ return storage;
+}
+
+template<typename T>
+USerStorageBinary& operator >> (USerStorageBinary& storage, MDyad<T> &data)
+{
+ operator >>(storage,data.v1);
+ operator >>(storage,data.v2);
+ return storage;
+}
+
+// MTensor
+template<typename T>
+USerStorageBinary& operator << (USerStorageBinary& storage, const MTensor<T> &data)
+{
+ operator <<(storage,data.Dyads);
+ return storage;
+}
+
+template<typename T>
+USerStorageBinary& operator >> (USerStorageBinary& storage, MTensor<T> &data)
+{
+ operator >>(storage,data.Dyads);
+ return storage;
+}
+
+// RotationTensor
+template<typename T>
+USerStorageBinary& operator << (USerStorageBinary& storage, const MRotationTensor<T> &data)
+{
+ operator <<(storage,data.m);
+ operator <<(storage,data.angle);
+ return storage;
+}
+
+template<typename T>
+USerStorageBinary& operator >> (USerStorageBinary& storage, MRotationTensor<T> &data)
+{
+ operator >>(storage,data.m);
+ operator >>(storage,data.angle);
+ return storage;
+}
+
+// InertiaTensor
+template<typename T>
+USerStorageBinary& operator << (USerStorageBinary& storage, const MInertiaTensor<T> &data)
+{
+ operator <<(storage,data.d1);
+ operator <<(storage,data.d2);
+ operator <<(storage,data.d3);
+ operator <<(storage,data.m1);
+ operator <<(storage,data.m2);
+ operator <<(storage,data.m3);
+ return storage;
+}
+
+template<typename T>
+USerStorageBinary& operator >> (USerStorageBinary& storage, MInertiaTensor<T> &data)
+{
+ operator >>(storage,data.d1);
+ operator >>(storage,data.d2);
+ operator >>(storage,data.d3);
+ operator >>(storage,data.m1);
+ operator >>(storage,data.m2);
+ operator >>(storage,data.m3);
+ return storage;
+}
+
+// MBody
+template<typename T>
+USerStorageBinary& operator << (USerStorageBinary& storage, const MBody<T> &data)
+{
+ operator <<(storage,data.Location);
+ return storage;
+}
+
+template<typename T>
+USerStorageBinary& operator >> (USerStorageBinary& storage, MBody<T> &data)
+{
+ operator >>(storage,data.Location);
+ return storage;
+}
+
+// MKinematicBody
+template<typename T>
+USerStorageBinary& operator << (USerStorageBinary& storage, const MKinematicBody<T> &data)
+{
+ operator <<(storage,static_cast<const MBody<T>&>(data));
+ operator <<(storage,data.Rotation);
+ operator <<(storage,data.TranslationSpeed);
+ operator <<(storage,data.AngleSpeed);
+ return storage;
+}
+
+template<typename T>
+USerStorageBinary& operator >> (USerStorageBinary& storage, MKinematicBody<T> &data)
+{
+ operator >>(storage,static_cast<MBody<T>&>(data));
+ operator >>(storage,data.Rotation);
+ operator >>(storage,data.TranslationSpeed);
+ operator >>(storage,data.AngleSpeed);
+ return storage;
+}
+
+// MMechanicalBody
+template<typename T>
+USerStorageBinary& operator << (USerStorageBinary& storage, const MMechanicalBody<T> &data)
+{
+ operator <<(storage,static_cast<const MKinematicBody<T>&>(data));
+ operator <<(storage,data.MassCenter);
+ operator <<(storage,data.Mass);
+ operator <<(storage,data.CIT);
+ return storage;
+}
+
+template<typename T>
+USerStorageBinary& operator >> (USerStorageBinary& storage, MMechanicalBody<T> &data)
+{
+ operator >>(storage,static_cast<MKinematicBody<T>&>(data));
+ operator >>(storage,data.MassCenter);
+ operator >>(storage,data.Mass);
+ operator >>(storage,data.CIT);
+ return storage;
+}
+
+// MRay
+template<typename T>
+USerStorageBinary& operator << (USerStorageBinary& storage, const MRay<T> &data)
+{
+ operator << (storage,data.Origin);
+ operator << (storage,data.Direction);
+ return storage;
+}
+
+template<typename T>
+USerStorageBinary& operator >> (USerStorageBinary& storage, MRay<T> &data)
+{
+ operator >> (storage,data.Origin);
+ operator >> (storage,data.Direction);
+ return storage;
+}
+
+// MPlane
+template<typename T>
+USerStorageBinary& operator << (USerStorageBinary& storage, const MPlane<T> &data)
+{
+ operator << (storage,data.Normal);
+ operator << (storage,data.Distance);
+ return storage;
+}
+
+template<typename T>
+USerStorageBinary& operator >> (USerStorageBinary& storage, MPlane<T> &data)
+{
+ operator >> (storage,data.Normal);
+ operator >> (storage,data.Distance);
+ return storage;
+}
+
+// MBorder
+USerStorageBinary& operator << (USerStorageBinary& storage, const MBorder &data);
+
+USerStorageBinary& operator >> (USerStorageBinary& storage, MBorder &data);
+
+// MVertex
+template<typename T>
+USerStorageBinary& operator << (USerStorageBinary& storage, const MVertex<T> &data)
+{
+ operator << (storage,data.GetVertex());
+ operator << (storage,data.GetNames());
+ return storage;
+}
+
+template<typename T>
+USerStorageBinary& operator >> (USerStorageBinary& storage, MVertex<T> &data)
+{
+ std::vector<MVector<T> > temp;
+ std::vector<std::string> temp2;
+ operator >> (storage,temp);
+ operator >> (storage,temp2);
+ data=temp;
+ data=temp2;
+ return storage;
+}
+
+// MGeometry
+template<typename T>
+USerStorageBinary& operator << (USerStorageBinary& storage, const MGeometry<T> &data)
+{
+ operator << (storage,data.GetVertex());
+ operator << (storage,data.GetBorders());
+ return storage;
+}
+
+template<typename T>
+USerStorageBinary& operator >> (USerStorageBinary& storage, MGeometry<T> &data)
+{
+ MVertex<T> vtemp;
+ std::vector<MBorder> btemp;
+
+ operator >> (storage,vtemp);
+ operator >> (storage,btemp);
+ data.SetVertex(vtemp);
+ data.SetBorders(btemp);
+
+ return storage;
+}
+
+// MCSystem
+template<typename T>
+USerStorageBinary& operator << (USerStorageBinary& storage, const MCSystem<T> &data)
+{
+ operator <<(storage,data.Location);
+ operator <<(storage,data.Basis[0]);
+ operator <<(storage,data.Basis[1]);
+ operator <<(storage,data.Basis[2]);
+ return storage;
+}
+
+template<typename T>
+USerStorageBinary& operator >> (USerStorageBinary& storage, MCSystem<T> &data)
+{
+ operator >>(storage,data.Location);
+ operator >>(storage,data.Basis[0]);
+ operator >>(storage,data.Basis[1]);
+ operator >>(storage,data.Basis[2]);
+ return storage;
+}
+/*
+// MCartesianCSystem
+template<typename T>
+USerStorageBinary& operator << (USerStorageBinary& storage, const MCartesianCSystem<T> &data)
+{
+ operator <<(storage,static_cast<const MCSystem<T> &>(data));
+ return storage;
+}
+
+template<typename T>
+USerStorageBinary& operator >> (USerStorageBinary& storage, MCartesianCSystem<T> &data)
+{
+ operator >>(storage,static_cast<const MCSystem<T> &>(data));
+ return storage;
+}
+
+// MEulerCSystem
+template<typename T>
+USerStorageBinary& operator << (USerStorageBinary& storage, const MEulerCSystem<T> &data)
+{
+ operator <<(storage,static_cast<const MCSystem<T> &>(data));
+ return storage;
+}
+
+template<typename T>
+USerStorageBinary& operator >> (USerStorageBinary& storage, MEulerCSystem<T> &data)
+{
+ operator >>(storage,static_cast<const MCSystem<T> &>(data));
+ return storage;
+}
+
+// MPolarCSystem
+template<typename T>
+USerStorageBinary& operator << (USerStorageBinary& storage, const MPolarCSystem<T> &data)
+{
+ operator <<(storage,static_cast<const MCSystem<T> &>(data));
+ return storage;
+}
+
+template<typename T>
+USerStorageBinary& operator >> (USerStorageBinary& storage, MPolarCSystem<T> &data)
+{
+ operator >>(storage,static_cast<const MCSystem<T> &>(data));
+ return storage;
+}                       */
+
+}
+}
+#endif
+

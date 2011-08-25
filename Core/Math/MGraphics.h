@@ -1,0 +1,319 @@
+/* ***********************************************************
+@Copyright Alexsandr V. Bakhshiev, 2010.
+E-mail:        alexab@ailab.ru
+Url:           http://ailab.ru
+
+This file is part of the project: RDK
+
+File License:       New BSD License
+Project License:    New BSD License
+See file license.txt for more information
+*********************************************************** */
+
+#ifndef MGraphicsH
+#define MGraphicsH
+
+#include <vector>
+#include "../Graphics/UAGraphics.h"
+#include "../Graphics/UBitmap.h"
+#include "MGeometry.h"
+
+namespace RDK {
+
+// Класс описания особенностей отображения заданного объекта
+class MGeometryDescription
+{
+public: // Данные
+// Цвет
+UColorT Color;
+
+// Толщина пера
+int PenWidth;
+
+// Имя
+string Name;
+
+// Описание
+string Description;
+
+// Флаг видимости
+bool Visible;
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+MGeometryDescription::MGeometryDescription(void)
+{
+ // Цвет
+ Color=UColorT(0,0,255,0);
+
+ // Толщина пера
+ PenWidth=4;
+
+ // Флаг видимости
+ Visible=true;
+};
+
+MGeometryDescription::MGeometryDescription(const MGeometryDescription &copy)
+{
+ // Цвет
+ Color=copy.Color;
+
+ // Толщина пера
+ PenWidth=copy.PenWidth;
+
+ // Имя
+ Name=copy.Name;
+
+ // Описание
+ Description=copy.Description;
+
+ // Флаг видимости
+ Visible=copy.Visible;
+};
+
+MGeometryDescription::~MGeometryDescription(void)
+{
+};
+// --------------------------
+
+};
+
+// Класс поддержки отрисовки графики
+template<class T>
+class MGraphics
+{
+protected: // Данные
+// Модуль рисования
+UAGraphics *Graphics;
+
+// Список объектов отрисовки в заданном порядке
+std::vector<MGeometry<T> > Geometry;
+
+// Список описаний соответствующего объекта
+vector<MGeometryDescription> Description;
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+MGraphics(void);
+MGraphics(const MGraphics<T> &copy);
+~MGraphics(void);
+// --------------------------
+
+// --------------------------
+// Методы управления данныим
+// --------------------------
+// Модуль рисования
+UAGraphics* GetGraphics(void) const;
+bool SetGraphics(UAGraphics *graphics);
+
+// Возвращает заданный объект отрисовки по индексу
+MGeometry<T>& GetGeometry(size_t index);
+
+// Возвращает описание заданного объекта отрисовки по индексу
+MGeometryDescription& GetDescription(size_t index);
+
+// Возвращает число объектов отрисовки
+size_t GetNumGeometry(void) const;
+
+// Добавляет новый объект отрисовки
+// Возвращает индекс добавленного объекта
+size_t AddGeometry(const MGeometry<T>& geometry);
+
+// Удаляет существующий объект отрисовки по индексу
+void DelGeometry(size_t index);
+
+// Удаляет все объекты отрисовки по индексу
+void DelAllGeometry(void);
+// --------------------------
+
+// --------------------------
+// Методы рисования
+// --------------------------
+// Очищает модуль рисования
+void Clear(void);
+
+// Отрисовывает все объекты
+void Repaint(void);
+// --------------------------
+
+// --------------------------
+// Операторы
+// --------------------------
+// Оператор присваивания
+// Не копирует модуль рисования
+MGraphics<T>& operator = (const MGraphics<T> &copy);
+// --------------------------
+};
+
+
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+template<class T>
+MGraphics<T>::MGraphics(void)
+{
+ // Модуль рисования
+ Graphics=0;
+}
+
+template<class T>
+MGraphics<T>::MGraphics(const MGraphics<T> &copy)
+{
+ *this=copy;
+}
+
+template<class T>
+MGraphics<T>::~MGraphics(void)
+{
+ Graphics=0;
+}
+// --------------------------
+
+// --------------------------
+// Методы управления данныим
+// --------------------------
+// Модуль рисования
+template<class T>
+UAGraphics* MGraphics<T>::GetGraphics(void) const
+{
+ return Graphics;
+}
+
+template<class T>
+bool MGraphics<T>::SetGraphics(UAGraphics *graphics)
+{
+ if(Graphics == graphics)
+  return true;
+
+ Graphics=graphics;
+ return true;
+}
+
+// Возвращает заданный объект отрисовки по индексу
+template<class T>
+MGeometry<T>& MGraphics<T>::GetGeometry(size_t index)
+{
+ return Geometry[index];
+}
+
+// Возвращает описание заданного объекта отрисовки по индексу
+template<class T>
+MGeometryDescription& MGraphics<T>::GetDescription(size_t index)
+{
+ return Description[index];
+}
+
+// Возвращает число объектов отрисовки
+template<class T>
+size_t MGraphics<T>::GetNumGeometry(void) const
+{
+ return Geometry.size();
+}
+
+// Добавляет новый объект отрисовки
+// Возвращает индекс добавленного объекта
+template<class T>
+size_t MGraphics<T>::AddGeometry(const MGeometry<T>& geometry)
+{
+ Geometry.push_back(geometry);
+ Description.resize(Geometry.size());
+
+ return Geometry.size()-1;
+}
+
+// Удаляет существующий объект отрисовки по индексу
+template<class T>
+void MGraphics<T>::DelGeometry(size_t index)
+{
+ if(index >= Geometry.size())
+  return;
+
+ Geometry.erase(Geometry.begin()+index);
+ Description.erase(Description.begin()+index);
+}
+
+// Удаляет все объекты отрисовки по индексу
+template<class T>
+void MGraphics<T>::DelAllGeometry(void)
+{
+ Geometry.clear();
+ Description.clear();
+}
+// --------------------------
+
+// --------------------------
+// Методы рисования
+// --------------------------
+// Очищает модуль рисования
+template<class T>
+void MGraphics<T>::Clear(void)
+{
+ if(!Graphics)
+  return;
+
+}
+
+// Отрисовывает все объекты
+template<class T>
+void MGraphics<T>::Repaint(void)
+{
+ if(!Graphics)
+  return;
+
+ for(size_t i=0;i<Geometry.size();i++)
+ {
+  if(Description[i].Visible)
+  {
+   Graphics->SetPenColor(Description[i].Color);
+   Graphics->SetPenWidth(Description[i].PenWidth);
+   // Считаем всю геометрию двумерной
+
+   MGeometry<T> &geometry=Geometry[i];
+   MVertex<T>& vertex=geometry();
+   // Отрисовываем точки
+   vertex=0;
+   for(size_t i=0;i<vertex.GetNumVertex();i++,vertex++)
+    Graphics->Pixel(vertex().x,vertex().y);
+
+   // Отрисовываем контуры
+   for(size_t j=0;j<geometry.GetNumBorders();j++)
+   {
+    if(geometry[j].GetNumVertex()>0)
+     for(size_t k=0;k<geometry[j].GetNumVertex()-1;k++)
+     {
+      MVector<T> v1=vertex[geometry[j][k]];
+      MVector<T> v2=vertex[geometry[j][k+1]];
+      Graphics->Line(v1.x,v1.y,v2.x,v2.y);
+     }
+   }
+  }
+ }
+}
+// --------------------------
+
+
+// --------------------------
+// Операторы
+// --------------------------
+// Оператор присваивания
+// Не копирует модуль рисования
+template<class T>
+MGraphics<T>& MGraphics<T>::operator = (const MGraphics<T> &copy)
+{
+ // Список объектов отрисовки в заданном порядке
+ Geometry=copy.Geometry;
+
+ // Список описаний соответствующего объекта
+ Description=copy.Description;
+
+
+ return *this;
+}
+// --------------------------
+
+}
+#endif
