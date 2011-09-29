@@ -100,6 +100,7 @@ object ListInputForm: TListInputForm
       Margins.Bottom = 2
       DoubleBuffered = True
       Kind = bkCancel
+      NumGlyphs = 2
       ParentDoubleBuffered = False
       TabOrder = 1
     end

@@ -160,28 +160,35 @@ UAContainer& UAContainerVector::operator () (int index)
 // --------------------------
 // Глобальные свойства
 // --------------------------
-// Текущее время модели в секундах
-//double UAContainer::Time=0;
+// Текущее время модели
+ULongTime UAContainer::Time=0;
+double UAContainer::DoubleTime=0;
 // --------------------------
 
 // --------------------------
 // Методы управления глобальными свойствами
 // --------------------------
 // Возвращает текущее время модели
-/*const double& UAContainer::GetTime(void)
+const ULongTime& UAContainer::GetTime(void)
 {
  return Time;
 }
 
+const double& UAContainer::GetDoubleTime(void)
+{
+ return DoubleTime;
+}
+
 // Устанавливает текущее время модели
-bool UAContainer::SetTime(double value)
+bool UAContainer::SetTime(ULongTime value)
 {
  if(Time == value)
   return true;
 
  Time=value;
+ DoubleTime=Time/1000000.0;
  return true;
-}   */
+}
 // --------------------------
 
 // --------------------------
@@ -195,8 +202,11 @@ UAContainer::UAContainer(void)
  // Количество компонент в векторе компонент
  NumComponents=0;
 
+ LastId=0;
+
  AddLookupProperty("Id",new UVProperty<UId,UAContainer>(this,&UAContainer::SetId,&UAContainer::GetId));
  AddLookupProperty("Name",new UVProperty<NameT,UAContainer>(this,&UAContainer::SetName,&UAContainer::GetName));
+ AddLookupProperty("TimeStep",new UVProperty<UTime,UAContainer>(this,&UAContainer::SetTimeStep,&UAContainer::GetTimeStep));
  AddLookupProperty("Activity",new UVProperty<bool,UAContainer>(this,&UAContainer::SetActivity,&UAContainer::GetActivity));
  AddLookupProperty("Coord",new UVProperty<RDK::MVector<double>,UAContainer>(this,&UAContainer::SetCoord,&UAContainer::GetCoord));
 }
@@ -353,7 +363,7 @@ bool UAContainer::SetMainOwner(RDK::UAComponent* const mainowner, int levels)
 // Проверяет предлагаемый Id 'id' на уникальность в рамках данного, объекта.
 bool UAContainer::CheckId(const UId &id)
 {
- return true;// Заглушка!! //(id>LastId)?true:false;
+ return (id>LastId)?true:false;
 }
 
 // Проверяет предлагаемое имя 'name' на уникальность в рамках
@@ -363,8 +373,8 @@ bool UAContainer::CheckName(const NameT &name)
  if(Name == name)
   return true;
 
- if(!GetOwner())
-  return true;
+// if(!GetOwner())
+//  return true;
 
  if(CompsLookupTable.find(name) == CompsLookupTable.end())
   return true;
@@ -375,7 +385,7 @@ bool UAContainer::CheckName(const NameT &name)
 // Генерирует уникальный Id.
 UId UAContainer::GenerateId(void)
 {
- return (LastId++)+1;
+ return LastId+1;
 }
 
 #pragma warning (disable : 4996)
@@ -454,7 +464,7 @@ NameT& UAContainer::GetFullName(NameT &buffer) const
 // владельцем объекта ни на каком уровне иерархии.
 NameT& UAContainer::GetLongName(const UAContainer *mainowner, NameT &buffer) const
 {
- if(!GetOwner() == 0 && GetOwner() != mainowner)
+ if(!GetOwner() && GetOwner() != mainowner)
   {
    buffer.clear();
    return buffer;
@@ -625,13 +635,20 @@ const UId& UAContainer::GetPointerId(const NameT &name) const
 // Методы управления общедоступными свойствами
 // --------------------------
 // Устанавливает величину шага интегрирования
-/*bool UAContainer::SetTimeStep(TimeT timestep)
+UTime UAContainer::GetTimeStep(void) const
+{
+ return TimeStep;
+}
+
+bool UAContainer::SetTimeStep(UTime timestep)
 {
  if(timestep <= 0)
   return false;
 
+ TimeStep=timestep;
+
  if(Owner)
-  OwnerTimeStep=static_cast<UAContainer*>(Owner)->TimeStep();
+  OwnerTimeStep=static_cast<UAContainer*>(Owner)->TimeStep;
  else
   OwnerTimeStep=timestep;
 
@@ -640,7 +657,7 @@ const UId& UAContainer::GetPointerId(const NameT &name) const
   PComponents[i]->OwnerTimeStep=timestep;
 
  return true;
-}         */
+}
 
 // Устанавливает флаг активности объекта
 bool UAContainer::GetActivity(void) const
@@ -730,6 +747,9 @@ bool UAContainer::Copy(UAContainer *target, UAContainerStorage *stor, bool copys
 {
  bool res=CopyProperties(target);
  if(!res)
+  return false;
+
+ if(!target->Build())
   return false;
 
  if(copystate)
@@ -896,17 +916,30 @@ UId UAContainer::AddComponent(UAContainer* comp, UIPointer* pointer)
  NameT namebuffer;
 
  if(!CheckName(comp->Name))
-  comp->Name=GenerateName(comp->Name,namebuffer);
- comp->SetId(GenerateId());
+  comp->SetName(GenerateName(comp->Name,namebuffer));
+ UId id=GenerateId();
 
- comp->Owner=this;
+ bool res=true;
+ int i=0;
+ for(i=0;i<NumComponents;i++)
+  if(PComponents[i]->Id == id)
+  {
+   res=false;
+   break;
+  }
+
+ comp->SetId(id);
+
+ comp->SetOwner(this);
+
+
  // Добавляем компонент в таблицу соответствий владельца
  SetLookupComponent(comp->Name, comp->Id);
 
  // Добавление в базу компонент
  AddComponentTable(comp,pointer);
 
-// comp->OwnerTimeStep=TimeStep();
+ comp->OwnerTimeStep=TimeStep;
 
  if(MainOwner)
   comp->SetMainOwner(MainOwner);
@@ -948,6 +981,9 @@ bool UAContainer::DelComponent(const UId &id, bool canfree)
 // Принудительно удаляет все дочерние компоненты
 void UAContainer::DelAllComponents(void)
 {
+ while(NumComponents)
+  DelComponent(PComponents[NumComponents-1],true);
+/*
  for(int i=0;i<NumComponents;i++)
  {
   PComponents[i]->Owner=0;
@@ -958,6 +994,7 @@ void UAContainer::DelAllComponents(void)
  PComponents=0;
  NumComponents=0;
 // CompsLookupTable.clear();
+*/
 }
 
 // Удаляет дочерний компонент из этого объекта.
@@ -1015,7 +1052,7 @@ bool UAContainer::CopyComponents(UAContainer* comp, UAContainerStorage* stor) co
     return false;
 
    bufcomp->SetId((*pcomponents)->Id);
-//   comp->SetLookupComponent(bufcomp->Name(), bufcomp->Id());
+   comp->SetLookupComponent(bufcomp->GetName(), bufcomp->GetId());
   }
  return true;
  /*
@@ -1131,6 +1168,7 @@ bool UAContainer::CopyProperties(UAContainer* comp) const
                                         J=PropertiesLookupTable.end();
   while(I != J)
   {
+   databuffer.clear();
    key &= ccomp->SetProperty(I->second.Id,GetProperty(I->second.Id,&databuffer));
    ++I;
   }
@@ -1868,6 +1906,8 @@ bool UAContainer::Default(void)
  if(Storage)
   original=static_cast<UAContainer*>(Storage->GetClass(Class));
 
+ SetTimeStep(2000);
+
  if(original && original != this)
  {
   NameT name=Name;
@@ -1923,7 +1963,7 @@ bool UAContainer::Reset(void)
  if(!AReset())
   return false;
 
-// CalcCounter=0;
+ CalcCounter=0;
  return true;
 }
 
@@ -1951,27 +1991,27 @@ bool UAContainer::Calculate(void)
  if(!Owner)
   return ACalculate();
 
-/* if(TimeStep.v == OwnerTimeStep)
+ if(TimeStep == OwnerTimeStep)
   return ACalculate();
  else
- if(TimeStep.v < OwnerTimeStep)
+ if(TimeStep < OwnerTimeStep)
   {
    --CalcCounter;
    if(CalcCounter <= 0)
     {
-     CalcCounter=OwnerTimeStep/TimeStep.v;
+	 CalcCounter=OwnerTimeStep/TimeStep;
      return ACalculate();
     }
   }
  else
- if(TimeStep.v > OwnerTimeStep)
+ if(TimeStep > OwnerTimeStep)
   {
-   for(TimeT i=TimeStep.v/OwnerTimeStep;i>=0;--i)
+   for(UTime i=TimeStep/OwnerTimeStep;i>=0;--i)
     if(!ACalculate())
      return false;
-  }        */
- if(!ACalculate())
-  return false;
+  }
+// if(!ACalculate())
+//  return false;
 
  // Обрабатываем контроллеры
  int numcontrollers=Controllers.size();
@@ -2015,8 +2055,8 @@ bool UAContainer::ModifyLookupComponent(const NameT &oldname,
 void UAContainer::SetLookupComponent(const NameT &name, const UId &id)
 {
  CompsLookupTable[name]=id;
-// if(LastId<id)
-//  LastId=id;
+ if(LastId<id)
+  LastId=id;
 }
 
 // Обновляет таблицу соответствий компонент удаляя запись
@@ -2038,14 +2078,15 @@ void UAContainer::DelLookupComponent(const NameT &name)
 // Добавляет параметр с именем 'name' в таблицу соотвествий
 // параметров и назначает ему корректный индекс
 // Должна вызываться в конструкторах классов
-UId UAContainer::AddLookupProperty(const NameT &name, UIProperty *property)
+UId UAContainer::AddLookupProperty(const NameT &name, UIProperty *property, bool delenable)
 {
  if(!property)
   return ForbiddenId;
 
  VariableMapIteratorT I=PropertiesLookupTable.begin(),
-                      J=PropertiesLookupTable.end();
+					  J=PropertiesLookupTable.end();
  UVariable P(1,property);
+ P.DelEnable=delenable;
 
  if(PropertiesLookupTable.find(name) != J)
   return ForbiddenId;
@@ -2071,7 +2112,8 @@ bool UAContainer::DelLookupProperty(const NameT &name)
  if(I == PropertiesLookupTable.end())
   return false;
 
- delete I->second.Property;
+ if(I->second.DelEnable)
+  delete I->second.Property;
  PropertiesLookupTable.erase(I);
  return true;
 }
@@ -2080,11 +2122,11 @@ bool UAContainer::DelLookupProperty(const NameT &name)
 void UAContainer::ClearLookupPropertyTable(void)
 {
   VariableMapIteratorT I=PropertiesLookupTable.begin(),
-                      J=PropertiesLookupTable.end();
+					  J=PropertiesLookupTable.end();
   while(I != J)
   {
-   if(I->second.Property)
-    delete I->second.Property;
+   if(I->second.Property && I->second.DelEnable)
+	delete I->second.Property;
 
    ++I;
   }
@@ -2207,14 +2249,15 @@ UController* UAContainer::GetController(int index)
 // Добавляет переменную состояния с именем 'name' в таблицу соотвествий
 // параметров и назначает ей корректный индекс
 // Должна вызываться в конструкторах классов
-UId UAContainer::AddLookupState(const NameT &name,UIProperty *property)
+UId UAContainer::AddLookupState(const NameT &name,UIProperty *property, bool delenable)
 {
  if(!property)
   return ForbiddenId;
 
  VariableMapIteratorT I=StateLookupTable.begin(),
-                      J=StateLookupTable.end();
+					  J=StateLookupTable.end();
  UVariable P(1,property);
+ P.DelEnable=delenable;
 
  if(StateLookupTable.find(name) != J)
   return ForbiddenId;
@@ -2239,7 +2282,8 @@ bool UAContainer::DelLookupState(const NameT &name)
  if(I == StateLookupTable.end())
   return false;
 
- delete I->second.Property;
+ if(I->second.DelEnable)
+  delete I->second.Property;
  StateLookupTable.erase(I);
  return true;
 }
@@ -2251,7 +2295,7 @@ void UAContainer::ClearLookupStateTable(void)
                       J=StateLookupTable.end();
   while(I != J)
   {
-   if(I->second.Property)
+   if(I->second.Property && I->second.DelEnable)
     delete I->second.Property;
 
    ++I;
@@ -2442,6 +2486,9 @@ bool UAContainer::DelComponent(UAContainer* comp, bool canfree)
 
  if(canfree)
   comp->Free();
+
+ if(!NumComponents)
+  LastId=0;
  return true;
 }
 

@@ -20,6 +20,7 @@ namespace RDK {
 
 #ifdef MVECTOR_H
 #else
+
 //class MDVector
 // Ìועמהû
 //---------------------------

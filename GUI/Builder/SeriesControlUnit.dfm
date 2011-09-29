@@ -445,6 +445,7 @@ object SeriesControlForm: TSeriesControlForm
         Caption = #1054#1090#1084#1077#1085#1072
         DoubleBuffered = True
         Kind = bkCancel
+        NumGlyphs = 2
         ParentDoubleBuffered = False
         TabOrder = 2
         OnClick = BitBtn2Click

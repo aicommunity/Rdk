@@ -25,6 +25,7 @@ See file license.txt for more information
 #include "UAModel.h"
 #include "UANet.h"
 #include "UAComponent.h"
+#include "UController.h"
 
 #endif
 

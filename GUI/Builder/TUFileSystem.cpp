@@ -25,7 +25,7 @@ int FindFilesList(const string &path, const string &mask, bool isfile, vector<st
  {
   do
   {
-   samplefilename=ExtractFileName(finddata.cFileName).t_str();
+   samplefilename=AnsiString(ExtractFileName(finddata.cFileName)).c_str();
 
    if(samplefilename != "." && samplefilename != ".." && ((!isfile && (finddata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) || isfile)))
    {

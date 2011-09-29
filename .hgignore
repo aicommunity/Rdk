@@ -73,4 +73,10 @@ UpgradeLog.XML
 *.lib
 *.dll
 *.exe
-
+Log
+Log0328
+Release
+Debug
+*.dcu
+*.identcache
+*.local

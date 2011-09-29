@@ -18,6 +18,7 @@ namespace RDK {
 #ifdef MVECTOR_H
 typedef MVector<double> MDVector;
 #else
+
 class MDVector
 {
 public: // Данные

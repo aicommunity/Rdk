@@ -185,6 +185,11 @@ int UBAEnvironment::GetInputImageHeight(int i) const
  return InputImages[i]->GetHeight();
 }
 
+UBMColorModel UBAEnvironment::GetInputImageColorModel(int i) const
+{
+ return InputImages[i]->GetColorModel();
+}
+
 bool UBAEnvironment::SetInputImageRes(int i, int width, int height)
 {
  if(!Build())
@@ -203,6 +208,11 @@ int UBAEnvironment::GetOutputImageWidth(int i) const
 int UBAEnvironment::GetOutputImageHeight(int i) const
 {
  return OutputImages[i]->GetHeight();
+}
+
+UBMColorModel UBAEnvironment::GetOutputImageColorModel(int i) const
+{
+ return OutputImages[i]->GetColorModel();
 }
 
 // Задает входное изображение

@@ -19,6 +19,8 @@ See file license.txt for more information
 
 namespace RDK {
 
+// Размер единичного элемента данных по умолчанию
+int UItemData::DefaultDataSize=sizeof(void*);
 
 // --------------------------
 // Конструкторы и деструкторы
@@ -29,7 +31,7 @@ UItemData::UItemData(void)
 
  // Размер данных в байтах
  Size=ByteSize=0;
- DataSize=sizeof(void*);
+ DataSize=DefaultDataSize;
 }
 
 UItemData::UItemData(const UItemData &copy)
@@ -38,7 +40,7 @@ UItemData::UItemData(const UItemData &copy)
 
  // Размер данных в байтах
  Size=ByteSize=0;
- DataSize=sizeof(int);
+ DataSize=DefaultDataSize;
 
  DataSize=copy.DataSize;
  Resize(copy.Size);
@@ -171,8 +173,9 @@ bool UItemData::SetDataSize(int size)
   return true;
 
  DataSize=size;
+ int current_size=Size;
  Resize(0);
- Resize(Size);
+ Resize(current_size);
  return true;
 }
 // --------------------------

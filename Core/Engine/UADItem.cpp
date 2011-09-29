@@ -17,6 +17,17 @@ See file license.txt for more information
 
 namespace RDK {
 
+// ------------------------
+// Конструкторы и деструкторы
+// ------------------------
+UIDataInfo::UIDataInfo(void)
+{
+}
+
+UIDataInfo::~UIDataInfo(void)
+{
+}
+// ------------------------
 
 /* *************************************************************************** */
 // Методы
@@ -24,7 +35,7 @@ namespace RDK {
 // Конструкторы и деструкторы
 // --------------------------
 UADItem::UADItem(void)
-// : OutputSize("OutputSize",this,&UADItem::SetOutputSize,&UADItem::GetOutputSize),
+// : OutputSize("OutputSize",this,&UADItem::SetOutputDataSize,&UADItem::GetOutputDataSize),
 //   DataOutputSize("DataOutputSize",this,&UADItem::SetDataOutputSize,&UADItem::GetDataOutputSize)
 {
  // Указатель на первый элемент массива указателей на вектора входов
@@ -121,6 +132,11 @@ const UIDataInfo* UADItem::GetOutputDataInfo(int index) const
 
 bool UADItem::SetOutputDataInfo(int index, UIDataInfo* value)
 {
+// if(!Build())
+//  return false;
+ if(OutputDataInfo.size()<=index)
+  return false;
+
  if(OutputDataInfo[index])
   delete OutputDataInfo[index];
  OutputDataInfo[index]=value;
@@ -135,6 +151,11 @@ const UIDataInfo* UADItem::GetInputDataInfo(int index) const
 
 bool UADItem::SetInputDataInfo(int index, UIDataInfo* value)
 {
+// if(!Build())
+//  return false;
+ if(InputDataInfo.size()<=index)
+  return false;
+
  if(InputDataInfo[index])
   delete InputDataInfo[index];
  InputDataInfo[index]=value;
@@ -149,6 +170,9 @@ const NameT& UADItem::GetOutputName(int index) const
 
 bool UADItem::SetOutputName(int index, const NameT& name)
 {
+ if(OutputNames.size()<=index)
+  return false;
+
  if(OutputNames[index] == name)
   return true;
 
@@ -164,6 +188,9 @@ const NameT& UADItem::GetInputName(int index) const
 
 bool UADItem::SetInputName(int index, const NameT& name)
 {
+ if(InputNames.size()<=index)
+  return false;
+
  if(InputNames[index] == name)
   return true;
 
@@ -448,13 +475,40 @@ bool UADItem::ConnectToItem(UAItem *na, int i_index, int &c_index)
  {
   if(AutoNumInputs)
   {
+//   if(c_index<0)
+//	c_index=NumInputs;
+
    if(!SetNumInputs(c_index+1))
-    return false;
+	return false;
    if(!Build())
-    return false;
+	return false;
   }
   else
    return false;
+
+//  if(c_index<0)
+//   c_index=NumInputs-1;
+ }
+ else
+ if(c_index<0)
+ {
+  for(int i=NumInputs-1;i>=0;i--)
+  {
+   if(!GetCItem(i).Item)
+   {
+	c_index=i;
+	break;
+   }
+  }
+  if(c_index<0)
+  {
+   c_index=NumInputs;
+
+   if(!SetNumInputs(c_index+1))
+	return false;
+   if(!Build())
+	return false;
+  }
  }
 
  UIDataInfo *iteminfo, *conninfo;
@@ -522,7 +576,7 @@ bool UADItem::Copy(UAContainer *target, UAContainerStorage *stor, bool copystate
 // Восстановление настроек по умолчанию и сброс процесса счета
 bool UADItem::Default(void)
 {
- SetOutputDataElementSize(0,sizeof(void*));
+// SetOutputDataElementSize(0,sizeof(void*));
  SetOutputDataSize(0,1);
 
  return UAItem::Default();

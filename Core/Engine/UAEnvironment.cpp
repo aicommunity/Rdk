@@ -264,6 +264,7 @@ bool UAEnvironment::CreateModel(const UId& classid)
 
  CurrentComponent=0;
  Model=Storage->TakeObject(classid);
+ Ready=false;
  if(Model)
   return true;
 
@@ -497,7 +498,7 @@ bool UAEnvironment::ADestroyStructure(void)
 bool UAEnvironment::ADefault(void)
 {
  if(!Model)
-  return false;
+  return true;
 
 // UAComponent::SetTime(0);
  if(ModelCalculationComponent.GetSize() == 0)
@@ -524,7 +525,7 @@ bool UAEnvironment::ADefault(void)
 bool UAEnvironment::ABuild(void)
 {
  if(!Model)
-  return false;
+  return true;
 
  if(ModelCalculationComponent.GetSize() == 0)
   return Model->Build();
@@ -547,7 +548,7 @@ bool UAEnvironment::ABuild(void)
 bool UAEnvironment::AReset(void)
 {
  if(!Model)
-  return false;
+  return true;
 
  if(ModelCalculationComponent.GetSize() == 0)
   return Model->Reset();
@@ -570,7 +571,7 @@ bool UAEnvironment::AReset(void)
 bool UAEnvironment::ACalculate(void)
 {
  if(!Model)
-  return false;
+  return true;
 
  if(ModelCalculationComponent.GetSize() == 0)
   return Model->Calculate();

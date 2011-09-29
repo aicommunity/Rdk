@@ -229,7 +229,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::list<T> &data)
   return storage;
 
  unsigned int size=0;
- size=atoi(storage.GetNodeAttribute("Size"));
+ size=RDK::atoi(storage.GetNodeAttribute("Size"));
  data.clear();
 
  if(size <= 0)

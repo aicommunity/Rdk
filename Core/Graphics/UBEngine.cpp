@@ -89,6 +89,68 @@ bool UBEngine::Stop(void)
 // --------------------------
 // Методы управления средой
 // --------------------------
+// Задает число входов среды
+void UBEngine::Env_SetNumInputImages(int number)
+{
+ GetEnvironment()->SetNumInputImages(number);
+}
+
+// Задает число выходов среды
+void UBEngine::Env_SetNumOutputImages(int number)
+{
+ GetEnvironment()->SetNumOutputImages(number);
+}
+
+// Возвращает число входов среды
+int UBEngine::Env_GetNumInputImages(void)
+{
+ return GetEnvironment()->GetNumInputImages();
+}
+
+// Возвращает число выходов среды
+int UBEngine::Env_GetNumOutputImages(void)
+{
+ return GetEnvironment()->GetNumOutputImages();
+}
+
+// Задает разрешение по умолчанию (рабочее разрешение)
+void UBEngine::Env_SetInputRes(int number, int width, int height)
+{
+ GetEnvironment()->SetInputImageRes(number,width,height);
+}
+
+// Возвращает разрешение по умолчанию (рабочее разрешение)
+int UBEngine::Env_GetInputImageWidth(int number)
+{
+ return GetEnvironment()->GetInputImageWidth(number);
+}
+
+int UBEngine::Env_GetInputImageHeight(int number)
+{
+ return GetEnvironment()->GetInputImageHeight(number);
+}
+
+int UBEngine::Env_GetInputImageColorModel(int number)
+{
+ return GetEnvironment()->GetInputImageColorModel(number);
+}
+
+// Возвращает текущее выходное разрешение
+int UBEngine::Env_GetOutputImageWidth(int number)
+{
+ return GetEnvironment()->GetOutputImageWidth(number);
+}
+
+int UBEngine::Env_GetOutputImageHeight(int number)
+{
+ return GetEnvironment()->GetOutputImageHeight(number);
+}
+
+int UBEngine::Env_GetOutputImageColorModel(int number)
+{
+ return GetEnvironment()->GetOutputImageColorModel(number);
+}
+
 void UBEngine::Env_SetInputImage(int number, unsigned char* image, int width, int height,int cmodel)
 {
  TempBmp.AttachBuffer(width,height,image,RDK::UBMColorModel(cmodel));
@@ -106,13 +168,13 @@ unsigned char* UBEngine::Env_GetInputImage(int index)
 
 unsigned char* UBEngine::Env_GetOutputImage(int index)
 {
- GetEnvironment()->GetOutputImage(index).SetColorModel(RDK::ubmRGB24);
+// GetEnvironment()->GetOutputImage(index).SetColorModel(RDK::ubmRGB24);
  return GetEnvironment()->GetOutputImage(index).GetData();
 }
 
 unsigned char* UBEngine::Env_GetOutputImageY8(int index)
 {
- GetEnvironment()->GetOutputImage(index).SetColorModel(RDK::ubmY8);
+// GetEnvironment()->GetOutputImage(index).SetColorModel(RDK::ubmY8);
  return GetEnvironment()->GetOutputImage(index).GetData();
 }
 

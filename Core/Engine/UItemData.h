@@ -27,7 +27,9 @@ namespace RDK {
 class UItemData
 {
 friend class UADItem;
-protected: // Данные
+public: // Размер единичного элемента данных по умолчанию
+static int DefaultDataSize;
+public: // Данные
 // Указатель на данные
 union
 {

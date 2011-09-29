@@ -159,6 +159,7 @@ void __fastcall TUClassRegistryFrame::UpdateInterface(void)
 // Перерисовывает список компонент
 void __fastcall TUClassRegistryFrame::UpdateComponentList(void)
 {
+ return;
  if(!CurrentRoot)
   CurrentRoot=Registry;
 
@@ -217,6 +218,8 @@ void __fastcall TUClassRegistryFrame::UpdatePath(void)
 // Перерисовывает список компонент
 void __fastcall TUClassRegistryFrame::UpdateComponentList(RDK::UClassRegistry &root)
 {
+ return;
+
  TListGroup* group=0;
  TListItem* item=0;
 
@@ -362,14 +365,14 @@ void __fastcall TUClassRegistryFrame::SetBitBtnClick(TObject *Sender)
  if(itemindex<0)
   return;
 
- (*regdata)[SelectedClassName][ListView->Items->Item[itemindex]->Caption.t_str()]
- = LabeledEdit->Text.t_str();
+ (*regdata)[SelectedClassName][AnsiString(ListView->Items->Item[itemindex]->Caption).c_str()]
+ = AnsiString(LabeledEdit->Text).c_str();
 
  std::string fullname=CurrentSubTree->GetFullName(Registry);
  DiffRegistry.CreateBranch(fullname);
  RDK::UClassRegData &diffregdata=DiffRegistry();
- diffregdata[SelectedClassName][ListView->Items->Item[itemindex]->Caption.t_str()]
- = LabeledEdit->Text.t_str();
+ diffregdata[SelectedClassName][AnsiString(ListView->Items->Item[itemindex]->Caption).c_str()]
+ = AnsiString(LabeledEdit->Text).c_str();
 
  UpdateParams();
 }
@@ -394,7 +397,7 @@ void __fastcall TUClassRegistryFrame::ListViewSelectItem(TObject *Sender, TListI
  if(itemindex<0)
   return;
  int groupid=ListView->Items->Item[itemindex]->GroupID;
- SelectedClassName=ListView->Groups->Items[groupid]->Header.t_str();
+ SelectedClassName=AnsiString(ListView->Groups->Items[groupid]->Header).c_str();
 
  LabeledEdit->EditLabel->Caption=ListView->Items->Item[itemindex]->Caption
                                 +" value:";
@@ -424,7 +427,7 @@ void __fastcall TUClassRegistryFrame::ComponentsListViewDblClick(TObject *Sender
   return;
  }
 
- CurrentRoot=CurrentRoot->FindSubTree(ComponentsListView->Items->Item[itemindex]->Caption.t_str());
+ CurrentRoot=CurrentRoot->FindSubTree(AnsiString(ComponentsListView->Items->Item[itemindex]->Caption).c_str());
 
  std::vector<std::string> subtree;
  CurrentRoot->GetSubTrees(subtree);
@@ -490,7 +493,7 @@ void __fastcall TUClassRegistryFrame::ComponentsListViewSelectItem(TObject *Send
  if(itemindex<0)
   return;
 
- CurrentSubTree=CurrentRoot->FindSubTree(ComponentsListView->Items->Item[itemindex]->Caption.t_str());
+ CurrentSubTree=CurrentRoot->FindSubTree(AnsiString(ComponentsListView->Items->Item[itemindex]->Caption).c_str());
 
  if(!CurrentSubTree)
   return;

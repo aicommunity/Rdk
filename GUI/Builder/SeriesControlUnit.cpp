@@ -373,7 +373,7 @@ void __fastcall TSeriesControlForm::Edit3DblClick(TObject *Sender)
   }
 
  s="Подпись для ";
- s+=StringGrid2->Cells[1][StringGrid2->Row].t_str();
+ s+=AnsiString(StringGrid2->Cells[1][StringGrid2->Row]).c_str();
  ListInputForm->Init(s,listvals,"");
  // ...подготовка формы запроса легенды завершена
  if(ListInputForm->ShowModal() != mrOk)
@@ -381,7 +381,7 @@ void __fastcall TSeriesControlForm::Edit3DblClick(TObject *Sender)
 
  Edit3->Text=ListInputForm->Edit->Text;
  WatchList[StrToInt(StringGrid2->Cells[0][StringGrid2->Row])].Legend
-                   =ListInputForm->Edit->Text.t_str();
+				   =AnsiString(ListInputForm->Edit->Text).c_str();
  LegendsChanged=true;
 }
 //---------------------------------------------------------------------------

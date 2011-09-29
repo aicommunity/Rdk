@@ -21,7 +21,6 @@ namespace RDK {
 // Конструкторы и деструкторы
 // --------------------------
 UANet::UANet(void)
-// : NADItem(name)
 {
 }
 
@@ -114,12 +113,24 @@ bool UANet::Copy(UAContainer *target, UAContainerStorage *stor, bool copystate) 
 
  if(UADItem::Copy(target,stor,copystate))
   {
+//   ((UANet*)target)->GetLinks(oldlinkslist,target);
    ((UANet*)target)->BreakLinks();
+//   oldlinkslist.Clear();
+//   ((UANet*)target)->GetLinks(oldlinkslist,target);
+
    if(((UANet*)target)->CreateLinks(GetLinks(linkslist,this)))
     return true;
   }
 
  return false;
+}
+
+// Осуществляет освобождение этого объекта в его хранилище
+// или вызов деструктора, если Storage == 0
+void UANet::Free(void)
+{
+// BreakLinks(this);
+ UADItem::Free();
 }
 // --------------------------
 
@@ -159,11 +170,20 @@ bool UANet::CreateLink(const ULongId &item_id, int item_index, const ULongId &co
 
 // Устанавливает новую связь между выходом элемента сети
 // 'item' и коннектором 'connector'
-/*bool UANet::CreateLink(const NameT &item, int item_index,
+bool UANet::CreateLink(const NameT &item, int item_index,
                         const NameT &connector, int connector_index)
 {
- UAItem *pitem=dynamic_cast<UAItem*>(GetComponentL(item));
- UAConnector *pconnector=dynamic_cast<UAConnector*>(GetComponentL(connector));
+ UAItem *pitem=0;
+ UAConnector *pconnector=0;
+ if(!item.size())
+  pitem=this;
+ else
+  pitem=dynamic_cast<UAItem*>(GetComponentL(item));
+
+ if(!connector.size())
+  pconnector=this;
+ else
+  pconnector=dynamic_cast<UAConnector*>(GetComponentL(connector));
 
  if(!pitem)
   return false;
@@ -175,17 +195,23 @@ bool UANet::CreateLink(const ULongId &item_id, int item_index, const ULongId &co
   return false;
 
  return true;
-}            */
+}
 
 // Устанавливает все связи из массива 'linkslist'.
 bool UANet::CreateLinks(const ULinksList &linkslist)
 {
  bool res=true;
 
- for(int i=0;i<linkslist.GetSize();i++)
+ int i=0;
+ for(i=0;i<linkslist.GetSize();i++)
  {
   res&=CreateLink(linkslist[i].Item,linkslist[i].Connector);
+  if(!res)
+   break;
  }
+
+ if(!res)
+  return false;
 
  return res;
 }
@@ -249,10 +275,10 @@ bool UANet::BreakLink(const ULongId &item_id, int item_index, const ULongId &con
 
 // Разрывает связь между выходом элемента сети, 'itemid'
 // и коннектором 'connectorid'
-/*bool UANet::BreakLink(const NameT &itemname, int item_index,
+bool UANet::BreakLink(const NameT &itemname, int item_index,
                         const NameT &connectorname, int connector_index)
 {
- UAItem *item=dynamic_cast<NADItem*>(GetComponentL(itemname));
+ UAItem *item=dynamic_cast<UADItem*>(GetComponentL(itemname));
  UAConnector *connector=dynamic_cast<UAConnector*>(GetComponentL(connectorname));
 
  if(!item)
@@ -263,7 +289,7 @@ bool UANet::BreakLink(const ULongId &item_id, int item_index, const ULongId &con
  item->Disconnect(connector);
 
  return true;
-}           */
+}
 
 // Разрывает все связи сети
 // исключая ее внутренние связи и обратные связи

@@ -20,6 +20,7 @@ See file license.txt for more information
 #include "UEnvSupport.cpp"
 #include "UItemData.cpp"        
 #include "UXMLEnvSerialize.cpp"
+#include "UThreadEnvironment.cpp"
 
 
 #endif

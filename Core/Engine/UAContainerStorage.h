@@ -291,6 +291,10 @@ const NameT GetClassName(const UId &id) const;
 // Возвращает id класса
 virtual UId AddClass(UAComponent *classtemplate, const string &classname, const UId &classid=ForbiddenId);
 
+protected:
+virtual UId AddClass(UAComponent *classtemplate, const UId &classid=ForbiddenId);
+public:
+
 // Возвращает id класса
 //virtual UId AddClass(const string &classname, UAComponent *classtemplate);
 

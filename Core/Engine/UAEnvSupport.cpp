@@ -179,7 +179,7 @@ const UId& UIdVector::operator [] (int index) const
 bool UIdVector::operator == (const UIdVector &copy) const
 {
  if(Size != copy.Size)
-  return true;
+  return false;
 
  return !memcmp(Buffer,copy.Buffer,Size*sizeof(UId));
 }

@@ -84,7 +84,7 @@ virtual int Find(const UAContainer * cont) const
 virtual void Set(UAContainer* source)
 {
  Source=static_cast<T*>(source);
- RDK::UEPointer<T>::operator = (Source);
+// RDK::UEPointer<T,OwnerT>::operator = (Source);
 };
 
 // --------------------------

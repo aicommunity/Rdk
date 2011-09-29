@@ -33,11 +33,15 @@ struct UVariable
  // Указатель на свойство
  UIProperty* Property;
 
+ // Флаг разрешения удаления данных на которых указывает Property
+ bool DelEnable;
+
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
 UVariable(void);
 UVariable(UId id, UIProperty *prop);
+UVariable(const UVariable &copy);
 virtual ~UVariable(void);
 // --------------------------
 };

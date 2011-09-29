@@ -118,11 +118,13 @@ bool SetNumOutputImages(int value);
 // Разрешение входного изображения
 int GetInputImageWidth(int i) const;
 int GetInputImageHeight(int i) const;
+UBMColorModel GetInputImageColorModel(int i) const;
 bool SetInputImageRes(int i, int width, int height);
 
 // Разрешение выходного изображения
 int GetOutputImageWidth(int i) const;
 int GetOutputImageHeight(int i) const;
+UBMColorModel GetOutputImageColorModel(int i) const;
 
 // Задает входное изображение
 bool SetInputImage(int i, const UBitmap &bmp);

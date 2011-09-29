@@ -25,7 +25,7 @@ See file license.txt for more information
 #include "UAModel.cpp"
 #include "UANet.cpp"        
 #include "UAComponent.cpp"
-
+#include "UController.cpp"
 
 
 #endif

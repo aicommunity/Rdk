@@ -277,7 +277,7 @@ bool UAConnector::SetNumInputs(int value)
  if(NumInputs == value)
   return true;
 
-// CNumInputs=CItemList.size();
+// NumInputs=CItemList.size();
  if(NumInputs > value)
  {
   for(int i=value;i<NumInputs;++i)
@@ -318,20 +318,13 @@ bool UAConnector::SetAutoNumInputs(bool value)
 // --------------------------
 // Системные методы управления объектом
 // --------------------------
-// Копирует этот объект в 'target' с сохранением всех компонент
-// и значений параметров
-// Если 'stor' == 0, то создание объектов осуществляется
-// в том же хранилище где располагается этот объект
-/*bool UAConnector::Copy(NAContainer *target, NStorage *stor, bool copystate) const
+// Осуществляет освобождение этого объекта в его хранилище
+// или вызов деструктора, если Storage == 0
+void UAConnector::Free(void)
 {
- if(!dynamic_cast<UAConnector*>(target))
-  return false;
-
- if(NAContainer::Copy(target,stor,copystate))
-  return CopyInputSymLinks(static_cast<UAConnector*>(target));
-
- return false;
-} */
+// DisconnectAllItems();
+ UAContainer::Free();
+}
 // --------------------------
 
 // --------------------------
@@ -400,7 +393,7 @@ bool UAConnector::ConnectToItem(UAItem *na, int i_index, int &c_index)
  else // Если c_index >= NumInputs то расширяем число входов до требуемого
  if(c_index >= NumInputs)
  {
-  NumInputs=c_index+1;
+  SetNumInputs(c_index+1);
  }
 
  if(!Build())

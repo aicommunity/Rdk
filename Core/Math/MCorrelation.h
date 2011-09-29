@@ -179,7 +179,7 @@ long long GetTSumAverage(void) const;
 bool SetTSumAverage(long long value);
 
 // ¬ходное изображение в форме градаций серого
-const unsigned char *GetInput(void) const;
+const unsigned char *GetInputData(void) const;
 
 // —умма среднего входного изображени€
 // дл€ каждого элемента матрицы коррел€ций

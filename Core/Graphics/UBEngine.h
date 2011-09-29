@@ -78,6 +78,31 @@ virtual bool Stop(void);
 // --------------------------
 // Методы управления средой
 // --------------------------
+// Задает число входов среды
+virtual void Env_SetNumInputImages(int number);
+
+// Задает число выходов среды
+virtual void Env_SetNumOutputImages(int number);
+
+// Возвращает число входов среды
+virtual int Env_GetNumInputImages(void);
+
+// Возвращает число выходов среды
+virtual int Env_GetNumOutputImages(void);
+
+// Задает разрешение по умолчанию (рабочее разрешение)
+virtual void Env_SetInputRes(int number, int width, int height);
+
+// Возвращает разрешение по умолчанию (рабочее разрешение)
+virtual int Env_GetInputImageWidth(int number);
+virtual int Env_GetInputImageHeight(int number);
+virtual int Env_GetInputImageColorModel(int number);
+
+// Возвращает текущее выходное разрешение
+virtual int Env_GetOutputImageWidth(int number);
+virtual int Env_GetOutputImageHeight(int number);
+virtual int Env_GetOutputImageColorModel(int number);
+
 virtual void Env_SetInputImage(int number, unsigned char* image, int width, int height,int cmodel);
 
 virtual unsigned char* Env_GetInputImage(int index);

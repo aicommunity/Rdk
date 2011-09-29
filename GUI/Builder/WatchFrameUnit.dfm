@@ -39,6 +39,7 @@ object WatchFrame: TWatchFrame
     Color = clWhite
     PopupMenu = PopupMenu
     TabOrder = 0
+    ColorPaletteIndex = 13
   end
   object SavePictureDialog: TSavePictureDialog
     Filter = 'Bitmaps (*.bmp)|*.bmp|Enhanced Metafiles (*.emf)|*.emf'

@@ -357,7 +357,7 @@ bool NCC2D::SetTSumAverage(long long value)
 }
 
 // Входное изображение в форме градаций серого
-const unsigned char* NCC2D::GetInput(void) const
+const unsigned char* NCC2D::GetInputData(void) const
 {
  return Input;
 }

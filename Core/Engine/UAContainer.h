@@ -24,6 +24,8 @@ class UAContainerStorage;
 class UInstancesStorageElement;
 
 typedef long int IndexT;
+typedef int UTime;
+typedef long long ULongTime;
 
 extern NameT ForbiddenName;
 
@@ -117,8 +119,11 @@ PointerMapT PointerLookupTable;
 //map<UAContainer*,UAContainer**> ComponentPointers;
 
 private: // Глобальные свойства
+// Текущее время модели в микросекундах
+static ULongTime Time;
+
 // Текущее время модели в секундах
-//static double Time;
+static double DoubleTime;
 
 private: // Системные свойства
 
@@ -145,12 +150,26 @@ UId Id;
 // false - расчет объекта будет игнорироваться
 bool Activity;
 
+// Шаг счета в долях секунды
+// Реальный шаг = 1./TimeStep
+UTime TimeStep;
+
 public: // Физические свойства
 // Координата компонента в пространстве сети
 RDK::MVector<double> Coord;
 
 
 protected: // Временные переменные
+// Если 'TimeStep' > 'Owner->TimeStep' то 'CalcCounter' является
+// счетчиком текущего интервала ожидания.
+// В противном случае 'CalcCounter' не ипользуется
+UTime CalcCounter;
+
+// Хранит величину шага счета родительского
+// объекта или величину шага счета этого объекта
+// если родительского объекта не существует
+UTime OwnerTimeStep;
+
 // Указатель на 0-й элемент вектора компонент
 UAContainer* *PComponents;
 
@@ -160,15 +179,19 @@ int NumComponents;
 // Итератор, указывающий на этот объект в хранилище
 UInstancesStorageElement* ObjectIterator;
 
+// Последний использованный Id компонент
+UId LastId;
+
 public: // Открытые методы
 // --------------------------
 // Методы управления глобальными свойствами
 // --------------------------
 // Возвращает текущее время модели
-//static const double& GetTime(void);
+static const ULongTime& GetTime(void);
+static const double& GetDoubleTime(void);
 
 // Устанавливает текущее время модели
-//static bool SetTime(double value);
+static bool SetTime(ULongTime value);
 // --------------------------
 
 // --------------------------
@@ -223,7 +246,8 @@ RDK::MVector<double> GetCoord(void) const;
 bool SetCoord(RDK::MVector<double> value);
 
 // Устанавливает величину шага интегрирования
-//bool SetTimeStep(TimeT timestep);
+UTime GetTimeStep(void) const;
+bool SetTimeStep(UTime timestep);
 
 // Устанавливает флаг активности объекта
 bool GetActivity(void) const;
@@ -598,7 +622,7 @@ public:
 // Добавляет переменную состояния с именем 'name' в таблицу соотвествий
 // параметров и назначает ей корректный индекс
 // Должна вызываться в конструкторах классов
-UId AddLookupState(const NameT &name,UIProperty *property);
+UId AddLookupState(const NameT &name,UIProperty *property, bool delenable=true);
 
 protected:
 // Удаляет переменную состояния с именем 'name' из таблицы соотвествий
@@ -665,7 +689,7 @@ public:
 // Добавляет параметр с именем 'name' в таблицу соотвествий
 // параметров и назначает ему корректный индекс
 // Должна вызываться в конструкторах классов
-UId AddLookupProperty(const NameT &name, UIProperty *property);
+UId AddLookupProperty(const NameT &name, UIProperty *property, bool delenable=true);
 
 protected:
 // Удаляет параметр с именем 'name' из таблицы соотвествий

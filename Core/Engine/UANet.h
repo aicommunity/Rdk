@@ -42,6 +42,10 @@ ULinksList& GetLinks(ULinksList &linkslist, const UAContainer *netlevel) const;
 // Если 'stor' == 0, то создание объектов осуществляется
 // в том же хранилище где располагается этот объект
 virtual bool Copy(UAContainer *target, UAContainerStorage *stor=0, bool copystate=false) const;
+
+// Осуществляет освобождение этого объекта в его хранилище
+// или вызов деструктора, если Storage == 0
+virtual void Free(void);
 // --------------------------
 
 // --------------------------
@@ -82,8 +86,8 @@ virtual bool CreateLink(const ULongId &item_id, int item_index, const ULongId &c
 
 // Устанавливает новую связь между выходом элемента сети
 // 'item' и коннектором 'connector'
-//virtual bool CreateLink(const NameT &item, int item_index,
-//                        const NameT &connector, int connector_index=-1);
+virtual bool CreateLink(const NameT &item, int item_index,
+						const NameT &connector, int connector_index=-1);
 
 // Устанавливает все связи из массива 'linkslist'
 virtual bool CreateLinks(const ULinksList &linkslist);
@@ -101,8 +105,8 @@ virtual bool BreakLink(const ULongId &item_id, int item_index, const ULongId &co
 
 // Разрывает связь между выходом элемента сети, 'itemid'
 // и коннектором 'connectorid'
-//virtual bool BreakLink(const NameT &itemname, int item_index,
-//                        const NameT &connectorname, int connector_index);
+virtual bool BreakLink(const NameT &itemname, int item_index,
+                        const NameT &connectorname, int connector_index);
 
 // Разрывает все связи сети
 // исключая ее внутренние связи и обратные связи

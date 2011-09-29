@@ -97,7 +97,6 @@ bool Structured;
 // Идентификатор компонента модели, который будет обсчитываться
 ULongId ModelCalculationComponent;
 
-
 protected: // Данные
 // Хранилище
 UAStorage* Storage;

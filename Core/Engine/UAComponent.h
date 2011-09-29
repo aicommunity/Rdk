@@ -38,9 +38,6 @@ UAComponent *MainOwner;
 // Указатель на хранилище компонент этого объекта
 UAStorage *Storage;
 
-// Последний использованный Id компонент
-UId LastId;
-
 protected: // Данные
 // Идентификатор класса
 UId Class;
@@ -70,9 +67,6 @@ virtual bool SetMainOwner(UAComponent* const mainowner);
 // Возвращает хранилище компонент этого объекта
 UAStorage* const GetStorage(void) const;
 virtual bool SetStorage(UAStorage* const storage);
-
-// Возвращает последний использованный Id компонент
-UId GetLastId(void) const;
 // --------------------------
 
 

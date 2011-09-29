@@ -195,6 +195,16 @@ int GetNumOutputs(void) const;
 bool SetNumOutputs(int value);
 // --------------------------
 
+
+// --------------------------
+// Системные методы управления объектом
+// --------------------------
+// Осуществляет освобождение этого объекта в его хранилище
+// или вызов деструктора, если Storage == 0
+virtual void Free(void);
+// --------------------------
+
+
 public:
 // ----------------------
 // Коммуникационные методы
@@ -229,7 +239,7 @@ virtual void BuildLinks(void);
 const UAConnector* GetAConnector(const UId &id, int index) const;
 
 // Возвращает  коннектор из списка подключений.
-const UAConnector* GetAConnector(int output, int index) const;
+const UAConnector* GetAConnectorByIndex(int output, int index) const;
 
 // Возвращает список подключений
 ULinksList& GetLinks(ULinksList &linkslist, const UAContainer *netlevel) const;

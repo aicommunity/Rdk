@@ -94,7 +94,7 @@ void __fastcall TListInputForm::FormShow(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TListInputForm::BitBtn1Click(TObject *Sender)
 {
- string s=Edit->Text.t_str();
+ string s=AnsiString(Edit->Text).c_str();
  if(s.find_first_not_of(' ') == string::npos || s == "")
   if(MustInput)
    {

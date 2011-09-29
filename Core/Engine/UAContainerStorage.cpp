@@ -167,6 +167,9 @@ int UInstancesStorage::GetSize(void) const
 // такой объект уже существует
 UInstancesStorageElement* UInstancesStorage::Add(UInstancesStorageElement* value)
 {
+ if(!value)
+  return 0;
+
  UInstancesStorageElement *current=First;
 
  if(!current)
@@ -174,33 +177,41 @@ UInstancesStorageElement* UInstancesStorage::Add(UInstancesStorageElement* value
   First=Last=value;
   value->Prev=0;
   value->Next=0;
+  Size=1;
   return value;
  }
 
  while(current)
  {
-  if(*value > *current)
+  if(*value < *current)// || current == Last)
   {
    break;
   }
+  current=current->Next;
  }
 
  // !!! Тут надо доработать - невозможно вставить элемент в начало сущетвующего списка
  if(current)
  {
   value->Next=current->Next;
-  if(current->Next)
-   current->Next->Prev=value;
-
-  current->Next=value;
   value->Prev=current;
+  current->Next=value;
+  if(value->Next)
+   value->Next->Prev=value;
+
+//  if(current->Next)
+//   current->Next=value;
+
+  if(Last == current)
+   Last=value;
  }
  else
  {
   value->Next=0;
   if(Last)
    Last->Next=value;
-  value->Prev=current;
+  value->Prev=Last;
+  Last=value;
  }
 
  ++Size;
@@ -235,7 +246,7 @@ void UInstancesStorage::Del(UInstancesStorageElement* value)
    if(next)
     next->Prev=current->Prev;
    if(current->Prev)
-    current->Prev=next;
+    current->Prev->Next=next;
 
    if(current == First)
     First=current->Next;
@@ -243,6 +254,7 @@ void UInstancesStorage::Del(UInstancesStorageElement* value)
     Last=current->Prev;
    delete current;
    --Size;
+   break;
   }
   current=next;
  }
@@ -423,7 +435,9 @@ void UObjectsStorage::Resize(int newsize)
  if(RealSize<newsize || !Objects)
  {
   UObjectStorageElement* newbuffer=new UObjectStorageElement[newrealsize];
-  memcpy(newbuffer,Objects,sizeof(UObjectStorageElement)*Size);
+  for(int i=0;i<Size;i++)
+   newbuffer[i]=Objects[i];
+//  memcpy(newbuffer,Objects,sizeof(UObjectStorageElement)*Size);
 
   if(Objects)
    delete []Objects;
@@ -910,6 +924,8 @@ const NameT UAContainerStorage::GetClassName(const UId &id) const
 UId UAContainerStorage::AddClass(UAComponent *classtemplate, const string &classname, const UId &classid)
 {
  UAContainerStorage *storage=dynamic_cast<UAContainerStorage*>(classtemplate->GetStorage());
+// UAContainer* contclasstemplate=dynamic_cast<UAContainer*>(classtemplate);
+ UInstancesStorage* temp=ObjectsStorage.Find(classid);
  if(storage)
   storage->PopObject(dynamic_cast<UAContainer*>(classtemplate));
  UId id=UAStorage::AddClass(classtemplate,classid);
@@ -922,7 +938,13 @@ UId UAContainerStorage::AddClass(UAComponent *classtemplate, const string &class
   }
   ClassesLookupTable[classname]=id;
  }
+
  return id;
+}
+
+UId UAContainerStorage::AddClass(UAComponent *classtemplate, const UId &classid)
+{
+ return UAStorage::AddClass(classtemplate, classid);
 }
 /*
 UId UAContainerStorage::AddClass(const NameT &classname, UAComponent *classtemplate)
@@ -1054,7 +1076,8 @@ UAContainer* UAContainerStorage::TakeObject(const UId &classid, const UAComponen
  UInstancesStorage* instances=ObjectsStorage.Find(classid);
  if(instances)
  {
-  UInstancesStorageElement* element=instances->FindFree();
+  UInstancesStorageElement* element=0;// Заглушка!! instances->FindFree();
+//  UInstancesStorageElement* element=instances->FindFree();
 
   if(element)
   {
@@ -1094,6 +1117,14 @@ UAContainer* UAContainerStorage::TakeObject(const UId &classid, const UAComponen
    return 0;
  }
 
+/* if(!obj->Build())
+ {
+   delete obj;
+   obj=0;
+   return 0;
+ }*/
+
+
  // В случае, если объект создается непосредственно как копия из хранилища...
  if(!prototype)
  {
@@ -1123,7 +1154,7 @@ UAContainer* UAContainerStorage::TakeObject(const UId &classid, const UAComponen
    return 0;
   }
 
- PushObject(classid,obj);
+// PushObject(classid,obj);
  obj->SetActivity(true);
 
  return obj;
@@ -1294,9 +1325,12 @@ void UAContainerStorage::ClearObjectsStorage(void)
   while(current != 0)
   {
    next=current->Next;
-   current->Object->SetStorage(0);
-   delete current->Object;
-   current->Object=0;
+   if(current->Object)
+   {
+    current->Object->SetStorage(0);
+	delete current->Object;
+	current->Object=0;
+   }
    current=next;
   }
   instances.Clear();

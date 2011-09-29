@@ -29,8 +29,6 @@ UAComponent::UAComponent(void)
 
  Storage=0;
 
- LastId=0;
-
  Class=ForbiddenId;
 // Id=ForbiddenId;
 }
@@ -88,12 +86,12 @@ bool UAComponent::SetStorage(UAStorage* const storage)
  Storage=storage;
  return true;
 }
-
+/*
 // Возвращает последний использованный Id компонент
 UId UAComponent::GetLastId(void) const
 {
  return LastId;
-}
+} */
 // --------------------------
 
 

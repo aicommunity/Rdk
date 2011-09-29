@@ -14,6 +14,5 @@ See file license.txt for more information
 
 #include "MCorrelation.cpp"
 #include "MDVector.cpp"
-#include "MCamera.cpp"
 
 #endif

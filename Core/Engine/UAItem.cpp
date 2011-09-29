@@ -350,7 +350,7 @@ UAItem::~UAItem(void)
 // Возвращает число подключенных элементов item
 int UAItem::GetNumOutputs(void) const
 {
- return AssociatedConnectors.GetSize();
+ return NumOutputs;//AssociatedConnectors.GetSize();
 }
 
 // Устанавливает число подключенных элементов item
@@ -359,8 +359,8 @@ bool UAItem::SetNumOutputs(int value)
  if(NumOutputs == value)
   return true;
 
- if(value == AssociatedConnectors.GetSize())
-  return true;
+// if(value == AssociatedConnectors.GetSize())
+//  return true;
 
  if(value > AssociatedConnectors.GetSize())
  {
@@ -373,6 +373,19 @@ bool UAItem::SetNumOutputs(int value)
  NumOutputs=value;
  Ready = false;
  return true;
+}
+// --------------------------
+
+
+// --------------------------
+// Системные методы управления объектом
+// --------------------------
+// Осуществляет освобождение этого объекта в его хранилище
+// или вызов деструктора, если Storage == 0
+void UAItem::Free(void)
+{
+// DisconnectAll();
+ UAConnector::Free();
 }
 // --------------------------
 
@@ -496,8 +509,9 @@ void UAItem::BuildLinks(void)
 // PAssociatedConnectors.resize(NumOutputs);
 // NumAConnectors.resize(NumOutputs);
 
- for(int i=0;i<NumOutputs;i++)
+ for(int i=0;i<AssociatedConnectors.GetSize();i++)
  {
+  // Заглушка!!! Тут почему то NumOutputs != AssociatedConnectors[i].Size
 //  NumAConnectors[i]=AssociatedConnectors[i].GetSize();
 //  if(NumAConnectors[i]>0)
 //   PAssociatedConnectors[i]=&AssociatedConnectors[i][0];
@@ -524,7 +538,7 @@ const UAConnector* UAItem::GetAConnector(const UId &id, int index) const
 }
 
 // Возвращает  коннектор из списка подключений.
-const UAConnector* UAItem::GetAConnector(int output, int index) const
+const UAConnector* UAItem::GetAConnectorByIndex(int output, int index) const
 {
  return AssociatedConnectors[output][index];
 }

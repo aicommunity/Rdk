@@ -241,21 +241,6 @@ bool UBAbstract::SetOutputColorModel(int index, UBMColorModel cmodel)
 // ---------------------
 // Методы управления данными
 // ---------------------
-// Идентификатор экземпляра
-/*IdT UBAbstract::GetId(void) const
-{
- return Id;
-}
-
-bool UBAbstract::SetId(IdT value)
-{
- if(Id == value)
-  return true;
-
- Id=value;
- return true;
-}           */
-
 // Возвращает указатель на таблицу входов
 const int* UBAbstract::GetInputTable(void) const
 {
@@ -348,34 +333,7 @@ bool UBAbstract::PLCalculate(UBitmap **input, UBitmap **output, int num_inputs, 
  {
   *output[TransitTable[i].Output]=*input[TransitTable[i].Input];
  }
-/*
- // Пробрасываем оставшиеся входы в выходы
- // выбираем минимальный по модулю отрицательный индекс из таблицы входов
- // и отправляем его в минимальный по модулю отрицательный индекс из таблицы выходов
- // и так для каждой пары отрицательных индексов, пока не исчерпается массив входов
- // или выходов
- int mininputindex=-NumInputs-1;
- int minoutputindex=-NumOutputs-1;
- for(int j=0;j<NumInputs;j++)
- {
-  if(InputTable[j]<0 && InputTable[j]>mininputindex)
-  {
-   // Нашли ближайший необработанный входной индекс
-   mininputindex=InputTable[j];
 
-   for(int i=0;i<NumOutputs;i++)
-   {
-    if(OutputTable[i]<0 && OutputTable[i]>minoutputindex)
-    {
-     // Нашли ближайший необработанный выходной индекс
-     minoutputindex=OutputTable[i];
-     *output[-minoutputindex]=*input[-mininputindex];
-     break;
-    }
-   }
-  }
- }
-     */
  return true;
 }
 
@@ -550,6 +508,10 @@ bool UBAbstract::ACalculate(void)
    if(!input)
     return true;
    int index=citem.Index;
+
+   if(input->GetNumOutputs()<=index)
+    return true;
+
    UBitmap *bmp=input->GetOutputs()[index];
    if(!bmp)
     return true;

@@ -24,12 +24,22 @@ namespace RDK {
 UVariable::UVariable(void)
 {
  Id=ForbiddenId;
+ Property=0;
+ DelEnable=true;
 }
 
 UVariable::UVariable(UId id, UIProperty *prop)
- : Id(id), Property(prop)
+ : Id(id), Property(prop), DelEnable(true)
 {
 }
+
+UVariable::UVariable(const UVariable &copy)
+{
+ Id=copy.Id;
+ Property=copy.Property;
+ DelEnable=copy.DelEnable;
+}
+
 
 UVariable::~UVariable(void)
 {
@@ -71,11 +81,11 @@ ULongId& operator << (ULongId& id, const std::string &str)
  start=stop=0;
  while(start != string::npos)
  {
-  std::size_t start=str.find_first_of("0123456789",stop);
+  start=str.find_first_of("0123456789",stop);
   if(start == string::npos)
    return id;
 
-  std::size_t stop=str.find_first_of(".",start);
+  stop=str.find_first_of(".",start);
   if(stop == string::npos)
   {
    id.Add(atoi(str.substr(start)));

@@ -4512,7 +4512,7 @@ int UBRect::Y2(void) const
 void UBRect::X2(int value)
 {
  if(value<X)
-  Width=0;
+  Width=value-X;
  else
   Width=value-X+1;
 }
@@ -4520,7 +4520,7 @@ void UBRect::X2(int value)
 void UBRect::Y2(int value)
 {
  if(value<Y)
-  Height=0;
+  Height=value-Y;
  else
   Height=value-Y+1;
 }

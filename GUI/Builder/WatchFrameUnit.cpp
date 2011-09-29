@@ -244,7 +244,7 @@ bool __fastcall TWatchFrame::RestoreInfo(string watchname, bool collectstate)
    if(j<int(oldnamelistsize))
    {
 	// Заменяет подпись под выбранной серией
-	ChangeLegend(j, ini->ReadString(IntToStr(j),"Legend","").t_str());
+	ChangeLegend(j, AnsiString(ini->ReadString(IntToStr(j),"Legend","")).c_str());
 
 	// Заменяет цвет выбранной серии
 	ChangeColor(j, (TColor)StrToInt(ini->ReadString(IntToStr(j),"Color",IntToStr(clTeeColor))));
@@ -263,7 +263,7 @@ bool __fastcall TWatchFrame::RestoreInfo(string watchname, bool collectstate)
    {
 	NameList.resize(NameList.size()+1);
 	wd=&NameList[NameList.size()-1];
-	wd->Legend=ini->ReadString(IntToStr(j),"Legend","").t_str();
+	wd->Legend=AnsiString(ini->ReadString(IntToStr(j),"Legend","")).c_str();
 	wd->YShift=StrToFloat(ini->ReadString(IntToStr(j),"YShift","0"));
 	wd->Color=(TColor)StrToInt(ini->ReadString(IntToStr(j),"Color",IntToStr(clTeeColor)));
 	wd->Style=(TPenStyle)StrToInt(ini->ReadString(IntToStr(j),"Style",IntToStr(psSolid)));
@@ -280,8 +280,8 @@ bool __fastcall TWatchFrame::RestoreInfo(string watchname, bool collectstate)
 	 grseries->Clear();
 	 ix1=0; ix2=0;
 	 iy1=0; iy2=0;
-	 xs=ini->ReadString(IntToStr(j),"XDATA","").t_str();
-	 ys=ini->ReadString(IntToStr(j),"YDATA","").t_str();
+	 xs=AnsiString(ini->ReadString(IntToStr(j),"XDATA","")).c_str();
+	 ys=AnsiString(ini->ReadString(IntToStr(j),"YDATA","")).c_str();
 	 grseries->Active=false;
 	 while( ((ix2+1) < xs.size()) && ((ix2=xs.find_first_of('|',ix2+1)) != string::npos) )
 	  {
@@ -835,6 +835,9 @@ void __fastcall TWatchFrame::StepUpdate(bool speedup)
 
   // Корректируем информацию в сериях
   wd=&NameList[seriesindex];
+
+  if(!wd->X || !wd->Y)
+   continue;
 
   // Кеш максимума и минимума за заданный интервал времени
   for(int i=0;i<wd->XYSize;i++)

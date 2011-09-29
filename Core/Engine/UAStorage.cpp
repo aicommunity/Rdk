@@ -209,6 +209,9 @@ UId UAStorage::AddClass(UAComponent *classtemplate, const UId &classid)
  if(ClassesStorage.Find(id))
   return ForbiddenId;
 
+ if(!classtemplate->Build())
+  return ForbiddenId;
+
  ClassesStorage.PushBack(id,classtemplate);
  classtemplate->SetClass(id);
  LastClassId=id;
