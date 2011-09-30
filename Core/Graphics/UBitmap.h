@@ -750,8 +750,7 @@ int Width,Height;
 // Конструкторы и деструкторы
 // --------------------------
 UBRect(void);
-//UBRect(int x, int y, int width, int hegiht);
-UBRect(int x, int y, int x2, int y2);
+UBRect(int x, int y, int width, int height);
 ~UBRect(void);
 // --------------------------
 

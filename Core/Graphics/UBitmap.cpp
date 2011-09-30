@@ -4501,12 +4501,12 @@ int UBRect::Y1(void) const
 
 int UBRect::X2(void) const
 {
- return X+Width;
+ return X+Width-1;
 }
 
 int UBRect::Y2(void) const
 {
- return Y+Height;
+ return Y+Height-1;
 }
 
 void UBRect::X2(int value)
