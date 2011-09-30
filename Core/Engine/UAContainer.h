@@ -125,6 +125,18 @@ static ULongTime Time;
 // Текущее время модели в секундах
 static double DoubleTime;
 
+// Реальное время в микросекундах
+static ULongTime RealTime;
+
+// Реальное время в секундах
+static double DoubleRealTime;
+
+// Мгновенный шаг в реальном времени в микросекундах
+static ULongTime RealTimeStep;
+
+// Мгновенный шаг в реальном времени в секундах
+static double DoubleRealTimeStep;
+
 private: // Системные свойства
 
 // Таблица компонент
@@ -192,6 +204,17 @@ static const double& GetDoubleTime(void);
 
 // Устанавливает текущее время модели
 static bool SetTime(ULongTime value);
+
+// Возвращает реальное время
+static const ULongTime& GetRealTime(void);
+static const double& GetDoubleRealTime(void);
+
+// Устанавливает реальное время
+static bool SetRealTime(ULongTime value);
+
+// Возвращает мгновенный шаг в реальном времени
+static const ULongTime& GetRealTimeStep(void);
+static const double& GetDoubleRealTimeStep(void);
 // --------------------------
 
 // --------------------------

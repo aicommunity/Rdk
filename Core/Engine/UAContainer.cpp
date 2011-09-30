@@ -163,6 +163,14 @@ UAContainer& UAContainerVector::operator () (int index)
 // Текущее время модели
 ULongTime UAContainer::Time=0;
 double UAContainer::DoubleTime=0;
+
+// Реальное время
+ULongTime UAContainer::RealTime=0;
+double UAContainer::DoubleRealTime=0;
+
+// Мгновенный шаг в реальном времени
+ULongTime UAContainer::RealTimeStep=1;
+double UAContainer::DoubleRealTimeStep=1.0e-6;
 // --------------------------
 
 // --------------------------
@@ -188,6 +196,42 @@ bool UAContainer::SetTime(ULongTime value)
  Time=value;
  DoubleTime=Time/1000000.0;
  return true;
+}
+
+// Возвращает реальное время
+const ULongTime& UAContainer::GetRealTime(void)
+{
+ return RealTime;
+}
+
+const double& UAContainer::GetDoubleRealTime(void)
+{
+ return DoubleRealTime;
+}
+
+// Устанавливает реальное время
+bool UAContainer::SetRealTime(ULongTime value)
+{
+ RealTimeStep=value-RealTime;
+ if(RealTimeStep == 0)
+  RealTimeStep=1;
+
+ DoubleRealTimeStep=RealTimeStep/1.0e6;
+
+ RealTime=value;
+ DoubleRealTime=RealTime/1000000.0;
+ return true;
+}
+
+// Возвращает мгновенный шаг в реальном времени
+const ULongTime& UAContainer::GetRealTimeStep(void)
+{
+ return RealTimeStep;
+}
+
+const double& UAContainer::GetDoubleRealTimeStep(void)
+{
+ return DoubleRealTimeStep;
 }
 // --------------------------
 
