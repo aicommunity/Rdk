@@ -13,45 +13,23 @@ See file license.txt for more information
 #ifndef UPointerH
 #define UPointerH
 
+#include <cstdlib>
+#include <string>
+#include <memory.h>
 #include "../Utilities/USupport.h"
+#include "UAContainer.h"
 
 namespace RDK {
 
 class UAContainer;
 
-// Класс описания локальных указателей
-class UIPointer
-{
-protected: // Данные
-
-public:
-virtual UAContainer* const Get(void) const=0;
-
-virtual void Set(UAContainer* source)=0;
-
-virtual void Del(UAContainer* source)=0;
-
-// Проверяет, существует ли такой указатель в этом классе
-// Возвращает 0 если да, и <0 если нет
-virtual int Find(const UAContainer * cont) const=0;
-
-// -----------------
-// Операторы
-// -----------------
-UIPointer& operator = (UAContainer *source)
-{
- Set(source);
- return *this;
-};
-// -----------------
-};
 
 // Указатель на локальный экземпляр компонента в классе
 // Для удобства использования
-template<typename T, typename OwnerT>
+template<typename T, class OwnerT>
 class UEPointer: public UPointer<T>, public UIPointer
 {
-friend OwnerT;
+//friend class OwnerT;
 protected: // Атрибуты
 // Исходный контейнер
 T* Source;
@@ -102,10 +80,10 @@ UEPointer<T,OwnerT>& operator = (UAContainer* pdata)
 
 // Указатель на массив локальных экземпляров компонент в классе
 // Для удобства использования
-template<typename T, typename OwnerT>
+template<typename T, class OwnerT>
 class UCPointer: public UIPointer
 {
-friend OwnerT;
+//friend class OwnerT;
 protected: // Атрибуты
 // Владелец указателя
 OwnerT* Owner;
@@ -120,7 +98,7 @@ public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UCPointer(OwnerT * const owner, const string &name)
+UCPointer(OwnerT * const owner, const std::string &name)
  : Owner(owner)
 { Size=0; Sources=0; reinterpret_cast<UAContainer* const>(Owner)->AddLookupPointer(name,this); };
 virtual ~UCPointer(void)

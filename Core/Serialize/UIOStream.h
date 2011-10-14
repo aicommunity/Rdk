@@ -114,7 +114,7 @@ template<typename CharT, typename T1, typename T2>
 std::basic_ostream<CharT>& operator << (std::basic_ostream<CharT>& stream, const std::map<T1,T2> &data)
 {
  size_t size=data.size();
- std::map<T1,T2>::const_iterator I,J;
+ typename std::map<T1,T2>::const_iterator I,J;
  I=data.begin();
  J=data.end();
  size_t i=0;
@@ -167,7 +167,7 @@ template<typename CharT, typename T>
 std::basic_ostream<CharT>& operator << (std::basic_ostream<CharT>& stream, const std::list<T> &data)
 {
  size_t size=data.size();
- std::list<T>::const_iterator I,J;
+ typename std::list<T>::const_iterator I,J;
  I=data.begin();
  J=data.end();
  size_t i=0;

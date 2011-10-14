@@ -118,7 +118,7 @@ friend MTensor<DataT> Transpose(const MTensor<DataT> &T);
 friend DataT Trace(const MTensor<DataT> &T);
 
 // Векторный инвариант.
-friend MVector<DataT> VectInvar(const MTensor<DataT>&);
+friend MVector<DataT> VectInvar(const MTensor<DataT> &T);
 // #########################
 
 // ## Операторы присваивания ##
@@ -159,7 +159,7 @@ bool operator != (const MTensor<DataT> &T) const
 // Смена знака у всех диад тензора.
 MTensor<DataT> operator - (void)
 {
- std::vector< Dyads<DataT> > tmp;
+ std::vector< MDyad<DataT> > tmp;
  size_t leng=Dyads.size();
 
  tmp.resize(leng);
@@ -223,7 +223,7 @@ MTensor<DataT>& operator *= (const MDyad<DataT> &D)
 };
 
 // Домножение тензора на число.
-MTensor<DataT>& operator *= (DataT)
+MTensor<DataT>& operator *= (DataT DT)
 {
  for(size_t i=0;i<Dyads.size();i++)
   Dyads[i]*=DT;
@@ -232,64 +232,64 @@ MTensor<DataT>& operator *= (DataT)
 };
 
 // Сложение двух тензоров.
-friend MTensor<DataT> operator + (const MTensor<DataT>&,const MTensor<DataT>&);
+friend MTensor<DataT> operator + (const MTensor<DataT> &T1,const MTensor<DataT> &T2);
 
 // Сложение тензора и диады.
-friend MTensor<DataT> operator + (const MTensor<DataT>&,const MDyad<DataT>&);
+friend MTensor<DataT> operator + (const MTensor<DataT> &T1,const MDyad<DataT> &T2);
 
 // Сложение диады и тензора.
-friend MTensor<DataT> operator + (const MDyad<DataT>&,const MTensor<DataT>&);
+friend MTensor<DataT> operator + (const MDyad<DataT> &T1,const MTensor<DataT> &T2);
 
 // Вычитание двух тензоров.
-friend MTensor<DataT> operator - (const MTensor<DataT>&,const MTensor<DataT>&);
+friend MTensor<DataT> operator - (const MTensor<DataT> &T1,const MTensor<DataT> &T2);
 
 // Вычитание тензора и диады.
-friend MTensor<DataT> operator - (const MTensor<DataT>&,const MDyad<DataT>&);
+friend MTensor<DataT> operator - (const MTensor<DataT> &T,const MDyad<DataT> &D);
 
 // Вычитание диады и тензора.
-friend MTensor<DataT> operator - (const MDyad<DataT>&,const MTensor<DataT>&);
+friend MTensor<DataT> operator - (const MDyad<DataT> &D,const MTensor<DataT> &T);
 
 // Скалярное умножение двух тензоров.
-friend MTensor<DataT> operator * (const MTensor<DataT>&,const MTensor<DataT>&);
+friend MTensor<DataT> operator * (const MTensor<DataT> &T1,const MTensor<DataT> &T2);
 
 // Скалярное умножение тензора и диады.
-friend MTensor<DataT> operator * (const MTensor<DataT>&,const MDyad<DataT>&);
+friend MTensor<DataT> operator * (const MTensor<DataT> &T,const MDyad<DataT> &D);
 
 // Скалярное умножение диады и тензора.
-friend MTensor<DataT> operator * (const MDyad<DataT>&,const MTensor<DataT>&);
+friend MTensor<DataT> operator * (const MDyad<DataT> &D,const MTensor<DataT> &T);
 
 // Скалярное умножение вектора и тензора.
-friend MVector<DataT> operator * (const MVector<DataT>&,const MTensor<DataT>&);
+friend MVector<DataT> operator * (const MVector<DataT> &v,const MTensor<DataT> &T);
 
 // Скалярное умножение тензора и вектора.
-friend MVector<DataT> operator * (const MTensor<DataT>&,const MVector<DataT>&);
+friend MVector<DataT> operator * (const MTensor<DataT> &T,const MVector<DataT> &v);
 
 // Умножение тензора и числа.
-friend MTensor<DataT> operator * (const MTensor<DataT>&,DataT);
+friend MTensor<DataT> operator * (const MTensor<DataT> &T,DataT d);
 
 // Умножение числа и тензора.
-friend MTensor<DataT> operator * (DataT,const MTensor<DataT>&);
+friend MTensor<DataT> operator * (DataT d,const MTensor<DataT> &T);
 
 // Деление тензора и числа.
-friend MTensor<DataT> operator / (const MTensor<DataT>&,DataT);
+friend MTensor<DataT> operator / (const MTensor<DataT> &T, DataT d);
 
 // Векторное умножение вектора и тензора.
-friend MTensor<DataT> operator ^ (const MVector<DataT>&,const MTensor<DataT>&);
+friend MTensor<DataT> operator ^ (const MVector<DataT> &v,const MTensor<DataT> &T);
 
 // Векторное умножение тензора и вектора.
-friend MTensor<DataT> operator ^ (const MTensor<DataT>&,const MVector<DataT>&);
+friend MTensor<DataT> operator ^ (const MTensor<DataT> &T,const MVector<DataT> &v);
 
 // Двойное скалярное произведение тензоров
-friend DataT SS(const MTensor<DataT>&,const MTensor<DataT>&);
+friend DataT SS(const MTensor<DataT> &T1,const MTensor<DataT> &T2);
 
 // Двойное векторное произведение тензоров
-friend MTensor<DataT> VV(const MTensor<DataT>&,const MTensor<DataT>&);
+friend MTensor<DataT> VV(const MTensor<DataT> &T1,const MTensor<DataT> &T2);
 
 // Двойное векторно-скалярное произведение тензоров
-friend MVector<DataT> VS(const MTensor<DataT>&,const MTensor<DataT>&);
+friend MVector<DataT> VS(const MTensor<DataT> &T1,const MTensor<DataT> &T2);
 
 // Двойное скалярно-векторное произведение тензоров
-friend MVector<DataT> SV(const MTensor<DataT>&,const MTensor<DataT>&);
+friend MVector<DataT> SV(const MTensor<DataT> &T1,const MTensor<DataT> &T2);
 // ##############################
 // -------------------------------
 };
@@ -302,7 +302,7 @@ MTensor<DataT> Transpose(const MTensor<DataT> &T)
 {
  std::vector< MDyad<DataT> > tmp(T.Dyads);
 
- for(int i=0;i<Dyads.size();i++)
+ for(int i=0;i<T.Dyads.size();i++)
   tmp[i].Transpose();
 
  return MTensor<DataT>(tmp);
@@ -315,7 +315,7 @@ DataT Trace(const MTensor<DataT> &T)
  DataT tmp=0;
 
  for(int i=0;i<T.Dyads.size();i++)
-  tmp+=Dyads[i].d1*Dyads[i].d2;
+  tmp+=T.Dyads[i].d1*T.Dyads[i].d2;
 
  return tmp;
 }
@@ -327,7 +327,7 @@ MVector<DataT> VectInvar(const MTensor<DataT> &T)
  MVector<DataT> tmp;
 
  for(int i=0;i<T.Dyads.size();i++)
-  tmp+=Dyads[i].d1^Dyads[i].d2;
+  tmp+=T.Dyads[i].d1^T.Dyads[i].d2;
 
  return MVector<DataT>(tmp);
 }
@@ -380,13 +380,13 @@ MTensor<DataT> operator - (const MDyad<DataT> &D,const MTensor<DataT> &T)
 template<class DataT>
 MTensor<DataT> operator * (const MTensor<DataT> &T1,const MTensor<DataT> &T2)
 {
- DArray< MDyad<DataT> > tmp;
+ std::vector< MDyad<DataT> > tmp;
  int leng,k=0;
 
- leng=T1.Dyads.GetLength()*T2.Dyads.GetLength();
+ leng=T1.Dyads.size()*T2.Dyads.size();
  tmp.ChangeLength(leng);
- for(int i=0;i<T1.Dyads.GetLength();i++)
-  for(int j=0;j<T2.Dyads.GetLength();j++)
+ for(int i=0;i<T1.Dyads.size();i++)
+  for(int j=0;j<T2.Dyads.size();j++)
    tmp[k++]=T1.Dyads[i]*T2.Dyads[j];
 
  return MTensor<DataT>(tmp);
@@ -396,8 +396,8 @@ MTensor<DataT> operator * (const MTensor<DataT> &T1,const MTensor<DataT> &T2)
 template<class DataT>
 MTensor<DataT> operator * (const MTensor<DataT> &T,const MDyad<DataT> &D)
 {
- DArray< MDyad<DataT> > tmp;
- int leng=T.Dyads.GetLength();
+ std::vector< MDyad<DataT> > tmp;
+ int leng=T.Dyads.size();
 
  tmp.Dyads.ChangeLength(leng);
  for(int i=0;i<leng;i++)
@@ -410,8 +410,8 @@ MTensor<DataT> operator * (const MTensor<DataT> &T,const MDyad<DataT> &D)
 template<class DataT>
 MTensor<DataT> operator * (const MDyad<DataT> &D,const MTensor<DataT> &T)
 {
- DArray< MDyad<DataT> > tmp;
- int leng=T.Dyads.GetLength();
+ std::vector< MDyad<DataT> > tmp;
+ int leng=T.Dyads.size();
 
  tmp.Dyads.ChangeLength(leng);
  for(int i=0;i<leng;i++)
@@ -426,7 +426,7 @@ MVector<DataT> operator * (const MVector<DataT> &v,const MTensor<DataT> &T)
 {
  MVector<DataT> tmp;
 
- for(int i=0;i<T.Dyads.GetLength();i++)
+ for(int i=0;i<T.Dyads.size();i++)
   tmp+=v*T.Dyads[i];
 
  return MVector<DataT>(tmp);
@@ -438,7 +438,7 @@ MVector<DataT> operator * (const MTensor<DataT> &T,const MVector<DataT> &v)
 {
  MVector<DataT> tmp;
 
- for(int i=0;i<T.Dyads.GetLength();i++)
+ for(int i=0;i<T.Dyads.size();i++)
   tmp+=T.Dyads[i]*v;
 
  return MVector<DataT>(tmp);
@@ -448,8 +448,8 @@ MVector<DataT> operator * (const MTensor<DataT> &T,const MVector<DataT> &v)
 template<class DataT>
 MTensor<DataT> operator * (const MTensor<DataT> &T,DataT d)
 {
- DArray< Dyads<DataT> > tmp;
- int leng=T.Dyads.GetLength();
+ std::vector< MDyad<DataT> > tmp;
+ int leng=T.Dyads.size();
 
  tmp.ChangeLength(leng);
  for(int i=0;i<leng;i++)
@@ -460,10 +460,10 @@ MTensor<DataT> operator * (const MTensor<DataT> &T,DataT d)
 
 // Умножение числа и тензора.
 template<class DataT>
-MTensor<DataT> operator * (DataT,const MTensor<DataT>&)
+MTensor<DataT> operator * (DataT d,const MTensor<DataT>& T)
 {
- DArray< Dyads<DataT> > tmp;
- int leng=T.Dyads.GetLength();
+ std::vector< MDyad<DataT> > tmp;
+ int leng=T.Dyads.size();
 
  tmp.ChangeLength(leng);
  for(int i=0;i<leng;i++)
@@ -476,8 +476,8 @@ MTensor<DataT> operator * (DataT,const MTensor<DataT>&)
 template<class DataT>
 MTensor<DataT> operator / (const MTensor<DataT> &T,DataT d)
 {
- DArray< Dyads<DataT> > tmp;
- int leng=T.Dyads.GetLength();
+ std::vector< MDyad<DataT> > tmp;
+ int leng=T.Dyads.size();
 
  tmp.ChangeLength(leng);
  for(int i=0;i<leng;i++)
@@ -490,8 +490,8 @@ MTensor<DataT> operator / (const MTensor<DataT> &T,DataT d)
 template<class DataT>
 MTensor<DataT> operator ^ (const MVector<DataT> &v,const MTensor<DataT> &T)
 {
- DArray< Dyads<DataT> > tmp;
- int leng=T.Dyads.GetLength();
+ std::vector< MDyad<DataT> > tmp;
+ int leng=T.Dyads.size();
 
  tmp.ChangeLength(leng);
  for(int i=0;i<leng;i++)
@@ -504,8 +504,8 @@ MTensor<DataT> operator ^ (const MVector<DataT> &v,const MTensor<DataT> &T)
 template<class DataT>
 MTensor<DataT> operator ^ (const MTensor<DataT> &T,const MVector<DataT> &v)
 {
- DArray< Dyads<DataT> > tmp;
- int leng=T.Dyads.GetLength();
+ std::vector< MDyad<DataT> > tmp;
+ int leng=T.Dyads.size();
 
  tmp.ChangeLength(leng);
  for(int i=0;i<leng;i++)
@@ -520,8 +520,8 @@ DataT SS(const MTensor<DataT> &T1,const MTensor<DataT> &T2)
 {
  DataT tmp=0;
 
- for(int i=0;i<T1.Dyads.GetLength();i++)
-  for(int j=0;j<T2.Dyads.GetLength();j++)
+ for(int i=0;i<T1.Dyads.size();i++)
+  for(int j=0;j<T2.Dyads.size();j++)
    tmp+=SS(T1.Dyads[i],T2.Dyads[j]);
 
  return tmp;
@@ -531,11 +531,11 @@ DataT SS(const MTensor<DataT> &T1,const MTensor<DataT> &T2)
 template<class DataT>
 MTensor<DataT> VV(const MTensor<DataT> &T1,const MTensor<DataT> &T2)
 {
- DArray< MDyad<DataT> > tmp;
+ std::vector< MDyad<DataT> > tmp;
  int k=0;
 
- for(int i=0;i<T1.Dyads.GetLength();i++)
-  for(int j=0;j<T2.Dyads.GetLength();j++)
+ for(int i=0;i<T1.Dyads.size();i++)
+  for(int j=0;j<T2.Dyads.size();j++)
    tmp[k++]=VV(T1.Dyads[i],T2.Dyads[j]);
 
  return MTensor<DataT>(tmp);
@@ -547,8 +547,8 @@ MVector<DataT> VS(const MTensor<DataT> &T1,const MTensor<DataT> &T2)
 {
  MVector<DataT> tmp;
 
- for(int i=0;i<T1.Dyads.GetLength();i++)
-  for(int j=0;j<T2.Dyads.GetLength();j++)
+ for(int i=0;i<T1.Dyads.size();i++)
+  for(int j=0;j<T2.Dyads.size();j++)
    tmp+=VS(T1.Dyads[i],T2.Dyads[j]);
 
  return MVector<DataT>(tmp);
@@ -560,8 +560,8 @@ MVector<DataT> SV(const MTensor<DataT> &T1,const MTensor<DataT> &T2)
 {
  MVector<DataT> tmp;
 
- for(int i=0;i<T1.Dyads.GetLength();i++)
-  for(int j=0;j<T2.Dyads.GetLength();j++)
+ for(int i=0;i<T1.Dyads.size();i++)
+  for(int j=0;j<T2.Dyads.size();j++)
    tmp+=SV(T1.Dyads[i],T2.Dyads[j]);
 
  return MVector<DataT>(tmp);

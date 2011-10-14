@@ -17,12 +17,12 @@ See file license.txt for more information
 #include <sstream>
 #include <iomanip>
 
-#ifndef min
-#define min(a,b) (a<b?a:b)
+#ifndef u_min
+#define u_min(a,b) (a<b?a:b)
 #endif
 
-#ifndef max
-#define max(a,b) (a>b?a:b)
+#ifndef u_max
+#define u_max(a,b) (a>b?a:b)
 #endif
 
 #ifndef M_E
@@ -226,7 +226,7 @@ int fraction(double d, int digs);
 template<typename CharT>
 int separatestring(const basic_string<CharT> &str, vector<basic_string<CharT> > &output, CharT sep, int num=0, int *lastpos=0)
 {
- basic_string<CharT>::size_type i=0,j=0;
+ typename basic_string<CharT>::size_type i=0,j=0;
  int size=0;
  int nnum=(num>0)?num-1:0;
 

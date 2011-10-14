@@ -13,6 +13,7 @@ See file license.txt for more information
 #define MVECTOR_H
 
 #include <cmath>
+#include <cstring>
 
 namespace RDK {
 /*

@@ -134,7 +134,7 @@ bool UADItem::SetOutputDataInfo(int index, UIDataInfo* value)
 {
 // if(!Build())
 //  return false;
- if(OutputDataInfo.size()<=index)
+ if(int(OutputDataInfo.size())<=index)
   return false;
 
  if(OutputDataInfo[index])
@@ -153,7 +153,7 @@ bool UADItem::SetInputDataInfo(int index, UIDataInfo* value)
 {
 // if(!Build())
 //  return false;
- if(InputDataInfo.size()<=index)
+ if(int(InputDataInfo.size())<=index)
   return false;
 
  if(InputDataInfo[index])
@@ -170,7 +170,7 @@ const NameT& UADItem::GetOutputName(int index) const
 
 bool UADItem::SetOutputName(int index, const NameT& name)
 {
- if(OutputNames.size()<=index)
+ if(int(OutputNames.size())<=index)
   return false;
 
  if(OutputNames[index] == name)
@@ -188,7 +188,7 @@ const NameT& UADItem::GetInputName(int index) const
 
 bool UADItem::SetInputName(int index, const NameT& name)
 {
- if(InputNames.size()<=index)
+ if(int(InputNames.size())<=index)
   return false;
 
  if(InputNames[index] == name)

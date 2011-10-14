@@ -12,7 +12,7 @@ See file license.txt for more information
 #ifndef USERIALIZE_CPP
 #define USERIALIZE_CPP
 
-#include "serialize_lite.cpp"
+#include "Serialize_lite.cpp"
 #include "UBinaryStdSerialize.cpp"
 #include "UXMLStdSerialize.cpp"
 #include "USerStorage.cpp"

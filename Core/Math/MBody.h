@@ -117,7 +117,7 @@ bool operator != (const MKinematicBody& b) const;
 //******************************************************************
 
 template<class T>
-class MMechanicalBody:virtual public MKinematicBody<T>
+class MMechanicalBody: public MKinematicBody<T>
 {
 public:
 // Inertial data
@@ -311,19 +311,19 @@ size_t MKinematicBody<T>::GetNumRotations(void) const
 }
 
 template<class T>
-inline const MRotationTensor<T>& MKinematicBody<T>::GetRotation(size_t ix) const
+const MRotationTensor<T>& MKinematicBody<T>::GetRotation(size_t ix) const
 {
  return Rotation[ix];
 }
 
 template<class T>
-inline const MVector<T>& MKinematicBody<T>::GetTranslationSpeed(void) const
+const MVector<T>& MKinematicBody<T>::GetTranslationSpeed(void) const
 {
  return TranslationSpeed;
 }
 
 template<class T>
-inline const MVector<T>& MKinematicBody<T>::GetAngleSpeed(void) const
+const MVector<T>& MKinematicBody<T>::GetAngleSpeed(void) const
 {
  return AngleSpeed;
 }
@@ -335,7 +335,7 @@ void MKinematicBody<T>::RTMovement(T time)
 {
  T len=!(AngleSpeed);
 
- Location+=TranslationSpeed*time;
+ this->Location+=TranslationSpeed*time;
  Rotation*=MRotationTensor<T>(AngleSpeed/len,len*time);
 }
 
@@ -391,7 +391,7 @@ MMechanicalBody<T>::~MMechanicalBody(void)
 template<class T>
 void MMechanicalBody<T>::SetMassCenter(MVector<T> &mc)
 {
- MassCenter=Location=mc;
+ MassCenter=this->Location=mc;
 }
 
 template<class T>
@@ -438,53 +438,53 @@ void MMechanicalBody<T>::SetCIT(MInertiaTensor<T> &cit)
 
 // Get mechanical characteristics
 template<class T>
-inline MVector<T> MMechanicalBody<T>::GetMassCenter(void)
+MVector<T> MMechanicalBody<T>::GetMassCenter(void)
 {
  return MassCenter;
 }
 
 template<class T>
-inline T MMechanicalBody<T>::GetMass(void)
+T MMechanicalBody<T>::GetMass(void)
 {
  return Mass;
 }
 
 template<class T>
-inline MInertiaTensor<T> MMechanicalBody<T>::GetCIT(void)
+MInertiaTensor<T> MMechanicalBody<T>::GetCIT(void)
 {
  return CIT;
 }
 
 template<class T>
-inline T MMechanicalBody<T>::GetKineticEnergy(void) // Кинетическая энергия
+T MMechanicalBody<T>::GetKineticEnergy(void) // Кинетическая энергия
 {
  T mVV,wCw;
 
- mVV=Mass*(TranslationSpeed*TranslationSpeed);
- wCw=AngleSpeed*(CIT*AngleSpeed);
+ mVV=Mass*(this->TranslationSpeed*this->TranslationSpeed);
+ wCw=this->AngleSpeed*(CIT*this->AngleSpeed);
  return 0.5*mVV+0.5*wCw;
 }
 
 template<class T>
-inline MVector<T> MMechanicalBody<T>::GetMomentum(void) // Количество движения
+MVector<T> MMechanicalBody<T>::GetMomentum(void) // Количество движения
 {
- return Mass*TranslationSpeed;
+ return Mass*this->TranslationSpeed;
 }
 
 template<class T>
-inline MVector<T> MMechanicalBody<T>::GetDynamicSpin(void) // Динамический спин тела.
+MVector<T> MMechanicalBody<T>::GetDynamicSpin(void) // Динамический спин тела.
 {
- return CIT*AngleSpeed;
+ return CIT*this->AngleSpeed;
 }
 
 template<class T>
-inline MVector<T> MMechanicalBody<T>::GetAngularMomentum(MVector<T> &SupportPoint) // Момент кол-ва движения.
+MVector<T> MMechanicalBody<T>::GetAngularMomentum(MVector<T> &SupportPoint) // Момент кол-ва движения.
 {
  return (MassCenter-SupportPoint)^GetMomentum();
 }
 
 template<class T>
-inline MVector<T> MMechanicalBody<T>::GetKineticMoment(MVector<T> &SupportPoint) // Кинетический момент.
+MVector<T> MMechanicalBody<T>::GetKineticMoment(MVector<T> &SupportPoint) // Кинетический момент.
 {
  return GetAngularMomentum(SupportPoint)+GetDynamicSpin();
 }
@@ -499,12 +499,12 @@ void MMechanicalBody<T>::RTInfluence(int kind,MVector<T> influence,T time)
  switch(kind)
  {
  case FORCE:
-  TranslationSpeed+=(influence*time)/Mass;
+	 this->TranslationSpeed+=(influence*time)/Mass;
  break;
  case MOMENT:
   I.d1=CIT.d1; I.d2=CIT.d2; I.d3=CIT.d3;
   I.m1=1./CIT.m1; I.m2=1./CIT.m2; I.m3=1./CIT.m3;
-  AngleSpeed+=I*(influence*time);
+  this->AngleSpeed+=I*(influence*time);
  };
 }
 

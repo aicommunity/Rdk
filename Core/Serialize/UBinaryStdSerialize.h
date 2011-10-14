@@ -16,6 +16,7 @@ See file license.txt for more information
 
 #include <vector>
 #include <map>
+#include <list>
 //#include "../Utilities/UQueue.h"
 #include "USerStorageBinary.h"
 #include "../Utilities/UTree.h"
@@ -127,13 +128,13 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, std::pair<T1,T2> &da
 template<typename T1, typename T2>
 USerStorageBinary& operator << (USerStorageBinary& storage, const std::map<T1,T2> &data)
 {
- unsigned int size=data.size();
+ size_t size=data.size();
  operator <<(storage,size);
 
  if(size <= 0)
   return storage;
 
- std::map<T1,T2>::const_iterator I,J;
+ typename std::map<T1,T2>::const_iterator I,J;
  I=data.begin(); J=data.end();
 
  while(I != J)
@@ -175,7 +176,7 @@ USerStorageBinary& operator << (USerStorageBinary& storage, const std::list<T> &
  if(size <= 0)
   return storage;
 
- std::list<T>::const_iterator I,J;
+ typename std::list<T>::const_iterator I,J;
  I=data.begin(); J=data.end();
 
  while(I != J)
@@ -269,8 +270,8 @@ template<typename T>
 USerStorageBinary& operator >> (USerStorageBinary& storage, UTree<T> &data)
 {
  size_t size;
- NameT name;
- UId id;
+ typename UTree<T>::NameT name;
+ typename UTree<T>::IdT id;
 
  operator >>(storage,name);
  operator >>(storage,id);

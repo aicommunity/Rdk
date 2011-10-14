@@ -26,7 +26,7 @@ class UAStorage;
 
 class UAComponent: public UModule
 {
-friend UAStorage;
+friend class UAStorage;
 protected: // ќсновные свойства
 // ”казатель на владельца этим объектом
 UAComponent *Owner;

@@ -167,16 +167,16 @@ virtual ~MCartesianCSystem(void)
 virtual bool ConvertTo(const MCSystem<T> &csystem,
                         const MVector<T> &input, MVector<T> &output) const
 {
- output.x=input*Basis[0];
- output.y=input*Basis[1];
- output.z=input*Basis[2];
+ output.x=input*this->Basis[0];
+ output.y=input*this->Basis[1];
+ output.z=input*this->Basis[2];
  return true;
 };
 
 // Вычисляет вектор смещения этой СК относительно заданной
 MVector<T> CalcTranslation(const MCSystem<T> &csystem)
 {
- return MVector<T>(csystem.Location-Location);
+ return MVector<T>(csystem.Location-this->Location);
 }
 
 // Вычисляет тензор поворота этой СК относительно заданной
@@ -188,7 +188,7 @@ MRotationTensor<T> CalcRotation(const MCSystem<T> &csystem)
 
  for(int i=0;i<3;i++)
  {
-  dyad.d1=Basis[i];
+  dyad.d1=this->Basis[i];
   dyad.d2=csystem.Basis[i];
   temp+=dyad;
  }
@@ -196,7 +196,7 @@ MRotationTensor<T> CalcRotation(const MCSystem<T> &csystem)
  rotation=temp;
 
  return rotation;
-}
+};
 
 // --------------------------
 

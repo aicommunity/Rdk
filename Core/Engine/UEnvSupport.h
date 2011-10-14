@@ -14,15 +14,63 @@ See file license.txt for more information
 
 #include <string>
 #include "UAEnvSupport.h"
-#include "UPointer.h"
-#include "UProperty.h"
-//#include "../USerialize/USerStorage.h"
+
+
 #include "../Serialize/Serialize.h"
 
 namespace RDK {
 
 typedef std::string NameT;
 typedef Serialize::USerStorage UVariableData;
+extern NameT ForbiddenName;
+
+class UAContainer;
+
+// Класс описания локальных указателей
+class UIPointer
+{
+protected: // Данные
+
+public:
+virtual UAContainer* const Get(void) const=0;
+
+virtual void Set(UAContainer* source)=0;
+
+virtual void Del(UAContainer* source)=0;
+
+// Проверяет, существует ли такой указатель в этом классе
+// Возвращает 0 если да, и <0 если нет
+virtual int Find(const UAContainer * cont) const=0;
+
+// -----------------
+// Операторы
+// -----------------
+UIPointer& operator = (UAContainer *source)
+{
+ Set(source);
+ return *this;
+};
+// -----------------
+};
+
+// Класс сериализации свойств
+class UIProperty
+{
+public:
+ // Метод возвращает строковое имя свойства
+ virtual const std::string& GetName(void) const=0;
+
+ // Метод возвращает строковое имя класса-владельца свойства
+ virtual std::string GetOwnerName(void) const=0;
+
+ // Метод записывает значение свойства в поток
+ virtual bool Save(Serialize::USerStorage *storage)=0;
+
+ // Метод читает значение свойства из потока
+ virtual bool Load(Serialize::USerStorage *storage)=0;
+};
+
+
 
 // Хранилище свойств параметра
 struct UVariable

@@ -122,7 +122,7 @@ bool SetSComment(const StringT& sc)
 // -----------------
 // Методы управления
 // -----------------
-// Возвращает true если секция section существует 
+// Возвращает true если секция section существует
 bool Check(const StringT &section)
 {
  StringT* result=0;
@@ -149,7 +149,7 @@ bool Check(const StringT &section, const StringT &variable)
 // Возвращает массив имен секций
 bool GetSectionList(vector<StringT> &buffer)
 {
- list<StringT>::const_iterator I,J;
+ typename list<StringT>::const_iterator I,J;
  int start=0,stop=0;
  int count=0;
 
@@ -175,7 +175,7 @@ bool GetSectionList(vector<StringT> &buffer)
 // Возвращает массив имен переменных секции 'section'
 bool GetVariableList(const StringT &section, vector<StringT> &buffer)
 {
- list<StringT>::const_iterator I,J;
+ typename list<StringT>::const_iterator I,J;
  int start=0,stop=0;
  int startvalue=0;
  int count=0;
@@ -211,7 +211,7 @@ bool GetVariableList(const StringT &section, vector<StringT> &buffer)
 // Возвращает массив строк секции 'section'
 bool GetSectionLines(const StringT &section, vector<StringT> &buffer)
 {
- list<StringT>::const_iterator I,J;
+ typename list<StringT>::const_iterator I,J;
  int start=0,stop=0;
  int count=0;
 
@@ -259,7 +259,7 @@ bool CheckName(const StringT &name)
 // Если имя недопустимо то возвращает false
 bool Add(const StringT &section)
 {
- list<StringT>::iterator I;
+ typename list<StringT>::iterator I;
 
  if(!CheckName(section))
   return false;
@@ -282,7 +282,7 @@ bool Add(const StringT &section, const StringT &variable, const StringT &value)
 {
  StringT* result=0;
  int startname=0, stopname=0, startvalue=0;
- list<StringT>::iterator I;
+ typename list<StringT>::iterator I;
 
  if(!CheckName(variable))
   return false;
@@ -361,7 +361,7 @@ bool Delete(void)
 // Удаляет секцию 'section'
 bool Delete(const StringT &section)
 {
- list<StringT>::iterator I,J,K;
+ typename list<StringT>::iterator I,J,K;
  int start=0,stop=0;
 
  I=FindSection(section);
@@ -388,7 +388,7 @@ bool Delete(const StringT &section)
 // Удаляет переменную 'variable' секции 'section'
 bool Delete(const StringT &section, const StringT &variable)
 {
- list<StringT>::iterator I;
+ typename list<StringT>::iterator I;
 
  I=FindVariable(section,variable);
 
@@ -502,7 +502,7 @@ protected: // скрытые методы
 // Метод возвращает итератор на найденную строку или end
 StringListIteratorT FindSection(const StringT &section)
 {
- list<StringT>::iterator I,J;
+ typename list<StringT>::iterator I,J;
  int start=0,stop=0;
 
  I=Lines.begin(); J=Lines.end();
@@ -529,7 +529,7 @@ StringListIteratorT FindSection(const StringT &section)
 // stop - конец имени секции (перед закрывающей ']')
 bool FindSection(const StringT &section, StringT* &result, int &start, int &stop)
 {
- list<StringT>::iterator I,J;
+ typename list<StringT>::iterator I,J;
 
  I=Lines.begin(); J=Lines.end();
  result=0;
@@ -554,7 +554,7 @@ bool FindSection(const StringT &section, StringT* &result, int &start, int &stop
 // Метод возвращает итератор на найденную строку или end
 StringListIteratorT FindVariable(const StringT &section, const StringT &variable)
 {
- list<StringT>::iterator I,J;
+ typename list<StringT>::iterator I,J;
  int startname=0, stopname=0, startvalue=0;
 
  I=FindSection(section);
@@ -592,7 +592,7 @@ bool FindVariable(const StringT &section, const StringT &variable,
             int &startname, int &stopname,
             int &startvalue)
 {
- list<StringT>::iterator I,J;
+ typename list<StringT>::iterator I,J;
 
  result=0;
 
@@ -641,7 +641,7 @@ bool DecodeAsComment(const StringT &str, int &start)
 };
 
 // Пытается декодировать строку 'str' как секцию
-// В случае успеха возвращает true и 
+// В случае успеха возвращает true и
 // start - начало имени секции (после открывающей '[')
 // stop - конец имени секции (перед закрывающей ']')
 bool DecodeAsSection(const StringT &str, int &start, int &stop)
@@ -675,7 +675,7 @@ bool DecodeAsSection(const StringT &str, int &start, int &stop)
 };
 
 // Пытается декодировать строку 'str' как секцию
-// В случае успеха возвращает true и 
+// В случае успеха возвращает true и
 // startname - начало имени переменной (после открывающих пробелов)
 // stopname - конец имени переменной (перед '=' или завершающими имя пробелами)
 // startvalue - начало значения переменной (после '=' и открывающих пробелов)

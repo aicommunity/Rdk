@@ -1,14 +1,14 @@
 #ifndef RDK_CPP
 #define RDK_CPP
 
-#include "RDK.h"
+#include "rdk.h"
 
 #include "../../ThirdParty/ThirdParty.cpp"
 #include "../../Core/Math/UMath.cpp"
 #include "../../Core/Utilities/Utilities.cpp"
 #include "../../Core/Serialize/Serialize.cpp"
-#include "../../Core/Graphics/Graphics.cpp"
 #include "../../Core/Engine/Engine.cpp"
+#include "../../Core/Graphics/Graphics.cpp"
 
 namespace RDK {
 

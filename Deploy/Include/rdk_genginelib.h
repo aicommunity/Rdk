@@ -1,5 +1,5 @@
-#ifndef rdk_genginedllH
-#define rdk_genginedllH
+#ifndef rdk_genginelibH
+#define rdk_genginelibH
 
 #define RDK_LIB_TYPE extern
 

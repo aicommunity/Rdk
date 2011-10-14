@@ -16,37 +16,26 @@ See file license.txt for more information
 
 #include <string>
 #include <sstream>
-#include "..\Serialize\USerStorageXML.h"
+#include <typeinfo>
+#include "../Serialize/USerStorageXML.h"
 #include "../Serialize/USerStorageBinary.h"
+#include "../Serialize/UXMLStdSerialize.h"
+#include "../Serialize/UBinaryStdSerialize.h"
+#include "UAContainer.h"
 
 namespace RDK {
+
+//typedef class UAContainer;
 
 using namespace std;
 
 #pragma warning( disable : 4700)
-// Класс сериализации свойств
-class UIProperty
-{
-public:
- // Метод возвращает строковое имя свойства
- virtual const string& GetName(void) const=0;
-
- // Метод возвращает строковое имя класса-владельца свойства
- virtual string GetOwnerName(void) const=0;
-
- // Метод записывает значение свойства в поток
- virtual bool Save(Serialize::USerStorage *storage)=0;
-
- // Метод читает значение свойства из потока
- virtual bool Load(Serialize::USerStorage *storage)=0;
-};
-
 // Класс - виртуальное свойство
 // Не содержит данного внутри себя
-template<typename T,typename OwnerT>
+template<typename T,class OwnerT>
 class UVProperty: public UIProperty
 {
-friend OwnerT;
+//friend class OwnerT;
 protected: // Типы методов ввода-вывода
 typedef T (OwnerT::*GetterT)(void) const;
 typedef const T& (OwnerT::*GetterRT)(void) const;
@@ -59,8 +48,8 @@ OwnerT* Owner;
 
 // Методы ввода-вывода
 GetterT Getter;
-GetterRT GetterR;
 SetterT Setter;
+GetterRT GetterR;
 SetterRT SetterR;
 
 public: // Методы
@@ -69,9 +58,9 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 UVProperty(OwnerT * const owner, SetterT setmethod , GetterT getmethod) :
-  Owner(owner), Getter(getmethod), Setter(setmethod), SetterR(0), GetterR(0) { };
+  Owner(owner), Getter(getmethod), Setter(setmethod), GetterR(0), SetterR(0) { };
 UVProperty(OwnerT * const owner, SetterRT setmethod , GetterRT getmethod) :
-  Owner(owner), GetterR(getmethod), SetterR(setmethod), Setter(0), Getter(0) { };
+  Owner(owner), Getter(0), Setter(0), GetterR(getmethod), SetterR(setmethod)   { };
 // -----------------------------
 
 // -----------------------------
@@ -91,6 +80,8 @@ const T Get(void)
 
  if(GetterR)
   return (Owner->*GetterR)();
+
+ return T();
 };
 
 // Установка значения без проверки наличия метода и владельца
@@ -167,9 +158,9 @@ UVProperty& operator = (const UVProperty &v)
 // Методы сериализации
 // -----------------------------
 // Метод возвращает строковое имя свойства
-virtual const string& GetName(void) const
+virtual const std::string& GetName(void) const
 {
- static string name;
+ static std::string name;
  name=reinterpret_cast<UAContainer* const>(Owner)->FindPropertyName(this);
  if(name == ForbiddenName)
   name=reinterpret_cast<UAContainer* const>(Owner)->FindStateName(this);
@@ -177,7 +168,7 @@ virtual const string& GetName(void) const
 };
 
 // Метод возвращает строковое имя класса-владельца свойства
-virtual string GetOwnerName(void) const
+virtual std::string GetOwnerName(void) const
 {
  return typeid(Owner).name();
 };
@@ -201,8 +192,6 @@ virtual bool Save(Serialize::USerStorage *storage)
   return true;
  }
 
-// return storage->Save((*this)());
-// Serialize::operator << (*storage,(*this)());
  return false;
 };
 
@@ -210,9 +199,7 @@ virtual bool Save(Serialize::USerStorage *storage)
 virtual bool Load(Serialize::USerStorage *storage)
 {
  T temp;
- //Serialize::operator >> (*storage,temp);
-// if(!storage || !storage->Load(temp))
-//  return false;
+
  Serialize::USerStorageBinary * binary=dynamic_cast<Serialize::USerStorageBinary *>(storage);
  if(binary)
  {
@@ -240,10 +227,10 @@ virtual bool Load(Serialize::USerStorage *storage)
 /* ************************************************************************* */
 // Класс - свойство с значением внутри
 /* ************************************************************************* */
-template<typename T,typename OwnerT>
+template<typename T,class OwnerT>
 class UProperty: public UVProperty<T,OwnerT>
 {
-friend OwnerT;
+//friend class OwnerT;
 public:
 //protected:
 // Данные
@@ -254,10 +241,10 @@ public:
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации
-UProperty(OwnerT * const owner, UVProperty<T,OwnerT>::SetterT setmethod=0)
+UProperty(OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterT setmethod=0)
  : UVProperty<T,OwnerT>(owner, setmethod, 0), v() { };
 
-UProperty(OwnerT * const owner, UVProperty<T,OwnerT>::SetterRT setmethod)
+UProperty(OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod)
  : UVProperty<T,OwnerT>(owner, setmethod, 0), v() { };
 // -----------------------------
 
@@ -276,11 +263,15 @@ UProperty& operator = (const T &value)
  if(v == value)
   return *this;
 
- if(Owner)
+ if(this->Owner)
  {
-  if((Setter && !(Owner->*Setter)(value)) ||
-     (SetterR && !(Owner->*SetterR)(value)))
-   return *this;
+//  if((this->Setter && !(*(this->Setter))(value)) ||
+//	 (this->SetterR && !(*(this->SetterR))(value)))
+//	  if((this->Setter && !(this->Owner->*Setter)(value)) ||
+//	     (this->SetterR && !(this->Owner->*SetterR)(value)))
+	  if((this->Setter && !(this->Owner->*(this->Setter))(value)) ||
+		 (this->SetterR && !(this->Owner->*(this->SetterR))(value)))
+	   return *this;
 
   v=value;
   return *this;
@@ -319,7 +310,7 @@ virtual bool Save(Serialize::USerStorage *storage)
  Serialize::USerStorageXML * xml=dynamic_cast<Serialize::USerStorageXML *>(storage);
  if(xml)
  {
-  xml->AddNode(GetName());
+  xml->AddNode(this->GetName());
   Serialize::operator << (*xml,(*this)());
   xml->SelectUp();
   return true;
@@ -352,7 +343,7 @@ virtual bool Load(Serialize::USerStorage *storage)
  Serialize::USerStorageXML * xml=dynamic_cast<Serialize::USerStorageXML *>(storage);
  if(xml)
  {
-  if(!xml->SelectNode(GetName()))
+  if(!xml->SelectNode(this->GetName()))
    return false;
   Serialize::operator >> (*xml,temp);
   *this=temp;
@@ -372,7 +363,7 @@ virtual bool Load(Serialize::USerStorage *storage)
 template<typename TC, typename OwnerT>
 class UCProperty: public UVProperty<TC,OwnerT>
 {
-friend OwnerT;
+//friend class OwnerT;
 protected: // Типы методов ввода-вывода
 typedef typename TC::value_type TV;
 
@@ -394,19 +385,19 @@ public:
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации
-UCProperty(OwnerT * const owner, UVProperty<TC,OwnerT>::SetterT setmethod=0)
+UCProperty(OwnerT * const owner, typename UVProperty<TC,OwnerT>::SetterT setmethod=0)
  : UVProperty<TC,OwnerT>(owner, setmethod, 0), v(), VSetter(0), VSetterR(0) { };
 
-UCProperty(OwnerT * const owner, UVProperty<TC,OwnerT>::SetterRT setmethod)
+UCProperty(OwnerT * const owner, typename UVProperty<TC,OwnerT>::SetterRT setmethod)
  : UVProperty<TC,OwnerT>(owner, setmethod, 0), v(), VSetter(0), VSetterR(0) { };
 
 //Конструктор инициализации для отдельных значений
 UCProperty(OwnerT * const owner, VSetterT setmethod)
- : UVProperty<TC,OwnerT>(owner,(UVProperty<TC,OwnerT>::SetterT)0,0), v()
+ : UVProperty<TC,OwnerT>(owner,(typename UVProperty<TC,OwnerT>::SetterT)0,0), v()
 { VSetter=setmethod; };
 
 UCProperty(OwnerT * const owner, VSetterRT setmethod)
- : UVProperty<TC,OwnerT>(owner,(UVProperty<TC,OwnerT>::SetterT)0,0), v()
+ : UVProperty<TC,OwnerT>(owner,(typename UVProperty<TC,OwnerT>::SetterT)0,0), v()
 { VSetterR=setmethod; };
 // -----------------------------
 
@@ -423,7 +414,7 @@ const TV& operator () (int i) const
 // Запись элемента контейнера
 bool operator () (int i, const TV &value)
 {
- if(VSetterR && !(Owner->*VSetterR)(value))
+ if(VSetterR && !(this->Owner->*VSetterR)(value))
   return false;
 
  if(i<0 || i>v.size())
@@ -436,7 +427,7 @@ bool operator () (int i, const TV &value)
 
 bool operator () (int i, TV value)
 {
- if(VSetter && !(Owner->*VSetter)(value))
+ if(VSetter && !(this->Owner->*VSetter)(value))
   return false;
 
  if(i<0 || i>v.size())
@@ -453,15 +444,15 @@ UCProperty& operator = (const TC &value)
  if(v == value)
   return *this;
 
- if(Owner)
+ if(this->Owner)
  {
   if(VSetter)
   {
-   TC::const_iterator I,J;
+   typename TC::const_iterator I,J;
    I=value.begin(); J=value.end();
    while(I != J)
    {
-    if(!(Owner->*VSetter)(*I))
+    if(!(this->Owner->*VSetter)(*I))
      return *this;
 
     ++I;
@@ -470,11 +461,11 @@ UCProperty& operator = (const TC &value)
   else
   if(VSetterR)
   {
-   TC::const_iterator I,J;
+   typename TC::const_iterator I,J;
    I=value.begin(); J=value.end();
    while(I != J)
    {
-    if(!(Owner->*VSetterR)(*I))
+    if(!(this->Owner->*VSetterR)(*I))
      return *this;
 
     ++I;
@@ -482,9 +473,9 @@ UCProperty& operator = (const TC &value)
   }
   else
   {
-   if((Setter && !(Owner->*Setter)(value)) ||
-     (SetterR && !(Owner->*SetterR)(value)))
-    return *this;
+   if((this->Setter && !(this->Owner->*(this->Setter))(value)) ||
+	 (this->SetterR && !(this->Owner->*(this->SetterR))(value)))
+	return *this;
   }
  }
 
@@ -512,7 +503,7 @@ TC& operator * (void)
 // -----------------------------
 // Скрытые операторы доступа только для дружественного класса
 // -----------------------------
-protected:
+public:
 TV& operator [] (int i)
 { return v[i]; };
 // -----------------------------
@@ -537,7 +528,7 @@ virtual bool Save(Serialize::USerStorage *storage)
  Serialize::USerStorageXML * xml=dynamic_cast<Serialize::USerStorageXML *>(storage);
  if(xml)
  {
-  xml->AddNode(GetName());
+  xml->AddNode(this->GetName());
   Serialize::operator << (*xml,(*this)());
   xml->SelectUp();
   return true;
@@ -573,7 +564,7 @@ virtual bool Load(Serialize::USerStorage *storage)
  Serialize::USerStorageXML * xml=dynamic_cast<Serialize::USerStorageXML *>(storage);
  if(xml)
  {
-  if(!xml->SelectNode(GetName()))
+  if(!xml->SelectNode(this->GetName()))
    return false;
   Serialize::operator >> (*xml,temp);
   *this=temp;

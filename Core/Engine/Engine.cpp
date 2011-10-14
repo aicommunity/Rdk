@@ -16,7 +16,7 @@ See file license.txt for more information
 #include "UAContainerStorage.cpp"
 #include "UAContainerEnvironment.cpp"
 #include "UEngine.cpp"
-#include "UProperty.cpp"
+//#include "UProperty.cpp"
 #include "UEnvSupport.cpp"
 #include "UItemData.cpp"        
 #include "UXMLEnvSerialize.cpp"

@@ -12,8 +12,9 @@ See file license.txt for more information
 #ifndef UAContainerH
 #define UAContainerH
 
+#include <vector>
+#include <map>
 #include "UAComponent.h"
-#include "UProperty.h"
 #include "UEnvSupport.h"
 #include "UController.h"
 #include "../Math/MVector.h"
@@ -27,9 +28,7 @@ typedef long int IndexT;
 typedef int UTime;
 typedef long long ULongTime;
 
-extern NameT ForbiddenName;
-
-class UAContainer;
+//class UAContainer;
 typedef UAContainer* PUAContainer;
 
 // Массив указателей на контейнеры
@@ -90,21 +89,21 @@ UAContainer& operator () (int index);
 class UAContainer: public UAComponent
 {
 public: // Типы данных
-typedef map<NameT,UVariable> VariableMapT;
-typedef map<NameT,UVariable>::iterator VariableMapIteratorT;
-typedef map<NameT,UVariable>::const_iterator VariableMapCIteratorT;
+typedef std::map<NameT,UVariable> VariableMapT;
+typedef std::map<NameT,UVariable>::iterator VariableMapIteratorT;
+typedef std::map<NameT,UVariable>::const_iterator VariableMapCIteratorT;
 //typedef vector<VariableMapT> VariableVectorMapT;
 
-typedef map<NameT,UPVariable> PointerMapT;
-typedef map<NameT,UPVariable>::iterator PointerMapIteratorT;
-typedef map<NameT,UPVariable>::const_iterator PointerMapCIteratorT;
+typedef std::map<NameT,UPVariable> PointerMapT;
+typedef std::map<NameT,UPVariable>::iterator PointerMapIteratorT;
+typedef std::map<NameT,UPVariable>::const_iterator PointerMapCIteratorT;
 
 friend class UAContainerStorage;
 friend class UController;
 
 private: // Системные свойства
 // Таблица соответствий имен и Id компонент объекта
-map<NameT,UId> CompsLookupTable;
+std::map<NameT,UId> CompsLookupTable;
 
 // Таблица соответствий имен и Id параметров объекта
 VariableMapT PropertiesLookupTable;
@@ -116,7 +115,7 @@ VariableMapT StateLookupTable;
 PointerMapT PointerLookupTable;
 
 // Таблица соответствий <компонента в таблице Components, локальный указатель>
-//map<UAContainer*,UAContainer**> ComponentPointers;
+//std::map<UAContainer*,UAContainer**> ComponentPointers;
 
 private: // Глобальные свойства
 // Текущее время модели в микросекундах
@@ -143,10 +142,10 @@ private: // Системные свойства
 UAContainerVector Components;
 
 // Таблица контроллеров интерфейса
-vector<UController*> Controllers;
+std::vector<UController*> Controllers;
 
 // Таблица соответствий <компонента в таблице Components, локальный указатель>
-//map<UAContainer*,UAContainer**> ComponentPointers;
+//std::map<UAContainer*,UAContainer**> ComponentPointers;
 
 protected: // Основные свойства
 
@@ -608,6 +607,9 @@ virtual bool Reset(void);
 
 // Выполняет расчет этого объекта
 virtual bool Calculate(void);
+
+// Обновляет состояние MainOwner после расчета этого объекта
+virtual bool UpdateMainOwner(void);
 // --------------------------
 
 // --------------------------
@@ -747,9 +749,19 @@ virtual bool AAddComponent(UAContainer* comp, UIPointer* pointer=0);
 // существует в списке компонент
 virtual bool ADelComponent(UAContainer* comp);
 // --------------------------
+
+// --------------------------
+// Скрытые методы управления счетом
+// --------------------------
+protected:
+// Обновляет состояние MainOwner после расчета этого объекта
+virtual bool AUpdateMainOwner(void);
+// --------------------------
 };
 
 
 }
 
+#include "UProperty.h"
+#include "UPointer.h"
 #endif

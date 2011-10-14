@@ -12,7 +12,7 @@ See file license.txt for more information
 #ifndef USERIALIZE_H
 #define USERIALIZE_H
 
-#include "serialize_lite.h"
+#include "Serialize_lite.h"
 #include "UBinaryStdSerialize.h"
 #include "UXMLStdSerialize.h"
 #include "USerStorage.h"

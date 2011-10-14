@@ -17,6 +17,7 @@ See file license.txt for more information
 #include <map>
 #include <strstream>
 #include <sstream>
+#include <typeinfo>
 #include "USerStorageXML.h"
 #include "../Utilities/UTree.h"
 #include "../Utilities/USupport.h"
@@ -154,10 +155,10 @@ USerStorageXML& operator << (USerStorageXML& storage, const std::map<T1,T2> &dat
  storage.SetNodeAttribute("Type","std::map");
  storage.SetNodeAttribute("Size",sntoa(data.size()));
 
- if(size <= 0)
+ if(data.size <= 0)
   return storage;
 
- std::map<T1,T2>::const_iterator I,J;
+ typename std::map<T1,T2>::const_iterator I,J;
  I=data.begin(); J=data.end();
 
  while(I != J)
@@ -208,7 +209,7 @@ USerStorageXML& operator << (USerStorageXML& storage, const std::list<T> &data)
  if(size <= 0)
   return storage;
 
- std::list<T>::const_iterator I,J;
+ typename std::list<T>::const_iterator I,J;
  I=data.begin(); J=data.end();
 
  while(I != J)
@@ -332,8 +333,8 @@ template<typename T>
 USerStorageXML& operator >> (USerStorageXML& storage, UTree<T> &data)
 {
  size_t size;
- NameT name;
- UId id;
+ typename UTree<T>::NameT name;
+ typename UTree<T>::IdT id;
 
  if(storage.GetNodeAttribute("Type") != "UTree")
   return storage;

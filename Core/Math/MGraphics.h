@@ -43,7 +43,7 @@ public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-MGeometryDescription::MGeometryDescription(void)
+MGeometryDescription(void)
 {
  // Цвет
  Color=UColorT(0,0,255,0);
@@ -55,7 +55,7 @@ MGeometryDescription::MGeometryDescription(void)
  Visible=true;
 };
 
-MGeometryDescription::MGeometryDescription(const MGeometryDescription &copy)
+MGeometryDescription(const MGeometryDescription &copy)
 {
  // Цвет
  Color=copy.Color;
@@ -73,7 +73,7 @@ MGeometryDescription::MGeometryDescription(const MGeometryDescription &copy)
  Visible=copy.Visible;
 };
 
-MGeometryDescription::~MGeometryDescription(void)
+virtual ~MGeometryDescription(void)
 {
 };
 // --------------------------

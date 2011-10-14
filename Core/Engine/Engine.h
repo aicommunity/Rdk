@@ -17,7 +17,7 @@ See file license.txt for more information
 #include "UAContainerEnvironment.h"
 #include "UEngine.h"
 #include "UEnvSupport.h"
-#include "UProperty.h"
+//#include "UProperty.h"
 #include "UItemData.h"                      
 #include "UXMLEnvSerialize.h"
 #include "UThreadEnvironment.h"

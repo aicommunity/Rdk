@@ -49,10 +49,10 @@ UItemData::UItemData(const UItemData &copy)
 
 UItemData::~UItemData(void)
 {
- if(Void)
+ if(Char)
  {
-  delete [] Void;
-  Void=0;
+  delete [] Char;
+  Char=0;
  }
  Size=ByteSize=0;
 }
@@ -89,9 +89,9 @@ void UItemData::Resize(int size)
  if(size == Size)
   return;
 
- if(!size && Void)
+ if(!size && Char)
  {
-  delete []Void;
+  delete []Char;
   Void=0;
   Size=0;
   ByteSize=0;
@@ -103,7 +103,7 @@ void UItemData::Resize(int size)
  if(size>Size)
   memset(static_cast<char*>(tmp)+Size*DataSize,0,DataSize*(size-Size));
 
- delete []Void;
+ delete []Char;
  Size=size;
  ByteSize=Size*DataSize;
  Void=tmp;

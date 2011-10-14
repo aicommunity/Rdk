@@ -13,6 +13,8 @@ See file license.txt for more information
 #define MGeometryH
 
 #include <vector>
+#include <string>
+#include <cstddef>
 #include "MTheormec.h"
 
 namespace RDK {
@@ -74,7 +76,7 @@ inline MVector<T> CalcPoint(T t)
 bool CalcIntersection(const MRay<T> &r, MVector<T> &res)
 {
  T t;
- Vector<T> v1,v2;
+ MVector<T> v1,v2;
  int i;
 
  v1=r.Origin-Origin;
@@ -119,7 +121,7 @@ MPlane(void)
 MPlane(const MPlane &copy)
 { *this=copy; };
 MPlane(MVector<T> n, T dist)
-{ Normal=n; Distance=d; };
+{ Normal=n; Distance=dist; };
 virtual ~MPlane(void){};
 // --------------------------
 
@@ -137,7 +139,7 @@ inline MPlane& operator = (const MPlane &copy)
 // Операторы сравнения
 inline bool operator == (const MPlane &v) const
 {
- return (Normal == copy.Normal) & (Distance == copy.Distance);
+ return (Normal == v.Normal) & (Distance == v.Distance);
 }
 
 inline bool operator != (const MPlane &v) const
@@ -155,8 +157,8 @@ bool CalcIntersection(MRay<T> ray, MVector<T> &p)
 {
  T alfa,beta,t;
 
- if( (alfa=plane.normal&ray.dir)==0 ) return false;
- beta=-(plane.normal&ray.org)+plane.dist;
+ if( (alfa=Normal&ray.dir)==0 ) return false;
+ beta=-(Normal&ray.org)+Distance;
  if( (t=beta/alfa)<0 ) return false;
 
  p=ray.CalcPoint(t);
@@ -391,7 +393,7 @@ bool SetNumBorders(size_t value);
 // Операторы управления
 // --------------------------
 // Оператор копирования
-MGeometry& operator = (const MGeometry<T> &copy);
+MGeometry<T>& operator = (const MGeometry<T> &copy);
 
 // Оператор доступа к описанию границы по индексу n в массиве границ
 MBorder& operator[] (int n);
@@ -400,27 +402,27 @@ MBorder& operator[] (int n);
 inline MVertex<T>& operator() (void);
 
 // Операторы сравнения
-bool operator == (const MGeometry &v) const;
-bool operator != (const MGeometry &v) const;
+bool operator == (const MGeometry<T> &v) const;
+bool operator != (const MGeometry<T> &v) const;
 // --------------------------
 
 // --------------------------
 // Операторы взаимодействия с другими объектами
 // --------------------------
 // Вывод в массив
-friend unsigned char* operator >> (const MGeometry &v, unsigned char* p);
+friend unsigned char* operator >> (const MGeometry<T> &v, unsigned char* p);
 
 // Ввод из массива
-friend const unsigned char* operator << (MGeometry &v, const unsigned char* p);
+friend const unsigned char* operator << (MGeometry<T> &v, const unsigned char* p);
 
 // Поворот тензором P
-MGeometry& operator *= (const MRotationTensor<T> &P);
+MGeometry<T>& operator *= (const MRotationTensor<T> &P);
 
 // Трансляция на вектор v
-MGeometry& operator += (const MVector<T> &v);
+MGeometry<T>& operator += (const MVector<T> &v);
 
 // Трансляция на вектор -v
-MGeometry& operator -= (const MVector<T> &v);
+MGeometry<T>& operator -= (const MVector<T> &v);
 // --------------------------
 };
 
@@ -787,13 +789,13 @@ MGeometry<T>::MGeometry(size_t na, size_t nf)
 {
  Vertex.SetNumVertex(na);
  SetNumBorders(nf);
-};
+}
 
 template<class T>
 MGeometry<T>::~MGeometry(void)
 {
  NumBorders=0;
-};
+}
 // --------------------------
 
 // --------------------------
@@ -886,7 +888,7 @@ template<class T>
 inline MVertex<T>& MGeometry<T>::operator () (void)
 {
  return Vertex;
-};
+}
 
 // Операторы сравнения
 template<class T>

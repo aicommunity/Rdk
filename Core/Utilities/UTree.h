@@ -19,6 +19,7 @@ See file license.txt for more information
 #include <vector>
 #include <iostream>
 #include <fstream>
+#include <algorithm>
 
 namespace RDK {
 
@@ -82,9 +83,9 @@ UTree(const UTree<T> &node)
  for(size_t i=0;i<SubTree.size();i++)
   {
    newnode=0;
-   newnode=PNew();
+   newnode=new UTree<T>;
    if(!newnode)
-    throw UTreeExNoFreeMem<T>(this);
+    throw NoFreeMemException(this);
 
    *newnode=*node.SubTree[i];
    newnode->Root=this;
@@ -182,7 +183,7 @@ UTree<T>* FindSubTree (const ULongIdT &fullid)
    break;
   }
 
- for(SizeT i=1;i<id.size();i++)
+ for(size_t i=1;i<fullid.size();i++)
   {
    if(!comp)
     return 0;
@@ -515,9 +516,9 @@ UTree<T>& operator = (const UTree<T> &node)
  for(size_t i=0;i<SubTree.size();i++)
   {
    newnode=0;
-   newnode=PNew();
+   newnode=new UTree<T>;
    if(!newnode)
-    throw UTreeExNoFreeMem<T>(this);
+    throw NoFreeMemException(this);
 
    *newnode=*node.SubTree[i];
    newnode->Root=this;

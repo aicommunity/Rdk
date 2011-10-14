@@ -14,6 +14,7 @@ See file license.txt for more information
 
 #include <algorithm>
 #include <string.h>
+#include <cstdio>
 #include "UAContainer.h"
 #include "UAContainerStorage.h"
 #include "UAConnector.h"
@@ -436,16 +437,20 @@ UId UAContainer::GenerateId(void)
 // Генерирует имя уникальное в компонентах этого объекта
 NameT& UAContainer::GenerateName(const NameT &prefix, NameT &namebuffer)
 {
- unsigned long int k=2;
- char buffer[20];
+ int k=2;
+ //char buffer[20];
 
  while(true)
   {
-   sprintf(buffer,"%i",k);
+   std::stringstream stream;
+   stream<<k;
+
+//   std::sprintf(buffer,"%i",k);
+   //stream.str();
    if(prefix.size()>0)
-    namebuffer=prefix+buffer;
+    namebuffer=prefix+stream.str();
    else
-    namebuffer=NameT("n")+buffer;
+    namebuffer=NameT("n")+stream.str();
    if(CheckName(namebuffer))
     break;
 
@@ -539,7 +544,7 @@ NameT& UAContainer::GetLongName(const UAContainer *mainowner, NameT &buffer) con
 // Возвращает имя дочернего компонента по его Id
 const NameT& UAContainer::GetComponentName(const UId &id) const
 {
- map<NameT,UId>::const_iterator I=CompsLookupTable.begin(),
+ std::map<NameT,UId>::const_iterator I=CompsLookupTable.begin(),
                                  J=CompsLookupTable.end();
  while(I != J)
   {
@@ -553,7 +558,7 @@ const NameT& UAContainer::GetComponentName(const UId &id) const
 // Возвращает Id дочернего компонента по его имени
 const UId& UAContainer::GetComponentId(const NameT &name) const
 {
- map<NameT,UId>::const_iterator I=CompsLookupTable.find(name);
+ std::map<NameT,UId>::const_iterator I=CompsLookupTable.find(name);
  if(I == CompsLookupTable.end())
   return ForbiddenId;
  else return I->second;
@@ -1118,10 +1123,10 @@ bool UAContainer::CopyComponents(UAContainer* comp, UAContainerStorage* stor) co
 
    bufcomp=PComponents[i]->Alloc(PComponents[i]->Name(),stor);
    UIPointer *pointer=0;
-   map<UId,UIPointer*>::const_iterator I=FindLookupPointer(PComponents[i]);
+   std::map<UId,UIPointer*>::const_iterator I=FindLookupPointer(PComponents[i]);
    if(I != PointerLookupTable.end())
    {
-    map<UId,UIPointer*>::iterator J=comp->PointerLookupTable.find(I->first);
+    std::map<UId,UIPointer*>::iterator J=comp->PointerLookupTable.find(I->first);
     if(J != comp->PointerLookupTable.end())
      pointer=J->second;
    }
@@ -1627,7 +1632,7 @@ bool UAContainer::Save(UVariableData *values)
 
  values->
 
- map<NameT,NVariable>::iterator I,J;
+ std::map<NameT,NVariable>::iterator I,J;
  I=ParamsLookupTable.begin();
  J=ParamsLookupTable.end();
 
@@ -1682,7 +1687,7 @@ bool UAContainer::Save(RDK::UClassRegistry &buffer)
 
  comp->SetName(name);
 
- map<NameT,NVariable>::iterator I,J;
+ std::map<NameT,NVariable>::iterator I,J;
  I=ParamsLookupTable.begin();
  J=ParamsLookupTable.end();
 
@@ -1732,7 +1737,7 @@ bool UAContainer::Load(RDK::UClassRegistry &buffer, UAContainerStorage *storage,
 
  RDK::UClassRegDataIterator I,J;
  RDK::URegDataIterator rI,rJ;
- map<NameT,NVariable>::iterator K;
+ std::map<NameT,NVariable>::iterator K;
 
  // Восстанавливаем параметры
  I=buffer().begin();
@@ -1849,7 +1854,7 @@ bool UAContainer::SaveState(RDK::UClassRegistry &buffer)
 
  comp->SetName(name);
 
- map<NameT,NVariable>::iterator I,J;
+ std::map<NameT,NVariable>::iterator I,J;
  I=StateLookupTable.begin();
  J=StateLookupTable.end();
 
@@ -1895,7 +1900,7 @@ bool UAContainer::LoadState(RDK::UClassRegistry &buffer)
 
  RDK::UClassRegDataIterator I,J;
  RDK::URegDataIterator rI,rJ;
- map<NameT,NVariable>::iterator K;
+ std::map<NameT,NVariable>::iterator K;
 
  I=buffer().begin();
  J=buffer().end();
@@ -2033,10 +2038,16 @@ bool UAContainer::Calculate(void)
 //  return false;
 
  if(!Owner)
-  return ACalculate();
+ {
+  if(!ACalculate())
+   return false;
+ }
 
  if(TimeStep == OwnerTimeStep)
-  return ACalculate();
+ {
+  if(!ACalculate())
+   return false;
+ }
  else
  if(TimeStep < OwnerTimeStep)
   {
@@ -2044,7 +2055,8 @@ bool UAContainer::Calculate(void)
    if(CalcCounter <= 0)
     {
 	 CalcCounter=OwnerTimeStep/TimeStep;
-     return ACalculate();
+	 if(!ACalculate())
+	  return false;
     }
   }
  else
@@ -2054,8 +2066,9 @@ bool UAContainer::Calculate(void)
     if(!ACalculate())
      return false;
   }
-// if(!ACalculate())
-//  return false;
+
+ if(!UpdateMainOwner())
+  return false;
 
  // Обрабатываем контроллеры
  int numcontrollers=Controllers.size();
@@ -2070,6 +2083,15 @@ bool UAContainer::Calculate(void)
  }
  return true;
 }
+
+// Обновляет состояние MainOwner после расчета этого объекта
+bool UAContainer::UpdateMainOwner(void)
+{
+ if(!MainOwner)
+  return true;
+
+ return AUpdateMainOwner();
+}
 // --------------------------
 
 
@@ -2079,11 +2101,11 @@ bool UAContainer::Calculate(void)
 // Обновляет таблицу соответствий компонент заменяя 'oldname'
 // имя компонента на 'newname'
 bool UAContainer::ModifyLookupComponent(const NameT &oldname,
-                                        const NameT newname)
+										const NameT newname)
 {
  UId id;
 
- map<NameT,UId>::iterator I=CompsLookupTable.find(oldname);
+ std::map<NameT,UId>::iterator I=CompsLookupTable.find(oldname);
  if(I == CompsLookupTable.end())
   return false;
 
@@ -2107,7 +2129,7 @@ void UAContainer::SetLookupComponent(const NameT &name, const UId &id)
 // компонента с именем 'name'
 void UAContainer::DelLookupComponent(const NameT &name)
 {
- map<NameT,UId>::iterator I=CompsLookupTable.find(name);
+ std::map<NameT,UId>::iterator I=CompsLookupTable.find(name);
 
  if(I == CompsLookupTable.end())
   return;
@@ -2551,6 +2573,16 @@ bool UAContainer::AAddComponent(UAContainer* comp, UIPointer* pointer)
 // Метод будет вызван только если comp
 // существует в списке компонент
 bool UAContainer::ADelComponent(UAContainer* comp)
+{
+ return true;
+}
+// --------------------------
+
+// --------------------------
+// Скрытые методы управления счетом
+// --------------------------
+// Обновляет состояние MainOwner после расчета этого объекта
+bool UAContainer::AUpdateMainOwner(void)
 {
  return true;
 }

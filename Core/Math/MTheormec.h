@@ -52,7 +52,7 @@ MRotationTensor<DataT>& operator = (const MTensor<DataT> &P)
  for(size_t i=0;i<P.Dyads.size();i++)
   angle+=P.Dyads[i].d1*P.Dyads[i].d2;
 
- angle¬os((angle-1)/2);
+ angle=((angle-1)/2);
  return *this;
 };
 
@@ -208,7 +208,7 @@ DataT m1,m2,m3;
 
 public:
 MInertiaTensor(void)
-{ d1ÒÓ=0; m1=m2=m3=0; };
+{ d1=d2=d3=0; m1=m2=m3=0; };
 
 MInertiaTensor(const MInertiaTensor<DataT> &IT)
 {

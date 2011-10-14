@@ -13,7 +13,7 @@ See file license.txt for more information
 #define UEngine_CPP
 
 #include "UEngine.h"
-#include "RDKdll_loader.h"
+#include "../../Deploy/Include/rdkdll_loader.h"
 
 
 namespace RDK{
@@ -1432,14 +1432,14 @@ int UEngine::LoadClasses(void)
 {
  vector<string> variables;
  int res=0;
- UAContainer *dllclass;
+ UAContainer *dllclass=0;
 
  Options.GetVariableList(ComponentClassesSectionName, variables);
 
  ClassesList.clear();
  for(size_t i=0;i<variables.size();i++)
  {
-  dllclass=LoadUClass(Options(ComponentClassesSectionName,variables[i],""),variables[i]);
+  //dllclass=LoadUClass(Options(ComponentClassesSectionName,variables[i],""),variables[i]);
   if(!dllclass)
    res|=1;
   ClassesList.push_back(dllclass);
@@ -1454,14 +1454,14 @@ int UEngine::LoadLibraries(void)
 {
  vector<string> variables;
  int res=0;
- UALibrary *library;
+ UALibrary *library=0;
 
  Options.GetVariableList(ComponentLibrariesSectionName, variables);
 
  LibrariesList.clear();
  for(size_t i=0;i<variables.size();i++)
  {
-  library=LoadULibrary(Options(ComponentLibrariesSectionName,variables[i],""),variables[i]);
+  //library=LoadULibrary(Options(ComponentLibrariesSectionName,variables[i],""),variables[i]);
   if(!library)
    res|=1;
   LibrariesList.push_back(library);

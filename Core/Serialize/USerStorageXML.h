@@ -12,11 +12,11 @@ See file license.txt for more information
 #ifndef USerStorage_XMLH
 #define USerStorage_XMLH
 
+#include <string>
 #include "USerStorage.h"
 #undef _XMLWINDOWS
 #define XML_NO_WIDE_CHAR
 #include "../../ThirdParty/xmlParser/xmlParser.h"
-#include <string>
 
 namespace RDK {
 namespace Serialize {
