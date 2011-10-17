@@ -1,11 +1,16 @@
-#ifndef RDK_DLL_CPP
-#define RDK_DLL_CPP
+#ifndef RDK_INIT_CPP
+#define RDK_INIT_CPP
 
-#include "rdkdll.h"
-#include "rdkdll_loader.h"
+#include "rdk_init.h"
+#include "rdk_gengine.h"
+//#include "rdkdll_loader.h"
 
 // Экземпляр менеджера
 RDKDllManager DllManager;
+
+extern RDK::UEngine* PEngine;
+extern RDK::UAEnvironment* PEnvironment;
+extern RDK::UAStorage* PStorage;
 
 // Инициализация dll
 bool DllInit(void* pfstorage,void* pfenvironment,void* pfengine)
@@ -189,6 +194,123 @@ bool RDKDllManager::Init(PCreateNewStorage fCreateNewStorage,
  return true;
 }
 // --------------------------
+
+
+RDK::UAStorage* CreateNewStorage(void)
+{
+ return new RDK::UAStorage;
+}
+
+extern RDK::UAEnvironment* CreateNewEnvironment(void)
+{
+ return new RDK::UAEnvironment;
+}
+
+extern RDK::UEngine* CreateNewEngine(void)
+{
+ return new RDK::UEngine;
+}
+
+// Деинициализация движка
+extern int Engine_Destroy(void);
+
+// Инициализация движка
+int Engine_Create(RDK::UEngine *engine, const char *inifilename, void *pCreateNewStorage, void *pCreateNewEnvironment)
+{
+ if(!engine)
+  return 1;
+
+ if(PEngine != engine)
+ {
+  Engine_Destroy();
+
+  PEngine=engine;
+ }
+
+ if(inifilename)
+ {
+  if(!PEngine->SetOptionsFileName(inifilename))
+  {
+   Engine_Destroy();
+   return 2;
+  }
+
+  if(!PEngine->SetFuncCreateNewStorage(reinterpret_cast<RDK::UEngine::PCreateNewStorage>(pCreateNewStorage)))
+   return 10;
+
+  if(!PEngine->SetFuncCreateNewEnvironment(reinterpret_cast<RDK::UEngine::PCreateNewEnvironment>(pCreateNewEnvironment)))
+   return 11;
+ }
+ return 0;
+}
+
+
+int LoadEngine(void *create_storage, void *create_environment, void *create_engine)
+{
+ if(!DllInit(create_storage, create_environment, create_engine))
+  return -2;
+
+ RDK::UEngine* pengine=dynamic_cast<RDK::UEngine*>(AddNewEngine());
+
+ if(!pengine)
+  return -3;
+
+ pengine->Default();
+
+ if(Engine_Create(pengine, "options.ini",(void*)AddNewStorage,(void*)AddNewEnvironment))
+  return -4;
+
+ return 0;
+}
+
+
+int RDK_EngineInit(int predefined_structure)
+{
+ LoadEngine((void*)CreateNewStorage, (void*)CreateNewEnvironment, (void*)CreateNewEngine);
+ RDKInit();
+ RDKLoadPredefinedLibraries();
+
+ RDKEnv_SetPredefinedStructure(predefined_structure);
+ RDKEnv_CreateStructure();
+
+ return 0;
+}
+
+RDK::UAStorage* CreateNewGStorage(void)
+{
+ return new RDK::UBAStorage;
+}
+
+RDK::UAEnvironment* CreateNewGEnvironment(void)
+{
+ return new RDK::UBAEnvironment;
+}
+
+RDK::UEngine* CreateNewGEngine(void)
+{
+ return new RDK::UBEngine;
+}
+
+int RDK_GraphicalEngineInit(int predefined_structure, int num_inputs,
+		int num_outputs, int input_width, int input_height)
+{
+ LoadEngine((void*)CreateNewGStorage, (void*)CreateNewGEnvironment, (void*)CreateNewGEngine);
+ RDKInit();
+ RDKLoadPredefinedLibraries();
+
+ // Задает число входов среды
+ RDKEnv_SetNumInputImages(num_inputs);
+ RDKEnv_SetNumOutputImages(num_outputs);
+
+ // Задает разрешение по умолчанию (рабочее разрешение)
+ for(int i=0;i<num_inputs;i++)
+  RDKEnv_SetInputRes(i, input_width, input_height);
+
+ RDKEnv_SetPredefinedStructure(predefined_structure);
+ RDKEnv_CreateStructure();
+
+ return 0;
+}
 
 
 #endif

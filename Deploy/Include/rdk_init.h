@@ -1,7 +1,8 @@
-#ifndef RDKLIB_H
-#define RDKLIB_H
+#ifndef RDK_INIT_H
+#define RDK_INIT_H
 
 #include "rdk.h"
+#include "rdk_gengine.h"
 
 extern "C"  {
 
@@ -11,37 +12,46 @@ class RDKDllManager;
 extern RDKDllManager DllManager;
 
 // Инициализация dll
-extern bool DllInit(void* pfstorage,void* pfenvironment,void* pfengine);
+RDK_LIB_TYPE bool DllInit(void* pfstorage,void* pfenvironment,void* pfengine);
 
 // Возвращает число хранилищ в библиотеке
-extern size_t GetNumStorages(void);
+RDK_LIB_TYPE size_t GetNumStorages(void);
 
 // Возвращает число сред в библиотеке
-extern size_t GetNumEnvironments(void);
+RDK_LIB_TYPE size_t GetNumEnvironments(void);
 
 // Возвращает число движков в библиотеке
-extern size_t GetNumEngines(void);
+RDK_LIB_TYPE size_t GetNumEngines(void);
 
 // Возвращает хранилище по индексу
-extern RDK::UAContainerStorage* GetStorage(size_t i);
+RDK_LIB_TYPE RDK::UAContainerStorage* GetStorage(size_t i);
 
 // Возвращает среду по индексу
-extern RDK::UAContainerEnvironment*  GetEnvironment(size_t i);
+RDK_LIB_TYPE RDK::UAContainerEnvironment*  GetEnvironment(size_t i);
 
 // Возвращает движок по индексу
-extern RDK::UEngine*  GetEngine(size_t i);
+RDK_LIB_TYPE RDK::UEngine*  GetEngine(size_t i);
 
 // Создает новое хранилище и помещает в конец массива
 // Возвращает указатель на хранилище
-extern RDK::UAContainerStorage*  AddNewStorage(void);
+RDK_LIB_TYPE RDK::UAContainerStorage*  AddNewStorage(void);
 
 // Создает новую среду и помещает в конец массива
 // Возвращает указатель на среду
-extern RDK::UAContainerEnvironment*  AddNewEnvironment(RDK::UAContainerStorage *storage=0,bool isinit=true, std::list<RDK::UAContainer*>* external_classes=0, std::list<RDK::UALibrary*>* external_libs=0);
+RDK_LIB_TYPE RDK::UAContainerEnvironment*  AddNewEnvironment(RDK::UAContainerStorage *storage=0,bool isinit=true, std::list<RDK::UAContainer*>* external_classes=0, std::list<RDK::UALibrary*>* external_libs=0);
 
 // Создает новый движок и помещает в конец массива
 // Возвращает указатель на движок
-extern RDK::UEngine*  AddNewEngine(void);
+RDK_LIB_TYPE RDK::UEngine*  AddNewEngine(void);
+
+RDK_LIB_TYPE int LoadEngine(void *create_storage, void *create_environment, void *create_engine);
+
+// Инициализирует движок (функция должна быть вызвана первой!)
+RDK_LIB_TYPE int RDK_EngineInit(int predefined_structure);
+
+// Инициализирует графический движок (функция должна быть вызвана первой!)
+RDK_LIB_TYPE int RDK_GraphicalEngineInit(int predefined_structure, int num_inputs,
+		int num_outputs, int input_width, int input_height);
 
 }
 

@@ -6,39 +6,6 @@ namespace RDK {
 // Дескриптор dll
 HMODULE RDKDllHandler=0;
 
-// Инициализация dll
-DLLPDllInit DLLDllInit=0;
-
-// Указатель на функцию возвращающую число хранилищ в библиотеке
-DLLPGetNumStorages DLLGetNumStorages=0;
-
-// Указатель на функцию возвращающую число сред в библиотеке
-DLLPGetNumEnvironments DLLGetNumEnvironments=0;
-
-// Указатель на функцию возвращающую число движков в библиотеке
-DLLPGetNumEngines DLLGetNumEngines=0;
-
-// Возвращает хранилище по индексу
-DLLPGetStorage DLLGetStorage=0;
-
-// Возвращает среду по индексу
-DLLPGetEnvironment DLLGetEnvironment=0;
-
-// Возвращает движок по индексу
-DLLPGetEngine DLLGetEngine=0;
-
-// Создает новое хранилище и помещает в конец массива
-// Возвращает указатель на хранилище
-DLLPAddNewStorage DLLAddNewStorage=0;
-
-// Создает новую среду и помещает в конец массива
-// Возвращает указатель на среду
-DLLPAddNewEnvironment DLLAddNewEnvironment=0;
-
-// Создает новый движок и помещает в конец массива
-// Возвращает указатель на движок
-DLLPAddNewEngine DLLAddNewEngine=0;
-
 // Вспомогательная функция, загружает указатель вне зависимости от префикса '_'
 FARPROC WINAPI LoadDllFunctionAddr(HMODULE hModule, LPCSTR lpProcName)
 {

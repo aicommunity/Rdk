@@ -20,6 +20,9 @@ See file license.txt for more information
 
 namespace RDK{
 
+//using namespace RDK;
+
+
 class UEngine: public UModule
 {
 public:
@@ -488,6 +491,49 @@ virtual bool AReset(void);
 virtual bool ACalculate(void);
 // --------------------------
 };
+
+// Инициализация dll
+typedef bool(*DLLPDllInit)(void* pfstorage,void* pfenvironment,void* pfengine);
+extern DLLPDllInit DLLDllInit;
+
+// Указатель на функцию возвращающую число хранилищ в библиотеке
+typedef std::size_t(*DLLPGetNumStorages)(void);
+extern DLLPGetNumStorages DLLGetNumStorages;
+
+// Указатель на функцию возвращающую число сред в библиотеке
+typedef std::size_t(*DLLPGetNumEnvironments)(void);
+extern DLLPGetNumEnvironments DLLGetNumEnvironments;
+
+// Указатель на функцию возвращающую число движков в библиотеке
+typedef std::size_t(*DLLPGetNumEngines)(void);
+extern DLLPGetNumEngines DLLGetNumEngines;
+
+// Возвращает хранилище по индексу
+typedef UAContainerStorage* (*DLLPGetStorage)(size_t i);
+extern DLLPGetStorage DLLGetStorage;
+
+// Возвращает среду по индексу
+typedef UAContainerEnvironment* (*DLLPGetEnvironment)(size_t i);
+extern DLLPGetEnvironment DLLGetEnvironment;
+
+// Возвращает движок по индексу
+typedef UEngine* (*DLLPGetEngine)(size_t i);
+extern DLLPGetEngine DLLGetEngine;
+
+// Создает новое хранилище и помещает в конец массива
+// Возвращает указатель на хранилище
+typedef UAContainerStorage* (*DLLPAddNewStorage)(void);
+extern DLLPAddNewStorage DLLAddNewStorage;
+
+// Создает новую среду и помещает в конец массива
+// Возвращает указатель на среду
+typedef UAContainerEnvironment* (*DLLPAddNewEnvironment)(UAContainerStorage *storage,bool isinit,list<UAContainer*>* external_classes, list<UALibrary*>* external_libs);
+extern DLLPAddNewEnvironment DLLAddNewEnvironment;
+
+// Создает новый движок и помещает в конец массива
+// Возвращает указатель на движок
+typedef UEngine* (*DLLPAddNewEngine)(void);
+extern DLLPAddNewEngine DLLAddNewEngine;
 
 
 }

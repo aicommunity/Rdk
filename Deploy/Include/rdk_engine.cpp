@@ -21,36 +21,6 @@ int Engine_Destroy(void)
  return 0;
 }
 
-// Инициализация движка
-int Engine_Create(RDK::UEngine *engine, const char *inifilename, void *pCreateNewStorage, void *pCreateNewEnvironment)
-{
- if(!engine)
-  return 1;
-
- if(PEngine != engine)
- {
-  Engine_Destroy();
-
-  PEngine=engine;
- }
-
- if(inifilename)
- {
-  if(!PEngine->SetOptionsFileName(inifilename))
-  {
-   Engine_Destroy();
-   return 2;
-  }
-
-  if(!PEngine->SetFuncCreateNewStorage(reinterpret_cast<RDK::UEngine::PCreateNewStorage>(pCreateNewStorage)))
-   return 10;
-
-  if(!PEngine->SetFuncCreateNewEnvironment(reinterpret_cast<RDK::UEngine::PCreateNewEnvironment>(pCreateNewEnvironment)))
-   return 11;
- }
- return 0;
-}
-
 int RDKInit(void)
 {
   if(!PEngine->Init())
