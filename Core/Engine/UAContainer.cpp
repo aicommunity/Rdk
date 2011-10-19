@@ -993,7 +993,7 @@ UId UAContainer::AddComponent(UAContainer* comp, UIPointer* pointer)
  if(MainOwner)
   comp->SetMainOwner(MainOwner);
 
- if(!AAddComponent(comp,pointer))
+ if(!AAddComponent(comp,pointer) || !comp->SharesInit())
   {
    // Откат
    // Удаляем компонент из таблицы соответствий владельца
@@ -1619,323 +1619,23 @@ void UAContainer::DelAllComponentsAs(const NameT &pointername, bool canfree)
 }
 // --------------------------
 
+
 // --------------------------
-// Методы управления текущим состоянием
+// Методы управления общими (shared) переменными
 // --------------------------
-/*
-// Сохраняет объект в контейнер сериализации
-bool UAContainer::Save(UVariableData *values)
+// Метод инициализации общих переменных. Вызывается автоматически при добавлении
+// объекта владельцу
+bool UAContainer::SharesInit(void)
 {
- NameT name=Name;
-
- comp->SetName(name);
-
- values->
-
- std::map<NameT,NVariable>::iterator I,J;
- I=ParamsLookupTable.begin();
- J=ParamsLookupTable.end();
-
- NameT str,str2,paramname;
- while(I != J)
- {
-  paramname=GetParameterLongName(*(I->second.Property));
-//  paramname+="::";
-//  paramname+=I->first;
-  stringstream stream(ios::out);
-  I->second.Property->Save(stream);
-  (*comp)()[paramname][I->first]=stream.str();
-  ++I;
- }
-
- buffer.AddSorted(comp);
-
- for(int i=0;i<NumComponents;i++)
-  if(!PComponents[i]->Save(*comp))
-   return false;
-
- return true;
+ return ASharesInit();
 }
 
-// Загружает объект из контейнера сериализации
-// Для создания компонент используется
-// хранилище этого объекта или storage, если он не 0
-// Если никакое хранилище не задано, то не делает ничего
-// Если флаг paramsonly == true то только обновляет данные параметров
-// для компонента и всех его уже существующих дочерних компонент
-bool UAContainer::Load(UVariableData *values, UAContainerStorage *storage, bool paramsonly)
+// Метод деинициализации общих переменных. Вызывается автоматически при удалении
+// объекта из владельца
+bool UAContainer::SharesUnInit(void)
 {
+ return ASharesUnInit();
 }
-            */
-/* // Сохраняет объект в дерево
-bool UAContainer::Save(RDK::UClassRegistry &buffer)
-{
- RDK::UClassRegistry *comp=new RDK::UClassRegistry;
-
- NameT name=Name;
-
- if(Storage)
- {
-  UId classid=Storage->FindClass(this);
-  if(classid != ForbiddenId)
-  {
-   name+=": ";
-   name+=static_cast<UAContainerStorage*>(Storage)->GetClassName(classid);
-  }
-
- }
-
- comp->SetName(name);
-
- std::map<NameT,NVariable>::iterator I,J;
- I=ParamsLookupTable.begin();
- J=ParamsLookupTable.end();
-
- NameT str,str2,paramname;
- while(I != J)
- {
-  paramname=GetParameterLongName(*(I->second.Property));
-//  paramname+="::";
-//  paramname+=I->first;
-  stringstream stream(ios::out);
-  I->second.Property->Save(stream);
-  (*comp)()[paramname][I->first]=stream.str();
-  ++I;
- }
-
- buffer.AddSorted(comp);
-
- for(int i=0;i<NumComponents;i++)
-  if(!PComponents[i]->Save(*comp))
-   return false;
-
- return true;
-}
-
-// Загружает объект из дерева
-// Для создания компонент используется
-// хранилище этого объекта или storage, если он не 0
-// Если никакое хранилище не задано, то не делает ничего
-bool UAContainer::Load(RDK::UClassRegistry &buffer, UAContainerStorage *storage, bool paramsonly)
-{
- // Текущая версия грузит только параметры
-
- if(!Storage && !storage && paramsonly == false)
-  return false;
-
- UAContainerStorage* stor=(storage != 0)?storage:static_cast<UAContainerStorage*>(Storage);
-
- UAContainer *comp=0;
-
- // Восстанавливаем имя
- NameT name=buffer.GetName();
- int name_i=name.find_last_of(":");
- if(name_i == NameT::npos)
-  Name=name;
- else
-  Name=name.substr(0,name_i);
-
- RDK::UClassRegDataIterator I,J;
- RDK::URegDataIterator rI,rJ;
- std::map<NameT,NVariable>::iterator K;
-
- // Восстанавливаем параметры
- I=buffer().begin();
- J=buffer().end();
- while(I != J)
- {
-  rI=I->second.begin();
-  rJ=I->second.end();
-  while(rI != rJ)
-  {
-   K=ParamsLookupTable.find(rI->first);
-   if(K != ParamsLookupTable.end())
-   {
-    stringstream stream(buffer()[I->first][rI->first],ios::in);
-    K->second.Property->Load(stream);
-   }
-   ++rI;
-  }
-
-  ++I;
- }
-
- // Восстанавливаем структуру дочерних компонент если необходимо
- vector<NameT> treebuf;
- vector<NameT> treeclassbuf;
- vector<NameT>::iterator tI,tJ,tK;
- buffer.GetSubTrees(treebuf);
- treeclassbuf.resize(treebuf.size());
- for(int i=0;i<treebuf.size();i++)
- {
-  name_i=treebuf[i].find_last_of(":");
-  if(name_i != NameT::npos)
-  {
-   treeclassbuf[i]=treebuf[i].substr(name_i+2);
-   treebuf[i]=treebuf[i].substr(0,name_i);
-  }
- }
-
- if(!paramsonly)
- {
-  vector<UId> deletelist;
-
-  for(int i=0;i<NumComponents;i++)
-  {
-   tI=find(treebuf.begin(),treebuf.end(),PComponents[i]->Name);
-   if(tI == treebuf.end())
-    deletelist.push_back(PComponents[i]->Id);
-   else
-   {
-    tJ=treeclassbuf.begin();
-    for(tK=treebuf.begin();tK!=tI;++tK,++tJ);
-    PComponents[i]->Load(buffer[*tI+string(": ")+*tJ],storage,paramsonly);
-    treebuf.erase(tI); treeclassbuf.erase(tJ);
-   }
-  }
-
-  // Удаляем компоненты которых более нет в списке
-  for(int i=0;i<deletelist.size();i++)
-   DelComponent(deletelist[i]);
-
-  // Добавляем новые компоненты
-  for(int i=0;i<treebuf.size();i++)
-  {
-   if(treeclassbuf[i] != "")
-   {
-    comp=stor->TakeObject(treeclassbuf[i]);
-    if(comp)
-    {
-     if(!AddComponent(comp))
-      delete comp;
-     else
-      comp->Load(buffer[treebuf[i]+string(": ")+treeclassbuf[i]],storage,paramsonly);
-    }
-   }
-  }
- }
- else
- {
-  // Загрузка для компонент
-  for(int i=0;i<treebuf.size();i++)
-  {
-   RDK::UClassRegistry &temp=buffer[treebuf[i]+string(": ")+treeclassbuf[i]];
-   name=temp.GetName();
-   name_i=name.find_last_of(":");
-   if(name_i != NameT::npos)
-    name=name.substr(0,name_i);
-   comp=GetComponent(name);
-   if(comp)
-    comp->Load(temp,storage,paramsonly);
-  }
- }
-
- return true;
-}
-
-// Сохраняет состояние объекта в дерево
-bool UAContainer::SaveState(RDK::UClassRegistry &buffer)
-{
- RDK::UClassRegistry *comp=new RDK::UClassRegistry;
-
- NameT name=Name;
-
- if(Storage)
- {
-//  UId classid=Storage->FindClass(this);
-//  if(classid != ForbiddenId)
-  if(Class != ForbiddenId)
-  {
-   name+=": ";
-   name+=static_cast<UAContainerStorage*>(Storage)->GetClassName(Class);//Storage->GetClassName(classid);
-  }
-
- }
-
- comp->SetName(name);
-
- std::map<NameT,NVariable>::iterator I,J;
- I=StateLookupTable.begin();
- J=StateLookupTable.end();
-
- NameT str,str2,statename;
- while(I != J)
- {
-  statename=GetStateLongName(*(I->second.Property));
-//  paramname+="::";
-//  paramname+=I->first;
-  stringstream stream(ios::out);
-  I->second.Property->Save(stream);
-  (*comp)()[statename][I->first]=stream.str();
-//  (*comp)()[statename][I->first].assign(1500,'a');
-  ++I;
- }
-
- buffer.AddSorted(comp);
-
- for(int i=0;i<NumComponents;i++)
-  if(!PComponents[i]->SaveState(*comp))
-   return false;
-
- return true;
-}
-
-// Загружает состояние объекта из дерева
-// Если какие-то из дочерних компонент не созданы, то их состояние не восстанавливается
-// однако метод возвращает true.
-// Если для каких-то дочерних компонент данные состояния отсутствуют, то
-// метод возвращает false
-bool UAContainer::LoadState(RDK::UClassRegistry &buffer)
-{
- UAContainer *comp=0;
-
- // Восстанавливаем имя
- NameT name=buffer.GetName();
- int name_i=name.find_last_of(":");
- if(name_i != NameT::npos)
-  name=name.substr(0,name_i);
-
- if(Name != name)
-  return false;
-
- RDK::UClassRegDataIterator I,J;
- RDK::URegDataIterator rI,rJ;
- std::map<NameT,NVariable>::iterator K;
-
- I=buffer().begin();
- J=buffer().end();
- while(I != J)
- {
-  rI=I->second.begin();
-  rJ=I->second.end();
-  while(rI != rJ)
-  {
-   K=StateLookupTable.find(rI->first);
-   if(K != StateLookupTable.end())
-   {
-    stringstream stream(buffer()[I->first][rI->first],ios::in);
-    K->second.Property->Load(stream);
-   }
-   ++rI;
-  }
-
-  ++I;
- }
-
- // Восстанавливаем структуру дочерних компонент если необходимо
- vector<NameT> treebuf;
- vector<NameT>::iterator tI;
- buffer.GetSubTrees(treebuf);
-
- for(int i=0;i<treebuf.size();i++)
- {
-  comp=GetComponent(buffer[treebuf[i]].GetName());
-  if(comp)
-   comp->LoadState(buffer[treebuf[i]]);
- }
-
- return true;
-}              */
 // --------------------------
 
 // --------------------------
@@ -2471,6 +2171,23 @@ UAContainer::PointerMapCIteratorT UAContainer::FindLookupPointer(const UAContain
 }
 // --------------------------
 
+// --------------------------
+// Скрытые методы управления общими (shared) переменными
+// --------------------------
+// Метод инициализации общих переменных. Вызывается автоматически при добавлении
+// объекта владельцу
+bool UAContainer::ASharesInit(void)
+{
+ return true;
+}
+
+// Метод деинициализации общих переменных. Вызывается автоматически при удалении
+// объекта из владельца
+bool UAContainer::ASharesUnInit(void)
+{
+ return true;
+}
+// --------------------------
 
 // --------------------------
 // Скрытые методы управления таблицей компонент
@@ -2535,7 +2252,7 @@ void UAContainer::DelComponentTable(UAContainer *comp)
 // Метод предполагает, что компонент принадлежит объекту
 bool UAContainer::DelComponent(UAContainer* comp, bool canfree)
 {
- if(!ADelComponent(comp))
+ if(!SharesUnInit() || !ADelComponent(comp))
   return false;
 
  if(comp->GetMainOwner() == MainOwner)
