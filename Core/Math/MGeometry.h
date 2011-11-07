@@ -169,8 +169,6 @@ bool CalcIntersection(MRay<T> ray, MVector<T> &p)
 };
 
 
-
-
 // Контур фигуры
 class MBorder
 {
@@ -248,9 +246,6 @@ friend unsigned char* operator >> (const MBorder &v, unsigned char* p);
 
 // Ввод из массива
 friend const unsigned char* operator << (MBorder &v, const unsigned char* p);
-
-//friend USerStorageXML& operator << (USerStorageXML& storage, const MBorder &data);
-//friend USerStorageXML& operator >> (USerStorageXML& storage, MBorder &data);
 // --------------------------
 };
 

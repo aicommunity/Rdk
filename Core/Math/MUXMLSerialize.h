@@ -70,7 +70,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, MVector<T> &data)
 
  return storage;
 }
-
+/*
 #ifdef MDVECTOR_H
 USerStorageXML& operator << (USerStorageXML& storage, const MDVector &data)
 {
@@ -115,7 +115,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, MDVector &data)
  return storage;
 }
 #endif
-
+*/
 // MRotationTensor
 template<typename T>
 USerStorageXML& operator << (USerStorageXML& storage, const MRotationTensor<T> &data)
@@ -279,34 +279,9 @@ USerStorageXML& operator >> (USerStorageXML& storage, MCartesianCSystem<T> &data
 }
 
 // MBorder
-USerStorageXML& operator << (USerStorageXML& storage, const MBorder &data)
-{
- storage.SetNodeAttribute("Type","MBorder");
- storage.AddNode("VertexIndex");
- storage<<data.GetVertexIndex();
- storage.SelectUp();
+USerStorageXML& operator << (USerStorageXML& storage, const MBorder &data);
+USerStorageXML& operator >> (USerStorageXML& storage, MBorder &data);
 
- return storage;
-}
-
-USerStorageXML& operator >> (USerStorageXML& storage, MBorder &data)
-{
- //Временные переменные
- std::vector<int> varVertexIndex;
-
- if(storage.GetNodeAttribute("Type") != "MBorder")
-  return storage;
-
- if(!storage.SelectNode("VertexIndex"))
-  return storage;
-
- storage>>varVertexIndex;
- data.SetVertexIndex(varVertexIndex);
- storage.SelectUp();
-
- return storage;
-
-}
 
 // MVertex
 template<typename T>
