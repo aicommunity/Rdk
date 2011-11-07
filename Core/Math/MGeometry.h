@@ -182,8 +182,11 @@ protected: // Временные переменные
 // Число вершин
 size_t NumVertex;
 
+
 // Указатель текущую вершину
 int* PVertexIndex;
+
+
 
 public: // Методы
 // --------------------------
@@ -203,6 +206,7 @@ void Clear(void);
 
 // Индексы вершин
 const std::vector<int>& GetVertexIndex(void) const;
+bool SetVertexIndex(const std::vector<int> &copy);
 
 // Число вершин
 size_t GetNumVertex(void) const;
@@ -244,6 +248,9 @@ friend unsigned char* operator >> (const MBorder &v, unsigned char* p);
 
 // Ввод из массива
 friend const unsigned char* operator << (MBorder &v, const unsigned char* p);
+
+//friend USerStorageXML& operator << (USerStorageXML& storage, const MBorder &data);
+//friend USerStorageXML& operator >> (USerStorageXML& storage, MBorder &data);
 // --------------------------
 };
 
@@ -288,9 +295,13 @@ const std::vector<MVector<T> >& GetVertex(void) const;
 
 // Имена вершин
 const std::vector<std::string>& GetNames(void) const;
+bool SetNames(const std::vector<std::string> &copy);
 
 // Имя вершины
 std::string& UseName(size_t index);
+
+// Вектора вершин
+bool SetVertexVector(const std::vector<MVector<T> > &copy);
 
 // Число вершин
 size_t GetNumVertex(void) const;
@@ -505,6 +516,14 @@ const std::vector<std::string>& MVertex<T>::GetNames(void) const
  return Names;
 }
 
+template<class T>
+bool MVertex<T>::SetNames(const std::vector<std::string> &copy)
+{
+   SetNumVertex(copy.size());
+   Names=copy;
+   return true;
+}
+
 // Имя вершины
 template<class T>
 std::string& MVertex<T>::UseName(size_t index)
@@ -512,6 +531,14 @@ std::string& MVertex<T>::UseName(size_t index)
  return Names[index];
 }
 
+// Векторы вершин
+template<class T>
+bool MVertex<T>::SetVertexVector(const std::vector<MVector<T> > &copy)
+{
+   SetNumVertex(copy.size());
+   Vertex=copy;
+   return true;
+}
 
 // Число вершин
 template<class T>

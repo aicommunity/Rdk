@@ -155,7 +155,7 @@ USerStorageXML& operator << (USerStorageXML& storage, const std::map<T1,T2> &dat
  storage.SetNodeAttribute("Type","std::map");
  storage.SetNodeAttribute("Size",sntoa(data.size()));
 
- if(data.size <= 0)
+ if(data.size() <= 0)
   return storage;
 
  typename std::map<T1,T2>::const_iterator I,J;

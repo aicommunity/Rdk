@@ -45,8 +45,8 @@ private:    // User declarations
 public:        // User declarations
     __fastcall TVCaptureOptionsFrame(TComponent* Owner);
 
-RDK::VCapture::VDCapture* DCapture;
-RDK::VCapture::VFCapture* FCapture;
+//RDK::VCapture::VDCapture* DCapture;
+//RDK::VCapture::VFCapture* FCapture;
 bool UpdateCaptureInterfaceFlag;
 
 // Если флаг true - при смене активной вкладке - неактивные источники видео
@@ -66,15 +66,15 @@ bool SetPauseInvisibleFlag(bool value);
 // Методы управления устройством ввода видео
 // -----------------------------
 // Устанавливает устройство видеоввода
-bool SetDCapture(RDK::VCapture::VDCapture *capture);
-bool SetFCapture(RDK::VCapture::VFCapture *capture);
+//bool SetDCapture(RDK::VCapture::VDCapture *capture);
+//bool SetFCapture(RDK::VCapture::VFCapture *capture);
 
 // Возвращает устройство видеоввода
-RDK::VCapture::VDCapture* GetDCapture(void) const;
-RDK::VCapture::VFCapture* GetFCapture(void) const;
+//RDK::VCapture::VDCapture* GetDCapture(void) const;
+//RDK::VCapture::VFCapture* GetFCapture(void) const;
 
 // Возвращает текущее устройство видеоввода
-RDK::VCapture::VACapture* GetCapture(void) const;
+//RDK::VCapture::VACapture* GetCapture(void) const;
 
 // Обновляет интерфейс фрейма
 void UpdateInterface(void);

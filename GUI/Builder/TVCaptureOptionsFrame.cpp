@@ -13,8 +13,8 @@ __fastcall TVCaptureOptionsFrame::TVCaptureOptionsFrame(TComponent* Owner)
     : TFrame(Owner)
 {
  UpdateCaptureInterfaceFlag=false;
- DCapture=0;
- FCapture=0;
+ //DCapture=0;
+ //FCapture=0;
  PauseInvisibleFlag=true;
 }
 
@@ -43,7 +43,7 @@ bool TVCaptureOptionsFrame::SetPauseInvisibleFlag(bool value)
 // Методы управления устройством ввода видео
 // -----------------------------
 // Устанавливает устройство видеоввода
-bool TVCaptureOptionsFrame::SetDCapture(RDK::VCapture::VDCapture *capture)
+/*bool TVCaptureOptionsFrame::SetDCapture(RDK::VCapture::VDCapture *capture)
 {
  if(DCapture == capture)
   return true;
@@ -82,14 +82,14 @@ RDK::VCapture::VACapture* TVCaptureOptionsFrame::GetCapture(void) const
   return FCapture;
 
  return 0;
-}
+}          */
 
 
 // Обновляет интерфейс фрейма
 void TVCaptureOptionsFrame::UpdateInterface(void)
 {
  UpdateCaptureInterfaceFlag=true;
-
+			/*
  if(DCapture)
  {
   DeviceTabSheet->TabVisible=true;
@@ -181,7 +181,7 @@ void TVCaptureOptionsFrame::UpdateInterface(void)
  {
   VideoFileTabSheet->TabVisible=false;
  }
-
+           */
  UpdateCaptureInterfaceFlag=false;
 }
 // -----------------------------
@@ -189,12 +189,12 @@ void __fastcall TVCaptureOptionsFrame::DeviceComboBoxSelect(TObject *Sender)
 {
  if(UpdateCaptureInterfaceFlag)
   return;
-
+				   /*
  if(DCapture)
  {
   DCapture->SetActiveDevice(DeviceComboBox->ItemIndex);
   UpdateInterface();
- }
+ }                    */
 }
 //---------------------------------------------------------------------------
 
@@ -205,12 +205,12 @@ void __fastcall TVCaptureOptionsFrame::InputComboBoxSelect(TObject *Sender)
 
  if(InputComboBox->ItemIndex == 0)
   return;
-
+					/*
  if(DCapture)
  {
   DCapture->SetActiveCrossbarInput(InputComboBox->ItemIndex-1);
   UpdateInterface();
- }
+ }                 */
 }
 //---------------------------------------------------------------------------
 
@@ -218,7 +218,7 @@ void __fastcall TVCaptureOptionsFrame::ModeComboBoxSelect(TObject *Sender)
 {
  if(UpdateCaptureInterfaceFlag)
   return;
-
+			/*
  if(DCapture)
  {
   std::string mode=AnsiString(ModeComboBox->Text).c_str();
@@ -227,7 +227,7 @@ void __fastcall TVCaptureOptionsFrame::ModeComboBoxSelect(TObject *Sender)
   imode=RDK::atoi(mode.substr(0,index));
   DCapture->SetActiveMode(imode);
   UpdateInterface();
- }
+ }                           */
 }
 //---------------------------------------------------------------------------
 void __fastcall TVCaptureOptionsFrame::VFBrowseButtonClick(TObject *Sender)
@@ -236,18 +236,18 @@ void __fastcall TVCaptureOptionsFrame::VFBrowseButtonClick(TObject *Sender)
   return;
 
  VFNameEdit->Text=VFOpenDialog->FileName;
-
+			   /*
  if(FCapture)
  {
   FCapture->SetFileName(VFNameEdit->Text.w_str());
   UpdateInterface();
- }
+ }         */
 
 }
 //---------------------------------------------------------------------------
 void __fastcall TVCaptureOptionsFrame::TimeEditChange(TObject *Sender)
 {
- if(UpdateCaptureInterfaceFlag || !FCapture)
+/* if(UpdateCaptureInterfaceFlag || !FCapture)
   return;
 
  std::string sstamp;
@@ -256,25 +256,25 @@ void __fastcall TVCaptureOptionsFrame::TimeEditChange(TObject *Sender)
  stamp<<sstamp;
 
  FCapture->SelectFrame(stamp());
- UpdateInterface();
+ UpdateInterface();*/
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TVCaptureOptionsFrame::TimeTrackBarChange(TObject *Sender)
 {
- if(UpdateCaptureInterfaceFlag || !FCapture)
+/* if(UpdateCaptureInterfaceFlag || !FCapture)
   return;
 
  std::string sstamp;
  RDK::VCapture::VTimeStamp stamp(double(TimeTrackBar->Position),double(FCapture->GetFPS()));
  FCapture->SelectFrame(stamp());
- UpdateInterface();
+ UpdateInterface();    */
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TVCaptureOptionsFrame::VCapturePageControlChange(TObject *Sender)
 
-{
+{        /*
  if(PauseInvisibleFlag)
  {
   if(DeviceTabSheet->TabVisible == false && DCapture->GetCaptureState())
@@ -284,7 +284,7 @@ void __fastcall TVCaptureOptionsFrame::VCapturePageControlChange(TObject *Sender
    FCapture->Pause();
  }
 
- UpdateInterface();
+ UpdateInterface();*/
 }
 //---------------------------------------------------------------------------
 

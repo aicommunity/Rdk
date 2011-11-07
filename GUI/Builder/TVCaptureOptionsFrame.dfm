@@ -20,6 +20,10 @@ object VCaptureOptionsFrame: TVCaptureOptionsFrame
     OnChange = VCapturePageControlChange
     object DeviceTabSheet: TTabSheet
       Caption = 'Device'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object VDCapturePanel: TPanel
         Left = 0
         Top = 0
@@ -95,6 +99,10 @@ object VCaptureOptionsFrame: TVCaptureOptionsFrame
     object VideoFileTabSheet: TTabSheet
       Caption = 'Video File'
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object VFCapturePanel: TPanel
         Left = 0
         Top = 0
@@ -159,6 +167,10 @@ object VCaptureOptionsFrame: TVCaptureOptionsFrame
     object PictureFileTabSheet: TTabSheet
       Caption = 'Picture File'
       ImageIndex = 2
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
     end
   end
   object VFOpenDialog: TOpenDialog
