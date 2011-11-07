@@ -17,7 +17,7 @@ See file license.txt for more information
 
 #include <string>
 #include <sstream>
-#include "rdk.h"
+#include "UProperty.h"
 
 namespace RDK {
 
