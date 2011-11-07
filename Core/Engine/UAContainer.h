@@ -757,7 +757,8 @@ virtual bool AUpdateMainOwner(void);
 }
 
 #include "UProperty.h"
-#include "UPointer.h"
+#include "UPointer.h"   
 #include "UShare.h"
+#include "ULocalProperty.h"
 
 #endif

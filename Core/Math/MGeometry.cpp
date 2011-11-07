@@ -64,6 +64,13 @@ const std::vector<int>& MBorder::GetVertexIndex(void) const
  return VertexIndex;
 }
 
+bool MBorder::SetVertexIndex(const std::vector<int> &copy)
+{
+   SetNumVertex(copy.size());
+   VertexIndex=copy;
+   return true;
+}
+
 // Число вершин
 size_t MBorder::GetNumVertex(void) const
 {
@@ -224,6 +231,7 @@ const unsigned char* operator << (MBorder &v, const unsigned char* p)
  return p+sizeof(double)*v.NumVertex;
 }
 // --------------------------
+
 
 }
 
