@@ -50,7 +50,7 @@ bool UBAEnvironment::CreateModel(const UId& classid)
  if(!GetStorage())
   return false;
 
- UAComponent *component=GetStorage()->GetClass(classid);
+ USharedPtr<UAComponent> component=GetStorage()->GetClass(classid);
  if(!component)
   return false;
 

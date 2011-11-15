@@ -35,11 +35,11 @@ typedef UAContainer* PUAContainer;
 class UAContainerVector
 {
 protected: // Параметры
-// Размер массива изображений
+// Размер массива
 int Size;
 
 protected: // Данные
-// Массив указателей на изображения
+// Массив указателей
 mutable PUAContainer* Buffer;
 
 // Реальный размер массива

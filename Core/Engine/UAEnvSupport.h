@@ -23,11 +23,11 @@ extern UId ForbiddenId;
 class UIdVector
 {
 protected: // Параметры
-// Размер массива изображений
+// Размер массива
 int Size;
 
 protected: // Данные
-// Массив указателей на изображения
+// Массив id
 mutable UId* Buffer;
 
 // Реальный размер массива
@@ -91,11 +91,11 @@ typedef UIdVector ULongId;
 class ULongIdVector
 {
 protected: // Параметры
-// Размер массива изображений
+// Размер массива
 int Size;
 
 protected: // Данные
-// Массив указателей на изображения
+// Массив указателей
 mutable ULongId* Buffer;
 
 // Реальный размер массива
@@ -208,7 +208,7 @@ protected: // Данные
 // Данные
 mutable ULink *Data;
 
-// Размер массива изображений
+// Размер массива
 int Size;
 
 // Реальный размер массива

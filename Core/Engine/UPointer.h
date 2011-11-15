@@ -27,7 +27,7 @@ class UAContainer;
 // ”казатель на локальный экземпл€р компонента в классе
 // ƒл€ удобства использовани€
 template<typename T, class OwnerT>
-class UEPointer: public UPointer<T>, public UIPointer
+class UEPointer: public UPtr<T>, public UIPointer
 {
 //friend class OwnerT;
 protected: // јтрибуты

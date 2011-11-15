@@ -17,6 +17,22 @@ See file license.txt for more information
 #include "UAStorage.h"
 
 namespace RDK {
+/*
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+UClassStorageElement::UClassStorageElement(void)
+{
+ Id=ForbiddenId;
+}
+
+UClassStorageElement::UClassStorageElement(UAComponent *comp, UId id)
+ : USharedPtr<UAComponent>(comp), Id(id)
+{
+
+}
+// --------------------------
+
 
 // --------------------------
 // Конструкторы и деструкторы
@@ -69,10 +85,14 @@ void UClassesStorage::Resize(int newsize)
   newrealsize=16;
  else
   newrealsize=newsize<<2;
+
+// newrealsize=newsize;
  if(RealSize<newsize || !Classes)
  {
   UClassStorageElement* newbuffer=new UClassStorageElement[newrealsize];
-  memcpy(newbuffer,Classes,sizeof(UClassStorageElement)*Size);
+  for(int i=0;i<Size;i++)
+   newbuffer[i]=Classes[i];
+//  memcpy(newbuffer,Classes,sizeof(UClassStorageElement)*Size);
 
   if(Classes)
    delete []Classes;
@@ -87,34 +107,42 @@ void UClassesStorage::Resize(int newsize)
 }
 
 // Ищет класс по Id
-UAComponent* UClassesStorage::Find(const UId &id) const
+USharedPtr<UAComponent> UClassesStorage::Find(const UId &id) const
 {
  UClassStorageElement* pclasses=Classes;
  for(int i=0;i<Size;i++,pclasses++)
   if(pclasses->Id == id)
-   return pclasses->Class;
+   return *pclasses;
 
- return 0;
+ return USharedPtr<UAComponent>();
 }
 
 // Ищет класс по Id и удаляет его из массива
 // Возвращает указатель на удаленный класс
-UAComponent* UClassesStorage::Erase(const UId &id)
+USharedPtr<UAComponent> UClassesStorage::Erase(const UId &id)
 {
  UClassStorageElement* pclasses=Classes;
+ USharedPtr<UAComponent> res;
  for(int i=0;i<Size;i++,pclasses++)
   if(pclasses->Id == id)
   {
-   UAComponent *result=pclasses->Class;
+   res=*pclasses;
 
    if(i != Size-1)
-    memmove(pclasses,pclasses+1,sizeof(UClassStorageElement)*(Size-i));
+   {
+	for(int j=i;j<Size-1;j++,pclasses++)
+	{
+	 *pclasses=*(pclasses+1);
+    }
+
+   }
+//	memmove(pclasses,pclasses+1,sizeof(UClassStorageElement)*(Size-i));
    Resize(Size-1);
 
-   return result;
+   return res;
   }
 
- return 0;
+ return res;
 }
 
 // Добавляет новый элемент в конец хранилища
@@ -126,9 +154,7 @@ void UClassesStorage::PushBack(const UClassStorageElement &classelement)
 
 void UClassesStorage::PushBack(const UId &id, UAComponent *component)
 {
- UClassStorageElement classelement;
- classelement.Id=id;
- classelement.Class=component;
+ UClassStorageElement classelement(component,id);
  PushBack(classelement);
 }
 
@@ -158,7 +184,7 @@ UClassStorageElement& UClassesStorage::operator [] (int i)
  return Classes[i];
 }
 // --------------------------
-
+               */
 /* *************************************************************************** */
 // Class UAStorage
 /* *************************************************************************** */
@@ -206,13 +232,13 @@ UId UAStorage::AddClass(UAComponent *classtemplate, const UId &classid)
  if(id == ForbiddenId)
   id=LastClassId+1;
 
- if(ClassesStorage.Find(id))
+ if(ClassesStorage.find(id) != ClassesStorage.end())
   return ForbiddenId;
 
  if(!classtemplate->Build())
   return ForbiddenId;
 
- ClassesStorage.PushBack(id,classtemplate);
+ ClassesStorage[id]=classtemplate;
  classtemplate->SetClass(id);
  LastClassId=id;
 
@@ -231,9 +257,12 @@ UId UAStorage::AddClass(UAComponent *classtemplate, const UId &classid)
 // или присутствуют объекты этого класса
 bool UAStorage::DelClass(const UId &classid)
 {
- UAComponent *eraseclass=ClassesStorage.Erase(classid);
+ UClassesStorageIterator I=ClassesStorage.find(classid);
 
- delete eraseclass;
+ if(I != ClassesStorage.end())
+  ClassesStorage.erase(I);
+
+// delete eraseclass;
 
  return true;
 }
@@ -241,50 +270,57 @@ bool UAStorage::DelClass(const UId &classid)
 // Проверяет наличие образца класса объекта в хранилище
 bool UAStorage::CheckClass(const UId &classid) const
 {
- if(ClassesStorage.Find(classid) == 0)
+ if(ClassesStorage.find(classid) == ClassesStorage.end())
   return false;
 
  return true;
 }
 
 // Возвращает образец класса
-UAComponent* const UAStorage::GetClass(const UId &classid) const
+USharedPtr<UAComponent> UAStorage::GetClass(const UId &classid) const
 {
- return ClassesStorage.Find(classid);
+ UClassesStorageCIterator I=ClassesStorage.find(classid);
+
+ if(I != ClassesStorage.end())
+  return I->second;
+
+ return USharedPtr<UAComponent>();
 }
 
 // Возвращает число классов
 int UAStorage::GetNumClasses(void) const
 {
- return ClassesStorage.GetSize();
+ return ClassesStorage.size();
 }
 
 // Возвращает список идентификаторов всех классов хранилища
 // Буфер 'buffer' будет очищен от предыдущих значений
 void UAStorage::GetClassIdList(UId* buffer, int max_num_classes) const
 {
- if(!buffer || !max_num_classes || !ClassesStorage.GetSize())
+ if(!buffer || !max_num_classes || !ClassesStorage.size())
   return;
 
- int size=(max_num_classes<ClassesStorage.GetSize())?max_num_classes:ClassesStorage.GetSize();
-
- UClassStorageElement* classes=ClassesStorage.GetClasses();
- for(int i=0;i<size;i++)
+ UClassesStorageCIterator I;
+ int count=0;
+ for(I=ClassesStorage.begin();I != ClassesStorage.end();++I,++count)
  {
-  *buffer++=(*classes++).Id;
+  if(count == max_num_classes)
+   break;
+
+  *buffer++=I->first;
  }
 }
 
 // Удаляет все образцы классов из хранилища
 bool UAStorage::ClearClassesStorage(void)
 {
- UClassStorageElement* classes=ClassesStorage.GetClasses();
+/* UClassStorageElement* classes=ClassesStorage.GetClasses();
  for(int i=0;i<ClassesStorage.GetSize();i++,classes++)
  {
   if(classes->Class)
    delete classes->Class;
- }
- ClassesStorage.Clear();
+ }*/
+ ClassesStorage.clear();
  return true;
 }
 // --------------------------
@@ -300,7 +336,7 @@ bool UAStorage::ClearClassesStorage(void)
 // в хранилище
 UAComponent* UAStorage::TakeObject(const UId &classid, const UAComponent *prototype)
 {
- UAComponent* classtemplate=ClassesStorage.Find(classid);
+ USharedPtr<UAComponent> classtemplate=ClassesStorage.find(classid)->second;
 
  if(!classtemplate)
   return 0;

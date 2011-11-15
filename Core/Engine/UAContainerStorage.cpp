@@ -1030,26 +1030,26 @@ void UAContainerStorage::GetClassNameList(vector<NameT> &buffer) const
 // Удаляет все не используемые образцы классов из хранилища
 void UAContainerStorage::FreeClassesStorage(void)
 {
- UClassStorageElement* classes=ClassesStorage.GetClasses();
- for(int j=0;j<GetNumClasses();j++)
-  {
-   UInstancesStorage* temp=ObjectsStorage.Find(classes[j].Id);
+ UClassesStorageCIterator I;
+ for(I=ClassesStorage.begin();I != ClassesStorage.end();++I)
+ {
+   UInstancesStorage* temp=ObjectsStorage.Find(I->first);
    if(temp && temp->GetSize() == 0)
-    {
-     DelClass(classes->Id);
-     break;
-    }
-  }
+	{
+	 DelClass(I->first);
+	 break;
+	}
+ }
 }
 
 // Удаляет все образцы классов из хранилища
 // Возвращает false если в хранилище присутствуют объекты
 bool UAContainerStorage::ClearClassesStorage(void)
 {
- UClassStorageElement* classes=ClassesStorage.GetClasses();
-  for(int i=0;i<GetNumClasses();i++,classes++)
+ UClassesStorageCIterator I;
+ for(I=ClassesStorage.begin();I != ClassesStorage.end();++I)
   {
-   UInstancesStorage* temp=ObjectsStorage.Find(classes[i].Id);
+   UInstancesStorage* temp=ObjectsStorage.Find(I->first);
    if(temp && temp->GetSize() != 0)
     return false;
   }
@@ -1069,7 +1069,13 @@ bool UAContainerStorage::ClearClassesStorage(void)
 // в хранилище
 UAContainer* UAContainerStorage::TakeObject(const UId &classid, const UAComponent *prototype)
 {
- UAContainer* classtemplate=dynamic_cast<UAContainer*>(ClassesStorage.Find(classid));
+ UClassesStorageIterator tmplI=ClassesStorage.find(classid);
+ if(tmplI == ClassesStorage.end())
+  return 0;
+
+ UClassStorageElement tmpl=tmplI->second;
+ UAContainer* classtemplate=dynamic_cast<UAContainer*>(tmpl.operator ->());
+// USharedPtr<UAContainer> classtemplate=dynamic_cast<USharedPtr<UAContainer> >(ClassesStorage.Find(classid));
  if(!classtemplate)
   return 0;
 
@@ -1199,7 +1205,7 @@ bool UAContainerStorage::PushObject(const UId &classid, UAContainer *object)
  if(!object || classid == ForbiddenId || object->GetStorage())
   return false;
 
- UAComponent* classtemplate=ClassesStorage.Find(classid);
+ USharedPtr<UAComponent> classtemplate=ClassesStorage.find(classid)->second;
  if(!classtemplate)
   return false;
 

@@ -1653,7 +1653,7 @@ bool UAContainer::Default(void)
  // из прообраза
  UAContainer *original=0;
  if(Storage)
-  original=static_cast<UAContainer*>(Storage->GetClass(Class));
+  original=static_cast<UAContainer*>(Storage->GetClass(Class).operator ->());
 
  SetTimeStep(2000);
 

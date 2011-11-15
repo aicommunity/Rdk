@@ -13,15 +13,30 @@ See file license.txt for more information
 #ifndef UASTORAGE_H
 #define UASTORAGE_H
 
+#include "../Utilities/UPtr.h"
 #include "UAComponent.h"
 
 namespace RDK {
 
+typedef USharedPtr<UAComponent> UClassStorageElement;
+typedef map<UId, UClassStorageElement> UClassesStorage;
+typedef map<UId, UClassStorageElement>::iterator UClassesStorageIterator;
+typedef map<UId, UClassStorageElement>::const_iterator UClassesStorageCIterator;
+/*
 // Единица хранилища образцов классов
-struct UClassStorageElement
+class UClassStorageElement: public USharedPtr<UAComponent>
 {
- UId Id;
- UAComponent* Class;
+public:
+// Id класса
+UId Id;
+
+public:
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+UClassStorageElement(void);
+UClassStorageElement(UAComponent *comp, UId id);
+// --------------------------
 };
 
 // Хранилище образцов классов
@@ -60,11 +75,11 @@ void Resize(int newsize);
 int GetSize(void) const;
 
 // Ищет класс по Id
-UAComponent* Find(const UId &id) const;
+USharedPtr<UAComponent> Find(const UId &id) const;
 
 // Ищет класс по Id и удаляет его из массива
 // Возвращает указатель на удаленный класс
-UAComponent* Erase(const UId &id);
+USharedPtr<UAComponent> Erase(const UId &id);
 
 // Добавляет новый элемент в конец хранилища
 void PushBack(const UClassStorageElement &classelement);
@@ -83,7 +98,7 @@ UClassesStorage& operator = (const UClassesStorage &copy);
 // Оператор доступа
 UClassStorageElement& operator [] (int i);
 // --------------------------
-};
+};    */
 
 class UAStorage
 {
@@ -137,7 +152,7 @@ virtual bool DelClass(const UId &classid);
 virtual bool CheckClass(const UId &classid) const;
 
 // Возвращает образец класса
-virtual UAComponent* const GetClass(const UId &classid) const;
+virtual USharedPtr<UAComponent> GetClass(const UId &classid) const;
 
 // Возвращает число классов
 int GetNumClasses(void) const;

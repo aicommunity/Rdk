@@ -8,17 +8,21 @@ extern "C" {
 // ----------------------------
 // Методы инициализации
 // ----------------------------
-// Инициализация среды
+RDK_LIB_TYPE int LoadEngine(void *create_storage, void *create_environment, void *create_engine);
+
+// Инициализирует движок (функция должна быть вызвана первой!)
+RDK_LIB_TYPE int RDK_EngineInit(int predefined_structure);
+
+// Инициализация библиотеки
 RDK_LIB_TYPE int RDKInit(void);
 
+// Деинициализация библиотеки
 RDK_LIB_TYPE int RDKUnInit(void);
 
 // Загружает набор предустановленных библиотек
 RDK_LIB_TYPE int RDKLoadPredefinedLibraries(void);
 // ----------------------------
 
-// --------------------------
-// Методы управления средой
 // --------------------------
 // Методы управления хранилищем
 // ----------------------------
@@ -39,7 +43,7 @@ RDK_LIB_TYPE int RDKStorage_GetClassId(const char *name);
 // или присутствуют объекты этого класса
 RDK_LIB_TYPE bool RDKStorage_DelClass(int classid);
 
-// Удалаяет все свободные объекты из хранилища
+// Удаляет все свободные объекты из хранилища
 RDK_LIB_TYPE void RDKStorage_FreeObjectsStorage(void);
 
 // Удаляет все объекты из хранилища
@@ -49,10 +53,12 @@ RDK_LIB_TYPE void RDKStorage_ClearObjectsStorage(void);
 RDK_LIB_TYPE int RDKStorage_CalcNumObjects(void);
 RDK_LIB_TYPE int RDKStorage_CalcNumObjectsById(int classid);
 RDK_LIB_TYPE int RDKStorage_CalcNumObjectsByName(const char* classname);
+// --------------------------
 
+// --------------------------
 // Методы управления средой
 // ----------------------------
-// Индекс предарительно заданной модели обработки
+// Индекс предварительно заданной модели обработки
 RDK_LIB_TYPE int RDKEnv_GetPredefinedStructure(void);
 RDK_LIB_TYPE bool RDKEnv_SetPredefinedStructure(int value);
 
@@ -119,7 +125,9 @@ RDK_LIB_TYPE int RDKEnv_CreateClass(const char* stringid);
 // Если stringid == 0 то вычисляет всю модель целиком,
 // иначе вычисляет только указанный компонент модели
 RDK_LIB_TYPE int RDKEnv_Calculate(const char* stringid=0);
+// ----------------------------
 
+// ----------------------------
 // Методы управления моделью
 // ----------------------------
 // Удаляет модель

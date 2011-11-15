@@ -20,6 +20,7 @@ See file license.txt for more information
 //#include <mem.h>
 
 #include "USupport.h"
+#include "UPtr.cpp"
 
 namespace RDK {
 

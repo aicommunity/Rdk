@@ -17,5 +17,6 @@ See file license.txt for more information
 #include "URegistry.cpp"
 #include "USupport.cpp"
 #include "UTree.cpp"
+#include "UException.cpp"
 
 #endif

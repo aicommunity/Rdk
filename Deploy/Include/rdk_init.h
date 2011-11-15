@@ -43,16 +43,6 @@ RDK_LIB_TYPE RDK::UAContainerEnvironment*  AddNewEnvironment(RDK::UAContainerSto
 // Создает новый движок и помещает в конец массива
 // Возвращает указатель на движок
 RDK_LIB_TYPE RDK::UEngine*  AddNewEngine(void);
-
-RDK_LIB_TYPE int LoadEngine(void *create_storage, void *create_environment, void *create_engine);
-
-// Инициализирует движок (функция должна быть вызвана первой!)
-RDK_LIB_TYPE int RDK_EngineInit(int predefined_structure);
-
-// Инициализирует графический движок (функция должна быть вызвана первой!)
-RDK_LIB_TYPE int RDK_GraphicalEngineInit(int predefined_structure, int num_inputs,
-		int num_outputs, int input_width, int input_height);
-
 }
 
 // Менеджер DLL

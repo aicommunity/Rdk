@@ -16,6 +16,7 @@ See file license.txt for more information
 #include <vector>
 #include <sstream>
 #include <iomanip>
+#include "UPtr.h"
 
 #ifndef u_min
 #define u_min(a,b) (a<b?a:b)
@@ -84,71 +85,6 @@ using namespace std;
 // Cистемные буферы
 extern string ustrbuf;
 extern wstring uwstrbuf;
-
-/*
-    Простой указатель
-*/                     
-template<typename T>
-class UPointer
-{
- T* PData;
-
-public: // Методы
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-UPointer(void)
-: PData(0)
-{
-};
-
-UPointer(T* pdata)
-: PData(0)
-{
- PData=pdata;
-};
-
-UPointer(const UPointer<T> &p)
-: PData(0)
-{
- PData=p.PData;
-};
-
-~UPointer(void)
-{
- PData=0;
-};
-// --------------------------
-
-// --------------------------
-// Операторы
-// --------------------------
-UPointer<T>& operator = (UPointer<T> &p)
-{
- PData=p.PData;
- return *this;
-};
-
-UPointer<T>& operator = (T *p)
-{
- PData=p;
- return *this;
-};
-
-bool operator == (const UPointer<T> &p)
-{ return (PData == p.PData)?true:false; };
-
-bool operator != (const UPointer<T> &p)
-{ return (PData != p.PData)?true:false; };
-
-T* operator -> (void)
-{ return PData; };
-
-T& operator * (void)
-{ return *PData; };
-
-// --------------------------
-};
 
 /*
  Функции возвращают указатель на внутренний буфер
