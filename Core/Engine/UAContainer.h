@@ -226,6 +226,15 @@ virtual ~UAContainer(void);
 // --------------------------
 // Методы доступа к свойствам
 // --------------------------
+// Возвращает владелца этого объекта
+UAContainer* const GetOwner(void) const;
+
+// Возвращает указатель на главного владельца этим объектом
+UAContainer* const GetMainOwner(void) const;
+
+// Возвращает хранилище компонент этого объекта
+UAContainerStorage* const GetStorage(void) const;
+
 // Проверяет, является ли объект owner
 // владельцем этого объекта на каком-либо уровне иерархии
 bool CheckOwner(const UAContainer *owner) const;

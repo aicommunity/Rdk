@@ -135,7 +135,7 @@ USharedPtr(const USharedPtr<T> &p)
 // --------------------------
 // Операторы
 // --------------------------
-USharedPtr<T>& operator = (USharedPtr<T> &p)
+USharedPtr<T>& operator = (const USharedPtr<T> &p)
 {
  if(Counter)
  {

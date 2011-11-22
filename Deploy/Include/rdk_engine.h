@@ -21,6 +21,10 @@ RDK_LIB_TYPE int RDKUnInit(void);
 
 // Загружает набор предустановленных библиотек
 RDK_LIB_TYPE int RDKLoadPredefinedLibraries(void);
+
+// Обработчик исключений библиотеки
+// Должен быть вызван в глобальном обработчике пользовательского ПО
+RDK_LIB_TYPE int RDKExceptionDispatcher(void *exception);
 // ----------------------------
 
 // --------------------------
@@ -263,6 +267,13 @@ RDK_LIB_TYPE const char * RDKModel_SaveComponentState(const char *stringid);
 // Загружает состояние компонента и его дочерних компонент из xml
 RDK_LIB_TYPE int RDKModel_LoadComponentState(const char *stringid, char* buffer);
 // --------------------------
+
+// --------------------------
+// Методы управления исключениями
+// ----------------------------
+// Возвращает массив строк лога
+RDK_LIB_TYPE const char* RDKEngine_GetLog(void);
+// ----------------------------
 
 
 #ifdef __cplusplus

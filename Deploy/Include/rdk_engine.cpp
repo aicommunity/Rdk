@@ -60,6 +60,19 @@ int RDKLoadPredefinedLibraries(void)
 {
  return PEngine->LoadPredefinedLibraries();
 }
+
+// Обработчик исключений библиотеки
+// Должен быть вызван в глобальном обработчике пользовательского ПО
+int RDKExceptionDispatcher(void *exception)
+{
+ if(!PEngine)
+  return 1;
+
+ RDK::UException *exc=reinterpret_cast<RDK::UException*>(exception);
+ PEngine->ProcessException(exc);
+
+ return 0;
+}
 // ----------------------------
 
 // --------------------------
@@ -518,6 +531,18 @@ int RDKModel_LoadComponentState(const char *stringid, char* buffer)
  return PEngine->Model_LoadComponentState(stringid, buffer);
 }
 // --------------------------
+
+// --------------------------
+// Методы управления исключениями
+// ----------------------------
+// Возвращает массив строк лога
+const char* RDKEngine_GetLog(void)
+{
+ return PEngine->GetLog();
+}
+// ----------------------------
+
+
 
 #endif
 

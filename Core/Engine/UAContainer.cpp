@@ -277,6 +277,24 @@ UAContainer::~UAContainer(void)
 // --------------------------
 // Методы доступа к свойствам
 // --------------------------
+// Возвращает владелца этого объекта
+UAContainer* const UAContainer::GetOwner(void) const
+{
+ return dynamic_cast<UAContainer*>(Owner);
+}
+
+// Возвращает указатель на главного владельца этим объектом
+UAContainer* const UAContainer::GetMainOwner(void) const
+{
+ return dynamic_cast<UAContainer*>(MainOwner);
+}
+
+// Возвращает хранилище компонент этого объекта
+UAContainerStorage* const UAContainer::GetStorage(void) const
+{
+ return dynamic_cast<UAContainerStorage*>(Storage);
+}
+
 // Проверяет, является ли объект owner
 // владельцем этого объекта на каком-либо уровне иерархии
 bool UAContainer::CheckOwner(const UAContainer *owner) const

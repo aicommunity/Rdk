@@ -20,7 +20,8 @@ See file license.txt for more information
 //#include "UProperty.h"
 #include "UItemData.h"                      
 #include "UXMLEnvSerialize.h"
-#include "UThreadEnvironment.h"
+#include "UThreadEnvironment.h"   
+#include "UEnvException.h"
 
 
 #endif

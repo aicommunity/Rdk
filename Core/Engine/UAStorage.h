@@ -13,15 +13,16 @@ See file license.txt for more information
 #ifndef UASTORAGE_H
 #define UASTORAGE_H
 
+#include <map>
 #include "../Utilities/UPtr.h"
 #include "UAComponent.h"
 
 namespace RDK {
 
 typedef USharedPtr<UAComponent> UClassStorageElement;
-typedef map<UId, UClassStorageElement> UClassesStorage;
-typedef map<UId, UClassStorageElement>::iterator UClassesStorageIterator;
-typedef map<UId, UClassStorageElement>::const_iterator UClassesStorageCIterator;
+typedef std::map<UId, UClassStorageElement> UClassesStorage;
+typedef std::map<UId, UClassStorageElement>::iterator UClassesStorageIterator;
+typedef std::map<UId, UClassStorageElement>::const_iterator UClassesStorageCIterator;
 /*
 // Единица хранилища образцов классов
 class UClassStorageElement: public USharedPtr<UAComponent>

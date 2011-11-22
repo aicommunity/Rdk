@@ -19,6 +19,10 @@ RDK_LIB_TYPE int RDK_GraphicalEngineInit(int predefined_structure, int num_input
 // --------------------------
 // Методы управления средой
 // --------------------------
+// Инициализирует графический движок (функция должна быть вызвана первой!)
+RDK_LIB_TYPE int RDK_GraphicalEngineInit(int predefined_structure, int num_inputs,
+		int num_outputs, int input_width, int input_height);
+
 // Задает число входов среды
 RDK_LIB_TYPE void RDKEnv_SetNumInputImages(int number);
 

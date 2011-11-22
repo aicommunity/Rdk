@@ -13,6 +13,7 @@ See file license.txt for more information
 #define UEngine_CPP
 
 #include "UEngine.h"
+#include "UEnvException.h"
 //#include "../../Deploy/Include/rdk_init.h"
 //#include "../../Deploy/Include/rdkdll_loader.h"
 
@@ -273,26 +274,54 @@ bool UEngine::Stop(void)
 // Возвращает число классов в хранилище
 int UEngine::Storage_GetNumClasses(void)
 {
- return Storage->GetNumClasses();
+ try
+ {
+	 return Storage->GetNumClasses();
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 // Возвращает id классов в хранилище. Память должна быть выделена
 void UEngine::Storage_GetClassesList(int *buffer) const
 {
- Storage->GetClassIdList(buffer,Storage->GetNumClasses());
+ try
+ {
+  Storage->GetClassIdList(buffer,Storage->GetNumClasses());
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 }
 
  // Возвращает имя класса по его id.
 const char * UEngine::Storage_GetClassName(int id) const
 {
- TempString=Storage->GetClassName(id);
+ try
+ {
+  TempString=Storage->GetClassName(id);
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
  return TempString.c_str();
 }
 
 // Возвращает Id класса по его имени
 int UEngine::Storage_GetClassId(const char *name) const
 {
- return Storage->GetClassId(name);
+ try
+ {
+  return Storage->GetClassId(name);
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 // Удаляет образец класса объекта из хранилища
@@ -300,35 +329,77 @@ int UEngine::Storage_GetClassId(const char *name) const
 // или присутствуют объекты этого класса
 bool UEngine::Storage_DelClass(int classid)
 {
- return Storage->DelClass(classid);
+ try
+ {
+  return Storage->DelClass(classid);
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 // Удалаяет все свободные объекты из хранилища
 void UEngine::Storage_FreeObjectsStorage(void)
 {
- Storage->FreeObjectsStorage();
+ try
+ {
+  Storage->FreeObjectsStorage();
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 // Удаляет все объекты из хранилища
 void UEngine::Storage_ClearObjectsStorage(void)
 {
- Storage->ClearObjectsStorage();
+ try
+ {
+  Storage->ClearObjectsStorage();
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 // Вычисляет суммарное число объектов в хранилище
 int UEngine::Storage_CalcNumObjects(void) const
 {
- return Storage->CalcNumObjects();
+ try
+ {
+  return Storage->CalcNumObjects();
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 int UEngine::Storage_CalcNumObjectsById(int classid) const
 {
- return Storage->CalcNumObjects(classid);
+ try
+ {
+  return Storage->CalcNumObjects(classid);
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 int UEngine::Storage_CalcNumObjectsByName(const char* classname) const
 {
- return Storage->CalcNumObjects(classname);
+ try
+ {
+  return Storage->CalcNumObjects(classname);
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 
@@ -337,12 +408,26 @@ int UEngine::Storage_CalcNumObjectsByName(const char* classname) const
 // Индекс предарительно заданной модели обработки
 int UEngine::Env_GetPredefinedStructure(void) const
 {
- return Environment->GetPredefinedStructure();
+ try
+ {
+  return Environment->GetPredefinedStructure();
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 bool UEngine::Env_SetPredefinedStructure(int value)
 {
- return Environment->SetPredefinedStructure(value);
+ try
+ {
+  return Environment->SetPredefinedStructure(value);
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 // Флаг состояния инициализации
@@ -350,105 +435,217 @@ bool UEngine::Env_SetPredefinedStructure(int value)
 // false - хранилище не готово
 bool UEngine::Env_IsStoragePresent(void) const
 {
- return Environment->IsStoragePresent();
+ try
+ {
+  return Environment->IsStoragePresent();
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 // Возвращает состояние инициализации
 bool UEngine::Env_IsInit(void) const
 {
- return Environment->IsInit();
+ try
+ {
+  return Environment->IsInit();
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 // Признак наличия сформированной структуры
 bool UEngine::Env_IsStructured(void) const
 {
- return Environment->IsStructured();
+ try
+ {
+  return Environment->IsStructured();
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 // Инициализация среды
 bool UEngine::Env_Init(void)
 {
- return Environment->Init();
+ try
+ {
+  return Environment->Init();
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 // Деинициализация среды
 bool UEngine::Env_UnInit(void)
 {
- return Environment->UnInit();
+ try
+ {
+  return Environment->UnInit();
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 // Формирует предварительно заданную модель обработки
 bool UEngine::Env_CreateStructure(void)
 {
- return Environment->CreateStructure();
+ try
+ {
+  return Environment->CreateStructure();
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 // Уничтожает текущую модель обработки
 bool UEngine::Env_DestroyStructure(void)
 {
- return Environment->DestroyStructure();
+ try
+ {
+  return Environment->DestroyStructure();
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 // Удаляет модель и все библиотеки, очищает хранилище, приводя среду в исходное состояние
 void UEngine::Env_Destroy(void)
 {
- Environment->DestroyModel();
- Storage->ClearObjectsStorage();
- Storage->ClearClassesStorage();
- Environment->DelAllClassLibraries();
+ try
+ {
+  Environment->DestroyModel();
+  Storage->ClearObjectsStorage();
+  Storage->ClearClassesStorage();
+  Environment->DelAllClassLibraries();
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 // Загружает библиотеку по имени dll-файла
 int UEngine::Env_LoadStorageLibrary(const char *filename)
 {
- return 0;
+ try
+ {
+  return 0;
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 // Удаляет подключенную библиотеку из списка по индексу
 // Ответственность за освобождение памяти лежит на вызывающей стороне.
 bool UEngine::Env_DelClassLibraryByIndex(int index)
 {
- return Environment->DelClassLibrary(index);
+ try
+ {
+  return Environment->DelClassLibrary(index);
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 // Удаляет подключенную библиотеку из списка по имени
 // Ответственность за освобождение памяти лежит на вызывающей стороне.
 bool UEngine::Env_DelClassLibraryByName(const char *name)
 {
- return Environment->DelClassLibrary(name);
+ try
+ {
+  return Environment->DelClassLibrary(name);
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 // Удаляет из списка все библиотеки
 // Ответственность за освобождение памяти лежит на вызывающей стороне.
 bool UEngine::Env_DelAllClassLibraries(void)
 {
- return Environment->DelAllClassLibraries();
+ try
+ {
+  return Environment->DelAllClassLibraries();
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 // Заполняет хранилище данными библиотек
 // Операция предварительно уничтожает модель и очищает хранилище
 bool UEngine::Env_BuildStorage(void)
 {
- return Environment->BuildStorage();
+ try
+ {
+  return Environment->BuildStorage();
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 // Возвращает число библиотек
 int UEngine::Env_GetNumClassLibraries(void) const
 {
- return Environment->GetNumClassLibraries();
+ try
+ {
+  return Environment->GetNumClassLibraries();
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 // Возвращает имя библиотеки по индексу
 const char * UEngine::Env_GetClassLibraryName(int index)
 {
- TempString=Environment->GetClassLibraryName(index);
+ try
+ {
+  TempString=Environment->GetClassLibraryName(index);
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
  return TempString.c_str();
 }
 
 // Возвращает версию библиотеки по индексу
 const char * UEngine::Env_GetClassLibraryVersion(int index)
 {
- TempString=Environment->GetClassLibraryVersion(index);
+ try
+ {
+  TempString=Environment->GetClassLibraryVersion(index);
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
  return TempString.c_str();
 }
 
@@ -458,7 +655,14 @@ const char * UEngine::Env_GetClassLibraryVersion(int index)
 // Возвращает id нового класса в хранилище
 int UEngine::Env_CreateClass(const char* stringid)
 {
- return 0;
+ try
+ {
+  return 0;
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 // Метод счета
@@ -466,19 +670,26 @@ int UEngine::Env_CreateClass(const char* stringid)
 // иначе вычисляет только указанный компонент модели
 int UEngine::Env_Calculate(const char* stringid)
 {
- RDK::ULongId id;
- if(!stringid)
+ try
  {
-  Environment->SetModelCalculationComponent(id);
- }
- else
- {
-  RDK::operator<<(id,stringid);
-  Environment->SetModelCalculationComponent(id);
- }
+  RDK::ULongId id;
+  if(!stringid)
+  {
+   Environment->SetModelCalculationComponent(id);
+  }
+  else
+  {
+   RDK::operator<<(id,stringid);
+   Environment->SetModelCalculationComponent(id);
+  }
 
- if(!Environment->Calculate())
-  return 1;
+  if(!Environment->Calculate())
+   return 1;
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 
  return 0;
 }
@@ -488,8 +699,15 @@ int UEngine::Env_Calculate(const char* stringid)
 // Удаляет модель
 int UEngine::Model_Destroy(void)
 {
- if(Environment->DestroyModel())
-  return 0;
+ try
+ {
+  if(Environment->DestroyModel())
+   return 0;
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 
  return -1;
 }
@@ -498,8 +716,15 @@ int UEngine::Model_Destroy(void)
 // Предварительно удаляет существующую модель
 int UEngine::Model_Create(int classid)
 {
- if(Environment->CreateModel(classid))
-  return 0;
+ try
+ {
+  if(Environment->CreateModel(classid))
+   return 0;
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 
  return -1;
 }
@@ -507,12 +732,19 @@ int UEngine::Model_Create(int classid)
 // Очищает модель
 int UEngine::Model_Clear(void)
 {
- RDK::UAContainer *model=dynamic_cast<RDK::UAContainer *>(Environment->GetModel());
+ try
+ {
+  RDK::UAContainer *model=dynamic_cast<RDK::UAContainer *>(Environment->GetModel());
 
- if(!model)
-  return -2;
+  if(!model)
+   return -2;
 
- model->DelAllComponents();
+  model->DelAllComponents();
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
  return 0;
 }
 
@@ -520,65 +752,44 @@ int UEngine::Model_Clear(void)
 // если stringid - пустая строка, то добавляет в саму модель
 int UEngine::Model_AddComponent(char* stringid, int classid)
 {
-/* if(!stringid)
-  return -10;
+ try
+ {
+  RDK::UAContainer* destcont=FindComponent(stringid);
 
- RDK::UAContainer *model=dynamic_cast<RDK::UAContainer *>(Environment->GetModel());
+  RDK::UAContainer* cont=Storage->TakeObject(classid);
 
- if(!model)
-  return -2;
+  if(!cont)
+   return -3;
 
- RDK::UAContainer* cont=Storage->TakeObject(classid);
+  if(!destcont)
+   return -4;
 
- if(!cont)
-  return -3;
-
- RDK::UAContainer* destcont=0;
- RDK::ULongId id;
- if(stringid[0] != '\0')
-  destcont=model->GetComponentL(RDK::operator<<(id,stringid));
- else
-  destcont=model;
-                */
- RDK::UAContainer* destcont=FindComponent(stringid);
-
- RDK::UAContainer* cont=Storage->TakeObject(classid);
-
- if(!cont)
-  return -3;
-
- if(!destcont)
-  return -4;
-
- return destcont->AddComponent(cont);
+  return destcont->AddComponent(cont);
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 // Удаляет из выбранного контейнера модели с идентификатором 'stringid' экземпляр контейнера с заданным 'id'
 // если stringid - пустая строка, то удаляет из самой модели
 int UEngine::Model_DelComponent(char* stringid, int id)
-{         /*
- if(!stringid)
-  return -10;
+{
+ try
+ {
+  RDK::UAContainer* destcont=FindComponent(stringid);
 
- RDK::UAContainer *model=dynamic_cast<RDK::UAContainer *>(Environment->GetModel());
+  if(!destcont)
+   return -4;
 
- if(!model)
-  return -2;
-
- RDK::UAContainer* destcont=0;
- RDK::ULongId longid;
- if(stringid[0] != '\0')
-  destcont=model->GetComponentL(RDK::operator<<(longid,stringid));
- else
-  destcont=model;
-*/
- RDK::UAContainer* destcont=FindComponent(stringid);
-
- if(!destcont)
-  return -4;
-
- if(!destcont->DelComponent(id))
-  return -5;
+  if(!destcont->DelComponent(id))
+   return -5;
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 
  return 0;
 }
@@ -586,58 +797,39 @@ int UEngine::Model_DelComponent(char* stringid, int id)
 // Возвращает число всех компонент в заданного компоненте 'stringid'
 // если stringid - пустая строка, то возвращает число всех компонент модели
 int UEngine::Model_GetNumComponents(char* stringid)
-{      /*
- if(!stringid)
-  return -10;
+{
+ try
+ {
+  RDK::UAContainer* destcont=FindComponent(stringid);
 
- RDK::UAContainer *model=dynamic_cast<RDK::UAContainer *>(Environment->GetModel());
+  if(!destcont)
+   return -4;
 
- if(!model)
-  return -2;
-
- RDK::UAContainer* destcont=0;
- RDK::ULongId longid;
- if(stringid[0] != '\0')
-  destcont=model->GetComponentL(RDK::operator<<(longid,stringid));
- else
-  destcont=model;
-         */
- RDK::UAContainer* destcont=FindComponent(stringid);
-
- if(!destcont)
-  return -4;
-
- return destcont->GetNumComponents();
+  return destcont->GetNumComponents();
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 // Возвращает массив всех id заданного компонента 'stringid'
 // если stringid - пустая строка, то возвращает массив всех id модели
 int UEngine::Model_GetComponentsList(char* stringid, int *buffer)
 {
-/* if(!stringid)
-  return -10;
+ try
+ {
+  RDK::UAContainer* destcont=FindComponent(stringid);
 
- if(!buffer)
-  return -20;
+  if(!destcont)
+   return -4;
 
- RDK::UANet *model=dynamic_cast<RDK::UANet *>(Environment->GetModel());
-
- if(!model)
-  return -2;
-
- RDK::UAContainer* destcont=0;
- RDK::ULongId longid;
- if(stringid[0] != '\0')
-  destcont=model->GetComponentL(RDK::operator<<(longid,stringid));
- else
-  destcont=model;
-*/
- RDK::UAContainer* destcont=FindComponent(stringid);
-
- if(!destcont)
-  return -4;
-
- destcont->GetComponentsList(buffer);
+  destcont->GetComponentsList(buffer);
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 
  return 0;
 }
@@ -647,132 +839,156 @@ int UEngine::Model_GetComponentsList(char* stringid, int *buffer)
 // Память выделяется и освобождается внутри dll
 const char* UEngine::Model_GetComponentName(char* stringid)
 {
-/* if(!stringid)
-  return 0;
+ try
+ {
+  RDK::UAContainer* destcont=FindComponent(stringid);
 
- RDK::UANet *model=dynamic_cast<RDK::UANet *>(Environment->GetModel());
+  if(!destcont)
+   return 0;
 
- if(!model)
-  return 0;
-
- RDK::UAContainer* destcont=0;
- RDK::ULongId longid;
- if(stringid[0] != '\0')
-  destcont=model->GetComponentL(RDK::operator<<(longid,stringid));
- else
-  destcont=model;
-    */
- RDK::UAContainer* destcont=FindComponent(stringid);
-
- if(!destcont)
-  return 0;
-
- return destcont->GetName().c_str();
+  return destcont->GetName().c_str();
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 // Возвращает параметры компонента по идентификатору
 // Память для buffer должна быть выделена!
 const char* UEngine::Model_GetComponentParameters(const char *stringid)
 {
- RDK::UANet *model=dynamic_cast<RDK::UANet *>(Environment->GetModel());
+ try
+ {
+  RDK::UANet *model=dynamic_cast<RDK::UANet *>(Environment->GetModel());
 
- if(!model)
-  return 0;
+  if(!model)
+   return 0;
 
- RDK::ULongId id;
-// id.Add(2);
+  RDK::ULongId id;
 
-// RDK::UBAbstract* cont=dynamic_cast<RDK::UBAbstract*>(model->GetComponentL(id));
- RDK::UAContainer* cont=model->GetComponentL(RDK::operator<<(id,stringid));
- if(!cont)
-  return 0;
+  RDK::UAContainer* cont=model->GetComponentL(RDK::operator<<(id,stringid));
+  if(!cont)
+   return 0;
 
- XmlStorage.Create("Parameters");
+  XmlStorage.Create("Parameters");
 
- if(!Model_GetComponentParameters(cont,&XmlStorage))
-  return 0;
+  if(!Model_GetComponentParameters(cont,&XmlStorage))
+   return 0;
 
- TempString="";
- XmlStorage.Save(TempString);
-// strcpy(buffer,str.c_str());
- return TempString.c_str();
+  TempString="";
+  XmlStorage.Save(TempString);
+  return TempString.c_str();
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 // Возвращает выборочные параметры компонента по идентификатору
 // Память для buffer должна быть выделена!
 const char* UEngine::Model_GetComponentSelectedParameters(const char *stringid)
 {
+ try
+ {
+  return 0;
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
  return 0;
 }
 
 // устанавливает параметры компонента по идентификатору
 bool UEngine::Model_SetComponentParameters(const char *stringid, const char* buffer)
 {
- RDK::UANet *model=dynamic_cast<RDK::UANet *>(Environment->GetModel());
+ try
+ {
+  RDK::UANet *model=dynamic_cast<RDK::UANet *>(Environment->GetModel());
 
- if(!model)
-  return false;
+  if(!model)
+   return false;
 
- RDK::ULongId id;
-// id.Add(2);
+  RDK::ULongId id;
+  RDK::UAContainer* cont=model->GetComponentL(RDK::operator<<(id,stringid));
+  if(!cont)
+   return false;
 
-// RDK::UBAbstract* cont=dynamic_cast<RDK::UBAbstract*>(model->GetComponentL(id));
- RDK::UAContainer* cont=model->GetComponentL(RDK::operator<<(id,stringid));
- if(!cont)
-  return false;
+  XmlStorage.Load(buffer,"Parameters");
 
- XmlStorage.Load(buffer,"Parameters");
+  if(!Model_SetComponentParameters(cont,&XmlStorage))
+   return false;
 
- if(!Model_SetComponentParameters(cont,&XmlStorage))
-  return false;
+  throw new UEnvFatalException(cont);
 
- return true;
+  return true;
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 // Связывает выбранные контейнеры друг с другом
 int UEngine::Model_CreateLink(char* stringid1, int output_number, char* stringid2, int input_number)
 {
- if(!stringid1)
-  return -10;
+ try
+ {
+  if(!stringid1)
+   return -10;
 
- if(!stringid2)
-  return -11;
+  if(!stringid2)
+   return -11;
 
- RDK::UANet *model=dynamic_cast<RDK::UANet *>(Environment->GetModel());
+  RDK::UANet *model=dynamic_cast<RDK::UANet *>(Environment->GetModel());
 
- if(!model)
-  return -2;
+  if(!model)
+   return -2;
 
- RDK::ULongId longid1, longid2;
- longid1<<stringid1;
- longid2<<stringid2;
- bool res=model->CreateLink(longid1,output_number,longid2,input_number);
- if(!res)
-  return -3;
+  RDK::ULongId longid1, longid2;
+  longid1<<stringid1;
+  longid2<<stringid2;
+  bool res=model->CreateLink(longid1,output_number,longid2,input_number);
+  if(!res)
+   return -3;
 
- return 0;
+  return 0;
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 // Разрывает выбранную связь
 int UEngine::Model_BreakLink(char* stringid1, int output_number, char* stringid2, int input_number)
 {
- if(!stringid1)
-  return -10;
+ try
+ {
+  if(!stringid1)
+   return -10;
 
- if(!stringid2)
-  return -11;
+  if(!stringid2)
+   return -11;
 
- RDK::UANet *model=dynamic_cast<RDK::UANet *>(Environment->GetModel());
+  RDK::UANet *model=dynamic_cast<RDK::UANet *>(Environment->GetModel());
 
- if(!model)
-  return -2;
+  if(!model)
+   return -2;
 
- RDK::ULongId longid1, longid2;
- longid1<<stringid1;
- longid2<<stringid2;
- bool res=model->BreakLink(longid1,output_number,longid2,input_number);
- if(!res)
-  return -3;
+  RDK::ULongId longid1, longid2;
+  longid1<<stringid1;
+  longid2<<stringid2;
+  bool res=model->BreakLink(longid1,output_number,longid2,input_number);
+  if(!res)
+   return -3;
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 
  return 0;
 }
@@ -780,12 +996,19 @@ int UEngine::Model_BreakLink(char* stringid1, int output_number, char* stringid2
 // Разрывает все связи
 int UEngine::Model_BreakAllLinks(void)
 {
- RDK::UANet *model=dynamic_cast<RDK::UANet *>(Environment->GetModel());
+ try
+ {
+  RDK::UANet *model=dynamic_cast<RDK::UANet *>(Environment->GetModel());
 
- if(!model)
-  return -2;
+  if(!model)
+   return -2;
 
- model->BreakLinks();
+  model->BreakLinks();
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 
  return 0;
 }
@@ -793,52 +1016,90 @@ int UEngine::Model_BreakAllLinks(void)
 // Разрывает все входные и выходные связи выбранного контейнера
 int UEngine::Model_BreakAllComponentLinks(char* stringid)
 {
+ try
+ {
+  return 0;
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
  return 0;
 }
 
 // Разрывает все входные связи выбранного контейнера
 int UEngine::Model_BreakAllComponentInputLinks(char* stringid)
 {
+ try
+ {
+  return 0;
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
  return 0;
 }
 
 // Разрывает все выходные связи выбранного контейнера
 int UEngine::Model_BreakAllComponentOutputLinks(char* stringid)
 {
+ try
+ {
+  return 0;
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
  return 0;
 }
 
 // Возращает все связи внутри компонента stringid в виде xml в буфер buffer
 const char* UEngine::Model_GetComponentInternalLinks(char* stringid)
 {
- RDK::UANet *cont=dynamic_cast<RDK::UANet *>(FindComponent(stringid));
+ try
+ {
+  RDK::UANet *cont=dynamic_cast<RDK::UANet *>(FindComponent(stringid));
 
- if(!cont)
-  return 0;
+  if(!cont)
+   return 0;
 
- XmlStorage.Create("Links");
+  XmlStorage.Create("Links");
 
- if(!Model_GetComponentInternalLinks(cont,&XmlStorage))
-  return 0;
+  if(!Model_GetComponentInternalLinks(cont,&XmlStorage))
+   return 0;
 
- TempString="";
- XmlStorage.Save(TempString);
+  TempString="";
+  XmlStorage.Save(TempString);
 
- return TempString.c_str();
+  return TempString.c_str();
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 // Устанавливает все связи внутри компонента stringid из строки xml в буфере buffer
 int UEngine::Model_SetComponentInternalLinks(char* stringid,const char* buffer)
 {
- RDK::UANet *cont=dynamic_cast<RDK::UANet *>(FindComponent(stringid));
+ try
+ {
+  RDK::UANet *cont=dynamic_cast<RDK::UANet *>(FindComponent(stringid));
 
- if(!cont)
-  return -3;
+  if(!cont)
+   return -3;
 
- XmlStorage.Load(buffer,"Links");
+  XmlStorage.Load(buffer,"Links");
 
- if(!Model_SetComponentInternalLinks(cont,&XmlStorage))
-  return -4;
+  if(!Model_SetComponentInternalLinks(cont,&XmlStorage))
+   return -4;
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 
  return 0;
 }
@@ -846,93 +1107,158 @@ int UEngine::Model_SetComponentInternalLinks(char* stringid,const char* buffer)
 // Возращает все входные связи к компоненту stringid в виде xml в буфер buffer
 const char * UEngine::Model_GetComponentInputLinks(char* stringid)
 {
+ try
+ {
+  return 0;
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
  return 0;
 }
 
 // Возращает все выходные связи из компонента stringid в виде xml в буфер buffer
 const char * UEngine::Model_GetComponentOutputLinks(char* stringid)
 {
+ try
+ {
+  return 0;
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
  return 0;
 }
 
 // Возвращает состояние компонента по идентификатору
 const char * UEngine::Model_GetComponentState(const char *stringid)
 {
- RDK::UANet *model=dynamic_cast<RDK::UANet *>(Environment->GetModel());
+ try
+ {
+  RDK::UANet *model=dynamic_cast<RDK::UANet *>(Environment->GetModel());
 
- if(!model)
-  return 0;
+  if(!model)
+   return 0;
 
- RDK::ULongId id;
-// id.Add(2);
+  RDK::ULongId id;
+  RDK::UAContainer* cont=model->GetComponentL(RDK::operator<<(id,stringid));
+  if(!cont)
+   return 0;
 
-// RDK::UBAbstract* cont=dynamic_cast<RDK::UBAbstract*>(model->GetComponentL(id));
- RDK::UAContainer* cont=model->GetComponentL(RDK::operator<<(id,stringid));
- if(!cont)
-  return 0;
+  XmlStorage.Create("State");
 
- XmlStorage.Create("State");
+  if(!Model_GetComponentState(cont,&XmlStorage))
+   return 0;
 
- if(!Model_GetComponentState(cont,&XmlStorage))
-  return 0;
-
- TempString="";
- XmlStorage.Save(TempString);
- return TempString.c_str();
+  TempString="";
+  XmlStorage.Save(TempString);
+  return TempString.c_str();
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 // Возвращает выборочные данные состояния компонента по идентификатору
 // Память для buffer должна быть выделена!
 const char * UEngine::Model_GetComponentSelectedState(const char *stringid)
 {
+ try
+ {
+  return 0;
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
+
  return 0;
 }
 
 // Устанавливает состояние компонента по идентификатору
 bool UEngine::Model_SetComponentState(const char *stringid, const char* buffer)
 {
- RDK::UANet *model=dynamic_cast<RDK::UANet *>(Environment->GetModel());
+ try
+ {
+  RDK::UANet *model=dynamic_cast<RDK::UANet *>(Environment->GetModel());
 
- if(!model)
-  return false;
+  if(!model)
+   return false;
 
- RDK::ULongId id;
-// id.Add(2);
+  RDK::ULongId id;
+  RDK::UAContainer* cont=model->GetComponentL(RDK::operator<<(id,stringid));
+  if(!cont)
+   return false;
 
-// RDK::UBAbstract* cont=dynamic_cast<RDK::UBAbstract*>(model->GetComponentL(id));
- RDK::UAContainer* cont=model->GetComponentL(RDK::operator<<(id,stringid));
- if(!cont)
-  return false;
+  XmlStorage.Load(buffer,"State");
 
- XmlStorage.Load(buffer,"State");
+  if(!Model_SetComponentState(cont,&XmlStorage))
+   return false;
 
- if(!Model_SetComponentState(cont,&XmlStorage))
-  return false;
-
- return true;
+  return true;
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 // Возвращает число входов у компонента
 int UEngine::Model_GetComponentNumInputs(const char *stringid)
 {
+ try
+ {
+  return 0;
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
  return 0;
 }
 
 // Возвращает размер входа компонента в числе элементов
 int UEngine::Model_GetComponentInputSize(const char *stringid, int index)
 {
+ try
+ {
+  return 0;
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
  return 0;
 }
 
 // Возвращает размер элемента входа в байтах
 int UEngine::Model_GetComponentInputElementSize(const char *stringid, int index)
 {
+ try
+ {
+  return 0;
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
  return 0;
 }
 
 // Возвращает размер входа компонента в байтах элементов
 int UEngine::Model_GetComponentInputByteSize(const char *stringid, int index)
 {
+ try
+ {
+  return 0;
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
  return 0;
 }
 
@@ -940,30 +1266,70 @@ int UEngine::Model_GetComponentInputByteSize(const char *stringid, int index)
 // Только для чтения!
 unsigned char* UEngine::Model_GetComponentInputData(const char *stringid, int index)
 {
+ try
+ {
+  return 0;
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
  return 0;
 }
 
 // Возвращает число выходов у компонента
 int UEngine::Model_GetComponentNumOutputs(const char *stringid)
 {
+ try
+ {
+  return 0;
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
  return 0;
 }
 
 // Возвращает размер выхода компонента в числе элементов
 int UEngine::Model_GetComponentOutputSize(const char *stringid, int index)
 {
+ try
+ {
+  return 0;
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
  return 0;
 }
 
 // Возвращает размер элемента выхода в байтах
 int UEngine::Model_GetComponentOutputElementSize(const char *stringid, int index)
 {
+ try
+ {
+  return 0;
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
  return 0;
 }
 
 // Возвращает размер выхода компонента в байтах элементов
 int UEngine::Model_GetComponentOutputByteSize(const char *stringid, int index)
 {
+ try
+ {
+  return 0;
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
  return 0;
 }
 
@@ -971,6 +1337,14 @@ int UEngine::Model_GetComponentOutputByteSize(const char *stringid, int index)
 // Только для чтения!
 unsigned char* UEngine::Model_GetComponentOutputData(const char *stringid, int index)
 {
+ try
+ {
+  return 0;
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
  return 0;
 }
 
@@ -978,111 +1352,153 @@ unsigned char* UEngine::Model_GetComponentOutputData(const char *stringid, int i
 // переменные состояния в xml
 const char *  UEngine::Model_SaveComponent(const char *stringid)
 {
- RDK::UANet *cont=dynamic_cast<RDK::UANet *>(FindComponent(stringid));
+ try
+ {
+  RDK::UANet *cont=dynamic_cast<RDK::UANet *>(FindComponent(stringid));
 
- if(!cont)
-  return 0;
+  if(!cont)
+   return 0;
 
- XmlStorage.Create("Save");
+  XmlStorage.Create("Save");
 
- if(!Model_SaveComponent(cont,&XmlStorage))
-  return 0;
+  if(!Model_SaveComponent(cont,&XmlStorage))
+   return 0;
 
- std::string str;
- XmlStorage.Save(str);
-// strcpy(buffer,str.c_str());
+  std::string str;
+  XmlStorage.Save(str);
+ // strcpy(buffer,str.c_str());
 
- return str.c_str();
+  return str.c_str();
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 // Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния из xml
 int UEngine::Model_LoadComponent(const char *stringid, char* buffer)
 {
- RDK::UANet *cont=dynamic_cast<RDK::UANet *>(FindComponent(stringid));
+ try
+ {
+  RDK::UANet *cont=dynamic_cast<RDK::UANet *>(FindComponent(stringid));
 
- if(!cont)
-  return -3;
+  if(!cont)
+   return -3;
 
- XmlStorage.Load(buffer,"Save");
- XmlStorage.SelectNode(0);
+  XmlStorage.Load(buffer,"Save");
+  XmlStorage.SelectNode(0);
 
- if(!Model_LoadComponent(cont,&XmlStorage))
-  return -4;
+  if(!Model_LoadComponent(cont,&XmlStorage))
+   return -4;
 
- return 0;
+  return 0;
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 // Сохраняет все параметры компонента и его дочерних компонент в xml
 const char * UEngine::Model_SaveComponentParameters(const char *stringid)
 {
- RDK::UANet *cont=dynamic_cast<RDK::UANet *>(FindComponent(stringid));
+ try
+ {
+  RDK::UANet *cont=dynamic_cast<RDK::UANet *>(FindComponent(stringid));
 
- if(!cont)
-  return 0;
+  if(!cont)
+   return 0;
 
- XmlStorage.Create("SaveParameters");
+  XmlStorage.Create("SaveParameters");
 
- if(!Model_SaveComponentParameters(cont,&XmlStorage))
-  return 0;
+  if(!Model_SaveComponentParameters(cont,&XmlStorage))
+   return 0;
 
- TempString="";
- XmlStorage.Save(TempString);
+  TempString="";
+  XmlStorage.Save(TempString);
 
- return TempString.c_str();
+  return TempString.c_str();
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 // Загружает все параметры компонента и его дочерних компонент из xml
 int UEngine::Model_LoadComponentParameters(const char *stringid, char* buffer)
 {
- RDK::UANet *cont=dynamic_cast<RDK::UANet *>(FindComponent(stringid));
+ try
+ {
+  RDK::UANet *cont=dynamic_cast<RDK::UANet *>(FindComponent(stringid));
 
- if(!cont)
-  return -3;
+  if(!cont)
+   return -3;
 
- XmlStorage.Load(buffer,"SaveParameters");
- XmlStorage.SelectNode(0);
+  XmlStorage.Load(buffer,"SaveParameters");
+  XmlStorage.SelectNode(0);
 
- if(!Model_LoadComponentParameters(cont,&XmlStorage))
-  return -4;
+  if(!Model_LoadComponentParameters(cont,&XmlStorage))
+   return -4;
 
- return 0;
+  return 0;
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 // Сохраняет состояние компонента и его дочерних компонент в xml
 const char * UEngine::Model_SaveComponentState(const char *stringid)
 {
- RDK::UANet *cont=dynamic_cast<RDK::UANet *>(FindComponent(stringid));
+ try
+ {
+  RDK::UANet *cont=dynamic_cast<RDK::UANet *>(FindComponent(stringid));
 
- if(!cont)
-  return 0;
+  if(!cont)
+   return 0;
 
- XmlStorage.Create("SaveState");
+  XmlStorage.Create("SaveState");
 
- if(!Model_SaveComponentState(cont,&XmlStorage))
-  return 0;
+  if(!Model_SaveComponentState(cont,&XmlStorage))
+   return 0;
 
- TempString="";
- XmlStorage.Save(TempString);
+  TempString="";
+  XmlStorage.Save(TempString);
 
- return TempString.c_str();
+  return TempString.c_str();
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 // Загружает состояние компонента и его дочерних компонент из xml
 int UEngine::Model_LoadComponentState(const char *stringid, char* buffer)
 {
- RDK::UANet *cont=dynamic_cast<RDK::UANet *>(FindComponent(stringid));
+ try
+ {
+  RDK::UANet *cont=dynamic_cast<RDK::UANet *>(FindComponent(stringid));
 
- if(!cont)
-  return -3;
+  if(!cont)
+   return -3;
 
- XmlStorage.Load(buffer,"SaveState");
- XmlStorage.SelectNode(0);
+  XmlStorage.Load(buffer,"SaveState");
+  XmlStorage.SelectNode(0);
 
- if(!Model_LoadComponentState(cont,&XmlStorage))
-  return -4;
+  if(!Model_LoadComponentState(cont,&XmlStorage))
+   return -4;
 
- return 0;
+  return 0;
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 }
 // --------------------------
 
@@ -1093,19 +1509,26 @@ int UEngine::Model_LoadComponentState(const char *stringid, char* buffer)
 // Память для buffer должна быть выделена!
 bool UEngine::Model_GetComponentParameters(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage)
 {
- if(!cont || !serstorage)
-  return false;
-
- RDK::UAContainer::VariableMapT props=cont->GetPropertiesList();
-
- RDK::UAContainer::VariableMapCIteratorT I,J;
-
- I=props.begin();
- J=props.end();
- while(I != J)
+ try
  {
-  cont->GetProperty(I->second.Id,serstorage);
-  ++I;
+  if(!cont || !serstorage)
+   return false;
+
+  RDK::UAContainer::VariableMapT props=cont->GetPropertiesList();
+
+  RDK::UAContainer::VariableMapCIteratorT I,J;
+
+  I=props.begin();
+  J=props.end();
+  while(I != J)
+  {
+   cont->GetProperty(I->second.Id,serstorage);
+   ++I;
+  }
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
  }
 
  return true;
@@ -1115,8 +1538,15 @@ bool UEngine::Model_GetComponentParameters(RDK::UAContainer* cont, RDK::Serializ
 // Память для buffer должна быть выделена!
 bool UEngine::Model_GetComponentSelectedParameters(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage)
 {
- if(!cont || !serstorage)
-  return false;
+ try
+ {
+  if(!cont || !serstorage)
+   return false;
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 
  return true;
 }
@@ -1124,15 +1554,14 @@ bool UEngine::Model_GetComponentSelectedParameters(RDK::UAContainer* cont, RDK::
 // устанавливает параметры компонента по идентификатору
 bool UEngine::Model_SetComponentParameters(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage)
 {
- if(!cont || !serstorage)
-  return false;
+ try
+ {
+  if(!cont || !serstorage)
+   return false;
 
- std::string name;
-// name=XmlStorage.GetNodeName();
-// if(name != cont->GetName())
-//  return false;
+  std::string name;
 
- RDK::UAContainer::VariableMapT props=cont->GetPropertiesList();
+  RDK::UAContainer::VariableMapT props=cont->GetPropertiesList();
 
   RDK::UAContainer::VariableMapCIteratorT I,J;
 
@@ -1143,35 +1572,52 @@ bool UEngine::Model_SetComponentParameters(RDK::UAContainer* cont, RDK::Serializ
    cont->SetProperty(I->second.Id,serstorage);
    ++I;
   }
-
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
  return true;
 }
 
 // Возращает все связи внутри компонента stringid в виде xml в буфер buffer
 int UEngine::Model_GetComponentInternalLinks(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage)
 {
- if(!cont || !serstorage)
-  return false;
+ try
+ {
+  if(!cont || !serstorage)
+   return false;
 
- ULinksList linkslist;
- cont->GetLinks(linkslist, cont);
+  ULinksList linkslist;
+  cont->GetLinks(linkslist, cont);
 
- *serstorage<<linkslist;
-
+  *serstorage<<linkslist;
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
  return true;
 }
 
 // Устанавливает все связи внутри компонента stringid из строки xml в буфере buffer
 int UEngine::Model_SetComponentInternalLinks(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage)
 {
- if(!cont || !serstorage)
-  return false;
+ try
+ {
+  if(!cont || !serstorage)
+   return false;
 
- ULinksList linkslist;
- *serstorage>>linkslist;
+  ULinksList linkslist;
+  *serstorage>>linkslist;
 
- cont->BreakLinks();
- cont->CreateLinks(linkslist);
+  cont->BreakLinks();
+  cont->CreateLinks(linkslist);
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 
  return true;
 }
@@ -1179,8 +1625,15 @@ int UEngine::Model_SetComponentInternalLinks(RDK::UANet* cont, RDK::Serialize::U
 // Возращает все входные связи к компоненту stringid в виде xml в буфер buffer
 int UEngine::Model_GetComponentInputLinks(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage)
 {
- if(!cont || !serstorage)
-  return false;
+ try
+ {
+  if(!cont || !serstorage)
+   return false;
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 
  return true;
 }
@@ -1188,8 +1641,15 @@ int UEngine::Model_GetComponentInputLinks(RDK::UANet* cont, RDK::Serialize::USer
 // Возращает все выходные связи из компонента stringid в виде xml в буфер buffer
 int UEngine::Model_GetComponentOutputLinks(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage)
 {
- if(!cont || !serstorage)
-  return false;
+ try
+ {
+  if(!cont || !serstorage)
+   return false;
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 
  return true;
 }
@@ -1198,19 +1658,26 @@ int UEngine::Model_GetComponentOutputLinks(RDK::UANet* cont, RDK::Serialize::USe
 // Память для buffer должна быть выделена!
 bool UEngine::Model_GetComponentState(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage)
 {
- if(!cont || !serstorage)
-  return false;
-
- RDK::UAContainer::VariableMapT props=cont->GetStateList();
-
- RDK::UAContainer::VariableMapCIteratorT I,J;
-
- I=props.begin();
- J=props.end();
- while(I != J)
+ try
  {
-  cont->GetState(I->second.Id,serstorage);
-  ++I;
+  if(!cont || !serstorage)
+   return false;
+
+  RDK::UAContainer::VariableMapT props=cont->GetStateList();
+
+  RDK::UAContainer::VariableMapCIteratorT I,J;
+
+  I=props.begin();
+  J=props.end();
+  while(I != J)
+  {
+   cont->GetState(I->second.Id,serstorage);
+   ++I;
+  }
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
  }
 
  return true;
@@ -1220,8 +1687,15 @@ bool UEngine::Model_GetComponentState(RDK::UAContainer* cont, RDK::Serialize::US
 // Память для buffer должна быть выделена!
 bool UEngine::Model_GetComponentSelectedState(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage)
 {
- if(!cont || !serstorage)
-  return false;
+ try
+ {
+  if(!cont || !serstorage)
+   return false;
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 
  return true;
 }
@@ -1229,15 +1703,14 @@ bool UEngine::Model_GetComponentSelectedState(RDK::UAContainer* cont, RDK::Seria
 // Устанавливает состояние компонента по идентификатору
 bool UEngine::Model_SetComponentState(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage)
 {
- if(!cont || !serstorage)
-  return false;
+ try
+ {
+  if(!cont || !serstorage)
+   return false;
 
- std::string name;
-// name=XmlStorage.GetNodeName();
-// if(name != cont->GetName())
-//  return false;
+  std::string name;
 
- RDK::UAContainer::VariableMapT props=cont->GetStateList();
+  RDK::UAContainer::VariableMapT props=cont->GetStateList();
 
   RDK::UAContainer::VariableMapCIteratorT I,J;
 
@@ -1248,6 +1721,11 @@ bool UEngine::Model_SetComponentState(RDK::UAContainer* cont, RDK::Serialize::US
    cont->SetState(I->second.Id,serstorage);
    ++I;
   }
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 
  return true;
 }
@@ -1256,30 +1734,37 @@ bool UEngine::Model_SetComponentState(RDK::UAContainer* cont, RDK::Serialize::US
 // переменные состояния в xml
 int UEngine::Model_SaveComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage)
 {
- if(!cont || !serstorage)
-  return false;
-
- serstorage->AddNode(cont->GetName());
- serstorage->SetNodeAttribute("Class",RDK::sntoa(cont->GetClass()));
- serstorage->AddNode("Parameters");
- if(!Model_GetComponentParameters(cont, serstorage))
-  return false;
- serstorage->SelectUp();
-
- serstorage->AddNode("Links");
- if(!Model_GetComponentInternalLinks(cont,serstorage))
-  return false;
- serstorage->SelectUp();
-
- serstorage->AddNode("Components");
- for(int i=0;i<cont->GetNumComponents();i++)
+ try
  {
-  if(!Model_SaveComponent(dynamic_cast<RDK::UANet*>(cont->GetComponentByIndex(i)),serstorage))
+  if(!cont || !serstorage)
    return false;
- }
- serstorage->SelectUp();
 
- serstorage->SelectUp();
+  serstorage->AddNode(cont->GetName());
+  serstorage->SetNodeAttribute("Class",RDK::sntoa(cont->GetClass()));
+  serstorage->AddNode("Parameters");
+  if(!Model_GetComponentParameters(cont, serstorage))
+   return false;
+  serstorage->SelectUp();
+
+  serstorage->AddNode("Links");
+  if(!Model_GetComponentInternalLinks(cont,serstorage))
+   return false;
+  serstorage->SelectUp();
+
+  serstorage->AddNode("Components");
+  for(int i=0;i<cont->GetNumComponents();i++)
+  {
+   if(!Model_SaveComponent(dynamic_cast<RDK::UANet*>(cont->GetComponentByIndex(i)),serstorage))
+	return false;
+  }
+  serstorage->SelectUp();
+
+  serstorage->SelectUp();
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 
  return true;
 }
@@ -1288,50 +1773,50 @@ int UEngine::Model_SaveComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXM
 // переменные состояния из xml
 int UEngine::Model_LoadComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage)
 {
- if(!cont || !serstorage)
-  return false;
-
-// serstorage->SelectNode(cont->GetName());
- UId id=RDK::atoi(serstorage->GetNodeAttribute("Class"));
- if(cont->GetClass() != id)
-  return false;
-
- serstorage->SelectNode("Parameters");
- if(!Model_SetComponentParameters(cont, serstorage))
-  return false;
- serstorage->SelectUp();
-
-// cont->SetName(serstorage->GetNodeName());
-
- cont->DelAllComponents();
-
- serstorage->SelectNode("Components");
- UAStorage* storage=cont->GetStorage();
- for(int i=0;i<serstorage->GetNumNodes();i++)
+ try
  {
-  serstorage->SelectNode(i);
-  std::string nodename=serstorage->GetNodeName();
-  id=RDK::atoi(serstorage->GetNodeAttribute("Class"));
-  UANet *newcont=dynamic_cast<UANet*>(storage->TakeObject(id));
-  if(!newcont)
-   return false;
-  if(cont->AddComponent(newcont) == ForbiddenId)
+  if(!cont || !serstorage)
    return false;
 
-//  newcont->SetName(serstorage->GetNodeName());
-//  serstorage->SelectUp();
-  if(!Model_LoadComponent(newcont,serstorage))
+  UId id=RDK::atoi(serstorage->GetNodeAttribute("Class"));
+  if(cont->GetClass() != id)
+   return false;
+
+  serstorage->SelectNode("Parameters");
+  if(!Model_SetComponentParameters(cont, serstorage))
+   return false;
+  serstorage->SelectUp();
+
+  cont->DelAllComponents();
+
+  serstorage->SelectNode("Components");
+  UAStorage* storage=cont->GetStorage();
+  for(int i=0;i<serstorage->GetNumNodes();i++)
+  {
+   serstorage->SelectNode(i);
+   std::string nodename=serstorage->GetNodeName();
+   id=RDK::atoi(serstorage->GetNodeAttribute("Class"));
+   UANet *newcont=dynamic_cast<UANet*>(storage->TakeObject(id));
+   if(!newcont)
+	return false;
+   if(cont->AddComponent(newcont) == ForbiddenId)
+	return false;
+
+   if(!Model_LoadComponent(newcont,serstorage))
+	return false;
+   serstorage->SelectUp();
+  }
+  serstorage->SelectUp();
+
+  serstorage->SelectNode("Links");
+  if(!Model_SetComponentInternalLinks(cont,serstorage))
    return false;
   serstorage->SelectUp();
  }
- serstorage->SelectUp();
-
- serstorage->SelectNode("Links");
- if(!Model_SetComponentInternalLinks(cont,serstorage))
-  return false;
- serstorage->SelectUp();
-
-// serstorage->SelectUp();
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 
  return true;
 }
@@ -1339,25 +1824,32 @@ int UEngine::Model_LoadComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXM
 // Сохраняет все параметры компонента и его дочерних компонент в xml
 int UEngine::Model_SaveComponentParameters(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage)
 {
- if(!cont || !serstorage)
-  return false;
-
- serstorage->AddNode(cont->GetName());
- serstorage->SetNodeAttribute("Class",RDK::sntoa(cont->GetClass()));
- serstorage->AddNode("Parameters");
- if(!Model_GetComponentParameters(cont, serstorage))
-  return false;
- serstorage->SelectUp();
-
- serstorage->AddNode("Components");
- for(int i=0;i<cont->GetNumComponents();i++)
+ try
  {
-  if(!Model_SaveComponentParameters(dynamic_cast<RDK::UANet*>(cont->GetComponentByIndex(i)),serstorage))
+  if(!cont || !serstorage)
    return false;
- }
- serstorage->SelectUp();
 
- serstorage->SelectUp();
+  serstorage->AddNode(cont->GetName());
+  serstorage->SetNodeAttribute("Class",RDK::sntoa(cont->GetClass()));
+  serstorage->AddNode("Parameters");
+  if(!Model_GetComponentParameters(cont, serstorage))
+   return false;
+  serstorage->SelectUp();
+
+  serstorage->AddNode("Components");
+  for(int i=0;i<cont->GetNumComponents();i++)
+  {
+   if(!Model_SaveComponentParameters(dynamic_cast<RDK::UANet*>(cont->GetComponentByIndex(i)),serstorage))
+	return false;
+  }
+  serstorage->SelectUp();
+
+  serstorage->SelectUp();
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 
  return true;
 }
@@ -1365,30 +1857,37 @@ int UEngine::Model_SaveComponentParameters(RDK::UANet* cont, RDK::Serialize::USe
 // Загружает все параметры компонента и его дочерних компонент из xml
 int UEngine::Model_LoadComponentParameters(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage)
 {
- if(!cont || !serstorage)
-  return false;
-
- UId id=RDK::atoi(serstorage->GetNodeAttribute("Class"));
- if(cont->GetClass() != id)
-  return false;
-
- serstorage->SelectNode("Parameters");
- if(!Model_SetComponentParameters(cont, serstorage))
-  return false;
- serstorage->SelectUp();
-
- serstorage->SelectNode("Components");
- for(int i=0;i<cont->GetNumComponents();i++)
+ try
  {
-  if(!serstorage->SelectNode(cont->GetComponentByIndex(i)->GetName()))
-   continue;
-  std::string nodename=serstorage->GetNodeName();
+  if(!cont || !serstorage)
+   return false;
 
-  if(!Model_LoadComponentParameters(dynamic_cast<RDK::UANet*>(cont->GetComponentByIndex(i)),serstorage))
+  UId id=RDK::atoi(serstorage->GetNodeAttribute("Class"));
+  if(cont->GetClass() != id)
+   return false;
+
+  serstorage->SelectNode("Parameters");
+  if(!Model_SetComponentParameters(cont, serstorage))
    return false;
   serstorage->SelectUp();
+
+  serstorage->SelectNode("Components");
+  for(int i=0;i<cont->GetNumComponents();i++)
+  {
+   if(!serstorage->SelectNode(cont->GetComponentByIndex(i)->GetName()))
+	continue;
+   std::string nodename=serstorage->GetNodeName();
+
+   if(!Model_LoadComponentParameters(dynamic_cast<RDK::UANet*>(cont->GetComponentByIndex(i)),serstorage))
+	return false;
+   serstorage->SelectUp();
+  }
+  serstorage->SelectUp();
  }
- serstorage->SelectUp();
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 
  return true;
 }
@@ -1396,25 +1895,32 @@ int UEngine::Model_LoadComponentParameters(RDK::UANet* cont, RDK::Serialize::USe
 // Сохраняет состояние компонента и его дочерних компонент в xml
 int UEngine::Model_SaveComponentState(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage)
 {
- if(!cont || !serstorage)
-  return false;
-
- serstorage->AddNode(cont->GetName());
- serstorage->SetNodeAttribute("Class",RDK::sntoa(cont->GetClass()));
- serstorage->AddNode("State");
- if(!Model_GetComponentState(cont, serstorage))
-  return false;
- serstorage->SelectUp();
-
- serstorage->AddNode("Components");
- for(int i=0;i<cont->GetNumComponents();i++)
+ try
  {
-  if(!Model_SaveComponentState(dynamic_cast<RDK::UANet*>(cont->GetComponentByIndex(i)),serstorage))
+  if(!cont || !serstorage)
    return false;
- }
- serstorage->SelectUp();
 
- serstorage->SelectUp();
+  serstorage->AddNode(cont->GetName());
+  serstorage->SetNodeAttribute("Class",RDK::sntoa(cont->GetClass()));
+  serstorage->AddNode("State");
+  if(!Model_GetComponentState(cont, serstorage))
+   return false;
+  serstorage->SelectUp();
+
+  serstorage->AddNode("Components");
+  for(int i=0;i<cont->GetNumComponents();i++)
+  {
+   if(!Model_SaveComponentState(dynamic_cast<RDK::UANet*>(cont->GetComponentByIndex(i)),serstorage))
+	return false;
+  }
+  serstorage->SelectUp();
+
+  serstorage->SelectUp();
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 
  return true;
 }
@@ -1422,35 +1928,128 @@ int UEngine::Model_SaveComponentState(RDK::UANet* cont, RDK::Serialize::USerStor
 // Загружает состояние компонента и его дочерних компонент из xml
 int UEngine::Model_LoadComponentState(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage)
 {
- if(!cont || !serstorage)
-  return false;
-
- UId id=RDK::atoi(serstorage->GetNodeAttribute("Class"));
- if(cont->GetClass() != id)
-  return false;
-
- serstorage->SelectNode("State");
- if(!Model_SetComponentState(cont, serstorage))
-  return false;
- serstorage->SelectUp();
-
- serstorage->SelectNode("Components");
- for(int i=0;i<cont->GetNumComponents();i++)
+ try
  {
-  if(!serstorage->SelectNode(cont->GetComponentByIndex(i)->GetName()))
-   continue;
-  std::string nodename=serstorage->GetNodeName();
+  if(!cont || !serstorage)
+   return false;
 
-  if(!Model_LoadComponentState(dynamic_cast<RDK::UANet*>(cont->GetComponentByIndex(i)),serstorage))
+  UId id=RDK::atoi(serstorage->GetNodeAttribute("Class"));
+  if(cont->GetClass() != id)
+   return false;
+
+  serstorage->SelectNode("State");
+  if(!Model_SetComponentState(cont, serstorage))
    return false;
   serstorage->SelectUp();
+
+  serstorage->SelectNode("Components");
+  for(int i=0;i<cont->GetNumComponents();i++)
+  {
+   if(!serstorage->SelectNode(cont->GetComponentByIndex(i)->GetName()))
+	continue;
+   std::string nodename=serstorage->GetNodeName();
+
+   if(!Model_LoadComponentState(dynamic_cast<RDK::UANet*>(cont->GetComponentByIndex(i)),serstorage))
+	return false;
+   serstorage->SelectUp();
+  }
+  serstorage->SelectUp();
  }
- serstorage->SelectUp();
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
 
  return true;
-
 }
 // --------------------------
+
+// --------------------------
+// Методы управления исключениями
+// --------------------------
+// Обрабатывает возникшее исключение
+void UEngine::ProcessException(UException *exception) const
+{
+ if(!exception)
+  throw exception;
+
+ USharedPtr<UException> ptr=exception;
+ ExceptionsLog.push_back(ptr);
+
+ TempLogString+=CreateLogMessage(exception);
+ TempLogString+="\r\n";
+
+// if(exception->GetType() == 1)
+//  throw exception;
+}
+
+// Формирует строку лога об исключении
+string UEngine::CreateLogMessage(UException *exception) const
+{
+ string result;
+
+ if(!exception)
+  return result;
+
+ result+=sntoa(exception->GetNumber());
+ result+=" ";
+ result+=sntoa(exception->GetTime());
+ result+=" ";
+ result+=sntoa(exception->GetType());
+ result+="> ";
+ result+=typeid(exception).name();
+
+ UIContainerException *iexception=dynamic_cast<UIContainerException*>(exception);
+
+ if(iexception)
+ {
+  // Короткое имя компонента в котором сгенерировано исключение
+  result+=" Name=";
+  result+=iexception->Name;
+
+  // Короткий идентификатор компонента в котором сгенерировано исключение
+//  result+=" Id=";
+//  result+=iexception->Id;
+
+  // Полное имя владельца компонента в котором сгенерировано исключение
+  result+=" OwnerName=";
+  result+=iexception->OwnerName;
+
+  // Полный идентификатор владельца компонента в котором сгенерировано исключение
+//  result+=" OwnerId=";
+//  result+=iexception->OwnerId;
+
+  if(iexception->MainOwnerName != iexception->OwnerName)
+  {
+   // Полное имя главного владельца компонента в котором сгенерировано исключение
+   result+=" MainOwnerName=";
+   result+=iexception->MainOwnerName;
+  }
+
+  // Полный идентификатор главного владельца компонента в котором сгенерировано исключение
+//  result+=" MainOwnerId=";
+//  result+=iexception->MainOwnerId;
+ }
+
+
+ return result;
+}
+
+// Возвращает массив зарегистрированных исключений
+const vector<USharedPtr<UException> > UEngine::GetExceptionsLog(void) const
+{
+ return ExceptionsLog;
+}
+
+
+// Возвращает массив строк лога
+const char* UEngine::GetLog(void) const
+{
+ return TempLogString.c_str();
+}
+
+// --------------------------
+
 
 
 // --------------------------

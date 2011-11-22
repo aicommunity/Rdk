@@ -77,6 +77,10 @@ UAContainerStorage* Storage;
 // Среда
 UAContainerEnvironment* Environment;
 
+protected: // Обработка исключений
+// Лог исключений системы
+mutable vector<USharedPtr<UException> > ExceptionsLog;
+
 protected: // Временные переменные
 // Список загруженных библиотек
 std::list<UALibrary*> LibrariesList;
@@ -88,6 +92,9 @@ RDK::Serialize::USerStorageXML XmlStorage;
 
 // Временное хранилище строк
 mutable string TempString;
+
+// Временное хранилище буфера для лога
+mutable string TempLogString;
 
 
 public: // Методы
@@ -386,6 +393,22 @@ virtual const char* Model_SaveComponentState(const char *stringid);
 
 // Загружает состояние компонента и его дочерних компонент из xml
 virtual int Model_LoadComponentState(const char *stringid, char* buffer);
+// --------------------------
+
+// --------------------------
+// Методы управления исключениями
+// --------------------------
+// Обрабатывает возникшее исключение
+virtual void ProcessException(UException *exception) const;
+
+// Формирует строку лога об исключении
+virtual string CreateLogMessage(UException *exception) const;
+
+// Возвращает массив зарегистрированных исключений
+const vector<USharedPtr<UException> > GetExceptionsLog(void) const;
+
+// Возвращает массив строк лога
+const char* GetLog(void) const;
 // --------------------------
 
 // --------------------------
