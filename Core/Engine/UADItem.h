@@ -174,10 +174,10 @@ const NameT& GetInputName(int index) const;
 bool SetInputName(int index, const NameT& name);
 
 // Копирует описание входных и выходных данных в item
-virtual bool CopyDataInfo(UADItem *item) const;
+virtual bool CopyDataInfo(UEPtr<UADItem> item) const;
 
 // Копирует имена входов и выходов в item
-virtual bool CopyIONames(UADItem *item) const;
+virtual bool CopyIONames(UEPtr<UADItem> item) const;
 // --------------------------
 
 // ----------------------
@@ -236,7 +236,7 @@ bool SetOutputDataElementSize(const vector<size_t> &value);
 // ----------------------
 // Копирует этот объект в 'target' с сохранением всех компонент
 // и значений параметров
-bool Copy(UAContainer *target, UAContainerStorage *stor, bool copystate) const;
+virtual bool Copy(UEPtr<UAContainer> target, UAContainerStorage *stor=0, bool copystate=false) const;
 // ----------------------
 
 // ----------------------
@@ -246,7 +246,7 @@ protected:
 // Устанавливает связь с элементом сети 'na' со входом по индексу index.
 // Возвращает false если na уже подключен к этому входу.
 // При успешном подключении c_index содержит реальный индекс подключенного входа
-virtual bool ConnectToItem(UAItem *na, int i_index, int &c_index);
+virtual bool ConnectToItem(UEPtr<UAItem> na, int i_index, int &c_index);
 
 // Разрывает связь с элементом сети подключенным ко входу 'index'
 virtual void DisconnectFromIndex(int c_index);

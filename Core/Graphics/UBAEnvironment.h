@@ -65,7 +65,7 @@ virtual ~UBAEnvironment(void);
 virtual UBAStorage* GetStorage(void);
 
 // ¬озвращает указатель на модель
-virtual UBAModel* GetModel(void);
+UEPtr<UBAModel> GetModel(void);
 
 // —оздает новую модель из хранилища по id класса
 virtual bool CreateModel(const UId& classid);

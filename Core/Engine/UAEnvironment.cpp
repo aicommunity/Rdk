@@ -154,6 +154,7 @@ UAEnvironment::UAEnvironment(void)
  // Признак наличия сформированной структуры
  Structured=false;
 
+
  Model=0;
  Storage=0;
  StoragePresent=false;
@@ -251,7 +252,7 @@ bool UAEnvironment::SetStorage(UAStorage *storage)
 }
 
 // Возвращает указатель на модель
-UAComponent* UAEnvironment::GetModel(void)
+UEPtr<UAContainer> UAEnvironment::GetModel(void)
 {
  return Model;
 }
@@ -263,7 +264,7 @@ bool UAEnvironment::CreateModel(const UId& classid)
   return false;
 
  CurrentComponent=0;
- Model=Storage->TakeObject(classid);
+ Model=dynamic_pointer_cast<UAContainer>(Storage->TakeObject(classid));
  Ready=false;
  if(Model)
   return true;
@@ -505,8 +506,8 @@ bool UAEnvironment::ADefault(void)
   return Model->Default();
  else
  {
-  RDK::UAContainer* destcont=0;
-  destcont=dynamic_cast<UAContainer*>(GetModel())->GetComponentL(ModelCalculationComponent);
+  UEPtr<UAContainer> destcont;
+  destcont=GetModel()->GetComponentL(ModelCalculationComponent);
 
   if(!destcont)
    return false;
@@ -531,8 +532,8 @@ bool UAEnvironment::ABuild(void)
   return Model->Build();
  else
  {
-  RDK::UAContainer* destcont=0;
-  destcont=dynamic_cast<UAContainer*>(GetModel())->GetComponentL(ModelCalculationComponent);
+  UEPtr<UAContainer> destcont;
+  destcont=GetModel()->GetComponentL(ModelCalculationComponent);
 
   if(!destcont)
    return false;
@@ -554,8 +555,8 @@ bool UAEnvironment::AReset(void)
   return Model->Reset();
  else
  {
-  RDK::UAContainer* destcont=0;
-  destcont=dynamic_cast<UAContainer*>(GetModel())->GetComponentL(ModelCalculationComponent);
+  UEPtr<UAContainer> destcont;
+  destcont=GetModel()->GetComponentL(ModelCalculationComponent);
 
   if(!destcont)
    return false;
@@ -577,8 +578,8 @@ bool UAEnvironment::ACalculate(void)
   return Model->Calculate();
  else
  {
-  RDK::UAContainer* destcont=0;
-  destcont=dynamic_cast<UAContainer*>(GetModel())->GetComponentL(ModelCalculationComponent);
+  UEPtr<UAContainer> destcont;
+  destcont=GetModel()->GetComponentL(ModelCalculationComponent);
 
   if(!destcont)
    return false;

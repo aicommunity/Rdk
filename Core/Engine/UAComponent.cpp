@@ -42,12 +42,12 @@ UAComponent::~UAComponent(void)
 // Методы доступа к свойствам
 // --------------------------
 // Возвращает владелца этого объекта.
-UAComponent* const UAComponent::GetOwner(void) const
+UEPtr<UAComponent> const UAComponent::GetOwner(void) const
 {
  return Owner;
 }
 
-bool UAComponent::SetOwner(UAComponent* owner)
+bool UAComponent::SetOwner(UEPtr<UAComponent> owner)
 {
  if(Owner == owner)
   return true;
@@ -58,12 +58,12 @@ bool UAComponent::SetOwner(UAComponent* owner)
 
 
 // Возвращает указатель на главного владельца этим объектом
-UAComponent* const UAComponent::GetMainOwner(void) const
+UEPtr<UAComponent> const UAComponent::GetMainOwner(void) const
 {
  return MainOwner;
 }
 
-bool UAComponent::SetMainOwner(UAComponent* const mainowner)
+bool UAComponent::SetMainOwner(UEPtr<UAComponent> mainowner)
 {
  if(mainowner == MainOwner)
   return true;

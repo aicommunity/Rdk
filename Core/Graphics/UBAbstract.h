@@ -193,10 +193,10 @@ bool PLCalculate(UBitmap **input, UBitmap **output, int num_inputs=1, int num_ou
 // ----------------------
 protected:
 // Выполняет действия после физически установленой связи
-virtual bool AConnectToItem(UAItem *na, int i_index, int c_index);
+virtual bool AConnectToItem(UEPtr<UAItem> na, int i_index, int c_index);
 
 // Выполняет действия после физически разорваной связи
-virtual void ADisconnectFromItem(UAItem *na, int i_index, int c_index);
+virtual void ADisconnectFromItem(UEPtr<UAItem> na, int i_index, int c_index);
 // ----------------------
 
 // --------------------------
@@ -244,10 +244,10 @@ virtual bool AFCalculate(void);
 // ----------------------
 protected:
 // Выполняет действия после физически установленой связи
-virtual bool AFConnectToItem(UBAbstract *na, int i_index, int c_index);
+virtual bool AFConnectToItem(UEPtr<UBAbstract> na, int i_index, int c_index);
 
 // Выполняет действия после физически разорваной связи
-virtual void AFDisconnectFromItem(UBAbstract *na, int i_index, int c_index);
+virtual void AFDisconnectFromItem(UEPtr<UBAbstract> na, int i_index, int c_index);
 // ----------------------
 
 };

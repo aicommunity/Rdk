@@ -13,7 +13,7 @@ protected:
 T* PData;
 
 public: // Исключения
-class UFEUsingZeroPtr: public UFatalException {};
+class UFEUsingZeroPtr/*: public UFatalException */{};
 
 public: // Методы
 // --------------------------
@@ -25,21 +25,30 @@ UPtr(void)
 };
 
 UPtr(T* pdata)
-: PData(0)
+: PData(pdata)
 {
- PData=pdata;
+// PData=pdata;
 };
 
 UPtr(const UPtr<T> &p)
-: PData(0)
+: PData(p.PData)
 {
- PData=p.PData;
+// PData=p.PData;
 };
 
-~UPtr(void)
+virtual ~UPtr(void)
 {
  PData=0;
 };
+// --------------------------
+
+// --------------------------
+// Методы доступа
+// --------------------------
+T* Get(void) const
+{
+ return PData;
+}
 // --------------------------
 
 // --------------------------
@@ -57,19 +66,19 @@ UPtr<T>& operator = (T *p)
  return *this;
 };
 
-bool operator == (const UPtr<T> &p)
+bool operator == (const UPtr<T> &p) const
 { return (PData == p.PData)?true:false; };
 
-bool operator != (const UPtr<T> &p)
+bool operator != (const UPtr<T> &p) const
 { return (PData != p.PData)?true:false; };
 
-bool operator == (const T *p)
+bool operator == (const T *p) const
 { return (PData == p)?true:false; };
 
-bool operator != (const T *p)
+bool operator != (const T *p) const
 { return (PData != p)?true:false; };
 
-operator bool (void)
+operator bool (void) const
 { return (PData)?true:false; };
 
 T* operator -> (void)
@@ -85,6 +94,10 @@ T& operator * (void)
  return *PData;
 };
 
+operator T* (void) const
+{
+ return PData;
+}
 // --------------------------
 };
 
@@ -120,14 +133,14 @@ USharedPtr(const USharedPtr<T> &p)
  ++(*Counter);
 };
 
-~USharedPtr(void)
+virtual ~USharedPtr(void)
 {
  if(Counter && --(*Counter) <= 0)
  {
   delete Counter;
   Counter=0;
-  if(PData)
-   delete PData;
+  if(UPtr<T>::PData)
+   delete UPtr<T>::PData;
  }
 };
 // --------------------------
@@ -143,13 +156,13 @@ USharedPtr<T>& operator = (const USharedPtr<T> &p)
   {
    delete Counter;
    Counter=0;
-   if(PData)
-    delete PData;
+   if(UPtr<T>::PData)
+    delete UPtr<T>::PData;
   }
  }
- PData=p.PData;
+ UPtr<T>::PData=p.PData;
 
- if(PData)
+ if(UPtr<T>::PData)
  {
   Counter=p.Counter;
   ++(*Counter);
@@ -168,13 +181,13 @@ USharedPtr<T>& operator = (T *p)
   {
    delete Counter;
    Counter=0;
-   if(PData)
-	delete PData;
+   if(UPtr<T>::PData)
+	delete UPtr<T>::PData;
   }
  }
- PData=p;
+ UPtr<T>::PData=p;
 
- if(PData)
+ if(UPtr<T>::PData)
   Counter=new long(1);
  else
   Counter=new long(0);
@@ -187,6 +200,7 @@ USharedPtr<T>& operator = (UPtr<T> &p)
 {
  return operator = (p.PData);
 };
+
 
 				/*
 bool operator == (const USharedPtr<T> &p)
@@ -222,7 +236,37 @@ T& operator * (void)
 
 // Возвращает число ссылок на объект
 long GetCounter(void) const
-{ return *Counter;};
+{ return *Counter; };
+
+long* GetPCounter(void) const
+{ return Counter; };
+
+// Очищает указатель от текущего  объекта
+void Clear(void)
+{
+ if(Counter && --(*Counter) <= 0)
+ {
+  delete Counter;
+  Counter=0;
+  if(UPtr<T>::PData)
+   delete UPtr<T>::PData;
+ }
+}
+
+T* GetPData(void) const
+{
+ return UPtr<T>::PData;
+}
+
+
+// Инициализирует умный указатель
+USharedPtr<T>& Init(long* counter, T* pdata)
+{
+ Clear();
+ Counter=counter;
+ ++(*Counter);
+ UPtr<T>::PData=pdata;
+}
 // --------------------------
 
 // --------------------------
@@ -230,9 +274,47 @@ long GetCounter(void) const
 // --------------------------
 protected:
 // --------------------------
-
 };
 
+
+// Операторы преобразования указателей через динамическое приведение типов
+template<typename T, typename T2>
+USharedPtr<T>& operator << (USharedPtr<T> &ptr1, const USharedPtr<T2> &ptr2)
+{
+ ptr1.Init(ptr2.GetPCounter(),dynamic_cast<T*>(ptr2.GetPData()));
+
+ return ptr1;
+}
+
+// Операторы преобразования указателей через динамическое приведение типов
+template<typename T, typename T2>
+USharedPtr<T>& PtrConvert (USharedPtr<T> &ptr1, USharedPtr<T2> &ptr2)
+{
+ //ptr1=ptr2;
+/*if( ptr1.Counter)
+ {
+  if(--(* ptr1.Counter) <= 0)
+  {
+   delete  ptr1.Counter;
+	ptr1.Counter=0;
+   if( ptr1.PData)
+	delete  ptr1.PData;
+  }
+ }
+  ptr1.PData= ptr2.PData;
+
+ if(ptr1.PData)
+ {
+  ptr1.Counter=ptr2.Counter;
+  ++(*ptr1.Counter);
+ }
+ else
+  ptr1.Counter=new long(0);
+
+ return *this;
+*/
+ return ptr1;
+}
 
 }
 

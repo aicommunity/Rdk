@@ -484,7 +484,7 @@ void UAItem::DisconnectAll(void)
 // Разрывает все связи объекта
 // исключая его внутренние связи и обратные связи
 // brklevel - объект, относительно которого связи считаются внутренними
-void UAItem::DisconnectBy(const UAContainer *brklevel)
+void UAItem::DisconnectBy(UEPtr<UAContainer> brklevel)
 {
  Build();
 
@@ -544,7 +544,7 @@ const UAConnector* UAItem::GetAConnectorByIndex(int output, int index) const
 }
 
 // Возвращает список подключений
-ULinksList& UAItem::GetLinks(ULinksList &linkslist, const UAContainer *netlevel) const
+ULinksList& UAItem::GetLinks(ULinksList &linkslist, UEPtr<UAContainer> netlevel) const
 {
  ULink link;
 
@@ -559,7 +559,7 @@ ULinksList& UAItem::GetLinks(ULinksList &linkslist, const UAContainer *netlevel)
    AssociatedConnectors[j][i]->GetLongId(netlevel,link.Connector.Id);
    if(link.Connector.Id.GetSize() != 0)
    {
-    UCLink indexes=AssociatedConnectors[j][i]->GetCLink(this);
+    UCLink indexes=AssociatedConnectors[j][i]->GetCLink(UEPtr<UAItem>(const_cast<UAItem*>(this)));
     link.Item.Index=indexes.Output;
     link.Connector.Index=indexes.Input;
 
@@ -575,8 +575,8 @@ ULinksList& UAItem::GetLinks(ULinksList &linkslist, const UAContainer *netlevel)
 
 // Возвращает список подключений этого компонента и всех дочерних компонент
 // к заданному компоненту comp и всем его дочерним компонентам
-ULinksList& UAItem::GetFullItemLinks(ULinksList &linkslist, const UAItem *comp,
-                                     const UAContainer *netlevel) const
+ULinksList& UAItem::GetFullItemLinks(ULinksList &linkslist, UEPtr<UAItem> comp,
+                                     UEPtr<UAContainer> netlevel) const
 {
  ULink link;
 
@@ -591,12 +591,12 @@ ULinksList& UAItem::GetFullItemLinks(ULinksList &linkslist, const UAItem *comp,
  for(int j=0;j<AssociatedConnectors.GetSize();j++)
   for(int i=0;i<AssociatedConnectors[j].GetSize();i++)
   {
-   if(!AssociatedConnectors[j][i]->CheckOwner(comp) && AssociatedConnectors[j][i] != comp)
+   if(!AssociatedConnectors[j][i]->CheckOwner(static_pointer_cast<UAContainer>(comp)) && AssociatedConnectors[j][i] != comp)
     continue;
    AssociatedConnectors[j][i]->GetLongId(netlevel,link.Connector.Id);
    if(link.Connector.Id.GetSize() != 0)
    {
-    UCLink indexes=AssociatedConnectors[j][i]->GetCLink(this);
+    UCLink indexes=AssociatedConnectors[j][i]->GetCLink(UEPtr<UAItem>(const_cast<UAItem*>(this)));
     link.Item.Index=indexes.Output;
     link.Connector.Index=indexes.Input;
 
@@ -609,9 +609,8 @@ ULinksList& UAItem::GetFullItemLinks(ULinksList &linkslist, const UAItem *comp,
 
  for(int i=0;i<NumComponents;i++)
  {
-  UAItem* item=dynamic_cast<UAItem*>(PComponents[i]);
-  if(item)
-   item->GetFullItemLinks(linkslist, comp, netlevel);
+  UEPtr<UAItem> item=dynamic_cast<UAItem*>(PComponents[i].operator->());
+  item->GetFullItemLinks(linkslist, comp, netlevel);
  }
 
  return linkslist;

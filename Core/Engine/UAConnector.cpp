@@ -338,14 +338,14 @@ const UCItem& UAConnector::GetCItem(int c_index) const
 
 // Возвращает информацию об индексах связей с этим item или -1, -1
 // если такая связь отсутствует
-UCLink UAConnector::GetCLink(const UAItem *item) const
+UCLink UAConnector::GetCLink(UEPtr<UAItem> item) const
 {
  UCLink indexes;
 
  if(!item)
   return indexes;
 
- UCItem citem=CItemList.Find(item);
+ UCItem citem=CItemList.Find(item.operator->());
 
  if(citem.Item == 0)
   return indexes;
@@ -361,7 +361,7 @@ UCLink UAConnector::GetCLink(const UAItem *item) const
 // Коммуникационные методы
 // ----------------------
 // Устанавливает связь с элементом сети 'na'.
-bool UAConnector::ConnectToItem(UAItem *na, int i_index, int &c_index)
+bool UAConnector::ConnectToItem(UEPtr<UAItem> na, int i_index, int &c_index)
 {
  if(!na)
   return false;
@@ -402,7 +402,7 @@ bool UAConnector::ConnectToItem(UAItem *na, int i_index, int &c_index)
  if(!CheckItem(na, i_index,c_index))
   return false;
 
- if(CItemList[c_index].Item == na)
+ if(CItemList[c_index].Item == na.operator->())
  {
   if(CItemList[c_index].Index == i_index)
    return true;
@@ -414,20 +414,20 @@ bool UAConnector::ConnectToItem(UAItem *na, int i_index, int &c_index)
  if(CItemList[c_index].Item)
   return false;
 
- CItemList[c_index].Item=na;
+ CItemList[c_index].Item=na.operator->();
  CItemList[c_index].Index=i_index;
  return AConnectToItem(na, i_index, c_index);
 }
 
 // Разрывает связь с элементом сети 'na'
-void UAConnector::DisconnectFromItem(UAItem *na)
+void UAConnector::DisconnectFromItem(UEPtr<UAItem> na)
 {
  if(!na)
   return;
 
  for(int i=0;i<CItemList.GetSize();i++)
  {
-  if(CItemList[i].Item == na)
+  if(CItemList[i].Item == na.operator->())
   {
    DisconnectFromIndex(i);
   }
@@ -443,16 +443,29 @@ void UAConnector::DisconnectFromIndex(int c_index)
  ADisconnectFromItem(CItemList[c_index].Item,CItemList[c_index].Index,c_index);
  CItemList[c_index].Item=0;
  CItemList[c_index].Index=-1;
+
+ // Подчищаем лишние входы, если разрешено
+ if(AutoNumInputs)
+ {
+  int newsize=NumInputs;
+  for(size_t i=NumInputs;i>=0;i++)
+  {
+   if(CItemList[i].Item != 0)
+	break;
+   --newsize;
+  }
+  SetNumInputs(newsize);
+ }
 }
 
 // Выполняет действия после физически установленой связи
-bool UAConnector::AConnectToItem(UAItem *na, int i_index, int c_index)
+bool UAConnector::AConnectToItem(UEPtr<UAItem> na, int i_index, int c_index)
 {
  return true;
 }
 
 // Выполняет действия после физически разорваной связи
-void UAConnector::ADisconnectFromItem(UAItem *na, int i_index, int c_index)
+void UAConnector::ADisconnectFromItem(UEPtr<UAItem> na, int i_index, int c_index)
 {
 }
 
@@ -468,7 +481,7 @@ void UAConnector::DisconnectAllItems(void)
 // Разрывает все связи объекта
 // исключая его внутренние связи и обратные связи
 // brklevel - объект, относительно которого связи считаются внутренними
-void UAConnector::DisconnectByObject(const UAContainer *brklevel)
+void UAConnector::DisconnectByObject(UEPtr<UAContainer> brklevel)
 {
 // Build();
  for(int i=0;i<CItemList.GetSize();i++)
@@ -494,7 +507,7 @@ NameT UAConnector::GetInputInterfaceTypeName(int c_index)
 }                       */
 
 // Проверяет, допустимо ли подключение заданного item к этому коннектору
-bool UAConnector::CheckItem(UAItem *item, int item_index, int conn_index)
+bool UAConnector::CheckItem(UEPtr<UAItem> item, int item_index, int conn_index)
 {
 /* if(item->GetOutputType(item_index) == GetInputType(conn_index))
   return true;
@@ -503,7 +516,7 @@ bool UAConnector::CheckItem(UAItem *item, int item_index, int conn_index)
 }
 
 // Возвращает список подключений
-ULinksList& UAConnector::GetLinks(ULinksList &linkslist, const UAContainer *netlevel) const
+ULinksList& UAConnector::GetLinks(ULinksList &linkslist, UEPtr<UAContainer> netlevel) const
 {
  ULink link;
  GetLongId(netlevel,link.Connector.Id);

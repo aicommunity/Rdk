@@ -2,11 +2,12 @@
 #define UENV_EXCEPTION_H
 
 #include <string>
-#include "UEnvSupport.h"
+#include "UAEnvSupport.h"
 #include "../Utilities/UException.h"
 
 namespace RDK {
 
+class UAContainer;
 
 /* Базовый класс исключений */
 class UIContainerException

@@ -32,6 +32,7 @@ NameT ForbiddenName="";
 /* *********************************************************************** */
 /* *********************************************************************** */
 // Методы
+/*
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
@@ -81,7 +82,7 @@ void UAContainerVector::Resize(int newsize)
 {
  if(RealSize<newsize || !Buffer)
  {
-  PUAContainer *newbuffer=new PUAContainer[newsize];
+  PUEPtr<UAContainer> newbuffer=new PUAContainer[newsize];
   for(int i=0;i<Size;i++)
    newbuffer[i]=Buffer[i];
 
@@ -150,7 +151,7 @@ UAContainer& UAContainerVector::operator () (int index)
  return *Buffer[index];
 }
 // --------------------------
-
+  */
 /* *********************************************************************** */
 /* *********************************************************************** */
 
@@ -173,6 +174,74 @@ double UAContainer::DoubleRealTime=0;
 ULongTime UAContainer::RealTimeStep=1;
 double UAContainer::DoubleRealTimeStep=1.0e-6;
 // --------------------------
+
+/* Классы исключений */
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+UAContainer::IException::IException(void)
+{
+
+}
+
+UAContainer::IException::IException(const UAContainer *cont)
+{
+ if(!cont)
+  return;
+
+ // Короткое имя компонента в котором сгенерировано исключение
+ Name=cont->GetName();
+
+ // Короткий идентификатор компонента в котором сгенерировано исключение
+ Id=cont->GetId();
+
+ // Полное имя владельца компонента в котором сгенерировано исключение
+ if(cont->GetOwner())
+ {
+  cont->GetOwner()->GetFullName(OwnerName);
+
+  // Полный идентификатор владельца компонента в котором сгенерировано исключение
+  OwnerId=cont->GetOwner()->GetFullId();
+ }
+
+ if(cont->GetMainOwner())
+ {
+  // Полное имя главного владельца компонента в котором сгенерировано исключение
+  cont->GetMainOwner()->GetFullName(MainOwnerName);
+
+  // Полный идентификатор главного владельца компонента в котором сгенерировано исключение
+  MainOwnerId=cont->GetMainOwner()->GetFullId();
+ }
+}
+
+
+UAContainer::IException::IException(const IException &copy)
+{
+ // Короткое имя компонента в котором сгенерировано исключение
+ Name=copy.Name;
+
+ // Короткий идентификатор компонента в котором сгенерировано исключение
+ Id=copy.Id;
+
+ // Полное имя владельца компонента в котором сгенерировано исключение
+ OwnerName=copy.OwnerName;
+
+ // Полный идентификатор владельца компонента в котором сгенерировано исключение
+ OwnerId=copy.OwnerId;
+
+ // Полное имя главного владельца компонента в котором сгенерировано исключение
+ MainOwnerName=copy.MainOwnerName;
+
+ // Полный идентификатор главного владельца компонента в котором сгенерировано исключение
+ MainOwnerId=copy.MainOwnerId;
+}
+
+UAContainer::IException::~IException(void)
+{
+
+}
+// --------------------------
+
 
 // --------------------------
 // Методы управления глобальными свойствами
@@ -249,6 +318,8 @@ UAContainer::UAContainer(void)
 
  LastId=0;
 
+ ObjectIterator=0;
+
  AddLookupProperty("Id",new UVProperty<UId,UAContainer>(this,&UAContainer::SetId,&UAContainer::GetId));
  AddLookupProperty("Name",new UVProperty<NameT,UAContainer>(this,&UAContainer::SetName,&UAContainer::GetName));
  AddLookupProperty("TimeStep",new UVProperty<UTime,UAContainer>(this,&UAContainer::SetTimeStep,&UAContainer::GetTimeStep));
@@ -269,7 +340,7 @@ UAContainer::~UAContainer(void)
  UAContainerStorage *cstorage=dynamic_cast<UAContainerStorage*>(Storage);
  if(cstorage)
   {
-   cstorage->PopObject(this);
+   cstorage->PopObject(UEPtr<UAContainer>(this));
   }
 }
 // --------------------------
@@ -278,15 +349,15 @@ UAContainer::~UAContainer(void)
 // Методы доступа к свойствам
 // --------------------------
 // Возвращает владелца этого объекта
-UAContainer* const UAContainer::GetOwner(void) const
+UEPtr<UAContainer> UAContainer::GetOwner(void) const
 {
- return dynamic_cast<UAContainer*>(Owner);
+ return dynamic_pointer_cast<UAContainer>(Owner);
 }
 
 // Возвращает указатель на главного владельца этим объектом
-UAContainer* const UAContainer::GetMainOwner(void) const
+UEPtr<UAContainer> UAContainer::GetMainOwner(void) const
 {
- return dynamic_cast<UAContainer*>(MainOwner);
+ return dynamic_pointer_cast<UAContainer>(MainOwner);
 }
 
 // Возвращает хранилище компонент этого объекта
@@ -297,7 +368,7 @@ UAContainerStorage* const UAContainer::GetStorage(void) const
 
 // Проверяет, является ли объект owner
 // владельцем этого объекта на каком-либо уровне иерархии
-bool UAContainer::CheckOwner(const UAContainer *owner) const
+bool UAContainer::CheckOwner(UEPtr<UAContainer> owner) const
 {
  if(Owner == 0 && Owner != owner)
   return false;
@@ -305,7 +376,7 @@ bool UAContainer::CheckOwner(const UAContainer *owner) const
  if(Owner == owner)
   return true;
 
- return static_cast<UAContainer*>(Owner)->CheckOwner(owner);
+ return GetOwner()->CheckOwner(owner);
 }
 
 // Возвращает полный Id объекта
@@ -318,7 +389,7 @@ ULongId& UAContainer::GetFullId(ULongId &buffer) const
    return buffer;
   }
 
- static_cast<UAContainer*>(Owner)->GetFullId(buffer);
+ GetOwner()->GetFullId(buffer);
  buffer.Add(Id);
 
  return buffer;
@@ -328,7 +399,7 @@ ULongId& UAContainer::GetFullId(ULongId &buffer) const
 // (исключая имя владельца 'mainowner').
 // Метод возвращает пустой вектор, если 'mainowner' - не является
 // владельцем объекта ни на каком уровне иерархии.
-ULongId& UAContainer::GetLongId(const UAContainer *mainowner, ULongId &buffer) const
+ULongId& UAContainer::GetLongId(UEPtr<UAContainer> mainowner, ULongId &buffer) const
 {
  if(Owner == 0 && Owner != mainowner)
   {
@@ -343,7 +414,7 @@ ULongId& UAContainer::GetLongId(const UAContainer *mainowner, ULongId &buffer) c
    return buffer;
   }
 
- if(static_cast<UAContainer*>(Owner)->GetLongId(mainowner,buffer).GetSize() == 0)
+ if(GetOwner()->GetLongId(mainowner,buffer).GetSize() == 0)
   return buffer;
 
  buffer.Add(Id);
@@ -380,7 +451,7 @@ bool UAContainer::SetCoord(RDK::MVector<double> value)
 bool UAContainer::BreakOwner(void)
 {
  if(Owner)
-  return static_cast<UAContainer*>(Owner)->DelComponent(this,false);
+  return GetOwner()->DelComponent(this,false);
 
  return true;
 }
@@ -388,12 +459,12 @@ bool UAContainer::BreakOwner(void)
 // Устанавливает указатель на главного владельца этим объектом
 // Указатель устанавливается на число уровней дочерних компонент
 // 'levels'. Если levels < 0 то устанавливается компонентам на всех уровнях
-bool UAContainer::SetMainOwner(RDK::UAComponent* const mainowner)
+bool UAContainer::SetMainOwner(UEPtr<UAComponent> mainowner)
 {
- return RDK::UAComponent::SetMainOwner(mainowner);
+ return UAComponent::SetMainOwner(mainowner);
 }
 
-bool UAContainer::SetMainOwner(RDK::UAComponent* const mainowner, int levels)
+bool UAContainer::SetMainOwner(UEPtr<UAComponent> mainowner, int levels)
 {
  if(MainOwner == mainowner && !levels)
   return true;
@@ -411,11 +482,11 @@ bool UAContainer::SetMainOwner(RDK::UAComponent* const mainowner, int levels)
   {
    if(levels<0)
    {
-    if(!PComponents[i]->SetMainOwner(static_cast<UAContainer*>(MainOwner),levels))
+    if(!PComponents[i]->SetMainOwner(MainOwner,levels))
      return false;
    }
    else
-    if(!PComponents[i]->SetMainOwner(static_cast<UAContainer*>(MainOwner),levels-1))
+    if(!PComponents[i]->SetMainOwner(MainOwner,levels-1))
      return false;
   }
  }
@@ -498,10 +569,10 @@ bool UAContainer::SetName(const NameT &name)
 
   if(GetOwner() != 0)
   {
-   if(!dynamic_cast<UAContainer*>(GetOwner())->CheckName(name))
-    return false;
+   if(!GetOwner()->CheckName(name))
+	return false;
 
-   if(!dynamic_cast<UAContainer*>(GetOwner())->ModifyLookupComponent(Name, name))
+   if(!GetOwner()->ModifyLookupComponent(Name, name))
     return false;
   }
  Name=name;
@@ -518,7 +589,7 @@ NameT& UAContainer::GetFullName(NameT &buffer) const
    return buffer;
   }
 
- dynamic_cast<const UAContainer*>(GetOwner())->GetFullName(buffer);
+ GetOwner()->GetFullName(buffer);
  buffer+='.';
  buffer+=Name;
 
@@ -529,7 +600,7 @@ NameT& UAContainer::GetFullName(NameT &buffer) const
 // (исключая имя владельца 'mainowner').
 // Метод возвращает пустую строку, если 'mainowner' - не является
 // владельцем объекта ни на каком уровне иерархии.
-NameT& UAContainer::GetLongName(const UAContainer *mainowner, NameT &buffer) const
+NameT& UAContainer::GetLongName(const UEPtr<UAContainer> mainowner, NameT &buffer) const
 {
  if(!GetOwner() && GetOwner() != mainowner)
   {
@@ -543,7 +614,7 @@ NameT& UAContainer::GetLongName(const UAContainer *mainowner, NameT &buffer) con
    return buffer;
   }
 
- if(dynamic_cast<UAContainer*>(GetOwner())->GetLongName(mainowner,buffer) == ForbiddenName)
+ if(GetOwner()->GetLongName(mainowner,buffer) == ForbiddenName)
   {
    buffer.clear();
    return buffer;
@@ -715,7 +786,7 @@ bool UAContainer::SetTimeStep(UTime timestep)
  TimeStep=timestep;
 
  if(Owner)
-  OwnerTimeStep=static_cast<UAContainer*>(Owner)->TimeStep;
+  OwnerTimeStep=GetOwner()->TimeStep;
  else
   OwnerTimeStep=timestep;
 
@@ -772,10 +843,10 @@ bool UAContainer::SetId(const UId &id)
 
  if(Owner != 0)
   {
-   if(!static_cast<UAContainer*>(Owner)->CheckId(id))
+   if(!GetOwner()->CheckId(id))
     return false;
 
-   static_cast<UAContainer*>(Owner)->SetLookupComponent(Name, id);
+   GetOwner()->SetLookupComponent(Name, id);
   }
  Id=id;
 
@@ -790,14 +861,14 @@ bool UAContainer::SetId(const UId &id)
 // и значений параметров.
 // Если 'stor' == 0, то создание объектов осуществляется
 // в том же хранилище где располагается этот объект
-UAContainer* UAContainer::Alloc(UAContainerStorage *stor, bool copystate)
+UEPtr<UAContainer> UAContainer::Alloc(UAContainerStorage *stor, bool copystate)
 {
- UAContainer* copy;
- UAContainerStorage *storage=(stor!=0)?stor:static_cast<UAContainerStorage*>(Storage);
+ UEPtr<UAContainer> copy;
+ UAContainerStorage *storage=(stor!=0)?stor:GetStorage();
 
  if(storage)
  {
-  copy=static_cast<UAContainer*>(storage->TakeObject(Class,this));
+  copy=dynamic_pointer_cast<UAContainer>(storage->TakeObject(Class,this));
  }
  else
  {
@@ -810,7 +881,7 @@ UAContainer* UAContainer::Alloc(UAContainerStorage *stor, bool copystate)
 
 // Копирует этот объект в 'target' с сохранением всех компонент
 // и значений параметров
-bool UAContainer::Copy(UAContainer *target, UAContainerStorage *stor, bool copystate) const
+bool UAContainer::Copy(UEPtr<UAContainer> target, UAContainerStorage *stor, bool copystate) const
 {
  bool res=CopyProperties(target);
  if(!res)
@@ -876,7 +947,7 @@ int UAContainer::GetNumAllComponents(void) const
 // в качестве компоненты данного объекта
 // Метод возвращает 'true' в случае допустимости
 // и 'false' в случае некорректного типа
-bool UAContainer::CheckComponentType(const UAContainer* comp) const
+bool UAContainer::CheckComponentType(UEPtr<UAContainer> comp) const
 {
  return false;
 }
@@ -884,7 +955,7 @@ bool UAContainer::CheckComponentType(const UAContainer* comp) const
 // Возвращает указатель на дочерний компонент, хранимый в этом
 // объекте по короткому Id 'id'
 // Если id == ForbiddenId то возвращает указатель на этот компонент
-UAContainer* UAContainer::GetComponent(const UId &id) const
+UEPtr<UAContainer> UAContainer::GetComponent(const UId &id) const
 {
  if(id == ForbiddenId)
   return 0;
@@ -898,7 +969,7 @@ UAContainer* UAContainer::GetComponent(const UId &id) const
 
 // Возвращает указатель на дочерний компонент, хранимый в этом
 // объекте по короткому имени 'name'
-UAContainer* UAContainer::GetComponent(const NameT &name) const
+UEPtr<UAContainer> UAContainer::GetComponent(const NameT &name) const
 {
  return GetComponent(GetComponentId(name));
 }
@@ -907,9 +978,9 @@ UAContainer* UAContainer::GetComponent(const NameT &name) const
 // объекте по ДЛИННОМУ Id 'id'.
 // Если id[0] == ForbiddenId или Id имеет нулевой размер,
 // то возвращает указатель на этот компонент
-UAContainer* UAContainer::GetComponentL(const ULongId &id) const
+UEPtr<UAContainer> UAContainer::GetComponentL(const ULongId &id) const
 {
- UAContainer* comp;
+ UEPtr<UAContainer> comp;
 
  if(id.GetSize() == 0)
   return 0;
@@ -927,9 +998,9 @@ UAContainer* UAContainer::GetComponentL(const ULongId &id) const
 
 // Возвращает указатель на дочерний компонент, хранимый в этом
 // объекте по ДЛИННОМУ имени 'name'
-UAContainer* UAContainer::GetComponentL(const NameT &name) const
+UEPtr<UAContainer> UAContainer::GetComponentL(const NameT &name) const
 {
- UAContainer* comp;
+ UEPtr<UAContainer> comp;
  NameT::size_type pi,pj;
 
  pi=name.find_first_of('.');
@@ -953,7 +1024,7 @@ UAContainer* UAContainer::GetComponentL(const NameT &name) const
 // Возвращает указатель на дочерний компонент, хранимый в этом
 // объекте по порядковому индеку в списке компонент
 // Метод возвращает 0, если индекс выходит за границы массива
-UAContainer* UAContainer::GetComponentByIndex(int index) const
+UEPtr<UAContainer> UAContainer::GetComponentByIndex(int index) const
 {
  if(index >= NumComponents)
   return 0;
@@ -964,7 +1035,7 @@ UAContainer* UAContainer::GetComponentByIndex(int index) const
 // Добавляет дочерний компонент в этот объект
 // Возвращает его Id или ForbiddenId если добавление неудачно
 // Может быть передан указатель на локальную переменную
-UId UAContainer::AddComponent(UAContainer* comp, UIPointer* pointer)
+UId UAContainer::AddComponent(UEPtr<UAContainer> comp, UIPointer* pointer)
 {
 // NameT namebuffer;
 
@@ -977,7 +1048,7 @@ UId UAContainer::AddComponent(UAContainer* comp, UIPointer* pointer)
  if(comp->GetOwner())
   return ForbiddenId;
 
- if(!CheckComponentType(comp))
+ if(!CheckComponentType(comp.operator->()))
   return ForbiddenId;
 
  NameT namebuffer;
@@ -1037,7 +1108,7 @@ UId UAContainer::AddComponent(UAContainer* comp, UIPointer* pointer)
 // либо повисает, если хранилище не установлено
 bool UAContainer::DelComponent(const UId &id, bool canfree)
 {
- UAContainer *comp=GetComponent(id);
+ UEPtr<UAContainer> comp=GetComponent(id);
 
  if(!comp)
   return false;
@@ -1081,15 +1152,15 @@ bool UAContainer::DelComponent(const NameT &name, bool canfree)
 // Память должна быть выделена
 void UAContainer::GetComponentsList(UId *buffer) const
 {
- UAContainer **pcomps=PComponents;
+ UEPtr<UAContainer> *pcomps=PComponents;
  for(int i=0;i<NumComponents;i++,buffer++,pcomps++)
   *buffer=(*pcomps)->Id;
 }
 
 // Копирует все компоненты этого объекта в объект 'comp', если возможно.
-bool UAContainer::CopyComponents(UAContainer* comp, UAContainerStorage* stor) const
+bool UAContainer::CopyComponents(UEPtr<UAContainer> comp, UAContainerStorage* stor) const
 {
- UAContainer* bufcomp;
+ UEPtr<UAContainer> bufcomp;
 
  if(!comp)
   return false;
@@ -1097,7 +1168,7 @@ bool UAContainer::CopyComponents(UAContainer* comp, UAContainerStorage* stor) co
  // Удаляем лишние компоненты из 'comp'
  comp->DelAllComponents();
 
- UAContainer ** pcomponents=0;
+ UEPtr<UAContainer> * pcomponents=0;
  PointerMapCIteratorT I;
  PointerMapIteratorT J;
  if(NumComponents>0)
@@ -1221,14 +1292,14 @@ const UAContainer::VariableMapT& UAContainer::GetPropertiesList(void) const
 }
 
 // Копирует все параметры этого объекта в объект 'comp', если возможно.
-bool UAContainer::CopyProperties(UAContainer* comp) const
+bool UAContainer::CopyProperties(UEPtr<UAContainer> comp) const
 {
  bool key=true;
 
  if(!comp)
   return false;
 
- UAContainer* ccomp=static_cast<UAContainer*>(comp);
+// UEPtr<UAContainer> ccomp=static_cast<UEPtr<UAContainer>>(comp);
 
  Serialize::USerStorageBinary databuffer;
   VariableMapCIteratorT I=PropertiesLookupTable.begin(),
@@ -1236,7 +1307,7 @@ bool UAContainer::CopyProperties(UAContainer* comp) const
   while(I != J)
   {
    databuffer.clear();
-   key &= ccomp->SetProperty(I->second.Id,GetProperty(I->second.Id,&databuffer));
+   key &= comp->SetProperty(I->second.Id,GetProperty(I->second.Id,&databuffer));
    ++I;
   }
  return key;
@@ -1268,17 +1339,19 @@ const NameT& UAContainer::FindPropertyName(const UIProperty *prop) const
 // если 'sublevel' == 0, то возвращает идентификаторы коннекторов только этой сети
 // Предварительная очистка буфера не производится.
 ULongIdVector& UAContainer::GetConnectorsList(ULongIdVector &buffer,
-                            int sublevel, UAContainer *ownerlevel)
+                            int sublevel, UEPtr<UAContainer> ownerlevel)
 {
  ULongId id;
 
  for(int i=0;i<NumComponents;i++)
  {
-  UAContainer *cont=GetComponentByIndex(i);
-  if(dynamic_cast<UAConnector*>(cont))
+  UEPtr<UAContainer> cont=GetComponentByIndex(i);
+  UEPtr<UAConnector> temp;
+  temp=dynamic_pointer_cast<UAConnector>(cont);
+  if(temp)
   {
    id.Resize(0);
-   cont->GetLongId((ownerlevel)?ownerlevel:this,id);
+   cont->GetLongId((ownerlevel)?ownerlevel:UEPtr<UAContainer>(this),id);
    buffer.Add(id);
   }
 
@@ -1297,18 +1370,21 @@ ULongIdVector& UAContainer::GetConnectorsList(ULongIdVector &buffer,
 // если 'sublevel' == 0, то возвращает идентификаторы элементов только этой сети
 // Предварительная очистка буфера не производится.
 ULongIdVector& UAContainer::GetItemsList(ULongIdVector &buffer,
-                            int sublevel, UAContainer *ownerlevel)
+							int sublevel, UEPtr<UAContainer> ownerlevel)
 
 {
  ULongId id;
 
  for(int i=0;i<NumComponents;i++)
  {
-  UAContainer *cont=GetComponentByIndex(i);
-  if(dynamic_cast<UAItem*>(cont))
+  UEPtr<UAContainer> cont=GetComponentByIndex(i);
+  UEPtr<UAItem> temp;
+  temp=dynamic_pointer_cast<UAItem>(cont);
+  if(temp)
+//  if(dynamic_cast<UAItem*>(cont))
   {
    id.Resize(0);
-   cont->GetLongId((ownerlevel)?ownerlevel:this,id);
+   cont->GetLongId((ownerlevel)?ownerlevel:UEPtr<UAContainer>(this),id);
    buffer.Add(id);
   }
 
@@ -1327,17 +1403,20 @@ ULongIdVector& UAContainer::GetItemsList(ULongIdVector &buffer,
 // если 'sublevel' == 0, то возвращает идентификаторы подсетей только этой сети
 // Предварительная очистка буфера не производится.
 ULongIdVector& UAContainer::GetNetsList(ULongIdVector &buffer,
-                            int sublevel, UAContainer *ownerlevel)
+                            int sublevel, UEPtr<UAContainer> ownerlevel)
 {
  ULongId id;
 
  for(int i=0;i<NumComponents;i++)
  {
-  UAContainer *cont=GetComponentByIndex(i);
-  if(dynamic_cast<UANet*>(cont))
+  UEPtr<UAContainer> cont=GetComponentByIndex(i);
+  UEPtr<UANet> temp;
+  temp=dynamic_pointer_cast<UANet>(cont);
+  if(temp)
+//  if(dynamic_cast<UANet*>(cont))
   {
    id.Resize(0);
-   cont->GetLongId((ownerlevel)?ownerlevel:this,id);
+   cont->GetLongId((ownerlevel)?ownerlevel:UEPtr<UAContainer>(this),id);
    buffer.Add(id);
   }
 
@@ -1428,7 +1507,7 @@ const NameT& UAContainer::FindStateName(const UIProperty *prop) const
 }
 
 // Копирует все переменные состояния этого объекта в объект 'comp', если возможно.
-bool UAContainer::CopyState(UAContainer* comp) const
+bool UAContainer::CopyState(UEPtr<UAContainer> comp) const
 {
  VariableMapCIteratorT I=StateLookupTable.begin(),
                        J=StateLookupTable.end();
@@ -1455,7 +1534,7 @@ bool UAContainer::CopyState(UAContainer* comp) const
 // 'pointerid'
 bool UAContainer::SetComponentAs(const UId &id, const UId &pointerid)
 {
- UAContainer* cont=GetComponent(id);
+ UEPtr<UAContainer> cont=GetComponent(id);
 
  if(!cont)
   return false;
@@ -1466,7 +1545,7 @@ bool UAContainer::SetComponentAs(const UId &id, const UId &pointerid)
 
  while(J != PointerLookupTable.end())
  {
-  if(J->second.Pointer && J->second.Pointer->Find(cont)>=0)
+  if(J->second.Pointer && J->second.Pointer->Find(cont.operator->())>=0)
   {
    if(J->second.Id == pointerid)
     return true;
@@ -1480,7 +1559,7 @@ bool UAContainer::SetComponentAs(const UId &id, const UId &pointerid)
 
  if(K != PointerLookupTable.end() && K->second.Pointer)
  {
-  K->second.Pointer->Set(cont);
+  K->second.Pointer->Set(cont.operator->());
   return true;
  }
 
@@ -1491,7 +1570,7 @@ bool UAContainer::SetComponentAs(const UId &id, const UId &pointerid)
 // 'pointername'
 bool UAContainer::SetComponentAs(const NameT &name,const NameT &pointername)
 {
- UAContainer* cont=GetComponent(name);
+ UEPtr<UAContainer> cont=GetComponent(name);
 
  if(!cont)
   return false;
@@ -1502,7 +1581,7 @@ bool UAContainer::SetComponentAs(const NameT &name,const NameT &pointername)
 
  while(J != PointerLookupTable.end())
  {
-  if(J->second.Pointer && J->second.Pointer->Find(cont)>=0)
+  if(J->second.Pointer && J->second.Pointer->Find(cont.operator->())>=0)
   {
    if(J->first == pointername)
     return true;
@@ -1516,7 +1595,7 @@ bool UAContainer::SetComponentAs(const NameT &name,const NameT &pointername)
 
  if(K != PointerLookupTable.end() && K->second.Pointer)
  {
-  K->second.Pointer->Set(cont);
+  K->second.Pointer->Set(cont.operator->());
   return true;
  }
 
@@ -1527,7 +1606,7 @@ bool UAContainer::SetComponentAs(const NameT &name,const NameT &pointername)
 // 'pointerid'
 bool UAContainer::ResetComponentAs(const UId &id, const UId &pointerid)
 {
- UAContainer* cont=GetComponent(id);
+ UEPtr<UAContainer> cont=GetComponent(id);
 
  if(!cont)
   return false;
@@ -1536,9 +1615,9 @@ bool UAContainer::ResetComponentAs(const UId &id, const UId &pointerid)
 
  while(J != PointerLookupTable.end())
  {
-  if(J->second.Id == pointerid && J->second.Pointer && J->second.Pointer->Find(cont)>=0)
+  if(J->second.Id == pointerid && J->second.Pointer && J->second.Pointer->Find(cont.operator->())>=0)
   {
-   J->second.Pointer->Del(cont);
+   J->second.Pointer->Del(cont.operator->());
    return true;
   }
 
@@ -1552,7 +1631,7 @@ bool UAContainer::ResetComponentAs(const UId &id, const UId &pointerid)
 // 'pointername'
 bool UAContainer::ResetComponentAs(const NameT &name,const NameT &pointername)
 {
- UAContainer* cont=GetComponent(name);
+ UEPtr<UAContainer> cont=GetComponent(name);
 
  if(!cont)
   return false;
@@ -1561,9 +1640,9 @@ bool UAContainer::ResetComponentAs(const NameT &name,const NameT &pointername)
 
  while(J != PointerLookupTable.end())
  {
-  if(J->first == pointername && J->second.Pointer && J->second.Pointer->Find(cont)>=0)
+  if(J->first == pointername && J->second.Pointer && J->second.Pointer->Find(cont.operator->())>=0)
   {
-   J->second.Pointer->Del(cont);
+   J->second.Pointer->Del(cont.operator->());
    return true;
   }
 
@@ -1576,7 +1655,7 @@ bool UAContainer::ResetComponentAs(const NameT &name,const NameT &pointername)
 // Сбрасывает отношение дочернего компонента 'id' ко всем классам локальных указателей
 bool UAContainer::ResetComponentAll(const UId &id)
 {
- UAContainer* cont=GetComponent(id);
+ UEPtr<UAContainer> cont=GetComponent(id);
 
  if(!cont)
   return false;
@@ -1585,9 +1664,9 @@ bool UAContainer::ResetComponentAll(const UId &id)
 
  while(J != PointerLookupTable.end())
  {
-  if(J->second.Pointer && J->second.Pointer->Find(cont)>=0)
+  if(J->second.Pointer && J->second.Pointer->Find(cont.operator->())>=0)
   {
-   J->second.Pointer->Del(cont);
+   J->second.Pointer->Del(cont.operator->());
   }
 
   ++J;
@@ -1599,7 +1678,7 @@ bool UAContainer::ResetComponentAll(const UId &id)
 // Сбрасывает отношение дочернего компонента 'name' ко всем классам локальных указателей
 bool UAContainer::ResetComponentAll(const NameT &name)
 {
- UAContainer* cont=GetComponent(name);
+ UEPtr<UAContainer> cont=GetComponent(name);
 
  if(!cont)
   return false;
@@ -1608,9 +1687,9 @@ bool UAContainer::ResetComponentAll(const NameT &name)
 
  while(J != PointerLookupTable.end())
  {
-  if(J->second.Pointer && J->second.Pointer->Find(cont)>=0)
+  if(J->second.Pointer && J->second.Pointer->Find(cont.operator->())>=0)
   {
-   J->second.Pointer->Del(cont);
+   J->second.Pointer->Del(cont.operator->());
   }
 
   ++J;
@@ -1626,7 +1705,7 @@ void UAContainer::DelAllComponentsAs(const NameT &pointername, bool canfree)
 
  if(J != PointerLookupTable.end())
  {
-  UAContainer *cont=J->second.Pointer->Get();
+  UEPtr<UAContainer> cont=J->second.Pointer->Get();
 
   while(cont)
   {
@@ -1669,9 +1748,9 @@ bool UAContainer::Default(void)
 
  // Если существует прообраз в хранилище, то берем настройки параметров
  // из прообраза
- UAContainer *original=0;
+ UEPtr<UAContainer> original;
  if(Storage)
-  original=static_cast<UAContainer*>(Storage->GetClass(Class).operator ->());
+  original=dynamic_pointer_cast<UAContainer>(GetStorage()->GetClass(Class));
 
  SetTimeStep(2000);
 
@@ -1744,7 +1823,7 @@ bool UAContainer::Calculate(void)
   return false;
 
 // bool key=true;
- UAContainer **comps=PComponents;
+ UEPtr<UAContainer> *comps=PComponents;
  for(int i=0;i<NumComponents;++i)
   if(!(*comps++)->Calculate())
    return false;
@@ -2173,14 +2252,14 @@ NameT UAContainer::GetPointerLongName(const UIPointer &pointer) const
 }
 
 // Осуществляет поиск в таблице указателя, соответствующего заданному источнику
-UAContainer::PointerMapCIteratorT UAContainer::FindLookupPointer(const UAContainer *source) const
+UAContainer::PointerMapCIteratorT UAContainer::FindLookupPointer(UEPtr<UAContainer> source) const
 {
  PointerMapCIteratorT I=PointerLookupTable.begin(),
                       J=PointerLookupTable.end();
 
  while(I != J)
   {
-   if(I->second.Pointer && I->second.Pointer->Find(source)>=0)
+   if(I->second.Pointer && I->second.Pointer->Find(source.operator->())>=0)
     break;
    ++I;
   }
@@ -2211,31 +2290,31 @@ bool UAContainer::ASharesUnInit(void)
 // Скрытые методы управления таблицей компонент
 // --------------------------
 // Добавляет компонент 'comp' в таблицу компонент
-void UAContainer::AddComponentTable(UAContainer *comp, UIPointer* pointer)
+void UAContainer::AddComponentTable(UEPtr<UAContainer> comp, UIPointer* pointer)
 {
- Components.Add(comp);
+ Components.push_back(comp);
  PComponents=&Components[0];
- NumComponents=Components.GetSize();
+ NumComponents=Components.size();
 
  if(pointer)
-  pointer->Set(comp);
+  pointer->Set(comp.operator->());
  else
  {
-  PointerMapCIteratorT I=FindLookupPointer(comp);
+  PointerMapCIteratorT I=FindLookupPointer(comp.operator->());
   if(I != PointerLookupTable.end())
   {
-   I->second.Pointer->Del(comp);
+   I->second.Pointer->Del(comp.operator->());
   }
  }
 }
 
 // Удаляет компонент 'comp' из таблицы компонент
-void UAContainer::DelComponentTable(UAContainer *comp)
+void UAContainer::DelComponentTable(UEPtr<UAContainer> comp)
 {
  int i;
 
  if(PComponents[NumComponents-1]==comp)
-  Components.Resize(NumComponents-1);
+  Components.resize(NumComponents-1);
  else
   {
    for(i=0;i<NumComponents;i++)
@@ -2245,20 +2324,20 @@ void UAContainer::DelComponentTable(UAContainer *comp)
    if(i>=NumComponents)
     return;
 
-   memmove(PComponents+i,PComponents+i+1,(NumComponents-i-1)*sizeof(UAContainer*));
-   Components.Resize(NumComponents-1);
+   memmove(PComponents+i,PComponents+i+1,(NumComponents-i-1)*sizeof(UEPtr<UAContainer>));
+   Components.resize(NumComponents-1);
   }
 
- NumComponents=Components.GetSize();
+ NumComponents=Components.size();
  if(NumComponents>0)
   PComponents=&Components[0];
  else
   PComponents=0;
 
- PointerMapCIteratorT I=FindLookupPointer(comp);
+ PointerMapCIteratorT I=FindLookupPointer(comp.operator->());
  if(I != PointerLookupTable.end())
  {
-  I->second.Pointer->Del(comp);
+  I->second.Pointer->Del(comp.operator->());
  }
 }
 // --------------------------
@@ -2268,7 +2347,7 @@ void UAContainer::DelComponentTable(UAContainer *comp)
 // --------------------------
 // Удаляет компонент comp
 // Метод предполагает, что компонент принадлежит объекту
-bool UAContainer::DelComponent(UAContainer* comp, bool canfree)
+bool UAContainer::DelComponent(UEPtr<UAContainer> comp, bool canfree)
 {
  if(!SharesUnInit() || !ADelComponent(comp))
   return false;
@@ -2298,7 +2377,7 @@ bool UAContainer::DelComponent(UAContainer* comp, bool canfree)
 // при добавлении дочернего компонента в этот объект
 // Метод будет вызван только если comp был
 // успешно добавлен в список компонент
-bool UAContainer::AAddComponent(UAContainer* comp, UIPointer* pointer)
+bool UAContainer::AAddComponent(UEPtr<UAContainer> comp, UIPointer* pointer)
 {
  return true;
 }
@@ -2307,7 +2386,7 @@ bool UAContainer::AAddComponent(UAContainer* comp, UIPointer* pointer)
 // при удалении дочернего компонента из этого объекта
 // Метод будет вызван только если comp
 // существует в списке компонент
-bool UAContainer::ADelComponent(UAContainer* comp)
+bool UAContainer::ADelComponent(UEPtr<UAContainer> comp)
 {
  return true;
 }

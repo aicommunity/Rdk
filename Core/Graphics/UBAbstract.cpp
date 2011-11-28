@@ -410,9 +410,9 @@ bool UBAbstract::SetOutput(int index, PUBitmap bitmap)
 // Коммуникационные методы
 // ----------------------
 // Выполняет действия после физически установленой связи
-bool UBAbstract::AConnectToItem(UAItem *na, int i_index, int c_index)
+bool UBAbstract::AConnectToItem(UEPtr<UAItem> na, int i_index, int c_index)
 {
- UBAbstract* filter=dynamic_cast<UBAbstract*>(na);
+ UEPtr<UBAbstract> filter=dynamic_pointer_cast<UBAbstract>(na);
 
  if(!InternalInputsFlag)
   Inputs[c_index]=filter->Outputs[i_index];
@@ -421,9 +421,9 @@ bool UBAbstract::AConnectToItem(UAItem *na, int i_index, int c_index)
 }
 
 // Выполняет действия после физически разорваной связи
-void UBAbstract::ADisconnectFromItem(UAItem *na, int i_index, int c_index)
+void UBAbstract::ADisconnectFromItem(UEPtr<UAItem> na, int i_index, int c_index)
 {
- UBAbstract* filter=dynamic_cast<UBAbstract*>(na);
+ UEPtr<UBAbstract> filter=dynamic_pointer_cast<UBAbstract>(na);
 
  AFDisconnectFromItem(filter,i_index,c_index);
 }
@@ -571,13 +571,13 @@ bool UBAbstract::AFCalculate(void)
 // Коммуникационные методы фильтров
 // ----------------------
 // Выполняет действия после физически установленой связи
-bool UBAbstract::AFConnectToItem(UBAbstract *na, int i_index, int c_index)
+bool UBAbstract::AFConnectToItem(UEPtr<UBAbstract> na, int i_index, int c_index)
 {
  return true;
 }
 
 // Выполняет действия после физически разорваной связи
-void UBAbstract::AFDisconnectFromItem(UBAbstract *na, int i_index, int c_index)
+void UBAbstract::AFDisconnectFromItem(UEPtr<UBAbstract> na, int i_index, int c_index)
 {
  return;
 }

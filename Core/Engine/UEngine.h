@@ -496,7 +496,7 @@ protected:
 protected:
 // Осуществляет поиск компонента по длинному строковому id
 // Если строковое id не задано, то возвращает указатель на модель
-UAContainer* FindComponent(const char *stringid);
+UEPtr<UAContainer> FindComponent(const char *stringid);
 
 // Восстановление настроек по умолчанию и сброс процесса счета
 virtual bool ADefault(void);

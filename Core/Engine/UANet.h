@@ -31,7 +31,7 @@ virtual ~UANet(void);
 // --------------------------
 // Методы доступа к свойствам
 // --------------------------
-ULinksList& GetLinks(ULinksList &linkslist, const UAContainer *netlevel) const;
+ULinksList& GetLinks(ULinksList &linkslist, UAContainer *netlevel) const;
 // --------------------------
 
 // --------------------------
@@ -41,7 +41,7 @@ ULinksList& GetLinks(ULinksList &linkslist, const UAContainer *netlevel) const;
 // и значений параметров
 // Если 'stor' == 0, то создание объектов осуществляется
 // в том же хранилище где располагается этот объект
-virtual bool Copy(UAContainer *target, UAContainerStorage *stor=0, bool copystate=false) const;
+virtual bool Copy(UEPtr<UAContainer> target, UAContainerStorage *stor=0, bool copystate=false) const;
 
 // Осуществляет освобождение этого объекта в его хранилище
 // или вызов деструктора, если Storage == 0
@@ -55,7 +55,7 @@ virtual void Free(void);
 // в качестве компоненты данного объекта
 // Метод возвращает 'true' в случае допустимости
 // и 'false' в случае некорректного типа
-virtual bool CheckComponentType(const UAContainer* comp) const;
+virtual bool CheckComponentType(UEPtr<UAContainer> comp) const;
 // --------------------------
 
 // --------------------------
@@ -66,13 +66,13 @@ protected:
 // при добавлении дочернего компонента в этот объект
 // Метод будет вызван только если comp был
 // успешно добавлен в список компонент
-virtual bool AAddComponent(UAContainer* comp, UIPointer* pointer=0);
+virtual bool AAddComponent(UEPtr<UAContainer> comp, UIPointer* pointer=0);
 
 // Выполняет предварительные пользовательские действия
 // при удалении дочернего компонента из этого объекта
 // Метод будет вызван только если comp
 // существует в списке компонент
-virtual bool ADelComponent(UAContainer* comp);
+virtual bool ADelComponent(UEPtr<UAContainer> comp);
 // --------------------------
 
 // ----------------------
@@ -111,7 +111,7 @@ virtual bool BreakLink(const NameT &itemname, int item_index,
 // Разрывает все связи сети
 // исключая ее внутренние связи и обратные связи
 // brklevel - объект, относительно которого связи считаются внутренними
-virtual void BreakLinks(const UAContainer* brklevel);
+virtual void BreakLinks(UAContainer* brklevel);
 
 // Разрывает заданные связи сети
 virtual bool BreakLinks(const ULinksList &linkslist);
@@ -124,7 +124,7 @@ virtual void BreakLinks(void);
 // Скрытые методы доступа к свойствам
 // --------------------------
 protected:
-ULinksList& GetLinks(const UAContainer *cont, ULinksList &linkslist, const UAContainer *netlevel) const;
+ULinksList& GetLinks(UAContainer *cont, ULinksList &linkslist, UAContainer *netlevel) const;
 // --------------------------
 
 

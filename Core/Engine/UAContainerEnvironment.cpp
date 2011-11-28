@@ -79,7 +79,7 @@ bool UAContainerEnvironment::CreateModel(const NameT& classname)
   return false;
 
  CurrentComponent=0;
- Model=GetStorage()->TakeObject(classname);
+ Model=dynamic_pointer_cast<UAContainer>(GetStorage()->TakeObject(classname));
  if(Model)
  {
   return true;

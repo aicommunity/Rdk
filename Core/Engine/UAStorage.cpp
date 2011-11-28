@@ -17,174 +17,7 @@ See file license.txt for more information
 #include "UAStorage.h"
 
 namespace RDK {
-/*
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-UClassStorageElement::UClassStorageElement(void)
-{
- Id=ForbiddenId;
-}
 
-UClassStorageElement::UClassStorageElement(UAComponent *comp, UId id)
- : USharedPtr<UAComponent>(comp), Id(id)
-{
-
-}
-// --------------------------
-
-
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-UClassesStorage::UClassesStorage(void)
-{
- Classes=0;
- Size=RealSize=0;
-}
-
-UClassesStorage::UClassesStorage(const UClassesStorage &copy)
-{
- Classes=0;
- Size=RealSize=0;
- *this=copy;
-}
-
-UClassesStorage::~UClassesStorage(void)
-{
- Clear();
-}
-// --------------------------
-
-// --------------------------
-// Методы управления
-// --------------------------
-// Очищает хранилище
-void UClassesStorage::Clear(void)
-{
- if(Classes)
- {
-  delete[] Classes;
-  Classes=0;
- }
- Size=RealSize=0;
-}
-
-// Возвращает размер массива
-int UClassesStorage::GetSize(void) const
-{
- return Size;
-}
-
-// Изменяет размер хранилища
-// Метод сохраняет старые данные
-void UClassesStorage::Resize(int newsize)
-{
- int newrealsize=0;
- if(newsize < 8)
-  newrealsize=16;
- else
-  newrealsize=newsize<<2;
-
-// newrealsize=newsize;
- if(RealSize<newsize || !Classes)
- {
-  UClassStorageElement* newbuffer=new UClassStorageElement[newrealsize];
-  for(int i=0;i<Size;i++)
-   newbuffer[i]=Classes[i];
-//  memcpy(newbuffer,Classes,sizeof(UClassStorageElement)*Size);
-
-  if(Classes)
-   delete []Classes;
-  Classes=newbuffer;
-  RealSize=newrealsize;
-  Size=newsize;
- }
- else
- {
-  Size=newsize;
- }
-}
-
-// Ищет класс по Id
-USharedPtr<UAComponent> UClassesStorage::Find(const UId &id) const
-{
- UClassStorageElement* pclasses=Classes;
- for(int i=0;i<Size;i++,pclasses++)
-  if(pclasses->Id == id)
-   return *pclasses;
-
- return USharedPtr<UAComponent>();
-}
-
-// Ищет класс по Id и удаляет его из массива
-// Возвращает указатель на удаленный класс
-USharedPtr<UAComponent> UClassesStorage::Erase(const UId &id)
-{
- UClassStorageElement* pclasses=Classes;
- USharedPtr<UAComponent> res;
- for(int i=0;i<Size;i++,pclasses++)
-  if(pclasses->Id == id)
-  {
-   res=*pclasses;
-
-   if(i != Size-1)
-   {
-	for(int j=i;j<Size-1;j++,pclasses++)
-	{
-	 *pclasses=*(pclasses+1);
-    }
-
-   }
-//	memmove(pclasses,pclasses+1,sizeof(UClassStorageElement)*(Size-i));
-   Resize(Size-1);
-
-   return res;
-  }
-
- return res;
-}
-
-// Добавляет новый элемент в конец хранилища
-void UClassesStorage::PushBack(const UClassStorageElement &classelement)
-{
- Resize(Size+1);
- Classes[Size-1]=classelement;
-}
-
-void UClassesStorage::PushBack(const UId &id, UAComponent *component)
-{
- UClassStorageElement classelement(component,id);
- PushBack(classelement);
-}
-
-// Возвращает указатель на массив классов
-UClassStorageElement* UClassesStorage::GetClasses(void) const
-{
- return Classes;
-}
-// --------------------------
-
-// --------------------------
-// Операторы
-// --------------------------
-// Оператор присваивания
-UClassesStorage& UClassesStorage::operator = (const UClassesStorage &copy)
-{
- Resize(copy.Size);
- for(int i=0;i<Size;i++)
-  Classes[i]=copy.Classes[i];
-
- return *this;
-}
-
-// Оператор доступа
-UClassStorageElement& UClassesStorage::operator [] (int i)
-{
- return Classes[i];
-}
-// --------------------------
-               */
 /* *************************************************************************** */
 // Class UAStorage
 /* *************************************************************************** */
@@ -245,13 +78,6 @@ UId UAStorage::AddClass(UAComponent *classtemplate, const UId &classid)
  return id;
 }
 
-// Добавляет образец класса объекта в хранилище с автоматическим назначением id
-// Возвращает id класса
-/*UId UAStorage::AddClass(UAComponent *classtemplate)
-{
- return AddClass(LastClassId+1,classtemplate);
-}  */
-
 // Удаляет образец класса объекта из хранилища
 // Возвращает false если classid не найден,
 // или присутствуют объекты этого класса
@@ -277,14 +103,14 @@ bool UAStorage::CheckClass(const UId &classid) const
 }
 
 // Возвращает образец класса
-USharedPtr<UAComponent> UAStorage::GetClass(const UId &classid) const
+UESharedPtr<UAComponent> UAStorage::GetClass(const UId &classid) const
 {
  UClassesStorageCIterator I=ClassesStorage.find(classid);
 
  if(I != ClassesStorage.end())
   return I->second;
 
- return USharedPtr<UAComponent>();
+ return UESharedPtr<UAComponent>();
 }
 
 // Возвращает число классов
@@ -334,28 +160,30 @@ bool UAStorage::ClearClassesStorage(void)
 // Флаг 'Activity' объекта выставляется в true
 // Если свободного объекта не существует он создается и добавляется
 // в хранилище
-UAComponent* UAStorage::TakeObject(const UId &classid, const UAComponent *prototype)
+UESharedPtr<UAComponent> UAStorage::TakeObject(const UId &classid, const UAComponent *prototype)
 {
- USharedPtr<UAComponent> classtemplate=ClassesStorage.find(classid)->second;
+ UESharedPtr<UAComponent> classtemplate=ClassesStorage.find(classid)->second;
+ UESharedPtr<UAComponent> obj;
 
  if(!classtemplate)
-  return 0;
+  return obj;
 
- UAComponent *obj=classtemplate->New();
+ obj=classtemplate->New();
  if(!obj)
-  return 0;
+  return obj;
 
  obj->SetClass(classid);
  obj->Default();
+// return obj.operator ->();
  return obj;
 }
 
 // Возвращает объект в хранилище
 // В текущей реализации всегда удаляет объект и возвращает true
-bool UAStorage::ReturnObject(UAComponent *object)
+bool UAStorage::ReturnObject(UEPtr<UAComponent> object)
 {
- if(object)
-  delete object;
+// if(object)
+//  delete object;
 
  return true;
 }
@@ -369,11 +197,6 @@ UId UAStorage::FindClass(const UAComponent *object) const
 
  return object->GetClass();
 }
-// --------------------------
-
-// --------------------------
-// Скрытые методы таблицы соответствий классов
-// --------------------------
 // --------------------------
 /* *************************************************************************** */
 

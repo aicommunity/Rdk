@@ -228,7 +228,7 @@ void DisconnectAll(void);
 // Разрывает все связи объекта
 // исключая его внутренние связи и обратные связи
 // brklevel - объект, относительно которого связи считаются внутренними
-virtual void DisconnectBy(const UAContainer *brklevel);
+virtual void DisconnectBy(UEPtr<UAContainer> brklevel);
 
 // Переустанавливает все связи этого item со всеми connectors которые получают
 // данные от этого item
@@ -242,12 +242,12 @@ const UAConnector* GetAConnector(const UId &id, int index) const;
 const UAConnector* GetAConnectorByIndex(int output, int index) const;
 
 // Возвращает список подключений
-ULinksList& GetLinks(ULinksList &linkslist, const UAContainer *netlevel) const;
+ULinksList& GetLinks(ULinksList &linkslist, UEPtr<UAContainer> netlevel) const;
 
 // Возвращает список подключений этого компонента и всех дочерних компонент
 // к заданному компоненту comp и всем его дочерним компонентам
-ULinksList& GetFullItemLinks(ULinksList &linkslist, const UAItem *comp,
-                            const UAContainer *netlevel) const;
+ULinksList& GetFullItemLinks(ULinksList &linkslist, UEPtr<UAItem> comp,
+                            UEPtr<UAContainer> netlevel) const;
 // ----------------------
 
 public:

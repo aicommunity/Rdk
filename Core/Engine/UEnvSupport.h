@@ -14,15 +14,11 @@ See file license.txt for more information
 
 #include <string>
 #include "UAEnvSupport.h"
-
-
 #include "../Serialize/Serialize.h"
 
 namespace RDK {
 
-typedef std::string NameT;
 typedef Serialize::USerStorage UVariableData;
-extern NameT ForbiddenName;
 
 class UAContainer;
 
@@ -115,6 +111,7 @@ virtual ~UPVariable(void);
 // Операторы ввода вывода идентификаторов
 ULongId& operator << (ULongId& id, const std::string &str);
 std::string& operator >> (const ULongId& id, std::string &str);
+
 
 }
 #endif

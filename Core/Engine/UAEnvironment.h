@@ -102,7 +102,7 @@ protected: // Данные
 UAStorage* Storage;
 
 // Исследуемая модель
-UAComponent *Model;
+UEPtr<UAContainer> Model;
 
 // Массив доступных библиотек
 UClassLibraryList ClassLibraryList;
@@ -172,7 +172,7 @@ virtual UAStorage* GetStorage(void);
 virtual bool SetStorage(UAStorage *storage);
 
 // Возвращает указатель на модель
-virtual UAComponent* GetModel(void);
+UEPtr<UAContainer> GetModel(void);
 
 // Создает новую модель из хранилища по id класса
 virtual bool CreateModel(const UId& classid);

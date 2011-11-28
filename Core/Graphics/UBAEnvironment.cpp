@@ -39,9 +39,9 @@ UBAStorage* UBAEnvironment::GetStorage(void)
 }
 
 // ¬озвращает указатель на модель
-UBAModel* UBAEnvironment::GetModel(void)
+UEPtr<UBAModel> UBAEnvironment::GetModel(void)
 {
- return dynamic_cast<UBAModel*>(UAEnvironment::GetModel());
+ return dynamic_pointer_cast<UBAModel>(UAEnvironment::GetModel());
 }
 
 // —оздает новую модель из хранилища по id класса
@@ -50,7 +50,7 @@ bool UBAEnvironment::CreateModel(const UId& classid)
  if(!GetStorage())
   return false;
 
- USharedPtr<UAComponent> component=GetStorage()->GetClass(classid);
+ UEPtr<UAComponent> component=GetStorage()->GetClass(classid);
  if(!component)
   return false;
 
@@ -309,7 +309,7 @@ bool UBAEnvironment::ABuild(void)
  InputImages.Resize(NumInputImages);
  OutputImages.Resize(NumOutputImages);
 
- UBAbstract *model=dynamic_cast<UBAbstract*>(GetModel());
+ UEPtr<UBAbstract> model=dynamic_pointer_cast<UBAbstract>(GetModel());
  if(model)
  {
   model->SetInternalInputsFlag(false);
@@ -335,7 +335,7 @@ bool UBAEnvironment::ACalculate(void)
  if(!UAContainerEnvironment::ACalculate())
   return false;
 
- UBAbstract *model=dynamic_cast<UBAbstract*>(GetModel());
+ UEPtr<UBAbstract> model=dynamic_pointer_cast<UBAbstract>(GetModel());
  if(model)
  {
   for(int i=0;i<GetNumOutputImages();i++)

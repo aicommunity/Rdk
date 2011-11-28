@@ -199,7 +199,7 @@ bool UADItem::SetInputName(int index, const NameT& name)
 }
 
 // Копирует описание входных и выходных данных в item
-bool UADItem::CopyDataInfo(UADItem *item) const
+bool UADItem::CopyDataInfo(UEPtr<UADItem> item) const
 {
  if(!item)
   return false;
@@ -214,7 +214,7 @@ bool UADItem::CopyDataInfo(UADItem *item) const
 }
 
 // Копирует имена входов и выходов в item
-bool UADItem::CopyIONames(UADItem *item) const
+bool UADItem::CopyIONames(UEPtr<UADItem> item) const
 {
  if(!item)
   return false;
@@ -465,9 +465,9 @@ bool UADItem::SetOutputDataElementSize(const vector<size_t> &value)
 // ----------------------
 // Устанавливает связь с элементом сети 'na' со входом по индексу index.
 // Переназначает связь если na уже подключен.
-bool UADItem::ConnectToItem(UAItem *na, int i_index, int &c_index)
+bool UADItem::ConnectToItem(UEPtr<UAItem> na, int i_index, int &c_index)
 {
- UADItem* nad=dynamic_cast<UADItem*>(na);
+ UEPtr<UADItem> nad=dynamic_pointer_cast<UADItem>(na);
  if(!nad)
   return false;
 
@@ -526,7 +526,7 @@ bool UADItem::ConnectToItem(UAItem *na, int i_index, int &c_index)
  UpdatePointers();
  CalcMinMaxInputDataSize();
 
- if(!UAConnector::ConnectToItem(nad, i_index, c_index))
+ if(!UAConnector::ConnectToItem(static_pointer_cast<UAItem>(nad), i_index, c_index))
   return false;
 
  return true;
@@ -553,12 +553,12 @@ void UADItem::DisconnectFromIndex(int c_index)
 // ----------------------
 // Копирует этот объект в 'target' с сохранением всех компонент
 // и значений параметров
-bool UADItem::Copy(UAContainer *target, UAContainerStorage *stor, bool copystate) const
+bool UADItem::Copy(UEPtr<UAContainer> target, UAContainerStorage *stor, bool copystate) const
 {
  if(!UAItem::Copy(target,stor,copystate))
   return false;
 
- UADItem *item=dynamic_cast<UADItem*>(target);
+ UEPtr<UADItem>item=dynamic_pointer_cast<UADItem>(target);
 
  if(!CopyDataInfo(item))
   return false;

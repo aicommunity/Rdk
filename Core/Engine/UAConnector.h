@@ -191,7 +191,7 @@ const UCItem& GetCItem(int c_index) const;
 
 // Возвращает информацию об индексах связей с этим item или -1, -1
 // если такая связь отсутствует
-UCLink GetCLink(const UAItem *item) const;
+UCLink GetCLink(UEPtr<UAItem> item) const;
 // --------------------------
 
 // ----------------------
@@ -201,19 +201,19 @@ protected:
 // Устанавливает связь с элементом сети 'na' со входом по индексу index.
 // Возвращает false если na уже подключен к этому входу.
 // При успешном подключении c_index содержит реальный индекс подключенного входа
-virtual bool ConnectToItem(UAItem *na, int i_index, int &c_index);
+virtual bool ConnectToItem(UEPtr<UAItem> na, int i_index, int &c_index);
 
 // Разрывает связь с элементом сети 'na'
-virtual void DisconnectFromItem(UAItem *na);
+virtual void DisconnectFromItem(UEPtr<UAItem> na);
 
 // Разрывает связь с элементом сети подключенным ко входу 'index'
 virtual void DisconnectFromIndex(int c_index);
 
 // Выполняет действия после физически установленой связи
-virtual bool AConnectToItem(UAItem *na, int i_index, int c_index);
+virtual bool AConnectToItem(UEPtr<UAItem> na, int i_index, int c_index);
 
 // Выполняет действия после физически разорваной связи
-virtual void ADisconnectFromItem(UAItem *na, int i_index, int c_index);
+virtual void ADisconnectFromItem(UEPtr<UAItem> na, int i_index, int c_index);
 
 public:
 // Разрывает все текущие связи
@@ -222,7 +222,7 @@ virtual void DisconnectAllItems(void);
 // Разрывает все связи объекта
 // исключая его внутренние связи и обратные связи
 // brklevel - объект, относительно которого связи считаются внутренними
-virtual void DisconnectByObject(const UAContainer *brklevel);
+virtual void DisconnectByObject(UEPtr<UAContainer> brklevel);
 
 public:
 // Возвращает интерфейс входа
@@ -232,10 +232,10 @@ public:
 //NameT GetInputInterfaceTypeName(int c_index);
 
 // Проверяет, допустимо ли подключение заданного item к этому коннектору
-virtual bool CheckItem(UAItem *item, int item_index, int conn_index);
+virtual bool CheckItem(UEPtr<UAItem> item, int item_index, int conn_index);
 
 // Возвращает список подключений
-ULinksList& GetLinks(ULinksList &linkslist, const UAContainer *netlevel) const;
+ULinksList& GetLinks(ULinksList &linkslist, UEPtr<UAContainer> netlevel) const;
 // ----------------------
 
 // --------------------------

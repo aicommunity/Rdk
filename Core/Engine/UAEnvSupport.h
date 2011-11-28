@@ -17,6 +17,9 @@ namespace RDK {
 typedef int UId;
 extern UId ForbiddenId;
 
+typedef std::string NameT;
+extern NameT ForbiddenName;
+
 /* *********************************************************************** */
 /* *********************************************************************** */
 // Массив id компонент

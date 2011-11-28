@@ -16,6 +16,7 @@ See file license.txt for more information
 
 #include "UModule.h"
 #include "UAEnvSupport.h"
+#include "UEPtr.h"
 
 namespace RDK {
 
@@ -27,13 +28,16 @@ class UAStorage;
 class UAComponent: public UModule
 {
 friend class UAStorage;
+public: // Классы описания исключений
+class IException {};
+
 protected: // Основные свойства
 // Указатель на владельца этим объектом
-UAComponent *Owner;
+UEPtr<UAComponent> Owner;
 
 // Указатель на главного владельца этим объектом
 // Автоматически устанавливается для всех дочерних объектов
-UAComponent *MainOwner;
+UEPtr<UAComponent> MainOwner;
 
 // Указатель на хранилище компонент этого объекта
 UAStorage *Storage;
@@ -57,12 +61,12 @@ virtual ~UAComponent(void);
 // Методы доступа к свойствам
 // --------------------------
 // Возвращает владелца этого объекта
-UAComponent* const GetOwner(void) const;
-virtual bool SetOwner(UAComponent* owner);
+UEPtr<UAComponent> const GetOwner(void) const;
+virtual bool SetOwner(UEPtr<UAComponent> owner);
 
 // Возвращает указатель на главного владельца этим объектом
-UAComponent* const GetMainOwner(void) const;
-virtual bool SetMainOwner(UAComponent* const mainowner);
+UEPtr<UAComponent> const GetMainOwner(void) const;
+virtual bool SetMainOwner(UEPtr<UAComponent> mainowner);
 
 // Возвращает хранилище компонент этого объекта
 UAStorage* const GetStorage(void) const;
