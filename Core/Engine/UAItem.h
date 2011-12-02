@@ -17,7 +17,7 @@ See file license.txt for more information
 
 namespace RDK {
 
-typedef UAConnector* PUAConnector;
+typedef UEPtr<UAConnector> PUAConnector;
 
 class UAConnectorVector
 {
@@ -210,10 +210,10 @@ public:
 // Коммуникационные методы
 // ----------------------
 // Устанавливает связь с коннектором 'c'
-virtual bool Connect(UAConnector *c, int i_index, int c_index=-1);
+virtual bool Connect(UEPtr<UAConnector> c, int i_index, int c_index=-1);
 
 // Разрывает связь выхода этого объекта с коннектором 'c'
-virtual void Disconnect(UAConnector *c);
+virtual void Disconnect(UEPtr<UAConnector> c);
 
 // Возвращает текущее число соединений для заданного выхода.
 int GetNumAConnectors(int index) const;
@@ -236,10 +236,10 @@ virtual void BuildLinks(void);
 
 // Возвращает указатель на коннектор из списка подключений
 // по Id 'id'.
-const UAConnector* GetAConnector(const UId &id, int index) const;
+UEPtr<UAConnector> GetAConnector(const UId &id, int index) const;
 
 // Возвращает  коннектор из списка подключений.
-const UAConnector* GetAConnectorByIndex(int output, int index) const;
+UEPtr<UAConnector> GetAConnectorByIndex(int output, int index) const;
 
 // Возвращает список подключений
 ULinksList& GetLinks(ULinksList &linkslist, UEPtr<UAContainer> netlevel) const;

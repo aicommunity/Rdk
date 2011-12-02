@@ -47,7 +47,7 @@ void UClassLibraryList::Clear(void)
 {
  if(Libraries)
  {
-  delete Libraries;
+  delete []Libraries;
   Libraries=0;
  }
  Size=RealSize=0;
@@ -160,7 +160,7 @@ UAEnvironment::UAEnvironment(void)
  StoragePresent=false;
 
  // Текущий компонент модели
- CurrentComponent=0;
+// CurrentComponent=0;
 }
 
 UAEnvironment::~UAEnvironment(void)

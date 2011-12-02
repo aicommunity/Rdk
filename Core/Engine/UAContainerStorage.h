@@ -30,7 +30,7 @@ class UInstancesStorageElement
 {
 public: // Данные
 // Указатель на объект
-UESharedPtr<UAContainer> Object;
+UEPtr<UAContainer> Object;
 
 // Признак того свободен ли объект
 bool UseFlag;
@@ -75,6 +75,7 @@ typedef map<UId, UInstancesStorage>::const_iterator UObjectsStorageCIterator;
 /* *********************************************************************** */
 class UAContainerStorage: public UAStorage
 {
+friend class UAContainer;
 protected: // Системные свойства
 // Таблица соответствий имен и Id образцов классов
 map<string,UId> ClassesLookupTable;
@@ -125,10 +126,10 @@ const NameT GetClassName(const UId &id) const;
 
 // Добавляет образец класса объекта в хранилище
 // Возвращает id класса
-virtual UId AddClass(UAComponent *classtemplate, const string &classname, const UId &classid=ForbiddenId);
+virtual UId AddClass(UEPtr<UAComponent> classtemplate, const string &classname, const UId &classid=ForbiddenId);
 
 protected:
-virtual UId AddClass(UAComponent *classtemplate, const UId &classid=ForbiddenId);
+virtual UId AddClass(UEPtr<UAComponent> classtemplate, const UId &classid=ForbiddenId);
 public:
 
 // Возвращает id класса
@@ -165,18 +166,20 @@ virtual bool ClearClassesStorage(void);
 // Флаг 'Activity' объекта выставляется в true
 // Если свободного объекта не существует он создается и добавляется
 // в хранилище
-virtual UESharedPtr<UAComponent> TakeObject(const UId &classid, const UAComponent *prototype=0);
-virtual UESharedPtr<UAComponent> TakeObject(const string &classname, const UAComponent *prototype=0);
+virtual UEPtr<UAComponent> TakeObject(const UId &classid, const UAComponent *prototype=0);
+virtual UEPtr<UAComponent> TakeObject(const string &classname, const UAComponent *prototype=0);
 
+protected:
 // Возвращает объект в хранилище
 // Выбранный объект помечается как свободный в хранилище
 // Флаг 'Activity' объекта выставляется в false
 // Если объект не существует в хранилище - возвращается false
 virtual bool ReturnObject(UEPtr<UAComponent> object);
 
+public:
 // Добавляет уже созданный объект в хранилище
 // Если объект уже принадлежит иному хранилищу то возвращает false
-virtual bool PushObject(const UId &classid, UESharedPtr<UAContainer> object);
+virtual bool PushObject(const UId &classid, UEPtr<UAContainer> object);
 
 // Выводит уже созданный объект из хранилища и возвращает
 // его classid
@@ -184,10 +187,10 @@ virtual bool PushObject(const UId &classid, UESharedPtr<UAContainer> object);
 virtual UId PopObject(UEPtr<UAContainer> object);
 
 // Перемещает объект в другое хранилище
-virtual bool MoveObject(UESharedPtr<UAContainer> object, UAContainerStorage *newstorage);
+virtual bool MoveObject(UEPtr<UAContainer> object, UAContainerStorage *newstorage);
 
 // Проверяет существует ли объект 'object' в хранилище
-virtual bool CheckObject(UESharedPtr<UAContainer> object) const;
+virtual bool CheckObject(UEPtr<UAContainer> object) const;
 
 // Вычисляет суммарное число объектов в хранилище
 virtual int CalcNumObjects(void) const;
@@ -199,6 +202,16 @@ virtual void FreeObjectsStorage(void);
 
 // Удаляет все объекты из хранилища
 virtual void ClearObjectsStorage(void);
+// --------------------------
+
+// --------------------------
+// Скрытые методы управления хранилищем объектов
+// Выводит уже созданный объект из хранилища и возвращает
+// его classid
+// --------------------------
+protected:
+// В случае ошибки возвращает ForbiddenId
+virtual UId PopObject(UObjectsStorageIterator instance_iterator, list<UInstancesStorageElement>::iterator object_iterator);
 // --------------------------
 
 // --------------------------

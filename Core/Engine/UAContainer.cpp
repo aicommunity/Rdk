@@ -908,12 +908,16 @@ bool UAContainer::Copy(UEPtr<UAContainer> target, UAContainerStorage *stor, bool
 // или вызов деструктора, если Storage == 0
 void UAContainer::Free(void)
 {
+ while(NumComponents)
+  PComponents[0]->Free();
+
  if(Storage)
  {
   if(!BreakOwner())
    return; // Заглушка, здесь должно быть исключение!!
 //   throw; // Заглушка, здесь должно быть исключение!!
-  Storage->ReturnObject(this);
+//  Storage->ReturnObject(this);
+  GetStorage()->ReturnObject(this);
  }
  else
   delete this;
@@ -1962,6 +1966,7 @@ UId UAContainer::AddLookupProperty(const NameT &name, UIProperty *property, bool
   }
 
  PropertiesLookupTable.insert(make_pair(name,P));
+// PropertiesLookupTable[name]=P;
 
  return P.Id;
 }

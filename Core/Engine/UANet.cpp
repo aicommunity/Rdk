@@ -26,13 +26,14 @@ UANet::UANet(void)
 
 UANet::~UANet(void)
 {
+// BreakLinks(this);
 }
 // --------------------------
 
 // --------------------------
 // Методы доступа к свойствам
 // --------------------------
-ULinksList& UANet::GetLinks(ULinksList &linkslist, UAContainer *netlevel) const
+ULinksList& UANet::GetLinks(ULinksList &linkslist, UEPtr<UAContainer> netlevel) const
 {
  GetLinks(const_cast<UANet*>(this), linkslist, netlevel);
 /*
@@ -287,7 +288,7 @@ bool UANet::BreakLink(const NameT &itemname, int item_index,
 // Разрывает все связи сети
 // исключая ее внутренние связи и обратные связи
 // brklevel - объект, относительно которого связи считаются внутренними
-void UANet::BreakLinks(UAContainer* brklevel)
+void UANet::BreakLinks(UEPtr<UAContainer> brklevel)
 {
  for(int i=0;i<NumComponents;i++)
   {
@@ -334,20 +335,20 @@ void UANet::BreakLinks(void)
 // --------------------------
 // Скрытые методы доступа к свойствам
 // --------------------------
-ULinksList& UANet::GetLinks(UAContainer *cont, ULinksList &linkslist, UAContainer *netlevel) const
+ULinksList& UANet::GetLinks(UEPtr<UAContainer> cont, ULinksList &linkslist, UEPtr<UAContainer> netlevel) const
 {
 /* if(dynamic_cast<const UANet*>(cont))
   static_cast<const UANet*>(cont)->GetLinks(linkslist,netlevel);
  else*/
  {
-  if(dynamic_cast<UAItem*>(cont))
+  if(dynamic_pointer_cast<UAItem>(cont))
   {
-   static_cast<UAConnector*>(cont)->GetLinks(linkslist,netlevel);
-   static_cast<UAItem*>(cont)->GetLinks(linkslist,netlevel);
+   static_pointer_cast<UAConnector>(cont)->GetLinks(linkslist,netlevel);
+   static_pointer_cast<UAItem>(cont)->GetLinks(linkslist,netlevel);
   }
   else
-  if(dynamic_cast<UAConnector*>(cont))
-   static_cast<UAConnector*>(cont)->GetLinks(linkslist,netlevel);
+  if(dynamic_pointer_cast<UAConnector>(cont))
+   static_pointer_cast<UAConnector>(cont)->GetLinks(linkslist,netlevel);
  }
 
  for(int i=0;i<cont->GetNumComponents();i++)

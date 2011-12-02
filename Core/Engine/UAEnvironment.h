@@ -120,7 +120,7 @@ protected: // Данные графического интерфеса пользователя
 
 protected: // Переменные быстрого доступа
 // Текущий компонент модели
-UAComponent *CurrentComponent;
+UEPtr<UAComponent> CurrentComponent;
 
 public: // Public methods
 // --------------------------

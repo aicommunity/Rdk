@@ -12,209 +12,6 @@ class UESharedPtr
 {
 public: // Исключения
 class UFEUsingZeroPtr: /*public UFatalException,*/ public T::IException {};
- /*
-	protected:
-		template<class T>
-        class obj_val
-        {
-        public:
-            obj_val(T *obj) : _obj(obj), _ref(1) {};
-            ~obj_val()
-            {
-                if(_obj) delete _obj;
-            }
-            int release(){ return --_ref; }
-            void take(){ ++_ref; }
-            void set(T *obj){ _obj = obj; }
-            T* value() const { return _obj; }
-            T** ref_value() { return &_obj; }
-			int counter() const { return _ref; }
-            void set_counter(int counter) { _ref=counter; }
-
-        private:
-            T *_obj;
-            int _ref;
-        };
-	protected:
-        obj_val<T> *_val;
-
-    public:
-
-		UESharedPtr() throw() : _val(new obj_val<T>(0))
-        {
-        }
-
-
-		UESharedPtr(T* obj) throw() : _val(new obj_val<T>(obj))
-        {
-        }
-
-
-        template<class C>
-		explicit UESharedPtr(C* obj) throw() : _val(new obj_val<T>(obj))
-        {
-        }
-
-		UESharedPtr(const UESharedPtr<T>& ptr) throw() : _val(0)
-        {
-            if(ptr.get())
-            {
-                _val = ptr._val;
-                   _val->take();
-            }
-            else
-            {
-				_val = new obj_val<T>(0);
-			}
-        }
-
-
-		~UESharedPtr() throw()
-        {
-            if(_val->release() == 0)
-            {
-                delete _val;
-            }
-        }
-
-
-        T* operator=(T* obj) throw()
-        {
-            reset(obj);
-            return _val->value();
-        }
-
-
-        template<class C>
-        T* operator=(C* obj) throw()
-        {
-            reset(obj);
-            return _val->value();
-        }
-
-
-		T* operator=(const UESharedPtr<T>& ptr) throw()
-        {
-            reset(ptr);
-            return _val->value();
-        }
-
-
-        T* get() const
-        {
-            return _val->value();
-        }
-
-
-        T& operator*() const throw()
-        {
-			if(!_val->value())
-			 throw UFEUsingZeroPtr();
-			//assert(_val->value() != 0);
-            return *(_val->value());
-        }
-
-        T** get_ref() throw()
-		{
-//            assert(_val->value() == 0);
-			if(!_val->value())
-			 throw UFEUsingZeroPtr();
-			  return _val->ref_value();
-		}
-
-
-		T* operator->() throw()
-		{
-			if(!_val->value())
-			 throw UFEUsingZeroPtr();
- //           assert(_val->value() != 0);
-			return _val->value();
-		}
-
-		const T* operator->() const throw()
-		{
-//			assert(_val->value() != 0);
-			if(!_val->value())
-			 throw UFEUsingZeroPtr();
-			return _val->value();
-		}
-
-		bool operator!() const throw()
-		{
-			return _val->value() == 0;
-        }
-
-        bool operator==(T *obj) const throw()
-        {
-            return _val->value() == obj;
-        }
-
-
-        void reset(T *obj = 0) throw()
-        {
-            if(get() != 0)
-            {
-                if(_val->release() == 0)
-                {
-                    delete _val;
-                }
-                _val = new obj_val<T>(obj);
-            }
-            else
-            {
-                _val->set(obj);
-            }
-        }
-
-
-        void reset(const UESharedPtr<T>& ptr) throw()
-        {
-            if(ptr.get())
-            {
-                if(_val->release() == 0)
-                {
-                    delete _val;
-                }
-                _val = ptr._val;
-                _val->take();
-            }
-            else
-            {
-                reset(0);
-            }
-		}
-
-
-        bool unique() const
-        {
-            return _val->counter() == 1;
-        }
-
-
-        int use_count() const
-		{
-            return _val->counter();
-		}
-
-		operator T* (void) const
-		{
-		 return _val->value();
-		}
-
-		void init(T* pointer, int counter)
-		{
-            if(ptr.get())
-			{
-                if(_val->release() == 0)
-                {
-                    delete _val;
-				}
-			}
-
-			_val=new obj_val<T>(0);
-			_val.set(pointer);
-            _val.set_counter(counter+1);
-		}       */
 
 //////////////////////////
 protected:
@@ -230,6 +27,13 @@ public: // Методы
 UESharedPtr(void);
 UESharedPtr(T* pdata);
 UESharedPtr(const UESharedPtr<T> &p);
+template<typename Y> UESharedPtr(UESharedPtr<Y> &p)
+: PData(dynamic_cast<T*>(p.Get())),
+  Counter(p.GetPCounter())
+{
+ if(Counter)
+  ++(*Counter);
+};
 ~UESharedPtr(void);
 // --------------------------
 
@@ -269,7 +73,7 @@ long* GetPCounter(void) const;
 // Очищает указатель от текущего  объекта
 void Clear(void);
 
-T* GetPData(void) const;
+T* Get(void) const;
 
 // Инициализирует умный указатель
 UESharedPtr<T>& Init(long* counter, T* pdata);
@@ -300,6 +104,9 @@ UEPtr(void);
 UEPtr(T* pdata);
 UEPtr(const UEPtr<T> &p);
 UEPtr(const UESharedPtr<T> &p);
+//template<typename Y> UEPtr(Y* p) : PData(p){};
+template<typename Y> UEPtr(UEPtr<Y> &p) : /*PData(p.Get()){};*/PData(dynamic_cast<T*>(p.Get())){};
+template<typename Y> UEPtr(UESharedPtr<Y> &p) : /*PData(p.Get()){};*/PData(dynamic_cast<T*>(p.Get())){};
 ~UEPtr(void);
 // --------------------------
 
@@ -315,6 +122,12 @@ T* Get(void) const;
 UEPtr<T>& operator = (UEPtr<T> &p);
 
 UEPtr<T>& operator = (UESharedPtr<T> &p);
+ /*
+template<typename Y> UEPtr<T>& operator = (UESharedPtr<Y> &p)
+{
+ PData=p.get();
+ return *this;
+}  */
 
 UEPtr<T>& operator = (T *p);
 
@@ -365,16 +178,22 @@ UEPtr<T>::UEPtr(const UEPtr<T> &p)
 
 template<typename T>
 UEPtr<T>::UEPtr(const UESharedPtr<T> &p)
-: PData(p.GetPData())
+: PData(p.Get())
 {
 
 }
+/*
+template<typename T, typename Y>
+UEPtr<T>::UEPtr(Y* p)
+ : PData(p)
+{
+} */
 
 
 template<typename T>
 UEPtr<T>::~UEPtr(void)
 {
- PData=0;
+// PData=0;
 };
 // --------------------------
 
@@ -616,7 +435,7 @@ void UESharedPtr<T>::Clear(void)
 }
 
 template<typename T>
-T* UESharedPtr<T>::GetPData(void) const
+T* UESharedPtr<T>::Get(void) const
 {
  return PData;
 }
@@ -642,7 +461,7 @@ template<class T, class U>
 UESharedPtr<T> static_pointer_cast(UESharedPtr<U> const & r)
 {
  UESharedPtr<T> result;
- result.Init(r.GetPCounter(),static_cast<T*>(r.GetPData()));
+ result.Init(r.GetPCounter(),static_cast<T*>(r.Get()));
 // result.reset(static_cast<T*>(r.get()));
  return result;
 }
@@ -651,7 +470,7 @@ template<class T, class U>
 UESharedPtr<T> const_pointer_cast(UESharedPtr<U> const & r)
 {
  UESharedPtr<T> result;
- result.Init(r.GetPCounter(),const_cast<T*>(r.GetPData()));
+ result.Init(r.GetPCounter(),const_cast<T*>(r.Get()));
  return result;
 }
 
@@ -659,7 +478,7 @@ template<class T, class U>
 UESharedPtr<T> dynamic_pointer_cast(UESharedPtr<U> const & r)
 {
  UESharedPtr<T> result;
- result.Init(r.GetPCounter(),dynamic_cast<T*>(r.GetPData()));
+ result.Init(r.GetPCounter(),dynamic_cast<T*>(r.Get()));
  //result.reset(dynamic_cast<T*>(r.get()));
  return result;
 }

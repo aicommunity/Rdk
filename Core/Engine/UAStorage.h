@@ -19,7 +19,7 @@ See file license.txt for more information
 
 namespace RDK {
 
-typedef UESharedPtr<UAComponent> UClassStorageElement;
+typedef UEPtr<UAComponent> UClassStorageElement;
 typedef std::map<UId, UClassStorageElement> UClassesStorage;
 typedef std::map<UId, UClassStorageElement>::iterator UClassesStorageIterator;
 typedef std::map<UId, UClassStorageElement>::const_iterator UClassesStorageCIterator;
@@ -52,16 +52,11 @@ UId GetLastClassId(void) const;
 // --------------------------
 
 // --------------------------
-// Методы доступа к таблицам соотвествий
-// --------------------------
-// --------------------------
-
-// --------------------------
 // Методы управления хранилищем классов
 // --------------------------
 // Добавляет образец класса объекта в хранилище
 // Возвращает id класса
-virtual UId AddClass(UAComponent *classtemplate, const UId &classid=ForbiddenId);
+virtual UId AddClass(UEPtr<UAComponent> classtemplate, const UId &classid=ForbiddenId);
 
 // Удаляет образец класса объекта из хранилища
 // Возвращает false если classid не найден,
@@ -72,7 +67,7 @@ virtual bool DelClass(const UId &classid);
 virtual bool CheckClass(const UId &classid) const;
 
 // Возвращает образец класса
-virtual UESharedPtr<UAComponent> GetClass(const UId &classid) const;
+virtual UEPtr<UAComponent> GetClass(const UId &classid) const;
 
 // Возвращает число классов
 int GetNumClasses(void) const;
@@ -94,14 +89,19 @@ virtual bool ClearClassesStorage(void);
 // Флаг 'Activity' объекта выставляется в true
 // Если свободного объекта не существует он создается и добавляется
 // в хранилище
-virtual UESharedPtr<UAComponent> TakeObject(const UId &classid, const UAComponent *prototype=0);
+virtual UEPtr<UAComponent> TakeObject(const UId &classid, const UAComponent *prototype=0);
 
+// Возвращает Id класса, отвечающий объекту 'object'
+virtual UId FindClass(UEPtr<UAComponent> object) const;
+// --------------------------
+
+// --------------------------
+// Скрытые методы управления хранилищем объектов
+// --------------------------
+protected:
 // Возвращает объект в хранилище
 // В текущей реализации всегда удаляет объект и возвращает true
 virtual bool ReturnObject(UEPtr<UAComponent> object);
-
-// Возвращает Id класса, отвечающий объекту 'object'
-virtual UId FindClass(const UAComponent *object) const;
 // --------------------------
 };
 

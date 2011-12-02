@@ -16,7 +16,7 @@ See file license.txt for more information
 #include "UEnvException.h"
 //#include "../../Deploy/Include/rdk_init.h"
 //#include "../../Deploy/Include/rdkdll_loader.h"
-
+#include "UXMLEnvSerialize.h"
 
 namespace RDK{
 

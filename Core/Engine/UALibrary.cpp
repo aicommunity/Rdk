@@ -98,12 +98,12 @@ int UALibrary::Upload(UAStorage *storage)
 // Методы заполенения бибилиотеки
 // --------------------------
 // Добавляет в хранилище очередной класс
-bool UALibrary::UploadClass(const UId &classid, UAComponent *cont)
+bool UALibrary::UploadClass(const UId &classid, UEPtr<UAComponent> cont)
 {
  return false;//UALibrary::UploadClass(classid, cont);
 }
 
-bool UALibrary::UploadClass(const string &name, UAComponent *cont)
+bool UALibrary::UploadClass(const string &name, UEPtr<UAComponent> cont)
 {
  if(!cont)
   return false;

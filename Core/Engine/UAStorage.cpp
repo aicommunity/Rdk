@@ -47,16 +47,11 @@ UId UAStorage::GetLastClassId(void) const
 // --------------------------
 
 // --------------------------
-// Методы доступа к таблицам соотвествий
-// --------------------------
-// --------------------------
-
-// --------------------------
 // Методы управления хранилищем классов
 // --------------------------
 // Добавляет образец класса объекта в хранилище
 // Возвращает id класса
-UId UAStorage::AddClass(UAComponent *classtemplate, const UId &classid)
+UId UAStorage::AddClass(UEPtr<UAComponent> classtemplate, const UId &classid)
 {
  if(!classtemplate)
   return ForbiddenId;
@@ -88,7 +83,9 @@ bool UAStorage::DelClass(const UId &classid)
  if(I != ClassesStorage.end())
   ClassesStorage.erase(I);
 
-// delete eraseclass;
+ UClassStorageElement element=I->second;
+ if(element)
+  delete element.Get();
 
  return true;
 }
@@ -103,14 +100,14 @@ bool UAStorage::CheckClass(const UId &classid) const
 }
 
 // Возвращает образец класса
-UESharedPtr<UAComponent> UAStorage::GetClass(const UId &classid) const
+UEPtr<UAComponent> UAStorage::GetClass(const UId &classid) const
 {
  UClassesStorageCIterator I=ClassesStorage.find(classid);
 
  if(I != ClassesStorage.end())
   return I->second;
 
- return UESharedPtr<UAComponent>();
+ return UEPtr<UAComponent>();
 }
 
 // Возвращает число классов
@@ -140,12 +137,12 @@ void UAStorage::GetClassIdList(UId* buffer, int max_num_classes) const
 // Удаляет все образцы классов из хранилища
 bool UAStorage::ClearClassesStorage(void)
 {
-/* UClassStorageElement* classes=ClassesStorage.GetClasses();
- for(int i=0;i<ClassesStorage.GetSize();i++,classes++)
+ UClassesStorageCIterator I;
+ for(I=ClassesStorage.begin();I != ClassesStorage.end();++I)
  {
-  if(classes->Class)
-   delete classes->Class;
- }*/
+  if(I->second)
+   delete I->second.Get();
+ }
  ClassesStorage.clear();
  return true;
 }
@@ -160,10 +157,10 @@ bool UAStorage::ClearClassesStorage(void)
 // Флаг 'Activity' объекта выставляется в true
 // Если свободного объекта не существует он создается и добавляется
 // в хранилище
-UESharedPtr<UAComponent> UAStorage::TakeObject(const UId &classid, const UAComponent *prototype)
+UEPtr<UAComponent> UAStorage::TakeObject(const UId &classid, const UAComponent *prototype)
 {
- UESharedPtr<UAComponent> classtemplate=ClassesStorage.find(classid)->second;
- UESharedPtr<UAComponent> obj;
+ UEPtr<UAComponent> classtemplate=ClassesStorage.find(classid)->second;
+ UEPtr<UAComponent> obj;
 
  if(!classtemplate)
   return obj;
@@ -178,24 +175,26 @@ UESharedPtr<UAComponent> UAStorage::TakeObject(const UId &classid, const UACompo
  return obj;
 }
 
-// Возвращает объект в хранилище
-// В текущей реализации всегда удаляет объект и возвращает true
-bool UAStorage::ReturnObject(UEPtr<UAComponent> object)
-{
-// if(object)
-//  delete object;
-
- return true;
-}
-
-
 // Возвращает Id класса, отвечающий объекту 'object'
-UId UAStorage::FindClass(const UAComponent *object) const
+UId UAStorage::FindClass(UEPtr<UAComponent> object) const
 {
  if(!object)
   return ForbiddenId;
 
  return object->GetClass();
+}
+// --------------------------
+
+// --------------------------
+// Скрытые методы управления хранилищем объектов
+// --------------------------
+// Возвращает объект в хранилище
+// В текущей реализации всегда удаляет объект и возвращает true
+bool UAStorage::ReturnObject(UEPtr<UAComponent> object)
+{
+ delete object.Get();
+
+ return true;
 }
 // --------------------------
 /* *************************************************************************** */

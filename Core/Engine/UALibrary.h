@@ -82,8 +82,8 @@ virtual int Upload(UAStorage *storage);
 // --------------------------
 protected:
 // Добавляет в хранилище очередной класс
-virtual bool UploadClass(const UId &classid, UAComponent *cont);
-virtual bool UploadClass(const string &name, UAComponent *cont);
+virtual bool UploadClass(const UId &classid, UEPtr<UAComponent> cont);
+virtual bool UploadClass(const string &name, UEPtr<UAComponent> cont);
 
 // Заполняет массив ClassSamples готовыми экземплярами образцов и их именами.
 // Не требуется предварительная очистка массива и уборка памяти.

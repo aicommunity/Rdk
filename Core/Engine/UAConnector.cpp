@@ -147,7 +147,7 @@ void UCItemList::Resize(int newsize)
 
 // Ищет в контейнере первый заданный элемент начиная с индекса index
 // и возвращает его описание
-UCItem UCItemList::Find(const UAItem *item, int index) const
+UCItem UCItemList::Find(UEPtr<UAItem> item, int index) const
 {
  UCItem *pdata=Data;
 
@@ -322,7 +322,7 @@ bool UAConnector::SetAutoNumInputs(bool value)
 // или вызов деструктора, если Storage == 0
 void UAConnector::Free(void)
 {
-// DisconnectAllItems();
+ DisconnectAllItems();
  UAContainer::Free();
 }
 // --------------------------
@@ -345,7 +345,7 @@ UCLink UAConnector::GetCLink(UEPtr<UAItem> item) const
  if(!item)
   return indexes;
 
- UCItem citem=CItemList.Find(item.operator->());
+ UCItem citem=CItemList.Find(item);
 
  if(citem.Item == 0)
   return indexes;
@@ -402,7 +402,7 @@ bool UAConnector::ConnectToItem(UEPtr<UAItem> na, int i_index, int &c_index)
  if(!CheckItem(na, i_index,c_index))
   return false;
 
- if(CItemList[c_index].Item == na.operator->())
+ if(CItemList[c_index].Item == na)
  {
   if(CItemList[c_index].Index == i_index)
    return true;
@@ -414,7 +414,7 @@ bool UAConnector::ConnectToItem(UEPtr<UAItem> na, int i_index, int &c_index)
  if(CItemList[c_index].Item)
   return false;
 
- CItemList[c_index].Item=na.operator->();
+ CItemList[c_index].Item=na;
  CItemList[c_index].Index=i_index;
  return AConnectToItem(na, i_index, c_index);
 }
@@ -427,7 +427,7 @@ void UAConnector::DisconnectFromItem(UEPtr<UAItem> na)
 
  for(int i=0;i<CItemList.GetSize();i++)
  {
-  if(CItemList[i].Item == na.operator->())
+  if(CItemList[i].Item == na)
   {
    DisconnectFromIndex(i);
   }
@@ -445,17 +445,17 @@ void UAConnector::DisconnectFromIndex(int c_index)
  CItemList[c_index].Index=-1;
 
  // Подчищаем лишние входы, если разрешено
- if(AutoNumInputs)
+/* if(AutoNumInputs)
  {
   int newsize=NumInputs;
-  for(size_t i=NumInputs;i>=0;i++)
+  for(int i=NumInputs-1;i>=0;i--)
   {
    if(CItemList[i].Item != 0)
 	break;
    --newsize;
   }
   SetNumInputs(newsize);
- }
+ }*/
 }
 
 // Выполняет действия после физически установленой связи

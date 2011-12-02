@@ -95,7 +95,7 @@ void Resize(int newsize);
 
 // »щет в контейнере первый заданный элемент начина€ с индекса index
 // и возвращает его описание
-UCItem Find(const UAItem *item, int index=0) const;
+UCItem Find(UEPtr<UAItem> item, int index=0) const;
 
 // »щет в контейнере первый заданный элемент начина€ с индекса index
 // и возвращает его индекс или -1 если элемент не найден

@@ -12,6 +12,8 @@ See file license.txt for more information
 #ifndef UAEnvSupportH
 #define UAEnvSupportH
 
+#include <string>
+
 namespace RDK {
 
 typedef int UId;

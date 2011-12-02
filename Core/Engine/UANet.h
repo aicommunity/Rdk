@@ -31,7 +31,7 @@ virtual ~UANet(void);
 // --------------------------
 // Методы доступа к свойствам
 // --------------------------
-ULinksList& GetLinks(ULinksList &linkslist, UAContainer *netlevel) const;
+ULinksList& GetLinks(ULinksList &linkslist, UEPtr<UAContainer> netlevel) const;
 // --------------------------
 
 // --------------------------
@@ -111,7 +111,7 @@ virtual bool BreakLink(const NameT &itemname, int item_index,
 // Разрывает все связи сети
 // исключая ее внутренние связи и обратные связи
 // brklevel - объект, относительно которого связи считаются внутренними
-virtual void BreakLinks(UAContainer* brklevel);
+virtual void BreakLinks(UEPtr<UAContainer> brklevel);
 
 // Разрывает заданные связи сети
 virtual bool BreakLinks(const ULinksList &linkslist);
@@ -124,7 +124,7 @@ virtual void BreakLinks(void);
 // Скрытые методы доступа к свойствам
 // --------------------------
 protected:
-ULinksList& GetLinks(UAContainer *cont, ULinksList &linkslist, UAContainer *netlevel) const;
+ULinksList& GetLinks(UEPtr<UAContainer> cont, ULinksList &linkslist, UEPtr<UAContainer> netlevel) const;
 // --------------------------
 
 

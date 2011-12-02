@@ -384,7 +384,7 @@ bool UAItem::SetNumOutputs(int value)
 // или вызов деструктора, если Storage == 0
 void UAItem::Free(void)
 {
-// DisconnectAll();
+ DisconnectAll();
  UAConnector::Free();
 }
 // --------------------------
@@ -393,7 +393,7 @@ void UAItem::Free(void)
 // Защищенные коммуникационные методы
 // ----------------------
 // Устанавливает связь с коннектором 'c'.
-bool UAItem::Connect(UAConnector *c, int i_index, int c_index)
+bool UAItem::Connect(UEPtr<UAConnector> c, int i_index, int c_index)
 {
  if(c == 0)
   return false;
@@ -412,10 +412,9 @@ bool UAItem::Connect(UAConnector *c, int i_index, int c_index)
 }
 
 // Разрывает связь выхода этого объекта с коннектором 'c'.
-void UAItem::Disconnect(UAConnector *c)
+void UAItem::Disconnect(UEPtr<UAConnector> c)
 {
  Build();
-
 
  if(c)
   c->DisconnectFromItem(this);
@@ -529,7 +528,7 @@ void UAItem::BuildLinks(void)
 // Возвращает указатель на коннектор из списка подключений
 // по имени 'name'.
 
-const UAConnector* UAItem::GetAConnector(const UId &id, int index) const
+UEPtr<UAConnector> UAItem::GetAConnector(const UId &id, int index) const
 {
  for(int i=0;i<AssociatedConnectors[index].GetSize();i++)
   if(AssociatedConnectors[index][i]->Id == id)
@@ -538,7 +537,7 @@ const UAConnector* UAItem::GetAConnector(const UId &id, int index) const
 }
 
 // Возвращает  коннектор из списка подключений.
-const UAConnector* UAItem::GetAConnectorByIndex(int output, int index) const
+UEPtr<UAConnector> UAItem::GetAConnectorByIndex(int output, int index) const
 {
  return AssociatedConnectors[output][index];
 }
