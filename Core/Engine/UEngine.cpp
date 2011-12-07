@@ -14,8 +14,6 @@ See file license.txt for more information
 
 #include "UEngine.h"
 #include "UEnvException.h"
-//#include "../../Deploy/Include/rdk_init.h"
-//#include "../../Deploy/Include/rdkdll_loader.h"
 #include "UXMLEnvSerialize.h"
 
 namespace RDK{
@@ -891,12 +889,14 @@ const char* UEngine::Model_GetComponentParameters(const char *stringid)
    return 0;
 
   RDK::ULongId id;
+  string namebuffer;
 
   UEPtr<RDK::UAContainer> cont=model->GetComponentL(RDK::operator<<(id,stringid));
   if(!cont)
    return 0;
 
-  XmlStorage.Create("Parameters");
+//  XmlStorage.Create("Parameters");
+  XmlStorage.Create(cont->GetLongName(model,namebuffer));
 
   if(!Model_GetComponentParameters(cont,&XmlStorage))
    return 0;
@@ -938,11 +938,14 @@ bool UEngine::Model_SetComponentParameters(const char *stringid, const char* buf
    return false;
 
   RDK::ULongId id;
+  string namebuffer;
+
   UEPtr<RDK::UAContainer> cont=model->GetComponentL(RDK::operator<<(id,stringid));
   if(!cont)
    return false;
 
-  XmlStorage.Load(buffer,"Parameters");
+  XmlStorage.Load(buffer, cont->GetLongName(model,namebuffer));
+//  XmlStorage.Load(buffer,"Parameters");
 
   if(!Model_SetComponentParameters(cont,&XmlStorage))
    return false;
@@ -1165,11 +1168,14 @@ const char * UEngine::Model_GetComponentState(const char *stringid)
    return 0;
 
   RDK::ULongId id;
+  string namebuffer;
+
   UEPtr<RDK::UAContainer> cont=model->GetComponentL(RDK::operator<<(id,stringid));
   if(!cont)
    return 0;
 
-  XmlStorage.Create("State");
+  XmlStorage.Create(cont->GetLongName(model,namebuffer));
+//  XmlStorage.Create("State");
 
   if(!Model_GetComponentState(cont,&XmlStorage))
    return 0;
@@ -1211,11 +1217,14 @@ bool UEngine::Model_SetComponentState(const char *stringid, const char* buffer)
    return false;
 
   RDK::ULongId id;
+  string namebuffer;
+
   UEPtr<RDK::UAContainer> cont=model->GetComponentL(RDK::operator<<(id,stringid));
   if(!cont)
    return false;
 
-  XmlStorage.Load(buffer,"State");
+  XmlStorage.Load(buffer, cont->GetLongName(model,namebuffer));
+//  XmlStorage.Load(buffer,"State");
 
   if(!Model_SetComponentState(cont,&XmlStorage))
    return false;
