@@ -27,6 +27,8 @@ See file license.txt for more information
 
 namespace RDK {
 
+const UTime DefaultTimeStep=(UTime)2000;
+
 NameT ForbiddenName="";
 
 /* *********************************************************************** */
@@ -1069,6 +1071,9 @@ UId UAContainer::AddComponent(UEPtr<UAContainer> comp, UIPointer* pointer)
    res=false;
    break;
   }
+
+ if(!res)
+  return ForbiddenId;
 
  comp->SetId(id);
 

@@ -29,17 +29,13 @@ namespace RDK {
 // Конструкторы и деструкторы
 // --------------------------
 UInstancesStorageElement::UInstancesStorageElement(void)
+ : UseFlag(false)
 {
- // Указатель на объект
- Object=0;
-
- // Признак того свободен ли объект
- UseFlag=false;
 }
 
 UInstancesStorageElement::UInstancesStorageElement(const UInstancesStorageElement &copy)
+ : Object(copy.Object), UseFlag(copy.UseFlag)
 {
- *this=copy;
 }
 
 UInstancesStorageElement::~UInstancesStorageElement(void)
@@ -147,13 +143,6 @@ const NameT UAContainerStorage::GetClassName(const UId &id) const
 // --------------------------
 // Методы управления хранилищем классов
 // --------------------------
-// Добавляет образец класса объекта в хранилище с автоматическим назначением id
-// Возвращает id класса
-/*UId UAContainerStorage::AddClass(UAComponent *classtemplate)
-{
- return UAStorage::AddClass(classtemplate);
-} */
-
 // Добавляет образец класса объекта в хранилище
 UId UAContainerStorage::AddClass(UEPtr<UAComponent> classtemplate, const string &classname, const UId &classid)
 {
@@ -177,26 +166,6 @@ UId UAContainerStorage::AddClass(UEPtr<UAComponent> classtemplate, const UId &cl
 {
  return UAStorage::AddClass(classtemplate, classid);
 }
-/*
-UId UAContainerStorage::AddClass(const NameT &classname, UAComponent *classtemplate)
-{
- UId id;
-
- if(!classtemplate || classname == "")
-  return false;
-
- id=AddLookupClass(classname);
- if(id == ForbiddenId)
-  return false;
-
- if(classtemplate->GetStorage())
- {
-  UAContainerStorage *storage=dynamic_cast<UAContainerStorage*>(classtemplate->GetStorage());
-  if(storage)
-   storage->PopObject(static_cast<UAContainer*>(classtemplate));
- }
- return AddClass(id,classtemplate);
-}       */
 
 // Удаляет образец класса объекта из хранилища
 // Возвращает false если classid не найден,
@@ -404,100 +373,6 @@ UEPtr<UAComponent> UAContainerStorage::TakeObject(const NameT &classname, const 
  return TakeObject(GetClassId(classname),prototype);
 }
 
-// Возвращает объект в хранилище
-// Выбранный объект помечается как свободный в хранилище
-// Флаг 'Activity' объекта выставляется в false
-// Если объект не существует в хранилище - возвращается false
-bool UAContainerStorage::ReturnObject(UEPtr<UAComponent> object)
-{
- if(!object)
-  return false;
-
- UEPtr<UAContainer> obj=dynamic_pointer_cast<UAContainer>(object);
- obj->ObjectIterator->UseFlag=false;
- obj->Activity=false;
- obj->BreakOwner();
- //obj->SetOwner(0); // возможно это не так? еще не проверено
-// FreeObjectsTableIterator tI=FreeObjectsTable.find(object->GetClass());
-// if(tI != FreeObjectsTable.end())
-// {
-//  tI->second.push_back(object->ObjectIterator);
-// }
-	  /*
- // Возвращаем все содержимое компонента
- for(int i=0;i<obj->GetNumComponents();i++)
- {
-  UEPtr<UAComponent> temp=static_pointer_cast<UAComponent>(obj->GetComponentByIndex(i));
-  if(!ReturnObject(temp))
-   return false;
- }    */
- return true;
-}
-
-// Добавляет уже созданный объект в хранилище
-// Если объект уже принадлежит иному хранилищу то возвращает false
-bool UAContainerStorage::PushObject(const UId &classid, UEPtr<UAContainer> object)
-{
- if(!object || classid == ForbiddenId || object->GetStorage())
-  return false;
-
- UEPtr<UAComponent> classtemplate=ClassesStorage.find(classid)->second;
- if(!classtemplate)
-  return false;
-
- ObjectsStorage[classid];
- UObjectsStorageIterator instances=ObjectsStorage.find(classid);
- if(instances == ObjectsStorage.end())
- {
-  return false;
- }
- UInstancesStorageElement element;
- element.Object=object;
- element.UseFlag=true;
- list<UInstancesStorageElement>::iterator instI=instances->second.insert(instances->second.end(),element);
-// instances->second.push_back(element);
- object->ObjectIterator=&(*instI);
- object->SetClass(classid);
-
-
-// ObjectsStorage[classid][object]=true;//(object->GetOwner())?true:false;
- object->SetStorage(this);
- return true;
-}
-
-// Выводит уже созданный объект из хранилища и возвращает
-// его classid
-// В случае ошибки возвращает ForbiddenId
-UId UAContainerStorage::PopObject(UEPtr<UAContainer> object)
-{
- if(!object)
-  return ForbiddenId;
-
- UObjectsStorageIterator instances=ObjectsStorage.find(object->GetClass());
- if(instances != ObjectsStorage.end())
- {
-  list<UInstancesStorageElement>::iterator elementI;
-  for(elementI=instances->second.begin(); elementI!= instances->second.end();++elementI)
-  {
-   if(elementI->Object == object)
-   {
-	return PopObject(instances, elementI);
-   }
-  }
- }
-
- return ForbiddenId;
-}
-
-// Перемещает объект в другое хранилище
-bool UAContainerStorage::MoveObject(UEPtr<UAContainer> object, UAContainerStorage *newstorage)
-{
- if(!newstorage)
-  return false;
-
- return newstorage->PushObject(PopObject(object),object);
-}
-
 // Проверяет существует ли объект 'object' в хранилище
 bool UAContainerStorage::CheckObject(UEPtr<UAContainer> object) const
 {
@@ -577,7 +452,6 @@ void UAContainerStorage::FreeObjectsStorage(void)
 void UAContainerStorage::ClearObjectsStorage(void)
 {
  UObjectsStorageIterator instances;
- size_t numobjects=this->CalcNumObjects();
  for(instances=ObjectsStorage.begin();instances != ObjectsStorage.end();++instances)
  {
   list<UInstancesStorageElement>::iterator elementI,elementJ;
@@ -593,13 +467,9 @@ void UAContainerStorage::ClearObjectsStorage(void)
   }
  }
 
- numobjects=this->CalcNumObjects();
-
  //ObjectsStorage.clear();
  FreeObjectsStorage();
 
- numobjects=this->CalcNumObjects();
- size_t s=ObjectsStorage.size();
 /* for(int i=0;i<ObjectsStorage.GetSize();i++)
  {
   UInstancesStorage& instances=ObjectsStorage[i].Objects;
@@ -626,6 +496,100 @@ void UAContainerStorage::ClearObjectsStorage(void)
 // Выводит уже созданный объект из хранилища и возвращает
 // его classid
 // --------------------------
+// Добавляет уже созданный объект в хранилище
+// Если объект уже принадлежит иному хранилищу то возвращает false
+bool UAContainerStorage::PushObject(const UId &classid, UEPtr<UAContainer> object)
+{
+ if(!object || classid == ForbiddenId || object->GetStorage())
+  return false;
+
+ UEPtr<UAComponent> classtemplate=ClassesStorage.find(classid)->second;
+ if(!classtemplate)
+  return false;
+
+ ObjectsStorage[classid];
+ UObjectsStorageIterator instances=ObjectsStorage.find(classid);
+ if(instances == ObjectsStorage.end())
+ {
+  return false;
+ }
+ UInstancesStorageElement element;
+ element.Object=object;
+ element.UseFlag=true;
+ list<UInstancesStorageElement>::iterator instI=instances->second.insert(instances->second.end(),element);
+// instances->second.push_back(element);
+ object->ObjectIterator=&(*instI);
+ object->SetClass(classid);
+
+
+// ObjectsStorage[classid][object]=true;//(object->GetOwner())?true:false;
+ object->SetStorage(this);
+ return true;
+}
+
+// Выводит уже созданный объект из хранилища и возвращает
+// его classid
+// В случае ошибки возвращает ForbiddenId
+UId UAContainerStorage::PopObject(UEPtr<UAContainer> object)
+{
+ if(!object)
+  return ForbiddenId;
+
+ UObjectsStorageIterator instances=ObjectsStorage.find(object->GetClass());
+ if(instances != ObjectsStorage.end())
+ {
+  list<UInstancesStorageElement>::iterator elementI;
+  for(elementI=instances->second.begin(); elementI!= instances->second.end();++elementI)
+  {
+   if(elementI->Object == object)
+   {
+	return PopObject(instances, elementI);
+   }
+  }
+ }
+
+ return ForbiddenId;
+}
+
+// Перемещает объект в другое хранилище
+bool UAContainerStorage::MoveObject(UEPtr<UAContainer> object, UAContainerStorage *newstorage)
+{
+ if(!newstorage)
+  return false;
+
+ return newstorage->PushObject(PopObject(object),object);
+}
+
+// Возвращает объект в хранилище
+// Выбранный объект помечается как свободный в хранилище
+// Флаг 'Activity' объекта выставляется в false
+// Если объект не существует в хранилище - возвращается false
+bool UAContainerStorage::ReturnObject(UEPtr<UAComponent> object)
+{
+ if(!object)
+  return false;
+
+ UEPtr<UAContainer> obj=dynamic_pointer_cast<UAContainer>(object);
+ obj->ObjectIterator->UseFlag=false;
+ obj->Activity=false;
+ obj->BreakOwner();
+ //obj->SetOwner(0); // возможно это не так? еще не проверено
+// FreeObjectsTableIterator tI=FreeObjectsTable.find(object->GetClass());
+// if(tI != FreeObjectsTable.end())
+// {
+//  tI->second.push_back(object->ObjectIterator);
+// }
+	  /*
+ // Возвращаем все содержимое компонента
+ for(int i=0;i<obj->GetNumComponents();i++)
+ {
+  UEPtr<UAComponent> temp=static_pointer_cast<UAComponent>(obj->GetComponentByIndex(i));
+  if(!ReturnObject(temp))
+   return false;
+ }    */
+ return true;
+}
+
 // В случае ошибки возвращает ForbiddenId
 UId UAContainerStorage::PopObject(UObjectsStorageIterator instance_iterator, list<UInstancesStorageElement>::iterator object_iterator)
 {

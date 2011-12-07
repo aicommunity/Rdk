@@ -909,6 +909,7 @@ const char* UEngine::Model_GetComponentParameters(const char *stringid)
  {
   ProcessException(exception);
  }
+ return 0;
 }
 
 // Возвращает выборочные параметры компонента по идентификатору
@@ -945,15 +946,13 @@ bool UEngine::Model_SetComponentParameters(const char *stringid, const char* buf
 
   if(!Model_SetComponentParameters(cont,&XmlStorage))
    return false;
-
-  throw new UEnvFatalException(cont);
-
-  return true;
  }
  catch (UException * exception)
  {
   ProcessException(exception);
  }
+
+ return true;
 }
 
 // Связывает выбранные контейнеры друг с другом
@@ -978,13 +977,12 @@ int UEngine::Model_CreateLink(char* stringid1, int output_number, char* stringid
   bool res=model->CreateLink(longid1,output_number,longid2,input_number);
   if(!res)
    return -3;
-
-  return 0;
  }
  catch (UException * exception)
  {
   ProcessException(exception);
  }
+ return 0;
 }
 
 // Разрывает выбранную связь
@@ -1097,13 +1095,12 @@ const char* UEngine::Model_GetComponentInternalLinks(char* stringid)
 
   TempString="";
   XmlStorage.Save(TempString);
-
-  return TempString.c_str();
  }
  catch (UException * exception)
  {
   ProcessException(exception);
  }
+ return TempString.c_str();
 }
 
 // Устанавливает все связи внутри компонента stringid из строки xml в буфере buffer
@@ -1179,12 +1176,12 @@ const char * UEngine::Model_GetComponentState(const char *stringid)
 
   TempString="";
   XmlStorage.Save(TempString);
-  return TempString.c_str();
  }
  catch (UException * exception)
  {
   ProcessException(exception);
  }
+ return TempString.c_str();
 }
 
 // Возвращает выборочные данные состояния компонента по идентификатору
@@ -1222,13 +1219,12 @@ bool UEngine::Model_SetComponentState(const char *stringid, const char* buffer)
 
   if(!Model_SetComponentState(cont,&XmlStorage))
    return false;
-
-  return true;
  }
  catch (UException * exception)
  {
   ProcessException(exception);
  }
+ return true;
 }
 
 // Возвращает число входов у компонента
@@ -1377,6 +1373,7 @@ unsigned char* UEngine::Model_GetComponentOutputData(const char *stringid, int i
 // переменные состояния в xml
 const char *  UEngine::Model_SaveComponent(const char *stringid)
 {
+ std::string str;
  try
  {
   UEPtr<RDK::UANet> cont=dynamic_pointer_cast<RDK::UANet>(FindComponent(stringid));
@@ -1389,16 +1386,14 @@ const char *  UEngine::Model_SaveComponent(const char *stringid)
   if(!Model_SaveComponent(cont,&XmlStorage))
    return 0;
 
-  std::string str;
   XmlStorage.Save(str);
  // strcpy(buffer,str.c_str());
-
-  return str.c_str();
  }
  catch (UException * exception)
  {
   ProcessException(exception);
  }
+ return str.c_str();
 }
 
 // Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
@@ -1417,13 +1412,12 @@ int UEngine::Model_LoadComponent(const char *stringid, char* buffer)
 
   if(!Model_LoadComponent(cont,&XmlStorage))
    return -4;
-
-  return 0;
  }
  catch (UException * exception)
  {
   ProcessException(exception);
  }
+ return 0;
 }
 
 // Сохраняет все параметры компонента и его дочерних компонент в xml
@@ -1443,13 +1437,12 @@ const char * UEngine::Model_SaveComponentParameters(const char *stringid)
 
   TempString="";
   XmlStorage.Save(TempString);
-
-  return TempString.c_str();
  }
  catch (UException * exception)
  {
   ProcessException(exception);
  }
+ return TempString.c_str();
 }
 
 // Загружает все параметры компонента и его дочерних компонент из xml
@@ -1467,13 +1460,12 @@ int UEngine::Model_LoadComponentParameters(const char *stringid, char* buffer)
 
   if(!Model_LoadComponentParameters(cont,&XmlStorage))
    return -4;
-
-  return 0;
  }
  catch (UException * exception)
  {
   ProcessException(exception);
  }
+ return 0;
 }
 
 // Сохраняет состояние компонента и его дочерних компонент в xml
@@ -1493,13 +1485,12 @@ const char * UEngine::Model_SaveComponentState(const char *stringid)
 
   TempString="";
   XmlStorage.Save(TempString);
-
-  return TempString.c_str();
  }
  catch (UException * exception)
  {
   ProcessException(exception);
  }
+ return TempString.c_str();
 }
 
 // Загружает состояние компонента и его дочерних компонент из xml
@@ -1517,13 +1508,12 @@ int UEngine::Model_LoadComponentState(const char *stringid, char* buffer)
 
   if(!Model_LoadComponentState(cont,&XmlStorage))
    return -4;
-
-  return 0;
  }
  catch (UException * exception)
  {
   ProcessException(exception);
  }
+ return 0;
 }
 // --------------------------
 
