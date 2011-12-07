@@ -34,6 +34,9 @@ typedef UAContainer* PUAContainer;
 // Массив указателей на контейнеры
 typedef std::vector<UEPtr<UAContainer> > UAContainerVector;
 
+extern const UTime DefaultTimeStep;
+
+
 class UAContainer: public UAComponent
 {
 public: // Типы данных
