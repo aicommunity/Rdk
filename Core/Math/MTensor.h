@@ -112,13 +112,13 @@ MTensor<DataT>& Transpose(void)
 // предыдущего видна из его описания: метод
 // не модифицирует тензор,а создаёт новый,
 // траспонированный экземпляр, его и возвращает.
-friend MTensor<DataT> Transpose(const MTensor<DataT> &T);
+template<class DataU> friend MTensor<DataU> Transpose(const MTensor<DataU> &T);
 
 // След тензора.
-friend DataT Trace(const MTensor<DataT> &T);
+template<class DataU> friend DataU Trace(const MTensor<DataU> &T);
 
 // Векторный инвариант.
-friend MVector<DataT> VectInvar(const MTensor<DataT> &T);
+template<class DataU> friend MVector<DataU> VectInvar(const MTensor<DataU> &T);
 // #########################
 
 // ## Операторы присваивания ##
@@ -232,64 +232,64 @@ MTensor<DataT>& operator *= (DataT DT)
 };
 
 // Сложение двух тензоров.
-friend MTensor<DataT> operator + (const MTensor<DataT> &T1,const MTensor<DataT> &T2);
+template<class DataU> friend MTensor<DataU> operator + (const MTensor<DataU> &T1,const MTensor<DataU> &T2);
 
 // Сложение тензора и диады.
-friend MTensor<DataT> operator + (const MTensor<DataT> &T1,const MDyad<DataT> &T2);
+template<class DataU> friend MTensor<DataU> operator + (const MTensor<DataU> &T1,const MDyad<DataU> &T2);
 
 // Сложение диады и тензора.
-friend MTensor<DataT> operator + (const MDyad<DataT> &T1,const MTensor<DataT> &T2);
+template<class DataU> friend MTensor<DataU> operator + (const MDyad<DataU> &T1,const MTensor<DataU> &T2);
 
 // Вычитание двух тензоров.
-friend MTensor<DataT> operator - (const MTensor<DataT> &T1,const MTensor<DataT> &T2);
+template<class DataU> friend MTensor<DataU> operator - (const MTensor<DataU> &T1,const MTensor<DataU> &T2);
 
 // Вычитание тензора и диады.
-friend MTensor<DataT> operator - (const MTensor<DataT> &T,const MDyad<DataT> &D);
+template<class DataU> friend MTensor<DataU> operator - (const MTensor<DataU> &T,const MDyad<DataU> &D);
 
 // Вычитание диады и тензора.
-friend MTensor<DataT> operator - (const MDyad<DataT> &D,const MTensor<DataT> &T);
+template<class DataU> friend MTensor<DataU> operator - (const MDyad<DataU> &D,const MTensor<DataU> &T);
 
 // Скалярное умножение двух тензоров.
-friend MTensor<DataT> operator * (const MTensor<DataT> &T1,const MTensor<DataT> &T2);
+template<class DataU> friend MTensor<DataU> operator * (const MTensor<DataU> &T1,const MTensor<DataU> &T2);
 
 // Скалярное умножение тензора и диады.
-friend MTensor<DataT> operator * (const MTensor<DataT> &T,const MDyad<DataT> &D);
+template<class DataU> friend MTensor<DataU> operator * (const MTensor<DataU> &T,const MDyad<DataU> &D);
 
 // Скалярное умножение диады и тензора.
-friend MTensor<DataT> operator * (const MDyad<DataT> &D,const MTensor<DataT> &T);
+template<class DataU> friend MTensor<DataU> operator * (const MDyad<DataU> &D,const MTensor<DataU> &T);
 
 // Скалярное умножение вектора и тензора.
-friend MVector<DataT> operator * (const MVector<DataT> &v,const MTensor<DataT> &T);
+template<class DataU> friend MVector<DataU> operator * (const MVector<DataU> &v,const MTensor<DataU> &T);
 
 // Скалярное умножение тензора и вектора.
-friend MVector<DataT> operator * (const MTensor<DataT> &T,const MVector<DataT> &v);
+template<class DataU> friend MVector<DataU> operator * (const MTensor<DataU> &T,const MVector<DataU> &v);
 
 // Умножение тензора и числа.
-friend MTensor<DataT> operator * (const MTensor<DataT> &T,DataT d);
+template<class DataU> friend MTensor<DataU> operator * (const MTensor<DataU> &T,DataU d);
 
 // Умножение числа и тензора.
-friend MTensor<DataT> operator * (DataT d,const MTensor<DataT> &T);
+template<class DataU> friend MTensor<DataU> operator * (DataU d,const MTensor<DataU> &T);
 
 // Деление тензора и числа.
-friend MTensor<DataT> operator / (const MTensor<DataT> &T, DataT d);
+template<class DataU> friend MTensor<DataU> operator / (const MTensor<DataU> &T, DataU d);
 
 // Векторное умножение вектора и тензора.
-friend MTensor<DataT> operator ^ (const MVector<DataT> &v,const MTensor<DataT> &T);
+template<class DataU> friend MTensor<DataU> operator ^ (const MVector<DataU> &v,const MTensor<DataU> &T);
 
 // Векторное умножение тензора и вектора.
-friend MTensor<DataT> operator ^ (const MTensor<DataT> &T,const MVector<DataT> &v);
+template<class DataU> friend MTensor<DataU> operator ^ (const MTensor<DataU> &T,const MVector<DataU> &v);
 
 // Двойное скалярное произведение тензоров
-friend DataT SS(const MTensor<DataT> &T1,const MTensor<DataT> &T2);
+template<class DataU> friend DataU SS(const MTensor<DataU> &T1,const MTensor<DataU> &T2);
 
 // Двойное векторное произведение тензоров
-friend MTensor<DataT> VV(const MTensor<DataT> &T1,const MTensor<DataT> &T2);
+template<class DataU> friend MTensor<DataU> VV(const MTensor<DataU> &T1,const MTensor<DataU> &T2);
 
 // Двойное векторно-скалярное произведение тензоров
-friend MVector<DataT> VS(const MTensor<DataT> &T1,const MTensor<DataT> &T2);
+template<class DataU> friend MVector<DataU> VS(const MTensor<DataU> &T1,const MTensor<DataU> &T2);
 
 // Двойное скалярно-векторное произведение тензоров
-friend MVector<DataT> SV(const MTensor<DataT> &T1,const MTensor<DataT> &T2);
+template<class DataU> friend MVector<DataU> SV(const MTensor<DataU> &T1,const MTensor<DataU> &T2);
 // ##############################
 // -------------------------------
 };

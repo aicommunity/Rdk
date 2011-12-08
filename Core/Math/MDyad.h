@@ -117,13 +117,13 @@ MDyad<DataD>& Transpose(void)
 // предыдущего видна из его описани€: метод
 // не модифицирует диаду,а создаЄт новый,
 // траспонированный экземпл€р,его и возвращает).
-friend MDyad<DataD> Transpose(const MDyad<DataD> &D);
+template<class DataU> friend MDyad<DataU> Transpose(const MDyad<DataU> &D);
 
 // —лед диады.
-friend DataD Trace(const MDyad<DataD> &D);
+template<class DataU> friend DataU Trace(const MDyad<DataU> &D);
 
 // ¬екторный инвариант.
-friend MVector<DataD> VectInvar(const MDyad<DataD> &D);
+template<class DataU> friend MVector<DataU> VectInvar(const MDyad<DataU> &D);
 // #########################
 
 // ## ќператоры присваивани€ ##
@@ -192,43 +192,43 @@ MDyad<DataD>& operator /=(const DataD d)
 };
 
 // —кал€рное умножение двух диад.
-friend MDyad<DataD> operator * (const MDyad<DataD> &D,const MDyad<DataD>&);
+template<class DataU> friend MDyad<DataU> operator * (const MDyad<DataU> &D,const MDyad<DataU>&);
 
 // —кал€рное умножение  диады и в-ра.
-friend MVector<DataD> operator * (const MDyad<DataD> &D1,const MVector<DataD> &D2);
+template<class DataU> friend MVector<DataU> operator * (const MDyad<DataU> &D1,const MVector<DataU> &D2);
 
 // —кал€рное умножение  в-ра и диады.
-friend MVector<DataD> operator * (const MVector<DataD> &D1,const MDyad<DataD> &D2);
+template<class DataU> friend MVector<DataU> operator * (const MVector<DataU> &D1,const MDyad<DataU> &D2);
 
 // ”множение диады и числа.
-friend MDyad<DataD> operator * (const MDyad<DataD> &D,const DataD d);
+template<class DataU> friend MDyad<DataU> operator * (const MDyad<DataU> &D,const DataU d);
 
 // ”множение числа и диады.
-friend MDyad<DataD> operator * (const DataD d,const MDyad<DataD> &D);
+template<class DataU> friend MDyad<DataU> operator * (const DataU d,const MDyad<DataU> &D);
 
 // ¬екторное умножение диады и вектора.
-friend MDyad<DataD> operator ^ (const MDyad<DataD> &D1,const MVector<DataD> &D2);
+template<class DataU> friend MDyad<DataU> operator ^ (const MDyad<DataU> &D1,const MVector<DataU> &D2);
 
 // ¬екторное умножение вектора и диады.
-friend MDyad<DataD> operator ^ (const MVector<DataD> &v,const MDyad<DataD> &D);
+template<class DataU> friend MDyad<DataU> operator ^ (const MVector<DataU> &v,const MDyad<DataU> &D);
 
 // ƒеление диады и числа.
-friend MDyad<DataD> operator / (const MDyad<DataD> &D,const DataD d);
+template<class DataU> friend MDyad<DataU> operator / (const MDyad<DataU> &D,const DataU d);
 
 // ƒвойное скал€рное произведение диад
-friend DataD SS(const MDyad<DataD> &D1,const MDyad<DataD> &D2);
+template<class DataU> friend DataU SS(const MDyad<DataU> &D1,const MDyad<DataU> &D2);
 
 // ƒвойное векторное произведение диад
-friend MDyad<DataD> VV(const MDyad<DataD> &D1,const MDyad<DataD> &D2);
+template<class DataU> friend MDyad<DataU> VV(const MDyad<DataU> &D1,const MDyad<DataU> &D2);
 
 // ƒвойное векторно-скал€рное произведение диад
-friend MVector<DataD> VS(const MDyad<DataD> &D1,const MDyad<DataD> &D2);
+template<class DataU> friend MVector<DataU> VS(const MDyad<DataU> &D1,const MDyad<DataU> &D2);
 
 // ƒвойное скал€рно-векторное произведение диад
-friend MVector<DataD> SV(const MDyad<DataD> &D1,const MDyad<DataD> &D2);
+template<class DataU> friend MVector<DataU> SV(const MDyad<DataU> &D1,const MDyad<DataU> &D2);
 
 // ƒиадное умножение двух векторов.
-friend MDyad<DataD> operator % (const MVector<DataD> &D,const MVector<DataD> &v);
+template<class DataU> friend MDyad<DataU> operator % (const MVector<DataU> &D,const MVector<DataU> &v);
 // ##############################
 // -------------------------------
 };

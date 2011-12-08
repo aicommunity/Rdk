@@ -335,10 +335,10 @@ bool operator != (const MVertex &v) const;
 // Операторы взаимодействия с другими объектами
 // --------------------------
 // Вывод в массив
-friend unsigned char* operator >> (const MVertex &v, unsigned char* p);
+template<class U> friend unsigned char* operator >> (const MVertex<U> &v, unsigned char* p);
 
 // Ввод из массива
-friend const unsigned char* operator << (MVertex &v, const unsigned char* p);
+template<class U> friend const unsigned char* operator << (MVertex<U> &v, const unsigned char* p);
 
 // Поворот тензором P
 MVertex& operator *= (const MRotationTensor<T> &P);
@@ -416,10 +416,10 @@ bool operator != (const MGeometry<T> &v) const;
 // Операторы взаимодействия с другими объектами
 // --------------------------
 // Вывод в массив
-friend unsigned char* operator >> (const MGeometry<T> &v, unsigned char* p);
+template<class U> friend unsigned char* operator >> (const MGeometry<U> &v, unsigned char* p);
 
 // Ввод из массива
-friend const unsigned char* operator << (MGeometry<T> &v, const unsigned char* p);
+template<class U> friend const unsigned char* operator << (MGeometry<U> &v, const unsigned char* p);
 
 // Поворот тензором P
 MGeometry<T>& operator *= (const MRotationTensor<T> &P);

@@ -1,19 +1,16 @@
 #ifndef RDK_INIT_H
 #define RDK_INIT_H
 
-#include "rdk.h"
-//#include "rdk_gengine.h"
-
 extern "C"  {
 
 // ----------------------------
 // Методы инициализации
 // ----------------------------
 // Инициализирует движок (функция должна быть вызвана первой!)
-RDK_LIB_TYPE int RDK_EngineInit(int predefined_structure);
+RDK_LIB_TYPE int RDK_CALL RDK_EngineInit(int predefined_structure);
 
 // Инициализирует графический движок (функция должна быть вызвана первой!)
-RDK_LIB_TYPE int RDK_GraphicalEngineInit(int predefined_structure, int num_inputs,
+RDK_LIB_TYPE int RDK_CALL RDK_GraphicalEngineInit(int predefined_structure, int num_inputs,
 		int num_outputs, int input_width, int input_height);
 // ----------------------------
 
@@ -21,341 +18,328 @@ RDK_LIB_TYPE int RDK_GraphicalEngineInit(int predefined_structure, int num_input
 // Методы управления хранилищем
 // ----------------------------
 // Возвращает число классов в хранилище
-RDK_LIB_TYPE int Storage_GetNumClasses(void);
+RDK_LIB_TYPE int RDK_CALL Storage_GetNumClasses(void);
 
 // Возвращает id классов в хранилище. Память должна быть выделена
-RDK_LIB_TYPE void Storage_GetClassesList(int *buffer);
+RDK_LIB_TYPE void RDK_CALL Storage_GetClassesList(int *buffer);
 
 // Возвращает имя класса по его id.
-RDK_LIB_TYPE const char * Storage_GetClassName(int id);
+RDK_LIB_TYPE const char * RDK_CALL Storage_GetClassName(int id);
 
 // Возвращает Id класса по его имени
-RDK_LIB_TYPE int Storage_GetClassId(const char *name);
+RDK_LIB_TYPE int RDK_CALL Storage_GetClassId(const char *name);
 
 // Удаляет образец класса объекта из хранилища
 // Возвращает false если classid не найден,
 // или присутствуют объекты этого класса
-RDK_LIB_TYPE bool Storage_DelClass(int classid);
+RDK_LIB_TYPE bool RDK_CALL Storage_DelClass(int classid);
 
 // Удаляет все свободные объекты из хранилища
-RDK_LIB_TYPE void Storage_FreeObjectsStorage(void);
+RDK_LIB_TYPE void RDK_CALL Storage_FreeObjectsStorage(void);
 
 // Удаляет все объекты из хранилища
-RDK_LIB_TYPE void Storage_ClearObjectsStorage(void);
+RDK_LIB_TYPE void RDK_CALL Storage_ClearObjectsStorage(void);
 
 // Вычисляет суммарное число объектов в хранилище
-RDK_LIB_TYPE int Storage_CalcNumObjects(void);
-RDK_LIB_TYPE int Storage_CalcNumObjectsById(int classid);
-RDK_LIB_TYPE int Storage_CalcNumObjectsByName(const char* classname);
+RDK_LIB_TYPE int RDK_CALL Storage_CalcNumObjects(void);
+RDK_LIB_TYPE int RDK_CALL Storage_CalcNumObjectsById(int classid);
+RDK_LIB_TYPE int RDK_CALL Storage_CalcNumObjectsByName(const char* classname);
 // --------------------------
 
 // --------------------------
 // Методы управления средой
 // ----------------------------
-// Индекс предварительно заданной модели обработки
-RDK_LIB_TYPE int Env_GetPredefinedStructure(void);
-RDK_LIB_TYPE bool Env_SetPredefinedStructure(int value);
-
-// Флаг состояния инициализации
-// true - хранилище готово к использованию
-// false - хранилище не готово
-RDK_LIB_TYPE bool Env_IsStoragePresent(void);
-
-// Возвращает состояние инициализации
-RDK_LIB_TYPE bool Env_IsInit(void);
-
-// Признак наличия сформированной структуры
-RDK_LIB_TYPE bool Env_IsStructured(void);
-
-// Инициализация среды
-RDK_LIB_TYPE bool Env_Init(void);
-
-// Деинициализация среды
-RDK_LIB_TYPE bool Env_UnInit(void);
-
-// Формирует предварительно заданную модель обработки
-RDK_LIB_TYPE bool Env_CreateStructure(void);
-
-// Уничтожает текущую модель обработки
-RDK_LIB_TYPE bool Env_DestroyStructure(void);
-
-// Удаляет модель и все библиотеки, очищает хранилище, приводя среду в исходное состояние
-RDK_LIB_TYPE void Env_Destroy(void);
-
 // Загружает библиотеку по имени dll-файла
-RDK_LIB_TYPE int Env_LoadStorageLibrary(const char *filename);
+RDK_LIB_TYPE int RDK_CALL Env_LoadStorageLibrary(const char *filename);
 
 // Удаляет подключенную библиотеку из списка по индексу
 // Ответственность за освобождение памяти лежит на вызывающей стороне.
-RDK_LIB_TYPE bool Env_DelClassLibraryByIndex(int index);
+RDK_LIB_TYPE bool RDK_CALL Env_DelClassLibraryByIndex(int index);
 
 // Удаляет подключенную библиотеку из списка по имени
 // Ответственность за освобождение памяти лежит на вызывающей стороне.
-RDK_LIB_TYPE bool Env_DelClassLibraryByName(const char *name);
+RDK_LIB_TYPE bool RDK_CALL Env_DelClassLibraryByName(const char *name);
 
 // Удаляет из списка все библиотеки
 // Ответственность за освобождение памяти лежит на вызывающей стороне.
-RDK_LIB_TYPE bool Env_DelAllClassLibraries(void);
+RDK_LIB_TYPE bool RDK_CALL Env_DelAllClassLibraries(void);
 
 // Заполняет хранилище данными библиотек
 // Операция предварительно уничтожает модель и очищает хранилище
-RDK_LIB_TYPE bool Env_BuildStorage(void);
+RDK_LIB_TYPE bool RDK_CALL Env_BuildStorage(void);
 
 // Возвращает число библиотек
-RDK_LIB_TYPE int Env_GetNumClassLibraries(void);
+RDK_LIB_TYPE int RDK_CALL Env_GetNumClassLibraries(void);
 
 // Возвращает имя библиотеки по индексу
-RDK_LIB_TYPE const char * Env_GetClassLibraryName(int index);
+RDK_LIB_TYPE const char * RDK_CALL Env_GetClassLibraryName(int index);
 
 // Возвращает версию библиотеки по индексу
-RDK_LIB_TYPE const char * Env_GetClassLibraryVersion(int index);
+RDK_LIB_TYPE const char * RDK_CALL Env_GetClassLibraryVersion(int index);
 
 // Перемещает объект в Storage как образец классов.
 // Объект удаляется из модели
 // Возвращает id нового класса в хранилище
-RDK_LIB_TYPE int Env_CreateClass(const char* stringid);
+RDK_LIB_TYPE int RDK_CALL Env_CreateClass(const char* stringid);
 
 // Метод счета
 // Если stringid == 0 то вычисляет всю модель целиком,
 // иначе вычисляет только указанный компонент модели
-RDK_LIB_TYPE int Env_Calculate(const char* stringid=0);
+RDK_LIB_TYPE int RDK_CALL Env_Calculate(const char* stringid=0);
+
+// ***********************************************
+// Вспомогательные функции управления средой. обычно вызов не требуется
+// ***********************************************
+// Индекс предварительно заданной модели обработки
+RDK_LIB_TYPE int RDK_CALL Env_GetPredefinedStructure(void);
+RDK_LIB_TYPE bool RDK_CALL Env_SetPredefinedStructure(int value);
+
+// Флаг состояния инициализации
+// true - хранилище готово к использованию
+// false - хранилище не готово
+RDK_LIB_TYPE bool RDK_CALL Env_IsStoragePresent(void);
+
+// Возвращает состояние инициализации
+RDK_LIB_TYPE bool RDK_CALL Env_IsInit(void);
+
+// Признак наличия сформированной структуры
+RDK_LIB_TYPE bool RDK_CALL Env_IsStructured(void);
+
+// Инициализация среды
+RDK_LIB_TYPE bool RDK_CALL Env_Init(void);
+
+// Деинициализация среды
+RDK_LIB_TYPE bool RDK_CALL Env_UnInit(void);
+
+// Формирует предварительно заданную модель обработки
+RDK_LIB_TYPE bool RDK_CALL Env_CreateStructure(void);
+
+// Уничтожает текущую модель обработки
+RDK_LIB_TYPE bool RDK_CALL Env_DestroyStructure(void);
+
+// Удаляет модель и все библиотеки, очищает хранилище, приводя среду в исходное состояние
+RDK_LIB_TYPE void RDK_CALL Env_Destroy(void);
+// ***********************************************
 // ----------------------------
 
 // ----------------------------
 // Методы управления моделью
 // ----------------------------
 // Удаляет модель
-RDK_LIB_TYPE int Model_Destroy(void);
+RDK_LIB_TYPE int RDK_CALL Model_Destroy(void);
 
 // Создает новую модель по имени класса в хранилище
 // Предварительно удаляет существующую модель
-RDK_LIB_TYPE int Model_Create(int classid);
+RDK_LIB_TYPE int RDK_CALL Model_Create(int classid);
 
 // Очищает модель
-RDK_LIB_TYPE int Model_Clear(void);
+RDK_LIB_TYPE int RDK_CALL Model_Clear(void);
 
 // Добавляет в выбранный контейнер модели с идентификатором 'stringid' экземпляр контейнера с заданным 'classid'
 // если stringid - пустая строка, то добавляет в саму модель
-RDK_LIB_TYPE int Model_AddComponent(char* stringid, int classid);
+RDK_LIB_TYPE int RDK_CALL Model_AddComponent(char* stringid, int classid);
 
 // Удаляет из выбранного контейнера модели с идентификатором 'stringid' экземпляр контейнера с заданным 'id'
 // если stringid - пустая строка, то удаляет из самой модели
-RDK_LIB_TYPE int Model_DelComponent(char* stringid, int id);
+RDK_LIB_TYPE int RDK_CALL Model_DelComponent(char* stringid, int id);
 
 // Возвращает число всех компонент в заданного компоненте 'stringid'
 // если stringid - пустая строка, то возвращает число всех компонент модели
-RDK_LIB_TYPE int Model_GetNumComponents(char* stringid);
+RDK_LIB_TYPE int RDK_CALL Model_GetNumComponents(char* stringid);
 
 // Возвращает массив всех id заданного компонента 'stringid'
 // если stringid - пустая строка, то возвращает массив всех id модели
-RDK_LIB_TYPE int Model_GetComponentsList(char* stringid, int *buffer);
+RDK_LIB_TYPE int RDK_CALL Model_GetComponentsList(char* stringid, int *buffer);
 
 // Возвращает имя компонента по заданному 'stringid'
 // если stringid - пустая строка, то возвращает имя модели
 // Память выделяется и освобождается внутри dll
-RDK_LIB_TYPE const char* Model_GetComponentName(char* stringid);
+RDK_LIB_TYPE const char* RDK_CALL Model_GetComponentName(char* stringid);
 
 // Возвращает параметры компонента по идентификатору
 // Память для buffer должна быть выделена!
-RDK_LIB_TYPE const char * Model_GetComponentParameters(const char *stringid);
+RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentParameters(const char *stringid);
 
 // Возвращает выборочные параметры компонента по идентификатору
 // Память для buffer должна быть выделена!
-RDK_LIB_TYPE const char * Model_GetComponentSelectedParameters(const char *stringid);
+RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentSelectedParameters(const char *stringid);
 
 // устанавливает параметры компонента по идентификатору
-RDK_LIB_TYPE bool Model_SetComponentParameters(const char *stringid, const char* buffer);
+RDK_LIB_TYPE bool RDK_CALL Model_SetComponentParameters(const char *stringid, const char* buffer);
 
 // Связывает выбранные контейнеры друг с другом
-RDK_LIB_TYPE int Model_CreateLink(char* stringid1, int output_number, char* stringid2, int input_number);
+RDK_LIB_TYPE int RDK_CALL Model_CreateLink(char* stringid1, int output_number, char* stringid2, int input_number);
 
 // Разрывает выбранную связь
-RDK_LIB_TYPE int Model_BreakLink(char* stringid1, int output_number, char* stringid2, int input_number);
+RDK_LIB_TYPE int RDK_CALL Model_BreakLink(char* stringid1, int output_number, char* stringid2, int input_number);
 
 // Разрывает все связи
-RDK_LIB_TYPE int Model_BreakAllLinks(void);
+RDK_LIB_TYPE int RDK_CALL Model_BreakAllLinks(void);
 
 // Разрывает все входные и выходные связи выбранного контейнера
-RDK_LIB_TYPE int Model_BreakAllComponentLinks(char* stringid);
+RDK_LIB_TYPE int RDK_CALL Model_BreakAllComponentLinks(char* stringid);
 
 // Разрывает все входные связи выбранного контейнера
-RDK_LIB_TYPE int Model_BreakAllComponentInputLinks(char* stringid);
+RDK_LIB_TYPE int RDK_CALL Model_BreakAllComponentInputLinks(char* stringid);
 
 // Разрывает все выходные связи выбранного контейнера
-RDK_LIB_TYPE int Model_BreakAllComponentOutputLinks(char* stringid);
+RDK_LIB_TYPE int RDK_CALL Model_BreakAllComponentOutputLinks(char* stringid);
 
 // Возращает все связи внутри компонента stringid в виде xml в буфер buffer
-RDK_LIB_TYPE const char * Model_GetComponentInternalLinks(char* stringid);
+RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentInternalLinks(char* stringid);
 
 // Устанавливает все связи внутри компонента stringid из строки xml в буфере buffer
-RDK_LIB_TYPE int Model_SetComponentInternalLinks(char* stringid, char* buffer);
+RDK_LIB_TYPE int RDK_CALL Model_SetComponentInternalLinks(char* stringid, char* buffer);
 
 // Возращает все входные связи к компоненту stringid в виде xml в буфер buffer
-RDK_LIB_TYPE const char * Model_GetComponentInputLinks(char* stringid);
+RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentInputLinks(char* stringid);
 
 // Возращает все выходные связи из компонента stringid в виде xml в буфер buffer
-RDK_LIB_TYPE const char * Model_GetComponentOutputLinks(char* stringid);
+RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentOutputLinks(char* stringid);
 
 // Возвращает состояние компонента по идентификатору
-RDK_LIB_TYPE const char * Model_GetComponentState(const char *stringid);
+RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentState(const char *stringid);
 
 // Возвращает выборочные данные состояния компонента по идентификатору
-RDK_LIB_TYPE const char * Model_GetComponentSelectedState(const char *stringid);
+RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentSelectedState(const char *stringid);
 
 // Устанавливает состояние компонента по идентификатору
-RDK_LIB_TYPE bool Model_SetComponentState(const char *stringid, const char* buffer);
+RDK_LIB_TYPE bool RDK_CALL Model_SetComponentState(const char *stringid, const char* buffer);
 
 // Возвращает число входов у компонента
-RDK_LIB_TYPE int Model_GetComponentNumInputs(const char *stringid);
+RDK_LIB_TYPE int RDK_CALL Model_GetComponentNumInputs(const char *stringid);
 
 // Возвращает размер входа компонента в числе элементов
-RDK_LIB_TYPE int Model_GetComponentInputSize(const char *stringid, int index);
+RDK_LIB_TYPE int RDK_CALL Model_GetComponentInputSize(const char *stringid, int index);
 
 // Возвращает размер элемента входа в байтах
-RDK_LIB_TYPE int Model_GetComponentInputElementSize(const char *stringid, int index);
+RDK_LIB_TYPE int RDK_CALL Model_GetComponentInputElementSize(const char *stringid, int index);
 
 // Возвращает размер входа компонента в байтах элементов
-RDK_LIB_TYPE int Model_GetComponentInputByteSize(const char *stringid, int index);
+RDK_LIB_TYPE int RDK_CALL Model_GetComponentInputByteSize(const char *stringid, int index);
 
 // Возвращает указатель на данные входа как на массив байт
 // Только для чтения!
-RDK_LIB_TYPE unsigned char* Model_GetComponentInputData(const char *stringid, int index);
+RDK_LIB_TYPE unsigned char* RDK_CALL Model_GetComponentInputData(const char *stringid, int index);
 
 // Возвращает число выходов у компонента
-RDK_LIB_TYPE int Model_GetComponentNumOutputs(const char *stringid);
+RDK_LIB_TYPE int RDK_CALL Model_GetComponentNumOutputs(const char *stringid);
 
 // Возвращает размер выхода компонента в числе элементов
-RDK_LIB_TYPE int Model_GetComponentOutputSize(const char *stringid, int index);
+RDK_LIB_TYPE int RDK_CALL Model_GetComponentOutputSize(const char *stringid, int index);
 
 // Возвращает размер элемента выхода в байтах
-RDK_LIB_TYPE int Model_GetComponentOutputElementSize(const char *stringid, int index);
+RDK_LIB_TYPE int RDK_CALL Model_GetComponentOutputElementSize(const char *stringid, int index);
 
 // Возвращает размер выхода компонента в байтах элементов
-RDK_LIB_TYPE int Model_GetComponentOutputByteSize(const char *stringid, int index);
+RDK_LIB_TYPE int RDK_CALL Model_GetComponentOutputByteSize(const char *stringid, int index);
 
 // Возвращает указатель на данные выхода как на массив байт
 // Только для чтения!
-RDK_LIB_TYPE unsigned char* Model_GetComponentOutputData(const char *stringid, int index);
+RDK_LIB_TYPE unsigned char* RDK_CALL Model_GetComponentOutputData(const char *stringid, int index);
 
 // Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния в xml
-RDK_LIB_TYPE const char * Model_SaveComponent(const char *stringid);
+RDK_LIB_TYPE const char * RDK_CALL Model_SaveComponent(const char *stringid);
 
 // Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния из xml
-RDK_LIB_TYPE int Model_LoadComponent(const char *stringid, char* buffer);
+RDK_LIB_TYPE int RDK_CALL Model_LoadComponent(const char *stringid, char* buffer);
 
 // Сохраняет все параметры компонента и его дочерних компонент в xml
-RDK_LIB_TYPE const char * Model_SaveComponentParameters(const char *stringid);
+RDK_LIB_TYPE const char * RDK_CALL Model_SaveComponentParameters(const char *stringid);
 
 // Загружает все параметры компонента и его дочерних компонент из xml
-RDK_LIB_TYPE int Model_LoadComponentParameters(const char *stringid, char* buffer);
+RDK_LIB_TYPE int RDK_CALL Model_LoadComponentParameters(const char *stringid, char* buffer);
 
 // Сохраняет состояние компонента и его дочерних компонент в xml
-RDK_LIB_TYPE const char * Model_SaveComponentState(const char *stringid);
+RDK_LIB_TYPE const char * RDK_CALL Model_SaveComponentState(const char *stringid);
 
 // Загружает состояние компонента и его дочерних компонент из xml
-RDK_LIB_TYPE int Model_LoadComponentState(const char *stringid, char* buffer);
+RDK_LIB_TYPE int RDK_CALL Model_LoadComponentState(const char *stringid, char* buffer);
 // --------------------------
 
 // --------------------------
 // Методы управления исключениями
 // ----------------------------
 // Возвращает массив строк лога
-RDK_LIB_TYPE const char* RDKEngine_GetLog(void);
+RDK_LIB_TYPE const char* RDK_CALL Engine_GetLog(void);
 // ----------------------------
 
 
 // --------------------------
-// Методы управления средой
+// Методы управления графической средой
 // --------------------------
 // Задает число входов среды
-RDK_LIB_TYPE void Env_SetNumInputImages(int number);
+RDK_LIB_TYPE void RDK_CALL Env_SetNumInputImages(int number);
 
 // Задает число выходов среды
-RDK_LIB_TYPE void Env_SetNumOutputImages(int number);
+RDK_LIB_TYPE void RDK_CALL Env_SetNumOutputImages(int number);
 
 // Возвращает число входов среды
-RDK_LIB_TYPE int Env_GetNumInputImages(void);
+RDK_LIB_TYPE int RDK_CALL Env_GetNumInputImages(void);
 
 // Возвращает число выходов среды
-RDK_LIB_TYPE int Env_GetNumOutputImages(void);
+RDK_LIB_TYPE int RDK_CALL Env_GetNumOutputImages(void);
 
 // Задает разрешение по умолчанию (рабочее разрешение)
-RDK_LIB_TYPE void Env_SetInputRes(int number, int width, int height);
+RDK_LIB_TYPE void RDK_CALL Env_SetInputRes(int number, int width, int height);
 
-RDK_LIB_TYPE void Env_SetInputImage(int number, unsigned char* image, int width, int height,int cmodel);
+RDK_LIB_TYPE void RDK_CALL Env_SetInputImage(int number, unsigned char* image, int width, int height,int cmodel);
 
 // Возвращает разрешение по умолчанию (рабочее разрешение)
-RDK_LIB_TYPE int Env_GetInputImageWidth(int number);
-RDK_LIB_TYPE int Env_GetInputImageHeight(int number);
-RDK_LIB_TYPE int Env_GetInputImageColorModel(int number);
+RDK_LIB_TYPE int RDK_CALL Env_GetInputImageWidth(int number);
+RDK_LIB_TYPE int RDK_CALL Env_GetInputImageHeight(int number);
+RDK_LIB_TYPE int RDK_CALL Env_GetInputImageColorModel(int number);
 
 // Возвращает текущее выходное разрешение
-RDK_LIB_TYPE int Env_GetOutputImageWidth(int number);
-RDK_LIB_TYPE int Env_GetOutputImageHeight(int number);
-RDK_LIB_TYPE int Env_GetOutputImageColorModel(int number);
+RDK_LIB_TYPE int RDK_CALL Env_GetOutputImageWidth(int number);
+RDK_LIB_TYPE int RDK_CALL Env_GetOutputImageHeight(int number);
+RDK_LIB_TYPE int RDK_CALL Env_GetOutputImageColorModel(int number);
 
-RDK_LIB_TYPE unsigned char* Env_GetInputImage(int index);
+RDK_LIB_TYPE unsigned char* RDK_CALL Env_GetInputImage(int index);
 
-RDK_LIB_TYPE unsigned char* Env_GetOutputImage(int index);
+RDK_LIB_TYPE unsigned char* RDK_CALL Env_GetOutputImage(int index);
 
-RDK_LIB_TYPE unsigned char* Env_GetOutputImageY8(int index);
+RDK_LIB_TYPE unsigned char* RDK_CALL Env_GetOutputImageY8(int index);
+// --------------------------
 
+// --------------------------
+// Методы управления графической моделью
+// --------------------------
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
-RDK_LIB_TYPE const RDK::UBitmap* const Env_GetComponentOutput(const char *stringid, int index);
+RDK_LIB_TYPE const /* RDK::UBitmap* */void* const RDK_CALL Env_GetComponentOutput(const char *stringid, int index);
 // --------------------------
 
 // ----------------------------
 // Внутренние методы инициализации
 // ----------------------------
-RDK_LIB_TYPE int LoadEngine(void *create_storage, void *create_environment, void *create_engine);
+RDK_LIB_TYPE int RDK_CALL LoadEngine(void *create_storage, void *create_environment, void *create_engine);
 
 // Инициализация библиотеки
-RDK_LIB_TYPE int RDKInit(void);
+RDK_LIB_TYPE int RDK_CALL RDKInit(void);
 
 // Деинициализация библиотеки
-RDK_LIB_TYPE int RDKUnInit(void);
+RDK_LIB_TYPE int RDK_CALL RDKUnInit(void);
 
 // Загружает набор предустановленных библиотек
-RDK_LIB_TYPE int RDKLoadPredefinedLibraries(void);
+RDK_LIB_TYPE int RDK_CALL RDKLoadPredefinedLibraries(void);
 
 // Обработчик исключений библиотеки
 // Должен быть вызван в глобальном обработчике пользовательского ПО
-RDK_LIB_TYPE int RDKExceptionDispatcher(void *exception);
+RDK_LIB_TYPE int RDK_CALL RDKExceptionDispatcher(void *exception);
 
 // Инициализация dll
-RDK_LIB_TYPE bool DllInit(void* pfstorage,void* pfenvironment,void* pfengine);
+RDK_LIB_TYPE bool RDK_CALL DllInit(void* pfstorage,void* pfenvironment,void* pfengine);
 
 // Возвращает число хранилищ в библиотеке
-RDK_LIB_TYPE size_t GetNumStorages(void);
+RDK_LIB_TYPE int RDK_CALL GetNumStorages(void);
 
 // Возвращает число сред в библиотеке
-RDK_LIB_TYPE size_t GetNumEnvironments(void);
+RDK_LIB_TYPE int RDK_CALL GetNumEnvironments(void);
 
 // Возвращает число движков в библиотеке
-RDK_LIB_TYPE size_t GetNumEngines(void);
-
-// Возвращает хранилище по индексу
-RDK_LIB_TYPE RDK::UAContainerStorage* GetStorage(size_t i);
-
-// Возвращает среду по индексу
-RDK_LIB_TYPE RDK::UAContainerEnvironment*  GetEnvironment(size_t i);
-
-// Возвращает движок по индексу
-RDK_LIB_TYPE RDK::UEngine*  GetEngine(size_t i);
-
-// Создает новое хранилище и помещает в конец массива
-// Возвращает указатель на хранилище
-RDK_LIB_TYPE RDK::UAContainerStorage*  AddNewStorage(void);
-
-// Создает новую среду и помещает в конец массива
-// Возвращает указатель на среду
-RDK_LIB_TYPE RDK::UAContainerEnvironment*  AddNewEnvironment(RDK::UAContainerStorage *storage=0,bool isinit=true, std::list<RDK::UAContainer*>* external_classes=0, std::list<RDK::UALibrary*>* external_libs=0);
-
-// Создает новый движок и помещает в конец массива
-// Возвращает указатель на движок
-RDK_LIB_TYPE RDK::UEngine*  AddNewEngine(void);
+RDK_LIB_TYPE int RDK_CALL GetNumEngines(void);
 // ----------------------------
 
 

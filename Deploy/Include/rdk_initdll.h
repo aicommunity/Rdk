@@ -1,10 +1,12 @@
 #ifndef rdk_initdllH
 #define rdk_initdllH
 
-#ifdef BORLAND
+#ifdef __BORLANDC__
 #define RDK_LIB_TYPE __declspec(dllexport)
+#define RDK_CALL __stdcall
 #else
 #define RDK_LIB_TYPE __declspec(dllexport)
+#define RDK_CALL __cdecl
 #endif
 #include "rdk_init.h"
 

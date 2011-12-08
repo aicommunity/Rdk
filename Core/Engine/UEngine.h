@@ -515,47 +515,51 @@ virtual bool ACalculate(void);
 // --------------------------
 };
 
+#ifndef RDK_CALL
+#define RDK_CALL
+#endif
+
 // Инициализация dll
-typedef bool(*DLLPDllInit)(void* pfstorage,void* pfenvironment,void* pfengine);
+typedef bool RDK_CALL (*DLLPDllInit)(void* pfstorage,void* pfenvironment,void* pfengine);
 extern DLLPDllInit DLLDllInit;
 
 // Указатель на функцию возвращающую число хранилищ в библиотеке
-typedef std::size_t(*DLLPGetNumStorages)(void);
+typedef int RDK_CALL (*DLLPGetNumStorages)(void);
 extern DLLPGetNumStorages DLLGetNumStorages;
 
 // Указатель на функцию возвращающую число сред в библиотеке
-typedef std::size_t(*DLLPGetNumEnvironments)(void);
+typedef int RDK_CALL (*DLLPGetNumEnvironments)(void);
 extern DLLPGetNumEnvironments DLLGetNumEnvironments;
 
 // Указатель на функцию возвращающую число движков в библиотеке
-typedef std::size_t(*DLLPGetNumEngines)(void);
+typedef int RDK_CALL (*DLLPGetNumEngines)(void);
 extern DLLPGetNumEngines DLLGetNumEngines;
 
 // Возвращает хранилище по индексу
-typedef UAContainerStorage* (*DLLPGetStorage)(size_t i);
+typedef UAContainerStorage* RDK_CALL (*DLLPGetStorage)(size_t i);
 extern DLLPGetStorage DLLGetStorage;
 
 // Возвращает среду по индексу
-typedef UAContainerEnvironment* (*DLLPGetEnvironment)(size_t i);
+typedef UAContainerEnvironment* RDK_CALL (*DLLPGetEnvironment)(size_t i);
 extern DLLPGetEnvironment DLLGetEnvironment;
 
 // Возвращает движок по индексу
-typedef UEngine* (*DLLPGetEngine)(size_t i);
+typedef UEngine* RDK_CALL (*DLLPGetEngine)(size_t i);
 extern DLLPGetEngine DLLGetEngine;
 
 // Создает новое хранилище и помещает в конец массива
 // Возвращает указатель на хранилище
-typedef UAContainerStorage* (*DLLPAddNewStorage)(void);
+typedef UAContainerStorage* RDK_CALL (*DLLPAddNewStorage)(void);
 extern DLLPAddNewStorage DLLAddNewStorage;
 
 // Создает новую среду и помещает в конец массива
 // Возвращает указатель на среду
-typedef UAContainerEnvironment* (*DLLPAddNewEnvironment)(UAContainerStorage *storage,bool isinit,list<UAContainer*>* external_classes, list<UALibrary*>* external_libs);
+typedef UAContainerEnvironment* RDK_CALL (*DLLPAddNewEnvironment)(UAContainerStorage *storage,bool isinit,list<UAContainer*>* external_classes, list<UALibrary*>* external_libs);
 extern DLLPAddNewEnvironment DLLAddNewEnvironment;
 
 // Создает новый движок и помещает в конец массива
 // Возвращает указатель на движок
-typedef UEngine* (*DLLPAddNewEngine)(void);
+typedef UEngine* RDK_CALL (*DLLPAddNewEngine)(void);
 extern DLLPAddNewEngine DLLAddNewEngine;
 
 

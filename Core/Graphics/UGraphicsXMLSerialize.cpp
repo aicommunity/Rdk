@@ -12,7 +12,8 @@ See file license.txt for more information
 #ifndef UGraphics_XML_SERIALIZE_CPP
 #define UGraphics_XML_SERIALIZE_CPP
 
-#include <strstream>
+//#include <strstream>
+#include <sstream>
 #include <iomanip>
 #include "UGraphicsXMLSerialize.h"
 #include "../Serialize/UXMLStdSerialize.h"
@@ -25,10 +26,10 @@ USerStorageXML& operator << (USerStorageXML& storage, const UColorT &data)
 {
  storage.SetNodeAttribute("Type",typeid(UColorT).name());
 
- std::strstream stream;
+ std::stringstream stream;
  stream.setf(ios::hex);
  stream<<data.c;
- std::string str(stream.str(),stream.pcount());
+ std::string str=stream.str();
  storage.SetNodeText(str);
 
  return storage;
@@ -39,7 +40,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, UColorT &data)
  if(storage.GetNodeAttribute("Type") != typeid(UColorT).name())
   return storage;
 
- std::istrstream stream(storage.GetNodeText().c_str());
+ std::istringstream stream(storage.GetNodeText().c_str());
  stream.setf(ios::hex);
  stream>>data.c;
 
@@ -243,13 +244,13 @@ USerStorageXML& operator << (USerStorageXML& storage, const UBitmap &data)
 
  storage.SetNodeAttribute("Size",sntoa(data.GetByteLength()));
  storage.AddNode("Data");
- std::strstream stream;
+ std::stringstream stream;
  UBColor *pdata=data.GetData();
  stream.setf(ios::hex);
  for(int i=0;i<data.GetByteLength();i++)
   stream<<*pdata++;
 
- std::string str(stream.str(),stream.pcount());
+ std::string str=stream.str();
  storage.SetNodeText(str);
  storage.SelectUp();
 
@@ -280,7 +281,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, UBitmap &data)
  {
   if(!storage.SelectNode("Data"))
    return storage;
-  std::istrstream stream(storage.GetNodeText().c_str());
+  std::istringstream stream(storage.GetNodeText().c_str());
   UBColor *pdata=data.GetData();
   stream.setf(ios::hex);
   for(int i=0;i<data.GetByteLength();i++)

@@ -16,7 +16,7 @@ See file license.txt for more information
 
 #include <vector>
 #include <map>
-#include <strstream>
+//#include <strstream>
 #include <sstream>
 #include "../Serialize/USerStorageXML.h"
 #include "UEnvSupport.h"

@@ -155,7 +155,7 @@ template<class DataT>
 MRotationTensor<DataT>& MRotationTensor<DataT>::Power2(void)
 {
  angle+=angle;
- return *this;   
+ return *this;
 }
 
 template<class DataT>
@@ -163,7 +163,7 @@ MRotationTensor<DataT>& MRotationTensor<DataT>::Power(int pow)
 {
  for(int i=1;i<pow;i++)
   angle+=angle;
- return *this; 
+ return *this;
 }
 
 // Вывод в массив
@@ -223,8 +223,8 @@ MInertiaTensor<DataT>& operator=(const MInertiaTensor<DataT> &IT)
  return *this;
 };
 
-friend MVector<DataT> operator * (const MInertiaTensor<DataT> &,
-                                  const MVector<DataT> &);
+template<class DataU> friend MVector<DataU> operator * (const MInertiaTensor<DataU> &,
+                                  const MVector<DataU> &);
 
 // Операторы сравнения
 bool operator == (const MInertiaTensor<DataT> &v) const;
@@ -284,7 +284,7 @@ void main(void)
  u=I*v;
  I.Rotate(P);
  cout<<w*v;
- cout<<w<<v<<u; 
+ cout<<w<<v<<u;
 }  */
 
 }
