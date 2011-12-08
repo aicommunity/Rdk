@@ -895,12 +895,13 @@ const char* UEngine::Model_GetComponentParameters(const char *stringid)
   if(!cont)
    return 0;
 
-//  XmlStorage.Create("Parameters");
   XmlStorage.Create(cont->GetLongName(model,namebuffer));
+  XmlStorage.AddNode("Parameters");
 
   if(!Model_GetComponentParameters(cont,&XmlStorage))
    return 0;
 
+  XmlStorage.SelectUp();
   TempString="";
   XmlStorage.Save(TempString);
   return TempString.c_str();
@@ -945,10 +946,11 @@ bool UEngine::Model_SetComponentParameters(const char *stringid, const char* buf
    return false;
 
   XmlStorage.Load(buffer, cont->GetLongName(model,namebuffer));
-//  XmlStorage.Load(buffer,"Parameters");
+  XmlStorage.SelectNode("Parameters");
 
   if(!Model_SetComponentParameters(cont,&XmlStorage))
    return false;
+  XmlStorage.SelectUp();
  }
  catch (UException * exception)
  {
@@ -1175,10 +1177,11 @@ const char * UEngine::Model_GetComponentState(const char *stringid)
    return 0;
 
   XmlStorage.Create(cont->GetLongName(model,namebuffer));
-//  XmlStorage.Create("State");
+  XmlStorage.AddNode("State");
 
   if(!Model_GetComponentState(cont,&XmlStorage))
    return 0;
+  XmlStorage.SelectUp();
 
   TempString="";
   XmlStorage.Save(TempString);
@@ -1224,10 +1227,11 @@ bool UEngine::Model_SetComponentState(const char *stringid, const char* buffer)
    return false;
 
   XmlStorage.Load(buffer, cont->GetLongName(model,namebuffer));
-//  XmlStorage.Load(buffer,"State");
+  XmlStorage.SelectNode("State");
 
   if(!Model_SetComponentState(cont,&XmlStorage))
    return false;
+  XmlStorage.SelectUp();
  }
  catch (UException * exception)
  {
