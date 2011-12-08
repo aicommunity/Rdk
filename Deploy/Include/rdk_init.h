@@ -7,10 +7,10 @@ extern "C"  {
 // Методы инициализации
 // ----------------------------
 // Инициализирует движок (функция должна быть вызвана первой!)
-RDK_LIB_TYPE int RDK_CALL RDK_EngineInit(int predefined_structure);
+RDK_LIB_TYPE int RDK_CALL EngineInit(int predefined_structure);
 
 // Инициализирует графический движок (функция должна быть вызвана первой!)
-RDK_LIB_TYPE int RDK_CALL RDK_GraphicalEngineInit(int predefined_structure, int num_inputs,
+RDK_LIB_TYPE int RDK_CALL GraphicalEngineInit(int predefined_structure, int num_inputs,
 		int num_outputs, int input_width, int input_height);
 // ----------------------------
 
@@ -308,7 +308,7 @@ RDK_LIB_TYPE unsigned char* RDK_CALL Env_GetOutputImageY8(int index);
 // Методы управления графической моделью
 // --------------------------
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
-RDK_LIB_TYPE const /* RDK::UBitmap* */void* const RDK_CALL Env_GetComponentOutput(const char *stringid, int index);
+RDK_LIB_TYPE const /* RDK::UBitmap* */void* const RDK_CALL Model_GetComponentOutput(const char *stringid, int index);
 // --------------------------
 
 // ----------------------------
@@ -317,17 +317,17 @@ RDK_LIB_TYPE const /* RDK::UBitmap* */void* const RDK_CALL Env_GetComponentOutpu
 RDK_LIB_TYPE int RDK_CALL LoadEngine(void *create_storage, void *create_environment, void *create_engine);
 
 // Инициализация библиотеки
-RDK_LIB_TYPE int RDK_CALL RDKInit(void);
+RDK_LIB_TYPE int RDK_CALL Init(void);
 
 // Деинициализация библиотеки
-RDK_LIB_TYPE int RDK_CALL RDKUnInit(void);
+RDK_LIB_TYPE int RDK_CALL UnInit(void);
 
 // Загружает набор предустановленных библиотек
-RDK_LIB_TYPE int RDK_CALL RDKLoadPredefinedLibraries(void);
+RDK_LIB_TYPE int RDK_CALL LoadPredefinedLibraries(void);
 
 // Обработчик исключений библиотеки
 // Должен быть вызван в глобальном обработчике пользовательского ПО
-RDK_LIB_TYPE int RDK_CALL RDKExceptionDispatcher(void *exception);
+RDK_LIB_TYPE int RDK_CALL ExceptionDispatcher(void *exception);
 
 // Инициализация dll
 RDK_LIB_TYPE bool RDK_CALL DllInit(void* pfstorage,void* pfenvironment,void* pfengine);

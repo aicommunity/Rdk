@@ -111,8 +111,11 @@ virtual unsigned char* Env_GetOutputImage(int index);
 
 virtual unsigned char* Env_GetOutputImageY8(int index);
 
+// --------------------------
+// Методы управления моделью
+// --------------------------
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
-virtual const RDK::UBitmap* const Env_GetComponentOutput(const char *stringid, int index);
+virtual const RDK::UBitmap* const Model_GetComponentOutput(const char *stringid, int index);
 // --------------------------
 
 // --------------------------

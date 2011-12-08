@@ -177,9 +177,13 @@ unsigned char* UBEngine::Env_GetOutputImageY8(int index)
 // GetEnvironment()->GetOutputImage(index).SetColorModel(RDK::ubmY8);
  return GetEnvironment()->GetOutputImage(index).GetData();
 }
+// --------------------------
 
+// --------------------------
+// Методы управления моделью
+// --------------------------
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
-const RDK::UBitmap* const UBEngine::Env_GetComponentOutput(const char *stringid, int index)
+const RDK::UBitmap* const UBEngine::Model_GetComponentOutput(const char *stringid, int index)
 {
  UEPtr<RDK::UBAbstract> model=dynamic_pointer_cast<RDK::UBAbstract>(Environment->GetModel());
 

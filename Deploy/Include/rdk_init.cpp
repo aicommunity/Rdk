@@ -69,11 +69,11 @@ RDK::UEngine* CreateNewGEngine(void)
 // ----------------------------
 // Методы инициализации
 // ----------------------------
-int RDK_CALL RDK_EngineInit(int predefined_structure)
+int RDK_CALL EngineInit(int predefined_structure)
 {
  LoadEngine((void*)CreateNewStorage, (void*)CreateNewEnvironment, (void*)CreateNewEngine);
- RDKInit();
- RDKLoadPredefinedLibraries();
+ Init();
+ LoadPredefinedLibraries();
 
  Env_SetPredefinedStructure(predefined_structure);
  Env_CreateStructure();
@@ -81,12 +81,12 @@ int RDK_CALL RDK_EngineInit(int predefined_structure)
  return 0;
 }
 
-int RDK_CALL RDK_GraphicalEngineInit(int predefined_structure, int num_inputs,
+int RDK_CALL GraphicalEngineInit(int predefined_structure, int num_inputs,
 		int num_outputs, int input_width, int input_height)
 {
  LoadEngine((void*)CreateNewGStorage, (void*)CreateNewGEnvironment, (void*)CreateNewGEngine);
- RDKInit();
- RDKLoadPredefinedLibraries();
+ Init();
+ LoadPredefinedLibraries();
 
  // Задает число входов среды
  Env_SetNumInputImages(num_inputs);
@@ -662,9 +662,9 @@ unsigned char* RDK_CALL Env_GetOutputImageY8(int index)
 // Методы управления графической моделью
 // --------------------------
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
-const /* RDK::UBitmap* */ void* const RDK_CALL Env_GetComponentOutput(const char *stringid, int index)
+const /* RDK::UBitmap* */ void* const RDK_CALL Model_GetComponentOutput(const char *stringid, int index)
 {
- return dynamic_cast<RDK::UBEngine*>(PEngine)->Env_GetComponentOutput(stringid, index);
+ return dynamic_cast<RDK::UBEngine*>(PEngine)->Model_GetComponentOutput(stringid, index);
 }
 // --------------------------
 
@@ -789,7 +789,7 @@ int Engine_Destroy(void)
  return 0;
 }
 
-int RDK_CALL RDKInit(void)
+int RDK_CALL Init(void)
 {
   if(!PEngine->Init())
   {
@@ -815,7 +815,7 @@ int RDK_CALL RDKInit(void)
  return 0;
 }
 
-int RDK_CALL RDKUnInit(void)
+int RDK_CALL UnInit(void)
 {
  if(!PEngine->UnInit())
   return 1;
@@ -824,14 +824,14 @@ int RDK_CALL RDKUnInit(void)
 }
 
 // Загружает набор предустановленных библиотек
-int RDK_CALL RDKLoadPredefinedLibraries(void)
+int RDK_CALL LoadPredefinedLibraries(void)
 {
  return PEngine->LoadPredefinedLibraries();
 }
 
 // Обработчик исключений библиотеки
 // Должен быть вызван в глобальном обработчике пользовательского ПО
-int RDK_CALL RDKExceptionDispatcher(void *exception)
+int RDK_CALL ExceptionDispatcher(void *exception)
 {
  if(!PEngine)
   return 1;
