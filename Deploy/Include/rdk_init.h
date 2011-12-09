@@ -4,7 +4,7 @@
 extern "C"  {
 
 // ----------------------------
-// Методы инициализации
+// Функции инициализации
 // ----------------------------
 // Инициализирует движок (функция должна быть вызвана первой!)
 RDK_LIB_TYPE int RDK_CALL EngineInit(int predefined_structure);
@@ -15,7 +15,7 @@ RDK_LIB_TYPE int RDK_CALL GraphicalEngineInit(int predefined_structure, int num_
 // ----------------------------
 
 // --------------------------
-// Методы управления хранилищем
+// Функции управления хранилищем
 // ----------------------------
 // Возвращает число классов в хранилище
 RDK_LIB_TYPE int RDK_CALL Storage_GetNumClasses(void);
@@ -47,7 +47,7 @@ RDK_LIB_TYPE int RDK_CALL Storage_CalcNumObjectsByName(const char* classname);
 // --------------------------
 
 // --------------------------
-// Методы управления средой
+// Функции управления средой
 // ----------------------------
 // Загружает библиотеку по имени dll-файла
 RDK_LIB_TYPE int RDK_CALL Env_LoadStorageLibrary(const char *filename);
@@ -121,6 +121,44 @@ RDK_LIB_TYPE bool RDK_CALL Env_DestroyStructure(void);
 RDK_LIB_TYPE void RDK_CALL Env_Destroy(void);
 // ***********************************************
 // ----------------------------
+
+
+// --------------------------
+// Функции управления средой видеообработки
+// --------------------------
+// Задает число входов среды
+RDK_LIB_TYPE void RDK_CALL Env_SetNumInputImages(int number);
+
+// Задает число выходов среды
+RDK_LIB_TYPE void RDK_CALL Env_SetNumOutputImages(int number);
+
+// Возвращает число входов среды
+RDK_LIB_TYPE int RDK_CALL Env_GetNumInputImages(void);
+
+// Возвращает число выходов среды
+RDK_LIB_TYPE int RDK_CALL Env_GetNumOutputImages(void);
+
+// Задает разрешение по умолчанию (рабочее разрешение)
+RDK_LIB_TYPE void RDK_CALL Env_SetInputRes(int number, int width, int height);
+
+RDK_LIB_TYPE void RDK_CALL Env_SetInputImage(int number, unsigned char* image, int width, int height,int cmodel);
+
+// Возвращает разрешение по умолчанию (рабочее разрешение)
+RDK_LIB_TYPE int RDK_CALL Env_GetInputImageWidth(int number);
+RDK_LIB_TYPE int RDK_CALL Env_GetInputImageHeight(int number);
+RDK_LIB_TYPE int RDK_CALL Env_GetInputImageColorModel(int number);
+
+// Возвращает текущее выходное разрешение
+RDK_LIB_TYPE int RDK_CALL Env_GetOutputImageWidth(int number);
+RDK_LIB_TYPE int RDK_CALL Env_GetOutputImageHeight(int number);
+RDK_LIB_TYPE int RDK_CALL Env_GetOutputImageColorModel(int number);
+
+RDK_LIB_TYPE unsigned char* RDK_CALL Env_GetInputImage(int index);
+
+RDK_LIB_TYPE unsigned char* RDK_CALL Env_GetOutputImage(int index);
+
+RDK_LIB_TYPE unsigned char* RDK_CALL Env_GetOutputImageY8(int index);
+// --------------------------
 
 // ----------------------------
 // Методы управления моделью
@@ -260,59 +298,22 @@ RDK_LIB_TYPE int RDK_CALL Model_LoadComponentState(const char *stringid, char* b
 // --------------------------
 
 // --------------------------
-// Методы управления исключениями
+// Функции управления моделью видеообработки
+// --------------------------
+// Возвращает указатель на выход с индексом 'index' компонента 'id'
+// возвращаемое значение имеет фактический тип RDK::UBitmap*
+RDK_LIB_TYPE const /* RDK::UBitmap* */void* const RDK_CALL Model_GetComponentOutput(const char *stringid, int index);
+// --------------------------
+
+// --------------------------
+// Функции управления исключениями
 // ----------------------------
 // Возвращает массив строк лога
 RDK_LIB_TYPE const char* RDK_CALL Engine_GetLog(void);
 // ----------------------------
 
-
-// --------------------------
-// Методы управления графической средой
-// --------------------------
-// Задает число входов среды
-RDK_LIB_TYPE void RDK_CALL Env_SetNumInputImages(int number);
-
-// Задает число выходов среды
-RDK_LIB_TYPE void RDK_CALL Env_SetNumOutputImages(int number);
-
-// Возвращает число входов среды
-RDK_LIB_TYPE int RDK_CALL Env_GetNumInputImages(void);
-
-// Возвращает число выходов среды
-RDK_LIB_TYPE int RDK_CALL Env_GetNumOutputImages(void);
-
-// Задает разрешение по умолчанию (рабочее разрешение)
-RDK_LIB_TYPE void RDK_CALL Env_SetInputRes(int number, int width, int height);
-
-RDK_LIB_TYPE void RDK_CALL Env_SetInputImage(int number, unsigned char* image, int width, int height,int cmodel);
-
-// Возвращает разрешение по умолчанию (рабочее разрешение)
-RDK_LIB_TYPE int RDK_CALL Env_GetInputImageWidth(int number);
-RDK_LIB_TYPE int RDK_CALL Env_GetInputImageHeight(int number);
-RDK_LIB_TYPE int RDK_CALL Env_GetInputImageColorModel(int number);
-
-// Возвращает текущее выходное разрешение
-RDK_LIB_TYPE int RDK_CALL Env_GetOutputImageWidth(int number);
-RDK_LIB_TYPE int RDK_CALL Env_GetOutputImageHeight(int number);
-RDK_LIB_TYPE int RDK_CALL Env_GetOutputImageColorModel(int number);
-
-RDK_LIB_TYPE unsigned char* RDK_CALL Env_GetInputImage(int index);
-
-RDK_LIB_TYPE unsigned char* RDK_CALL Env_GetOutputImage(int index);
-
-RDK_LIB_TYPE unsigned char* RDK_CALL Env_GetOutputImageY8(int index);
-// --------------------------
-
-// --------------------------
-// Методы управления графической моделью
-// --------------------------
-// Возвращает указатель на выход с индексом 'index' компонента 'id'
-RDK_LIB_TYPE const /* RDK::UBitmap* */void* const RDK_CALL Model_GetComponentOutput(const char *stringid, int index);
-// --------------------------
-
 // ----------------------------
-// Внутренние методы инициализации
+// Внутренние функции инициализации
 // ----------------------------
 RDK_LIB_TYPE int RDK_CALL LoadEngine(void *create_storage, void *create_environment, void *create_engine);
 
