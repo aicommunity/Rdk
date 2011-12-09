@@ -18,9 +18,9 @@ See file license.txt for more information
 #include "UEngine.h"
 #include "UEnvSupport.h"
 //#include "UProperty.h"
-#include "UItemData.h"                      
+#include "UItemData.h"
 #include "UXMLEnvSerialize.h"
-#include "UThreadEnvironment.h"   
+//#include "UThreadEnvironment.h"
 #include "UEnvException.h"
 
 
