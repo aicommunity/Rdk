@@ -1,7 +1,11 @@
 #ifndef RDK_INIT_H
 #define RDK_INIT_H
 
+#ifdef __cplusplus
 extern "C"  {
+#else
+typedef int bool;
+#endif
 
 // ----------------------------
 // Функции инициализации
@@ -85,7 +89,7 @@ RDK_LIB_TYPE int RDK_CALL Env_CreateClass(const char* stringid);
 // Метод счета
 // Если stringid == 0 то вычисляет всю модель целиком,
 // иначе вычисляет только указанный компонент модели
-RDK_LIB_TYPE int RDK_CALL Env_Calculate(const char* stringid=0);
+RDK_LIB_TYPE int RDK_CALL Env_Calculate(const char* stringid);
 
 // ***********************************************
 // Вспомогательные функции управления средой. обычно вызов не требуется
@@ -343,7 +347,8 @@ RDK_LIB_TYPE int RDK_CALL GetNumEnvironments(void);
 RDK_LIB_TYPE int RDK_CALL GetNumEngines(void);
 // ----------------------------
 
-
+#ifdef __cplusplus
 }
+#endif
 
 #endif
