@@ -14,6 +14,7 @@ See file license.txt for more information
 
 #include "UAComponent.h"
 #include "UAStorage.h"
+#include "UComponentDescription.h"
 
 namespace RDK {
 
@@ -135,6 +136,16 @@ bool UAComponent::SetId(UId value)
 // --------------------------
 // Методы управления счетом
 // --------------------------
+// Создает экземпляр описания класса
+UComponentDescription* UAComponent::NewDescription(void)
+{
+ UComponentDescription* result=new UComponentDescription;
+
+ result->SetClassId(sntoa(Class));
+
+ return result;
+}
+
 // Уничтожение этого объекта
 void UAComponent::Free(void)
 {

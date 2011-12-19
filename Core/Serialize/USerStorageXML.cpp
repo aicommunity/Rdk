@@ -210,6 +210,9 @@ bool USerStorageXML::SetNodeText(const std::string &text)
 // Возвращает значение узла
 const std::string USerStorageXML::GetNodeText(void) const
 {
+ if(!CurrentNode.getText())
+  return string();
+
  return CurrentNode.getText();
 }
 // --------------------------

@@ -16,6 +16,8 @@ See file license.txt for more information
 #include <map>
 #include "UEPtr.h"
 #include "UAComponent.h"
+#include "../Serialize/USerStorageXML.h"
+#include "UComponentDescription.h"
 
 namespace RDK {
 
@@ -24,10 +26,18 @@ typedef std::map<UId, UClassStorageElement> UClassesStorage;
 typedef std::map<UId, UClassStorageElement>::iterator UClassesStorageIterator;
 typedef std::map<UId, UClassStorageElement>::const_iterator UClassesStorageCIterator;
 
+typedef std::map<UId, UEPtr<UComponentDescription> > UClassesDescription;
+typedef std::map<UId, UEPtr<UComponentDescription> >::iterator UClassesDescriptionIterator;
+typedef std::map<UId, UEPtr<UComponentDescription> >::const_iterator UClassesDescriptionCIterator;
+
 class UAStorage
 {
 protected: // Системные свойства
 UClassesStorage ClassesStorage;
+
+protected: // Описания классов
+// XML описания всех классов хранилища
+UClassesDescription ClassesDescription;
 
 protected: // Основные свойства
 // Последний использованный Id образцов классов
@@ -96,6 +106,31 @@ virtual UId FindClass(UEPtr<UAComponent> object) const;
 // --------------------------
 
 // --------------------------
+// Методы управления описанием классов
+// --------------------------
+// Возвращает XML описание класса
+const UEPtr<UComponentDescription> GetClassDescription(const UId &classid) const;
+
+// Устанавливает XML описание класса
+// Класс в хранилище должен существовать
+bool SetClassDescription(const UId &classid, const UEPtr<UComponentDescription>& description);
+
+// Сохраняет описание класса в xml
+virtual bool SaveClassDescription(const UId &classid,
+										Serialize::USerStorageXML &xml);
+
+// Загружает описание класса из xml
+virtual bool LoadClassDescription(const UId &classid,
+										Serialize::USerStorageXML &xml);
+
+// Сохраняет описание всех классов в xml
+virtual bool SaveClassesDescription(Serialize::USerStorageXML &xml);
+
+// Загружает описание всех классов из xml
+virtual bool LoadClassesDescription(Serialize::USerStorageXML &xml);
+// --------------------------
+
+// --------------------------
 // Скрытые методы управления хранилищем объектов
 // --------------------------
 protected:
@@ -103,6 +138,17 @@ protected:
 // В текущей реализации всегда удаляет объект и возвращает true
 virtual bool ReturnObject(UEPtr<UAComponent> object);
 // --------------------------
+
+// --------------------------
+// Скрытые методы управления описанием классов
+// --------------------------
+// Формирует прототип XML описания для заданного класса
+// Класс в хранилище должен существовать
+// Очищает уже созданные поля описания
+//virtual bool GenerateClassDescription(UClassesStorageIterator classI,
+//										Serialize::USerStorageXML &xml);
+// --------------------------
+
 };
 
 }

@@ -406,6 +406,108 @@ int UEngine::Storage_CalcNumObjectsByName(const char* classname) const
  return 0;
 }
 
+// Возвращает описание класса по его id в формате xml
+const char* UEngine::Storage_GetClassDescription(int classid)
+{
+ try
+ {
+  Serialize::USerStorageXML xml;
+  xml.Create(sntoa(classid));
+  Storage->SaveClassDescription(classid,xml);
+  xml.SelectUp();
+  xml.Save(TempString);
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
+ return TempString.c_str();
+}
+
+// Устанавливает описание класса по его id, считывая его из формата xml
+bool UEngine::Storage_SetClassDescription(int classid, const char* description)
+{
+ try
+ {
+  Serialize::USerStorageXML xml;
+  xml.Load(description, sntoa(classid));
+  return Storage->LoadClassDescription(classid,xml);
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
+ return false;
+}
+
+// Сохраняет описание всех классов в xml
+const char* UEngine::Storage_SaveClassesDescription(void)
+{
+ try
+ {
+  Serialize::USerStorageXML xml;
+  xml.Create("ClassesDescription");
+  Storage->SaveClassesDescription(xml);
+  xml.SelectUp();
+  xml.Save(TempString);
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
+ return TempString.c_str();
+}
+
+// Загружает описание всех классов из xml
+bool UEngine::Storage_LoadClassesDescription(const char* xmltext)
+{
+ try
+ {
+  Serialize::USerStorageXML xml;
+  xml.Load(xmltext, "ClassesDescription");
+  return Storage->LoadClassesDescription(xml);
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
+ return false;
+}
+
+// Сохраняет общее описание всех классов в xml
+const char* UEngine::Storage_SaveCommonClassesDescription(void)
+{
+ try
+ {
+  Serialize::USerStorageXML xml;
+  xml.Create("ClassesDescription");
+  Storage->SaveCommonClassesDescription(xml);
+  xml.SelectUp();
+  xml.Save(TempString);
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
+ return TempString.c_str();
+}
+
+// Загружает общее описание всех классов из xml
+bool UEngine::Storage_LoadCommonClassesDescription(const char* xmltext)
+{
+ try
+ {
+  Serialize::USerStorageXML xml;
+  xml.Load(xmltext, "ClassesDescription");
+  return Storage->LoadCommonClassesDescription(xml);
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
+ return false;
+}
+
 
 // Методы управления средой
 // ----------------------------
@@ -878,7 +980,6 @@ const char* UEngine::Model_GetComponentName(char* stringid)
 }
 
 // Возвращает параметры компонента по идентификатору
-// Память для buffer должна быть выделена!
 const char* UEngine::Model_GetComponentParameters(const char *stringid)
 {
  try
@@ -914,12 +1015,46 @@ const char* UEngine::Model_GetComponentParameters(const char *stringid)
 }
 
 // Возвращает выборочные параметры компонента по идентификатору
-// Память для buffer должна быть выделена!
 const char* UEngine::Model_GetComponentSelectedParameters(const char *stringid)
 {
  try
  {
   return 0;
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
+// Возвращает параметры компонента по идентификатору с описаниями
+const char* UEngine::Model_GetComponentParametersEx(const char *stringid)
+{
+ try
+ {
+  UEPtr<RDK::UANet> model=dynamic_pointer_cast<RDK::UANet>(Environment->GetModel());
+
+  if(!model)
+   return 0;
+
+  RDK::ULongId id;
+  string namebuffer;
+
+  UEPtr<RDK::UAContainer> cont=model->GetComponentL(RDK::operator<<(id,stringid));
+  if(!cont)
+   return 0;
+
+  XmlStorage.Create(cont->GetLongName(model,namebuffer));
+  XmlStorage.AddNode("Parameters");
+
+  if(!Model_GetComponentParametersEx(cont,&XmlStorage))
+   return 0;
+
+  XmlStorage.SelectUp();
+  TempString="";
+  XmlStorage.Save(TempString);
+  return TempString.c_str();
  }
  catch (UException * exception)
  {
@@ -1578,6 +1713,48 @@ bool UEngine::Model_GetComponentSelectedParameters(RDK::UAContainer* cont, RDK::
 
  return true;
 }
+
+// Возвращает параметры компонента по идентификатору с описаниями
+// Память для buffer должна быть выделена!
+bool UEngine::Model_GetComponentParametersEx(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage)
+{
+ try
+ {
+  if(!cont || !serstorage)
+   return false;
+
+  RDK::UAContainer::VariableMapT props=cont->GetPropertiesList();
+
+  RDK::UAContainer::VariableMapCIteratorT I,J;
+
+  UEPtr<UContainerDescription> descr=dynamic_pointer_cast<UContainerDescription>(Storage->GetClassDescription(cont->GetClass()));
+
+  I=props.begin();
+  J=props.end();
+  while(I != J)
+  {
+   cont->GetProperty(I->second.Id,serstorage);
+
+   if(descr)
+   {
+	std::string paramname=I->second.Property->GetName();
+	if(serstorage->SelectNode(paramname))
+	{
+	 serstorage->SetNodeAttribute("Header",descr->GetParameter(paramname).Header);
+	 serstorage->SelectUp();
+	}
+   }
+   ++I;
+  }
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
+
+ return true;
+}
+
 
 // устанавливает параметры компонента по идентификатору
 bool UEngine::Model_SetComponentParameters(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage)

@@ -18,6 +18,7 @@ See file license.txt for more information
 #include "UEnvSupport.h"
 #include "UController.h"
 #include "../Math/MVector.h"
+#include "UContainerDescription.h"
 
 namespace RDK {
 
@@ -342,6 +343,9 @@ public:
 // --------------------------
 // Выделяет память для новой чистой копии объекта этого класса
 virtual UAContainer* New(void)=0;
+
+// Создает экземпляр описания класса
+virtual UContainerDescription* NewDescription(void);
 
 // Создает копию этого объекта с сохранением всех компонент
 // и значений параметров.

@@ -22,6 +22,8 @@ See file license.txt for more information
 #include "UXMLEnvSerialize.cpp"
 //#include "UThreadEnvironment.cpp"
 #include "UEnvException.cpp"
+#include "UComponentDescription.cpp"
+#include "UContainerDescription.cpp"
 
 
 #endif

@@ -24,6 +24,7 @@ See file license.txt for more information
 #include "../Math/MUBinarySerialize.h"
 #include "../Math/MUXMLSerialize.h"
 #include "UAContainerStorage.h"
+#include "UContainerDescription.h"
 
 namespace RDK {
 
@@ -859,6 +860,24 @@ bool UAContainer::SetId(const UId &id)
 // --------------------------
 // Системные методы управления объектом
 // --------------------------
+// Создает экземпляр описания класса
+UContainerDescription* UAContainer::NewDescription(void)
+{
+ UContainerDescription* result=new UContainerDescription;
+
+ result->SetClassId(sntoa(Class));
+
+ VariableMapIteratorT I=PropertiesLookupTable.begin();
+ UParameterDescription dummydescr;
+ while(I != PropertiesLookupTable.end())
+ {
+  result->SetParameter(I->first,dummydescr);
+  ++I;
+ }
+
+ return result;
+}
+
 // Создает копию этого объекта с сохранением всех компонент
 // и значений параметров.
 // Если 'stor' == 0, то создание объектов осуществляется

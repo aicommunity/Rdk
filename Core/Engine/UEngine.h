@@ -189,6 +189,25 @@ virtual int Storage_CalcNumObjects(void) const;
 virtual int Storage_CalcNumObjectsById(int classid) const;
 virtual int Storage_CalcNumObjectsByName(const char* classname) const;
 
+// Возвращает описание класса по его id в формате xml
+virtual const char* Storage_GetClassDescription(int classid);
+
+// Устанавливает описание класса по его id, считывая его из формата xml
+virtual bool Storage_SetClassDescription(int classid, const char* description);
+
+// Сохраняет описание всех классов в xml
+virtual const char* Storage_SaveClassesDescription(void);
+
+// Загружает описание всех классов из xml
+virtual bool Storage_LoadClassesDescription(const char* xmltext);
+
+// Сохраняет общее описание всех классов в xml
+virtual const char* Storage_SaveCommonClassesDescription(void);
+
+// Загружает общее описание всех классов из xml
+virtual bool Storage_LoadCommonClassesDescription(const char* xmltext);
+
+
 // Методы управления средой
 // ----------------------------
 // Индекс предарительно заданной модели обработки
@@ -299,6 +318,10 @@ virtual const char* Model_GetComponentParameters(const char *stringid);
 // Возвращает выборочные параметры компонента по идентификатору
 // Память для buffer должна быть выделена!
 virtual const char* Model_GetComponentSelectedParameters(const char *stringid);
+
+// Возвращает параметры компонента по идентификатору с описаниями
+// Память для buffer должна быть выделена!
+virtual const char* Model_GetComponentParametersEx(const char *stringid);
 
 // устанавливает параметры компонента по идентификатору
 virtual bool Model_SetComponentParameters(const char *stringid, const char* buffer);
@@ -430,12 +453,13 @@ int LoadLibraries(void);
 // --------------------------
 protected:
 // Возвращает параметры компонента по идентификатору
-// Память для buffer должна быть выделена!
 virtual bool Model_GetComponentParameters(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage);
 
 // Возвращает выборочные параметры компонента по идентификатору
-// Память для buffer должна быть выделена!
 virtual bool Model_GetComponentSelectedParameters(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage);
+
+// Возвращает параметры компонента по идентификатору с описаниями
+virtual bool Model_GetComponentParametersEx(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage);
 
 // устанавливает параметры компонента по идентификатору
 virtual bool Model_SetComponentParameters(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage);

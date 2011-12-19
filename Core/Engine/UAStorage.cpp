@@ -70,6 +70,8 @@ UId UAStorage::AddClass(UEPtr<UAComponent> classtemplate, const UId &classid)
  classtemplate->SetClass(id);
  LastClassId=id;
 
+ ClassesDescription[id]=classtemplate->NewDescription();
+
  return id;
 }
 
@@ -86,6 +88,16 @@ bool UAStorage::DelClass(const UId &classid)
  UClassStorageElement element=I->second;
  if(element)
   delete element.Get();
+
+ UClassesDescriptionIterator J=ClassesDescription.find(classid);
+
+ if(J != ClassesDescription.end())
+ {
+  if(J->second)
+   delete J->second;
+
+  ClassesDescription.erase(J);
+ }
 
  return true;
 }
@@ -144,6 +156,14 @@ bool UAStorage::ClearClassesStorage(void)
    delete I->second.Get();
  }
  ClassesStorage.clear();
+
+ UClassesDescriptionCIterator J;
+ for(J=ClassesDescription.begin();J != ClassesDescription.end();++J)
+ {
+  if(J->second)
+   delete J->second.Get();
+ }
+ ClassesDescription.clear();
  return true;
 }
 // --------------------------
@@ -186,6 +206,95 @@ UId UAStorage::FindClass(UEPtr<UAComponent> object) const
 // --------------------------
 
 // --------------------------
+// Методы управления описанием классов
+// --------------------------
+// Возвращает XML описание класса
+const UEPtr<UComponentDescription> UAStorage::GetClassDescription(const UId &classid) const
+{
+ UClassesDescriptionCIterator I=ClassesDescription.find(classid);
+
+// if(I == ClassesDescription.end())
+//  return ClassesDescription[classid]; // Заглушка! Здесь проверка и исключение
+
+ return I->second;
+}
+
+// Устанавливает XML описание класса
+// Класс в хранилище должен существовать
+bool UAStorage::SetClassDescription(const UId &classid, const UEPtr<UComponentDescription>& description)
+{
+ UClassesStorageIterator I=ClassesStorage.find(classid);
+
+ if(I == ClassesStorage.end())
+  return false;
+
+ ClassesDescription[classid]=description;
+ return true;
+}
+
+// Сохраняет описание класса в xml
+bool UAStorage::SaveClassDescription(const UId &classid,
+										Serialize::USerStorageXML &xml)
+{
+// xml.AddNode(sntoa(classid));
+
+ GetClassDescription(classid)->Save(xml);
+
+// xml.SelectUp();
+ return true;
+}
+
+// Загружает описание класса из xml
+bool UAStorage::LoadClassDescription(const UId &classid,
+										Serialize::USerStorageXML &xml)
+{
+// if(!xml.SelectNode(sntoa(classid)))
+//  return false;
+
+ GetClassDescription(classid)->Load(xml);
+
+// xml.SelectUp();
+ return true;
+}
+
+// Сохраняет описание всех классов в xml
+bool UAStorage::SaveClassesDescription(Serialize::USerStorageXML &xml)
+{
+ UClassesDescriptionIterator I=ClassesDescription.begin();
+
+ while(I != ClassesDescription.end())
+ {
+  xml.AddNode(sntoa(I->first));
+  I->second->Save(xml);
+  xml.SelectUp();
+  ++I;
+ }
+
+ return true;
+}
+
+// Загружает описание всех классов из xml
+bool UAStorage::LoadClassesDescription(Serialize::USerStorageXML &xml)
+{
+ UClassesDescriptionIterator I=ClassesDescription.begin();
+
+ while(I != ClassesDescription.end())
+ {
+  if(!xml.SelectNode(sntoa(I->first)))
+  {
+   ++I;
+   continue;
+  }
+  I->second->Load(xml);
+  xml.SelectUp();
+  ++I;
+ }
+
+ return true;
+}
+// --------------------------
+
+// --------------------------
 // Скрытые методы управления хранилищем объектов
 // --------------------------
 // Возвращает объект в хранилище
@@ -197,6 +306,27 @@ bool UAStorage::ReturnObject(UEPtr<UAComponent> object)
  return true;
 }
 // --------------------------
+
+// --------------------------
+// Скрытые методы управления описанием классов
+// --------------------------
+// Формирует прототип XML описания для заданного класса
+// Класс в хранилище должен существовать
+// Очищает уже созданные поля описания
+/*bool UAStorage::GenerateClassDescription(UClassesStorageIterator classI,
+										Serialize::USerStorageXML &xml)
+{
+ // Заполняем xml
+ xml.Create("Class");
+ xml.SetNodeAttribute("Id",sntoa(classI->first));
+ xml.AddNode("Header");
+ xml.SelectUp();
+ xml.AddNode("Description");
+ xml.SelectUp();
+ return true;
+}            */
+// --------------------------
+
 /* *************************************************************************** */
 
 }

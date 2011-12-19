@@ -48,6 +48,24 @@ RDK_LIB_TYPE void RDK_CALL Storage_ClearObjectsStorage(void);
 RDK_LIB_TYPE int RDK_CALL Storage_CalcNumObjects(void);
 RDK_LIB_TYPE int RDK_CALL Storage_CalcNumObjectsById(int classid);
 RDK_LIB_TYPE int RDK_CALL Storage_CalcNumObjectsByName(const char* classname);
+
+// Возвращает описание класса по его id в формате xml
+RDK_LIB_TYPE const char* RDK_CALL Storage_GetClassDescription(int classid);
+
+// Устанавливает описание класса по его id, считывая его из формата xml
+RDK_LIB_TYPE bool RDK_CALL Storage_SetClassDescription(int classid, const char* description);
+
+// Сохраняет описание всех классов в xml
+RDK_LIB_TYPE const char* RDK_CALL Storage_SaveClassesDescription(void);
+
+// Загружает описание всех классов из xml
+RDK_LIB_TYPE bool RDK_CALL Storage_LoadClassesDescription(const char* xmltext);
+
+// Сохраняет общее описание всех классов в xml
+RDK_LIB_TYPE const char* RDK_CALL Storage_SaveCommonClassesDescription(void);
+
+// Загружает общее описание всех классов из xml
+RDK_LIB_TYPE bool RDK_CALL Storage_LoadCommonClassesDescription(const char* xmltext);
 // --------------------------
 
 // --------------------------
@@ -157,10 +175,9 @@ RDK_LIB_TYPE int RDK_CALL Env_GetOutputImageWidth(int number);
 RDK_LIB_TYPE int RDK_CALL Env_GetOutputImageHeight(int number);
 RDK_LIB_TYPE int RDK_CALL Env_GetOutputImageColorModel(int number);
 
+// Возвращает данные выходного изображения
 RDK_LIB_TYPE unsigned char* RDK_CALL Env_GetInputImage(int index);
-
 RDK_LIB_TYPE unsigned char* RDK_CALL Env_GetOutputImage(int index);
-
 RDK_LIB_TYPE unsigned char* RDK_CALL Env_GetOutputImageY8(int index);
 // --------------------------
 
@@ -199,11 +216,12 @@ RDK_LIB_TYPE int RDK_CALL Model_GetComponentsList(char* stringid, int *buffer);
 RDK_LIB_TYPE const char* RDK_CALL Model_GetComponentName(char* stringid);
 
 // Возвращает параметры компонента по идентификатору
-// Память для buffer должна быть выделена!
 RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentParameters(const char *stringid);
 
+// Возвращает параметры компонента по идентификатору с описаниями
+RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentParametersEx(const char *stringid);
+
 // Возвращает выборочные параметры компонента по идентификатору
-// Память для buffer должна быть выделена!
 RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentSelectedParameters(const char *stringid);
 
 // устанавливает параметры компонента по идентификатору

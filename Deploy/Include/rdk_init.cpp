@@ -165,6 +165,42 @@ int RDK_CALL Storage_CalcNumObjectsByName(const char* classname)
 {
  return PEngine->Storage_CalcNumObjectsByName(classname);
 }
+
+// Возвращает описание класса по его id в формате xml
+const char* RDK_CALL Storage_GetClassDescription(int classid)
+{
+ return PEngine->Storage_GetClassDescription(classid);
+}
+
+// Устанавливает описание класса по его id, считывая его из формата xml
+bool RDK_CALL Storage_SetClassDescription(int classid, const char* description)
+{
+ return PEngine->Storage_SetClassDescription(classid, description);
+}
+
+// Сохраняет описание всех классов в xml
+const char* RDK_CALL Storage_SaveClassesDescription(void)
+{
+ return PEngine->Storage_SaveClassesDescription();
+}
+
+// Загружает описание всех классов из xml
+bool RDK_CALL Storage_LoadClassesDescription(const char* xmltext)
+{
+ return PEngine->Storage_LoadClassesDescription(xmltext);
+}
+
+// Сохраняет общее описание всех классов в xml
+const char* RDK_CALL Storage_SaveCommonClassesDescription(void)
+{
+ return PEngine->Storage_SaveCommonClassesDescription();
+}
+
+// Загружает общее описание всех классов из xml
+bool RDK_CALL Storage_LoadCommonClassesDescription(const char* xmltext)
+{
+ return PEngine->Storage_LoadCommonClassesDescription(xmltext);
+}
 // ----------------------------
 
 // ----------------------------
@@ -371,6 +407,13 @@ const char * RDK_CALL Model_GetComponentSelectedParameters(const char *stringid)
 {
  return PEngine->Model_GetComponentSelectedParameters(stringid);
 }
+
+// Возвращает параметры компонента по идентификатору с описаниями
+const char * RDK_CALL Model_GetComponentParametersEx(const char *stringid)
+{
+ return PEngine->Model_GetComponentParametersEx(stringid);
+}
+
 
 // устанавливает параметры компонента по идентификатору
 bool RDK_CALL Model_SetComponentParameters(const char *stringid, const char* buffer)

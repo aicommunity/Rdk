@@ -157,6 +157,7 @@ UId UAContainerStorage::AddClass(UEPtr<UAComponent> classtemplate, const string 
  if(id != ForbiddenId)
  {
   ClassesLookupTable[classname]=id;
+  ClassesDescription[id]->SetClassName(classname);
  }
 
  return id;
@@ -605,6 +606,45 @@ UId UAContainerStorage::PopObject(UObjectsStorageIterator instance_iterator, lis
 }
 // --------------------------
 
+// --------------------------
+// ћетоды управлени€ описанием классов
+// --------------------------
+// —охран€ет общее описание всех классов в xml
+bool UAContainerStorage::SaveCommonClassesDescription(Serialize::USerStorageXML &xml)
+{
+ xml.AddNode(sntoa(0));
+ if(!UContainerDescription::SaveCommon(xml))
+ {
+  xml.SelectUp();
+  return false;
+ }
+ xml.SelectUp();
+ return true;
+}
+
+// «агружает общее описание всех классов из xml
+bool UAContainerStorage::LoadCommonClassesDescription(Serialize::USerStorageXML &xml)
+{
+ if(xml.SelectNode(sntoa(0)))
+ {
+  UContainerDescription::LoadCommon(xml);
+  xml.SelectUp();
+ }
+
+ UClassesDescriptionIterator I=ClassesDescription.begin();
+
+ while(I != ClassesDescription.end())
+ {
+  dynamic_pointer_cast<UContainerDescription>(I->second)->RemoveCommonDuplicatesParameters();
+  /*xml.AddNode(sntoa(I->first));
+  I->second->Save(xml);
+  xml.SelectUp();*/
+  ++I;
+ }
+
+ return true;
+}
+// --------------------------
 
 // --------------------------
 // —крытые методы таблицы соответствий классов

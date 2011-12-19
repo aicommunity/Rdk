@@ -197,6 +197,27 @@ virtual UId PopObject(UObjectsStorageIterator instance_iterator, list<UInstances
 // --------------------------
 
 // --------------------------
+// ћетоды управлени€ описанием классов
+// --------------------------
+public:
+// —охран€ет общее описание всех классов в xml
+virtual bool SaveCommonClassesDescription(Serialize::USerStorageXML &xml);
+
+// «агружает общее описание всех классов из xml
+virtual bool LoadCommonClassesDescription(Serialize::USerStorageXML &xml);
+// --------------------------
+
+// --------------------------
+// —крытые методы управлени€ описанием классов
+// --------------------------
+// ‘ормирует прототип XML описани€ дл€ заданного класса
+//  ласс в хранилище должен существовать
+// ќчищает уже созданные пол€ описани€
+//virtual bool GenerateClassDescription(UClassesStorageIterator classI,
+//										Serialize::USerStorageXML &xml);
+// --------------------------
+
+// --------------------------
 // —крытые методы таблицы соответствий классов
 // --------------------------
 protected:

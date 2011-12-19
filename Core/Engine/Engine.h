@@ -22,7 +22,8 @@ See file license.txt for more information
 #include "UXMLEnvSerialize.h"
 //#include "UThreadEnvironment.h"
 #include "UEnvException.h"
-
+#include "UComponentDescription.h"
+#include "UContainerDescription.h"
 
 #endif
 

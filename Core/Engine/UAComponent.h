@@ -21,6 +21,7 @@ See file license.txt for more information
 namespace RDK {
 
 class UAStorage;
+class UComponentDescription;
 
 //typedef long int UId;
 //extern UId ForbiddenId;
@@ -91,6 +92,9 @@ bool SetId(UId value);          */
 // --------------------------
 // Создает экземпляр этого класса
 virtual UAComponent* New(void)=0;
+
+// Создает экземпляр описания класса
+virtual UComponentDescription* NewDescription(void);
 
 // Уничтожение этого объекта
 void Free(void);
