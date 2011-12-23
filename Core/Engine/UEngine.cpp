@@ -919,7 +919,7 @@ int UEngine::Model_DelComponent(char* stringid, int id)
 
 // Возвращает число всех компонент в заданного компоненте 'stringid'
 // если stringid - пустая строка, то возвращает число всех компонент модели
-int UEngine::Model_GetNumComponents(char* stringid)
+int UEngine::Model_GetNumComponents(const char* stringid)
 {
  try
  {
@@ -939,7 +939,7 @@ int UEngine::Model_GetNumComponents(char* stringid)
 
 // Возвращает массив всех id заданного компонента 'stringid'
 // если stringid - пустая строка, то возвращает массив всех id модели
-int UEngine::Model_GetComponentsList(char* stringid, int *buffer)
+int UEngine::Model_GetComponentsList(const char* stringid, int *buffer)
 {
  try
  {
@@ -961,7 +961,7 @@ int UEngine::Model_GetComponentsList(char* stringid, int *buffer)
 // Возвращает имя компонента по заданному 'stringid'
 // если stringid - пустая строка, то возвращает имя модели
 // Память выделяется и освобождается внутри dll
-const char* UEngine::Model_GetComponentName(char* stringid)
+const char* UEngine::Model_GetComponentName(const char* stringid)
 {
  try
  {

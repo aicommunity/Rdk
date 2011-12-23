@@ -541,14 +541,21 @@ int ULinksList::Merge(const ULink &link)
   {
    Data[id].Connector.push_back(link.Connector[j]);
   }
-//  for(size_t i=0;i<Data[id].Connector.size();i++)
-//  {
-//   if(
-//  }
  }
  return id;
 }
 
+// Заменяет элемент (если элемент не существует - он создается)
+int ULinksList::Set(const ULink &link)
+{
+ int id=FindItem(link.Item);
+
+ if(id < 0)
+  return Add(link);
+
+ Data[id]=link;
+ return id;
+}
 
 
 // Удаляет произвольный элемент по индексу

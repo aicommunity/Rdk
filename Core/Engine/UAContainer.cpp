@@ -32,133 +32,6 @@ const UTime DefaultTimeStep=(UTime)2000;
 
 NameT ForbiddenName="";
 
-/* *********************************************************************** */
-/* *********************************************************************** */
-// Методы
-/*
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-UAContainerVector::UAContainerVector(void)
-{
- // Размер массива изображений
- Size=0;
-
- // Массив изображений
- Buffer=0;
-
- // Реальный размер массива
- RealSize=0;
-}
-
-UAContainerVector::UAContainerVector(const UAContainerVector &copy)
-{
- // Размер массива изображений
- Size=0;
-
- // Массив изображений
- Buffer=0;
-
- // Реальный размер массива
- RealSize=0;
-
- *this=copy;
-}
-
-UAContainerVector::~UAContainerVector(void)
-{
- Clear();
-}
-// --------------------------
-
-// --------------------------
-// Методы управления параметрами
-// --------------------------
-// Возвращает размер массива
-int UAContainerVector::GetSize(void) const
-{
- return Size;
-}
-
-// Изменяет размер массива с сохранением прежних данных
-void UAContainerVector::Resize(int newsize)
-{
- if(RealSize<newsize || !Buffer)
- {
-  PUEPtr<UAContainer> newbuffer=new PUAContainer[newsize];
-  for(int i=0;i<Size;i++)
-   newbuffer[i]=Buffer[i];
-
-  for(int i=Size;i<newsize;i++)
-   newbuffer[i]=0;
-
-  if(Buffer)
-   delete []Buffer;
-  Buffer=newbuffer;
-  RealSize=Size=newsize;
- }
- else
- {
-  Size=newsize;
- }
-}
-
-// Очищает массив
-void UAContainerVector::Clear(void)
-{
- if(Buffer)
- {
-  delete []Buffer;
-  Buffer=0;
- }
- Size=RealSize=0;
-}
-
-// Возвращает указатель на начало данных
-PUAContainer* UAContainerVector::GetBuffer(void)
-{
- return Buffer;
-}
-
-// Добавляет элемент в конец массива
-// Возвращает индекс элемента
-int UAContainerVector::Add(PUAContainer value)
-{
- Resize(Size+1);
- Buffer[Size-1]=value;
- return Size-1;
-}
-// --------------------------
-
-// --------------------------
-// Операторы
-// --------------------------
-// Оператор присваивания
-UAContainerVector& UAContainerVector::operator = (const UAContainerVector &copy)
-{
- Resize(copy.Size);
- for(int i=0;i<Size;i++)
-  *Buffer[i]=*copy.Buffer[i];
-
- return *this;
-}
-
-// Оператор доступа
-PUAContainer& UAContainerVector::operator [] (int index)
-{
- return Buffer[index];
-}
-
-UAContainer& UAContainerVector::operator () (int index)
-{
- return *Buffer[index];
-}
-// --------------------------
-  */
-/* *********************************************************************** */
-/* *********************************************************************** */
-
-
 /* *************************************************************************** */
 // Class UAContainer
 /* *************************************************************************** */
@@ -294,6 +167,12 @@ bool UAContainer::SetRealTime(ULongTime value)
  RealTime=value;
  DoubleRealTime=RealTime/1000000.0;
  return true;
+}
+
+// Увеличивает реальное время на заданную величину
+bool UAContainer::IncreaseRealTime(ULongTime value)
+{
+ return SetRealTime(RealTime+value);
 }
 
 // Возвращает мгновенный шаг в реальном времени
@@ -2123,7 +2002,7 @@ bool UAContainer::CheckController(UController *controller) const
 }
 
 // Возвращает число контроллеров
-bool UAContainer::GetNumControllers(void) const
+size_t UAContainer::GetNumControllers(void) const
 {
  return Controllers.size();
 }

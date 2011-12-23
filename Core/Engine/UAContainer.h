@@ -198,6 +198,9 @@ static const double& GetDoubleRealTime(void);
 // Устанавливает реальное время
 static bool SetRealTime(ULongTime value);
 
+// Увеличивает реальное время на заданную величину
+static bool IncreaseRealTime(ULongTime value);
+
 // Возвращает мгновенный шаг в реальном времени
 static const ULongTime& GetRealTimeStep(void);
 static const double& GetDoubleRealTimeStep(void);
@@ -612,7 +615,7 @@ bool UnLinkAllControllers(bool forchilds=false);
 bool CheckController(UController *controller) const;
 
 // Возвращает число контроллеров
-bool GetNumControllers(void) const;
+size_t GetNumControllers(void) const;
 
 // Возвращает контроллер по индексу
 UController* GetController(int index);

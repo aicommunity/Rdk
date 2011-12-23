@@ -204,16 +204,16 @@ RDK_LIB_TYPE int RDK_CALL Model_DelComponent(char* stringid, int id);
 
 // Возвращает число всех компонент в заданного компоненте 'stringid'
 // если stringid - пустая строка, то возвращает число всех компонент модели
-RDK_LIB_TYPE int RDK_CALL Model_GetNumComponents(char* stringid);
+RDK_LIB_TYPE int RDK_CALL Model_GetNumComponents(const char* stringid);
 
 // Возвращает массив всех id заданного компонента 'stringid'
 // если stringid - пустая строка, то возвращает массив всех id модели
-RDK_LIB_TYPE int RDK_CALL Model_GetComponentsList(char* stringid, int *buffer);
+RDK_LIB_TYPE int RDK_CALL Model_GetComponentsList(const char* stringid, int *buffer);
 
 // Возвращает имя компонента по заданному 'stringid'
 // если stringid - пустая строка, то возвращает имя модели
 // Память выделяется и освобождается внутри dll
-RDK_LIB_TYPE const char* RDK_CALL Model_GetComponentName(char* stringid);
+RDK_LIB_TYPE const char* RDK_CALL Model_GetComponentName(const char* stringid);
 
 // Возвращает параметры компонента по идентификатору
 RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentParameters(const char *stringid);

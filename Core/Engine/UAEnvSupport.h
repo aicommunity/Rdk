@@ -255,6 +255,9 @@ int Add(const ULink &link);
 // Объединяет элемент уже с существующим
 int Merge(const ULink &link);
 
+// Заменяет элемент (если элемент не существует - он создается)
+int Set(const ULink &link);
+
 // Удаляет произвольный элемент по индексу
 void Del(int index);
 

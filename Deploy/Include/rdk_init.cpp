@@ -374,14 +374,14 @@ int RDK_CALL Model_DelComponent(char* stringid, int id)
 
 // Возвращает число всех компонент в заданного компоненте 'stringid'
 // если stringid - пустая строка, то возвращает число всех компонент модели
-int RDK_CALL Model_GetNumComponents(char* stringid)
+int RDK_CALL Model_GetNumComponents(const char* stringid)
 {
  return PEngine->Model_GetNumComponents(stringid);
 }
 
 // Возвращает массив всех id заданного компонента 'stringid'
 // если stringid - пустая строка, то возвращает массив всех id модели
-int RDK_CALL Model_GetComponentsList(char* stringid, int *buffer)
+int RDK_CALL Model_GetComponentsList(const char* stringid, int *buffer)
 {
  return PEngine->Model_GetComponentsList(stringid, buffer);
 }
@@ -389,7 +389,7 @@ int RDK_CALL Model_GetComponentsList(char* stringid, int *buffer)
 // Возвращает имя компонента по заданному 'stringid'
 // если stringid - пустая строка, то возвращает имя модели
 // Память выделяется и освобождается внутри dll
-const char* RDK_CALL Model_GetComponentName(char* stringid)
+const char* RDK_CALL Model_GetComponentName(const char* stringid)
 {
  return PEngine->Model_GetComponentName(stringid);
 }

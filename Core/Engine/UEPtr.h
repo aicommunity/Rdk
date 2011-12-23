@@ -131,13 +131,13 @@ template<typename Y> UEPtr<T>& operator = (UESharedPtr<Y> &p)
 
 UEPtr<T>& operator = (T *p);
 
-bool operator == (const UEPtr<T> &p);
+//bool operator == (const UEPtr<T> &p);
 
-bool operator != (const UEPtr<T> &p);
+//bool operator != (const UEPtr<T> &p);
 
-bool operator == (const T *p);
+//bool operator == (const T *p);
 
-bool operator != (const T *p);
+//bool operator != (const T *p);
 
 bool operator ! (void) const;
 
@@ -231,7 +231,7 @@ UEPtr<T>& UEPtr<T>::operator = (T *p)
  PData=p;
  return *this;
 };
-
+/*
 template<typename T>
 bool UEPtr<T>::operator == (const UEPtr<T> &p)
 { return (PData == p.PData)?true:false; };
@@ -247,7 +247,7 @@ bool UEPtr<T>::operator == (const T *p)
 template<typename T>
 bool UEPtr<T>::operator != (const T *p)
 { return (PData != p)?true:false; };
-
+*/
 template<typename T>
 bool UEPtr<T>::operator ! (void) const
 { return (PData)?false:true; };

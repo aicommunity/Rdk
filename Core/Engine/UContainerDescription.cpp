@@ -112,7 +112,7 @@ bool UContainerDescription::RemoveCommonDuplicatesParameters(void)
   else
    ++J;
  }
-
+ return true;
 }
 // --------------------------
 

@@ -565,7 +565,7 @@ ULinksList& UAItem::GetLinks(ULinksList &linkslist, UEPtr<UAContainer> netlevel)
 
 	link.Item=item;
 	link.Connector.push_back(connector);
-	linkslist.Merge(link);
+	linkslist.Set(link);
 //	if(linkslist.Find(link) >= 0)
 //     continue;
 //    else
@@ -607,12 +607,7 @@ ULinksList& UAItem::GetFullItemLinks(ULinksList &linkslist, UEPtr<UAItem> comp,
 
 	link.Item=item;
 	link.Connector.push_back(connector);
-	linkslist.Merge(link);
-
-//	if(linkslist.Find(link) >= 0)
-//     continue;
-//    else
-//     linkslist.Add(link);
+	linkslist.Set(link);
    }
   }
 

@@ -83,15 +83,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\Deploy\Include\rdk.cpp" />
-    <ClCompile Include="..\..\..\Deploy\Include\rdk_genginelib.cpp" />
-    <ClCompile Include="..\..\..\Deploy\Include\rdkdll.cpp" />
-    <ClCompile Include="..\..\..\Deploy\Include\rdkdll_loader.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\..\Deploy\Include\mysdk.h" />
+    <ClCompile Include="..\..\..\Deploy\Include\rdk_initlib.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\Deploy\Include\rdk.h" />
+    <ClInclude Include="..\..\..\Deploy\Include\rdk_initlib.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
