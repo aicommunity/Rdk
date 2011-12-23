@@ -385,15 +385,19 @@ ULink::ULink(void)
 ULink::ULink(const ULinkSide &item, const ULinkSide &conn)
 {
  Item=item;
- Connector=conn;
+// Connector=conn;
+ Connector.push_back(conn);
 }
 
 ULink::ULink(const ULongId &item_id, int item_index,const ULongId &conn_id, int conn_index)
 {
  Item.Id=item_id;
  Item.Index=item_index;
- Connector.Id=conn_id;
- Connector.Index=conn_index;
+// Connector.Id=conn_id;
+// Connector.Index=conn_index;
+ Connector.resize(1);
+ Connector[0].Id=conn_id;
+ Connector[0].Index=conn_index;
 }
 
 ULink::ULink(const ULink &link)
@@ -406,6 +410,23 @@ ULink::~ULink(void)
 {
 }
 // --------------------------
+
+// --------------------------
+// Методы управления данными
+// --------------------------
+// Ищет заданный элемент с приемником connector и возвращает индекс или отрицательное число, если не
+// найдено
+int ULink::FindConnector(const ULinkSide &connector)
+{
+  for(size_t j=0;j<Connector.size();j++)
+   if(Connector[j] == connector)
+	return j;
+
+ return -1;
+}
+// --------------------------
+
+
 
 // --------------------------
 // Операторы
@@ -505,6 +526,31 @@ int ULinksList::Add(const ULink &link)
  return Size-1;
 }
 
+// Объединяет элемент уже с существующим
+int ULinksList::Merge(const ULink &link)
+{
+ int id=FindItem(link.Item);
+
+ if(id < 0)
+  return Add(link);
+
+ for(size_t j=0;j<link.Connector.size();j++)
+ {
+  vector<ULinkSide>::iterator I=find(Data[id].Connector.begin(),Data[id].Connector.end(),link.Connector[j]);
+  if(I == Data[id].Connector.end())
+  {
+   Data[id].Connector.push_back(link.Connector[j]);
+  }
+//  for(size_t i=0;i<Data[id].Connector.size();i++)
+//  {
+//   if(
+//  }
+ }
+ return id;
+}
+
+
+
 // Удаляет произвольный элемент по индексу
 void ULinksList::Del(int index)
 {
@@ -527,6 +573,33 @@ int ULinksList::Find(const ULink &link)
  for(int i=0;i<Size;i++,pdata++)
   if(*pdata == link)
    return i;
+
+ return -1;
+}
+
+// Ищет заданный элемент с источником item и возвращает индекс или отрицательное число, если не
+// найдено
+int ULinksList::FindItem(const ULinkSide &item)
+{
+ ULink *pdata=Data;
+ for(int i=0;i<Size;i++,pdata++)
+  if(pdata->Item == item)
+   return i;
+
+ return -1;
+}
+
+// Ищет заданный элемент с приемником connector и возвращает индекс или отрицательное число, если не
+// найдено
+int ULinksList::FindConnector(const ULinkSide &connector)
+{
+ ULink *pdata=Data;
+ for(int i=0;i<Size;i++,pdata++)
+ {
+  for(size_t j=0;j<pdata->Connector.size();j++)
+   if(pdata->Connector[j] == connector)
+	return i;
+ }
 
  return -1;
 }

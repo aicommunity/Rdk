@@ -138,6 +138,37 @@ void UANet::Free(void)
 // ----------------------
 // Методы управления связями
 // ----------------------
+// Устанавливает новую связь 'link'
+bool UANet::CreateLink(const ULink &link)
+{
+ UEPtr<UAItem> pitem;
+ bool res=true;
+ if(link.Item.Id.GetSize() == 0 || link.Item.Id[0] == ForbiddenId)
+  pitem=this;
+ else
+  pitem=dynamic_pointer_cast<UAItem>(GetComponentL(link.Item.Id));
+
+ if(!pitem)
+  return false;
+
+ for(size_t i=0;i<link.Connector.size();i++)
+ {
+  UEPtr<UAConnector> pconnector=0;
+  const ULinkSide &connector=link.Connector[i];
+  if(connector.Id.GetSize() == 0 || connector.Id[0] == ForbiddenId)
+   pconnector=this;
+  else
+   pconnector=dynamic_pointer_cast<UAConnector>(GetComponentL(connector.Id));
+
+  if(!pconnector)
+   res=false;
+
+  if(!(pitem->Connect(pconnector,link.Item.Index,connector.Index)))
+   res=false;
+ }
+ return res;
+}
+
 // Устанавливает новую связь между выходом элемента сети
 // 'item' и коннектором 'connector'
 bool UANet::CreateLink(const ULinkSide &item, const ULinkSide &connector)
@@ -206,7 +237,7 @@ bool UANet::CreateLinks(const ULinksList &linkslist)
  int i=0;
  for(i=0;i<linkslist.GetSize();i++)
  {
-  res&=CreateLink(linkslist[i].Item,linkslist[i].Connector);
+  res&=CreateLink(linkslist[i]);
   if(!res)
    break;
  }
@@ -240,6 +271,37 @@ bool UANet::BreakLink(const ULinkSide &id)
    return true;
   }
  return false;
+}
+
+// Разрывает связь 'link'
+bool UANet::BreakLink(const ULink &link)
+{
+ UEPtr<UAItem> pitem=0;
+ if(link.Item.Id.GetSize() == 0 || link.Item.Id[0] == ForbiddenId)
+  pitem=this;
+ else
+  pitem=dynamic_pointer_cast<UAItem>(GetComponentL(link.Item.Id));
+
+ if(!pitem)
+  return false;
+
+ for(size_t i=0;i<link.Connector.size();i++)
+ {
+  UEPtr<UAConnector> pconnector=0;
+  const ULinkSide &connector=link.Connector[i];
+
+  if(connector.Id.GetSize() == 0 || connector.Id[0] == ForbiddenId)
+   pconnector=this;
+  else
+   pconnector==dynamic_pointer_cast<UAConnector>(GetComponentL(connector.Id));
+
+  if(!pitem || !pconnector)
+   return false;
+
+  pitem->Disconnect(pconnector);
+ }
+
+ return true;
 }
 
 // Разрывает связь между выходом элемента сети, 'itemid'
@@ -306,7 +368,7 @@ bool UANet::BreakLinks(const ULinksList &linkslist)
  bool res=true;
 
  for(int i=0;i<linkslist.GetSize();i++)
-  res&=BreakLink(linkslist[i].Item,linkslist[i].Connector);
+  res&=BreakLink(linkslist[i]);
 
  return res;
 }

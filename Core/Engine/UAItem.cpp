@@ -546,26 +546,30 @@ UEPtr<UAConnector> UAItem::GetAConnectorByIndex(int output, int index) const
 ULinksList& UAItem::GetLinks(ULinksList &linkslist, UEPtr<UAContainer> netlevel) const
 {
  ULink link;
+ ULinkSide item;
+ ULinkSide connector;
 
- GetLongId(netlevel,link.Item.Id);
- if(link.Item.Id.GetSize() == 0)
+ GetLongId(netlevel,item.Id);
+ if(item.Id.GetSize() == 0)
   return linkslist;
-
 
  for(int j=0;j<AssociatedConnectors.GetSize();j++)
   for(int i=0;i<AssociatedConnectors[j].GetSize();i++)
   {
-   AssociatedConnectors[j][i]->GetLongId(netlevel,link.Connector.Id);
-   if(link.Connector.Id.GetSize() != 0)
+   AssociatedConnectors[j][i]->GetLongId(netlevel,connector.Id);
+   if(connector.Id.GetSize() != 0)
    {
-    UCLink indexes=AssociatedConnectors[j][i]->GetCLink(UEPtr<UAItem>(const_cast<UAItem*>(this)));
-    link.Item.Index=indexes.Output;
-    link.Connector.Index=indexes.Input;
+	UCLink indexes=AssociatedConnectors[j][i]->GetCLink(UEPtr<UAItem>(const_cast<UAItem*>(this)));
+	item.Index=indexes.Output;
+	connector.Index=indexes.Input;
 
-    if(linkslist.Find(link) >= 0)
-     continue;
-    else
-     linkslist.Add(link);
+	link.Item=item;
+	link.Connector.push_back(connector);
+	linkslist.Merge(link);
+//	if(linkslist.Find(link) >= 0)
+//     continue;
+//    else
+//     linkslist.Add(link);
    }
   }
 
@@ -578,11 +582,13 @@ ULinksList& UAItem::GetFullItemLinks(ULinksList &linkslist, UEPtr<UAItem> comp,
                                      UEPtr<UAContainer> netlevel) const
 {
  ULink link;
+ ULinkSide item;
+ ULinkSide connector;
 
  if(!comp)
   return linkslist;
 
- GetLongId(netlevel,link.Item.Id);
+ GetLongId(netlevel,item.Id);
  if(link.Item.Id.GetSize() == 0)
   return linkslist;
 
@@ -592,17 +598,21 @@ ULinksList& UAItem::GetFullItemLinks(ULinksList &linkslist, UEPtr<UAItem> comp,
   {
    if(!AssociatedConnectors[j][i]->CheckOwner(static_pointer_cast<UAContainer>(comp)) && AssociatedConnectors[j][i] != comp)
     continue;
-   AssociatedConnectors[j][i]->GetLongId(netlevel,link.Connector.Id);
-   if(link.Connector.Id.GetSize() != 0)
+   AssociatedConnectors[j][i]->GetLongId(netlevel,connector.Id);
+   if(connector.Id.GetSize() != 0)
    {
-    UCLink indexes=AssociatedConnectors[j][i]->GetCLink(UEPtr<UAItem>(const_cast<UAItem*>(this)));
-    link.Item.Index=indexes.Output;
-    link.Connector.Index=indexes.Input;
+	UCLink indexes=AssociatedConnectors[j][i]->GetCLink(UEPtr<UAItem>(const_cast<UAItem*>(this)));
+	item.Index=indexes.Output;
+	connector.Index=indexes.Input;
 
-    if(linkslist.Find(link) >= 0)
-     continue;
-    else
-     linkslist.Add(link);
+	link.Item=item;
+	link.Connector.push_back(connector);
+	linkslist.Merge(link);
+
+//	if(linkslist.Find(link) >= 0)
+//     continue;
+//    else
+//     linkslist.Add(link);
    }
   }
 

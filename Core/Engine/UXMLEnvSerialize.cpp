@@ -30,6 +30,28 @@ USerStorageXML& operator << (USerStorageXML& storage, const UIdVector &data)
  if(size <= 0)
   return storage;
 
+ std::stringstream stream;
+ for(unsigned int i=0;i<size;i++)
+ {
+  stream<<data[i];
+  if(i<size-1)
+   stream<<" ";
+ }
+
+// std::string str;
+// str=stream.str();
+
+ storage.SetNodeText(stream.str());
+
+ return storage;
+/*
+ storage.SetNodeAttribute("Type","UIdVector");
+ unsigned int size=data.GetSize();
+ storage.SetNodeAttribute("Size",sntoa(size));
+
+ if(size <= 0)
+  return storage;
+
  for(unsigned int i=0;i<size;i++)
  {
   storage.AddNode("elem");
@@ -38,10 +60,35 @@ USerStorageXML& operator << (USerStorageXML& storage, const UIdVector &data)
  }
 
  return storage;
+ */
 }
 
 USerStorageXML& operator >> (USerStorageXML& storage, UIdVector &data)
 {
+ if(storage.GetNodeAttribute("Type") != "UIdVector")
+  return storage;
+
+ int size=0;
+ size=atoi(storage.GetNodeAttribute("Size"));
+
+ if(size <= 0)
+ {
+  data.Resize(0);
+  return storage;
+ }
+ data.Resize(size);
+
+ UId* pdata=&data[0];
+
+ std::stringstream stream(storage.GetNodeText().c_str());
+
+ for(int i=0;i<size;i++)
+ {
+  stream>>data[i];
+ }
+
+ return storage;
+/*
  if(storage.GetNodeAttribute("Type") != "UIdVector")
   return storage;
 
@@ -66,6 +113,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, UIdVector &data)
  }
 
  return storage;
+ */
 }
 
 // ULongIdVector
@@ -119,6 +167,12 @@ USerStorageXML& operator >> (USerStorageXML& storage, ULongIdVector &data)
 // ULinkSide
 USerStorageXML& operator << (USerStorageXML& storage, const ULinkSide &data)
 {
+ storage<<data.Id;
+ storage.SetNodeAttribute("Type","ULinkSide");
+ storage.SetNodeAttribute("Index",sntoa(data.Index));
+
+ return storage;
+/*
  storage.SetNodeAttribute("Type","ULinkSide");
 
  storage.AddNode("Id");
@@ -130,10 +184,18 @@ USerStorageXML& operator << (USerStorageXML& storage, const ULinkSide &data)
  storage.SelectUp();
 
  return storage;
+ */
 }
 
 USerStorageXML& operator >> (USerStorageXML& storage, ULinkSide &data)
 {
+ if(storage.GetNodeAttribute("Type") != "ULinkSide")
+  return storage;
+ operator >>(storage,data.Id);
+ data.Index=atoi(storage.GetNodeAttribute("Index"));
+
+ return storage;
+/*
  if(storage.GetNodeAttribute("Type") != "ULinkSide")
   return storage;
 
@@ -148,6 +210,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, ULinkSide &data)
  storage.SelectUp();
 
  return storage;
+ */
 }
 
 // ULink
@@ -159,15 +222,52 @@ USerStorageXML& operator << (USerStorageXML& storage, const ULink &data)
  storage<<data.Item;
  storage.SelectUp();
 
+ for(size_t i=0;i<data.Connector.size();i++)
+ {
+  storage.AddNode("Connector");
+  storage<<data.Connector[i];
+  storage.SelectUp();
+ }
+
+ return storage;
+/*
+ storage.SetNodeAttribute("Type","ULink");
+
+ storage.AddNode("Item");
+ storage<<data.Item;
+ storage.SelectUp();
+
  storage.AddNode("Connector");
  storage<<data.Connector;
  storage.SelectUp();
 
  return storage;
+*/
 }
 
 USerStorageXML& operator >> (USerStorageXML& storage, ULink &data)
 {
+ if(storage.GetNodeAttribute("Type") != "ULink")
+  return storage;
+
+ if(!storage.SelectNode("Item"))
+  return storage;
+ operator >>(storage,data.Item);
+ storage.SelectUp();
+
+ int num_connectors=storage.GetNumNodes("Connector");
+
+ data.Connector.resize(num_connectors);
+ for(int i=0;i<num_connectors;i++)
+ {
+  if(!storage.SelectNode("Connector",i))
+   return storage;
+  operator >>(storage,data.Connector[i]);
+  storage.SelectUp();
+ }
+
+ return storage;
+/*
  if(storage.GetNodeAttribute("Type") != "ULink")
   return storage;
 
@@ -182,6 +282,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, ULink &data)
  storage.SelectUp();
 
  return storage;
+*/
 }
 
 // ULinksList

@@ -13,6 +13,7 @@ See file license.txt for more information
 #define UAEnvSupportH
 
 #include <string>
+#include <vector>
 
 namespace RDK {
 
@@ -185,7 +186,7 @@ friend bool operator != (const ULinkSide &linkside1, const ULinkSide &linkside2)
 struct ULink
 {
  ULinkSide Item;
- ULinkSide Connector;
+ std::vector<ULinkSide> Connector;
 
 // --------------------------
 // Конструкторы и деструкторы
@@ -196,6 +197,16 @@ ULink(const ULongId &item_id, int item_index,const ULongId &conn_id, int conn_in
 ULink(const ULink &link);
 virtual ~ULink(void);
 // --------------------------
+
+
+// --------------------------
+// Методы управления данными
+// --------------------------
+// Ищет заданный элемент с приемником connector и возвращает индекс или отрицательное число, если не
+// найдено
+int FindConnector(const ULinkSide &connector);
+// --------------------------
+
 
 // --------------------------
 // Операторы
@@ -241,12 +252,23 @@ void Resize(int newsize);
 // Возвращает индекс элемента
 int Add(const ULink &link);
 
+// Объединяет элемент уже с существующим
+int Merge(const ULink &link);
+
 // Удаляет произвольный элемент по индексу
 void Del(int index);
 
 // Ищет заданный элемент и возвращает индекс или отрицательное число, если не
 // найдено
 int Find(const ULink &link);
+
+// Ищет заданный элемент с источником item и возвращает индекс или отрицательное число, если не
+// найдено
+int FindItem(const ULinkSide &item);
+
+// Ищет заданный элемент с приемником connector и возвращает индекс или отрицательное число, если не
+// найдено
+int FindConnector(const ULinkSide &connector);
 // --------------------------
 
 // --------------------------

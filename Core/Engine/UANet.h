@@ -79,6 +79,9 @@ virtual bool ADelComponent(UEPtr<UAContainer> comp);
 // Методы управления связями
 // ----------------------
 public:
+// Устанавливает новую связь 'link'
+virtual bool CreateLink(const ULink &link);
+
 // Устанавливает новую связь между выходом элемента сети
 // 'item' и коннектором 'connector'
 virtual bool CreateLink(const ULinkSide &itemid, const ULinkSide &connectorid);
@@ -97,6 +100,9 @@ virtual bool CreateLinks(const ULinksList &linkslist);
 // Иначе, если 'id' - Id коннектора, то метод разрывает
 // связи этого коннектора
 virtual bool BreakLink(const ULinkSide &id);
+
+// Разрывает связь 'link'
+virtual bool BreakLink(const ULink &link);
 
 // Разрывает связь между выходом элемента сети, 'itemid'
 // и коннектором 'connectorid'
