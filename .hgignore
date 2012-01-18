@@ -79,4 +79,6 @@ Release
 Debug
 *.dcu
 *.identcache
-*.local
+*.local          
+ipch
+*.ipch
