@@ -3,9 +3,7 @@
 
 #include <vcl.h>
 #include <windows.h>
-#include "rdk.h"
-#include "rdkdll_loader.h"
-#include "rdk_genginedll.h"
+
 #pragma hdrstop
 //---------------------------------------------------------------------------
 //   Important note about DLL memory management when your DLL uses the
@@ -27,55 +25,10 @@
 //   If your DLL uses the dynamic version of the RTL, you do not need to
 //   explicitly add MEMMGR.LIB as this will be done implicitly for you
 //---------------------------------------------------------------------------
-//extern RDK::UBEngine* PEngine;
-
-//extern RDK::UAEnvironment* PEnvironment;
-
-//extern RDK::UAStorage* PStorage;
-
-extern int Engine_Create(RDK::UEngine *engine, const char *inifilename, void *pCreateNewStorage, void *pCreateNewEnvironment);
-
-
-RDK::UBAStorage* CreateNewStorage(void)
-{
- return new RDK::UBAStorage;
-}
-
-RDK::UBAEnvironment* CreateNewEnvironment(void)
-{
- return new RDK::UBAEnvironment;
-}
-
-RDK::UBEngine* CreateNewEngine(void)
-{
- return new RDK::UBEngine;
-}
-
-int LoadEngine(void)
-{
- if(RDK::LoadDll("rdk.dll"))
-  return -1;
-
- if(!RDK::DLLDllInit(CreateNewStorage, CreateNewEnvironment, CreateNewEngine))
-  return -2;
-
-
- return 0;
-}
 
 #pragma argsused
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fwdreason, LPVOID lpvReserved)
 {
- if(LoadEngine())
-  return -2;
-
- RDK::UBEngine* pengine=dynamic_cast<RDK::UBEngine*>(RDK::DLLAddNewEngine());
-
- if(!pengine)
-  return -3;
-
- if(Engine_Create(pengine, "options.ini",CreateNewStorage,CreateNewEnvironment))
-  return -4;
 
  return 1;
 }

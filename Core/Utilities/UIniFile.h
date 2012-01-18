@@ -81,9 +81,9 @@ UIniFile(void)
  NoNameSymbols.resize(5);
  NoNameSymbols[0]='[';
  NoNameSymbols[1]=']';
- NoNameSymbols[3]='=';
- NoNameSymbols[4]='\n';
- NoNameSymbols[5]='\r';
+ NoNameSymbols[2]='=';
+ NoNameSymbols[3]='\n';
+ NoNameSymbols[4]='\r';
 };
 
 UIniFile(const UIniFile<CharT> &ini)
