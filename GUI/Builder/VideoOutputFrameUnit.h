@@ -15,7 +15,7 @@
 #include "VideoOutputToolsFormUnit.h"
 #include <Menus.hpp>
 
-using namespace RDK::VCapture;
+//using namespace RDK::VCapture;
 using namespace RDK;
 //---------------------------------------------------------------------------
 class TVideoOutputFrame : public TFrame
@@ -53,7 +53,7 @@ public:        // User declarations
 TVideoOutputToolsForm* MyVideoOutputToolsForm;
 
 // Источник видео
-VACapture *Capture;
+//VACapture *Capture;
 
 // Источник изображения
 UBitmap BmpSource;
