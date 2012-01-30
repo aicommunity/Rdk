@@ -46,11 +46,15 @@ protected: // Данные
 // Владелец свойства
 OwnerT* Owner;
 
+// Прямой доступ к данным
+T* PData;
+
 // Методы ввода-вывода
 GetterT Getter;
 SetterT Setter;
 GetterRT GetterR;
 SetterRT SetterR;
+
 
 public: // Методы
 // --------------------------
@@ -58,9 +62,11 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 UVProperty(OwnerT * const owner, SetterT setmethod , GetterT getmethod) :
-  Owner(owner), Getter(getmethod), Setter(setmethod), GetterR(0), SetterR(0) { };
+  Owner(owner), PData(0), Getter(getmethod), Setter(setmethod), GetterR(0), SetterR(0) { };
 UVProperty(OwnerT * const owner, SetterRT setmethod , GetterRT getmethod) :
-  Owner(owner), Getter(0), Setter(0), GetterR(getmethod), SetterR(setmethod)   { };
+  Owner(owner), PData(0), Getter(0), Setter(0), GetterR(getmethod), SetterR(setmethod)   { };
+UVProperty(OwnerT * const owner, T * const pdata) :
+  Owner(owner), PData(pdata), Getter(0), Setter(0), GetterR(0), SetterR(0)   { };
 // -----------------------------
 
 // -----------------------------
@@ -68,13 +74,18 @@ UVProperty(OwnerT * const owner, SetterRT setmethod , GetterRT getmethod) :
 // -----------------------------
 // Инициализация
 void Init(OwnerT * const owner, SetterT setmethod, GetterT getmethod)
-{ Owner = owner; Getter = getmethod; Setter = setmethod; SetterR=0; };
+{ Owner = owner; PData=0; Getter = getmethod; Setter = setmethod; SetterR=0; };
 void Init(OwnerT * const owner, SetterRT setmethod, GetterT getmethod)
-{ Owner = owner; Getter = getmethod; SetterR = setmethod; Setter=0; };
+{ Owner = owner; PData=0; Getter = getmethod; SetterR = setmethod; Setter=0; };
+void Init(OwnerT * const owner, T * const pdata)
+{ Owner = owner; PData=pdata; Getter = 0; GetterR=0; SetterR = 0; Setter=0; };
 
 // Возврат значения без проверки наличия метода и владельца
 const T Get(void)
 {
+ if(PData)
+  return *PData;
+
  if(Getter)
   return (Owner->*Getter)();
 
@@ -86,15 +97,18 @@ const T Get(void)
 
 // Установка значения без проверки наличия метода и владельца
 bool Set(T value)
-{ return (Owner->*Setter)(value); };
+{ return (PData)?(*PData):((Owner->*Setter)(value)); };
 
 bool Set(const T &value)
-{ return (Owner->*SetterR)(value); };
+{ return (PData)?(*PData):((Owner->*SetterR)(value)); };
 
 T operator () (void)
 {
  if(Owner)
  {
+  if(PData)
+   return *PData;
+
   if(Getter)
    return (Owner->*Getter)();
 
@@ -110,6 +124,9 @@ operator T (void) const
 {
  if(Owner)
  {
+  if(PData)
+   return *PData;
+
   if(Getter)
    return (Owner->*Getter)();
 
@@ -124,6 +141,9 @@ operator T (void) const
 // Оператор присваивания
 UVProperty& operator = (const T &value)
 {
+ if(PData)
+  *PData=value;
+
  if(Owner && Setter)
   (Owner->*Setter)(value);
  else
@@ -135,17 +155,20 @@ UVProperty& operator = (const T &value)
 
 UVProperty& operator = (const UVProperty &v)
 {
- if(Owner)
+ if(v.Owner)
  {
-  if(Getter)
+  if(v.PData)
+   (*this)=*v.PData;
+
+  if(v.Getter)
   {
-   *this=(Owner->*Getter)();
+   *this=(v.Owner->*Getter)();
    return *this;
   }
 
-  if(GetterR)
+  if(v.GetterR)
   {
-   *this=(Owner->*GetterR)();
+   *this=(v.Owner->*GetterR)();
    return *this;
   }
  }
