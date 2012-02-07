@@ -33,6 +33,10 @@ typedef std::map<UId, UEPtr<UComponentDescription> >::const_iterator UClassesDes
 class UAStorage
 {
 protected: // Системные свойства
+// Таблица соответствий имен и Id образцов классов
+std::map<std::string,UId> ClassesLookupTable;
+
+// Хранилище образцов классов
 UClassesStorage ClassesStorage;
 
 protected: // Описания классов
@@ -62,12 +66,23 @@ UId GetLastClassId(void) const;
 // --------------------------
 
 // --------------------------
+// Методы доступа к таблицам соотвествий
+// --------------------------
+// Возвращает Id класса по его имени
+const UId& GetClassId(const std::string &name) const;
+
+// Возвращает имя класса по его Id
+const NameT GetClassName(const UId &id) const;
+// --------------------------
+
+// --------------------------
 // Методы управления хранилищем классов
 // --------------------------
 // Добавляет образец класса объекта в хранилище
 // Возвращает id класса
 // Если classid == ForbiddenId, то id назначается автоматически
 virtual UId AddClass(UEPtr<UAComponent> classtemplate, const UId &classid=ForbiddenId);
+virtual UId AddClass(UEPtr<UAComponent> classtemplate, const std::string &classname, const UId &classid=ForbiddenId);
 
 // Удаляет образец класса объекта из хранилища
 virtual void DelClass(const UId &classid);
@@ -82,8 +97,14 @@ virtual UEPtr<UAComponent> GetClass(const UId &classid) const;
 int GetNumClasses(void) const;
 
 // Возвращает список идентификаторов всех классов хранилища
-// max_num_classes - максимальная длина массива
+// Буфер 'buffer' будет очищен от предыдущих значений
 virtual void GetClassIdList(std::vector<UId> &buffer) const;
+
+// Возвращает список имен всех классов хранилища
+// Буфер 'buffer' будет очищен от предыдущих значений
+virtual void GetClassNameList(std::vector<std::string> &buffer) const;
+
+
 
 // Удаляет все образцы классов из хранилища
 virtual void ClearClassesStorage(void);
@@ -127,6 +148,12 @@ virtual void SaveClassesDescription(Serialize::USerStorageXML &xml);
 
 // Загружает описание всех классов из xml
 virtual void LoadClassesDescription(Serialize::USerStorageXML &xml);
+
+// Сохраняет общее описание всех классов в xml
+virtual bool SaveCommonClassesDescription(Serialize::USerStorageXML &xml);
+
+// Загружает общее описание всех классов из xml
+virtual bool LoadCommonClassesDescription(Serialize::USerStorageXML &xml);
 // --------------------------
 
 // --------------------------
@@ -139,6 +166,18 @@ virtual void ReturnObject(UEPtr<UAComponent> object);
 // --------------------------
 
 // --------------------------
+// Скрытые методы таблицы соответствий классов
+// --------------------------
+protected:
+// Добавляет класс с именем 'name' в таблицу соответствий
+virtual UId AddLookupClass(const std::string &name);
+
+// Удаляет класс с именем 'name' из таблицы соотвествий
+virtual void DelLookupClass(const std::string &name);
+// --------------------------
+
+
+// --------------------------
 // Исключения
 // --------------------------
 public:
@@ -146,6 +185,15 @@ class IException: public Exception {};
 
 // Попытка работы с классом по идентификатору classid отсутствующим в хранилище
 class EClassIdDontExist;
+
+// Попытка работы с классом по имени, отсутствующему в хранилище
+class EClassNameDontExist;
+
+// Класс с заданным именем уже существует
+class EClassNameAlreadyExist;
+
+// Некорректное имя класса
+class EInvalidClassName;
 // --------------------------
 };
 
@@ -161,6 +209,72 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 EClassIdDontExist(UId id);
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+virtual std::string CreateLogMessage(void) const;
+// --------------------------
+};
+
+// Попытка работы с классом по имени, отсутствующему в хранилище
+class UAStorage::EClassNameDontExist: public EError
+{
+public: // Данные
+// Ошибочный идентификатор
+std::string Name;
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EClassNameDontExist(const std::string &name);
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+virtual std::string CreateLogMessage(void) const;
+// --------------------------
+};
+
+// Некорректное имя класса
+class UAStorage::EInvalidClassName: public EError
+{
+public: // Данные
+// Ошибочный идентификатор
+std::string Name;
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EInvalidClassName(const std::string &name);
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+virtual std::string CreateLogMessage(void) const;
+// --------------------------
+};
+
+// Класс с заданным именем уже существует
+class UAStorage::EClassNameAlreadyExist: public EError
+{
+public: // Данные
+// Ошибочное имя
+std::string Name;
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EClassNameAlreadyExist(const std::string &name);
 // --------------------------
 
 // --------------------------

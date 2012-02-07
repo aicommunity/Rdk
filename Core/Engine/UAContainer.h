@@ -12,40 +12,75 @@ See file license.txt for more information
 #ifndef UAContainerH
 #define UAContainerH
 
-#include <vector>
-#include <map>
-#include "UAComponent.h"
-#include "UEnvSupport.h"
-#include "UController.h"
 #include "../Math/MVector.h"
-#include "UContainerDescription.h"
-
+#include "UADataComponent.h"
+#include "UController.h"
+#include "UTime.h"
 
 namespace RDK {
+
+class UAContainer;
+
+// Класс описания локальных указателей
+class UIPointer
+{
+protected: // Данные
+
+public:
+virtual UAContainer* const Get(void) const=0;
+
+virtual void Set(UAContainer* source)=0;
+
+virtual void Del(UAContainer* source)=0;
+
+// Проверяет, существует ли такой указатель в этом классе
+// Возвращает 0 если да, и <0 если нет
+virtual int Find(const UAContainer * cont) const=0;
+
+// -----------------
+// Операторы
+// -----------------
+UIPointer& operator = (UAContainer *source)
+{
+ Set(source);
+ return *this;
+};
+// -----------------
+};
+
+
+// Хранилище свойств указателя
+struct UPVariable
+{
+ // Id указателя
+ UId Id;
+
+ // Указатель на свойство
+ UIPointer* Pointer;
+
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+UPVariable(void);
+UPVariable(UId id, UIPointer *prop);
+virtual ~UPVariable(void);
+// --------------------------
+};
+
 
 class UAContainerStorage;
 class UInstancesStorageElement;
 
 typedef long int IndexT;
-typedef int UTime;
-typedef long long ULongTime;
-
 //class UAContainer;
 typedef UAContainer* PUAContainer;
 
 // Массив указателей на контейнеры
 typedef std::vector<UEPtr<UAContainer> > UAContainerVector;
 
-extern const UTime DefaultTimeStep;
-
-
-class UAContainer: public UAComponent
+class UAContainer: public UADataComponent, public UTimeControl
 {
 public: // Типы данных
-typedef std::map<NameT,UVariable> VariableMapT;
-typedef std::map<NameT,UVariable>::iterator VariableMapIteratorT;
-typedef std::map<NameT,UVariable>::const_iterator VariableMapCIteratorT;
-
 typedef std::map<NameT,UPVariable> PointerMapT;
 typedef std::map<NameT,UPVariable>::iterator PointerMapIteratorT;
 typedef std::map<NameT,UPVariable>::const_iterator PointerMapCIteratorT;
@@ -57,39 +92,10 @@ private: // Системные свойства
 // Таблица соответствий имен и Id компонент объекта
 std::map<NameT,UId> CompsLookupTable;
 
-// Таблица соответствий имен и Id параметров объекта
-VariableMapT PropertiesLookupTable;
-
-// Таблица соответствий имен и Id данных состояния объекта
-VariableMapT StateLookupTable;
-
 // Таблица локальных указателей на дочерние компоненты
 PointerMapT PointerLookupTable;
 
-// Таблица соответствий <компонента в таблице Components, локальный указатель>
-//std::map<UAContainer*,UAContainer**> ComponentPointers;
-
-private: // Глобальные свойства
-// Текущее время модели в микросекундах
-static ULongTime Time;
-
-// Текущее время модели в секундах
-static double DoubleTime;
-
-// Реальное время в микросекундах
-static ULongTime RealTime;
-
-// Реальное время в секундах
-static double DoubleRealTime;
-
-// Мгновенный шаг в реальном времени в микросекундах
-static ULongTime RealTimeStep;
-
-// Мгновенный шаг в реальном времени в секундах
-static double DoubleRealTimeStep;
-
 private: // Системные свойства
-
 // Таблица компонент
 UAContainerVector Components;
 
@@ -145,35 +151,10 @@ UInstancesStorageElement* ObjectIterator;
 // Последний использованный Id компонент
 UId LastId;
 
-public: // Открытые методы
-// --------------------------
-// Методы управления глобальными свойствами
-// --------------------------
-// Возвращает текущее время модели
-static const ULongTime& GetTime(void);
-static const double& GetDoubleTime(void);
-
-// Устанавливает текущее время модели
-static bool SetTime(ULongTime value);
-
-// Возвращает реальное время
-static const ULongTime& GetRealTime(void);
-static const double& GetDoubleRealTime(void);
-
-// Устанавливает реальное время
-static bool SetRealTime(ULongTime value);
-
-// Увеличивает реальное время на заданную величину
-static bool IncreaseRealTime(ULongTime value);
-
-// Возвращает мгновенный шаг в реальном времени
-static const ULongTime& GetRealTimeStep(void);
-static const double& GetDoubleRealTimeStep(void);
-// --------------------------
-
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
+public:
 UAContainer(void);
 virtual ~UAContainer(void);
 // --------------------------
@@ -239,9 +220,6 @@ bool SetTimeStep(UTime timestep);
 bool GetActivity(void) const;
 bool SetActivity(bool activity);
 
-UId GetClass(void) const;
-bool SetClass(UId value);
-
 // Id объекта
 const UId& GetId(void) const;
 bool SetId(const UId &id);
@@ -278,26 +256,6 @@ const NameT& GetComponentName(const UId &id) const;
 // Возвращает Id дочернего компонента по его имени
 const UId& GetComponentId(const NameT &name) const;
 
-// Возвращает имя параметра по его Id
-const NameT& GetPropertyName(const UId &id) const;
-
-// Возвращает Id параметра по его имени
-const UId& GetPropertyId(const NameT &name) const;
-
-// Возвращает полное имя параметра без префикса NMSDK, и суффикса '*'
-NameT GetPropertyLongName(const NameT &name) const;
-NameT GetPropertyLongName(const UId &id) const;
-
-// Возвращает имя переменной состояния по его Id
-const NameT& GetStateName(const UId &id) const;
-
-// Возвращает Id переменной состояния по его имени
-const UId& GetStateId(const NameT &name) const;
-
-// Возвращает полное имя переменной состояния без префикса NMSDK, и суффикса '*'
-NameT GetStateLongName(const NameT &name) const;
-NameT GetStateLongName(const UId &id) const;
-
 // Возвращает имя локального указателя по его Id
 const NameT& GetPointerName(const UId &id) const;
 
@@ -313,7 +271,7 @@ public:
 virtual UAContainer* New(void)=0;
 
 // Создает экземпляр описания класса
-virtual UContainerDescription* NewDescription(void);
+//virtual UContainerDescription* NewDescription(void);
 
 // Создает копию этого объекта с сохранением всех компонент
 // и значений параметров.
@@ -409,32 +367,6 @@ virtual bool CopyComponents(UEPtr<UAContainer> comp, UAContainerStorage* stor=0)
 // --------------------------
 
 
-// --------------------------
-// Методы доступа к параметрам
-// --------------------------
-// Возвращает значение параметра по Id 'id'
-UVariableData* GetProperty(const UId &id, UVariableData *values) const;
-
-// Возвращает значение параметра по имени 'name'
-UVariableData* GetProperty(const NameT &name, UVariableData *values) const;
-
-// Устанавливает значение параметра по Id 'id'
-bool SetProperty(const UId &id, UVariableData *values);
-
-// Устанавливает значение параметра по имени 'name'
-bool SetProperty(const NameT &name, UVariableData *values);
-
-// Возвращает список Id параметров, содержащихся непосредственно
-// в этом объекте
-const UAContainer::VariableMapT& GetPropertiesList(void) const;
-
-// Ищет имя свойства по указателю на него
-const NameT& FindPropertyName(const UIProperty *prop) const;
-
-// Копирует все параметры этого объекта в объект 'comp', если возможно.
-virtual bool CopyProperties(UEPtr<UAContainer> comp) const;
-// --------------------------
-
 // ----------------------
 // Методы управления коммуникационными компонентами
 // ----------------------
@@ -469,32 +401,6 @@ virtual ULongIdVector& GetItemsList(ULongIdVector &buffer,
 virtual ULongIdVector& GetNetsList(ULongIdVector &buffer,
 							int sublevel=-1, UEPtr<UAContainer> ownerlevel=0);
 // ----------------------
-
-// --------------------------
-// Методы доступа к переменным состояния
-// --------------------------
-// Возвращает значение переменной состояния по Id 'id'
-virtual UVariableData* GetState(const UId &id, UVariableData *values) const;
-
-// Возвращает значение переменной состояния по имени 'name'
-UVariableData* GetState(const NameT &name, UVariableData *values) const;
-
-// Устанавливает значение переменной состояния по Id 'id'
-virtual bool SetState(const UId &id, UVariableData *values);
-
-// Устанавливает значение переменной состояния по имени 'name'
-bool SetState(const NameT &name, UVariableData *values);
-
-// Возвращает список имен и Id переменных состояния, содержащихся непосредственно
-// в этом объекте
-const UAContainer::VariableMapT& GetStateList(void) const;
-
-// Ищет имя свойства по указателю на него
-const NameT& FindStateName(const UIProperty *prop) const;
-
-// Копирует все переменные состояния этого объекта в объект 'comp', если возможно.
-virtual bool CopyState(UEPtr<UAContainer> comp) const;
-// --------------------------
 
 // --------------------------
 // Методы управления локальными указателями
@@ -586,27 +492,6 @@ size_t GetNumControllers(void) const;
 UController* GetController(int index);
 // --------------------------
 
-protected:
-// --------------------------
-// Скрытые методы управления состоянием
-// --------------------------
-public:
-// Добавляет переменную состояния с именем 'name' в таблицу соотвествий
-// параметров и назначает ей корректный индекс
-// Должна вызываться в конструкторах классов
-UId AddLookupState(const NameT &name,UIProperty *property, bool delenable=true);
-
-protected:
-// Удаляет переменную состояния с именем 'name' из таблицы соотвествий
-bool DelLookupState(const NameT &name);
-
-// Удаляет всю таблицу соответствий
-void ClearLookupStateTable(void);
-
-// Возвращает полное имя переменной состояния без префикса NMSDK, и суффикса '*'
-NameT GetStateLongName(const UIProperty &property) const;
-// --------------------------
-
 // --------------------------
 // Скрытые методы управления локальными указателями
 // --------------------------
@@ -621,7 +506,7 @@ protected:
 bool DelLookupPointer(const NameT &name);
 
 // Возвращает полное имя указателя без префикса RDK, и суффикса '*'
-NameT GetPointerLongName(const UIPointer &pointer) const;
+//NameT GetPointerLongName(const UIPointer &pointer) const;
 
 // Осуществляет поиск в таблице указателя, соответствующего заданному источнику
 PointerMapCIteratorT FindLookupPointer(UEPtr<UAContainer> source) const;
@@ -666,27 +551,6 @@ void SetLookupComponent(const NameT &name, const UId &id);
 // Обновляет таблицу соответствий компонент удаляя запись
 // компонента с именем 'name'
 void DelLookupComponent(const NameT &name);
-// --------------------------
-
-// --------------------------
-// Скрытые методы управления параметрами
-// --------------------------
-public:
-// Добавляет параметр с именем 'name' в таблицу соотвествий
-// параметров и назначает ему корректный индекс
-// Должна вызываться в конструкторах классов
-UId AddLookupProperty(const NameT &name, UIProperty *property, bool delenable=true);
-
-protected:
-// Удаляет параметр с именем 'name' из таблицы соотвествий
-// параметров
-bool DelLookupProperty(const NameT &name);
-
-// Удаляет всю таблицу соответствий
-void ClearLookupPropertyTable(void);
-
-// Возвращает полное имя параметра без префикса RDK, и суффикса '*'
-NameT GetPropertyLongName(const UIProperty &property) const;
 // --------------------------
 
 // --------------------------
@@ -796,9 +660,7 @@ virtual std::string CreateLogMessage(void) const;
 
 }
 
-#include "UProperty.h"
-#include "UPointer.h"   
+#include "UPointer.h"
 #include "UShare.h"
-#include "ULocalProperty.h"
 
 #endif

@@ -81,10 +81,6 @@ virtual bool SetStorage(UAStorage* const storage);
 // Идентификатор класса
 UId GetClass(void) const;
 bool SetClass(UId value);
-
-// Идентификатор экземпляра
-/*UId GetId(void) const;
-bool SetId(UId value);          */
 // --------------------------
 
 // --------------------------

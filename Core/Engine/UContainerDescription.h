@@ -25,10 +25,10 @@ class UContainerDescription: public UComponentDescription
 {
 protected: // Данные
 // Описания общих параметров
-static map<std::string, UParameterDescription> CommonParameters;
+static std::map<std::string, UParameterDescription> CommonParameters;
 
 // Описания параметров
-map<std::string, UParameterDescription> Parameters;
+std::map<std::string, UParameterDescription> Parameters;
 
 public: // Методы
 // --------------------------
@@ -43,22 +43,22 @@ virtual ~UContainerDescription(void);
 // Методы управления общими параметрами
 // --------------------------
 // Описание общего параметра
-static const UParameterDescription& GetCommonParameter(const string &name);
-static bool SetCommonParameter(const string &name, const UParameterDescription& value);
+static const UParameterDescription& GetCommonParameter(const std::string &name);
+static bool SetCommonParameter(const std::string &name, const UParameterDescription& value);
 
 // Проверяет наличие общего параметра с заданным именем
-static bool CheckCommonParameter(const string &name);
+static bool CheckCommonParameter(const std::string &name);
 // --------------------------
 
 // --------------------------
 // Методы управления данными
 // --------------------------
 // Описание параметра
-const UParameterDescription& GetParameter(const string &name) const;
-bool SetParameter(const string &name, const UParameterDescription& value, bool force=false);
+const UParameterDescription& GetParameter(const std::string &name) const;
+bool SetParameter(const std::string &name, const UParameterDescription& value, bool force=false);
 
 // Удаляет параметр из этого описания, если он есть в общих описаниях
-bool RemoveCommonDuplicatesParameter(const string &name);
+bool RemoveCommonDuplicatesParameter(const std::string &name);
 
 // Удаляет все параметры из этого описания, если они есть в общих описаниях
 bool RemoveCommonDuplicatesParameters(void);

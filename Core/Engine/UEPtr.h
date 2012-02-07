@@ -11,7 +11,7 @@ template<typename T>
 class UESharedPtr
 {
 public: // Исключения
-class UFEUsingZeroPtr: /*public UFatalException,*/ public T::IException {};
+class UFEUsingZeroPtr: public T::IException {};
 
 //////////////////////////
 protected:
@@ -94,7 +94,7 @@ protected:
 T* PData;
 
 public: // Исключения
-class UFEUsingZeroPtr: /*public UFatalException,*/ public T::IException {};
+class UFEUsingZeroPtr: public T::IException {};
 
 public: // Методы
 // --------------------------

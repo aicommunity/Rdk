@@ -15,7 +15,7 @@ See file license.txt for more information
 #define ULocalProperty_CPP
 
 #include "ULocalProperty.h"
-#include <strstream>
+//#include <strstream>
 
 namespace RDK {
 

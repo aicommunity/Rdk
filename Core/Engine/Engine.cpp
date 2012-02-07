@@ -13,6 +13,7 @@ See file license.txt for more information
 #define ENGINE_CPP
 
 #include "Engine_lite.cpp"
+#include "UTime.cpp"
 #include "UAContainerStorage.cpp"
 #include "UAContainerEnvironment.cpp"
 #include "UEngine.cpp"
@@ -24,7 +25,9 @@ See file license.txt for more information
 //#include "UContException.cpp"
 //#include "UEnvException.cpp"
 #include "UComponentDescription.cpp"
-#include "UContainerDescription.cpp"
+#include "UContainerDescription.cpp"     
+#include "UADataComponent.cpp"
+
 
 
 #endif

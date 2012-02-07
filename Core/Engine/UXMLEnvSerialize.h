@@ -19,7 +19,7 @@ See file license.txt for more information
 //#include <strstream>
 #include <sstream>
 #include "../Serialize/USerStorageXML.h"
-#include "UEnvSupport.h"
+//#include "UEnvSupport.h"
 
 namespace RDK {
 namespace Serialize {

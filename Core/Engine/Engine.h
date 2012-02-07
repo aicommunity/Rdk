@@ -12,7 +12,8 @@ See file license.txt for more information
 #ifndef ENGINE_H
 #define ENGINE_H
 
-#include "Engine_lite.h"
+#include "Engine_lite.h"   
+#include "UTime.h"
 #include "UAContainerStorage.h"
 #include "UAContainerEnvironment.h"
 #include "UEngine.h"
@@ -24,7 +25,8 @@ See file license.txt for more information
 //#include "UContException.h"
 //#include "UEnvException.h"
 #include "UComponentDescription.h"
-#include "UContainerDescription.h"
+#include "UContainerDescription.h"  
+#include "UADataComponent.h"
 
 #endif
 

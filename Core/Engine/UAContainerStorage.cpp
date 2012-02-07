@@ -118,53 +118,23 @@ UAContainerStorage::~UAContainerStorage(void)
 // --------------------------
 
 // --------------------------
-// Методы доступа к таблицам соотвествий
-// --------------------------
-// Возвращает Id класса по его имени
-const UId& UAContainerStorage::GetClassId(const NameT &name) const
-{
- map<NameT,UId>::const_iterator I=ClassesLookupTable.find(name);
- if(I == ClassesLookupTable.end())
-  throw new EClassNameDontExist(name);
- return I->second;
-}
-
-// Возвращает имя класса по его Id
-const NameT UAContainerStorage::GetClassName(const UId &id) const
-{
- for(map<NameT,UId>::const_iterator I=ClassesLookupTable.begin(),
-									J=ClassesLookupTable.end();I != J;++I)
- {
-  if(I->second == id)
-   return I->first;
- }
- throw new EClassIdDontExist(id);
-}
-// --------------------------
-
-// --------------------------
 // Методы управления хранилищем классов
 // --------------------------
-// Добавляет образец класса объекта в хранилище
-UId UAContainerStorage::AddClass(UEPtr<UAComponent> classtemplate, const string &classname, const UId &classid)
+UId UAContainerStorage::AddClass(UEPtr<UAComponent> classtemplate, const UId &classid)
 {
- if(ClassesLookupTable.find(classname) != ClassesLookupTable.end())
-  throw new EClassNameDontExist(classname);
  UAContainerStorage *storage=dynamic_cast<UAContainerStorage*>(classtemplate->GetStorage());
  UObjectsStorageIterator temp=ObjectsStorage.find(classid);
  if(storage)
   storage->PopObject(dynamic_pointer_cast<UAContainer>(classtemplate));
 
- UId id=UAStorage::AddClass(classtemplate,classid);
- ClassesLookupTable[classname]=id;
- ClassesDescription[id]->SetClassName(classname);
- return id;
+ return UAStorage::AddClass(classtemplate,classid);
 }
 
-UId UAContainerStorage::AddClass(UEPtr<UAComponent> classtemplate, const UId &classid)
+UId UAContainerStorage::AddClass(UEPtr<UAComponent> classtemplate, const string &classname, const UId &classid)
 {
- return UAStorage::AddClass(classtemplate, classid);
+ return UAStorage::AddClass(classtemplate, classname, classid);
 }
+
 
 // Удаляет образец класса объекта из хранилища
 // Возвращает false если classid не найден,
@@ -186,31 +156,6 @@ void UAContainerStorage::DelClass(const UId &classid)
    ClassesLookupTable.erase(I);
    break;
   }
- }
-}
-
-// Возвращает список идентификаторов всех классов хранилища
-// Буфер 'buffer' будет очищен от предыдущих значений
-void UAContainerStorage::GetClassIdList(std::vector<UId> &buffer) const
-{
- return UAStorage::GetClassIdList(buffer);
-}
-
-// Возвращает список имен всех классов хранилища
-// Буфер 'buffer' будет очищен от предыдущих значений
-void UAContainerStorage::GetClassNameList(vector<NameT> &buffer) const
-{
- map<NameT,UId>::const_iterator I,J;
-
- I=ClassesLookupTable.begin();
- J=ClassesLookupTable.end();
- buffer.resize(0);
- buffer.reserve(ClassesLookupTable.size());
-
- for(map<NameT,UId>::const_iterator I=ClassesLookupTable.begin(),
-									J=ClassesLookupTable.end(); I!=J; ++I)
- {
-  buffer.push_back(I->first);
  }
 }
 
@@ -473,112 +418,7 @@ UId UAContainerStorage::PopObject(UObjectsStorageIterator instance_iterator, lis
  return classid;
 }
 // --------------------------
-
-// --------------------------
-// Методы управления описанием классов
-// --------------------------
-// Сохраняет общее описание всех классов в xml
-bool UAContainerStorage::SaveCommonClassesDescription(Serialize::USerStorageXML &xml)
-{
- xml.AddNode(sntoa(0));
- if(!UContainerDescription::SaveCommon(xml))
- {
-  xml.SelectUp();
-  return false;
- }
- xml.SelectUp();
- return true;
-}
-
-// Загружает общее описание всех классов из xml
-bool UAContainerStorage::LoadCommonClassesDescription(Serialize::USerStorageXML &xml)
-{
- if(xml.SelectNode(sntoa(0)))
- {
-  UContainerDescription::LoadCommon(xml);
-  xml.SelectUp();
- }
-
- UClassesDescriptionIterator I=ClassesDescription.begin();
-
- while(I != ClassesDescription.end())
- {
-  dynamic_pointer_cast<UContainerDescription>(I->second)->RemoveCommonDuplicatesParameters();
-  ++I;
- }
-
- return true;
-}
-// --------------------------
-
-// --------------------------
-// Скрытые методы таблицы соответствий классов
-// --------------------------
-// Добавляет класс с именем 'name' в таблицу соответствий
-UId UAContainerStorage::AddLookupClass(const NameT &name)
-{
- if(ClassesLookupTable.find(name) != ClassesLookupTable.end())
-  throw EClassNameAlreadyExist(name);
-
- ClassesLookupTable.insert(make_pair(name,LastClassId+1));
-
- return LastClassId+1;
-}
-
-// Удаляет класс с именем 'name' из таблицы соотвествий
-void UAContainerStorage::DelLookupClass(const NameT &name)
-{
- map<NameT,UId>::iterator I=ClassesLookupTable.find(name);
-
- if(I == ClassesLookupTable.end())
-  throw EClassNameDontExist(name);
-
- ClassesLookupTable.erase(I);
-}
-// --------------------------
 /* *************************************************************************** */
-// Попытка работы с классом по имени, отсутствующему в хранилище
-//class UAContainerStorage::EClassNameDontExist: public EError
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-UAContainerStorage::EClassNameDontExist::EClassNameDontExist(const std::string &name)
-: Name(name)
-{
-}
-// --------------------------
-
-// --------------------------
-// Методы формирования лога
-// --------------------------
-// Формирует строку лога об исключении
-std::string UAContainerStorage::EClassNameDontExist::CreateLogMessage(void) const
-{
- return Exception::CreateLogMessage()+std::string(" Name=")+Name;
-}
-// --------------------------
-
-// Некорректное имя класса
-// class UAContainerStorage::EInvalidClassName: public EError
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-UAContainerStorage::EInvalidClassName::EInvalidClassName(const std::string &name)
-: Name(name)
-{
-}
-// --------------------------
-
-// --------------------------
-// Методы формирования лога
-// --------------------------
-// Формирует строку лога об исключении
-std::string UAContainerStorage::EInvalidClassName::CreateLogMessage(void) const
-{
- return Exception::CreateLogMessage()+std::string(" Name=")+Name;
-}
-// --------------------------
-
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
@@ -596,28 +436,6 @@ UAContainerStorage::EObjectIdDontExist::EObjectIdDontExist(UId id)
 std::string UAContainerStorage::EObjectIdDontExist::CreateLogMessage(void) const
 {
  return Exception::CreateLogMessage()+std::string(" Id=")+sntoa(Id);
-}
-// --------------------------
-
-
-// Класс с заданным именем уже существует
-//class UAContainerStorage::EClassNameAlredyExist: public EError
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-UAContainerStorage::EClassNameAlreadyExist::EClassNameAlreadyExist(const std::string &name)
-: Name(name)
-{
-}
-// --------------------------
-
-// --------------------------
-// Методы формирования лога
-// --------------------------
-// Формирует строку лога об исключении
-std::string UAContainerStorage::EClassNameAlreadyExist::CreateLogMessage(void) const
-{
- return Exception::CreateLogMessage()+std::string(" Name=")+Name;
 }
 // --------------------------
 

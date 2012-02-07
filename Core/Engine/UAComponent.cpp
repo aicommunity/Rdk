@@ -31,7 +31,6 @@ UAComponent::UAComponent(void)
  Storage=0;
 
  Class=ForbiddenId;
-// Id=ForbiddenId;
 }
 
 UAComponent::~UAComponent(void)
@@ -87,12 +86,6 @@ bool UAComponent::SetStorage(UAStorage* const storage)
  Storage=storage;
  return true;
 }
-/*
-// Возвращает последний использованный Id компонент
-UId UAComponent::GetLastId(void) const
-{
- return LastId;
-} */
 // --------------------------
 
 
@@ -113,22 +106,6 @@ bool UAComponent::SetClass(UId value)
  Class=value;
  return true;
 }
-
-/*
-// Идентификатор экземпляра
-UId UAComponent::GetId(void) const
-{
- return Id;
-}
-
-bool UAComponent::SetId(UId value)
-{
- if(Id == value)
-  return true;
-
- Id=value;
- return true;
-}            */
 // --------------------------
 
 

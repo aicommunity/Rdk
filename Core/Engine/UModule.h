@@ -42,18 +42,26 @@ bool IsReady(void) const;
 // Методы управления счетом
 // --------------------------
 // Восстановление настроек по умолчанию и сброс процесса счета
+virtual bool BeforeDefault(void);
+virtual bool AfterDefault(void);
 virtual bool Default(void);
 
 // Обеспечивает сборку внутренней структуры объекта
 // после настройки параметров
 // Автоматически вызывает метод Reset() и выставляет Ready в true
 // в случае успешной сборки
+virtual bool BeforeBuild(void);
+virtual bool AfterBuild(void);
 virtual bool Build(void);
 
 // Сброс процесса счета без потери настроек
+virtual bool BeforeReset(void);
+virtual bool AfterReset(void);
 virtual bool Reset(void);
 
 // Выполняет расчет этого объекта
+virtual bool BeforeCalculate(void);
+virtual bool AfterCalculate(void);
 virtual bool Calculate(void);
 // --------------------------
 
@@ -62,18 +70,26 @@ virtual bool Calculate(void);
 // --------------------------
 protected:
 // Восстановление настроек по умолчанию и сброс процесса счета
+virtual bool ABeforeDefault(void);
+virtual bool AAfterDefault(void);
 virtual bool ADefault(void);
 
 // Обеспечивает сборку внутренней структуры объекта
 // после настройки параметров
 // Автоматически вызывает метод Reset() и выставляет Ready в true
 // в случае успешной сборки
+virtual bool ABeforeBuild(void);
+virtual bool AAfterBuild(void);
 virtual bool ABuild(void);
 
 // Сброс процесса счета.
+virtual bool ABeforeReset(void);
+virtual bool AAfterReset(void);
 virtual bool AReset(void);
 
 // Выполняет расчет этого объекта
+virtual bool ABeforeCalculate(void);
+virtual bool AAfterCalculate(void);
 virtual bool ACalculate(void);
 // --------------------------
 };

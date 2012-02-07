@@ -28,97 +28,33 @@ See file license.txt for more information
 
 namespace RDK {
 
-const UTime DefaultTimeStep=(UTime)2000;
-
 NameT ForbiddenName="";
+
+
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+UPVariable::UPVariable(void)
+{
+ Id=ForbiddenId;
+}
+
+UPVariable::UPVariable(UId id, UIPointer *prop)
+ : Id(id), Pointer(prop)
+{
+
+}
+
+UPVariable::~UPVariable(void)
+{
+
+}
+// --------------------------
+
 
 /* *************************************************************************** */
 // Class UAContainer
 /* *************************************************************************** */
-// --------------------------
-// Глобальные свойства
-// --------------------------
-// Текущее время модели
-ULongTime UAContainer::Time=0;
-double UAContainer::DoubleTime=0;
-
-// Реальное время
-ULongTime UAContainer::RealTime=0;
-double UAContainer::DoubleRealTime=0;
-
-// Мгновенный шаг в реальном времени
-ULongTime UAContainer::RealTimeStep=1;
-double UAContainer::DoubleRealTimeStep=1.0e-6;
-// --------------------------
-
-// --------------------------
-// Методы управления глобальными свойствами
-// --------------------------
-// Возвращает текущее время модели
-const ULongTime& UAContainer::GetTime(void)
-{
- return Time;
-}
-
-const double& UAContainer::GetDoubleTime(void)
-{
- return DoubleTime;
-}
-
-// Устанавливает текущее время модели
-bool UAContainer::SetTime(ULongTime value)
-{
- if(Time == value)
-  return true;
-
- Time=value;
- DoubleTime=Time/1000000.0;
- return true;
-}
-
-// Возвращает реальное время
-const ULongTime& UAContainer::GetRealTime(void)
-{
- return RealTime;
-}
-
-const double& UAContainer::GetDoubleRealTime(void)
-{
- return DoubleRealTime;
-}
-
-// Устанавливает реальное время
-bool UAContainer::SetRealTime(ULongTime value)
-{
- RealTimeStep=value-RealTime;
- if(RealTimeStep == 0)
-  RealTimeStep=1;
-
- DoubleRealTimeStep=RealTimeStep/1.0e6;
-
- RealTime=value;
- DoubleRealTime=RealTime/1000000.0;
- return true;
-}
-
-// Увеличивает реальное время на заданную величину
-bool UAContainer::IncreaseRealTime(ULongTime value)
-{
- return SetRealTime(RealTime+value);
-}
-
-// Возвращает мгновенный шаг в реальном времени
-const ULongTime& UAContainer::GetRealTimeStep(void)
-{
- return RealTimeStep;
-}
-
-const double& UAContainer::GetDoubleRealTimeStep(void)
-{
- return DoubleRealTimeStep;
-}
-// --------------------------
-
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
@@ -467,98 +403,6 @@ const UId& UAContainer::GetComponentId(const NameT &name) const
  else return I->second;
 }
 
-// Возвращает имя параметра по его Id
-const NameT& UAContainer::GetPropertyName(const UId &id) const
-{
- VariableMapCIteratorT I=PropertiesLookupTable.begin(),
-                         J=PropertiesLookupTable.end();
- while(I != J)
-  {
-   if(I->second.Id == id)
-    return I->first;
-   ++I;
-  }
- return ForbiddenName;
-}
-
-// Возвращает Id параметра по его имени
-const UId& UAContainer::GetPropertyId(const NameT &name) const
-{
- VariableMapCIteratorT I=PropertiesLookupTable.find(name);
- if(I == PropertiesLookupTable.end())
-  return ForbiddenId;
- else return I->second.Id;
-}
-
-// Возвращает полное имя параметра без префикса RDK, и суффикса '*'
-NameT UAContainer::GetPropertyLongName(const NameT &name) const
-{
- VariableMapCIteratorT I=PropertiesLookupTable.find(name);
- if(I == PropertiesLookupTable.end())
-  return NameT();
- else return GetPropertyLongName(*(I->second.Property));
-}
-
-NameT UAContainer::GetPropertyLongName(const UId &id) const
-{
- VariableMapCIteratorT I=PropertiesLookupTable.begin(),
-                                 J=PropertiesLookupTable.end();
- while(I != J)
-  {
-   if(I->second.Id == id)
-    return GetPropertyLongName(*(I->second.Property));
-   ++I;
-  }
- return NameT();
-}
-
-
-// Возвращает имя переменной состояния по его Id
-const NameT& UAContainer::GetStateName(const UId &id) const
-{
- VariableMapCIteratorT I=StateLookupTable.begin(),
-                                 J=StateLookupTable.end();
- while(I != J)
-  {
-   if(I->second.Id == id)
-    return I->first;
-   ++I;
-  }
- return ForbiddenName;
-}
-
-// Возвращает Id переменной состояния по его имени
-const UId& UAContainer::GetStateId(const NameT &name) const
-{
- VariableMapCIteratorT I=StateLookupTable.find(name);
- if(I == StateLookupTable.end())
-  return ForbiddenId;
- else return I->second.Id;
-}
-
-// Возвращает полное имя переменной состояния без префикса NMSDK, и суффикса '*'
-NameT UAContainer::GetStateLongName(const NameT &name) const
-{
- VariableMapCIteratorT I=StateLookupTable.find(name);
- if(I == StateLookupTable.end())
-  return NameT();
- else return GetStateLongName(*(I->second.Property));
-}
-
-NameT UAContainer::GetStateLongName(const UId &id) const
-{
- VariableMapCIteratorT I=StateLookupTable.begin(),
-                                 J=StateLookupTable.end();
- while(I != J)
-  {
-   if(I->second.Id == id)
-    return GetStateLongName(*(I->second.Property));
-   ++I;
-  }
- return NameT();
-}
-
-
 // Возвращает имя локального указателя по его Id
 const NameT& UAContainer::GetPointerName(const UId &id) const
 {
@@ -634,16 +478,6 @@ bool UAContainer::SetActivity(bool activity)
  return true;
 }
 
-UId UAContainer::GetClass(void) const
-{
- return RDK::UAComponent::GetClass();
-}
-
-bool UAContainer::SetClass(UId value)
-{
- return RDK::UAComponent::SetClass(value);
-}
-
 // Id объекта
 const UId& UAContainer::GetId(void) const
 {
@@ -671,24 +505,6 @@ bool UAContainer::SetId(const UId &id)
 // --------------------------
 // Системные методы управления объектом
 // --------------------------
-// Создает экземпляр описания класса
-UContainerDescription* UAContainer::NewDescription(void)
-{
- UContainerDescription* result=new UContainerDescription;
-
- result->SetClassId(sntoa(Class));
-
- VariableMapIteratorT I=PropertiesLookupTable.begin();
- UParameterDescription dummydescr;
- while(I != PropertiesLookupTable.end())
- {
-  result->SetParameter(I->first,dummydescr);
-  ++I;
- }
-
- return result;
-}
-
 // Создает копию этого объекта с сохранением всех компонент
 // и значений параметров.
 // Если 'stor' == 0, то создание объектов осуществляется
@@ -1069,103 +885,6 @@ bool UAContainer::CopyComponents(UEPtr<UAContainer> comp, UAContainerStorage* st
 }
 // --------------------------
 
-// --------------------------
-// Методы доступа к параметрам
-// --------------------------
-// Возвращает значение параметра по Id 'id'
-UVariableData* UAContainer::GetProperty(const UId &id, UVariableData *values) const
-{
- VariableMapCIteratorT I,J;
-
- I=PropertiesLookupTable.begin();
- J=PropertiesLookupTable.end();
- while(I != J)
- {
-  if(I->second.Id == id)
-  {
-   I->second.Property->Save(values);
-   return values;
-  }
-
-  ++I;
- }
-
- return values;
-}
-
-// Возвращает значение параметра по имени 'name'
-UVariableData* UAContainer::GetProperty(const NameT &name, UVariableData *values) const
-{
- return GetProperty(GetPropertyId(name),values);
-}
-
-// Устанавливает значение параметра по Id 'id'
-bool UAContainer::SetProperty(const UId &id, UVariableData *values)
-{
- VariableMapCIteratorT I,J;
-
- I=PropertiesLookupTable.begin();
- J=PropertiesLookupTable.end();
- while(I != J)
- {
-  if(I->second.Id == id)
-  {
-   return I->second.Property->Load(values);
-  }
-
-  ++I;
- }
-
- return false;
-}
-
-// Устанавливает значение параметра по имени 'name'
-bool UAContainer::SetProperty(const NameT &name, UVariableData *values)
-{
- return SetProperty(GetPropertyId(name),values);
-}
-
-const UAContainer::VariableMapT& UAContainer::GetPropertiesList(void) const
-{
- return PropertiesLookupTable;
-}
-
-// Копирует все параметры этого объекта в объект 'comp', если возможно.
-bool UAContainer::CopyProperties(UEPtr<UAContainer> comp) const
-{
- bool key=true;
-
- if(!comp)
-  return false;
-
-// UEPtr<UAContainer> ccomp=static_cast<UEPtr<UAContainer>>(comp);
-
- Serialize::USerStorageBinary databuffer;
-  VariableMapCIteratorT I=PropertiesLookupTable.begin(),
-                                        J=PropertiesLookupTable.end();
-  while(I != J)
-  {
-   databuffer.clear();
-   key &= comp->SetProperty(I->second.Id,GetProperty(I->second.Id,&databuffer));
-   ++I;
-  }
- return key;
-}
-
-// Ищет имя свойства по указателю на него
-const NameT& UAContainer::FindPropertyName(const UIProperty *prop) const
-{
-  VariableMapCIteratorT I=PropertiesLookupTable.begin(),
-                        J=PropertiesLookupTable.end();
-  while(I != J)
-  {
-   if(I->second.Property == prop)
-    return I->first;
-   ++I;
-  }
- return ForbiddenName;
-}
-// --------------------------
 
 // ----------------------
 // Методы управления коммуникационными компонентами
@@ -1267,104 +986,6 @@ ULongIdVector& UAContainer::GetNetsList(ULongIdVector &buffer,
 }
 // ----------------------
 
-
-// --------------------------
-// Методы доступа к переменным состояния
-// --------------------------
-// Возвращает значение переменной состояния по Id 'id'
-UVariableData* UAContainer::GetState(const UId &id, UVariableData *values) const
-{
- VariableMapCIteratorT I,J;
-
- I=StateLookupTable.begin();
- J=StateLookupTable.end();
- while(I != J)
- {
-  if(I->second.Id == id)
-  {
-   I->second.Property->Save(values);
-   return values;
-  }
-
-  ++I;
- }
-
- return values;
-}
-
-// Возвращает значение переменной состояния по имени 'name'
-UVariableData* UAContainer::GetState(const NameT &name, UVariableData *values) const
-{
- return GetState(GetStateId(name),values);
-}
-
-// Устанавливает значение переменной состояния по Id 'id'
-bool UAContainer::SetState(const UId &id, UVariableData *values)
-{
- VariableMapCIteratorT I,J;
-
- I=StateLookupTable.begin();
- J=StateLookupTable.end();
- while(I != J)
- {
-  if(I->second.Id == id)
-  {
-   return I->second.Property->Load(values);
-  }
-
-  ++I;
- }
-
- return false;
-}
-
-// Устанавливает значение переменной состояния по имени 'name'
-bool UAContainer::SetState(const NameT &name, UVariableData *values)
-{
- return SetState(GetStateId(name),values);
-}
-
-// Возвращает список имен и Id переменных состояния, содержащихся непосредственно
-// в этом объекте
-const UAContainer::VariableMapT& UAContainer::GetStateList(void) const
-{
- return StateLookupTable;
-}
-
-// Ищет имя свойства по указателю на него
-const NameT& UAContainer::FindStateName(const UIProperty *prop) const
-{
-  VariableMapCIteratorT I=StateLookupTable.begin(),
-                        J=StateLookupTable.end();
-  while(I != J)
-  {
-   if(I->second.Property == prop)
-    return I->first;
-   ++I;
-  }
- return ForbiddenName;
-}
-
-// Копирует все переменные состояния этого объекта в объект 'comp', если возможно.
-bool UAContainer::CopyState(UEPtr<UAContainer> comp) const
-{
- VariableMapCIteratorT I=StateLookupTable.begin(),
-                       J=StateLookupTable.end();
- bool key=true;
-
- if(!comp)
-  return false;
-
- Serialize::USerStorageBinary serstorage;
- while(I != J)
-  {
-   if(!comp->SetState(I->second.Id,GetState(I->second.Id,&serstorage)))
-    key=false;
-   ++I;
-  }
- return key;
-}
-// --------------------------
 
 // --------------------------
 // Методы управления локальными указателями
@@ -1772,90 +1393,6 @@ void UAContainer::DelLookupComponent(const NameT &name)
 // --------------------------
 
 // --------------------------
-// Скрытые методы управления параметрами
-// --------------------------
-// Добавляет параметр с именем 'name' в таблицу соотвествий
-// параметров и назначает ему корректный индекс
-// Должна вызываться в конструкторах классов
-UId UAContainer::AddLookupProperty(const NameT &name, UIProperty *property, bool delenable)
-{
- if(!property)
-  return ForbiddenId;
-
- VariableMapIteratorT I=PropertiesLookupTable.begin(),
-					  J=PropertiesLookupTable.end();
- UVariable P(1,property);
- P.DelEnable=delenable;
-
- if(PropertiesLookupTable.find(name) != J)
-  return ForbiddenId;
-
- while(I != J)
-  {
-   if(P.Id <= I->second.Id)
-    P.Id=I->second.Id+1;
-   ++I;
-  }
-
- PropertiesLookupTable.insert(make_pair(name,P));
-// PropertiesLookupTable[name]=P;
-
- return P.Id;
-}
-
-// Удаляет параметр с именем 'name' из таблицы соотвествий
-// параметров
-bool UAContainer::DelLookupProperty(const NameT &name)
-{
- VariableMapIteratorT I=PropertiesLookupTable.find(name);
-
- if(I == PropertiesLookupTable.end())
-  return false;
-
- if(I->second.DelEnable)
-  delete I->second.Property;
- PropertiesLookupTable.erase(I);
- return true;
-}
-
-// Удаляет всю таблицу соответствий
-void UAContainer::ClearLookupPropertyTable(void)
-{
-  VariableMapIteratorT I=PropertiesLookupTable.begin(),
-					  J=PropertiesLookupTable.end();
-  while(I != J)
-  {
-   if(I->second.Property && I->second.DelEnable)
-	delete I->second.Property;
-
-   ++I;
-  }
- PropertiesLookupTable.clear();
-}
-
-// Возвращает полное имя параметра без префикса RDK, и суффикса '*'
-NameT UAContainer::GetPropertyLongName(const UIProperty &property) const
-{
- NameT name=property.GetOwnerName();
-
- size_t i=name.find("RDK::");
- if(i == NameT::npos)
-  i=0;
- else
-  i=5;
-
- size_t j=name.find_last_of("*");
- if(j == NameT::npos)
-  j=name.size()-i;
- else
-  j-=i+1;
-
- return name.substr(i,j);
-}
-// --------------------------
-
-
-// --------------------------
 // Методы управления контроллерами интерфейса
 // Удаление контроллеров лежит на вызывающем модуле
 // --------------------------
@@ -1944,87 +1481,6 @@ UController* UAContainer::GetController(int index)
 // --------------------------
 
 // --------------------------
-// Скрытые методы управления состоянием
-// --------------------------
-// Добавляет переменную состояния с именем 'name' в таблицу соотвествий
-// параметров и назначает ей корректный индекс
-// Должна вызываться в конструкторах классов
-UId UAContainer::AddLookupState(const NameT &name,UIProperty *property, bool delenable)
-{
- if(!property)
-  return ForbiddenId;
-
- VariableMapIteratorT I=StateLookupTable.begin(),
-					  J=StateLookupTable.end();
- UVariable P(1,property);
- P.DelEnable=delenable;
-
- if(StateLookupTable.find(name) != J)
-  return ForbiddenId;
-
- while(I != J)
-  {
-   if(P.Id <= I->second.Id)
-    P.Id=I->second.Id+1;
-   ++I;
-  }
-
- StateLookupTable.insert(make_pair(name,P));
-
- return P.Id;
-}
-
-// Удаляет переменную состояния с именем 'name' из таблицы соотвествий
-bool UAContainer::DelLookupState(const NameT &name)
-{
- VariableMapIteratorT I=StateLookupTable.find(name);
-
- if(I == StateLookupTable.end())
-  return false;
-
- if(I->second.DelEnable)
-  delete I->second.Property;
- StateLookupTable.erase(I);
- return true;
-}
-
-// Удаляет всю таблицу соответствий
-void UAContainer::ClearLookupStateTable(void)
-{
-  VariableMapIteratorT I=StateLookupTable.begin(),
-                      J=StateLookupTable.end();
-  while(I != J)
-  {
-   if(I->second.Property && I->second.DelEnable)
-    delete I->second.Property;
-
-   ++I;
-  }
- StateLookupTable.clear();
-}
-
-// Возвращает полное имя переменной состояния без префикса NMSDK, и суффикса '*'
-NameT UAContainer::GetStateLongName(const UIProperty &property) const
-{
- NameT name=property.GetOwnerName();
-
- size_t i=name.find("RDK::");
- if(i == NameT::npos)
-  i=0;
- else
-  i=5;
-
- size_t j=name.find_last_of("*");
- if(j == NameT::npos)
-  j=name.size()-i;
- else
-  j-=i+1;
-
- return name.substr(i,j);
-}
-// --------------------------
-
-// --------------------------
 // Скрытые методы управления локальными указателями
 // --------------------------
 // Добавляет указатель в таблицу соотвествий
@@ -2065,11 +1521,11 @@ bool UAContainer::DelLookupPointer(const NameT &name)
  PointerLookupTable.erase(I);
  return true;
 }
-
+/*
 // Возвращает полное имя указателя без префикса NMSDK, и суффикса '*'
 NameT UAContainer::GetPointerLongName(const UIPointer &pointer) const
 {
-/*
+
  NameT name=pointer.GetOwnerName();
 
  int i=name.find("RDK::");
@@ -2084,9 +1540,9 @@ NameT UAContainer::GetPointerLongName(const UIPointer &pointer) const
  else
   j-=i+1;
 
- return name.substr(i,j);*/
+ return name.substr(i,j);
  return "";
-}
+}                        */
 
 // Осуществляет поиск в таблице указателя, соответствующего заданному источнику
 UAContainer::PointerMapCIteratorT UAContainer::FindLookupPointer(UEPtr<UAContainer> source) const

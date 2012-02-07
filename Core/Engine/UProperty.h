@@ -21,11 +21,12 @@ See file license.txt for more information
 #include "../Serialize/USerStorageBinary.h"
 #include "../Serialize/UXMLStdSerialize.h"
 #include "../Serialize/UBinaryStdSerialize.h"
-#include "UAContainer.h"
+//#include "UAContainer.h"
+#include "UADataComponent.h"
 
 namespace RDK {
 
-//typedef class UAContainer;
+//typedef class UADataComponent;
 
 using namespace std;
 
@@ -184,9 +185,9 @@ UVProperty& operator = (const UVProperty &v)
 virtual const std::string& GetName(void) const
 {
  static std::string name;
- name=reinterpret_cast<UAContainer* const>(Owner)->FindPropertyName(this);
+ name=reinterpret_cast<UADataComponent* const>(Owner)->FindPropertyName(this);
  if(name == ForbiddenName)
-  name=reinterpret_cast<UAContainer* const>(Owner)->FindStateName(this);
+  name=reinterpret_cast<UADataComponent* const>(Owner)->FindStateName(this);
  return name;
 };
 
