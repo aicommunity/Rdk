@@ -198,8 +198,7 @@ bool UAContainerEnvironment::BuildStorage(void)
 
  GetStorage()->ClearObjectsStorage();
 
- if(!GetStorage()->ClearClassesStorage())
-  return false;
+ GetStorage()->ClearClassesStorage();
 
  for(int i=0;i<ClassLibraryList.GetSize();i++)
  {

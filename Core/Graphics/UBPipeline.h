@@ -23,14 +23,6 @@ class UBPipeline: public UBAModel
 protected: // Типы данных
 typedef UBAbstract* PUBAbstract;
 protected: // Данные
-// Конвеер расчетов
-//PUBAbstract* Pipeline;
-
-// Размер конвеера
-//int Size;
-
-// Реальный размер массива
-//int RealSize;
 
 protected: // Временные переменные
 // Массив промежуточных изображений
@@ -65,23 +57,6 @@ virtual ~UBPipeline(void);
 // ---------------------
 // Методы управления конвеером
 // ---------------------
-/*// Возвращает размер конвеера
-int GetSize(void) const;
-
-// Изменяет размер конвеера
-bool Resize(int newsize);
-
-// Очищает конвеер
-void Clear(void);
-
-// Добавляет фильтр в конец конвеера
-bool Add(UBAbstract *filter);
-
-// Заменяет фильтр по индексу
-bool Set(int index, UBAbstract *filter);
-
-// Удаляет фильтр по индексу
-void Del(int index);*/
 // ---------------------
 
 // --------------------------
@@ -100,7 +75,7 @@ virtual bool CheckComponentType(UEPtr<UAContainer> comp) const;
 // Создание новой копии этого объекта
 virtual UBPipeline* New(void);
 
-virtual bool Calculate(void);
+//virtual bool Calculate(void);
 
 virtual bool PLACalculate(UBitmap **input, UBitmap **output, int num_inputs=1, int num_outputs=1);
 // ---------------------

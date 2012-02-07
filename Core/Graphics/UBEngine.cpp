@@ -192,7 +192,7 @@ const RDK::UBitmap* const UBEngine::Model_GetComponentOutput(const char *stringi
 
  RDK::ULongId id;
 
- UEPtr<RDK::UBAbstract> cont=dynamic_pointer_cast<RDK::UBAbstract>(model->GetComponentL(RDK::operator<<(id,stringid)));
+ UEPtr<RDK::UBAbstract> cont=dynamic_pointer_cast<RDK::UBAbstract>(model->GetComponentL(id.DecodeFromString(stringid)));
  if(!cont)
   return 0;
 
@@ -298,6 +298,11 @@ int UBEngine::LoadPredefinedLibraries(void)
  filter->Default();
  filter->SetName("MaskFilteringSimple");
  bstorage->AddClass(filter,"MaskFilteringSimple",50);
+
+ filter=new RDK::UBAColorConvert;
+ filter->Default();
+ filter->SetName("ColorConvert");
+ bstorage->AddClass(filter,"ColorConvert",100);
 
  return 0;
 }

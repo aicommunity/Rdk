@@ -20,6 +20,7 @@ See file license.txt for more information
 #include "../Math/MVector.h"
 #include "UContainerDescription.h"
 
+
 namespace RDK {
 
 class UAContainerStorage;
@@ -51,42 +52,6 @@ typedef std::map<NameT,UPVariable>::const_iterator PointerMapCIteratorT;
 
 friend class UAContainerStorage;
 friend class UController;
-
-public: // Классы описания исключений
- /* Базовый класс описания исключений */
- class IException
- {
- public: // Данные исключения
- // Короткое имя компонента в котором сгенерировано исключение
- std::string Name;
-
- // Короткий идентификатор компонента в котором сгенерировано исключение
- ULongId Id;
-
- // Полное имя владельца компонента в котором сгенерировано исключение
- std::string OwnerName;
-
- // Полный идентификатор владельца компонента в котором сгенерировано исключение
- ULongId OwnerId;
-
- // Полное имя главного владельца компонента в котором сгенерировано исключение
- std::string MainOwnerName;
-
- // Полный идентификатор главного владельца компонента в котором сгенерировано исключение
- ULongId MainOwnerId;
-
- public: // Методы
- // --------------------------
- // Конструкторы и деструкторы
- // --------------------------
- IException(void);
- IException(const UAContainer *cont);
- IException(const IException &copy);
- virtual ~IException(void);
- // --------------------------
- };
-/* **************************** */
-
 
 private: // Системные свойства
 // Таблица соответствий имен и Id компонент объекта
@@ -753,6 +718,78 @@ protected:
 // Обновляет состояние MainOwner после расчета этого объекта
 virtual bool AUpdateMainOwner(void);
 // --------------------------
+
+public: // Классы описания исключений
+/* Базовый класс исключений */
+class EIContainer
+{
+public: // Данные исключения
+// Короткое имя компонента в котором сгенерировано исключение
+std::string Name;
+
+// Короткий идентификатор компонента в котором сгенерировано исключение
+ULongId Id;
+
+// Полное имя владельца компонента в котором сгенерировано исключение
+std::string OwnerName;
+
+// Полный идентификатор владельца компонента в котором сгенерировано исключение
+ULongId OwnerId;
+
+// Полное имя главного владельца компонента в котором сгенерировано исключение
+std::string MainOwnerName;
+
+// Полный идентификатор главного владельца компонента в котором сгенерировано исключение
+ULongId MainOwnerId;
+
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EIContainer(void);
+EIContainer(const UAContainer *cont);
+EIContainer(const EIContainer &copy);
+virtual ~EIContainer(void);
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+virtual std::string CreateLogMessage(void) const;
+// --------------------------
+};
+
+// Исключение - ошибка
+class EComponentCalculate: public EError, public EIContainer
+{
+ public: // Данные исключения
+ // Короткое имя дочернего компонента в котором произошла ошибка счета
+ std::string SubName;
+
+ // Короткий идентификатор дочернего компонента в котором произошла ошибка счета
+ ULongId SubId;
+
+ // --------------------------
+ // Конструкторы и деструкторы
+ // --------------------------
+ EComponentCalculate(void);
+ EComponentCalculate(const UAContainer *cont, const UAContainer *subcont);
+ EComponentCalculate(const EComponentCalculate &copy);
+ virtual ~EComponentCalculate(void);
+ // --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+virtual std::string CreateLogMessage(void) const;
+// --------------------------
+};
+/* **************************** */
+
+
 };
 
 

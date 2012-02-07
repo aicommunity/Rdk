@@ -66,12 +66,11 @@ UId GetLastClassId(void) const;
 // --------------------------
 // Добавляет образец класса объекта в хранилище
 // Возвращает id класса
+// Если classid == ForbiddenId, то id назначается автоматически
 virtual UId AddClass(UEPtr<UAComponent> classtemplate, const UId &classid=ForbiddenId);
 
 // Удаляет образец класса объекта из хранилища
-// Возвращает false если classid не найден,
-// или присутствуют объекты этого класса
-virtual bool DelClass(const UId &classid);
+virtual void DelClass(const UId &classid);
 
 // Проверяет наличие образца класса объекта в хранилище
 virtual bool CheckClass(const UId &classid) const;
@@ -84,10 +83,10 @@ int GetNumClasses(void) const;
 
 // Возвращает список идентификаторов всех классов хранилища
 // max_num_classes - максимальная длина массива
-virtual void GetClassIdList(UId* buffer, int max_num_classes) const;
+virtual void GetClassIdList(std::vector<UId> &buffer) const;
 
 // Удаляет все образцы классов из хранилища
-virtual bool ClearClassesStorage(void);
+virtual void ClearClassesStorage(void);
 // --------------------------
 
 // --------------------------
@@ -99,7 +98,7 @@ virtual bool ClearClassesStorage(void);
 // Флаг 'Activity' объекта выставляется в true
 // Если свободного объекта не существует он создается и добавляется
 // в хранилище
-virtual UEPtr<UAComponent> TakeObject(const UId &classid, const UAComponent *prototype=0);
+virtual UEPtr<UAComponent> TakeObject(const UId &classid, const UEPtr<UAComponent> prototype=0);
 
 // Возвращает Id класса, отвечающий объекту 'object'
 virtual UId FindClass(UEPtr<UAComponent> object) const;
@@ -113,21 +112,21 @@ const UEPtr<UComponentDescription> GetClassDescription(const UId &classid) const
 
 // Устанавливает XML описание класса
 // Класс в хранилище должен существовать
-bool SetClassDescription(const UId &classid, const UEPtr<UComponentDescription>& description);
+void SetClassDescription(const UId &classid, const UEPtr<UComponentDescription>& description);
 
 // Сохраняет описание класса в xml
-virtual bool SaveClassDescription(const UId &classid,
+virtual void SaveClassDescription(const UId &classid,
 										Serialize::USerStorageXML &xml);
 
 // Загружает описание класса из xml
-virtual bool LoadClassDescription(const UId &classid,
+virtual void LoadClassDescription(const UId &classid,
 										Serialize::USerStorageXML &xml);
 
 // Сохраняет описание всех классов в xml
-virtual bool SaveClassesDescription(Serialize::USerStorageXML &xml);
+virtual void SaveClassesDescription(Serialize::USerStorageXML &xml);
 
 // Загружает описание всех классов из xml
-virtual bool LoadClassesDescription(Serialize::USerStorageXML &xml);
+virtual void LoadClassesDescription(Serialize::USerStorageXML &xml);
 // --------------------------
 
 // --------------------------
@@ -136,20 +135,42 @@ virtual bool LoadClassesDescription(Serialize::USerStorageXML &xml);
 protected:
 // Возвращает объект в хранилище
 // В текущей реализации всегда удаляет объект и возвращает true
-virtual bool ReturnObject(UEPtr<UAComponent> object);
+virtual void ReturnObject(UEPtr<UAComponent> object);
 // --------------------------
 
 // --------------------------
-// Скрытые методы управления описанием классов
+// Исключения
 // --------------------------
-// Формирует прототип XML описания для заданного класса
-// Класс в хранилище должен существовать
-// Очищает уже созданные поля описания
-//virtual bool GenerateClassDescription(UClassesStorageIterator classI,
-//										Serialize::USerStorageXML &xml);
-// --------------------------
+public:
+class IException: public Exception {};
 
+// Попытка работы с классом по идентификатору classid отсутствующим в хранилище
+class EClassIdDontExist;
+// --------------------------
 };
+
+// Попытка работы с классом по идентификатору classid отсутствующим в хранилище
+class UAStorage::EClassIdDontExist: public EError
+{
+public: // Данные
+// Ошибочный идентификатор
+UId Id;
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EClassIdDontExist(UId id);
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+virtual std::string CreateLogMessage(void) const;
+// --------------------------
+};
+
 
 }
 

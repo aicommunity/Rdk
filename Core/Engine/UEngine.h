@@ -79,7 +79,7 @@ UAContainerEnvironment* Environment;
 
 protected: // Обработка исключений
 // Лог исключений системы
-mutable vector<USharedPtr<UException> > ExceptionsLog;
+mutable vector<USharedPtr<Exception> > ExceptionsLog;
 
 protected: // Временные переменные
 // Список загруженных библиотек
@@ -422,13 +422,13 @@ virtual int Model_LoadComponentState(const char *stringid, char* buffer);
 // Методы управления исключениями
 // --------------------------
 // Обрабатывает возникшее исключение
-virtual void ProcessException(UException *exception) const;
+virtual void ProcessException(Exception *exception) const;
 
 // Формирует строку лога об исключении
-virtual string CreateLogMessage(UException *exception) const;
+//virtual string CreateLogMessage(Exception *exception) const;
 
 // Возвращает массив зарегистрированных исключений
-const vector<USharedPtr<UException> > GetExceptionsLog(void) const;
+const vector<USharedPtr<Exception> > GetExceptionsLog(void) const;
 
 // Возвращает массив строк лога
 const char* GetLog(void) const;

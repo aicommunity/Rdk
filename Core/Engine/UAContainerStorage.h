@@ -42,6 +42,7 @@ public: // Методы
 // --------------------------
 UInstancesStorageElement(void);
 UInstancesStorageElement(const UInstancesStorageElement &copy);
+UInstancesStorageElement(const UEPtr<UAContainer> &object, bool useflag);
 virtual ~UInstancesStorageElement(void);
 // --------------------------
 
@@ -88,8 +89,6 @@ UObjectsStorage ObjectsStorage;
 UId LastClassId;
 
 protected: // Временные переменные
-// Таблица итераторов на свободные объекты классов
-//UFreeObjectsTable FreeObjectsTable;
 
 public: // Методы
 // --------------------------
@@ -122,12 +121,12 @@ public:
 // Удаляет образец класса объекта из хранилища
 // Возвращает false если classid не найден,
 // или присутствуют объекты этого класса
-virtual bool DelClass(const UId &classid);
+virtual void DelClass(const UId &classid);
 
 // Возвращает список идентификаторов всех классов хранилища
 // Буфер 'buffer' будет очищен от предыдущих значений
-virtual void GetClassIdList(UId* buffer, int max_num_classes) const;
-virtual void GetClassIdList(UIdVector &buffer) const;
+virtual void GetClassIdList(std::vector<UId> &buffer) const;
+//virtual void GetClassIdList(UIdVector &buffer) const;
 
 // Возвращает список имен всех классов хранилища
 // Буфер 'buffer' будет очищен от предыдущих значений
@@ -138,7 +137,7 @@ virtual void FreeClassesStorage(void);
 
 // Удаляет все образцы классов из хранилища
 // Возвращает false если в хранилище присутствуют объекты
-virtual bool ClearClassesStorage(void);
+virtual void ClearClassesStorage(void);
 // --------------------------
 
 // --------------------------
@@ -150,8 +149,8 @@ virtual bool ClearClassesStorage(void);
 // Флаг 'Activity' объекта выставляется в true
 // Если свободного объекта не существует он создается и добавляется
 // в хранилище
-virtual UEPtr<UAComponent> TakeObject(const UId &classid, const UAComponent *prototype=0);
-virtual UEPtr<UAComponent> TakeObject(const string &classname, const UAComponent *prototype=0);
+virtual UEPtr<UAComponent> TakeObject(const UId &classid, const UEPtr<UAComponent> prototype=0);
+virtual UEPtr<UAComponent> TakeObject(const string &classname, const UEPtr<UAComponent> prototype=0);
 
 // Проверяет существует ли объект 'object' в хранилище
 virtual bool CheckObject(UEPtr<UAContainer> object) const;
@@ -176,7 +175,7 @@ virtual void ClearObjectsStorage(void);
 protected:
 // Добавляет уже созданный объект в хранилище
 // Если объект уже принадлежит иному хранилищу то возвращает false
-virtual bool PushObject(const UId &classid, UEPtr<UAContainer> object);
+virtual void PushObject(const UId &classid, UEPtr<UAContainer> object);
 
 // Выводит уже созданный объект из хранилища и возвращает
 // его classid
@@ -184,13 +183,13 @@ virtual bool PushObject(const UId &classid, UEPtr<UAContainer> object);
 virtual UId PopObject(UEPtr<UAContainer> object);
 
 // Перемещает объект в другое хранилище
-virtual bool MoveObject(UEPtr<UAContainer> object, UAContainerStorage *newstorage);
+virtual void MoveObject(UEPtr<UAContainer> object, UEPtr<UAContainerStorage> newstorage);
 
 // Возвращает объект в хранилище
 // Выбранный объект помечается как свободный в хранилище
 // Флаг 'Activity' объекта выставляется в false
 // Если объект не существует в хранилище - возвращается false
-virtual bool ReturnObject(UEPtr<UAComponent> object);
+virtual void ReturnObject(UEPtr<UAComponent> object);
 
 // В случае ошибки возвращает ForbiddenId
 virtual UId PopObject(UObjectsStorageIterator instance_iterator, list<UInstancesStorageElement>::iterator object_iterator);
@@ -225,9 +224,130 @@ protected:
 virtual UId AddLookupClass(const string &name);
 
 // Удаляет класс с именем 'name' из таблицы соотвествий
-virtual bool DelLookupClass(const string &name);
+virtual void DelLookupClass(const string &name);
+// --------------------------
+
+// --------------------------
+// Исключения
+// --------------------------
+public:
+// Попытка работы с классом по имени, отсутствующему в хранилище
+class EClassNameDontExist;
+
+// Некорректное имя класса
+class EInvalidClassName;
+
+// Попытка работы с классом по идентификатору, отсутствующему в хранилище
+class EObjectIdDontExist;
+
+// Попытка выполнения разрушающих действий к классом, объекты которого присутствуют в хранилище
+class EObjectStorageNotEmpty;
+
+// Класс с заданным именем уже существует
+class EClassNameAlreadyExist;
 // --------------------------
 };
+
+// Попытка работы с классом по имени, отсутствующему в хранилище
+class UAContainerStorage::EClassNameDontExist: public EError
+{
+public: // Данные
+// Ошибочный идентификатор
+std::string Name;
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EClassNameDontExist(const std::string &name);
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+virtual std::string CreateLogMessage(void) const;
+// --------------------------
+};
+
+// Некорректное имя класса
+class UAContainerStorage::EInvalidClassName: public EError
+{
+public: // Данные
+// Ошибочный идентификатор
+std::string Name;
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EInvalidClassName(const std::string &name);
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+virtual std::string CreateLogMessage(void) const;
+// --------------------------
+};
+
+// Попытка работы с классом по идентификатору, отсутствующему в хранилище
+class UAContainerStorage::EObjectIdDontExist: public EError
+{
+public: // Данные
+// Ошибочный идентификатор
+UId Id;
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EObjectIdDontExist(UId id);
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+virtual std::string CreateLogMessage(void) const;
+// --------------------------
+};
+
+// Попытка выполнения разрушающих действий к классом, объекты которого присутствуют в хранилище
+class UAContainerStorage::EObjectStorageNotEmpty: public UAStorage::EClassIdDontExist
+{
+public:
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EObjectStorageNotEmpty(UId id) : UAStorage::EClassIdDontExist(id) {};
+// --------------------------
+};
+
+// Класс с заданным именем уже существует
+class UAContainerStorage::EClassNameAlreadyExist: public EError
+{
+public: // Данные
+// Ошибочное имя
+std::string Name;
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EClassNameAlreadyExist(const std::string &name);
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+virtual std::string CreateLogMessage(void) const;
+// --------------------------
+};
+
+
 
 }
 

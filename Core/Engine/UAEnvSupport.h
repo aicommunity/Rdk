@@ -14,6 +14,7 @@ See file license.txt for more information
 
 #include <string>
 #include <vector>
+#include "../Utilities/UException.h"
 
 namespace RDK {
 
@@ -71,6 +72,14 @@ int Add(UId id);
 // --------------------------
 
 // --------------------------
+// Методы ввода вывода идентификаторов
+// --------------------------
+// !!! Исключения
+UIdVector& DecodeFromString(const std::string &str);
+std::string& EncodeToString(std::string &str) const;
+// --------------------------
+
+// --------------------------
 // Операторы
 // --------------------------
 // Оператор присваивания
@@ -85,9 +94,55 @@ bool operator == (const UIdVector &copy) const;
 bool operator != (const UIdVector &copy) const;
 bool operator < (const UIdVector &copy) const;
 // --------------------------
+
+// --------------------------
+// Исключения
+// --------------------------
+// Интерфейс описания исключение
+class EILongId;
+
+// Ошибка декодирования строкового id
+class EDecodeFail;
+// --------------------------
 };
 
 typedef UIdVector ULongId;
+
+
+// --------------------------
+// Исключения
+// --------------------------
+// Интерфейс описания исключение
+class UIdVector::EILongId
+{
+};
+
+// Ошибка декодирования строкового id
+class UIdVector::EDecodeFail: public EError, public UIdVector::EILongId
+{
+public:
+// Строка с ошибкой
+std::string StringId;
+
+// Позиция ошибки в строке
+int Position;
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+//EDecodeFail(void);
+EDecodeFail(const std::string &stringid, int position);
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+virtual std::string CreateLogMessage(void) const;
+// --------------------------
+};
+// --------------------------
 /* *********************************************************************** */
 /* *********************************************************************** */
 

@@ -53,15 +53,12 @@ UId UAStorage::GetLastClassId(void) const
 // Возвращает id класса
 UId UAStorage::AddClass(UEPtr<UAComponent> classtemplate, const UId &classid)
 {
- if(!classtemplate)
-  return ForbiddenId;
-
  UId id=classid;
  if(id == ForbiddenId)
   id=LastClassId+1;
 
  if(ClassesStorage.find(id) != ClassesStorage.end())
-  return ForbiddenId;
+  throw new EClassIdDontExist(id);
 
  if(!classtemplate->Build())
   return ForbiddenId;
@@ -76,14 +73,14 @@ UId UAStorage::AddClass(UEPtr<UAComponent> classtemplate, const UId &classid)
 }
 
 // Удаляет образец класса объекта из хранилища
-// Возвращает false если classid не найден,
-// или присутствуют объекты этого класса
-bool UAStorage::DelClass(const UId &classid)
+void UAStorage::DelClass(const UId &classid)
 {
  UClassesStorageIterator I=ClassesStorage.find(classid);
 
  if(I != ClassesStorage.end())
   ClassesStorage.erase(I);
+ else
+  throw new EClassIdDontExist(classid);
 
  UClassStorageElement element=I->second;
  if(element)
@@ -98,8 +95,6 @@ bool UAStorage::DelClass(const UId &classid)
 
   ClassesDescription.erase(J);
  }
-
- return true;
 }
 
 // Проверяет наличие образца класса объекта в хранилище
@@ -116,10 +111,10 @@ UEPtr<UAComponent> UAStorage::GetClass(const UId &classid) const
 {
  UClassesStorageCIterator I=ClassesStorage.find(classid);
 
- if(I != ClassesStorage.end())
-  return I->second;
+ if(I == ClassesStorage.end())
+  throw EClassIdDontExist(classid);
 
- return UEPtr<UAComponent>();
+ return I->second;
 }
 
 // Возвращает число классов
@@ -130,41 +125,31 @@ int UAStorage::GetNumClasses(void) const
 
 // Возвращает список идентификаторов всех классов хранилища
 // Буфер 'buffer' будет очищен от предыдущих значений
-void UAStorage::GetClassIdList(UId* buffer, int max_num_classes) const
+void UAStorage::GetClassIdList(std::vector<UId> &buffer) const
 {
- if(!buffer || !max_num_classes || !ClassesStorage.size())
-  return;
-
- UClassesStorageCIterator I;
- int count=0;
- for(I=ClassesStorage.begin();I != ClassesStorage.end();++I,++count)
- {
-  if(count == max_num_classes)
-   break;
-
-  *buffer++=I->first;
- }
+ buffer.resize(0);
+ buffer.reserve(ClassesStorage.size());
+ for(UClassesStorageCIterator I = ClassesStorage.begin(), J=ClassesStorage.end(); I != J; ++I)
+  buffer.push_back(I->first);
 }
 
 // Удаляет все образцы классов из хранилища
-bool UAStorage::ClearClassesStorage(void)
+void UAStorage::ClearClassesStorage(void)
 {
- UClassesStorageCIterator I;
- for(I=ClassesStorage.begin();I != ClassesStorage.end();++I)
+ for(UClassesStorageCIterator I = ClassesStorage.begin(), J=ClassesStorage.end(); I != J; ++I)
  {
   if(I->second)
    delete I->second.Get();
  }
  ClassesStorage.clear();
 
- UClassesDescriptionCIterator J;
- for(J=ClassesDescription.begin();J != ClassesDescription.end();++J)
+ for(UClassesDescriptionCIterator I = ClassesDescription.begin(), J=ClassesDescription.end(); I != J; ++I)
  {
-  if(J->second)
-   delete J->second.Get();
+  if(I->second)
+   delete I->second.Get();
  }
  ClassesDescription.clear();
- return true;
+ LastClassId=0;
 }
 // --------------------------
 
@@ -177,21 +162,18 @@ bool UAStorage::ClearClassesStorage(void)
 // Флаг 'Activity' объекта выставляется в true
 // Если свободного объекта не существует он создается и добавляется
 // в хранилище
-UEPtr<UAComponent> UAStorage::TakeObject(const UId &classid, const UAComponent *prototype)
+UEPtr<UAComponent> UAStorage::TakeObject(const UId &classid, const UEPtr<UAComponent> prototype)
 {
  UEPtr<UAComponent> classtemplate=ClassesStorage.find(classid)->second;
  UEPtr<UAComponent> obj;
 
  if(!classtemplate)
-  return obj;
+  throw EClassIdDontExist(classid);
 
  obj=classtemplate->New();
- if(!obj)
-  return obj;
 
  obj->SetClass(classid);
  obj->Default();
-// return obj.operator ->();
  return obj;
 }
 
@@ -213,84 +195,59 @@ const UEPtr<UComponentDescription> UAStorage::GetClassDescription(const UId &cla
 {
  UClassesDescriptionCIterator I=ClassesDescription.find(classid);
 
-// if(I == ClassesDescription.end())
-//  return ClassesDescription[classid]; // Заглушка! Здесь проверка и исключение
+ if(I == ClassesDescription.end())
+  throw EClassIdDontExist(classid);
 
  return I->second;
 }
 
 // Устанавливает XML описание класса
 // Класс в хранилище должен существовать
-bool UAStorage::SetClassDescription(const UId &classid, const UEPtr<UComponentDescription>& description)
+void UAStorage::SetClassDescription(const UId &classid, const UEPtr<UComponentDescription>& description)
 {
  UClassesStorageIterator I=ClassesStorage.find(classid);
 
  if(I == ClassesStorage.end())
-  return false;
+  throw EClassIdDontExist(classid);
 
  ClassesDescription[classid]=description;
- return true;
 }
 
 // Сохраняет описание класса в xml
-bool UAStorage::SaveClassDescription(const UId &classid,
+void UAStorage::SaveClassDescription(const UId &classid,
 										Serialize::USerStorageXML &xml)
 {
-// xml.AddNode(sntoa(classid));
-
  GetClassDescription(classid)->Save(xml);
-
-// xml.SelectUp();
- return true;
 }
 
 // Загружает описание класса из xml
-bool UAStorage::LoadClassDescription(const UId &classid,
+void UAStorage::LoadClassDescription(const UId &classid,
 										Serialize::USerStorageXML &xml)
 {
-// if(!xml.SelectNode(sntoa(classid)))
-//  return false;
-
  GetClassDescription(classid)->Load(xml);
-
-// xml.SelectUp();
- return true;
 }
 
 // Сохраняет описание всех классов в xml
-bool UAStorage::SaveClassesDescription(Serialize::USerStorageXML &xml)
+void UAStorage::SaveClassesDescription(Serialize::USerStorageXML &xml)
 {
- UClassesDescriptionIterator I=ClassesDescription.begin();
-
- while(I != ClassesDescription.end())
+ for(UClassesDescriptionCIterator I = ClassesDescription.begin(), J=ClassesDescription.end(); I != J; ++I)
  {
   xml.AddNode(sntoa(I->first));
   I->second->Save(xml);
   xml.SelectUp();
-  ++I;
  }
-
- return true;
 }
 
 // Загружает описание всех классов из xml
-bool UAStorage::LoadClassesDescription(Serialize::USerStorageXML &xml)
+void UAStorage::LoadClassesDescription(Serialize::USerStorageXML &xml)
 {
- UClassesDescriptionIterator I=ClassesDescription.begin();
-
- while(I != ClassesDescription.end())
+ for(UClassesDescriptionCIterator I = ClassesDescription.begin(), J=ClassesDescription.end(); I != J; ++I)
  {
   if(!xml.SelectNode(sntoa(I->first)))
-  {
-   ++I;
    continue;
-  }
   I->second->Load(xml);
   xml.SelectUp();
-  ++I;
  }
-
- return true;
 }
 // --------------------------
 
@@ -299,36 +256,32 @@ bool UAStorage::LoadClassesDescription(Serialize::USerStorageXML &xml)
 // --------------------------
 // Возвращает объект в хранилище
 // В текущей реализации всегда удаляет объект и возвращает true
-bool UAStorage::ReturnObject(UEPtr<UAComponent> object)
+void UAStorage::ReturnObject(UEPtr<UAComponent> object)
 {
  delete object.Get();
+}
+// --------------------------
+/* *************************************************************************** */
 
- return true;
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+UAStorage::EClassIdDontExist::EClassIdDontExist(UId id)
+ : Id(id)
+{
+
 }
 // --------------------------
 
 // --------------------------
-// Скрытые методы управления описанием классов
+// Методы формирования лога
 // --------------------------
-// Формирует прототип XML описания для заданного класса
-// Класс в хранилище должен существовать
-// Очищает уже созданные поля описания
-/*bool UAStorage::GenerateClassDescription(UClassesStorageIterator classI,
-										Serialize::USerStorageXML &xml)
+// Формирует строку лога об исключении
+std::string UAStorage::EClassIdDontExist::CreateLogMessage(void) const
 {
- // Заполняем xml
- xml.Create("Class");
- xml.SetNodeAttribute("Id",sntoa(classI->first));
- xml.AddNode("Header");
- xml.SelectUp();
- xml.AddNode("Description");
- xml.SelectUp();
- return true;
-}            */
+ return Exception::CreateLogMessage()+std::string(" Id=")+sntoa(Id);
+}
 // --------------------------
-
-/* *************************************************************************** */
-
 }
 
 

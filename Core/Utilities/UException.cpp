@@ -2,33 +2,33 @@
 #define UEXCEPTION_CPP
 
 #include "UException.h"
-//#include "UExceptionDispatcher.h"
+//#include "ExceptionDispatcher.h"
 
 namespace RDK {
 
 // Последний порядковый номер исключения
-long long UException::LastNumber=0;
+long long Exception::LastNumber=0;
 
 // Диспетчер исключений
-//UExceptionDispatcher* UException::Dispatcher=0;
+//ExceptionDispatcher* Exception::Dispatcher=0;
 
-/* class UException */
+/* class Exception */
 // --------------------------
 // Методы управления общими данными
 // --------------------------
 // Последний порядковый номер исключения
-long long UException::GetLastNumber(void)
+long long Exception::GetLastNumber(void)
 {
  return LastNumber;
 }
 /*
 // Диспетчер исключений. Осуществляет запись логов и другую деятельность
-UExceptionDispatcher* UException::GetDispatcher(void)
+ExceptionDispatcher* Exception::GetDispatcher(void)
 {
  return Dispatcher;
 }
 
-bool UException::SetDispatcher(UExceptionDispatcher* value)
+bool Exception::SetDispatcher(ExceptionDispatcher* value)
 {
  if(Dispatcher == value)
   return true;
@@ -41,21 +41,21 @@ bool UException::SetDispatcher(UExceptionDispatcher* value)
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UException::UException(void)
+Exception::Exception(void)
 : Type(0)
 {
  Number=++LastNumber;
  std::time(&Time);
 }
 
-UException::UException(const UException &copy)
+Exception::Exception(const Exception &copy)
 {
  Number=copy.Number;
  Time=copy.Time;
 }
 
 
-UException::~UException(void)
+Exception::~Exception(void)
 {
 
 }
@@ -66,49 +66,69 @@ UException::~UException(void)
 // Методы упрвления данными исключения
 // --------------------------
 // Возвращает порядковый номер исключения
-long long UException::GetNumber(void) const
+long long Exception::GetNumber(void) const
 {
  return Number;
 }
 
 // Тип исключения
-int UException::GetType(void) const
+int Exception::GetType(void) const
 {
  return Type;
 }
 
 // Время возникновения (обработки) исключения
-std::time_t UException::GetTime(void) const
+std::time_t Exception::GetTime(void) const
 {
  return Time;
 }
 
-void UException::SetTime(std::time_t ex_time)
+void Exception::SetTime(std::time_t ex_time)
 {
  Time=ex_time;
 }
 // --------------------------
 
+// --------------------------
+// Методы формирования лога
+// --------------------------
+std::string Exception::CreateLogMessage(void) const
+{
+ std::string result;
+
+ result+=sntoa(GetNumber());
+ result+=" ";
+ result+=sntoa(GetTime());
+ result+=" ";
+ result+=sntoa(GetType());
+ result+="> ";
+ result+=typeid(*this).name();
+
+ return result;
+};
+// --------------------------
+
+
 
 
 
 /* Фатальные ошибки (обращение по 0 указателям и т.п.) */
-//class UFatalException: public UException
+//class EFatal: public Exception
 
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UFatalException::UFatalException(void)
+EFatal::EFatal(void)
 {
  Type=1;
 }
 
-UFatalException::UFatalException(const UFatalException &copy)
+EFatal::EFatal(const EFatal &copy)
 {
 
 }
 
-UFatalException::~UFatalException(void)
+EFatal::~EFatal(void)
 {
 
 }
@@ -117,21 +137,21 @@ UFatalException::~UFatalException(void)
 
 
 /* Ошибки, корректируемые пользователем */
-//class UErrException: public UException
+//class EError: public Exception
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UErrException::UErrException(void)
+EError::EError(void)
 {
  Type=2;
 }
 
-UErrException::UErrException(const UErrException &copy)
+EError::EError(const EError &copy)
 {
 
 }
 
-UErrException::~UErrException(void)
+EError::~EError(void)
 {
 
 }
@@ -140,21 +160,21 @@ UErrException::~UErrException(void)
 
 
 /* Предупреждения (например об неэффективном использовании ресурсов) */
-//class UWarningException: public UException
+//class EWarning: public Exception
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UWarningException::UWarningException(void)
+EWarning::EWarning(void)
 {
  Type=3;
 }
 
-UWarningException::UWarningException(const UWarningException &copy)
+EWarning::EWarning(const EWarning &copy)
 {
 
 }
 
-UWarningException::~UWarningException(void)
+EWarning::~EWarning(void)
 {
 
 }
@@ -162,24 +182,45 @@ UWarningException::~UWarningException(void)
 
 
 /* Информационные сообщения, выдача которых инициируется пользователем */
-//class UInfoException: public UException
+//class EInfo: public Exception
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UInfoException::UInfoException(void)
+EInfo::EInfo(void)
 {
  Type=4;
 }
 
-UInfoException::UInfoException(const UInfoException &copy)
+EInfo::EInfo(const EInfo &copy)
 {
 
 
 }
 
-UInfoException::~UInfoException(void)
+EInfo::~EInfo(void)
 {
 
+}
+// --------------------------
+
+/* Ошибка преобразования строки в число */
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EStrToNumber::EStrToNumber(const std::string &str)
+ : Str(str)
+{
+
+}
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+std::string EStrToNumber::CreateLogMessage(void) const
+{
+ return EError::CreateLogMessage()+string(" Str=")+Str;
 }
 // --------------------------
 

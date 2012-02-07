@@ -152,6 +152,61 @@ int UIdVector::Add(UId id)
 // --------------------------
 
 // --------------------------
+// Методы ввода вывода идентификаторов
+// --------------------------
+UIdVector& UIdVector::DecodeFromString(const std::string &str)
+{
+ Resize(0);
+
+ if(!str.size())
+  return *this;
+
+ std::size_t start=str.find_first_not_of("0123456789. ");
+ std::size_t stop;
+ if(start != string::npos)
+  throw new EDecodeFail(str,0);
+
+ start=stop=0;
+ while(start != string::npos)
+ {
+  start=str.find_first_of("0123456789",stop);
+  if(start == string::npos)
+   break;
+
+  stop=str.find_first_of(".",start);
+  try 
+  {
+   if(stop == string::npos)
+	Add(atoi(str.substr(start)));	   
+   else
+	Add(atoi(str.substr(start,stop-start)));
+  }
+  catch (EStrToNumber *strtonumber) 
+  {
+   delete strtonumber;
+   throw new EDecodeFail(str,stop);	
+  }
+ }
+
+ return *this;
+}
+
+std::string& UIdVector::EncodeToString(std::string &str) const
+{
+ str.clear();
+ for(int i=0;i<Size;i++)
+ {
+  str+=sntoa(Buffer[i]);
+  if(i < Size-1)
+   str+=".";
+ }
+
+ return str;
+}
+// --------------------------
+
+
+// --------------------------
 // Операторы
 // --------------------------
 // Оператор присваивания
@@ -201,6 +256,36 @@ bool UIdVector::operator < (const UIdVector &copy) const
   return true;
 
  return false;
+}
+// --------------------------
+
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+/*UIdVector::EDecodeFail::EDecodeFail(void)
+{
+
+}
+  */
+UIdVector::EDecodeFail::EDecodeFail(const std::string &stringid, int position)
+ : StringId(stringid), Position(position)
+{
+
+}
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+std::string UIdVector::EDecodeFail::CreateLogMessage(void) const
+{
+ std::string result=Exception::CreateLogMessage();
+ result+=" StringId=";
+ result+=StringId;
+ result+=" Position=";
+ result+=sntoa(Position);
+ return result;
 }
 // --------------------------
 
@@ -301,6 +386,7 @@ int ULongIdVector::Add(const ULongId &id)
  return Size-1;
 }
 // --------------------------
+
 
 // --------------------------
 // Операторы

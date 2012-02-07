@@ -21,7 +21,8 @@ See file license.txt for more information
 #include "UItemData.cpp"
 #include "UXMLEnvSerialize.cpp"
 //#include "UThreadEnvironment.cpp"
-#include "UEnvException.cpp"
+//#include "UContException.cpp"
+//#include "UEnvException.cpp"
 #include "UComponentDescription.cpp"
 #include "UContainerDescription.cpp"
 

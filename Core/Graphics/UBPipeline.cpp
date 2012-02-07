@@ -24,15 +24,6 @@ namespace RDK {
 // --------------------------
 UBPipeline::UBPipeline(void)
 {
-/* // Конвеер расчетов
- Pipeline=0;
-
- // Размер конвеера
- Size=0;
-
- // Реальный размер массива
- RealSize=0;
-  */
  // Массив промежуточных изображений
  InputBuffer=0;
  OutputBuffer=0;
@@ -60,8 +51,6 @@ UBPipeline::UBPipeline(void)
 
 UBPipeline::~UBPipeline(void)
 {
-// Clear();
-
  if(InputBuffer)
  {
   delete []InputBuffer;
@@ -99,85 +88,6 @@ UBPipeline::~UBPipeline(void)
 // ---------------------
 // Методы управления конвеером
 // ---------------------
-/*
-// Возвращает размер конвеера
-int UBPipeline::GetSize(void) const
-{
- return NumComponents;
-}
-
-// Изменяет размер конвеера
-bool UBPipeline::Resize(int newsize)
-{
- if(newsize == NumComponents)
-  return true;
-
- if(newsize == 0)
- {
-  Clear();
-  return true;
- }
-
- if(newsize < NumComponents)
- {
-  NumComponents=newsize;
-  return true;
- }
-
- PUBAbstract* pipeline=new PUBAbstract[newsize];
- memcpy(pipeline,Pipeline,sizeof(PUBAbstract)*NumComponents);
- memset(pipeline+NumComponents,0,sizeof(PUBAbstract)*(newsize-NumComponents));
- RealSize=NumComponents=newsize;
- delete []Pipeline;
- Pipeline=pipeline;
- return true;
-}
-
-// Очищает конвеер
-void UBPipeline::Clear(void)
-{
- if(Pipeline)
- {
-  for(int i=0;i<NumComponents;i++)
-   if(Pipeline[i])
-    Pipeline[i]->Free();
-  delete []Pipeline;
-  Pipeline=0;
- }
- NumComponents=0;
- RealSize=0;
-}
-
-// Добавляет фильтр в конец конвеера
-bool UBPipeline::Add(UBAbstract *filter)
-{
- Resize(NumComponents+1);
- Pipeline[NumComponents-1]=filter;
- CalcNumIOs();
- return true;
-}
-
-// Заменяет фильтр по индексу
-bool UBPipeline::Set(int index, UBAbstract *filter)
-{
- if(index<0 || index >= NumComponents)
-  return false;
-
- Pipeline[index]=filter;
- CalcNumIOs();
- return true;
-}
-
-// Удаляет фильтр по индексу
-void UBPipeline::Del(int index)
-{
- if(index<0 || index >= NumComponents)
-  return;
-
- memmove(Pipeline+index,Pipeline+index+1,sizeof(UBAbstract*)*(NumComponents-index-1));
- --NumComponents;
- CalcNumIOs();
-}               */
 // ---------------------
 
 
@@ -204,7 +114,7 @@ UBPipeline* UBPipeline::New(void)
 {
  return new UBPipeline;
 }
-
+	/*
 bool UBPipeline::Calculate(void)
 {
  if(!Build())
@@ -213,10 +123,11 @@ bool UBPipeline::Calculate(void)
  CalcNumIOs();
 
  return ACalculate();
-}
+} */
 
 bool UBPipeline::PLACalculate(UBitmap **input, UBitmap **output, int num_inputs, int num_outputs)
 {
+/*
  if(!NumComponents)
   return true;
 
@@ -229,10 +140,10 @@ bool UBPipeline::PLACalculate(UBitmap **input, UBitmap **output, int num_inputs,
   ExpandInputArray(NumInputs);
   ExpandOutputArray(NumOutputs);
   for(int i=0;i<min_inputs;i++)
-   InputArray[i]=(UBitmap *)input[InputTableValue(i)];
+   InputArray[i]=(UBitmap *)input[i];
 
   for(int i=0;i<min_outputs;i++)
-   OutputArray[i]=output[OutputTableValue(i)];
+   OutputArray[i]=output[i];
 
   if(PComponents[0])
   {
@@ -264,7 +175,7 @@ bool UBPipeline::PLACalculate(UBitmap **input, UBitmap **output, int num_inputs,
  ExpandInputArray(max_buffer_size);
  ExpandOutputArray(max_buffer_size);
  for(int i=0;i<min_inputs;i++)
-  InputArray[i]=(UBitmap *)input[InputTableValue(i)];
+  InputArray[i]=(UBitmap *)input[i];
 
  for(int i=0;i<max_buffer_size;i++)
   OutputArray[i]=&OutputBuffer[i];
@@ -279,8 +190,6 @@ bool UBPipeline::PLACalculate(UBitmap **input, UBitmap **output, int num_inputs,
 	return false;
    if(!static_pointer_cast<UBAbstract>(static_pointer_cast<UBAbstract>(PComponents[i]))->Calculate())
 	return false;
-//   if(!Pipeline[i]->PLCalculate(InputArray,OutputArray,InputArraySize,OutputArraySize))
-//    return false;
   }
 
   // Пробрасываем неиспользуемые более выходы выполненного фильтра на выход конвеера
@@ -288,16 +197,13 @@ bool UBPipeline::PLACalculate(UBitmap **input, UBitmap **output, int num_inputs,
   for(int l=0;l<static_pointer_cast<UBAbstract>(PComponents[i])->GetNumOutputs();l++)
   {
    bool key=false;
-   int output_table_index=static_pointer_cast<UBAbstract>(static_pointer_cast<UBAbstract>(PComponents[i]))->OutputTableValue(l);
-
-//   if(output_table_index<0)
-//    break;
+   int output_table_index=l;//static_pointer_cast<UBAbstract>(static_pointer_cast<UBAbstract>(PComponents[i]))->OutputTableValue(l);
 
    for(int j=i+1;j<NumComponents;j++)
    {
 	for(int k=0;k<static_pointer_cast<UBAbstract>(PComponents[j])->GetNumOutputs();k++)
 	{
-     int output_table_index2=static_pointer_cast<UBAbstract>(PComponents[j])->OutputTableValue(k);
+     int output_table_index2=k;//static_pointer_cast<UBAbstract>(PComponents[j])->OutputTableValue(k);
      if(output_table_index == output_table_index2)
      {
       key=true;
@@ -311,8 +217,8 @@ bool UBPipeline::PLACalculate(UBitmap **input, UBitmap **output, int num_inputs,
 
    if(!key)
    {
-    if(output_table_index<NumOutputs && OutputTableValue(output_table_index)<NumOutputs)
-     *output[OutputTableValue(output_table_index)]=*OutputArray[output_table_index];
+    if(output_table_index<NumOutputs && output_table_index<NumOutputs)
+     *output[output_table_index]=*OutputArray[output_table_index];
    }
   }
 
@@ -321,12 +227,12 @@ bool UBPipeline::PLACalculate(UBitmap **input, UBitmap **output, int num_inputs,
    break;
 
   for(int j=0;j<min_inputs;j++)
-   InputArray[j]=(UBitmap *)input[InputTableValue(j)];
+   InputArray[j]=(UBitmap *)input[j];
 
   // Создаем вектор входов для следующего фильтра
   for(int l=0;l<static_pointer_cast<UBAbstract>(PComponents[i])->GetNumOutputs();l++)
   {
-   int output_table_index=static_pointer_cast<UBAbstract>(static_pointer_cast<UBAbstract>(PComponents[i]))->OutputTableValue(l);
+   int output_table_index=l;//static_pointer_cast<UBAbstract>(static_pointer_cast<UBAbstract>(PComponents[i]))->OutputTableValue(l);
    // Поправили элемент вектора входов
    InputArray[output_table_index]=OutputArray[output_table_index];
   }
@@ -334,7 +240,7 @@ bool UBPipeline::PLACalculate(UBitmap **input, UBitmap **output, int num_inputs,
   // Создаем вектор выходов для следующего фильтра
   for(int l=0;l<static_pointer_cast<UBAbstract>(PComponents[i+1])->GetNumOutputs();l++)
   {
-   int output_table_index=static_pointer_cast<UBAbstract>(PComponents[i+1])->OutputTableValue(l);
+   int output_table_index=l;//static_pointer_cast<UBAbstract>(PComponents[i+1])->OutputTableValue(l);
 
    if(i<NumComponents-2)
    {
@@ -346,12 +252,12 @@ bool UBPipeline::PLACalculate(UBitmap **input, UBitmap **output, int num_inputs,
    }
    else
    {
-    OutputArray[output_table_index]=output[OutputTableValue(output_table_index)];
+    OutputArray[output_table_index]=output[output_table_index];
    }
   }
 
  }
-
+   */
  return true;
 }
 // ---------------------
@@ -518,10 +424,10 @@ bool UBParallelPipeline::PLACalculate(UBitmap **input, UBitmap **output, int num
  ExpandInputArray(NumInputs);
  ExpandOutputArray(NumOutputs);
  for(int i=0;i<min_inputs;i++)
-  InputArray[i]=(UBitmap *)input[InputTableValue(i)];
+  InputArray[i]=(UBitmap *)input[i];
 
  for(int i=0;i<min_outputs;i++)
-  OutputArray[i]=output[OutputTableValue(i)];
+  OutputArray[i]=output[i];
 
  for(int i=0;i<NumComponents;i++)
  {

@@ -2,20 +2,19 @@
 #define UEXCEPTION_H
 
 #include <ctime>
+#include <string>
 
 namespace RDK {
 
-//class UExceptionDispatcher;
-
 /* Базовый класс исключений */
-class UException
+class Exception
 {
 protected: // Общие данные
 // Последний порядковый номер исключения
 static long long LastNumber;
 
 // Диспетчер исключений. Осуществляет запись логов и другую деятельность
-//static UExceptionDispatcher* Dispatcher;
+//static ExceptionDispatcher* Dispatcher;
 
 protected: // Данные исключения
 // Порядковый номер исключения
@@ -37,9 +36,9 @@ public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UException(void);
-UException(const UException &copy);
-virtual ~UException(void);
+Exception(void);
+Exception(const Exception &copy);
+virtual ~Exception(void);
 // --------------------------
 
 // --------------------------
@@ -49,8 +48,8 @@ virtual ~UException(void);
 static long long GetLastNumber(void);
 
 // Диспетчер исключений. Осуществляет запись логов и другую деятельность
-//static UExceptionDispatcher* GetDispatcher(void);
-//static bool SetDispatcher(UExceptionDispatcher* value);
+//static ExceptionDispatcher* GetDispatcher(void);
+//static bool SetDispatcher(ExceptionDispatcher* value);
 // --------------------------
 
 // --------------------------
@@ -67,63 +66,93 @@ std::time_t GetTime(void) const;
 void SetTime(std::time_t ex_time);
 // --------------------------
 
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+virtual std::string CreateLogMessage(void) const;
+// --------------------------
 };
 
+
 /* Фатальные ошибки (обращение по 0 указателям и т.п.) */
-class UFatalException: public UException
+class EFatal: public Exception
 {
 
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UFatalException(void);
-UFatalException(const UFatalException &copy);
-virtual ~UFatalException(void);
+EFatal(void);
+EFatal(const EFatal &copy);
+virtual ~EFatal(void);
 // --------------------------
 
 };
 
 /* Ошибки, корректируемые пользователем */
-class UErrException: public UException
+class EError: public Exception
 {
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UErrException(void);
-UErrException(const UErrException &copy);
-virtual ~UErrException(void);
+EError(void);
+EError(const EError &copy);
+virtual ~EError(void);
 // --------------------------
 
 };
 
 /* Предупреждения (например об неэффективном использовании ресурсов) */
-class UWarningException: public UException
+class EWarning: public Exception
 {
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UWarningException(void);
-UWarningException(const UWarningException &copy);
-virtual ~UWarningException(void);
+EWarning(void);
+EWarning(const EWarning &copy);
+virtual ~EWarning(void);
 // --------------------------
 
 };
 
 /* Информационные сообщения, выдача которых инициируется пользователем */
-class UInfoException: public UException
+class EInfo: public Exception
 {
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UInfoException(void);
-UInfoException(const UInfoException &copy);
-virtual ~UInfoException(void);
+EInfo(void);
+EInfo(const EInfo &copy);
+virtual ~EInfo(void);
 // --------------------------
 };
+
+/* Ошибка преобразования строки в число */
+class EStrToNumber: public EError
+{
+public: // Данные
+std::string Str;
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EStrToNumber(const std::string &str);
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+virtual std::string CreateLogMessage(void) const;
+// --------------------------
+};
+
+
 
 }
 

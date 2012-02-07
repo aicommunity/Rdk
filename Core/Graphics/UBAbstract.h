@@ -16,31 +16,11 @@ See file license.txt for more information
 #include "UBitmap.h"
 #include "UBitmapVector.h"
 #include "../Engine/UANet.h"
-//#include "../../UEnvironment/UEInterface.h"
 
 namespace RDK {
-        /*
-class UBInterface: public UEInterface
-{
-
-};        */
-
-// Структура пар индексов
-struct UBIOPair
-{
-int Input;
-int Output;
-
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-UBIOPair(void);
-UBIOPair(int input, int output);
-// --------------------------
-};
 
 // Базовый класс для всех классов обработки изображений
-class UBAbstract: public UANet//UAComponent
+class UBAbstract: public UANet
 {
 protected: // Параметры
 // Флаг, разрешающий использовать массив внутренних входных данных
@@ -48,15 +28,6 @@ bool InternalInputsFlag;
 
 // Флаг, разрешающий использовать массив внутренних выходных данных
 bool InternalOutputsFlag;
-
-// Число входов фильтра
-//int NumInputs;
-
-// Число выходов фильтра
-//int NumOutputs;
-
-// Число транзитных входов фильтра
-int NumTransitInputs;
 
 protected: // Данные
 // Используемый массив входных изображений
@@ -75,25 +46,6 @@ UBitmapVector InternalInputs;
 
 // Цветовая модель входа и выхода
 std::vector<UBMColorModel> InputColorModel, OutputColorModel;
-
-// Таблица соответствий входов
-int *InputTable;
-
-// Таблица соответствий выходов
-int *OutputTable;
-
-// Таблица соответствий транзитных входов
-// указывает какой номер входа нужно транзитом отправить в выход c индексом
-UBIOPair *TransitTable;
-
-protected: // Сериализация
-// Индекс начального параметра этого класса
-// (исключая родительские параметры)
-//int FirstParamIndex;
-
-// Индекс конечного параметра этого класса
-// (исключая родительские параметры)
-//int LastParamIndex;
 
 public: // Методы
 // ---------------------
@@ -114,14 +66,6 @@ bool SetInternalInputsFlag(bool value);
 bool GetInternalOutputsFlag(void) const;
 bool SetInternalOutputsFlag(bool value);
 
-// Число входов фильтра
-//int GetNumInputs(void) const;
-//bool SetNumInputs(int value);
-
-// Число выходов фильтра
-//int GetNumOutputs(void) const;
-//bool SetNumOutputs(int value);
-
 // Число транзитных входов
 int GetNumTransitInputs(void) const;
 bool SetNumTransitInputs(int value);
@@ -137,30 +81,6 @@ bool SetOutputColorModel(int index, UBMColorModel cmodel);
 // ---------------------
 // Методы управления данными
 // ---------------------
-// Возвращает указатель на таблицу входов
-const int* GetInputTable(void) const;
-
-// Возвращает указатель на таблицу выходов
-const int* GetOutputTable(void) const;
-
-// Возвращает указатель на таблицу транзитных входов
-const UBIOPair* GetTransitTable(void) const;
-
-// Предоставлет доступ к элементу таблицы соответствий входов
-int& InputTableValue(int index);
-
-// Предоставлет доступ к элементу таблицы соответствий выходов
-int& OutputTableValue(int index);
-
-// Предоставлет доступ к элементу таблицы транзитных входов
-UBIOPair& TransitTableValue(int index);
-
-// Устаналивает таблицу соответствий входов по умолчанию
-void SetDefaultInputTable(void);
-
-// Устаналивает таблицу соответствий выходов по умолчанию
-void SetDefaultOutputTable(void);
-
 // Возвращает массив входных изображений
 UPBitmapVector& GetInputs(void);
 

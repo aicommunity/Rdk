@@ -21,6 +21,32 @@ See file license.txt for more information
 namespace RDK {
 namespace Serialize {
 
+// UBMColorModel
+USerStorageXML& operator << (USerStorageXML& storage, const UBMColorModel &data)
+{
+ storage.SetNodeAttribute("Type",typeid(UBMColorModel).name());
+
+ std::stringstream stream;
+ stream<<int(data);
+ std::string str=stream.str();
+ storage.SetNodeText(str);
+
+ return storage;
+}
+
+USerStorageXML& operator >> (USerStorageXML& storage, UBMColorModel &data)
+{
+ if(storage.GetNodeAttribute("Type") != typeid(UBMColorModel).name())
+  return storage;
+
+ std::istringstream stream(storage.GetNodeText().c_str());
+ int temp;
+ stream>>temp;
+ data=temp;
+
+ return storage;
+}
+
 // UColorT
 USerStorageXML& operator << (USerStorageXML& storage, const UColorT &data)
 {

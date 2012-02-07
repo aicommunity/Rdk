@@ -51,74 +51,6 @@ ULongTime UAContainer::RealTimeStep=1;
 double UAContainer::DoubleRealTimeStep=1.0e-6;
 // --------------------------
 
-/* Классы исключений */
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-UAContainer::IException::IException(void)
-{
-
-}
-
-UAContainer::IException::IException(const UAContainer *cont)
-{
- if(!cont)
-  return;
-
- // Короткое имя компонента в котором сгенерировано исключение
- Name=cont->GetName();
-
- // Короткий идентификатор компонента в котором сгенерировано исключение
- Id=cont->GetId();
-
- // Полное имя владельца компонента в котором сгенерировано исключение
- if(cont->GetOwner())
- {
-  cont->GetOwner()->GetFullName(OwnerName);
-
-  // Полный идентификатор владельца компонента в котором сгенерировано исключение
-  OwnerId=cont->GetOwner()->GetFullId();
- }
-
- if(cont->GetMainOwner())
- {
-  // Полное имя главного владельца компонента в котором сгенерировано исключение
-  cont->GetMainOwner()->GetFullName(MainOwnerName);
-
-  // Полный идентификатор главного владельца компонента в котором сгенерировано исключение
-  MainOwnerId=cont->GetMainOwner()->GetFullId();
- }
-}
-
-
-UAContainer::IException::IException(const IException &copy)
-{
- // Короткое имя компонента в котором сгенерировано исключение
- Name=copy.Name;
-
- // Короткий идентификатор компонента в котором сгенерировано исключение
- Id=copy.Id;
-
- // Полное имя владельца компонента в котором сгенерировано исключение
- OwnerName=copy.OwnerName;
-
- // Полный идентификатор владельца компонента в котором сгенерировано исключение
- OwnerId=copy.OwnerId;
-
- // Полное имя главного владельца компонента в котором сгенерировано исключение
- MainOwnerName=copy.MainOwnerName;
-
- // Полный идентификатор главного владельца компонента в котором сгенерировано исключение
- MainOwnerId=copy.MainOwnerId;
-}
-
-UAContainer::IException::~IException(void)
-{
-
-}
-// --------------------------
-
-
 // --------------------------
 // Методы управления глобальными свойствами
 // --------------------------
@@ -1731,15 +1663,12 @@ bool UAContainer::Calculate(void)
 
 // bool key=true;
  UEPtr<UAContainer> *comps=PComponents;
- for(int i=0;i<NumComponents;++i)
-  if(!(*comps++)->Calculate())
-   return false;
-//  {
-//   key=false;
-//   break;
-//  }
-// if(!key)
-//  return false;
+ for(int i=0;i<NumComponents;++i,comps++)
+  if(!(*comps)->Calculate())
+  {
+   throw new EComponentCalculate(this,comps->Get());
+//   return false;
+  }
 
  if(!Owner)
  {
@@ -2311,6 +2240,169 @@ bool UAContainer::AUpdateMainOwner(void)
 // --------------------------
 
 /* *************************************************************************** */
+/* Классы исключений */
+// class EIContainer
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+UAContainer::EIContainer::EIContainer(void)
+{
+
+}
+
+UAContainer::EIContainer::EIContainer(const UAContainer *cont)
+{
+ if(!cont)
+  return;
+
+ // Короткое имя компонента в котором сгенерировано исключение
+ Name=cont->GetName();
+
+ // Короткий идентификатор компонента в котором сгенерировано исключение
+ Id=cont->GetId();
+
+ // Полное имя владельца компонента в котором сгенерировано исключение
+ if(cont->GetOwner())
+ {
+  cont->GetOwner()->GetFullName(OwnerName);
+
+  // Полный идентификатор владельца компонента в котором сгенерировано исключение
+  OwnerId=cont->GetOwner()->GetFullId();
+ }
+
+ if(cont->GetMainOwner())
+ {
+  // Полное имя главного владельца компонента в котором сгенерировано исключение
+  cont->GetMainOwner()->GetFullName(MainOwnerName);
+
+  // Полный идентификатор главного владельца компонента в котором сгенерировано исключение
+  MainOwnerId=cont->GetMainOwner()->GetFullId();
+ }
+}
+
+
+UAContainer::EIContainer::EIContainer(const EIContainer &copy)
+{
+ // Короткое имя компонента в котором сгенерировано исключение
+ Name=copy.Name;
+
+ // Короткий идентификатор компонента в котором сгенерировано исключение
+ Id=copy.Id;
+
+ // Полное имя владельца компонента в котором сгенерировано исключение
+ OwnerName=copy.OwnerName;
+
+ // Полный идентификатор владельца компонента в котором сгенерировано исключение
+ OwnerId=copy.OwnerId;
+
+ // Полное имя главного владельца компонента в котором сгенерировано исключение
+ MainOwnerName=copy.MainOwnerName;
+
+ // Полный идентификатор главного владельца компонента в котором сгенерировано исключение
+ MainOwnerId=copy.MainOwnerId;
+}
+
+UAContainer::EIContainer::~EIContainer(void)
+{
+
+}
+// --------------------------
+
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+std::string UAContainer::EIContainer::CreateLogMessage(void) const
+{
+ string result;//=UException::CreateLogMessage();
+
+// EIContainer *iexception=dynamic_cast<EIContainer*>(exception);
+
+// if(iexception)
+ {
+  // Короткое имя компонента в котором сгенерировано исключение
+  result+=" Name=";
+  result+=Name;
+
+  // Короткий идентификатор компонента в котором сгенерировано исключение
+//  result+=" Id=";
+//  result+=iexception->Id;
+
+  // Полное имя владельца компонента в котором сгенерировано исключение
+  result+=" OwnerName=";
+  result+=OwnerName;
+
+  // Полный идентификатор владельца компонента в котором сгенерировано исключение
+//  result+=" OwnerId=";
+//  result+=iexception->OwnerId;
+
+  if(MainOwnerName != OwnerName && MainOwnerName.size()>0)
+  {
+   // Полное имя главного владельца компонента в котором сгенерировано исключение
+   result+=" MainOwnerName=";
+   result+=MainOwnerName;
+  }
+
+  // Полный идентификатор главного владельца компонента в котором сгенерировано исключение
+//  result+=" MainOwnerId=";
+//  result+=iexception->MainOwnerId;
+ }
+
+
+ return result;
+}
+// --------------------------
+
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+UAContainer::EComponentCalculate::EComponentCalculate(void)
+{
+
+}
+
+UAContainer::EComponentCalculate::EComponentCalculate(const UAContainer *cont, const UAContainer *subcont)
+ : EError(), EIContainer(cont)
+{
+ if(!subcont)
+  return;
+
+ // Короткое имя компонента в котором сгенерировано исключение
+ SubName=subcont->GetName();
+
+ // Короткий идентификатор компонента в котором сгенерировано исключение
+ SubId=subcont->GetId();
+}
+
+
+UAContainer::EComponentCalculate::EComponentCalculate(const EComponentCalculate &copy)
+ : EError(copy), EIContainer(copy)
+{
+ // Короткое имя компонента в котором сгенерировано исключение
+ SubName=copy.SubName;
+
+ // Короткий идентификатор компонента в котором сгенерировано исключение
+ SubId=copy.SubId;
+}
+
+UAContainer::EComponentCalculate::~EComponentCalculate(void)
+{
+
+}
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+std::string UAContainer::EComponentCalculate::CreateLogMessage(void) const
+{
+ return EError::CreateLogMessage()+EIContainer::CreateLogMessage();
+}
+// --------------------------
+
+
 
 
 }

@@ -879,7 +879,7 @@ int RDK_CALL ExceptionDispatcher(void *exception)
  if(!PEngine)
   return 1;
 
- RDK::UException *exc=reinterpret_cast<RDK::UException*>(exception);
+ RDK::Exception *exc=reinterpret_cast<RDK::Exception*>(exception);
  PEngine->ProcessException(exc);
 
  return 0;

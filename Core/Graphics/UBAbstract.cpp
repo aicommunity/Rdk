@@ -16,86 +16,20 @@ See file license.txt for more information
 
 namespace RDK {
 
-
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-UBIOPair::UBIOPair(void)
-{
- Input=0;
- Output=0;
-}
-
-UBIOPair::UBIOPair(int input, int output)
-{
- Input=input;
- Output=output;
-}
-// --------------------------
-
 // ---------------------
 // Конструкторы и деструкторы
 // ---------------------
 UBAbstract::UBAbstract(void)
 {
- // Таблица соответствий входов
- InputTable=0;
-
- // Таблица соответствий выходов
- OutputTable=0;
-
  // Число входов фильтра
  NumInputs=0;
- SetNumInputs(1);
 
  // Число выходов фильтра
  NumOutputs=0;
- SetNumOutputs(1);
-
- NumTransitInputs=0;
- TransitTable=0;
-
- // Индекс начального параметра этого класса
- // (исключая родительские параметры)
-// FirstParamIndex=-1;
-
- // Индекс конечного параметра этого класса
- // (исключая родительские параметры)
-// LastParamIndex=-1;
 }
 
 UBAbstract::~UBAbstract(void)
 {
- // Таблица соответствий входов
- if(InputTable)
- {
-  delete []InputTable;
-  InputTable=0;
- }
-
- // Таблица соответствий выходов
- if(OutputTable)
- {
-  delete []OutputTable;
-  OutputTable=0;
- }
-
-
- // Таблица соответствий выходов
- if(TransitTable)
- {
-  delete []TransitTable;
-  TransitTable=0;
- }
-
- // Число транзитных входов
- NumTransitInputs=0;
-
- // Число входов фильтра
- NumInputs=0;
-
- // Число выходов фильтра
- NumOutputs=0;
 }
 // ---------------------
 
@@ -134,80 +68,6 @@ bool UBAbstract::SetInternalOutputsFlag(bool value)
  return true;
 }
 
-/*
-// Число входов фильтра
-int UBAbstract::GetNumInputs(void) const
-{
- return NumInputs;
-}
-
-bool UBAbstract::SetNumInputs(int value)
-{
- if(NumInputs == value)
-  return true;
-
- NumInputs=value;
- if(InputTable)
- {
-  delete []InputTable;
-  InputTable=0;
- }
- InputTable=new int[NumInputs];
-
- SetDefaultInputTable();
- InputBitmaps.Resize(NumInputs);
- return true;
-}
-*/
-/*
-// Число выходов фильтра
-int UBAbstract::GetNumOutputs(void) const
-{
- return NumOutputs;
-}
-
-bool UBAbstract::SetNumOutputs(int value)
-{
- if(NumOutputs == value)
-  return true;
-
- NumOutputs=value;
-
- if(OutputTable)
- {
-  delete []OutputTable;
-  OutputTable=0;
- }
- OutputTable=new int[NumOutputs];
-
- SetDefaultOutputTable();
- OutputBitmaps.Resize(NumOutputs);
- return true;
-}    */
-
-// Число транзитных входов
-int UBAbstract::GetNumTransitInputs(void) const
-{
- return NumTransitInputs;
-}
-
-bool UBAbstract::SetNumTransitInputs(int value)
-{
- if(NumTransitInputs == value)
-  return true;
-
- NumTransitInputs=value;
-
- if(TransitTable)
- {
-  delete []TransitTable;
-  TransitTable=0;
- }
- TransitTable=new UBIOPair[NumTransitInputs];
-
- return true;
-}
-
 // Цветовая модель входа и выхода
 UBMColorModel UBAbstract::GetInputColorModel(int index) const
 {
@@ -241,57 +101,6 @@ bool UBAbstract::SetOutputColorModel(int index, UBMColorModel cmodel)
 // ---------------------
 // Методы управления данными
 // ---------------------
-// Возвращает указатель на таблицу входов
-const int* UBAbstract::GetInputTable(void) const
-{
- return InputTable;
-}
-
-// Возвращает указатель на таблицу выходов
-const int* UBAbstract::GetOutputTable(void) const
-{
- return OutputTable;
-}
-
-// Возвращает указатель на таблицу транзитных входов
-const UBIOPair* UBAbstract::GetTransitTable(void) const
-{
- return TransitTable;
-}
-
-// Предоставлет доступ к элементу таблицы соответствий входов
-int& UBAbstract::InputTableValue(int index)
-{
- Build();
- return InputTable[index];
-}
-
-// Предоставлет доступ к элементу таблицы соответствий выходов
-int& UBAbstract::OutputTableValue(int index)
-{
- Build();
- return OutputTable[index];
-}
-
-// Предоставлет доступ к элементу таблицы транзитных входов
-UBIOPair& UBAbstract::TransitTableValue(int index)
-{
- return TransitTable[index];
-}
-
-// Устаналивает таблицу соответствий входов по умолчанию
-void UBAbstract::SetDefaultInputTable(void)
-{
- for(int i=0;i<NumInputs;i++)
-  InputTable[i]=i;
-}
-
-// Устаналивает таблицу соответствий выходов по умолчанию
-void UBAbstract::SetDefaultOutputTable(void)
-{
- for(int i=0;i<NumOutputs;i++)
-  OutputTable[i]=i;
-}
 // ---------------------
 
 // ---------------------
@@ -307,32 +116,29 @@ bool UBAbstract::PLCalculate(UBitmap **input, UBitmap **output, int num_inputs, 
 
  for(int i=0;i<NumInputs;i++)
  {
-  if(!input[InputTable[i]])
+  if(!input[i])
    return true;
 
-  if(InputColorModel[InputTable[i]] != ubmUnknown)
-   input[InputTable[i]]->SetColorModel(InputColorModel[InputTable[i]]);
+  if(InputColorModel[i] != ubmUnknown)
+  {
+   if(InternalInputsFlag)
+	input[i]->SetColorModel(InputColorModel[i]);
+   else
+	if(InputColorModel[i] != input[i]->GetColorModel())
+   	 return true;
+  }
  }
 
  for(int i=0;i<NumOutputs;i++)
  {
-  if(!output[OutputTable[i]])
+  if(!output[i])
    return true;
-  if(OutputColorModel[OutputTable[i]] != ubmUnknown)
-   output[OutputTable[i]]->SetColorModel(OutputColorModel[OutputTable[i]]);
+  if(OutputColorModel[i] != ubmUnknown)
+   output[i]->SetColorModel(OutputColorModel[i]);
  }
 
  if(!PLACalculate(input, output, num_inputs, num_outputs))
   return false;
-
-
- // Пробрасываем оставшиеся входы в выходы
- // Проходим по таблице выходов, и пробрасываем в ячейки с отрицательным
- // индексом соответствующий по модулю вход
- for(int i=0;i<NumTransitInputs;i++)
- {
-  *output[TransitTable[i].Output]=*input[TransitTable[i].Input];
- }
 
  return true;
 }
@@ -435,8 +241,10 @@ void UBAbstract::ADisconnectFromItem(UEPtr<UAItem> na, int i_index, int c_index)
 // Восстановление настроек по умолчанию и сброс процесса счета
 bool UBAbstract::ADefault(void)
 {
+ SetNumInputs(1);
+ SetNumOutputs(1);
  SetInternalOutputsFlag(true);
- SetInternalInputsFlag(true);
+ SetInternalInputsFlag(false);
  return AFDefault();
 }
 
@@ -446,24 +254,8 @@ bool UBAbstract::ADefault(void)
 // в случае успешной сборки
 bool UBAbstract::ABuild(void)
 {
- if(OutputTable)
- {
-  delete []OutputTable;
-  OutputTable=0;
- }
- OutputTable=new int[NumOutputs];
-
- SetDefaultOutputTable();
  Outputs.Resize(NumOutputs);
 
- if(InputTable)
- {
-  delete []InputTable;
-  InputTable=0;
- }
- InputTable=new int[NumInputs];
-
- SetDefaultInputTable();
  Inputs.Resize(NumInputs);
 
  if(InternalInputsFlag)
@@ -487,7 +279,22 @@ bool UBAbstract::ABuild(void)
  InputColorModel.assign(NumInputs,ubmUnknown);
  OutputColorModel.assign(NumOutputs,ubmUnknown);
 
- return AFBuild();
+ if(!AFBuild())
+  return false;
+
+ if(InternalInputsFlag)
+ {
+  for(int i=0;i<Inputs.GetSize();i++)
+   Inputs[i]->SetColorModel(InputColorModel[i],false);
+ }
+
+ if(InternalOutputsFlag)
+ {
+  for(int i=0;i<Outputs.GetSize();i++)
+   if(Outputs[i])
+	Outputs[i]->SetColorModel(OutputColorModel[i],false);
+ }
+ return true;
 }
 
 // Сброс процесса счета без потери настроек
@@ -503,26 +310,26 @@ bool UBAbstract::ACalculate(void)
  {
   for(int i=0;i<NumInputs;i++)
   {
-   const UCItem &citem=GetCItem(InputTable[i]);
-   UBAbstract *input=static_cast<UBAbstract*>(citem.Item);
+   const UCItem &citem=GetCItem(i);
+   UBAbstract* input=static_cast<UBAbstract*>(citem.Item);
    if(!input)
-    return true;
+	return true;
    int index=citem.Index;
 
    if(input->GetNumOutputs()<=index)
-    return true;
+	return true;
 
    UBitmap *bmp=input->GetOutputs()[index];
    if(!bmp)
-    return true;
-   UBMColorModel cmodel=InputColorModel[InputTable[i]];
+	return true;
+   UBMColorModel cmodel=InputColorModel[i];
    if(cmodel == ubmUnknown)
    {
     *Inputs[i]=*bmp;
    }
    else
    {
-    Inputs[i]->SetRes(bmp->GetWidth(),bmp->GetHeight(),InputColorModel[InputTable[i]]);
+    Inputs[i]->SetRes(bmp->GetWidth(),bmp->GetHeight(),InputColorModel[i]);
     bmp->ConvertTo(*Inputs[i]);
    }
   }

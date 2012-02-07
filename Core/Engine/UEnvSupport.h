@@ -108,9 +108,6 @@ virtual ~UPVariable(void);
 // --------------------------
 };
 
-// Операторы ввода вывода идентификаторов
-ULongId& operator << (ULongId& id, const std::string &str);
-std::string& operator >> (const ULongId& id, std::string &str);
 
 
 }
