@@ -122,7 +122,7 @@ UAContainerStorage::~UAContainerStorage(void)
 // --------------------------
 UId UAContainerStorage::AddClass(UEPtr<UAComponent> classtemplate, const UId &classid)
 {
- UAContainerStorage *storage=dynamic_cast<UAContainerStorage*>(classtemplate->GetStorage());
+ UEPtr<UAContainerStorage> storage=dynamic_pointer_cast<UAContainerStorage>(classtemplate->GetStorage());
  UObjectsStorageIterator temp=ObjectsStorage.find(classid);
  if(storage)
   storage->PopObject(dynamic_pointer_cast<UAContainer>(classtemplate));
@@ -203,7 +203,7 @@ UEPtr<UAComponent> UAContainerStorage::TakeObject(const UId &classid, const UEPt
 {
  UClassesStorageIterator tmplI=ClassesStorage.find(classid);
  if(tmplI == ClassesStorage.end())
-  throw EClassIdDontExist(classid);
+  throw EClassIdNotExist(classid);
 
  UClassStorageElement tmpl=tmplI->second;
  UEPtr<UAContainer> classtemplate=dynamic_pointer_cast<UAContainer>(tmpl);
@@ -299,7 +299,7 @@ int UAContainerStorage::CalcNumObjects(const UId &classid) const
  UObjectsStorageCIterator instances=ObjectsStorage.find(classid);
 
  if(instances == ObjectsStorage.end())
-  throw EClassIdDontExist(classid);
+  throw EClassIdNotExist(classid);
 
  return instances->second.size();
 }
@@ -374,7 +374,7 @@ UId UAContainerStorage::PopObject(UEPtr<UAContainer> object)
 {
  UObjectsStorageIterator instances=ObjectsStorage.find(object->GetClass());
  if(instances == ObjectsStorage.end())
-  throw new EClassIdDontExist(object->GetClass());
+  throw new EClassIdNotExist(object->GetClass());
 
  for(list<UInstancesStorageElement>::iterator I=instances->second.begin(),
 						J=instances->second.end(); I!=J; ++I)
@@ -419,10 +419,11 @@ UId UAContainerStorage::PopObject(UObjectsStorageIterator instance_iterator, lis
 }
 // --------------------------
 /* *************************************************************************** */
+/*
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UAContainerStorage::EObjectIdDontExist::EObjectIdDontExist(UId id)
+UAContainerStorage::EObjectIdNotExist::EObjectIdNotExist(UId id)
  : Id(id)
 {
 
@@ -433,12 +434,12 @@ UAContainerStorage::EObjectIdDontExist::EObjectIdDontExist(UId id)
 // Методы формирования лога
 // --------------------------
 // Формирует строку лога об исключении
-std::string UAContainerStorage::EObjectIdDontExist::CreateLogMessage(void) const
+std::string UAContainerStorage::EObjectIdNotExist::CreateLogMessage(void) const
 {
  return Exception::CreateLogMessage()+std::string(" Id=")+sntoa(Id);
 }
 // --------------------------
-
+    */
 }
 
 #endif

@@ -39,7 +39,7 @@ UPVariable::UPVariable(void)
  Id=ForbiddenId;
 }
 
-UPVariable::UPVariable(UId id, UIPointer *prop)
+UPVariable::UPVariable(UId id, UEPtr<UIPointer> prop)
  : Id(id), Pointer(prop)
 {
 
@@ -59,17 +59,8 @@ UPVariable::~UPVariable(void)
 // Конструкторы и деструкторы
 // --------------------------
 UAContainer::UAContainer(void)
+ : PComponents(0), NumComponents(0), LastId(0)
 {
- // Указатель на 0-й элемент вектора компонент
- PComponents=0;
-
- // Количество компонент в векторе компонент
- NumComponents=0;
-
- LastId=0;
-
- ObjectIterator=0;
-
  AddLookupProperty("Id",new UVProperty<UId,UAContainer>(this,&UAContainer::SetId,&UAContainer::GetId));
  AddLookupProperty("Name",new UVProperty<NameT,UAContainer>(this,&UAContainer::SetName,&UAContainer::GetName));
  AddLookupProperty("TimeStep",new UVProperty<UTime,UAContainer>(this,&UAContainer::SetTimeStep,&UAContainer::GetTimeStep));
@@ -84,10 +75,9 @@ UAContainer::~UAContainer(void)
  DelAllComponents();
  UnLinkAllControllers();
 
- if(!BreakOwner())
-  return;// Заглушка! Неустранимая ошибка, требуется исключение
+ BreakOwner();
 
- UAContainerStorage *cstorage=dynamic_cast<UAContainerStorage*>(Storage);
+ UEPtr<UAContainerStorage> cstorage=dynamic_pointer_cast<UAContainerStorage>(Storage);
  if(cstorage)
   {
    cstorage->PopObject(UEPtr<UAContainer>(this));
@@ -111,9 +101,9 @@ UEPtr<UAContainer> UAContainer::GetMainOwner(void) const
 }
 
 // Возвращает хранилище компонент этого объекта
-UAContainerStorage* const UAContainer::GetStorage(void) const
+UEPtr<UAContainerStorage> const UAContainer::GetStorage(void) const
 {
- return dynamic_cast<UAContainerStorage*>(Storage);
+ return dynamic_pointer_cast<UAContainerStorage>(Storage);
 }
 
 // Проверяет, является ли объект owner
@@ -171,12 +161,6 @@ ULongId& UAContainer::GetLongId(UEPtr<UAContainer> mainowner, ULongId &buffer) c
 
  return buffer;
 }
-                 /*
-// Возвращает последний использованный Id компонент
-UId UAContainer::GetLastId(void) const
-{
- return LastId;
-}                  */
 // --------------------------
 
 // --------------------------
@@ -190,58 +174,49 @@ RDK::MVector<double> UAContainer::GetCoord(void) const
 
 bool UAContainer::SetCoord(RDK::MVector<double> value)
 {
- if(Coord == value)
-  return true;
+ if(Coord != value)
+  Coord=value;
 
- Coord=value;
  return true;
 }
 
 // Удаляет владельца объекта
-bool UAContainer::BreakOwner(void)
+void UAContainer::BreakOwner(void)
 {
- if(Owner)
-  return GetOwner()->DelComponent(this,false);
-
- return true;
+ GetOwner()->DelComponent(this,false);
 }
 
 // Устанавливает указатель на главного владельца этим объектом
 // Указатель устанавливается на число уровней дочерних компонент
 // 'levels'. Если levels < 0 то устанавливается компонентам на всех уровнях
-bool UAContainer::SetMainOwner(UEPtr<UAComponent> mainowner)
+void UAContainer::SetMainOwner(UEPtr<UAComponent> mainowner)
 {
- return UAComponent::SetMainOwner(mainowner);
+ UAComponent::SetMainOwner(mainowner);
 }
 
-bool UAContainer::SetMainOwner(UEPtr<UAComponent> mainowner, int levels)
+void UAContainer::SetMainOwner(UEPtr<UAComponent> mainowner, int levels)
 {
  if(MainOwner == mainowner && !levels)
-  return true;
+  return;
 
  MainOwner=mainowner;
 
  if(!levels)
-  return true;
+  return;
 
- for(int i=0;i<NumComponents;i++)
+ UEPtr<UAContainer>* comps=PComponents;
+ for(int i=0;i<NumComponents;i++, comps++)
  {
   // Устанавливаем главного владельца только тем дочерним компонентам
   // у которых он еще не задан
-  if(PComponents[i]->GetMainOwner() == 0)
+  if((*comps)->GetMainOwner() == 0)
   {
    if(levels<0)
-   {
-    if(!PComponents[i]->SetMainOwner(MainOwner,levels))
-     return false;
-   }
+	(*comps)->SetMainOwner(MainOwner,levels);
    else
-    if(!PComponents[i]->SetMainOwner(MainOwner,levels-1))
-     return false;
+	(*comps)->SetMainOwner(MainOwner,levels-1);
   }
  }
-
- return true;
 }
 
 // Проверяет предлагаемый Id 'id' на уникальность в рамках данного, объекта.
@@ -320,10 +295,9 @@ bool UAContainer::SetName(const NameT &name)
   if(GetOwner() != 0)
   {
    if(!GetOwner()->CheckName(name))
-	return false;
+	throw new EComponentNameAlreadyExist(name);
 
-   if(!GetOwner()->ModifyLookupComponent(Name, name))
-    return false;
+   GetOwner()->ModifyLookupComponent(Name, name);
   }
  Name=name;
  return true;
@@ -383,15 +357,13 @@ NameT& UAContainer::GetLongName(const UEPtr<UAContainer> mainowner, NameT &buffe
 // Возвращает имя дочернего компонента по его Id
 const NameT& UAContainer::GetComponentName(const UId &id) const
 {
- std::map<NameT,UId>::const_iterator I=CompsLookupTable.begin(),
-                                 J=CompsLookupTable.end();
- while(I != J)
-  {
-   if(I->second == id)
-    return I->first;
-   ++I;
-  }
- return ForbiddenName;
+ for(std::map<NameT,UId>::const_iterator I=CompsLookupTable.begin(),
+								 J=CompsLookupTable.end(); I!=J; ++I)
+ {
+  if(I->second == id)
+   return I->first;
+ }
+ throw new EComponentIdNotExist(id);
 }
 
 // Возвращает Id дочернего компонента по его имени
@@ -399,22 +371,21 @@ const UId& UAContainer::GetComponentId(const NameT &name) const
 {
  std::map<NameT,UId>::const_iterator I=CompsLookupTable.find(name);
  if(I == CompsLookupTable.end())
-  return ForbiddenId;
- else return I->second;
+  throw new EComponentNameNotExist(name);
+
+ return I->second;
 }
 
 // Возвращает имя локального указателя по его Id
 const NameT& UAContainer::GetPointerName(const UId &id) const
 {
- PointerMapCIteratorT I=PointerLookupTable.begin(),
-                                 J=PointerLookupTable.end();
- while(I != J)
-  {
-   if(I->second.Id == id)
-    return I->first;
-   ++I;
-  }
- return ForbiddenName;
+ for(PointerMapCIteratorT I=PointerLookupTable.begin(),
+								 J=PointerLookupTable.end(); I!=J; ++I)
+ {
+  if(I->second.Id == id)
+   return I->first;
+ }
+ throw new EPointerIdNotExist(id);
 }
 
 // Возвращает Id локального указателя по его имени
@@ -422,8 +393,9 @@ const UId& UAContainer::GetPointerId(const NameT &name) const
 {
  PointerMapCIteratorT I=PointerLookupTable.find(name);
  if(I == PointerLookupTable.end())
-  return ForbiddenId;
- else return I->second.Id;
+  throw new EPointerNameNotExist(name);
+
+ return I->second.Id;
 }
 // --------------------------
 
@@ -449,8 +421,9 @@ bool UAContainer::SetTimeStep(UTime timestep)
   OwnerTimeStep=timestep;
 
  // Обращение ко всем компонентам объекта
- for(int i=0;i<NumComponents;i++)
-  PComponents[i]->OwnerTimeStep=timestep;
+ UEPtr<UAContainer>* comps=PComponents;
+ for(int i=0;i<NumComponents;i++,comps++)
+  (*comps)->OwnerTimeStep=timestep;
 
  return true;
 }
@@ -467,11 +440,12 @@ bool UAContainer::SetActivity(bool activity)
   return true;
 
  Activity=true;
- for(int i=0;i<NumComponents;i++)
-  PComponents[i]->Activity=activity;
+ UEPtr<UAContainer>* comps=PComponents;
+ for(int i=0;i<NumComponents;i++,comps++)
+  (*comps)->Activity=activity;
 
  if(activity)
-  return Reset();
+  return Reset(); // !!! Заглушка. Возможно это не нужно!
 
  Activity=activity;
 
@@ -492,12 +466,11 @@ bool UAContainer::SetId(const UId &id)
  if(Owner != 0)
   {
    if(!GetOwner()->CheckId(id))
-    return false;
+	throw new EComponentIdAlreadyExist(id);
 
    GetOwner()->SetLookupComponent(Name, id);
   }
  Id=id;
-
  return true;
 }
 // --------------------------
@@ -509,10 +482,10 @@ bool UAContainer::SetId(const UId &id)
 // и значений параметров.
 // Если 'stor' == 0, то создание объектов осуществляется
 // в том же хранилище где располагается этот объект
-UEPtr<UAContainer> UAContainer::Alloc(UAContainerStorage *stor, bool copystate)
+UEPtr<UAContainer> UAContainer::Alloc(UEPtr<UAContainerStorage> stor, bool copystate)
 {
  UEPtr<UAContainer> copy;
- UAContainerStorage *storage=(stor!=0)?stor:GetStorage();
+ UEPtr<UAContainerStorage> storage=(stor!=0)?stor:GetStorage();
 
  if(storage)
  {
@@ -529,26 +502,17 @@ UEPtr<UAContainer> UAContainer::Alloc(UAContainerStorage *stor, bool copystate)
 
 // Копирует этот объект в 'target' с сохранением всех компонент
 // и значений параметров
-bool UAContainer::Copy(UEPtr<UAContainer> target, UAContainerStorage *stor, bool copystate) const
+bool UAContainer::Copy(UEPtr<UAContainer> target, UEPtr<UAContainerStorage> stor, bool copystate) const
 {
- bool res=CopyProperties(target);
- if(!res)
-  return false;
+ bool res=true;
 
- if(!target->Build())
-  return false;
+ CopyProperties(target);
+ target->Build();
 
  if(copystate)
- {
-  res=CopyState(target);
-  if(!res)
-   return false;
- }
+  CopyState(target);
 
- res=CopyComponents(target,stor);
- if(!res)
-  return false;
-
+ CopyComponents(target,stor);
  return true;
 }
 
@@ -561,10 +525,7 @@ void UAContainer::Free(void)
 
  if(Storage)
  {
-  if(!BreakOwner())
-   return; // Заглушка, здесь должно быть исключение!!
-//   throw; // Заглушка, здесь должно быть исключение!!
-//  Storage->ReturnObject(this);
+  BreakOwner();
   GetStorage()->ReturnObject(this);
  }
  else
@@ -588,8 +549,9 @@ int UAContainer::GetNumAllComponents(void) const
 {
  int res=NumComponents;
 
- for(int i=0;i<NumComponents;i++)
-  res+=PComponents[i]->GetNumAllComponents();
+ UEPtr<UAContainer>* comps=PComponents;
+ for(int i=0;i<NumComponents;i++,comps++)
+  res+=(*comps)->GetNumAllComponents();
 
  return res;
 }
@@ -610,13 +572,14 @@ bool UAContainer::CheckComponentType(UEPtr<UAContainer> comp) const
 UEPtr<UAContainer> UAContainer::GetComponent(const UId &id) const
 {
  if(id == ForbiddenId)
-  return 0;
+  throw new EComponentIdNotExist(id);
 
- for(int i=0;i<NumComponents;i++)
-  if(id == PComponents[i]->Id)
-   return PComponents[i];
+ UEPtr<UAContainer>* comps=PComponents;
+ for(int i=0;i<NumComponents;i++,comps++)
+  if(id == (*comps)->Id)
+   return *comps;
 
- return 0;
+ throw new EComponentIdNotExist(id);
 }
 
 // Возвращает указатель на дочерний компонент, хранимый в этом
@@ -678,30 +641,34 @@ UEPtr<UAContainer> UAContainer::GetComponentL(const NameT &name) const
 // Метод возвращает 0, если индекс выходит за границы массива
 UEPtr<UAContainer> UAContainer::GetComponentByIndex(int index) const
 {
- if(index >= NumComponents)
-  return 0;
-
- return PComponents[index];
+ return Components[index];
 }
 
 // Добавляет дочерний компонент в этот объект
 // Возвращает его Id или ForbiddenId если добавление неудачно
 // Может быть передан указатель на локальную переменную
-UId UAContainer::AddComponent(UEPtr<UAContainer> comp, UIPointer* pointer)
+void UAContainer::BeforeAddComponent(UEPtr<UAContainer> comp, UEPtr<UIPointer> pointer)
 {
-// NameT namebuffer;
+ ABeforeAddComponent(comp,pointer);
+}
 
- if(!comp)
-  return ForbiddenId;
+void UAContainer::AfterAddComponent(UEPtr<UAContainer> comp, UEPtr<UIPointer> pointer)
+{
+ AAfterAddComponent(comp,pointer);
+}
 
+UId UAContainer::AddComponent(UEPtr<UAContainer> comp, UEPtr<UIPointer> pointer)
+{
  if(comp->GetOwner() == this)
   return comp->Id;
 
  if(comp->GetOwner())
-  return ForbiddenId;
+  throw new EAddComponentAlreadyHaveOwner(comp->Id);
 
- if(!CheckComponentType(comp.operator->()))
-  return ForbiddenId;
+ if(!CheckComponentType(comp))
+  throw new EAddComponentHaveInvalidType(comp->Id);
+
+ BeforeAddComponent(comp,pointer);
 
  NameT namebuffer;
 
@@ -719,12 +686,10 @@ UId UAContainer::AddComponent(UEPtr<UAContainer> comp, UIPointer* pointer)
   }
 
  if(!res)
-  return ForbiddenId;
+  throw EComponentIdAlreadyExist(id);
 
  comp->SetId(id);
-
  comp->SetOwner(this);
-
 
  // Добавляем компонент в таблицу соответствий владельца
  SetLookupComponent(comp->Name, comp->Id);
@@ -737,19 +702,23 @@ UId UAContainer::AddComponent(UEPtr<UAContainer> comp, UIPointer* pointer)
  if(MainOwner)
   comp->SetMainOwner(MainOwner);
 
- if(!AAddComponent(comp,pointer) || !comp->SharesInit())
-  {
-   // Откат
-   // Удаляем компонент из таблицы соответствий владельца
-   DelLookupComponent(comp->Name);
+ try{
+  AAddComponent(comp,pointer);
+  comp->SharesInit();
+  AfterAddComponent(comp,pointer);
+ }
+ catch(Exception *exception)
+ {
+  // Откат
+  // Удаляем компонент из таблицы соответствий владельца
+  DelLookupComponent(comp->Name);
 
-   // Удаление из базы компонент
-   DelComponentTable(comp);
+  // Удаление из базы компонент
+  DelComponentTable(comp);
 
-   comp->Owner=0;
-
-   return ForbiddenId;
-  }
+  comp->Owner=0;
+  throw;
+ }
 
  return comp->Id;
 }
@@ -761,33 +730,11 @@ UId UAContainer::AddComponent(UEPtr<UAContainer> comp, UIPointer* pointer)
 // Если 'canfree' == true - предпринимается попытка вернуть объект в хранилище
 // или удалить его. Иначе объект сохраняется в хранилище в состоянии занят
 // либо повисает, если хранилище не установлено
-bool UAContainer::DelComponent(const UId &id, bool canfree)
+void UAContainer::DelComponent(const UId &id, bool canfree)
 {
  UEPtr<UAContainer> comp=GetComponent(id);
 
- if(!comp)
-  return false;
-
- return DelComponent(comp, canfree);
-}
-
-// Принудительно удаляет все дочерние компоненты
-void UAContainer::DelAllComponents(void)
-{
- while(NumComponents)
-  DelComponent(PComponents[NumComponents-1],true);
-/*
- for(int i=0;i<NumComponents;i++)
- {
-  PComponents[i]->Owner=0;
-  PComponents[i]->Free();
- }
-
- Components.Resize(0);
- PComponents=0;
- NumComponents=0;
-// CompsLookupTable.clear();
-*/
+ DelComponent(comp, canfree);
 }
 
 // Удаляет дочерний компонент из этого объекта.
@@ -797,28 +744,34 @@ void UAContainer::DelAllComponents(void)
 // Если 'canfree' == true - предпринимается попытка вернуть объект в хранилище
 // или удалить его. Иначе объект сохраняется в хранилище в состоянии занят
 // либо повисает, если хранилище не установлено
-bool UAContainer::DelComponent(const NameT &name, bool canfree)
+void UAContainer::DelComponent(const NameT &name, bool canfree)
 {
- return DelComponent(GetComponentId(name),canfree);
+ DelComponent(GetComponentId(name),canfree);
+}
+
+// Принудительно удаляет все дочерние компоненты
+void UAContainer::DelAllComponents(void)
+{
+ while(NumComponents)
+  DelComponent(PComponents[NumComponents-1],true);
 }
 
 // Возвращает список имен и Id компонент, содержащихся непосредственно
 // в этом объекте
 // Память должна быть выделена
-void UAContainer::GetComponentsList(UId *buffer) const
+void UAContainer::GetComponentsList(std::vector<UId> &buffer) const
 {
  UEPtr<UAContainer> *pcomps=PComponents;
- for(int i=0;i<NumComponents;i++,buffer++,pcomps++)
-  *buffer=(*pcomps)->Id;
+ buffer.resize(0);
+ buffer.reserve(NumComponents);
+ for(int i=0;i<NumComponents;i++,pcomps++)
+  buffer.push_back((*pcomps)->Id);
 }
 
 // Копирует все компоненты этого объекта в объект 'comp', если возможно.
-bool UAContainer::CopyComponents(UEPtr<UAContainer> comp, UAContainerStorage* stor) const
+void UAContainer::CopyComponents(UEPtr<UAContainer> comp, UEPtr<UAContainerStorage> stor) const
 {
  UEPtr<UAContainer> bufcomp;
-
- if(!comp)
-  return false;
 
  // Удаляем лишние компоненты из 'comp'
  comp->DelAllComponents();
@@ -832,7 +785,7 @@ bool UAContainer::CopyComponents(UEPtr<UAContainer> comp, UAContainerStorage* st
  for(int i=0;i<NumComponents;i++,pcomponents++)
   {
    bufcomp=(*pcomponents)->Alloc(stor);
-   UIPointer *pointer=0;
+   UEPtr<UIPointer> pointer=0;
    I=FindLookupPointer(*pcomponents);
    if(I != PointerLookupTable.end())
    {
@@ -841,13 +794,10 @@ bool UAContainer::CopyComponents(UEPtr<UAContainer> comp, UAContainerStorage* st
      pointer=J->second.Pointer;
    }
 
-   if(comp->AddComponent(bufcomp,pointer) == ForbiddenId)
-    return false;
-
+   comp->AddComponent(bufcomp,pointer);
    bufcomp->SetId((*pcomponents)->Id);
    comp->SetLookupComponent(bufcomp->GetName(), bufcomp->GetId());
   }
- return true;
  /*
  // Удаляем лишние компоненты из 'comp'
  for(int i=0;i<comp->GetNumComponents();i++)
@@ -855,15 +805,15 @@ bool UAContainer::CopyComponents(UEPtr<UAContainer> comp, UAContainerStorage* st
   bufcomp=comp->GetComponentByIndex(i);
   if(!GetComponent(bufcomp->Id))
    if(!comp->DelComponent(bufcomp,true))
-    return false;
+	return false;
  }
 
  for(int i=0;i<NumComponents;i++)
   {
    bufcomp=comp->GetComponent(PComponents[i]->Id());
    if(bufcomp)
-    if(!comp->DelComponent(bufcomp->Id()))
-     return false;
+	if(!comp->DelComponent(bufcomp->Id()))
+	 return false;
 
    bufcomp=PComponents[i]->Alloc(PComponents[i]->Name(),stor);
    UIPointer *pointer=0;
@@ -996,19 +946,16 @@ bool UAContainer::SetComponentAs(const UId &id, const UId &pointerid)
 {
  UEPtr<UAContainer> cont=GetComponent(id);
 
- if(!cont)
-  return false;
-
- PointerMapIteratorT I=PointerLookupTable.end();;
- PointerMapIteratorT K=PointerLookupTable.end();;
+ PointerMapIteratorT I=PointerLookupTable.end();
+ PointerMapIteratorT K=PointerLookupTable.end();
  PointerMapIteratorT J=PointerLookupTable.begin();
 
  while(J != PointerLookupTable.end())
  {
-  if(J->second.Pointer && J->second.Pointer->Find(cont.operator->())>=0)
+  if(J->second.Pointer && J->second.Pointer->Find(cont)>=0)
   {
    if(J->second.Id == pointerid)
-    return true;
+	return true;
   }
 
   if(J->second.Id == pointerid)
@@ -1019,7 +966,7 @@ bool UAContainer::SetComponentAs(const UId &id, const UId &pointerid)
 
  if(K != PointerLookupTable.end() && K->second.Pointer)
  {
-  K->second.Pointer->Set(cont.operator->());
+  K->second.Pointer->Set(cont);
   return true;
  }
 
@@ -1032,16 +979,13 @@ bool UAContainer::SetComponentAs(const NameT &name,const NameT &pointername)
 {
  UEPtr<UAContainer> cont=GetComponent(name);
 
- if(!cont)
-  return false;
-
  PointerMapIteratorT I=PointerLookupTable.end();;
  PointerMapIteratorT K=PointerLookupTable.end();;
  PointerMapIteratorT J=PointerLookupTable.begin();
 
  while(J != PointerLookupTable.end())
  {
-  if(J->second.Pointer && J->second.Pointer->Find(cont.operator->())>=0)
+  if(J->second.Pointer && J->second.Pointer->Find(cont)>=0)
   {
    if(J->first == pointername)
     return true;
@@ -1055,7 +999,7 @@ bool UAContainer::SetComponentAs(const NameT &name,const NameT &pointername)
 
  if(K != PointerLookupTable.end() && K->second.Pointer)
  {
-  K->second.Pointer->Set(cont.operator->());
+  K->second.Pointer->Set(cont);
   return true;
  }
 
@@ -1068,16 +1012,13 @@ bool UAContainer::ResetComponentAs(const UId &id, const UId &pointerid)
 {
  UEPtr<UAContainer> cont=GetComponent(id);
 
- if(!cont)
-  return false;
-
  PointerMapIteratorT J=PointerLookupTable.begin();
 
  while(J != PointerLookupTable.end())
  {
-  if(J->second.Id == pointerid && J->second.Pointer && J->second.Pointer->Find(cont.operator->())>=0)
+  if(J->second.Id == pointerid && J->second.Pointer && J->second.Pointer->Find(cont)>=0)
   {
-   J->second.Pointer->Del(cont.operator->());
+   J->second.Pointer->Del(cont);
    return true;
   }
 
@@ -1093,16 +1034,13 @@ bool UAContainer::ResetComponentAs(const NameT &name,const NameT &pointername)
 {
  UEPtr<UAContainer> cont=GetComponent(name);
 
- if(!cont)
-  return false;
-
  PointerMapIteratorT J=PointerLookupTable.begin();
 
  while(J != PointerLookupTable.end())
  {
-  if(J->first == pointername && J->second.Pointer && J->second.Pointer->Find(cont.operator->())>=0)
+  if(J->first == pointername && J->second.Pointer && J->second.Pointer->Find(cont)>=0)
   {
-   J->second.Pointer->Del(cont.operator->());
+   J->second.Pointer->Del(cont);
    return true;
   }
 
@@ -1117,16 +1055,13 @@ bool UAContainer::ResetComponentAll(const UId &id)
 {
  UEPtr<UAContainer> cont=GetComponent(id);
 
- if(!cont)
-  return false;
-
  PointerMapIteratorT J=PointerLookupTable.begin();
 
  while(J != PointerLookupTable.end())
  {
-  if(J->second.Pointer && J->second.Pointer->Find(cont.operator->())>=0)
+  if(J->second.Pointer && J->second.Pointer->Find(cont)>=0)
   {
-   J->second.Pointer->Del(cont.operator->());
+   J->second.Pointer->Del(cont);
   }
 
   ++J;
@@ -1140,16 +1075,13 @@ bool UAContainer::ResetComponentAll(const NameT &name)
 {
  UEPtr<UAContainer> cont=GetComponent(name);
 
- if(!cont)
-  return false;
-
  PointerMapIteratorT J=PointerLookupTable.begin();
 
  while(J != PointerLookupTable.end())
  {
-  if(J->second.Pointer && J->second.Pointer->Find(cont.operator->())>=0)
+  if(J->second.Pointer && J->second.Pointer->Find(cont)>=0)
   {
-   J->second.Pointer->Del(cont.operator->());
+   J->second.Pointer->Del(cont);
   }
 
   ++J;
@@ -1182,16 +1114,16 @@ void UAContainer::DelAllComponentsAs(const NameT &pointername, bool canfree)
 // --------------------------
 // Метод инициализации общих переменных. Вызывается автоматически при добавлении
 // объекта владельцу
-bool UAContainer::SharesInit(void)
+void UAContainer::SharesInit(void)
 {
- return ASharesInit();
+ ASharesInit();
 }
 
 // Метод деинициализации общих переменных. Вызывается автоматически при удалении
 // объекта из владельца
-bool UAContainer::SharesUnInit(void)
+void UAContainer::SharesUnInit(void)
 {
- return ASharesUnInit();
+ ASharesUnInit();
 }
 // --------------------------
 
@@ -1203,8 +1135,7 @@ bool UAContainer::Default(void)
 {
  Ready=false;
  for(int i=0;i<NumComponents;i++)
-  if(!PComponents[i]->Default())
-   return false;
+  PComponents[i]->Default();
 
  // Если существует прообраз в хранилище, то берем настройки параметров
  // из прообраза
@@ -1223,7 +1154,7 @@ bool UAContainer::Default(void)
   SetActivity(activity);
  }
 
- return ADefault();//Build();
+ return ADefault();
 }
 
 // Обеспечивает сборку внутренней структуры объекта
@@ -1236,38 +1167,24 @@ bool UAContainer::Build(void)
   return true;
 
  for(int i=0;i<NumComponents;i++)
-  if(!PComponents[i]->Build())
-   return false;
+  PComponents[i]->Build();
 
- if(ABuild())
- {
-  Ready=true;
-  return Reset();
- }
+ ABuild();
+ Ready=true;
+ Reset();
 
- Ready=false;
- return false;
+ return true;
 }
 
 // Сброс процесса счета.
 bool UAContainer::Reset(void)
 {
- if(!Ready)
-  return Build();
+ Build();
 
- bool key=true;
  for(int i=0;i<NumComponents;i++)
-  if(!PComponents[i]->Reset())
-  {
-   key=false;
-   break;
-  }
+  PComponents[i]->Reset();
 
- if(!key)
-  return false;
-
- if(!AReset())
-  return false;
+ AReset();
 
  CalcCounter=0;
  return true;
@@ -1279,28 +1196,20 @@ bool UAContainer::Calculate(void)
  if(!Activity)
   return true;
 
- if(!Ready && !Build())
-  return false;
+ Build();
 
-// bool key=true;
  UEPtr<UAContainer> *comps=PComponents;
  for(int i=0;i<NumComponents;++i,comps++)
-  if(!(*comps)->Calculate())
-  {
-   throw new EComponentCalculate(this,comps->Get());
-//   return false;
-  }
+  (*comps)->Calculate();
 
  if(!Owner)
  {
-  if(!ACalculate())
-   return false;
+  ACalculate();
  }
 
  if(TimeStep == OwnerTimeStep)
  {
-  if(!ACalculate())
-   return false;
+  ACalculate();
  }
  else
  if(TimeStep < OwnerTimeStep)
@@ -1309,27 +1218,24 @@ bool UAContainer::Calculate(void)
    if(CalcCounter <= 0)
     {
 	 CalcCounter=OwnerTimeStep/TimeStep;
-	 if(!ACalculate())
-	  return false;
+	 ACalculate();
     }
   }
  else
  if(TimeStep > OwnerTimeStep)
   {
    for(UTime i=TimeStep/OwnerTimeStep;i>=0;--i)
-    if(!ACalculate())
-     return false;
+	ACalculate();
   }
 
- if(!UpdateMainOwner())
-  return false;
+ UpdateMainOwner();
 
  // Обрабатываем контроллеры
  int numcontrollers=Controllers.size();
 
  if(numcontrollers)
  {
-  UController** controllers=&Controllers[0];
+  UEPtr<UController>* controllers=&Controllers[0];
   for(int i=0;i<numcontrollers;i++,controllers++)
   {
    (*controllers)->Update();
@@ -1339,10 +1245,10 @@ bool UAContainer::Calculate(void)
 }
 
 // Обновляет состояние MainOwner после расчета этого объекта
-bool UAContainer::UpdateMainOwner(void)
+void UAContainer::UpdateMainOwner(void)
 {
  if(!MainOwner)
-  return true;
+  return;
 
  return AUpdateMainOwner();
 }
@@ -1354,20 +1260,18 @@ bool UAContainer::UpdateMainOwner(void)
 // --------------------------
 // Обновляет таблицу соответствий компонент заменяя 'oldname'
 // имя компонента на 'newname'
-bool UAContainer::ModifyLookupComponent(const NameT &oldname,
+void UAContainer::ModifyLookupComponent(const NameT &oldname,
 										const NameT newname)
 {
  UId id;
 
  std::map<NameT,UId>::iterator I=CompsLookupTable.find(oldname);
  if(I == CompsLookupTable.end())
-  return false;
+  throw new EComponentNameNotExist(oldname);
 
  id=I->second;
  CompsLookupTable.erase(I);
  CompsLookupTable[newname]=id;
-
- return true;
 }
 
 // Обновляет таблицу соответствий компонент устанавливая Id 'id'
@@ -1386,7 +1290,7 @@ void UAContainer::DelLookupComponent(const NameT &name)
  std::map<NameT,UId>::iterator I=CompsLookupTable.find(name);
 
  if(I == CompsLookupTable.end())
-  return;
+  throw new EComponentNameNotExist(name);
 
  CompsLookupTable.erase(name);
 }
@@ -1397,70 +1301,65 @@ void UAContainer::DelLookupComponent(const NameT &name)
 // Удаление контроллеров лежит на вызывающем модуле
 // --------------------------
 // Добавляет новый контроллер
-bool UAContainer::AddController(UController *controller, bool forchilds)
+void UAContainer::AddController(UEPtr<UController> controller, bool forchilds)
 {
- if(!controller)
-  return false;
-
  if(CheckController(controller))
-  return true;
+  return;
 
  Controllers.push_back(controller);
  if(forchilds)
-  for(int i=0;i<NumComponents;i++)
-  {
-   PComponents[i]->AddController(controller,forchilds);
-  }
- return true;
+ {
+  UEPtr<UAContainer>* comps=PComponents;
+  for(int i=0;i<NumComponents;i++,comps++)
+   (*comps)->AddController(controller,forchilds);
+ }
 }
 
 // Удаляет контроллер из списка
-bool UAContainer::DelController(UController *controller, bool forchilds)
+void UAContainer::DelController(UEPtr<UController> controller, bool forchilds)
 {
- vector<UController*>::iterator I=find(Controllers.begin(),Controllers.end(),controller);
+ vector<UEPtr<UController> >::iterator I=find(Controllers.begin(),Controllers.end(),controller);
 
  if(I != Controllers.end())
   Controllers.erase(I);
 
  if(forchilds)
-  for(int i=0;i<NumComponents;i++)
-  {
-   PComponents[i]->DelController(controller,forchilds);
-  }
-
- return true;
+ {
+  UEPtr<UAContainer>* comps=PComponents;
+  for(int i=0;i<NumComponents;i++,comps++)
+   (*comps)->DelController(controller,forchilds);
+ }
 }
 
 // Удаляет все контроллеры
-bool UAContainer::DelAllControllers(bool forchilds)
+void UAContainer::DelAllControllers(bool forchilds)
 {
  Controllers.clear();
  if(forchilds)
-  for(int i=0;i<NumComponents;i++)
-  {
-   PComponents[i]->DelAllControllers(forchilds);
-  }
- return true;
+ {
+  UEPtr<UAContainer>* comps=PComponents;
+  for(int i=0;i<NumComponents;i++,comps++)
+   (*comps)->DelAllControllers(forchilds);
+ }
 }
 
 // Инициирует отключение всех контроллеров
-bool UAContainer::UnLinkAllControllers(bool forchilds)
+void UAContainer::UnLinkAllControllers(bool forchilds)
 {
  while(Controllers.begin() != Controllers.end())
   Controllers.front()->UnLink(this);
 
  if(forchilds)
-  for(int i=0;i<NumComponents;i++)
-  {
-   PComponents[i]->UnLinkAllControllers(forchilds);
-  }
-
- return true;
+ {
+  UEPtr<UAContainer>* comps=PComponents;
+  for(int i=0;i<NumComponents;i++,comps++)
+   (*comps)->UnLinkAllControllers(forchilds);
+ }
 }
 
 
 // Проверяет, существует ли контроллер в списке
-bool UAContainer::CheckController(UController *controller) const
+bool UAContainer::CheckController(UEPtr<UController> controller) const
 {
  if(find(Controllers.begin(),Controllers.end(),controller) != Controllers.end())
   return true;
@@ -1474,7 +1373,7 @@ size_t UAContainer::GetNumControllers(void) const
 }
 
 // Возвращает контроллер по индексу
-UController* UAContainer::GetController(int index)
+UEPtr<UController> UAContainer::GetController(int index)
 {
  return Controllers[index];
 }
@@ -1485,41 +1384,34 @@ UController* UAContainer::GetController(int index)
 // --------------------------
 // Добавляет указатель в таблицу соотвествий
 // Должна вызываться в конструкторах классов
-UId UAContainer::AddLookupPointer(const NameT &name, UIPointer *pointer)
+UId UAContainer::AddLookupPointer(const NameT &name, UEPtr<UIPointer> pointer)
 {
- if(!pointer)
-  return ForbiddenId;
-
- PointerMapIteratorT I=PointerLookupTable.begin(),
-                      J=PointerLookupTable.end();
  UPVariable P(1,pointer);
 
- if(PointerLookupTable.find(name) != J)
-  return ForbiddenId;
+ if(PointerLookupTable.find(name) != PointerLookupTable.end())
+  throw EPointerNameAlreadyExist(name);
 
- while(I != J)
-  {
-   if(P.Id <= I->second.Id)
-    P.Id=I->second.Id+1;
-   ++I;
-  }
+ for(PointerMapIteratorT I=PointerLookupTable.begin(),
+					  J=PointerLookupTable.end(); I!=J; ++I)
+ {
+  if(P.Id <= I->second.Id)
+   P.Id=I->second.Id+1;
+ }
 
  PointerLookupTable.insert(make_pair(name,P));
-
  return P.Id;
 }
 
 // Удаляет указатель с ID 'id' из таблицы соотвествий
-bool UAContainer::DelLookupPointer(const NameT &name)
+void UAContainer::DelLookupPointer(const NameT &name)
 {
  PointerMapIteratorT I=PointerLookupTable.find(name);
 
  if(I == PointerLookupTable.end())
-  return false;
+  throw new EPointerNameNotExist(name);
 
  delete I->second.Pointer;
  PointerLookupTable.erase(I);
- return true;
 }
 /*
 // Возвращает полное имя указателя без префикса NMSDK, и суффикса '*'
@@ -1547,17 +1439,14 @@ NameT UAContainer::GetPointerLongName(const UIPointer &pointer) const
 // Осуществляет поиск в таблице указателя, соответствующего заданному источнику
 UAContainer::PointerMapCIteratorT UAContainer::FindLookupPointer(UEPtr<UAContainer> source) const
 {
- PointerMapCIteratorT I=PointerLookupTable.begin(),
-                      J=PointerLookupTable.end();
+ for(PointerMapCIteratorT I=PointerLookupTable.begin(),
+					  J=PointerLookupTable.end(); I!=J; ++I)
+ {
+   if(I->second.Pointer && I->second.Pointer->Find(source)>=0)
+	return I;
+ }
 
- while(I != J)
-  {
-   if(I->second.Pointer && I->second.Pointer->Find(source.operator->())>=0)
-    break;
-   ++I;
-  }
-
- return I;
+ return PointerLookupTable.end();
 }
 // --------------------------
 
@@ -1566,16 +1455,14 @@ UAContainer::PointerMapCIteratorT UAContainer::FindLookupPointer(UEPtr<UAContain
 // --------------------------
 // Метод инициализации общих переменных. Вызывается автоматически при добавлении
 // объекта владельцу
-bool UAContainer::ASharesInit(void)
+void UAContainer::ASharesInit(void)
 {
- return true;
 }
 
 // Метод деинициализации общих переменных. Вызывается автоматически при удалении
 // объекта из владельца
-bool UAContainer::ASharesUnInit(void)
+void UAContainer::ASharesUnInit(void)
 {
- return true;
 }
 // --------------------------
 
@@ -1583,25 +1470,24 @@ bool UAContainer::ASharesUnInit(void)
 // Скрытые методы управления таблицей компонент
 // --------------------------
 // Добавляет компонент 'comp' в таблицу компонент
-void UAContainer::AddComponentTable(UEPtr<UAContainer> comp, UIPointer* pointer)
+void UAContainer::AddComponentTable(UEPtr<UAContainer> comp, UEPtr<UIPointer> pointer)
 {
  Components.push_back(comp);
  PComponents=&Components[0];
  NumComponents=Components.size();
 
  if(pointer)
-  pointer->Set(comp.operator->());
+  pointer->Set(comp);
  else
  {
-  PointerMapCIteratorT I=FindLookupPointer(comp.operator->());
+  PointerMapCIteratorT I=FindLookupPointer(comp);
   if(I != PointerLookupTable.end())
   {
-   I->second.Pointer->Del(comp.operator->());
+   I->second.Pointer->Del(comp);
   }
  }
 }
 
-// Удаляет компонент 'comp' из таблицы компонент
 void UAContainer::DelComponentTable(UEPtr<UAContainer> comp)
 {
  int i;
@@ -1627,10 +1513,10 @@ void UAContainer::DelComponentTable(UEPtr<UAContainer> comp)
  else
   PComponents=0;
 
- PointerMapCIteratorT I=FindLookupPointer(comp.operator->());
+ PointerMapCIteratorT I=FindLookupPointer(comp);
  if(I != PointerLookupTable.end())
  {
-  I->second.Pointer->Del(comp.operator->());
+  I->second.Pointer->Del(comp);
  }
 }
 // --------------------------
@@ -1640,10 +1526,21 @@ void UAContainer::DelComponentTable(UEPtr<UAContainer> comp)
 // --------------------------
 // Удаляет компонент comp
 // Метод предполагает, что компонент принадлежит объекту
-bool UAContainer::DelComponent(UEPtr<UAContainer> comp, bool canfree)
+void UAContainer::BeforeDelComponent(UEPtr<UAContainer> comp, bool canfree)
 {
- if(!SharesUnInit() || !ADelComponent(comp))
-  return false;
+ ABeforeDelComponent(comp,canfree);
+}
+
+void UAContainer::AfterDelComponent(UEPtr<UAContainer> comp, bool canfree)
+{
+ AAfterDelComponent(comp,canfree);
+}
+
+void UAContainer::DelComponent(UEPtr<UAContainer> comp, bool canfree)
+{
+ BeforeDelComponent(comp,canfree);
+ SharesUnInit();
+ ADelComponent(comp);
 
  if(comp->GetMainOwner() == MainOwner)
   comp->SetMainOwner(0);
@@ -1657,12 +1554,13 @@ bool UAContainer::DelComponent(UEPtr<UAContainer> comp, bool canfree)
 
  comp->Owner=0;
 
+ AfterDelComponent(comp,canfree);
+
  if(canfree)
   comp->Free();
 
  if(!NumComponents)
   LastId=0;
- return true;
 }
 
 
@@ -1670,7 +1568,17 @@ bool UAContainer::DelComponent(UEPtr<UAContainer> comp, bool canfree)
 // при добавлении дочернего компонента в этот объект
 // Метод будет вызван только если comp был
 // успешно добавлен в список компонент
-bool UAContainer::AAddComponent(UEPtr<UAContainer> comp, UIPointer* pointer)
+void UAContainer::ABeforeAddComponent(UEPtr<UAContainer> comp, UEPtr<UIPointer> pointer)
+{
+
+}
+
+void UAContainer::AAfterAddComponent(UEPtr<UAContainer> comp, UEPtr<UIPointer> pointer)
+{
+
+}
+
+bool UAContainer::AAddComponent(UEPtr<UAContainer> comp, UEPtr<UIPointer> pointer)
 {
  return true;
 }
@@ -1679,6 +1587,16 @@ bool UAContainer::AAddComponent(UEPtr<UAContainer> comp, UIPointer* pointer)
 // при удалении дочернего компонента из этого объекта
 // Метод будет вызван только если comp
 // существует в списке компонент
+void UAContainer::ABeforeDelComponent(UEPtr<UAContainer> comp, bool canfree)
+{
+
+}
+
+void UAContainer::AAfterDelComponent(UEPtr<UAContainer> comp, bool canfree)
+{
+
+}
+
 bool UAContainer::ADelComponent(UEPtr<UAContainer> comp)
 {
  return true;
@@ -1689,9 +1607,8 @@ bool UAContainer::ADelComponent(UEPtr<UAContainer> comp)
 // Скрытые методы управления счетом
 // --------------------------
 // Обновляет состояние MainOwner после расчета этого объекта
-bool UAContainer::AUpdateMainOwner(void)
+void UAContainer::AUpdateMainOwner(void)
 {
- return true;
 }
 // --------------------------
 

@@ -23,10 +23,10 @@ public:
  virtual std::string GetOwnerName(void) const=0;
 
  // Метод записывает значение свойства в поток
- virtual bool Save(Serialize::USerStorage *storage)=0;
+ virtual bool Save(UEPtr<UVariableData> storage)=0;
 
  // Метод читает значение свойства из потока
- virtual bool Load(Serialize::USerStorage *storage)=0;
+ virtual bool Load(UEPtr<UVariableData> storage)=0;
 };
 
 
@@ -38,7 +38,7 @@ struct UVariable
  UId Id;
 
  // Указатель на свойство
- UIProperty* Property;
+ UEPtr<UIProperty> Property;
 
  // Флаг разрешения удаления данных на которых указывает Property
  bool DelEnable;
@@ -47,7 +47,7 @@ struct UVariable
 // Конструкторы и деструкторы
 // --------------------------
 UVariable(void);
-UVariable(UId id, UIProperty *prop);
+UVariable(UId id, UEPtr<UIProperty> prop);
 UVariable(const UVariable &copy);
 virtual ~UVariable(void);
 // --------------------------
@@ -107,52 +107,52 @@ virtual UContainerDescription* NewDescription(void);
 // Методы доступа к параметрам
 // --------------------------
 // Возвращает значение параметра по Id 'id'
-UVariableData* GetProperty(const UId &id, UVariableData *values) const;
+UEPtr<UVariableData> GetProperty(const UId &id, UEPtr<UVariableData> values) const;
 
 // Возвращает значение параметра по имени 'name'
-UVariableData* GetProperty(const NameT &name, UVariableData *values) const;
+UEPtr<UVariableData> GetProperty(const NameT &name, UEPtr<UVariableData> values) const;
 
 // Устанавливает значение параметра по Id 'id'
-bool SetProperty(const UId &id, UVariableData *values);
+void SetProperty(const UId &id, UEPtr<UVariableData> values);
 
 // Устанавливает значение параметра по имени 'name'
-bool SetProperty(const NameT &name, UVariableData *values);
+void SetProperty(const NameT &name, UEPtr<UVariableData> values);
 
 // Возвращает список Id параметров, содержащихся непосредственно
 // в этом объекте
 const UADataComponent::VariableMapT& GetPropertiesList(void) const;
 
 // Ищет имя свойства по указателю на него
-const NameT& FindPropertyName(const UIProperty *prop) const;
+const NameT& FindPropertyName(UEPtr<const UIProperty> prop) const;
 
 // Копирует все параметры этого объекта в объект 'comp', если возможно.
-virtual bool CopyProperties(UEPtr<UADataComponent> comp) const;
+virtual void CopyProperties(UEPtr<UADataComponent> comp) const;
 // --------------------------
 
 // --------------------------
 // Методы доступа к переменным состояния
 // --------------------------
 // Возвращает значение переменной состояния по Id 'id'
-virtual UVariableData* GetState(const UId &id, UVariableData *values) const;
+virtual UEPtr<UVariableData> GetState(const UId &id, UEPtr<UVariableData> values) const;
 
 // Возвращает значение переменной состояния по имени 'name'
-UVariableData* GetState(const NameT &name, UVariableData *values) const;
+UEPtr<UVariableData> GetState(const NameT &name, UEPtr<UVariableData> values) const;
 
 // Устанавливает значение переменной состояния по Id 'id'
-virtual bool SetState(const UId &id, UVariableData *values);
+virtual void SetState(const UId &id, UEPtr<UVariableData> values);
 
 // Устанавливает значение переменной состояния по имени 'name'
-bool SetState(const NameT &name, UVariableData *values);
+void SetState(const NameT &name, UEPtr<UVariableData> values);
 
 // Возвращает список имен и Id переменных состояния, содержащихся непосредственно
 // в этом объекте
 const UADataComponent::VariableMapT& GetStateList(void) const;
 
 // Ищет имя свойства по указателю на него
-const NameT& FindStateName(const UIProperty *prop) const;
+const NameT& FindStateName(UEPtr<const UIProperty> prop) const;
 
 // Копирует все переменные состояния этого объекта в объект 'comp', если возможно.
-virtual bool CopyState(UEPtr<UADataComponent> comp) const;
+virtual void CopyState(UEPtr<UADataComponent> comp) const;
 // --------------------------
 
 // --------------------------
@@ -162,12 +162,12 @@ public:
 // Добавляет параметр с именем 'name' в таблицу соотвествий
 // параметров и назначает ему корректный индекс
 // Должна вызываться в конструкторах классов
-UId AddLookupProperty(const NameT &name, UIProperty *property, bool delenable=true);
+UId AddLookupProperty(const NameT &name, UEPtr<UIProperty> property, bool delenable=true);
 
 protected:
 // Удаляет параметр с именем 'name' из таблицы соотвествий
 // параметров
-bool DelLookupProperty(const NameT &name);
+void DelLookupProperty(const NameT &name);
 
 // Удаляет всю таблицу соответствий
 void ClearLookupPropertyTable(void);
@@ -184,11 +184,11 @@ public:
 // Добавляет переменную состояния с именем 'name' в таблицу соотвествий
 // параметров и назначает ей корректный индекс
 // Должна вызываться в конструкторах классов
-UId AddLookupState(const NameT &name,UIProperty *property, bool delenable=true);
+UId AddLookupState(const NameT &name, UEPtr<UIProperty> property, bool delenable=true);
 
 protected:
 // Удаляет переменную состояния с именем 'name' из таблицы соотвествий
-bool DelLookupState(const NameT &name);
+void DelLookupState(const NameT &name);
 
 // Удаляет всю таблицу соответствий
 void ClearLookupStateTable(void);
@@ -196,6 +196,56 @@ void ClearLookupStateTable(void);
 // Возвращает полное имя переменной состояния без префикса NMSDK, и суффикса '*'
 //NameT GetStateLongName(const UIProperty &property) const;
 // --------------------------
+
+public: // Исключения
+// Id свойства не найден
+struct EPropertyIdNotExist: public EIdNotExist
+{
+EPropertyIdNotExist(UId id) : EIdNotExist(id) {};
+};
+
+// Id свойства уже существует
+struct EPropertyIdAlreadyExist: public EIdAlreadyExist
+{
+EPropertyIdAlreadyExist(UId id) : EIdAlreadyExist(id) {};
+};
+
+// Имя свойства не найдено
+struct EPropertyNameNotExist: public ENameNotExist
+{
+EPropertyNameNotExist(const std::string &name) : ENameNotExist(name) {};
+};
+
+// Имя свойства уже существует
+struct EPropertyNameAlreadyExist: public ENameAlreadyExist
+{
+EPropertyNameAlreadyExist(const std::string &name) : ENameAlreadyExist(name) {};
+};
+
+// Id переменной состояния не найден
+struct EStateIdNotExist: public EIdNotExist
+{
+EStateIdNotExist(UId id) : EIdNotExist(id) {};
+};
+
+// Id переменной состояния уже существует
+struct EStateIdAlreadyExist: public EIdAlreadyExist
+{
+EStateIdAlreadyExist(UId id) : EIdAlreadyExist(id) {};
+};
+
+// Имя переменной состояния не найдено
+struct EStateNameNotExist: public ENameNotExist
+{
+EStateNameNotExist(const std::string &name) : ENameNotExist(name) {};
+};
+
+// Имя переменной состояния уже существует
+struct EStateNameAlreadyExist: public ENameAlreadyExist
+{
+EStateNameAlreadyExist(const std::string &name) : ENameAlreadyExist(name) {};
+};
+
 };
 
 }

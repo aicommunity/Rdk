@@ -11,7 +11,7 @@ template<typename T>
 class UESharedPtr
 {
 public: // Исключения
-class UFEUsingZeroPtr: public T::IException {};
+class EUsingZeroPtr: public EFatal {};//T::IException {};
 
 //////////////////////////
 protected:
@@ -94,7 +94,7 @@ protected:
 T* PData;
 
 public: // Исключения
-class UFEUsingZeroPtr: public T::IException {};
+class EUsingZeroPtr: public EFatal {};//T::IException {};
 
 public: // Методы
 // --------------------------
@@ -262,7 +262,7 @@ template<typename T>
 T& UEPtr<T>::operator * (void)
 {
  if(!PData)
-  throw UFEUsingZeroPtr();
+  throw new EUsingZeroPtr();
 
  return *PData;
 };
@@ -370,7 +370,7 @@ template<typename T>
 T& UESharedPtr<T>::operator * (void)
 {
  if(!PData)
-  throw UFEUsingZeroPtr();
+  throw new EUsingZeroPtr();
 
  return *PData;
 };
@@ -399,7 +399,7 @@ template<typename T>
 T* UESharedPtr<T>::operator -> (void) const
 {
  if(!PData)
-  throw UFEUsingZeroPtr();
+  throw new EUsingZeroPtr();
 
  return PData;
 };

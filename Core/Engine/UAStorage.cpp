@@ -54,7 +54,7 @@ const UId& UAStorage::GetClassId(const NameT &name) const
 {
  map<NameT,UId>::const_iterator I=ClassesLookupTable.find(name);
  if(I == ClassesLookupTable.end())
-  throw new EClassNameDontExist(name);
+  throw new EClassNameNotExist(name);
  return I->second;
 }
 
@@ -67,7 +67,7 @@ const NameT UAStorage::GetClassName(const UId &id) const
   if(I->second == id)
    return I->first;
  }
- throw new EClassIdDontExist(id);
+ throw new EClassIdNotExist(id);
 }
 // --------------------------
 
@@ -84,7 +84,7 @@ UId UAStorage::AddClass(UEPtr<UAComponent> classtemplate, const UId &classid)
   id=LastClassId+1;
 
  if(ClassesStorage.find(id) != ClassesStorage.end())
-  throw new EClassIdDontExist(id);
+  throw new EClassIdNotExist(id);
 
  if(!classtemplate->Build())
   return ForbiddenId;
@@ -118,7 +118,7 @@ void UAStorage::DelClass(const UId &classid)
  if(I != ClassesStorage.end())
   ClassesStorage.erase(I);
  else
-  throw new EClassIdDontExist(classid);
+  throw new EClassIdNotExist(classid);
 
  UClassStorageElement element=I->second;
  if(element)
@@ -150,7 +150,7 @@ UEPtr<UAComponent> UAStorage::GetClass(const UId &classid) const
  UClassesStorageCIterator I=ClassesStorage.find(classid);
 
  if(I == ClassesStorage.end())
-  throw EClassIdDontExist(classid);
+  throw EClassIdNotExist(classid);
 
  return I->second;
 }
@@ -225,7 +225,7 @@ UEPtr<UAComponent> UAStorage::TakeObject(const UId &classid, const UEPtr<UACompo
  UEPtr<UAComponent> obj;
 
  if(!classtemplate)
-  throw EClassIdDontExist(classid);
+  throw EClassIdNotExist(classid);
 
  obj=classtemplate->New();
 
@@ -253,7 +253,7 @@ const UEPtr<UComponentDescription> UAStorage::GetClassDescription(const UId &cla
  UClassesDescriptionCIterator I=ClassesDescription.find(classid);
 
  if(I == ClassesDescription.end())
-  throw EClassIdDontExist(classid);
+  throw EClassIdNotExist(classid);
 
  return I->second;
 }
@@ -265,7 +265,7 @@ void UAStorage::SetClassDescription(const UId &classid, const UEPtr<UComponentDe
  UClassesStorageIterator I=ClassesStorage.find(classid);
 
  if(I == ClassesStorage.end())
-  throw EClassIdDontExist(classid);
+  throw EClassIdNotExist(classid);
 
  ClassesDescription[classid]=description;
 }
@@ -372,17 +372,17 @@ void UAStorage::DelLookupClass(const NameT &name)
  map<NameT,UId>::iterator I=ClassesLookupTable.find(name);
 
  if(I == ClassesLookupTable.end())
-  throw EClassNameDontExist(name);
+  throw EClassNameNotExist(name);
 
  ClassesLookupTable.erase(I);
 }
 // --------------------------
 /* *************************************************************************** */
-
+              /*
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UAStorage::EClassIdDontExist::EClassIdDontExist(UId id)
+UAStorage::EClassIdNotExist::EClassIdNotExist(UId id)
  : Id(id)
 {
 
@@ -393,18 +393,18 @@ UAStorage::EClassIdDontExist::EClassIdDontExist(UId id)
 // Методы формирования лога
 // --------------------------
 // Формирует строку лога об исключении
-std::string UAStorage::EClassIdDontExist::CreateLogMessage(void) const
+std::string UAStorage::EClassIdNotExist::CreateLogMessage(void) const
 {
  return Exception::CreateLogMessage()+std::string(" Id=")+sntoa(Id);
 }
 // --------------------------
 
 // Попытка работы с классом по имени, отсутствующему в хранилище
-//class UAStorage::EClassNameDontExist: public EError
+//class UAStorage::EClassNameNotExist: public EError
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UAStorage::EClassNameDontExist::EClassNameDontExist(const std::string &name)
+UAStorage::EClassNameNotExist::EClassNameNotExist(const std::string &name)
 : Name(name)
 {
 }
@@ -414,7 +414,7 @@ UAStorage::EClassNameDontExist::EClassNameDontExist(const std::string &name)
 // Методы формирования лога
 // --------------------------
 // Формирует строку лога об исключении
-std::string UAStorage::EClassNameDontExist::CreateLogMessage(void) const
+std::string UAStorage::EClassNameNotExist::CreateLogMessage(void) const
 {
  return Exception::CreateLogMessage()+std::string(" Name=")+Name;
 }
@@ -463,7 +463,7 @@ std::string UAStorage::EClassNameAlreadyExist::CreateLogMessage(void) const
  return Exception::CreateLogMessage()+std::string(" Name=")+Name;
 }
 // --------------------------
-
+       */
 }
 
 

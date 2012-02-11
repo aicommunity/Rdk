@@ -77,7 +77,7 @@ bool UANet::CheckComponentType(UEPtr<UAContainer> comp) const
 // при добавлении дочернего компонента в этот объект
 // Метод будет вызван только если comp был
 // успешно добавлен в список компонент
-bool UANet::AAddComponent(UEPtr<UAContainer> comp, UIPointer* pointer)
+bool UANet::AAddComponent(UEPtr<UAContainer> comp, UEPtr<UIPointer> pointer)
 {
  return true;
 }
@@ -104,7 +104,7 @@ bool UANet::ADelComponent(UEPtr<UAContainer> comp)
 // и значений параметров
 // Если 'stor' == 0, то создание объектов осуществляется
 // в том же хранилище где располагается этот объект
-bool UANet::Copy(UEPtr<UAContainer> target, UAContainerStorage *stor, bool copystate) const
+bool UANet::Copy(UEPtr<UAContainer> target, UEPtr<UAContainerStorage> stor, bool copystate) const
 {
  ULinksList linkslist;
  ULinksList oldlinkslist;

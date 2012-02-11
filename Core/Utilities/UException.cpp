@@ -224,6 +224,48 @@ std::string EStrToNumber::CreateLogMessage(void) const
 }
 // --------------------------
 
+// Исключения, связанные с идентификаторами
+//struct EIdError
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EIdError::EIdError(int id) : Id(id)
+{
+}
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+std::string EIdError::CreateLogMessage(void) const
+{
+ return EError::CreateLogMessage()+string(" Id=")+sntoa(Id);
+}
+// --------------------------
+
+// Исключения, связанные с именами
+//struct ENameError
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+ENameError::ENameError(const std::string &name) : Name(name)
+{
+}
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+std::string ENameError::CreateLogMessage(void) const
+{
+ return EError::CreateLogMessage()+string(" Name=")+Name;
+}
+// --------------------------
+
+
+
 }
 #endif
 

@@ -553,7 +553,7 @@ void UADItem::DisconnectFromIndex(int c_index)
 // ----------------------
 // Копирует этот объект в 'target' с сохранением всех компонент
 // и значений параметров
-bool UADItem::Copy(UEPtr<UAContainer> target, UAContainerStorage *stor, bool copystate) const
+bool UADItem::Copy(UEPtr<UAContainer> target, UEPtr<UAContainerStorage> stor, bool copystate) const
 {
  if(!UAItem::Copy(target,stor,copystate))
   return false;

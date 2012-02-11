@@ -11,11 +11,11 @@ namespace RDK {
 UVariable::UVariable(void)
 {
  Id=ForbiddenId;
- Property=0;
+// Property=0;
  DelEnable=true;
 }
 
-UVariable::UVariable(UId id, UIProperty *prop)
+UVariable::UVariable(UId id, UEPtr<UIProperty> prop)
  : Id(id), Property(prop), DelEnable(true)
 {
 }
@@ -39,15 +39,13 @@ UVariable::~UVariable(void)
 // Возвращает имя параметра по его Id
 const NameT& UADataComponent::GetPropertyName(const UId &id) const
 {
- VariableMapCIteratorT I=PropertiesLookupTable.begin(),
-                         J=PropertiesLookupTable.end();
- while(I != J)
-  {
+ for(VariableMapCIteratorT I=PropertiesLookupTable.begin(),
+						 J=PropertiesLookupTable.end(); I!=J;++I)
+ {
    if(I->second.Id == id)
-    return I->first;
-   ++I;
-  }
- return ForbiddenName;
+	return I->first;
+ }
+ throw new EPropertyIdNotExist(id);
 }
 
 // Возвращает Id параметра по его имени
@@ -55,8 +53,9 @@ const UId& UADataComponent::GetPropertyId(const NameT &name) const
 {
  VariableMapCIteratorT I=PropertiesLookupTable.find(name);
  if(I == PropertiesLookupTable.end())
-  return ForbiddenId;
- else return I->second.Id;
+   throw new EPropertyNameNotExist(name);
+
+ return I->second.Id;
 }
  /*
 // Возвращает полное имя параметра без префикса RDK, и суффикса '*'
@@ -85,15 +84,13 @@ NameT UADataComponent::GetPropertyLongName(const UId &id) const
 // Возвращает имя переменной состояния по его Id
 const NameT& UADataComponent::GetStateName(const UId &id) const
 {
- VariableMapCIteratorT I=StateLookupTable.begin(),
-                                 J=StateLookupTable.end();
- while(I != J)
-  {
-   if(I->second.Id == id)
-    return I->first;
-   ++I;
-  }
- return ForbiddenName;
+ for(VariableMapCIteratorT I=StateLookupTable.begin(),
+								 J=StateLookupTable.end(); I!=J;++I)
+ {
+  if(I->second.Id == id)
+   return I->first;
+ }
+ throw new EStateIdNotExist(id);
 }
 
 // Возвращает Id переменной состояния по его имени
@@ -101,8 +98,9 @@ const UId& UADataComponent::GetStateId(const NameT &name) const
 {
  VariableMapCIteratorT I=StateLookupTable.find(name);
  if(I == StateLookupTable.end())
-  return ForbiddenId;
- else return I->second.Id;
+  throw new EStateNameNotExist(name);
+
+ return I->second.Id;
 }
 		 /*
 // Возвращает полное имя переменной состояния без префикса NMSDK, и суффикса '*'
@@ -154,56 +152,45 @@ UContainerDescription* UADataComponent::NewDescription(void)
 // Методы доступа к параметрам
 // --------------------------
 // Возвращает значение параметра по Id 'id'
-UVariableData* UADataComponent::GetProperty(const UId &id, UVariableData *values) const
+UEPtr<UVariableData> UADataComponent::GetProperty(const UId &id, UEPtr<UVariableData> values) const
 {
- VariableMapCIteratorT I,J;
-
- I=PropertiesLookupTable.begin();
- J=PropertiesLookupTable.end();
- while(I != J)
+ for(VariableMapCIteratorT I=PropertiesLookupTable.begin(),
+							J=PropertiesLookupTable.end(); I!=J;++I)
  {
   if(I->second.Id == id)
   {
    I->second.Property->Save(values);
    return values;
   }
-
-  ++I;
  }
 
  return values;
 }
 
 // Возвращает значение параметра по имени 'name'
-UVariableData* UADataComponent::GetProperty(const NameT &name, UVariableData *values) const
+UEPtr<UVariableData> UADataComponent::GetProperty(const NameT &name, UEPtr<UVariableData> values) const
 {
  return GetProperty(GetPropertyId(name),values);
 }
 
 // Устанавливает значение параметра по Id 'id'
-bool UADataComponent::SetProperty(const UId &id, UVariableData *values)
+void UADataComponent::SetProperty(const UId &id, UEPtr<UVariableData> values)
 {
- VariableMapCIteratorT I,J;
-
- I=PropertiesLookupTable.begin();
- J=PropertiesLookupTable.end();
- while(I != J)
+ for(VariableMapCIteratorT I=PropertiesLookupTable.begin(),
+							 J=PropertiesLookupTable.end(); I!=J; ++I)
  {
   if(I->second.Id == id)
   {
-   return I->second.Property->Load(values);
+   I->second.Property->Load(values);
+   return;
   }
-
-  ++I;
  }
-
- return false;
 }
 
 // Устанавливает значение параметра по имени 'name'
-bool UADataComponent::SetProperty(const NameT &name, UVariableData *values)
+void UADataComponent::SetProperty(const NameT &name, UEPtr<UVariableData> values)
 {
- return SetProperty(GetPropertyId(name),values);
+ SetProperty(GetPropertyId(name),values);
 }
 
 const UADataComponent::VariableMapT& UADataComponent::GetPropertiesList(void) const
@@ -212,37 +199,25 @@ const UADataComponent::VariableMapT& UADataComponent::GetPropertiesList(void) co
 }
 
 // Копирует все параметры этого объекта в объект 'comp', если возможно.
-bool UADataComponent::CopyProperties(UEPtr<UADataComponent> comp) const
+void UADataComponent::CopyProperties(UEPtr<UADataComponent> comp) const
 {
- bool key=true;
-
- if(!comp)
-  return false;
-
-// UEPtr<UADataComponent> ccomp=static_cast<UEPtr<UADataComponent>>(comp);
-
  Serialize::USerStorageBinary databuffer;
-  VariableMapCIteratorT I=PropertiesLookupTable.begin(),
-                                        J=PropertiesLookupTable.end();
-  while(I != J)
-  {
-   databuffer.clear();
-   key &= comp->SetProperty(I->second.Id,GetProperty(I->second.Id,&databuffer));
-   ++I;
-  }
- return key;
+ for(VariableMapCIteratorT I=PropertiesLookupTable.begin(),
+							J=PropertiesLookupTable.end(); I!=J; ++I)
+ {
+  databuffer.clear();
+  comp->SetProperty(I->second.Id,GetProperty(I->second.Id,&databuffer));
+ }
 }
 
 // Ищет имя свойства по указателю на него
-const NameT& UADataComponent::FindPropertyName(const UIProperty *prop) const
+const NameT& UADataComponent::FindPropertyName(UEPtr<const UIProperty> prop) const
 {
-  VariableMapCIteratorT I=PropertiesLookupTable.begin(),
-                        J=PropertiesLookupTable.end();
-  while(I != J)
+  for(VariableMapCIteratorT I=PropertiesLookupTable.begin(),
+						J=PropertiesLookupTable.end(); I!=J; ++I)
   {
    if(I->second.Property == prop)
     return I->first;
-   ++I;
   }
  return ForbiddenName;
 }
@@ -252,56 +227,45 @@ const NameT& UADataComponent::FindPropertyName(const UIProperty *prop) const
 // Методы доступа к переменным состояния
 // --------------------------
 // Возвращает значение переменной состояния по Id 'id'
-UVariableData* UADataComponent::GetState(const UId &id, UVariableData *values) const
+UEPtr<UVariableData> UADataComponent::GetState(const UId &id, UEPtr<UVariableData> values) const
 {
- VariableMapCIteratorT I,J;
-
- I=StateLookupTable.begin();
- J=StateLookupTable.end();
- while(I != J)
+ for(VariableMapCIteratorT I=StateLookupTable.begin(),
+							 J=StateLookupTable.end(); I!=J; ++I)
  {
   if(I->second.Id == id)
   {
    I->second.Property->Save(values);
    return values;
   }
-
-  ++I;
  }
 
  return values;
 }
 
 // Возвращает значение переменной состояния по имени 'name'
-UVariableData* UADataComponent::GetState(const NameT &name, UVariableData *values) const
+UEPtr<UVariableData> UADataComponent::GetState(const NameT &name, UEPtr<UVariableData> values) const
 {
  return GetState(GetStateId(name),values);
 }
 
 // Устанавливает значение переменной состояния по Id 'id'
-bool UADataComponent::SetState(const UId &id, UVariableData *values)
+void UADataComponent::SetState(const UId &id, UEPtr<UVariableData> values)
 {
- VariableMapCIteratorT I,J;
-
- I=StateLookupTable.begin();
- J=StateLookupTable.end();
- while(I != J)
+ for(VariableMapCIteratorT I=StateLookupTable.begin(),
+							 J=StateLookupTable.end(); I!=J; ++I)
  {
   if(I->second.Id == id)
   {
-   return I->second.Property->Load(values);
+   I->second.Property->Load(values);
+   return;
   }
-
-  ++I;
  }
-
- return false;
 }
 
 // Устанавливает значение переменной состояния по имени 'name'
-bool UADataComponent::SetState(const NameT &name, UVariableData *values)
+void UADataComponent::SetState(const NameT &name, UEPtr<UVariableData> values)
 {
- return SetState(GetStateId(name),values);
+ SetState(GetStateId(name),values);
 }
 
 // Возвращает список имен и Id переменных состояния, содержащихся непосредственно
@@ -312,37 +276,30 @@ const UADataComponent::VariableMapT& UADataComponent::GetStateList(void) const
 }
 
 // Ищет имя свойства по указателю на него
-const NameT& UADataComponent::FindStateName(const UIProperty *prop) const
+const NameT& UADataComponent::FindStateName(UEPtr<const UIProperty> prop) const
 {
-  VariableMapCIteratorT I=StateLookupTable.begin(),
-                        J=StateLookupTable.end();
-  while(I != J)
-  {
-   if(I->second.Property == prop)
-    return I->first;
-   ++I;
-  }
+ if(!prop)
+  return ForbiddenName;
+
+ for(VariableMapCIteratorT I=StateLookupTable.begin(),
+						J=StateLookupTable.end(); I!=J; ++I)
+ {
+  if(I->second.Property == prop)
+   return I->first;
+ }
  return ForbiddenName;
 }
 
 // Копирует все переменные состояния этого объекта в объект 'comp', если возможно.
-bool UADataComponent::CopyState(UEPtr<UADataComponent> comp) const
+void UADataComponent::CopyState(UEPtr<UADataComponent> comp) const
 {
- VariableMapCIteratorT I=StateLookupTable.begin(),
-                       J=StateLookupTable.end();
- bool key=true;
-
- if(!comp)
-  return false;
-
  Serialize::USerStorageBinary serstorage;
- while(I != J)
-  {
-   if(!comp->SetState(I->second.Id,GetState(I->second.Id,&serstorage)))
-    key=false;
-   ++I;
-  }
- return key;
+ for(VariableMapCIteratorT I=StateLookupTable.begin(),
+					   J=StateLookupTable.end(); I!=J; ++I)
+ {
+  comp->SetState(I->second.Id,GetState(I->second.Id,&serstorage));
+  ++I;
+ }
 }
 // --------------------------
 
@@ -352,59 +309,48 @@ bool UADataComponent::CopyState(UEPtr<UADataComponent> comp) const
 // Добавляет параметр с именем 'name' в таблицу соотвествий
 // параметров и назначает ему корректный индекс
 // Должна вызываться в конструкторах классов
-UId UADataComponent::AddLookupProperty(const NameT &name, UIProperty *property, bool delenable)
+UId UADataComponent::AddLookupProperty(const NameT &name, UEPtr<UIProperty> property, bool delenable)
 {
- if(!property)
-  return ForbiddenId;
+ if(PropertiesLookupTable.find(name) != PropertiesLookupTable.end())
+  throw new EPropertyNameAlreadyExist(name);
 
- VariableMapIteratorT I=PropertiesLookupTable.begin(),
-					  J=PropertiesLookupTable.end();
  UVariable P(1,property);
  P.DelEnable=delenable;
 
- if(PropertiesLookupTable.find(name) != J)
-  return ForbiddenId;
-
- while(I != J)
-  {
-   if(P.Id <= I->second.Id)
-	P.Id=I->second.Id+1;
-   ++I;
-  }
+ for(VariableMapIteratorT I=PropertiesLookupTable.begin(),
+					  J=PropertiesLookupTable.end(); I!=J; ++I)
+ {
+  if(P.Id <= I->second.Id)
+   P.Id=I->second.Id+1;
+ }
 
  PropertiesLookupTable.insert(make_pair(name,P));
-// PropertiesLookupTable[name]=P;
-
  return P.Id;
 }
 
 // Удаляет параметр с именем 'name' из таблицы соотвествий
 // параметров
-bool UADataComponent::DelLookupProperty(const NameT &name)
+void UADataComponent::DelLookupProperty(const NameT &name)
 {
  VariableMapIteratorT I=PropertiesLookupTable.find(name);
 
  if(I == PropertiesLookupTable.end())
-  return false;
+  throw new EPropertyNameNotExist(name);
 
  if(I->second.DelEnable)
   delete I->second.Property;
  PropertiesLookupTable.erase(I);
- return true;
 }
 
 // Удаляет всю таблицу соответствий
 void UADataComponent::ClearLookupPropertyTable(void)
 {
-  VariableMapIteratorT I=PropertiesLookupTable.begin(),
-					  J=PropertiesLookupTable.end();
-  while(I != J)
-  {
-   if(I->second.Property && I->second.DelEnable)
-	delete I->second.Property;
-
-   ++I;
-  }
+ for(VariableMapIteratorT I=PropertiesLookupTable.begin(),
+					  J=PropertiesLookupTable.end(); I!=J; ++I)
+ {
+  if(I->second.Property && I->second.DelEnable)
+   delete I->second.Property;
+ }
  PropertiesLookupTable.clear();
 }
 						 /*
@@ -435,57 +381,47 @@ NameT UADataComponent::GetPropertyLongName(const UIProperty &property) const
 // Добавляет переменную состояния с именем 'name' в таблицу соотвествий
 // параметров и назначает ей корректный индекс
 // Должна вызываться в конструкторах классов
-UId UADataComponent::AddLookupState(const NameT &name,UIProperty *property, bool delenable)
+UId UADataComponent::AddLookupState(const NameT &name, UEPtr<UIProperty> property, bool delenable)
 {
- if(!property)
-  return ForbiddenId;
-
- VariableMapIteratorT I=StateLookupTable.begin(),
-					  J=StateLookupTable.end();
  UVariable P(1,property);
  P.DelEnable=delenable;
 
- if(StateLookupTable.find(name) != J)
-  return ForbiddenId;
+ if(StateLookupTable.find(name) != StateLookupTable.end())
+  throw new EStateNameAlreadyExist(name);
 
- while(I != J)
-  {
-   if(P.Id <= I->second.Id)
-    P.Id=I->second.Id+1;
-   ++I;
-  }
+ for(VariableMapIteratorT I=StateLookupTable.begin(),
+					  J=StateLookupTable.end(); I!=J; ++I)
+ {
+  if(P.Id <= I->second.Id)
+   P.Id=I->second.Id+1;
+ }
 
  StateLookupTable.insert(make_pair(name,P));
-
  return P.Id;
 }
 
 // Удаляет переменную состояния с именем 'name' из таблицы соотвествий
-bool UADataComponent::DelLookupState(const NameT &name)
+void UADataComponent::DelLookupState(const NameT &name)
 {
  VariableMapIteratorT I=StateLookupTable.find(name);
 
  if(I == StateLookupTable.end())
-  return false;
+  throw new EStateNameNotExist(name);
 
  if(I->second.DelEnable)
   delete I->second.Property;
  StateLookupTable.erase(I);
- return true;
 }
 
 // Удаляет всю таблицу соответствий
 void UADataComponent::ClearLookupStateTable(void)
 {
-  VariableMapIteratorT I=StateLookupTable.begin(),
-                      J=StateLookupTable.end();
-  while(I != J)
-  {
-   if(I->second.Property && I->second.DelEnable)
-    delete I->second.Property;
-
-   ++I;
-  }
+ for(VariableMapIteratorT I=StateLookupTable.begin(),
+					  J=StateLookupTable.end(); I!=J; ++I)
+ {
+  if(I->second.Property && I->second.DelEnable)
+   delete I->second.Property;
+ }
  StateLookupTable.clear();
 }
 

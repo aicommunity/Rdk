@@ -910,8 +910,7 @@ int UEngine::Model_DelComponent(char* stringid, int id)
   if(!destcont)
    return -4;
 
-  if(!destcont->DelComponent(id))
-   return -5;
+  destcont->DelComponent(id);
  }
  catch (Exception * exception)
  {
@@ -952,7 +951,11 @@ int UEngine::Model_GetComponentsList(const char* stringid, int *buffer)
   if(!destcont)
    return -4;
 
-  destcont->GetComponentsList(buffer);
+  std::vector<int> tempbuffer;
+
+  destcont->GetComponentsList(tempbuffer);
+  if(tempbuffer.size())
+   memcpy(buffer,&tempbuffer[0],tempbuffer.size()*sizeof(int));
  }
  catch (Exception * exception)
  {

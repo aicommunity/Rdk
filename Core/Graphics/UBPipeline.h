@@ -89,7 +89,7 @@ protected:
 // Метод будет вызван только если comp был
 // успешно добавлен в список компонент
 // Может быть передан указатель на локальную переменную
-virtual bool AAddComponent(UEPtr<UAContainer> comp, UIPointer* pointer=0);
+virtual bool AAddComponent(UEPtr<UAContainer> comp, UEPtr<UIPointer> pointer=0);
 
 // Выполняет предварительные пользовательские действия
 // при удалении дочернего компонента из этого объекта

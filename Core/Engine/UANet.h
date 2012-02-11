@@ -41,7 +41,7 @@ ULinksList& GetLinks(ULinksList &linkslist, UEPtr<UAContainer> netlevel) const;
 // и значений параметров
 // Если 'stor' == 0, то создание объектов осуществляется
 // в том же хранилище где располагается этот объект
-virtual bool Copy(UEPtr<UAContainer> target, UAContainerStorage *stor=0, bool copystate=false) const;
+virtual bool Copy(UEPtr<UAContainer> target, UEPtr<UAContainerStorage> stor=0, bool copystate=false) const;
 
 // Осуществляет освобождение этого объекта в его хранилище
 // или вызов деструктора, если Storage == 0
@@ -66,7 +66,7 @@ protected:
 // при добавлении дочернего компонента в этот объект
 // Метод будет вызван только если comp был
 // успешно добавлен в список компонент
-virtual bool AAddComponent(UEPtr<UAContainer> comp, UIPointer* pointer=0);
+virtual bool AAddComponent(UEPtr<UAContainer> comp, UEPtr<UIPointer> pointer=0);
 
 // Выполняет предварительные пользовательские действия
 // при удалении дочернего компонента из этого объекта

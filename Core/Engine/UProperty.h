@@ -198,16 +198,16 @@ virtual std::string GetOwnerName(void) const
 };
 
 // Метод записывает значение свойства в поток
-virtual bool Save(Serialize::USerStorage *storage)
+virtual bool Save(UEPtr<Serialize::USerStorage>  storage)
 {
- Serialize::USerStorageBinary * binary=dynamic_cast<Serialize::USerStorageBinary *>(storage);
+ UEPtr<Serialize::USerStorageBinary> binary=dynamic_pointer_cast<Serialize::USerStorageBinary>(storage);
  if(binary)
  {
   *binary<<(*this)();
   return true;
  }
 
- Serialize::USerStorageXML * xml=dynamic_cast<Serialize::USerStorageXML *>(storage);
+ UEPtr<Serialize::USerStorageXML> xml=dynamic_pointer_cast<Serialize::USerStorageXML>(storage);
  if(xml)
  {
   xml->AddNode(GetName());
@@ -220,11 +220,11 @@ virtual bool Save(Serialize::USerStorage *storage)
 };
 
 // Метод читает значение свойства из потока
-virtual bool Load(Serialize::USerStorage *storage)
+virtual bool Load(UEPtr<Serialize::USerStorage>  storage)
 {
  T temp;
 
- Serialize::USerStorageBinary * binary=dynamic_cast<Serialize::USerStorageBinary *>(storage);
+ UEPtr<Serialize::USerStorageBinary> binary=dynamic_pointer_cast<Serialize::USerStorageBinary>(storage);
  if(binary)
  {
   Serialize::operator >> (*binary,temp);
@@ -232,7 +232,7 @@ virtual bool Load(Serialize::USerStorage *storage)
   return true;
  }
 
- Serialize::USerStorageXML * xml=dynamic_cast<Serialize::USerStorageXML *>(storage);
+ UEPtr<Serialize::USerStorageXML> xml=dynamic_pointer_cast<Serialize::USerStorageXML>(storage);
  if(xml)
  {
   if(!xml->SelectNode(GetName()))
@@ -319,19 +319,19 @@ T& operator * (void)
 // Методы сериализации
 // -----------------------------
 // Метод записывает значение свойства в поток
-virtual bool Save(Serialize::USerStorage *storage)
+virtual bool Save(UEPtr<Serialize::USerStorage>  storage)
 {
 /* Serialize::operator << (*storage,(*this)());
  return true;
 */
- Serialize::USerStorageBinary * binary=dynamic_cast<Serialize::USerStorageBinary *>(storage);
+ UEPtr<Serialize::USerStorageBinary>   binary=dynamic_cast<UEPtr<Serialize::USerStorageBinary>  >(storage);
  if(binary)
  {
   *binary<<(*this)();
   return true;
  }
 
- Serialize::USerStorageXML * xml=dynamic_cast<Serialize::USerStorageXML *>(storage);
+ UEPtr<Serialize::USerStorageXML> xml=dynamic_cast<UEPtr<Serialize::USerStorageXML>>(storage);
  if(xml)
  {
   xml->AddNode(this->GetName());
@@ -346,7 +346,7 @@ virtual bool Save(Serialize::USerStorage *storage)
 };
 
 // Метод читает значение свойства из потока
-virtual bool Load(Serialize::USerStorage *storage)
+virtual bool Load(UEPtr<Serialize::USerStorage>  storage)
 {
 /* T temp;
  Serialize::operator >> (*storage,temp);
@@ -356,7 +356,7 @@ virtual bool Load(Serialize::USerStorage *storage)
  //Serialize::operator >> (*storage,temp);
 // if(!storage || !storage->Load(temp))
 //  return false;
- Serialize::USerStorageBinary * binary=dynamic_cast<Serialize::USerStorageBinary *>(storage);
+ UEPtr<Serialize::USerStorageBinary>   binary=dynamic_cast<UEPtr<Serialize::USerStorageBinary>  >(storage);
  if(binary)
  {
   Serialize::operator >> (*binary,temp);
@@ -364,7 +364,7 @@ virtual bool Load(Serialize::USerStorage *storage)
   return true;
  }
 
- Serialize::USerStorageXML * xml=dynamic_cast<Serialize::USerStorageXML *>(storage);
+ UEPtr<Serialize::USerStorageXML> xml=dynamic_cast<UEPtr<Serialize::USerStorageXML>>(storage);
  if(xml)
  {
   if(!xml->SelectNode(this->GetName()))
@@ -537,19 +537,19 @@ TV& operator [] (int i)
 // -----------------------------
 public:
 // Метод записывает значение свойства в поток
-virtual bool Save(Serialize::USerStorage *storage)
+virtual bool Save(UEPtr<Serialize::USerStorage> storage)
 {
 /* Serialize::operator << (*storage,(*this)());
  return true;
  */
- Serialize::USerStorageBinary * binary=dynamic_cast<Serialize::USerStorageBinary *>(storage);
+ UEPtr<Serialize::USerStorageBinary>   binary=dynamic_cast<UEPtr<Serialize::USerStorageBinary>  >(storage);
  if(binary)
  {
   *binary<<(*this)();
   return true;
  }
 
- Serialize::USerStorageXML * xml=dynamic_cast<Serialize::USerStorageXML *>(storage);
+ UEPtr<Serialize::USerStorageXML> xml=dynamic_cast<UEPtr<Serialize::USerStorageXML>>(storage);
  if(xml)
  {
   xml->AddNode(this->GetName());
@@ -564,7 +564,7 @@ virtual bool Save(Serialize::USerStorage *storage)
 };
 
 // Метод читает значение свойства из потока
-virtual bool Load(Serialize::USerStorage *storage)
+virtual bool Load(UEPtr<Serialize::USerStorage> storage)
 {
 /*
  TC temp;
@@ -577,7 +577,7 @@ virtual bool Load(Serialize::USerStorage *storage)
  //Serialize::operator >> (*storage,temp);
 // if(!storage || !storage->Load(temp))
 //  return false;
- Serialize::USerStorageBinary * binary=dynamic_cast<Serialize::USerStorageBinary *>(storage);
+ UEPtr<Serialize::USerStorageBinary> binary=dynamic_pointer_cast<Serialize::USerStorageBinary>(storage);
  if(binary)
  {
   Serialize::operator >> (*binary,temp);
@@ -585,7 +585,7 @@ virtual bool Load(Serialize::USerStorage *storage)
   return true;
  }
 
- Serialize::USerStorageXML * xml=dynamic_cast<Serialize::USerStorageXML *>(storage);
+ UEPtr<Serialize::USerStorageXML> xml=dynamic_cast<UEPtr<Serialize::USerStorageXML>>(storage);
  if(xml)
  {
   if(!xml->SelectNode(this->GetName()))

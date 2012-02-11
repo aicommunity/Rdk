@@ -41,7 +41,7 @@ UEPtr<UAComponent> Owner;
 UEPtr<UAComponent> MainOwner;
 
 // Указатель на хранилище компонент этого объекта
-UAStorage *Storage;
+UEPtr<UAStorage> Storage;
 
 protected: // Данные
 // Идентификатор класса
@@ -67,11 +67,11 @@ virtual bool SetOwner(UEPtr<UAComponent> owner);
 
 // Возвращает указатель на главного владельца этим объектом
 UEPtr<UAComponent> const GetMainOwner(void) const;
-virtual bool SetMainOwner(UEPtr<UAComponent> mainowner);
+virtual void SetMainOwner(UEPtr<UAComponent> mainowner);
 
 // Возвращает хранилище компонент этого объекта
-UAStorage* const GetStorage(void) const;
-virtual bool SetStorage(UAStorage* const storage);
+UEPtr<UAStorage> const GetStorage(void) const;
+virtual bool SetStorage(UEPtr<UAStorage> storage);
 // --------------------------
 
 

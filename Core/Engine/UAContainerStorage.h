@@ -170,15 +170,21 @@ class IException: public Exception {};
 
 public:
 // Попытка работы с классом по идентификатору, отсутствующему в хранилище
-class EObjectIdDontExist;
-
-// Попытка выполнения разрушающих действий к классом, объекты которого присутствуют в хранилище
-class EObjectStorageNotEmpty;
-// --------------------------
+struct EObjectIdNotExist: public EIdNotExist
+{
+EObjectIdNotExist(UId id) : EIdNotExist(id) {};
 };
 
+// Попытка выполнения разрушающих действий к классом, объекты которого присутствуют в хранилище
+struct EObjectStorageNotEmpty: public EIdError
+{
+EObjectStorageNotEmpty(UId id) : EIdError(id) {};
+};
+// --------------------------
+};
+     /*
 // Попытка работы с классом по идентификатору, отсутствующему в хранилище
-class UAContainerStorage::EObjectIdDontExist: public EError
+class UAContainerStorage::EObjectIdNotExist: public EError
 {
 public: // Данные
 // Ошибочный идентификатор
@@ -188,7 +194,7 @@ public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-EObjectIdDontExist(UId id);
+EObjectIdNotExist(UId id);
 // --------------------------
 
 // --------------------------
@@ -197,19 +203,19 @@ EObjectIdDontExist(UId id);
 // Формирует строку лога об исключении
 virtual std::string CreateLogMessage(void) const;
 // --------------------------
-};
-
+};         */
+				  /*
 // Попытка выполнения разрушающих действий к классом, объекты которого присутствуют в хранилище
-class UAContainerStorage::EObjectStorageNotEmpty: public UAStorage::EClassIdDontExist
+class UAContainerStorage::EObjectStorageNotEmpty: public UAStorage::EClassIdNotExist
 {
 public:
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-EObjectStorageNotEmpty(UId id) : UAStorage::EClassIdDontExist(id) {};
+EObjectStorageNotEmpty(UId id) : UAStorage::EClassIdNotExist(id) {};
 // --------------------------
 };
-
+              */
 
 }
 

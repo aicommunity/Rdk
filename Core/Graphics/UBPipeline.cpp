@@ -270,7 +270,7 @@ bool UBPipeline::PLACalculate(UBitmap **input, UBitmap **output, int num_inputs,
 // Метод будет вызван только если comp был
 // успешно добавлен в список компонент
 // Может быть передан указатель на локальную переменную
-bool UBPipeline::AAddComponent(UEPtr<UAContainer> comp, UIPointer* pointer)
+bool UBPipeline::AAddComponent(UEPtr<UAContainer> comp, UEPtr<UIPointer> pointer)
 {
  CalcNumIOs();
  return true;

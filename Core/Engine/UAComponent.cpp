@@ -24,11 +24,11 @@ namespace RDK {
 // --------------------------
 UAComponent::UAComponent(void)
 {
- Owner=0;
+// Owner=0;
 
- MainOwner=0;
+// MainOwner=0;
 
- Storage=0;
+// Storage=0;
 
  Class=ForbiddenId;
 }
@@ -63,22 +63,19 @@ UEPtr<UAComponent> const UAComponent::GetMainOwner(void) const
  return MainOwner;
 }
 
-bool UAComponent::SetMainOwner(UEPtr<UAComponent> mainowner)
+void UAComponent::SetMainOwner(UEPtr<UAComponent> mainowner)
 {
- if(mainowner == MainOwner)
-  return true;
-
- MainOwner=mainowner;
- return true;
+ if(mainowner != MainOwner)
+  MainOwner=mainowner;
 }
 
 // Возвращает хранилище компонент этого объекта
-UAStorage* const UAComponent::GetStorage(void) const
+UEPtr<UAStorage> const UAComponent::GetStorage(void) const
 {
  return Storage;
 }
 
-bool UAComponent::SetStorage(UAStorage* const storage)
+bool UAComponent::SetStorage(UEPtr<UAStorage> storage)
 {
  if(Storage == storage)
   return true;

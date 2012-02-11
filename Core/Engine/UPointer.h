@@ -46,30 +46,29 @@ UEPointer(OwnerT * const owner, const string &name)
 { Source=0; reinterpret_cast<UAContainer* const>(Owner)->AddLookupPointer(name,this); };
 // --------------------------
 
-UAContainer* const Get(void) const
+UEPtr<UAContainer const> Get(void) const
 { return Source; };
 
-virtual void Del(UAContainer* source)
+virtual void Del(UEPtr<UAContainer> source)
 {
  Source=0;
 }
 
 // Проверяет, существует ли такой указатель в этом классе
 // Возвращает 0 если да, и <0 если нет
-virtual int Find(const UAContainer * cont) const
+virtual int Find(UEPtr<const UAContainer> cont) const
 { return (cont == Source)?0:-1; };
 
-virtual void Set(UAContainer* source)
+virtual void Set(UEPtr<UAContainer> source)
 {
- Source=static_cast<T*>(source);
-// RDK::UEPointer<T,OwnerT>::operator = (Source);
+ Source=static_pointer_cast<T>(source);
 };
 
 // --------------------------
 // Операторы
 // --------------------------
 // Оператор присваивания
-UEPointer<T,OwnerT>& operator = (UAContainer* pdata)
+UEPointer<T,OwnerT>& operator = (UEPtr<UAContainer> pdata)
 {
  UIPointer::operator = (pdata);
  return *this;
@@ -112,13 +111,13 @@ virtual ~UCPointer(void)
 };
 // --------------------------
 
-UAContainer* const Get(void) const
+UEPtr<UAContainer> const Get(void) const
 { return *Sources; };
 
-UAContainer* const Get(size_t index) const
+UEPtr<UAContainer> const Get(size_t index) const
 { return Sources[index]; };
 
-virtual void Set(UAContainer* source)
+virtual void Set(UEPtr<UAContainer> source)
 {
  if(Find(source) >=0)
   return;
@@ -127,11 +126,11 @@ virtual void Set(UAContainer* source)
  memcpy(sources,Sources,sizeof(T*)*Size);
  delete []Sources;
  Sources=sources;
- Sources[Size]=static_cast<T*>(source);
+ Sources[Size]=static_pointer_cast<T>(source);
  ++Size;
 }
 
-virtual void Del(UAContainer* source)
+virtual void Del(UEPtr<UAContainer> source)
 {
  int index=Find(source);
 
@@ -148,7 +147,7 @@ virtual void Del(UAContainer* source)
 
 // Проверяет, существует ли такой указатель в этом классе
 // Возвращает 0 если да, и <0 если нет
-virtual int Find(const UAContainer * cont) const
+virtual int Find(UEPtr<const UAContainer> cont) const
 {
  T** sources=Sources;
  for(size_t i=0;i<Size;i++,sources++)
@@ -162,7 +161,7 @@ virtual int Find(const UAContainer * cont) const
 // Операторы
 // --------------------------
 // Оператор присваивания
-UEPointer<T,OwnerT>& operator = (UAContainer* pdata)
+UEPointer<T,OwnerT>& operator = (UEPtr<UAContainer> pdata)
 {
  UIPointer::operator = (pdata);
  return *this;

@@ -76,10 +76,8 @@ virtual std::string CreateLogMessage(void) const;
 
 
 /* Фатальные ошибки (обращение по 0 указателям и т.п.) */
-class EFatal: public Exception
+struct EFatal: public Exception
 {
-
-public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
@@ -91,9 +89,8 @@ virtual ~EFatal(void);
 };
 
 /* Ошибки, корректируемые пользователем */
-class EError: public Exception
+struct EError: public Exception
 {
-public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
@@ -105,9 +102,8 @@ virtual ~EError(void);
 };
 
 /* Предупреждения (например об неэффективном использовании ресурсов) */
-class EWarning: public Exception
+struct EWarning: public Exception
 {
-public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
@@ -119,9 +115,8 @@ virtual ~EWarning(void);
 };
 
 /* Информационные сообщения, выдача которых инициируется пользователем */
-class EInfo: public Exception
+struct EInfo: public Exception
 {
-public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
@@ -132,12 +127,10 @@ virtual ~EInfo(void);
 };
 
 /* Ошибка преобразования строки в число */
-class EStrToNumber: public EError
+struct EStrToNumber: public EError
 {
-public: // Данные
-std::string Str;
+std::string Str; // Строка
 
-public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
@@ -152,7 +145,70 @@ virtual std::string CreateLogMessage(void) const;
 // --------------------------
 };
 
+// Исключения, связанные с идентификаторами
+struct EIdError: public EError
+{
+// Идентификатор, вызвавший исключение
+int Id;
 
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EIdError(int id);
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+virtual std::string CreateLogMessage(void) const;
+// --------------------------
+};
+
+// Исключения, связанные с именами
+struct ENameError: public EError
+{
+// Идентификатор, вызвавший исключение
+std::string Name;
+
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+ENameError(const std::string &name);
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+virtual std::string CreateLogMessage(void) const;
+// --------------------------
+};
+
+
+// Id не найден
+struct EIdNotExist: public EIdError
+{
+EIdNotExist(int id) : EIdError(id) {};
+};
+
+// Имя не найдено
+struct ENameNotExist: public ENameError
+{
+ENameNotExist(const std::string &name) : ENameError(name) {};
+};
+
+// Id уже существует
+struct EIdAlreadyExist: public EIdError
+{
+EIdAlreadyExist(int id) : EIdError(id) {};
+};
+
+// Имя уже существует
+struct ENameAlreadyExist: public ENameError
+{
+ENameAlreadyExist(const std::string &name) : ENameError(name) {};
+};
 
 }
 

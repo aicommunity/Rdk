@@ -6,6 +6,108 @@
 namespace RDK {
 
 template<typename T,class MainOwnerT>
+class UVShare
+{
+protected: // Данные
+// Указатель на расшаренные данные
+T* Pointer;
+
+// Локальная копия данных если указатель не доступен
+T& RData;
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+UVShare(T &rdata)
+: Pointer(0), RData(rdata)
+{
+}
+
+virtual ~UVShare(void)
+{
+ Pointer=0;
+}
+// --------------------------
+
+// --------------------------
+// Методы управления данными
+// --------------------------
+const T& Get(void) const
+{
+ return (Pointer)?*Pointer:RData;
+}
+
+void Set(const T& data)
+{
+ if(Pointer)
+  *Pointer=data;
+ else
+  RData=data;
+}
+
+const T& GetLocal(void) const
+{
+ return RData;
+}
+
+void SetLocal(const T& data)
+{
+ RData=data;
+}
+
+const T& GetShared(void) const
+{
+ if(Pointer)
+  return *Pointer;
+
+ return RData;
+}
+
+void SetShared(const T& data)
+{
+ if(Pointer)
+  *Pointer=data;
+ else
+  RData=data;
+}
+
+const T* GetPointer(void) const
+{
+ return Pointer;
+}
+
+void SetPointer(UAComponent *owner, T* pointer)
+{
+ MainOwnerT *mainowner=dynamic_cast<MainOwnerT*>(owner);
+
+ if(mainowner)
+ {
+  Pointer=pointer;
+  if(Pointer)
+   *Pointer=RData;
+ }
+ else
+  Pointer=0;
+}
+// --------------------------
+
+// --------------------------
+// Операторы
+// --------------------------
+UVShare<T,MainOwnerT>& operator = (const UVShare<T,MainOwnerT> &copy)
+{
+ Pointer=copy.Pointer;
+ RData=copy.RData;
+
+ return *this;
+}
+// --------------------------
+
+};
+
+
+template<typename T,class MainOwnerT>
 class UShare
 {
 protected: // Данные

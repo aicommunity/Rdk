@@ -184,21 +184,39 @@ public:
 class IException: public Exception {};
 
 // Попытка работы с классом по идентификатору classid отсутствующим в хранилище
-class EClassIdDontExist;
-
-// Попытка работы с классом по имени, отсутствующему в хранилище
-class EClassNameDontExist;
-
-// Класс с заданным именем уже существует
-class EClassNameAlreadyExist;
-
-// Некорректное имя класса
-class EInvalidClassName;
-// --------------------------
+struct EClassIdNotExist: public EIdNotExist
+{
+EClassIdNotExist(UId id) : EIdNotExist(id) {};
 };
 
+// Класс с заданным именем уже существует
+struct EClassIdAlreadyExist: public EIdAlreadyExist
+{
+EClassIdAlreadyExist(UId id) : EIdAlreadyExist(id) {};
+};
+
+// Попытка работы с классом по имени, отсутствующему в хранилище
+struct EClassNameNotExist: public ENameNotExist
+{
+EClassNameNotExist(const std::string &name) : ENameNotExist(name) {};
+};
+
+// Класс с заданным именем уже существует
+struct EClassNameAlreadyExist: public ENameAlreadyExist
+{
+EClassNameAlreadyExist(const std::string &name) : ENameAlreadyExist(name) {};
+};
+
+// Некорректное имя класса
+struct EInvalidClassName: public ENameError
+{
+EInvalidClassName(const std::string &name) : ENameError(name) {};
+};
+// --------------------------
+};
+	 /*
 // Попытка работы с классом по идентификатору classid отсутствующим в хранилище
-class UAStorage::EClassIdDontExist: public EError
+class UAStorage::EClassIdNotExist: public EError
 {
 public: // Данные
 // Ошибочный идентификатор
@@ -208,7 +226,7 @@ public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-EClassIdDontExist(UId id);
+EClassIdNotExist(UId id);
 // --------------------------
 
 // --------------------------
@@ -220,7 +238,7 @@ virtual std::string CreateLogMessage(void) const;
 };
 
 // Попытка работы с классом по имени, отсутствующему в хранилище
-class UAStorage::EClassNameDontExist: public EError
+class UAStorage::EClassNameNotExist: public EError
 {
 public: // Данные
 // Ошибочный идентификатор
@@ -230,7 +248,7 @@ public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-EClassNameDontExist(const std::string &name);
+EClassNameNotExist(const std::string &name);
 // --------------------------
 
 // --------------------------
@@ -285,7 +303,7 @@ virtual std::string CreateLogMessage(void) const;
 // --------------------------
 };
 
-
+                  */
 }
 
 

@@ -27,20 +27,20 @@ class UIPointer
 protected: // Данные
 
 public:
-virtual UAContainer* const Get(void) const=0;
+virtual UEPtr<UAContainer> const Get(void) const=0;
 
-virtual void Set(UAContainer* source)=0;
+virtual void Set(UEPtr<UAContainer> source)=0;
 
-virtual void Del(UAContainer* source)=0;
+virtual void Del(UEPtr<UAContainer> source)=0;
 
 // Проверяет, существует ли такой указатель в этом классе
 // Возвращает 0 если да, и <0 если нет
-virtual int Find(const UAContainer * cont) const=0;
+virtual int Find(UEPtr<const UAContainer> cont) const=0;
 
 // -----------------
 // Операторы
 // -----------------
-UIPointer& operator = (UAContainer *source)
+UIPointer& operator = (UEPtr<UAContainer> source)
 {
  Set(source);
  return *this;
@@ -56,13 +56,13 @@ struct UPVariable
  UId Id;
 
  // Указатель на свойство
- UIPointer* Pointer;
+ UEPtr<UIPointer> Pointer;
 
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
 UPVariable(void);
-UPVariable(UId id, UIPointer *prop);
+UPVariable(UId id, UEPtr<UIPointer> prop);
 virtual ~UPVariable(void);
 // --------------------------
 };
@@ -100,10 +100,7 @@ private: // Системные свойства
 UAContainerVector Components;
 
 // Таблица контроллеров интерфейса
-std::vector<UController*> Controllers;
-
-// Таблица соответствий <компонента в таблице Components, локальный указатель>
-//std::map<UAContainer*,UAContainer**> ComponentPointers;
+std::vector<UEPtr<UController> > Controllers;
 
 protected: // Основные свойства
 
@@ -146,7 +143,7 @@ UEPtr<UAContainer>* PComponents;
 int NumComponents;
 
 // Указатель на этот объект в хранилище
-UInstancesStorageElement* ObjectIterator;
+UEPtr<UInstancesStorageElement> ObjectIterator;
 
 // Последний использованный Id компонент
 UId LastId;
@@ -169,7 +166,7 @@ UEPtr<UAContainer> GetOwner(void) const;
 UEPtr<UAContainer> GetMainOwner(void) const;
 
 // Возвращает хранилище компонент этого объекта
-UAContainerStorage* const GetStorage(void) const;
+UEPtr<UAContainerStorage> const GetStorage(void) const;
 
 // Проверяет, является ли объект owner
 // владельцем этого объекта на каком-либо уровне иерархии
@@ -190,12 +187,12 @@ ULongId& GetLongId(UEPtr<UAContainer> mainowner, ULongId &buffer=ULongIdemp) con
 // Методы управления свойствами
 // --------------------------
 // Удаляет владельца объекта
-bool BreakOwner(void);
+void BreakOwner(void);
 
 // Указатель устанавливается на число уровней дочерних компонент
 // 'levels'. Если levels < 0 то устанавливается компонентам на всех уровнях
-bool SetMainOwner(UEPtr<UAComponent> mainowner);
-bool SetMainOwner(UEPtr<UAComponent> mainowner, int levels);
+void SetMainOwner(UEPtr<UAComponent> mainowner);
+void SetMainOwner(UEPtr<UAComponent> mainowner, int levels);
 
 // Проверяет предлагаемый Id 'id' на уникальность в рамках данного, объекта.
 bool CheckId(const UId &id);
@@ -277,13 +274,13 @@ virtual UAContainer* New(void)=0;
 // и значений параметров.
 // Если 'stor' == 0, то создание объектов осуществляется
 // в том же хранилище где располагается этот объект
-virtual UEPtr<UAContainer> Alloc(UAContainerStorage *stor=0, bool copystate=false);
+virtual UEPtr<UAContainer> Alloc(UEPtr<UAContainerStorage> stor=0, bool copystate=false);
 
 // Копирует этот объект в 'target' с сохранением всех компонент
 // и значений параметров
 // Если 'stor' == 0, то создание объектов осуществляется
 // в том же хранилище где располагается этот объект
-virtual bool Copy(UEPtr<UAContainer> target, UAContainerStorage *stor=0, bool copystate=false) const;
+virtual bool Copy(UEPtr<UAContainer> target, UEPtr<UAContainerStorage> stor=0, bool copystate=false) const;
 
 // Осуществляет освобождение этого объекта в его хранилище
 // или вызов деструктора, если Storage == 0
@@ -333,7 +330,9 @@ UEPtr<UAContainer> GetComponentByIndex(int index) const;
 // Добавляет дочерний компонент в этот объект
 // Возвращает его Id или ForbiddenId если добавление неудачно
 // Может быть передан указатель на локальную переменную
-virtual UId AddComponent(UEPtr<UAContainer> comp, UIPointer* pointer=0);
+virtual void BeforeAddComponent(UEPtr<UAContainer> comp, UEPtr<UIPointer> pointer=0);
+virtual void AfterAddComponent(UEPtr<UAContainer> comp, UEPtr<UIPointer> pointer=0);
+virtual UId AddComponent(UEPtr<UAContainer> comp, UEPtr<UIPointer> pointer=0);
 
 // Удаляет дочерний компонент из этого объекта.
 // Удаляемый компонент должен содержаться именно в этом объекте.
@@ -342,7 +341,7 @@ virtual UId AddComponent(UEPtr<UAContainer> comp, UIPointer* pointer=0);
 // Если 'canfree' == true - предпринимается попытка вернуть объект в хранилище
 // или удалить его. Иначе объект сохраняется в хранилище в состоянии занят
 // либо повисает, если хранилище не установлено
-virtual bool DelComponent(const UId &id, bool canfree=true);
+virtual void DelComponent(const UId &id, bool canfree=true);
 
 // Удаляет дочерний компонент из этого объекта.
 // Удаляемый компонент должен содержаться именно в этом объекте.
@@ -351,7 +350,7 @@ virtual bool DelComponent(const UId &id, bool canfree=true);
 // Если 'canfree' == true - предпринимается попытка вернуть объект в хранилище
 // или удалить его. Иначе объект сохраняется в хранилище в состоянии занят
 // либо повисает, если хранилище не установлено
-bool DelComponent(const NameT &name, bool canfree);
+void DelComponent(const NameT &name, bool canfree);
 
 // Принудительно удаляет все дочерние компоненты
 void DelAllComponents(void);
@@ -359,11 +358,11 @@ void DelAllComponents(void);
 // Возвращает список имен и Id компонент, содержащихся непосредственно
 // в этом объекте
 // Память должна быть выделена
-void GetComponentsList(UId *buffer) const;
+void GetComponentsList(vector<UId> &buffer) const;
 
 // Копирует все компоненты этого объекта в объект 'comp', если возможно
 // Если хранилище stor != 0 то используется оно
-virtual bool CopyComponents(UEPtr<UAContainer> comp, UAContainerStorage* stor=0) const;
+virtual void CopyComponents(UEPtr<UAContainer> comp, UEPtr<UAContainerStorage> stor=0) const;
 // --------------------------
 
 
@@ -436,11 +435,11 @@ void DelAllComponentsAs(const NameT &pointername, bool canfree=true);
 // --------------------------
 // Метод инициализации общих переменных. Вызывается автоматически при добавлении
 // объекта владельцу
-virtual bool SharesInit(void);
+virtual void SharesInit(void);
 
 // Метод деинициализации общих переменных. Вызывается автоматически при удалении
 // объекта из владельца
-virtual bool SharesUnInit(void);
+virtual void SharesUnInit(void);
 // --------------------------
 
 // --------------------------
@@ -462,7 +461,7 @@ virtual bool Reset(void);
 virtual bool Calculate(void);
 
 // Обновляет состояние MainOwner после расчета этого объекта
-virtual bool UpdateMainOwner(void);
+virtual void UpdateMainOwner(void);
 // --------------------------
 
 // --------------------------
@@ -471,25 +470,25 @@ virtual bool UpdateMainOwner(void);
 // --------------------------
 protected:
 // Добавляет новый контроллер
-bool AddController(UController *controller, bool forchilds=false);
+void AddController(UEPtr<UController> controller, bool forchilds=false);
 
 // Удаляет контроллер из списка
-bool DelController(UController *controller, bool forchilds=false);
+void DelController(UEPtr<UController> controller, bool forchilds=false);
 
 // Удаляет все контроллеры
-bool DelAllControllers(bool forchilds=false);
+void DelAllControllers(bool forchilds=false);
 
 // Инициирует отключение всех контроллеров
-bool UnLinkAllControllers(bool forchilds=false);
+void UnLinkAllControllers(bool forchilds=false);
 
 // Проверяет, существует ли контроллер в списке
-bool CheckController(UController *controller) const;
+bool CheckController(UEPtr<UController> controller) const;
 
 // Возвращает число контроллеров
 size_t GetNumControllers(void) const;
 
 // Возвращает контроллер по индексу
-UController* GetController(int index);
+UEPtr<UController> GetController(int index);
 // --------------------------
 
 // --------------------------
@@ -499,14 +498,11 @@ public:
 // Добавляет указатель с именем 'name' в таблицу соотвествий
 // параметров и назначает ей корректный индекс
 // Должна вызываться в конструкторах классов
-UId AddLookupPointer(const NameT &name, UIPointer *pointer);
+UId AddLookupPointer(const NameT &name, UEPtr<UIPointer> pointer);
 
 protected:
 // Удаляет указатель с ID 'id' из таблицы соотвествий
-bool DelLookupPointer(const NameT &name);
-
-// Возвращает полное имя указателя без префикса RDK, и суффикса '*'
-//NameT GetPointerLongName(const UIPointer &pointer) const;
+void DelLookupPointer(const NameT &name);
 
 // Осуществляет поиск в таблице указателя, соответствующего заданному источнику
 PointerMapCIteratorT FindLookupPointer(UEPtr<UAContainer> source) const;
@@ -516,7 +512,7 @@ PointerMapCIteratorT FindLookupPointer(UEPtr<UAContainer> source) const;
 // Скрытые методы управления таблицей компонент
 // --------------------------
 // Добавляет компонент 'comp' в таблицу компонент
-void AddComponentTable(UEPtr<UAContainer> comp, UIPointer* pointer=0);
+void AddComponentTable(UEPtr<UAContainer> comp, UEPtr<UIPointer> pointer=0);
 
 // Удаляет компонент 'comp' из таблицы компонент
 void DelComponentTable(UEPtr<UAContainer> comp);
@@ -528,13 +524,12 @@ void DelComponentTable(UEPtr<UAContainer> comp);
 protected:
 // Метод инициализации общих переменных. Вызывается автоматически при добавлении
 // объекта владельцу
-virtual bool ASharesInit(void);
+virtual void ASharesInit(void);
 
 // Метод деинициализации общих переменных. Вызывается автоматически при удалении
 // объекта из владельца
-virtual bool ASharesUnInit(void);
+virtual void ASharesUnInit(void);
 // --------------------------
-
 
 protected:
 // --------------------------
@@ -542,7 +537,7 @@ protected:
 // --------------------------
 // Обновляет таблицу соответствий компонент заменяя 'oldname'
 // имя компонента на 'newname'
-bool ModifyLookupComponent(const NameT &oldname, const NameT newname);
+void ModifyLookupComponent(const NameT &oldname, const NameT newname);
 
 // Обновляет таблицу соответствий компонент устанавливая Id 'id'
 // для компонента с именем 'name'
@@ -559,19 +554,25 @@ void DelLookupComponent(const NameT &name);
 protected:
 // Удаляет компонент comp
 // Метод предполагает, что компонент принадлежит объекту
-bool DelComponent(UEPtr<UAContainer> comp, bool canfree);
+virtual void BeforeDelComponent(UEPtr<UAContainer> comp, bool canfree=true);
+virtual void AfterDelComponent(UEPtr<UAContainer> comp, bool canfree=true);
+void DelComponent(UEPtr<UAContainer> comp, bool canfree);
 
 // Выполняет завершающие пользовательские действия
 // при добавлении дочернего компонента в этот объект
 // Метод будет вызван только если comp был
 // успешно добавлен в список компонент
 // Может быть передан указатель на локальную переменную
-virtual bool AAddComponent(UEPtr<UAContainer> comp, UIPointer* pointer=0);
+virtual void ABeforeAddComponent(UEPtr<UAContainer> comp, UEPtr<UIPointer> pointer=0);
+virtual void AAfterAddComponent(UEPtr<UAContainer> comp, UEPtr<UIPointer> pointer=0);
+virtual bool AAddComponent(UEPtr<UAContainer> comp, UEPtr<UIPointer> pointer=0);
 
 // Выполняет предварительные пользовательские действия
 // при удалении дочернего компонента из этого объекта
 // Метод будет вызван только если comp
 // существует в списке компонент
+virtual void ABeforeDelComponent(UEPtr<UAContainer> comp, bool canfree);
+virtual void AAfterDelComponent(UEPtr<UAContainer> comp, bool canfree);
 virtual bool ADelComponent(UEPtr<UAContainer> comp);
 // --------------------------
 
@@ -580,7 +581,7 @@ virtual bool ADelComponent(UEPtr<UAContainer> comp);
 // --------------------------
 protected:
 // Обновляет состояние MainOwner после расчета этого объекта
-virtual bool AUpdateMainOwner(void);
+virtual void AUpdateMainOwner(void);
 // --------------------------
 
 public: // Классы описания исключений
@@ -625,6 +626,69 @@ virtual std::string CreateLogMessage(void) const;
 // --------------------------
 };
 
+// Id компонента не найден
+struct EComponentIdNotExist: public EIdNotExist
+{
+EComponentIdNotExist(UId id) : EIdNotExist(id) {};
+};
+
+// Id компонента уже существует
+struct EComponentIdAlreadyExist: public EIdAlreadyExist
+{
+EComponentIdAlreadyExist(UId id) : EIdAlreadyExist(id) {};
+};
+
+// Имя компонента не найдено
+struct EComponentNameNotExist: public ENameNotExist
+{
+EComponentNameNotExist(const std::string &name) : ENameNotExist(name) {};
+};
+
+// Имя компонента уже существует
+struct EComponentNameAlreadyExist: public ENameAlreadyExist
+{
+EComponentNameAlreadyExist(const std::string &name) : ENameAlreadyExist(name) {};
+};
+
+
+// Id указателя не найден
+struct EPointerIdNotExist: public EIdNotExist
+{
+EPointerIdNotExist(UId id) : EIdNotExist(id) {};
+};
+
+// Id указателя уже существует
+struct EPointerIdAlreadyExist: public EIdAlreadyExist
+{
+EPointerIdAlreadyExist(UId id) : EIdAlreadyExist(id) {};
+};
+
+// Имя указателя не найдено
+struct EPointerNameNotExist: public ENameNotExist
+{
+EPointerNameNotExist(const std::string &name) : ENameNotExist(name) {};
+};
+
+// Имя указателя уже существует
+struct EPointerNameAlreadyExist: public ENameAlreadyExist
+{
+EPointerNameAlreadyExist(const std::string &name) : ENameAlreadyExist(name) {};
+};
+
+// Ошибки добавления/удаления компонент
+// Id указателя уже существует
+struct EAddComponentAlreadyHaveOwner: public EIdError
+{
+EAddComponentAlreadyHaveOwner(UId id) : EIdError(id) {};
+};
+
+// Недопустимый тип дочернего компонента
+struct EAddComponentHaveInvalidType: public EIdError
+{
+EAddComponentHaveInvalidType(UId id) : EIdError(id) {};
+};
+
+
 // Исключение - ошибка
 class EComponentCalculate: public EError, public EIContainer
 {
@@ -653,10 +717,7 @@ virtual std::string CreateLogMessage(void) const;
 };
 /* **************************** */
 
-
 };
-
-
 
 }
 
@@ -664,3 +725,4 @@ virtual std::string CreateLogMessage(void) const;
 #include "UShare.h"
 
 #endif
+
