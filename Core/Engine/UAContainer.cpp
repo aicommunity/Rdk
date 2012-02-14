@@ -183,7 +183,9 @@ bool UAContainer::SetCoord(RDK::MVector<double> value)
 // Удаляет владельца объекта
 void UAContainer::BreakOwner(void)
 {
- GetOwner()->DelComponent(this,false);
+ UEPtr<UAContainer> owner=GetOwner();
+ if(owner)
+  owner->DelComponent(this,false);
 }
 
 // Устанавливает указатель на главного владельца этим объектом
@@ -1291,7 +1293,6 @@ void UAContainer::DelLookupComponent(const NameT &name)
 
  if(I == CompsLookupTable.end())
   throw new EComponentNameNotExist(name);
-
  CompsLookupTable.erase(name);
 }
 // --------------------------
@@ -1492,20 +1493,23 @@ void UAContainer::DelComponentTable(UEPtr<UAContainer> comp)
 {
  int i;
 
- if(PComponents[NumComponents-1]==comp)
-  Components.resize(NumComponents-1);
- else
+ if(NumComponents)
+ {
+  if(PComponents[NumComponents-1]==comp)
+   Components.resize(NumComponents-1);
+  else
   {
    for(i=0;i<NumComponents;i++)
-    if(PComponents[i] == comp)
-     break;
+	if(PComponents[i] == comp)
+	 break;
 
    if(i>=NumComponents)
-    return;
+	return;
 
    memmove(PComponents+i,PComponents+i+1,(NumComponents-i-1)*sizeof(UEPtr<UAContainer>));
    Components.resize(NumComponents-1);
   }
+ }
 
  NumComponents=Components.size();
  if(NumComponents>0)

@@ -255,6 +255,9 @@ bool UEPtr<T>::operator ! (void) const
 template<typename T>
 T* UEPtr<T>::operator -> (void) const
 {
+ if(!PData)
+  throw new EUsingZeroPtr();
+
  return PData;
 };
 
