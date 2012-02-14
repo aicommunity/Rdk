@@ -23,10 +23,10 @@ public:
  virtual std::string GetOwnerName(void) const=0;
 
  // Метод записывает значение свойства в поток
- virtual bool Save(UEPtr<UVariableData> storage)=0;
+ virtual bool Save(UEPtr<UVariableData> storage, bool simplemode=false)=0;
 
  // Метод читает значение свойства из потока
- virtual bool Load(UEPtr<UVariableData> storage)=0;
+ virtual bool Load(UEPtr<UVariableData> storage, bool simplemode=false)=0;
 };
 
 
@@ -108,15 +108,19 @@ virtual UContainerDescription* NewDescription(void);
 // --------------------------
 // Возвращает значение параметра по Id 'id'
 UEPtr<UVariableData> GetProperty(const UId &id, UEPtr<UVariableData> values) const;
+std::string& GetPropertyValue(const UId &id, std::string &values) const;
 
 // Возвращает значение параметра по имени 'name'
 UEPtr<UVariableData> GetProperty(const NameT &name, UEPtr<UVariableData> values) const;
+std::string& GetPropertyValue(const NameT &name, std::string &values) const;
 
 // Устанавливает значение параметра по Id 'id'
 void SetProperty(const UId &id, UEPtr<UVariableData> values);
+void SetPropertyValue(const UId &id, const std::string &values);
 
 // Устанавливает значение параметра по имени 'name'
 void SetProperty(const NameT &name, UEPtr<UVariableData> values);
+void SetPropertyValue(const NameT &name, const std::string &values);
 
 // Возвращает список Id параметров, содержащихся непосредственно
 // в этом объекте
@@ -134,15 +138,19 @@ virtual void CopyProperties(UEPtr<UADataComponent> comp) const;
 // --------------------------
 // Возвращает значение переменной состояния по Id 'id'
 virtual UEPtr<UVariableData> GetState(const UId &id, UEPtr<UVariableData> values) const;
+virtual std::string& GetStateValue(const UId &id, std::string &values) const;
 
 // Возвращает значение переменной состояния по имени 'name'
 UEPtr<UVariableData> GetState(const NameT &name, UEPtr<UVariableData> values) const;
+std::string& GetStateValue(const NameT &name, std::string &values) const;
 
 // Устанавливает значение переменной состояния по Id 'id'
 virtual void SetState(const UId &id, UEPtr<UVariableData> values);
+virtual void SetStateValue(const UId &id, const std::string &values);
 
 // Устанавливает значение переменной состояния по имени 'name'
 void SetState(const NameT &name, UEPtr<UVariableData> values);
+void SetStateValue(const NameT &name, const std::string &values);
 
 // Возвращает список имен и Id переменных состояния, содержащихся непосредственно
 // в этом объекте

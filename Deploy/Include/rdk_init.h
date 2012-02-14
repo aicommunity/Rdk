@@ -224,8 +224,14 @@ RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentParametersEx(const char *st
 // Возвращает выборочные параметры компонента по идентификатору
 RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentSelectedParameters(const char *stringid);
 
-// устанавливает параметры компонента по идентификатору
+// Возвращает значение параметра компонента по идентификатору компонента и имени параметра
+RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentParameterValue(const char *stringid, const char *paramname);
+
+// Устанавливает параметры компонента по идентификатору
 RDK_LIB_TYPE bool RDK_CALL Model_SetComponentParameters(const char *stringid, const char* buffer);
+
+// Устанавливает значение параметра компонента по идентификатору компонента и имени параметра
+RDK_LIB_TYPE void RDK_CALL Model_SetComponentParameterValue(const char *stringid, const char *paramname, const char *buffer);
 
 // Связывает выбранные контейнеры друг с другом
 RDK_LIB_TYPE int RDK_CALL Model_CreateLink(char* stringid1, int output_number, char* stringid2, int input_number);
@@ -263,8 +269,14 @@ RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentState(const char *stringid)
 // Возвращает выборочные данные состояния компонента по идентификатору
 RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentSelectedState(const char *stringid);
 
+// Возвращает значение параметра перменной состояния по идентификатору компонента и имени переменной
+RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentStateValue(const char *stringid, const char *statename);
+
 // Устанавливает состояние компонента по идентификатору
 RDK_LIB_TYPE bool RDK_CALL Model_SetComponentState(const char *stringid, const char* buffer);
+
+// Устанавливает значение переменной состояния компонента по идентификатору компонента и имени переменной
+RDK_LIB_TYPE void RDK_CALL Model_SetComponentStateValue(const char *stringid, const char *statename, const char *buffer);
 
 // Возвращает число входов у компонента
 RDK_LIB_TYPE int RDK_CALL Model_GetComponentNumInputs(const char *stringid);

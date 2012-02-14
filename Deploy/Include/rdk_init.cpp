@@ -414,11 +414,22 @@ const char * RDK_CALL Model_GetComponentParametersEx(const char *stringid)
  return PEngine->Model_GetComponentParametersEx(stringid);
 }
 
+// Возвращает значение параметра компонента по идентификатору компонента и имени параметра
+const char * RDK_CALL Model_GetComponentParameterValue(const char *stringid, const char *paramname)
+{
+ return PEngine->Model_GetComponentParameterValue(stringid,paramname);
+}
 
-// устанавливает параметры компонента по идентификатору
+// Устанавливает параметры компонента по идентификатору
 bool RDK_CALL Model_SetComponentParameters(const char *stringid, const char* buffer)
 {
  return PEngine->Model_SetComponentParameters(stringid, buffer);
+}
+
+// Устанавливает значение параметра компонента по идентификатору компонента и имени параметра
+void RDK_CALL Model_SetComponentParameterValue(const char *stringid, const char *paramname, const char *buffer)
+{
+ PEngine->Model_SetComponentParameterValue(stringid,paramname,buffer);
 }
 
 // Связывает выбранные контейнеры друг с другом
@@ -496,10 +507,22 @@ const char * RDK_CALL Model_GetComponentSelectedState(const char *stringid)
  return PEngine->Model_GetComponentSelectedState(stringid);
 }
 
+// Возвращает значение переменной состояния компонента по идентификатору компонента и имени переменной
+const char * RDK_CALL Model_GetComponentStateValue(const char *stringid, const char *statename)
+{
+ return PEngine->Model_GetComponentStateValue(stringid,statename);
+}
+
 // Устанавливает состояние компонента по идентификатору
 bool RDK_CALL Model_SetComponentState(const char *stringid, const char* buffer)
 {
  return PEngine->Model_SetComponentState(stringid, buffer);
+}
+
+// Устанавливает значение переменной состояния компонента по идентификатору компонента и имени переменной
+void RDK_CALL Model_SetComponentStateValue(const char *stringid, const char *statename, const char *buffer)
+{
+ PEngine->Model_SetComponentStateValue(stringid,statename,buffer);
 }
 
 // Возвращает число входов у компонента

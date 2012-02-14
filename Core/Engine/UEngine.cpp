@@ -1070,6 +1070,40 @@ const char* UEngine::Model_GetComponentParametersEx(const char *stringid)
  return 0;
 }
 
+// Возвращает значение параметра компонента по идентификатору компонента и имени параметра
+const char * UEngine::Model_GetComponentParameterValue(const char *stringid, const char *paramname)
+{
+ try
+ {
+  UEPtr<RDK::UANet> model=dynamic_pointer_cast<RDK::UANet>(Environment->GetModel());
+
+  if(!model)
+   return 0;
+
+  RDK::ULongId id;
+//  string namebuffer;
+
+  UEPtr<RDK::UAContainer> cont=model->GetComponentL(id.DecodeFromString(stringid));
+  if(!cont)
+   return 0;
+
+//  XmlStorage.Create(cont->GetLongName(model,namebuffer));
+//  XmlStorage.AddNode("Parameters");
+
+  cont->GetPropertyValue(paramname,TempString);
+
+//  XmlStorage.SelectUp();
+//  TempString="";
+//  XmlStorage.Save(TempString);
+  return TempString.c_str();
+ }
+ catch (Exception * exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
 // устанавливает параметры компонента по идентификатору
 bool UEngine::Model_SetComponentParameters(const char *stringid, const char* buffer)
 {
@@ -1100,6 +1134,35 @@ bool UEngine::Model_SetComponentParameters(const char *stringid, const char* buf
  }
 
  return true;
+}
+
+// Устанавливает значение параметра компонента по идентификатору компонента и имени параметра
+void UEngine::Model_SetComponentParameterValue(const char *stringid, const char *paramname, const char *buffer)
+{
+ try
+ {
+  UEPtr<RDK::UANet> model=dynamic_pointer_cast<RDK::UANet>(Environment->GetModel());
+
+  if(!model)
+   return;
+
+  RDK::ULongId id;
+//  string namebuffer;
+
+  UEPtr<RDK::UAContainer> cont=model->GetComponentL(id.DecodeFromString(stringid));
+  if(!cont)
+   return;
+
+//  XmlStorage.Load(buffer, cont->GetLongName(model,namebuffer));
+//  XmlStorage.SelectNode("Parameters");
+
+  cont->SetPropertyValue(paramname,buffer);
+//  XmlStorage.SelectUp();
+ }
+ catch (Exception * exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 // Связывает выбранные контейнеры друг с другом
@@ -1351,6 +1414,40 @@ const char * UEngine::Model_GetComponentSelectedState(const char *stringid)
  return 0;
 }
 
+// Возвращает значение переменной состояния компонента по идентификатору компонента и имени переменной
+const char * UEngine::Model_GetComponentStateValue(const char *stringid, const char *statename)
+{
+ try
+ {
+  UEPtr<RDK::UANet> model=dynamic_pointer_cast<RDK::UANet>(Environment->GetModel());
+
+  if(!model)
+   return 0;
+
+  RDK::ULongId id;
+//  string namebuffer;
+
+  UEPtr<RDK::UAContainer> cont=model->GetComponentL(id.DecodeFromString(stringid));
+  if(!cont)
+   return 0;
+
+//  XmlStorage.Create(cont->GetLongName(model,namebuffer));
+//  XmlStorage.AddNode("Parameters");
+
+  cont->GetStateValue(statename,TempString);
+
+//  XmlStorage.SelectUp();
+//  TempString="";
+//  XmlStorage.Save(TempString);
+  return TempString.c_str();
+ }
+ catch (Exception * exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
 // Устанавливает состояние компонента по идентификатору
 bool UEngine::Model_SetComponentState(const char *stringid, const char* buffer)
 {
@@ -1380,6 +1477,36 @@ bool UEngine::Model_SetComponentState(const char *stringid, const char* buffer)
   ProcessException(exception);
  }
  return true;
+}
+
+
+// Устанавливает значение переменной состояния компонента по идентификатору компонента и имени переменной
+void UEngine::Model_SetComponentStateValue(const char *stringid, const char *statename, const char *buffer)
+{
+ try
+ {
+  UEPtr<RDK::UANet> model=dynamic_pointer_cast<RDK::UANet>(Environment->GetModel());
+
+  if(!model)
+   return;
+
+  RDK::ULongId id;
+//  string namebuffer;
+
+  UEPtr<RDK::UAContainer> cont=model->GetComponentL(id.DecodeFromString(stringid));
+  if(!cont)
+   return;
+
+//  XmlStorage.Load(buffer, cont->GetLongName(model,namebuffer));
+//  XmlStorage.SelectNode("Parameters");
+
+  cont->SetStateValue(statename,buffer);
+//  XmlStorage.SelectUp();
+ }
+ catch (Exception * exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 // Возвращает число входов у компонента

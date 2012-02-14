@@ -167,10 +167,33 @@ UEPtr<UVariableData> UADataComponent::GetProperty(const UId &id, UEPtr<UVariable
  return values;
 }
 
+std::string& UADataComponent::GetPropertyValue(const UId &id, std::string &values) const
+{
+ Serialize::USerStorageXML data;
+
+ for(VariableMapCIteratorT I=PropertiesLookupTable.begin(),
+							J=PropertiesLookupTable.end(); I!=J;++I)
+ {
+  if(I->second.Id == id)
+  {
+   I->second.Property->Save(&data,true);
+   values=data.GetNodeText();
+   return values;
+  }
+ }
+
+ return values;
+}
+
 // ¬озвращает значение параметра по имени 'name'
 UEPtr<UVariableData> UADataComponent::GetProperty(const NameT &name, UEPtr<UVariableData> values) const
 {
  return GetProperty(GetPropertyId(name),values);
+}
+
+std::string& UADataComponent::GetPropertyValue(const NameT &name, std::string &values) const
+{
+ return GetPropertyValue(GetPropertyId(name),values);
 }
 
 // ”станавливает значение параметра по Id 'id'
@@ -187,10 +210,32 @@ void UADataComponent::SetProperty(const UId &id, UEPtr<UVariableData> values)
  }
 }
 
+void UADataComponent::SetPropertyValue(const UId &id, const std::string &values)
+{
+ Serialize::USerStorageXML data;
+ for(VariableMapCIteratorT I=PropertiesLookupTable.begin(),
+							 J=PropertiesLookupTable.end(); I!=J; ++I)
+ {
+  if(I->second.Id == id)
+  {
+   I->second.Property->Save(&data,true);
+   data.SetNodeText(values);
+   I->second.Property->Load(&data,true);
+   return;
+  }
+ }
+}
+
+
 // ”станавливает значение параметра по имени 'name'
 void UADataComponent::SetProperty(const NameT &name, UEPtr<UVariableData> values)
 {
  SetProperty(GetPropertyId(name),values);
+}
+
+void UADataComponent::SetPropertyValue(const NameT &name, const std::string &values)
+{
+ SetPropertyValue(GetPropertyId(name),values);
 }
 
 const UADataComponent::VariableMapT& UADataComponent::GetPropertiesList(void) const
@@ -242,10 +287,33 @@ UEPtr<UVariableData> UADataComponent::GetState(const UId &id, UEPtr<UVariableDat
  return values;
 }
 
+std::string& UADataComponent::GetStateValue(const UId &id, std::string &values) const
+{
+ Serialize::USerStorageXML data;
+
+ for(VariableMapCIteratorT I=StateLookupTable.begin(),
+							J=StateLookupTable.end(); I!=J;++I)
+ {
+  if(I->second.Id == id)
+  {
+   I->second.Property->Save(&data,true);
+   values=data.GetNodeText();
+   return values;
+  }
+ }
+
+ return values;
+}
+
 // ¬озвращает значение переменной состо€ни€ по имени 'name'
 UEPtr<UVariableData> UADataComponent::GetState(const NameT &name, UEPtr<UVariableData> values) const
 {
  return GetState(GetStateId(name),values);
+}
+
+std::string& UADataComponent::GetStateValue(const NameT &name, std::string &values) const
+{
+ return GetStateValue(GetStateId(name),values);
 }
 
 // ”станавливает значение переменной состо€ни€ по Id 'id'
@@ -262,10 +330,31 @@ void UADataComponent::SetState(const UId &id, UEPtr<UVariableData> values)
  }
 }
 
+void UADataComponent::SetStateValue(const UId &id, const std::string &values)
+{
+ Serialize::USerStorageXML data;
+ for(VariableMapCIteratorT I=StateLookupTable.begin(),
+							 J=StateLookupTable.end(); I!=J; ++I)
+ {
+  if(I->second.Id == id)
+  {
+   I->second.Property->Save(&data,true);
+   data.SetNodeText(values);
+   I->second.Property->Load(&data,true);
+   return;
+  }
+ }
+}
+
 // ”станавливает значение переменной состо€ни€ по имени 'name'
 void UADataComponent::SetState(const NameT &name, UEPtr<UVariableData> values)
 {
  SetState(GetStateId(name),values);
+}
+
+void UADataComponent::SetStateValue(const NameT &name, const std::string &values)
+{
+ SetStateValue(GetStateId(name),values);
 }
 
 // ¬озвращает список имен и Id переменных состо€ни€, содержащихс€ непосредственно

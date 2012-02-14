@@ -198,7 +198,7 @@ virtual std::string GetOwnerName(void) const
 };
 
 // Метод записывает значение свойства в поток
-virtual bool Save(UEPtr<Serialize::USerStorage>  storage)
+virtual bool Save(UEPtr<Serialize::USerStorage>  storage, bool simplemode=false)
 {
  UEPtr<Serialize::USerStorageBinary> binary=dynamic_pointer_cast<Serialize::USerStorageBinary>(storage);
  if(binary)
@@ -210,17 +210,27 @@ virtual bool Save(UEPtr<Serialize::USerStorage>  storage)
  UEPtr<Serialize::USerStorageXML> xml=dynamic_pointer_cast<Serialize::USerStorageXML>(storage);
  if(xml)
  {
-  xml->AddNode(GetName());
-  Serialize::operator << (*xml,(*this)());
-  xml->SelectUp();
-  return true;
+  if(simplemode)
+  {
+   xml->Create(GetName());
+   Serialize::operator << (*xml,(*this)());
+   xml->SelectUp();
+   return true;
+  }
+  else
+  {
+   xml->AddNode(GetName());
+   Serialize::operator << (*xml,(*this)());
+   xml->SelectUp();
+   return true;
+  }
  }
 
  return false;
 };
 
 // Метод читает значение свойства из потока
-virtual bool Load(UEPtr<Serialize::USerStorage>  storage)
+virtual bool Load(UEPtr<Serialize::USerStorage>  storage, bool simplemode=false)
 {
  T temp;
 
@@ -235,12 +245,25 @@ virtual bool Load(UEPtr<Serialize::USerStorage>  storage)
  UEPtr<Serialize::USerStorageXML> xml=dynamic_pointer_cast<Serialize::USerStorageXML>(storage);
  if(xml)
  {
-  if(!xml->SelectNode(GetName()))
-   return false;
-  Serialize::operator >> (*xml,temp);
-  *this=temp;
-  xml->SelectUp();
-  return true;
+  if(simplemode)
+  {
+   xml->SelectRoot();
+   if(xml->GetNodeName() != GetName())
+	return false;
+   Serialize::operator >> (*xml,temp);
+   *this=temp;
+   xml->SelectUp();
+   return true;
+  }
+  else
+  {
+   if(!xml->SelectNode(GetName()))
+	return false;
+   Serialize::operator >> (*xml,temp);
+   *this=temp;
+   xml->SelectUp();
+   return true;
+  }
  }
 
  return false;
@@ -334,10 +357,20 @@ virtual bool Save(UEPtr<Serialize::USerStorage>  storage)
  UEPtr<Serialize::USerStorageXML> xml=dynamic_cast<UEPtr<Serialize::USerStorageXML>>(storage);
  if(xml)
  {
-  xml->AddNode(this->GetName());
-  Serialize::operator << (*xml,(*this)());
-  xml->SelectUp();
-  return true;
+  if(simplemode)
+  {
+   xml->Create(GetName());
+   Serialize::operator << (*xml,(*this)());
+   xml->SelectUp();
+   return true;
+  }
+  else
+  {
+   xml->AddNode(this->GetName());
+   Serialize::operator << (*xml,(*this)());
+   xml->SelectUp();
+   return true;
+  }
  }
 
 // return storage->Save((*this)());
@@ -367,12 +400,25 @@ virtual bool Load(UEPtr<Serialize::USerStorage>  storage)
  UEPtr<Serialize::USerStorageXML> xml=dynamic_cast<UEPtr<Serialize::USerStorageXML>>(storage);
  if(xml)
  {
-  if(!xml->SelectNode(this->GetName()))
-   return false;
-  Serialize::operator >> (*xml,temp);
-  *this=temp;
-  xml->SelectUp();
-  return true;
+  if(simplemode)
+  {
+   xml->SelectRoot();
+   if(xml->GetNodeName() != GetName())
+	return false;
+   Serialize::operator >> (*xml,temp);
+   *this=temp;
+   xml->SelectUp();
+   return true;
+  }
+  else
+  {
+   if(!xml->SelectNode(this->GetName()))
+	return false;
+   Serialize::operator >> (*xml,temp);
+   *this=temp;
+   xml->SelectUp();
+   return true;
+  }
  }
 
  return false;
@@ -552,10 +598,20 @@ virtual bool Save(UEPtr<Serialize::USerStorage> storage)
  UEPtr<Serialize::USerStorageXML> xml=dynamic_cast<UEPtr<Serialize::USerStorageXML>>(storage);
  if(xml)
  {
-  xml->AddNode(this->GetName());
-  Serialize::operator << (*xml,(*this)());
-  xml->SelectUp();
-  return true;
+  if(simplemode)
+  {
+   xml->Create(GetName());
+   Serialize::operator << (*xml,(*this)());
+   xml->SelectUp();
+   return true;
+  }
+  else
+  {
+   xml->AddNode(this->GetName());
+   Serialize::operator << (*xml,(*this)());
+   xml->SelectUp();
+   return true;
+  }
  }
 
 // return storage->Save((*this)());
@@ -588,12 +644,25 @@ virtual bool Load(UEPtr<Serialize::USerStorage> storage)
  UEPtr<Serialize::USerStorageXML> xml=dynamic_cast<UEPtr<Serialize::USerStorageXML>>(storage);
  if(xml)
  {
-  if(!xml->SelectNode(this->GetName()))
-   return false;
-  Serialize::operator >> (*xml,temp);
-  *this=temp;
-  xml->SelectUp();
-  return true;
+  if(simplemode)
+  {
+   xml->SelectRoot();
+   if(xml->GetNodeName() != GetName())
+	return false;
+   Serialize::operator >> (*xml,temp);
+   *this=temp;
+   xml->SelectUp();
+   return true;
+  }
+  else
+  {
+   if(!xml->SelectNode(this->GetName()))
+	return false;
+   Serialize::operator >> (*xml,temp);
+   *this=temp;
+   xml->SelectUp();
+   return true;
+  }
  }
 
  return false;

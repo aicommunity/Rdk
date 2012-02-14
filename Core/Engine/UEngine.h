@@ -323,8 +323,14 @@ virtual const char* Model_GetComponentSelectedParameters(const char *stringid);
 // Память для buffer должна быть выделена!
 virtual const char* Model_GetComponentParametersEx(const char *stringid);
 
-// устанавливает параметры компонента по идентификатору
+// Возвращает значение параметра компонента по идентификатору компонента и имени параметра
+virtual const char * Model_GetComponentParameterValue(const char *stringid, const char *paramname);
+
+// Устанавливает параметры компонента по идентификатору
 virtual bool Model_SetComponentParameters(const char *stringid, const char* buffer);
+
+// Устанавливает значение параметра компонента по идентификатору компонента и имени параметра
+virtual void Model_SetComponentParameterValue(const char *stringid, const char *paramname, const char *buffer);
 
 // Связывает выбранные контейнеры друг с другом
 virtual int Model_CreateLink(char* stringid1, int output_number, char* stringid2, int input_number);
@@ -362,8 +368,14 @@ virtual const char* Model_GetComponentState(const char *stringid);
 // Возвращает выборочные данные состояния компонента по идентификатору
 virtual const char* Model_GetComponentSelectedState(const char *stringid);
 
+// Возвращает значение переменной состояния компонента по идентификатору компонента и имени переменной
+virtual const char * Model_GetComponentStateValue(const char *stringid, const char *statename);
+
 // Устанавливает состояние компонента по идентификатору
 virtual bool Model_SetComponentState(const char *stringid, const char* buffer);
+
+// Устанавливает значение переменной состояния компонента по идентификатору компонента и имени переменной
+virtual void Model_SetComponentStateValue(const char *stringid, const char *statename, const char *buffer);
 
 // Возвращает число входов у компонента
 virtual int Model_GetComponentNumInputs(const char *stringid);
@@ -461,7 +473,7 @@ virtual bool Model_GetComponentSelectedParameters(RDK::UAContainer* cont, RDK::S
 // Возвращает параметры компонента по идентификатору с описаниями
 virtual bool Model_GetComponentParametersEx(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage);
 
-// устанавливает параметры компонента по идентификатору
+// Устанавливает параметры компонента по идентификатору
 virtual bool Model_SetComponentParameters(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage);
 
 // Возращает все связи внутри компонента stringid в виде xml в буфер buffer
