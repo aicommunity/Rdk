@@ -93,6 +93,9 @@ virtual int Env_GetNumOutputImages(void);
 // «адает разрешение по умолчанию (рабочее разрешение)
 virtual void Env_SetInputRes(int number, int width, int height);
 
+// «адает флаг отражени€ входного изображени€ вокруг горизонтальной оси
+virtual void Env_SetReflectionXFlag(bool value);
+
 // ¬озвращает разрешение по умолчанию (рабочее разрешение)
 virtual int Env_GetInputImageWidth(int number);
 virtual int Env_GetInputImageHeight(int number);

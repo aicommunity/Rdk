@@ -13,6 +13,7 @@ TImagesFrame *ImagesFrame;
 __fastcall TImagesFrame::TImagesFrame(TComponent* Owner)
     : TFrame(Owner)
 {
+ ReflectionXFlag=false;
 }
 
 // --------------------------
@@ -53,6 +54,17 @@ int TImagesFrame::GetNumCellWidth(void)
 int TImagesFrame::GetNumCellHeight(void)
 {
  return DrawGrid->RowCount;
+}
+
+// ‘лаг отражени€ вокруг оси X изображений при выводе
+bool TImagesFrame::GetReflectionXFlag(void)
+{
+ return ReflectionXFlag;
+}
+
+void TImagesFrame::SetReflectionXFlag(bool value)
+{
+ ReflectionXFlag=value;
 }
 // --------------------------
 
@@ -105,16 +117,21 @@ bool TImagesFrame::SetImage(int i, int j, int width, int height, int colormodel,
  case 3:
   target->HandleType=bmDIB;
   target->PixelFormat=pf24bit;
-
+  /*
    if(!(width % 4))
-    memcpy(target->ScanLine[height-1],buffer,
-          width*height*3);
-   else
+	memcpy(target->ScanLine[height-1],buffer,
+		  width*height*3);
+   else */
    {
-    linebytelength=width*3;
-    for(int i=height-1;i>=0;--i,buffer+=linebytelength)
-     memcpy(target->ScanLine[i],buffer,
-          linebytelength);
+	linebytelength=width*3;
+	if(ReflectionXFlag)
+	 for(int i=0;i<height;++i,buffer+=linebytelength)
+	  memcpy(target->ScanLine[i],buffer,
+		  linebytelength);
+	else
+	 for(int i=height-1;i>=height;--i,buffer+=linebytelength)
+	  memcpy(target->ScanLine[i],buffer,
+		  linebytelength);
    }
  break;
 
@@ -122,15 +139,20 @@ bool TImagesFrame::SetImage(int i, int j, int width, int height, int colormodel,
    target->HandleType=bmDIB;
    target->PixelFormat=pf32bit;
 
-   if(!(width % 4))
-    memcpy(target->ScanLine[height-1],buffer,
-          width*height*4);
-   else
+/*   if(!(width % 4))
+	memcpy(target->ScanLine[height-1],buffer,
+		  width*height*4);
+   else */
    {
     linebytelength=width*4;
-    for(int i=height-1;i>=0;--i,buffer+=linebytelength)
-     memcpy(target->ScanLine[i],buffer,
-          linebytelength);
+	if(ReflectionXFlag)
+	 for(int i=0;i<height;++i,buffer+=linebytelength)
+	  memcpy(target->ScanLine[i],buffer,
+		  linebytelength);
+	else
+	 for(int i=height-1;i>=0;--i,buffer+=linebytelength)
+	  memcpy(target->ScanLine[i],buffer,
+		  linebytelength);
    }
  break;
 
@@ -149,15 +171,20 @@ bool TImagesFrame::SetImage(int i, int j, int width, int height, int colormodel,
     DeleteObject(target->Palette);
    target->Palette = CreatePalette((const tagLOGPALETTE *)&SysPal.lpal);
 
-   if(!(width % 4))
-    memcpy(target->ScanLine[height-1],buffer,
-          width*height);
-   else
+ /*  if(!(width % 4))
+	memcpy(target->ScanLine[height-1],buffer,
+		  width*height);
+   else */
    {
     linebytelength=width;
-    for(int i=height-1;i>=0;--i,buffer+=linebytelength)
-     memcpy(target->ScanLine[i],buffer,
-          linebytelength);
+	if(ReflectionXFlag)
+	 for(int i=0;i<height;++i,buffer+=linebytelength)
+	  memcpy(target->ScanLine[i],buffer,
+		  linebytelength);
+	else
+	 for(int i=height-1;i>=0;--i,buffer+=linebytelength)
+	  memcpy(target->ScanLine[i],buffer,
+		  linebytelength);
    }
  break;
  }

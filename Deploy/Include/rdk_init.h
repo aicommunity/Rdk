@@ -15,7 +15,7 @@ RDK_LIB_TYPE int RDK_CALL EngineInit(int predefined_structure);
 
 // Инициализирует графический движок (функция должна быть вызвана первой!)
 RDK_LIB_TYPE int RDK_CALL GraphicalEngineInit(int predefined_structure, int num_inputs,
-		int num_outputs, int input_width, int input_height);
+		int num_outputs, int input_width, int input_height, bool reflectionx=false);
 // ----------------------------
 
 // --------------------------
@@ -163,7 +163,11 @@ RDK_LIB_TYPE int RDK_CALL Env_GetNumOutputImages(void);
 // Задает разрешение по умолчанию (рабочее разрешение)
 RDK_LIB_TYPE void RDK_CALL Env_SetInputRes(int number, int width, int height);
 
+// Задает данные изображения
 RDK_LIB_TYPE void RDK_CALL Env_SetInputImage(int number, unsigned char* image, int width, int height,int cmodel);
+
+// Задает флаг отражения входного изображения вокруг горизонтальной оси
+RDK_LIB_TYPE void Env_SetReflectionXFlag(bool value);
 
 // Возвращает разрешение по умолчанию (рабочее разрешение)
 RDK_LIB_TYPE int RDK_CALL Env_GetInputImageWidth(int number);

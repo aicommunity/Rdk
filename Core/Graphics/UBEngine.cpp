@@ -119,6 +119,12 @@ void UBEngine::Env_SetInputRes(int number, int width, int height)
  GetEnvironment()->SetInputImageRes(number,width,height);
 }
 
+// Задает флаг отражения входного изображения вокруг горизонтальной оси
+void UBEngine::Env_SetReflectionXFlag(bool value)
+{
+ GetEnvironment()->SetReflectionXFlag(value);
+}
+
 // Возвращает разрешение по умолчанию (рабочее разрешение)
 int UBEngine::Env_GetInputImageWidth(int number)
 {

@@ -31,6 +31,10 @@ int NumInputImages;
 // Число выходных изображений
 int NumOutputImages;
 
+// Флаг переворота изображения вокруг горизонтальной оси при вводе
+bool ReflectionXFlag;
+
+
 protected: // Состояния
 
 protected: // Данные
@@ -96,6 +100,10 @@ bool SetModelInputId(UId value);
 // Идентификатор приемника данных в модели, связанного с выходным массивом изображений
 UId GetModelOutputId(void) const;
 bool SetModelOutputId(UId value);
+
+// Флаг переворота изображения вокруг горизонтальной оси при вводе
+bool GetReflectionXFlag(void) const;
+void SetReflectionXFlag(bool value);
 // --------------------------
 
 // --------------------------

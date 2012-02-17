@@ -25,6 +25,9 @@ public:        // User declarations
 // Массив изображений
 std::vector<std::vector<TImage*> > Images;
 
+// Флаг отражения вокруг оси X изображений при выводе
+bool ReflectionXFlag;
+
 // --------------------------
 // Методы управления параметрами
 // --------------------------
@@ -37,6 +40,10 @@ void SetNumCells(int width, int height);
 // Возвращает число ячеек
 int GetNumCellWidth(void);
 int GetNumCellHeight(void);
+
+// Флаг отражения вокруг оси X изображений при выводе
+bool GetReflectionXFlag(void);
+void SetReflectionXFlag(bool value);
 // --------------------------
 
 // --------------------------

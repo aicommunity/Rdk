@@ -130,6 +130,20 @@ bool UBAEnvironment::SetModelOutputId(UId value)
  ModelOutputId=value;
  return true;
 }
+
+// Флаг переворота изображения вокруг горизонтальной оси при вводе
+bool UBAEnvironment::GetReflectionXFlag(void) const
+{
+ return ReflectionXFlag;
+}
+
+void UBAEnvironment::SetReflectionXFlag(bool value)
+{
+ if(ReflectionXFlag == value)
+  return;
+
+ ReflectionXFlag=value;
+}
 // --------------------------
 
 // --------------------------
@@ -226,6 +240,8 @@ bool UBAEnvironment::SetInputImage(int i, const UBitmap &bmp)
   return false;
 
  bmp.ConvertTo(*InputImages[i]);
+ if(ReflectionXFlag)
+  InputImages[i]->ReflectionX();
  return true;
 }
 
@@ -238,7 +254,7 @@ bool UBAEnvironment::SetInputImage(int i, UBColor *data, UBMColorModel colormode
   return false;
 
  TempConvertBitmap.AttachBuffer(InputImages[i]->GetWidth(), InputImages[i]->GetHeight(), data, colormodel);
- TempConvertBitmap.ConvertTo(*InputImages[i]);
+ SetInputImage(i, TempConvertBitmap);
  TempConvertBitmap.DetachBuffer();
  return true;
 }
@@ -297,6 +313,8 @@ bool UBAEnvironment::ADefault(void)
  DefaultColorModel=ubmY8;
  SetNumInputImages(1);
  SetNumOutputImages(1);
+ SetReflectionXFlag(true);
+
  return true;
 }
 

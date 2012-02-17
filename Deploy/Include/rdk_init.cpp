@@ -82,7 +82,7 @@ int RDK_CALL EngineInit(int predefined_structure)
 }
 
 int RDK_CALL GraphicalEngineInit(int predefined_structure, int num_inputs,
-		int num_outputs, int input_width, int input_height)
+		int num_outputs, int input_width, int input_height, bool reflectionx)
 {
  LoadEngine((void*)CreateNewGStorage, (void*)CreateNewGEnvironment, (void*)CreateNewGEngine);
  Init();
@@ -95,6 +95,8 @@ int RDK_CALL GraphicalEngineInit(int predefined_structure, int num_inputs,
  // Задает разрешение по умолчанию (рабочее разрешение)
  for(int i=0;i<num_inputs;i++)
   Env_SetInputRes(i, input_width, input_height);
+
+ Env_SetReflectionXFlag(reflectionx);
 
  Env_SetPredefinedStructure(predefined_structure);
  Env_CreateStructure();
@@ -670,9 +672,16 @@ void RDK_CALL Env_SetInputRes(int number, int width, int height)
  return dynamic_cast<RDK::UBEngine*>(PEngine)->Env_SetInputRes(number, width, height);
 }
 
+// Задает данные изображения
 void RDK_CALL Env_SetInputImage(int number, unsigned char* image, int width, int height,int cmodel)
 {
  return dynamic_cast<RDK::UBEngine*>(PEngine)->Env_SetInputImage(number, image, width, height,cmodel);
+}
+
+// Задает флаг отражения входного изображения вокруг горизонтальной оси
+RDK_LIB_TYPE void Env_SetReflectionXFlag(bool value)
+{
+ return dynamic_cast<RDK::UBEngine*>(PEngine)->Env_SetReflectionXFlag(value);
 }
 
 
@@ -877,6 +886,8 @@ int RDK_CALL Init(void)
    Engine_Destroy();
    return 5;
   }
+
+ PEnvironment->Default();
 
  return 0;
 }
