@@ -47,7 +47,7 @@ UBEngine::~UBEngine(void)
 // Возвращает указатель на среду
 UBAEnvironment* UBEngine::GetEnvironment(void)
 {
- return dynamic_cast<UBAEnvironment* >(Environment);
+ return dynamic_pointer_cast<UBAEnvironment>(Environment);
 }
 // --------------------------
 
@@ -220,7 +220,7 @@ int UBEngine::LoadPredefinedLibraries(void)
  if(!Storage)
   return 1;
 
- RDK::UBAStorage *bstorage=dynamic_cast<RDK::UBAStorage *>(Storage);
+ UEPtr<RDK::UBAStorage> bstorage=dynamic_pointer_cast<RDK::UBAStorage>(Storage);
 
  if(!bstorage)
   return 2;

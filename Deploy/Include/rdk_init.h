@@ -346,6 +346,10 @@ RDK_LIB_TYPE const /* RDK::UBitmap* */void* const RDK_CALL Model_GetComponentOut
 // --------------------------
 // Функции управления исключениями
 // ----------------------------
+// Управление функцией-обработчиком исключений
+RDK_LIB_TYPE void* RDK_CALL Engine_GetExceptionHandler(void);
+RDK_LIB_TYPE bool RDK_CALL Engine_SetExceptionHandler(void* value);
+
 // Возвращает массив строк лога
 RDK_LIB_TYPE const char* RDK_CALL Engine_GetLog(void);
 // ----------------------------

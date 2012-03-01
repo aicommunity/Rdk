@@ -46,7 +46,7 @@ UEPointer(OwnerT * const owner, const string &name)
 { Source=0; reinterpret_cast<UAContainer* const>(Owner)->AddLookupPointer(name,this); };
 // --------------------------
 
-UEPtr<UAContainer const> Get(void) const
+UEPtr<UAContainer> const Get(void) const
 { return Source; };
 
 virtual void Del(UEPtr<UAContainer> source)

@@ -32,6 +32,9 @@ typedef RDK::UAContainerStorage* (*PCreateNewStorage)(void);
 // Создает новую среду
 typedef RDK::UAContainerEnvironment* (*PCreateNewEnvironment)(void);
 
+// Прототип функции обратного вызова обработчика исключений
+typedef void (*PExceptionHandler)(void);
+
 protected: // Параметры инициализации
 // Указатели на функции создания экземпляров хранилища и среды
 PCreateNewStorage FuncCreateNewStorage;
@@ -72,14 +75,17 @@ protected: // Данные
 UIniFile<char> Options;
 
 // Хранилище
-UAContainerStorage* Storage;
+RDK::UEPtr<UAContainerStorage> Storage;
 
 // Среда
-UAContainerEnvironment* Environment;
+RDK::UEPtr<UAContainerEnvironment> Environment;
 
 protected: // Обработка исключений
 // Лог исключений системы
 mutable vector<USharedPtr<Exception> > ExceptionsLog;
+
+// Внешний обработчик исключений
+PExceptionHandler ExceptionHandler;
 
 protected: // Временные переменные
 // Список загруженных библиотек
@@ -444,6 +450,10 @@ const vector<USharedPtr<Exception> > GetExceptionsLog(void) const;
 
 // Возвращает массив строк лога
 const char* GetLog(void) const;
+
+// Управление функцией-обработчиком исключений
+PExceptionHandler GetExceptionHandler(void) const;
+bool SetExceptionHandler(PExceptionHandler value);
 // --------------------------
 
 // --------------------------

@@ -210,6 +210,18 @@ struct ENameAlreadyExist: public ENameError
 ENameAlreadyExist(const std::string &name) : ENameError(name) {};
 };
 
+// Id не определен (forbidden id)
+struct EForbiddenId: public EIdError
+{
+EForbiddenId(int id) : EIdError(id) {};
+};
+
+// Id не корректен
+struct EInvalidId: public EIdError
+{
+EInvalidId(int id) : EIdError(id) {};
+};
+
 }
 
 #endif

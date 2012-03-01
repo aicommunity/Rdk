@@ -30,9 +30,9 @@ RDK_LIB_TYPE RDK::UAContainerEnvironment*  RDK_CALL AddNewEnvironment(RDK::UACon
 RDK_LIB_TYPE RDK::UEngine*  RDK_CALL AddNewEngine(void);
 // --------------------------------------
 
-RDK::UEngine* PEngine=0;
-RDK::UAEnvironment* PEnvironment=0;
-RDK::UAStorage* PStorage=0;
+RDK::UEPtr<RDK::UEngine> PEngine=0;
+RDK::UEPtr<RDK::UAEnvironment> PEnvironment=0;
+RDK::UEPtr<RDK::UAStorage> PStorage=0;
 
 /*****************************************************************************/
 RDK::UAStorage* CreateNewStorage(void)
@@ -631,6 +631,17 @@ int RDK_CALL Model_LoadComponentState(const char *stringid, char* buffer)
 // --------------------------
 // Методы управления исключениями
 // ----------------------------
+// Управление функцией-обработчиком исключений
+void* RDK_CALL Engine_GetExceptionHandler(void)
+{
+ return PEngine->GetExceptionHandler();
+}
+
+bool RDK_CALL Engine_SetExceptionHandler(void* value)
+{
+ return PEngine->SetExceptionHandler(reinterpret_cast<RDK::UEngine::PExceptionHandler>(value));
+}
+
 // Возвращает массив строк лога
 const char* RDK_CALL Engine_GetLog(void)
 {
@@ -645,91 +656,91 @@ const char* RDK_CALL Engine_GetLog(void)
 // Задает число входов среды
 void RDK_CALL Env_SetNumInputImages(int number)
 {
- return dynamic_cast<RDK::UBEngine*>(PEngine)->Env_SetNumInputImages(number);
+ return RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Env_SetNumInputImages(number);
 }
 
 // Задает число выходов среды
 void RDK_CALL Env_SetNumOutputImages(int number)
 {
- return dynamic_cast<RDK::UBEngine*>(PEngine)->Env_SetNumOutputImages(number);
+ return RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Env_SetNumOutputImages(number);
 }
 
 // Задает число входов среды
 int RDK_CALL Env_GetNumInputImages(void)
 {
- return dynamic_cast<RDK::UBEngine*>(PEngine)->Env_GetNumInputImages();
+ return RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Env_GetNumInputImages();
 }
 
 // Задает число выходов среды
 int RDK_CALL Env_GetNumOutputImages(void)
 {
- return dynamic_cast<RDK::UBEngine*>(PEngine)->Env_GetNumInputImages();
+ return RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Env_GetNumInputImages();
 }
 
 // Задает разрешение по умолчанию (рабочее разрешение)
 void RDK_CALL Env_SetInputRes(int number, int width, int height)
 {
- return dynamic_cast<RDK::UBEngine*>(PEngine)->Env_SetInputRes(number, width, height);
+ return RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Env_SetInputRes(number, width, height);
 }
 
 // Задает данные изображения
 void RDK_CALL Env_SetInputImage(int number, unsigned char* image, int width, int height,int cmodel)
 {
- return dynamic_cast<RDK::UBEngine*>(PEngine)->Env_SetInputImage(number, image, width, height,cmodel);
+ return RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Env_SetInputImage(number, image, width, height,cmodel);
 }
 
 // Задает флаг отражения входного изображения вокруг горизонтальной оси
 RDK_LIB_TYPE void Env_SetReflectionXFlag(bool value)
 {
- return dynamic_cast<RDK::UBEngine*>(PEngine)->Env_SetReflectionXFlag(value);
+ return RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Env_SetReflectionXFlag(value);
 }
 
 
 // Возвращает разрешение по умолчанию (рабочее разрешение)
 int RDK_CALL Env_GetInputImageWidth(int number)
 {
- return dynamic_cast<RDK::UBEngine*>(PEngine)->Env_GetInputImageWidth(number);
+ return RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Env_GetInputImageWidth(number);
 }
 
 int RDK_CALL Env_GetInputImageHeight(int number)
 {
- return dynamic_cast<RDK::UBEngine*>(PEngine)->Env_GetInputImageHeight(number);
+ return RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Env_GetInputImageHeight(number);
 }
 
 int RDK_CALL Env_GetInputImageColorModel(int number)
 {
- return dynamic_cast<RDK::UBEngine*>(PEngine)->Env_GetInputImageColorModel(number);
+ return RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Env_GetInputImageColorModel(number);
 }
 
 // Возвращает текущее выходное разрешение
 int RDK_CALL Env_GetOutputImageWidth(int number)
 {
- return dynamic_cast<RDK::UBEngine*>(PEngine)->Env_GetOutputImageWidth(number);
+ return RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Env_GetOutputImageWidth(number);
 }
 
 int RDK_CALL Env_GetOutputImageHeight(int number)
 {
- return dynamic_cast<RDK::UBEngine*>(PEngine)->Env_GetOutputImageHeight(number);
+ return RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Env_GetOutputImageHeight(number);
 }
 
 int RDK_CALL Env_GetOutputImageColorModel(int number)
 {
- return dynamic_cast<RDK::UBEngine*>(PEngine)->Env_GetOutputImageColorModel(number);
+ return RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Env_GetOutputImageColorModel(number);
 }
 
 unsigned char* RDK_CALL Env_GetInputImage(int index)
 {
- return dynamic_cast<RDK::UBEngine*>(PEngine)->Env_GetInputImage(index);
+ return RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Env_GetInputImage(index);
 }
 
 unsigned char* RDK_CALL Env_GetOutputImage(int index)
 {
- return dynamic_cast<RDK::UBEngine*>(PEngine)->Env_GetOutputImage(index);
+ return RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Env_GetOutputImage(index);
 }
 
 unsigned char* RDK_CALL Env_GetOutputImageY8(int index)
 {
- return dynamic_cast<RDK::UBEngine*>(PEngine)->Env_GetOutputImageY8(index);
+ return RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Env_GetOutputImageY8(index);
 }
 // --------------------------
 
@@ -739,7 +750,7 @@ unsigned char* RDK_CALL Env_GetOutputImageY8(int index)
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
 const /* RDK::UBitmap* */ void* const RDK_CALL Model_GetComponentOutput(const char *stringid, int index)
 {
- return dynamic_cast<RDK::UBEngine*>(PEngine)->Model_GetComponentOutput(stringid, index);
+ return RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Model_GetComponentOutput(stringid, index);
 }
 // --------------------------
 
@@ -797,9 +808,9 @@ bool Init(PCreateNewStorage fCreateNewStorage,
 // Экземпляр менеджера
 RDKDllManager DllManager;
 
-extern RDK::UEngine* PEngine;
-extern RDK::UAEnvironment* PEnvironment;
-extern RDK::UAStorage* PStorage;
+extern RDK::UEPtr<RDK::UEngine> PEngine;
+extern RDK::UEPtr<RDK::UAEnvironment> PEnvironment;
+extern RDK::UEPtr<RDK::UAStorage> PStorage;
 
 
 // Менеджер DLL
@@ -866,6 +877,7 @@ int Engine_Destroy(void)
 
 int RDK_CALL Init(void)
 {
+ try {
   if(!PEngine->Init())
   {
    Engine_Destroy();
@@ -888,14 +900,25 @@ int RDK_CALL Init(void)
   }
 
  PEnvironment->Default();
-
+ }
+ catch (RDK::Exception * exception)
+ {
+  PEngine->ProcessException(exception);
+ }
  return 0;
 }
 
 int RDK_CALL UnInit(void)
 {
- if(!PEngine->UnInit())
-  return 1;
+ try
+ {
+  if(!PEngine->UnInit())
+   return 1;
+ }
+ catch (RDK::Exception * exception)
+ {
+  PEngine->ProcessException(exception);
+ }
 
  return 0;
 }

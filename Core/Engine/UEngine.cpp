@@ -2318,6 +2318,9 @@ void UEngine::ProcessException(Exception *exception) const
  TempLogString+=exception->CreateLogMessage();
  TempLogString+="\r\n";
 
+ if(ExceptionHandler)
+  ExceptionHandler();
+
 // if(exception->GetType() == 1)
 //  throw exception;
 }
@@ -2336,6 +2339,20 @@ const char* UEngine::GetLog(void) const
  return TempLogString.c_str();
 }
 
+// Управление функцией-обработчиком исключений
+UEngine::PExceptionHandler UEngine::GetExceptionHandler(void) const
+{
+ return ExceptionHandler;
+}
+
+bool UEngine::SetExceptionHandler(PExceptionHandler value)
+{
+ if(ExceptionHandler == value)
+  return true;
+
+ ExceptionHandler=value;
+ return true;
+}
 // --------------------------
 
 
