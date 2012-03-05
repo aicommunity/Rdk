@@ -141,7 +141,7 @@ bool BuildStorage(void);
 //UAComponent* operator () (const LongUId &longid);
 
 // Возвращает указатель на текущий компонент модели
-UAComponent* operator () (void);
+UEPtr<UAComponent> operator () (void);
 // --------------------------
 
 // --------------------------

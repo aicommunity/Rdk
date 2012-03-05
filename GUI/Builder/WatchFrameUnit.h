@@ -10,7 +10,7 @@
 #include <ExtDlgs.hpp>
 #include <StdCtrls.hpp>
 #include <Forms.hpp>
-#include <series.hpp>
+#include <VCLTee.Series.hpp>
 
 #include <ComCtrls.hpp>
 #include <ToolWin.hpp>
@@ -18,9 +18,9 @@
 
 #include <IniFiles.hpp>
 #include <jpeg.hpp>
-#include <Chart.hpp>
-#include <TeEngine.hpp>
-#include <TeeProcs.hpp>
+#include <VCLTee.Chart.hpp>
+#include <VCLTee.TeEngine.hpp>
+#include <VCLTee.TeeProcs.hpp>
 #include <Menus.hpp>
 
 

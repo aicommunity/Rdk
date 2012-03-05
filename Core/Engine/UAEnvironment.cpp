@@ -264,7 +264,7 @@ bool UAEnvironment::CreateModel(const UId& classid)
   return false;
 
  CurrentComponent=0;
- Model=dynamic_pointer_cast<UAContainer>(Storage->TakeObject(classid));
+ CurrentComponent=Model=dynamic_pointer_cast<UAContainer>(Storage->TakeObject(classid));
  Ready=false;
  if(Model)
   return true;
@@ -371,7 +371,7 @@ bool UAEnvironment::BuildStorage(void)
 // Операторы доступа к данным среды
 // --------------------------
 // Возвращает указатель на текущий компонент модели
-UAComponent* UAEnvironment::operator () (void)
+UEPtr<UAComponent> UAEnvironment::operator () (void)
 {
  return CurrentComponent;
 }

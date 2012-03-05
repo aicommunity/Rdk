@@ -15,7 +15,7 @@ See file license.txt for more information
 #define TUBITMAP_CPP
 
 #include "TUBitmap.h"
-#include "Series.hpp"
+#include <VCLTee.Series.hpp>
 
 namespace RDK {
 

@@ -78,8 +78,7 @@ bool UAContainerEnvironment::CreateModel(const NameT& classname)
  if(!IsStoragePresent())
   return false;
 
- CurrentComponent=0;
- Model=dynamic_pointer_cast<UAContainer>(GetStorage()->TakeObject(classname));
+ CurrentComponent=Model=dynamic_pointer_cast<UAContainer>(GetStorage()->TakeObject(classname));
  if(Model)
  {
   return true;
@@ -227,7 +226,7 @@ bool UAContainerEnvironment::BuildStorage(void)
 // Операторы доступа к данным среды
 // --------------------------
 // Возвращает указатель на текущий компонент модели
-UAComponent* UAContainerEnvironment::operator () (void)
+UEPtr<UAComponent> UAContainerEnvironment::operator () (void)
 {
  return CurrentComponent;
 }

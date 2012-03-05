@@ -15,7 +15,7 @@ See file license.txt for more information
 #define TUBITMAP_H
 
 #include <vcl.h>
-#include "Chart.hpp"
+#include <VCLTee.Chart.hpp>
 #include "../../Core/Graphics/UBitmap.h"
 #pragma hdrstop
 
