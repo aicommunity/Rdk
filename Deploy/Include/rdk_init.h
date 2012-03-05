@@ -110,6 +110,32 @@ RDK_LIB_TYPE int RDK_CALL Env_CreateClass(const char* stringid);
 RDK_LIB_TYPE int RDK_CALL Env_Calculate(const char* stringid);
 
 // ***********************************************
+// Методы управления текущим компонентом
+// !!! Следующие методы влияют на все
+// методы, обращающиеся к компонентам по строковому id !!!
+// ***********************************************
+// Устанавливает текущий компонент (адресация относительно корня - модели)
+RDK_LIB_TYPE int RDK_CALL Env_SelectCurrentComponent(const char *stringid);
+
+// Сбрасывает текущий компонент в состояние по умолчению (модель)
+RDK_LIB_TYPE int RDK_CALL Env_ResetCurrentComponent(const char *stringid);
+
+// Меняет текущий компонент на его родителя (подъем на уровень вверх)
+// Если уже на верхнем уровне, то не делает ничего
+RDK_LIB_TYPE int RDK_CALL Env_UpCurrentComponent(void);
+
+// Меняет текущий компонент на его дочерний на произвольном уровне вложенности
+// (спуск на N уровней вниз относительно текущего компонента)
+RDK_LIB_TYPE int RDK_CALL Env_DownCurrentComponent(const char *stringid);
+
+// Возвращает длинное имя текущего компонента
+RDK_LIB_TYPE const char* RDK_CALL Env_GetCurrentComponentName(void);
+
+// Возвращает длинный строковой id текущего компонента
+RDK_LIB_TYPE const char* RDK_CALL Env_GetCurrentComponentId(void);
+// ***********************************************
+
+// ***********************************************
 // Вспомогательные функции управления средой. обычно вызов не требуется
 // ***********************************************
 // Индекс предварительно заданной модели обработки

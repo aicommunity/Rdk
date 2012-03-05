@@ -336,6 +336,50 @@ int RDK_CALL Env_Calculate(const char* stringid)
 {
  return PEngine->Env_Calculate(stringid);
 }
+
+// ***********************************************
+// Методы управления текущим компонентом
+// !!! Следующие методы влияют на все
+// методы, обращающиеся к компонентам по строковому id !!!
+// ***********************************************
+// Устанавливает текущий компонент (адресация относительно корня - модели)
+int RDK_CALL Env_SelectCurrentComponent(const char *stringid)
+{
+ return PEngine->Env_SelectCurrentComponent(stringid);
+}
+
+// Сбрасывает текущий компонент в состояние по умолчению (модель)
+int RDK_CALL Env_ResetCurrentComponent(const char *stringid)
+{
+ return PEngine->Env_ResetCurrentComponent(stringid);
+}
+
+// Меняет текущий компонент на его родителя (подъем на уровень вверх)
+// Если уже на верхнем уровне, то не делает ничего
+int RDK_CALL Env_UpCurrentComponent(void)
+{
+ return PEngine->Env_UpCurrentComponent();
+}
+
+// Меняет текущий компонент на его дочерний на произвольном уровне вложенности
+// (спуск на N уровней вниз относительно текущего компонента)
+int RDK_CALL Env_DownCurrentComponent(const char *stringid)
+{
+ return PEngine->Env_DownCurrentComponent(stringid);
+}
+
+// Возвращает длинное имя текущего компонента
+const char* RDK_CALL Env_GetCurrentComponentName(void)
+{
+ return PEngine->Env_GetCurrentComponentName();
+}
+
+// Возвращает длинный строковой id текущего компонента
+const char* RDK_CALL Env_GetCurrentComponentId(void)
+{
+ return PEngine->Env_GetCurrentComponentId();
+}
+// ***********************************************
 // --------------------------
 
 // --------------------------

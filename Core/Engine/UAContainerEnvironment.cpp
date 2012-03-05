@@ -226,9 +226,54 @@ bool UAContainerEnvironment::BuildStorage(void)
 // Операторы доступа к данным среды
 // --------------------------
 // Возвращает указатель на текущий компонент модели
-UEPtr<UAComponent> UAContainerEnvironment::operator () (void)
+UEPtr<UAContainer> UAContainerEnvironment::GetCurrentComponent(void)
 {
  return CurrentComponent;
+}
+
+// Устанавливает указатель на текущий компонент модели
+void UAContainerEnvironment::SelectCurrentComponent(const NameT &name)
+{
+ if(name == ForbiddenName)
+  CurrentComponent=Model;
+ else
+  CurrentComponent=Model->GetComponentL(name);
+}
+
+void UAContainerEnvironment::SelectCurrentComponent(const ULongId &id)
+{
+ if(id.GetSize() == 0 || id[0] == ForbiddenId)
+  CurrentComponent=Model;
+ else
+  CurrentComponent=Model->GetComponentL(id);
+}
+
+// Устанавливает указатель на текущий компонент модели на саму модель
+void UAContainerEnvironment::ResetCurrentComponent(void)
+{
+ CurrentComponent=Model;
+}
+
+// Устанавливает указатель на текущий компонент модели на родительский компонент
+// (переход на уровень вверх). Если уже указывает на модель, то не делает ничего
+void UAContainerEnvironment::UpCurrentComponent(void)
+{
+ if(CurrentComponent == Model)
+  return;
+
+ CurrentComponent=CurrentComponent->GetOwner();
+}
+
+// Устанавливает указатель на текущий компонент модели на дочерней компонент на
+// любом уровне (переход на уровень вниз).
+void UAContainerEnvironment::DownCurrentComponent(const NameT &name)
+{
+ CurrentComponent=GetCurrentComponent()->GetComponentL(name);
+}
+
+void UAContainerEnvironment::DownCurrentComponent(const ULongId &id)
+{
+ CurrentComponent=GetCurrentComponent()->GetComponentL(id);
 }
 // --------------------------
 
