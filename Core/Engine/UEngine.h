@@ -102,6 +102,9 @@ mutable string TempString;
 // Временное хранилище буфера для лога
 mutable string TempLogString;
 
+// Временное хранилище имени компонента
+mutable string CompName;
+
 
 public: // Методы
 // --------------------------
@@ -283,6 +286,28 @@ virtual int Env_CreateClass(const char* stringid);
 // Если stringid == 0 то вычисляет всю модель целиком,
 // иначе вычисляет только указанный компонент модели
 virtual int Env_Calculate(const char* stringid=0);
+
+// !!! Следующие методы управления текущим компонентом влияют на все
+// методы, обращающиеся к компонентам по строковому id !!!
+// Устанавливает текущий компонент (адресация относительно корня - модели)
+virtual int Env_SelectCurrentComponent(const char *stringid);
+
+// Сбрасывает текущий компонент в состояние по умолчению (модель)
+virtual int Env_ResetCurrentComponent(const char *stringid);
+
+// Меняет текущий компонент на его родителя (подъем на уровень вверх)
+// Если уже на верхнем уровне, то не делает ничего
+virtual int Env_UpCurrentComponent(void);
+
+// Меняет текущий компонент на его дочерний на произвольном уровне вложенности
+// (спуск на N уровней вниз относительно текущего компонента)
+virtual int Env_DownCurrentComponent(const char *stringid);
+
+// Возвращает длинное имя текущего компонента
+virtual const char* Env_GetCurrentComponentName(void) const;
+
+// Возвращает длинный строковой id текущего компонента
+virtual const char* Env_GetCurrentComponentId(void) const;
 
 // Методы управления моделью
 // ----------------------------

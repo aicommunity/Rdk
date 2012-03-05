@@ -820,6 +820,118 @@ int UEngine::Env_Calculate(const char* stringid)
  return 0;
 }
 
+// !!! Следующие методы управления текущим компонентом влияют на все
+// методы, обращающиеся к компонентам по строковому id !!!
+// Устанавливает текущий компонент (адресация относительно корня - модели)
+int UEngine::Env_SelectCurrentComponent(const char *stringid)
+{
+ try
+ {
+  Environment->ResetCurrentComponent();
+
+  // Если первый символ - цифра, то декодруем как строковой id
+  if(stringid[0]>=0x30 && stringid[0]<=0x39)
+  {
+   ULongId longid;
+   longid.DecodeFromString(stringid);
+   Environment->SelectCurrentComponent(longid);
+  }
+  else // ...иначе декодируем как строковое имя
+  {
+   Environment->SelectCurrentComponent(stringid);
+  }
+ }
+ catch (RDK::Exception * exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
+// Сбрасывает текущий компонент в состояние по умолчению (модель)
+int UEngine::Env_ResetCurrentComponent(const char *stringid)
+{
+ try
+ {
+  Environment->ResetCurrentComponent();
+ }
+ catch (RDK::Exception * exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
+// Меняет текущий компонент на его родителя (подъем на уровень вверх)
+// Если уже на верхнем уровне, то не делает ничего
+int UEngine::Env_UpCurrentComponent(void)
+{
+ try
+ {
+  Environment->UpCurrentComponent();
+ }
+ catch (RDK::Exception * exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
+// Меняет текущий компонент на его дочерний на произвольном уровне вложенности
+// (спуск на N уровней вниз относительно текущего компонента)
+int UEngine::Env_DownCurrentComponent(const char *stringid)
+{
+ try
+ {
+  // Если первый символ - цифра, то декодруем как строковой id
+  if(stringid[0]>=0x30 && stringid[0]<=0x39)
+  {
+   ULongId longid;
+   longid.DecodeFromString(stringid);
+   Environment->DownCurrentComponent(longid);
+  }
+  else // ...иначе декодируем как строковое имя
+  {
+   Environment->DownCurrentComponent(stringid);
+  }
+ }
+ catch (RDK::Exception * exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
+// Возвращает длинное имя текущего компонента
+const char* UEngine::Env_GetCurrentComponentName(void) const
+{
+ try
+ {
+  Environment->GetCurrentComponent()->GetLongName(Environment->GetModel(),TempString);
+ }
+ catch (RDK::Exception * exception)
+ {
+  ProcessException(exception);
+ }
+ return TempString.c_str();
+}
+
+// Возвращает длинный строковой id текущего компонента
+const char* UEngine::Env_GetCurrentComponentId(void) const
+{
+ try
+ {
+  ULongId longid;
+  Environment->GetCurrentComponent()->GetLongId(Environment->GetModel(),longid);
+  longid.EncodeToString(TempString);
+ }
+ catch (RDK::Exception * exception)
+ {
+  ProcessException(exception);
+ }
+ return TempString.c_str();
+}
+
 // Методы управления моделью
 // ----------------------------
 // Удаляет модель
@@ -2421,7 +2533,8 @@ int UEngine::LoadLibraries(void)
 // Если строковое id не задано, то возвращает указатель на модель
 UEPtr<UAContainer> UEngine::FindComponent(const char *stringid)
 {
- UEPtr<RDK::UANet> model=dynamic_pointer_cast<RDK::UANet>(Environment->GetModel());
+// UEPtr<RDK::UANet> model=dynamic_pointer_cast<RDK::UANet>(Environment->GetModel());
+ UEPtr<RDK::UANet> model=dynamic_pointer_cast<RDK::UANet>(Environment->GetCurrentComponent());
 
  if(!model)
   return 0;
@@ -2433,11 +2546,23 @@ UEPtr<UAContainer> UEngine::FindComponent(const char *stringid)
   cont=model;
  else
  {
-  longid.DecodeFromString(stringid);
-  if(!longid.GetSize() || longid[0] == ForbiddenId)
-   cont=model;
-  else
-   cont=dynamic_pointer_cast<RDK::UAContainer>(model->GetComponentL(longid));
+  // Если первый символ - цифра, то декодруем как строковой id
+  if(stringid[0]>=0x30 && stringid[0]<=0x39)
+  {
+   longid.DecodeFromString(stringid);
+   if(!longid.GetSize() || longid[0] == ForbiddenId)
+	cont=model;
+   else
+	cont=dynamic_pointer_cast<RDK::UAContainer>(model->GetComponentL(longid));
+  }
+  else // ...иначе декодируем как имя
+  {
+   if(strlen(stringid) == 0)
+	cont=model;
+   else
+    cont=dynamic_pointer_cast<RDK::UAContainer>(model->GetComponentL(stringid));
+  }
+
  }
 
  return cont;
