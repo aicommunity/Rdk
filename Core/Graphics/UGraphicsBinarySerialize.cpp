@@ -17,6 +17,7 @@ See file license.txt for more information
 namespace RDK {
 namespace Serialize {
 
+// UBMColorModel
 USerStorageBinary& operator << (USerStorageBinary& storage, UBMColorModel data)
 {
  return USimpleToStorage(storage,data);
@@ -25,6 +26,125 @@ USerStorageBinary& operator << (USerStorageBinary& storage, UBMColorModel data)
 USerStorageBinary& operator >> (USerStorageBinary& storage, UBMColorModel &data)
 {
  return USimpleFromStorage(storage,data);
+}
+
+// UColorT
+USerStorageBinary& operator << (USerStorageBinary& storage, const UColorT &data)
+{
+ return USimpleToStorage(storage,data);
+}
+
+USerStorageBinary& operator >> (USerStorageBinary& storage, UColorT &data)
+{
+ return USimpleFromStorage(storage,data);
+}
+
+//struct UBPoint;
+USerStorageBinary& operator << (USerStorageBinary& storage, const UBPoint &data)
+{
+ return USimpleToStorage(storage,data);
+}
+
+USerStorageBinary& operator >> (USerStorageBinary& storage, UBPoint &data)
+{
+ return USimpleFromStorage(storage,data);
+}
+
+//struct UBColorPoint;
+USerStorageBinary& operator << (USerStorageBinary& storage, const UBColorPoint &data)
+{
+ return USimpleToStorage(storage,data);
+}
+
+USerStorageBinary& operator >> (USerStorageBinary& storage, UBColorPoint &data)
+{
+ return USimpleFromStorage(storage,data);
+}
+
+//struct UBRect;
+USerStorageBinary& operator << (USerStorageBinary& storage, const UBRect &data)
+{
+ return USimpleToStorage(storage,data);
+}
+
+USerStorageBinary& operator >> (USerStorageBinary& storage, UBRect &data)
+{
+ return USimpleFromStorage(storage,data);
+}
+
+//struct UBHistogramElement;
+USerStorageBinary& operator << (USerStorageBinary& storage, const UBHistogramElement &data)
+{
+ return USimpleToStorage(storage,data);
+}
+
+USerStorageBinary& operator >> (USerStorageBinary& storage, UBHistogramElement &data)
+{
+ return USimpleFromStorage(storage,data);
+}
+
+//class UBHistogram;
+USerStorageBinary& operator << (USerStorageBinary& storage, const UBHistogram &data)
+{
+ return USimpleToStorage(storage,data);
+}
+
+USerStorageBinary& operator >> (USerStorageBinary& storage, UBHistogram &data)
+{
+ return USimpleFromStorage(storage,data);
+}
+
+//class UBitmap
+USerStorageBinary& operator << (USerStorageBinary& storage, const UBitmap &data)
+{
+ return USimpleToStorage(storage,data);
+}
+
+USerStorageBinary& operator >> (USerStorageBinary& storage, UBitmap &data)
+{
+ return USimpleFromStorage(storage,data);
+}
+
+//class UBitmapVector
+USerStorageBinary& operator << (USerStorageBinary& storage, const UBitmapVector &data)
+{
+ return USimpleToStorage(storage,data);
+}
+
+USerStorageBinary& operator >> (USerStorageBinary& storage, UBitmapVector &data)
+{
+ return USimpleFromStorage(storage,data);
+}
+
+// struct UBVSObject
+USerStorageBinary& operator << (USerStorageBinary& storage, const UBVSObject &data)
+{
+ operator << (storage,data.ObjectX);
+ operator << (storage,data.ObjectY);
+ operator << (storage,data.ObjectWidth);
+ operator << (storage,data.ObjectHeight);
+ operator << (storage,data.XShift);
+ operator << (storage,data.YShift);
+ operator << (storage,data.ObjectColor);
+ operator << (storage,data.Visible);
+ operator << (storage,data.MovingDirection);
+
+ return storage;
+}
+
+USerStorageBinary& operator >> (USerStorageBinary& storage, UBVSObject &data)
+{
+ operator >> (storage,data.ObjectX);
+ operator >> (storage,data.ObjectY);
+ operator >> (storage,data.ObjectWidth);
+ operator >> (storage,data.ObjectHeight);
+ operator >> (storage,data.XShift);
+ operator >> (storage,data.YShift);
+ operator >> (storage,data.ObjectColor);
+ operator >> (storage,data.Visible);
+ operator >> (storage,data.MovingDirection);
+
+ return storage;
 }
 
 }

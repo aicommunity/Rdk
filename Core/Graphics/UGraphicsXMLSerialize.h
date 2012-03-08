@@ -14,6 +14,7 @@ See file license.txt for more information
 
 #include "UBitmap.h"
 #include "UBitmapVector.h"
+#include "Libraries/Simulator/UBAVideoSimulator.h"
 #include "../Serialize/USerStorageXML.h"
 
 namespace RDK {
@@ -54,6 +55,10 @@ USerStorageXML& operator >> (USerStorageXML& storage, UBitmap &data);
 //class UBitmapVector
 USerStorageXML& operator << (USerStorageXML& storage, const UBitmapVector &data);
 USerStorageXML& operator >> (USerStorageXML& storage, UBitmapVector &data);
+
+// struct UBVSObject
+USerStorageXML& operator << (USerStorageXML& storage, const UBVSObject &data);
+USerStorageXML& operator >> (USerStorageXML& storage, UBVSObject &data);
 
 }
 }

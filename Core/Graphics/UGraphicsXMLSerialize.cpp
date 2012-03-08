@@ -347,6 +347,97 @@ USerStorageXML& operator >> (USerStorageXML& storage, UBitmapVector &data)
  return storage;
 }
 
+// struct UBVSObject
+USerStorageXML& operator << (USerStorageXML& storage, const UBVSObject &data)
+{
+ storage.AddNode("ObjectX");
+ operator << (storage,data.ObjectX);
+ storage.SelectUp();
+
+ storage.AddNode("ObjectY");
+ operator << (storage,data.ObjectY);
+ storage.SelectUp();
+
+ storage.AddNode("ObjectWidth");
+ operator << (storage,data.ObjectWidth);
+ storage.SelectUp();
+
+ storage.AddNode("ObjectHeight");
+ operator << (storage,data.ObjectHeight);
+ storage.SelectUp();
+
+ storage.AddNode("XShift");
+ operator << (storage,data.XShift);
+ storage.SelectUp();
+
+ storage.AddNode("YShift");
+ operator << (storage,data.YShift);
+ storage.SelectUp();
+
+ storage.AddNode("ObjectColor");
+ operator << (storage,data.ObjectColor);
+ storage.SelectUp();
+
+ storage.AddNode("Visible");
+ operator << (storage,data.Visible);
+ storage.SelectUp();
+
+ storage.AddNode("MovingDirection");
+ operator << (storage,data.MovingDirection);
+ storage.SelectUp();
+
+ return storage;
+}
+
+USerStorageXML& operator >> (USerStorageXML& storage, UBVSObject &data)
+{
+ if(!storage.SelectNode("ObjectX"))
+  return storage;
+ operator >> (storage,data.ObjectX);
+ storage.SelectUp();
+
+ if(!storage.SelectNode("ObjectY"))
+  return storage;
+ operator >> (storage,data.ObjectY);
+ storage.SelectUp();
+
+ if(!storage.SelectNode("ObjectWidth"))
+  return storage;
+ operator >> (storage,data.ObjectWidth);
+ storage.SelectUp();
+
+ if(!storage.SelectNode("ObjectHeight"))
+  return storage;
+ operator >> (storage,data.ObjectHeight);
+ storage.SelectUp();
+
+ if(!storage.SelectNode("XShift"))
+  return storage;
+ operator >> (storage,data.XShift);
+ storage.SelectUp();
+
+ if(!storage.SelectNode("YShift"))
+  return storage;
+ operator >> (storage,data.YShift);
+ storage.SelectUp();
+
+ if(!storage.SelectNode("ObjectColor"))
+  return storage;
+ operator >> (storage,data.ObjectColor);
+ storage.SelectUp();
+
+ if(!storage.SelectNode("Visible"))
+  return storage;
+ operator >> (storage,data.Visible);
+ storage.SelectUp();
+
+ if(!storage.SelectNode("MovingDirection"))
+  return storage;
+ operator >> (storage,data.MovingDirection);
+ storage.SelectUp();
+
+ return storage;
+}
 
 }
 }
