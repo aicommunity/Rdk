@@ -44,6 +44,7 @@ class UIniFile
 typedef basic_string<CharT> StringT;
 typedef list<StringT> StringListT;
 typedef typename list<StringT>::iterator StringListIteratorT;
+typedef typename StringT::size_type SizeT;
 
 private: // Служебные константы
 // Символы запрещенные в комментариях
@@ -158,7 +159,7 @@ bool GetSectionList(vector<StringT> &buffer)
 
  while(I != J)
  {
-  if(DecodeAsSection(*I, start, stop)) 
+  if(DecodeAsSection(*I, start, stop))
   {
    if((int)buffer.size() <= count)
     buffer.resize(count+1);
@@ -176,8 +177,8 @@ bool GetSectionList(vector<StringT> &buffer)
 bool GetVariableList(const StringT &section, vector<StringT> &buffer)
 {
  typename list<StringT>::const_iterator I,J;
- int start=0,stop=0;
- int startvalue=0;
+ SizeT start=0,stop=0;
+ SizeT startvalue=0;
  int count=0;
 
  I=FindSection(section);
@@ -191,10 +192,10 @@ bool GetVariableList(const StringT &section, vector<StringT> &buffer)
 
  while(I != J)
  {
-  if(DecodeAsSection(*I, start, stop)) 
+  if(DecodeAsSection(*I, start, stop))
    return true;
 
-  if(DecodeAsVariable(*I, start, stop, startvalue)) 
+  if(DecodeAsVariable(*I, start, stop, startvalue))
   {
    if((int)buffer.size() <= count)
     buffer.resize(count+1);
@@ -226,7 +227,7 @@ bool GetSectionLines(const StringT &section, vector<StringT> &buffer)
 
  while(I != J)
  {
-  if(DecodeAsSection(*I, start, stop)) 
+  if(DecodeAsSection(*I, start, stop))
    return true;
 
   if((int)buffer.size() <= count)
@@ -234,7 +235,7 @@ bool GetSectionLines(const StringT &section, vector<StringT> &buffer)
 
    buffer[count]=*I;
    ++count;
-  
+
   ++I;
  }
 
@@ -270,7 +271,7 @@ bool Add(const StringT &section)
   return true;
 
  Lines.push_back(StringT(1,'[')+section+StringT(1,']'));
- 
+
  return true;
 };
 
@@ -281,7 +282,7 @@ bool Add(const StringT &section)
 bool Add(const StringT &section, const StringT &variable, const StringT &value)
 {
  StringT* result=0;
- int startname=0, stopname=0, startvalue=0;
+ SizeT startname=0, stopname=0, startvalue=0;
  typename list<StringT>::iterator I;
 
  if(!CheckName(variable))
@@ -292,14 +293,14 @@ bool Add(const StringT &section, const StringT &variable, const StringT &value)
   I=FindSection(section);
 
   if(I == Lines.end())
-  { 
+  {
    if(!Add(section))
     return false;
    I=Lines.end();
   }
   else
    ++I;
-    
+
   StringT temp=variable;
   temp+=' '; temp+='='; temp+=' '; temp+=value;
   Lines.insert(I,temp);
@@ -319,14 +320,14 @@ bool Add(const StringT &section, const StringT &variable, const StringT &value)
 bool Rename(const StringT &section, const StringT &newsection)
 {
  StringT* result=0;
- int startname=0, stopname=0;
+ SizeT startname=0, stopname=0;
 
  if(!CheckName(newsection))
   return false;
 
  if(FindSection(section,result,startname,stopname) && result)
  {
-  *result=result->substr(0,startname-1)+newsection+result->substr(stopname+1);  
+  *result=result->substr(0,startname-1)+newsection+result->substr(stopname+1);
   return true;
  }
 
@@ -337,14 +338,14 @@ bool Rename(const StringT &section, const StringT &newsection)
 bool Rename(const StringT &section, const StringT &variable, const StringT &newvariable)
 {
  StringT* result=0;
- int startname=0, stopname=0, startvalue=0;
+ SizeT startname=0, stopname=0, startvalue=0;
 
  if(!CheckName(newvariable))
   return false;
 
  if(FindVariable(section,variable,result,startname,stopname,startvalue) && result)
  {
-  *result=result->substr(0,startname-1)+newvariable+result->substr(stopname+1);  
+  *result=result->substr(0,startname-1)+newvariable+result->substr(stopname+1);
   return true;
  }
 
@@ -362,7 +363,7 @@ bool Delete(void)
 bool Delete(const StringT &section)
 {
  typename list<StringT>::iterator I,J,K;
- int start=0,stop=0;
+ SizeT start=0,stop=0;
 
  I=FindSection(section);
  J=Lines.end();
@@ -375,7 +376,7 @@ bool Delete(const StringT &section)
  Lines.erase(K);
  while(I != J)
  {
-  if(DecodeAsSection(*I, start, stop)) 
+  if(DecodeAsSection(*I, start, stop))
    return true;
 
   K=I; ++I;
@@ -417,7 +418,7 @@ bool LoadFromFile(const StringT &FileName)
  file.close();
  return true;
 };
-        
+
 // Обновить файл на диске
 // Метод не делает ничего, если FileName == ""
 bool SaveToFile(const StringT &FileName)
@@ -438,7 +439,7 @@ bool SaveToFile(const StringT &FileName)
   if(I != J)
    file<<endl;//.write("\n",1);
  }
-      
+
  file.close();
  return true;
 };
@@ -463,13 +464,13 @@ UIniFile& operator = (const UIniFile &inifile)
 StringT operator () (const StringT &section, const StringT &variable, const CharT *def=0)
 {
  StringT* result=0;
- int startname=0, stopname=0, startvalue=0;
+ SizeT startname=0, stopname=0, startvalue=0;
 
  if(FindVariable(section, variable, result, startname, stopname, startvalue))
  {
   if(result)
   {
-   if(startvalue != int(StringT::npos))
+   if(startvalue != StringT::npos)
     return result->substr(startvalue);
    else
    {
@@ -503,13 +504,13 @@ protected: // скрытые методы
 StringListIteratorT FindSection(const StringT &section)
 {
  typename list<StringT>::iterator I,J;
- int start=0,stop=0;
+ SizeT start=0,stop=0;
 
  I=Lines.begin(); J=Lines.end();
 
  while(I != J)
  {
-  if(DecodeAsSection(*I, start, stop)) 
+  if(DecodeAsSection(*I, start, stop))
   {
    StringT str=I->substr(start,stop-start+1);
    if(section == I->substr(start,stop-start+1))
@@ -527,7 +528,7 @@ StringListIteratorT FindSection(const StringT &section)
 // result - ссылка на найденную строку
 // start - начало имени секции (после открывающей '[')
 // stop - конец имени секции (перед закрывающей ']')
-bool FindSection(const StringT &section, StringT* &result, int &start, int &stop)
+bool FindSection(const StringT &section, StringT* &result, SizeT &start, SizeT &stop)
 {
  typename list<StringT>::iterator I,J;
 
@@ -536,7 +537,7 @@ bool FindSection(const StringT &section, StringT* &result, int &start, int &stop
 
  while(I != J)
  {
-  if(DecodeAsSection(*I, start, stop)) 
+  if(DecodeAsSection(*I, start, stop))
   {
    if(section == I->substr(start,stop-start+1))
    {
@@ -566,10 +567,10 @@ StringListIteratorT FindVariable(const StringT &section, const StringT &variable
  ++I;
  while(I != J)
  {
-  if(DecodeAsSection(*I, startname, stopname)) 
+  if(DecodeAsSection(*I, startname, stopname))
    return J;
 
-  if(DecodeAsVariable(*I, startname, stopname, startvalue)) 
+  if(DecodeAsVariable(*I, startname, stopname, startvalue))
   {
    if(variable == I->substr(startname,stopname-startname+1))
     break;
@@ -587,10 +588,10 @@ StringListIteratorT FindVariable(const StringT &section, const StringT &variable
 // startname - начало имени переменной (после открывающих пробелов)
 // stopname - конец имени переменной (перед '=' или завершающими имя пробелами)
 // startvalue - начало значения переменной (после '=' и открывающих пробелов)
-bool FindVariable(const StringT &section, const StringT &variable, 
-            StringT* &result, 
-            int &startname, int &stopname,
-            int &startvalue)
+bool FindVariable(const StringT &section, const StringT &variable,
+            StringT* &result,
+            SizeT &startname, SizeT &stopname,
+            SizeT &startvalue)
 {
  typename list<StringT>::iterator I,J;
 
@@ -605,10 +606,10 @@ bool FindVariable(const StringT &section, const StringT &variable,
  ++I;
  while(I != J)
  {
-  if(DecodeAsSection(*I, startname, stopname)) 
+  if(DecodeAsSection(*I, startname, stopname))
    return false;
 
-  if(DecodeAsVariable(*I, startname, stopname, startvalue)) 
+  if(DecodeAsVariable(*I, startname, stopname, startvalue))
   {
    if(variable == I->substr(startname,stopname-startname+1))
    {
@@ -624,9 +625,9 @@ bool FindVariable(const StringT &section, const StringT &variable,
 
 // Пытается декодировать строку 'str' как комментарий
 // В случае успеха возвращает true и начало комментария 'start' (после открывающих пробелов)
-bool DecodeAsComment(const StringT &str, int &start)
+bool DecodeAsComment(const StringT &str, SizeT &start)
 {
- int i=str.find_first_not_of(' ');
+ SizeT i=str.find_first_not_of(' ');
  if(i == StringT::npos)
   return false;
 
@@ -644,9 +645,9 @@ bool DecodeAsComment(const StringT &str, int &start)
 // В случае успеха возвращает true и
 // start - начало имени секции (после открывающей '[')
 // stop - конец имени секции (перед закрывающей ']')
-bool DecodeAsSection(const StringT &str, int &start, int &stop)
+bool DecodeAsSection(const StringT &str, SizeT &start, SizeT &stop)
 {
- int i=str.find_first_not_of(' ');
+ SizeT i=str.find_first_not_of(' ');
  if(i == StringT::npos)
   return false;
 
@@ -679,13 +680,13 @@ bool DecodeAsSection(const StringT &str, int &start, int &stop)
 // startname - начало имени переменной (после открывающих пробелов)
 // stopname - конец имени переменной (перед '=' или завершающими имя пробелами)
 // startvalue - начало значения переменной (после '=' и открывающих пробелов)
-bool DecodeAsVariable(const StringT &str, int &startname, int &stopname, int &startvalue)
+bool DecodeAsVariable(const StringT &str, SizeT &startname, SizeT &stopname, SizeT &startvalue)
 {
  startname=str.find_first_not_of(' ');
  if(startname == StringT::npos)
   return false;
 
- int i=str.find_first_of('=');
+ std::string::size_type i=str.find_first_of('=');
 
  if(i == StringT::npos)
   return false;

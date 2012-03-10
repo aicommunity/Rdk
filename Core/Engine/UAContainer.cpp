@@ -59,7 +59,7 @@ UPVariable::~UPVariable(void)
 // Конструкторы и деструкторы
 // --------------------------
 UAContainer::UAContainer(void)
- : PComponents(0), NumComponents(0), LastId(0), Id(0)
+ : PComponents(0), NumComponents(0), Id(0), LastId(0),
 {
  AddLookupProperty("Id",new UVProperty<UId,UAContainer>(this,&UAContainer::SetId,&UAContainer::GetId));
  AddLookupProperty("Name",new UVProperty<NameT,UAContainer>(this,&UAContainer::SetName,&UAContainer::GetName));
@@ -513,8 +513,6 @@ UEPtr<UAContainer> UAContainer::Alloc(UEPtr<UAContainerStorage> stor, bool copys
 // и значений параметров
 bool UAContainer::Copy(UEPtr<UAContainer> target, UEPtr<UAContainerStorage> stor, bool copystate) const
 {
- bool res=true;
-
  CopyProperties(target);
  target->Build();
 

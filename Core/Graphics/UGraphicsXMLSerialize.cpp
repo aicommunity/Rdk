@@ -42,7 +42,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, UBMColorModel &data)
  std::istringstream stream(storage.GetNodeText().c_str());
  int temp;
  stream>>temp;
- data=temp;
+ data=UBMColorModel(temp);
 
  return storage;
 }

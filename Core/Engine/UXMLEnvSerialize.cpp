@@ -78,8 +78,6 @@ USerStorageXML& operator >> (USerStorageXML& storage, UIdVector &data)
  }
  data.Resize(size);
 
- UId* pdata=&data[0];
-
  std::stringstream stream(storage.GetNodeText().c_str());
 
  for(int i=0;i<size;i++)

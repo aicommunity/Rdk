@@ -258,6 +258,7 @@ virtual ~MEulerCSystem(void)
 virtual bool ConvertTo(const MCSystem<T> &csystem,
                         const MVector<T> &input, MVector<T> &output) const
 {
+ return true;
 };
 // --------------------------
 
@@ -319,6 +320,7 @@ virtual ~MPolarCSystem(void)
 virtual bool ConvertTo(const MCSystem<T> &csystem,
                         const MVector<T> &input, MVector<T> &output) const
 {
+ return true;
 };
 // --------------------------
 

@@ -359,7 +359,7 @@ virtual bool Save(UEPtr<Serialize::USerStorage>  storage, bool simplemode=false)
  {
   if(simplemode)
   {
-   xml->Create(GetName());
+   xml->Create(this->GetName());
    Serialize::operator << (*xml,(*this)());
    xml->SelectUp();
    return true;
@@ -403,7 +403,7 @@ virtual bool Load(UEPtr<Serialize::USerStorage>  storage, bool simplemode=false)
   if(simplemode)
   {
    xml->SelectRoot();
-   if(xml->GetNodeName() != GetName())
+   if(xml->GetNodeName() != this->GetName())
 	return false;
    Serialize::operator >> (*xml,temp);
    *this=temp;
@@ -600,7 +600,7 @@ virtual bool Save(UEPtr<Serialize::USerStorage> storage, bool simplemode=false)
  {
   if(simplemode)
   {
-   xml->Create(GetName());
+   xml->Create(this->GetName());
    Serialize::operator << (*xml,(*this)());
    xml->SelectUp();
    return true;
@@ -647,7 +647,7 @@ virtual bool Load(UEPtr<Serialize::USerStorage> storage, bool simplemode=false)
   if(simplemode)
   {
    xml->SelectRoot();
-   if(xml->GetNodeName() != GetName())
+   if(xml->GetNodeName() != this->GetName())
 	return false;
    Serialize::operator >> (*xml,temp);
    *this=temp;

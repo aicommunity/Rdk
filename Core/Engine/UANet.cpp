@@ -293,7 +293,7 @@ bool UANet::BreakLink(const ULink &link)
   if(connector.Id.GetSize() == 0 || connector.Id[0] == ForbiddenId)
    pconnector=this;
   else
-   pconnector==dynamic_pointer_cast<UAConnector>(GetComponentL(connector.Id));
+   pconnector=dynamic_pointer_cast<UAConnector>(GetComponentL(connector.Id));
 
   if(!pitem || !pconnector)
    return false;
@@ -318,7 +318,7 @@ bool UANet::BreakLink(const ULinkSide &item, const ULinkSide &connector)
  if(connector.Id.GetSize() == 0 || connector.Id[0] == ForbiddenId)
   pconnector=this;
  else
-  pconnector==dynamic_pointer_cast<UAConnector>(GetComponentL(connector.Id));
+  pconnector=dynamic_pointer_cast<UAConnector>(GetComponentL(connector.Id));
 
  if(!pitem || !pconnector)
   return false;

@@ -739,7 +739,7 @@ double RDK_CALL Model_GetDoubleRealTimeStep(void)
 // Управление функцией-обработчиком исключений
 void* RDK_CALL Engine_GetExceptionHandler(void)
 {
- return PEngine->GetExceptionHandler();
+ return reinterpret_cast<void*>(PEngine->GetExceptionHandler());
 }
 
 bool RDK_CALL Engine_SetExceptionHandler(void* value)
