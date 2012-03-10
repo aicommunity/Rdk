@@ -337,6 +337,16 @@ int RDK_CALL Env_Calculate(const char* stringid)
  return PEngine->Env_Calculate(stringid);
 }
 
+// Метод сброса счета
+// Если stringid == 0 то сбрасывает всю модель целиком,
+// иначе - только указанный компонент модели
+int RDK_CALL Env_Reset(const char* stringid)
+{
+ return PEngine->Env_Reset(stringid);
+}
+
+
+
 // ***********************************************
 // Методы управления текущим компонентом
 // !!! Следующие методы влияют на все
@@ -669,6 +679,57 @@ const char * RDK_CALL Model_SaveComponentState(const char *stringid)
 int RDK_CALL Model_LoadComponentState(const char *stringid, char* buffer)
 {
  return PEngine->Model_LoadComponentState(stringid, buffer);
+}
+
+// Возвращает текущее время модели
+long long RDK_CALL Model_GetTime(void)
+{
+ return PEngine->Model_GetTime();
+}
+
+double RDK_CALL Model_GetDoubleTime(void)
+{
+ return PEngine->Model_GetDoubleTime();
+}
+
+// Устанавливает текущее время модели
+bool RDK_CALL Model_SetTime(long long value)
+{
+ return PEngine->Model_SetTime(value);
+}
+
+// Возвращает реальное время
+long long RDK_CALL Model_GetRealTime(void)
+{
+ return PEngine->Model_GetRealTime();
+}
+
+double RDK_CALL Model_GetDoubleRealTime(void)
+{
+ return PEngine->Model_GetDoubleRealTime();
+}
+
+// Устанавливает реальное время
+bool RDK_CALL Model_SetRealTime(long long value)
+{
+ return PEngine->Model_SetRealTime(value);
+}
+
+// Увеличивает реальное время на заданную величину
+bool RDK_CALL Model_IncreaseRealTime(long long value)
+{
+ return PEngine->Model_IncreaseRealTime(value);
+}
+
+// Возвращает мгновенный шаг в реальном времени
+long long RDK_CALL Model_GetRealTimeStep(void)
+{
+ return PEngine->Model_GetRealTimeStep();
+}
+
+double RDK_CALL Model_GetDoubleRealTimeStep(void)
+{
+ return PEngine->Model_GetDoubleRealTimeStep();
 }
 // --------------------------
 

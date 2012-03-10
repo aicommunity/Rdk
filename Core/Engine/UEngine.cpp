@@ -820,6 +820,37 @@ int UEngine::Env_Calculate(const char* stringid)
  return 0;
 }
 
+
+// Метод сброса счета
+// Если stringid == 0 то сбрасывает всю модель целиком,
+// иначе - только указанный компонент модели
+int UEngine::Env_Reset(const char* stringid)
+{
+ try
+ {
+  RDK::ULongId id;
+  if(!stringid)
+  {
+   Environment->SetModelCalculationComponent(id);
+  }
+  else
+  {
+   id.DecodeFromString(stringid);
+   Environment->SetModelCalculationComponent(id);
+  }
+
+  if(!Environment->Reset())
+   return 1;
+ }
+ catch (RDK::Exception * exception)
+ {
+  ProcessException(exception);
+ }
+
+
+ return 0;
+}
+
 // !!! Следующие методы управления текущим компонентом влияют на все
 // методы, обращающиеся к компонентам по строковому id !!!
 // Устанавливает текущий компонент (адресация относительно корня - модели)
@@ -2412,6 +2443,57 @@ int UEngine::Model_LoadComponentState(RDK::UANet* cont, RDK::Serialize::USerStor
  }
 
  return true;
+}
+
+// Возвращает текущее время модели
+long long UEngine::Model_GetTime(void)
+{
+ return UTimeControl::GetTime();
+}
+
+double UEngine::Model_GetDoubleTime(void)
+{
+ return UTimeControl::GetDoubleTime();
+}
+
+// Устанавливает текущее время модели
+bool UEngine::Model_SetTime(long long value)
+{
+ return UTimeControl::SetTime(value);
+}
+
+// Возвращает реальное время
+long long UEngine::Model_GetRealTime(void)
+{
+ return UTimeControl::GetRealTime();
+}
+
+double UEngine::Model_GetDoubleRealTime(void)
+{
+ return UTimeControl::GetDoubleRealTime();
+}
+
+// Устанавливает реальное время
+bool UEngine::Model_SetRealTime(long long value)
+{
+ return UTimeControl::SetRealTime(value);
+}
+
+// Увеличивает реальное время на заданную величину
+bool UEngine::Model_IncreaseRealTime(long long value)
+{
+ return UTimeControl::IncreaseRealTime(value);
+}
+
+// Возвращает мгновенный шаг в реальном времени
+long long UEngine::Model_GetRealTimeStep(void)
+{
+ return UTimeControl::GetRealTimeStep();
+}
+
+double UEngine::Model_GetDoubleRealTimeStep(void)
+{
+ return UTimeControl::GetDoubleRealTimeStep();
 }
 // --------------------------
 

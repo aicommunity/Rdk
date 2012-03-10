@@ -28,6 +28,7 @@ See file license.txt for more information
 #include "UContainerDescription.cpp"     
 #include "UADataComponent.cpp"
 
+#include "Libraries/UELibraries.cpp"
 
 
 #endif

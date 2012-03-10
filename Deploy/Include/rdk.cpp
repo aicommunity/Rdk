@@ -62,6 +62,8 @@ UAContainerEnvironment* CreateEnvironment(UAContainerEnvironment *environment, U
   }
  }
 
+ env->AddClassLibrary(&IOLibrary);
+
  if(external_libs != 0)
  {
   list<UALibrary*>::iterator I,J;

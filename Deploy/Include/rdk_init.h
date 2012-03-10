@@ -109,6 +109,11 @@ RDK_LIB_TYPE int RDK_CALL Env_CreateClass(const char* stringid);
 // иначе вычисляет только указанный компонент модели
 RDK_LIB_TYPE int RDK_CALL Env_Calculate(const char* stringid);
 
+// Метод сброса счета
+// Если stringid == 0 то сбрасывает всю модель целиком,
+// иначе - только указанный компонент модели
+RDK_LIB_TYPE int RDK_CALL Env_Reset(const char* stringid);
+
 // ***********************************************
 // Методы управления текущим компонентом
 // !!! Следующие методы влияют на все
@@ -359,6 +364,27 @@ RDK_LIB_TYPE const char * RDK_CALL Model_SaveComponentState(const char *stringid
 
 // Загружает состояние компонента и его дочерних компонент из xml
 RDK_LIB_TYPE int RDK_CALL Model_LoadComponentState(const char *stringid, char* buffer);
+
+// Возвращает текущее время модели
+RDK_LIB_TYPE long long RDK_CALL Model_GetTime(void);
+RDK_LIB_TYPE double RDK_CALL Model_GetDoubleTime(void);
+
+// Устанавливает текущее время модели
+RDK_LIB_TYPE bool RDK_CALL Model_SetTime(long long value);
+
+// Возвращает реальное время
+RDK_LIB_TYPE long long RDK_CALL Model_GetRealTime(void);
+RDK_LIB_TYPE double RDK_CALL Model_GetDoubleRealTime(void);
+
+// Устанавливает реальное время
+RDK_LIB_TYPE bool RDK_CALL Model_SetRealTime(long long value);
+
+// Увеличивает реальное время на заданную величину
+RDK_LIB_TYPE bool RDK_CALL Model_IncreaseRealTime(long long value);
+
+// Возвращает мгновенный шаг в реальном времени
+RDK_LIB_TYPE long long RDK_CALL Model_GetRealTimeStep(void);
+RDK_LIB_TYPE double RDK_CALL Model_GetDoubleRealTimeStep(void);
 // --------------------------
 
 // --------------------------
