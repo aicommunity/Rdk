@@ -127,7 +127,7 @@ bool SetSComment(const StringT& sc)
 bool Check(const StringT &section)
 {
  StringT* result=0;
- int startname=0, stopname=0;
+ SizeT startname=0, stopname=0;
 
  if(FindSection(section,result,startname,stopname))
   return true;
@@ -139,7 +139,7 @@ bool Check(const StringT &section)
 bool Check(const StringT &section, const StringT &variable)
 {
  StringT* result=0;
- int startname=0, stopname=0, startvalue=0;
+ SizeT startname=0, stopname=0, startvalue=0;
 
  if(FindVariable(section,variable,result,startname,stopname,startvalue))
   return true;
@@ -151,7 +151,7 @@ bool Check(const StringT &section, const StringT &variable)
 bool GetSectionList(vector<StringT> &buffer)
 {
  typename list<StringT>::const_iterator I,J;
- int start=0,stop=0;
+ SizeT start=0,stop=0;
  int count=0;
 
  I=Lines.begin(); J=Lines.end();
@@ -213,7 +213,7 @@ bool GetVariableList(const StringT &section, vector<StringT> &buffer)
 bool GetSectionLines(const StringT &section, vector<StringT> &buffer)
 {
  typename list<StringT>::const_iterator I,J;
- int start=0,stop=0;
+ SizeT start=0,stop=0;
  int count=0;
 
  I=FindSection(section);
