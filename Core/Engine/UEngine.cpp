@@ -1019,7 +1019,7 @@ int UEngine::Model_Clear(void)
 
 // Добавляет в выбранный контейнер модели с идентификатором 'stringid' экземпляр контейнера с заданным 'classid'
 // если stringid - пустая строка, то добавляет в саму модель
-int UEngine::Model_AddComponent(char* stringid, int classid)
+int UEngine::Model_AddComponent(const char* stringid, int classid)
 {
  try
  {
@@ -1044,7 +1044,7 @@ int UEngine::Model_AddComponent(char* stringid, int classid)
 
 // Удаляет из выбранного контейнера модели с идентификатором 'stringid' экземпляр контейнера с заданным 'id'
 // если stringid - пустая строка, то удаляет из самой модели
-int UEngine::Model_DelComponent(char* stringid, int id)
+int UEngine::Model_DelComponent(const char* stringid, int id)
 {
  try
  {
@@ -1134,26 +1134,19 @@ const char* UEngine::Model_GetComponentParameters(const char *stringid)
 {
  try
  {
-  UEPtr<RDK::UANet> model=dynamic_pointer_cast<RDK::UANet>(Environment->GetModel());
+  TempString="";
+  UEPtr<RDK::UAContainer> cont=FindComponent(stringid);
 
-  if(!model)
-   return 0;
-
-  RDK::ULongId id;
-  string namebuffer;
-
-  UEPtr<RDK::UAContainer> cont=model->GetComponentL(id.DecodeFromString(stringid));
   if(!cont)
-   return 0;
+   return TempString.c_str();
 
-  XmlStorage.Create(cont->GetLongName(model,namebuffer));
+  XmlStorage.Create(cont->GetLongName(Environment->GetCurrentComponent(),CompName));
   XmlStorage.AddNode("Parameters");
 
   if(!Model_GetComponentParameters(cont,&XmlStorage))
    return 0;
 
   XmlStorage.SelectUp();
-  TempString="";
   XmlStorage.Save(TempString);
   return TempString.c_str();
  }
@@ -1183,26 +1176,18 @@ const char* UEngine::Model_GetComponentParametersEx(const char *stringid)
 {
  try
  {
-  UEPtr<RDK::UANet> model=dynamic_pointer_cast<RDK::UANet>(Environment->GetModel());
-
-  if(!model)
-   return 0;
-
-  RDK::ULongId id;
-  string namebuffer;
-
-  UEPtr<RDK::UAContainer> cont=model->GetComponentL(id.DecodeFromString(stringid));
+  TempString="";
+  UEPtr<RDK::UAContainer> cont=FindComponent(stringid);
   if(!cont)
-   return 0;
+   return TempString.c_str();
 
-  XmlStorage.Create(cont->GetLongName(model,namebuffer));
+  XmlStorage.Create(cont->GetLongName(Environment->GetCurrentComponent(),CompName));
   XmlStorage.AddNode("Parameters");
 
   if(!Model_GetComponentParametersEx(cont,&XmlStorage))
    return 0;
 
   XmlStorage.SelectUp();
-  TempString="";
   XmlStorage.Save(TempString);
   return TempString.c_str();
  }
@@ -1218,26 +1203,12 @@ const char * UEngine::Model_GetComponentParameterValue(const char *stringid, con
 {
  try
  {
-  UEPtr<RDK::UANet> model=dynamic_pointer_cast<RDK::UANet>(Environment->GetModel());
-
-  if(!model)
-   return 0;
-
-  RDK::ULongId id;
-//  string namebuffer;
-
-  UEPtr<RDK::UAContainer> cont=model->GetComponentL(id.DecodeFromString(stringid));
+  TempString="";
+  UEPtr<RDK::UAContainer> cont=FindComponent(stringid);
   if(!cont)
-   return 0;
-
-//  XmlStorage.Create(cont->GetLongName(model,namebuffer));
-//  XmlStorage.AddNode("Parameters");
+   return TempString.c_str();
 
   cont->GetPropertyValue(paramname,TempString);
-
-//  XmlStorage.SelectUp();
-//  TempString="";
-//  XmlStorage.Save(TempString);
   return TempString.c_str();
  }
  catch (Exception * exception)
@@ -1252,19 +1223,11 @@ bool UEngine::Model_SetComponentParameters(const char *stringid, const char* buf
 {
  try
  {
-  UEPtr<RDK::UANet> model=dynamic_pointer_cast<RDK::UANet>(Environment->GetModel());
-
-  if(!model)
-   return false;
-
-  RDK::ULongId id;
-  string namebuffer;
-
-  UEPtr<RDK::UAContainer> cont=model->GetComponentL(id.DecodeFromString(stringid));
+  UEPtr<RDK::UAContainer> cont=FindComponent(stringid);
   if(!cont)
    return false;
 
-  XmlStorage.Load(buffer, cont->GetLongName(model,namebuffer));
+  XmlStorage.Load(buffer, cont->GetLongName(Environment->GetCurrentComponent(),CompName));
   XmlStorage.SelectNode("Parameters");
 
   if(!Model_SetComponentParameters(cont,&XmlStorage))
@@ -1284,23 +1247,11 @@ void UEngine::Model_SetComponentParameterValue(const char *stringid, const char 
 {
  try
  {
-  UEPtr<RDK::UANet> model=dynamic_pointer_cast<RDK::UANet>(Environment->GetModel());
-
-  if(!model)
-   return;
-
-  RDK::ULongId id;
-//  string namebuffer;
-
-  UEPtr<RDK::UAContainer> cont=model->GetComponentL(id.DecodeFromString(stringid));
+  UEPtr<RDK::UAContainer> cont=FindComponent(stringid);
   if(!cont)
    return;
 
-//  XmlStorage.Load(buffer, cont->GetLongName(model,namebuffer));
-//  XmlStorage.SelectNode("Parameters");
-
   cont->SetPropertyValue(paramname,buffer);
-//  XmlStorage.SelectUp();
  }
  catch (Exception * exception)
  {
@@ -1798,7 +1749,6 @@ unsigned char* UEngine::Model_GetComponentOutputData(const char *stringid, int i
 // переменные состояния в xml
 const char *  UEngine::Model_SaveComponent(const char *stringid)
 {
- std::string str;
  try
  {
   UEPtr<RDK::UANet> cont=dynamic_pointer_cast<RDK::UANet>(FindComponent(stringid));
@@ -1811,14 +1761,14 @@ const char *  UEngine::Model_SaveComponent(const char *stringid)
   if(!Model_SaveComponent(cont,&XmlStorage))
    return 0;
 
-  XmlStorage.Save(str);
+  XmlStorage.Save(TempString);
  // strcpy(buffer,str.c_str());
  }
  catch (Exception * exception)
  {
   ProcessException(exception);
  }
- return str.c_str();
+ return TempString.c_str();
 }
 
 // Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
@@ -1827,16 +1777,24 @@ int UEngine::Model_LoadComponent(const char *stringid, char* buffer)
 {
  try
  {
-  UEPtr<RDK::UANet> cont=dynamic_pointer_cast<RDK::UANet>(FindComponent(stringid));
-
-  if(!cont)
-   return -3;
-
   XmlStorage.Load(buffer,"Save");
   XmlStorage.SelectNode(0);
 
-  if(!Model_LoadComponent(cont,&XmlStorage))
-   return -4;
+  if(!Environment->GetModel())
+  {
+   if(!Model_LoadComponent(0,&XmlStorage))
+	return -4;
+  }
+  else
+  {
+   UEPtr<RDK::UANet> cont=dynamic_pointer_cast<RDK::UANet>(FindComponent(stringid));
+
+   if(!cont)
+	return -3;
+
+   if(!Model_LoadComponent(cont,&XmlStorage))
+    return -4;
+  }
  }
  catch (Exception * exception)
  {
@@ -2257,10 +2215,17 @@ int UEngine::Model_LoadComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXM
 {
  try
  {
-  if(!cont || !serstorage)
+  if(!serstorage)
    return false;
 
   UId id=RDK::atoi(serstorage->GetNodeAttribute("Class"));
+
+  if(!cont) // Создаем модель
+  {
+   Model_Create(id);
+   cont=dynamic_pointer_cast<RDK::UANet>(Environment->GetModel()).Get();
+  }
+  else
   if(cont->GetClass() != id)
    return false;
 

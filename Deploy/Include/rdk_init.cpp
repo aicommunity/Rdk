@@ -416,14 +416,14 @@ int RDK_CALL Model_Clear(void)
 
 // ƒобавл€ет в выбранный контейнер модели с идентификатором 'stringid' экземпл€р контейнера с заданным 'classid'
 // если stringid - пуста€ строка, то добавл€ет в саму модель
-int RDK_CALL Model_AddComponent(char* stringid, int classid)
+int RDK_CALL Model_AddComponent(const char* stringid, int classid)
 {
  return PEngine->Model_AddComponent(stringid, classid);
 }
 
 // ”дал€ет из выбранного контейнера модели с идентификатором 'stringid' экземпл€р контейнера с заданным 'id'
 // если stringid - пуста€ строка, то удал€ет из самой модели
-int RDK_CALL Model_DelComponent(char* stringid, int id)
+int RDK_CALL Model_DelComponent(const char* stringid, int id)
 {
  return PEngine->Model_DelComponent(stringid, id);
 }

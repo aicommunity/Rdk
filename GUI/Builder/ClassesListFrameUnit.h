@@ -20,8 +20,11 @@ private:	// User declarations
 public:		// User declarations
 	__fastcall TClassesListFrame(TComponent* Owner);
 
+protected:
+// Флаг обновления интерфейса
 bool UpdateInterfaceFlag;
 
+public:
 // Отрисовка фрейма
 void UpdateInterface(void);
 

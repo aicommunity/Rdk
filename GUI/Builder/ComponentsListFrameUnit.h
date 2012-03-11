@@ -10,19 +10,26 @@
 #include <ComCtrls.hpp>
 #include <Grids.hpp>
 #include <ToolWin.hpp>
+#include <Vcl.ExtCtrls.hpp>
 #include <string>
 #include <vector>
 //---------------------------------------------------------------------------
 class TComponentsListFrame : public TFrame
 {
 __published:	// IDE-managed Components
+	TPanel *Panel1;
+	TRichEdit *ParametersRichEdit;
+	THeaderControl *ParametersHeaderControl;
+	TPanel *Panel2;
 	TStringGrid *StringGrid;
 	THeaderControl *HeaderControl;
 	void __fastcall FrameResize(TObject *Sender);
-	void __fastcall HeaderControlSectionClick(THeaderControl *HeaderControl, THeaderSection *Section);
 	void __fastcall StringGridDblClick(TObject *Sender);
 	void __fastcall StringGridSelectCell(TObject *Sender, int ACol, int ARow, bool &CanSelect);
 	void __fastcall StringGridKeyPress(TObject *Sender, System::WideChar &Key);
+	void __fastcall StringGridClick(TObject *Sender);
+	void __fastcall ParametersHeaderControlSectionClick(THeaderControl *HeaderControl,
+          THeaderSection *Section);
 
 protected:		// User declarations
 		// Длинное имя выделенного компонента
@@ -49,6 +56,9 @@ protected:		// User declarations
 		// true если реестр был изменен
 		bool RegistryModified;
 
+		// Включение-выключение отображения параметров в виде xml
+		bool ShowXMLComponentParameters;
+
 protected: // Временные переменные
 		bool UpdateInterfaceFlag;
 
@@ -62,10 +72,10 @@ public:
         // Методы доступа к физическим данным
 		// -----------------------
 		// Возвращает id выбранного компонента
-		const std::string& GetSelectedComponentId(void) const;
+		const std::string GetSelectedComponentId(void) const;
 
 		// Возвращает имя выбранного компонента
-		const std::string& GetSelectedComponentName(void) const;
+		const std::string GetSelectedComponentName(void) const;
 
 		// Длинное имя выделенного компонента
 		const std::string& GetSelectedComponentLongName(void) const;
@@ -78,6 +88,9 @@ public:
 
 		// Длинный строковой id текущего компонента
 		const std::string& GetCurrentComponentId(void) const;
+
+		// Включение-выключение отображения параметров в виде xml
+		bool GetShowXMLComponentParameters(void) const;
 
 		// Возвращает флаг запрета редактирования дерева узлов
 		bool GetTreeReadOnlyFlag(void);
@@ -98,6 +111,9 @@ public:
 		// Делает текущим узел с полным именем 'fullname'
 		bool __fastcall SetCurrentSubTree(std::string &fullname);
 
+		// Включение-выключение отображения параметров в виде xml
+		void SetShowXMLComponentParameters(bool flag);
+
 		// Разрешает/запрещает редактирование дерева узлов
 		void __fastcall SetTreeReadOnlyFlag(bool flag);
 
@@ -117,6 +133,9 @@ void UpdateInterface(void);
 
 // Обновляет длинные имена выбранных компонент
 void UpdateSelectedComponentInfo(void);
+
+// Обновляет параметры компонента
+void UpdateParameters(void);
 
 
 };

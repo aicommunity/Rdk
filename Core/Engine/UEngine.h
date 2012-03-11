@@ -328,11 +328,11 @@ virtual int Model_Clear(void);
 
 // Добавляет в выбранный контейнер модели с идентификатором 'stringid' экземпляр контейнера с заданным 'classid'
 // если stringid - пустая строка, то добавляет в саму модель
-virtual int Model_AddComponent(char* stringid, int classid);
+virtual int Model_AddComponent(const char* stringid, int classid);
 
 // Удаляет из выбранного контейнера модели с идентификатором 'stringid' экземпляр контейнера с заданным 'id'
 // если stringid - пустая строка, то удаляет из самой модели
-virtual int Model_DelComponent(char* stringid, int id);
+virtual int Model_DelComponent(const char* stringid, int id);
 
 // Возвращает число всех компонент в заданного компоненте 'stringid'
 // если stringid - пустая строка, то возвращает число всех компонент модели

@@ -231,11 +231,11 @@ RDK_LIB_TYPE int RDK_CALL Model_Clear(void);
 
 // Добавляет в выбранный контейнер модели с идентификатором 'stringid' экземпляр контейнера с заданным 'classid'
 // если stringid - пустая строка, то добавляет в саму модель
-RDK_LIB_TYPE int RDK_CALL Model_AddComponent(char* stringid, int classid);
+RDK_LIB_TYPE int RDK_CALL Model_AddComponent(const char* stringid, int classid);
 
 // Удаляет из выбранного контейнера модели с идентификатором 'stringid' экземпляр контейнера с заданным 'id'
 // если stringid - пустая строка, то удаляет из самой модели
-RDK_LIB_TYPE int RDK_CALL Model_DelComponent(char* stringid, int id);
+RDK_LIB_TYPE int RDK_CALL Model_DelComponent(const char* stringid, int id);
 
 // Возвращает число всех компонент в заданного компоненте 'stringid'
 // если stringid - пустая строка, то возвращает число всех компонент модели

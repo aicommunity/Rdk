@@ -231,8 +231,8 @@ bool UAContainer::CheckId(const UId &id)
 // данного объекта.
 bool UAContainer::CheckName(const NameT &name)
 {
- if(Name == name)
-  return true;
+// if(Name == name)
+//  return true;
 
 // if(!GetOwner())
 //  return true;

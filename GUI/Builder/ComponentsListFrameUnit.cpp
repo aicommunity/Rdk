@@ -55,6 +55,7 @@ TComponentsListFrame *ComponentsListFrame;
 __fastcall TComponentsListFrame::TComponentsListFrame(TComponent* Owner)
 	: TFrame(Owner)
 {
+ ShowXMLComponentParameters=true;
 }
 //---------------------------------------------------------------------------
 
@@ -75,23 +76,7 @@ void __fastcall TComponentsListFrame::UpdatePath(void)
   section->Text=CurrentPath[i].c_str();
   section->Width=HeaderControl->Canvas->TextWidth(section->Text)+20;
  }
-		   /*
- RDK::UClassRegistry* root=CurrentSubTree;
 
- CurrentPath.resize(0);
- while(root)
- {
-  CurrentPath.push_back(root->GetName().substr(0,root->GetName().find_first_of(':')));
-  root=root->GetRoot();
- }
-
- for(int i=int(CurrentPath.size())-2;i>=0;i--)
- {
-  THeaderSection *section=HeaderControl->Sections->Add();
-  section->Text=CurrentPath[i].c_str();
-  section->Width=HeaderControl->Canvas->TextWidth(section->Text)+20;
- }
-                        */
  UpdateInterfaceFlag=false;
 }
 
@@ -112,6 +97,9 @@ void TComponentsListFrame::UpdateInterface(void)
 
  if(numcomponents<0)
  {
+  UpdatePath();
+  UpdateSelectedComponentInfo();
+  UpdateParameters();
   UpdateInterfaceFlag=false;
   return;
  }
@@ -143,13 +131,45 @@ void TComponentsListFrame::UpdateInterface(void)
  UpdateInterfaceFlag=false;
  UpdatePath();
  UpdateSelectedComponentInfo();
+ UpdateParameters();
 }
+
+// Обновляет параметры компонента
+void TComponentsListFrame::UpdateParameters(void)
+{
+ UpdateInterfaceFlag=true;
+
+ if(ShowXMLComponentParameters)
+ {
+  Panel1->Visible=true;
+  ParametersRichEdit->Text=Model_GetComponentParameters(GetSelectedComponentLongId().c_str());
+ }
+ else
+ {
+  Panel1->Visible=false;
+ }
+
+ UpdateInterfaceFlag=false;
+}
+
+
 
 // Обновляет длинные имена выбранных компонент
 void TComponentsListFrame::UpdateSelectedComponentInfo(void)
 {
- if(StringGrid->Row<2 || StringGrid->Cells[0][StringGrid->Row] == "..")
+ if(StringGrid->Row<1)
+ {
+  SelectedComponentName="";
+  SelectedComponentId="";
   return;
+ }
+ else
+ if(StringGrid->Cells[0][StringGrid->Row] == "..")
+ {
+  SelectedComponentName=CurrentComponentName;
+  SelectedComponentId=CurrentComponentId;
+  return;
+ }
 
  SelectedComponentName=AnsiString(StringGrid->Cells[1][StringGrid->Row]).c_str();
  if(CurrentComponentName.size()>0)
@@ -164,13 +184,13 @@ void TComponentsListFrame::UpdateSelectedComponentInfo(void)
 // Методы доступа к физическим данным
 // -----------------------
 // Возвращает id выбранного компонента
-const std::string& TComponentsListFrame::GetSelectedComponentId(void) const
+const std::string TComponentsListFrame::GetSelectedComponentId(void) const
 {
  return AnsiString(StringGrid->Cells[0][StringGrid->Row]).c_str();
 }
 
 // Возвращает имя выбранного компонента
-const std::string& TComponentsListFrame::GetSelectedComponentName(void) const
+const std::string TComponentsListFrame::GetSelectedComponentName(void) const
 {
  return AnsiString(StringGrid->Cells[1][StringGrid->Row]).c_str();
 }
@@ -199,6 +219,11 @@ const std::string& TComponentsListFrame::GetCurrentComponentId(void) const
  return CurrentComponentId;
 }
 
+// Включение-выключение отображения параметров в виде xml
+bool TComponentsListFrame::GetShowXMLComponentParameters(void) const
+{
+ return ShowXMLComponentParameters;
+}
 
 // Возвращает флаг запрета редактирования дерева узлов
 bool TComponentsListFrame::GetTreeReadOnlyFlag(void)
@@ -238,6 +263,12 @@ bool __fastcall TComponentsListFrame::SetCurrentSubTree(std::string &fullname)
  return true;
 }
 
+// Включение-выключение отображения параметров в виде xml
+void TComponentsListFrame::SetShowXMLComponentParameters(bool flag)
+{
+ ShowXMLComponentParameters=flag;
+}
+
 void __fastcall TComponentsListFrame::SetTreeReadOnlyFlag(bool flag)
 {
  TreeReadOnlyFlag=flag;
@@ -261,17 +292,6 @@ void __fastcall TComponentsListFrame::FrameResize(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TComponentsListFrame::HeaderControlSectionClick(THeaderControl *HeaderControl,
-          THeaderSection *Section)
-{
-/* int start=(CurrentPath.size())-2;
- int stop=Section->Index;
- for(int i=start;i>stop;i--)
- {
-  ComponentsListViewColumnClick(0,0);
- }*/
-}
-//---------------------------------------------------------------------------
 
 
 void __fastcall TComponentsListFrame::StringGridDblClick(TObject *Sender)
@@ -314,7 +334,7 @@ void __fastcall TComponentsListFrame::StringGridDblClick(TObject *Sender)
   CurrentComponentName+=".";
   CurrentComponentId+=".";
  }
- SelectedId=0;
+ SelectedId=StrToInt(StringGrid->Cells[0][StringGrid->Row]);
  CurrentComponentName+=AnsiString(StringGrid->Cells[1][StringGrid->Row]).c_str();
  CurrentComponentId+=AnsiString(StringGrid->Cells[0][StringGrid->Row]).c_str();
  UpdateInterface();
@@ -324,15 +344,54 @@ void __fastcall TComponentsListFrame::StringGridDblClick(TObject *Sender)
 void __fastcall TComponentsListFrame::StringGridSelectCell(TObject *Sender, int ACol,
           int ARow, bool &CanSelect)
 {
+ if(UpdateInterfaceFlag)
+  return;
+
+ if(StringGrid->Row<=1 || StringGrid->Cells[0][StringGrid->Row] == "" || StringGrid->Cells[0][StringGrid->Row] == "..")
+  SelectedId=0;
+ else
+  SelectedId=StrToInt(StringGrid->Cells[0][StringGrid->Row]);
  UpdateSelectedComponentInfo();
+ UpdateParameters();
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TComponentsListFrame::StringGridKeyPress(TObject *Sender, System::WideChar &Key)
-
 {
  if(Key == VK_RETURN)
   StringGridDblClick(Sender);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TComponentsListFrame::StringGridClick(TObject *Sender)
+{
+ if(StringGrid->Row<1 || StringGrid->Cells[0][StringGrid->Row] == "" || StringGrid->Cells[0][StringGrid->Row] == "..")
+  SelectedId=0;
+ else
+  SelectedId=StrToInt(StringGrid->Cells[0][StringGrid->Row]);
+ UpdateSelectedComponentInfo();
+ UpdateParameters();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TComponentsListFrame::ParametersHeaderControlSectionClick(THeaderControl *HeaderControl,
+          THeaderSection *Section)
+{
+ if(Section->Index == 0)
+ {
+  Model_SetComponentParameters(GetSelectedComponentLongId().c_str(),AnsiString(ParametersRichEdit->Text).c_str());
+  UpdateInterface();
+ }
+ else
+ if(Section->Index == 1)
+ {
+  UpdateParameters();
+ }
+ else
+ if(Section->Index == 2)
+ {
+
+ }
 }
 //---------------------------------------------------------------------------
 
