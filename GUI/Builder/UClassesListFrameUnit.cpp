@@ -4,14 +4,14 @@
 #include <vector>
 #pragma hdrstop
 
-#include "ClassesListFrameUnit.h"
+#include "UClassesListFrameUnit.h"
 #include "rdk_initdll.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
-TClassesListFrame *ClassesListFrame;
+TUClassesListFrame *UClassesListFrame;
 //---------------------------------------------------------------------------
-__fastcall TClassesListFrame::TClassesListFrame(TComponent* Owner)
+__fastcall TUClassesListFrame::TUClassesListFrame(TComponent* Owner)
 	: TFrame(Owner)
 {
  UpdateInterfaceFlag=false;
@@ -19,7 +19,7 @@ __fastcall TClassesListFrame::TClassesListFrame(TComponent* Owner)
 //---------------------------------------------------------------------------
 
 // Отрисовка фрейма
-void TClassesListFrame::UpdateInterface(void)
+void TUClassesListFrame::UpdateInterface(void)
 {
  UpdateInterfaceFlag=true;
 
@@ -52,17 +52,17 @@ void TClassesListFrame::UpdateInterface(void)
 
 
 // Возвращает id выбранного класса
-int TClassesListFrame::GetSelectedId(void)
+int TUClassesListFrame::GetSelectedId(void)
 {
  return StrToInt(StringGrid->Cells[0][StringGrid->Row]);
 }
 
 // Возвращает имя выбранного класса
-String TClassesListFrame::GetSelectedName(void)
+String TUClassesListFrame::GetSelectedName(void)
 {
  return StringGrid->Cells[1][StringGrid->Row];
 }
-void __fastcall TClassesListFrame::FrameResize(TObject *Sender)
+void __fastcall TUClassesListFrame::FrameResize(TObject *Sender)
 {
  UpdateInterface();
 }

@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 
-#ifndef EngineMonitorFrameUnitH
-#define EngineMonitorFrameUnitH
+#ifndef UEngineMonitorFrameUnitH
+#define UEngineMonitorFrameUnitH
 //---------------------------------------------------------------------------
 #include <System.Classes.hpp>
 #include <Vcl.Controls.hpp>
@@ -11,20 +11,20 @@
 
 //---------------------------------------------------------------------------
 
-class TEngineMonitorFrame : public TFrame
+class TUEngineMonitorFrame : public TFrame
 {
 __published:	// IDE-managed Components
 	TRichEdit *RichEdit;
 	TStatusBar *StatusBar;
 private:	// User declarations
 public:		// User declarations
-	__fastcall TEngineMonitorFrame(TComponent* Owner);
+	__fastcall TUEngineMonitorFrame(TComponent* Owner);
 
 	void UpdateInterface(void);
 
 	bool UpdateInterfaceFlag;
 };
 //---------------------------------------------------------------------------
-extern PACKAGE TEngineMonitorFrame *EngineMonitorFrame;
+extern PACKAGE TUEngineMonitorFrame *UEngineMonitorFrame;
 //---------------------------------------------------------------------------
 #endif

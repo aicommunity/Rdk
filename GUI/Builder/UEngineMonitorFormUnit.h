@@ -1,40 +1,29 @@
 //---------------------------------------------------------------------------
 
-#ifndef ClassesListFrameUnitH
-#define ClassesListFrameUnitH
+#ifndef UEngineMonitorFormUnitH
+#define UEngineMonitorFormUnitH
 //---------------------------------------------------------------------------
 #include <Classes.hpp>
 #include <Controls.hpp>
 #include <StdCtrls.hpp>
 #include <Forms.hpp>
-#include <Grids.hpp>
 #include <ComCtrls.hpp>
-#include <ToolWin.hpp>
+#include "UEngineMonitorFrameUnit.h"
+#include "UEngineMonitorFrameUnit.h"
 //---------------------------------------------------------------------------
-class TClassesListFrame : public TFrame
+
+void ExceptionHandler(void);
+
+//---------------------------------------------------------------------------
+class TUEngineMonitorForm : public TForm
 {
 __published:	// IDE-managed Components
-	TStringGrid *StringGrid;
-	void __fastcall FrameResize(TObject *Sender);
+	TUEngineMonitorFrame *EngineMonitorFrame;
 private:	// User declarations
 public:		// User declarations
-	__fastcall TClassesListFrame(TComponent* Owner);
-
-protected:
-// Флаг обновления интерфейса
-bool UpdateInterfaceFlag;
-
-public:
-// Отрисовка фрейма
-void UpdateInterface(void);
-
-// Возвращает id выбранного класса
-int GetSelectedId(void);
-
-// Возвращает имя выбранного класса
-String GetSelectedName(void);
+	__fastcall TUEngineMonitorForm(TComponent* Owner);
 };
 //---------------------------------------------------------------------------
-extern PACKAGE TClassesListFrame *ClassesListFrame;
+extern PACKAGE TUEngineMonitorForm *UEngineMonitorForm;
 //---------------------------------------------------------------------------
 #endif

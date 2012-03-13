@@ -3,10 +3,7 @@
 
 #include "rdk.h"
 
-#include "../../ThirdParty/ThirdParty.cpp"
-#include "../../Core/Math/UMath.cpp"
-#include "../../Core/Utilities/Utilities.cpp"
-#include "../../Core/Serialize/Serialize.cpp"
+#include "myrdk.cpp"
 #include "../../Core/Engine/Engine.cpp"
 #include "../../Core/Graphics/Graphics.cpp"
 

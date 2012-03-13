@@ -1,4 +1,4 @@
-object NANetFrame: TNANetFrame
+object UComponentIOFrame: TUComponentIOFrame
   Left = 0
   Top = 0
   Width = 599

@@ -1,25 +1,27 @@
-object ComponentsListFrame: TComponentsListFrame
+object UComponentsListFrame: TUComponentsListFrame
   Left = 0
   Top = 0
   Width = 755
   Height = 567
   TabOrder = 0
   OnResize = FrameResize
-  object Panel1: TPanel
+  object Splitter1: TSplitter
     Left = 361
     Top = 0
-    Width = 394
+    Width = 8
+    Height = 567
+  end
+  object Panel1: TPanel
+    Left = 369
+    Top = 0
+    Width = 386
     Height = 567
     Align = alClient
     TabOrder = 0
-    ExplicitLeft = 384
-    ExplicitTop = 208
-    ExplicitWidth = 185
-    ExplicitHeight = 273
     object ParametersRichEdit: TRichEdit
       Left = 1
       Top = 35
-      Width = 392
+      Width = 384
       Height = 531
       Align = alClient
       Font.Charset = RUSSIAN_CHARSET
@@ -30,15 +32,11 @@ object ComponentsListFrame: TComponentsListFrame
       ParentFont = False
       ScrollBars = ssBoth
       TabOrder = 0
-      ExplicitLeft = -114
-      ExplicitTop = -260
-      ExplicitWidth = 299
-      ExplicitHeight = 533
     end
     object ParametersHeaderControl: THeaderControl
       Left = 1
       Top = 1
-      Width = 392
+      Width = 384
       Height = 34
       HotTrack = True
       Sections = <
@@ -85,10 +83,6 @@ object ComponentsListFrame: TComponentsListFrame
       OnDblClick = StringGridDblClick
       OnKeyPress = StringGridKeyPress
       OnSelectCell = StringGridSelectCell
-      ExplicitLeft = -160
-      ExplicitTop = 1
-      ExplicitWidth = 345
-      ExplicitHeight = 271
     end
     object HeaderControl: THeaderControl
       Left = 1
@@ -102,7 +96,6 @@ object ComponentsListFrame: TComponentsListFrame
       OverFlow = True
       ShowHint = False
       ParentShowHint = False
-      ExplicitWidth = 456
     end
   end
 end

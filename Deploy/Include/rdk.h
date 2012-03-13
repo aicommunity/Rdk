@@ -1,10 +1,7 @@
 #ifndef RDK_H
 #define RDK_H
 
-#include "../../ThirdParty/ThirdParty.h"
-#include "../../Core/Math/UMath.h"
-#include "../../Core/Utilities/Utilities.h"
-#include "../../Core/Serialize/Serialize.h"
+#include "myrdk.h"
 #include "../../Core/Graphics/Graphics.h"
 #include "../../Core/Engine/Engine.h"
 

@@ -3,14 +3,14 @@
 #include <vcl.h>
 #pragma hdrstop
 
-#include "ClassesListFormUnit.h"
+#include "UComponentsListFormUnit.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma link "ClassesListFrameUnit"
+#pragma link "UComponentsListFrameUnit"
 #pragma resource "*.dfm"
-TClassesListForm *ClassesListForm;
+TUComponentsListForm *UComponentsListForm;
 //---------------------------------------------------------------------------
-__fastcall TClassesListForm::TClassesListForm(TComponent* Owner)
+__fastcall TUComponentsListForm::TUComponentsListForm(TComponent* Owner)
 	: TForm(Owner)
 {
 }

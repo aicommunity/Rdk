@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 
-#ifndef ComponentsListFrameUnitH
-#define ComponentsListFrameUnitH
+#ifndef UComponentsListFrameUnitH
+#define UComponentsListFrameUnitH
 //---------------------------------------------------------------------------
 #include <Classes.hpp>
 #include <Controls.hpp>
@@ -14,7 +14,7 @@
 #include <string>
 #include <vector>
 //---------------------------------------------------------------------------
-class TComponentsListFrame : public TFrame
+class TUComponentsListFrame : public TFrame
 {
 __published:	// IDE-managed Components
 	TPanel *Panel1;
@@ -23,6 +23,7 @@ __published:	// IDE-managed Components
 	TPanel *Panel2;
 	TStringGrid *StringGrid;
 	THeaderControl *HeaderControl;
+	TSplitter *Splitter1;
 	void __fastcall FrameResize(TObject *Sender);
 	void __fastcall StringGridDblClick(TObject *Sender);
 	void __fastcall StringGridSelectCell(TObject *Sender, int ACol, int ARow, bool &CanSelect);
@@ -66,7 +67,7 @@ protected: // Временные переменные
 		int SelectedId;
 
 public:
-	__fastcall TComponentsListFrame(TComponent* Owner);
+	__fastcall TUComponentsListFrame(TComponent* Owner);
 
 		// -----------------------
         // Методы доступа к физическим данным
@@ -140,6 +141,6 @@ void UpdateParameters(void);
 
 };
 //---------------------------------------------------------------------------
-extern PACKAGE TComponentsListFrame *ComponentsListFrame;
+extern PACKAGE TUComponentsListFrame *UComponentsListFrame;
 //---------------------------------------------------------------------------
 #endif

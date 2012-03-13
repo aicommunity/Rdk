@@ -1,4 +1,4 @@
-object EngineMonitorFrame: TEngineMonitorFrame
+object UEngineMonitorFrame: TUEngineMonitorFrame
   Left = 0
   Top = 0
   Width = 568
@@ -17,8 +17,6 @@ object EngineMonitorFrame: TEngineMonitorFrame
     Font.Style = []
     ParentFont = False
     TabOrder = 0
-    ExplicitWidth = 527
-    ExplicitHeight = 243
   end
   object StatusBar: TStatusBar
     Left = 0
@@ -27,8 +25,5 @@ object EngineMonitorFrame: TEngineMonitorFrame
     Height = 19
     Panels = <>
     SimplePanel = True
-    ExplicitLeft = 208
-    ExplicitTop = 296
-    ExplicitWidth = 0
   end
 end

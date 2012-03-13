@@ -65,8 +65,8 @@ USerStorageXML& operator << (USerStorageXML& storage, const UIdVector &data)
 
 USerStorageXML& operator >> (USerStorageXML& storage, UIdVector &data)
 {
- if(storage.GetNodeAttribute("Type") != "UIdVector")
-  return storage;
+// if(storage.GetNodeAttribute("Type") != "UIdVector")
+//  return storage;
 
  int size=0;
  size=atoi(storage.GetNodeAttribute("Size"));

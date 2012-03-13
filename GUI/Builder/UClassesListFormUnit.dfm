@@ -1,7 +1,7 @@
-object EngineMonitorForm: TEngineMonitorForm
-  Left = 686
-  Top = 386
-  Caption = 'EngineMonitorForm'
+object UClassesListForm: TUClassesListForm
+  Left = 0
+  Top = 321
+  Caption = 'UClassesListForm'
   ClientHeight = 243
   ClientWidth = 527
   Color = clBtnFace
@@ -14,24 +14,20 @@ object EngineMonitorForm: TEngineMonitorForm
   Position = poDesigned
   PixelsPerInch = 96
   TextHeight = 13
-  inline EngineMonitorFrame: TEngineMonitorFrame
+  inline ClassesListFrame: TUClassesListFrame
     Left = 0
     Top = 0
     Width = 527
     Height = 243
     Align = alClient
+    DoubleBuffered = True
+    ParentDoubleBuffered = False
     TabOrder = 0
-    ExplicitLeft = -41
-    ExplicitTop = -164
-    inherited RichEdit: TRichEdit
+    ExplicitLeft = 20
+    ExplicitTop = -204
+    inherited StringGrid: TStringGrid
       Width = 527
-      Height = 224
-      ExplicitWidth = 568
-      ExplicitHeight = 407
-    end
-    inherited StatusBar: TStatusBar
-      Top = 224
-      Width = 527
+      Height = 243
     end
   end
 end

@@ -1108,6 +1108,113 @@ int UEngine::Model_GetComponentsList(const char* stringid, int *buffer)
  return 0;
 }
 
+// Возвращает xml-список длинных идентификаторов всех коннекторов сети.
+// 'sublevel' опеределяет число уровней вложенности подсетей для которых
+// коннекторы будут добавлены в список.
+// если 'sublevel' == -1, то возвращает идентификаторы всех коннекторов включая
+// все вложенные сети.
+// если 'sublevel' == 0, то возвращает идентификаторы коннекторов только этой сети
+// Предварительная очистка буфера не производится.
+const char* UEngine::Model_GetConnectorsList(const char* stringid,
+						  int sublevel, const char* owner_level_stringid)
+{
+ try
+ {
+  UEPtr<RDK::UAContainer> cont=FindComponent(stringid);
+  UEPtr<RDK::UAContainer> owner_level=FindComponent(owner_level_stringid);
+
+  TempString="";
+  if(!cont)
+   return TempString.c_str();
+
+
+  ULongIdVector buffer;
+  cont->GetConnectorsList(buffer,sublevel,owner_level);
+
+  XmlStorage.Create("Connectors");
+  XmlStorage<<buffer;
+  XmlStorage.SelectRoot();
+
+  XmlStorage.Save(TempString);
+ }
+ catch (Exception * exception)
+ {
+  ProcessException(exception);
+ }
+ return TempString.c_str();
+}
+
+// Возвращает xml-список длинных идентификаторов всех элементов сети.
+// 'sublevel' опеределяет число уровней вложенности подсетей для которых
+// элементы будут добавлены в список.
+// если 'sublevel' == -1, то возвращает идентификаторы всех элементов включая
+// все вложенные сети.
+// если 'sublevel' == 0, то возвращает идентификаторы элементов только этой сети
+// Предварительная очистка буфера не производится.
+const char* UEngine::Model_GetItemsList(const char* stringid,
+							int sublevel, const char* owner_level_stringid)
+{
+ try
+ {
+  UEPtr<RDK::UAContainer> cont=FindComponent(stringid);
+  UEPtr<RDK::UAContainer> owner_level=FindComponent(owner_level_stringid);
+
+  TempString="";
+  if(!cont)
+   return TempString.c_str();
+
+
+  ULongIdVector buffer;
+  cont->GetItemsList(buffer,sublevel,owner_level);
+
+  XmlStorage.Create("Items");
+  XmlStorage<<buffer;
+
+  XmlStorage.Save(TempString);
+ }
+ catch (Exception * exception)
+ {
+  ProcessException(exception);
+ }
+ return TempString.c_str();
+}
+
+// Возвращает xml-список длинных идентификаторов всех подсетей сети.
+// 'sublevel' опеределяет число уровней вложенности подсетей для которых
+// подсети будут добавлены в список.
+// если 'sublevel' == -1, то возвращает идентификаторы всех подсетей включая
+// все вложенные сети.
+// если 'sublevel' == 0, то возвращает идентификаторы подсетей только этой сети
+// Предварительная очистка буфера не производится.
+const char* UEngine::Model_GetNetsList(const char* stringid,
+							int sublevel, const char* owner_level_stringid)
+{
+ try
+ {
+  UEPtr<RDK::UAContainer> cont=FindComponent(stringid);
+  UEPtr<RDK::UAContainer> owner_level=FindComponent(owner_level_stringid);
+
+  TempString="";
+  if(!cont)
+   return TempString.c_str();
+
+  ULongIdVector buffer;
+  cont->GetNetsList(buffer,sublevel,owner_level);
+
+  XmlStorage.Create("Nets");
+  XmlStorage<<buffer;
+
+  XmlStorage.Save(TempString);
+ }
+ catch (Exception * exception)
+ {
+  ProcessException(exception);
+ }
+ return TempString.c_str();
+
+}
+
+
 // Возвращает имя компонента по заданному 'stringid'
 // если stringid - пустая строка, то возвращает имя модели
 // Память выделяется и освобождается внутри dll
@@ -1115,10 +1222,11 @@ const char* UEngine::Model_GetComponentName(const char* stringid)
 {
  try
  {
-  RDK::UAContainer* destcont=FindComponent(stringid);
+  TempString="";
+  UEPtr<RDK::UAContainer> destcont=FindComponent(stringid);
 
   if(!destcont)
-   return 0;
+   return TempString.c_str();
 
   return destcont->GetName().c_str();
  }
@@ -1126,8 +1234,35 @@ const char* UEngine::Model_GetComponentName(const char* stringid)
  {
   ProcessException(exception);
  }
- return 0;
+ return TempString.c_str();
 }
+
+
+// Возвращает длинное имя компонента по заданному 'stringid'
+// если stringid - пустая строка, то возвращает имя модели
+// Память выделяется и освобождается внутри dll
+// Имя формируется до уровня компонента owner_level_stringid
+// Если owner_level_stringid не задан, то имя формируется до уровня текущего компонента
+const char* UEngine::Model_GetComponentLongName(const char* stringid, const char* owner_level_stringid)
+{
+ try
+ {
+  TempString="";
+  UEPtr<RDK::UAContainer> destcont=FindComponent(stringid);
+  UEPtr<RDK::UAContainer> owner_level=FindComponent(owner_level_stringid);
+
+  if(!destcont)
+   return TempString.c_str();
+
+  return destcont->GetLongName(owner_level,TempString).c_str();
+ }
+ catch (Exception * exception)
+ {
+  ProcessException(exception);
+ }
+ return TempString.c_str();
+}
+
 
 // Возвращает параметры компонента по идентификатору
 const char* UEngine::Model_GetComponentParameters(const char *stringid)
@@ -1260,7 +1395,7 @@ void UEngine::Model_SetComponentParameterValue(const char *stringid, const char 
 }
 
 // Связывает выбранные контейнеры друг с другом
-int UEngine::Model_CreateLink(char* stringid1, int output_number, char* stringid2, int input_number)
+int UEngine::Model_CreateLink(const char* stringid1, int output_number, const char* stringid2, int input_number)
 {
  try
  {
@@ -1270,14 +1405,27 @@ int UEngine::Model_CreateLink(char* stringid1, int output_number, char* stringid
   if(!stringid2)
    return -11;
 
-  UEPtr<RDK::UANet> model=dynamic_pointer_cast<RDK::UANet>(Environment->GetModel());
+  UEPtr<RDK::UANet> model=dynamic_pointer_cast<RDK::UANet>(Environment->GetCurrentComponent());
 
   if(!model)
    return -2;
 
   RDK::ULongId longid1, longid2;
-  longid1.DecodeFromString(stringid1);
-  longid2.DecodeFromString(stringid2);
+  if(stringid1[0]>=0x30 && stringid1[0]<=0x39)
+   longid1.DecodeFromString(stringid1);
+  else
+  {
+   UEPtr<UAContainer> cont=FindComponent(stringid1);
+   longid1=cont->GetLongId(model);
+  }
+
+  if(stringid2[0]>=0x30 && stringid2[0]<=0x39)
+   longid2.DecodeFromString(stringid2);
+  else
+  {
+   UEPtr<UAContainer> cont=FindComponent(stringid2);
+   longid2=cont->GetLongId(model);
+  }
   bool res=model->CreateLink(longid1,output_number,longid2,input_number);
   if(!res)
    return -3;
@@ -1289,8 +1437,36 @@ int UEngine::Model_CreateLink(char* stringid1, int output_number, char* stringid
  return 0;
 }
 
+// Связывает все компоненты выбранного компонента по возрастанию id в формате: 0 выход к 0 входу
+int UEngine::Model_ChainLinking(const char* stringid)
+{
+ try
+ {
+  UEPtr<UANet> cont=dynamic_pointer_cast<UANet>(FindComponent(stringid));
+
+  cont->BreakLinks(cont);
+
+  if(cont->GetNumComponents() == 0)
+   return 0;
+
+  ULongId id1,id2;
+  cont->GetComponentByIndex(0)->GetLongId(cont,id1);
+  for(int i=1;i<cont->GetNumComponents();i++)
+  {
+   cont->GetComponentByIndex(i)->GetLongId(cont,id2);
+   cont->CreateLink(id1,0,id2,0);
+   id1=id2;
+  }
+ }
+ catch (Exception * exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
 // Разрывает выбранную связь
-int UEngine::Model_BreakLink(char* stringid1, int output_number, char* stringid2, int input_number)
+int UEngine::Model_BreakLink(const char* stringid1, int output_number, const char* stringid2, int input_number)
 {
  try
  {
@@ -1300,14 +1476,28 @@ int UEngine::Model_BreakLink(char* stringid1, int output_number, char* stringid2
   if(!stringid2)
    return -11;
 
-  UEPtr<RDK::UANet> model=dynamic_pointer_cast<RDK::UANet>(Environment->GetModel());
+  UEPtr<RDK::UANet> model=dynamic_pointer_cast<RDK::UANet>(Environment->GetCurrentComponent());
 
   if(!model)
    return -2;
 
   RDK::ULongId longid1, longid2;
-  longid1.DecodeFromString(stringid1);
-  longid2.DecodeFromString(stringid2);
+  if(stringid1[0]>=0x30 && stringid1[0]<=0x39)
+   longid1.DecodeFromString(stringid1);
+  else
+  {
+   UEPtr<UAContainer> cont=FindComponent(stringid1);
+   longid1=cont->GetLongId(model);
+  }
+
+  if(stringid2[0]>=0x30 && stringid2[0]<=0x39)
+   longid2.DecodeFromString(stringid2);
+  else
+  {
+   UEPtr<UAContainer> cont=FindComponent(stringid2);
+   longid2=cont->GetLongId(model);
+  }
+
   bool res=model->BreakLink(longid1,output_number,longid2,input_number);
   if(!res)
    return -3;
@@ -1325,7 +1515,7 @@ int UEngine::Model_BreakAllLinks(void)
 {
  try
  {
-  UEPtr<RDK::UANet> model=dynamic_pointer_cast<RDK::UANet>(Environment->GetModel());
+  UEPtr<RDK::UANet> model=dynamic_pointer_cast<RDK::UANet>(Environment->GetCurrentComponent());
 
   if(!model)
    return -2;
@@ -1341,21 +1531,27 @@ int UEngine::Model_BreakAllLinks(void)
 }
 
 // Разрывает все входные и выходные связи выбранного контейнера
-int UEngine::Model_BreakAllComponentLinks(char* stringid)
+int UEngine::Model_BreakAllComponentLinks(const char* stringid)
 {
  try
  {
-  return 0;
+  UEPtr<RDK::UANet> model=dynamic_pointer_cast<RDK::UANet>(FindComponent(stringid));
+
+  if(!model)
+   return -2;
+
+  model->BreakLinks();
  }
  catch (Exception * exception)
  {
   ProcessException(exception);
  }
+
  return 0;
 }
 
 // Разрывает все входные связи выбранного контейнера
-int UEngine::Model_BreakAllComponentInputLinks(char* stringid)
+int UEngine::Model_BreakAllComponentInputLinks(const char* stringid)
 {
  try
  {
@@ -1369,7 +1565,7 @@ int UEngine::Model_BreakAllComponentInputLinks(char* stringid)
 }
 
 // Разрывает все выходные связи выбранного контейнера
-int UEngine::Model_BreakAllComponentOutputLinks(char* stringid)
+int UEngine::Model_BreakAllComponentOutputLinks(const char* stringid)
 {
  try
  {
@@ -1383,14 +1579,15 @@ int UEngine::Model_BreakAllComponentOutputLinks(char* stringid)
 }
 
 // Возращает все связи внутри компонента stringid в виде xml в буфер buffer
-const char* UEngine::Model_GetComponentInternalLinks(char* stringid)
+const char* UEngine::Model_GetComponentInternalLinks(const char* stringid)
 {
  try
  {
   UEPtr<RDK::UANet> cont=dynamic_pointer_cast<RDK::UANet>(FindComponent(stringid));
 
+  TempString="";
   if(!cont)
-   return 0;
+   return TempString.c_str();
 
   XmlStorage.Create("Links");
 
@@ -1408,7 +1605,7 @@ const char* UEngine::Model_GetComponentInternalLinks(char* stringid)
 }
 
 // Устанавливает все связи внутри компонента stringid из строки xml в буфере buffer
-int UEngine::Model_SetComponentInternalLinks(char* stringid,const char* buffer)
+int UEngine::Model_SetComponentInternalLinks(const char* stringid, const char* buffer)
 {
  try
  {
@@ -1431,7 +1628,7 @@ int UEngine::Model_SetComponentInternalLinks(char* stringid,const char* buffer)
 }
 
 // Возращает все входные связи к компоненту stringid в виде xml в буфер buffer
-const char * UEngine::Model_GetComponentInputLinks(char* stringid)
+const char * UEngine::Model_GetComponentInputLinks(const char* stringid)
 {
  try
  {
@@ -1445,7 +1642,7 @@ const char * UEngine::Model_GetComponentInputLinks(char* stringid)
 }
 
 // Возращает все выходные связи из компонента stringid в виде xml в буфер buffer
-const char * UEngine::Model_GetComponentOutputLinks(char* stringid)
+const char * UEngine::Model_GetComponentOutputLinks(const char* stringid)
 {
  try
  {
@@ -1608,7 +1805,12 @@ int UEngine::Model_GetComponentNumInputs(const char *stringid)
 {
  try
  {
-  return 0;
+  UEPtr<RDK::UAItem> cont=dynamic_pointer_cast<RDK::UAItem>(FindComponent(stringid));
+
+  if(!cont)
+   return 0;
+
+  return cont->GetNumInputs();
  }
  catch (Exception * exception)
  {
@@ -1618,11 +1820,16 @@ int UEngine::Model_GetComponentNumInputs(const char *stringid)
 }
 
 // Возвращает размер входа компонента в числе элементов
-int UEngine::Model_GetComponentInputSize(const char *stringid, int index)
+int UEngine::Model_GetComponentInputDataSize(const char *stringid, int index)
 {
  try
  {
-  return 0;
+  UEPtr<RDK::UADItem> cont=dynamic_pointer_cast<RDK::UADItem>(FindComponent(stringid));
+
+  if(!cont)
+   return 0;
+
+  return cont->GetOutputDataSize(index);
  }
  catch (Exception * exception)
  {
@@ -1679,7 +1886,12 @@ int UEngine::Model_GetComponentNumOutputs(const char *stringid)
 {
  try
  {
-  return 0;
+  UEPtr<RDK::UAItem> cont=dynamic_pointer_cast<RDK::UAItem>(FindComponent(stringid));
+
+  if(!cont)
+   return 0;
+
+  return cont->GetNumOutputs();
  }
  catch (Exception * exception)
  {
@@ -1689,11 +1901,16 @@ int UEngine::Model_GetComponentNumOutputs(const char *stringid)
 }
 
 // Возвращает размер выхода компонента в числе элементов
-int UEngine::Model_GetComponentOutputSize(const char *stringid, int index)
+int UEngine::Model_GetComponentOutputDataSize(const char *stringid, int index)
 {
  try
  {
-  return 0;
+  UEPtr<RDK::UADItem> cont=dynamic_pointer_cast<RDK::UADItem>(FindComponent(stringid));
+
+  if(!cont)
+   return 0;
+
+  return cont->GetOutputDataSize(index);
  }
  catch (Exception * exception)
  {

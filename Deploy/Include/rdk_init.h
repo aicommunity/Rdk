@@ -241,14 +241,51 @@ RDK_LIB_TYPE int RDK_CALL Model_DelComponent(const char* stringid, int id);
 // если stringid - пустая строка, то возвращает число всех компонент модели
 RDK_LIB_TYPE int RDK_CALL Model_GetNumComponents(const char* stringid);
 
-// Возвращает массив всех id заданного компонента 'stringid'
+// Возвращает массив id всех компонент заданного компонента 'stringid'
 // если stringid - пустая строка, то возвращает массив всех id модели
 RDK_LIB_TYPE int RDK_CALL Model_GetComponentsList(const char* stringid, int *buffer);
+
+// Возвращает xml-список длинных идентификаторов всех коннекторов сети.
+// 'sublevel' опеределяет число уровней вложенности подсетей для которых
+// коннекторы будут добавлены в список.
+// если 'sublevel' == -1, то возвращает идентификаторы всех коннекторов включая
+// все вложенные сети.
+// если 'sublevel' == 0, то возвращает идентификаторы коннекторов только этой сети
+// Предварительная очистка буфера не производится.
+RDK_LIB_TYPE const char* RDK_CALL Model_GetConnectorsList(const char* stringid,
+						  int sublevel=-1, const char* owner_level_stringid=0);
+
+// Возвращает xml-список длинных идентификаторов всех элементов сети.
+// 'sublevel' опеределяет число уровней вложенности подсетей для которых
+// элементы будут добавлены в список.
+// если 'sublevel' == -1, то возвращает идентификаторы всех элементов включая
+// все вложенные сети.
+// если 'sublevel' == 0, то возвращает идентификаторы элементов только этой сети
+// Предварительная очистка буфера не производится.
+RDK_LIB_TYPE const char* RDK_CALL Model_GetItemsList(const char* stringid,
+							int sublevel=-1, const char* owner_level_stringid=0);
+
+// Возвращает xml-список длинных идентификаторов всех подсетей сети.
+// 'sublevel' опеределяет число уровней вложенности подсетей для которых
+// подсети будут добавлены в список.
+// если 'sublevel' == -1, то возвращает идентификаторы всех подсетей включая
+// все вложенные сети.
+// если 'sublevel' == 0, то возвращает идентификаторы подсетей только этой сети
+// Предварительная очистка буфера не производится.
+RDK_LIB_TYPE const char* RDK_CALL Model_GetNetsList(const char* stringid,
+							int sublevel=-1, const char* owner_level_stringid=0);
 
 // Возвращает имя компонента по заданному 'stringid'
 // если stringid - пустая строка, то возвращает имя модели
 // Память выделяется и освобождается внутри dll
 RDK_LIB_TYPE const char* RDK_CALL Model_GetComponentName(const char* stringid);
+
+// Возвращает длинное имя компонента по заданному 'stringid'
+// если stringid - пустая строка, то возвращает имя модели
+// Память выделяется и освобождается внутри dll
+// Имя формируется до уровня компонента owner_level_stringid
+// Если owner_level_stringid не задан, то имя формируется до уровня текущего компонента
+RDK_LIB_TYPE const char* RDK_CALL Model_GetComponentLongName(const char* stringid, const char* owner_level_stringid=0);
 
 // Возвращает параметры компонента по идентификатору
 RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentParameters(const char *stringid);
@@ -269,34 +306,37 @@ RDK_LIB_TYPE bool RDK_CALL Model_SetComponentParameters(const char *stringid, co
 RDK_LIB_TYPE void RDK_CALL Model_SetComponentParameterValue(const char *stringid, const char *paramname, const char *buffer);
 
 // Связывает выбранные контейнеры друг с другом
-RDK_LIB_TYPE int RDK_CALL Model_CreateLink(char* stringid1, int output_number, char* stringid2, int input_number);
+RDK_LIB_TYPE int RDK_CALL Model_CreateLink(const char* stringid1, int output_number, const char* stringid2, int input_number);
+
+// Связывает все компоненты выбранного компонента по возрастанию id в формате: 0 выход к 0 входу
+RDK_LIB_TYPE int RDK_CALL Model_ChainLinking(const char* stringid);
 
 // Разрывает выбранную связь
-RDK_LIB_TYPE int RDK_CALL Model_BreakLink(char* stringid1, int output_number, char* stringid2, int input_number);
+RDK_LIB_TYPE int RDK_CALL Model_BreakLink(const char* stringid1, int output_number, const char* stringid2, int input_number);
 
 // Разрывает все связи
 RDK_LIB_TYPE int RDK_CALL Model_BreakAllLinks(void);
 
 // Разрывает все входные и выходные связи выбранного контейнера
-RDK_LIB_TYPE int RDK_CALL Model_BreakAllComponentLinks(char* stringid);
+RDK_LIB_TYPE int RDK_CALL Model_BreakAllComponentLinks(const char* stringid);
 
 // Разрывает все входные связи выбранного контейнера
-RDK_LIB_TYPE int RDK_CALL Model_BreakAllComponentInputLinks(char* stringid);
+RDK_LIB_TYPE int RDK_CALL Model_BreakAllComponentInputLinks(const char* stringid);
 
 // Разрывает все выходные связи выбранного контейнера
-RDK_LIB_TYPE int RDK_CALL Model_BreakAllComponentOutputLinks(char* stringid);
+RDK_LIB_TYPE int RDK_CALL Model_BreakAllComponentOutputLinks(const char* stringid);
 
 // Возращает все связи внутри компонента stringid в виде xml в буфер buffer
-RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentInternalLinks(char* stringid);
+RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentInternalLinks(const char* stringid);
 
 // Устанавливает все связи внутри компонента stringid из строки xml в буфере buffer
-RDK_LIB_TYPE int RDK_CALL Model_SetComponentInternalLinks(char* stringid, char* buffer);
+RDK_LIB_TYPE int RDK_CALL Model_SetComponentInternalLinks(const char* stringid, const char* buffer);
 
 // Возращает все входные связи к компоненту stringid в виде xml в буфер buffer
-RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentInputLinks(char* stringid);
+RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentInputLinks(const char* stringid);
 
 // Возращает все выходные связи из компонента stringid в виде xml в буфер buffer
-RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentOutputLinks(char* stringid);
+RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentOutputLinks(const char* stringid);
 
 // Возвращает состояние компонента по идентификатору
 RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentState(const char *stringid);
@@ -317,7 +357,7 @@ RDK_LIB_TYPE void RDK_CALL Model_SetComponentStateValue(const char *stringid, co
 RDK_LIB_TYPE int RDK_CALL Model_GetComponentNumInputs(const char *stringid);
 
 // Возвращает размер входа компонента в числе элементов
-RDK_LIB_TYPE int RDK_CALL Model_GetComponentInputSize(const char *stringid, int index);
+RDK_LIB_TYPE int RDK_CALL Model_GetComponentInputDataSize(const char *stringid, int index);
 
 // Возвращает размер элемента входа в байтах
 RDK_LIB_TYPE int RDK_CALL Model_GetComponentInputElementSize(const char *stringid, int index);
@@ -333,7 +373,7 @@ RDK_LIB_TYPE unsigned char* RDK_CALL Model_GetComponentInputData(const char *str
 RDK_LIB_TYPE int RDK_CALL Model_GetComponentNumOutputs(const char *stringid);
 
 // Возвращает размер выхода компонента в числе элементов
-RDK_LIB_TYPE int RDK_CALL Model_GetComponentOutputSize(const char *stringid, int index);
+RDK_LIB_TYPE int RDK_CALL Model_GetComponentOutputDataSize(const char *stringid, int index);
 
 // Возвращает размер элемента выхода в байтах
 RDK_LIB_TYPE int RDK_CALL Model_GetComponentOutputElementSize(const char *stringid, int index);

@@ -4,7 +4,7 @@
 #pragma hdrstop
 
 #include <vector>
-#include "ComponentsListFrameUnit.h"
+#include "UComponentsListFrameUnit.h"
 #include "rdk_initdll.h"
 
 // Разделяет строку на составлящие через сепаратор 'sep'
@@ -50,9 +50,9 @@ int separatestring(const std::basic_string<CharT> &str, std::vector<std::basic_s
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
-TComponentsListFrame *ComponentsListFrame;
+TUComponentsListFrame *UComponentsListFrame;
 //---------------------------------------------------------------------------
-__fastcall TComponentsListFrame::TComponentsListFrame(TComponent* Owner)
+__fastcall TUComponentsListFrame::TUComponentsListFrame(TComponent* Owner)
 	: TFrame(Owner)
 {
  ShowXMLComponentParameters=true;
@@ -60,7 +60,7 @@ __fastcall TComponentsListFrame::TComponentsListFrame(TComponent* Owner)
 //---------------------------------------------------------------------------
 
 // Перерисовывает путь до текущего узла
-void __fastcall TComponentsListFrame::UpdatePath(void)
+void __fastcall TUComponentsListFrame::UpdatePath(void)
 {
  UpdateInterfaceFlag=true;
 
@@ -81,7 +81,7 @@ void __fastcall TComponentsListFrame::UpdatePath(void)
 }
 
 // Отрисовка фрейма
-void TComponentsListFrame::UpdateInterface(void)
+void TUComponentsListFrame::UpdateInterface(void)
 {
  UpdateInterfaceFlag=true;
 
@@ -135,7 +135,7 @@ void TComponentsListFrame::UpdateInterface(void)
 }
 
 // Обновляет параметры компонента
-void TComponentsListFrame::UpdateParameters(void)
+void TUComponentsListFrame::UpdateParameters(void)
 {
  UpdateInterfaceFlag=true;
 
@@ -155,7 +155,7 @@ void TComponentsListFrame::UpdateParameters(void)
 
 
 // Обновляет длинные имена выбранных компонент
-void TComponentsListFrame::UpdateSelectedComponentInfo(void)
+void TUComponentsListFrame::UpdateSelectedComponentInfo(void)
 {
  if(StringGrid->Row<1)
  {
@@ -184,61 +184,61 @@ void TComponentsListFrame::UpdateSelectedComponentInfo(void)
 // Методы доступа к физическим данным
 // -----------------------
 // Возвращает id выбранного компонента
-const std::string TComponentsListFrame::GetSelectedComponentId(void) const
+const std::string TUComponentsListFrame::GetSelectedComponentId(void) const
 {
  return AnsiString(StringGrid->Cells[0][StringGrid->Row]).c_str();
 }
 
 // Возвращает имя выбранного компонента
-const std::string TComponentsListFrame::GetSelectedComponentName(void) const
+const std::string TUComponentsListFrame::GetSelectedComponentName(void) const
 {
  return AnsiString(StringGrid->Cells[1][StringGrid->Row]).c_str();
 }
 
 // Длинное имя выделенного компонента
-const std::string& TComponentsListFrame::GetSelectedComponentLongName(void) const
+const std::string& TUComponentsListFrame::GetSelectedComponentLongName(void) const
 {
  return SelectedComponentName;
 }
 
 // Длинный строковой Id выделенного компонента
-const std::string& TComponentsListFrame::GetSelectedComponentLongId(void) const
+const std::string& TUComponentsListFrame::GetSelectedComponentLongId(void) const
 {
  return SelectedComponentId;
 }
 
 // Длинное имя текущего компонента
-const std::string& TComponentsListFrame::GetCurrentComponentName(void) const
+const std::string& TUComponentsListFrame::GetCurrentComponentName(void) const
 {
  return CurrentComponentName;
 }
 
 // Длинный строковой id текущего компонента
-const std::string& TComponentsListFrame::GetCurrentComponentId(void) const
+const std::string& TUComponentsListFrame::GetCurrentComponentId(void) const
 {
  return CurrentComponentId;
 }
 
 // Включение-выключение отображения параметров в виде xml
-bool TComponentsListFrame::GetShowXMLComponentParameters(void) const
+bool TUComponentsListFrame::GetShowXMLComponentParameters(void) const
 {
  return ShowXMLComponentParameters;
 }
 
 // Возвращает флаг запрета редактирования дерева узлов
-bool TComponentsListFrame::GetTreeReadOnlyFlag(void)
+bool TUComponentsListFrame::GetTreeReadOnlyFlag(void)
 {
  return TreeReadOnlyFlag;
 }
 
 // Возвращает флаг запрета редактирования параметров
-bool TComponentsListFrame::GetParamReadOnlyFlag(void)
+bool TUComponentsListFrame::GetParamReadOnlyFlag(void)
 {
  return ParamReadOnlyFlag;
 }
 
 // Возвращает признак наличия изменений в данных
-bool TComponentsListFrame::GetRegistryModified(void)
+bool TUComponentsListFrame::GetRegistryModified(void)
 {
  return RegistryModified;
 }
@@ -249,13 +249,13 @@ bool TComponentsListFrame::GetRegistryModified(void)
 // Методы управления физическими данными
 // -----------------------
 // Очищает список изменений реестра
-void __fastcall TComponentsListFrame::ClearDiffRegistry(void)
+void __fastcall TUComponentsListFrame::ClearDiffRegistry(void)
 {
 // DiffRegistry.Clear();
 }
 
 
-bool __fastcall TComponentsListFrame::SetCurrentSubTree(std::string &fullname)
+bool __fastcall TUComponentsListFrame::SetCurrentSubTree(std::string &fullname)
 {
 // if(!Registry)
 //  return false;
@@ -264,29 +264,29 @@ bool __fastcall TComponentsListFrame::SetCurrentSubTree(std::string &fullname)
 }
 
 // Включение-выключение отображения параметров в виде xml
-void TComponentsListFrame::SetShowXMLComponentParameters(bool flag)
+void TUComponentsListFrame::SetShowXMLComponentParameters(bool flag)
 {
  ShowXMLComponentParameters=flag;
 }
 
-void __fastcall TComponentsListFrame::SetTreeReadOnlyFlag(bool flag)
+void __fastcall TUComponentsListFrame::SetTreeReadOnlyFlag(bool flag)
 {
  TreeReadOnlyFlag=flag;
 }
 
-void __fastcall TComponentsListFrame::SetParamReadOnlyFlag(bool flag)
+void __fastcall TUComponentsListFrame::SetParamReadOnlyFlag(bool flag)
 {
  ParamReadOnlyFlag=flag;
 }
 
-void __fastcall TComponentsListFrame::SetRegistryModified(bool flag)
+void __fastcall TUComponentsListFrame::SetRegistryModified(bool flag)
 {
  RegistryModified=flag;
 }
 // -----------------------
 
 //---------------------------------------------------------------------------
-void __fastcall TComponentsListFrame::FrameResize(TObject *Sender)
+void __fastcall TUComponentsListFrame::FrameResize(TObject *Sender)
 {
  UpdateInterface();
 }
@@ -294,7 +294,7 @@ void __fastcall TComponentsListFrame::FrameResize(TObject *Sender)
 
 
 
-void __fastcall TComponentsListFrame::StringGridDblClick(TObject *Sender)
+void __fastcall TUComponentsListFrame::StringGridDblClick(TObject *Sender)
 {
  if(StringGrid->Row <= 0)
   return;
@@ -341,7 +341,7 @@ void __fastcall TComponentsListFrame::StringGridDblClick(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TComponentsListFrame::StringGridSelectCell(TObject *Sender, int ACol,
+void __fastcall TUComponentsListFrame::StringGridSelectCell(TObject *Sender, int ACol,
           int ARow, bool &CanSelect)
 {
  if(UpdateInterfaceFlag)
@@ -356,14 +356,14 @@ void __fastcall TComponentsListFrame::StringGridSelectCell(TObject *Sender, int 
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TComponentsListFrame::StringGridKeyPress(TObject *Sender, System::WideChar &Key)
+void __fastcall TUComponentsListFrame::StringGridKeyPress(TObject *Sender, System::WideChar &Key)
 {
  if(Key == VK_RETURN)
   StringGridDblClick(Sender);
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TComponentsListFrame::StringGridClick(TObject *Sender)
+void __fastcall TUComponentsListFrame::StringGridClick(TObject *Sender)
 {
  if(StringGrid->Row<1 || StringGrid->Cells[0][StringGrid->Row] == "" || StringGrid->Cells[0][StringGrid->Row] == "..")
   SelectedId=0;
@@ -374,7 +374,7 @@ void __fastcall TComponentsListFrame::StringGridClick(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TComponentsListFrame::ParametersHeaderControlSectionClick(THeaderControl *HeaderControl,
+void __fastcall TUComponentsListFrame::ParametersHeaderControlSectionClick(THeaderControl *HeaderControl,
           THeaderSection *Section)
 {
  if(Section->Index == 0)

@@ -442,12 +442,61 @@ int RDK_CALL Model_GetComponentsList(const char* stringid, int *buffer)
  return PEngine->Model_GetComponentsList(stringid, buffer);
 }
 
+// Возвращает xml-список длинных идентификаторов всех коннекторов сети.
+// 'sublevel' опеределяет число уровней вложенности подсетей для которых
+// коннекторы будут добавлены в список.
+// если 'sublevel' == -1, то возвращает идентификаторы всех коннекторов включая
+// все вложенные сети.
+// если 'sublevel' == 0, то возвращает идентификаторы коннекторов только этой сети
+// Предварительная очистка буфера не производится.
+const char* RDK_CALL Model_GetConnectorsList(const char* stringid,
+						  int sublevel, const char* owner_level_stringid)
+{
+ return PEngine->Model_GetConnectorsList(stringid, sublevel, owner_level_stringid);
+}
+
+// Возвращает xml-список длинных идентификаторов всех элементов сети.
+// 'sublevel' опеределяет число уровней вложенности подсетей для которых
+// элементы будут добавлены в список.
+// если 'sublevel' == -1, то возвращает идентификаторы всех элементов включая
+// все вложенные сети.
+// если 'sublevel' == 0, то возвращает идентификаторы элементов только этой сети
+// Предварительная очистка буфера не производится.
+const char* RDK_CALL Model_GetItemsList(const char* stringid,
+							int sublevel, const char* owner_level_stringid)
+{
+ return PEngine->Model_GetItemsList(stringid, sublevel, owner_level_stringid);
+}
+
+// Возвращает xml-список длинных идентификаторов всех подсетей сети.
+// 'sublevel' опеределяет число уровней вложенности подсетей для которых
+// подсети будут добавлены в список.
+// если 'sublevel' == -1, то возвращает идентификаторы всех подсетей включая
+// все вложенные сети.
+// если 'sublevel' == 0, то возвращает идентификаторы подсетей только этой сети
+// Предварительная очистка буфера не производится.
+const char* RDK_CALL Model_GetNetsList(const char* stringid,
+							int sublevel, const char* owner_level_stringid)
+{
+ return PEngine->Model_GetNetsList(stringid, sublevel, owner_level_stringid);
+}
+
 // Возвращает имя компонента по заданному 'stringid'
 // если stringid - пустая строка, то возвращает имя модели
 // Память выделяется и освобождается внутри dll
 const char* RDK_CALL Model_GetComponentName(const char* stringid)
 {
  return PEngine->Model_GetComponentName(stringid);
+}
+
+// Возвращает длинное имя компонента по заданному 'stringid'
+// если stringid - пустая строка, то возвращает имя модели
+// Память выделяется и освобождается внутри dll
+// Имя формируется до уровня компонента owner_level_stringid
+// Если owner_level_stringid не задан, то имя формируется до уровня текущего компонента
+const char* RDK_CALL Model_GetComponentLongName(const char* stringid, const char* owner_level_stringid)
+{
+ return PEngine->Model_GetComponentLongName(stringid,owner_level_stringid);
 }
 
 // Возвращает параметры компонента по идентификатору
@@ -489,13 +538,19 @@ void RDK_CALL Model_SetComponentParameterValue(const char *stringid, const char 
 }
 
 // Связывает выбранные контейнеры друг с другом
-int RDK_CALL Model_CreateLink(char* stringid1, int output_number, char* stringid2, int input_number)
+int RDK_CALL Model_CreateLink(const char* stringid1, int output_number, const char* stringid2, int input_number)
 {
  return PEngine->Model_CreateLink(stringid1, output_number, stringid2, input_number);
 }
 
+// Связывает все компоненты выбранного компонента по возрастанию id в формате: 0 выход к 0 входу
+int RDK_CALL Model_ChainLinking(const char* stringid)
+{
+ return PEngine->Model_ChainLinking(stringid);
+}
+
 // Разрывает выбранную связь
-int RDK_CALL Model_BreakLink(char* stringid1, int output_number, char* stringid2, int input_number)
+int RDK_CALL Model_BreakLink(const char* stringid1, int output_number, const char* stringid2, int input_number)
 {
  return PEngine->Model_BreakLink(stringid1, output_number, stringid2, input_number);
 }
@@ -508,43 +563,43 @@ int RDK_CALL Model_BreakAllLinks(void)
 
 
 // Разрывает все входные и выходные связи выбранного контейнера
-int RDK_CALL Model_BreakAllComponentLinks(char* stringid)
+int RDK_CALL Model_BreakAllComponentLinks(const char* stringid)
 {
  return PEngine->Model_BreakAllComponentLinks(stringid);
 }
 
 // Разрывает все входные связи выбранного контейнера
-int RDK_CALL Model_BreakAllComponentInputLinks(char* stringid)
+int RDK_CALL Model_BreakAllComponentInputLinks(const char* stringid)
 {
  return PEngine->Model_BreakAllComponentInputLinks(stringid);
 }
 
 // Разрывает все выходные связи выбранного контейнера
-int RDK_CALL Model_BreakAllComponentOutputLinks(char* stringid)
+int RDK_CALL Model_BreakAllComponentOutputLinks(const char* stringid)
 {
  return PEngine->Model_BreakAllComponentOutputLinks(stringid);
 }
 
 // Возращает все связи внутри компонента stringid в виде xml в буфер buffer
-const char * RDK_CALL Model_GetComponentInternalLinks(char* stringid)
+const char * RDK_CALL Model_GetComponentInternalLinks(const char* stringid)
 {
  return PEngine->Model_GetComponentInternalLinks(stringid);
 }
 
 // Устанавливает все связи внутри компонента stringid из строки xml в буфере buffer
-int RDK_CALL Model_SetComponentInternalLinks(char* stringid,char* buffer)
+int RDK_CALL Model_SetComponentInternalLinks(const char* stringid, const char* buffer)
 {
  return PEngine->Model_SetComponentInternalLinks(stringid,buffer);
 }
 
 // Возращает все входные связи к компоненту stringid в виде xml в буфер buffer
-const char * RDK_CALL Model_GetComponentInputLinks(char* stringid)
+const char * RDK_CALL Model_GetComponentInputLinks(const char* stringid)
 {
  return PEngine->Model_GetComponentInputLinks(stringid);
 }
 
 // Возращает все выходные связи из компонента stringid в виде xml в буфер buffer
-const char * RDK_CALL Model_GetComponentOutputLinks(char* stringid)
+const char * RDK_CALL Model_GetComponentOutputLinks(const char* stringid)
 {
  return PEngine->Model_GetComponentOutputLinks(stringid);
 }
@@ -588,9 +643,9 @@ int RDK_CALL Model_GetComponentNumInputs(const char *stringid)
 }
 
 // Возвращает размер входа компонента в числе элементов
-int RDK_CALL Model_GetComponentInputSize(const char *stringid, int index)
+int RDK_CALL Model_GetComponentInputDataSize(const char *stringid, int index)
 {
- return PEngine->Model_GetComponentInputSize(stringid, index);
+ return PEngine->Model_GetComponentInputDataSize(stringid, index);
 }
 
 // Возвращает размер элемента входа в байтах
@@ -619,9 +674,9 @@ int RDK_CALL Model_GetComponentNumOutputs(const char *stringid)
 }
 
 // Возвращает размер выхода компонента в числе элементов
-int RDK_CALL Model_GetComponentOutputSize(const char *stringid, int index)
+int RDK_CALL Model_GetComponentOutputDataSize(const char *stringid, int index)
 {
- return PEngine->Model_GetComponentOutputSize(stringid, index);
+ return PEngine->Model_GetComponentOutputDataSize(stringid, index);
 }
 
 // Возвращает размер элемента выхода в байтах

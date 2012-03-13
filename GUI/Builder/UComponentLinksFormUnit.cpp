@@ -3,23 +3,14 @@
 #include <vcl.h>
 #pragma hdrstop
 
-#include "EngineMonitorFormUnit.h"
-#include "nmsdk_initdll.h"
-
+#include "UComponentLinksFormUnit.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma link "EngineMonitorFrameUnit"
+#pragma link "UComponentLinksFrameUnit"
 #pragma resource "*.dfm"
-TEngineMonitorForm *EngineMonitorForm;
-
+TUComponentLinksForm *UComponentLinksForm;
 //---------------------------------------------------------------------------
-
-void ExceptionHandler(void)
-{
- EngineMonitorForm->EngineMonitorFrame->RichEdit->Text=Engine_GetLog();
-}
-//---------------------------------------------------------------------------
-__fastcall TEngineMonitorForm::TEngineMonitorForm(TComponent* Owner)
+__fastcall TUComponentLinksForm::TUComponentLinksForm(TComponent* Owner)
 	: TForm(Owner)
 {
 }

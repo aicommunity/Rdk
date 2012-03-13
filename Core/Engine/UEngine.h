@@ -342,10 +342,47 @@ virtual int Model_GetNumComponents(const char* stringid);
 // если stringid - пустая строка, то возвращает массив всех id модели
 virtual int Model_GetComponentsList(const char* stringid, int *buffer);
 
+// Возвращает xml-список длинных идентификаторов всех коннекторов сети.
+// 'sublevel' опеределяет число уровней вложенности подсетей для которых
+// коннекторы будут добавлены в список.
+// если 'sublevel' == -1, то возвращает идентификаторы всех коннекторов включая
+// все вложенные сети.
+// если 'sublevel' == 0, то возвращает идентификаторы коннекторов только этой сети
+// Предварительная очистка буфера не производится.
+virtual const char* Model_GetConnectorsList(const char* stringid,
+						  int sublevel=-1, const char* owner_level_stringid=0);
+
+// Возвращает xml-список длинных идентификаторов всех элементов сети.
+// 'sublevel' опеределяет число уровней вложенности подсетей для которых
+// элементы будут добавлены в список.
+// если 'sublevel' == -1, то возвращает идентификаторы всех элементов включая
+// все вложенные сети.
+// если 'sublevel' == 0, то возвращает идентификаторы элементов только этой сети
+// Предварительная очистка буфера не производится.
+virtual const char* Model_GetItemsList(const char* stringid,
+							int sublevel=-1, const char* owner_level_stringid=0);
+
+// Возвращает xml-список длинных идентификаторов всех подсетей сети.
+// 'sublevel' опеределяет число уровней вложенности подсетей для которых
+// подсети будут добавлены в список.
+// если 'sublevel' == -1, то возвращает идентификаторы всех подсетей включая
+// все вложенные сети.
+// если 'sublevel' == 0, то возвращает идентификаторы подсетей только этой сети
+// Предварительная очистка буфера не производится.
+virtual const char* Model_GetNetsList(const char* stringid,
+							int sublevel=-1, const char* owner_level_stringid=0);
+
 // Возвращает имя компонента по заданному 'stringid'
 // если stringid - пустая строка, то возвращает имя модели
 // Память выделяется и освобождается внутри dll
 virtual const char* Model_GetComponentName(const char* stringid);
+
+// Возвращает длинное имя компонента по заданному 'stringid'
+// если stringid - пустая строка, то возвращает имя модели
+// Память выделяется и освобождается внутри dll
+// Имя формируется до уровня компонента owner_level_stringid
+// Если owner_level_stringid не задан, то имя формируется до уровня текущего компонента
+virtual const char* Model_GetComponentLongName(const char* stringid, const char* owner_level_stringid=0);
 
 // Возвращает параметры компонента по идентификатору
 // Память для buffer должна быть выделена!
@@ -369,34 +406,37 @@ virtual bool Model_SetComponentParameters(const char *stringid, const char* buff
 virtual void Model_SetComponentParameterValue(const char *stringid, const char *paramname, const char *buffer);
 
 // Связывает выбранные контейнеры друг с другом
-virtual int Model_CreateLink(char* stringid1, int output_number, char* stringid2, int input_number);
+virtual int Model_CreateLink(const char* stringid1, int output_number, const char* stringid2, int input_number);
+
+// Связывает все компоненты выбранного компонента по возрастанию id в формате: 0 выход к 0 входу
+virtual int Model_ChainLinking(const char* stringid);
 
 // Разрывает выбранную связь
-virtual int Model_BreakLink(char* stringid1, int output_number, char* stringid2, int input_number);
+virtual int Model_BreakLink(const char* stringid1, int output_number, const char* stringid2, int input_number);
 
 // Разрывает все связи
 virtual int Model_BreakAllLinks(void);
 
 // Разрывает все входные и выходные связи выбранного контейнера
-virtual int Model_BreakAllComponentLinks(char* stringid);
+virtual int Model_BreakAllComponentLinks(const char* stringid);
 
 // Разрывает все входные связи выбранного контейнера
-virtual int Model_BreakAllComponentInputLinks(char* stringid);
+virtual int Model_BreakAllComponentInputLinks(const char* stringid);
 
 // Разрывает все выходные связи выбранного контейнера
-virtual int Model_BreakAllComponentOutputLinks(char* stringid);
+virtual int Model_BreakAllComponentOutputLinks(const char* stringid);
 
 // Возращает все связи внутри компонента stringid в виде xml в буфер buffer
-virtual const char* Model_GetComponentInternalLinks(char* stringid);
+virtual const char* Model_GetComponentInternalLinks(const char* stringid);
 
 // Устанавливает все связи внутри компонента stringid из строки xml в буфере buffer
-virtual int Model_SetComponentInternalLinks(char* stringid,const char* buffer);
+virtual int Model_SetComponentInternalLinks(const char* stringid,const char* buffer);
 
 // Возращает все входные связи к компоненту stringid в виде xml в буфер buffer
-virtual const char* Model_GetComponentInputLinks(char* stringid);
+virtual const char* Model_GetComponentInputLinks(const char* stringid);
 
 // Возращает все выходные связи из компонента stringid в виде xml в буфер buffer
-virtual const char* Model_GetComponentOutputLinks(char* stringid);
+virtual const char* Model_GetComponentOutputLinks(const char* stringid);
 
 // Возвращает состояние компонента по идентификатору
 virtual const char* Model_GetComponentState(const char *stringid);
@@ -417,7 +457,7 @@ virtual void Model_SetComponentStateValue(const char *stringid, const char *stat
 virtual int Model_GetComponentNumInputs(const char *stringid);
 
 // Возвращает размер входа компонента в числе элементов
-virtual int Model_GetComponentInputSize(const char *stringid, int index);
+virtual int Model_GetComponentInputDataSize(const char *stringid, int index);
 
 // Возвращает размер элемента входа в байтах
 virtual int Model_GetComponentInputElementSize(const char *stringid, int index);
@@ -433,7 +473,7 @@ virtual unsigned char* Model_GetComponentInputData(const char *stringid, int ind
 virtual int Model_GetComponentNumOutputs(const char *stringid);
 
 // Возвращает размер выхода компонента в числе элементов
-virtual int Model_GetComponentOutputSize(const char *stringid, int index);
+virtual int Model_GetComponentOutputDataSize(const char *stringid, int index);
 
 // Возвращает размер элемента выхода в байтах
 virtual int Model_GetComponentOutputElementSize(const char *stringid, int index);

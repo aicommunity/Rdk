@@ -3,22 +3,22 @@
 #include <vcl.h>
 #pragma hdrstop
 
-#include "EngineMonitorFrameUnit.h"
+#include "UEngineMonitorFrameUnit.h"
 #include "nmsdk_initdll.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
-TEngineMonitorFrame *EngineMonitorFrame;
+TUEngineMonitorFrame *UEngineMonitorFrame;
 
 //---------------------------------------------------------------------------
-__fastcall TEngineMonitorFrame::TEngineMonitorFrame(TComponent* Owner)
+__fastcall TUEngineMonitorFrame::TUEngineMonitorFrame(TComponent* Owner)
 	: TFrame(Owner)
 {
  UpdateInterfaceFlag=false;
 }
 //---------------------------------------------------------------------------
 
-void TEngineMonitorFrame::UpdateInterface(void)
+void TUEngineMonitorFrame::UpdateInterface(void)
 {
  UpdateInterfaceFlag=true;
 

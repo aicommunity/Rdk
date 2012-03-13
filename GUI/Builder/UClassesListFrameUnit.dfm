@@ -1,4 +1,4 @@
-object ClassesListFrame: TClassesListFrame
+object UClassesListFrame: TUClassesListFrame
   Left = 0
   Top = 0
   Width = 507
