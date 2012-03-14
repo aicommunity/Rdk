@@ -43,6 +43,7 @@ void TUComponentsControlFrame::SaveModelToFile(const String &filename)
  TRichEdit* RichEdit=new TRichEdit(this);
  RichEdit->Parent=this;
 
+ RichEdit->PlainText=true;
  RichEdit->Text=Model_SaveComponent("");
  RichEdit->Lines->SaveToFile(FileName);
 
@@ -56,13 +57,14 @@ void TUComponentsControlFrame::LoadModelFromFile(const String &filename)
  String FileName=filename;
  if(filename == "")
  {
-  if(!SaveTextFileDialog->Execute())
+  if(!OpenTextFileDialog->Execute())
    return;
-  FileName=SaveTextFileDialog->FileName;
+  FileName=OpenTextFileDialog->FileName;
  }
 
  TRichEdit* RichEdit=new TRichEdit(this);
  RichEdit->Parent=this;
+ RichEdit->PlainText=true;
  RichEdit->Lines->LoadFromFile(FileName);
 
  Model_LoadComponent("",AnsiString(RichEdit->Text).c_str());

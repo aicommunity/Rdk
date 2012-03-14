@@ -116,11 +116,17 @@ object UComponentsControlFrame: TUComponentsControlFrame
         DoubleBuffered = True
         ParentDoubleBuffered = False
         TabOrder = 0
-        ExplicitLeft = -203
-        ExplicitTop = 39
+        ExplicitLeft = 2
+        ExplicitTop = 15
+        ExplicitWidth = 300
+        ExplicitHeight = 469
         inherited StringGrid: TStringGrid
           Width = 300
           Height = 469
+          OnDblClick = ClassesListFrameStringGridDblClick
+          OnKeyPress = ClassesListFrameStringGridKeyPress
+          ExplicitWidth = 300
+          ExplicitHeight = 469
         end
       end
     end
@@ -152,10 +158,18 @@ object UComponentsControlFrame: TUComponentsControlFrame
     end
   end
   object OpenTextFileDialog: TOpenTextFileDialog
+    DefaultExt = 'xml'
+    Filter = 'XML '#1092#1072#1081#1083#1099' '#1086#1087#1080#1089#1072#1085#1080#1103' '#1089#1090#1088#1091#1082#1090#1091#1088#1099' '#1084#1086#1076#1077#1083#1080'|*.xml'
+    FilterIndex = 0
+    Options = [ofHideReadOnly, ofPathMustExist, ofFileMustExist, ofEnableSizing]
     Left = 312
     Top = 16
   end
   object SaveTextFileDialog: TSaveTextFileDialog
+    DefaultExt = 'xml'
+    Filter = 'XML '#1092#1072#1081#1083#1099' '#1086#1087#1080#1089#1072#1085#1080#1103' '#1089#1090#1088#1091#1082#1090#1091#1088#1099' '#1084#1086#1076#1077#1083#1080'|*.xml'
+    FilterIndex = 0
+    Options = [ofOverwritePrompt, ofHideReadOnly, ofPathMustExist, ofEnableSizing]
     Left = 312
     Top = 72
   end

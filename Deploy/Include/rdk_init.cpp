@@ -37,12 +37,12 @@ RDK::UEPtr<RDK::UAStorage> PStorage=0;
 /*****************************************************************************/
 RDK::UAStorage* CreateNewStorage(void)
 {
- return new RDK::UAStorage;
+ return new RDK::UAContainerStorage;
 }
 
 extern RDK::UAEnvironment* CreateNewEnvironment(void)
 {
- return new RDK::UAEnvironment;
+ return new RDK::UAContainerEnvironment;
 }
 
 extern RDK::UEngine* CreateNewEngine(void)
@@ -69,9 +69,10 @@ RDK::UEngine* CreateNewGEngine(void)
 // ----------------------------
 // Методы инициализации
 // ----------------------------
-int RDK_CALL EngineInit(int predefined_structure)
+int RDK_CALL EngineInit(int predefined_structure, void* exception_handler)
 {
  LoadEngine((void*)CreateNewStorage, (void*)CreateNewEnvironment, (void*)CreateNewEngine);
+ Engine_SetExceptionHandler(exception_handler);
  Init();
  LoadPredefinedLibraries();
 
@@ -82,9 +83,11 @@ int RDK_CALL EngineInit(int predefined_structure)
 }
 
 int RDK_CALL GraphicalEngineInit(int predefined_structure, int num_inputs,
-		int num_outputs, int input_width, int input_height, bool reflectionx)
+		int num_outputs, int input_width, int input_height, bool reflectionx,
+		void* exception_handler)
 {
  LoadEngine((void*)CreateNewGStorage, (void*)CreateNewGEnvironment, (void*)CreateNewGEngine);
+ Engine_SetExceptionHandler(exception_handler);
  Init();
  LoadPredefinedLibraries();
 

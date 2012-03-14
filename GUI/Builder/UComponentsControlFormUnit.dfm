@@ -21,85 +21,66 @@ object UComponentsControlForm: TUComponentsControlForm
     Height = 436
     Align = alClient
     TabOrder = 0
-    ExplicitWidth = 1009
-    ExplicitHeight = 436
+    ExplicitLeft = 22
+    ExplicitTop = -90
     inherited Panel1: TPanel
       Top = 398
       Width = 1009
-      ExplicitTop = 398
-      ExplicitWidth = 1009
       inherited HeaderControl: THeaderControl
         Width = 1007
-        ExplicitWidth = 1007
       end
     end
     inherited Panel2: TPanel
       Width = 1009
       Height = 398
-      ExplicitWidth = 1009
-      ExplicitHeight = 398
       inherited Splitter1: TSplitter
         Height = 396
-        ExplicitHeight = 396
       end
       inherited GroupBox1: TGroupBox
         Width = 632
         Height = 396
-        ExplicitWidth = 632
-        ExplicitHeight = 396
         inherited ComponentsListFrame: TUComponentsListFrame
           Width = 628
           Height = 379
-          ExplicitWidth = 628
-          ExplicitHeight = 379
           inherited Splitter1: TSplitter
             Height = 379
           end
           inherited Panel1: TPanel
             Width = 259
             Height = 379
-            ExplicitWidth = 259
-            ExplicitHeight = 379
             inherited ParametersRichEdit: TRichEdit
               Width = 257
               Height = 343
-              ExplicitWidth = 257
-              ExplicitHeight = 343
             end
             inherited ParametersHeaderControl: THeaderControl
               Width = 257
-              OnSectionClick = nil
-              ExplicitWidth = 257
             end
           end
           inherited Panel2: TPanel
             Height = 379
-            ExplicitHeight = 379
             inherited StringGrid: TStringGrid
               Height = 343
-              OnDblClick = nil
-              OnKeyPress = nil
-              OnSelectCell = nil
-              ExplicitHeight = 343
+              OnClick = ComponentsListFrameStringGridClick
+              OnDblClick = ComponentsListFrameStringGridDblClick
+              OnKeyPress = ComponentsListFrameStringGridKeyPress
+              OnSelectCell = ComponentsListFrameStringGridSelectCell
             end
           end
         end
       end
       inherited GroupBox2: TGroupBox
         Height = 396
-        ExplicitHeight = 396
         inherited ClassesListFrame: TUClassesListFrame
           Height = 379
-          ExplicitHeight = 379
           inherited StringGrid: TStringGrid
             Height = 379
-            ExplicitHeight = 379
+            OnDblClick = ClassesListFrameStringGridDblClick
+            OnKeyPress = ClassesListFrameStringGridKeyPress
           end
         end
       end
       inherited Panel3: TPanel
         Height = 396
-        ExplicitHeight = 396
       end
     end
   end

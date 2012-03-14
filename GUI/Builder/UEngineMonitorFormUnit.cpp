@@ -4,7 +4,7 @@
 #pragma hdrstop
 
 #include "UEngineMonitorFormUnit.h"
-#include "nmsdk_initdll.h"
+#include "rdk_initdll.h"
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)

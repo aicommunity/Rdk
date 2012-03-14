@@ -1213,7 +1213,7 @@ bool UAContainer::Calculate(void)
  {
   ACalculate();
  }
-
+ else
  if(TimeStep == OwnerTimeStep)
  {
   ACalculate();

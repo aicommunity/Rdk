@@ -77,10 +77,10 @@ vector<UItemData> OutputData;
 
 private: // Хранилище входных связей
 // Массив указателей на вектора входов
-vector<const UItemData*> InputData;
+vector<UEPtr<const UItemData> > InputData;
 
 // Массив размеров векторов входов
-vector<size_t> InputDataSize;
+//vector<size_t> InputDataSize;
 
 protected: // Описание входов и выходов
 // Описание выходных данных
@@ -97,17 +97,17 @@ vector<NameT> InputNames;
 
 protected: // Общедоступные свойства
 // Размер выходных векторов
-vector<size_t> OutputDataSize;
+//vector<size_t> OutputDataSize;
 
 // Размер единичного данного вектора выходов в байтах
-vector<size_t> OutputDataElementSize;
+//vector<size_t> OutputDataElementSize;
 
 protected: // Переменные быстрого доступа к даннным входов. Read only!
 // Указатель на первый элемент массива указателей на вектора входов
-const UItemData** PInputData;
+//const UItemData** PInputData;
 
 // Указатель на первый элемент массива размеров векторов входов
-size_t* PInputDataSize;
+//size_t* PInputDataSize;
 
 // Суммарное число всех входов
 size_t FullInputDataSize;
@@ -140,11 +140,11 @@ inline const UItemData& GetOutputData(int index) const
 
 // Возвращает указатель на вектор входов InputData по указателю на item
 // Возвращает 0 если citem == 0 или не найден в списке подключений
-const UItemData* GetInputData(UAItem *citem) const;
+const UEPtr<const UItemData>& GetInputData(const UEPtr<UAItem> &citem) const;
 
 // Возвращает указатель на вектор входов InputData по индексу
 // Не проверяет индекс на корректность
-const UItemData* GetInputData(size_t index) const;
+const UEPtr<const UItemData>& GetInputData(size_t index) const;
 
 // Возвращает размер вектора входов InputData по индексу
 // Не проверяет индекс на корректность
@@ -183,7 +183,7 @@ virtual bool CopyIONames(UEPtr<UADItem> item) const;
 // ----------------------
 // Методы управления выходными данными
 // ----------------------
-// Устанавливает размер вектора выходных данных
+// Размер вектора выходных данных
 inline size_t GetOutputDataSize(int index) const
 { return OutputData[index].Size; };
 virtual bool SetOutputDataSize(int index, int size, bool nobuild=false);
@@ -192,7 +192,7 @@ virtual bool SetOutputDataSize(int index, int size, bool nobuild=false);
 inline size_t GetByteOutputDataSize(int index) const
 { return OutputData[index].ByteSize; };
 
-// Устанавливает размер единичного данного вектора выходных данных в байтах
+// Размер единичного данного вектора выходных данных в байтах
 size_t GetOutputDataElementSize(int index) const
 { return OutputData[index].DataSize; };
 bool SetOutputDataElementSize(int index, int size);
@@ -273,6 +273,9 @@ virtual bool Reset(void);
 // Вспомогательные методы
 // ----------------------
 private:
+// Обновляет входной массив по данным подключенного ко входу компонента
+//void UpdateInputData(int index);
+
 // Обновляет указатели на массивы входов и выходов
 void UpdatePointers(void);
 

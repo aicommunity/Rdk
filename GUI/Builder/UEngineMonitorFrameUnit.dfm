@@ -26,4 +26,33 @@ object UEngineMonitorFrame: TUEngineMonitorFrame
     Panels = <>
     SimplePanel = True
   end
+  object MainMenu: TMainMenu
+    Left = 16
+    Top = 16
+    object Control1: TMenuItem
+      Caption = 'Control'
+    end
+    object Calculate1: TMenuItem
+      Caption = 'Calculate'
+      object Start1: TMenuItem
+        Caption = 'Start'
+        OnClick = Start1Click
+      end
+      object Pause1: TMenuItem
+        Caption = 'Pause'
+        OnClick = Pause1Click
+      end
+      object Reset1: TMenuItem
+        Caption = 'Reset'
+        OnClick = Reset1Click
+      end
+    end
+  end
+  object Timer: TTimer
+    Enabled = False
+    Interval = 1
+    OnTimer = TimerTimer
+    Left = 64
+    Top = 16
+  end
 end

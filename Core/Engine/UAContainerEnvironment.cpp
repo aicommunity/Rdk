@@ -295,7 +295,41 @@ void UAContainerEnvironment::DownCurrentComponent(const ULongId &id)
 // --------------------------
 // Скрытые методы управления счетом
 // --------------------------
+// Восстановление настроек по умолчанию и сброс процесса счета
+bool UAContainerEnvironment::ADefault(void)
+{
+ return UAEnvironment::ADefault();
+}
+
+// Обеспечивает сборку внутренней структуры объекта
+// после настройки параметров
+// Автоматически вызывает метод Reset() и выставляет Ready в true
+// в случае успешной сборки
+bool UAContainerEnvironment::ABuild(void)
+{
+ return UAEnvironment::ABuild();
+}
+
+// Сброс процесса счета.
+bool UAContainerEnvironment::AReset(void)
+{
+ if(!UAEnvironment::AReset())
+  return false;
+ UAContainer::SetTime(0);
+ return true;
+}
+
+// Выполняет расчет этого объекта
+bool UAContainerEnvironment::ACalculate(void)
+{
+ if(!UAEnvironment::ACalculate())
+  return false;
+ UAContainer::SetTime(UAContainer::GetTime()+1000000/GetModel()->GetTimeStep());
+ return true;
+}
 // --------------------------
+
+
 
 // --------------------------
 // Вспомогательные методы инициализации среды
@@ -335,6 +369,7 @@ bool UAContainerEnvironment::UnLoadClassLibrary(const string &libname)
 // Методы управления моделью
 // --------------------------
 // --------------------------
+
 
 }
 #endif

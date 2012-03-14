@@ -11,11 +11,12 @@ typedef int bool;
 // Функции инициализации
 // ----------------------------
 // Инициализирует движок (функция должна быть вызвана первой!)
-RDK_LIB_TYPE int RDK_CALL EngineInit(int predefined_structure);
+RDK_LIB_TYPE int RDK_CALL EngineInit(int predefined_structure, void* exception_handler=0);
 
 // Инициализирует графический движок (функция должна быть вызвана первой!)
 RDK_LIB_TYPE int RDK_CALL GraphicalEngineInit(int predefined_structure, int num_inputs,
-		int num_outputs, int input_width, int input_height, bool reflectionx=false);
+		int num_outputs, int input_width, int input_height, bool reflectionx=false,
+		void* exception_handler=0);
 // ----------------------------
 
 // --------------------------

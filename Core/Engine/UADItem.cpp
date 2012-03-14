@@ -42,10 +42,10 @@ UADItem::UADItem(void)
  POutputData=0;
 
  // Указатель на первый элемент массива указателей на вектора входов
- PInputData=0;
+// PInputData=0;
 
  // Указатель на первый элемент массива размеров векторов входов
- PInputDataSize=0;
+// PInputDataSize=0;
 
  // Суммарное число всех входов
  FullInputDataSize=0;
@@ -80,7 +80,7 @@ UADItem::~UADItem(void)
 
 // Возвращает указатель на вектор входов InputData по указателю на item
 // Возвращает 0 если citem == 0 или не найден в списке подключений
-const UItemData* UADItem::GetInputData(UAItem *citem) const
+const UEPtr<const UItemData>& UADItem::GetInputData(const UEPtr<UAItem> &citem) const
 {
  UItemData result;
 
@@ -91,27 +91,24 @@ const UItemData* UADItem::GetInputData(UAItem *citem) const
  if(indexes.Input < 0)
   return 0;
 
- return PInputData[indexes.Input];
+ return InputData[indexes.Input];
 }
 
 // Возвращает указатель на вектор входов InputData по индексу
 // Не проверяет индекс на корректность
-const UItemData* UADItem::GetInputData(size_t index) const
+const UEPtr<const UItemData>& UADItem::GetInputData(size_t index) const
 {
 // if(!PInputData || index>=InputData.size())
 //  return 0;
 
- return PInputData[index];
+ return InputData[index];
 }
 
 // Возвращает размер вектора входов InputData по индексу
 // Не проверяет индекс на корректность
 size_t UADItem::GetInputDataSize(size_t index) const
 {
-// if(!PInputDataSize || index>=InputData.size())
-//  return 0;
-
- return PInputDataSize[index];
+ return InputData[index]->GetSize();//PInputDataSize[index];
 }
 
 // Возвращает суммарный размер всех векторов входов
@@ -258,13 +255,14 @@ bool UADItem::SetOutputDataSize(int index, int size, bool nobuild)
   OutputData.resize(index+1);
 
  OutputData[index].Resize(size);
-/*
- for(size_t j=0;j<NumAConnectors[index];j++)
- {
-  pair<int,int> indexes=PAssociatedConnectors[index][j]->GetCItemIndexes(this);
-  PAssociatedConnectors[index][j]->ConnectToItem(this,indexes.first,indexes.second);
- }
-  */
+
+ if(index<AssociatedConnectors.GetSize())
+  for(size_t j=0;j<AssociatedConnectors[index].GetSize();j++)
+  {
+   static_pointer_cast<UADItem>(AssociatedConnectors[index][j])->UpdatePointers();
+   static_pointer_cast<UADItem>(AssociatedConnectors[index][j])->CalcMinMaxInputDataSize();
+  }
+
  if(!nobuild)
   Ready=false;
  return true;
@@ -306,12 +304,13 @@ bool UADItem::SetOutputDataElementSize(int index, int size)
   OutputData.resize(index+1);
 
  OutputData[index].SetDataSize(size);
- /*
- for(size_t i=0;i<NumAConnectors[index];i++)
- {
-  pair<int,int> indexes=PAssociatedConnectors[index][i]->GetCItemIndexes(this);
-  PAssociatedConnectors[index][i]->ConnectToItem(this,indexes.first,indexes.second);
- } */
+ if(index<AssociatedConnectors.GetSize())
+  for(size_t j=0;j<AssociatedConnectors[index].GetSize();j++)
+  {
+   static_pointer_cast<UADItem>(AssociatedConnectors[index][j])->UpdatePointers();
+   static_pointer_cast<UADItem>(AssociatedConnectors[index][j])->CalcMinMaxInputDataSize();
+  }
+
 
  Ready=false;
  return true;
@@ -385,9 +384,9 @@ void* UADItem::GetOutputDataAsPointer(int index)
 // Возвращает данные входа как указателя на объект
 void* UADItem::GetInputDataAsPointer(int index)
 {
- if(index<NumInputs && PInputData && PInputData[index] && PInputData[index]->GetSize()>0 && PInputData[index]->GetDataSize() == int(sizeof(void*)))
+ if(index<NumInputs && InputData[index] && InputData[index]->GetSize()>0 && InputData[index]->GetDataSize() == int(sizeof(void*)))
  {
-  void *pointer=PInputData[index]->PVoid[0];
+  void *pointer=InputData[index]->PVoid[0];
   return pointer;
  }
  return 0;
@@ -520,7 +519,7 @@ bool UADItem::ConnectToItem(UEPtr<UAItem> na, int i_index, int &c_index)
  if(iteminfo && conninfo && !iteminfo->Compare(conninfo))
   return false;
 
- InputDataSize[c_index]=nad->POutputData[i_index].Size;
+// InputDataSize[c_index]=nad->POutputData[i_index].Size;
  InputData[c_index]=&nad->POutputData[i_index];
 
  UpdatePointers();
@@ -540,7 +539,7 @@ void UADItem::DisconnectFromIndex(int c_index)
 
  UAConnector::DisconnectFromIndex(c_index);
 
- InputDataSize[c_index]=0;
+// InputDataSize[c_index]=0;
  InputData[c_index]=0;
 
  UpdatePointers();
@@ -593,7 +592,7 @@ bool UADItem::Build(void)
 
  OutputData.resize(NumOutputs);
  InputData.resize(NumInputs);
- InputDataSize.resize(NumInputs);
+// InputDataSize.resize(NumInputs);
 
  size_t size=OutputDataInfo.size();
  for(size_t i=NumOutputs;i<size;i++)
@@ -639,6 +638,17 @@ bool UADItem::Reset(void)
 // ----------------------
 // Вспомогательные методы
 // ----------------------
+// Обновляет входной массив по данным подключенного ко входу компонента
+/*void UADItem::UpdateInputData(int index)
+{
+ if(index>=NumInputs)
+  return;
+
+ UEPtr<UADItem> nad=GetCItem(index);
+ InputDataSize[index]=nad->POutputData[i_index].Size;
+ InputData[index]=&nad->POutputData[i_index];
+} */
+
 // Обновляет указатели на массивы входов и выходов
 void UADItem::UpdatePointers(void)
 {
@@ -654,30 +664,33 @@ void UADItem::UpdatePointers(void)
  if(NumInputs>0)
  {
   // Указатель на первый элемент массива указателей на вектора входов
-  PInputData=&InputData[0];
+//  PInputData=&InputData[0];
 
   // Указатель на первый элемент массива размеров векторов входов
-  PInputDataSize=&InputDataSize[0];
+//  PInputDataSize=&InputDataSize[0];
  }
  else
  {
   // Указатель на первый элемент массива указателей на вектора входов
-  PInputData=0;
+//  PInputData=0;
 
   // Указатель на первый элемент массива размеров векторов входов
-  PInputDataSize=0;
+//  PInputDataSize=0;
  }
 
  // Суммарное число всех входов
  FullInputDataSize=0;
  for(int i=0;i<NumInputs;i++)
-  FullInputDataSize+=PInputDataSize[i];
+//  FullInputDataSize+=PInputDataSize[i];
+  if(InputData[i])
+   FullInputDataSize+=InputData[i]->GetSize();
 }
 
 
 // Вычисляет минимальный и максимальный размер векторов входов
 void UADItem::CalcMinMaxInputDataSize(void)
 {
+/*
  vector<size_t>::const_iterator I;
 
  I=min_element(InputDataSize.begin(),InputDataSize.end());
@@ -693,6 +706,28 @@ void UADItem::CalcMinMaxInputDataSize(void)
   MaxInputDataSize=*I;
  else
   MaxInputDataSize=0;
+  */
+ if(!InputData.size())
+ {
+  MinInputDataSize=0;
+  MaxInputDataSize=0;
+ }
+ else
+ {
+  if(InputData[0])
+   MaxInputDataSize=MinInputDataSize=InputData[0]->GetSize();
+  else
+   MaxInputDataSize=MinInputDataSize=0;
+  for(int i=1;i<NumInputs;i++)
+  {
+   if(!InputData[i])
+    continue;
+   if(MinInputDataSize>InputData[i]->GetSize())
+	MinInputDataSize=InputData[i]->GetSize();
+   if(MaxInputDataSize<InputData[i]->GetSize())
+	MaxInputDataSize=InputData[i]->GetSize();
+  }
+ }
 }
 // ----------------------
 /* *************************************************************************** */
