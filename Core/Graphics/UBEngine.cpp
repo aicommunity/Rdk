@@ -228,17 +228,17 @@ int UBEngine::LoadPredefinedLibraries(void)
  RDK::UBAbstract *filter=new RDK::UBAQLinearContrasting;
  filter->Default();
  filter->SetName("QLinerarContrasting");
- bstorage->AddClass(filter,"QLinerarContrasting",1);
+ bstorage->AddClass(filter,"QLinerarContrasting",14);
 
  filter=new RDK::UBAQSolarize;
  filter->Default();
  filter->SetName("QSolarize");
- bstorage->AddClass(filter,"QSolarize",2);
+ bstorage->AddClass(filter,"QSolarize",15);
 
  filter=new RDK::UBAQEqualizeHist;
  filter->Default();
  filter->SetName("QEqualizeHist");
- bstorage->AddClass(filter,"QEqualizeHist",3);
+ bstorage->AddClass(filter,"QEqualizeHist",16);
 
  filter=new RDK::UBAQCropHist;
  filter->Default();

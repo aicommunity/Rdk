@@ -84,7 +84,7 @@ UId UAStorage::AddClass(UEPtr<UAComponent> classtemplate, const UId &classid)
   id=LastClassId+1;
 
  if(ClassesStorage.find(id) != ClassesStorage.end())
-  throw new EClassIdNotExist(id);
+  throw new EClassIdAlreadyExist(id);
 
  if(!classtemplate->Build())
   return ForbiddenId;
