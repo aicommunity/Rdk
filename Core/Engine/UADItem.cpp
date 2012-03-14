@@ -257,7 +257,7 @@ bool UADItem::SetOutputDataSize(int index, int size, bool nobuild)
  OutputData[index].Resize(size);
 
  if(index<AssociatedConnectors.GetSize())
-  for(size_t j=0;j<AssociatedConnectors[index].GetSize();j++)
+  for(int j=0;j<AssociatedConnectors[index].GetSize();j++)
   {
    static_pointer_cast<UADItem>(AssociatedConnectors[index][j])->UpdatePointers();
    static_pointer_cast<UADItem>(AssociatedConnectors[index][j])->CalcMinMaxInputDataSize();
@@ -305,7 +305,7 @@ bool UADItem::SetOutputDataElementSize(int index, int size)
 
  OutputData[index].SetDataSize(size);
  if(index<AssociatedConnectors.GetSize())
-  for(size_t j=0;j<AssociatedConnectors[index].GetSize();j++)
+  for(int j=0;j<AssociatedConnectors[index].GetSize();j++)
   {
    static_pointer_cast<UADItem>(AssociatedConnectors[index][j])->UpdatePointers();
    static_pointer_cast<UADItem>(AssociatedConnectors[index][j])->CalcMinMaxInputDataSize();

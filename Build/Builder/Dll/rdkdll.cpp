@@ -1,11 +1,3 @@
-
-//---------------------------------------------------------------------------
-
-#include <vcl.h>
-#include <windows.h>
-
-#pragma hdrstop
-//---------------------------------------------------------------------------
 //   Important note about DLL memory management when your DLL uses the
 //   static version of the RunTime Library:
 //
@@ -24,12 +16,12 @@
 //
 //   If your DLL uses the dynamic version of the RTL, you do not need to
 //   explicitly add MEMMGR.LIB as this will be done implicitly for you
-//---------------------------------------------------------------------------
 
+#pragma hdrstop
 #pragma argsused
-BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fwdreason, LPVOID lpvReserved)
-{
 
- return 1;
+extern "C" int _libmain(unsigned long reason)
+{
+	return 1;
 }
-//---------------------------------------------------------------------------
+
