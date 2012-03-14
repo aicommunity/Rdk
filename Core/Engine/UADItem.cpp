@@ -98,9 +98,6 @@ const UEPtr<const UItemData>& UADItem::GetInputData(const UEPtr<UAItem> &citem) 
 // Не проверяет индекс на корректность
 const UEPtr<const UItemData>& UADItem::GetInputData(size_t index) const
 {
-// if(!PInputData || index>=InputData.size())
-//  return 0;
-
  return InputData[index];
 }
 
@@ -108,7 +105,14 @@ const UEPtr<const UItemData>& UADItem::GetInputData(size_t index) const
 // Не проверяет индекс на корректность
 size_t UADItem::GetInputDataSize(size_t index) const
 {
- return InputData[index]->GetSize();//PInputDataSize[index];
+ try
+ {
+  return InputData[index]->GetSize();
+ }
+ catch (UEPtr<const RDK::UItemData>::EUsingZeroPtr *exception)
+ {
+  return 0;
+ }
 }
 
 // Возвращает суммарный размер всех векторов входов
