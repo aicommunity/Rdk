@@ -243,7 +243,7 @@ int UBEngine::LoadPredefinedLibraries(void)
  filter=new RDK::UBAQCropHist;
  filter->Default();
  filter->SetName("QCropHist");
- bstorage->AddClass(filter,"QCropHist",4);
+ bstorage->AddClass(filter,"QCropHist",17);
 
  filter=new RDK::UBAQModifyHist;
  filter->Default();
