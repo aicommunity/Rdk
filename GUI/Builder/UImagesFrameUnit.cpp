@@ -3,14 +3,15 @@
 #include <vcl.h>
 #pragma hdrstop
 
-#include "TImagesFrameUnit.h"
+#include "UImagesFrameUnit.h"
+#include "rdk_initdll.h"
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
-TImagesFrame *ImagesFrame;
+TUImagesFrame *UImagesFrame;
 //---------------------------------------------------------------------------
-__fastcall TImagesFrame::TImagesFrame(TComponent* Owner)
+__fastcall TUImagesFrame::TUImagesFrame(TComponent* Owner)
     : TFrame(Owner)
 {
  ReflectionXFlag=false;
@@ -20,14 +21,14 @@ __fastcall TImagesFrame::TImagesFrame(TComponent* Owner)
 // ћетоды управлени€ параметрами
 // --------------------------
 // ”станавливает размер €чейки
-void TImagesFrame::SetCellRes(int width, int height)
+void TUImagesFrame::SetCellRes(int width, int height)
 {
  DrawGrid->DefaultColWidth=width;
  DrawGrid->DefaultRowHeight=height;
 }
 
 // ”станавливает число €чеек
-void TImagesFrame::SetNumCells(int width, int height)
+void TUImagesFrame::SetNumCells(int width, int height)
 {
  DrawGrid->ColCount=width;
  DrawGrid->RowCount=height;
@@ -37,32 +38,36 @@ void TImagesFrame::SetNumCells(int width, int height)
    delete Images[i][j];
 
  Images.resize(width);
+ StringIds.resize(width);
+ ComponentIndexes.resize(width);
  for(size_t i=0;i<Images.size();i++)
  {
   Images[i].resize(height);
+  StringIds[i].resize(height);
+  ComponentIndexes[i].resize(height);
   for(size_t j=0;j<Images[i].size();j++)
    Images[i][j]=new TImage(this);
  }
 }
 
 // ¬озвращает число €чеек
-int TImagesFrame::GetNumCellWidth(void)
+int TUImagesFrame::GetNumCellWidth(void)
 {
  return DrawGrid->ColCount;
 }
 
-int TImagesFrame::GetNumCellHeight(void)
+int TUImagesFrame::GetNumCellHeight(void)
 {
  return DrawGrid->RowCount;
 }
 
 // ‘лаг отражени€ вокруг оси X изображений при выводе
-bool TImagesFrame::GetReflectionXFlag(void)
+bool TUImagesFrame::GetReflectionXFlag(void)
 {
  return ReflectionXFlag;
 }
 
-void TImagesFrame::SetReflectionXFlag(bool value)
+void TUImagesFrame::SetReflectionXFlag(bool value)
 {
  ReflectionXFlag=value;
 }
@@ -71,17 +76,30 @@ void TImagesFrame::SetReflectionXFlag(bool value)
 // --------------------------
 // ћетоды управлени€ изображени€ми
 // --------------------------
+// —в€зывает €чейку с идентификатором компонента
+void TUImagesFrame::LinkToComponent(int i, int j, const std::string &stringid, int index)
+{
+ if(i <0 || j<0 || i>= DrawGrid->ColCount || j>= DrawGrid->RowCount)
+  return;
+
+ StringIds[i][j]=stringid;
+ ComponentIndexes[i][j]=index;
+}
+
+
 // ”станавливает заданное изображение в €чейку с координатами i,j
-/*bool TImagesFrame::SetBitmap(int i, int j, RDK::UBitmap &bitmap)
+bool TUImagesFrame::SetBitmap(int i, int j, const RDK::UBitmap &bitmap)
 {
  if(i <0 || j<0 || i>= DrawGrid->ColCount || j>= DrawGrid->RowCount)
   return false;
 
- bitmap>>Images[i][j]->Picture->Bitmap;
- return true;
-} */
+// bitmap>>Images[i][j]->Picture->Bitmap;
 
-bool TImagesFrame::SetImage(int i, int j, const TImage *image)
+ SetImage(i, j, bitmap.GetWidth(), bitmap.GetHeight(), bitmap.GetColorModel(), bitmap.GetData());
+ return true;
+}
+
+bool TUImagesFrame::SetImage(int i, int j, const TImage *image)
 {
  if(i <0 || j<0 || i>= DrawGrid->ColCount || j>= DrawGrid->RowCount)
   return false;
@@ -90,7 +108,7 @@ bool TImagesFrame::SetImage(int i, int j, const TImage *image)
  return true;
 }
 
-bool TImagesFrame::SetImage(int i, int j, int width, int height, int colormodel, unsigned char *buffer)
+bool TUImagesFrame::SetImage(int i, int j, int width, int height, int colormodel, unsigned char *buffer)
 {
  struct {
   TLogPalette lpal;
@@ -197,24 +215,24 @@ bool TImagesFrame::SetImage(int i, int j, int width, int height, int colormodel,
  return SetBitmap(DrawGrid->Col,DrawGrid->Row,bitmap);
 } */
 
-bool TImagesFrame::SetImage(const TImage *image)
+bool TUImagesFrame::SetImage(const TImage *image)
 {
  return SetImage(DrawGrid->Col,DrawGrid->Row,image);
 }
 
 // ¬озвращает координаты текущей €чейки
-int TImagesFrame::GetX(void)
+int TUImagesFrame::GetX(void)
 {
  return DrawGrid->Col;
 }
 
-int TImagesFrame::GetY(void)
+int TUImagesFrame::GetY(void)
 {
  return DrawGrid->Row;
 }
 
 // ¬озвращает изображение в выбранной €чейке
-Graphics::TBitmap* TImagesFrame::GetImage(int i, int j)
+Graphics::TBitmap* TUImagesFrame::GetImage(int i, int j)
 {
  if(i <0 || j<0 || i>= DrawGrid->ColCount || j>= DrawGrid->RowCount)
   return 0;
@@ -223,7 +241,7 @@ Graphics::TBitmap* TImagesFrame::GetImage(int i, int j)
 }
 
 // ¬озвращает изображение в текущей €чейке
-Graphics::TBitmap* TImagesFrame::GetImage(void)
+Graphics::TBitmap* TUImagesFrame::GetImage(void)
 {
  if(DrawGrid->Col>=0 && DrawGrid->Col<int(Images.size())
     && DrawGrid->Row>=0 && DrawGrid->Row<int(Images[DrawGrid->Col].size()))
@@ -232,9 +250,29 @@ Graphics::TBitmap* TImagesFrame::GetImage(void)
  return 0;
 }
 // --------------------------
+
+// --------------------------
+// ћетоды управлени€ фреймом
+// --------------------------
+void TUImagesFrame::UpdateInterface(void)
+{
+ for(size_t i=0;i<Images.size();i++)
+ {
+  for(size_t j=0;j<Images[i].size();j++)
+  {
+   const RDK::UBitmap* bmp=(const RDK::UBitmap*)Model_GetComponentOutput(StringIds[i][j].c_str(), ComponentIndexes[i][j]);
+   if(bmp)
+    SetBitmap(i, j, *bmp);
+  }
+ }
+ DrawGrid->Repaint();
+ DrawGrid->Update();
+}
+// --------------------------
+
 //---------------------------------------------------------------------------
-void __fastcall TImagesFrame::DrawGridDrawCell(TObject *Sender, int ACol, int ARow,
-          TRect &Rect, TGridDrawState State)
+void __fastcall TUImagesFrame::DrawGridDrawCell(TObject *Sender, int ACol, int ARow,
+		  TRect &Rect, TGridDrawState State)
 {
  if(int(Images.size())<=ACol || int(Images[ACol].size())<=ARow)
   return;
@@ -243,3 +281,4 @@ void __fastcall TImagesFrame::DrawGridDrawCell(TObject *Sender, int ACol, int AR
         StretchDraw(Rect, Images[ACol][ARow]->Picture->Graphic);
 }
 //---------------------------------------------------------------------------
+

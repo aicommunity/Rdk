@@ -149,6 +149,7 @@ void TUComponentsListFrame::UpdateParameters(void)
   Panel1->Visible=false;
  }
 
+ RegistryModified=false;
  UpdateInterfaceFlag=false;
 }
 
@@ -288,7 +289,7 @@ void __fastcall TUComponentsListFrame::SetRegistryModified(bool flag)
 //---------------------------------------------------------------------------
 void __fastcall TUComponentsListFrame::FrameResize(TObject *Sender)
 {
- UpdateInterface();
+// UpdateInterface();
 }
 //---------------------------------------------------------------------------
 
@@ -348,7 +349,12 @@ void __fastcall TUComponentsListFrame::StringGridSelectCell(TObject *Sender, int
   return;
 
  if(StringGrid->Row<=1 || StringGrid->Cells[0][StringGrid->Row] == "" || StringGrid->Cells[0][StringGrid->Row] == "..")
+ {
   SelectedId=0;
+ }
+ else
+ if(SelectedId == StrToInt(StringGrid->Cells[0][StringGrid->Row]))
+  return;
  else
   SelectedId=StrToInt(StringGrid->Cells[0][StringGrid->Row]);
  UpdateSelectedComponentInfo();
@@ -359,14 +365,24 @@ void __fastcall TUComponentsListFrame::StringGridSelectCell(TObject *Sender, int
 void __fastcall TUComponentsListFrame::StringGridKeyPress(TObject *Sender, System::WideChar &Key)
 {
  if(Key == VK_RETURN)
+ {
   StringGridDblClick(Sender);
+ }
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUComponentsListFrame::StringGridClick(TObject *Sender)
 {
- if(StringGrid->Row<1 || StringGrid->Cells[0][StringGrid->Row] == "" || StringGrid->Cells[0][StringGrid->Row] == "..")
+ if(UpdateInterfaceFlag)
+  return;
+
+ if(StringGrid->Row<=1 || StringGrid->Cells[0][StringGrid->Row] == "" || StringGrid->Cells[0][StringGrid->Row] == "..")
+ {
   SelectedId=0;
+ }
+ else
+ if(SelectedId == StrToInt(StringGrid->Cells[0][StringGrid->Row]))
+  return;
  else
   SelectedId=StrToInt(StringGrid->Cells[0][StringGrid->Row]);
  UpdateSelectedComponentInfo();
@@ -392,6 +408,14 @@ void __fastcall TUComponentsListFrame::ParametersHeaderControlSectionClick(THead
  {
 
  }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::ParametersRichEditChange(TObject *Sender)
+{
+ if(UpdateInterfaceFlag)
+  return;
+ RegistryModified=true;
 }
 //---------------------------------------------------------------------------
 

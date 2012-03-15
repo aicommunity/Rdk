@@ -191,14 +191,8 @@ unsigned char* UBEngine::Env_GetOutputImageY8(int index)
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
 const RDK::UBitmap* const UBEngine::Model_GetComponentOutput(const char *stringid, int index)
 {
- UEPtr<RDK::UBAbstract> model=dynamic_pointer_cast<RDK::UBAbstract>(Environment->GetModel());
+ UEPtr<RDK::UBAbstract> cont=dynamic_pointer_cast<RDK::UBAbstract>(FindComponent(stringid));
 
- if(!model)
-  return 0;
-
- RDK::ULongId id;
-
- UEPtr<RDK::UBAbstract> cont=dynamic_pointer_cast<RDK::UBAbstract>(model->GetComponentL(id.DecodeFromString(stringid)));
  if(!cont)
   return 0;
 

@@ -238,8 +238,8 @@ bool UANet::CreateLinks(const ULinksList &linkslist)
  for(i=0;i<linkslist.GetSize();i++)
  {
   res&=CreateLink(linkslist[i]);
-  if(!res)
-   break;
+ // if(!res)
+ //  break;
  }
 
  if(!res)

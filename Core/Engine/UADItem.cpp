@@ -138,6 +138,9 @@ bool UADItem::SetOutputDataInfo(int index, UIDataInfo* value)
  if(int(OutputDataInfo.size())<=index)
   return false;
 
+ if(OutputDataInfo[index] == value)
+  return true;
+
  if(OutputDataInfo[index])
   delete OutputDataInfo[index];
  OutputDataInfo[index]=value;
@@ -156,6 +159,9 @@ bool UADItem::SetInputDataInfo(int index, UIDataInfo* value)
 //  return false;
  if(int(InputDataInfo.size())<=index)
   return false;
+
+ if(InputDataInfo[index] == value)
+  return true;
 
  if(InputDataInfo[index])
   delete InputDataInfo[index];

@@ -404,7 +404,8 @@ bool UAItem::Connect(UEPtr<UAConnector> c, int i_index, int c_index)
  if(!c->ConnectToItem(this,i_index,c_index))
   return false;
 
- AssociatedConnectors[i_index].Add(c);
+// if(AssociatedConnectors[i_index].Find(c) < 0)
+ AssociatedConnectors[i_index].AddUnique(c);
 // PAssociatedConnectors[i_index]=&AssociatedConnectors[i_index][0];
 // NumAConnectors[i_index]=AssociatedConnectors[i_index].GetSize();
 

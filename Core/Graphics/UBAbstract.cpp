@@ -334,6 +334,23 @@ bool UBAbstract::ACalculate(void)
    }
   }
  }
+ else
+ {
+  for(int i=0;i<NumInputs;i++)
+  {
+   const UCItem &citem=GetCItem(i);
+   UBAbstract* input=static_cast<UBAbstract*>(citem.Item);
+   if(!input)
+	return true;
+   int index=citem.Index;
+
+   if(input->GetNumOutputs()<=index)
+	return true;
+
+   Inputs[i]=input->GetOutputs()[index];
+  }
+
+ }
 
  if(!PLCalculate(Inputs.GetBuffer(), Outputs.GetBuffer(), NumInputs, NumOutputs))
   return false;

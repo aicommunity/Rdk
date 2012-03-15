@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 
-#ifndef TImagesFrameUnitH
-#define TImagesFrameUnitH
+#ifndef UImagesFrameUnitH
+#define UImagesFrameUnitH
 //---------------------------------------------------------------------------
 #include <Classes.hpp>
 #include <Controls.hpp>
@@ -9,21 +9,30 @@
 #include <Forms.hpp>
 #include <Grids.hpp>
 #include <ImgList.hpp>
+#include <Vcl.ComCtrls.hpp>
 #include <vector>
+#include "myrdk.h"
 //---------------------------------------------------------------------------
-class TImagesFrame : public TFrame
+class TUImagesFrame : public TFrame
 {
 __published:    // IDE-managed Components
     TDrawGrid *DrawGrid;
     void __fastcall DrawGridDrawCell(TObject *Sender, int ACol, int ARow, TRect &Rect,
           TGridDrawState State);
+
 private:    // User declarations
 public:        // User declarations
-    __fastcall TImagesFrame(TComponent* Owner);
+    __fastcall TUImagesFrame(TComponent* Owner);
 
 
 // Массив изображений
 std::vector<std::vector<TImage*> > Images;
+
+// Массив длинных id компонент, связанных с изображениями
+std::vector<std::vector<std::string> > StringIds;
+
+// Массив индексов выходов компонент, связанных с изображениями
+std::vector<std::vector<int> > ComponentIndexes;
 
 // Флаг отражения вокруг оси X изображений при выводе
 bool ReflectionXFlag;
@@ -49,8 +58,11 @@ void SetReflectionXFlag(bool value);
 // --------------------------
 // Методы управления изображениями
 // --------------------------
+// Связывает ячейку с идентификатором компонента
+void LinkToComponent(int i, int j, const std::string &stringid, int index);
+
 // Устанавливает заданное изображение в ячейку с координатами i,j
-//bool SetBitmap(int i, int j, RDK::UBitmap &bitmap);
+bool SetBitmap(int i, int j, const RDK::UBitmap &bitmap);
 bool SetImage(int i, int j, const TImage *image);
 bool SetImage(int i, int j, int width, int height, int colormodel, unsigned char *buffer);
 
@@ -70,8 +82,14 @@ Graphics::TBitmap* GetImage(int i, int j);
 Graphics::TBitmap* GetImage(void);
 // --------------------------
 
+// --------------------------
+// Методы управления фреймом
+// --------------------------
+void UpdateInterface(void);
+// --------------------------
+
 };
 //---------------------------------------------------------------------------
-extern PACKAGE TImagesFrame *ImagesFrame;
+extern PACKAGE TUImagesFrame *UImagesFrame;
 //---------------------------------------------------------------------------
 #endif

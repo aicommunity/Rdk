@@ -2371,7 +2371,8 @@ UBitmap& UBitmap::operator = (const UBitmap &bitmap)
    }
    memcpy(ChannelOffset,bitmap.ChannelOffset,sizeof(ChannelOffset));
   }
- memcpy(Data,bitmap.Data,ByteLength);
+ if(ByteLength)
+  memcpy(Data,bitmap.Data,ByteLength);
  PData=Data+(bitmap.PData-bitmap.Data);
 
  return *this;

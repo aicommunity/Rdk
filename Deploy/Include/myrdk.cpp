@@ -8,4 +8,6 @@
 #include "../../Core/Engine/UAEnvSupport.cpp"
 #include "../../Core/Engine/UXMLEnvSerialize.cpp"
 #include "../../Core/Engine/UBinaryEnvSerialize.cpp"
+#include "../../Core/Graphics/UBitmap.cpp"
+
 

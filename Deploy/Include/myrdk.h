@@ -5,4 +5,5 @@
 
 #include "../../Core/Engine/UXMLEnvSerialize.h"
 #include "../../Core/Engine/UBinaryEnvSerialize.h"
+#include "../../Core/Graphics/UBitmap.h"
 

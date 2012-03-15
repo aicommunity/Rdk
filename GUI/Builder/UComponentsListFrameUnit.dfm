@@ -32,6 +32,7 @@ object UComponentsListFrame: TUComponentsListFrame
       ParentFont = False
       ScrollBars = ssBoth
       TabOrder = 0
+      OnChange = ParametersRichEditChange
     end
     object ParametersHeaderControl: THeaderControl
       Left = 1

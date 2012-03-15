@@ -31,6 +31,7 @@ __published:	// IDE-managed Components
 	void __fastcall StringGridClick(TObject *Sender);
 	void __fastcall ParametersHeaderControlSectionClick(THeaderControl *HeaderControl,
           THeaderSection *Section);
+	void __fastcall ParametersRichEditChange(TObject *Sender);
 
 protected:		// User declarations
 		// Длинное имя выделенного компонента

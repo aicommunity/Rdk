@@ -1973,6 +1973,7 @@ const char *  UEngine::Model_SaveComponent(const char *stringid)
   if(!cont)
    return 0;
 
+  XmlStorage.DelNode();
   XmlStorage.Create("Save");
 
   if(!Model_SaveComponent(cont,&XmlStorage))
@@ -1996,6 +1997,8 @@ int UEngine::Model_LoadComponent(const char *stringid, char* buffer)
  {
   XmlStorage.Load(buffer,"Save");
   XmlStorage.SelectNode(0);
+
+  Environment->Reset();
 
   if(!Environment->GetModel())
   {
@@ -2389,7 +2392,7 @@ bool UEngine::Model_SetComponentState(RDK::UAContainer* cont, RDK::Serialize::US
 
 // Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния в xml
-int UEngine::Model_SaveComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage)
+int UEngine::Model_SaveComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage, bool links)
 {
  try
  {
@@ -2403,15 +2406,18 @@ int UEngine::Model_SaveComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXM
    return false;
   serstorage->SelectUp();
 
-  serstorage->AddNode("Links");
-  if(!Model_GetComponentInternalLinks(cont,serstorage))
-   return false;
-  serstorage->SelectUp();
+  if(links)
+  {
+   serstorage->AddNode("Links");
+   if(!Model_GetComponentInternalLinks(cont,serstorage))
+	return false;
+   serstorage->SelectUp();
+  }
 
   serstorage->AddNode("Components");
   for(int i=0;i<cont->GetNumComponents();i++)
   {
-   if(!Model_SaveComponent(dynamic_pointer_cast<RDK::UANet>(cont->GetComponentByIndex(i)),serstorage))
+   if(!Model_SaveComponent(dynamic_pointer_cast<RDK::UANet>(cont->GetComponentByIndex(i)),serstorage,false))
     return false;
   }
   serstorage->SelectUp();
@@ -2428,7 +2434,7 @@ int UEngine::Model_SaveComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXM
 
 // Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния из xml
-int UEngine::Model_LoadComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage)
+int UEngine::Model_LoadComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage, bool links)
 {
  try
  {
@@ -2466,16 +2472,20 @@ int UEngine::Model_LoadComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXM
    if(cont->AddComponent(static_pointer_cast<UAContainer>(newcont)) == ForbiddenId)
     return false;
 
-   if(!Model_LoadComponent(newcont,serstorage))
-    return false;
+//   if(!Model_LoadComponent(newcont,serstorage))
+   if(!Model_LoadComponent(newcont,serstorage,false))
+	return false;
    serstorage->SelectUp();
   }
   serstorage->SelectUp();
 
-  serstorage->SelectNode("Links");
-  if(!Model_SetComponentInternalLinks(cont,serstorage))
-   return false;
-  serstorage->SelectUp();
+  if(links)
+  {
+   serstorage->SelectNode("Links");
+   if(!Model_SetComponentInternalLinks(cont,serstorage))
+	return false;
+   serstorage->SelectUp();
+  }
  }
  catch (Exception * exception)
  {
