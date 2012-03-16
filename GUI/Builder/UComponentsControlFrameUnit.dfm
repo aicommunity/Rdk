@@ -75,26 +75,36 @@ object UComponentsControlFrame: TUComponentsControlFrame
         Height = 469
         Align = alClient
         TabOrder = 0
-        ExplicitLeft = -145
-        ExplicitTop = -81
+        ExplicitLeft = 2
+        ExplicitTop = 15
+        ExplicitWidth = 606
+        ExplicitHeight = 469
         inherited Splitter1: TSplitter
           Height = 469
+          ExplicitHeight = 469
         end
         inherited Panel1: TPanel
           Width = 237
           Height = 469
+          ExplicitWidth = 237
+          ExplicitHeight = 469
           inherited ParametersRichEdit: TRichEdit
             Width = 235
             Height = 433
+            ExplicitWidth = 235
+            ExplicitHeight = 433
           end
           inherited ParametersHeaderControl: THeaderControl
             Width = 235
+            ExplicitWidth = 235
           end
         end
         inherited Panel2: TPanel
           Height = 469
+          ExplicitHeight = 469
           inherited StringGrid: TStringGrid
             Height = 433
+            ExplicitHeight = 433
           end
         end
       end

@@ -65,6 +65,7 @@ void TUComponentsControlFrame::LoadModelFromFile(const String &filename)
  TRichEdit* RichEdit=new TRichEdit(this);
  RichEdit->Parent=this;
  RichEdit->PlainText=true;
+ RichEdit->Visible=false;
  RichEdit->Lines->LoadFromFile(FileName);
 
  Model_LoadComponent("",AnsiString(RichEdit->Text).c_str());
