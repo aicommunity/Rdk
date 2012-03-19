@@ -14,52 +14,70 @@
 #include <CheckLst.hpp>
 #include "VideoOutputToolsFormUnit.h"
 #include <Menus.hpp>
+#include "VidGrab.hpp"
+
+class TVideoGrabberControlForm;
 
 //using namespace RDK::VCapture;
-using namespace RDK;
 //---------------------------------------------------------------------------
 class TVideoOutputFrame : public TFrame
 {
-__published:    // IDE-managed Components
-    TGroupBox *GroupBox;
-    TImage *Image;
-    TPanel *Panel1;
-    TTrackBar *ImageTrackBar;
-    TButton *StopButton;
-    TButton *StartButton;
-    TTimer *Timer;
-    TMaskEdit *TimeEdit;
-    TPopupMenu *PopupMenu;
-    TMenuItem *N1;
-    void __fastcall ImageTrackBarChange(TObject *Sender);
-    void __fastcall TimerTimer(TObject *Sender);
-    void __fastcall StartButtonClick(TObject *Sender);
-    void __fastcall StopButtonClick(TObject *Sender);
-    void __fastcall ImageMouseDown(TObject *Sender, TMouseButton Button,
+__published:	// IDE-managed Components
+	TGroupBox *GroupBox;
+	TImage *Image;
+	TPanel *Panel1;
+	TButton *StopButton;
+	TButton *StartButton;
+	TTimer *Timer;
+	TMaskEdit *TimeEdit;
+	TPopupMenu *PopupMenu;
+	TMenuItem *N1;
+	TVideoGrabber *VideoGrabber;
+	TTrackBar *TrackBar;
+	TMenuItem *SourceControl1;
+	TMenuItem *N2;
+	void __fastcall TimerTimer(TObject *Sender);
+	void __fastcall StartButtonClick(TObject *Sender);
+	void __fastcall StopButtonClick(TObject *Sender);
+	void __fastcall ImageMouseDown(TObject *Sender, TMouseButton Button,
           TShiftState Shift, int X, int Y);
-    void __fastcall ImageMouseMove(TObject *Sender, TShiftState Shift, int X,
+	void __fastcall ImageMouseMove(TObject *Sender, TShiftState Shift, int X,
           int Y);
-    void __fastcall ImageMouseUp(TObject *Sender, TMouseButton Button,
+	void __fastcall ImageMouseUp(TObject *Sender, TMouseButton Button,
           TShiftState Shift, int X, int Y);
-    void __fastcall TimeEditChange(TObject *Sender);
-    void __fastcall N1Click(TObject *Sender);
+	void __fastcall TimeEditChange(TObject *Sender);
+	void __fastcall N1Click(TObject *Sender);
+	void __fastcall VideoGrabberFrameCaptureCompleted(TObject *Sender, Pointer FrameBitmap,
+          int BitmapWidth, int BitmapHeight, DWORD FrameNumber, __int64 FrameTime,
+          TFrameCaptureDest DestType, UnicodeString FileName, bool Success,
+          int FrameId);
+	void __fastcall TrackBarChange(TObject *Sender);
+	void __fastcall SourceControl1Click(TObject *Sender);
 
-private:    // User declarations
-public:        // User declarations
-    __fastcall TVideoOutputFrame(TComponent* Owner);
-    __fastcall ~TVideoOutputFrame(void);
+private:	// User declarations
+public:		// User declarations
+	__fastcall TVideoOutputFrame(TComponent* Owner);
+	__fastcall ~TVideoOutputFrame(void);
+
+// Режим работы
+// 0 - Bmp
+// 1 - Avi
+// 2 - Camera
+int Mode;
+
+Graphics::TBitmap* ConvertBitmap;
 
 // Форма управления выводом видео
 TVideoOutputToolsForm* MyVideoOutputToolsForm;
 
-// Источник видео
-//VACapture *Capture;
+// Форма управления инициализацией видео
+TVideoGrabberControlForm* MyVideoGrabberControlForm;
 
 // Источник изображения
-UBitmap BmpSource;
+RDK::UBitmap BmpSource;
 
 // Канва рисования
-UBitmap BmpCanvas;
+RDK::UBitmap BmpCanvas;
 
 // Модуль графики
 RDK::UGraphics Graph;
@@ -115,15 +133,21 @@ bool CorrSelectFlag;
 
 // Флаг обновления отрисовки
 bool UpdateFlag;
+
+// Текущий обрабатываемый кадр
+long CurrentFrameNumber;
 // ============================================================
+// Инициализация фрейма avi-файлом
+void InitByAvi(const String &filename);
 
-
-// Устанавливает новый источник видео
-// Если capture == 0, то отменяет текущий источник
-bool SetCapture(VACapture *capture);
+// Инициализация фрейма bmp-файлом
+void InitByBmp(const String &filename);
 
 // Устанавливает отдельное изображение
-bool SetBitmap(const UBitmap &bmp);
+bool InitByBmp(const RDK::UBitmap &bmp);
+
+// Инициализация фрейма avi-файлом
+void InitByCamera(int camera_index);
 
 // Устанавливает название окна
 bool SetTitle(String title);
@@ -136,14 +160,14 @@ bool SetFrameRect(int x,int y, int x_width, int y_height, TColor color=(TColor)0
 bool UpdateVideo(void);
 
 // Отрисовываем текущее состояние видеопотока
-void DrawCapture(VACapture *capture, Graphics::TBitmap *bmp);
+void DrawCapture(Graphics::TBitmap *bmp);
 
 // Обновляем список точек
 void UpdateGeometryList(TCheckListBox *GeometryCheckListBox, TCheckListBox *PointsCheckListBox);
 
 // Метод отрисовки прямоугольной зоны
 void __fastcall TVideoOutputFrame::DrawFrameRect(TImage *image, int x1, int y1, int x2,
-                                                int y2, int framewidth, TColor color);
+												int y2, int framewidth, TColor color);
 
 // Добавляет очередной элемент фигуры
 void AddFigureRect(double l,double t,double w,double h);

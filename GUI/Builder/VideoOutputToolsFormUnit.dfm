@@ -59,7 +59,6 @@ object VideoOutputToolsForm: TVideoOutputToolsForm
         Height = 22
         Selected = clRed
         Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbCustomColor, cbPrettyNames, cbCustomColors]
-        ItemHeight = 16
         TabOrder = 0
       end
       object AddFigureButton: TButton

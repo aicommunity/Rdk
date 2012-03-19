@@ -9,6 +9,8 @@
 #pragma package(smart_init)
 #pragma resource "*.dfm"
 TVideoOutputToolsForm *VideoOutputToolsForm;
+
+using namespace RDK;
 //---------------------------------------------------------------------------
 __fastcall TVideoOutputToolsForm::TVideoOutputToolsForm(TComponent* Owner,
 	TVideoOutputFrame* _MyVideoOutputFrame,
@@ -129,7 +131,7 @@ void __fastcall TVideoOutputToolsForm::AddPointButtonClick(TObject *Sender)
  EditFigureButtonClick(Sender);
  Figure().SetNumVertex(Figure().GetNumVertex()+1);
  PointIndex=Figure().GetNumVertex()-1;
- Figure().UseName(PointIndex)=string(PointNameEdit->Text.t_str())+sntoa(PointIndex+1,3);
+ Figure().UseName(PointIndex)=string(AnsiString(PointNameEdit->Text).c_str())+sntoa(PointIndex+1,3);
  GeometryGraphics.GetGeometry(FigureIndex)=Figure;
  MyVideoOutputFrame->UpdateVideo();
  PointsCheckListBox->ItemIndex=PointIndex;

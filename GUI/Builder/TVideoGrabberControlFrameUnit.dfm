@@ -1,8 +1,8 @@
-object VCaptureOptionsFrame: TVCaptureOptionsFrame
+object VideoGrabberControlFrame: TVideoGrabberControlFrame
   Left = 0
   Top = 0
   Width = 453
-  Height = 169
+  Height = 269
   DoubleBuffered = True
   ParentDoubleBuffered = False
   TabOrder = 0
@@ -10,30 +10,29 @@ object VCaptureOptionsFrame: TVCaptureOptionsFrame
     Left = 0
     Top = 0
     Width = 453
-    Height = 169
-    ActivePage = DeviceTabSheet
+    Height = 269
+    ActivePage = VideoFileTabSheet
     Align = alClient
     DoubleBuffered = True
     ParentDoubleBuffered = False
     Style = tsFlatButtons
     TabOrder = 0
     OnChange = VCapturePageControlChange
+    ExplicitHeight = 308
     object DeviceTabSheet: TTabSheet
       Caption = 'Device'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
+      ExplicitHeight = 277
       object VDCapturePanel: TPanel
         Left = 0
         Top = 0
         Width = 445
-        Height = 138
+        Height = 238
         Align = alClient
         TabOrder = 0
+        ExplicitHeight = 277
         DesignSize = (
           445
-          138)
+          238)
         object ModeLabel: TLabel
           Left = 8
           Top = 89
@@ -41,7 +40,7 @@ object VCaptureOptionsFrame: TVCaptureOptionsFrame
           Height = 13
           Anchors = [akLeft, akTop, akRight]
           AutoSize = False
-          Caption = 'Mode:'
+          Caption = 'Video Size:'
           ExplicitWidth = 390
         end
         object InputLabel: TLabel
@@ -51,7 +50,7 @@ object VCaptureOptionsFrame: TVCaptureOptionsFrame
           Height = 13
           Anchors = [akLeft, akTop, akRight]
           AutoSize = False
-          Caption = 'Crossbar:'
+          Caption = 'Video Input:'
           ExplicitWidth = 390
         end
         object DeviceLabel: TLabel
@@ -64,7 +63,25 @@ object VCaptureOptionsFrame: TVCaptureOptionsFrame
           Caption = 'Video device:'
           ExplicitWidth = 369
         end
-        object ModeComboBox: TComboBox
+        object Label1: TLabel
+          Left = 8
+          Top = 137
+          Width = 429
+          Height = 13
+          Anchors = [akLeft, akTop, akRight]
+          AutoSize = False
+          Caption = 'Subtype:'
+        end
+        object Label2: TLabel
+          Left = 8
+          Top = 185
+          Width = 429
+          Height = 13
+          Anchors = [akLeft, akTop, akRight]
+          AutoSize = False
+          Caption = 'Analog video standard:'
+        end
+        object VideoSizeComboBox: TComboBox
           Left = 8
           Top = 104
           Width = 429
@@ -72,7 +89,7 @@ object VCaptureOptionsFrame: TVCaptureOptionsFrame
           Style = csDropDownList
           Anchors = [akLeft, akTop, akRight]
           TabOrder = 2
-          OnSelect = ModeComboBoxSelect
+          OnSelect = VideoSizeComboBoxSelect
         end
         object InputComboBox: TComboBox
           Left = 8
@@ -94,25 +111,43 @@ object VCaptureOptionsFrame: TVCaptureOptionsFrame
           TabOrder = 0
           OnSelect = DeviceComboBoxSelect
         end
+        object VideoSubTypeComboBox: TComboBox
+          Left = 8
+          Top = 152
+          Width = 429
+          Height = 21
+          Style = csDropDownList
+          Anchors = [akLeft, akTop, akRight]
+          TabOrder = 3
+          OnSelect = VideoSubTypeComboBoxSelect
+        end
+        object AnalogVideoStandardComboBox: TComboBox
+          Left = 8
+          Top = 200
+          Width = 429
+          Height = 21
+          Style = csDropDownList
+          Anchors = [akLeft, akTop, akRight]
+          TabOrder = 4
+          OnSelect = AnalogVideoStandardComboBoxSelect
+        end
       end
     end
     object VideoFileTabSheet: TTabSheet
       Caption = 'Video File'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
+      ExplicitHeight = 277
       object VFCapturePanel: TPanel
         Left = 0
         Top = 0
         Width = 445
-        Height = 138
+        Height = 238
         Align = alClient
         TabOrder = 0
+        ExplicitTop = -16
         DesignSize = (
           445
-          138)
+          238)
         object VideoFileNameLabel: TLabel
           Left = 8
           Top = 3
@@ -124,9 +159,9 @@ object VCaptureOptionsFrame: TVCaptureOptionsFrame
           ExplicitWidth = 369
         end
         object VFNameEdit: TEdit
-          Left = 15
+          Left = 8
           Top = 22
-          Width = 337
+          Width = 344
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           TabOrder = 0
@@ -141,42 +176,50 @@ object VCaptureOptionsFrame: TVCaptureOptionsFrame
           TabOrder = 1
           OnClick = VFBrowseButtonClick
         end
-        object TimeTrackBar: TTrackBar
-          Left = 8
-          Top = 51
-          Width = 348
-          Height = 33
-          Anchors = [akLeft, akTop, akRight]
-          TabOrder = 2
-          OnChange = TimeTrackBarChange
-        end
-        object TimeEdit: TMaskEdit
-          Left = 358
-          Top = 51
-          Width = 79
-          Height = 21
-          Anchors = [akTop, akRight]
-          EditMask = '000\:00\:00\:00;1;_'
-          MaxLength = 12
-          TabOrder = 3
-          Text = '000:00:00:00'
-          OnChange = TimeEditChange
-        end
       end
     end
     object PictureFileTabSheet: TTabSheet
       Caption = 'Picture File'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
+      ExplicitHeight = 277
+      DesignSize = (
+        445
+        238)
+      object Label3: TLabel
+        Left = 8
+        Top = 3
+        Width = 429
+        Height = 13
+        Anchors = [akLeft, akTop, akRight]
+        AutoSize = False
+        Caption = 'Image file name:'
+        ExplicitWidth = 369
+      end
+      object ImageFileNameEdit: TEdit
+        Left = 8
+        Top = 22
+        Width = 344
+        Height = 21
+        Anchors = [akLeft, akTop, akRight]
+        TabOrder = 0
+      end
+      object OpenImageFileButton: TButton
+        Left = 358
+        Top = 20
+        Width = 79
+        Height = 25
+        Anchors = [akTop, akRight]
+        Caption = 'Browse'
+        TabOrder = 1
+        OnClick = OpenImageFileButtonClick
+      end
     end
   end
-  object VFOpenDialog: TOpenDialog
-    DefaultExt = 'avi'
-    Filter = 'Video (*.avi)|*.avi|All files (*.*)|*.*'
-    Left = 296
-    Top = 264
+  object OpenDialog: TOpenDialog
+    DefaultExt = '.avi'
+    Filter = #1042#1080#1076#1077#1086'|*.avi|'#1060#1086#1090#1086'|*.bmp'
+    FilterIndex = 0
+    Left = 224
+    Top = 112
   end
 end

@@ -18,5 +18,6 @@ See file license.txt for more information
 #include "USupport.cpp"
 #include "UTree.cpp"
 #include "UException.cpp"
+#include "UTimeStamp.cpp"
 
 #endif

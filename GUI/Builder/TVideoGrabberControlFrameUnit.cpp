@@ -3,18 +3,18 @@
 #include <vcl.h>
 #pragma hdrstop
 
-#include "TVCaptureOptionsFrame.h"
+#include "TVideoGrabberControlFrameUnit.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
-TVCaptureOptionsFrame *VCaptureOptionsFrame;
+TVideoGrabberControlFrame *VideoGrabberControlFrame;
 //---------------------------------------------------------------------------
-__fastcall TVCaptureOptionsFrame::TVCaptureOptionsFrame(TComponent* Owner)
+__fastcall TVideoGrabberControlFrame::TVideoGrabberControlFrame(TComponent* Owner)
     : TFrame(Owner)
 {
  UpdateCaptureInterfaceFlag=false;
- //DCapture=0;
- //FCapture=0;
+ VideoGrabber=0;
+ VideoOutputFrame=0;
  PauseInvisibleFlag=true;
 }
 
@@ -23,12 +23,12 @@ __fastcall TVCaptureOptionsFrame::TVCaptureOptionsFrame(TComponent* Owner)
 // -----------------------------
 // Если флаг true - при смене активной вкладке - неактивные источники видео
 // останавливаются командой Pause.
-bool TVCaptureOptionsFrame::GetPauseInvisibleFlag(void) const
+bool TVideoGrabberControlFrame::GetPauseInvisibleFlag(void) const
 {
  return PauseInvisibleFlag;
 }
 
-bool TVCaptureOptionsFrame::SetPauseInvisibleFlag(bool value)
+bool TVideoGrabberControlFrame::SetPauseInvisibleFlag(bool value)
 {
  if(PauseInvisibleFlag == value)
   return true;
@@ -42,53 +42,55 @@ bool TVCaptureOptionsFrame::SetPauseInvisibleFlag(bool value)
 // -----------------------------
 // Методы управления устройством ввода видео
 // -----------------------------
-// Устанавливает устройство видеоввода
-/*bool TVCaptureOptionsFrame::SetDCapture(RDK::VCapture::VDCapture *capture)
+// Выбор управляемой компоненты видеозахвата
+TVideoGrabber* TVideoGrabberControlFrame::GetVideoGrabber(void)
 {
- if(DCapture == capture)
-  return true;
-
- DCapture=capture;
- return true;
+ return VideoGrabber;
 }
 
-bool TVCaptureOptionsFrame::SetFCapture(RDK::VCapture::VFCapture *capture)
+TVideoOutputFrame* TVideoGrabberControlFrame::GetVideoOutputFrame(void)
 {
- if(FCapture == capture)
-  return true;
-
- FCapture=capture;
- return true;
+ return VideoOutputFrame;
 }
 
-// Возвращает устройство видеоввода
-RDK::VCapture::VDCapture* TVCaptureOptionsFrame::GetDCapture(void) const
+
+
+void TVideoGrabberControlFrame::Init(TVideoOutputFrame* video_output_frame, TVideoGrabber* grabber)
 {
- return DCapture;
+ VideoGrabber=grabber;
+ VideoOutputFrame=video_output_frame;
+ UpdateInterface();
 }
 
-RDK::VCapture::VFCapture* TVCaptureOptionsFrame::GetFCapture(void) const
+void __fastcall TVideoGrabberControlFrame::AssignListToComboBox (TComboBox* ComboBox, String List, int Index)
 {
- return FCapture;
+   ComboBox->Items->Text = List;
+   if (ComboBox->Items->Count > 0) {
+	  ComboBox->ItemIndex = Index;
+   }
 }
-
-// Возвращает текущее устройство видеоввода
-RDK::VCapture::VACapture* TVCaptureOptionsFrame::GetCapture(void) const
-{
- if(VCapturePageControl->ActivePageIndex == 0)
-  return DCapture;
-
- if(VCapturePageControl->ActivePageIndex == 1)
-  return FCapture;
-
- return 0;
-}          */
-
 
 // Обновляет интерфейс фрейма
-void TVCaptureOptionsFrame::UpdateInterface(void)
+void TVideoGrabberControlFrame::UpdateInterface(void)
 {
  UpdateCaptureInterfaceFlag=true;
+
+ if(VideoGrabber->VideoSource == vs_VideoCaptureDevice)
+  VCapturePageControl->ActivePage = DeviceTabSheet;
+ else
+ if(VideoGrabber->VideoSource == vs_VideoFileOrURL)
+  VCapturePageControl->ActivePage = VideoFileTabSheet;
+
+ AssignListToComboBox (DeviceComboBox, VideoGrabber->VideoDevices, VideoGrabber->VideoDevice);
+ VideoGrabber->Update();
+// DeviceComboBox->ItemIndex = VideoGrabber->VideoDevice;
+
+ AssignListToComboBox (VideoSizeComboBox, VideoGrabber->VideoSizes, VideoGrabber->VideoSize);
+ AssignListToComboBox (VideoSubTypeComboBox, VideoGrabber->VideoSubtypes, VideoGrabber->VideoSubtype);
+ AssignListToComboBox (AnalogVideoStandardComboBox, VideoGrabber->AnalogVideoStandards, VideoGrabber->AnalogVideoStandard);
+ AssignListToComboBox (InputComboBox, VideoGrabber->VideoInputs, VideoGrabber->VideoInput);
+
+ VFNameEdit->Text=VideoGrabber->PlayerFileName;
 			/*
  if(DCapture)
  {
@@ -99,7 +101,7 @@ void TVCaptureOptionsFrame::UpdateInterface(void)
    std::vector<std::wstring> &devices=DCapture->GetCaptureDevicesList();
    DeviceComboBox->Clear();
    for(size_t i=0;i<devices.size();i++)
-    DeviceComboBox->Items->Add(devices[i].c_str());
+	DeviceComboBox->Items->Add(devices[i].c_str());
 
    std::vector<long> &crossbar=DCapture->GetCrossbarInputsList();
    InputComboBox->Clear();
@@ -185,67 +187,36 @@ void TVCaptureOptionsFrame::UpdateInterface(void)
  UpdateCaptureInterfaceFlag=false;
 }
 // -----------------------------
-void __fastcall TVCaptureOptionsFrame::DeviceComboBoxSelect(TObject *Sender)
+void __fastcall TVideoGrabberControlFrame::DeviceComboBoxSelect(TObject *Sender)
 {
- if(UpdateCaptureInterfaceFlag)
-  return;
-				   /*
- if(DCapture)
- {
-  DCapture->SetActiveDevice(DeviceComboBox->ItemIndex);
-  UpdateInterface();
- }                    */
+ VideoGrabber->VideoDevice = DeviceComboBox->ItemIndex;
+ UpdateInterface();
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TVCaptureOptionsFrame::InputComboBoxSelect(TObject *Sender)
+void __fastcall TVideoGrabberControlFrame::InputComboBoxSelect(TObject *Sender)
 {
- if(UpdateCaptureInterfaceFlag)
-  return;
-
- if(InputComboBox->ItemIndex == 0)
-  return;
-					/*
- if(DCapture)
- {
-  DCapture->SetActiveCrossbarInput(InputComboBox->ItemIndex-1);
-  UpdateInterface();
- }                 */
+ VideoGrabber->VideoInput = InputComboBox->ItemIndex;
+ UpdateInterface();
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TVCaptureOptionsFrame::ModeComboBoxSelect(TObject *Sender)
+void __fastcall TVideoGrabberControlFrame::VideoSizeComboBoxSelect(TObject *Sender)
 {
- if(UpdateCaptureInterfaceFlag)
-  return;
-			/*
- if(DCapture)
- {
-  std::string mode=AnsiString(ModeComboBox->Text).c_str();
-  int imode=0;
-  int index=mode.find_first_of(">");
-  imode=RDK::atoi(mode.substr(0,index));
-  DCapture->SetActiveMode(imode);
-  UpdateInterface();
- }                           */
+ VideoGrabber->VideoSize = VideoSizeComboBox->ItemIndex;
+ UpdateInterface();
 }
 //---------------------------------------------------------------------------
-void __fastcall TVCaptureOptionsFrame::VFBrowseButtonClick(TObject *Sender)
+void __fastcall TVideoGrabberControlFrame::VFBrowseButtonClick(TObject *Sender)
 {
- if(!VFOpenDialog->Execute())
+ if(!OpenDialog->Execute())
   return;
 
- VFNameEdit->Text=VFOpenDialog->FileName;
-			   /*
- if(FCapture)
- {
-  FCapture->SetFileName(VFNameEdit->Text.w_str());
-  UpdateInterface();
- }         */
-
+ VFNameEdit->Text=OpenDialog->FileName;
+ VideoOutputFrame->InitByAvi(OpenDialog->FileName);
 }
 //---------------------------------------------------------------------------
-void __fastcall TVCaptureOptionsFrame::TimeEditChange(TObject *Sender)
+void __fastcall TVideoGrabberControlFrame::TimeEditChange(TObject *Sender)
 {
 /* if(UpdateCaptureInterfaceFlag || !FCapture)
   return;
@@ -260,7 +231,7 @@ void __fastcall TVCaptureOptionsFrame::TimeEditChange(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TVCaptureOptionsFrame::TimeTrackBarChange(TObject *Sender)
+void __fastcall TVideoGrabberControlFrame::TimeTrackBarChange(TObject *Sender)
 {
 /* if(UpdateCaptureInterfaceFlag || !FCapture)
   return;
@@ -272,20 +243,44 @@ void __fastcall TVCaptureOptionsFrame::TimeTrackBarChange(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TVCaptureOptionsFrame::VCapturePageControlChange(TObject *Sender)
+void __fastcall TVideoGrabberControlFrame::VCapturePageControlChange(TObject *Sender)
 
-{        /*
- if(PauseInvisibleFlag)
+{
+ if(VCapturePageControl->ActivePage == DeviceTabSheet)
  {
-  if(DeviceTabSheet->TabVisible == false && DCapture->GetCaptureState())
-   DCapture->Pause();
-
-  if(VideoFileTabSheet->TabVisible == false && FCapture->GetCaptureState())
-   FCapture->Pause();
+  VideoGrabber->VideoSource=vs_VideoCaptureDevice;
  }
-
- UpdateInterface();*/
+ else
+ if(VCapturePageControl->ActivePage == VideoFileTabSheet)
+ {
+  VideoGrabber->VideoSource=vs_VideoFileOrURL;
+ }
 }
 //---------------------------------------------------------------------------
 
+void __fastcall TVideoGrabberControlFrame::VideoSubTypeComboBoxSelect(TObject *Sender)
+
+{
+ VideoGrabber->VideoSubtype = VideoSubTypeComboBox->ItemIndex;
+ UpdateInterface();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoGrabberControlFrame::AnalogVideoStandardComboBoxSelect(TObject *Sender)
+
+{
+   VideoGrabber->AnalogVideoStandard = AnalogVideoStandardComboBox->ItemIndex;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoGrabberControlFrame::OpenImageFileButtonClick(TObject *Sender)
+
+{
+ if(!OpenDialog->Execute())
+  return;
+
+ ImageFileNameEdit->Text=OpenDialog->FileName;
+ VideoOutputFrame->InitByBmp(OpenDialog->FileName);
+}
+//---------------------------------------------------------------------------
 

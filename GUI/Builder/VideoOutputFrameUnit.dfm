@@ -25,9 +25,51 @@ object VideoOutputFrame: TVideoOutputFrame
       OnMouseDown = ImageMouseDown
       OnMouseMove = ImageMouseMove
       OnMouseUp = ImageMouseUp
-      ExplicitTop = 17
-      ExplicitWidth = 378
-      ExplicitHeight = 291
+      ExplicitLeft = 186
+      ExplicitTop = 103
+    end
+    object VideoGrabber: TVideoGrabber
+      Left = 432
+      Top = 417
+      Width = 64
+      Height = 40
+      Caption = 'VideoGrabber'
+      Color = clBlack
+      Visible = False
+      ASFVideoWidth = -1
+      AspectRatioToUse = -1.000000000000000000
+      AudioCompressor = 0
+      AutoFilePrefix = 'vg'
+      Cropping_Zoom = 1.000000000000000000
+      LicenseString = 'N/A'
+      MotionDetector_Grid = 
+        '5555555555 5555555555 5555555555 5555555555 5555555555 555555555' +
+        '5 5555555555 5555555555 5555555555 5555555555'
+      PlayerSpeedRatio = 1.000000000000000000
+      PlayerTrackBar = TrackBar
+      Reencoding_StartTime = -1
+      Reencoding_StartFrame = -1
+      Reencoding_StopTime = -1
+      Reencoding_StopFrame = -1
+      TextOverlay_Font.Charset = DEFAULT_CHARSET
+      TextOverlay_Font.Color = clAqua
+      TextOverlay_Font.Height = -16
+      TextOverlay_Font.Name = 'Tahoma'
+      TextOverlay_Font.Style = []
+      TextOverlay_String = 
+        'Note: the date/time formats '#13#10'can be easily modified.'#13#10#13#10'system ' +
+        'date/time: %sys_time[dd/mm/yy hh:nn:ss]%'#13#10'DV time code: %time_co' +
+        'de%'#13#10'DV date/time: %dv_time[dd/mm/yy hh:nn:ss]%'#13#10'frame number: %' +
+        'frame_count%'#13#10'time (full): %time_full%'#13#10'time (sec): %time_sec%'#13#10 +
+        'time (ns): %time_100ns%'
+      VideoCompression_Quality = 1.000000000000000000
+      VideoCompressor = 0
+      VideoFromImages_TemporaryFile = 'SetOfBitmaps01.dat'
+      VideoProcessing_RotationCustomAngle = 45.500000000000000000
+      VideoSource = vs_VideoFileOrURL
+      VideoSource_FileOrURL_StartTime = -1
+      VideoSource_FileOrURL_StopTime = -1
+      OnFrameCaptureCompleted = VideoGrabberFrameCaptureCompleted
     end
   end
   object Panel1: TPanel
@@ -37,29 +79,17 @@ object VideoOutputFrame: TVideoOutputFrame
     Height = 41
     Align = alBottom
     TabOrder = 1
-    Visible = False
     DesignSize = (
       702
       41)
-    object ImageTrackBar: TTrackBar
-      Left = 0
-      Top = 8
-      Width = 546
-      Height = 29
-      Anchors = [akLeft, akTop, akRight]
-      Enabled = False
-      TabOrder = 0
-      OnChange = ImageTrackBarChange
-    end
     object StopButton: TButton
       Left = 665
       Top = 6
       Width = 30
       Height = 25
       Anchors = [akTop, akRight]
-      Caption = #1057#1090#1086#1087
-      Enabled = False
-      TabOrder = 1
+      Caption = 'Stop'
+      TabOrder = 0
       OnClick = StopButtonClick
     end
     object StartButton: TButton
@@ -68,9 +98,8 @@ object VideoOutputFrame: TVideoOutputFrame
       Width = 30
       Height = 25
       Anchors = [akTop, akRight]
-      Caption = #1055#1091#1089#1082
-      Enabled = False
-      TabOrder = 2
+      Caption = 'Start'
+      TabOrder = 1
       OnClick = StartButtonClick
     end
     object TimeEdit: TMaskEdit
@@ -81,9 +110,22 @@ object VideoOutputFrame: TVideoOutputFrame
       Anchors = [akTop, akRight]
       EditMask = '000\:00\:00\:00;1;_'
       MaxLength = 12
-      TabOrder = 3
+      TabOrder = 2
       Text = '000:00:00:00'
       OnChange = TimeEditChange
+    end
+    object TrackBar: TTrackBar
+      Left = 2
+      Top = 9
+      Width = 536
+      Height = 22
+      Anchors = [akLeft, akTop, akRight]
+      Max = 1
+      Min = 1
+      PageSize = 1
+      Position = 1
+      TabOrder = 3
+      OnChange = TrackBarChange
     end
   end
   object Timer: TTimer
@@ -96,8 +138,15 @@ object VideoOutputFrame: TVideoOutputFrame
   object PopupMenu: TPopupMenu
     Left = 48
     Top = 264
+    object SourceControl1: TMenuItem
+      Caption = 'Source Control'
+      OnClick = SourceControl1Click
+    end
+    object N2: TMenuItem
+      Caption = '-'
+    end
     object N1: TMenuItem
-      Caption = #1055#1072#1085#1077#1083#1100' '#1080#1085#1089#1090#1088#1091#1084#1077#1085#1090#1086#1074
+      Caption = 'Toolbar'
       OnClick = N1Click
     end
   end
