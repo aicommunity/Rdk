@@ -226,6 +226,92 @@ int UBEngine::LoadPredefinedLibraries(void)
  RDK::UBAbstract *filter=new RDK::UBAQLinearContrasting;
  filter->Default();
  filter->SetName("QLinerarContrasting");
+ bstorage->AddClass(filter,"QLinerarContrasting");
+
+ filter=new RDK::UBAQSolarize;
+ filter->Default();
+ filter->SetName("QSolarize");
+ bstorage->AddClass(filter,"QSolarize");
+
+ filter=new RDK::UBAQEqualizeHist;
+ filter->Default();
+ filter->SetName("QEqualizeHist");
+ bstorage->AddClass(filter,"QEqualizeHist");
+
+ filter=new RDK::UBAQCropHist;
+ filter->Default();
+ filter->SetName("QCropHist");
+ bstorage->AddClass(filter,"QCropHist");
+
+ filter=new RDK::UBAQModifyHist;
+ filter->Default();
+ filter->SetName("QModifyHist");
+ bstorage->AddClass(filter,"QModifyHist");
+
+ filter=new RDK::UBAQLocalEqualizeHist;
+ filter->Default();
+ filter->SetName("QLocalEqualizeHist");
+ bstorage->AddClass(filter,"QLocalEqualizeHist");
+
+ filter=new RDK::UBAQCombineHist;
+ filter->Default();
+ filter->SetName("QCombineHist");
+ bstorage->AddClass(filter,"QCombineHist");
+
+ filter=new RDK::UBPipeline;
+ filter->Default();
+ filter->SetName("Pipeline");
+ bstorage->AddClass(filter,"Pipeline");
+
+ filter=new RDK::UBParallelPipeline;
+ filter->Default();
+ filter->SetName("ParallelPipeline");
+ bstorage->AddClass(filter,"ParallelPipeline");
+
+ filter=new RDK::UBAResizeEdges;
+ filter->Default();
+ filter->SetName("ResizeEdges");
+ bstorage->AddClass(filter,"ResizeEdges");
+
+ filter=new RDK::UBAModel;
+ filter->Default();
+ filter->SetName("Model");
+ bstorage->AddClass(filter,"Model");
+
+ filter=new RDK::UBASource;
+ filter->Default();
+ filter->SetName("Source");
+ bstorage->AddClass(filter,"Source");
+
+ filter=new RDK::UBAReceiver;
+ filter->Default();
+ filter->SetName("Receiver");
+ bstorage->AddClass(filter,"Receiver");
+
+ filter=new RDK::UBAVideoSimulatorSimple;
+ filter->Default();
+ filter->SetName("VideoSimulatorSimple");
+ bstorage->AddClass(filter,"VideoSimulatorSimple");
+
+ filter=new RDK::UBADifferenceFrameSimple;
+ filter->Default();
+ filter->SetName("DifferenceFrameSimple");
+ bstorage->AddClass(filter,"DifferenceFrameSimple");
+
+ filter=new RDK::UBAMaskFilteringSimple;
+ filter->Default();
+ filter->SetName("MaskFilteringSimple");
+ bstorage->AddClass(filter,"MaskFilteringSimple");
+
+ filter=new RDK::UBAColorConvert;
+ filter->Default();
+ filter->SetName("ColorConvert");
+ bstorage->AddClass(filter,"ColorConvert");
+
+	 /*
+ RDK::UBAbstract *filter=new RDK::UBAQLinearContrasting;
+ filter->Default();
+ filter->SetName("QLinerarContrasting");
  bstorage->AddClass(filter,"QLinerarContrasting",14);
 
  filter=new RDK::UBAQSolarize;
@@ -307,7 +393,7 @@ int UBEngine::LoadPredefinedLibraries(void)
  filter->Default();
  filter->SetName("ColorConvert");
  bstorage->AddClass(filter,"ColorConvert",100);
-
+             */
  return 0;
 }
 // --------------------------

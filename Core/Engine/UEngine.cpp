@@ -2390,7 +2390,7 @@ int UEngine::Model_SaveComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXM
    return false;
 
   serstorage->AddNode(cont->GetName());
-  serstorage->SetNodeAttribute("Class",RDK::sntoa(cont->GetClass()));
+  serstorage->SetNodeAttribute("Class",/*RDK::sntoa(cont->GetClass())*/Storage->GetClassName(cont->GetClass()));
   serstorage->AddNode("Parameters");
   if(!Model_GetComponentParameters(cont, serstorage))
    return false;
@@ -2431,7 +2431,8 @@ int UEngine::Model_LoadComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXM
   if(!serstorage)
    return false;
 
-  UId id=RDK::atoi(serstorage->GetNodeAttribute("Class"));
+  std::string name=serstorage->GetNodeAttribute("Class");
+  UId id=Storage->GetClassId(name);
 
   if(!cont) // Создаем модель
   {
@@ -2455,7 +2456,9 @@ int UEngine::Model_LoadComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXM
   {
    serstorage->SelectNode(i);
    std::string nodename=serstorage->GetNodeName();
-   id=RDK::atoi(serstorage->GetNodeAttribute("Class"));
+   name=serstorage->GetNodeAttribute("Class");
+   id=Storage->GetClassId(name);
+   //id=RDK::atoi(serstorage->GetNodeAttribute("Class"));
    UEPtr<UANet> newcont=dynamic_pointer_cast<UANet>(storage->TakeObject(id));
    if(!newcont)
     return false;
