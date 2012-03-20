@@ -9,5 +9,7 @@
 #include "../../Core/Engine/UXMLEnvSerialize.cpp"
 #include "../../Core/Engine/UBinaryEnvSerialize.cpp"
 #include "../../Core/Graphics/UBitmap.cpp"
+#include "../../Core/Graphics/UAGraphics.cpp"
+#include "../../Core/Graphics/UGraphics.cpp"
 
 

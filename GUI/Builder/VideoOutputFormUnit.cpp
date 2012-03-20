@@ -4,7 +4,7 @@
 #pragma hdrstop
 
 #include "VideoOutputFormUnit.h"
-#include "MainFormUnit.h"
+//#include "MainFormUnit.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "VideoOutputFrameUnit"
