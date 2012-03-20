@@ -35,35 +35,17 @@ RDK::UEPtr<RDK::UAEnvironment> PEnvironment=0;
 RDK::UEPtr<RDK::UAStorage> PStorage=0;
 
 /*****************************************************************************/
-RDK::UAStorage* CreateNewStorage(void)
-{
- return new RDK::UAContainerStorage;
-}
+extern RDK::UAStorage* CreateNewStorage(void);
 
-extern RDK::UAEnvironment* CreateNewEnvironment(void)
-{
- return new RDK::UAContainerEnvironment;
-}
+extern RDK::UAEnvironment* CreateNewEnvironment(void);
 
-extern RDK::UEngine* CreateNewEngine(void)
-{
- return new RDK::UEngine;
-}
+extern RDK::UEngine* CreateNewEngine(void);
 
-RDK::UAStorage* CreateNewGStorage(void)
-{
- return new RDK::UBAStorage;
-}
+//extern RDK::UAStorage* CreateNewGStorage(void);
 
-RDK::UAEnvironment* CreateNewGEnvironment(void)
-{
- return new RDK::UBAEnvironment;
-}
+//extern RDK::UAEnvironment* CreateNewGEnvironment(void);
 
-RDK::UEngine* CreateNewGEngine(void)
-{
- return new RDK::UBEngine;
-}
+//extern RDK::UEngine* CreateNewGEngine(void);
 /*****************************************************************************/
 
 // ----------------------------
@@ -73,8 +55,8 @@ int RDK_CALL EngineInit(int predefined_structure, void* exception_handler)
 {
  LoadEngine((void*)CreateNewStorage, (void*)CreateNewEnvironment, (void*)CreateNewEngine);
  Engine_SetExceptionHandler(exception_handler);
- Init();
  LoadPredefinedLibraries();
+ Init();
 
  Env_SetPredefinedStructure(predefined_structure);
  Env_CreateStructure();
@@ -86,10 +68,9 @@ int RDK_CALL GraphicalEngineInit(int predefined_structure, int num_inputs,
 		int num_outputs, int input_width, int input_height, bool reflectionx,
 		void* exception_handler)
 {
- LoadEngine((void*)CreateNewGStorage, (void*)CreateNewGEnvironment, (void*)CreateNewGEngine);
+ LoadEngine((void*)CreateNewStorage, (void*)CreateNewEnvironment, (void*)CreateNewEngine);
  Engine_SetExceptionHandler(exception_handler);
  Init();
- LoadPredefinedLibraries();
 
  // Задает число входов среды
  Env_SetNumInputImages(num_inputs);
@@ -982,9 +963,9 @@ extern RDK::UEPtr<RDK::UAStorage> PStorage;
 // --------------------------
 RDKDllManager::RDKDllManager(void)
 {
- FuncCreateNewStorage=&RDK::NewUStorage;
- FuncCreateNewEnvironment=&RDK::NewUAContainerEnvironment;
- FuncCreateNewEngine=&RDK::NewUEngine;
+ FuncCreateNewStorage=0;//&RDK::NewUStorage;
+ FuncCreateNewEnvironment=0;//&RDK::NewUAContainerEnvironment;
+ FuncCreateNewEngine=0;//&RDK::NewUEngine;
 }
 
 RDKDllManager::~RDKDllManager(void)

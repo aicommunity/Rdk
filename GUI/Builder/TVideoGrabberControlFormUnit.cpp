@@ -15,3 +15,4 @@ __fastcall TVideoGrabberControlForm::TVideoGrabberControlForm(TComponent* Owner)
 {
 }
 //---------------------------------------------------------------------------
+

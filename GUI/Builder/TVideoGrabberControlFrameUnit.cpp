@@ -190,6 +190,7 @@ void TVideoGrabberControlFrame::UpdateInterface(void)
 void __fastcall TVideoGrabberControlFrame::DeviceComboBoxSelect(TObject *Sender)
 {
  VideoGrabber->VideoDevice = DeviceComboBox->ItemIndex;
+ VideoOutputFrame->InitByCamera(VideoGrabber->VideoDevice, VideoGrabber->VideoInput, VideoGrabber->VideoSize, VideoGrabber->VideoSubtype, VideoGrabber->AnalogVideoStandard);
  UpdateInterface();
 }
 //---------------------------------------------------------------------------
@@ -197,6 +198,7 @@ void __fastcall TVideoGrabberControlFrame::DeviceComboBoxSelect(TObject *Sender)
 void __fastcall TVideoGrabberControlFrame::InputComboBoxSelect(TObject *Sender)
 {
  VideoGrabber->VideoInput = InputComboBox->ItemIndex;
+ VideoOutputFrame->InitByCamera(VideoGrabber->VideoDevice, VideoGrabber->VideoInput, VideoGrabber->VideoSize, VideoGrabber->VideoSubtype, VideoGrabber->AnalogVideoStandard);
  UpdateInterface();
 }
 //---------------------------------------------------------------------------
@@ -204,11 +206,13 @@ void __fastcall TVideoGrabberControlFrame::InputComboBoxSelect(TObject *Sender)
 void __fastcall TVideoGrabberControlFrame::VideoSizeComboBoxSelect(TObject *Sender)
 {
  VideoGrabber->VideoSize = VideoSizeComboBox->ItemIndex;
+ VideoOutputFrame->InitByCamera(VideoGrabber->VideoDevice, VideoGrabber->VideoInput, VideoGrabber->VideoSize, VideoGrabber->VideoSubtype, VideoGrabber->AnalogVideoStandard);
  UpdateInterface();
 }
 //---------------------------------------------------------------------------
 void __fastcall TVideoGrabberControlFrame::VFBrowseButtonClick(TObject *Sender)
 {
+ OpenDialog->FilterIndex=0;
  if(!OpenDialog->Execute())
   return;
 
@@ -244,43 +248,60 @@ void __fastcall TVideoGrabberControlFrame::TimeTrackBarChange(TObject *Sender)
 //---------------------------------------------------------------------------
 
 void __fastcall TVideoGrabberControlFrame::VCapturePageControlChange(TObject *Sender)
-
 {
+ if(UpdateCaptureInterfaceFlag)
+  return;
+
+ VideoOutputFrame->StopButtonClick(Sender);
+
  if(VCapturePageControl->ActivePage == DeviceTabSheet)
  {
   VideoGrabber->VideoSource=vs_VideoCaptureDevice;
+  VideoOutputFrame->InitByCamera(VideoGrabber->VideoDevice, VideoGrabber->VideoInput, VideoGrabber->VideoSize, VideoGrabber->VideoSubtype, VideoGrabber->AnalogVideoStandard);
  }
  else
  if(VCapturePageControl->ActivePage == VideoFileTabSheet)
  {
   VideoGrabber->VideoSource=vs_VideoFileOrURL;
+  if(VFNameEdit->Text != "")
+   VideoOutputFrame->InitByAvi(VFNameEdit->Text);
  }
+ else
+ if(VCapturePageControl->ActivePage == PictureFileTabSheet)
+ {
+  if(ImageFileNameEdit->Text != "")
+   VideoOutputFrame->InitByBmp(ImageFileNameEdit->Text);
+ }
+
+ UpdateInterface();
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TVideoGrabberControlFrame::VideoSubTypeComboBoxSelect(TObject *Sender)
-
 {
  VideoGrabber->VideoSubtype = VideoSubTypeComboBox->ItemIndex;
+ VideoOutputFrame->InitByCamera(VideoGrabber->VideoDevice, VideoGrabber->VideoInput, VideoGrabber->VideoSize, VideoGrabber->VideoSubtype, VideoGrabber->AnalogVideoStandard);
  UpdateInterface();
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TVideoGrabberControlFrame::AnalogVideoStandardComboBoxSelect(TObject *Sender)
-
 {
-   VideoGrabber->AnalogVideoStandard = AnalogVideoStandardComboBox->ItemIndex;
+ VideoGrabber->AnalogVideoStandard = AnalogVideoStandardComboBox->ItemIndex;
+ VideoOutputFrame->InitByCamera(VideoGrabber->VideoDevice, VideoGrabber->VideoInput, VideoGrabber->VideoSize, VideoGrabber->VideoSubtype, VideoGrabber->AnalogVideoStandard);
+ UpdateInterface();
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TVideoGrabberControlFrame::OpenImageFileButtonClick(TObject *Sender)
-
 {
+ OpenDialog->FilterIndex=1;
  if(!OpenDialog->Execute())
   return;
 
  ImageFileNameEdit->Text=OpenDialog->FileName;
  VideoOutputFrame->InitByBmp(OpenDialog->FileName);
+ UpdateInterface();
 }
 //---------------------------------------------------------------------------
 

@@ -6,7 +6,7 @@
 #include "../../Core/Engine/Engine.h"
 
 namespace RDK {
-
+	 /*
 // Создает пустое хранилище и возвращает указатель на него
 UAContainerStorage* NewUStorage(void);
 
@@ -15,7 +15,7 @@ UAContainerEnvironment* NewUAContainerEnvironment(void);
 
 // Создает движок и возвращает указатель на него
 UEngine* NewUEngine(void);
-
+       */
 // Инициализирует пустое хранилище и возвращает указатель на него
 UAContainerStorage* CreateStorage(UAContainerStorage *storage);
 

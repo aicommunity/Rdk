@@ -1,6 +1,6 @@
 object VideoOutputForm: TVideoOutputForm
   Left = 0
-  Top = 250
+  Top = 257
   Caption = #1048#1089#1090#1086#1095#1085#1080#1082
   ClientHeight = 531
   ClientWidth = 645

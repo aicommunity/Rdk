@@ -25,8 +25,8 @@ object VideoOutputFrame: TVideoOutputFrame
       OnMouseDown = ImageMouseDown
       OnMouseMove = ImageMouseMove
       OnMouseUp = ImageMouseUp
-      ExplicitLeft = 186
-      ExplicitTop = 103
+      ExplicitTop = 56
+      ExplicitHeight = 359
     end
     object VideoGrabber: TVideoGrabber
       Left = 432

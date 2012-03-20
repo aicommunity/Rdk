@@ -8,7 +8,7 @@
 #include "../../Core/Graphics/Graphics.cpp"
 
 namespace RDK {
-
+		  /*
 // Создает пустое хранилище и возвращает указатель на него
 UAContainerStorage* NewUStorage(void)
 {
@@ -26,7 +26,7 @@ UEngine* NewUEngine(void)
 {
  return new UEngine;
 }
-
+            */
 // Создает пустое хранилище и возвращает указатель на него
 UAContainerStorage* CreateStorage(UAContainerStorage *storage)
 {
@@ -58,9 +58,6 @@ UAContainerEnvironment* CreateEnvironment(UAContainerEnvironment *environment, U
    ++I;
   }
  }
-
- env->AddClassLibrary(&BCLLibrary);
- env->AddClassLibrary(&IOLibrary);
 
  if(external_libs != 0)
  {

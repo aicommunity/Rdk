@@ -146,8 +146,8 @@ void InitByBmp(const String &filename);
 // Устанавливает отдельное изображение
 bool InitByBmp(const RDK::UBitmap &bmp);
 
-// Инициализация фрейма avi-файлом
-void InitByCamera(int camera_index);
+// Инициализация фрейма камерой
+void InitByCamera(int camera_index, int input_index, int size_index, int subtype_index, int analog_index);
 
 // Устанавливает название окна
 bool SetTitle(String title);

@@ -11,17 +11,15 @@ object VideoGrabberControlFrame: TVideoGrabberControlFrame
     Top = 0
     Width = 453
     Height = 269
-    ActivePage = VideoFileTabSheet
+    ActivePage = DeviceTabSheet
     Align = alClient
     DoubleBuffered = True
     ParentDoubleBuffered = False
     Style = tsFlatButtons
     TabOrder = 0
     OnChange = VCapturePageControlChange
-    ExplicitHeight = 308
     object DeviceTabSheet: TTabSheet
       Caption = 'Device'
-      ExplicitHeight = 277
       object VDCapturePanel: TPanel
         Left = 0
         Top = 0
@@ -29,7 +27,6 @@ object VideoGrabberControlFrame: TVideoGrabberControlFrame
         Height = 238
         Align = alClient
         TabOrder = 0
-        ExplicitHeight = 277
         DesignSize = (
           445
           238)
@@ -136,7 +133,6 @@ object VideoGrabberControlFrame: TVideoGrabberControlFrame
     object VideoFileTabSheet: TTabSheet
       Caption = 'Video File'
       ImageIndex = 1
-      ExplicitHeight = 277
       object VFCapturePanel: TPanel
         Left = 0
         Top = 0
@@ -144,7 +140,6 @@ object VideoGrabberControlFrame: TVideoGrabberControlFrame
         Height = 238
         Align = alClient
         TabOrder = 0
-        ExplicitTop = -16
         DesignSize = (
           445
           238)
@@ -181,7 +176,6 @@ object VideoGrabberControlFrame: TVideoGrabberControlFrame
     object PictureFileTabSheet: TTabSheet
       Caption = 'Picture File'
       ImageIndex = 2
-      ExplicitHeight = 277
       DesignSize = (
         445
         238)

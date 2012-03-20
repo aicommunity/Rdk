@@ -13,10 +13,66 @@
 #pragma resource "*.dfm"
 TVideoOutputFrame *VideoOutputFrame;
 
+
+//---------------------------------------------------------------------------
+__fastcall TVideoOutputFrame::TVideoOutputFrame(TComponent* Owner)
+	: TFrame(Owner)
+{
+// Capture=0;
+
+ // Модуль графики
+ Graph.SetCanvas(&BmpCanvas);
+
+ // Отрисовка геометрии
+ GeometryGraphics.SetGraphics(&Graph);
+
+ x1b=x2b=y1b=y2b=-1;
+ corrx1b=corry1b=corrx2b=corry2b=-1;
+ left=-1; top=-1; width=-1; height=-1;
+
+ CorrSelectFlag=false;
+ ZoneSelectEnable=false;
+
+ ZoneSelectEvent=CreateEvent(0,0,0,0);
+ UpdateFlag=false;
+
+ PointFlag=0;
+ FigureFlag=false;
+
+ MyVideoOutputToolsForm=new TVideoOutputToolsForm(this,
+	this,
+	GeometryGraphics,
+	SampleGeometryGraphics,
+	Figure,
+	FigureIndex,
+	FigureFlag,
+	PointIndex,
+	PointFlag);
+
+ MyVideoGrabberControlForm=new TVideoGrabberControlForm(this);
+
+
+ ConvertBitmap=new Graphics::TBitmap;
+
+}
+
+__fastcall TVideoOutputFrame::~TVideoOutputFrame(void)
+{
+ CloseHandle(ZoneSelectEvent);
+ delete MyVideoOutputToolsForm;
+ MyVideoOutputToolsForm=0;
+
+ delete MyVideoGrabberControlForm;
+ MyVideoGrabberControlForm=0;
+
+ delete ConvertBitmap;
+}
+
 //---------------------------------------------------------------------------
 // Инициализация фрейма avi-файлом
 void TVideoOutputFrame::InitByAvi(const String &filename)
 {
+ StopButtonClick(this);
  VideoGrabber->PlayerFileName=filename;
 
    VideoGrabber->Display_AutoSize = false;
@@ -34,6 +90,7 @@ void TVideoOutputFrame::InitByAvi(const String &filename)
 // Инициализация фрейма bmp-файлом
 void TVideoOutputFrame::InitByBmp(const String &filename)
 {
+ StopButtonClick(this);
  LoadBitmapFromFile(AnsiString(filename).c_str(),&BmpSource);
  BmpSource.SetColorModel(RDK::ubmRGB24);
  Mode=0;
@@ -43,6 +100,7 @@ void TVideoOutputFrame::InitByBmp(const String &filename)
 // Устанавливает отдельное изображение
 bool TVideoOutputFrame::InitByBmp(const RDK::UBitmap &bmp)
 {
+ StopButtonClick(this);
  BmpSource=bmp;
  BmpSource.SetColorModel(RDK::ubmRGB24);
  Mode=0;
@@ -50,15 +108,21 @@ bool TVideoOutputFrame::InitByBmp(const RDK::UBitmap &bmp)
 }
 
 
-// Инициализация фрейма avi-файлом
-void TVideoOutputFrame::InitByCamera(int camera_index)
+// Инициализация фрейма камерой
+void TVideoOutputFrame::InitByCamera(int camera_index, int input_index, int size_index, int subtype_index, int analog_index)
 {
+ StopButtonClick(this);
  VideoGrabber->BurstType = fc_TBitmap;
  VideoGrabber->BurstMode = True;
  VideoGrabber->BurstCount = 0;
-
-
+ VideoGrabber->VideoDevice=camera_index;
+ VideoGrabber->VideoInput=input_index;
+ VideoGrabber->VideoSize=size_index;
+ VideoGrabber->VideoSubtype=subtype_index;
+ VideoGrabber->AnalogVideoStandard=analog_index;
  Mode=2;
+ StartButtonClick(this);
+ UpdateVideo();
 }
 
 
@@ -85,54 +149,7 @@ bool TVideoOutputFrame::SetFrameRect(int x,int y, int x_width, int y_height, TCo
 
 // Обновляет отрисовку окна
 bool TVideoOutputFrame::UpdateVideo(void)
-{       /*
- if(!Capture)
- {
-  UpdateFlag=true;
-  StartButton->Enabled=false;
-  StopButton->Enabled=false;
-  ImageTrackBar->Enabled=false;
-  UpdateFlag=false;
- }
- else
- if(dynamic_cast<VFCapture*>(Capture))
- {
-  ImageTrackBar->Enabled=true;
-  TimeEdit->ReadOnly=false;
-  TimeEdit->Color=clWindow;
-  ImageTrackBar->Max=static_cast<VFCapture*>(Capture)->GetNumFrames();
-  ImageTrackBar->Position=static_cast<VFCapture*>(Capture)->GetCurrentFrame();
-  UpdateFlag=false;
- }
- else
- {
-  TimeEdit->ReadOnly=true;
-  TimeEdit->Color=clBtnFace;
- }
-
- if(Capture)
- {
-  string sstamp;
-  VTimeStamp stamp(Capture->GetCurrentVideoTime(),Capture->GetFPS());
-  stamp>>sstamp;
-  TimeEdit->Text=sstamp.c_str();
-  StartButton->Caption="Пуск";
-  StopButton->Caption="Стоп";
-  UpdateFlag=true;
-  if(Capture->GetCaptureState())
-  {
-   StartButton->Enabled=false;
-   StopButton->Enabled=true;
-  }
-  else
-  {
-   StartButton->Enabled=true;
-   StopButton->Enabled=false;
-  }
-
-  UpdateFlag=false;
- }
-			 */
+{
 
 // TrackBar->Max=VideoGrabber->G;
 // TrackBar->Position=CurrentFrameNumber;
@@ -316,60 +333,6 @@ void TVideoOutputFrame::SetSampleGeometryGraphics(RDK::MGraphics<double>& sample
  MyVideoOutputToolsForm->GeometryCheckListBox->ItemIndex=FigureIndex;
 }
 
-//---------------------------------------------------------------------------
-__fastcall TVideoOutputFrame::TVideoOutputFrame(TComponent* Owner)
-	: TFrame(Owner)
-{
-// Capture=0;
-
- // Модуль графики
- Graph.SetCanvas(&BmpCanvas);
-
- // Отрисовка геометрии
- GeometryGraphics.SetGraphics(&Graph);
-
- x1b=x2b=y1b=y2b=-1;
- corrx1b=corry1b=corrx2b=corry2b=-1;
- left=-1; top=-1; width=-1; height=-1;
-
- CorrSelectFlag=false;
- ZoneSelectEnable=false;
-
- ZoneSelectEvent=CreateEvent(0,0,0,0);
- UpdateFlag=false;
-
- PointFlag=0;
- FigureFlag=false;
-
- MyVideoOutputToolsForm=new TVideoOutputToolsForm(this,
-	this,
-	GeometryGraphics,
-	SampleGeometryGraphics,
-	Figure,
-	FigureIndex,
-	FigureFlag,
-	PointIndex,
-	PointFlag);
-
- MyVideoGrabberControlForm=new TVideoGrabberControlForm(this);
-
-
- ConvertBitmap=new Graphics::TBitmap;
-
-}
-
-__fastcall TVideoOutputFrame::~TVideoOutputFrame(void)
-{
- CloseHandle(ZoneSelectEvent);
- delete MyVideoOutputToolsForm;
- MyVideoOutputToolsForm=0;
-
- delete MyVideoGrabberControlForm;
- MyVideoGrabberControlForm=0;
-
- delete ConvertBitmap;
-}
-
 /*
  if(UpdateFlag)
   return;
@@ -432,7 +395,6 @@ void __fastcall TVideoOutputFrame::TimerTimer(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TVideoOutputFrame::StartButtonClick(TObject *Sender)
 {
-/*
  switch (Mode) {
  case 0:
  break;
@@ -447,31 +409,13 @@ void __fastcall TVideoOutputFrame::StartButtonClick(TObject *Sender)
 
  default:
 	 ;
- }*/
+ }  /*
  if(VideoGrabber->VideoSource == vs_VideoFileOrURL)
   VideoGrabber->RunPlayer();
  else
  if(VideoGrabber->VideoSource == vs_VideoCaptureDevice)
    VideoGrabber->StartPreview();
-
-/* if(!Capture)
-  return;
-
- if(UpdateFlag)
-  return;
-
- if(dynamic_cast<VFCapture*>(Capture))
- {
-  static_cast<VFCapture*>(Capture)->SelectFrame((long long)(ImageTrackBar->Position));
- }
-
-  StartButton->Enabled=false;
-  StopButton->Enabled=true;
-  Capture->Start();
-  Timer->Enabled=true;
-//  if(ImageTrackBar->Position>ImageTrackBar->Min)
-//   ImageTrackBar->Position=ImageTrackBar->Position-1;
-*/
+		*/
 }
 //---------------------------------------------------------------------------
 void __fastcall TVideoOutputFrame::StopButtonClick(TObject *Sender)
@@ -491,22 +435,6 @@ void __fastcall TVideoOutputFrame::StopButtonClick(TObject *Sender)
  default:
 	 ;
  }
-
- // VideoGrabber->PausePreview();
-// VideoGrabber->PausePlayer();
-/* if(!Capture)
-  return;
-
- if(UpdateFlag)
-  return;
-
-  StartButton->Enabled=true;
-  StopButton->Enabled=false;
-  Capture->Pause();
-  Timer->Enabled=false;
-//  if(ImageTrackBar->Position<ImageTrackBar->Max)
-//   ImageTrackBar->Position=ImageTrackBar->Position+1;
-*/
 }
 //---------------------------------------------------------------------------
 void __fastcall TVideoOutputFrame::ImageMouseDown(TObject *Sender,

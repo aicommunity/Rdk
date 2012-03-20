@@ -169,27 +169,17 @@ bool UEngine::Init(void)
   Environment=DLLGetEnvironment(EnvironmentIndex);
  else
  {
-//  if(LoadPredefinedLibraries())
-//   return false;
+  LibrariesList.clear();
+  ClassesList.clear();
+  if(LoadPredefinedLibraries())
+   return false;
   if(LoadClasses())
    return false;
   if(LoadLibraries())
    return false;
   Environment=DLLAddNewEnvironment(Storage,true,&ClassesList, &LibrariesList);
  }
-/*
- Storage=FuncCreateNewStorage();
- Storage=CreateStorage(Storage);
- Environment=FuncCreateNewEnvironment();
- if(LoadPredefinedLibraries())
-  return false;
- if(LoadLibraries())
-  return false;
- CreateEnvironment(Environment, Storage, true, &LibrariesList);
 
- if(!Environment)
-  return false;
-  */
  if(!Storage || !Environment || Environment->GetStorage() != Storage)
  {
   return false;
@@ -2749,6 +2739,9 @@ bool UEngine::SetExceptionHandler(PExceptionHandler value)
 // «агружает набор предустановленных библиотек
 int UEngine::LoadPredefinedLibraries(void)
 {
+ LibrariesList.push_back(&BCLLibrary);
+ LibrariesList.push_back(&IOLibrary);
+
  return 0;
 }
 
@@ -2761,7 +2754,6 @@ int UEngine::LoadClasses(void)
 
  Options.GetVariableList(ComponentClassesSectionName, variables);
 
- ClassesList.clear();
  for(size_t i=0;i<variables.size();i++)
  {
   //dllclass=LoadUClass(Options(ComponentClassesSectionName,variables[i],""),variables[i]);
@@ -2783,7 +2775,6 @@ int UEngine::LoadLibraries(void)
 
  Options.GetVariableList(ComponentLibrariesSectionName, variables);
 
- LibrariesList.clear();
  for(size_t i=0;i<variables.size();i++)
  {
   //library=LoadULibrary(Options(ComponentLibrariesSectionName,variables[i],""),variables[i]);
