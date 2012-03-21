@@ -14,7 +14,7 @@ See file license.txt for more information
 #ifndef UPROPERTY_CPP
 #define UPROPERTY_CPP
 
-#include "UProperty.h"
+//#include "UProperty.h"
 
 namespace RDK {
 
@@ -22,4 +22,4 @@ namespace RDK {
 #endif
 
 
- 
+

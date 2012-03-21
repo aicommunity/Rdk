@@ -14,10 +14,12 @@ See file license.txt for more information
 
 #include "UBitmap.h"
 #include "UBitmapVector.h"
-#include "Libraries/Simulator/UBAVideoSimulator.h"
 #include "../Serialize/USerStorageXML.h"
 
 namespace RDK {
+
+class UBVSObject;
+
 namespace Serialize {
 
 // UBMColorModel

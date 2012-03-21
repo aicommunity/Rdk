@@ -17,6 +17,7 @@ See file license.txt for more information
 #include <iomanip>
 #include "UGraphicsXMLSerialize.h"
 #include "../Serialize/UXMLStdSerialize.h"
+#include "Libraries/Simulator/UBAVideoSimulator.h"
 
 namespace RDK {
 namespace Serialize {

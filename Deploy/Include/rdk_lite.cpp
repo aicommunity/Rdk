@@ -6,9 +6,9 @@
 #include "../../ThirdParty/ThirdParty.cpp"
 #include "../../Core/Math/UMath_lite.cpp"
 #include "../../Core/Utilities/Utilities_lite.cpp"
-#include "../../Core/Serialize/Serialize_lite.cpp"
 #include "../../Core/Graphics/Graphics_lite.cpp"
 #include "../../Core/Engine/Engine_lite.cpp"
+#include "../../Core/Serialize/Serialize_lite.cpp"
 
 namespace RDK {
 
@@ -44,11 +44,11 @@ UAEnvironment* CreateAEnvironment(UAEnvironment *environment, UAStorage *storage
 
  if(!env->SetStorage(storage) || !isinit || !external_libs || !numlibs)
   return env;
-                                
+
  for(int i=0;i<numlibs;i++)
  {
   env->AddClassLibrary(external_libs[i]);
- } 
+ }
 
  env->BuildStorage();
 

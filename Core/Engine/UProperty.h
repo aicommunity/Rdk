@@ -21,12 +21,11 @@ See file license.txt for more information
 #include "../Serialize/USerStorageBinary.h"
 #include "../Serialize/UXMLStdSerialize.h"
 #include "../Serialize/UBinaryStdSerialize.h"
-//#include "UAContainer.h"
+#include "../Graphics/UGraphicsBinarySerialize.h"
+#include "../Graphics/UGraphicsXMLSerialize.h"
 #include "UADataComponent.h"
 
 namespace RDK {
-
-//typedef class UADataComponent;
 
 using namespace std;
 

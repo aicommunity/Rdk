@@ -4,9 +4,9 @@
 #include "../../ThirdParty/ThirdParty.h"
 #include "../../Core/Math/UMath_lite.h"
 #include "../../Core/Utilities/Utilities_lite.h"
-#include "../../Core/Serialize/Serialize_lite.h"
 #include "../../Core/Graphics/Graphics_lite.h"
 #include "../../Core/Engine/Engine_lite.h"
+#include "../../Core/Serialize/Serialize_lite.h"
 
 namespace RDK {
 

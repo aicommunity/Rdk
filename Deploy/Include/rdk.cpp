@@ -4,8 +4,8 @@
 #include "rdk.h"
 
 #include "myrdk.cpp"
-#include "../../Core/Engine/Engine.cpp"
 #include "../../Core/Graphics/Graphics.cpp"
+#include "../../Core/Engine/Engine.cpp"
 
 namespace RDK {
 		  /*

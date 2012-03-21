@@ -14,11 +14,12 @@ See file license.txt for more information
 #define UGraphicsBinarySerializeH
 
 #include "UBitmap.h"
+#include "UBitmapVector.h"
 #include "../Serialize/USerStorageBinary.h"
-#include "Libraries/Simulator/UBAVideoSimulator.h"
 
 namespace RDK {
 
+class UBVSObject;
 
 namespace Serialize {
 

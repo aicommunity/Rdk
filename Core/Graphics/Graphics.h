@@ -12,6 +12,7 @@ See file license.txt for more information
 #ifndef UBGRAPHICS_H
 #define UBGRAPHICS_H
 
+#include "UGraphicsBinarySerialize.h"
 #include "Gui.h"
 #include "Kernel.h"
 #include "Libraries/Libraries.h"

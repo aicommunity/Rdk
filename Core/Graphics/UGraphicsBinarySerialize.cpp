@@ -13,6 +13,7 @@ See file license.txt for more information
 #define UGRAPHICS_BINARY_SERIALIZE_CPP
 
 #include "UGraphicsBinarySerialize.h"
+#include "Libraries/Simulator/UBAVideoSimulator.h"
 
 namespace RDK {
 namespace Serialize {
