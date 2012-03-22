@@ -15,6 +15,7 @@ See file license.txt for more information
 #include "UEngine.h"
 //#include "UEnvException.h"
 #include "UXMLEnvSerialize.h"
+#include "Libraries/IO/UFileIO.h"
 
 namespace RDK{
 
@@ -153,10 +154,7 @@ bool UEngine::Init(void)
 
  StorageIndex=atoi(Options("General","StorageIndex",sntoa(StorageIndex).c_str()));
  EnvironmentIndex=atoi(Options("General","EnvironmentIndex",sntoa(EnvironmentIndex).c_str()));
-/*
- if(LoadDll(Options(MainLibrarySectionName,MainLibraryName,"").c_str()))
-  return false;
-  */
+
  if(StorageIndex>=0)
   Storage=DLLGetStorage(StorageIndex);
  else
@@ -183,6 +181,16 @@ bool UEngine::Init(void)
  if(!Storage || !Environment || Environment->GetStorage() != Storage)
  {
   return false;
+ }
+
+ UFileIO FileIO;
+ FileIO.SetDirection(0);
+ FileIO.SetFileName(ClassesDescriptionFileName);
+ FileIO.Calculate();
+ if(!FileIO.GetDataString().empty())
+ {
+  Storage_LoadCommonClassesDescription(FileIO.GetDataString().c_str());
+  Storage_LoadClassesDescription(FileIO.GetDataString().c_str());
  }
 
  return true;
@@ -2841,6 +2849,9 @@ bool UEngine::ADefault(void)
 {
  // Имя файла инициализации
  OptionsFileName="options.ini";
+
+ // Имя файла описаний параметров классов
+ ClassesDescriptionFileName="ClassesDescription.xml";
 
  // Имя секции выбора основной библиотеки
  MainLibrarySectionName="MainDLL";

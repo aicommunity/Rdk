@@ -142,7 +142,7 @@ void TUComponentsListFrame::UpdateParameters(void)
  if(ShowXMLComponentParameters)
  {
   Panel1->Visible=true;
-  ParametersRichEdit->Text=Model_GetComponentParameters(GetSelectedComponentLongId().c_str());
+  ParametersRichEdit->Text=Model_GetComponentParametersEx(GetSelectedComponentLongId().c_str());
  }
  else
  {

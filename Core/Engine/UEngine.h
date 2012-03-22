@@ -43,6 +43,9 @@ PCreateNewEnvironment FuncCreateNewEnvironment;
 // Имя файла инициализации
 string OptionsFileName;
 
+// Имя файла описаний параметров классов
+string ClassesDescriptionFileName;
+
 // Имя секции выбора основной библиотеки
 string MainLibrarySectionName;
 
@@ -62,6 +65,7 @@ int StorageIndex;
 // Индекс используемой среды в библиотеке
 // Если < 0, то новая среда будет создана
 int EnvironmentIndex;
+
 
 protected: // Переменные состояния
 // Флаг работы системы

@@ -284,6 +284,53 @@ void UBitmap::Fill(UColorT color)
  }
 }
 
+void UBitmap::Fill(UColorT color, const UBRect &rect)
+{
+ if(!Data || Width == 0 || Height == 0)
+  return;
+
+ UBRect realrect=rect;
+ if(realrect.X<0)
+  realrect.X=0;
+
+ if(realrect.Y<0)
+  realrect.Y=0;
+
+ if(realrect.X2()>=Width)
+  realrect.X2(Width-1);
+
+ if(realrect.Y2()>=Height)
+  realrect.Y2(Height-1);
+
+ UBColor *pdata=0;
+ switch(ColorModel)
+ {
+ case ubmY8:
+  pdata=Data+realrect.Y*LineByteLength+realrect.X*PixelByteLength;
+  for(int i=0;i<realrect.Height;i++,pdata+=LineByteLength)
+   memset(pdata,color.ycrcb.y,LineByteLength);
+ break;
+
+ case ubmRGB24:
+  pdata=Data+realrect.Y*LineByteLength+realrect.X*PixelByteLength;
+  for(int i=0;i<realrect.Height;i++,pdata+=LineByteLength-realrect.Width)
+   for(int i=0;i<realrect.Width;++i)
+   {
+	*pdata++=color.rgb.b;
+	*pdata++=color.rgb.g;
+	*pdata++=color.rgb.r;
+   }
+ break;
+
+ case ubmY32:
+  pdata=Data+realrect.Y*LineByteLength+realrect.X*PixelByteLength;
+  for(int i=0;i<realrect.Height;i++,pdata+=LineByteLength)
+   *reinterpret_cast<unsigned int*>(pdata)=color.c;
+ break;
+ }
+}
+
+
 
 // ѕреобразует это изображение в формат приемника 'target'
 // и записывает результат в приемник.

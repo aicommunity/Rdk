@@ -262,11 +262,53 @@ void TUImagesFrame::UpdateInterface(void)
   {
    const RDK::UBitmap* bmp=(const RDK::UBitmap*)Model_GetComponentOutput(StringIds[i][j].c_str(), ComponentIndexes[i][j]);
    if(bmp)
-    SetBitmap(i, j, *bmp);
+	SetBitmap(i, j, *bmp);
   }
  }
  DrawGrid->Repaint();
  DrawGrid->Update();
+}
+
+// Сохраняет информацию об источниках данных в заданный ini файл
+void TUImagesFrame::SaveToIni(TMemIniFile *ini, const String &section)
+{
+ if(!ini)
+  return;
+
+ ini->WriteInteger(section,"NumCellWidth",GetNumCellWidth());
+ ini->WriteInteger(section,"NumCellHeight",GetNumCellHeight());
+
+ for(size_t i=0;i<Images.size();i++)
+ {
+  for(size_t j=0;j<Images[i].size();j++)
+  {
+   String name=IntToStr(int(i))+String("_")+IntToStr(int(j));
+   ini->WriteString(section,String("CellName")+name,StringIds[i][j].c_str());
+   ini->WriteInteger(section,String("CellIndex")+name,ComponentIndexes[i][j]);
+  }
+ }
+}
+
+// Загружает информацию об источниках данных из заданного ini файла
+void TUImagesFrame::LoadFromIni(TMemIniFile *ini, const String &section)
+{
+ if(!ini)
+  return;
+
+ int x=ini->ReadInteger(section,"NumCellWidth",1);
+ int y=ini->ReadInteger(section,"NumCellHeight",1);
+ SetNumCells(x,y);
+
+ for(size_t i=0;i<Images.size();i++)
+ {
+  for(size_t j=0;j<Images[i].size();j++)
+  {
+   String name=IntToStr(int(i))+String("_")+IntToStr(int(j));
+   StringIds[i][j]=AnsiString(ini->ReadString(section,String("CellName")+name,"")).c_str();
+   ComponentIndexes[i][j]=ini->ReadInteger(section,String("CellIndex")+name,0);
+  }
+ }
+ UpdateInterface();
 }
 // --------------------------
 

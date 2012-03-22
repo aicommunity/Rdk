@@ -9,6 +9,7 @@
 #include <Forms.hpp>
 #include <Grids.hpp>
 #include <ImgList.hpp>
+#include <IniFiles.hpp>
 #include <Vcl.ComCtrls.hpp>
 #include <vector>
 #include "myrdk.h"
@@ -23,7 +24,6 @@ __published:    // IDE-managed Components
 private:    // User declarations
 public:        // User declarations
     __fastcall TUImagesFrame(TComponent* Owner);
-
 
 // Массив изображений
 std::vector<std::vector<TImage*> > Images;
@@ -86,6 +86,12 @@ Graphics::TBitmap* GetImage(void);
 // Методы управления фреймом
 // --------------------------
 void UpdateInterface(void);
+
+// Сохраняет информацию об источниках данных в заданный ini файл
+void SaveToIni(TMemIniFile *ini, const String &section);
+
+// Загружает информацию об источниках данных из заданного ini файла
+void LoadFromIni(TMemIniFile *ini, const String &section);
 // --------------------------
 
 };

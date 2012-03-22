@@ -50,6 +50,7 @@ __fastcall TVideoOutputFrame::TVideoOutputFrame(TComponent* Owner)
 	PointFlag);
 
  MyVideoGrabberControlForm=new TVideoGrabberControlForm(this);
+ MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this,VideoGrabber);
 
 
  ConvertBitmap=new Graphics::TBitmap;
@@ -693,7 +694,6 @@ void __fastcall TVideoOutputFrame::TrackBarChange(TObject *Sender)
 
 void __fastcall TVideoOutputFrame::SourceControl1Click(TObject *Sender)
 {
- MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this,VideoGrabber);
  MyVideoGrabberControlForm->Show();
 }
 //---------------------------------------------------------------------------

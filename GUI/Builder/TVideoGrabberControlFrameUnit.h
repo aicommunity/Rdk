@@ -45,8 +45,6 @@ __published:    // IDE-managed Components
     void __fastcall InputComboBoxSelect(TObject *Sender);
     void __fastcall VideoSizeComboBoxSelect(TObject *Sender);
     void __fastcall VFBrowseButtonClick(TObject *Sender);
-    void __fastcall TimeEditChange(TObject *Sender);
-    void __fastcall TimeTrackBarChange(TObject *Sender);
     void __fastcall VCapturePageControlChange(TObject *Sender);
 	void __fastcall VideoSubTypeComboBoxSelect(TObject *Sender);
 	void __fastcall AnalogVideoStandardComboBoxSelect(TObject *Sender);
@@ -61,40 +59,19 @@ bool UpdateCaptureInterfaceFlag;
 TVideoGrabber* VideoGrabber;
 TVideoOutputFrame *VideoOutputFrame;
 
-// Если флаг true - при смене активной вкладке - неактивные источники видео
-// останавливаются командой Pause.
-bool PauseInvisibleFlag;
-
-// -----------------------------
-// Методы управления параметрами
-// -----------------------------
-public:
-// Если флаг true - при смене активной вкладке - неактивные источники видео
-// останавливаются командой Pause.
-bool GetPauseInvisibleFlag(void) const;
-bool SetPauseInvisibleFlag(bool value);
-// -----------------------------
-
 // -----------------------------
 // Методы управления устройством ввода видео
 // -----------------------------
+public:
 // Выбор управляемой компоненты видеозахвата
 TVideoGrabber* GetVideoGrabber(void);
 TVideoOutputFrame* GetVideoOutputFrame(void);
 void Init(TVideoOutputFrame* video_output_frame, TVideoGrabber* grabber);
 
+// Выбор активного режима видеоввода
+void SelectMode(int mode);
+
 void __fastcall AssignListToComboBox (TComboBox* ComboBox, String List, int Index);
-
-// Устанавливает устройство видеоввода
-//bool SetDCapture(RDK::VCapture::VDCapture *capture);
-//bool SetFCapture(RDK::VCapture::VFCapture *capture);
-
-// Возвращает устройство видеоввода
-//RDK::VCapture::VDCapture* GetDCapture(void) const;
-//RDK::VCapture::VFCapture* GetFCapture(void) const;
-
-// Возвращает текущее устройство видеоввода
-//RDK::VCapture::VACapture* GetCapture(void) const;
 
 // Обновляет интерфейс фрейма
 void UpdateInterface(void);

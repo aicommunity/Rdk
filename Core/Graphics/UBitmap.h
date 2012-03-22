@@ -211,6 +211,7 @@ void Clear(void);
 // Заполняет изображение цветом color
 // Поддерживает режимы ubmY8, ubmRGB24, ubmY32
 void Fill(UColorT color);
+void Fill(UColorT color, const UBRect &rect);
 
 // Преобразует это изображение в формат приемника 'target'
 // и записывает результат в приемник.

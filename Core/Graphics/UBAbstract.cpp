@@ -340,14 +340,15 @@ bool UBAbstract::ACalculate(void)
   {
    const UCItem &citem=GetCItem(i);
    UBAbstract* input=static_cast<UBAbstract*>(citem.Item);
-   if(!input)
-	return true;
-   int index=citem.Index;
+   if(input)
+   {
+	int index=citem.Index;
 
-   if(input->GetNumOutputs()<=index)
-	return true;
+	if(input->GetNumOutputs()<=index)
+	 return true;
 
-   Inputs[i]=input->GetOutputs()[index];
+	Inputs[i]=input->GetOutputs()[index];
+   }
   }
 
  }
