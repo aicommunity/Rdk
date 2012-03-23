@@ -180,6 +180,35 @@ bool UAContainer::SetCoord(RDK::MVector<double> value)
  return true;
 }
 
+
+// Время, затраченное на обработку объекта
+// (без учета времени обсчета дочерних объектов) (мс)
+long long UAContainer::GetStepDuration(void) const
+{
+/*
+ return StepDuration;
+*/
+ long long res=0;
+ for(int i=0;i<NumComponents;i++)
+  res+=PComponents[i]->GetFullStepDuration();
+
+ return StepDuration-res;
+}
+
+// Время, затраченное на обработку объекта
+// (вместе со времени обсчета дочерних объектов) (мс)
+long long UAContainer::GetFullStepDuration(void) const
+{
+ return StepDuration;
+/*
+ long long res=0;
+ for(int i=0;i<NumComponents;i++)
+  res+=PComponents[i]->GetFullStepDuration();
+
+ return res+StepDuration;
+ */
+}
+
 // Удаляет владельца объекта
 void UAContainer::BreakOwner(void)
 {
@@ -1194,6 +1223,7 @@ bool UAContainer::Reset(void)
  AReset();
 
  CalcCounter=0;
+ SkipComponentCalculation=false;
  return true;
 }
 
@@ -1205,9 +1235,12 @@ bool UAContainer::Calculate(void)
 
  Build();
 
+ long long tempstepduration=GetCurrentStartupTime();
  UEPtr<UAContainer> *comps=PComponents;
- for(int i=0;i<NumComponents;++i,comps++)
+ for(int i=0;(i<NumComponents) & !SkipComponentCalculation;++i,comps++)
   (*comps)->Calculate();
+
+ SkipComponentCalculation=false;
 
  if(!Owner)
  {
@@ -1236,7 +1269,7 @@ bool UAContainer::Calculate(void)
   }
 
  UpdateMainOwner();
-
+ StepDuration=CalcDiffTime(GetCurrentStartupTime(),tempstepduration);
  // Обрабатываем контроллеры
  int numcontrollers=Controllers.size();
 
@@ -1258,6 +1291,13 @@ void UAContainer::UpdateMainOwner(void)
   return;
 
  return AUpdateMainOwner();
+}
+
+// Обычно вызывается дочерним компонентом и прерывает обсчет цепочки дочерних
+// компонент на этом шаге счета
+void UAContainer::ForceSkipComponentCalculation(void)
+{
+ SkipComponentCalculation=true;
 }
 // --------------------------
 

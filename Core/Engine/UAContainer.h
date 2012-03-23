@@ -124,6 +124,9 @@ public: // Физические свойства
 // Координата компонента в пространстве сети
 RDK::MVector<double> Coord;
 
+// Время, затраченное на обработку объекта
+// (без учета времени обсчета дочерних объектов) (мс)
+long long StepDuration;
 
 protected: // Временные переменные
 // Если 'TimeStep' > 'Owner->TimeStep' то 'CalcCounter' является
@@ -147,6 +150,9 @@ UEPtr<UInstancesStorageElement> ObjectIterator;
 
 // Последний использованный Id компонент
 UId LastId;
+
+// Флаг запроса на пропуск обсчета компонент в текущей итерации расчетов
+bool SkipComponentCalculation;
 
 // --------------------------
 // Конструкторы и деструкторы
@@ -208,6 +214,14 @@ public:
 // Координата компонента в пространстве сети
 RDK::MVector<double> GetCoord(void) const;
 bool SetCoord(RDK::MVector<double> value);
+
+// Время, затраченное на обработку объекта
+// (без учета времени обсчета дочерних объектов) (мс)
+long long GetStepDuration(void) const;
+
+// Время, затраченное на обработку объекта
+// (вместе со времени обсчета дочерних объектов) (мс)
+long long GetFullStepDuration(void) const;
 
 // Устанавливает величину шага интегрирования
 UTime GetTimeStep(void) const;
@@ -462,6 +476,10 @@ virtual bool Calculate(void);
 
 // Обновляет состояние MainOwner после расчета этого объекта
 virtual void UpdateMainOwner(void);
+
+// Обычно вызывается дочерним компонентом и прерывает обсчет цепочки дочерних
+// компонент на этом шаге счета
+virtual void ForceSkipComponentCalculation(void);
 // --------------------------
 
 // --------------------------

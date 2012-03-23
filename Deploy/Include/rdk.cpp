@@ -8,25 +8,7 @@
 #include "../../Core/Engine/Engine.cpp"
 
 namespace RDK {
-		  /*
-// Создает пустое хранилище и возвращает указатель на него
-UAContainerStorage* NewUStorage(void)
-{
- return new UAContainerStorage;
-}
-
-// Создает среду и возвращает указатель на нее
-UAContainerEnvironment* NewUAContainerEnvironment(void)
-{
- return new UAContainerEnvironment;
-}
-
-// Создает движок и возвращает указатель на него
-UEngine* NewUEngine(void)
-{
- return new UEngine;
-}
-            */
+		  
 // Создает пустое хранилище и возвращает указатель на него
 UAContainerStorage* CreateStorage(UAContainerStorage *storage)
 {
