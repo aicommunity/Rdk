@@ -22,5 +22,6 @@ unsigned long long CalcDiffTime(unsigned long long time1, unsigned long long tim
   return time2-time1;
 }
 
+}
 #endif
 

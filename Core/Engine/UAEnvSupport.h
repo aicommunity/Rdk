@@ -211,10 +211,11 @@ extern ULongId ULongIdemp;
 /* *********************************************************************** */
 /* *********************************************************************** */
 // Описание одной из сторон связи между объектами
-struct ULinkSide
+template<typename T>
+struct ULinkSideT
 {
 // Id объекта
-ULongId Id;
+T Id;
 
 // Индекс связываемого входа/выхода
 int Index;
@@ -222,35 +223,45 @@ int Index;
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-ULinkSide(void);
-ULinkSide(const ULongId &id, int index);
-ULinkSide(const ULinkSide &link);
-virtual ~ULinkSide(void);
+ULinkSideT(void);
+ULinkSideT(const T &id, int index);
+ULinkSideT(const ULinkSideT &link);
+virtual ~ULinkSideT(void);
 // --------------------------
 
 // --------------------------
 // Операторы
 // --------------------------
-friend bool operator < (const ULinkSide &linkside1, const ULinkSide &linkside2);
-friend bool operator == (const ULinkSide &linkside1, const ULinkSide &linkside2);
-friend bool operator != (const ULinkSide &linkside1, const ULinkSide &linkside2);
+bool operator < (const ULinkSideT<T> &linkside2) const;
+bool operator == (const ULinkSideT<T> &linkside2) const;
+bool operator != (const ULinkSideT<T> &linkside2) const;
+//friend bool operator < (const ULinkSideT<T> &linkside1, const ULinkSideT<T> &linkside2);
+//friend bool operator == (const ULinkSideT<T> &linkside1, const ULinkSideT<T> &linkside2);
+//friend bool operator != (const ULinkSideT<T> &linkside1, const ULinkSideT<T> &linkside2);
 // --------------------------
 };
 
+typedef ULinkSideT<ULongId> ULinkSide;
+
+
+/* *********************************************************************** */
+/* *********************************************************************** */
+
 // Описание одиночной связи
-struct ULink
+template<typename T>
+struct ULinkT
 {
- ULinkSide Item;
- std::vector<ULinkSide> Connector;
+ ULinkSideT<T> Item;
+ std::vector<ULinkSideT<T> > Connector;
 
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-ULink(void);
-ULink(const ULinkSide &item, const ULinkSide &conn);
-ULink(const ULongId &item_id, int item_index,const ULongId &conn_id, int conn_index);
-ULink(const ULink &link);
-virtual ~ULink(void);
+ULinkT(void);
+ULinkT(const ULinkSideT<T> &item, const ULinkSideT<T> &conn);
+ULinkT(const T &item_id, int item_index,const T &conn_id, int conn_index);
+ULinkT(const ULinkT &link);
+virtual ~ULinkT(void);
 // --------------------------
 
 
@@ -259,39 +270,200 @@ virtual ~ULink(void);
 // --------------------------
 // Ищет заданный элемент с приемником connector и возвращает индекс или отрицательное число, если не
 // найдено
-int FindConnector(const ULinkSide &connector);
+int FindConnector(const ULinkSideT<T> &connector);
 // --------------------------
 
 
 // --------------------------
 // Операторы
 // --------------------------
-friend bool operator < (const ULink &link1, const ULink &link2);
-friend bool operator == (const ULink &link1, const ULink &link2);
-friend bool operator != (const ULink &link1, const ULink &link2);
+friend bool operator < (const ULinkT<T> &link1, const ULinkT<T> &link2);
+friend bool operator == (const ULinkT<T> &link1, const ULinkT<T> &link2);
+friend bool operator != (const ULinkT<T> &link1, const ULinkT<T> &link2);
 // --------------------------
 };
 
+typedef ULinkT<ULongId> ULink;
+
+
+/* ************************************************************************* */
+/* ************************************************************************* */
+/* ************************************************************************* */
+/* *********************************************************************** */
+/* *********************************************************************** */
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+template<typename T>
+ULinkSideT<T>::ULinkSideT(void)
+ : Index(0)
+{
+}
+
+template<typename T>
+ULinkSideT<T>::ULinkSideT(const T &id, int index)
+ : Id(id), Index(index)
+{
+}
+
+template<typename T>
+ULinkSideT<T>::ULinkSideT(const ULinkSideT<T> &link)
+{
+ Id=link.Id;
+ Index=link.Index;
+}
+
+template<typename T>
+ULinkSideT<T>::~ULinkSideT(void)
+{
+}
+// --------------------------
+
+// --------------------------
+// Операторы
+// --------------------------
+/*template<typename T>
+bool operator < (const ULinkSideT<T> &linkside1, const ULinkSideT<T> &linkside2)
+{
+ return (linkside1.Id<linkside2.Id)
+	|| (linkside1.Id == linkside2.Id && linkside1.Index < linkside2.Index);
+}
+
+template<typename T>
+bool operator == (const ULinkSideT<T> &linkside1, const ULinkSideT<T> &linkside2)
+{
+ return (linkside1.Id == linkside2.Id) & (linkside1.Index == linkside2.Index);
+}
+
+template<typename T>
+bool operator != (const ULinkSideT<T> &linkside1, const ULinkSideT<T> &linkside2)
+{
+ return (!(linkside1 == linkside2));
+} */
+
+template<typename T>
+bool ULinkSideT<T>::operator < (const ULinkSideT<T> &linkside2) const
+{
+ return (Id<linkside2.Id)
+	|| (Id == linkside2.Id && Index < linkside2.Index);
+}
+
+template<typename T>
+bool ULinkSideT<T>::operator == (const ULinkSideT<T> &linkside2) const
+{
+ return (Id == linkside2.Id) & (Index == linkside2.Index);
+}
+
+template<typename T>
+bool ULinkSideT<T>::operator != (const ULinkSideT<T> &linkside2) const
+{
+ return (!(*this == linkside2));
+}
+// --------------------------
+/* ************************************************************************* */
+/* ************************************************************************* */
+/* ************************************************************************* */
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+template<typename T>
+ULinkT<T>::ULinkT(void)
+{
+}
+
+template<typename T>
+ULinkT<T>::ULinkT(const ULinkSideT<T> &item, const ULinkSideT<T> &conn)
+{
+ Item=item;
+ Connector.push_back(conn);
+}
+
+template<typename T>
+ULinkT<T>::ULinkT(const T &item_id, int item_index,const T &conn_id, int conn_index)
+{
+ Item.Id=item_id;
+ Item.Index=item_index;
+ Connector.resize(1);
+ Connector[0].Id=conn_id;
+ Connector[0].Index=conn_index;
+}
+
+template<typename T>
+ULinkT<T>::ULinkT(const ULinkT<T> &link)
+{
+ Item=link.Item;
+ Connector=link.Connector;
+}
+
+template<typename T>
+ULinkT<T>::~ULinkT(void)
+{
+}
+// --------------------------
+
+// --------------------------
+// Методы управления данными
+// --------------------------
+// Ищет заданный элемент с приемником connector и возвращает индекс или отрицательное число, если не
+// найдено
+template<typename T>
+int ULinkT<T>::FindConnector(const ULinkSideT<T> &connector)
+{
+  for(size_t j=0;j<Connector.size();j++)
+   if(Connector[j] == connector)
+	return j;
+
+ return -1;
+}
+// --------------------------
+
+
+
+// --------------------------
+// Операторы
+// --------------------------
+template<typename T>
+bool operator < (const ULinkT<T> &link1, const ULinkT<T> &link2)
+{
+ return (link1.Item<link2.Item) & (link1.Connector<link2.Connector);
+}
+
+template<typename T>
+bool operator == (const ULinkT<T> &link1, const ULinkT<T> &link2)
+{
+ return (link1.Item == link2.Item) & (link1.Connector == link2.Connector);
+}
+
+template<typename T>
+bool operator != (const ULinkT<T> &link1, const ULinkT<T> &link2)
+{
+ return !(link1 == link2);
+}
+// --------------------------
+
+
+/* ************************************************************************* */
+/* ************************************************************************* */
+/* ************************************************************************* */
+
 // Массив связей
-class ULinksList
+template<typename T>
+class ULinksListT
 {
 protected: // Данные
 // Данные
-mutable ULink *Data;
+mutable std::vector<ULinkT<T> > Data;
 
 // Размер массива
 int Size;
-
-// Реальный размер массива
-int RealSize;
 
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-ULinksList(void);
-ULinksList(const ULinksList &copy);
-virtual ~ULinksList(void);
+ULinksListT(void);
+ULinksListT(const ULinksListT<T> &copy);
+virtual ~ULinksListT(void);
 // --------------------------
 
 // --------------------------
@@ -305,28 +477,28 @@ void Resize(int newsize);
 
 // Добавляет элемент в конец массива
 // Возвращает индекс элемента
-int Add(const ULink &link);
+int Add(const ULinkT<T> &link);
 
 // Объединяет элемент уже с существующим
-int Merge(const ULink &link);
+int Merge(const ULinkT<T> &link);
 
 // Заменяет элемент (если элемент не существует - он создается)
-int Set(const ULink &link);
+int Set(const ULinkT<T> &link);
 
 // Удаляет произвольный элемент по индексу
 void Del(int index);
 
 // Ищет заданный элемент и возвращает индекс или отрицательное число, если не
 // найдено
-int Find(const ULink &link);
+int Find(const ULinkT<T> &link);
 
 // Ищет заданный элемент с источником item и возвращает индекс или отрицательное число, если не
 // найдено
-int FindItem(const ULinkSide &item);
+int FindItem(const ULinkSideT<T> &item);
 
 // Ищет заданный элемент с приемником connector и возвращает индекс или отрицательное число, если не
 // найдено
-int FindConnector(const ULinkSide &connector);
+int FindConnector(const ULinkSideT<T> &connector);
 // --------------------------
 
 // --------------------------
@@ -336,7 +508,7 @@ int FindConnector(const ULinkSide &connector);
 int GetSize(void) const;
 
 // Возвращает указатель на начало данных
-ULink* GetData(void);
+ULinkT<T>* GetData(void);
 // --------------------------
 
 
@@ -344,13 +516,216 @@ ULink* GetData(void);
 // Операторы
 // --------------------------
 // Оператор присваивания
-ULinksList& operator = (const ULinksList &copy);
+ULinksListT<T>& operator = (const ULinksListT<T> &copy);
 
 // Оператор доступа
-ULink& operator [] (int index);
-const ULink& operator [] (int index) const;
+ULinkT<T>& operator [] (int index);
+const ULinkT<T>& operator [] (int index) const;
 // --------------------------
 };
+
+
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+template<typename T>
+ULinksListT<T>::ULinksListT(void)
+{
+ Size=0;
+}
+
+template<typename T>
+ULinksListT<T>::ULinksListT(const ULinksListT<T> &copy)
+{
+ Size=0;
+
+ *this=copy;
+}
+
+template<typename T>
+ULinksListT<T>::~ULinksListT(void)
+{
+ Clear();
+}
+// --------------------------
+
+// --------------------------
+// Методы управления данными
+// --------------------------
+// Очищает массив
+template<typename T>
+void ULinksListT<T>::Clear(void)
+{
+ Data.clear();
+ Size=0;
+}
+
+// Изменяет размер массива с сохранением прежних данных
+template<typename T>
+void ULinksListT<T>::Resize(int newsize)
+{
+ Data.resize(newsize);
+ Size=Data.size();
+}
+
+// Добавляет элемент в конец массива
+// Возвращает индекс элемента
+template<typename T>
+int ULinksListT<T>::Add(const ULinkT<T> &link)
+{
+ Data.push_back(link);
+ ++Size;
+ return Size-1;
+}
+
+// Объединяет элемент уже с существующим
+template<typename T>
+int ULinksListT<T>::Merge(const ULinkT<T> &link)
+{
+ int id=FindItem(link.Item);
+
+ if(id < 0)
+  return Add(link);
+
+ for(size_t j=0;j<link.Connector.size();j++)
+ {
+  vector<ULinkSide>::iterator I=find(Data[id].Connector.begin(),Data[id].Connector.end(),link.Connector[j]);
+  if(I == Data[id].Connector.end())
+  {
+   Data[id].Connector.push_back(link.Connector[j]);
+  }
+ }
+ return id;
+}
+
+// Заменяет элемент (если элемент не существует - он создается)
+template<typename T>
+int ULinksListT<T>::Set(const ULinkT<T> &link)
+{
+ int id=FindItem(link.Item);
+
+ if(id < 0)
+  return Add(link);
+
+ Data[id]=link;
+ return id;
+}
+
+
+// Удаляет произвольный элемент по индексу
+template<typename T>
+void ULinksListT<T>::Del(int index)
+{
+ if(index<0 || index>=Size)
+  return;
+
+ Data.erase(Data.begin()+index);
+ --Size;
+}
+
+// Ищет заданный элемент и возвращает индекс или отрицательное число, если не
+// найдено
+template<typename T>
+int ULinksListT<T>::Find(const ULinkT<T> &link)
+{
+ if(!Size)
+  return -1;
+ ULinkT<T> *pdata=&Data[0];
+ for(int i=0;i<Size;i++,pdata++)
+  if(*pdata == link)
+   return i;
+
+ return -1;
+}
+
+// Ищет заданный элемент с источником item и возвращает индекс или отрицательное число, если не
+// найдено
+template<typename T>
+int ULinksListT<T>::FindItem(const ULinkSideT<T> &item)
+{
+ if(!Size)
+  return -1;
+
+ ULinkT<T> *pdata=&Data[0];
+ for(int i=0;i<Size;i++,pdata++)
+  if(pdata->Item == item)
+   return i;
+
+ return -1;
+}
+
+// Ищет заданный элемент с приемником connector и возвращает индекс или отрицательное число, если не
+// найдено
+template<typename T>
+int ULinksListT<T>::FindConnector(const ULinkSideT<T> &connector)
+{
+ if(!Size)
+  return -1;
+
+ ULinkT<T> *pdata=&Data[0];
+ for(int i=0;i<Size;i++,pdata++)
+ {
+  for(size_t j=0;j<pdata->Connector.size();j++)
+   if(pdata->Connector[j] == connector)
+	return i;
+ }
+
+ return -1;
+}
+// --------------------------
+
+// --------------------------
+// Методы доступа к данным
+// --------------------------
+// Возвращает размер массива
+template<typename T>
+int ULinksListT<T>::GetSize(void) const
+{
+ return Size;
+}
+
+// Возвращает указатель на начало данных
+template<typename T>
+ULinkT<T>* ULinksListT<T>::GetData(void)
+{
+ if(!Size)
+  return 0;
+
+ return &Data[0];
+}
+// --------------------------
+
+
+// --------------------------
+// Операторы
+// --------------------------
+// Оператор присваивания
+template<typename T>
+ULinksListT<T>& ULinksListT<T>::operator = (const ULinksListT<T> &copy)
+{
+ Data=copy.Data;
+ Size=copy.Size;
+
+ return *this;
+}
+
+// Оператор доступа
+template<typename T>
+ULinkT<T>& ULinksListT<T>::operator [] (int index)
+{
+ return Data[index];
+}
+
+template<typename T>
+const ULinkT<T>& ULinksListT<T>::operator [] (int index) const
+{
+ return Data[index];
+}
+// --------------------------
+/* *********************************************************************** */
+/* *********************************************************************** */
+
+typedef ULinksListT<ULongId> ULinksList;
 /* *********************************************************************** */
 /* *********************************************************************** */
 }

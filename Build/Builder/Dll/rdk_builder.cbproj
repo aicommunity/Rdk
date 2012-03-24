@@ -89,12 +89,15 @@
 			<CppCompile Include="rdkdll.cpp">
 				<BuildOrder>0</BuildOrder>
 			</CppCompile>
-			<CppCompile Include="..\..\..\Deploy\Include\rdk.cpp">
-				<BuildOrder>1</BuildOrder>
+			<CppCompile Include="..\..\..\Deploy\Include\rdk_builder.cpp">
+				<BuildOrder>2</BuildOrder>
 			</CppCompile>
 			<CppCompile Include="..\..\..\Deploy\Include\rdk_initdll.cpp">
 				<DependentOn>..\..\..\Deploy\Include\rdk_initdll.h</DependentOn>
 				<BuildOrder>2</BuildOrder>
+			</CppCompile>
+			<CppCompile Include="..\..\..\Deploy\Include\rdk_new.cpp">
+				<BuildOrder>3</BuildOrder>
 			</CppCompile>
 			<BuildConfiguration Include="Release">
 				<Key>Cfg_2</Key>
