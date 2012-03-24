@@ -101,6 +101,11 @@ int UIdVector::GetSize(void) const
  return Size;
 }
 
+int UIdVector::size(void) const
+{
+ return Size;
+}
+
 // Изменяет размер массива с сохранением прежних данных
 void UIdVector::Resize(int newsize)
 {

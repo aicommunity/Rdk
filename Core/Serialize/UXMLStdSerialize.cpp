@@ -175,8 +175,8 @@ USerStorageXML& operator << (USerStorageXML& storage, const std::string &data)
 
 USerStorageXML& operator >> (USerStorageXML& storage, std::string &data)
 {
- if(storage.GetNodeAttribute("Type") != "std::string")
-  return storage;
+// if(storage.GetNodeAttribute("Type") != "std::string")
+//  return storage;
 
  size_t size=0;
  size=atoi(storage.GetNodeAttribute("Size"));

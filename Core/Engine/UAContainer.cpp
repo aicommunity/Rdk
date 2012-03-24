@@ -161,6 +161,30 @@ ULongId& UAContainer::GetLongId(UEPtr<UAContainer> mainowner, ULongId &buffer) c
 
  return buffer;
 }
+
+// ѕромежуточный вариант одноименного метода, возвращающего длинное им€
+std::string& UAContainer::GetLongId(UEPtr<UAContainer> mainowner, std::string &buffer) const
+{
+ return GetLongName(mainowner,buffer);
+}
+
+// ¬озвращает true если передаваемый идентификатор объекта корректен, в противном случае возвращает false
+bool UAContainer::CheckLongId(const ULongId &id) const
+{
+ if(id.GetSize() == 0 || id[0] == ForbiddenId)
+  return false;
+
+ return true;
+}
+
+// ѕромежуточный вариант одноименного метода, обрабатывающего длинное им€
+bool UAContainer::CheckLongId(const std::string &id) const
+{
+ if(id.size() == 0)
+  return false;
+
+ return true;
+}
 // --------------------------
 
 // --------------------------

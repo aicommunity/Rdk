@@ -544,21 +544,22 @@ UEPtr<UAConnector> UAItem::GetAConnectorByIndex(int output, int index) const
 }
 
 // Возвращает список подключений
-ULinksList& UAItem::GetLinks(ULinksList &linkslist, UEPtr<UAContainer> netlevel) const
+template<typename T>
+ULinksListT<T>& UAItem::GetLinks(ULinksListT<T> &linkslist, UEPtr<UAContainer> netlevel) const
 {
- ULink link;
- ULinkSide item;
- ULinkSide connector;
+ ULinkT<T> link;
+ ULinkSideT<T> item;
+ ULinkSideT<T> connector;
 
  GetLongId(netlevel,item.Id);
- if(item.Id.GetSize() == 0)
+ if(item.Id.size() == 0)
   return linkslist;
 
  for(int j=0;j<AssociatedConnectors.GetSize();j++)
   for(int i=0;i<AssociatedConnectors[j].GetSize();i++)
   {
    AssociatedConnectors[j][i]->GetLongId(netlevel,connector.Id);
-   if(connector.Id.GetSize() != 0)
+   if(connector.Id.size() != 0)
    {
 	UCLink indexes=AssociatedConnectors[j][i]->GetCLink(UEPtr<UAItem>(const_cast<UAItem*>(this)));
 	item.Index=indexes.Output;
@@ -567,10 +568,6 @@ ULinksList& UAItem::GetLinks(ULinksList &linkslist, UEPtr<UAContainer> netlevel)
 	link.Item=item;
 	link.Connector.push_back(connector);
 	linkslist.Set(link);
-//	if(linkslist.Find(link) >= 0)
-//     continue;
-//    else
-//     linkslist.Add(link);
    }
   }
 
@@ -579,12 +576,13 @@ ULinksList& UAItem::GetLinks(ULinksList &linkslist, UEPtr<UAContainer> netlevel)
 
 // Возвращает список подключений этого компонента и всех дочерних компонент
 // к заданному компоненту comp и всем его дочерним компонентам
-ULinksList& UAItem::GetFullItemLinks(ULinksList &linkslist, UEPtr<UAItem> comp,
+template<typename T>
+ULinksListT<T>& UAItem::GetFullItemLinks(ULinksListT<T> &linkslist, UEPtr<UAItem> comp,
                                      UEPtr<UAContainer> netlevel) const
 {
- ULink link;
- ULinkSide item;
- ULinkSide connector;
+ ULinkT<T> link;
+ ULinkSideT<T> item;
+ ULinkSideT<T> connector;
 
  if(!comp)
   return linkslist;

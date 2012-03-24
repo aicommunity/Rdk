@@ -33,16 +33,122 @@ USerStorageXML& operator << (USerStorageXML& storage, const ULongIdVector &data)
 USerStorageXML& operator >> (USerStorageXML& storage, ULongIdVector &data);
 
 // ULinkSide
-USerStorageXML& operator << (USerStorageXML& storage, const ULinkSide &data);
-USerStorageXML& operator >> (USerStorageXML& storage, ULinkSide &data);
+template<typename T>
+USerStorageXML& operator << (USerStorageXML& storage, const ULinkSideT<T> &data)
+{
+ storage<<data.Id;
+ storage.SetNodeAttribute("Type","ULinkSide");
+ storage.SetNodeAttribute("Index",sntoa(data.Index));
+
+ return storage;
+}
+
+template<typename T>
+USerStorageXML& operator >> (USerStorageXML& storage, ULinkSideT<T> &data)
+{
+ if(storage.GetNodeAttribute("Type") != "ULinkSide")
+  return storage;
+ operator >>(storage,data.Id);
+ data.Index=RDK::atoi(storage.GetNodeAttribute("Index"));
+
+ return storage;
+}
 
 // ULink
-USerStorageXML& operator << (USerStorageXML& storage, const ULink &data);
-USerStorageXML& operator >> (USerStorageXML& storage, ULink &data);
+template<typename T>
+USerStorageXML& operator << (USerStorageXML& storage, const ULinkT<T> &data)
+{
+ storage.SetNodeAttribute("Type","ULink");
+
+ storage.AddNode("Item");
+ storage<<data.Item;
+ storage.SelectUp();
+
+ for(size_t i=0;i<data.Connector.size();i++)
+ {
+  storage.AddNode("Connector");
+  storage<<data.Connector[i];
+  storage.SelectUp();
+ }
+
+ return storage;
+}
+
+template<typename T>
+USerStorageXML& operator >> (USerStorageXML& storage, ULinkT<T> &data)
+{
+ if(storage.GetNodeAttribute("Type") != "ULink")
+  return storage;
+
+ if(!storage.SelectNode("Item"))
+  return storage;
+ operator >>(storage,data.Item);
+ storage.SelectUp();
+
+ int num_connectors=storage.GetNumNodes("Connector");
+
+ data.Connector.resize(num_connectors);
+ for(int i=0;i<num_connectors;i++)
+ {
+  if(!storage.SelectNode("Connector",i))
+   return storage;
+  operator >>(storage,data.Connector[i]);
+  storage.SelectUp();
+ }
+
+ return storage;
+}
+
 
 // ULinksList
-USerStorageXML& operator << (USerStorageXML& storage, const ULinksList &data);
-USerStorageXML& operator >> (USerStorageXML& storage, ULinksList &data);
+template<typename T>
+USerStorageXML& operator << (USerStorageXML& storage, const ULinksListT<T> &data)
+{
+ storage.SetNodeAttribute("Type","ULinksList");
+ unsigned int size=data.GetSize();
+ storage.SetNodeAttribute("Size",sntoa(size));
+
+ if(size <= 0)
+  return storage;
+
+ for(unsigned int i=0;i<size;i++)
+ {
+  storage.AddNode("elem");
+  storage<<data[i];
+  storage.SelectUp();
+ }
+
+ return storage;
+}
+
+template<typename T>
+USerStorageXML& operator >> (USerStorageXML& storage, ULinksListT<T> &data)
+{
+ if(storage.GetNodeAttribute("Type") != "ULinksList")
+  return storage;
+
+ int size=0;
+ size=RDK::atoi(storage.GetNodeAttribute("Size"));
+
+ if(size <= 0)
+ {
+  data.Resize(0);
+  return storage;
+ }
+ data.Resize(size);
+
+ ULinkT<T>* pdata=&data[0];
+
+ for(int i=0;i<size;i++)
+ {
+  if(!storage.SelectNode("elem",i))
+   return storage;
+  operator >>(storage,*(pdata+i));
+  storage.SelectUp();
+ }
+
+ return storage;
+}
 
 }
 }

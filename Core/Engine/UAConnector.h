@@ -235,7 +235,8 @@ public:
 virtual bool CheckItem(UEPtr<UAItem> item, int item_index, int conn_index);
 
 // Возвращает список подключений
-ULinksList& GetLinks(ULinksList &linkslist, UEPtr<UAContainer> netlevel) const;
+template<typename T>
+ULinksListT<T>& GetLinks(ULinksListT<T> &linkslist, UEPtr<UAContainer> netlevel) const;
 // ----------------------
 
 // --------------------------

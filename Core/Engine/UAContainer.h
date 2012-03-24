@@ -187,6 +187,13 @@ ULongId& GetFullId(ULongId &buffer=ULongIdemp) const;
 // Метод возвращает пустой вектор, если 'mainowner' - не является
 // владельцем объекта ни на каком уровне иерархии
 ULongId& GetLongId(UEPtr<UAContainer> mainowner, ULongId &buffer=ULongIdemp) const;
+// Промежуточный вариант одноименного метода, возвращающего длинное имя
+std::string& GetLongId(UEPtr<UAContainer> mainowner, std::string &buffer) const;
+
+// Возвращает true если передаваемый идентификатор объекта корректен, в противном случае возвращает false
+bool CheckLongId(const ULongId &id) const;
+// Промежуточный вариант одноименного метода, обрабатывающего длинное имя
+bool CheckLongId(const std::string &id) const;
 // --------------------------
 
 // --------------------------

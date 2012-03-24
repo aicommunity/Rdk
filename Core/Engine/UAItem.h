@@ -242,11 +242,13 @@ UEPtr<UAConnector> GetAConnector(const UId &id, int index) const;
 UEPtr<UAConnector> GetAConnectorByIndex(int output, int index) const;
 
 // Возвращает список подключений
-ULinksList& GetLinks(ULinksList &linkslist, UEPtr<UAContainer> netlevel) const;
+template<typename T>
+ULinksListT<T>& GetLinks(ULinksListT<T> &linkslist, UEPtr<UAContainer> netlevel) const;
 
 // Возвращает список подключений этого компонента и всех дочерних компонент
 // к заданному компоненту comp и всем его дочерним компонентам
-ULinksList& GetFullItemLinks(ULinksList &linkslist, UEPtr<UAItem> comp,
+template<typename T>
+ULinksListT<T>& GetFullItemLinks(ULinksListT<T> &linkslist, UEPtr<UAItem> comp,
                             UEPtr<UAContainer> netlevel) const;
 // ----------------------
 

@@ -161,7 +161,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, ULongIdVector &data)
 
  return storage;
 }
-
+   /*
 // ULinkSide
 USerStorageXML& operator << (USerStorageXML& storage, const ULinkSide &data)
 {
@@ -170,19 +170,6 @@ USerStorageXML& operator << (USerStorageXML& storage, const ULinkSide &data)
  storage.SetNodeAttribute("Index",sntoa(data.Index));
 
  return storage;
-/*
- storage.SetNodeAttribute("Type","ULinkSide");
-
- storage.AddNode("Id");
- storage<<data.Id;
- storage.SelectUp();
-
- storage.AddNode("Index");
- storage<<data.Index;
- storage.SelectUp();
-
- return storage;
- */
 }
 
 USerStorageXML& operator >> (USerStorageXML& storage, ULinkSide &data)
@@ -193,22 +180,6 @@ USerStorageXML& operator >> (USerStorageXML& storage, ULinkSide &data)
  data.Index=atoi(storage.GetNodeAttribute("Index"));
 
  return storage;
-/*
- if(storage.GetNodeAttribute("Type") != "ULinkSide")
-  return storage;
-
- if(!storage.SelectNode("Id"))
-  return storage;
- operator >>(storage,data.Id);
- storage.SelectUp();
-
- if(!storage.SelectNode("Index"))
-  return storage;
- operator >>(storage,data.Index);
- storage.SelectUp();
-
- return storage;
- */
 }
 
 // ULink
@@ -228,19 +199,6 @@ USerStorageXML& operator << (USerStorageXML& storage, const ULink &data)
  }
 
  return storage;
-/*
- storage.SetNodeAttribute("Type","ULink");
-
- storage.AddNode("Item");
- storage<<data.Item;
- storage.SelectUp();
-
- storage.AddNode("Connector");
- storage<<data.Connector;
- storage.SelectUp();
-
- return storage;
-*/
 }
 
 USerStorageXML& operator >> (USerStorageXML& storage, ULink &data)
@@ -265,22 +223,6 @@ USerStorageXML& operator >> (USerStorageXML& storage, ULink &data)
  }
 
  return storage;
-/*
- if(storage.GetNodeAttribute("Type") != "ULink")
-  return storage;
-
- if(!storage.SelectNode("Item"))
-  return storage;
- operator >>(storage,data.Item);
- storage.SelectUp();
-
- if(!storage.SelectNode("Connector"))
-  return storage;
- operator >>(storage,data.Connector);
- storage.SelectUp();
-
- return storage;
-*/
 }
 
 // ULinksList
@@ -330,7 +272,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, ULinksList &data)
 
  return storage;
 }
-
+      */
 
 }
 }

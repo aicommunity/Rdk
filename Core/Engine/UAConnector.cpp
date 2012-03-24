@@ -516,13 +516,14 @@ bool UAConnector::CheckItem(UEPtr<UAItem> item, int item_index, int conn_index)
 }
 
 // Возвращает список подключений
-ULinksList& UAConnector::GetLinks(ULinksList &linkslist, UEPtr<UAContainer> netlevel) const
+template<typename T>
+ULinksListT<T>& UAConnector::GetLinks(ULinksListT<T> &linkslist, UEPtr<UAContainer> netlevel) const
 {
- ULink link;
- ULinkSide connector;
- ULinkSide item;
+ ULinkT<T> link;
+ ULinkSideT<T> connector;
+ ULinkSideT<T> item;
  GetLongId(netlevel,connector.Id);
- if(connector.Id.GetSize()==0)
+ if(connector.Id.size()==0)
   return linkslist;
 // link.Connector.push_back(connector);
 
@@ -533,7 +534,7 @@ ULinksList& UAConnector::GetLinks(ULinksList &linkslist, UEPtr<UAContainer> netl
    CItemList[i].Item->GetLongId(netlevel,item.Id);
    connector.Index=i;
    item.Index=CItemList[i].Index;
-   if(connector.Id.GetSize() != 0)
+   if(connector.Id.size() != 0)
    {
 	int item_id=linkslist.FindItem(item);
 	if(item_id >= 0)

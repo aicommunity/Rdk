@@ -2246,7 +2246,7 @@ int UEngine::Model_GetComponentInternalLinks(RDK::UANet* cont, RDK::Serialize::U
   if(!cont || !serstorage)
    return false;
 
-  ULinksList linkslist;
+  UStringLinksList linkslist;
   cont->GetLinks(linkslist, cont);
 
   *serstorage<<linkslist;
@@ -2266,7 +2266,7 @@ int UEngine::Model_SetComponentInternalLinks(RDK::UANet* cont, RDK::Serialize::U
   if(!cont || !serstorage)
    return false;
 
-  ULinksList linkslist;
+  UStringLinksList linkslist;
   *serstorage>>linkslist;
 
   cont->BreakLinks();

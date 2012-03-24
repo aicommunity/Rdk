@@ -26,31 +26,16 @@ UANet::UANet(void)
 
 UANet::~UANet(void)
 {
-// BreakLinks(this);
 }
 // --------------------------
 
 // --------------------------
 // Методы доступа к свойствам
 // --------------------------
-ULinksList& UANet::GetLinks(ULinksList &linkslist, UEPtr<UAContainer> netlevel) const
+template<typename T>
+ULinksListT<T>& UANet::GetLinks(ULinksListT<T> &linkslist, UEPtr<UAContainer> netlevel) const
 {
  GetLinks(const_cast<UANet*>(this), linkslist, netlevel);
-/*
- for(size_t i=0;i<NumComponents;i++)
-  if(dynamic_cast<UANet*>(PComponents[i]))
-   static_cast<UANet*>(PComponents[i])->GetLinks(linkslist,netlevel);
-  else
-  {
-   if(dynamic_cast<UAItem*>(PComponents[i]))
-   {
-    static_cast<UAConnector*>(PComponents[i])->GetLinks(linkslist,netlevel);
-    static_cast<UAItem*>(PComponents[i])->GetLinks(linkslist,netlevel);
-   }
-   else
-   if(dynamic_cast<UAConnector*>(PComponents[i]))
-    static_cast<UAConnector*>(PComponents[i])->GetLinks(linkslist,netlevel);
-  }*/
 
  return linkslist;
 }
@@ -114,10 +99,7 @@ bool UANet::Copy(UEPtr<UAContainer> target, UEPtr<UAContainerStorage> stor, bool
 
  if(UADItem::Copy(target,stor,copystate))
   {
-//   ((UANet*)target)->GetLinks(oldlinkslist,target);
    static_pointer_cast<UANet>(target)->BreakLinks();
-//   oldlinkslist.Clear();
-//   ((UANet*)target)->GetLinks(oldlinkslist,target);
 
    if(static_pointer_cast<UANet>(target)->CreateLinks(GetLinks(linkslist,const_cast<UANet*>(this))))
     return true;
@@ -130,7 +112,6 @@ bool UANet::Copy(UEPtr<UAContainer> target, UEPtr<UAContainerStorage> stor, bool
 // или вызов деструктора, если Storage == 0
 void UANet::Free(void)
 {
-// BreakLinks(this);
  UADItem::Free();
 }
 // --------------------------
@@ -139,11 +120,12 @@ void UANet::Free(void)
 // Методы управления связями
 // ----------------------
 // Устанавливает новую связь 'link'
-bool UANet::CreateLink(const ULink &link)
+template<typename T>
+bool UANet::CreateLink(const ULinkT<T> &link)
 {
  UEPtr<UAItem> pitem;
  bool res=true;
- if(link.Item.Id.GetSize() == 0 || link.Item.Id[0] == ForbiddenId)
+ if(!CheckLongId(link.Item.Id))
   pitem=this;
  else
   pitem=dynamic_pointer_cast<UAItem>(GetComponentL(link.Item.Id));
@@ -154,8 +136,8 @@ bool UANet::CreateLink(const ULink &link)
  for(size_t i=0;i<link.Connector.size();i++)
  {
   UEPtr<UAConnector> pconnector=0;
-  const ULinkSide &connector=link.Connector[i];
-  if(connector.Id.GetSize() == 0 || connector.Id[0] == ForbiddenId)
+  const ULinkSideT<T> &connector=link.Connector[i];
+  if(!CheckLongId(connector.Id))
    pconnector=this;
   else
    pconnector=dynamic_pointer_cast<UAConnector>(GetComponentL(connector.Id));
@@ -171,16 +153,17 @@ bool UANet::CreateLink(const ULink &link)
 
 // Устанавливает новую связь между выходом элемента сети
 // 'item' и коннектором 'connector'
-bool UANet::CreateLink(const ULinkSide &item, const ULinkSide &connector)
+template<typename T>
+bool UANet::CreateLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
 {
  UEPtr<UAItem> pitem;
- if(item.Id.GetSize() == 0 || item.Id[0] == ForbiddenId)
+ if(!CheckLongId(item.Id))
   pitem=this;
  else
   pitem=dynamic_pointer_cast<UAItem>(GetComponentL(item.Id));
 
  UEPtr<UAConnector> pconnector=0;
- if(connector.Id.GetSize() == 0 || connector.Id[0] == ForbiddenId)
+ if(!CheckLongId(connector.Id))
   pconnector=this;
  else
   pconnector=dynamic_pointer_cast<UAConnector>(GetComponentL(connector.Id));
@@ -230,7 +213,8 @@ bool UANet::CreateLink(const NameT &item, int item_index,
 }
 
 // Устанавливает все связи из массива 'linkslist'.
-bool UANet::CreateLinks(const ULinksList &linkslist)
+template<typename T>
+bool UANet::CreateLinks(const ULinksListT<T> &linkslist)
 {
  bool res=true;
 
@@ -252,7 +236,8 @@ bool UANet::CreateLinks(const ULinksList &linkslist)
 // 'id' - есть Id элемента сети.
 // Иначе, если 'id' - Id коннектора, то метод разрывает
 // связи этого коннектора.
-bool UANet::BreakLink(const ULinkSide &id)
+template<typename T>
+bool UANet::BreakLink(const ULinkSideT<T> &id)
 {
  UEPtr<UAContainer> pointer=GetComponentL(id.Id);
 
@@ -274,10 +259,11 @@ bool UANet::BreakLink(const ULinkSide &id)
 }
 
 // Разрывает связь 'link'
-bool UANet::BreakLink(const ULink &link)
+template<typename T>
+bool UANet::BreakLink(const ULinkT<T> &link)
 {
  UEPtr<UAItem> pitem=0;
- if(link.Item.Id.GetSize() == 0 || link.Item.Id[0] == ForbiddenId)
+ if(!CheckLongId(Id))
   pitem=this;
  else
   pitem=dynamic_pointer_cast<UAItem>(GetComponentL(link.Item.Id));
@@ -290,7 +276,7 @@ bool UANet::BreakLink(const ULink &link)
   UEPtr<UAConnector> pconnector=0;
   const ULinkSide &connector=link.Connector[i];
 
-  if(connector.Id.GetSize() == 0 || connector.Id[0] == ForbiddenId)
+  if(!CheckLongId(connector.Id))
    pconnector=this;
   else
    pconnector=dynamic_pointer_cast<UAConnector>(GetComponentL(connector.Id));
@@ -306,16 +292,17 @@ bool UANet::BreakLink(const ULink &link)
 
 // Разрывает связь между выходом элемента сети, 'itemid'
 // и коннектором 'connectorid'
-bool UANet::BreakLink(const ULinkSide &item, const ULinkSide &connector)
+template<typename T>
+bool UANet::BreakLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
 {
  UEPtr<UAItem> pitem=0;
- if(item.Id.GetSize() == 0 || item.Id[0] == ForbiddenId)
+ if(!CheckLongId(item.Id))
   pitem=this;
  else
   pitem=dynamic_pointer_cast<UAItem>(GetComponentL(item.Id));
 
  UEPtr<UAConnector> pconnector=0;
- if(connector.Id.GetSize() == 0 || connector.Id[0] == ForbiddenId)
+ if(!CheckLongId(connector.Id))
   pconnector=this;
  else
   pconnector=dynamic_pointer_cast<UAConnector>(GetComponentL(connector.Id));
@@ -397,21 +384,17 @@ void UANet::BreakLinks(void)
 // --------------------------
 // Скрытые методы доступа к свойствам
 // --------------------------
-ULinksList& UANet::GetLinks(UEPtr<UAContainer> cont, ULinksList &linkslist, UEPtr<UAContainer> netlevel) const
+template<typename T>
+ULinksListT<T>& UANet::GetLinks(UEPtr<UAContainer> cont, ULinksListT<T> &linkslist, UEPtr<UAContainer> netlevel) const
 {
-/* if(dynamic_cast<const UANet*>(cont))
-  static_cast<const UANet*>(cont)->GetLinks(linkslist,netlevel);
- else*/
+ if(dynamic_pointer_cast<UAItem>(cont))
  {
-  if(dynamic_pointer_cast<UAItem>(cont))
-  {
-   static_pointer_cast<UAConnector>(cont)->GetLinks(linkslist,netlevel);
-   static_pointer_cast<UAItem>(cont)->GetLinks(linkslist,netlevel);
-  }
-  else
-  if(dynamic_pointer_cast<UAConnector>(cont))
-   static_pointer_cast<UAConnector>(cont)->GetLinks(linkslist,netlevel);
+  static_pointer_cast<UAConnector>(cont)->GetLinks(linkslist,netlevel);
+  static_pointer_cast<UAItem>(cont)->GetLinks(linkslist,netlevel);
  }
+ else
+ if(dynamic_pointer_cast<UAConnector>(cont))
+  static_pointer_cast<UAConnector>(cont)->GetLinks(linkslist,netlevel);
 
  for(int i=0;i<cont->GetNumComponents();i++)
   GetLinks(cont->GetComponentByIndex(i), linkslist, netlevel);

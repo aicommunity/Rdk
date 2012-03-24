@@ -31,7 +31,8 @@ virtual ~UANet(void);
 // --------------------------
 // Методы доступа к свойствам
 // --------------------------
-ULinksList& GetLinks(ULinksList &linkslist, UEPtr<UAContainer> netlevel) const;
+template<typename T>
+ULinksListT<T>& GetLinks(ULinksListT<T> &linkslist, UEPtr<UAContainer> netlevel) const;
 // --------------------------
 
 // --------------------------
@@ -80,11 +81,13 @@ virtual bool ADelComponent(UEPtr<UAContainer> comp);
 // ----------------------
 public:
 // Устанавливает новую связь 'link'
-virtual bool CreateLink(const ULink &link);
+template<typename T>
+bool CreateLink(const ULinkT<T> &link);
 
 // Устанавливает новую связь между выходом элемента сети
 // 'item' и коннектором 'connector'
-virtual bool CreateLink(const ULinkSide &itemid, const ULinkSide &connectorid);
+template<typename T>
+bool CreateLink(const ULinkSideT<T> &itemid, const ULinkSideT<T> &connectorid);
 virtual bool CreateLink(const ULongId &item_id, int item_index, const ULongId &conn_id, int conn_index);
 
 // Устанавливает новую связь между выходом элемента сети
@@ -93,20 +96,24 @@ virtual bool CreateLink(const NameT &item, int item_index,
 						const NameT &connector, int connector_index=-1);
 
 // Устанавливает все связи из массива 'linkslist'
-virtual bool CreateLinks(const ULinksList &linkslist);
+template<typename T>
+bool CreateLinks(const ULinksListT<T> &linkslist);
 
 // Разрывает все связи с выходом элемента сети, если
 // 'id' - есть Id элемента сети.
 // Иначе, если 'id' - Id коннектора, то метод разрывает
 // связи этого коннектора
-virtual bool BreakLink(const ULinkSide &id);
+template<typename T>
+bool BreakLink(const ULinkSideT<T> &id);
 
 // Разрывает связь 'link'
-virtual bool BreakLink(const ULink &link);
+template<typename T>
+bool BreakLink(const ULinkT<T> &link);
 
 // Разрывает связь между выходом элемента сети, 'itemid'
 // и коннектором 'connectorid'
-virtual bool BreakLink(const ULinkSide &item, const ULinkSide &connector);
+template<typename T>
+bool BreakLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector);
 virtual bool BreakLink(const ULongId &item_id, int item_index, const ULongId &conn_id, int conn_index);
 
 // Разрывает связь между выходом элемента сети, 'itemid'
@@ -130,7 +137,8 @@ virtual void BreakLinks(void);
 // Скрытые методы доступа к свойствам
 // --------------------------
 protected:
-ULinksList& GetLinks(UEPtr<UAContainer> cont, ULinksList &linkslist, UEPtr<UAContainer> netlevel) const;
+template<typename T>
+ULinksListT<T>& GetLinks(UEPtr<UAContainer> cont, ULinksListT<T> &linkslist, UEPtr<UAContainer> netlevel) const;
 // --------------------------
 
 
