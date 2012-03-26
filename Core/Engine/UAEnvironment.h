@@ -122,6 +122,9 @@ protected: // Переменные быстрого доступа
 // Текущий компонент модели
 UEPtr<UAComponent> CurrentComponent;
 
+protected: // Временные переменные
+long long StartupTime;
+
 public: // Public methods
 // --------------------------
 // Constructors & destructors

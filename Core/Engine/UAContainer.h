@@ -230,6 +230,10 @@ long long GetStepDuration(void) const;
 // (вместе со времени обсчета дочерних объектов) (мс)
 long long GetFullStepDuration(void) const;
 
+// Возвращает мгновенное быстродействие, равное отношению
+// полного затраченного времени к ожидаемому времени шага счета
+double GetInstantPerformance(void) const;
+
 // Устанавливает величину шага интегрирования
 UTime GetTimeStep(void) const;
 bool SetTimeStep(UTime timestep);

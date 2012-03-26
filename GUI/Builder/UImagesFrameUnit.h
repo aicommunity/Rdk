@@ -11,19 +11,45 @@
 #include <ImgList.hpp>
 #include <IniFiles.hpp>
 #include <Vcl.ComCtrls.hpp>
+#include <Vcl.Menus.hpp>
+#include <Vcl.Dialogs.hpp>
+#include <Vcl.ExtDlgs.hpp>
 #include <vector>
 #include "myrdk.h"
+
+class TUComponentsListForm;
 //---------------------------------------------------------------------------
 class TUImagesFrame : public TFrame
 {
 __published:    // IDE-managed Components
     TDrawGrid *DrawGrid;
+	TPopupMenu *PopupMenu;
+	TMenuItem *SaveToBmp;
+	TMenuItem *SaveToJpeg;
+	TMenuItem *SaveAllToBmp;
+	TMenuItem *SaveAllToJpeg;
+	TMenuItem *N1;
+	TMenuItem *SelectSource;
+	TMenuItem *N2;
+	TSavePictureDialog *SavePictureDialog;
+	TMenuItem *N3;
+	TMenuItem *AddColumn;
+	TMenuItem *AddRow;
+	TMenuItem *DeleteColumn;
+	TMenuItem *DeleteRow;
     void __fastcall DrawGridDrawCell(TObject *Sender, int ACol, int ARow, TRect &Rect,
           TGridDrawState State);
+	void __fastcall SaveToBmpClick(TObject *Sender);
+	void __fastcall SelectSourceClick(TObject *Sender);
+	void __fastcall AddColumnClick(TObject *Sender);
+	void __fastcall AddRowClick(TObject *Sender);
+	void __fastcall DeleteColumnClick(TObject *Sender);
+	void __fastcall DeleteRowClick(TObject *Sender);
 
 private:    // User declarations
 public:        // User declarations
-    __fastcall TUImagesFrame(TComponent* Owner);
+	__fastcall TUImagesFrame(TComponent* Owner);
+	virtual __fastcall ~TUImagesFrame(void);
 
 // Массив изображений
 std::vector<std::vector<TImage*> > Images;
@@ -36,6 +62,9 @@ std::vector<std::vector<int> > ComponentIndexes;
 
 // Флаг отражения вокруг оси X изображений при выводе
 bool ReflectionXFlag;
+
+// Указатель на форму выбора компоненты-источника
+TUComponentsListForm *MyComponentsListForm;
 
 // --------------------------
 // Методы управления параметрами

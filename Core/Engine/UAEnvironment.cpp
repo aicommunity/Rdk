@@ -547,8 +547,13 @@ bool UAEnvironment::ABuild(void)
 // Сброс процесса счета.
 bool UAEnvironment::AReset(void)
 {
+ StartupTime=GetCurrentStartupTime();
+
  if(!Model)
   return true;
+
+ RDK::DefaultTimeStep=30;
+ Model->SetTimeStep(DefaultTimeStep);
 
  if(ModelCalculationComponent.GetSize() == 0)
   return Model->Reset();
@@ -570,6 +575,7 @@ bool UAEnvironment::AReset(void)
 // Выполняет расчет этого объекта
 bool UAEnvironment::ACalculate(void)
 {
+ UAContainer::SetRealTime(CalcDiffTime(GetCurrentStartupTime(),StartupTime)*1000);
  if(!Model)
   return true;
 

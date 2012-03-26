@@ -5,7 +5,7 @@
 
 namespace RDK {
 
-const UTime DefaultTimeStep=(UTime)2000;
+UTime DefaultTimeStep=(UTime)2000;
 
 // --------------------------
 // Глобальные свойства
@@ -46,6 +46,19 @@ bool UTimeControl::SetTime(ULongTime value)
  Time=value;
  DoubleTime=Time/1000000.0;
  return true;
+}
+
+// Увеличивает время модели на заданную величину
+bool UTimeControl::IncreaseModelTime(ULongTime value)
+{
+ return UTimeControl::SetTime(UTimeControl::GetTime()+value);
+}
+
+// Увеличивает время модели на заданную величину при заданном шаге вычислений
+// в тысячных долях секунды
+bool UTimeControl::IncreaseModelTimeByStep(ULongTime step)
+{
+ return UTimeControl::IncreaseModelTime(1000000/step);
 }
 
 // Возвращает реальное время

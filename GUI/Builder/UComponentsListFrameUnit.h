@@ -24,6 +24,18 @@ __published:	// IDE-managed Components
 	TStringGrid *StringGrid;
 	THeaderControl *HeaderControl;
 	TSplitter *Splitter1;
+	TPageControl *PageControl1;
+	TTabSheet *TabSheet1;
+	TTabSheet *TabSheet2;
+	TTabSheet *TabSheet3;
+	THeaderControl *StateHeaderControl;
+	TRichEdit *StateRichEdit;
+	THeaderControl *IOHeaderControl;
+	TGroupBox *GroupBox;
+	TGroupBox *GroupBox2;
+	TSplitter *Splitter2;
+	TStringGrid *OutputsStringGrid;
+	TStringGrid *InputsStringGrid;
 	void __fastcall FrameResize(TObject *Sender);
 	void __fastcall StringGridDblClick(TObject *Sender);
 	void __fastcall StringGridSelectCell(TObject *Sender, int ACol, int ARow, bool &CanSelect);
@@ -32,6 +44,17 @@ __published:	// IDE-managed Components
 	void __fastcall ParametersHeaderControlSectionClick(THeaderControl *HeaderControl,
           THeaderSection *Section);
 	void __fastcall ParametersRichEditChange(TObject *Sender);
+	void __fastcall StateRichEditChange(TObject *Sender);
+	void __fastcall StateHeaderControlSectionClick(THeaderControl *HeaderControl, THeaderSection *Section);
+	void __fastcall OutputsStringGridClick(TObject *Sender);
+	void __fastcall OutputsStringGridDblClick(TObject *Sender);
+	void __fastcall OutputsStringGridSelectCell(TObject *Sender, int ACol, int ARow,
+          bool &CanSelect);
+	void __fastcall InputsStringGridSelectCell(TObject *Sender, int ACol, int ARow,
+          bool &CanSelect);
+	void __fastcall InputsStringGridDblClick(TObject *Sender);
+	void __fastcall InputsStringGridClick(TObject *Sender);
+
 
 protected:		// User declarations
 		// Длинное имя выделенного компонента
@@ -48,6 +71,12 @@ protected:		// User declarations
 
 		// Путь до текущего компонента
 		std::vector<std::string> CurrentPath;
+
+		// Выбранный выход объекта
+		int SelectedComponentOutput;
+
+		// Выбранный вход объекта
+		int SelectedComponentInput;
 
 		// true если запрещено изменение значений дерева реестра
 		bool TreeReadOnlyFlag;
@@ -90,6 +119,12 @@ public:
 
 		// Длинный строковой id текущего компонента
 		const std::string& GetCurrentComponentId(void) const;
+
+		// Выбранный выход объекта
+		int GetSelectedComponentOutput(void) const;
+
+		// Выбранный вход объекта
+		int GetSelectedComponentInput(void) const;
 
 		// Включение-выключение отображения параметров в виде xml
 		bool GetShowXMLComponentParameters(void) const;
@@ -139,7 +174,11 @@ void UpdateSelectedComponentInfo(void);
 // Обновляет параметры компонента
 void UpdateParameters(void);
 
+// Обновляет состояние компонента
+void UpdateState(void);
 
+// Обновляет данные ввода-вывода
+void UpdateIO(void);
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TUComponentsListFrame *UComponentsListFrame;

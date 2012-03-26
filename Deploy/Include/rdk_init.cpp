@@ -329,7 +329,11 @@ int RDK_CALL Env_Reset(const char* stringid)
  return PEngine->Env_Reset(stringid);
 }
 
-
+// Производит увеличение времени модели на требуемую величину
+void RDK_CALL Env_IncreaseModelTimeByStep(void)
+{
+ return PEngine->Env_IncreaseModelTimeByStep();
+}
 
 // ***********************************************
 // Методы управления текущим компонентом
@@ -769,6 +773,26 @@ long long RDK_CALL Model_GetRealTimeStep(void)
 double RDK_CALL Model_GetDoubleRealTimeStep(void)
 {
  return PEngine->Model_GetDoubleRealTimeStep();
+}
+
+// Возвращает время расчета компонента без времени расчета дочерних компонент (мс)
+long long RDK_CALL Model_GetStepDuration(const char *stringid)
+{
+ return PEngine->Model_GetStepDuration(stringid);
+}
+
+// Возвращает время, затраченное на обработку объекта
+// (вместе со времени обсчета дочерних объектов) (мс)
+long long RDK_CALL Model_GetFullStepDuration(const char *stringid)
+{
+ return PEngine->Model_GetFullStepDuration(stringid);
+}
+
+// Возвращает мгновенное быстродействие, равное отношению
+// полного затраченного времени к ожидаемому времени шага счета
+double RDK_CALL Model_GetInstantPerformance(const char *stringid)
+{
+ return PEngine->Model_GetInstantPerformance(stringid);
 }
 // --------------------------
 

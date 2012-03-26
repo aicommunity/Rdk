@@ -23,7 +23,9 @@ void TUEngineMonitorFrame::UpdateInterface(void)
  UpdateInterfaceFlag=true;
 
  StatusBar->SimpleText=String("Model Time=")+FloatToStrF(Model_GetDoubleTime(),ffFixed,3,3)
-				+String("; Real Time=")+FloatToStrF(Model_GetDoubleRealTime(),ffFixed,3,3);
+				+String("; Real Time=")+FloatToStrF(Model_GetDoubleRealTime(),ffFixed,3,3)
+				+String("; Model Duration Time=")+FloatToStrF(Model_GetFullStepDuration("")/1000.0,ffFixed,3,3)
+				+String("; Model Performance=")+FloatToStrF(Model_GetInstantPerformance(""),ffFixed,3,3);
  UpdateInterfaceFlag=false;
 }
 void __fastcall TUEngineMonitorFrame::Start1Click(TObject *Sender)

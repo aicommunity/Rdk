@@ -26,9 +26,9 @@ typedef std::map<UId, UClassStorageElement> UClassesStorage;
 typedef std::map<UId, UClassStorageElement>::iterator UClassesStorageIterator;
 typedef std::map<UId, UClassStorageElement>::const_iterator UClassesStorageCIterator;
 
-typedef std::map<UId, UEPtr<UComponentDescription> > UClassesDescription;
-typedef std::map<UId, UEPtr<UComponentDescription> >::iterator UClassesDescriptionIterator;
-typedef std::map<UId, UEPtr<UComponentDescription> >::const_iterator UClassesDescriptionCIterator;
+typedef std::map<std::string, UEPtr<UComponentDescription> > UClassesDescription;
+typedef std::map<std::string, UEPtr<UComponentDescription> >::iterator UClassesDescriptionIterator;
+typedef std::map<std::string, UEPtr<UComponentDescription> >::const_iterator UClassesDescriptionCIterator;
 
 class UAStorage
 {

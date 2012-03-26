@@ -93,7 +93,8 @@ UId UAStorage::AddClass(UEPtr<UAComponent> classtemplate, const UId &classid)
  classtemplate->SetClass(id);
  LastClassId=id;
 
- ClassesDescription[id]=classtemplate->NewDescription();
+ // Заглушка!!! Это некоррректно, имени-то нет.
+// ClassesDescription[GetClassName(id)]=classtemplate->NewDescription();
 
  return id;
 }
@@ -106,7 +107,8 @@ UId UAStorage::AddClass(UEPtr<UAComponent> classtemplate, const string &classnam
 
  UId id=AddClass(classtemplate,classid);
  ClassesLookupTable[classname]=id;
- ClassesDescription[id]->SetClassName(classname);
+ ClassesDescription[classname]=classtemplate->NewDescription();
+ ClassesDescription[classname]->SetClassName(classname);
  return id;
 }
 
@@ -114,6 +116,7 @@ UId UAStorage::AddClass(UEPtr<UAComponent> classtemplate, const string &classnam
 void UAStorage::DelClass(const UId &classid)
 {
  UClassesStorageIterator I=ClassesStorage.find(classid);
+ std::string name=GetClassName(classid);
 
  if(I != ClassesStorage.end())
   ClassesStorage.erase(I);
@@ -124,7 +127,7 @@ void UAStorage::DelClass(const UId &classid)
  if(element)
   delete element.Get();
 
- UClassesDescriptionIterator J=ClassesDescription.find(classid);
+ UClassesDescriptionIterator J=ClassesDescription.find(name);
 
  if(J != ClassesDescription.end())
  {
@@ -250,7 +253,7 @@ UId UAStorage::FindClass(UEPtr<UAComponent> object) const
 // Возвращает XML описание класса
 const UEPtr<UComponentDescription> UAStorage::GetClassDescription(const UId &classid) const
 {
- UClassesDescriptionCIterator I=ClassesDescription.find(classid);
+ UClassesDescriptionCIterator I=ClassesDescription.find(GetClassName(classid));
 
  if(I == ClassesDescription.end())
   throw EClassIdNotExist(classid);
@@ -267,7 +270,7 @@ void UAStorage::SetClassDescription(const UId &classid, const UEPtr<UComponentDe
  if(I == ClassesStorage.end())
   throw EClassIdNotExist(classid);
 
- ClassesDescription[classid]=description;
+ ClassesDescription[GetClassName(classid)]=description;
 }
 
 // Сохраняет описание класса в xml
@@ -289,7 +292,7 @@ void UAStorage::SaveClassesDescription(Serialize::USerStorageXML &xml)
 {
  for(UClassesDescriptionCIterator I = ClassesDescription.begin(), J=ClassesDescription.end(); I != J; ++I)
  {
-  xml.AddNode(sntoa(I->first));
+  xml.AddNode(I->first);
   I->second->Save(xml);
   xml.SelectUp();
  }
@@ -300,7 +303,7 @@ void UAStorage::LoadClassesDescription(Serialize::USerStorageXML &xml)
 {
  for(UClassesDescriptionCIterator I = ClassesDescription.begin(), J=ClassesDescription.end(); I != J; ++I)
  {
-  if(!xml.SelectNode(sntoa(I->first)))
+  if(!xml.SelectNode(I->first))
    continue;
   I->second->Load(xml);
   xml.SelectUp();
@@ -310,7 +313,7 @@ void UAStorage::LoadClassesDescription(Serialize::USerStorageXML &xml)
 // Сохраняет общее описание всех классов в xml
 bool UAStorage::SaveCommonClassesDescription(Serialize::USerStorageXML &xml)
 {
- xml.AddNode(sntoa(0));
+ xml.AddNode("0");
  if(!UContainerDescription::SaveCommon(xml))
  {
   xml.SelectUp();
@@ -323,7 +326,7 @@ bool UAStorage::SaveCommonClassesDescription(Serialize::USerStorageXML &xml)
 // Загружает общее описание всех классов из xml
 bool UAStorage::LoadCommonClassesDescription(Serialize::USerStorageXML &xml)
 {
- if(xml.SelectNode(sntoa(0)))
+ if(xml.SelectNode("0"))
  {
   UContainerDescription::LoadCommon(xml);
   xml.SelectUp();

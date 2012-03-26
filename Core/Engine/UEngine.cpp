@@ -845,8 +845,20 @@ int UEngine::Env_Reset(const char* stringid)
   ProcessException(exception);
  }
 
-
  return 0;
+}
+
+// Производит увеличение времени модели на требуемую величину
+void UEngine::Env_IncreaseModelTimeByStep(void)
+{
+ try
+ {
+  Environment->IncreaseModelTimeByStep();
+ }
+ catch (RDK::Exception * exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 // !!! Следующие методы управления текущим компонентом влияют на все
@@ -1827,7 +1839,7 @@ int UEngine::Model_GetComponentInputDataSize(const char *stringid, int index)
   if(!cont)
    return 0;
 
-  return cont->GetOutputDataSize(index);
+  return cont->GetInputDataSize(index);
  }
  catch (Exception * exception)
  {
@@ -1922,7 +1934,12 @@ int UEngine::Model_GetComponentOutputElementSize(const char *stringid, int index
 {
  try
  {
-  return 0;
+  UEPtr<RDK::UADItem> cont=dynamic_pointer_cast<RDK::UADItem>(FindComponent(stringid));
+
+  if(!cont)
+   return 0;
+
+  return cont->GetOutputDataElementSize(index);
  }
  catch (Exception * exception)
  {
@@ -2109,6 +2126,109 @@ int UEngine::Model_LoadComponentState(const char *stringid, char* buffer)
 
   if(!Model_LoadComponentState(cont,&XmlStorage))
    return -4;
+ }
+ catch (Exception * exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
+
+// Возвращает текущее время модели
+long long UEngine::Model_GetTime(void)
+{
+ return UTimeControl::GetTime();
+}
+
+double UEngine::Model_GetDoubleTime(void)
+{
+ return UTimeControl::GetDoubleTime();
+}
+
+// Устанавливает текущее время модели
+bool UEngine::Model_SetTime(long long value)
+{
+ return UTimeControl::SetTime(value);
+}
+
+// Возвращает реальное время
+long long UEngine::Model_GetRealTime(void)
+{
+ return UTimeControl::GetRealTime();
+}
+
+double UEngine::Model_GetDoubleRealTime(void)
+{
+ return UTimeControl::GetDoubleRealTime();
+}
+
+// Устанавливает реальное время
+bool UEngine::Model_SetRealTime(long long value)
+{
+ return UTimeControl::SetRealTime(value);
+}
+
+// Увеличивает реальное время на заданную величину
+bool UEngine::Model_IncreaseRealTime(long long value)
+{
+ return UTimeControl::IncreaseRealTime(value);
+}
+
+// Возвращает мгновенный шаг в реальном времени
+long long UEngine::Model_GetRealTimeStep(void)
+{
+ return UTimeControl::GetRealTimeStep();
+}
+
+double UEngine::Model_GetDoubleRealTimeStep(void)
+{
+ return UTimeControl::GetDoubleRealTimeStep();
+}
+
+// Возвращает время расчета компонента без времени расчета дочерних компонент (мс)
+long long UEngine::Model_GetStepDuration(const char *stringid) const
+{
+ try
+ {
+  UEPtr<RDK::UANet> cont=dynamic_pointer_cast<RDK::UANet>(FindComponent(stringid));
+
+  return cont->GetStepDuration();
+ }
+ catch (Exception * exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
+// Возвращает время, затраченное на обработку объекта
+// (вместе со времени обсчета дочерних объектов) (мс)
+long long UEngine::Model_GetFullStepDuration(const char *stringid) const
+{
+ try
+ {
+  UEPtr<RDK::UANet> cont=dynamic_pointer_cast<RDK::UANet>(FindComponent(stringid));
+
+  return cont->GetFullStepDuration();
+ }
+ catch (Exception * exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
+
+// Возвращает мгновенное быстродействие, равное отношению
+// полного затраченного времени к ожидаемому времени шага счета
+double UEngine::Model_GetInstantPerformance(const char *stringid) const
+{
+ try
+ {
+  UEPtr<RDK::UANet> cont=dynamic_pointer_cast<RDK::UANet>(FindComponent(stringid));
+
+  return cont->GetInstantPerformance();
  }
  catch (Exception * exception)
  {
@@ -2637,57 +2757,6 @@ int UEngine::Model_LoadComponentState(RDK::UANet* cont, RDK::Serialize::USerStor
 
  return true;
 }
-
-// Возвращает текущее время модели
-long long UEngine::Model_GetTime(void)
-{
- return UTimeControl::GetTime();
-}
-
-double UEngine::Model_GetDoubleTime(void)
-{
- return UTimeControl::GetDoubleTime();
-}
-
-// Устанавливает текущее время модели
-bool UEngine::Model_SetTime(long long value)
-{
- return UTimeControl::SetTime(value);
-}
-
-// Возвращает реальное время
-long long UEngine::Model_GetRealTime(void)
-{
- return UTimeControl::GetRealTime();
-}
-
-double UEngine::Model_GetDoubleRealTime(void)
-{
- return UTimeControl::GetDoubleRealTime();
-}
-
-// Устанавливает реальное время
-bool UEngine::Model_SetRealTime(long long value)
-{
- return UTimeControl::SetRealTime(value);
-}
-
-// Увеличивает реальное время на заданную величину
-bool UEngine::Model_IncreaseRealTime(long long value)
-{
- return UTimeControl::IncreaseRealTime(value);
-}
-
-// Возвращает мгновенный шаг в реальном времени
-long long UEngine::Model_GetRealTimeStep(void)
-{
- return UTimeControl::GetRealTimeStep();
-}
-
-double UEngine::Model_GetDoubleRealTimeStep(void)
-{
- return UTimeControl::GetDoubleRealTimeStep();
-}
 // --------------------------
 
 // --------------------------
@@ -2807,7 +2876,7 @@ int UEngine::LoadLibraries(void)
 // --------------------------
 // Осуществляет поиск компонента по длинному строковому id
 // Если строковое id не задано, то возвращает указатель на модель
-UEPtr<UAContainer> UEngine::FindComponent(const char *stringid)
+UEPtr<UAContainer> UEngine::FindComponent(const char *stringid) const
 {
 // UEPtr<RDK::UANet> model=dynamic_pointer_cast<RDK::UANet>(Environment->GetModel());
  UEPtr<RDK::UANet> model=dynamic_pointer_cast<RDK::UANet>(Environment->GetCurrentComponent());

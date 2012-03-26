@@ -4,6 +4,7 @@
 #pragma hdrstop
 
 #include "UImagesFrameUnit.h"
+#include "UComponentsListFormUnit.h"
 #include "rdk_initdll.h"
 
 //---------------------------------------------------------------------------
@@ -12,10 +13,18 @@
 TUImagesFrame *UImagesFrame;
 //---------------------------------------------------------------------------
 __fastcall TUImagesFrame::TUImagesFrame(TComponent* Owner)
-    : TFrame(Owner)
+	: TFrame(Owner)
 {
  ReflectionXFlag=false;
+ MyComponentsListForm=new TUComponentsListForm(this);
 }
+
+__fastcall TUImagesFrame::~TUImagesFrame(void)
+{
+ if(MyComponentsListForm)
+  delete MyComponentsListForm;
+}
+
 
 // --------------------------
 // Методы управления параметрами
@@ -321,6 +330,79 @@ void __fastcall TUImagesFrame::DrawGridDrawCell(TObject *Sender, int ACol, int A
 
     dynamic_cast<TDrawGrid *>(Sender)->Canvas->
         StretchDraw(Rect, Images[ACol][ARow]->Picture->Graphic);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUImagesFrame::SaveToBmpClick(TObject *Sender)
+{
+ if(DrawGrid->Col < 0 || DrawGrid->Row <0)
+  return;
+
+ if(!SavePictureDialog->Execute())
+  return;
+
+ Images[DrawGrid->Col][DrawGrid->Row]->Picture->SaveToFile(SavePictureDialog->FileName);
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TUImagesFrame::SelectSourceClick(TObject *Sender)
+{
+ if(DrawGrid->Col < 0 || DrawGrid->Row <0)
+  return;
+
+ if(MyComponentsListForm->ShowComponentSelect() != mrOk)
+  return;
+
+ StringIds[DrawGrid->Col][DrawGrid->Row]=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongId();
+ ComponentIndexes[DrawGrid->Col][DrawGrid->Row]=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUImagesFrame::AddColumnClick(TObject *Sender)
+{
+ SetNumCells(GetNumCellWidth()+1, GetNumCellHeight());
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUImagesFrame::AddRowClick(TObject *Sender)
+{
+ SetNumCells(GetNumCellWidth(), GetNumCellHeight()+1);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUImagesFrame::DeleteColumnClick(TObject *Sender)
+{
+ if(DrawGrid->Col < 0 || DrawGrid->Row <0)
+  return;
+
+ StringIds.erase(StringIds.begin()+DrawGrid->Col);
+
+ ComponentIndexes.erase(ComponentIndexes.begin()+DrawGrid->Col);
+
+ Images.erase(Images.begin()+DrawGrid->Col);
+
+ SetNumCells(GetNumCellWidth()-1,GetNumCellHeight());
+ UpdateInterface();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUImagesFrame::DeleteRowClick(TObject *Sender)
+{
+ if(DrawGrid->Col < 0 || DrawGrid->Row <0)
+  return;
+
+ for(size_t i=0;i<StringIds.size();i++)
+  StringIds[i].erase(StringIds[i].begin()+DrawGrid->Row);
+
+ for(size_t i=0;i<ComponentIndexes.size();i++)
+  ComponentIndexes[i].erase(ComponentIndexes[i].begin()+DrawGrid->Row);
+
+ for(size_t i=0;i<Images.size();i++)
+  Images[i].erase(Images[i].begin()+DrawGrid->Row);
+
+ SetNumCells(GetNumCellWidth(),GetNumCellHeight()-1);
+ UpdateInterface();
 }
 //---------------------------------------------------------------------------
 

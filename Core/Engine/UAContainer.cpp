@@ -209,9 +209,6 @@ bool UAContainer::SetCoord(RDK::MVector<double> value)
 // (без учета времени обсчета дочерних объектов) (мс)
 long long UAContainer::GetStepDuration(void) const
 {
-/*
- return StepDuration;
-*/
  long long res=0;
  for(int i=0;i<NumComponents;i++)
   res+=PComponents[i]->GetFullStepDuration();
@@ -224,13 +221,13 @@ long long UAContainer::GetStepDuration(void) const
 long long UAContainer::GetFullStepDuration(void) const
 {
  return StepDuration;
-/*
- long long res=0;
- for(int i=0;i<NumComponents;i++)
-  res+=PComponents[i]->GetFullStepDuration();
+}
 
- return res+StepDuration;
- */
+// Возвращает мгновенное быстродействие, равное отношению
+// полного затраченного времени к ожидаемому времени шага счета
+double UAContainer::GetInstantPerformance(void) const
+{
+ return ((GetFullStepDuration()*TimeStep)/1000.0);
 }
 
 // Удаляет владельца объекта

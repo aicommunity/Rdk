@@ -19,8 +19,61 @@ object UImagesFrame: TUImagesFrame
     FixedRows = 0
     Options = [goVertLine, goHorzLine, goDrawFocusSelected, goRowSizing, goColSizing, goEditing, goAlwaysShowEditor]
     ParentDoubleBuffered = False
+    PopupMenu = PopupMenu
     TabOrder = 0
     OnDrawCell = DrawGridDrawCell
-    ExplicitHeight = 536
+  end
+  object PopupMenu: TPopupMenu
+    Left = 192
+    Top = 296
+    object SaveToBmp: TMenuItem
+      Caption = 'Save to Bmp'
+      OnClick = SaveToBmpClick
+    end
+    object SaveToJpeg: TMenuItem
+      Caption = 'Save to Jpeg'
+      Enabled = False
+    end
+    object N2: TMenuItem
+      Caption = '-'
+    end
+    object SaveAllToBmp: TMenuItem
+      Caption = 'Save All to Bmp'
+      Enabled = False
+    end
+    object SaveAllToJpeg: TMenuItem
+      Caption = 'Save All to Jpeg'
+      Enabled = False
+    end
+    object N1: TMenuItem
+      Caption = '-'
+    end
+    object SelectSource: TMenuItem
+      Caption = 'Select Source'
+      OnClick = SelectSourceClick
+    end
+    object N3: TMenuItem
+      Caption = '-'
+    end
+    object AddColumn: TMenuItem
+      Caption = 'Add Column'
+      OnClick = AddColumnClick
+    end
+    object AddRow: TMenuItem
+      Caption = 'Add Row'
+      OnClick = AddRowClick
+    end
+    object DeleteColumn: TMenuItem
+      Caption = 'Delete Column'
+      OnClick = DeleteColumnClick
+    end
+    object DeleteRow: TMenuItem
+      Caption = 'Delete Row'
+      OnClick = DeleteRowClick
+    end
+  end
+  object SavePictureDialog: TSavePictureDialog
+    Left = 240
+    Top = 296
   end
 end

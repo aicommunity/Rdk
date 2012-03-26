@@ -115,6 +115,10 @@ RDK_LIB_TYPE int RDK_CALL Env_Calculate(const char* stringid);
 // иначе - только указанный компонент модели
 RDK_LIB_TYPE int RDK_CALL Env_Reset(const char* stringid);
 
+// Производит увеличение времени модели на требуемую величину
+RDK_LIB_TYPE void RDK_CALL Env_IncreaseModelTimeByStep(void);
+
+
 // ***********************************************
 // Методы управления текущим компонентом
 // !!! Следующие методы влияют на все
@@ -426,6 +430,17 @@ RDK_LIB_TYPE bool RDK_CALL Model_IncreaseRealTime(long long value);
 // Возвращает мгновенный шаг в реальном времени
 RDK_LIB_TYPE long long RDK_CALL Model_GetRealTimeStep(void);
 RDK_LIB_TYPE double RDK_CALL Model_GetDoubleRealTimeStep(void);
+
+// Возвращает время расчета компонента без времени расчета дочерних компонент (мс)
+RDK_LIB_TYPE long long RDK_CALL Model_GetStepDuration(const char *stringid);
+
+// Возвращает время, затраченное на обработку объекта
+// (вместе со времени обсчета дочерних объектов) (мс)
+RDK_LIB_TYPE long long RDK_CALL Model_GetFullStepDuration(const char *stringid);
+
+// Возвращает мгновенное быстродействие, равное отношению
+// полного затраченного времени к ожидаемому времени шага счета
+RDK_LIB_TYPE double RDK_CALL Model_GetInstantPerformance(const char *stringid);
 // --------------------------
 
 // --------------------------

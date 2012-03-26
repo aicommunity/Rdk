@@ -6,7 +6,7 @@ namespace RDK {
 typedef int UTime;
 typedef long long ULongTime;
 
-extern const UTime DefaultTimeStep;
+extern UTime DefaultTimeStep;
 
 class UTimeControl
 {
@@ -39,6 +39,13 @@ static const double& GetDoubleTime(void);
 
 // Устанавливает текущее время модели
 static bool SetTime(ULongTime value);
+
+// Увеличивает время модели на заданную величину
+static bool IncreaseModelTime(ULongTime value);
+
+// Увеличивает время модели на заданную величину при заданном шаге вычислений
+// в тысячных долях секунды
+static bool IncreaseModelTimeByStep(ULongTime step);
 
 // Возвращает реальное время
 static const ULongTime& GetRealTime(void);

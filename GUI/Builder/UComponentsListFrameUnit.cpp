@@ -131,7 +131,10 @@ void TUComponentsListFrame::UpdateInterface(void)
  UpdateInterfaceFlag=false;
  UpdatePath();
  UpdateSelectedComponentInfo();
+
  UpdateParameters();
+ UpdateState();
+ UpdateIO();
 }
 
 // Обновляет параметры компонента
@@ -150,6 +153,69 @@ void TUComponentsListFrame::UpdateParameters(void)
  }
 
  RegistryModified=false;
+ UpdateInterfaceFlag=false;
+}
+
+
+// Обновляет состояние компонента
+void TUComponentsListFrame::UpdateState(void)
+{
+ UpdateInterfaceFlag=true;
+
+ if(ShowXMLComponentParameters)
+ {
+  Panel1->Visible=true;
+  StateRichEdit->Text=Model_GetComponentState(GetSelectedComponentLongId().c_str());
+ }
+ else
+ {
+  Panel1->Visible=false;
+ }
+
+ RegistryModified=false;
+ UpdateInterfaceFlag=false;
+}
+
+// Обновляет данные ввода-вывода
+void TUComponentsListFrame::UpdateIO(void)
+{
+ UpdateInterfaceFlag=true;
+
+ int num=Model_GetComponentNumOutputs(GetSelectedComponentLongId().c_str());
+ OutputsStringGrid->RowCount=1+num;
+ OutputsStringGrid->ColCount=1+3;
+
+ OutputsStringGrid->Cells[0][0]="#";
+ OutputsStringGrid->Cells[1][0]="Size";
+ OutputsStringGrid->Cells[2][0]="Element Size";
+ OutputsStringGrid->Cells[3][0]="Type";
+
+ for(int i=0;i<num;i++)
+ {
+  OutputsStringGrid->Cells[0][i+1]=IntToStr(i);
+  OutputsStringGrid->Cells[1][i+1]=Model_GetComponentOutputDataSize(GetSelectedComponentLongId().c_str(), i);
+  OutputsStringGrid->Cells[1][i+1]=Model_GetComponentOutputDataSize(GetSelectedComponentLongId().c_str(), i);
+  OutputsStringGrid->Cells[2][i+1]=Model_GetComponentOutputElementSize(GetSelectedComponentLongId().c_str(), i);
+ }
+
+
+ num=Model_GetComponentNumInputs(GetSelectedComponentLongId().c_str());
+ InputsStringGrid->RowCount=1+num;
+ InputsStringGrid->ColCount=1+3;
+
+ InputsStringGrid->Cells[0][0]="#";
+ InputsStringGrid->Cells[1][0]="Size";
+ InputsStringGrid->Cells[2][0]="Element Size";
+ InputsStringGrid->Cells[3][0]="Type";
+
+ for(int i=0;i<num;i++)
+ {
+  InputsStringGrid->Cells[0][i+1]=IntToStr(i);
+  InputsStringGrid->Cells[1][i+1]=Model_GetComponentInputDataSize(GetSelectedComponentLongId().c_str(), i);
+  InputsStringGrid->Cells[1][i+1]=Model_GetComponentInputDataSize(GetSelectedComponentLongId().c_str(), i);
+  InputsStringGrid->Cells[2][i+1]=Model_GetComponentInputElementSize(GetSelectedComponentLongId().c_str(), i);
+ }
+
  UpdateInterfaceFlag=false;
 }
 
@@ -218,6 +284,18 @@ const std::string& TUComponentsListFrame::GetCurrentComponentName(void) const
 const std::string& TUComponentsListFrame::GetCurrentComponentId(void) const
 {
  return CurrentComponentId;
+}
+
+// Выбранный выход объекта
+int TUComponentsListFrame::GetSelectedComponentOutput(void) const
+{
+ return SelectedComponentOutput;
+}
+
+// Выбранный вход объекта
+int TUComponentsListFrame::GetSelectedComponentInput(void) const
+{
+ return SelectedComponentInput;
 }
 
 // Включение-выключение отображения параметров в виде xml
@@ -359,6 +437,8 @@ void __fastcall TUComponentsListFrame::StringGridSelectCell(TObject *Sender, int
   SelectedId=StrToInt(StringGrid->Cells[0][StringGrid->Row]);
  UpdateSelectedComponentInfo();
  UpdateParameters();
+ UpdateState();
+ UpdateIO();
 }
 //---------------------------------------------------------------------------
 
@@ -387,6 +467,8 @@ void __fastcall TUComponentsListFrame::StringGridClick(TObject *Sender)
   SelectedId=StrToInt(StringGrid->Cells[0][StringGrid->Row]);
  UpdateSelectedComponentInfo();
  UpdateParameters();
+ UpdateState();
+ UpdateIO();
 }
 //---------------------------------------------------------------------------
 
@@ -416,6 +498,73 @@ void __fastcall TUComponentsListFrame::ParametersRichEditChange(TObject *Sender)
  if(UpdateInterfaceFlag)
   return;
  RegistryModified=true;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::StateRichEditChange(TObject *Sender)
+{
+ if(UpdateInterfaceFlag)
+  return;
+ RegistryModified=true;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::StateHeaderControlSectionClick(THeaderControl *HeaderControl,
+          THeaderSection *Section)
+{
+ if(Section->Index == 0)
+ {
+  Model_SetComponentState(GetSelectedComponentLongId().c_str(),AnsiString(StateRichEdit->Text).c_str());
+  UpdateInterface();
+ }
+ else
+ if(Section->Index == 1)
+ {
+  UpdateState();
+ }
+ else
+ if(Section->Index == 2)
+ {
+
+ }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::OutputsStringGridClick(TObject *Sender)
+{
+ SelectedComponentOutput=OutputsStringGrid->Row-1;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::OutputsStringGridDblClick(TObject *Sender)
+{
+ OutputsStringGridClick(Sender);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::OutputsStringGridSelectCell(TObject *Sender,
+		  int ACol, int ARow, bool &CanSelect)
+{
+ OutputsStringGridClick(Sender);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::InputsStringGridSelectCell(TObject *Sender,
+		  int ACol, int ARow, bool &CanSelect)
+{
+ InputsStringGridClick(Sender);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::InputsStringGridDblClick(TObject *Sender)
+{
+ InputsStringGridClick(Sender);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::InputsStringGridClick(TObject *Sender)
+{
+ SelectedComponentInput=InputsStringGrid->Row-1;
 }
 //---------------------------------------------------------------------------
 

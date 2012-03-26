@@ -296,6 +296,9 @@ virtual int Env_Calculate(const char* stringid=0);
 // иначе - только указанный компонент модели
 virtual int Env_Reset(const char* stringid=0);
 
+// Производит увеличение времени модели на требуемую величину
+virtual void Env_IncreaseModelTimeByStep(void);
+
 // !!! Следующие методы управления текущим компонентом влияют на все
 // методы, обращающиеся к компонентам по строковому id !!!
 // Устанавливает текущий компонент (адресация относительно корня - модели)
@@ -529,6 +532,17 @@ virtual bool Model_IncreaseRealTime(long long value);
 // Возвращает мгновенный шаг в реальном времени
 virtual long long Model_GetRealTimeStep(void);
 virtual double Model_GetDoubleRealTimeStep(void);
+
+// Возвращает время расчета компонента без времени расчета дочерних компонент (мс)
+long long Model_GetStepDuration(const char *stringid) const;
+
+// Возвращает время, затраченное на обработку объекта
+// (вместе со времени обсчета дочерних объектов) (мс)
+long long Model_GetFullStepDuration(const char *stringid) const;
+
+// Возвращает мгновенное быстродействие, равное отношению
+// полного затраченного времени к ожидаемому времени шага счета
+double Model_GetInstantPerformance(const char *stringid) const;
 // --------------------------
 
 // --------------------------
@@ -637,7 +651,7 @@ protected:
 protected:
 // Осуществляет поиск компонента по длинному строковому id
 // Если строковое id не задано, то возвращает указатель на модель
-UEPtr<UAContainer> FindComponent(const char *stringid);
+UEPtr<UAContainer> FindComponent(const char *stringid) const;
 
 // Восстановление настроек по умолчанию и сброс процесса счета
 virtual bool ADefault(void);

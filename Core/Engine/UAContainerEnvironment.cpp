@@ -293,6 +293,16 @@ void UAContainerEnvironment::DownCurrentComponent(const ULongId &id)
 // --------------------------
 
 // --------------------------
+// ћетоды управлени€ счетом
+// --------------------------
+// ѕроизводит увеличение времени модели на требуемую величину
+void UAContainerEnvironment::IncreaseModelTimeByStep(void)
+{
+ UTimeControl::IncreaseModelTimeByStep(GetModel()->GetTimeStep());
+}
+// --------------------------
+
+// --------------------------
 // —крытые методы управлени€ счетом
 // --------------------------
 // ¬осстановление настроек по умолчанию и сброс процесса счета
@@ -324,7 +334,11 @@ bool UAContainerEnvironment::ACalculate(void)
 {
  if(!UAEnvironment::ACalculate())
   return false;
- UAContainer::SetTime(UAContainer::GetTime()+1000000/GetModel()->GetTimeStep());
+
+ // ≈сли мы считаем всю модель, то расчитываем врем€ модели здесь,
+ // иначе мы ожидаем, что вызывающий модуль сам расчитает врем€ модели
+ if(ModelCalculationComponent.GetSize() == 0)
+  IncreaseModelTimeByStep();
  return true;
 }
 // --------------------------
