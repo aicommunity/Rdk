@@ -54,8 +54,8 @@ USerStorageXML& operator << (USerStorageXML& storage, const UColorT &data)
  storage.SetNodeAttribute("Type",typeid(UColorT).name());
 
  std::stringstream stream;
- stream.setf(ios::hex);
- stream<<data.c;
+// stream.setf(ios::hex);
+ stream<<uppercase<<std::hex<<data.c;
  std::string str=stream.str();
  storage.SetNodeText(str);
 
@@ -68,8 +68,8 @@ USerStorageXML& operator >> (USerStorageXML& storage, UColorT &data)
   return storage;
 
  std::istringstream stream(storage.GetNodeText().c_str());
- stream.setf(ios::hex);
- stream>>data.c;
+// stream.setf(ios::hex);
+ stream>>std::hex>>data.c;
 
  return storage;
 }

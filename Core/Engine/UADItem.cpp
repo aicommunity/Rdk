@@ -375,7 +375,7 @@ bool UADItem::SetOutputDataAsPointer(int index, void *pointer)
  {
   SetOutputDataElementSize(index,sizeof(void*));
   SetOutputDataSize(index,1);
-  OutputData[0].PVoid[0]=pointer;
+  OutputData[index].PVoid[0]=pointer;
   return true;
  }
  return false;
@@ -529,8 +529,8 @@ bool UADItem::ConnectToItem(UEPtr<UAItem> na, int i_index, int &c_index)
  if(iteminfo && conninfo && !iteminfo->Compare(conninfo))
   return false;
 
-// InputDataSize[c_index]=nad->POutputData[i_index].Size;
  InputData[c_index]=&nad->POutputData[i_index];
+
 
  UpdatePointers();
  CalcMinMaxInputDataSize();

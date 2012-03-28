@@ -10,5 +10,8 @@
 #include "../../Core/Graphics/UBitmap.h"
 #include "../../Core/Graphics/UAGraphics.h"
 #include "../../Core/Graphics/UGraphics.h"
+#include "../../Core/Graphics/UGraphicsXMLSerialize.h"
+#include "../../Core/Graphics/UGraphicsBinarySerialize.h"
+
 
 

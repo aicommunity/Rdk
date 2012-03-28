@@ -10,7 +10,7 @@ namespace RDK {
 // (зависит от реализации)
 unsigned long long GetCurrentStartupTime(void)
 {
- return GetTickCount64();
+ return GetTickCount();
 }
 
 // Вычисляет разницу во времени в миллисекундах
