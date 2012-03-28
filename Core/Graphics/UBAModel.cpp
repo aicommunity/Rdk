@@ -24,8 +24,8 @@ namespace RDK {
 // Конструкторы и деструкторы
 // --------------------------
 UBAModel::UBAModel(void)
- : Sources(this,"Sources"),
-   Receivers(this,"Receivers")
+// : Sources(this,"Sources"),
+//   Receivers(this,"Receivers")
 {
 }
 

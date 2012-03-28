@@ -313,7 +313,7 @@ void UAStorage::LoadClassesDescription(Serialize::USerStorageXML &xml)
 // —охран€ет общее описание всех классов в xml
 bool UAStorage::SaveCommonClassesDescription(Serialize::USerStorageXML &xml)
 {
- xml.AddNode("0");
+ xml.AddNode("Default");
  if(!UContainerDescription::SaveCommon(xml))
  {
   xml.SelectUp();
@@ -326,7 +326,7 @@ bool UAStorage::SaveCommonClassesDescription(Serialize::USerStorageXML &xml)
 // «агружает общее описание всех классов из xml
 bool UAStorage::LoadCommonClassesDescription(Serialize::USerStorageXML &xml)
 {
- if(xml.SelectNode("0"))
+ if(xml.SelectNode("Default"))
  {
   UContainerDescription::LoadCommon(xml);
   xml.SelectUp();

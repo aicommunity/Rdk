@@ -29,10 +29,10 @@ protected: // Основные свойства
 
 protected: // Указатели на источники и приемники сигналов модели
 // Массив источников
-UCPointer<UBASource, UBAModel> Sources;
+//UCPointer<UBASource, UBAModel> Sources;
 
 // Массив приемников
-UCPointer<UBAReceiver, UBAModel> Receivers;
+//UCPointer<UBAReceiver, UBAModel> Receivers;
 
 public: // Методы
 // --------------------------

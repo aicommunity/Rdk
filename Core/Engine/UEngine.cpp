@@ -447,8 +447,10 @@ const char* UEngine::Storage_SaveClassesDescription(void)
  try
  {
   Serialize::USerStorageXML xml;
+  xml.Create("Root");
   xml.Create("ClassesDescription");
   Storage->SaveClassesDescription(xml);
+  xml.SelectUp();
   xml.SelectUp();
   xml.Save(TempString);
  }
@@ -465,7 +467,9 @@ bool UEngine::Storage_LoadClassesDescription(const char* xmltext)
  try
  {
   Serialize::USerStorageXML xml;
-  xml.Load(xmltext, "ClassesDescription");
+  xml.Load(xmltext, "Root");
+  if(!xml.SelectNode("ClassesDescription"))
+   return false;
   Storage->LoadClassesDescription(xml);
  }
  catch (Exception * exception)
@@ -481,8 +485,10 @@ const char* UEngine::Storage_SaveCommonClassesDescription(void)
  try
  {
   Serialize::USerStorageXML xml;
-  xml.Create("ClassesDescription");
+  xml.Create("Root");
+  xml.Create("CommonClassesDescription");
   Storage->SaveCommonClassesDescription(xml);
+  xml.SelectUp();
   xml.SelectUp();
   xml.Save(TempString);
  }
@@ -499,7 +505,9 @@ bool UEngine::Storage_LoadCommonClassesDescription(const char* xmltext)
  try
  {
   Serialize::USerStorageXML xml;
-  xml.Load(xmltext, "ClassesDescription");
+  xml.Load(xmltext, "Root");
+  if(!xml.SelectNode("CommonClassesDescription"))
+   return false;
   return Storage->LoadCommonClassesDescription(xml);
  }
  catch (Exception * exception)
