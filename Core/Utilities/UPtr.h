@@ -130,11 +130,21 @@ USharedPtr(const USharedPtr<T> &p)
 : UPtr<T>(p.PData),
   Counter(p.Counter)
 {
- ++(*Counter);
+ if(!UPtr<T>::PData)
+  Counter=new long(0);
+ else
+  ++(*Counter);
 };
 
 virtual ~USharedPtr(void)
 {
+ if(!UPtr<T>::PData)
+ {
+  if(Counter)
+   delete Counter;
+   Counter=0;
+ }
+ else
  if(Counter && --(*Counter) <= 0)
  {
   delete Counter;

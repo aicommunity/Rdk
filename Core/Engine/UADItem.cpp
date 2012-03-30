@@ -59,13 +59,14 @@ UADItem::UADItem(void)
 
 UADItem::~UADItem(void)
 {
- for(size_t i=0;i<InputDataInfo.size();i++)
+/* for(size_t i=0;i<InputDataInfo.size();i++)
   if(InputDataInfo[i])
-   delete InputDataInfo[i];
+   delete InputDataInfo[i].Get();
 
  for(size_t i=0;i<OutputDataInfo.size();i++)
   if(OutputDataInfo[i])
-   delete OutputDataInfo[i];
+   delete OutputDataInfo[i].Get();
+   */
 }                       
 // --------------------------
 
@@ -141,8 +142,8 @@ bool UADItem::SetOutputDataInfo(int index, UIDataInfo* value)
  if(OutputDataInfo[index] == value)
   return true;
 
- if(OutputDataInfo[index])
-  delete OutputDataInfo[index];
+// if(OutputDataInfo[index])
+//  delete OutputDataInfo[index];
  OutputDataInfo[index]=value;
  return true;
 }
@@ -163,8 +164,8 @@ bool UADItem::SetInputDataInfo(int index, UIDataInfo* value)
  if(InputDataInfo[index] == value)
   return true;
 
- if(InputDataInfo[index])
-  delete InputDataInfo[index];
+// if(InputDataInfo[index])
+//  delete InputDataInfo[index];
  InputDataInfo[index]=value;
  return true;
 }
@@ -605,17 +606,17 @@ bool UADItem::Build(void)
 // InputDataSize.resize(NumInputs);
 
  size_t size=OutputDataInfo.size();
- for(size_t i=NumOutputs;i<size;i++)
-  if(OutputDataInfo[i])
-   delete OutputDataInfo[i];
+// for(size_t i=NumOutputs;i<size;i++)
+//  if(OutputDataInfo[i])
+//   delete OutputDataInfo[i];
  OutputDataInfo.resize(NumOutputs);
  for(int i=size;i<NumOutputs;i++)
   OutputDataInfo[i]=0;
 
  size=InputDataInfo.size();
- for(size_t i=NumInputs;i<size;i++)
-  if(InputDataInfo[i])
-   delete InputDataInfo[i];
+// for(size_t i=NumInputs;i<size;i++)
+//  if(InputDataInfo[i])
+//   delete InputDataInfo[i];
  InputDataInfo.resize(NumInputs);
  for(int i=size;i<NumInputs;i++)
   InputDataInfo[i]=0;

@@ -84,10 +84,10 @@ vector<UEPtr<const UItemData> > InputData;
 
 protected: // Описание входов и выходов
 // Описание выходных данных
-vector<UIDataInfo*> OutputDataInfo;
+vector<USharedPtr<UIDataInfo> > OutputDataInfo;
 
 // Описание входных данных
-vector<UIDataInfo*> InputDataInfo;
+vector<USharedPtr<UIDataInfo> > InputDataInfo;
 
 // Имена выходов
 vector<NameT> OutputNames;

@@ -379,6 +379,14 @@ USerStorageXML& operator << (USerStorageXML& storage, const UBVSObject &data)
  operator << (storage,data.ObjectColor);
  storage.SelectUp();
 
+ storage.AddNode("ObjectColor2");
+ operator << (storage,data.ObjectColor2);
+ storage.SelectUp();
+
+ storage.AddNode("Mode");
+ operator << (storage,data.Mode);
+ storage.SelectUp();
+
  storage.AddNode("Visible");
  operator << (storage,data.Visible);
  storage.SelectUp();
@@ -425,6 +433,16 @@ USerStorageXML& operator >> (USerStorageXML& storage, UBVSObject &data)
  if(!storage.SelectNode("ObjectColor"))
   return storage;
  operator >> (storage,data.ObjectColor);
+ storage.SelectUp();
+
+ if(!storage.SelectNode("ObjectColor2"))
+  return storage;
+ operator >> (storage,data.ObjectColor2);
+ storage.SelectUp();
+
+ if(!storage.SelectNode("Mode"))
+  return storage;
+ operator >> (storage,data.Mode);
  storage.SelectUp();
 
  if(!storage.SelectNode("Visible"))
