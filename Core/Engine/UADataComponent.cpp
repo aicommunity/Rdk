@@ -34,6 +34,21 @@ UVariable::~UVariable(void)
 // --------------------------
 
 // --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+UADataComponent::UADataComponent(void)
+{
+
+}
+
+UADataComponent::~UADataComponent(void)
+{
+ ClearLookupPropertyTable();
+ ClearLookupStateTable();
+}
+// --------------------------
+
+// --------------------------
 // Методы доступа к таблицам соотвествий
 // --------------------------
 // Возвращает имя параметра по его Id
@@ -426,7 +441,7 @@ void UADataComponent::DelLookupProperty(const NameT &name)
  if(I == PropertiesLookupTable.end())
   throw new EPropertyNameNotExist(name);
 
- if(I->second.DelEnable)
+ if(I->second.Property && I->second.DelEnable)
   delete I->second.Property;
  PropertiesLookupTable.erase(I);
 }

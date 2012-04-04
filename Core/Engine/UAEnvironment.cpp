@@ -165,6 +165,7 @@ UAEnvironment::UAEnvironment(void)
 
 UAEnvironment::~UAEnvironment(void)
 {
+ DestroyModel();
 }
 // --------------------------
 

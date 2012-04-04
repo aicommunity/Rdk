@@ -116,7 +116,7 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 USharedPtr(void)
-: Counter(new long(0))
+: UPtr<T>(0),Counter(0)
 {
 };
 
@@ -131,7 +131,7 @@ USharedPtr(const USharedPtr<T> &p)
   Counter(p.Counter)
 {
  if(!UPtr<T>::PData)
-  Counter=new long(0);
+  Counter=0;
  else
   ++(*Counter);
 };
@@ -141,8 +141,8 @@ virtual ~USharedPtr(void)
  if(!UPtr<T>::PData)
  {
   if(Counter)
-   delete Counter;
-   Counter=0;
+   delete Counter; // Заглушка!! Это по идее не нужно
+  Counter=0;
  }
  else
  if(Counter && --(*Counter) <= 0)
@@ -167,7 +167,10 @@ USharedPtr<T>& operator = (const USharedPtr<T> &p)
    delete Counter;
    Counter=0;
    if(UPtr<T>::PData)
-    delete UPtr<T>::PData;
+   {
+	delete UPtr<T>::PData;
+	UPtr<T>::PData=0;
+   }
   }
  }
  UPtr<T>::PData=p.PData;
@@ -178,7 +181,7 @@ USharedPtr<T>& operator = (const USharedPtr<T> &p)
   ++(*Counter);
  }
  else
-  Counter=new long(0);
+  Counter=0;
 
  return *this;
 };
@@ -192,7 +195,10 @@ USharedPtr<T>& operator = (T *p)
    delete Counter;
    Counter=0;
    if(UPtr<T>::PData)
+   {
 	delete UPtr<T>::PData;
+	UPtr<T>::PData=0;
+   }
   }
  }
  UPtr<T>::PData=p;
@@ -200,7 +206,7 @@ USharedPtr<T>& operator = (T *p)
  if(UPtr<T>::PData)
   Counter=new long(1);
  else
-  Counter=new long(0);
+  Counter=0;
 
  return *this;
 };
@@ -212,6 +218,18 @@ USharedPtr<T>& operator = (UPtr<T> &p)
 };
 
 
+const T* operator -> (void) const
+{
+ return UPtr<T>::PData;
+};
+
+
+protected:
+operator T* (void) const
+{
+ return PData;
+}
+public:
 				/*
 bool operator == (const USharedPtr<T> &p)
 { return (PData == p.PData)?true:false; };
@@ -259,16 +277,13 @@ void Clear(void)
   delete Counter;
   Counter=0;
   if(UPtr<T>::PData)
+  {
    delete UPtr<T>::PData;
+   UPtr<T>::PData=0;
+  }
  }
 }
-
-T* GetPData(void) const
-{
- return UPtr<T>::PData;
-}
-
-
+/*
 // Инициализирует умный указатель
 USharedPtr<T>& Init(long* counter, T* pdata)
 {
@@ -276,7 +291,7 @@ USharedPtr<T>& Init(long* counter, T* pdata)
  Counter=counter;
  ++(*Counter);
  UPtr<T>::PData=pdata;
-}
+} */
 // --------------------------
 
 // --------------------------

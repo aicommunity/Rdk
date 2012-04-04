@@ -70,8 +70,6 @@ UAContainer::UAContainer(void)
 
 UAContainer::~UAContainer(void)
 {
- ClearLookupPropertyTable();
- ClearLookupStateTable();
  DelAllComponents();
  UnLinkAllControllers();
 
@@ -1245,6 +1243,7 @@ bool UAContainer::Reset(void)
 
  CalcCounter=0;
  SkipComponentCalculation=false;
+ ComponentReCalculation=false;
  return true;
 }
 
@@ -1258,10 +1257,23 @@ bool UAContainer::Calculate(void)
 
  long long tempstepduration=GetCurrentStartupTime();
  UEPtr<UAContainer> *comps=PComponents;
- for(int i=0;(i<NumComponents) & !SkipComponentCalculation;++i,comps++)
+ int i=0;
+ while((i<NumComponents) & !SkipComponentCalculation)
+ {
   (*comps)->Calculate();
+  if(ComponentReCalculation)
+  {
+   ComponentReCalculation=false;
+   i=0; comps=PComponents;
+  }
+  else
+  {
+   ++i,++comps;
+  }
+ }
 
  SkipComponentCalculation=false;
+ ComponentReCalculation=false;
 
  if(!Owner)
  {
@@ -1319,6 +1331,13 @@ void UAContainer::UpdateMainOwner(void)
 void UAContainer::ForceSkipComponentCalculation(void)
 {
  SkipComponentCalculation=true;
+}
+
+// Обычно вызывается дочерним компонентом и требует перерасчет цепочки дочерних
+// компонент на этом шаге счета сначала
+void UAContainer::ForceComponentReCalculation(void)
+{
+ ComponentReCalculation=true;
 }
 // --------------------------
 

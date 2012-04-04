@@ -127,12 +127,12 @@ size_t UADItem::GetFullInputDataSize(void) const
 // Методы доступа к описанию входов и выходов
 // --------------------------
 // Описание выходных данных
-const UIDataInfo* UADItem::GetOutputDataInfo(int index) const
+const USharedPtr<UIDataInfo>& UADItem::GetOutputDataInfo(int index) const
 {
  return OutputDataInfo[index];
 }
 
-bool UADItem::SetOutputDataInfo(int index, UIDataInfo* value)
+bool UADItem::SetOutputDataInfo(int index, const USharedPtr<UIDataInfo>& value)
 {
 // if(!Build())
 //  return false;
@@ -149,12 +149,12 @@ bool UADItem::SetOutputDataInfo(int index, UIDataInfo* value)
 }
 
 // Описание входных данных
-const UIDataInfo* UADItem::GetInputDataInfo(int index) const
+const USharedPtr<UIDataInfo>& UADItem::GetInputDataInfo(int index) const
 {
  return InputDataInfo[index];
 }
 
-bool UADItem::SetInputDataInfo(int index, UIDataInfo* value)
+bool UADItem::SetInputDataInfo(int index, const USharedPtr<UIDataInfo>& value)
 {
 // if(!Build())
 //  return false;
@@ -521,7 +521,7 @@ bool UADItem::ConnectToItem(UEPtr<UAItem> na, int i_index, int &c_index)
   }
  }
 
- UIDataInfo *iteminfo, *conninfo;
+ USharedPtr<UIDataInfo> iteminfo, conninfo;
  iteminfo=nad->OutputDataInfo[i_index];
  conninfo=InputDataInfo[c_index];
  if(conninfo && !iteminfo)

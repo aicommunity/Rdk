@@ -70,6 +70,13 @@ VariableMapT PropertiesLookupTable;
 // Таблица соответствий имен и Id данных состояния объекта
 VariableMapT StateLookupTable;
 
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+UADataComponent(void);
+virtual ~UADataComponent(void);
+// --------------------------
 
 // --------------------------
 // Методы доступа к таблицам соотвествий

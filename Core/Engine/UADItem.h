@@ -32,7 +32,7 @@ virtual ~UIDataInfo(void);
 // Методы управления информацией типов
 // ------------------------
 virtual const type_info& GetType(void) const=0;
-virtual bool Compare(const UIDataInfo *dt) const=0;
+virtual bool Compare(const USharedPtr<UIDataInfo> &dt) const=0;
 virtual UIDataInfo* New(void)=0;
 // ------------------------
 };
@@ -56,7 +56,7 @@ virtual const type_info& GetType(void) const
  return typeid(T);
 };
 
-virtual bool Compare(const UIDataInfo *dt) const
+virtual bool Compare(const USharedPtr<UIDataInfo> &dt) const
 {
  return GetType() == dt->GetType();
 };
@@ -158,12 +158,12 @@ size_t GetFullInputDataSize(void) const;
 // Методы доступа к описанию входов и выходов
 // --------------------------
 // Описание выходных данных
-const UIDataInfo* GetOutputDataInfo(int index) const;
-bool SetOutputDataInfo(int index, UIDataInfo* value);
+const USharedPtr<UIDataInfo>& GetOutputDataInfo(int index) const;
+bool SetOutputDataInfo(int index, const USharedPtr<UIDataInfo> &value);
 
 // Описание входных данных
-const UIDataInfo* GetInputDataInfo(int index) const;
-bool SetInputDataInfo(int index, UIDataInfo* value);
+const USharedPtr<UIDataInfo>& GetInputDataInfo(int index) const;
+bool SetInputDataInfo(int index, const USharedPtr<UIDataInfo> &value);
 
 // Имена выходов
 const NameT& GetOutputName(int index) const;

@@ -227,7 +227,9 @@ void UAConnector2DVector::Resize(int newsize)
  if(RealSize<newsize || !Data)
  {
   UAConnectorVector* newbuffer=new UAConnectorVector[newsize];
-  memcpy(newbuffer,Data,sizeof(UAConnectorVector)*Size);
+  for(int i=0;i<Size;i++)
+   newbuffer[i]=Data[i];
+//  memcpy(newbuffer,Data,sizeof(UAConnectorVector)*Size);
 
   if(Data)
    delete []Data;
