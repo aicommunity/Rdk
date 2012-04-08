@@ -1468,13 +1468,38 @@ int UEngine::Model_ChainLinking(const char* stringid)
    return 0;
 
   ULongId id1,id2;
-  cont->GetComponentByIndex(0)->GetLongId(cont,id1);
+
+
+  UEPtr<UANet> item=dynamic_pointer_cast<UANet>(cont->GetComponentByIndex(0));
+  item->GetLongId(cont,id1);
+
+  // Подключаем выходы модели
+  int minsize=cont->GetNumOutputs();
+  if(minsize>item->GetNumInputs())
+   minsize=item->GetNumInputs();
+  for(int j=0;j<minsize;j++)
+   cont->CreateLink(ForbiddenId,j,id1,j);
+
   for(int i=1;i<cont->GetNumComponents();i++)
   {
-   cont->GetComponentByIndex(i)->GetLongId(cont,id2);
-   cont->CreateLink(id1,0,id2,0);
+   UEPtr<UANet> connector=dynamic_pointer_cast<UANet>(cont->GetComponentByIndex(i));
+   connector->GetLongId(cont,id2);
+   minsize=item->GetNumOutputs();
+   if(minsize>connector->GetNumInputs())
+	minsize=connector->GetNumInputs();
+   for(int j=0;j<minsize;j++)
+	cont->CreateLink(id1,j,id2,j);
    id1=id2;
+   item=connector;
   }
+ /*   // Заглушка! Непонятно, будет ли это нужно когда-нибудь
+  // Подключаем входы модели
+  minsize=cont->GetNumInputs();
+  if(minsize>item->GetNumOutputs())
+   minsize=item->GetNumOutputs();
+  for(int j=0;j<minsize;j++)
+   cont->CreateLink(id1,j,ForbiddenId,j);
+   */
  }
  catch (Exception * exception)
  {

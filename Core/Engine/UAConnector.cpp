@@ -546,14 +546,10 @@ ULinksListT<T>& UAConnector::GetLinks(ULinksListT<T> &linkslist, UEPtr<UAContain
 	else
 	{
 	 link.Item=item;
+	 link.Connector.clear();
 	 link.Connector.push_back(connector);
 	 linkslist.Add(link);
 	}
-
-//	if(linkslist.FindItem(item) >= 0 && linkslist.FindConnector(connector) >= 0)
-//	 continue;
-//	else
-//	 linkslist.Add(link);
    }
   }
  }

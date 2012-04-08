@@ -558,6 +558,8 @@ ULinksListT<T>& UAItem::GetLinks(ULinksListT<T> &linkslist, UEPtr<UAContainer> n
   return linkslist;
 
  for(int j=0;j<AssociatedConnectors.GetSize();j++)
+ {
+  link.Connector.clear();
   for(int i=0;i<AssociatedConnectors[j].GetSize();i++)
   {
    AssociatedConnectors[j][i]->GetLongId(netlevel,connector.Id);
@@ -569,9 +571,10 @@ ULinksListT<T>& UAItem::GetLinks(ULinksListT<T> &linkslist, UEPtr<UAContainer> n
 
 	link.Item=item;
 	link.Connector.push_back(connector);
-	linkslist.Set(link);
+    linkslist.Set(link);
    }
   }
+ }
 
  return linkslist;
 }

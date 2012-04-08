@@ -233,7 +233,7 @@ void __fastcall TUComponentIOFrame::ShowLinks(void)
  StringGrid->Cells[3][0]="Выход";
  StringGrid->Cells[4][0]="Вход";
 
- RDK::ULinksList linkslist;
+ RDK::UStringLinksList linkslist;
  std::string stringid;
 
  std::string xmlbuffer=Model_GetComponentInternalLinks(ViewComponentLongId.c_str());
@@ -256,10 +256,10 @@ void __fastcall TUComponentIOFrame::ShowLinks(void)
  std::string itemname,connname;
  for(int i=0;i<linkslist.GetSize();i++)
   {
-   itemname=Model_GetComponentLongName(linkslist[i].Item.Id.EncodeToString(stringid).c_str());
+   itemname=linkslist[i].Item.Id;//Model_GetComponentLongName(linkslist[i].Item.Id.EncodeToString(stringid).c_str());
    for(size_t j=0;j<linkslist[i].Connector.size();j++)
 	{
-     connname=Model_GetComponentLongName(linkslist[i].Connector[j].Id.EncodeToString(stringid).c_str());
+     connname=linkslist[i].Connector[j].Id;//Model_GetComponentLongName(linkslist[i].Connector[j].Id.EncodeToString(stringid).c_str());
 	 StringGrid->Cells[0][i+1]=IntToStr(int(i));
 	 StringGrid->Cells[1][i+1]=StrToInt(linkslist[i].Item.Index);
 	 StringGrid->Cells[2][i+1]=StrToInt(linkslist[i].Connector[j].Index);

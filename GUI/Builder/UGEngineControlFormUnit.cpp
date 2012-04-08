@@ -12,6 +12,7 @@
 #include "UComponentLinksFormUnit.h"
 #include "UEngineMonitorFormUnit.h"
 #include "VideoOutputFormUnit.h"
+#include "UComponentsPerformanceFormUnit.h"
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -34,18 +35,21 @@ void TUGEngineControlForm::UpdateInterface(void)
   UImagesForm->ImagesFrame->UpdateInterface();
  }
 
+ if(UComponentsPerformanceForm->Visible)
+  UComponentsPerformanceForm->UComponentsPerformanceFrame->UpdateInterface();
+
  UpdateInterfaceFlag=false;
 }
 
 void __fastcall TUGEngineControlForm::FormShow(TObject *Sender)
 {
  GraphicalEngineInit(0,4,4,360,240,1,ExceptionHandler);
+ for(int i=0;i<4;i++)
+  VideoOutputForm->AddSource();
  UImagesForm->ImagesFrame->SetReflectionXFlag(true);
  UpdateInterface();
 
  ProjectIni=new TMemIniFile("project.ini");
-
- UImagesForm->ImagesFrame->LoadFromIni(ProjectIni,"ImagesFrame");
 
  String modelfilename=ProjectIni->ReadString("General","ModelFileName","");
  if(modelfilename.Length() != 0)
@@ -53,6 +57,9 @@ void __fastcall TUGEngineControlForm::FormShow(TObject *Sender)
   UComponentsControlForm->ComponentsControlFrame->LoadModelFromFile(modelfilename);
  }
 
+ UImagesForm->ImagesFrame->LoadFromIni(ProjectIni,"ImagesFrame");
+ UComponentsPerformanceForm->UComponentsPerformanceFrame->LoadFromIni(ProjectIni,"PerformanceFrame");
+// UComponentsPerformanceForm->UComponentsPerformanceFrame->AddAllComponents("1");
 }
 //---------------------------------------------------------------------------
 
@@ -74,6 +81,7 @@ void __fastcall TUGEngineControlForm::FormClose(TObject *Sender, TCloseAction &A
  if(ProjectIni)
  {
   UImagesForm->ImagesFrame->SaveToIni(ProjectIni,"ImagesFrame");
+  UComponentsPerformanceForm->UComponentsPerformanceFrame->SaveToIni(ProjectIni,"PerformanceFrame");
   ProjectIni->UpdateFile();
   delete ProjectIni;
   ProjectIni=0;
@@ -90,7 +98,7 @@ void __fastcall TUGEngineControlForm::Start1Click(TObject *Sender)
 // UImagesForm->ImagesFrame->LinkToComponent(1,1,"Pipeline1.BackgroundSimple",2);
 
  Timer->Enabled=true;
- VideoOutputForm->VideoOutputFrame->StartButtonClick(Sender);
+ VideoOutputForm->GetVideoOutputFrame(0)->StartButtonClick(Sender);
  UEngineMonitorForm->EngineMonitorFrame->Start1Click(Sender);
 }
 //---------------------------------------------------------------------------
@@ -98,7 +106,7 @@ void __fastcall TUGEngineControlForm::Start1Click(TObject *Sender)
 void __fastcall TUGEngineControlForm::Pause1Click(TObject *Sender)
 {
  UEngineMonitorForm->EngineMonitorFrame->Pause1Click(Sender);
- VideoOutputForm->VideoOutputFrame->StopButtonClick(Sender);
+ VideoOutputForm->GetVideoOutputFrame(0)->StopButtonClick(Sender);
  Timer->Enabled=false;
 }
 //---------------------------------------------------------------------------
@@ -125,12 +133,15 @@ void __fastcall TUGEngineControlForm::VideoSource1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::Step1Click(TObject *Sender)
 {
- RDK::UBitmap &source=VideoOutputForm->VideoOutputFrame->BmpSource;
-
- if(source.GetByteLength()>0)
+ for(int i=0;i<Env_GetNumInputImages();i++)
  {
-  Env_SetInputRes(0, source.GetWidth(), source.GetHeight());
-  Env_SetInputImage(0,(unsigned char*)source.GetData(),source.GetWidth(), source.GetHeight(),source.GetColorModel());
+  RDK::UBitmap &source=VideoOutputForm->GetVideoOutputFrame(i)->BmpSource;
+
+  if(source.GetByteLength()>0)
+  {
+   Env_SetInputRes(i, source.GetWidth(), source.GetHeight());
+   Env_SetInputImage(i,(unsigned char*)source.GetData(),source.GetWidth(), source.GetHeight(),source.GetColorModel());
+  }
  }
  Env_Calculate(0);
  UpdateInterface();
@@ -163,28 +174,34 @@ void __fastcall TUGEngineControlForm::SaveModel1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::OpenImage1Click(TObject *Sender)
 {
- VideoOutputForm->VideoOutputFrame->MyVideoGrabberControlForm->VideoGrabberControlFrame->OpenImageFileButtonClick(Sender);
+ VideoOutputForm->GetVideoOutputFrame(0)->MyVideoGrabberControlForm->VideoGrabberControlFrame->OpenImageFileButtonClick(Sender);
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUGEngineControlForm::OpenVideo1Click(TObject *Sender)
 {
- VideoOutputForm->VideoOutputFrame->MyVideoGrabberControlForm->VideoGrabberControlFrame->VFBrowseButtonClick(Sender);
+ VideoOutputForm->GetVideoOutputFrame(0)->MyVideoGrabberControlForm->VideoGrabberControlFrame->VFBrowseButtonClick(Sender);
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUGEngineControlForm::CaptureVideo1Click(TObject *Sender)
 {
- VideoOutputForm->VideoOutputFrame->MyVideoGrabberControlForm->VideoGrabberControlFrame->SelectMode(0);
- VideoOutputForm->VideoOutputFrame->MyVideoGrabberControlForm->Show();
+ VideoOutputForm->GetVideoOutputFrame(0)->MyVideoGrabberControlForm->VideoGrabberControlFrame->SelectMode(0);
+ VideoOutputForm->GetVideoOutputFrame(0)->MyVideoGrabberControlForm->Show();
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUGEngineControlForm::Reset1Click(TObject *Sender)
 {
  UEngineMonitorForm->EngineMonitorFrame->Reset1Click(Sender);
- VideoOutputForm->VideoOutputFrame->StopButtonClick(Sender);
+ VideoOutputForm->GetVideoOutputFrame(0)->StopButtonClick(Sender);
  Timer->Enabled=false;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::Performance1Click(TObject *Sender)
+{
+ UComponentsPerformanceForm->Show();
 }
 //---------------------------------------------------------------------------
 

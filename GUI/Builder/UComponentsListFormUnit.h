@@ -19,6 +19,7 @@ __published:	// IDE-managed Components
 	TButton *OkButton;
 	TButton *CancelButton;
 	void __fastcall FormShow(TObject *Sender);
+	void __fastcall ComponentsListFrame1StringGridDblClick(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
 	__fastcall TUComponentsListForm(TComponent* Owner);

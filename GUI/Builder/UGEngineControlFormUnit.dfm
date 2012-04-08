@@ -24,8 +24,6 @@ object UGEngineControlForm: TUGEngineControlForm
     Height = 2
     Align = alClient
     TabOrder = 0
-    ExplicitWidth = 635
-    ExplicitHeight = 1
   end
   object ToolBar: TToolBar
     Left = 0
@@ -39,7 +37,6 @@ object UGEngineControlForm: TUGEngineControlForm
     Images = ImageList
     ShowCaptions = True
     TabOrder = 1
-    ExplicitWidth = 635
     object ToolButton1: TToolButton
       Left = 0
       Top = 0
@@ -166,8 +163,6 @@ object UGEngineControlForm: TUGEngineControlForm
     Height = 19
     Panels = <>
     SimplePanel = True
-    ExplicitTop = 97
-    ExplicitWidth = 635
   end
   object Timer: TTimer
     Enabled = False
@@ -271,13 +266,17 @@ object UGEngineControlForm: TUGEngineControlForm
         Caption = 'Components Links'
         OnClick = ComponentsLinks1Click
       end
+      object Performance1: TMenuItem
+        Caption = 'Performance'
+        OnClick = Performance1Click
+      end
     end
   end
   object ImageList: TImageList
     Left = 544
     Top = 40
     Bitmap = {
-      494C01011B006000440010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B006000480010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

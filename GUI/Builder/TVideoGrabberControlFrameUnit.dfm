@@ -11,7 +11,7 @@ object VideoGrabberControlFrame: TVideoGrabberControlFrame
     Top = 0
     Width = 453
     Height = 269
-    ActivePage = DeviceTabSheet
+    ActivePage = VideoFileTabSheet
     Align = alClient
     DoubleBuffered = True
     ParentDoubleBuffered = False
@@ -209,11 +209,18 @@ object VideoGrabberControlFrame: TVideoGrabberControlFrame
       end
     end
   end
-  object OpenDialog: TOpenDialog
-    DefaultExt = '.avi'
-    Filter = #1042#1080#1076#1077#1086'|*.avi|'#1060#1086#1090#1086'|*.bmp'
+  object VideoOpenDialog: TOpenDialog
+    DefaultExt = 'avi'
+    Filter = #1042#1080#1076#1077#1086'|*.avi|'#1042#1089#1077' '#1092#1072#1081#1083#1099'|*.*'
     FilterIndex = 0
-    Left = 224
+    Left = 200
+    Top = 112
+  end
+  object PicturesOpenDialog: TOpenDialog
+    DefaultExt = 'bmp'
+    Filter = #1060#1086#1090#1086'|*.bmp|'#1042#1089#1077' '#1092#1072#1081#1083#1099'|*.*'
+    FilterIndex = 0
+    Left = 288
     Top = 112
   end
 end

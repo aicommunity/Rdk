@@ -64,6 +64,7 @@ __published:	// IDE-managed Components
 	TToolButton *ToolButton15;
 	TToolButton *ToolButton7;
 	TToolButton *ToolButton16;
+	TMenuItem *Performance1;
 	void __fastcall FormShow(TObject *Sender);
 	void __fastcall TimerTimer(TObject *Sender);
 	void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
@@ -81,6 +82,7 @@ __published:	// IDE-managed Components
 	void __fastcall OpenVideo1Click(TObject *Sender);
 	void __fastcall CaptureVideo1Click(TObject *Sender);
 	void __fastcall Reset1Click(TObject *Sender);
+	void __fastcall Performance1Click(TObject *Sender);
 
 
 private:	// User declarations

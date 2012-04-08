@@ -308,6 +308,11 @@ int UBEngine::LoadPredefinedLibraries(void)
  filter->SetName("ColorConvert");
  bstorage->AddClass(filter,"ColorConvert");
 
+ filter=new RDK::UBASearchNCC;
+ filter->Default();
+ filter->SetName("SearchNCC");
+ bstorage->AddClass(filter,"SearchNCC");
+
 	 /*
  RDK::UBAbstract *filter=new RDK::UBAQLinearContrasting;
  filter->Default();

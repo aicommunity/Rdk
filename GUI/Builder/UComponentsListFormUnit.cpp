@@ -4,6 +4,7 @@
 #pragma hdrstop
 
 #include "UComponentsListFormUnit.h"
+#include "rdk_initdll.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "UComponentsListFrameUnit"
@@ -27,6 +28,19 @@ int TUComponentsListForm::ShowComponentSelect(void)
 void __fastcall TUComponentsListForm::FormShow(TObject *Sender)
 {
  ComponentsListFrame1->UpdateInterface();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListForm::ComponentsListFrame1StringGridDblClick(TObject *Sender)
+
+{
+ int num_components=Model_GetNumComponents(ComponentsListFrame1->GetSelectedComponentLongId().c_str());
+ if(!num_components)
+ {
+  ModalResult=mrOk;
+  return;
+ }
+ ComponentsListFrame1->StringGridDblClick(Sender);
 }
 //---------------------------------------------------------------------------
 

@@ -73,6 +73,14 @@ object UImagesFrame: TUImagesFrame
     end
   end
   object SavePictureDialog: TSavePictureDialog
+    Filter = 
+      'All (*.gif;*.png;*.jpg;*.jpeg;*.bmp;*.tif;*.tiff;*.ico;*.emf;*.w' +
+      'mf)|*.gif;*.png;*.jpg;*.jpeg;*.bmp;*.tif;*.tiff;*.ico;*.emf;*.wm' +
+      'f|GIF Image (*.gif)|*.gif|Portable Network Graphics (*.png)|*.pn' +
+      'g|JPEG Image File (*.jpg)|*.jpg|JPEG Image File (*.jpeg)|*.jpeg|' +
+      'Bitmaps (*.bmp)|*.bmp|TIFF Images (*.tif)|*.tif|TIFF Images (*.t' +
+      'iff)|*.tiff|Icons (*.ico)|*.ico|Enhanced Metafiles (*.emf)|*.emf' +
+      '|Metafiles (*.wmf)|*.wmf'
     Left = 240
     Top = 296
   end

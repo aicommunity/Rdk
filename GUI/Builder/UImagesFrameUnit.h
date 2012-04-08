@@ -15,6 +15,7 @@
 #include <Vcl.Dialogs.hpp>
 #include <Vcl.ExtDlgs.hpp>
 #include <vector>
+#include "UComponentsListFormUnit.h"
 #include "myrdk.h"
 
 class TUComponentsListForm;

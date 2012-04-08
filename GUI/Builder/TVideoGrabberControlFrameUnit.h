@@ -40,7 +40,8 @@ __published:    // IDE-managed Components
 	TEdit *ImageFileNameEdit;
 	TLabel *Label3;
 	TButton *OpenImageFileButton;
-	TOpenDialog *OpenDialog;
+	TOpenDialog *VideoOpenDialog;
+	TOpenDialog *PicturesOpenDialog;
     void __fastcall DeviceComboBoxSelect(TObject *Sender);
     void __fastcall InputComboBoxSelect(TObject *Sender);
     void __fastcall VideoSizeComboBoxSelect(TObject *Sender);

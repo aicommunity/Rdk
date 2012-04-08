@@ -74,23 +74,25 @@ void TVideoGrabberControlFrame::UpdateInterface(void)
 {
  UpdateCaptureInterfaceFlag=true;
 
- if(VideoGrabber->VideoSource == vs_VideoCaptureDevice)
-  VCapturePageControl->ActivePage = DeviceTabSheet;
- else
- if(VideoGrabber->VideoSource == vs_VideoFileOrURL)
-  VCapturePageControl->ActivePage = VideoFileTabSheet;
+ if(VCapturePageControl->ActivePage != PictureFileTabSheet)
+ {
+  if(VideoGrabber->VideoSource == vs_VideoCaptureDevice)
+   VCapturePageControl->ActivePage = DeviceTabSheet;
+  else
+  if(VideoGrabber->VideoSource == vs_VideoFileOrURL)
+   VCapturePageControl->ActivePage = VideoFileTabSheet;
 
- AssignListToComboBox (DeviceComboBox, VideoGrabber->VideoDevices, VideoGrabber->VideoDevice);
- VideoGrabber->Update();
+  AssignListToComboBox (DeviceComboBox, VideoGrabber->VideoDevices, VideoGrabber->VideoDevice);
+  VideoGrabber->Update();
 // DeviceComboBox->ItemIndex = VideoGrabber->VideoDevice;
 
- AssignListToComboBox (VideoSizeComboBox, VideoGrabber->VideoSizes, VideoGrabber->VideoSize);
- AssignListToComboBox (VideoSubTypeComboBox, VideoGrabber->VideoSubtypes, VideoGrabber->VideoSubtype);
- AssignListToComboBox (AnalogVideoStandardComboBox, VideoGrabber->AnalogVideoStandards, VideoGrabber->AnalogVideoStandard);
- AssignListToComboBox (InputComboBox, VideoGrabber->VideoInputs, VideoGrabber->VideoInput);
+  AssignListToComboBox (VideoSizeComboBox, VideoGrabber->VideoSizes, VideoGrabber->VideoSize);
+  AssignListToComboBox (VideoSubTypeComboBox, VideoGrabber->VideoSubtypes, VideoGrabber->VideoSubtype);
+  AssignListToComboBox (AnalogVideoStandardComboBox, VideoGrabber->AnalogVideoStandards, VideoGrabber->AnalogVideoStandard);
+  AssignListToComboBox (InputComboBox, VideoGrabber->VideoInputs, VideoGrabber->VideoInput);
 
- VFNameEdit->Text=VideoGrabber->PlayerFileName;
-
+  VFNameEdit->Text=VideoGrabber->PlayerFileName;
+ }
  UpdateCaptureInterfaceFlag=false;
 }
 // -----------------------------
@@ -119,13 +121,12 @@ void __fastcall TVideoGrabberControlFrame::VideoSizeComboBoxSelect(TObject *Send
 //---------------------------------------------------------------------------
 void __fastcall TVideoGrabberControlFrame::VFBrowseButtonClick(TObject *Sender)
 {
- OpenDialog->FilterIndex=0;
- if(!OpenDialog->Execute())
+ if(!PicturesOpenDialog->Execute())
   return;
 
  SelectMode(1);
- VFNameEdit->Text=OpenDialog->FileName;
- VideoOutputFrame->InitByAvi(OpenDialog->FileName);
+ VFNameEdit->Text=PicturesOpenDialog->FileName;
+ VideoOutputFrame->InitByAvi(PicturesOpenDialog->FileName);
 }
 //---------------------------------------------------------------------------
 
@@ -177,14 +178,13 @@ void __fastcall TVideoGrabberControlFrame::AnalogVideoStandardComboBoxSelect(TOb
 
 void __fastcall TVideoGrabberControlFrame::OpenImageFileButtonClick(TObject *Sender)
 {
- OpenDialog->FilterIndex=1;
- if(!OpenDialog->Execute())
+ if(!PicturesOpenDialog->Execute())
   return;
 
  SelectMode(2);
 
- ImageFileNameEdit->Text=OpenDialog->FileName;
- VideoOutputFrame->InitByBmp(OpenDialog->FileName);
+ ImageFileNameEdit->Text=PicturesOpenDialog->FileName;
+ VideoOutputFrame->InitByBmp(PicturesOpenDialog->FileName);
  UpdateInterface();
 }
 //---------------------------------------------------------------------------
