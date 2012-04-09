@@ -26,6 +26,9 @@ void TUEngineControlForm::UpdateInterface(void)
 {
  UpdateInterfaceFlag=true;
 
+ if(UComponentsPerformanceForm->Visible)
+  UComponentsPerformanceForm->UComponentsPerformanceFrame->UpdateInterface();
+
  UpdateInterfaceFlag=false;
 }
 

@@ -553,8 +553,8 @@ bool UAEnvironment::AReset(void)
  if(!Model)
   return true;
 
- RDK::DefaultTimeStep=30;
- Model->SetTimeStep(DefaultTimeStep);
+// RDK::DefaultTimeStep=30;
+// Model->SetTimeStep(DefaultTimeStep);
 
  if(ModelCalculationComponent.GetSize() == 0)
   return Model->Reset();
