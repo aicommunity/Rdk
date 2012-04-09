@@ -24,7 +24,6 @@ object UEngineControlForm: TUEngineControlForm
     Height = 5
     Align = alClient
     TabOrder = 0
-    ExplicitWidth = 651
   end
   object ToolBar: TToolBar
     Left = 0
@@ -38,7 +37,6 @@ object UEngineControlForm: TUEngineControlForm
     Images = ImageList
     ShowCaptions = True
     TabOrder = 1
-    ExplicitWidth = 651
     object ToolButton1: TToolButton
       Left = 0
       Top = 0
@@ -135,7 +133,6 @@ object UEngineControlForm: TUEngineControlForm
     Height = 19
     Panels = <>
     SimplePanel = True
-    ExplicitWidth = 651
   end
   object Timer: TTimer
     Enabled = False
@@ -216,13 +213,17 @@ object UEngineControlForm: TUEngineControlForm
         Caption = 'Components Links'
         OnClick = ComponentsLinks1Click
       end
+      object Performance1: TMenuItem
+        Caption = 'Performance'
+        OnClick = Performance1Click
+      end
     end
   end
   object ImageList: TImageList
     Left = 544
     Top = 40
     Bitmap = {
-      494C01011B006000480010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B0060004C0010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

@@ -55,6 +55,7 @@ __published:	// IDE-managed Components
 	TToolButton *ToolButton15;
 	TToolButton *ToolButton7;
 	TToolButton *ToolButton6;
+	TMenuItem *Performance1;
 	void __fastcall FormShow(TObject *Sender);
 	void __fastcall TimerTimer(TObject *Sender);
 	void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
@@ -67,6 +68,7 @@ __published:	// IDE-managed Components
 	void __fastcall LoadModel1Click(TObject *Sender);
 	void __fastcall SaveModel1Click(TObject *Sender);
 	void __fastcall Reset1Click(TObject *Sender);
+	void __fastcall Performance1Click(TObject *Sender);
 
 
 private:	// User declarations

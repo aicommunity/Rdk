@@ -9,6 +9,7 @@
 #include "UComponentsControlFormUnit.h"
 #include "UComponentLinksFormUnit.h"
 #include "UEngineMonitorFormUnit.h"
+#include "UComponentsPerformanceFormUnit.h"
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -132,4 +133,10 @@ void __fastcall TUEngineControlForm::Reset1Click(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+
+void __fastcall TUEngineControlForm::Performance1Click(TObject *Sender)
+{
+ UComponentsPerformanceForm->Show();
+}
+//---------------------------------------------------------------------------
 
