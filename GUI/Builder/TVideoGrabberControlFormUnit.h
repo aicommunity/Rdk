@@ -16,6 +16,7 @@ __published:	// IDE-managed Components
 private:	// User declarations
 public:		// User declarations
 	__fastcall TVideoGrabberControlForm(TComponent* Owner);
+
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TVideoGrabberControlForm *VideoGrabberControlForm;

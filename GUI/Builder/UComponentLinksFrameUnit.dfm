@@ -24,7 +24,6 @@ object UComponentLinksFrame: TUComponentLinksFrame
     Align = alRight
     Caption = ' '#1042#1093#1086#1076#1099' '
     TabOrder = 0
-    ExplicitHeight = 218
     inline NANetFrameInputs: TUComponentIOFrame
       Left = 2
       Top = 15
@@ -35,12 +34,12 @@ object UComponentLinksFrame: TUComponentLinksFrame
       ExplicitLeft = 2
       ExplicitTop = 15
       ExplicitWidth = 301
-      ExplicitHeight = 201
+      ExplicitHeight = 199
       inherited StringGrid: TStringGrid
         Width = 301
         Height = 199
         ExplicitWidth = 301
-        ExplicitHeight = 201
+        ExplicitHeight = 199
       end
     end
   end
@@ -52,7 +51,6 @@ object UComponentLinksFrame: TUComponentLinksFrame
     Align = alClient
     Caption = ' '#1042#1099#1093#1086#1076#1099' '
     TabOrder = 1
-    ExplicitHeight = 218
     inline NANetFrameOutputs: TUComponentIOFrame
       Left = 2
       Top = 15
@@ -63,12 +61,12 @@ object UComponentLinksFrame: TUComponentLinksFrame
       ExplicitLeft = 2
       ExplicitTop = 15
       ExplicitWidth = 311
-      ExplicitHeight = 201
+      ExplicitHeight = 199
       inherited StringGrid: TStringGrid
         Width = 311
         Height = 199
         ExplicitWidth = 311
-        ExplicitHeight = 201
+        ExplicitHeight = 199
       end
     end
   end
@@ -80,7 +78,6 @@ object UComponentLinksFrame: TUComponentLinksFrame
     Align = alBottom
     Caption = ' '#1057#1074#1103#1079#1080' '
     TabOrder = 2
-    ExplicitTop = 225
     inline NANetFrameLinks: TUComponentIOFrame
       Left = 2
       Top = 15
@@ -91,12 +88,12 @@ object UComponentLinksFrame: TUComponentLinksFrame
       ExplicitLeft = 2
       ExplicitTop = 15
       ExplicitWidth = 616
-      ExplicitHeight = 145
+      ExplicitHeight = 151
       inherited StringGrid: TStringGrid
         Width = 616
         Height = 151
         ExplicitWidth = 616
-        ExplicitHeight = 145
+        ExplicitHeight = 151
       end
     end
   end
@@ -137,10 +134,13 @@ object UComponentLinksFrame: TUComponentLinksFrame
           ImageIndex = -1
           Text = 'Chain linking'
           Width = 80
+        end
+        item
+          ImageIndex = -1
+          Text = 'Parallel linking'
+          Width = 80
         end>
       OnSectionClick = HeaderControl1SectionClick
-      ExplicitTop = 6
-      ExplicitHeight = 34
     end
   end
 end

@@ -9,6 +9,7 @@
 #include <Forms.hpp>
 #include "VideoOutputFrameUnit.h"
 #include <Menus.hpp>
+#include <IniFiles.hpp>
 #include <Vcl.ComCtrls.hpp>
 //---------------------------------------------------------------------------
 class TVideoOutputForm : public TForm
@@ -45,6 +46,12 @@ void SetSourceType(int index, int mode);
 
 // Возвращает фрейм источника видео
 TVideoOutputFrame* GetVideoOutputFrame(int index);
+
+// Сохраняет информацию об источниках данных в заданный ini файл
+void SaveToIni(TMemIniFile *ini, const String &section);
+
+// Загружает информацию об источниках данных из заданного ini файла
+void LoadFromIni(TMemIniFile *ini, const String &section);
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TVideoOutputForm *VideoOutputForm;

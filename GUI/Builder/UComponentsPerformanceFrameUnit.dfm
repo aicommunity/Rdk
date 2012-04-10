@@ -11,7 +11,6 @@ object UComponentsPerformanceFrame: TUComponentsPerformanceFrame
     Height = 326
     BackWall.Brush.Gradient.Direction = gdBottomTop
     BackWall.Brush.Gradient.EndColor = clWhite
-    BackWall.Brush.Gradient.MidColor = clNone
     BackWall.Brush.Gradient.StartColor = 15395562
     BackWall.Brush.Gradient.Visible = True
     BackWall.Transparent = False
@@ -22,17 +21,18 @@ object UComponentsPerformanceFrame: TUComponentsPerformanceFrame
     Gradient.StartColor = 15395562
     Gradient.Visible = True
     LeftWall.Color = 14745599
-    Legend.Alignment = laBottom
+    Legend.Alignment = laTop
     Legend.Font.Name = 'Verdana'
     RightWall.Color = 14745599
     SubFoot.Font.Name = 'Verdana'
     SubTitle.Font.Name = 'Verdana'
     Title.Font.Name = 'Verdana'
-    Title.Text.Strings = (
-      'Performance')
     BottomAxis.Axis.Color = 4210752
     BottomAxis.Grid.Color = 11119017
+    BottomAxis.LabelsAlternate = True
     BottomAxis.LabelsFont.Name = 'Verdana'
+    BottomAxis.LabelsMultiLine = True
+    BottomAxis.LabelsSeparation = 0
     BottomAxis.TicksInner.Color = 11119017
     BottomAxis.Title.Font.Name = 'Verdana'
     DepthAxis.Axis.Color = 4210752
@@ -57,17 +57,15 @@ object UComponentsPerformanceFrame: TUComponentsPerformanceFrame
     RightAxis.Title.Font.Name = 'Verdana'
     TopAxis.Axis.Color = 4210752
     TopAxis.Grid.Color = 11119017
+    TopAxis.LabelsAlternate = True
     TopAxis.LabelsFont.Name = 'Verdana'
+    TopAxis.LabelsMultiLine = True
     TopAxis.TicksInner.Color = 11119017
     TopAxis.Title.Font.Name = 'Verdana'
     View3D = False
     Align = alClient
     PopupMenu = PopupMenu
     TabOrder = 0
-    ExplicitLeft = 32
-    ExplicitTop = 56
-    ExplicitWidth = 400
-    ExplicitHeight = 250
     ColorPaletteIndex = 13
     object Series1: TBarSeries
       Marks.Arrow.Visible = True
@@ -76,8 +74,8 @@ object UComponentsPerformanceFrame: TUComponentsPerformanceFrame
       Marks.Style = smsValue
       Marks.Visible = True
       Title = 'Time, ms'
-      Emboss.Color = 8487297
-      Shadow.Color = 8487297
+      Emboss.Color = 8553090
+      Shadow.Color = 8553090
       XValues.Name = 'X'
       XValues.Order = loAscending
       YValues.Name = 'Bar'
@@ -95,6 +93,8 @@ object UComponentsPerformanceFrame: TUComponentsPerformanceFrame
       Marks.Style = smsValue
       Marks.Visible = True
       Title = 'Percent'
+      Emboss.Color = 8553090
+      Shadow.Color = 8553090
       XValues.Name = 'X'
       XValues.Order = loAscending
       YValues.Name = 'Bar'

@@ -12,6 +12,7 @@
 #include <ComCtrls.hpp>
 #include <Dialogs.hpp>
 #include <Mask.hpp>
+#include <IniFiles.hpp>
 #include "VidGrab.hpp"
 #include "VideoOutputFrameUnit.h"
 //---------------------------------------------------------------------------
@@ -42,6 +43,8 @@ __published:    // IDE-managed Components
 	TButton *OpenImageFileButton;
 	TOpenDialog *VideoOpenDialog;
 	TOpenDialog *PicturesOpenDialog;
+	TCheckBox *VideoTruncPathCheckBox;
+	TCheckBox *PictureTruncPathCheckBox;
     void __fastcall DeviceComboBoxSelect(TObject *Sender);
     void __fastcall InputComboBoxSelect(TObject *Sender);
     void __fastcall VideoSizeComboBoxSelect(TObject *Sender);
@@ -70,12 +73,19 @@ TVideoOutputFrame* GetVideoOutputFrame(void);
 void Init(TVideoOutputFrame* video_output_frame, TVideoGrabber* grabber);
 
 // Выбор активного режима видеоввода
+int GetMode(void) const;
 void SelectMode(int mode);
 
 void __fastcall AssignListToComboBox (TComboBox* ComboBox, String List, int Index);
 
 // Обновляет интерфейс фрейма
 void UpdateInterface(void);
+
+// Сохраняет информацию об источниках данных в заданный ini файл
+void SaveToIni(TMemIniFile *ini, const String &section);
+
+// Загружает информацию об источниках данных из заданного ini файла
+void LoadFromIni(TMemIniFile *ini, const String &section);
 // -----------------------------
 
 

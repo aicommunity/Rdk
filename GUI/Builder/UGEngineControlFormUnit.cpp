@@ -59,13 +59,10 @@ void __fastcall TUGEngineControlForm::FormShow(TObject *Sender)
 
  UImagesForm->ImagesFrame->LoadFromIni(ProjectIni,"ImagesFrame");
  UComponentsPerformanceForm->UComponentsPerformanceFrame->LoadFromIni(ProjectIni,"PerformanceFrame");
-// UComponentsPerformanceForm->UComponentsPerformanceFrame->AddAllComponents("1");
+ VideoOutputForm->LoadFromIni(ProjectIni,"VideoOutputForm");
+// UComponentsPerformanceForm->UComponentsPerformanceFrame->AddAllComponents("Pipeline1");
 }
 //---------------------------------------------------------------------------
-
-
-
-
 void __fastcall TUGEngineControlForm::TimerTimer(TObject *Sender)
 {
  Timer->Enabled=false;
@@ -82,6 +79,7 @@ void __fastcall TUGEngineControlForm::FormClose(TObject *Sender, TCloseAction &A
  {
   UImagesForm->ImagesFrame->SaveToIni(ProjectIni,"ImagesFrame");
   UComponentsPerformanceForm->UComponentsPerformanceFrame->SaveToIni(ProjectIni,"PerformanceFrame");
+  VideoOutputForm->SaveToIni(ProjectIni,"VideoOutputForm");
   ProjectIni->UpdateFile();
   delete ProjectIni;
   ProjectIni=0;

@@ -54,7 +54,24 @@ void TUComponentsPerformanceFrame::UpdateInterface(void)
 
  for(size_t i=0;i<ComponentNames.size();i++)
  {
-  Chart->Series[0]->AddY(comp_time[i],ComponentNames[i].c_str());
+  std::string legend=ComponentNames[i];
+
+  if(legend.size()>10)
+  {
+   size_t n=legend.find_last_of('.');
+   if(n != std::string::npos)
+    legend=legend.substr(n+1);
+
+   int j=0;
+   for(;j<legend.size();j++)
+	if(j>0 && !(j%8) && legend.size()-j>3)
+	{
+	 legend.insert(j,"\r\n"); j+=2;
+	}
+//  if(legend.Length()>15)
+//   legend=AnsiString("...")+legend.SubString(legend.Length()-15,15);
+  }
+  Chart->Series[0]->AddY(comp_time[i],legend.c_str());
   Chart->Series[1]->AddY((comp_time[i]*100.0)/model_time);
  }
 
@@ -66,17 +83,6 @@ void TUComponentsPerformanceFrame::UpdateInterface(void)
 
   Chart->Series[0]->AddY(model_time,"Model");
   Chart->Series[1]->AddY(100);
-
-// Возвращает время расчета компонента без времени расчета дочерних компонент (мс)
-//RDK_LIB_TYPE long long RDK_CALL Model_GetStepDuration(const char *stringid);
-
-// Возвращает время, затраченное на обработку объекта
-// (вместе со времени обсчета дочерних объектов) (мс)
-//RDK_LIB_TYPE long long RDK_CALL Model_GetFullStepDuration(const char *stringid);
-
-// Возвращает мгновенное быстродействие, равное отношению
-// полного затраченного времени к ожидаемому времени шага счета
-//RDK_LIB_TYPE double RDK_CALL Model_GetInstantPerformance(const char *stringid);
 
  UpdateInterfaceFlag=false;
 }
@@ -135,14 +141,18 @@ void TUComponentsPerformanceFrame::AddAllComponents(const std::string &component
  std::vector<int> ids;
  ids.resize(numcomponents);
  Model_GetComponentsList(componentname.c_str(), &ids[0]);
+ std::vector<std::string> names;
+ names.resize(ids.size());
+
+ std::string componentid=Model_GetComponentLongId(componentname.c_str());
+
+ for(size_t i=0;i<ids.size();i++)
+  names[i]=Model_GetComponentLongName((componentid+std::string(".")+AnsiString(ids[i]).c_str()).c_str());
 
  AnsiString str;
- for(size_t i=0;i<ids.size();i++)
+ for(size_t i=0;i<names.size();i++)
  {
-  str=componentname.c_str();
-  str+=".";
-  str+=IntToStr(ids[i]);
-  ComponentNames.push_back(str.c_str());
+  ComponentNames.push_back(names[i]);
  }
 
  UpdateInterface();
@@ -177,7 +187,7 @@ void __fastcall TUComponentsPerformanceFrame::SelectSource1Click(TObject *Sender
  if(MyComponentsListForm->ShowComponentSelect() != mrOk)
   return;
 
- AddComponent(MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongId());
+ AddComponent(MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName());
 }
 //---------------------------------------------------------------------------
 void __fastcall TUComponentsPerformanceFrame::ClearAll1Click(TObject *Sender)

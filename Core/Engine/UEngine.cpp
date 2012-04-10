@@ -1281,6 +1281,35 @@ const char* UEngine::Model_GetComponentLongName(const char* stringid, const char
  return TempString.c_str();
 }
 
+// Возвращает длинный id компонента по заданному 'stringid'
+// если stringid - пустая строка, то возвращает имя модели
+// Память выделяется и освобождается внутри dll
+// Имя формируется до уровня компонента owner_level_stringid
+// Если owner_level_stringid не задан, то имя формируется до уровня текущего компонента
+const char* UEngine::Model_GetComponentLongId(const char* stringid, const char* owner_level_stringid)
+{
+ try
+ {
+  TempString="";
+  UEPtr<RDK::UAContainer> destcont=FindComponent(stringid);
+  UEPtr<RDK::UAContainer> owner_level=FindComponent(owner_level_stringid);
+
+  if(!destcont)
+   return TempString.c_str();
+
+  ULongId id;
+
+  destcont->GetLongId(owner_level,id);
+  id.EncodeToString(TempString);
+  return TempString.c_str();
+ }
+ catch (Exception * exception)
+ {
+  ProcessException(exception);
+ }
+ return TempString.c_str();
+}
+
 
 // Возвращает параметры компонента по идентификатору
 const char* UEngine::Model_GetComponentParameters(const char *stringid)
@@ -1500,6 +1529,43 @@ int UEngine::Model_ChainLinking(const char* stringid)
   for(int j=0;j<minsize;j++)
    cont->CreateLink(id1,j,ForbiddenId,j);
    */
+ }
+ catch (Exception * exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
+// Связывает все компоненты выбранного компонента параллельно, подключая их к необходимому числу выходов модели
+// Используется для тестирования производительности
+int UEngine::Model_ParallelLinking(const char* stringid)
+{
+ try
+ {
+  UEPtr<UANet> cont=dynamic_pointer_cast<UANet>(FindComponent(stringid));
+
+  cont->BreakLinks(cont);
+
+  if(cont->GetNumComponents() == 0)
+   return 0;
+
+  ULongId id1,id2;
+
+
+  UEPtr<UANet> item=cont;//dynamic_pointer_cast<UANet>(cont->GetComponentByIndex(0));
+  //item->GetLongId(cont,id1);
+
+  for(int i=0;i<cont->GetNumComponents();i++)
+  {
+   UEPtr<UANet> connector=dynamic_pointer_cast<UANet>(cont->GetComponentByIndex(i));
+   connector->GetLongId(cont,id2);
+   int minsize=item->GetNumOutputs();
+   if(minsize>connector->GetNumInputs())
+	minsize=connector->GetNumInputs();
+   for(int j=0;j<minsize;j++)
+	cont->CreateLink(id1,j,id2,j);
+  }
  }
  catch (Exception * exception)
  {

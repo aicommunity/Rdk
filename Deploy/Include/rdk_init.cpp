@@ -487,6 +487,18 @@ const char* RDK_CALL Model_GetComponentLongName(const char* stringid, const char
  return PEngine->Model_GetComponentLongName(stringid,owner_level_stringid);
 }
 
+
+// Возвращает длинный id компонента по заданному 'stringid'
+// если stringid - пустая строка, то возвращает имя модели
+// Память выделяется и освобождается внутри dll
+// Имя формируется до уровня компонента owner_level_stringid
+// Если owner_level_stringid не задан, то имя формируется до уровня текущего компонента
+const char* RDK_CALL Model_GetComponentLongId(const char* stringid, const char* owner_level_stringid)
+{
+ return PEngine->Model_GetComponentLongId(stringid,owner_level_stringid);
+}
+
+
 // Возвращает параметры компонента по идентификатору
 // Память для buffer должна быть выделена!
 const char * RDK_CALL Model_GetComponentParameters(const char *stringid)
@@ -535,6 +547,13 @@ int RDK_CALL Model_CreateLink(const char* stringid1, int output_number, const ch
 int RDK_CALL Model_ChainLinking(const char* stringid)
 {
  return PEngine->Model_ChainLinking(stringid);
+}
+
+// Связывает все компоненты выбранного компонента параллельно, подключая их к необходимому числу выходов модели
+// Используется для тестирования производительности
+int RDK_CALL Model_ParallelLinking(const char* stringid)
+{
+ return PEngine->Model_ParallelLinking(stringid);
 }
 
 // Разрывает выбранную связь

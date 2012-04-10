@@ -89,6 +89,28 @@ TVideoOutputFrame* TVideoOutputForm::GetVideoOutputFrame(int index)
  return Sources[index];
 }
 
+// Сохраняет информацию об источниках данных в заданный ini файл
+void TVideoOutputForm::SaveToIni(TMemIniFile *ini, const String &section)
+{
+// ini->WriteInteger(section,"NumSources",GetNumSources());
+ for(int i=0;i<GetNumSources();i++)
+ {
+  Sources[i]->MyVideoGrabberControlForm->VideoGrabberControlFrame->SaveToIni(ini,section+IntToStr(i));
+ }
+}
+
+// Загружает информацию об источниках данных из заданного ini файла
+void TVideoOutputForm::LoadFromIni(TMemIniFile *ini, const String &section)
+{
+// int numsources=ini->ReadInteger(section,"NumSources",0);
+// ClearSources();
+ for(int i=0;i<GetNumSources();i++)
+ {
+//  AddSource();
+  Sources[i]->MyVideoGrabberControlForm->VideoGrabberControlFrame->LoadFromIni(ini,section+IntToStr(i));
+ }
+
+}
 //---------------------------------------------------------------------------
 
 

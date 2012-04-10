@@ -41,6 +41,18 @@ void TVideoGrabberControlFrame::Init(TVideoOutputFrame* video_output_frame, TVid
 }
 
 // Выбор активного режима видеоввода
+int TVideoGrabberControlFrame::GetMode(void) const
+{
+ if(VCapturePageControl->ActivePage == DeviceTabSheet)
+  return 0;
+ if(VCapturePageControl->ActivePage == VideoFileTabSheet)
+  return 1;
+ if(VCapturePageControl->ActivePage == PictureFileTabSheet)
+  return 2;
+
+ return -1;
+}
+
 void TVideoGrabberControlFrame::SelectMode(int mode)
 {
  switch(mode)
@@ -95,6 +107,31 @@ void TVideoGrabberControlFrame::UpdateInterface(void)
  }
  UpdateCaptureInterfaceFlag=false;
 }
+
+
+// Сохраняет информацию об источниках данных в заданный ini файл
+void TVideoGrabberControlFrame::SaveToIni(TMemIniFile *ini, const String &section)
+{
+ if(!ini)
+  return;
+
+ ini->WriteInteger(section,"Mode",GetMode());
+ ini->WriteString(section,"VideoFileName",VFNameEdit->Text);
+ ini->WriteString(section,"PictureFileName",ImageFileNameEdit->Text);
+}
+
+// Загружает информацию об источниках данных из заданного ini файла
+void TVideoGrabberControlFrame::LoadFromIni(TMemIniFile *ini, const String &section)
+{
+ if(!ini)
+  return;
+
+ VFNameEdit->Text=ini->ReadString(section,"VideoFileName","");
+ ImageFileNameEdit->Text=ini->ReadString(section,"PictureFileName","");
+ SelectMode(ini->ReadInteger(section,"Mode",1));
+// VideoOutputFrame->InitByBmp(PicturesOpenDialog->FileName);
+ UpdateInterface();
+}
 // -----------------------------
 void __fastcall TVideoGrabberControlFrame::DeviceComboBoxSelect(TObject *Sender)
 {
@@ -121,12 +158,18 @@ void __fastcall TVideoGrabberControlFrame::VideoSizeComboBoxSelect(TObject *Send
 //---------------------------------------------------------------------------
 void __fastcall TVideoGrabberControlFrame::VFBrowseButtonClick(TObject *Sender)
 {
- if(!PicturesOpenDialog->Execute())
+ if(!VideoOpenDialog->Execute())
   return;
 
  SelectMode(1);
- VFNameEdit->Text=PicturesOpenDialog->FileName;
- VideoOutputFrame->InitByAvi(PicturesOpenDialog->FileName);
+ String FileName;
+ if(ExtractFilePath(Application->ExeName) == ExtractFilePath(VideoOpenDialog->FileName) || VideoTruncPathCheckBox->Checked == true)
+  FileName=ExtractFileName(VideoOpenDialog->FileName);
+ else
+  FileName=VideoOpenDialog->FileName;
+
+ VFNameEdit->Text=FileName;
+ VideoOutputFrame->InitByAvi(FileName);
 }
 //---------------------------------------------------------------------------
 
@@ -183,8 +226,15 @@ void __fastcall TVideoGrabberControlFrame::OpenImageFileButtonClick(TObject *Sen
 
  SelectMode(2);
 
- ImageFileNameEdit->Text=PicturesOpenDialog->FileName;
- VideoOutputFrame->InitByBmp(PicturesOpenDialog->FileName);
+ String FileName;
+// if(ExtractFilePath(Application->ExeName) == ExtractFilePath(PicturesOpenDialog->FileName))
+ if(ExtractFilePath(Application->ExeName) == ExtractFilePath(PicturesOpenDialog->FileName) || PictureTruncPathCheckBox->Checked == true)
+  FileName=ExtractFileName(PicturesOpenDialog->FileName);
+ else
+  FileName=PicturesOpenDialog->FileName;
+
+ ImageFileNameEdit->Text=FileName;
+ VideoOutputFrame->InitByBmp(FileName);
  UpdateInterface();
 }
 //---------------------------------------------------------------------------

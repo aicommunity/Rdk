@@ -112,6 +112,16 @@ void __fastcall TUComponentLinksFrame::ChainLinking(void)
  UpdateInterface();
 }
 
+// Связывает все объекты параллельно с выходами модели
+// Предварительно разрывает все существующие связи
+void __fastcall TUComponentLinksFrame::ParallelLinking(void)
+{
+ Model_ParallelLinking(ViewComponentLongId.c_str());
+
+ UpdateInterface();
+}
+
+
 //---------------------------------------------------------------------------
 void __fastcall TUComponentLinksFrame::FrameResize(TObject *Sender)
 {
@@ -142,6 +152,10 @@ void __fastcall TUComponentLinksFrame::HeaderControl1SectionClick(THeaderControl
 
  case 3:
   ChainLinking();
+ break;
+
+ case 4:
+  ParallelLinking();
  break;
  }
 

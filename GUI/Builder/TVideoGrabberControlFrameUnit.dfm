@@ -171,6 +171,14 @@ object VideoGrabberControlFrame: TVideoGrabberControlFrame
           TabOrder = 1
           OnClick = VFBrowseButtonClick
         end
+        object VideoTruncPathCheckBox: TCheckBox
+          Left = 8
+          Top = 49
+          Width = 153
+          Height = 17
+          Caption = 'Truncate full path'
+          TabOrder = 2
+        end
       end
     end
     object PictureFileTabSheet: TTabSheet
@@ -206,6 +214,14 @@ object VideoGrabberControlFrame: TVideoGrabberControlFrame
         Caption = 'Browse'
         TabOrder = 1
         OnClick = OpenImageFileButtonClick
+      end
+      object PictureTruncPathCheckBox: TCheckBox
+        Left = 8
+        Top = 49
+        Width = 153
+        Height = 17
+        Caption = 'Truncate full path'
+        TabOrder = 2
       end
     end
   end
