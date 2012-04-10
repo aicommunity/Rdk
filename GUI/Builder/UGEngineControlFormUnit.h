@@ -26,8 +26,8 @@ __published:	// IDE-managed Components
 	TImageList *ImageList;
 	TToolBar *ToolBar;
 	TMenuItem *File1;
-	TMenuItem *LoadProject;
-	TMenuItem *SaveProject;
+	TMenuItem *LoadProjectItem;
+	TMenuItem *SaveProjectItem;
 	TMenuItem *N1;
 	TMenuItem *OpenVideo1;
 	TMenuItem *OpenImage1;
@@ -65,6 +65,8 @@ __published:	// IDE-managed Components
 	TToolButton *ToolButton7;
 	TToolButton *ToolButton16;
 	TMenuItem *Performance1;
+	TOpenDialog *OpenDialog;
+	TSaveDialog *SaveDialog;
 	void __fastcall FormShow(TObject *Sender);
 	void __fastcall TimerTimer(TObject *Sender);
 	void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
@@ -83,6 +85,8 @@ __published:	// IDE-managed Components
 	void __fastcall CaptureVideo1Click(TObject *Sender);
 	void __fastcall Reset1Click(TObject *Sender);
 	void __fastcall Performance1Click(TObject *Sender);
+	void __fastcall LoadProjectItemClick(TObject *Sender);
+	void __fastcall SaveProjectItemClick(TObject *Sender);
 
 
 private:	// User declarations
@@ -95,8 +99,38 @@ bool UpdateInterfaceFlag;
 // Файл настроек программы
 TMemIniFile *ProjectIni;
 
+// Путь до папки проекта
+String ProjectPath;
+
+// Имя файла проекта
+String ProjectName;
+
+// Флаг автоматического сохранения проекта
+bool ProjectAutoSaveFlag;
+
+// Число входов среды
+int NumEnvInputs;
+
+// Число выходов среды
+int NumEnvOutputs;
+
+// Разрешение изображений
+int InputEnvImageWidth, InputEnvImageHeight;
+
 // Обновление интерфейса
 void UpdateInterface(void);
+
+// Создает новый проект
+void CreateProject(const String &FileName);
+
+// Закрывает существущий проект
+void CloseProject(void);
+
+// Открывает проект
+void OpenProject(const String &FileName);
+
+// Сохраняет проект
+void SaveProject(void);
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TUGEngineControlForm *UGEngineControlForm;

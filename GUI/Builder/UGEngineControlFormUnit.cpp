@@ -23,6 +23,7 @@ __fastcall TUGEngineControlForm::TUGEngineControlForm(TComponent* Owner)
 	: TForm(Owner)
 {
  UpdateInterfaceFlag=false;
+ ProjectAutoSaveFlag=true;
 }
 //---------------------------------------------------------------------------
 void TUGEngineControlForm::UpdateInterface(void)
@@ -38,29 +39,123 @@ void TUGEngineControlForm::UpdateInterface(void)
  if(UComponentsPerformanceForm->Visible)
   UComponentsPerformanceForm->UComponentsPerformanceFrame->UpdateInterface();
 
+ CaptureVideo1->Caption=String("Capture Video (")+IntToStr(VideoOutputForm->GetActiveSource())+")";
+ OpenVideo1->Caption=String("Open Video File (")+IntToStr(VideoOutputForm->GetActiveSource())+")";
+ OpenImage1->Caption=String("Open Image (")+IntToStr(VideoOutputForm->GetActiveSource())+")";
+ ToolButton6->Caption=CaptureVideo1->Caption;
+ ToolButton8->Caption=OpenVideo1->Caption;
+ ToolButton9->Caption=OpenImage1->Caption;
+
+ Caption="Engine Control";
+ if(ProjectIni)
+ {
+  Caption=Caption+String(" [")+ProjectName+"]";
+ }
+
  UpdateInterfaceFlag=false;
 }
 
 void __fastcall TUGEngineControlForm::FormShow(TObject *Sender)
 {
- GraphicalEngineInit(0,4,4,360,240,1,ExceptionHandler);
- for(int i=0;i<4;i++)
-  VideoOutputForm->AddSource();
  UImagesForm->ImagesFrame->SetReflectionXFlag(true);
  UpdateInterface();
+}
 
- ProjectIni=new TMemIniFile("project.ini");
+// Создает новый проект
+void TUGEngineControlForm::CreateProject(const String &FileName)
+{
+ CloseProject();
+
+ OpenProject(FileName);
+}
+
+// Закрывает существущий проект
+void TUGEngineControlForm::CloseProject(void)
+{
+ if(ProjectAutoSaveFlag)
+  SaveProject();
+
+ if(ProjectIni)
+ {
+  delete ProjectIni;
+  ProjectName="";
+  ProjectPath="";
+ }
+ UpdateInterface();
+}
+
+// Открывает проект
+void TUGEngineControlForm::OpenProject(const String &FileName)
+{
+ CloseProject();
+ ProjectIni=new TMemIniFile(OpenDialog->FileName);
+ ProjectPath=ExtractFilePath(OpenDialog->FileName);
+ ProjectName=ExtractFileName(OpenDialog->FileName);
+
+ // Число входов среды
+ NumEnvInputs=ProjectIni->ReadInteger("General","NumEnvInputs",1);
+
+ // Число выходов среды
+ NumEnvOutputs=ProjectIni->ReadInteger("General","NumEnvOutputs",1);
+
+ InputEnvImageWidth=ProjectIni->ReadInteger("General","InputEnvImageWidth",360);
+ InputEnvImageHeight=ProjectIni->ReadInteger("General","InputEnvImageHeight",240);
+
+ // Флаг автоматического сохранения проекта
+ ProjectAutoSaveFlag=ProjectIni->ReadInteger("General","ProjectAutoSaveFlag",1);
+
+ GraphicalEngineInit(0,NumEnvInputs,NumEnvOutputs,InputEnvImageWidth, InputEnvImageHeight ,1,ExceptionHandler);
+ for(int i=0;i<NumEnvInputs;i++)
+  VideoOutputForm->AddSource();
 
  String modelfilename=ProjectIni->ReadString("General","ModelFileName","");
  if(modelfilename.Length() != 0)
  {
-  UComponentsControlForm->ComponentsControlFrame->LoadModelFromFile(modelfilename);
+  if(ExtractFilePath(modelfilename).Length() == 0)
+   UComponentsControlForm->ComponentsControlFrame->LoadModelFromFile(ProjectPath+modelfilename);
+  else
+   UComponentsControlForm->ComponentsControlFrame->LoadModelFromFile(modelfilename);
  }
 
  UImagesForm->ImagesFrame->LoadFromIni(ProjectIni,"ImagesFrame");
  UComponentsPerformanceForm->UComponentsPerformanceFrame->LoadFromIni(ProjectIni,"PerformanceFrame");
  VideoOutputForm->LoadFromIni(ProjectIni,"VideoOutputForm");
 // UComponentsPerformanceForm->UComponentsPerformanceFrame->AddAllComponents("Pipeline1");
+ UpdateInterface();
+}
+
+// Сохраняет проект
+void TUGEngineControlForm::SaveProject(void)
+{
+ if(!ProjectIni)
+  return;
+
+ UImagesForm->ImagesFrame->SaveToIni(ProjectIni,"ImagesFrame");
+ UComponentsPerformanceForm->UComponentsPerformanceFrame->SaveToIni(ProjectIni,"PerformanceFrame");
+ VideoOutputForm->SaveToIni(ProjectIni,"VideoOutputForm");
+
+ String modelfilename=ProjectIni->ReadString("General","ModelFileName","");
+ if(modelfilename.Length() != 0)
+ {
+  if(ExtractFilePath(modelfilename).Length() == 0)
+   UComponentsControlForm->ComponentsControlFrame->SaveModelToFile(ProjectPath+modelfilename);
+  else
+   UComponentsControlForm->ComponentsControlFrame->SaveModelToFile(modelfilename);
+ }
+
+ // Флаг автоматического сохранения проекта
+ ProjectIni->WriteInteger("General","ProjectAutoSaveFlag",ProjectAutoSaveFlag);
+
+ // Число входов среды
+ ProjectIni->WriteInteger("General","NumEnvInputs",NumEnvInputs);
+
+ // Число выходов среды
+ ProjectIni->WriteInteger("General","NumEnvOutputs",NumEnvOutputs);
+
+ ProjectIni->WriteInteger("General","InputEnvImageWidth",InputEnvImageWidth);
+ ProjectIni->WriteInteger("General","InputEnvImageHeight",InputEnvImageHeight);
+
+ ProjectIni->UpdateFile();
 }
 //---------------------------------------------------------------------------
 void __fastcall TUGEngineControlForm::TimerTimer(TObject *Sender)
@@ -75,12 +170,9 @@ void __fastcall TUGEngineControlForm::TimerTimer(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TUGEngineControlForm::FormClose(TObject *Sender, TCloseAction &Action)
 {
+ SaveProjectItemClick(Sender);
  if(ProjectIni)
  {
-  UImagesForm->ImagesFrame->SaveToIni(ProjectIni,"ImagesFrame");
-  UComponentsPerformanceForm->UComponentsPerformanceFrame->SaveToIni(ProjectIni,"PerformanceFrame");
-  VideoOutputForm->SaveToIni(ProjectIni,"VideoOutputForm");
-  ProjectIni->UpdateFile();
   delete ProjectIni;
   ProjectIni=0;
  }
@@ -96,7 +188,7 @@ void __fastcall TUGEngineControlForm::Start1Click(TObject *Sender)
 // UImagesForm->ImagesFrame->LinkToComponent(1,1,"Pipeline1.BackgroundSimple",2);
 
  Timer->Enabled=true;
- VideoOutputForm->GetVideoOutputFrame(0)->StartButtonClick(Sender);
+ VideoOutputForm->Start();
  UEngineMonitorForm->EngineMonitorFrame->Start1Click(Sender);
 }
 //---------------------------------------------------------------------------
@@ -104,7 +196,7 @@ void __fastcall TUGEngineControlForm::Start1Click(TObject *Sender)
 void __fastcall TUGEngineControlForm::Pause1Click(TObject *Sender)
 {
  UEngineMonitorForm->EngineMonitorFrame->Pause1Click(Sender);
- VideoOutputForm->GetVideoOutputFrame(0)->StopButtonClick(Sender);
+ VideoOutputForm->Stop();
  Timer->Enabled=false;
 }
 //---------------------------------------------------------------------------
@@ -172,27 +264,27 @@ void __fastcall TUGEngineControlForm::SaveModel1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::OpenImage1Click(TObject *Sender)
 {
- VideoOutputForm->GetVideoOutputFrame(0)->MyVideoGrabberControlForm->VideoGrabberControlFrame->OpenImageFileButtonClick(Sender);
+ VideoOutputForm->GetActiveVideoOutputFrame()->MyVideoGrabberControlForm->VideoGrabberControlFrame->OpenImageFileButtonClick(Sender);
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUGEngineControlForm::OpenVideo1Click(TObject *Sender)
 {
- VideoOutputForm->GetVideoOutputFrame(0)->MyVideoGrabberControlForm->VideoGrabberControlFrame->VFBrowseButtonClick(Sender);
+ VideoOutputForm->GetActiveVideoOutputFrame()->MyVideoGrabberControlForm->VideoGrabberControlFrame->VFBrowseButtonClick(Sender);
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUGEngineControlForm::CaptureVideo1Click(TObject *Sender)
 {
- VideoOutputForm->GetVideoOutputFrame(0)->MyVideoGrabberControlForm->VideoGrabberControlFrame->SelectMode(0);
- VideoOutputForm->GetVideoOutputFrame(0)->MyVideoGrabberControlForm->Show();
+ VideoOutputForm->GetActiveVideoOutputFrame()->MyVideoGrabberControlForm->VideoGrabberControlFrame->SelectMode(0);
+ VideoOutputForm->GetActiveVideoOutputFrame()->MyVideoGrabberControlForm->Show();
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUGEngineControlForm::Reset1Click(TObject *Sender)
 {
  UEngineMonitorForm->EngineMonitorFrame->Reset1Click(Sender);
- VideoOutputForm->GetVideoOutputFrame(0)->StopButtonClick(Sender);
+ VideoOutputForm->Stop();
  Timer->Enabled=false;
 }
 //---------------------------------------------------------------------------
@@ -202,4 +294,20 @@ void __fastcall TUGEngineControlForm::Performance1Click(TObject *Sender)
  UComponentsPerformanceForm->Show();
 }
 //---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::LoadProjectItemClick(TObject *Sender)
+{
+ if(!OpenDialog->Execute())
+  return;
+
+ OpenProject(OpenDialog->FileName);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::SaveProjectItemClick(TObject *Sender)
+{
+ SaveProject();
+}
+//---------------------------------------------------------------------------
+
 

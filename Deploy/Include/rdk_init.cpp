@@ -53,6 +53,7 @@ extern RDK::UEngine* CreateNewEngine(void);
 // ----------------------------
 int RDK_CALL EngineInit(int predefined_structure, void* exception_handler)
 {
+ EngineUnInit();
  LoadEngine((void*)CreateNewStorage, (void*)CreateNewEnvironment, (void*)CreateNewEngine);
  Engine_SetExceptionHandler(exception_handler);
  LoadPredefinedLibraries();
@@ -68,6 +69,7 @@ int RDK_CALL GraphicalEngineInit(int predefined_structure, int num_inputs,
 		int num_outputs, int input_width, int input_height, bool reflectionx,
 		void* exception_handler)
 {
+ EngineUnInit();
  LoadEngine((void*)CreateNewStorage, (void*)CreateNewEnvironment, (void*)CreateNewEngine);
  Engine_SetExceptionHandler(exception_handler);
  Init();
@@ -85,6 +87,20 @@ int RDK_CALL GraphicalEngineInit(int predefined_structure, int num_inputs,
  Env_SetPredefinedStructure(predefined_structure);
  Env_CreateStructure();
 
+ return 0;
+}
+
+// Деинициализация движка
+extern int Engine_Destroy(void);
+
+// Деинициализирует движок (функция автоматически вызывается при вызове инициализации)
+int RDK_CALL EngineUnInit(void)
+{
+ if(!PEngine)
+  return 0;
+
+ Engine_Destroy();
+ PEngine=0;
  return 0;
 }
 // ----------------------------
@@ -1128,9 +1144,6 @@ int RDK_CALL ExceptionDispatcher(void *exception)
 
  return 0;
 }
-
-// Деинициализация движка
-extern int Engine_Destroy(void);
 
 // Инициализация движка
 int RDK_CALL Engine_Create(RDK::UEngine *engine, const char *inifilename, void *pCreateNewStorage, void *pCreateNewEnvironment)

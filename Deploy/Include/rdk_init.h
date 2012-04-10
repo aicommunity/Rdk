@@ -17,6 +17,9 @@ RDK_LIB_TYPE int RDK_CALL EngineInit(int predefined_structure, void* exception_h
 RDK_LIB_TYPE int RDK_CALL GraphicalEngineInit(int predefined_structure, int num_inputs,
 		int num_outputs, int input_width, int input_height, bool reflectionx=false,
 		void* exception_handler=0);
+
+// Деинициализирует движок (функция автоматически вызывается при вызове инициализации)
+RDK_LIB_TYPE int RDK_CALL EngineUnInit(void);
 // ----------------------------
 
 // --------------------------

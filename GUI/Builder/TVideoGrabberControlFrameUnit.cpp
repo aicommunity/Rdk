@@ -4,6 +4,7 @@
 #pragma hdrstop
 
 #include "TVideoGrabberControlFrameUnit.h"
+#include "UGEngineControlFormUnit.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
@@ -116,8 +117,23 @@ void TVideoGrabberControlFrame::SaveToIni(TMemIniFile *ini, const String &sectio
   return;
 
  ini->WriteInteger(section,"Mode",GetMode());
- ini->WriteString(section,"VideoFileName",VFNameEdit->Text);
- ini->WriteString(section,"PictureFileName",ImageFileNameEdit->Text);
+ if(ExtractFilePath(VFNameEdit->Text).Length() == 0)
+ {
+  ini->WriteString(section,"VideoFileName",UGEngineControlForm->ProjectPath+VFNameEdit->Text);
+ }
+ else
+ {
+  ini->WriteString(section,"VideoFileName",VFNameEdit->Text);
+ }
+
+ if(ExtractFilePath(ImageFileNameEdit->Text).Length() == 0)
+ {
+  ini->WriteString(section,"PictureFileName",UGEngineControlForm->ProjectPath+ImageFileNameEdit->Text);
+ }
+ else
+ {
+  ini->WriteString(section,"PictureFileName",ImageFileNameEdit->Text);
+ }
 }
 
 // Загружает информацию об источниках данных из заданного ini файла
@@ -127,7 +143,13 @@ void TVideoGrabberControlFrame::LoadFromIni(TMemIniFile *ini, const String &sect
   return;
 
  VFNameEdit->Text=ini->ReadString(section,"VideoFileName","");
+ if(ExtractFilePath(VFNameEdit->Text) == UGEngineControlForm->ProjectPath)
+  VFNameEdit->Text=ExtractFileName(VFNameEdit->Text);
+
  ImageFileNameEdit->Text=ini->ReadString(section,"PictureFileName","");
+ if(ExtractFilePath(ImageFileNameEdit->Text) == UGEngineControlForm->ProjectPath)
+  ImageFileNameEdit->Text=ExtractFileName(ImageFileNameEdit->Text);
+
  SelectMode(ini->ReadInteger(section,"Mode",1));
 // VideoOutputFrame->InitByBmp(PicturesOpenDialog->FileName);
  UpdateInterface();
@@ -161,15 +183,22 @@ void __fastcall TVideoGrabberControlFrame::VFBrowseButtonClick(TObject *Sender)
  if(!VideoOpenDialog->Execute())
   return;
 
- SelectMode(1);
  String FileName;
- if(ExtractFilePath(Application->ExeName) == ExtractFilePath(VideoOpenDialog->FileName) || VideoTruncPathCheckBox->Checked == true)
+ if(UGEngineControlForm->ProjectPath == ExtractFilePath(VideoOpenDialog->FileName) || VideoTruncPathCheckBox->Checked == true)
+ {
   FileName=ExtractFileName(VideoOpenDialog->FileName);
+  VFNameEdit->Text=FileName;
+  SelectMode(1);
+  VideoOutputFrame->InitByAvi(UGEngineControlForm->ProjectPath+FileName);
+ }
  else
+ {
   FileName=VideoOpenDialog->FileName;
-
- VFNameEdit->Text=FileName;
- VideoOutputFrame->InitByAvi(FileName);
+  VFNameEdit->Text=FileName;
+  SelectMode(1);
+  VideoOutputFrame->InitByAvi(FileName);
+ }
+ UpdateInterface();
 }
 //---------------------------------------------------------------------------
 
@@ -190,13 +219,23 @@ void __fastcall TVideoGrabberControlFrame::VCapturePageControlChange(TObject *Se
  {
   VideoGrabber->VideoSource=vs_VideoFileOrURL;
   if(VFNameEdit->Text != "")
-   VideoOutputFrame->InitByAvi(VFNameEdit->Text);
+  {
+   if(ExtractFilePath(VFNameEdit->Text).Length() == 0)
+	VideoOutputFrame->InitByAvi(UGEngineControlForm->ProjectPath+VFNameEdit->Text);
+   else
+	VideoOutputFrame->InitByAvi(VFNameEdit->Text);
+  }
  }
  else
  if(VCapturePageControl->ActivePage == PictureFileTabSheet)
  {
   if(ImageFileNameEdit->Text != "")
-   VideoOutputFrame->InitByBmp(ImageFileNameEdit->Text);
+  {
+   if(ExtractFilePath(ImageFileNameEdit->Text).Length() == 0)
+	VideoOutputFrame->InitByBmp(UGEngineControlForm->ProjectPath+ImageFileNameEdit->Text);
+   else
+	VideoOutputFrame->InitByBmp(ImageFileNameEdit->Text);
+  }
  }
 
  UpdateInterface();
@@ -224,17 +263,24 @@ void __fastcall TVideoGrabberControlFrame::OpenImageFileButtonClick(TObject *Sen
  if(!PicturesOpenDialog->Execute())
   return;
 
- SelectMode(2);
 
  String FileName;
 // if(ExtractFilePath(Application->ExeName) == ExtractFilePath(PicturesOpenDialog->FileName))
- if(ExtractFilePath(Application->ExeName) == ExtractFilePath(PicturesOpenDialog->FileName) || PictureTruncPathCheckBox->Checked == true)
+ if(UGEngineControlForm->ProjectPath == ExtractFilePath(PicturesOpenDialog->FileName) || PictureTruncPathCheckBox->Checked == true)
+ {
   FileName=ExtractFileName(PicturesOpenDialog->FileName);
+  ImageFileNameEdit->Text=FileName;
+  SelectMode(2);
+  VideoOutputFrame->InitByBmp(UGEngineControlForm->ProjectPath+FileName);
+ }
  else
+ {
   FileName=PicturesOpenDialog->FileName;
+  ImageFileNameEdit->Text=FileName;
+  SelectMode(2);
+  VideoOutputFrame->InitByBmp(FileName);
+ }
 
- ImageFileNameEdit->Text=FileName;
- VideoOutputFrame->InitByBmp(FileName);
  UpdateInterface();
 }
 //---------------------------------------------------------------------------

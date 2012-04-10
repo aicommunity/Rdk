@@ -1,9 +1,9 @@
 object UGEngineControlForm: TUGEngineControlForm
   Left = 0
   Top = 0
-  Caption = 'UGEngineControlForm'
-  ClientHeight = 117
-  ClientWidth = 631
+  Caption = 'Engine Control'
+  ClientHeight = 64
+  ClientWidth = 823
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -19,17 +19,20 @@ object UGEngineControlForm: TUGEngineControlForm
   TextHeight = 13
   object Panel1: TPanel
     Left = 0
-    Top = 96
-    Width = 631
-    Height = 2
+    Top = 44
+    Width = 823
+    Height = 1
     Align = alClient
     TabOrder = 0
+    ExplicitTop = 96
+    ExplicitWidth = 631
+    ExplicitHeight = 2
   end
   object ToolBar: TToolBar
     Left = 0
     Top = 0
-    Width = 631
-    Height = 96
+    Width = 823
+    Height = 44
     AutoSize = True
     ButtonHeight = 44
     ButtonWidth = 87
@@ -40,19 +43,21 @@ object UGEngineControlForm: TUGEngineControlForm
     object ToolButton1: TToolButton
       Left = 0
       Top = 0
+      AutoSize = True
       Caption = 'Load Project'
       ImageIndex = 0
-      MenuItem = LoadProject
+      MenuItem = LoadProjectItem
     end
     object ToolButton2: TToolButton
-      Left = 87
+      Left = 71
       Top = 0
+      AutoSize = True
       Caption = 'Save Project'
       ImageIndex = 1
-      MenuItem = SaveProject
+      MenuItem = SaveProjectItem
     end
     object ToolButton3: TToolButton
-      Left = 174
+      Left = 143
       Top = 0
       Width = 8
       Caption = 'ToolButton3'
@@ -60,21 +65,23 @@ object UGEngineControlForm: TUGEngineControlForm
       Style = tbsSeparator
     end
     object ToolButton4: TToolButton
-      Left = 182
+      Left = 151
       Top = 0
+      AutoSize = True
       Caption = 'Load Model'
       ImageIndex = 2
       MenuItem = LoadModel1
     end
     object ToolButton5: TToolButton
-      Left = 269
+      Left = 216
       Top = 0
+      AutoSize = True
       Caption = 'Save Model'
       ImageIndex = 3
       MenuItem = SaveModel1
     end
     object ToolButton7: TToolButton
-      Left = 356
+      Left = 282
       Top = 0
       Width = 8
       Caption = 'ToolButton7'
@@ -82,74 +89,81 @@ object UGEngineControlForm: TUGEngineControlForm
       Style = tbsSeparator
     end
     object ToolButton6: TToolButton
-      Left = 364
+      Left = 290
       Top = 0
+      AutoSize = True
       Caption = 'Capture Video'
       ImageIndex = 4
       MenuItem = CaptureVideo1
     end
     object ToolButton8: TToolButton
-      Left = 451
+      Left = 369
       Top = 0
+      AutoSize = True
       Caption = 'Open Video File'
       ImageIndex = 5
       MenuItem = OpenVideo1
     end
     object ToolButton9: TToolButton
-      Left = 538
+      Left = 454
       Top = 0
+      AutoSize = True
       Caption = 'Open Image'
       ImageIndex = 6
       MenuItem = OpenImage1
     end
     object ToolButton11: TToolButton
-      Left = 0
+      Left = 524
       Top = 0
       Width = 8
       Caption = 'ToolButton11'
       ImageIndex = 8
-      Wrap = True
       Style = tbsSeparator
     end
     object ToolButton10: TToolButton
-      Left = 0
-      Top = 52
+      Left = 532
+      Top = 0
+      AutoSize = True
       Caption = 'Start'
       ImageIndex = 7
       MenuItem = Start1
     end
     object ToolButton12: TToolButton
-      Left = 87
-      Top = 52
+      Left = 567
+      Top = 0
+      AutoSize = True
       Caption = 'Pause'
       ImageIndex = 8
       MenuItem = Pause1
     end
     object ToolButton13: TToolButton
-      Left = 174
-      Top = 52
+      Left = 607
+      Top = 0
+      AutoSize = True
       Caption = 'Reset'
       ImageIndex = 9
       MenuItem = Reset1
     end
     object ToolButton16: TToolButton
-      Left = 261
-      Top = 52
+      Left = 646
+      Top = 0
+      AutoSize = True
       Caption = 'Step'
       ImageIndex = 20
       MenuItem = Step1
     end
     object ToolButton14: TToolButton
-      Left = 348
-      Top = 52
+      Left = 679
+      Top = 0
       Width = 8
       Caption = 'ToolButton14'
       ImageIndex = 10
       Style = tbsSeparator
     end
     object ToolButton15: TToolButton
-      Left = 356
-      Top = 52
+      Left = 687
+      Top = 0
+      AutoSize = True
       Caption = 'Window'
       ImageIndex = 10
       MenuItem = Window1
@@ -158,11 +172,13 @@ object UGEngineControlForm: TUGEngineControlForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 98
-    Width = 631
+    Top = 45
+    Width = 823
     Height = 19
     Panels = <>
     SimplePanel = True
+    ExplicitTop = 98
+    ExplicitWidth = 631
   end
   object Timer: TTimer
     Enabled = False
@@ -173,17 +189,19 @@ object UGEngineControlForm: TUGEngineControlForm
   end
   object MainMenu: TMainMenu
     Images = ImageList
-    Left = 448
+    Left = 456
     Top = 40
     object File1: TMenuItem
       Caption = 'File'
-      object LoadProject: TMenuItem
+      object LoadProjectItem: TMenuItem
         Caption = 'Load Project'
         ImageIndex = 0
+        OnClick = LoadProjectItemClick
       end
-      object SaveProject: TMenuItem
+      object SaveProjectItem: TMenuItem
         Caption = 'Save Project'
         ImageIndex = 1
+        OnClick = SaveProjectItemClick
       end
       object N2: TMenuItem
         Caption = '-'
@@ -276,7 +294,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 544
     Top = 40
     Bitmap = {
-      494C01011B006000480010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B006000540010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -1206,5 +1224,17 @@ object UGEngineControlForm: TUGEngineControlForm
       001F0001800000008FF10001FC000023FFF90001FC010063FF750001FC0300C3
       FF8F0001FC070107FFFF8003FFFF03FF00000000000000000000000000000000
       000000000000}
+  end
+  object OpenDialog: TOpenDialog
+    DefaultExt = 'ini'
+    Filter = 'Project Ini File (*.ini)|*.ini'
+    Left = 400
+    Top = 40
+  end
+  object SaveDialog: TSaveDialog
+    DefaultExt = 'ini'
+    Filter = 'Project Ini File (*.ini)|*.ini'
+    Left = 352
+    Top = 40
   end
 end

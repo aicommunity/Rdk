@@ -78,6 +78,14 @@ void TVideoOutputForm::SetSourceType(int index, int mode)
 {
  if(index<0 || index >=Sources.size())
   return;
+
+ Sources[index]->MyVideoGrabberControlForm->VideoGrabberControlFrame->SelectMode(mode);
+}
+
+// Возвращает индекс текущего активного источника видео
+int TVideoOutputForm::GetActiveSource(void) const
+{
+ return PageControl->ActivePageIndex;
 }
 
 // Возвращает фрейм источника видео
@@ -88,6 +96,16 @@ TVideoOutputFrame* TVideoOutputForm::GetVideoOutputFrame(int index)
 
  return Sources[index];
 }
+
+// Возвращает фрейм активного (выбранного) источника видео
+TVideoOutputFrame* TVideoOutputForm::GetActiveVideoOutputFrame(void)
+{
+ if(GetActiveSource()>0)
+  return Sources[GetActiveSource()];
+
+ return 0;
+}
+
 
 // Сохраняет информацию об источниках данных в заданный ini файл
 void TVideoOutputForm::SaveToIni(TMemIniFile *ini, const String &section)
@@ -110,6 +128,26 @@ void TVideoOutputForm::LoadFromIni(TMemIniFile *ini, const String &section)
   Sources[i]->MyVideoGrabberControlForm->VideoGrabberControlFrame->LoadFromIni(ini,section+IntToStr(i));
  }
 
+}
+
+// Запускает выбранный источник видео, или все если index == -1
+void TVideoOutputForm::Start(int index)
+{
+ if(index>=0 && index<GetNumSources())
+  Sources[index]->StartButtonClick(this);
+ else
+  for(int i=0;i<GetNumSources();i++)
+   Sources[i]->StartButtonClick(this);
+}
+
+// Останавливает выбранный источник видео, или все если index == -1
+void TVideoOutputForm::Stop(int index)
+{
+ if(index>=0 && index<GetNumSources())
+  Sources[index]->StartButtonClick(this);
+ else
+  for(int i=0;i<GetNumSources();i++)
+   Sources[i]->StopButtonClick(this);
 }
 //---------------------------------------------------------------------------
 

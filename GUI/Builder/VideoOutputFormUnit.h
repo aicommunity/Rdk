@@ -44,14 +44,27 @@ void ClearSources(void);
 // Выбирает режим заданного источника
 void SetSourceType(int index, int mode);
 
+// Возвращает индекс текущего активного (выбранного) источника видео
+int GetActiveSource(void) const;
+
 // Возвращает фрейм источника видео
 TVideoOutputFrame* GetVideoOutputFrame(int index);
+
+// Возвращает фрейм активного (выбранного) источника видео
+TVideoOutputFrame* GetActiveVideoOutputFrame(void);
 
 // Сохраняет информацию об источниках данных в заданный ini файл
 void SaveToIni(TMemIniFile *ini, const String &section);
 
 // Загружает информацию об источниках данных из заданного ini файла
 void LoadFromIni(TMemIniFile *ini, const String &section);
+
+// Запускает выбранный источник видео, или все если index == -1
+void Start(int index=-1);
+
+// Останавливает выбранный источник видео, или все если index == -1
+void Stop(int index=-1);
+
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TVideoOutputForm *VideoOutputForm;
