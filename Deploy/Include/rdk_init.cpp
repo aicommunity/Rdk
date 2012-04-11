@@ -418,6 +418,12 @@ int RDK_CALL Model_Clear(void)
  return PEngine->Model_Clear();
 }
 
+// Проверяет, существует ли модель
+bool RDK_CALL Model_Check(void)
+{
+ return PEngine->Model_Check();
+}
+
 // Добавляет в выбранный контейнер модели с идентификатором 'stringid' экземпляр контейнера с заданным 'classid'
 // если stringid - пустая строка, то добавляет в саму модель
 int RDK_CALL Model_AddComponent(const char* stringid, int classid)

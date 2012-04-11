@@ -27,6 +27,8 @@ object UComponentsPerformanceFrame: TUComponentsPerformanceFrame
     SubFoot.Font.Name = 'Verdana'
     SubTitle.Font.Name = 'Verdana'
     Title.Font.Name = 'Verdana'
+    Title.Text.Strings = (
+      'TChart')
     BottomAxis.Axis.Color = 4210752
     BottomAxis.Grid.Color = 11119017
     BottomAxis.LabelsAlternate = True

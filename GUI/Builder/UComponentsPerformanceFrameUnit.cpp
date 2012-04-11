@@ -32,6 +32,9 @@ __fastcall TUComponentsPerformanceFrame::~TUComponentsPerformanceFrame(void)
 //---------------------------------------------------------------------------
 void TUComponentsPerformanceFrame::UpdateInterface(void)
 {
+ if(!Model_Check())
+  return;
+
  UpdateInterfaceFlag=true;
 
  long long model_time=Model_GetFullStepDuration("");
@@ -45,12 +48,6 @@ void TUComponentsPerformanceFrame::UpdateInterface(void)
 
  Chart->Series[0]->Clear();
  Chart->Series[1]->Clear();
-
- if(!model_time)
- {
-  UpdateInterfaceFlag=false;
-  return;
- }
 
  for(size_t i=0;i<ComponentNames.size();i++)
  {
@@ -72,13 +69,20 @@ void TUComponentsPerformanceFrame::UpdateInterface(void)
 //   legend=AnsiString("...")+legend.SubString(legend.Length()-15,15);
   }
   Chart->Series[0]->AddY(comp_time[i],legend.c_str());
-  Chart->Series[1]->AddY((comp_time[i]*100.0)/model_time);
+  if(model_time)
+   Chart->Series[1]->AddY((comp_time[i]*100.0)/model_time);
+  else
+   Chart->Series[1]->AddY(0);
+
  }
 
  if(ComponentNames.size()>0)
  {
   Chart->Series[0]->AddY(model_time-sum,"Others");
-  Chart->Series[1]->AddY(((model_time-sum)*100.0)/model_time);
+  if(model_time)
+   Chart->Series[1]->AddY(((model_time-sum)*100.0)/model_time);
+  else
+   Chart->Series[1]->AddY(0);
  }
 
   Chart->Series[0]->AddY(model_time,"Model");

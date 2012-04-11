@@ -1035,6 +1035,27 @@ int UEngine::Model_Clear(void)
  return 0;
 }
 
+// Проверяет, существует ли модель
+bool UEngine::Model_Check(void)
+{
+ try
+ {
+  UEPtr<RDK::UAContainer> model=dynamic_pointer_cast<RDK::UAContainer>(Environment->GetModel());
+
+  if(!model)
+   return false;
+
+  return true;
+ }
+ catch (Exception * exception)
+ {
+  ProcessException(exception);
+ }
+ return false;
+}
+
+
+
 // Добавляет в выбранный контейнер модели с идентификатором 'stringid' экземпляр контейнера с заданным 'classid'
 // если stringid - пустая строка, то добавляет в саму модель
 int UEngine::Model_AddComponent(const char* stringid, int classid)

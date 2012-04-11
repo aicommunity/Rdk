@@ -333,6 +333,9 @@ virtual int Model_Create(int classid);
 // Очищает модель
 virtual int Model_Clear(void);
 
+// Проверяет, существует ли модель
+virtual bool Model_Check(void);
+
 // Добавляет в выбранный контейнер модели с идентификатором 'stringid' экземпляр контейнера с заданным 'classid'
 // если stringid - пустая строка, то добавляет в саму модель
 virtual int Model_AddComponent(const char* stringid, int classid);

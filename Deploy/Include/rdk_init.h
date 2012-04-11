@@ -237,6 +237,9 @@ RDK_LIB_TYPE int RDK_CALL Model_Create(int classid);
 // Очищает модель
 RDK_LIB_TYPE int RDK_CALL Model_Clear(void);
 
+// Проверяет, существует ли модель
+RDK_LIB_TYPE bool RDK_CALL Model_Check(void);
+
 // Добавляет в выбранный контейнер модели с идентификатором 'stringid' экземпляр контейнера с заданным 'classid'
 // если stringid - пустая строка, то добавляет в саму модель
 RDK_LIB_TYPE int RDK_CALL Model_AddComponent(const char* stringid, int classid);
