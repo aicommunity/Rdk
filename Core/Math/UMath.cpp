@@ -23,6 +23,8 @@ See file license.txt for more information
 #include "MUIOStream.cpp"
 #include "MUXMLSerialize.cpp"
 #include "MUBinarySerialize.cpp"
+#include "MKalmanFilter.cpp"
+#include "MMatrix.cpp"
 #include "UMath_lite.cpp"
 
 #endif

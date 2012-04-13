@@ -1,5 +1,5 @@
 /* ***********************************************************
-@Copyright Alexsandr V. Bakhshiev, 2011.
+@Copyright Alexsandr V. Bakhshiev, 2012.
 E-mail:        alexab@ailab.ru
 Url:           http://ailab.ru
 
@@ -9,18 +9,29 @@ File License:       New BSD License
 Project License:    New BSD License
 See file license.txt for more information
 *********************************************************** */
-#include "MBody.h"
-#include "MCSystem.h"
-#include "MDyad.h"
-#include "MGeometry.h"
-#include "MGraphics.h"
-#include "MTensor.h"
-#include "MTheormec.h"
-#include "MVector.h"
-#include "MUIOStream.h"
-#include "MUXMLSerialize.h"
-#include "MUBinarySerialize.h"
+#ifndef MKALMANFILTER_H
+#define MKALMANFILTER_H
+
 #include "MKalmanFilter.h"
-#include "MMatrix.h"
-#include "UMath_lite.h"
+
+namespace RDK {
+
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+/*MKalmanFilter::MKalmanFilter(void)
+{
+
+}
+
+MKalmanFilter::~MKalmanFilter(void)
+{
+
+} */
+// --------------------------
+
+
+}
+
+#endif MKALMANFILTER_H
 
