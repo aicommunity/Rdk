@@ -82,7 +82,9 @@ void TUEngineControlForm::OpenProject(const String &FileName)
  // Флаг автоматического сохранения проекта
  ProjectAutoSaveFlag=ProjectIni->ReadInteger("General","ProjectAutoSaveFlag",1);
 
- EngineInit(0,ExceptionHandler);
+ PredefinedStructure=ProjectIni->ReadInteger("General","PredefinedStructure",0);
+
+ EngineInit(PredefinedStructure,ExceptionHandler);
 // for(int i=0;i<NumEnvInputs;i++)
 //  VideoOutputForm->AddSource();
 
@@ -120,6 +122,8 @@ void TUEngineControlForm::SaveProject(void)
   else
    UComponentsControlForm->ComponentsControlFrame->SaveModelToFile(modelfilename);
  }
+
+ ProjectIni->WriteInteger("General","PredefinedStructure",PredefinedStructure);
 
  // Флаг автоматического сохранения проекта
  ProjectIni->WriteInteger("General","ProjectAutoSaveFlag",ProjectAutoSaveFlag);
