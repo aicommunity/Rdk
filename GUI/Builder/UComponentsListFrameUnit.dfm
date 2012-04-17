@@ -27,6 +27,7 @@ object UComponentsListFrame: TUComponentsListFrame
       Align = alClient
       TabOrder = 0
       TabPosition = tpBottom
+      OnChange = PageControl1Change
       object TabSheet1: TTabSheet
         Caption = 'Parameters'
         object ParametersHeaderControl: THeaderControl
@@ -165,10 +166,6 @@ object UComponentsListFrame: TUComponentsListFrame
             OnClick = OutputsStringGridClick
             OnDblClick = OutputsStringGridDblClick
             OnSelectCell = OutputsStringGridSelectCell
-            ExplicitLeft = 40
-            ExplicitTop = 40
-            ExplicitWidth = 320
-            ExplicitHeight = 120
           end
         end
         object GroupBox2: TGroupBox
@@ -179,10 +176,6 @@ object UComponentsListFrame: TUComponentsListFrame
           Align = alClient
           Caption = ' Inputs '
           TabOrder = 2
-          ExplicitLeft = 48
-          ExplicitTop = 272
-          ExplicitWidth = 185
-          ExplicitHeight = 105
           object InputsStringGrid: TStringGrid
             Left = 2
             Top = 15
@@ -194,10 +187,6 @@ object UComponentsListFrame: TUComponentsListFrame
             OnClick = InputsStringGridClick
             OnDblClick = InputsStringGridDblClick
             OnSelectCell = InputsStringGridSelectCell
-            ExplicitLeft = 120
-            ExplicitTop = 104
-            ExplicitWidth = 320
-            ExplicitHeight = 120
           end
         end
       end

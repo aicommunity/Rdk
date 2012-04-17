@@ -117,6 +117,9 @@ int NumEnvOutputs;
 // Разрешение изображений
 int InputEnvImageWidth, InputEnvImageHeight;
 
+// Индекс предварительно заданной модели
+int PredefinedStructure;
+
 // Обновление интерфейса
 void UpdateInterface(void);
 

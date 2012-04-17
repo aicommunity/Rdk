@@ -101,10 +101,12 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
  InputEnvImageWidth=ProjectIni->ReadInteger("General","InputEnvImageWidth",360);
  InputEnvImageHeight=ProjectIni->ReadInteger("General","InputEnvImageHeight",240);
 
+ PredefinedStructure=ProjectIni->ReadInteger("General","PredefinedStructure",0);
+
  // Флаг автоматического сохранения проекта
  ProjectAutoSaveFlag=ProjectIni->ReadInteger("General","ProjectAutoSaveFlag",1);
 
- GraphicalEngineInit(0,NumEnvInputs,NumEnvOutputs,InputEnvImageWidth, InputEnvImageHeight ,1,ExceptionHandler);
+ GraphicalEngineInit(PredefinedStructure,NumEnvInputs,NumEnvOutputs,InputEnvImageWidth, InputEnvImageHeight ,1,ExceptionHandler);
  for(int i=0;i<NumEnvInputs;i++)
   VideoOutputForm->AddSource();
 
@@ -142,6 +144,8 @@ void TUGEngineControlForm::SaveProject(void)
   else
    UComponentsControlForm->ComponentsControlFrame->SaveModelToFile(modelfilename);
  }
+
+ ProjectIni->WriteInteger("General","PredefinedStructure",PredefinedStructure);
 
  // Флаг автоматического сохранения проекта
  ProjectIni->WriteInteger("General","ProjectAutoSaveFlag",ProjectAutoSaveFlag);

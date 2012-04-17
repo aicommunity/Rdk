@@ -721,6 +721,14 @@ UBPoint(void);
 UBPoint(int x, int y);
 ~UBPoint(void);
 // --------------------------
+
+// --------------------------
+// Операторы
+// --------------------------
+// Операторы сравнения
+bool operator == (const UBPoint &value) const;
+bool operator != (const UBPoint &value) const;
+// --------------------------
 };
 
 // Координаты и цвет пикселя изображения

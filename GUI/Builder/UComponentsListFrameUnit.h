@@ -54,6 +54,7 @@ __published:	// IDE-managed Components
           bool &CanSelect);
 	void __fastcall InputsStringGridDblClick(TObject *Sender);
 	void __fastcall InputsStringGridClick(TObject *Sender);
+	void __fastcall PageControl1Change(TObject *Sender);
 
 
 protected:		// User declarations

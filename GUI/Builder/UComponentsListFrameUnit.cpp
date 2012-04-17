@@ -568,3 +568,9 @@ void __fastcall TUComponentsListFrame::InputsStringGridClick(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+void __fastcall TUComponentsListFrame::PageControl1Change(TObject *Sender)
+{
+ UpdateInterface();
+}
+//---------------------------------------------------------------------------
+

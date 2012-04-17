@@ -4493,6 +4493,22 @@ UBPoint::~UBPoint(void)
 // --------------------------
 
 // --------------------------
+// Операторы
+// --------------------------
+// Операторы сравнения
+bool UBPoint::operator == (const UBPoint &value) const
+{
+ return (X == value.X && Y == value.Y);
+}
+
+bool UBPoint::operator != (const UBPoint &value) const
+{
+ return !(*this == value);
+}
+// --------------------------
+
+
+// --------------------------
 // Конструкторы и деструкторы
 // --------------------------
 UBColorPoint::UBColorPoint(void)
