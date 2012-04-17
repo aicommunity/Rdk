@@ -55,40 +55,6 @@ void __fastcall TVideoOutputToolsForm::AddFigureButtonClick(TObject *Sender)
  EditFigureButtonClick(Sender);
  AddPointButtonClick(Sender);
  return;
-/*
- if(!FigureFlag)
- {
-  Figure.Clear();
-  FigureFlag=true;
-  if(SampleGeometryGraphics.GetNumGeometry()>0)
-  {
-   AddFigureButton->Caption="Редактирование...";
-   FigureIndex=GeometryCheckListBox->ItemIndex;
-   Figure=GeometryGraphics.GetGeometry(FigureIndex);
-   MyVideoOutputFrame->UpdateVideo();
-   PointsCheckListBox->ItemIndex=0;
-
-//   GeometryGraphics.GetDescription(FigureIndex)=SampleGeometryGraphics.GetDescription(FigureIndex);
-  }
-  else
-  {
-   AddFigureButton->Caption="Добавление...";
-   FigureIndex=GeometryGraphics.AddGeometry(Figure);
-   GeometryGraphics.GetDescription(FigureIndex).PenWidth=3;
-   TColor col=ColorBox->Selected;
-   GeometryGraphics.GetDescription(FigureIndex).Color.r=col & 0x000000FF;
-   GeometryGraphics.GetDescription(FigureIndex).Color.g=(col & 0x0000FF00) >> 8;
-   GeometryGraphics.GetDescription(FigureIndex).Color.b=(col & 0x00FF0000) >> 16;
-   GeometryGraphics.GetDescription(FigureIndex).Name=string("Figure")+sntoa(FigureIndex+1,3);
-   GeometryGraphics.GetDescription(FigureIndex).Description=string("Геометрия №")+sntoa(FigureIndex+1);
-  }
- }
- else
- {
-  FigureFlag=false;
-  AddFigureButton->Caption="Добавить фигуру";
-  MyVideoOutputFrame->UpdateVideo();
- }      */
 }
 //---------------------------------------------------------------------------
 void __fastcall TVideoOutputToolsForm::DelAllFiguresButtonClick(TObject *Sender)
@@ -136,46 +102,8 @@ void __fastcall TVideoOutputToolsForm::AddPointButtonClick(TObject *Sender)
  MyVideoOutputFrame->UpdateVideo();
  PointsCheckListBox->ItemIndex=PointIndex;
  SampleGeometryGraphics.Clear();
- EditPointButtonClick(Sender);
+// EditPointButtonClick(Sender);
  return;
-/*
- if(SampleGeometryGraphics.GetNumGeometry()>0)
-  {
-   EditPointButtonClick(Sender);
-   return;
-  }
-
- if(!PointFlag)
- {
-  PointFlag=1;
-  if(SampleGeometryGraphics.GetNumGeometry()>0)
-  {
-   FigureIndex=GeometryCheckListBox->ItemIndex;
-   Figure=GeometryGraphics.GetGeometry(FigureIndex);
-   MyVideoOutputFrame->UpdateVideo();
-   PointIndex=PointsCheckListBox->ItemIndex+1;
-
-//   GeometryGraphics.GetDescription(FigureIndex)=GeometryGraphics.GetDescription(FigureIndex);
-   AddPointButton->Caption="Редактирование...";
-  }
-  else
-  {
-   AddPointButton->Caption="Добавление...";
-   Figure().SetNumVertex(Figure().GetNumVertex()+1);
-   PointIndex=Figure().GetNumVertex()-1;
-   Figure().UseName(PointIndex)=string(PointNameEdit->Text.t_str())+sntoa(PointIndex+1,3);
-   MyVideoOutputFrame->UpdateVideo();
-   PointsCheckListBox->ItemIndex=PointIndex;
-  }
-  SampleGeometryGraphics.Clear();
- }
- else
- {
-  PointFlag=0;
-  AddPointButton->Caption="Добавить точку";
-  MyVideoOutputFrame->UpdateVideo();
- }
-     */
 }
 //---------------------------------------------------------------------------
 void __fastcall TVideoOutputToolsForm::EditPointButtonClick(TObject *Sender)
@@ -220,4 +148,13 @@ void __fastcall TVideoOutputToolsForm::PointsCheckListBoxClick(TObject *Sender)
 // MyVideoOutputFrame->UpdateVideo();
 }
 //---------------------------------------------------------------------------
+
+void __fastcall TVideoOutputToolsForm::FormShow(TObject *Sender)
+{
+ MyVideoOutputFrame->ZoneSelectEnable=true;
+}
+//---------------------------------------------------------------------------
+
+
+
 

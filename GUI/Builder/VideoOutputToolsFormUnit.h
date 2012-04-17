@@ -43,6 +43,7 @@ __published:	// IDE-managed Components
 	void __fastcall EditPointButtonClick(TObject *Sender);
 	void __fastcall EditFigureButtonClick(TObject *Sender);
 	void __fastcall PointsCheckListBoxClick(TObject *Sender);
+	void __fastcall FormShow(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
 	__fastcall TVideoOutputToolsForm(TComponent* Owner,

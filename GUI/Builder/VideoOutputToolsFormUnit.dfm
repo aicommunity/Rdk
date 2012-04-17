@@ -3,7 +3,7 @@ object VideoOutputToolsForm: TVideoOutputToolsForm
   Top = 0
   BorderStyle = bsToolWindow
   Caption = 'VideoOutputToolsForm'
-  ClientHeight = 347
+  ClientHeight = 396
   ClientWidth = 228
   Color = clBtnFace
   DoubleBuffered = True
@@ -13,34 +13,39 @@ object VideoOutputToolsForm: TVideoOutputToolsForm
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
   object FigurePanel: TPanel
     Left = 0
     Top = 0
     Width = 113
-    Height = 347
+    Height = 396
     Align = alLeft
     BevelOuter = bvNone
     TabOrder = 0
+    ExplicitHeight = 347
     object GroupBox1: TGroupBox
       Left = 0
       Top = 174
       Width = 113
-      Height = 173
+      Height = 222
       Align = alClient
       Caption = ' '#1057#1087#1080#1089#1086#1082' '#1092#1080#1075#1091#1088' '
       TabOrder = 0
+      ExplicitLeft = -3
+      ExplicitTop = 172
       object GeometryCheckListBox: TCheckListBox
         Left = 2
         Top = 15
         Width = 109
-        Height = 156
+        Height = 205
         OnClickCheck = GeometryCheckListBoxClickCheck
         Align = alClient
         ItemHeight = 13
         TabOrder = 0
         OnClick = GeometryCheckListBoxClick
+        ExplicitHeight = 156
       end
     end
     object GroupBox4: TGroupBox
@@ -102,9 +107,10 @@ object VideoOutputToolsForm: TVideoOutputToolsForm
     Left = 113
     Top = 0
     Width = 115
-    Height = 347
+    Height = 396
     Align = alClient
     TabOrder = 1
+    ExplicitHeight = 347
     object GroupBox2: TGroupBox
       Left = 1
       Top = 1
@@ -115,7 +121,7 @@ object VideoOutputToolsForm: TVideoOutputToolsForm
       TabOrder = 0
       object AddPointButton: TButton
         Left = 6
-        Top = 43
+        Top = 46
         Width = 99
         Height = 25
         Caption = #1044#1086#1073#1072#1074#1080#1090#1100' '#1090#1086#1095#1082#1091
@@ -124,7 +130,7 @@ object VideoOutputToolsForm: TVideoOutputToolsForm
       end
       object DelPointButton: TButton
         Left = 6
-        Top = 106
+        Top = 108
         Width = 99
         Height = 25
         Caption = #1059#1076#1072#1083#1080#1090#1100' '#1090#1086#1095#1082#1091
@@ -132,7 +138,7 @@ object VideoOutputToolsForm: TVideoOutputToolsForm
       end
       object DelAllPointsButton: TButton
         Left = 6
-        Top = 137
+        Top = 140
         Width = 99
         Height = 25
         Caption = #1059#1076#1072#1083#1080#1090#1100' '#1074#1089#1077
@@ -140,7 +146,7 @@ object VideoOutputToolsForm: TVideoOutputToolsForm
       end
       object EditPointButton: TButton
         Left = 6
-        Top = 74
+        Top = 77
         Width = 99
         Height = 25
         Caption = #1055#1088#1072#1074#1080#1090#1100' '#1090#1086#1095#1082#1091
@@ -149,7 +155,7 @@ object VideoOutputToolsForm: TVideoOutputToolsForm
       end
       object PointNameEdit: TEdit
         Left = 6
-        Top = 16
+        Top = 18
         Width = 99
         Height = 21
         TabOrder = 4
@@ -160,19 +166,21 @@ object VideoOutputToolsForm: TVideoOutputToolsForm
       Left = 1
       Top = 175
       Width = 113
-      Height = 171
+      Height = 220
       Align = alClient
       Caption = ' '#1057#1087#1080#1089#1086#1082' '#1090#1086#1095#1077#1082' '
       TabOrder = 1
+      ExplicitHeight = 171
       object PointsCheckListBox: TCheckListBox
         Left = 2
         Top = 15
         Width = 109
-        Height = 154
+        Height = 203
         Align = alClient
         ItemHeight = 13
         TabOrder = 0
         OnClick = PointsCheckListBoxClick
+        ExplicitHeight = 154
       end
     end
   end
