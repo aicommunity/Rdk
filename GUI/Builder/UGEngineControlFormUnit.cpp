@@ -26,18 +26,31 @@ __fastcall TUGEngineControlForm::TUGEngineControlForm(TComponent* Owner)
  ProjectAutoSaveFlag=true;
 }
 //---------------------------------------------------------------------------
+// Метод, вызываемый перед шагом расчета
+void TUGEngineControlForm::BeforeCalculate(void)
+{
+ for(int i=0;i<Env_GetNumInputImages();i++)
+ {
+  RDK::UBitmap &source=VideoOutputForm->GetVideoOutputFrame(i)->BmpSource;
+
+  if(source.GetByteLength()>0)
+  {
+   Env_SetInputRes(i, source.GetWidth(), source.GetHeight());
+   Env_SetInputImage(i,(unsigned char*)source.GetData(),source.GetWidth(), source.GetHeight(),source.GetColorModel());
+  }
+ }
+
+}
+
+// Метод, вызываемый после шага расчета
+void TUGEngineControlForm::AfterCalculate(void)
+{
+ StatusBar->SimpleText=UEngineMonitorForm->EngineMonitorFrame->StatusBar->SimpleText;
+}
+
 void TUGEngineControlForm::UpdateInterface(void)
 {
  UpdateInterfaceFlag=true;
-
- // Update video
- if(UImagesForm->Visible)
- {
-  UImagesForm->ImagesFrame->UpdateInterface();
- }
-
- if(UComponentsPerformanceForm->Visible)
-  UComponentsPerformanceForm->UComponentsPerformanceFrame->UpdateInterface();
 
  CaptureVideo1->Caption=String("Capture Video (")+IntToStr(VideoOutputForm->GetActiveSource())+")";
  OpenVideo1->Caption=String("Open Video File (")+IntToStr(VideoOutputForm->GetActiveSource())+")";
@@ -57,6 +70,8 @@ void TUGEngineControlForm::UpdateInterface(void)
 
 void __fastcall TUGEngineControlForm::FormShow(TObject *Sender)
 {
+ if(UEngineMonitorForm)
+  UEngineMonitorForm->AddInterface(this);
  UImagesForm->ImagesFrame->SetReflectionXFlag(true);
  UpdateInterface();
 }
@@ -162,16 +177,6 @@ void TUGEngineControlForm::SaveProject(void)
  ProjectIni->UpdateFile();
 }
 //---------------------------------------------------------------------------
-void __fastcall TUGEngineControlForm::TimerTimer(TObject *Sender)
-{
- Timer->Enabled=false;
-
- Step1Click(Sender);
- StatusBar->SimpleText=UEngineMonitorForm->EngineMonitorFrame->StatusBar->SimpleText;
-
- Timer->Enabled=true;
-}
-//---------------------------------------------------------------------------
 void __fastcall TUGEngineControlForm::FormClose(TObject *Sender, TCloseAction &Action)
 {
  SaveProjectItemClick(Sender);
@@ -191,7 +196,7 @@ void __fastcall TUGEngineControlForm::Start1Click(TObject *Sender)
 // UImagesForm->ImagesFrame->LinkToComponent(1,0,"Pipeline1.DifferenceFrameSimple",0);
 // UImagesForm->ImagesFrame->LinkToComponent(1,1,"Pipeline1.BackgroundSimple",2);
 
- Timer->Enabled=true;
+// Timer->Enabled=true;
  VideoOutputForm->Start();
  UEngineMonitorForm->EngineMonitorFrame->Start1Click(Sender);
 }
@@ -201,7 +206,7 @@ void __fastcall TUGEngineControlForm::Pause1Click(TObject *Sender)
 {
  UEngineMonitorForm->EngineMonitorFrame->Pause1Click(Sender);
  VideoOutputForm->Stop();
- Timer->Enabled=false;
+// Timer->Enabled=false;
 }
 //---------------------------------------------------------------------------
 
@@ -227,18 +232,7 @@ void __fastcall TUGEngineControlForm::VideoSource1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::Step1Click(TObject *Sender)
 {
- for(int i=0;i<Env_GetNumInputImages();i++)
- {
-  RDK::UBitmap &source=VideoOutputForm->GetVideoOutputFrame(i)->BmpSource;
-
-  if(source.GetByteLength()>0)
-  {
-   Env_SetInputRes(i, source.GetWidth(), source.GetHeight());
-   Env_SetInputImage(i,(unsigned char*)source.GetData(),source.GetWidth(), source.GetHeight(),source.GetColorModel());
-  }
- }
- Env_Calculate(0);
- UpdateInterface();
+ UEngineMonitorForm->EngineMonitorFrame->Step1Click(Sender);
 }
 //---------------------------------------------------------------------------
 
@@ -289,7 +283,7 @@ void __fastcall TUGEngineControlForm::Reset1Click(TObject *Sender)
 {
  UEngineMonitorForm->EngineMonitorFrame->Reset1Click(Sender);
  VideoOutputForm->Stop();
- Timer->Enabled=false;
+// Timer->Enabled=false;
 }
 //---------------------------------------------------------------------------
 
@@ -314,4 +308,13 @@ void __fastcall TUGEngineControlForm::SaveProjectItemClick(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+
+
+
+void __fastcall TUGEngineControlForm::FormHide(TObject *Sender)
+{
+ if(UEngineMonitorForm)
+  UEngineMonitorForm->DelInterface(this);
+}
+//---------------------------------------------------------------------------
 

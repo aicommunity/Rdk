@@ -13,6 +13,7 @@ object UEngineMonitorForm: TUEngineMonitorForm
   Menu = EngineMonitorFrame.MainMenu
   OldCreateOrder = False
   Position = poDesigned
+  OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
   inline EngineMonitorFrame: TUEngineMonitorFrame
@@ -23,17 +24,17 @@ object UEngineMonitorForm: TUEngineMonitorForm
     Align = alClient
     TabOrder = 0
     ExplicitWidth = 527
-    ExplicitHeight = 243
+    ExplicitHeight = 223
     inherited RichEdit: TRichEdit
       Width = 527
       Height = 204
       ExplicitWidth = 527
-      ExplicitHeight = 224
+      ExplicitHeight = 204
     end
     inherited StatusBar: TStatusBar
       Top = 204
       Width = 527
-      ExplicitTop = 224
+      ExplicitTop = 204
       ExplicitWidth = 527
     end
   end

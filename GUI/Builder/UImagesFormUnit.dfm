@@ -12,6 +12,8 @@ object UImagesForm: TUImagesForm
   Font.Style = []
   OldCreateOrder = False
   Position = poDesigned
+  OnHide = FormHide
+  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
   inline ImagesFrame: TUImagesFrame
@@ -21,14 +23,14 @@ object UImagesForm: TUImagesForm
     Height = 487
     Align = alClient
     TabOrder = 0
-    ExplicitWidth = 629
-    ExplicitHeight = 562
+    ExplicitWidth = 728
+    ExplicitHeight = 487
     inherited DrawGrid: TDrawGrid
       Width = 728
       Height = 487
       Options = [goVertLine, goHorzLine, goDrawFocusSelected, goRowSizing, goColSizing]
-      ExplicitWidth = 649
-      ExplicitHeight = 519
+      ExplicitWidth = 728
+      ExplicitHeight = 487
     end
   end
 end

@@ -39,13 +39,16 @@ void TUEngineMonitorFrame::UpdateInterface(void)
 {
  UpdateInterfaceFlag=true;
 
- for(size_t i=0;i<InterfaceUpdaters.size();i++)
-  InterfaceUpdaters[i]->UpdateInterface();
 
  StatusBar->SimpleText=String("Model Time=")+FloatToStrF(Model_GetDoubleTime(),ffFixed,3,3)
 				+String("; Real Time=")+FloatToStrF(Model_GetDoubleRealTime(),ffFixed,3,3)
 				+String("; Model Duration Time=")+FloatToStrF(Model_GetFullStepDuration("")/1000.0,ffFixed,3,3)
 				+String("; Model Performance=")+FloatToStrF(Model_GetInstantPerformance(""),ffFixed,3,3);
+ StatusBar->Repaint();
+ StatusBar->Update();
+
+ for(size_t i=0;i<InterfaceUpdaters.size();i++)
+  InterfaceUpdaters[i]->UpdateInterface();
  UpdateInterfaceFlag=false;
 }
 //---------------------------------------------------------------------------
@@ -70,8 +73,20 @@ void __fastcall TUEngineMonitorFrame::Reset1Click(TObject *Sender)
 
 void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
 {
+ for(size_t i=0;i<InterfaceUpdaters.size();i++)
+  InterfaceUpdaters[i]->BeforeCalculate();
+
  Env_Calculate(0);
+
+ for(size_t i=0;i<InterfaceUpdaters.size();i++)
+  InterfaceUpdaters[i]->AfterCalculate();
  UpdateInterface();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUEngineMonitorFrame::Step1Click(TObject *Sender)
+{
+ TimerTimer(Sender);
 }
 //---------------------------------------------------------------------------
 

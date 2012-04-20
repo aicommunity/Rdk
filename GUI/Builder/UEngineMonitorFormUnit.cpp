@@ -23,4 +23,24 @@ __fastcall TUEngineMonitorForm::TUEngineMonitorForm(TComponent* Owner)
 	: TForm(Owner)
 {
 }
+
+// Добавляет обработчик в список
+void TUEngineMonitorForm::AddInterface(RDK::IVisualInterface *value)
+{
+ if(EngineMonitorFrame)
+  EngineMonitorFrame->AddInterface(value);
+}
+
+// Удаляет обработчик из списка
+void TUEngineMonitorForm::DelInterface(RDK::IVisualInterface *value)
+{
+ if(EngineMonitorFrame)
+  EngineMonitorFrame->DelInterface(value);
+}
 //---------------------------------------------------------------------------
+void __fastcall TUEngineMonitorForm::FormDestroy(TObject *Sender)
+{
+ EngineMonitorFrame->Timer->Enabled=false;
+}
+//---------------------------------------------------------------------------
+

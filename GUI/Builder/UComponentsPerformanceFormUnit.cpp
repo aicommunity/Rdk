@@ -4,6 +4,7 @@
 #pragma hdrstop
 
 #include "UComponentsPerformanceFormUnit.h"
+#include "UEngineMonitorFormUnit.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "UComponentsPerformanceFrameUnit"
@@ -15,3 +16,17 @@ __fastcall TUComponentsPerformanceForm::TUComponentsPerformanceForm(TComponent* 
 {
 }
 //---------------------------------------------------------------------------
+void __fastcall TUComponentsPerformanceForm::FormShow(TObject *Sender)
+{
+ if(UEngineMonitorForm)
+  UEngineMonitorForm->AddInterface(UComponentsPerformanceFrame);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsPerformanceForm::FormHide(TObject *Sender)
+{
+ if(UEngineMonitorForm)
+  UEngineMonitorForm->DelInterface(UComponentsPerformanceFrame);
+}
+//---------------------------------------------------------------------------
+

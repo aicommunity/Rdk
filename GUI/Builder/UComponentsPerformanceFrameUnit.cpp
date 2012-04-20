@@ -30,6 +30,16 @@ __fastcall TUComponentsPerformanceFrame::~TUComponentsPerformanceFrame(void)
 }
 
 //---------------------------------------------------------------------------
+void TUComponentsPerformanceFrame::BeforeCalculate(void)
+{
+
+}
+
+void TUComponentsPerformanceFrame::AfterCalculate(void)
+{
+
+}
+
 void TUComponentsPerformanceFrame::UpdateInterface(void)
 {
  if(!Model_Check())

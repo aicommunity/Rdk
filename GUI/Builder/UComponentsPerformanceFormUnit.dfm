@@ -11,6 +11,8 @@ object UComponentsPerformanceForm: TUComponentsPerformanceForm
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  OnHide = FormHide
+  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
   inline UComponentsPerformanceFrame: TUComponentsPerformanceFrame
@@ -20,15 +22,18 @@ object UComponentsPerformanceForm: TUComponentsPerformanceForm
     Height = 352
     Align = alClient
     TabOrder = 0
-    ExplicitLeft = 104
-    ExplicitTop = 26
+    ExplicitWidth = 558
+    ExplicitHeight = 352
     inherited Chart: TChart
       Width = 558
       Height = 352
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 454
-      ExplicitHeight = 326
+      ExplicitWidth = 558
+      ExplicitHeight = 352
+      inherited Series1: TBarSeries
+        Data = {
+          00060000000000000000C87E400000000000187A400000000000F07940000000
+          0000A0794000000000000074400000000000807140}
+      end
     end
   end
 end

@@ -1,3 +1,6 @@
+#ifndef MYRDK_CPP
+#define MYRDK_CPP
+
 #include "myrdk.h"
 
 #include "../../ThirdParty/ThirdParty.cpp"
@@ -14,5 +17,21 @@
 #include "../../Core/Graphics/UGraphicsXMLSerialize.cpp"
 #include "../../Core/Graphics/UGraphicsBinarySerialize.cpp"
 
+namespace RDK {
+				/*
+// Метод, вызываемый перед шагом расчета
+void IVisualInterface::BeforeCalculate(void)
+{
+
+}
+
+// Метод, вызываемый после шага расчета
+void IVisualInterface::AfterCalculate(void)
+{
+
+}
+                  */
+}
+#endif
 
 

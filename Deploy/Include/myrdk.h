@@ -77,8 +77,14 @@ T ReadStateValue(const std::string &comp_name, const std::string &param_name)
 class IVisualInterface
 {
 public:
-virtual void UpdateInterface(void)=0;
+// Метод, вызываемый перед шагом расчета
+virtual void BeforeCalculate(void)=0;
 
+// Метод, вызываемый после шага расчета
+virtual void AfterCalculate(void)=0;
+
+// Обновление интерфейса
+virtual void UpdateInterface(void)=0;
 };
 
 }

@@ -263,6 +263,16 @@ Graphics::TBitmap* TUImagesFrame::GetImage(void)
 // --------------------------
 // Методы управления фреймом
 // --------------------------
+void TUImagesFrame::BeforeCalculate(void)
+{
+
+}
+
+void TUImagesFrame::AfterCalculate(void)
+{
+
+}
+
 void TUImagesFrame::UpdateInterface(void)
 {
  for(size_t i=0;i<Images.size();i++)

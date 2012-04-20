@@ -17,8 +17,9 @@
 #include <vector>
 #include <string>
 #include "UComponentsListFormUnit.h"
+#include "myrdk.h"
 //---------------------------------------------------------------------------
-class TUComponentsPerformanceFrame : public TFrame
+class TUComponentsPerformanceFrame : public TFrame, public RDK::IVisualInterface
 {
 __published:	// IDE-managed Components
 	TChart *Chart;
@@ -47,6 +48,9 @@ TUComponentsListForm *MyComponentsListForm;
 // --------------------------
 // Методы управления фреймом
 // --------------------------
+void BeforeCalculate(void);
+void AfterCalculate(void);
+
 // Обновляет интерфейс
 void UpdateInterface(void);
 

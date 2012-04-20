@@ -20,7 +20,7 @@
 
 class TUComponentsListForm;
 //---------------------------------------------------------------------------
-class TUImagesFrame : public TFrame
+class TUImagesFrame : public TFrame, public RDK::IVisualInterface
 {
 __published:    // IDE-managed Components
     TDrawGrid *DrawGrid;
@@ -115,6 +115,9 @@ Graphics::TBitmap* GetImage(void);
 // --------------------------
 // Методы управления фреймом
 // --------------------------
+void BeforeCalculate(void);
+void AfterCalculate(void);
+
 void UpdateInterface(void);
 
 // Сохраняет информацию об источниках данных в заданный ini файл

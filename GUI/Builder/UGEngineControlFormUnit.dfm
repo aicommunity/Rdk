@@ -14,6 +14,7 @@ object UGEngineControlForm: TUGEngineControlForm
   OldCreateOrder = False
   Position = poDesigned
   OnClose = FormClose
+  OnHide = FormHide
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
@@ -24,9 +25,6 @@ object UGEngineControlForm: TUGEngineControlForm
     Height = 1
     Align = alClient
     TabOrder = 0
-    ExplicitTop = 96
-    ExplicitWidth = 631
-    ExplicitHeight = 2
   end
   object ToolBar: TToolBar
     Left = 0
@@ -177,15 +175,6 @@ object UGEngineControlForm: TUGEngineControlForm
     Height = 19
     Panels = <>
     SimplePanel = True
-    ExplicitTop = 98
-    ExplicitWidth = 631
-  end
-  object Timer: TTimer
-    Enabled = False
-    Interval = 30
-    OnTimer = TimerTimer
-    Left = 496
-    Top = 40
   end
   object MainMenu: TMainMenu
     Images = ImageList
@@ -294,7 +283,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 544
     Top = 40
     Bitmap = {
-      494C01011B006000540010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B006000600010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

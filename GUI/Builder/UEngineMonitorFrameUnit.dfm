@@ -46,6 +46,10 @@ object UEngineMonitorFrame: TUEngineMonitorFrame
         Caption = 'Reset'
         OnClick = Reset1Click
       end
+      object Step1: TMenuItem
+        Caption = 'Step'
+        OnClick = Step1Click
+      end
     end
   end
   object Timer: TTimer
