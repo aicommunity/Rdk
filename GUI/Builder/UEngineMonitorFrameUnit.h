@@ -10,10 +10,12 @@
 #include <Vcl.ComCtrls.hpp>
 #include <Vcl.Menus.hpp>
 #include <Vcl.ExtCtrls.hpp>
+#include <vector>
+#include "myrdk.h"
 
 //---------------------------------------------------------------------------
 
-class TUEngineMonitorFrame : public TFrame
+class TUEngineMonitorFrame : public TFrame, public RDK::IVisualInterface
 {
 __published:	// IDE-managed Components
 	TRichEdit *RichEdit;
@@ -33,9 +35,18 @@ private:	// User declarations
 public:		// User declarations
 	__fastcall TUEngineMonitorFrame(TComponent* Owner);
 
-	void UpdateInterface(void);
+// Список обработчиков, которые должны быть вызваны после расчета
+std::vector<RDK::IVisualInterface*> InterfaceUpdaters;
 
-	bool UpdateInterfaceFlag;
+// Добавляет обработчик в список
+void AddInterface(RDK::IVisualInterface *value);
+
+// Удаляет обработчик из списка
+void DelInterface(RDK::IVisualInterface *value);
+
+void UpdateInterface(void);
+
+bool UpdateInterfaceFlag;
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TUEngineMonitorFrame *UEngineMonitorFrame;

@@ -3,6 +3,7 @@
 #include <vcl.h>
 #pragma hdrstop
 
+#include <algorithm>
 #include "UEngineMonitorFrameUnit.h"
 #include "rdk_initdll.h"
 //---------------------------------------------------------------------------
@@ -16,11 +17,30 @@ __fastcall TUEngineMonitorFrame::TUEngineMonitorFrame(TComponent* Owner)
 {
  UpdateInterfaceFlag=false;
 }
-//---------------------------------------------------------------------------
+
+
+// Добавляет обработчик в список
+void TUEngineMonitorFrame::AddInterface(RDK::IVisualInterface* value)
+{
+ std::vector<RDK::IVisualInterface*>::iterator I=find(InterfaceUpdaters.begin(),InterfaceUpdaters.end(),value);
+ if(I == InterfaceUpdaters.end())
+  InterfaceUpdaters.push_back(value);
+}
+
+// Удаляет обработчик из списка
+void TUEngineMonitorFrame::DelInterface(RDK::IVisualInterface* value)
+{
+ std::vector<RDK::IVisualInterface*>::iterator I=find(InterfaceUpdaters.begin(),InterfaceUpdaters.end(),value);
+ if(I != InterfaceUpdaters.end())
+  InterfaceUpdaters.erase(I);
+}
 
 void TUEngineMonitorFrame::UpdateInterface(void)
 {
  UpdateInterfaceFlag=true;
+
+ for(size_t i=0;i<InterfaceUpdaters.size();i++)
+  InterfaceUpdaters[i]->UpdateInterface();
 
  StatusBar->SimpleText=String("Model Time=")+FloatToStrF(Model_GetDoubleTime(),ffFixed,3,3)
 				+String("; Real Time=")+FloatToStrF(Model_GetDoubleRealTime(),ffFixed,3,3)
@@ -28,6 +48,8 @@ void TUEngineMonitorFrame::UpdateInterface(void)
 				+String("; Model Performance=")+FloatToStrF(Model_GetInstantPerformance(""),ffFixed,3,3);
  UpdateInterfaceFlag=false;
 }
+//---------------------------------------------------------------------------
+
 void __fastcall TUEngineMonitorFrame::Start1Click(TObject *Sender)
 {
  Timer->Enabled=true;

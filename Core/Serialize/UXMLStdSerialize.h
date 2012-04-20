@@ -47,8 +47,8 @@ USerStorageXML& USimpleFromStorage (USerStorageXML& storage, T &data)
 {
  std::string type=typeid(T).name();
  std::string rtype=storage.GetNodeAttribute("Type");
- if(storage.GetNodeAttribute("Type") != typeid(T).name())
-  return storage;
+// if(storage.GetNodeAttribute("Type") != typeid(T).name())
+//  return storage;
 
  std::string rvalue=storage.GetNodeText();
 

@@ -1840,26 +1840,12 @@ const char * UEngine::Model_GetComponentStateValue(const char *stringid, const c
 {
  try
  {
-  UEPtr<RDK::UANet> model=dynamic_pointer_cast<RDK::UANet>(Environment->GetModel());
-
-  if(!model)
-   return 0;
-
-  RDK::ULongId id;
-//  string namebuffer;
-
-  UEPtr<RDK::UAContainer> cont=model->GetComponentL(id.DecodeFromString(stringid));
+  TempString="";
+  UEPtr<RDK::UAContainer> cont=FindComponent(stringid);
   if(!cont)
-   return 0;
-
-//  XmlStorage.Create(cont->GetLongName(model,namebuffer));
-//  XmlStorage.AddNode("Parameters");
+   return TempString.c_str();
 
   cont->GetStateValue(statename,TempString);
-
-//  XmlStorage.SelectUp();
-//  TempString="";
-//  XmlStorage.Save(TempString);
   return TempString.c_str();
  }
  catch (Exception * exception)
@@ -1867,6 +1853,7 @@ const char * UEngine::Model_GetComponentStateValue(const char *stringid, const c
   ProcessException(exception);
  }
  return 0;
+
 }
 
 // Устанавливает состояние компонента по идентификатору
