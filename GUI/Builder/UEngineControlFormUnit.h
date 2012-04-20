@@ -16,12 +16,12 @@
 #include <Vcl.ImgList.hpp>
 #include <Vcl.Menus.hpp>
 #include <Vcl.ToolWin.hpp>
+#include "myrdk.h"
 //---------------------------------------------------------------------------
-class TUEngineControlForm : public TForm
+class TUEngineControlForm : public TForm, public RDK::IVisualInterface
 {
 __published:	// IDE-managed Components
 	TPanel *Panel1;
-	TTimer *Timer;
 	TMainMenu *MainMenu;
 	TImageList *ImageList;
 	TToolBar *ToolBar;
@@ -59,7 +59,6 @@ __published:	// IDE-managed Components
 	TSaveDialog *SaveDialog;
 	TOpenDialog *OpenDialog;
 	void __fastcall FormShow(TObject *Sender);
-	void __fastcall TimerTimer(TObject *Sender);
 	void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
 	void __fastcall Start1Click(TObject *Sender);
 	void __fastcall Pause1Click(TObject *Sender);
@@ -73,6 +72,7 @@ __published:	// IDE-managed Components
 	void __fastcall Performance1Click(TObject *Sender);
 	void __fastcall LoadProjectItemClick(TObject *Sender);
 	void __fastcall SaveProjectItemClick(TObject *Sender);
+	void __fastcall FormHide(TObject *Sender);
 
 
 private:	// User declarations
@@ -107,6 +107,8 @@ int InputEnvImageWidth, InputEnvImageHeight;
 int PredefinedStructure;
 
 // Обновление интерфейса
+void BeforeCalculate(void);
+void AfterCalculate(void);
 void UpdateInterface(void);
 
 // Создает новый проект

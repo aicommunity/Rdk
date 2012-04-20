@@ -23,6 +23,16 @@ __fastcall TUEngineControlForm::TUEngineControlForm(TComponent* Owner)
  ProjectAutoSaveFlag=true;
 }
 //---------------------------------------------------------------------------
+void TUEngineControlForm::BeforeCalculate(void)
+{
+
+}
+
+void TUEngineControlForm::AfterCalculate(void)
+{
+
+}
+
 void TUEngineControlForm::UpdateInterface(void)
 {
  UpdateInterfaceFlag=true;
@@ -36,6 +46,7 @@ void TUEngineControlForm::UpdateInterface(void)
   Caption=Caption+String(" [")+ProjectName+"]";
  }
 
+ StatusBar->SimpleText=UEngineMonitorForm->EngineMonitorFrame->StatusBar->SimpleText;
  UpdateInterfaceFlag=false;
 }
 
@@ -143,33 +154,15 @@ void TUEngineControlForm::SaveProject(void)
 
 void __fastcall TUEngineControlForm::FormShow(TObject *Sender)
 {
-// EngineInit(0,ExceptionHandler);
+ if(UEngineMonitorForm)
+  UEngineMonitorForm->AddInterface(this);
  UpdateInterface();
-/*
- ProjectIni=new TMemIniFile("project.ini");
-
- String modelfilename=ProjectIni->ReadString("General","ModelFileName","");
- if(modelfilename.Length() != 0)
- {
-  UComponentsControlForm->ComponentsControlFrame->LoadModelFromFile(modelfilename);
- }
-  */
 }
 //---------------------------------------------------------------------------
 
 
 
 
-void __fastcall TUEngineControlForm::TimerTimer(TObject *Sender)
-{
- Timer->Enabled=false;
-
- Step1Click(Sender);
- StatusBar->SimpleText=UEngineMonitorForm->EngineMonitorFrame->StatusBar->SimpleText;
-
- Timer->Enabled=true;
-}
-//---------------------------------------------------------------------------
 void __fastcall TUEngineControlForm::FormClose(TObject *Sender, TCloseAction &Action)
 {
  SaveProjectItemClick(Sender);
@@ -183,13 +176,6 @@ void __fastcall TUEngineControlForm::FormClose(TObject *Sender, TCloseAction &Ac
 
 void __fastcall TUEngineControlForm::Start1Click(TObject *Sender)
 {
-// UImagesForm->ImagesFrame->SetNumCells(2,2);
-// UImagesForm->ImagesFrame->LinkToComponent(0,0,"Pipeline1.ShowTZoneExtVector2",0);
-// UImagesForm->ImagesFrame->LinkToComponent(0,1,"Pipeline1.TrackingSimple",1);
-// UImagesForm->ImagesFrame->LinkToComponent(1,0,"Pipeline1.DifferenceFrameSimple",0);
-// UImagesForm->ImagesFrame->LinkToComponent(1,1,"Pipeline1.BackgroundSimple",2);
-
- Timer->Enabled=true;
  UEngineMonitorForm->EngineMonitorFrame->Start1Click(Sender);
 }
 //---------------------------------------------------------------------------
@@ -197,7 +183,6 @@ void __fastcall TUEngineControlForm::Start1Click(TObject *Sender)
 void __fastcall TUEngineControlForm::Pause1Click(TObject *Sender)
 {
  UEngineMonitorForm->EngineMonitorFrame->Pause1Click(Sender);
- Timer->Enabled=false;
 }
 //---------------------------------------------------------------------------
 
@@ -209,8 +194,7 @@ void __fastcall TUEngineControlForm::EngineMonitor1Click(TObject *Sender)
 
 void __fastcall TUEngineControlForm::Step1Click(TObject *Sender)
 {
- Env_Calculate(0);
- UpdateInterface();
+ UEngineMonitorForm->EngineMonitorFrame->Step1Click(Sender);
 }
 //---------------------------------------------------------------------------
 
@@ -241,7 +225,6 @@ void __fastcall TUEngineControlForm::SaveModel1Click(TObject *Sender)
 void __fastcall TUEngineControlForm::Reset1Click(TObject *Sender)
 {
  UEngineMonitorForm->EngineMonitorFrame->Reset1Click(Sender);
- Timer->Enabled=false;
 }
 //---------------------------------------------------------------------------
 
@@ -264,6 +247,13 @@ void __fastcall TUEngineControlForm::LoadProjectItemClick(TObject *Sender)
 void __fastcall TUEngineControlForm::SaveProjectItemClick(TObject *Sender)
 {
  SaveProject();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUEngineControlForm::FormHide(TObject *Sender)
+{
+ if(UEngineMonitorForm)
+  UEngineMonitorForm->DelInterface(this);
 }
 //---------------------------------------------------------------------------
 

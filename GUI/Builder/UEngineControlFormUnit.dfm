@@ -14,6 +14,7 @@ object UEngineControlForm: TUEngineControlForm
   OldCreateOrder = False
   Position = poDesigned
   OnClose = FormClose
+  OnHide = FormHide
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
@@ -143,13 +144,6 @@ object UEngineControlForm: TUEngineControlForm
     Panels = <>
     SimplePanel = True
   end
-  object Timer: TTimer
-    Enabled = False
-    Interval = 30
-    OnTimer = TimerTimer
-    Left = 336
-    Top = 32
-  end
   object MainMenu: TMainMenu
     Images = ImageList
     Left = 288
@@ -234,7 +228,7 @@ object UEngineControlForm: TUEngineControlForm
     Left = 384
     Top = 32
     Bitmap = {
-      494C01011B006000580010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B0060005C0010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
