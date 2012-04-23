@@ -1,5 +1,5 @@
-#ifndef ShowProgressBarUnitH
-#define ShowProgressBarUnitH
+#ifndef UShowProgressBarUnitH
+#define UShowProgressBarUnitH
 
 /* ***********************************************************
    @Copyright Alexander V. Bakhshiev, 2005-2009.
@@ -18,7 +18,7 @@
 #include <Forms.hpp>
 #include <ComCtrls.hpp>
 //---------------------------------------------------------------------------
-class TShowProgressBarForm : public TForm
+class TUShowProgressBarForm : public TForm
 {
 __published:    // IDE-managed Components
         TProgressBar *ProgressBar1;
@@ -28,7 +28,7 @@ __published:    // IDE-managed Components
         void __fastcall FormShow(TObject *Sender);
 private:    // User declarations
 public:        // User declarations
-        __fastcall TShowProgressBarForm(TComponent* Owner);
+        __fastcall TUShowProgressBarForm(TComponent* Owner);
 
 public: // Ìועמהû
         // ------------------------------------------
@@ -60,6 +60,6 @@ public: // Ìועמהû
         // ------------------------------------------
 };
 //---------------------------------------------------------------------------
-extern PACKAGE TShowProgressBarForm *ShowProgressBarForm;
+extern PACKAGE TUShowProgressBarForm *UShowProgressBarForm;
 //---------------------------------------------------------------------------
 #endif

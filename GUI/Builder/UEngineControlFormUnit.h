@@ -58,6 +58,7 @@ __published:	// IDE-managed Components
 	TMenuItem *Performance1;
 	TSaveDialog *SaveDialog;
 	TOpenDialog *OpenDialog;
+	TMenuItem *WatchWindow1;
 	void __fastcall FormShow(TObject *Sender);
 	void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
 	void __fastcall Start1Click(TObject *Sender);
@@ -73,6 +74,7 @@ __published:	// IDE-managed Components
 	void __fastcall LoadProjectItemClick(TObject *Sender);
 	void __fastcall SaveProjectItemClick(TObject *Sender);
 	void __fastcall FormHide(TObject *Sender);
+	void __fastcall WatchWindow1Click(TObject *Sender);
 
 
 private:	// User declarations

@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 
-#ifndef WatchWindowFormUnitH
-#define WatchWindowFormUnitH
+#ifndef UWatchWindowFormUnitH
+#define UWatchWindowFormUnitH
 //---------------------------------------------------------------------------
 #include <Classes.hpp>
 #include <Controls.hpp>
@@ -10,19 +10,19 @@
 #include <ComCtrls.hpp>
 #include <ImgList.hpp>
 #include <ToolWin.hpp>
-#include "WatchFrameUnit.h"
 #include <Menus.hpp>
+#include "UWatchFrameUnit.h"
 //---------------------------------------------------------------------------
-class TWatchWindowForm : public TForm
+class TUWatchWindowForm : public TForm, RDK::IVisualInterface
 {
 __published:	// IDE-managed Components
-        TWatchFrame *WatchFrame;
-        TToolBar *ToolBar1;
-        TToolButton *ToolButton1;
-        TToolButton *ToolButton2;
-        TToolButton *ToolButton3;
-        TToolButton *ToolButton4;
-        TImageList *ImageList1;
+		TToolBar *ToolBar1;
+		TToolButton *ToolButton1;
+		TToolButton *ToolButton2;
+		TToolButton *ToolButton3;
+		TToolButton *ToolButton4;
+		TImageList *ImageList1;
+	TUWatchFrame *WatchFrame;
         void __fastcall FormResize(TObject *Sender);
         void __fastcall FormShow(TObject *Sender);
         void __fastcall FormHide(TObject *Sender);
@@ -32,7 +32,7 @@ __published:	// IDE-managed Components
         void __fastcall ToolButton2Click(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
-        __fastcall TWatchWindowForm(TComponent* Owner);
+        __fastcall TUWatchWindowForm(TComponent* Owner);
 
 protected:	// Данные
         // -----------------------------------------
@@ -44,16 +44,23 @@ protected:	// Данные
         // -----------------------------------------
 
 public:	        // Методы
-        // ------------------------------
-        // Методы управления состоянием
-        // ------------------------------
-        // Возвращает 'true', если данные в сериях были изменены,
-        // или если серии были добавлены/удалены
-        bool __fastcall GetModifyState(void);
-        // ------------------------------
+		// ------------------------------
+		// Методы управления состоянием
+		// ------------------------------
+		// Возвращает 'true', если данные в сериях были изменены,
+		// или если серии были добавлены/удалены
+		bool __fastcall GetModifyState(void);
+
+		// Возвращает текущий графический фрейм
+		TUWatchFrame* GetCurrentWatchFrame(void);
+
+		void UpdateInterface(void);
+		void BeforeCalculate(void);
+		void AfterCalculate(void);
+		// ------------------------------
 
 };
 //---------------------------------------------------------------------------
-extern PACKAGE TWatchWindowForm *WatchWindowForm;
+extern PACKAGE TUWatchWindowForm *UWatchWindowForm;
 //---------------------------------------------------------------------------
 #endif

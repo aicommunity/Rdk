@@ -1,4 +1,4 @@
-object WatchFrame: TWatchFrame
+object UWatchFrame: TUWatchFrame
   Left = 0
   Top = 0
   Width = 656
@@ -51,12 +51,19 @@ object WatchFrame: TWatchFrame
   object PopupMenu: TPopupMenu
     Left = 72
     Top = 16
+    object AddWatch1: TMenuItem
+      Caption = 'Add Watch'
+      OnClick = AddWatch1Click
+    end
     object N1: TMenuItem
-      Caption = #1059#1087#1088#1072#1074#1083#1077#1085#1080#1077
+      Caption = 'Watch Control'
       OnClick = N1Click
     end
+    object N2: TMenuItem
+      Caption = '-'
+    end
     object bmp1: TMenuItem
-      Caption = #1057#1086#1093#1088#1072#1085#1080#1090#1100' '#1075#1088#1072#1092#1080#1082
+      Caption = 'Save Picture'
       OnClick = bmp1Click
     end
   end

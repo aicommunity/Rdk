@@ -1,14 +1,14 @@
-object ListInputForm: TListInputForm
+object UListInputForm: TUListInputForm
   Left = 327
   Top = 267
   BorderIcons = [biMinimize, biMaximize]
   BorderStyle = bsDialog
-  Caption = 'ListInputForm'
-  ClientHeight = 239
-  ClientWidth = 397
+  Caption = 'UListInputForm'
+  ClientHeight = 294
+  ClientWidth = 489
   Color = clBtnFace
-  Constraints.MinHeight = 122
-  Constraints.MinWidth = 325
+  Constraints.MinHeight = 150
+  Constraints.MinWidth = 400
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -10
@@ -21,12 +21,12 @@ object ListInputForm: TListInputForm
   OnResize = FormResize
   OnShow = FormShow
   PixelsPerInch = 96
-  TextHeight = 13
+  TextHeight = 16
   object List: TStringGrid
     Left = 0
     Top = 0
-    Width = 397
-    Height = 176
+    Width = 489
+    Height = 217
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
@@ -42,9 +42,9 @@ object ListInputForm: TListInputForm
   end
   object Panel1: TPanel
     Left = 0
-    Top = 176
-    Width = 397
-    Height = 63
+    Top = 217
+    Width = 489
+    Height = 77
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
@@ -53,20 +53,19 @@ object ListInputForm: TListInputForm
     BevelOuter = bvNone
     TabOrder = 1
     DesignSize = (
-      397
-      63)
+      489
+      77)
     object BitBtn1: TBitBtn
-      Left = 124
-      Top = 33
-      Width = 73
-      Height = 26
+      Left = 153
+      Top = 41
+      Width = 89
+      Height = 32
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
       Caption = 'OK'
       Default = True
-      DoubleBuffered = True
       Glyph.Data = {
         DE010000424DDE01000000000000760000002800000024000000120000000100
         0400000000006801000000000000000000001000000000000000000000000000
@@ -85,30 +84,27 @@ object ListInputForm: TListInputForm
         333A333333333333333338330000333333333333333333333333333333333333
         0000}
       NumGlyphs = 2
-      ParentDoubleBuffered = False
       TabOrder = 0
       OnClick = BitBtn1Click
     end
     object BitBtn2: TBitBtn
-      Left = 202
-      Top = 33
-      Width = 72
-      Height = 26
+      Left = 249
+      Top = 41
+      Width = 88
+      Height = 32
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      DoubleBuffered = True
       Kind = bkCancel
       NumGlyphs = 2
-      ParentDoubleBuffered = False
       TabOrder = 1
     end
     object Edit: TEdit
       Left = 2
-      Top = 7
-      Width = 391
-      Height = 21
+      Top = 9
+      Width = 482
+      Height = 24
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
@@ -122,8 +118,8 @@ object ListInputForm: TListInputForm
   object Panel2: TPanel
     Left = 0
     Top = 0
-    Width = 397
-    Height = 79
+    Width = 489
+    Height = 97
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
@@ -132,13 +128,13 @@ object ListInputForm: TListInputForm
     TabOrder = 2
     Visible = False
     DesignSize = (
-      397
-      79)
+      489
+      97)
     object Button1: TButton
-      Left = 169
-      Top = 58
-      Width = 61
-      Height = 20
+      Left = 208
+      Top = 71
+      Width = 75
+      Height = 25
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2

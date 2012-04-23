@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 
-#ifndef SeriesControlUnitH
-#define SeriesControlUnitH
+#ifndef USeriesControlUnitH
+#define USeriesControlUnitH
 //---------------------------------------------------------------------------
 #include <Classes.hpp>
 #include <Controls.hpp>
@@ -11,9 +11,9 @@
 #include <ExtCtrls.hpp>
 #include <Grids.hpp>
 #include <Dialogs.hpp>
-#include "WatchFrameUnit.h"
+#include "UWatchFrameUnit.h"
 //---------------------------------------------------------------------------
-class TSeriesControlForm : public TForm
+class TUSeriesControlForm : public TForm
 {
 __published:	// IDE-managed Components
         TPanel *Panel2;
@@ -84,21 +84,21 @@ __published:	// IDE-managed Components
 	void __fastcall ComboBox3Select(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
-        __fastcall TSeriesControlForm(TComponent* Owner);
+        __fastcall TUSeriesControlForm(TComponent* Owner);
 
 protected: // Данные
         // Настраиваемое окно наблюдений
-        TWatchFrame* GrSender;
+        TUWatchFrame* GrSender;
 
         // -----------------------------------------
         // Данные об наблюдаемых точках съёма данных
         // -----------------------------------------
         // Список имён наблюдаемых точек съёма, и смещений
         // графиков серий друг относительно друга по оси Y.
-		map<int,OutGateWatchData> WatchList;
+		map<int,TUWatchInfo> WatchList;
 
 		// Список имён доступных для наблюдения точек съёма
-		map<int,OutGateWatchData> PossibleWatchList;
+		map<int,TUWatchInfo> PossibleWatchList;
         // -----------------------------------------
 
         // -----------------------------------------
@@ -142,11 +142,11 @@ public: // Методы
         // Методы управления формой
         // ------------------------
         // Метод, который должен быть вызван для открытия диалога
-        void __fastcall Execute(TWatchFrame* grsender);
+        void __fastcall Execute(TUWatchFrame* grsender);
 
         // ------------------------
 };
 //---------------------------------------------------------------------------
-extern PACKAGE TSeriesControlForm *SeriesControlForm;
+extern PACKAGE TUSeriesControlForm *USeriesControlForm;
 //---------------------------------------------------------------------------
 #endif

@@ -76,6 +76,7 @@ void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
  for(size_t i=0;i<InterfaceUpdaters.size();i++)
   InterfaceUpdaters[i]->BeforeCalculate();
 
+ for(int i=0;i<100;i++)
  Env_Calculate(0);
 
  for(size_t i=0;i<InterfaceUpdaters.size();i++)

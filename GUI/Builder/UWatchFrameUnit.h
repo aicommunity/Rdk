@@ -1,8 +1,8 @@
 //---------------------------------------------------------------------------
 
 
-#ifndef WatchFrameUnitH
-#define WatchFrameUnitH
+#ifndef UWatchFrameUnitH
+#define UWatchFrameUnitH
 #include <Classes.hpp>
 #include <Controls.hpp>
 #include <Dialogs.hpp>
@@ -27,6 +27,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include "myrdk.h"
 
 using namespace std;
 
@@ -37,7 +38,7 @@ using namespace std;
 съёма.
 */
 //---------------------------------------------------------------------------
-class OutGateWatchData
+class TUWatchInfo
 {
 public: // Связи
 // Индекс графика в массиве серий
@@ -45,6 +46,15 @@ int SeriesIndex;
 
 // Указатель на источник данных
 void* DataSource;
+
+// Альтернативный указатель на имя компонента-источника данных
+string DataSourceName;
+
+// Индекс выхода
+int OutputIndex;
+
+// Индекс элемента выхода
+int OutputElementIndex;
 
 public: // Данные графика
 const double *X;
@@ -87,14 +97,14 @@ string Legend;
 int LineWidth;
 
 public: // Методы
-OutGateWatchData(void);
-~OutGateWatchData(void);
-OutGateWatchData(const OutGateWatchData &wd);
-OutGateWatchData& operator = (const OutGateWatchData& wd);
+TUWatchInfo(void);
+~TUWatchInfo(void);
+TUWatchInfo(const TUWatchInfo &wd);
+TUWatchInfo& operator = (const TUWatchInfo& wd);
 };
         
 //---------------------------------------------------------------------------
-class TWatchFrame : public TFrame
+class TUWatchFrame : public TFrame
 {
 __published:	// IDE-managed Components
         TChart *Chart1;
@@ -102,12 +112,15 @@ __published:	// IDE-managed Components
 	TPopupMenu *PopupMenu;
 	TMenuItem *N1;
 	TMenuItem *bmp1;
+	TMenuItem *AddWatch1;
+	TMenuItem *N2;
 	void __fastcall N1Click(TObject *Sender);
 	void __fastcall bmp1Click(TObject *Sender);
+	void __fastcall AddWatch1Click(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
-        __fastcall TWatchFrame(TComponent* Owner);
-        virtual __fastcall ~TWatchFrame(void);
+        __fastcall TUWatchFrame(TComponent* Owner);
+        virtual __fastcall ~TUWatchFrame(void);
 
 protected:	// Параметры
 // Размер кеша отображаемых данных
@@ -119,7 +132,7 @@ protected:	// Данные
         // -----------------------------------------
         // Список имён наблюдаемых точек съёма, и смещений
         // графиков серий друг относительно друга по оси Y.
-		vector<OutGateWatchData> NameList;
+		vector<TUWatchInfo> NameList;
 
 		// Текущий индекс накопления в кеше
 		int CacheIndex;
@@ -212,9 +225,13 @@ public:	// Методы
         // ------------------------------
         // Возвращает 'true', если данные в сериях были изменены,
         // или если серии были добавлены/удалены
-        bool __fastcall GetModifyState(void);
+		bool __fastcall GetModifyState(void);
 
-        // Собирает информацию об открытых сериях в файл 'watchname'
+		// Сохранение и загрузка описания графика в файл
+		bool SaveToIni(TMemIniFile *ini, const String &section);
+		bool LoadFromIni(TMemIniFile *ini, const String &section);
+
+		// Собирает информацию об открытых сериях в файл 'watchname'
         // Если 'collectstate' == 'true', то сохраняет также накопленную информацию
         bool __fastcall CollectInfo(string watchname, bool collectstate);
 
@@ -229,15 +246,19 @@ public:	// Методы
         // Методы управления наблюдениями
 		// ------------------------------
 		// Возвращает данные наблюдения
-		OutGateWatchData* __fastcall Get(int seriesindex);
-		OutGateWatchData* __fastcall Get(void *datasource);
+		TUWatchInfo* __fastcall Get(int seriesindex);
+		TUWatchInfo* __fastcall Get(void *datasource);
 
 		// Возвращает общее число данных наблюдения
 		int __fastcall GetNumWatches(void);
 
 		// Добавление нового наблюдения
 		// Возвращает индекс серии
-		int __fastcall Add(OutGateWatchData& wd);
+		int __fastcall Add(TUWatchInfo& wd);
+
+		// Добавление нового наблюдения по имени компонента и индексу выхода
+		// Возвращает индекс серии
+		int __fastcall Add(const string &name, int output=0, int outindex=0, double yshift=0, TPenStyle style=psSolid, TColor color=TColor(0));
 
         // Удаление наблюдения
         void __fastcall Del(int seriesindex);
@@ -257,13 +278,13 @@ public:	// Методы
 
 		// Обновление данных серии
 		// Добавление одной точки в серию
-		void __fastcall SeriesUpdate(int seriesindex, double x, double y);
-		void __fastcall SeriesUpdate(void* datasource, double x, double y);
+ //		void __fastcall SeriesUpdate(int seriesindex, double x, double y);
+ //		void __fastcall SeriesUpdate(void* datasource, double x, double y);
 
 		// Обновление данных серии
 		// Добавление массива точек в серию
-		void __fastcall SeriesUpdate(int seriesindex, double* x, double* y, int size);
-		void __fastcall SeriesUpdate(void* datasource, double* x, double* y, int size);
+ //		void __fastcall SeriesUpdate(int seriesindex, double* x, double* y, int size);
+ //		void __fastcall SeriesUpdate(void* datasource, double* x, double* y, int size);
 
 		// Обновление информации за 'stepcount' прошедших шагов интегрирования
 		void __fastcall StepUpdate(bool speedup=true);
@@ -272,13 +293,13 @@ public:	// Методы
         void __fastcall Reset(void);
 
         // Возвращает копию списка всех наблюдаемых серий
-		void __fastcall GetWatchList(map<int, OutGateWatchData> &buffer);
+		void __fastcall GetWatchList(map<int, TUWatchInfo> &buffer);
 
 		// Возвращает копию списка всех видимых серий
-		void __fastcall GetVisibleList(map<int, OutGateWatchData> &buffer);
+		void __fastcall GetVisibleList(map<int, TUWatchInfo> &buffer);
 
 		// Возвращает копию списка всех невидимых серий
-		void __fastcall GetInvisibleList(map<int, OutGateWatchData> &buffer);
+		void __fastcall GetInvisibleList(map<int, TUWatchInfo> &buffer);
 
 		// Заменяет подпись под выбранной серией
 		void __fastcall ChangeLegend(int seriesindex, string legend);
@@ -320,6 +341,6 @@ public:	// Методы
 		// -----------------------------
 };
 //---------------------------------------------------------------------------
-extern PACKAGE TWatchFrame *WatchFrame;
+extern PACKAGE TUWatchFrame *UWatchFrame;
 //---------------------------------------------------------------------------
 #endif

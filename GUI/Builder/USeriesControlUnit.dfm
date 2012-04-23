@@ -1,11 +1,11 @@
-object SeriesControlForm: TSeriesControlForm
+object USeriesControlForm: TUSeriesControlForm
   Left = 360
   Top = 248
   BorderIcons = [biSystemMenu]
   BorderStyle = bsDialog
   Caption = #1044#1086#1073#1072#1074#1083#1077#1085#1080#1077'/'#1091#1076#1072#1083#1077#1085#1080#1077'/'#1085#1072#1089#1090#1088#1086#1081#1082#1072' '#1085#1072#1073#1083#1102#1076#1077#1085#1080#1081
-  ClientHeight = 401
-  ClientWidth = 529
+  ClientHeight = 494
+  ClientWidth = 651
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -17,37 +17,53 @@ object SeriesControlForm: TSeriesControlForm
   Position = poDesktopCenter
   OnHide = FormHide
   PixelsPerInch = 96
-  TextHeight = 13
+  TextHeight = 16
   object Panel2: TPanel
     Left = 0
     Top = 0
-    Width = 298
-    Height = 401
+    Width = 367
+    Height = 494
+    Margins.Left = 4
+    Margins.Top = 4
+    Margins.Right = 4
+    Margins.Bottom = 4
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 0
     object Panel4: TPanel
       Left = 0
       Top = 0
-      Width = 298
-      Height = 186
+      Width = 367
+      Height = 229
+      Margins.Left = 4
+      Margins.Top = 4
+      Margins.Right = 4
+      Margins.Bottom = 4
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 0
       object Panel5: TPanel
-        Left = 240
+        Left = 295
         Top = 0
-        Width = 58
-        Height = 186
+        Width = 72
+        Height = 229
+        Margins.Left = 4
+        Margins.Top = 4
+        Margins.Right = 4
+        Margins.Bottom = 4
         Align = alRight
         BevelOuter = bvNone
         TabOrder = 0
         object Button1: TButton
-          Left = 10
-          Top = 13
-          Width = 41
-          Height = 20
+          Left = 12
+          Top = 16
+          Width = 51
+          Height = 25
           Hint = #1053#1072#1095#1072#1090#1100' '#1085#1072#1073#1083#1102#1076#1077#1085#1080#1077' '#1079#1072' '#1074#1089#1077#1084' '#1090#1086#1095#1082#1072#1084#1080
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
           Caption = '>>>'
           ParentShowHint = False
           ShowHint = True
@@ -55,11 +71,15 @@ object SeriesControlForm: TSeriesControlForm
           OnClick = Button1Click
         end
         object Button2: TButton
-          Left = 10
-          Top = 65
-          Width = 41
-          Height = 20
+          Left = 12
+          Top = 80
+          Width = 51
+          Height = 25
           Hint = #1053#1072#1095#1072#1090#1100' '#1085#1072#1073#1083#1102#1076#1077#1085#1080#1077
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
           Caption = '>'
           ParentShowHint = False
           ShowHint = True
@@ -67,11 +87,15 @@ object SeriesControlForm: TSeriesControlForm
           OnClick = Button2Click
         end
         object Button3: TButton
-          Left = 10
-          Top = 91
-          Width = 41
-          Height = 20
+          Left = 12
+          Top = 112
+          Width = 51
+          Height = 25
           Hint = #1055#1088#1077#1088#1074#1072#1090#1100' '#1085#1072#1073#1083#1102#1076#1077#1085#1080#1077
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
           Caption = '<'
           ParentShowHint = False
           ShowHint = True
@@ -79,11 +103,15 @@ object SeriesControlForm: TSeriesControlForm
           OnClick = Button3Click
         end
         object Button4: TButton
-          Left = 10
-          Top = 141
-          Width = 41
-          Height = 20
+          Left = 12
+          Top = 174
+          Width = 51
+          Height = 24
           Hint = #1055#1088#1077#1088#1074#1072#1090#1100' '#1085#1072#1073#1083#1102#1076#1077#1085#1080#1077' '#1079#1072' '#1074#1089#1077#1084#1080' '#1090#1086#1095#1082#1072#1084#1080
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
           Caption = '<<<'
           ParentShowHint = False
           ShowHint = True
@@ -93,16 +121,24 @@ object SeriesControlForm: TSeriesControlForm
       end
       object GroupBox3: TGroupBox
         Left = 0
-        Top = 6
-        Width = 239
-        Height = 170
+        Top = 7
+        Width = 294
+        Height = 210
+        Margins.Left = 4
+        Margins.Top = 4
+        Margins.Right = 4
+        Margins.Bottom = 4
         Caption = ' '#1044#1086#1089#1090#1091#1087#1085#1099#1077' '#1090#1086#1095#1082#1080' '
         TabOrder = 1
         object StringGrid1: TStringGrid
           Left = 2
-          Top = 15
-          Width = 235
-          Height = 153
+          Top = 18
+          Width = 290
+          Height = 190
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
           Align = alClient
           ColCount = 2
           FixedCols = 0
@@ -115,44 +151,64 @@ object SeriesControlForm: TSeriesControlForm
     end
     object Panel1: TPanel
       Left = 0
-      Top = 186
-      Width = 298
-      Height = 215
+      Top = 229
+      Width = 367
+      Height = 265
+      Margins.Left = 4
+      Margins.Top = 4
+      Margins.Right = 4
+      Margins.Bottom = 4
       Align = alBottom
       BevelOuter = bvNone
       TabOrder = 1
       object GroupBox2: TGroupBox
-        Left = 6
+        Left = 7
         Top = 1
-        Width = 228
-        Height = 176
+        Width = 281
+        Height = 217
+        Margins.Left = 4
+        Margins.Top = 4
+        Margins.Right = 4
+        Margins.Bottom = 4
         Caption = ' '#1055#1072#1088#1072#1084#1077#1090#1088#1099' '#1086#1082#1085#1072' '
         TabOrder = 0
         DesignSize = (
-          228
-          176)
+          281
+          217)
         object Label7: TLabel
           Left = 25
-          Top = 135
-          Width = 46
-          Height = 13
+          Top = 166
+          Width = 62
+          Height = 16
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
           Alignment = taRightJustify
           Caption = #1051#1077#1075#1077#1085#1076#1072':'
         end
         object CheckBox2: TCheckBox
-          Left = 7
-          Top = 98
-          Width = 104
-          Height = 14
+          Left = 9
+          Top = 121
+          Width = 128
+          Height = 17
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
           Caption = #1055#1086#1076#1087#1080#1089#1100' '#1086#1089#1080' Y:'
           TabOrder = 0
           OnClick = CheckBox2Click
         end
         object Edit2: TEdit
-          Left = 23
-          Top = 112
-          Width = 192
-          Height = 21
+          Left = 28
+          Top = 138
+          Width = 237
+          Height = 24
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
           Anchors = [akLeft, akTop, akRight]
           Color = clActiveBorder
           Enabled = False
@@ -160,10 +216,14 @@ object SeriesControlForm: TSeriesControlForm
           OnChange = Edit2Change
         end
         object CheckBox4: TCheckBox
-          Left = 7
-          Top = 79
-          Width = 104
-          Height = 13
+          Left = 9
+          Top = 97
+          Width = 128
+          Height = 16
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
           Caption = #1064#1082#1072#1083#1072' '#1087#1086' '#1086#1089#1080' Y'
           Checked = True
           State = cbChecked
@@ -171,10 +231,14 @@ object SeriesControlForm: TSeriesControlForm
           OnClick = CheckBox4Click
         end
         object Edit1: TEdit
-          Left = 22
-          Top = 55
-          Width = 193
-          Height = 21
+          Left = 27
+          Top = 68
+          Width = 238
+          Height = 24
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
           Anchors = [akLeft, akTop, akRight]
           Color = clActiveBorder
           Enabled = False
@@ -182,19 +246,27 @@ object SeriesControlForm: TSeriesControlForm
           OnChange = Edit1Change
         end
         object CheckBox1: TCheckBox
-          Left = 7
-          Top = 39
-          Width = 104
-          Height = 14
+          Left = 9
+          Top = 48
+          Width = 128
+          Height = 17
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
           Caption = #1055#1086#1076#1087#1080#1089#1100' '#1086#1089#1080' X:'
           TabOrder = 4
           OnClick = CheckBox1Click
         end
         object CheckBox3: TCheckBox
-          Left = 7
-          Top = 20
-          Width = 104
-          Height = 13
+          Left = 9
+          Top = 25
+          Width = 128
+          Height = 16
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
           Caption = #1064#1082#1072#1083#1072' '#1087#1086' '#1086#1089#1080' X'
           Checked = True
           State = cbChecked
@@ -202,10 +274,14 @@ object SeriesControlForm: TSeriesControlForm
           OnClick = CheckBox3Click
         end
         object ComboBox3: TComboBox
-          Left = 23
-          Top = 152
-          Width = 192
-          Height = 21
+          Left = 28
+          Top = 187
+          Width = 237
+          Height = 24
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
           Style = csDropDownList
           ItemIndex = 5
           TabOrder = 6
@@ -223,38 +299,53 @@ object SeriesControlForm: TSeriesControlForm
     end
   end
   object Panel3: TPanel
-    Left = 298
+    Left = 367
     Top = 0
-    Width = 231
-    Height = 401
+    Width = 284
+    Height = 494
+    Margins.Left = 4
+    Margins.Top = 4
+    Margins.Right = 4
+    Margins.Bottom = 4
     Align = alRight
     BevelOuter = bvNone
     TabOrder = 1
     object Panel6: TPanel
       Left = 0
-      Top = 180
-      Width = 231
-      Height = 221
+      Top = 222
+      Width = 284
+      Height = 272
+      Margins.Left = 4
+      Margins.Top = 4
+      Margins.Right = 4
+      Margins.Bottom = 4
       Align = alBottom
       BevelOuter = bvNone
       TabOrder = 0
       DesignSize = (
-        231
-        221)
+        284
+        272)
       object Label1: TLabel
-        Left = 7
-        Top = 7
+        Left = 9
+        Top = 9
         Width = 3
-        Height = 13
+        Height = 16
+        Margins.Left = 4
+        Margins.Top = 4
+        Margins.Right = 4
+        Margins.Bottom = 4
       end
       object BitBtn1: TBitBtn
-        Left = 45
-        Top = 190
-        Width = 87
-        Height = 26
+        Left = 55
+        Top = 234
+        Width = 107
+        Height = 32
+        Margins.Left = 4
+        Margins.Top = 4
+        Margins.Right = 4
+        Margins.Bottom = 4
         Anchors = [akRight, akBottom]
         Caption = #1055#1088#1080#1084#1077#1085#1080#1090#1100
-        DoubleBuffered = True
         Glyph.Data = {
           DE010000424DDE01000000000000760000002800000024000000120000000100
           0400000000006801000000000000000000001000000000000000000000000000
@@ -274,66 +365,93 @@ object SeriesControlForm: TSeriesControlForm
           0000}
         ModalResult = 1
         NumGlyphs = 2
-        ParentDoubleBuffered = False
         TabOrder = 0
         OnClick = BitBtn1Click
       end
       object GroupBox1: TGroupBox
         Left = 0
-        Top = 6
-        Width = 228
-        Height = 178
+        Top = 7
+        Width = 281
+        Height = 219
+        Margins.Left = 4
+        Margins.Top = 4
+        Margins.Right = 4
+        Margins.Bottom = 4
         Caption = ' '#1055#1072#1088#1072#1084#1077#1090#1088#1099' '#1085#1072#1073#1083#1102#1076#1077#1085#1080#1103' '
         TabOrder = 1
         DesignSize = (
-          228
-          178)
+          281
+          219)
         object Label2: TLabel
-          Left = 20
-          Top = 20
-          Width = 50
-          Height = 13
+          Left = 25
+          Top = 25
+          Width = 65
+          Height = 16
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
           Caption = #1055#1086#1076#1087#1080#1089#1100': '
         end
         object Label3: TLabel
-          Left = 39
-          Top = 72
-          Width = 28
-          Height = 13
+          Left = 45
+          Top = 89
+          Width = 37
+          Height = 16
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
           Alignment = taRightJustify
           Caption = #1062#1074#1077#1090':'
         end
         object Label4: TLabel
-          Left = 10
-          Top = 46
-          Width = 57
-          Height = 13
+          Left = 7
+          Top = 57
+          Width = 75
+          Height = 16
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
           Alignment = taRightJustify
           Caption = #1057#1084#1077#1097#1077#1085#1080#1077':'
         end
         object Label5: TLabel
-          Left = 12
-          Top = 98
-          Width = 55
-          Height = 13
+          Left = 7
+          Top = 121
+          Width = 75
+          Height = 16
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
           Alignment = taRightJustify
           Caption = #1058#1080#1087' '#1083#1080#1085#1080#1080':'
         end
         object Label6: TLabel
           Left = 18
-          Top = 127
-          Width = 49
-          Height = 13
+          Top = 156
+          Width = 64
+          Height = 16
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
           Alignment = taRightJustify
           Caption = #1058#1086#1083#1097#1080#1085#1072':'
         end
         object Edit3: TEdit
-          Left = 72
-          Top = 16
-          Width = 150
-          Height = 21
+          Left = 89
+          Top = 20
+          Width = 184
+          Height = 24
           Cursor = crHandPoint
           Hint = #1044#1074#1086#1081#1085#1086#1081' '#1097#1077#1083#1095#1086#1082', '#1095#1090#1086#1073#1099' '#1080#1079#1084#1077#1085#1080#1090#1100' '#1087#1086#1076#1087#1080#1089#1100
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
           Anchors = [akLeft, akTop, akRight]
           Color = clActiveBorder
           ParentShowHint = False
@@ -343,10 +461,14 @@ object SeriesControlForm: TSeriesControlForm
           OnDblClick = Edit3DblClick
         end
         object Edit4: TEdit
-          Left = 72
-          Top = 43
-          Width = 150
-          Height = 21
+          Left = 89
+          Top = 53
+          Width = 184
+          Height = 24
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
           Anchors = [akLeft, akTop, akRight]
           TabOrder = 1
           Text = '0'
@@ -354,12 +476,16 @@ object SeriesControlForm: TSeriesControlForm
           OnKeyDown = Edit4KeyDown
         end
         object OutterCPanel: TPanel
-          Left = 72
-          Top = 68
-          Width = 150
-          Height = 20
+          Left = 89
+          Top = 84
+          Width = 184
+          Height = 24
           Cursor = crHandPoint
           Hint = #1044#1074#1086#1081#1085#1086#1081' '#1097#1077#1083#1095#1086#1082', '#1095#1090#1086#1073#1099' '#1080#1079#1084#1077#1085#1080#1090#1100' '#1094#1074#1077#1090
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
           Anchors = [akLeft, akTop, akRight]
           BevelInner = bvLowered
           BevelOuter = bvSpace
@@ -369,15 +495,19 @@ object SeriesControlForm: TSeriesControlForm
           TabOrder = 2
           OnDblClick = OutterCPanelDblClick
           DesignSize = (
-            150
-            20)
+            184
+            24)
           object InnerCPanel: TPanel
-            Left = 7
-            Top = 7
-            Width = 137
-            Height = 7
+            Left = 9
+            Top = 9
+            Width = 168
+            Height = 8
             Cursor = crHandPoint
             Hint = #1044#1074#1086#1081#1085#1086#1081' '#1097#1077#1083#1095#1086#1082', '#1095#1090#1086#1073#1099' '#1080#1079#1084#1077#1085#1080#1090#1100' '#1094#1074#1077#1090
+            Margins.Left = 4
+            Margins.Top = 4
+            Margins.Right = 4
+            Margins.Bottom = 4
             Anchors = [akLeft, akTop, akRight]
             BevelOuter = bvNone
             Color = clBlack
@@ -388,10 +518,14 @@ object SeriesControlForm: TSeriesControlForm
           end
         end
         object CheckBox5: TCheckBox
-          Left = 75
-          Top = 155
-          Width = 150
-          Height = 13
+          Left = 92
+          Top = 191
+          Width = 185
+          Height = 16
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
           Anchors = [akLeft, akTop, akRight]
           Caption = #1054#1090#1082#1083#1102#1095#1080#1090#1100' '#1074#1089#1077' '#1087#1086#1076#1087#1080#1089#1080
           Checked = True
@@ -400,10 +534,14 @@ object SeriesControlForm: TSeriesControlForm
           OnClick = CheckBox5Click
         end
         object ComboBox1: TComboBox
-          Left = 72
-          Top = 95
-          Width = 150
-          Height = 21
+          Left = 89
+          Top = 117
+          Width = 184
+          Height = 24
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
           Style = csDropDownList
           TabOrder = 4
           OnSelect = ComboBox1Select
@@ -415,10 +553,14 @@ object SeriesControlForm: TSeriesControlForm
             '2 '#1064#1090#1088#1080#1093'-'#1087#1091#1085#1082#1090#1080#1088)
         end
         object ComboBox2: TComboBox
-          Left = 72
-          Top = 124
-          Width = 150
-          Height = 21
+          Left = 89
+          Top = 153
+          Width = 184
+          Height = 24
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
           Style = csDropDownList
           ItemIndex = 0
           TabOrder = 5
@@ -438,31 +580,41 @@ object SeriesControlForm: TSeriesControlForm
         end
       end
       object BitBtn2: TBitBtn
-        Left = 138
-        Top = 190
-        Width = 85
-        Height = 26
+        Left = 170
+        Top = 234
+        Width = 104
+        Height = 32
+        Margins.Left = 4
+        Margins.Top = 4
+        Margins.Right = 4
+        Margins.Bottom = 4
         Caption = #1054#1090#1084#1077#1085#1072
-        DoubleBuffered = True
         Kind = bkCancel
         NumGlyphs = 2
-        ParentDoubleBuffered = False
         TabOrder = 2
         OnClick = BitBtn2Click
       end
     end
     object GroupBox4: TGroupBox
       Left = 0
-      Top = 6
-      Width = 228
-      Height = 170
+      Top = 7
+      Width = 281
+      Height = 210
+      Margins.Left = 4
+      Margins.Top = 4
+      Margins.Right = 4
+      Margins.Bottom = 4
       Caption = ' '#1053#1072#1073#1083#1102#1076#1072#1077#1084#1099#1077' '#1090#1086#1095#1082#1080' '
       TabOrder = 1
       object StringGrid2: TStringGrid
         Left = 2
-        Top = 15
-        Width = 224
-        Height = 153
+        Top = 18
+        Width = 277
+        Height = 190
+        Margins.Left = 4
+        Margins.Top = 4
+        Margins.Right = 4
+        Margins.Bottom = 4
         Align = alClient
         ColCount = 2
         FixedCols = 0

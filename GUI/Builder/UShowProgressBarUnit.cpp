@@ -12,13 +12,13 @@
 #include <vcl.h>
 #pragma hdrstop
 
-#include "ShowProgressBarUnit.h"
+#include "UShowProgressBarUnit.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
-TShowProgressBarForm *ShowProgressBarForm;
+TUShowProgressBarForm *UShowProgressBarForm;
 //---------------------------------------------------------------------------
-__fastcall TShowProgressBarForm::TShowProgressBarForm(TComponent* Owner)
+__fastcall TUShowProgressBarForm::TUShowProgressBarForm(TComponent* Owner)
         : TForm(Owner)
 {
 }
@@ -28,7 +28,7 @@ __fastcall TShowProgressBarForm::TShowProgressBarForm(TComponent* Owner)
 // ћетоды управлени€ окном статуса выполнени€
 // ------------------------------------------
 // ¬озвращает заголовок окна
-String __fastcall TShowProgressBarForm::GetWinTitle(void)
+String __fastcall TUShowProgressBarForm::GetWinTitle(void)
 {
  if(!Visible)
   return "";
@@ -38,7 +38,7 @@ String __fastcall TShowProgressBarForm::GetWinTitle(void)
 
 
 // ”станавливает заголовок окна
-void __fastcall TShowProgressBarForm::SetWinTitle(String title)
+void __fastcall TUShowProgressBarForm::SetWinTitle(String title)
 {
  if(!Visible)
   return;
@@ -48,7 +48,7 @@ void __fastcall TShowProgressBarForm::SetWinTitle(String title)
 }
 
 // ¬озвращает заголовки полос состо€ни€
-String __fastcall TShowProgressBarForm::GetBarHeader(unsigned int num)
+String __fastcall TUShowProgressBarForm::GetBarHeader(unsigned int num)
 {
  if(!Visible)
   return "";
@@ -65,7 +65,7 @@ String __fastcall TShowProgressBarForm::GetBarHeader(unsigned int num)
 }
 
 // ”станавливает заголовки полос состо€ни€
-void __fastcall TShowProgressBarForm::SetBarHeader(unsigned int num, String title)
+void __fastcall TUShowProgressBarForm::SetBarHeader(unsigned int num, String title)
 {
  if(!Visible)
   return;
@@ -84,7 +84,7 @@ void __fastcall TShowProgressBarForm::SetBarHeader(unsigned int num, String titl
 }
 
 // ¬озвращает состо€ние конкретной полосы
-int __fastcall TShowProgressBarForm::GetBarStatus(unsigned int num)
+int __fastcall TUShowProgressBarForm::GetBarStatus(unsigned int num)
 {
  if(!Visible)
   return 0;
@@ -102,7 +102,7 @@ int __fastcall TShowProgressBarForm::GetBarStatus(unsigned int num)
 }
 
 // ”величивает состо€ние конкретной полосы
-void __fastcall TShowProgressBarForm::IncBarStatus(unsigned int num, int val)
+void __fastcall TUShowProgressBarForm::IncBarStatus(unsigned int num, int val)
 {
  if(!Visible)
   return;
@@ -122,7 +122,7 @@ void __fastcall TShowProgressBarForm::IncBarStatus(unsigned int num, int val)
 }
 
 // ”меньшает состо€ние конкретной полосы
-void __fastcall TShowProgressBarForm::DecBarStatus(unsigned int num, int val)
+void __fastcall TUShowProgressBarForm::DecBarStatus(unsigned int num, int val)
 {
  if(!Visible)
   return;
@@ -142,7 +142,7 @@ void __fastcall TShowProgressBarForm::DecBarStatus(unsigned int num, int val)
 }
 
 // —брасывает состо€ние конкретной полосы
-void __fastcall TShowProgressBarForm::ResetBarStatus(unsigned int num, int currvalue, int total)
+void __fastcall TUShowProgressBarForm::ResetBarStatus(unsigned int num, int currvalue, int total)
 {
  if(!Visible)
   return;
@@ -164,7 +164,7 @@ void __fastcall TShowProgressBarForm::ResetBarStatus(unsigned int num, int currv
 }
 // ------------------------------------------
 //---------------------------------------------------------------------------
-void __fastcall TShowProgressBarForm::FormShow(TObject *Sender)
+void __fastcall TUShowProgressBarForm::FormShow(TObject *Sender)
 {
  ProgressBar1->Position=0;
  ProgressBar2->Position=0;

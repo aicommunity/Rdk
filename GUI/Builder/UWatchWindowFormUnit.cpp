@@ -3,16 +3,16 @@
 #include <vcl.h>
 #pragma hdrstop
 
-#include "WatchWindowFormUnit.h"
-#include "ListInputFormUnit.h"
-//#include "MainUnit.h"
+#include "UWatchWindowFormUnit.h"
+#include "UListInputFormUnit.h"
+#include "UEngineMonitorFormUnit.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma link "WatchFrameUnit"
+#pragma link "UWatchFrameUnit"
 #pragma resource "*.dfm"
-TWatchWindowForm *WatchWindowForm;
+TUWatchWindowForm *UWatchWindowForm;
 //---------------------------------------------------------------------------
-__fastcall TWatchWindowForm::TWatchWindowForm(TComponent* Owner)
+__fastcall TUWatchWindowForm::TUWatchWindowForm(TComponent* Owner)
         : TForm(Owner)
 {
 // WatchFrame->Model=0;
@@ -25,7 +25,7 @@ __fastcall TWatchWindowForm::TWatchWindowForm(TComponent* Owner)
 // ------------------------------
 // Возвращает 'true', если данные в сериях были изменены,
 // или если серии были добавлены/удалены
-bool __fastcall TWatchWindowForm::GetModifyState(void)
+bool __fastcall TUWatchWindowForm::GetModifyState(void)
 {
  if(ModifyState || WatchFrame->GetModifyState())
   {
@@ -35,62 +35,86 @@ bool __fastcall TWatchWindowForm::GetModifyState(void)
 
  return false;
 }
+
+// Возвращает текущий графический фрейм
+TUWatchFrame* TUWatchWindowForm::GetCurrentWatchFrame(void)
+{
+ return WatchFrame;
+}
+
+void TUWatchWindowForm::UpdateInterface(void)
+{
+ GetCurrentWatchFrame()->StepUpdate(false);
+ GetCurrentWatchFrame()->Chart1->Repaint();
+}
+
+void TUWatchWindowForm::BeforeCalculate(void)
+{
+
+}
+
+void TUWatchWindowForm::AfterCalculate(void)
+{
+
+}
 // ------------------------------
 
-void __fastcall TWatchWindowForm::FormResize(TObject *Sender)
+void __fastcall TUWatchWindowForm::FormResize(TObject *Sender)
 {
  ModifyState=true;
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TWatchWindowForm::FormShow(TObject *Sender)
+void __fastcall TUWatchWindowForm::FormShow(TObject *Sender)
 {
  ModifyState=true;
+ UEngineMonitorForm->EngineMonitorFrame->AddInterface(this);
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TWatchWindowForm::FormHide(TObject *Sender)
+void __fastcall TUWatchWindowForm::FormHide(TObject *Sender)
 {
  ModifyState=true;
+ UEngineMonitorForm->EngineMonitorFrame->DelInterface(this);
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TWatchWindowForm::FormPaint(TObject *Sender)
+void __fastcall TUWatchWindowForm::FormPaint(TObject *Sender)
 {
 // if(Caption != WatchFrame->Chart1->Title->Text->Strings[0])
 //  WatchFrame->Chart1->Title->Text->Strings[0]=Caption;
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TWatchWindowForm::ToolButton1Click(TObject *Sender)
+void __fastcall TUWatchWindowForm::ToolButton1Click(TObject *Sender)
 {
  WatchFrame->TBSeriesModify(Sender);
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TWatchWindowForm::ToolButton4Click(TObject *Sender)
+void __fastcall TUWatchWindowForm::ToolButton4Click(TObject *Sender)
 {
  WatchFrame->Save();
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TWatchWindowForm::ToolButton2Click(TObject *Sender)
+void __fastcall TUWatchWindowForm::ToolButton2Click(TObject *Sender)
 {
  vector<string> listvals;
 
  // Подготовка формы запроса имени
- ListInputForm->PresentSelect=false;
- ListInputForm->MustInput=true;
- ListInputForm->Sort=false;
+ UListInputForm->PresentSelect=false;
+ UListInputForm->MustInput=true;
+ UListInputForm->Sort=false;
 
-// MainForm->Modeler->GetWatchList(listvals);
- ListInputForm->Init("Список имен открытых окно наблюдения",listvals,"");
+ UListInputForm->Init("Список имен открытых окно наблюдения",listvals,"");
  // ...подготовка формы запроса завершена
 
- if(ListInputForm->ShowModal() != mrOk)
+ if(UListInputForm->ShowModal() != mrOk)
   return;
 
- Caption=ListInputForm->Edit->Text;
+ Caption=UListInputForm->Edit->Text;
 }
 //---------------------------------------------------------------------------
+
 

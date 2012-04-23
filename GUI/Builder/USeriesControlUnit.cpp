@@ -2,14 +2,14 @@
 
 #include <vcl.h>
 #pragma hdrstop
-#include "SeriesControlUnit.h"
-#include "ListInputFormUnit.h"
+#include "USeriesControlUnit.h"
+#include "UListInputFormUnit.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
-TSeriesControlForm *SeriesControlForm;
+TUSeriesControlForm *USeriesControlForm;
 //---------------------------------------------------------------------------
-__fastcall TSeriesControlForm::TSeriesControlForm(TComponent* Owner)
+__fastcall TUSeriesControlForm::TUSeriesControlForm(TComponent* Owner)
         : TForm(Owner)
 {
  StringGrid1->ColWidths[0]=StringGrid1->Width/7;
@@ -35,10 +35,10 @@ __fastcall TSeriesControlForm::TSeriesControlForm(TComponent* Owner)
 // ------------------------
 
 // Обновление списков данных
-void __fastcall TSeriesControlForm::UpdateDataLists(void)
+void __fastcall TUSeriesControlForm::UpdateDataLists(void)
 {
- map<int,OutGateWatchData>::iterator I,listI;
- OutGateWatchData* og;
+ map<int,TUWatchInfo>::iterator I,listI;
+ TUWatchInfo* og;
 
  // Обновление списков...
  GrSender->GetVisibleList(WatchList);
@@ -88,10 +88,10 @@ void __fastcall TSeriesControlForm::UpdateDataLists(void)
 }
 
 // Обновляет информацию в окнах и состояние всех элементов управления
-void __fastcall TSeriesControlForm::UpdateInfo(void)
+void __fastcall TUSeriesControlForm::UpdateInfo(void)
 {
- map<int,OutGateWatchData>::iterator I;
- map<int,OutGateWatchData>::iterator listI;
+ map<int,TUWatchInfo>::iterator I;
+ map<int,TUWatchInfo>::iterator listI;
 
  StringGrid1->RowCount=2;
  StringGrid1->Cells[0][StringGrid1->RowCount-1]="";
@@ -154,7 +154,7 @@ void __fastcall TSeriesControlForm::UpdateInfo(void)
 
 
 // Обновляет информацию по выбранной наблюдаемой точки съёма
-void __fastcall TSeriesControlForm::UpdateSelectedWatch(void)
+void __fastcall TUSeriesControlForm::UpdateSelectedWatch(void)
 {
  if(StringGrid2->Row < 1 || (StringGrid2->Row == 1 && StringGrid2->Cells[0][1] == ""))
   {
@@ -186,7 +186,7 @@ void __fastcall TSeriesControlForm::UpdateSelectedWatch(void)
 // Методы управления формой
 // ------------------------
 // Метод, который должен быть вызван для открытия диалога
-void __fastcall TSeriesControlForm::Execute(TWatchFrame* grsender)
+void __fastcall TUSeriesControlForm::Execute(TUWatchFrame* grsender)
 {
  if(Visible)
   return;
@@ -210,7 +210,7 @@ void __fastcall TSeriesControlForm::Execute(TWatchFrame* grsender)
 // ------------------------
 //---------------------------------------------------------------------------
 
-void __fastcall TSeriesControlForm::OutterCPanelDblClick(TObject *Sender)
+void __fastcall TUSeriesControlForm::OutterCPanelDblClick(TObject *Sender)
 {
  if(!ColorDialog1->Execute())
   return;
@@ -222,15 +222,15 @@ void __fastcall TSeriesControlForm::OutterCPanelDblClick(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TSeriesControlForm::InnerCPanelDblClick(TObject *Sender)
+void __fastcall TUSeriesControlForm::InnerCPanelDblClick(TObject *Sender)
 {
  OutterCPanelDblClick(Sender);
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TSeriesControlForm::FormHide(TObject *Sender)
+void __fastcall TUSeriesControlForm::FormHide(TObject *Sender)
 {
- map<int,OutGateWatchData>::iterator I;
+ map<int,TUWatchInfo>::iterator I;
 
  GrSender=0;
  WatchList.clear();
@@ -238,7 +238,7 @@ void __fastcall TSeriesControlForm::FormHide(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TSeriesControlForm::CheckBox1Click(TObject *Sender)
+void __fastcall TUSeriesControlForm::CheckBox1Click(TObject *Sender)
 {
  if(CheckBox1->Checked == true)
   {
@@ -254,7 +254,7 @@ void __fastcall TSeriesControlForm::CheckBox1Click(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TSeriesControlForm::CheckBox2Click(TObject *Sender)
+void __fastcall TUSeriesControlForm::CheckBox2Click(TObject *Sender)
 {
  if(CheckBox2->Checked == true)
   {
@@ -272,15 +272,15 @@ void __fastcall TSeriesControlForm::CheckBox2Click(TObject *Sender)
 
 
 
-void __fastcall TSeriesControlForm::StringGrid2Click(TObject *Sender)
+void __fastcall TUSeriesControlForm::StringGrid2Click(TObject *Sender)
 {
  UpdateSelectedWatch();
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TSeriesControlForm::Button1Click(TObject *Sender)
+void __fastcall TUSeriesControlForm::Button1Click(TObject *Sender)
 {
- map<int,OutGateWatchData>::iterator I;
+ map<int,TUWatchInfo>::iterator I;
 
  I=PossibleWatchList.begin();
  while(I != PossibleWatchList.end())
@@ -294,9 +294,9 @@ void __fastcall TSeriesControlForm::Button1Click(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TSeriesControlForm::Button4Click(TObject *Sender)
+void __fastcall TUSeriesControlForm::Button4Click(TObject *Sender)
 {
- map<int,OutGateWatchData>::iterator I;
+ map<int,TUWatchInfo>::iterator I;
 
  I=WatchList.begin();
  while(I != WatchList.end())
@@ -310,12 +310,12 @@ void __fastcall TSeriesControlForm::Button4Click(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TSeriesControlForm::Button2Click(TObject *Sender)
+void __fastcall TUSeriesControlForm::Button2Click(TObject *Sender)
 {
  if(StringGrid1->Row < 1 || (StringGrid1->Row == 1 && StringGrid1->Cells[0][1] == ""))
   return;
 
- map<int,OutGateWatchData>::iterator I;
+ map<int,TUWatchInfo>::iterator I;
 
  I=PossibleWatchList.find(StrToInt(StringGrid1->Cells[0][StringGrid1->Row]));
  WatchList[I->first]=I->second;
@@ -325,12 +325,12 @@ void __fastcall TSeriesControlForm::Button2Click(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TSeriesControlForm::Button3Click(TObject *Sender)
+void __fastcall TUSeriesControlForm::Button3Click(TObject *Sender)
 {
  if(StringGrid2->Row < 1 || (StringGrid2->Row == 1 && StringGrid2->Cells[0][1] == ""))
   return;
 
- map<int,OutGateWatchData>::iterator I;
+ map<int,TUWatchInfo>::iterator I;
 
  I=WatchList.find(StrToInt(StringGrid2->Cells[0][StringGrid2->Row]));
  PossibleWatchList[I->first]=I->second;
@@ -340,7 +340,7 @@ void __fastcall TSeriesControlForm::Button3Click(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TSeriesControlForm::StringGrid2DblClick(TObject *Sender)
+void __fastcall TUSeriesControlForm::StringGrid2DblClick(TObject *Sender)
 {
  Button3Click(Sender);       
 }
@@ -348,16 +348,16 @@ void __fastcall TSeriesControlForm::StringGrid2DblClick(TObject *Sender)
 
 
 
-void __fastcall TSeriesControlForm::Edit3DblClick(TObject *Sender)
+void __fastcall TUSeriesControlForm::Edit3DblClick(TObject *Sender)
 {
- map<int,OutGateWatchData>::iterator I;
+ map<int,TUWatchInfo>::iterator I;
  string s;
  vector<string> listvals;
 
  // Подготовка формы запроса легенды
- ListInputForm->PresentSelect=false;
- ListInputForm->MustInput=true;
- ListInputForm->Sort=false;
+ UListInputForm->PresentSelect=false;
+ UListInputForm->MustInput=true;
+ UListInputForm->Sort=false;
 
  I=WatchList.begin();
  while(I != WatchList.end())
@@ -374,14 +374,14 @@ void __fastcall TSeriesControlForm::Edit3DblClick(TObject *Sender)
 
  s="Подпись для ";
  s+=AnsiString(StringGrid2->Cells[1][StringGrid2->Row]).c_str();
- ListInputForm->Init(s,listvals,"");
+ UListInputForm->Init(s,listvals,"");
  // ...подготовка формы запроса легенды завершена
- if(ListInputForm->ShowModal() != mrOk)
+ if(UListInputForm->ShowModal() != mrOk)
   return;
 
- Edit3->Text=ListInputForm->Edit->Text;
+ Edit3->Text=UListInputForm->Edit->Text;
  WatchList[StrToInt(StringGrid2->Cells[0][StringGrid2->Row])].Legend
-				   =AnsiString(ListInputForm->Edit->Text).c_str();
+				   =AnsiString(UListInputForm->Edit->Text).c_str();
  LegendsChanged=true;
 }
 //---------------------------------------------------------------------------
@@ -391,9 +391,9 @@ void __fastcall TSeriesControlForm::Edit3DblClick(TObject *Sender)
 
 
 
-void __fastcall TSeriesControlForm::BitBtn1Click(TObject *Sender)
+void __fastcall TUSeriesControlForm::BitBtn1Click(TObject *Sender)
 {
- map<int,OutGateWatchData>::iterator I;
+ map<int,TUWatchInfo>::iterator I;
 
  if(SeriesChanged)
   {
@@ -485,25 +485,25 @@ void __fastcall TSeriesControlForm::BitBtn1Click(TObject *Sender)
 //---------------------------------------------------------------------------
 
 
-void __fastcall TSeriesControlForm::CheckBox3Click(TObject *Sender)
+void __fastcall TUSeriesControlForm::CheckBox3Click(TObject *Sender)
 {
  GraphChanged=true;
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TSeriesControlForm::CheckBox4Click(TObject *Sender)
+void __fastcall TUSeriesControlForm::CheckBox4Click(TObject *Sender)
 {
  GraphChanged=true;
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TSeriesControlForm::StringGrid1DblClick(TObject *Sender)
+void __fastcall TUSeriesControlForm::StringGrid1DblClick(TObject *Sender)
 {
  Button2Click(Sender);
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TSeriesControlForm::Edit4KeyDown(TObject *Sender,
+void __fastcall TUSeriesControlForm::Edit4KeyDown(TObject *Sender,
       WORD &Key, TShiftState Shift)
 {
  if(Key == VK_RETURN)
@@ -513,7 +513,7 @@ void __fastcall TSeriesControlForm::Edit4KeyDown(TObject *Sender,
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TSeriesControlForm::Edit4Exit(TObject *Sender)
+void __fastcall TUSeriesControlForm::Edit4Exit(TObject *Sender)
 {
  if(StringGrid2->Row < 1 || (StringGrid2->Row == 1 && StringGrid2->Cells[0][1] == ""))
   return;
@@ -524,25 +524,25 @@ void __fastcall TSeriesControlForm::Edit4Exit(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TSeriesControlForm::Edit1Change(TObject *Sender)
+void __fastcall TUSeriesControlForm::Edit1Change(TObject *Sender)
 {
  GraphChanged=true;
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TSeriesControlForm::Edit2Change(TObject *Sender)
+void __fastcall TUSeriesControlForm::Edit2Change(TObject *Sender)
 {
  GraphChanged=true;
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TSeriesControlForm::BitBtn2Click(TObject *Sender)
+void __fastcall TUSeriesControlForm::BitBtn2Click(TObject *Sender)
 {
  Hide();
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TSeriesControlForm::CheckBox5Click(TObject *Sender)
+void __fastcall TUSeriesControlForm::CheckBox5Click(TObject *Sender)
 {
  GraphChanged=true;
 }
@@ -550,7 +550,7 @@ void __fastcall TSeriesControlForm::CheckBox5Click(TObject *Sender)
 
 
 
-void __fastcall TSeriesControlForm::ComboBox1Select(TObject *Sender)
+void __fastcall TUSeriesControlForm::ComboBox1Select(TObject *Sender)
 {
  if(StringGrid2->Row < 1 || (StringGrid2->Row == 1 && StringGrid2->Cells[0][1] == ""))
   return;
@@ -560,7 +560,7 @@ void __fastcall TSeriesControlForm::ComboBox1Select(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TSeriesControlForm::ComboBox2Select(TObject *Sender)
+void __fastcall TUSeriesControlForm::ComboBox2Select(TObject *Sender)
 {
  if(StringGrid2->Row < 1 || (StringGrid2->Row == 1 && StringGrid2->Cells[0][1] == ""))
   return;
@@ -571,7 +571,7 @@ void __fastcall TSeriesControlForm::ComboBox2Select(TObject *Sender)
 //---------------------------------------------------------------------------
 
 
-void __fastcall TSeriesControlForm::ComboBox3Select(TObject *Sender)
+void __fastcall TUSeriesControlForm::ComboBox3Select(TObject *Sender)
 {
  GraphChanged=true;
 }

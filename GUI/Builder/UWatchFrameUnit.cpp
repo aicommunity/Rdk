@@ -3,23 +3,25 @@
 #include <vcl.h>
 #pragma hdrstop
 
-#include "WatchFrameUnit.h"
-#include "ListInputFormUnit.h"
-#include "SeriesControlUnit.h"
-#include "ShowProgressBarUnit.h"
+#include "UWatchFrameUnit.h"
+#include "UListInputFormUnit.h"
+#include "USeriesControlUnit.h"
+#include "UShowProgressBarUnit.h"
+#include "UComponentsListFormUnit.h"
+#include "rdk_initdll.h"
 //---------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
-TWatchFrame *WatchFrame;
+TUWatchFrame *UWatchFrame;
 
 //---------------------------------------------------------------------------
 /*
-   Методы класса OutGateWatchData
+   Методы класса TUWatchInfo
 */
 //---------------------------------------------------------------------------
-OutGateWatchData::OutGateWatchData(void)
+TUWatchInfo::TUWatchInfo(void)
 {
  YShift=0;
  FullUpdate=false;
@@ -41,13 +43,18 @@ OutGateWatchData::OutGateWatchData(void)
  YCurrentMin=0;
 
  Visible=true;
+
+ OutputIndex=0;
+
+ OutputElementIndex=0;
+
 }
 
-OutGateWatchData::~OutGateWatchData(void)
+TUWatchInfo::~TUWatchInfo(void)
 {
 }
 
-OutGateWatchData::OutGateWatchData(const OutGateWatchData &wd)
+TUWatchInfo::TUWatchInfo(const TUWatchInfo &wd)
 {
  YShift=wd.YShift;
  Color=wd.Color;
@@ -68,9 +75,16 @@ OutGateWatchData::OutGateWatchData(const OutGateWatchData &wd)
  YCurrentMin=wd.YCurrentMin;
 
  Visible=wd.Visible;
+
+ DataSourceName=wd.DataSourceName;
+
+ OutputIndex=wd.OutputIndex;
+
+ OutputElementIndex=wd.OutputElementIndex;
+
 }
 
-OutGateWatchData& OutGateWatchData::operator = (const OutGateWatchData& wd)
+TUWatchInfo& TUWatchInfo::operator = (const TUWatchInfo& wd)
 {
  YShift=wd.YShift;
  Color=wd.Color;
@@ -90,13 +104,20 @@ OutGateWatchData& OutGateWatchData::operator = (const OutGateWatchData& wd)
  YCurrentMax=wd.YCurrentMax;
  XCurrentMin=wd.XCurrentMin;
  YCurrentMin=wd.YCurrentMin;
+
+ DataSourceName=wd.DataSourceName;
+
+ OutputIndex=wd.OutputIndex;
+
+ OutputElementIndex=wd.OutputElementIndex;
+
 
  return *this;
 }
 //---------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------
-__fastcall TWatchFrame::TWatchFrame(TComponent* Owner)
+__fastcall TUWatchFrame::TUWatchFrame(TComponent* Owner)
         : TFrame(Owner)
 {
  SetLegendPosition(5);
@@ -105,7 +126,7 @@ __fastcall TWatchFrame::TWatchFrame(TComponent* Owner)
  CacheSize=100;
 }
 
-__fastcall TWatchFrame::~TWatchFrame(void)
+__fastcall TUWatchFrame::~TUWatchFrame(void)
 {
  Clear();
 } 
@@ -118,7 +139,7 @@ __fastcall TWatchFrame::~TWatchFrame(void)
 // ------------------------------
 // Возвращает 'true', если данные в сериях были изменены,
 // или если серии были добавлены/удалены
-bool __fastcall TWatchFrame::GetModifyState(void)
+bool __fastcall TUWatchFrame::GetModifyState(void)
 {
  if(ModifyState)
   {
@@ -130,9 +151,26 @@ bool __fastcall TWatchFrame::GetModifyState(void)
 }
 
 
+// Сохранение и загрузка описания графика в файл
+bool TUWatchFrame::SaveToIni(TMemIniFile *ini, const String &section)
+{
+ if(!ini)
+  return false;
+
+ return true;
+}
+
+bool TUWatchFrame::LoadFromIni(TMemIniFile *ini, const String &section)
+{
+ if(!ini)
+  return false;
+
+ return true;
+}
+
 // Собирает информацию об открытых сериях в файл 'watchname'
 // Если 'collectstate' == 'true', то сохраняет также накопленную информацию
-bool __fastcall TWatchFrame::CollectInfo(string watchname, bool collectstate)
+bool __fastcall TUWatchFrame::CollectInfo(string watchname, bool collectstate)
 {
  TMemIniFile *ini;
  char *out=0;
@@ -149,13 +187,13 @@ bool __fastcall TWatchFrame::CollectInfo(string watchname, bool collectstate)
 
  ini->Clear();
 
- String s=ShowProgressBarForm->GetBarHeader(1);
- ShowProgressBarForm->ResetBarStatus(1,0,NameList.size());
+ String s=UShowProgressBarForm->GetBarHeader(1);
+ UShowProgressBarForm->ResetBarStatus(1,0,NameList.size());
 
  // Пробегаем по списку всех открытых серий
  for(int seriesindex=0;seriesindex<(int)NameList.size();seriesindex++)
   {
-   ShowProgressBarForm->SetBarHeader(1,s+" - "+NameList[seriesindex].Legend.c_str()+":");
+   UShowProgressBarForm->SetBarHeader(1,s+" - "+NameList[seriesindex].Legend.c_str()+":");
 
    ini->WriteString(IntToStr(seriesindex),"Legend",NameList[seriesindex].Legend.c_str());
    ini->WriteString(IntToStr(seriesindex),"YShift",FloatToStr(NameList[seriesindex].YShift));
@@ -163,6 +201,9 @@ bool __fastcall TWatchFrame::CollectInfo(string watchname, bool collectstate)
    ini->WriteString(IntToStr(seriesindex),"Style",IntToStr(NameList[seriesindex].Style));
    ini->WriteString(IntToStr(seriesindex),"Visible",IntToStr(int(NameList[seriesindex].Visible)));
    ini->WriteString(IntToStr(seriesindex),"LineWidth",IntToStr(int(NameList[seriesindex].LineWidth)));
+   ini->WriteString(IntToStr(seriesindex),"DataSourceName",NameList[seriesindex].DataSourceName.c_str());
+   ini->WriteString(IntToStr(seriesindex),"OutputIndex",IntToStr(int(NameList[seriesindex].OutputIndex)));
+   ini->WriteString(IntToStr(seriesindex),"OutputElementIndex",IntToStr(int(NameList[seriesindex].OutputElementIndex)));
 
    if(collectstate)
 	{
@@ -193,7 +234,7 @@ bool __fastcall TWatchFrame::CollectInfo(string watchname, bool collectstate)
 	 ini->WriteString(IntToStr(seriesindex),"YDATA",out);
 	}
 
-   ShowProgressBarForm->IncBarStatus(1);
+   UShowProgressBarForm->IncBarStatus(1);
   }
 
  ini->UpdateFile();
@@ -206,12 +247,12 @@ bool __fastcall TWatchFrame::CollectInfo(string watchname, bool collectstate)
 // Если 'collectstate' == 'true', то восстанавливает также накопленную
 // информацию
 // (Все открытые наблюдения будут предварительно закрыты)
-bool __fastcall TWatchFrame::RestoreInfo(string watchname, bool collectstate)
+bool __fastcall TUWatchFrame::RestoreInfo(string watchname, bool collectstate)
 {
- map<string,OutGateWatchData*>::iterator I;
+ map<string,TUWatchInfo*>::iterator I;
  TMemIniFile *ini;
  TStringList *series;
- OutGateWatchData *wd;
+ TUWatchInfo *wd;
  TFastLineSeries *grseries;
  string xs,ys;
  double x,y;
@@ -221,27 +262,22 @@ bool __fastcall TWatchFrame::RestoreInfo(string watchname, bool collectstate)
  if(!ini)
   return false;
 
-// Clear();
+ Clear();
 
  series=new TStringList;
  ini->ReadSections(series);
 
- String s=ShowProgressBarForm->GetBarHeader(1);
- ShowProgressBarForm->ResetBarStatus(1,0,series->Count);
+ String s=UShowProgressBarForm->GetBarHeader(1);
+ UShowProgressBarForm->ResetBarStatus(1,0,series->Count);
 
  size_t oldnamelistsize=NameList.size();
 
  for(int i=0;i<series->Count;i++)
   {
-   ShowProgressBarForm->SetBarHeader(1,s+" - "+series->Strings[i]+":");
+   UShowProgressBarForm->SetBarHeader(1,s+" - "+series->Strings[i]+":");
 
-/*   if(!Model->GetOutGate(series->Strings[i].c_str()))
-	{
-	 ShowProgressBarForm->IncBarStatus(1);
-	 continue;
-	}*/
    int j=StrToInt(series->Strings[i]);
-   if(j<int(oldnamelistsize))
+ /*  if(j<int(oldnamelistsize))
    {
 	// Заменяет подпись под выбранной серией
 	ChangeLegend(j, AnsiString(ini->ReadString(IntToStr(j),"Legend","")).c_str());
@@ -259,22 +295,30 @@ bool __fastcall TWatchFrame::RestoreInfo(string watchname, bool collectstate)
 
 	ChangeLineWidth(j, StrToInt(ini->ReadString(IntToStr(j),"LineWidth","1")));
    }
-   else
+   else   */
    {
-	NameList.resize(NameList.size()+1);
-	wd=&NameList[NameList.size()-1];
+	TUWatchInfo wd_data;
+	wd=&wd_data;
+//	NameList.resize(NameList.size()+1);
+//	wd=&NameList[NameList.size()-1];
 	wd->Legend=AnsiString(ini->ReadString(IntToStr(j),"Legend","")).c_str();
 	wd->YShift=StrToFloat(ini->ReadString(IntToStr(j),"YShift","0"));
 	wd->Color=(TColor)StrToInt(ini->ReadString(IntToStr(j),"Color",IntToStr(clTeeColor)));
 	wd->Style=(TPenStyle)StrToInt(ini->ReadString(IntToStr(j),"Style",IntToStr(psSolid)));
 	wd->LineWidth=StrToInt(ini->ReadString(IntToStr(j),"LineWidth",1));
+	wd->DataSourceName=AnsiString(ini->ReadString(IntToStr(j),"DataSourceName","")).c_str();
+	wd->OutputIndex=StrToInt(ini->ReadString(IntToStr(j),"OutputIndex","0"));
+	wd->OutputElementIndex=StrToInt(ini->ReadString(IntToStr(j),"OutputElementIndex","0"));
 
-	grseries=new TFastLineSeries(Chart1);
+
+/*	grseries=new TFastLineSeries(Chart1);
 	grseries->ParentChart=Chart1;
 	grseries->Title=wd->Legend.c_str();
 	grseries->ColorSource=wd->Color;
 	grseries->SeriesColor=wd->Color;
-	grseries->LinePen->Style=wd->Style;
+	grseries->LinePen->Style=wd->Style;*/
+	int grindex=Add(wd_data);
+	grseries=dynamic_cast<TFastLineSeries*>(Chart1->Series[grindex]);
 	if(collectstate)
 	{
 	 grseries->Clear();
@@ -304,7 +348,7 @@ bool __fastcall TWatchFrame::RestoreInfo(string watchname, bool collectstate)
 	}
    }
 
-   ShowProgressBarForm->IncBarStatus(1);
+   UShowProgressBarForm->IncBarStatus(1);
   }
 
  delete series;
@@ -318,7 +362,7 @@ bool __fastcall TWatchFrame::RestoreInfo(string watchname, bool collectstate)
 // Методы настройки отображения
 // ------------------------------
 // Включает/отключает автомасштабирование по оси X
-void __fastcall TWatchFrame::SetXAutoScale(bool value)
+void __fastcall TUWatchFrame::SetXAutoScale(bool value)
 {
  if(value)
  {
@@ -333,13 +377,13 @@ void __fastcall TWatchFrame::SetXAutoScale(bool value)
 }
 
 // Возвращает состояние автомасштабирования по оси X
-bool __fastcall TWatchFrame::GetXAutoScale(void)
+bool __fastcall TUWatchFrame::GetXAutoScale(void)
 {
  return Chart1->TopAxis->Automatic;
 }
 
 // Включает/отключает автомасштабирование по оси Y
-void __fastcall TWatchFrame::SetYAutoScale(bool value)
+void __fastcall TUWatchFrame::SetYAutoScale(bool value)
 {
  if(value)
  {
@@ -354,61 +398,61 @@ void __fastcall TWatchFrame::SetYAutoScale(bool value)
 }
 
 // Возвращает состояние автомасштабирования по оси Y
-bool __fastcall TWatchFrame::GetYAutoScale(void)
+bool __fastcall TUWatchFrame::GetYAutoScale(void)
 {
  return Chart1->LeftAxis->Automatic;
 }
 
 // Устанавливает границы изменения по оси X
-void __fastcall TWatchFrame::SetXMin(double value)
+void __fastcall TUWatchFrame::SetXMin(double value)
 {
   Chart1->TopAxis->Minimum=value;
   Chart1->BottomAxis->Minimum=value;
 }
 
-void __fastcall TWatchFrame::SetXMax(double value)
+void __fastcall TUWatchFrame::SetXMax(double value)
 {
   Chart1->TopAxis->Maximum=value;
   Chart1->BottomAxis->Maximum=value;
 }
 
 // Устанавливает границы изменения по оси Y
-void __fastcall TWatchFrame::SetYMin(double value)
+void __fastcall TUWatchFrame::SetYMin(double value)
 {
   Chart1->LeftAxis->Minimum=value;
   Chart1->RightAxis->Minimum=value;
 }
 
-void __fastcall TWatchFrame::SetYMax(double value)
+void __fastcall TUWatchFrame::SetYMax(double value)
 {
   Chart1->LeftAxis->Maximum=value;
   Chart1->RightAxis->Maximum=value;
 }
 
 // Возвращает границы изменения по оси X
-double __fastcall TWatchFrame::GetXMin(void)
+double __fastcall TUWatchFrame::GetXMin(void)
 {
  return Chart1->TopAxis->Minimum;
 }
 
-double __fastcall TWatchFrame::GetXMax(void)
+double __fastcall TUWatchFrame::GetXMax(void)
 {
  return Chart1->TopAxis->Maximum;
 }
 
 // Возвращает границы изменения по оси Y
-double __fastcall TWatchFrame::GetYMin(void)
+double __fastcall TUWatchFrame::GetYMin(void)
 {
  return Chart1->LeftAxis->Minimum;
 }
 
-double __fastcall TWatchFrame::GetYMax(void)
+double __fastcall TUWatchFrame::GetYMax(void)
 {
  return Chart1->LeftAxis->Maximum;
 }
 
 // Устанавливает заголовок графика
-void __fastcall TWatchFrame::SetGraphTitle(AnsiString title)
+void __fastcall TUWatchFrame::SetGraphTitle(AnsiString title)
 {
  Chart1->Title->Text->Clear();
  Chart1->Title->Text->Add(title);
@@ -420,58 +464,58 @@ void __fastcall TWatchFrame::SetGraphTitle(AnsiString title)
 }
 
 // Устанавливает видимость подписей по осям
-void __fastcall TWatchFrame::SetXLabelVisible(bool value)
+void __fastcall TUWatchFrame::SetXLabelVisible(bool value)
 {
  Chart1->BottomAxis->Labels=value;
 }
 
-void __fastcall TWatchFrame::SetYLabelVisible(bool value)
+void __fastcall TUWatchFrame::SetYLabelVisible(bool value)
 {
  Chart1->LeftAxis->Labels=value;
 }
 
 // Возвращает видимость подписей по осям
-bool __fastcall TWatchFrame::GetXLabelVisible(void)
+bool __fastcall TUWatchFrame::GetXLabelVisible(void)
 {
  return Chart1->BottomAxis->Labels;
 }
 
-bool __fastcall TWatchFrame::GetYLabelVisible(void)
+bool __fastcall TUWatchFrame::GetYLabelVisible(void)
 {
  return Chart1->LeftAxis->Labels;
 }
 
 // Устанавливает подписи по осям
-void __fastcall TWatchFrame::SetXLabelTitle(AnsiString value)
+void __fastcall TUWatchFrame::SetXLabelTitle(AnsiString value)
 {
  Chart1->BottomAxis->Title->Caption=value;
 }
 
-void __fastcall TWatchFrame::SetYLabelTitle(AnsiString value)
+void __fastcall TUWatchFrame::SetYLabelTitle(AnsiString value)
 {
  Chart1->LeftAxis->Title->Caption=value;
 }
 
 // Возвращает подписи по осям
-AnsiString __fastcall TWatchFrame::GetXLabelTitle(void)
+AnsiString __fastcall TUWatchFrame::GetXLabelTitle(void)
 {
  return Chart1->BottomAxis->Title->Caption;
 }
 
-AnsiString __fastcall TWatchFrame::GetYLabelTitle(void)
+AnsiString __fastcall TUWatchFrame::GetYLabelTitle(void)
 {
  return Chart1->LeftAxis->Title->Caption;
 }
 
 // Устанавливает видимость легенды
-void __fastcall TWatchFrame::SetLegendVisible(bool value)
+void __fastcall TUWatchFrame::SetLegendVisible(bool value)
 {
  Chart1->Legend->Visible=value;
  Chart1->Legend->DividingLines->Visible=false;
 }
 
 // Возвращает видимость легенды
-bool __fastcall TWatchFrame::GetLegendVisible(void)
+bool __fastcall TUWatchFrame::GetLegendVisible(void)
 {
  return Chart1->Legend->Visible;
 }
@@ -483,7 +527,7 @@ bool __fastcall TWatchFrame::GetLegendVisible(void)
 // 3 - Справа (на графике)
 // 4 - Сверху
 // 5 - Снизу
-void __fastcall TWatchFrame::SetLegendPosition(int value)
+void __fastcall TUWatchFrame::SetLegendPosition(int value)
 {
  switch(value)
  {
@@ -520,7 +564,7 @@ void __fastcall TWatchFrame::SetLegendPosition(int value)
 }
 
 // Возвращает положение легенды
-int __fastcall TWatchFrame::GetLegendPosition(void)
+int __fastcall TUWatchFrame::GetLegendPosition(void)
 {
  switch(Chart1->Legend->Alignment)
  {
@@ -546,12 +590,12 @@ int __fastcall TWatchFrame::GetLegendPosition(void)
 }
 
 // Размер кеша отображаемых данных
-int TWatchFrame::GetCacheSize(void) const
+int TUWatchFrame::GetCacheSize(void) const
 {
  return CacheSize;
 }
 
-bool TWatchFrame::SetCacheSize(int value)
+bool TUWatchFrame::SetCacheSize(int value)
 {
  if(CacheSize == value)
   return true;
@@ -568,7 +612,7 @@ bool TWatchFrame::SetCacheSize(int value)
 // Методы управления наблюдениями
 // ------------------------------
 // Возвращает данные наблюдения
-OutGateWatchData* __fastcall TWatchFrame::Get(int seriesindex)
+TUWatchInfo* __fastcall TUWatchFrame::Get(int seriesindex)
 {
  if(seriesindex < 0 || seriesindex >= (int)NameList.size())
   return 0;
@@ -576,7 +620,7 @@ OutGateWatchData* __fastcall TWatchFrame::Get(int seriesindex)
  return &NameList[seriesindex];
 }
 
-OutGateWatchData* __fastcall TWatchFrame::Get(void *datasource)
+TUWatchInfo* __fastcall TUWatchFrame::Get(void *datasource)
 {
  for(size_t i=0;i<NameList.size();i++)
   if(NameList[i].DataSource == datasource)
@@ -586,24 +630,26 @@ OutGateWatchData* __fastcall TWatchFrame::Get(void *datasource)
 }
 
 // Возвращает общее число данных наблюдения
-int __fastcall TWatchFrame::GetNumWatches(void)
+int __fastcall TUWatchFrame::GetNumWatches(void)
 {
  return (int)NameList.size();
 }
 
 
 // Добавление нового наблюдения
-int __fastcall TWatchFrame::Add(OutGateWatchData& wd)
+int __fastcall TUWatchFrame::Add(TUWatchInfo& wd)
 {
  // Проверяем, есть ли серия с такими же данными
  int seriesindex=-1;
 
- vector<OutGateWatchData>::iterator I;
+ vector<TUWatchInfo>::iterator I;
  I=NameList.begin();
  int i=0;
  while(I != NameList.end())
   {
-   if(wd.Y == I->Y)
+   if((wd.Y && (wd.Y == I->Y)) ||
+   (I->DataSourceName == wd.DataSourceName && I->OutputIndex == wd.OutputIndex &&
+    I->OutputElementIndex == wd.OutputElementIndex))
 	return i;
    ++I; ++i;
   }
@@ -635,8 +681,43 @@ int __fastcall TWatchFrame::Add(OutGateWatchData& wd)
  return seriesindex;
 }
 
+// Добавление нового наблюдения по имени компонента и индексу выхода
+// Возвращает индекс серии
+int __fastcall TUWatchFrame::Add(const string &name, int output, int outindex, double yshift, TPenStyle style, TColor color)
+{
+ TUWatchInfo wd;
+ wd.FullUpdate=false;
+ //wd.WatchInterval=watchinterval;
+
+ wd.YShift=yshift;
+ wd.Legend=name;
+ wd.OutputIndex=output;
+ wd.OutputElementIndex=outindex;
+
+/* if(itemd->GetOwner())
+  itemd->GetLongName(static_pointer_cast<NAContainer>(itemd->GetOwner()->GetOwner()),wd.Legend);
+ else
+  itemd->GetLongName(0,wd.Legend);*/
+ wd.Legend+=string("[")+RDK::sntoa(output)+string(":");
+ wd.Legend+=RDK::sntoa(outindex)+string("]");
+// wd.DataSource=item;
+
+ if(color == 0) // Подбор подходящего цвета
+  wd.Color=Chart1->GetFreeSeriesColor(true);
+ else
+  wd.Color=color;
+
+ wd.DataSourceName=name;
+// wd.X=&NAContainer::GetDoubleTime();
+// wd.Y=&(itemd->GetOutputData(output).Double[outindex]);
+ wd.XYSize=1;
+ wd.Style=style;
+ return Add(wd);
+}
+
+
 // Удаление наблюдения
-void __fastcall TWatchFrame::Del(int seriesindex)
+void __fastcall TUWatchFrame::Del(int seriesindex)
 {
  if(seriesindex >= (int)NameList.size())
   return;
@@ -649,7 +730,7 @@ void __fastcall TWatchFrame::Del(int seriesindex)
  delete ser;
  // ...... остальное удаляем
 
- vector<OutGateWatchData>::iterator I=NameList.begin();
+ vector<TUWatchInfo>::iterator I=NameList.begin();
 
  I+=seriesindex;
  NameList.erase(I);
@@ -658,9 +739,9 @@ void __fastcall TWatchFrame::Del(int seriesindex)
 }
 
 // Удаляет все наблюдения
-void __fastcall TWatchFrame::Clear(void)
+void __fastcall TUWatchFrame::Clear(void)
 {
- map<string,OutGateWatchData*>::iterator I;
+ map<string,TUWatchInfo*>::iterator I;
 
  if(NameList.size() == 0)
   return;
@@ -685,7 +766,7 @@ void __fastcall TWatchFrame::Clear(void)
 // Отключает отображение серии
 // используется при обновлении данных
 // если seriesindex < 0 то отключает все серии
-void __fastcall TWatchFrame::SeriesDisable(int seriesindex)
+void __fastcall TUWatchFrame::SeriesDisable(int seriesindex)
 {
  if(seriesindex >= (int)NameList.size())
   return;
@@ -702,7 +783,7 @@ void __fastcall TWatchFrame::SeriesDisable(int seriesindex)
 // Включает отображение серии
 // используется при обновлении данных
 // если seriesindex < 0 то включает все серии
-void __fastcall TWatchFrame::SeriesEnable(int seriesindex)
+void __fastcall TUWatchFrame::SeriesEnable(int seriesindex)
 {
  if(seriesindex >= Chart1->SeriesCount())
   return;
@@ -715,15 +796,15 @@ void __fastcall TWatchFrame::SeriesEnable(int seriesindex)
  else
   Chart1->Series[seriesindex]->Active=true;
 }
-
+            /*
 // Обновление данных серии
 // Добавление одной точки в серию
-void __fastcall TWatchFrame::SeriesUpdate(int seriesindex, double x, double y)
+void __fastcall TUWatchFrame::SeriesUpdate(int seriesindex, double x, double y)
 {
  if(seriesindex < 0 || seriesindex >= (int)NameList.size())
   return;
 
- OutGateWatchData *wd;
+ TUWatchInfo *wd;
 
 
  // Корректируем информацию в сериях
@@ -748,7 +829,7 @@ void __fastcall TWatchFrame::SeriesUpdate(int seriesindex, double x, double y)
  ModifyState=true;
 }
 
-void __fastcall TWatchFrame::SeriesUpdate(void* datasource, double x, double y)
+void __fastcall TUWatchFrame::SeriesUpdate(void* datasource, double x, double y)
 {
  for(int i=0;i<(int)NameList.size();i++)
   if(NameList[i].DataSource == datasource)
@@ -760,12 +841,12 @@ void __fastcall TWatchFrame::SeriesUpdate(void* datasource, double x, double y)
 
 // Обновление данных серии
 // Добавление массива точек в серию
-void __fastcall TWatchFrame::SeriesUpdate(int seriesindex, double* x, double* y, int size)
+void __fastcall TUWatchFrame::SeriesUpdate(int seriesindex, double* x, double* y, int size)
 {
  if(seriesindex < 0 || seriesindex >= (int)NameList.size())
   return;
 
- OutGateWatchData *wd;
+ TUWatchInfo *wd;
 
  // Корректируем информацию в сериях
  wd=&NameList[seriesindex];
@@ -816,7 +897,7 @@ void __fastcall TWatchFrame::SeriesUpdate(int seriesindex, double* x, double* y,
  ModifyState=true;
 }
 
-void __fastcall TWatchFrame::SeriesUpdate(void* datasource, double* x, double* y, int size)
+void __fastcall TUWatchFrame::SeriesUpdate(void* datasource, double* x, double* y, int size)
 {
  for(int i=0;i<(int)NameList.size();i++)
   if(NameList[i].DataSource == datasource)
@@ -824,33 +905,49 @@ void __fastcall TWatchFrame::SeriesUpdate(void* datasource, double* x, double* y
    SeriesUpdate(i,x,y,size);
    return;
   }
-}
+}           */
 
 // Обновление информации за 'stepcount' прошедших шагов интегрирования
-void __fastcall TWatchFrame::StepUpdate(bool speedup)
+void __fastcall TUWatchFrame::StepUpdate(bool speedup)
 {
  for(int seriesindex=0; seriesindex<(int)NameList.size();seriesindex++)
  {
-  OutGateWatchData *wd;
+  TUWatchInfo *wd;
+  const double *x=0,*y=0;
 
   // Корректируем информацию в сериях
   wd=&NameList[seriesindex];
 
-  if(!wd->X || !wd->Y)
+  if((!wd->X || !wd->Y) && !wd->DataSourceName.size())
    continue;
+
+   double xdata;
+   if(wd->DataSourceName.size())
+   {
+	xdata=Model_GetDoubleTime();
+	x=&xdata;
+	y=(double*)Model_GetComponentOutputData(wd->DataSourceName.c_str(), wd->OutputIndex);
+	if(!y)
+	 continue;
+   }
+   else
+   {
+	x=wd->X;
+	y=wd->Y;
+   }
 
   // Кеш максимума и минимума за заданный интервал времени
   for(int i=0;i<wd->XYSize;i++)
   {
-   if(wd->YCurrentMax<=wd->Y[i])
+   if(wd->YCurrentMax<=y[i])
    {
-	wd->XCurrentMax=wd->X[i];
-	wd->YCurrentMax=wd->Y[i];
+	wd->XCurrentMax=x[i];
+	wd->YCurrentMax=y[i];
    }
-   if(wd->YCurrentMin>=wd->Y[i])
+   if(wd->YCurrentMin>=y[i])
    {
-	wd->XCurrentMin=wd->X[i];
-	wd->YCurrentMin=wd->Y[i];
+	wd->XCurrentMin=x[i];
+	wd->YCurrentMin=y[i];
    }
   }
 
@@ -868,7 +965,7 @@ void __fastcall TWatchFrame::StepUpdate(bool speedup)
 
  for(int seriesindex=0; seriesindex<(int)NameList.size();seriesindex++)
  {
-  OutGateWatchData *wd;
+  TUWatchInfo *wd;
 
   // Корректируем информацию в сериях
   wd=&NameList[seriesindex];
@@ -886,12 +983,28 @@ void __fastcall TWatchFrame::StepUpdate(bool speedup)
   {
    series->Clear();
 
-   if(!wd->X || !wd->Y || wd->XYSize == 0)
+   if((!wd->X || !wd->Y || wd->XYSize == 0) && !wd->DataSourceName.size())
 	continue;
+
+   const double *x=0, *y=0;
+   double xdata;
+   if(wd->DataSourceName.size())
+   {
+	xdata=Model_GetDoubleTime();
+	x=&xdata;
+	y=(double*)Model_GetComponentOutputData(wd->DataSourceName.c_str(), wd->OutputIndex);
+	if(!y)
+	 continue;
+   }
+   else
+   {
+	x=wd->X;
+	y=wd->Y;
+   }
 
    static_cast<TFastLineSeries*>(series)->AutoRepaint=false;
    for(int i=0;i<wd->XYSize;i++)
-	series->AddXY(wd->X[i],wd->Y[i]+wd->YShift,"",wd->Color);
+	series->AddXY(x[i],y[i]+wd->YShift,"",wd->Color);
    static_cast<TFastLineSeries*>(series)->AutoRepaint=true;
   }
   else
@@ -899,8 +1012,24 @@ void __fastcall TWatchFrame::StepUpdate(bool speedup)
    if(wd->WatchInterval == 0)
 	continue;
 
-   if(!wd->X || !wd->Y || wd->XYSize == 0)
+   if((!wd->X || !wd->Y || wd->XYSize == 0) && !wd->DataSourceName.size())
 	continue;
+
+   const double *x=0, *y=0;
+   double xdata;
+   if(wd->DataSourceName.size())
+   {
+	xdata=Model_GetDoubleTime();
+	x=&xdata;
+	y=(double*)Model_GetComponentOutputData(wd->DataSourceName.c_str(), wd->OutputIndex);
+	if(!y)
+	 continue;
+   }
+   else
+   {
+	x=wd->X;
+	y=wd->Y;
+   }
 
    static_cast<TFastLineSeries*>(series)->AutoRepaint=false;
    if(wd->XCurrentMin<wd->XCurrentMax)
@@ -960,7 +1089,7 @@ void __fastcall TWatchFrame::StepUpdate(bool speedup)
 // ------------------------------
 
 // Удаляет данные всех наблюдений
-void __fastcall TWatchFrame::Reset(void)
+void __fastcall TUWatchFrame::Reset(void)
 {
  // Корректируем информацию в сериях
  for(int i=0;i<Chart1->SeriesCount();i++)
@@ -973,7 +1102,7 @@ void __fastcall TWatchFrame::Reset(void)
 
  for(int seriesindex=0; seriesindex<(int)NameList.size();seriesindex++)
  {
-  OutGateWatchData *wd;
+  TUWatchInfo *wd;
 
   // Корректируем информацию в сериях
   wd=&NameList[seriesindex];
@@ -986,7 +1115,7 @@ void __fastcall TWatchFrame::Reset(void)
 
 
 // Возвращает копию списка всех наблюдаемых серий
-void __fastcall TWatchFrame::GetWatchList(map<int, OutGateWatchData> &buffer)
+void __fastcall TUWatchFrame::GetWatchList(map<int, TUWatchInfo> &buffer)
 {
  buffer.clear();
  for(size_t i=0;i<NameList.size();i++)
@@ -994,7 +1123,7 @@ void __fastcall TWatchFrame::GetWatchList(map<int, OutGateWatchData> &buffer)
 }
 
 // Возвращает копию списка всех видимых серий
-void __fastcall TWatchFrame::GetVisibleList(map<int, OutGateWatchData> &buffer)
+void __fastcall TUWatchFrame::GetVisibleList(map<int, TUWatchInfo> &buffer)
 {
  buffer.clear();
  for(size_t i=0;i<NameList.size();i++)
@@ -1003,7 +1132,7 @@ void __fastcall TWatchFrame::GetVisibleList(map<int, OutGateWatchData> &buffer)
 }
 
 // Возвращает копию списка всех невидимых серий
-void __fastcall TWatchFrame::GetInvisibleList(map<int, OutGateWatchData> &buffer)
+void __fastcall TUWatchFrame::GetInvisibleList(map<int, TUWatchInfo> &buffer)
 {
  buffer.clear();
  for(size_t i=0;i<NameList.size();i++)
@@ -1013,7 +1142,7 @@ void __fastcall TWatchFrame::GetInvisibleList(map<int, OutGateWatchData> &buffer
 
 
 // Заменяет подпись по выбранной серией
-void __fastcall TWatchFrame::ChangeLegend(int seriesindex, string legend)
+void __fastcall TUWatchFrame::ChangeLegend(int seriesindex, string legend)
 {
  if(seriesindex >= (int)NameList.size())
   return;
@@ -1030,7 +1159,7 @@ void __fastcall TWatchFrame::ChangeLegend(int seriesindex, string legend)
 }
 
 // Заменяет цвет выбранной серии
-void __fastcall TWatchFrame::ChangeColor(int seriesindex, TColor color)
+void __fastcall TUWatchFrame::ChangeColor(int seriesindex, TColor color)
 {
  if(seriesindex >= (int)NameList.size())
   return;
@@ -1048,7 +1177,7 @@ void __fastcall TWatchFrame::ChangeColor(int seriesindex, TColor color)
 }
 
 // Заменяет тип линии выбранной серии
-void __fastcall TWatchFrame::ChangeLineStyle(int seriesindex, TPenStyle style)
+void __fastcall TUWatchFrame::ChangeLineStyle(int seriesindex, TPenStyle style)
 {
  if(seriesindex >= (int)NameList.size())
   return;
@@ -1064,7 +1193,7 @@ void __fastcall TWatchFrame::ChangeLineStyle(int seriesindex, TPenStyle style)
 }
 
 // Изменяет информацио о видимости серии
-void __fastcall TWatchFrame::ChangeVisible(int seriesindex, bool visible)
+void __fastcall TUWatchFrame::ChangeVisible(int seriesindex, bool visible)
 {
  if(seriesindex < 0 || seriesindex >= (int)NameList.size())
   return;
@@ -1075,7 +1204,7 @@ void __fastcall TWatchFrame::ChangeVisible(int seriesindex, bool visible)
 
 
 // Изменяет смещение по оси Y
-void __fastcall TWatchFrame::ChangeYShift(int seriesindex, double yshift)
+void __fastcall TUWatchFrame::ChangeYShift(int seriesindex, double yshift)
 {
  if(seriesindex >= (int)NameList.size())
   return;
@@ -1091,7 +1220,7 @@ void __fastcall TWatchFrame::ChangeYShift(int seriesindex, double yshift)
 
 
 // Изменяет толщину линии
-void __fastcall  TWatchFrame::ChangeLineWidth(int seriesindex, int width)
+void __fastcall  TUWatchFrame::ChangeLineWidth(int seriesindex, int width)
 {
  if(seriesindex >= (int)NameList.size())
   return;
@@ -1113,9 +1242,9 @@ void __fastcall  TWatchFrame::ChangeLineWidth(int seriesindex, int width)
 // Методы визуального управления
 // -----------------------------
 // Изменение данных серий
-void __fastcall TWatchFrame::TBSeriesModify(TObject *Sender)
+void __fastcall TUWatchFrame::TBSeriesModify(TObject *Sender)
 {
- SeriesControlForm->Execute(this);
+ USeriesControlForm->Execute(this);
 }
 
 // Сохранение графика в файл
@@ -1128,7 +1257,7 @@ void __fastcall TWatchFrame::TBSeriesModify(TObject *Sender)
 } */
 
 // Сохраняет изображение графика в bmp
-bool TWatchFrame::SaveToBitmap(const AnsiString &filename)
+bool TUWatchFrame::SaveToBitmap(const AnsiString &filename)
 {
  if(filename == "")
   return false;
@@ -1138,7 +1267,7 @@ bool TWatchFrame::SaveToBitmap(const AnsiString &filename)
 }
 
 // Сохраняет изображение в метафайл
-bool TWatchFrame::SaveToMetafile(const AnsiString &filename)
+bool TUWatchFrame::SaveToMetafile(const AnsiString &filename)
 {
  if(filename == "")
   return false;
@@ -1148,7 +1277,7 @@ bool TWatchFrame::SaveToMetafile(const AnsiString &filename)
 }
 
 // Сохраняет изображение графика в jpeg
-bool TWatchFrame::SaveToJpeg(const AnsiString &filename)
+bool TUWatchFrame::SaveToJpeg(const AnsiString &filename)
 {
  if(filename == "")
   return false;
@@ -1170,7 +1299,7 @@ bool TWatchFrame::SaveToJpeg(const AnsiString &filename)
 }
 
 // Сохраняет изображение с выбором типа из диалога
-bool TWatchFrame::Save(void)
+bool TUWatchFrame::Save(void)
 {
  SavePictureDialog->DefaultExt="";
  SavePictureDialog->FileName="";
@@ -1208,15 +1337,25 @@ bool TWatchFrame::Save(void)
 
 
 
-void __fastcall TWatchFrame::N1Click(TObject *Sender)
+void __fastcall TUWatchFrame::N1Click(TObject *Sender)
 {
  TBSeriesModify(Sender);
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TWatchFrame::bmp1Click(TObject *Sender)
+void __fastcall TUWatchFrame::bmp1Click(TObject *Sender)
 {
  Save();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUWatchFrame::AddWatch1Click(TObject *Sender)
+{
+ UComponentsListForm->ComponentsListFrame1->PageControl1->ActivePageIndex=2;
+ if(UComponentsListForm->ShowComponentSelect() != mrOk)
+  return;
+
+ Add(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName(),UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput());
 }
 //---------------------------------------------------------------------------
 

@@ -1,5 +1,5 @@
-#ifndef ListInputFormUnitH
-#define ListInputFormUnitH
+#ifndef UListInputFormUnitH
+#define UListInputFormUnitH
 
 /* ***********************************************************
    @Copyright Alexander V. Bakhshiev, 2005-2009.
@@ -28,7 +28,7 @@
 
 using namespace std;
 //---------------------------------------------------------------------------
-class TListInputForm : public TForm
+class TUListInputForm : public TForm
 {
 __published:    // IDE-managed Components
         TStringGrid *List;
@@ -49,7 +49,7 @@ __published:    // IDE-managed Components
         void __fastcall Button1Click(TObject *Sender);
 private:    // User declarations
 public:        // User declarations
-        __fastcall TListInputForm(TComponent* Owner);
+        __fastcall TUListInputForm(TComponent* Owner);
 
 protected:        // User declarations
         // Параметры окна по умолчанию
@@ -82,6 +82,6 @@ public:        // User declarations
         void __fastcall ShowError(string cap, string msg);
 };
 //---------------------------------------------------------------------------
-extern PACKAGE TListInputForm *ListInputForm;
+extern PACKAGE TUListInputForm *UListInputForm;
 //---------------------------------------------------------------------------
 #endif

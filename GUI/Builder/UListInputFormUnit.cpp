@@ -12,13 +12,13 @@
 #include <vcl.h>
 #pragma hdrstop
 
-#include "ListInputFormUnit.h"
+#include "UListInputFormUnit.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
-TListInputForm *ListInputForm;
+TUListInputForm *UListInputForm;
 //---------------------------------------------------------------------------
-__fastcall TListInputForm::TListInputForm(TComponent* Owner)
+__fastcall TUListInputForm::TUListInputForm(TComponent* Owner)
         : TForm(Owner)
 {
  List->ColWidths[0]=List->Width;
@@ -32,7 +32,7 @@ __fastcall TListInputForm::TListInputForm(TComponent* Owner)
 //---------------------------------------------------------------------------
 // Метод задаёт заголовок окна, список вариантов
 // и начальное значение поля ввода
-void __fastcall TListInputForm::Init(string caption,vector<string> &listvals,string deftext)
+void __fastcall TUListInputForm::Init(string caption,vector<string> &listvals,string deftext)
 {
  Caption=caption.c_str();
 
@@ -56,7 +56,7 @@ void __fastcall TListInputForm::Init(string caption,vector<string> &listvals,str
 
 
 // Отображает сообщение об ошибке
-void __fastcall TListInputForm::ShowError(string cap, string msg)
+void __fastcall TUListInputForm::ShowError(string cap, string msg)
 {
  Panel1->Visible=false;
  List->Visible=false;
@@ -78,12 +78,12 @@ void __fastcall TListInputForm::ShowError(string cap, string msg)
 //---------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------
-void __fastcall TListInputForm::FormHide(TObject *Sender)
+void __fastcall TUListInputForm::FormHide(TObject *Sender)
 {
  //
 }
 //---------------------------------------------------------------------------
-void __fastcall TListInputForm::FormShow(TObject *Sender)
+void __fastcall TUListInputForm::FormShow(TObject *Sender)
 {
  if(List->Cells[0][0] == "" && List->RowCount == 1)
   List->Enabled=false;
@@ -92,7 +92,7 @@ void __fastcall TListInputForm::FormShow(TObject *Sender)
  Edit->SetFocus();
 }
 //---------------------------------------------------------------------------
-void __fastcall TListInputForm::BitBtn1Click(TObject *Sender)
+void __fastcall TUListInputForm::BitBtn1Click(TObject *Sender)
 {
  string s=AnsiString(Edit->Text).c_str();
  if(s.find_first_not_of(' ') == string::npos || s == "")
@@ -123,7 +123,7 @@ void __fastcall TListInputForm::BitBtn1Click(TObject *Sender)
  ModalResult=mrOk;
 }
 //---------------------------------------------------------------------------
-void __fastcall TListInputForm::ListDblClick(TObject *Sender)
+void __fastcall TUListInputForm::ListDblClick(TObject *Sender)
 {
  if(List->Row < 0)
   return;
@@ -133,7 +133,7 @@ void __fastcall TListInputForm::ListDblClick(TObject *Sender)
   BitBtn1Click(Sender);
 }
 //---------------------------------------------------------------------------
-void __fastcall TListInputForm::EditChange(TObject *Sender)
+void __fastcall TUListInputForm::EditChange(TObject *Sender)
 {
  int i;
  AnsiString temp;
@@ -151,7 +151,7 @@ void __fastcall TListInputForm::EditChange(TObject *Sender)
   }
 }
 //---------------------------------------------------------------------------
-void __fastcall TListInputForm::EditKeyDown(TObject *Sender, WORD &Key,
+void __fastcall TUListInputForm::EditKeyDown(TObject *Sender, WORD &Key,
       TShiftState Shift)
 {
  // Если нажата клавиша Enter
@@ -176,12 +176,12 @@ void __fastcall TListInputForm::EditKeyDown(TObject *Sender, WORD &Key,
   }
 }
 //---------------------------------------------------------------------------
-void __fastcall TListInputForm::FormResize(TObject *Sender)
+void __fastcall TUListInputForm::FormResize(TObject *Sender)
 {
  List->ColWidths[0]=List->Width;
 }
 //---------------------------------------------------------------------------
-void __fastcall TListInputForm::Button1Click(TObject *Sender)
+void __fastcall TUListInputForm::Button1Click(TObject *Sender)
 {
  Top=top;
  Left=left;

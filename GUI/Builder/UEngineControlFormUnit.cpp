@@ -10,6 +10,7 @@
 #include "UComponentLinksFormUnit.h"
 #include "UEngineMonitorFormUnit.h"
 #include "UComponentsPerformanceFormUnit.h"
+#include "UWatchWindowFormUnit.h"
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -250,10 +251,17 @@ void __fastcall TUEngineControlForm::SaveProjectItemClick(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+
 void __fastcall TUEngineControlForm::FormHide(TObject *Sender)
 {
  if(UEngineMonitorForm)
   UEngineMonitorForm->DelInterface(this);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUEngineControlForm::WatchWindow1Click(TObject *Sender)
+{
+ UWatchWindowForm->Show();
 }
 //---------------------------------------------------------------------------
 

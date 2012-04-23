@@ -1,10 +1,10 @@
-object WatchWindowForm: TWatchWindowForm
+object UWatchWindowForm: TUWatchWindowForm
   Left = 230
   Top = 232
   BorderIcons = [biSystemMenu, biMinimize, biMaximize, biHelp]
-  Caption = #1054#1082#1085#1086' '#1085#1072#1073#1083#1102#1076#1077#1085#1080#1103
-  ClientHeight = 420
-  ClientWidth = 686
+  Caption = 'Watch'
+  ClientHeight = 346
+  ClientWidth = 547
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -17,33 +17,16 @@ object WatchWindowForm: TWatchWindowForm
   OnResize = FormResize
   OnShow = FormShow
   PixelsPerInch = 96
-  TextHeight = 13
-  inline WatchFrame: TWatchFrame
-    Left = 0
-    Top = 29
-    Width = 686
-    Height = 391
-    Align = alClient
-    TabOrder = 0
-    TabStop = True
-    ExplicitTop = 29
-    ExplicitWidth = 686
-    ExplicitHeight = 391
-    inherited Chart1: TChart
-      Width = 686
-      Height = 391
-      ExplicitWidth = 686
-      ExplicitHeight = 391
-    end
-  end
+  TextHeight = 16
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
-    Width = 686
+    Width = 547
     Height = 29
     Caption = 'ToolBar1'
     Images = ImageList1
-    TabOrder = 1
+    TabOrder = 0
+    ExplicitWidth = 844
     object ToolButton1: TToolButton
       Left = 0
       Top = 0
@@ -83,11 +66,29 @@ object WatchWindowForm: TWatchWindowForm
       OnClick = ToolButton4Click
     end
   end
+  inline WatchFrame: TUWatchFrame
+    Left = 0
+    Top = 29
+    Width = 547
+    Height = 317
+    Align = alClient
+    TabOrder = 1
+    TabStop = True
+    ExplicitTop = 29
+    ExplicitWidth = 547
+    ExplicitHeight = 317
+    inherited Chart1: TChart
+      Width = 547
+      Height = 317
+      ExplicitWidth = 844
+      ExplicitHeight = 488
+    end
+  end
   object ImageList1: TImageList
-    Left = 592
-    Top = 10
+    Left = 112
+    Top = 50
     Bitmap = {
-      494C010103000400040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010103000400140010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000001000000001002000000000000010
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

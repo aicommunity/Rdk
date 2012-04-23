@@ -2075,7 +2075,12 @@ unsigned char* UEngine::Model_GetComponentOutputData(const char *stringid, int i
 {
  try
  {
-  return 0;
+  UEPtr<RDK::UANet> cont=dynamic_pointer_cast<RDK::UANet>(FindComponent(stringid));
+
+  if(!cont)
+   return 0;
+
+  return cont->GetOutputData(index).UChar;
  }
  catch (Exception * exception)
  {
