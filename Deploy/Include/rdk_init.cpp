@@ -337,6 +337,12 @@ int RDK_CALL Env_Calculate(const char* stringid)
  return PEngine->Env_Calculate(stringid);
 }
 
+// Расчет всей модели в реальном времени
+void RDK_CALL Env_RTCalculate(void)
+{
+ PEngine->Env_RTCalculate();
+}
+
 // Метод сброса счета
 // Если stringid == 0 то сбрасывает всю модель целиком,
 // иначе - только указанный компонент модели
@@ -763,6 +769,34 @@ const char * RDK_CALL Model_SaveComponentState(const char *stringid)
 int RDK_CALL Model_LoadComponentState(const char *stringid, char* buffer)
 {
  return PEngine->Model_LoadComponentState(stringid, buffer);
+}
+
+// Управляет шагом счета модели по умолчанию
+int RDK_CALL Model_GetDefaultTimeStep(void)
+{
+ return PEngine->Model_GetDefaultTimeStep();
+}
+
+void RDK_CALL Model_SetDefaultTimeStep(int value)
+{
+ PEngine->Model_SetDefaultTimeStep(value);
+}
+
+// Управляет шагом счета компонента
+int RDK_CALL Model_GetTimeStep(const char *stringid)
+{
+ return PEngine->Model_GetTimeStep(stringid);
+}
+
+void RDK_CALL Model_SetTimeStep(const char *stringid, int value)
+{
+ PEngine->Model_SetTimeStep(stringid, value);
+}
+
+// Устанавливает шаг счета компонента и всех его дочерних компонент
+void RDK_CALL Model_SetGlobalTimeStep(const char *stringid, int value)
+{
+ PEngine->Model_SetGlobalTimeStep(stringid, value);
 }
 
 // Возвращает текущее время модели

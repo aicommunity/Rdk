@@ -121,7 +121,15 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
  // Флаг автоматического сохранения проекта
  ProjectAutoSaveFlag=ProjectIni->ReadInteger("General","ProjectAutoSaveFlag",1);
 
+ // Шаг счета по умолчанию
+ DefaultTimeStep=ProjectIni->ReadInteger("General","DefaultTimeStep",30);
+
+ // Глобальный шаг счета модели
+ GlobalTimeStep=ProjectIni->ReadInteger("General","GlobalTimeStep",30);
+
  GraphicalEngineInit(PredefinedStructure,NumEnvInputs,NumEnvOutputs,InputEnvImageWidth, InputEnvImageHeight ,1,ExceptionHandler);
+ Model_SetDefaultTimeStep(DefaultTimeStep);
+
  for(int i=0;i<NumEnvInputs;i++)
   VideoOutputForm->AddSource();
 
@@ -134,9 +142,12 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
    UComponentsControlForm->ComponentsControlFrame->LoadModelFromFile(modelfilename);
  }
 
+ Model_SetGlobalTimeStep("",GlobalTimeStep);
+
  UImagesForm->ImagesFrame->LoadFromIni(ProjectIni,"ImagesFrame");
  UComponentsPerformanceForm->UComponentsPerformanceFrame->LoadFromIni(ProjectIni,"PerformanceFrame");
  VideoOutputForm->LoadFromIni(ProjectIni,"VideoOutputForm");
+ UEngineMonitorForm->EngineMonitorFrame->LoadFromIni(ProjectIni,"EngineMonitorForm");
 // UComponentsPerformanceForm->UComponentsPerformanceFrame->AddAllComponents("Pipeline1");
  UpdateInterface();
 }
@@ -147,6 +158,7 @@ void TUGEngineControlForm::SaveProject(void)
  if(!ProjectIni)
   return;
 
+ UEngineMonitorForm->EngineMonitorFrame->SaveToIni(ProjectIni,"EngineMonitorForm");
  UImagesForm->ImagesFrame->SaveToIni(ProjectIni,"ImagesFrame");
  UComponentsPerformanceForm->UComponentsPerformanceFrame->SaveToIni(ProjectIni,"PerformanceFrame");
  VideoOutputForm->SaveToIni(ProjectIni,"VideoOutputForm");
@@ -173,6 +185,12 @@ void TUGEngineControlForm::SaveProject(void)
 
  ProjectIni->WriteInteger("General","InputEnvImageWidth",InputEnvImageWidth);
  ProjectIni->WriteInteger("General","InputEnvImageHeight",InputEnvImageHeight);
+
+ // Шаг счета по умолчанию
+ ProjectIni->WriteInteger("General","DefaultTimeStep",DefaultTimeStep);
+
+ // Глобальный шаг счета модели
+ ProjectIni->WriteInteger("General","GlobalTimeStep",GlobalTimeStep);
 
  ProjectIni->UpdateFile();
 }

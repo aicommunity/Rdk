@@ -478,6 +478,23 @@ bool UAContainer::SetTimeStep(UTime timestep)
  return true;
 }
 
+// Устанавливает величину шага интегрирования компоненту и всем его дочерним компонентам
+bool UAContainer::SetGlobalTimeStep(UTime timestep)
+{
+ if(!SetTimeStep(timestep))
+  return false;
+
+ // Обращение ко всем компонентам объекта
+ UEPtr<UAContainer>* comps=PComponents;
+ for(int i=0;i<NumComponents;i++,comps++)
+  if(!(*comps)->SetGlobalTimeStep(timestep))
+   return false;
+
+ return true;
+}
+
+
+
 // Устанавливает флаг активности объекта
 bool UAContainer::GetActivity(void) const
 {

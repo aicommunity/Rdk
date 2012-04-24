@@ -826,6 +826,19 @@ int UEngine::Env_Calculate(const char* stringid)
  return 0;
 }
 
+// Расчет всей модели в реальном времени
+void UEngine::Env_RTCalculate(void)
+{
+ try
+ {
+  Environment->RTCalculate();
+ }
+ catch (RDK::Exception * exception)
+ {
+  ProcessException(exception);
+ }
+}
+
 
 // Метод сброса счета
 // Если stringid == 0 то сбрасывает всю модель целиком,
@@ -2246,6 +2259,61 @@ int UEngine::Model_LoadComponentState(const char *stringid, char* buffer)
  return 0;
 }
 
+// Управляет шагом счета модели по умолчанию
+int UEngine::Model_GetDefaultTimeStep(void) const
+{
+ return DefaultTimeStep;
+}
+
+void UEngine::Model_SetDefaultTimeStep(int value)
+{
+ DefaultTimeStep=value;
+}
+
+// Управляет шагом счета компонента
+int UEngine::Model_GetTimeStep(const char *stringid) const
+{
+ try
+ {
+  UEPtr<RDK::UANet> cont=dynamic_pointer_cast<RDK::UANet>(FindComponent(stringid));
+
+  return cont->GetTimeStep();
+ }
+ catch (Exception * exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
+void UEngine::Model_SetTimeStep(const char *stringid, int value)
+{
+ try
+ {
+  UEPtr<RDK::UANet> cont=dynamic_pointer_cast<RDK::UANet>(FindComponent(stringid));
+
+  cont->SetTimeStep(value);
+ }
+ catch (Exception * exception)
+ {
+  ProcessException(exception);
+ }
+}
+
+// Устанавливает шаг счета компонента и всех его дочерних компонент
+void UEngine::Model_SetGlobalTimeStep(const char *stringid, int value)
+{
+ try
+ {
+  UEPtr<RDK::UANet> cont=dynamic_pointer_cast<RDK::UANet>(FindComponent(stringid));
+
+  cont->SetGlobalTimeStep(value);
+ }
+ catch (Exception * exception)
+ {
+  ProcessException(exception);
+ }
+}
 
 // Возвращает текущее время модели
 long long UEngine::Model_GetTime(void)

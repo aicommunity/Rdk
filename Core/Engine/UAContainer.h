@@ -241,6 +241,9 @@ double GetInstantPerformance(void) const;
 UTime GetTimeStep(void) const;
 bool SetTimeStep(UTime timestep);
 
+// Устанавливает величину шага интегрирования компоненту и всем его дочерним компонентам
+bool SetGlobalTimeStep(UTime timestep);
+
 // Устанавливает флаг активности объекта
 bool GetActivity(void) const;
 bool SetActivity(bool activity);

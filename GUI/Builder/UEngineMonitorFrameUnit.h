@@ -10,6 +10,7 @@
 #include <Vcl.ComCtrls.hpp>
 #include <Vcl.Menus.hpp>
 #include <Vcl.ExtCtrls.hpp>
+#include <IniFiles.hpp>
 #include <vector>
 #include "myrdk.h"
 
@@ -37,8 +38,19 @@ private:	// User declarations
 public:		// User declarations
 	__fastcall TUEngineMonitorFrame(TComponent* Owner);
 
+// Режим расчетов
+// 0 - простой расчет
+// 1 - расчет в реальном времени
+int CalculateMode;
+
+bool UpdateInterfaceFlag;
+
 // Список обработчиков, которые должны быть вызваны после расчета
 std::vector<RDK::IVisualInterface*> InterfaceUpdaters;
+
+// Управление режимом расчетов
+int GetCalculateMode(void) const;
+void SetCalculateMode(int value);
 
 // Добавляет обработчик в список
 void AddInterface(RDK::IVisualInterface *value);
@@ -48,7 +60,11 @@ void DelInterface(RDK::IVisualInterface *value);
 
 void UpdateInterface(void);
 
-bool UpdateInterfaceFlag;
+// Сохраняет информацию в заданный ini файл
+void SaveToIni(TMemIniFile *ini, const String &section);
+
+// Загружает информацию из заданного ini файла
+void LoadFromIni(TMemIniFile *ini, const String &section);
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TUEngineMonitorFrame *UEngineMonitorFrame;

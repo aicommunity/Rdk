@@ -125,6 +125,8 @@ UEPtr<UAComponent> CurrentComponent;
 protected: // Временные переменные
 long long StartupTime;
 
+long long /*StartProcTime,*/CurrentTime,LastDuration/*,LastSentTime*/, ProcEndTime;
+
 public: // Public methods
 // --------------------------
 // Constructors & destructors
@@ -248,6 +250,9 @@ virtual bool CreateStructure(void);
 
 // Уничтожает текущую модель обработки
 virtual bool DestroyStructure(void);
+
+// Расчет модели в реальном времени
+virtual void RTCalculate(void);
 // --------------------------
 
 // --------------------------

@@ -113,6 +113,9 @@ RDK_LIB_TYPE int RDK_CALL Env_CreateClass(const char* stringid);
 // иначе вычисляет только указанный компонент модели
 RDK_LIB_TYPE int RDK_CALL Env_Calculate(const char* stringid);
 
+// Расчет всей модели в реальном времени
+RDK_LIB_TYPE void RDK_CALL Env_RTCalculate(void);
+
 // Метод сброса счета
 // Если stringid == 0 то сбрасывает всю модель целиком,
 // иначе - только указанный компонент модели
@@ -426,6 +429,17 @@ RDK_LIB_TYPE const char * RDK_CALL Model_SaveComponentState(const char *stringid
 
 // Загружает состояние компонента и его дочерних компонент из xml
 RDK_LIB_TYPE int RDK_CALL Model_LoadComponentState(const char *stringid, char* buffer);
+
+// Управляет шагом счета модели по умолчанию
+RDK_LIB_TYPE int RDK_CALL Model_GetDefaultTimeStep(void);
+RDK_LIB_TYPE void RDK_CALL Model_SetDefaultTimeStep(int value);
+
+// Управляет шагом счета компонента
+RDK_LIB_TYPE int RDK_CALL Model_GetTimeStep(const char *stringid);
+RDK_LIB_TYPE void RDK_CALL Model_SetTimeStep(const char *stringid, int value);
+
+// Устанавливает шаг счета компонента и всех его дочерних компонент
+RDK_LIB_TYPE void RDK_CALL Model_SetGlobalTimeStep(const char *stringid, int value);
 
 // Возвращает текущее время модели
 RDK_LIB_TYPE long long RDK_CALL Model_GetTime(void);

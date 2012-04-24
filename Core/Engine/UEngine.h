@@ -291,6 +291,9 @@ virtual int Env_CreateClass(const char* stringid);
 // иначе вычисляет только указанный компонент модели
 virtual int Env_Calculate(const char* stringid=0);
 
+// Расчет всей модели в реальном времени
+virtual void Env_RTCalculate(void);
+
 // Метод сброса счета
 // Если stringid == 0 то сбрасывает всю модель целиком,
 // иначе - только указанный компонент модели
@@ -525,6 +528,17 @@ virtual const char* Model_SaveComponentState(const char *stringid);
 
 // Загружает состояние компонента и его дочерних компонент из xml
 virtual int Model_LoadComponentState(const char *stringid, char* buffer);
+
+// Управляет шагом счета модели по умолчанию
+virtual int Model_GetDefaultTimeStep(void) const;
+virtual void Model_SetDefaultTimeStep(int value);
+
+// Управляет шагом счета компонента
+virtual int Model_GetTimeStep(const char *stringid) const;
+virtual void Model_SetTimeStep(const char *stringid, int value);
+
+// Устанавливает шаг счета компонента и всех его дочерних компонент
+virtual void Model_SetGlobalTimeStep(const char *stringid, int value);
 
 // Возвращает текущее время модели
 virtual long long Model_GetTime(void);

@@ -16,8 +16,19 @@ __fastcall TUEngineMonitorFrame::TUEngineMonitorFrame(TComponent* Owner)
 	: TFrame(Owner)
 {
  UpdateInterfaceFlag=false;
+ CalculateMode=0;
 }
 
+// Управление режимом расчетов
+int TUEngineMonitorFrame::GetCalculateMode(void) const
+{
+ return CalculateMode;
+}
+
+void TUEngineMonitorFrame::SetCalculateMode(int value)
+{
+ CalculateMode=value;
+}
 
 // Добавляет обработчик в список
 void TUEngineMonitorFrame::AddInterface(RDK::IVisualInterface* value)
@@ -51,6 +62,26 @@ void TUEngineMonitorFrame::UpdateInterface(void)
   InterfaceUpdaters[i]->UpdateInterface();
  UpdateInterfaceFlag=false;
 }
+
+
+// Сохраняет информацию в заданный ini файл
+void TUEngineMonitorFrame::SaveToIni(TMemIniFile *ini, const String &section)
+{
+ if(!ini)
+  return;
+
+ ini->EraseSection(section);
+ ini->WriteInteger(section,"CalculateMode",GetCalculateMode());
+}
+
+// Загружает информацию из заданного ini файла
+void TUEngineMonitorFrame::LoadFromIni(TMemIniFile *ini, const String &section)
+{
+ if(!ini)
+  return;
+
+ SetCalculateMode(ini->ReadInteger(section,"CalculateMode",0));
+}
 //---------------------------------------------------------------------------
 
 void __fastcall TUEngineMonitorFrame::Start1Click(TObject *Sender)
@@ -76,8 +107,16 @@ void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
  for(size_t i=0;i<InterfaceUpdaters.size();i++)
   InterfaceUpdaters[i]->BeforeCalculate();
 
- for(int i=0;i<100;i++)
- Env_Calculate(0);
+ switch(CalculateMode)
+ {
+ case 0:
+  Env_Calculate(0);
+ break;
+
+ case 1:
+  Env_RTCalculate();
+ break;
+ }
 
  for(size_t i=0;i<InterfaceUpdaters.size();i++)
   InterfaceUpdaters[i]->AfterCalculate();

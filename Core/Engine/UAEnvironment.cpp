@@ -464,6 +464,60 @@ bool UAEnvironment::DestroyStructure(void)
  Structured=false;
  return true;
 }
+
+// Расчет модели в реальном времени
+void UAEnvironment::RTCalculate(void)
+{
+ Build();
+
+// StartProcTime=GetCurrentStartupTime();
+
+ CurrentTime=GetCurrentStartupTime();
+ UAContainer::SetRealTime(CalcDiffTime(GetCurrentStartupTime(),StartupTime)*1000);
+
+ long long curtime;
+ long long TimerInterval=0;
+ double devicemodeltime=0;
+
+ TimerInterval=GetCurrentStartupTime()-ProcEndTime;
+ if(TimerInterval<=0)
+  TimerInterval=1;
+
+ int i=0;
+ if(LastDuration < TimerInterval)
+  LastDuration=TimerInterval;
+ int model_duration=(Model->GetDoubleTime()*1e6-UAContainer::GetRealTime())/1000.0;
+ int elapsed_counter=0;
+ if(model_duration<0)
+ {
+  elapsed_counter=(-model_duration*Model->GetTimeStep())/1000;
+ }
+ else
+ {
+  elapsed_counter=0;//(/*LastDuration*/model_duration*Model->GetTimeStep())/1000;
+ }
+
+ curtime=GetCurrentStartupTime();
+ while(curtime-CurrentTime<TimerInterval && i<elapsed_counter)
+ {
+  Calculate();
+
+  ++i;
+  curtime=GetCurrentStartupTime();
+ }
+
+// LastSentTime=GetCurrentStartupTime();
+ if(UAContainer::GetRealTime()/1e6<Model->GetDoubleTime())
+ {
+  Sleep(Model->GetDoubleTime()*1000-UAContainer::GetRealTime()/1000);
+  UAContainer::SetRealTime(CalcDiffTime(GetCurrentStartupTime(),StartupTime)*1000);
+ }
+
+ LastDuration=GetCurrentStartupTime()-CurrentTime;
+ ProcEndTime=GetCurrentStartupTime();
+
+ return;
+}
 // --------------------------
 
 
@@ -549,6 +603,8 @@ bool UAEnvironment::ABuild(void)
 bool UAEnvironment::AReset(void)
 {
  StartupTime=GetCurrentStartupTime();
+ LastDuration=1;
+ ProcEndTime=StartupTime;
 
  if(!Model)
   return true;

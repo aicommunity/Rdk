@@ -120,6 +120,12 @@ int InputEnvImageWidth, InputEnvImageHeight;
 // Индекс предварительно заданной модели
 int PredefinedStructure;
 
+// Шаг счета по умолчанию
+int DefaultTimeStep;
+
+// Глобальный шаг счета модели
+int GlobalTimeStep;
+
 // Обновление интерфейса
 void UpdateInterface(void);
 
