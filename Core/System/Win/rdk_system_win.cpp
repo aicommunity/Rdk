@@ -21,6 +21,13 @@ unsigned long long CalcDiffTime(unsigned long long time1, unsigned long long tim
  else
   return time2-time1;
 }
+
+// Усыпляет процесс на заданное число миллисекунд
+void Sleep(int value)
+{
+ ::Sleep(value);
+}
+
 }
 #endif
 

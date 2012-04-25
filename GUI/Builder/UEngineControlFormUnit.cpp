@@ -82,23 +82,12 @@ void TUEngineControlForm::OpenProject(const String &FileName)
  ProjectPath=ExtractFilePath(OpenDialog->FileName);
  ProjectName=ExtractFileName(OpenDialog->FileName);
 
- // Число входов среды
-// NumEnvInputs=ProjectIni->ReadInteger("General","NumEnvInputs",1);
-
- // Число выходов среды
-// NumEnvOutputs=ProjectIni->ReadInteger("General","NumEnvOutputs",1);
-
-// InputEnvImageWidth=ProjectIni->ReadInteger("General","InputEnvImageWidth",360);
-// InputEnvImageHeight=ProjectIni->ReadInteger("General","InputEnvImageHeight",240);
-
  // Флаг автоматического сохранения проекта
  ProjectAutoSaveFlag=ProjectIni->ReadInteger("General","ProjectAutoSaveFlag",1);
 
  PredefinedStructure=ProjectIni->ReadInteger("General","PredefinedStructure",0);
 
  EngineInit(PredefinedStructure,ExceptionHandler);
-// for(int i=0;i<NumEnvInputs;i++)
-//  VideoOutputForm->AddSource();
 
  String modelfilename=ProjectIni->ReadString("General","ModelFileName","");
  if(modelfilename.Length() != 0)
@@ -109,10 +98,8 @@ void TUEngineControlForm::OpenProject(const String &FileName)
    UComponentsControlForm->ComponentsControlFrame->LoadModelFromFile(modelfilename);
  }
 
-// UImagesForm->ImagesFrame->LoadFromIni(ProjectIni,"ImagesFrame");
+ UEngineMonitorForm->EngineMonitorFrame->LoadFromIni(ProjectIni,"EngineMonitorForm");
  UComponentsPerformanceForm->UComponentsPerformanceFrame->LoadFromIni(ProjectIni,"PerformanceFrame");
-// VideoOutputForm->LoadFromIni(ProjectIni,"VideoOutputForm");
-// UComponentsPerformanceForm->UComponentsPerformanceFrame->AddAllComponents("Pipeline1");
  UpdateInterface();
 }
 
@@ -122,9 +109,8 @@ void TUEngineControlForm::SaveProject(void)
  if(!ProjectIni)
   return;
 
-// UImagesForm->ImagesFrame->SaveToIni(ProjectIni,"ImagesFrame");
+ UEngineMonitorForm->EngineMonitorFrame->SaveToIni(ProjectIni,"EngineMonitorForm");
  UComponentsPerformanceForm->UComponentsPerformanceFrame->SaveToIni(ProjectIni,"PerformanceFrame");
-// VideoOutputForm->SaveToIni(ProjectIni,"VideoOutputForm");
 
  String modelfilename=ProjectIni->ReadString("General","ModelFileName","");
  if(modelfilename.Length() != 0)
@@ -139,15 +125,6 @@ void TUEngineControlForm::SaveProject(void)
 
  // Флаг автоматического сохранения проекта
  ProjectIni->WriteInteger("General","ProjectAutoSaveFlag",ProjectAutoSaveFlag);
-
- // Число входов среды
-// ProjectIni->WriteInteger("General","NumEnvInputs",NumEnvInputs);
-
- // Число выходов среды
-// ProjectIni->WriteInteger("General","NumEnvOutputs",NumEnvOutputs);
-
-// ProjectIni->WriteInteger("General","InputEnvImageWidth",InputEnvImageWidth);
-// ProjectIni->WriteInteger("General","InputEnvImageHeight",InputEnvImageHeight);
 
  ProjectIni->UpdateFile();
 }
