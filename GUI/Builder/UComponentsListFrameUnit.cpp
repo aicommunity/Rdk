@@ -107,7 +107,7 @@ void TUComponentsListFrame::UpdateInterface(void)
  std::vector<int> ids;
  ids.resize(numcomponents);
  Model_GetComponentsList(CurrentComponentId.c_str(), &ids[0]);
- for(size_t i=0;i<numcomponents;i++)
+ for(int i=0;i<numcomponents;i++)
  {
   if(ids[i] == SelectedId)
    row=i+2;

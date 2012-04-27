@@ -26,10 +26,10 @@ public:		// User declarations
 
 
 // Добавляет обработчик в список
-void AddInterface(RDK::IVisualInterface *value);
+void AddInterface(RDK::UIVisualController *value);
 
 // Удаляет обработчик из списка
-void DelInterface(RDK::IVisualInterface *value);
+void DelInterface(RDK::UIVisualController *value);
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TUEngineMonitorForm *UEngineMonitorForm;

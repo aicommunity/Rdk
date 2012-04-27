@@ -18,9 +18,10 @@
 #include "UComponentsListFormUnit.h"
 #include "myrdk.h"
 
+#pragma warn -8130
 class TUComponentsListForm;
 //---------------------------------------------------------------------------
-class TUImagesFrame : public TFrame, public RDK::IVisualInterface
+class TUImagesFrame : public TFrame, public RDK::UIVisualController
 {
 __published:    // IDE-managed Components
     TDrawGrid *DrawGrid;
@@ -128,6 +129,7 @@ void LoadFromIni(TMemIniFile *ini, const String &section);
 // --------------------------
 
 };
+#pragma warn .8130
 //---------------------------------------------------------------------------
 extern PACKAGE TUImagesFrame *UImagesFrame;
 //---------------------------------------------------------------------------

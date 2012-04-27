@@ -15,6 +15,7 @@ See file license.txt for more information
 
 namespace RDK {
 
+			   /*
 #ifdef MVECTOR_H
 typedef MVector<double> MDVector;
 #else
@@ -133,6 +134,6 @@ MDVector operator / (const MDVector &v,double f);
 // Покомпонентное деление в-ров
 MDVector operator / (const MDVector &u,const MDVector &v);
 
-#endif
+#endif    */
 }
 #endif

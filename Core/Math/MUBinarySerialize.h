@@ -27,7 +27,7 @@ namespace Serialize {
 
 // MVector
 template<typename T>
-USerStorageBinary& operator << (USerStorageBinary& storage, const MVector<T> &data)
+USerStorageBinary& operator << (USerStorageBinary& storage, const MVector<T,3> &data)
 {
  operator <<(storage,data.x);
  operator <<(storage,data.y);
@@ -36,11 +36,50 @@ USerStorageBinary& operator << (USerStorageBinary& storage, const MVector<T> &da
 }
 
 template<typename T>
-USerStorageBinary& operator >> (USerStorageBinary& storage, MVector<T> &data)
+USerStorageBinary& operator >> (USerStorageBinary& storage, MVector<T,3> &data)
 {
  operator >>(storage,data.x);
  operator >>(storage,data.y);
  operator >>(storage,data.z);
+ return storage;
+}
+
+template<typename T, unsigned Rows>
+USerStorageBinary& operator << (USerStorageBinary& storage, const MVector<T,Rows> &data)
+{
+ for(unsigned i=0;i<Rows;i++)
+  operator <<(storage,data.Data1D[i]);
+ return storage;
+}
+
+template<typename T, unsigned Rows>
+USerStorageBinary& operator >> (USerStorageBinary& storage, MVector<T,Rows> &data)
+{
+ for(unsigned i=0;i<Rows;i++)
+  operator >>(storage,data.Data1D[i]);
+ return storage;
+}
+
+// MMatrix
+template<typename T, unsigned Rows, unsigned Cols>
+USerStorageBinary& operator << (USerStorageBinary& storage, const MMatrix<T,Rows,Cols> &data)
+{
+ for(unsigned i=0;i<Rows;i++)
+ {
+  for(unsigned j=0;j<Cols;j++)
+   operator <<(storage,data.Data[i][j]);
+ }
+ return storage;
+}
+
+template<typename T, unsigned Rows, unsigned Cols>
+USerStorageBinary& operator >> (USerStorageBinary& storage, MMatrix<T,Rows,Cols> &data)
+{
+ for(unsigned i=0;i<Rows;i++)
+ {
+  for(unsigned j=0;j<Cols;j++)
+   operator >>(storage,data.Data[i][j]);
+ }
  return storage;
 }
 
@@ -226,7 +265,7 @@ USerStorageBinary& operator << (USerStorageBinary& storage, const MVertex<T> &da
 template<typename T>
 USerStorageBinary& operator >> (USerStorageBinary& storage, MVertex<T> &data)
 {
- std::vector<MVector<T> > temp;
+ std::vector<MVector<T,3> > temp;
  std::vector<std::string> temp2;
  operator >> (storage,temp);
  operator >> (storage,temp2);

@@ -18,19 +18,7 @@
 #include "../../Core/Graphics/UGraphicsBinarySerialize.cpp"
 
 namespace RDK {
-				/*
-// Метод, вызываемый перед шагом расчета
-void IVisualInterface::BeforeCalculate(void)
-{
 
-}
-
-// Метод, вызываемый после шага расчета
-void IVisualInterface::AfterCalculate(void)
-{
-
-}
-                  */
 }
 #endif
 

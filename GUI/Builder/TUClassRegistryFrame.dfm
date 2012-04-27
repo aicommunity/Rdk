@@ -42,7 +42,6 @@ object UClassRegistryFrame: TUClassRegistryFrame
       Height = 25
       Anchors = [akTop, akRight]
       Default = True
-      DoubleBuffered = True
       Glyph.Data = {
         DE010000424DDE01000000000000760000002800000024000000120000000100
         0400000000006801000000000000000000001000000000000000000000000000
@@ -61,7 +60,6 @@ object UClassRegistryFrame: TUClassRegistryFrame
         333A333333333333333338330000333333333333333333333333333333333333
         0000}
       NumGlyphs = 2
-      ParentDoubleBuffered = False
       TabOrder = 1
       OnClick = SetBitBtnClick
     end
@@ -72,7 +70,6 @@ object UClassRegistryFrame: TUClassRegistryFrame
       Height = 25
       Anchors = [akTop, akRight]
       Cancel = True
-      DoubleBuffered = True
       Glyph.Data = {
         DE010000424DDE01000000000000760000002800000024000000120000000100
         0400000000006801000000000000000000001000000000000000000000000000
@@ -91,7 +88,6 @@ object UClassRegistryFrame: TUClassRegistryFrame
         3333333333333333333888330000333333333333333333333333333333333333
         0000}
       NumGlyphs = 2
-      ParentDoubleBuffered = False
       TabOrder = 2
       OnClick = RestoreBitBtnClick
     end

@@ -14,8 +14,166 @@ See file license.txt for more information
 
 #include <cmath>
 #include <cstring>
+#include "MMatrix.h"
 
 namespace RDK {
+
+template<class T, unsigned Rows>
+class MVector: public MMatrix<T,Rows,1>
+{
+public:
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+MVector(void);
+MVector(T defvalue);
+MVector(T xv, T yv, T zv);
+MVector(T xv, T yv, T zv, T dv);
+MVector(const MVector<T,Rows> &copy);
+MVector(const MMatrix<T,Rows,1> &copy);
+//MVector(const T* data);
+~MVector(void);
+// --------------------------
+
+// --------------------------
+// Операторы управления данными
+// --------------------------
+// Оператор присваивания
+MVector<T,Rows>& operator = (const MVector<T,Rows> &copy);
+MVector<T,Rows>& operator = (const MMatrix<T,Rows,1> &copy);
+//MVector<T,Rows>& operator = (const T* data);
+MVector<T,Rows>& operator = (T value);
+
+// Доступ к элементу
+T& operator () (int i);
+const T& operator () (int i) const;
+// --------------------------
+
+};
+
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+template<class T, unsigned Rows>
+MVector<T,Rows>::MVector(void)
+{
+};
+
+template<class T, unsigned Rows>
+MVector<T,Rows>::MVector(T defvalue)
+{
+ if(defvalue == 0)
+  memset(Data1D,0,Rows*sizeof(T));
+ else
+  for(int i=0;i<Rows;i++)
+   Data1D[i]=defvalue;
+}
+
+template<class T, unsigned Rows>
+MVector<T,Rows>::MVector(T xv, T yv, T zv)
+{
+ x=xv; y=yv; z=zv;
+}
+
+template<class T, unsigned Rows>
+MVector<T,Rows>::MVector(T xv, T yv, T zv, T dv)
+{
+ x=xv; y=yv; z=zv; d=dv;
+}
+
+
+template<class T, unsigned Rows>
+MVector<T,Rows>::MVector(const MVector<T,Rows> &copy)
+{ *this=copy; };
+
+template<class T, unsigned Rows>
+MVector<T,Rows>::MVector(const MMatrix<T,Rows,1> &copy)
+{ *this=copy; };
+/*
+template<class T, unsigned Rows>
+MVector<T,Rows>::MVector(const T* data)
+{ *copy=data; };
+  */
+template<class T, unsigned Rows>
+MVector<T,Rows>::~MVector(void) {};
+// --------------------------
+
+// --------------------------
+// Операторы управления данными
+// --------------------------
+// Оператор присваивания
+template<class T, unsigned Rows>
+MVector<T,Rows>& MVector<T,Rows>::operator = (const MVector<T,Rows> &copy)
+{
+ memcpy(Data1D,copy.Data1D,sizeof(T)*Rows);
+ return *this;
+};
+
+template<class T, unsigned Rows>
+MVector<T,Rows>& MVector<T,Rows>::operator = (const MMatrix<T,Rows,1> &copy)
+{
+ memcpy(Data1D,copy.Data1D,sizeof(T)*Rows);
+ return *this;
+}
+  /*
+template<class T, unsigned Rows>
+MVector<T,Rows>& MVector<T,Rows>::operator = (const T* data)
+{
+ memcpy(Data1D,data,sizeof(T)*Rows);
+ return *this;
+};  */
+
+template<class T, unsigned Rows>
+MVector<T,Rows>& MVector<T,Rows>::operator = (T value)
+{
+ T* pm1=Data1D;
+
+ for(int i=0;i<Rows;i++)
+  *pm1++ = value;
+ return *this;
+};
+
+// Доступ к элементу
+template<class T, unsigned Rows>
+T& MVector<T,Rows>::operator () (int i)
+{
+ return Data1D[i];
+}
+
+template<class T, unsigned Rows>
+const T& MVector<T,Rows>::operator () (int i) const
+{
+ return Data1D[i];
+}
+// --------------------------
+
+// --------------------------
+// Арифметические операторы
+// --------------------------
+// Скалярное произведение векторов
+template<class T, unsigned Rows>
+double operator * (const MVector<T,Rows> &M1, const MVector<T,Rows> &M2)
+{
+ double res=0;
+ for(int k=0;k<Rows;k++)
+ {
+  res+=M1.Data[k][0]*M2.Data[k][0];
+ }
+
+ return res;
+}
+
+// Векторное произведение векторов
+template<class T>
+MVector<T,3> operator ^ (const MVector<T,3> &u, const MVector<T,3> &v)
+{
+ return MVector<T,3>(u.y*v.z-u.z*v.y,u.z*v.x-u.x*v.z,u.x*v.y-u.y*v.x);
+}
+// --------------------------
+
+
+
+
 /*
   Класс - MVector. Определяет новый тип данных - 3D-вектор.
  Вектор можно создать след. способами:
@@ -68,7 +226,7 @@ namespace RDK {
    fstream >> MVector<type>; - Ввод из файлового потока.
  ----------------------------------------
 */
-
+    /*
 template<class DataV>
 class MVector
 {
@@ -231,39 +389,7 @@ MVector<DataV>& operator /= (const MVector<DataV> &v)
  z/=v.z;
  return *this;
 }
-/*
-// Сложение векторов.
-MVector<DataV> operator + (const MVector<DataV> &u,const MVector<DataV> &v);
 
-// Вычитание векторов.
-MVector<DataV> operator - (const MVector<DataV> &u,const MVector<DataV> &v);
-
-// Векторное умножение векторов.
-MVector<DataV> operator ^ (const MVector<DataV> &u,const MVector<DataV> &v);
-
-// Скалярное умножение векторов.
-DataV operator * (const MVector<DataV> &u,const MVector<DataV> &v);
-
-// Умножение вектора и числа справа.
-MVector<DataV> operator * (const MVector<DataV> &v,DataV g);
-
-// Умножение вектора и числа слева.
-MVector<DataV> operator * (DataV f,const MVector<DataV> &v);
-
-// Деление вектора и числа.
-MVector<DataV> operator / (const MVector<DataV> &v,DataV f);
-
-// Покомпонентное деление в-ров
-MVector<DataV> operator / (const MVector<DataV> &u,const MVector<DataV>&v);
-// ##############################
-                                      */
-// ## Потоковые операторы ввода-вывода ##
-// Вывод в массив
-//unsigned char* operator >> (const MVector<DataV> &v,unsigned char* p);
-
-// Ввод из массива
-//MVector<DataV>& operator << (MVector<DataV> &v, const unsigned char* p);
-// ######################################
 };
 
 template<class DataV>
@@ -358,7 +484,7 @@ const unsigned char* operator << (MVector<DataV> &v, const unsigned char* p)
  return p+sizeof(DataV)*3;
 }
 // ######################################
-
+					  */
 }
 #endif
 

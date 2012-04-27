@@ -122,7 +122,7 @@ UTime TimeStep;
 
 public: // Физические свойства
 // Координата компонента в пространстве сети
-RDK::MVector<double> Coord;
+RDK::MVector<double,3> Coord;
 
 // Время, затраченное на обработку объекта
 // (без учета времени обсчета дочерних объектов) (мс)
@@ -222,8 +222,8 @@ virtual UId GenerateId(void);
 // --------------------------
 public:
 // Координата компонента в пространстве сети
-RDK::MVector<double> GetCoord(void) const;
-bool SetCoord(RDK::MVector<double> value);
+RDK::MVector<double,3> GetCoord(void) const;
+bool SetCoord(RDK::MVector<double,3> value);
 
 // Время, затраченное на обработку объекта
 // (без учета времени обсчета дочерних объектов) (мс)

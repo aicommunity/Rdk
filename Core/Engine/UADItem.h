@@ -159,11 +159,11 @@ size_t GetFullInputDataSize(void) const;
 // --------------------------
 // Описание выходных данных
 const USharedPtr<UIDataInfo>& GetOutputDataInfo(int index) const;
-bool SetOutputDataInfo(int index, const USharedPtr<UIDataInfo> &value);
+bool SetOutputDataInfo(int index, const USharedPtr<UIDataInfo> value);
 
 // Описание входных данных
 const USharedPtr<UIDataInfo>& GetInputDataInfo(int index) const;
-bool SetInputDataInfo(int index, const USharedPtr<UIDataInfo> &value);
+bool SetInputDataInfo(int index, const USharedPtr<UIDataInfo> value);
 
 // Имена выходов
 const NameT& GetOutputName(int index) const;

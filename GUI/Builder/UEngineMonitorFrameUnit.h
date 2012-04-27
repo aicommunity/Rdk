@@ -14,9 +14,10 @@
 #include <vector>
 #include "myrdk.h"
 
+#pragma warn -8130
 //---------------------------------------------------------------------------
 
-class TUEngineMonitorFrame : public TFrame, public RDK::IVisualInterface
+class TUEngineMonitorFrame : public TFrame, public RDK::UIVisualController
 {
 __published:	// IDE-managed Components
 	TRichEdit *RichEdit;
@@ -46,17 +47,17 @@ int CalculateMode;
 bool UpdateInterfaceFlag;
 
 // Список обработчиков, которые должны быть вызваны после расчета
-std::vector<RDK::IVisualInterface*> InterfaceUpdaters;
+std::vector<RDK::UIVisualController*> InterfaceUpdaters;
 
 // Управление режимом расчетов
 int GetCalculateMode(void) const;
 void SetCalculateMode(int value);
 
 // Добавляет обработчик в список
-void AddInterface(RDK::IVisualInterface *value);
+void AddInterface(RDK::UIVisualController *value);
 
 // Удаляет обработчик из списка
-void DelInterface(RDK::IVisualInterface *value);
+void DelInterface(RDK::UIVisualController *value);
 
 void UpdateInterface(void);
 
@@ -66,6 +67,7 @@ void SaveToIni(TMemIniFile *ini, const String &section);
 // Загружает информацию из заданного ini файла
 void LoadFromIni(TMemIniFile *ini, const String &section);
 };
+#pragma warn .8130
 //---------------------------------------------------------------------------
 extern PACKAGE TUEngineMonitorFrame *UEngineMonitorFrame;
 //---------------------------------------------------------------------------

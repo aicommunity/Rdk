@@ -25,14 +25,14 @@ __fastcall TUEngineMonitorForm::TUEngineMonitorForm(TComponent* Owner)
 }
 
 // Добавляет обработчик в список
-void TUEngineMonitorForm::AddInterface(RDK::IVisualInterface *value)
+void TUEngineMonitorForm::AddInterface(RDK::UIVisualController *value)
 {
  if(EngineMonitorFrame)
   EngineMonitorFrame->AddInterface(value);
 }
 
 // Удаляет обработчик из списка
-void TUEngineMonitorForm::DelInterface(RDK::IVisualInterface *value)
+void TUEngineMonitorForm::DelInterface(RDK::UIVisualController *value)
 {
  if(EngineMonitorFrame)
   EngineMonitorFrame->DelInterface(value);

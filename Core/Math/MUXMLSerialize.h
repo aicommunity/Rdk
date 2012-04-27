@@ -26,7 +26,7 @@ namespace Serialize {
 
 // MVector
 template<typename T>
-USerStorageXML& operator << (USerStorageXML& storage, const MVector<T> &data)
+USerStorageXML& operator << (USerStorageXML& storage, const MVector<T,3> &data)
 {
  storage.SetNodeAttribute("Type","MVector");
  storage.AddNode("x");
@@ -45,7 +45,7 @@ USerStorageXML& operator << (USerStorageXML& storage, const MVector<T> &data)
 }
 
 template<typename T>
-USerStorageXML& operator >> (USerStorageXML& storage, MVector<T> &data)
+USerStorageXML& operator >> (USerStorageXML& storage, MVector<T,3> &data)
 {
  if(storage.GetNodeAttribute("Type") != "MVector")
   return storage;
@@ -70,6 +70,77 @@ USerStorageXML& operator >> (USerStorageXML& storage, MVector<T> &data)
 
  return storage;
 }
+
+template<typename T, unsigned Rows>
+USerStorageXML& operator << (USerStorageXML& storage, const MVector<T,Rows> &data)
+{
+ std::stringstream stream;
+
+ for(unsigned i=0;i<Rows;i++)
+ {
+  stream<<data.Data1D[i];
+  if(i<Rows-1)
+   stream<<" ";
+ }
+
+ storage.SetNodeText(stream.str());
+
+ return storage;
+}
+
+template<typename T, unsigned Rows>
+USerStorageXML& operator >> (USerStorageXML& storage, MVector<T,Rows> &data)
+{
+ std::string rvalue=storage.GetNodeText();
+ std::stringstream stream(storage.GetNodeText().c_str());
+
+ for(unsigned i=0;i<Rows;i++)
+  stream>>data.Data1D[i];
+
+ return storage;
+}
+
+// MMatrix
+template<typename T, unsigned Rows, unsigned Cols>
+USerStorageXML& operator << (USerStorageXML& storage, const MMatrix<T,Rows,Cols> &data)
+{
+ std::stringstream stream;
+
+ for(unsigned i=0;i<Rows;i++)
+ {
+  for(unsigned j=0;j<Cols;j++)
+  {
+   stream<<data.Data[i][j];
+   if(i<Cols-1)
+	stream<<" ";
+  }
+  if(i<Rows-1)
+   stream<<endl;
+ }
+
+ storage.SetNodeText(stream.str());
+
+ return storage;
+}
+
+template<typename T, unsigned Rows, unsigned Cols>
+USerStorageXML& operator >> (USerStorageXML& storage, MMatrix<T,Rows,Cols> &data)
+{
+ std::string rvalue=storage.GetNodeText();
+ std::stringstream stream(storage.GetNodeText().c_str());
+
+ for(unsigned i=0;i<Rows;i++)
+ {
+  for(unsigned j=0;j<Cols;j++)
+  {
+   stream>>data.Data[i][j];
+  }
+ }
+
+ return storage;
+}
+
+
 /*
 #ifdef MDVECTOR_H
 USerStorageXML& operator << (USerStorageXML& storage, const MDVector &data)
@@ -303,7 +374,7 @@ template<typename T>
 USerStorageXML& operator >> (USerStorageXML& storage, MVertex<T> &data)
 {
  //Временные переменные
- std::vector<MVector<T> > varVertexVector;
+ std::vector<MVector<T,3> > varVertexVector;
  std::vector<std::string> varNames;
 
  if(storage.GetNodeAttribute("Type") != "MVertex")

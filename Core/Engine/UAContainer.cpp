@@ -65,7 +65,7 @@ UAContainer::UAContainer(void)
  AddLookupProperty("Name",new UVProperty<NameT,UAContainer>(this,&UAContainer::SetName,&UAContainer::GetName));
  AddLookupProperty("TimeStep",new UVProperty<UTime,UAContainer>(this,&UAContainer::SetTimeStep,&UAContainer::GetTimeStep));
  AddLookupProperty("Activity",new UVProperty<bool,UAContainer>(this,&UAContainer::SetActivity,&UAContainer::GetActivity));
- AddLookupProperty("Coord",new UVProperty<RDK::MVector<double>,UAContainer>(this,&UAContainer::SetCoord,&UAContainer::GetCoord));
+ AddLookupProperty("Coord",new UVProperty<RDK::MVector<double,3>,UAContainer>(this,&UAContainer::SetCoord,&UAContainer::GetCoord));
 }
 
 UAContainer::~UAContainer(void)
@@ -189,12 +189,12 @@ bool UAContainer::CheckLongId(const std::string &id) const
 // Методы управления свойствами
 // --------------------------
 // Координата компонента в пространстве сети
-RDK::MVector<double> UAContainer::GetCoord(void) const
+RDK::MVector<double,3> UAContainer::GetCoord(void) const
 {
  return Coord;
 }
 
-bool UAContainer::SetCoord(RDK::MVector<double> value)
+bool UAContainer::SetCoord(RDK::MVector<double,3> value)
 {
  if(Coord != value)
   Coord=value;

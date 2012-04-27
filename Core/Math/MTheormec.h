@@ -25,14 +25,14 @@ template<class DataT>
 class MRotationTensor
 {
 public:
-MVector<DataT> m;
+MVector<DataT,3> m;
 DataT angle;
 
 public:
 MRotationTensor(void)
 { angle=0; };
 
-MRotationTensor(const MVector<DataT> &v, DataT ang)
+MRotationTensor(const MVector<DataT,3> &v, DataT ang)
 { m=v; angle=ang; };
 
 MRotationTensor(const MRotationTensor<DataT>& P)
@@ -44,9 +44,9 @@ MRotationTensor<DataT>& operator = (const MRotationTensor<DataT> &P )
 
 MRotationTensor<DataT>& operator = (const MTensor<DataT> &P)
 {
- m=0;
- for(size_t i=0;i<P.Dyads.size();i++)
-  m+=P.Dyads[i].d1^P.Dyads[i].d2;
+ m=0.0;
+// for(size_t i=0;i<P.Dyads.size();i++) // Заглушка!! Пока не собирается оператор ^
+//  m+=P.Dyads[i].d1^P.Dyads[i].d2;
 
  angle=0;
  for(size_t i=0;i<P.Dyads.size();i++)
@@ -60,8 +60,8 @@ MRotationTensor<DataT>& operator *= (const MRotationTensor<DataT> &P );
 
 //MRotationTensor<DataT> operator * (const MRotationTensor<DataT> &P1
 //                                        ,const MRotationTensor<DataT> &P2);
-//MVector<DataT> operator *(const MRotationTensor<DataT> &P
-//                                        ,const MVector<DataT> &v);
+//MVector<DataT,3> operator *(const MRotationTensor<DataT> &P
+//                                        ,const MVector<DataT,3> &v);
 
 // Операторы сравнения
 bool operator == (const MRotationTensor<DataT> &v) const;
@@ -107,7 +107,7 @@ MRotationTensor<DataT> operator * (const MRotationTensor<DataT> &P1
 {
  DataT sin_P2=sin(P2.angle),sin_P1=sin(P1.angle);
  DataT angle;
- MVector<DataT> m;
+ MVector<DataT,3> m;
 
  if(sin_P2==0) return P1;
  if(sin_P1==0) m=P2.m;
@@ -127,14 +127,14 @@ MRotationTensor<DataT> operator * (const MRotationTensor<DataT> &P1
 }
 
 template<class DataT>
-MVector<DataT> operator *(const MRotationTensor<DataT> &P
-                                ,const MVector<DataT> &v)
+MVector<DataT,3> operator *(const MRotationTensor<DataT> &P
+                                ,const MVector<DataT,3> &v)
 {
- MVector<DataT> ret,u=P.m;
+ MVector<DataT,3> ret,u=P.m;
  DataT cosa=cos(P.angle),sina=sin(P.angle);
 
  ret=(1-cosa)*P.m*(P.m*v)+cosa*v+sina*(P.m^v);
- return MVector<DataT>(ret);
+ return MVector<DataT,3>(ret);
 }
 
 // Операторы сравнения
@@ -201,7 +201,7 @@ class MInertiaTensor
 {
 public:
 // Axis of inertia
-MVector<DataT> d1,d2,d3;
+MVector<DataT,3> d1,d2,d3;
 
 // Moment of inertia
 DataT m1,m2,m3;
@@ -223,8 +223,8 @@ MInertiaTensor<DataT>& operator=(const MInertiaTensor<DataT> &IT)
  return *this;
 };
 
-template<class DataU> friend MVector<DataU> operator * (const MInertiaTensor<DataU> &,
-                                  const MVector<DataU> &);
+template<class DataU> friend MVector<DataU,3> operator * (const MInertiaTensor<DataU> &,
+                                  const MVector<DataU,3> &);
 
 // Операторы сравнения
 bool operator == (const MInertiaTensor<DataT> &v) const;
@@ -234,13 +234,13 @@ MInertiaTensor<DataT>& Rotate(MRotationTensor<DataT> &);
 };
 
 template<class DataT>
-MVector<DataT> operator * (const MInertiaTensor<DataT> &I,
-                             const MVector<DataT> &v)
+MVector<DataT,3> operator * (const MInertiaTensor<DataT> &I,
+                             const MVector<DataT,3> &v)
 {
- MVector<DataT> tmp;
+ MVector<DataT,3> tmp;
 
  tmp=I.m1*(I.d1*v)*I.d1+I.m2*(I.d2*v)*I.d2+I.m3*(I.d3*v)*I.d3;
- return MVector<DataT>(tmp);
+ return MVector<DataT,3>(tmp);
 }
 
 
@@ -270,10 +270,10 @@ MInertiaTensor<DataT>& MInertiaTensor<DataT>::Rotate(MRotationTensor<DataT> &P)
 /*
 void main(void)
 {
- MVector<DataT> v(0,23,0);
- MVector<DataT> u=MVector<DataT>(5);
- MVector<DataT> w(v);
- MRotationTensor<DataT> P=MRotationTensor<DataT>(MVector<DataT>(0,42,23),0.2);
+ MVector<DataT,3> v(0,23,0);
+ MVector<DataT,3> u=MVector<DataT,3>(5);
+ MVector<DataT,3> w(v);
+ MRotationTensor<DataT> P=MRotationTensor<DataT>(MVector<DataT,3>(0,42,23),0.2);
  MInertiaTensor<DataT> I;
 
  w=v^u;

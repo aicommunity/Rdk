@@ -51,7 +51,7 @@ void TVideoOutputForm::AddSource(void)
 // Удаляет источник видео
 void TVideoOutputForm::DelSource(int index)
 {
- if(index<0 || index >=Sources.size())
+ if(index<0 || index >=int(Sources.size()))
   return;
 
  delete Sources[index];
@@ -76,7 +76,7 @@ void TVideoOutputForm::ClearSources(void)
 // Выбирает режим заданного источника
 void TVideoOutputForm::SetSourceType(int index, int mode)
 {
- if(index<0 || index >=Sources.size())
+ if(index<0 || index >=int(Sources.size()))
   return;
 
  Sources[index]->MyVideoGrabberControlForm->VideoGrabberControlFrame->SelectMode(mode);
@@ -91,7 +91,7 @@ int TVideoOutputForm::GetActiveSource(void) const
 // Возвращает фрейм источника видео
 TVideoOutputFrame* TVideoOutputForm::GetVideoOutputFrame(int index)
 {
- if(index<0 || index >=Sources.size())
+ if(index<0 || index >=int(Sources.size()))
   return 0;
 
  return Sources[index];

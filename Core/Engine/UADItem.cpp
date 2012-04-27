@@ -137,7 +137,7 @@ const USharedPtr<UIDataInfo>& UADItem::GetOutputDataInfo(int index) const
  return OutputDataInfo[index];
 }
 
-bool UADItem::SetOutputDataInfo(int index, const USharedPtr<UIDataInfo>& value)
+bool UADItem::SetOutputDataInfo(int index, const USharedPtr<UIDataInfo> value)
 {
 // if(!Build())
 //  return false;
@@ -159,7 +159,7 @@ const USharedPtr<UIDataInfo>& UADItem::GetInputDataInfo(int index) const
  return InputDataInfo[index];
 }
 
-bool UADItem::SetInputDataInfo(int index, const USharedPtr<UIDataInfo>& value)
+bool UADItem::SetInputDataInfo(int index, const USharedPtr<UIDataInfo> value)
 {
 // if(!Build())
 //  return false;
@@ -738,9 +738,9 @@ void UADItem::CalcMinMaxInputDataSize(void)
   {
    if(!InputData[i])
     continue;
-   if(MinInputDataSize>InputData[i]->GetSize())
+   if(int(MinInputDataSize)>InputData[i]->GetSize())
 	MinInputDataSize=InputData[i]->GetSize();
-   if(MaxInputDataSize<InputData[i]->GetSize())
+   if(int(MaxInputDataSize)<InputData[i]->GetSize())
 	MaxInputDataSize=InputData[i]->GetSize();
   }
  }

@@ -27,6 +27,9 @@ public:
 union {
 T Data[Rows][Cols];
 T Data1D[];
+struct {
+T x,y,z,d;
+};
 };
 
 public:
@@ -45,11 +48,16 @@ MMatrix(const T* data);
 // --------------------------
 // Оператор присваивания
 MMatrix<T,Rows,Cols>& operator = (const MMatrix<T,Rows,Cols> &copy);
-MMatrix<T,Rows,Cols>& operator = (const T* data);
+//MMatrix<T,Rows,Cols>& operator = (const T* data);
+MMatrix<T,Rows,Cols>& operator = (T value);
 
 // Получение размерности матриц
 unsigned GetCols(void) const;
 unsigned GetRows(void) const;
+
+// Доступ к элементу
+T& operator () (int i, int j);
+const T& operator () (int i, int j) const;
 // --------------------------
 
 // --------------------------
@@ -62,6 +70,8 @@ MMatrix<T,Rows,Cols>& operator -= (const MMatrix<T,Rows,Cols> &M);
 // --------------------------
 // Скалярные операторы
 // --------------------------
+MMatrix<T,Rows,Cols> operator - (void) const;
+
 MMatrix<T,Rows,Cols>& operator *= (T v);
 
 MMatrix<T,Rows,Cols>& operator /= (T v);
@@ -96,6 +106,12 @@ MMatrix<T,Rows-1,Cols-1> GetMinor(unsigned row, unsigned col) const;
 
 // След
 T Trace(void) const;
+
+// Норма матрицы
+T operator !(void) const;
+
+// Нормализация матрицы
+MMatrix<T,Rows,Cols>& Normalize(void);
 // --------------------------
 
 // --------------------------
@@ -136,11 +152,11 @@ MMatrix<T,Rows,Cols>::MMatrix(T defvalue)
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>::MMatrix(const MMatrix<T,Rows,Cols> &copy)
 { *this=copy; };
-
+/*
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>::MMatrix(const T* data)
 { *copy=data; };
-
+  */
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>::~MMatrix(void) {};
 // --------------------------
@@ -155,13 +171,24 @@ MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::operator = (const MMatrix<T,Rows,Col
  memcpy(Data1D,copy.Data1D,sizeof(T)*Cols*Rows);
  return *this;
 };
-
+	 /*
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::operator = (const T* data)
 {
  memcpy(Data1D,data,sizeof(T)*Cols*Rows);
  return *this;
+};     */
+
+template<class T, unsigned Rows, unsigned Cols>
+MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::operator = (T value)
+{
+ T* pm1=Data1D;
+
+ for(int i=0;i<Cols*Rows;i++)
+  *pm1++ = value;
+ return *this;
 };
+
 
 // Получение размерности матриц
 template<class T, unsigned Rows, unsigned Cols>
@@ -176,6 +203,18 @@ unsigned MMatrix<T,Rows,Cols>::GetRows(void) const
  return Rows;
 }
 
+// Доступ к элементу
+template<class T, unsigned Rows, unsigned Cols>
+T& MMatrix<T,Rows,Cols>::operator () (int i, int j)
+{
+ return Data[i][j];
+}
+
+template<class T, unsigned Rows, unsigned Cols>
+const T& MMatrix<T,Rows,Cols>::operator () (int i, int j) const
+{
+ return Data[i][j];
+}
 // --------------------------
 
 // --------------------------
@@ -254,6 +293,19 @@ MMatrix<T,Rows,Cols2> operator * (const MMatrix<T,Rows,Cols> &M1, const MMatrix<
 // --------------------------
 // Скалярные операторы
 // --------------------------
+template<class T, unsigned Rows, unsigned Cols>
+MMatrix<T,Rows,Cols> MMatrix<T,Rows,Cols>::operator - (void) const
+{
+ MMatrix<T,Rows,Cols> res;
+
+ const T* pm1=Data1D;
+ T* pm2=res.Data1D;
+ for(int i=0;i<Cols*Rows;i++)
+  *pm2++ = -*pm1++;
+
+ return res;
+}
+
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::operator *= (T v)
 {
@@ -343,6 +395,24 @@ MMatrix<T,Rows,Cols> operator - (T v, const MMatrix<T,Rows,Cols> &M)
  return res-=v;
 }
 // --------------------------
+
+// --------------------------
+// Операторы сравнения
+// --------------------------
+// Оператор присваивания
+template<class T, unsigned Rows, unsigned Cols>
+bool operator == (const MMatrix<T,Rows,Cols> &M1, const MMatrix<T,Rows,Cols> &M2)
+{
+ return !memcmp(M1.Data1D,M2.Data1D,Cols*Rows*sizeof(T));
+}
+
+template<class T, unsigned Rows, unsigned Cols>
+bool operator != (const MMatrix<T,Rows,Cols> &M1, const MMatrix<T,Rows,Cols> &M2)
+{
+ return memcmp(M1.Data1D,M2.Data1D,Cols*Rows*sizeof(T));
+}
+// --------------------------
+
 
 // --------------------------
 // Преобразования матриц
@@ -588,6 +658,33 @@ T MMatrix<T,Rows,Cols>::Trace(void) const
 
  return sum;
 }
+
+// Норма матрицы
+template<class T, unsigned Rows, unsigned Cols>
+T MMatrix<T,Rows,Cols>::operator !(void) const
+{
+ T res=0;
+ const T* pm1=Data1D;
+ for(int i=0;i<Cols*Rows;i++,pm1++)
+  res+=*pm1 * *pm1;
+ return sqrt(res);
+}
+
+// Нормализация матрицы
+template<class T, unsigned Rows, unsigned Cols>
+MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::Normalize(void)
+{
+ T norm=this->operator!();
+
+ if(!norm)
+  return *this;
+
+ T* pm1=Data1D;
+ for(int i=0;i<Cols*Rows;i++,pm1++)
+  *pm1/=norm;
+
+ return *this;
+}
 // --------------------------
 
 // --------------------------
@@ -612,7 +709,6 @@ MMatrix<T,Rows,Cols> MMatrix<T,Rows,Cols>::Eye(void)
 
  unsigned crmin=(Cols<Rows)?Cols:Rows;
 
- T sum=0;
  for(unsigned i=0;i<crmin;i++)
   res.Data[i][i]=1;
 

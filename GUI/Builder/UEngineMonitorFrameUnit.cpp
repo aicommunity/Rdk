@@ -31,17 +31,17 @@ void TUEngineMonitorFrame::SetCalculateMode(int value)
 }
 
 // Добавляет обработчик в список
-void TUEngineMonitorFrame::AddInterface(RDK::IVisualInterface* value)
+void TUEngineMonitorFrame::AddInterface(RDK::UIVisualController* value)
 {
- std::vector<RDK::IVisualInterface*>::iterator I=find(InterfaceUpdaters.begin(),InterfaceUpdaters.end(),value);
+ std::vector<RDK::UIVisualController*>::iterator I=find(InterfaceUpdaters.begin(),InterfaceUpdaters.end(),value);
  if(I == InterfaceUpdaters.end())
   InterfaceUpdaters.push_back(value);
 }
 
 // Удаляет обработчик из списка
-void TUEngineMonitorFrame::DelInterface(RDK::IVisualInterface* value)
+void TUEngineMonitorFrame::DelInterface(RDK::UIVisualController* value)
 {
- std::vector<RDK::IVisualInterface*>::iterator I=find(InterfaceUpdaters.begin(),InterfaceUpdaters.end(),value);
+ std::vector<RDK::UIVisualController*>::iterator I=find(InterfaceUpdaters.begin(),InterfaceUpdaters.end(),value);
  if(I != InterfaceUpdaters.end())
   InterfaceUpdaters.erase(I);
 }

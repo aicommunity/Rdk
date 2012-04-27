@@ -313,6 +313,18 @@ int UBEngine::LoadPredefinedLibraries(void)
  filter->SetName("SearchNCC");
  bstorage->AddClass(filter,"SearchNCC");
 
+ filter=new RDK::UBAShowObjectsSimple;
+ filter->Default();
+ filter->SetName("ShowObjectsSimple");
+ bstorage->AddClass(filter,"ShowObjectsSimple");
+
+ filter=new RDK::UBADataSimulatorSimple;
+ filter->Default();
+ filter->SetName("DataSimulatorSimple");
+ bstorage->AddClass(filter,"DataSimulatorSimple");
+
+
+
 	 /*
  RDK::UBAbstract *filter=new RDK::UBAQLinearContrasting;
  filter->Default();

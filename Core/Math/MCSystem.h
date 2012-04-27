@@ -25,10 +25,10 @@ class MCSystem
 {
 public: // Данные
 // Базис в 3-мерном пространстве
-MVector<T> Basis[3];
+MVector<T,3> Basis[3];
 
 // Положение базиса относительно выбранного нуля координат
-MVector<T> Location;
+MVector<T,3> Location;
 
 public: // Методы
 // --------------------------
@@ -39,7 +39,7 @@ MCSystem(void)
  Basis[0].x=1; Basis[0].y=0; Basis[0].z=0;
  Basis[1].x=0; Basis[1].y=1; Basis[1].z=0;
  Basis[2].x=0; Basis[2].y=0; Basis[2].z=1;
- Location=0;
+ Location=0.0;
 };
 
 MCSystem(const MCSystem<T> &copy)
@@ -47,14 +47,14 @@ MCSystem(const MCSystem<T> &copy)
  *this=copy;
 };
 
-MCSystem(const MVector<T> &b1, const MVector<T> &b2, const MVector<T> &b3,
-        const MVector<T> &loc=0)
+MCSystem(const MVector<T,3> &b1, const MVector<T,3> &b2, const MVector<T,3> &b3,
+        const MVector<T,3> &loc=0)
 {
  Basis[0]=b1; Basis[1]=b2; Basis[2]=b3;
  Location=loc;
 };
 
-MCSystem(const MVector<T> *basis, const MVector<T> *loc=0)
+MCSystem(const MVector<T,3> *basis, const MVector<T,3> *loc=0)
 {
  MCSystem();
  if(!basis)
@@ -81,20 +81,20 @@ virtual ~MCSystem(void)
 // преобразуются в систему координат csystem и возвращается как output
 // input и output НЕ могут указывать на один объект
 virtual bool ConvertTo(const MCSystem &csystem,
-                        const MVector<T> &input, MVector<T> &output) const=0;
+                        const MVector<T,3> &input, MVector<T,3> &output) const=0;
 
 // Преобразование в заданную систему координат
 // координаты вектора v в базисе текущей системы координат
 // преобразуются в систему координат csystem
-MVector<T> ConvertTo(const MCSystem &csystem, const MVector<T> &v) const
+MVector<T,3> ConvertTo(const MCSystem &csystem, const MVector<T,3> &v) const
 {
- MVector<T> res;
+ MVector<T,3> res;
  ConvertTo(csystem,v,res);
  return res;
 };
 
 // Вычисляет вектор смещения этой СК относительно заданной
-virtual MVector<T> CalcTranslation(const MCSystem &csystem)=0;
+virtual MVector<T,3> CalcTranslation(const MCSystem &csystem)=0;
 
 // Вычисляет тензор поворота этой СК относительно заданной
 virtual MRotationTensor<T> CalcRotation(const MCSystem &csystem)=0;
@@ -165,7 +165,7 @@ virtual ~MCartesianCSystem(void)
 // преобразуются в систему координат csystem и возвращается как output
 // input и output НЕ могут указывать на один объект
 virtual bool ConvertTo(const MCSystem<T> &csystem,
-                        const MVector<T> &input, MVector<T> &output) const
+                        const MVector<T,3> &input, MVector<T,3> &output) const
 {
  output.x=input*this->Basis[0];
  output.y=input*this->Basis[1];
@@ -174,9 +174,9 @@ virtual bool ConvertTo(const MCSystem<T> &csystem,
 };
 
 // Вычисляет вектор смещения этой СК относительно заданной
-MVector<T> CalcTranslation(const MCSystem<T> &csystem)
+MVector<T,3> CalcTranslation(const MCSystem<T> &csystem)
 {
- return MVector<T>(csystem.Location-this->Location);
+ return MVector<T,3>(csystem.Location-this->Location);
 }
 
 // Вычисляет тензор поворота этой СК относительно заданной
@@ -256,7 +256,7 @@ virtual ~MEulerCSystem(void)
 // преобразуются в систему координат csystem и возвращается как output
 // input и output НЕ могут указывать на один объект
 virtual bool ConvertTo(const MCSystem<T> &csystem,
-                        const MVector<T> &input, MVector<T> &output) const
+                        const MVector<T,3> &input, MVector<T,3> &output) const
 {
  return true;
 };
@@ -318,7 +318,7 @@ virtual ~MPolarCSystem(void)
 // преобразуются в систему координат csystem и возвращается как output
 // input и output НЕ могут указывать на один объект
 virtual bool ConvertTo(const MCSystem<T> &csystem,
-                        const MVector<T> &input, MVector<T> &output) const
+                        const MVector<T,3> &input, MVector<T,3> &output) const
 {
  return true;
 };

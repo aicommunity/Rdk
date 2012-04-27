@@ -253,7 +253,7 @@ void __fastcall TUClassRegistryFrame::UpdateComponentList(RDK::UClassRegistry &r
  {
   item=ComponentsListView->Items->Item[i];
   item->Caption=subtree[i].c_str();
-  item->Caption.EnsureUnicode();
+//  item->Caption.EnsureUnicode();
   if(CurrentSubTree && CurrentSubTree->GetName() == subtree[i])
    ComponentsListView->ItemIndex=i;
  }
@@ -316,16 +316,16 @@ void __fastcall TUClassRegistryFrame::UpdateParams(RDK::UClassRegData &data)
     {
      group=ListView->Groups->Items[groupid];
      group->Header=I->first.c_str();
-     group->Header.EnsureUnicode();
+//     group->Header.EnsureUnicode();
      rI=I->second.begin();
      rJ=I->second.end();
      while(rI != rJ)
      {
       item=ListView->Items->Item[itemid];
       item->Caption=rI->first.c_str();
-      item->Caption.EnsureUnicode();
+//      item->Caption.EnsureUnicode();
       item->SubItems->Strings[0]=rI->second.c_str();
-      item->SubItems->Strings[0].EnsureUnicode();
+//      item->SubItems->Strings[0].EnsureUnicode();
       item->GroupID=group->GroupID;
       ++rI;
       ++itemid;

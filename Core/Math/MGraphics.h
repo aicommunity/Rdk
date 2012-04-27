@@ -285,8 +285,8 @@ void MGraphics<T>::Repaint(void)
     if(geometry[j].GetNumVertex()>0)
      for(size_t k=0;k<geometry[j].GetNumVertex()-1;k++)
      {
-      MVector<T> v1=vertex[geometry[j][k]];
-      MVector<T> v2=vertex[geometry[j][k+1]];
+      MVector<T,3> v1=vertex[geometry[j][k]];
+      MVector<T,3> v2=vertex[geometry[j][k+1]];
       Graphics->Line(v1.x,v1.y,v2.x,v2.y);
      }
    }

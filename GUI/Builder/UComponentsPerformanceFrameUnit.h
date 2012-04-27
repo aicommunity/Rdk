@@ -19,7 +19,8 @@
 #include "UComponentsListFormUnit.h"
 #include "myrdk.h"
 //---------------------------------------------------------------------------
-class TUComponentsPerformanceFrame : public TFrame, public RDK::IVisualInterface
+#pragma warn -8130
+class TUComponentsPerformanceFrame : public TFrame, public RDK::UIVisualController
 {
 __published:	// IDE-managed Components
 	TChart *Chart;
@@ -77,6 +78,7 @@ void DelComponent(std::size_t index);
 // Удаляет все наблюдаемые компоненты
 void ClearComponents(void);
 };
+#pragma warn .8130
 //---------------------------------------------------------------------------
 extern PACKAGE TUComponentsPerformanceFrame *UComponentsPerformanceFrame;
 //---------------------------------------------------------------------------

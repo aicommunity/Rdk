@@ -74,7 +74,7 @@ T ReadStateValue(const std::string &comp_name, const std::string &param_name)
 }
 
 // Класс прототип-визуальных интерфейсов
-class IVisualInterface
+class UIVisualController
 {
 public:
 // Метод, вызываемый перед шагом расчета

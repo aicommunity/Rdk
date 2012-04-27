@@ -69,7 +69,7 @@ void TUComponentsPerformanceFrame::UpdateInterface(void)
    if(n != std::string::npos)
     legend=legend.substr(n+1);
 
-   int j=0;
+   size_t j=0;
    for(;j<legend.size();j++)
 	if(j>0 && !(j%8) && legend.size()-j>3)
 	{

@@ -18,7 +18,8 @@
 #include <Vcl.ToolWin.hpp>
 #include "myrdk.h"
 //---------------------------------------------------------------------------
-class TUGEngineControlForm : public TForm, public RDK::IVisualInterface
+#pragma warn -8130
+class TUGEngineControlForm : public TForm, public RDK::UIVisualController
 {
 __published:	// IDE-managed Components
 	TPanel *Panel1;
@@ -147,6 +148,7 @@ void OpenProject(const String &FileName);
 // Сохраняет проект
 void SaveProject(void);
 };
+#pragma warn .8130
 //---------------------------------------------------------------------------
 extern PACKAGE TUGEngineControlForm *UGEngineControlForm;
 //---------------------------------------------------------------------------

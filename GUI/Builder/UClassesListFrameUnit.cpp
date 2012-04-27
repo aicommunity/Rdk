@@ -32,7 +32,7 @@ void TUClassesListFrame::UpdateInterface(void)
  std::vector<int> ids;
  ids.resize(numclasses);
  Storage_GetClassesList(&ids[0]);
- for(size_t i=0;i<numclasses;i++)
+ for(int i=0;i<numclasses;i++)
  {
   StringGrid->Cells[0][i+1]=IntToStr(ids[i]);
   StringGrid->Cells[1][i+1]=Storage_GetClassName(ids[i]);

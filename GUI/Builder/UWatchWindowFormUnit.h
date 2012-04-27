@@ -12,8 +12,9 @@
 #include <ToolWin.hpp>
 #include <Menus.hpp>
 #include "UWatchFrameUnit.h"
+#pragma warn -8130
 //---------------------------------------------------------------------------
-class TUWatchWindowForm : public TForm, RDK::IVisualInterface
+class TUWatchWindowForm : public TForm, RDK::UIVisualController
 {
 __published:	// IDE-managed Components
 		TToolBar *ToolBar1;
@@ -60,6 +61,7 @@ public:	        // Ìועמהû
 		// ------------------------------
 
 };
+#pragma warn .8130
 //---------------------------------------------------------------------------
 extern PACKAGE TUWatchWindowForm *UWatchWindowForm;
 //---------------------------------------------------------------------------

@@ -26,9 +26,18 @@ namespace RDK {
 
 //namespace IO {
 
-// Вывод MVector в поток
+// Вывод общего случая MVector в поток
+/*template<typename CharT, typename T, int Rows, int Cols>
+std::basic_ostream<CharT>& operator << (std::basic_ostream<CharT>& stream, const MMatrix<T,Rows,Cols> &data)
+{
+ stream<<"{"<<(T)data.x<<","<<(T)data.y<<","<<(T)data.z<<"}";
+ return stream;
+} */
+
+
+// Вывод частного случая MVector в поток
 template<typename CharT, typename T>
-std::basic_ostream<CharT>& operator << (std::basic_ostream<CharT>& stream, const MVector<T> &data)
+std::basic_ostream<CharT>& operator << (std::basic_ostream<CharT>& stream, const MVector<T,3> &data)
 {
  stream<<"{"<<(T)data.x<<","<<(T)data.y<<","<<(T)data.z<<"}";
  return stream;
@@ -36,7 +45,7 @@ std::basic_ostream<CharT>& operator << (std::basic_ostream<CharT>& stream, const
 
 // Ввод из потока
 template<typename CharT, typename T>
-std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, MVector<T> &data)
+std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, MVector<T,3> &data)
 {
  CharT ch;
  ch=stream.get();
@@ -57,7 +66,6 @@ std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, MVect
  ch=stream.get();
  return stream;
 }
-
 
 // MDyad
 template<typename CharT, typename T>

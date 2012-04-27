@@ -13,6 +13,6 @@ See file license.txt for more information
 #define UMATH_LITE_CPP
 
 #include "MCorrelation.cpp"
-#include "MDVector.cpp"
+//#include "MDVector.cpp"
 
 #endif
