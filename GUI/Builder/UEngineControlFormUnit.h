@@ -18,7 +18,7 @@
 #include <Vcl.ToolWin.hpp>
 #include "myrdk.h"
 //---------------------------------------------------------------------------
-class TUEngineControlForm : public TForm, public RDK::IVisualInterface
+class TUEngineControlForm : public TForm, public RDK::UIVisualController
 {
 __published:	// IDE-managed Components
 	TPanel *Panel1;
