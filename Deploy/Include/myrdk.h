@@ -43,18 +43,18 @@ T DecodeParameterValue(const std::string &param_value)
 
 // —читывает и декодирует содержимое свойства компонента
 template<typename T>
-T& ReadPropertyValue(const std::string &comp_name, const std::string &param_name, T &res)
+T& ReadParameterValue(const std::string &comp_name, const std::string &param_name, T &res)
 {
- std::string param_value=Model_GetComponentPropertyValue(comp_name.c_str(),param_name.c_str());
+ std::string param_value=Model_GetComponentParameterValue(comp_name.c_str(),param_name.c_str());
 
  return RDK::DecodeParameterValue(param_value,res);
 }
 
 template<typename T>
-T ReadPropertyValue(const std::string &comp_name, const std::string &param_name)
+T ReadParameterValue(const std::string &comp_name, const std::string &param_name)
 {
  T res;
- return ReadPropertyValue(comp_name, param_name,res);
+ return ReadParameterValue(comp_name, param_name,res);
 }
 
 // —читывает и декодирует содержимое переменной состо€ни€ компонента
