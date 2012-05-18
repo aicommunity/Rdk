@@ -59,18 +59,18 @@ T ReadParameterValue(const std::string &comp_name, const std::string &param_name
 
 // Считывает и декодирует содержимое переменной состояния компонента
 template<typename T>
-T& ReadStateValue(const std::string &comp_name, const std::string &param_name, T &res)
+T& ReadStateValue(const std::string &comp_name, const std::string &state_name, T &res)
 {
- std::string param_value=Model_GetComponentStateValue(comp_name.c_str(),param_name.c_str());
+ std::string state_value=Model_GetComponentStateValue(comp_name.c_str(),state_name.c_str());
 
- return RDK::DecodeParameterValue(param_value,res);
+ return RDK::DecodeParameterValue(state_value,res);
 }
 
 template<typename T>
-T ReadStateValue(const std::string &comp_name, const std::string &param_name)
+T ReadStateValue(const std::string &comp_name, const std::string &state_name)
 {
  T res;
- return ReadStateValue(comp_name, param_name,res);
+ return ReadStateValue(comp_name, state_name,res);
 }
 
 // Класс прототип-визуальных интерфейсов
