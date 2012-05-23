@@ -243,15 +243,15 @@ RDK_LIB_TYPE int RDK_CALL Model_Clear(void);
 // Проверяет, существует ли модель
 RDK_LIB_TYPE bool RDK_CALL Model_Check(void);
 
-// Добавляет в выбранный контейнер модели с идентификатором 'stringid' экземпляр контейнера с заданным 'classid'
+// Добавляет в выбранный компонент модели с идентификатором 'stringid' экземпляр компонента с заданным 'classid'
 // если stringid - пустая строка, то добавляет в саму модель
 RDK_LIB_TYPE int RDK_CALL Model_AddComponent(const char* stringid, int classid);
 
-// Удаляет из выбранного контейнера модели с идентификатором 'stringid' экземпляр контейнера с заданным 'id'
+// Удаляет из выбранного компонента модели с идентификатором 'stringid' экземпляр компонента с заданным 'id'
 // если stringid - пустая строка, то удаляет из самой модели
 RDK_LIB_TYPE int RDK_CALL Model_DelComponent(const char* stringid, int id);
 
-// Возвращает число всех компонент в заданного компоненте 'stringid'
+// Возвращает число всех компонент в заданном компоненте 'stringid'
 // если stringid - пустая строка, то возвращает число всех компонент модели
 RDK_LIB_TYPE int RDK_CALL Model_GetNumComponents(const char* stringid);
 
@@ -289,7 +289,7 @@ RDK_LIB_TYPE const char* RDK_CALL Model_GetItemsList(const char* stringid,
 RDK_LIB_TYPE const char* RDK_CALL Model_GetNetsList(const char* stringid,
 							int sublevel=-1, const char* owner_level_stringid=0);
 
-// Возвращает имя компонента по заданному 'stringid'
+// Возвращает короткое имя компонента по заданному 'stringid'
 // если stringid - пустая строка, то возвращает имя модели
 // Память выделяется и освобождается внутри dll
 RDK_LIB_TYPE const char* RDK_CALL Model_GetComponentName(const char* stringid);
@@ -326,7 +326,7 @@ RDK_LIB_TYPE bool RDK_CALL Model_SetComponentParameters(const char *stringid, co
 // Устанавливает значение параметра компонента по идентификатору компонента и имени параметра
 RDK_LIB_TYPE void RDK_CALL Model_SetComponentParameterValue(const char *stringid, const char *paramname, const char *buffer);
 
-// Связывает выбранные контейнеры друг с другом
+// Связывает выбранные компоненты друг с другом
 RDK_LIB_TYPE int RDK_CALL Model_CreateLink(const char* stringid1, int output_number, const char* stringid2, int input_number);
 
 // Связывает все компоненты выбранного компонента по возрастанию id в формате: 0 выход к 0 входу
@@ -357,10 +357,10 @@ RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentInternalLinks(const char* s
 // Устанавливает все связи внутри компонента stringid из строки xml в буфере buffer
 RDK_LIB_TYPE int RDK_CALL Model_SetComponentInternalLinks(const char* stringid, const char* buffer);
 
-// Возращает все входные связи к компоненту stringid в виде xml в буфер buffer
+// Возвращает все входные связи к компоненту stringid в виде xml в буфер buffer
 RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentInputLinks(const char* stringid);
 
-// Возращает все выходные связи из компонента stringid в виде xml в буфер buffer
+// Возвращает все выходные связи из компонента stringid в виде xml в буфер buffer
 RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentOutputLinks(const char* stringid);
 
 // Возвращает состояние компонента по идентификатору
@@ -387,7 +387,7 @@ RDK_LIB_TYPE int RDK_CALL Model_GetComponentInputDataSize(const char *stringid, 
 // Возвращает размер элемента входа в байтах
 RDK_LIB_TYPE int RDK_CALL Model_GetComponentInputElementSize(const char *stringid, int index);
 
-// Возвращает размер входа компонента в байтах элементов
+// Возвращает размер входа компонента в байтах
 RDK_LIB_TYPE int RDK_CALL Model_GetComponentInputByteSize(const char *stringid, int index);
 
 // Возвращает указатель на данные входа как на массив байт
@@ -403,7 +403,7 @@ RDK_LIB_TYPE int RDK_CALL Model_GetComponentOutputDataSize(const char *stringid,
 // Возвращает размер элемента выхода в байтах
 RDK_LIB_TYPE int RDK_CALL Model_GetComponentOutputElementSize(const char *stringid, int index);
 
-// Возвращает размер выхода компонента в байтах элементов
+// Возвращает размер выхода компонента в байтах
 RDK_LIB_TYPE int RDK_CALL Model_GetComponentOutputByteSize(const char *stringid, int index);
 
 // Возвращает указатель на данные выхода как на массив байт
@@ -466,7 +466,7 @@ RDK_LIB_TYPE double RDK_CALL Model_GetDoubleRealTimeStep(void);
 RDK_LIB_TYPE long long RDK_CALL Model_GetStepDuration(const char *stringid);
 
 // Возвращает время, затраченное на обработку объекта
-// (вместе со времени обсчета дочерних объектов) (мс)
+// (вместе со времени расчета дочерних компонент) (мс)
 RDK_LIB_TYPE long long RDK_CALL Model_GetFullStepDuration(const char *stringid);
 
 // Возвращает мгновенное быстродействие, равное отношению
