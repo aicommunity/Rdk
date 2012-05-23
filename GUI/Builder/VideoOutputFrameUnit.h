@@ -94,13 +94,13 @@ public:
 RDK::MGeometry<double> Figure;
 
 // Индекс текущей редактируемой фигуры
-size_t FigureIndex;
+int FigureIndex;
 
 // Индекс текущей редактируемой точки
-size_t PointIndex;
+int PointIndex;
 
 // Флаг создания фигуры
-bool FigureFlag;
+//bool FigureFlag;
 
 // Флаг создания точки
 // 0 - выключено

@@ -20,6 +20,7 @@ object VideoOutputFrame: TVideoOutputFrame
       Top = 15
       Width = 698
       Height = 400
+      Cursor = crCross
       Align = alClient
       Stretch = True
       OnMouseDown = ImageMouseDown

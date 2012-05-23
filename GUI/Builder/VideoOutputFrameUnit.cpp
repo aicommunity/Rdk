@@ -29,6 +29,8 @@ __fastcall TVideoOutputFrame::TVideoOutputFrame(TComponent* Owner)
  x1b=x2b=y1b=y2b=-1;
  corrx1b=corry1b=corrx2b=corry2b=-1;
  left=-1; top=-1; width=-1; height=-1;
+ PointIndex=-1;
+ FigureIndex=-1;
 
  CorrSelectFlag=false;
  ZoneSelectEnable=false;
@@ -37,7 +39,7 @@ __fastcall TVideoOutputFrame::TVideoOutputFrame(TComponent* Owner)
  UpdateFlag=false;
 
  PointFlag=0;
- FigureFlag=false;
+// FigureFlag=false;
 
  MyVideoOutputToolsForm=new TVideoOutputToolsForm(this,
 	this,
@@ -45,7 +47,7 @@ __fastcall TVideoOutputFrame::TVideoOutputFrame(TComponent* Owner)
 	SampleGeometryGraphics,
 	Figure,
 	FigureIndex,
-	FigureFlag,
+//	FigureFlag,
 	PointIndex,
 	PointFlag);
 
@@ -215,7 +217,7 @@ void TVideoOutputFrame::UpdateGeometryList(TCheckListBox *GeometryCheckListBox, 
   GeometryCheckListBox->ItemIndex=ix;
  else
   GeometryCheckListBox->ItemIndex=0;
-
+/*
  if(FigureFlag)
  {
   GeometryCheckListBox->ItemIndex=FigureIndex;
@@ -223,7 +225,7 @@ void TVideoOutputFrame::UpdateGeometryList(TCheckListBox *GeometryCheckListBox, 
  }
  else
   GeometryCheckListBox->Enabled=true;
-
+  */
  if(GeometryGraphics.GetNumGeometry()<=FigureIndex)
   return;
 
@@ -248,7 +250,7 @@ void TVideoOutputFrame::UpdateGeometryList(TCheckListBox *GeometryCheckListBox, 
   PointsCheckListBox->ItemIndex=ix;
  else
   PointsCheckListBox->ItemIndex=0;
-
+ /*
  if(PointFlag > 0)
  {
   PointsCheckListBox->Enabled=false;
@@ -256,7 +258,7 @@ void TVideoOutputFrame::UpdateGeometryList(TCheckListBox *GeometryCheckListBox, 
  else
  {
   PointsCheckListBox->Enabled=true;
- }
+ } */
 }
 
 // Метод отрисовки прямоугольной зоны
@@ -477,10 +479,10 @@ void __fastcall TVideoOutputFrame::ImageMouseDown(TObject *Sender,
    height=(k2y-k1y);
    CorrSelectFlag=false;
   }
- if(FigureFlag && !PointFlag)
+// if(FigureFlag && !PointFlag)
   MyVideoOutputToolsForm->AddPointButtonClick(Sender);
 
- if(SampleGeometryGraphics.GetNumGeometry())
+ //if(SampleGeometryGraphics.GetNumGeometry())
   MyVideoOutputToolsForm->EditPointButtonClick(Sender);
 }
 //---------------------------------------------------------------------------
@@ -495,6 +497,19 @@ void __fastcall TVideoOutputFrame::ImageMouseMove(TObject *Sender,
  int cardwidth,cardheight;
  double iwidth,iheight,bwidth,bheight;
 
+ iwidth=Image->Width;
+ iheight=Image->Height;
+ bwidth=Image->Picture->Bitmap->Width;
+ bheight=Image->Picture->Bitmap->Height;
+
+
+ DrawCapture(Image->Picture->Bitmap);
+ Image->Canvas->Pen->Color=clLime;
+ Image->Canvas->PenPos=TPoint(X*bwidth/iwidth,0);
+ Image->Canvas->LineTo(X*bwidth/iwidth,Image->Height);
+ Image->Canvas->PenPos=TPoint(0,Y*bheight/iheight);
+ Image->Canvas->LineTo(Image->Width,Y*bheight/iheight);
+
  if(!CorrSelectFlag)
   {
    if(x1b!=-1)
@@ -502,10 +517,6 @@ void __fastcall TVideoOutputFrame::ImageMouseMove(TObject *Sender,
 	 int i;
 	 int k1x,k1y,k2x,k2y;
 
-	 iwidth=Image->Width;
-	 iheight=Image->Height;
-	 bwidth=Image->Picture->Bitmap->Width;
-	 bheight=Image->Picture->Bitmap->Height;
 
 	 if(X>x1b)
 	  {
@@ -534,7 +545,7 @@ void __fastcall TVideoOutputFrame::ImageMouseMove(TObject *Sender,
 	 top=k1y;
 	 width=(k2x-k1x);
 	 height=(k2y-k1y);
-	 DrawCapture(Image->Picture->Bitmap);
+//	 DrawCapture(Image->Picture->Bitmap);
 	 DrawFrameRect(Image, k1x, k1y, k2x, k2y, 2, SelColor);
 //	 ImageTrackBarChange(Sender);
 	}
@@ -545,11 +556,6 @@ void __fastcall TVideoOutputFrame::ImageMouseMove(TObject *Sender,
 	{
 	 int i;
 	 int k1x,k1y,k2x,k2y;
-
-	 iwidth=Image->Width;
-	 iheight=Image->Height;
-	 bwidth=Image->Picture->Bitmap->Width;
-	 bheight=Image->Picture->Bitmap->Height;
 
 	 if(X>corrx1b)
 	  {
@@ -572,7 +578,7 @@ void __fastcall TVideoOutputFrame::ImageMouseMove(TObject *Sender,
 	   k2y=corry1b*bheight/iheight;
 	  }
 
-	 DrawCapture(Image->Picture->Bitmap);
+ //	 DrawCapture(Image->Picture->Bitmap);
 	 DrawFrameRect(Image, k1x, k1y, k2x, k2y, 2, SelColor);
 	}
   }
@@ -590,22 +596,22 @@ void __fastcall TVideoOutputFrame::ImageMouseUp(TObject *Sender,
 
  if(!CorrSelectFlag)
   {
-   if((X==x1b || Y==y1b) && !FigureFlag)
+ /*  if((X==x1b || Y==y1b))
 	{
 	 x1b=x2b=y1b=y2b=-1;
 	 return;
-	}
+	}*/
    x2b=X; y2b=Y;
 
    x1b=x2b=y1b=y2b=-1;
   }
  else
   {
-   if((X==corrx1b || Y==corry1b) && !FigureFlag)
+/*   if((X==corrx1b || Y==corry1b))
 	{
 	 corrx1b=corrx2b=corry1b=corry2b=-1;
 	 return;
-	}
+	}*/
    corrx2b=X; corry2b=Y;
 
    corrx1b=corrx2b=corry1b=corry2b=-1;
@@ -615,8 +621,8 @@ void __fastcall TVideoOutputFrame::ImageMouseUp(TObject *Sender,
  if(PointFlag)
  {
   AddFigureRect(left,top,width,height);
-  if(SampleGeometryGraphics.GetNumGeometry())
-   MyVideoOutputToolsForm->EditPointButtonClick(Sender);
+//  if(SampleGeometryGraphics.GetNumGeometry())
+//   MyVideoOutputToolsForm->EditPointButtonClick(Sender);
 
  }
 }

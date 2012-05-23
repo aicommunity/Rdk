@@ -51,9 +51,9 @@ public:		// User declarations
 	RDK::MGraphics<double>& _GeometryGraphics,
 	RDK::MGraphics<double>& _SampleGeometryGraphics,
 	RDK::MGeometry<double>& _Figure,
-	size_t& _FigureIndex,
-	bool& _FigureFlag,
-	size_t& _PointIndex,
+	int& _FigureIndex,
+//	bool& _FigureFlag,
+	int& _PointIndex,
 	int& _PointFlag);
 
 	// Владелец формы
@@ -69,10 +69,10 @@ RDK::MGraphics<double>& SampleGeometryGraphics;
 RDK::MGeometry<double>& Figure;
 
 // Индекс текущей редактируемой фигуры
-size_t& FigureIndex;
+int& FigureIndex;
 
 // Флаг создания фигуры
-bool& FigureFlag;
+//bool& FigureFlag;
 
 // Флаг создания точки
 // 0 - выключено
@@ -81,7 +81,7 @@ bool& FigureFlag;
 int& PointFlag;
 
 // Индекс текущей редактируемой точки
-size_t& PointIndex;
+int& PointIndex;
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TVideoOutputToolsForm *VideoOutputToolsForm;
