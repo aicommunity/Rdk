@@ -25,7 +25,7 @@ namespace RDK {
 namespace Serialize {
 
 // MVector
-template<typename T>
+/*template<typename T>
 USerStorageXML& operator << (USerStorageXML& storage, const MVector<T,3> &data)
 {
  storage.SetNodeAttribute("Type","MVector");
@@ -70,7 +70,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, MVector<T,3> &data)
 
  return storage;
 }
-
+       */
 template<typename T, unsigned Rows>
 USerStorageXML& operator << (USerStorageXML& storage, const MVector<T,Rows> &data)
 {
@@ -111,8 +111,8 @@ USerStorageXML& operator << (USerStorageXML& storage, const MMatrix<T,Rows,Cols>
   for(unsigned j=0;j<Cols;j++)
   {
    stream<<data.Data[i][j];
-   if(i<Cols-1)
-	stream<<" ";
+//   if(i<Cols-1)
+//	stream<<" ";
   }
   if(i<Rows-1)
    stream<<endl;
@@ -186,7 +186,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, MDVector &data)
  return storage;
 }
 #endif
-*/
+*/                      /*
 // MRotationTensor
 template<typename T>
 USerStorageXML& operator << (USerStorageXML& storage, const MRotationTensor<T> &data)
@@ -347,7 +347,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, MCartesianCSystem<T> &data
  storage>>static_cast<MCSystem<T>& >(data);
 
  return storage;
-}
+}          */
 
 // MBorder
 USerStorageXML& operator << (USerStorageXML& storage, const MBorder &data);
@@ -355,8 +355,8 @@ USerStorageXML& operator >> (USerStorageXML& storage, MBorder &data);
 
 
 // MVertex
-template<typename T>
-USerStorageXML& operator << (USerStorageXML& storage, const MVertex<T> &data)
+template<typename T, int Rows>
+USerStorageXML& operator << (USerStorageXML& storage, const MVertex<T, Rows> &data)
 {
  storage.SetNodeAttribute("Type","MVertex");
  storage.AddNode("Vertex");
@@ -370,8 +370,8 @@ USerStorageXML& operator << (USerStorageXML& storage, const MVertex<T> &data)
  return storage;
 }
 
-template<typename T>
-USerStorageXML& operator >> (USerStorageXML& storage, MVertex<T> &data)
+template<typename T, int Rows>
+USerStorageXML& operator >> (USerStorageXML& storage, MVertex<T, Rows> &data)
 {
  //Временные переменные
  std::vector<MVector<T,3> > varVertexVector;
@@ -399,8 +399,8 @@ USerStorageXML& operator >> (USerStorageXML& storage, MVertex<T> &data)
 }
 
 // MGeometry
-template<typename T>
-USerStorageXML& operator << (USerStorageXML& storage, const MGeometry<T> &data)
+template<typename T, int Rows>
+USerStorageXML& operator << (USerStorageXML& storage, const MGeometry<T, Rows> &data)
 {
  storage.SetNodeAttribute("Type","MGeometry");
  storage.AddNode("Vertex");
@@ -414,8 +414,8 @@ USerStorageXML& operator << (USerStorageXML& storage, const MGeometry<T> &data)
  return storage;
 }
 
-template<typename T>
-USerStorageXML& operator >> (USerStorageXML& storage, MGeometry<T> &data)
+template<typename T, int Rows>
+USerStorageXML& operator >> (USerStorageXML& storage, MGeometry<T, Rows> &data)
 {
  //Временные переменные
  MVertex<T> varVertexVector;

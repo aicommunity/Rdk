@@ -52,30 +52,72 @@ object UComponentsListForm: TUComponentsListForm
             ExplicitHeight = 317
           end
         end
+        inherited TabSheet2: TTabSheet
+          ExplicitWidth = 186
+          ExplicitHeight = 351
+          inherited StateHeaderControl: THeaderControl
+            Width = 186
+            ExplicitWidth = 186
+          end
+          inherited StateRichEdit: TRichEdit
+            Width = 186
+            Height = 317
+          end
+        end
         inherited TabSheet3: TTabSheet
-          ExplicitLeft = 4
-          ExplicitTop = 4
-          ExplicitWidth = 376
-          ExplicitHeight = 539
+          ExplicitWidth = 186
+          ExplicitHeight = 351
+          inherited Splitter2: TSplitter
+            Width = 186
+          end
+          inherited IOHeaderControl: THeaderControl
+            Width = 186
+            ExplicitWidth = 186
+          end
           inherited GroupBox: TGroupBox
+            Width = 186
+            ExplicitWidth = 186
             inherited OutputsStringGrid: TStringGrid
-              ExplicitLeft = 2
-              ExplicitTop = 15
-              ExplicitWidth = 372
-              ExplicitHeight = 222
+              Width = 182
+              ExplicitWidth = 182
             end
           end
           inherited GroupBox2: TGroupBox
-            ExplicitLeft = 0
-            ExplicitTop = 281
-            ExplicitWidth = 376
-            ExplicitHeight = 258
+            Width = 186
+            Height = 70
+            ExplicitWidth = 186
+            ExplicitHeight = 70
             inherited InputsStringGrid: TStringGrid
-              ExplicitLeft = 2
-              ExplicitTop = 15
-              ExplicitWidth = 372
-              ExplicitHeight = 241
+              Width = 182
+              Height = 53
+              ExplicitWidth = 182
+              ExplicitHeight = 53
             end
+          end
+        end
+        inherited TabSheet4: TTabSheet
+          ExplicitWidth = 186
+          ExplicitHeight = 351
+          inherited HeaderControl1: THeaderControl
+            Width = 186
+            ExplicitWidth = 186
+          end
+          inherited ParametersListStringGrid: TStringGrid
+            Width = 186
+            Height = 321
+            OnDblClick = ComponentsListFrame1ParametersListStringGridDblClick
+            ExplicitLeft = 0
+            ExplicitTop = 30
+            ExplicitWidth = 186
+            ExplicitHeight = 321
+          end
+        end
+        inherited TabSheet5: TTabSheet
+          ExplicitWidth = 186
+          ExplicitHeight = 351
+          inherited HeaderControl2: THeaderControl
+            Width = 186
+            ExplicitWidth = 186
           end
         end
       end

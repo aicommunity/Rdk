@@ -14,26 +14,17 @@ See file license.txt for more information
 
 #include <iostream>
 #include "MVector.h"
-#include "MDyad.h"
-#include "MTensor.h"
-#include "MTheormec.h"
-#include "MBody.h"
+//#include "MDyad.h"
+//#include "MTensor.h"
+//#include "MTheormec.h"
+//#include "MBody.h"
 #include "MGeometry.h"
-#include "MCSystem.h"
+//#include "MCSystem.h"
 #include "../Serialize/UIOStream.h"
 
 namespace RDK {
 
 //namespace IO {
-
-// Вывод общего случая MVector в поток
-/*template<typename CharT, typename T, int Rows, int Cols>
-std::basic_ostream<CharT>& operator << (std::basic_ostream<CharT>& stream, const MMatrix<T,Rows,Cols> &data)
-{
- stream<<"{"<<(T)data.x<<","<<(T)data.y<<","<<(T)data.z<<"}";
- return stream;
-} */
-
 
 // Вывод частного случая MVector в поток
 template<typename CharT, typename T>
@@ -67,6 +58,44 @@ std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, MVect
  return stream;
 }
 
+// Вывод общего случая MVector в поток
+template<typename CharT, typename T, int Rows>
+std::basic_ostream<CharT>& operator << (std::basic_ostream<CharT>& stream, const MVector<T,Rows> &data)
+{
+ stream<<"{";
+ for(unsigned i=0;i<Rows;i++)
+ {
+  stream<<data.Data1D[i];
+  if(i<Rows-1)
+   stream<<",";
+ }
+ stream<<"}";
+
+ return stream;
+}
+
+// Ввод из потока
+template<typename CharT, typename T, int Rows>
+std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, MVector<T,Rows> &data)
+{
+ CharT ch;
+ ch=stream.get();
+ if(ch != '{')
+  return stream;
+
+ ch=stream.get();
+ if(ch == '}')
+  return stream;
+ else
+  stream.unget();
+
+ for(unsigned i=0;i<Rows;i++)
+  stream>>data.Data1D[i];
+
+ ch=stream.get();
+ return stream;
+}
+/*
 // MDyad
 template<typename CharT, typename T>
 std::basic_ostream<CharT>& operator << (std::basic_ostream<CharT>& stream, const MDyad<T> &data)
@@ -274,19 +303,19 @@ std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, MMech
  stream>>data.CIT;
  ch=stream.get();
  return stream;
-}
+}          */
 
 // MRay
-template<typename CharT, typename T>
-std::basic_ostream<CharT>& operator << (std::basic_ostream<CharT>& stream, const MRay<T> &data)
+template<typename CharT, typename T, int Rows>
+std::basic_ostream<CharT>& operator << (std::basic_ostream<CharT>& stream, const MRay<T,Rows> &data)
 {
  stream<<"{"<<data.Origin<<","<<data.Direction<<"}";
  return stream;
 }
 
 
-template<typename CharT, typename T>
-std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, MRay<T> &data)
+template<typename CharT, typename T, int Rows>
+std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, MRay<T,Rows> &data)
 {
  CharT ch;
  ch=stream.get();
@@ -306,16 +335,16 @@ std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, MRay<
 }
 
 // MPlane
-template<typename CharT, typename T>
-std::basic_ostream<CharT>& operator << (std::basic_ostream<CharT>& stream, const MPlane<T> &data)
+template<typename CharT, typename T, int Rows>
+std::basic_ostream<CharT>& operator << (std::basic_ostream<CharT>& stream, const MPlane<T,Rows> &data)
 {
  stream<<"{"<<data.Normal<<","<<data.Distance<<"}";
  return stream;
 }
 
 
-template<typename CharT, typename T>
-std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, MPlane<T> &data)
+template<typename CharT, typename T, int Rows>
+std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, MPlane<T,Rows> &data)
 {
  CharT ch;
  ch=stream.get();
@@ -354,16 +383,16 @@ std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, MBord
 }
 
 // MVertex
-template<typename CharT,typename T>
-std::basic_ostream<CharT>& operator << (std::basic_ostream<CharT>& stream, const MVertex<T> &data)
+template<typename CharT,typename T, int Rows>
+std::basic_ostream<CharT>& operator << (std::basic_ostream<CharT>& stream, const MVertex<T,Rows> &data)
 {
  stream<<"{"<<data.GetVertex()<<","<<data.GetNames()<<"}";
  return stream;
 }
 
 
-template<typename CharT,typename T>
-std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, MVertex<T> &data)
+template<typename CharT,typename T, int Rows>
+std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, MVertex<T,Rows> &data)
 {
  std::vector<MVector<T,3> > temp;
  std::vector<std::string> temp2;
@@ -390,16 +419,16 @@ std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, MVert
 }
 
 // MGeometry
-template<typename CharT,typename T>
-std::basic_ostream<CharT>& operator << (std::basic_ostream<CharT>& stream, const MGeometry<T> &data)
+template<typename CharT,typename T, int Rows>
+std::basic_ostream<CharT>& operator << (std::basic_ostream<CharT>& stream, const MGeometry<T,Rows> &data)
 {
  stream<<"{"<<data.GetVertex()<<","<<data.GetBorders()<<"}";
  return stream;
 }
 
 
-template<typename CharT,typename T>
-std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, MGeometry<T> &data)
+template<typename CharT,typename T, int Rows>
+std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, MGeometry<T,Rows> &data)
 {
  CharT ch;
  ch=stream.get();
@@ -424,7 +453,7 @@ std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, MGeom
  data.SetBorders(btemp);
  return stream;
 }
-
+/*
 // MCSystem
 template<typename CharT,typename T>
 std::basic_ostream<CharT>& operator << (std::basic_ostream<CharT>& stream, const MCSystem<T> &data)
@@ -456,7 +485,7 @@ std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, MCSys
  stream>>data.Basis[2];
  ch=stream.get();
  return stream;
-}
+}              */
         /*
 // MCartesianCSystem
 template<typename CharT,typename T>

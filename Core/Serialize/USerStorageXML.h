@@ -50,9 +50,11 @@ bool Create(const std::string &rootname);
 
 // Загружает xml из строки
 bool Load(const std::string &str, const std::string &root);
+bool LoadToNode(const std::string &str, const std::string &root);
 
 // Сохраняет xml в строку
 bool Save(std::string &str);
+bool SaveFromNode(std::string &str);
 // --------------------------
 
 // --------------------------

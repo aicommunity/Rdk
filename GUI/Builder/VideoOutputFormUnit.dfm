@@ -5,6 +5,7 @@ object VideoOutputForm: TVideoOutputForm
   ClientHeight = 537
   ClientWidth = 661
   Color = clBtnFace
+  DockSite = True
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11

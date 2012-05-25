@@ -11,6 +11,7 @@
 #include <Grids.hpp>
 #include <ToolWin.hpp>
 #include <Vcl.ExtCtrls.hpp>
+#include <Vcl.ValEdit.hpp>
 #include <string>
 #include <vector>
 //---------------------------------------------------------------------------
@@ -36,6 +37,12 @@ __published:	// IDE-managed Components
 	TSplitter *Splitter2;
 	TStringGrid *OutputsStringGrid;
 	TStringGrid *InputsStringGrid;
+	TTabSheet *TabSheet4;
+	TTabSheet *TabSheet5;
+	THeaderControl *HeaderControl1;
+	THeaderControl *HeaderControl2;
+	TStringGrid *ParametersListStringGrid;
+	TStringGrid *StatesListStringGrid;
 	void __fastcall FrameResize(TObject *Sender);
 	void __fastcall StringGridDblClick(TObject *Sender);
 	void __fastcall StringGridSelectCell(TObject *Sender, int ACol, int ARow, bool &CanSelect);
@@ -55,6 +62,14 @@ __published:	// IDE-managed Components
 	void __fastcall InputsStringGridDblClick(TObject *Sender);
 	void __fastcall InputsStringGridClick(TObject *Sender);
 	void __fastcall PageControl1Change(TObject *Sender);
+	void __fastcall ParametersListStringGridClick(TObject *Sender);
+	void __fastcall ParametersListStringGridDblClick(TObject *Sender);
+	void __fastcall ParametersListStringGridSelectCell(TObject *Sender, int ACol, int ARow,
+          bool &CanSelect);
+	void __fastcall StatesListStringGridClick(TObject *Sender);
+	void __fastcall StatesListStringGridDblClick(TObject *Sender);
+	void __fastcall StatesListStringGridSelectCell(TObject *Sender, int ACol, int ARow, bool &CanSelect);
+
 
 
 protected:		// User declarations
@@ -69,6 +84,12 @@ protected:		// User declarations
 
 		// Длинный строковой id текущего компонента
 		std::string CurrentComponentId;
+
+		// Имя выделенного параметра выделенного компонента
+		std::string SelectedComponentParameterName;
+
+		// Имя выделенной переменной состояния выделенного компонента
+		std::string SelectedComponentStateName;
 
 		// Путь до текущего компонента
 		std::vector<std::string> CurrentPath;
@@ -114,6 +135,12 @@ public:
 
 		// Длинный строковой Id выделенного компонента
 		const std::string& GetSelectedComponentLongId(void) const;
+
+		// Имя выделенного параметра выделенного компонента
+		const std::string& GetSelectedComponentParameterName(void) const;
+
+		// Имя выделенной переменной состояния выделенного компонента
+		const std::string& GetSelectedComponentStateName(void) const;
 
 		// Длинное имя текущего компонента
 		const std::string& GetCurrentComponentName(void) const;
@@ -180,6 +207,12 @@ void UpdateState(void);
 
 // Обновляет данные ввода-вывода
 void UpdateIO(void);
+
+// Обновляет данные списка параметров
+void UpdateParametersList(void);
+
+// Обновляет данные списка переменных состояния
+void UpdateStatesList(void);
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TUComponentsListFrame *UComponentsListFrame;

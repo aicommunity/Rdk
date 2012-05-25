@@ -81,7 +81,7 @@ virtual ~MGeometryDescription(void)
 };
 
 // Класс поддержки отрисовки графики
-template<class T>
+template<class T, int Rows>
 class MGraphics
 {
 protected: // Данные
@@ -89,7 +89,7 @@ protected: // Данные
 UAGraphics *Graphics;
 
 // Список объектов отрисовки в заданном порядке
-std::vector<MGeometry<T> > Geometry;
+std::vector<MGeometry<T,Rows> > Geometry;
 
 // Список описаний соответствующего объекта
 vector<MGeometryDescription> Description;
@@ -99,7 +99,7 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 MGraphics(void);
-MGraphics(const MGraphics<T> &copy);
+MGraphics(const MGraphics<T,Rows> &copy);
 ~MGraphics(void);
 // --------------------------
 
@@ -111,7 +111,7 @@ UAGraphics* GetGraphics(void) const;
 bool SetGraphics(UAGraphics *graphics);
 
 // Возвращает заданный объект отрисовки по индексу
-MGeometry<T>& GetGeometry(size_t index);
+MGeometry<T,Rows>& GetGeometry(size_t index);
 
 // Возвращает описание заданного объекта отрисовки по индексу
 MGeometryDescription& GetDescription(size_t index);
@@ -121,7 +121,7 @@ size_t GetNumGeometry(void) const;
 
 // Добавляет новый объект отрисовки
 // Возвращает индекс добавленного объекта
-size_t AddGeometry(const MGeometry<T>& geometry);
+size_t AddGeometry(const MGeometry<T,Rows>& geometry);
 
 // Удаляет существующий объект отрисовки по индексу
 void DelGeometry(size_t index);
@@ -145,7 +145,7 @@ void Repaint(void);
 // --------------------------
 // Оператор присваивания
 // Не копирует модуль рисования
-MGraphics<T>& operator = (const MGraphics<T> &copy);
+MGraphics<T,Rows>& operator = (const MGraphics<T,Rows> &copy);
 // --------------------------
 };
 
@@ -153,21 +153,21 @@ MGraphics<T>& operator = (const MGraphics<T> &copy);
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-template<class T>
-MGraphics<T>::MGraphics(void)
+template<class T, int Rows>
+MGraphics<T,Rows>::MGraphics(void)
 {
  // Модуль рисования
  Graphics=0;
 }
 
-template<class T>
-MGraphics<T>::MGraphics(const MGraphics<T> &copy)
+template<class T, int Rows>
+MGraphics<T,Rows>::MGraphics(const MGraphics<T,Rows> &copy)
 {
  *this=copy;
 }
 
-template<class T>
-MGraphics<T>::~MGraphics(void)
+template<class T, int Rows>
+MGraphics<T,Rows>::~MGraphics(void)
 {
  Graphics=0;
 }
@@ -177,14 +177,14 @@ MGraphics<T>::~MGraphics(void)
 // Методы управления данныим
 // --------------------------
 // Модуль рисования
-template<class T>
-UAGraphics* MGraphics<T>::GetGraphics(void) const
+template<class T, int Rows>
+UAGraphics* MGraphics<T,Rows>::GetGraphics(void) const
 {
  return Graphics;
 }
 
-template<class T>
-bool MGraphics<T>::SetGraphics(UAGraphics *graphics)
+template<class T, int Rows>
+bool MGraphics<T,Rows>::SetGraphics(UAGraphics *graphics)
 {
  if(Graphics == graphics)
   return true;
@@ -194,30 +194,30 @@ bool MGraphics<T>::SetGraphics(UAGraphics *graphics)
 }
 
 // Возвращает заданный объект отрисовки по индексу
-template<class T>
-MGeometry<T>& MGraphics<T>::GetGeometry(size_t index)
+template<class T, int Rows>
+MGeometry<T,Rows>& MGraphics<T,Rows>::GetGeometry(size_t index)
 {
  return Geometry[index];
 }
 
 // Возвращает описание заданного объекта отрисовки по индексу
-template<class T>
-MGeometryDescription& MGraphics<T>::GetDescription(size_t index)
+template<class T, int Rows>
+MGeometryDescription& MGraphics<T,Rows>::GetDescription(size_t index)
 {
  return Description[index];
 }
 
 // Возвращает число объектов отрисовки
-template<class T>
-size_t MGraphics<T>::GetNumGeometry(void) const
+template<class T, int Rows>
+size_t MGraphics<T,Rows>::GetNumGeometry(void) const
 {
  return Geometry.size();
 }
 
 // Добавляет новый объект отрисовки
 // Возвращает индекс добавленного объекта
-template<class T>
-size_t MGraphics<T>::AddGeometry(const MGeometry<T>& geometry)
+template<class T, int Rows>
+size_t MGraphics<T,Rows>::AddGeometry(const MGeometry<T,Rows>& geometry)
 {
  Geometry.push_back(geometry);
  Description.resize(Geometry.size());
@@ -226,8 +226,8 @@ size_t MGraphics<T>::AddGeometry(const MGeometry<T>& geometry)
 }
 
 // Удаляет существующий объект отрисовки по индексу
-template<class T>
-void MGraphics<T>::DelGeometry(size_t index)
+template<class T, int Rows>
+void MGraphics<T,Rows>::DelGeometry(size_t index)
 {
  if(index >= Geometry.size())
   return;
@@ -237,8 +237,8 @@ void MGraphics<T>::DelGeometry(size_t index)
 }
 
 // Удаляет все объекты отрисовки по индексу
-template<class T>
-void MGraphics<T>::DelAllGeometry(void)
+template<class T, int Rows>
+void MGraphics<T,Rows>::DelAllGeometry(void)
 {
  Geometry.clear();
  Description.clear();
@@ -249,8 +249,8 @@ void MGraphics<T>::DelAllGeometry(void)
 // Методы рисования
 // --------------------------
 // Очищает модуль рисования
-template<class T>
-void MGraphics<T>::Clear(void)
+template<class T, int Rows>
+void MGraphics<T,Rows>::Clear(void)
 {
  if(!Graphics)
   return;
@@ -258,8 +258,8 @@ void MGraphics<T>::Clear(void)
 }
 
 // Отрисовывает все объекты
-template<class T>
-void MGraphics<T>::Repaint(void)
+template<class T, int Rows>
+void MGraphics<T,Rows>::Repaint(void)
 {
  if(!Graphics)
   return;
@@ -272,8 +272,8 @@ void MGraphics<T>::Repaint(void)
    Graphics->SetPenWidth(Description[i].PenWidth);
    // Считаем всю геометрию двумерной
 
-   MGeometry<T> &geometry=Geometry[i];
-   MVertex<T>& vertex=geometry();
+   MGeometry<T,Rows> &geometry=Geometry[i];
+   MVertex<T,Rows>& vertex=geometry();
    // Отрисовываем точки
    vertex=0;
    for(size_t i=0;i<vertex.GetNumVertex();i++,vertex++)
@@ -285,8 +285,8 @@ void MGraphics<T>::Repaint(void)
     if(geometry[j].GetNumVertex()>0)
      for(size_t k=0;k<geometry[j].GetNumVertex()-1;k++)
      {
-      MVector<T,3> v1=vertex[geometry[j][k]];
-      MVector<T,3> v2=vertex[geometry[j][k+1]];
+	  MVector<T,Rows> v1=vertex[geometry[j][k]];
+      MVector<T,Rows> v2=vertex[geometry[j][k+1]];
       Graphics->Line(v1.x,v1.y,v2.x,v2.y);
      }
    }
@@ -301,8 +301,8 @@ void MGraphics<T>::Repaint(void)
 // --------------------------
 // Оператор присваивания
 // Не копирует модуль рисования
-template<class T>
-MGraphics<T>& MGraphics<T>::operator = (const MGraphics<T> &copy)
+template<class T, int Rows>
+MGraphics<T,Rows>& MGraphics<T,Rows>::operator = (const MGraphics<T,Rows> &copy)
 {
  // Список объектов отрисовки в заданном порядке
  Geometry=copy.Geometry;

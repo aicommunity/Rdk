@@ -7,6 +7,8 @@
 #include "rdk_builder.h"
 #include "TUBitmap.h"
 #include "TVideoGrabberControlFormUnit.h"
+#include "myrdk.h"
+#include "rdk_initdll.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "VidGrab"
@@ -29,6 +31,8 @@ __fastcall TVideoOutputFrame::TVideoOutputFrame(TComponent* Owner)
  x1b=x2b=y1b=y2b=-1;
  corrx1b=corry1b=corrx2b=corry2b=-1;
  left=-1; top=-1; width=-1; height=-1;
+ PointIndex=-1;
+ FigureIndex=-1;
 
  CorrSelectFlag=false;
  ZoneSelectEnable=false;
@@ -37,15 +41,15 @@ __fastcall TVideoOutputFrame::TVideoOutputFrame(TComponent* Owner)
  UpdateFlag=false;
 
  PointFlag=0;
- FigureFlag=false;
+// FigureFlag=false;
 
  MyVideoOutputToolsForm=new TVideoOutputToolsForm(this,
 	this,
 	GeometryGraphics,
-	SampleGeometryGraphics,
+//	SampleGeometryGraphics,
 	Figure,
 	FigureIndex,
-	FigureFlag,
+//	FigureFlag,
 	PointIndex,
 	PointFlag);
 
@@ -55,6 +59,7 @@ __fastcall TVideoOutputFrame::TVideoOutputFrame(TComponent* Owner)
 
  ConvertBitmap=new Graphics::TBitmap;
 
+ MyComponentsListForm=new TUComponentsListForm(this);
 }
 
 __fastcall TVideoOutputFrame::~TVideoOutputFrame(void)
@@ -67,6 +72,9 @@ __fastcall TVideoOutputFrame::~TVideoOutputFrame(void)
  MyVideoGrabberControlForm=0;
 
  delete ConvertBitmap;
+
+ if(MyComponentsListForm)
+  delete MyComponentsListForm;
 }
 
 //---------------------------------------------------------------------------
@@ -215,7 +223,7 @@ void TVideoOutputFrame::UpdateGeometryList(TCheckListBox *GeometryCheckListBox, 
   GeometryCheckListBox->ItemIndex=ix;
  else
   GeometryCheckListBox->ItemIndex=0;
-
+/*
  if(FigureFlag)
  {
   GeometryCheckListBox->ItemIndex=FigureIndex;
@@ -223,7 +231,7 @@ void TVideoOutputFrame::UpdateGeometryList(TCheckListBox *GeometryCheckListBox, 
  }
  else
   GeometryCheckListBox->Enabled=true;
-
+  */
  if(GeometryGraphics.GetNumGeometry()<=FigureIndex)
   return;
 
@@ -248,7 +256,7 @@ void TVideoOutputFrame::UpdateGeometryList(TCheckListBox *GeometryCheckListBox, 
   PointsCheckListBox->ItemIndex=ix;
  else
   PointsCheckListBox->ItemIndex=0;
-
+ /*
  if(PointFlag > 0)
  {
   PointsCheckListBox->Enabled=false;
@@ -256,7 +264,7 @@ void TVideoOutputFrame::UpdateGeometryList(TCheckListBox *GeometryCheckListBox, 
  else
  {
   PointsCheckListBox->Enabled=true;
- }
+ } */
 }
 
 // Метод отрисовки прямоугольной зоны
@@ -314,7 +322,7 @@ void TVideoOutputFrame::AddFigureRect(double l,double t,double w,double h)
   if(PointIndex < MyVideoOutputToolsForm->PointsCheckListBox->Items->Count)
   MyVideoOutputToolsForm->PointsCheckListBox->ItemIndex = PointIndex+1;
  }
-      */
+	  */
 
  GeometryGraphics.GetGeometry(FigureIndex)=Figure;
 
@@ -323,10 +331,10 @@ void TVideoOutputFrame::AddFigureRect(double l,double t,double w,double h)
 
 
 // Устанавливает образец графики
-void TVideoOutputFrame::SetSampleGeometryGraphics(RDK::MGraphics<double>& samplegraphics)
+void TVideoOutputFrame::SetSampleGeometryGraphics(RDK::MGraphics<double,2>& samplegraphics)
 {
- SampleGeometryGraphics=samplegraphics;
- GeometryGraphics=SampleGeometryGraphics;
+// SampleGeometryGraphics=samplegraphics;
+// GeometryGraphics=SampleGeometryGraphics;
  UpdateVideo();
  FigureIndex=0;
  PointIndex=0;
@@ -359,6 +367,40 @@ void TVideoOutputFrame::SetSampleGeometryGraphics(RDK::MGraphics<double>& sample
  TimeEdit->Repaint();
  Image->Repaint();
  Image->Update();   */
+
+
+// -------------------------
+// Методы ввода вывода точек геометрии из параметров и переменных состояния компонент
+// -------------------------
+// Отправляет набор точек в параметр компонента
+void TVideoOutputFrame::SendToComponentParameter(const std::string &stringid, const std::string &parameter_name, int figure_index)
+{
+ const std::vector<RDK::MVector<double,2> > &points=GeometryGraphics.GetGeometry(figure_index).GetVertex().GetVertex();
+ RDK::WriteParameterValue(stringid, parameter_name, points);
+}
+
+// Отправляет набор точек в переменную состояния компонента
+void TVideoOutputFrame::SendToComponentState(const std::string &stringid, const std::string &state_name, int figure_index)
+{
+ const std::vector<RDK::MVector<double,2> > &points=GeometryGraphics.GetGeometry(figure_index).GetVertex().GetVertex();
+ RDK::WriteStateValue(stringid, state_name, points);
+}
+
+// Считывает набор точек из параметра компонента
+void TVideoOutputFrame::ReceiveFromComponentParameter(const std::string &stringid, const std::string &parameter_name, int figure_index)
+{
+ std::vector<RDK::MVector<double,2> > points;
+ RDK::ReadParameterValue(stringid, parameter_name, points);
+}
+
+// Считывает набор точек из переменной состояния компонента
+void TVideoOutputFrame::ReceiveFromComponentState(const std::string &stringid, const std::string &state_name, int figure_index)
+{
+ std::vector<RDK::MVector<double,2> > points;
+ RDK::ReadStateValue(stringid, state_name, points);
+}
+// -------------------------
+
 //---------------------------------------------------------------------------
 void __fastcall TVideoOutputFrame::TimerTimer(TObject *Sender)
 {
@@ -477,10 +519,10 @@ void __fastcall TVideoOutputFrame::ImageMouseDown(TObject *Sender,
    height=(k2y-k1y);
    CorrSelectFlag=false;
   }
- if(FigureFlag && !PointFlag)
+// if(FigureFlag && !PointFlag)
   MyVideoOutputToolsForm->AddPointButtonClick(Sender);
 
- if(SampleGeometryGraphics.GetNumGeometry())
+ //if(SampleGeometryGraphics.GetNumGeometry())
   MyVideoOutputToolsForm->EditPointButtonClick(Sender);
 }
 //---------------------------------------------------------------------------
@@ -495,6 +537,19 @@ void __fastcall TVideoOutputFrame::ImageMouseMove(TObject *Sender,
  int cardwidth,cardheight;
  double iwidth,iheight,bwidth,bheight;
 
+ iwidth=Image->Width;
+ iheight=Image->Height;
+ bwidth=Image->Picture->Bitmap->Width;
+ bheight=Image->Picture->Bitmap->Height;
+
+
+ DrawCapture(Image->Picture->Bitmap);
+ Image->Canvas->Pen->Color=clLime;
+ Image->Canvas->PenPos=TPoint(X*bwidth/iwidth,0);
+ Image->Canvas->LineTo(X*bwidth/iwidth,Image->Height*bheight/iheight);
+ Image->Canvas->PenPos=TPoint(0,Y*bheight/iheight);
+ Image->Canvas->LineTo(Image->Width*bwidth/iwidth,Y*bheight/iheight);
+
  if(!CorrSelectFlag)
   {
    if(x1b!=-1)
@@ -502,10 +557,6 @@ void __fastcall TVideoOutputFrame::ImageMouseMove(TObject *Sender,
 	 int i;
 	 int k1x,k1y,k2x,k2y;
 
-	 iwidth=Image->Width;
-	 iheight=Image->Height;
-	 bwidth=Image->Picture->Bitmap->Width;
-	 bheight=Image->Picture->Bitmap->Height;
 
 	 if(X>x1b)
 	  {
@@ -534,7 +585,7 @@ void __fastcall TVideoOutputFrame::ImageMouseMove(TObject *Sender,
 	 top=k1y;
 	 width=(k2x-k1x);
 	 height=(k2y-k1y);
-	 DrawCapture(Image->Picture->Bitmap);
+//	 DrawCapture(Image->Picture->Bitmap);
 	 DrawFrameRect(Image, k1x, k1y, k2x, k2y, 2, SelColor);
 //	 ImageTrackBarChange(Sender);
 	}
@@ -545,11 +596,6 @@ void __fastcall TVideoOutputFrame::ImageMouseMove(TObject *Sender,
 	{
 	 int i;
 	 int k1x,k1y,k2x,k2y;
-
-	 iwidth=Image->Width;
-	 iheight=Image->Height;
-	 bwidth=Image->Picture->Bitmap->Width;
-	 bheight=Image->Picture->Bitmap->Height;
 
 	 if(X>corrx1b)
 	  {
@@ -572,7 +618,7 @@ void __fastcall TVideoOutputFrame::ImageMouseMove(TObject *Sender,
 	   k2y=corry1b*bheight/iheight;
 	  }
 
-	 DrawCapture(Image->Picture->Bitmap);
+ //	 DrawCapture(Image->Picture->Bitmap);
 	 DrawFrameRect(Image, k1x, k1y, k2x, k2y, 2, SelColor);
 	}
   }
@@ -590,22 +636,22 @@ void __fastcall TVideoOutputFrame::ImageMouseUp(TObject *Sender,
 
  if(!CorrSelectFlag)
   {
-   if((X==x1b || Y==y1b) && !FigureFlag)
+ /*  if((X==x1b || Y==y1b))
 	{
 	 x1b=x2b=y1b=y2b=-1;
 	 return;
-	}
+	}*/
    x2b=X; y2b=Y;
 
    x1b=x2b=y1b=y2b=-1;
   }
  else
   {
-   if((X==corrx1b || Y==corry1b) && !FigureFlag)
+/*   if((X==corrx1b || Y==corry1b))
 	{
 	 corrx1b=corrx2b=corry1b=corry2b=-1;
 	 return;
-	}
+	}*/
    corrx2b=X; corry2b=Y;
 
    corrx1b=corrx2b=corry1b=corry2b=-1;
@@ -615,8 +661,8 @@ void __fastcall TVideoOutputFrame::ImageMouseUp(TObject *Sender,
  if(PointFlag)
  {
   AddFigureRect(left,top,width,height);
-  if(SampleGeometryGraphics.GetNumGeometry())
-   MyVideoOutputToolsForm->EditPointButtonClick(Sender);
+//  if(SampleGeometryGraphics.GetNumGeometry())
+//   MyVideoOutputToolsForm->EditPointButtonClick(Sender);
 
  }
 }
@@ -695,6 +741,68 @@ void __fastcall TVideoOutputFrame::TrackBarChange(TObject *Sender)
 void __fastcall TVideoOutputFrame::SourceControl1Click(TObject *Sender)
 {
  MyVideoGrabberControlForm->Show();
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TVideoOutputFrame::SendToComponentClick(TObject *Sender)
+{
+ if(MyComponentsListForm->ShowParameterSelect() != mrOk)
+  return;
+
+ SelectedComponentPName=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName();
+ SelectedComponentParameterName=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentParameterName();
+ SendToComponentParameter(SelectedComponentPName, SelectedComponentParameterName, FigureIndex);
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TVideoOutputFrame::PopupMenuPopup(TObject *Sender)
+{
+ if(SelectedComponentPName.size())
+ {
+  SendTo->Caption=(std::string("Send To ")+SelectedComponentPName+std::string(":")+SelectedComponentParameterName).c_str();
+  SendTo->Enabled=true;
+ }
+ else
+ {
+  SendTo->Caption="Send To ";
+  SendTo->Enabled=false;
+ }
+
+ if(SelectedComponentSName.size())
+ {
+  SendToState->Caption=(std::string("Send To ")+SelectedComponentSName+std::string(":")+SelectedComponentStateName).c_str();
+  SendToState->Enabled=true;
+ }
+ else
+ {
+  SendToState->Caption="Send To ";
+  SendToState->Enabled=false;
+ }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoOutputFrame::SendToClick(TObject *Sender)
+{
+ SendToComponentParameter(SelectedComponentPName, SelectedComponentParameterName, FigureIndex);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoOutputFrame::SendToComponentState1Click(TObject *Sender)
+{
+ if(MyComponentsListForm->ShowStateSelect() != mrOk)
+  return;
+
+ SelectedComponentSName=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName();
+ SelectedComponentStateName=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentStateName();
+ SendToComponentParameter(SelectedComponentSName, SelectedComponentStateName, FigureIndex);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoOutputFrame::SendToStateClick(TObject *Sender)
+{
+ SendToComponentState(SelectedComponentSName, SelectedComponentStateName, FigureIndex);
 }
 //---------------------------------------------------------------------------
 

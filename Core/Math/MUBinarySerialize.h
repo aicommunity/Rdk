@@ -15,12 +15,12 @@ See file license.txt for more information
 #include <iostream>
 #include "../Serialize/Serialize.h"
 #include "MVector.h"
-#include "MDyad.h"
-#include "MTensor.h"
-#include "MTheormec.h"
-#include "MBody.h"
+//#include "MDyad.h"
+//#include "MTensor.h"
+//#include "MTheormec.h"
+//#include "MBody.h"
 #include "MGeometry.h"
-#include "MCSystem.h"
+//#include "MCSystem.h"
 
 namespace RDK {
 namespace Serialize {
@@ -82,7 +82,7 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, MMatrix<T,Rows,Cols>
  }
  return storage;
 }
-
+		  /*
 // MDyad
 template<typename T>
 USerStorageBinary& operator << (USerStorageBinary& storage, const MDyad<T> &data)
@@ -212,19 +212,19 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, MMechanicalBody<T> &
  operator >>(storage,data.Mass);
  operator >>(storage,data.CIT);
  return storage;
-}
+}        */
 
 // MRay
-template<typename T>
-USerStorageBinary& operator << (USerStorageBinary& storage, const MRay<T> &data)
+template<typename T, int Rows>
+USerStorageBinary& operator << (USerStorageBinary& storage, const MRay<T, Rows> &data)
 {
  operator << (storage,data.Origin);
  operator << (storage,data.Direction);
  return storage;
 }
 
-template<typename T>
-USerStorageBinary& operator >> (USerStorageBinary& storage, MRay<T> &data)
+template<typename T, int Rows>
+USerStorageBinary& operator >> (USerStorageBinary& storage, MRay<T, Rows> &data)
 {
  operator >> (storage,data.Origin);
  operator >> (storage,data.Direction);
@@ -232,16 +232,16 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, MRay<T> &data)
 }
 
 // MPlane
-template<typename T>
-USerStorageBinary& operator << (USerStorageBinary& storage, const MPlane<T> &data)
+template<typename T, int Rows>
+USerStorageBinary& operator << (USerStorageBinary& storage, const MPlane<T, Rows> &data)
 {
  operator << (storage,data.Normal);
  operator << (storage,data.Distance);
  return storage;
 }
 
-template<typename T>
-USerStorageBinary& operator >> (USerStorageBinary& storage, MPlane<T> &data)
+template<typename T, int Rows>
+USerStorageBinary& operator >> (USerStorageBinary& storage, MPlane<T, Rows> &data)
 {
  operator >> (storage,data.Normal);
  operator >> (storage,data.Distance);
@@ -254,16 +254,16 @@ USerStorageBinary& operator << (USerStorageBinary& storage, const MBorder &data)
 USerStorageBinary& operator >> (USerStorageBinary& storage, MBorder &data);
 
 // MVertex
-template<typename T>
-USerStorageBinary& operator << (USerStorageBinary& storage, const MVertex<T> &data)
+template<typename T, int Rows>
+USerStorageBinary& operator << (USerStorageBinary& storage, const MVertex<T, Rows> &data)
 {
  operator << (storage,data.GetVertex());
  operator << (storage,data.GetNames());
  return storage;
 }
 
-template<typename T>
-USerStorageBinary& operator >> (USerStorageBinary& storage, MVertex<T> &data)
+template<typename T, int Rows>
+USerStorageBinary& operator >> (USerStorageBinary& storage, MVertex<T, Rows> &data)
 {
  std::vector<MVector<T,3> > temp;
  std::vector<std::string> temp2;
@@ -275,16 +275,16 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, MVertex<T> &data)
 }
 
 // MGeometry
-template<typename T>
-USerStorageBinary& operator << (USerStorageBinary& storage, const MGeometry<T> &data)
+template<typename T, int Rows>
+USerStorageBinary& operator << (USerStorageBinary& storage, const MGeometry<T, Rows> &data)
 {
  operator << (storage,data.GetVertex());
  operator << (storage,data.GetBorders());
  return storage;
 }
 
-template<typename T>
-USerStorageBinary& operator >> (USerStorageBinary& storage, MGeometry<T> &data)
+template<typename T, int Rows>
+USerStorageBinary& operator >> (USerStorageBinary& storage, MGeometry<T, Rows> &data)
 {
  MVertex<T> vtemp;
  std::vector<MBorder> btemp;
@@ -296,7 +296,7 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, MGeometry<T> &data)
 
  return storage;
 }
-
+	  /*
 // MCSystem
 template<typename T>
 USerStorageBinary& operator << (USerStorageBinary& storage, const MCSystem<T> &data)
@@ -316,7 +316,7 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, MCSystem<T> &data)
  operator >>(storage,data.Basis[1]);
  operator >>(storage,data.Basis[2]);
  return storage;
-}
+}                  */
 /*
 // MCartesianCSystem
 template<typename T>
