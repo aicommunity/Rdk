@@ -1,7 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CalibrationDll", "CalibrationDll.vcxproj", "{F4562951-469A-4F59-A903-E4D18F74E7AA}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CameraCalibrationDll", "CalibrationDll.vcxproj", "{F4562951-469A-4F59-A903-E4D18F74E7AA}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CalibrateCamera", "..\..\..\..\..\!Try\Calibration\CalibrateCamera\CalibrateCamera.vcxproj", "{A12E00F6-73A0-49EF-A5E0-B181B048E424}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,6 +15,10 @@ Global
 		{F4562951-469A-4F59-A903-E4D18F74E7AA}.Debug|Win32.Build.0 = Debug|Win32
 		{F4562951-469A-4F59-A903-E4D18F74E7AA}.Release|Win32.ActiveCfg = Release|Win32
 		{F4562951-469A-4F59-A903-E4D18F74E7AA}.Release|Win32.Build.0 = Release|Win32
+		{A12E00F6-73A0-49EF-A5E0-B181B048E424}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A12E00F6-73A0-49EF-A5E0-B181B048E424}.Debug|Win32.Build.0 = Debug|Win32
+		{A12E00F6-73A0-49EF-A5E0-B181B048E424}.Release|Win32.ActiveCfg = Release|Win32
+		{A12E00F6-73A0-49EF-A5E0-B181B048E424}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

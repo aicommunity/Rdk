@@ -14,6 +14,8 @@ object VideoOutputFrame: TVideoOutputFrame
     Width = 702
     Height = 417
     Align = alClient
+    DoubleBuffered = True
+    ParentDoubleBuffered = False
     TabOrder = 0
     object Image: TImage
       Left = 2
@@ -26,8 +28,7 @@ object VideoOutputFrame: TVideoOutputFrame
       OnMouseDown = ImageMouseDown
       OnMouseMove = ImageMouseMove
       OnMouseUp = ImageMouseUp
-      ExplicitTop = 56
-      ExplicitHeight = 359
+      ExplicitTop = 14
     end
     object VideoGrabber: TVideoGrabber
       Left = 432
@@ -41,6 +42,7 @@ object VideoOutputFrame: TVideoOutputFrame
       AspectRatioToUse = -1.000000000000000000
       AudioCompressor = 0
       AutoFilePrefix = 'vg'
+      DoubleBuffered = True
       Cropping_Zoom = 1.000000000000000000
       LicenseString = 'N/A'
       MotionDetector_Grid = 
@@ -137,11 +139,26 @@ object VideoOutputFrame: TVideoOutputFrame
     Top = 264
   end
   object PopupMenu: TPopupMenu
+    OnPopup = PopupMenuPopup
     Left = 48
     Top = 264
-    object SourceControl1: TMenuItem
-      Caption = 'Source Control'
-      OnClick = SourceControl1Click
+    object SendTo: TMenuItem
+      Caption = 'Send To Parameter'
+      Enabled = False
+      OnClick = SendToClick
+    end
+    object SendToState: TMenuItem
+      Caption = 'Send To State'
+      Enabled = False
+      OnClick = SendToStateClick
+    end
+    object SendToComponent: TMenuItem
+      Caption = 'Send To Component Parameter...'
+      OnClick = SendToComponentClick
+    end
+    object SendToComponentState1: TMenuItem
+      Caption = 'Send To Component State...'
+      OnClick = SendToComponentState1Click
     end
     object N2: TMenuItem
       Caption = '-'
@@ -149,6 +166,13 @@ object VideoOutputFrame: TVideoOutputFrame
     object N1: TMenuItem
       Caption = 'Toolbar'
       OnClick = N1Click
+    end
+    object N3: TMenuItem
+      Caption = '-'
+    end
+    object SourceControl1: TMenuItem
+      Caption = 'Source Control'
+      OnClick = SourceControl1Click
     end
   end
 end

@@ -42,7 +42,6 @@ bool USerStorageXML::Create(const std::string &rootname)
  RootNode=XMLNode::createXMLTopNode(rootname.c_str());
  if(RootNode.isEmpty())
   return false;
-// RootNode.updateName(rootname.c_str());
  CurrentNode=RootNode;
  return true;
 }
@@ -50,7 +49,6 @@ bool USerStorageXML::Create(const std::string &rootname)
 // Загружает xml из строки
 bool USerStorageXML::Load(const std::string &str, const std::string &root)
 {
-// RootNode.parseString(std.c_str(),"PMML");
  RootNode.deleteNodeContent();
  RootNode=XMLNode::parseString(str.c_str(),root.c_str());
  if(RootNode.isEmpty())
@@ -60,10 +58,34 @@ bool USerStorageXML::Load(const std::string &str, const std::string &root)
  return true;
 }
 
+bool USerStorageXML::LoadToNode(const std::string &str, const std::string &root)
+{
+ CurrentNode.deleteNodeContent();
+ CurrentNode=XMLNode::parseString(str.c_str(),root.c_str());
+ if(CurrentNode.isEmpty())
+  return false;
+
+ return true;
+}
+
+
 // Сохраняет xml в строку
 bool USerStorageXML::Save(std::string &str)
 {
  char* pch=RootNode.createXMLString(true);
+ if(pch)
+ {
+  str=pch;
+  freeXMLString(pch);
+ }
+ else
+  str="";
+ return true;
+}
+
+bool USerStorageXML::SaveFromNode(std::string &str)
+{
+ char* pch=CurrentNode.createXMLString(true);
  if(pch)
  {
   str=pch;

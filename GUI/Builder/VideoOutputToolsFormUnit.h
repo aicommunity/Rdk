@@ -44,13 +44,14 @@ __published:	// IDE-managed Components
 	void __fastcall EditFigureButtonClick(TObject *Sender);
 	void __fastcall PointsCheckListBoxClick(TObject *Sender);
 	void __fastcall FormShow(TObject *Sender);
+	void __fastcall DelAllPointsButtonClick(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
 	__fastcall TVideoOutputToolsForm(TComponent* Owner,
 	TVideoOutputFrame* _MyVideoOutputFrame,
-	RDK::MGraphics<double>& _GeometryGraphics,
-	RDK::MGraphics<double>& _SampleGeometryGraphics,
-	RDK::MGeometry<double>& _Figure,
+	RDK::MGraphics<double,2>& _GeometryGraphics,
+//	RDK::MGraphics<double,2>& _SampleGeometryGraphics,
+	RDK::MGeometry<double,2>& _Figure,
 	int& _FigureIndex,
 //	bool& _FigureFlag,
 	int& _PointIndex,
@@ -60,13 +61,13 @@ public:		// User declarations
 	TVideoOutputFrame* MyVideoOutputFrame;
 
 // Отрисовка геометрии
-RDK::MGraphics<double>& GeometryGraphics;
+RDK::MGraphics<double,2>& GeometryGraphics;
 
 // Образец формируемой геометрии
-RDK::MGraphics<double>& SampleGeometryGraphics;
+//RDK::MGraphics<double,2>& SampleGeometryGraphics;
 
 // Текущая создаваемая фигура
-RDK::MGeometry<double>& Figure;
+RDK::MGeometry<double,2>& Figure;
 
 // Индекс текущей редактируемой фигуры
 int& FigureIndex;

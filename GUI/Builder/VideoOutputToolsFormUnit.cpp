@@ -14,9 +14,9 @@ using namespace RDK;
 //---------------------------------------------------------------------------
 __fastcall TVideoOutputToolsForm::TVideoOutputToolsForm(TComponent* Owner,
 	TVideoOutputFrame* _MyVideoOutputFrame,
-	MGraphics<double>& _GeometryGraphics,
-	MGraphics<double>& _SampleGeometryGraphics,
-	MGeometry<double>& _Figure,
+	MGraphics<double,2>& _GeometryGraphics,
+//	MGraphics<double,2>& _SampleGeometryGraphics,
+	MGeometry<double,2>& _Figure,
 	int& _FigureIndex,
 //	bool& _FigureFlag,
 	int& _PointIndex,
@@ -25,7 +25,7 @@ __fastcall TVideoOutputToolsForm::TVideoOutputToolsForm(TComponent* Owner,
 	: TForm(Owner),
 	MyVideoOutputFrame(_MyVideoOutputFrame),
 	GeometryGraphics(_GeometryGraphics),
-	SampleGeometryGraphics(_SampleGeometryGraphics),
+//	SampleGeometryGraphics(_SampleGeometryGraphics),
 	Figure(_Figure),
 	FigureIndex(_FigureIndex),
 //	FigureFlag(_FigureFlag),
@@ -48,7 +48,7 @@ void __fastcall TVideoOutputToolsForm::AddFigureButtonClick(TObject *Sender)
  GeometryGraphics.GetDescription(FigureIndex).Description=string("Геометрия №")+sntoa(FigureIndex+1);
  MyVideoOutputFrame->UpdateVideo();
  GeometryCheckListBox->ItemIndex=FigureIndex;
- SampleGeometryGraphics.Clear();
+// SampleGeometryGraphics.Clear();
  EditFigureButtonClick(Sender);
 // AddPointButtonClick(Sender);
  return;
@@ -57,7 +57,7 @@ void __fastcall TVideoOutputToolsForm::AddFigureButtonClick(TObject *Sender)
 void __fastcall TVideoOutputToolsForm::DelAllFiguresButtonClick(TObject *Sender)
 {
  GeometryGraphics.DelAllGeometry();
- SampleGeometryGraphics.Clear();
+// SampleGeometryGraphics.Clear();
  MyVideoOutputFrame->UpdateVideo();
 }
 //---------------------------------------------------------------------------
@@ -68,7 +68,7 @@ void __fastcall TVideoOutputToolsForm::DelFigureButtonClick(TObject *Sender)
   return;
 
  GeometryGraphics.DelGeometry(GeometryCheckListBox->ItemIndex);
- SampleGeometryGraphics.Clear();
+// SampleGeometryGraphics.Clear();
  MyVideoOutputFrame->UpdateVideo();
 }
 //---------------------------------------------------------------------------
@@ -100,7 +100,7 @@ void __fastcall TVideoOutputToolsForm::AddPointButtonClick(TObject *Sender)
  GeometryGraphics.GetGeometry(FigureIndex)=Figure;
  MyVideoOutputFrame->UpdateVideo();
  PointsCheckListBox->ItemIndex=PointIndex;
- SampleGeometryGraphics.Clear();
+// SampleGeometryGraphics.Clear();
 // EditPointButtonClick(Sender);
  return;
 }
@@ -155,8 +155,12 @@ void __fastcall TVideoOutputToolsForm::FormShow(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-
-
-
+void __fastcall TVideoOutputToolsForm::DelAllPointsButtonClick(TObject *Sender)
+{
+ GeometryGraphics.GetGeometry(FigureIndex).Clear();
+ PointIndex=-1;
+ MyVideoOutputFrame->UpdateVideo();
+}
+//---------------------------------------------------------------------------
 
 

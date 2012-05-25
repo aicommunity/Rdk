@@ -6,13 +6,13 @@
 #include <vector>
 #include "UGEngineControlFormUnit.h"
 #include "TVideoGrabberControlFormUnit.h"
-#include "rdk_initdll.h"
 #include "UImagesFormUnit.h"
 #include "UComponentsControlFormUnit.h"
 #include "UComponentLinksFormUnit.h"
 #include "UEngineMonitorFormUnit.h"
 #include "VideoOutputFormUnit.h"
 #include "UComponentsPerformanceFormUnit.h"
+#include "rdk_initdll.h"
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)

@@ -128,10 +128,6 @@ object UComponentsListFrame: TUComponentsListFrame
       object TabSheet3: TTabSheet
         Caption = 'I/O'
         ImageIndex = 2
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object Splitter2: TSplitter
           Left = 0
           Top = 273
@@ -192,6 +188,64 @@ object UComponentsListFrame: TUComponentsListFrame
             OnDblClick = InputsStringGridDblClick
             OnSelectCell = InputsStringGridSelectCell
           end
+        end
+      end
+      object TabSheet4: TTabSheet
+        Caption = 'Parameters List'
+        ImageIndex = 3
+        object HeaderControl1: THeaderControl
+          Left = 0
+          Top = 0
+          Width = 376
+          Height = 30
+          Sections = <>
+          DoubleBuffered = True
+          ParentDoubleBuffered = False
+        end
+        object ParametersListStringGrid: TStringGrid
+          Left = 0
+          Top = 30
+          Width = 376
+          Height = 509
+          Align = alClient
+          Options = [goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goRowSelect]
+          TabOrder = 1
+          OnClick = ParametersListStringGridClick
+          OnDblClick = ParametersListStringGridDblClick
+          OnSelectCell = ParametersListStringGridSelectCell
+          ExplicitLeft = 2
+          ExplicitTop = 15
+          ExplicitWidth = 372
+          ExplicitHeight = 222
+        end
+      end
+      object TabSheet5: TTabSheet
+        Caption = 'States List'
+        ImageIndex = 4
+        object HeaderControl2: THeaderControl
+          Left = 0
+          Top = 0
+          Width = 376
+          Height = 30
+          Sections = <>
+          DoubleBuffered = True
+          ParentDoubleBuffered = False
+        end
+        object StatesListStringGrid: TStringGrid
+          Left = 0
+          Top = 30
+          Width = 376
+          Height = 509
+          Align = alClient
+          Options = [goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goRowSelect]
+          TabOrder = 1
+          OnClick = StatesListStringGridClick
+          OnDblClick = StatesListStringGridDblClick
+          OnSelectCell = StatesListStringGridSelectCell
+          ExplicitLeft = 2
+          ExplicitTop = 15
+          ExplicitWidth = 372
+          ExplicitHeight = 222
         end
       end
     end

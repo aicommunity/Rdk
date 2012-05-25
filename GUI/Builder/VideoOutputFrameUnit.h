@@ -13,6 +13,7 @@
 #include "rdk_builder.h"
 #include <CheckLst.hpp>
 #include "VideoOutputToolsFormUnit.h"
+#include "UComponentsListFormUnit.h"
 #include <Menus.hpp>
 #include "VidGrab.hpp"
 
@@ -36,6 +37,11 @@ __published:	// IDE-managed Components
 	TTrackBar *TrackBar;
 	TMenuItem *SourceControl1;
 	TMenuItem *N2;
+	TMenuItem *N3;
+	TMenuItem *SendToComponent;
+	TMenuItem *SendTo;
+	TMenuItem *SendToState;
+	TMenuItem *SendToComponentState1;
 	void __fastcall TimerTimer(TObject *Sender);
 	void __fastcall StartButtonClick(TObject *Sender);
 	void __fastcall StopButtonClick(TObject *Sender);
@@ -53,6 +59,11 @@ __published:	// IDE-managed Components
           int FrameId);
 	void __fastcall TrackBarChange(TObject *Sender);
 	void __fastcall SourceControl1Click(TObject *Sender);
+	void __fastcall SendToComponentClick(TObject *Sender);
+	void __fastcall PopupMenuPopup(TObject *Sender);
+	void __fastcall SendToClick(TObject *Sender);
+	void __fastcall SendToComponentState1Click(TObject *Sender);
+	void __fastcall SendToStateClick(TObject *Sender);
 
 private:	// User declarations
 public:		// User declarations
@@ -73,6 +84,9 @@ TVideoOutputToolsForm* MyVideoOutputToolsForm;
 // Форма управления инициализацией видео
 TVideoGrabberControlForm* MyVideoGrabberControlForm;
 
+// Указатель на форму выбора компоненты-источника
+TUComponentsListForm *MyComponentsListForm;
+
 // Источник изображения
 RDK::UBitmap BmpSource;
 
@@ -83,15 +97,15 @@ RDK::UBitmap BmpCanvas;
 RDK::UGraphics Graph;
 
 // Отрисовка геометрии
-RDK::MGraphics<double> GeometryGraphics;
+RDK::MGraphics<double,2> GeometryGraphics;
 
 protected:
 // Образец формируемой геометрии
-RDK::MGraphics<double> SampleGeometryGraphics;
+//RDK::MGraphics<double,2> SampleGeometryGraphics;
 
 public:
 // Текущая создаваемая фигура
-RDK::MGeometry<double> Figure;
+RDK::MGeometry<double,2> Figure;
 
 // Индекс текущей редактируемой фигуры
 int FigureIndex;
@@ -136,7 +150,17 @@ bool UpdateFlag;
 
 // Текущий обрабатываемый кадр
 long CurrentFrameNumber;
+
+// Целевой параметр-приемник данных о геометрии
+std::string SelectedComponentPName;
+std::string SelectedComponentParameterName;
+
+// Целевая переменная состояния-приемник данных о геометрии
+std::string SelectedComponentSName;
+std::string SelectedComponentStateName;
 // ============================================================
+
+
 // Инициализация фрейма avi-файлом
 void InitByAvi(const String &filename);
 
@@ -173,7 +197,23 @@ void __fastcall TVideoOutputFrame::DrawFrameRect(TImage *image, int x1, int y1, 
 void AddFigureRect(double l,double t,double w,double h);
 
 // Устанавливает образец графики
-void SetSampleGeometryGraphics(RDK::MGraphics<double>& samplegraphics);
+void SetSampleGeometryGraphics(RDK::MGraphics<double,2>& samplegraphics);
+
+// -------------------------
+// Методы ввода вывода точек геометрии из параметров и переменных состояния компонент
+// -------------------------
+// Отправляет набор точек в параметр компонента
+void SendToComponentParameter(const std::string &stringid, const std::string &parameter_name, int figure_index);
+
+// Отправляет набор точек в переменную состояния компонента
+void SendToComponentState(const std::string &stringid, const std::string &state_name, int figure_index);
+
+// Считывает набор точек из параметра компонента
+void ReceiveFromComponentParameter(const std::string &stringid, const std::string &parameter_name, int figure_index);
+
+// Считывает набор точек из переменной состояния компонента
+void ReceiveFromComponentState(const std::string &stringid, const std::string &state_name, int figure_index);
+// -------------------------
 
 };
 //---------------------------------------------------------------------------

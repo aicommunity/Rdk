@@ -192,7 +192,10 @@ std::string& UADataComponent::GetPropertyValue(const UId &id, std::string &value
   if(I->second.Id == id)
   {
    I->second.Property->Save(&data,true);
-   values=data.GetNodeText();
+   if(data.GetNumNodes() == 0)
+	values=data.GetNodeText();
+   else
+    data.Save(values);
    return values;
   }
  }
@@ -233,9 +236,18 @@ void UADataComponent::SetPropertyValue(const UId &id, const std::string &values)
  {
   if(I->second.Id == id)
   {
-   I->second.Property->Save(&data,true);
-   data.SetNodeText(values);
-   I->second.Property->Load(&data,true);
+   if(values.size()>0 && values[0]=='<')
+   {
+	data.Load(values,"");
+	data.RenameNode(I->second.Property->GetName());
+    I->second.Property->Load(&data,true);
+   }
+   else
+   {
+	I->second.Property->Save(&data,true);
+	data.SetNodeText(values);
+    I->second.Property->Load(&data,true);
+   }
    return;
   }
  }
@@ -312,7 +324,10 @@ std::string& UADataComponent::GetStateValue(const UId &id, std::string &values) 
   if(I->second.Id == id)
   {
    I->second.Property->Save(&data,true);
-   values=data.GetNodeText();
+   if(data.GetNumNodes() == 0)
+	values=data.GetNodeText();
+   else
+    data.Save(values);
    return values;
   }
  }
@@ -353,9 +368,18 @@ void UADataComponent::SetStateValue(const UId &id, const std::string &values)
  {
   if(I->second.Id == id)
   {
-   I->second.Property->Save(&data,true);
-   data.SetNodeText(values);
-   I->second.Property->Load(&data,true);
+   if(values.size()>0 && values[0]=='<')
+   {
+	data.Load(values,"");
+	data.RenameNode(I->second.Property->GetName());
+    I->second.Property->Load(&data,true);
+   }
+   else
+   {
+	I->second.Property->Save(&data,true);
+	data.SetNodeText(values);
+    I->second.Property->Load(&data,true);
+   }
    return;
   }
  }

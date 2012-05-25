@@ -6,47 +6,8 @@
 #include <vector>
 #include "UComponentsListFrameUnit.h"
 #include "rdk_initdll.h"
+#include "myrdk.h"
 
-// Разделяет строку на составлящие через сепаратор 'sep'
-// Возвращает число полученных строк
-template<typename CharT>
-int separatestring(const std::basic_string<CharT> &str, std::vector<std::basic_string<CharT> > &output, CharT sep, int num=0, int *lastpos=0)
-{
- typename std::basic_string<CharT>::size_type i=0,j=0;
- int size=0;
- int nnum=(num>0)?num-1:0;
-
- if(lastpos) *lastpos=0;
- output.resize(0);
- if(!str.size())
-  return 0;
-
- while(i != std::string::npos && (nnum>=0) )
- {
-  i=str.find_first_of(sep,j);
-  if(i == j)
-  {
-   j++;
-   continue;
-  }
-
-  ++size;
-  output.resize(size);
-  if(num)
-   nnum--;
-  if(i == std::string::npos)
-   output[size-1]=str.substr(j);
-  else
-   output[size-1]=str.substr(j,i-j);
-  j=i+1;
-  if(j >= str.size())
-   break;
- }
-
- if(lastpos) *lastpos=i;
-
- return size;
-}
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
@@ -68,7 +29,7 @@ void __fastcall TUComponentsListFrame::UpdatePath(void)
 
  CurrentPath.resize(0);
 
- separatestring(CurrentComponentName,CurrentPath,'.');
+ RDK::separatestring(CurrentComponentName,CurrentPath,'.');
 
  for(int i=0;i<int(CurrentPath.size());i++)
  {
@@ -135,6 +96,9 @@ void TUComponentsListFrame::UpdateInterface(void)
  UpdateParameters();
  UpdateState();
  UpdateIO();
+ UpdateParametersList();
+ UpdateStatesList();
+
 }
 
 // Обновляет параметры компонента
@@ -194,8 +158,8 @@ void TUComponentsListFrame::UpdateIO(void)
  {
   OutputsStringGrid->Cells[0][i+1]=IntToStr(i);
   OutputsStringGrid->Cells[1][i+1]=Model_GetComponentOutputDataSize(GetSelectedComponentLongId().c_str(), i);
-  OutputsStringGrid->Cells[1][i+1]=Model_GetComponentOutputDataSize(GetSelectedComponentLongId().c_str(), i);
-  OutputsStringGrid->Cells[2][i+1]=Model_GetComponentOutputElementSize(GetSelectedComponentLongId().c_str(), i);
+  OutputsStringGrid->Cells[2][i+1]=Model_GetComponentOutputDataSize(GetSelectedComponentLongId().c_str(), i);
+  OutputsStringGrid->Cells[3][i+1]=Model_GetComponentOutputElementSize(GetSelectedComponentLongId().c_str(), i);
  }
 
 
@@ -212,14 +176,95 @@ void TUComponentsListFrame::UpdateIO(void)
  {
   InputsStringGrid->Cells[0][i+1]=IntToStr(i);
   InputsStringGrid->Cells[1][i+1]=Model_GetComponentInputDataSize(GetSelectedComponentLongId().c_str(), i);
-  InputsStringGrid->Cells[1][i+1]=Model_GetComponentInputDataSize(GetSelectedComponentLongId().c_str(), i);
-  InputsStringGrid->Cells[2][i+1]=Model_GetComponentInputElementSize(GetSelectedComponentLongId().c_str(), i);
+  InputsStringGrid->Cells[2][i+1]=Model_GetComponentInputDataSize(GetSelectedComponentLongId().c_str(), i);
+  InputsStringGrid->Cells[3][i+1]=Model_GetComponentInputElementSize(GetSelectedComponentLongId().c_str(), i);
  }
 
  UpdateInterfaceFlag=false;
 }
 
 
+// Обновляет данные списка параметров
+void TUComponentsListFrame::UpdateParametersList(void)
+{
+ UpdateInterfaceFlag=true;
+
+ std::string xml_data=Model_GetComponentParametersEx(GetSelectedComponentLongId().c_str());
+ RDK::Serialize::USerStorageXML xml;
+ xml.Load(xml_data,"");
+ xml.SelectNode("Parameters");
+ int num=xml.GetNumNodes();
+
+
+ ParametersListStringGrid->RowCount=1+num;
+ ParametersListStringGrid->ColCount=1+3;
+
+ ParametersListStringGrid->Cells[0][0]="#";
+ ParametersListStringGrid->Cells[1][0]="Name";
+ ParametersListStringGrid->Cells[2][0]="Value";
+ ParametersListStringGrid->Cells[3][0]="Description";
+
+ for(int i=0;i<num;i++)
+ {
+  ParametersListStringGrid->Cells[0][i+1]=IntToStr(i);
+  xml.SelectNode(i);
+  ParametersListStringGrid->Cells[1][i+1]=xml.GetNodeName().c_str();
+  if(xml.GetNumNodes() == 0)
+   ParametersListStringGrid->Cells[2][i+1]=xml.GetNodeText().c_str();
+  else
+  {
+   std::string value;
+   xml.SaveFromNode(value);
+   ParametersListStringGrid->Cells[2][i+1]=value.c_str();
+  }
+  ParametersListStringGrid->Cells[3][i+1]=xml.GetNodeAttribute("Header").c_str();
+  xml.SelectUp();
+ }
+
+ SelectedComponentParameterName=AnsiString(ParametersListStringGrid->Cells[1][1]).c_str();
+ UpdateInterfaceFlag=false;
+}
+
+// Обновляет данные списка переменных состояния
+void TUComponentsListFrame::UpdateStatesList(void)
+{
+ UpdateInterfaceFlag=true;
+
+ std::string xml_data=Model_GetComponentParametersEx(GetSelectedComponentLongId().c_str());
+ RDK::Serialize::USerStorageXML xml;
+ xml.Load(xml_data,"");
+ xml.SelectNode("Parameters");
+ int num=xml.GetNumNodes();
+
+
+ StatesListStringGrid->RowCount=1+num;
+ StatesListStringGrid->ColCount=1+3;
+
+ StatesListStringGrid->Cells[0][0]="#";
+ StatesListStringGrid->Cells[1][0]="Name";
+ StatesListStringGrid->Cells[2][0]="Value";
+ StatesListStringGrid->Cells[3][0]="Description";
+
+ for(int i=0;i<num;i++)
+ {
+  StatesListStringGrid->Cells[0][i+1]=IntToStr(i);
+  xml.SelectNode(i);
+  StatesListStringGrid->Cells[1][i+1]=xml.GetNodeName().c_str();
+  if(xml.GetNumNodes() == 0)
+   StatesListStringGrid->Cells[2][i+1]=xml.GetNodeText().c_str();
+  else
+  {
+   std::string value;
+   xml.SaveFromNode(value);
+   StatesListStringGrid->Cells[2][i+1]=value.c_str();
+  }
+  StatesListStringGrid->Cells[3][i+1]=xml.GetNodeAttribute("Header").c_str();
+  xml.SelectUp();
+ }
+
+ SelectedComponentStateName=AnsiString(StatesListStringGrid->Cells[1][1]).c_str();
+ UpdateInterfaceFlag=false;
+}
 
 // Обновляет длинные имена выбранных компонент
 void TUComponentsListFrame::UpdateSelectedComponentInfo(void)
@@ -272,6 +317,18 @@ const std::string& TUComponentsListFrame::GetSelectedComponentLongName(void) con
 const std::string& TUComponentsListFrame::GetSelectedComponentLongId(void) const
 {
  return SelectedComponentId;
+}
+
+// Имя выделенного параметра выделенного компонента
+const std::string& TUComponentsListFrame::GetSelectedComponentParameterName(void) const
+{
+ return SelectedComponentParameterName;
+}
+
+// Имя выделенной переменной состояния выделенного компонента
+const std::string& TUComponentsListFrame::GetSelectedComponentStateName(void) const
+{
+ return SelectedComponentStateName;
 }
 
 // Длинное имя текущего компонента
@@ -439,6 +496,8 @@ void __fastcall TUComponentsListFrame::StringGridSelectCell(TObject *Sender, int
  UpdateParameters();
  UpdateState();
  UpdateIO();
+ UpdateParametersList();
+ UpdateStatesList();
 }
 //---------------------------------------------------------------------------
 
@@ -469,6 +528,8 @@ void __fastcall TUComponentsListFrame::StringGridClick(TObject *Sender)
  UpdateParameters();
  UpdateState();
  UpdateIO();
+ UpdateParametersList();
+ UpdateStatesList();
 }
 //---------------------------------------------------------------------------
 
@@ -571,6 +632,46 @@ void __fastcall TUComponentsListFrame::InputsStringGridClick(TObject *Sender)
 void __fastcall TUComponentsListFrame::PageControl1Change(TObject *Sender)
 {
  UpdateInterface();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::ParametersListStringGridClick(TObject *Sender)
+
+{
+ SelectedComponentParameterName=AnsiString(ParametersListStringGrid->Cells[1][ParametersListStringGrid->Row]).c_str();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::ParametersListStringGridDblClick(TObject *Sender)
+
+{
+ SelectedComponentParameterName=AnsiString(ParametersListStringGrid->Cells[1][ParametersListStringGrid->Row]).c_str();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::ParametersListStringGridSelectCell(TObject *Sender,
+		  int ACol, int ARow, bool &CanSelect)
+{
+ SelectedComponentParameterName=AnsiString(ParametersListStringGrid->Cells[1][ARow]).c_str();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::StatesListStringGridClick(TObject *Sender)
+{
+ SelectedComponentStateName=AnsiString(StatesListStringGrid->Cells[1][ParametersListStringGrid->Row]).c_str();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::StatesListStringGridDblClick(TObject *Sender)
+{
+ SelectedComponentStateName=AnsiString(StatesListStringGrid->Cells[1][ParametersListStringGrid->Row]).c_str();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::StatesListStringGridSelectCell(TObject *Sender, int ACol,
+		  int ARow, bool &CanSelect)
+{
+ SelectedComponentStateName=AnsiString(StatesListStringGrid->Cells[1][ARow]).c_str();
 }
 //---------------------------------------------------------------------------
 
