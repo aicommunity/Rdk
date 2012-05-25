@@ -365,7 +365,7 @@ std::basic_ostream<CharT>& operator << (std::basic_ostream<CharT>& stream, const
 template<typename CharT,typename T>
 std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, MVertex<T> &data)
 {
- std::vector<MVector<T> > temp;
+ std::vector<MVector<T,3> > temp;
  std::vector<std::string> temp2;
 
  CharT ch;
@@ -412,7 +412,7 @@ std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, MGeom
  else
   stream.unget();
 
- std::vector<MVector<T> > vtemp;
+ std::vector<MVector<T,3> > vtemp;
  std::vector<MBorder> btemp;
 
  stream>>vtemp;

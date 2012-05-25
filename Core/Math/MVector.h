@@ -12,8 +12,8 @@ See file license.txt for more information
 #ifndef MVECTOR_H
 #define MVECTOR_H
 
-#include <cmath>
-#include <cstring>
+#include <math.h>
+#include <string.h>
 #include "MMatrix.h"
 
 namespace RDK {
@@ -63,22 +63,22 @@ template<class T, unsigned Rows>
 MVector<T,Rows>::MVector(T defvalue)
 {
  if(defvalue == 0)
-  memset(Data1D,0,Rows*sizeof(T));
+  memset(MMatrix<T,Rows,1>::Data1D,0,Rows*sizeof(T));
  else
   for(int i=0;i<Rows;i++)
-   Data1D[i]=defvalue;
+   MMatrix<T,Rows,1>::Data1D[i]=defvalue;
 }
 
 template<class T, unsigned Rows>
 MVector<T,Rows>::MVector(T xv, T yv, T zv)
 {
- x=xv; y=yv; z=zv;
+ MMatrix<T,Rows,1>::x=xv; MMatrix<T,Rows,1>::y=yv; MMatrix<T,Rows,1>::z=zv;
 }
 
 template<class T, unsigned Rows>
 MVector<T,Rows>::MVector(T xv, T yv, T zv, T dv)
 {
- x=xv; y=yv; z=zv; d=dv;
+ MMatrix<T,Rows,1>::x=xv; MMatrix<T,Rows,1>::y=yv; MMatrix<T,Rows,1>::z=zv; MMatrix<T,Rows,1>::d=dv;
 }
 
 
@@ -105,14 +105,14 @@ MVector<T,Rows>::~MVector(void) {};
 template<class T, unsigned Rows>
 MVector<T,Rows>& MVector<T,Rows>::operator = (const MVector<T,Rows> &copy)
 {
- memcpy(Data1D,copy.Data1D,sizeof(T)*Rows);
+ memcpy(MMatrix<T,Rows,1>::Data1D,copy.Data1D,sizeof(T)*Rows);
  return *this;
 };
 
 template<class T, unsigned Rows>
 MVector<T,Rows>& MVector<T,Rows>::operator = (const MMatrix<T,Rows,1> &copy)
 {
- memcpy(Data1D,copy.Data1D,sizeof(T)*Rows);
+ memcpy(MMatrix<T,Rows,1>::Data1D,copy.Data1D,sizeof(T)*Rows);
  return *this;
 }
   /*
@@ -126,7 +126,7 @@ MVector<T,Rows>& MVector<T,Rows>::operator = (const T* data)
 template<class T, unsigned Rows>
 MVector<T,Rows>& MVector<T,Rows>::operator = (T value)
 {
- T* pm1=Data1D;
+ T* pm1=MMatrix<T,Rows,1>::Data1D;
 
  for(int i=0;i<Rows;i++)
   *pm1++ = value;
@@ -137,13 +137,13 @@ MVector<T,Rows>& MVector<T,Rows>::operator = (T value)
 template<class T, unsigned Rows>
 T& MVector<T,Rows>::operator () (int i)
 {
- return Data1D[i];
+ return MMatrix<T,Rows,1>::Data1D[i];
 }
 
 template<class T, unsigned Rows>
 const T& MVector<T,Rows>::operator () (int i) const
 {
- return Data1D[i];
+ return MMatrix<T,Rows,1>::Data1D[i];
 }
 // --------------------------
 

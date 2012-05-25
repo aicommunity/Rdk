@@ -12,7 +12,7 @@ unsigned long long GetCurrentStartupTime(void)
 {
  time_t timedata;
  time(&timedata);
- return timedata;
+ return timedata*1000;
 }
 
 // ¬ычисл€ет разницу во времени в миллисекундах

@@ -227,7 +227,7 @@ const T* operator -> (void) const
 protected:
 operator T* (void) const
 {
- return PData;
+ return UPtr<T>::PData;
 }
 public:
 				/*

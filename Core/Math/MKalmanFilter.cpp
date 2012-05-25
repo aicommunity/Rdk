@@ -33,5 +33,5 @@ MKalmanFilter::~MKalmanFilter(void)
 
 }
 
-#endif MKALMANFILTER_H
+#endif
 

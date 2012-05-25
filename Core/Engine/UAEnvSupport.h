@@ -279,9 +279,9 @@ int FindConnector(const ULinkSideT<T> &connector);
 // --------------------------
 // Операторы
 // --------------------------
-friend bool operator < (const ULinkT<T> &link1, const ULinkT<T> &link2);
-friend bool operator == (const ULinkT<T> &link1, const ULinkT<T> &link2);
-friend bool operator != (const ULinkT<T> &link1, const ULinkT<T> &link2);
+//friend bool operator < (const ULinkT<T> &link1, const ULinkT<T> &link2);
+//friend bool operator == (const ULinkT<T> &link1, const ULinkT<T> &link2);
+//friend bool operator != (const ULinkT<T> &link1, const ULinkT<T> &link2);
 // --------------------------
 };
 

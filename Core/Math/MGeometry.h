@@ -14,8 +14,9 @@ See file license.txt for more information
 
 #include <vector>
 #include <string>
-#include <cstddef>
-#include "MTheormec.h"
+#include <stddef.h>
+#include "MVector.h"
+//#include "MTheormec.h"
 
 namespace RDK {
 
@@ -341,7 +342,7 @@ template<class U> friend unsigned char* operator >> (const MVertex<U> &v, unsign
 template<class U> friend const unsigned char* operator << (MVertex<U> &v, const unsigned char* p);
 
 // Поворот тензором P
-MVertex& operator *= (const MRotationTensor<T> &P);
+//MVertex& operator *= (const MRotationTensor<T> &P);
 
 // Трансляция на вектор v
 MVertex& operator += (const MVector<T,3> &v);
@@ -422,7 +423,7 @@ template<class U> friend unsigned char* operator >> (const MGeometry<U> &v, unsi
 template<class U> friend const unsigned char* operator << (MGeometry<U> &v, const unsigned char* p);
 
 // Поворот тензором P
-MGeometry<T>& operator *= (const MRotationTensor<T> &P);
+//MGeometry<T>& operator *= (const MRotationTensor<T> &P);
 
 // Трансляция на вектор v
 MGeometry<T>& operator += (const MVector<T,3> &v);
@@ -702,15 +703,15 @@ unsigned char* operator >> (const MVertex<T> &v, unsigned char* p)
  if(!p)
   return 0;
 
- std::memcpy(p,&v.NumVertex,sizeof(v.NumVertex)); p+=sizeof(v.NumVertex);
+ memcpy(p,&v.NumVertex,sizeof(v.NumVertex)); p+=sizeof(v.NumVertex);
  for(size_t i=0;i<v.NumVertex;i++)
   p=v.Vertex[i]>>p;
  for(size_t i=0;i<v.NumVertex;i++)
  {
   size_t size=v.Names[i].size();
-  std::memcpy(p,&size,sizeof(size)); p+=sizeof(size);
+  memcpy(p,&size,sizeof(size)); p+=sizeof(size);
   if(size>0)
-   std::memcpy(p,v.Names[i].c_str(),size*sizeof(char)); p+=size*sizeof(char);
+   memcpy(p,v.Names[i].c_str(),size*sizeof(char)); p+=size*sizeof(char);
  }
 
  return p;
@@ -724,21 +725,21 @@ const unsigned char* operator << (MVertex<T> &v, const unsigned char* p)
   return 0;
 
  size_t temp;
- std::memcpy(&temp,p,sizeof(v.NumVertex)); p+=sizeof(v.NumVertex);
+ memcpy(&temp,p,sizeof(v.NumVertex)); p+=sizeof(v.NumVertex);
  v.SetNumVertex(temp);
  for(size_t i=0;i<v.NumVertex;i++)
   p=v.Vertex[i]<<p;
  for(size_t i=0;i<v.NumVertex;i++)
  {
   size_t size;
-  std::memcpy(&size,p,sizeof(size)); p+=sizeof(size);
+  memcpy(&size,p,sizeof(size)); p+=sizeof(size);
   v.Names[i].resize(size);
   if(size>0)
-   std::memcpy(&v.Names[i][0],p,size*sizeof(char)); p+=size*sizeof(char);
+   memcpy(&v.Names[i][0],p,size*sizeof(char)); p+=size*sizeof(char);
  }
  return p;
 }
-
+/*
 // Поворот тензором P
 template<class T>
 MVertex<T>& MVertex<T>::operator *= (const MRotationTensor<T> &P)
@@ -754,7 +755,7 @@ MVertex<T>& MVertex<T>::operator *= (const MRotationTensor<T> &P)
 
  return *this;
 }
-
+*/
 // Трансляция на вектор v
 template<class T>
 MVertex<T>& MVertex<T>::operator += (const MVector<T,3> &v)
@@ -939,7 +940,7 @@ unsigned char* operator >> (const MGeometry<T> &v, unsigned char* p)
 
  p=operator >> (v.Vertex,p);
 
- std::memcpy(p,&v.NumBorders,sizeof(v.NumBorders));
+ memcpy(p,&v.NumBorders,sizeof(v.NumBorders));
  p+=sizeof(v.NumBorders);
  for(size_t i=0;i<v.NumBorders;i++)
   p=v.Borders[i]>>p;
@@ -957,7 +958,7 @@ const unsigned char* operator << (MGeometry<T> &v, const unsigned char* p)
  p=operator << (v.Vertex,p);
 
  size_t temp;
- std::memcpy(&temp,p,sizeof(v.NumBorders));
+ memcpy(&temp,p,sizeof(v.NumBorders));
  p+=sizeof(temp);
  v.SetNumBorders(temp);
  for(size_t i=0;i<v.NumBorders;i++)
@@ -965,14 +966,14 @@ const unsigned char* operator << (MGeometry<T> &v, const unsigned char* p)
 
  return p;
 }
-
+/*
 // Поворот тензором P
 template<class T>
 MGeometry<T>& MGeometry<T>::operator *= (const MRotationTensor<T> &P)
 {
  Vertex*=P;
  return *this;
-}
+}*/
 
 // Трансляция на вектор v
 template<class T>

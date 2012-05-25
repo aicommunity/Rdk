@@ -16,7 +16,7 @@ See file license.txt for more information
 #include <stdlib.h>
 #include <math.h>
 #include "MVector.h"
-#include "MTensor.h"
+//#include "MTensor.h"
 
 namespace RDK {
 
@@ -41,7 +41,7 @@ MRotationTensor(const MRotationTensor<DataT>& P)
 // Перегружаемые операторы
 MRotationTensor<DataT>& operator = (const MRotationTensor<DataT> &P )
 { m=P.m; angle=P.angle; return *this; };
-
+/*
 MRotationTensor<DataT>& operator = (const MTensor<DataT> &P)
 {
  m=0.0;
@@ -54,7 +54,7 @@ MRotationTensor<DataT>& operator = (const MTensor<DataT> &P)
 
  angle=((angle-1)/2);
  return *this;
-};
+};*/
 
 MRotationTensor<DataT>& operator *= (const MRotationTensor<DataT> &P );
 

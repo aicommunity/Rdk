@@ -12,13 +12,13 @@ See file license.txt for more information
 #ifndef UMATH_CPP
 #define UMATH_CPP
 
-#include "MBody.cpp"
-#include "MCSystem.cpp"
-#include "MDyad.cpp"
-#include "MGeometry.cpp"
-#include "MGraphics.cpp"
-#include "MTensor.cpp"
-#include "MTheormec.cpp"
+//#include "MBody.cpp"
+//#include "MCSystem.cpp"
+//#include "MDyad.cpp"
+//#include "MGeometry.cpp"
+//#include "MGraphics.cpp"
+//#include "MTensor.cpp"
+//#include "MTheormec.cpp"
 #include "MVector.cpp"
 #include "MUIOStream.cpp"
 #include "MUXMLSerialize.cpp"

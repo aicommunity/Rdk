@@ -12,6 +12,7 @@ See file license.txt for more information
 #ifndef MBODY_H
 #define MBODY_H
 
+#include <vector>
 #include<stdio.h>
 #include<stdlib.h>
 #include<math.h>

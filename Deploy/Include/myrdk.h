@@ -15,6 +15,7 @@
 #include "../../Core/Graphics/UGraphics.h"
 #include "../../Core/Graphics/UGraphicsXMLSerialize.h"
 #include "../../Core/Graphics/UGraphicsBinarySerialize.h"
+#include "rdk_initlib.h"
 
 namespace RDK {
 

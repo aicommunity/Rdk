@@ -178,7 +178,7 @@ MVector<T,3> CalcTranslation(const MCSystem<T> &csystem)
 {
  return MVector<T,3>(csystem.Location-this->Location);
 }
-
+/*
 // Вычисляет тензор поворота этой СК относительно заданной
 MRotationTensor<T> CalcRotation(const MCSystem<T> &csystem)
 {
@@ -196,7 +196,7 @@ MRotationTensor<T> CalcRotation(const MCSystem<T> &csystem)
  rotation=temp;
 
  return rotation;
-};
+};*/
 
 // --------------------------
 

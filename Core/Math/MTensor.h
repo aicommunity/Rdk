@@ -13,8 +13,8 @@ See file license.txt for more information
 #ifndef MTENSOR_H
 #define MTENSOR_H
 
-#include "MDyad.h"
 #include <vector>
+#include "MDyad.h"
 
 namespace RDK {
 

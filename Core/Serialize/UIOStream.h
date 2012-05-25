@@ -153,7 +153,7 @@ std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, std::
   stream.unget();
 
  do {
-  pair<T1,T2> temp;
+  std::pair<T1,T2> temp;
   stream>>temp;
   data.insert(temp);
   ch=stream.get();
