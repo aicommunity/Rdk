@@ -211,9 +211,9 @@ unsigned char* operator >> (const MBorder &v, unsigned char* p)
  if(!p)
   return 0;
 
- std::memcpy(p,&v.NumVertex,sizeof(v.NumVertex)); p+=sizeof(v.NumVertex);
+ memcpy(p,&v.NumVertex,sizeof(v.NumVertex)); p+=sizeof(v.NumVertex);
  if(v.NumVertex)
-  std::memcpy(p,&v.VertexIndex[0],sizeof(double)*v.NumVertex);
+  memcpy(p,&v.VertexIndex[0],sizeof(double)*v.NumVertex);
  return p+sizeof(double)*v.NumVertex;
 }
 
@@ -224,10 +224,10 @@ const unsigned char* operator << (MBorder &v, const unsigned char* p)
   return 0;
 
  size_t temp;
- std::memcpy(&temp,p,sizeof(v.NumVertex)); p+=sizeof(v.NumVertex);
+ memcpy(&temp,p,sizeof(v.NumVertex)); p+=sizeof(v.NumVertex);
  v.SetNumVertex(temp);
  if(v.NumVertex)
-  std::memcpy(&v.VertexIndex[0],p,sizeof(double)*v.NumVertex);
+  memcpy(&v.VertexIndex[0],p,sizeof(double)*v.NumVertex);
  return p+sizeof(double)*v.NumVertex;
 }
 // --------------------------

@@ -135,7 +135,7 @@ virtual ~UShare(void)
 // --------------------------
 // Методы управления данными
 // --------------------------
-const T& Get(void) const
+const T Get(void) const
 {
  return (Pointer)?*Pointer:Data;
 }

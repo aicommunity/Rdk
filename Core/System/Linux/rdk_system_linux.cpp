@@ -20,9 +20,16 @@ unsigned long long CalcDiffTime(unsigned long long time1, unsigned long long tim
 {
  if(time1>time2)
   return time1-time2;
- else
-  return time2-time1;
+ return time2-time1;
 }
 
+
+// Усыпляет процесс на заданное число миллисекунд
+void Sleep(int value)
+{
+ usleep(value*1000);
+}
+
+}
 #endif
 
