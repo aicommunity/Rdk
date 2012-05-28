@@ -12,7 +12,7 @@ See file license.txt for more information
 #ifndef MGEOMETRY_CPP
 #define MGEOMETRY_CPP
 //#include <stdio.h>
-#include <cstring>
+#include <string.h>
 #include "MGeometry.h"
 
 namespace RDK {

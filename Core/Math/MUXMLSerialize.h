@@ -418,7 +418,7 @@ template<typename T, int Rows>
 USerStorageXML& operator >> (USerStorageXML& storage, MGeometry<T, Rows> &data)
 {
  //Временные переменные
- MVertex<T> varVertexVector;
+ MVertex<T,Rows> varVertexVector;
  std::vector<MBorder> varBorders;
 
  if(storage.GetNodeAttribute("Type") != "MGeometry")

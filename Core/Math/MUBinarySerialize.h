@@ -286,7 +286,7 @@ USerStorageBinary& operator << (USerStorageBinary& storage, const MGeometry<T, R
 template<typename T, int Rows>
 USerStorageBinary& operator >> (USerStorageBinary& storage, MGeometry<T, Rows> &data)
 {
- MVertex<T> vtemp;
+ MVertex<T,Rows> vtemp;
  std::vector<MBorder> btemp;
 
  operator >> (storage,vtemp);

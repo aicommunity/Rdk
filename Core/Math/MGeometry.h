@@ -15,20 +15,20 @@ See file license.txt for more information
 #include <vector>
 #include <string>
 #include <stddef.h>
-#include "MVector.h"
 //#include "MTheormec.h"
+#include "MVector.h"
 
 namespace RDK {
 
-template<class T>
+template<class T, int Rows>
 class MRay
 {
 public: // Данные
 // Начало луча
-MVector<T,3> Origin;
+MVector<T,Rows> Origin;
 
 // Направление луча
-MVector<T,3> Direction;
+MVector<T,Rows> Direction;
 
 public: // Методы
 // --------------------------
@@ -38,7 +38,7 @@ MRay(void)
 {};
 MRay(const MRay &copy)
 { *this=copy; };
-MRay(MVector<T,3> &o, MVector<T,3> &d)
+MRay(MVector<T,Rows> &o, MVector<T,Rows> &d)
 { Origin=o; Direction=d; };
 // --------------------------
 
@@ -69,15 +69,15 @@ inline bool operator != (const MRay &v) const
 // Методы счета
 // --------------------------
 // Вычисляет вектор точки, смещенной вдоль луча на расстояние t
-inline MVector<T,3> CalcPoint(T t)
+inline MVector<T,Rows> CalcPoint(T t)
 { return Origin+Direction*t; };
 
 // Вычисляет точку пересечения лучей
 // Возвращает true если пересечение существует
-bool CalcIntersection(const MRay<T> &r, MVector<T,3> &res)
+bool CalcIntersection(const MRay<T,Rows> &r, MVector<T,Rows> &res)
 {
  T t;
- MVector<T,3> v1,v2;
+ MVector<T,Rows> v1,v2;
  int i;
 
  v1=r.Origin-Origin;
@@ -103,12 +103,12 @@ bool CalcIntersection(const MRay<T> &r, MVector<T,3> &res)
 };
 
 // Класс плоскость
-template<class T>
+template<class T, int Rows>
 class MPlane
 {
 public: // Данные
 // Нормаль к плоскости
-MVector<T,3> Normal;
+MVector<T,Rows> Normal;
 
 // Смещение точки плоскости вдоль нормали от начала координат
 T Distance;
@@ -121,7 +121,7 @@ MPlane(void)
 { Normal=0; Distance=0; };
 MPlane(const MPlane &copy)
 { *this=copy; };
-MPlane(MVector<T,3> n, T dist)
+MPlane(MVector<T,Rows> n, T dist)
 { Normal=n; Distance=dist; };
 virtual ~MPlane(void){};
 // --------------------------
@@ -154,7 +154,7 @@ inline bool operator != (const MPlane &v) const
 // --------------------------
 // Вычисляет точку пересечения луча с плоскостью
 // Возвращает true если пересечение существует
-bool CalcIntersection(MRay<T> ray, MVector<T,3> &p)
+bool CalcIntersection(MRay<T,Rows> ray, MVector<T,Rows> &p)
 {
  T alfa,beta,t;
 
@@ -251,12 +251,12 @@ friend const unsigned char* operator << (MBorder &v, const unsigned char* p);
 };
 
 // Набор точек объекта
-template<class T>
+template<class T, int Rows>
 class MVertex
 {
 protected: // Данные
 // Вектора вершин
-std::vector<MVector<T,3> > Vertex;
+std::vector<MVector<T,Rows> > Vertex;
 
 // Имена вершин
 std::vector<std::string> Names;
@@ -266,7 +266,7 @@ protected: // Временные переменные
 size_t NumVertex;
 
 // Указатель на текущую вершину
-MVector<T,3>* PVertex;
+MVector<T,Rows>* PVertex;
 
 public: // Методы
 // --------------------------
@@ -274,7 +274,7 @@ public: // Методы
 // --------------------------
 MVertex(void);
 MVertex(const MVertex &copy);
-MVertex(const std::vector<MVector<T,3> > &copy);
+MVertex(const std::vector<MVector<T,Rows> > &copy);
 MVertex(const std::vector<std::string> &copy);
 MVertex(size_t na);
 virtual ~MVertex(void);
@@ -287,7 +287,7 @@ virtual ~MVertex(void);
 void Clear(void);
 
 // Вектора вершин
-const std::vector<MVector<T,3> >& GetVertex(void) const;
+const std::vector<MVector<T,Rows> >& GetVertex(void) const;
 
 // Имена вершин
 const std::vector<std::string>& GetNames(void) const;
@@ -297,7 +297,7 @@ bool SetNames(const std::vector<std::string> &copy);
 std::string& UseName(size_t index);
 
 // Вектора вершин
-bool SetVertexVector(const std::vector<MVector<T,3> > &copy);
+bool SetVertexVector(const std::vector<MVector<T,Rows> > &copy);
 
 // Число вершин
 size_t GetNumVertex(void) const;
@@ -309,23 +309,23 @@ bool SetNumVertex(size_t value);
 // --------------------------
 // Оператор копирования
 MVertex& operator = (const MVertex &copy);
-MVertex& operator = (const std::vector<MVector<T,3> > &copy);
+MVertex& operator = (const std::vector<MVector<T,Rows> > &copy);
 MVertex& operator = (const std::vector<std::string> &copy);
 
 // Оператор доступа к индексам вершин
-inline MVector<T,3>& operator [] (int index);
+inline MVector<T,Rows>& operator [] (int index);
 
 // Оператор доступа к текущей вершине
-inline MVector<T,3>& operator () (void);
+inline MVector<T,Rows>& operator () (void);
 
 // Операторы позиционирования текущей вершины
-inline MVector<T,3>& operator = (int index);
-inline MVector<T,3>& operator += (int index);
-inline MVector<T,3>& operator -= (int index);
-inline MVector<T,3>& operator ++ (int);
-inline MVector<T,3>& operator ++ (void);
-inline MVector<T,3>& operator -- (int);
-inline MVector<T,3>& operator -- (void);
+inline MVector<T,Rows>& operator = (int index);
+inline MVector<T,Rows>& operator += (int index);
+inline MVector<T,Rows>& operator -= (int index);
+inline MVector<T,Rows>& operator ++ (int);
+inline MVector<T,Rows>& operator ++ (void);
+inline MVector<T,Rows>& operator -- (int);
+inline MVector<T,Rows>& operator -- (void);
 
 // Операторы сравнения
 bool operator == (const MVertex &v) const;
@@ -336,29 +336,29 @@ bool operator != (const MVertex &v) const;
 // Операторы взаимодействия с другими объектами
 // --------------------------
 // Вывод в массив
-template<class U> friend unsigned char* operator >> (const MVertex<U> &v, unsigned char* p);
+template<class U> friend unsigned char* operator >> (const MVertex<U,Rows> &v, unsigned char* p);
 
 // Ввод из массива
-template<class U> friend const unsigned char* operator << (MVertex<U> &v, const unsigned char* p);
+template<class U> friend const unsigned char* operator << (MVertex<U,Rows> &v, const unsigned char* p);
 
 // Поворот тензором P
 //MVertex& operator *= (const MRotationTensor<T> &P);
 
 // Трансляция на вектор v
-MVertex& operator += (const MVector<T,3> &v);
+//MVertex& operator += (const MVector<T,Rows> &v);
 
 // Трансляция на вектор -v
-MVertex& operator -= (const MVector<T,3> &v);
+//MVertex& operator -= (const MVector<T,Rows> &v);
 // --------------------------
 };
 
 // Геометрия объекта
-template<class T>
+template<class T, int Rows>
 class MGeometry
 {
 protected: // Данные
 // Вектора вершин
-MVertex<T> Vertex;
+MVertex<T,Rows> Vertex;
 
 // Границы объекта
 std::vector<MBorder> Borders;
@@ -372,7 +372,7 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 MGeometry(void);
-MGeometry(const MGeometry<T> &copy);
+MGeometry(const MGeometry<T,Rows> &copy);
 MGeometry(size_t na, size_t nf);
 virtual ~MGeometry(void);
 // --------------------------
@@ -384,8 +384,8 @@ virtual ~MGeometry(void);
 void Clear(void);
 
 // Вектора вершин
-const MVertex<T>& GetVertex(void) const;
-bool SetVertex(const MVertex<T> &copy);
+const MVertex<T,Rows>& GetVertex(void) const;
+bool SetVertex(const MVertex<T,Rows> &copy);
 
 // Границы объекта
 const std::vector<MBorder>& GetBorders(void) const;
@@ -400,36 +400,36 @@ bool SetNumBorders(size_t value);
 // Операторы управления
 // --------------------------
 // Оператор копирования
-MGeometry<T>& operator = (const MGeometry<T> &copy);
+MGeometry<T,Rows>& operator = (const MGeometry<T,Rows> &copy);
 
 // Оператор доступа к описанию границы по индексу n в массиве границ
 MBorder& operator[] (int n);
 
 // Оператор доступа к векторам вершины по индексу n в массиве векторов
-inline MVertex<T>& operator() (void);
+inline MVertex<T,Rows>& operator() (void);
 
 // Операторы сравнения
-bool operator == (const MGeometry<T> &v) const;
-bool operator != (const MGeometry<T> &v) const;
+bool operator == (const MGeometry<T,Rows> &v) const;
+bool operator != (const MGeometry<T,Rows> &v) const;
 // --------------------------
 
 // --------------------------
 // Операторы взаимодействия с другими объектами
 // --------------------------
 // Вывод в массив
-template<class U> friend unsigned char* operator >> (const MGeometry<U> &v, unsigned char* p);
+template<class U> friend unsigned char* operator >> (const MGeometry<U,Rows> &v, unsigned char* p);
 
 // Ввод из массива
-template<class U> friend const unsigned char* operator << (MGeometry<U> &v, const unsigned char* p);
+template<class U> friend const unsigned char* operator << (MGeometry<U,Rows> &v, const unsigned char* p);
 
 // Поворот тензором P
-//MGeometry<T>& operator *= (const MRotationTensor<T> &P);
+//MGeometry<T,Rows>& operator *= (const MRotationTensor<T> &P);
 
 // Трансляция на вектор v
-MGeometry<T>& operator += (const MVector<T,3> &v);
+//MGeometry<T,Rows>& operator += (const MVector<T,Rows> &v);
 
 // Трансляция на вектор -v
-MGeometry<T>& operator -= (const MVector<T,3> &v);
+//MGeometry<T,Rows>& operator -= (const MVector<T,Rows> &v);
 // --------------------------
 };
 
@@ -444,41 +444,41 @@ MGeometry<T>& operator -= (const MVector<T,3> &v);
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-template<class T>
-MVertex<T>::MVertex(void)
+template<class T, int Rows>
+MVertex<T,Rows>::MVertex(void)
 {
  NumVertex=0;
  PVertex=0;
 }
 
-template<class T>
-MVertex<T>::MVertex(const MVertex<T> &copy)
+template<class T, int Rows>
+MVertex<T,Rows>::MVertex(const MVertex<T,Rows> &copy)
 {
  *this=copy;
 }
 
-template<class T>
-MVertex<T>::MVertex(const std::vector<MVector<T,3> > &copy)
+template<class T, int Rows>
+MVertex<T,Rows>::MVertex(const std::vector<MVector<T,Rows> > &copy)
 {
  *this=copy;
 }
 
-template<class T>
-MVertex<T>::MVertex(const std::vector<std::string> &copy)
+template<class T, int Rows>
+MVertex<T,Rows>::MVertex(const std::vector<std::string> &copy)
 {
  *this=copy;
 }
 
-template<class T>
-MVertex<T>::MVertex(size_t na)
+template<class T, int Rows>
+MVertex<T,Rows>::MVertex(size_t na)
 {
  NumVertex=0;
  PVertex=0;
  SetNumVertex(na);
 }
 
-template<class T>
-MVertex<T>::~MVertex(void)
+template<class T, int Rows>
+MVertex<T,Rows>::~MVertex(void)
 {
  NumVertex=0;
  PVertex=0;
@@ -489,8 +489,8 @@ MVertex<T>::~MVertex(void)
 // Методы управления
 // --------------------------
 // Очищает фигуру
-template<class T>
-void MVertex<T>::Clear(void)
+template<class T, int Rows>
+void MVertex<T,Rows>::Clear(void)
 {
  Vertex.clear();
  Names.clear();
@@ -499,21 +499,21 @@ void MVertex<T>::Clear(void)
 }
 
 // Вектора вершин
-template<class T>
-const std::vector<MVector<T,3> >& MVertex<T>::GetVertex(void) const
+template<class T, int Rows>
+const std::vector<MVector<T,Rows> >& MVertex<T,Rows>::GetVertex(void) const
 {
  return Vertex;
 }
 
 // Имена вершин
-template<class T>
-const std::vector<std::string>& MVertex<T>::GetNames(void) const
+template<class T, int Rows>
+const std::vector<std::string>& MVertex<T,Rows>::GetNames(void) const
 {
  return Names;
 }
 
-template<class T>
-bool MVertex<T>::SetNames(const std::vector<std::string> &copy)
+template<class T, int Rows>
+bool MVertex<T,Rows>::SetNames(const std::vector<std::string> &copy)
 {
    SetNumVertex(copy.size());
    Names=copy;
@@ -521,15 +521,15 @@ bool MVertex<T>::SetNames(const std::vector<std::string> &copy)
 }
 
 // Имя вершины
-template<class T>
-std::string& MVertex<T>::UseName(size_t index)
+template<class T, int Rows>
+std::string& MVertex<T,Rows>::UseName(size_t index)
 {
  return Names[index];
 }
 
 // Векторы вершин
-template<class T>
-bool MVertex<T>::SetVertexVector(const std::vector<MVector<T,3> > &copy)
+template<class T, int Rows>
+bool MVertex<T,Rows>::SetVertexVector(const std::vector<MVector<T,Rows> > &copy)
 {
    SetNumVertex(copy.size());
    Vertex=copy;
@@ -537,14 +537,14 @@ bool MVertex<T>::SetVertexVector(const std::vector<MVector<T,3> > &copy)
 }
 
 // Число вершин
-template<class T>
-size_t MVertex<T>::GetNumVertex(void) const
+template<class T, int Rows>
+size_t MVertex<T,Rows>::GetNumVertex(void) const
 {
  return NumVertex;
 }
 
-template<class T>
-bool MVertex<T>::SetNumVertex(size_t value)
+template<class T, int Rows>
+bool MVertex<T,Rows>::SetNumVertex(size_t value)
 {
  if(NumVertex == value)
   return true;
@@ -573,8 +573,8 @@ bool MVertex<T>::SetNumVertex(size_t value)
 // Операторы управления
 // --------------------------
 // Оператор копирования
-template<class T>
-MVertex<T>& MVertex<T>::operator = (const MVertex<T> &copy)
+template<class T, int Rows>
+MVertex<T,Rows>& MVertex<T,Rows>::operator = (const MVertex<T,Rows> &copy)
 {
  Vertex=copy.Vertex;
  NumVertex=copy.NumVertex;
@@ -590,8 +590,8 @@ MVertex<T>& MVertex<T>::operator = (const MVertex<T> &copy)
  return *this;
 }
 
-template<class T>
-MVertex<T>& MVertex<T>::operator = (const std::vector<MVector<T,3> > &copy)
+template<class T, int Rows>
+MVertex<T,Rows>& MVertex<T,Rows>::operator = (const std::vector<MVector<T,Rows> > &copy)
 {
  ptrdiff_t curr=0;
  if(NumVertex)
@@ -611,8 +611,8 @@ MVertex<T>& MVertex<T>::operator = (const std::vector<MVector<T,3> > &copy)
  return *this;
 }
 
-template<class T>
-MVertex<T>& MVertex<T>::operator = (const std::vector<std::string> &copy)
+template<class T, int Rows>
+MVertex<T,Rows>& MVertex<T,Rows>::operator = (const std::vector<std::string> &copy)
 {
  SetNumVertex(copy.size());
  Names=copy;
@@ -620,74 +620,74 @@ MVertex<T>& MVertex<T>::operator = (const std::vector<std::string> &copy)
 }
 
 // Оператор доступа к индексам вершин
-template<class T>
-inline MVector<T,3>& MVertex<T>::operator [] (int index)
+template<class T, int Rows>
+inline MVector<T,Rows>& MVertex<T,Rows>::operator [] (int index)
 {
  PVertex=&Vertex[index];
  return *PVertex;
 }
 
 // Оператор доступа к текущей вершине
-template<class T>
-inline MVector<T,3>& MVertex<T>::operator () (void)
+template<class T, int Rows>
+inline MVector<T,Rows>& MVertex<T,Rows>::operator () (void)
 {
  return *PVertex;
 }
 
 // Операторы позиционирования текущей вершины
-template<class T>
-inline MVector<T,3>& MVertex<T>::operator = (int index)
+template<class T, int Rows>
+inline MVector<T,Rows>& MVertex<T,Rows>::operator = (int index)
 {
  return operator [] (index);
 }
 
-template<class T>
-inline MVector<T,3>& MVertex<T>::operator += (int index)
+template<class T, int Rows>
+inline MVector<T,Rows>& MVertex<T,Rows>::operator += (int index)
 {
  PVertex+=index;
  return *PVertex;
 }
 
-template<class T>
-inline MVector<T,3>& MVertex<T>::operator -= (int index)
+template<class T, int Rows>
+inline MVector<T,Rows>& MVertex<T,Rows>::operator -= (int index)
 {
  PVertex-=index;
  return *PVertex;
 }
 
-template<class T>
-inline MVector<T,3>& MVertex<T>::operator ++ (int)
+template<class T, int Rows>
+inline MVector<T,Rows>& MVertex<T,Rows>::operator ++ (int)
 {
  return *PVertex++;
 }
 
-template<class T>
-inline MVector<T,3>& MVertex<T>::operator ++ (void)
+template<class T, int Rows>
+inline MVector<T,Rows>& MVertex<T,Rows>::operator ++ (void)
 {
  return *(++PVertex);
 }
 
-template<class T>
-inline MVector<T,3>& MVertex<T>::operator -- (int)
+template<class T, int Rows>
+inline MVector<T,Rows>& MVertex<T,Rows>::operator -- (int)
 {
  return *PVertex--;
 }
 
-template<class T>
-inline MVector<T,3>& MVertex<T>::operator -- (void)
+template<class T, int Rows>
+inline MVector<T,Rows>& MVertex<T,Rows>::operator -- (void)
 {
  return *(--PVertex);
 }
 
 // Операторы сравнения
-template<class T>
-bool MVertex<T>::operator == (const MVertex<T> &v) const
+template<class T, int Rows>
+bool MVertex<T,Rows>::operator == (const MVertex<T,Rows> &v) const
 {
  return (Vertex == v.Vertex);
 }
 
-template<class T>
-bool MVertex<T>::operator != (const MVertex<T> &v) const
+template<class T, int Rows>
+bool MVertex<T,Rows>::operator != (const MVertex<T,Rows> &v) const
 {
  return (Vertex != v.Vertex);
 }
@@ -697,8 +697,8 @@ bool MVertex<T>::operator != (const MVertex<T> &v) const
 // Операторы взаимодействия с другими объектами
 // --------------------------
 // Вывод в массив
-template<class T>
-unsigned char* operator >> (const MVertex<T> &v, unsigned char* p)
+template<class T, int Rows>
+unsigned char* operator >> (const MVertex<T,Rows> &v, unsigned char* p)
 {
  if(!p)
   return 0;
@@ -718,8 +718,8 @@ unsigned char* operator >> (const MVertex<T> &v, unsigned char* p)
 }
 
 // Ввод из массива
-template<class T>
-const unsigned char* operator << (MVertex<T> &v, const unsigned char* p)
+template<class T, int Rows>
+const unsigned char* operator << (MVertex<T,Rows> &v, const unsigned char* p)
 {
  if(!p)
   return 0;
@@ -741,13 +741,13 @@ const unsigned char* operator << (MVertex<T> &v, const unsigned char* p)
 }
 /*
 // Поворот тензором P
-template<class T>
-MVertex<T>& MVertex<T>::operator *= (const MRotationTensor<T> &P)
+template<class T, int Rows>
+MVertex<T,Rows>& MVertex<T,Rows>::operator *= (const MRotationTensor<T> &P)
 {
  if(!NumVertex)
   return *this;
 
- MVector<T,3>* pv=&Vertex[0];
+ MVector<T,Rows>* pv=&Vertex[0];
  for(size_t i=0;i<NumVertex;i++,pv++)
  {
   (*pv)=P*(*pv);
@@ -755,15 +755,15 @@ MVertex<T>& MVertex<T>::operator *= (const MRotationTensor<T> &P)
 
  return *this;
 }
-*/
+
 // Трансляция на вектор v
-template<class T>
-MVertex<T>& MVertex<T>::operator += (const MVector<T,3> &v)
+template<class T, int Rows>
+MVertex<T,Rows>& MVertex<T,Rows>::operator += (const MVector<T,Rows> &v)
 {
  if(!NumVertex)
   return *this;
 
- MVector<T,3>* pv=&Vertex[0];
+ MVector<T,Rows>* pv=&Vertex[0];
  for(size_t i=0;i<NumVertex;i++,pv++)
  {
   (*pv)+=v;
@@ -773,20 +773,20 @@ MVertex<T>& MVertex<T>::operator += (const MVector<T,3> &v)
 }
 
 // Трансляция на вектор -v
-template<class T>
-MVertex<T>& MVertex<T>::operator -= (const MVector<T,3> &v)
+template<class T, int Rows>
+MVertex<T,Rows>& MVertex<T,Rows>::operator -= (const MVector<T,Rows> &v)
 {
  if(!NumVertex)
   return *this;
 
- MVector<T,3>* pv=&Vertex[0];
+ MVector<T,Rows>* pv=&Vertex[0];
  for(size_t i=0;i<NumVertex;i++,pv++)
  {
   (*pv)-=v;
  }
 
  return *this;
-}
+}              */
 // --------------------------
 
 
@@ -794,28 +794,28 @@ MVertex<T>& MVertex<T>::operator -= (const MVector<T,3> &v)
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-template<class T>
-MGeometry<T>::MGeometry(void)
+template<class T, int Rows>
+MGeometry<T,Rows>::MGeometry(void)
 {
  // Число границ
  NumBorders=0;
 }
 
-template<class T>
-MGeometry<T>::MGeometry(const MGeometry &copy)
+template<class T, int Rows>
+MGeometry<T,Rows>::MGeometry(const MGeometry &copy)
 {
  *this=copy;
 }
 
-template<class T>
-MGeometry<T>::MGeometry(size_t na, size_t nf)
+template<class T, int Rows>
+MGeometry<T,Rows>::MGeometry(size_t na, size_t nf)
 {
  Vertex.SetNumVertex(na);
  SetNumBorders(nf);
 }
 
-template<class T>
-MGeometry<T>::~MGeometry(void)
+template<class T, int Rows>
+MGeometry<T,Rows>::~MGeometry(void)
 {
  NumBorders=0;
 }
@@ -825,36 +825,36 @@ MGeometry<T>::~MGeometry(void)
 // Методы управления
 // --------------------------
 // Очищает фигуру
-template<class T>
-void MGeometry<T>::Clear(void)
+template<class T, int Rows>
+void MGeometry<T,Rows>::Clear(void)
 {
  Vertex.Clear();
  Borders.clear();
 }
 
 // Вектора вершин
-template<class T>
-const MVertex<T>& MGeometry<T>::GetVertex(void) const
+template<class T, int Rows>
+const MVertex<T,Rows>& MGeometry<T,Rows>::GetVertex(void) const
 {
  return Vertex;
 }
 
-template<class T>
-bool MGeometry<T>::SetVertex(const MVertex<T> &copy)
+template<class T, int Rows>
+bool MGeometry<T,Rows>::SetVertex(const MVertex<T,Rows> &copy)
 {
  Vertex=copy;
  return true;
 }
 
 // Границы объекта
-template<class T>
-const std::vector<MBorder>& MGeometry<T>::GetBorders(void) const
+template<class T, int Rows>
+const std::vector<MBorder>& MGeometry<T,Rows>::GetBorders(void) const
 {
  return Borders;
 }
 
-template<class T>
-bool MGeometry<T>::SetBorders(const std::vector<MBorder> &copy)
+template<class T, int Rows>
+bool MGeometry<T,Rows>::SetBorders(const std::vector<MBorder> &copy)
 {
  Borders=copy;
  NumBorders=Borders.size();
@@ -862,14 +862,14 @@ bool MGeometry<T>::SetBorders(const std::vector<MBorder> &copy)
 }
 
 // Число границ
-template<class T>
-size_t MGeometry<T>::GetNumBorders(void) const
+template<class T, int Rows>
+size_t MGeometry<T,Rows>::GetNumBorders(void) const
 {
  return NumBorders;
 }
 
-template<class T>
-bool MGeometry<T>::SetNumBorders(size_t value)
+template<class T, int Rows>
+bool MGeometry<T,Rows>::SetNumBorders(size_t value)
 {
  if(NumBorders == value)
   return true;
@@ -884,8 +884,8 @@ bool MGeometry<T>::SetNumBorders(size_t value)
 // Операторы управления
 // --------------------------
 // Оператор копирования
-template<class T>
-MGeometry<T>& MGeometry<T>::operator = (const MGeometry<T> &copy)
+template<class T, int Rows>
+MGeometry<T,Rows>& MGeometry<T,Rows>::operator = (const MGeometry<T,Rows> &copy)
 {
  // Вектора вершин
  Vertex=copy.Vertex;
@@ -900,28 +900,28 @@ MGeometry<T>& MGeometry<T>::operator = (const MGeometry<T> &copy)
 }
 
 // Оператор доступа к описанию границы по индексу n в массиве границ
-template<class T>
-MBorder& MGeometry<T>::operator [] (int n)
+template<class T, int Rows>
+MBorder& MGeometry<T,Rows>::operator [] (int n)
 {
  return Borders[n];
 };
 
 // Оператор доступа к вектору вершины по индексу n в массиве векторов
-template<class T>
-inline MVertex<T>& MGeometry<T>::operator () (void)
+template<class T, int Rows>
+inline MVertex<T,Rows>& MGeometry<T,Rows>::operator () (void)
 {
  return Vertex;
 }
 
 // Операторы сравнения
-template<class T>
-bool MGeometry<T>::operator == (const MGeometry<T> &v) const
+template<class T, int Rows>
+bool MGeometry<T,Rows>::operator == (const MGeometry<T,Rows> &v) const
 {
  return (Vertex == v.Vertex) & (Borders == v.Borders);
 }
 
-template<class T>
-bool MGeometry<T>::operator != (const MGeometry<T> &v) const
+template<class T, int Rows>
+bool MGeometry<T,Rows>::operator != (const MGeometry<T,Rows> &v) const
 {
  return (Vertex != v.Vertex) | (Borders != v.Borders);
 }
@@ -932,8 +932,8 @@ bool MGeometry<T>::operator != (const MGeometry<T> &v) const
 // Операторы взаимодействия с другими объектами
 // --------------------------
 // Вывод в массив
-template<class T>
-unsigned char* operator >> (const MGeometry<T> &v, unsigned char* p)
+template<class T, int Rows>
+unsigned char* operator >> (const MGeometry<T,Rows> &v, unsigned char* p)
 {
  if(!p)
   return 0;
@@ -949,8 +949,8 @@ unsigned char* operator >> (const MGeometry<T> &v, unsigned char* p)
 }
 
 // Ввод из массива
-template<class T>
-const unsigned char* operator << (MGeometry<T> &v, const unsigned char* p)
+template<class T, int Rows>
+const unsigned char* operator << (MGeometry<T,Rows> &v, const unsigned char* p)
 {
  if(!p)
   return 0;
@@ -968,28 +968,28 @@ const unsigned char* operator << (MGeometry<T> &v, const unsigned char* p)
 }
 /*
 // Поворот тензором P
-template<class T>
-MGeometry<T>& MGeometry<T>::operator *= (const MRotationTensor<T> &P)
+template<class T, int Rows>
+MGeometry<T,Rows>& MGeometry<T,Rows>::operator *= (const MRotationTensor<T> &P)
 {
  Vertex*=P;
  return *this;
-}*/
+}
 
 // Трансляция на вектор v
-template<class T>
-MGeometry<T>& MGeometry<T>::operator += (const MVector<T,3> &v)
+template<class T, int Rows>
+MGeometry<T,Rows>& MGeometry<T,Rows>::operator += (const MVector<T,Rows> &v)
 {
  Vertex+=v;
  return *this;
 }
 
 // Трансляция на вектор -v
-template<class T>
-MGeometry<T>& MGeometry<T>::operator -= (const MVector<T,3> &v)
+template<class T, int Rows>
+MGeometry<T,Rows>& MGeometry<T,Rows>::operator -= (const MVector<T,Rows> &v)
 {
  Vertex-=v;
  return *this;
-}
+}               */
 // --------------------------
 }
 #endif
