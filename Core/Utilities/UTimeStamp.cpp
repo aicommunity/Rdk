@@ -71,10 +71,10 @@ UTimeStamp& UTimeStamp::operator = (const UTimeStamp &copy)
 UTimeStamp& UTimeStamp::operator = (double seconds)
 {
  double sec=(seconds<0)?-seconds:seconds;
- Hours=sec/3600;
- Minutes=(sec-Hours*3600)/60;
- Seconds=sec-Hours*3600-Minutes*60;
- Frames=(double(sec)-double(Hours*3600)-double(Minutes*60)-double(Seconds))*FPS;
+ Hours=int(sec/3600);
+ Minutes=(unsigned char)((sec-Hours*3600)/60);
+ Seconds=(unsigned char)(sec-Hours*3600-Minutes*60);
+ Frames=(unsigned char)((double(sec)-double(Hours*3600)-double(Minutes*60)-double(Seconds))*FPS);
  if(seconds<0)
   Hours=-Hours;
 
@@ -169,8 +169,8 @@ double UTimeStamp::operator() (void) const
 
 bool UTimeStamp::operator == (const UTimeStamp &copy)
 {
- return (Hours==copy.Hours & Minutes==copy.Minutes
-		& Seconds==copy.Seconds & Frames==copy.Frames);
+ return ((Hours==copy.Hours) & (Minutes==copy.Minutes)
+		& (Seconds==copy.Seconds) & (Frames==copy.Frames));
 }
 
 bool UTimeStamp::operator != (const UTimeStamp &copy)

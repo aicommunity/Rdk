@@ -63,13 +63,18 @@ bool UContainerDescription::CheckCommonParameter(const std::string &name)
 // Методы управления данными
 // --------------------------
 // Описание параметра
-const UParameterDescription& UContainerDescription::GetParameter(const std::string &name) const
+const UParameterDescription& UContainerDescription::GetParameter(const std::string &name) 
 {
  std::map<std::string, UParameterDescription>::const_iterator I=Parameters.find(name);
 
  if(I == Parameters.end())
  {
   I=CommonParameters.find(name);
+  if(I == CommonParameters.end())
+  {
+   UParameterDescription descr;
+   I=Parameters.insert(Parameters.end(),pair<std::string, UParameterDescription>(name,descr));
+  }
  }
 
  return I->second;

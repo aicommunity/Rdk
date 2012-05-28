@@ -377,8 +377,8 @@ USerStorageXML& operator >> (USerStorageXML& storage, MVertex<T, Rows> &data)
  std::vector<MVector<T,3> > varVertexVector;
  std::vector<std::string> varNames;
 
- if(storage.GetNodeAttribute("Type") != "MVertex")
-  return storage;
+// if(storage.GetNodeAttribute("Type") != "MVertex")
+//  return storage;
 
  if(!storage.SelectNode("Vertex"))
   return storage;
@@ -421,8 +421,8 @@ USerStorageXML& operator >> (USerStorageXML& storage, MGeometry<T, Rows> &data)
  MVertex<T> varVertexVector;
  std::vector<MBorder> varBorders;
 
- if(storage.GetNodeAttribute("Type") != "MGeometry")
-  return storage;
+// if(storage.GetNodeAttribute("Type") != "MGeometry")
+//  return storage;
 
  if(!storage.SelectNode("Vertex"))
   return storage;

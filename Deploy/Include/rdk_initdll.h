@@ -3,7 +3,7 @@
 
 #ifdef __BORLANDC__
 #define RDK_LIB_TYPE __declspec(dllexport)
-#define RDK_CALL __stdcall
+#define RDK_CALL __cdecl
 #else
 #define RDK_LIB_TYPE __declspec(dllexport)
 #define RDK_CALL __cdecl

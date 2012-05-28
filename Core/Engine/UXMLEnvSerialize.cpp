@@ -136,8 +136,8 @@ USerStorageXML& operator << (USerStorageXML& storage, const ULongIdVector &data)
 
 USerStorageXML& operator >> (USerStorageXML& storage, ULongIdVector &data)
 {
- if(storage.GetNodeAttribute("Type") != "ULongIdVector")
-  return storage;
+// if(storage.GetNodeAttribute("Type") != "ULongIdVector")
+//  return storage;
 
  int size=0;
  size=atoi(storage.GetNodeAttribute("Size"));
