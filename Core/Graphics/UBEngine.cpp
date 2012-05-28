@@ -211,7 +211,7 @@ const RDK::UBitmap* const UBEngine::Model_GetComponentOutput(const char *stringi
 // «агружает набор предустановленных библиотек
 int UBEngine::LoadPredefinedLibraries(void)
 {
- bool res=UEngine::LoadPredefinedLibraries();
+ int res=UEngine::LoadPredefinedLibraries();
  if(res)
   return res;
 

@@ -264,7 +264,24 @@ std::string ENameError::CreateLogMessage(void) const
 }
 // --------------------------
 
+// Исключения, связанные с индексами
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EIndexError::EIndexError(int index) : Index(index)
+{
+}
+// --------------------------
 
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+std::string EIndexError::CreateLogMessage(void) const
+{
+ return EError::CreateLogMessage()+string(" Index=")+sntoa(Index);
+}
+// --------------------------
 
 }
 #endif

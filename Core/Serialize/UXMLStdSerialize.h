@@ -133,8 +133,8 @@ USerStorageXML& operator << (USerStorageXML& storage, const std::pair<T1,T2> &da
 template<typename T1, typename T2>
 USerStorageXML& operator >> (USerStorageXML& storage, std::pair<T1,T2> &data)
 {
- if(storage.GetNodeAttribute("Type") != "std::pair")
-  return storage;
+// if(storage.GetNodeAttribute("Type") != "std::pair")
+//  return storage;
 
  if(!storage.SelectNode("first"))
   return storage;
@@ -175,8 +175,8 @@ USerStorageXML& operator << (USerStorageXML& storage, const std::map<T1,T2> &dat
 template<typename T1, typename T2>
 USerStorageXML& operator >> (USerStorageXML& storage, std::map<T1,T2> &data)
 {
- if(storage.GetNodeAttribute("Type") != "std::map")
-  return storage;
+// if(storage.GetNodeAttribute("Type") != "std::map")
+//  return storage;
 
  unsigned int size=0;
  size=atoi(storage.GetNodeAttribute("Size"));
@@ -226,8 +226,8 @@ USerStorageXML& operator << (USerStorageXML& storage, const std::list<T> &data)
 template<typename T>
 USerStorageXML& operator >> (USerStorageXML& storage, std::list<T> &data)
 {
- if(storage.GetNodeAttribute("Type") != "std::list")
-  return storage;
+// if(storage.GetNodeAttribute("Type") != "std::list")
+//  return storage;
 
  unsigned int size=0;
  size=RDK::atoi(storage.GetNodeAttribute("Size"));
@@ -273,8 +273,8 @@ USerStorageXML& operator << (USerStorageXML& storage, const std::vector<T> &data
 template<typename T>
 USerStorageXML& operator >> (USerStorageXML& storage, std::vector<T> &data)
 {
- if(storage.GetNodeAttribute("Type") != "std::vector")
-  return storage;
+// if(storage.GetNodeAttribute("Type") != "std::vector")
+//  return storage;
 
  unsigned int size=0;
  size=RDK::atoi(storage.GetNodeAttribute("Size"));

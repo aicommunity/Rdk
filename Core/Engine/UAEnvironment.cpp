@@ -477,7 +477,7 @@ void UAEnvironment::RTCalculate(void)
 
  long long curtime;
  long long TimerInterval=0;
- double devicemodeltime=0;
+ //double devicemodeltime=0;
 
  TimerInterval=GetCurrentStartupTime()-ProcEndTime;
  if(TimerInterval<=0)
@@ -486,11 +486,11 @@ void UAEnvironment::RTCalculate(void)
  int i=0;
  if(LastDuration < TimerInterval)
   LastDuration=TimerInterval;
- int model_duration=(Model->GetDoubleTime()*1e6-UAContainer::GetRealTime())/1000.0;
+ double model_duration=(Model->GetDoubleTime()*1e6-UAContainer::GetRealTime())/1000.0;
  int elapsed_counter=0;
  if(model_duration<0)
  {
-  elapsed_counter=(-model_duration*Model->GetTimeStep())/1000;
+  elapsed_counter=int((-model_duration*Model->GetTimeStep())/1000);
  }
  else
  {
@@ -509,7 +509,7 @@ void UAEnvironment::RTCalculate(void)
 // LastSentTime=GetCurrentStartupTime();
  if(UAContainer::GetRealTime()/1e6<Model->GetDoubleTime())
  {
-  Sleep(Model->GetDoubleTime()*1000-UAContainer::GetRealTime()/1000);
+  Sleep(int(Model->GetDoubleTime()*1000-UAContainer::GetRealTime()/1000));
   UAContainer::SetRealTime(CalcDiffTime(GetCurrentStartupTime(),StartupTime)*1000);
  }
 

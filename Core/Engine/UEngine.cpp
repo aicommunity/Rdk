@@ -184,6 +184,7 @@ bool UEngine::Init(void)
  }
 
  UFileIO FileIO;
+ FileIO.Default();
  FileIO.SetDirection(0);
  FileIO.SetFileName(ClassesDescriptionFileName);
  FileIO.Calculate();

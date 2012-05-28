@@ -253,6 +253,18 @@ virtual bool Default(void);
 virtual bool Build(void);
 // --------------------------
 
+public: // Классы описания исключений
+// Некорректный индекс входа
+struct EInvalidInputIndex: public EInvalidIndex
+{
+EInvalidInputIndex(int index) : EInvalidIndex(index) {};
+};
+
+// Такой вход не существует
+struct EInputIndexNotExist: public EInvalidIndex
+{
+EInputIndexNotExist(void) : EInvalidIndex(-1) {};
+};
 };
 
 }

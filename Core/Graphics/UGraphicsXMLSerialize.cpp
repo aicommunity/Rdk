@@ -37,8 +37,8 @@ USerStorageXML& operator << (USerStorageXML& storage, const UBMColorModel &data)
 
 USerStorageXML& operator >> (USerStorageXML& storage, UBMColorModel &data)
 {
- if(storage.GetNodeAttribute("Type") != typeid(UBMColorModel).name())
-  return storage;
+// if(storage.GetNodeAttribute("Type") != typeid(UBMColorModel).name())
+//  return storage;
 
  std::istringstream stream(storage.GetNodeText().c_str());
  int temp;
@@ -64,8 +64,8 @@ USerStorageXML& operator << (USerStorageXML& storage, const UColorT &data)
 
 USerStorageXML& operator >> (USerStorageXML& storage, UColorT &data)
 {
- if(storage.GetNodeAttribute("Type") != typeid(UColorT).name())
-  return storage;
+// if(storage.GetNodeAttribute("Type") != typeid(UColorT).name())
+//  return storage;
 
  std::istringstream stream(storage.GetNodeText().c_str());
 // stream.setf(ios::hex);
@@ -228,7 +228,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, UBHistogram &data)
  int size=atoi(storage.GetNodeAttribute("Size"));
 
  data.Resize(size);
- data.Normalize(atoi(storage.GetNodeAttribute("NormalizeFlag")));
+ data.Normalize((atoi(storage.GetNodeAttribute("NormalizeFlag"))!=0)?true:false);
  data.SetNumPixels(atoi(storage.GetNodeAttribute("NumPixels")));
 
  UBHistogramElement elem;

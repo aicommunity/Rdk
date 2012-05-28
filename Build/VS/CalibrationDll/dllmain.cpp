@@ -555,25 +555,25 @@ __declspec(dllexport) int __cdecl CameraCalibrateComplete(double* icc, double* d
  *num_dist_coeffs=distCoeffs.rows;
  for(int i=0;i<*num_dist_coeffs;i++)
 	 dist_coeffs[i]=distCoeffs.at<double>(i,0);
- /*
+
+ Mat rotation(3,3,CV_64F);
+ cvRodrigues2(&rvecs[0].operator CvMat(),&rotation.operator CvMat());
+
  k=0;
  for(int i=0;i<3;i++)
  {
   for(int j=0;j<3;j++)
   {
-   ecc[k++]=rvecs[i].at<double>(j, 1);
+   ecc[k++]=rotation.at<double>(i, j);
   }
    ecc[k++]=tvecs[0].at<double>(i, 1);
-  }
+ }
   for(int j=0;j<3;j++)
   {
    ecc[k++]=0;
   }
-   ecc[k++]=1;
-   */
- /*
- rvecs, tvecs 
- */
+  ecc[k++]=1;
+   
  return 0;
 }
 

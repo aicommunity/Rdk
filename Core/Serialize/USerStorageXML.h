@@ -16,7 +16,9 @@ See file license.txt for more information
 #include "USerStorage.h"
 #undef _XMLWINDOWS
 #define XML_NO_WIDE_CHAR
+#define _CRT_SECURE_NO_WARNINGS
 #include "../../ThirdParty/xmlParser/xmlParser.h"
+#undef _CRT_SECURE_NO_WARNINGS
 
 namespace RDK {
 namespace Serialize {

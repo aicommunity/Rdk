@@ -18,7 +18,7 @@ See file license.txt for more information
 
 namespace RDK {
 
-class UBVSObject;
+struct UBVSObject;
 
 namespace Serialize {
 

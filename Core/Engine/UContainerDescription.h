@@ -54,7 +54,7 @@ static bool CheckCommonParameter(const std::string &name);
 // Методы управления данными
 // --------------------------
 // Описание параметра
-const UParameterDescription& GetParameter(const std::string &name) const;
+const UParameterDescription& GetParameter(const std::string &name);
 bool SetParameter(const std::string &name, const UParameterDescription& value, bool force=false);
 
 // Удаляет параметр из этого описания, если он есть в общих описаниях

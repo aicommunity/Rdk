@@ -222,6 +222,33 @@ struct EInvalidId: public EIdError
 EInvalidId(int id) : EIdError(id) {};
 };
 
+// Исключения, связанные с индексами
+struct EIndexError: public EError
+{
+// Индекс, вызвавший исключение
+int Index;
+
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EIndexError(int index);
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+virtual std::string CreateLogMessage(void) const;
+// --------------------------
+};
+
+// Id не корректен
+struct EInvalidIndex: public EIndexError
+{
+EInvalidIndex(int index) : EIndexError(index) {};
+};
+
+
 }
 
 #endif
