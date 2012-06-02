@@ -53,6 +53,8 @@ virtual ~UBEngine(void);
 // --------------------------
 // Возвращает указатель на среду
 virtual UBAEnvironment* GetEnvironment(void);
+
+virtual UBAbstract* GetModel(void);
 // --------------------------
 
 // --------------------------

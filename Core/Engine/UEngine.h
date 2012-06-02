@@ -147,6 +147,9 @@ int IsRunned(void);
 // --------------------------
 // Возвращает указатель на среду
 virtual UAContainerEnvironment* GetEnvironment(void);
+
+// Возвращает указатель на модель
+virtual UAContainer* GetModel(void);
 // --------------------------
 
 // --------------------------
@@ -699,9 +702,9 @@ virtual bool ACalculate(void);
 // --------------------------
 };
 
-#ifndef RDK_CALL
-#define RDK_CALL
-#endif
+//#ifndef RDK_CALL
+//#define RDK_CALL
+//#endif
 
 // Инициализация dll
 typedef bool (RDK_CALL *DLLPDllInit)(void* pfstorage,void* pfenvironment,void* pfengine);

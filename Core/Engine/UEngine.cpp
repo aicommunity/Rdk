@@ -138,6 +138,12 @@ UAContainerEnvironment* UEngine::GetEnvironment(void)
 {
  return Environment;
 }
+
+// Возвращает указатель на модель
+UAContainer* UEngine::GetModel(void)
+{
+ return Environment->GetModel();
+}
 // --------------------------
 
 // --------------------------
