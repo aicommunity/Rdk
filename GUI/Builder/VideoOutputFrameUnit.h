@@ -10,7 +10,7 @@
 #include <ComCtrls.hpp>
 #include <ExtCtrls.hpp>
 #include <Mask.hpp>
-#include "rdk_builder.h"
+#include "rdk.bcc.h"
 #include <CheckLst.hpp>
 #include "VideoOutputToolsFormUnit.h"
 #include "UComponentsListFormUnit.h"
@@ -23,52 +23,52 @@ class TVideoGrabberControlForm;
 //---------------------------------------------------------------------------
 class TVideoOutputFrame : public TFrame
 {
-__published:	// IDE-managed Components
-	TGroupBox *GroupBox;
-	TImage *Image;
-	TPanel *Panel1;
-	TButton *StopButton;
-	TButton *StartButton;
-	TTimer *Timer;
-	TMaskEdit *TimeEdit;
-	TPopupMenu *PopupMenu;
-	TMenuItem *N1;
-	TVideoGrabber *VideoGrabber;
-	TTrackBar *TrackBar;
-	TMenuItem *SourceControl1;
-	TMenuItem *N2;
-	TMenuItem *N3;
-	TMenuItem *SendToComponent;
-	TMenuItem *SendTo;
-	TMenuItem *SendToState;
-	TMenuItem *SendToComponentState1;
-	void __fastcall TimerTimer(TObject *Sender);
-	void __fastcall StartButtonClick(TObject *Sender);
-	void __fastcall StopButtonClick(TObject *Sender);
-	void __fastcall ImageMouseDown(TObject *Sender, TMouseButton Button,
+__published:    // IDE-managed Components
+    TGroupBox *GroupBox;
+    TImage *Image;
+    TPanel *Panel1;
+    TButton *StopButton;
+    TButton *StartButton;
+    TTimer *Timer;
+    TMaskEdit *TimeEdit;
+    TPopupMenu *PopupMenu;
+    TMenuItem *N1;
+    TVideoGrabber *VideoGrabber;
+    TTrackBar *TrackBar;
+    TMenuItem *SourceControl1;
+    TMenuItem *N2;
+    TMenuItem *N3;
+    TMenuItem *SendToComponent;
+    TMenuItem *SendTo;
+    TMenuItem *SendToState;
+    TMenuItem *SendToComponentState1;
+    void __fastcall TimerTimer(TObject *Sender);
+    void __fastcall StartButtonClick(TObject *Sender);
+    void __fastcall StopButtonClick(TObject *Sender);
+    void __fastcall ImageMouseDown(TObject *Sender, TMouseButton Button,
           TShiftState Shift, int X, int Y);
-	void __fastcall ImageMouseMove(TObject *Sender, TShiftState Shift, int X,
+    void __fastcall ImageMouseMove(TObject *Sender, TShiftState Shift, int X,
           int Y);
-	void __fastcall ImageMouseUp(TObject *Sender, TMouseButton Button,
+    void __fastcall ImageMouseUp(TObject *Sender, TMouseButton Button,
           TShiftState Shift, int X, int Y);
-	void __fastcall TimeEditChange(TObject *Sender);
-	void __fastcall N1Click(TObject *Sender);
-	void __fastcall VideoGrabberFrameCaptureCompleted(TObject *Sender, Pointer FrameBitmap,
+    void __fastcall TimeEditChange(TObject *Sender);
+    void __fastcall N1Click(TObject *Sender);
+    void __fastcall VideoGrabberFrameCaptureCompleted(TObject *Sender, Pointer FrameBitmap,
           int BitmapWidth, int BitmapHeight, DWORD FrameNumber, __int64 FrameTime,
           TFrameCaptureDest DestType, UnicodeString FileName, bool Success,
           int FrameId);
-	void __fastcall TrackBarChange(TObject *Sender);
-	void __fastcall SourceControl1Click(TObject *Sender);
-	void __fastcall SendToComponentClick(TObject *Sender);
-	void __fastcall PopupMenuPopup(TObject *Sender);
-	void __fastcall SendToClick(TObject *Sender);
-	void __fastcall SendToComponentState1Click(TObject *Sender);
-	void __fastcall SendToStateClick(TObject *Sender);
+    void __fastcall TrackBarChange(TObject *Sender);
+    void __fastcall SourceControl1Click(TObject *Sender);
+    void __fastcall SendToComponentClick(TObject *Sender);
+    void __fastcall PopupMenuPopup(TObject *Sender);
+    void __fastcall SendToClick(TObject *Sender);
+    void __fastcall SendToComponentState1Click(TObject *Sender);
+    void __fastcall SendToStateClick(TObject *Sender);
 
-private:	// User declarations
-public:		// User declarations
-	__fastcall TVideoOutputFrame(TComponent* Owner);
-	__fastcall ~TVideoOutputFrame(void);
+private:    // User declarations
+public:        // User declarations
+    __fastcall TVideoOutputFrame(TComponent* Owner);
+    __fastcall ~TVideoOutputFrame(void);
 
 // Режим работы
 // 0 - Bmp
@@ -191,7 +191,7 @@ void UpdateGeometryList(TCheckListBox *GeometryCheckListBox, TCheckListBox *Poin
 
 // Метод отрисовки прямоугольной зоны
 void __fastcall TVideoOutputFrame::DrawFrameRect(TImage *image, int x1, int y1, int x2,
-												int y2, int framewidth, TColor color);
+                                                int y2, int framewidth, TColor color);
 
 // Добавляет очередной элемент фигуры
 void AddFigureRect(double l,double t,double w,double h);

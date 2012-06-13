@@ -4,7 +4,7 @@
 #pragma hdrstop
 
 #include "VideoOutputFrameUnit.h"
-#include "rdk_builder.h"
+#include "rdk.bcc.h"
 #include "TUBitmap.h"
 #include "TVideoGrabberControlFormUnit.h"
 #include "myrdk.h"
@@ -18,7 +18,7 @@ TVideoOutputFrame *VideoOutputFrame;
 
 //---------------------------------------------------------------------------
 __fastcall TVideoOutputFrame::TVideoOutputFrame(TComponent* Owner)
-	: TFrame(Owner)
+    : TFrame(Owner)
 {
 // Capture=0;
 
@@ -44,14 +44,14 @@ __fastcall TVideoOutputFrame::TVideoOutputFrame(TComponent* Owner)
 // FigureFlag=false;
 
  MyVideoOutputToolsForm=new TVideoOutputToolsForm(this,
-	this,
-	GeometryGraphics,
-//	SampleGeometryGraphics,
-	Figure,
-	FigureIndex,
-//	FigureFlag,
-	PointIndex,
-	PointFlag);
+    this,
+    GeometryGraphics,
+//    SampleGeometryGraphics,
+    Figure,
+    FigureIndex,
+//    FigureFlag,
+    PointIndex,
+    PointFlag);
 
  MyVideoGrabberControlForm=new TVideoGrabberControlForm(this);
  MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this,VideoGrabber);
@@ -169,7 +169,7 @@ bool TVideoOutputFrame::UpdateVideo(void)
   DrawFrameRect(Image, left, top, left+width, top+height, 2, SelColor);
  Image->Repaint();
  UpdateGeometryList(MyVideoOutputToolsForm->GeometryCheckListBox,
-					MyVideoOutputToolsForm->PointsCheckListBox);
+                    MyVideoOutputToolsForm->PointsCheckListBox);
 
  return true;
 }
@@ -246,10 +246,10 @@ void TVideoOutputFrame::UpdateGeometryList(TCheckListBox *GeometryCheckListBox, 
   PointsCheckListBox->Items->Add(stream.str().c_str());
    if(GeometryGraphics.GetGeometry(GeometryCheckListBox->ItemIndex)()[i].z>=0)
    {
-	PointsCheckListBox->Checked[i]=true;
+    PointsCheckListBox->Checked[i]=true;
    }
    else
-	PointsCheckListBox->Checked[i]=false;
+    PointsCheckListBox->Checked[i]=false;
  }
 
  if(ix>=0)
@@ -269,7 +269,7 @@ void TVideoOutputFrame::UpdateGeometryList(TCheckListBox *GeometryCheckListBox, 
 
 // Метод отрисовки прямоугольной зоны
 void __fastcall TVideoOutputFrame::DrawFrameRect(TImage *image, int x1, int y1, int x2,
-												int y2, int framewidth, TColor color)
+                                                int y2, int framewidth, TColor color)
 {
  TRect rect;
  int realwidth;
@@ -284,7 +284,7 @@ void __fastcall TVideoOutputFrame::DrawFrameRect(TImage *image, int x1, int y1, 
    int w2=image->Picture->Bitmap->Height/image->Height;
    realwidth=(w1>w2)?w1:w2;
    if(realwidth <= 0)
-	realwidth=1;
+    realwidth=1;
 
    realwidth++;
   }
@@ -322,7 +322,7 @@ void TVideoOutputFrame::AddFigureRect(double l,double t,double w,double h)
   if(PointIndex < MyVideoOutputToolsForm->PointsCheckListBox->Items->Count)
   MyVideoOutputToolsForm->PointsCheckListBox->ItemIndex = PointIndex+1;
  }
-	  */
+      */
 
  GeometryGraphics.GetGeometry(FigureIndex)=Figure;
 
@@ -443,7 +443,7 @@ void __fastcall TVideoOutputFrame::StartButtonClick(TObject *Sender)
  break;
 
  case 1:
-	VideoGrabber->RunPlayer();
+    VideoGrabber->RunPlayer();
  break;
 
  case 2:
@@ -451,14 +451,14 @@ void __fastcall TVideoOutputFrame::StartButtonClick(TObject *Sender)
  break;
 
  default:
-	 ;
+     ;
  }  /*
  if(VideoGrabber->VideoSource == vs_VideoFileOrURL)
   VideoGrabber->RunPlayer();
  else
  if(VideoGrabber->VideoSource == vs_VideoCaptureDevice)
    VideoGrabber->StartPreview();
-		*/
+        */
 }
 //---------------------------------------------------------------------------
 void __fastcall TVideoOutputFrame::StopButtonClick(TObject *Sender)
@@ -468,7 +468,7 @@ void __fastcall TVideoOutputFrame::StopButtonClick(TObject *Sender)
  break;
 
  case 1:
-	VideoGrabber->PausePlayer();
+    VideoGrabber->PausePlayer();
  break;
 
  case 2:
@@ -476,12 +476,12 @@ void __fastcall TVideoOutputFrame::StopButtonClick(TObject *Sender)
  break;
 
  default:
-	 ;
+     ;
  }
 }
 //---------------------------------------------------------------------------
 void __fastcall TVideoOutputFrame::ImageMouseDown(TObject *Sender,
-	  TMouseButton Button, TShiftState Shift, int X, int Y)
+      TMouseButton Button, TShiftState Shift, int X, int Y)
 {
  if(!ZoneSelectEnable)
   return;
@@ -528,7 +528,7 @@ void __fastcall TVideoOutputFrame::ImageMouseDown(TObject *Sender,
 //---------------------------------------------------------------------------
 
 void __fastcall TVideoOutputFrame::ImageMouseMove(TObject *Sender,
-	  TShiftState Shift, int X, int Y)
+      TShiftState Shift, int X, int Y)
 {
  if(!ZoneSelectEnable)
   return;
@@ -553,80 +553,80 @@ void __fastcall TVideoOutputFrame::ImageMouseMove(TObject *Sender,
  if(!CorrSelectFlag)
   {
    if(x1b!=-1)
-	{
-	 int i;
-	 int k1x,k1y,k2x,k2y;
+    {
+     int i;
+     int k1x,k1y,k2x,k2y;
 
 
-	 if(X>x1b)
-	  {
-	   k1x=x1b*bwidth/iwidth;
-	   k2x=X*bwidth/iwidth;
-	  }
-	 else
-	  {
-	   k1x=X*bwidth/iwidth;
-	   k2x=x1b*bwidth/iwidth;
-	  }
-	 if(Y>y1b)
-	  {
-	   k1y=y1b*bheight/iheight;
-	   k2y=Y*bheight/iheight;
-	  }
-	 else
-	  {
-	   k1y=Y*bheight/iheight;
-	   k2y=y1b*bheight/iheight;
-	  }
+     if(X>x1b)
+      {
+       k1x=x1b*bwidth/iwidth;
+       k2x=X*bwidth/iwidth;
+      }
+     else
+      {
+       k1x=X*bwidth/iwidth;
+       k2x=x1b*bwidth/iwidth;
+      }
+     if(Y>y1b)
+      {
+       k1y=y1b*bheight/iheight;
+       k2y=Y*bheight/iheight;
+      }
+     else
+      {
+       k1y=Y*bheight/iheight;
+       k2y=y1b*bheight/iheight;
+      }
 
-//	 DrawFrameRect(Image, k1x, k1y, k2x, k2y, 3, (TColor)(255<<16));
+//     DrawFrameRect(Image, k1x, k1y, k2x, k2y, 3, (TColor)(255<<16));
 
-	 left=k1x;
-	 top=k1y;
-	 width=(k2x-k1x);
-	 height=(k2y-k1y);
-//	 DrawCapture(Image->Picture->Bitmap);
-	 DrawFrameRect(Image, k1x, k1y, k2x, k2y, 2, SelColor);
-//	 ImageTrackBarChange(Sender);
-	}
+     left=k1x;
+     top=k1y;
+     width=(k2x-k1x);
+     height=(k2y-k1y);
+//     DrawCapture(Image->Picture->Bitmap);
+     DrawFrameRect(Image, k1x, k1y, k2x, k2y, 2, SelColor);
+//     ImageTrackBarChange(Sender);
+    }
   }
  else
   {
    if(corrx1b!=-1)
-	{
-	 int i;
-	 int k1x,k1y,k2x,k2y;
+    {
+     int i;
+     int k1x,k1y,k2x,k2y;
 
-	 if(X>corrx1b)
-	  {
-	   k1x=corrx1b*bwidth/iwidth;
-	   k2x=X*bwidth/iwidth;
-	  }
-	 else
-	  {
-	   k1x=X*bwidth/iwidth;
-	   k2x=corrx1b*bwidth/iwidth;
-	  }
-	 if(Y>corry1b)
-	  {
-	   k1y=corry1b*bheight/iheight;
-	   k2y=Y*bheight/iheight;
-	  }
-	 else
-	  {
-	   k1y=Y*bheight/iheight;
-	   k2y=corry1b*bheight/iheight;
-	  }
+     if(X>corrx1b)
+      {
+       k1x=corrx1b*bwidth/iwidth;
+       k2x=X*bwidth/iwidth;
+      }
+     else
+      {
+       k1x=X*bwidth/iwidth;
+       k2x=corrx1b*bwidth/iwidth;
+      }
+     if(Y>corry1b)
+      {
+       k1y=corry1b*bheight/iheight;
+       k2y=Y*bheight/iheight;
+      }
+     else
+      {
+       k1y=Y*bheight/iheight;
+       k2y=corry1b*bheight/iheight;
+      }
 
- //	 DrawCapture(Image->Picture->Bitmap);
-	 DrawFrameRect(Image, k1x, k1y, k2x, k2y, 2, SelColor);
-	}
+ //     DrawCapture(Image->Picture->Bitmap);
+     DrawFrameRect(Image, k1x, k1y, k2x, k2y, 2, SelColor);
+    }
   }
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TVideoOutputFrame::ImageMouseUp(TObject *Sender,
-	  TMouseButton Button, TShiftState Shift, int X, int Y)
+      TMouseButton Button, TShiftState Shift, int X, int Y)
 {
  if(!ZoneSelectEnable)
   return;
@@ -637,10 +637,10 @@ void __fastcall TVideoOutputFrame::ImageMouseUp(TObject *Sender,
  if(!CorrSelectFlag)
   {
  /*  if((X==x1b || Y==y1b))
-	{
-	 x1b=x2b=y1b=y2b=-1;
-	 return;
-	}*/
+    {
+     x1b=x2b=y1b=y2b=-1;
+     return;
+    }*/
    x2b=X; y2b=Y;
 
    x1b=x2b=y1b=y2b=-1;
@@ -648,10 +648,10 @@ void __fastcall TVideoOutputFrame::ImageMouseUp(TObject *Sender,
  else
   {
 /*   if((X==corrx1b || Y==corry1b))
-	{
-	 corrx1b=corrx2b=corry1b=corry2b=-1;
-	 return;
-	}*/
+    {
+     corrx1b=corrx2b=corry1b=corry2b=-1;
+     return;
+    }*/
    corrx2b=X; corry2b=Y;
 
    corrx1b=corrx2b=corry1b=corry2b=-1;
@@ -705,29 +705,29 @@ Graphics::TBitmap *Frame_Bitmap;
    Frame_Bitmap = (Graphics::TBitmap*) FrameBitmap;
 
    switch (DestType) {
-	  case fc_TBitmap:
+      case fc_TBitmap:
 
-		 if(Frame_Bitmap->PixelFormat == pf24bit)
-		  BmpSource<<Frame_Bitmap;
-		 else
-		 {
-		  ConvertBitmap->Assign(Frame_Bitmap);
-		  ConvertBitmap->PixelFormat=pf24bit;
-		  BmpSource<<ConvertBitmap;
+         if(Frame_Bitmap->PixelFormat == pf24bit)
+          BmpSource<<Frame_Bitmap;
+         else
+         {
+          ConvertBitmap->Assign(Frame_Bitmap);
+          ConvertBitmap->PixelFormat=pf24bit;
+          BmpSource<<ConvertBitmap;
          }
 
-		 UpdateFlag=true;
-		 std::string sstamp;
-		 RDK::UTimeStamp stamp(CurrentFrameNumber,VideoGrabber->CurrentFrameRate);
-		 stamp>>sstamp;
-		 TimeEdit->Text=sstamp.c_str();
-		 UpdateFlag=false;
+         UpdateFlag=true;
+         std::string sstamp;
+         RDK::UTimeStamp stamp(CurrentFrameNumber,VideoGrabber->CurrentFrameRate);
+         stamp>>sstamp;
+         TimeEdit->Text=sstamp.c_str();
+         UpdateFlag=false;
 
-		 CurrentFrameNumber=FrameNumber;
-		 DrawCapture(Image->Picture->Bitmap);
-		 UpdateVideo();
+         CurrentFrameNumber=FrameNumber;
+         DrawCapture(Image->Picture->Bitmap);
+         UpdateVideo();
 
-	  break;
+      break;
    }
 }
 //---------------------------------------------------------------------------

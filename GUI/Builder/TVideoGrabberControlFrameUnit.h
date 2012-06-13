@@ -7,7 +7,7 @@
 #include <Controls.hpp>
 #include <StdCtrls.hpp>
 #include <Forms.hpp>
-#include "rdk_builder.h"
+#include "rdk.bcc.h"
 #include <ExtCtrls.hpp>
 #include <ComCtrls.hpp>
 #include <Dialogs.hpp>
@@ -25,7 +25,7 @@ __published:    // IDE-managed Components
     TLabel *ModeLabel;
     TLabel *InputLabel;
     TLabel *DeviceLabel;
-	TComboBox *VideoSizeComboBox;
+    TComboBox *VideoSizeComboBox;
     TComboBox *InputComboBox;
     TComboBox *DeviceComboBox;
     TTabSheet *VideoFileTabSheet;
@@ -34,25 +34,25 @@ __published:    // IDE-managed Components
     TEdit *VFNameEdit;
     TButton *VFBrowseButton;
     TTabSheet *PictureFileTabSheet;
-	TComboBox *VideoSubTypeComboBox;
-	TLabel *Label1;
-	TComboBox *AnalogVideoStandardComboBox;
-	TLabel *Label2;
-	TEdit *ImageFileNameEdit;
-	TLabel *Label3;
-	TButton *OpenImageFileButton;
-	TOpenDialog *VideoOpenDialog;
-	TOpenDialog *PicturesOpenDialog;
-	TCheckBox *VideoTruncPathCheckBox;
-	TCheckBox *PictureTruncPathCheckBox;
+    TComboBox *VideoSubTypeComboBox;
+    TLabel *Label1;
+    TComboBox *AnalogVideoStandardComboBox;
+    TLabel *Label2;
+    TEdit *ImageFileNameEdit;
+    TLabel *Label3;
+    TButton *OpenImageFileButton;
+    TOpenDialog *VideoOpenDialog;
+    TOpenDialog *PicturesOpenDialog;
+    TCheckBox *VideoTruncPathCheckBox;
+    TCheckBox *PictureTruncPathCheckBox;
     void __fastcall DeviceComboBoxSelect(TObject *Sender);
     void __fastcall InputComboBoxSelect(TObject *Sender);
     void __fastcall VideoSizeComboBoxSelect(TObject *Sender);
     void __fastcall VFBrowseButtonClick(TObject *Sender);
     void __fastcall VCapturePageControlChange(TObject *Sender);
-	void __fastcall VideoSubTypeComboBoxSelect(TObject *Sender);
-	void __fastcall AnalogVideoStandardComboBoxSelect(TObject *Sender);
-	void __fastcall OpenImageFileButtonClick(TObject *Sender);
+    void __fastcall VideoSubTypeComboBoxSelect(TObject *Sender);
+    void __fastcall AnalogVideoStandardComboBoxSelect(TObject *Sender);
+    void __fastcall OpenImageFileButtonClick(TObject *Sender);
 private:    // User declarations
 public:        // User declarations
     __fastcall TVideoGrabberControlFrame(TComponent* Owner);
