@@ -34,6 +34,12 @@
 			<Base>true</Base>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base)'!=''">
+			<VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+			<Manifest_File>None</Manifest_File>
+			<PostBuildEvent><![CDATA[copy $(OUTPUTDIR)\rdk.bcc.dll $(OUTPUTDIR)..\Deploy\Dll\rdk.bcc.dll /Y
+copy $(OUTPUTDIR)\rdk.bcc.lib $(OUTPUTDIR)..\Deploy\Dll\rdk.bcc.lib /Y
+$(PostBuildEvent)]]></PostBuildEvent>
+			<VerInfo_Locale>1049</VerInfo_Locale>
 			<ILINK_LibraryPath>..\..\..\Deploy\Include\;$(ILINK_LibraryPath)</ILINK_LibraryPath>
 			<_TCHARMapping>char</_TCHARMapping>
 			<PackageImports>IPIndyImpl;bindcompfmx;fmx;rtl;dbrtl;IndySystem;DbxClientDriver;bindcomp;inetdb;DBXInterBaseDriver;DataSnapCommon;DataSnapClient;DataSnapServer;DataSnapProviderClient;xmlrtl;DbxCommonDriver;IndyProtocols;DBXMySQLDriver;dbxcds;bindengine;soaprtl;DBXOracleDriver;dsnap;DBXInformixDriver;IndyCore;fmxase;DBXFirebirdDriver;inet;fmxobj;inetdbxpress;DBXSybaseASADriver;fmxdae;dbexpress;DataSnapIndy10ServerTransport;$(PackageImports)</PackageImports>
@@ -46,7 +52,7 @@
 			<DynamicRTL>true</DynamicRTL>
 			<UsePackages>true</UsePackages>
 			<IntermediateOutputDir>.\$(Platform)\$(Config)</IntermediateOutputDir>
-			<FinalOutputDir>.\$(Platform)\$(Config)</FinalOutputDir>
+			<FinalOutputDir>..\..\..\Bin</FinalOutputDir>
 			<BCC_wpar>false</BCC_wpar>
 			<BCC_OptimizeForSpeed>true</BCC_OptimizeForSpeed>
 			<BCC_ExtendedErrorInfo>true</BCC_ExtendedErrorInfo>
@@ -79,7 +85,7 @@
 			<Manifest_File>None</Manifest_File>
 			<VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
 			<VerInfo_Locale>1033</VerInfo_Locale>
-			<FinalOutputDir>..\..\..\Deploy\Dll\</FinalOutputDir>
+			<FinalOutputDir>..\..\..\Bin</FinalOutputDir>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_2)'!=''">
 			<Defines>NDEBUG;$(Defines)</Defines>
@@ -165,4 +171,36 @@
 		</ProjectExtensions>
 		<Import Condition="Exists('$(BDS)\Bin\CodeGear.Cpp.Targets')" Project="$(BDS)\Bin\CodeGear.Cpp.Targets"/>
 		<Import Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')" Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj"/>
+		<PropertyGroup Condition="'$(Config)'=='Debug' And '$(Platform)'=='OSX32'">
+			<PreBuildEvent/>
+			<PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
+			<PreLinkEvent/>
+			<PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
+			<PostBuildEvent>copy $(OUTPUTDIR)\rdk.bcc.dll $(OUTPUTDIR)..\Deploy\Dll\rdk.bcc.dll /Y&amp;&amp;copy $(OUTPUTDIR)\rdk.bcc.lib $(OUTPUTDIR)..\Deploy\Dll\rdk.bcc.lib /Y</PostBuildEvent>
+			<PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Config)'=='Debug' And '$(Platform)'=='Win32'">
+			<PreBuildEvent/>
+			<PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
+			<PreLinkEvent/>
+			<PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
+			<PostBuildEvent>copy $(OUTPUTDIR)\rdk.bcc.dll $(OUTPUTDIR)..\Deploy\Dll\rdk.bcc.dll /Y&amp;&amp;copy $(OUTPUTDIR)\rdk.bcc.lib $(OUTPUTDIR)..\Deploy\Dll\rdk.bcc.lib /Y</PostBuildEvent>
+			<PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Config)'=='Release' And '$(Platform)'=='OSX32'">
+			<PreBuildEvent/>
+			<PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
+			<PreLinkEvent/>
+			<PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
+			<PostBuildEvent>copy $(OUTPUTDIR)\rdk.bcc.dll $(OUTPUTDIR)..\Deploy\Dll\rdk.bcc.dll /Y&amp;&amp;copy $(OUTPUTDIR)\rdk.bcc.lib $(OUTPUTDIR)..\Deploy\Dll\rdk.bcc.lib /Y</PostBuildEvent>
+			<PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Config)'=='Release' And '$(Platform)'=='Win32'">
+			<PreBuildEvent/>
+			<PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
+			<PreLinkEvent/>
+			<PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
+			<PostBuildEvent>copy $(OUTPUTDIR)\rdk.bcc.dll $(OUTPUTDIR)..\Deploy\Dll\rdk.bcc.dll /Y&amp;&amp;copy $(OUTPUTDIR)\rdk.bcc.lib $(OUTPUTDIR)..\Deploy\Dll\rdk.bcc.lib /Y</PostBuildEvent>
+			<PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
+		</PropertyGroup>
 	</Project>

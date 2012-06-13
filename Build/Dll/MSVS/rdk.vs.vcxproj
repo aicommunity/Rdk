@@ -14,7 +14,7 @@
     <ProjectGuid>{C6AEE584-F809-46D8-852B-911113BE882D}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>rdkdll</RootNamespace>
-    <ProjectName>rdk_vs</ProjectName>
+    <ProjectName>rdk.vs</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -40,11 +40,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)\..\..\..\Deploy\Dll\</OutDir>
+    <OutDir>$(SolutionDir)\..\..\..\Bin\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(SolutionDir)\..\..\..\Deploy\Dll\</OutDir>
+    <OutDir>$(SolutionDir)\..\..\..\Bin\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -60,11 +60,8 @@
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
     <PostBuildEvent>
-      <Command>del "..\..\..\Deploy\Dll\*.il*" 
-del "..\..\..\Deploy\Dll\*.exp" 
-del "..\..\..\Deploy\Dll\*.pdb" 
-
-</Command>
+      <Command>copy ..\..\..\Bin\rdk.vs.dll ..\..\..\Deploy\Dll\rdk.vs.dll /Y
+copy ..\..\..\Bin\rdk.vs.lib ..\..\..\Deploy\Dll\rdk.vs.lib /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -85,11 +82,8 @@ del "..\..\..\Deploy\Dll\*.pdb"
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
     <PostBuildEvent>
-      <Command>del "..\..\..\Deploy\Dll\*.il*" 
-del "..\..\..\Deploy\Dll\*.exp" 
-del "..\..\..\Deploy\Dll\*.pdb" 
-
-</Command>
+      <Command>copy ..\..\..\Bin\rdk.vs.dll ..\..\..\Deploy\Dll\rdk.vs.dll /Y
+copy ..\..\..\Bin\rdk.vs.lib ..\..\..\Deploy\Dll\rdk.vs.lib /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
