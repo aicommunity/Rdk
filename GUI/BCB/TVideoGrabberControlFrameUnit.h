@@ -7,7 +7,7 @@
 #include <Controls.hpp>
 #include <StdCtrls.hpp>
 #include <Forms.hpp>
-#include "rdk.bcc.h"
+#include "rdk.bcb.h"
 #include <ExtCtrls.hpp>
 #include <ComCtrls.hpp>
 #include <Dialogs.hpp>

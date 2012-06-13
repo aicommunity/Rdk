@@ -4,7 +4,7 @@
 #pragma hdrstop
 
 #include "VideoOutputFrameUnit.h"
-#include "rdk.bcc.h"
+#include "rdk.bcb.h"
 #include "TUBitmap.h"
 #include "TVideoGrabberControlFormUnit.h"
 #include "myrdk.h"

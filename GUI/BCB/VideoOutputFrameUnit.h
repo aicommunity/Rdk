@@ -10,7 +10,7 @@
 #include <ComCtrls.hpp>
 #include <ExtCtrls.hpp>
 #include <Mask.hpp>
-#include "rdk.bcc.h"
+#include "rdk.bcb.h"
 #include <CheckLst.hpp>
 #include "VideoOutputToolsFormUnit.h"
 #include "UComponentsListFormUnit.h"
