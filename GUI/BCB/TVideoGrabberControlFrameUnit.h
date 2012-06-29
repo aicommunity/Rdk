@@ -16,6 +16,7 @@
 #include "VidGrab.hpp"
 #include "VideoOutputFrameUnit.h"
 #include "TUVisualController.h"
+#include "TUVisualControllerFrameUnit.h"
 //---------------------------------------------------------------------------
 class TVideoGrabberControlFrame : public TUVisualControllerFrame
 {

@@ -14,6 +14,7 @@
 #include <Vcl.Menus.hpp>
 #include <Vcl.Dialogs.hpp>
 #include <Vcl.ExtDlgs.hpp>
+#include "TUVisualControllerFrameUnit.h"
 #include <vector>
 #include "UComponentsListFormUnit.h"
 #include "myrdk.h"

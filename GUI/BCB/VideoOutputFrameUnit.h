@@ -17,6 +17,7 @@
 #include <Menus.hpp>
 #include "VidGrab.hpp"
 #include "TUVisualController.h"
+#include "TUVisualControllerFrameUnit.h"
 
 class TVideoGrabberControlForm;
 

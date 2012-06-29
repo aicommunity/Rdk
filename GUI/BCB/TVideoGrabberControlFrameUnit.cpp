@@ -7,6 +7,7 @@
 #include "UGEngineControlFormUnit.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
+#pragma link "TUVisualControllerFrameUnit"
 #pragma resource "*.dfm"
 TVideoGrabberControlFrame *VideoGrabberControlFrame;
 //---------------------------------------------------------------------------
@@ -100,6 +101,9 @@ void TVideoGrabberControlFrame::AAfterCalculate(void)
 // Обновление интерфейса
 void TVideoGrabberControlFrame::AUpdateInterface(void)
 {
+ if(!VideoGrabber)
+  return;
+
  if(VCapturePageControl->ActivePage != PictureFileTabSheet)
  {
   if(VideoGrabber->VideoSource == vs_VideoCaptureDevice)
@@ -163,6 +167,9 @@ void TVideoGrabberControlFrame::ALoadParameters(RDK::Serialize::USerStorageXML &
 
 void __fastcall TVideoGrabberControlFrame::DeviceComboBoxSelect(TObject *Sender)
 {
+ if(!VideoOutputFrame || !VideoGrabber)
+  return;
+
  VideoGrabber->VideoDevice = DeviceComboBox->ItemIndex;
  VideoOutputFrame->InitByCamera(VideoGrabber->VideoDevice, VideoGrabber->VideoInput, VideoGrabber->VideoSize, VideoGrabber->VideoSubtype, VideoGrabber->AnalogVideoStandard);
  UpdateInterface();
@@ -171,6 +178,9 @@ void __fastcall TVideoGrabberControlFrame::DeviceComboBoxSelect(TObject *Sender)
 
 void __fastcall TVideoGrabberControlFrame::InputComboBoxSelect(TObject *Sender)
 {
+ if(!VideoOutputFrame || !VideoGrabber)
+  return;
+
  VideoGrabber->VideoInput = InputComboBox->ItemIndex;
  VideoOutputFrame->InitByCamera(VideoGrabber->VideoDevice, VideoGrabber->VideoInput, VideoGrabber->VideoSize, VideoGrabber->VideoSubtype, VideoGrabber->AnalogVideoStandard);
  UpdateInterface();
@@ -179,6 +189,9 @@ void __fastcall TVideoGrabberControlFrame::InputComboBoxSelect(TObject *Sender)
 
 void __fastcall TVideoGrabberControlFrame::VideoSizeComboBoxSelect(TObject *Sender)
 {
+ if(!VideoOutputFrame || !VideoGrabber)
+  return;
+
  VideoGrabber->VideoSize = VideoSizeComboBox->ItemIndex;
  VideoOutputFrame->InitByCamera(VideoGrabber->VideoDevice, VideoGrabber->VideoInput, VideoGrabber->VideoSize, VideoGrabber->VideoSubtype, VideoGrabber->AnalogVideoStandard);
  UpdateInterface();
@@ -186,6 +199,9 @@ void __fastcall TVideoGrabberControlFrame::VideoSizeComboBoxSelect(TObject *Send
 //---------------------------------------------------------------------------
 void __fastcall TVideoGrabberControlFrame::VFBrowseButtonClick(TObject *Sender)
 {
+ if(!VideoOutputFrame || !VideoGrabber)
+  return;
+
  if(!VideoOpenDialog->Execute())
   return;
 
@@ -211,6 +227,9 @@ void __fastcall TVideoGrabberControlFrame::VFBrowseButtonClick(TObject *Sender)
 void __fastcall TVideoGrabberControlFrame::VCapturePageControlChange(TObject *Sender)
 {
  if(UpdateInterfaceFlag)
+  return;
+
+ if(!VideoOutputFrame || !VideoGrabber)
   return;
 
  VideoOutputFrame->StopButtonClick(Sender);
@@ -250,6 +269,9 @@ void __fastcall TVideoGrabberControlFrame::VCapturePageControlChange(TObject *Se
 
 void __fastcall TVideoGrabberControlFrame::VideoSubTypeComboBoxSelect(TObject *Sender)
 {
+ if(!VideoOutputFrame || !VideoGrabber)
+  return;
+
  VideoGrabber->VideoSubtype = VideoSubTypeComboBox->ItemIndex;
  VideoOutputFrame->InitByCamera(VideoGrabber->VideoDevice, VideoGrabber->VideoInput, VideoGrabber->VideoSize, VideoGrabber->VideoSubtype, VideoGrabber->AnalogVideoStandard);
  UpdateInterface();
@@ -258,6 +280,9 @@ void __fastcall TVideoGrabberControlFrame::VideoSubTypeComboBoxSelect(TObject *S
 
 void __fastcall TVideoGrabberControlFrame::AnalogVideoStandardComboBoxSelect(TObject *Sender)
 {
+ if(!VideoOutputFrame || !VideoGrabber)
+  return;
+
  VideoGrabber->AnalogVideoStandard = AnalogVideoStandardComboBox->ItemIndex;
  VideoOutputFrame->InitByCamera(VideoGrabber->VideoDevice, VideoGrabber->VideoInput, VideoGrabber->VideoSize, VideoGrabber->VideoSubtype, VideoGrabber->AnalogVideoStandard);
  UpdateInterface();
@@ -269,6 +294,8 @@ void __fastcall TVideoGrabberControlFrame::OpenImageFileButtonClick(TObject *Sen
  if(!PicturesOpenDialog->Execute())
   return;
 
+ if(!VideoOutputFrame || !VideoGrabber)
+  return;
 
  String FileName;
 // if(ExtractFilePath(Application->ExeName) == ExtractFilePath(PicturesOpenDialog->FileName))

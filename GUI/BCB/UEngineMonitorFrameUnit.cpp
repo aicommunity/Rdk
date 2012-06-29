@@ -56,7 +56,7 @@ void TUEngineMonitorFrame::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
 void __fastcall TUEngineMonitorFrame::Start1Click(TObject *Sender)
 {
  if(CalculateMode == 1)
-  Reset1Click();
+  Reset1Click(Sender);
  Timer->Enabled=true;
 }
 //---------------------------------------------------------------------------

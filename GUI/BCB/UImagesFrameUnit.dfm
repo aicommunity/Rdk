@@ -1,9 +1,8 @@
 inherited UImagesFrame: TUImagesFrame
-  Left = 0
-  Top = 0
   Width = 667
   Height = 585
-  TabOrder = 0
+  ExplicitWidth = 667
+  ExplicitHeight = 585
   object DrawGrid: TDrawGrid
     Left = 0
     Top = 0

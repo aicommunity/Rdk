@@ -1,13 +1,12 @@
 inherited VideoOutputFrame: TVideoOutputFrame
-  Left = 0
-  Top = 0
   Width = 702
   Height = 458
   Constraints.MinHeight = 100
   Constraints.MinWidth = 200
   PopupMenu = PopupMenu
-  TabOrder = 0
   TabStop = True
+  ExplicitWidth = 702
+  ExplicitHeight = 458
   object GroupBox: TGroupBox
     Left = 0
     Top = 0

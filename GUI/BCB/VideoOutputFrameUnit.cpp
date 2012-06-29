@@ -12,6 +12,7 @@
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "VidGrab"
+#pragma link "TUVisualControllerFrameUnit"
 #pragma resource "*.dfm"
 TVideoOutputFrame *VideoOutputFrame;
 
