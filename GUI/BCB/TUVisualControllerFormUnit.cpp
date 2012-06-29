@@ -89,6 +89,8 @@ void TUVisualControllerForm::AAfterCalculate(void)
 // Обновление интерфейса
 void TUVisualControllerForm::UpdateInterface(void)
 {
+// if(!Visible)
+//  return;
  UpdateInterfaceFlag=true;
  AUpdateInterface();
  UpdateInterfaceFlag=false;

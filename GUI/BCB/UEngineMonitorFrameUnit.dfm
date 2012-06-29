@@ -1,9 +1,8 @@
 inherited UEngineMonitorFrame: TUEngineMonitorFrame
-  Left = 0
-  Top = 0
   Width = 568
   Height = 407
-  TabOrder = 0
+  ExplicitWidth = 568
+  ExplicitHeight = 407
   object RichEdit: TRichEdit
     Left = 0
     Top = 0

@@ -1,4 +1,4 @@
-inherited UVisualControllerFrame: TUVisualControllerFrame
+object UVisualControllerFrame: TUVisualControllerFrame
   Left = 0
   Top = 0
   Width = 320

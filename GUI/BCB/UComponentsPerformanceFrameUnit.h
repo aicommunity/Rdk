@@ -14,6 +14,7 @@
 #include <VCLTee.Series.hpp>
 #include <Vcl.Menus.hpp>
 #include <IniFiles.hpp>
+#include "TUVisualControllerFrameUnit.h"
 #include <vector>
 #include <string>
 #include "UComponentsListFormUnit.h"

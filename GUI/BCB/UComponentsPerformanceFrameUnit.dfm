@@ -1,9 +1,8 @@
 inherited UComponentsPerformanceFrame: TUComponentsPerformanceFrame
-  Left = 0
-  Top = 0
   Width = 454
   Height = 326
-  TabOrder = 0
+  ExplicitWidth = 454
+  ExplicitHeight = 326
   object Chart: TChart
     Left = 0
     Top = 0

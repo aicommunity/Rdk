@@ -8,6 +8,7 @@
 #include "rdk_initdll.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
+#pragma link "TUVisualControllerFrameUnit"
 #pragma resource "*.dfm"
 TUEngineMonitorFrame *UEngineMonitorFrame;
 
@@ -37,8 +38,6 @@ void TUEngineMonitorFrame::AUpdateInterface(void)
 				+String("; Model Performance=")+FloatToStrF(Model_GetInstantPerformance(""),ffFixed,3,3);
  StatusBar->Repaint();
  StatusBar->Update();
-
- RDK::UIVisualControllerStorage::UpdateInterface();
 }
 
 // Сохраняет параметры интерфейса в xml
@@ -56,6 +55,8 @@ void TUEngineMonitorFrame::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
 
 void __fastcall TUEngineMonitorFrame::Start1Click(TObject *Sender)
 {
+ if(CalculateMode == 1)
+  Reset1Click();
  Timer->Enabled=true;
 }
 //---------------------------------------------------------------------------
@@ -88,7 +89,7 @@ void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
  }
 
  RDK::UIVisualControllerStorage::AfterCalculate();
- UpdateInterface();
+ RDK::UIVisualControllerStorage::UpdateInterface();
 }
 //---------------------------------------------------------------------------
 

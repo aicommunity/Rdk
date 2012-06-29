@@ -50,6 +50,8 @@ void TUVisualControllerFrame::AAfterCalculate(void)
 // Обновление интерфейса
 void TUVisualControllerFrame::UpdateInterface(void)
 {
+// if(!Parent->Visible)
+//  return;
  UpdateInterfaceFlag=true;
  AUpdateInterface();
  UpdateInterfaceFlag=false;

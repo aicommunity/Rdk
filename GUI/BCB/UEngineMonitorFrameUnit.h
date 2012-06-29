@@ -11,6 +11,7 @@
 #include <Vcl.Menus.hpp>
 #include <Vcl.ExtCtrls.hpp>
 #include <IniFiles.hpp>
+#include "TUVisualControllerFrameUnit.h"
 #include <vector>
 #include "myrdk.h"
 #include "TUVisualController.h"
