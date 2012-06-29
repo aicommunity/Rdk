@@ -11,8 +11,36 @@
 TVideoGrabberControlForm *VideoGrabberControlForm;
 //---------------------------------------------------------------------------
 __fastcall TVideoGrabberControlForm::TVideoGrabberControlForm(TComponent* Owner)
-	: TForm(Owner)
+	: TUVisualControllerForm(Owner)
 {
 }
 //---------------------------------------------------------------------------
+// -----------------------------
+// Методы управления визуальным интерфейсом
+// -----------------------------
+// Метод, вызываемый перед шагом расчета
+void TVideoGrabberControlForm::ABeforeCalculate(void)
+{
+}
+
+// Метод, вызываемый после шага расчета
+void TVideoGrabberControlForm::AAfterCalculate(void)
+{
+}
+
+// Обновление интерфейса
+void TVideoGrabberControlForm::AUpdateInterface(void)
+{
+}
+
+// Сохраняет параметры интерфейса в xml
+void TVideoGrabberControlForm::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
+{
+}
+
+// Загружает параметры интерфейса из xml
+void TVideoGrabberControlForm::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
+{
+}
+// -----------------------------
 

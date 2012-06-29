@@ -9,12 +9,9 @@
 #include <Forms.hpp>
 #include <Grids.hpp>
 #include <string>
-
-//#include "../../Kernel/NBios.h"
-
-//using namespace NMSDK;
+#include "TUVisualController.h"
 //---------------------------------------------------------------------------
-class TUComponentIOFrame : public TFrame
+class TUComponentIOFrame : public TUVisualControllerFrame
 {
 __published:	// IDE-managed Components
 	TStringGrid *StringGrid;
@@ -43,9 +40,6 @@ int Mode;
 // 1 - показывать только входы (выходы, связи) своего уровня
 // 2 - показывать входы (выходы, связи) своего уровня, и всех вложенных сетей
 int ShowModifier;
-
-// Флаг обновления интерфейса
-bool UpdateInterfaceFlag;
 // -----------------
 
 // -----------------
@@ -65,10 +59,26 @@ void __fastcall ShowInputsOutputs(void);
 
 // Заполняет таблицу установленными связями
 void __fastcall ShowLinks(void);
-
-// Отрисовывает текущее состояние фрейма
-void __fastcall UpdateInterface(void);
 // -----------------
+
+// -----------------------------
+// Методы управления визуальным интерфейсом
+// -----------------------------
+// Метод, вызываемый перед шагом расчета
+void ABeforeCalculate(void);
+
+// Метод, вызываемый после шага расчета
+void AAfterCalculate(void);
+
+// Обновление интерфейса
+void AUpdateInterface(void);
+
+// Сохраняет параметры интерфейса в xml
+void ASaveParameters(RDK::Serialize::USerStorageXML &xml);
+
+// Загружает параметры интерфейса из xml
+void ALoadParameters(RDK::Serialize::USerStorageXML &xml);
+// -----------------------------
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TUComponentIOFrame *UComponentIOFrame;

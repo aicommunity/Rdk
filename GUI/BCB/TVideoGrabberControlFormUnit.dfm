@@ -35,41 +35,53 @@ object VideoGrabberControlForm: TVideoGrabberControlForm
       ExplicitHeight = 262
       inherited DeviceTabSheet: TTabSheet
         inherited VDCapturePanel: TPanel
-          Width = 576
-          Height = 231
+          ExplicitWidth = 576
+          ExplicitHeight = 231
           inherited ModeLabel: TLabel
             Width = 560
+            ExplicitWidth = 560
           end
           inherited InputLabel: TLabel
             Width = 560
+            ExplicitWidth = 560
           end
           inherited DeviceLabel: TLabel
             Width = 560
+            ExplicitWidth = 560
           end
           inherited Label1: TLabel
             Width = 560
+            ExplicitWidth = 560
           end
           inherited Label2: TLabel
             Width = 560
+            ExplicitWidth = 560
           end
           inherited VideoSizeComboBox: TComboBox
             Width = 560
+            ExplicitWidth = 560
           end
           inherited InputComboBox: TComboBox
             Width = 560
+            ExplicitWidth = 560
           end
           inherited DeviceComboBox: TComboBox
             Width = 560
+            ExplicitWidth = 560
           end
           inherited VideoSubTypeComboBox: TComboBox
             Width = 560
+            ExplicitWidth = 560
           end
           inherited AnalogVideoStandardComboBox: TComboBox
             Width = 560
+            ExplicitWidth = 560
           end
         end
       end
       inherited VideoFileTabSheet: TTabSheet
+        ExplicitLeft = 0
+        ExplicitTop = 0
         ExplicitWidth = 576
         ExplicitHeight = 231
         inherited VFCapturePanel: TPanel

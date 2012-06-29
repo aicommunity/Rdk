@@ -13,12 +13,11 @@
 TUComponentsPerformanceFrame *UComponentsPerformanceFrame;
 //---------------------------------------------------------------------------
 __fastcall TUComponentsPerformanceFrame::TUComponentsPerformanceFrame(TComponent* Owner)
-	: TFrame(Owner)
+	: TUVisualControllerFrame(Owner)
 {
  for(int i=0;i<Chart->SeriesCount();i++)
   Chart->Series[i]->Clear();
 
- UpdateInterfaceFlag=false;
 
  MyComponentsListForm=new TUComponentsListForm(this);
 }
@@ -30,22 +29,20 @@ __fastcall TUComponentsPerformanceFrame::~TUComponentsPerformanceFrame(void)
 }
 
 //---------------------------------------------------------------------------
-void TUComponentsPerformanceFrame::BeforeCalculate(void)
+void TUComponentsPerformanceFrame::ABeforeCalculate(void)
 {
 
 }
 
-void TUComponentsPerformanceFrame::AfterCalculate(void)
+void TUComponentsPerformanceFrame::AAfterCalculate(void)
 {
 
 }
 
-void TUComponentsPerformanceFrame::UpdateInterface(void)
+void TUComponentsPerformanceFrame::AUpdateInterface(void)
 {
  if(!Model_Check())
   return;
-
- UpdateInterfaceFlag=true;
 
  long long model_time=Model_GetFullStepDuration("");
  long long sum=0;
@@ -97,24 +94,31 @@ void TUComponentsPerformanceFrame::UpdateInterface(void)
 
   Chart->Series[0]->AddY(model_time,"Model");
   Chart->Series[1]->AddY(100);
-
- UpdateInterfaceFlag=false;
 }
 
 
-// Сохраняет информацию об источниках данных в заданный ini файл
-void TUComponentsPerformanceFrame::SaveToIni(TMemIniFile *ini, const String &section)
+// Сохраняет параметры интерфейса в xml
+void TUComponentsPerformanceFrame::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
 {
- if(!ini)
-  return;
-
- ini->EraseSection(section);
  for(size_t i=0;i<ComponentNames.size();i++)
  {
-  ini->WriteString(section,ComponentNames[i].c_str(),"");
+  xml.WriteString(ComponentNames[i],"");
  }
 }
 
+// Загружает параметры интерфейса из xml
+void TUComponentsPerformanceFrame::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
+{
+ ClearComponents();
+
+ for(int i=0;i<xml.GetNumNodes();i++)
+ {
+  std::string name=xml.ReadString(i,"");
+  ComponentNames.push_back(name);
+ }
+
+}
+/*
 // Загружает информацию об источниках данных из заданного ini файла
 void TUComponentsPerformanceFrame::LoadFromIni(TMemIniFile *ini, const String &section)
 {
@@ -132,7 +136,7 @@ void TUComponentsPerformanceFrame::LoadFromIni(TMemIniFile *ini, const String &s
  }
 
  delete Strings;
-}
+} */
 
 // Возвращает число наблюдаемых компонент
 std::size_t TUComponentsPerformanceFrame::GetNumComponents(void) const

@@ -1,9 +1,8 @@
-object UComponentsControlFrame: TUComponentsControlFrame
-  Left = 0
-  Top = 0
+inherited UComponentsControlFrame: TUComponentsControlFrame
   Width = 987
   Height = 526
-  TabOrder = 0
+  ExplicitWidth = 987
+  ExplicitHeight = 526
   object Panel1: TPanel
     Left = 0
     Top = 488
@@ -74,6 +73,12 @@ object UComponentsControlFrame: TUComponentsControlFrame
         Width = 606
         Height = 469
         Align = alClient
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ParentFont = False
         TabOrder = 0
         ExplicitLeft = 2
         ExplicitTop = 15
@@ -88,15 +93,25 @@ object UComponentsControlFrame: TUComponentsControlFrame
           Height = 469
           ExplicitWidth = 237
           ExplicitHeight = 469
-          inherited ParametersRichEdit: TRichEdit
+          inherited PageControl1: TPageControl
             Width = 235
-            Height = 433
+            Height = 467
             ExplicitWidth = 235
-            ExplicitHeight = 433
-          end
-          inherited ParametersHeaderControl: THeaderControl
-            Width = 235
-            ExplicitWidth = 235
+            ExplicitHeight = 467
+            inherited TabSheet1: TTabSheet
+              ExplicitWidth = 227
+              ExplicitHeight = 441
+              inherited ParametersHeaderControl: THeaderControl
+                Width = 227
+                ExplicitWidth = 235
+              end
+              inherited ParametersRichEdit: TRichEdit
+                Width = 227
+                Height = 407
+                ExplicitWidth = 227
+                ExplicitHeight = 407
+              end
+            end
           end
         end
         inherited Panel2: TPanel
@@ -124,7 +139,13 @@ object UComponentsControlFrame: TUComponentsControlFrame
         Height = 469
         Align = alClient
         DoubleBuffered = True
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = []
         ParentDoubleBuffered = False
+        ParentFont = False
         TabOrder = 0
         ExplicitLeft = 2
         ExplicitTop = 15

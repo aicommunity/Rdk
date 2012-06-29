@@ -12,21 +12,9 @@
 TUComponentsPerformanceForm *UComponentsPerformanceForm;
 //---------------------------------------------------------------------------
 __fastcall TUComponentsPerformanceForm::TUComponentsPerformanceForm(TComponent* Owner)
-	: TForm(Owner)
+	: TUVisualControllerForm(Owner)
 {
-}
-//---------------------------------------------------------------------------
-void __fastcall TUComponentsPerformanceForm::FormShow(TObject *Sender)
-{
- if(UEngineMonitorForm)
-  UEngineMonitorForm->AddInterface(UComponentsPerformanceFrame);
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TUComponentsPerformanceForm::FormHide(TObject *Sender)
-{
- if(UEngineMonitorForm)
-  UEngineMonitorForm->DelInterface(UComponentsPerformanceFrame);
-}
-//---------------------------------------------------------------------------
 

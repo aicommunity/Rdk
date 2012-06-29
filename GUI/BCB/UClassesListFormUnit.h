@@ -9,8 +9,9 @@
 #include <Vcl.Forms.hpp>
 #include "UClassesListFrameUnit.h"
 #include "UClassesListFrameUnit.h"
+#include "TUVisualController.h"
 //---------------------------------------------------------------------------
-class TUClassesListForm : public TForm
+class TUClassesListForm : public TUVisualControllerForm
 {
 __published:	// IDE-managed Components
 	TUClassesListFrame *ClassesListFrame;

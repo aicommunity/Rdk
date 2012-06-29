@@ -15,8 +15,10 @@
 #include <Vcl.ExtDlgs.hpp>
 #include "UClassesListFrameUnit.h"
 #include "UComponentsListFrameUnit.h"
+#include "TUVisualController.h"
+#include "TUVisualControllerFrameUnit.h"
 //---------------------------------------------------------------------------
-class TUComponentsControlFrame : public TFrame
+class TUComponentsControlFrame : public TUVisualControllerFrame
 {
 __published:	// IDE-managed Components
 	TPanel *Panel1;
@@ -44,10 +46,9 @@ public:		// User declarations
 	__fastcall TUComponentsControlFrame(TComponent* Owner);
 
 protected: // Данные
-bool UpdateInterfaceFlag;
 
 public: // Методы
-void UpdateInterface(void);
+void AUpdateInterface(void);
 
 // Сохраняет выбранную модель
 // Если filename == "", то открывает окно запроса диалога

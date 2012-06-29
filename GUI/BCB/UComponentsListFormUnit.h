@@ -10,8 +10,9 @@
 #include "UComponentsListFrameUnit.h"
 #include "UComponentsListFrameUnit.h"
 #include <Vcl.ExtCtrls.hpp>
+#include "TUVisualController.h"
 //---------------------------------------------------------------------------
-class TUComponentsListForm : public TForm
+class TUComponentsListForm : public TUVisualControllerForm
 {
 __published:	// IDE-managed Components
 	TUComponentsListFrame *ComponentsListFrame1;

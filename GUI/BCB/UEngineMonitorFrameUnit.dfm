@@ -1,4 +1,4 @@
-object UEngineMonitorFrame: TUEngineMonitorFrame
+inherited UEngineMonitorFrame: TUEngineMonitorFrame
   Left = 0
   Top = 0
   Width = 568

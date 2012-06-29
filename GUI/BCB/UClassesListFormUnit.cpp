@@ -11,7 +11,7 @@
 TUClassesListForm *UClassesListForm;
 //---------------------------------------------------------------------------
 __fastcall TUClassesListForm::TUClassesListForm(TComponent* Owner)
-	: TForm(Owner)
+	: TUVisualControllerForm(Owner)
 {
 }
 //---------------------------------------------------------------------------

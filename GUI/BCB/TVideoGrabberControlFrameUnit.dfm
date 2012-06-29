@@ -1,4 +1,4 @@
-object VideoGrabberControlFrame: TVideoGrabberControlFrame
+inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
   Left = 0
   Top = 0
   Width = 453

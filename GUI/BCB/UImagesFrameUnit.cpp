@@ -13,7 +13,7 @@
 TUImagesFrame *UImagesFrame;
 //---------------------------------------------------------------------------
 __fastcall TUImagesFrame::TUImagesFrame(TComponent* Owner)
-	: TFrame(Owner)
+	: TUVisualControllerFrame(Owner)
 {
  ReflectionXFlag=false;
  MyComponentsListForm=new TUComponentsListForm(this);
@@ -263,17 +263,17 @@ Graphics::TBitmap* TUImagesFrame::GetImage(void)
 // --------------------------
 // Методы управления фреймом
 // --------------------------
-void TUImagesFrame::BeforeCalculate(void)
+void TUImagesFrame::ABeforeCalculate(void)
 {
 
 }
 
-void TUImagesFrame::AfterCalculate(void)
+void TUImagesFrame::AAfterCalculate(void)
 {
 
 }
 
-void TUImagesFrame::UpdateInterface(void)
+void TUImagesFrame::AUpdateInterface(void)
 {
  for(size_t i=0;i<Images.size();i++)
  {
@@ -288,6 +288,45 @@ void TUImagesFrame::UpdateInterface(void)
  DrawGrid->Update();
 }
 
+
+// Сохраняет параметры интерфейса в xml
+void TUImagesFrame::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
+{
+
+ xml.WriteInteger("NumCellWidth",GetNumCellWidth());
+ xml.WriteInteger("NumCellHeight",GetNumCellHeight());
+
+ for(size_t i=0;i<Images.size();i++)
+ {
+  for(size_t j=0;j<Images[i].size();j++)
+  {
+   std::string name=RDK::sntoa(int(i))+std::string("_")+RDK::sntoa(int(j));
+   xml.WriteString(std::string("CellName")+name,StringIds[i][j].c_str());
+   xml.WriteInteger(std::string("CellIndex")+name,ComponentIndexes[i][j]);
+  }
+ }
+
+}
+
+// Загружает параметры интерфейса из xml
+void TUImagesFrame::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
+{
+ int x=xml.ReadInteger("NumCellWidth",1);
+ int y=xml.ReadInteger("NumCellHeight",1);
+ SetNumCells(x,y);
+
+ for(size_t i=0;i<Images.size();i++)
+ {
+  for(size_t j=0;j<Images[i].size();j++)
+  {
+   std::string name=RDK::sntoa(int(i))+std::string("_")+RDK::sntoa(int(j));
+   StringIds[i][j]=xml.ReadString(std::string("CellName")+name,"");
+   ComponentIndexes[i][j]=xml.ReadInteger(std::string("CellIndex")+name,0);
+  }
+ }
+ UpdateInterface();
+}
+/*
 // Сохраняет информацию об источниках данных в заданный ini файл
 void TUImagesFrame::SaveToIni(TMemIniFile *ini, const String &section)
 {
@@ -328,7 +367,7 @@ void TUImagesFrame::LoadFromIni(TMemIniFile *ini, const String &section)
   }
  }
  UpdateInterface();
-}
+} */
 // --------------------------
 
 //---------------------------------------------------------------------------

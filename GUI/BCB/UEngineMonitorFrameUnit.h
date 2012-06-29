@@ -13,11 +13,12 @@
 #include <IniFiles.hpp>
 #include <vector>
 #include "myrdk.h"
+#include "TUVisualController.h"
 
 #pragma warn -8130
 //---------------------------------------------------------------------------
 
-class TUEngineMonitorFrame : public TFrame, public RDK::UIVisualController
+class TUEngineMonitorFrame : public TUVisualControllerFrame
 {
 __published:	// IDE-managed Components
 	TRichEdit *RichEdit;
@@ -44,28 +45,17 @@ public:		// User declarations
 // 1 - расчет в реальном времени
 int CalculateMode;
 
-bool UpdateInterfaceFlag;
-
-// Список обработчиков, которые должны быть вызваны после расчета
-std::vector<RDK::UIVisualController*> InterfaceUpdaters;
-
 // Управление режимом расчетов
 int GetCalculateMode(void) const;
 void SetCalculateMode(int value);
 
-// Добавляет обработчик в список
-void AddInterface(RDK::UIVisualController *value);
+void AUpdateInterface(void);
 
-// Удаляет обработчик из списка
-void DelInterface(RDK::UIVisualController *value);
+// Сохраняет параметры интерфейса в xml
+virtual void ASaveParameters(RDK::Serialize::USerStorageXML &xml);
 
-void UpdateInterface(void);
-
-// Сохраняет информацию в заданный ini файл
-void SaveToIni(TMemIniFile *ini, const String &section);
-
-// Загружает информацию из заданного ini файла
-void LoadFromIni(TMemIniFile *ini, const String &section);
+// Загружает параметры интерфейса из xml
+virtual void ALoadParameters(RDK::Serialize::USerStorageXML &xml);
 };
 #pragma warn .8130
 //---------------------------------------------------------------------------

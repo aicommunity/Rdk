@@ -25,7 +25,6 @@ object VideoOutputToolsForm: TVideoOutputToolsForm
     Align = alLeft
     BevelOuter = bvNone
     TabOrder = 0
-    ExplicitHeight = 396
     object GroupBox1: TGroupBox
       Left = 0
       Top = 174
@@ -34,7 +33,6 @@ object VideoOutputToolsForm: TVideoOutputToolsForm
       Align = alClient
       Caption = ' '#1057#1087#1080#1089#1086#1082' '#1092#1080#1075#1091#1088' '
       TabOrder = 0
-      ExplicitHeight = 222
       object GeometryCheckListBox: TCheckListBox
         Left = 2
         Top = 15
@@ -45,7 +43,6 @@ object VideoOutputToolsForm: TVideoOutputToolsForm
         ItemHeight = 13
         TabOrder = 0
         OnClick = GeometryCheckListBoxClick
-        ExplicitHeight = 205
       end
     end
     object GroupBox4: TGroupBox
@@ -110,8 +107,6 @@ object VideoOutputToolsForm: TVideoOutputToolsForm
     Height = 386
     Align = alClient
     TabOrder = 1
-    ExplicitWidth = 115
-    ExplicitHeight = 396
     object GroupBox2: TGroupBox
       Left = 1
       Top = 1
@@ -120,7 +115,6 @@ object VideoOutputToolsForm: TVideoOutputToolsForm
       Align = alTop
       Caption = ' '#1058#1086#1095#1082#1080' '
       TabOrder = 0
-      ExplicitWidth = 113
       object AddPointButton: TButton
         Left = 6
         Top = 46
@@ -173,8 +167,6 @@ object VideoOutputToolsForm: TVideoOutputToolsForm
       Align = alClient
       Caption = ' '#1057#1087#1080#1089#1086#1082' '#1090#1086#1095#1077#1082' '
       TabOrder = 1
-      ExplicitWidth = 113
-      ExplicitHeight = 220
       object PointsCheckListBox: TCheckListBox
         Left = 2
         Top = 15
@@ -184,8 +176,6 @@ object VideoOutputToolsForm: TVideoOutputToolsForm
         ItemHeight = 13
         TabOrder = 0
         OnClick = PointsCheckListBoxClick
-        ExplicitWidth = 109
-        ExplicitHeight = 203
       end
     end
   end

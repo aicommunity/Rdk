@@ -18,7 +18,7 @@ TVideoOutputFrame *VideoOutputFrame;
 
 //---------------------------------------------------------------------------
 __fastcall TVideoOutputFrame::TVideoOutputFrame(TComponent* Owner)
-    : TFrame(Owner)
+    : TUVisualControllerFrame(Owner)
 {
 // Capture=0;
 

@@ -134,6 +134,45 @@ virtual void AfterCalculate(void)=0;
 
 // Обновление интерфейса
 virtual void UpdateInterface(void)=0;
+
+// Возвращает уникальное имя интерфейса
+virtual std::string GetName(void)=0;
+
+// Сохраняет параметры интерфейса в xml
+virtual void SaveParameters(RDK::Serialize::USerStorageXML &xml)=0;
+
+// Загружает параметры интерфейса из xml
+virtual void LoadParameters(RDK::Serialize::USerStorageXML &xml)=0;
+};
+
+// Класс хранилище-визуальных интерфейсов
+class UIVisualControllerStorage
+{
+public:
+// Список обработчиков, которые должны быть вызваны после расчета
+static std::vector<RDK::UIVisualController*> InterfaceUpdaters;
+
+public:
+// Добавляет обработчик в список
+static void AddInterface(RDK::UIVisualController *value);
+
+// Удаляет обработчик из списка
+static void DelInterface(RDK::UIVisualController *value);
+
+// Метод, вызываемый перед шагом расчета
+static void BeforeCalculate(void);
+
+// Метод, вызываемый после шага расчета
+static void AfterCalculate(void);
+
+// Обновление интерфейса
+static void UpdateInterface(void);
+
+// Сохраняет параметры интерфейса в xml
+static void SaveParameters(RDK::Serialize::USerStorageXML &xml);
+
+// Загружает параметры интерфейса из xml
+static void LoadParameters(RDK::Serialize::USerStorageXML &xml);
 };
 
 }

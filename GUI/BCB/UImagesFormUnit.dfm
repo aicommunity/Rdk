@@ -12,8 +12,6 @@ object UImagesForm: TUImagesForm
   Font.Style = []
   OldCreateOrder = False
   Position = poDesigned
-  OnHide = FormHide
-  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
   inline ImagesFrame: TUImagesFrame

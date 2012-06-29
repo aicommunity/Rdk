@@ -57,6 +57,14 @@ bool LoadToNode(const std::string &str, const std::string &root);
 // —охран€ет xml в строку
 bool Save(std::string &str);
 bool SaveFromNode(std::string &str);
+
+// ѕрочесть файл с диска
+// ћетод не делает ничего, если FileName == ""
+bool USerStorageXML::LoadFromFile(const std::string &file_name, const std::string &root);
+
+// ќбновить файл на диске
+// ћетод не делает ничего, если FileName == ""
+bool USerStorageXML::SaveToFile(const std::string &file_name);
 // --------------------------
 
 // --------------------------
@@ -81,6 +89,15 @@ int GetNumNodes(void);
 bool SelectNode(const std::string &name, int index=0);
 
 bool SelectNode(int index);
+
+// ≈сли узел с таким именем существует в текущем узле то позиционируемс€ на него.
+// иначе создаем такой узел
+// ¬сегда позиционируетс€ на 0 узел!
+bool SelectNodeForce(const std::string &name);
+
+// јналогично SelectNodeForce, но позиционируетс€ всегда от корневого узла,
+// и поддерживает составное именование узла, с разделителем в виде '/'
+bool SelectNodeRoot(const std::string &name);
 
 // ¬озвращает им€ узла
 const std::string GetNodeName(void) const;
@@ -112,6 +129,27 @@ bool SetNodeText(const std::string &text);
 
 // ¬озвращает значение узла
 const std::string GetNodeText(void) const;
+// --------------------------
+
+// --------------------------
+// ƒополнительные методы управлени€ данными текущего элемента как ini-файлом
+// --------------------------
+// —читывает данные как соответствующий тип, если данное не найдено или не приводимо в
+// ожидаемый тип - оно инициализируетс€ значением по умолчанию
+const std::string ReadString(const std::string &name, const std::string &default_value);
+const std::string ReadString(int node_index, const std::string &default_value);
+int ReadInteger(const std::string &name, int default_value);
+int ReadInteger(int node_index, int default_value);
+double ReadFloat(const std::string &name, double default_value);
+double ReadFloat(int node_index, double default_value);
+bool ReadBool(const std::string &name, bool default_value);
+bool ReadBool(int node_index, bool default_value);
+
+// «аписывает данные как соответствующий тип
+void WriteString(const std::string &name, const std::string &value);
+void WriteInteger(const std::string &name, int value);
+void WriteFloat(const std::string &name, double value);
+void WriteBool(const std::string &name, bool value);
 // --------------------------
 
 // --------------------------

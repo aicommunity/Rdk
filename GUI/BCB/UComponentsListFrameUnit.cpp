@@ -10,11 +10,12 @@
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
+#pragma link "TUVisualControllerFrameUnit"
 #pragma resource "*.dfm"
 TUComponentsListFrame *UComponentsListFrame;
 //---------------------------------------------------------------------------
 __fastcall TUComponentsListFrame::TUComponentsListFrame(TComponent* Owner)
-	: TFrame(Owner)
+	: TUVisualControllerFrame(Owner)
 {
  ShowXMLComponentParameters=true;
 }

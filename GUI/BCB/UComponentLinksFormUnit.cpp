@@ -11,7 +11,7 @@
 TUComponentLinksForm *UComponentLinksForm;
 //---------------------------------------------------------------------------
 __fastcall TUComponentLinksForm::TUComponentLinksForm(TComponent* Owner)
-	: TForm(Owner)
+	: TUVisualControllerForm(Owner)
 {
 }
 //---------------------------------------------------------------------------

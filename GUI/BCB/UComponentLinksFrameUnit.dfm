@@ -1,4 +1,4 @@
-object UComponentLinksFrame: TUComponentLinksFrame
+inherited UComponentLinksFrame: TUComponentLinksFrame
   Left = 0
   Top = 0
   Width = 620

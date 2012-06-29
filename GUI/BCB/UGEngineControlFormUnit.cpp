@@ -20,14 +20,16 @@
 TUGEngineControlForm *UGEngineControlForm;
 //---------------------------------------------------------------------------
 __fastcall TUGEngineControlForm::TUGEngineControlForm(TComponent* Owner)
-	: TForm(Owner)
+	: TUVisualControllerForm(Owner)
 {
- UpdateInterfaceFlag=false;
  ProjectAutoSaveFlag=true;
+
+ // Признак наличия открытого проекта
+ ProjectOpenFlag=false;
 }
 //---------------------------------------------------------------------------
 // Метод, вызываемый перед шагом расчета
-void TUGEngineControlForm::BeforeCalculate(void)
+void TUGEngineControlForm::ABeforeCalculate(void)
 {
  for(int i=0;i<Env_GetNumInputImages();i++)
  {
@@ -43,15 +45,13 @@ void TUGEngineControlForm::BeforeCalculate(void)
 }
 
 // Метод, вызываемый после шага расчета
-void TUGEngineControlForm::AfterCalculate(void)
+void TUGEngineControlForm::AAfterCalculate(void)
 {
  StatusBar->SimpleText=UEngineMonitorForm->EngineMonitorFrame->StatusBar->SimpleText;
 }
 
-void TUGEngineControlForm::UpdateInterface(void)
+void TUGEngineControlForm::AUpdateInterface(void)
 {
- UpdateInterfaceFlag=true;
-
  CaptureVideo1->Caption=String("Capture Video (")+IntToStr(VideoOutputForm->GetActiveSource())+")";
  OpenVideo1->Caption=String("Open Video File (")+IntToStr(VideoOutputForm->GetActiveSource())+")";
  OpenImage1->Caption=String("Open Image (")+IntToStr(VideoOutputForm->GetActiveSource())+")";
@@ -60,18 +60,14 @@ void TUGEngineControlForm::UpdateInterface(void)
  ToolButton9->Caption=OpenImage1->Caption;
 
  Caption="Engine Control";
- if(ProjectIni)
+ if(ProjectOpenFlag)
  {
   Caption=Caption+String(" [")+ProjectName+"]";
  }
-
- UpdateInterfaceFlag=false;
 }
 
 void __fastcall TUGEngineControlForm::FormShow(TObject *Sender)
 {
- if(UEngineMonitorForm)
-  UEngineMonitorForm->AddInterface(this);
  UImagesForm->ImagesFrame->SetReflectionXFlag(true);
  UpdateInterface();
 }
@@ -90,12 +86,12 @@ void TUGEngineControlForm::CloseProject(void)
  if(ProjectAutoSaveFlag)
   SaveProject();
 
- if(ProjectIni)
+ if(ProjectOpenFlag)
  {
-  delete ProjectIni;
   ProjectName="";
   ProjectPath="";
  }
+ ProjectOpenFlag=false;
  UpdateInterface();
 }
 
@@ -103,29 +99,33 @@ void TUGEngineControlForm::CloseProject(void)
 void TUGEngineControlForm::OpenProject(const String &FileName)
 {
  CloseProject();
- ProjectIni=new TMemIniFile(OpenDialog->FileName);
+
+ ProjectXml.LoadFromFile(AnsiString(OpenDialog->FileName).c_str(),"");
  ProjectPath=ExtractFilePath(OpenDialog->FileName);
  ProjectName=ExtractFileName(OpenDialog->FileName);
 
+ ProjectXml.SelectNodeRoot("Project/General");
  // Число входов среды
- NumEnvInputs=ProjectIni->ReadInteger("General","NumEnvInputs",1);
+ NumEnvInputs=ProjectXml.ReadInteger("NumEnvInputs",1);
 
  // Число выходов среды
- NumEnvOutputs=ProjectIni->ReadInteger("General","NumEnvOutputs",1);
+ NumEnvOutputs=ProjectXml.ReadInteger("NumEnvOutputs",1);
 
- InputEnvImageWidth=ProjectIni->ReadInteger("General","InputEnvImageWidth",360);
- InputEnvImageHeight=ProjectIni->ReadInteger("General","InputEnvImageHeight",240);
+ InputEnvImageWidth=ProjectXml.ReadInteger("InputEnvImageWidth",360);
+ InputEnvImageHeight=ProjectXml.ReadInteger("InputEnvImageHeight",240);
 
- PredefinedStructure=ProjectIni->ReadInteger("General","PredefinedStructure",0);
+ PredefinedStructure=ProjectXml.ReadInteger("PredefinedStructure",0);
 
  // Флаг автоматического сохранения проекта
- ProjectAutoSaveFlag=ProjectIni->ReadInteger("General","ProjectAutoSaveFlag",1);
+ ProjectAutoSaveFlag=ProjectXml.ReadInteger("ProjectAutoSaveFlag",1);
 
  // Шаг счета по умолчанию
- DefaultTimeStep=ProjectIni->ReadInteger("General","DefaultTimeStep",30);
+ DefaultTimeStep=ProjectXml.ReadInteger("DefaultTimeStep",30);
 
  // Глобальный шаг счета модели
- GlobalTimeStep=ProjectIni->ReadInteger("General","GlobalTimeStep",30);
+ GlobalTimeStep=ProjectXml.ReadInteger("GlobalTimeStep",30);
+
+ String modelfilename=ProjectXml.ReadString("ModelFileName","").c_str();
 
  GraphicalEngineInit(PredefinedStructure,NumEnvInputs,NumEnvOutputs,InputEnvImageWidth, InputEnvImageHeight ,1,ExceptionHandler);
  Model_SetDefaultTimeStep(DefaultTimeStep);
@@ -133,7 +133,6 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
  for(int i=0;i<NumEnvInputs;i++)
   VideoOutputForm->AddSource();
 
- String modelfilename=ProjectIni->ReadString("General","ModelFileName","");
  if(modelfilename.Length() != 0)
  {
   if(ExtractFilePath(modelfilename).Length() == 0)
@@ -144,26 +143,43 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
 
  Model_SetGlobalTimeStep("",GlobalTimeStep);
 
- UImagesForm->ImagesFrame->LoadFromIni(ProjectIni,"ImagesFrame");
- UComponentsPerformanceForm->UComponentsPerformanceFrame->LoadFromIni(ProjectIni,"PerformanceFrame");
- VideoOutputForm->LoadFromIni(ProjectIni,"VideoOutputForm");
- UEngineMonitorForm->EngineMonitorFrame->LoadFromIni(ProjectIni,"EngineMonitorForm");
-// UComponentsPerformanceForm->UComponentsPerformanceFrame->AddAllComponents("Pipeline1");
+ ProjectXml.SelectNodeRoot(std::string("Project/Interfaces/"));
+ RDK::UIVisualControllerStorage::LoadParameters(ProjectXml);
+
  UpdateInterface();
+ ProjectOpenFlag=true;
+
+/* String modelfilename=ProjectIni->ReadString("General","ModelFileName","");
+ if(modelfilename.Length() != 0)
+ {
+  if(ExtractFilePath(modelfilename).Length() == 0)
+   UComponentsControlForm->ComponentsControlFrame->LoadModelFromFile(ProjectPath+modelfilename);
+  else
+   UComponentsControlForm->ComponentsControlFrame->LoadModelFromFile(modelfilename);
+ }
+
+ Model_SetGlobalTimeStep("",GlobalTimeStep);
+
+// UImagesForm->ImagesFrame->LoadFromIni(ProjectIni,"ImagesFrame");
+// UComponentsPerformanceForm->UComponentsPerformanceFrame->LoadFromIni(ProjectIni,"PerformanceFrame");
+// VideoOutputForm->LoadFromIni(ProjectIni,"VideoOutputForm");
+// UEngineMonitorForm->EngineMonitorFrame->LoadFromIni(ProjectIni,"EngineMonitorForm");
+ UpdateInterface();
+ */
 }
 
 // Сохраняет проект
 void TUGEngineControlForm::SaveProject(void)
 {
- if(!ProjectIni)
+ if(!ProjectOpenFlag)
   return;
 
- UEngineMonitorForm->EngineMonitorFrame->SaveToIni(ProjectIni,"EngineMonitorForm");
- UImagesForm->ImagesFrame->SaveToIni(ProjectIni,"ImagesFrame");
- UComponentsPerformanceForm->UComponentsPerformanceFrame->SaveToIni(ProjectIni,"PerformanceFrame");
- VideoOutputForm->SaveToIni(ProjectIni,"VideoOutputForm");
+ ProjectXml.SelectNodeRoot(std::string("Project/Interfaces/"));
+ RDK::UIVisualControllerStorage::SaveParameters(ProjectXml);
 
- String modelfilename=ProjectIni->ReadString("General","ModelFileName","");
+ ProjectXml.SelectNodeRoot("Project/General");
+
+ String modelfilename=ProjectXml.ReadString("ModelFileName","").c_str();
  if(modelfilename.Length() != 0)
  {
   if(ExtractFilePath(modelfilename).Length() == 0)
@@ -172,37 +188,30 @@ void TUGEngineControlForm::SaveProject(void)
    UComponentsControlForm->ComponentsControlFrame->SaveModelToFile(modelfilename);
  }
 
- ProjectIni->WriteInteger("General","PredefinedStructure",PredefinedStructure);
-
- // Флаг автоматического сохранения проекта
- ProjectIni->WriteInteger("General","ProjectAutoSaveFlag",ProjectAutoSaveFlag);
+ ProjectXml.WriteInteger("PredefinedStructure",PredefinedStructure);
+ ProjectXml.WriteInteger("ProjectAutoSaveFlag",ProjectAutoSaveFlag);
 
  // Число входов среды
- ProjectIni->WriteInteger("General","NumEnvInputs",NumEnvInputs);
+ ProjectXml.WriteInteger("NumEnvInputs",NumEnvInputs);
 
  // Число выходов среды
- ProjectIni->WriteInteger("General","NumEnvOutputs",NumEnvOutputs);
+ ProjectXml.WriteInteger("NumEnvOutputs",NumEnvOutputs);
 
- ProjectIni->WriteInteger("General","InputEnvImageWidth",InputEnvImageWidth);
- ProjectIni->WriteInteger("General","InputEnvImageHeight",InputEnvImageHeight);
+ ProjectXml.WriteInteger("InputEnvImageWidth",InputEnvImageWidth);
+ ProjectXml.WriteInteger("InputEnvImageHeight",InputEnvImageHeight);
 
  // Шаг счета по умолчанию
- ProjectIni->WriteInteger("General","DefaultTimeStep",DefaultTimeStep);
+ ProjectXml.WriteInteger("DefaultTimeStep",DefaultTimeStep);
 
  // Глобальный шаг счета модели
- ProjectIni->WriteInteger("General","GlobalTimeStep",GlobalTimeStep);
+ ProjectXml.WriteInteger("GlobalTimeStep",GlobalTimeStep);
 
- ProjectIni->UpdateFile();
+ ProjectXml.SaveToFile(AnsiString(ProjectPath+ProjectName).c_str());
 }
 //---------------------------------------------------------------------------
 void __fastcall TUGEngineControlForm::FormClose(TObject *Sender, TCloseAction &Action)
 {
  SaveProjectItemClick(Sender);
- if(ProjectIni)
- {
-  delete ProjectIni;
-  ProjectIni=0;
- }
 }
 //---------------------------------------------------------------------------
 
@@ -329,10 +338,4 @@ void __fastcall TUGEngineControlForm::SaveProjectItemClick(TObject *Sender)
 
 
 
-void __fastcall TUGEngineControlForm::FormHide(TObject *Sender)
-{
- if(UEngineMonitorForm)
-  UEngineMonitorForm->DelInterface(this);
-}
-//---------------------------------------------------------------------------
 

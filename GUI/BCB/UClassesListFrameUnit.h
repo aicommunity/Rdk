@@ -10,8 +10,10 @@
 #include <Grids.hpp>
 #include <ComCtrls.hpp>
 #include <ToolWin.hpp>
+#include "TUVisualController.h"
+#include "TUVisualControllerFrameUnit.h"
 //---------------------------------------------------------------------------
-class TUClassesListFrame : public TFrame
+class TUClassesListFrame : public TUVisualControllerFrame
 {
 __published:	// IDE-managed Components
 	TStringGrid *StringGrid;
@@ -21,12 +23,10 @@ public:		// User declarations
 	__fastcall TUClassesListFrame(TComponent* Owner);
 
 protected:
-// Флаг обновления интерфейса
-bool UpdateInterfaceFlag;
 
 public:
 // Отрисовка фрейма
-void UpdateInterface(void);
+void AUpdateInterface(void);
 
 // Возвращает id выбранного класса
 int GetSelectedId(void);

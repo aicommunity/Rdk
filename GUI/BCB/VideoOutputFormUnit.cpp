@@ -12,7 +12,7 @@
 TVideoOutputForm *VideoOutputForm;
 //---------------------------------------------------------------------------
 __fastcall TVideoOutputForm::TVideoOutputForm(TComponent* Owner)
-	: TForm(Owner)
+	: TUVisualControllerForm(Owner)
 {
  UpdateInterfaceFlag=false;
 }
@@ -113,7 +113,7 @@ void TVideoOutputForm::SaveToIni(TMemIniFile *ini, const String &section)
 // ini->WriteInteger(section,"NumSources",GetNumSources());
  for(int i=0;i<GetNumSources();i++)
  {
-  Sources[i]->MyVideoGrabberControlForm->VideoGrabberControlFrame->SaveToIni(ini,section+IntToStr(i));
+  //Sources[i]->MyVideoGrabberControlForm->VideoGrabberControlFrame->SaveToIni(ini,section+IntToStr(i));
  }
 }
 
@@ -125,7 +125,7 @@ void TVideoOutputForm::LoadFromIni(TMemIniFile *ini, const String &section)
  for(int i=0;i<GetNumSources();i++)
  {
 //  AddSource();
-  Sources[i]->MyVideoGrabberControlForm->VideoGrabberControlFrame->LoadFromIni(ini,section+IntToStr(i));
+ // Sources[i]->MyVideoGrabberControlForm->VideoGrabberControlFrame->LoadFromIni(ini,section+IntToStr(i));
  }
 
 }

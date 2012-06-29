@@ -5,6 +5,7 @@
 
 #include "UEngineMonitorFormUnit.h"
 #include "rdk_initdll.h"
+#include "TUVisualController.h"
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -20,22 +21,18 @@ void ExceptionHandler(void)
 }
 //---------------------------------------------------------------------------
 __fastcall TUEngineMonitorForm::TUEngineMonitorForm(TComponent* Owner)
-	: TForm(Owner)
+	: TUVisualControllerForm(Owner)
 {
 }
 
-// Добавляет обработчик в список
-void TUEngineMonitorForm::AddInterface(RDK::UIVisualController *value)
+// Сохраняет параметры интерфейса в xml
+void TUEngineMonitorForm::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
 {
- if(EngineMonitorFrame)
-  EngineMonitorFrame->AddInterface(value);
 }
 
-// Удаляет обработчик из списка
-void TUEngineMonitorForm::DelInterface(RDK::UIVisualController *value)
+// Загружает параметры интерфейса из xml
+void TUEngineMonitorForm::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
 {
- if(EngineMonitorFrame)
-  EngineMonitorFrame->DelInterface(value);
 }
 //---------------------------------------------------------------------------
 void __fastcall TUEngineMonitorForm::FormDestroy(TObject *Sender)
@@ -43,4 +40,5 @@ void __fastcall TUEngineMonitorForm::FormDestroy(TObject *Sender)
  EngineMonitorFrame->Timer->Enabled=false;
 }
 //---------------------------------------------------------------------------
+
 

@@ -13,8 +13,9 @@
 #include <Menus.hpp>
 #include "UWatchFrameUnit.h"
 #pragma warn -8130
+#include "TUVisualController.h"
 //---------------------------------------------------------------------------
-class TUWatchWindowForm : public TForm, RDK::UIVisualController
+class TUWatchWindowForm : public TUVisualControllerForm
 {
 __published:	// IDE-managed Components
 		TToolBar *ToolBar1;
@@ -55,9 +56,9 @@ public:	        // Методы
 		// Возвращает текущий графический фрейм
 		TUWatchFrame* GetCurrentWatchFrame(void);
 
-		void UpdateInterface(void);
-		void BeforeCalculate(void);
-		void AfterCalculate(void);
+		void AUpdateInterface(void);
+		void ABeforeCalculate(void);
+		void AAfterCalculate(void);
 		// ------------------------------
 
 };

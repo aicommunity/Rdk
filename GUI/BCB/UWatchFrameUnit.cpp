@@ -118,7 +118,7 @@ TUWatchInfo& TUWatchInfo::operator = (const TUWatchInfo& wd)
 
 //---------------------------------------------------------------------------
 __fastcall TUWatchFrame::TUWatchFrame(TComponent* Owner)
-        : TFrame(Owner)
+        : TUVisualControllerFrame(Owner)
 {
  SetLegendPosition(5);
  ModifyState=false;

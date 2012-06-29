@@ -28,6 +28,7 @@
 #include <map>
 #include <vector>
 #include "myrdk.h"
+#include "TUVisualController.h"
 
 using namespace std;
 
@@ -104,7 +105,7 @@ TUWatchInfo& operator = (const TUWatchInfo& wd);
 };
         
 //---------------------------------------------------------------------------
-class TUWatchFrame : public TFrame
+class TUWatchFrame : public TUVisualControllerFrame
 {
 __published:	// IDE-managed Components
         TChart *Chart1;

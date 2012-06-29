@@ -1,4 +1,4 @@
-object UComponentIOFrame: TUComponentIOFrame
+inherited UComponentIOFrame: TUComponentIOFrame
   Left = 0
   Top = 0
   Width = 599

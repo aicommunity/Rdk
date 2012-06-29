@@ -13,7 +13,7 @@
 TUWatchWindowForm *UWatchWindowForm;
 //---------------------------------------------------------------------------
 __fastcall TUWatchWindowForm::TUWatchWindowForm(TComponent* Owner)
-        : TForm(Owner)
+        : TUVisualControllerForm(Owner)
 {
 // WatchFrame->Model=0;
  ModifyState=false;
@@ -42,18 +42,18 @@ TUWatchFrame* TUWatchWindowForm::GetCurrentWatchFrame(void)
  return WatchFrame;
 }
 
-void TUWatchWindowForm::UpdateInterface(void)
+void TUWatchWindowForm::AUpdateInterface(void)
 {
  GetCurrentWatchFrame()->StepUpdate(false);
  GetCurrentWatchFrame()->Chart1->Repaint();
 }
 
-void TUWatchWindowForm::BeforeCalculate(void)
+void TUWatchWindowForm::ABeforeCalculate(void)
 {
 
 }
 
-void TUWatchWindowForm::AfterCalculate(void)
+void TUWatchWindowForm::AAfterCalculate(void)
 {
 
 }
@@ -68,14 +68,12 @@ void __fastcall TUWatchWindowForm::FormResize(TObject *Sender)
 void __fastcall TUWatchWindowForm::FormShow(TObject *Sender)
 {
  ModifyState=true;
- UEngineMonitorForm->EngineMonitorFrame->AddInterface(this);
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUWatchWindowForm::FormHide(TObject *Sender)
 {
  ModifyState=true;
- UEngineMonitorForm->EngineMonitorFrame->DelInterface(this);
 }
 //---------------------------------------------------------------------------
 

@@ -13,6 +13,7 @@ See file license.txt for more information
 #define USER_STORAGE_XML_CPP
 
 #include <string.h>
+#include <iostream>
 #include "USerStorageXML.h"
 
 namespace RDK {
@@ -95,6 +96,46 @@ bool USerStorageXML::SaveFromNode(std::string &str)
   str="";
  return true;
 }
+
+// ѕрочесть файл с диска
+// ћетод не делает ничего, если FileName == ""
+bool USerStorageXML::LoadFromFile(const std::string &file_name, const std::string &root)
+{
+ fstream file(file_name.c_str(), ios::in);
+ char buffer[4096];
+
+ string result;
+
+ if(!file)
+  return false;
+
+ while(!file.eof())
+  {
+   file.getline(buffer,4096);
+   result+=buffer;
+  }
+
+ file.close();
+ Load(result,root);
+ return true;
+};
+
+// ќбновить файл на диске
+// ћетод не делает ничего, если FileName == ""
+bool USerStorageXML::SaveToFile(const std::string &file_name)
+{
+ fstream file(file_name.c_str(), ios::out | ios::trunc);
+
+ if(!file)
+  return false;
+
+ std::string result;
+ Save(result);
+ file.write(result.c_str(),result.size());
+
+ file.close();
+ return true;
+};
 // --------------------------
 
 // --------------------------
@@ -146,6 +187,39 @@ bool USerStorageXML::SelectNode(int index)
  if(node.isEmpty())
   return false;
  CurrentNode=node;
+ return true;
+}
+
+// ≈сли узел с таким именем существует в текущем узле то позиционируемс€ на него.
+// иначе создаем такой узел
+// ¬сегда позиционируетс€ на 0 узел!
+bool USerStorageXML::SelectNodeForce(const std::string &name)
+{
+ if(!SelectNode(name))
+  return AddNode(name);
+
+ return true;
+}
+
+// јналогично SelectNodeForce, но позиционируетс€ всегда от корневого узла,
+// и поддерживает составное именование узла, с разделителем в виде '/'
+bool USerStorageXML::SelectNodeRoot(const std::string &name)
+{
+ std::vector<std::string> nodes;
+
+ separatestring(name,nodes, '/');
+ SelectRoot();
+ if(nodes.empty())
+  return false;
+
+ if(GetNodeName() != nodes[0])
+  Create(nodes[0]);
+ for(size_t i=1;i<nodes.size();i++)
+ {
+  if(!SelectNode(nodes[i]))
+   if(!AddNode(nodes[i]))
+    return false;
+ }
  return true;
 }
 
@@ -238,6 +312,143 @@ const std::string USerStorageXML::GetNodeText(void) const
  return CurrentNode.getText();
 }
 // --------------------------
+
+// --------------------------
+// ƒополнительные методы управлени€ данными текущего элемента как ini-файлом
+// --------------------------
+// —читывает данные как соответствующий тип, если данное не найдено или не приводимо в
+// ожидаемый тип - оно инициализируетс€ значением по умолчанию
+const std::string USerStorageXML::ReadString(const std::string &name, const std::string &default_value)
+{
+ if(!SelectNode(name))
+  return default_value;
+
+ std::string res=GetNodeText();
+
+ SelectUp();
+ return res;
+}
+
+const std::string USerStorageXML::ReadString(int node_index, const std::string &default_value)
+{
+ if(!SelectNode(node_index))
+  return default_value;
+
+ std::string res=GetNodeText();
+
+ SelectUp();
+ return res;
+}
+
+int USerStorageXML::ReadInteger(const std::string &name, int default_value)
+{
+ if(!SelectNode(name))
+  return default_value;
+
+ int res=atoi(GetNodeText());
+
+ SelectUp();
+ return res;
+}
+
+int USerStorageXML::ReadInteger(int node_index, int default_value)
+{
+ if(!SelectNode(node_index))
+  return default_value;
+
+ int res=atoi(GetNodeText());
+
+ SelectUp();
+ return res;
+}
+
+double USerStorageXML::ReadFloat(const std::string &name, double default_value)
+{
+ if(!SelectNode(name))
+  return default_value;
+
+ double res=atoi(GetNodeText());
+
+ SelectUp();
+ return res;
+}
+
+double USerStorageXML::ReadFloat(int node_index, double default_value)
+{
+ if(!SelectNode(node_index))
+  return default_value;
+
+ double res=atoi(GetNodeText());
+
+ SelectUp();
+ return res;
+}
+
+bool USerStorageXML::ReadBool(const std::string &name, bool default_value)
+{
+ if(!SelectNode(name))
+  return default_value;
+
+ bool res=atoi(GetNodeText());
+
+ SelectUp();
+ return res;
+}
+
+bool USerStorageXML::ReadBool(int node_index, bool default_value)
+{
+ if(!SelectNode(node_index))
+  return default_value;
+
+ bool res=atoi(GetNodeText());
+
+ SelectUp();
+ return res;
+}
+
+// «аписывает данные как соответствующий тип
+void USerStorageXML::WriteString(const std::string &name, const std::string &value)
+{
+ if(!SelectNode(name))
+  AddNode(name);
+
+ SetNodeText(value);
+
+ SelectUp();
+}
+
+void USerStorageXML::WriteInteger(const std::string &name, int value)
+{
+ if(!SelectNode(name))
+  AddNode(name);
+
+ SetNodeText(sntoa(value));
+
+ SelectUp();
+}
+
+void USerStorageXML::WriteFloat(const std::string &name, double value)
+{
+ if(!SelectNode(name))
+  AddNode(name);
+
+ SetNodeText(sntoa(value));
+
+ SelectUp();
+}
+
+void USerStorageXML::WriteBool(const std::string &name, bool value)
+{
+ if(!SelectNode(name))
+  AddNode(name);
+
+ SetNodeText(sntoa(value));
+
+ SelectUp();
+}
+// --------------------------
+
+
 
 // --------------------------
 // —крытые методы управлени€ данными

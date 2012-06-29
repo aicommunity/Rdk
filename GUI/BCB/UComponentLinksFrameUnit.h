@@ -10,8 +10,9 @@
 #include <ExtCtrls.hpp>
 #include "UComponentIOFrameUnit.h"
 #include <Vcl.ComCtrls.hpp>
+#include "TUVisualController.h"
 //---------------------------------------------------------------------------
-class TUComponentLinksFrame : public TFrame
+class TUComponentLinksFrame : public TUVisualControllerFrame
 {
 __published:	// IDE-managed Components
 	TGroupBox *GroupBox1;

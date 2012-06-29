@@ -8,11 +8,12 @@
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "UComponentsControlFrameUnit"
+#pragma link "TUVisualControllerFrameUnit"
 #pragma resource "*.dfm"
 TUComponentsControlForm *UComponentsControlForm;
 //---------------------------------------------------------------------------
 __fastcall TUComponentsControlForm::TUComponentsControlForm(TComponent* Owner)
-	: TForm(Owner)
+	: TUVisualControllerForm(Owner)
 {
 }
 //---------------------------------------------------------------------------

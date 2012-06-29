@@ -8,9 +8,10 @@
 #include <Vcl.StdCtrls.hpp>
 #include <Vcl.Forms.hpp>
 #include "UComponentsControlFrameUnit.h"
-#include "UComponentsControlFrameUnit.h"
+#include "TUVisualController.h"
+#include "TUVisualControllerFrameUnit.h"
 //---------------------------------------------------------------------------
-class TUComponentsControlForm : public TForm
+class TUComponentsControlForm : public TUVisualControllerForm
 {
 __published:	// IDE-managed Components
 	TUComponentsControlFrame *ComponentsControlFrame;

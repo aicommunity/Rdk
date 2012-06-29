@@ -12,10 +12,12 @@
 #include <ToolWin.hpp>
 #include <Vcl.ExtCtrls.hpp>
 #include <Vcl.ValEdit.hpp>
+#include "TUVisualControllerFrameUnit.h"
 #include <string>
 #include <vector>
+#include "TUVisualController.h"
 //---------------------------------------------------------------------------
-class TUComponentsListFrame : public TFrame
+class TUComponentsListFrame : public TUVisualControllerFrame
 {
 __published:	// IDE-managed Components
 	TPanel *Panel1;

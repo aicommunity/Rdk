@@ -16,12 +16,13 @@
 #include "UComponentsListFormUnit.h"
 #include <Menus.hpp>
 #include "VidGrab.hpp"
+#include "TUVisualController.h"
 
 class TVideoGrabberControlForm;
 
 //using namespace RDK::VCapture;
 //---------------------------------------------------------------------------
-class TVideoOutputFrame : public TFrame
+class TVideoOutputFrame : public TUVisualControllerFrame
 {
 __published:    // IDE-managed Components
     TGroupBox *GroupBox;

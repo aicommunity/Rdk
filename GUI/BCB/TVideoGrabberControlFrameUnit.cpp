@@ -11,9 +11,8 @@
 TVideoGrabberControlFrame *VideoGrabberControlFrame;
 //---------------------------------------------------------------------------
 __fastcall TVideoGrabberControlFrame::TVideoGrabberControlFrame(TComponent* Owner)
-    : TFrame(Owner)
+    : TUVisualControllerFrame(Owner)
 {
- UpdateCaptureInterfaceFlag=false;
  VideoGrabber=0;
  VideoOutputFrame=0;
 }
@@ -81,12 +80,26 @@ void __fastcall TVideoGrabberControlFrame::AssignListToComboBox (TComboBox* Comb
 	  ComboBox->ItemIndex = Index;
    }
 }
+// -----------------------------
 
-// Обновляет интерфейс фрейма
-void TVideoGrabberControlFrame::UpdateInterface(void)
+// -----------------------------
+// Методы управления визуальным интерфейсом
+// -----------------------------
+// Метод, вызываемый перед шагом расчета
+void TVideoGrabberControlFrame::ABeforeCalculate(void)
 {
- UpdateCaptureInterfaceFlag=true;
 
+}
+
+// Метод, вызываемый после шага расчета
+void TVideoGrabberControlFrame::AAfterCalculate(void)
+{
+
+}
+
+// Обновление интерфейса
+void TVideoGrabberControlFrame::AUpdateInterface(void)
+{
  if(VCapturePageControl->ActivePage != PictureFileTabSheet)
  {
   if(VideoGrabber->VideoSource == vs_VideoCaptureDevice)
@@ -106,55 +119,48 @@ void TVideoGrabberControlFrame::UpdateInterface(void)
 
   VFNameEdit->Text=VideoGrabber->PlayerFileName;
  }
- UpdateCaptureInterfaceFlag=false;
 }
 
-
-// Сохраняет информацию об источниках данных в заданный ini файл
-void TVideoGrabberControlFrame::SaveToIni(TMemIniFile *ini, const String &section)
+// Сохраняет параметры интерфейса в xml
+void TVideoGrabberControlFrame::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
 {
- if(!ini)
-  return;
-
- ini->WriteInteger(section,"Mode",GetMode());
+ xml.WriteInteger("Mode",GetMode());
  if(ExtractFilePath(VFNameEdit->Text).Length() == 0)
  {
-  ini->WriteString(section,"VideoFileName",UGEngineControlForm->ProjectPath+VFNameEdit->Text);
+  xml.WriteString("VideoFileName",AnsiString(UGEngineControlForm->ProjectPath+VFNameEdit->Text).c_str());
  }
  else
  {
-  ini->WriteString(section,"VideoFileName",VFNameEdit->Text);
+  xml.WriteString("VideoFileName",AnsiString(VFNameEdit->Text).c_str());
  }
 
  if(ExtractFilePath(ImageFileNameEdit->Text).Length() == 0)
  {
-  ini->WriteString(section,"PictureFileName",UGEngineControlForm->ProjectPath+ImageFileNameEdit->Text);
+  xml.WriteString("PictureFileName",AnsiString(UGEngineControlForm->ProjectPath+ImageFileNameEdit->Text).c_str());
  }
  else
  {
-  ini->WriteString(section,"PictureFileName",ImageFileNameEdit->Text);
+  xml.WriteString("PictureFileName",AnsiString(ImageFileNameEdit->Text).c_str());
  }
 }
 
-// Загружает информацию об источниках данных из заданного ini файла
-void TVideoGrabberControlFrame::LoadFromIni(TMemIniFile *ini, const String &section)
+// Загружает параметры интерфейса из xml
+void TVideoGrabberControlFrame::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
 {
- if(!ini)
-  return;
-
- VFNameEdit->Text=ini->ReadString(section,"VideoFileName","");
+ VFNameEdit->Text=xml.ReadString("VideoFileName","").c_str();
  if(ExtractFilePath(VFNameEdit->Text) == UGEngineControlForm->ProjectPath)
   VFNameEdit->Text=ExtractFileName(VFNameEdit->Text);
 
- ImageFileNameEdit->Text=ini->ReadString(section,"PictureFileName","");
+ ImageFileNameEdit->Text=xml.ReadString("PictureFileName","").c_str();
  if(ExtractFilePath(ImageFileNameEdit->Text) == UGEngineControlForm->ProjectPath)
   ImageFileNameEdit->Text=ExtractFileName(ImageFileNameEdit->Text);
 
- SelectMode(ini->ReadInteger(section,"Mode",1));
+ SelectMode(xml.ReadInteger("Mode",1));
 // VideoOutputFrame->InitByBmp(PicturesOpenDialog->FileName);
  UpdateInterface();
 }
 // -----------------------------
+
 void __fastcall TVideoGrabberControlFrame::DeviceComboBoxSelect(TObject *Sender)
 {
  VideoGrabber->VideoDevice = DeviceComboBox->ItemIndex;
@@ -204,7 +210,7 @@ void __fastcall TVideoGrabberControlFrame::VFBrowseButtonClick(TObject *Sender)
 
 void __fastcall TVideoGrabberControlFrame::VCapturePageControlChange(TObject *Sender)
 {
- if(UpdateCaptureInterfaceFlag)
+ if(UpdateInterfaceFlag)
   return;
 
  VideoOutputFrame->StopButtonClick(Sender);

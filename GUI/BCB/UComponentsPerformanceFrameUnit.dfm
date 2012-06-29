@@ -1,4 +1,4 @@
-object UComponentsPerformanceFrame: TUComponentsPerformanceFrame
+inherited UComponentsPerformanceFrame: TUComponentsPerformanceFrame
   Left = 0
   Top = 0
   Width = 454

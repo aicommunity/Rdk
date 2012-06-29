@@ -18,9 +18,10 @@
 #include <string>
 #include "UComponentsListFormUnit.h"
 #include "myrdk.h"
+#include "TUVisualController.h"
 //---------------------------------------------------------------------------
 #pragma warn -8130
-class TUComponentsPerformanceFrame : public TFrame, public RDK::UIVisualController
+class TUComponentsPerformanceFrame : public TUVisualControllerFrame
 {
 __published:	// IDE-managed Components
 	TChart *Chart;
@@ -40,26 +41,23 @@ public:		// User declarations
 // Массив длинных имен наблюдаемых компонент
 std::vector<std::string> ComponentNames;
 
-// Флаг текущего обновления интерфейса
-bool UpdateInterfaceFlag;
-
 // Указатель на форму выбора компоненты-источника
 TUComponentsListForm *MyComponentsListForm;
 
 // --------------------------
 // Методы управления фреймом
 // --------------------------
-void BeforeCalculate(void);
-void AfterCalculate(void);
+void ABeforeCalculate(void);
+void AAfterCalculate(void);
 
 // Обновляет интерфейс
-void UpdateInterface(void);
+void AUpdateInterface(void);
 
-// Сохраняет информацию об источниках данных в заданный ini файл
-void SaveToIni(TMemIniFile *ini, const String &section);
+// Сохраняет параметры интерфейса в xml
+void ASaveParameters(RDK::Serialize::USerStorageXML &xml);
 
-// Загружает информацию об источниках данных из заданного ini файла
-void LoadFromIni(TMemIniFile *ini, const String &section);
+// Загружает параметры интерфейса из xml
+void ALoadParameters(RDK::Serialize::USerStorageXML &xml);
 // --------------------------
 
 // Возвращает число наблюдаемых компонент

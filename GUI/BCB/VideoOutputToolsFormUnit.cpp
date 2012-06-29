@@ -22,7 +22,7 @@ __fastcall TVideoOutputToolsForm::TVideoOutputToolsForm(TComponent* Owner,
 	int& _PointIndex,
 	int& _PointFlag)
 
-	: TForm(Owner),
+	: TUVisualControllerForm(Owner),
 	MyVideoOutputFrame(_MyVideoOutputFrame),
 	GeometryGraphics(_GeometryGraphics),
 //	SampleGeometryGraphics(_SampleGeometryGraphics),
@@ -162,5 +162,6 @@ void __fastcall TVideoOutputToolsForm::DelAllPointsButtonClick(TObject *Sender)
  MyVideoOutputFrame->UpdateVideo();
 }
 //---------------------------------------------------------------------------
+
 
 

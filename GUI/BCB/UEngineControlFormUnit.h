@@ -17,8 +17,10 @@
 #include <Vcl.Menus.hpp>
 #include <Vcl.ToolWin.hpp>
 #include "myrdk.h"
+#include "TUVisualController.h"
+#include "TUVisualControllerFormUnit.h"
 //---------------------------------------------------------------------------
-class TUEngineControlForm : public TForm, public RDK::UIVisualController
+class TUEngineControlForm : public TUVisualControllerForm
 {
 __published:	// IDE-managed Components
 	TPanel *Panel1;
@@ -73,7 +75,6 @@ __published:	// IDE-managed Components
 	void __fastcall Performance1Click(TObject *Sender);
 	void __fastcall LoadProjectItemClick(TObject *Sender);
 	void __fastcall SaveProjectItemClick(TObject *Sender);
-	void __fastcall FormHide(TObject *Sender);
 	void __fastcall WatchWindow1Click(TObject *Sender);
 
 
@@ -81,11 +82,11 @@ private:	// User declarations
 public:		// User declarations
 	__fastcall TUEngineControlForm(TComponent* Owner);
 
-// Признак обновления интерфейса
-bool UpdateInterfaceFlag;
+// Признак наличия открытого проекта
+bool ProjectOpenFlag;
 
 // Файл настроек программы
-TMemIniFile *ProjectIni;
+RDK::Serialize::USerStorageXML ProjectXml;
 
 // Путь до папки проекта
 String ProjectPath;
@@ -109,9 +110,15 @@ int InputEnvImageWidth, InputEnvImageHeight;
 int PredefinedStructure;
 
 // Обновление интерфейса
-void BeforeCalculate(void);
-void AfterCalculate(void);
-void UpdateInterface(void);
+void ABeforeCalculate(void);
+void AAfterCalculate(void);
+void AUpdateInterface(void);
+
+// Сохраняет параметры интерфейса в xml
+virtual void ASaveParameters(RDK::Serialize::USerStorageXML &xml);
+
+// Загружает параметры интерфейса из xml
+virtual void ALoadParameters(RDK::Serialize::USerStorageXML &xml);
 
 // Создает новый проект
 void CreateProject(const String &FileName);

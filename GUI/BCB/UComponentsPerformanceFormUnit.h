@@ -8,13 +8,12 @@
 #include <Vcl.StdCtrls.hpp>
 #include <Vcl.Forms.hpp>
 #include "UComponentsPerformanceFrameUnit.h"
+#include "TUVisualController.h"
 //---------------------------------------------------------------------------
-class TUComponentsPerformanceForm : public TForm
+class TUComponentsPerformanceForm : public TUVisualControllerForm
 {
 __published:	// IDE-managed Components
 	TUComponentsPerformanceFrame *UComponentsPerformanceFrame;
-	void __fastcall FormShow(TObject *Sender);
-	void __fastcall FormHide(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
 	__fastcall TUComponentsPerformanceForm(TComponent* Owner);

@@ -1,12 +1,11 @@
-object UClassesListFrame: TUClassesListFrame
-  Left = 0
-  Top = 0
+inherited UClassesListFrame: TUClassesListFrame
   Width = 507
   Height = 447
   DoubleBuffered = True
   ParentDoubleBuffered = False
-  TabOrder = 0
   OnResize = FrameResize
+  ExplicitWidth = 507
+  ExplicitHeight = 447
   object StringGrid: TStringGrid
     Left = 0
     Top = 0

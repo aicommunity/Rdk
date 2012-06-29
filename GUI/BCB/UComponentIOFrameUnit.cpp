@@ -13,7 +13,7 @@
 TUComponentIOFrame *UComponentIOFrame;
 //---------------------------------------------------------------------------
 __fastcall TUComponentIOFrame::TUComponentIOFrame(TComponent* Owner)
-	: TFrame(Owner)
+	: TUVisualControllerFrame(Owner)
 {
  // Указатель на рассматриваемую сеть
 // Net=0;
@@ -29,10 +29,6 @@ __fastcall TUComponentIOFrame::TUComponentIOFrame(TComponent* Owner)
  // 1 - показывать только входы (выходы, связи) своего уровня
  // 2 - показывать входы (выходы, связи) своего уровня, и всех вложенных сетей
  ShowModifier=1;
-
-
- // Флаг обновления интерфейса
- UpdateInterfaceFlag=false;
 }
 //---------------------------------------------------------------------------
 
@@ -277,12 +273,26 @@ void __fastcall TUComponentIOFrame::ShowLinks(void)
  if(StringGrid->RowCount>current_row && current_row>0)
   StringGrid->Row=current_row;
 }
+// -----------------
 
-// Отрисовывает текущее состояние фрейма
-void __fastcall TUComponentIOFrame::UpdateInterface(void)
+// -----------------------------
+// Методы управления визуальным интерфейсом
+// -----------------------------
+// Метод, вызываемый перед шагом расчета
+void TUComponentIOFrame::ABeforeCalculate(void)
 {
- UpdateInterfaceFlag=true;
 
+}
+
+// Метод, вызываемый после шага расчета
+void TUComponentIOFrame::AAfterCalculate(void)
+{
+
+}
+
+// Обновление интерфейса
+void TUComponentIOFrame::AUpdateInterface(void)
+{
  Clear();
  switch(Mode)
  {
@@ -304,9 +314,20 @@ void __fastcall TUComponentIOFrame::UpdateInterface(void)
  }
 
  FrameResize(this);
- UpdateInterfaceFlag=false;
 }
-// -----------------
+
+// Сохраняет параметры интерфейса в xml
+void TUComponentIOFrame::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
+{
+
+}
+
+// Загружает параметры интерфейса из xml
+void TUComponentIOFrame::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
+{
+
+}
+// -----------------------------
 
 void __fastcall TUComponentIOFrame::FrameResize(TObject *Sender)
 {

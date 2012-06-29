@@ -9,23 +9,19 @@
 #pragma package(smart_init)
 #pragma link "UClassesListFrameUnit"
 #pragma link "UComponentsListFrameUnit"
+#pragma link "TUVisualControllerFrameUnit"
 #pragma resource "*.dfm"
 TUComponentsControlFrame *UComponentsControlFrame;
 //---------------------------------------------------------------------------
 __fastcall TUComponentsControlFrame::TUComponentsControlFrame(TComponent* Owner)
-	: TFrame(Owner)
+	: TUVisualControllerFrame(Owner)
 {
- UpdateInterfaceFlag=false;
 }
 //---------------------------------------------------------------------------
-void TUComponentsControlFrame::UpdateInterface(void)
+void TUComponentsControlFrame::AUpdateInterface(void)
 {
- UpdateInterfaceFlag=true;
-
  ClassesListFrame->UpdateInterface();
  ComponentsListFrame->UpdateInterface();
-
- UpdateInterfaceFlag=false;
 }
 
 // Сохраняет выбранную модель

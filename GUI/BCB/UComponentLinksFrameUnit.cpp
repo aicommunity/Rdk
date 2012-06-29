@@ -13,7 +13,7 @@ TUComponentLinksFrame *UComponentLinksFrame;
 
 //---------------------------------------------------------------------------
 __fastcall TUComponentLinksFrame::TUComponentLinksFrame(TComponent* Owner)
-	: TFrame(Owner)
+	: TUVisualControllerFrame(Owner)
 {
 // Network=0;
  Init();

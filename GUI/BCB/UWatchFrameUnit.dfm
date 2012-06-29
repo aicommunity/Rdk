@@ -1,4 +1,4 @@
-object UWatchFrame: TUWatchFrame
+inherited UWatchFrame: TUWatchFrame
   Left = 0
   Top = 0
   Width = 656

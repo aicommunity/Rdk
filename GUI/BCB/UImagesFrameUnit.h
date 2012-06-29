@@ -17,11 +17,12 @@
 #include <vector>
 #include "UComponentsListFormUnit.h"
 #include "myrdk.h"
+#include "TUVisualController.h"
 
 #pragma warn -8130
 class TUComponentsListForm;
 //---------------------------------------------------------------------------
-class TUImagesFrame : public TFrame, public RDK::UIVisualController
+class TUImagesFrame : public TUVisualControllerFrame
 {
 __published:    // IDE-managed Components
     TDrawGrid *DrawGrid;
@@ -116,16 +117,16 @@ Graphics::TBitmap* GetImage(void);
 // --------------------------
 // Методы управления фреймом
 // --------------------------
-void BeforeCalculate(void);
-void AfterCalculate(void);
+void ABeforeCalculate(void);
+void AAfterCalculate(void);
 
-void UpdateInterface(void);
+void AUpdateInterface(void);
 
-// Сохраняет информацию об источниках данных в заданный ini файл
-void SaveToIni(TMemIniFile *ini, const String &section);
+// Сохраняет параметры интерфейса в xml
+virtual void ASaveParameters(RDK::Serialize::USerStorageXML &xml);
 
-// Загружает информацию об источниках данных из заданного ini файла
-void LoadFromIni(TMemIniFile *ini, const String &section);
+// Загружает параметры интерфейса из xml
+virtual void ALoadParameters(RDK::Serialize::USerStorageXML &xml);
 // --------------------------
 
 };

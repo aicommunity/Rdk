@@ -14,41 +14,49 @@
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
+#pragma link "TUVisualControllerFormUnit"
 #pragma resource "*.dfm"
 TUEngineControlForm *UEngineControlForm;
 //---------------------------------------------------------------------------
 __fastcall TUEngineControlForm::TUEngineControlForm(TComponent* Owner)
-	: TForm(Owner)
+	: TUVisualControllerForm(Owner)
 {
- UpdateInterfaceFlag=false;
  ProjectAutoSaveFlag=true;
+ ProjectOpenFlag=false;
 }
 //---------------------------------------------------------------------------
-void TUEngineControlForm::BeforeCalculate(void)
+void TUEngineControlForm::ABeforeCalculate(void)
 {
 
 }
 
-void TUEngineControlForm::AfterCalculate(void)
+void TUEngineControlForm::AAfterCalculate(void)
 {
 
 }
 
-void TUEngineControlForm::UpdateInterface(void)
+void TUEngineControlForm::AUpdateInterface(void)
 {
- UpdateInterfaceFlag=true;
-
  if(UComponentsPerformanceForm->Visible)
   UComponentsPerformanceForm->UComponentsPerformanceFrame->UpdateInterface();
 
  Caption="Engine Control";
- if(ProjectIni)
+ if(ProjectOpenFlag)
  {
   Caption=Caption+String(" [")+ProjectName+"]";
  }
 
  StatusBar->SimpleText=UEngineMonitorForm->EngineMonitorFrame->StatusBar->SimpleText;
- UpdateInterfaceFlag=false;
+}
+
+// Сохраняет параметры интерфейса в xml
+void TUEngineControlForm::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
+{
+}
+
+// Загружает параметры интерфейса из xml
+void TUEngineControlForm::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
+{
 }
 
 // Создает новый проект
@@ -65,12 +73,12 @@ void TUEngineControlForm::CloseProject(void)
  if(ProjectAutoSaveFlag)
   SaveProject();
 
- if(ProjectIni)
+ if(ProjectOpenFlag)
  {
-  delete ProjectIni;
   ProjectName="";
   ProjectPath="";
  }
+ ProjectOpenFlag=false;
  UpdateInterface();
 }
 
@@ -78,18 +86,19 @@ void TUEngineControlForm::CloseProject(void)
 void TUEngineControlForm::OpenProject(const String &FileName)
 {
  CloseProject();
- ProjectIni=new TMemIniFile(OpenDialog->FileName);
+// ProjectSerialize.SetXml(&ProjectXml);
+ ProjectXml.LoadFromFile(AnsiString(OpenDialog->FileName).c_str(),"");
  ProjectPath=ExtractFilePath(OpenDialog->FileName);
  ProjectName=ExtractFileName(OpenDialog->FileName);
 
  // Флаг автоматического сохранения проекта
- ProjectAutoSaveFlag=ProjectIni->ReadInteger("General","ProjectAutoSaveFlag",1);
-
- PredefinedStructure=ProjectIni->ReadInteger("General","PredefinedStructure",0);
+ ProjectXml.SelectNodeRoot("Project/General");
+ ProjectAutoSaveFlag=ProjectXml.ReadInteger("ProjectAutoSaveFlag",1);
+ PredefinedStructure=ProjectXml.ReadInteger("PredefinedStructure",0);
+ String modelfilename=ProjectXml.ReadString("ModelFileName","").c_str();
 
  EngineInit(PredefinedStructure,ExceptionHandler);
 
- String modelfilename=ProjectIni->ReadString("General","ModelFileName","");
  if(modelfilename.Length() != 0)
  {
   if(ExtractFilePath(modelfilename).Length() == 0)
@@ -98,21 +107,25 @@ void TUEngineControlForm::OpenProject(const String &FileName)
    UComponentsControlForm->ComponentsControlFrame->LoadModelFromFile(modelfilename);
  }
 
- UEngineMonitorForm->EngineMonitorFrame->LoadFromIni(ProjectIni,"EngineMonitorForm");
- UComponentsPerformanceForm->UComponentsPerformanceFrame->LoadFromIni(ProjectIni,"PerformanceFrame");
+ ProjectXml.SelectNodeRoot(string("Project/Interfaces/"));
+ RDK::UIVisualControllerStorage::LoadParameters(ProjectXml);
+
  UpdateInterface();
+ ProjectOpenFlag=true;
 }
 
 // Сохраняет проект
 void TUEngineControlForm::SaveProject(void)
 {
- if(!ProjectIni)
+ if(!ProjectOpenFlag)
   return;
 
- UEngineMonitorForm->EngineMonitorFrame->SaveToIni(ProjectIni,"EngineMonitorForm");
- UComponentsPerformanceForm->UComponentsPerformanceFrame->SaveToIni(ProjectIni,"PerformanceFrame");
+ ProjectXml.SelectNodeRoot(string("Project/Interfaces/"));
+ RDK::UIVisualControllerStorage::SaveParameters(ProjectXml);
 
- String modelfilename=ProjectIni->ReadString("General","ModelFileName","");
+ ProjectXml.SelectNodeRoot("Project/General");
+
+ String modelfilename=ProjectXml.ReadString("ModelFileName","").c_str();
  if(modelfilename.Length() != 0)
  {
   if(ExtractFilePath(modelfilename).Length() == 0)
@@ -121,19 +134,14 @@ void TUEngineControlForm::SaveProject(void)
    UComponentsControlForm->ComponentsControlFrame->SaveModelToFile(modelfilename);
  }
 
- ProjectIni->WriteInteger("General","PredefinedStructure",PredefinedStructure);
-
- // Флаг автоматического сохранения проекта
- ProjectIni->WriteInteger("General","ProjectAutoSaveFlag",ProjectAutoSaveFlag);
-
- ProjectIni->UpdateFile();
+ ProjectXml.WriteInteger("PredefinedStructure",PredefinedStructure);
+ ProjectXml.WriteInteger("ProjectAutoSaveFlag",ProjectAutoSaveFlag);
+ ProjectXml.SaveToFile(AnsiString(ProjectPath+ProjectName).c_str());
 }
 
 
 void __fastcall TUEngineControlForm::FormShow(TObject *Sender)
 {
- if(UEngineMonitorForm)
-  UEngineMonitorForm->AddInterface(this);
  UpdateInterface();
 }
 //---------------------------------------------------------------------------
@@ -144,11 +152,6 @@ void __fastcall TUEngineControlForm::FormShow(TObject *Sender)
 void __fastcall TUEngineControlForm::FormClose(TObject *Sender, TCloseAction &Action)
 {
  SaveProjectItemClick(Sender);
- if(ProjectIni)
- {
-  delete ProjectIni;
-  ProjectIni=0;
- }
 }
 //---------------------------------------------------------------------------
 
@@ -227,15 +230,6 @@ void __fastcall TUEngineControlForm::SaveProjectItemClick(TObject *Sender)
  SaveProject();
 }
 //---------------------------------------------------------------------------
-
-
-void __fastcall TUEngineControlForm::FormHide(TObject *Sender)
-{
- if(UEngineMonitorForm)
-  UEngineMonitorForm->DelInterface(this);
-}
-//---------------------------------------------------------------------------
-
 void __fastcall TUEngineControlForm::WatchWindow1Click(TObject *Sender)
 {
  UWatchWindowForm->Show();

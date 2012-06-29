@@ -12,21 +12,9 @@
 TUImagesForm *UImagesForm;
 //---------------------------------------------------------------------------
 __fastcall TUImagesForm::TUImagesForm(TComponent* Owner)
-	: TForm(Owner)
+	: TUVisualControllerForm(Owner)
 {
 }
 
-void __fastcall TUImagesForm::FormShow(TObject *Sender)
-{
- if(UEngineMonitorForm)
-  UEngineMonitorForm->AddInterface(ImagesFrame);
-}
-//---------------------------------------------------------------------------
 
-void __fastcall TUImagesForm::FormHide(TObject *Sender)
-{
- if(UEngineMonitorForm)
-  UEngineMonitorForm->DelInterface(ImagesFrame);
-}
-//---------------------------------------------------------------------------
 

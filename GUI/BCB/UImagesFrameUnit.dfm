@@ -1,4 +1,4 @@
-object UImagesFrame: TUImagesFrame
+inherited UImagesFrame: TUImagesFrame
   Left = 0
   Top = 0
   Width = 667

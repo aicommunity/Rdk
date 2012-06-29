@@ -101,13 +101,13 @@ basic_string<CharT>& ntoa(NumT n, basic_string<CharT> &buf)
 }
 
 template<typename NumT>
-string& sntoa(NumT n)
+string sntoa(NumT n)
 {
  return ntoa(n,ustrbuf);
 }
 
 template<typename NumT>
-wstring& wntoa(NumT n)
+wstring wntoa(NumT n)
 {
  return ntoa(n,uwstrbuf);
 }
@@ -123,13 +123,13 @@ basic_string<CharT>& ntoa(NumT n, int digs, basic_string<CharT> &buf)
 }
 
 template<typename NumT>
-string& sntoa(NumT n,int digs)
+string sntoa(NumT n,int digs)
 {
  return ntoa(n,digs,ustrbuf);
 }
 
 template<typename NumT>
-wstring& wntoa(NumT n,int digs)
+wstring wntoa(NumT n,int digs)
 {
  return ntoa(n,digs,uwstrbuf);
 }

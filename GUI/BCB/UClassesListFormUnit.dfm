@@ -25,9 +25,13 @@ object UClassesListForm: TUClassesListForm
     TabOrder = 0
     ExplicitLeft = 20
     ExplicitTop = -204
+    ExplicitWidth = 527
+    ExplicitHeight = 243
     inherited StringGrid: TStringGrid
       Width = 527
       Height = 243
+      ExplicitWidth = 527
+      ExplicitHeight = 243
     end
   end
 end

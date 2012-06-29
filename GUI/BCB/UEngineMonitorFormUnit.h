@@ -10,12 +10,13 @@
 #include <ComCtrls.hpp>
 #include "UEngineMonitorFrameUnit.h"
 #include "UEngineMonitorFrameUnit.h"
+#include "TUVisualController.h"
 //---------------------------------------------------------------------------
 
 void ExceptionHandler(void);
 
 //---------------------------------------------------------------------------
-class TUEngineMonitorForm : public TForm
+class TUEngineMonitorForm : public TUVisualControllerForm
 {
 __published:	// IDE-managed Components
 	TUEngineMonitorFrame *EngineMonitorFrame;
@@ -24,12 +25,11 @@ private:	// User declarations
 public:		// User declarations
 	__fastcall TUEngineMonitorForm(TComponent* Owner);
 
+// Сохраняет параметры интерфейса в xml
+virtual void ASaveParameters(RDK::Serialize::USerStorageXML &xml);
 
-// Добавляет обработчик в список
-void AddInterface(RDK::UIVisualController *value);
-
-// Удаляет обработчик из списка
-void DelInterface(RDK::UIVisualController *value);
+// Загружает параметры интерфейса из xml
+virtual void ALoadParameters(RDK::Serialize::USerStorageXML &xml);
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TUEngineMonitorForm *UEngineMonitorForm;

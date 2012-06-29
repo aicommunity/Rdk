@@ -15,8 +15,9 @@
 #include <IniFiles.hpp>
 #include "VidGrab.hpp"
 #include "VideoOutputFrameUnit.h"
+#include "TUVisualController.h"
 //---------------------------------------------------------------------------
-class TVideoGrabberControlFrame : public TFrame
+class TVideoGrabberControlFrame : public TUVisualControllerFrame
 {
 __published:    // IDE-managed Components
     TPageControl *VCapturePageControl;
@@ -28,7 +29,7 @@ __published:    // IDE-managed Components
     TComboBox *VideoSizeComboBox;
     TComboBox *InputComboBox;
     TComboBox *DeviceComboBox;
-    TTabSheet *VideoFileTabSheet;
+	TTabSheet *VideoFileTabSheet;
     TPanel *VFCapturePanel;
     TLabel *VideoFileNameLabel;
     TEdit *VFNameEdit;
@@ -58,7 +59,6 @@ public:        // User declarations
     __fastcall TVideoGrabberControlFrame(TComponent* Owner);
 
 protected:
-bool UpdateCaptureInterfaceFlag;
 
 TVideoGrabber* VideoGrabber;
 TVideoOutputFrame *VideoOutputFrame;
@@ -77,15 +77,25 @@ int GetMode(void) const;
 void SelectMode(int mode);
 
 void __fastcall AssignListToComboBox (TComboBox* ComboBox, String List, int Index);
+// -----------------------------
 
-// Обновляет интерфейс фрейма
-void UpdateInterface(void);
+// -----------------------------
+// Методы управления визуальным интерфейсом
+// -----------------------------
+// Метод, вызываемый перед шагом расчета
+void ABeforeCalculate(void);
 
-// Сохраняет информацию об источниках данных в заданный ini файл
-void SaveToIni(TMemIniFile *ini, const String &section);
+// Метод, вызываемый после шага расчета
+void AAfterCalculate(void);
 
-// Загружает информацию об источниках данных из заданного ini файла
-void LoadFromIni(TMemIniFile *ini, const String &section);
+// Обновление интерфейса
+void AUpdateInterface(void);
+
+// Сохраняет параметры интерфейса в xml
+void ASaveParameters(RDK::Serialize::USerStorageXML &xml);
+
+// Загружает параметры интерфейса из xml
+void ALoadParameters(RDK::Serialize::USerStorageXML &xml);
 // -----------------------------
 
 

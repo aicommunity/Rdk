@@ -17,9 +17,10 @@
 #include <Vcl.Menus.hpp>
 #include <Vcl.ToolWin.hpp>
 #include "myrdk.h"
+#include "TUVisualController.h"
 //---------------------------------------------------------------------------
 #pragma warn -8130
-class TUGEngineControlForm : public TForm, public RDK::UIVisualController
+class TUGEngineControlForm : public TUVisualControllerForm
 {
 __published:	// IDE-managed Components
 	TPanel *Panel1;
@@ -87,18 +88,17 @@ __published:	// IDE-managed Components
 	void __fastcall Performance1Click(TObject *Sender);
 	void __fastcall LoadProjectItemClick(TObject *Sender);
 	void __fastcall SaveProjectItemClick(TObject *Sender);
-	void __fastcall FormHide(TObject *Sender);
 
 
 private:	// User declarations
 public:		// User declarations
 	__fastcall TUGEngineControlForm(TComponent* Owner);
 
-// Признак обновления интерфейса
-bool UpdateInterfaceFlag;
-
 // Файл настроек программы
-TMemIniFile *ProjectIni;
+RDK::Serialize::USerStorageXML ProjectXml;
+
+// Признак наличия открытого проекта
+bool ProjectOpenFlag;
 
 // Путь до папки проекта
 String ProjectPath;
@@ -128,13 +128,13 @@ int DefaultTimeStep;
 int GlobalTimeStep;
 
 // Обновление интерфейса
-void UpdateInterface(void);
+void AUpdateInterface(void);
 
 // Метод, вызываемый перед шагом расчета
-void BeforeCalculate(void);
+void ABeforeCalculate(void);
 
 // Метод, вызываемый после шага расчета
-void AfterCalculate(void);
+void AAfterCalculate(void);
 
 // Создает новый проект
 void CreateProject(const String &FileName);

@@ -8,21 +8,20 @@
 #include "rdk_initdll.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
+#pragma link "TUVisualControllerFrameUnit"
 #pragma resource "*.dfm"
 TUClassesListFrame *UClassesListFrame;
 //---------------------------------------------------------------------------
 __fastcall TUClassesListFrame::TUClassesListFrame(TComponent* Owner)
-	: TFrame(Owner)
+	: TUVisualControllerFrame(Owner)
 {
  UpdateInterfaceFlag=false;
 }
 //---------------------------------------------------------------------------
 
 // Отрисовка фрейма
-void TUClassesListFrame::UpdateInterface(void)
+void TUClassesListFrame::AUpdateInterface(void)
 {
- UpdateInterfaceFlag=true;
-
  int numclasses=Storage_GetNumClasses();
 
  int row=StringGrid->Row;
@@ -46,8 +45,6 @@ void TUClassesListFrame::UpdateInterface(void)
 
  if(row<StringGrid->RowCount)
   StringGrid->Row=row;
-
- UpdateInterfaceFlag=false;
 }
 
 

@@ -11,8 +11,9 @@
 #include <Menus.hpp>
 #include <IniFiles.hpp>
 #include <Vcl.ComCtrls.hpp>
+#include "TUVisualController.h"
 //---------------------------------------------------------------------------
-class TVideoOutputForm : public TForm
+class TVideoOutputForm : public TUVisualControllerForm
 {
 __published:	// IDE-managed Components
 	TPageControl *PageControl;

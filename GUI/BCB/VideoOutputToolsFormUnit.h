@@ -9,11 +9,12 @@
 #include <Forms.hpp>
 #include <CheckLst.hpp>
 #include <ExtCtrls.hpp>
-#include "rdk.h"
+#include "myrdk.h"
+#include "TUVisualController.h"
 
 class TVideoOutputFrame;
 //---------------------------------------------------------------------------
-class TVideoOutputToolsForm : public TForm
+class TVideoOutputToolsForm : public TUVisualControllerForm
 {
 __published:	// IDE-managed Components
 	TPanel *FigurePanel;

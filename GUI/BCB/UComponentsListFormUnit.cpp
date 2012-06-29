@@ -12,7 +12,7 @@
 TUComponentsListForm *UComponentsListForm;
 //---------------------------------------------------------------------------
 __fastcall TUComponentsListForm::TUComponentsListForm(TComponent* Owner)
-	: TForm(Owner)
+	: TUVisualControllerForm(Owner)
 {
 }
 //---------------------------------------------------------------------------

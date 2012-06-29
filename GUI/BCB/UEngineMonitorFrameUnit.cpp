@@ -13,9 +13,8 @@ TUEngineMonitorFrame *UEngineMonitorFrame;
 
 //---------------------------------------------------------------------------
 __fastcall TUEngineMonitorFrame::TUEngineMonitorFrame(TComponent* Owner)
-	: TFrame(Owner)
+	: TUVisualControllerFrame(Owner)
 {
- UpdateInterfaceFlag=false;
  CalculateMode=0;
 }
 
@@ -30,27 +29,8 @@ void TUEngineMonitorFrame::SetCalculateMode(int value)
  CalculateMode=value;
 }
 
-// Добавляет обработчик в список
-void TUEngineMonitorFrame::AddInterface(RDK::UIVisualController* value)
+void TUEngineMonitorFrame::AUpdateInterface(void)
 {
- std::vector<RDK::UIVisualController*>::iterator I=find(InterfaceUpdaters.begin(),InterfaceUpdaters.end(),value);
- if(I == InterfaceUpdaters.end())
-  InterfaceUpdaters.push_back(value);
-}
-
-// Удаляет обработчик из списка
-void TUEngineMonitorFrame::DelInterface(RDK::UIVisualController* value)
-{
- std::vector<RDK::UIVisualController*>::iterator I=find(InterfaceUpdaters.begin(),InterfaceUpdaters.end(),value);
- if(I != InterfaceUpdaters.end())
-  InterfaceUpdaters.erase(I);
-}
-
-void TUEngineMonitorFrame::UpdateInterface(void)
-{
- UpdateInterfaceFlag=true;
-
-
  StatusBar->SimpleText=String("Model Time=")+FloatToStrF(Model_GetDoubleTime(),ffFixed,3,3)
 				+String("; Real Time=")+FloatToStrF(Model_GetDoubleRealTime(),ffFixed,3,3)
 				+String("; Model Duration Time=")+FloatToStrF(Model_GetFullStepDuration("")/1000.0,ffFixed,3,3)
@@ -58,29 +38,19 @@ void TUEngineMonitorFrame::UpdateInterface(void)
  StatusBar->Repaint();
  StatusBar->Update();
 
- for(size_t i=0;i<InterfaceUpdaters.size();i++)
-  InterfaceUpdaters[i]->UpdateInterface();
- UpdateInterfaceFlag=false;
+ RDK::UIVisualControllerStorage::UpdateInterface();
 }
 
-
-// Сохраняет информацию в заданный ini файл
-void TUEngineMonitorFrame::SaveToIni(TMemIniFile *ini, const String &section)
+// Сохраняет параметры интерфейса в xml
+void TUEngineMonitorFrame::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
 {
- if(!ini)
-  return;
-
- ini->EraseSection(section);
- ini->WriteInteger(section,"CalculateMode",GetCalculateMode());
+ xml.WriteInteger("CalculateMode",GetCalculateMode());
 }
 
-// Загружает информацию из заданного ini файла
-void TUEngineMonitorFrame::LoadFromIni(TMemIniFile *ini, const String &section)
+// Загружает параметры интерфейса из xml
+void TUEngineMonitorFrame::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
 {
- if(!ini)
-  return;
-
- SetCalculateMode(ini->ReadInteger(section,"CalculateMode",0));
+ SetCalculateMode(xml.ReadInteger("CalculateMode",0));
 }
 //---------------------------------------------------------------------------
 
@@ -104,8 +74,7 @@ void __fastcall TUEngineMonitorFrame::Reset1Click(TObject *Sender)
 
 void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
 {
- for(size_t i=0;i<InterfaceUpdaters.size();i++)
-  InterfaceUpdaters[i]->BeforeCalculate();
+ RDK::UIVisualControllerStorage::BeforeCalculate();
 
  switch(CalculateMode)
  {
@@ -118,8 +87,7 @@ void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
  break;
  }
 
- for(size_t i=0;i<InterfaceUpdaters.size();i++)
-  InterfaceUpdaters[i]->AfterCalculate();
+ RDK::UIVisualControllerStorage::AfterCalculate();
  UpdateInterface();
 }
 //---------------------------------------------------------------------------
