@@ -27,6 +27,28 @@ __fastcall TUVisualControllerFrame::~TUVisualControllerFrame(void)
 // -----------------------------
 // Методы управления визуальным интерфейсом
 // -----------------------------
+// Метод, вызываемый перед сбросом модели
+void TUVisualControllerFrame::BeforeReset(void)
+{
+ ABeforeReset();
+}
+
+void TUVisualControllerFrame::ABeforeReset(void)
+{
+
+}
+
+// Метод, вызываемый после сброса модели
+void TUVisualControllerFrame::AfterReset(void)
+{
+ AAfterReset();
+}
+
+void TUVisualControllerFrame::AAfterReset(void)
+{
+
+}
+
 // Метод, вызываемый перед шагом расчета
 void TUVisualControllerFrame::BeforeCalculate(void)
 {

@@ -24,6 +24,14 @@ public:
 // -----------------------------
 // Методы управления визуальным интерфейсом
 // -----------------------------
+// Метод, вызываемый перед сбросом модели
+virtual void BeforeReset(void);
+virtual void ABeforeReset(void);
+
+// Метод, вызываемый после сброса модели
+virtual void AfterReset(void);
+virtual void AAfterReset(void);
+
 // Метод, вызываемый перед шагом расчета
 virtual void BeforeCalculate(void);
 virtual void ABeforeCalculate(void);

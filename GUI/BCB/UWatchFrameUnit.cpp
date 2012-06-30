@@ -13,6 +13,7 @@
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
+#pragma link "TUVisualControllerFrameUnit"
 #pragma resource "*.dfm"
 TUWatchFrame *UWatchFrame;
 
@@ -123,7 +124,7 @@ __fastcall TUWatchFrame::TUWatchFrame(TComponent* Owner)
  SetLegendPosition(5);
  ModifyState=false;
  Chart1->BufferedDisplay=true;
- CacheSize=100;
+ CacheSize=10;
 }
 
 __fastcall TUWatchFrame::~TUWatchFrame(void)
@@ -148,213 +149,6 @@ bool __fastcall TUWatchFrame::GetModifyState(void)
   }
 
  return false;
-}
-
-
-// Сохранение и загрузка описания графика в файл
-bool TUWatchFrame::SaveToIni(TMemIniFile *ini, const String &section)
-{
- if(!ini)
-  return false;
-
- return true;
-}
-
-bool TUWatchFrame::LoadFromIni(TMemIniFile *ini, const String &section)
-{
- if(!ini)
-  return false;
-
- return true;
-}
-
-// Собирает информацию об открытых сериях в файл 'watchname'
-// Если 'collectstate' == 'true', то сохраняет также накопленную информацию
-bool __fastcall TUWatchFrame::CollectInfo(string watchname, bool collectstate)
-{
- TMemIniFile *ini;
- char *out=0;
- int len;
- char buffer[32];
- string *sp;
-
- if(NameList.size() == 0)
-  return true;
-
- ini=new TMemIniFile(watchname.c_str());
- if(!ini)
-  return false;
-
- ini->Clear();
-
- String s=UShowProgressBarForm->GetBarHeader(1);
- UShowProgressBarForm->ResetBarStatus(1,0,NameList.size());
-
- // Пробегаем по списку всех открытых серий
- for(int seriesindex=0;seriesindex<(int)NameList.size();seriesindex++)
-  {
-   UShowProgressBarForm->SetBarHeader(1,s+" - "+NameList[seriesindex].Legend.c_str()+":");
-
-   ini->WriteString(IntToStr(seriesindex),"Legend",NameList[seriesindex].Legend.c_str());
-   ini->WriteString(IntToStr(seriesindex),"YShift",FloatToStr(NameList[seriesindex].YShift));
-   ini->WriteString(IntToStr(seriesindex),"Color",IntToStr(NameList[seriesindex].Color));
-   ini->WriteString(IntToStr(seriesindex),"Style",IntToStr(NameList[seriesindex].Style));
-   ini->WriteString(IntToStr(seriesindex),"Visible",IntToStr(int(NameList[seriesindex].Visible)));
-   ini->WriteString(IntToStr(seriesindex),"LineWidth",IntToStr(int(NameList[seriesindex].LineWidth)));
-   ini->WriteString(IntToStr(seriesindex),"DataSourceName",NameList[seriesindex].DataSourceName.c_str());
-   ini->WriteString(IntToStr(seriesindex),"OutputIndex",IntToStr(int(NameList[seriesindex].OutputIndex)));
-   ini->WriteString(IntToStr(seriesindex),"OutputElementIndex",IntToStr(int(NameList[seriesindex].OutputElementIndex)));
-
-   if(collectstate)
-	{
-	 delete[] out;
-	 out=new char[31*Chart1->Series[seriesindex]->Count()+1];
-	 *out='\0';
-	 len=0;
-	 for(int k=0;k<Chart1->Series[seriesindex]->Count();k++)
-	 {
-	  *buffer='\0';
-	  sprintf(buffer,"%f|",Chart1->Series[seriesindex]->XValue[k]);
-	  memcpy(out+len,buffer,strlen(buffer));
-	  len+=strlen(buffer);
-	 }
-	 out[len]='\0';
-	 ini->WriteString(IntToStr(seriesindex),"XDATA",out);
-
-	 *out='\0';
-	 len=0;
-	 for(int k=0;k<Chart1->Series[seriesindex]->Count();k++)
-	 {
-	  *buffer='\0';
-	  sprintf(buffer,"%f|",Chart1->Series[seriesindex]->YValue[k]);
-	  memcpy(out+len,buffer,strlen(buffer));
-	  len+=strlen(buffer);
-	 }
-	 out[len]='\0';
-	 ini->WriteString(IntToStr(seriesindex),"YDATA",out);
-	}
-
-   UShowProgressBarForm->IncBarStatus(1);
-  }
-
- ini->UpdateFile();
- delete ini;
- ModifyState=false;
- return true;
-}
-
-// Восстанавливает серии по информации из файла 'watchname'
-// Если 'collectstate' == 'true', то восстанавливает также накопленную
-// информацию
-// (Все открытые наблюдения будут предварительно закрыты)
-bool __fastcall TUWatchFrame::RestoreInfo(string watchname, bool collectstate)
-{
- map<string,TUWatchInfo*>::iterator I;
- TMemIniFile *ini;
- TStringList *series;
- TUWatchInfo *wd;
- TFastLineSeries *grseries;
- string xs,ys;
- double x,y;
- string::size_type ix1,ix2,iy1,iy2;
-
- ini=new TMemIniFile(watchname.c_str());
- if(!ini)
-  return false;
-
- Clear();
-
- series=new TStringList;
- ini->ReadSections(series);
-
- String s=UShowProgressBarForm->GetBarHeader(1);
- UShowProgressBarForm->ResetBarStatus(1,0,series->Count);
-
- size_t oldnamelistsize=NameList.size();
-
- for(int i=0;i<series->Count;i++)
-  {
-   UShowProgressBarForm->SetBarHeader(1,s+" - "+series->Strings[i]+":");
-
-   int j=StrToInt(series->Strings[i]);
- /*  if(j<int(oldnamelistsize))
-   {
-	// Заменяет подпись под выбранной серией
-	ChangeLegend(j, AnsiString(ini->ReadString(IntToStr(j),"Legend","")).c_str());
-
-	// Заменяет цвет выбранной серии
-	ChangeColor(j, (TColor)StrToInt(ini->ReadString(IntToStr(j),"Color",IntToStr(clTeeColor))));
-
-	// Заменяет тип линии выбранной серии
-	ChangeLineStyle(j, (TPenStyle)StrToInt(ini->ReadString(IntToStr(j),"Style",IntToStr(psSolid))));
-
-	// Изменяет информацио о видимости серии
-	ChangeVisible(j, ini->ReadInteger(IntToStr(j),"Visible",1));
-
-	ChangeYShift(j, StrToFloat(ini->ReadString(IntToStr(j),"YShift","0")));
-
-	ChangeLineWidth(j, StrToInt(ini->ReadString(IntToStr(j),"LineWidth","1")));
-   }
-   else   */
-   {
-	TUWatchInfo wd_data;
-	wd=&wd_data;
-//	NameList.resize(NameList.size()+1);
-//	wd=&NameList[NameList.size()-1];
-	wd->Legend=AnsiString(ini->ReadString(IntToStr(j),"Legend","")).c_str();
-	wd->YShift=StrToFloat(ini->ReadString(IntToStr(j),"YShift","0"));
-	wd->Color=(TColor)StrToInt(ini->ReadString(IntToStr(j),"Color",IntToStr(clTeeColor)));
-	wd->Style=(TPenStyle)StrToInt(ini->ReadString(IntToStr(j),"Style",IntToStr(psSolid)));
-	wd->LineWidth=StrToInt(ini->ReadString(IntToStr(j),"LineWidth",1));
-	wd->DataSourceName=AnsiString(ini->ReadString(IntToStr(j),"DataSourceName","")).c_str();
-	wd->OutputIndex=StrToInt(ini->ReadString(IntToStr(j),"OutputIndex","0"));
-	wd->OutputElementIndex=StrToInt(ini->ReadString(IntToStr(j),"OutputElementIndex","0"));
-
-
-/*	grseries=new TFastLineSeries(Chart1);
-	grseries->ParentChart=Chart1;
-	grseries->Title=wd->Legend.c_str();
-	grseries->ColorSource=wd->Color;
-	grseries->SeriesColor=wd->Color;
-	grseries->LinePen->Style=wd->Style;*/
-	int grindex=Add(wd_data);
-	grseries=dynamic_cast<TFastLineSeries*>(Chart1->Series[grindex]);
-	if(collectstate)
-	{
-	 grseries->Clear();
-	 ix1=0; ix2=0;
-	 iy1=0; iy2=0;
-	 xs=AnsiString(ini->ReadString(IntToStr(j),"XDATA","")).c_str();
-	 ys=AnsiString(ini->ReadString(IntToStr(j),"YDATA","")).c_str();
-	 grseries->Active=false;
-	 while( ((ix2+1) < xs.size()) && ((ix2=xs.find_first_of('|',ix2+1)) != string::npos) )
-	  {
-	   if(iy2+1 >= ys.size())
-		{
-		 grseries->Clear();
-		 break;
-		}
-
-	   iy2=ys.find_first_of('|',iy2+1);
-//       x=StrToFloat(xs.substr(ix1,ix2-ix1).c_str());
-//       y=StrToFloat(ys.substr(iy1,iy2-iy1).c_str());
-	   x=atof(xs.substr(ix1,ix2-ix1).c_str());
-	   y=atof(ys.substr(iy1,iy2-iy1).c_str());
-	   grseries->AddXY(x,y,"",wd->Color);
-	   ix1=ix2+1;
-	   iy1=iy2+1;
-	  }
-	 grseries->Active=true;
-	}
-   }
-
-   UShowProgressBarForm->IncBarStatus(1);
-  }
-
- delete series;
- delete ini;
- ModifyState=false;
- return true;
 }
 // ------------------------------
 
@@ -1332,8 +1126,170 @@ bool TUWatchFrame::Save(void)
  return true;
 }
 // -------------------------
-//---------------------------------------------------------------------------
+
 // -----------------------------
+// Методы управления визуальным интерфейсом
+// -----------------------------
+// Метод, вызываемый после сброса модели
+void TUWatchFrame::AAfterReset(void)
+{
+ Reset();
+}
+
+// Обновление интерфейса
+void TUWatchFrame::AUpdateInterface(void)
+{
+ StepUpdate(true);
+ Chart1->Repaint();
+}
+
+// Сохраняет параметры интерфейса в xml
+void TUWatchFrame::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
+{
+ char *out=0;
+ int len;
+ char buffer[32];
+ string *sp;
+ bool collectstate=false;
+
+ if(NameList.size() == 0)
+  return;
+
+ String s=UShowProgressBarForm->GetBarHeader(1);
+ UShowProgressBarForm->ResetBarStatus(1,0,NameList.size());
+
+ // Пробегаем по списку всех открытых серий
+ for(int seriesindex=0;seriesindex<(int)NameList.size();seriesindex++)
+  {
+   UShowProgressBarForm->SetBarHeader(1,s+" - "+NameList[seriesindex].Legend.c_str()+":");
+   xml.SelectNodeForce(RDK::sntoa(seriesindex));
+
+   xml.WriteString("Legend",NameList[seriesindex].Legend);
+   xml.WriteFloat("YShift",NameList[seriesindex].YShift);
+   xml.WriteInteger("Color",NameList[seriesindex].Color);
+   xml.WriteInteger("Style",NameList[seriesindex].Style);
+   xml.WriteBool("Visible",NameList[seriesindex].Visible);
+   xml.WriteInteger("LineWidth",NameList[seriesindex].LineWidth);
+   xml.WriteString("DataSourceName",NameList[seriesindex].DataSourceName);
+   xml.WriteInteger("OutputIndex",NameList[seriesindex].OutputIndex);
+   xml.WriteInteger("OutputElementIndex",NameList[seriesindex].OutputElementIndex);
+   xml.WriteInteger("XYSize", NameList[seriesindex].XYSize);
+
+   if(collectstate)
+	{
+	 delete[] out;
+	 out=new char[31*Chart1->Series[seriesindex]->Count()+1];
+	 *out='\0';
+	 len=0;
+	 for(int k=0;k<Chart1->Series[seriesindex]->Count();k++)
+	 {
+	  *buffer='\0';
+	  sprintf(buffer,"%f|",Chart1->Series[seriesindex]->XValue[k]);
+	  memcpy(out+len,buffer,strlen(buffer));
+	  len+=strlen(buffer);
+	 }
+	 out[len]='\0';
+	 xml.WriteString("XDATA",out);
+
+	 *out='\0';
+	 len=0;
+	 for(int k=0;k<Chart1->Series[seriesindex]->Count();k++)
+	 {
+	  *buffer='\0';
+	  sprintf(buffer,"%f|",Chart1->Series[seriesindex]->YValue[k]);
+	  memcpy(out+len,buffer,strlen(buffer));
+	  len+=strlen(buffer);
+	 }
+	 out[len]='\0';
+	 xml.WriteString("YDATA",out);
+	}
+
+   xml.SelectUp();
+   UShowProgressBarForm->IncBarStatus(1);
+  }
+
+ ModifyState=false;
+}
+
+// Загружает параметры интерфейса из xml
+void TUWatchFrame::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
+{
+ map<string,TUWatchInfo*>::iterator I;
+ TUWatchInfo *wd;
+ TFastLineSeries *grseries;
+ string xs,ys;
+ double x,y;
+ string::size_type ix1,ix2,iy1,iy2;
+ bool collectstate=false;
+
+ Clear();
+
+ int num_series=xml.GetNumNodes();
+
+ String s=UShowProgressBarForm->GetBarHeader(1);
+ UShowProgressBarForm->ResetBarStatus(1,0,num_series);
+
+ size_t oldnamelistsize=NameList.size();
+
+ for(int i=0;i<num_series;i++)
+  {
+   xml.SelectNode(i);
+   UShowProgressBarForm->SetBarHeader(1,s+String(" - ")+String(xml.GetNodeName().c_str())+":");
+
+   int j=i;
+   {
+	TUWatchInfo wd_data;
+	wd=&wd_data;
+	wd->Legend=xml.ReadString("Legend","");
+	wd->YShift=xml.ReadFloat("YShift",0);
+	wd->Color=(TColor)xml.ReadInteger("Color",clTeeColor);
+	wd->Style=(TPenStyle)xml.ReadInteger("Style",psSolid);
+	wd->LineWidth=xml.ReadInteger("LineWidth",1);
+	wd->DataSourceName=xml.ReadString("DataSourceName","");
+	wd->OutputIndex=xml.ReadInteger("OutputIndex",0);
+	wd->OutputElementIndex=xml.ReadInteger("OutputElementIndex",0);
+	wd->XYSize=xml.ReadInteger("XYSize", 1);
+
+	int grindex=Add(wd_data);
+	grseries=dynamic_cast<TFastLineSeries*>(Chart1->Series[grindex]);
+	if(collectstate)
+	{
+	 grseries->Clear();
+	 ix1=0; ix2=0;
+	 iy1=0; iy2=0;
+	 xs=xml.ReadString("XDATA","").c_str();
+	 ys=xml.ReadString("YDATA","").c_str();
+	 grseries->Active=false;
+	 while( ((ix2+1) < xs.size()) && ((ix2=xs.find_first_of('|',ix2+1)) != string::npos) )
+	  {
+	   if(iy2+1 >= ys.size())
+		{
+		 grseries->Clear();
+		 break;
+		}
+
+	   iy2=ys.find_first_of('|',iy2+1);
+//       x=StrToFloat(xs.substr(ix1,ix2-ix1).c_str());
+//       y=StrToFloat(ys.substr(iy1,iy2-iy1).c_str());
+	   x=atof(xs.substr(ix1,ix2-ix1).c_str());
+	   y=atof(ys.substr(iy1,iy2-iy1).c_str());
+	   grseries->AddXY(x,y,"",wd->Color);
+	   ix1=ix2+1;
+	   iy1=iy2+1;
+	  }
+	 grseries->Active=true;
+	}
+   }
+
+   xml.SelectUp();
+   UShowProgressBarForm->IncBarStatus(1);
+  }
+
+ ModifyState=false;
+}
+// -----------------------------
+
+//---------------------------------------------------------------------------
 
 
 

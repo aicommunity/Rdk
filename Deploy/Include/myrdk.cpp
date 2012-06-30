@@ -40,6 +40,22 @@ void UIVisualControllerStorage::DelInterface(RDK::UIVisualController *value)
   InterfaceUpdaters.erase(I);
 }
 
+// Ìועמה, גûחûגאולûי ןונוה סבנמסמל למהוכט
+void UIVisualControllerStorage::BeforeReset(void)
+{
+ for(size_t i=0;i<InterfaceUpdaters.size();i++)
+  if(InterfaceUpdaters[i])
+   InterfaceUpdaters[i]->BeforeReset();
+}
+
+// Ìועמה, גûחûגאולûי ןמסכו סבנמסא למהוכט
+void UIVisualControllerStorage::AfterReset(void)
+{
+ for(size_t i=0;i<InterfaceUpdaters.size();i++)
+  if(InterfaceUpdaters[i])
+   InterfaceUpdaters[i]->AfterReset();
+}
+
 // Ìועמה, גûחûגאולûי ןונוה ראדמל נאסקועא
 void UIVisualControllerStorage::BeforeCalculate(void)
 {

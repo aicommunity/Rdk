@@ -10,6 +10,7 @@
 #include "UComponentsControlFrameUnit.h"
 #include "TUVisualController.h"
 #include "TUVisualControllerFrameUnit.h"
+#include "TUVisualControllerFormUnit.h"
 //---------------------------------------------------------------------------
 class TUComponentsControlForm : public TUVisualControllerForm
 {

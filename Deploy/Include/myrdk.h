@@ -126,6 +126,12 @@ void WriteStateValue(const std::string &comp_name, const std::string &param_name
 class UIVisualController
 {
 public:
+// Метод, вызываемый перед сбросом модели
+virtual void BeforeReset(void)=0;
+
+// Метод, вызываемый после сброса модели
+virtual void AfterReset(void)=0;
+
 // Метод, вызываемый перед шагом расчета
 virtual void BeforeCalculate(void)=0;
 
@@ -158,6 +164,12 @@ static void AddInterface(RDK::UIVisualController *value);
 
 // Удаляет обработчик из списка
 static void DelInterface(RDK::UIVisualController *value);
+
+// Метод, вызываемый перед сбросом модели
+static void BeforeReset(void);
+
+// Метод, вызываемый после сброса модели
+static void AfterReset(void);
 
 // Метод, вызываемый перед шагом расчета
 static void BeforeCalculate(void);

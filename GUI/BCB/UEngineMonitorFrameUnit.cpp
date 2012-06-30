@@ -69,7 +69,9 @@ void __fastcall TUEngineMonitorFrame::Pause1Click(TObject *Sender)
 
 void __fastcall TUEngineMonitorFrame::Reset1Click(TObject *Sender)
 {
+ RDK::UIVisualControllerStorage::BeforeReset();
  Env_Reset(0);
+ RDK::UIVisualControllerStorage::AfterReset();
 }
 //---------------------------------------------------------------------------
 

@@ -9,6 +9,7 @@
 #pragma package(smart_init)
 #pragma link "UComponentsControlFrameUnit"
 #pragma link "TUVisualControllerFrameUnit"
+#pragma link "TUVisualControllerFormUnit"
 #pragma resource "*.dfm"
 TUComponentsControlForm *UComponentsControlForm;
 //---------------------------------------------------------------------------

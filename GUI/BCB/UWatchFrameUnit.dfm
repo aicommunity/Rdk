@@ -1,10 +1,9 @@
 inherited UWatchFrame: TUWatchFrame
-  Left = 0
-  Top = 0
   Width = 656
   Height = 469
-  TabOrder = 0
   TabStop = True
+  ExplicitWidth = 656
+  ExplicitHeight = 469
   object Chart1: TChart
     Left = 0
     Top = 0

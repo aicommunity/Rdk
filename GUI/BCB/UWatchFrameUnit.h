@@ -22,6 +22,7 @@
 #include <VCLTee.TeEngine.hpp>
 #include <VCLTee.TeeProcs.hpp>
 #include <Menus.hpp>
+#include "TUVisualControllerFrameUnit.h"
 
 
 #include <string>
@@ -227,20 +228,6 @@ public:	// Методы
         // Возвращает 'true', если данные в сериях были изменены,
         // или если серии были добавлены/удалены
 		bool __fastcall GetModifyState(void);
-
-		// Сохранение и загрузка описания графика в файл
-		bool SaveToIni(TMemIniFile *ini, const String &section);
-		bool LoadFromIni(TMemIniFile *ini, const String &section);
-
-		// Собирает информацию об открытых сериях в файл 'watchname'
-        // Если 'collectstate' == 'true', то сохраняет также накопленную информацию
-        bool __fastcall CollectInfo(string watchname, bool collectstate);
-
-        // Восстанавливает серии по информации из файла 'watchname'
-        // Если 'collectstate' == 'true', то восстанавливает также накопленную
-        // информацию
-        // (Все открытые наблюдения будут предварительно закрыты)
-        bool __fastcall RestoreInfo(string watchname, bool collectstate);
         // ------------------------------
 
         // ------------------------------
@@ -340,6 +327,22 @@ public:	// Методы
 		// Сохраняет изображение с выбором типа из диалога
 		bool Save(void);
 		// -----------------------------
+
+// -----------------------------
+// Методы управления визуальным интерфейсом
+// -----------------------------
+// Метод, вызываемый после сброса модели
+virtual void AAfterReset(void);
+
+// Обновление интерфейса
+virtual void AUpdateInterface(void);
+
+// Сохраняет параметры интерфейса в xml
+virtual void ASaveParameters(RDK::Serialize::USerStorageXML &xml);
+
+// Загружает параметры интерфейса из xml
+virtual void ALoadParameters(RDK::Serialize::USerStorageXML &xml);
+// -----------------------------
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TUWatchFrame *UWatchFrame;
