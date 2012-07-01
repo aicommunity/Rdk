@@ -27,18 +27,18 @@ class UEngine: public UModule
 {
 public:
 // Создает новое хранилище
-typedef RDK::UAContainerStorage* (*PCreateNewStorage)(void);
+//typedef RDK::UAContainerStorage* (*PCreateNewStorage)(void);
 
 // Создает новую среду
-typedef RDK::UAContainerEnvironment* (*PCreateNewEnvironment)(void);
+//typedef RDK::UAContainerEnvironment* (*PCreateNewEnvironment)(void);
 
 // Прототип функции обратного вызова обработчика исключений
 typedef void (*PExceptionHandler)(void);
 
 protected: // Параметры инициализации
 // Указатели на функции создания экземпляров хранилища и среды
-PCreateNewStorage FuncCreateNewStorage;
-PCreateNewEnvironment FuncCreateNewEnvironment;
+//PCreateNewStorage FuncCreateNewStorage;
+//PCreateNewEnvironment FuncCreateNewEnvironment;
 
 // Имя файла инициализации
 string OptionsFileName;
@@ -47,10 +47,10 @@ string OptionsFileName;
 string ClassesDescriptionFileName;
 
 // Имя секции выбора основной библиотеки
-string MainLibrarySectionName;
+//string MainLibrarySectionName;
 
 // Имя переменной основной библиотеки
-string MainLibraryName;
+//string MainLibraryName;
 
 // Имя секции выбора библиотек компонент
 string ComponentLibrariesSectionName;
@@ -60,11 +60,11 @@ string ComponentClassesSectionName;
 
 // Индекс используемого хранилища в библиотеке
 // Если < 0, то новое хранилище будет создано
-int StorageIndex;
+//int StorageIndex;
 
 // Индекс используемой среды в библиотеке
 // Если < 0, то новая среда будет создана
-int EnvironmentIndex;
+//int EnvironmentIndex;
 
 
 protected: // Переменные состояния
@@ -123,12 +123,12 @@ virtual ~UEngine(void);
 // Методы управления параметрами инициализации
 // --------------------------
 // Указатели на функции создания экземпляров хранилища и среды
-UEngine::PCreateNewStorage GetFuncCreateNewStorage(void) const;
+/*UEngine::PCreateNewStorage GetFuncCreateNewStorage(void) const;
 bool SetFuncCreateNewStorage(UEngine::PCreateNewStorage value);
 
 UEngine::PCreateNewEnvironment GetFuncCreateNewEnvironment(void) const;
 bool SetFuncCreateNewEnvironment(UEngine::PCreateNewEnvironment value);
-
+  */
 // Имя файла инициализации
 const string& GetOptionsFileName(void) const;
 bool SetOptionsFileName(const string& value);
@@ -157,7 +157,7 @@ virtual UAContainer* GetModel(void);
 // Методы пишут в лог по необходимости
 // --------------------------
 // Инициализирует данные движка
-virtual bool Init(void);
+virtual bool Init(UEPtr<UAContainerStorage> storage, UEPtr<UAContainerEnvironment> env);
 
 // Деинициализирует данные движка
 // и сохраняет текущие настройки
@@ -601,6 +601,15 @@ bool SetExceptionHandler(PExceptionHandler value);
 // Методы управления движком
 // --------------------------
 public:
+// Инициализирует пустое хранилище
+void CreateStorage(void);
+
+// Инициализирует среду
+// Если задано хранилище 'storage', то связывает его со средой.
+// Если флаг 'isinit' == true, то инициализирует хранилище стандартными библиотеками
+// Если указатель на массив external_libs != 0, дополнительно инициализирует хранилище этими бибилиотеками
+void CreateEnvironment(bool isinit=true, list<UAContainer*>* external_classes=0, list<UALibrary*>* external_libs=0);
+
 // Загружает набор предустановленных библиотек
 virtual int LoadPredefinedLibraries(void);
 
@@ -701,7 +710,7 @@ virtual bool AReset(void);
 virtual bool ACalculate(void);
 // --------------------------
 };
-
+	  /*
 #ifndef RDK_CALL
 #define RDK_CALL _cdecl
 #endif
@@ -748,7 +757,7 @@ extern "C" DLLPAddNewEnvironment DLLAddNewEnvironment;
 // Возвращает указатель на движок
 typedef UEngine* (RDK_CALL *DLLPAddNewEngine)(void);
 extern "C" DLLPAddNewEngine DLLAddNewEngine;
-
+          */
 
 }
 #endif

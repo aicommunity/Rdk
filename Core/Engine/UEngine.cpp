@@ -17,8 +17,33 @@ See file license.txt for more information
 #include "UXMLEnvSerialize.h"
 #include "Libraries/IO/UFileIO.h"
 
-namespace RDK{
+// --------------------------------------
+// Объявления дополнительных функций
+// --------------------------------------
+// Возвращает хранилище по индексу
+extern RDK::UAContainerStorage* GetStorage(size_t i);
 
+// Возвращает среду по индексу
+extern RDK::UAContainerEnvironment*  GetEnvironment(size_t i);
+
+// Возвращает движок по индексу
+extern RDK::UEngine*  GetEngine(size_t i);
+
+// Создает новое хранилище и помещает в конец массива
+// Возвращает указатель на хранилище
+extern RDK::UAContainerStorage*  AddNewStorage(void);
+
+// Создает новую среду и помещает в конец массива
+// Возвращает указатель на среду
+extern RDK::UAContainerEnvironment*  AddNewEnvironment(void);
+
+// Создает новый движок и помещает в конец массива
+// Возвращает указатель на движок
+extern RDK::UEngine*  AddNewEngine(void);
+// --------------------------------------
+
+namespace RDK{
+/*
 // Инициализация dll
 DLLPDllInit DLLDllInit=0;
 
@@ -51,7 +76,7 @@ DLLPAddNewEnvironment DLLAddNewEnvironment=0;
 // Создает новый движок и помещает в конец массива
 // Возвращает указатель на движок
 DLLPAddNewEngine DLLAddNewEngine=0;
-
+ */
 
 // --------------------------
 // Конструкторы и деструкторы
@@ -61,8 +86,8 @@ UEngine::UEngine(void)
  Runned=-1;
  Storage=0;
  Environment=0;
- FuncCreateNewStorage=0;
- FuncCreateNewEnvironment=0;
+// FuncCreateNewStorage=0;
+// FuncCreateNewEnvironment=0;
 }
 
 UEngine::~UEngine(void)
@@ -75,7 +100,7 @@ UEngine::~UEngine(void)
 // Методы управления параметрами инициализации
 // --------------------------
 // Указатели на функции создания экземпляров хранилища и среды
-UEngine::PCreateNewStorage UEngine::GetFuncCreateNewStorage(void) const
+/*UEngine::PCreateNewStorage UEngine::GetFuncCreateNewStorage(void) const
 {
  return FuncCreateNewStorage;
 }
@@ -101,7 +126,7 @@ bool UEngine::SetFuncCreateNewEnvironment(UEngine::PCreateNewEnvironment value)
 
  FuncCreateNewEnvironment=value;
  return true;
-}
+}  */
 
 // Имя файла инициализации
 const string& UEngine::GetOptionsFileName(void) const
@@ -150,29 +175,34 @@ UAContainer* UEngine::GetModel(void)
 // Методы управления счетом
 // --------------------------
 // Инициализирует данные движка
-bool UEngine::Init(void)
+bool UEngine::Init(UEPtr<UAContainerStorage> storage, UEPtr<UAContainerEnvironment> env)
 {
- if(!Options.LoadFromFile(OptionsFileName))
- {
+// if(!Options.LoadFromFile(OptionsFileName))
+// {
   if(!Default())
    return false;
- }
+// }
 
- StorageIndex=atoi(Options("General","StorageIndex",sntoa(StorageIndex).c_str()));
- EnvironmentIndex=atoi(Options("General","EnvironmentIndex",sntoa(EnvironmentIndex).c_str()));
+// StorageIndex=atoi(Options("General","StorageIndex",sntoa(StorageIndex).c_str()));
+// EnvironmentIndex=atoi(Options("General","EnvironmentIndex",sntoa(EnvironmentIndex).c_str()));
 
- if(StorageIndex>=0)
-  Storage=DLLGetStorage(StorageIndex);
- else
-  Storage=DLLAddNewStorage();
+// if(StorageIndex>=0)
+//  Storage=DLLGetStorage(StorageIndex);
+// else
+//  Storage=AddNewStorage();
+
+ Storage=storage;
+ Environment=env;
+
+ CreateStorage();
 
  if(!Storage)
   return false;
 
- if(EnvironmentIndex>=0)
-  Environment=DLLGetEnvironment(EnvironmentIndex);
- else
- {
+// if(EnvironmentIndex>=0)
+//  Environment=DLLGetEnvironment(EnvironmentIndex);
+// else
+// {
   LibrariesList.clear();
   ClassesList.clear();
   if(LoadPredefinedLibraries())
@@ -181,8 +211,9 @@ bool UEngine::Init(void)
    return false;
   if(LoadLibraries())
    return false;
-  Environment=DLLAddNewEnvironment(Storage,true,&ClassesList, &LibrariesList);
- }
+//  Environment=AddNewEnvironment();
+  CreateEnvironment(true,&ClassesList, &LibrariesList);
+// }
 
  if(!Storage || !Environment || Environment->GetStorage() != Storage)
  {
@@ -210,12 +241,12 @@ bool UEngine::UnInit(void)
  if(!Stop())
   return false;
 
- Options("General","StorageIndex",sntoa(StorageIndex));
+/* Options("General","StorageIndex",sntoa(StorageIndex));
  Options("General","EnvironmentIndex",sntoa(EnvironmentIndex));
 
  if(!Options.SaveToFile(OptionsFileName))
   return false;
-
+  */
  return true;
 }
 
@@ -3003,6 +3034,56 @@ bool UEngine::SetExceptionHandler(PExceptionHandler value)
 // --------------------------
 // Методы внутреннего управления движком
 // --------------------------
+
+// Создает пустое хранилище и возвращает указатель на него
+void UEngine::CreateStorage(void)
+{
+}
+
+// Создает среду и возвращает указатель на нее.
+// Если задано хранилище 'storage', то связывает его со средой.
+// Если флаг 'isinit' == true, то инициализирует хранилище стандартными библиотеками
+// Если указатель на массив external_libs != 0, дополнительно инициализирует хранилище этими бибилиотеками
+void UEngine::CreateEnvironment(bool isinit, list<UAContainer*>* external_classes, list<UALibrary*>* external_libs)
+{
+ if(!Storage)
+  return;
+
+ if(!Environment)
+  return;
+
+ Environment->Default();
+
+ if(!Environment->SetStorage(Storage) || !isinit)
+  return;
+
+ if(external_classes != 0)
+ {
+  list<UAContainer*>::iterator I,J;
+  I=external_classes->begin();
+  J=external_classes->end();
+  while(I != J)
+  {
+   Environment->AddClass(*I);
+   ++I;
+  }
+ }
+
+ if(external_libs != 0)
+ {
+  list<UALibrary*>::iterator I,J;
+  I=external_libs->begin();
+  J=external_libs->end();
+  while(I != J)
+  {
+   Environment->AddClassLibrary(*I);
+   ++I;
+  }
+ }
+
+ Environment->BuildStorage();
+}
+
 // Загружает набор предустановленных библиотек
 int UEngine::LoadPredefinedLibraries(void)
 {
@@ -3110,11 +3191,11 @@ bool UEngine::ADefault(void)
  ClassesDescriptionFileName="ClassesDescription.xml";
 
  // Имя секции выбора основной библиотеки
- MainLibrarySectionName="MainDLL";
+// MainLibrarySectionName="MainDLL";
 
  // Имя переменной основной библиотеки
- MainLibraryName="MainLibraryName";
- Options(MainLibrarySectionName,MainLibraryName,string("nmsdk.dll"));
+// MainLibraryName="MainLibraryName";
+// Options(MainLibrarySectionName,MainLibraryName,string("nmsdk.dll"));
 
  // Имя секции выбора библиотек компонент
  ComponentLibrariesSectionName="ComponentLibraries";
@@ -3123,13 +3204,13 @@ bool UEngine::ADefault(void)
 
  // Индекс используемого хранилища в библиотеке
  // Если < 0, то новое хранилище будет создано
- StorageIndex=-1;
- Options("General","StorageIndex",sntoa(StorageIndex));
+// StorageIndex=-1;
+// Options("General","StorageIndex",sntoa(StorageIndex));
 
  // Индекс используемой среды в библиотеке
  // Если < 0, то новая среда будет создана
- EnvironmentIndex=-1;
- Options("General","EnvironmentIndex",sntoa(EnvironmentIndex));
+// EnvironmentIndex=-1;
+// Options("General","EnvironmentIndex",sntoa(EnvironmentIndex));
 
  return true;
 }

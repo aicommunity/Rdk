@@ -8,43 +8,55 @@
 // Объявления дополнительных функций
 // --------------------------------------
 // Возвращает хранилище по индексу
-RDK_LIB_TYPE RDK::UAContainerStorage* RDK_CALL GetStorage(size_t i);
+RDK::UAContainerStorage* GetStorage(size_t i);
 
 // Возвращает среду по индексу
-RDK_LIB_TYPE RDK::UAContainerEnvironment*  RDK_CALL GetEnvironment(size_t i);
+RDK::UAContainerEnvironment*  GetEnvironment(size_t i);
 
 // Возвращает движок по индексу
-RDK_LIB_TYPE RDK::UEngine*  RDK_CALL GetEngine(size_t i);
+RDK::UEngine*  GetEngine(size_t i);
 
 // Создает новое хранилище и помещает в конец массива
 // Возвращает указатель на хранилище
-RDK_LIB_TYPE RDK::UAContainerStorage*  RDK_CALL AddNewStorage(void);
+RDK::UAContainerStorage*  AddNewStorage(void);
+
+// Удаляет существующее хранилище
+void DelStorage(RDK::UAContainerStorage* env);
 
 // Создает новую среду и помещает в конец массива
 // Возвращает указатель на среду
-RDK_LIB_TYPE RDK::UAContainerEnvironment*  RDK_CALL AddNewEnvironment(RDK::UAContainerStorage *storage=0,bool isinit=true, std::list<RDK::UAContainer*>* external_classes=0, std::list<RDK::UALibrary*>* external_libs=0);
+RDK::UAContainerEnvironment*  AddNewEnvironment(void);
+
+// Удаляет существующую среду
+void DelEnvironment(RDK::UAContainerEnvironment* env);
 
 // Создает новый движок и помещает в конец массива
 // Возвращает указатель на движок
-RDK_LIB_TYPE RDK::UEngine*  RDK_CALL AddNewEngine(void);
+RDK::UEngine*  AddNewEngine(void);
+
+// Удаляет существующий движок
+void DelEngine(RDK::UEngine* engine);
+
+// Инициализация библиотеки
+int Init(void* exception_handler);
+
+// Деинициализация библиотеки
+int UnInit(void);
+
+// Инициализация dll
+bool DllInit(void* pfstorage,void* pfenvironment,void* pfengine);
 // --------------------------------------
 
 RDK::UEPtr<RDK::UEngine> PEngine=0;
-RDK::UEPtr<RDK::UAEnvironment> PEnvironment=0;
-RDK::UEPtr<RDK::UAStorage> PStorage=0;
+RDK::UEPtr<RDK::UAContainerEnvironment> PEnvironment=0;
+RDK::UEPtr<RDK::UAContainerStorage> PStorage=0;
 
 /*****************************************************************************/
-extern RDK::UAStorage* CreateNewStorage(void);
+extern RDK::UAContainerStorage* CreateNewStorage(void);
 
-extern RDK::UAEnvironment* CreateNewEnvironment(void);
+extern RDK::UAContainerEnvironment* CreateNewEnvironment(void);
 
 extern RDK::UEngine* CreateNewEngine(void);
-
-//extern RDK::UAStorage* CreateNewGStorage(void);
-
-//extern RDK::UAEnvironment* CreateNewGEnvironment(void);
-
-//extern RDK::UEngine* CreateNewGEngine(void);
 /*****************************************************************************/
 
 // ----------------------------
@@ -53,10 +65,7 @@ extern RDK::UEngine* CreateNewEngine(void);
 int RDK_CALL EngineInit(int predefined_structure, void* exception_handler)
 {
  EngineUnInit();
- LoadEngine((void*)CreateNewStorage, (void*)CreateNewEnvironment, (void*)CreateNewEngine);
- Engine_SetExceptionHandler(exception_handler);
- LoadPredefinedLibraries();
- Init();
+ Init(exception_handler);
 
  Env_SetPredefinedStructure(predefined_structure);
  Env_CreateStructure();
@@ -69,9 +78,7 @@ int RDK_CALL GraphicalEngineInit(int predefined_structure, int num_inputs,
 		void* exception_handler)
 {
  EngineUnInit();
- LoadEngine((void*)CreateNewStorage, (void*)CreateNewEnvironment, (void*)CreateNewEngine);
- Engine_SetExceptionHandler(exception_handler);
- Init();
+ Init(exception_handler);
 
  // Задает число входов среды
  Env_SetNumInputImages(num_inputs);
@@ -89,18 +96,10 @@ int RDK_CALL GraphicalEngineInit(int predefined_structure, int num_inputs,
  return 0;
 }
 
-// Деинициализация движка
-extern int Engine_Destroy(void);
-
 // Деинициализирует движок (функция автоматически вызывается при вызове инициализации)
 int RDK_CALL EngineUnInit(void)
 {
- if(!PEngine)
-  return 0;
-
- Engine_Destroy();
- PEngine=0;
- return 0;
+ return UnInit();
 }
 // ----------------------------
 
@@ -1051,8 +1050,8 @@ bool Init(PCreateNewStorage fCreateNewStorage,
 RDKDllManager DllManager;
 
 extern RDK::UEPtr<RDK::UEngine> PEngine;
-extern RDK::UEPtr<RDK::UAEnvironment> PEnvironment;
-extern RDK::UEPtr<RDK::UAStorage> PStorage;
+extern RDK::UEPtr<RDK::UAContainerEnvironment> PEnvironment;
+extern RDK::UEPtr<RDK::UAContainerStorage> PStorage;
 
 
 // Менеджер DLL
@@ -1109,39 +1108,48 @@ bool RDKDllManager::Init(PCreateNewStorage fCreateNewStorage,
 // Внутренние методы инициализации
 // ----------------------------
 // Деинициализация движка
-int Engine_Destroy(void)
+/*int Engine_Destroy(void)
 {
  PEngine=0;
  PEnvironment=0;
  PStorage=0;
  return 0;
-}
+} */
 
-int RDK_CALL Init(void)
+int Init(void* exception_handler)
 {
- try {
-  if(!PEngine->Init())
-  {
-   Engine_Destroy();
-   return 3;
-  }
+ UnInit();
+ if(!DllInit((void*)CreateNewStorage, (void*)CreateNewEnvironment, (void*)CreateNewEngine))
+  return -2;
 
-  PEnvironment=PEngine->GetEnvironment();
-  if(PEnvironment)
-   PStorage=PEnvironment->GetStorage();
-  else
+ PEngine=dynamic_cast<RDK::UEngine*>(AddNewEngine());
+
+ if(!PEngine)
+  return -3;
+
+ PEngine->Default();
+ Engine_SetExceptionHandler(exception_handler);
+
+ try {
+  PEnvironment=AddNewEnvironment();
+  PStorage=AddNewStorage();
+  if(!PEnvironment)
   {
-   Engine_Destroy();
-   return 4;
+   UnInit();
+   return 3;
   }
 
   if(!PStorage)
   {
-   Engine_Destroy();
-   return 5;
+   UnInit();
+   return 4;
   }
 
- PEnvironment->Default();
+  if(!PEngine->Init(PStorage,PEnvironment))
+  {
+   UnInit();
+   return 3;
+  }
  }
  catch (RDK::Exception * exception)
  {
@@ -1150,25 +1158,29 @@ int RDK_CALL Init(void)
  return 0;
 }
 
-int RDK_CALL UnInit(void)
+int UnInit(void)
 {
  try
  {
-  if(!PEngine->UnInit())
-   return 1;
+  if(PEngine)
+  {
+   if(!PEngine->UnInit())
+	return 1;
+  }
  }
  catch (RDK::Exception * exception)
  {
   PEngine->ProcessException(exception);
  }
 
- return 0;
-}
+ DelEngine(PEngine);
+ PEngine=0;
+ DelEnvironment(PEnvironment);
+ PEnvironment=0;
+ DelStorage(PStorage);
+ PStorage=0;
 
-// Загружает набор предустановленных библиотек
-int RDK_CALL LoadPredefinedLibraries(void)
-{
- return PEngine->LoadPredefinedLibraries();
+ return 0;
 }
 
 // Обработчик исключений библиотеки
@@ -1184,116 +1196,34 @@ int RDK_CALL ExceptionDispatcher(void *exception)
  return 0;
 }
 
-// Инициализация движка
-int RDK_CALL Engine_Create(RDK::UEngine *engine, const char *inifilename, void *pCreateNewStorage, void *pCreateNewEnvironment)
-{
- if(!engine)
-  return 1;
-
- if(PEngine != engine)
- {
-  Engine_Destroy();
-
-  PEngine=engine;
- }
-
- if(inifilename)
- {
-  if(!PEngine->SetOptionsFileName(inifilename))
-  {
-   Engine_Destroy();
-   return 2;
-  }
-
-  if(!PEngine->SetFuncCreateNewStorage(reinterpret_cast<RDK::UEngine::PCreateNewStorage>(pCreateNewStorage)))
-   return 10;
-
-  if(!PEngine->SetFuncCreateNewEnvironment(reinterpret_cast<RDK::UEngine::PCreateNewEnvironment>(pCreateNewEnvironment)))
-   return 11;
- }
- return 0;
-}
-
-
-int RDK_CALL LoadEngine(void *create_storage, void *create_environment, void *create_engine)
-{
- if(!DllInit(create_storage, create_environment, create_engine))
-  return -2;
-
- RDK::UEngine* pengine=dynamic_cast<RDK::UEngine*>(AddNewEngine());
-
- if(!pengine)
-  return -3;
-
- pengine->Default();
-
- if(Engine_Create(pengine, "options.ini",(void*)AddNewStorage,(void*)AddNewEnvironment))
-  return -4;
-
- return 0;
-}
-
 // Инициализация dll
-bool RDK_CALL DllInit(void* pfstorage,void* pfenvironment,void* pfengine)
+bool DllInit(void* pfstorage,void* pfenvironment,void* pfengine)
 {
- // Инициализация dll
- RDK::DLLDllInit=DllInit;
-
- // Указатель на функцию возвращающую число хранилищ в библиотеке
- RDK::DLLGetNumStorages=GetNumStorages;
-
- // Указатель на функцию возвращающую число сред в библиотеке
- RDK::DLLGetNumEnvironments=GetNumEnvironments;
-
- // Указатель на функцию возвращающую число движков в библиотеке
- RDK::DLLGetNumEngines=GetNumEngines;
-
- // Возвращает хранилище по индексу
- RDK::DLLGetStorage=GetStorage;
-
- // Возвращает среду по индексу
- RDK::DLLGetEnvironment=GetEnvironment;
-
- // Возвращает движок по индексу
- RDK::DLLGetEngine=GetEngine;
-
- // Создает новое хранилище и помещает в конец массива
- // Возвращает указатель на хранилище
- RDK::DLLAddNewStorage=AddNewStorage;
-
- // Создает новую среду и помещает в конец массива
- // Возвращает указатель на среду
- RDK::DLLAddNewEnvironment=AddNewEnvironment;
-
- // Создает новый движок и помещает в конец массива
- // Возвращает указатель на движок
- RDK::DLLAddNewEngine=AddNewEngine;
-
  return DllManager.Init(reinterpret_cast<RDKDllManager::PCreateNewStorage>(pfstorage),
-                        reinterpret_cast<RDKDllManager::PCreateNewEnvironment>(pfenvironment),
-                        reinterpret_cast<RDKDllManager::PCreateNewEngine>(pfengine));
+						reinterpret_cast<RDKDllManager::PCreateNewEnvironment>(pfenvironment),
+						reinterpret_cast<RDKDllManager::PCreateNewEngine>(pfengine));
 }
 
 // Возвращает число хранилищ в библиотеке
-int RDK_CALL GetNumStorages(void)
+int GetNumStorages(void)
 {
  return DllManager.StorageList.size();
 }
 
 // Возвращает число сред в библиотеке
-int RDK_CALL GetNumEnvironments(void)
+int GetNumEnvironments(void)
 {
  return DllManager.EnvironmentList.size();
 }
 
 // Возвращает число движков в библиотеке
-int RDK_CALL GetNumEngines(void)
+int GetNumEngines(void)
 {
  return DllManager.EngineList.size();
 }
 
 // Возвращает хранилище по индексу
-RDK::UAContainerStorage* RDK_CALL GetStorage(size_t i)
+RDK::UAContainerStorage* GetStorage(size_t i)
 {
  if(i>=DllManager.StorageList.size())
   return 0;
@@ -1302,7 +1232,7 @@ RDK::UAContainerStorage* RDK_CALL GetStorage(size_t i)
 }
 
 // Возвращает среду по индексу
-RDK::UAContainerEnvironment* RDK_CALL GetEnvironment(size_t i)
+RDK::UAContainerEnvironment* GetEnvironment(size_t i)
 {
  if(i>=DllManager.EnvironmentList.size())
   return 0;
@@ -1311,7 +1241,7 @@ RDK::UAContainerEnvironment* RDK_CALL GetEnvironment(size_t i)
 }
 
 // Возвращает движок по индексу
-RDK::UEngine* RDK_CALL GetEngine(size_t i)
+RDK::UEngine* GetEngine(size_t i)
 {
  if(i>=DllManager.EngineList.size())
   return 0;
@@ -1322,7 +1252,7 @@ RDK::UEngine* RDK_CALL GetEngine(size_t i)
 
 // Создает новое хранилище и помещает в конец массива
 // Возвращает указатель на хранилище
-RDK::UAContainerStorage* RDK_CALL AddNewStorage(void)
+RDK::UAContainerStorage* AddNewStorage(void)
 {
  if(!DllManager.FuncCreateNewStorage)
   return 0;
@@ -1330,15 +1260,29 @@ RDK::UAContainerStorage* RDK_CALL AddNewStorage(void)
  RDK::UAContainerStorage* storage=DllManager.FuncCreateNewStorage();
  if(storage)
  {
-  CreateStorage(storage);
+//  CreateStorage(storage);
   DllManager.StorageList.push_back(storage);
  }
  return storage;
 }
 
+// Удаляет существующее хранилище
+void DelStorage(RDK::UAContainerStorage* storage)
+{
+ if(storage)
+ {
+  for(size_t i=0;i<DllManager.StorageList.size();i++)
+   if(DllManager.StorageList[i] == storage)
+   {
+	DllManager.StorageList.erase(DllManager.StorageList.begin()+i);
+	delete storage;
+   }
+ }
+}
+
 // Создает новую среду и помещает в конец массива
 // Возвращает указатель на среду
-RDK::UAContainerEnvironment* RDK_CALL AddNewEnvironment(RDK::UAContainerStorage *storage,bool isinit, std::list<RDK::UAContainer*>* external_classes, std::list<RDK::UALibrary*>* external_libs)
+RDK::UAContainerEnvironment* AddNewEnvironment(void)
 {
  if(!DllManager.FuncCreateNewEnvironment)
   return 0;
@@ -1346,15 +1290,29 @@ RDK::UAContainerEnvironment* RDK_CALL AddNewEnvironment(RDK::UAContainerStorage 
  RDK::UAContainerEnvironment* environment=DllManager.FuncCreateNewEnvironment();
  if(environment)
  {
-  CreateEnvironment(environment, storage,isinit,external_classes, external_libs);
+//  CreateEnvironment(environment, storage,isinit,external_classes, external_libs);
   DllManager.EnvironmentList.push_back(environment);
  }
  return environment;
 }
 
+// Удаляет существующую среду
+void DelEnvironment(RDK::UAContainerEnvironment* env)
+{
+ if(env)
+ {
+  for(size_t i=0;i<DllManager.EnvironmentList.size();i++)
+   if(DllManager.EnvironmentList[i] == env)
+   {
+	DllManager.EnvironmentList.erase(DllManager.EnvironmentList.begin()+i);
+	delete env;
+   }
+ }
+}
+
 // Создает новый движок и помещает в конец массива
 // Возвращает указатель на движок
-RDK::UEngine* RDK_CALL AddNewEngine(void)
+RDK::UEngine* AddNewEngine(void)
 {
  if(!DllManager.FuncCreateNewEngine)
   return 0;
@@ -1365,6 +1323,20 @@ RDK::UEngine* RDK_CALL AddNewEngine(void)
   DllManager.EngineList.push_back(engine);
  }
  return engine;
+}
+
+// Удаляет существую среду
+void DelEngine(RDK::UEngine* engine)
+{
+ if(engine)
+ {
+  for(size_t i=0;i<DllManager.EngineList.size();i++)
+   if(DllManager.EngineList[i] == engine)
+   {
+	DllManager.EngineList.erase(DllManager.EngineList.begin()+i);
+	delete engine;
+   }
+ }
 }
 // ----------------------------
 

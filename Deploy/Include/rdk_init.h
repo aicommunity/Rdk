@@ -493,37 +493,6 @@ RDK_LIB_TYPE bool RDK_CALL Engine_SetExceptionHandler(void* value);
 RDK_LIB_TYPE const char* RDK_CALL Engine_GetLog(void);
 // ----------------------------
 
-// ----------------------------
-// Внутренние функции инициализации
-// ----------------------------
-RDK_LIB_TYPE int RDK_CALL LoadEngine(void *create_storage, void *create_environment, void *create_engine);
-
-// Инициализация библиотеки
-RDK_LIB_TYPE int RDK_CALL Init(void);
-
-// Деинициализация библиотеки
-RDK_LIB_TYPE int RDK_CALL UnInit(void);
-
-// Загружает набор предустановленных библиотек
-RDK_LIB_TYPE int RDK_CALL LoadPredefinedLibraries(void);
-
-// Обработчик исключений библиотеки
-// Должен быть вызван в глобальном обработчике пользовательского ПО
-RDK_LIB_TYPE int RDK_CALL ExceptionDispatcher(void *exception);
-
-// Инициализация dll
-RDK_LIB_TYPE bool RDK_CALL DllInit(void* pfstorage,void* pfenvironment,void* pfengine);
-
-// Возвращает число хранилищ в библиотеке
-RDK_LIB_TYPE int RDK_CALL GetNumStorages(void);
-
-// Возвращает число сред в библиотеке
-RDK_LIB_TYPE int RDK_CALL GetNumEnvironments(void);
-
-// Возвращает число движков в библиотеке
-RDK_LIB_TYPE int RDK_CALL GetNumEngines(void);
-// ----------------------------
-
 #ifdef __cplusplus
 }
 #endif
