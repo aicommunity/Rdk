@@ -402,37 +402,83 @@ void TVideoOutputFrame::ReceiveFromComponentState(const std::string &stringid, c
 }
 // -------------------------
 
-//---------------------------------------------------------------------------
-void __fastcall TVideoOutputFrame::TimerTimer(TObject *Sender)
+// -------------------------
+// Методы вывода изображений во входы-выходы компонент
+// -------------------------
+// Отправляет изображение в выбранный компонент
+void TVideoOutputFrame::SendToComponentIO(void)
 {
-/* if(!Capture->GetCaptureState())
-  {
-   StartButton->Enabled=false;
-   StopButton->Enabled=true;
-   Timer->Enabled=false;
-   return;
-  }
-
- DrawCapture(Capture,Image->Picture->Bitmap);
- UpdateFlag=true;
-
- if(dynamic_cast<VFCapture*>(Capture))
+ if(LinkedComponentName.empty())
+  return;
+ switch(LinkedMode)
  {
-  ImageTrackBar->Position=static_cast<VFCapture*>(Capture)->GetCurrentFrame();
-  string sstamp;
-  VTimeStamp stamp(ImageTrackBar->Position/Capture->GetFPS(),Capture->GetFPS());
-  stamp>>sstamp;
-  TimeEdit->Text=sstamp.c_str();
+ case 0:
+  Model_SetComponentBitmapInput(LinkedComponentName.c_str(), LinkedIndex, &BmpSource);
+ break;
+ case 1:
+  Model_SetComponentBitmapOutput(LinkedComponentName.c_str(), LinkedIndex, &BmpSource);
+ break;
+ }
+}
+// -------------------------
+
+
+// -----------------------------
+// Методы управления визуальным интерфейсом
+// -----------------------------
+// Метод, вызываемый перед шагом расчета
+void TVideoOutputFrame::ABeforeCalculate(void)
+{
+ SendToComponentIO();
+}
+
+// Обновление интерфейса
+void TVideoOutputFrame::AUpdateInterface(void)
+{
+ if(LinkedComponentName.size() == 0)
+ {
+  SendImageToComponentInput1->Caption="Send Image To Component Input...";
+  SendImageToComponentOutput1->Caption="Send Image To Component Output...";
  }
  else
  {
-  string sstamp;
-  VTimeStamp stamp(Capture->GetCurrentVideoTime(),Capture->GetFPS());
-  stamp>>sstamp;
-  TimeEdit->Text=sstamp.c_str();
- }
+  switch(LinkedMode)
+  {
+  case 0:
+   SendImageToComponentInput1->Caption=String("Send Image To Input ")+String(LinkedComponentName.c_str())+String("[")+IntToStr(LinkedIndex)+String("]");
+   SendImageToComponentOutput1->Caption="Send Image To Component Output...";
+  break;
 
-                     */
+  case 1:
+   SendImageToComponentInput1->Caption="Send Image To Component Input...";
+   SendImageToComponentOutput1->Caption=String("Send Image To Output ")+String(LinkedComponentName.c_str())+String("[")+IntToStr(LinkedIndex)+String("]");
+  break;
+  }
+ }
+}
+
+// Сохраняет параметры интерфейса в xml
+void TVideoOutputFrame::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
+{
+ xml.WriteString("LinkedComponentName",LinkedComponentName);
+ xml.WriteInteger("LinkedMode",LinkedMode);
+ xml.WriteInteger("LinkedIndex",LinkedIndex);
+}
+
+// Загружает параметры интерфейса из xml
+void TVideoOutputFrame::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
+{
+ LinkedComponentName=xml.ReadString("LinkedComponentName","");
+ LinkedMode=xml.ReadInteger("LinkedMode",1);
+ LinkedIndex=xml.ReadInteger("LinkedIndex",0);
+}
+// -----------------------------
+
+
+
+//---------------------------------------------------------------------------
+void __fastcall TVideoOutputFrame::TimerTimer(TObject *Sender)
+{
  UpdateFlag=false;
  Image->Repaint();
 }
@@ -453,13 +499,7 @@ void __fastcall TVideoOutputFrame::StartButtonClick(TObject *Sender)
 
  default:
      ;
- }  /*
- if(VideoGrabber->VideoSource == vs_VideoFileOrURL)
-  VideoGrabber->RunPlayer();
- else
- if(VideoGrabber->VideoSource == vs_VideoCaptureDevice)
-   VideoGrabber->StartPreview();
-        */
+ }  
 }
 //---------------------------------------------------------------------------
 void __fastcall TVideoOutputFrame::StopButtonClick(TObject *Sender)
@@ -804,6 +844,28 @@ void __fastcall TVideoOutputFrame::SendToComponentState1Click(TObject *Sender)
 void __fastcall TVideoOutputFrame::SendToStateClick(TObject *Sender)
 {
  SendToComponentState(SelectedComponentSName, SelectedComponentStateName, FigureIndex);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoOutputFrame::SendImageToComponentOutput1Click(TObject *Sender)
+{
+ if(MyComponentsListForm->ShowComponentSelect() != mrOk)
+  return;
+
+ LinkedMode=1;
+ LinkedComponentName=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongId();
+ LinkedIndex=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoOutputFrame::SendImageToComponentInput1Click(TObject *Sender)
+{
+ if(MyComponentsListForm->ShowComponentSelect() != mrOk)
+  return;
+
+ LinkedMode=0;
+ LinkedComponentName=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongId();
+ LinkedIndex=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput();
 }
 //---------------------------------------------------------------------------
 

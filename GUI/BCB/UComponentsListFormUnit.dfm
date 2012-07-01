@@ -21,6 +21,12 @@ object UComponentsListForm: TUComponentsListForm
     Width = 565
     Height = 379
     Align = alClient
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
     TabOrder = 0
     ExplicitWidth = 565
     ExplicitHeight = 379

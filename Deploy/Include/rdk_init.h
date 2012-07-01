@@ -480,6 +480,18 @@ RDK_LIB_TYPE double RDK_CALL Model_GetInstantPerformance(const char *stringid);
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
 // возвращаемое значение имеет фактический тип RDK::UBitmap*
 RDK_LIB_TYPE const /* RDK::UBitmap* */void* const RDK_CALL Model_GetComponentOutput(const char *stringid, int index);
+
+// Возвращает указатель на выход с индексом 'index' компонента 'id'
+RDK_LIB_TYPE const /*RDK::UBitmap* */ void* const RDK_CALL Model_GetComponentBitmapOutput(const char *stringid, int index);
+
+// Возвращает указатель на вход с индексом 'index' компонента 'id'
+RDK_LIB_TYPE const /*RDK::UBitmap* */ void* const RDK_CALL Model_GetComponentBitmapInput(const char *stringid, int index);
+
+// Замещает изображение выхода с индексом 'index' компонента 'id'
+RDK_LIB_TYPE void RDK_CALL Model_SetComponentBitmapOutput(const char *stringid, int index, const /*RDK::UBitmap* */ void* const bmp);
+
+// Замещает изображение входа с индексом 'index' компонента 'id'
+RDK_LIB_TYPE void RDK_CALL Model_SetComponentBitmapInput(const char *stringid, int index, const /*RDK::UBitmap* */ void* const bmp);
 // --------------------------
 
 // --------------------------

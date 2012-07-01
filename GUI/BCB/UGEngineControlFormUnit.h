@@ -18,6 +18,7 @@
 #include <Vcl.ToolWin.hpp>
 #include "myrdk.h"
 #include "TUVisualController.h"
+#include "TUVisualControllerFormUnit.h"
 //---------------------------------------------------------------------------
 #pragma warn -8130
 class TUGEngineControlForm : public TUVisualControllerForm

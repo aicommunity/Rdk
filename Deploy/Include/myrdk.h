@@ -15,12 +15,12 @@
 #include "../../Core/Graphics/UGraphics.h"
 #include "../../Core/Graphics/UGraphicsXMLSerialize.h"
 #include "../../Core/Graphics/UGraphicsBinarySerialize.h"
-#ifndef RDK_LIB_TYPE
+/*#ifndef RDK_LIB_TYPE
 #include "rdk_initlib.h"
 #else
 #include "rdk_init.h"
 #endif
-
+  */
 namespace RDK {
 
 // Декодирует содержимое свойства/переменной состояния компонента

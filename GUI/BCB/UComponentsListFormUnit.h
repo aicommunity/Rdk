@@ -11,6 +11,8 @@
 #include "UComponentsListFrameUnit.h"
 #include <Vcl.ExtCtrls.hpp>
 #include "TUVisualController.h"
+#include "TUVisualControllerFormUnit.h"
+#include "TUVisualControllerFrameUnit.h"
 //---------------------------------------------------------------------------
 class TUComponentsListForm : public TUVisualControllerForm
 {

@@ -51,6 +51,10 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, UBHistogramElement &
 USerStorageBinary& operator << (USerStorageBinary& storage, const UBHistogram &data);
 USerStorageBinary& operator >> (USerStorageBinary& storage, UBHistogram &data);
 
+//class UBitmapParam
+USerStorageBinary& operator << (USerStorageBinary& storage, const UBitmapParam &data);
+USerStorageBinary& operator >> (USerStorageBinary& storage, UBitmapParam &data);
+
 //class UBitmap
 USerStorageBinary& operator << (USerStorageBinary& storage, const UBitmap &data);
 USerStorageBinary& operator >> (USerStorageBinary& storage, UBitmap &data);

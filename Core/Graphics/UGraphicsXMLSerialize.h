@@ -50,6 +50,10 @@ USerStorageXML& operator >> (USerStorageXML& storage, UBHistogramElement &data);
 USerStorageXML& operator << (USerStorageXML& storage, const UBHistogram &data);
 USerStorageXML& operator >> (USerStorageXML& storage, UBHistogram &data);
 
+//class UBitmapParam
+USerStorageXML& operator << (USerStorageXML& storage, const UBitmapParam &data);
+USerStorageXML& operator >> (USerStorageXML& storage, UBitmapParam &data);
+
 //class UBitmap
 USerStorageXML& operator << (USerStorageXML& storage, const UBitmap &data);
 USerStorageXML& operator >> (USerStorageXML& storage, UBitmap &data);

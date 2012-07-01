@@ -159,6 +159,17 @@ inherited VideoOutputFrame: TVideoOutputFrame
       Caption = 'Send To Component State...'
       OnClick = SendToComponentState1Click
     end
+    object N4: TMenuItem
+      Caption = '-'
+    end
+    object SendImageToComponentInput1: TMenuItem
+      Caption = 'Send Image To Component Input...'
+      OnClick = SendImageToComponentInput1Click
+    end
+    object SendImageToComponentOutput1: TMenuItem
+      Caption = 'Send Image To Component Output...'
+      OnClick = SendImageToComponentOutput1Click
+    end
     object N2: TMenuItem
       Caption = '-'
     end

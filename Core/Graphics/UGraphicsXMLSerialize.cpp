@@ -254,6 +254,44 @@ USerStorageXML& operator >> (USerStorageXML& storage, UBHistogram &data)
  return storage;
 }
 
+//class UBitmapParam
+USerStorageXML& operator << (USerStorageXML& storage, const UBitmapParam &data)
+{
+ storage.AddNode("Width");
+ operator << (storage,data.Width);
+ storage.SelectUp();
+
+ storage.AddNode("Height");
+ operator << (storage,data.Height);
+ storage.SelectUp();
+
+ storage.AddNode("ColorModel");
+ operator << (storage,data.ColorModel);
+ storage.SelectUp();
+
+ return storage;
+}
+
+USerStorageXML& operator >> (USerStorageXML& storage, UBitmapParam &data)
+{
+ if(!storage.SelectNode("Width"))
+  return storage;
+ operator >> (storage,data.Width);
+ storage.SelectUp();
+
+ if(!storage.SelectNode("Height"))
+  return storage;
+ operator >> (storage,data.Height);
+ storage.SelectUp();
+
+ if(!storage.SelectNode("ColorModel"))
+  return storage;
+ operator >> (storage,data.ColorModel);
+ storage.SelectUp();
+
+ return storage;
+}
+
 //class UBitmap
 USerStorageXML& operator << (USerStorageXML& storage, const UBitmap &data)
 {

@@ -44,6 +44,9 @@ __published:    // IDE-managed Components
     TMenuItem *SendTo;
     TMenuItem *SendToState;
     TMenuItem *SendToComponentState1;
+	TMenuItem *N4;
+	TMenuItem *SendImageToComponentInput1;
+	TMenuItem *SendImageToComponentOutput1;
     void __fastcall TimerTimer(TObject *Sender);
     void __fastcall StartButtonClick(TObject *Sender);
     void __fastcall StopButtonClick(TObject *Sender);
@@ -66,6 +69,8 @@ __published:    // IDE-managed Components
     void __fastcall SendToClick(TObject *Sender);
     void __fastcall SendToComponentState1Click(TObject *Sender);
     void __fastcall SendToStateClick(TObject *Sender);
+	void __fastcall SendImageToComponentOutput1Click(TObject *Sender);
+	void __fastcall SendImageToComponentInput1Click(TObject *Sender);
 
 private:    // User declarations
 public:        // User declarations
@@ -101,9 +106,18 @@ RDK::UGraphics Graph;
 // Отрисовка геометрии
 RDK::MGraphics<double,2> GeometryGraphics;
 
-protected:
-// Образец формируемой геометрии
-//RDK::MGraphics<double,2> SampleGeometryGraphics;
+protected: // Привязка источника видео к входу-выходу компонента
+// Имя компонента, к которому привязан источник
+std::string LinkedComponentName;
+
+// Режим привязки
+// 0 - ко входу
+// 1 - к выходу
+int LinkedMode;
+
+// Выход, к которому привязан источник
+int LinkedIndex;
+
 
 public:
 // Текущая создаваемая фигура
@@ -216,6 +230,29 @@ void ReceiveFromComponentParameter(const std::string &stringid, const std::strin
 // Считывает набор точек из переменной состояния компонента
 void ReceiveFromComponentState(const std::string &stringid, const std::string &state_name, int figure_index);
 // -------------------------
+
+// -------------------------
+// Методы вывода изображений во входы-выходы компонент
+// -------------------------
+// Отправляет изображение в выбранный компонент
+void SendToComponentIO(void);
+// -------------------------
+
+// -----------------------------
+// Методы управления визуальным интерфейсом
+// -----------------------------
+// Метод, вызываемый перед шагом расчета
+virtual void ABeforeCalculate(void);
+
+// Обновление интерфейса
+virtual void AUpdateInterface(void);
+
+// Сохраняет параметры интерфейса в xml
+virtual void ASaveParameters(RDK::Serialize::USerStorageXML &xml);
+
+// Загружает параметры интерфейса из xml
+virtual void ALoadParameters(RDK::Serialize::USerStorageXML &xml);
+// -----------------------------
 
 };
 //---------------------------------------------------------------------------

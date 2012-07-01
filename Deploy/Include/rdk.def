@@ -137,16 +137,12 @@ EXPORTS
     Model_GetFullStepDuration = _Model_GetFullStepDuration
     Model_GetInstantPerformance = _Model_GetInstantPerformance
     Model_GetComponentOutput = _Model_GetComponentOutput
+    Model_GetComponentBitmapOutput = _Model_GetComponentBitmapOutput
+    Model_GetComponentBitmapInput = _Model_GetComponentBitmapInput
+    Model_SetComponentBitmapOutput = _Model_SetComponentBitmapOutput
+    Model_SetComponentBitmapInput = _Model_SetComponentBitmapInput
     Engine_GetExceptionHandler = _Engine_GetExceptionHandler
     Engine_SetExceptionHandler = _Engine_SetExceptionHandler
     Engine_GetLog = _Engine_GetLog
-    LoadEngine = _LoadEngine
-    Init = _Init
-    UnInit = _UnInit
-    LoadPredefinedLibraries = _LoadPredefinedLibraries
-    ExceptionDispatcher = _ExceptionDispatcher
-    DllInit = _DllInit
-    GetNumStorages = _GetNumStorages
-    GetNumEnvironments = _GetNumEnvironments
-    GetNumEngines = _GetNumEngines         
+        
 

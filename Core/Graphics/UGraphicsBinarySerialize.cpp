@@ -95,6 +95,18 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, UBHistogram &data)
  return USimpleFromStorage(storage,data);
 }
 
+//class UBitmapParam
+USerStorageBinary& operator << (USerStorageBinary& storage, const UBitmapParam &data)
+{
+ return USimpleToStorage(storage,data);
+}
+
+USerStorageBinary& operator >> (USerStorageBinary& storage, UBitmapParam &data)
+{
+ return USimpleFromStorage(storage,data);
+}
+
+
 //class UBitmap
 USerStorageBinary& operator << (USerStorageBinary& storage, const UBitmap &data)
 {

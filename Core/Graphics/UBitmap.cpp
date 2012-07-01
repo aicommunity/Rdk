@@ -22,6 +22,33 @@ See file license.txt for more information
 
 namespace RDK {
 
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+UBitmapParam::UBitmapParam(void)
+{
+ Width=Height=0;
+ ColorModel=ubmRGB24;
+}
+
+UBitmapParam::UBitmapParam(const UBitmapParam &bitmap)
+{
+ Width=bitmap.Width;
+ Height=bitmap.Height;
+ ColorModel=bitmap.ColorModel;
+}
+
+UBitmapParam::UBitmapParam(UBMColorModel cmodel)
+{
+ Width=Height=0;
+ ColorModel=cmodel;
+}
+
+UBitmapParam::~UBitmapParam(void)
+{
+
+}
+// --------------------------
 
 
 // Методы UBitmap
@@ -29,29 +56,29 @@ namespace RDK {
 // Конструкторы и деструкторы
 // --------------------------
 UBitmap::UBitmap(void)
+ : UBitmapParam()
 {
  Data=PData=0;
  Clear();
- ColorModel=ubmRGB24;
 }
 
 UBitmap::UBitmap(const UBitmap &bitmap)
+ : UBitmapParam(bitmap)
 {
  Data=PData=0;
  Clear();
- ColorModel=ubmRGB24;
  *this=bitmap;
 }
 
 UBitmap::UBitmap(UBMColorModel cmodel)
+ : UBitmapParam(cmodel)
 {
  Data=PData=0;
  Clear();
- ColorModel=cmodel;
 }
 
 UBitmap::UBitmap(int width, int height, UColorT color,
-                UBMColorModel cmodel)
+				UBMColorModel cmodel)
 {
  Data=PData=0;
  Clear();
@@ -67,7 +94,7 @@ UBitmap::UBitmap(int width, int height, UColorT color,
 }
 
 UBitmap::UBitmap(int width, int height, const UBColor* data,
-                UBMColorModel cmodel)
+				UBMColorModel cmodel)
 {
  Data=PData=0;
  Clear();
@@ -76,7 +103,7 @@ UBitmap::UBitmap(int width, int height, const UBColor* data,
  if(width >= 0 && height >=0)
   SetImage(width, height, data, cmodel);
  else
-  UBitmap(cmodel);  
+  UBitmap(cmodel);
 }
 
 UBitmap::~UBitmap(void)

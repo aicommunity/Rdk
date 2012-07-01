@@ -96,17 +96,37 @@ struct UBHistogramElement;
 // (Описание в конце файла)
 class UBHistogram;
 
+
+class UBitmapParam
+{
+public:
+// размеры изображения по осям
+int Width, Height;
+
+// Формат изображения
+UBMColorModel ColorModel;
+
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+UBitmapParam(void);
+UBitmapParam(const UBitmapParam &bitmap);
+UBitmapParam(UBMColorModel cmodel);
+~UBitmapParam(void);
+// --------------------------
+};
+
 // Класс, описывающий изображение
-class UBitmap
+class UBitmap: protected UBitmapParam
 {
 protected: // Данные
 UBColor *Data;
 
 // Формат изображения
-UBMColorModel ColorModel;
+//UBMColorModel ColorModel;
 
 // размеры изображения по осям
-int Width, Height;
+//int Width, Height;
 
 // Число пикселей изображения
 int Length;

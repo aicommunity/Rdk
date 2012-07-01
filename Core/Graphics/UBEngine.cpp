@@ -206,11 +206,83 @@ const RDK::UBitmap* const UBEngine::Model_GetComponentOutput(const char *stringi
 
  return cont->GetOutputs()[index];
 }
+
+// Возвращает указатель на выход с индексом 'index' компонента 'id'
+const RDK::UBitmap* const UBEngine::Model_GetComponentBitmapOutput(const char *stringid, int index)
+{
+ UEPtr<RDK::UBAbstract> cont=dynamic_pointer_cast<RDK::UBAbstract>(FindComponent(stringid));
+
+ if(!cont)
+  return 0;
+
+ if(index<0 || index >= cont->GetNumOutputs())
+  return 0;
+
+ return cont->GetOutputs()[index];
+}
+
+// Возвращает указатель на вход с индексом 'index' компонента 'id'
+const RDK::UBitmap* const UBEngine::Model_GetComponentBitmapInput(const char *stringid, int index)
+{
+ UEPtr<RDK::UBAbstract> cont=dynamic_pointer_cast<RDK::UBAbstract>(FindComponent(stringid));
+
+ if(!cont)
+  return 0;
+
+ if(index<0 || index >= cont->GetNumInputs())
+  return 0;
+
+ return cont->GetInputs()[index];
+}
+
+// Замещает изображение выхода с индексом 'index' компонента 'id'
+void UBEngine::Model_SetComponentBitmapOutput(const char *stringid, int index, const RDK::UBitmap* const bmp)
+{
+ UEPtr<RDK::UBAbstract> cont=dynamic_pointer_cast<RDK::UBAbstract>(FindComponent(stringid));
+
+ if(!cont)
+  return;
+
+ if(index<0 || index >= cont->GetNumOutputs())
+  return;
+
+ UBitmap *output=cont->GetOutputs()[index];
+
+ if(!output)
+  return;
+
+ UBitmap conversion;
+ conversion.AttachBuffer(bmp->GetWidth(),bmp->GetHeight(),bmp->GetData(),bmp->GetColorModel());
+ conversion.ConvertTo(*output);
+ conversion.DetachBuffer();
+}
+
+// Замещает изображение входа с индексом 'index' компонента 'id'
+void UBEngine::Model_SetComponentBitmapInput(const char *stringid, int index, const RDK::UBitmap* const bmp)
+{
+ UEPtr<RDK::UBAbstract> cont=dynamic_pointer_cast<RDK::UBAbstract>(FindComponent(stringid));
+
+ if(!cont)
+  return;
+
+ if(index<0 || index >= cont->GetNumInputs())
+  return;
+
+ UBitmap *input=cont->GetInputs()[index];
+
+ if(!input)
+  return;
+
+ UBitmap conversion;
+ conversion.AttachBuffer(bmp->GetWidth(),bmp->GetHeight(),bmp->GetData(),bmp->GetColorModel());
+ conversion.ConvertTo(*input);
+ conversion.DetachBuffer();
+}
 // --------------------------
 
 
 
-// --------------------------
+// -------------------------b-
 // Методы внутреннего управления движком
 // --------------------------
 // Загружает набор предустановленных библиотек
@@ -327,13 +399,18 @@ int UBEngine::LoadPredefinedLibraries(void)
  filter->Default();
  filter->SetName("DataSimulatorSimple");
  bstorage->AddClass(filter,"DataSimulatorSimple");
-                 
+
 #ifdef WIN32
  filter=new RDK::UBWDllCameraCalibrator;
  filter->Default();
  filter->SetName("CameraCalibrator");
  bstorage->AddClass(filter,"WDllCameraCalibrator");
 #endif
+
+ filter=new RDK::UBABitmapSourceSimple;
+ filter->Default();
+ filter->SetName("BitmapSourceSimple");
+ bstorage->AddClass(filter,"BitmapSourceSimple");
 
  return 0;
 }

@@ -16,6 +16,7 @@
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
+#pragma link "TUVisualControllerFormUnit"
 #pragma resource "*.dfm"
 TUGEngineControlForm *UGEngineControlForm;
 //---------------------------------------------------------------------------
