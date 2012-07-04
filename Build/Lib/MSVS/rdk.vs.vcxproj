@@ -82,16 +82,16 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\Deploy\Include\rdk_initlib.cpp" />
+    <ClCompile Include="..\..\..\Deploy\Include\rdk.win.cpp" />
+    <ClCompile Include="..\..\..\Deploy\Include\rdk_cpp_initlib.cpp" />
     <ClCompile Include="..\..\..\Deploy\Include\rdk_new.cpp" />
-    <ClCompile Include="..\..\..\Deploy\Include\rdk_win.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\Deploy\Include\rdk.h" />
-    <ClInclude Include="..\..\..\Deploy\Include\rdk_initlib.h" />
+    <ClInclude Include="..\..\..\Deploy\Include\rdk_cpp_initlib.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

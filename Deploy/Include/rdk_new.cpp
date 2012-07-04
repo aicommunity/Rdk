@@ -4,12 +4,12 @@
 #include "rdk.h"
 
 /*****************************************************************************/
-extern RDK::UAStorage* CreateNewStorage(void)
+extern RDK::UAContainerStorage* CreateNewStorage(void)
 {
  return new RDK::UBAStorage;
 }
 
-extern RDK::UAEnvironment* CreateNewEnvironment(void)
+extern RDK::UAContainerEnvironment* CreateNewEnvironment(void)
 {
  return new RDK::UBAEnvironment;
 }

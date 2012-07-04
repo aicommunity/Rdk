@@ -91,14 +91,14 @@ copy ..\..\..\Bin\rdk.vs.lib ..\..\..\Deploy\Dll\rdk.vs.lib /Y</Command>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\Deploy\Include\rdk.h" />
-    <ClInclude Include="..\..\..\Deploy\Include\rdk_initdll.h" />
+    <ClInclude Include="..\..\..\Deploy\Include\rdk_cpp_initdll.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\Deploy\Include\rdk_initdll.cpp" />
+    <ClCompile Include="..\..\..\Deploy\Include\rdk.win.cpp" />
+    <ClCompile Include="..\..\..\Deploy\Include\rdk_cpp_initdll.cpp" />
     <ClCompile Include="..\..\..\Deploy\Include\rdk_new.cpp" />
-    <ClCompile Include="..\..\..\Deploy\Include\rdk_win.cpp" />
     <ClCompile Include="dllmain.cpp">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
