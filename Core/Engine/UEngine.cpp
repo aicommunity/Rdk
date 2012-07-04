@@ -1841,26 +1841,19 @@ const char * UEngine::Model_GetComponentState(const char *stringid)
 {
  try
  {
-  UEPtr<RDK::UANet> model=dynamic_pointer_cast<RDK::UANet>(Environment->GetModel());
+  TempString="";
+  UEPtr<RDK::UAContainer> cont=FindComponent(stringid);
 
-  if(!model)
-   return 0;
-
-  RDK::ULongId id;
-  string namebuffer;
-
-  UEPtr<RDK::UAContainer> cont=model->GetComponentL(id.DecodeFromString(stringid));
   if(!cont)
-   return 0;
+   return TempString.c_str();
 
-  XmlStorage.Create(cont->GetLongName(model,namebuffer));
+  XmlStorage.Create(cont->GetLongName(Environment->GetCurrentComponent(),CompName));
   XmlStorage.AddNode("State");
 
   if(!Model_GetComponentState(cont,&XmlStorage))
    return 0;
-  XmlStorage.SelectUp();
 
-  TempString="";
+  XmlStorage.SelectUp();
   XmlStorage.Save(TempString);
  }
  catch (Exception * exception)
