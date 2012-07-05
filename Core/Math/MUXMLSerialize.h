@@ -110,7 +110,7 @@ USerStorageXML& operator << (USerStorageXML& storage, const MMatrix<T,Rows,Cols>
  {
   for(unsigned j=0;j<Cols;j++)
   {
-   stream<<data.Data[i][j];
+   stream<<data.Data[i][j]<<" ";
 //   if(i<Cols-1)
 //	stream<<" ";
   }
