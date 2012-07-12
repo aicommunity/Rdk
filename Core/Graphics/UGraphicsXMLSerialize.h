@@ -19,6 +19,7 @@ See file license.txt for more information
 namespace RDK {
 
 struct UBVSObject;
+struct UBVSObject3D;
 
 namespace Serialize {
 
@@ -66,6 +67,9 @@ USerStorageXML& operator >> (USerStorageXML& storage, UBitmapVector &data);
 USerStorageXML& operator << (USerStorageXML& storage, const UBVSObject &data);
 USerStorageXML& operator >> (USerStorageXML& storage, UBVSObject &data);
 
+// struct UBVSObject
+USerStorageXML& operator << (USerStorageXML& storage, const UBVSObject3D &data);
+USerStorageXML& operator >> (USerStorageXML& storage, UBVSObject3D &data);
 }
 }
 #endif

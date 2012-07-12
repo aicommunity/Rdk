@@ -412,6 +412,18 @@ int UBEngine::LoadPredefinedLibraries(void)
  filter->SetName("BitmapSourceSimple");
  bstorage->AddClass(filter,"BitmapSourceSimple");
 
+#ifdef OPENCV
+ filter=new RDK::UBOpenCVSurf;
+ filter->Default();
+ filter->SetName("OpenCVSurf");
+ bstorage->AddClass(filter,"OpenCVSurf");
+#endif
+
+ filter=new RDK::UBAVideo3DSimulatorSimple;
+ filter->Default();
+ filter->SetName("Video3DSimulatorSimple");
+ bstorage->AddClass(filter,"Video3DSimulatorSimple");
+
  return 0;
 }
 // --------------------------

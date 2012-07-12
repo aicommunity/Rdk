@@ -14,6 +14,7 @@ See file license.txt for more information
 
 #include "UGraphicsBinarySerialize.h"
 #include "Libraries/Simulator/UBAVideoSimulator.h"
+#include "Libraries/Simulator/UBAVideo3DSimulator.h"
 
 namespace RDK {
 namespace Serialize {
@@ -139,6 +140,7 @@ USerStorageBinary& operator << (USerStorageBinary& storage, const UBVSObject &da
  operator << (storage,data.XShift);
  operator << (storage,data.YShift);
  operator << (storage,data.ObjectColor);
+ operator << (storage,data.ObjectColor2);
  operator << (storage,data.Visible);
  operator << (storage,data.MovingDirection);
 
@@ -154,6 +156,35 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, UBVSObject &data)
  operator >> (storage,data.XShift);
  operator >> (storage,data.YShift);
  operator >> (storage,data.ObjectColor);
+ operator >> (storage,data.ObjectColor2);
+ operator >> (storage,data.Visible);
+ operator >> (storage,data.MovingDirection);
+
+ return storage;
+}
+
+
+// struct UBVSObject3D
+USerStorageBinary& operator << (USerStorageBinary& storage, const UBVSObject3D &data)
+{
+ operator << (storage,data.Size);
+ operator << (storage,data.Position);
+ operator << (storage,data.Speed);
+ operator << (storage,data.ObjectColor);
+ operator << (storage,data.ObjectColor2);
+ operator << (storage,data.Visible);
+ operator << (storage,data.MovingDirection);
+
+ return storage;
+}
+
+USerStorageBinary& operator >> (USerStorageBinary& storage, UBVSObject3D &data)
+{
+ operator >> (storage,data.Size);
+ operator >> (storage,data.Position);
+ operator >> (storage,data.Speed);
+ operator >> (storage,data.ObjectColor);
+ operator >> (storage,data.ObjectColor2);
  operator >> (storage,data.Visible);
  operator >> (storage,data.MovingDirection);
 

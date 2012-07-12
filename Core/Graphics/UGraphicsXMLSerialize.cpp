@@ -18,6 +18,7 @@ See file license.txt for more information
 #include "UGraphicsXMLSerialize.h"
 #include "../Serialize/UXMLStdSerialize.h"
 #include "Libraries/Simulator/UBAVideoSimulator.h"
+#include "Libraries/Simulator/UBAVideo3DSimulator.h"
 
 namespace RDK {
 namespace Serialize {
@@ -466,6 +467,89 @@ USerStorageXML& operator >> (USerStorageXML& storage, UBVSObject &data)
  if(!storage.SelectNode("YShift"))
   return storage;
  operator >> (storage,data.YShift);
+ storage.SelectUp();
+
+ if(!storage.SelectNode("ObjectColor"))
+  return storage;
+ operator >> (storage,data.ObjectColor);
+ storage.SelectUp();
+
+ if(!storage.SelectNode("ObjectColor2"))
+  return storage;
+ operator >> (storage,data.ObjectColor2);
+ storage.SelectUp();
+
+ if(!storage.SelectNode("Mode"))
+  return storage;
+ operator >> (storage,data.Mode);
+ storage.SelectUp();
+
+ if(!storage.SelectNode("Visible"))
+  return storage;
+ operator >> (storage,data.Visible);
+ storage.SelectUp();
+
+ if(!storage.SelectNode("MovingDirection"))
+  return storage;
+ operator >> (storage,data.MovingDirection);
+ storage.SelectUp();
+
+ return storage;
+}
+
+// struct UBVSObject3D
+USerStorageXML& operator << (USerStorageXML& storage, const UBVSObject3D &data)
+{
+ storage.AddNode("Size");
+ operator << (storage,data.Size);
+ storage.SelectUp();
+
+ storage.AddNode("Position");
+ operator << (storage,data.Position);
+ storage.SelectUp();
+
+ storage.AddNode("Speed");
+ operator << (storage,data.Speed);
+ storage.SelectUp();
+
+ storage.AddNode("ObjectColor");
+ operator << (storage,data.ObjectColor);
+ storage.SelectUp();
+
+ storage.AddNode("ObjectColor2");
+ operator << (storage,data.ObjectColor2);
+ storage.SelectUp();
+
+ storage.AddNode("Mode");
+ operator << (storage,data.Mode);
+ storage.SelectUp();
+
+ storage.AddNode("Visible");
+ operator << (storage,data.Visible);
+ storage.SelectUp();
+
+ storage.AddNode("MovingDirection");
+ operator << (storage,data.MovingDirection);
+ storage.SelectUp();
+
+ return storage;
+}
+
+USerStorageXML& operator >> (USerStorageXML& storage, UBVSObject3D &data)
+{
+ if(!storage.SelectNode("Size"))
+  return storage;
+ operator >> (storage,data.Size);
+ storage.SelectUp();
+
+ if(!storage.SelectNode("Position"))
+  return storage;
+ operator >> (storage,data.Position);
+ storage.SelectUp();
+
+ if(!storage.SelectNode("Speed"))
+  return storage;
+ operator >> (storage,data.Speed);
  storage.SelectUp();
 
  if(!storage.SelectNode("ObjectColor"))
