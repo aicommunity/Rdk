@@ -70,9 +70,6 @@ UpgradeLog.XML
 *.?0X
 *.?0Y
 *.?0Z   
-*.lib
-*.dll
-*.exe
 Log
 Log0328
 Release
