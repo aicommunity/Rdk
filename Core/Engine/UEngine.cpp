@@ -2146,6 +2146,7 @@ const char *  UEngine::Model_SaveComponent(const char *stringid)
 
   XmlStorage.DelNode();
   XmlStorage.Create("Save");
+  XmlStorage.SetNodeAttribute("ModelName",Environment->GetModel()->GetName());
 
   if(!Model_SaveComponent(cont,&XmlStorage))
    return 0;
@@ -2178,6 +2179,9 @@ int UEngine::Model_LoadComponent(const char *stringid, char* buffer)
   }
   else
   {
+   if(XmlStorage.GetNodeAttribute("ModelName") != Environment->GetModel()->GetName())
+    return -10;
+
    UEPtr<RDK::UANet> cont=dynamic_pointer_cast<RDK::UANet>(FindComponent(stringid));
 
    if(!cont)
@@ -2205,6 +2209,7 @@ const char * UEngine::Model_SaveComponentParameters(const char *stringid)
    return 0;
 
   XmlStorage.Create("SaveParameters");
+  XmlStorage.SetNodeAttribute("ModelName",Environment->GetModel()->GetName());
 
   if(!Model_SaveComponentParameters(cont,&XmlStorage))
    return 0;
@@ -2232,6 +2237,9 @@ int UEngine::Model_LoadComponentParameters(const char *stringid, char* buffer)
   XmlStorage.Load(buffer,"SaveParameters");
   XmlStorage.SelectNode(0);
 
+  if(XmlStorage.GetNodeAttribute("ModelName") != Environment->GetModel()->GetName())
+   return -10;
+
   if(!Model_LoadComponentParameters(cont,&XmlStorage))
    return -4;
  }
@@ -2253,6 +2261,7 @@ const char * UEngine::Model_SaveComponentState(const char *stringid)
    return 0;
 
   XmlStorage.Create("SaveState");
+  XmlStorage.SetNodeAttribute("ModelName",Environment->GetModel()->GetName());
 
   if(!Model_SaveComponentState(cont,&XmlStorage))
    return 0;
@@ -2279,6 +2288,9 @@ int UEngine::Model_LoadComponentState(const char *stringid, char* buffer)
 
   XmlStorage.Load(buffer,"SaveState");
   XmlStorage.SelectNode(0);
+  if(XmlStorage.GetNodeAttribute("ModelName") != Environment->GetModel()->GetName())
+   return -10;
+
 
   if(!Model_LoadComponentState(cont,&XmlStorage))
    return -4;
@@ -2836,7 +2848,7 @@ int UEngine::Model_SaveComponentParameters(RDK::UANet* cont, RDK::Serialize::USe
    return false;
 
   serstorage->AddNode(cont->GetName());
-  serstorage->SetNodeAttribute("Class",RDK::sntoa(cont->GetClass()));
+  serstorage->SetNodeAttribute("Class",Storage->GetClassName(cont->GetClass()));
   serstorage->AddNode("Parameters");
   if(!Model_GetComponentParameters(cont, serstorage))
    return false;
