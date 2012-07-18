@@ -8,7 +8,7 @@
 #include "TUBitmap.h"
 #include "TVideoGrabberControlFormUnit.h"
 #include "myrdk.h"
-#include "rdk_initdll.h"
+#include "rdk_cpp_initdll.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "VidGrab"
