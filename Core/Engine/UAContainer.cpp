@@ -262,9 +262,9 @@ void UAContainer::SetMainOwner(UEPtr<UAComponent> mainowner, int levels)
   if((*comps)->GetMainOwner() == 0)
   {
    if(levels<0)
-	(*comps)->SetMainOwner(MainOwner,levels);
+    (*comps)->SetMainOwner(MainOwner,levels);
    else
-	(*comps)->SetMainOwner(MainOwner,levels-1);
+    (*comps)->SetMainOwner(MainOwner,levels-1);
   }
  }
 }
@@ -345,7 +345,7 @@ bool UAContainer::SetName(const NameT &name)
   if(GetOwner() != 0)
   {
    if(!GetOwner()->CheckName(name))
-	throw new EComponentNameAlreadyExist(name);
+    throw new EComponentNameAlreadyExist(name);
 
    GetOwner()->ModifyLookupComponent(Name, name);
   }
@@ -408,7 +408,7 @@ NameT& UAContainer::GetLongName(const UEPtr<UAContainer> mainowner, NameT &buffe
 const NameT& UAContainer::GetComponentName(const UId &id) const
 {
  for(std::map<NameT,UId>::const_iterator I=CompsLookupTable.begin(),
-								 J=CompsLookupTable.end(); I!=J; ++I)
+                                 J=CompsLookupTable.end(); I!=J; ++I)
  {
   if(I->second == id)
    return I->first;
@@ -430,7 +430,7 @@ const UId& UAContainer::GetComponentId(const NameT &name) const
 const NameT& UAContainer::GetPointerName(const UId &id) const
 {
  for(PointerMapCIteratorT I=PointerLookupTable.begin(),
-								 J=PointerLookupTable.end(); I!=J; ++I)
+                                 J=PointerLookupTable.end(); I!=J; ++I)
  {
   if(I->second.Id == id)
    return I->first;
@@ -540,7 +540,7 @@ bool UAContainer::SetId(const UId &id)
  if(Owner != 0)
   {
    if(!GetOwner()->CheckId(id))
-	throw new EComponentIdAlreadyExist(id);
+    throw new EComponentIdAlreadyExist(id);
 
    GetOwner()->SetLookupComponent(Name, id);
   }
@@ -877,15 +877,15 @@ void UAContainer::CopyComponents(UEPtr<UAContainer> comp, UEPtr<UAContainerStora
   bufcomp=comp->GetComponentByIndex(i);
   if(!GetComponent(bufcomp->Id))
    if(!comp->DelComponent(bufcomp,true))
-	return false;
+    return false;
  }
 
  for(int i=0;i<NumComponents;i++)
   {
    bufcomp=comp->GetComponent(PComponents[i]->Id());
    if(bufcomp)
-	if(!comp->DelComponent(bufcomp->Id()))
-	 return false;
+    if(!comp->DelComponent(bufcomp->Id()))
+     return false;
 
    bufcomp=PComponents[i]->Alloc(PComponents[i]->Name(),stor);
    UIPointer *pointer=0;
@@ -950,7 +950,7 @@ ULongIdVector& UAContainer::GetConnectorsList(ULongIdVector &buffer,
 // если 'sublevel' == 0, то возвращает идентификаторы элементов только этой сети
 // Предварительная очистка буфера не производится.
 ULongIdVector& UAContainer::GetItemsList(ULongIdVector &buffer,
-							int sublevel, UEPtr<UAContainer> ownerlevel)
+                            int sublevel, UEPtr<UAContainer> ownerlevel)
 
 {
  ULongId id;
@@ -1027,7 +1027,7 @@ bool UAContainer::SetComponentAs(const UId &id, const UId &pointerid)
   if(J->second.Pointer && J->second.Pointer->Find(cont)>=0)
   {
    if(J->second.Id == pointerid)
-	return true;
+    return true;
   }
 
   if(J->second.Id == pointerid)
@@ -1307,15 +1307,15 @@ bool UAContainer::Calculate(void)
    --CalcCounter;
    if(CalcCounter <= 0)
     {
-	 CalcCounter=OwnerTimeStep/TimeStep;
-	 ACalculate();
+     CalcCounter=OwnerTimeStep/TimeStep;
+     ACalculate();
     }
   }
  else
  if(TimeStep > OwnerTimeStep)
   {
    for(UTime i=TimeStep/OwnerTimeStep;i>=0;--i)
-	ACalculate();
+    ACalculate();
   }
 
  UpdateMainOwner();
@@ -1365,7 +1365,7 @@ void UAContainer::ForceComponentReCalculation(void)
 // Обновляет таблицу соответствий компонент заменяя 'oldname'
 // имя компонента на 'newname'
 void UAContainer::ModifyLookupComponent(const NameT &oldname,
-										const NameT newname)
+                                        const NameT newname)
 {
  UId id;
 
@@ -1495,7 +1495,7 @@ UId UAContainer::AddLookupPointer(const NameT &name, UEPtr<UIPointer> pointer)
   throw EPointerNameAlreadyExist(name);
 
  for(PointerMapIteratorT I=PointerLookupTable.begin(),
-					  J=PointerLookupTable.end(); I!=J; ++I)
+                      J=PointerLookupTable.end(); I!=J; ++I)
  {
   if(P.Id <= I->second.Id)
    P.Id=I->second.Id+1;
@@ -1517,7 +1517,7 @@ void UAContainer::DelLookupPointer(const NameT &name)
  PointerLookupTable.erase(I);
 }
 /*
-// Возвращает полное имя указателя без префикса NMSDK, и суффикса '*'
+// Возвращает полное имя указателя без префикса RDK, и суффикса '*'
 NameT UAContainer::GetPointerLongName(const UIPointer &pointer) const
 {
 
@@ -1543,10 +1543,10 @@ NameT UAContainer::GetPointerLongName(const UIPointer &pointer) const
 UAContainer::PointerMapCIteratorT UAContainer::FindLookupPointer(UEPtr<UAContainer> source) const
 {
  for(PointerMapCIteratorT I=PointerLookupTable.begin(),
-					  J=PointerLookupTable.end(); I!=J; ++I)
+                      J=PointerLookupTable.end(); I!=J; ++I)
  {
    if(I->second.Pointer && I->second.Pointer->Find(source)>=0)
-	return I;
+    return I;
  }
 
  return PointerLookupTable.end();
@@ -1602,11 +1602,11 @@ void UAContainer::DelComponentTable(UEPtr<UAContainer> comp)
   else
   {
    for(i=0;i<NumComponents;i++)
-	if(PComponents[i] == comp)
-	 break;
+    if(PComponents[i] == comp)
+     break;
 
    if(i>=NumComponents)
-	return;
+    return;
 
    memmove(PComponents+i,PComponents+i+1,(NumComponents-i-1)*sizeof(UEPtr<UAContainer>));
    Components.resize(NumComponents-1);

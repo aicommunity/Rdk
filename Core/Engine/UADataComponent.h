@@ -88,7 +88,7 @@ const NameT& GetPropertyName(const UId &id) const;
 // Возвращает Id параметра по его имени
 const UId& GetPropertyId(const NameT &name) const;
 
-// Возвращает полное имя параметра без префикса NMSDK, и суффикса '*'
+// Возвращает полное имя параметра без префикса RDK, и суффикса '*'
 //NameT GetPropertyLongName(const NameT &name) const;
 //NameT GetPropertyLongName(const UId &id) const;
 
@@ -98,7 +98,7 @@ const NameT& GetStateName(const UId &id) const;
 // Возвращает Id переменной состояния по его имени
 const UId& GetStateId(const NameT &name) const;
 
-// Возвращает полное имя переменной состояния без префикса NMSDK, и суффикса '*'
+// Возвращает полное имя переменной состояния без префикса RDK, и суффикса '*'
 //NameT GetStateLongName(const NameT &name) const;
 //NameT GetStateLongName(const UId &id) const;
 // --------------------------
@@ -208,7 +208,7 @@ void DelLookupState(const NameT &name);
 // Удаляет всю таблицу соответствий
 void ClearLookupStateTable(void);
 
-// Возвращает полное имя переменной состояния без префикса NMSDK, и суффикса '*'
+// Возвращает полное имя переменной состояния без префикса RDK, и суффикса '*'
 //NameT GetStateLongName(const UIProperty &property) const;
 // --------------------------
 

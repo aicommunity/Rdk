@@ -4,7 +4,7 @@ E-mail:        alexab@ailab.ru
 url:            http://ailab.ru
 Version:        3.0.0
 
-This file - part of the project: NMSDK
+This file - part of the project: RDK
 
 File License:        BSD License
 Project License:    BSD License

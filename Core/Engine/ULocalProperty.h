@@ -4,7 +4,7 @@ E-mail:        alexab@ailab.ru
 url:            http://ailab.ru
 Version:        3.0.0
 
-This file - part of the project: NMSDK
+This file - part of the project: RDK
 
 File License:        BSD License
 Project License:    BSD License
@@ -179,11 +179,11 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 UVLStateProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterT setmethod ,
-		typename UVProperty<T,OwnerT>::GetterT getmethod)
+        typename UVProperty<T,OwnerT>::GetterT getmethod)
  : UVProperty<T,OwnerT>(owner, setmethod, getmethod)
 { reinterpret_cast<UADataComponent* const>(owner)->AddLookupState(name,this,false); };
 UVLStateProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod ,
-		typename UVProperty<T,OwnerT>::GetterT getmethod)
+        typename UVProperty<T,OwnerT>::GetterT getmethod)
  : UVProperty<T,OwnerT>(owner, setmethod, getmethod)
 { reinterpret_cast<UADataComponent* const>(owner)->AddLookupState(name,this,false); };
 // -----------------------------

@@ -55,10 +55,10 @@ UADataComponent::~UADataComponent(void)
 const NameT& UADataComponent::GetPropertyName(const UId &id) const
 {
  for(VariableMapCIteratorT I=PropertiesLookupTable.begin(),
-						 J=PropertiesLookupTable.end(); I!=J;++I)
+                         J=PropertiesLookupTable.end(); I!=J;++I)
  {
    if(I->second.Id == id)
-	return I->first;
+    return I->first;
  }
  throw new EPropertyIdNotExist(id);
 }
@@ -94,13 +94,13 @@ NameT UADataComponent::GetPropertyLongName(const UId &id) const
   }
  return NameT();
 }
-		 */
+         */
 
 // Возвращает имя переменной состояния по его Id
 const NameT& UADataComponent::GetStateName(const UId &id) const
 {
  for(VariableMapCIteratorT I=StateLookupTable.begin(),
-								 J=StateLookupTable.end(); I!=J;++I)
+                                 J=StateLookupTable.end(); I!=J;++I)
  {
   if(I->second.Id == id)
    return I->first;
@@ -117,8 +117,8 @@ const UId& UADataComponent::GetStateId(const NameT &name) const
 
  return I->second.Id;
 }
-		 /*
-// Возвращает полное имя переменной состояния без префикса NMSDK, и суффикса '*'
+         /*
+// Возвращает полное имя переменной состояния без префикса RDK, и суффикса '*'
 NameT UADataComponent::GetStateLongName(const NameT &name) const
 {
  VariableMapCIteratorT I=StateLookupTable.find(name);
@@ -170,7 +170,7 @@ UContainerDescription* UADataComponent::NewDescription(void)
 UEPtr<UVariableData> UADataComponent::GetProperty(const UId &id, UEPtr<UVariableData> values) const
 {
  for(VariableMapCIteratorT I=PropertiesLookupTable.begin(),
-							J=PropertiesLookupTable.end(); I!=J;++I)
+                            J=PropertiesLookupTable.end(); I!=J;++I)
  {
   if(I->second.Id == id)
   {
@@ -187,13 +187,13 @@ std::string& UADataComponent::GetPropertyValue(const UId &id, std::string &value
  Serialize::USerStorageXML data;
 
  for(VariableMapCIteratorT I=PropertiesLookupTable.begin(),
-							J=PropertiesLookupTable.end(); I!=J;++I)
+                            J=PropertiesLookupTable.end(); I!=J;++I)
  {
   if(I->second.Id == id)
   {
    I->second.Property->Save(&data,true);
    if(data.GetNumNodes() == 0)
-	values=data.GetNodeText();
+    values=data.GetNodeText();
    else
     data.Save(values);
    return values;
@@ -218,7 +218,7 @@ std::string& UADataComponent::GetPropertyValue(const NameT &name, std::string &v
 void UADataComponent::SetProperty(const UId &id, UEPtr<UVariableData> values)
 {
  for(VariableMapCIteratorT I=PropertiesLookupTable.begin(),
-							 J=PropertiesLookupTable.end(); I!=J; ++I)
+                             J=PropertiesLookupTable.end(); I!=J; ++I)
  {
   if(I->second.Id == id)
   {
@@ -232,20 +232,20 @@ void UADataComponent::SetPropertyValue(const UId &id, const std::string &values)
 {
  Serialize::USerStorageXML data;
  for(VariableMapCIteratorT I=PropertiesLookupTable.begin(),
-							 J=PropertiesLookupTable.end(); I!=J; ++I)
+                             J=PropertiesLookupTable.end(); I!=J; ++I)
  {
   if(I->second.Id == id)
   {
    if(values.size()>0 && values[0]=='<')
    {
-	data.Load(values,"");
-	data.RenameNode(I->second.Property->GetName());
+    data.Load(values,"");
+    data.RenameNode(I->second.Property->GetName());
     I->second.Property->Load(&data,true);
    }
    else
    {
-	I->second.Property->Save(&data,true);
-	data.SetNodeText(values);
+    I->second.Property->Save(&data,true);
+    data.SetNodeText(values);
     I->second.Property->Load(&data,true);
    }
    return;
@@ -275,7 +275,7 @@ void UADataComponent::CopyProperties(UEPtr<UADataComponent> comp) const
 {
  Serialize::USerStorageBinary databuffer;
  for(VariableMapCIteratorT I=PropertiesLookupTable.begin(),
-							J=PropertiesLookupTable.end(); I!=J; ++I)
+                            J=PropertiesLookupTable.end(); I!=J; ++I)
  {
   databuffer.clear();
   comp->SetProperty(I->second.Id,GetProperty(I->second.Id,&databuffer));
@@ -286,7 +286,7 @@ void UADataComponent::CopyProperties(UEPtr<UADataComponent> comp) const
 const NameT& UADataComponent::FindPropertyName(UEPtr<const UIProperty> prop) const
 {
   for(VariableMapCIteratorT I=PropertiesLookupTable.begin(),
-						J=PropertiesLookupTable.end(); I!=J; ++I)
+                        J=PropertiesLookupTable.end(); I!=J; ++I)
   {
    if(I->second.Property == prop)
     return I->first;
@@ -302,7 +302,7 @@ const NameT& UADataComponent::FindPropertyName(UEPtr<const UIProperty> prop) con
 UEPtr<UVariableData> UADataComponent::GetState(const UId &id, UEPtr<UVariableData> values) const
 {
  for(VariableMapCIteratorT I=StateLookupTable.begin(),
-							 J=StateLookupTable.end(); I!=J; ++I)
+                             J=StateLookupTable.end(); I!=J; ++I)
  {
   if(I->second.Id == id)
   {
@@ -319,13 +319,13 @@ std::string& UADataComponent::GetStateValue(const UId &id, std::string &values) 
  Serialize::USerStorageXML data;
 
  for(VariableMapCIteratorT I=StateLookupTable.begin(),
-							J=StateLookupTable.end(); I!=J;++I)
+                            J=StateLookupTable.end(); I!=J;++I)
  {
   if(I->second.Id == id)
   {
    I->second.Property->Save(&data,true);
    if(data.GetNumNodes() == 0)
-	values=data.GetNodeText();
+    values=data.GetNodeText();
    else
     data.Save(values);
    return values;
@@ -350,7 +350,7 @@ std::string& UADataComponent::GetStateValue(const NameT &name, std::string &valu
 void UADataComponent::SetState(const UId &id, UEPtr<UVariableData> values)
 {
  for(VariableMapCIteratorT I=StateLookupTable.begin(),
-							 J=StateLookupTable.end(); I!=J; ++I)
+                             J=StateLookupTable.end(); I!=J; ++I)
  {
   if(I->second.Id == id)
   {
@@ -364,20 +364,20 @@ void UADataComponent::SetStateValue(const UId &id, const std::string &values)
 {
  Serialize::USerStorageXML data;
  for(VariableMapCIteratorT I=StateLookupTable.begin(),
-							 J=StateLookupTable.end(); I!=J; ++I)
+                             J=StateLookupTable.end(); I!=J; ++I)
  {
   if(I->second.Id == id)
   {
    if(values.size()>0 && values[0]=='<')
    {
-	data.Load(values,"");
-	data.RenameNode(I->second.Property->GetName());
+    data.Load(values,"");
+    data.RenameNode(I->second.Property->GetName());
     I->second.Property->Load(&data,true);
    }
    else
    {
-	I->second.Property->Save(&data,true);
-	data.SetNodeText(values);
+    I->second.Property->Save(&data,true);
+    data.SetNodeText(values);
     I->second.Property->Load(&data,true);
    }
    return;
@@ -410,7 +410,7 @@ const NameT& UADataComponent::FindStateName(UEPtr<const UIProperty> prop) const
   return ForbiddenName;
 
  for(VariableMapCIteratorT I=StateLookupTable.begin(),
-						J=StateLookupTable.end(); I!=J; ++I)
+                        J=StateLookupTable.end(); I!=J; ++I)
  {
   if(I->second.Property == prop)
    return I->first;
@@ -423,7 +423,7 @@ void UADataComponent::CopyState(UEPtr<UADataComponent> comp) const
 {
  Serialize::USerStorageBinary serstorage;
  for(VariableMapCIteratorT I=StateLookupTable.begin(),
-					   J=StateLookupTable.end(); I!=J; ++I)
+                       J=StateLookupTable.end(); I!=J; ++I)
  {
   comp->SetState(I->second.Id,GetState(I->second.Id,&serstorage));
   ++I;
@@ -446,7 +446,7 @@ UId UADataComponent::AddLookupProperty(const NameT &name, UEPtr<UIProperty> prop
  P.DelEnable=delenable;
 
  for(VariableMapIteratorT I=PropertiesLookupTable.begin(),
-					  J=PropertiesLookupTable.end(); I!=J; ++I)
+                      J=PropertiesLookupTable.end(); I!=J; ++I)
  {
   if(P.Id <= I->second.Id)
    P.Id=I->second.Id+1;
@@ -474,14 +474,14 @@ void UADataComponent::DelLookupProperty(const NameT &name)
 void UADataComponent::ClearLookupPropertyTable(void)
 {
  for(VariableMapIteratorT I=PropertiesLookupTable.begin(),
-					  J=PropertiesLookupTable.end(); I!=J; ++I)
+                      J=PropertiesLookupTable.end(); I!=J; ++I)
  {
   if(I->second.Property && I->second.DelEnable)
    delete I->second.Property;
  }
  PropertiesLookupTable.clear();
 }
-						 /*
+                         /*
 // Возвращает полное имя параметра без префикса RDK, и суффикса '*'
 NameT UADataComponent::GetPropertyLongName(const UIProperty &property) const
 {
@@ -518,7 +518,7 @@ UId UADataComponent::AddLookupState(const NameT &name, UEPtr<UIProperty> propert
   throw new EStateNameAlreadyExist(name);
 
  for(VariableMapIteratorT I=StateLookupTable.begin(),
-					  J=StateLookupTable.end(); I!=J; ++I)
+                      J=StateLookupTable.end(); I!=J; ++I)
  {
   if(P.Id <= I->second.Id)
    P.Id=I->second.Id+1;
@@ -545,7 +545,7 @@ void UADataComponent::DelLookupState(const NameT &name)
 void UADataComponent::ClearLookupStateTable(void)
 {
  for(VariableMapIteratorT I=StateLookupTable.begin(),
-					  J=StateLookupTable.end(); I!=J; ++I)
+                      J=StateLookupTable.end(); I!=J; ++I)
  {
   if(I->second.Property && I->second.DelEnable)
    delete I->second.Property;
@@ -553,7 +553,7 @@ void UADataComponent::ClearLookupStateTable(void)
  StateLookupTable.clear();
 }
 
-// Возвращает полное имя переменной состояния без префикса NMSDK, и суффикса '*'
+// Возвращает полное имя переменной состояния без префикса RDK, и суффикса '*'
 /*NameT UADataComponent::GetStateLongName(const UIProperty &property) const
 {
  NameT name=property.GetOwnerName();

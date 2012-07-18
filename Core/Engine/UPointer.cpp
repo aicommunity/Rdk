@@ -15,7 +15,7 @@ See file license.txt for more information
 
 #include "UPointer.h"
 
-namespace NMSDK {
+namespace RDK {
 
 }
 
