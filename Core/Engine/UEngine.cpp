@@ -2921,7 +2921,7 @@ int UEngine::Model_SaveComponentState(RDK::UANet* cont, RDK::Serialize::USerStor
    return false;
 
   serstorage->AddNode(cont->GetName());
-  serstorage->SetNodeAttribute("Class",RDK::sntoa(cont->GetClass()));
+  serstorage->SetNodeAttribute("Class",Storage->FindClassName(cont->GetClass()));
   serstorage->AddNode("State");
   if(!Model_GetComponentState(cont, serstorage))
    return false;

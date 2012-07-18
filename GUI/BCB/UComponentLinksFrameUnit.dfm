@@ -1,10 +1,9 @@
 inherited UComponentLinksFrame: TUComponentLinksFrame
-  Left = 0
-  Top = 0
   Width = 620
   Height = 428
-  TabOrder = 0
   OnResize = FrameResize
+  ExplicitWidth = 620
+  ExplicitHeight = 428
   object Splitter1: TSplitter
     Left = 0
     Top = 216
@@ -30,6 +29,12 @@ inherited UComponentLinksFrame: TUComponentLinksFrame
       Width = 301
       Height = 199
       Align = alClient
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
       TabOrder = 0
       ExplicitLeft = 2
       ExplicitTop = 15
@@ -57,6 +62,12 @@ inherited UComponentLinksFrame: TUComponentLinksFrame
       Width = 311
       Height = 199
       Align = alClient
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
       TabOrder = 0
       ExplicitLeft = 2
       ExplicitTop = 15
@@ -84,6 +95,12 @@ inherited UComponentLinksFrame: TUComponentLinksFrame
       Width = 616
       Height = 151
       Align = alClient
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
       TabOrder = 0
       ExplicitLeft = 2
       ExplicitTop = 15

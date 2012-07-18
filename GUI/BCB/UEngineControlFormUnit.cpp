@@ -94,6 +94,10 @@ void TUEngineControlForm::OpenProject(const String &FileName)
  // Флаг автоматического сохранения проекта
  ProjectXml.SelectNodeRoot("Project/General");
  ProjectAutoSaveFlag=ProjectXml.ReadInteger("ProjectAutoSaveFlag",1);
+
+ // Флаг автоматического сохранения проекта
+ ProjectAutoSaveStateFlag=ProjectXml.ReadInteger("ProjectAutoSaveStateFlag",1);
+
  PredefinedStructure=ProjectXml.ReadInteger("PredefinedStructure",0);
  String modelfilename=ProjectXml.ReadString("ModelFileName","").c_str();
 
@@ -105,6 +109,29 @@ void TUEngineControlForm::OpenProject(const String &FileName)
    UComponentsControlForm->ComponentsControlFrame->LoadModelFromFile(ProjectPath+modelfilename);
   else
    UComponentsControlForm->ComponentsControlFrame->LoadModelFromFile(modelfilename);
+ }
+
+ String paramsfilename=ProjectXml.ReadString("ParametersFileName","").c_str();
+
+ if(paramsfilename.Length() != 0)
+ {
+  if(ExtractFilePath(paramsfilename).Length() == 0)
+   UComponentsControlForm->ComponentsControlFrame->LoadParametersFromFile(ProjectPath+paramsfilename);
+  else
+   UComponentsControlForm->ComponentsControlFrame->LoadParametersFromFile(paramsfilename);
+ }
+
+ if(ProjectAutoSaveStateFlag)
+ {
+  String statesfilename=ProjectXml.ReadString("StatesFileName","").c_str();
+
+  if(statesfilename.Length() != 0)
+  {
+   if(ExtractFilePath(statesfilename).Length() == 0)
+	UComponentsControlForm->ComponentsControlFrame->LoadStatesFromFile(ProjectPath+statesfilename);
+   else
+	UComponentsControlForm->ComponentsControlFrame->LoadStatesFromFile(statesfilename);
+  }
  }
 
  ProjectXml.SelectNodeRoot(string("Project/Interfaces/"));
@@ -134,8 +161,46 @@ void TUEngineControlForm::SaveProject(void)
    UComponentsControlForm->ComponentsControlFrame->SaveModelToFile(modelfilename);
  }
 
+ String paramsfilename=ProjectXml.ReadString("ParametersFileName","").c_str();
+ if(paramsfilename.Length() == 0)
+ {
+  paramsfilename="Parameters.xml";
+  ProjectXml.WriteString("ParametersFileName",AnsiString(paramsfilename).c_str());
+ }
+
+ if(paramsfilename.Length() != 0)
+ {
+  if(ExtractFilePath(paramsfilename).Length() == 0)
+   UComponentsControlForm->ComponentsControlFrame->SaveParametersToFile(ProjectPath+paramsfilename);
+  else
+   UComponentsControlForm->ComponentsControlFrame->SaveParametersToFile(paramsfilename);
+ }
+
+ if(ProjectAutoSaveStateFlag)
+ {
+  String statesfilename=ProjectXml.ReadString("StatesFileName","").c_str();
+  if(statesfilename.Length() == 0)
+  {
+   statesfilename="States.xml";
+   ProjectXml.WriteString("StatesFileName",AnsiString(statesfilename).c_str());
+  }
+
+  if(statesfilename.Length() != 0)
+  {
+   if(ExtractFilePath(statesfilename).Length() == 0)
+	UComponentsControlForm->ComponentsControlFrame->SaveStatesToFile(ProjectPath+statesfilename);
+   else
+	UComponentsControlForm->ComponentsControlFrame->SaveStatesToFile(statesfilename);
+  }
+ }
+
+
  ProjectXml.WriteInteger("PredefinedStructure",PredefinedStructure);
  ProjectXml.WriteInteger("ProjectAutoSaveFlag",ProjectAutoSaveFlag);
+
+ // Флаг автоматического сохранения проекта
+ ProjectXml.WriteInteger("ProjectAutoSaveStateFlag",ProjectAutoSaveStateFlag);
+
  ProjectXml.SaveToFile(AnsiString(ProjectPath+ProjectName).c_str());
 }
 

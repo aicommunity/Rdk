@@ -118,6 +118,55 @@ void TUComponentsControlFrame::LoadParametersFromFile(const String &filename)
  delete RichEdit;
  ComponentsListFrame->UpdateInterface();
 }
+
+// —охран€ет состо€ние выбранной модели
+// ≈сли filename == "", то открывает окно запроса диалога
+void TUComponentsControlFrame::SaveStatesToFile(const String &filename)
+{
+ String FileName=filename;
+ if(filename == "")
+ {
+  if(!SaveTextFileDialog->Execute())
+   return;
+  FileName=SaveTextFileDialog->FileName;
+ }
+
+ TRichEdit* RichEdit=new TRichEdit(this);
+ RichEdit->Parent=this;
+
+ RichEdit->PlainText=true;
+ RichEdit->Text=Model_SaveComponentState("");
+ RichEdit->Lines->SaveToFile(FileName);
+
+ delete RichEdit;
+}
+
+// «агружает состо€ние выбранной модели
+// ≈сли filename == "", то открывает окно запроса диалога
+void TUComponentsControlFrame::LoadStatesFromFile(const String &filename)
+{
+ String FileName=filename;
+ if(filename == "")
+ {
+  if(!OpenTextFileDialog->Execute())
+   return;
+  FileName=OpenTextFileDialog->FileName;
+ }
+
+ if(!FileExists(FileName))
+  return;
+
+ TRichEdit* RichEdit=new TRichEdit(this);
+ RichEdit->Parent=this;
+ RichEdit->PlainText=true;
+ RichEdit->Visible=false;
+ RichEdit->Lines->LoadFromFile(FileName);
+
+ Model_LoadComponentState("",AnsiString(RichEdit->Text).c_str());
+
+ delete RichEdit;
+ ComponentsListFrame->UpdateInterface();
+}
 //---------------------------------------------------------------------------
 
 void __fastcall TUComponentsControlFrame::TakeObjectButtonClick(TObject *Sender)
@@ -178,6 +227,16 @@ void __fastcall TUComponentsControlFrame::HeaderControlSectionClick(THeaderContr
  if(Section->Index == 5)
  {
   SaveParametersToFile("");
+ }
+ else
+ if(Section->Index == 6)
+ {
+  LoadStatesFromFile("");
+ }
+ else
+ if(Section->Index == 7)
+ {
+  SaveStatesToFile("");
  }
  ComponentsListFrame->UpdateInterface();
 }

@@ -42,16 +42,30 @@ inherited UComponentsControlFrame: TUComponentsControlFrame
           Width = 90
         end
         item
+          Alignment = taCenter
           AllowClick = False
           ImageIndex = -1
           Text = 'Load Parameters'
           Width = 100
         end
         item
+          Alignment = taCenter
           Checked = True
           ImageIndex = -1
           Text = 'Save Parameters'
           Width = 100
+        end
+        item
+          Alignment = taCenter
+          ImageIndex = -1
+          Text = 'Load States'
+          Width = 80
+        end
+        item
+          Alignment = taCenter
+          ImageIndex = -1
+          Text = 'Save States'
+          Width = 80
         end>
       OnSectionClick = HeaderControlSectionClick
     end

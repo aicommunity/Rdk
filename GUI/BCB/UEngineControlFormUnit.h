@@ -97,6 +97,9 @@ String ProjectName;
 // Флаг автоматического сохранения проекта
 bool ProjectAutoSaveFlag;
 
+// Флаг автоматического сохранения состояния модели
+bool ProjectAutoSaveStateFlag;
+
 // Число входов среды
 int NumEnvInputs;
 

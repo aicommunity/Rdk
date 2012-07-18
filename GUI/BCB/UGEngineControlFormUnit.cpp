@@ -120,6 +120,9 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
  // Флаг автоматического сохранения проекта
  ProjectAutoSaveFlag=ProjectXml.ReadInteger("ProjectAutoSaveFlag",1);
 
+ // Флаг автоматического сохранения проекта
+ ProjectAutoSaveStateFlag=ProjectXml.ReadInteger("ProjectAutoSaveStateFlag",1);
+
  // Шаг счета по умолчанию
  DefaultTimeStep=ProjectXml.ReadInteger("DefaultTimeStep",30);
 
@@ -150,6 +153,19 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
    UComponentsControlForm->ComponentsControlFrame->LoadParametersFromFile(ProjectPath+paramsfilename);
   else
    UComponentsControlForm->ComponentsControlFrame->LoadParametersFromFile(paramsfilename);
+ }
+
+ if(ProjectAutoSaveStateFlag)
+ {
+  String statesfilename=ProjectXml.ReadString("StatesFileName","").c_str();
+
+  if(statesfilename.Length() != 0)
+  {
+   if(ExtractFilePath(statesfilename).Length() == 0)
+	UComponentsControlForm->ComponentsControlFrame->LoadStatesFromFile(ProjectPath+statesfilename);
+   else
+	UComponentsControlForm->ComponentsControlFrame->LoadStatesFromFile(statesfilename);
+  }
  }
 
  Model_SetGlobalTimeStep("",GlobalTimeStep);
@@ -214,8 +230,29 @@ void TUGEngineControlForm::SaveProject(void)
    UComponentsControlForm->ComponentsControlFrame->SaveParametersToFile(paramsfilename);
  }
 
+ if(ProjectAutoSaveStateFlag)
+ {
+  String statesfilename=ProjectXml.ReadString("StatesFileName","").c_str();
+  if(statesfilename.Length() == 0)
+  {
+   statesfilename="States.xml";
+   ProjectXml.WriteString("StatesFileName",AnsiString(statesfilename).c_str());
+  }
+
+  if(statesfilename.Length() != 0)
+  {
+   if(ExtractFilePath(statesfilename).Length() == 0)
+	UComponentsControlForm->ComponentsControlFrame->SaveStatesToFile(ProjectPath+statesfilename);
+   else
+	UComponentsControlForm->ComponentsControlFrame->SaveStatesToFile(statesfilename);
+  }
+ }
+
  ProjectXml.WriteInteger("PredefinedStructure",PredefinedStructure);
  ProjectXml.WriteInteger("ProjectAutoSaveFlag",ProjectAutoSaveFlag);
+
+ // Флаг автоматического сохранения проекта
+ ProjectXml.WriteInteger("ProjectAutoSaveStateFlag",ProjectAutoSaveStateFlag);
 
  // Число входов среды
  ProjectXml.WriteInteger("NumEnvInputs",NumEnvInputs);

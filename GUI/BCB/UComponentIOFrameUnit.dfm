@@ -1,10 +1,9 @@
 inherited UComponentIOFrame: TUComponentIOFrame
-  Left = 0
-  Top = 0
   Width = 599
   Height = 403
-  TabOrder = 0
   OnResize = FrameResize
+  ExplicitWidth = 599
+  ExplicitHeight = 403
   object StringGrid: TStringGrid
     Left = 0
     Top = 0

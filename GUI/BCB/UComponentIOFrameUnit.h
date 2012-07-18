@@ -8,6 +8,7 @@
 #include <StdCtrls.hpp>
 #include <Forms.hpp>
 #include <Grids.hpp>
+#include "TUVisualControllerFrameUnit.h"
 #include <string>
 #include "TUVisualController.h"
 //---------------------------------------------------------------------------

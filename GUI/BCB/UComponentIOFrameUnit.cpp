@@ -9,6 +9,7 @@
 #include <vector>
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
+#pragma link "TUVisualControllerFrameUnit"
 #pragma resource "*.dfm"
 TUComponentIOFrame *UComponentIOFrame;
 //---------------------------------------------------------------------------

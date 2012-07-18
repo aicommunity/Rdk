@@ -11,6 +11,7 @@
 #include "UComponentIOFrameUnit.h"
 #include <Vcl.ComCtrls.hpp>
 #include "TUVisualController.h"
+#include "TUVisualControllerFrameUnit.h"
 //---------------------------------------------------------------------------
 class TUComponentLinksFrame : public TUVisualControllerFrame
 {
