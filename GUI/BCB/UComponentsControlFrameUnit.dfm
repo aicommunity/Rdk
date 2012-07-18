@@ -40,6 +40,18 @@ inherited UComponentsControlFrame: TUComponentsControlFrame
           ImageIndex = -1
           Text = 'Save Model'
           Width = 90
+        end
+        item
+          AllowClick = False
+          ImageIndex = -1
+          Text = 'Load Parameters'
+          Width = 100
+        end
+        item
+          Checked = True
+          ImageIndex = -1
+          Text = 'Save Parameters'
+          Width = 100
         end>
       OnSectionClick = HeaderControlSectionClick
     end
@@ -103,13 +115,43 @@ inherited UComponentsControlFrame: TUComponentsControlFrame
               ExplicitHeight = 441
               inherited ParametersHeaderControl: THeaderControl
                 Width = 227
-                ExplicitWidth = 235
+                ExplicitWidth = 227
               end
               inherited ParametersRichEdit: TRichEdit
                 Width = 227
                 Height = 407
                 ExplicitWidth = 227
                 ExplicitHeight = 407
+              end
+            end
+            inherited TabSheet3: TTabSheet
+              ExplicitLeft = 4
+              ExplicitTop = 4
+              ExplicitWidth = 376
+              ExplicitHeight = 539
+            end
+            inherited TabSheet4: TTabSheet
+              ExplicitLeft = 4
+              ExplicitTop = 4
+              ExplicitWidth = 376
+              ExplicitHeight = 539
+              inherited ParametersListStringGrid: TStringGrid
+                ExplicitLeft = 0
+                ExplicitTop = 30
+                ExplicitWidth = 376
+                ExplicitHeight = 509
+              end
+            end
+            inherited TabSheet5: TTabSheet
+              ExplicitLeft = 4
+              ExplicitTop = 4
+              ExplicitWidth = 376
+              ExplicitHeight = 539
+              inherited StatesListStringGrid: TStringGrid
+                ExplicitLeft = 0
+                ExplicitTop = 30
+                ExplicitWidth = 376
+                ExplicitHeight = 509
               end
             end
           end

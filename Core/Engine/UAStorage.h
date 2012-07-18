@@ -69,10 +69,10 @@ UId GetLastClassId(void) const;
 // Методы доступа к таблицам соотвествий
 // --------------------------
 // Возвращает Id класса по его имени
-const UId& GetClassId(const std::string &name) const;
+const UId& FindClassId(const std::string &name) const;
 
 // Возвращает имя класса по его Id
-const NameT GetClassName(const UId &id) const;
+const NameT FindClassName(const UId &id) const;
 // --------------------------
 
 // --------------------------

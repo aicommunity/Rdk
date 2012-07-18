@@ -340,7 +340,7 @@ const char * UEngine::Storage_GetClassName(int id) const
 {
  try
  {
-  TempString=Storage->GetClassName(id);
+  TempString=Storage->FindClassName(id);
  }
  catch (Exception * exception)
  {
@@ -354,7 +354,7 @@ int UEngine::Storage_GetClassId(const char *name) const
 {
  try
  {
-  return Storage->GetClassId(name);
+  return Storage->FindClassId(name);
  }
  catch (Exception * exception)
  {
@@ -2741,7 +2741,7 @@ int UEngine::Model_SaveComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXM
    return false;
 
   serstorage->AddNode(cont->GetName());
-  serstorage->SetNodeAttribute("Class",/*RDK::sntoa(cont->GetClass())*/Storage->GetClassName(cont->GetClass()));
+  serstorage->SetNodeAttribute("Class",/*RDK::sntoa(cont->GetClass())*/Storage->FindClassName(cont->GetClass()));
   serstorage->AddNode("Parameters");
   if(!Model_GetComponentParameters(cont, serstorage))
    return false;
@@ -2783,7 +2783,7 @@ int UEngine::Model_LoadComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXM
    return false;
 
   std::string name=serstorage->GetNodeAttribute("Class");
-  UId id=Storage->GetClassId(name);
+  UId id=Storage->FindClassId(name);
 
   if(!cont) // Создаем модель
   {
@@ -2808,7 +2808,7 @@ int UEngine::Model_LoadComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXM
    serstorage->SelectNode(i);
    std::string nodename=serstorage->GetNodeName();
    name=serstorage->GetNodeAttribute("Class");
-   id=Storage->GetClassId(name);
+   id=Storage->FindClassId(name);
    //id=RDK::atoi(serstorage->GetNodeAttribute("Class"));
    UEPtr<UANet> newcont=dynamic_pointer_cast<UANet>(storage->TakeObject(id));
    if(!newcont)
@@ -2848,7 +2848,7 @@ int UEngine::Model_SaveComponentParameters(RDK::UANet* cont, RDK::Serialize::USe
    return false;
 
   serstorage->AddNode(cont->GetName());
-  serstorage->SetNodeAttribute("Class",Storage->GetClassName(cont->GetClass()));
+  serstorage->SetNodeAttribute("Class",Storage->FindClassName(cont->GetClass()));
   serstorage->AddNode("Parameters");
   if(!Model_GetComponentParameters(cont, serstorage))
    return false;

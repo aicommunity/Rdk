@@ -66,12 +66,12 @@ UComponentDescription::~UComponentDescription(void)
 // Методы управления данными
 // --------------------------
 // Имя класса
-const std::string& UComponentDescription::GetClassName(void) const
+const std::string& UComponentDescription::GetClassNameValue(void) const
 {
  return ClassName;
 }
 
-void UComponentDescription::SetClassName(const std::string& value)
+void UComponentDescription::SetClassNameValue(const std::string& value)
 {
  if(ClassName == value)
   return;

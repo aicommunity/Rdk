@@ -23,7 +23,13 @@ object VideoGrabberControlForm: TVideoGrabberControlForm
     Height = 262
     Align = alClient
     DoubleBuffered = True
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = []
     ParentDoubleBuffered = False
+    ParentFont = False
     TabOrder = 0
     ExplicitWidth = 584
     ExplicitHeight = 262
@@ -35,8 +41,6 @@ object VideoGrabberControlForm: TVideoGrabberControlForm
       ExplicitHeight = 262
       inherited DeviceTabSheet: TTabSheet
         inherited VDCapturePanel: TPanel
-          ExplicitWidth = 576
-          ExplicitHeight = 231
           inherited ModeLabel: TLabel
             Width = 560
             ExplicitWidth = 560
@@ -78,6 +82,12 @@ object VideoGrabberControlForm: TVideoGrabberControlForm
             ExplicitWidth = 560
           end
         end
+      end
+      inherited IPCameraTabSheet: TTabSheet
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
       end
       inherited VideoFileTabSheet: TTabSheet
         ExplicitLeft = 0

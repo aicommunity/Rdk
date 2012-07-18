@@ -261,7 +261,7 @@ UEPtr<UAComponent> UAContainerStorage::TakeObject(const UId &classid, const UEPt
 
 UEPtr<UAComponent> UAContainerStorage::TakeObject(const NameT &classname, const UEPtr<UAComponent> prototype)
 {
- return TakeObject(GetClassId(classname),prototype);
+ return TakeObject(FindClassId(classname),prototype);
 }
 
 // Проверяет существует ли объект 'object' в хранилище
@@ -306,7 +306,7 @@ int UAContainerStorage::CalcNumObjects(const UId &classid) const
 
 size_t UAContainerStorage::CalcNumObjects(const string &classname) const
 {
- return CalcNumObjects(GetClassId(classname));
+ return CalcNumObjects(FindClassId(classname));
 }
 
 

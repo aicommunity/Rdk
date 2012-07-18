@@ -47,6 +47,14 @@ __published:    // IDE-managed Components
     TOpenDialog *PicturesOpenDialog;
     TCheckBox *VideoTruncPathCheckBox;
     TCheckBox *PictureTruncPathCheckBox;
+	TTabSheet *IPCameraTabSheet;
+	TPanel *Panel1;
+	TLabel *Label4;
+	TLabel *Label5;
+	TLabel *Label6;
+	TEdit *IPCameraUrlEdit;
+	TEdit *IPCameraUserNameEdit;
+	TEdit *IPCameraUserPasswordEdit;
     void __fastcall DeviceComboBoxSelect(TObject *Sender);
     void __fastcall InputComboBoxSelect(TObject *Sender);
     void __fastcall VideoSizeComboBoxSelect(TObject *Sender);

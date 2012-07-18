@@ -81,6 +81,7 @@ public:        // User declarations
 // 0 - Bmp
 // 1 - Avi
 // 2 - Camera
+// 3 - IP Camera
 int Mode;
 
 Graphics::TBitmap* ConvertBitmap;
@@ -188,6 +189,9 @@ bool InitByBmp(const RDK::UBitmap &bmp);
 
 // Инициализация фрейма камерой
 void InitByCamera(int camera_index, int input_index, int size_index, int subtype_index, int analog_index);
+
+// Инициализация фрейма IP-камерой
+void InitByIPCamera(const String camera_url, const String user_name, const String user_password);
 
 // Устанавливает название окна
 bool SetTitle(String title);

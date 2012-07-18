@@ -57,8 +57,8 @@ virtual ~UComponentDescription(void);
 // Методы управления данными
 // --------------------------
 // Имя класса
-const std::string& GetClassName(void) const;
-void SetClassName(const std::string& value);
+const std::string& GetClassNameValue(void) const;
+void SetClassNameValue(const std::string& value);
 
 // Id класса записанное в виде строки
 const std::string& GetClassId(void) const;

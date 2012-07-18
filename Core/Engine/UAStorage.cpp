@@ -50,7 +50,7 @@ UId UAStorage::GetLastClassId(void) const
 // Методы доступа к таблицам соотвествий
 // --------------------------
 // Возвращает Id класса по его имени
-const UId& UAStorage::GetClassId(const NameT &name) const
+const UId& UAStorage::FindClassId(const NameT &name) const
 {
  map<NameT,UId>::const_iterator I=ClassesLookupTable.find(name);
  if(I == ClassesLookupTable.end())
@@ -59,7 +59,7 @@ const UId& UAStorage::GetClassId(const NameT &name) const
 }
 
 // Возвращает имя класса по его Id
-const NameT UAStorage::GetClassName(const UId &id) const
+const NameT UAStorage::FindClassName(const UId &id) const
 {
  for(map<NameT,UId>::const_iterator I=ClassesLookupTable.begin(),
 									J=ClassesLookupTable.end();I != J;++I)
@@ -94,7 +94,7 @@ UId UAStorage::AddClass(UEPtr<UAComponent> classtemplate, const UId &classid)
  LastClassId=id;
 
  // Заглушка!!! Это некоррректно, имени-то нет.
-// ClassesDescription[GetClassName(id)]=classtemplate->NewDescription();
+// ClassesDescription[FindClassName(id)]=classtemplate->NewDescription();
 
  return id;
 }
@@ -108,7 +108,7 @@ UId UAStorage::AddClass(UEPtr<UAComponent> classtemplate, const string &classnam
  UId id=AddClass(classtemplate,classid);
  ClassesLookupTable[classname]=id;
  ClassesDescription[classname]=classtemplate->NewDescription();
- ClassesDescription[classname]->SetClassName(classname);
+ ClassesDescription[classname]->SetClassNameValue(classname);
  return id;
 }
 
@@ -116,7 +116,7 @@ UId UAStorage::AddClass(UEPtr<UAComponent> classtemplate, const string &classnam
 void UAStorage::DelClass(const UId &classid)
 {
  UClassesStorageIterator I=ClassesStorage.find(classid);
- std::string name=GetClassName(classid);
+ std::string name=FindClassName(classid);
 
  if(I != ClassesStorage.end())
   ClassesStorage.erase(I);
@@ -253,7 +253,7 @@ UId UAStorage::FindClass(UEPtr<UAComponent> object) const
 // Возвращает XML описание класса
 const UEPtr<UComponentDescription> UAStorage::GetClassDescription(const UId &classid) const
 {
- UClassesDescriptionCIterator I=ClassesDescription.find(GetClassName(classid));
+ UClassesDescriptionCIterator I=ClassesDescription.find(FindClassName(classid));
 
  if(I == ClassesDescription.end())
   throw EClassIdNotExist(classid);
@@ -270,7 +270,7 @@ void UAStorage::SetClassDescription(const UId &classid, const UEPtr<UComponentDe
  if(I == ClassesStorage.end())
   throw EClassIdNotExist(classid);
 
- ClassesDescription[GetClassName(classid)]=description;
+ ClassesDescription[FindClassName(classid)]=description;
 }
 
 // Сохраняет описание класса в xml

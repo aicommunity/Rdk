@@ -135,6 +135,20 @@ void TVideoOutputFrame::InitByCamera(int camera_index, int input_index, int size
  UpdateVideo();
 }
 
+// Инициализация фрейма IP-камерой
+void TVideoOutputFrame::InitByIPCamera(const String camera_url, const String user_name, const String user_password)
+{
+ StopButtonClick(this);
+ VideoGrabber->BurstType = fc_TBitmap;
+ VideoGrabber->BurstMode = True;
+ VideoGrabber->BurstCount = 0;
+ VideoGrabber->IPCameraURL=camera_url;
+
+ VideoGrabber->SetAuthentication(at_IPCamera,user_name,user_password);
+ Mode=3;
+ StartButtonClick(this);
+ UpdateVideo();
+}
 
 // Устанавливает название окна
 bool TVideoOutputFrame::SetTitle(String title)
@@ -497,6 +511,10 @@ void __fastcall TVideoOutputFrame::StartButtonClick(TObject *Sender)
    VideoGrabber->StartPreview();
  break;
 
+ case 3:
+   VideoGrabber->StartPreview();
+ break;
+
  default:
      ;
  }  
@@ -516,8 +534,12 @@ void __fastcall TVideoOutputFrame::StopButtonClick(TObject *Sender)
    VideoGrabber->PausePreview();
  break;
 
+ case 3:
+   VideoGrabber->PausePreview();
+ break;
+
  default:
-     ;
+	 ;
  }
 }
 //---------------------------------------------------------------------------

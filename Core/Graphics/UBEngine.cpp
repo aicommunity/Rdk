@@ -400,7 +400,7 @@ int UBEngine::LoadPredefinedLibraries(void)
  filter->SetName("DataSimulatorSimple");
  bstorage->AddClass(filter,"DataSimulatorSimple");
 
-#ifdef WIN32
+#ifdef RDK_WINAPI
  filter=new RDK::UBWDllCameraCalibrator;
  filter->Default();
  filter->SetName("CameraCalibrator");

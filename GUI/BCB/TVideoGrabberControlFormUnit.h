@@ -9,6 +9,8 @@
 #include <Vcl.Forms.hpp>
 #include "TVideoGrabberControlFrameUnit.h"
 #include "TUVisualController.h"
+#include "TUVisualControllerFormUnit.h"
+#include "TUVisualControllerFrameUnit.h"
 //---------------------------------------------------------------------------
 class TVideoGrabberControlForm : public TUVisualControllerForm
 {

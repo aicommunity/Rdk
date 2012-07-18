@@ -142,6 +142,16 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
    UComponentsControlForm->ComponentsControlFrame->LoadModelFromFile(modelfilename);
  }
 
+ String paramsfilename=ProjectXml.ReadString("ParametersFileName","").c_str();
+
+ if(paramsfilename.Length() != 0)
+ {
+  if(ExtractFilePath(paramsfilename).Length() == 0)
+   UComponentsControlForm->ComponentsControlFrame->LoadParametersFromFile(ProjectPath+paramsfilename);
+  else
+   UComponentsControlForm->ComponentsControlFrame->LoadParametersFromFile(paramsfilename);
+ }
+
  Model_SetGlobalTimeStep("",GlobalTimeStep);
 
  ProjectXml.SelectNodeRoot(std::string("Project/Interfaces/"));
@@ -187,6 +197,21 @@ void TUGEngineControlForm::SaveProject(void)
    UComponentsControlForm->ComponentsControlFrame->SaveModelToFile(ProjectPath+modelfilename);
   else
    UComponentsControlForm->ComponentsControlFrame->SaveModelToFile(modelfilename);
+ }
+
+ String paramsfilename=ProjectXml.ReadString("ParametersFileName","").c_str();
+ if(paramsfilename.Length() == 0)
+ {
+  paramsfilename="Parameters.xml";
+  ProjectXml.WriteString("ParametersFileName",AnsiString(paramsfilename).c_str());
+ }
+
+ if(paramsfilename.Length() != 0)
+ {
+  if(ExtractFilePath(paramsfilename).Length() == 0)
+   UComponentsControlForm->ComponentsControlFrame->SaveParametersToFile(ProjectPath+paramsfilename);
+  else
+   UComponentsControlForm->ComponentsControlFrame->SaveParametersToFile(paramsfilename);
  }
 
  ProjectXml.WriteInteger("PredefinedStructure",PredefinedStructure);

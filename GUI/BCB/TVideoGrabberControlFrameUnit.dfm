@@ -10,7 +10,7 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
     Top = 0
     Width = 453
     Height = 269
-    ActivePage = VideoFileTabSheet
+    ActivePage = IPCameraTabSheet
     Align = alClient
     DoubleBuffered = True
     ParentDoubleBuffered = False
@@ -19,10 +19,6 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
     OnChange = VCapturePageControlChange
     object DeviceTabSheet: TTabSheet
       Caption = 'Device'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object VDCapturePanel: TPanel
         Left = 0
         Top = 0
@@ -133,13 +129,84 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
         end
       end
     end
+    object IPCameraTabSheet: TTabSheet
+      Caption = 'IP Camera'
+      ImageIndex = 3
+      object Panel1: TPanel
+        Left = 0
+        Top = 0
+        Width = 445
+        Height = 238
+        Align = alClient
+        TabOrder = 0
+        ExplicitLeft = 88
+        ExplicitTop = 40
+        ExplicitWidth = 185
+        ExplicitHeight = 41
+        DesignSize = (
+          445
+          238)
+        object Label4: TLabel
+          Left = 8
+          Top = 3
+          Width = 429
+          Height = 13
+          Anchors = [akLeft, akTop, akRight]
+          AutoSize = False
+          Caption = 'IP Camera URL:'
+          ExplicitWidth = 369
+        end
+        object Label5: TLabel
+          Left = 8
+          Top = 47
+          Width = 429
+          Height = 13
+          Anchors = [akLeft, akTop, akRight]
+          AutoSize = False
+          Caption = 'User Name:'
+          ExplicitWidth = 390
+        end
+        object Label6: TLabel
+          Left = 8
+          Top = 89
+          Width = 429
+          Height = 13
+          Anchors = [akLeft, akTop, akRight]
+          AutoSize = False
+          Caption = 'User Password:'
+          ExplicitWidth = 390
+        end
+        object IPCameraUrlEdit: TEdit
+          Left = 8
+          Top = 20
+          Width = 429
+          Height = 21
+          Anchors = [akLeft, akTop, akRight]
+          TabOrder = 0
+          Text = 'http://127.0.0.1/video/mjpg.cgi'
+        end
+        object IPCameraUserNameEdit: TEdit
+          Left = 8
+          Top = 62
+          Width = 429
+          Height = 21
+          Anchors = [akLeft, akTop, akRight]
+          TabOrder = 1
+          Text = 'Admin'
+        end
+        object IPCameraUserPasswordEdit: TEdit
+          Left = 8
+          Top = 108
+          Width = 429
+          Height = 21
+          Anchors = [akLeft, akTop, akRight]
+          TabOrder = 2
+        end
+      end
+    end
     object VideoFileTabSheet: TTabSheet
       Caption = 'Video File'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object VFCapturePanel: TPanel
         Left = 0
         Top = 0
@@ -191,10 +258,6 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
     object PictureFileTabSheet: TTabSheet
       Caption = 'Picture File'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         445
         238)

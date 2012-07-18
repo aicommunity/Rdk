@@ -58,6 +58,13 @@ void SaveModelToFile(const String &filename);
 // ≈сли filename == "", то открывает окно запроса диалога
 void LoadModelFromFile(const String &filename);
 
+// —охран€ет параметры выбранной модели
+// ≈сли filename == "", то открывает окно запроса диалога
+void SaveParametersToFile(const String &filename);
+
+// «агружает параметры выбранной модели
+// ≈сли filename == "", то открывает окно запроса диалога
+void LoadParametersFromFile(const String &filename);
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TUComponentsControlFrame *UComponentsControlFrame;
