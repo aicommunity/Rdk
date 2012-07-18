@@ -60,11 +60,11 @@ bool SaveFromNode(std::string &str);
 
 // Прочесть файл с диска
 // Метод не делает ничего, если FileName == ""
-bool USerStorageXML::LoadFromFile(const std::string &file_name, const std::string &root);
+bool LoadFromFile(const std::string &file_name, const std::string &root);
 
 // Обновить файл на диске
 // Метод не делает ничего, если FileName == ""
-bool USerStorageXML::SaveToFile(const std::string &file_name);
+bool SaveToFile(const std::string &file_name);
 // --------------------------
 
 // --------------------------
