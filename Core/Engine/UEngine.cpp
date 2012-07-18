@@ -2208,6 +2208,7 @@ const char * UEngine::Model_SaveComponentParameters(const char *stringid)
   if(!cont)
    return 0;
 
+  XmlStorage.DelNode();
   XmlStorage.Create("SaveParameters");
   XmlStorage.SetNodeAttribute("ModelName",Environment->GetModel()->GetName());
 
@@ -2235,10 +2236,10 @@ int UEngine::Model_LoadComponentParameters(const char *stringid, char* buffer)
    return -3;
 
   XmlStorage.Load(buffer,"SaveParameters");
-  XmlStorage.SelectNode(0);
-
   if(XmlStorage.GetNodeAttribute("ModelName") != Environment->GetModel()->GetName())
    return -10;
+
+  XmlStorage.SelectNode(0);
 
   if(!Model_LoadComponentParameters(cont,&XmlStorage))
    return -4;
@@ -2287,10 +2288,10 @@ int UEngine::Model_LoadComponentState(const char *stringid, char* buffer)
    return -3;
 
   XmlStorage.Load(buffer,"SaveState");
-  XmlStorage.SelectNode(0);
   if(XmlStorage.GetNodeAttribute("ModelName") != Environment->GetModel()->GetName())
    return -10;
 
+  XmlStorage.SelectNode(0);
 
   if(!Model_LoadComponentState(cont,&XmlStorage))
    return -4;
@@ -2880,7 +2881,8 @@ int UEngine::Model_LoadComponentParameters(RDK::UANet* cont, RDK::Serialize::USe
   if(!cont || !serstorage)
    return false;
 
-  UId id=RDK::atoi(serstorage->GetNodeAttribute("Class"));
+  std::string name=serstorage->GetNodeAttribute("Class");
+  UId id=Storage->FindClassId(name);
   if(cont->GetClass() != id)
    return false;
 
@@ -2951,7 +2953,8 @@ int UEngine::Model_LoadComponentState(RDK::UANet* cont, RDK::Serialize::USerStor
   if(!cont || !serstorage)
    return false;
 
-  UId id=RDK::atoi(serstorage->GetNodeAttribute("Class"));
+  std::string name=serstorage->GetNodeAttribute("Class");
+  UId id=Storage->FindClassId(name);
   if(cont->GetClass() != id)
    return false;
 

@@ -47,6 +47,14 @@ bool USerStorageXML::Create(const std::string &rootname)
  return true;
 }
 
+// Уничтожает xml
+bool USerStorageXML::Destroy(void)
+{
+ RootNode.deleteNodeContent();
+ CurrentNode=RootNode;
+ return true;
+}
+
 // Загружает xml из строки
 bool USerStorageXML::Load(const std::string &str, const std::string &root)
 {

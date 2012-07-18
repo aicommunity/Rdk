@@ -50,6 +50,9 @@ virtual ~USerStorageXML(void);
 // Создает новый xml в корневом узле уничтожая старые данные
 bool Create(const std::string &rootname);
 
+// Уничтожает xml
+bool Destroy(void);
+
 // Загружает xml из строки
 bool Load(const std::string &str, const std::string &root);
 bool LoadToNode(const std::string &str, const std::string &root);
