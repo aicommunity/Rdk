@@ -299,7 +299,8 @@ MMatrix<T,Rows,Cols2> operator * (const MMatrix<T,Rows,Cols> &M1, const MMatrix<
   {
    T sum=0;
    for(int i=0;i<Cols;i++)
-	sum+=M1.Data[i][k]*M2.Data[j][i];
+//	sum+=M1.Data[i][k]*M2.Data[j][i];
+	sum+=M1.Data[k][i]*M2.Data[i][j];
    res.Data[k][j]=sum;
   }
  }
