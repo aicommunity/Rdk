@@ -66,6 +66,7 @@ UAContainer::UAContainer(void)
  AddLookupProperty("TimeStep",new UVProperty<UTime,UAContainer>(this,&UAContainer::SetTimeStep,&UAContainer::GetTimeStep));
  AddLookupProperty("Activity",new UVProperty<bool,UAContainer>(this,&UAContainer::SetActivity,&UAContainer::GetActivity));
  AddLookupProperty("Coord",new UVProperty<RDK::MVector<double,3>,UAContainer>(this,&UAContainer::SetCoord,&UAContainer::GetCoord));
+ InitFlag=false;
 }
 
 UAContainer::~UAContainer(void)
@@ -183,6 +184,7 @@ bool UAContainer::CheckLongId(const std::string &id) const
 
  return true;
 }
+
 // --------------------------
 
 // --------------------------
@@ -1253,6 +1255,11 @@ bool UAContainer::Reset(void)
 {
  Build();
 
+ Init(); // Заглушка
+
+ if(!IsInit())
+  return false;
+
  for(int i=0;i<NumComponents;i++)
   PComponents[i]->Reset();
 
@@ -1269,6 +1276,11 @@ bool UAContainer::Calculate(void)
 {
  if(!Activity)
   return true;
+
+ Init(); // Заглушка
+
+ if(!IsInit())
+  return false;
 
  Build();
 
@@ -1334,6 +1346,26 @@ bool UAContainer::Calculate(void)
  return true;
 }
 
+
+// Выполняет начальную инициализацию этого объекта
+void UAContainer::Init(void)
+{
+ if(IsInit())
+  return;
+
+ AInit();
+ InitFlag=true;
+ Build();
+}
+
+// Выполняет деинициализацию этого объекта
+void UAContainer::UnInit(void)
+{
+ if(!IsInit())
+  return;
+
+ AUnInit();
+}
 // Обновляет состояние MainOwner после расчета этого объекта
 void UAContainer::UpdateMainOwner(void)
 {
@@ -1358,7 +1390,17 @@ void UAContainer::ForceComponentReCalculation(void)
 }
 // --------------------------
 
-
+// --------------------------
+// Скрытые методы управления счетом
+// --------------------------
+void UAContainer::AInit(void)
+{
+ return;
+}
+void UAContainer::AUnInit(void)
+{
+ return;
+}
 // --------------------------
 // Скрытые методы управления таблицей соответсвий компонент
 // --------------------------

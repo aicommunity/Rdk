@@ -116,6 +116,8 @@ UId Id;
 // false - расчет объекта будет игнорироваться
 bool Activity;
 
+
+
 // Шаг счета в долях секунды
 // Реальный шаг = 1./TimeStep
 UTime TimeStep;
@@ -197,6 +199,7 @@ std::string& GetLongId(UEPtr<UAContainer> mainowner, std::string &buffer) const;
 bool CheckLongId(const ULongId &id) const;
 // Промежуточный вариант одноименного метода, обрабатывающего длинное имя
 bool CheckLongId(const std::string &id) const;
+// --------------------------
 // --------------------------
 
 // --------------------------
@@ -491,6 +494,12 @@ virtual bool Reset(void);
 // Выполняет расчет этого объекта
 virtual bool Calculate(void);
 
+// Выполняет начальную инициализацию этого объекта
+virtual void Init(void);
+
+// Выполняет деинициализацию этого объекта
+virtual void UnInit(void);
+
 // Обновляет состояние MainOwner после расчета этого объекта
 virtual void UpdateMainOwner(void);
 
@@ -503,6 +512,11 @@ virtual void ForceSkipComponentCalculation(void);
 virtual void ForceComponentReCalculation(void);
 // --------------------------
 
+// --------------------------
+// Скрытые методы управления счетом
+// --------------------------
+virtual void AInit(void);
+virtual void AUnInit(void);
 // --------------------------
 // Скрытые методы управления контроллерами интерфейса
 // Удаление контроллеров лежит на вызывающем модуле

@@ -157,9 +157,6 @@ public:
 // false - хранилище не готово
 bool IsStoragePresent(void) const;
 
-// Возвращает состояние инициализации
-virtual bool IsInit(void) const;
-
 // Признак наличия сформированной структуры
 virtual bool IsStructured(void) const;
 // --------------------------
@@ -240,10 +237,10 @@ UEPtr<UAComponent> GetCurrentComponent(void);
 // --------------------------
 public:
 // Инициализация среды
-virtual bool Init(void);
+virtual void Init(void);
 
 // Деинициализация среды
-virtual bool UnInit(void);
+virtual void UnInit(void);
 
 // Формирует предварительно заданную модель обработки
 virtual bool CreateStructure(void);
@@ -260,10 +257,10 @@ virtual void RTCalculate(void);
 // --------------------------
 protected:
 // Инициализация среды
-virtual bool AInit(void);
+virtual void AInit(void);
 
 // Деинициализация среды
-virtual bool AUnInit(void);
+virtual void AUnInit(void);
 
 // Формирует предварительно заданную модель обработки
 virtual bool ACreateStructure(void);

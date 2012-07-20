@@ -69,6 +69,7 @@ int RDK_CALL EngineInit(int predefined_structure, void* exception_handler)
 
  Env_SetPredefinedStructure(predefined_structure);
  Env_CreateStructure();
+ Env_Init();
 
  return 0;
 }
@@ -92,6 +93,7 @@ int RDK_CALL GraphicalEngineInit(int predefined_structure, int num_inputs,
 
  Env_SetPredefinedStructure(predefined_structure);
  Env_CreateStructure();
+ Env_Init();
 
  return 0;
 }
@@ -99,6 +101,10 @@ int RDK_CALL GraphicalEngineInit(int predefined_structure, int num_inputs,
 // Деинициализирует движок (функция автоматически вызывается при вызове инициализации)
 int RDK_CALL EngineUnInit(void)
 {
+ if(PEngine)
+  if(Env_UnInit())
+   return 1;
+
  return UnInit();
 }
 // ----------------------------
