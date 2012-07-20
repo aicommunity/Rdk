@@ -175,6 +175,11 @@ UAContainer* UEngine::GetModel(void)
 // Методы управления счетом
 // --------------------------
 // Инициализирует данные движка
+void UEngine::Init(void)
+{
+ // Заглушка
+}
+
 bool UEngine::Init(UEPtr<UAContainerStorage> storage, UEPtr<UAContainerEnvironment> env)
 {
 // if(!Options.LoadFromFile(OptionsFileName))
@@ -236,10 +241,10 @@ bool UEngine::Init(UEPtr<UAContainerStorage> storage, UEPtr<UAContainerEnvironme
 
 // Деинициализирует данные движка
 // и сохраняет текущие настройки
-bool UEngine::UnInit(void)
+void UEngine::UnInit(void)
 {
  if(!Stop())
-  return false;
+  return;
 
 /* Options("General","StorageIndex",sntoa(StorageIndex));
  Options("General","EnvironmentIndex",sntoa(EnvironmentIndex));
@@ -247,7 +252,6 @@ bool UEngine::UnInit(void)
  if(!Options.SaveToFile(OptionsFileName))
   return false;
   */
- return true;
 }
 
 // Запускает систему

@@ -60,6 +60,11 @@ UBAbstract* UBEngine::GetModel(void)
 // Методы управления счетом
 // --------------------------
 // Инициализирует данные движка
+void UBEngine::Init(void)
+{
+ // Заглушка
+}
+
 bool UBEngine::Init(UEPtr<UAContainerStorage> storage, UEPtr<UAContainerEnvironment> env)
 {
  return UEngine::Init(storage, env);
@@ -67,9 +72,9 @@ bool UBEngine::Init(UEPtr<UAContainerStorage> storage, UEPtr<UAContainerEnvironm
 
 // Деинициализирует данные движка
 // и сохраняет текущие настройки
-bool UBEngine::UnInit(void)
+void UBEngine::UnInit(void)
 {
- return UEngine::UnInit();
+ UEngine::UnInit();
 }
 
 // Запускает систему

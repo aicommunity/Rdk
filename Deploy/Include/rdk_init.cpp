@@ -1194,8 +1194,7 @@ int UnInit(void)
  {
   if(PEngine)
   {
-   if(!PEngine->UnInit())
-	return 1;
+   PEngine->UnInit();
   }
  }
  catch (RDK::Exception * exception)

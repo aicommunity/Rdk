@@ -61,11 +61,12 @@ virtual UBAbstract* GetModel(void);
 // Методы управления движком
 // --------------------------
 // Инициализирует данные движка
+virtual void Init(void);
 virtual bool Init(UEPtr<UAContainerStorage> storage, UEPtr<UAContainerEnvironment> env);
 
 // Деинициализирует данные движка
 // и сохраняет текущие настройки
-virtual bool UnInit(void);
+virtual void UnInit(void);
 
 // Запускает систему
 virtual bool Start(void);
