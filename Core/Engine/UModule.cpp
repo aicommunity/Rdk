@@ -40,6 +40,11 @@ bool UModule::IsReady(void) const
 {
  return Ready;
 }
+// Флаг готовности объекта к начальной инициализации
+bool UModule::IsInit(void) const
+{
+ return InitFlag;
+}
 // --------------------------
 
 // --------------------------
@@ -145,6 +150,15 @@ bool UModule::Calculate(void)
  AAfterCalculate();
  return true;
 }
+
+// Выполняет инициализацию этого объекта
+void UModule::Init(void)
+{
+ if(IsInit())
+  return;
+
+ AInit();
+}
 // --------------------------
 
 // --------------------------
@@ -215,6 +229,12 @@ bool UModule::AAfterCalculate(void)
 bool UModule::ACalculate(void)
 {
  return true;
+}
+
+// Выполняет инициализацию этого объекта
+void UModule::AInit(void)
+{
+ return;
 }
 // --------------------------
 

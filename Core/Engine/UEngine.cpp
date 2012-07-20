@@ -634,7 +634,8 @@ bool UEngine::Env_Init(void)
 {
  try
  {
-  return Environment->Init();
+  Environment->Init();
+   return true;
  }
  catch (Exception * exception)
  {
@@ -648,7 +649,8 @@ bool UEngine::Env_UnInit(void)
 {
  try
  {
-  return Environment->UnInit();
+  Environment->UnInit();
+  return true;
  }
  catch (Exception * exception)
  {

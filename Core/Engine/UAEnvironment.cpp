@@ -209,12 +209,6 @@ bool UAEnvironment::SetModelCalculationComponent(const ULongId& value)
 // --------------------------
 // Методы управления состояниями
 // --------------------------
-// Возвращает состояние инициализации
-bool UAEnvironment::IsInit(void) const
-{
- return Initialized;
-}
-
 // Признак наличия сформированной структуры
 bool UAEnvironment::IsStructured(void) const
 {
@@ -403,30 +397,32 @@ bool UAEnvironment::IsStoragePresent(void) const
 // Методы управления
 // --------------------------
 // Инициализация среды
-bool UAEnvironment::Init(void)
+void UAEnvironment::Init(void)
 {
  if(IsInit())
-  return true;
+  return;
 
- if(!AInit())
-  return false;
+ AInit();
 
  ModelCalculationComponent.Resize(0);
+ if(Model)
+  Model->Init();
  Initialized=true;
- return true;
+ return;
 }
 
 // Деинициализация среды
-bool UAEnvironment::UnInit(void)
+void UAEnvironment::UnInit(void)
 {
- if(!IsInit())
-  return true;
+ if(Model)
+  Model->UnInit();
 
- if(!AUnInit())
-  return false;
+ if(!IsInit())
+  return;
+
+ AUnInit();
 
  Initialized=false;
- return true;
 }
 
 // Формирует предварительно заданную модель обработки
@@ -435,8 +431,7 @@ bool UAEnvironment::CreateStructure(void)
  if(Structured)
   return true;
 
- if(!Init())
-  return false;
+ Init();
 
  if(!ACreateStructure())
   return false;
@@ -525,15 +520,15 @@ void UAEnvironment::RTCalculate(void)
 // Скрытые методы управления счетом
 // --------------------------
 // Инициализация среды
-bool UAEnvironment::AInit(void)
+void UAEnvironment::AInit(void)
 {
- return true;
+ return;
 }
 
 // Деинициализация среды
-bool UAEnvironment::AUnInit(void)
+void UAEnvironment::AUnInit(void)
 {
- return true;
+ return;
 }
 
 // Формирует предварительно заданную модель обработки

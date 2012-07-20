@@ -23,6 +23,10 @@ protected: // Флаги состояний
 // Если false, то перед итерацией счета будет вызван метод build
 bool Ready;
 
+// Флаг инициализации объекта
+// если false - объект будет проинициализирован
+bool InitFlag;
+
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
@@ -36,6 +40,8 @@ virtual ~UModule(void);
 // --------------------------
 // Флаг готовности объекта к счету
 bool IsReady(void) const;
+// Флаг готовности объекта к начальной инициализации
+bool IsInit(void) const;
 // --------------------------
 
 // --------------------------
@@ -63,6 +69,9 @@ virtual bool Reset(void);
 virtual bool BeforeCalculate(void);
 virtual bool AfterCalculate(void);
 virtual bool Calculate(void);
+
+// Выполняет инициализацию этого объекта
+virtual void Init(void);
 // --------------------------
 
 // --------------------------
@@ -91,6 +100,9 @@ virtual bool AReset(void);
 virtual bool ABeforeCalculate(void);
 virtual bool AAfterCalculate(void);
 virtual bool ACalculate(void);
+
+// Выполняет инициализацию этого объекта
+virtual void AInit(void);
 // --------------------------
 };
 
