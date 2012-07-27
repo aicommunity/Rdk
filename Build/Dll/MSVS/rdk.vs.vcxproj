@@ -41,6 +41,8 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)\..\..\..\Bin\</OutDir>
+    <IncludePath>C:\Programs\openCV\opencv\include\opencv;C:\Programs\openCV\opencv\include;C:\Programs\openCV\opencv\include\opencv2;C:\Programs\openCV\opencv\build\include\opencv2;C:\Programs\openCV\opencv\build\include;C:\Programs\openCV\opencv\build\include\opencv;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Programs\openCV\opencv\build\x86\vc10\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -96,6 +98,7 @@ copy ..\..\..\Bin\rdk.vs.lib ..\..\..\Deploy\Dll\rdk.vs.lib /Y</Command>
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\Deploy\Include\rdk.mod.opencv.cpp" />
     <ClCompile Include="..\..\..\Deploy\Include\rdk.win.cpp" />
     <ClCompile Include="..\..\..\Deploy\Include\rdk_cpp_initdll.cpp" />
     <ClCompile Include="..\..\..\Deploy\Include\rdk_new.cpp" />
