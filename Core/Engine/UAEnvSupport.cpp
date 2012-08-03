@@ -179,14 +179,14 @@ UIdVector& UIdVector::DecodeFromString(const std::string &str)
    break;
 
   stop=str.find_first_of(".",start);
-  try 
+  try
   {
    if(stop == string::npos)
-	Add(atoi(str.substr(start)));	   
+	Add(atoi(str.substr(start)));
    else
 	Add(atoi(str.substr(start,stop-start)));
   }
-  catch (EStrToNumber *strtonumber) 
+  catch (EStrToNumber *strtonumber)
   {
    delete strtonumber;
    throw new EDecodeFail(str,stop);	

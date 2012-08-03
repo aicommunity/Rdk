@@ -417,7 +417,8 @@ int UBEngine::LoadPredefinedLibraries(void)
  filter->SetName("BitmapSourceSimple");
  bstorage->AddClass(filter,"BitmapSourceSimple");
 
-#ifdef OPENCV
+//#define RDK_OPENCV
+#ifdef RDK_OPENCV
  filter=new RDK::UBOpenCVSurf;
  filter->Default();
  filter->SetName("OpenCVSurf");

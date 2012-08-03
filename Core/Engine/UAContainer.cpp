@@ -1276,73 +1276,86 @@ bool UAContainer::Calculate(void)
 {
  if(!Activity)
   return true;
-
- Init(); // Заглушка
-
- if(!IsInit())
-  return false;
-
- Build();
-
- long long tempstepduration=GetCurrentStartupTime();
- UEPtr<UAContainer> *comps=PComponents;
- int i=0;
- while((i<NumComponents) & !SkipComponentCalculation)
+try {
+ try
  {
-  (*comps)->Calculate();
-  if(ComponentReCalculation)
+  Init(); // Заглушка
+
+  if(!IsInit())
+   return false;
+
+  Build();
+
+  int i=0;
+  long long tempstepduration=GetCurrentStartupTime();
+  UEPtr<UAContainer> *comps=PComponents;
+  while((i<NumComponents) && !SkipComponentCalculation)
   {
-   ComponentReCalculation=false;
-   i=0; comps=PComponents;
+   (*comps)->Calculate();
+   if(ComponentReCalculation)
+   {
+	ComponentReCalculation=false;
+	i=0; comps=PComponents;
+   }
+   else
+   {
+	++i,++comps;
+   }
+  }
+
+  SkipComponentCalculation=false;
+  ComponentReCalculation=false;
+
+  if(!Owner)
+  {
+   ACalculate();
   }
   else
+  if(TimeStep == OwnerTimeStep)
   {
-   ++i,++comps;
+   ACalculate();
   }
- }
-
- SkipComponentCalculation=false;
- ComponentReCalculation=false;
-
- if(!Owner)
- {
-  ACalculate();
- }
- else
- if(TimeStep == OwnerTimeStep)
- {
-  ACalculate();
- }
- else
- if(TimeStep < OwnerTimeStep)
+  else
+  if(TimeStep < OwnerTimeStep)
   {
    --CalcCounter;
    if(CalcCounter <= 0)
-    {
-     CalcCounter=OwnerTimeStep/TimeStep;
-     ACalculate();
-    }
+	{
+	 CalcCounter=OwnerTimeStep/TimeStep;
+	 ACalculate();
+	}
   }
- else
- if(TimeStep > OwnerTimeStep)
+  else
+  if(TimeStep > OwnerTimeStep)
   {
    for(UTime i=TimeStep/OwnerTimeStep;i>=0;--i)
-    ACalculate();
+	ACalculate();
   }
 
- UpdateMainOwner();
- StepDuration=CalcDiffTime(GetCurrentStartupTime(),tempstepduration);
- // Обрабатываем контроллеры
- int numcontrollers=Controllers.size();
+  UpdateMainOwner();
+  StepDuration=CalcDiffTime(GetCurrentStartupTime(),tempstepduration);
+  // Обрабатываем контроллеры
+  int numcontrollers=Controllers.size();
 
- if(numcontrollers)
- {
-  UEPtr<UController>* controllers=&Controllers[0];
-  for(int i=0;i<numcontrollers;i++,controllers++)
+  if(numcontrollers)
   {
-   (*controllers)->Update();
+   UEPtr<UController>* controllers=&Controllers[0];
+   for(int i=0;i<numcontrollers;i++,controllers++)
+   {
+	(*controllers)->Update();
+   }
   }
  }
+ catch(Exception *exception)
+ {
+  throw;
+ }
+}
+RDK_SYS_CATCH
+{
+ throw new EComponentSystemException(this,0);
+}
+
  return true;
 }
 
@@ -1841,50 +1854,55 @@ std::string UAContainer::EIContainer::CreateLogMessage(void) const
 // EIContainer *iexception=dynamic_cast<EIContainer*>(exception);
 
 // if(iexception)
+ if(Name.size()>0)
  {
   // Короткое имя компонента в котором сгенерировано исключение
   result+=" Name=";
   result+=Name;
-
+ }
   // Короткий идентификатор компонента в котором сгенерировано исключение
 //  result+=" Id=";
 //  result+=iexception->Id;
 
+ if(OwnerName.size()>0)
+ {
   // Полное имя владельца компонента в котором сгенерировано исключение
   result+=" OwnerName=";
   result+=OwnerName;
+ }
 
   // Полный идентификатор владельца компонента в котором сгенерировано исключение
 //  result+=" OwnerId=";
 //  result+=iexception->OwnerId;
 
-  if(MainOwnerName != OwnerName && MainOwnerName.size()>0)
-  {
-   // Полное имя главного владельца компонента в котором сгенерировано исключение
-   result+=" MainOwnerName=";
-   result+=MainOwnerName;
-  }
+ if(MainOwnerName != OwnerName && MainOwnerName.size()>0)
+ {
+  // Полное имя главного владельца компонента в котором сгенерировано исключение
+  result+=" MainOwnerName=";
+  result+=MainOwnerName;
+ }
 
   // Полный идентификатор главного владельца компонента в котором сгенерировано исключение
 //  result+=" MainOwnerId=";
 //  result+=iexception->MainOwnerId;
- }
 
 
  return result;
 }
 // --------------------------
 
+// Интерфейсный класс для обработки ошибок счета компонент
+//class EICalculateContainer: public EIContainer
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UAContainer::EComponentCalculate::EComponentCalculate(void)
+UAContainer::EICalculateContainer::EICalculateContainer(void)
 {
 
 }
 
-UAContainer::EComponentCalculate::EComponentCalculate(const UAContainer *cont, const UAContainer *subcont)
- : EError(), EIContainer(cont)
+UAContainer::EICalculateContainer::EICalculateContainer(const UAContainer *cont, const UAContainer *subcont)
+: EIContainer(cont)
 {
  if(!subcont)
   return;
@@ -1896,18 +1914,56 @@ UAContainer::EComponentCalculate::EComponentCalculate(const UAContainer *cont, c
  SubId=subcont->GetId();
 }
 
-
-UAContainer::EComponentCalculate::EComponentCalculate(const EComponentCalculate &copy)
- : EError(copy), EIContainer(copy)
+UAContainer::EICalculateContainer::EICalculateContainer(const EICalculateContainer &copy)
+ :EIContainer(copy)
 {
- // Короткое имя компонента в котором сгенерировано исключение
- SubName=copy.SubName;
-
- // Короткий идентификатор компонента в котором сгенерировано исключение
+ SubName=copy.Name;
  SubId=copy.SubId;
 }
 
-UAContainer::EComponentCalculate::~EComponentCalculate(void)
+UAContainer::EICalculateContainer::~EICalculateContainer(void)
+{
+
+}
+ // --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+std::string UAContainer::EICalculateContainer::CreateLogMessage(void) const
+{
+ string result=UAContainer::EIContainer::CreateLogMessage();
+ if(SubName.size()>0)
+ {
+  result+=" SubName=";
+  result+=SubName;
+ }
+ return result;
+}
+// --------------------------
+
+
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+UAContainer::EComponentSystemException::EComponentSystemException(void)
+{
+
+}
+
+UAContainer::EComponentSystemException::EComponentSystemException(const UAContainer *cont, const UAContainer *subcont)
+ : ESystemException(), EICalculateContainer(cont,subcont)
+{
+}
+
+
+UAContainer::EComponentSystemException::EComponentSystemException(const EComponentSystemException &copy)
+ : ESystemException(copy), EICalculateContainer(copy)
+{
+}
+
+UAContainer::EComponentSystemException::~EComponentSystemException(void)
 {
 
 }
@@ -1917,9 +1973,9 @@ UAContainer::EComponentCalculate::~EComponentCalculate(void)
 // Методы формирования лога
 // --------------------------
 // Формирует строку лога об исключении
-std::string UAContainer::EComponentCalculate::CreateLogMessage(void) const
+std::string UAContainer::EComponentSystemException::CreateLogMessage(void) const
 {
- return EError::CreateLogMessage()+EIContainer::CreateLogMessage();
+ return ESystemException::CreateLogMessage()+EICalculateContainer::CreateLogMessage();
 }
 // --------------------------
 

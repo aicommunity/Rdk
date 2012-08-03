@@ -741,9 +741,8 @@ struct EAddComponentHaveInvalidType: public EIdError
 EAddComponentHaveInvalidType(UId id) : EIdError(id) {};
 };
 
-
-// Исключение - ошибка
-class EComponentCalculate: public EError, public EIContainer
+// Интерфейсный класс для обработки ошибок счета компонент
+class EICalculateContainer: public EIContainer
 {
  public: // Данные исключения
  // Короткое имя дочернего компонента в котором произошла ошибка счета
@@ -755,10 +754,54 @@ class EComponentCalculate: public EError, public EIContainer
  // --------------------------
  // Конструкторы и деструкторы
  // --------------------------
+ EICalculateContainer(void);
+ EICalculateContainer(const UAContainer *cont, const UAContainer *subcont);
+ EICalculateContainer(const EICalculateContainer &copy);
+ virtual ~EICalculateContainer(void);
+ // --------------------------
+
+ // --------------------------
+ // Методы формирования лога
+ // --------------------------
+ // Формирует строку лога об исключении
+ virtual std::string CreateLogMessage(void) const;
+ // --------------------------
+};
+
+
+// Исключение - ошибка
+class EComponentCalculate: public EError, public EICalculateContainer
+{
+public:
+ // --------------------------
+ // Конструкторы и деструкторы
+ // --------------------------
  EComponentCalculate(void);
  EComponentCalculate(const UAContainer *cont, const UAContainer *subcont);
  EComponentCalculate(const EComponentCalculate &copy);
  virtual ~EComponentCalculate(void);
+ // --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+virtual std::string CreateLogMessage(void) const;
+// --------------------------
+};
+
+// Исключение - фатальная ошибка стороннего исключения
+class EComponentSystemException: public ESystemException, public EICalculateContainer
+{
+ public:
+
+ // --------------------------
+ // Конструкторы и деструкторы
+ // --------------------------
+ EComponentSystemException(void);
+ EComponentSystemException(const UAContainer *cont, const UAContainer *subcont);
+ EComponentSystemException(const EComponentSystemException &copy);
+ virtual ~EComponentSystemException(void);
  // --------------------------
 
 // --------------------------

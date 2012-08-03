@@ -1,6 +1,7 @@
 #ifndef RDK_INIT_CPP
 #define RDK_INIT_CPP
 
+#include <exception>
 #include "rdk_init.h"
 #include "rdk.h"
 

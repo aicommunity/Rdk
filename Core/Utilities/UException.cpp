@@ -283,6 +283,36 @@ std::string EIndexError::CreateLogMessage(void) const
 }
 // --------------------------
 
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+ESystemException::ESystemException(void)
+{
+
+}
+
+ESystemException::ESystemException(const ESystemException &copy)
+{
+
+}
+
+ESystemException::~ESystemException(void)
+{
+
+}
+// --------------------------
+
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+std::string ESystemException::CreateLogMessage(void) const
+{
+ return EFatal::CreateLogMessage();
+}
+// --------------------------
+
 }
 #endif
 

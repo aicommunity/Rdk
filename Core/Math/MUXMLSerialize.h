@@ -20,6 +20,7 @@ See file license.txt for more information
 #include "../Serialize/USerStorageXML.h"
 #include "../Utilities/USupport.h"
 #include "../Math/UMath.h"
+#include "../Serialize/UXMLStdSerialize.h"
 
 namespace RDK {
 namespace Serialize {

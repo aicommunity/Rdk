@@ -249,6 +249,26 @@ EInvalidIndex(int index) : EIndexError(index) {};
 };
 
 
+struct ESystemException: public EFatal
+{
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+ESystemException(void);
+ESystemException(const ESystemException &copy);
+virtual ~ESystemException(void);
+// --------------------------
+
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+virtual std::string CreateLogMessage(void) const;
+// --------------------------
+
+};
+
 }
 
 #endif

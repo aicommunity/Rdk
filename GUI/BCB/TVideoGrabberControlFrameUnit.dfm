@@ -139,10 +139,6 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
         Height = 238
         Align = alClient
         TabOrder = 0
-        ExplicitLeft = 88
-        ExplicitTop = 40
-        ExplicitWidth = 185
-        ExplicitHeight = 41
         DesignSize = (
           445
           238)
