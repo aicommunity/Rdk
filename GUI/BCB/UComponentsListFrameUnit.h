@@ -114,10 +114,7 @@ protected:		// User declarations
 		// ¬ключение-выключение отображени€ параметров в виде xml
 		bool ShowXMLComponentParameters;
 
-protected: // ¬ременные переменные
-		bool UpdateInterfaceFlag;
-
-		// Ёлемент который должен быть найден и выделен после обновлени€ списка
+protected: // ¬ременные переменные		// Ёлемент который должен быть найден и выделен после обновлени€ списка
 		int SelectedId;
 
 public:

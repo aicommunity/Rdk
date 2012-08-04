@@ -1168,7 +1168,7 @@ int UEngine::Model_GetNumComponents(const char* stringid)
   RDK::UAContainer* destcont=FindComponent(stringid);
 
   if(!destcont)
-   return -4;
+   return 0;
 
   return destcont->GetNumComponents();
  }

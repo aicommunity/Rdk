@@ -98,8 +98,17 @@ std::string Exception::CreateLogMessage(void) const
 
  result+=sntoa(GetNumber());
  result+=" ";
- result+=sntoa(GetTime());
+
+ std::time_t ex_time=GetTime();
+ tm* time_stuct=localtime(&ex_time);
+
+ result+=sntoa(time_stuct->tm_hour);
+ result+=":";
+ result+=sntoa(time_stuct->tm_min);
+ result+=":";
+ result+=sntoa(time_stuct->tm_sec);
  result+=" ";
+
  result+=sntoa(GetType());
  result+="> ";
  result+=typeid(*this).name();

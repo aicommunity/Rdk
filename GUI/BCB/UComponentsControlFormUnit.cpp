@@ -26,6 +26,8 @@ void __fastcall TUComponentsControlForm::FormShow(TObject *Sender)
 void __fastcall TUComponentsControlForm::ComponentsListFrameStringGridClick(TObject *Sender)
 {
  ComponentsControlFrame->ComponentsListFrame->StringGridClick(Sender);
+ if(ComponentsControlFrame->ComponentsListFrame->UpdateInterfaceFlag)
+  return;
  UComponentLinksForm->UComponentLinksFrame->UpdateInterface();
 }
 //---------------------------------------------------------------------------
@@ -33,6 +35,8 @@ void __fastcall TUComponentsControlForm::ComponentsListFrameStringGridClick(TObj
 void __fastcall TUComponentsControlForm::ComponentsListFrameStringGridDblClick(TObject *Sender)
 {
  ComponentsControlFrame->ComponentsListFrame->StringGridDblClick(Sender);
+ if(ComponentsControlFrame->ComponentsListFrame->UpdateInterfaceFlag)
+  return;
  UComponentLinksForm->UComponentLinksFrame->UpdateInterface();
 }
 //---------------------------------------------------------------------------
@@ -42,6 +46,8 @@ void __fastcall TUComponentsControlForm::ComponentsListFrameStringGridSelectCell
 {
  ComponentsControlFrame->ComponentsListFrame->StringGridSelectCell(Sender,
 		  ACol, ARow, CanSelect);
+ if(ComponentsControlFrame->ComponentsListFrame->UpdateInterfaceFlag)
+  return;
  UComponentLinksForm->UComponentLinksFrame->UpdateInterface();
 }
 //---------------------------------------------------------------------------

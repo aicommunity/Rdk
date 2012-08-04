@@ -433,6 +433,9 @@ void __fastcall TUComponentsListFrame::FrameResize(TObject *Sender)
 
 void __fastcall TUComponentsListFrame::StringGridDblClick(TObject *Sender)
 {
+ if(UpdateInterfaceFlag)
+  return;
+
  if(StringGrid->Row <= 0)
   return;
 

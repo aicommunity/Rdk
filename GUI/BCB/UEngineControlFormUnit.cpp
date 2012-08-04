@@ -207,6 +207,7 @@ void TUEngineControlForm::SaveProject(void)
 
 void __fastcall TUEngineControlForm::FormShow(TObject *Sender)
 {
+ EngineInit(0,ExceptionHandler);
  UpdateInterface();
 }
 //---------------------------------------------------------------------------
