@@ -88,6 +88,10 @@ protected: // Обработка исключений
 // Лог исключений системы
 mutable vector<USharedPtr<Exception> > ExceptionsLog;
 
+// Максимальное число хранимых исключений
+// Если 0, то неограниченно
+int MaxExceptionsLogSize;
+
 // Внешний обработчик исключений
 PExceptionHandler ExceptionHandler;
 
@@ -109,7 +113,8 @@ mutable string TempLogString;
 // Временное хранилище имени компонента
 mutable string CompName;
 
-
+// Индекс последнего считанного символа лога исключений
+size_t LastReadExceptionLogIndex;
 
 public: // Методы
 // --------------------------
@@ -590,8 +595,17 @@ virtual void ProcessException(Exception *exception) const;
 // Возвращает массив зарегистрированных исключений
 const vector<USharedPtr<Exception> > GetExceptionsLog(void) const;
 
+// Максимальное число хранимых исключений
+// Если 0, то неограниченно
+int GetMaxExceptionsLogSize(void) const;
+void SetMaxExceptionsLogSize(int value);
+
 // Возвращает массив строк лога
 const char* GetLog(void) const;
+
+// Возвращает частичный массив строк лога с момента последнего считывания лога
+// этой функцией
+const char* GetUnreadLog(void);
 
 // Управление функцией-обработчиком исключений
 PExceptionHandler GetExceptionHandler(void) const;

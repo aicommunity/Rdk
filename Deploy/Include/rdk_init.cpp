@@ -895,6 +895,13 @@ const char* RDK_CALL Engine_GetLog(void)
 {
  return PEngine->GetLog();
 }
+
+// Возвращает частичный массив строк лога с момента последнего считывания лога
+// этой функцией
+const char* RDK_CALL Engine_GetUnreadLog(void)
+{
+ return PEngine->GetUnreadLog();
+}
 // ----------------------------
 
 

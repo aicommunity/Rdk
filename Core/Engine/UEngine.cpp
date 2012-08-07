@@ -86,8 +86,9 @@ UEngine::UEngine(void)
  Runned=-1;
  Storage=0;
  Environment=0;
-// FuncCreateNewStorage=0;
-// FuncCreateNewEnvironment=0;
+
+ LastReadExceptionLogIndex=-1;
+ MaxExceptionsLogSize=1000;
 }
 
 UEngine::~UEngine(void)
@@ -182,6 +183,9 @@ void UEngine::Init(void)
 
 bool UEngine::Init(UEPtr<UAContainerStorage> storage, UEPtr<UAContainerEnvironment> env)
 {
+ LastReadExceptionLogIndex=string::npos;
+ ExceptionsLog.clear();
+ TempLogString.clear();
 // if(!Options.LoadFromFile(OptionsFileName))
 // {
   if(!Default())
@@ -3003,6 +3007,15 @@ void UEngine::ProcessException(Exception *exception) const
  USharedPtr<Exception> ptr=exception;
  ExceptionsLog.push_back(ptr);
 
+ if(ExceptionsLog.size() > MaxExceptionsLogSize)
+ {
+  ExceptionsLog.erase(ExceptionsLog.begin());
+  size_t i=TempLogString.find_first_of("\n");
+  if(i != string::npos)
+  {
+   TempLogString.erase(0,i);
+  }
+ }
  TempLogString+=exception->CreateLogMessage();
  TempLogString+="\r\n";
 
@@ -3027,6 +3040,27 @@ const char* UEngine::GetLog(void) const
  return TempLogString.c_str();
 }
 
+// Возвращает частичный массив строк лога с момента последнего считывания лога
+// этой функцией
+const char* UEngine::GetUnreadLog(void)
+{
+ if(LastReadExceptionLogIndex<=0)
+ {
+  LastReadExceptionLogIndex=TempLogString.size();
+  return TempLogString.c_str();
+ }
+
+ if(LastReadExceptionLogIndex<TempLogString.size())
+ {
+  TempString=TempLogString.substr(LastReadExceptionLogIndex);
+  LastReadExceptionLogIndex=TempLogString.size();
+  return TempString.c_str();
+ }
+
+ TempString="";
+ return TempString.c_str();
+}
+
 // Управление функцией-обработчиком исключений
 UEngine::PExceptionHandler UEngine::GetExceptionHandler(void) const
 {
@@ -3040,6 +3074,25 @@ bool UEngine::SetExceptionHandler(PExceptionHandler value)
 
  ExceptionHandler=value;
  return true;
+}
+
+// Максимальное число хранимых исключений
+// Если 0, то неограниченно
+int UEngine::GetMaxExceptionsLogSize(void) const
+{
+ return MaxExceptionsLogSize;
+}
+
+void UEngine::SetMaxExceptionsLogSize(int value)
+{
+ if(MaxExceptionsLogSize == value)
+  return;
+
+ MaxExceptionsLogSize=value;
+ if(MaxExceptionsLogSize>0 && ExceptionsLog.size()>MaxExceptionsLogSize)
+ {
+  ExceptionsLog.erase(ExceptionsLog.begin(), ExceptionsLog.begin()+int(ExceptionsLog.size())-MaxExceptionsLogSize);
+ }
 }
 // --------------------------
 

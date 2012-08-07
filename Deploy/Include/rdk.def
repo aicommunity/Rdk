@@ -144,5 +144,6 @@ EXPORTS
     Engine_GetExceptionHandler = _Engine_GetExceptionHandler
     Engine_SetExceptionHandler = _Engine_SetExceptionHandler
     Engine_GetLog = _Engine_GetLog
+    Engine_GetUnreadLog = _Engine_GetUnreadLog
         
 

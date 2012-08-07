@@ -69,6 +69,7 @@ void TUGEngineControlForm::AUpdateInterface(void)
 
 void __fastcall TUGEngineControlForm::FormShow(TObject *Sender)
 {
+ GraphicalEngineInit(0,1,1,320,240,1,ExceptionHandler);
  UImagesForm->ImagesFrame->SetReflectionXFlag(true);
  UpdateInterface();
 }

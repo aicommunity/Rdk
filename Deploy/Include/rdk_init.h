@@ -503,6 +503,10 @@ RDK_LIB_TYPE bool RDK_CALL Engine_SetExceptionHandler(void* value);
 
 // Возвращает массив строк лога
 RDK_LIB_TYPE const char* RDK_CALL Engine_GetLog(void);
+
+// Возвращает частичный массив строк лога с момента последнего считывания лога
+// этой функцией
+RDK_LIB_TYPE const char* RDK_CALL Engine_GetUnreadLog(void);
 // ----------------------------
 
 #ifdef __cplusplus

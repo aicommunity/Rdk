@@ -12,12 +12,35 @@
 #include <IniFiles.hpp>
 #include <Vcl.ComCtrls.hpp>
 #include "TUVisualController.h"
+#include "TUVisualControllerFormUnit.h"
+#include <Vcl.ImgList.hpp>
+#include <Vcl.ToolWin.hpp>
 //---------------------------------------------------------------------------
 class TVideoOutputForm : public TUVisualControllerForm
 {
 __published:	// IDE-managed Components
 	TPageControl *PageControl;
+	TMainMenu *MainMenu;
+	TToolBar *ToolBar1;
+	TImageList *ImageList;
+	TMenuItem *Sources1;
+	TMenuItem *AddSource1;
+	TMenuItem *DelSource1;
+	TMenuItem *ClearSources1;
+	TPopupMenu *PopupMenu;
+	TMenuItem *AddSource2;
+	TMenuItem *DelSource2;
+	TMenuItem *ClearSource1;
+	TToolButton *ToolButton1;
+	TToolButton *ToolButton2;
+	TToolButton *ToolButton3;
 	void __fastcall PageControlChange(TObject *Sender);
+	void __fastcall AddSource1Click(TObject *Sender);
+	void __fastcall DelSource1Click(TObject *Sender);
+	void __fastcall ClearSources1Click(TObject *Sender);
+	void __fastcall AddSource2Click(TObject *Sender);
+	void __fastcall DelSource2Click(TObject *Sender);
+	void __fastcall ClearSource1Click(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
 	__fastcall TVideoOutputForm(TComponent* Owner);
@@ -25,10 +48,14 @@ public:		// User declarations
 // Источники видео
 std::vector<TVideoOutputFrame*> Sources;
 
-bool UpdateInterfaceFlag;
-
 // Обновляет интерфейс
-void UpdateInterface(void);
+void AUpdateInterface(void);
+
+// Сохраняет параметры интерфейса в xml
+void ASaveParameters(RDK::Serialize::USerStorageXML &xml);
+
+// Загружает параметры интерфейса из xml
+void ALoadParameters(RDK::Serialize::USerStorageXML &xml);
 
 // Число источников видео
 int GetNumSources(void) const;

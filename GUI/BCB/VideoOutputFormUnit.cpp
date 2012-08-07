@@ -8,21 +8,34 @@
 #include "TVideoGrabberControlFormUnit.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
+#pragma link "TUVisualControllerFormUnit"
 #pragma resource "*.dfm"
 TVideoOutputForm *VideoOutputForm;
 //---------------------------------------------------------------------------
 __fastcall TVideoOutputForm::TVideoOutputForm(TComponent* Owner)
 	: TUVisualControllerForm(Owner)
 {
- UpdateInterfaceFlag=false;
 }
 
 // Обновляет интерфейс
-void TVideoOutputForm::UpdateInterface(void)
+void TVideoOutputForm::AUpdateInterface(void)
 {
- UpdateInterfaceFlag=true;
+}
 
- UpdateInterfaceFlag=false;
+// Сохраняет параметры интерфейса в xml
+void TVideoOutputForm::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
+{
+ xml.WriteInteger("NumSources",GetNumSources());
+}
+
+// Загружает параметры интерфейса из xml
+void TVideoOutputForm::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
+{
+ int num=xml.ReadInteger("NumSources",1);
+ ClearSources();
+ for(int i=0;i<num;i++)
+  AddSource();
+ UpdateInterface();
 }
 
 // Число источников видео
@@ -150,11 +163,6 @@ void TVideoOutputForm::Stop(int index)
    Sources[i]->StopButtonClick(this);
 }
 //---------------------------------------------------------------------------
-
-
-
-
-
 void __fastcall TVideoOutputForm::PageControlChange(TObject *Sender)
 {
  for(int i=0;i<PageControl->PageCount;i++)
@@ -164,6 +172,45 @@ void __fastcall TVideoOutputForm::PageControlChange(TObject *Sender)
    Sources[i]->MyVideoOutputToolsForm->Hide();
   }
 
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoOutputForm::AddSource1Click(TObject *Sender)
+{
+ AddSource();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoOutputForm::DelSource1Click(TObject *Sender)
+{
+ if(GetNumSources()<=0)
+  return;
+
+ DelSource(PageControl->ActivePageIndex);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoOutputForm::ClearSources1Click(TObject *Sender)
+{
+ ClearSources();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoOutputForm::AddSource2Click(TObject *Sender)
+{
+ AddSource1Click(Sender);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoOutputForm::DelSource2Click(TObject *Sender)
+{
+ DelSource1Click(Sender);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoOutputForm::ClearSource1Click(TObject *Sender)
+{
+ ClearSources1Click(Sender);
 }
 //---------------------------------------------------------------------------
 
