@@ -799,7 +799,7 @@ class EComponentSystemException: public ESystemException, public EICalculateCont
  // Конструкторы и деструкторы
  // --------------------------
  EComponentSystemException(void);
- EComponentSystemException(const UAContainer *cont, const UAContainer *subcont);
+ EComponentSystemException(const UAContainer *cont, const UAContainer *subcont, const std::string &info);
  EComponentSystemException(const EComponentSystemException &copy);
  virtual ~EComponentSystemException(void);
  // --------------------------

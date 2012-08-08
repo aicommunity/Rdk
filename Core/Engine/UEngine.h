@@ -114,7 +114,7 @@ mutable string TempLogString;
 mutable string CompName;
 
 // Индекс последнего считанного символа лога исключений
-size_t LastReadExceptionLogIndex;
+int LastReadExceptionLogIndex;
 
 public: // Методы
 // --------------------------

@@ -11,6 +11,8 @@
 #include "UEngineMonitorFrameUnit.h"
 #include "UEngineMonitorFrameUnit.h"
 #include "TUVisualController.h"
+#include "TUVisualControllerFormUnit.h"
+#include "TUVisualControllerFrameUnit.h"
 //---------------------------------------------------------------------------
 
 void ExceptionHandler(void);

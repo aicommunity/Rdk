@@ -251,10 +251,14 @@ EInvalidIndex(int index) : EIndexError(index) {};
 
 struct ESystemException: public EFatal
 {
+// Дополнительная информация об исключении
+std::string Info;
+
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
 ESystemException(void);
+ESystemException(const std::string &info);
 ESystemException(const ESystemException &copy);
 virtual ~ESystemException(void);
 // --------------------------

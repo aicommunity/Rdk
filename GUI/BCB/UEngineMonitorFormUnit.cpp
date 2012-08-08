@@ -10,14 +10,15 @@
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "UEngineMonitorFrameUnit"
+#pragma link "TUVisualControllerFormUnit"
+#pragma link "TUVisualControllerFrameUnit"
 #pragma resource "*.dfm"
 TUEngineMonitorForm *UEngineMonitorForm;
 
 //---------------------------------------------------------------------------
-
 void ExceptionHandler(void)
 {
- UEngineMonitorForm->EngineMonitorFrame->RichEdit->Text=Engine_GetLog();
+ UEngineMonitorForm->EngineMonitorFrame->RichEdit->Text=UEngineMonitorForm->EngineMonitorFrame->RichEdit->Text+Engine_GetUnreadLog();
 }
 //---------------------------------------------------------------------------
 __fastcall TUEngineMonitorForm::TUEngineMonitorForm(TComponent* Owner)

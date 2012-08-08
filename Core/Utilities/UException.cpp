@@ -96,17 +96,17 @@ std::string Exception::CreateLogMessage(void) const
 {
  std::string result;
 
- result+=sntoa(GetNumber());
+ result+=sntoa(GetNumber(),4);
  result+=" ";
 
  std::time_t ex_time=GetTime();
  tm* time_stuct=localtime(&ex_time);
 
- result+=sntoa(time_stuct->tm_hour);
+ result+=sntoa(time_stuct->tm_hour,2);
  result+=":";
- result+=sntoa(time_stuct->tm_min);
+ result+=sntoa(time_stuct->tm_min,2);
  result+=":";
- result+=sntoa(time_stuct->tm_sec);
+ result+=sntoa(time_stuct->tm_sec,2);
  result+=" ";
 
  result+=sntoa(GetType());
@@ -300,6 +300,12 @@ ESystemException::ESystemException(void)
 
 }
 
+ESystemException::ESystemException(const std::string &info)
+: Info(info)
+{
+
+}
+
 ESystemException::ESystemException(const ESystemException &copy)
 {
 
@@ -318,7 +324,7 @@ ESystemException::~ESystemException(void)
 // Формирует строку лога об исключении
 std::string ESystemException::CreateLogMessage(void) const
 {
- return EFatal::CreateLogMessage();
+ return EFatal::CreateLogMessage()+Info;
 }
 // --------------------------
 

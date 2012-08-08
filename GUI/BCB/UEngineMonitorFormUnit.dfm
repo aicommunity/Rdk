@@ -22,6 +22,12 @@ object UEngineMonitorForm: TUEngineMonitorForm
     Width = 527
     Height = 223
     Align = alClient
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
     TabOrder = 0
     ExplicitWidth = 527
     ExplicitHeight = 223

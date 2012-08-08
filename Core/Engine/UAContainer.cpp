@@ -1276,7 +1276,7 @@ bool UAContainer::Calculate(void)
 {
  if(!Activity)
   return true;
-try {
+RDK_SYS_TRY {
  try
  {
   Init(); // Заглушка
@@ -1353,7 +1353,7 @@ try {
 }
 RDK_SYS_CATCH
 {
- throw new EComponentSystemException(this,0);
+ throw new EComponentSystemException(this,0,GetSystemExceptionData());
 }
 
  return true;
@@ -1952,8 +1952,8 @@ UAContainer::EComponentSystemException::EComponentSystemException(void)
 
 }
 
-UAContainer::EComponentSystemException::EComponentSystemException(const UAContainer *cont, const UAContainer *subcont)
- : ESystemException(), EICalculateContainer(cont,subcont)
+UAContainer::EComponentSystemException::EComponentSystemException(const UAContainer *cont, const UAContainer *subcont, const std::string &info)
+ : ESystemException(info), EICalculateContainer(cont,subcont)
 {
 }
 
