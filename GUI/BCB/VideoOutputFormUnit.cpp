@@ -55,10 +55,26 @@ void TVideoOutputForm::AddSource(void)
  Sources.resize(PageControl->PageCount);
 
  size_t index=Sources.size()-1;
+/*
+ TUWatchFrame *frame=new TUWatchFrame(0);
+ frame->Name=frame->Name+String("_")+PageControl->PageCount;
+ InsertComponent(frame);
+ frame->Parent=tab;
+*/
+
+ Sources[index]=new TVideoOutputFrame(0);
+ Sources[index]->Name=Sources[index]->Name+String("_")+PageControl->PageCount;
+ InsertComponent(Sources[index]);
+ Sources[index]->Parent=sheet;
+ Sources[index]->Align=alClient;
+ PageControl->Pages[index]->Caption=IntToStr(int(index));
+
+ /*
  Sources[index]=new TVideoOutputFrame(sheet);
  Sources[index]->Parent=sheet;
  Sources[index]->Align=alClient;
  PageControl->Pages[index]->Caption=IntToStr(int(index));
+ */
 }
 
 // Удаляет источник видео
@@ -213,4 +229,5 @@ void __fastcall TVideoOutputForm::ClearSource1Click(TObject *Sender)
  ClearSources1Click(Sender);
 }
 //---------------------------------------------------------------------------
+
 

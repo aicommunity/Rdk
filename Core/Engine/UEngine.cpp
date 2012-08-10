@@ -183,7 +183,7 @@ void UEngine::Init(void)
 
 bool UEngine::Init(UEPtr<UAContainerStorage> storage, UEPtr<UAContainerEnvironment> env)
 {
- LastReadExceptionLogIndex=string::npos;
+ LastReadExceptionLogIndex=-1;
  ExceptionsLog.clear();
  TempLogString.clear();
 // if(!Options.LoadFromFile(OptionsFileName))
@@ -3044,7 +3044,7 @@ const char* UEngine::GetLog(void) const
 // этой функцией
 const char* UEngine::GetUnreadLog(void)
 {
- if(LastReadExceptionLogIndex<=0)
+ if(LastReadExceptionLogIndex<=0 && TempLogString.size())
  {
   LastReadExceptionLogIndex=TempLogString.size();
   return TempLogString.c_str();

@@ -41,12 +41,17 @@ __published:    // IDE-managed Components
     TMenuItem *N2;
     TMenuItem *N3;
     TMenuItem *SendToComponent;
-    TMenuItem *SendTo;
-    TMenuItem *SendToState;
     TMenuItem *SendToComponentState1;
 	TMenuItem *N4;
 	TMenuItem *SendImageToComponentInput1;
 	TMenuItem *SendImageToComponentOutput1;
+	TPanel *Panel2;
+	TEdit *SendToEdit;
+	TButton *Button1;
+	TButton *SelectSendToButton;
+	TPopupMenu *SelectPopupMenu;
+	TMenuItem *Parameter1;
+	TMenuItem *State1;
     void __fastcall TimerTimer(TObject *Sender);
     void __fastcall StartButtonClick(TObject *Sender);
     void __fastcall StopButtonClick(TObject *Sender);
@@ -65,12 +70,13 @@ __published:    // IDE-managed Components
     void __fastcall TrackBarChange(TObject *Sender);
     void __fastcall SourceControl1Click(TObject *Sender);
     void __fastcall SendToComponentClick(TObject *Sender);
-    void __fastcall PopupMenuPopup(TObject *Sender);
-    void __fastcall SendToClick(TObject *Sender);
     void __fastcall SendToComponentState1Click(TObject *Sender);
-    void __fastcall SendToStateClick(TObject *Sender);
 	void __fastcall SendImageToComponentOutput1Click(TObject *Sender);
 	void __fastcall SendImageToComponentInput1Click(TObject *Sender);
+	void __fastcall Parameter1Click(TObject *Sender);
+	void __fastcall State1Click(TObject *Sender);
+	void __fastcall Button1Click(TObject *Sender);
+
 
 private:    // User declarations
 public:        // User declarations

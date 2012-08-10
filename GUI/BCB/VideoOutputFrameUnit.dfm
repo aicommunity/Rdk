@@ -11,16 +11,17 @@ inherited VideoOutputFrame: TVideoOutputFrame
     Left = 0
     Top = 0
     Width = 702
-    Height = 417
+    Height = 386
     Align = alClient
     DoubleBuffered = True
     ParentDoubleBuffered = False
     TabOrder = 0
+    ExplicitHeight = 417
     object Image: TImage
       Left = 2
       Top = 15
       Width = 698
-      Height = 400
+      Height = 369
       Cursor = crCross
       Align = alClient
       Stretch = True
@@ -28,6 +29,7 @@ inherited VideoOutputFrame: TVideoOutputFrame
       OnMouseMove = ImageMouseMove
       OnMouseUp = ImageMouseUp
       ExplicitTop = 14
+      ExplicitHeight = 400
     end
     object VideoGrabber: TVideoGrabber
       Left = 432
@@ -130,6 +132,48 @@ inherited VideoOutputFrame: TVideoOutputFrame
       OnChange = TrackBarChange
     end
   end
+  object Panel2: TPanel
+    Left = 0
+    Top = 386
+    Width = 702
+    Height = 31
+    Align = alBottom
+    TabOrder = 2
+    DesignSize = (
+      702
+      31)
+    object SendToEdit: TEdit
+      Left = 17
+      Top = 4
+      Width = 521
+      Height = 21
+      Anchors = [akLeft, akTop, akRight]
+      Color = clBtnFace
+      ReadOnly = True
+      TabOrder = 0
+    end
+    object Button1: TButton
+      Left = 544
+      Top = 2
+      Width = 79
+      Height = 25
+      Anchors = [akTop, akRight]
+      Caption = 'Send points'
+      TabOrder = 1
+      OnClick = Button1Click
+    end
+    object SelectSendToButton: TButton
+      Left = 629
+      Top = 2
+      Width = 66
+      Height = 25
+      Anchors = [akTop, akRight]
+      Caption = 'Select To'
+      DropDownMenu = SelectPopupMenu
+      Style = bsSplitButton
+      TabOrder = 2
+    end
+  end
   object Timer: TTimer
     Enabled = False
     Interval = 39
@@ -138,19 +182,8 @@ inherited VideoOutputFrame: TVideoOutputFrame
     Top = 264
   end
   object PopupMenu: TPopupMenu
-    OnPopup = PopupMenuPopup
     Left = 48
     Top = 264
-    object SendTo: TMenuItem
-      Caption = 'Send To Parameter'
-      Enabled = False
-      OnClick = SendToClick
-    end
-    object SendToState: TMenuItem
-      Caption = 'Send To State'
-      Enabled = False
-      OnClick = SendToStateClick
-    end
     object SendToComponent: TMenuItem
       Caption = 'Send To Component Parameter...'
       OnClick = SendToComponentClick
@@ -183,6 +216,18 @@ inherited VideoOutputFrame: TVideoOutputFrame
     object SourceControl1: TMenuItem
       Caption = 'Source Control'
       OnClick = SourceControl1Click
+    end
+  end
+  object SelectPopupMenu: TPopupMenu
+    Left = 120
+    Top = 272
+    object Parameter1: TMenuItem
+      Caption = 'Parameter'
+      OnClick = Parameter1Click
+    end
+    object State1: TMenuItem
+      Caption = 'State'
+      OnClick = State1Click
     end
   end
 end

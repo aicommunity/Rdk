@@ -102,6 +102,13 @@ std::string Exception::CreateLogMessage(void) const
  std::time_t ex_time=GetTime();
  tm* time_stuct=localtime(&ex_time);
 
+ result+=sntoa(time_stuct->tm_mday,2);
+ result+="/";
+ result+=sntoa(time_stuct->tm_mon+1,2);
+ result+="/";
+ result+=sntoa(time_stuct->tm_year+1900,4);
+ result+=" ";
+
  result+=sntoa(time_stuct->tm_hour,2);
  result+=":";
  result+=sntoa(time_stuct->tm_min,2);

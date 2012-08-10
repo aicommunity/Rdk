@@ -468,6 +468,19 @@ void TVideoOutputFrame::AUpdateInterface(void)
   break;
   }
  }
+
+ if(!SelectedComponentSName.empty())
+ {
+  SendToEdit->Text=String("State ")+SelectedComponentSName.c_str()+String(":")+SelectedComponentStateName.c_str();
+ }
+ else
+ if(!SelectedComponentPName.empty())
+ {
+  SendToEdit->Text=String("Parameter ")+SelectedComponentPName.c_str()+String(":")+SelectedComponentParameterName.c_str();
+ }
+ else
+  SendToEdit->Text="";
+
 }
 
 // Сохраняет параметры интерфейса в xml
@@ -476,6 +489,11 @@ void TVideoOutputFrame::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
  xml.WriteString("LinkedComponentName",LinkedComponentName);
  xml.WriteInteger("LinkedMode",LinkedMode);
  xml.WriteInteger("LinkedIndex",LinkedIndex);
+
+ xml.WriteString("SelectedComponentSName",SelectedComponentSName);
+ xml.WriteString("SelectedComponentStateName",SelectedComponentStateName);
+ xml.WriteString("SelectedComponentPName",SelectedComponentPName);
+ xml.WriteString("SelectedComponentParameterName",SelectedComponentParameterName);
 }
 
 // Загружает параметры интерфейса из xml
@@ -484,6 +502,12 @@ void TVideoOutputFrame::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
  LinkedComponentName=xml.ReadString("LinkedComponentName","");
  LinkedMode=xml.ReadInteger("LinkedMode",1);
  LinkedIndex=xml.ReadInteger("LinkedIndex",0);
+
+ SelectedComponentSName=xml.ReadString("SelectedComponentSName","");
+ SelectedComponentStateName=xml.ReadString("SelectedComponentStateName","");
+ SelectedComponentPName=xml.ReadString("SelectedComponentPName","");
+ SelectedComponentParameterName=xml.ReadString("SelectedComponentParameterName","");
+ UpdateInterface();
 }
 // -----------------------------
 
@@ -814,42 +838,13 @@ void __fastcall TVideoOutputFrame::SendToComponentClick(TObject *Sender)
 
  SelectedComponentPName=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName();
  SelectedComponentParameterName=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentParameterName();
+ SelectedComponentSName="";
+ SelectedComponentStateName="";
  SendToComponentParameter(SelectedComponentPName, SelectedComponentParameterName, FigureIndex);
+ UpdateInterface();
 }
 //---------------------------------------------------------------------------
 
-
-void __fastcall TVideoOutputFrame::PopupMenuPopup(TObject *Sender)
-{
- if(SelectedComponentPName.size())
- {
-  SendTo->Caption=(std::string("Send To ")+SelectedComponentPName+std::string(":")+SelectedComponentParameterName).c_str();
-  SendTo->Enabled=true;
- }
- else
- {
-  SendTo->Caption="Send To ";
-  SendTo->Enabled=false;
- }
-
- if(SelectedComponentSName.size())
- {
-  SendToState->Caption=(std::string("Send To ")+SelectedComponentSName+std::string(":")+SelectedComponentStateName).c_str();
-  SendToState->Enabled=true;
- }
- else
- {
-  SendToState->Caption="Send To ";
-  SendToState->Enabled=false;
- }
-}
-//---------------------------------------------------------------------------
-
-void __fastcall TVideoOutputFrame::SendToClick(TObject *Sender)
-{
- SendToComponentParameter(SelectedComponentPName, SelectedComponentParameterName, FigureIndex);
-}
-//---------------------------------------------------------------------------
 
 void __fastcall TVideoOutputFrame::SendToComponentState1Click(TObject *Sender)
 {
@@ -858,14 +853,12 @@ void __fastcall TVideoOutputFrame::SendToComponentState1Click(TObject *Sender)
 
  SelectedComponentSName=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName();
  SelectedComponentStateName=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentStateName();
- SendToComponentParameter(SelectedComponentSName, SelectedComponentStateName, FigureIndex);
+ SelectedComponentPName="";
+ SelectedComponentParameterName="";
+ SendToComponentState(SelectedComponentSName, SelectedComponentStateName, FigureIndex);
+ UpdateInterface();
 }
 //---------------------------------------------------------------------------
-
-void __fastcall TVideoOutputFrame::SendToStateClick(TObject *Sender)
-{
- SendToComponentState(SelectedComponentSName, SelectedComponentStateName, FigureIndex);
-}
 //---------------------------------------------------------------------------
 
 void __fastcall TVideoOutputFrame::SendImageToComponentOutput1Click(TObject *Sender)
@@ -887,6 +880,34 @@ void __fastcall TVideoOutputFrame::SendImageToComponentInput1Click(TObject *Send
  LinkedMode=0;
  LinkedComponentName=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongId();
  LinkedIndex=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoOutputFrame::Parameter1Click(TObject *Sender)
+{
+ SendToComponentClick(Sender);
+ UpdateInterface();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoOutputFrame::State1Click(TObject *Sender)
+{
+ SendToComponentState1Click(Sender);
+ UpdateInterface();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoOutputFrame::Button1Click(TObject *Sender)
+{
+ if(!SelectedComponentSName.empty())
+ {
+  SendToComponentState(SelectedComponentSName, SelectedComponentStateName, FigureIndex);
+ }
+ else
+ if(!SelectedComponentPName.empty())
+ {
+  SendToComponentParameter(SelectedComponentPName, SelectedComponentParameterName, FigureIndex);
+ }
 }
 //---------------------------------------------------------------------------
 
