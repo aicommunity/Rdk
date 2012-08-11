@@ -7,6 +7,7 @@
 #include "VideoOutputFrameUnit.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
+#pragma link "TUVisualControllerFormUnit"
 #pragma resource "*.dfm"
 TVideoOutputToolsForm *VideoOutputToolsForm;
 
@@ -162,6 +163,7 @@ void __fastcall TVideoOutputToolsForm::DelAllPointsButtonClick(TObject *Sender)
  MyVideoOutputFrame->UpdateVideo();
 }
 //---------------------------------------------------------------------------
+
 
 
 

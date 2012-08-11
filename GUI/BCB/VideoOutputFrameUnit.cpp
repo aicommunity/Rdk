@@ -389,6 +389,9 @@ void TVideoOutputFrame::SetSampleGeometryGraphics(RDK::MGraphics<double,2>& samp
 // Отправляет набор точек в параметр компонента
 void TVideoOutputFrame::SendToComponentParameter(const std::string &stringid, const std::string &parameter_name, int figure_index)
 {
+ if(figure_index<0)
+  return;
+
  const std::vector<RDK::MVector<double,2> > &points=GeometryGraphics.GetGeometry(figure_index).GetVertex().GetVertex();
  RDK::WriteParameterValue(stringid, parameter_name, points);
 }
@@ -396,6 +399,9 @@ void TVideoOutputFrame::SendToComponentParameter(const std::string &stringid, co
 // Отправляет набор точек в переменную состояния компонента
 void TVideoOutputFrame::SendToComponentState(const std::string &stringid, const std::string &state_name, int figure_index)
 {
+ if(figure_index<0)
+  return;
+
  const std::vector<RDK::MVector<double,2> > &points=GeometryGraphics.GetGeometry(figure_index).GetVertex().GetVertex();
  RDK::WriteStateValue(stringid, state_name, points);
 }
@@ -712,8 +718,23 @@ void __fastcall TVideoOutputFrame::ImageMouseMove(TObject *Sender,
 //---------------------------------------------------------------------------
 
 void __fastcall TVideoOutputFrame::ImageMouseUp(TObject *Sender,
-      TMouseButton Button, TShiftState Shift, int X, int Y)
+	  TMouseButton Button, TShiftState Shift, int X, int Y)
 {
+ if(Button == mbRight)
+ {
+  if(PointIndex<0)
+   return;
+
+  Figure().SetNumVertex(Figure().GetNumVertex()-1);
+  if(PointIndex>=Figure().GetNumVertex())
+   --PointIndex;
+
+  GeometryGraphics.GetGeometry(FigureIndex)=Figure;
+
+  UpdateVideo();
+  return;
+ }
+
  if(!ZoneSelectEnable)
   return;
 
@@ -910,4 +931,5 @@ void __fastcall TVideoOutputFrame::Button1Click(TObject *Sender)
  }
 }
 //---------------------------------------------------------------------------
+
 

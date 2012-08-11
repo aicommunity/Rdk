@@ -11,6 +11,7 @@
 #include <ExtCtrls.hpp>
 #include "myrdk.h"
 #include "TUVisualController.h"
+#include "TUVisualControllerFormUnit.h"
 
 class TVideoOutputFrame;
 //---------------------------------------------------------------------------
