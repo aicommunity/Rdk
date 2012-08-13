@@ -504,6 +504,14 @@ USerStorageXML& operator << (USerStorageXML& storage, const UBVSObject3D &data)
  operator << (storage,data.Size);
  storage.SelectUp();
 
+ storage.AddNode("Angle");
+ operator << (storage,data.Angle);
+ storage.SelectUp();
+
+ storage.AddNode("Shift");
+ operator << (storage,data.Shift);
+ storage.SelectUp();
+
  storage.AddNode("Position");
  operator << (storage,data.Position);
  storage.SelectUp();
@@ -540,6 +548,16 @@ USerStorageXML& operator >> (USerStorageXML& storage, UBVSObject3D &data)
  if(!storage.SelectNode("Size"))
   return storage;
  operator >> (storage,data.Size);
+ storage.SelectUp();
+
+ if(!storage.SelectNode("Angle"))
+  return storage;
+ operator >> (storage,data.Angle);
+ storage.SelectUp();
+
+ if(!storage.SelectNode("Shift"))
+  return storage;
+ operator >> (storage,data.Shift);
  storage.SelectUp();
 
  if(!storage.SelectNode("Position"))

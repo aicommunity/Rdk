@@ -19,7 +19,7 @@ See file license.txt for more information
 //#include <list>
 
 #ifndef M_PI
-#define M_PI 3.141
+#define M_PI 3.1416
 #endif
 
 namespace RDK {
