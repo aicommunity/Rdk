@@ -3021,9 +3021,6 @@ void UEngine::ProcessException(Exception *exception) const
 
  if(ExceptionHandler)
   ExceptionHandler();
-
-// if(exception->GetType() == 1)
-//  throw exception;
 }
 
 
