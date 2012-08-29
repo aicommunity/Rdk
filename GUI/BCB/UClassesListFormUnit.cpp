@@ -7,6 +7,8 @@
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "UClassesListFrameUnit"
+#pragma link "TUVisualControllerFormUnit"
+#pragma link "TUVisualControllerFrameUnit"
 #pragma resource "*.dfm"
 TUClassesListForm *UClassesListForm;
 //---------------------------------------------------------------------------

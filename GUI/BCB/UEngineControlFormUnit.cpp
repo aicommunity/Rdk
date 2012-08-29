@@ -10,6 +10,7 @@
 #include "UComponentLinksFormUnit.h"
 #include "UEngineMonitorFormUnit.h"
 #include "UComponentsPerformanceFormUnit.h"
+#include "UClassesListFormUnit.h"
 #include "UWatchFormUnit.h"
 
 //---------------------------------------------------------------------------
@@ -47,6 +48,8 @@ void TUEngineControlForm::AUpdateInterface(void)
  }
 
  StatusBar->SimpleText=UEngineMonitorForm->EngineMonitorFrame->StatusBar->SimpleText;
+ StatusBar->Repaint();
+ StatusBar->Update();
 }
 
 // Сохраняет параметры интерфейса в xml
@@ -160,6 +163,12 @@ void TUEngineControlForm::SaveProject(void)
   else
    UComponentsControlForm->ComponentsControlFrame->SaveModelToFile(modelfilename);
  }
+ else
+ {
+  ProjectXml.WriteString("ModelFileName","model.xml");
+  UComponentsControlForm->ComponentsControlFrame->SaveModelToFile(ProjectPath+"model.xml");
+ }
+
 
  String paramsfilename=ProjectXml.ReadString("ParametersFileName","").c_str();
  if(paramsfilename.Length() == 0)
@@ -299,6 +308,25 @@ void __fastcall TUEngineControlForm::SaveProjectItemClick(TObject *Sender)
 void __fastcall TUEngineControlForm::WatchWindow1Click(TObject *Sender)
 {
  UWatchForm->Show();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUEngineControlForm::CreateProjectItemClick(TObject *Sender)
+{
+ if(!OpenDialog->Execute())
+  return;
+
+ CreateProject(OpenDialog->FileName);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUEngineControlForm::CreateModelClick(TObject *Sender)
+{
+ if(UClassesListForm->ShowModal() != mrOk)
+  return;
+
+ Model_Destroy();
+ Model_Create(UClassesListForm->ClassesListFrame->GetSelectedId());
 }
 //---------------------------------------------------------------------------
 

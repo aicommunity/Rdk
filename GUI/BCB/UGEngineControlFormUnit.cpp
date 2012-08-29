@@ -11,6 +11,7 @@
 #include "UComponentLinksFormUnit.h"
 #include "UEngineMonitorFormUnit.h"
 #include "VideoOutputFormUnit.h"
+#include "UClassesListFormUnit.h"
 #include "UComponentsPerformanceFormUnit.h"
 #include "rdk_initdll.h"
 
@@ -34,6 +35,8 @@ void TUGEngineControlForm::ABeforeCalculate(void)
 {
  for(int i=0;i<Env_GetNumInputImages();i++)
  {
+  if(!VideoOutputForm->GetVideoOutputFrame(i))
+   continue;
   RDK::UBitmap &source=VideoOutputForm->GetVideoOutputFrame(i)->BmpSource;
 
   if(source.GetByteLength()>0)
@@ -48,7 +51,6 @@ void TUGEngineControlForm::ABeforeCalculate(void)
 // Метод, вызываемый после шага расчета
 void TUGEngineControlForm::AAfterCalculate(void)
 {
- StatusBar->SimpleText=UEngineMonitorForm->EngineMonitorFrame->StatusBar->SimpleText;
 }
 
 void TUGEngineControlForm::AUpdateInterface(void)
@@ -65,6 +67,9 @@ void TUGEngineControlForm::AUpdateInterface(void)
  {
   Caption=Caption+String(" [")+ProjectName+"]";
  }
+ StatusBar->SimpleText=UEngineMonitorForm->EngineMonitorFrame->StatusBar->SimpleText;
+ StatusBar->Repaint();
+ StatusBar->Update();
 }
 
 void __fastcall TUGEngineControlForm::FormShow(TObject *Sender)
@@ -168,8 +173,10 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
 	UComponentsControlForm->ComponentsControlFrame->LoadStatesFromFile(statesfilename);
   }
  }
-
- Model_SetGlobalTimeStep("",GlobalTimeStep);
+ if(Model_Check())
+ {
+  Model_SetGlobalTimeStep("",GlobalTimeStep);
+ }
 
  ProjectXml.SelectNodeRoot(std::string("Project/Interfaces/"));
  RDK::UIVisualControllerStorage::LoadParameters(ProjectXml);
@@ -214,6 +221,11 @@ void TUGEngineControlForm::SaveProject(void)
    UComponentsControlForm->ComponentsControlFrame->SaveModelToFile(ProjectPath+modelfilename);
   else
    UComponentsControlForm->ComponentsControlFrame->SaveModelToFile(modelfilename);
+ }
+ else
+ {
+  ProjectXml.WriteString("ModelFileName","model.xml");
+  UComponentsControlForm->ComponentsControlFrame->SaveModelToFile(ProjectPath+"model.xml");
  }
 
  String paramsfilename=ProjectXml.ReadString("ParametersFileName","").c_str();
@@ -353,18 +365,27 @@ void __fastcall TUGEngineControlForm::SaveModel1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::OpenImage1Click(TObject *Sender)
 {
+ if(!VideoOutputForm->GetActiveVideoOutputFrame())
+  return;
+
  VideoOutputForm->GetActiveVideoOutputFrame()->MyVideoGrabberControlForm->VideoGrabberControlFrame->OpenImageFileButtonClick(Sender);
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUGEngineControlForm::OpenVideo1Click(TObject *Sender)
 {
+ if(!VideoOutputForm->GetActiveVideoOutputFrame())
+  return;
+
  VideoOutputForm->GetActiveVideoOutputFrame()->MyVideoGrabberControlForm->VideoGrabberControlFrame->VFBrowseButtonClick(Sender);
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUGEngineControlForm::CaptureVideo1Click(TObject *Sender)
 {
+ if(!VideoOutputForm->GetActiveVideoOutputFrame())
+  return;
+
  VideoOutputForm->GetActiveVideoOutputFrame()->MyVideoGrabberControlForm->VideoGrabberControlFrame->SelectMode(0);
  VideoOutputForm->GetActiveVideoOutputFrame()->MyVideoGrabberControlForm->Show();
 }
@@ -399,7 +420,22 @@ void __fastcall TUGEngineControlForm::SaveProjectItemClick(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+void __fastcall TUGEngineControlForm::CreateProjectItemClick(TObject *Sender)
+{
+ if(!OpenDialog->Execute())
+  return;
 
+ CreateProject(OpenDialog->FileName);
+}
+//---------------------------------------------------------------------------
 
+void __fastcall TUGEngineControlForm::CreateModelClick(TObject *Sender)
+{
+ if(UClassesListForm->ShowModal() != mrOk)
+  return;
 
+ Model_Destroy();
+ Model_Create(UClassesListForm->ClassesListFrame->GetSelectedId());
+}
+//---------------------------------------------------------------------------
 

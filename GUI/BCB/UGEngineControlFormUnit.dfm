@@ -2,8 +2,8 @@ object UGEngineControlForm: TUGEngineControlForm
   Left = 0
   Top = 0
   Caption = 'Engine Control'
-  ClientHeight = 64
-  ClientWidth = 823
+  ClientHeight = 116
+  ClientWidth = 522
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -19,17 +19,19 @@ object UGEngineControlForm: TUGEngineControlForm
   TextHeight = 13
   object Panel1: TPanel
     Left = 0
-    Top = 44
-    Width = 823
+    Top = 96
+    Width = 522
     Height = 1
     Align = alClient
     TabOrder = 0
+    ExplicitTop = 44
+    ExplicitWidth = 823
   end
   object ToolBar: TToolBar
     Left = 0
     Top = 0
-    Width = 823
-    Height = 44
+    Width = 522
+    Height = 96
     AutoSize = True
     ButtonHeight = 44
     ButtonWidth = 87
@@ -37,8 +39,16 @@ object UGEngineControlForm: TUGEngineControlForm
     Images = ImageList
     ShowCaptions = True
     TabOrder = 1
-    object ToolButton1: TToolButton
+    ExplicitWidth = 823
+    object ToolButton17: TToolButton
       Left = 0
+      Top = 0
+      Caption = 'Create Project'
+      ImageIndex = 21
+      MenuItem = CreateProjectItem
+    end
+    object ToolButton1: TToolButton
+      Left = 87
       Top = 0
       AutoSize = True
       Caption = 'Load Project'
@@ -46,7 +56,7 @@ object UGEngineControlForm: TUGEngineControlForm
       MenuItem = LoadProjectItem
     end
     object ToolButton2: TToolButton
-      Left = 71
+      Left = 158
       Top = 0
       AutoSize = True
       Caption = 'Save Project'
@@ -54,15 +64,22 @@ object UGEngineControlForm: TUGEngineControlForm
       MenuItem = SaveProjectItem
     end
     object ToolButton3: TToolButton
-      Left = 143
+      Left = 230
       Top = 0
       Width = 8
       Caption = 'ToolButton3'
       ImageIndex = 2
       Style = tbsSeparator
     end
+    object ToolButton18: TToolButton
+      Left = 238
+      Top = 0
+      Caption = 'Create Model'
+      ImageIndex = 24
+      MenuItem = CreateModel
+    end
     object ToolButton4: TToolButton
-      Left = 151
+      Left = 325
       Top = 0
       AutoSize = True
       Caption = 'Load Model'
@@ -70,7 +87,7 @@ object UGEngineControlForm: TUGEngineControlForm
       MenuItem = LoadModel1
     end
     object ToolButton5: TToolButton
-      Left = 216
+      Left = 390
       Top = 0
       AutoSize = True
       Caption = 'Save Model'
@@ -78,88 +95,89 @@ object UGEngineControlForm: TUGEngineControlForm
       MenuItem = SaveModel1
     end
     object ToolButton7: TToolButton
-      Left = 282
+      Left = 0
       Top = 0
       Width = 8
       Caption = 'ToolButton7'
       ImageIndex = 11
+      Wrap = True
       Style = tbsSeparator
     end
     object ToolButton6: TToolButton
-      Left = 290
-      Top = 0
+      Left = 0
+      Top = 52
       AutoSize = True
       Caption = 'Capture Video'
       ImageIndex = 4
       MenuItem = CaptureVideo1
     end
     object ToolButton8: TToolButton
-      Left = 369
-      Top = 0
+      Left = 79
+      Top = 52
       AutoSize = True
       Caption = 'Open Video File'
       ImageIndex = 5
       MenuItem = OpenVideo1
     end
     object ToolButton9: TToolButton
-      Left = 454
-      Top = 0
+      Left = 164
+      Top = 52
       AutoSize = True
       Caption = 'Open Image'
       ImageIndex = 6
       MenuItem = OpenImage1
     end
     object ToolButton11: TToolButton
-      Left = 524
-      Top = 0
+      Left = 234
+      Top = 52
       Width = 8
       Caption = 'ToolButton11'
       ImageIndex = 8
       Style = tbsSeparator
     end
     object ToolButton10: TToolButton
-      Left = 532
-      Top = 0
+      Left = 242
+      Top = 52
       AutoSize = True
       Caption = 'Start'
       ImageIndex = 7
       MenuItem = Start1
     end
     object ToolButton12: TToolButton
-      Left = 567
-      Top = 0
+      Left = 277
+      Top = 52
       AutoSize = True
       Caption = 'Pause'
       ImageIndex = 8
       MenuItem = Pause1
     end
     object ToolButton13: TToolButton
-      Left = 607
-      Top = 0
+      Left = 317
+      Top = 52
       AutoSize = True
       Caption = 'Reset'
       ImageIndex = 9
       MenuItem = Reset1
     end
     object ToolButton16: TToolButton
-      Left = 646
-      Top = 0
+      Left = 356
+      Top = 52
       AutoSize = True
       Caption = 'Step'
       ImageIndex = 20
       MenuItem = Step1
     end
     object ToolButton14: TToolButton
-      Left = 679
-      Top = 0
+      Left = 389
+      Top = 52
       Width = 8
       Caption = 'ToolButton14'
       ImageIndex = 10
       Style = tbsSeparator
     end
     object ToolButton15: TToolButton
-      Left = 687
-      Top = 0
+      Left = 397
+      Top = 52
       AutoSize = True
       Caption = 'Window'
       ImageIndex = 10
@@ -169,11 +187,13 @@ object UGEngineControlForm: TUGEngineControlForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 45
-    Width = 823
+    Top = 97
+    Width = 522
     Height = 19
     Panels = <>
     SimplePanel = True
+    ExplicitTop = 45
+    ExplicitWidth = 823
   end
   object MainMenu: TMainMenu
     Images = ImageList
@@ -181,6 +201,11 @@ object UGEngineControlForm: TUGEngineControlForm
     Top = 40
     object File1: TMenuItem
       Caption = 'File'
+      object CreateProjectItem: TMenuItem
+        Caption = 'Create Project'
+        ImageIndex = 21
+        OnClick = CreateProjectItemClick
+      end
       object LoadProjectItem: TMenuItem
         Caption = 'Load Project'
         ImageIndex = 0
@@ -193,6 +218,11 @@ object UGEngineControlForm: TUGEngineControlForm
       end
       object N2: TMenuItem
         Caption = '-'
+      end
+      object CreateModel: TMenuItem
+        Caption = 'Create Model'
+        ImageIndex = 24
+        OnClick = CreateModelClick
       end
       object LoadModel1: TMenuItem
         Caption = 'Load Model'
@@ -282,7 +312,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 544
     Top = 40
     Bitmap = {
-      494C01011B006000700010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B006000880010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

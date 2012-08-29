@@ -32,6 +32,13 @@ void TUEngineMonitorFrame::SetCalculateMode(int value)
 
 void TUEngineMonitorFrame::AUpdateInterface(void)
 {
+ if(!Model_Check())
+ {
+  StatusBar->SimpleText="Model not exist!";
+  StatusBar->Repaint();
+  StatusBar->Update();
+  return;
+ }
  StatusBar->SimpleText=String("Model Time=")+FloatToStrF(Model_GetDoubleTime(),ffFixed,3,3)
 				+String("; Real Time=")+FloatToStrF(Model_GetDoubleRealTime(),ffFixed,3,3)
 				+String("; Model Duration Time=")+FloatToStrF(Model_GetFullStepDuration("")/1000.0,ffFixed,3,3)
@@ -69,6 +76,12 @@ void __fastcall TUEngineMonitorFrame::Pause1Click(TObject *Sender)
 
 void __fastcall TUEngineMonitorFrame::Reset1Click(TObject *Sender)
 {
+ if(!Model_Check())
+ {
+  RDK::UIVisualControllerStorage::UpdateInterface();
+  return;
+ }
+
  RDK::UIVisualControllerStorage::BeforeReset();
  Env_Reset(0);
  RDK::UIVisualControllerStorage::AfterReset();
@@ -77,6 +90,13 @@ void __fastcall TUEngineMonitorFrame::Reset1Click(TObject *Sender)
 
 void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
 {
+ if(!Model_Check())
+ {
+  Timer->Enabled=false;
+  RDK::UIVisualControllerStorage::UpdateInterface();
+  return;
+ }
+
  RDK::UIVisualControllerStorage::BeforeCalculate();
 
  switch(CalculateMode)

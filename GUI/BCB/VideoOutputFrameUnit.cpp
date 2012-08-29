@@ -100,7 +100,12 @@ void TVideoOutputFrame::InitByAvi(const String &filename)
 void TVideoOutputFrame::InitByBmp(const String &filename)
 {
  StopButtonClick(this);
- LoadBitmapFromFile(AnsiString(filename).c_str(),&BmpSource);
+ try {
+  LoadBitmapFromFile(AnsiString(filename).c_str(),&BmpSource);
+ }
+ catch (EFOpenError &exception) {
+  BmpSource.SetRes(0,0);
+ }
  BmpSource.SetColorModel(RDK::ubmRGB24);
  Mode=0;
  UpdateVideo();
