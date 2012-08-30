@@ -7,7 +7,7 @@ inherited UImagesFrame: TUImagesFrame
     Left = 0
     Top = 0
     Width = 667
-    Height = 585
+    Height = 568
     Align = alClient
     ColCount = 2
     DefaultColWidth = 360
@@ -21,6 +21,23 @@ inherited UImagesFrame: TUImagesFrame
     PopupMenu = PopupMenu
     TabOrder = 0
     OnDrawCell = DrawGridDrawCell
+    ExplicitHeight = 585
+  end
+  object ShowLegendCheckBox: TCheckBox
+    Left = 0
+    Top = 568
+    Width = 667
+    Height = 17
+    Align = alBottom
+    Caption = 'Show legend'
+    Checked = True
+    DoubleBuffered = True
+    ParentDoubleBuffered = False
+    State = cbChecked
+    TabOrder = 1
+    ExplicitLeft = 128
+    ExplicitTop = 432
+    ExplicitWidth = 97
   end
   object PopupMenu: TPopupMenu
     Left = 192

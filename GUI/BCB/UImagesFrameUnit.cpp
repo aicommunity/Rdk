@@ -307,6 +307,7 @@ void TUImagesFrame::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
   }
  }
 
+ xml.WriteBool("ShowLegendCheckBox",ShowLegendCheckBox->Checked);
 }
 
 // Загружает параметры интерфейса из xml
@@ -325,6 +326,9 @@ void TUImagesFrame::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
    ComponentIndexes[i][j]=xml.ReadInteger(std::string("CellIndex")+name,0);
   }
  }
+
+ ShowLegendCheckBox->Checked=xml.ReadBool("ShowLegendCheckBox",true);
+
  UpdateInterface();
 }
 /*
@@ -378,8 +382,10 @@ void __fastcall TUImagesFrame::DrawGridDrawCell(TObject *Sender, int ACol, int A
  if(int(Images.size())<=ACol || int(Images[ACol].size())<=ARow)
   return;
 
-    dynamic_cast<TDrawGrid *>(Sender)->Canvas->
-        StretchDraw(Rect, Images[ACol][ARow]->Picture->Graphic);
+ dynamic_cast<TDrawGrid *>(Sender)->Canvas->
+		StretchDraw(Rect, Images[ACol][ARow]->Picture->Graphic);
+ if(ShowLegendCheckBox->Checked)
+  dynamic_cast<TDrawGrid *>(Sender)->Canvas->TextOut(Rect.Left,Rect.Top,Model_GetComponentLongName(StringIds[ACol][ARow].c_str()));
 }
 //---------------------------------------------------------------------------
 

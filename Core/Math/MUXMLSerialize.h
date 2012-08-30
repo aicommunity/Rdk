@@ -81,7 +81,7 @@ USerStorageXML& operator << (USerStorageXML& storage, const MVector<T,Rows> &dat
  {
   stream<<data.Data1D[i];
   if(i<Rows-1)
-   stream<<" ";
+   stream<<"\t";
  }
 
  storage.SetNodeText(stream.str());
@@ -107,13 +107,12 @@ USerStorageXML& operator << (USerStorageXML& storage, const MMatrix<T,Rows,Cols>
 {
  std::stringstream stream;
 
+ stream<<endl;
  for(unsigned i=0;i<Rows;i++)
  {
   for(unsigned j=0;j<Cols;j++)
   {
-   stream<<data.Data[i][j]<<" ";
-//   if(i<Cols-1)
-//	stream<<" ";
+   stream<<data.Data[i][j]<<"\t";
   }
   if(i<Rows-1)
    stream<<endl;

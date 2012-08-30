@@ -41,6 +41,7 @@ __published:    // IDE-managed Components
 	TMenuItem *AddRow;
 	TMenuItem *DeleteColumn;
 	TMenuItem *DeleteRow;
+	TCheckBox *ShowLegendCheckBox;
     void __fastcall DrawGridDrawCell(TObject *Sender, int ACol, int ARow, TRect &Rect,
           TGridDrawState State);
 	void __fastcall SaveToBmpClick(TObject *Sender);

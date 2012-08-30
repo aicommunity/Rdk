@@ -110,7 +110,9 @@ void TUComponentsListFrame::UpdateParameters(void)
  if(ShowXMLComponentParameters)
  {
   Panel1->Visible=true;
-  ParametersRichEdit->Text=Model_GetComponentParametersEx(GetSelectedComponentLongId().c_str());
+  TempParams=Model_GetComponentParametersEx(GetSelectedComponentLongId().c_str());
+  if(TempParams.Length() != LastParams.Length() || TempParams != LastParams)
+   ParametersRichEdit->Text=LastParams=TempParams;
  }
  else
  {
@@ -130,7 +132,9 @@ void TUComponentsListFrame::UpdateState(void)
  if(ShowXMLComponentParameters)
  {
   Panel1->Visible=true;
-  StateRichEdit->Text=Model_GetComponentState(GetSelectedComponentLongId().c_str());
+  TempStates=Model_GetComponentState(GetSelectedComponentLongId().c_str());
+  if(TempStates.Length() != LastStates.Length() || TempStates != LastStates)
+   StateRichEdit->Text=LastStates=TempStates;
  }
  else
  {

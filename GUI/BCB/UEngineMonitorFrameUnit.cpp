@@ -39,10 +39,18 @@ void TUEngineMonitorFrame::AUpdateInterface(void)
   StatusBar->Update();
   return;
  }
+
+ double fps=0;
+ double instperf=Model_GetInstantPerformance("");
+ if(fabs(instperf)>0.0001)
+  fps=Model_GetTimeStep("")/instperf;
+
+
  StatusBar->SimpleText=String("Model Time=")+FloatToStrF(Model_GetDoubleTime(),ffFixed,3,3)
 				+String("; Real Time=")+FloatToStrF(Model_GetDoubleRealTime(),ffFixed,3,3)
 				+String("; Model Duration Time=")+FloatToStrF(Model_GetFullStepDuration("")/1000.0,ffFixed,3,3)
-				+String("; Model Performance=")+FloatToStrF(Model_GetInstantPerformance(""),ffFixed,3,3);
+				+String("; Model Performance=")+FloatToStrF(instperf,ffFixed,3,3)
+				+String(" (")+FloatToStrF(fps,ffFixed,3,3)+String(" FPS)");
  StatusBar->Repaint();
  StatusBar->Update();
 }

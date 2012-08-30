@@ -117,6 +117,18 @@ protected:		// User declarations
 protected: // ¬ременные переменные		// Ёлемент который должен быть найден и выделен после обновлени€ списка
 		int SelectedId;
 
+		// —тарые значени€ прочитанных параметров
+		AnsiString LastParams;
+
+		// ¬ременна€ переменна€ дл€ чтени€ параметров
+		AnsiString TempParams;
+
+		// —тарые значени€ прочитанных переменных состо€ни€
+		AnsiString LastStates;
+
+		// ¬ременна€ переменна€ дл€ чтени€ переменных состо€ни€
+		AnsiString TempStates;
+
 public:
 	__fastcall TUComponentsListFrame(TComponent* Owner);
 
