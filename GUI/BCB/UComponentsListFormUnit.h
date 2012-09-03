@@ -7,12 +7,17 @@
 #include <Vcl.Controls.hpp>
 #include <Vcl.StdCtrls.hpp>
 #include <Vcl.Forms.hpp>
-#include "UComponentsListFrameUnit.h"
-#include "UComponentsListFrameUnit.h"
 #include <Vcl.ExtCtrls.hpp>
+#include "UComponentsListFrameUnit.h"
+#include "UComponentsListFrameUnit.h"
 #include "TUVisualController.h"
 #include "TUVisualControllerFormUnit.h"
 #include "TUVisualControllerFrameUnit.h"
+#include <Classes.hpp>
+#include <Controls.hpp>
+#include <ExtCtrls.hpp>
+#include <Forms.hpp>
+#include <StdCtrls.hpp>
 //---------------------------------------------------------------------------
 class TUComponentsListForm : public TUVisualControllerForm
 {

@@ -8,6 +8,8 @@
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "UComponentsPerformanceFrameUnit"
+#pragma link "TUVisualControllerFormUnit"
+#pragma link "TUVisualControllerFrameUnit"
 #pragma resource "*.dfm"
 TUComponentsPerformanceForm *UComponentsPerformanceForm;
 //---------------------------------------------------------------------------

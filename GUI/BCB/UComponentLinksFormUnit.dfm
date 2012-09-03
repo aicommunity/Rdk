@@ -19,6 +19,12 @@ object UComponentLinksForm: TUComponentLinksForm
     Width = 820
     Height = 535
     Align = alClient
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
     TabOrder = 0
     ExplicitWidth = 820
     ExplicitHeight = 535

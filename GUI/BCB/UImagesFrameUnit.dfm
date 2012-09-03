@@ -1,13 +1,13 @@
 inherited UImagesFrame: TUImagesFrame
-  Width = 667
-  Height = 585
-  ExplicitWidth = 667
-  ExplicitHeight = 585
+  Width = 729
+  Height = 505
+  ExplicitWidth = 729
+  ExplicitHeight = 505
   object DrawGrid: TDrawGrid
     Left = 0
     Top = 0
-    Width = 667
-    Height = 568
+    Width = 729
+    Height = 488
     Align = alClient
     ColCount = 2
     DefaultColWidth = 360
@@ -21,12 +21,13 @@ inherited UImagesFrame: TUImagesFrame
     PopupMenu = PopupMenu
     TabOrder = 0
     OnDrawCell = DrawGridDrawCell
-    ExplicitHeight = 585
+    ExplicitWidth = 667
+    ExplicitHeight = 568
   end
   object ShowLegendCheckBox: TCheckBox
     Left = 0
-    Top = 568
-    Width = 667
+    Top = 488
+    Width = 729
     Height = 17
     Align = alBottom
     Caption = 'Show legend'
@@ -35,9 +36,8 @@ inherited UImagesFrame: TUImagesFrame
     ParentDoubleBuffered = False
     State = cbChecked
     TabOrder = 1
-    ExplicitLeft = 128
-    ExplicitTop = 432
-    ExplicitWidth = 97
+    ExplicitTop = 568
+    ExplicitWidth = 667
   end
   object PopupMenu: TPopupMenu
     Left = 192

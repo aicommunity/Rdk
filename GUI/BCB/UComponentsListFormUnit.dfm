@@ -64,10 +64,6 @@ object UComponentsListForm: TUComponentsListForm
           inherited StateHeaderControl: THeaderControl
             ExplicitWidth = 186
           end
-          inherited StateRichEdit: TRichEdit
-            ExplicitWidth = 186
-            ExplicitHeight = 317
-          end
         end
         inherited TabSheet3: TTabSheet
           ExplicitWidth = 186

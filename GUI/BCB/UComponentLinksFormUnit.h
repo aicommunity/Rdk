@@ -9,6 +9,8 @@
 #include <Vcl.Forms.hpp>
 #include "UComponentLinksFrameUnit.h"
 #include "TUVisualController.h"
+#include "TUVisualControllerFormUnit.h"
+#include "TUVisualControllerFrameUnit.h"
 //---------------------------------------------------------------------------
 class TUComponentLinksForm : public TUVisualControllerForm
 {
