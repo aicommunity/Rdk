@@ -1408,12 +1408,13 @@ void UAContainer::ForceComponentReCalculation(void)
 // --------------------------
 void UAContainer::AInit(void)
 {
- return;
 }
+
 void UAContainer::AUnInit(void)
 {
- return;
 }
+// --------------------------
+
 // --------------------------
 // Скрытые методы управления таблицей соответсвий компонент
 // --------------------------
