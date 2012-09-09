@@ -30,7 +30,7 @@ class UAComponent: public UModule
 {
 friend class UAStorage;
 public: // Классы описания исключений
-class IException: public Exception {};
+class IException: public UException {};
 
 protected: // Основные свойства
 // Указатель на владельца этим объектом

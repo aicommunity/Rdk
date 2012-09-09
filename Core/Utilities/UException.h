@@ -7,7 +7,7 @@
 namespace RDK {
 
 /* Базовый класс исключений */
-class Exception
+class UException
 {
 protected: // Общие данные
 // Последний порядковый номер исключения
@@ -36,9 +36,9 @@ public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-Exception(void);
-Exception(const Exception &copy);
-virtual ~Exception(void);
+UException(void);
+UException(const UException &copy);
+virtual ~UException(void);
 // --------------------------
 
 // --------------------------
@@ -76,7 +76,7 @@ virtual std::string CreateLogMessage(void) const;
 
 
 /* Фатальные ошибки (обращение по 0 указателям и т.п.) */
-struct EFatal: public Exception
+struct EFatal: public UException
 {
 // --------------------------
 // Конструкторы и деструкторы
@@ -89,7 +89,7 @@ virtual ~EFatal(void);
 };
 
 /* Ошибки, корректируемые пользователем */
-struct EError: public Exception
+struct EError: public UException
 {
 // --------------------------
 // Конструкторы и деструкторы
@@ -102,7 +102,7 @@ virtual ~EError(void);
 };
 
 /* Предупреждения (например об неэффективном использовании ресурсов) */
-struct EWarning: public Exception
+struct EWarning: public UException
 {
 // --------------------------
 // Конструкторы и деструкторы
@@ -115,7 +115,7 @@ virtual ~EWarning(void);
 };
 
 /* Информационные сообщения, выдача которых инициируется пользователем */
-struct EInfo: public Exception
+struct EInfo: public UException
 {
 // --------------------------
 // Конструкторы и деструкторы

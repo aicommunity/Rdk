@@ -181,7 +181,7 @@ virtual void DelLookupClass(const std::string &name);
 // Исключения
 // --------------------------
 public:
-class IException: public Exception {};
+class IException: public UException {};
 
 // Попытка работы с классом по идентификатору classid отсутствующим в хранилище
 struct EClassIdNotExist: public EIdNotExist

@@ -7,6 +7,7 @@
 #include <Vcl.Controls.hpp>
 #include <Vcl.StdCtrls.hpp>
 #include <Vcl.Forms.hpp>
+#include <string>
 #include "myrdk.h"
 //---------------------------------------------------------------------------
 #pragma warn -8130
@@ -19,6 +20,9 @@ public:		// User declarations
 	__fastcall ~TUVisualControllerFrame(void);
 
 bool UpdateInterfaceFlag;
+
+// Длинное имя управляемого компонента модели (опционально)
+std::string ComponentControlName;
 
 public:
 // -----------------------------
@@ -54,6 +58,11 @@ virtual void ASaveParameters(RDK::Serialize::USerStorageXML &xml);
 // Загружает параметры интерфейса из xml
 virtual void LoadParameters(RDK::Serialize::USerStorageXML &xml);
 virtual void ALoadParameters(RDK::Serialize::USerStorageXML &xml);
+
+// Управление длинным именем управляемого компонента
+// Длинное имя управляемого компонента модели (опционально)
+const std::string& GetComponentControlName(void) const;
+bool SetComponentControlName(const std::string& name);
 // -----------------------------
 };
 //---------------------------------------------------------------------------

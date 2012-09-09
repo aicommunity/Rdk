@@ -166,7 +166,7 @@ virtual UId PopObject(UObjectsStorageIterator instance_iterator, list<UInstances
 // Исключения
 // --------------------------
 public: // Классы описания исключений
-class IException: public Exception {};
+class IException: public UException {};
 
 public:
 // Попытка работы с классом по идентификатору, отсутствующему в хранилище

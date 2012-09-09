@@ -127,10 +127,6 @@ inherited UComponentsListFrame: TUComponentsListFrame
       object TabSheet3: TTabSheet
         Caption = 'I/O'
         ImageIndex = 2
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object Splitter2: TSplitter
           Left = 0
           Top = 273
@@ -196,10 +192,6 @@ inherited UComponentsListFrame: TUComponentsListFrame
       object TabSheet4: TTabSheet
         Caption = 'Parameters List'
         ImageIndex = 3
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object HeaderControl1: THeaderControl
           Left = 0
           Top = 0
@@ -220,19 +212,11 @@ inherited UComponentsListFrame: TUComponentsListFrame
           OnClick = ParametersListStringGridClick
           OnDblClick = ParametersListStringGridDblClick
           OnSelectCell = ParametersListStringGridSelectCell
-          ExplicitLeft = 2
-          ExplicitTop = 15
-          ExplicitWidth = 372
-          ExplicitHeight = 222
         end
       end
       object TabSheet5: TTabSheet
         Caption = 'States List'
         ImageIndex = 4
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object HeaderControl2: THeaderControl
           Left = 0
           Top = 0
@@ -253,10 +237,6 @@ inherited UComponentsListFrame: TUComponentsListFrame
           OnClick = StatesListStringGridClick
           OnDblClick = StatesListStringGridDblClick
           OnSelectCell = StatesListStringGridSelectCell
-          ExplicitLeft = 2
-          ExplicitTop = 15
-          ExplicitWidth = 372
-          ExplicitHeight = 222
         end
       end
     end
@@ -276,6 +256,7 @@ inherited UComponentsListFrame: TUComponentsListFrame
       Align = alClient
       FixedCols = 0
       Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRowSelect]
+      PopupMenu = PopupMenu
       TabOrder = 0
       OnClick = StringGridClick
       OnDblClick = StringGridDblClick
@@ -294,6 +275,14 @@ inherited UComponentsListFrame: TUComponentsListFrame
       OverFlow = True
       ShowHint = False
       ParentShowHint = False
+    end
+  end
+  object PopupMenu: TPopupMenu
+    Left = 288
+    Top = 288
+    object GUI1: TMenuItem
+      Caption = 'GUI'
+      OnClick = GUI1Click
     end
   end
 end

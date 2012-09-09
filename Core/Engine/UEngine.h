@@ -86,7 +86,7 @@ RDK::UEPtr<UAContainerEnvironment> Environment;
 
 protected: // Обработка исключений
 // Лог исключений системы
-mutable vector<USharedPtr<Exception> > ExceptionsLog;
+mutable vector<USharedPtr<UException> > ExceptionsLog;
 
 // Максимальное число хранимых исключений
 // Если 0, то неограниченно
@@ -414,6 +414,10 @@ virtual const char* Model_GetComponentLongName(const char* stringid, const char*
 // Если owner_level_stringid не задан, то имя формируется до уровня текущего компонента
 virtual const char* Model_GetComponentLongId(const char* stringid, const char* owner_level_stringid=0);
 
+// Возвращает имя класса компонента в хранилище по длинному 'stringid'
+// если stringid - пустая строка, то возвращает имя класса модели
+virtual const char* Model_GetComponentClassName(const char* stringid);
+
 // Возвращает параметры компонента по идентификатору
 // Память для buffer должна быть выделена!
 virtual const char* Model_GetComponentParameters(const char *stringid);
@@ -587,13 +591,13 @@ double Model_GetInstantPerformance(const char *stringid) const;
 // Методы управления исключениями
 // --------------------------
 // Обрабатывает возникшее исключение
-virtual void ProcessException(Exception *exception) const;
+virtual void ProcessException(UException *exception) const;
 
 // Формирует строку лога об исключении
-//virtual string CreateLogMessage(Exception *exception) const;
+//virtual string CreateLogMessage(UException *exception) const;
 
 // Возвращает массив зарегистрированных исключений
-const vector<USharedPtr<Exception> > GetExceptionsLog(void) const;
+const vector<USharedPtr<UException> > GetExceptionsLog(void) const;
 
 // Максимальное число хранимых исключений
 // Если 0, то неограниченно

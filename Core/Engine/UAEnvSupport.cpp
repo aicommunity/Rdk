@@ -285,7 +285,7 @@ UIdVector::EDecodeFail::EDecodeFail(const std::string &stringid, int position)
 // Формирует строку лога об исключении
 std::string UIdVector::EDecodeFail::CreateLogMessage(void) const
 {
- std::string result=Exception::CreateLogMessage();
+ std::string result=UException::CreateLogMessage();
  result+=" StringId=";
  result+=StringId;
  result+=" Position=";

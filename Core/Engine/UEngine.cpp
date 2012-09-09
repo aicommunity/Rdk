@@ -320,7 +320,7 @@ int UEngine::Storage_GetNumClasses(void)
  {
      return Storage->GetNumClasses();
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -337,7 +337,7 @@ void UEngine::Storage_GetClassesList(int *buffer) const
   if(temp.size())
    memcpy(buffer,&temp[0],temp.size()*sizeof(UId));
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -350,7 +350,7 @@ const char * UEngine::Storage_GetClassName(int id) const
  {
   TempString=Storage->FindClassName(id);
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -364,7 +364,7 @@ int UEngine::Storage_GetClassId(const char *name) const
  {
   return Storage->FindClassId(name);
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -380,7 +380,7 @@ bool UEngine::Storage_DelClass(int classid)
  {
   Storage->DelClass(classid);
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -394,7 +394,7 @@ void UEngine::Storage_FreeObjectsStorage(void)
  {
   Storage->FreeObjectsStorage();
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -407,7 +407,7 @@ void UEngine::Storage_ClearObjectsStorage(void)
  {
   Storage->ClearObjectsStorage();
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -420,7 +420,7 @@ int UEngine::Storage_CalcNumObjects(void) const
  {
   return Storage->CalcNumObjects();
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -433,7 +433,7 @@ int UEngine::Storage_CalcNumObjectsById(int classid) const
  {
   return Storage->CalcNumObjects(classid);
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -446,7 +446,7 @@ int UEngine::Storage_CalcNumObjectsByName(const char* classname) const
  {
   return Storage->CalcNumObjects(classname);
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -464,7 +464,7 @@ const char* UEngine::Storage_GetClassDescription(int classid)
   xml.SelectUp();
   xml.Save(TempString);
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -480,7 +480,7 @@ bool UEngine::Storage_SetClassDescription(int classid, const char* description)
   xml.Load(description, sntoa(classid));
   Storage->LoadClassDescription(classid,xml);
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -500,7 +500,7 @@ const char* UEngine::Storage_SaveClassesDescription(void)
   xml.SelectUp();
   xml.Save(TempString);
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -518,7 +518,7 @@ bool UEngine::Storage_LoadClassesDescription(const char* xmltext)
    return false;
   Storage->LoadClassesDescription(xml);
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -538,7 +538,7 @@ const char* UEngine::Storage_SaveCommonClassesDescription(void)
   xml.SelectUp();
   xml.Save(TempString);
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -556,7 +556,7 @@ bool UEngine::Storage_LoadCommonClassesDescription(const char* xmltext)
    return false;
   return Storage->LoadCommonClassesDescription(xml);
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -573,7 +573,7 @@ int UEngine::Env_GetPredefinedStructure(void) const
  {
   return Environment->GetPredefinedStructure();
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -586,7 +586,7 @@ bool UEngine::Env_SetPredefinedStructure(int value)
  {
   return Environment->SetPredefinedStructure(value);
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -602,7 +602,7 @@ bool UEngine::Env_IsStoragePresent(void) const
  {
   return Environment->IsStoragePresent();
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -616,7 +616,7 @@ bool UEngine::Env_IsInit(void) const
  {
   return Environment->IsInit();
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -630,7 +630,7 @@ bool UEngine::Env_IsStructured(void) const
  {
   return Environment->IsStructured();
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -645,7 +645,7 @@ bool UEngine::Env_Init(void)
   Environment->Init();
    return true;
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -660,7 +660,7 @@ bool UEngine::Env_UnInit(void)
   Environment->UnInit();
   return true;
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -674,7 +674,7 @@ bool UEngine::Env_CreateStructure(void)
  {
   return Environment->CreateStructure();
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -688,7 +688,7 @@ bool UEngine::Env_DestroyStructure(void)
  {
   return Environment->DestroyStructure();
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -705,7 +705,7 @@ void UEngine::Env_Destroy(void)
   Storage->ClearClassesStorage();
   Environment->DelAllClassLibraries();
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -718,7 +718,7 @@ int UEngine::Env_LoadStorageLibrary(const char *filename)
  {
   return 0;
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -733,7 +733,7 @@ bool UEngine::Env_DelClassLibraryByIndex(int index)
  {
   return Environment->DelClassLibrary(index);
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -748,7 +748,7 @@ bool UEngine::Env_DelClassLibraryByName(const char *name)
  {
   return Environment->DelClassLibrary(name);
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -763,7 +763,7 @@ bool UEngine::Env_DelAllClassLibraries(void)
  {
   return Environment->DelAllClassLibraries();
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -778,7 +778,7 @@ bool UEngine::Env_BuildStorage(void)
  {
   return Environment->BuildStorage();
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -792,7 +792,7 @@ int UEngine::Env_GetNumClassLibraries(void) const
  {
   return Environment->GetNumClassLibraries();
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -806,7 +806,7 @@ const char * UEngine::Env_GetClassLibraryName(int index)
  {
   TempString=Environment->GetClassLibraryName(index);
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -820,7 +820,7 @@ const char * UEngine::Env_GetClassLibraryVersion(int index)
  {
   TempString=Environment->GetClassLibraryVersion(index);
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -837,7 +837,7 @@ int UEngine::Env_CreateClass(const char* stringid)
  {
   return 0;
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -865,7 +865,7 @@ int UEngine::Env_Calculate(const char* stringid)
   if(!Environment->Calculate())
    return 1;
  }
- catch (RDK::Exception * exception)
+ catch (RDK::UException * exception)
  {
   ProcessException(exception);
  }
@@ -881,7 +881,7 @@ void UEngine::Env_RTCalculate(void)
  {
   Environment->RTCalculate();
  }
- catch (RDK::Exception * exception)
+ catch (RDK::UException * exception)
  {
   ProcessException(exception);
  }
@@ -909,7 +909,7 @@ int UEngine::Env_Reset(const char* stringid)
   if(!Environment->Reset())
    return 1;
  }
- catch (RDK::Exception * exception)
+ catch (RDK::UException * exception)
  {
   ProcessException(exception);
  }
@@ -924,7 +924,7 @@ void UEngine::Env_IncreaseModelTimeByStep(void)
  {
   Environment->IncreaseModelTimeByStep();
  }
- catch (RDK::Exception * exception)
+ catch (RDK::UException * exception)
  {
   ProcessException(exception);
  }
@@ -951,7 +951,7 @@ int UEngine::Env_SelectCurrentComponent(const char *stringid)
    Environment->SelectCurrentComponent(stringid);
   }
  }
- catch (RDK::Exception * exception)
+ catch (RDK::UException * exception)
  {
   ProcessException(exception);
  }
@@ -965,7 +965,7 @@ int UEngine::Env_ResetCurrentComponent(const char *stringid)
  {
   Environment->ResetCurrentComponent();
  }
- catch (RDK::Exception * exception)
+ catch (RDK::UException * exception)
  {
   ProcessException(exception);
  }
@@ -980,7 +980,7 @@ int UEngine::Env_UpCurrentComponent(void)
  {
   Environment->UpCurrentComponent();
  }
- catch (RDK::Exception * exception)
+ catch (RDK::UException * exception)
  {
   ProcessException(exception);
  }
@@ -1005,7 +1005,7 @@ int UEngine::Env_DownCurrentComponent(const char *stringid)
    Environment->DownCurrentComponent(stringid);
   }
  }
- catch (RDK::Exception * exception)
+ catch (RDK::UException * exception)
  {
   ProcessException(exception);
  }
@@ -1019,7 +1019,7 @@ const char* UEngine::Env_GetCurrentComponentName(void) const
  {
   Environment->GetCurrentComponent()->GetLongName(Environment->GetModel(),TempString);
  }
- catch (RDK::Exception * exception)
+ catch (RDK::UException * exception)
  {
   ProcessException(exception);
  }
@@ -1035,7 +1035,7 @@ const char* UEngine::Env_GetCurrentComponentId(void) const
   Environment->GetCurrentComponent()->GetLongId(Environment->GetModel(),longid);
   longid.EncodeToString(TempString);
  }
- catch (RDK::Exception * exception)
+ catch (RDK::UException * exception)
  {
   ProcessException(exception);
  }
@@ -1052,7 +1052,7 @@ int UEngine::Model_Destroy(void)
   if(Environment->DestroyModel())
    return 0;
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -1069,7 +1069,7 @@ int UEngine::Model_Create(int classid)
   if(Environment->CreateModel(classid))
    return 0;
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -1089,7 +1089,7 @@ int UEngine::Model_Clear(void)
 
   model->DelAllComponents();
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -1108,7 +1108,7 @@ bool UEngine::Model_Check(void)
 
   return true;
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -1135,7 +1135,7 @@ int UEngine::Model_AddComponent(const char* stringid, int classid)
 
   return destcont->AddComponent(cont);
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -1155,7 +1155,7 @@ int UEngine::Model_DelComponent(const char* stringid, int id)
 
   destcont->DelComponent(id);
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -1176,7 +1176,7 @@ int UEngine::Model_GetNumComponents(const char* stringid)
 
   return destcont->GetNumComponents();
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -1200,7 +1200,7 @@ int UEngine::Model_GetComponentsList(const char* stringid, int *buffer)
   if(tempbuffer.size())
    memcpy(buffer,&tempbuffer[0],tempbuffer.size()*sizeof(int));
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -1237,7 +1237,7 @@ const char* UEngine::Model_GetConnectorsList(const char* stringid,
 
   XmlStorage.Save(TempString);
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -1272,7 +1272,7 @@ const char* UEngine::Model_GetItemsList(const char* stringid,
 
   XmlStorage.Save(TempString);
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -1306,7 +1306,7 @@ const char* UEngine::Model_GetNetsList(const char* stringid,
 
   XmlStorage.Save(TempString);
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -1330,7 +1330,7 @@ const char* UEngine::Model_GetComponentName(const char* stringid)
 
   return destcont->GetName().c_str();
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -1356,7 +1356,7 @@ const char* UEngine::Model_GetComponentLongName(const char* stringid, const char
 
   return destcont->GetLongName(owner_level,TempString).c_str();
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -1385,13 +1385,34 @@ const char* UEngine::Model_GetComponentLongId(const char* stringid, const char* 
   id.EncodeToString(TempString);
   return TempString.c_str();
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
  return TempString.c_str();
 }
 
+// Возвращает имя класса компонента в хранилище по длинному 'stringid'
+// если stringid - пустая строка, то возвращает имя класса модели
+const char* UEngine::Model_GetComponentClassName(const char* stringid)
+{
+ try
+ {
+  TempString="";
+  UEPtr<RDK::UAContainer> destcont=FindComponent(stringid);
+
+  if(!destcont)
+   return TempString.c_str();
+
+  TempString=Storage->FindClassName(destcont->GetClass());
+  return TempString.c_str();
+ }
+ catch (UException * exception)
+ {
+  ProcessException(exception);
+ }
+ return TempString.c_str();
+}
 
 // Возвращает параметры компонента по идентификатору
 const char* UEngine::Model_GetComponentParameters(const char *stringid)
@@ -1414,7 +1435,7 @@ const char* UEngine::Model_GetComponentParameters(const char *stringid)
   XmlStorage.Save(TempString);
   return TempString.c_str();
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -1428,7 +1449,7 @@ const char* UEngine::Model_GetComponentSelectedParameters(const char *stringid)
  {
   return 0;
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -1455,7 +1476,7 @@ const char* UEngine::Model_GetComponentParametersEx(const char *stringid)
   XmlStorage.Save(TempString);
   return TempString.c_str();
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -1475,7 +1496,7 @@ const char * UEngine::Model_GetComponentParameterValue(const char *stringid, con
   cont->GetPropertyValue(paramname,TempString);
   return TempString.c_str();
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -1498,7 +1519,7 @@ bool UEngine::Model_SetComponentParameters(const char *stringid, const char* buf
    return false;
   XmlStorage.SelectUp();
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -1517,7 +1538,7 @@ void UEngine::Model_SetComponentParameterValue(const char *stringid, const char 
 
   cont->SetPropertyValue(paramname,buffer);
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -1559,7 +1580,7 @@ int UEngine::Model_CreateLink(const char* stringid1, int output_number, const ch
   if(!res)
    return -3;
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -1612,7 +1633,7 @@ int UEngine::Model_ChainLinking(const char* stringid)
    cont->CreateLink(id1,j,ForbiddenId,j);
    */
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -1649,7 +1670,7 @@ int UEngine::Model_ParallelLinking(const char* stringid)
 	cont->CreateLink(id1,j,id2,j);
   }
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -1693,7 +1714,7 @@ int UEngine::Model_BreakLink(const char* stringid1, int output_number, const cha
   if(!res)
    return -3;
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -1713,7 +1734,7 @@ int UEngine::Model_BreakAllLinks(void)
 
   model->BreakLinks();
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -1733,7 +1754,7 @@ int UEngine::Model_BreakAllComponentLinks(const char* stringid)
 
   model->BreakLinks();
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -1748,7 +1769,7 @@ int UEngine::Model_BreakAllComponentInputLinks(const char* stringid)
  {
   return 0;
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -1762,7 +1783,7 @@ int UEngine::Model_BreakAllComponentOutputLinks(const char* stringid)
  {
   return 0;
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -1788,7 +1809,7 @@ const char* UEngine::Model_GetComponentInternalLinks(const char* stringid)
   TempString="";
   XmlStorage.Save(TempString);
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -1810,7 +1831,7 @@ int UEngine::Model_SetComponentInternalLinks(const char* stringid, const char* b
   if(!Model_SetComponentInternalLinks(cont,&XmlStorage))
    return -4;
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -1825,7 +1846,7 @@ const char * UEngine::Model_GetComponentInputLinks(const char* stringid)
  {
   return 0;
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -1839,7 +1860,7 @@ const char * UEngine::Model_GetComponentOutputLinks(const char* stringid)
  {
   return 0;
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -1866,7 +1887,7 @@ const char * UEngine::Model_GetComponentState(const char *stringid)
   XmlStorage.SelectUp();
   XmlStorage.Save(TempString);
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -1881,7 +1902,7 @@ const char * UEngine::Model_GetComponentSelectedState(const char *stringid)
  {
   return 0;
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -1902,7 +1923,7 @@ const char * UEngine::Model_GetComponentStateValue(const char *stringid, const c
   cont->GetStateValue(statename,TempString);
   return TempString.c_str();
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -1934,7 +1955,7 @@ bool UEngine::Model_SetComponentState(const char *stringid, const char* buffer)
    return false;
   XmlStorage.SelectUp();
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -1965,7 +1986,7 @@ void UEngine::Model_SetComponentStateValue(const char *stringid, const char *sta
   cont->SetStateValue(statename,buffer);
 //  XmlStorage.SelectUp();
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -1983,7 +2004,7 @@ int UEngine::Model_GetComponentNumInputs(const char *stringid)
 
   return cont->GetNumInputs();
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -2002,7 +2023,7 @@ int UEngine::Model_GetComponentInputDataSize(const char *stringid, int index)
 
   return cont->GetInputDataSize(index);
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -2016,7 +2037,7 @@ int UEngine::Model_GetComponentInputElementSize(const char *stringid, int index)
  {
   return 0;
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -2030,7 +2051,7 @@ int UEngine::Model_GetComponentInputByteSize(const char *stringid, int index)
  {
   return 0;
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -2045,7 +2066,7 @@ unsigned char* UEngine::Model_GetComponentInputData(const char *stringid, int in
  {
   return 0;
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -2064,7 +2085,7 @@ int UEngine::Model_GetComponentNumOutputs(const char *stringid)
 
   return cont->GetNumOutputs();
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -2083,7 +2104,7 @@ int UEngine::Model_GetComponentOutputDataSize(const char *stringid, int index)
 
   return cont->GetOutputDataSize(index);
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -2102,7 +2123,7 @@ int UEngine::Model_GetComponentOutputElementSize(const char *stringid, int index
 
   return cont->GetOutputDataElementSize(index);
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -2116,7 +2137,7 @@ int UEngine::Model_GetComponentOutputByteSize(const char *stringid, int index)
  {
   return 0;
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -2136,7 +2157,7 @@ unsigned char* UEngine::Model_GetComponentOutputData(const char *stringid, int i
 
   return cont->GetOutputData(index).UChar;
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -2164,7 +2185,7 @@ const char *  UEngine::Model_SaveComponent(const char *stringid)
   XmlStorage.Save(TempString);
  // strcpy(buffer,str.c_str());
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -2201,7 +2222,7 @@ int UEngine::Model_LoadComponent(const char *stringid, char* buffer)
     return -4;
   }
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -2228,7 +2249,7 @@ const char * UEngine::Model_SaveComponentParameters(const char *stringid)
   TempString="";
   XmlStorage.Save(TempString);
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -2254,7 +2275,7 @@ int UEngine::Model_LoadComponentParameters(const char *stringid, char* buffer)
   if(!Model_LoadComponentParameters(cont,&XmlStorage))
    return -4;
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -2280,7 +2301,7 @@ const char * UEngine::Model_SaveComponentState(const char *stringid)
   TempString="";
   XmlStorage.Save(TempString);
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -2306,7 +2327,7 @@ int UEngine::Model_LoadComponentState(const char *stringid, char* buffer)
   if(!Model_LoadComponentState(cont,&XmlStorage))
    return -4;
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -2333,7 +2354,7 @@ int UEngine::Model_GetTimeStep(const char *stringid) const
 
   return cont->GetTimeStep();
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -2348,7 +2369,7 @@ void UEngine::Model_SetTimeStep(const char *stringid, int value)
 
   cont->SetTimeStep(value);
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -2363,7 +2384,7 @@ void UEngine::Model_SetGlobalTimeStep(const char *stringid, int value)
 
   cont->SetGlobalTimeStep(value);
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -2429,7 +2450,7 @@ long long UEngine::Model_GetStepDuration(const char *stringid) const
 
   return cont->GetStepDuration();
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -2446,7 +2467,7 @@ long long UEngine::Model_GetFullStepDuration(const char *stringid) const
 
   return cont->GetFullStepDuration();
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -2464,7 +2485,7 @@ double UEngine::Model_GetInstantPerformance(const char *stringid) const
 
   return cont->GetInstantPerformance();
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -2496,7 +2517,7 @@ bool UEngine::Model_GetComponentParameters(RDK::UAContainer* cont, RDK::Serializ
    ++I;
   }
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -2513,7 +2534,7 @@ bool UEngine::Model_GetComponentSelectedParameters(RDK::UAContainer* cont, RDK::
   if(!cont || !serstorage)
    return false;
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -2554,7 +2575,7 @@ bool UEngine::Model_GetComponentParametersEx(RDK::UAContainer* cont, RDK::Serial
    ++I;
   }
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -2585,7 +2606,7 @@ bool UEngine::Model_SetComponentParameters(RDK::UAContainer* cont, RDK::Serializ
    ++I;
   }
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -2605,7 +2626,7 @@ int UEngine::Model_GetComponentInternalLinks(RDK::UANet* cont, RDK::Serialize::U
 
   *serstorage<<linkslist;
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -2626,7 +2647,7 @@ int UEngine::Model_SetComponentInternalLinks(RDK::UANet* cont, RDK::Serialize::U
   cont->BreakLinks();
   cont->CreateLinks(linkslist);
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -2642,7 +2663,7 @@ int UEngine::Model_GetComponentInputLinks(RDK::UANet* cont, RDK::Serialize::USer
   if(!cont || !serstorage)
    return false;
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -2658,7 +2679,7 @@ int UEngine::Model_GetComponentOutputLinks(RDK::UANet* cont, RDK::Serialize::USe
   if(!cont || !serstorage)
    return false;
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -2687,7 +2708,7 @@ bool UEngine::Model_GetComponentState(RDK::UAContainer* cont, RDK::Serialize::US
    ++I;
   }
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -2704,7 +2725,7 @@ bool UEngine::Model_GetComponentSelectedState(RDK::UAContainer* cont, RDK::Seria
   if(!cont || !serstorage)
    return false;
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -2734,7 +2755,7 @@ bool UEngine::Model_SetComponentState(RDK::UAContainer* cont, RDK::Serialize::US
    ++I;
   }
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -2776,7 +2797,7 @@ int UEngine::Model_SaveComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXM
 
   serstorage->SelectUp();
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -2842,7 +2863,7 @@ int UEngine::Model_LoadComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXM
    serstorage->SelectUp();
   }
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -2875,7 +2896,7 @@ int UEngine::Model_SaveComponentParameters(RDK::UANet* cont, RDK::Serialize::USe
 
   serstorage->SelectUp();
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -2914,7 +2935,7 @@ int UEngine::Model_LoadComponentParameters(RDK::UANet* cont, RDK::Serialize::USe
   }
   serstorage->SelectUp();
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -2947,7 +2968,7 @@ int UEngine::Model_SaveComponentState(RDK::UANet* cont, RDK::Serialize::USerStor
 
   serstorage->SelectUp();
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -2986,7 +3007,7 @@ int UEngine::Model_LoadComponentState(RDK::UANet* cont, RDK::Serialize::USerStor
   }
   serstorage->SelectUp();
  }
- catch (Exception * exception)
+ catch (UException * exception)
  {
   ProcessException(exception);
  }
@@ -2999,12 +3020,12 @@ int UEngine::Model_LoadComponentState(RDK::UANet* cont, RDK::Serialize::USerStor
 // Методы управления исключениями
 // --------------------------
 // Обрабатывает возникшее исключение
-void UEngine::ProcessException(Exception *exception) const
+void UEngine::ProcessException(UException *exception) const
 {
  if(!exception)
   throw exception;
 
- USharedPtr<Exception> ptr=exception;
+ USharedPtr<UException> ptr=exception;
  ExceptionsLog.push_back(ptr);
 
  if(ExceptionsLog.size() > MaxExceptionsLogSize)
@@ -3025,7 +3046,7 @@ void UEngine::ProcessException(Exception *exception) const
 
 
 // Возвращает массив зарегистрированных исключений
-const vector<USharedPtr<Exception> > UEngine::GetExceptionsLog(void) const
+const vector<USharedPtr<UException> > UEngine::GetExceptionsLog(void) const
 {
  return ExceptionsLog;
 }

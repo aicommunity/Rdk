@@ -3,6 +3,7 @@
 
 #include <windows.h>
 #include "../rdk_system.h"
+#include <System.SysUtils.hpp>
 
 namespace RDK {
 

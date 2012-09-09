@@ -22,6 +22,9 @@ public:		// User declarations
 protected:
 bool UpdateInterfaceFlag;
 
+// Длинное имя управляемого компонента модели (опционально)
+std::string ComponentControlName;
+
 public:
 // -----------------------------
 // Методы управления визуальным интерфейсом
@@ -56,6 +59,11 @@ virtual void ASaveParameters(RDK::Serialize::USerStorageXML &xml);
 // Загружает параметры интерфейса из xml
 virtual void LoadParameters(RDK::Serialize::USerStorageXML &xml);
 virtual void ALoadParameters(RDK::Serialize::USerStorageXML &xml);
+
+// Управление длинным именем управляемого компонента
+// Длинное имя управляемого компонента модели (опционально)
+const std::string& GetComponentControlName(void) const;
+bool SetComponentControlName(const std::string& name);
 // -----------------------------
 };
 

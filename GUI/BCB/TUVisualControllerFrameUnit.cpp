@@ -117,6 +117,23 @@ void TUVisualControllerFrame::LoadParameters(RDK::Serialize::USerStorageXML &xml
 void TUVisualControllerFrame::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
 {
 }
+
+// Управление длинным именем управляемого компонента
+// Длинное имя управляемого компонента модели (опционально)
+const std::string& TUVisualControllerFrame::GetComponentControlName(void) const
+{
+ return ComponentControlName;
+}
+
+bool TUVisualControllerFrame::SetComponentControlName(const std::string& name)
+{
+ if(ComponentControlName == name)
+  return true;
+
+ ComponentControlName=name;
+ UpdateInterface();
+ return true;
+}
 // -----------------------------
 
 

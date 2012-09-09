@@ -13,6 +13,7 @@
 #include <Vcl.ExtCtrls.hpp>
 #include <Vcl.ValEdit.hpp>
 #include "TUVisualControllerFrameUnit.h"
+#include <Vcl.Menus.hpp>
 #include <string>
 #include <vector>
 #include "TUVisualController.h"
@@ -45,6 +46,8 @@ __published:	// IDE-managed Components
 	THeaderControl *HeaderControl2;
 	TStringGrid *ParametersListStringGrid;
 	TStringGrid *StatesListStringGrid;
+	TPopupMenu *PopupMenu;
+	TMenuItem *GUI1;
 	void __fastcall FrameResize(TObject *Sender);
 	void __fastcall StringGridDblClick(TObject *Sender);
 	void __fastcall StringGridSelectCell(TObject *Sender, int ACol, int ARow, bool &CanSelect);
@@ -71,6 +74,7 @@ __published:	// IDE-managed Components
 	void __fastcall StatesListStringGridClick(TObject *Sender);
 	void __fastcall StatesListStringGridDblClick(TObject *Sender);
 	void __fastcall StatesListStringGridSelectCell(TObject *Sender, int ACol, int ARow, bool &CanSelect);
+	void __fastcall GUI1Click(TObject *Sender);
 
 
 
@@ -113,6 +117,10 @@ protected:		// User declarations
 
 		// ¬ключение-выключение отображени€ параметров в виде xml
 		bool ShowXMLComponentParameters;
+
+public: // —писок интерфейсных форм дл€ управлени€ компонентами
+		// —обственно список форм
+		static std::map<std::string, TUVisualControllerForm*> ComponentControllers;
 
 protected: // ¬ременные переменные		// Ёлемент который должен быть найден и выделен после обновлени€ списка
 		int SelectedId;

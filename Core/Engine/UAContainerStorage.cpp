@@ -436,7 +436,7 @@ UAContainerStorage::EObjectIdNotExist::EObjectIdNotExist(UId id)
 // Формирует строку лога об исключении
 std::string UAContainerStorage::EObjectIdNotExist::CreateLogMessage(void) const
 {
- return Exception::CreateLogMessage()+std::string(" Id=")+sntoa(Id);
+ return UException::CreateLogMessage()+std::string(" Id=")+sntoa(Id);
 }
 // --------------------------
     */

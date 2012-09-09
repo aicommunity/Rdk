@@ -531,6 +531,12 @@ const char* RDK_CALL Model_GetComponentLongId(const char* stringid, const char* 
  return PEngine->Model_GetComponentLongId(stringid,owner_level_stringid);
 }
 
+// Возвращает имя класса компонента в хранилище по длинному 'stringid'
+// если stringid - пустая строка, то возвращает имя класса модели
+const char* RDK_CALL Model_GetComponentClassName(const char* stringid)
+{
+ return PEngine->Model_GetComponentClassName(stringid);
+}
 
 // Возвращает параметры компонента по идентификатору
 // Память для buffer должна быть выделена!
@@ -1189,7 +1195,7 @@ int Init(void* exception_handler)
    return 3;
   }
  }
- catch (RDK::Exception * exception)
+ catch (RDK::UException * exception)
  {
   PEngine->ProcessException(exception);
  }
@@ -1205,7 +1211,7 @@ int UnInit(void)
    PEngine->UnInit();
   }
  }
- catch (RDK::Exception * exception)
+ catch (RDK::UException * exception)
  {
   PEngine->ProcessException(exception);
  }
@@ -1227,7 +1233,7 @@ int RDK_CALL ExceptionDispatcher(void *exception)
  if(!PEngine)
   return 1;
 
- RDK::Exception *exc=reinterpret_cast<RDK::Exception*>(exception);
+ RDK::UException *exc=reinterpret_cast<RDK::UException*>(exception);
  PEngine->ProcessException(exc);
 
  return 0;

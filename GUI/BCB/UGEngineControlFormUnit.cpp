@@ -178,8 +178,17 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
   Model_SetGlobalTimeStep("",GlobalTimeStep);
  }
 
- ProjectXml.SelectNodeRoot(std::string("Project/Interfaces/"));
- RDK::UIVisualControllerStorage::LoadParameters(ProjectXml);
+ String interfacefilename=ProjectXml.ReadString("InterfaceFileName","").c_str();
+ if(interfacefilename.Length() != 0)
+ {
+  if(ExtractFilePath(interfacefilename.c_str()).Length() == 0)
+   InterfaceXml.LoadFromFile(AnsiString(ProjectPath+interfacefilename).c_str(),"Interfaces");
+  else
+   InterfaceXml.LoadFromFile(AnsiString(interfacefilename).c_str(),"Interfaces");
+
+  InterfaceXml.SelectNodeRoot(std::string("Interfaces"));
+  RDK::UIVisualControllerStorage::LoadParameters(InterfaceXml);
+ }
 
  UpdateInterface();
  ProjectOpenFlag=true;
@@ -209,8 +218,22 @@ void TUGEngineControlForm::SaveProject(void)
  if(!ProjectOpenFlag)
   return;
 
- ProjectXml.SelectNodeRoot(std::string("Project/Interfaces/"));
- RDK::UIVisualControllerStorage::SaveParameters(ProjectXml);
+ InterfaceXml.SelectNodeRoot(std::string("Interfaces"));
+ RDK::UIVisualControllerStorage::SaveParameters(InterfaceXml);
+
+ String interfacefilename=ProjectXml.ReadString("InterfaceFileName","").c_str();
+ if(interfacefilename.Length() != 0)
+ {
+  if(ExtractFilePath(interfacefilename).Length() == 0)
+   InterfaceXml.SaveToFile(AnsiString(ProjectPath+interfacefilename).c_str());
+  else
+   InterfaceXml.SaveToFile(AnsiString(interfacefilename).c_str());
+ }
+ else
+ {
+  ProjectXml.WriteString("InterfaceFileName","Interface.xml");
+  InterfaceXml.SaveToFile(AnsiString(ProjectPath+interfacefilename).c_str());
+ }
 
  ProjectXml.SelectNodeRoot("Project/General");
 

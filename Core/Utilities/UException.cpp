@@ -7,28 +7,28 @@
 namespace RDK {
 
 // Последний порядковый номер исключения
-long long Exception::LastNumber=0;
+long long UException::LastNumber=0;
 
 // Диспетчер исключений
-//ExceptionDispatcher* Exception::Dispatcher=0;
+//ExceptionDispatcher* UException::Dispatcher=0;
 
-/* class Exception */
+/* class UException */
 // --------------------------
 // Методы управления общими данными
 // --------------------------
 // Последний порядковый номер исключения
-long long Exception::GetLastNumber(void)
+long long UException::GetLastNumber(void)
 {
  return LastNumber;
 }
 /*
 // Диспетчер исключений. Осуществляет запись логов и другую деятельность
-ExceptionDispatcher* Exception::GetDispatcher(void)
+ExceptionDispatcher* UException::GetDispatcher(void)
 {
  return Dispatcher;
 }
 
-bool Exception::SetDispatcher(ExceptionDispatcher* value)
+bool UException::SetDispatcher(ExceptionDispatcher* value)
 {
  if(Dispatcher == value)
   return true;
@@ -41,21 +41,21 @@ bool Exception::SetDispatcher(ExceptionDispatcher* value)
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-Exception::Exception(void)
+UException::UException(void)
 : Type(0)
 {
  Number=++LastNumber;
  std::time(&Time);
 }
 
-Exception::Exception(const Exception &copy)
+UException::UException(const UException &copy)
 {
  Number=copy.Number;
  Time=copy.Time;
 }
 
 
-Exception::~Exception(void)
+UException::~UException(void)
 {
 
 }
@@ -66,24 +66,24 @@ Exception::~Exception(void)
 // Методы упрвления данными исключения
 // --------------------------
 // Возвращает порядковый номер исключения
-long long Exception::GetNumber(void) const
+long long UException::GetNumber(void) const
 {
  return Number;
 }
 
 // Тип исключения
-int Exception::GetType(void) const
+int UException::GetType(void) const
 {
  return Type;
 }
 
 // Время возникновения (обработки) исключения
-std::time_t Exception::GetTime(void) const
+std::time_t UException::GetTime(void) const
 {
  return Time;
 }
 
-void Exception::SetTime(std::time_t ex_time)
+void UException::SetTime(std::time_t ex_time)
 {
  Time=ex_time;
 }
@@ -92,7 +92,7 @@ void Exception::SetTime(std::time_t ex_time)
 // --------------------------
 // Методы формирования лога
 // --------------------------
-std::string Exception::CreateLogMessage(void) const
+std::string UException::CreateLogMessage(void) const
 {
  std::string result;
 
@@ -129,7 +129,7 @@ std::string Exception::CreateLogMessage(void) const
 
 
 /* Фатальные ошибки (обращение по 0 указателям и т.п.) */
-//class EFatal: public Exception
+//class EFatal: public UException
 
 // --------------------------
 // Конструкторы и деструкторы
@@ -153,7 +153,7 @@ EFatal::~EFatal(void)
 
 
 /* Ошибки, корректируемые пользователем */
-//class EError: public Exception
+//class EError: public UException
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
@@ -176,7 +176,7 @@ EError::~EError(void)
 
 
 /* Предупреждения (например об неэффективном использовании ресурсов) */
-//class EWarning: public Exception
+//class EWarning: public UException
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
@@ -198,7 +198,7 @@ EWarning::~EWarning(void)
 
 
 /* Информационные сообщения, выдача которых инициируется пользователем */
-//class EInfo: public Exception
+//class EInfo: public UException
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------

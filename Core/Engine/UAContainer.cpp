@@ -1353,7 +1353,7 @@ RDK_SYS_TRY {
 }
 RDK_SYS_CATCH
 {
- throw new EComponentSystemException(this,0,GetSystemExceptionData());
+ throw new EComponentSystemException(this,0,GET_SYSTEM_EXCEPTION_DATA);
 }
 
  return true;

@@ -7,12 +7,17 @@
 #include "UComponentsListFrameUnit.h"
 #include "rdk_initdll.h"
 #include "myrdk.h"
+#include "UCRPerseptronFormUnit.h"
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "TUVisualControllerFrameUnit"
 #pragma resource "*.dfm"
 TUComponentsListFrame *UComponentsListFrame;
+
+// Собственно список форм
+std::map<std::string, TUVisualControllerForm*> TUComponentsListFrame::ComponentControllers;
+
 //---------------------------------------------------------------------------
 __fastcall TUComponentsListFrame::TUComponentsListFrame(TComponent* Owner)
 	: TUVisualControllerFrame(Owner)
@@ -46,6 +51,12 @@ void __fastcall TUComponentsListFrame::UpdatePath(void)
 void TUComponentsListFrame::UpdateInterface(void)
 {
  UpdateInterfaceFlag=true;
+
+ if(ComponentControllers.empty())
+ {
+  ComponentControllers["UCRPerseptron"]=UCRPerseptronForm;
+ }
+
 
  int row=StringGrid->Row;
 
@@ -99,7 +110,6 @@ void TUComponentsListFrame::UpdateInterface(void)
  UpdateIO();
  UpdateParametersList();
  UpdateStatesList();
-
 }
 
 // Обновляет параметры компонента
@@ -118,6 +128,13 @@ void TUComponentsListFrame::UpdateParameters(void)
  {
   Panel1->Visible=false;
  }
+
+ std::string name=Model_GetComponentClassName(SelectedComponentName.c_str());
+ std::map<std::string, TUVisualControllerForm*>::iterator I=ComponentControllers.find(name);
+ if(I != ComponentControllers.end() && I->second)
+  GUI1->Enabled=true;
+ else
+  GUI1->Enabled=false;
 
  RegistryModified=false;
  UpdateInterfaceFlag=false;
@@ -680,6 +697,18 @@ void __fastcall TUComponentsListFrame::StatesListStringGridSelectCell(TObject *S
 		  int ARow, bool &CanSelect)
 {
  SelectedComponentStateName=AnsiString(StatesListStringGrid->Cells[1][ARow]).c_str();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::GUI1Click(TObject *Sender)
+{
+ std::string name=Model_GetComponentClassName(SelectedComponentName.c_str());
+ std::map<std::string, TUVisualControllerForm*>::iterator I=ComponentControllers.find(name);
+ if(I != ComponentControllers.end() && I->second)
+ {
+  I->second->SetComponentControlName(SelectedComponentName);
+  I->second->Show();
+ }
 }
 //---------------------------------------------------------------------------
 

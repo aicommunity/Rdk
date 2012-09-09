@@ -308,6 +308,10 @@ RDK_LIB_TYPE const char* RDK_CALL Model_GetComponentLongName(const char* stringi
 // Если owner_level_stringid не задан, то имя формируется до уровня текущего компонента
 RDK_LIB_TYPE const char* RDK_CALL Model_GetComponentLongId(const char* stringid, const char* owner_level_stringid=0);
 
+// Возвращает имя класса компонента в хранилище по длинному 'stringid'
+// если stringid - пустая строка, то возвращает имя класса модели
+RDK_LIB_TYPE const char* RDK_CALL Model_GetComponentClassName(const char* stringid);
+
 // Возвращает параметры компонента по идентификатору
 RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentParameters(const char *stringid);
 
