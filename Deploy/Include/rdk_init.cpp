@@ -1195,7 +1195,7 @@ int Init(void* exception_handler)
    return 3;
   }
  }
- catch (RDK::UException * exception)
+ catch (RDK::UException &exception)
  {
   PEngine->ProcessException(exception);
  }
@@ -1211,7 +1211,7 @@ int UnInit(void)
    PEngine->UnInit();
   }
  }
- catch (RDK::UException * exception)
+ catch (RDK::UException &exception)
  {
   PEngine->ProcessException(exception);
  }
@@ -1233,8 +1233,11 @@ int RDK_CALL ExceptionDispatcher(void *exception)
  if(!PEngine)
   return 1;
 
+ if(!exception)
+  return 2;
+
  RDK::UException *exc=reinterpret_cast<RDK::UException*>(exception);
- PEngine->ProcessException(exc);
+ PEngine->ProcessException(*exc);
 
  return 0;
 }

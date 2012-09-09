@@ -314,6 +314,7 @@ ESystemException::ESystemException(const std::string &info)
 }
 
 ESystemException::ESystemException(const ESystemException &copy)
+: Info(copy.Info)
 {
 
 }

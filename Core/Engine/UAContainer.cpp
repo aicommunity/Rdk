@@ -347,7 +347,7 @@ bool UAContainer::SetName(const NameT &name)
   if(GetOwner() != 0)
   {
    if(!GetOwner()->CheckName(name))
-    throw new EComponentNameAlreadyExist(name);
+    throw EComponentNameAlreadyExist(name);
 
    GetOwner()->ModifyLookupComponent(Name, name);
   }
@@ -415,7 +415,7 @@ const NameT& UAContainer::GetComponentName(const UId &id) const
   if(I->second == id)
    return I->first;
  }
- throw new EComponentIdNotExist(id);
+ throw EComponentIdNotExist(id);
 }
 
 // Возвращает Id дочернего компонента по его имени
@@ -423,7 +423,7 @@ const UId& UAContainer::GetComponentId(const NameT &name) const
 {
  std::map<NameT,UId>::const_iterator I=CompsLookupTable.find(name);
  if(I == CompsLookupTable.end())
-  throw new EComponentNameNotExist(name);
+  throw EComponentNameNotExist(name);
 
  return I->second;
 }
@@ -437,7 +437,7 @@ const NameT& UAContainer::GetPointerName(const UId &id) const
   if(I->second.Id == id)
    return I->first;
  }
- throw new EPointerIdNotExist(id);
+ throw EPointerIdNotExist(id);
 }
 
 // Возвращает Id локального указателя по его имени
@@ -445,7 +445,7 @@ const UId& UAContainer::GetPointerId(const NameT &name) const
 {
  PointerMapCIteratorT I=PointerLookupTable.find(name);
  if(I == PointerLookupTable.end())
-  throw new EPointerNameNotExist(name);
+  throw EPointerNameNotExist(name);
 
  return I->second.Id;
 }
@@ -533,16 +533,16 @@ bool UAContainer::SetId(const UId &id)
   return true;
 
  if(id == ForbiddenId)
-  return true;// Заглушка!! Это хак! throw new EForbiddenId(id);
+  return true;// Заглушка!! Это хак! throwEForbiddenId(id);
 
  if(id < 0)
-  throw new EInvalidId(id);
+  throw EInvalidId(id);
 
 
  if(Owner != 0)
   {
    if(!GetOwner()->CheckId(id))
-    throw new EComponentIdAlreadyExist(id);
+    throw EComponentIdAlreadyExist(id);
 
    GetOwner()->SetLookupComponent(Name, id);
   }
@@ -646,14 +646,14 @@ bool UAContainer::CheckComponentType(UEPtr<UAContainer> comp) const
 UEPtr<UAContainer> UAContainer::GetComponent(const UId &id) const
 {
  if(id == ForbiddenId)
-  throw new EComponentIdNotExist(id);
+  throw EComponentIdNotExist(id);
 
  UEPtr<UAContainer>* comps=PComponents;
  for(int i=0;i<NumComponents;i++,comps++)
   if(id == (*comps)->Id)
    return *comps;
 
- throw new EComponentIdNotExist(id);
+ throw EComponentIdNotExist(id);
 }
 
 // Возвращает указатель на дочерний компонент, хранимый в этом
@@ -737,10 +737,10 @@ UId UAContainer::AddComponent(UEPtr<UAContainer> comp, UEPtr<UIPointer> pointer)
   return comp->Id;
 
  if(comp->GetOwner())
-  throw new EAddComponentAlreadyHaveOwner(comp->Id);
+  throw EAddComponentAlreadyHaveOwner(comp->Id);
 
  if(!CheckComponentType(comp))
-  throw new EAddComponentHaveInvalidType(comp->Id);
+  throw EAddComponentHaveInvalidType(comp->Id);
 
  BeforeAddComponent(comp,pointer);
 
@@ -781,7 +781,7 @@ UId UAContainer::AddComponent(UEPtr<UAContainer> comp, UEPtr<UIPointer> pointer)
   comp->SharesInit();
   AfterAddComponent(comp,pointer);
  }
- catch(Exception *exception)
+ catch(UException &exception)
  {
   // Откат
   // Удаляем компонент из таблицы соответствий владельца
@@ -1346,14 +1346,14 @@ RDK_SYS_TRY {
    }
   }
  }
- catch(Exception *exception)
+ catch(UException &exception)
  {
   throw;
  }
 }
 RDK_SYS_CATCH
 {
- throw new EComponentSystemException(this,0,GET_SYSTEM_EXCEPTION_DATA);
+ throw EComponentSystemException(this,0,GET_SYSTEM_EXCEPTION_DATA);
 }
 
  return true;
@@ -1427,7 +1427,7 @@ void UAContainer::ModifyLookupComponent(const NameT &oldname,
 
  std::map<NameT,UId>::iterator I=CompsLookupTable.find(oldname);
  if(I == CompsLookupTable.end())
-  throw new EComponentNameNotExist(oldname);
+  throw EComponentNameNotExist(oldname);
 
  id=I->second;
  CompsLookupTable.erase(I);
@@ -1450,7 +1450,7 @@ void UAContainer::DelLookupComponent(const NameT &name)
  std::map<NameT,UId>::iterator I=CompsLookupTable.find(name);
 
  if(I == CompsLookupTable.end())
-  throw new EComponentNameNotExist(name);
+  throw EComponentNameNotExist(name);
  CompsLookupTable.erase(name);
 }
 // --------------------------
@@ -1567,7 +1567,7 @@ void UAContainer::DelLookupPointer(const NameT &name)
  PointerMapIteratorT I=PointerLookupTable.find(name);
 
  if(I == PointerLookupTable.end())
-  throw new EPointerNameNotExist(name);
+  throw EPointerNameNotExist(name);
 
  delete I->second.Pointer;
  PointerLookupTable.erase(I);

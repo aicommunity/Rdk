@@ -86,7 +86,10 @@ RDK::UEPtr<UAContainerEnvironment> Environment;
 
 protected: // Обработка исключений
 // Лог исключений системы
-mutable vector<USharedPtr<UException> > ExceptionsLog;
+//mutable vector<USharedPtr<UException> > ExceptionsLog;
+
+// Текущее число исключений системы
+mutable int CurrentExceptionsLogSize;
 
 // Максимальное число хранимых исключений
 // Если 0, то неограниченно
@@ -591,13 +594,13 @@ double Model_GetInstantPerformance(const char *stringid) const;
 // Методы управления исключениями
 // --------------------------
 // Обрабатывает возникшее исключение
-virtual void ProcessException(UException *exception) const;
+virtual void ProcessException(UException &exception) const;
 
 // Формирует строку лога об исключении
-//virtual string CreateLogMessage(UException *exception) const;
+//virtual string CreateLogMessage(UException &exception) const;
 
 // Возвращает массив зарегистрированных исключений
-const vector<USharedPtr<UException> > GetExceptionsLog(void) const;
+//const vector<USharedPtr<UException> > GetExceptionsLog(void) const;
 
 // Максимальное число хранимых исключений
 // Если 0, то неограниченно
