@@ -140,6 +140,7 @@ EFatal::EFatal(void)
 }
 
 EFatal::EFatal(const EFatal &copy)
+ : UException(copy)
 {
 
 }
@@ -163,6 +164,7 @@ EError::EError(void)
 }
 
 EError::EError(const EError &copy)
+ : UException(copy)
 {
 
 }
@@ -186,6 +188,7 @@ EWarning::EWarning(void)
 }
 
 EWarning::EWarning(const EWarning &copy)
+ : UException(copy)
 {
 
 }
@@ -208,6 +211,7 @@ EInfo::EInfo(void)
 }
 
 EInfo::EInfo(const EInfo &copy)
+ : UException(copy)
 {
 
 
