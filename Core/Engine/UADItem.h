@@ -143,11 +143,11 @@ inline const UItemData& GetOutputData(int index) const
 const UEPtr<const UItemData>& GetInputData(const UEPtr<UAItem> &citem) const;
 
 // Возвращает указатель на вектор входов InputData по индексу
-// Не проверяет индекс на корректность
+// Проверяет индекс на корректность и возвращает 0, если такого входа нет фактически
 const UEPtr<const UItemData>& GetInputData(size_t index) const;
 
 // Возвращает размер вектора входов InputData по индексу
-// Не проверяет индекс на корректность
+// Проверяет индекс на корректность и возвращает 0, если такого входа нет фактически
 size_t GetInputDataSize(size_t index) const;
 
 // Возвращает суммарный размер всех векторов входов

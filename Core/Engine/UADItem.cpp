@@ -96,16 +96,19 @@ const UEPtr<const UItemData>& UADItem::GetInputData(const UEPtr<UAItem> &citem) 
 }
 
 // Возвращает указатель на вектор входов InputData по индексу
-// Не проверяет индекс на корректность
+// Проверяет индекс на корректность и возвращает 0, если такого входа нет фактически
 const UEPtr<const UItemData>& UADItem::GetInputData(size_t index) const
 {
- return InputData[index];
+ return InputData.at(index);
 }
 
 // Возвращает размер вектора входов InputData по индексу
-// Не проверяет индекс на корректность
+// Проверяет индекс на корректность и возвращает 0, если такого входа нет фактически
 size_t UADItem::GetInputDataSize(size_t index) const
 {
+ if(index >= InputData.size())
+  return 0;
+ 
  if(!InputData[index])
   return 0;
 
