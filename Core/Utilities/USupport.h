@@ -198,6 +198,10 @@ int separatestring(const basic_string<CharT> &str, vector<basic_string<CharT> > 
  return size;
 }
 
+// Возвращает время в виде понятной строки вида YYYY.MM.DD HH:MM:SS
+std::string get_text_time(time_t time_data, char date_sep='.', char time_sep=':');
+
+
 /*
 // Конвертация string<->wstring
 // Копипаста с http://habrahabr.ru/blogs/cpp/112997/

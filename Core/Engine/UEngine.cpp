@@ -3178,6 +3178,7 @@ int UEngine::LoadPredefinedLibraries(void)
  LibrariesList.push_back(&BCLLibrary);
  LibrariesList.push_back(&IOLibrary);
  LibrariesList.push_back(&CRLibrary);
+ LibrariesList.push_back(&StatisticLibrary);
 
  return 0;
 }

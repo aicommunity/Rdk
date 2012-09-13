@@ -430,6 +430,11 @@ int UBEngine::LoadPredefinedLibraries(void)
  filter->SetName("Video3DSimulatorSimple");
  bstorage->AddClass(filter,"Video3DSimulatorSimple");
 
+ filter=new RDK::UBStatisticSimple;
+ filter->Default();
+ filter->SetName("BStatisticSimple");
+ bstorage->AddClass(filter,"BStatisticSimple");
+
  return 0;
 }
 // --------------------------

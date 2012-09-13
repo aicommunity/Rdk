@@ -41,7 +41,19 @@ unsigned long long CalcDiffTime(unsigned long long time1, unsigned long long tim
 void Sleep(int value)
 {
  usleep(value*1000);
+}             
+
+// —оздает каталог
+// ¬озвращает 0 в случае успеха или если каталог уже существует
+// 1 - если уже существует файл с таким именем
+// 2 - если такой путь не существует
+// 3 - если произошла друга€ ошибка
+int CreateDirectory(const char* path)
+{
+ return 3;
 }
+
+
 
 }
 #endif

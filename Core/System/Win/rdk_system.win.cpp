@@ -6,14 +6,14 @@
 
 namespace RDK {
 
-// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‚РµРєСѓС‰РµРµ РІСЂРµРјСЏ РІ РјРёР»Р»РёСЃРµРєСѓРЅРґР°С… РѕС‚ РЅРµРєРѕС‚РѕСЂРѕРіРѕ С„РёРєСЃРёСЂРѕРІР°РЅРЅРѕРіРѕ РјРѕРјРµРЅС‚Р°
-// (Р·Р°РІРёСЃРёС‚ РѕС‚ СЂРµР°Р»РёР·Р°С†РёРё)
+// Возвращает текущее время в миллисекундах от некоторого фиксированного момента
+// (зависит от реализации)
 unsigned long long GetCurrentStartupTime(void)
 {
  return GetTickCount();
 }
 
-// Р’С‹С‡РёСЃР»СЏРµС‚ СЂР°Р·РЅРёС†Сѓ РІРѕ РІСЂРµРјРµРЅРё РІ РјРёР»Р»РёСЃРµРєСѓРЅРґР°С…
+// Вычисляет разницу во времени в миллисекундах
 unsigned long long CalcDiffTime(unsigned long long time1, unsigned long long time2)
 {
  if(time1>time2)
@@ -22,10 +22,34 @@ unsigned long long CalcDiffTime(unsigned long long time1, unsigned long long tim
   return time2-time1;
 }
 
-// РЈСЃС‹РїР»СЏРµС‚ РїСЂРѕС†РµСЃСЃ РЅР° Р·Р°РґР°РЅРЅРѕРµ С‡РёСЃР»Рѕ РјРёР»Р»РёСЃРµРєСѓРЅРґ
+// Усыпляет процесс на заданное число миллисекунд
 void Sleep(int value)
 {
  ::Sleep(value);
+}
+
+// Создает каталог
+// Возвращает 0 в случае успеха или если каталог уже существует
+// 1 - если уже существует файл с таким именем
+// 2 - если такой путь не существует
+// 3 - если произошла другая ошибка
+int CreateDirectory(const char* path)
+{
+ DWORD dwFileAttributes = GetFileAttributes(path);
+ if(dwFileAttributes == INVALID_FILE_ATTRIBUTES || (dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+ {
+  if(!::CreateDirectory(path, 0))
+  {
+   if(GetLastError() == ERROR_PATH_NOT_FOUND)
+    return 2;
+
+   return 0;
+  }
+ }
+ else
+  return 1;
+
+ return 0;
 }
 
 }

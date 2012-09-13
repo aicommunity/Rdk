@@ -40,6 +40,27 @@ int fraction(double d, int digs)
  return int(d);
 }
 
+// ¬озвращает врем€ в виде пон€тной строки вида YYYY.MM.DD HH:MM:SS
+std::string get_text_time(time_t time_data, char date_sep, char time_sep)
+{
+ std::string result;
+ tm* time_stuct=localtime(&time_data);
+
+ result+=sntoa(time_stuct->tm_year+1900,4);
+ result+=date_sep;
+ result+=sntoa(time_stuct->tm_mon+1,2);
+ result+=date_sep;
+ result+=sntoa(time_stuct->tm_mday,2);
+ result+=" ";
+
+ result+=sntoa(time_stuct->tm_hour,2);
+ result+=time_sep;
+ result+=sntoa(time_stuct->tm_min,2);
+ result+=time_sep;
+ result+=sntoa(time_stuct->tm_sec,2);
+ return result;
+}
+
 
 }
 #endif
