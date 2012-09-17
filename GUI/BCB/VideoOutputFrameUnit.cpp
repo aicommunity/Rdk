@@ -220,10 +220,10 @@ void TVideoOutputFrame::DrawCapture(Graphics::TBitmap *bmp)
    bmp->PixelFormat=pf32bit;
   break;
   }
-  BmpCanvas=BmpSource;
+ BmpSource.ReflectionX(&BmpCanvas);
 
  GeometryGraphics.Repaint();
-
+ BmpCanvas.ReflectionX();
  BmpCanvas>>bmp;
 }
 
@@ -322,26 +322,8 @@ void TVideoOutputFrame::AddFigureRect(double l,double t,double w,double h)
  if(l<0 || t<0)
   return;
 
-// Figure().SetNumVertex(Figure().GetNumVertex()+1);
  Figure()[PointIndex].x=l+w/2;
- Figure()[PointIndex].y=BmpCanvas.GetHeight()-(t+h/2);
-
-/*
- if(PointFlag == 1)
- {
-  Figure().SetNumVertex(Figure().GetNumVertex()+1);
-  Figure()[Figure().GetNumVertex()-1].x=l+w/2;
-  Figure()[Figure().GetNumVertex()-1].y=BmpCanvas.GetHeight()-(t+h/2);
- }
- else
- if(PointFlag == 2)
- {
-  Figure()[PointIndex].x=l+w/2;
-  Figure()[PointIndex].y=BmpCanvas.GetHeight()-(t+h/2);
-  if(PointIndex < MyVideoOutputToolsForm->PointsCheckListBox->Items->Count)
-  MyVideoOutputToolsForm->PointsCheckListBox->ItemIndex = PointIndex+1;
- }
-      */
+ Figure()[PointIndex].y=/*BmpCanvas.GetHeight()-*/(t+h/2);
 
  GeometryGraphics.GetGeometry(FigureIndex)=Figure;
 
@@ -360,33 +342,6 @@ void TVideoOutputFrame::SetSampleGeometryGraphics(RDK::MGraphics<double,2>& samp
  MyVideoOutputToolsForm->PointsCheckListBox->ItemIndex=PointIndex;
  MyVideoOutputToolsForm->GeometryCheckListBox->ItemIndex=FigureIndex;
 }
-
-/*
- if(UpdateFlag)
-  return;
-
- if(!Capture || !dynamic_cast<VFCapture*>(Capture))
-  return;
-
- static_cast<VFCapture*>(Capture)->SelectFrame((long long)(ImageTrackBar->Position));
- DrawCapture(Capture,Image->Picture->Bitmap);
- Image->Repaint();
- if(left != -1 || top != -1 || width != -1 || height != -1)
- {
-  DrawFrameRect(Image, left, top, left+width, top+height, 2, SelColor);
- }
- string sstamp;
- VTimeStamp stamp(ImageTrackBar->Position/Capture->GetFPS(),Capture->GetFPS());
- stamp>>sstamp;
-
- UpdateFlag=true;
- TimeEdit->Text=sstamp.c_str();
- TimeEdit->Repaint();
- UpdateFlag=false;
- TimeEdit->Repaint();
- Image->Repaint();
- Image->Update();   */
-
 
 // -------------------------
 // Методы ввода вывода точек геометрии из параметров и переменных состояния компонент
