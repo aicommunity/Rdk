@@ -3070,7 +3070,7 @@ const char* UEngine::GetUnreadLog(void)
   return TempLogString.c_str();
  }
 
- if(LastReadExceptionLogIndex<TempLogString.size())
+ if(LastReadExceptionLogIndex<int(TempLogString.size()))
  {
   TempString=TempLogString.substr(LastReadExceptionLogIndex);
   LastReadExceptionLogIndex=TempLogString.size();
