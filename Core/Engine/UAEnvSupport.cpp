@@ -169,7 +169,7 @@ UIdVector& UIdVector::DecodeFromString(const std::string &str)
  std::size_t start=str.find_first_not_of("0123456789. ");
  std::size_t stop;
  if(start != string::npos)
-  throw new EDecodeFail(str,0);
+  throw EDecodeFail(str,0);
 
  start=stop=0;
  while(start != string::npos)
@@ -189,7 +189,7 @@ UIdVector& UIdVector::DecodeFromString(const std::string &str)
   catch (EStrToNumber *strtonumber)
   {
    delete strtonumber;
-   throw new EDecodeFail(str,stop);	
+   throw EDecodeFail(str,stop);
   }
  }
 
