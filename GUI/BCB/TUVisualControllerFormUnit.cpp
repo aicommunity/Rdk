@@ -150,6 +150,7 @@ void TUVisualControllerForm::LoadParameters(RDK::Serialize::USerStorageXML &xml)
  LoadFormPosition(xml, this);
  ALoadParameters(xml);
  xml.SelectUp();
+ UpdateInterface();
 }
 
 void TUVisualControllerForm::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
