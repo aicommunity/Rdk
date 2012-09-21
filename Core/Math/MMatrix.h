@@ -60,6 +60,12 @@ unsigned GetRows(void) const;
 // Доступ к элементу
 T& operator () (int i, int j);
 const T& operator () (int i, int j) const;
+
+// Возвращает заданную строку матрицы
+MMatrix<T,Cols,1> GetRow(int i) const;
+
+// Возвращает заданный столбец матрицы
+MMatrix<T,Rows,1> GetCol(int i) const;
 // --------------------------
 
 // --------------------------
@@ -232,6 +238,26 @@ template<class T, unsigned Rows, unsigned Cols>
 const T& MMatrix<T,Rows,Cols>::operator () (int i, int j) const
 {
  return Data[i][j];
+}
+
+// Возвращает заданную строку матрицы
+template<class T, unsigned Rows, unsigned Cols>
+MMatrix<T,Cols,1> MMatrix<T,Rows,Cols>::GetRow(int i) const
+{
+ MMatrix<T,Cols,1> res;
+ for(int j=0;j<Cols;j++)
+  res.Data[j][0]=Data[i][j];
+ return res;
+}
+
+// Возвращает заданный столбец матрицы
+template<class T, unsigned Rows, unsigned Cols>
+MMatrix<T,Rows,1> MMatrix<T,Rows,Cols>::GetCol(int i) const
+{
+ MMatrix<T,Rows,1> res;
+ for(int j=0;j<Rows;j++)
+  res.Data[j][0]=Data[j][i];
+ return res;
 }
 // --------------------------
 

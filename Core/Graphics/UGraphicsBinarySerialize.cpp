@@ -167,8 +167,6 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, UBVSObject &data)
 // struct UBVSObject3D
 USerStorageBinary& operator << (USerStorageBinary& storage, const UBVSObject3D &data)
 {
- operator << (storage,data.Size);
- operator << (storage,data.Position);
  operator << (storage,data.Speed);
  operator << (storage,data.ObjectColor);
  operator << (storage,data.ObjectColor2);
@@ -180,8 +178,6 @@ USerStorageBinary& operator << (USerStorageBinary& storage, const UBVSObject3D &
 
 USerStorageBinary& operator >> (USerStorageBinary& storage, UBVSObject3D &data)
 {
- operator >> (storage,data.Size);
- operator >> (storage,data.Position);
  operator >> (storage,data.Speed);
  operator >> (storage,data.ObjectColor);
  operator >> (storage,data.ObjectColor2);

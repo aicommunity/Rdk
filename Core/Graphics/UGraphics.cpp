@@ -114,9 +114,13 @@ void UGraphics::Line(int x1, int y1, int x2, int y2)
 {
  int tmp;
  int dx,dy,y,x;
+ int old_x1=x1, old_y1=y1, old_x2=x2, old_y2=y2;
 
  CWidth=Canvas->GetWidth();
  CHeight=Canvas->GetHeight();
+
+ dx=x2-x1;
+ dy=y2-y1;
 
  if(x1>x2 && y1>y2)
   {
@@ -124,11 +128,8 @@ void UGraphics::Line(int x1, int y1, int x2, int y2)
    tmp=y1; y1=y2; y2=tmp;
   }
 
- if(x1 >= CWidth || y1 >= CHeight)
-  return;
-
- dx=x2-x1;
- dy=y2-y1;
+// if(x1 >= CWidth || y1 >= CHeight)
+//  return;
 
  if(!dx && !dy)
   {
@@ -137,8 +138,14 @@ void UGraphics::Line(int x1, int y1, int x2, int y2)
   }
 
  x1=(x1<0)?0:x1;
+ x1=(x1>=CWidth)?CWidth-1:x1;
+
+ x2=(x2<0)?0:x2;
  x2=(x2>=CWidth)?CWidth-1:x2;
  y1=(y1<0)?0:y1;
+ y1=(y1>=CHeight)?CHeight-1:y1;
+
+ y2=(y2<0)?0:y2;
  y2=(y2>=CHeight)?CHeight-1:y2;
 
  if(!dx)
@@ -168,34 +175,34 @@ void UGraphics::Line(int x1, int y1, int x2, int y2)
    if(x1<x2)
     for(int i=x1;i<=x2;i++)
     {
-     y=dy*(i-x1)/dx+y1;
-     if(y >= 0 && y < CHeight)
-      DrawPixel(i,y);
-    }
+	 y=(dy*(i-old_x1))/dx+old_y1;
+	 if(y >= 0 && y < CHeight)
+	  DrawPixel(i,y);
+	}
    else
-    for(int i=x1;i>=x2;i--)
-    {
-     y=dy*(i-x1)/dx+y1;
-     if(y >= 0 && y < CHeight)
-      DrawPixel(i,y);
-    }
+	for(int i=x1;i>=x2;i--)
+	{
+	 y=(dy*(i-old_x1))/dx+old_y1;
+	 if(y >= 0 && y < CHeight)
+	  DrawPixel(i,y);
+	}
   }
  else
   {
    if(y1<y2)
-    for(int i=y1;i<=y2;i++)
-    {
-     x=dx*(i-y1)/dy+x1;
-     if(x >= 0 && x < CWidth)
-      DrawPixel(x,i);
-    }
+	for(int i=y1;i<=y2;i++)
+	{
+	 x=(dx*(i-old_y1))/dy+old_x1;
+	 if(x >= 0 && x < CWidth)
+	  DrawPixel(x,i);
+	}
    else
-    for(int i=y1;i>=y2;i--)
-    {
-     x=dx*(i-y1)/dy+x1;
-     if(x >= 0 && x < CWidth)
-      DrawPixel(x,i);
-    }
+	for(int i=y1;i>=y2;i--)
+	{
+	 x=(dx*(i-old_y1))/dy+old_x1;
+	 if(x >= 0 && x < CWidth)
+	  DrawPixel(x,i);
+	}
 
   }
 }

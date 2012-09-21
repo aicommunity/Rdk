@@ -374,7 +374,7 @@ template<typename T, int Rows>
 USerStorageXML& operator >> (USerStorageXML& storage, MVertex<T, Rows> &data)
 {
  //Временные переменные
- std::vector<MVector<T,3> > varVertexVector;
+ std::vector<MVector<T,Rows> > varVertexVector;
  std::vector<std::string> varNames;
 
 // if(storage.GetNodeAttribute("Type") != "MVertex")

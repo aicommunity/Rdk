@@ -500,22 +500,6 @@ USerStorageXML& operator >> (USerStorageXML& storage, UBVSObject &data)
 // struct UBVSObject3D
 USerStorageXML& operator << (USerStorageXML& storage, const UBVSObject3D &data)
 {
- storage.AddNode("Size");
- operator << (storage,data.Size);
- storage.SelectUp();
-
- storage.AddNode("Angle");
- operator << (storage,data.Angle);
- storage.SelectUp();
-
- storage.AddNode("Shift");
- operator << (storage,data.Shift);
- storage.SelectUp();
-
- storage.AddNode("Position");
- operator << (storage,data.Position);
- storage.SelectUp();
-
  storage.AddNode("Speed");
  operator << (storage,data.Speed);
  storage.SelectUp();
@@ -540,31 +524,15 @@ USerStorageXML& operator << (USerStorageXML& storage, const UBVSObject3D &data)
  operator << (storage,data.MovingDirection);
  storage.SelectUp();
 
+ storage.AddNode("Geometry");
+ operator << (storage,data.Geometry);
+ storage.SelectUp();
+
  return storage;
 }
 
 USerStorageXML& operator >> (USerStorageXML& storage, UBVSObject3D &data)
 {
- if(!storage.SelectNode("Size"))
-  return storage;
- operator >> (storage,data.Size);
- storage.SelectUp();
-
- if(!storage.SelectNode("Angle"))
-  return storage;
- operator >> (storage,data.Angle);
- storage.SelectUp();
-
- if(!storage.SelectNode("Shift"))
-  return storage;
- operator >> (storage,data.Shift);
- storage.SelectUp();
-
- if(!storage.SelectNode("Position"))
-  return storage;
- operator >> (storage,data.Position);
- storage.SelectUp();
-
  if(!storage.SelectNode("Speed"))
   return storage;
  operator >> (storage,data.Speed);
@@ -593,6 +561,11 @@ USerStorageXML& operator >> (USerStorageXML& storage, UBVSObject3D &data)
  if(!storage.SelectNode("MovingDirection"))
   return storage;
  operator >> (storage,data.MovingDirection);
+ storage.SelectUp();
+
+ if(!storage.SelectNode("Geometry"))
+  return storage;
+ operator >> (storage,data.Geometry);
  storage.SelectUp();
 
  return storage;
