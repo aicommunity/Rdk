@@ -13,6 +13,7 @@
 #include "VideoOutputFormUnit.h"
 #include "UClassesListFormUnit.h"
 #include "UComponentsPerformanceFormUnit.h"
+#include "UFavoriteComponentInfoFormUnit.h"
 #include "rdk_initdll.h"
 
 //---------------------------------------------------------------------------
@@ -190,26 +191,8 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
   RDK::UIVisualControllerStorage::LoadParameters(InterfaceXml);
  }
 
- UpdateInterface();
+ RDK::UIVisualControllerStorage::UpdateInterface();
  ProjectOpenFlag=true;
-
-/* String modelfilename=ProjectIni->ReadString("General","ModelFileName","");
- if(modelfilename.Length() != 0)
- {
-  if(ExtractFilePath(modelfilename).Length() == 0)
-   UComponentsControlForm->ComponentsControlFrame->LoadModelFromFile(ProjectPath+modelfilename);
-  else
-   UComponentsControlForm->ComponentsControlFrame->LoadModelFromFile(modelfilename);
- }
-
- Model_SetGlobalTimeStep("",GlobalTimeStep);
-
-// UImagesForm->ImagesFrame->LoadFromIni(ProjectIni,"ImagesFrame");
-// UComponentsPerformanceForm->UComponentsPerformanceFrame->LoadFromIni(ProjectIni,"PerformanceFrame");
-// VideoOutputForm->LoadFromIni(ProjectIni,"VideoOutputForm");
-// UEngineMonitorForm->EngineMonitorFrame->LoadFromIni(ProjectIni,"EngineMonitorForm");
- UpdateInterface();
- */
 }
 
 // Сохраняет проект
@@ -459,6 +442,12 @@ void __fastcall TUGEngineControlForm::CreateModelClick(TObject *Sender)
 
  Model_Destroy();
  Model_Create(UClassesListForm->ClassesListFrame->GetSelectedId());
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::FavoriteInformation1Click(TObject *Sender)
+{
+ UFavoriteComponentInfoForm->Show();
 }
 //---------------------------------------------------------------------------
 

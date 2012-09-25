@@ -47,6 +47,16 @@ int TUComponentsListForm::ShowStateSelect(void)
  return ShowModal();
 }
 
+// Метод открытия диалога для выбора входа или выхода
+int TUComponentsListForm::ShowIOSelect(void)
+{
+ Panel1->Visible;
+ Position=poScreenCenter;
+ Mode=3;
+ ComponentsListFrame1->PageControl1->ActivePageIndex=2;
+ return ShowModal();
+}
+
 //---------------------------------------------------------------------------
 
 void __fastcall TUComponentsListForm::FormShow(TObject *Sender)
@@ -72,8 +82,48 @@ void __fastcall TUComponentsListForm::ComponentsListFrame1ParametersListStringGr
 {
  ComponentsListFrame1->ParametersListStringGridDblClick(Sender);
 
- ModalResult=mrOk;
- return;
+ if(Mode == 1)
+ {
+  ModalResult=mrOk;
+  return;
+ }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListForm::ComponentsListFrame1StatesListStringGridDblClick(TObject *Sender)
+
+{
+ ComponentsListFrame1->StatesListStringGridDblClick(Sender);
+
+ if(Mode == 2)
+ {
+  ModalResult=mrOk;
+  return;
+ }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListForm::ComponentsListFrame1OutputsStringGridDblClick(TObject *Sender)
+{
+ ComponentsListFrame1->OutputsStringGridDblClick(Sender);
+
+ if(Mode == 3)
+ {
+  ModalResult=mrOk;
+  return;
+ }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListForm::ComponentsListFrame1InputsStringGridDblClick(TObject *Sender)
+{
+ ComponentsListFrame1->InputsStringGridDblClick(Sender);
+
+ if(Mode == 3)
+ {
+  ModalResult=mrOk;
+  return;
+ }
 }
 //---------------------------------------------------------------------------
 

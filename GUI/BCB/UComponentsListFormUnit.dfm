@@ -3,7 +3,7 @@ object UComponentsListForm: TUComponentsListForm
   Top = 64
   Caption = 'Components List'
   ClientHeight = 420
-  ClientWidth = 565
+  ClientWidth = 682
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -18,7 +18,7 @@ object UComponentsListForm: TUComponentsListForm
   inline ComponentsListFrame1: TUComponentsListFrame
     Left = 0
     Top = 0
-    Width = 565
+    Width = 682
     Height = 379
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
@@ -35,12 +35,12 @@ object UComponentsListForm: TUComponentsListForm
       ExplicitHeight = 379
     end
     inherited Panel1: TPanel
-      Width = 196
+      Width = 313
       Height = 379
       ExplicitWidth = 196
       ExplicitHeight = 379
       inherited PageControl1: TPageControl
-        Width = 194
+        Width = 311
         Height = 377
         ExplicitWidth = 194
         ExplicitHeight = 377
@@ -48,78 +48,60 @@ object UComponentsListForm: TUComponentsListForm
           ExplicitWidth = 186
           ExplicitHeight = 351
           inherited ParametersHeaderControl: THeaderControl
-            Width = 186
+            Width = 303
             ExplicitWidth = 186
           end
           inherited ParametersRichEdit: TRichEdit
-            Width = 186
+            Width = 303
             Height = 317
             ExplicitWidth = 186
             ExplicitHeight = 317
           end
         end
-        inherited TabSheet2: TTabSheet
-          ExplicitWidth = 186
-          ExplicitHeight = 351
-          inherited StateHeaderControl: THeaderControl
-            ExplicitWidth = 186
-          end
-        end
         inherited TabSheet3: TTabSheet
-          ExplicitWidth = 186
-          ExplicitHeight = 351
           inherited Splitter2: TSplitter
-            Width = 186
+            Top = 201
+            Width = 303
             ExplicitWidth = 186
           end
           inherited IOHeaderControl: THeaderControl
-            Width = 186
-            ExplicitWidth = 186
+            Width = 303
           end
           inherited GroupBox: TGroupBox
-            Width = 186
-            ExplicitWidth = 186
+            Width = 303
+            Height = 167
+            ExplicitWidth = 303
+            ExplicitHeight = 167
             inherited OutputsStringGrid: TStringGrid
-              Width = 182
-              ExplicitWidth = 182
+              Width = 299
+              Height = 150
+              OnDblClick = ComponentsListFrame1OutputsStringGridDblClick
             end
           end
           inherited GroupBox2: TGroupBox
-            Width = 186
-            Height = 70
-            ExplicitWidth = 186
-            ExplicitHeight = 70
+            Top = 209
+            Width = 303
+            Height = 142
             inherited InputsStringGrid: TStringGrid
-              Width = 182
-              Height = 53
-              ExplicitWidth = 182
-              ExplicitHeight = 53
+              Width = 299
+              Height = 125
+              OnDblClick = ComponentsListFrame1InputsStringGridDblClick
             end
           end
         end
         inherited TabSheet4: TTabSheet
-          ExplicitWidth = 186
-          ExplicitHeight = 351
-          inherited HeaderControl1: THeaderControl
-            Width = 186
-            ExplicitWidth = 186
-          end
           inherited ParametersListStringGrid: TStringGrid
-            Width = 186
-            Height = 321
             OnDblClick = ComponentsListFrame1ParametersListStringGridDblClick
-            ExplicitLeft = 0
-            ExplicitTop = 30
-            ExplicitWidth = 186
-            ExplicitHeight = 321
           end
         end
         inherited TabSheet5: TTabSheet
-          ExplicitWidth = 186
-          ExplicitHeight = 351
           inherited HeaderControl2: THeaderControl
-            Width = 186
-            ExplicitWidth = 186
+            Width = 303
+          end
+          inherited StatesListStringGrid: TStringGrid
+            Width = 303
+            Height = 321
+            OnDblClick = ComponentsListFrame1StatesListStringGridDblClick
           end
         end
       end
@@ -137,15 +119,16 @@ object UComponentsListForm: TUComponentsListForm
   object Panel1: TPanel
     Left = 0
     Top = 379
-    Width = 565
+    Width = 682
     Height = 41
     Align = alBottom
     TabOrder = 1
+    ExplicitWidth = 565
     DesignSize = (
-      565
+      682
       41)
     object OkButton: TButton
-      Left = 397
+      Left = 514
       Top = 8
       Width = 75
       Height = 25
@@ -154,9 +137,10 @@ object UComponentsListForm: TUComponentsListForm
       Default = True
       ModalResult = 1
       TabOrder = 0
+      ExplicitLeft = 397
     end
     object CancelButton: TButton
-      Left = 480
+      Left = 597
       Top = 8
       Width = 75
       Height = 25
@@ -164,6 +148,7 @@ object UComponentsListForm: TUComponentsListForm
       Caption = 'Cancel'
       ModalResult = 2
       TabOrder = 1
+      ExplicitLeft = 480
     end
   end
 end

@@ -196,3 +196,9 @@ void __fastcall TUListInputForm::Button1Click(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+void __fastcall TUListInputForm::ListClick(TObject *Sender)
+{
+ ListDblClick(Sender);
+}
+//---------------------------------------------------------------------------
+

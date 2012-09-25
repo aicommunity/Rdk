@@ -40,7 +40,7 @@ USerStorageXML::~USerStorageXML(void)
 bool USerStorageXML::Create(const std::string &rootname)
 {
  RootNode.deleteNodeContent();
- RootNode=XMLNode::createXMLTopNode(rootname.c_str());
+ RootNode=XMLNode::createXMLTopNode(widen2(rootname).c_str());
  if(RootNode.isEmpty())
   return false;
  CurrentNode=RootNode;
@@ -59,7 +59,7 @@ bool USerStorageXML::Destroy(void)
 bool USerStorageXML::Load(const std::string &str, const std::string &root)
 {
  RootNode.deleteNodeContent();
- RootNode=XMLNode::parseString(str.c_str(),root.c_str());
+ RootNode=XMLNode::parseString(widen2(str).c_str(),widen2(root).c_str());
  if(RootNode.isEmpty())
   return false;
 
@@ -70,7 +70,7 @@ bool USerStorageXML::Load(const std::string &str, const std::string &root)
 bool USerStorageXML::LoadToNode(const std::string &str, const std::string &root)
 {
  CurrentNode.deleteNodeContent();
- CurrentNode=XMLNode::parseString(str.c_str(),root.c_str());
+ CurrentNode=XMLNode::parseString(widen2(str).c_str(),widen2(root).c_str());
  if(CurrentNode.isEmpty())
   return false;
 
@@ -81,10 +81,10 @@ bool USerStorageXML::LoadToNode(const std::string &str, const std::string &root)
 // —охран€ет xml в строку
 bool USerStorageXML::Save(std::string &str)
 {
- char* pch=RootNode.createXMLString(true);
+ wchar_t* pch=RootNode.createXMLString(true);
  if(pch)
  {
-  str=pch;
+  str=narrow2(pch);
   freeXMLString(pch);
  }
  else
@@ -94,10 +94,10 @@ bool USerStorageXML::Save(std::string &str)
 
 bool USerStorageXML::SaveFromNode(std::string &str)
 {
- char* pch=CurrentNode.createXMLString(true);
+ wchar_t* pch=CurrentNode.createXMLString(true);
  if(pch)
  {
-  str=pch;
+  str=narrow2(pch);
   freeXMLString(pch);
  }
  else
@@ -167,7 +167,7 @@ void USerStorageXML::SelectUp(void)
 // ¬озвращает число узлов с заданным именем
 int USerStorageXML::GetNumNodes(const std::string &name)
 {
- return CurrentNode.nChildNode(name.c_str());
+ return CurrentNode.nChildNode(widen2(name).c_str());
 }
 
 // ¬озвращает число узлов
@@ -182,7 +182,7 @@ int USerStorageXML::GetNumNodes(void)
 // именем и индексом меньшим на 1 - то создаем узел
 bool USerStorageXML::SelectNode(const std::string &name, int index)
 {
- XMLNode node=CurrentNode.getChildNode(name.c_str(),index);
+ XMLNode node=CurrentNode.getChildNode(widen2(name).c_str(),index);
  if(node.isEmpty())
   return false;
  CurrentNode=node;
@@ -236,7 +236,7 @@ const std::string USerStorageXML::GetNodeName(void) const
 {
  std::string str;
  if(CurrentNode.getName())
-  str=CurrentNode.getName();
+  str=narrow2(CurrentNode.getName());
 
  return str;
 }
@@ -244,7 +244,7 @@ const std::string USerStorageXML::GetNodeName(void) const
 // —оздает новый узел с заданным именем и позиционируетс€ на него
 bool USerStorageXML::AddNode(const std::string &name)
 {
- XMLNode node=CurrentNode.addChild(name.c_str());
+ XMLNode node=CurrentNode.addChild(widen2(name).c_str());
  if(node.isEmpty())
   return false;
  CurrentNode=node;
@@ -254,7 +254,7 @@ bool USerStorageXML::AddNode(const std::string &name)
 // ѕереименовывает текущий узел и продолжает указывать на него
 void USerStorageXML::RenameNode(const std::string &newname)
 {
- CurrentNode.updateName(newname.c_str());
+ CurrentNode.updateName(widen2(newname).c_str());
 }
 
 // ”дал€ет текущий узел и устанавливает указатель уровнем выше
@@ -274,13 +274,13 @@ void USerStorageXML::DelNode(void)
 // ”станавливает значение атрибута узла
 bool USerStorageXML::SetNodeAttribute(const std::string &name, const std::string &value)
 {
- if(!CurrentNode.isAttributeSet(name.c_str()))
+ if(!CurrentNode.isAttributeSet(widen2(name).c_str()))
  {
-  CurrentNode.addAttribute(name.c_str(),value.c_str());
+  CurrentNode.addAttribute(widen2(name).c_str(),widen2(value).c_str());
  }
  else
  {
-  CurrentNode.updateAttribute(value.c_str(),0,name.c_str());
+  CurrentNode.updateAttribute(widen2(value).c_str(),0,widen2(name).c_str());
  }
  return true;
 }
@@ -289,11 +289,11 @@ bool USerStorageXML::SetNodeAttribute(const std::string &name, const std::string
 const std::string USerStorageXML::GetNodeAttribute(const std::string &name) const
 {
  std::string str;
- const char *p=CurrentNode.getAttribute(name.c_str(),0);
+ const wchar_t *p=CurrentNode.getAttribute(widen2(name).c_str(),0);
 
  if(p)
  {
-  str=p;
+  str=narrow2(p);
  }
  return str;
 }
@@ -301,13 +301,13 @@ const std::string USerStorageXML::GetNodeAttribute(const std::string &name) cons
 // ”дал€ет заданный атрибут
 void USerStorageXML::DelNodeAttribute(const std::string &name)
 {
- CurrentNode.deleteAttribute(name.c_str());
+ CurrentNode.deleteAttribute(widen2(name).c_str());
 }
 
 // ”станавливает текст узла
 bool USerStorageXML::SetNodeText(const std::string &text)
 {
- CurrentNode.updateText(text.c_str());
+ CurrentNode.updateText(widen2(text).c_str());
  return true;
 }
 
@@ -317,7 +317,7 @@ const std::string USerStorageXML::GetNodeText(void) const
  if(!CurrentNode.getText())
   return string();
 
- return CurrentNode.getText();
+ return narrow2(CurrentNode.getText());
 }
 // --------------------------
 

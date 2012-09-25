@@ -14,11 +14,21 @@ See file license.txt for more information
 
 #include <string>
 #include "USerStorage.h"
-#undef _XMLWINDOWS
-#define XML_NO_WIDE_CHAR
+//#undef _XMLWINDOWS
+//#define XML_NO_WIDE_CHAR
+#ifndef _UNICODE
+#define RDK_UNICODE_RUN
+#define _UNICODE
+#endif
+
 #define _CRT_SECURE_NO_WARNINGS
 #include "../../ThirdParty/xmlParser/xmlParser.h"
 #undef _CRT_SECURE_NO_WARNINGS
+
+#ifdef RDK_UNICODE_RUN
+#undef _UNICODE
+#undef RDK_UNICODE_RUN
+#endif
 
 namespace RDK {
 namespace Serialize {

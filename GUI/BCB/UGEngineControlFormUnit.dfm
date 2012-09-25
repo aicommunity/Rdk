@@ -3,7 +3,7 @@ object UGEngineControlForm: TUGEngineControlForm
   Top = 0
   Caption = 'Engine Control'
   ClientHeight = 116
-  ClientWidth = 522
+  ClientWidth = 540
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -20,17 +20,16 @@ object UGEngineControlForm: TUGEngineControlForm
   object Panel1: TPanel
     Left = 0
     Top = 96
-    Width = 522
+    Width = 540
     Height = 1
     Align = alClient
     TabOrder = 0
-    ExplicitTop = 44
-    ExplicitWidth = 823
+    ExplicitWidth = 522
   end
   object ToolBar: TToolBar
     Left = 0
     Top = 0
-    Width = 522
+    Width = 540
     Height = 96
     AutoSize = True
     ButtonHeight = 44
@@ -39,7 +38,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Images = ImageList
     ShowCaptions = True
     TabOrder = 1
-    ExplicitWidth = 823
+    ExplicitWidth = 522
     object ToolButton17: TToolButton
       Left = 0
       Top = 0
@@ -188,12 +187,11 @@ object UGEngineControlForm: TUGEngineControlForm
   object StatusBar: TStatusBar
     Left = 0
     Top = 97
-    Width = 522
+    Width = 540
     Height = 19
     Panels = <>
     SimplePanel = True
-    ExplicitTop = 45
-    ExplicitWidth = 823
+    ExplicitWidth = 522
   end
   object MainMenu: TMainMenu
     Images = ImageList
@@ -306,13 +304,17 @@ object UGEngineControlForm: TUGEngineControlForm
         Caption = 'Performance'
         OnClick = Performance1Click
       end
+      object FavoriteInformation1: TMenuItem
+        Caption = 'Favorite Information'
+        OnClick = FavoriteInformation1Click
+      end
     end
   end
   object ImageList: TImageList
     Left = 544
     Top = 40
     Bitmap = {
-      494C01011B006000880010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B006000940010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

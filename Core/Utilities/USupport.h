@@ -16,6 +16,7 @@ See file license.txt for more information
 #include <vector>
 #include <sstream>
 #include <iomanip>
+#include <locale>
 #include "UPtr.h"
 
 #ifndef u_min
@@ -202,7 +203,7 @@ int separatestring(const basic_string<CharT> &str, vector<basic_string<CharT> > 
 std::string get_text_time(time_t time_data, char date_sep='.', char time_sep=':');
 
 
-/*
+
 // Конвертация string<->wstring
 // Копипаста с http://habrahabr.ru/blogs/cpp/112997/
 //@brief Сужает широкую строку, используя локализацию loc
@@ -229,6 +230,13 @@ std::string narrow(const std::wstring& wstr, const std::locale& loc)
   return result;
 }
 
+std::string narrow2(const std::wstring& wstr)
+{
+ std::locale cp1251_locale("");
+// std::locale cp866(std::locale(), new codecvt_cp866);
+ return narrow(wstr,cp1251_locale);
+}
+
 //@brief Расширяет строку, используя локализацию loc
 //   @return Возвращает расширенную строку или пустую расширенную строку, в
 //   случае, если возникла ошибка.
@@ -253,7 +261,13 @@ std::wstring widen(const std::string& str, const std::locale& loc)
     return std::wstring();
   return result;
 }
-    */
+
+std::wstring widen2(const std::string& str)
+{
+ std::locale cp1251_locale("");
+ return widen(str,cp1251_locale);
+}
+
 
 }
 #endif

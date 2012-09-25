@@ -14,7 +14,7 @@ object USeriesControlForm: TUSeriesControlForm
   Font.Style = []
   FormStyle = fsStayOnTop
   OldCreateOrder = False
-  Position = poDesktopCenter
+  Position = poScreenCenter
   OnHide = FormHide
   PixelsPerInch = 96
   TextHeight = 16

@@ -47,6 +47,7 @@ __published:    // IDE-managed Components
           TShiftState Shift);
         void __fastcall FormResize(TObject *Sender);
         void __fastcall Button1Click(TObject *Sender);
+	void __fastcall ListClick(TObject *Sender);
 private:    // User declarations
 public:        // User declarations
         __fastcall TUListInputForm(TComponent* Owner);
@@ -67,7 +68,7 @@ public:        // User declarations
         // Указывает будет ли форма запроса требовать обязателный ввод
         // не пустой строки
         // Если 'true' - то ввод обязателен
-        // Если 'false' - то нет
+		// Если 'false' - то нет
         bool MustInput;
 
         // Указывает включена или выключена сортировка в списке

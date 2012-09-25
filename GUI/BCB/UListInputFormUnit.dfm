@@ -16,7 +16,7 @@ object UListInputForm: TUListInputForm
   Font.Style = []
   FormStyle = fsStayOnTop
   OldCreateOrder = False
-  Position = poDesktopCenter
+  Position = poScreenCenter
   OnHide = FormHide
   OnResize = FormResize
   OnShow = FormShow
@@ -38,6 +38,7 @@ object UListInputForm: TUListInputForm
     FixedRows = 0
     Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRowSelect]
     TabOrder = 0
+    OnClick = ListClick
     OnDblClick = ListDblClick
   end
   object Panel1: TPanel

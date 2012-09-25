@@ -29,6 +29,11 @@ __published:	// IDE-managed Components
 	void __fastcall FormShow(TObject *Sender);
 	void __fastcall ComponentsListFrame1StringGridDblClick(TObject *Sender);
 	void __fastcall ComponentsListFrame1ParametersListStringGridDblClick(TObject *Sender);
+	void __fastcall ComponentsListFrame1StatesListStringGridDblClick(TObject *Sender);
+	void __fastcall ComponentsListFrame1OutputsStringGridDblClick(TObject *Sender);
+	void __fastcall ComponentsListFrame1InputsStringGridDblClick(TObject *Sender);
+
+
 
 private:	// User declarations
 public:		// User declarations
@@ -38,6 +43,7 @@ public:		// User declarations
 // 0 - компонента
 // 1 - параметра
 // 2 - перменной состояния
+// 3 - входа или выхода
 int Mode;
 
 // Метод открытия диалога для выбора компонента
@@ -48,6 +54,9 @@ int ShowParameterSelect(void);
 
 // Метод открытия диалога для выбора переменной состояния
 int ShowStateSelect(void);
+
+// Метод открытия диалога для выбора входа или выхода
+int ShowIOSelect(void);
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TUComponentsListForm *UComponentsListForm;
