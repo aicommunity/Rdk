@@ -247,3 +247,5 @@ void __fastcall TUComponentsControlFrame::ClassesListFrameStringGridDblClick(TOb
  TakeObjectButtonClick(Sender);
 }
 //---------------------------------------------------------------------------
+
+

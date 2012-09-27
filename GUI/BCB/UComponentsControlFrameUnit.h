@@ -41,6 +41,7 @@ __published:	// IDE-managed Components
 	void __fastcall ClassesListFrameStringGridDblClick(TObject *Sender);
 
 
+
 private:	// User declarations
 public:		// User declarations
 	__fastcall TUComponentsControlFrame(TComponent* Owner);

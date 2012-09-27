@@ -14,6 +14,7 @@
 #include "UClassesListFormUnit.h"
 #include "UComponentsPerformanceFormUnit.h"
 #include "UFavoriteComponentInfoFormUnit.h"
+#include "UDrawEngineFormUnit.h"
 #include "rdk_initdll.h"
 
 //---------------------------------------------------------------------------
@@ -448,6 +449,12 @@ void __fastcall TUGEngineControlForm::CreateModelClick(TObject *Sender)
 void __fastcall TUGEngineControlForm::FavoriteInformation1Click(TObject *Sender)
 {
  UFavoriteComponentInfoForm->Show();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::DrawEngine1Click(TObject *Sender)
+{
+ UDrawEngineForm->Show();
 }
 //---------------------------------------------------------------------------
 

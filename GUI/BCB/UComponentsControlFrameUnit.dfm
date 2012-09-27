@@ -149,24 +149,12 @@ inherited UComponentsControlFrame: TUComponentsControlFrame
               ExplicitTop = 4
               ExplicitWidth = 376
               ExplicitHeight = 539
-              inherited ParametersListStringGrid: TStringGrid
-                ExplicitLeft = 0
-                ExplicitTop = 30
-                ExplicitWidth = 376
-                ExplicitHeight = 509
-              end
             end
             inherited TabSheet5: TTabSheet
               ExplicitLeft = 4
               ExplicitTop = 4
               ExplicitWidth = 376
               ExplicitHeight = 539
-              inherited StatesListStringGrid: TStringGrid
-                ExplicitLeft = 0
-                ExplicitTop = 30
-                ExplicitWidth = 376
-                ExplicitHeight = 509
-              end
             end
           end
         end

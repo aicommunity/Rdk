@@ -337,6 +337,17 @@ const std::string USerStorageXML::ReadString(const std::string &name, const std:
  return res;
 }
 
+const std::string USerStorageXML::ReadString(const std::string &name, int node_index, const std::string &default_value)
+{
+ if(!SelectNode(name,node_index))
+  return default_value;
+
+ std::string res=GetNodeText();
+
+ SelectUp();
+ return res;
+}
+
 const std::string USerStorageXML::ReadString(int node_index, const std::string &default_value)
 {
  if(!SelectNode(node_index))
@@ -351,6 +362,17 @@ const std::string USerStorageXML::ReadString(int node_index, const std::string &
 int USerStorageXML::ReadInteger(const std::string &name, int default_value)
 {
  if(!SelectNode(name))
+  return default_value;
+
+ int res=atoi(GetNodeText());
+
+ SelectUp();
+ return res;
+}
+
+int USerStorageXML::ReadInteger(const std::string &name, int node_index, int default_value)
+{
+ if(!SelectNode(name,node_index))
   return default_value;
 
  int res=atoi(GetNodeText());
@@ -381,6 +403,17 @@ double USerStorageXML::ReadFloat(const std::string &name, double default_value)
  return res;
 }
 
+double USerStorageXML::ReadFloat(const std::string &name, int node_index, double default_value)
+{
+ if(!SelectNode(name,node_index))
+  return default_value;
+
+ double res=atoi(GetNodeText());
+
+ SelectUp();
+ return res;
+}
+
 double USerStorageXML::ReadFloat(int node_index, double default_value)
 {
  if(!SelectNode(node_index))
@@ -395,6 +428,17 @@ double USerStorageXML::ReadFloat(int node_index, double default_value)
 bool USerStorageXML::ReadBool(const std::string &name, bool default_value)
 {
  if(!SelectNode(name))
+  return default_value;
+
+ bool res=atoi(GetNodeText());
+
+ SelectUp();
+ return res;
+}
+
+bool USerStorageXML::ReadBool(const std::string &name, int node_index, bool default_value)
+{
+ if(!SelectNode(name,node_index))
   return default_value;
 
  bool res=atoi(GetNodeText());

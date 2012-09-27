@@ -329,6 +329,20 @@ const std::string TUComponentsListFrame::GetSelectedComponentName(void) const
  return AnsiString(StringGrid->Cells[1][StringGrid->Row]).c_str();
 }
 
+// Выбирает компонент по заданному короткому имени
+void TUComponentsListFrame::SetSelectedComponentName(const std::string &name)
+{
+ for(int i=0;i<StringGrid->RowCount;i++)
+ {
+  if(StringGrid->Cells[1][i] == name.c_str())
+  {
+   StringGrid->Row=i;
+   StringGridClick(this);
+   break;
+  }
+ }
+}
+
 // Длинное имя выделенного компонента
 const std::string& TUComponentsListFrame::GetSelectedComponentLongName(void) const
 {
@@ -357,6 +371,20 @@ const std::string& TUComponentsListFrame::GetSelectedComponentStateName(void) co
 const std::string& TUComponentsListFrame::GetCurrentComponentName(void) const
 {
  return CurrentComponentName;
+}
+
+// Опускается на уровень вниз по имени выбранного компонента
+void TUComponentsListFrame::SelectComponentByName(const std::string& name)
+{
+ SetSelectedComponentName(name);
+ StringGridDblClick(this);
+}
+
+// Поднимается на уровень вверх
+void TUComponentsListFrame::SelectUp(void)
+{
+ SetSelectedComponentName("");
+ StringGridDblClick(this);
 }
 
 // Длинный строковой id текущего компонента
@@ -458,6 +486,10 @@ void __fastcall TUComponentsListFrame::StringGridDblClick(TObject *Sender)
   return;
 
  if(StringGrid->Row <= 0)
+  return;
+
+ int num_components=Model_GetNumComponents(GetSelectedComponentLongId().c_str());
+ if(!num_components)
   return;
 
  if(StringGrid->Row == 1 && StringGrid->Cells[0][StringGrid->Row] == "..")

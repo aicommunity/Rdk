@@ -14,6 +14,7 @@ See file license.txt for more information
 
 #include "Gui_lite.h"
 #include "UFont.h"
+#include "UDrawEngine.h"
 
                         
 #endif

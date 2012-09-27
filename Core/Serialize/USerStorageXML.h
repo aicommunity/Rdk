@@ -150,12 +150,16 @@ const std::string GetNodeText(void) const;
 // Считывает данные как соответствующий тип, если данное не найдено или не приводимо в
 // ожидаемый тип - оно инициализируется значением по умолчанию
 const std::string ReadString(const std::string &name, const std::string &default_value);
+const std::string ReadString(const std::string &name, int node_index, const std::string &default_value);
 const std::string ReadString(int node_index, const std::string &default_value);
 int ReadInteger(const std::string &name, int default_value);
+int ReadInteger(const std::string &name, int node_index, int default_value);
 int ReadInteger(int node_index, int default_value);
 double ReadFloat(const std::string &name, double default_value);
+double ReadFloat(const std::string &name, int node_index, double default_value);
 double ReadFloat(int node_index, double default_value);
 bool ReadBool(const std::string &name, bool default_value);
+bool ReadBool(const std::string &name, int node_index, bool default_value);
 bool ReadBool(int node_index, bool default_value);
 
 // Записывает данные как соответствующий тип

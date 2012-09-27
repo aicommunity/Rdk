@@ -149,6 +149,9 @@ public:
 		// Возвращает имя выбранного компонента
 		const std::string GetSelectedComponentName(void) const;
 
+		// Выбирает компонент по заданному короткому имени
+		void SetSelectedComponentName(const std::string &name);
+
 		// Длинное имя выделенного компонента
 		const std::string& GetSelectedComponentLongName(void) const;
 
@@ -163,6 +166,12 @@ public:
 
 		// Длинное имя текущего компонента
 		const std::string& GetCurrentComponentName(void) const;
+
+		// Опускается на уровень вниз по имени выбранного компонента
+		void SelectComponentByName(const std::string& name);
+
+		// Поднимается на уровень вверх
+		void SelectUp(void);
 
 		// Длинный строковой id текущего компонента
 		const std::string& GetCurrentComponentId(void) const;

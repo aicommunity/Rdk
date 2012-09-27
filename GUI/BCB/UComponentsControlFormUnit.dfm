@@ -73,6 +73,8 @@ object UComponentsControlForm: TUComponentsControlForm
               ExplicitWidth = 257
               ExplicitHeight = 377
               inherited TabSheet1: TTabSheet
+                ExplicitWidth = 249
+                ExplicitHeight = 351
                 inherited ParametersHeaderControl: THeaderControl
                   Width = 249
                   ExplicitWidth = 249
