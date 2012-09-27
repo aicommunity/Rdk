@@ -104,9 +104,11 @@ void TUDrawEngineForm::SetNet(const std::string &comp_name)
   return;
 
  ComponentName=comp_name;
- const char *xml=Model_SaveComponent(ComponentName.c_str());
+ const char *xml=Model_SaveComponentDrawInfo(ComponentName.c_str());
  if(xml)
   NetXml.Load(xml,"");
+
+// RichEdit1->Text=xml;
  DrawEngine.SetNetXml(NetXml);
 
  if(Visible)

@@ -12,6 +12,8 @@
 #include "UComponentsPerformanceFormUnit.h"
 #include "UClassesListFormUnit.h"
 #include "UWatchFormUnit.h"
+#include "UFavoriteComponentInfoFormUnit.h"
+#include "UDrawEngineFormUnit.h"
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -137,10 +139,19 @@ void TUEngineControlForm::OpenProject(const String &FileName)
   }
  }
 
- ProjectXml.SelectNodeRoot(string("Project/Interfaces/"));
- RDK::UIVisualControllerStorage::LoadParameters(ProjectXml);
+ String interfacefilename=ProjectXml.ReadString("InterfaceFileName","").c_str();
+ if(interfacefilename.Length() != 0)
+ {
+  if(ExtractFilePath(interfacefilename.c_str()).Length() == 0)
+   InterfaceXml.LoadFromFile(AnsiString(ProjectPath+interfacefilename).c_str(),"Interfaces");
+  else
+   InterfaceXml.LoadFromFile(AnsiString(interfacefilename).c_str(),"Interfaces");
 
- UpdateInterface();
+  InterfaceXml.SelectNodeRoot(std::string("Interfaces"));
+  RDK::UIVisualControllerStorage::LoadParameters(InterfaceXml);
+ }
+
+ RDK::UIVisualControllerStorage::UpdateInterface();
  ProjectOpenFlag=true;
 }
 
@@ -150,8 +161,22 @@ void TUEngineControlForm::SaveProject(void)
  if(!ProjectOpenFlag)
   return;
 
- ProjectXml.SelectNodeRoot(string("Project/Interfaces/"));
- RDK::UIVisualControllerStorage::SaveParameters(ProjectXml);
+ InterfaceXml.SelectNodeRoot(std::string("Interfaces"));
+ RDK::UIVisualControllerStorage::SaveParameters(InterfaceXml);
+
+ String interfacefilename=ProjectXml.ReadString("InterfaceFileName","").c_str();
+ if(interfacefilename.Length() != 0)
+ {
+  if(ExtractFilePath(interfacefilename).Length() == 0)
+   InterfaceXml.SaveToFile(AnsiString(ProjectPath+interfacefilename).c_str());
+  else
+   InterfaceXml.SaveToFile(AnsiString(interfacefilename).c_str());
+ }
+ else
+ {
+  ProjectXml.WriteString("InterfaceFileName","Interface.xml");
+  InterfaceXml.SaveToFile(AnsiString(ProjectPath+interfacefilename).c_str());
+ }
 
  ProjectXml.SelectNodeRoot("Project/General");
 
@@ -327,6 +352,18 @@ void __fastcall TUEngineControlForm::CreateModelClick(TObject *Sender)
 
  Model_Destroy();
  Model_Create(UClassesListForm->ClassesListFrame->GetSelectedId());
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUEngineControlForm::FavoriteInformation1Click(TObject *Sender)
+{
+ UFavoriteComponentInfoForm->Show();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUEngineControlForm::DrawEngine1Click(TObject *Sender)
+{
+ UDrawEngineForm->Show();
 }
 //---------------------------------------------------------------------------
 

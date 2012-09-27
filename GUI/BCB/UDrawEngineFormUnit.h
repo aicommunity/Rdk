@@ -11,6 +11,7 @@
 #include <Vcl.ExtCtrls.hpp>
 #include "rdk_initdll.h"
 #include "myrdk.h"
+#include <Vcl.ComCtrls.hpp>
 //---------------------------------------------------------------------------
 class TUDrawEngineForm : public TUVisualControllerForm
 {
@@ -19,6 +20,8 @@ __published:	// IDE-managed Components
 	TPanel *Panel2;
 	TScrollBox *ScrollBox;
 	TImage *Image;
+	TRichEdit *RichEdit1;
+	TSplitter *Splitter1;
 	void __fastcall FormResize(TObject *Sender);
 	void __fastcall ImageMouseDown(TObject *Sender, TMouseButton Button, TShiftState Shift,
           int X, int Y);

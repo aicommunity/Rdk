@@ -782,6 +782,13 @@ int RDK_CALL Model_LoadComponentState(const char *stringid, char* buffer)
  return PEngine->Model_LoadComponentState(stringid, buffer);
 }
 
+// Сохраняет внутренние данные компонента, и его _непосредственных_ дочерних компонент, исключая
+// переменные состояния в xml
+const char* RDK_CALL Model_SaveComponentDrawInfo(const char *stringid)
+{
+ return PEngine->Model_SaveComponentDrawInfo(stringid);
+}
+
 // Управляет шагом счета модели по умолчанию
 int RDK_CALL Model_GetDefaultTimeStep(void)
 {

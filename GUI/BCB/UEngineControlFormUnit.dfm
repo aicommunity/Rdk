@@ -24,7 +24,6 @@ object UEngineControlForm: TUEngineControlForm
     Height = 5
     Align = alClient
     TabOrder = 0
-    ExplicitWidth = 516
   end
   object ToolBar: TToolBar
     Left = 0
@@ -38,7 +37,6 @@ object UEngineControlForm: TUEngineControlForm
     Images = ImageList
     ShowCaptions = True
     TabOrder = 1
-    ExplicitWidth = 516
     object ToolButton8: TToolButton
       Left = 0
       Top = 0
@@ -158,7 +156,6 @@ object UEngineControlForm: TUEngineControlForm
     Height = 19
     Panels = <>
     SimplePanel = True
-    ExplicitWidth = 516
   end
   object MainMenu: TMainMenu
     Images = ImageList
@@ -252,13 +249,21 @@ object UEngineControlForm: TUEngineControlForm
         Caption = 'Watch Window'
         OnClick = WatchWindow1Click
       end
+      object FavoriteInformation1: TMenuItem
+        Caption = 'Favorite Information'
+        OnClick = FavoriteInformation1Click
+      end
+      object DrawEngine1: TMenuItem
+        Caption = 'Draw Engine'
+        OnClick = DrawEngine1Click
+      end
     end
   end
   object ImageList: TImageList
     Left = 384
     Top = 32
     Bitmap = {
-      494C01011B006000800010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B006000840010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

@@ -2335,6 +2335,37 @@ int UEngine::Model_LoadComponentState(const char *stringid, char* buffer)
  return 0;
 }
 
+
+// Сохраняет внутренние данные компонента, и его _непосредственных_ дочерних компонент, исключая
+// переменные состояния в xml
+const char* UEngine::Model_SaveComponentDrawInfo(const char *stringid)
+{
+ try
+ {
+  UEPtr<RDK::UANet> cont=dynamic_pointer_cast<RDK::UANet>(FindComponent(stringid));
+
+  if(!cont)
+   return 0;
+
+  XmlStorage.DelNode();
+  XmlStorage.Create("Save");
+  XmlStorage.SetNodeAttribute("ModelName",Environment->GetModel()->GetName());
+
+  if(!Model_SaveComponentDrawInfo(cont,&XmlStorage))
+   return 0;
+
+  XmlStorage.Save(TempString);
+ // strcpy(buffer,str.c_str());
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return TempString.c_str();
+}
+
+
+
 // Управляет шагом счета модели по умолчанию
 int UEngine::Model_GetDefaultTimeStep(void) const
 {
@@ -3006,6 +3037,49 @@ int UEngine::Model_LoadComponentState(RDK::UANet* cont, RDK::Serialize::USerStor
     return false;
    serstorage->SelectUp();
   }
+  serstorage->SelectUp();
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+
+ return true;
+}
+
+
+// Сохраняет внутренние данные компонента, и его _непосредственных_ дочерних компонент, исключая
+// переменные состояния в xml
+int UEngine::Model_SaveComponentDrawInfo(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage)
+{
+ try
+ {
+  if(!cont || !serstorage)
+   return false;
+
+  serstorage->AddNode(cont->GetName());
+  serstorage->SetNodeAttribute("Class",/*RDK::sntoa(cont->GetClass())*/Storage->FindClassName(cont->GetClass()));
+
+  serstorage->AddNode("Links");
+
+  UStringLinksList linkslist;
+  for(int i=0;i<cont->GetNumComponents();i++)
+   static_pointer_cast<UAItem>(cont->GetComponentByIndex(i))->GetLinks(linkslist, cont);
+  *serstorage<<linkslist;
+  serstorage->SelectUp();
+
+  serstorage->AddNode("Components");
+  for(int i=0;i<cont->GetNumComponents();i++)
+  {
+   XmlStorage.AddNode(cont->GetComponentByIndex(i)->GetName());
+   XmlStorage.AddNode("Parameters");
+   if(!Model_GetComponentParameters(dynamic_pointer_cast<RDK::UANet>(cont->GetComponentByIndex(i)),serstorage))
+	return false;
+   XmlStorage.SelectUp();
+   XmlStorage.SelectUp();
+  }
+  serstorage->SelectUp();
+
   serstorage->SelectUp();
  }
  catch (UException &exception)

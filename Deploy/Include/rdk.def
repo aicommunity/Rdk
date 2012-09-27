@@ -118,7 +118,8 @@ EXPORTS
     Model_SaveComponentParameters = _Model_SaveComponentParameters
     Model_LoadComponentParameters = _Model_LoadComponentParameters
     Model_SaveComponentState = _Model_SaveComponentState
-    Model_LoadComponentState = _Model_LoadComponentState
+    Model_LoadComponentState = _Model_LoadComponentState  
+    Model_SaveComponentDrawInfo = _Model_SaveComponentDrawInfo
     Model_GetDefaultTimeStep = _Model_GetDefaultTimeStep
     Model_SetDefaultTimeStep = _Model_SetDefaultTimeStep
     Model_GetTimeStep = _Model_GetTimeStep

@@ -227,12 +227,16 @@ void UDrawEngine::UpdateDestinations(void)
    UGEDescription &descr=Descriptions[name];
    descr.X=(i+1)*30;
    descr.Y=(i+1)*30;
-   NetXml.SelectNode("Components");
-   if(NetXml.GetNumNodes())
-	descr.Type=2;
-   else
+   if(!NetXml.SelectNode("Components"))
 	descr.Type=1;
-   NetXml.SelectUp();
+   else
+   {
+    if(NetXml.GetNumNodes())
+	 descr.Type=2;
+	else
+	 descr.Type=1;
+	NetXml.SelectUp();
+   }
 
    NetXml.SelectNode("Parameters");
    descr.NumInputs=NetXml.ReadInteger("NumInputs",0);
@@ -356,7 +360,7 @@ void UDrawEngine::ParseLinks(void)
    for(int j=0;j<num_inps;j++)
    {
 	std::string conn_name=NetXml.ReadString("Connector",j,"");
-	J=Descriptions.find(conn_name);
+	J=Descriptions.find(conn_name.substr(0,conn_name.find_first_of(".")));
 	if(J == Descriptions.end())
 	 continue;
 	Links[I->first].push_back(J);

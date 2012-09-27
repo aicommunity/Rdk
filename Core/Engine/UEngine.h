@@ -546,6 +546,10 @@ virtual const char* Model_SaveComponentState(const char *stringid);
 // Загружает состояние компонента и его дочерних компонент из xml
 virtual int Model_LoadComponentState(const char *stringid, char* buffer);
 
+// Сохраняет внутренние данные компонента, и его _непосредственных_ дочерних компонент, исключая
+// переменные состояния в xml
+virtual const char* Model_SaveComponentDrawInfo(const char *stringid);
+
 // Управляет шагом счета модели по умолчанию
 virtual int Model_GetDefaultTimeStep(void) const;
 virtual void Model_SetDefaultTimeStep(int value);
@@ -700,6 +704,10 @@ virtual int Model_SaveComponentState(RDK::UANet* cont, RDK::Serialize::USerStora
 
 // Загружает состояние компонента и его дочерних компонент из xml
 virtual int Model_LoadComponentState(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage);
+
+// Сохраняет внутренние данные компонента, и его _непосредственных_ дочерних компонент, исключая
+// переменные состояния в xml
+virtual int Model_SaveComponentDrawInfo(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage);
 // --------------------------
 
 // --------------------------

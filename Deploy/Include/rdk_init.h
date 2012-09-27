@@ -434,6 +434,10 @@ RDK_LIB_TYPE const char * RDK_CALL Model_SaveComponentState(const char *stringid
 // Загружает состояние компонента и его дочерних компонент из xml
 RDK_LIB_TYPE int RDK_CALL Model_LoadComponentState(const char *stringid, char* buffer);
 
+// Сохраняет внутренние данные компонента, и его _непосредственных_ дочерних компонент, исключая
+// переменные состояния в xml
+RDK_LIB_TYPE const char* RDK_CALL Model_SaveComponentDrawInfo(const char *stringid);
+
 // Управляет шагом счета модели по умолчанию
 RDK_LIB_TYPE int RDK_CALL Model_GetDefaultTimeStep(void);
 RDK_LIB_TYPE void RDK_CALL Model_SetDefaultTimeStep(int value);
