@@ -25,6 +25,10 @@ __published:	// IDE-managed Components
 	void __fastcall FormResize(TObject *Sender);
 	void __fastcall ImageMouseDown(TObject *Sender, TMouseButton Button, TShiftState Shift,
           int X, int Y);
+	void __fastcall ImageMouseMove(TObject *Sender, TShiftState Shift, int X, int Y);
+	void __fastcall ImageMouseUp(TObject *Sender, TMouseButton Button, TShiftState Shift,
+          int X, int Y);
+
 private:	// User declarations
 public:		// User declarations
 	__fastcall TUDrawEngineForm(TComponent* Owner);
@@ -38,11 +42,22 @@ RDK::UDrawEngine DrawEngine;
 // Графический движок
 RDK::UGraphics Graph;
 
+// Шрифт
+RDK::UBitmapFont Font;
+
 // Канва рисования
 RDK::UBitmap GraphCanvas,ShowCanvas;
 
 // Xml описание сети
 RDK::Serialize::USerStorageXML NetXml;
+
+TShiftState DownShift;
+
+int StartX,StartY,StopX,StopY;
+
+std::string MoveComponentName;
+
+std::string FontFileName;
 
 // -----------------------------
 // Методы управления визуальным интерфейсом
@@ -75,6 +90,9 @@ virtual void ALoadParameters(RDK::Serialize::USerStorageXML &xml);
 void SetNet(const std::string &comp_name);
 
 void SelectComponent(const std::string &comp_name);
+
+// Сохраняет положение компонента в заданных координатах
+void SaveComponentPosition(const std::string &name);
 // -----------------------------
 };
 //---------------------------------------------------------------------------

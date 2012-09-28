@@ -13,10 +13,11 @@ See file license.txt for more information
 #ifndef UGRAPHICS_CPP
 #define UGRAPHICS_CPP
 
-#include "UGraphics.h"
 #include <cmath>
 #include <cstdlib>
 //#include <list>
+#include "UGraphics.h"
+#include "UFont.h"
 
 #ifndef M_PI
 #define M_PI 3.1416
@@ -36,6 +37,7 @@ using namespace std;
 UGraphics::UGraphics(void)
 {
  Canvas=0;
+ Font=0;
  PenColor.c=0;
  PenWidth=1;
  HalfPenWidth=0;
@@ -74,6 +76,22 @@ bool UGraphics::SetCanvas(UBitmap *canvas)
  Canvas=canvas;
  CWidth=Canvas->GetWidth();
  CHeight=Canvas->GetHeight();
+ return true;
+}
+
+// Возвращает текущий шрифт
+UAFont* UGraphics::GetFont(void)
+{
+ return Font;
+}
+
+// Устанавливает текущий шрифт
+bool UGraphics::SetFont(UAFont* font)
+{
+ if(Font == font)
+  return true;
+
+ Font=font;
  return true;
 }
 // --------------------------
@@ -499,7 +517,7 @@ void UGraphics::Fill(int x, int y, UColorT BorderColor)
 
 // Выводит изображение с началом в заданной позиции
 // Если transparency == 0 копируется без прозрачности
-// Если transparency == 1 копируется c эффектом прозрачности прозрачности
+// Если transparency == 1 копируется c эффектом прозрачности
 // Если transparency == 2 копируется как маска, с цветом данных как текущего пера
 void UGraphics::Bitmap(int x, int y, UBitmap &bmp, int transparency, UColorT transp)
 {
@@ -519,6 +537,31 @@ void UGraphics::Bitmap(int x, int y, UBitmap &bmp, int transparency, UColorT tra
  }
 }
 // --------------------------
+
+
+// --------------------------
+// Вывод текста
+// --------------------------
+// Выводит текст str
+void UGraphics::Text(const wstring &str, int x, int y)
+{
+ if(!Font)
+  return;
+
+ SetPenPos(x,y);
+ Font->Draw(str,this);
+}
+
+void UGraphics::Text(const string &str, int x, int y)
+{
+ if(!Font)
+  return;
+
+ SetPenPos(x,y);
+ Font->Draw(str,this);
+}
+// --------------------------
+
 
 
 // Вспомогательные методы

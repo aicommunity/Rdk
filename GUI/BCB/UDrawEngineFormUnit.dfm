@@ -43,10 +43,6 @@ object UDrawEngineForm: TUDrawEngineForm
         'RichEdit1')
       ParentFont = False
       TabOrder = 0
-      ExplicitLeft = 120
-      ExplicitTop = 48
-      ExplicitWidth = 185
-      ExplicitHeight = 89
     end
   end
   object Panel2: TPanel
@@ -56,7 +52,6 @@ object UDrawEngineForm: TUDrawEngineForm
     Height = 250
     Align = alClient
     TabOrder = 1
-    ExplicitWidth = 315
     object ScrollBox: TScrollBox
       Left = 1
       Top = 1
@@ -64,13 +59,14 @@ object UDrawEngineForm: TUDrawEngineForm
       Height = 248
       Align = alClient
       TabOrder = 0
-      ExplicitWidth = 313
       object Image: TImage
         Left = 0
         Top = 0
         Width = 305
         Height = 241
         OnMouseDown = ImageMouseDown
+        OnMouseMove = ImageMouseMove
+        OnMouseUp = ImageMouseUp
       end
     end
   end

@@ -58,22 +58,6 @@ int UAGraphics::GetCHeight(void) const
 {
  return CHeight;
 }
-
-// Возвращает текущий шрифт
-/*UAFont* UAGraphics::GetFont(void)
-{
- return Font;
-}
-
-// Устанавливает текущий шрифт
-bool UAGraphics::SetFont(UAFont* font)
-{
- if(Font == font)
-  return true;
-
- Font=font;
- return true;
-} */
 // --------------------------
 
 // --------------------------
@@ -134,29 +118,6 @@ void UAGraphics::SetPenPos(int x, int y)
 }
 // --------------------------
 
-// --------------------------
-// Вывод текста
-// --------------------------
-// Выводит текст str
-/*void UAGraphics::Text(const wstring &str, int x, int y)
-{
- if(!Font)
-  return;
-
- SetPenPos(x,y);
- Font->Draw(str,this);
-}
-
-void UAGraphics::Text(const string &str, int x, int y)
-{
- if(!Font)
-  return;
-
- SetPenPos(x,y);
- Font->Draw(str,this);
-}
-// --------------------------
-*/
 }
 #endif
 

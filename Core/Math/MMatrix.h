@@ -448,13 +448,13 @@ MMatrix<T,Rows,Cols> operator - (T v, const MMatrix<T,Rows,Cols> &M)
 template<class T, unsigned Rows, unsigned Cols>
 bool operator == (const MMatrix<T,Rows,Cols> &M1, const MMatrix<T,Rows,Cols> &M2)
 {
- return !memcmp(M1.Data1D,M2.Data1D,Cols*Rows*sizeof(T));
+ return (memcmp(M1.Data1D,M2.Data1D,Cols*Rows*sizeof(T)) == 0)?true:false;
 }
 
 template<class T, unsigned Rows, unsigned Cols>
 bool operator != (const MMatrix<T,Rows,Cols> &M1, const MMatrix<T,Rows,Cols> &M2)
 {
- return (memcmp(M1.Data1D,M2.Data1D,Cols*Rows*sizeof(T)) == 0)?true:false;
+ return (memcmp(M1.Data1D,M2.Data1D,Cols*Rows*sizeof(T)) != 0)?true:false;
 }
 // --------------------------
 

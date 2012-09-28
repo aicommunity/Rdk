@@ -14,6 +14,7 @@
 #include "../../Core/Graphics/UBitmap.cpp"
 #include "../../Core/Graphics/UAGraphics.cpp"
 #include "../../Core/Graphics/UGraphics.cpp"
+#include "../../Core/Graphics/UFont.cpp"
 #include "../../Core/Graphics/UDrawEngine.cpp"
 #include "../../Core/Graphics/UGraphicsXMLSerialize.cpp"
 #include "../../Core/Graphics/UGraphicsBinarySerialize.cpp"

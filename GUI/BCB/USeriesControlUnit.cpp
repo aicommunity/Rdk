@@ -149,6 +149,9 @@ void __fastcall TUSeriesControlForm::UpdateInfo(void)
  else
   CheckBox5->Checked=true;
 
+ WatchIntervalEdit->Text=FloatToStrF(GrSender->GetWatchInterval(),ffFixed,5,5);
+
+
  UpdateSelectedWatch(); 
 }
 
@@ -409,6 +412,14 @@ void __fastcall TUSeriesControlForm::BitBtn1Click(TObject *Sender)
 	 GrSender->ChangeVisible(I->first, false);
 	 ++I;
 	}
+
+   I=DelWatchList.begin();
+   while(I != DelWatchList.end())
+	{
+	 GrSender->Del(I->first);
+	 ++I;
+	}
+
   }
  else
   {
@@ -478,6 +489,8 @@ void __fastcall TUSeriesControlForm::BitBtn1Click(TObject *Sender)
 	GrSender->SetLegendVisible(true);
 
    GrSender->SetLegendPosition(ComboBox3->ItemIndex);
+
+   GrSender->SetWatchInterval(StrToFloat(WatchIntervalEdit->Text));
   }
 
  Hide();
@@ -572,6 +585,27 @@ void __fastcall TUSeriesControlForm::ComboBox2Select(TObject *Sender)
 
 
 void __fastcall TUSeriesControlForm::ComboBox3Select(TObject *Sender)
+{
+ GraphChanged=true;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUSeriesControlForm::DelPointButtonClick(TObject *Sender)
+{
+ if(StringGrid2->Row < 1 || (StringGrid2->Row == 1 && StringGrid2->Cells[0][1] == ""))
+  return;
+
+ map<int,TUWatchInfo>::iterator I;
+
+ I=WatchList.find(StrToInt(StringGrid2->Cells[0][StringGrid2->Row]));
+ DelWatchList[I->first]=I->second;
+ WatchList.erase(I);
+ UpdateInfo();
+ SeriesChanged=true;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUSeriesControlForm::WatchIntervalEditChange(TObject *Sender)
 {
  GraphChanged=true;
 }

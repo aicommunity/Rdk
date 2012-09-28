@@ -123,6 +123,12 @@ void RenameNode(const std::string &newname);
 
 // ”дал€ет текущий узел и устанавливает указатель уровнем выше
 void DelNode(void);
+
+// ”дал€ет содержимое узла
+void DelNodeContent(void);
+
+// ”дал€ет содержимое узла сохран€€ сам узел
+void DelNodeInternalContent(void);
 // --------------------------
 
 // --------------------------

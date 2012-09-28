@@ -222,7 +222,7 @@ public:
 void __fastcall UpdatePath(void);
 
 // Отрисовка фрейма
-void UpdateInterface(void);
+void AUpdateInterface(void);
 
 // Обновляет длинные имена выбранных компонент
 void UpdateSelectedComponentInfo(void);

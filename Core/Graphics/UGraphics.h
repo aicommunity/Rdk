@@ -17,11 +17,16 @@ See file license.txt for more information
 
 namespace RDK {
 
+class UAFont;
+
 class UGraphics: public UAGraphics
 {
 protected: // Данные
 // Канва рисования
 UBitmap* Canvas;
+
+// Шрифт
+UAFont *Font;
 
 public: // Методы
 // --------------------------
@@ -40,6 +45,12 @@ UBitmap* GetCanvas(void);
 
 // Задает канву рисования
 bool SetCanvas(UBitmap *canvas);
+
+// Возвращает текущий шрифт
+UAFont* GetFont(void);
+
+// Устанавливает текущий шрифт
+bool SetFont(UAFont* font);
 // --------------------------
 
 // --------------------------
@@ -93,10 +104,19 @@ void Fill(int x, int y, UColorT BorderColor);
 
 // Выводит изображение с началом в заданной позиции
 // Если transparency == 0 копируется без прозрачности
-// Если transparency == 1 копируется c эффектом прозрачности прозрачности
+// Если transparency == 1 копируется c эффектом прозрачности
 // Если transparency == 2 копируется как маска, с цветом данных как текущего пера
 void Bitmap(int x, int y, UBitmap &bmp, int transparency=0, UColorT transp=UColorT(255,255,255));
 // --------------------------
+
+// --------------------------
+// Вывод текста
+// --------------------------
+// Выводит текст str
+void Text(const wstring &str, int x, int y);
+void Text(const string &str, int x, int y);
+// --------------------------
+
 
 protected: // Вспомогательные методы
 // --------------------------

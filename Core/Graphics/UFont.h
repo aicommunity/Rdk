@@ -174,10 +174,16 @@ int CalcWidth(char ch);
 
 // --------------------------
 // Методы загрузки и сохранения
-// Загружает данные заданного символа ch из файла
 // --------------------------
+// Загружает/сохраняет данные заданного символа ch из файла
 bool Load(wchar_t ch, const string &filename);
 bool Save(wchar_t ch, const string &filename);
+
+// Загружает/сохраняет данные символов с кодами из интервала [ch1,ch2] из файла
+// Область символов в файле описывается прямоугольником rect
+// размер символа size;
+bool Load(const string &filename, const UBPoint &size=UBPoint(16,16), const UBRect &rect=UBRect(-1,-1,-1,-1), wchar_t ch1=0, wchar_t ch2=255);
+bool Save(const string &filename, const UBPoint &size=UBPoint(16,16), const UBRect &rect=UBRect(-1,-1,-1,-1), wchar_t ch1=0, wchar_t ch2=255);
 // --------------------------
 
 // --------------------------

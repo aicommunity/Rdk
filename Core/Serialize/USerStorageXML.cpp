@@ -266,6 +266,23 @@ void USerStorageXML::DelNode(void)
  CurrentNode.deleteNodeContent();
  CurrentNode=tmp;
 }
+
+// ”дал€ет содержимое узла
+void USerStorageXML::DelNodeContent(void)
+{
+ CurrentNode.deleteNodeContent();
+}
+
+// ”дал€ет содержимое узла сохран€€ сам узел
+void USerStorageXML::DelNodeInternalContent(void)
+{
+ int num_nodes=CurrentNode.nChildNode();
+ for(int i=0;i<num_nodes;i++)
+ {
+  SelectNode(0);
+  DelNode();
+ }
+}
 // --------------------------
 
 // --------------------------

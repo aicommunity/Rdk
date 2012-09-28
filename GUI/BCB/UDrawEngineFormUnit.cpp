@@ -16,6 +16,7 @@ __fastcall TUDrawEngineForm::TUDrawEngineForm(TComponent* Owner)
 	: TUVisualControllerForm(Owner)
 {
  Graph.SetCanvas(&GraphCanvas);
+ Graph.SetFont(&Font);
  DrawEngine.SetEngine(&Graph);
 }
 
@@ -83,12 +84,18 @@ void TUDrawEngineForm::AUpdateInterface(void)
 // Сохраняет параметры интерфейса в xml
 void TUDrawEngineForm::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
 {
+ xml.WriteString("FontFileName",FontFileName);
 
 }
 
 // Загружает параметры интерфейса из xml
 void TUDrawEngineForm::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
 {
+ FontFileName=xml.ReadString("FontFileName","Font/");//"Font_16x8_EnRu.bmp");
+
+ for(int i=0;i<256;i++)
+  Font.Load(i,FontFileName+RDK::sntoa(i,4)+".bmp");
+// Font.Load(FontFileName);
 
  SetNet(ComponentName);
 }
@@ -122,6 +129,27 @@ void TUDrawEngineForm::SelectComponent(const std::string &comp_name)
  if(Visible)
   UpdateInterface();
 }
+
+
+// Сохраняет положение компонента в заданных координатах
+void TUDrawEngineForm::SaveComponentPosition(const std::string &name)
+{
+ if(name == "")
+  return;
+ const RDK::UGEDescription &descr=DrawEngine.GetDescription(name);
+ RDK::Serialize::USerStorageXML xml;
+ xml.Create("Coord");
+ std::string buffer;
+ RDK::MVector<double,3> pos=(descr.Position-DrawEngine.GetOrigin())/DrawEngine.GetZoomCoeff();
+ RDK::Serialize::operator << (xml,pos);
+ xml.Save(buffer);
+
+ if(!ComponentName.empty())
+  Model_SetComponentParameterValue((ComponentName+std::string(".")+name).c_str(), "Coord", buffer.c_str());
+ else
+  Model_SetComponentParameterValue(name.c_str(), "Coord", buffer.c_str());
+}
+
 // -----------------------------
 
 
@@ -132,25 +160,50 @@ void __fastcall TUDrawEngineForm::FormResize(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 void __fastcall TUDrawEngineForm::ImageMouseDown(TObject *Sender, TMouseButton Button,
+		  TShiftState Shift, int X, int Y)
+{
+ DownShift=Shift;
+ MoveComponentName=DrawEngine.FindComponent(X,Y);
+ if(MoveComponentName != "")
+ {
+  StartX=X; StartY=Y;
+ }
+}
+//---------------------------------------------------------------------------
+void __fastcall TUDrawEngineForm::ImageMouseMove(TObject *Sender, TShiftState Shift,
+		  int X, int Y)
+{
+ if(StartX<0 || StartY <0)
+  return;
+
+ StopX=X; StopY=Y;
+ DrawEngine.MoveComponent(MoveComponentName, X,Y);
+ UpdateInterface();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUDrawEngineForm::ImageMouseUp(TObject *Sender, TMouseButton Button,
           TShiftState Shift, int X, int Y)
 {
- if(Shift.Contains(ssRight) && Shift.Contains(ssDouble))
+ if(DownShift.Contains(ssRight) && DownShift.Contains(ssDouble))
  {
   UComponentsControlForm->ComponentsControlFrame->ComponentsListFrame->SelectUp();
   SetNet(UComponentsControlForm->ComponentsControlFrame->ComponentsListFrame->GetCurrentComponentName());
  }
  else
- if(Shift.Contains(ssLeft) && !Shift.Contains(ssDouble))
+ if(DownShift.Contains(ssLeft) && !DownShift.Contains(ssDouble))
  {
   std::string name=DrawEngine.FindComponent(X,Y);
 
   if(name != "")
   {
    UComponentsControlForm->ComponentsControlFrame->ComponentsListFrame->SetSelectedComponentName(name);
+   SaveComponentPosition(name);
+   UpdateInterface();
   }
  }
  else
- if(Shift.Contains(ssLeft) && Shift.Contains(ssDouble))
+ if(DownShift.Contains(ssLeft) && DownShift.Contains(ssDouble))
  {
   TPoint pos=Image->ScreenToClient(Mouse->CursorPos);
 
@@ -163,6 +216,7 @@ void __fastcall TUDrawEngineForm::ImageMouseDown(TObject *Sender, TMouseButton B
   }
  }
 
-
+ StartX=StartY=StopX=StopY=-1;
 }
 //---------------------------------------------------------------------------
+

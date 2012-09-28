@@ -125,6 +125,7 @@ __fastcall TUWatchFrame::TUWatchFrame(TComponent* Owner)
  ModifyState=false;
  Chart1->BufferedDisplay=true;
  CacheSize=10;
+ WatchInterval=0;
 }
 
 __fastcall TUWatchFrame::~TUWatchFrame(void)
@@ -381,6 +382,23 @@ int __fastcall TUWatchFrame::GetLegendPosition(void)
   return 5;
  }
  return -1;
+}
+
+// Возвращает интервал наблюдения
+double __fastcall TUWatchFrame::GetWatchInterval(void)
+{
+ return WatchInterval;
+}
+
+// Устанавливает интервал наблюдения
+void __fastcall TUWatchFrame::SetWatchInterval(double value)
+{
+ if(WatchInterval == value)
+  return;
+
+ WatchInterval=value;
+ for(size_t i=0;i<NameList.size();i++)
+  NameList[i].WatchInterval = WatchInterval;
 }
 
 // Размер кеша отображаемых данных
@@ -1158,6 +1176,7 @@ void TUWatchFrame::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
  String s=UShowProgressBarForm->GetBarHeader(1);
  UShowProgressBarForm->ResetBarStatus(1,0,NameList.size());
 
+ xml.DelNodeInternalContent();
  // Пробегаем по списку всех открытых серий
  for(int seriesindex=0;seriesindex<(int)NameList.size();seriesindex++)
   {

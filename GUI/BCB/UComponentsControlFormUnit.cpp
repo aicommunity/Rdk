@@ -27,10 +27,12 @@ void __fastcall TUComponentsControlForm::FormShow(TObject *Sender)
 void __fastcall TUComponentsControlForm::ComponentsListFrameStringGridClick(TObject *Sender)
 {
  ComponentsControlFrame->ComponentsListFrame->StringGridClick(Sender);
- if(ComponentsControlFrame->ComponentsListFrame->UpdateInterfaceFlag)
-  return;
- UComponentLinksForm->UComponentLinksFrame->UpdateInterface();
  UDrawEngineForm->SelectComponent(ComponentsControlFrame->ComponentsListFrame->GetSelectedComponentName());
+/* if(ComponentsControlFrame->ComponentsListFrame->UpdateInterfaceFlag)
+  return;
+ //UComponentLinksForm->UComponentLinksFrame->UpdateInterface();
+ UDrawEngineForm->SelectComponent(ComponentsControlFrame->ComponentsListFrame->GetSelectedComponentName());
+*/
 }
 //---------------------------------------------------------------------------
 
@@ -51,7 +53,7 @@ void __fastcall TUComponentsControlForm::ComponentsListFrameStringGridSelectCell
 		  ACol, ARow, CanSelect);
  if(ComponentsControlFrame->ComponentsListFrame->UpdateInterfaceFlag)
   return;
- UComponentLinksForm->UComponentLinksFrame->UpdateInterface();
+// UComponentLinksForm->UComponentLinksFrame->UpdateInterface();
  UDrawEngineForm->SelectComponent(ComponentsControlFrame->ComponentsListFrame->GetSelectedComponentName());
 }
 //---------------------------------------------------------------------------

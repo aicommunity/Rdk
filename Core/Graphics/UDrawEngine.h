@@ -53,9 +53,6 @@ int NumInputs, NumOutputs;
 // ------------------------
 // Геометрические параметры
 // ------------------------
-// Координаты элемента в пикселях
-int X,Y;
-
 // Радиус элемента в пикселях
 int Radius;
 
@@ -90,8 +87,11 @@ std::vector<double> Indicators;
 // Конструкторы и деструкторы
 // ------------------------
 UGEDescription(void);
+UGEDescription(const UGEDescription &copy);
 ~UGEDescription(void);
 // ------------------------
+
+UGEDescription& operator = (const UGEDescription &copy);
 };
 
 /*
@@ -140,8 +140,18 @@ UColorT BackgroundColor;
 // Цвет линий фона
 UColorT BackgroundLineColor;
 
+// Шаг сетки фона
+int BackgroundLineStep;
+
 // Цвет выделяемого элемента
 UColorT SelectedColor;
+
+// Коэффициент зуммирования
+// Пиксельная координата X,Y=ZoomCoeff*Coord.X,Y
+double ZoomCoeff;
+
+// Начало координат в канве
+MVector<double,3> Origin;
 // ---------------------------
 
 
@@ -151,6 +161,17 @@ public: // Методы
 // ---------------------------
 UDrawEngine(void);
 ~UDrawEngine(void);
+// ---------------------------
+
+// ---------------------------
+// Методы управления параметрами
+// ---------------------------
+// Коэффициент зуммирования
+// Пиксельная координата X,Y=ZoomCoeff*Coord.X,Y
+double GetZoomCoeff(void) const;
+
+// Начало координат в канве
+MVector<double,3> GetOrigin(void) const;
 // ---------------------------
 
 // ---------------------------
@@ -185,7 +206,10 @@ void UpdateDescriptions(void);
 void SelectSingleComponent(const string &name);
 
 // Поиск объекта по заданным координатам в изображении
-const std::string FindComponent(int x, int y);
+std::string FindComponent(int x, int y);
+
+// Перемещает компонента в заданные координаты, с некоторой зоной нечуствительности
+void MoveComponent(const string &name, int x, int y);
 // ---------------------------
 
 // ---------------------------

@@ -48,10 +48,8 @@ void __fastcall TUComponentsListFrame::UpdatePath(void)
 }
 
 // Отрисовка фрейма
-void TUComponentsListFrame::UpdateInterface(void)
+void TUComponentsListFrame::AUpdateInterface(void)
 {
- UpdateInterfaceFlag=true;
-
  if(ComponentControllers.empty())
  {
   ComponentControllers["UCRPerseptron"]=UCRPerseptronForm;
@@ -337,7 +335,8 @@ void TUComponentsListFrame::SetSelectedComponentName(const std::string &name)
   if(StringGrid->Cells[1][i] == name.c_str())
   {
    StringGrid->Row=i;
-   StringGridClick(this);
+   bool CanSelect;
+   StringGridSelectCell(this, StringGrid->Col, i, CanSelect);
    break;
   }
  }
@@ -537,7 +536,7 @@ void __fastcall TUComponentsListFrame::StringGridDblClick(TObject *Sender)
 void __fastcall TUComponentsListFrame::StringGridSelectCell(TObject *Sender, int ACol,
           int ARow, bool &CanSelect)
 {
- if(UpdateInterfaceFlag)
+/* if(UpdateInterfaceFlag)
   return;
 
  if(StringGrid->Row<=1 || StringGrid->Cells[0][StringGrid->Row] == "" || StringGrid->Cells[0][StringGrid->Row] == "..")
@@ -554,7 +553,8 @@ void __fastcall TUComponentsListFrame::StringGridSelectCell(TObject *Sender, int
  UpdateState();
  UpdateIO();
  UpdateParametersList();
- UpdateStatesList();
+ UpdateStatesList();*/
+ StringGridClick(Sender);
 }
 //---------------------------------------------------------------------------
 

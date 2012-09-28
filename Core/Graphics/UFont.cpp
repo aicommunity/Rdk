@@ -35,7 +35,7 @@ UAFont::UAFont(void)
  Height=16;
 
  // Межсимвольный интервал в процентах от высоты шрифта
- Interval=0;
+ Interval=-35;
 
  Scale=1;
 }
@@ -281,8 +281,8 @@ int UBitmapFont::CalcWidth(char ch)
 
 // --------------------------
 // Методы загрузки и сохранения
-// Загружает данные заданного символа ch из файла
 // --------------------------
+// Загружает данные заданного символа ch из файла
 bool UBitmapFont::Load(wchar_t ch, const string &filename)
 {
  basic_ifstream<char> file(filename.c_str(),ios::in | ios::binary);
@@ -291,6 +291,7 @@ bool UBitmapFont::Load(wchar_t ch, const string &filename)
   return false;
 
  file>>Table[ch].Data;
+ Table[ch].Data.ReflectionX();
  if(Scale != 1)
  {
   ScaledTable[ch].Data.SetRes(static_cast<int>(Table[ch].Data.GetWidth()*Scale),
@@ -313,6 +314,51 @@ bool UBitmapFont::Save(wchar_t ch, const string &filename)
 
  return true;
 };
+
+// Загружает/сохраняет данные символов с кодами из интервала [ch1,ch2] из файла
+// Область символов в файле описывается прямоугольником rect
+// размер символа size;
+bool UBitmapFont::Load(const string &filename, const UBPoint &size, const UBRect &rect, wchar_t ch1, wchar_t ch2)
+{
+ basic_ifstream<char> file(filename.c_str(),ios::in | ios::binary);
+ UBitmap bmp;
+
+ if(!file)
+  return false;
+
+ file>>bmp;
+ bmp.ReflectionX();
+
+ int i=0,j=0;
+// int step_x=
+ for(wchar_t k=ch1;k<ch2;k++)
+ {
+  UBitmap &char_bmp=Table[k].Data;
+  char_bmp.SetRes(size.X,size.Y, bmp.GetColorModel());
+  bmp.GetRect(i*size.X, j*size.Y,char_bmp);
+  if(Scale != 1)
+  {
+   ScaledTable[k].Data.SetRes(static_cast<int>(char_bmp.GetWidth()*Scale),
+							   static_cast<int>(char_bmp.GetHeight()*Scale),
+							   char_bmp.GetColorModel());
+   UBResizeEdges(char_bmp,ScaledTable[k].Data);
+  }
+  i+=size.X;
+  if(i>=bmp.GetWidth()-size.X)
+  {
+   i=0;
+   j+=size.Y;
+  }
+ }
+
+ return true;
+}
+
+bool UBitmapFont::Save(const string &filename, const UBPoint &size, const UBRect &rect, wchar_t ch1, wchar_t ch2)
+{
+
+ return true;
+}
 // --------------------------
 
 // --------------------------

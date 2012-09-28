@@ -56,6 +56,9 @@ __published:	// IDE-managed Components
 	TComboBox *ComboBox2;
 	TLabel *Label7;
 	TComboBox *ComboBox3;
+	TButton *DelPointButton;
+	TLabel *Label8;
+	TEdit *WatchIntervalEdit;
         void __fastcall OutterCPanelDblClick(TObject *Sender);
         void __fastcall InnerCPanelDblClick(TObject *Sender);
         void __fastcall FormHide(TObject *Sender);
@@ -82,6 +85,8 @@ __published:	// IDE-managed Components
 	void __fastcall ComboBox1Select(TObject *Sender);
 	void __fastcall ComboBox2Select(TObject *Sender);
 	void __fastcall ComboBox3Select(TObject *Sender);
+	void __fastcall DelPointButtonClick(TObject *Sender);
+	void __fastcall WatchIntervalEditChange(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
         __fastcall TUSeriesControlForm(TComponent* Owner);
@@ -99,7 +104,10 @@ protected: // Данные
 
 		// Список имён доступных для наблюдения точек съёма
 		map<int,TUWatchInfo> PossibleWatchList;
-        // -----------------------------------------
+
+		// Список имён помеченных для удаления точек съёма
+		map<int,TUWatchInfo> DelWatchList;
+		// -----------------------------------------
 
         // -----------------------------------------
         // Атрибуты, описывающие сложность модификаций серий

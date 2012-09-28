@@ -72,7 +72,7 @@ object USeriesControlForm: TUSeriesControlForm
         end
         object Button2: TButton
           Left = 12
-          Top = 80
+          Top = 63
           Width = 51
           Height = 25
           Hint = #1053#1072#1095#1072#1090#1100' '#1085#1072#1073#1083#1102#1076#1077#1085#1080#1077
@@ -88,7 +88,7 @@ object USeriesControlForm: TUSeriesControlForm
         end
         object Button3: TButton
           Left = 12
-          Top = 112
+          Top = 95
           Width = 51
           Height = 25
           Hint = #1055#1088#1077#1088#1074#1072#1090#1100' '#1085#1072#1073#1083#1102#1076#1077#1085#1080#1077
@@ -117,6 +117,22 @@ object USeriesControlForm: TUSeriesControlForm
           ShowHint = True
           TabOrder = 3
           OnClick = Button4Click
+        end
+        object DelPointButton: TButton
+          Left = 12
+          Top = 127
+          Width = 51
+          Height = 25
+          Hint = #1059#1076#1072#1083#1080#1090#1100' '#1090#1086#1095#1082#1091
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
+          Caption = '<X'
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 4
+          OnClick = DelPointButtonClick
         end
       end
       object GroupBox3: TGroupBox
@@ -165,7 +181,7 @@ object USeriesControlForm: TUSeriesControlForm
         Left = 7
         Top = 1
         Width = 281
-        Height = 217
+        Height = 256
         Margins.Left = 4
         Margins.Top = 4
         Margins.Right = 4
@@ -174,7 +190,7 @@ object USeriesControlForm: TUSeriesControlForm
         TabOrder = 0
         DesignSize = (
           281
-          217)
+          256)
         object Label7: TLabel
           Left = 25
           Top = 166
@@ -186,6 +202,18 @@ object USeriesControlForm: TUSeriesControlForm
           Margins.Bottom = 4
           Alignment = taRightJustify
           Caption = #1051#1077#1075#1077#1085#1076#1072':'
+        end
+        object Label8: TLabel
+          Left = 34
+          Top = 223
+          Width = 156
+          Height = 16
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
+          Alignment = taRightJustify
+          Caption = 'Watch interval (sec, 0 - inf):'
         end
         object CheckBox2: TCheckBox
           Left = 9
@@ -294,6 +322,22 @@ object USeriesControlForm: TUSeriesControlForm
             #1057#1087#1088#1072#1074#1072' ('#1085#1072' '#1075#1088#1072#1092#1080#1082#1077')'
             #1057#1074#1077#1088#1093#1091
             #1057#1085#1080#1079#1091)
+        end
+        object WatchIntervalEdit: TEdit
+          Left = 198
+          Top = 219
+          Width = 67
+          Height = 24
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
+          Anchors = [akLeft, akTop, akRight]
+          TabOrder = 7
+          Text = '0'
+          OnChange = WatchIntervalEditChange
+          OnExit = Edit4Exit
+          OnKeyDown = Edit4KeyDown
         end
       end
     end

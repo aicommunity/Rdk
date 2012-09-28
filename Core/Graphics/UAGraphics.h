@@ -61,12 +61,6 @@ virtual ~UAGraphics(void);
 // Разрешение канвы рисования
 int GetCWidth(void) const;
 int GetCHeight(void) const;
-
-// Возвращает текущий шрифт
-//UAFont* GetFont(void);
-
-// Устанавливает текущий шрифт
-//bool SetFont(UAFont* font);
 // --------------------------
 
 // --------------------------
@@ -138,7 +132,7 @@ virtual void Fill(int x, int y, UColorT BorderColor)=0;
 
 // Выводит изображение с началом в заданной позиции
 // Если transparency == 0 копируется без прозрачности
-// Если transparency == 1 копируется c эффектом прозрачности прозрачности
+// Если transparency == 1 копируется c эффектом прозрачности
 // Если transparency == 2 копируется как маска, с цветом данных как текущего пера
 virtual void Bitmap(int x, int y, UBitmap &bmp, int transparency=0, UColorT transp=UColorT(255,255,255))=0;
 // --------------------------
@@ -147,8 +141,8 @@ virtual void Bitmap(int x, int y, UBitmap &bmp, int transparency=0, UColorT tran
 // Вывод текста
 // --------------------------
 // Выводит текст str
-//virtual void Text(const wstring &str, int x, int y);
-//virtual void Text(const string &str, int x, int y);
+virtual void Text(const wstring &str, int x, int y)=0;
+virtual void Text(const string &str, int x, int y)=0;
 // --------------------------
 
 protected: // Вспомогательные методы
