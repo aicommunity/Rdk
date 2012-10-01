@@ -21,6 +21,9 @@ public:		// User declarations
 
 bool UpdateInterfaceFlag;
 
+// Флаг, разрешающий обновление интерфейса, даже если объект не видим
+bool AlwaysUpdateFlag;
+
 // Длинное имя управляемого компонента модели (опционально)
 std::string ComponentControlName;
 

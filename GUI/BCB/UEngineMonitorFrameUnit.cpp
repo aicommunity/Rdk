@@ -17,6 +17,7 @@ __fastcall TUEngineMonitorFrame::TUEngineMonitorFrame(TComponent* Owner)
 	: TUVisualControllerFrame(Owner)
 {
  CalculateMode=0;
+ AlwaysUpdateFlag=true;
 }
 
 // ”правление режимом расчетов
