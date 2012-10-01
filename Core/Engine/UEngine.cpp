@@ -1528,7 +1528,7 @@ int UEngine::Model_SetComponentParameters(const char *stringid, const char* buff
   XmlStorage.Load(buffer, cont->GetLongName(Environment->GetCurrentComponent(),CompName));
   XmlStorage.SelectNode("Parameters");
 
-  if(!Model_SetComponentParameters(cont,&XmlStorage))
+  if(Model_SetComponentParameters(cont,&XmlStorage))
    return 2;
   XmlStorage.SelectUp();
  }
@@ -3103,7 +3103,7 @@ int UEngine::Model_LoadComponentParameters(RDK::UANet* cont, RDK::Serialize::USe
    return false;
 
   serstorage->SelectNode("Parameters");
-  if(!Model_SetComponentParameters(cont, serstorage))
+  if(Model_SetComponentParameters(cont, serstorage))
    return false;
   serstorage->SelectUp();
 
