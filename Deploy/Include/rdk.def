@@ -98,6 +98,7 @@ EXPORTS
     Model_SetComponentInternalLinks = _Model_SetComponentInternalLinks
     Model_GetComponentInputLinks = _Model_GetComponentInputLinks
     Model_GetComponentOutputLinks = _Model_GetComponentOutputLinks
+    Model_GetComponentPersonalLinks = _Model_GetComponentPersonalLinks
     Model_GetComponentState = _Model_GetComponentState
     Model_GetComponentSelectedState = _Model_GetComponentSelectedState
     Model_GetComponentStateValue = _Model_GetComponentStateValue

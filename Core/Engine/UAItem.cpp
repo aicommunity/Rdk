@@ -546,8 +546,10 @@ UEPtr<UAConnector> UAItem::GetAConnectorByIndex(int output, int index) const
 }
 
 // Возвращает список подключений
+// Имена формируются до уровня компонента owner_level
+// Если owner_level не задан, то имена формируются до уровня текущего компонента
 template<typename T>
-ULinksListT<T>& UAItem::GetLinks(ULinksListT<T> &linkslist, UEPtr<UAContainer> netlevel) const
+ULinksListT<T>& UAItem::GetLinks(ULinksListT<T> &linkslist, UEPtr<UAContainer> netlevel, bool exclude_internals, UEPtr<UAContainer> internal_level) const
 {
  ULinkT<T> link;
  ULinkSideT<T> item;
@@ -562,6 +564,47 @@ ULinksListT<T>& UAItem::GetLinks(ULinksListT<T> &linkslist, UEPtr<UAContainer> n
   link.Connector.clear();
   for(int i=0;i<AssociatedConnectors[j].GetSize();i++)
   {
+   if(exclude_internals)
+   {
+	if(AssociatedConnectors[j][i]->CheckOwner(internal_level))
+	 continue;
+   }
+   AssociatedConnectors[j][i]->GetLongId(netlevel,connector.Id);
+   if(connector.Id.size() != 0)
+   {
+	UCLink indexes=AssociatedConnectors[j][i]->GetCLink(UEPtr<UAItem>(const_cast<UAItem*>(this)));
+	item.Index=indexes.Output;
+	connector.Index=indexes.Input;
+
+	link.Item=item;
+	link.Connector.push_back(connector);
+    linkslist.Set(link);
+   }
+  }
+ }
+
+ return linkslist;
+}
+
+// Возвращает список подключений непосредственно коннектора cont
+template<typename T>
+ULinksListT<T>& UAItem::GetPersonalLinks(UEPtr<UAContainer> cont, ULinksListT<T> &linkslist, UEPtr<UAContainer> netlevel) const
+{
+ ULinkT<T> link;
+ ULinkSideT<T> item;
+ ULinkSideT<T> connector;
+
+ GetLongId(netlevel,item.Id);
+ if(item.Id.size() == 0)
+  return linkslist;
+
+ for(int j=0;j<AssociatedConnectors.GetSize();j++)
+ {
+  link.Connector.clear();
+  for(int i=0;i<AssociatedConnectors[j].GetSize();i++)
+  {
+   if(AssociatedConnectors[j][i] != cont)
+	continue;
    AssociatedConnectors[j][i]->GetLongId(netlevel,connector.Id);
    if(connector.Id.size() != 0)
    {

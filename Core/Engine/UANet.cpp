@@ -33,12 +33,37 @@ UANet::~UANet(void)
 // Методы доступа к свойствам
 // --------------------------
 template<typename T>
-ULinksListT<T>& UANet::GetLinks(ULinksListT<T> &linkslist, UEPtr<UAContainer> netlevel) const
+ULinksListT<T>& UANet::GetLinks(ULinksListT<T> &linkslist, UEPtr<UAContainer> netlevel, bool exclude_internals, UEPtr<UAContainer> internal_level) const
 {
- GetLinks(const_cast<UANet*>(this), linkslist, netlevel);
+ GetLinks(const_cast<UANet*>(this), linkslist, netlevel, exclude_internals, internal_level);
 
  return linkslist;
 }
+
+// Возращает все связи между двумя компонентами в виде xml в буфер buffer
+// включая связи этого компонента
+// если 'sublevel' == -1, то возвращает также все связи между объектом и любым дочерним компонентом
+// второго объекта. Работает симметрично в обе стороны.
+// если 'sublevel' == 0, то возвращает связи только между этими объектами
+template<typename T>
+ULinksListT<T>& UANet::GetPersonalLinks(UEPtr<RDK::UANet> cont, ULinksListT<T> &linkslist, UEPtr<UAContainer> netlevel, int sublevel)
+{
+ GetPersonalLinks(const_cast<UANet*>(this), cont, linkslist, netlevel);
+/*
+ for(int i=0;i<linkslist.GetSize();i++)
+ {
+  ULinkT<T> &link=linkslist[i];
+  ULinkSideT<T> &item=link.item;
+  ULinkSideT<T> &connector=link.connector;
+
+  if()
+ }
+ // Прореживаем
+// linkslist.
+  */
+ return linkslist;
+}
+
 // --------------------------
 
 // --------------------------
@@ -214,16 +239,17 @@ bool UANet::CreateLink(const NameT &item, int item_index,
 
 // Устанавливает все связи из массива 'linkslist'.
 template<typename T>
-bool UANet::CreateLinks(const ULinksListT<T> &linkslist)
+bool UANet::CreateLinks(const ULinksListT<T> &linkslist, UEPtr<UANet> owner_level)
 {
  bool res=true;
 
  int i=0;
  for(i=0;i<linkslist.GetSize();i++)
  {
-  res&=CreateLink(linkslist[i]);
- // if(!res)
- //  break;
+  if(owner_level)
+   res&=owner_level->CreateLink(linkslist[i]);
+  else
+   res&=CreateLink(linkslist[i]);
  }
 
  if(!res)
@@ -385,19 +411,37 @@ void UANet::BreakLinks(void)
 // Скрытые методы доступа к свойствам
 // --------------------------
 template<typename T>
-ULinksListT<T>& UANet::GetLinks(UEPtr<UAContainer> cont, ULinksListT<T> &linkslist, UEPtr<UAContainer> netlevel) const
+ULinksListT<T>& UANet::GetLinks(UEPtr<UAContainer> cont, ULinksListT<T> &linkslist, UEPtr<UAContainer> netlevel, bool exclude_internals, UEPtr<UAContainer> internal_level) const
 {
  if(dynamic_pointer_cast<UAItem>(cont))
  {
-  static_pointer_cast<UAConnector>(cont)->GetLinks(linkslist,netlevel);
-  static_pointer_cast<UAItem>(cont)->GetLinks(linkslist,netlevel);
+  static_pointer_cast<UAConnector>(cont)->GetLinks(linkslist,netlevel, exclude_internals,internal_level);
+  static_pointer_cast<UAItem>(cont)->GetLinks(linkslist,netlevel, exclude_internals,internal_level);
  }
  else
  if(dynamic_pointer_cast<UAConnector>(cont))
-  static_pointer_cast<UAConnector>(cont)->GetLinks(linkslist,netlevel);
+  static_pointer_cast<UAConnector>(cont)->GetLinks(linkslist,netlevel, exclude_internals,internal_level);
 
  for(int i=0;i<cont->GetNumComponents();i++)
-  GetLinks(cont->GetComponentByIndex(i), linkslist, netlevel);
+  GetLinks(cont->GetComponentByIndex(i), linkslist, netlevel, exclude_internals,internal_level);
+
+ return linkslist;
+}
+
+template<typename T>
+ULinksListT<T>& UANet::GetPersonalLinks(UEPtr<UAContainer> cont, UEPtr<UAContainer> cont2, ULinksListT<T> &linkslist, UEPtr<UAContainer> netlevel) const
+{
+ if(dynamic_pointer_cast<UAItem>(cont))
+ {
+  static_pointer_cast<UAConnector>(cont)->GetPersonalLinks(cont2,linkslist,netlevel);
+  static_pointer_cast<UAItem>(cont)->GetPersonalLinks(cont2,linkslist,netlevel);
+ }
+ else
+ if(dynamic_pointer_cast<UAConnector>(cont))
+  static_pointer_cast<UAConnector>(cont)->GetPersonalLinks(cont2,linkslist,netlevel);
+
+ for(int i=0;i<cont->GetNumComponents();i++)
+  GetPersonalLinks(cont->GetComponentByIndex(i), cont2, linkslist, netlevel);
 
  return linkslist;
 }

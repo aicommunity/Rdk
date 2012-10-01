@@ -15,6 +15,8 @@ __fastcall TUVisualControllerFrame::TUVisualControllerFrame(TComponent* Owner)
  : TFrame(Owner)
 {
  UpdateInterfaceFlag=false;
+ AlwaysUpdateFlag=false;
+
  RDK::UIVisualControllerStorage::AddInterface(this);
 }
 
@@ -72,8 +74,8 @@ void TUVisualControllerFrame::AAfterCalculate(void)
 // Обновление интерфейса
 void TUVisualControllerFrame::UpdateInterface(void)
 {
-// if(!Parent->Visible)
-//  return;
+ if(!AlwaysUpdateFlag && !Parent->Visible)
+  return;
  UpdateInterfaceFlag=true;
  AUpdateInterface();
  UpdateInterfaceFlag=false;

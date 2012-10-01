@@ -17,3 +17,9 @@ __fastcall TUComponentLinksForm::TUComponentLinksForm(TComponent* Owner)
 {
 }
 //---------------------------------------------------------------------------
+void __fastcall TUComponentLinksForm::FormShow(TObject *Sender)
+{
+ UComponentLinksFrame->UpdateInterface();
+}
+//---------------------------------------------------------------------------
+

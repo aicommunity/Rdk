@@ -54,13 +54,13 @@ void TUFavoriteData::ReadData(void)
  switch(Type)
  {
  case 1:
-  Model_GetComponentParameterValue(ComponentName.c_str(), DataName.c_str());
+  value=Model_GetComponentParameterValue(ComponentName.c_str(), DataName.c_str());
   if(value)
    Data=value;
  break;
 
  case 2:
-  Model_GetComponentStateValue(ComponentName.c_str(), DataName.c_str());
+  value=Model_GetComponentStateValue(ComponentName.c_str(), DataName.c_str());
   if(value)
    Data=value;
  break;

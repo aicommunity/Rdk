@@ -27,6 +27,9 @@ public:		// User declarations
 // Указатель на рассматриваемую сеть
 //NANet* Net;
 
+// Путь до родителя наблюдаемого компонента
+std::string ViewComponentOwnerLongId;
+
 // Путь до наблюдаемого компонента
 std::string ViewComponentLongId;
 
@@ -62,9 +65,22 @@ void __fastcall ShowInputsOutputs(void);
 void __fastcall ShowLinks(void);
 // -----------------
 
+// -----------------
+// Вспомогательные методы управления
+// -----------------
+protected:
+// Отображает данные выходов в таблицу
+void __fastcall ShowOutputs(TStringGrid *string_grid, RDK::ULongIdVector &linkslist);
+
+// Отображает данные входов в таблицу
+void __fastcall ShowInputs(TStringGrid *string_grid, RDK::ULongIdVector &linkslist);
+// -----------------
+
+
 // -----------------------------
 // Методы управления визуальным интерфейсом
 // -----------------------------
+public:
 // Метод, вызываемый перед шагом расчета
 void ABeforeCalculate(void);
 

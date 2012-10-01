@@ -119,6 +119,12 @@ object UComponentsControlForm: TUComponentsControlForm
       inherited Panel3: TPanel
         Height = 396
         ExplicitHeight = 396
+        inherited TakeObjectButton: TButton
+          OnClick = ComponentsControlFrameTakeObjectButtonClick
+        end
+        inherited ReturnObjectButton: TButton
+          OnClick = ComponentsControlFrameReturnObjectButtonClick
+        end
       end
     end
   end

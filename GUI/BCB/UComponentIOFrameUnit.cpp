@@ -29,7 +29,7 @@ __fastcall TUComponentIOFrame::TUComponentIOFrame(TComponent* Owner)
  // Модификатор режима показа
  // 1 - показывать только входы (выходы, связи) своего уровня
  // 2 - показывать входы (выходы, связи) своего уровня, и всех вложенных сетей
- ShowModifier=1;
+ ShowModifier=2;
 }
 //---------------------------------------------------------------------------
 
@@ -55,14 +55,13 @@ void __fastcall TUComponentIOFrame::ShowInputs(void)
  StringGrid->Cells[2][0]="Вход";
 
  RDK::ULongIdVector buffer;
- std::string stringid;
 
  int sublevel=0;
  if(ShowModifier == 1)
   sublevel=0;
  else
  if(ShowModifier == 2)
-  sublevel=-1;
+  sublevel=-2;
 
  std::string xmlbuffer=Model_GetItemsList(ViewComponentLongId.c_str(),sublevel);
 
@@ -70,25 +69,7 @@ void __fastcall TUComponentIOFrame::ShowInputs(void)
  storage.Load(xmlbuffer,"Items");
  RDK::Serialize::operator >> (storage,buffer);
 
- for(int i=0;i<buffer.GetSize();i++)
- {
-  for(int j=-1;j<Model_GetComponentNumInputs(buffer[i].EncodeToString(stringid).c_str());j++)
-  {
-   StringGrid->RowCount=StringGrid->RowCount+1;
-   if(j==-1)
-   {
-	StringGrid->Cells[0][StringGrid->RowCount-1]=IntToStr(i);
-	StringGrid->Cells[2][StringGrid->RowCount-1]=Model_GetComponentLongName(stringid.c_str());
-   }
-   else
-   {
-	StringGrid->Cells[0][StringGrid->RowCount-1]="";
-	StringGrid->Cells[2][StringGrid->RowCount-1]="";
-
-   }
-   StringGrid->Cells[1][StringGrid->RowCount-1]=IntToStr(j);
-  }
- }
+ ShowInputs(StringGrid,buffer);
 
  if(StringGrid->RowCount>1)
  {
@@ -110,14 +91,13 @@ void __fastcall TUComponentIOFrame::ShowOutputs(void)
  StringGrid->Cells[2][0]="Выход";
 
  RDK::ULongIdVector buffer;
- std::string stringid;
 
  int sublevel=0;
  if(ShowModifier == 1)
   sublevel=0;
  else
  if(ShowModifier == 2)
-  sublevel=-1;
+  sublevel=-2;
 
  std::string xmlbuffer=Model_GetItemsList(ViewComponentLongId.c_str(),sublevel);
 
@@ -125,24 +105,7 @@ void __fastcall TUComponentIOFrame::ShowOutputs(void)
  storage.Load(xmlbuffer,"Items");
  RDK::Serialize::operator >> (storage,buffer);
 
- for(int i=0;i<buffer.GetSize();i++)
- {
-  for(int j=0;j<Model_GetComponentNumInputs(buffer[i].EncodeToString(stringid).c_str());j++)
-  {
-   StringGrid->RowCount=StringGrid->RowCount+1;
-   if(j == 0)
-   {
-	StringGrid->Cells[0][StringGrid->RowCount-1]=IntToStr(i);
-	StringGrid->Cells[2][StringGrid->RowCount-1]=Model_GetComponentLongName(stringid.c_str());
-   }
-   else
-   {
-	StringGrid->Cells[0][StringGrid->RowCount-1]="";
-	StringGrid->Cells[2][StringGrid->RowCount-1]="";
-   }
-   StringGrid->Cells[1][StringGrid->RowCount-1]=IntToStr(int(j));
-  }
- }
+ ShowOutputs(StringGrid,buffer);
 
  if(StringGrid->RowCount>1)
  {
@@ -173,8 +136,8 @@ void __fastcall TUComponentIOFrame::ShowInputsOutputs(void)
   sublevel=0;
  else
  if(ShowModifier == 2)
-  sublevel=-1;
- std::string xmlbuffer=Model_GetItemsList(ViewComponentLongId.c_str(),sublevel);
+  sublevel=-2;
+ std::string xmlbuffer=Model_GetItemsList(ViewComponentLongId.c_str(),sublevel,ViewComponentOwnerLongId.c_str());
 
  RDK::Serialize::USerStorageXML storage;
  storage.Load(xmlbuffer,"Items");
@@ -233,7 +196,8 @@ void __fastcall TUComponentIOFrame::ShowLinks(void)
  RDK::UStringLinksList linkslist;
  std::string stringid;
 
- std::string xmlbuffer=Model_GetComponentInternalLinks(ViewComponentLongId.c_str());
+// std::string xmlbuffer=Model_GetComponentInternalLinks(ViewComponentLongId.c_str());
+ std::string xmlbuffer=Model_GetComponentPersonalLinks(ViewComponentLongId.c_str());
 
  RDK::Serialize::USerStorageXML storage;
  storage.Load(xmlbuffer,"Links");
@@ -275,6 +239,63 @@ void __fastcall TUComponentIOFrame::ShowLinks(void)
   StringGrid->Row=current_row;
 }
 // -----------------
+
+// -----------------
+// Вспомогательные методы управления
+// -----------------
+// Отображает данные выходов в таблицу
+void __fastcall TUComponentIOFrame::ShowOutputs(TStringGrid *string_grid, RDK::ULongIdVector &linkslist)
+{
+ std::string stringid;
+ for(int i=0;i<linkslist.GetSize();i++)
+ {
+  for(int j=0;j<Model_GetComponentNumInputs(linkslist[i].EncodeToString(stringid).c_str());j++)
+  {
+   string_grid->RowCount=string_grid->RowCount+1;
+   if(j == 0)
+   {
+	string_grid->Cells[0][string_grid->RowCount-1]=IntToStr(i);
+	string_grid->Cells[2][string_grid->RowCount-1]=Model_GetComponentLongName(stringid.c_str(),ViewComponentOwnerLongId.c_str());
+   }
+   else
+   {
+	string_grid->Cells[0][string_grid->RowCount-1]="";
+	string_grid->Cells[2][string_grid->RowCount-1]="";
+   }
+   string_grid->Cells[1][string_grid->RowCount-1]=IntToStr(int(j));
+  }
+ }
+
+}
+
+// Отображает данные входов в таблицу
+void __fastcall TUComponentIOFrame::ShowInputs(TStringGrid *string_grid, RDK::ULongIdVector &linkslist)
+{
+ std::string stringid;
+ for(int i=0;i<linkslist.GetSize();i++)
+ {
+  for(int j=-1;j<Model_GetComponentNumInputs(linkslist[i].EncodeToString(stringid).c_str());j++)
+  {
+   string_grid->RowCount=string_grid->RowCount+1;
+   if(j==-1)
+   {
+	string_grid->Cells[0][string_grid->RowCount-1]=IntToStr(i);
+	string_grid->Cells[2][string_grid->RowCount-1]=Model_GetComponentLongName(stringid.c_str(),ViewComponentOwnerLongId.c_str());
+   }
+   else
+   {
+	string_grid->Cells[0][string_grid->RowCount-1]="";
+	string_grid->Cells[2][string_grid->RowCount-1]="";
+
+   }
+   string_grid->Cells[1][string_grid->RowCount-1]=IntToStr(j);
+  }
+ }
+
+
+}
+// -----------------
+
 
 // -----------------------------
 // Методы управления визуальным интерфейсом

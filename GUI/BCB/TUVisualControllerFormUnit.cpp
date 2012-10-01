@@ -54,6 +54,7 @@ __fastcall TUVisualControllerForm::TUVisualControllerForm(TComponent* Owner)
  : TForm(Owner)
 {
  UpdateInterfaceFlag=false;
+ AlwaysUpdateFlag=false;
  RDK::UIVisualControllerStorage::AddInterface(this);
 }
 
@@ -111,8 +112,8 @@ void TUVisualControllerForm::AAfterCalculate(void)
 // Обновление интерфейса
 void TUVisualControllerForm::UpdateInterface(void)
 {
-// if(!Visible)
-//  return;
+ if(!AlwaysUpdateFlag && !Visible)
+  return;
  UpdateInterfaceFlag=true;
  AUpdateInterface();
  UpdateInterfaceFlag=false;

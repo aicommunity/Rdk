@@ -354,7 +354,8 @@ virtual bool Model_Check(void);
 
 // Добавляет в выбранный контейнер модели с идентификатором 'stringid' экземпляр контейнера с заданным 'classid'
 // если stringid - пустая строка, то добавляет в саму модель
-virtual int Model_AddComponent(const char* stringid, int classid);
+// Возвращает длинное имя компонента в случае успеха
+virtual const char*  Model_AddComponent(const char* stringid, int classid);
 
 // Удаляет из выбранного контейнера модели с идентификатором 'stringid' экземпляр контейнера с заданным 'id'
 // если stringid - пустая строка, то удаляет из самой модели
@@ -371,6 +372,8 @@ virtual int Model_GetComponentsList(const char* stringid, int *buffer);
 // Возвращает xml-список длинных идентификаторов всех коннекторов сети.
 // 'sublevel' опеределяет число уровней вложенности подсетей для которых
 // коннекторы будут добавлены в список.
+// если 'sublevel' == -2, то возвращает идентификаторы всех элементов включая
+// все вложенные сети и сам опрашиваемый компонент.
 // если 'sublevel' == -1, то возвращает идентификаторы всех коннекторов включая
 // все вложенные сети.
 // если 'sublevel' == 0, то возвращает идентификаторы коннекторов только этой сети
@@ -381,6 +384,8 @@ virtual const char* Model_GetConnectorsList(const char* stringid,
 // Возвращает xml-список длинных идентификаторов всех элементов сети.
 // 'sublevel' опеределяет число уровней вложенности подсетей для которых
 // элементы будут добавлены в список.
+// если 'sublevel' == -2, то возвращает идентификаторы всех элементов включая
+// все вложенные сети и сам опрашиваемый компонент.
 // если 'sublevel' == -1, то возвращает идентификаторы всех элементов включая
 // все вложенные сети.
 // если 'sublevel' == 0, то возвращает идентификаторы элементов только этой сети
@@ -391,6 +396,8 @@ virtual const char* Model_GetItemsList(const char* stringid,
 // Возвращает xml-список длинных идентификаторов всех подсетей сети.
 // 'sublevel' опеределяет число уровней вложенности подсетей для которых
 // подсети будут добавлены в список.
+// если 'sublevel' == -2, то возвращает идентификаторы всех элементов включая
+// все вложенные сети и сам опрашиваемый компонент.
 // если 'sublevel' == -1, то возвращает идентификаторы всех подсетей включая
 // все вложенные сети.
 // если 'sublevel' == 0, то возвращает идентификаторы подсетей только этой сети
@@ -437,7 +444,7 @@ virtual const char* Model_GetComponentParametersEx(const char *stringid);
 virtual const char * Model_GetComponentParameterValue(const char *stringid, const char *paramname);
 
 // Устанавливает параметры компонента по идентификатору
-virtual bool Model_SetComponentParameters(const char *stringid, const char* buffer);
+virtual int Model_SetComponentParameters(const char *stringid, const char* buffer);
 
 // Устанавливает значение параметра компонента по идентификатору компонента и имени параметра
 virtual void Model_SetComponentParameterValue(const char *stringid, const char *paramname, const char *buffer);
@@ -468,16 +475,40 @@ virtual int Model_BreakAllComponentInputLinks(const char* stringid);
 virtual int Model_BreakAllComponentOutputLinks(const char* stringid);
 
 // Возращает все связи внутри компонента stringid в виде xml в буфер buffer
-virtual const char* Model_GetComponentInternalLinks(const char* stringid);
+// Имена формируются до уровня компонента owner_level_stringid
+// Если owner_level_stringid не задан, то имена формируются до уровня текущего компонента
+virtual const char* Model_GetComponentInternalLinks(const char* stringid, const char* owner_level_stringid=0);
 
 // Устанавливает все связи внутри компонента stringid из строки xml в буфере buffer
-virtual int Model_SetComponentInternalLinks(const char* stringid,const char* buffer);
+// Имена применяются с уровня компонента owner_level_stringid
+// Если owner_level_stringid не задан, то применяется уровень текущего компонента
+virtual int Model_SetComponentInternalLinks(const char* stringid,const char* buffer, const char* owner_level_stringid=0);
 
 // Возращает все входные связи к компоненту stringid в виде xml в буфер buffer
-virtual const char* Model_GetComponentInputLinks(const char* stringid);
+// если 'sublevel' == -2, то возвращает связи всех элементов включая
+// все вложенные сети и сам опрашиваемый компонент.
+// если 'sublevel' == -1, то возвращает связи всех подсетей включая
+// все вложенные сети.
+// если 'sublevel' == 0, то возвращает связи подсетей только этой сети
+// Имена формируются до уровня компонента owner_level_stringid
+// Если owner_level_stringid не задан, то имена формируются до уровня текущего компонента
+virtual const char* Model_GetComponentInputLinks(const char* stringid, const char* owner_level_stringid=0, int sublevel=-1);
 
 // Возращает все выходные связи из компонента stringid в виде xml в буфер buffer
-virtual const char* Model_GetComponentOutputLinks(const char* stringid);
+// если 'sublevel' == -2, то возвращает связи всех элементов включая
+// все вложенные сети и сам опрашиваемый компонент.
+// если 'sublevel' == -1, то возвращает связи всех подсетей включая
+// все вложенные сети.
+// если 'sublevel' == 0, то возвращает связи подсетей только этой сети
+// Имена формируются до уровня компонента owner_level_stringid
+// Если owner_level_stringid не задан, то имена формируются до уровня текущего компонента
+virtual const char* Model_GetComponentOutputLinks(const char* stringid, const char* owner_level_stringid=0, int sublevel=-1);
+
+// Возращает все внешние связи c компонентом cont и его дочерними компонентами в виде xml в буфер buffer
+// Информация о связях формируется относительно владельца компонента cont!
+// Имена формируются до уровня компонента owner_level_stringid
+// Если owner_level_stringid не задан, то имена формируются до уровня текущего компонента
+virtual const char* Model_GetComponentPersonalLinks(const char* stringid, const char* owner_level_stringid=0);
 
 // Возвращает состояние компонента по идентификатору
 virtual const char* Model_GetComponentState(const char *stringid);
@@ -660,19 +691,43 @@ virtual bool Model_GetComponentSelectedParameters(RDK::UAContainer* cont, RDK::S
 virtual bool Model_GetComponentParametersEx(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage);
 
 // Устанавливает параметры компонента по идентификатору
-virtual bool Model_SetComponentParameters(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage);
+virtual int Model_SetComponentParameters(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage);
 
-// Возращает все связи внутри компонента stringid в виде xml в буфер buffer
-virtual int Model_GetComponentInternalLinks(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage);
+// Возращает все связи внутри компонента cont в виде xml в буфер buffer
+// Имена формируются до уровня компонента owner_level
+// Если owner_level не задан, то имена формируются до уровня текущего компонента
+virtual int Model_GetComponentInternalLinks(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage, RDK::UANet* owner_level);
 
 // Устанавливает все связи внутри компонента stringid из строки xml в буфере buffer
-virtual int Model_SetComponentInternalLinks(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage);
+// Имена применяются до уровня компонента owner_level
+// Если owner_level не задан, то имена применяются до уровня текущего компонента
+virtual int Model_SetComponentInternalLinks(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage, RDK::UANet* owner_level);
 
 // Возращает все входные связи к компоненту stringid в виде xml в буфер buffer
-virtual int Model_GetComponentInputLinks(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage);
+// если 'sublevel' == -2, то возвращает связи всех элементов включая
+// все вложенные сети и сам опрашиваемый компонент.
+// если 'sublevel' == -1, то возвращает связи всех подсетей включая
+// все вложенные сети.
+// если 'sublevel' == 0, то возвращает связи подсетей только этой сети
+// Имена формируются до уровня компонента owner_level
+// Если owner_level не задан, то имена формируются до уровня текущего компонента
+virtual int Model_GetComponentInputLinks(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage, RDK::UANet* owner_level, int sublevel=-1);
 
 // Возращает все выходные связи из компонента stringid в виде xml в буфер buffer
-virtual int Model_GetComponentOutputLinks(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage);
+// если 'sublevel' == -2, то возвращает связи всех элементов включая
+// все вложенные сети и сам опрашиваемый компонент.
+// если 'sublevel' == -1, то возвращает связи всех подсетей включая
+// все вложенные сети.
+// если 'sublevel' == 0, то возвращает связи подсетей только этой сети
+// Имена формируются до уровня компонента owner_level
+// Если owner_level не задан, то имена формируются до уровня текущего компонента
+virtual int Model_GetComponentOutputLinks(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage, RDK::UANet* owner_level, int sublevel=-1);
+
+// Возращает все внешние связи c компонентом cont и его дочерними компонентами в виде xml в буфер buffer
+// Информация о связях формируется относительно владельца компонента cont!
+// Имена формируются до уровня компонента owner_level
+// Если owner_level не задан, то имена формируются до уровня текущего компонента
+virtual int Model_GetComponentPersonalLinks(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage, RDK::UANet* owner_level);
 
 // Возвращает состояние компонента по идентификатору
 // Память для buffer должна быть выделена!

@@ -1120,7 +1120,8 @@ bool UEngine::Model_Check(void)
 
 // Добавляет в выбранный контейнер модели с идентификатором 'stringid' экземпляр контейнера с заданным 'classid'
 // если stringid - пустая строка, то добавляет в саму модель
-int UEngine::Model_AddComponent(const char* stringid, int classid)
+// Возвращает имя компонента в случае успеха
+const char* UEngine::Model_AddComponent(const char* stringid, int classid)
 {
  try
  {
@@ -1129,18 +1130,23 @@ int UEngine::Model_AddComponent(const char* stringid, int classid)
   UEPtr<RDK::UAContainer> cont=dynamic_pointer_cast<RDK::UAContainer>(Storage->TakeObject(classid));
 
   if(!cont)
-   return -3;
+   return 0;
 
   if(!destcont)
-   return -4;
+   return 0;
 
-  return destcont->AddComponent(cont);
+  if(destcont->AddComponent(cont))
+  {
+   TempString=cont->GetName();
+  }
+  else
+   TempString.clear();
  }
  catch (UException &exception)
  {
   ProcessException(exception);
  }
- return 0;
+ return TempString.c_str();
 }
 
 // Удаляет из выбранного контейнера модели с идентификатором 'stringid' экземпляр контейнера с заданным 'id'
@@ -1212,6 +1218,8 @@ int UEngine::Model_GetComponentsList(const char* stringid, int *buffer)
 // Возвращает xml-список длинных идентификаторов всех коннекторов сети.
 // 'sublevel' опеределяет число уровней вложенности подсетей для которых
 // коннекторы будут добавлены в список.
+// если 'sublevel' == -2, то возвращает идентификаторы всех элементов включая
+// все вложенные сети и сам опрашиваемый компонент.
 // если 'sublevel' == -1, то возвращает идентификаторы всех коннекторов включая
 // все вложенные сети.
 // если 'sublevel' == 0, то возвращает идентификаторы коннекторов только этой сети
@@ -1248,6 +1256,8 @@ const char* UEngine::Model_GetConnectorsList(const char* stringid,
 // Возвращает xml-список длинных идентификаторов всех элементов сети.
 // 'sublevel' опеределяет число уровней вложенности подсетей для которых
 // элементы будут добавлены в список.
+// если 'sublevel' == -2, то возвращает идентификаторы всех элементов включая
+// все вложенные сети и сам опрашиваемый компонент.
 // если 'sublevel' == -1, то возвращает идентификаторы всех элементов включая
 // все вложенные сети.
 // если 'sublevel' == 0, то возвращает идентификаторы элементов только этой сети
@@ -1283,6 +1293,8 @@ const char* UEngine::Model_GetItemsList(const char* stringid,
 // Возвращает xml-список длинных идентификаторов всех подсетей сети.
 // 'sublevel' опеределяет число уровней вложенности подсетей для которых
 // подсети будут добавлены в список.
+// если 'sublevel' == -2, то возвращает идентификаторы всех элементов включая
+// все вложенные сети и сам опрашиваемый компонент.
 // если 'sublevel' == -1, то возвращает идентификаторы всех подсетей включая
 // все вложенные сети.
 // если 'sublevel' == 0, то возвращает идентификаторы подсетей только этой сети
@@ -1505,19 +1517,19 @@ const char * UEngine::Model_GetComponentParameterValue(const char *stringid, con
 }
 
 // устанавливает параметры компонента по идентификатору
-bool UEngine::Model_SetComponentParameters(const char *stringid, const char* buffer)
+int UEngine::Model_SetComponentParameters(const char *stringid, const char* buffer)
 {
  try
  {
   UEPtr<RDK::UAContainer> cont=FindComponent(stringid);
   if(!cont)
-   return false;
+   return 1;
 
   XmlStorage.Load(buffer, cont->GetLongName(Environment->GetCurrentComponent(),CompName));
   XmlStorage.SelectNode("Parameters");
 
   if(!Model_SetComponentParameters(cont,&XmlStorage))
-   return false;
+   return 2;
   XmlStorage.SelectUp();
  }
  catch (UException &exception)
@@ -1525,7 +1537,7 @@ bool UEngine::Model_SetComponentParameters(const char *stringid, const char* buf
   ProcessException(exception);
  }
 
- return true;
+ return 0;
 }
 
 // Устанавливает значение параметра компонента по идентификатору компонента и имени параметра
@@ -1792,11 +1804,16 @@ int UEngine::Model_BreakAllComponentOutputLinks(const char* stringid)
 }
 
 // Возращает все связи внутри компонента stringid в виде xml в буфер buffer
-const char* UEngine::Model_GetComponentInternalLinks(const char* stringid)
+// Имена формируются до уровня компонента owner_level_stringid
+// Если owner_level_stringid не задан, то имена формируются до уровня текущего компонента
+const char* UEngine::Model_GetComponentInternalLinks(const char* stringid, const char* owner_level_stringid)
 {
  try
  {
   UEPtr<RDK::UANet> cont=dynamic_pointer_cast<RDK::UANet>(FindComponent(stringid));
+  UEPtr<RDK::UANet> owner;
+  if(owner_level_stringid)
+   dynamic_pointer_cast<RDK::UANet>(FindComponent(owner_level_stringid));
 
   TempString="";
   if(!cont)
@@ -1804,7 +1821,70 @@ const char* UEngine::Model_GetComponentInternalLinks(const char* stringid)
 
   XmlStorage.Create("Links");
 
-  if(!Model_GetComponentInternalLinks(cont,&XmlStorage))
+  if(Model_GetComponentInternalLinks(cont,&XmlStorage,owner))
+   return TempString.c_str();
+
+  XmlStorage.Save(TempString);
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return TempString.c_str();
+}
+
+// Устанавливает все связи внутри компонента stringid из строки xml в буфере buffer
+// Имена применяются с уровня компонента owner_level_stringid
+// Если owner_level_stringid не задан, то применяется уровень текущего компонента
+int UEngine::Model_SetComponentInternalLinks(const char* stringid, const char* buffer, const char* owner_level_stringid)
+{
+ try
+ {
+  UEPtr<RDK::UANet> cont=dynamic_pointer_cast<RDK::UANet>(FindComponent(stringid));
+  UEPtr<RDK::UANet> owner;
+  if(owner_level_stringid)
+   dynamic_pointer_cast<RDK::UANet>(FindComponent(owner_level_stringid));
+
+  if(!cont)
+   return -3;
+
+  XmlStorage.Load(buffer,"Links");
+
+  if(!Model_SetComponentInternalLinks(cont,&XmlStorage,owner))
+   return -4;
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+
+ return 0;
+}
+
+// Возращает все входные связи к компоненту stringid в виде xml в буфер buffer
+// если 'sublevel' == -2, то возвращает связи всех элементов включая
+// все вложенные сети и сам опрашиваемый компонент.
+// если 'sublevel' == -1, то возвращает связи всех подсетей включая
+// все вложенные сети.
+// если 'sublevel' == 0, то возвращает связи подсетей только этой сети
+// Имена формируются до уровня компонента owner_level_stringid
+// Если owner_level_stringid не задан, то имена формируются до уровня текущего компонента
+const char * UEngine::Model_GetComponentInputLinks(const char* stringid, const char* owner_level_stringid, int sublevel)
+{
+ try
+ {
+  UEPtr<RDK::UANet> cont=dynamic_pointer_cast<RDK::UANet>(FindComponent(stringid));
+  UEPtr<RDK::UANet> owner;
+  if(owner_level_stringid)
+   dynamic_pointer_cast<RDK::UANet>(FindComponent(owner_level_stringid));
+
+  TempString="";
+  if(!cont)
+   return TempString.c_str();
+
+  XmlStorage.Create("Links");
+
+  if(!Model_GetComponentInputLinks(cont,&XmlStorage,owner,sublevel))
    return 0;
 
   TempString="";
@@ -1817,55 +1897,72 @@ const char* UEngine::Model_GetComponentInternalLinks(const char* stringid)
  return TempString.c_str();
 }
 
-// Устанавливает все связи внутри компонента stringid из строки xml в буфере buffer
-int UEngine::Model_SetComponentInternalLinks(const char* stringid, const char* buffer)
+// Возращает все выходные связи из компонента stringid в виде xml в буфер buffer
+// если 'sublevel' == -2, то возвращает связи всех элементов включая
+// все вложенные сети и сам опрашиваемый компонент.
+// если 'sublevel' == -1, то возвращает связи всех подсетей включая
+// все вложенные сети.
+// если 'sublevel' == 0, то возвращает связи подсетей только этой сети
+// Имена формируются до уровня компонента owner_level_stringid
+// Если owner_level_stringid не задан, то имена формируются до уровня текущего компонента
+const char * UEngine::Model_GetComponentOutputLinks(const char* stringid, const char* owner_level_stringid, int sublevel)
 {
  try
  {
   UEPtr<RDK::UANet> cont=dynamic_pointer_cast<RDK::UANet>(FindComponent(stringid));
+  UEPtr<RDK::UANet> owner;
+  if(owner_level_stringid)
+   dynamic_pointer_cast<RDK::UANet>(FindComponent(owner_level_stringid));
 
+  TempString="";
   if(!cont)
-   return -3;
+   return TempString.c_str();
 
-  XmlStorage.Load(buffer,"Links");
+  XmlStorage.Create("Links");
 
-  if(!Model_SetComponentInternalLinks(cont,&XmlStorage))
-   return -4;
+  if(!Model_GetComponentOutputLinks(cont,&XmlStorage,owner, sublevel))
+   return 0;
+
+  TempString="";
+  XmlStorage.Save(TempString);
  }
  catch (UException &exception)
  {
   ProcessException(exception);
  }
-
- return 0;
+ return TempString.c_str();
 }
 
-// Возращает все входные связи к компоненту stringid в виде xml в буфер buffer
-const char * UEngine::Model_GetComponentInputLinks(const char* stringid)
+// Возращает все внешние связи c компонентом cont и его дочерними компонентами в виде xml в буфер buffer
+// Информация о связях формируется относительно владельца компонента cont!
+// Имена формируются до уровня компонента owner_level_stringid
+// Если owner_level_stringid не задан, то имена формируются до уровня текущего компонента
+const char* UEngine::Model_GetComponentPersonalLinks(const char* stringid, const char* owner_level_stringid)
 {
  try
  {
-  return 0;
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
- return 0;
-}
+  UEPtr<RDK::UANet> cont=dynamic_pointer_cast<RDK::UANet>(FindComponent(stringid));
+  UEPtr<RDK::UANet> owner;
+  if(owner_level_stringid)
+   dynamic_pointer_cast<RDK::UANet>(FindComponent(owner_level_stringid));
 
-// Возращает все выходные связи из компонента stringid в виде xml в буфер buffer
-const char * UEngine::Model_GetComponentOutputLinks(const char* stringid)
-{
- try
- {
-  return 0;
+  TempString="";
+  if(!cont)
+   return TempString.c_str();
+
+  XmlStorage.Create("Links");
+
+  if(Model_GetComponentPersonalLinks(cont,&XmlStorage,owner))
+   return TempString.c_str();
+
+  TempString="";
+  XmlStorage.Save(TempString);
  }
  catch (UException &exception)
  {
   ProcessException(exception);
  }
- return 0;
+ return TempString.c_str();
 }
 
 // Возвращает состояние компонента по идентификатору
@@ -2617,12 +2714,12 @@ bool UEngine::Model_GetComponentParametersEx(RDK::UAContainer* cont, RDK::Serial
 
 
 // устанавливает параметры компонента по идентификатору
-bool UEngine::Model_SetComponentParameters(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage)
+int UEngine::Model_SetComponentParameters(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage)
 {
  try
  {
   if(!cont || !serstorage)
-   return false;
+   return 1;
 
   std::string name;
 
@@ -2642,19 +2739,25 @@ bool UEngine::Model_SetComponentParameters(RDK::UAContainer* cont, RDK::Serializ
  {
   ProcessException(exception);
  }
- return true;
+ return 0;
 }
 
 // Возращает все связи внутри компонента stringid в виде xml в буфер buffer
-int UEngine::Model_GetComponentInternalLinks(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage)
+// Имена формируются до уровня компонента owner_level
+// Если owner_level не задан, то имена формируются до уровня текущего компонента
+int UEngine::Model_GetComponentInternalLinks(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage, RDK::UANet* owner_level)
 {
  try
  {
   if(!cont || !serstorage)
-   return false;
+   return 1;
 
   UStringLinksList linkslist;
-  cont->GetLinks(linkslist, cont);
+  if(owner_level)
+   cont->GetLinks(linkslist, owner_level);
+  else
+   cont->GetLinks(linkslist, cont);
+
 
   *serstorage<<linkslist;
  }
@@ -2662,22 +2765,24 @@ int UEngine::Model_GetComponentInternalLinks(RDK::UANet* cont, RDK::Serialize::U
  {
   ProcessException(exception);
  }
- return true;
+ return 0;
 }
 
 // Устанавливает все связи внутри компонента stringid из строки xml в буфере buffer
-int UEngine::Model_SetComponentInternalLinks(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage)
+// Имена применяются до уровня компонента owner_level
+// Если owner_level не задан, то имена применяются до уровня текущего компонента
+int UEngine::Model_SetComponentInternalLinks(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage, RDK::UANet* owner_level)
 {
  try
  {
   if(!cont || !serstorage)
-   return false;
+   return 1;
 
   UStringLinksList linkslist;
   *serstorage>>linkslist;
 
   cont->BreakLinks();
-  cont->CreateLinks(linkslist);
+  cont->CreateLinks(linkslist, owner_level);
  }
  catch (UException &exception)
  {
@@ -2688,35 +2793,83 @@ int UEngine::Model_SetComponentInternalLinks(RDK::UANet* cont, RDK::Serialize::U
 }
 
 // Возращает все входные связи к компоненту stringid в виде xml в буфер buffer
-int UEngine::Model_GetComponentInputLinks(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage)
+// если 'sublevel' == -2, то возвращает связи всех элементов включая
+// все вложенные сети и сам опрашиваемый компонент.
+// если 'sublevel' == -1, то возвращает связи всех подсетей включая
+// все вложенные сети.
+// если 'sublevel' == 0, то возвращает связи подсетей только этой сети
+// Имена формируются до уровня компонента owner_level
+// Если owner_level не задан, то имена формируются до уровня текущего компонента
+int UEngine::Model_GetComponentInputLinks(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage, RDK::UANet* owner_level, int sublevel)
 {
  try
  {
   if(!cont || !serstorage)
-   return false;
+   return 1;
+
+  UStringLinksList linkslist;
+//  cont->GetInputLinks(linkslist, cont);
+
+  *serstorage<<linkslist;
  }
  catch (UException &exception)
  {
   ProcessException(exception);
  }
-
- return true;
+ return 0;
 }
 
 // Возращает все выходные связи из компонента stringid в виде xml в буфер buffer
-int UEngine::Model_GetComponentOutputLinks(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage)
+// если 'sublevel' == -2, то возвращает связи всех элементов включая
+// все вложенные сети и сам опрашиваемый компонент.
+// если 'sublevel' == -1, то возвращает связи всех подсетей включая
+// все вложенные сети.
+// если 'sublevel' == 0, то возвращает связи подсетей только этой сети
+// Имена формируются до уровня компонента owner_level
+// Если owner_level не задан, то имена формируются до уровня текущего компонента
+int UEngine::Model_GetComponentOutputLinks(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage, RDK::UANet* owner_level, int sublevel)
 {
  try
  {
   if(!cont || !serstorage)
-   return false;
+   return 1;
+
+  UStringLinksList linkslist;
+//  cont->GetOutputLinks(linkslist, cont);
+
+  *serstorage<<linkslist;
  }
  catch (UException &exception)
  {
   ProcessException(exception);
  }
+ return 0;
+}
 
- return true;
+// Возращает все внешние связи c компонентом cont и его дочерними компонентами в виде xml в буфер buffer
+// Информация о связях формируется относительно владельца компонента cont!
+// Имена формируются до уровня компонента owner_level
+// Если owner_level не задан, то имена формируются до уровня текущего компонента
+int UEngine::Model_GetComponentPersonalLinks(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage, RDK::UANet* owner_level)
+{
+ try
+ {
+  if(!cont || !serstorage)
+   return 1;
+
+  UStringLinksList linkslist;
+  if(owner_level)
+   cont->GetLinks(linkslist, owner_level, true);
+  else
+   cont->GetLinks(linkslist, cont->GetOwner(), true);
+
+  *serstorage<<linkslist;
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
 }
 
 // Возвращает состояние компонента по идентификатору
@@ -2814,7 +2967,7 @@ int UEngine::Model_SaveComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXM
   if(links)
   {
    serstorage->AddNode("Links");
-   if(!Model_GetComponentInternalLinks(cont,serstorage))
+   if(Model_GetComponentInternalLinks(cont,serstorage,0))
 	return false;
    serstorage->SelectUp();
   }
@@ -2859,7 +3012,7 @@ int UEngine::Model_LoadComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXM
    return false;
 
   serstorage->SelectNode("Parameters");
-  if(!Model_SetComponentParameters(cont, serstorage))
+  if(Model_SetComponentParameters(cont, serstorage))
    return false;
   serstorage->SelectUp();
 
@@ -2890,7 +3043,7 @@ int UEngine::Model_LoadComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXM
   if(links)
   {
    serstorage->SelectNode("Links");
-   if(!Model_SetComponentInternalLinks(cont,serstorage))
+   if(!Model_SetComponentInternalLinks(cont,serstorage,0))
 	return false;
    serstorage->SelectUp();
   }

@@ -256,7 +256,7 @@ template<typename T>
 T* UEPtr<T>::operator -> (void) const
 {
  if(!PData)
-  throw new EUsingZeroPtr();
+  throw EUsingZeroPtr();
 
  return PData;
 };
@@ -265,7 +265,7 @@ template<typename T>
 T& UEPtr<T>::operator * (void)
 {
  if(!PData)
-  throw new EUsingZeroPtr();
+  throw EUsingZeroPtr();
 
  return *PData;
 };
@@ -373,7 +373,7 @@ template<typename T>
 T& UESharedPtr<T>::operator * (void)
 {
  if(!PData)
-  throw new EUsingZeroPtr();
+  throw EUsingZeroPtr();
 
  return *PData;
 };
@@ -402,7 +402,7 @@ template<typename T>
 T* UESharedPtr<T>::operator -> (void) const
 {
  if(!PData)
-  throw new EUsingZeroPtr();
+  throw EUsingZeroPtr();
 
  return PData;
 };

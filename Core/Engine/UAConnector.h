@@ -236,7 +236,11 @@ virtual bool CheckItem(UEPtr<UAItem> item, int item_index, int conn_index);
 
 // Возвращает список подключений
 template<typename T>
-ULinksListT<T>& GetLinks(ULinksListT<T> &linkslist, UEPtr<UAContainer> netlevel) const;
+ULinksListT<T>& GetLinks(ULinksListT<T> &linkslist, UEPtr<UAContainer> netlevel, bool exclude_internals=false, UEPtr<UAContainer> internal_level=0) const;
+
+// Возвращает список подключений непосредственно коннектора cont
+template<typename T>
+ULinksListT<T>& GetPersonalLinks(UEPtr<UAContainer> cont, ULinksListT<T> &linkslist, UEPtr<UAContainer> netlevel) const;
 // ----------------------
 
 // --------------------------

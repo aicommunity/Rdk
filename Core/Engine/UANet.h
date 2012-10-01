@@ -32,7 +32,15 @@ virtual ~UANet(void);
 // Методы доступа к свойствам
 // --------------------------
 template<typename T>
-ULinksListT<T>& GetLinks(ULinksListT<T> &linkslist, UEPtr<UAContainer> netlevel) const;
+ULinksListT<T>& GetLinks(ULinksListT<T> &linkslist, UEPtr<UAContainer> netlevel, bool exclude_internals=false, UEPtr<UAContainer> internal_level=0) const;
+
+// Возращает все связи между двумя компонентами в виде xml в буфер buffer
+// включая связи этого компонента
+// если 'sublevel' == -1, то возвращает также все связи между объектом и любым дочерним компонентом
+// второго объекта. Работает симметрично в обе стороны.
+// если 'sublevel' == 0, то возвращает связи только между этими объектами
+template<typename T>
+ULinksListT<T>& GetPersonalLinks(UEPtr<RDK::UANet> cont, ULinksListT<T> &linkslist, UEPtr<UAContainer> netlevel, int sublevel=-1);
 // --------------------------
 
 // --------------------------
@@ -97,7 +105,7 @@ virtual bool CreateLink(const NameT &item, int item_index,
 
 // Устанавливает все связи из массива 'linkslist'
 template<typename T>
-bool CreateLinks(const ULinksListT<T> &linkslist);
+bool CreateLinks(const ULinksListT<T> &linkslist, UEPtr<UANet> owner_level=0);
 
 // Разрывает все связи с выходом элемента сети, если
 // 'id' - есть Id элемента сети.
@@ -138,7 +146,10 @@ virtual void BreakLinks(void);
 // --------------------------
 protected:
 template<typename T>
-ULinksListT<T>& GetLinks(UEPtr<UAContainer> cont, ULinksListT<T> &linkslist, UEPtr<UAContainer> netlevel) const;
+ULinksListT<T>& GetLinks(UEPtr<UAContainer> cont, ULinksListT<T> &linkslist, UEPtr<UAContainer> netlevel, bool exclude_internals, UEPtr<UAContainer> internal_level=0) const;
+
+template<typename T>
+ULinksListT<T>& GetPersonalLinks(UEPtr<UAContainer> cont, UEPtr<UAContainer> cont2, ULinksListT<T> &linkslist, UEPtr<UAContainer> netlevel) const;
 // --------------------------
 
 

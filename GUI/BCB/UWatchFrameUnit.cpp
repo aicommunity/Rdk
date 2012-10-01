@@ -1227,6 +1227,8 @@ void TUWatchFrame::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
    UShowProgressBarForm->IncBarStatus(1);
   }
 
+ xml.WriteFloat("WatchInterval",WatchInterval);
+
  ModifyState=false;
 }
 
@@ -1268,6 +1270,7 @@ void TUWatchFrame::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
 	wd->OutputIndex=xml.ReadInteger("OutputIndex",0);
 	wd->OutputElementIndex=xml.ReadInteger("OutputElementIndex",0);
 	wd->XYSize=xml.ReadInteger("XYSize", 1);
+	wd->Visible=xml.ReadBool("Visible",true);
 
 	int grindex=Add(wd_data);
 	grseries=dynamic_cast<TFastLineSeries*>(Chart1->Series[grindex]);
@@ -1304,6 +1307,7 @@ void TUWatchFrame::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
    UShowProgressBarForm->IncBarStatus(1);
   }
 
+ SetWatchInterval(xml.ReadFloat("WatchInterval",0));
  ModifyState=false;
 }
 // -----------------------------

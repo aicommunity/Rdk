@@ -16,6 +16,7 @@ class TUComponentLinksForm : public TUVisualControllerForm
 {
 __published:	// IDE-managed Components
 	TUComponentLinksFrame *UComponentLinksFrame;
+	void __fastcall FormShow(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
 	__fastcall TUComponentLinksForm(TComponent* Owner);

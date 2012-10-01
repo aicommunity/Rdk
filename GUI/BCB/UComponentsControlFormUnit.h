@@ -24,6 +24,9 @@ __published:	// IDE-managed Components
 	void __fastcall ComponentsListFrameStringGridKeyPress(TObject *Sender, System::WideChar &Key);
 	void __fastcall ClassesListFrameStringGridDblClick(TObject *Sender);
 	void __fastcall ClassesListFrameStringGridKeyPress(TObject *Sender, System::WideChar &Key);
+	void __fastcall ComponentsControlFrameTakeObjectButtonClick(TObject *Sender);
+	void __fastcall ComponentsControlFrameReturnObjectButtonClick(TObject *Sender);
+
 
 
 

@@ -25,8 +25,12 @@ __published:	// IDE-managed Components
 	TPanel *Panel1;
 	TSplitter *Splitter1;
 	THeaderControl *HeaderControl1;
+	TPanel *ButtonPanel;
+	TButton *OkButton;
+	TButton *CancelButton;
 	void __fastcall FrameResize(TObject *Sender);
 	void __fastcall HeaderControl1SectionClick(THeaderControl *HeaderControl, THeaderSection *Section);
+	void __fastcall OkButtonClick(TObject *Sender);
 
 private:	// User declarations
 public:		// User declarations
@@ -34,18 +38,27 @@ public:		// User declarations
 
 protected:		// User declarations
 // Длинный id наблюдаемого компонента модели
-std::string ViewComponentLongId;
+//std::string ViewComponentLongId;
+
+// Режим работы фрейма
+// 0 - Обычный режим с панелью
+// 1 - Модальный режим создания связи с кнопками
+// 2 - Модальный режим разрыва связи с кнопками
+int Mode;
 
 public:
 // Доступ к id наблюдаемого компонента
-const std::string& GetViewComponentLongId(void) const;
-void SetViewComponentLongId(const std::string& value);
+//const std::string& GetViewComponentLongId(void) const;
+//void SetViewComponentLongId(const std::string& value);
 
-// Инициализация интерфейса перед первым отображением
-void __fastcall Init(void);
+// Инициализация интерфейса перед отображением
+void __fastcall Init(int mode, const std::string &component_name1, const std::string &owner_component_name, const std::string &component_name2="");
+
+// Выбор режима отображения
+void SetMode(int mode);
 
 // Обновление интерфейса
-void UpdateInterface(void);
+void AUpdateInterface(void);
 
 // Создает выбранную связь
 void __fastcall CreateLink(void);

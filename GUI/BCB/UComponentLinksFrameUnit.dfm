@@ -6,7 +6,7 @@ inherited UComponentLinksFrame: TUComponentLinksFrame
   ExplicitHeight = 428
   object Splitter1: TSplitter
     Left = 0
-    Top = 216
+    Top = 175
     Width = 620
     Height = 7
     Cursor = crVSplit
@@ -19,15 +19,16 @@ inherited UComponentLinksFrame: TUComponentLinksFrame
     Left = 315
     Top = 0
     Width = 305
-    Height = 216
+    Height = 175
     Align = alRight
     Caption = ' '#1042#1093#1086#1076#1099' '
     TabOrder = 0
+    ExplicitHeight = 216
     inline NANetFrameInputs: TUComponentIOFrame
       Left = 2
       Top = 15
       Width = 301
-      Height = 199
+      Height = 158
       Align = alClient
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
@@ -42,7 +43,7 @@ inherited UComponentLinksFrame: TUComponentLinksFrame
       ExplicitHeight = 199
       inherited StringGrid: TStringGrid
         Width = 301
-        Height = 199
+        Height = 158
         ExplicitWidth = 301
         ExplicitHeight = 199
       end
@@ -52,15 +53,16 @@ inherited UComponentLinksFrame: TUComponentLinksFrame
     Left = 0
     Top = 0
     Width = 315
-    Height = 216
+    Height = 175
     Align = alClient
     Caption = ' '#1042#1099#1093#1086#1076#1099' '
     TabOrder = 1
+    ExplicitHeight = 216
     inline NANetFrameOutputs: TUComponentIOFrame
       Left = 2
       Top = 15
       Width = 311
-      Height = 199
+      Height = 158
       Align = alClient
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
@@ -75,7 +77,7 @@ inherited UComponentLinksFrame: TUComponentLinksFrame
       ExplicitHeight = 199
       inherited StringGrid: TStringGrid
         Width = 311
-        Height = 199
+        Height = 158
         ExplicitWidth = 311
         ExplicitHeight = 199
       end
@@ -83,12 +85,13 @@ inherited UComponentLinksFrame: TUComponentLinksFrame
   end
   object GroupBox3: TGroupBox
     Left = 0
-    Top = 223
+    Top = 182
     Width = 620
     Height = 168
     Align = alBottom
     Caption = ' '#1057#1074#1103#1079#1080' '
     TabOrder = 2
+    ExplicitTop = 223
     inline NANetFrameLinks: TUComponentIOFrame
       Left = 2
       Top = 15
@@ -102,25 +105,24 @@ inherited UComponentLinksFrame: TUComponentLinksFrame
       Font.Style = []
       ParentFont = False
       TabOrder = 0
-      ExplicitLeft = 2
-      ExplicitTop = 15
-      ExplicitWidth = 616
-      ExplicitHeight = 151
+      ExplicitWidth = 315
+      ExplicitHeight = 216
       inherited StringGrid: TStringGrid
         Width = 616
         Height = 151
-        ExplicitWidth = 616
-        ExplicitHeight = 151
+        ExplicitWidth = 315
+        ExplicitHeight = 216
       end
     end
   end
   object Panel1: TPanel
     Left = 0
-    Top = 391
+    Top = 350
     Width = 620
     Height = 37
     Align = alBottom
     TabOrder = 3
+    ExplicitTop = 391
     object HeaderControl1: THeaderControl
       Left = 1
       Top = 1
@@ -158,6 +160,42 @@ inherited UComponentLinksFrame: TUComponentLinksFrame
           Width = 80
         end>
       OnSectionClick = HeaderControl1SectionClick
+    end
+  end
+  object ButtonPanel: TPanel
+    Left = 0
+    Top = 387
+    Width = 620
+    Height = 41
+    Align = alBottom
+    TabOrder = 4
+    Visible = False
+    ExplicitLeft = 24
+    ExplicitTop = 397
+    DesignSize = (
+      620
+      41)
+    object OkButton: TButton
+      Left = 449
+      Top = 8
+      Width = 75
+      Height = 25
+      Anchors = [akTop, akRight]
+      Caption = 'OK'
+      Default = True
+      ModalResult = 1
+      TabOrder = 0
+      OnClick = OkButtonClick
+    end
+    object CancelButton: TButton
+      Left = 532
+      Top = 8
+      Width = 75
+      Height = 25
+      Anchors = [akTop, akRight]
+      Caption = 'Cancel'
+      ModalResult = 2
+      TabOrder = 1
     end
   end
 end

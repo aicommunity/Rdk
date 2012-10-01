@@ -245,7 +245,8 @@ RDK_LIB_TYPE bool RDK_CALL Model_Check(void);
 
 // Добавляет в выбранный компонент модели с идентификатором 'stringid' экземпляр компонента с заданным 'classid'
 // если stringid - пустая строка, то добавляет в саму модель
-RDK_LIB_TYPE int RDK_CALL Model_AddComponent(const char* stringid, int classid);
+// Возвращает имя компонента в случае успеха
+RDK_LIB_TYPE const char* RDK_CALL Model_AddComponent(const char* stringid, int classid);
 
 // Удаляет из выбранного компонента модели с идентификатором 'stringid' экземпляр компонента с заданным 'id'
 // если stringid - пустая строка, то удаляет из самой модели
@@ -262,6 +263,8 @@ RDK_LIB_TYPE int RDK_CALL Model_GetComponentsList(const char* stringid, int *buf
 // Возвращает xml-список длинных идентификаторов всех коннекторов сети.
 // 'sublevel' опеределяет число уровней вложенности подсетей для которых
 // коннекторы будут добавлены в список.
+// если 'sublevel' == -2, то возвращает идентификаторы всех элементов включая
+// все вложенные сети и сам опрашиваемый компонент.
 // если 'sublevel' == -1, то возвращает идентификаторы всех коннекторов включая
 // все вложенные сети.
 // если 'sublevel' == 0, то возвращает идентификаторы коннекторов только этой сети
@@ -272,6 +275,8 @@ RDK_LIB_TYPE const char* RDK_CALL Model_GetConnectorsList(const char* stringid,
 // Возвращает xml-список длинных идентификаторов всех элементов сети.
 // 'sublevel' опеределяет число уровней вложенности подсетей для которых
 // элементы будут добавлены в список.
+// если 'sublevel' == -2, то возвращает идентификаторы всех элементов включая
+// все вложенные сети и сам опрашиваемый компонент.
 // если 'sublevel' == -1, то возвращает идентификаторы всех элементов включая
 // все вложенные сети.
 // если 'sublevel' == 0, то возвращает идентификаторы элементов только этой сети
@@ -282,6 +287,8 @@ RDK_LIB_TYPE const char* RDK_CALL Model_GetItemsList(const char* stringid,
 // Возвращает xml-список длинных идентификаторов всех подсетей сети.
 // 'sublevel' опеределяет число уровней вложенности подсетей для которых
 // подсети будут добавлены в список.
+// если 'sublevel' == -2, то возвращает идентификаторы всех элементов включая
+// все вложенные сети и сам опрашиваемый компонент.
 // если 'sublevel' == -1, то возвращает идентификаторы всех подсетей включая
 // все вложенные сети.
 // если 'sublevel' == 0, то возвращает идентификаторы подсетей только этой сети
@@ -325,7 +332,7 @@ RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentSelectedParameters(const ch
 RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentParameterValue(const char *stringid, const char *paramname);
 
 // Устанавливает параметры компонента по идентификатору
-RDK_LIB_TYPE bool RDK_CALL Model_SetComponentParameters(const char *stringid, const char* buffer);
+RDK_LIB_TYPE int RDK_CALL Model_SetComponentParameters(const char *stringid, const char* buffer);
 
 // Устанавливает значение параметра компонента по идентификатору компонента и имени параметра
 RDK_LIB_TYPE void RDK_CALL Model_SetComponentParameterValue(const char *stringid, const char *paramname, const char *buffer);
@@ -356,16 +363,40 @@ RDK_LIB_TYPE int RDK_CALL Model_BreakAllComponentInputLinks(const char* stringid
 RDK_LIB_TYPE int RDK_CALL Model_BreakAllComponentOutputLinks(const char* stringid);
 
 // Возращает все связи внутри компонента stringid в виде xml в буфер buffer
-RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentInternalLinks(const char* stringid);
+// Имена формируются до уровня компонента owner_level_stringid
+// Если owner_level_stringid не задан, то имена формируются до уровня текущего компонента
+RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentInternalLinks(const char* stringid, const char* owner_level_stringid=0);
 
 // Устанавливает все связи внутри компонента stringid из строки xml в буфере buffer
-RDK_LIB_TYPE int RDK_CALL Model_SetComponentInternalLinks(const char* stringid, const char* buffer);
+// Имена применяются с уровня компонента owner_level_stringid
+// Если owner_level_stringid не задан, то применяется уровень текущего компонента
+RDK_LIB_TYPE int RDK_CALL Model_SetComponentInternalLinks(const char* stringid, const char* buffer, const char* owner_level_stringid=0);
 
 // Возвращает все входные связи к компоненту stringid в виде xml в буфер buffer
-RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentInputLinks(const char* stringid);
+// если 'sublevel' == -2, то возвращает связи всех элементов включая
+// все вложенные сети и сам опрашиваемый компонент.
+// если 'sublevel' == -1, то возвращает связи всех подсетей включая
+// все вложенные сети.
+// если 'sublevel' == 0, то возвращает связи подсетей только этой сети
+// Имена формируются до уровня компонента owner_level_stringid
+// Если owner_level_stringid не задан, то имена формируются до уровня текущего компонента
+RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentInputLinks(const char* stringid, const char* owner_level_stringid=0, bool sublevel=-1);
 
 // Возвращает все выходные связи из компонента stringid в виде xml в буфер buffer
-RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentOutputLinks(const char* stringid);
+// если 'sublevel' == -2, то возвращает связи всех элементов включая
+// все вложенные сети и сам опрашиваемый компонент.
+// если 'sublevel' == -1, то возвращает связи всех подсетей включая
+// все вложенные сети.
+// если 'sublevel' == 0, то возвращает связи подсетей только этой сети
+// Имена формируются до уровня компонента owner_level_stringid
+// Если owner_level_stringid не задан, то имена формируются до уровня текущего компонента
+RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentOutputLinks(const char* stringid, const char* owner_level_stringid=0, bool sublevel=-1);
+
+// Возращает все внешние связи c компонентом cont и его дочерними компонентами в виде xml в буфер buffer
+// Информация о связях формируется относительно владельца компонента cont!
+// Имена формируются до уровня компонента owner_level_stringid
+// Если owner_level_stringid не задан, то имена формируются до уровня текущего компонента
+RDK_LIB_TYPE const char* RDK_CALL Model_GetComponentPersonalLinks(const char* stringid, const char* owner_level_stringid=0);
 
 // Возвращает состояние компонента по идентификатору
 RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentState(const char *stringid);

@@ -83,3 +83,20 @@ void __fastcall TUComponentsControlForm::ClassesListFrameStringGridKeyPress(TObj
 }
 //---------------------------------------------------------------------------
 
+
+void __fastcall TUComponentsControlForm::ComponentsControlFrameTakeObjectButtonClick(TObject *Sender)
+
+{
+  ComponentsControlFrame->TakeObjectButtonClick(Sender);
+  UDrawEngineForm->SetNet(ComponentsControlFrame->ComponentsListFrame->GetCurrentComponentName());
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsControlForm::ComponentsControlFrameReturnObjectButtonClick(TObject *Sender)
+
+{
+  ComponentsControlFrame->ReturnObjectButtonClick(Sender);
+  UDrawEngineForm->SetNet(ComponentsControlFrame->ComponentsListFrame->GetCurrentComponentName());
+}
+//---------------------------------------------------------------------------
+

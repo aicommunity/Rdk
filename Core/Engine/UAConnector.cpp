@@ -517,7 +517,7 @@ bool UAConnector::CheckItem(UEPtr<UAItem> item, int item_index, int conn_index)
 
 // Возвращает список подключений
 template<typename T>
-ULinksListT<T>& UAConnector::GetLinks(ULinksListT<T> &linkslist, UEPtr<UAContainer> netlevel) const
+ULinksListT<T>& UAConnector::GetLinks(ULinksListT<T> &linkslist, UEPtr<UAContainer> netlevel, bool exclude_internals, UEPtr<UAContainer> internal_level) const
 {
  ULinkT<T> link;
  ULinkSideT<T> connector;
@@ -525,11 +525,56 @@ ULinksListT<T>& UAConnector::GetLinks(ULinksListT<T> &linkslist, UEPtr<UAContain
  GetLongId(netlevel,connector.Id);
  if(connector.Id.size()==0)
   return linkslist;
-// link.Connector.push_back(connector);
 
  for(int i=0;i<CItemList.GetSize();i++)
  {
   if(CItemList[i].Item)
+  {
+   if(exclude_internals)
+   {
+	if(CItemList[i].Item->CheckOwner(internal_level))
+	 continue;
+   }
+   CItemList[i].Item->GetLongId(netlevel,item.Id);
+   connector.Index=i;
+   item.Index=CItemList[i].Index;
+   if(connector.Id.size() != 0)
+   {
+	int item_id=linkslist.FindItem(item);
+	if(item_id >= 0)
+	{
+	 if(linkslist[item_id].FindConnector(connector) >= 0)
+	  continue;
+	 linkslist[item_id].Connector.push_back(connector);
+	}
+	else
+	{
+	 link.Item=item;
+	 link.Connector.clear();
+	 link.Connector.push_back(connector);
+	 linkslist.Add(link);
+	}
+   }
+  }
+ }
+
+ return linkslist;
+}
+
+// Возвращает список подключений непосредственно коннектора cont
+template<typename T>
+ULinksListT<T>& UAConnector::GetPersonalLinks(UEPtr<UAContainer> cont, ULinksListT<T> &linkslist, UEPtr<UAContainer> netlevel) const
+{
+ ULinkT<T> link;
+ ULinkSideT<T> connector;
+ ULinkSideT<T> item;
+ GetLongId(netlevel,connector.Id);
+ if(connector.Id.size()==0)
+  return linkslist;
+
+ for(int i=0;i<CItemList.GetSize();i++)
+ {
+  if(CItemList[i].Item == cont)
   {
    CItemList[i].Item->GetLongId(netlevel,item.Id);
    connector.Index=i;

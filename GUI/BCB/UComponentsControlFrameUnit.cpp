@@ -64,7 +64,8 @@ void TUComponentsControlFrame::LoadModelFromFile(const String &filename)
  RichEdit->Visible=false;
  RichEdit->Lines->LoadFromFile(FileName);
 
- Model_LoadComponent("",AnsiString(RichEdit->Text).c_str());
+ if(RichEdit->Text.Length() >0)
+  Model_LoadComponent("",AnsiString(RichEdit->Text).c_str());
 
  delete RichEdit;
  ComponentsListFrame->UpdateInterface();

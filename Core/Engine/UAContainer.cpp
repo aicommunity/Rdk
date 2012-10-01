@@ -916,14 +916,23 @@ void UAContainer::CopyComponents(UEPtr<UAContainer> comp, UEPtr<UAContainerStora
 // Возвращает список длинных идентификаторов всех коннекторов сети.
 // 'sublevel' опеределяет число уровней вложенности подсетей для которых
 // коннекторы будут добавлены в список.
+// если 'sublevel' == -2, то возвращает идентификаторы всех элементов включая
+// все вложенные сети и сам опрашиваемый компонент.
 // если 'sublevel' == -1, то возвращает идентификаторы всех коннекторов включая
 // все вложенные сети.
 // если 'sublevel' == 0, то возвращает идентификаторы коннекторов только этой сети
 // Предварительная очистка буфера не производится.
 ULongIdVector& UAContainer::GetConnectorsList(ULongIdVector &buffer,
-                            int sublevel, UEPtr<UAContainer> ownerlevel)
+							int sublevel, UEPtr<UAContainer> ownerlevel)
 {
  ULongId id;
+
+ if(sublevel == -2)
+ {
+  id.Resize(0);
+  this->GetLongId((ownerlevel)?ownerlevel:UEPtr<UAContainer>(this),id);
+  buffer.Add(id);
+ }
 
  for(int i=0;i<NumComponents;i++)
  {
@@ -938,7 +947,7 @@ ULongIdVector& UAContainer::GetConnectorsList(ULongIdVector &buffer,
   }
 
   if(sublevel != 0)
-   cont->GetConnectorsList(buffer,(sublevel<0)?sublevel:sublevel-1,ownerlevel);
+   cont->GetConnectorsList(buffer,(sublevel<0)?-1:sublevel-1,ownerlevel);
  }
 
  return buffer;
@@ -947,6 +956,8 @@ ULongIdVector& UAContainer::GetConnectorsList(ULongIdVector &buffer,
 // Возвращает список длинных идентификаторов всех элементов сети.
 // 'sublevel' опеределяет число уровней вложенности подсетей для которых
 // элементы будут добавлены в список.
+// если 'sublevel' == -2, то возвращает идентификаторы всех элементов включая
+// все вложенные сети и сам опрашиваемый компонент.
 // если 'sublevel' == -1, то возвращает идентификаторы всех элементов включая
 // все вложенные сети.
 // если 'sublevel' == 0, то возвращает идентификаторы элементов только этой сети
@@ -956,6 +967,13 @@ ULongIdVector& UAContainer::GetItemsList(ULongIdVector &buffer,
 
 {
  ULongId id;
+
+ if(sublevel == -2)
+ {
+  id.Resize(0);
+  this->GetLongId((ownerlevel)?ownerlevel:UEPtr<UAContainer>(this),id);
+  buffer.Add(id);
+ }
 
  for(int i=0;i<NumComponents;i++)
  {
@@ -971,7 +989,7 @@ ULongIdVector& UAContainer::GetItemsList(ULongIdVector &buffer,
   }
 
   if(sublevel != 0)
-   cont->GetItemsList(buffer,(sublevel<0)?sublevel:sublevel-1,ownerlevel);
+   cont->GetItemsList(buffer,(sublevel<0)?-1:sublevel-1,ownerlevel);
  }
 
  return buffer;
@@ -980,6 +998,8 @@ ULongIdVector& UAContainer::GetItemsList(ULongIdVector &buffer,
 // Возвращает список длинных идентификаторов всех подсетей сети.
 // 'sublevel' опеределяет число уровней вложенности подсетей для которых
 // подсети будут добавлены в список.
+// если 'sublevel' == -2, то возвращает идентификаторы всех элементов включая
+// все вложенные сети и сам опрашиваемый компонент.
 // если 'sublevel' == -1, то возвращает идентификаторы всех подсетей включая
 // все вложенные сети.
 // если 'sublevel' == 0, то возвращает идентификаторы подсетей только этой сети
@@ -988,6 +1008,13 @@ ULongIdVector& UAContainer::GetNetsList(ULongIdVector &buffer,
                             int sublevel, UEPtr<UAContainer> ownerlevel)
 {
  ULongId id;
+
+ if(sublevel == -2)
+ {
+  id.Resize(0);
+  this->GetLongId((ownerlevel)?ownerlevel:UEPtr<UAContainer>(this),id);
+  buffer.Add(id);
+ }
 
  for(int i=0;i<NumComponents;i++)
  {
@@ -1003,7 +1030,7 @@ ULongIdVector& UAContainer::GetNetsList(ULongIdVector &buffer,
   }
 
   if(sublevel != 0)
-   cont->GetNetsList(buffer,(sublevel<0)?sublevel:sublevel-1,ownerlevel);
+   cont->GetNetsList(buffer,(sublevel<0)?-1:sublevel-1,ownerlevel);
  }
 
  return buffer;
