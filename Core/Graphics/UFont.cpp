@@ -15,7 +15,7 @@ See file license.txt for more information
 #include "UFont.h"
 #include "UAGraphics.h"
 #include "UGraphicsIO.h"
-#include "Libraries/Basic/UBAResize.h"
+//#include "Libraries/Basic/UBAResize.h"
 
 namespace RDK {
 
@@ -256,7 +256,7 @@ bool UBitmapFont::SetScale(float value)
    ScaledTable[I->first].Data.SetRes(static_cast<int>(I->second.Data.GetWidth()*Scale),
                                      static_cast<int>(I->second.Data.GetHeight()*Scale),
                                      I->second.Data.GetColorModel());
-   UBResizeEdges(I->second.Data,ScaledTable[I->first].Data);
+//   UBResizeEdges(I->second.Data,ScaledTable[I->first].Data);
    ++I;
   }
  }
@@ -297,7 +297,7 @@ bool UBitmapFont::Load(wchar_t ch, const string &filename)
   ScaledTable[ch].Data.SetRes(static_cast<int>(Table[ch].Data.GetWidth()*Scale),
                                static_cast<int>(Table[ch].Data.GetHeight()*Scale),
                                Table[ch].Data.GetColorModel());
-  UBResizeEdges(Table[ch].Data,ScaledTable[ch].Data);
+//  UBResizeEdges(Table[ch].Data,ScaledTable[ch].Data);
  }
 
  return true;
@@ -341,7 +341,7 @@ bool UBitmapFont::Load(const string &filename, const UBPoint &size, const UBRect
    ScaledTable[k].Data.SetRes(static_cast<int>(char_bmp.GetWidth()*Scale),
 							   static_cast<int>(char_bmp.GetHeight()*Scale),
 							   char_bmp.GetColorModel());
-   UBResizeEdges(char_bmp,ScaledTable[k].Data);
+//   UBResizeEdges(char_bmp,ScaledTable[k].Data);
   }
   i+=size.X;
   if(i>=bmp.GetWidth()-size.X)

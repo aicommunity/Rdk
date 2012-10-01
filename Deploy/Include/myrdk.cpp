@@ -13,6 +13,7 @@
 #include "../../Core/Engine/UBinaryEnvSerialize.cpp"
 #include "../../Core/Graphics/UBitmap.cpp"
 #include "../../Core/Graphics/UAGraphics.cpp"
+#include "../../Core/Graphics/UGraphicsIO.cpp"
 #include "../../Core/Graphics/UGraphics.cpp"
 #include "../../Core/Graphics/UFont.cpp"
 #include "../../Core/Graphics/UDrawEngine.cpp"

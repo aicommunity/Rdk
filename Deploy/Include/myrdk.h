@@ -12,6 +12,7 @@
 #include "../../Core/Engine/UBinaryEnvSerialize.h"
 #include "../../Core/Graphics/UBitmap.h"
 #include "../../Core/Graphics/UAGraphics.h"
+#include "../../Core/Graphics/UGraphicsIO.h"
 #include "../../Core/Graphics/UGraphics.h"
 #include "../../Core/Graphics/UFont.h"
 #include "../../Core/Graphics/UDrawEngine.h"
