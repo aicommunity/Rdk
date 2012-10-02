@@ -223,6 +223,12 @@ long long UAContainer::GetFullStepDuration(void) const
  return StepDuration;
 }
 
+// ¬рем€, прошедшее между двум€ последними итераци€ми счета
+long long UAContainer::GetInterstepsInterval(void) const
+{
+ return InterstepsInterval;
+}
+
 // ¬озвращает мгновенное быстродействие, равное отношению
 // полного затраченного времени к ожидаемому времени шага счета
 double UAContainer::GetInstantPerformance(void) const
@@ -1295,6 +1301,7 @@ bool UAContainer::Reset(void)
  CalcCounter=0;
  SkipComponentCalculation=false;
  ComponentReCalculation=false;
+ LastCalcTime=-1;
  return true;
 }
 
@@ -1315,6 +1322,9 @@ RDK_SYS_TRY {
 
   int i=0;
   long long tempstepduration=GetCurrentStartupTime();
+  InterstepsInterval=(LastCalcTime>=0)?tempstepduration-LastCalcTime:0;
+  LastCalcTime=tempstepduration;
+
   UEPtr<UAContainer> *comps=PComponents;
   while((i<NumComponents) && !SkipComponentCalculation)
   {
@@ -1360,7 +1370,7 @@ RDK_SYS_TRY {
   }
 
   UpdateMainOwner();
-  StepDuration=CalcDiffTime(GetCurrentStartupTime(),tempstepduration);
+  InterstepsInterval-=StepDuration=CalcDiffTime(GetCurrentStartupTime(),tempstepduration);
   // ќбрабатываем контроллеры
   int numcontrollers=Controllers.size();
 
