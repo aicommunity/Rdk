@@ -325,6 +325,18 @@ const NameT& UADataComponent::FindPropertyName(UEPtr<const UIProperty> prop) con
  return ForbiddenName;
 }
 
+// »щет переменную свойства в таблице по указателю на него
+UADataComponent::VariableMapCIteratorT UADataComponent::FindPropertyVariable(UEPtr<const UIProperty> prop) const
+{
+  for(VariableMapCIteratorT I=PropertiesLookupTable.begin(),
+						J=PropertiesLookupTable.end(); I!=J; ++I)
+  {
+   if(I->second.Property == prop)
+	return I;
+  }
+ return PropertiesLookupTable.end();
+}
+
 // »щет тип свойства по указателю на него
 unsigned int UADataComponent::FindPropertyType(UEPtr<const UIProperty> prop) const
 {
@@ -360,7 +372,9 @@ UId UADataComponent::AddLookupProperty(const NameT &name, unsigned int type, UEP
    P.Id=I->second.Id+1;
  }
 
- PropertiesLookupTable.insert(make_pair(name,P));
+ pair<VariableMapIteratorT, bool> res=PropertiesLookupTable.insert(make_pair(name,P));
+ P.Property->SetVariable(res.first);
+
  return P.Id;
 }
 

@@ -11,6 +11,8 @@ namespace RDK {
 typedef Serialize::USerStorage UVariableData;
 
 class UADataComponent;
+class UIProperty;
+class UIShare;
 
 // Варианты типа свойства (битовая маска) pt - Property Type
 // 0x1 - Параметр
@@ -28,28 +30,6 @@ enum {pgPublic=0x100, pgSystem=0x200, pgInput=0x400, pgOutput=0x800, pgMode=0x10
 
 // Наиболее часто используемые сочетания типа и группы
 enum {ptPubParameter=ptParameter|pgPublic, ptPubState=ptState|pgPublic};
-
-// Класс сериализации свойств
-class UIProperty
-{
-public:
-// Метод возвращает тип свойства
-virtual unsigned int GetType(void) const=0;
-
-// Метод возвращает строковое имя свойства
-virtual const std::string& GetName(void) const=0;
-
-// Метод возвращает строковое имя класса-владельца свойства
-virtual std::string GetOwnerName(void) const=0;
-
-// Метод записывает значение свойства в поток
-virtual bool Save(UEPtr<UVariableData> storage, bool simplemode=false)=0;
-
-// Метод читает значение свойства из потока
-virtual bool Load(UEPtr<UVariableData> storage, bool simplemode=false)=0;
-};
-
-
 
 // Хранилище свойств параметра
 struct UVariable
@@ -100,24 +80,6 @@ std::string GetPropertyTypeName(void) const;
 bool CheckMask(unsigned int mask) const;
 // --------------------------
 };
-
-// Класс управления общими свойствами
-class UIShare
-{
-public:
- // Метод возвращает Id общего свойства
-// virtual int GetId(void) const=0;
-
- // Метод возвращает строковое имя класса-владельца общего свойства
-// virtual std::string GetOwnerName(void) const=0;
-
- // Метод инициализации общего свойства
- virtual bool Init(UEPtr<UADataComponent> main_owner)=0;
-
- // Метод деинициализации общего свойства
- virtual bool UnInit(void)=0;
-};
-
 
    /*
 // Хранилище свойств параметра
@@ -214,6 +176,9 @@ const NameT& FindPropertyName(UEPtr<const UIProperty> prop) const;
 // Ищет тип свойства по указателю на него
 unsigned int FindPropertyType(UEPtr<const UIProperty> prop) const;
 
+// Ищет переменную свойства в таблице по указателю на него
+UADataComponent::VariableMapCIteratorT FindPropertyVariable(UEPtr<const UIProperty> prop) const;
+
 // Копирует все параметры этого объекта в объект 'comp', если возможно.
 // копируются только свойства типа type
 virtual void CopyProperties(UEPtr<UADataComponent> comp, unsigned int type) const;
@@ -298,11 +263,52 @@ EStateNameAlreadyExist(const std::string &name) : ENameAlreadyExist(name) {};
     */
 };
 
+// Класс сериализации свойств
+class UIProperty
+{
+public:
+// Метод устанавливает значение указателя на итератор-хранилище данных об этом
+// свойстве в родительском компоненте
+virtual void SetVariable(UADataComponent::VariableMapCIteratorT &var)=0;
+
+// Метод возвращает тип свойства
+virtual unsigned int GetType(void) const=0;
+
+// Метод возвращает строковое имя свойства
+virtual const std::string& GetName(void) const=0;
+
+// Метод возвращает строковое имя класса-владельца свойства
+virtual std::string GetOwnerName(void) const=0;
+
+// Метод записывает значение свойства в поток
+virtual bool Save(UEPtr<UVariableData> storage, bool simplemode=false)=0;
+
+// Метод читает значение свойства из потока
+virtual bool Load(UEPtr<UVariableData> storage, bool simplemode=false)=0;
+};
+
+// Класс управления общими свойствами
+class UIShare
+{
+public:
+ // Метод возвращает Id общего свойства
+// virtual int GetId(void) const=0;
+
+ // Метод возвращает строковое имя класса-владельца общего свойства
+// virtual std::string GetOwnerName(void) const=0;
+
+ // Метод инициализации общего свойства
+ virtual bool Init(UEPtr<UADataComponent> main_owner)=0;
+
+ // Метод деинициализации общего свойства
+ virtual bool UnInit(void)=0;
+};
+
 }
 
 #include "UProperty.h"
 #include "ULocalProperty.h"
 #include "UShare.h"
 
-#endif 
+#endif
 

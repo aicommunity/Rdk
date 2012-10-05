@@ -46,6 +46,9 @@ protected: // Данные
 // Владелец свойства
 OwnerT* Owner;
 
+// Указатель на итератор-хранилище данных об этом свойстве в родительском компоненте
+UADataComponent::VariableMapCIteratorT Variable;
+
 // Прямой доступ к данным
 T* PData;
 
@@ -62,11 +65,25 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 UVProperty(OwnerT * const owner, SetterT setmethod , GetterT getmethod) :
-  Owner(owner), PData(0), Getter(getmethod), Setter(setmethod), GetterR(0), SetterR(0) { };
+  Owner(owner), PData(0), Getter(getmethod), Setter(setmethod), GetterR(0), SetterR(0), Variable(0)
+{
+   if(Owner)
+	Variable=Owner->FindPropertyVariable(this);
+}
+
 UVProperty(OwnerT * const owner, SetterRT setmethod , GetterRT getmethod) :
-  Owner(owner), PData(0), Getter(0), Setter(0), GetterR(getmethod), SetterR(setmethod)   { };
+  Owner(owner), PData(0), Getter(0), Setter(0), GetterR(getmethod), SetterR(setmethod), Variable(0)
+{
+   if(Owner)
+	Variable=Owner->FindPropertyVariable(this);
+}
+
 UVProperty(OwnerT * const owner, T * const pdata) :
-  Owner(owner), PData(pdata), Getter(0), Setter(0), GetterR(0), SetterR(0)   { };
+  Owner(owner), PData(pdata), Getter(0), Setter(0), GetterR(0), SetterR(0), Variable(0)
+{
+   if(Owner)
+	Variable=Owner->FindPropertyVariable(this);
+}
 // -----------------------------
 
 // -----------------------------
@@ -74,11 +91,23 @@ UVProperty(OwnerT * const owner, T * const pdata) :
 // -----------------------------
 // Инициализация
 void Init(OwnerT * const owner, SetterT setmethod, GetterT getmethod)
-{ Owner = owner; PData=0; Getter = getmethod; Setter = setmethod; SetterR=0; };
+{
+ Owner = owner; PData=0; Getter = getmethod; Setter = setmethod; SetterR=0;
+ if(Owner)
+  Variable=Owner->FindPropertyVariable(this);
+}
 void Init(OwnerT * const owner, SetterRT setmethod, GetterT getmethod)
-{ Owner = owner; PData=0; Getter = getmethod; SetterR = setmethod; Setter=0; };
+{
+ Owner = owner; PData=0; Getter = getmethod; SetterR = setmethod; Setter=0;
+ if(Owner)
+  Variable=Owner->FindPropertyVariable(this);
+}
 void Init(OwnerT * const owner, T * const pdata)
-{ Owner = owner; PData=pdata; Getter = 0; GetterR=0; SetterR = 0; Setter=0; };
+{
+ Owner = owner; PData=pdata; Getter = 0; GetterR=0; SetterR = 0; Setter=0;
+ if(Owner)
+  Variable=Owner->FindPropertyVariable(this);
+}
 
 // Возврат значения без проверки наличия метода и владельца
 const T Get(void)
@@ -180,18 +209,23 @@ UVProperty& operator = (const UVProperty &v)
 // -----------------------------
 // Методы сериализации
 // -----------------------------
+// Метод устанавливает значение указателя на итератор-хранилище данных об этом
+// свойстве в родительском компоненте
+virtual void SetVariable(UADataComponent::VariableMapCIteratorT &var)
+{
+ Variable=var;
+}
+
 // Метод возвращает строковое имя свойства
 virtual const std::string& GetName(void) const
 {
- static std::string name;
- name=reinterpret_cast<UADataComponent* const>(Owner)->FindPropertyName(this);
- return name;
+ return Variable->first;
 };
 
 // Метод возвращает тип свойства
 virtual unsigned int GetType(void) const
 {
- return reinterpret_cast<UADataComponent* const>(Owner)->FindPropertyType(this);
+ return Variable->second.Type;
 };
 
 // Метод возвращает строковое имя класса-владельца свойства
@@ -216,7 +250,6 @@ virtual bool Save(UEPtr<Serialize::USerStorage>  storage, bool simplemode=false)
   if(simplemode)
   {
    xml->Create(GetName());
-//   xml->SetNodeAttribute("PType",sntoa(GetType()));
    Serialize::operator << (*xml,(*this)());
    xml->SelectUp();
    return true;
@@ -224,7 +257,6 @@ virtual bool Save(UEPtr<Serialize::USerStorage>  storage, bool simplemode=false)
   else
   {
    xml->AddNode(GetName());
-//   xml->SetNodeAttribute("PType",sntoa(GetType()));
    Serialize::operator << (*xml,(*this)());
    xml->SelectUp();
    return true;
@@ -282,7 +314,6 @@ virtual bool Load(UEPtr<Serialize::USerStorage>  storage, bool simplemode=false)
 template<typename T,class OwnerT>
 class UProperty: public UVProperty<T,OwnerT>
 {
-//friend class OwnerT;
 public:
 //protected:
 // Данные
@@ -317,10 +348,6 @@ UProperty& operator = (const T &value)
 
  if(this->Owner)
  {
-//  if((this->Setter && !(*(this->Setter))(value)) ||
-//	 (this->SetterR && !(*(this->SetterR))(value)))
-//	  if((this->Setter && !(this->Owner->*Setter)(value)) ||
-//	     (this->SetterR && !(this->Owner->*SetterR)(value)))
 	  if((this->Setter && !(this->Owner->*(this->Setter))(value)) ||
 		 (this->SetterR && !(this->Owner->*(this->SetterR))(value)))
 	   return *this;
@@ -349,9 +376,6 @@ T& operator * (void)
 // Метод записывает значение свойства в поток
 virtual bool Save(UEPtr<Serialize::USerStorage>  storage, bool simplemode=false)
 {
-/* Serialize::operator << (*storage,(*this)());
- return true;
-*/
  UEPtr<Serialize::USerStorageBinary>   binary=dynamic_pointer_cast<Serialize::USerStorageBinary>(storage);
  if(binary)
  {
@@ -365,7 +389,6 @@ virtual bool Save(UEPtr<Serialize::USerStorage>  storage, bool simplemode=false)
   if(simplemode)
   {
    xml->Create(this->GetName());
-  // xml->SetNodeAttribute("PType",sntoa(GetType()));
    Serialize::operator << (*xml,(*this)());
    xml->SelectUp();
    return true;
@@ -373,29 +396,20 @@ virtual bool Save(UEPtr<Serialize::USerStorage>  storage, bool simplemode=false)
   else
   {
    xml->AddNode(this->GetName());
-   //xml->SetNodeAttribute("PType",sntoa(GetType()));
    Serialize::operator << (*xml,(*this)());
    xml->SelectUp();
    return true;
   }
  }
 
-// return storage->Save((*this)());
-// Serialize::operator << (*storage,(*this)());
  return false;
 };
 
 // Метод читает значение свойства из потока
 virtual bool Load(UEPtr<Serialize::USerStorage>  storage, bool simplemode=false)
 {
-/* T temp;
- Serialize::operator >> (*storage,temp);
- *this=temp;
- return true;*/
  T temp;
- //Serialize::operator >> (*storage,temp);
-// if(!storage || !storage->Load(temp))
-//  return false;
+
  UEPtr<Serialize::USerStorageBinary>   binary=dynamic_pointer_cast<Serialize::USerStorageBinary>(storage);
  if(binary)
  {
@@ -592,9 +606,6 @@ public:
 // Метод записывает значение свойства в поток
 virtual bool Save(UEPtr<Serialize::USerStorage> storage, bool simplemode=false)
 {
-/* Serialize::operator << (*storage,(*this)());
- return true;
- */
  UEPtr<Serialize::USerStorageBinary>   binary=dynamic_pointer_cast<Serialize::USerStorageBinary>(storage);
  if(binary)
  {
@@ -608,7 +619,6 @@ virtual bool Save(UEPtr<Serialize::USerStorage> storage, bool simplemode=false)
   if(simplemode)
   {
    xml->Create(this->GetName());
-//   xml->SetNodeAttribute("PType",sntoa(GetType()));
    Serialize::operator << (*xml,(*this)());
    xml->SelectUp();
    return true;
@@ -616,32 +626,20 @@ virtual bool Save(UEPtr<Serialize::USerStorage> storage, bool simplemode=false)
   else
   {
    xml->AddNode(this->GetName());
-//   xml->SetNodeAttribute("PType",sntoa(GetType()));
    Serialize::operator << (*xml,(*this)());
    xml->SelectUp();
    return true;
   }
  }
 
-// return storage->Save((*this)());
-// Serialize::operator << (*storage,(*this)());
  return false;
 };
 
 // Метод читает значение свойства из потока
 virtual bool Load(UEPtr<Serialize::USerStorage> storage, bool simplemode=false)
 {
-/*
  TC temp;
- Serialize::operator >> (*storage,temp);
- *this=temp;
- return true;
- */
 
- TC temp;
- //Serialize::operator >> (*storage,temp);
-// if(!storage || !storage->Load(temp))
-//  return false;
  UEPtr<Serialize::USerStorageBinary> binary=dynamic_pointer_cast<Serialize::USerStorageBinary>(storage);
  if(binary)
  {
