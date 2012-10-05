@@ -545,42 +545,78 @@ const char* RDK_CALL Model_GetComponentClassName(const char* stringid)
  return PEngine->Model_GetComponentClassName(stringid);
 }
 
+// Возвращает свойства компонента по идентификатору
+const char * RDK_CALL Model_GetComponentProperties(const char *stringid, unsigned int type_mask)
+{
+ return PEngine->Model_GetComponentProperties(stringid,type_mask);
+}
+
+// Возвращает свойства компонента по идентификатору с описаниями
+const char * RDK_CALL Model_GetComponentPropertiesEx(const char *stringid, unsigned int type_mask)
+{
+ return PEngine->Model_GetComponentPropertiesEx(stringid, type_mask);
+}
+
+// Возвращает выборочные свойства компонента по идентификатору
+const char * RDK_CALL Model_GetComponentSelectedProperties(const char *stringid, unsigned int type_mask)
+{
+ return PEngine->Model_GetComponentSelectedProperties(stringid);
+}
+
+// Возвращает значение свойства компонента по идентификатору компонента и имени свойства
+const char * RDK_CALL Model_GetComponentPropertyValue(const char *stringid, const char *paramname)
+{
+ return PEngine->Model_GetComponentPropertyValue(stringid,paramname);
+}
+
+// Устанавливает свойства компонента по идентификатору
+int RDK_CALL Model_SetComponentProperties(const char *stringid, const char* buffer)
+{
+ return PEngine->Model_SetComponentProperties(stringid, buffer);
+}
+
+// Устанавливает значение свойства компонента по идентификатору компонента и имени свойства
+void RDK_CALL Model_SetComponentPropertyValue(const char *stringid, const char *paramname, const char *buffer)
+{
+ PEngine->Model_SetComponentPropertyValue(stringid,paramname,buffer);
+}
+
 // Возвращает параметры компонента по идентификатору
 // Память для buffer должна быть выделена!
-const char * RDK_CALL Model_GetComponentParameters(const char *stringid)
+const char * RDK_CALL Model_GetComponentParameters(const char *stringid, unsigned int type_mask)
 {
- return PEngine->Model_GetComponentParameters(stringid);
+ return PEngine->Model_GetComponentProperties(stringid,type_mask & 0xFFFFFF01);
 }
 
 // Возвращает выборочные параметры компонента по идентификатору
 // Память для buffer должна быть выделена!
 const char * RDK_CALL Model_GetComponentSelectedParameters(const char *stringid)
 {
- return PEngine->Model_GetComponentSelectedParameters(stringid);
+ return PEngine->Model_GetComponentSelectedProperties(stringid);
 }
 
 // Возвращает параметры компонента по идентификатору с описаниями
-const char * RDK_CALL Model_GetComponentParametersEx(const char *stringid)
+const char * RDK_CALL Model_GetComponentParametersEx(const char *stringid, unsigned int type_mask)
 {
- return PEngine->Model_GetComponentParametersEx(stringid);
+ return PEngine->Model_GetComponentPropertiesEx(stringid, type_mask & 0xFFFFFF01);
 }
 
 // Возвращает значение параметра компонента по идентификатору компонента и имени параметра
 const char * RDK_CALL Model_GetComponentParameterValue(const char *stringid, const char *paramname)
 {
- return PEngine->Model_GetComponentParameterValue(stringid,paramname);
+ return PEngine->Model_GetComponentPropertyValue(stringid,paramname);
 }
 
 // Устанавливает параметры компонента по идентификатору
 int RDK_CALL Model_SetComponentParameters(const char *stringid, const char* buffer)
 {
- return PEngine->Model_SetComponentParameters(stringid, buffer);
+ return PEngine->Model_SetComponentProperties(stringid, buffer);
 }
 
 // Устанавливает значение параметра компонента по идентификатору компонента и имени параметра
 void RDK_CALL Model_SetComponentParameterValue(const char *stringid, const char *paramname, const char *buffer)
 {
- PEngine->Model_SetComponentParameterValue(stringid,paramname,buffer);
+ PEngine->Model_SetComponentPropertyValue(stringid,paramname,buffer);
 }
 
 // Связывает выбранные контейнеры друг с другом
@@ -689,34 +725,34 @@ const char* RDK_CALL Model_GetComponentPersonalLinks(const char* stringid, const
 
 // Возвращает состояние компонента по идентификатору
 // Память для buffer должна быть выделена!
-const char * RDK_CALL Model_GetComponentState(const char *stringid)
+const char * RDK_CALL Model_GetComponentState(const char *stringid, unsigned int type_mask)
 {
- return PEngine->Model_GetComponentState(stringid);
+ return PEngine->Model_GetComponentProperties(stringid, type_mask & 0xFFFFFF02);
 }
 
 // Возвращает выборочные данные состояния компонента по идентификатору
 // Память для buffer должна быть выделена!
 const char * RDK_CALL Model_GetComponentSelectedState(const char *stringid)
 {
- return PEngine->Model_GetComponentSelectedState(stringid);
+ return PEngine->Model_GetComponentSelectedProperties(stringid);
 }
 
 // Возвращает значение переменной состояния компонента по идентификатору компонента и имени переменной
 const char * RDK_CALL Model_GetComponentStateValue(const char *stringid, const char *statename)
 {
- return PEngine->Model_GetComponentStateValue(stringid,statename);
+ return PEngine->Model_GetComponentPropertyValue(stringid,statename);
 }
 
 // Устанавливает состояние компонента по идентификатору
 bool RDK_CALL Model_SetComponentState(const char *stringid, const char* buffer)
 {
- return PEngine->Model_SetComponentState(stringid, buffer);
+ return PEngine->Model_SetComponentProperties(stringid, buffer);
 }
 
 // Устанавливает значение переменной состояния компонента по идентификатору компонента и имени переменной
 void RDK_CALL Model_SetComponentStateValue(const char *stringid, const char *statename, const char *buffer)
 {
- PEngine->Model_SetComponentStateValue(stringid,statename,buffer);
+ PEngine->Model_SetComponentPropertyValue(stringid,statename,buffer);
 }
 
 // Возвращает число входов у компонента
@@ -783,9 +819,9 @@ unsigned char* RDK_CALL Model_GetComponentOutputData(const char *stringid, int i
 
 // Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния в xml
-const char * RDK_CALL Model_SaveComponent(const char *stringid)
+const char * RDK_CALL Model_SaveComponent(const char *stringid, unsigned int params_type_mask)
 {
- return PEngine->Model_SaveComponent(stringid);
+ return PEngine->Model_SaveComponent(stringid, params_type_mask);
 }
 
 // Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
@@ -795,28 +831,40 @@ int RDK_CALL Model_LoadComponent(const char *stringid, char* buffer)
  return PEngine->Model_LoadComponent(stringid, buffer);
 }
 
-// Сохраняет все параметры компонента и его дочерних компонент в xml
-const char * RDK_CALL Model_SaveComponentParameters(const char *stringid)
+// Сохраняет все свойства компонента и его дочерних компонент в xml
+const char * RDK_CALL Model_SaveComponentProperties(const char *stringid, unsigned int type_mask)
 {
- return PEngine->Model_SaveComponentParameters(stringid);
+ return PEngine->Model_SaveComponentProperties(stringid, type_mask);
+}
+
+// Загружает все свойства компонента и его дочерних компонент из xml
+int RDK_CALL Model_LoadComponentProperties(const char *stringid, char* buffer)
+{
+ return PEngine->Model_LoadComponentProperties(stringid, buffer);
+}
+
+// Сохраняет все параметры компонента и его дочерних компонент в xml
+const char * RDK_CALL Model_SaveComponentParameters(const char *stringid, unsigned int type_mask)
+{
+ return PEngine->Model_SaveComponentProperties(stringid, type_mask & 0xFFFFFF01);
 }
 
 // Загружает все параметры компонента и его дочерних компонент из xml
 int RDK_CALL Model_LoadComponentParameters(const char *stringid, char* buffer)
 {
- return PEngine->Model_LoadComponentParameters(stringid, buffer);
+ return PEngine->Model_LoadComponentProperties(stringid, buffer);
 }
 
 // Сохраняет состояние компонента и его дочерних компонент в xml
-const char * RDK_CALL Model_SaveComponentState(const char *stringid)
+const char * RDK_CALL Model_SaveComponentState(const char *stringid, unsigned int type_mask)
 {
- return PEngine->Model_SaveComponentState(stringid);
+ return PEngine->Model_SaveComponentProperties(stringid, type_mask & 0xFFFFFF02);
 }
 
 // Загружает состояние компонента и его дочерних компонент из xml
 int RDK_CALL Model_LoadComponentState(const char *stringid, char* buffer)
 {
- return PEngine->Model_LoadComponentState(stringid, buffer);
+ return PEngine->Model_LoadComponentProperties(stringid, buffer);
 }
 
 // Сохраняет внутренние данные компонента, и его _непосредственных_ дочерних компонент, исключая

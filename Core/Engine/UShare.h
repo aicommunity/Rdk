@@ -1,49 +1,91 @@
 #ifndef UShareH
 #define UShareH
 
-#include "UAContainer.h"
+#include "UADataComponent.h"
 
 namespace RDK {
 
 template<typename T,class MainOwnerT>
-class UVShare
+class UVShare: public UIShare
 {
 protected: // Данные
 // Указатель на расшаренные данные
-T* Pointer;
+//T* Pointer;
+UVProperty<T,MainOwnerT>* VProperty;
 
 // Локальная копия данных если указатель не доступен
 T& RData;
+
+// Имя подключаемого свойства
+std::string PropertyName;
+
+// Владелец свойства
+UADataComponent* Owner;
 
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UVShare(T &rdata)
-: Pointer(0), RData(rdata)
+UVShare(const std::string &property_name, UADataComponent* owner, T &rdata)
+: VProperty(0), RData(rdata), PropertyName(property_name), Owner(owner)
 {
+ if(Owner)
+  Owner->AddLookupShare(PropertyName,this);
 }
 
 virtual ~UVShare(void)
 {
- Pointer=0;
+// Pointer=0;
 }
 // --------------------------
 
 // --------------------------
 // Методы управления данными
 // --------------------------
+// Метод инициализации общего свойства
+virtual bool Init(UEPtr<UADataComponent> main_owner)
+{
+ UEPtr<RTVModel> main_owner_cast=dynamic_pointer_cast<MainOwnerT>(main_owner);
+
+ UADataComponent::VariableMapCIteratorT I=main_owner_cast->GetPropertiesList().find(PropertyName);
+ if(I != main_owner_cast->GetPropertiesList().end())
+ {
+  UVProperty<T,MainOwner> *prop=dynamic_pointer_cast<UVProperty<T,MainOwner> >(I->second.Property);
+  if(prop)
+   VProperty=prop;
+  else
+   VProperty=0;
+ }
+ else
+  VProperty=0;
+
+ return true;
+}
+
+// Метод деинициализации общего свойства
+virtual bool UnInit(void)
+{
+ VProperty=0;
+ return true;
+}
+
 const T& Get(void) const
 {
- return (Pointer)?*Pointer:RData;
+ return (VProperty)?VProperty->Get():RData;//(Pointer)?*Pointer:RData;
 }
 
 void Set(const T& data)
 {
+ if(VProperty)
+  *VProperty=data;
+ else
+  RData=data;
+/*
  if(Pointer)
   *Pointer=data;
  else
   RData=data;
+  */
 }
 
 const T& GetLocal(void) const
@@ -55,19 +97,21 @@ void SetLocal(const T& data)
 {
  RData=data;
 }
-
+     /*
 const T& GetShared(void) const
 {
- if(Pointer)
-  return *Pointer;
+// if(Pointer)
+//  return *Pointer;
+ if(VProperty)
+  return VProperty->Get();
 
  return RData;
 }
 
 void SetShared(const T& data)
 {
- if(Pointer)
-  *Pointer=data;
+ if(VProperty)
+  *VProperty=data;
  else
   RData=data;
 }
@@ -89,7 +133,7 @@ void SetPointer(UAComponent *owner, T* pointer)
  }
  else
   Pointer=0;
-}
+}            */
 // --------------------------
 
 // --------------------------
@@ -98,6 +142,7 @@ void SetPointer(UAComponent *owner, T* pointer)
 UVShare<T,MainOwnerT>& operator = (const UVShare<T,MainOwnerT> &copy)
 {
  Pointer=copy.Pointer;
+ VProperty=copy.VProperty;
  RData=copy.RData;
 
  return *this;
@@ -108,44 +153,86 @@ UVShare<T,MainOwnerT>& operator = (const UVShare<T,MainOwnerT> &copy)
 
 
 template<typename T,class MainOwnerT>
-class UShare
+class UShare: public UIShare
 {
 protected: // Данные
 // Указатель на расшаренные данные
-T* Pointer;
+//T* Pointer;
+UVProperty<T,MainOwnerT>* VProperty;
 
 // Локальная копия данных если указатель не доступен
 T Data;
+
+// Имя подключаемого свойства
+std::string PropertyName;
+
+// Владелец свойства
+UADataComponent* Owner;
 
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UShare(void)
+UShare(const std::string &property_name, UADataComponent* owner)
+: VProperty(0), PropertyName(property_name), Owner(owner)
 {
- Pointer=0;
+ if(Owner)
+  Owner->AddLookupShare(PropertyName,this);
 }
 
 virtual ~UShare(void)
 {
- Pointer=0;
+// Pointer=0;
 }
 // --------------------------
 
 // --------------------------
 // Методы управления данными
 // --------------------------
+// Метод инициализации общего свойства
+virtual bool Init(UEPtr<UADataComponent> main_owner)
+{
+ UEPtr<MainOwnerT> main_owner_cast=dynamic_pointer_cast<MainOwnerT>(main_owner);
+
+ UADataComponent::VariableMapCIteratorT I=main_owner_cast->GetPropertiesList().find(PropertyName);
+ if(I != main_owner_cast->GetPropertiesList().end())
+ {
+  UVProperty<T,MainOwnerT> *prop=dynamic_pointer_cast<UVProperty<T,MainOwnerT> >(I->second.Property);
+  if(prop)
+   VProperty=prop;
+  else
+   VProperty=0;
+ }
+ else
+  VProperty=0;
+
+ return true;
+}
+
+// Метод деинициализации общего свойства
+virtual bool UnInit(void)
+{
+ VProperty=0;
+}
+
 const T Get(void) const
 {
- return (Pointer)?*Pointer:Data;
+ return (VProperty)?VProperty->Get():Data;
+// return (Pointer)?*Pointer:Data;
 }
 
 void Set(const T& data)
 {
+ if(VProperty)
+  *VProperty=data;
+ else
+  Data=data;
+/*
  if(Pointer)
   *Pointer=data;
  else
   Data=data;
+  */
 }
 
 const T& GetLocal(void) const
@@ -157,21 +244,19 @@ void SetLocal(const T& data)
 {
  Data=data;
 }
-
+  /*
 const T& GetShared(void) const
 {
- if(Pointer)
-  return *Pointer;
-
- return Data;
+ return (VProperty)?VProperty->Get():Data;
 }
 
 void SetShared(const T& data)
 {
- if(Pointer)
-  *Pointer=data;
+ if(VProperty)
+  *VProperty=data;
  else
   Data=data;
+
 }
 
 const T* GetPointer(void) const
@@ -191,7 +276,7 @@ void SetPointer(UAComponent *owner, T* pointer)
  }
  else
   Pointer=0;
-}
+}    */
 // --------------------------
 
 // --------------------------
@@ -200,6 +285,7 @@ void SetPointer(UAComponent *owner, T* pointer)
 UShare<T,MainOwnerT>& operator = (const UShare<T,MainOwnerT> &copy)
 {
  Pointer=copy.Pointer;
+ VProperty=copy.VProperty;
  Data=copy.Data;
 
  return *this;

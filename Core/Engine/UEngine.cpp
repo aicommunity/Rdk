@@ -1427,8 +1427,8 @@ const char* UEngine::Model_GetComponentClassName(const char* stringid)
  return TempString.c_str();
 }
 
-// Возвращает параметры компонента по идентификатору
-const char* UEngine::Model_GetComponentParameters(const char *stringid)
+// Возвращает свойства компонента по идентификатору
+const char* UEngine::Model_GetComponentProperties(const char *stringid, unsigned int type_mask)
 {
  try
  {
@@ -1439,9 +1439,9 @@ const char* UEngine::Model_GetComponentParameters(const char *stringid)
    return TempString.c_str();
 
   XmlStorage.Create(cont->GetLongName(Environment->GetCurrentComponent(),CompName));
-  XmlStorage.AddNode("Parameters");
+  XmlStorage.AddNode(UVariable::GetPropertyTypeNameByType(type_mask));
 
-  if(!Model_GetComponentParameters(cont,&XmlStorage))
+  if(!Model_GetComponentProperties(cont,&XmlStorage, type_mask))
    return 0;
 
   XmlStorage.SelectUp();
@@ -1455,8 +1455,8 @@ const char* UEngine::Model_GetComponentParameters(const char *stringid)
  return 0;
 }
 
-// Возвращает выборочные параметры компонента по идентификатору
-const char* UEngine::Model_GetComponentSelectedParameters(const char *stringid)
+// Возвращает выборочные свойства компонента по идентификатору
+const char* UEngine::Model_GetComponentSelectedProperties(const char *stringid)
 {
  try
  {
@@ -1469,8 +1469,8 @@ const char* UEngine::Model_GetComponentSelectedParameters(const char *stringid)
  return 0;
 }
 
-// Возвращает параметры компонента по идентификатору с описаниями
-const char* UEngine::Model_GetComponentParametersEx(const char *stringid)
+// Возвращает свойства компонента по идентификатору с описаниями
+const char* UEngine::Model_GetComponentPropertiesEx(const char *stringid, unsigned int type_mask)
 {
  try
  {
@@ -1480,9 +1480,9 @@ const char* UEngine::Model_GetComponentParametersEx(const char *stringid)
    return TempString.c_str();
 
   XmlStorage.Create(cont->GetLongName(Environment->GetCurrentComponent(),CompName));
-  XmlStorage.AddNode("Parameters");
+  XmlStorage.AddNode(UVariable::GetPropertyTypeNameByType(type_mask));
 
-  if(!Model_GetComponentParametersEx(cont,&XmlStorage))
+  if(!Model_GetComponentPropertiesEx(cont,&XmlStorage, type_mask))
    return 0;
 
   XmlStorage.SelectUp();
@@ -1496,8 +1496,8 @@ const char* UEngine::Model_GetComponentParametersEx(const char *stringid)
  return 0;
 }
 
-// Возвращает значение параметра компонента по идентификатору компонента и имени параметра
-const char * UEngine::Model_GetComponentParameterValue(const char *stringid, const char *paramname)
+// Возвращает значение свойства компонента по идентификатору компонента и имени свойства
+const char * UEngine::Model_GetComponentPropertyValue(const char *stringid, const char *paramname)
 {
  try
  {
@@ -1516,8 +1516,8 @@ const char * UEngine::Model_GetComponentParameterValue(const char *stringid, con
  return 0;
 }
 
-// устанавливает параметры компонента по идентификатору
-int UEngine::Model_SetComponentParameters(const char *stringid, const char* buffer)
+// устанавливает свойства компонента по идентификатору
+int UEngine::Model_SetComponentProperties(const char *stringid, const char* buffer)
 {
  try
  {
@@ -1526,11 +1526,16 @@ int UEngine::Model_SetComponentParameters(const char *stringid, const char* buff
    return 1;
 
   XmlStorage.Load(buffer, cont->GetLongName(Environment->GetCurrentComponent(),CompName));
-  XmlStorage.SelectNode("Parameters");
+  for(unsigned int i=0, mask=1;i<7;i++, mask<<=1)
+  {
+   if(XmlStorage.SelectNode(UVariable::GetPropertyTypeNameByType(mask)))
+   {
+	if(Model_SetComponentProperties(cont,&XmlStorage))
+	 return 2;
 
-  if(Model_SetComponentParameters(cont,&XmlStorage))
-   return 2;
-  XmlStorage.SelectUp();
+	XmlStorage.SelectUp();
+   }
+  }
  }
  catch (UException &exception)
  {
@@ -1540,8 +1545,8 @@ int UEngine::Model_SetComponentParameters(const char *stringid, const char* buff
  return 0;
 }
 
-// Устанавливает значение параметра компонента по идентификатору компонента и имени параметра
-void UEngine::Model_SetComponentParameterValue(const char *stringid, const char *paramname, const char *buffer)
+// Устанавливает значение свойства компонента по идентификатору компонента и имени свойства
+void UEngine::Model_SetComponentPropertyValue(const char *stringid, const char *paramname, const char *buffer)
 {
  try
  {
@@ -1965,131 +1970,6 @@ const char* UEngine::Model_GetComponentPersonalLinks(const char* stringid, const
  return TempString.c_str();
 }
 
-// Возвращает состояние компонента по идентификатору
-const char * UEngine::Model_GetComponentState(const char *stringid)
-{
- try
- {
-  TempString="";
-  UEPtr<RDK::UAContainer> cont=FindComponent(stringid);
-
-  if(!cont)
-   return TempString.c_str();
-
-  XmlStorage.Create(cont->GetLongName(Environment->GetCurrentComponent(),CompName));
-  XmlStorage.AddNode("State");
-
-  if(!Model_GetComponentState(cont,&XmlStorage))
-   return 0;
-
-  XmlStorage.SelectUp();
-  XmlStorage.Save(TempString);
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
- return TempString.c_str();
-}
-
-// Возвращает выборочные данные состояния компонента по идентификатору
-// Память для buffer должна быть выделена!
-const char * UEngine::Model_GetComponentSelectedState(const char *stringid)
-{
- try
- {
-  return 0;
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
-
- return 0;
-}
-
-// Возвращает значение переменной состояния компонента по идентификатору компонента и имени переменной
-const char * UEngine::Model_GetComponentStateValue(const char *stringid, const char *statename)
-{
- try
- {
-  TempString="";
-  UEPtr<RDK::UAContainer> cont=FindComponent(stringid);
-  if(!cont)
-   return TempString.c_str();
-
-  cont->GetStateValue(statename,TempString);
-  return TempString.c_str();
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
- return 0;
-
-}
-
-// Устанавливает состояние компонента по идентификатору
-bool UEngine::Model_SetComponentState(const char *stringid, const char* buffer)
-{
- try
- {
-  UEPtr<RDK::UANet> model=dynamic_pointer_cast<RDK::UANet>(Environment->GetModel());
-
-  if(!model)
-   return false;
-
-  RDK::ULongId id;
-  string namebuffer;
-
-  UEPtr<RDK::UAContainer> cont=model->GetComponentL(id.DecodeFromString(stringid));
-  if(!cont)
-   return false;
-
-  XmlStorage.Load(buffer, cont->GetLongName(model,namebuffer));
-  XmlStorage.SelectNode("State");
-
-  if(!Model_SetComponentState(cont,&XmlStorage))
-   return false;
-  XmlStorage.SelectUp();
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
- return true;
-}
-
-
-// Устанавливает значение переменной состояния компонента по идентификатору компонента и имени переменной
-void UEngine::Model_SetComponentStateValue(const char *stringid, const char *statename, const char *buffer)
-{
- try
- {
-  UEPtr<RDK::UANet> model=dynamic_pointer_cast<RDK::UANet>(Environment->GetModel());
-
-  if(!model)
-   return;
-
-  RDK::ULongId id;
-//  string namebuffer;
-
-  UEPtr<RDK::UAContainer> cont=model->GetComponentL(id.DecodeFromString(stringid));
-  if(!cont)
-   return;
-
-//  XmlStorage.Load(buffer, cont->GetLongName(model,namebuffer));
-//  XmlStorage.SelectNode("Parameters");
-
-  cont->SetStateValue(statename,buffer);
-//  XmlStorage.SelectUp();
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
-}
-
 // Возвращает число входов у компонента
 int UEngine::Model_GetComponentNumInputs(const char *stringid)
 {
@@ -2264,7 +2144,7 @@ unsigned char* UEngine::Model_GetComponentOutputData(const char *stringid, int i
 
 // Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния в xml
-const char *  UEngine::Model_SaveComponent(const char *stringid)
+const char *  UEngine::Model_SaveComponent(const char *stringid, unsigned int params_type_mask)
 {
  try
  {
@@ -2277,7 +2157,7 @@ const char *  UEngine::Model_SaveComponent(const char *stringid)
   XmlStorage.Create("Save");
   XmlStorage.SetNodeAttribute("ModelName",Environment->GetModel()->GetName());
 
-  if(!Model_SaveComponent(cont,&XmlStorage))
+  if(!Model_SaveComponent(cont,&XmlStorage, true, params_type_mask))
    return 0;
 
   XmlStorage.Save(TempString);
@@ -2303,7 +2183,7 @@ int UEngine::Model_LoadComponent(const char *stringid, char* buffer)
 
   if(!Environment->GetModel())
   {
-   if(!Model_LoadComponent(0,&XmlStorage))
+   if(!Model_LoadComponent(0,&XmlStorage,true))
 	return -4;
   }
   else
@@ -2316,7 +2196,7 @@ int UEngine::Model_LoadComponent(const char *stringid, char* buffer)
    if(!cont)
 	return -3;
 
-   if(!Model_LoadComponent(cont,&XmlStorage))
+   if(!Model_LoadComponent(cont,&XmlStorage,true))
     return -4;
   }
  }
@@ -2327,8 +2207,8 @@ int UEngine::Model_LoadComponent(const char *stringid, char* buffer)
  return 0;
 }
 
-// Сохраняет все параметры компонента и его дочерних компонент в xml
-const char * UEngine::Model_SaveComponentParameters(const char *stringid)
+// Сохраняет все свойства компонента и его дочерних компонент в xml
+const char * UEngine::Model_SaveComponentProperties(const char *stringid, unsigned int type_mask)
 {
  try
  {
@@ -2338,10 +2218,10 @@ const char * UEngine::Model_SaveComponentParameters(const char *stringid)
    return 0;
 
   XmlStorage.DelNode();
-  XmlStorage.Create("SaveParameters");
+  XmlStorage.Create("SaveProperties");
   XmlStorage.SetNodeAttribute("ModelName",Environment->GetModel()->GetName());
 
-  if(!Model_SaveComponentParameters(cont,&XmlStorage))
+  if(!Model_SaveComponentProperties(cont,&XmlStorage, type_mask))
    return 0;
 
   TempString="";
@@ -2354,8 +2234,8 @@ const char * UEngine::Model_SaveComponentParameters(const char *stringid)
  return TempString.c_str();
 }
 
-// Загружает все параметры компонента и его дочерних компонент из xml
-int UEngine::Model_LoadComponentParameters(const char *stringid, char* buffer)
+// Загружает все свойства компонента и его дочерних компонент из xml
+int UEngine::Model_LoadComponentProperties(const char *stringid, char* buffer)
 {
  try
  {
@@ -2364,13 +2244,13 @@ int UEngine::Model_LoadComponentParameters(const char *stringid, char* buffer)
   if(!cont)
    return -3;
 
-  XmlStorage.Load(buffer,"SaveParameters");
+  XmlStorage.Load(buffer,"SaveProperties");
   if(XmlStorage.GetNodeAttribute("ModelName") != Environment->GetModel()->GetName())
    return -10;
 
   XmlStorage.SelectNode(0);
 
-  if(!Model_LoadComponentParameters(cont,&XmlStorage))
+  if(!Model_LoadComponentProperties(cont,&XmlStorage))
    return -4;
  }
  catch (UException &exception)
@@ -2379,59 +2259,6 @@ int UEngine::Model_LoadComponentParameters(const char *stringid, char* buffer)
  }
  return 0;
 }
-
-// Сохраняет состояние компонента и его дочерних компонент в xml
-const char * UEngine::Model_SaveComponentState(const char *stringid)
-{
- try
- {
-  UEPtr<RDK::UANet> cont=dynamic_pointer_cast<RDK::UANet>(FindComponent(stringid));
-
-  if(!cont)
-   return 0;
-
-  XmlStorage.Create("SaveState");
-  XmlStorage.SetNodeAttribute("ModelName",Environment->GetModel()->GetName());
-
-  if(!Model_SaveComponentState(cont,&XmlStorage))
-   return 0;
-
-  TempString="";
-  XmlStorage.Save(TempString);
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
- return TempString.c_str();
-}
-
-// Загружает состояние компонента и его дочерних компонент из xml
-int UEngine::Model_LoadComponentState(const char *stringid, char* buffer)
-{
- try
- {
-  UEPtr<RDK::UANet> cont=dynamic_pointer_cast<RDK::UANet>(FindComponent(stringid));
-
-  if(!cont)
-   return -3;
-
-  XmlStorage.Load(buffer,"SaveState");
-  if(XmlStorage.GetNodeAttribute("ModelName") != Environment->GetModel()->GetName())
-   return -10;
-
-  XmlStorage.SelectNode(0);
-
-  if(!Model_LoadComponentState(cont,&XmlStorage))
-   return -4;
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
- return 0;
-}
-
 
 // Сохраняет внутренние данные компонента, и его _непосредственных_ дочерних компонент, исключая
 // переменные состояния в xml
@@ -2625,9 +2452,9 @@ double UEngine::Model_GetInstantPerformance(const char *stringid) const
 // --------------------------
 // Скрытые методы управления средой
 // --------------------------
-// Возвращает параметры компонента по идентификатору
+// Возвращает свойства компонента по идентификатору
 // Память для buffer должна быть выделена!
-bool UEngine::Model_GetComponentParameters(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage)
+bool UEngine::Model_GetComponentProperties(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage, unsigned int type_mask)
 {
  try
  {
@@ -2642,7 +2469,16 @@ bool UEngine::Model_GetComponentParameters(RDK::UAContainer* cont, RDK::Serializ
   J=props.end();
   while(I != J)
   {
-   cont->GetProperty(I->second.Id,serstorage);
+   if(I->second.CheckMask(type_mask))
+   {
+	cont->GetProperty(I->second.Id,serstorage);
+	std::string paramname=I->second.Property->GetName();
+	if(serstorage->SelectNode(paramname))
+	{
+	 serstorage->SetNodeAttribute("PType",sntoa(I->second.Type));
+	 serstorage->SelectUp();
+    }
+   }
    ++I;
   }
  }
@@ -2654,9 +2490,9 @@ bool UEngine::Model_GetComponentParameters(RDK::UAContainer* cont, RDK::Serializ
  return true;
 }
 
-// Возвращает выборочные параметры компонента по идентификатору
+// Возвращает выборочные свойства компонента по идентификатору
 // Память для buffer должна быть выделена!
-bool UEngine::Model_GetComponentSelectedParameters(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage)
+bool UEngine::Model_GetComponentSelectedProperties(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage)
 {
  try
  {
@@ -2671,9 +2507,9 @@ bool UEngine::Model_GetComponentSelectedParameters(RDK::UAContainer* cont, RDK::
  return true;
 }
 
-// Возвращает параметры компонента по идентификатору с описаниями
+// Возвращает свойства компонента по идентификатору с описаниями
 // Память для buffer должна быть выделена!
-bool UEngine::Model_GetComponentParametersEx(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage)
+bool UEngine::Model_GetComponentPropertiesEx(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage, unsigned int type_mask)
 {
  try
  {
@@ -2690,16 +2526,20 @@ bool UEngine::Model_GetComponentParametersEx(RDK::UAContainer* cont, RDK::Serial
   J=props.end();
   while(I != J)
   {
-   cont->GetProperty(I->second.Id,serstorage);
-
-   if(descr)
+   if(I->second.CheckMask(type_mask))
    {
-    std::string paramname=I->second.Property->GetName();
-    if(serstorage->SelectNode(paramname))
-    {
-     serstorage->SetNodeAttribute("Header",descr->GetParameter(paramname).Header);
-     serstorage->SelectUp();
-    }
+	cont->GetProperty(I->second.Id,serstorage);
+
+	std::string paramname=I->second.Property->GetName();
+	if(serstorage->SelectNode(paramname))
+	{
+	 serstorage->SetNodeAttribute("PType",sntoa(I->second.Type));
+	 if(descr)
+	 {
+	  serstorage->SetNodeAttribute("Header",descr->GetParameter(paramname).Header);
+	 }
+	 serstorage->SelectUp();
+	}
    }
    ++I;
   }
@@ -2713,8 +2553,8 @@ bool UEngine::Model_GetComponentParametersEx(RDK::UAContainer* cont, RDK::Serial
 }
 
 
-// устанавливает параметры компонента по идентификатору
-int UEngine::Model_SetComponentParameters(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage)
+// устанавливает свойства компонента по идентификатору
+int UEngine::Model_SetComponentProperties(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage)
 {
  try
  {
@@ -2872,85 +2712,9 @@ int UEngine::Model_GetComponentPersonalLinks(RDK::UANet* cont, RDK::Serialize::U
  return 0;
 }
 
-// Возвращает состояние компонента по идентификатору
-// Память для buffer должна быть выделена!
-bool UEngine::Model_GetComponentState(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage)
-{
- try
- {
-  if(!cont || !serstorage)
-   return false;
-
-  RDK::UAContainer::VariableMapT props=cont->GetStateList();
-
-  RDK::UAContainer::VariableMapCIteratorT I,J;
-
-  I=props.begin();
-  J=props.end();
-  while(I != J)
-  {
-   cont->GetState(I->second.Id,serstorage);
-   ++I;
-  }
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
-
- return true;
-}
-
-// Возвращает выборочные данные состояния компонента по идентификатору
-// Память для buffer должна быть выделена!
-bool UEngine::Model_GetComponentSelectedState(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage)
-{
- try
- {
-  if(!cont || !serstorage)
-   return false;
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
-
- return true;
-}
-
-// Устанавливает состояние компонента по идентификатору
-bool UEngine::Model_SetComponentState(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage)
-{
- try
- {
-  if(!cont || !serstorage)
-   return false;
-
-  std::string name;
-
-  RDK::UAContainer::VariableMapT props=cont->GetStateList();
-
-  RDK::UAContainer::VariableMapCIteratorT I,J;
-
-  I=props.begin();
-  J=props.end();
-  while(I != J)
-  {
-   cont->SetState(I->second.Id,serstorage);
-   ++I;
-  }
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
-
- return true;
-}
-
 // Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния в xml
-int UEngine::Model_SaveComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage, bool links)
+int UEngine::Model_SaveComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage, bool links, unsigned int params_type_mask)
 {
  try
  {
@@ -2959,8 +2723,8 @@ int UEngine::Model_SaveComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXM
 
   serstorage->AddNode(cont->GetName());
   serstorage->SetNodeAttribute("Class",/*RDK::sntoa(cont->GetClass())*/Storage->FindClassName(cont->GetClass()));
-  serstorage->AddNode("Parameters");
-  if(!Model_GetComponentParameters(cont, serstorage))
+  serstorage->AddNode(UVariable::GetPropertyTypeNameByType(ptParameter));
+  if(!Model_GetComponentProperties(cont, serstorage,params_type_mask))
    return false;
   serstorage->SelectUp();
 
@@ -2975,7 +2739,7 @@ int UEngine::Model_SaveComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXM
   serstorage->AddNode("Components");
   for(int i=0;i<cont->GetNumComponents();i++)
   {
-   if(!Model_SaveComponent(dynamic_pointer_cast<RDK::UANet>(cont->GetComponentByIndex(i)),serstorage,false))
+   if(!Model_SaveComponent(dynamic_pointer_cast<RDK::UANet>(cont->GetComponentByIndex(i)),serstorage,false,params_type_mask))
     return false;
   }
   serstorage->SelectUp();
@@ -3011,10 +2775,15 @@ int UEngine::Model_LoadComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXM
   if(cont->GetClass() != id)
    return false;
 
-  serstorage->SelectNode("Parameters");
-  if(Model_SetComponentParameters(cont, serstorage))
-   return false;
-  serstorage->SelectUp();
+  for(unsigned int i=0, mask=1;i<7;i++, mask<<=1)
+  {
+   if(serstorage->SelectNode(UVariable::GetPropertyTypeNameByType(mask)))
+   {
+	if(Model_SetComponentProperties(cont, serstorage))
+	 return false;
+    serstorage->SelectUp();
+   }
+  }
 
   cont->DelAllComponents();
 
@@ -3056,8 +2825,8 @@ int UEngine::Model_LoadComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXM
  return true;
 }
 
-// Сохраняет все параметры компонента и его дочерних компонент в xml
-int UEngine::Model_SaveComponentParameters(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage)
+// Сохраняет все свойства компонента и его дочерних компонент в xml
+int UEngine::Model_SaveComponentProperties(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage, unsigned int type_mask)
 {
  try
  {
@@ -3066,15 +2835,15 @@ int UEngine::Model_SaveComponentParameters(RDK::UANet* cont, RDK::Serialize::USe
 
   serstorage->AddNode(cont->GetName());
   serstorage->SetNodeAttribute("Class",Storage->FindClassName(cont->GetClass()));
-  serstorage->AddNode("Parameters");
-  if(!Model_GetComponentParameters(cont, serstorage))
+  serstorage->AddNode(UVariable::GetPropertyTypeNameByType(type_mask));
+  if(!Model_GetComponentProperties(cont, serstorage,type_mask))
    return false;
   serstorage->SelectUp();
 
   serstorage->AddNode("Components");
   for(int i=0;i<cont->GetNumComponents();i++)
   {
-   if(!Model_SaveComponentParameters(dynamic_pointer_cast<RDK::UANet>(cont->GetComponentByIndex(i)),serstorage))
+   if(!Model_SaveComponentProperties(dynamic_pointer_cast<RDK::UANet>(cont->GetComponentByIndex(i)),serstorage,type_mask))
     return false;
   }
   serstorage->SelectUp();
@@ -3089,8 +2858,8 @@ int UEngine::Model_SaveComponentParameters(RDK::UANet* cont, RDK::Serialize::USe
  return true;
 }
 
-// Загружает все параметры компонента и его дочерних компонент из xml
-int UEngine::Model_LoadComponentParameters(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage)
+// Загружает все свойства компонента и его дочерних компонент из xml
+int UEngine::Model_LoadComponentProperties(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage)
 {
  try
  {
@@ -3102,10 +2871,15 @@ int UEngine::Model_LoadComponentParameters(RDK::UANet* cont, RDK::Serialize::USe
   if(cont->GetClass() != id)
    return false;
 
-  serstorage->SelectNode("Parameters");
-  if(Model_SetComponentParameters(cont, serstorage))
-   return false;
-  serstorage->SelectUp();
+  for(unsigned int i=0, mask=1;i<7;i++, mask<<=1)
+  {
+   if(serstorage->SelectNode(UVariable::GetPropertyTypeNameByType(mask)))
+   {
+	if(Model_SetComponentProperties(cont, serstorage))
+	 return false;
+    serstorage->SelectUp();
+   }
+  }
 
   serstorage->SelectNode("Components");
   for(int i=0;i<cont->GetNumComponents();i++)
@@ -3114,7 +2888,7 @@ int UEngine::Model_LoadComponentParameters(RDK::UANet* cont, RDK::Serialize::USe
     continue;
    std::string nodename=serstorage->GetNodeName();
 
-   if(!Model_LoadComponentParameters(dynamic_pointer_cast<RDK::UANet>(cont->GetComponentByIndex(i)),serstorage))
+   if(!Model_LoadComponentProperties(dynamic_pointer_cast<RDK::UANet>(cont->GetComponentByIndex(i)),serstorage))
     return false;
    serstorage->SelectUp();
   }
@@ -3127,79 +2901,6 @@ int UEngine::Model_LoadComponentParameters(RDK::UANet* cont, RDK::Serialize::USe
 
  return true;
 }
-
-// Сохраняет состояние компонента и его дочерних компонент в xml
-int UEngine::Model_SaveComponentState(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage)
-{
- try
- {
-  if(!cont || !serstorage)
-   return false;
-
-  serstorage->AddNode(cont->GetName());
-  serstorage->SetNodeAttribute("Class",Storage->FindClassName(cont->GetClass()));
-  serstorage->AddNode("State");
-  if(!Model_GetComponentState(cont, serstorage))
-   return false;
-  serstorage->SelectUp();
-
-  serstorage->AddNode("Components");
-  for(int i=0;i<cont->GetNumComponents();i++)
-  {
-   if(!Model_SaveComponentState(dynamic_pointer_cast<RDK::UANet>(cont->GetComponentByIndex(i)),serstorage))
-    return false;
-  }
-  serstorage->SelectUp();
-
-  serstorage->SelectUp();
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
-
- return true;
-}
-
-// Загружает состояние компонента и его дочерних компонент из xml
-int UEngine::Model_LoadComponentState(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage)
-{
- try
- {
-  if(!cont || !serstorage)
-   return false;
-
-  std::string name=serstorage->GetNodeAttribute("Class");
-  UId id=Storage->FindClassId(name);
-  if(cont->GetClass() != id)
-   return false;
-
-  serstorage->SelectNode("State");
-  if(!Model_SetComponentState(cont, serstorage))
-   return false;
-  serstorage->SelectUp();
-
-  serstorage->SelectNode("Components");
-  for(int i=0;i<cont->GetNumComponents();i++)
-  {
-   if(!serstorage->SelectNode(cont->GetComponentByIndex(i)->GetName()))
-    continue;
-   std::string nodename=serstorage->GetNodeName();
-
-   if(!Model_LoadComponentState(dynamic_pointer_cast<RDK::UANet>(cont->GetComponentByIndex(i)),serstorage))
-    return false;
-   serstorage->SelectUp();
-  }
-  serstorage->SelectUp();
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
-
- return true;
-}
-
 
 // Сохраняет внутренние данные компонента, и его _непосредственных_ дочерних компонент, исключая
 // переменные состояния в xml
@@ -3225,8 +2926,8 @@ int UEngine::Model_SaveComponentDrawInfo(RDK::UANet* cont, RDK::Serialize::USerS
   for(int i=0;i<cont->GetNumComponents();i++)
   {
    XmlStorage.AddNode(cont->GetComponentByIndex(i)->GetName());
-   XmlStorage.AddNode("Parameters");
-   if(!Model_GetComponentParameters(dynamic_pointer_cast<RDK::UANet>(cont->GetComponentByIndex(i)),serstorage))
+   XmlStorage.AddNode("Properties");
+   if(!Model_GetComponentProperties(dynamic_pointer_cast<RDK::UANet>(cont->GetComponentByIndex(i)),serstorage,0xFFFFFFFF))
 	return false;
    XmlStorage.SelectUp();
    XmlStorage.SelectUp();

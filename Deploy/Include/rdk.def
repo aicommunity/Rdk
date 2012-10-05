@@ -80,6 +80,12 @@ EXPORTS
     Model_GetComponentName = _Model_GetComponentName
     Model_GetComponentLongName = _Model_GetComponentLongName
     Model_GetComponentLongId = _Model_GetComponentLongId
+    Model_GetComponentProperties = _Model_GetComponentProperties
+    Model_GetComponentPropertiesEx = _Model_GetComponentPropertiesEx
+    Model_GetComponentSelectedProperties = _Model_GetComponentSelectedProperties
+    Model_GetComponentPropertyValue = _Model_GetComponentPropertyValue
+    Model_SetComponentProperties = _Model_SetComponentProperties
+    Model_SetComponentPropertyValue = _Model_SetComponentPropertyValue
     Model_GetComponentParameters = _Model_GetComponentParameters
     Model_GetComponentParametersEx = _Model_GetComponentParametersEx
     Model_GetComponentSelectedParameters = _Model_GetComponentSelectedParameters
@@ -116,6 +122,8 @@ EXPORTS
     Model_GetComponentOutputData = _Model_GetComponentOutputData
     Model_SaveComponent = _Model_SaveComponent
     Model_LoadComponent = _Model_LoadComponent
+    Model_SaveComponentProperties = _Model_SaveComponentProperties
+    Model_LoadComponentProperties = _Model_LoadComponentProperties
     Model_SaveComponentParameters = _Model_SaveComponentParameters
     Model_LoadComponentParameters = _Model_LoadComponentParameters
     Model_SaveComponentState = _Model_SaveComponentState

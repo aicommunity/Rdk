@@ -337,7 +337,7 @@ int UAConnector2DVector::GetSize(void) const
 UAItem::UAItem(void)
 {
  NumOutputs=0;
- AddLookupProperty("NumOutputs",new UVProperty<int,UAItem>(this,&UAItem::SetNumOutputs,&UAItem::GetNumOutputs));
+ AddLookupProperty("NumOutputs",ptParameter & pgSystem,new UVProperty<int,UAItem>(this,&UAItem::SetNumOutputs,&UAItem::GetNumOutputs));
 }
 
 UAItem::~UAItem(void)

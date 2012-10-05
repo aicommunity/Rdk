@@ -251,8 +251,8 @@ int UCItemList::GetSize(void) const
 UAConnector::UAConnector(void)
 {
  NumInputs=0;
- AddLookupProperty("NumInputs",new UVProperty<int,UAConnector>(this,&UAConnector::SetNumInputs,&UAConnector::GetNumInputs));
- AddLookupProperty("AutoNumInputs",new UVProperty<bool,UAConnector>(this,&UAConnector::SetAutoNumInputs,&UAConnector::GetAutoNumInputs));
+ AddLookupProperty("NumInputs",ptParameter & pgSystem,new UVProperty<int,UAConnector>(this,&UAConnector::SetNumInputs,&UAConnector::GetNumInputs));
+ AddLookupProperty("AutoNumInputs",ptParameter & pgSystem,new UVProperty<bool,UAConnector>(this,&UAConnector::SetAutoNumInputs,&UAConnector::GetAutoNumInputs));
 }
 
 UAConnector::~UAConnector(void)

@@ -7,6 +7,21 @@ extern "C"  {
 typedef int bool;
 #endif
 
+// Варианты типа свойства (битовая маска) pt - Property Type
+// 0x1 - Параметр
+// 0x2 - Переменная состояния
+// 0x4 - Временная переменная
+enum {ptParameter=1, ptState=2, ptTemp=4, ptAny=255};
+
+// Варианты групп свойства (битовая маска) pg - Property Group
+// 0x100 - Общедоступный
+// 0x200 - Системный
+// 0x400 - Входные данные
+// 0x800 - Выходные данные
+// 0x1000 - Флаг смены режима работы компонента
+enum {pgPublic=0x100, pgSystem=0x200, pgInput=0x400, pgOutput=0x800, pgMode=0x1000, pgAny=0xFFFFFF};
+
+
 // ----------------------------
 // Функции инициализации
 // ----------------------------
@@ -319,23 +334,67 @@ RDK_LIB_TYPE const char* RDK_CALL Model_GetComponentLongId(const char* stringid,
 // если stringid - пустая строка, то возвращает имя класса модели
 RDK_LIB_TYPE const char* RDK_CALL Model_GetComponentClassName(const char* stringid);
 
+// Возвращает свойства компонента по идентификатору
+RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentProperties(const char *stringid, unsigned int type_mask);
+
+// Возвращает свойства компонента по идентификатору с описаниями
+RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentPropertiesEx(const char *stringid, unsigned int type_mask);
+
+// Возвращает выборочные свойства компонента по идентификатору
+RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentSelectedProperties(const char *stringid, unsigned int type_mask);
+
+// Возвращает значение свойства компонента по идентификатору компонента и имени свойства
+RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentPropertyValue(const char *stringid, const char *paramname);
+
+// Устанавливает свойства компонента по идентификатору
+RDK_LIB_TYPE int RDK_CALL Model_SetComponentProperties(const char *stringid, const char* buffer);
+
+// Устанавливает значение свойства компонента по идентификатору компонента и имени свойства
+RDK_LIB_TYPE void RDK_CALL Model_SetComponentPropertyValue(const char *stringid, const char *paramname, const char *buffer);
+
 // Возвращает параметры компонента по идентификатору
-RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentParameters(const char *stringid);
+// Deprecated
+RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentParameters(const char *stringid, unsigned int type_mask=ptParameter | pgPublic);
 
 // Возвращает параметры компонента по идентификатору с описаниями
-RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentParametersEx(const char *stringid);
+// Deprecated
+RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentParametersEx(const char *stringid, unsigned int type_mask=ptParameter | pgPublic);
 
 // Возвращает выборочные параметры компонента по идентификатору
-RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentSelectedParameters(const char *stringid);
+// Deprecated
+RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentSelectedParameters(const char *stringid, unsigned int type_mask=ptParameter | pgPublic);
 
 // Возвращает значение параметра компонента по идентификатору компонента и имени параметра
+// Deprecated
 RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentParameterValue(const char *stringid, const char *paramname);
 
 // Устанавливает параметры компонента по идентификатору
+// Deprecated
 RDK_LIB_TYPE int RDK_CALL Model_SetComponentParameters(const char *stringid, const char* buffer);
 
 // Устанавливает значение параметра компонента по идентификатору компонента и имени параметра
+// Deprecated
 RDK_LIB_TYPE void RDK_CALL Model_SetComponentParameterValue(const char *stringid, const char *paramname, const char *buffer);
+
+// Возвращает состояние компонента по идентификатору
+// Deprecated
+RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentState(const char *stringid, unsigned int type_mask=0xFFFFFFFF);
+
+// Возвращает выборочные данные состояния компонента по идентификатору
+// Deprecated
+RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentSelectedState(const char *stringid);
+
+// Возвращает значение параметра перменной состояния по идентификатору компонента и имени переменной
+// Deprecated
+RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentStateValue(const char *stringid, const char *statename);
+
+// Устанавливает состояние компонента по идентификатору
+// Deprecated
+RDK_LIB_TYPE bool RDK_CALL Model_SetComponentState(const char *stringid, const char* buffer);
+
+// Устанавливает значение переменной состояния компонента по идентификатору компонента и имени переменной
+// Deprecated
+RDK_LIB_TYPE void RDK_CALL Model_SetComponentStateValue(const char *stringid, const char *statename, const char *buffer);
 
 // Связывает выбранные компоненты друг с другом
 RDK_LIB_TYPE int RDK_CALL Model_CreateLink(const char* stringid1, int output_number, const char* stringid2, int input_number);
@@ -398,21 +457,6 @@ RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentOutputLinks(const char* str
 // Если owner_level_stringid не задан, то имена формируются до уровня текущего компонента
 RDK_LIB_TYPE const char* RDK_CALL Model_GetComponentPersonalLinks(const char* stringid, const char* owner_level_stringid=0);
 
-// Возвращает состояние компонента по идентификатору
-RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentState(const char *stringid);
-
-// Возвращает выборочные данные состояния компонента по идентификатору
-RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentSelectedState(const char *stringid);
-
-// Возвращает значение параметра перменной состояния по идентификатору компонента и имени переменной
-RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentStateValue(const char *stringid, const char *statename);
-
-// Устанавливает состояние компонента по идентификатору
-RDK_LIB_TYPE bool RDK_CALL Model_SetComponentState(const char *stringid, const char* buffer);
-
-// Устанавливает значение переменной состояния компонента по идентификатору компонента и имени переменной
-RDK_LIB_TYPE void RDK_CALL Model_SetComponentStateValue(const char *stringid, const char *statename, const char *buffer);
-
 // Возвращает число входов у компонента
 RDK_LIB_TYPE int RDK_CALL Model_GetComponentNumInputs(const char *stringid);
 
@@ -447,22 +491,32 @@ RDK_LIB_TYPE unsigned char* RDK_CALL Model_GetComponentOutputData(const char *st
 
 // Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния в xml
-RDK_LIB_TYPE const char * RDK_CALL Model_SaveComponent(const char *stringid);
+RDK_LIB_TYPE const char * RDK_CALL Model_SaveComponent(const char *stringid, unsigned int params_type_mask=ptParameter | pgPublic);
 
 // Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния из xml
 RDK_LIB_TYPE int RDK_CALL Model_LoadComponent(const char *stringid, char* buffer);
 
+// Сохраняет все свойства компонента и его дочерних компонент в xml
+RDK_LIB_TYPE const char * RDK_CALL Model_SaveComponentProperties(const char *stringid, unsigned int type_mask);
+
+// Загружает все свойства компонента и его дочерних компонент из xml
+RDK_LIB_TYPE int RDK_CALL Model_LoadComponentProperties(const char *stringid, char* buffer);
+
 // Сохраняет все параметры компонента и его дочерних компонент в xml
-RDK_LIB_TYPE const char * RDK_CALL Model_SaveComponentParameters(const char *stringid);
+// Deprecated
+RDK_LIB_TYPE const char * RDK_CALL Model_SaveComponentParameters(const char *stringid, unsigned int type_mask=ptParameter | pgPublic);
 
 // Загружает все параметры компонента и его дочерних компонент из xml
+// Deprecated
 RDK_LIB_TYPE int RDK_CALL Model_LoadComponentParameters(const char *stringid, char* buffer);
 
 // Сохраняет состояние компонента и его дочерних компонент в xml
-RDK_LIB_TYPE const char * RDK_CALL Model_SaveComponentState(const char *stringid);
+// Deprecated
+RDK_LIB_TYPE const char * RDK_CALL Model_SaveComponentState(const char *stringid, unsigned int type_mask=0xFFFFFFFF);
 
 // Загружает состояние компонента и его дочерних компонент из xml
+// Deprecated
 RDK_LIB_TYPE int RDK_CALL Model_LoadComponentState(const char *stringid, char* buffer);
 
 // Сохраняет внутренние данные компонента, и его _непосредственных_ дочерних компонент, исключая

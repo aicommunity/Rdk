@@ -185,9 +185,13 @@ virtual const std::string& GetName(void) const
 {
  static std::string name;
  name=reinterpret_cast<UADataComponent* const>(Owner)->FindPropertyName(this);
- if(name == ForbiddenName)
-  name=reinterpret_cast<UADataComponent* const>(Owner)->FindStateName(this);
  return name;
+};
+
+// Метод возвращает тип свойства
+virtual unsigned int GetType(void) const
+{
+ return reinterpret_cast<UADataComponent* const>(Owner)->FindPropertyType(this);
 };
 
 // Метод возвращает строковое имя класса-владельца свойства
@@ -212,6 +216,7 @@ virtual bool Save(UEPtr<Serialize::USerStorage>  storage, bool simplemode=false)
   if(simplemode)
   {
    xml->Create(GetName());
+//   xml->SetNodeAttribute("PType",sntoa(GetType()));
    Serialize::operator << (*xml,(*this)());
    xml->SelectUp();
    return true;
@@ -219,6 +224,7 @@ virtual bool Save(UEPtr<Serialize::USerStorage>  storage, bool simplemode=false)
   else
   {
    xml->AddNode(GetName());
+//   xml->SetNodeAttribute("PType",sntoa(GetType()));
    Serialize::operator << (*xml,(*this)());
    xml->SelectUp();
    return true;
@@ -359,6 +365,7 @@ virtual bool Save(UEPtr<Serialize::USerStorage>  storage, bool simplemode=false)
   if(simplemode)
   {
    xml->Create(this->GetName());
+  // xml->SetNodeAttribute("PType",sntoa(GetType()));
    Serialize::operator << (*xml,(*this)());
    xml->SelectUp();
    return true;
@@ -366,6 +373,7 @@ virtual bool Save(UEPtr<Serialize::USerStorage>  storage, bool simplemode=false)
   else
   {
    xml->AddNode(this->GetName());
+   //xml->SetNodeAttribute("PType",sntoa(GetType()));
    Serialize::operator << (*xml,(*this)());
    xml->SelectUp();
    return true;
@@ -600,6 +608,7 @@ virtual bool Save(UEPtr<Serialize::USerStorage> storage, bool simplemode=false)
   if(simplemode)
   {
    xml->Create(this->GetName());
+//   xml->SetNodeAttribute("PType",sntoa(GetType()));
    Serialize::operator << (*xml,(*this)());
    xml->SelectUp();
    return true;
@@ -607,6 +616,7 @@ virtual bool Save(UEPtr<Serialize::USerStorage> storage, bool simplemode=false)
   else
   {
    xml->AddNode(this->GetName());
+//   xml->SetNodeAttribute("PType",sntoa(GetType()));
    Serialize::operator << (*xml,(*this)());
    xml->SelectUp();
    return true;

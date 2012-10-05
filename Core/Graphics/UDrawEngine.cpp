@@ -359,7 +359,6 @@ void UDrawEngine::ParseLinks(void)
     NetXml.SelectUp();
 	continue;
    }
-   UGEDescription &out=I->second;
    Links[I->first].clear();
    for(int j=0;j<num_inps;j++)
    {
@@ -457,6 +456,7 @@ bool UDrawEngine::DrawBackground(void)
 
  for(int i=0;i<CanvasHeight;i+=BackgroundLineStep)
   GEngine->Line(0,i,CanvasWidth-1,i);
+ return true;
 }
 // ---------------------------
 

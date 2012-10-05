@@ -12,21 +12,41 @@ typedef Serialize::USerStorage UVariableData;
 
 class UADataComponent;
 
+// Варианты типа свойства (битовая маска) pt - Property Type
+// 0x1 - Параметр
+// 0x2 - Переменная состояния
+// 0x4 - Временная переменная
+enum {ptParameter=1, ptState=2, ptTemp=4, ptAny=255};
+
+// Варианты групп свойства (битовая маска) pg - Property Group
+// 0x100 - Общедоступный
+// 0x200 - Системный
+// 0x400 - Входные данные
+// 0x800 - Выходные данные
+// 0x1000 - Флаг смены режима работы компонента
+enum {pgPublic=0x100, pgSystem=0x200, pgInput=0x400, pgOutput=0x800, pgMode=0x1000, pgAny=0xFFFFFF};
+
+// Наиболее часто используемые сочетания типа и группы
+enum {ptPubParameter=ptParameter|pgPublic, ptPubState=ptState|pgPublic};
+
 // Класс сериализации свойств
 class UIProperty
 {
 public:
- // Метод возвращает строковое имя свойства
- virtual const std::string& GetName(void) const=0;
+// Метод возвращает тип свойства
+virtual unsigned int GetType(void) const=0;
 
- // Метод возвращает строковое имя класса-владельца свойства
- virtual std::string GetOwnerName(void) const=0;
+// Метод возвращает строковое имя свойства
+virtual const std::string& GetName(void) const=0;
 
- // Метод записывает значение свойства в поток
- virtual bool Save(UEPtr<UVariableData> storage, bool simplemode=false)=0;
+// Метод возвращает строковое имя класса-владельца свойства
+virtual std::string GetOwnerName(void) const=0;
 
- // Метод читает значение свойства из потока
- virtual bool Load(UEPtr<UVariableData> storage, bool simplemode=false)=0;
+// Метод записывает значение свойства в поток
+virtual bool Save(UEPtr<UVariableData> storage, bool simplemode=false)=0;
+
+// Метод читает значение свойства из потока
+virtual bool Load(UEPtr<UVariableData> storage, bool simplemode=false)=0;
 };
 
 
@@ -34,26 +54,90 @@ public:
 // Хранилище свойств параметра
 struct UVariable
 {
- // Id параметра
- UId Id;
+// Id параметра
+UId Id;
 
- // Указатель на свойство
- UEPtr<UIProperty> Property;
+// Указатель на свойство
+UEPtr<UIProperty> Property;
 
- // Флаг разрешения удаления данных на которых указывает Property
- bool DelEnable;
+// Флаг разрешения удаления данных на которых указывает Property
+bool DelEnable;
+
+// Тип свойства (битовая маска)
+// Младшие 8 бит на собственно тип:
+// Старшие 24 на принадлежность группе
+// (показан их отсчет от 0):
+unsigned int Type;
 
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
 UVariable(void);
-UVariable(UId id, UEPtr<UIProperty> prop);
+UVariable(UId id, UEPtr<UIProperty> prop, unsigned int type=0);
 UVariable(const UVariable &copy);
 virtual ~UVariable(void);
 // --------------------------
+
+// --------------------------
+// Методы доступа к данным
+// --------------------------
+// Возвращает только маску типа свойства
+unsigned int GetPropertyType(void) const;
+
+// Возвращает только маску группы свойства
+unsigned int GetPropertyGroup(void) const;
+
+// Возвращает строковое имя типа свойства по заданному типу
+static std::string GetPropertyTypeNameByType(unsigned int type);
+
+// Возвращает тип свойства по строковому имени
+static unsigned int GetPropertyTypeByTypeName(const std::string &name);
+
+// Возвращает строковое имя типа свойства
+std::string GetPropertyTypeName(void) const;
+
+// Проверяет соответствие типа и группы свойства маске
+bool CheckMask(unsigned int mask) const;
+// --------------------------
+};
+
+// Класс управления общими свойствами
+class UIShare
+{
+public:
+ // Метод возвращает Id общего свойства
+// virtual int GetId(void) const=0;
+
+ // Метод возвращает строковое имя класса-владельца общего свойства
+// virtual std::string GetOwnerName(void) const=0;
+
+ // Метод инициализации общего свойства
+ virtual bool Init(UEPtr<UADataComponent> main_owner)=0;
+
+ // Метод деинициализации общего свойства
+ virtual bool UnInit(void)=0;
 };
 
 
+   /*
+// Хранилище свойств параметра
+struct USharedVariable
+{
+ // Id параметра
+ UId Id;
+
+ // Указатель на свойство
+ UEPtr<UIShare> Property;
+
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+USharedVariable(void);
+USharedVariable(UId id, UEPtr<UIShare> prop);
+USharedVariable(const USharedVariable &copy);
+virtual ~USharedVariable(void);
+// --------------------------
+};    */
 
 class UADataComponent: public UAComponent
 {
@@ -62,13 +146,18 @@ typedef std::map<NameT,UVariable> VariableMapT;
 typedef std::map<NameT,UVariable>::iterator VariableMapIteratorT;
 typedef std::map<NameT,UVariable>::const_iterator VariableMapCIteratorT;
 
+typedef std::map<UId,UEPtr<UIShare> > ShareMapT;
+typedef std::map<UId,UEPtr<UIShare> >::iterator ShareMapIteratorT;
+typedef std::map<UId,UEPtr<UIShare> >::const_iterator ShareMapCIteratorT;
+
 private: // Системные свойства
 //protected: // Системные свойства
 // Таблица соответствий имен и Id параметров объекта
 VariableMapT PropertiesLookupTable;
 
-// Таблица соответствий имен и Id данных состояния объекта
-VariableMapT StateLookupTable;
+protected:
+// Таблица соответствий Id и общего свойства
+ShareMapT ShareLookupTable;
 
 public: // Методы
 // --------------------------
@@ -87,20 +176,6 @@ const NameT& GetPropertyName(const UId &id) const;
 
 // Возвращает Id параметра по его имени
 const UId& GetPropertyId(const NameT &name) const;
-
-// Возвращает полное имя параметра без префикса RDK, и суффикса '*'
-//NameT GetPropertyLongName(const NameT &name) const;
-//NameT GetPropertyLongName(const UId &id) const;
-
-// Возвращает имя переменной состояния по его Id
-const NameT& GetStateName(const UId &id) const;
-
-// Возвращает Id переменной состояния по его имени
-const UId& GetStateId(const NameT &name) const;
-
-// Возвращает полное имя переменной состояния без префикса RDK, и суффикса '*'
-//NameT GetStateLongName(const NameT &name) const;
-//NameT GetStateLongName(const UId &id) const;
 // --------------------------
 
 // --------------------------
@@ -136,38 +211,12 @@ const UADataComponent::VariableMapT& GetPropertiesList(void) const;
 // Ищет имя свойства по указателю на него
 const NameT& FindPropertyName(UEPtr<const UIProperty> prop) const;
 
+// Ищет тип свойства по указателю на него
+unsigned int FindPropertyType(UEPtr<const UIProperty> prop) const;
+
 // Копирует все параметры этого объекта в объект 'comp', если возможно.
-virtual void CopyProperties(UEPtr<UADataComponent> comp) const;
-// --------------------------
-
-// --------------------------
-// Методы доступа к переменным состояния
-// --------------------------
-// Возвращает значение переменной состояния по Id 'id'
-virtual UEPtr<UVariableData> GetState(const UId &id, UEPtr<UVariableData> values) const;
-virtual std::string& GetStateValue(const UId &id, std::string &values) const;
-
-// Возвращает значение переменной состояния по имени 'name'
-UEPtr<UVariableData> GetState(const NameT &name, UEPtr<UVariableData> values) const;
-std::string& GetStateValue(const NameT &name, std::string &values) const;
-
-// Устанавливает значение переменной состояния по Id 'id'
-virtual void SetState(const UId &id, UEPtr<UVariableData> values);
-virtual void SetStateValue(const UId &id, const std::string &values);
-
-// Устанавливает значение переменной состояния по имени 'name'
-void SetState(const NameT &name, UEPtr<UVariableData> values);
-void SetStateValue(const NameT &name, const std::string &values);
-
-// Возвращает список имен и Id переменных состояния, содержащихся непосредственно
-// в этом объекте
-const UADataComponent::VariableMapT& GetStateList(void) const;
-
-// Ищет имя свойства по указателю на него
-const NameT& FindStateName(UEPtr<const UIProperty> prop) const;
-
-// Копирует все переменные состояния этого объекта в объект 'comp', если возможно.
-virtual void CopyState(UEPtr<UADataComponent> comp) const;
+// копируются только свойства типа type
+virtual void CopyProperties(UEPtr<UADataComponent> comp, unsigned int type) const;
 // --------------------------
 
 // --------------------------
@@ -177,7 +226,7 @@ public:
 // Добавляет параметр с именем 'name' в таблицу соотвествий
 // параметров и назначает ему корректный индекс
 // Должна вызываться в конструкторах классов
-UId AddLookupProperty(const NameT &name, UEPtr<UIProperty> property, bool delenable=true);
+UId AddLookupProperty(const NameT &name, unsigned int type, UEPtr<UIProperty> property, bool delenable=true);
 
 protected:
 // Удаляет параметр с именем 'name' из таблицы соотвествий
@@ -186,30 +235,16 @@ void DelLookupProperty(const NameT &name);
 
 // Удаляет всю таблицу соответствий
 void ClearLookupPropertyTable(void);
-
-// Возвращает полное имя параметра без префикса RDK, и суффикса '*'
-//NameT GetPropertyLongName(const UIProperty &property) const;
 // --------------------------
 
-protected:
 // --------------------------
-// Скрытые методы управления состоянием
+// Скрытые методы управления общими свойствами
 // --------------------------
 public:
-// Добавляет переменную состояния с именем 'name' в таблицу соотвествий
-// параметров и назначает ей корректный индекс
+// Добавляет общее свойство параметр с именем 'name' в таблицу соотвествий
+// общих свойств и назначает ему корректный индекс
 // Должна вызываться в конструкторах классов
-UId AddLookupState(const NameT &name, UEPtr<UIProperty> property, bool delenable=true);
-
-protected:
-// Удаляет переменную состояния с именем 'name' из таблицы соотвествий
-void DelLookupState(const NameT &name);
-
-// Удаляет всю таблицу соответствий
-void ClearLookupStateTable(void);
-
-// Возвращает полное имя переменной состояния без префикса RDK, и суффикса '*'
-//NameT GetStateLongName(const UIProperty &property) const;
+UId AddLookupShare(const NameT &name, UEPtr<UIShare> property);
 // --------------------------
 
 public: // Исключения
@@ -236,7 +271,7 @@ struct EPropertyNameAlreadyExist: public ENameAlreadyExist
 {
 EPropertyNameAlreadyExist(const std::string &name) : ENameAlreadyExist(name) {};
 };
-
+/*
 // Id переменной состояния не найден
 struct EStateIdNotExist: public EIdNotExist
 {
@@ -260,13 +295,14 @@ struct EStateNameAlreadyExist: public ENameAlreadyExist
 {
 EStateNameAlreadyExist(const std::string &name) : ENameAlreadyExist(name) {};
 };
-
+    */
 };
 
 }
 
 #include "UProperty.h"
 #include "ULocalProperty.h"
+#include "UShare.h"
 
 #endif 
 

@@ -428,26 +428,26 @@ virtual const char* Model_GetComponentLongId(const char* stringid, const char* o
 // если stringid - пустая строка, то возвращает имя класса модели
 virtual const char* Model_GetComponentClassName(const char* stringid);
 
-// Возвращает параметры компонента по идентификатору
+// Возвращает свойства компонента по идентификатору
 // Память для buffer должна быть выделена!
-virtual const char* Model_GetComponentParameters(const char *stringid);
+virtual const char* Model_GetComponentProperties(const char *stringid, unsigned int type_mask=0xFFFFFFFF);
 
-// Возвращает выборочные параметры компонента по идентификатору
+// Возвращает выборочные свойства компонента по идентификатору
 // Память для buffer должна быть выделена!
-virtual const char* Model_GetComponentSelectedParameters(const char *stringid);
+virtual const char* Model_GetComponentSelectedProperties(const char *stringid);
 
-// Возвращает параметры компонента по идентификатору с описаниями
+// Возвращает свойства компонента по идентификатору с описаниями
 // Память для buffer должна быть выделена!
-virtual const char* Model_GetComponentParametersEx(const char *stringid);
+virtual const char* Model_GetComponentPropertiesEx(const char *stringid, unsigned int type_mask=0xFFFFFFFF);
 
-// Возвращает значение параметра компонента по идентификатору компонента и имени параметра
-virtual const char * Model_GetComponentParameterValue(const char *stringid, const char *paramname);
+// Возвращает значение свойства компонента по идентификатору компонента и имени свойства
+virtual const char * Model_GetComponentPropertyValue(const char *stringid, const char *paramname);
 
-// Устанавливает параметры компонента по идентификатору
-virtual int Model_SetComponentParameters(const char *stringid, const char* buffer);
+// Устанавливает свойства компонента по идентификатору
+virtual int Model_SetComponentProperties(const char *stringid, const char* buffer);
 
-// Устанавливает значение параметра компонента по идентификатору компонента и имени параметра
-virtual void Model_SetComponentParameterValue(const char *stringid, const char *paramname, const char *buffer);
+// Устанавливает значение свойства компонента по идентификатору компонента и имени свойства
+virtual void Model_SetComponentPropertyValue(const char *stringid, const char *paramname, const char *buffer);
 
 // Связывает выбранные контейнеры друг с другом
 virtual int Model_CreateLink(const char* stringid1, int output_number, const char* stringid2, int input_number);
@@ -510,21 +510,6 @@ virtual const char* Model_GetComponentOutputLinks(const char* stringid, const ch
 // Если owner_level_stringid не задан, то имена формируются до уровня текущего компонента
 virtual const char* Model_GetComponentPersonalLinks(const char* stringid, const char* owner_level_stringid=0);
 
-// Возвращает состояние компонента по идентификатору
-virtual const char* Model_GetComponentState(const char *stringid);
-
-// Возвращает выборочные данные состояния компонента по идентификатору
-virtual const char* Model_GetComponentSelectedState(const char *stringid);
-
-// Возвращает значение переменной состояния компонента по идентификатору компонента и имени переменной
-virtual const char * Model_GetComponentStateValue(const char *stringid, const char *statename);
-
-// Устанавливает состояние компонента по идентификатору
-virtual bool Model_SetComponentState(const char *stringid, const char* buffer);
-
-// Устанавливает значение переменной состояния компонента по идентификатору компонента и имени переменной
-virtual void Model_SetComponentStateValue(const char *stringid, const char *statename, const char *buffer);
-
 // Возвращает число входов у компонента
 virtual int Model_GetComponentNumInputs(const char *stringid);
 
@@ -559,23 +544,17 @@ virtual unsigned char* Model_GetComponentOutputData(const char *stringid, int in
 
 // Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния в xml
-virtual const char* Model_SaveComponent(const char *stringid);
+virtual const char* Model_SaveComponent(const char *stringid, unsigned int params_type_mask=0xFFFFFFFF);
 
 // Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния из xml
 virtual int Model_LoadComponent(const char *stringid, char* buffer);
 
-// Сохраняет все параметры компонента и его дочерних компонент в xml
-virtual const char* Model_SaveComponentParameters(const char *stringid);
+// Сохраняет все свойства компонента и его дочерних компонент в xml
+virtual const char* Model_SaveComponentProperties(const char *stringid, unsigned int type_mask=0xFFFFFFFF);
 
-// Загружает все параметры компонента и его дочерних компонент из xml
-virtual int Model_LoadComponentParameters(const char *stringid, char* buffer);
-
-// Сохраняет состояние компонента и его дочерних компонент в xml
-virtual const char* Model_SaveComponentState(const char *stringid);
-
-// Загружает состояние компонента и его дочерних компонент из xml
-virtual int Model_LoadComponentState(const char *stringid, char* buffer);
+// Загружает все свойства компонента и его дочерних компонент из xml
+virtual int Model_LoadComponentProperties(const char *stringid, char* buffer);
 
 // Сохраняет внутренние данные компонента, и его _непосредственных_ дочерних компонент, исключая
 // переменные состояния в xml
@@ -681,17 +660,17 @@ int LoadLibraries(void);
 // Скрытые методы управления средой
 // --------------------------
 protected:
-// Возвращает параметры компонента по идентификатору
-virtual bool Model_GetComponentParameters(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage);
+// Возвращает свойства компонента по идентификатору
+virtual bool Model_GetComponentProperties(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage, unsigned int type_mask);
 
-// Возвращает выборочные параметры компонента по идентификатору
-virtual bool Model_GetComponentSelectedParameters(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage);
+// Возвращает выборочные свойства компонента по идентификатору
+virtual bool Model_GetComponentSelectedProperties(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage);
 
-// Возвращает параметры компонента по идентификатору с описаниями
-virtual bool Model_GetComponentParametersEx(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage);
+// Возвращает свойства компонента по идентификатору с описаниями
+virtual bool Model_GetComponentPropertiesEx(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage, unsigned int type_mask);
 
-// Устанавливает параметры компонента по идентификатору
-virtual int Model_SetComponentParameters(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage);
+// Устанавливает свойства компонента по идентификатору
+virtual int Model_SetComponentProperties(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage);
 
 // Возращает все связи внутри компонента cont в виде xml в буфер buffer
 // Имена формируются до уровня компонента owner_level
@@ -729,36 +708,19 @@ virtual int Model_GetComponentOutputLinks(RDK::UANet* cont, RDK::Serialize::USer
 // Если owner_level не задан, то имена формируются до уровня текущего компонента
 virtual int Model_GetComponentPersonalLinks(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage, RDK::UANet* owner_level);
 
-// Возвращает состояние компонента по идентификатору
-// Память для buffer должна быть выделена!
-virtual bool Model_GetComponentState(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage);
-
-// Возвращает выборочные данные состояния компонента по идентификатору
-// Память для buffer должна быть выделена!
-virtual bool Model_GetComponentSelectedState(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage);
-
-// Устанавливает состояние компонента по идентификатору
-virtual bool Model_SetComponentState(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage);
-
 // Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния в xml
-virtual int Model_SaveComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage, bool links=true);
+virtual int Model_SaveComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage, bool links, unsigned int params_type_mask);
 
 // Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния из xml
-virtual int Model_LoadComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage, bool links=true);
+virtual int Model_LoadComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage, bool links);
 
-// Сохраняет все параметры компонента и его дочерних компонент в xml
-virtual int Model_SaveComponentParameters(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage);
+// Сохраняет все свойства компонента и его дочерних компонент в xml
+virtual int Model_SaveComponentProperties(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage, unsigned int type_mask);
 
-// Загружает все параметры компонента и его дочерних компонент из xml
-virtual int Model_LoadComponentParameters(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage);
-
-// Сохраняет состояние компонента и его дочерних компонент в xml
-virtual int Model_SaveComponentState(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage);
-
-// Загружает состояние компонента и его дочерних компонент из xml
-virtual int Model_LoadComponentState(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage);
+// Загружает все свойства компонента и его дочерних компонент из xml
+virtual int Model_LoadComponentProperties(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage);
 
 // Сохраняет внутренние данные компонента, и его _непосредственных_ дочерних компонент, исключая
 // переменные состояния в xml

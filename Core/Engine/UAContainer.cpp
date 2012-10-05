@@ -61,11 +61,11 @@ UPVariable::~UPVariable(void)
 UAContainer::UAContainer(void)
  : PComponents(0), NumComponents(0), Id(0), LastId(0), Coord(0)
 {
- AddLookupProperty("Id",new UVProperty<UId,UAContainer>(this,&UAContainer::SetId,&UAContainer::GetId));
- AddLookupProperty("Name",new UVProperty<NameT,UAContainer>(this,&UAContainer::SetName,&UAContainer::GetName));
- AddLookupProperty("TimeStep",new UVProperty<UTime,UAContainer>(this,&UAContainer::SetTimeStep,&UAContainer::GetTimeStep));
- AddLookupProperty("Activity",new UVProperty<bool,UAContainer>(this,&UAContainer::SetActivity,&UAContainer::GetActivity));
- AddLookupProperty("Coord",new UVProperty<RDK::MVector<double,3>,UAContainer>(this,&UAContainer::SetCoord,&UAContainer::GetCoord));
+ AddLookupProperty("Id",ptParameter | pgSystem,new UVProperty<UId,UAContainer>(this,&UAContainer::SetId,&UAContainer::GetId));
+ AddLookupProperty("Name",ptParameter | pgSystem,new UVProperty<NameT,UAContainer>(this,&UAContainer::SetName,&UAContainer::GetName));
+ AddLookupProperty("TimeStep",ptParameter | pgSystem,new UVProperty<UTime,UAContainer>(this,&UAContainer::SetTimeStep,&UAContainer::GetTimeStep));
+ AddLookupProperty("Activity",ptParameter | pgPublic,new UVProperty<bool,UAContainer>(this,&UAContainer::SetActivity,&UAContainer::GetActivity));
+ AddLookupProperty("Coord",ptParameter | pgPublic,new UVProperty<RDK::MVector<double,3>,UAContainer>(this,&UAContainer::SetCoord,&UAContainer::GetCoord));
  InitFlag=false;
 }
 
@@ -586,11 +586,11 @@ UEPtr<UAContainer> UAContainer::Alloc(UEPtr<UAContainerStorage> stor, bool copys
 // и значений параметров
 bool UAContainer::Copy(UEPtr<UAContainer> target, UEPtr<UAContainerStorage> stor, bool copystate) const
 {
- CopyProperties(target);
+ CopyProperties(target, ptParameter);
  target->Build();
 
  if(copystate)
-  CopyState(target);
+  CopyProperties(target, ptState);
 
  CopyComponents(target,stor);
  return true;
@@ -1223,6 +1223,10 @@ void UAContainer::DelAllComponentsAs(const NameT &pointername, bool canfree)
 // объекта владельцу
 void UAContainer::SharesInit(void)
 {
+ ShareMapIteratorT I=ShareLookupTable.begin();
+ ShareMapIteratorT J=ShareLookupTable.end();
+ for(;I != J;++I)
+  I->second->Init(MainOwner);
  ASharesInit();
 }
 
@@ -1231,6 +1235,10 @@ void UAContainer::SharesInit(void)
 void UAContainer::SharesUnInit(void)
 {
  ASharesUnInit();
+ ShareMapIteratorT I=ShareLookupTable.begin();
+ ShareMapIteratorT J=ShareLookupTable.end();
+ for(;I != J;++I)
+  I->second->UnInit();
 }
 // --------------------------
 
@@ -1256,7 +1264,7 @@ bool UAContainer::Default(void)
  {
   NameT name=Name;
   bool activity=Activity;
-  original->CopyProperties(this);
+  original->CopyProperties(this,ptParameter);
   SetName(name);
   SetActivity(activity);
  }

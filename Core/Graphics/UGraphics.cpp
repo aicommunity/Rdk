@@ -132,7 +132,7 @@ void UGraphics::Line(int x1, int y1, int x2, int y2)
 {
  int tmp;
  int dx,dy,y,x;
- int old_x1=x1, old_y1=y1, old_x2=x2, old_y2=y2;
+ int old_x1=x1, old_y1=y1;
 
  CWidth=Canvas->GetWidth();
  CHeight=Canvas->GetHeight();
