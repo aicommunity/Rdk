@@ -76,6 +76,9 @@ std::string BreakLinkComponentName;
 
 std::string FontFileName;
 
+// Флаг, выставляемый в процессе drag&drop
+bool DragDropFlag;
+
 // -----------------------------
 // Методы управления визуальным интерфейсом
 // -----------------------------

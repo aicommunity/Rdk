@@ -22,6 +22,8 @@ __fastcall TUDrawEngineForm::TUDrawEngineForm(TComponent* Owner)
  Graph.SetCanvas(&GraphCanvas);
  Graph.SetFont(&Font);
  DrawEngine.SetEngine(&Graph);
+ UpdateInterval=-1;
+ DragDropFlag=false;
 }
 
 // -----------------------------
@@ -89,7 +91,8 @@ void TUDrawEngineForm::AUpdateInterface(void)
 void TUDrawEngineForm::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
 {
  xml.WriteString("FontFileName",FontFileName);
-
+ xml.WriteInteger("CanvasWidth",GraphCanvas.GetWidth());
+ xml.WriteInteger("CanvasHeight",GraphCanvas.GetHeight());
 }
 
 // Загружает параметры интерфейса из xml
@@ -101,6 +104,7 @@ void TUDrawEngineForm::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
   Font.Load(i,FontFileName+RDK::sntoa(i,4)+".bmp");
 // Font.Load(FontFileName);
 
+ GraphCanvas.SetRes(xml.ReadInteger("CanvasWidth",640),xml.ReadInteger("CanvasHeight",480));
  SetNet(ComponentName);
 }
 // -----------------------------
@@ -303,6 +307,7 @@ void __fastcall TUDrawEngineForm::UClassesListFrameStringGridMouseMove(TObject *
  if(Shift.Contains(ssLeft))
  {
   UClassesListFrame->StringGrid->BeginDrag(true);
+  DragDropFlag=true;
  }
 }
 //---------------------------------------------------------------------------
@@ -311,6 +316,7 @@ void __fastcall TUDrawEngineForm::UClassesListFrameStringGridMouseUp(TObject *Se
 		  TMouseButton Button, TShiftState Shift, int X, int Y)
 {
  UClassesListFrame->StringGrid->DragMode=dmManual;
+ DragDropFlag=false;
 }
 //---------------------------------------------------------------------------
 
@@ -318,6 +324,10 @@ void __fastcall TUDrawEngineForm::UClassesListFrameStringGridMouseUp(TObject *Se
 void __fastcall TUDrawEngineForm::ImageDragDrop(TObject *Sender, TObject *Source,
 		  int X, int Y)
 {
+ if(!DragDropFlag)
+  return;
+ DragDropFlag=false;
+
  int classid=UClassesListFrame->GetSelectedId();
  const char* pname=Model_AddComponent(ComponentName.c_str(), classid);
  if(pname)

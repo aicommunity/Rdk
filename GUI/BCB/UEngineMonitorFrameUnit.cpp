@@ -18,6 +18,7 @@ __fastcall TUEngineMonitorFrame::TUEngineMonitorFrame(TComponent* Owner)
 {
  CalculateMode=0;
  AlwaysUpdateFlag=true;
+ UpdateInterval=100;
 }
 
 // ”правление режимом расчетов
@@ -73,6 +74,8 @@ void __fastcall TUEngineMonitorFrame::Start1Click(TObject *Sender)
 {
  if(CalculateMode == 1)
   Reset1Click(Sender);
+ TUVisualControllerFrame::CalculationModeFlag=true;
+ TUVisualControllerForm::CalculationModeFlag=true;
  Timer->Enabled=true;
 }
 //---------------------------------------------------------------------------
@@ -80,6 +83,8 @@ void __fastcall TUEngineMonitorFrame::Start1Click(TObject *Sender)
 void __fastcall TUEngineMonitorFrame::Pause1Click(TObject *Sender)
 {
  Timer->Enabled=false;
+ TUVisualControllerFrame::CalculationModeFlag=false;
+ TUVisualControllerForm::CalculationModeFlag=false;
 }
 //---------------------------------------------------------------------------
 

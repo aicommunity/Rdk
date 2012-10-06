@@ -21,6 +21,7 @@ __fastcall TUComponentsPerformanceFrame::TUComponentsPerformanceFrame(TComponent
 
 
  MyComponentsListForm=new TUComponentsListForm(this);
+ UpdateInterval=500;
 }
 
 __fastcall TUComponentsPerformanceFrame::~TUComponentsPerformanceFrame(void)

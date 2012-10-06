@@ -11,11 +11,15 @@ TUVisualControllerFrame *UVisualControllerFrame;
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
+// Флаг, сообщающий что идет расчет
+bool TUVisualControllerFrame::CalculationModeFlag=false;
+
 __fastcall TUVisualControllerFrame::TUVisualControllerFrame(TComponent* Owner)
  : TFrame(Owner)
 {
  UpdateInterfaceFlag=false;
  AlwaysUpdateFlag=false;
+ UpdateInterval=1000;
 
  RDK::UIVisualControllerStorage::AddInterface(this);
 }
@@ -43,6 +47,7 @@ void TUVisualControllerFrame::ABeforeReset(void)
 // Метод, вызываемый после сброса модели
 void TUVisualControllerFrame::AfterReset(void)
 {
+ LastUpdateTime=0;
  AAfterReset();
 }
 
@@ -74,8 +79,19 @@ void TUVisualControllerFrame::AAfterCalculate(void)
 // Обновление интерфейса
 void TUVisualControllerFrame::UpdateInterface(void)
 {
- if(!AlwaysUpdateFlag && !Parent->Visible)
+ if((!AlwaysUpdateFlag && !Parent->Visible) || (UpdateInterval<0 && CalculationModeFlag))
   return;
+ if(UpdateInterval>0 && CalculationModeFlag)
+
+ if(UpdateInterval>0)
+ {
+  DWORD curr_time=GetTickCount();
+  if(curr_time-LastUpdateTime<UpdateInterval)
+   return;
+
+  LastUpdateTime=curr_time;
+ }
+
  UpdateInterfaceFlag=true;
  AUpdateInterface();
  UpdateInterfaceFlag=false;

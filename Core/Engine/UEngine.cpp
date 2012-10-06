@@ -2775,6 +2775,8 @@ int UEngine::Model_LoadComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXM
   if(cont->GetClass() != id)
    return false;
 
+  cont->SetName(serstorage->GetNodeName());
+
   for(unsigned int i=0, mask=1;i<7;i++, mask<<=1)
   {
    if(serstorage->SelectNode(UVariable::GetPropertyTypeNameByType(mask)))
@@ -2917,8 +2919,10 @@ int UEngine::Model_SaveComponentDrawInfo(RDK::UANet* cont, RDK::Serialize::USerS
   serstorage->AddNode("Links");
 
   UStringLinksList linkslist;
+//  cont->GetLinks(linkslist, cont);
+
   for(int i=0;i<cont->GetNumComponents();i++)
-   static_pointer_cast<UAItem>(cont->GetComponentByIndex(i))->GetLinks(linkslist, cont);
+   static_pointer_cast<UANet>(cont->GetComponentByIndex(i))->GetLinks(linkslist, cont,true,cont->GetComponentByIndex(i));
   *serstorage<<linkslist;
   serstorage->SelectUp();
 
@@ -2926,8 +2930,8 @@ int UEngine::Model_SaveComponentDrawInfo(RDK::UANet* cont, RDK::Serialize::USerS
   for(int i=0;i<cont->GetNumComponents();i++)
   {
    XmlStorage.AddNode(cont->GetComponentByIndex(i)->GetName());
-   XmlStorage.AddNode("Properties");
-   if(!Model_GetComponentProperties(dynamic_pointer_cast<RDK::UANet>(cont->GetComponentByIndex(i)),serstorage,0xFFFFFFFF))
+   XmlStorage.AddNode("Parameters");
+   if(!Model_GetComponentProperties(dynamic_pointer_cast<RDK::UANet>(cont->GetComponentByIndex(i)),serstorage,ptParameter|pgAny))
 	return false;
    XmlStorage.SelectUp();
    XmlStorage.SelectUp();

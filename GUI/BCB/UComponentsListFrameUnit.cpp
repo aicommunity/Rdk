@@ -23,6 +23,7 @@ __fastcall TUComponentsListFrame::TUComponentsListFrame(TComponent* Owner)
 	: TUVisualControllerFrame(Owner)
 {
  ShowXMLComponentParameters=true;
+ UpdateInterval=-1;
 }
 //---------------------------------------------------------------------------
 

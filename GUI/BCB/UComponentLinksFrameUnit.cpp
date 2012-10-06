@@ -32,6 +32,7 @@ __fastcall TUComponentLinksFrame::TUComponentLinksFrame(TComponent* Owner)
 
  Width=Width+1;
  Width=Width-1;
+ UpdateInterval=-1;
 }
 
 void __fastcall TUComponentLinksFrame::Init(int mode, const std::string &component_name1, const std::string &owner_component_name, const std::string &component_name2)
@@ -122,6 +123,12 @@ void __fastcall TUComponentLinksFrame::CreateLink(void)
  int connindex=StrToInt(NANetFrameInputs->StringGrid->Cells[1][NANetFrameInputs->StringGrid->Row]);
  std::string connname=AnsiString(NANetFrameInputs->StringGrid->Cells[2][NANetFrameInputs->StringGrid->Row-(connindex+1)]).c_str();
 
+ if(!NANetFrameLinks->ViewComponentOwnerLongId.empty())
+ {
+  itemname.insert(0,NANetFrameLinks->ViewComponentOwnerLongId+std::string("."));
+  connname.insert(0,NANetFrameLinks->ViewComponentOwnerLongId+std::string("."));
+ }
+
  Model_CreateLink(itemname.c_str(), itemindex, connname.c_str(), connindex);
  //Network->CreateLink(itemname,itemindex,connname,connindex);
  NANetFrameLinks->UpdateInterface();
@@ -138,8 +145,8 @@ void __fastcall TUComponentLinksFrame::BreakLink(void)
  std::string connname=AnsiString(NANetFrameLinks->StringGrid->Cells[4][NANetFrameLinks->StringGrid->Row]).c_str();
  if(!NANetFrameLinks->ViewComponentOwnerLongId.empty())
  {
-  itemname=NANetFrameLinks->ViewComponentOwnerLongId+std::string(".")+itemname;
-  connname=NANetFrameLinks->ViewComponentOwnerLongId+std::string(".")+connname;
+  itemname.insert(0,NANetFrameLinks->ViewComponentOwnerLongId+std::string("."));
+  connname.insert(0,NANetFrameLinks->ViewComponentOwnerLongId+std::string("."));
  }
 
  Model_BreakLink(itemname.c_str(), itemindex, connname.c_str(), connindex);

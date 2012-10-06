@@ -16,6 +16,7 @@ TUComponentsControlFrame *UComponentsControlFrame;
 __fastcall TUComponentsControlFrame::TUComponentsControlFrame(TComponent* Owner)
 	: TUVisualControllerFrame(Owner)
 {
+ UpdateInterval=1000;
 }
 //---------------------------------------------------------------------------
 void TUComponentsControlFrame::AUpdateInterface(void)

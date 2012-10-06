@@ -300,25 +300,27 @@ void UDrawEngine::UpdateDestinations(void)
 	NetXml.SelectUp();
    }
 
-   NetXml.SelectNode("Parameters");
-   descr.NumInputs=NetXml.ReadInteger("NumInputs",0);
-   descr.NumOutputs=NetXml.ReadInteger("NumOutputs",0);
-
-   if(NetXml.SelectNode("Coord"))
+   if(NetXml.SelectNode("Parameters"))
    {
-	RDK::MVector<double,3> coord(1);
-	RDK::Serialize::operator >> (NetXml,coord);
-	NetXml.SelectUp();
+	descr.NumInputs=NetXml.ReadInteger("NumInputs",0);
+	descr.NumOutputs=NetXml.ReadInteger("NumOutputs",0);
 
-	if(!coord>0)
-	 descr.Position=coord*ZoomCoeff+Origin;
-	else
-	 descr.Position=i*30.0;
+	if(NetXml.SelectNode("Coord"))
+	{
+	 RDK::MVector<double,3> coord(1);
+	 RDK::Serialize::operator >> (NetXml,coord);
+	 NetXml.SelectUp();
+
+	 if(!coord>0)
+	  descr.Position=coord*ZoomCoeff+Origin;
+	 else
+	  descr.Position=i*30.0;
+	}
+
+	NetXml.SelectUp();
    }
 
    descr.Header=dI->first;
-
-   NetXml.SelectUp();
    dI->second=descr;
 
   NetXml.SelectUp();
@@ -347,19 +349,21 @@ void UDrawEngine::ParseLinks(void)
 
  int num_outs=NetXml.GetNumNodes();
 
+ Links.clear();
  for (int i = 0; i < num_outs; i++)
  {
    NetXml.SelectNode(i);
    int num_inps=NetXml.GetNumNodes()-1;
 
    std::string item_name=NetXml.ReadString("Item","");
-   I=Descriptions.find(item_name);
+   I=Descriptions.find(item_name.substr(0,item_name.find_first_of(".")));
    if(I == Descriptions.end())
    {
     NetXml.SelectUp();
 	continue;
    }
-   Links[I->first].clear();
+
+//   Links[I->first].clear();
    for(int j=0;j<num_inps;j++)
    {
 	std::string conn_name=NetXml.ReadString("Connector",j,"");

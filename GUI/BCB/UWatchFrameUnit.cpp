@@ -126,6 +126,7 @@ __fastcall TUWatchFrame::TUWatchFrame(TComponent* Owner)
  Chart1->BufferedDisplay=true;
  CacheSize=10;
  WatchInterval=0;
+ UpdateInterval=200;
 }
 
 __fastcall TUWatchFrame::~TUWatchFrame(void)
@@ -889,7 +890,7 @@ void __fastcall TUWatchFrame::StepUpdate(bool speedup)
 	 }
 	}while (ser_max-ser_min > wd->WatchInterval);
    }
-   static_cast<TFastLineSeries*>(series)->AutoRepaint=false;
+   static_cast<TFastLineSeries*>(series)->AutoRepaint=true;
   }
   ModifyState=true;
   wd->XCurrentMax=0;
@@ -1157,7 +1158,7 @@ void TUWatchFrame::AAfterReset(void)
 // Обновление интерфейса
 void TUWatchFrame::AUpdateInterface(void)
 {
- StepUpdate(true);
+ StepUpdate(false);
  Chart1->Repaint();
 }
 

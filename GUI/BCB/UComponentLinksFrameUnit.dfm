@@ -23,7 +23,6 @@ inherited UComponentLinksFrame: TUComponentLinksFrame
     Align = alRight
     Caption = ' '#1042#1093#1086#1076#1099' '
     TabOrder = 0
-    ExplicitHeight = 216
     inline NANetFrameInputs: TUComponentIOFrame
       Left = 2
       Top = 15
@@ -40,12 +39,12 @@ inherited UComponentLinksFrame: TUComponentLinksFrame
       ExplicitLeft = 2
       ExplicitTop = 15
       ExplicitWidth = 301
-      ExplicitHeight = 199
+      ExplicitHeight = 158
       inherited StringGrid: TStringGrid
         Width = 301
         Height = 158
         ExplicitWidth = 301
-        ExplicitHeight = 199
+        ExplicitHeight = 158
       end
     end
   end
@@ -57,7 +56,6 @@ inherited UComponentLinksFrame: TUComponentLinksFrame
     Align = alClient
     Caption = ' '#1042#1099#1093#1086#1076#1099' '
     TabOrder = 1
-    ExplicitHeight = 216
     inline NANetFrameOutputs: TUComponentIOFrame
       Left = 2
       Top = 15
@@ -74,12 +72,12 @@ inherited UComponentLinksFrame: TUComponentLinksFrame
       ExplicitLeft = 2
       ExplicitTop = 15
       ExplicitWidth = 311
-      ExplicitHeight = 199
+      ExplicitHeight = 158
       inherited StringGrid: TStringGrid
         Width = 311
         Height = 158
         ExplicitWidth = 311
-        ExplicitHeight = 199
+        ExplicitHeight = 158
       end
     end
   end
@@ -91,7 +89,6 @@ inherited UComponentLinksFrame: TUComponentLinksFrame
     Align = alBottom
     Caption = ' '#1057#1074#1103#1079#1080' '
     TabOrder = 2
-    ExplicitTop = 223
     inline NANetFrameLinks: TUComponentIOFrame
       Left = 2
       Top = 15
@@ -105,13 +102,15 @@ inherited UComponentLinksFrame: TUComponentLinksFrame
       Font.Style = []
       ParentFont = False
       TabOrder = 0
-      ExplicitWidth = 315
-      ExplicitHeight = 216
+      ExplicitLeft = 2
+      ExplicitTop = 15
+      ExplicitWidth = 616
+      ExplicitHeight = 151
       inherited StringGrid: TStringGrid
         Width = 616
         Height = 151
-        ExplicitWidth = 315
-        ExplicitHeight = 216
+        ExplicitWidth = 616
+        ExplicitHeight = 151
       end
     end
   end
@@ -122,7 +121,6 @@ inherited UComponentLinksFrame: TUComponentLinksFrame
     Height = 37
     Align = alBottom
     TabOrder = 3
-    ExplicitTop = 391
     object HeaderControl1: THeaderControl
       Left = 1
       Top = 1
@@ -170,8 +168,6 @@ inherited UComponentLinksFrame: TUComponentLinksFrame
     Align = alBottom
     TabOrder = 4
     Visible = False
-    ExplicitLeft = 24
-    ExplicitTop = 397
     DesignSize = (
       620
       41)

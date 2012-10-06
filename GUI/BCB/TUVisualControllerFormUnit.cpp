@@ -50,11 +50,17 @@ void LoadFormPosition(RDK::Serialize::USerStorageXML &xml, TForm *form)
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
+// Флаг, сообщающий что идет расчет
+bool TUVisualControllerForm::CalculationModeFlag=false;
+
+
 __fastcall TUVisualControllerForm::TUVisualControllerForm(TComponent* Owner)
  : TForm(Owner)
 {
  UpdateInterfaceFlag=false;
  AlwaysUpdateFlag=false;
+ UpdateInterval=1000;
+
  RDK::UIVisualControllerStorage::AddInterface(this);
 }
 
@@ -81,6 +87,8 @@ void TUVisualControllerForm::ABeforeReset(void)
 // Метод, вызываемый после сброса модели
 void TUVisualControllerForm::AfterReset(void)
 {
+ LastUpdateTime=0;
+
  AAfterReset();
 }
 
@@ -112,8 +120,17 @@ void TUVisualControllerForm::AAfterCalculate(void)
 // Обновление интерфейса
 void TUVisualControllerForm::UpdateInterface(void)
 {
- if(!AlwaysUpdateFlag && !Visible)
+ if((!AlwaysUpdateFlag && !Visible) || (UpdateInterval<0 && CalculationModeFlag))
   return;
+ if(UpdateInterval>0 && CalculationModeFlag)
+ {
+  DWORD curr_time=GetTickCount();
+  if(curr_time-LastUpdateTime<UpdateInterval)
+   return;
+
+  LastUpdateTime=curr_time;
+ }
+
  UpdateInterfaceFlag=true;
  AUpdateInterface();
  UpdateInterfaceFlag=false;
