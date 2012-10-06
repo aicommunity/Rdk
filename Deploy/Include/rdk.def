@@ -146,6 +146,7 @@ EXPORTS
     Model_GetStepDuration = _Model_GetStepDuration
     Model_GetFullStepDuration = _Model_GetFullStepDuration
     Model_GetInstantPerformance = _Model_GetInstantPerformance
+    Model_GetInterstepsInterval = _Model_GetInterstepsInterval
     Model_GetComponentOutput = _Model_GetComponentOutput
     Model_GetComponentBitmapOutput = _Model_GetComponentBitmapOutput
     Model_GetComponentBitmapInput = _Model_GetComponentBitmapInput

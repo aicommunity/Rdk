@@ -104,16 +104,23 @@ void TUComponentsListFrame::AUpdateInterface(void)
  UpdatePath();
  UpdateSelectedComponentInfo();
 
- UpdateParameters();
- UpdateState();
+ if(PageControl1->ActivePage == TabSheet1)
+  UpdateParameters();
+ if(PageControl1->ActivePage == TabSheet2)
+  UpdateState();
+ if(PageControl1->ActivePage == TabSheet3)
  UpdateIO();
- UpdateParametersList();
- UpdateStatesList();
+ if(PageControl1->ActivePage == TabSheet4)
+  UpdateParametersList();
+ if(PageControl1->ActivePage == TabSheet5)
+  UpdateStatesList();
 }
 
 // Обновляет параметры компонента
 void TUComponentsListFrame::UpdateParameters(void)
 {
+ if(PageControl1->ActivePage != TabSheet1)
+  return;
  UpdateInterfaceFlag=true;
 
  if(ShowXMLComponentParameters)
@@ -143,6 +150,8 @@ void TUComponentsListFrame::UpdateParameters(void)
 // Обновляет состояние компонента
 void TUComponentsListFrame::UpdateState(void)
 {
+ if(PageControl1->ActivePage != TabSheet2)
+  return;
  UpdateInterfaceFlag=true;
 
  if(ShowXMLComponentParameters)
@@ -164,6 +173,8 @@ void TUComponentsListFrame::UpdateState(void)
 // Обновляет данные ввода-вывода
 void TUComponentsListFrame::UpdateIO(void)
 {
+ if(PageControl1->ActivePage != TabSheet3)
+  return;
  UpdateInterfaceFlag=true;
 
  int num=Model_GetComponentNumOutputs(GetSelectedComponentLongId().c_str());
@@ -208,6 +219,8 @@ void TUComponentsListFrame::UpdateIO(void)
 // Обновляет данные списка параметров
 void TUComponentsListFrame::UpdateParametersList(void)
 {
+ if(PageControl1->ActivePage != TabSheet4)
+  return;
  UpdateInterfaceFlag=true;
 
  std::string xml_data=Model_GetComponentParametersEx(GetSelectedComponentLongId().c_str());
@@ -249,9 +262,11 @@ void TUComponentsListFrame::UpdateParametersList(void)
 // Обновляет данные списка переменных состояния
 void TUComponentsListFrame::UpdateStatesList(void)
 {
+ if(PageControl1->ActivePage != TabSheet5)
+  return;
  UpdateInterfaceFlag=true;
 
- std::string xml_data=Model_GetComponentParametersEx(GetSelectedComponentLongId().c_str());
+ std::string xml_data=Model_GetComponentState(GetSelectedComponentLongId().c_str());
  RDK::Serialize::USerStorageXML xml;
  xml.Load(xml_data,"");
  xml.SelectNode("Parameters");
@@ -583,11 +598,16 @@ void __fastcall TUComponentsListFrame::StringGridClick(TObject *Sender)
  else
   SelectedId=StrToInt(StringGrid->Cells[0][StringGrid->Row]);
  UpdateSelectedComponentInfo();
- UpdateParameters();
- UpdateState();
+ if(PageControl1->ActivePage == TabSheet1)
+  UpdateParameters();
+ if(PageControl1->ActivePage == TabSheet2)
+  UpdateState();
+ if(PageControl1->ActivePage == TabSheet3)
  UpdateIO();
- UpdateParametersList();
- UpdateStatesList();
+ if(PageControl1->ActivePage == TabSheet4)
+  UpdateParametersList();
+ if(PageControl1->ActivePage == TabSheet5)
+  UpdateStatesList();
 }
 //---------------------------------------------------------------------------
 

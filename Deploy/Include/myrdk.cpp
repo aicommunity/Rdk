@@ -80,7 +80,7 @@ void UIVisualControllerStorage::UpdateInterface(void)
 {
  for(size_t i=0;i<InterfaceUpdaters.size();i++)
   if(InterfaceUpdaters[i])
-   InterfaceUpdaters[i]->UpdateInterface();
+   InterfaceUpdaters[i]->UpdateInterface(false);
 }
 
 // Сохраняет параметры интерфейса в xml

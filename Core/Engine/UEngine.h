@@ -602,6 +602,9 @@ long long Model_GetFullStepDuration(const char *stringid) const;
 // ¬озвращает мгновенное быстродействие, равное отношению
 // полного затраченного времени к ожидаемому времени шага счета
 double Model_GetInstantPerformance(const char *stringid) const;
+
+// ¬рем€, прошедшее между двум€ последними итераци€ми счета
+long long Model_GetInterstepsInterval(const char *stringid) const;
 // --------------------------
 
 // --------------------------

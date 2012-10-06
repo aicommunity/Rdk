@@ -565,6 +565,9 @@ RDK_LIB_TYPE long long RDK_CALL Model_GetFullStepDuration(const char *stringid);
 // ¬озвращает мгновенное быстродействие, равное отношению
 // полного затраченного времени к ожидаемому времени шага счета
 RDK_LIB_TYPE double RDK_CALL Model_GetInstantPerformance(const char *stringid);
+
+// ¬рем€, прошедшее между двум€ последними итераци€ми счета
+RDK_LIB_TYPE long long RDK_CALL Model_GetInterstepsInterval(const char *stringid);
 // --------------------------
 
 // --------------------------

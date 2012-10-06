@@ -1330,7 +1330,7 @@ RDK_SYS_TRY {
 
   int i=0;
   long long tempstepduration=GetCurrentStartupTime();
-  InterstepsInterval=(LastCalcTime>=0)?tempstepduration-LastCalcTime:0;
+  InterstepsInterval=(LastCalcTime>=0)?CalcDiffTime(tempstepduration,LastCalcTime):0;
   LastCalcTime=tempstepduration;
 
   UEPtr<UAContainer> *comps=PComponents;
@@ -1378,7 +1378,8 @@ RDK_SYS_TRY {
   }
 
   UpdateMainOwner();
-  InterstepsInterval-=StepDuration=CalcDiffTime(GetCurrentStartupTime(),tempstepduration);
+  InterstepsInterval-=StepDuration;
+  StepDuration=CalcDiffTime(GetCurrentStartupTime(),tempstepduration);
   // Обрабатываем контроллеры
   int numcontrollers=Controllers.size();
 

@@ -972,6 +972,12 @@ double RDK_CALL Model_GetInstantPerformance(const char *stringid)
 {
  return PEngine->Model_GetInstantPerformance(stringid);
 }
+
+// Время, прошедшее между двумя последними итерациями счета
+long long RDK_CALL Model_GetInterstepsInterval(const char *stringid)
+{
+ return PEngine->Model_GetInterstepsInterval(stringid);
+}
 // --------------------------
 
 // --------------------------

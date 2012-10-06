@@ -77,19 +77,22 @@ void TUVisualControllerFrame::AAfterCalculate(void)
 }
 
 // Обновление интерфейса
-void TUVisualControllerFrame::UpdateInterface(void)
+void TUVisualControllerFrame::UpdateInterface(bool force_update)
 {
- if((!AlwaysUpdateFlag && !Parent->Visible) || (UpdateInterval<0 && CalculationModeFlag))
-  return;
- if(UpdateInterval>0 && CalculationModeFlag)
-
- if(UpdateInterval>0)
+ if(!force_update)
  {
-  DWORD curr_time=GetTickCount();
-  if(curr_time-LastUpdateTime<UpdateInterval)
+  if((!AlwaysUpdateFlag && !Parent->Visible) || (UpdateInterval<0 && CalculationModeFlag))
    return;
+  if(UpdateInterval>0 && CalculationModeFlag)
 
-  LastUpdateTime=curr_time;
+  if(UpdateInterval>0)
+  {
+   DWORD curr_time=GetTickCount();
+   if(curr_time-LastUpdateTime<UpdateInterval)
+	return;
+
+   LastUpdateTime=curr_time;
+  }
  }
 
  UpdateInterfaceFlag=true;

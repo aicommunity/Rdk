@@ -118,17 +118,20 @@ void TUVisualControllerForm::AAfterCalculate(void)
 }
 
 // Обновление интерфейса
-void TUVisualControllerForm::UpdateInterface(void)
+void TUVisualControllerForm::UpdateInterface(bool force_update)
 {
- if((!AlwaysUpdateFlag && !Visible) || (UpdateInterval<0 && CalculationModeFlag))
-  return;
- if(UpdateInterval>0 && CalculationModeFlag)
+ if(!force_update)
  {
-  DWORD curr_time=GetTickCount();
-  if(curr_time-LastUpdateTime<UpdateInterval)
+  if((!AlwaysUpdateFlag && !Visible) || (UpdateInterval<0 && CalculationModeFlag))
    return;
+  if(UpdateInterval>0 && CalculationModeFlag)
+  {
+   DWORD curr_time=GetTickCount();
+   if(curr_time-LastUpdateTime<UpdateInterval)
+	return;
 
-  LastUpdateTime=curr_time;
+   LastUpdateTime=curr_time;
+  }
  }
 
  UpdateInterfaceFlag=true;

@@ -56,6 +56,16 @@ void TUDrawEngineForm::AAfterCalculate(void)
 // Обновление интерфейса
 void TUDrawEngineForm::AUpdateInterface(void)
 {
+ if(!NetXml.GetNumNodes())
+ {
+  const char *xml=Model_SaveComponentDrawInfo(ComponentName.c_str());
+  if(xml)
+   NetXml.Load(xml,"");
+
+   // RichEdit1->Text=xml;
+  DrawEngine.SetNetXml(NetXml);
+ }
+
  int new_img_width, new_img_height, new_bmp_width, new_bmp_height;
  int vert_sb_size=VertScrollBar->Size;
  int horz_sb_size=HorzScrollBar->Size;
@@ -114,20 +124,17 @@ void TUDrawEngineForm::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
 // -----------------------------
 void TUDrawEngineForm::SetNet(const std::string &comp_name)
 {
- NetXml.Destroy();
+ if(ComponentName == comp_name)
+  return;
+
  if(!Model_Check())
   return;
 
  ComponentName=comp_name;
- const char *xml=Model_SaveComponentDrawInfo(ComponentName.c_str());
- if(xml)
-  NetXml.Load(xml,"");
-
-// RichEdit1->Text=xml;
- DrawEngine.SetNetXml(NetXml);
+ NetXml.Destroy();
 
  if(Visible)
-  UpdateInterface();
+  UpdateInterface(false);
 }
 
 void TUDrawEngineForm::SelectComponent(const std::string &comp_name)
@@ -135,7 +142,7 @@ void TUDrawEngineForm::SelectComponent(const std::string &comp_name)
  DrawEngine.SelectSingleComponent(comp_name);
 
  if(Visible)
-  UpdateInterface();
+  UpdateInterface(false);
 }
 
 

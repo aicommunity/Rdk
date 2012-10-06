@@ -2447,6 +2447,22 @@ double UEngine::Model_GetInstantPerformance(const char *stringid) const
  }
  return 0;
 }
+
+// Время, прошедшее между двумя последними итерациями счета
+long long UEngine::Model_GetInterstepsInterval(const char *stringid) const
+{
+ try
+ {
+  UEPtr<RDK::UANet> cont=dynamic_pointer_cast<RDK::UANet>(FindComponent(stringid));
+
+  return cont->GetInterstepsInterval();
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
 // --------------------------
 
 // --------------------------

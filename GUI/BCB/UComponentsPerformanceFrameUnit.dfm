@@ -7,7 +7,7 @@ inherited UComponentsPerformanceFrame: TUComponentsPerformanceFrame
     Left = 0
     Top = 0
     Width = 454
-    Height = 326
+    Height = 280
     BackWall.Brush.Gradient.Direction = gdBottomTop
     BackWall.Brush.Gradient.EndColor = clWhite
     BackWall.Brush.Gradient.StartColor = 15395562
@@ -28,6 +28,7 @@ inherited UComponentsPerformanceFrame: TUComponentsPerformanceFrame
     Title.Font.Name = 'Verdana'
     Title.Text.Strings = (
       'TChart')
+    Title.Visible = False
     BottomAxis.Axis.Color = 4210752
     BottomAxis.Grid.Color = 11119017
     BottomAxis.LabelsAlternate = True
@@ -67,6 +68,7 @@ inherited UComponentsPerformanceFrame: TUComponentsPerformanceFrame
     Align = alClient
     PopupMenu = PopupMenu
     TabOrder = 0
+    ExplicitHeight = 326
     ColorPaletteIndex = 13
     object Series1: TBarSeries
       Marks.Arrow.Visible = True
@@ -100,6 +102,54 @@ inherited UComponentsPerformanceFrame: TUComponentsPerformanceFrame
       XValues.Order = loAscending
       YValues.Name = 'Bar'
       YValues.Order = loNone
+    end
+  end
+  object Panel1: TPanel
+    Left = 0
+    Top = 280
+    Width = 454
+    Height = 46
+    Align = alBottom
+    TabOrder = 1
+    object ShowModeRadioGroup: TRadioGroup
+      Left = 1
+      Top = 1
+      Width = 136
+      Height = 44
+      Align = alLeft
+      Caption = ' Show mode '
+      Columns = 2
+      ItemIndex = 0
+      Items.Strings = (
+        'Ms'
+        'Percent')
+      TabOrder = 0
+      OnClick = ShowModeRadioGroupClick
+      ExplicitHeight = 36
+    end
+    object GroupBox1: TGroupBox
+      Left = 137
+      Top = 1
+      Width = 316
+      Height = 44
+      Align = alClient
+      Caption = ' Average interval (counts) '
+      TabOrder = 1
+      ExplicitLeft = 224
+      ExplicitTop = 16
+      ExplicitWidth = 185
+      ExplicitHeight = 105
+      object AverageIntervalSpinEdit: TSpinEdit
+        Left = 6
+        Top = 16
+        Width = 43
+        Height = 22
+        MaxValue = 1000
+        MinValue = 0
+        TabOrder = 0
+        Value = 10
+        OnChange = AverageIntervalSpinEditChange
+      end
     end
   end
   object PopupMenu: TPopupMenu

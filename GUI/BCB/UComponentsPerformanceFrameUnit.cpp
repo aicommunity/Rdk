@@ -21,7 +21,8 @@ __fastcall TUComponentsPerformanceFrame::TUComponentsPerformanceFrame(TComponent
 
 
  MyComponentsListForm=new TUComponentsListForm(this);
- UpdateInterval=500;
+ UpdateInterval=100;
+ AverageIterations=10;
 }
 
 __fastcall TUComponentsPerformanceFrame::~TUComponentsPerformanceFrame(void)
@@ -46,17 +47,62 @@ void TUComponentsPerformanceFrame::AUpdateInterface(void)
  if(!Model_Check())
   return;
 
+ if(ComponentData.size()>=AverageIterations && AverageIterations>0)
+  ComponentData.erase(ComponentData.begin());
+
  long long model_time=Model_GetFullStepDuration("");
  long long sum=0;
+ long long ext_gui=Model_GetInterstepsInterval("");
 
  std::vector<long long> comp_time;
+ size_t last_comps_index=ComponentNames.size();
 
- comp_time.resize(ComponentNames.size());
+ comp_time.resize(ComponentNames.size()+4);
  for(size_t i=0;i<ComponentNames.size();i++)
   sum+=comp_time[i]=Model_GetFullStepDuration(ComponentNames[i].c_str());
 
+
+ if(ComponentNames.size()>0)
+  comp_time[last_comps_index]=model_time-sum;
+ else
+  comp_time[last_comps_index]=0;
+
+ comp_time[last_comps_index+1]=model_time;
+ comp_time[last_comps_index+2]=ext_gui;
+ comp_time[last_comps_index+3]=ext_gui+model_time;
+
+ ComponentData.push_back(comp_time);
+
+ std::vector<long long> average;
+
+ average.assign(ComponentNames.size()+4,0);
+ for(size_t i=0;i<average.size();i++)
+ {
+  for(size_t j=0;j<ComponentData.size();j++)
+  {
+   if(ComponentData[j].size() > i)
+	average[i]+=ComponentData[j][i];
+  }
+  if(ComponentData.size()>0)
+   average[i]/=ComponentData.size();
+ }
+
  Chart->Series[0]->Clear();
  Chart->Series[1]->Clear();
+
+ if(ShowModeRadioGroup->ItemIndex == 0)
+ {
+  Chart->Series[0]->Visible=true;
+  Chart->Series[1]->Visible=false;
+ }
+ else
+ {
+  Chart->Series[0]->Visible=false;
+  Chart->Series[1]->Visible=true;
+ }
+
+ if(ComponentData.size()<AverageIterations)
+  return;
 
  for(size_t i=0;i<ComponentNames.size();i++)
  {
@@ -74,51 +120,65 @@ void TUComponentsPerformanceFrame::AUpdateInterface(void)
 	{
 	 legend.insert(j,"\r\n"); j+=2;
 	}
-//  if(legend.Length()>15)
-//   legend=AnsiString("...")+legend.SubString(legend.Length()-15,15);
   }
-  Chart->Series[0]->AddY(comp_time[i],legend.c_str());
+  Chart->Series[0]->AddY(average[i],legend.c_str());
   if(model_time)
-   Chart->Series[1]->AddY((comp_time[i]*100.0)/model_time);
+   Chart->Series[1]->AddY((average[i]*100.0)/average[last_comps_index+1],legend.c_str());
   else
-   Chart->Series[1]->AddY(0);
+   Chart->Series[1]->AddY(0,legend.c_str());
 
  }
 
  if(ComponentNames.size()>0)
  {
-  Chart->Series[0]->AddY(model_time-sum,"Others");
+  Chart->Series[0]->AddY(average[last_comps_index],"Others");
   if(model_time)
-   Chart->Series[1]->AddY(((model_time-sum)*100.0)/model_time);
+   Chart->Series[1]->AddY(((average[last_comps_index])*100.0)/average[last_comps_index+1],"Others");
   else
-   Chart->Series[1]->AddY(0);
+   Chart->Series[1]->AddY(0,"Others");
  }
 
-  Chart->Series[0]->AddY(model_time,"Model");
-  Chart->Series[1]->AddY(100);
+  Chart->Series[0]->AddY(average[last_comps_index+1],"Model");
+  Chart->Series[1]->AddY(100,"Model");
+
+  Chart->Series[0]->AddY(average[last_comps_index+2],"Ext. GUI");
+  Chart->Series[0]->AddY(average[last_comps_index+3],"Full step");
 }
 
 
 // Сохраняет параметры интерфейса в xml
 void TUComponentsPerformanceFrame::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
 {
+ xml.WriteInteger("AverageIterations",AverageIterations);
+ xml.WriteInteger("ShowModeRadioGroup",ShowModeRadioGroup->ItemIndex);
+ xml.WriteInteger("AverageIntervalSpinEdit",AverageIntervalSpinEdit->Value);
+
+ xml.SelectNodeForce("Components");
+ xml.DelNodeInternalContent();
  for(size_t i=0;i<ComponentNames.size();i++)
  {
-  xml.WriteString(ComponentNames[i],"");
+  xml.WriteString(RDK::sntoa(i),ComponentNames[i]);
  }
+ xml.SelectUp();
 }
 
 // Загружает параметры интерфейса из xml
 void TUComponentsPerformanceFrame::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
 {
  ClearComponents();
+ ComponentData.clear();
 
+ xml.SelectNodeForce("Components");
  for(int i=0;i<xml.GetNumNodes();i++)
  {
   std::string name=xml.ReadString(i,"");
   ComponentNames.push_back(name);
  }
+ xml.SelectUp();
 
+ AverageIterations=xml.ReadInteger("AverageIterations",AverageIterations);
+ ShowModeRadioGroup->ItemIndex=xml.ReadInteger("ShowModeRadioGroup",ShowModeRadioGroup->ItemIndex);
+ AverageIntervalSpinEdit->Value=xml.ReadInteger("AverageIntervalSpinEdit",AverageIntervalSpinEdit->Value);
 }
 /*
 // Загружает информацию об источниках данных из заданного ini файла
@@ -208,10 +268,32 @@ void __fastcall TUComponentsPerformanceFrame::SelectSource1Click(TObject *Sender
   return;
 
  AddComponent(MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName());
+ ComponentData.clear();
 }
 //---------------------------------------------------------------------------
 void __fastcall TUComponentsPerformanceFrame::ClearAll1Click(TObject *Sender)
 {
  ClearComponents();
+ ComponentData.clear();
 }
 //---------------------------------------------------------------------------
+void __fastcall TUComponentsPerformanceFrame::AverageIntervalSpinEditChange(TObject *Sender)
+
+{
+ if(UpdateInterfaceFlag)
+  return;
+
+ AverageIterations=AverageIntervalSpinEdit->Value;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsPerformanceFrame::ShowModeRadioGroupClick(TObject *Sender)
+
+{
+ if(UpdateInterfaceFlag)
+  return;
+
+ UpdateInterface();
+}
+//---------------------------------------------------------------------------
+

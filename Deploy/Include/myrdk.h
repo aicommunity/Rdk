@@ -38,7 +38,7 @@ virtual void BeforeCalculate(void)=0;
 virtual void AfterCalculate(void)=0;
 
 // Обновление интерфейса
-virtual void UpdateInterface(void)=0;
+virtual void UpdateInterface(bool force_update=true)=0;
 
 // Возвращает уникальное имя интерфейса
 virtual std::string GetName(void)=0;
