@@ -31,6 +31,7 @@ object UComponentsPerformanceForm: TUComponentsPerformanceForm
     inherited Chart: TChart
       Width = 558
       Height = 306
+      Legend.Visible = False
       ExplicitWidth = 558
       ExplicitHeight = 306
       inherited Series1: TBarSeries

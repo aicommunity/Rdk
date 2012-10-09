@@ -14,12 +14,11 @@ object UDrawEngineForm: TUDrawEngineForm
   PixelsPerInch = 96
   TextHeight = 13
   object Splitter1: TSplitter
-    Left = 504
+    Left = 509
     Top = 0
-    Width = 16
+    Width = 11
     Height = 369
     Align = alRight
-    ExplicitLeft = 339
   end
   object Panel1: TPanel
     Left = 520
@@ -60,19 +59,20 @@ object UDrawEngineForm: TUDrawEngineForm
   object Panel2: TPanel
     Left = 0
     Top = 0
-    Width = 504
+    Width = 509
     Height = 369
     Align = alClient
     TabOrder = 1
+    ExplicitWidth = 504
     object ScrollBox: TScrollBox
       Left = 1
       Top = 1
-      Width = 502
+      Width = 507
       Height = 367
       Align = alClient
       TabOrder = 0
       OnResize = ScrollBoxResize
-      ExplicitHeight = 264
+      ExplicitWidth = 502
       object Image: TImage
         Left = 0
         Top = 0
