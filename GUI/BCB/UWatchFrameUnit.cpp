@@ -1246,7 +1246,7 @@ void TUWatchFrame::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
 
  Clear();
 
- int num_series=xml.GetNumNodes();
+ int num_series=xml.GetNumNodes()-1;
 
  String s=UShowProgressBarForm->GetBarHeader(1);
  UShowProgressBarForm->ResetBarStatus(1,0,num_series);
