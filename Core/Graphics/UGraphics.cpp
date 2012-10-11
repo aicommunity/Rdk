@@ -445,7 +445,7 @@ void UGraphics::Triangle(int x1, int y1, int x2, int y2, int x3, int y3,
 // Простейшая заливка произвольной области
 void UGraphics::Fill(int x, int y, UColorT BorderColor)
 {
-/* CWidth=Canvas->GetWidth();
+ CWidth=Canvas->GetWidth();
  CHeight=Canvas->GetHeight();
 
  list<int> points;
@@ -512,7 +512,7 @@ void UGraphics::Fill(int x, int y, UColorT BorderColor)
   }
 
   points.pop_front();
- }while(points.size()>0);*/
+ }while(points.size()>0);
 }
 
 // Выводит изображение с началом в заданной позиции

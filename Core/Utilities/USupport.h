@@ -135,6 +135,27 @@ wstring wntoa(NumT n,int digs)
  return ntoa(n,digs,uwstrbuf);
 }
 
+// Функция, преобразующая число в шестнадцатиричную строку
+template<typename CharT, typename NumT>
+basic_string<CharT>& ntohex(NumT n, basic_string<CharT> &buf)
+{
+ basic_stringstream<CharT> stream;
+ stream<<hex<<n;
+ return buf=stream.str();
+}
+
+template<typename NumT>
+string sntohex(NumT n)
+{
+ return ntohex(n,ustrbuf);
+}
+
+template<typename NumT>
+wstring wntohex(NumT n)
+{
+ return ntohex(n,uwstrbuf);
+}
+
 // Функция, преобразующая строку в вещественное число
 template<typename CharT>
 double atof(const std::basic_string<CharT> &str)
@@ -152,6 +173,16 @@ int atoi(const std::basic_string<CharT> &str)
  basic_stringstream<CharT> stream(str);
  int res;
  stream>>res;
+ return res;
+}
+
+// Функция, преобразующая шестнадцатиричную строку в целое число
+template<typename CharT>
+int hextoi(const std::basic_string<CharT> &str)
+{
+ basic_stringstream<CharT> stream(str);
+ int res;
+ stream>>hex>>res;
  return res;
 }
 

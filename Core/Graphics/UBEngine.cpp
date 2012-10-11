@@ -435,6 +435,11 @@ int UBEngine::LoadPredefinedLibraries(void)
  filter->SetName("BStatisticSimple");
  bstorage->AddClass(filter,"BStatisticSimple");
 
+ filter=new RDK::UBMathOperator;
+ filter->Default();
+ filter->SetName("BMathOperator");
+ bstorage->AddClass(filter,"BMathOperator");
+
  return 0;
 }
 // --------------------------
