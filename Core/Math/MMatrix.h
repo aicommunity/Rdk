@@ -436,8 +436,8 @@ MMatrix<T,Rows,Cols> operator - (const MMatrix<T,Rows,Cols> &M, T v)
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols> operator - (T v, const MMatrix<T,Rows,Cols> &M)
 {
- MMatrix<T,Rows,Cols> res=M;
- return res-=v;
+ MMatrix<T,Rows,Cols> res=-M;
+ return res+=v;
 }
 // --------------------------
 

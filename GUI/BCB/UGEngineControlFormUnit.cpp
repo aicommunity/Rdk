@@ -43,7 +43,7 @@ void TUGEngineControlForm::ABeforeCalculate(void)
 
   if(source.GetByteLength()>0)
   {
-   Env_SetInputRes(i, source.GetWidth(), source.GetHeight());
+   Env_SetInputRes(i, InputEnvImageWidth, InputEnvImageHeight);
    Env_SetInputImage(i,(unsigned char*)source.GetData(),source.GetWidth(), source.GetHeight(),source.GetColorModel());
   }
  }
