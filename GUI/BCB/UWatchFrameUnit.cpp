@@ -734,14 +734,43 @@ void __fastcall TUWatchFrame::StepUpdate(bool speedup)
   if((!wd->X || !wd->Y) && !wd->DataSourceName.size())
    continue;
 
-   double xdata;
+   double xdata=0;
+
+   std::vector<double> vxdata, vydata;
    if(wd->DataSourceName.size())
    {
-	xdata=Model_GetDoubleTime();
-	x=&xdata;
-	y=(double*)Model_GetComponentOutputData(wd->DataSourceName.c_str(), wd->OutputIndex);
-	if(!y)
-	 continue;
+	int data_size=Model_GetComponentOutputDataSize(wd->DataSourceName.c_str(), wd->OutputIndex);
+	if(data_size == 1)
+	{
+	 xdata=Model_GetDoubleTime();
+	 x=&xdata;
+	 y=(double*)Model_GetComponentOutputData(wd->DataSourceName.c_str(), wd->OutputIndex);
+	 if(!y)
+	  continue;
+	}
+	else
+	{
+	 vxdata.assign(data_size*3+1,0);
+	 vydata.assign(data_size*3+1,0);
+	 double* xx=(double*)Model_GetComponentOutputData(wd->DataSourceName.c_str(), wd->OutputIndex);
+	 if(!xx)
+	  continue;
+	 vxdata[0]=xx[0]-0.0001;
+	 vydata[0]=0;
+	 for(int i=0,j=1;i<data_size;i++,j+=3)
+	 {
+	  vxdata[j]=xx[i]-0.0001;
+	  vydata[j]=0;
+	  vxdata[j+1]=xx[i];
+	  vydata[j+1]=1;
+	  vxdata[j+2]=xx[i]+0.0001;
+	  vydata[j+2]=0;
+	 }
+
+	 y=&vydata[0];
+	 x=&vxdata[0];
+	 wd->XYSize=data_size*3+1;
+	}
    }
    else
    {
@@ -801,13 +830,41 @@ void __fastcall TUWatchFrame::StepUpdate(bool speedup)
 
    const double *x=0, *y=0;
    double xdata;
+   std::vector<double> vxdata, vydata;
    if(wd->DataSourceName.size())
    {
-	xdata=Model_GetDoubleTime();
-	x=&xdata;
-	y=(double*)Model_GetComponentOutputData(wd->DataSourceName.c_str(), wd->OutputIndex);
-	if(!y)
-	 continue;
+	int data_size=Model_GetComponentOutputDataSize(wd->DataSourceName.c_str(), wd->OutputIndex);
+	if(data_size == 1)
+	{
+	 xdata=Model_GetDoubleTime();
+	 x=&xdata;
+	 y=(double*)Model_GetComponentOutputData(wd->DataSourceName.c_str(), wd->OutputIndex);
+	 if(!y)
+	  continue;
+	}
+	else
+	{
+	 vxdata.assign(data_size*3+1,0);
+	 vydata.assign(data_size*3+1,0);
+	 double* xx=(double*)Model_GetComponentOutputData(wd->DataSourceName.c_str(), wd->OutputIndex);
+	 if(!xx)
+	  continue;
+	 vxdata[0]=xx[0]-0.0001;
+	 vydata[0]=0;
+	 for(int i=0,j=1;i<data_size;i++,j+=3)
+	 {
+	  vxdata[j]=xx[i]-0.0001;
+	  vydata[j]=0;
+	  vxdata[j+1]=xx[i];
+	  vydata[j+1]=1;
+	  vxdata[j+2]=xx[i]+0.0001;
+	  vydata[j+2]=0;
+	 }
+
+	 y=&vydata[0];
+	 x=&vxdata[0];
+	 wd->XYSize=data_size*3+1;
+	}
    }
    else
    {
@@ -830,13 +887,41 @@ void __fastcall TUWatchFrame::StepUpdate(bool speedup)
 
    const double *x=0, *y=0;
    double xdata;
+   std::vector<double> vxdata, vydata;
    if(wd->DataSourceName.size())
    {
-	xdata=Model_GetDoubleTime();
-	x=&xdata;
-	y=(double*)Model_GetComponentOutputData(wd->DataSourceName.c_str(), wd->OutputIndex);
-	if(!y)
-	 continue;
+	int data_size=Model_GetComponentOutputDataSize(wd->DataSourceName.c_str(), wd->OutputIndex);
+	if(data_size == 1)
+	{
+	 xdata=Model_GetDoubleTime();
+	 x=&xdata;
+	 y=(double*)Model_GetComponentOutputData(wd->DataSourceName.c_str(), wd->OutputIndex);
+	 if(!y)
+	  continue;
+	}
+	else
+	{
+	 vxdata.assign(data_size*3+1,0);
+	 vydata.assign(data_size*3+1,0);
+	 double* xx=(double*)Model_GetComponentOutputData(wd->DataSourceName.c_str(), wd->OutputIndex);
+	 if(!xx)
+	  continue;
+	 vxdata[0]=xx[0]-0.001;
+	 vydata[0]=0;
+	 for(int i=0,j=1;i<data_size;i++,j+=3)
+	 {
+	  vxdata[j]=xx[i]-0.001;
+	  vydata[j]=0;
+	  vxdata[j+1]=xx[i];
+	  vydata[j+1]=1;
+	  vxdata[j+2]=xx[i]+0.001;
+	  vydata[j+2]=0;
+	 }
+
+	 y=&vydata[0];
+	 x=&vxdata[0];
+	 wd->XYSize=data_size*3+1;
+	}
    }
    else
    {

@@ -89,7 +89,7 @@ std::string narrow(const std::wstring& wstr, const std::locale& loc)
 
 std::string narrow2(const std::wstring& wstr)
 {
- std::locale my_locale("");
+ static std::locale my_locale("");
 // std::locale cp866(std::locale(), new codecvt_cp866);
  return narrow(wstr,my_locale);
 }
@@ -121,7 +121,7 @@ std::wstring widen(const std::string& str, const std::locale& loc)
 
 std::wstring widen2(const std::string& str)
 {
- std::locale my_locale("");
+ static std::locale my_locale("");
  return widen(str,my_locale);
 }
 
