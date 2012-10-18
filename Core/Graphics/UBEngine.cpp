@@ -170,9 +170,9 @@ int UBEngine::Env_GetOutputImageColorModel(int number)
 void UBEngine::Env_SetInputImage(int number, unsigned char* image, int width, int height,int cmodel)
 {
  TempBmp.AttachBuffer(width,height,image,RDK::UBMColorModel(cmodel));
- RDK::UBResizeEdges.SetNewWidth(GetEnvironment()->GetInputImageWidth(number));
- RDK::UBResizeEdges.SetNewHeight(GetEnvironment()->GetInputImageHeight(number));
- RDK::UBResizeEdges(TempBmp,TempBmp2);
+ BResizeEdges.SetNewWidth(GetEnvironment()->GetInputImageWidth(number));
+ BResizeEdges.SetNewHeight(GetEnvironment()->GetInputImageHeight(number));
+ BResizeEdges(TempBmp,TempBmp2);
  GetEnvironment()->SetInputImage(number,TempBmp2);
  TempBmp.DetachBuffer();
 }
@@ -439,6 +439,11 @@ int UBEngine::LoadPredefinedLibraries(void)
  filter->Default();
  filter->SetName("BMathOperator");
  bstorage->AddClass(filter,"BMathOperator");
+
+ filter=new RDK::UBACameraSimple;
+ filter->Default();
+ filter->SetName("CameraSimple");
+ bstorage->AddClass(filter,"CameraSimple");
 
  return 0;
 }

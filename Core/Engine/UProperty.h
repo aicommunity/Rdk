@@ -65,21 +65,21 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 UVProperty(OwnerT * const owner, SetterT setmethod , GetterT getmethod) :
-  Owner(owner), PData(0), Getter(getmethod), Setter(setmethod), GetterR(0), SetterR(0), Variable(0)
+  Owner(owner), PData(0), Getter(getmethod), Setter(setmethod), GetterR(0), SetterR(0)
 {
    if(Owner)
 	Variable=Owner->FindPropertyVariable(this);
 }
 
 UVProperty(OwnerT * const owner, SetterRT setmethod , GetterRT getmethod) :
-  Owner(owner), PData(0), Getter(0), Setter(0), GetterR(getmethod), SetterR(setmethod), Variable(0)
+  Owner(owner), PData(0), Getter(0), Setter(0), GetterR(getmethod), SetterR(setmethod)
 {
    if(Owner)
 	Variable=Owner->FindPropertyVariable(this);
 }
 
 UVProperty(OwnerT * const owner, T * const pdata) :
-  Owner(owner), PData(pdata), Getter(0), Setter(0), GetterR(0), SetterR(0), Variable(0)
+  Owner(owner), PData(pdata), Getter(0), Setter(0), GetterR(0), SetterR(0)
 {
    if(Owner)
 	Variable=Owner->FindPropertyVariable(this);

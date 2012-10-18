@@ -399,7 +399,10 @@ void UADataComponent::ClearLookupPropertyTable(void)
                       J=PropertiesLookupTable.end(); I!=J; ++I)
  {
   if(I->second.Property && I->second.DelEnable)
+  {
    delete I->second.Property;
+   I->second.Property=0;
+  }
  }
  PropertiesLookupTable.clear();
 }

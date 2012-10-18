@@ -14,6 +14,8 @@ See file license.txt for more information
 
 #include "../Engine/UEngine.h"
 #include "UBAEnvironment.h"
+#include "Libraries/Basic/UBAResize.h"
+
 
 namespace RDK{
 
@@ -26,7 +28,9 @@ protected: // Переменные состояния
 protected: // Данные
 
 protected: // Временные переменные
-RDK::UBitmap TempBmp,TempBmp2;
+UBitmap TempBmp,TempBmp2;
+
+UBAResizeEdges BResizeEdges;
 
 
 public: // Методы
