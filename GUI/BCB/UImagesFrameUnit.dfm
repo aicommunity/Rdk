@@ -21,8 +21,6 @@ inherited UImagesFrame: TUImagesFrame
     PopupMenu = PopupMenu
     TabOrder = 0
     OnDrawCell = DrawGridDrawCell
-    ExplicitWidth = 667
-    ExplicitHeight = 568
   end
   object ShowLegendCheckBox: TCheckBox
     Left = 0
@@ -36,8 +34,6 @@ inherited UImagesFrame: TUImagesFrame
     ParentDoubleBuffered = False
     State = cbChecked
     TabOrder = 1
-    ExplicitTop = 568
-    ExplicitWidth = 667
   end
   object PopupMenu: TPopupMenu
     Left = 192

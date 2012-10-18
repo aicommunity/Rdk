@@ -367,7 +367,7 @@ void __fastcall TUImagesFrame::SelectSourceClick(TObject *Sender)
  if(MyComponentsListForm->ShowComponentSelect() != mrOk)
   return;
 
- StringIds[DrawGrid->Col][DrawGrid->Row]=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongId();
+ StringIds[DrawGrid->Col][DrawGrid->Row]=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName();
  ComponentIndexes[DrawGrid->Col][DrawGrid->Row]=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput();
 }
 //---------------------------------------------------------------------------
