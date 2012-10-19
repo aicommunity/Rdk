@@ -16,6 +16,7 @@ object USeriesControlForm: TUSeriesControlForm
   OldCreateOrder = False
   Position = poScreenCenter
   OnHide = FormHide
+  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 16
   object Panel2: TPanel
@@ -204,16 +205,16 @@ object USeriesControlForm: TUSeriesControlForm
           Caption = #1051#1077#1075#1077#1085#1076#1072':'
         end
         object Label8: TLabel
-          Left = 34
+          Left = 30
           Top = 223
-          Width = 156
+          Width = 160
           Height = 16
           Margins.Left = 4
           Margins.Top = 4
           Margins.Right = 4
           Margins.Bottom = 4
           Alignment = taRightJustify
-          Caption = 'Watch interval (sec, 0 - inf):'
+          Caption = 'Watch interval (sec, -1 - inf):'
         end
         object CheckBox2: TCheckBox
           Left = 9

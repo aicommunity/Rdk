@@ -29,7 +29,6 @@ TUWatchInfo::TUWatchInfo(void)
  WatchInterval=-1;
 
  SeriesIndex=-1;
- DataSource=0;
  Color=TColor(0);
 
  X=0;
@@ -38,17 +37,12 @@ TUWatchInfo::TUWatchInfo(void)
  Style=psDot;
  LineWidth=3;
 
- XCurrentMax=0;
- YCurrentMax=0;
- XCurrentMin=0;
- YCurrentMin=0;
-
  Visible=true;
 
- OutputIndex=0;
-
- OutputElementIndex=0;
-
+ XOutputIndex=0;
+ XOutputElementIndex=0;
+ YOutputIndex=0;
+ YOutputElementIndex=0;
 }
 
 TUWatchInfo::~TUWatchInfo(void)
@@ -66,23 +60,17 @@ TUWatchInfo::TUWatchInfo(const TUWatchInfo &wd)
  FullUpdate=wd.FullUpdate;
  WatchInterval=wd.WatchInterval;
  SeriesIndex=wd.SeriesIndex;
- DataSource=wd.DataSource;
  Style=wd.Style;
  LineWidth=wd.LineWidth;
 
- XCurrentMax=wd.XCurrentMax;
- YCurrentMax=wd.YCurrentMax;
- XCurrentMin=wd.XCurrentMin;
- YCurrentMin=wd.YCurrentMin;
-
  Visible=wd.Visible;
 
- DataSourceName=wd.DataSourceName;
-
- OutputIndex=wd.OutputIndex;
-
- OutputElementIndex=wd.OutputElementIndex;
-
+ XDataSourceName=wd.XDataSourceName;
+ XOutputIndex=wd.XOutputIndex;
+ XOutputElementIndex=wd.XOutputElementIndex;
+ YDataSourceName=wd.YDataSourceName;
+ YOutputIndex=wd.YOutputIndex;
+ YOutputElementIndex=wd.YOutputElementIndex;
 }
 
 TUWatchInfo& TUWatchInfo::operator = (const TUWatchInfo& wd)
@@ -96,22 +84,16 @@ TUWatchInfo& TUWatchInfo::operator = (const TUWatchInfo& wd)
  FullUpdate=wd.FullUpdate;
  WatchInterval=wd.WatchInterval;
  SeriesIndex=wd.SeriesIndex;
- DataSource=wd.DataSource;
  Visible=wd.Visible;
  Style=wd.Style;
  LineWidth=wd.LineWidth;
 
- XCurrentMax=wd.XCurrentMax;
- YCurrentMax=wd.YCurrentMax;
- XCurrentMin=wd.XCurrentMin;
- YCurrentMin=wd.YCurrentMin;
-
- DataSourceName=wd.DataSourceName;
-
- OutputIndex=wd.OutputIndex;
-
- OutputElementIndex=wd.OutputElementIndex;
-
+ XDataSourceName=wd.XDataSourceName;
+ XOutputIndex=wd.XOutputIndex;
+ XOutputElementIndex=wd.XOutputElementIndex;
+ YDataSourceName=wd.YDataSourceName;
+ YOutputIndex=wd.YOutputIndex;
+ YOutputElementIndex=wd.YOutputElementIndex;
 
  return *this;
 }
@@ -125,8 +107,9 @@ __fastcall TUWatchFrame::TUWatchFrame(TComponent* Owner)
  ModifyState=false;
  Chart1->BufferedDisplay=true;
  CacheSize=10;
- WatchInterval=0;
+ WatchInterval=-1;
  UpdateInterval=200;
+ AlwaysUpdateFlag=true;
 }
 
 __fastcall TUWatchFrame::~TUWatchFrame(void)
@@ -433,15 +416,6 @@ TUWatchInfo* __fastcall TUWatchFrame::Get(int seriesindex)
  return &NameList[seriesindex];
 }
 
-TUWatchInfo* __fastcall TUWatchFrame::Get(void *datasource)
-{
- for(size_t i=0;i<NameList.size();i++)
-  if(NameList[i].DataSource == datasource)
-   return &NameList[i];
-
- return 0;
-}
-
 // Возвращает общее число данных наблюдения
 int __fastcall TUWatchFrame::GetNumWatches(void)
 {
@@ -461,8 +435,10 @@ int __fastcall TUWatchFrame::Add(TUWatchInfo& wd)
  while(I != NameList.end())
   {
    if((wd.Y && (wd.Y == I->Y)) ||
-   (I->DataSourceName == wd.DataSourceName && I->OutputIndex == wd.OutputIndex &&
-    I->OutputElementIndex == wd.OutputElementIndex))
+   (I->XDataSourceName == wd.XDataSourceName && I->XOutputIndex == wd.XOutputIndex &&
+	I->XOutputElementIndex == wd.XOutputElementIndex &&
+	I->YDataSourceName == wd.YDataSourceName && I->YOutputIndex == wd.YOutputIndex &&
+	I->YOutputElementIndex == wd.YOutputElementIndex))
 	return i;
    ++I; ++i;
   }
@@ -496,23 +472,35 @@ int __fastcall TUWatchFrame::Add(TUWatchInfo& wd)
 
 // Добавление нового наблюдения по имени компонента и индексу выхода
 // Возвращает индекс серии
-int __fastcall TUWatchFrame::Add(const string &name, int output, int outindex, double yshift, TPenStyle style, TColor color)
+int __fastcall TUWatchFrame::Add(const string &xname, const string &yname, int xoutput, int xoutindex, int youtput, int youtindex, double yshift, TPenStyle style, TColor color)
 {
  TUWatchInfo wd;
  wd.FullUpdate=false;
  //wd.WatchInterval=watchinterval;
 
  wd.YShift=yshift;
- wd.Legend=name;
- wd.OutputIndex=output;
- wd.OutputElementIndex=outindex;
+ wd.XOutputIndex=xoutput;
+ wd.XOutputElementIndex=xoutindex;
 
+ wd.YOutputIndex=youtput;
+ wd.YOutputElementIndex=youtindex;
 /* if(itemd->GetOwner())
   itemd->GetLongName(static_pointer_cast<NAContainer>(itemd->GetOwner()->GetOwner()),wd.Legend);
  else
   itemd->GetLongName(0,wd.Legend);*/
- wd.Legend+=string("[")+RDK::sntoa(output)+string(":");
- wd.Legend+=RDK::sntoa(outindex)+string("]");
+ if(!yname.empty())
+ {
+  wd.Legend=yname;
+  wd.Legend+=string("[")+RDK::sntoa(youtput)+string(":");
+  wd.Legend+=RDK::sntoa(youtindex)+string("]");
+ }
+ else
+ if(!xname.empty())
+ {
+  wd.Legend=xname;
+  wd.Legend+=string("[")+RDK::sntoa(xoutput)+string(":");
+  wd.Legend+=RDK::sntoa(xoutindex)+string("]");
+ }
 // wd.DataSource=item;
 
  if(color == 0) // Подбор подходящего цвета
@@ -520,10 +508,11 @@ int __fastcall TUWatchFrame::Add(const string &name, int output, int outindex, d
  else
   wd.Color=color;
 
- wd.DataSourceName=name;
-// wd.X=&NAContainer::GetDoubleTime();
-// wd.Y=&(itemd->GetOutputData(output).Double[outindex]);
- wd.XYSize=1;
+ wd.XDataSourceName=xname;
+ wd.YDataSourceName=yname;
+
+ if(xname.empty())
+  wd.XYSize=1;
  wd.Style=style;
  return Add(wd);
 }
@@ -609,202 +598,10 @@ void __fastcall TUWatchFrame::SeriesEnable(int seriesindex)
  else
   Chart1->Series[seriesindex]->Active=true;
 }
-            /*
-// Обновление данных серии
-// Добавление одной точки в серию
-void __fastcall TUWatchFrame::SeriesUpdate(int seriesindex, double x, double y)
-{
- if(seriesindex < 0 || seriesindex >= (int)NameList.size())
-  return;
-
- TUWatchInfo *wd;
-
-
- // Корректируем информацию в сериях
- wd=&NameList[seriesindex];
-
- if(!wd->Visible)
-  return;
-
- // Смотрим способ обновления данных наблюдения...
- if(wd->FullUpdate)
- {
-  Chart1->Series[seriesindex]->Clear();
-  Chart1->Series[seriesindex]->AddXY(x,y+wd->YShift,"",wd->Color);
- }
- else
- {
-  if(wd->WatchInterval == 0)
-   return;
-
-  Chart1->Series[seriesindex]->AddXY(x,y+wd->YShift,"",wd->Color);
- }
- ModifyState=true;
-}
-
-void __fastcall TUWatchFrame::SeriesUpdate(void* datasource, double x, double y)
-{
- for(int i=0;i<(int)NameList.size();i++)
-  if(NameList[i].DataSource == datasource)
-  {
-   SeriesUpdate(i,x,y);
-   return;
-  }
-}
-
-// Обновление данных серии
-// Добавление массива точек в серию
-void __fastcall TUWatchFrame::SeriesUpdate(int seriesindex, double* x, double* y, int size)
-{
- if(seriesindex < 0 || seriesindex >= (int)NameList.size())
-  return;
-
- TUWatchInfo *wd;
-
- // Корректируем информацию в сериях
- wd=&NameList[seriesindex];
-
- if(!wd->Visible)
-  return;
-
- 
- // Смотрим способ обновления данных наблюдения...
- if(wd->FullUpdate)
- {
-  Chart1->Series[seriesindex]->Clear();
-
-  if(!x || !y || size == 0)
-   return;
-
-  for(int i=0;i<size;i++)
-   Chart1->Series[seriesindex]->AddXY(x[i],y[i]+wd->YShift,"",wd->Color);
- }
- else
- {
-  if(wd->WatchInterval == 0)
-   return;
-
-  if(!x || !y || size == 0)
-   return;
-
-  for(int i=0;i<size;i++)
-   Chart1->Series[seriesindex]->AddXY(x[i],y[i]+wd->YShift,"",wd->Color);
-  if(wd->WatchInterval>0)
-  {
-   double ser_max,ser_min;
-   if(Chart1->Series[seriesindex]->Count() > 0)
-   {
-	ser_max=Chart1->Series[seriesindex]->XValue[Chart1->Series[seriesindex]->Count()-1];
-	ser_min=Chart1->Series[seriesindex]->XValue[0];
-   }
-   else
-   {
-	ser_max=0;
-	ser_min=0;
-   }
-
-   if(ser_max-ser_min > wd->WatchInterval)
-    Chart1->Series[seriesindex]->Delete(0);
-  }
- }
- ModifyState=true;
-}
-
-void __fastcall TUWatchFrame::SeriesUpdate(void* datasource, double* x, double* y, int size)
-{
- for(int i=0;i<(int)NameList.size();i++)
-  if(NameList[i].DataSource == datasource)
-  {
-   SeriesUpdate(i,x,y,size);
-   return;
-  }
-}           */
 
 // Обновление информации за 'stepcount' прошедших шагов интегрирования
-void __fastcall TUWatchFrame::StepUpdate(bool speedup)
+void __fastcall TUWatchFrame::StepUpdate(void)
 {
- for(int seriesindex=0; seriesindex<(int)NameList.size();seriesindex++)
- {
-  TUWatchInfo *wd;
-  const double *x=0,*y=0;
-
-  // Корректируем информацию в сериях
-  wd=&NameList[seriesindex];
-
-  if((!wd->X || !wd->Y) && !wd->DataSourceName.size())
-   continue;
-
-   double xdata=0;
-
-   std::vector<double> vxdata, vydata;
-   if(wd->DataSourceName.size())
-   {
-	int data_size=Model_GetComponentOutputDataSize(wd->DataSourceName.c_str(), wd->OutputIndex);
-	if(data_size == 1)
-	{
-	 xdata=Model_GetDoubleTime();
-	 x=&xdata;
-	 y=(double*)Model_GetComponentOutputData(wd->DataSourceName.c_str(), wd->OutputIndex);
-	 if(!y)
-	  continue;
-	}
-	else
-	{
-	 vxdata.assign(data_size*3+1,0);
-	 vydata.assign(data_size*3+1,0);
-	 double* xx=(double*)Model_GetComponentOutputData(wd->DataSourceName.c_str(), wd->OutputIndex);
-	 if(!xx)
-	  continue;
-	 vxdata[0]=xx[0]-0.0001;
-	 vydata[0]=0;
-	 for(int i=0,j=1;i<data_size;i++,j+=3)
-	 {
-	  vxdata[j]=xx[i]-0.0001;
-	  vydata[j]=0;
-	  vxdata[j+1]=xx[i];
-	  vydata[j+1]=1;
-	  vxdata[j+2]=xx[i]+0.0001;
-	  vydata[j+2]=0;
-	 }
-
-	 y=&vydata[0];
-	 x=&vxdata[0];
-	 wd->XYSize=data_size*3+1;
-	}
-   }
-   else
-   {
-	x=wd->X;
-	y=wd->Y;
-   }
-
-  // Кеш максимума и минимума за заданный интервал времени
-  for(int i=0;i<wd->XYSize;i++)
-  {
-   if(wd->YCurrentMax<=y[i])
-   {
-	wd->XCurrentMax=x[i];
-	wd->YCurrentMax=y[i];
-   }
-   if(wd->YCurrentMin>=y[i])
-   {
-	wd->XCurrentMin=x[i];
-	wd->YCurrentMin=y[i];
-   }
-  }
-
-  ++CacheIndex;
- }
-
- if(speedup && CacheIndex < CacheSize)
-  return;
- else
- {
-  CacheIndex=0;
- }
-
-// Chart1->AutoRepaint=false;
-
  for(int seriesindex=0; seriesindex<(int)NameList.size();seriesindex++)
  {
   TUWatchInfo *wd;
@@ -814,44 +611,36 @@ void __fastcall TUWatchFrame::StepUpdate(bool speedup)
 
   TChartSeries* series=Chart1->Series[seriesindex];
 
-  static_cast<TFastLineSeries*>(series)->DrawAllPoints=!speedup;
+  static_cast<TFastLineSeries*>(series)->DrawAllPoints=true;
 //  static_cast<TFastLineSeries*>(series)->Stairs=true;
 
   if(!wd->Visible)
    continue;
 
-  // Смотрим способ обновления данных наблюдения...
-  if(wd->FullUpdate)
-  {
-   series->Clear();
-
-   if((!wd->X || !wd->Y || wd->XYSize == 0) && !wd->DataSourceName.size())
-	continue;
-
    const double *x=0, *y=0;
    double xdata;
    std::vector<double> vxdata, vydata;
-   if(wd->DataSourceName.size())
+   if(wd->YDataSourceName.size() && wd->XDataSourceName.size()==0)
    {
-	int data_size=Model_GetComponentOutputDataSize(wd->DataSourceName.c_str(), wd->OutputIndex);
-	if(data_size == 1)
-	{
+	int ydata_size=Model_GetComponentOutputDataSize(wd->YDataSourceName.c_str(), wd->YOutputIndex);
 	 xdata=Model_GetDoubleTime();
 	 x=&xdata;
-	 y=(double*)Model_GetComponentOutputData(wd->DataSourceName.c_str(), wd->OutputIndex);
+	 y=(double*)Model_GetComponentOutputData(wd->YDataSourceName.c_str(), wd->YOutputIndex);
 	 if(!y)
 	  continue;
-	}
-	else
-	{
-	 vxdata.assign(data_size*3+1,0);
-	 vydata.assign(data_size*3+1,0);
-	 double* xx=(double*)Model_GetComponentOutputData(wd->DataSourceName.c_str(), wd->OutputIndex);
+   }
+   else
+   if(wd->YDataSourceName.size()==0 && wd->XDataSourceName.size())
+   {
+	int xdata_size=Model_GetComponentOutputDataSize(wd->XDataSourceName.c_str(), wd->XOutputIndex);
+	 vxdata.assign(xdata_size*3+1,0);
+	 vydata.assign(xdata_size*3+1,0);
+	 double* xx=(double*)Model_GetComponentOutputData(wd->XDataSourceName.c_str(), wd->XOutputIndex);
 	 if(!xx)
 	  continue;
 	 vxdata[0]=xx[0]-0.0001;
 	 vydata[0]=0;
-	 for(int i=0,j=1;i<data_size;i++,j+=3)
+	 for(int i=0,j=1;i<xdata_size;i++,j+=3)
 	 {
 	  vxdata[j]=xx[i]-0.0001;
 	  vydata[j]=0;
@@ -863,14 +652,37 @@ void __fastcall TUWatchFrame::StepUpdate(bool speedup)
 
 	 y=&vydata[0];
 	 x=&vxdata[0];
-	 wd->XYSize=data_size*3+1;
-	}
+	 wd->XYSize=xdata_size*3+1;
    }
    else
    {
-	x=wd->X;
-	y=wd->Y;
+	int xdata_size=Model_GetComponentOutputDataSize(wd->XDataSourceName.c_str(), wd->XOutputIndex);
+	int ydata_size=Model_GetComponentOutputDataSize(wd->YDataSourceName.c_str(), wd->YOutputIndex);
+	int data_size=(xdata_size<ydata_size)?xdata_size:ydata_size;
+	 vxdata.assign(data_size,0);
+	 vydata.assign(data_size,0);
+	 double* xx=(double*)Model_GetComponentOutputData(wd->XDataSourceName.c_str(), wd->XOutputIndex);
+	 double* yy=(double*)Model_GetComponentOutputData(wd->YDataSourceName.c_str(), wd->YOutputIndex);
+	 if(!xx || !yy)
+	  continue;
+	 for(int i=0,j=0;i<data_size;i++,j++)
+	 {
+	  vxdata[j]=xx[i];
+	  vydata[j]=yy[i];
+	 }
+
+	 y=&vydata[0];
+	 x=&vxdata[0];
+	 wd->XYSize=data_size;
    }
+
+  // Смотрим способ обновления данных наблюдения...
+  if(wd->FullUpdate)
+  {
+   series->Clear();
+
+//   if(!wd->YDataSourceName.size())
+//	continue;
 
    static_cast<TFastLineSeries*>(series)->AutoRepaint=false;
    for(int i=0;i<wd->XYSize;i++)
@@ -882,64 +694,12 @@ void __fastcall TUWatchFrame::StepUpdate(bool speedup)
    if(wd->WatchInterval == 0)
 	continue;
 
-   if((!wd->X || !wd->Y || wd->XYSize == 0) && !wd->DataSourceName.size())
-	continue;
-
-   const double *x=0, *y=0;
-   double xdata;
-   std::vector<double> vxdata, vydata;
-   if(wd->DataSourceName.size())
-   {
-	int data_size=Model_GetComponentOutputDataSize(wd->DataSourceName.c_str(), wd->OutputIndex);
-	if(data_size == 1)
-	{
-	 xdata=Model_GetDoubleTime();
-	 x=&xdata;
-	 y=(double*)Model_GetComponentOutputData(wd->DataSourceName.c_str(), wd->OutputIndex);
-	 if(!y)
-	  continue;
-	}
-	else
-	{
-	 vxdata.assign(data_size*3+1,0);
-	 vydata.assign(data_size*3+1,0);
-	 double* xx=(double*)Model_GetComponentOutputData(wd->DataSourceName.c_str(), wd->OutputIndex);
-	 if(!xx)
-	  continue;
-	 vxdata[0]=xx[0]-0.001;
-	 vydata[0]=0;
-	 for(int i=0,j=1;i<data_size;i++,j+=3)
-	 {
-	  vxdata[j]=xx[i]-0.001;
-	  vydata[j]=0;
-	  vxdata[j+1]=xx[i];
-	  vydata[j+1]=1;
-	  vxdata[j+2]=xx[i]+0.001;
-	  vydata[j+2]=0;
-	 }
-
-	 y=&vydata[0];
-	 x=&vxdata[0];
-	 wd->XYSize=data_size*3+1;
-	}
-   }
-   else
-   {
-	x=wd->X;
-	y=wd->Y;
-   }
+//   if(!wd->YDataSourceName.size())
+//	continue;
 
    static_cast<TFastLineSeries*>(series)->AutoRepaint=false;
-   if(wd->XCurrentMin<wd->XCurrentMax)
-   {
-	series->AddXY(wd->XCurrentMin,wd->YCurrentMin+wd->YShift,"",wd->Color);
-	series->AddXY(wd->XCurrentMax,wd->YCurrentMax+wd->YShift,"",wd->Color);
-   }
-   else
-   {
-	series->AddXY(wd->XCurrentMax,wd->YCurrentMax+wd->YShift,"",wd->Color);
-	series->AddXY(wd->XCurrentMin,wd->YCurrentMin+wd->YShift,"",wd->Color);
-   }
+   for(int i=0;i<wd->XYSize;i++)
+	series->AddXY(x[i],y[i]+wd->YShift,"",wd->Color);
 
    if(wd->WatchInterval>0)
    {
@@ -978,10 +738,6 @@ void __fastcall TUWatchFrame::StepUpdate(bool speedup)
    static_cast<TFastLineSeries*>(series)->AutoRepaint=true;
   }
   ModifyState=true;
-  wd->XCurrentMax=0;
-  wd->YCurrentMax=0;
-  wd->XCurrentMin=0;
-  wd->YCurrentMin=0;
  }
 }
 // ------------------------------
@@ -1004,10 +760,6 @@ void __fastcall TUWatchFrame::Reset(void)
 
   // Корректируем информацию в сериях
   wd=&NameList[seriesindex];
-  wd->XCurrentMin=0;
-  wd->YCurrentMin=0;
-  wd->XCurrentMax=0;
-  wd->YCurrentMax=0;
  }
 }
 
@@ -1243,7 +995,7 @@ void TUWatchFrame::AAfterReset(void)
 // Обновление интерфейса
 void TUWatchFrame::AUpdateInterface(void)
 {
- StepUpdate(false);
+ StepUpdate();
  Chart1->Repaint();
 }
 
@@ -1275,9 +1027,12 @@ void TUWatchFrame::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
    xml.WriteInteger("Style",NameList[seriesindex].Style);
    xml.WriteBool("Visible",NameList[seriesindex].Visible);
    xml.WriteInteger("LineWidth",NameList[seriesindex].LineWidth);
-   xml.WriteString("DataSourceName",NameList[seriesindex].DataSourceName);
-   xml.WriteInteger("OutputIndex",NameList[seriesindex].OutputIndex);
-   xml.WriteInteger("OutputElementIndex",NameList[seriesindex].OutputElementIndex);
+   xml.WriteString("XDataSourceName",NameList[seriesindex].XDataSourceName);
+   xml.WriteInteger("XOutputIndex",NameList[seriesindex].XOutputIndex);
+   xml.WriteInteger("XOutputElementIndex",NameList[seriesindex].XOutputElementIndex);
+   xml.WriteString("YDataSourceName",NameList[seriesindex].YDataSourceName);
+   xml.WriteInteger("YOutputIndex",NameList[seriesindex].YOutputIndex);
+   xml.WriteInteger("YOutputElementIndex",NameList[seriesindex].YOutputElementIndex);
    xml.WriteInteger("XYSize", NameList[seriesindex].XYSize);
 
    if(collectstate)
@@ -1352,9 +1107,12 @@ void TUWatchFrame::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
 	wd->Color=(TColor)xml.ReadInteger("Color",clTeeColor);
 	wd->Style=(TPenStyle)xml.ReadInteger("Style",psSolid);
 	wd->LineWidth=xml.ReadInteger("LineWidth",1);
-	wd->DataSourceName=xml.ReadString("DataSourceName","");
-	wd->OutputIndex=xml.ReadInteger("OutputIndex",0);
-	wd->OutputElementIndex=xml.ReadInteger("OutputElementIndex",0);
+	wd->XDataSourceName=xml.ReadString("XDataSourceName","");
+	wd->XOutputIndex=xml.ReadInteger("XOutputIndex",0);
+	wd->XOutputElementIndex=xml.ReadInteger("XOutputElementIndex",0);
+	wd->YDataSourceName=xml.ReadString("YDataSourceName","");
+	wd->YOutputIndex=xml.ReadInteger("YOutputIndex",0);
+	wd->YOutputElementIndex=xml.ReadInteger("YOutputElementIndex",0);
 	wd->XYSize=xml.ReadInteger("XYSize", 1);
 	wd->Visible=xml.ReadBool("Visible",true);
 
@@ -1420,7 +1178,17 @@ void __fastcall TUWatchFrame::AddWatch1Click(TObject *Sender)
  if(UComponentsListForm->ShowComponentSelect() != mrOk)
   return;
 
- Add(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName(),UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput());
+ Add("",UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName(),0,0,UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput());
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUWatchFrame::AddXPulseWatch1Click(TObject *Sender)
+{
+ UComponentsListForm->ComponentsListFrame1->PageControl1->ActivePageIndex=2;
+ if(UComponentsListForm->ShowComponentSelect() != mrOk)
+  return;
+
+ Add(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName(),"",UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput(),0,0);
 }
 //---------------------------------------------------------------------------
 

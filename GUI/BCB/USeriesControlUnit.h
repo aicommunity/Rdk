@@ -87,6 +87,7 @@ __published:	// IDE-managed Components
 	void __fastcall ComboBox3Select(TObject *Sender);
 	void __fastcall DelPointButtonClick(TObject *Sender);
 	void __fastcall WatchIntervalEditChange(TObject *Sender);
+	void __fastcall FormShow(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
         __fastcall TUSeriesControlForm(TComponent* Owner);

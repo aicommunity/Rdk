@@ -388,12 +388,6 @@ void __fastcall TUSeriesControlForm::Edit3DblClick(TObject *Sender)
  LegendsChanged=true;
 }
 //---------------------------------------------------------------------------
-
-
-
-
-
-
 void __fastcall TUSeriesControlForm::BitBtn1Click(TObject *Sender)
 {
  map<int,TUWatchInfo>::iterator I;
@@ -608,6 +602,12 @@ void __fastcall TUSeriesControlForm::DelPointButtonClick(TObject *Sender)
 void __fastcall TUSeriesControlForm::WatchIntervalEditChange(TObject *Sender)
 {
  GraphChanged=true;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUSeriesControlForm::FormShow(TObject *Sender)
+{
+ DelWatchList.clear();
 }
 //---------------------------------------------------------------------------
 

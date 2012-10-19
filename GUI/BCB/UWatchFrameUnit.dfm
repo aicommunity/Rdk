@@ -51,8 +51,16 @@ inherited UWatchFrame: TUWatchFrame
     Left = 72
     Top = 16
     object AddWatch1: TMenuItem
-      Caption = 'Add Watch'
+      Caption = 'Add Time-Y Watch'
       OnClick = AddWatch1Click
+    end
+    object AddXPulseWatch1: TMenuItem
+      Caption = 'Add X-Pulse Watch'
+      OnClick = AddXPulseWatch1Click
+    end
+    object AddXYWatch1: TMenuItem
+      Caption = 'Add XY Watch'
+      Enabled = False
     end
     object N1: TMenuItem
       Caption = 'Watch Control'

@@ -84,8 +84,6 @@ void TUVisualControllerFrame::UpdateInterface(bool force_update)
   if((!AlwaysUpdateFlag && !Parent->Visible) || (UpdateInterval<0 && CalculationModeFlag))
    return;
   if(UpdateInterval>0 && CalculationModeFlag)
-
-  if(UpdateInterval>0)
   {
    DWORD curr_time=GetTickCount();
    if(curr_time-LastUpdateTime<UpdateInterval)

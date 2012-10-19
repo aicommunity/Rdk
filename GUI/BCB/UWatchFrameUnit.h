@@ -46,17 +46,23 @@ public: // Связи
 // Индекс графика в массиве серий
 int SeriesIndex;
 
-// Указатель на источник данных
-void* DataSource;
+// Имя компонента-источника данных по оси X
+string XDataSourceName;
 
-// Альтернативный указатель на имя компонента-источника данных
-string DataSourceName;
+// Индекс выхода хранящего данные по оси X
+int XOutputIndex;
 
-// Индекс выхода
-int OutputIndex;
+// Индекс элемента выхода хранящего данные по оси X
+int XOutputElementIndex;
 
-// Индекс элемента выхода
-int OutputElementIndex;
+// Имя компонента-источника данных по оси X
+string YDataSourceName;
+
+// Индекс выхода хранящего данные по оси X
+int YOutputIndex;
+
+// Индекс элемента выхода хранящего данные по оси X
+int YOutputElementIndex;
 
 public: // Данные графика
 const double *X;
@@ -64,8 +70,8 @@ const double *Y;
 int XYSize;
 
 // Кеш максимума и минимума за заданный интервал времени
-double XCurrentMax,YCurrentMax;
-double XCurrentMin,YCurrentMin;
+//double XCurrentMax,YCurrentMax;
+//double XCurrentMin,YCurrentMin;
 
 // Тип наблюдения
 // true - в массивах X,Y хранится набор всех значений графика
@@ -104,7 +110,7 @@ TUWatchInfo(void);
 TUWatchInfo(const TUWatchInfo &wd);
 TUWatchInfo& operator = (const TUWatchInfo& wd);
 };
-        
+
 //---------------------------------------------------------------------------
 class TUWatchFrame : public TUVisualControllerFrame
 {
@@ -116,9 +122,12 @@ __published:	// IDE-managed Components
 	TMenuItem *bmp1;
 	TMenuItem *AddWatch1;
 	TMenuItem *N2;
+	TMenuItem *AddXPulseWatch1;
+	TMenuItem *AddXYWatch1;
 	void __fastcall N1Click(TObject *Sender);
 	void __fastcall bmp1Click(TObject *Sender);
 	void __fastcall AddWatch1Click(TObject *Sender);
+	void __fastcall AddXPulseWatch1Click(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
         __fastcall TUWatchFrame(TComponent* Owner);
@@ -245,7 +254,6 @@ public:	// Методы
 		// ------------------------------
 		// Возвращает данные наблюдения
 		TUWatchInfo* __fastcall Get(int seriesindex);
-		TUWatchInfo* __fastcall Get(void *datasource);
 
 		// Возвращает общее число данных наблюдения
 		int __fastcall GetNumWatches(void);
@@ -256,7 +264,7 @@ public:	// Методы
 
 		// Добавление нового наблюдения по имени компонента и индексу выхода
 		// Возвращает индекс серии
-		int __fastcall Add(const string &name, int output=0, int outindex=0, double yshift=0, TPenStyle style=psSolid, TColor color=TColor(0));
+		int __fastcall Add(const string &xname, const string &yname, int xoutput=0, int xoutindex=0, int youtput=0, int youtindex=0, double yshift=0, TPenStyle style=psSolid, TColor color=TColor(0));
 
         // Удаление наблюдения
         void __fastcall Del(int seriesindex);
@@ -274,18 +282,8 @@ public:	// Методы
 		// если seriesindex < 0 то включает все серии
 		void __fastcall SeriesEnable(int seriesindex=-1);
 
-		// Обновление данных серии
-		// Добавление одной точки в серию
- //		void __fastcall SeriesUpdate(int seriesindex, double x, double y);
- //		void __fastcall SeriesUpdate(void* datasource, double x, double y);
-
-		// Обновление данных серии
-		// Добавление массива точек в серию
- //		void __fastcall SeriesUpdate(int seriesindex, double* x, double* y, int size);
- //		void __fastcall SeriesUpdate(void* datasource, double* x, double* y, int size);
-
 		// Обновление информации за 'stepcount' прошедших шагов интегрирования
-		void __fastcall StepUpdate(bool speedup=true);
+		void __fastcall StepUpdate(void);
 
         // Удаляет данные всех наблюдений
         void __fastcall Reset(void);
