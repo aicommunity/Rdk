@@ -36,7 +36,7 @@ typedef enum {ubmY=0, ubmCr=1, ubmCb=2} UBMColorChannel;
 typedef unsigned char UBColor;
 
 // RGB тип
-struct UBRgb { UBColor b,g,r,d; }; // 32,24 бит RGB
+struct UBRgb { UBColor r,g,b,d; }; // 32,24 бит RGB
 
 // YCrCb тип
 struct UBYCrCb { UBColor y,cr,cb; }; // YCrCb

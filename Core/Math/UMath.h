@@ -22,5 +22,6 @@ See file license.txt for more information
 #include "MUBinarySerialize.h"
 #include "MKalmanFilter.h"
 #include "MMatrix.h"
+#include "MDMatrix.h"
 #include "UMath_lite.h"
 
