@@ -2,8 +2,8 @@ object UEngineControlForm: TUEngineControlForm
   Left = 0
   Top = 0
   Caption = 'UEngineControlForm'
-  ClientHeight = 68
-  ClientWidth = 757
+  ClientHeight = 64
+  ClientWidth = 811
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -20,32 +20,36 @@ object UEngineControlForm: TUEngineControlForm
   object Panel1: TPanel
     Left = 0
     Top = 44
-    Width = 757
-    Height = 5
+    Width = 811
+    Height = 1
     Align = alClient
     TabOrder = 0
+    ExplicitWidth = 757
+    ExplicitHeight = 5
   end
   object ToolBar: TToolBar
     Left = 0
     Top = 0
-    Width = 757
+    Width = 811
     Height = 44
     AutoSize = True
     ButtonHeight = 44
-    ButtonWidth = 83
+    ButtonWidth = 104
     Caption = 'ToolBar'
     Images = ImageList
     ShowCaptions = True
     TabOrder = 1
+    ExplicitWidth = 919
     object ToolButton8: TToolButton
       Left = 0
       Top = 0
+      AutoSize = True
       Caption = 'Create Project'
       ImageIndex = 21
       MenuItem = CreateProjectItem
     end
     object ToolButton1: TToolButton
-      Left = 83
+      Left = 81
       Top = 0
       AutoSize = True
       Caption = 'Load Project'
@@ -53,7 +57,7 @@ object UEngineControlForm: TUEngineControlForm
       MenuItem = LoadProjectItem
     end
     object ToolButton2: TToolButton
-      Left = 154
+      Left = 152
       Top = 0
       AutoSize = True
       Caption = 'Save Project'
@@ -61,7 +65,7 @@ object UEngineControlForm: TUEngineControlForm
       MenuItem = SaveProjectItem
     end
     object ToolButton3: TToolButton
-      Left = 226
+      Left = 224
       Top = 0
       Width = 8
       Caption = 'ToolButton3'
@@ -69,14 +73,15 @@ object UEngineControlForm: TUEngineControlForm
       Style = tbsSeparator
     end
     object ToolButton9: TToolButton
-      Left = 234
+      Left = 232
       Top = 0
+      AutoSize = True
       Caption = 'Create Model'
       ImageIndex = 24
       MenuItem = CreateModel
     end
     object ToolButton4: TToolButton
-      Left = 317
+      Left = 307
       Top = 0
       AutoSize = True
       Caption = 'Load Model'
@@ -84,15 +89,31 @@ object UEngineControlForm: TUEngineControlForm
       MenuItem = LoadModel1
     end
     object ToolButton5: TToolButton
-      Left = 382
+      Left = 372
       Top = 0
       AutoSize = True
       Caption = 'Save Model'
       ImageIndex = 3
       MenuItem = SaveModel1
     end
+    object ToolButton16: TToolButton
+      Left = 438
+      Top = 0
+      Width = 8
+      Caption = 'ToolButton16'
+      ImageIndex = 12
+      Style = tbsSeparator
+    end
+    object ToolButton11: TToolButton
+      Left = 446
+      Top = 0
+      AutoSize = True
+      Caption = 'Reload Parameters'
+      ImageIndex = 22
+      MenuItem = ReloadParameters1
+    end
     object ToolButton7: TToolButton
-      Left = 448
+      Left = 548
       Top = 0
       Width = 8
       Caption = 'ToolButton7'
@@ -100,7 +121,7 @@ object UEngineControlForm: TUEngineControlForm
       Style = tbsSeparator
     end
     object ToolButton10: TToolButton
-      Left = 456
+      Left = 556
       Top = 0
       AutoSize = True
       Caption = 'Start'
@@ -108,7 +129,7 @@ object UEngineControlForm: TUEngineControlForm
       MenuItem = Start1
     end
     object ToolButton12: TToolButton
-      Left = 491
+      Left = 591
       Top = 0
       AutoSize = True
       Caption = 'Pause'
@@ -116,7 +137,7 @@ object UEngineControlForm: TUEngineControlForm
       MenuItem = Pause1
     end
     object ToolButton13: TToolButton
-      Left = 531
+      Left = 631
       Top = 0
       AutoSize = True
       Caption = 'Reset'
@@ -124,7 +145,7 @@ object UEngineControlForm: TUEngineControlForm
       MenuItem = Reset1
     end
     object ToolButton6: TToolButton
-      Left = 570
+      Left = 670
       Top = 0
       AutoSize = True
       Caption = 'Step'
@@ -132,7 +153,7 @@ object UEngineControlForm: TUEngineControlForm
       MenuItem = Step1
     end
     object ToolButton14: TToolButton
-      Left = 603
+      Left = 703
       Top = 0
       Width = 8
       Caption = 'ToolButton14'
@@ -140,7 +161,7 @@ object UEngineControlForm: TUEngineControlForm
       Style = tbsSeparator
     end
     object ToolButton15: TToolButton
-      Left = 611
+      Left = 711
       Top = 0
       AutoSize = True
       Caption = 'Window'
@@ -151,11 +172,13 @@ object UEngineControlForm: TUEngineControlForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 49
-    Width = 757
+    Top = 45
+    Width = 811
     Height = 19
     Panels = <>
     SimplePanel = True
+    ExplicitTop = 49
+    ExplicitWidth = 757
   end
   object MainMenu: TMainMenu
     Images = ImageList
@@ -198,6 +221,11 @@ object UEngineControlForm: TUEngineControlForm
       end
       object N1: TMenuItem
         Caption = '-'
+      end
+      object ReloadParameters1: TMenuItem
+        Caption = 'Reload Parameters'
+        ImageIndex = 22
+        OnClick = ReloadParameters1Click
       end
     end
     object Calculate1: TMenuItem
@@ -263,7 +291,7 @@ object UEngineControlForm: TUEngineControlForm
     Left = 384
     Top = 32
     Bitmap = {
-      494C01011B006000840010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B006000880010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

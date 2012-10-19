@@ -67,6 +67,9 @@ __published:	// IDE-managed Components
 	TToolButton *ToolButton9;
 	TMenuItem *FavoriteInformation1;
 	TMenuItem *DrawEngine1;
+	TToolButton *ToolButton11;
+	TToolButton *ToolButton16;
+	TMenuItem *ReloadParameters1;
 	void __fastcall FormShow(TObject *Sender);
 	void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
 	void __fastcall Start1Click(TObject *Sender);
@@ -86,6 +89,7 @@ __published:	// IDE-managed Components
 	void __fastcall CreateModelClick(TObject *Sender);
 	void __fastcall FavoriteInformation1Click(TObject *Sender);
 	void __fastcall DrawEngine1Click(TObject *Sender);
+	void __fastcall ReloadParameters1Click(TObject *Sender);
 
 
 private:	// User declarations

@@ -367,3 +367,22 @@ void __fastcall TUEngineControlForm::DrawEngine1Click(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+void __fastcall TUEngineControlForm::ReloadParameters1Click(TObject *Sender)
+{
+ String paramsfilename=ProjectXml.ReadString("ParametersFileName","").c_str();
+ if(paramsfilename.Length() == 0)
+ {
+  paramsfilename="Parameters.xml";
+  ProjectXml.WriteString("ParametersFileName",AnsiString(paramsfilename).c_str());
+ }
+
+ if(paramsfilename.Length() != 0)
+ {
+  if(ExtractFilePath(paramsfilename).Length() == 0)
+   UComponentsControlForm->ComponentsControlFrame->LoadParametersFromFile(ProjectPath+paramsfilename);
+  else
+   UComponentsControlForm->ComponentsControlFrame->LoadParametersFromFile(paramsfilename);
+ }
+}
+//---------------------------------------------------------------------------
+
