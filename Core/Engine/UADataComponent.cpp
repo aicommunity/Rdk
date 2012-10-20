@@ -385,6 +385,18 @@ UId UADataComponent::AddLookupProperty(const NameT &name, unsigned int type, UEP
  return P.Id;
 }
 
+// Изменяет тип параметра
+bool UADataComponent::ChangeLookupPropertyType(const NameT &name, unsigned int type)
+{
+ VariableMapIteratorT I=PropertiesLookupTable.find(name);
+
+ if(I == PropertiesLookupTable.end())
+  return false;
+
+ I->second.Type=type;
+ return true;
+}
+
 // Удаляет параметр с именем 'name' из таблицы соотвествий
 // параметров
 void UADataComponent::DelLookupProperty(const NameT &name)

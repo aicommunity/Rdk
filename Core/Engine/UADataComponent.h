@@ -194,6 +194,9 @@ public:
 // Должна вызываться в конструкторах классов
 UId AddLookupProperty(const NameT &name, unsigned int type, UEPtr<UIProperty> property, bool delenable=true);
 
+// Изменяет тип параметра
+bool ChangeLookupPropertyType(const NameT &name, unsigned int type);
+
 protected:
 // Удаляет параметр с именем 'name' из таблицы соотвествий
 // параметров

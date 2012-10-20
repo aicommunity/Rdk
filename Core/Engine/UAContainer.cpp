@@ -523,6 +523,8 @@ bool UAContainer::SetActivity(bool activity)
   return Reset(); // !!! Заглушка. Возможно это не нужно!
 
  Activity=activity;
+ StepDuration=0;
+ InterstepsInterval=0;
 
  return true;
 }
@@ -1310,6 +1312,8 @@ bool UAContainer::Reset(void)
  SkipComponentCalculation=false;
  ComponentReCalculation=false;
  LastCalcTime=-1;
+ InterstepsInterval=0;
+ StepDuration=0;
  return true;
 }
 
