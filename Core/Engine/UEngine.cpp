@@ -1160,7 +1160,21 @@ bool UEngine::Model_Check(void)
  return false;
 }
 
-
+// Проверяет, существует ли в модели компонент с именем stringid)
+bool UEngine::Model_CheckComponent(const char* stringid) const
+{
+ try
+ {
+  UEPtr<RDK::UAContainer> destcont=FindComponent(stringid);
+  if(destcont)
+   return true;
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return false;
+}
 
 // Добавляет в выбранный контейнер модели с идентификатором 'stringid' экземпляр контейнера с заданным 'classid'
 // если stringid - пустая строка, то добавляет в саму модель

@@ -105,6 +105,10 @@ void __fastcall TUSeriesControlForm::UpdateInfo(void)
   {
    StringGrid2->Cells[0][StringGrid2->RowCount-1]=IntToStr(I->first);
    StringGrid2->Cells[1][StringGrid2->RowCount-1]=I->second.Legend.c_str();
+   int width=StringGrid2->Canvas->TextWidth(I->second.Legend.c_str());
+   if(StringGrid2->ColWidths[1]<width)
+	StringGrid2->ColWidths[1]=width;
+
    StringGrid2->RowCount++;
    I++;
   }
@@ -116,6 +120,10 @@ void __fastcall TUSeriesControlForm::UpdateInfo(void)
   {
    StringGrid1->Cells[0][StringGrid1->RowCount-1]=IntToStr(I->first);
    StringGrid1->Cells[1][StringGrid1->RowCount-1]=I->second.Legend.c_str();
+   int width=StringGrid1->Canvas->TextWidth(I->second.Legend.c_str());
+   if(StringGrid1->ColWidths[1]<width)
+	StringGrid1->ColWidths[1]=width;
+
    StringGrid1->RowCount++;
    I++;
   }

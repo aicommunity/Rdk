@@ -124,10 +124,13 @@ __published:	// IDE-managed Components
 	TMenuItem *N2;
 	TMenuItem *AddXPulseWatch1;
 	TMenuItem *AddXYWatch1;
+	TMenuItem *DeleteAll1;
+	TMenuItem *N3;
 	void __fastcall N1Click(TObject *Sender);
 	void __fastcall bmp1Click(TObject *Sender);
 	void __fastcall AddWatch1Click(TObject *Sender);
 	void __fastcall AddXPulseWatch1Click(TObject *Sender);
+	void __fastcall DeleteAll1Click(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
         __fastcall TUWatchFrame(TComponent* Owner);

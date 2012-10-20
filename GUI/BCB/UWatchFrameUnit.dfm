@@ -62,6 +62,13 @@ inherited UWatchFrame: TUWatchFrame
       Caption = 'Add XY Watch'
       Enabled = False
     end
+    object DeleteAll1: TMenuItem
+      Caption = 'Delete All Watches'
+      OnClick = DeleteAll1Click
+    end
+    object N3: TMenuItem
+      Caption = '-'
+    end
     object N1: TMenuItem
       Caption = 'Watch Control'
       OnClick = N1Click

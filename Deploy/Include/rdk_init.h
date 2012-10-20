@@ -264,6 +264,9 @@ RDK_LIB_TYPE int RDK_CALL Model_Clear(void);
 // Проверяет, существует ли модель
 RDK_LIB_TYPE bool RDK_CALL Model_Check(void);
 
+// Проверяет, существует ли в модели компонент с именем stringid)
+RDK_LIB_TYPE bool RDK_CALL Model_CheckComponent(const char* stringid);
+
 // Добавляет в выбранный компонент модели с идентификатором 'stringid' экземпляр компонента с заданным 'classid'
 // если stringid - пустая строка, то добавляет в саму модель
 // Возвращает имя компонента в случае успеха

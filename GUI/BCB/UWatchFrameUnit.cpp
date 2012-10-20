@@ -1199,3 +1199,10 @@ void __fastcall TUWatchFrame::AddXPulseWatch1Click(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+void __fastcall TUWatchFrame::DeleteAll1Click(TObject *Sender)
+{
+ if(Application->MessageBox(L"Delete all watches! Are you sure?",L"Warining",MB_YESNO) == ID_YES)
+  Clear();
+}
+//---------------------------------------------------------------------------
+

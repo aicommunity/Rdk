@@ -160,7 +160,7 @@ object USeriesControlForm: TUSeriesControlForm
           ColCount = 2
           FixedCols = 0
           RowCount = 2
-          Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColMoving, goRowSelect]
+          Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing, goColMoving, goRowSelect]
           TabOrder = 0
           OnDblClick = StringGrid1DblClick
         end
@@ -664,7 +664,7 @@ object USeriesControlForm: TUSeriesControlForm
         ColCount = 2
         FixedCols = 0
         RowCount = 2
-        Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goColMoving, goRowSelect]
+        Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goColSizing, goColMoving, goRowSelect]
         TabOrder = 0
         OnClick = StringGrid2Click
         OnDblClick = StringGrid2DblClick

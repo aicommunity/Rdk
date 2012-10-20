@@ -357,6 +357,9 @@ virtual int Model_Clear(void);
 // Проверяет, существует ли модель
 virtual bool Model_Check(void);
 
+// Проверяет, существует ли в модели компонент с именем stringid)
+virtual bool Model_CheckComponent(const char* stringid) const;
+
 // Добавляет в выбранный контейнер модели с идентификатором 'stringid' экземпляр контейнера с заданным 'classid'
 // если stringid - пустая строка, то добавляет в саму модель
 // Возвращает длинное имя компонента в случае успеха

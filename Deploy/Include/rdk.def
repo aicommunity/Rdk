@@ -72,6 +72,7 @@ EXPORTS
     Model_Create = _Model_Create
     Model_Clear = _Model_Clear
     Model_Check = _Model_Check
+    Model_CheckComponent = _Model_CheckComponent
     Model_AddComponent = _Model_AddComponent
     Model_DelComponent = _Model_DelComponent
     Model_GetNumComponents = _Model_GetNumComponents
