@@ -217,6 +217,12 @@ void* GetOutputDataAsPointer(int index);
 void* GetInputDataAsPointer(int index);
 // --------------------------
 
+// --------------------------
+// Системные методы управления объектом
+// --------------------------
+// Создает экземпляр описания класса
+virtual UContainerDescription* ANewDescription(UComponentDescription* description);
+// --------------------------
 
 // ----------------------
 // Методы доступа к системным свойствам

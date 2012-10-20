@@ -38,6 +38,7 @@ void TUComponentsControlFrame::SaveModelToFile(const String &filename)
  }
 
  TRichEdit* RichEdit=new TRichEdit(this);
+ RichEdit->Visible=false;
  RichEdit->Parent=this;
 
  RichEdit->PlainText=true;
@@ -85,6 +86,7 @@ void TUComponentsControlFrame::SaveParametersToFile(const String &filename)
  }
 
  TRichEdit* RichEdit=new TRichEdit(this);
+ RichEdit->Visible=false;
  RichEdit->Parent=this;
 
  RichEdit->PlainText=true;
@@ -134,6 +136,7 @@ void TUComponentsControlFrame::SaveStatesToFile(const String &filename)
  }
 
  TRichEdit* RichEdit=new TRichEdit(this);
+ RichEdit->Visible=false;
  RichEdit->Parent=this;
 
  RichEdit->PlainText=true;

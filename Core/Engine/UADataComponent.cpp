@@ -177,13 +177,20 @@ UContainerDescription* UADataComponent::NewDescription(void)
 {
  UContainerDescription* result=new UContainerDescription;
 
- result->SetClassId(sntoa(Class));
+ return result;
+}
+
+UContainerDescription* UADataComponent::ANewDescription(UComponentDescription* description)
+{
+ UContainerDescription* result=dynamic_cast<UContainerDescription*>(description);
+ if(!result)
+  return result;
 
  VariableMapIteratorT I=PropertiesLookupTable.begin();
- UParameterDescription dummydescr;
+ UPropertyDescription dummydescr;
  while(I != PropertiesLookupTable.end())
  {
-  result->SetParameter(I->first,dummydescr);
+  result->SetProperty(I->first,dummydescr);
   ++I;
  }
 

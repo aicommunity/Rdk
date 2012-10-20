@@ -208,6 +208,18 @@ bool RDK_CALL Storage_LoadCommonClassesDescription(const char* xmltext)
 {
  return PEngine->Storage_LoadCommonClassesDescription(xmltext);
 }
+
+// Сохраняет описание всех классов в xml включая общее описание
+const char* RDK_CALL Storage_SaveAllClassesDescription(void)
+{
+ return PEngine->Storage_SaveAllClassesDescription();
+}
+
+// Загружает описание всех классов из xml включая общее описание
+bool RDK_CALL Storage_LoadAllClassesDescription(const char* xmltext)
+{
+ return PEngine->Storage_LoadAllClassesDescription(xmltext);
+}
 // ----------------------------
 
 // ----------------------------

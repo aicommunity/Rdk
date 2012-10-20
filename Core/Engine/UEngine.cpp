@@ -495,10 +495,9 @@ const char* UEngine::Storage_SaveClassesDescription(void)
  {
   Serialize::USerStorageXML xml;
   xml.Create("Root");
-  xml.Create("ClassesDescription");
+  xml.AddNode("ClassesDescription");
   Storage->SaveClassesDescription(xml);
-  xml.SelectUp();
-  xml.SelectUp();
+  xml.SelectRoot();
   xml.Save(TempString);
  }
  catch (UException &exception)
@@ -533,10 +532,9 @@ const char* UEngine::Storage_SaveCommonClassesDescription(void)
  {
   Serialize::USerStorageXML xml;
   xml.Create("Root");
-  xml.Create("CommonClassesDescription");
+  xml.AddNode("CommonClassesDescription");
   Storage->SaveCommonClassesDescription(xml);
-  xml.SelectUp();
-  xml.SelectUp();
+  xml.SelectRoot();
   xml.Save(TempString);
  }
  catch (UException &exception)
@@ -556,6 +554,52 @@ bool UEngine::Storage_LoadCommonClassesDescription(const char* xmltext)
   if(!xml.SelectNode("CommonClassesDescription"))
    return false;
   return Storage->LoadCommonClassesDescription(xml);
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return false;
+}
+
+// Сохраняет описание всех классов в xml включая общее описание
+const char* UEngine::Storage_SaveAllClassesDescription(void)
+{
+ try
+ {
+  Serialize::USerStorageXML xml;
+  xml.Create("Root");
+  xml.AddNode("CommonClassesDescription");
+  Storage->SaveCommonClassesDescription(xml);
+  xml.SelectUp();
+  xml.AddNode("ClassesDescription");
+  Storage->SaveClassesDescription(xml);
+  xml.SelectRoot();
+  xml.Save(TempString);
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return TempString.c_str();
+}
+
+// Загружает описание всех классов из xml включая общее описание
+bool UEngine::Storage_LoadAllClassesDescription(const char* xmltext)
+{
+ try
+ {
+  Serialize::USerStorageXML xml;
+  xml.Load(xmltext, "Root");
+  if(!xml.SelectNode("CommonClassesDescription"))
+   return false;
+  if(!Storage->LoadCommonClassesDescription(xml))
+   return false;
+  xml.SelectUp();
+  if(!xml.SelectNode("ClassesDescription"))
+   return false;
+  Storage->LoadClassesDescription(xml);
+  return true;
  }
  catch (UException &exception)
  {
@@ -2552,7 +2596,7 @@ bool UEngine::Model_GetComponentPropertiesEx(RDK::UAContainer* cont, RDK::Serial
 	 serstorage->SetNodeAttribute("PType",sntoa(I->second.Type));
 	 if(descr)
 	 {
-	  serstorage->SetNodeAttribute("Header",descr->GetParameter(paramname).Header);
+	  serstorage->SetNodeAttribute("Header",descr->GetProperty(paramname).Header);
 	 }
 	 serstorage->SelectUp();
 	}

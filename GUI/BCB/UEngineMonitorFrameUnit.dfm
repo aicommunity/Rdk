@@ -50,6 +50,17 @@ inherited UEngineMonitorFrame: TUEngineMonitorFrame
         OnClick = Step1Click
       end
     end
+    object ools1: TMenuItem
+      Caption = 'Tools'
+      object SaveClassesDescriptions1: TMenuItem
+        Caption = 'Save Classes Descriptions'
+        OnClick = SaveClassesDescriptions1Click
+      end
+      object LoadAllClassesDescriptions1: TMenuItem
+        Caption = 'Load Classes Descriptions'
+        OnClick = LoadAllClassesDescriptions1Click
+      end
+    end
   end
   object Timer: TTimer
     Enabled = False

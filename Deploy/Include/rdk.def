@@ -21,6 +21,8 @@ EXPORTS
     Storage_LoadClassesDescription = _Storage_LoadClassesDescription
     Storage_SaveCommonClassesDescription = _Storage_SaveCommonClassesDescription
     Storage_LoadCommonClassesDescription = _Storage_LoadCommonClassesDescription
+    Storage_SaveAllClassesDescription = _Storage_SaveAllClassesDescription
+    Storage_LoadAllClassesDescription = _Storage_LoadAllClassesDescription
     Env_LoadStorageLibrary = _Env_LoadStorageLibrary
     Env_DelClassLibraryByIndex = _Env_DelClassLibraryByIndex
     Env_DelClassLibraryByName = _Env_DelClassLibraryByName

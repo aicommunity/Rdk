@@ -145,6 +145,7 @@ const UId& GetPropertyId(const NameT &name) const;
 // --------------------------
 // Создает экземпляр описания класса
 virtual UContainerDescription* NewDescription(void);
+virtual UContainerDescription* ANewDescription(UComponentDescription* description);
 // --------------------------
 
 // --------------------------

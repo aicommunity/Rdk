@@ -38,7 +38,6 @@ UComponentDescription::UComponentDescription(void)
 
 UComponentDescription::UComponentDescription(const UComponentDescription &copy)
  : 	ClassName(copy.ClassName),
-	ClassId(copy.ClassId),
 	Header(copy.Header),
 	Description(copy.Description)
 {
@@ -77,20 +76,6 @@ void UComponentDescription::SetClassNameValue(const std::string& value)
   return;
 
  ClassName=value;
-}
-
-// Id класса записанное в виде строки
-const std::string& UComponentDescription::GetClassId(void) const
-{
- return ClassId;
-}
-
-void UComponentDescription::SetClassId(const std::string& value)
-{
- if(ClassId == value)
-  return;
-
- ClassId=value;
 }
 
 // «аголовок класса
@@ -132,10 +117,6 @@ bool UComponentDescription::Save(Serialize::USerStorageXML &xml)
  xml.SetNodeText(ClassName);
  xml.SelectUp();
 
- xml.AddNode("ClassId");
- xml.SetNodeText(ClassId);
- xml.SelectUp();
-
  xml.AddNode("Header");
  xml.SetNodeText(Header);
  xml.SelectUp();
@@ -152,12 +133,6 @@ bool UComponentDescription::Load(Serialize::USerStorageXML &xml)
  if(xml.SelectNode("ClassName"))
  {
   ClassName=xml.GetNodeText();
-  xml.SelectUp();
- }
-
- if(xml.SelectNode("ClassId"))
- {
-  ClassId=xml.GetNodeText();
   xml.SelectUp();
  }
 

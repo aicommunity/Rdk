@@ -5,8 +5,8 @@
 
 namespace RDK {
 
-// Описания общих параметров
-std::map<std::string, UParameterDescription> UContainerDescription::CommonParameters;
+// Описания общих свойств
+std::map<std::string, UPropertyDescription> UContainerDescription::CommonProperties;
 
 // --------------------------
 // Конструкторы и деструкторы
@@ -18,7 +18,7 @@ UContainerDescription::UContainerDescription(void)
 
 UContainerDescription::UContainerDescription(const UContainerDescription &copy)
  : UComponentDescription(copy),
-   Parameters(copy.Parameters)
+   Properties(copy.Properties)
 {
 
 }
@@ -30,31 +30,31 @@ UContainerDescription::~UContainerDescription(void)
 // --------------------------
 
 // --------------------------
-// Методы управления общими параметрами
+// Методы управления общими свойствами
 // --------------------------
-// Описание общего параметра
-const UParameterDescription& UContainerDescription::GetCommonParameter(const std::string &name)
+// Описание общего свойства
+const UPropertyDescription& UContainerDescription::GetCommonProperty(const std::string &name)
 {
- std::map<std::string, UParameterDescription>::const_iterator I=CommonParameters.find(name);
+ std::map<std::string, UPropertyDescription>::const_iterator I=CommonProperties.find(name);
 
  // Заглушка! Здесь исключение если не найдено
 
  return I->second;
 }
 
-bool UContainerDescription::SetCommonParameter(const std::string &name, const UParameterDescription& value)
+bool UContainerDescription::SetCommonProperty(const std::string &name, const UPropertyDescription& value)
 {
- CommonParameters[name]=value;
+ CommonProperties[name]=value;
 
  return true;
 }
 
-// Проверяет наличие общего параметра с заданным именем
-bool UContainerDescription::CheckCommonParameter(const std::string &name)
+// Проверяет наличие общего свойства с заданным именем
+bool UContainerDescription::CheckCommonProperty(const std::string &name)
 {
- std::map<std::string, UParameterDescription>::const_iterator I=CommonParameters.find(name);
+ std::map<std::string, UPropertyDescription>::const_iterator I=CommonProperties.find(name);
 
- return I != CommonParameters.end();
+ return I != CommonProperties.end();
 }
 // --------------------------
 
@@ -62,56 +62,56 @@ bool UContainerDescription::CheckCommonParameter(const std::string &name)
 // --------------------------
 // Методы управления данными
 // --------------------------
-// Описание параметра
-const UParameterDescription& UContainerDescription::GetParameter(const std::string &name) 
+// Описание свойства
+const UPropertyDescription& UContainerDescription::GetProperty(const std::string &name)
 {
- std::map<std::string, UParameterDescription>::const_iterator I=Parameters.find(name);
+ std::map<std::string, UPropertyDescription>::const_iterator I=Properties.find(name);
 
- if(I == Parameters.end())
+ if(I == Properties.end())
  {
-  I=CommonParameters.find(name);
-  if(I == CommonParameters.end())
+  I=CommonProperties.find(name);
+  if(I == CommonProperties.end())
   {
-   UParameterDescription descr;
-   I=Parameters.insert(Parameters.end(),pair<std::string, UParameterDescription>(name,descr));
+   UPropertyDescription descr;
+   I=Properties.insert(Properties.end(),pair<std::string, UPropertyDescription>(name,descr));
   }
  }
 
  return I->second;
 }
 
-bool UContainerDescription::SetParameter(const std::string &name, const UParameterDescription& value, bool force)
+bool UContainerDescription::SetProperty(const std::string &name, const UPropertyDescription& value, bool force)
 {
- if(CheckCommonParameter(name) && !force)
+ if(CheckCommonProperty(name) && !force)
   return true;
 
 // I->second=value;
- Parameters[name]=value;
+ Properties[name]=value;
 
  return true;
 }
 
-// Удаляет параметр из этого описания, если он есть в общих описаниях
-bool UContainerDescription::RemoveCommonDuplicatesParameter(const std::string &name)
+// Удаляет свойство из этого описания, если он есть в общих описаниях
+bool UContainerDescription::RemoveCommonDuplicatesProperty(const std::string &name)
 {
- std::map<std::string, UParameterDescription>::const_iterator I=CommonParameters.find(name);
+ std::map<std::string, UPropertyDescription>::const_iterator I=CommonProperties.find(name);
 
- if(I != CommonParameters.begin())
-  Parameters.erase(name);
+ if(I != CommonProperties.begin())
+  Properties.erase(name);
 
  return true;
 }
 
-// Удаляет все параметры из этого описания, если они есть в общих описаниях
-bool UContainerDescription::RemoveCommonDuplicatesParameters(void)
+// Удаляет все свойства из этого описания, если они есть в общих описаниях
+bool UContainerDescription::RemoveCommonDuplicatesProperties(void)
 {
- std::map<std::string, UParameterDescription>::iterator I,J;
- for(J=Parameters.begin();J != Parameters.end();)
+ std::map<std::string, UPropertyDescription>::iterator I,J;
+ for(J=Properties.begin();J != Properties.end();)
  {
-  if(CommonParameters.find(J->first) != CommonParameters.end())
+  if(CommonProperties.find(J->first) != CommonProperties.end())
   {
    I=J; ++I;
-   Parameters.erase(J);
+   Properties.erase(J);
    J=I;
   }
   else
@@ -130,9 +130,9 @@ bool UContainerDescription::Save(Serialize::USerStorageXML &xml)
  if(!UComponentDescription::Save(xml))
   return false;
 
- xml.AddNode("Parameters");
- std::map<std::string, UParameterDescription>::const_iterator I=Parameters.begin();
- while(I != Parameters.end())
+ xml.AddNode("Properties");
+ std::map<std::string, UPropertyDescription>::const_iterator I=Properties.begin();
+ while(I != Properties.end())
  {
   xml.AddNode(I->first);
 
@@ -153,14 +153,14 @@ bool UContainerDescription::Load(Serialize::USerStorageXML &xml)
  if(!UComponentDescription::Load(xml))
   return false;
 
- if(!xml.SelectNode("Parameters"))
+ if(!xml.SelectNode("Properties"))
   return false;
 
- Parameters.clear();
+ Properties.clear();
  int num_parameters=xml.GetNumNodes();
  for(int i=0;i<num_parameters;i++)
-// std::map<std::string, UParameterDescription>::iterator I=Parameters.begin();
-// while(I != Parameters.end())
+// std::map<std::string, UPropertyDescription>::iterator I=Properties.begin();
+// while(I != Properties.end())
  {
   if(!xml.SelectNode(i))
   {
@@ -171,7 +171,7 @@ bool UContainerDescription::Load(Serialize::USerStorageXML &xml)
   std::string nodename=xml.GetNodeName();
   if(xml.SelectNode("Header"))
   {
-   Parameters[nodename].Header=xml.GetNodeText();
+   Properties[nodename].Header=xml.GetNodeText();
    xml.SelectUp();
   }
 
@@ -190,9 +190,9 @@ bool UContainerDescription::Load(Serialize::USerStorageXML &xml)
 // Сохраняет данные класса в XML
 bool UContainerDescription::SaveCommon(Serialize::USerStorageXML &xml)
 {
- xml.AddNode("Parameters");
- std::map<std::string, UParameterDescription>::const_iterator I=CommonParameters.begin();
- while(I != CommonParameters.end())
+ xml.AddNode("Properties");
+ std::map<std::string, UPropertyDescription>::const_iterator I=CommonProperties.begin();
+ while(I != CommonProperties.end())
  {
   xml.AddNode(I->first);
 
@@ -210,12 +210,12 @@ bool UContainerDescription::SaveCommon(Serialize::USerStorageXML &xml)
 // Загружает данные класса из XML
 bool UContainerDescription::LoadCommon(Serialize::USerStorageXML &xml)
 {
- if(!xml.SelectNode("Parameters"))
+ if(!xml.SelectNode("Properties"))
   return false;
 
-// std::map<std::string, UParameterDescription>::iterator I=CommonParameters.begin();
-// while(I != CommonParameters.end())
- CommonParameters.clear();
+// std::map<std::string, UPropertyDescription>::iterator I=CommonProperties.begin();
+// while(I != CommonProperties.end())
+ CommonProperties.clear();
  int num_parameters=xml.GetNumNodes();
  for(int i=0;i<num_parameters;i++)
  {
@@ -228,7 +228,7 @@ bool UContainerDescription::LoadCommon(Serialize::USerStorageXML &xml)
   std::string nodename=xml.GetNodeName();
   if(xml.SelectNode("Header"))
   {
-   CommonParameters[nodename].Header=xml.GetNodeText();
+   CommonProperties[nodename].Header=xml.GetNodeText();
    xml.SelectUp();
   }
 

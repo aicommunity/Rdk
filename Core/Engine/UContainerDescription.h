@@ -6,14 +6,14 @@
 
 namespace RDK {
 
-// Класс описания параметра компонента
-class UParameterDescription
+// Класс описания свойства компонента
+class UPropertyDescription
 {
 public: // Данные
-// Заголовок параметра
+// Заголовок свойства
 std::string Header;
 
-// Описание параметра
+// Описание свойства
 std::string Description;
 
 
@@ -24,11 +24,11 @@ public: // Методы
 class UContainerDescription: public UComponentDescription
 {
 protected: // Данные
-// Описания общих параметров
-static std::map<std::string, UParameterDescription> CommonParameters;
+// Описания общих свойств
+static std::map<std::string, UPropertyDescription> CommonProperties;
 
-// Описания параметров
-std::map<std::string, UParameterDescription> Parameters;
+// Описания свойств
+std::map<std::string, UPropertyDescription> Properties;
 
 public: // Методы
 // --------------------------
@@ -40,28 +40,28 @@ virtual ~UContainerDescription(void);
 // --------------------------
 
 // --------------------------
-// Методы управления общими параметрами
+// Методы управления общими свойствами
 // --------------------------
-// Описание общего параметра
-static const UParameterDescription& GetCommonParameter(const std::string &name);
-static bool SetCommonParameter(const std::string &name, const UParameterDescription& value);
+// Описание общего свойства
+static const UPropertyDescription& GetCommonProperty(const std::string &name);
+static bool SetCommonProperty(const std::string &name, const UPropertyDescription& value);
 
-// Проверяет наличие общего параметра с заданным именем
-static bool CheckCommonParameter(const std::string &name);
+// Проверяет наличие общего свойства с заданным именем
+static bool CheckCommonProperty(const std::string &name);
 // --------------------------
 
 // --------------------------
 // Методы управления данными
 // --------------------------
-// Описание параметра
-const UParameterDescription& GetParameter(const std::string &name);
-bool SetParameter(const std::string &name, const UParameterDescription& value, bool force=false);
+// Описание свойства
+const UPropertyDescription& GetProperty(const std::string &name);
+bool SetProperty(const std::string &name, const UPropertyDescription& value, bool force=false);
 
-// Удаляет параметр из этого описания, если он есть в общих описаниях
-bool RemoveCommonDuplicatesParameter(const std::string &name);
+// Удаляет свойство из этого описания, если он есть в общих описаниях
+bool RemoveCommonDuplicatesProperty(const std::string &name);
 
-// Удаляет все параметры из этого описания, если они есть в общих описаниях
-bool RemoveCommonDuplicatesParameters(void);
+// Удаляет все свойства из этого описания, если они есть в общих описаниях
+bool RemoveCommonDuplicatesProperties(void);
 // --------------------------
 
 // --------------------------

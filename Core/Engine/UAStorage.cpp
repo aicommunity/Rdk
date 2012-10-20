@@ -336,7 +336,7 @@ bool UAStorage::LoadCommonClassesDescription(Serialize::USerStorageXML &xml)
 
  while(I != ClassesDescription.end())
  {
-  dynamic_pointer_cast<UContainerDescription>(I->second)->RemoveCommonDuplicatesParameters();
+  dynamic_pointer_cast<UContainerDescription>(I->second)->RemoveCommonDuplicatesProperties();
   ++I;
  }
 

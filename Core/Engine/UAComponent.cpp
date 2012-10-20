@@ -115,9 +115,12 @@ UComponentDescription* UAComponent::NewDescription(void)
 {
  UComponentDescription* result=new UComponentDescription;
 
- result->SetClassId(sntoa(Class));
+ return ANewDescription(result);
+}
 
- return result;
+UComponentDescription* UAComponent::ANewDescription(UComponentDescription* description)
+{
+ return description;
 }
 
 // Уничтожение этого объекта

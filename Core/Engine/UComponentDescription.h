@@ -15,9 +15,6 @@ protected: // Данные
 // Имя класса
 std::string ClassName;
 
-// Id класса записанное в виде строки
-std::string ClassId;
-
 // Заголовок класса
 std::string Header;
 
@@ -59,10 +56,6 @@ virtual ~UComponentDescription(void);
 // Имя класса
 const std::string& GetClassNameValue(void) const;
 void SetClassNameValue(const std::string& value);
-
-// Id класса записанное в виде строки
-const std::string& GetClassId(void) const;
-void SetClassId(const std::string& value);
 
 // Заголовок класса
 const std::string& GetHeader(void) const;

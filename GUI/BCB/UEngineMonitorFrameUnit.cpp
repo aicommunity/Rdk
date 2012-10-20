@@ -135,3 +135,33 @@ void __fastcall TUEngineMonitorFrame::Step1Click(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+void __fastcall TUEngineMonitorFrame::SaveClassesDescriptions1Click(TObject *Sender)
+
+{
+ TRichEdit* RichEdit=new TRichEdit(this);
+ RichEdit->Visible=false;
+ RichEdit->Parent=this;
+
+ RichEdit->PlainText=true;
+ RichEdit->Text=Storage_SaveAllClassesDescription();
+ RichEdit->Lines->SaveToFile("ClassesDescription.xml");
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TUEngineMonitorFrame::LoadAllClassesDescriptions1Click(TObject *Sender)
+
+{
+ TRichEdit* RichEdit=new TRichEdit(this);
+ RichEdit->Parent=this;
+ RichEdit->PlainText=true;
+ RichEdit->Visible=false;
+ RichEdit->Lines->LoadFromFile("ClassesDescription.xml");
+
+ Storage_LoadClassesDescription(AnsiString(RichEdit->Text).c_str());
+ Storage_LoadCommonClassesDescription(AnsiString(RichEdit->Text).c_str());
+
+ delete RichEdit;
+}
+//---------------------------------------------------------------------------
+

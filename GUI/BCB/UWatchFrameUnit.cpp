@@ -636,18 +636,25 @@ void __fastcall TUWatchFrame::StepUpdate(void)
 	 vxdata.assign(xdata_size*3+1,0);
 	 vydata.assign(xdata_size*3+1,0);
 	 double* xx=(double*)Model_GetComponentOutputData(wd->XDataSourceName.c_str(), wd->XOutputIndex);
-	 if(!xx)
-	  continue;
-	 vxdata[0]=xx[0]-0.0001;
-	 vydata[0]=0;
-	 for(int i=0,j=1;i<xdata_size;i++,j+=3)
+
+	 if(!xx || !xdata_size)
 	 {
-	  vxdata[j]=xx[i]-0.0001;
-	  vydata[j]=0;
-	  vxdata[j+1]=xx[i];
-	  vydata[j+1]=1;
-	  vxdata[j+2]=xx[i]+0.0001;
-	  vydata[j+2]=0;
+	  vxdata[0]=Model_GetDoubleTime();
+	  vydata[0]=0;
+	 }
+	 else
+	 {
+	  vxdata[0]=xx[0]-0.0001;
+	  vydata[0]=0;
+	  for(int i=0,j=1;i<xdata_size;i++,j+=3)
+	  {
+	   vxdata[j]=xx[i]-0.0001;
+	   vydata[j]=0;
+	   vxdata[j+1]=xx[i];
+	   vydata[j+1]=1;
+	   vxdata[j+2]=xx[i]+0.0001;
+	   vydata[j+2]=0;
+	  }
 	 }
 
 	 y=&vydata[0];
@@ -701,14 +708,15 @@ void __fastcall TUWatchFrame::StepUpdate(void)
    for(int i=0;i<wd->XYSize;i++)
 	series->AddXY(x[i],y[i]+wd->YShift,"",wd->Color);
 
+   Chart1->BottomAxis->Automatic=false;
    if(wd->WatchInterval>0)
    {
 	double ser_max,ser_min;
 	do{
-	 if(series->Count() > 0)
+	 if(series->Count() > 1)
 	 {
 	  ser_max=series->XValue[series->Count()-1];
-	  ser_min=series->XValue[0];
+	  ser_min=series->XValue[1];
 	 }
 	 else
 	 {
@@ -716,7 +724,6 @@ void __fastcall TUWatchFrame::StepUpdate(void)
 	  ser_min=0;
 	 }
 
-	 Chart1->BottomAxis->Automatic=false;
 	 if(ser_max-wd->WatchInterval<Chart1->BottomAxis->Maximum)
 	 {
 	  Chart1->BottomAxis->Minimum=ser_max-wd->WatchInterval;

@@ -85,6 +85,12 @@ RDK_LIB_TYPE const char* RDK_CALL Storage_SaveCommonClassesDescription(void);
 
 // Загружает общее описание всех классов из xml
 RDK_LIB_TYPE bool RDK_CALL Storage_LoadCommonClassesDescription(const char* xmltext);
+
+// Сохраняет описание всех классов в xml включая общее описание
+RDK_LIB_TYPE const char* RDK_CALL Storage_SaveAllClassesDescription(void);
+
+// Загружает описание всех классов из xml включая общее описание
+RDK_LIB_TYPE bool RDK_CALL Storage_LoadAllClassesDescription(const char* xmltext);
 // --------------------------
 
 // --------------------------

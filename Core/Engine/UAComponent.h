@@ -91,6 +91,7 @@ virtual UAComponent* New(void)=0;
 
 // Создает экземпляр описания класса
 virtual UComponentDescription* NewDescription(void);
+virtual UComponentDescription* ANewDescription(UComponentDescription* description);
 
 // Уничтожение этого объекта
 void Free(void);
