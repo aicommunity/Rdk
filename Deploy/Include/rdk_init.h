@@ -399,7 +399,7 @@ RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentStateValue(const char *stri
 
 // Устанавливает состояние компонента по идентификатору
 // Deprecated
-RDK_LIB_TYPE bool RDK_CALL Model_SetComponentState(const char *stringid, const char* buffer);
+RDK_LIB_TYPE int RDK_CALL Model_SetComponentState(const char *stringid, const char* buffer);
 
 // Устанавливает значение переменной состояния компонента по идентификатору компонента и имени переменной
 // Deprecated
@@ -448,7 +448,7 @@ RDK_LIB_TYPE int RDK_CALL Model_SetComponentInternalLinks(const char* stringid, 
 // если 'sublevel' == 0, то возвращает связи подсетей только этой сети
 // Имена формируются до уровня компонента owner_level_stringid
 // Если owner_level_stringid не задан, то имена формируются до уровня текущего компонента
-RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentInputLinks(const char* stringid, const char* owner_level_stringid=0, bool sublevel=-1);
+RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentInputLinks(const char* stringid, const char* owner_level_stringid=0, int sublevel=-1);
 
 // Возвращает все выходные связи из компонента stringid в виде xml в буфер buffer
 // если 'sublevel' == -2, то возвращает связи всех элементов включая
@@ -458,7 +458,7 @@ RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentInputLinks(const char* stri
 // если 'sublevel' == 0, то возвращает связи подсетей только этой сети
 // Имена формируются до уровня компонента owner_level_stringid
 // Если owner_level_stringid не задан, то имена формируются до уровня текущего компонента
-RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentOutputLinks(const char* stringid, const char* owner_level_stringid=0, bool sublevel=-1);
+RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentOutputLinks(const char* stringid, const char* owner_level_stringid=0, int sublevel=-1);
 
 // Возращает все внешние связи c компонентом cont и его дочерними компонентами в виде xml в буфер buffer
 // Информация о связях формируется относительно владельца компонента cont!

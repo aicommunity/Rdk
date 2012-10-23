@@ -1,5 +1,5 @@
-#ifndef RDK_EXCEPTIONS_CPP
-#define RDK_EXCEPTIONS_CPP
+#ifndef RDK_WIN_EXCEPTIONS_CPP
+#define RDK_WIN_EXCEPTIONS_CPP
 #include "rdk_exceptions.win.h"
 namespace RDK {                                  
 

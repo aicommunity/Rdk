@@ -159,7 +159,7 @@ UGEDescription& UDrawEngine::GetDescription(const string &name)
 }
 
 // Возвращает всю таблицу соответсвий
-const map<string, UGEDescription>& UDrawEngine::GetDescriptions(void)
+const UDrawEngine::DescriptionsTableT& UDrawEngine::GetDescriptions(void)
 {
  return Descriptions;
 }
@@ -200,7 +200,7 @@ void UDrawEngine::UpdateDescriptions(void)
 // Выделяет заданный компонент, сбрасывая флаг выделения с остальных
 void UDrawEngine::SelectSingleComponent(const string &name)
 {
- map<string, UGEDescription>::iterator I, J;
+ DescriptionsTableIteratorT I, J;
  I = Descriptions.begin();
  J = Descriptions.end();
 
@@ -216,7 +216,7 @@ void UDrawEngine::SelectSingleComponent(const string &name)
 // Поиск объекта по заданным координатам в изображении
 std::string UDrawEngine::FindComponent(int x, int y)
 {
- map<string, UGEDescription>::iterator I, J;
+ DescriptionsTableIteratorT I, J;
  I = Descriptions.begin();
  J = Descriptions.end();
  std::string name;
@@ -237,7 +237,7 @@ std::string UDrawEngine::FindComponent(int x, int y)
 // Перемещает компонента в заданные координаты, с некоторой зоной нечуствительности
 void UDrawEngine::MoveComponent(const string &name, int x, int y)
 {
- map<string, UGEDescription>::iterator I=Descriptions.find(name);
+ DescriptionsTableIteratorT I=Descriptions.find(name);
  if(I == Descriptions.end())
   return;
  UGEDescription &descr=I->second;
@@ -340,7 +340,7 @@ bool UDrawEngine::SetDestination(const string &name, int x, int y)
 // Заполняет массивы связей компонент
 void UDrawEngine::ParseLinks(void)
 {
- map<string,UGEDescription>::iterator I,J;
+ DescriptionsTableIteratorT I,J;
 
  NetXml.SelectRoot();
  NetXml.SelectNode(0);
@@ -388,7 +388,7 @@ void UDrawEngine::Draw(void)
  CanvasHeight=GEngine->GetCHeight();
 
  DrawBackground();
- map<string, UGEDescription>::iterator I, J;
+ DescriptionsTableIteratorT I, J;
  I = Descriptions.begin();
  J = Descriptions.end();
 
@@ -406,7 +406,7 @@ void UDrawEngine::Draw(void)
 // Возвращает false если элемент не найден
 bool UDrawEngine::Draw(const string &name)
 {
- map<string, UGEDescription>::iterator I = Descriptions.find(name);
+ DescriptionsTableIteratorT I = Descriptions.find(name);
 
  if (I == Descriptions.end())
   return false;
@@ -424,14 +424,14 @@ bool UDrawEngine::Draw(const string &name)
 bool UDrawEngine::DrawLinks(bool links, bool highlight,
 	bool contour)
 {
- map<string,vector<map<string,UGEDescription>::iterator> >::iterator I,J;
+ DescriptionsLinksTableIteratorT I,J;
 
  I=Links.begin();
  J=Links.end();
 
  for(;I!=J;++I)
  {
-  map<string,UGEDescription>::iterator K=Descriptions.find(I->first);
+  DescriptionsTableIteratorT K=Descriptions.find(I->first);
   if(K == Descriptions.end())
    continue;
   UGEDescription &out=K->second;
@@ -486,14 +486,14 @@ void UDrawEngine::Paint(UGEDescription &ndescr)
 
  // Отрисовываем индикаторы
  for(size_t i=0;i<ndescr.Indicators.size();i++)
-  PaintIndicator(ndescr.Position.x - ndescr.Radius,
-		ndescr.Position.y + ndescr.Radius + ndescr.ContourWidth, ndescr.Radius * 2,
+  PaintIndicator(int(ndescr.Position.x) - ndescr.Radius,
+		int(ndescr.Position.y) + ndescr.Radius + ndescr.ContourWidth, ndescr.Radius * 2,
 		ndescr.Radius / 2, ndescr.Indicators[i], 1, (i<FullIndicatorColors.size())?FullIndicatorColors[i]:BackgroundColor,
 		(i<EmptyIndicatorColors.size())?EmptyIndicatorColors[i]:BackgroundColor);
 
  // Отрисовываем имя
  GEngine->SetPenColor(ndescr.ContourColor);
-  GEngine->Text(ndescr.Header,ndescr.Position.x+ndescr.Radius*1.5,static_cast<int>(ndescr.Position.y-ndescr.Radius/2));
+  GEngine->Text(ndescr.Header,int(ndescr.Position.x+ndescr.Radius*1.5),static_cast<int>(int(ndescr.Position.y)-ndescr.Radius/2));
 }
 
 // Отрисовывает конечный элемент (NAItem*) с центром в заданной позиции
@@ -503,30 +503,30 @@ void UDrawEngine::PaintItem(UGEDescription &ndescr)
  int shift=0;
 
  if(ndescr.ContourWidth % 2)
-  shift=std::ceil(ndescr.ContourWidth/2.0);
+  shift=int(std::ceil(ndescr.ContourWidth/2.0));
  else
-  shift=std::ceil(ndescr.ContourWidth/2.0+1);
+  shift=int(std::ceil(ndescr.ContourWidth/2.0+1));
 
  GEngine->SetPenWidth(ndescr.ContourWidth);
  if (ndescr.ContourColor == ndescr.FillColor)
  {
         GEngine->SetPenColor(ndescr.ContourColor);
-		GEngine->Rect(ndescr.Position.x-ndescr.Radius, ndescr.Position.y-ndescr.Radius, ndescr.Position.x+ndescr.Radius, ndescr.Position.y+ndescr.Radius, true);
+		GEngine->Rect(int(int(ndescr.Position.x))-ndescr.Radius, int(int(ndescr.Position.y))-ndescr.Radius, int(int(ndescr.Position.x))+ndescr.Radius, int(int(ndescr.Position.y))+ndescr.Radius, true);
  }
  else
  {
   if (ndescr.Highlight)
   {
-   GEngine->Rect(ndescr.Position.x-ndescr.Radius, ndescr.Position.y-ndescr.Radius, ndescr.Position.x+ndescr.Radius, ndescr.Position.y+ndescr.Radius, false);
+   GEngine->Rect(int(int(ndescr.Position.x))-ndescr.Radius, int(int(ndescr.Position.y))-ndescr.Radius, int(int(ndescr.Position.x))+ndescr.Radius, int(int(ndescr.Position.y))+ndescr.Radius, false);
    GEngine->SetPenColor(SelectedColor);
-   GEngine->Rect(ndescr.Position.x-ndescr.Radius+shift, ndescr.Position.y-ndescr.Radius+shift, ndescr.Position.x+ndescr.Radius-ndescr.ContourWidth, ndescr.Position.y+ndescr.Radius-ndescr.ContourWidth, true);
+   GEngine->Rect(int(int(ndescr.Position.x))-ndescr.Radius+shift, int(int(ndescr.Position.y))-ndescr.Radius+shift, int(int(ndescr.Position.x))+ndescr.Radius-ndescr.ContourWidth, int(int(ndescr.Position.y))+ndescr.Radius-ndescr.ContourWidth, true);
   }
   else
   {
    GEngine->SetPenColor(ndescr.ContourColor);
-   GEngine->Rect(ndescr.Position.x-ndescr.Radius, ndescr.Position.y-ndescr.Radius, ndescr.Position.x+ndescr.Radius, ndescr.Position.y+ndescr.Radius, false);
+   GEngine->Rect(int(int(ndescr.Position.x))-ndescr.Radius, int(int(ndescr.Position.y))-ndescr.Radius, int(int(ndescr.Position.x))+ndescr.Radius, int(int(ndescr.Position.y))+ndescr.Radius, false);
    GEngine->SetPenColor(ndescr.FillColor);
-   GEngine->Rect(ndescr.Position.x-ndescr.Radius+shift, ndescr.Position.y-ndescr.Radius+shift, ndescr.Position.x+ndescr.Radius-ndescr.ContourWidth, ndescr.Position.y+ndescr.Radius-ndescr.ContourWidth, true);
+   GEngine->Rect(int(int(ndescr.Position.x))-ndescr.Radius+shift, int(int(ndescr.Position.y))-ndescr.Radius+shift, int(int(ndescr.Position.x))+ndescr.Radius-ndescr.ContourWidth, int(ndescr.Position.y)+ndescr.Radius-ndescr.ContourWidth, true);
   }
  }
 }
@@ -537,30 +537,30 @@ void UDrawEngine::PaintNet(UGEDescription &ndescr)
  int shift=0;
 
  if((ndescr.ContourWidth+1) % 2)
-  shift=std::ceil((ndescr.ContourWidth+1)/2.0);
+  shift=int(std::ceil((ndescr.ContourWidth+1)/2.0));
  else
-  shift=std::ceil((ndescr.ContourWidth+1)/2.0+1);
+  shift=int(std::ceil((ndescr.ContourWidth+1)/2.0+1));
 
  GEngine->SetPenWidth(ndescr.ContourWidth+1);
  if (ndescr.ContourColor == ndescr.FillColor)
  {
   GEngine->SetPenColor(ndescr.ContourColor);
-  GEngine->Rect(ndescr.Position.x-ndescr.Radius, ndescr.Position.y-ndescr.Radius, ndescr.Position.x+ndescr.Radius, ndescr.Position.y+ndescr.Radius, true);
+  GEngine->Rect(int(int(ndescr.Position.x))-ndescr.Radius, int(int(ndescr.Position.y))-ndescr.Radius, int(int(ndescr.Position.x))+ndescr.Radius, int(int(ndescr.Position.y))+ndescr.Radius, true);
  }
  else
  {
   if (ndescr.Highlight)
   {
-   GEngine->Rect(ndescr.Position.x-ndescr.Radius, ndescr.Position.y-ndescr.Radius, ndescr.Position.x+ndescr.Radius, ndescr.Position.y+ndescr.Radius, false);
+   GEngine->Rect(int(ndescr.Position.x)-ndescr.Radius, int(ndescr.Position.y)-ndescr.Radius, int(ndescr.Position.x)+ndescr.Radius, int(ndescr.Position.y)+ndescr.Radius, false);
    GEngine->SetPenColor(SelectedColor);
-   GEngine->Rect(ndescr.Position.x-ndescr.Radius+shift, ndescr.Position.y-ndescr.Radius+shift, ndescr.Position.x+ndescr.Radius-ndescr.ContourWidth, ndescr.Position.y+ndescr.Radius-ndescr.ContourWidth, true);
+   GEngine->Rect(int(ndescr.Position.x)-ndescr.Radius+shift, int(ndescr.Position.y)-ndescr.Radius+shift, int(ndescr.Position.x)+ndescr.Radius-ndescr.ContourWidth, int(ndescr.Position.y)+ndescr.Radius-ndescr.ContourWidth, true);
   }
   else
   {
    GEngine->SetPenColor(ndescr.ContourColor);
-   GEngine->Rect(ndescr.Position.x-ndescr.Radius, ndescr.Position.y-ndescr.Radius, ndescr.Position.x+ndescr.Radius, ndescr.Position.y+ndescr.Radius, false);
+   GEngine->Rect(int(ndescr.Position.x)-ndescr.Radius, int(ndescr.Position.y)-ndescr.Radius, int(ndescr.Position.x)+ndescr.Radius, int(ndescr.Position.y)+ndescr.Radius, false);
    GEngine->SetPenColor(ndescr.FillColor);
-   GEngine->Rect(ndescr.Position.x-ndescr.Radius+shift, ndescr.Position.y-ndescr.Radius+shift, ndescr.Position.x+ndescr.Radius-ndescr.ContourWidth, ndescr.Position.y+ndescr.Radius-ndescr.ContourWidth, true);
+   GEngine->Rect(int(ndescr.Position.x)-ndescr.Radius+shift, int(ndescr.Position.y)-ndescr.Radius+shift, int(ndescr.Position.x)+ndescr.Radius-ndescr.ContourWidth, int(ndescr.Position.y)+ndescr.Radius-ndescr.ContourWidth, true);
   }
  }
 }
@@ -622,37 +622,37 @@ void UDrawEngine::PaintLink(UGEDescription &out, UGEDescription &in,
   GEngine->SetPenWidth(out.LinkWidth);
   RDK::MVector<double,3> &c_out=out.Position;
   RDK::MVector<double,3> &c_in=in.Position;
-  int x_diff=fabs(c_out.x-c_in.x), y_diff=fabs(c_out.y-c_in.y);
+  double x_diff=fabs(c_out.x-c_in.x), y_diff=fabs(c_out.y-c_in.y);
   if(c_out.x<c_in.x && x_diff>y_diff)
   {
-   GEngine->Line(c_out.x + out.Radius, c_out.y, c_in.x - in.Radius, c_in.y);
-   GEngine->Rect(in.Position.x - in.Radius - out.LinkWidth,
-			c_in.y - out.LinkWidth,
-			c_in.x - in.Radius + out.LinkWidth, c_in.y + out.LinkWidth, true);
+   GEngine->Line(int(c_out.x) + out.Radius, int(c_out.y), int(c_in.x) - in.Radius, int(c_in.y));
+   GEngine->Rect(int(in.Position.x) - in.Radius - out.LinkWidth,
+			int(c_in.y) - out.LinkWidth,
+			int(c_in.x) - in.Radius + out.LinkWidth, int(c_in.y) + out.LinkWidth, true);
   }
   else
   if(c_out.y<c_in.y && x_diff<=y_diff)
   {
-   GEngine->Line(c_out.x, c_out.y + out.Radius, c_in.x, c_in.y - in.Radius);
-   GEngine->Rect(in.Position.x - out.LinkWidth,
-			c_in.y - in.Radius - out.LinkWidth,
-			c_in.x + out.LinkWidth, c_in.y - in.Radius + out.LinkWidth, true);
+   GEngine->Line(int(c_out.x), int(c_out.y) + out.Radius, int(c_in.x), int(c_in.y) - in.Radius);
+   GEngine->Rect(int(in.Position.x) - out.LinkWidth,
+			int(c_in.y) - in.Radius - out.LinkWidth,
+			int(c_in.x) + out.LinkWidth, int(c_in.y) - in.Radius + out.LinkWidth, true);
   }
   else
   if(c_out.x>=c_in.x && x_diff>y_diff)
   {
-   GEngine->Line(c_out.x - out.Radius, c_out.y, c_in.x + in.Radius, c_in.y);
-   GEngine->Rect(in.Position.x + in.Radius - out.LinkWidth,
-			c_in.y - out.LinkWidth,
-			c_in.x + in.Radius + out.LinkWidth, c_in.y + out.LinkWidth, true);
+   GEngine->Line(int(c_out.x) - out.Radius, int(c_out.y), int(c_in.x) + in.Radius, int(c_in.y));
+   GEngine->Rect(int(in.Position.x) + in.Radius - out.LinkWidth,
+			int(c_in.y) - out.LinkWidth,
+			int(c_in.x) + in.Radius + out.LinkWidth, int(c_in.y) + out.LinkWidth, true);
   }
   else
   if(c_out.y>=c_in.y && x_diff<=y_diff)
   {
-   GEngine->Line(c_out.x, c_out.y - out.Radius, c_in.x, c_in.y + in.Radius);
-   GEngine->Rect(in.Position.x - out.LinkWidth,
-			c_in.y + in.Radius - out.LinkWidth,
-			c_in.x + out.LinkWidth, c_in.y + in.Radius + out.LinkWidth, true);
+   GEngine->Line(int(c_out.x), int(c_out.y) - out.Radius, int(c_in.x), int(c_in.y) + in.Radius);
+   GEngine->Rect(int(in.Position.x) - out.LinkWidth,
+			int(c_in.y) + in.Radius - out.LinkWidth,
+			int(c_in.x) + out.LinkWidth, int(c_in.y) + in.Radius + out.LinkWidth, true);
   }
  }
 /*

@@ -99,17 +99,24 @@ UGEDescription& operator = (const UGEDescription &copy);
 */
 class UDrawEngine
 {
+public: // Типы данных
+typedef map<string,UGEDescription> DescriptionsTableT;
+typedef map<string,UGEDescription>::iterator DescriptionsTableIteratorT;
+
+typedef map<string,vector<DescriptionsTableIteratorT> > DescriptionsLinksTableT;
+typedef map<string,vector<DescriptionsTableIteratorT> >::iterator DescriptionsLinksTableIteratorT;
+
 protected: // Данные
 // Указатель на сеть
 //UEPtr<UANet> Net;
 Serialize::USerStorageXML NetXml;
 
 // Таблица соответствий между нейронами сети и описаний визуальных элементов
-map<string,UGEDescription> Descriptions;
+DescriptionsTableT Descriptions;
 
 
 // Связи
-map<string,vector<map<string,UGEDescription>::iterator> > Links;
+DescriptionsLinksTableT Links;
 
 
 // Движок для отображения сети
@@ -185,7 +192,7 @@ const Serialize::USerStorageXML& GetNetXml(void) const;
 UGEDescription& GetDescription(const string &name);
 
 // Возвращает всю таблицу соответсвий
-const map<string,UGEDescription>& GetDescriptions(void);
+const UDrawEngine::DescriptionsTableT& GetDescriptions(void);
 
 // Возвращает указатель на движок отображения
 UEPtr<UAGraphics> GetGEngine(void);

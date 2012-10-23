@@ -7,7 +7,7 @@
 #include "UDrawEngineFormUnit.h"
 #include "../../Core/Graphics/UDrawEngine.cpp"
 #include "TUBitmap.h"
-#include "ULinkSelectionFormUnit.h"
+//#include "ULinkSelectionFormUnit.h"
 #include "UComponentLinksFormUnit.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)

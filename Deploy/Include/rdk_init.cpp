@@ -762,7 +762,7 @@ const char * RDK_CALL Model_GetComponentStateValue(const char *stringid, const c
 }
 
 // Устанавливает состояние компонента по идентификатору
-bool RDK_CALL Model_SetComponentState(const char *stringid, const char* buffer)
+int RDK_CALL Model_SetComponentState(const char *stringid, const char* buffer)
 {
  return PEngine->Model_SetComponentProperties(stringid, buffer);
 }

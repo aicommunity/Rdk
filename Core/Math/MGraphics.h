@@ -277,7 +277,7 @@ void MGraphics<T,Rows>::Repaint(void)
    // Отрисовываем точки
    vertex=0;
    for(size_t i=0;i<vertex.GetNumVertex();i++,vertex++)
-    Graphics->Pixel(vertex().x,vertex().y);
+    Graphics->Pixel(int(vertex().x),int(vertex().y));
 
    // Отрисовываем контуры
    for(size_t j=0;j<geometry.GetNumBorders();j++)
@@ -287,7 +287,7 @@ void MGraphics<T,Rows>::Repaint(void)
      {
 	  MVector<T,Rows> v1=vertex[geometry[j][k]];
       MVector<T,Rows> v2=vertex[geometry[j][k+1]];
-      Graphics->Line(v1.x,v1.y,v2.x,v2.y);
+      Graphics->Line(int(v1.x),int(v1.y),int(v2.x),int(v2.y));
      }
    }
   }

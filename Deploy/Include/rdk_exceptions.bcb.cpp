@@ -1,5 +1,5 @@
-#ifndef RDK_EXCEPTIONS_CPP
-#define RDK_EXCEPTIONS_CPP
+#ifndef RDK_BCB_EXCEPTIONS_CPP
+#define RDK_BCB_EXCEPTIONS_CPP
 #include "rdk_exceptions.bcb.h"
 #include <except.h>
 //#include "../../Core/Utilities/USupport.h"

@@ -447,7 +447,7 @@ bool USerStorageXML::ReadBool(const std::string &name, bool default_value)
  if(!SelectNode(name))
   return default_value;
 
- bool res=atoi(GetNodeText());
+ int res=atoi(GetNodeText());
 
  SelectUp();
  return res;
@@ -458,7 +458,7 @@ bool USerStorageXML::ReadBool(const std::string &name, int node_index, bool defa
  if(!SelectNode(name,node_index))
   return default_value;
 
- bool res=atoi(GetNodeText());
+ int res=atoi(GetNodeText());
 
  SelectUp();
  return res;
@@ -469,7 +469,7 @@ bool USerStorageXML::ReadBool(int node_index, bool default_value)
  if(!SelectNode(node_index))
   return default_value;
 
- bool res=atoi(GetNodeText());
+ int res=atoi(GetNodeText());
 
  SelectUp();
  return res;

@@ -208,7 +208,7 @@ template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::operator = (const T* data)
 {
  T* pm1=Data1D;
- for(int i=0;i<Cols*Rows;i++)
+ for(unsigned i=0;i<Cols*Rows;i++)
   *pm1++ = *data++;
  return *this;
 }
@@ -321,7 +321,7 @@ MMatrix<T,Rows,Cols2> operator * (const MMatrix<T,Rows,Cols> &M1, const MMatrix<
 
  for(int j=0;j<Cols2;j++)
  {
-  for(int k=0;k<Rows;k++)
+  for(unsigned k=0;k<Rows;k++)
   {
    T sum=0;
    for(int i=0;i<Cols;i++)
@@ -345,7 +345,7 @@ MMatrix<T,Rows,Cols> MMatrix<T,Rows,Cols>::operator - (void) const
 
  const T* pm1=Data1D;
  T* pm2=res.Data1D;
- for(int i=0;i<Cols*Rows;i++)
+ for(unsigned i=0;i<Cols*Rows;i++)
   *pm2++ = -*pm1++;
 
  return res;
@@ -355,7 +355,7 @@ template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::operator *= (T v)
 {
  T* pm1=Data1D;
- for(int i=0;i<Cols*Rows;i++)
+ for(unsigned i=0;i<Cols*Rows;i++)
   *pm1++ *= v;
 
  return *this;
@@ -466,8 +466,8 @@ bool operator != (const MMatrix<T,Rows,Cols> &M1, const MMatrix<T,Rows,Cols> &M2
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Cols,Rows>& MMatrix<T,Rows,Cols>::Transpose(MMatrix<T,Cols,Rows> &res) const
 {
- for(int i=0;i<Cols;i++)
-  for(int j=0;j<Rows;j++)
+ for(unsigned i=0;i<Cols;i++)
+  for(unsigned j=0;j<Rows;j++)
   {
    res.Data[j][i]=Data[i][j];
   }
