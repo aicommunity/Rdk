@@ -49,6 +49,7 @@
  *
  ****************************************************************************
  */
+#define _XMLPARSER_NO_MESSAGEBOX_
 #ifndef _CRT_SECURE_NO_DEPRECATE
 #define _CRT_SECURE_NO_DEPRECATE
 #endif
@@ -159,7 +160,7 @@ XMLCSTR XMLNode::getError(XMLError xerror)
 #ifdef XML_NO_WIDE_CHAR
 char myIsTextWideChar(const void *b, int len) { return FALSE; }
 #else
-    #if defined (UNDER_CE) || !defined(_XMLWINDOWS)
+    #if 1//defined (UNDER_CE) || !defined(_XMLWINDOWS)
     char myIsTextWideChar(const void *b, int len) // inspired by the Wine API: RtlIsTextUnicode
     {
 #ifdef sun

@@ -67,6 +67,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -93,12 +95,9 @@
     <ClCompile Include="ClassCreateSimple.cpp" />
     <ClCompile Include="..\ClassCreateSimpleCore.cpp" />
     <ClCompile Include="..\..\..\..\Deploy\Include\rdk.win.cpp" />
-    <ClCompile Include="stdafx.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\ClassCreateSimpleCore.h" />
-    <ClInclude Include="stdafx.h" />
-    <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
