@@ -101,6 +101,7 @@ void TUGEngineControlForm::CloseProject(void)
   ProjectPath="";
  }
  ProjectOpenFlag=false;
+ EngineUnInit();
  UpdateInterface();
 }
 
@@ -294,7 +295,7 @@ void TUGEngineControlForm::SaveProject(void)
 //---------------------------------------------------------------------------
 void __fastcall TUGEngineControlForm::FormClose(TObject *Sender, TCloseAction &Action)
 {
- SaveProjectItemClick(Sender);
+ CloseProject();
 }
 //---------------------------------------------------------------------------
 
@@ -477,5 +478,6 @@ void __fastcall TUGEngineControlForm::ReloadParameters1Click(TObject *Sender)
  }
 }
 //---------------------------------------------------------------------------
+
 
 

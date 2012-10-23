@@ -1227,6 +1227,8 @@ RDKDllManager::RDKDllManager(void)
 
 RDKDllManager::~RDKDllManager(void)
 {
+ EngineUnInit();
+
  for(size_t i=0;i<EnvironmentList.size();i++)
   if(EnvironmentList[i])
    delete EnvironmentList[i];

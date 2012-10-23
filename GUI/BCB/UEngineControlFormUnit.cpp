@@ -22,7 +22,7 @@
 TUEngineControlForm *UEngineControlForm;
 //---------------------------------------------------------------------------
 __fastcall TUEngineControlForm::TUEngineControlForm(TComponent* Owner)
-	: TUVisualControllerForm(Owner)
+    : TUVisualControllerForm(Owner)
 {
  ProjectAutoSaveFlag=true;
  ProjectOpenFlag=false;
@@ -133,9 +133,9 @@ void TUEngineControlForm::OpenProject(const String &FileName)
   if(statesfilename.Length() != 0)
   {
    if(ExtractFilePath(statesfilename).Length() == 0)
-	UComponentsControlForm->ComponentsControlFrame->LoadStatesFromFile(ProjectPath+statesfilename);
+    UComponentsControlForm->ComponentsControlFrame->LoadStatesFromFile(ProjectPath+statesfilename);
    else
-	UComponentsControlForm->ComponentsControlFrame->LoadStatesFromFile(statesfilename);
+    UComponentsControlForm->ComponentsControlFrame->LoadStatesFromFile(statesfilename);
   }
  }
 
@@ -222,9 +222,9 @@ void TUEngineControlForm::SaveProject(void)
   if(statesfilename.Length() != 0)
   {
    if(ExtractFilePath(statesfilename).Length() == 0)
-	UComponentsControlForm->ComponentsControlFrame->SaveStatesToFile(ProjectPath+statesfilename);
+    UComponentsControlForm->ComponentsControlFrame->SaveStatesToFile(ProjectPath+statesfilename);
    else
-	UComponentsControlForm->ComponentsControlFrame->SaveStatesToFile(statesfilename);
+    UComponentsControlForm->ComponentsControlFrame->SaveStatesToFile(statesfilename);
   }
  }
 
@@ -251,7 +251,7 @@ void __fastcall TUEngineControlForm::FormShow(TObject *Sender)
 
 void __fastcall TUEngineControlForm::FormClose(TObject *Sender, TCloseAction &Action)
 {
- SaveProjectItemClick(Sender);
+ CloseProject();
 }
 //---------------------------------------------------------------------------
 
