@@ -49,8 +49,6 @@ $(PostBuildEvent)]]></PostBuildEvent>
 			<ProjectType>CppDynamicLibrary</ProjectType>
 			<ILINK_GenerateImportLibrary>true</ILINK_GenerateImportLibrary>
 			<DCC_CBuilderOutput>JPHNE</DCC_CBuilderOutput>
-			<DynamicRTL>true</DynamicRTL>
-			<UsePackages>true</UsePackages>
 			<IntermediateOutputDir>.\$(Platform)\$(Config)</IntermediateOutputDir>
 			<FinalOutputDir>..\..\..\Bin</FinalOutputDir>
 			<BCC_wpar>false</BCC_wpar>
