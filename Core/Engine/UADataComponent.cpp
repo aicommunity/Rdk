@@ -406,9 +406,11 @@ void UADataComponent::DelLookupProperty(const NameT &name)
  if(I == PropertiesLookupTable.end())
   throw new EPropertyNameNotExist(name);
 
- if(I->second.Property && I->second.DelEnable)
-  delete I->second.Property;
+ UIProperty *prop=I->second.Property;
+ bool del_enable=I->second.DelEnable;
  PropertiesLookupTable.erase(I);
+ if(prop && del_enable)
+  delete prop;
 }
 
 // Удаляет всю таблицу соответствий
@@ -418,11 +420,10 @@ void UADataComponent::ClearLookupPropertyTable(void)
  {
   VariableMapIteratorT I=PropertiesLookupTable.begin();
   UIProperty* prop=I->second.Property;
-  if(prop && I->second.DelEnable)
-  {
-   PropertiesLookupTable.erase(I);
+  bool del_enable=I->second.DelEnable;
+  PropertiesLookupTable.erase(I);
+  if(prop && del_enable)
    delete prop;
-  }
  }
 }
 // --------------------------

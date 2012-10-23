@@ -82,6 +82,7 @@ std::string narrow(const std::wstring& wstr, const std::locale& loc)
   res = std::use_facet<cvt>(loc).out(state, wcstr, wcstr + sz, wnext,
 	  buffer, buffer + sz, cnext);
   std::string result(buffer);
+  delete [] buffer;
   if(res == cvt::error)
 	return std::string();
   return result;
