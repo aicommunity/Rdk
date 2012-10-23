@@ -10,6 +10,10 @@
 ACreateSimpleCore::ACreateSimpleCore()
 {}
 
+ACreateSimpleCore::~ACreateSimpleCore()
+{}
+
+
 void ACreateSimpleCore::LoadFromFile (void)
 {
  RDK::UFileIO FileIO;
@@ -21,7 +25,6 @@ void ACreateSimpleCore::LoadFromFile (void)
  {
   FileIO.GetDataString();
   RDK::separatestring(FileIO.GetDataString(), data, '\n', 0, 0);
-
  }
 }
 		
