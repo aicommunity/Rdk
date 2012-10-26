@@ -109,6 +109,8 @@ virtual void ALoadParameters(RDK::Serialize::USerStorageXML &xml);
 // -----------------------------
 void SetNet(const std::string &comp_name);
 
+void ReloadNet(void);
+
 void SelectComponent(const std::string &comp_name);
 
 // Сохраняет положение компонента в заданных координатах

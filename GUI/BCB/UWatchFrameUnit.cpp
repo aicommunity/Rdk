@@ -633,8 +633,8 @@ void __fastcall TUWatchFrame::StepUpdate(void)
    if(wd->YDataSourceName.size()==0 && wd->XDataSourceName.size())
    {
 	int xdata_size=Model_GetComponentOutputDataSize(wd->XDataSourceName.c_str(), wd->XOutputIndex);
-	 vxdata.assign(xdata_size*3+1,0);
-	 vydata.assign(xdata_size*3+1,0);
+	 vxdata.assign(xdata_size*3+2,0);
+	 vydata.assign(xdata_size*3+2,0);
 	 double* xx=(double*)Model_GetComponentOutputData(wd->XDataSourceName.c_str(), wd->XOutputIndex);
 
 	 if(!xx || !xdata_size)
@@ -655,11 +655,13 @@ void __fastcall TUWatchFrame::StepUpdate(void)
 	   vxdata[j+2]=xx[i]+0.0001;
 	   vydata[j+2]=0;
 	  }
+	  vxdata[xdata_size*3+1]=Model_GetDoubleTime();
+	  vydata[xdata_size*3+1]=0;
 	 }
 
 	 y=&vydata[0];
 	 x=&vxdata[0];
-	 wd->XYSize=xdata_size*3+1;
+	 wd->XYSize=xdata_size*3+2;
    }
    else
    {
@@ -735,12 +737,12 @@ void __fastcall TUWatchFrame::StepUpdate(void)
 	  Chart1->BottomAxis->Minimum=ser_max-wd->WatchInterval;
 	 }
 
-	 if(ser_max-ser_min > wd->WatchInterval)
+	 if(fabs(ser_max-ser_min) > wd->WatchInterval)
 	 {
 	  series->Delete(0);
 //	  series->Delete(0);
 	 }
-	}while (ser_max-ser_min > wd->WatchInterval);
+	}while (fabs(ser_max-ser_min) > wd->WatchInterval);
    }
    static_cast<TFastLineSeries*>(series)->AutoRepaint=true;
   }

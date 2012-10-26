@@ -77,6 +77,9 @@ void TUComponentLinksFrame::SetMode(int mode)
   GroupBox1->Visible=true;
   GroupBox2->Visible=true;
   GroupBox3->Align=alBottom;
+  GroupBox3->Height=ClientHeight/2;
+  GroupBox1->Align=alRight;
+  GroupBox2->Align=alClient;
   GroupBox3->Visible=true;
   Splitter1->Visible=true;
  break;
@@ -88,6 +91,9 @@ void TUComponentLinksFrame::SetMode(int mode)
   GroupBox1->Visible=true;
   GroupBox2->Visible=true;
   GroupBox3->Align=alBottom;
+  GroupBox3->Height=ClientHeight/2;
+  GroupBox1->Align=alRight;
+  GroupBox2->Align=alClient;
   GroupBox3->Visible=true;
   Splitter1->Visible=true;
  break;

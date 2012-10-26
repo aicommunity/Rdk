@@ -63,7 +63,6 @@ object UDrawEngineForm: TUDrawEngineForm
     Height = 369
     Align = alClient
     TabOrder = 1
-    ExplicitWidth = 504
     object ScrollBox: TScrollBox
       Left = 1
       Top = 1
@@ -72,7 +71,6 @@ object UDrawEngineForm: TUDrawEngineForm
       Align = alClient
       TabOrder = 0
       OnResize = ScrollBoxResize
-      ExplicitWidth = 502
       object Image: TImage
         Left = 0
         Top = 0

@@ -18,7 +18,14 @@ TUEngineMonitorForm *UEngineMonitorForm;
 //---------------------------------------------------------------------------
 void ExceptionHandler(void)
 {
- UEngineMonitorForm->EngineMonitorFrame->RichEdit->Text=UEngineMonitorForm->EngineMonitorFrame->RichEdit->Text+Engine_GetUnreadLog();
+ std::string new_log_data=Engine_GetUnreadLog();
+ UEngineMonitorForm->EngineMonitorFrame->RichEdit->Text=UEngineMonitorForm->EngineMonitorFrame->RichEdit->Text+new_log_data.c_str();
+
+ if(!new_log_data.empty())
+ {
+  UEngineMonitorForm->Show();
+  UEngineMonitorForm->WindowState=wsNormal;
+ }
 }
 //---------------------------------------------------------------------------
 __fastcall TUEngineMonitorForm::TUEngineMonitorForm(TComponent* Owner)

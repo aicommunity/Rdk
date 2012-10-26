@@ -43,40 +43,6 @@ extern RDK::UEngine*  AddNewEngine(void);
 // --------------------------------------
 
 namespace RDK{
-/*
-// Инициализация dll
-DLLPDllInit DLLDllInit=0;
-
-// Указатель на функцию возвращающую число хранилищ в библиотеке
-DLLPGetNumStorages DLLGetNumStorages=0;
-
-// Указатель на функцию возвращающую число сред в библиотеке
-DLLPGetNumEnvironments DLLGetNumEnvironments=0;
-
-// Указатель на функцию возвращающую число движков в библиотеке
-DLLPGetNumEngines DLLGetNumEngines=0;
-
-// Возвращает хранилище по индексу
-DLLPGetStorage DLLGetStorage=0;
-
-// Возвращает среду по индексу
-DLLPGetEnvironment DLLGetEnvironment=0;
-
-// Возвращает движок по индексу
-DLLPGetEngine DLLGetEngine=0;
-
-// Создает новое хранилище и помещает в конец массива
-// Возвращает указатель на хранилище
-DLLPAddNewStorage DLLAddNewStorage=0;
-
-// Создает новую среду и помещает в конец массива
-// Возвращает указатель на среду
-DLLPAddNewEnvironment DLLAddNewEnvironment=0;
-
-// Создает новый движок и помещает в конец массива
-// Возвращает указатель на движок
-DLLPAddNewEngine DLLAddNewEngine=0;
- */
 
 // --------------------------
 // Конструкторы и деструкторы
@@ -100,35 +66,6 @@ UEngine::~UEngine(void)
 // --------------------------
 // Методы управления параметрами инициализации
 // --------------------------
-// Указатели на функции создания экземпляров хранилища и среды
-/*UEngine::PCreateNewStorage UEngine::GetFuncCreateNewStorage(void) const
-{
- return FuncCreateNewStorage;
-}
-
-bool UEngine::SetFuncCreateNewStorage(UEngine::PCreateNewStorage value)
-{
- if(FuncCreateNewStorage == value)
-  return true;
-
- FuncCreateNewStorage=value;
- return true;
-}
-
-UEngine::PCreateNewEnvironment UEngine::GetFuncCreateNewEnvironment(void) const
-{
- return FuncCreateNewEnvironment;
-}
-
-bool UEngine::SetFuncCreateNewEnvironment(UEngine::PCreateNewEnvironment value)
-{
- if(FuncCreateNewEnvironment == value)
-  return true;
-
- FuncCreateNewEnvironment=value;
- return true;
-}  */
-
 // Имя файла инициализации
 const string& UEngine::GetOptionsFileName(void) const
 {
@@ -2007,7 +1944,7 @@ const char* UEngine::Model_GetComponentPersonalLinks(const char* stringid, const
   UEPtr<RDK::UANet> cont=dynamic_pointer_cast<RDK::UANet>(FindComponent(stringid));
   UEPtr<RDK::UANet> owner;
   if(owner_level_stringid)
-   dynamic_pointer_cast<RDK::UANet>(FindComponent(owner_level_stringid));
+   owner=dynamic_pointer_cast<RDK::UANet>(FindComponent(owner_level_stringid));
 
   TempString="";
   if(!cont)
@@ -2773,9 +2710,9 @@ int UEngine::Model_GetComponentPersonalLinks(RDK::UANet* cont, RDK::Serialize::U
 
   UStringLinksList linkslist;
   if(owner_level)
-   cont->GetLinks(linkslist, owner_level, true);
+   cont->GetLinks(linkslist, owner_level, true, cont);
   else
-   cont->GetLinks(linkslist, cont->GetOwner(), true);
+   cont->GetLinks(linkslist, cont->GetOwner(), true, cont);
 
   *serstorage<<linkslist;
  }

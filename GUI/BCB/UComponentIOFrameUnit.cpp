@@ -197,13 +197,13 @@ void __fastcall TUComponentIOFrame::ShowLinks(void)
  std::string stringid;
 
 // std::string xmlbuffer=Model_GetComponentInternalLinks(ViewComponentLongId.c_str());
- std::string xmlbuffer=Model_GetComponentPersonalLinks(ViewComponentLongId.c_str());
+ std::string xmlbuffer=Model_GetComponentPersonalLinks(ViewComponentLongId.c_str(),ViewComponentOwnerLongId.c_str());
 
  RDK::Serialize::USerStorageXML storage;
  storage.Load(xmlbuffer,"Links");
  RDK::Serialize::operator >> (storage,linkslist);
 
- StringGrid->RowCount=linkslist.GetSize()+1;
+ StringGrid->RowCount=1;
 
 // LinksListCIterator K,I,J,endI;
 // pair<LinksListCIterator,LinksListCIterator> b;
@@ -215,17 +215,20 @@ void __fastcall TUComponentIOFrame::ShowLinks(void)
 // I=linkslist.begin();
 // endI=linkslist.end();
  std::string itemname,connname;
+ int k=1;
  for(int i=0;i<linkslist.GetSize();i++)
   {
    itemname=linkslist[i].Item.Id;//Model_GetComponentLongName(linkslist[i].Item.Id.EncodeToString(stringid).c_str());
+   StringGrid->RowCount=StringGrid->RowCount+linkslist[i].Connector.size();
    for(size_t j=0;j<linkslist[i].Connector.size();j++)
 	{
      connname=linkslist[i].Connector[j].Id;//Model_GetComponentLongName(linkslist[i].Connector[j].Id.EncodeToString(stringid).c_str());
-	 StringGrid->Cells[0][i+1]=IntToStr(int(i));
-	 StringGrid->Cells[1][i+1]=StrToInt(linkslist[i].Item.Index);
-	 StringGrid->Cells[2][i+1]=StrToInt(linkslist[i].Connector[j].Index);
-	 StringGrid->Cells[3][i+1]=itemname.c_str();
-	 StringGrid->Cells[4][i+1]=connname.c_str();
+	 StringGrid->Cells[0][k]=IntToStr(int(i));
+	 StringGrid->Cells[1][k]=StrToInt(linkslist[i].Item.Index);
+	 StringGrid->Cells[2][k]=StrToInt(linkslist[i].Connector[j].Index);
+	 StringGrid->Cells[3][k]=itemname.c_str();
+	 StringGrid->Cells[4][k]=connname.c_str();
+	 ++k;
 	}
   }
 

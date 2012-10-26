@@ -137,6 +137,19 @@ void TUDrawEngineForm::SetNet(const std::string &comp_name)
   UpdateInterface(false);
 }
 
+void TUDrawEngineForm::ReloadNet(void)
+{
+
+ if(!Model_Check())
+  return;
+
+ NetXml.Destroy();
+
+ if(Visible)
+  UpdateInterface(false);
+}
+
+
 void TUDrawEngineForm::SelectComponent(const std::string &comp_name)
 {
  DrawEngine.SelectSingleComponent(comp_name);
@@ -290,7 +303,8 @@ void __fastcall TUDrawEngineForm::ImageMouseUp(TObject *Sender, TMouseButton But
   if(UComponentLinksForm->ShowModal() == mrOk)
   {
    UComponentLinksForm->UComponentLinksFrame->UpdateInterface();
-   SetNet(UComponentsControlForm->ComponentsControlFrame->ComponentsListFrame->GetCurrentComponentName());
+//   SetNet(UComponentsControlForm->ComponentsControlFrame->ComponentsListFrame->GetCurrentComponentName());
+   ReloadNet();
    UpdateInterface();
   }
  }
@@ -378,14 +392,12 @@ void __fastcall TUDrawEngineForm::Breakinputlink1Click(TObject *Sender)
    BreakLinkComponentName=ComponentName+std::string(".")+BreakLinkComponentName;
   }
 
-//  UComponentLinksForm->UComponentLinksFrame->NANetFrameLinks->ViewComponentOwnerLongId=ComponentName;
-//  UComponentLinksForm->UComponentLinksFrame->NANetFrameLinks->ViewComponentLongId=BreakLinkComponentName;
-//  UComponentLinksForm->UComponentLinksFrame->SetMode(2);
   UComponentLinksForm->UComponentLinksFrame->Init(2, BreakLinkComponentName,ComponentName);
   if(UComponentLinksForm->ShowModal() == mrOk)
   {
    UComponentLinksForm->UComponentLinksFrame->UpdateInterface();
-   SetNet(UComponentsControlForm->ComponentsControlFrame->ComponentsListFrame->GetCurrentComponentName());
+//   SetNet(UComponentsControlForm->ComponentsControlFrame->ComponentsListFrame->GetCurrentComponentName());
+   ReloadNet();
    UpdateInterface();
   }
 }

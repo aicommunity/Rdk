@@ -558,6 +558,7 @@ ULinksListT<T>& UAItem::GetLinks(ULinksListT<T> &linkslist, UEPtr<UAContainer> n
  GetLongId(netlevel,item.Id);
  if(item.Id.size() == 0)
   return linkslist;
+ link.Item=item;
 
  for(int j=0;j<AssociatedConnectors.GetSize();j++)
  {
@@ -576,9 +577,8 @@ ULinksListT<T>& UAItem::GetLinks(ULinksListT<T> &linkslist, UEPtr<UAContainer> n
 	item.Index=indexes.Output;
 	connector.Index=indexes.Input;
 
-	link.Item=item;
 	link.Connector.push_back(connector);
-    linkslist.Set(link);
+	linkslist.Set(link);
    }
   }
  }
@@ -597,6 +597,7 @@ ULinksListT<T>& UAItem::GetPersonalLinks(UEPtr<UAContainer> cont, ULinksListT<T>
  GetLongId(netlevel,item.Id);
  if(item.Id.size() == 0)
   return linkslist;
+ link.Item=item;
 
  for(int j=0;j<AssociatedConnectors.GetSize();j++)
  {
@@ -612,9 +613,8 @@ ULinksListT<T>& UAItem::GetPersonalLinks(UEPtr<UAContainer> cont, ULinksListT<T>
 	item.Index=indexes.Output;
 	connector.Index=indexes.Input;
 
-	link.Item=item;
 	link.Connector.push_back(connector);
-    linkslist.Set(link);
+	linkslist.Set(link);
    }
   }
  }
@@ -638,13 +638,14 @@ ULinksListT<T>& UAItem::GetFullItemLinks(ULinksListT<T> &linkslist, UEPtr<UAItem
  GetLongId(netlevel,item.Id);
  if(link.Item.Id.GetSize() == 0)
   return linkslist;
+ link.Item=item;
 
 
  for(int j=0;j<AssociatedConnectors.GetSize();j++)
   for(int i=0;i<AssociatedConnectors[j].GetSize();i++)
   {
    if(!AssociatedConnectors[j][i]->CheckOwner(static_pointer_cast<UAContainer>(comp)) && AssociatedConnectors[j][i] != comp)
-    continue;
+	continue;
    AssociatedConnectors[j][i]->GetLongId(netlevel,connector.Id);
    if(connector.Id.GetSize() != 0)
    {
@@ -652,7 +653,6 @@ ULinksListT<T>& UAItem::GetFullItemLinks(ULinksListT<T> &linkslist, UEPtr<UAItem
 	item.Index=indexes.Output;
 	connector.Index=indexes.Input;
 
-	link.Item=item;
 	link.Connector.push_back(connector);
 	linkslist.Set(link);
    }
