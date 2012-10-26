@@ -371,7 +371,7 @@ RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentParametersEx(const char *st
 
 // Возвращает выборочные параметры компонента по идентификатору
 // Deprecated
-RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentSelectedParameters(const char *stringid, unsigned int type_mask=ptParameter | pgPublic);
+RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentSelectedParameters(const char *stringid);
 
 // Возвращает значение параметра компонента по идентификатору компонента и имени параметра
 // Deprecated
