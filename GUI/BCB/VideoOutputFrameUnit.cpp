@@ -91,6 +91,7 @@ void TVideoOutputFrame::InitByAvi(const String &filename)
    VideoGrabber->BurstInterval = 0;
    VideoGrabber->BurstMode = true;
    VideoGrabber->BurstType = fc_TBitmap;
+   VideoGrabber->Synchronized=true;
 
    VideoGrabber->OpenPlayer();
    Mode=1;
@@ -493,15 +494,18 @@ void __fastcall TVideoOutputFrame::StartButtonClick(TObject *Sender)
  break;
 
  case 1:
-    VideoGrabber->RunPlayer();
+  VideoGrabber->StartSynchronized();
+  VideoGrabber->RunPlayer();
  break;
 
  case 2:
    VideoGrabber->StartPreview();
+   VideoGrabber->StartSynchronized();
  break;
 
  case 3:
    VideoGrabber->StartPreview();
+   VideoGrabber->StartSynchronized();
  break;
 
  default:

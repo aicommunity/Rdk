@@ -339,6 +339,13 @@ __declspec(dllexport) int __cdecl CameraCalibrateInit(int num_frames, int width,
  return 0;
 }
 
+__declspec(dllexport) int __cdecl SetCameraCalibrationStepDelay(int value)
+{
+ if(value>0)
+  delay=value;
+ return 0;
+}
+
 __declspec(dllexport) int __cdecl CameraCalibrationStep(unsigned char *imagedata, int camera_index)
 {
  if(camera_index<0 || camera_index >=imagePoints.size())
@@ -497,13 +504,25 @@ __declspec(dllexport) int __cdecl StereoCalibrateComplete(double* r, double* t)
  R = Mat::eye(3, 3, CV_64F);
  T = Mat::zeros(3, 1, CV_64F);
 
+ double test_icc1[9],test_icc2[9];
+ int k=0;
+ for(int i=0;i<3;i++)
+ {
+  for(int j=0;j<3;j++)
+  {
+   test_icc1[k]=cameraMatrix[0].at<double>(i, j);
+   test_icc2[k++]=cameraMatrix[1].at<double>(i, j);
+  }
+ }
+
+
  stereoCalibrate(objectPoints, imagePoints[0], imagePoints[1], cameraMatrix[0], distCoeffs[0], cameraMatrix[1], distCoeffs[1],
                                      imageSize, R, T, E, F,
                                      TermCriteria(TermCriteria::COUNT+
                                          TermCriteria::EPS, 30, 1e-6),
                                      CV_CALIB_FIX_INTRINSIC);
 
- int k=0;
+ k=0;
  for(int i=0;i<3;i++)
  {
   for(int j=0;j<3;j++)

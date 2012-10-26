@@ -68,6 +68,11 @@ void TVideoOutputForm::AddSource(void)
  Sources[index]->Parent=sheet;
  Sources[index]->Align=alClient;
  PageControl->Pages[index]->Caption=IntToStr(int(index));
+ if(index == 0)
+  Sources[index]->VideoGrabber->SynchronizationRole=sr_Master;
+ else
+  Sources[index]->VideoGrabber->SynchronizationRole=sr_Slave;
+
 
  /*
  Sources[index]=new TVideoOutputFrame(sheet);
@@ -165,8 +170,12 @@ void TVideoOutputForm::Start(int index)
  if(index>=0 && index<GetNumSources())
   Sources[index]->StartButtonClick(this);
  else
+ {
+//  if(GetNumSources()>0)
+//   Sources[i]->
   for(int i=0;i<GetNumSources();i++)
    Sources[i]->StartButtonClick(this);
+ }
 }
 
 // Останавливает выбранный источник видео, или все если index == -1

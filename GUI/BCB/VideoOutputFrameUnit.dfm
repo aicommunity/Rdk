@@ -16,7 +16,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
     DoubleBuffered = True
     ParentDoubleBuffered = False
     TabOrder = 0
-    ExplicitHeight = 417
     object Image: TImage
       Left = 2
       Top = 15
@@ -32,10 +31,11 @@ inherited VideoOutputFrame: TVideoOutputFrame
       ExplicitHeight = 400
     end
     object VideoGrabber: TVideoGrabber
-      Left = 432
-      Top = 417
-      Width = 64
-      Height = 40
+      Left = 2
+      Top = 15
+      Width = 698
+      Height = 369
+      Align = alClient
       Caption = 'VideoGrabber'
       Color = clBlack
       Visible = False
@@ -74,6 +74,10 @@ inherited VideoOutputFrame: TVideoOutputFrame
       VideoSource_FileOrURL_StartTime = -1
       VideoSource_FileOrURL_StopTime = -1
       OnFrameCaptureCompleted = VideoGrabberFrameCaptureCompleted
+      ExplicitLeft = 432
+      ExplicitTop = 417
+      ExplicitWidth = 64
+      ExplicitHeight = 40
     end
   end
   object Panel1: TPanel
