@@ -15,6 +15,7 @@
 #include "UComponentsPerformanceFormUnit.h"
 #include "UFavoriteComponentInfoFormUnit.h"
 #include "UDrawEngineFormUnit.h"
+#include "UCreateProjectWizardFormUnit.h"
 #include "rdk_initdll.h"
 
 //---------------------------------------------------------------------------
@@ -481,7 +482,7 @@ void __fastcall TUGEngineControlForm::CreateProjectItemClick(TObject *Sender)
   NumEnvInputs=StrToInt(UCreateProjectWizardForm->NumInputsLabeledEdit->Text);
   NumEnvOutputs=StrToInt(UCreateProjectWizardForm->NumOutputsLabeledEdit->Text);
   InputEnvImageWidth=StrToInt(UCreateProjectWizardForm->ImageWidthLabeledEdit->Text);
-  InputEnvImageHeight=StrToInt(UCreateProjectWizardForm->ImageHeihgtLabeledEdit->Text);
+  InputEnvImageHeight=StrToInt(UCreateProjectWizardForm->ImageHeightLabeledEdit->Text);
   ReflectionFlag=UCreateProjectWizardForm->UpendInputImageCheckBox->Checked;
 
   CreateProject(UCreateProjectWizardForm->ProjectDirectoryLabeledEdit->Text+String("\\Project.ini"),UCreateProjectWizardForm->UClassesListFrame1->GetSelectedName(),UCreateProjectWizardForm->ProjectModelFileNameLabeledEdit->Text);
@@ -495,7 +496,7 @@ void __fastcall TUGEngineControlForm::CreateModelClick(TObject *Sender)
   return;
 
  Model_Destroy();
- Model_Create(UClassesListForm->ClassesListFrame->GetSelectedId());
+ Model_Create(AnsiString(UClassesListForm->ClassesListFrame->GetSelectedName()).c_str());
 }
 //---------------------------------------------------------------------------
 
