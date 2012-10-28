@@ -82,11 +82,46 @@ void __fastcall TUGEngineControlForm::FormShow(TObject *Sender)
 }
 
 // Создает новый проект
-void TUGEngineControlForm::CreateProject(const String &FileName)
+void TUGEngineControlForm::CreateProject(const String &FileName, const String &model_comp_name, const String &model_file_name)
 {
  CloseProject();
+ ProjectXml.Destroy();
+ ProjectXml.SelectNodeRoot("Project/General");
+ ProjectXml.WriteInteger("PredefinedStructure",PredefinedStructure);
+ ProjectXml.WriteInteger("ProjectAutoSaveFlag",ProjectAutoSaveFlag);
 
+ // Число входов среды
+ ProjectXml.WriteInteger("NumEnvInputs",NumEnvInputs);
+
+ // Число выходов среды
+ ProjectXml.WriteInteger("NumEnvOutputs",NumEnvOutputs);
+
+ ProjectXml.WriteInteger("InputEnvImageWidth",InputEnvImageWidth);
+ ProjectXml.WriteInteger("InputEnvImageHeight",InputEnvImageHeight);
+
+ // Шаг счета по умолчанию
+ ProjectXml.WriteInteger("DefaultTimeStep",DefaultTimeStep);
+
+ // Глобальный шаг счета модели
+ ProjectXml.WriteInteger("GlobalTimeStep",GlobalTimeStep);
+
+ ProjectXml.WriteBool("ReflectionFlag",ReflectionFlag);
+
+ ProjectXml.SaveToFile(AnsiString(FileName).c_str());
  OpenProject(FileName);
+
+ if(ProjectOpenFlag)
+ {
+  if(PredefinedStructure == 0 && model_comp_name.Length()>0)
+  {
+   Model_Create(AnsiString(model_comp_name).c_str());
+  }
+
+  if(PredefinedStructure == 0 && model_file_name.Length()>0)
+  {
+	UComponentsControlForm->ComponentsControlFrame->LoadModelFromFile(model_file_name);
+  }
+ }
 }
 
 // Закрывает существущий проект
@@ -110,9 +145,9 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
 {
  CloseProject();
 
- ProjectXml.LoadFromFile(AnsiString(OpenDialog->FileName).c_str(),"");
- ProjectPath=ExtractFilePath(OpenDialog->FileName);
- ProjectName=ExtractFileName(OpenDialog->FileName);
+ ProjectXml.LoadFromFile(AnsiString(FileName).c_str(),"");
+ ProjectPath=ExtractFilePath(FileName);
+ ProjectName=ExtractFileName(FileName);
 
  ProjectXml.SelectNodeRoot("Project/General");
  // Число входов среды
@@ -138,9 +173,11 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
  // Глобальный шаг счета модели
  GlobalTimeStep=ProjectXml.ReadInteger("GlobalTimeStep",30);
 
+ ReflectionFlag=ProjectXml.ReadBool("ReflectionFlag",true);
+
  String modelfilename=ProjectXml.ReadString("ModelFileName","").c_str();
 
- GraphicalEngineInit(PredefinedStructure,NumEnvInputs,NumEnvOutputs,InputEnvImageWidth, InputEnvImageHeight ,1,ExceptionHandler);
+ GraphicalEngineInit(PredefinedStructure,NumEnvInputs,NumEnvOutputs,InputEnvImageWidth, InputEnvImageHeight ,ReflectionFlag,ExceptionHandler);
  Model_SetDefaultTimeStep(DefaultTimeStep);
 
  for(int i=0;i<NumEnvInputs;i++)
@@ -290,6 +327,9 @@ void TUGEngineControlForm::SaveProject(void)
  // Глобальный шаг счета модели
  ProjectXml.WriteInteger("GlobalTimeStep",GlobalTimeStep);
 
+ ProjectXml.WriteBool("ReflectionFlag",ReflectionFlag);
+
+
  ProjectXml.SaveToFile(AnsiString(ProjectPath+ProjectName).c_str());
 }
 //---------------------------------------------------------------------------
@@ -430,10 +470,22 @@ void __fastcall TUGEngineControlForm::SaveProjectItemClick(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::CreateProjectItemClick(TObject *Sender)
 {
- if(!OpenDialog->Execute())
-  return;
+ if(UCreateProjectWizardForm->ShowModal() == mrOk)
+ {
+  CloseProject();
+  PredefinedStructure=UCreateProjectWizardForm->PredefinedStructure;
+  ProjectAutoSaveFlag=UCreateProjectWizardForm->ProjectAutoSaveFlagCheckBox->Checked;
+  DefaultTimeStep=StrToInt(UCreateProjectWizardForm->ProjectTimeStepEdit->Text);
+  GlobalTimeStep=DefaultTimeStep;
 
- CreateProject(OpenDialog->FileName);
+  NumEnvInputs=StrToInt(UCreateProjectWizardForm->NumInputsLabeledEdit->Text);
+  NumEnvOutputs=StrToInt(UCreateProjectWizardForm->NumOutputsLabeledEdit->Text);
+  InputEnvImageWidth=StrToInt(UCreateProjectWizardForm->ImageWidthLabeledEdit->Text);
+  InputEnvImageHeight=StrToInt(UCreateProjectWizardForm->ImageHeihgtLabeledEdit->Text);
+  ReflectionFlag=UCreateProjectWizardForm->UpendInputImageCheckBox->Checked;
+
+  CreateProject(UCreateProjectWizardForm->ProjectDirectoryLabeledEdit->Text+String("\\Project.ini"),UCreateProjectWizardForm->UClassesListFrame1->GetSelectedName(),UCreateProjectWizardForm->ProjectModelFileNameLabeledEdit->Text);
+ }
 }
 //---------------------------------------------------------------------------
 

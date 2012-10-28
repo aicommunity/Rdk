@@ -349,7 +349,7 @@ virtual int Model_Destroy(void);
 
 // Создает новую модель по id класса в хранилище
 // Предварительно удаляет существующую модель
-virtual int Model_Create(int classid);
+virtual int Model_Create(const char *classid);
 
 // Очищает модель
 virtual int Model_Clear(void);

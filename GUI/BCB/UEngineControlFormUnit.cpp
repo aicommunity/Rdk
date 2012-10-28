@@ -14,6 +14,7 @@
 #include "UWatchFormUnit.h"
 #include "UFavoriteComponentInfoFormUnit.h"
 #include "UDrawEngineFormUnit.h"
+#include "UCreateProjectWizardFormUnit.h"
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -65,11 +66,35 @@ void TUEngineControlForm::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
 }
 
 // Создает новый проект
-void TUEngineControlForm::CreateProject(const String &FileName)
+void TUEngineControlForm::CreateProject(const String &FileName, const String &model_comp_name, const String &model_file_name)
 {
  CloseProject();
+ ProjectXml.Destroy();
+ ProjectXml.SelectNodeRoot("Project/General");
+ ProjectXml.WriteInteger("PredefinedStructure",PredefinedStructure);
+ ProjectXml.WriteInteger("ProjectAutoSaveFlag",ProjectAutoSaveFlag);
 
+ // Шаг счета по умолчанию
+ ProjectXml.WriteInteger("DefaultTimeStep",DefaultTimeStep);
+
+ // Глобальный шаг счета модели
+ ProjectXml.WriteInteger("GlobalTimeStep",GlobalTimeStep);
+
+ ProjectXml.SaveToFile(AnsiString(FileName).c_str());
  OpenProject(FileName);
+
+ if(ProjectOpenFlag)
+ {
+  if(PredefinedStructure == 0 && model_comp_name.Length()>0)
+  {
+   Model_Create(AnsiString(model_comp_name).c_str());
+  }
+
+  if(PredefinedStructure == 0 && model_file_name.Length()>0)
+  {
+	UComponentsControlForm->ComponentsControlFrame->LoadModelFromFile(model_file_name);
+  }
+ }
 }
 
 // Закрывает существущий проект
@@ -92,9 +117,9 @@ void TUEngineControlForm::OpenProject(const String &FileName)
 {
  CloseProject();
 // ProjectSerialize.SetXml(&ProjectXml);
- ProjectXml.LoadFromFile(AnsiString(OpenDialog->FileName).c_str(),"");
- ProjectPath=ExtractFilePath(OpenDialog->FileName);
- ProjectName=ExtractFileName(OpenDialog->FileName);
+ ProjectXml.LoadFromFile(AnsiString(FileName).c_str(),"");
+ ProjectPath=ExtractFilePath(FileName);
+ ProjectName=ExtractFileName(FileName);
 
  // Флаг автоматического сохранения проекта
  ProjectXml.SelectNodeRoot("Project/General");
@@ -105,6 +130,12 @@ void TUEngineControlForm::OpenProject(const String &FileName)
 
  PredefinedStructure=ProjectXml.ReadInteger("PredefinedStructure",0);
  String modelfilename=ProjectXml.ReadString("ModelFileName","").c_str();
+
+ // Шаг счета по умолчанию
+ DefaultTimeStep=ProjectXml.ReadInteger("DefaultTimeStep",2000);
+
+ // Глобальный шаг счета модели
+ GlobalTimeStep=ProjectXml.ReadInteger("GlobalTimeStep",2000);
 
  EngineInit(PredefinedStructure,ExceptionHandler);
 
@@ -137,6 +168,11 @@ void TUEngineControlForm::OpenProject(const String &FileName)
    else
     UComponentsControlForm->ComponentsControlFrame->LoadStatesFromFile(statesfilename);
   }
+ }
+
+ if(Model_Check())
+ {
+  Model_SetGlobalTimeStep("",GlobalTimeStep);
  }
 
  String interfacefilename=ProjectXml.ReadString("InterfaceFileName","").c_str();
@@ -338,10 +374,16 @@ void __fastcall TUEngineControlForm::WatchWindow1Click(TObject *Sender)
 
 void __fastcall TUEngineControlForm::CreateProjectItemClick(TObject *Sender)
 {
- if(!OpenDialog->Execute())
-  return;
+ if(UCreateProjectWizardForm->ShowModal() == mrOk)
+ {
+  CloseProject();
+  PredefinedStructure=UCreateProjectWizardForm->PredefinedStructure;
+  ProjectAutoSaveFlag=UCreateProjectWizardForm->ProjectAutoSaveFlagCheckBox->Checked;
+  DefaultTimeStep=StrToInt(UCreateProjectWizardForm->ProjectTimeStepEdit->Text);
+  GlobalTimeStep=DefaultTimeStep;
 
- CreateProject(OpenDialog->FileName);
+  CreateProject(UCreateProjectWizardForm->ProjectDirectoryLabeledEdit->Text+String("\\Project.ini"),UCreateProjectWizardForm->UClassesListFrame1->GetSelectedName(),UCreateProjectWizardForm->ProjectModelFileNameLabeledEdit->Text);
+ }
 }
 //---------------------------------------------------------------------------
 
@@ -351,7 +393,7 @@ void __fastcall TUEngineControlForm::CreateModelClick(TObject *Sender)
   return;
 
  Model_Destroy();
- Model_Create(UClassesListForm->ClassesListFrame->GetSelectedId());
+ Model_Create(AnsiString(UClassesListForm->ClassesListFrame->GetSelectedName()).c_str());
 }
 //---------------------------------------------------------------------------
 

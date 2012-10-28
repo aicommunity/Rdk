@@ -1044,11 +1044,11 @@ int UEngine::Model_Destroy(void)
 
 // Создает новую модель по id класса в хранилище
 // Предварительно удаляет существующую модель
-int UEngine::Model_Create(int classid)
+int UEngine::Model_Create(const char *classid)
 {
  try
  {
-  if(Environment->CreateModel(classid))
+  if(Environment->CreateModel(Storage->FindClassId(classid)))
    return 0;
  }
  catch (UException &exception)
@@ -2779,7 +2779,7 @@ int UEngine::Model_LoadComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXM
 
   if(!cont) // Создаем модель
   {
-   Model_Create(id);
+   Model_Create(name.c_str());
    cont=dynamic_pointer_cast<RDK::UANet>(Environment->GetModel()).Get();
   }
   else

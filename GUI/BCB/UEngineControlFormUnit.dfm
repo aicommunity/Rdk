@@ -24,8 +24,6 @@ object UEngineControlForm: TUEngineControlForm
     Height = 1
     Align = alClient
     TabOrder = 0
-    ExplicitWidth = 757
-    ExplicitHeight = 5
   end
   object ToolBar: TToolBar
     Left = 0
@@ -39,7 +37,6 @@ object UEngineControlForm: TUEngineControlForm
     Images = ImageList
     ShowCaptions = True
     TabOrder = 1
-    ExplicitWidth = 919
     object ToolButton8: TToolButton
       Left = 0
       Top = 0
@@ -177,8 +174,6 @@ object UEngineControlForm: TUEngineControlForm
     Height = 19
     Panels = <>
     SimplePanel = True
-    ExplicitTop = 49
-    ExplicitWidth = 757
   end
   object MainMenu: TMainMenu
     Images = ImageList
@@ -291,7 +286,7 @@ object UEngineControlForm: TUEngineControlForm
     Left = 384
     Top = 32
     Bitmap = {
-      494C01011B006000880010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B0060008C0010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

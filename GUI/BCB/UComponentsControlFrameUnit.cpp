@@ -67,7 +67,10 @@ void TUComponentsControlFrame::LoadModelFromFile(const String &filename)
  RichEdit->Lines->LoadFromFile(FileName);
 
  if(RichEdit->Text.Length() >0)
+ {
+  Model_Destroy();
   Model_LoadComponent("",AnsiString(RichEdit->Text).c_str());
+ }
 
  delete RichEdit;
  ComponentsListFrame->UpdateInterface();
@@ -206,7 +209,7 @@ void __fastcall TUComponentsControlFrame::HeaderControlSectionClick(THeaderContr
  if(Section->Index == 0)
  {
   Model_Destroy();
-  Model_Create(ClassesListFrame->GetSelectedId());
+  Model_Create(AnsiString(ClassesListFrame->GetSelectedName()).c_str());
  }
  else
  if(Section->Index == 1)

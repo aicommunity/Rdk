@@ -150,6 +150,9 @@ int DefaultTimeStep;
 // Глобальный шаг счета модели
 int GlobalTimeStep;
 
+// Флаг необходимости переворачивать входные изображения
+bool ReflectionFlag;
+
 // Обновление интерфейса
 void AUpdateInterface(void);
 
@@ -160,7 +163,7 @@ void ABeforeCalculate(void);
 void AAfterCalculate(void);
 
 // Создает новый проект
-void CreateProject(const String &FileName);
+void CreateProject(const String &FileName, const String &model_comp_name="", const String &model_file_name="");
 
 // Закрывает существущий проект
 void CloseProject(void);

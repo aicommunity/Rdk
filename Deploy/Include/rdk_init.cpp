@@ -430,7 +430,7 @@ int RDK_CALL Model_Destroy(void)
 
 // Создает новую модель по имени класса в хранилище
 // Предварительно удаляет существующую модель
-int RDK_CALL Model_Create(int classid)
+int RDK_CALL Model_Create(const char *classid)
 {
  return PEngine->Model_Create(classid);
 }

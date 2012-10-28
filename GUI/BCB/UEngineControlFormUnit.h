@@ -126,6 +126,12 @@ int NumEnvOutputs;
 // Разрешение изображений
 int InputEnvImageWidth, InputEnvImageHeight;
 
+// Шаг счета по умолчанию
+int DefaultTimeStep;
+
+// Глобальный шаг счета модели
+int GlobalTimeStep;
+
 // Индекс предварительно заданной модели
 int PredefinedStructure;
 
@@ -141,7 +147,7 @@ virtual void ASaveParameters(RDK::Serialize::USerStorageXML &xml);
 virtual void ALoadParameters(RDK::Serialize::USerStorageXML &xml);
 
 // Создает новый проект
-void CreateProject(const String &FileName);
+void CreateProject(const String &FileName, const String &model_comp_name="", const String &model_file_name="");
 
 // Закрывает существущий проект
 void CloseProject(void);

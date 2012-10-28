@@ -256,7 +256,7 @@ RDK_LIB_TYPE int RDK_CALL Model_Destroy(void);
 
 // Создает новую модель по имени класса в хранилище
 // Предварительно удаляет существующую модель
-RDK_LIB_TYPE int RDK_CALL Model_Create(int classid);
+RDK_LIB_TYPE int RDK_CALL Model_Create(const char *classid);
 
 // Очищает модель
 RDK_LIB_TYPE int RDK_CALL Model_Clear(void);
