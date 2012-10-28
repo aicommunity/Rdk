@@ -25,6 +25,7 @@ void ExceptionHandler(void)
  {
   UEngineMonitorForm->Show();
   UEngineMonitorForm->WindowState=wsNormal;
+  UEngineMonitorForm->EngineMonitorFrame->Pause1Click(UEngineMonitorForm);
  }
 }
 //---------------------------------------------------------------------------

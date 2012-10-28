@@ -49,6 +49,9 @@ Pattern pattern = CHESSBOARD;
 vector<Mat> rvecs, tvecs;
 vector<float> reprojErrs;
 double totalAvgErr = 0;
+vector<Mat> views;
+Mat view;
+
 
 
 static double computeReprojectionErrors(
@@ -330,6 +333,7 @@ __declspec(dllexport) int __cdecl CameraCalibrateInit(int num_frames, int width,
  cameraMatrix.resize(num_cameras);
  distCoeffs.resize(num_cameras);
  prevTimestamp.resize(num_cameras);
+ views.resize(num_cameras);
 
  imageSize.height=height;
  imageSize.width=width;
@@ -353,7 +357,6 @@ __declspec(dllexport) int __cdecl CameraCalibrationStep(unsigned char *imagedata
 //    namedWindow( "Image View", 1 );
         vector<Point2f> pointbuf;
 		Mat viewGray(Size(ImageWidth, ImageHeight), CV_8UC1, imagedata, Mat::AUTO_STEP);
-		Mat view;
         cvtColor(viewGray, view, CV_GRAY2BGR); 
         bool found;
         switch( pattern )
@@ -385,13 +388,13 @@ __declspec(dllexport) int __cdecl CameraCalibrationStep(unsigned char *imagedata
 //        if(found) 
         {
             imagePoints[camera_index].push_back(pointbuf);
+            drawChessboardCorners( view, boardSize, Mat(pointbuf), found );
+			views[camera_index]=view;
             prevTimestamp[camera_index] = clock();
         }
 		else
 		 return -3;
         
-//        if(found)
-//            drawChessboardCorners( view, boardSize, Mat(pointbuf), found );
 /*
         string msg = mode == CAPTURING ? "100/100" :
             mode == CALIBRATED ? "Calibrated" : "Press 'g' to start";
@@ -450,7 +453,7 @@ __declspec(dllexport) int __cdecl CameraCalibrateComplete(double* icc, double* d
   {
    ecc[k++]=rotation.at<double>(i, j);
   }
-   ecc[k++]=tvecs[0].at<double>(i, 1);
+   ecc[k++]=tvecs[0].at<double>(i, 0);
  }
   for(int j=0;j<3;j++)
   {
@@ -537,8 +540,13 @@ __declspec(dllexport) int __cdecl StereoCalibrateComplete(double* r, double* t)
  return 0;
 }
 
+__declspec(dllexport) unsigned char* __cdecl GetCalibrationBoardImage(int camera_index)
+{
+ if(camera_index<0 || camera_index>=cameraMatrix.size())
+  return 0;
 
-
+ return (unsigned char*)views[camera_index].data;
+}
 
 }
 

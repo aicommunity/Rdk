@@ -209,6 +209,10 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, std::list<T> &data)
 }
 
 // Вектора
+
+USerStorageBinary& operator << (USerStorageBinary& storage, const std::vector<bool> &data);
+USerStorageBinary& operator >> (USerStorageBinary& storage, std::vector<bool> &data);
+
 template<typename T>
 USerStorageBinary& operator << (USerStorageBinary& storage, const std::vector<T> &data)
 {

@@ -184,7 +184,7 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
  for(int i=0;i<NumEnvInputs;i++)
   VideoOutputForm->AddSource();
 
- if(modelfilename.Length() != 0)
+ if(PredefinedStructure == 0 && modelfilename.Length() != 0)
  {
   if(ExtractFilePath(modelfilename).Length() == 0)
    UComponentsControlForm->ComponentsControlFrame->LoadModelFromFile(ProjectPath+modelfilename);

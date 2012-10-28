@@ -139,7 +139,7 @@ void TUEngineControlForm::OpenProject(const String &FileName)
 
  EngineInit(PredefinedStructure,ExceptionHandler);
 
- if(modelfilename.Length() != 0)
+ if(PredefinedStructure == 0 && modelfilename.Length() != 0)
  {
   if(ExtractFilePath(modelfilename).Length() == 0)
    UComponentsControlForm->ComponentsControlFrame->LoadModelFromFile(ProjectPath+modelfilename);

@@ -250,6 +250,9 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::list<T> &data)
 }
 
 // Вектора
+USerStorageXML& operator << (USerStorageXML& storage, const std::vector<bool> &data);
+USerStorageXML& operator >> (USerStorageXML& storage, std::vector<bool> &data);
+
 template<typename T>
 USerStorageXML& operator << (USerStorageXML& storage, const std::vector<T> &data)
 {

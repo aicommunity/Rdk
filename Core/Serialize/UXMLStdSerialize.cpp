@@ -158,6 +158,52 @@ USerStorageXML& operator >> (USerStorageXML& storage, long double &data)
  return USimpleFromStorage(storage,data);
 }
 
+// Вектора
+USerStorageXML& operator << (USerStorageXML& storage, const std::vector<bool> &data)
+{
+ storage.SetNodeAttribute("Type","std::vector");
+ unsigned int size=data.size();
+ storage.SetNodeAttribute("Size",sntoa(size));
+
+ if(size <= 0)
+  return storage;
+
+ for(size_t i=0;i<size;i++)
+ {
+  storage.AddNode("elem");
+  storage<<data[i];
+  storage.SelectUp();
+ }
+
+ return storage;
+}
+
+USerStorageXML& operator >> (USerStorageXML& storage, std::vector<bool> &data)
+{
+ unsigned int size=0;
+ size=RDK::atoi(storage.GetNodeAttribute("Size"));
+
+ if(size <= 0)
+ {
+  data.resize(0);
+  return storage;
+ }
+ data.resize(size);
+
+ for(size_t i=0;i<size;i++)
+ {
+  if(!storage.SelectNode("elem",i))
+   return storage;
+  bool element;
+  operator >>(storage,element);
+  data[i]=element;
+  storage.SelectUp();
+ }
+
+ return storage;
+}
+
+
 // Строки
 //template<typename T>
 USerStorageXML& operator << (USerStorageXML& storage, const std::string &data)
