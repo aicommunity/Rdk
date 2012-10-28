@@ -159,7 +159,7 @@ UAEnvironment::UAEnvironment(void)
  Storage=0;
  StoragePresent=false;
 
- MaxModelDuration=0.1;
+ MaxModelDuration=100;
 
  // Текущий компонент модели
 // CurrentComponent=0;

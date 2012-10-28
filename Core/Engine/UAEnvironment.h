@@ -113,6 +113,8 @@ UClassLibraryList ClassLibraryList;
 // ћассив имен не загруженных классов
 //vector<string> IncompletedClassNames;
 
+// ћаксимальный интеревал времени, который систем пытаетс€ "догнать" в режиме
+// расчета реального времени (мс)
 double MaxModelDuration;
 
 protected: //  онтроллеры

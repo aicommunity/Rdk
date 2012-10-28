@@ -135,6 +135,9 @@ int GlobalTimeStep;
 // Индекс предварительно заданной модели
 int PredefinedStructure;
 
+// Режим счета
+int CalculationMode;
+
 // Обновление интерфейса
 void ABeforeCalculate(void);
 void AAfterCalculate(void);
