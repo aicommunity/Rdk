@@ -47,12 +47,15 @@ void TUEngineMonitorFrame::AUpdateInterface(void)
  if(fabs(instperf)>0.0001)
   fps=Model_GetTimeStep("")/instperf;
 
-
  StatusBar->SimpleText=String("Model Time=")+FloatToStrF(Model_GetDoubleTime(),ffFixed,3,3)
 				+String("; Real Time=")+FloatToStrF(Model_GetDoubleRealTime(),ffFixed,3,3)
-				+String("; Model Duration Time=")+FloatToStrF(Model_GetFullStepDuration("")/1000.0,ffFixed,3,3)
-				+String("; Model Performance=")+FloatToStrF(instperf,ffFixed,3,3)
-				+String(" (")+FloatToStrF(fps,ffFixed,3,3)+String(" FPS)");
+				+String("; Model Duration Time=")+FloatToStrF(Model_GetFullStepDuration("")/1000.0,ffFixed,3,3);
+ if(instperf)
+  StatusBar->SimpleText=StatusBar->SimpleText+
+				String("; Model Performance=")+FloatToStrF(instperf,ffFixed,3,3)+
+				StatusBar->SimpleText=StatusBar->SimpleText+String(" (")+
+				FloatToStrF(fps,ffFixed,3,3)+String(" FPS)");
+
  StatusBar->Repaint();
  StatusBar->Update();
 }
@@ -60,13 +63,13 @@ void TUEngineMonitorFrame::AUpdateInterface(void)
 // Сохраняет параметры интерфейса в xml
 void TUEngineMonitorFrame::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
 {
- xml.WriteInteger("CalculateMode",GetCalculateMode());
+// xml.WriteInteger("CalculateMode",GetCalculateMode());
 }
 
 // Загружает параметры интерфейса из xml
 void TUEngineMonitorFrame::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
 {
- SetCalculateMode(xml.ReadInteger("CalculateMode",0));
+// SetCalculateMode(xml.ReadInteger("CalculateMode",0));
 }
 //---------------------------------------------------------------------------
 

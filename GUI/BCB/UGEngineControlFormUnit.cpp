@@ -108,6 +108,8 @@ void TUGEngineControlForm::CreateProject(const String &FileName, const String &m
 
  ProjectXml.WriteBool("ReflectionFlag",ReflectionFlag);
 
+ ProjectXml.WriteInteger("CalculationMode",CalculationMode);
+
  ProjectXml.SaveToFile(AnsiString(FileName).c_str());
  OpenProject(FileName);
 
@@ -176,6 +178,9 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
 
  ReflectionFlag=ProjectXml.ReadBool("ReflectionFlag",true);
 
+ CalculationMode=ProjectXml.ReadInteger("CalculationMode",0);
+
+
  String modelfilename=ProjectXml.ReadString("ModelFileName","").c_str();
 
  GraphicalEngineInit(PredefinedStructure,NumEnvInputs,NumEnvOutputs,InputEnvImageWidth, InputEnvImageHeight ,ReflectionFlag,ExceptionHandler);
@@ -231,6 +236,7 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
   RDK::UIVisualControllerStorage::LoadParameters(InterfaceXml);
  }
 
+ UEngineMonitorForm->EngineMonitorFrame->SetCalculateMode(CalculationMode);
  RDK::UIVisualControllerStorage::UpdateInterface();
  ProjectOpenFlag=true;
 }
@@ -330,6 +336,7 @@ void TUGEngineControlForm::SaveProject(void)
 
  ProjectXml.WriteBool("ReflectionFlag",ReflectionFlag);
 
+ ProjectXml.WriteInteger("CalculationMode",CalculationMode);
 
  ProjectXml.SaveToFile(AnsiString(ProjectPath+ProjectName).c_str());
 }
@@ -484,6 +491,7 @@ void __fastcall TUGEngineControlForm::CreateProjectItemClick(TObject *Sender)
   InputEnvImageWidth=StrToInt(UCreateProjectWizardForm->ImageWidthLabeledEdit->Text);
   InputEnvImageHeight=StrToInt(UCreateProjectWizardForm->ImageHeightLabeledEdit->Text);
   ReflectionFlag=UCreateProjectWizardForm->UpendInputImageCheckBox->Checked;
+  CalculationMode=UCreateProjectWizardForm->ProjectCalculationModeRadioGroup->ItemIndex;
 
   CreateProject(UCreateProjectWizardForm->ProjectDirectoryLabeledEdit->Text+String("\\Project.ini"),UCreateProjectWizardForm->UClassesListFrame1->GetSelectedName(),UCreateProjectWizardForm->ProjectModelFileNameLabeledEdit->Text);
  }

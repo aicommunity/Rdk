@@ -113,6 +113,8 @@ UClassLibraryList ClassLibraryList;
 // Массив имен не загруженных классов
 //vector<string> IncompletedClassNames;
 
+double MaxModelDuration;
+
 protected: // Контроллеры
 
 protected: // Данные графического интерфеса пользователя

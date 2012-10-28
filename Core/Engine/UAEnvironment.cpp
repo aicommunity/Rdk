@@ -159,6 +159,8 @@ UAEnvironment::UAEnvironment(void)
  Storage=0;
  StoragePresent=false;
 
+ MaxModelDuration=0.1;
+
  // Текущий компонент модели
 // CurrentComponent=0;
 }
@@ -481,11 +483,15 @@ void UAEnvironment::RTCalculate(void)
  int i=0;
  if(LastDuration < TimerInterval)
   LastDuration=TimerInterval;
- double model_duration=(Model->GetDoubleTime()*1e6-UAContainer::GetRealTime())/1000.0;
+ double model_duration=(UAContainer::GetRealTime()-Model->GetDoubleTime()*1e6)/1000.0;
+
+ if(model_duration>MaxModelDuration)
+  model_duration=MaxModelDuration;
+
  int elapsed_counter=0;
- if(model_duration<0)
+ if(model_duration>0)
  {
-  elapsed_counter=int((-model_duration*Model->GetTimeStep())/1000);
+  elapsed_counter=int((model_duration*Model->GetTimeStep())/1000);
  }
  else
  {

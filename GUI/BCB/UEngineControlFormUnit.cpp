@@ -80,6 +80,8 @@ void TUEngineControlForm::CreateProject(const String &FileName, const String &mo
  // Глобальный шаг счета модели
  ProjectXml.WriteInteger("GlobalTimeStep",GlobalTimeStep);
 
+ ProjectXml.WriteInteger("CalculationMode",CalculationMode);
+
  ProjectXml.SaveToFile(AnsiString(FileName).c_str());
  OpenProject(FileName);
 
@@ -137,6 +139,8 @@ void TUEngineControlForm::OpenProject(const String &FileName)
  // Глобальный шаг счета модели
  GlobalTimeStep=ProjectXml.ReadInteger("GlobalTimeStep",2000);
 
+ CalculationMode=ProjectXml.ReadInteger("CalculationMode",0);
+
  EngineInit(PredefinedStructure,ExceptionHandler);
 
  if(PredefinedStructure == 0 && modelfilename.Length() != 0)
@@ -187,6 +191,7 @@ void TUEngineControlForm::OpenProject(const String &FileName)
   RDK::UIVisualControllerStorage::LoadParameters(InterfaceXml);
  }
 
+ UEngineMonitorForm->EngineMonitorFrame->SetCalculateMode(CalculationMode);
  RDK::UIVisualControllerStorage::UpdateInterface();
  ProjectOpenFlag=true;
 }
@@ -270,6 +275,15 @@ void TUEngineControlForm::SaveProject(void)
 
  // Флаг автоматического сохранения проекта
  ProjectXml.WriteInteger("ProjectAutoSaveStateFlag",ProjectAutoSaveStateFlag);
+
+ // Шаг счета по умолчанию
+ ProjectXml.WriteInteger("DefaultTimeStep",DefaultTimeStep);
+
+ // Глобальный шаг счета модели
+ ProjectXml.WriteInteger("GlobalTimeStep",GlobalTimeStep);
+
+ ProjectXml.WriteInteger("CalculationMode",CalculationMode);
+
 
  ProjectXml.SaveToFile(AnsiString(ProjectPath+ProjectName).c_str());
 }
@@ -381,6 +395,7 @@ void __fastcall TUEngineControlForm::CreateProjectItemClick(TObject *Sender)
   ProjectAutoSaveFlag=UCreateProjectWizardForm->ProjectAutoSaveFlagCheckBox->Checked;
   DefaultTimeStep=StrToInt(UCreateProjectWizardForm->ProjectTimeStepEdit->Text);
   GlobalTimeStep=DefaultTimeStep;
+  CalculationMode=UCreateProjectWizardForm->ProjectCalculationModeRadioGroup->ItemIndex;
 
   CreateProject(UCreateProjectWizardForm->ProjectDirectoryLabeledEdit->Text+String("\\Project.ini"),UCreateProjectWizardForm->UClassesListFrame1->GetSelectedName(),UCreateProjectWizardForm->ProjectModelFileNameLabeledEdit->Text);
  }

@@ -153,6 +153,9 @@ int GlobalTimeStep;
 // Флаг необходимости переворачивать входные изображения
 bool ReflectionFlag;
 
+// Режим счета
+int CalculationMode;
+
 // Обновление интерфейса
 void AUpdateInterface(void);
 
