@@ -1,7 +1,7 @@
 #ifndef UADATA_COMPONENT_CPP
 #define UADATA_COMPONENT_CPP
-                            
-#include "UADataComponent.h"                            
+
+#include "UADataComponent.h"
 
 namespace RDK {
 
@@ -379,7 +379,7 @@ UId UADataComponent::AddLookupProperty(const NameT &name, unsigned int type, UEP
    P.Id=I->second.Id+1;
  }
 
- pair<VariableMapIteratorT, bool> res=PropertiesLookupTable.insert(make_pair(name,P));
+ pair<VariableMapCIteratorT, bool> res=PropertiesLookupTable.insert(make_pair(name,P));
  P.Property->SetVariable(res.first);
 
  return P.Id;
@@ -453,5 +453,5 @@ UId UADataComponent::AddLookupShare(const NameT &name, UEPtr<UIShare> property)
 
 }
 
-#endif 
+#endif
 

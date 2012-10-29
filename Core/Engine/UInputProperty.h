@@ -51,27 +51,27 @@ bool CheckRange(int index)
 // Возвращает указатель на данные входа
 void const * GetPointer(void) const
 {
- return PData;
+ return this->PData;
 }
 
 // Устанавливает указатель на данные входа
 bool SetPointer(void* value)
 {
- PData=reinterpret_cast<T*>(value);
+ this->PData=reinterpret_cast<T*>(value);
  return true;
 }
 
 bool operator ! (void) const
-{ return (PData)?false:true; };
+{ return (this->PData)?false:true; };
 
 T* operator -> (void) const
 {
- if(!PData)
+ if(!this->PData)
   return 0;
 //  throw EUsingZeroPtr();
 
 
- return PData;
+ return this->PData;
 };
 
 T& operator * (void)
@@ -79,12 +79,12 @@ T& operator * (void)
 // if(!PData)
   //throw EUsingZeroPtr();
 
- return *PData;
+ return *this->PData;
 };
 
 operator T* (void) const
 {
- return PData;
+ return this->PData;
 }
 
 // --------------------------

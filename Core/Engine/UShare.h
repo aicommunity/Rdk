@@ -45,12 +45,12 @@ virtual ~UVShare(void)
 // Метод инициализации общего свойства
 virtual bool Init(UEPtr<UADataComponent> main_owner)
 {
- UEPtr<RTVModel> main_owner_cast=dynamic_pointer_cast<MainOwnerT>(main_owner);
+ UEPtr<MainOwnerT> main_owner_cast=dynamic_pointer_cast<MainOwnerT>(main_owner);
 
  UADataComponent::VariableMapCIteratorT I=main_owner_cast->GetPropertiesList().find(PropertyName);
  if(I != main_owner_cast->GetPropertiesList().end())
  {
-  UVProperty<T,MainOwner> *prop=dynamic_pointer_cast<UVProperty<T,MainOwner> >(I->second.Property);
+  UVProperty<T,MainOwnerT> *prop=dynamic_pointer_cast<UVProperty<T,MainOwnerT> >(I->second.Property);
   if(prop)
    VProperty=prop;
   else
@@ -141,7 +141,7 @@ void SetPointer(UAComponent *owner, T* pointer)
 // --------------------------
 UVShare<T,MainOwnerT>& operator = (const UVShare<T,MainOwnerT> &copy)
 {
- Pointer=copy.Pointer;
+// Pointer=copy.Pointer;
  VProperty=copy.VProperty;
  RData=copy.RData;
 
@@ -284,7 +284,7 @@ void SetPointer(UAComponent *owner, T* pointer)
 // --------------------------
 UShare<T,MainOwnerT>& operator = (const UShare<T,MainOwnerT> &copy)
 {
- Pointer=copy.Pointer;
+//s Pointer=copy.Pointer;
  VProperty=copy.VProperty;
  Data=copy.Data;
 

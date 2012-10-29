@@ -75,7 +75,7 @@ MDMatrix<T>& operator -= (T v);
 // Преобразования матриц
 // --------------------------
 // Транспонирование
-MDMatrix<T>& Transpose(MDMatrix<T> &res) const; 
+MDMatrix<T>& Transpose(MDMatrix<T> &res) const;
 MDMatrix<T> Transpose(void) const;
 
 // Приведение матрицы к верхней треугольной форме
@@ -148,7 +148,7 @@ MDMatrix<T>::MDMatrix(int rows, int cols, T defvalue)
 
 template<class T>
 MDMatrix<T>::MDMatrix(const MDMatrix<T> &copy)
-{ 
+{
 	//*this=copy;
 	SetDim(copy.Rows, copy.Cols);
 	for(int i=0;i<Rows;i++)
@@ -163,7 +163,7 @@ MDMatrix<T>::MDMatrix(const int rows, const  int cols, const T* data)
 			Data[i][j]=data[i*Cols+j]; };
 
 template<class T>
-MDMatrix<T>::~MDMatrix() 
+MDMatrix<T>::~MDMatrix()
 {
 	delete[] Data;
 };
@@ -173,11 +173,11 @@ MDMatrix<T>::~MDMatrix()
 // Задание размерности
 template<class T>
 void MDMatrix<T>::SetDim(int rows, int cols)
-{ 
+{
 	if(rows>0 && cols>0)
 	{
 		Rows=rows;
-		Cols=cols; 
+		Cols=cols;
 		Data = new T *[Rows];
 		for(int i=0; i<Rows; i++)
 			Data[i] = new T [Cols];
@@ -187,13 +187,13 @@ void MDMatrix<T>::SetDim(int rows, int cols)
 // Проверка и изменения размерности
 template<class T>
 void MDMatrix<T>::CheckDim(int rows, int cols)
-{ 
+{
 	if(Rows>rows && Cols>cols)
 	{
 		Rows=rows;
 		Cols=cols;
 	}
-	else 
+	else
 	{
 		if(Rows>=rows && Cols<cols)
 		{
@@ -480,8 +480,8 @@ template<class T>
 bool operator == (const MDMatrix<T> &M1, const MDMatrix<T> &M2)
 {
 	bool flag = 1;
-	for(int i=0;i<Rows;i++)
-		for(int j=0;j<Cols;j++)
+	for(int i=0;i<M1.Rows;i++)
+		for(int j=0;j<M1.Cols;j++)
 			if(M1.Data[i][j]!=M2.Data[i][j]) flag=0;
  return flag;
 }
@@ -690,7 +690,7 @@ T MDMatrix<T>::Det(void) const
  // det += (i%2==1?-1.0:1.0) * Data[0][i] * (Res.GetRows()>1)?Res.Det():Res.Data[0][0];
   //det += pow( -1.0, i ) * mat[0][i] * CalcDeterminant( minor,order-1 );
 // }
- //return det;    
+ //return det;
 }
 
 // Вычисление минорной матрицы
