@@ -6,10 +6,10 @@
 
 namespace RDK {
 
-enum { ipSingle, ipRange, ipList } UInputPropertyTypes
+enum UInputPropertyTypes { ipSingle=1, ipRange=2, ipList=3 };
 
 template<typename T, typename OwnerT, unsigned int type=ptPubInput>
-class UInputProperty: public UVLProperty, UIInputProperty
+class UInputProperty: public UVLProperty<T,OwnerT,type>, public UIInputProperty
 {
 protected:
 // Тип входа
@@ -24,7 +24,7 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 UInputProperty(const string &name, OwnerT * const owner, UInputPropertyTypes input_type=ipSingle, int min_range=0, int max_range=-1)
- : UVLProperty<T,OwnerT>(owner, (T const *)0), InputType(input_type), MinRange(min_range), MaxRange(max_range)
+ : UVLProperty<T,OwnerT,type>(name, owner, (T * const)0), InputType(input_type), MinRange(min_range), MaxRange(max_range)
 { };
 // -----------------------------
 
@@ -55,22 +55,41 @@ void const * GetPointer(void) const
 }
 
 // Устанавливает указатель на данные входа
-bool SetPointer(void const * value)
+bool SetPointer(void* value)
 {
- PData=reinterpret_cast<T const *>(value);
+ PData=reinterpret_cast<T*>(value);
  return true;
 }
+
+bool operator ! (void) const
+{ return (PData)?false:true; };
 
 T* operator -> (void) const
 {
  if(!PData)
-  throw EUsingZeroPtr();
+  return 0;
+//  throw EUsingZeroPtr();
+
 
  return PData;
 };
+
+T& operator * (void)
+{
+// if(!PData)
+  //throw EUsingZeroPtr();
+
+ return *PData;
+};
+
+operator T* (void) const
+{
+ return PData;
+}
+
 // --------------------------
 };
 
 
-};
+}
 #endif

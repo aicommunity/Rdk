@@ -154,7 +154,6 @@ UAEnvironment::UAEnvironment(void)
  // Признак наличия сформированной структуры
  Structured=false;
 
-
  Model=0;
  Storage=0;
  StoragePresent=false;

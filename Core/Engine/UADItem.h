@@ -309,11 +309,12 @@ virtual bool CheckRange(int index)=0;
 virtual void const * GetPointer(void) const=0;
 
 // Устанавливает указатель на данные входа
-virtual bool SetPointer(void const * value)=0;
+virtual bool SetPointer(void* value)=0;
 // --------------------------
 };
 
-
 }
+
+#include "UInputProperty.h"
 #endif
 
