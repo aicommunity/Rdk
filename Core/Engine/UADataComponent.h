@@ -18,7 +18,7 @@ class UIShare;
 // 0x1 - Параметр
 // 0x2 - Переменная состояния
 // 0x4 - Временная переменная
-enum {ptParameter=1, ptState=2, ptTemp=4, ptAny=255};
+enum {ptParameter=1, ptState=2, ptTemp=4, ptInput=5, ptAny=255};
 
 // Варианты групп свойства (битовая маска) pg - Property Group
 // 0x100 - Общедоступный
@@ -29,7 +29,7 @@ enum {ptParameter=1, ptState=2, ptTemp=4, ptAny=255};
 enum {pgPublic=0x100, pgSystem=0x200, pgInput=0x400, pgOutput=0x800, pgMode=0x1000, pgAny=0xFFFFFF};
 
 // Наиболее часто используемые сочетания типа и группы
-enum {ptPubParameter=ptParameter|pgPublic, ptPubState=ptState|pgPublic};
+enum {ptPubParameter=ptParameter|pgPublic, ptPubState=ptState|pgPublic, ptPubInput=ptInput|pgPublic};
 
 // Хранилище свойств параметра
 struct UVariable
@@ -112,7 +112,7 @@ typedef std::map<UId,UEPtr<UIShare> > ShareMapT;
 typedef std::map<UId,UEPtr<UIShare> >::iterator ShareMapIteratorT;
 typedef std::map<UId,UEPtr<UIShare> >::const_iterator ShareMapCIteratorT;
 
-private: // Системные свойства
+protected: // Системные свойства
 //protected: // Системные свойства
 // Таблица соответствий имен и Id параметров объекта
 VariableMapT PropertiesLookupTable;

@@ -14,7 +14,6 @@ See file license.txt for more information
 #ifndef ULocalProperty_H
 #define ULocalProperty_H
 
-
 #include <string>
 #include <sstream>
 #include "UProperty.h"
@@ -46,6 +45,10 @@ UVLProperty(const string &name, OwnerT * const owner, typename UVProperty<T,Owne
 UVLProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod ,
 								typename UVProperty<T,OwnerT>::GetterT getmethod)
  : UVProperty<T,OwnerT>(owner, setmethod, getmethod)
+{ reinterpret_cast<UADataComponent* const>(owner)->AddLookupProperty(name,type,this,false); };
+
+UVLProperty(const string &name, OwnerT * const owner, T * const pdata)
+ : UVProperty<T,OwnerT>(owner, pdata)
 { reinterpret_cast<UADataComponent* const>(owner)->AddLookupProperty(name,type,this,false); };
 // -----------------------------
 
@@ -104,29 +107,29 @@ ULProperty& operator = (const T &value)
 /* ************************************************************************* */
 // Класс - свойство-контейнер со значением внутри
 /* ************************************************************************* */
-template<typename TC, typename OwnerT, unsigned int type=ptPubParameter>
-class UCLProperty: public UCProperty<TC,OwnerT>
+template<typename T, typename OwnerT, unsigned int type=ptPubParameter>
+class UCLProperty: public UCProperty<T,OwnerT>
 {
 public:
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации
-UCLProperty(const string &name, OwnerT * const owner, typename UVProperty<TC,OwnerT>::SetterT setmethod=0)
- : UCProperty<TC,OwnerT>(owner, setmethod)
+UCLProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterT setmethod=0)
+ : UCProperty<T,OwnerT>(owner, setmethod)
 { reinterpret_cast<UADataComponent* const>(owner)->AddLookupProperty(name,type,this,false); };
 
-UCLProperty(const string &name, OwnerT * const owner, typename UVProperty<TC,OwnerT>::SetterRT setmethod)
- : UCProperty<TC,OwnerT>(owner, setmethod)
+UCLProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod)
+ : UCProperty<T,OwnerT>(owner, setmethod)
 { reinterpret_cast<UADataComponent* const>(owner)->AddLookupProperty(name,type,this,false); };
 
 //Конструктор инициализации для отдельных значений
-UCLProperty(const string &name, OwnerT * const owner, typename UCProperty<TC,OwnerT>::VSetterT setmethod)
- : UCProperty<TC,OwnerT>(owner,setmethod)
+UCLProperty(const string &name, OwnerT * const owner, typename UCProperty<T,OwnerT>::VSetterT setmethod)
+ : UCProperty<T,OwnerT>(owner,setmethod)
 { reinterpret_cast<UADataComponent* const>(owner)->AddLookupProperty(name,type,this,false); };
 
-UCLProperty(const string &name, OwnerT * const owner, typename UCProperty<TC,OwnerT>::VSetterRT setmethod)
- : UCProperty<TC,OwnerT>(owner,setmethod)
+UCLProperty(const string &name, OwnerT * const owner, typename UCProperty<T,OwnerT>::VSetterRT setmethod)
+ : UCProperty<T,OwnerT>(owner,setmethod)
 { reinterpret_cast<UADataComponent* const>(owner)->AddLookupProperty(name,type,this,false); };
 // -----------------------------
 
@@ -134,22 +137,22 @@ UCLProperty(const string &name, OwnerT * const owner, typename UCProperty<TC,Own
 // Операторы доступа
 // -----------------------------
 // Оператор присваивания
-UCLProperty& operator = (const TC &value)
+UCLProperty& operator = (const T &value)
 {
- (*static_cast<UCProperty<TC,OwnerT>* >(this)) = value;
+ (*static_cast<UCProperty<T,OwnerT>* >(this)) = value;
  return *this;
 };
 
 UCLProperty& operator = (const UCLProperty &value)
 {
- (*static_cast<UCProperty<TC,OwnerT>* >(this)) = value;
+ (*static_cast<UCProperty<T,OwnerT>* >(this)) = value;
  return *this;
 };
 
 // Оператор задания размера контейнера
 UCLProperty& operator = (size_t size)
 {
- (*static_cast<UCProperty<TC,OwnerT>* >(this)) = size;
+ (*static_cast<UCProperty<T,OwnerT>* >(this)) = size;
  return *this;
 };
 // -----------------------------

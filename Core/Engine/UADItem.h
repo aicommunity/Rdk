@@ -18,6 +18,8 @@ See file license.txt for more information
 
 namespace RDK {
 
+class UIInputProperty;
+
 class UIDataInfo
 {
 public: // Методы
@@ -289,6 +291,28 @@ void UpdatePointers(void);
 void CalcMinMaxInputDataSize(void);
 // ----------------------
 };
+
+class UIInputProperty
+{
+public:
+
+// --------------------------
+// Методы управления данными
+// --------------------------
+virtual bool CheckRange(int index)=0;
+// --------------------------
+
+// --------------------------
+// Методы управления указателем
+// --------------------------
+// Возвращает указатель на данные входа
+virtual void const * GetPointer(void) const=0;
+
+// Устанавливает указатель на данные входа
+virtual bool SetPointer(void const * value)=0;
+// --------------------------
+};
+
 
 }
 #endif

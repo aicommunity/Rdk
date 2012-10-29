@@ -102,6 +102,48 @@ const double& UTimeControl::GetDoubleRealTimeStep(void)
 {
  return DoubleRealTimeStep;
 }
+
+// Текущее время внешних источников данных в микросекундах
+const ULongTime& UTimeControl::GetSourceTime(void)
+{
+ return SourceTime;
+}
+
+const double& UTimeControl::GetDoubleSourceTime(void)
+{
+ return DoubleSourceTime;
+}
+
+// Устанавливает время внешних источников данных
+bool UTimeControl::SetSourceTime(ULongTime value)
+{
+ SourceTimeStep=value-SourceTime;
+ if(SourceTimeStep == 0)
+  SourceTimeStep=1;
+
+ DoubleSourceTimeStep=SourceTimeStep/1.0e6;
+
+ SourceTime=value;
+ DoubleSourceTime=SourceTime/1000000.0;
+ return true;
+}
+
+// Увеличивает время внешних источников данных на заданную величину
+bool UTimeControl::IncreaseSourceTime(ULongTime value)
+{
+ return SetSourceTime(SourceTime+value);
+}
+
+// Мгновенный шаг во времени внешних источников данных в микросекундах
+const ULongTime& UTimeControl::GetSourceTimeStep(void)
+{
+ return SourceTimeStep;
+}
+
+const double& UTimeControl::GetDoubleSourceTimeStep(void)
+{
+ return DoubleSourceTimeStep;
+}
 // --------------------------
 
 

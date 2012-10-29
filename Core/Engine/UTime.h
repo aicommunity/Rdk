@@ -29,6 +29,19 @@ static ULongTime RealTimeStep;
 // ћгновенный шаг в реальном времени в секундах
 static double DoubleRealTimeStep;
 
+// “екущее врем€ внешних источников данных в микросекундах
+static ULongTime SourceTime;
+
+// “екущее врем€ внешних источников данных в секундах
+static double DoubleSourceTime;
+
+// ћгновенный шаг во времени внешних источников данных в микросекундах
+static ULongTime SourceTimeStep;
+
+// ћгновенный шаг во времени внешних источников данных в секундах
+static double DoubleSourceTimeStep;
+
+
 public: // ќткрытые методы
 // --------------------------
 // ћетоды управлени€ глобальными свойствами
@@ -60,6 +73,21 @@ static bool IncreaseRealTime(ULongTime value);
 // ¬озвращает мгновенный шаг в реальном времени
 static const ULongTime& GetRealTimeStep(void);
 static const double& GetDoubleRealTimeStep(void);
+
+
+// “екущее врем€ внешних источников данных в микросекундах
+static const ULongTime& GetSourceTime(void);
+static const double& GetDoubleSourceTime(void);
+
+// ”станавливает врем€ внешних источников данных
+static bool SetSourceTime(ULongTime value);
+
+// ”величивает врем€ внешних источников данных на заданную величину
+static bool IncreaseSourceTime(ULongTime value);
+
+// ћгновенный шаг во времени внешних источников данных в микросекундах
+static const ULongTime& GetSourceTimeStep(void);
+static const double& GetDoubleSourceTimeStep(void);
 // --------------------------
 
 

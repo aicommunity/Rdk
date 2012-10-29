@@ -556,6 +556,21 @@ bool UADItem::ConnectToItem(UEPtr<UAItem> na, int i_index, int &c_index)
  if(!UAConnector::ConnectToItem(static_pointer_cast<UAItem>(nad), i_index, c_index))
   return false;
 
+ // Выполняем действия по инициализации указателей
+ VariableMapIteratorT I=PropertiesLookupTable.begin(),
+					  J=PropertiesLookupTable.end();
+ for(;I != J;++I)
+ {
+  if(I->second.Type & ptInput)
+  {
+   UIInputProperty* input_property=dynamic_cast<UIInputProperty*>(I->second.Property.Get());
+   if(!input_property || !input_property->CheckRange(c_index))
+	continue;
+
+   input_property->SetPointer(nad->GetOutputDataAsPointer(i_index));
+  }
+ }
+
  return true;
 }
 
@@ -564,6 +579,21 @@ void UADItem::DisconnectFromIndex(int c_index)
 {
  if(c_index<0 || c_index >= int(InputData.size()))
   return;
+
+ // Выполняем действия по деинициализации указателей
+ VariableMapIteratorT I=PropertiesLookupTable.begin(),
+					  J=PropertiesLookupTable.end();
+ for(;I != J;++I)
+ {
+  if(I->second.Type & ptInput)
+  {
+   UIInputProperty* input_property=dynamic_cast<UIInputProperty*>(I->second.Property.Get());
+   if(!input_property || !input_property->CheckRange(c_index))
+	continue;
+
+   input_property->SetPointer(0);
+  }
+ }
 
  UAConnector::DisconnectFromIndex(c_index);
 

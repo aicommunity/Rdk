@@ -416,6 +416,7 @@ bool UAConnector::ConnectToItem(UEPtr<UAItem> na, int i_index, int &c_index)
 
  CItemList[c_index].Item=na;
  CItemList[c_index].Index=i_index;
+
  return AConnectToItem(na, i_index, c_index);
 }
 
@@ -441,6 +442,7 @@ void UAConnector::DisconnectFromIndex(int c_index)
   return;
 
  ADisconnectFromItem(CItemList[c_index].Item,CItemList[c_index].Index,c_index);
+
  CItemList[c_index].Item=0;
  CItemList[c_index].Index=-1;
 

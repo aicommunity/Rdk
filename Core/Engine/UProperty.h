@@ -109,44 +109,17 @@ void Init(OwnerT * const owner, T * const pdata)
   Variable=Owner->FindPropertyVariable(this);
 }
 
-// Возврат значения без проверки наличия метода и владельца
-const T Get(void)
+// Возврат значения
+virtual T Get(void)
 {
- if(PData)
-  return *PData;
-
- if(Getter)
-  return (Owner->*Getter)();
-
- if(GetterR)
-  return (Owner->*GetterR)();
-
- return T();
+ return T(*this);
 };
 
-// Установка значения без проверки наличия метода и владельца
-bool Set(T value)
-{ return (PData)?(*PData):((Owner->*Setter)(value)); };
-
-bool Set(const T &value)
-{ return (PData)?(*PData):((Owner->*SetterR)(value)); };
-
-T operator () (void)
+// Установка значения
+virtual bool Set(const T &value)
 {
- if(Owner)
- {
-  if(PData)
-   return *PData;
-
-  if(Getter)
-   return (Owner->*Getter)();
-
-  if(GetterR)
-   return (Owner->*GetterR)();
- }
-
- T val;
- return val;
+ *this=value;
+ return true;
 };
 
 operator T (void) const
@@ -240,7 +213,7 @@ virtual bool Save(UEPtr<Serialize::USerStorage>  storage, bool simplemode=false)
  UEPtr<Serialize::USerStorageBinary> binary=dynamic_pointer_cast<Serialize::USerStorageBinary>(storage);
  if(binary)
  {
-  *binary<<(*this)();
+  *binary<<Get();
   return true;
  }
 
@@ -250,14 +223,14 @@ virtual bool Save(UEPtr<Serialize::USerStorage>  storage, bool simplemode=false)
   if(simplemode)
   {
    xml->Create(GetName());
-   Serialize::operator << (*xml,(*this)());
+   Serialize::operator << (*xml,Get());
    xml->SelectUp();
    return true;
   }
   else
   {
    xml->AddNode(GetName());
-   Serialize::operator << (*xml,(*this)());
+   Serialize::operator << (*xml,Get());
    xml->SelectUp();
    return true;
   }
@@ -275,7 +248,7 @@ virtual bool Load(UEPtr<Serialize::USerStorage>  storage, bool simplemode=false)
  if(binary)
  {
   Serialize::operator >> (*binary,temp);
-  *this=temp;
+  Set(temp);
   return true;
  }
 
@@ -288,7 +261,7 @@ virtual bool Load(UEPtr<Serialize::USerStorage>  storage, bool simplemode=false)
    if(xml->GetNodeName() != GetName())
 	return false;
    Serialize::operator >> (*xml,temp);
-   *this=temp;
+   Set(temp);
    xml->SelectUp();
    return true;
   }
@@ -297,7 +270,7 @@ virtual bool Load(UEPtr<Serialize::USerStorage>  storage, bool simplemode=false)
    if(!xml->SelectNode(GetName()))
 	return false;
    Serialize::operator >> (*xml,temp);
-   *this=temp;
+   Set(temp);
    xml->SelectUp();
    return true;
   }
@@ -334,6 +307,18 @@ UProperty(OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmetho
 // -----------------------------
 // Операторы доступа
 // -----------------------------
+// Возврат значения
+virtual T Get(void)
+{
+ return v;
+};
+
+virtual bool Set(const T &value)
+{
+ (*this)=value;
+ return true;
+};
+
 const T& operator () (void) const
 { return v; };
 
@@ -369,94 +354,18 @@ T* operator -> (void)
 T& operator * (void)
 { return v; };
 // -----------------------------
-
-// -----------------------------
-// Методы сериализации
-// -----------------------------
-// Метод записывает значение свойства в поток
-virtual bool Save(UEPtr<Serialize::USerStorage>  storage, bool simplemode=false)
-{
- UEPtr<Serialize::USerStorageBinary>   binary=dynamic_pointer_cast<Serialize::USerStorageBinary>(storage);
- if(binary)
- {
-  *binary<<(*this)();
-  return true;
- }
-
- UEPtr<Serialize::USerStorageXML> xml=dynamic_pointer_cast<Serialize::USerStorageXML>(storage);
- if(xml)
- {
-  if(simplemode)
-  {
-   xml->Create(this->GetName());
-   Serialize::operator << (*xml,(*this)());
-   xml->SelectUp();
-   return true;
-  }
-  else
-  {
-   xml->AddNode(this->GetName());
-   Serialize::operator << (*xml,(*this)());
-   xml->SelectUp();
-   return true;
-  }
- }
-
- return false;
-};
-
-// Метод читает значение свойства из потока
-virtual bool Load(UEPtr<Serialize::USerStorage>  storage, bool simplemode=false)
-{
- T temp;
-
- UEPtr<Serialize::USerStorageBinary>   binary=dynamic_pointer_cast<Serialize::USerStorageBinary>(storage);
- if(binary)
- {
-  Serialize::operator >> (*binary,temp);
-  *this=temp;
-  return true;
- }
-
- UEPtr<Serialize::USerStorageXML> xml=dynamic_pointer_cast<Serialize::USerStorageXML>(storage);
- if(xml)
- {
-  if(simplemode)
-  {
-   xml->SelectRoot();
-   if(xml->GetNodeName() != this->GetName())
-	return false;
-   Serialize::operator >> (*xml,temp);
-   *this=temp;
-   xml->SelectUp();
-   return true;
-  }
-  else
-  {
-   if(!xml->SelectNode(this->GetName()))
-	return false;
-   Serialize::operator >> (*xml,temp);
-   *this=temp;
-   xml->SelectUp();
-   return true;
-  }
- }
-
- return false;
-};
-// -----------------------------
 };
 /* ************************************************************************* */
 
 /* ************************************************************************* */
 // Класс - свойство-контейнер со значением внутри
 /* ************************************************************************* */
-template<typename TC, typename OwnerT>
-class UCProperty: public UVProperty<TC,OwnerT>
+template<typename T, typename OwnerT>
+class UCProperty: public UVProperty<T,OwnerT>
 {
 //friend class OwnerT;
 protected: // Типы методов ввода-вывода
-typedef typename TC::value_type TV;
+typedef typename T::value_type TV;
 
 //typedef T (OwnerT::*VGetterT)(void) const;
 typedef bool (OwnerT::*VSetterT)(TV);
@@ -469,33 +378,33 @@ VSetterRT VSetterR;
 
 protected:
 // Данные
-TC v;
+T v;
 
 public:
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации
-UCProperty(OwnerT * const owner, typename UVProperty<TC,OwnerT>::SetterT setmethod=0)
- : UVProperty<TC,OwnerT>(owner, setmethod, 0), v(), VSetter(0), VSetterR(0) { };
+UCProperty(OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterT setmethod=0)
+ : UVProperty<T,OwnerT>(owner, setmethod, 0), v(), VSetter(0), VSetterR(0) { };
 
-UCProperty(OwnerT * const owner, typename UVProperty<TC,OwnerT>::SetterRT setmethod)
- : UVProperty<TC,OwnerT>(owner, setmethod, 0), v(), VSetter(0), VSetterR(0) { };
+UCProperty(OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod)
+ : UVProperty<T,OwnerT>(owner, setmethod, 0), v(), VSetter(0), VSetterR(0) { };
 
 //Конструктор инициализации для отдельных значений
 UCProperty(OwnerT * const owner, VSetterT setmethod)
- : UVProperty<TC,OwnerT>(owner,(typename UVProperty<TC,OwnerT>::SetterT)0,0), v()
+ : UVProperty<T,OwnerT>(owner,(typename UVProperty<T,OwnerT>::SetterT)0,0), v()
 { VSetter=setmethod; };
 
 UCProperty(OwnerT * const owner, VSetterRT setmethod)
- : UVProperty<TC,OwnerT>(owner,(typename UVProperty<TC,OwnerT>::SetterT)0,0), v()
+ : UVProperty<T,OwnerT>(owner,(typename UVProperty<T,OwnerT>::SetterT)0,0), v()
 { VSetterR=setmethod; };
 // -----------------------------
 
 // -----------------------------
 // Операторы доступа
 // -----------------------------
-const TC& operator () (void) const
+const T& operator () (void) const
 { return v; };
 
 // Чтение элемента контейнера
@@ -530,7 +439,7 @@ bool operator () (int i, TV value)
 };
 
  // Оператор присваивания
-UCProperty& operator = (const TC &value)
+UCProperty& operator = (const T &value)
 {
  if(v == value)
   return *this;
@@ -539,7 +448,7 @@ UCProperty& operator = (const TC &value)
  {
   if(VSetter)
   {
-   typename TC::const_iterator I,J;
+   typename T::const_iterator I,J;
    I=value.begin(); J=value.end();
    while(I != J)
    {
@@ -552,7 +461,7 @@ UCProperty& operator = (const TC &value)
   else
   if(VSetterR)
   {
-   typename TC::const_iterator I,J;
+   typename T::const_iterator I,J;
    I=value.begin(); J=value.end();
    while(I != J)
    {
@@ -584,10 +493,10 @@ UCProperty& operator = (size_t size)
  return *this;
 };
 
-TC* operator -> (void)
+T* operator -> (void)
 { return &v; };
 
-TC& operator * (void)
+T& operator * (void)
 { return v; };
 // -----------------------------
 
@@ -598,84 +507,6 @@ public:
 TV& operator [] (int i)
 { return v[i]; };
 // -----------------------------
-
-// -----------------------------
-// Методы сериализации
-// -----------------------------
-public:
-// Метод записывает значение свойства в поток
-virtual bool Save(UEPtr<Serialize::USerStorage> storage, bool simplemode=false)
-{
- UEPtr<Serialize::USerStorageBinary>   binary=dynamic_pointer_cast<Serialize::USerStorageBinary>(storage);
- if(binary)
- {
-  *binary<<(*this)();
-  return true;
- }
-
- UEPtr<Serialize::USerStorageXML> xml=dynamic_pointer_cast<Serialize::USerStorageXML>(storage);
- if(xml)
- {
-  if(simplemode)
-  {
-   xml->Create(this->GetName());
-   Serialize::operator << (*xml,(*this)());
-   xml->SelectUp();
-   return true;
-  }
-  else
-  {
-   xml->AddNode(this->GetName());
-   Serialize::operator << (*xml,(*this)());
-   xml->SelectUp();
-   return true;
-  }
- }
-
- return false;
-};
-
-// Метод читает значение свойства из потока
-virtual bool Load(UEPtr<Serialize::USerStorage> storage, bool simplemode=false)
-{
- TC temp;
-
- UEPtr<Serialize::USerStorageBinary> binary=dynamic_pointer_cast<Serialize::USerStorageBinary>(storage);
- if(binary)
- {
-  Serialize::operator >> (*binary,temp);
-  *this=temp;
-  return true;
- }
-
- UEPtr<Serialize::USerStorageXML> xml=dynamic_pointer_cast<Serialize::USerStorageXML>(storage);
- if(xml)
- {
-  if(simplemode)
-  {
-   xml->SelectRoot();
-   if(xml->GetNodeName() != this->GetName())
-	return false;
-   Serialize::operator >> (*xml,temp);
-   *this=temp;
-   xml->SelectUp();
-   return true;
-  }
-  else
-  {
-   if(!xml->SelectNode(this->GetName()))
-	return false;
-   Serialize::operator >> (*xml,temp);
-   *this=temp;
-   xml->SelectUp();
-   return true;
-  }
- }
-
- return false;
-};
-// -----------------------------
-
 };
 #pragma warning( default : 4700)
 /* ************************************************************************* */
