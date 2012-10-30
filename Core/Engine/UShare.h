@@ -244,39 +244,6 @@ void SetLocal(const T& data)
 {
  Data=data;
 }
-  /*
-const T& GetShared(void) const
-{
- return (VProperty)?VProperty->Get():Data;
-}
-
-void SetShared(const T& data)
-{
- if(VProperty)
-  *VProperty=data;
- else
-  Data=data;
-
-}
-
-const T* GetPointer(void) const
-{
- return Pointer;
-}
-
-void SetPointer(UAComponent *owner, T* pointer)
-{
- MainOwnerT *mainowner=dynamic_cast<MainOwnerT*>(owner);
-
- if(mainowner)
- {
-  Pointer=pointer;
-  if(Pointer)
-   *Pointer=Data;
- }
- else
-  Pointer=0;
-}    */
 // --------------------------
 
 // --------------------------
@@ -284,7 +251,7 @@ void SetPointer(UAComponent *owner, T* pointer)
 // --------------------------
 UShare<T,MainOwnerT>& operator = (const UShare<T,MainOwnerT> &copy)
 {
-//s Pointer=copy.Pointer;
+// Pointer=copy.Pointer;
  VProperty=copy.VProperty;
  Data=copy.Data;
 

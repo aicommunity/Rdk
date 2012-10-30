@@ -72,6 +72,7 @@ std::string narrow(const std::wstring& wstr, const std::locale& loc)
   if(sz == 0)
 	return std::string();
   mbstate_t state;
+  memset(&state,0,sizeof(state));
   char *cnext;
   const wchar_t *wnext;
   const wchar_t *wcstr = wstr.c_str();
@@ -104,6 +105,7 @@ std::wstring widen(const std::string& str, const std::locale& loc)
   if(sz == 0)
     return std::wstring();
   mbstate_t state;
+  memset(&state,0,sizeof(state));
   const char *cnext;
   wchar_t *wnext;
   const char *cstr = str.c_str();

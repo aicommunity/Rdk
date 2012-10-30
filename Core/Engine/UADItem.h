@@ -20,6 +20,12 @@ namespace RDK {
 
 class UIInputProperty;
 
+enum { ipData=1, ipComp=2 };
+enum { ipSingle=16, ipRange=32, ipList=64 };
+enum { ipDataSingle=ipData|ipSingle, ipDataRange=ipData|ipRange,
+	   ipDataList=ipData|ipList, ipCompSingle=ipComp|ipSingle,
+	   ipCompRange=ipComp|ipRange, ipCompList=ipComp|ipList };
+
 class UIDataInfo
 {
 public: // Методы
@@ -299,6 +305,8 @@ public:
 // --------------------------
 // Методы управления данными
 // --------------------------
+virtual int GetInputType(void) const=0;
+
 virtual bool CheckRange(int index)=0;
 // --------------------------
 

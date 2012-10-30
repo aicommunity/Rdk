@@ -1,8 +1,8 @@
 /* ***********************************************************
-@Copyright Alexander V. Bakhshiev, 2005.
+@Copyright Alexander V. Bakhshiev, 2012.
 E-mail:        alexab@ailab.ru
 url:            http://ailab.ru
-Version:        3.0.0
+Version:        1.0.0
 
 This file - part of the project: RDK
 
@@ -21,6 +21,32 @@ See file license.txt for more information
 namespace RDK {
 
 using namespace std;
+
+// Класс - базовое виртуальное свойство
+// Не содержит данного внутри себя
+template<typename T, typename OwnerT, unsigned int type=ptPubParameter>
+class UVBaseLProperty: public UVBaseProperty<T,OwnerT>
+{
+friend class UADataComponent;
+protected: // Типы методов ввода-вывода
+
+protected: // Данные
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+//Конструктор инициализации.
+UVBaseLProperty(const string &name, OwnerT * const owner)
+ : UVBaseProperty<T,OwnerT>(owner)
+{ reinterpret_cast<UADataComponent* const>(owner)->AddLookupProperty(name,type,this,false); };
+
+UVBaseLProperty(const string &name, OwnerT * const owner, T * const pdata)
+ : UVBaseProperty<T,OwnerT>(owner, pdata)
+{ reinterpret_cast<UADataComponent* const>(owner)->AddLookupProperty(name,type,this,false); };
+// -----------------------------
+};
+
 
 
 // Класс - виртуальное свойство

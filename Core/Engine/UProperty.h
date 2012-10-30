@@ -30,17 +30,13 @@ namespace RDK {
 using namespace std;
 
 #pragma warning( disable : 4700)
-// Класс - виртуальное свойство
-// Не содержит данного внутри себя
+
+// Класс - база для свойств
 template<typename T,class OwnerT>
-class UVProperty: public UIProperty
+class UVBaseProperty: public UIProperty
 {
 //friend class OwnerT;
 protected: // Типы методов ввода-вывода
-typedef T (OwnerT::*GetterT)(void) const;
-typedef const T& (OwnerT::*GetterRT)(void) const;
-typedef bool (OwnerT::*SetterT)(T);
-typedef bool (OwnerT::*SetterRT)(const T&);
 
 protected: // Данные
 // Владелец свойства
@@ -52,6 +48,91 @@ UADataComponent::VariableMapCIteratorT Variable;
 // Прямой доступ к данным
 T* PData;
 
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+//Конструктор инициализации.
+UVBaseProperty(OwnerT * const owner) :
+  Owner(owner), PData(0)
+{
+   if(Owner)
+	Variable=Owner->FindPropertyVariable(this);
+}
+
+UVBaseProperty(OwnerT * const owner, T * const pdata) :
+  Owner(owner), PData(pdata)
+{
+   if(Owner)
+	Variable=Owner->FindPropertyVariable(this);
+}
+// -----------------------------
+
+// -----------------------------
+// Методы управления
+// -----------------------------
+// Инициализация
+/*void Init(OwnerT * const owner)
+{
+ Owner = owner; PData=0;
+ if(Owner)
+  Variable=Owner->FindPropertyVariable(this);
+}
+
+void Init(OwnerT * const owner, T * const pdata)
+{
+ Owner = owner; PData=pdata;
+ if(Owner)
+  Variable=Owner->FindPropertyVariable(this);
+}
+  */
+// -----------------------------
+
+// -----------------------------
+// Методы сериализации
+// -----------------------------
+// Метод устанавливает значение указателя на итератор-хранилище данных об этом
+// свойстве в родительском компоненте
+virtual void SetVariable(UADataComponent::VariableMapCIteratorT &var)
+{
+ Variable=var;
+}
+
+// Метод возвращает строковое имя свойства
+virtual const std::string& GetName(void) const
+{
+ return Variable->first;
+};
+
+// Метод возвращает тип свойства
+virtual unsigned int GetType(void) const
+{
+ return Variable->second.Type;
+};
+
+// Метод возвращает строковое имя класса-владельца свойства
+virtual std::string GetOwnerName(void) const
+{
+ return typeid(Owner).name();
+};
+// -----------------------------
+};
+
+
+
+// Класс - виртуальное свойство
+// Не содержит данного внутри себя
+template<typename T,class OwnerT>
+class UVProperty: public UVBaseProperty<T,OwnerT>
+{
+//friend class OwnerT;
+protected: // Типы методов ввода-вывода
+typedef T (OwnerT::*GetterT)(void) const;
+typedef const T& (OwnerT::*GetterRT)(void) const;
+typedef bool (OwnerT::*SetterT)(T);
+typedef bool (OwnerT::*SetterRT)(const T&);
+
+protected: // Данные
 // Методы ввода-вывода
 GetterT Getter;
 SetterT Setter;
@@ -65,49 +146,40 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 UVProperty(OwnerT * const owner, SetterT setmethod , GetterT getmethod) :
-  Owner(owner), PData(0), Getter(getmethod), Setter(setmethod), GetterR(0), SetterR(0)
+  UVBaseProperty<T,OwnerT>(owner), Getter(getmethod), Setter(setmethod), GetterR(0), SetterR(0)
 {
-   if(Owner)
-	Variable=Owner->FindPropertyVariable(this);
 }
 
 UVProperty(OwnerT * const owner, SetterRT setmethod , GetterRT getmethod) :
-  Owner(owner), PData(0), Getter(0), Setter(0), GetterR(getmethod), SetterR(setmethod)
+  UVBaseProperty<T,OwnerT>(owner), Getter(0), Setter(0), GetterR(getmethod), SetterR(setmethod)
 {
-   if(Owner)
-	Variable=Owner->FindPropertyVariable(this);
 }
 
 UVProperty(OwnerT * const owner, T * const pdata) :
-  Owner(owner), PData(pdata), Getter(0), Setter(0), GetterR(0), SetterR(0)
+  UVBaseProperty<T,OwnerT>(owner,pdata), Getter(0), Setter(0), GetterR(0), SetterR(0)
 {
-   if(Owner)
-	Variable=Owner->FindPropertyVariable(this);
 }
 // -----------------------------
 
 // -----------------------------
 // Методы управления
 // -----------------------------
-// Инициализация
+/*// Инициализация
 void Init(OwnerT * const owner, SetterT setmethod, GetterT getmethod)
 {
- Owner = owner; PData=0; Getter = getmethod; Setter = setmethod; SetterR=0;
- if(Owner)
-  Variable=Owner->FindPropertyVariable(this);
+ UVBaseProperty::Init(owner);
+ Getter = getmethod; Setter = setmethod; SetterR=0;
 }
 void Init(OwnerT * const owner, SetterRT setmethod, GetterT getmethod)
 {
- Owner = owner; PData=0; Getter = getmethod; SetterR = setmethod; Setter=0;
- if(Owner)
-  Variable=Owner->FindPropertyVariable(this);
+ UVBaseProperty::Init(owner);
+ Getter = getmethod; SetterR = setmethod; Setter=0;
 }
 void Init(OwnerT * const owner, T * const pdata)
 {
- Owner = owner; PData=pdata; Getter = 0; GetterR=0; SetterR = 0; Setter=0;
- if(Owner)
-  Variable=Owner->FindPropertyVariable(this);
-}
+ UVBaseProperty::Init(owner,pdata);
+ Getter = 0; GetterR=0; SetterR = 0; Setter=0;
+}        */
 
 // Возврат значения
 virtual T Get(void)

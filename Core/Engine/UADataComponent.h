@@ -18,7 +18,8 @@ class UIShare;
 // 0x1 - Параметр
 // 0x2 - Переменная состояния
 // 0x4 - Временная переменная
-enum {ptParameter=1, ptState=2, ptTemp=4, ptInput=5, ptAny=255};
+// 0x8 - Вход
+enum {ptParameter=1, ptState=2, ptTemp=4, ptInput=8, ptAny=255};
 
 // Варианты групп свойства (битовая маска) pg - Property Group
 // 0x100 - Общедоступный

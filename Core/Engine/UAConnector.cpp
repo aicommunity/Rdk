@@ -130,8 +130,12 @@ void UCItemList::Resize(int newsize)
 
  if(RealSize<newsize || !Data)
  {
-  UCItem* newbuffer=new UCItem[newsize];
-  memcpy(newbuffer,Data,sizeof(UCItem)*Size);
+  UCItem* newbuffer=0;
+  if(newsize)
+  {
+   newbuffer=new UCItem[newsize];
+   memcpy(newbuffer,Data,sizeof(UCItem)*Size);
+  }
 
   if(Data)
    delete []Data;
