@@ -335,7 +335,7 @@ object USeriesControlForm: TUSeriesControlForm
           Margins.Bottom = 4
           Anchors = [akLeft, akTop, akRight]
           TabOrder = 7
-          Text = '0'
+          Text = '5'
           OnChange = WatchIntervalEditChange
           OnExit = Edit4Exit
           OnKeyDown = Edit4KeyDown

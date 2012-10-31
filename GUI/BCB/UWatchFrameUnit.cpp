@@ -26,7 +26,7 @@ TUWatchInfo::TUWatchInfo(void)
 {
  YShift=0;
  FullUpdate=false;
- WatchInterval=-1;
+ WatchInterval=5;
 
  SeriesIndex=-1;
  Color=TColor(0);
@@ -622,7 +622,6 @@ void __fastcall TUWatchFrame::StepUpdate(void)
    std::vector<double> vxdata, vydata;
    if(wd->YDataSourceName.size() && wd->XDataSourceName.size()==0)
    {
-	int ydata_size=Model_GetComponentOutputDataSize(wd->YDataSourceName.c_str(), wd->YOutputIndex);
 	 xdata=Model_GetDoubleTime();
 	 x=&xdata;
 	 y=(double*)Model_GetComponentOutputData(wd->YDataSourceName.c_str(), wd->YOutputIndex);
@@ -700,7 +699,7 @@ void __fastcall TUWatchFrame::StepUpdate(void)
   }
   else
   {
-   if(wd->WatchInterval == 0)
+   if(wd->WatchInterval < 0)
 	continue;
 
 //   if(!wd->YDataSourceName.size())
@@ -1100,14 +1099,11 @@ void TUWatchFrame::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
  String s=UShowProgressBarForm->GetBarHeader(1);
  UShowProgressBarForm->ResetBarStatus(1,0,num_series);
 
- size_t oldnamelistsize=NameList.size();
-
  for(int i=0;i<num_series;i++)
   {
    xml.SelectNode(i);
    UShowProgressBarForm->SetBarHeader(1,s+String(" - ")+String(xml.GetNodeName().c_str())+":");
 
-   int j=i;
    {
 	TUWatchInfo wd_data;
 	wd=&wd_data;
