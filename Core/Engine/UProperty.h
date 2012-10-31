@@ -370,10 +370,10 @@ public:
 // --------------------------
 //Конструктор инициализации
 UProperty(OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterT setmethod=0)
- : UVProperty<T,OwnerT>(owner, setmethod, 0), v() { };
+ : UVProperty<T,OwnerT>(owner, setmethod, 0), v() { PData=&v; };
 
 UProperty(OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod)
- : UVProperty<T,OwnerT>(owner, setmethod, 0), v() { };
+ : UVProperty<T,OwnerT>(owner, setmethod, 0), v() { PData=&v; };
 // -----------------------------
 
 // -----------------------------
@@ -458,19 +458,19 @@ public:
 // --------------------------
 //Конструктор инициализации
 UCProperty(OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterT setmethod=0)
- : UVProperty<T,OwnerT>(owner, setmethod, 0), v(), VSetter(0), VSetterR(0) { };
+ : UVProperty<T,OwnerT>(owner, setmethod, 0), v(), VSetter(0), VSetterR(0) { PData=&v; };
 
 UCProperty(OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod)
- : UVProperty<T,OwnerT>(owner, setmethod, 0), v(), VSetter(0), VSetterR(0) { };
+ : UVProperty<T,OwnerT>(owner, setmethod, 0), v(), VSetter(0), VSetterR(0) { PData=&v; };
 
 //Конструктор инициализации для отдельных значений
 UCProperty(OwnerT * const owner, VSetterT setmethod)
  : UVProperty<T,OwnerT>(owner,(typename UVProperty<T,OwnerT>::SetterT)0,0), v()
-{ VSetter=setmethod; };
+{ VSetter=setmethod; PData=&v; };
 
 UCProperty(OwnerT * const owner, VSetterRT setmethod)
  : UVProperty<T,OwnerT>(owner,(typename UVProperty<T,OwnerT>::SetterT)0,0), v()
-{ VSetterR=setmethod; };
+{ VSetterR=setmethod; PData=&v; };
 // -----------------------------
 
 // -----------------------------

@@ -77,6 +77,8 @@ object UComponentsControlForm: TUComponentsControlForm
                 ExplicitHeight = 351
                 inherited ParametersHeaderControl: THeaderControl
                   Width = 249
+                  ExplicitLeft = 1
+                  ExplicitTop = -6
                   ExplicitWidth = 249
                 end
                 inherited ParametersRichEdit: TRichEdit
