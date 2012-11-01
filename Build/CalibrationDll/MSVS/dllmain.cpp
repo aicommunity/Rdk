@@ -423,6 +423,13 @@ __declspec(dllexport) int __cdecl CameraCalibrationStep(unsigned char *imagedata
 		return 0;
 }
 
+__declspec(dllexport) int __cdecl CameraCalibrationUndoStep(int camera_index)
+{
+ if(imagePoints[camera_index].size()>0)
+  imagePoints[camera_index].resize(imagePoints[camera_index].size()-1);
+ return 0;
+}
+
 __declspec(dllexport) int __cdecl CameraCalibrateComplete(double* icc, double* dist_coeffs, int* num_dist_coeffs, double* ecc, int camera_index)
 {
  if(camera_index<0 || camera_index>=cameraMatrix.size())
