@@ -12,6 +12,8 @@
 #include "UImagesFrameUnit.h"
 #include "myrdk.h"
 #include "TUVisualController.h"
+#include "TUVisualControllerFormUnit.h"
+#include "TUVisualControllerFrameUnit.h"
 //---------------------------------------------------------------------------
 class TUImagesForm : public TUVisualControllerForm
 {

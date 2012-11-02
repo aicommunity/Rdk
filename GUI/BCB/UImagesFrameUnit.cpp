@@ -314,6 +314,10 @@ void TUImagesFrame::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
 // Загружает параметры интерфейса из xml
 void TUImagesFrame::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
 {
+ Images.clear();
+ StringIds.clear();
+ ComponentIndexes.clear();
+
  int x=xml.ReadInteger("NumCellWidth",1);
  int y=xml.ReadInteger("NumCellHeight",1);
  SetNumCells(x,y);

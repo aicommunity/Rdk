@@ -20,15 +20,25 @@ object UImagesForm: TUImagesForm
     Width = 728
     Height = 487
     Align = alClient
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
     TabOrder = 0
     ExplicitWidth = 728
     ExplicitHeight = 487
     inherited DrawGrid: TDrawGrid
       Width = 728
-      Height = 487
+      Height = 470
       Options = [goVertLine, goHorzLine, goDrawFocusSelected, goRowSizing, goColSizing]
       ExplicitWidth = 728
       ExplicitHeight = 487
+    end
+    inherited ShowLegendCheckBox: TCheckBox
+      Top = 470
+      Width = 728
     end
   end
 end

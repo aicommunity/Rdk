@@ -158,6 +158,12 @@ void TVideoGrabberControlFrame::ASaveParameters(RDK::Serialize::USerStorageXML &
  xml.WriteString("IPCameraUrl",AnsiString(IPCameraUrlEdit->Text).c_str());
  xml.WriteString("IPCameraUserName",AnsiString(IPCameraUserNameEdit->Text).c_str());
  xml.WriteString("IPCameraUserPassword",AnsiString(IPCameraUserPasswordEdit->Text).c_str());
+
+ xml.WriteInteger("DeviceId",DeviceComboBox->ItemIndex);
+ xml.WriteInteger("InputId",InputComboBox->ItemIndex);
+ xml.WriteInteger("VideoSizeId",VideoSizeComboBox->ItemIndex);
+ xml.WriteInteger("VideoSubTypeId",VideoSubTypeComboBox->ItemIndex);
+ xml.WriteInteger("AnalogVideoStandardId",AnalogVideoStandardComboBox->ItemIndex);
 }
 
 // Загружает параметры интерфейса из xml
@@ -177,6 +183,27 @@ void TVideoGrabberControlFrame::ALoadParameters(RDK::Serialize::USerStorageXML &
 
  SelectMode(xml.ReadInteger("Mode",1));
  UpdateInterface();
+
+ int index=-1;
+ index=xml.ReadInteger("DeviceId",-1);
+ if(index<DeviceComboBox->Items->Count)
+  DeviceComboBox->ItemIndex=index;
+
+ index=xml.ReadInteger("InputId",-1);
+ if(index<InputComboBox->Items->Count)
+  InputComboBox->ItemIndex=index;
+
+ index=xml.ReadInteger("VideoSizeId",-1);
+ if(index<VideoSizeComboBox->Items->Count)
+  VideoSizeComboBox->ItemIndex=index;
+
+ index=xml.ReadInteger("VideoSubTypeId",-1);
+ if(index<VideoSubTypeComboBox->Items->Count)
+  VideoSubTypeComboBox->ItemIndex=index;
+
+ index=xml.ReadInteger("AnalogVideoStandardId",-1);
+ if(index<AnalogVideoStandardComboBox->Items->Count)
+  AnalogVideoStandardComboBox->ItemIndex=index;
 }
 // -----------------------------
 
