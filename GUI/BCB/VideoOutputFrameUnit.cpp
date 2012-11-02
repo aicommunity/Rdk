@@ -56,7 +56,6 @@ __fastcall TVideoOutputFrame::TVideoOutputFrame(TComponent* Owner)
  MyVideoGrabberControlForm=new TVideoGrabberControlForm(this);
  MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this,VideoGrabber);
 
-
  ConvertBitmap=new Graphics::TBitmap;
 
  MyComponentsListForm=new TUComponentsListForm(this);

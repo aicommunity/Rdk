@@ -74,10 +74,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
       VideoSource_FileOrURL_StartTime = -1
       VideoSource_FileOrURL_StopTime = -1
       OnFrameCaptureCompleted = VideoGrabberFrameCaptureCompleted
-      ExplicitLeft = 432
-      ExplicitTop = 417
-      ExplicitWidth = 64
-      ExplicitHeight = 40
     end
   end
   object Panel1: TPanel
