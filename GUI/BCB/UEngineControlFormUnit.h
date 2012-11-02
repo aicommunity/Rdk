@@ -70,6 +70,9 @@ __published:	// IDE-managed Components
 	TToolButton *ToolButton11;
 	TToolButton *ToolButton16;
 	TMenuItem *ReloadParameters1;
+	TMenuItem *CopyProject1;
+	TMenuItem *N4;
+	TMenuItem *ProjectOptions1;
 	void __fastcall FormShow(TObject *Sender);
 	void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
 	void __fastcall Start1Click(TObject *Sender);
@@ -90,6 +93,8 @@ __published:	// IDE-managed Components
 	void __fastcall FavoriteInformation1Click(TObject *Sender);
 	void __fastcall DrawEngine1Click(TObject *Sender);
 	void __fastcall ReloadParameters1Click(TObject *Sender);
+	void __fastcall CopyProject1Click(TObject *Sender);
+	void __fastcall ProjectOptions1Click(TObject *Sender);
 
 
 private:	// User declarations
@@ -109,7 +114,13 @@ RDK::Serialize::USerStorageXML InterfaceXml;
 String ProjectPath;
 
 // Имя файла проекта
+String ProjectFileName;
+
+// Имя проекта
 String ProjectName;
+
+// Описание проекта
+String ProjectDescription;
 
 // Флаг автоматического сохранения проекта
 bool ProjectAutoSaveFlag;

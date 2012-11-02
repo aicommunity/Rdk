@@ -129,17 +129,12 @@ void __fastcall TUCreateProjectWizardForm::Button1Click(TObject *Sender)
  }
 }
 //---------------------------------------------------------------------------
-void __fastcall TUCreateProjectWizardForm::FormShow(TObject *Sender)
-{
- ClearWizard();
-}
-//---------------------------------------------------------------------------
 void __fastcall TUCreateProjectWizardForm::ProjectTypeRadioGroupClick(TObject *Sender)
 
 {
  if(ProjectTypeRadioGroup->ItemIndex == 0)
  {
-  ProjectCalculationModeRadioGroup->ItemIndex=0;
+  ProjectCalculationModeRadioGroup->ItemIndex=1;
   if(ProjectTimeStepEdit->Text == "2000" || ProjectTimeStepEdit->Text == "30")
    ProjectTimeStepEdit->Text="2000";
 
@@ -148,7 +143,7 @@ void __fastcall TUCreateProjectWizardForm::ProjectTypeRadioGroupClick(TObject *S
  else
  if(ProjectTypeRadioGroup->ItemIndex == 1)
  {
-  ProjectCalculationModeRadioGroup->ItemIndex=1;
+  ProjectCalculationModeRadioGroup->ItemIndex=0;
   if(ProjectTimeStepEdit->Text == "2000" || ProjectTimeStepEdit->Text == "30")
    ProjectTimeStepEdit->Text="30";
 

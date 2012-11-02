@@ -350,7 +350,8 @@ void TUComponentIOFrame::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
 // Загружает параметры интерфейса из xml
 void TUComponentIOFrame::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
 {
-
+ ViewComponentOwnerLongId="";
+ ViewComponentLongId="";
 }
 // -----------------------------
 

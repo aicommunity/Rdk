@@ -11,7 +11,6 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
-  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
   object Panel1: TPanel
@@ -21,9 +20,6 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
     Height = 41
     Align = alBottom
     TabOrder = 0
-    ExplicitLeft = 280
-    ExplicitTop = 200
-    ExplicitWidth = 185
     object PrevButton: TButton
       Left = 278
       Top = 6
@@ -58,15 +54,12 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
     Top = 0
     Width = 527
     Height = 362
-    ActivePage = TabSheet2
+    ActivePage = TabSheet1
     Align = alClient
     TabOrder = 1
     OnChange = PageControlChange
-    ExplicitTop = 41
-    ExplicitHeight = 214
     object TabSheet1: TTabSheet
       Caption = 'Name'
-      ExplicitHeight = 186
       DesignSize = (
         519
         334)
@@ -132,8 +125,8 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
         Font.Name = 'Tahoma'
         Font.Style = []
         ParentFont = False
+        PlainText = True
         TabOrder = 3
-        ExplicitHeight = 83
       end
       object ProjectAutoSaveFlagCheckBox: TCheckBox
         Left = 3
@@ -150,7 +143,6 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
     object TabSheet2: TTabSheet
       Caption = 'Type'
       ImageIndex = 1
-      ExplicitHeight = 186
       object TitlePanel2: TPanel
         Left = 0
         Top = 0
@@ -174,9 +166,6 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
           'Video analysis')
         TabOrder = 2
         OnClick = ProjectTypeRadioGroupClick
-        ExplicitLeft = 3
-        ExplicitTop = 47
-        ExplicitWidth = 513
       end
       object ProjectTimeStepGroupBox: TGroupBox
         Left = 0
@@ -186,9 +175,6 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
         Align = alTop
         Caption = ' Time step duration (or default frame processing duration) '
         TabOrder = 1
-        ExplicitLeft = 3
-        ExplicitTop = 191
-        ExplicitWidth = 513
         object Label2: TLabel
           Left = 10
           Top = 32
@@ -212,14 +198,11 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
         Height = 66
         Align = alTop
         Caption = ' Calculation mode '
-        ItemIndex = 0
+        ItemIndex = 1
         Items.Strings = (
           'Sequential'
           'Real-time simulation')
         TabOrder = 3
-        ExplicitLeft = 3
-        ExplicitTop = 119
-        ExplicitWidth = 513
       end
       object VideoAnalysisGroupBox: TGroupBox
         Left = 0
@@ -229,7 +212,6 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
         Align = alClient
         Caption = ' Video Analysis Additional Parameters '
         TabOrder = 4
-        ExplicitTop = 237
         DesignSize = (
           519
           95)
@@ -296,7 +278,6 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
     object TabSheet3: TTabSheet
       Caption = 'Model'
       ImageIndex = 2
-      ExplicitHeight = 186
       object TitlePanel3: TPanel
         Left = 0
         Top = 0
@@ -314,8 +295,6 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
         Height = 149
         Align = alClient
         TabOrder = 1
-        ExplicitTop = 41
-        ExplicitHeight = 96
         inline UClassesListFrame1: TUClassesListFrame
           Left = 2
           Top = 32
@@ -331,11 +310,15 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
           ParentDoubleBuffered = False
           ParentFont = False
           TabOrder = 0
-          ExplicitLeft = 12
-          ExplicitTop = -298
+          ExplicitLeft = 2
+          ExplicitTop = 32
+          ExplicitWidth = 515
+          ExplicitHeight = 115
           inherited StringGrid: TStringGrid
             Width = 515
             Height = 115
+            ExplicitWidth = 515
+            ExplicitHeight = 115
           end
         end
         object RootModelComponentNameRadioButton: TRadioButton
@@ -347,9 +330,6 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
           Caption = 'Root model component name'
           TabOrder = 1
           OnClick = RootModelComponentNameRadioButtonClick
-          ExplicitLeft = 8
-          ExplicitTop = 32
-          ExplicitWidth = 113
         end
       end
       object GroupBox3: TGroupBox
@@ -373,9 +353,6 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
           TabOrder = 1
           TabStop = True
           OnClick = PredefinedModelRadioButtonClick
-          ExplicitLeft = 56
-          ExplicitTop = 24
-          ExplicitWidth = 113
         end
         object PredefinedModelComboBox: TComboBox
           Left = 4
@@ -394,8 +371,6 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
         Height = 72
         Align = alTop
         TabOrder = 3
-        ExplicitLeft = 3
-        ExplicitTop = 169
         DesignSize = (
           519
           72)

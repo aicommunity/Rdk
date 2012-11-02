@@ -58,7 +58,6 @@ __published:	// IDE-managed Components
 	TCheckBox *UpendInputImageCheckBox;
 	void __fastcall FinishButtonClick(TObject *Sender);
 	void __fastcall Button1Click(TObject *Sender);
-	void __fastcall FormShow(TObject *Sender);
 	void __fastcall ProjectTypeRadioGroupClick(TObject *Sender);
 	void __fastcall PredefinedModelRadioButtonClick(TObject *Sender);
 	void __fastcall RootModelComponentNameRadioButtonClick(TObject *Sender);

@@ -116,6 +116,26 @@ void TUComponentsListFrame::AUpdateInterface(void)
   UpdateStatesList();
 }
 
+
+// Сохраняет параметры интерфейса в xml
+void TUComponentsListFrame::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
+{
+
+}
+
+// Загружает параметры интерфейса из xml
+void TUComponentsListFrame::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
+{
+ SelectedComponentName.clear();
+ SelectedComponentId.clear();
+ CurrentComponentName.clear();
+ CurrentComponentId.clear();
+ SelectedComponentParameterName.clear();
+ SelectedComponentStateName.clear();
+ CurrentPath.clear();
+
+}
+
 // Обновляет параметры компонента
 void TUComponentsListFrame::UpdateParameters(void)
 {

@@ -108,6 +108,19 @@ void TUDrawEngineForm::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
 // Загружает параметры интерфейса из xml
 void TUDrawEngineForm::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
 {
+ // Имя компонента, содержимое которого будет отображено
+ ComponentName.clear();
+
+ // Xml описание сети
+ NetXml.Destroy();
+
+ StartName.clear();
+ StopName.clear();
+
+ MoveComponentName.clear();
+ BreakLinkComponentName.clear();
+ FontFileName.clear();
+
  FontFileName=xml.ReadString("FontFileName","Font/");//"Font_16x8_EnRu.bmp");
 
  for(int i=0;i<256;i++)
@@ -355,7 +368,7 @@ void __fastcall TUDrawEngineForm::ImageDragDrop(TObject *Sender, TObject *Source
  {
   std::string name=pname;
   UpdateInterfaceFlag=true;
-  SetNet(UComponentsControlForm->ComponentsControlFrame->ComponentsListFrame->GetCurrentComponentName());
+  ReloadNet();
   UpdateInterfaceFlag=false;
   DrawEngine.MoveComponent(name, X,Y);
   SaveComponentPosition(name);

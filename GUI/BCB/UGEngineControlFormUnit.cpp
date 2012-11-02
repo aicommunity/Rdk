@@ -4,6 +4,7 @@
 #pragma hdrstop
 
 #include <vector>
+#include <Vcl.FileCtrl.hpp>
 #include "UGEngineControlFormUnit.h"
 #include "TVideoGrabberControlFormUnit.h"
 #include "UImagesFormUnit.h"
@@ -16,6 +17,7 @@
 #include "UFavoriteComponentInfoFormUnit.h"
 #include "UDrawEngineFormUnit.h"
 #include "UCreateProjectWizardFormUnit.h"
+#include "TUFileSystem.h"
 #include "rdk_initdll.h"
 
 //---------------------------------------------------------------------------
@@ -68,7 +70,7 @@ void TUGEngineControlForm::AUpdateInterface(void)
  Caption="Engine Control";
  if(ProjectOpenFlag)
  {
-  Caption=Caption+String(" [")+ProjectName+"]";
+  Caption=Caption+String(" [")+ProjectFileName+"]";
  }
  StatusBar->SimpleText=UEngineMonitorForm->EngineMonitorFrame->StatusBar->SimpleText;
  StatusBar->Repaint();
@@ -110,6 +112,15 @@ void TUGEngineControlForm::CreateProject(const String &FileName, const String &m
 
  ProjectXml.WriteInteger("CalculationMode",CalculationMode);
 
+ if(PredefinedStructure == 0 && model_file_name.Length()>0)
+ {
+  ProjectXml.WriteString("ModelFileName",AnsiString(model_file_name).c_str());
+ }
+
+ ProjectXml.WriteString("InterfaceFileName","Interface.xml");
+ ProjectXml.WriteString("ParametersFileName","Parameters.xml");
+ ProjectXml.WriteString("StatesFileName","States.xml");
+
  ProjectXml.SaveToFile(AnsiString(FileName).c_str());
  OpenProject(FileName);
 
@@ -118,11 +129,6 @@ void TUGEngineControlForm::CreateProject(const String &FileName, const String &m
   if(PredefinedStructure == 0 && model_comp_name.Length()>0)
   {
    Model_Create(AnsiString(model_comp_name).c_str());
-  }
-
-  if(PredefinedStructure == 0 && model_file_name.Length()>0)
-  {
-	UComponentsControlForm->ComponentsControlFrame->LoadModelFromFile(model_file_name);
   }
  }
 }
@@ -135,12 +141,12 @@ void TUGEngineControlForm::CloseProject(void)
 
  if(ProjectOpenFlag)
  {
-  ProjectName="";
+  ProjectFileName="";
   ProjectPath="";
  }
  ProjectOpenFlag=false;
  EngineUnInit();
- UpdateInterface();
+// UpdateInterface();
 }
 
 // Открывает проект
@@ -150,9 +156,12 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
 
  ProjectXml.LoadFromFile(AnsiString(FileName).c_str(),"");
  ProjectPath=ExtractFilePath(FileName);
- ProjectName=ExtractFileName(FileName);
+ ProjectFileName=ExtractFileName(FileName);
 
  ProjectXml.SelectNodeRoot("Project/General");
+
+ ProjectName=ProjectXml.ReadString("ProjectName","NoName").c_str();
+
  // Число входов среды
  NumEnvInputs=ProjectXml.ReadInteger("NumEnvInputs",1);
 
@@ -180,6 +189,22 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
 
  CalculationMode=ProjectXml.ReadInteger("CalculationMode",0);
 
+ String descriptionfilename=ProjectXml.ReadString("ProjectDescriptionFileName","").c_str();
+
+ if(descriptionfilename.Length() != 0)
+ {
+  TRichEdit* RichEdit=new TRichEdit(this);
+  RichEdit->Parent=this;
+  RichEdit->PlainText=true;
+  RichEdit->Visible=false;
+
+  if(ExtractFilePath(descriptionfilename).Length() == 0)
+   RichEdit->Lines->LoadFromFile(ProjectPath+descriptionfilename);
+  else
+   RichEdit->Lines->LoadFromFile(descriptionfilename);
+  ProjectDescription=RichEdit->Text;
+  delete RichEdit;
+ }
 
  String modelfilename=ProjectXml.ReadString("ModelFileName","").c_str();
 
@@ -224,6 +249,7 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
   Model_SetGlobalTimeStep("",GlobalTimeStep);
  }
 
+ InterfaceXml.Destroy();
  String interfacefilename=ProjectXml.ReadString("InterfaceFileName","").c_str();
  if(interfacefilename.Length() != 0)
  {
@@ -233,8 +259,8 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
    InterfaceXml.LoadFromFile(AnsiString(interfacefilename).c_str(),"Interfaces");
 
   InterfaceXml.SelectNodeRoot(std::string("Interfaces"));
-  RDK::UIVisualControllerStorage::LoadParameters(InterfaceXml);
  }
+ RDK::UIVisualControllerStorage::LoadParameters(InterfaceXml);
 
  UEngineMonitorForm->EngineMonitorFrame->SetCalculateMode(CalculationMode);
  RDK::UIVisualControllerStorage::UpdateInterface();
@@ -265,6 +291,28 @@ void TUGEngineControlForm::SaveProject(void)
  }
 
  ProjectXml.SelectNodeRoot("Project/General");
+
+ String descriptionfilename=ProjectXml.ReadString("ProjectDescriptionFileName","").c_str();
+ if(descriptionfilename.Length() == 0)
+ {
+  descriptionfilename="Description.rtf";
+  ProjectXml.WriteString("ProjectDescriptionFileName",AnsiString(descriptionfilename).c_str());
+ }
+
+ if(descriptionfilename.Length() != 0)
+ {
+  TRichEdit* RichEdit=new TRichEdit(this);
+  RichEdit->Parent=this;
+  RichEdit->PlainText=true;
+  RichEdit->Visible=false;
+  RichEdit->Text=ProjectDescription;
+
+  if(ExtractFilePath(descriptionfilename).Length() == 0)
+   RichEdit->Lines->SaveToFile(ProjectPath+descriptionfilename);
+  else
+   RichEdit->Lines->SaveToFile(descriptionfilename);
+  delete RichEdit;
+ }
 
  String modelfilename=ProjectXml.ReadString("ModelFileName","").c_str();
  if(modelfilename.Length() != 0)
@@ -338,7 +386,9 @@ void TUGEngineControlForm::SaveProject(void)
 
  ProjectXml.WriteInteger("CalculationMode",CalculationMode);
 
- ProjectXml.SaveToFile(AnsiString(ProjectPath+ProjectName).c_str());
+ ProjectXml.WriteString("ProjectName",AnsiString(ProjectName).c_str());
+
+ ProjectXml.SaveToFile(AnsiString(ProjectPath+ProjectFileName).c_str());
 }
 //---------------------------------------------------------------------------
 void __fastcall TUGEngineControlForm::FormClose(TObject *Sender, TCloseAction &Action)
@@ -478,6 +528,8 @@ void __fastcall TUGEngineControlForm::SaveProjectItemClick(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::CreateProjectItemClick(TObject *Sender)
 {
+ UCreateProjectWizardForm->ClearWizard();
+ UCreateProjectWizardForm->Caption="Create Project Wizard";
  if(UCreateProjectWizardForm->ShowModal() == mrOk)
  {
   CloseProject();
@@ -494,6 +546,9 @@ void __fastcall TUGEngineControlForm::CreateProjectItemClick(TObject *Sender)
   CalculationMode=UCreateProjectWizardForm->ProjectCalculationModeRadioGroup->ItemIndex;
 
   CreateProject(UCreateProjectWizardForm->ProjectDirectoryLabeledEdit->Text+String("\\Project.ini"),UCreateProjectWizardForm->UClassesListFrame1->GetSelectedName(),UCreateProjectWizardForm->ProjectModelFileNameLabeledEdit->Text);
+
+  ProjectName=UCreateProjectWizardForm->ProjectNameLabeledEdit->Text;
+  ProjectDescription=UCreateProjectWizardForm->ProjectDescriptionRichEdit->Text;
  }
 }
 //---------------------------------------------------------------------------
@@ -541,4 +596,70 @@ void __fastcall TUGEngineControlForm::ReloadParameters1Click(TObject *Sender)
 //---------------------------------------------------------------------------
 
 
+
+void __fastcall TUGEngineControlForm::CopyProject1Click(TObject *Sender)
+{
+ if(!ProjectOpenFlag)
+  return;
+
+ const SELDIRHELP = 1000;
+ String chosenDir=ExtractFilePath(Application->ExeName);
+
+ if(SelectDirectory("Select project directory", ExtractFilePath(Application->ExeName), chosenDir,TSelectDirExtOpts() << sdNewFolder << sdNewUI))
+ {
+  SaveProject();
+  CopyDir(AnsiString(ProjectPath).c_str(), AnsiString(chosenDir+"\\").c_str(), "*.*");
+ }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::ProjectOptions1Click(TObject *Sender)
+{
+ if(!ProjectOpenFlag)
+  return;
+
+ UCreateProjectWizardForm->ProjectDirectoryLabeledEdit->Text=ProjectPath;
+ UCreateProjectWizardForm->ProjectNameLabeledEdit->Text=ProjectName;
+ UCreateProjectWizardForm->ProjectDescriptionRichEdit->Text=ProjectDescription;
+ UCreateProjectWizardForm->ProjectTypeRadioGroup->ItemIndex=1;
+ UCreateProjectWizardForm->ProjectAutoSaveFlagCheckBox->Checked=ProjectAutoSaveFlag;
+ UCreateProjectWizardForm->ProjectTimeStepEdit->Text=IntToStr(DefaultTimeStep);
+ UCreateProjectWizardForm->ProjectCalculationModeRadioGroup->ItemIndex=CalculationMode;
+
+ UCreateProjectWizardForm->PredefinedStructure=PredefinedStructure;
+ if(PredefinedStructure)
+ {
+  UCreateProjectWizardForm->PredefinedModelRadioButton->Checked=true;
+  UCreateProjectWizardForm->ModelFileNameRadioButton->Checked=false;
+ }
+ else
+ {
+  UCreateProjectWizardForm->PredefinedModelRadioButton->Checked=false;
+  UCreateProjectWizardForm->ModelFileNameRadioButton->Checked=true;
+  UCreateProjectWizardForm->ProjectModelFileNameLabeledEdit->Text=ProjectXml.ReadString("ModelFileName","").c_str();
+ }
+
+  UCreateProjectWizardForm->NumInputsLabeledEdit->Text=IntToStr(NumEnvInputs);
+  UCreateProjectWizardForm->NumOutputsLabeledEdit->Text=IntToStr(NumEnvOutputs);
+  UCreateProjectWizardForm->ImageWidthLabeledEdit->Text=IntToStr(InputEnvImageWidth);
+  UCreateProjectWizardForm->ImageHeightLabeledEdit->Text=IntToStr(InputEnvImageHeight);
+  UCreateProjectWizardForm->UpendInputImageCheckBox->Checked=ReflectionFlag;
+
+ UCreateProjectWizardForm->Caption="Update Project Wizard";
+ if(UCreateProjectWizardForm->ShowModal() == mrOk)
+ {
+  CloseProject();
+  PredefinedStructure=UCreateProjectWizardForm->PredefinedStructure;
+  ProjectAutoSaveFlag=UCreateProjectWizardForm->ProjectAutoSaveFlagCheckBox->Checked;
+  DefaultTimeStep=StrToInt(UCreateProjectWizardForm->ProjectTimeStepEdit->Text);
+  GlobalTimeStep=DefaultTimeStep;
+  CalculationMode=UCreateProjectWizardForm->ProjectCalculationModeRadioGroup->ItemIndex;
+
+  CreateProject(UCreateProjectWizardForm->ProjectDirectoryLabeledEdit->Text+String("\\Project.ini"),UCreateProjectWizardForm->UClassesListFrame1->GetSelectedName(),UCreateProjectWizardForm->ProjectModelFileNameLabeledEdit->Text);
+
+  ProjectName=UCreateProjectWizardForm->ProjectNameLabeledEdit->Text;
+  ProjectDescription=UCreateProjectWizardForm->ProjectDescriptionRichEdit->Text;
+ }
+}
+//---------------------------------------------------------------------------
 

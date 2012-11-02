@@ -224,6 +224,12 @@ void __fastcall UpdatePath(void);
 // Отрисовка фрейма
 void AUpdateInterface(void);
 
+// Сохраняет параметры интерфейса в xml
+void ASaveParameters(RDK::Serialize::USerStorageXML &xml);
+
+// Загружает параметры интерфейса из xml
+void ALoadParameters(RDK::Serialize::USerStorageXML &xml);
+
 // Обновляет длинные имена выбранных компонент
 void UpdateSelectedComponentInfo(void);
 

@@ -196,6 +196,17 @@ object UEngineControlForm: TUEngineControlForm
         ImageIndex = 1
         OnClick = SaveProjectItemClick
       end
+      object CopyProject1: TMenuItem
+        Caption = 'Copy Project'
+        OnClick = CopyProject1Click
+      end
+      object N4: TMenuItem
+        Caption = '-'
+      end
+      object ProjectOptions1: TMenuItem
+        Caption = 'Project Options'
+        OnClick = ProjectOptions1Click
+      end
       object N2: TMenuItem
         Caption = '-'
       end
@@ -286,7 +297,7 @@ object UEngineControlForm: TUEngineControlForm
     Left = 384
     Top = 32
     Bitmap = {
-      494C01011B006000940010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B006000A40010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
