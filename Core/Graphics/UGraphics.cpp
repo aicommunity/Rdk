@@ -79,20 +79,17 @@ bool UGraphics::SetCanvas(UBitmap *canvas)
  return true;
 }
 
+// Устанавливает шрифт
+bool UGraphics::SetFont(UAFont* font)
+{
+ Font=font;
+ return true;
+}
+
 // Возвращает текущий шрифт
 UAFont* UGraphics::GetFont(void)
 {
  return Font;
-}
-
-// Устанавливает текущий шрифт
-bool UGraphics::SetFont(UAFont* font)
-{
- if(Font == font)
-  return true;
-
- Font=font;
- return true;
 }
 // --------------------------
 
@@ -542,6 +539,41 @@ void UGraphics::Bitmap(int x, int y, UBitmap &bmp, int transparency, UColorT tra
 // --------------------------
 // Вывод текста
 // --------------------------
+// Вычисление длины и высоты строки текста
+void UGraphics::CalcTextSize(const wstring &str, int &width, int &height)
+{
+ if(!Font)
+  return;
+
+ Font->CalcTextSize(str, width, height);
+}
+
+void UGraphics::CalcTextSize(const string &str, int &width, int &height)
+{
+ if(!Font)
+  return;
+
+ Font->CalcTextSize(str, width, height);
+}
+
+// Вычисление, сколько символов строки, начиная с символа index, войдет по
+// ширине в заданное число пикселей
+int UGraphics::CalcTextLength(const string &str, int index, int width)
+{
+ if(!Font)
+  return 0;
+
+ return Font->CalcTextLength(str, index, width);
+}
+
+int UGraphics::CalcTextLength(const wstring &str, int index, int width)
+{
+ if(!Font)
+  return 0;
+
+ return Font->CalcTextLength(str, index, width);
+}
+
 // Выводит текст str
 void UGraphics::Text(const wstring &str, int x, int y)
 {
@@ -559,6 +591,22 @@ void UGraphics::Text(const string &str, int x, int y)
 
  SetPenPos(x,y);
  Font->Draw(str,this);
+}
+
+void UGraphics::TextRect(const wstring &str, const UBRect &rect, int align)
+{
+ if(!Font)
+  return;
+
+ Font->DrawRect(str,rect,align,this);
+}
+
+void UGraphics::TextRect(const string &str, const UBRect &rect, int align)
+{
+ if(!Font)
+  return;
+
+ Font->DrawRect(str,rect,align,this);
 }
 // --------------------------
 

@@ -14,6 +14,7 @@ See file license.txt for more information
 #define UGRAPHICS_H
 
 #include "UAGraphics.h"
+#include "UFont.h"
 
 namespace RDK {
 
@@ -22,6 +23,9 @@ class UAFont;
 class UGraphics: public UAGraphics
 {
 protected: // Данные
+// Список шрифтов
+map<string,UBitmapFont> Fonts;
+
 // Канва рисования
 UBitmap* Canvas;
 
@@ -46,11 +50,11 @@ UBitmap* GetCanvas(void);
 // Задает канву рисования
 bool SetCanvas(UBitmap *canvas);
 
+// Устанавливает шрифт
+bool SetFont(UAFont* font);
+
 // Возвращает текущий шрифт
 UAFont* GetFont(void);
-
-// Устанавливает текущий шрифт
-bool SetFont(UAFont* font);
 // --------------------------
 
 // --------------------------
@@ -112,9 +116,20 @@ void Bitmap(int x, int y, UBitmap &bmp, int transparency=0, UColorT transp=UColo
 // --------------------------
 // Вывод текста
 // --------------------------
+// Вычисление длины и высоты строки текста
+virtual void CalcTextSize(const wstring &str, int &width, int &height);
+virtual void CalcTextSize(const string &str, int &width, int &height);
+
+// Вычисление, сколько символов строки, начиная с символа index, войдет по
+// ширине в заданное число пикселей
+virtual int CalcTextLength(const string &str, int index, int width);
+virtual int CalcTextLength(const wstring &str, int index, int width);
+
 // Выводит текст str
-void Text(const wstring &str, int x, int y);
-void Text(const string &str, int x, int y);
+virtual void Text(const wstring &str, int x, int y);
+virtual void Text(const string &str, int x, int y);
+virtual void TextRect(const wstring &str, const UBRect &rect, int align=alLeft);
+virtual void TextRect(const string &str, const UBRect &rect, int align=alLeft);
 // --------------------------
 
 

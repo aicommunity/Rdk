@@ -32,10 +32,10 @@ UAFont::UAFont(void)
  Name="Font";
 
  // Высота шрифта в пикселях
- Height=16;
+ Height=10;
 
  // Межсимвольный интервал в процентах от высоты шрифта
- Interval=-35;
+ Interval=0;
 
  Scale=1;
 }
@@ -109,30 +109,62 @@ bool UAFont::SetScale(float value)
 // --------------------------
 // Методы управления
 // --------------------------
-int UAFont::CalcWidth(const wstring &str)
+// Вычисление длины и высоты строки текста
+void UAFont::CalcTextSize(const wstring &str, int &width, int &height)
 {
- int res=0;
+ width=0;
  for(size_t i=0;i<str.size();i++)
-  res+=CalcWidth(str[i]);
+  width+=CalcWidth(str[i]);
 
  if(str.size()>0)
-  res+=static_cast<int>(((str.size()-1)*Interval*Scale)/100);
+  width+=static_cast<int>(((str.size()-1)*Interval*Scale)/100);
 
- return res;
+ height=Height;
 }
 
-int UAFont::CalcWidth(const string &str)
+void UAFont::CalcTextSize(const string &str, int &width, int &height)
 {
- int res=0;
+ width=0;
  for(size_t i=0;i<str.size();i++)
-  res+=CalcWidth(str[i]);
+  width+=CalcWidth(str[i]);
 
  if(str.size()>0)
-  res+=static_cast<int>(((str.size()-1)*Interval*Scale)/100);
+  width+=static_cast<int>(((str.size()-1)*Interval*Scale)/100);
 
- return res;
+ height=Height;
 }
 
+// Вычисление, сколько символов строки, начиная с символа index, войдет по
+// ширине в заданное число пикселей
+int UAFont::CalcTextLength(const string &str, int index, int width)
+{
+ int calc_width, calc_height;
+ int pos;
+
+ pos=int(str.size())-index;
+ CalcTextSize(str.substr(index,pos), calc_width, calc_height);
+ while(calc_width>width && pos>0)
+ {
+  --pos;
+  CalcTextSize(str.substr(index,pos), calc_width, calc_height);
+ }
+ return (pos)?pos:1;
+}
+
+int UAFont::CalcTextLength(const wstring &str, int index, int width)
+{
+ int calc_width, calc_height;
+ int pos;
+
+ pos=int(str.size())-index;
+ CalcTextSize(str.substr(index,pos), calc_width, calc_height);
+ while(calc_width>width && pos>0)
+ {
+  --pos;
+  CalcTextSize(str.substr(index,pos), calc_width, calc_height);
+ }
+ return (pos)?pos:1;
+}
 
 // Отрисовывает заданный символ в текущей позиции канвы
 bool UAFont::Draw(wchar_t ch, UAGraphics *graphics)
@@ -169,7 +201,7 @@ bool UAFont::Draw(const wstring &str, UAGraphics *graphics)
   x+=static_cast<int>(width+(Interval*Scale*width)/100);
   graphics->SetPenPos(x,y);
  }
- return false;
+ return true;
 }
 
 bool UAFont::Draw(const string &str, UAGraphics *graphics)
@@ -186,7 +218,89 @@ bool UAFont::Draw(const string &str, UAGraphics *graphics)
   x+=static_cast<int>(width+(Interval*Scale*width)/100);
   graphics->SetPenPos(x,y);
  }
- return false;
+ return true;
+}
+
+bool UAFont::DrawRect(const wstring &str, const UBRect &rect, int align, UAGraphics *graphics)
+{
+ if(!graphics)
+  return false;
+
+ int curr_index=0;
+ int curr_x=rect.X, curr_y=rect.Y;
+ int width,height;
+ int num_symbols_in_line=0;
+ do
+ {
+  num_symbols_in_line=CalcTextLength(str,curr_index,rect.Width);
+  switch(align)
+  {
+  case alRight:
+   CalcTextSize(str.substr(curr_index,num_symbols_in_line),width,height);
+   curr_x=rect.X+rect.Width-width;
+  break;
+
+  case alCenter:
+   CalcTextSize(str.substr(curr_index,num_symbols_in_line),width,height);
+   curr_x=rect.X+(rect.Width-width)/2;
+  break;
+
+  case alJustify:
+  break;
+
+  case alLeft:
+  default:
+  ;
+  }
+
+  graphics->SetPenPos(curr_x,curr_y);
+  Draw(str.substr(curr_index,num_symbols_in_line),graphics);
+  curr_index+=num_symbols_in_line;
+  curr_y+=Height+Height/2;
+ } while(curr_index<int(str.size()));
+
+ return true;
+}
+
+bool UAFont::DrawRect(const string &str, const UBRect &rect, int align, UAGraphics *graphics)
+{
+ if(!graphics)
+  return false;
+
+ int curr_index=0;
+ int curr_x=rect.X, curr_y=rect.Y;
+ int width,height;
+ int num_symbols_in_line=0;
+ do
+ {
+  num_symbols_in_line=CalcTextLength(str,curr_index,rect.Width);
+  switch(align)
+  {
+  case alRight:
+   CalcTextSize(str.substr(curr_index,num_symbols_in_line),width,height);
+   curr_x=rect.X+rect.Width-width;
+  break;
+
+  case alCenter:
+   CalcTextSize(str.substr(curr_index,num_symbols_in_line),width,height);
+   curr_x=rect.X+(rect.Width-width)/2;
+  break;
+
+  case alJustify:
+  break;
+
+  case alLeft:
+  default:
+  ;
+  }
+
+  graphics->SetPenPos(curr_x,curr_y);
+  Draw(str.substr(curr_index,num_symbols_in_line),graphics);
+  curr_index+=num_symbols_in_line;
+  curr_y+=Height+Height/2;
+ } while(curr_index<int(str.size()));
+
+ return true;
 }
 // --------------------------
 
@@ -359,6 +473,71 @@ bool UBitmapFont::Save(const string &filename, const UBPoint &size, const UBRect
 
  return true;
 }
+
+// Загружает весь шрифт из файла
+bool UBitmapFont::LoadFromFile(const string &font_name, const string &font_file_name, int size)
+{
+ std::size_t dir_sep_pos=font_file_name.find_last_of("\\/");
+ std::string font_path;
+ if(dir_sep_pos != string::npos)
+  font_path=font_file_name.substr(0,dir_sep_pos+1);
+
+ UIniFile<char> ini;
+ ini.LoadFromFile(font_file_name);
+
+ std::string image_file_name=font_path;
+ image_file_name+=ini("HGEFONT","Bitmap","");
+
+ basic_ifstream<char> file(image_file_name.c_str(),ios::in | ios::binary);
+ UBitmap bmp;
+
+ if(!file)
+  return false;
+
+ file>>bmp;
+ bmp.ReflectionX();
+
+ vector<string> vals;
+ vector<string> params;
+ ini.GetVariableList("HGEFONT",vals);
+
+ int k=0;
+ for(size_t i=0;i<vals.size();i++)
+ {
+  string value=vals[i];
+  if(value == "Char")
+  {
+   params.clear();
+   separatestring(ini("HGEFONT",value,"",k++),params,',');
+   if(!params.empty())
+   {
+    int ch=0;
+	if(params[0][0] == '"')
+	{
+     ch=params[0][1];
+	}
+	else
+	{
+     ch=hextoi(params[0]);
+	}
+	UBitmap &char_bmp=Table[ch].Data;
+	int x,y,w,h;
+	x=RDK::atoi(params[1]);
+	y=RDK::atoi(params[2]);
+	w=RDK::atoi(params[3]);
+	h=RDK::atoi(params[4]);
+
+	char_bmp.SetRes(w,h, bmp.GetColorModel());
+	bmp.GetRect(x, y,char_bmp);
+   }
+
+  }
+ }
+
+ Height=size;
+ Name=font_name;
+ return true;
+}
 // --------------------------
 
 // --------------------------
@@ -394,6 +573,44 @@ void UBitmapFont::DrawSymbol(char ch, UAGraphics *graphics)
   graphics->Bitmap(graphics->GetPenX(), graphics->GetPenY(), ScaledTable[ch].Data,2);
 }
 // --------------------------
+
+
+
+// Добавляет шрифт
+bool UBitmapFontCollection::AddFont(const string &name, int size, UBitmapFont &font)
+{
+ Fonts[name][size]=font;
+ return true;
+}
+
+// Удаляет шрифт
+bool UBitmapFontCollection::DelFont(const string &name)
+{
+ return true;
+}
+
+bool UBitmapFontCollection::DelFont(const string &name, int size)
+{
+ return true;
+}
+
+// Возвращает список имен шрифтов
+void UBitmapFontCollection::GetFontNames(vector<string> &buffer)
+{
+}
+
+// Удаляет все шрифты
+void UBitmapFontCollection::DelAllFonts(void)
+{
+ Fonts.clear();
+}
+
+// Возвращает текущий шрифт
+UAFont* UBitmapFontCollection::GetFont(const string &name, int size)
+{
+ return &Fonts[name][size];
+}
+
 
 }
 

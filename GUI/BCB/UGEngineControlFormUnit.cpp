@@ -5,6 +5,7 @@
 
 #include <vector>
 #include <Vcl.FileCtrl.hpp>
+#include <System.IOUtils.hpp>
 #include "UGEngineControlFormUnit.h"
 #include "TVideoGrabberControlFormUnit.h"
 #include "UImagesFormUnit.h"
@@ -19,6 +20,7 @@
 #include "UCreateProjectWizardFormUnit.h"
 #include "TUFileSystem.h"
 #include "rdk_initdll.h"
+#include "myrdk.h"
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -79,6 +81,18 @@ void TUGEngineControlForm::AUpdateInterface(void)
 
 void __fastcall TUGEngineControlForm::FormShow(TObject *Sender)
 {
+ // Грузим шрифты
+ std::vector<std::string> font_names;
+ std::string font_path=AnsiString(ExtractFilePath(Application->ExeName)+"Fontss\\").c_str();
+ FindFilesList(font_path, "*.fnt", true, font_names);
+
+ RDK::ClearClobalFonts();
+ RDK::UBitmapFont font;
+ for(size_t i=0;i<font_names.size();i++)
+ {
+  RDK::AddGlobalFont(font_path+font_names[i]);
+ }
+
  GraphicalEngineInit(0,1,1,320,240,1,ExceptionHandler);
  UImagesForm->ImagesFrame->SetReflectionXFlag(true);
  UpdateInterface();

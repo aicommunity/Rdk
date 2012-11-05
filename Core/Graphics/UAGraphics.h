@@ -22,6 +22,8 @@ using namespace std;
 
 //class UAFont;
 
+enum {alLeft=1, alRight=2, alCenter=3, alJustify=4};
+
 class UAGraphics
 {
 protected: // Данные
@@ -140,9 +142,20 @@ virtual void Bitmap(int x, int y, UBitmap &bmp, int transparency=0, UColorT tran
 // --------------------------
 // Вывод текста
 // --------------------------
+// Вычисление длины и высоты строки текста
+virtual void CalcTextSize(const wstring &str, int &width, int &height)=0;
+virtual void CalcTextSize(const string &str, int &width, int &height)=0;
+
+// Вычисление, сколько символов строки, начиная с символа index, войдет по
+// ширине в заданное число пикселей
+virtual int CalcTextLength(const string &str, int index, int width)=0;
+virtual int CalcTextLength(const wstring &str, int index, int width)=0;
+
 // Выводит текст str
 virtual void Text(const wstring &str, int x, int y)=0;
 virtual void Text(const string &str, int x, int y)=0;
+virtual void TextRect(const wstring &str, const UBRect &rect, int align=alLeft)=0;
+virtual void TextRect(const string &str, const UBRect &rect, int align=alLeft)=0;
 // --------------------------
 
 protected: // Вспомогательные методы

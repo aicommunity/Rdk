@@ -21,6 +21,15 @@
 
 namespace RDK {
 
+// Глобальная коллекция шрифтов
+extern RDK::UBitmapFontCollection GlobalFonts;
+
+// Очищает коллекцию глобальных шрифтов
+void ClearClobalFonts(void);
+
+// Загружает новый глобальный шрифт
+bool AddGlobalFont(const std::string &font_file_name);
+
 // Класс прототип-визуальных интерфейсов
 class UIVisualController
 {

@@ -120,13 +120,16 @@ void TUDrawEngineForm::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
  MoveComponentName.clear();
  BreakLinkComponentName.clear();
  FontFileName.clear();
-
+/*
  FontFileName=xml.ReadString("FontFileName","Font/");//"Font_16x8_EnRu.bmp");
 
  for(int i=0;i<256;i++)
   Font.Load(i,FontFileName+RDK::sntoa(i,4)+".bmp");
 // Font.Load(FontFileName);
-
+  */
+ RDK::UBitmapFont* font=dynamic_cast<RDK::UBitmapFont*>(RDK::GlobalFonts.GetFont("rus",10));
+ if(font)
+  Font=*font;
  GraphCanvas.SetRes(xml.ReadInteger("CanvasWidth",640),xml.ReadInteger("CanvasHeight",480));
  SetNet(ComponentName);
 }

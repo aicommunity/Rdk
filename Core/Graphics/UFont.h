@@ -101,14 +101,24 @@ virtual bool SetScale(float value);
 // Возвращает ширину объекта в пикселах
 virtual int CalcWidth(wchar_t ch)=0;
 virtual int CalcWidth(char ch)=0;
-int CalcWidth(const wstring &str);
-int CalcWidth(const string &str);
+
+// Вычисление длины и высоты строки текста
+void CalcTextSize(const wstring &str, int &width, int &height);
+void CalcTextSize(const string &str, int &width, int &height);
+
+// Вычисление, сколько символов строки, начиная с символа index, войдет по
+// ширине в заданное число пикселей
+virtual int CalcTextLength(const string &str, int index, int width);
+virtual int CalcTextLength(const wstring &str, int index, int width);
 
 // Отрисовывает заданный символ в текущей позиции канвы
 bool Draw(wchar_t ch, UAGraphics *graphics);
 bool Draw(char ch, UAGraphics *graphics);
 bool Draw(const wstring &str, UAGraphics *graphics);
 bool Draw(const string &str, UAGraphics *graphics);
+
+bool DrawRect(const wstring &str, const UBRect &rect, int align, UAGraphics *graphics);
+bool DrawRect(const string &str, const UBRect &rect, int align, UAGraphics *graphics);
 // --------------------------
 
 // --------------------------
@@ -184,6 +194,9 @@ bool Save(wchar_t ch, const string &filename);
 // размер символа size;
 bool Load(const string &filename, const UBPoint &size=UBPoint(16,16), const UBRect &rect=UBRect(-1,-1,-1,-1), wchar_t ch1=0, wchar_t ch2=255);
 bool Save(const string &filename, const UBPoint &size=UBPoint(16,16), const UBRect &rect=UBRect(-1,-1,-1,-1), wchar_t ch1=0, wchar_t ch2=255);
+
+// Загружает весь шрифт из файла
+bool LoadFromFile(const string &font_name, const string &font_file_name, int size);
 // --------------------------
 
 // --------------------------
@@ -253,6 +266,69 @@ protected:
 void DrawSymbol(wchar_t ch, UAGraphics *graphics);
 void DrawSymbol(char ch, UAGraphics *graphics);
 // --------------------------
+};
+
+class UFontCollection
+{
+public:
+// --------------------------
+// Методы доступа к данным
+// --------------------------
+// Добавляет шрифт
+//bool AddFont(const string &name, UBitmapFont &font);
+
+// Удаляет шрифт
+virtual bool DelFont(const string &name)=0;
+virtual bool DelFont(const string &name, int size)=0;
+
+// Возвращает список имен шрифтов
+virtual void GetFontNames(vector<string> &buffer)=0;
+
+// Возвращает список имен шрифтов
+virtual void GetFontSizes(const string &name, vector<int> &buffer)=0;
+
+// Удаляет все шрифты
+virtual void DelAllFonts(void)=0;
+
+// Возвращает шрифт
+virtual UAFont* GetFont(const string &name, int size)=0;
+// --------------------------
+
+};
+
+class UBitmapFontCollection
+{
+public:
+typedef map<int,UBitmapFont> FontSizeContainerT;
+typedef map<string,FontSizeContainerT> FontContainerT;
+
+protected:
+FontContainerT Fonts;
+
+public:
+// --------------------------
+// Методы доступа к данным
+// --------------------------
+// Добавляет шрифт
+bool AddFont(const string &name, int size, UBitmapFont &font);
+
+// Удаляет шрифт
+bool DelFont(const string &name);
+bool DelFont(const string &name, int size);
+
+// Возвращает список имен шрифтов
+void GetFontNames(vector<string> &buffer);
+
+// Возвращает список имен шрифтов
+void GetFontSizes(const string &name, vector<int> &buffer);
+
+// Удаляет все шрифты
+void DelAllFonts(void);
+
+// Возвращает шрифт
+UAFont* GetFont(const string &name, int size);
+// --------------------------
+
 };
 
 }

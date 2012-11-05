@@ -461,12 +461,12 @@ UIniFile& operator = (const UIniFile &inifile)
 
 // Возвращает значение переменной variable секции section
 // Если секции и/или переменной не существует, то возвращается строка 'default'
-StringT operator () (const StringT &section, const StringT &variable, const CharT *def=0)
+StringT operator () (const StringT &section, const StringT &variable, const CharT *def=0, int k=0)
 {
  StringT* result=0;
  SizeT startname=0, stopname=0, startvalue=0;
 
- if(FindVariable(section, variable, result, startname, stopname, startvalue))
+ if(FindVariable(section, variable, result, startname, stopname, startvalue,k))
  {
   if(result)
   {
@@ -553,7 +553,7 @@ bool FindSection(const StringT &section, StringT* &result, SizeT &start, SizeT &
 
 // Метод поиска строки описания переменной 'variable' секции 'section'
 // Метод возвращает итератор на найденную строку или end
-StringListIteratorT FindVariable(const StringT &section, const StringT &variable)
+StringListIteratorT FindVariable(const StringT &section, const StringT &variable, int k=0)
 {
  typename list<StringT>::iterator I,J;
  int startname=0, stopname=0, startvalue=0;
@@ -565,6 +565,7 @@ StringListIteratorT FindVariable(const StringT &section, const StringT &variable
   return I;
 
  ++I;
+ int k_temp=0;
  while(I != J)
  {
   if(DecodeAsSection(*I, startname, stopname))
@@ -573,7 +574,12 @@ StringListIteratorT FindVariable(const StringT &section, const StringT &variable
   if(DecodeAsVariable(*I, startname, stopname, startvalue))
   {
    if(variable == I->substr(startname,stopname-startname+1))
-    break;
+   {
+	if(k_temp == k)
+	 break;
+	else
+	 ++k_temp;
+   }
   }
   ++I;
  }
@@ -591,7 +597,7 @@ StringListIteratorT FindVariable(const StringT &section, const StringT &variable
 bool FindVariable(const StringT &section, const StringT &variable,
             StringT* &result,
             SizeT &startname, SizeT &stopname,
-            SizeT &startvalue)
+            SizeT &startvalue, int k=0)
 {
  typename list<StringT>::iterator I,J;
 
@@ -604,6 +610,7 @@ bool FindVariable(const StringT &section, const StringT &variable,
   return false;
 
  ++I;
+ int k_temp=0;
  while(I != J)
  {
   if(DecodeAsSection(*I, startname, stopname))
@@ -613,8 +620,13 @@ bool FindVariable(const StringT &section, const StringT &variable,
   {
    if(variable == I->substr(startname,stopname-startname+1))
    {
-    result=&(*I);
-    return true;
+	if(k_temp == k)
+	{
+	 result=&(*I);
+	 return true;
+	}
+	else
+	 ++k_temp;
    }
   }
   ++I;
