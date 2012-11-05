@@ -5,6 +5,7 @@
 
 #include <vector>
 #include <Vcl.FileCtrl.hpp>
+#include <System.IOUtils.hpp>
 #include "UEngineControlFormUnit.h"
 #include "rdk_initdll.h"
 #include "UComponentsControlFormUnit.h"

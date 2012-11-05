@@ -224,10 +224,11 @@ std::string UDrawEngine::FindComponent(int x, int y)
 
  for(;I != J;++I)
  {
-  double dist=sqrt(double((x-I->second.Position.x)*(x-I->second.Position.x)+(y-I->second.Position.y)*(y-I->second.Position.y)));
+//  double dist=sqrt(double((x-I->second.Position.x)*(x-I->second.Position.x)+(y-I->second.Position.y)*(y-I->second.Position.y)));
 
   name=I->first;
-  if(dist<=I->second.Height)// Заглушка!!
+  if(abs(int(x-I->second.Position.x))<=I->second.Width && abs(int(y-I->second.Position.y))<=I->second.Height)
+//  if(dist<=I->second.Height)// Заглушка!!
    return I->first;
  }
 
