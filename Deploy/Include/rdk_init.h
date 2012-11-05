@@ -361,6 +361,10 @@ RDK_LIB_TYPE int RDK_CALL Model_SetComponentProperties(const char *stringid, con
 // Устанавливает значение свойства компонента по идентификатору компонента и имени свойства
 RDK_LIB_TYPE void RDK_CALL Model_SetComponentPropertyValue(const char *stringid, const char *paramname, const char *buffer);
 
+// Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
+// исключая этот компонент
+RDK_LIB_TYPE void RDK_CALL Model_SetGlobalComponentPropertyValue(const char *stringid, const char* class_stringid, const char *paramname, const char *buffer);
+
 // Возвращает параметры компонента по идентификатору
 // Deprecated
 RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentParameters(const char *stringid, unsigned int type_mask=ptParameter | pgPublic);

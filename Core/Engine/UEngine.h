@@ -457,6 +457,10 @@ virtual int Model_SetComponentProperties(const char *stringid, const char* buffe
 // Устанавливает значение свойства компонента по идентификатору компонента и имени свойства
 virtual void Model_SetComponentPropertyValue(const char *stringid, const char *paramname, const char *buffer);
 
+// Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
+// исключая этот компонент
+virtual void Model_SetGlobalComponentPropertyValue(const char *stringid, const char* class_stringid, const char *paramname, const char *buffer);
+
 // Связывает выбранные контейнеры друг с другом
 virtual int Model_CreateLink(const char* stringid1, int output_number, const char* stringid2, int input_number);
 
@@ -682,6 +686,10 @@ virtual bool Model_GetComponentPropertiesEx(RDK::UAContainer* cont, RDK::Seriali
 
 // Устанавливает свойства компонента по идентификатору
 virtual int Model_SetComponentProperties(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage);
+
+// Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
+// исключая этот компонент
+virtual void Model_SetGlobalComponentPropertyValue(RDK::UAContainer* cont, UId classid, const char *paramname, const char *buffer);
 
 // Возращает все связи внутри компонента cont в виде xml в буфер buffer
 // Имена формируются до уровня компонента owner_level

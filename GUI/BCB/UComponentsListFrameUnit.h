@@ -42,19 +42,21 @@ __published:	// IDE-managed Components
 	TStringGrid *InputsStringGrid;
 	TTabSheet *TabSheet4;
 	TTabSheet *TabSheet5;
-	THeaderControl *HeaderControl1;
-	THeaderControl *HeaderControl2;
 	TStringGrid *ParametersListStringGrid;
 	TStringGrid *StatesListStringGrid;
 	TPopupMenu *PopupMenu;
 	TMenuItem *GUI1;
+	TSplitter *Splitter3;
+	TRichEdit *ParameterValueRichEdit;
+	THeaderControl *HeaderControl3;
+	THeaderControl *HeaderControl1;
+	TSplitter *Splitter4;
+	TRichEdit *StateValueRichEdit;
 	void __fastcall FrameResize(TObject *Sender);
 	void __fastcall StringGridDblClick(TObject *Sender);
 	void __fastcall StringGridSelectCell(TObject *Sender, int ACol, int ARow, bool &CanSelect);
 	void __fastcall StringGridKeyPress(TObject *Sender, System::WideChar &Key);
 	void __fastcall StringGridClick(TObject *Sender);
-	void __fastcall ParametersHeaderControlSectionClick(THeaderControl *HeaderControl,
-          THeaderSection *Section);
 	void __fastcall ParametersRichEditChange(TObject *Sender);
 	void __fastcall StateRichEditChange(TObject *Sender);
 	void __fastcall StateHeaderControlSectionClick(THeaderControl *HeaderControl, THeaderSection *Section);
@@ -75,6 +77,12 @@ __published:	// IDE-managed Components
 	void __fastcall StatesListStringGridDblClick(TObject *Sender);
 	void __fastcall StatesListStringGridSelectCell(TObject *Sender, int ACol, int ARow, bool &CanSelect);
 	void __fastcall GUI1Click(TObject *Sender);
+	void __fastcall ParametersHeaderControlSectionClick(THeaderControl *HeaderControl,
+          THeaderSection *Section);
+	void __fastcall HeaderControl3SectionClick(THeaderControl *HeaderControl, THeaderSection *Section);
+	void __fastcall HeaderControl1SectionClick(THeaderControl *HeaderControl, THeaderSection *Section);
+
+
 
 
 

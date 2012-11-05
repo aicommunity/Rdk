@@ -599,6 +599,13 @@ void RDK_CALL Model_SetComponentPropertyValue(const char *stringid, const char *
  PEngine->Model_SetComponentPropertyValue(stringid,paramname,buffer);
 }
 
+// Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
+// исключая этот компонент
+void RDK_CALL Model_SetGlobalComponentPropertyValue(const char *stringid, const char* class_stringid, const char *paramname, const char *buffer)
+{
+ PEngine->Model_SetGlobalComponentPropertyValue(stringid,class_stringid, paramname,buffer);
+}
+
 // Возвращает параметры компонента по идентификатору
 // Память для buffer должна быть выделена!
 const char * RDK_CALL Model_GetComponentParameters(const char *stringid, unsigned int type_mask)

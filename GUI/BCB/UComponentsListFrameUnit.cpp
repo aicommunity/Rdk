@@ -162,6 +162,8 @@ void TUComponentsListFrame::UpdateParameters(void)
  else
   GUI1->Enabled=false;
 
+ ParameterValueRichEdit->Text=ParametersListStringGrid->Cells[2][ParametersListStringGrid->Row];
+
  RegistryModified=false;
  UpdateInterfaceFlag=false;
 }
@@ -186,6 +188,7 @@ void TUComponentsListFrame::UpdateState(void)
   Panel1->Visible=false;
  }
 
+ StateValueRichEdit->Text=StatesListStringGrid->Cells[2][StatesListStringGrid->Row];
  RegistryModified=false;
  UpdateInterfaceFlag=false;
 }
@@ -258,6 +261,9 @@ void TUComponentsListFrame::UpdateParametersList(void)
  ParametersListStringGrid->Cells[2][0]="Value";
  ParametersListStringGrid->Cells[3][0]="Description";
 
+ for(int i=1;i<ParametersListStringGrid->ColCount;i++)
+  ParametersListStringGrid->ColWidths[i]=10;
+
  for(int i=0;i<num;i++)
  {
   ParametersListStringGrid->Cells[0][i+1]=IntToStr(i);
@@ -271,7 +277,28 @@ void TUComponentsListFrame::UpdateParametersList(void)
    xml.SaveFromNode(value);
    ParametersListStringGrid->Cells[2][i+1]=value.c_str();
   }
+  int global_width=ParametersListStringGrid->ColWidths[0];
   ParametersListStringGrid->Cells[3][i+1]=xml.GetNodeAttribute("Header").c_str();
+  int width=ParametersListStringGrid->Canvas->TextWidth(ParametersListStringGrid->Cells[1][i+1])+10;
+  if(width>ParametersListStringGrid->Width/2)
+   width=ParametersListStringGrid->Width/2;
+  if(ParametersListStringGrid->ColWidths[1]<width)
+   ParametersListStringGrid->ColWidths[1]=width;
+  global_width+=ParametersListStringGrid->ColWidths[1];
+
+  width=ParametersListStringGrid->Canvas->TextWidth(ParametersListStringGrid->Cells[2][i+1])+10;
+  if(width>ParametersListStringGrid->Width/2)
+   width=ParametersListStringGrid->Width/2;
+  if(ParametersListStringGrid->ColWidths[2]<width)
+   ParametersListStringGrid->ColWidths[2]=width;
+  global_width+=ParametersListStringGrid->ColWidths[2];
+
+  width=ParametersListStringGrid->Canvas->TextWidth(ParametersListStringGrid->Cells[3][i+1])+10;
+  if(width < ParametersListStringGrid->Width-global_width)
+   width=ParametersListStringGrid->Width-global_width;
+
+  if(ParametersListStringGrid->ColWidths[3]<width)
+   ParametersListStringGrid->ColWidths[3]=width;
   xml.SelectUp();
  }
 
@@ -282,6 +309,69 @@ void TUComponentsListFrame::UpdateParametersList(void)
 // Обновляет данные списка переменных состояния
 void TUComponentsListFrame::UpdateStatesList(void)
 {
+ if(PageControl1->ActivePage != TabSheet5)
+  return;
+ UpdateInterfaceFlag=true;
+
+ std::string xml_data=Model_GetComponentState(GetSelectedComponentLongId().c_str());
+ RDK::Serialize::USerStorageXML xml;
+ xml.Load(xml_data,"");
+ xml.SelectNode("State");
+ int num=xml.GetNumNodes();
+
+
+ StatesListStringGrid->RowCount=1+num;
+ StatesListStringGrid->ColCount=1+3;
+
+ StatesListStringGrid->Cells[0][0]="#";
+ StatesListStringGrid->Cells[1][0]="Name";
+ StatesListStringGrid->Cells[2][0]="Value";
+ StatesListStringGrid->Cells[3][0]="Description";
+
+ for(int i=1;i<StatesListStringGrid->ColCount;i++)
+  StatesListStringGrid->ColWidths[i]=10;
+
+ for(int i=0;i<num;i++)
+ {
+  StatesListStringGrid->Cells[0][i+1]=IntToStr(i);
+  xml.SelectNode(i);
+  StatesListStringGrid->Cells[1][i+1]=xml.GetNodeName().c_str();
+  if(xml.GetNumNodes() == 0)
+   StatesListStringGrid->Cells[2][i+1]=xml.GetNodeText().c_str();
+  else
+  {
+   std::string value;
+   xml.SaveFromNode(value);
+   StatesListStringGrid->Cells[2][i+1]=value.c_str();
+  }
+  int global_width=StatesListStringGrid->ColWidths[0];
+  StatesListStringGrid->Cells[3][i+1]=xml.GetNodeAttribute("Header").c_str();
+  int width=StatesListStringGrid->Canvas->TextWidth(StatesListStringGrid->Cells[1][i+1])+10;
+  if(width>StatesListStringGrid->Width/2)
+   width=StatesListStringGrid->Width/2;
+  if(StatesListStringGrid->ColWidths[1]<width)
+   StatesListStringGrid->ColWidths[1]=width;
+  global_width+=StatesListStringGrid->ColWidths[1];
+
+  width=StatesListStringGrid->Canvas->TextWidth(StatesListStringGrid->Cells[2][i+1])+10;
+  if(width>StatesListStringGrid->Width/2)
+   width=StatesListStringGrid->Width/2;
+  if(StatesListStringGrid->ColWidths[2]<width)
+   StatesListStringGrid->ColWidths[2]=width;
+  global_width+=StatesListStringGrid->ColWidths[2];
+
+  width=StatesListStringGrid->Canvas->TextWidth(StatesListStringGrid->Cells[3][i+1])+10;
+  if(width < StatesListStringGrid->Width-global_width)
+   width=StatesListStringGrid->Width-global_width;
+
+  if(StatesListStringGrid->ColWidths[3]<width)
+   StatesListStringGrid->ColWidths[3]=width;
+  xml.SelectUp();
+ }
+
+ SelectedComponentStateName=AnsiString(StatesListStringGrid->Cells[1][1]).c_str();
+ UpdateInterfaceFlag=false;
+/*
  if(PageControl1->ActivePage != TabSheet5)
   return;
  UpdateInterfaceFlag=true;
@@ -320,6 +410,7 @@ void TUComponentsListFrame::UpdateStatesList(void)
 
  SelectedComponentStateName=AnsiString(StatesListStringGrid->Cells[1][1]).c_str();
  UpdateInterfaceFlag=false;
+ */
 }
 
 // Обновляет длинные имена выбранных компонент
@@ -631,26 +722,6 @@ void __fastcall TUComponentsListFrame::StringGridClick(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TUComponentsListFrame::ParametersHeaderControlSectionClick(THeaderControl *HeaderControl,
-          THeaderSection *Section)
-{
- if(Section->Index == 0)
- {
-  Model_SetComponentParameters(GetSelectedComponentLongId().c_str(),AnsiString(ParametersRichEdit->Text).c_str());
-  UpdateInterface();
- }
- else
- if(Section->Index == 1)
- {
-  UpdateParameters();
- }
- else
- if(Section->Index == 2)
- {
-
- }
-}
-//---------------------------------------------------------------------------
 
 void __fastcall TUComponentsListFrame::ParametersRichEditChange(TObject *Sender)
 {
@@ -751,6 +822,7 @@ void __fastcall TUComponentsListFrame::ParametersListStringGridSelectCell(TObjec
 		  int ACol, int ARow, bool &CanSelect)
 {
  SelectedComponentParameterName=AnsiString(ParametersListStringGrid->Cells[1][ARow]).c_str();
+ ParameterValueRichEdit->Text=ParametersListStringGrid->Cells[2][ARow];
 }
 //---------------------------------------------------------------------------
 
@@ -770,6 +842,7 @@ void __fastcall TUComponentsListFrame::StatesListStringGridSelectCell(TObject *S
 		  int ARow, bool &CanSelect)
 {
  SelectedComponentStateName=AnsiString(StatesListStringGrid->Cells[1][ARow]).c_str();
+ StateValueRichEdit->Text=StatesListStringGrid->Cells[2][ARow];
 }
 //---------------------------------------------------------------------------
 
@@ -781,6 +854,89 @@ void __fastcall TUComponentsListFrame::GUI1Click(TObject *Sender)
  {
   I->second->SetComponentControlName(SelectedComponentName);
   I->second->Show();
+ }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::ParametersHeaderControlSectionClick(THeaderControl *HeaderControl,
+          THeaderSection *Section)
+{
+ if(Section->Index == 0)
+ {
+  Model_SetComponentParameters(GetSelectedComponentLongId().c_str(),AnsiString(ParametersRichEdit->Text).c_str());
+  UpdateInterface();
+ }
+ else
+ if(Section->Index == 1)
+ {
+  UpdateParameters();
+ }
+ else
+ if(Section->Index == 2)
+ {
+
+ }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::HeaderControl3SectionClick(THeaderControl *HeaderControl,
+          THeaderSection *Section)
+{
+ if(ParametersListStringGrid->Row<0 || ParametersListStringGrid->Row>=ParametersListStringGrid->RowCount)
+  return;
+ if(Section->Index == 0)
+ {
+  Model_SetComponentParameterValue(GetSelectedComponentLongId().c_str(),AnsiString(ParametersListStringGrid->Cells[1][ParametersListStringGrid->Row]).c_str(), AnsiString(ParameterValueRichEdit->Text).c_str());
+  UpdateInterface();
+ }
+ else
+ if(Section->Index == 1)
+ {
+  if(Application->MessageBox(L"Are you sure you want to change this value in all components of the same class?",L"Warning",MB_YESNO) != ID_YES)
+   return;
+  Model_SetGlobalComponentPropertyValue("",Model_GetComponentClassName(GetSelectedComponentLongId().c_str()),AnsiString(ParametersListStringGrid->Cells[1][ParametersListStringGrid->Row]).c_str(), AnsiString(ParameterValueRichEdit->Text).c_str());
+  UpdateInterface();
+ }
+ else
+ if(Section->Index == 2)
+ {
+  UpdateParameters();
+ }
+ else
+ if(Section->Index == 3)
+ {
+
+ }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::HeaderControl1SectionClick(THeaderControl *HeaderControl,
+          THeaderSection *Section)
+{
+ if(StatesListStringGrid->Row<0 || StatesListStringGrid->Row>=StatesListStringGrid->RowCount)
+  return;
+ if(Section->Index == 0)
+ {
+  Model_SetComponentStateValue(GetSelectedComponentLongId().c_str(),AnsiString(StatesListStringGrid->Cells[1][StatesListStringGrid->Row]).c_str(), AnsiString(StateValueRichEdit->Text).c_str());
+  UpdateInterface();
+ }
+ else
+ if(Section->Index == 1)
+ {
+  if(Application->MessageBox(L"Are you sure you want to change this value in all components of the same class?",L"Warning",MB_YESNO) != ID_YES)
+   return;
+  Model_SetGlobalComponentPropertyValue("",Model_GetComponentClassName(GetSelectedComponentLongId().c_str()),AnsiString(StatesListStringGrid->Cells[1][StatesListStringGrid->Row]).c_str(), AnsiString(StateValueRichEdit->Text).c_str());
+  UpdateInterface();
+ }
+ else
+ if(Section->Index == 2)
+ {
+  UpdateState();
+ }
+ else
+ if(Section->Index == 3)
+ {
+
  }
 }
 //---------------------------------------------------------------------------

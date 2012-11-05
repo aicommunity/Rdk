@@ -1557,6 +1557,29 @@ void UEngine::Model_SetComponentPropertyValue(const char *stringid, const char *
  }
 }
 
+
+// Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
+// исключая этот компонент
+void UEngine::Model_SetGlobalComponentPropertyValue(const char *stringid, const char* class_stringid, const char *paramname, const char *buffer)
+{
+ try
+ {
+  UEPtr<RDK::UAContainer> cont=FindComponent(stringid);
+  if(!cont)
+   return;
+
+  UId classid=Storage->FindClassId(class_stringid);
+  if(classid == ForbiddenId)
+   return;
+
+  Model_SetGlobalComponentPropertyValue(cont, classid, paramname, buffer);
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+}
+
 // Связывает выбранные контейнеры друг с другом
 int UEngine::Model_CreateLink(const char* stringid1, int output_number, const char* stringid2, int input_number)
 {
@@ -2591,6 +2614,30 @@ int UEngine::Model_SetComponentProperties(RDK::UAContainer* cont, RDK::Serialize
   ProcessException(exception);
  }
  return 0;
+}
+
+// Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
+// исключая этот компонент
+void UEngine::Model_SetGlobalComponentPropertyValue(RDK::UAContainer* cont, UId classid, const char *paramname, const char *buffer)
+{
+ try
+ {
+  if(!cont || classid == ForbiddenId)
+   return;
+
+  for(int i=0;i<cont->GetNumComponents();i++)
+  {
+   if(cont->GetComponentByIndex(i)->GetClass() == classid)
+   {
+	cont->GetComponentByIndex(i)->SetPropertyValue(paramname,buffer);
+   }
+   Model_SetGlobalComponentPropertyValue(cont->GetComponentByIndex(i), classid, paramname, buffer);
+  }
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 // Возращает все связи внутри компонента stringid в виде xml в буфер buffer
