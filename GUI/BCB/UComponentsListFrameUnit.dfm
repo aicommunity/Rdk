@@ -128,8 +128,6 @@ inherited UComponentsListFrame: TUComponentsListFrame
           OnClick = StatesListStringGridClick
           OnDblClick = StatesListStringGridDblClick
           OnSelectCell = StatesListStringGridSelectCell
-          ExplicitTop = 30
-          ExplicitHeight = 459
         end
         object HeaderControl1: THeaderControl
           Left = 0
@@ -165,7 +163,6 @@ inherited UComponentsListFrame: TUComponentsListFrame
           OnSectionClick = HeaderControl1SectionClick
           ShowHint = False
           ParentShowHint = False
-          ExplicitTop = 30
         end
         object StateValueRichEdit: TRichEdit
           Left = 0
@@ -189,31 +186,22 @@ inherited UComponentsListFrame: TUComponentsListFrame
         ImageIndex = 2
         object Splitter2: TSplitter
           Left = 0
-          Top = 273
+          Top = 239
           Width = 376
           Height = 8
           Cursor = crVSplit
           Align = alTop
           ExplicitTop = 241
         end
-        object IOHeaderControl: THeaderControl
-          Left = 0
-          Top = 0
-          Width = 376
-          Height = 34
-          HotTrack = True
-          Sections = <>
-          ShowHint = False
-          ParentShowHint = False
-        end
         object GroupBox: TGroupBox
           Left = 0
-          Top = 34
+          Top = 0
           Width = 376
           Height = 239
           Align = alTop
           Caption = ' Outputs '
-          TabOrder = 1
+          TabOrder = 0
+          ExplicitTop = 34
           object OutputsStringGrid: TStringGrid
             Left = 2
             Top = 15
@@ -230,17 +218,19 @@ inherited UComponentsListFrame: TUComponentsListFrame
         end
         object GroupBox2: TGroupBox
           Left = 0
-          Top = 281
+          Top = 247
           Width = 376
-          Height = 258
+          Height = 292
           Align = alClient
           Caption = ' Inputs '
-          TabOrder = 2
+          TabOrder = 1
+          ExplicitTop = 281
+          ExplicitHeight = 258
           object InputsStringGrid: TStringGrid
             Left = 2
             Top = 15
             Width = 372
-            Height = 241
+            Height = 275
             Align = alClient
             DefaultRowHeight = 18
             Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goRowSelect]
@@ -248,6 +238,7 @@ inherited UComponentsListFrame: TUComponentsListFrame
             OnClick = InputsStringGridClick
             OnDblClick = InputsStringGridDblClick
             OnSelectCell = InputsStringGridSelectCell
+            ExplicitHeight = 241
           end
         end
       end

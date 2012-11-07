@@ -408,6 +408,14 @@ void __fastcall TUSeriesControlForm::BitBtn1Click(TObject *Sender)
 	 GrSender->ChangeVisible(I->first, true);
 	 ++I;
 	}
+
+   I=WatchList.begin();
+   while(I != WatchList.end())
+	{
+	 GrSender->ChangeYShift(I->first, I->second.YShift);
+	 ++I;
+	}
+
    I=PossibleWatchList.begin();
    while(I != PossibleWatchList.end())
 	{

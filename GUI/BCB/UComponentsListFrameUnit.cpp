@@ -8,6 +8,7 @@
 #include "rdk_initdll.h"
 #include "myrdk.h"
 #include "UCRPerseptronFormUnit.h"
+#include "UComponentsListFormUnit.h"
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -892,10 +893,13 @@ void __fastcall TUComponentsListFrame::HeaderControl3SectionClick(THeaderControl
  else
  if(Section->Index == 1)
  {
-  if(Application->MessageBox(L"Are you sure you want to change this value in all components of the same class?",L"Warning",MB_YESNO) != ID_YES)
-   return;
-  Model_SetGlobalComponentPropertyValue("",Model_GetComponentClassName(GetSelectedComponentLongId().c_str()),AnsiString(ParametersListStringGrid->Cells[1][ParametersListStringGrid->Row]).c_str(), AnsiString(ParameterValueRichEdit->Text).c_str());
-  UpdateInterface();
+//  if(Application->MessageBox(L"Are you sure you want to change this value in all components of the same class?",L"Warning",MB_YESNO) != ID_YES)
+//   return;
+  if(UComponentsListForm->ShowComponentSelect() == mrOk)
+  {
+   Model_SetGlobalComponentPropertyValue(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName().c_str(), Model_GetComponentClassName(GetSelectedComponentLongId().c_str()),AnsiString(ParametersListStringGrid->Cells[1][ParametersListStringGrid->Row]).c_str(), AnsiString(ParameterValueRichEdit->Text).c_str());
+   UpdateInterface();
+  }
  }
  else
  if(Section->Index == 2)
@@ -923,10 +927,13 @@ void __fastcall TUComponentsListFrame::HeaderControl1SectionClick(THeaderControl
  else
  if(Section->Index == 1)
  {
-  if(Application->MessageBox(L"Are you sure you want to change this value in all components of the same class?",L"Warning",MB_YESNO) != ID_YES)
-   return;
-  Model_SetGlobalComponentPropertyValue("",Model_GetComponentClassName(GetSelectedComponentLongId().c_str()),AnsiString(StatesListStringGrid->Cells[1][StatesListStringGrid->Row]).c_str(), AnsiString(StateValueRichEdit->Text).c_str());
-  UpdateInterface();
+//  if(Application->MessageBox(L"Are you sure you want to change this value in all components of the same class?",L"Warning",MB_YESNO) != ID_YES)
+//   return;
+  if(UComponentsListForm->ShowComponentSelect() == mrOk)
+  {
+   Model_SetGlobalComponentPropertyValue(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName().c_str(),Model_GetComponentClassName(GetSelectedComponentLongId().c_str()),AnsiString(StatesListStringGrid->Cells[1][StatesListStringGrid->Row]).c_str(), AnsiString(StateValueRichEdit->Text).c_str());
+   UpdateInterface();
+  }
  }
  else
  if(Section->Index == 2)

@@ -21,7 +21,7 @@ __fastcall TUComponentsListForm::TUComponentsListForm(TComponent* Owner)
 // Метод открытия диалога для выбора компонента
 int TUComponentsListForm::ShowComponentSelect(void)
 {
- Panel1->Visible;
+ Panel1->Visible=true;
  Position=poScreenCenter;
  Mode=0;
  return ShowModal();
@@ -30,20 +30,20 @@ int TUComponentsListForm::ShowComponentSelect(void)
 // Метод открытия диалога для выбора параметра
 int TUComponentsListForm::ShowParameterSelect(void)
 {
- Panel1->Visible;
+ Panel1->Visible=true;
  Position=poScreenCenter;
  Mode=1;
- ComponentsListFrame1->PageControl1->ActivePageIndex=3;
+ ComponentsListFrame1->PageControl1->ActivePageIndex=0;
  return ShowModal();
 }
 
 // Метод открытия диалога для выбора переменной состояния
 int TUComponentsListForm::ShowStateSelect(void)
 {
- Panel1->Visible;
+ Panel1->Visible=true;
  Position=poScreenCenter;
  Mode=2;
- ComponentsListFrame1->PageControl1->ActivePageIndex=4;
+ ComponentsListFrame1->PageControl1->ActivePageIndex=1;
  return ShowModal();
 }
 

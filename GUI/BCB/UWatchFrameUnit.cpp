@@ -1180,7 +1180,7 @@ void __fastcall TUWatchFrame::bmp1Click(TObject *Sender)
 void __fastcall TUWatchFrame::AddWatch1Click(TObject *Sender)
 {
  UComponentsListForm->ComponentsListFrame1->PageControl1->ActivePageIndex=2;
- if(UComponentsListForm->ShowComponentSelect() != mrOk)
+ if(UComponentsListForm->ShowIOSelect() != mrOk)
   return;
 
  Add("",UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName(),0,0,UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput());
@@ -1190,7 +1190,7 @@ void __fastcall TUWatchFrame::AddWatch1Click(TObject *Sender)
 void __fastcall TUWatchFrame::AddXPulseWatch1Click(TObject *Sender)
 {
  UComponentsListForm->ComponentsListFrame1->PageControl1->ActivePageIndex=2;
- if(UComponentsListForm->ShowComponentSelect() != mrOk)
+ if(UComponentsListForm->ShowIOSelect() != mrOk)
   return;
 
  Add(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName(),"",UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput(),0,0);

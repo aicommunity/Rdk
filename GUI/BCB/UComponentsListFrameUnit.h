@@ -34,7 +34,6 @@ __published:	// IDE-managed Components
 	TTabSheet *TabSheet3;
 	THeaderControl *StateHeaderControl;
 	TRichEdit *StateRichEdit;
-	THeaderControl *IOHeaderControl;
 	TGroupBox *GroupBox;
 	TGroupBox *GroupBox2;
 	TSplitter *Splitter2;
