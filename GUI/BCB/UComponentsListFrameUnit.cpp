@@ -438,6 +438,8 @@ void TUComponentsListFrame::UpdateSelectedComponentInfo(void)
  SelectedComponentId=AnsiString(StringGrid->Cells[0][StringGrid->Row]).c_str();
  if(CurrentComponentId.size()>0)
   SelectedComponentId=CurrentComponentId+std::string(".")+SelectedComponentId;
+
+ ClassNamePanel->Caption=Model_GetComponentClassName(SelectedComponentName.c_str());
 }
 
 // -----------------------
@@ -904,10 +906,20 @@ void __fastcall TUComponentsListFrame::HeaderControl3SectionClick(THeaderControl
  else
  if(Section->Index == 2)
  {
-  UpdateParameters();
+  if(UComponentsListForm->ShowComponentSelect() == mrOk)
+  {
+   std::string global_owner_stringid=Model_GetComponentClassName(CurrentComponentName.c_str());
+   Model_SetGlobalOwnerComponentPropertyValue(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName().c_str(), Model_GetComponentClassName(GetSelectedComponentLongId().c_str()),global_owner_stringid.c_str(),AnsiString(ParametersListStringGrid->Cells[1][ParametersListStringGrid->Row]).c_str(), AnsiString(ParameterValueRichEdit->Text).c_str());
+   UpdateInterface();
+  }
  }
  else
  if(Section->Index == 3)
+ {
+  UpdateParameters();
+ }
+ else
+ if(Section->Index == 4)
  {
 
  }
@@ -938,10 +950,20 @@ void __fastcall TUComponentsListFrame::HeaderControl1SectionClick(THeaderControl
  else
  if(Section->Index == 2)
  {
-  UpdateState();
+  if(UComponentsListForm->ShowComponentSelect() == mrOk)
+  {
+   std::string global_owner_stringid=Model_GetComponentClassName(CurrentComponentName.c_str());
+   Model_SetGlobalOwnerComponentPropertyValue(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName().c_str(),Model_GetComponentClassName(GetSelectedComponentLongId().c_str()),global_owner_stringid.c_str(),AnsiString(StatesListStringGrid->Cells[1][StatesListStringGrid->Row]).c_str(), AnsiString(StateValueRichEdit->Text).c_str());
+   UpdateInterface();
+  }
  }
  else
  if(Section->Index == 3)
+ {
+  UpdateState();
+ }
+ else
+ if(Section->Index == 4)
  {
 
  }

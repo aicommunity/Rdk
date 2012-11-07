@@ -1559,7 +1559,7 @@ void UEngine::Model_SetComponentPropertyValue(const char *stringid, const char *
 
 
 // Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
-// исключая этот компонент
+// включая этот компонент
 void UEngine::Model_SetGlobalComponentPropertyValue(const char *stringid, const char* class_stringid, const char *paramname, const char *buffer)
 {
  try
@@ -1573,6 +1573,29 @@ void UEngine::Model_SetGlobalComponentPropertyValue(const char *stringid, const 
    return;
 
   Model_SetGlobalComponentPropertyValue(cont, classid, paramname, buffer);
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+}
+
+// Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
+// и владельцем, производным от класса 'class_owner_stringid' включая этот компонент
+void UEngine::Model_SetGlobalOwnerComponentPropertyValue(const char *stringid, const char* class_stringid, const char* class_owner_stringid, const char *paramname, const char *buffer)
+{
+ try
+ {
+  UEPtr<RDK::UAContainer> cont=FindComponent(stringid);
+  if(!cont)
+   return;
+
+  UId classid=Storage->FindClassId(class_stringid);
+  UId owner_classid=Storage->FindClassId(class_owner_stringid);
+  if(classid == ForbiddenId || owner_classid == ForbiddenId)
+   return;
+
+  Model_SetGlobalOwnerComponentPropertyValue(cont, classid, owner_classid, paramname, buffer);
  }
  catch (UException &exception)
  {
@@ -2617,7 +2640,7 @@ int UEngine::Model_SetComponentProperties(RDK::UAContainer* cont, RDK::Serialize
 }
 
 // Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
-// исключая этот компонент
+// включая этот компонент
 void UEngine::Model_SetGlobalComponentPropertyValue(RDK::UAContainer* cont, UId classid, const char *paramname, const char *buffer)
 {
  try
@@ -2625,13 +2648,35 @@ void UEngine::Model_SetGlobalComponentPropertyValue(RDK::UAContainer* cont, UId 
   if(!cont || classid == ForbiddenId)
    return;
 
+  if(cont->GetClass() == classid)
+   cont->SetPropertyValue(paramname,buffer);
+
   for(int i=0;i<cont->GetNumComponents();i++)
   {
-   if(cont->GetComponentByIndex(i)->GetClass() == classid)
-   {
-	cont->GetComponentByIndex(i)->SetPropertyValue(paramname,buffer);
-   }
    Model_SetGlobalComponentPropertyValue(cont->GetComponentByIndex(i), classid, paramname, buffer);
+  }
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+}
+
+// Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
+// и владельцем, производным от класса 'class_owner_stringid' включая этот компонент
+void UEngine::Model_SetGlobalOwnerComponentPropertyValue(RDK::UAContainer* cont, UId classid, UId owner_classid, const char *paramname, const char *buffer)
+{
+ try
+ {
+  if(!cont || classid == ForbiddenId)
+   return;
+
+  if(cont->GetClass() == classid && cont->GetOwner() && cont->GetOwner()->GetClass() == owner_classid)
+   cont->SetPropertyValue(paramname,buffer);
+
+  for(int i=0;i<cont->GetNumComponents();i++)
+  {
+   Model_SetGlobalOwnerComponentPropertyValue(cont->GetComponentByIndex(i), classid, owner_classid, paramname, buffer);
   }
  }
  catch (UException &exception)

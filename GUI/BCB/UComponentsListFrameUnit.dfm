@@ -88,6 +88,11 @@ inherited UComponentsListFrame: TUComponentsListFrame
               Width = 60
             end
             item
+              ImageIndex = -1
+              Text = 'Set Global Owner'
+              Width = 100
+            end
+            item
               Alignment = taCenter
               ImageIndex = -1
               Text = 'Reload'
@@ -149,6 +154,11 @@ inherited UComponentsListFrame: TUComponentsListFrame
               Width = 60
             end
             item
+              ImageIndex = -1
+              Text = 'Set Global Owner'
+              Width = 100
+            end
+            item
               Alignment = taCenter
               ImageIndex = -1
               Text = 'Reload'
@@ -201,7 +211,6 @@ inherited UComponentsListFrame: TUComponentsListFrame
           Align = alTop
           Caption = ' Outputs '
           TabOrder = 0
-          ExplicitTop = 34
           object OutputsStringGrid: TStringGrid
             Left = 2
             Top = 15
@@ -224,8 +233,6 @@ inherited UComponentsListFrame: TUComponentsListFrame
           Align = alClient
           Caption = ' Inputs '
           TabOrder = 1
-          ExplicitTop = 281
-          ExplicitHeight = 258
           object InputsStringGrid: TStringGrid
             Left = 2
             Top = 15
@@ -238,7 +245,6 @@ inherited UComponentsListFrame: TUComponentsListFrame
             OnClick = InputsStringGridClick
             OnDblClick = InputsStringGridDblClick
             OnSelectCell = InputsStringGridSelectCell
-            ExplicitHeight = 241
           end
         end
       end
@@ -352,7 +358,7 @@ inherited UComponentsListFrame: TUComponentsListFrame
       Left = 1
       Top = 35
       Width = 359
-      Height = 531
+      Height = 509
       Align = alClient
       FixedCols = 0
       Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRowSelect]
@@ -362,6 +368,7 @@ inherited UComponentsListFrame: TUComponentsListFrame
       OnDblClick = StringGridDblClick
       OnKeyPress = StringGridKeyPress
       OnSelectCell = StringGridSelectCell
+      ExplicitHeight = 531
     end
     object HeaderControl: THeaderControl
       Left = 1
@@ -375,6 +382,15 @@ inherited UComponentsListFrame: TUComponentsListFrame
       OverFlow = True
       ShowHint = False
       ParentShowHint = False
+    end
+    object ClassNamePanel: TPanel
+      Left = 1
+      Top = 544
+      Width = 359
+      Height = 22
+      Align = alBottom
+      Alignment = taLeftJustify
+      TabOrder = 2
     end
   end
   object PopupMenu: TPopupMenu

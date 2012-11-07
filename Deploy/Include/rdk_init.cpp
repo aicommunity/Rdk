@@ -600,10 +600,17 @@ void RDK_CALL Model_SetComponentPropertyValue(const char *stringid, const char *
 }
 
 // Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
-// исключая этот компонент
+// включая этот компонент
 void RDK_CALL Model_SetGlobalComponentPropertyValue(const char *stringid, const char* class_stringid, const char *paramname, const char *buffer)
 {
  PEngine->Model_SetGlobalComponentPropertyValue(stringid,class_stringid, paramname,buffer);
+}
+
+// Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
+// и владельцем, производным от класса 'class_owner_stringid' включая этот компонент
+void RDK_CALL Model_SetGlobalOwnerComponentPropertyValue(const char *stringid, const char* class_stringid, const char* class_owner_stringid, const char *paramname, const char *buffer)
+{
+ PEngine->Model_SetGlobalOwnerComponentPropertyValue(stringid, class_stringid, class_owner_stringid, paramname,buffer);
 }
 
 // Возвращает параметры компонента по идентификатору

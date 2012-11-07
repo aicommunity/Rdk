@@ -51,6 +51,7 @@ __published:	// IDE-managed Components
 	THeaderControl *HeaderControl1;
 	TSplitter *Splitter4;
 	TRichEdit *StateValueRichEdit;
+	TPanel *ClassNamePanel;
 	void __fastcall FrameResize(TObject *Sender);
 	void __fastcall StringGridDblClick(TObject *Sender);
 	void __fastcall StringGridSelectCell(TObject *Sender, int ACol, int ARow, bool &CanSelect);
