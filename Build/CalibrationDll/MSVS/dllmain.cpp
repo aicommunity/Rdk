@@ -54,7 +54,7 @@ Mat view;
 
 
 
-static double computeReprojectionErrors(
+double computeReprojectionErrors(
         const vector<vector<Point3f> >& objectPoints,
         const vector<vector<Point2f> >& imagePoints,
         const vector<Mat>& rvecs, const vector<Mat>& tvecs,
@@ -306,8 +306,8 @@ double CameraCalibrate(unsigned char *imagedata, double* objects_points, double*
     
  //   bool ok = checkRange(cameraMatrix) && checkRange(distCoeffs);
     
- //   totalAvgErr = computeReprojectionErrors(objectPoints, imagePoints,
- //               rvecs, tvecs, cameraMatrix, distCoeffs, reprojErrs);
+    totalAvgErr = computeReprojectionErrors(objectPoints, imagePoints,
+                rvecs, tvecs, cameraMatrix, distCoeffs, reprojErrs);
 
  return totalAvgErr;	
 }
@@ -340,6 +340,7 @@ __declspec(dllexport) int __cdecl CameraCalibrateInit(int num_frames, int width,
  boardSize.width=board_width;
  boardSize.height=board_height;
  squareSize=board_size;
+ totalAvgErr=0;
  return 0;
 }
 
@@ -430,7 +431,7 @@ __declspec(dllexport) int __cdecl CameraCalibrationUndoStep(int camera_index)
  return 0;
 }
 
-__declspec(dllexport) int __cdecl CameraCalibrateComplete(double* icc, double* dist_coeffs, int* num_dist_coeffs, double* ecc, int camera_index)
+__declspec(dllexport) int __cdecl CameraCalibrateComplete(double* icc, double* dist_coeffs, int* num_dist_coeffs, double* ecc, double &error, int camera_index)
 {
  if(camera_index<0 || camera_index>=cameraMatrix.size())
   return 1;
@@ -467,6 +468,8 @@ __declspec(dllexport) int __cdecl CameraCalibrateComplete(double* icc, double* d
    ecc[k++]=0;
   }
   ecc[k++]=1;
+
+ error=totalAvgErr;
    
  return 0;
 }
@@ -502,7 +505,7 @@ __declspec(dllexport) int __cdecl StereoCalibrateInit(double* icc1, double* dist
 }
 
 
-__declspec(dllexport) int __cdecl StereoCalibrateComplete(double* r, double* t)
+__declspec(dllexport) int __cdecl StereoCalibrateComplete(double* r, double* t, double &error)
 {
     vector<vector<Point3f> > objectPoints(1);
     calcChessboardCorners(boardSize, squareSize, objectPoints[0], pattern);
@@ -526,7 +529,7 @@ __declspec(dllexport) int __cdecl StereoCalibrateComplete(double* r, double* t)
  }
 
 
- stereoCalibrate(objectPoints, imagePoints[0], imagePoints[1], cameraMatrix[0], distCoeffs[0], cameraMatrix[1], distCoeffs[1],
+ error=stereoCalibrate(objectPoints, imagePoints[0], imagePoints[1], cameraMatrix[0], distCoeffs[0], cameraMatrix[1], distCoeffs[1],
                                      imageSize, R, T, E, F,
                                      TermCriteria(TermCriteria::COUNT+
                                          TermCriteria::EPS, 30, 1e-6),
