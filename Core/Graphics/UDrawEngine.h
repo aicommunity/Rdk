@@ -129,6 +129,9 @@ protected: // Параметры
 // Реальная ширина и высота изображения
 int CanvasWidth, CanvasHeight;
 
+// Размеры элемента в пикселях по умолчанию
+int RectWidth, RectHeight;
+
 // Число элементов в строке
 int ElementsXRes;
 
@@ -179,6 +182,12 @@ double GetZoomCoeff(void) const;
 
 // Начало координат в канве
 MVector<double,3> GetOrigin(void) const;
+
+// Размеры элемента в пикселях по умолчанию
+int GetRectWidth(void) const;
+bool SetRectWidth(int value);
+int GetRectHeight(void) const;
+bool SetRectHeight(int value);
 // ---------------------------
 
 // ---------------------------
@@ -217,6 +226,9 @@ std::string FindComponent(int x, int y);
 
 // Перемещает компонента в заданные координаты, с некоторой зоной нечуствительности
 void MoveComponent(const string &name, int x, int y);
+
+// Обновляет размеры всех элементов в соответствии с размерами по умолчанию
+void UpdateAllElementsSize(void);
 // ---------------------------
 
 // ---------------------------

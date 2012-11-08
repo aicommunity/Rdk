@@ -83,7 +83,7 @@ void __fastcall TUGEngineControlForm::FormShow(TObject *Sender)
 {
  // Грузим шрифты
  std::vector<std::string> font_names;
- std::string font_path=AnsiString(ExtractFilePath(Application->ExeName)+"Fontss\\").c_str();
+ std::string font_path=AnsiString(ExtractFilePath(Application->ExeName)+"Fonts\\").c_str();
  FindFilesList(font_path, "*.fnt", true, font_names);
 
  RDK::ClearClobalFonts();

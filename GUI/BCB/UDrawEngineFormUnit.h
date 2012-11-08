@@ -27,6 +27,15 @@ __published:	// IDE-managed Components
 	TUClassesListFrame *UClassesListFrame;
 	TPopupMenu *PopupMenu;
 	TMenuItem *Breakinputlink1;
+	TPanel *Panel3;
+	TLabeledEdit *RectWidthLabeledEdit;
+	TLabel *Label1;
+	TComboBox *FontTypeComboBox;
+	TLabel *Label2;
+	TComboBox *FontSizeComboBox;
+	TLabeledEdit *RectHeightLabeledEdit;
+	TButton *ApplyButton;
+	TButton *RestoreButton;
 	void __fastcall ImageMouseDown(TObject *Sender, TMouseButton Button, TShiftState Shift,
           int X, int Y);
 	void __fastcall ImageMouseMove(TObject *Sender, TShiftState Shift, int X, int Y);
@@ -41,6 +50,9 @@ __published:	// IDE-managed Components
 	void __fastcall ImageDragOver(TObject *Sender, TObject *Source, int X, int Y, TDragState State,
           bool &Accept);
 	void __fastcall Breakinputlink1Click(TObject *Sender);
+	void __fastcall ApplyButtonClick(TObject *Sender);
+	void __fastcall RestoreButtonClick(TObject *Sender);
+	void __fastcall FontTypeComboBoxSelect(TObject *Sender);
 
 private:	// User declarations
 public:		// User declarations
@@ -54,6 +66,12 @@ RDK::UDrawEngine DrawEngine;
 
 // Графический движок
 RDK::UGraphics Graph;
+
+// Тип шрифта
+std::string FontType;
+
+// Размер шрифта
+int FontSize;
 
 // Шрифт
 RDK::UBitmapFont Font;

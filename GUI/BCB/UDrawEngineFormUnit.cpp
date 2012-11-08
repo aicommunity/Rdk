@@ -95,6 +95,32 @@ void TUDrawEngineForm::AUpdateInterface(void)
  GraphCanvas.ReflectionX(&ShowCanvas);
  ShowCanvas>>Image->Picture->Bitmap;
  Image->Repaint();
+
+ FontTypeComboBox->Clear();
+ std::vector<std::string> buffer;
+ RDK::GlobalFonts.GetFontNames(buffer);
+ for(size_t i=0;i<buffer.size();i++)
+ {
+  FontTypeComboBox->Items->Add(buffer[i].c_str());
+  if(buffer[i] == FontType)
+   FontTypeComboBox->ItemIndex=i;
+ }
+
+ FontSizeComboBox->Clear();
+ std::vector<int> size_buffer;
+ RDK::GlobalFonts.GetFontSizes(FontType, size_buffer);
+ for(size_t i=0;i<size_buffer.size();i++)
+ {
+  FontSizeComboBox->Items->Add(IntToStr(size_buffer[i]));
+  if(size_buffer[i] == FontSize)
+  {
+   FontSizeComboBox->ItemIndex=i;
+  }
+ }
+
+
+ RectWidthLabeledEdit->Text=IntToStr(DrawEngine.GetRectWidth());
+ RectHeightLabeledEdit->Text=IntToStr(DrawEngine.GetRectHeight());
 }
 
 // Сохраняет параметры интерфейса в xml
@@ -103,6 +129,11 @@ void TUDrawEngineForm::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
  xml.WriteString("FontFileName",FontFileName);
  xml.WriteInteger("CanvasWidth",GraphCanvas.GetWidth());
  xml.WriteInteger("CanvasHeight",GraphCanvas.GetHeight());
+
+ xml.WriteString("FontType",FontType);
+ xml.WriteInteger("FontSize",FontSize);
+ xml.WriteInteger("RectWidth",DrawEngine.GetRectWidth());
+ xml.WriteInteger("RectHeight",DrawEngine.GetRectHeight());
 }
 
 // Загружает параметры интерфейса из xml
@@ -120,14 +151,13 @@ void TUDrawEngineForm::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
  MoveComponentName.clear();
  BreakLinkComponentName.clear();
  FontFileName.clear();
-/*
- FontFileName=xml.ReadString("FontFileName","Font/");//"Font_16x8_EnRu.bmp");
 
- for(int i=0;i<256;i++)
-  Font.Load(i,FontFileName+RDK::sntoa(i,4)+".bmp");
-// Font.Load(FontFileName);
-  */
- RDK::UBitmapFont* font=dynamic_cast<RDK::UBitmapFont*>(RDK::GlobalFonts.GetFont("rus",15));
+ FontType=xml.ReadString("FontType","Times New Roman");
+ FontSize=xml.ReadInteger("FontSize",15);
+ DrawEngine.SetRectWidth(xml.ReadInteger("RectWidth",80));
+ DrawEngine.SetRectHeight(xml.ReadInteger("RectHeight",25));
+
+ RDK::UBitmapFont* font=dynamic_cast<RDK::UBitmapFont*>(RDK::GlobalFonts.GetFont(FontType,FontSize));
  if(font)
   Font=*font;
  GraphCanvas.SetRes(xml.ReadInteger("CanvasWidth",640),xml.ReadInteger("CanvasHeight",480));
@@ -416,6 +446,53 @@ void __fastcall TUDrawEngineForm::Breakinputlink1Click(TObject *Sender)
    ReloadNet();
    UpdateInterface();
   }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUDrawEngineForm::ApplyButtonClick(TObject *Sender)
+{
+ FontType=AnsiString(FontTypeComboBox->Text).c_str();
+ FontSize=StrToInt(FontSizeComboBox->Text);
+
+ RDK::UBitmapFont* font=dynamic_cast<RDK::UBitmapFont*>(RDK::GlobalFonts.GetFont(FontType,FontSize));
+ if(font)
+  Font=*font;
+
+ DrawEngine.SetRectWidth(StrToInt(RectWidthLabeledEdit->Text));
+ DrawEngine.SetRectHeight(StrToInt(RectHeightLabeledEdit->Text));
+
+ DrawEngine.UpdateAllElementsSize();
+
+ UpdateInterface(true);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUDrawEngineForm::RestoreButtonClick(TObject *Sender)
+{
+ for(int i=0;i<FontTypeComboBox->Items->Count;i++)
+ {
+  if(Font.GetName() == AnsiString(FontSizeComboBox->Items->Strings[i]).c_str())
+   FontTypeComboBox->ItemIndex=i;
+ }
+
+ for(int i=0;i<FontSizeComboBox->Items->Count;i++)
+ {
+  if(Font.GetHeight() == StrToInt(FontSizeComboBox->Items->Strings[i]))
+   FontTypeComboBox->ItemIndex=i;
+ }
+
+ RectWidthLabeledEdit->Text=IntToStr(DrawEngine.GetRectWidth());
+ RectHeightLabeledEdit->Text=IntToStr(DrawEngine.GetRectHeight());
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUDrawEngineForm::FontTypeComboBoxSelect(TObject *Sender)
+{
+ if(UpdateInterfaceFlag)
+  return;
+
+ FontType=AnsiString(FontTypeComboBox->Text).c_str();
+ UpdateInterface(true);
 }
 //---------------------------------------------------------------------------
 

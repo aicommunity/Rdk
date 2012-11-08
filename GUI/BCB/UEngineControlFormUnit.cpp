@@ -347,21 +347,13 @@ void __fastcall TUEngineControlForm::FormShow(TObject *Sender)
  // Грузим шрифты
  std::vector<std::string> font_names;
  std::string font_path=AnsiString(ExtractFilePath(Application->ExeName)+"Fonts\\").c_str();
- FindFilesList(font_path, "*.bmp", true, font_names);
+ FindFilesList(font_path, "*.fnt", true, font_names);
 
- RDK::GlobalFonts.DelAllFonts();
+ RDK::ClearClobalFonts();
  RDK::UBitmapFont font;
  for(size_t i=0;i<font_names.size();i++)
  {
-  std::string font_name=AnsiString(TPath::GetFileNameWithoutExtension(font_names[i].c_str())).c_str();
-  std::size_t _pos=font_name.find_first_of("_");
-  if(_pos != std::string::npos)
-  {
-   std::string font_string_size=font_name.substr(_pos+1);
-   int size=RDK::atoi(font_string_size);
-   font.LoadFromFile(font_path+font_name+".bmp",font_path+font_name+".fnt",size);
-   RDK::GlobalFonts.AddFont(font_name.substr(0,_pos),size,font);
-  }
+  RDK::AddGlobalFont(font_path+font_names[i]);
  }
 
  EngineInit(0,ExceptionHandler);

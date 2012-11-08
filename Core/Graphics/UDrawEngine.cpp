@@ -115,6 +115,10 @@ UDrawEngine::UDrawEngine(void)
  ZoomCoeff=30;
 
  Origin=0;
+
+ // Размеры элемента в пикселях по умолчанию
+ RectWidth=80;
+ RectHeight=25;
 }
 
 UDrawEngine::~UDrawEngine(void)
@@ -136,6 +140,29 @@ double UDrawEngine::GetZoomCoeff(void) const
 MVector<double,3> UDrawEngine::GetOrigin(void) const
 {
  return Origin;
+}
+
+// Размеры элемента в пикселях по умолчанию
+int UDrawEngine::GetRectWidth(void) const
+{
+ return RectWidth;
+}
+
+bool UDrawEngine::SetRectWidth(int value)
+{
+ RectWidth=value;
+ return true;
+}
+
+int UDrawEngine::GetRectHeight(void) const
+{
+ return RectHeight;
+}
+
+bool UDrawEngine::SetRectHeight(int value)
+{
+ RectHeight=value;
+ return true;
 }
 // ---------------------------
 
@@ -250,6 +277,20 @@ void UDrawEngine::MoveComponent(const string &name, int x, int y)
  if(fabs(descr.Position.y-y)>BackgroundLineStep)
   descr.Position.y+=(int(y-descr.Position.y)/BackgroundLineStep)*BackgroundLineStep;
 }
+
+// Обновляет размеры всех элементов в соответствии с размерами по умолчанию
+void UDrawEngine::UpdateAllElementsSize(void)
+{
+ DescriptionsTableIteratorT I, J;
+ I = Descriptions.begin();
+ J = Descriptions.end();
+
+ for(;I != J;++I)
+ {
+  I->second.Width=RectWidth;
+  I->second.Height=RectHeight;
+ }
+}
 // ---------------------------
 
 // ---------------------------
@@ -323,6 +364,8 @@ void UDrawEngine::UpdateDestinations(void)
    }
 
    descr.Header=dI->first;
+   descr.Width=RectWidth;
+   descr.Height=RectHeight;
    dI->second=descr;
 
   NetXml.SelectUp();

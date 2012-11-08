@@ -599,6 +599,29 @@ bool UBitmapFontCollection::DelFont(const string &name, int size)
 // Возвращает список имен шрифтов
 void UBitmapFontCollection::GetFontNames(vector<string> &buffer)
 {
+ map<string,FontSizeContainerT>::iterator I,J;
+ I=Fonts.begin(); J=Fonts.end();
+ buffer.clear();
+ buffer.reserve(Fonts.size());
+ for(;I!=J;++I)
+  buffer.push_back(I->first);
+}
+
+// Возвращает список имен шрифтов
+void UBitmapFontCollection::GetFontSizes(const string &name, vector<int> &buffer)
+{
+ buffer.clear();
+
+ map<int,UBitmapFont>::iterator I,J;
+ map<string,FontSizeContainerT>::iterator fI=Fonts.find(name);
+
+ if(fI == Fonts.end())
+  return;
+
+ I=fI->second.begin(); J=fI->second.end();
+ buffer.reserve(fI->second.size());
+ for(;I!=J;++I)
+  buffer.push_back(I->first);
 }
 
 // Удаляет все шрифты
