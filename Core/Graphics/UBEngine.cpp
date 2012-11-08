@@ -442,7 +442,7 @@ int UBEngine::LoadPredefinedLibraries(void)
 
  filter=new RDK::UBACameraSimple;
  filter->Default();
- filter->SetName("CameraSimple");
+ filter->SetName("Camera");
  bstorage->AddClass(filter,"CameraSimple");
 
  return 0;

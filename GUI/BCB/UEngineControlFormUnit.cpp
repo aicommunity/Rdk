@@ -153,7 +153,7 @@ void TUEngineControlForm::OpenProject(const String &FileName)
 
  String descriptionfilename=ProjectXml.ReadString("ProjectDescriptionFileName","").c_str();
 
- if(descriptionfilename.Length() != 0)
+ if(descriptionfilename.Length() != 0 && FileExists(descriptionfilename)))
  {
   TRichEdit* RichEdit=new TRichEdit(this);
   RichEdit->Parent=this;

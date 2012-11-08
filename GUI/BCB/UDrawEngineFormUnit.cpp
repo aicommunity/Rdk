@@ -117,7 +117,8 @@ void TUDrawEngineForm::AUpdateInterface(void)
    FontSizeComboBox->ItemIndex=i;
   }
  }
-
+ if(FontSizeComboBox->ItemIndex < 0 && FontSizeComboBox->Items->Count>0)
+  FontSizeComboBox->ItemIndex=0;
 
  RectWidthLabeledEdit->Text=IntToStr(DrawEngine.GetRectWidth());
  RectHeightLabeledEdit->Text=IntToStr(DrawEngine.GetRectHeight());
