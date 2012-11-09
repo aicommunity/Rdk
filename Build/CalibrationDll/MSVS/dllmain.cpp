@@ -558,6 +558,25 @@ __declspec(dllexport) unsigned char* __cdecl GetCalibrationBoardImage(int camera
  return (unsigned char*)views[camera_index].data;
 }
 
+__declspec(dllexport) void __cdecl Undistortion(char *source, char *dest, int imagewidth, int imageheight, double IntMat[3][3], double DistCoeff[4][1])
+{
+ int k, j;
+ cv::Mat FRAME(imageheight,imagewidth,CV_8UC3), FRAME2(imageheight,imagewidth,CV_8UC3);
+ cv::Mat cammatrix(3,3,CV_64FC1);
+ cv::Mat distvec(4,1,CV_64FC1);
+ memcpy(FRAME.data, source, 3*imagewidth*imageheight);
+ for(k=0; k<3; k++)
+  for(j=0; j<3; j++)
+  { 
+   cammatrix.at<double>(k,j) = IntMat[k][j];
+  }
+ for(k=0; k<4; k++)
+  distvec.at<double>(k,0)=DistCoeff[k][0];
+ 
+ undistort(FRAME, FRAME2, cammatrix, distvec);
+ memcpy(dest, FRAME2.data, 3*imagewidth*imageheight);
+}
+
 }
 
 BOOL APIENTRY DllMain( HMODULE hModule,

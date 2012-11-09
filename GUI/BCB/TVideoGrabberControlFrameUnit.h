@@ -55,6 +55,11 @@ __published:    // IDE-managed Components
 	TEdit *IPCameraUrlEdit;
 	TEdit *IPCameraUserNameEdit;
 	TEdit *IPCameraUserPasswordEdit;
+	TTabSheet *ImageSequenceTabSheet;
+	TEdit *ImageSequencePathEdit;
+	TLabel *Label7;
+	TCheckBox *ImageSequencePathCheckBox;
+	TButton *ImageSequencePathBrowseButton;
     void __fastcall DeviceComboBoxSelect(TObject *Sender);
     void __fastcall InputComboBoxSelect(TObject *Sender);
     void __fastcall VideoSizeComboBoxSelect(TObject *Sender);
@@ -63,6 +68,7 @@ __published:    // IDE-managed Components
     void __fastcall VideoSubTypeComboBoxSelect(TObject *Sender);
     void __fastcall AnalogVideoStandardComboBoxSelect(TObject *Sender);
     void __fastcall OpenImageFileButtonClick(TObject *Sender);
+	void __fastcall ImageSequencePathBrowseButtonClick(TObject *Sender);
 private:    // User declarations
 public:        // User declarations
     __fastcall TVideoGrabberControlFrame(TComponent* Owner);

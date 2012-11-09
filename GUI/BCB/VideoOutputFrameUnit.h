@@ -88,6 +88,7 @@ public:        // User declarations
 // 1 - Avi
 // 2 - Camera
 // 3 - IP Camera
+// 4 - Image sequence
 int Mode;
 
 Graphics::TBitmap* ConvertBitmap;
@@ -198,6 +199,9 @@ void InitByCamera(int camera_index, int input_index, int size_index, int subtype
 
 // Инициализация фрейма IP-камерой
 void InitByIPCamera(const String camera_url, const String user_name, const String user_password);
+
+// Инициализация последовательностью изображений
+bool InitByImageSequence(const String &pathname);
 
 // Устанавливает название окна
 bool SetTitle(String title);

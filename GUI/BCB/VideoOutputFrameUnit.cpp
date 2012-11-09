@@ -154,6 +154,24 @@ void TVideoOutputFrame::InitByIPCamera(const String camera_url, const String use
  UpdateVideo();
 }
 
+// Инициализация последовательностью изображений
+bool TVideoOutputFrame::InitByImageSequence(const String &pathname)
+{
+ StopButtonClick(this);
+ VideoGrabber->BurstType = fc_TBitmap;
+ VideoGrabber->BurstMode = True;
+ VideoGrabber->BurstCount = 0;
+ VideoGrabber->VideoSource=vs_VideoFromImages;
+ VideoGrabber->VideoFromImages_SourceDirectory=pathname;
+ VideoGrabber->VideoFromImages_TemporaryFile = "MyTempFile.dat";
+ VideoGrabber->VideoFromImages_RepeatIndefinitely = false;
+ VideoGrabber->FrameRate=30;
+ Mode=4;
+// StartButtonClick(this);
+ UpdateVideo();
+ return true;
+}
+
 // Устанавливает название окна
 bool TVideoOutputFrame::SetTitle(String title)
 {
@@ -507,6 +525,12 @@ void __fastcall TVideoOutputFrame::StartButtonClick(TObject *Sender)
    VideoGrabber->StartSynchronized();
  break;
 
+ case 4:
+  VideoGrabber->StartPreview();
+//  VideoGrabber->StartSynchronized();
+//  VideoGrabber->PlayerFrameStep(1);
+ break;
+
  default:
      ;
  }  
@@ -528,6 +552,10 @@ void __fastcall TVideoOutputFrame::StopButtonClick(TObject *Sender)
 
  case 3:
    VideoGrabber->PausePreview();
+ break;
+
+ case 4:
+	VideoGrabber->PausePlayer();
  break;
 
  default:

@@ -10,7 +10,7 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
     Top = 0
     Width = 453
     Height = 269
-    ActivePage = DeviceTabSheet
+    ActivePage = ImageSequenceTabSheet
     Align = alClient
     DoubleBuffered = True
     ParentDoubleBuffered = False
@@ -292,6 +292,49 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
         Height = 17
         Caption = 'Truncate full path'
         TabOrder = 2
+      end
+    end
+    object ImageSequenceTabSheet: TTabSheet
+      Caption = 'Image Sequence'
+      ImageIndex = 4
+      DesignSize = (
+        445
+        238)
+      object Label7: TLabel
+        Left = 8
+        Top = 3
+        Width = 429
+        Height = 13
+        Anchors = [akLeft, akTop, akRight]
+        AutoSize = False
+        Caption = 'Image file name:'
+        ExplicitWidth = 369
+      end
+      object ImageSequencePathEdit: TEdit
+        Left = 8
+        Top = 22
+        Width = 344
+        Height = 21
+        Anchors = [akLeft, akTop, akRight]
+        TabOrder = 0
+      end
+      object ImageSequencePathCheckBox: TCheckBox
+        Left = 8
+        Top = 49
+        Width = 153
+        Height = 17
+        Caption = 'Truncate full path'
+        TabOrder = 1
+      end
+      object ImageSequencePathBrowseButton: TButton
+        Left = 358
+        Top = 20
+        Width = 79
+        Height = 25
+        Anchors = [akTop, akRight]
+        Caption = 'Browse'
+        TabOrder = 2
+        OnClick = ImageSequencePathBrowseButtonClick
       end
     end
   end

@@ -410,12 +410,22 @@ int UBEngine::LoadPredefinedLibraries(void)
  filter->Default();
  filter->SetName("CameraCalibrator");
  bstorage->AddClass(filter,"WDllCameraCalibrator");
+
+ filter=new RDK::UBDllOpenCvUndistortion;
+ filter->Default();
+ filter->SetName("BUndistortion");
+ bstorage->AddClass(filter,"BDllOpenCvUndistortion");
 #endif
 
  filter=new RDK::UBABitmapSourceSimple;
  filter->Default();
  filter->SetName("BitmapSourceSimple");
  bstorage->AddClass(filter,"BitmapSourceSimple");
+
+ filter=new RDK::UBABitmapSourceFile;
+ filter->Default();
+ filter->SetName("BitmapSourceFile");
+ bstorage->AddClass(filter,"BitmapSourceFile");
 
 //#define RDK_OPENCV
 #ifdef RDK_OPENCV

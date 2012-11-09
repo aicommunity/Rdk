@@ -119,7 +119,6 @@ void __fastcall TUCreateProjectWizardForm::FinishButtonClick(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TUCreateProjectWizardForm::Button1Click(TObject *Sender)
 {
- const SELDIRHELP = 1000;
  String chosenDir=ExtractFilePath(Application->ExeName);
 
 // if(SelectDirectory(chosenDir,TSelectDirOpts() << sdAllowCreate << sdPerformCreate << sdPrompt,SELDIRHELP))

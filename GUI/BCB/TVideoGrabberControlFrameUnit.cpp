@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #include <vcl.h>
+#include <Vcl.FileCtrl.hpp>
 #pragma hdrstop
 
 #include "TVideoGrabberControlFrameUnit.h"
@@ -52,6 +53,8 @@ int TVideoGrabberControlFrame::GetMode(void) const
   return 2;
  if(VCapturePageControl->ActivePage == IPCameraTabSheet)
   return 3;
+ if(VCapturePageControl->ActivePage == ImageSequenceTabSheet)
+  return 4;
 
  return -1;
 }
@@ -74,6 +77,10 @@ void TVideoGrabberControlFrame::SelectMode(int mode)
 
  case 3:
   VCapturePageControl->ActivePage = IPCameraTabSheet;
+ break;
+
+ case 4:
+  VCapturePageControl->ActivePage = ImageSequenceTabSheet;
  break;
  }
 
@@ -110,7 +117,7 @@ void TVideoGrabberControlFrame::AUpdateInterface(void)
  if(!VideoGrabber)
   return;
 
- if(VCapturePageControl->ActivePage != PictureFileTabSheet)
+ if(VCapturePageControl->ActivePage != PictureFileTabSheet && VCapturePageControl->ActivePage != ImageSequenceTabSheet)
  {
   if(VideoGrabber->VideoSource == vs_VideoCaptureDevice)
    VCapturePageControl->ActivePage = DeviceTabSheet;
@@ -155,6 +162,8 @@ void TVideoGrabberControlFrame::ASaveParameters(RDK::Serialize::USerStorageXML &
   xml.WriteString("PictureFileName",AnsiString(ImageFileNameEdit->Text).c_str());
  }
 
+ xml.WriteString("ImageSequencePath",AnsiString(ImageSequencePathEdit->Text).c_str());
+
  xml.WriteString("IPCameraUrl",AnsiString(IPCameraUrlEdit->Text).c_str());
  xml.WriteString("IPCameraUserName",AnsiString(IPCameraUserNameEdit->Text).c_str());
  xml.WriteString("IPCameraUserPassword",AnsiString(IPCameraUserPasswordEdit->Text).c_str());
@@ -176,6 +185,8 @@ void TVideoGrabberControlFrame::ALoadParameters(RDK::Serialize::USerStorageXML &
  ImageFileNameEdit->Text=xml.ReadString("PictureFileName","").c_str();
  if(ExtractFilePath(ImageFileNameEdit->Text) == UGEngineControlForm->ProjectPath)
   ImageFileNameEdit->Text=ExtractFileName(ImageFileNameEdit->Text);
+
+ ImageSequencePathEdit->Text=xml.ReadString("ImageSequencePath","").c_str();
 
  IPCameraUrlEdit->Text=xml.ReadString("IPCameraUrl","").c_str();
  IPCameraUserNameEdit->Text=xml.ReadString("IPCameraUserName","").c_str();
@@ -310,6 +321,11 @@ void __fastcall TVideoGrabberControlFrame::VCapturePageControlChange(TObject *Se
   VideoGrabber->VideoSource=vs_IPCamera;
   VideoOutputFrame->InitByIPCamera(IPCameraUrlEdit->Text, IPCameraUserNameEdit->Text, IPCameraUserPasswordEdit->Text);
  }
+ else
+ if(VCapturePageControl->ActivePage == ImageSequenceTabSheet)
+ {
+  VideoOutputFrame->InitByImageSequence(ImageSequencePathEdit->Text);
+ }
 
  UpdateInterface();
 }
@@ -361,6 +377,25 @@ void __fastcall TVideoGrabberControlFrame::OpenImageFileButtonClick(TObject *Sen
   SelectMode(2);
   VideoOutputFrame->InitByBmp(FileName);
  }
+
+ UpdateInterface();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoGrabberControlFrame::ImageSequencePathBrowseButtonClick(TObject *Sender)
+{
+ String chosenDir=ExtractFilePath(Application->ExeName);
+
+ if(SelectDirectory("Select image sequence directory", ExtractFilePath(Application->ExeName), chosenDir,TSelectDirExtOpts() << sdNewFolder << sdNewUI))
+ {
+  ImageSequencePathEdit->Text=chosenDir;
+ }
+
+ if(!VideoOutputFrame || !VideoGrabber)
+  return;
+
+ SelectMode(4);
+ VideoOutputFrame->InitByImageSequence(ImageSequencePathEdit->Text);
 
  UpdateInterface();
 }
