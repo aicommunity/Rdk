@@ -114,6 +114,12 @@ RDK::UGraphics Graph;
 // Отрисовка геометрии
 RDK::MGraphics<double,2> GeometryGraphics;
 
+// Массив изображений для режима последовательности картинок
+std::vector<RDK::UBitmap> BmpSequence;
+
+// Текущий кадр в последовательности картинок
+int CurrentBmpSequenceIndex;
+
 protected: // Привязка источника видео к входу-выходу компонента
 // Имя компонента, к которому привязан источник
 std::string LinkedComponentName;

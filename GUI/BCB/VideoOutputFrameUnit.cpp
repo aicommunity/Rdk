@@ -8,6 +8,7 @@
 #include "TVideoGrabberControlFormUnit.h"
 #include "myrdk.h"
 #include "rdk_cpp_initdll.h"
+#include "TUFileSystem.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "VidGrab"
@@ -158,7 +159,7 @@ void TVideoOutputFrame::InitByIPCamera(const String camera_url, const String use
 bool TVideoOutputFrame::InitByImageSequence(const String &pathname)
 {
  StopButtonClick(this);
- VideoGrabber->BurstType = fc_TBitmap;
+/* VideoGrabber->BurstType = fc_TBitmap;
  VideoGrabber->BurstMode = True;
  VideoGrabber->BurstCount = 0;
  VideoGrabber->VideoSource=vs_VideoFromImages;
@@ -166,8 +167,27 @@ bool TVideoOutputFrame::InitByImageSequence(const String &pathname)
  VideoGrabber->VideoFromImages_TemporaryFile = "MyTempFile.dat";
  VideoGrabber->VideoFromImages_RepeatIndefinitely = false;
  VideoGrabber->FrameRate=30;
+ */
  Mode=4;
 // StartButtonClick(this);
+ std::vector<std::string> bmp_names;
+ std::string path=AnsiString(pathname+"\\").c_str();
+ FindFilesList(path, "*.bmp", true, bmp_names);
+ BmpSequence.resize(bmp_names.size());
+ for(size_t i=0;i<bmp_names.size();i++)
+ {
+  RDK::LoadBitmapFromFile((path+bmp_names[i]).c_str(),BmpSequence[i]);
+ }
+
+ CurrentBmpSequenceIndex=0;
+
+ if(BmpSequence.size()>0)
+ {
+  BmpSource=BmpSequence[0];
+  BmpSource.SetColorModel(RDK::ubmRGB24);
+ }
+ else
+  BmpSource.Clear();
  UpdateVideo();
  return true;
 }
@@ -526,7 +546,21 @@ void __fastcall TVideoOutputFrame::StartButtonClick(TObject *Sender)
  break;
 
  case 4:
-  VideoGrabber->StartPreview();
+  if(CurrentBmpSequenceIndex<int(BmpSequence.size())-1)
+  {
+   BmpSource=BmpSequence[++CurrentBmpSequenceIndex];
+   BmpSource.SetColorModel(RDK::ubmRGB24);
+   UpdateVideo();
+
+   UpdateFlag=true;
+   std::string sstamp;
+   RDK::UTimeStamp stamp(long(CurrentBmpSequenceIndex),1);
+   stamp>>sstamp;
+   TimeEdit->Text=sstamp.c_str();
+   UpdateFlag=false;
+  }
+
+//  VideoGrabber->StartPreview();
 //  VideoGrabber->StartSynchronized();
 //  VideoGrabber->PlayerFrameStep(1);
  break;
@@ -822,7 +856,7 @@ Graphics::TBitmap *Frame_Bitmap;
          UpdateFlag=false;
 
          CurrentFrameNumber=FrameNumber;
-         DrawCapture(Image->Picture->Bitmap);
+//         DrawCapture(Image->Picture->Bitmap);
          UpdateVideo();
 
       break;
@@ -831,8 +865,16 @@ Graphics::TBitmap *Frame_Bitmap;
 //---------------------------------------------------------------------------
 void __fastcall TVideoOutputFrame::TrackBarChange(TObject *Sender)
 {
- if(!VideoGrabber->InFrameProgressEvent)
-  VideoGrabber->PlayerFramePosition = TrackBar->Position;
+ if(Mode != 4)
+ {
+  if(!VideoGrabber->InFrameProgressEvent)
+   VideoGrabber->PlayerFramePosition = TrackBar->Position;
+ }
+ else
+ {
+  if(TrackBar->Position < BmpSequence.size())
+   CurrentBmpSequenceIndex=TrackBar->Position;
+ }
 }
 //---------------------------------------------------------------------------
 

@@ -252,7 +252,7 @@ void __fastcall TUComponentIOFrame::ShowOutputs(TStringGrid *string_grid, RDK::U
  std::string stringid;
  for(int i=0;i<linkslist.GetSize();i++)
  {
-  for(int j=0;j<Model_GetComponentNumInputs(linkslist[i].EncodeToString(stringid).c_str());j++)
+  for(int j=0;j<Model_GetComponentNumOutputs(linkslist[i].EncodeToString(stringid).c_str());j++)
   {
    string_grid->RowCount=string_grid->RowCount+1;
    if(j == 0)
