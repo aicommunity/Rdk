@@ -196,16 +196,16 @@ virtual bool Set(const T &value)
 
 operator T (void) const
 {
- if(Owner)
+ if(this->Owner)
  {
-  if(PData)
-   return *PData;
+  if(this->PData)
+   return *this->PData;
 
   if(Getter)
-   return (Owner->*Getter)();
+   return (this->Owner->*Getter)();
 
   if(GetterR)
-   return (Owner->*GetterR)();
+   return (this->Owner->*GetterR)();
  }
 
  T val;
@@ -215,14 +215,14 @@ operator T (void) const
 // Оператор присваивания
 UVProperty& operator = (const T &value)
 {
- if(PData)
-  *PData=value;
+ if(this->PData)
+  *this->PData=value;
 
- if(Owner && Setter)
-  (Owner->*Setter)(value);
+ if(this->Owner && Setter)
+  (this->Owner->*Setter)(value);
  else
- if(Owner && SetterR)
-  (Owner->*SetterR)(value);
+ if(this->Owner && SetterR)
+  (this->Owner->*SetterR)(value);
 
  return *this;
 };
@@ -258,25 +258,25 @@ UVProperty& operator = (const UVProperty &v)
 // свойстве в родительском компоненте
 virtual void SetVariable(UADataComponent::VariableMapCIteratorT &var)
 {
- Variable=var;
+ this->Variable=var;
 }
 
 // Метод возвращает строковое имя свойства
 virtual const std::string& GetName(void) const
 {
- return Variable->first;
+ return this->Variable->first;
 };
 
 // Метод возвращает тип свойства
 virtual unsigned int GetType(void) const
 {
- return Variable->second.Type;
+ return this->Variable->second.Type;
 };
 
 // Метод возвращает строковое имя класса-владельца свойства
 virtual std::string GetOwnerName(void) const
 {
- return typeid(Owner).name();
+ return typeid(this->Owner).name();
 };
 
 // Метод записывает значение свойства в поток
@@ -370,10 +370,10 @@ public:
 // --------------------------
 //Конструктор инициализации
 UProperty(OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterT setmethod=0)
- : UVProperty<T,OwnerT>(owner, setmethod, 0), v() { PData=&v; };
+ : UVProperty<T,OwnerT>(owner, setmethod, 0), v() { this->PData=&v; };
 
 UProperty(OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod)
- : UVProperty<T,OwnerT>(owner, setmethod, 0), v() { PData=&v; };
+ : UVProperty<T,OwnerT>(owner, setmethod, 0), v() { this->PData=&v; };
 // -----------------------------
 
 // -----------------------------
@@ -458,19 +458,19 @@ public:
 // --------------------------
 //Конструктор инициализации
 UCProperty(OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterT setmethod=0)
- : UVProperty<T,OwnerT>(owner, setmethod, 0), v(), VSetter(0), VSetterR(0) { PData=&v; };
+ : UVProperty<T,OwnerT>(owner, setmethod, 0), v(), VSetter(0), VSetterR(0) { this->PData=&v; };
 
 UCProperty(OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod)
- : UVProperty<T,OwnerT>(owner, setmethod, 0), v(), VSetter(0), VSetterR(0) { PData=&v; };
+ : UVProperty<T,OwnerT>(owner, setmethod, 0), v(), VSetter(0), VSetterR(0) { this->PData=&v; };
 
 //Конструктор инициализации для отдельных значений
 UCProperty(OwnerT * const owner, VSetterT setmethod)
  : UVProperty<T,OwnerT>(owner,(typename UVProperty<T,OwnerT>::SetterT)0,0), v()
-{ VSetter=setmethod; PData=&v; };
+{ VSetter=setmethod; this->PData=&v; };
 
 UCProperty(OwnerT * const owner, VSetterRT setmethod)
  : UVProperty<T,OwnerT>(owner,(typename UVProperty<T,OwnerT>::SetterT)0,0), v()
-{ VSetterR=setmethod; PData=&v; };
+{ VSetterR=setmethod; this->PData=&v; };
 // -----------------------------
 
 // -----------------------------
