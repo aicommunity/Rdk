@@ -125,7 +125,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
       Height = 22
       Anchors = [akLeft, akTop, akRight]
       Max = 1
-      Min = 1
       PageSize = 1
       Position = 1
       TabOrder = 3

@@ -346,7 +346,7 @@ __declspec(dllexport) int __cdecl CameraCalibrateInit(int num_frames, int width,
 
 __declspec(dllexport) int __cdecl SetCameraCalibrationStepDelay(int value)
 {
- if(value>0)
+ if(value>=0)
   delay=value;
  return 0;
 }

@@ -226,7 +226,20 @@ bool TVideoOutputFrame::UpdateVideo(void)
   DrawFrameRect(Image, left, top, left+width, top+height, 2, SelColor);
  Image->Repaint();
  UpdateGeometryList(MyVideoOutputToolsForm->GeometryCheckListBox,
-                    MyVideoOutputToolsForm->PointsCheckListBox);
+					MyVideoOutputToolsForm->PointsCheckListBox);
+
+ if(Mode == 4)
+ {
+  UpdateFlag=true;
+  std::string sstamp;
+  RDK::UTimeStamp stamp(long(CurrentBmpSequenceIndex),1);
+  stamp>>sstamp;
+  TimeEdit->Text=sstamp.c_str();
+  TrackBar->Max=BmpSequence.size();
+  TrackBar->Enabled=true;
+  TrackBar->Position=CurrentBmpSequenceIndex;
+  UpdateFlag=false;
+ }
 
  return true;
 }
@@ -446,6 +459,11 @@ void TVideoOutputFrame::SendToComponentIO(void)
 // Метод, вызываемый перед шагом расчета
 void TVideoOutputFrame::ABeforeCalculate(void)
 {
+ if(Mode == 4)
+ {
+  CurrentBmpSequenceIndex++;
+  UpdateVideo();
+ }
  SendToComponentIO();
 }
 
@@ -548,16 +566,9 @@ void __fastcall TVideoOutputFrame::StartButtonClick(TObject *Sender)
  case 4:
   if(CurrentBmpSequenceIndex<int(BmpSequence.size())-1)
   {
-   BmpSource=BmpSequence[++CurrentBmpSequenceIndex];
+   BmpSource=BmpSequence[CurrentBmpSequenceIndex];
    BmpSource.SetColorModel(RDK::ubmRGB24);
    UpdateVideo();
-
-   UpdateFlag=true;
-   std::string sstamp;
-   RDK::UTimeStamp stamp(long(CurrentBmpSequenceIndex),1);
-   stamp>>sstamp;
-   TimeEdit->Text=sstamp.c_str();
-   UpdateFlag=false;
   }
 
 //  VideoGrabber->StartPreview();
@@ -805,19 +816,32 @@ void __fastcall TVideoOutputFrame::TimeEditChange(TObject *Sender)
  if(UpdateFlag)
   return;
 
- int selstart=TimeEdit->SelStart;
- int sellength=TimeEdit->SelLength;
+ if(Mode != 4)
+ {
+  int selstart=TimeEdit->SelStart;
+  int sellength=TimeEdit->SelLength;
 
- std::string sstamp;
- RDK::UTimeStamp stamp(0.0,VideoGrabber->CurrentFrameRate);
- sstamp=AnsiString(TimeEdit->Text).c_str();
- stamp<<sstamp;
+  std::string sstamp;
+  RDK::UTimeStamp stamp(0.0,VideoGrabber->CurrentFrameRate);
+  sstamp=AnsiString(TimeEdit->Text).c_str();
+  stamp<<sstamp;
 
-// TrackBar->Position=stamp()*VideoGrabber->CurrentFrameRate;
-
- UpdateVideo();
- TimeEdit->SelStart=selstart;
- TimeEdit->SelLength=sellength;
+  UpdateVideo();
+  TimeEdit->SelStart=selstart;
+  TimeEdit->SelLength=sellength;
+ }
+ else
+ if (Mode == 4)
+ {
+  std::string sstamp;
+  RDK::UTimeStamp stamp(0.0,1);
+  sstamp=AnsiString(TimeEdit->Text).c_str();
+  stamp<<sstamp;
+  CurrentBmpSequenceIndex=stamp.Frames;
+  BmpSource=BmpSequence[CurrentBmpSequenceIndex];
+  BmpSource.SetColorModel(RDK::ubmRGB24);
+  UpdateVideo();
+ }
 }
 //---------------------------------------------------------------------------
 
@@ -873,7 +897,12 @@ void __fastcall TVideoOutputFrame::TrackBarChange(TObject *Sender)
  else
  {
   if(TrackBar->Position < BmpSequence.size())
+  {
    CurrentBmpSequenceIndex=TrackBar->Position;
+   BmpSource=BmpSequence[CurrentBmpSequenceIndex];
+   BmpSource.SetColorModel(RDK::ubmRGB24);
+   UpdateVideo();
+  }
  }
 }
 //---------------------------------------------------------------------------
