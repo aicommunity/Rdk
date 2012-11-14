@@ -221,7 +221,7 @@ bool TVideoOutputFrame::UpdateVideo(void)
 // TrackBar->Position=CurrentFrameNumber;
 
  DrawCapture(Image->Picture->Bitmap);
- Image->Repaint();
+// Image->Repaint();
  if(left != -1 || top != -1 || width != -1 || height != -1)
   DrawFrameRect(Image, left, top, left+width, top+height, 2, SelColor);
  Image->Repaint();
@@ -271,10 +271,11 @@ void TVideoOutputFrame::DrawCapture(Graphics::TBitmap *bmp)
    bmp->PixelFormat=pf32bit;
   break;
   }
- BmpSource.ReflectionX(&BmpCanvas);
+// BmpSource.ReflectionX(&BmpCanvas);
+ BmpCanvas=BmpSource;
 
  GeometryGraphics.Repaint();
- BmpCanvas.ReflectionX();
+// BmpCanvas.ReflectionX();
  BmpCanvas>>bmp;
 }
 
@@ -374,7 +375,7 @@ void TVideoOutputFrame::AddFigureRect(double l,double t,double w,double h)
   return;
 
  Figure()[PointIndex].x=l+w/2;
- Figure()[PointIndex].y=/*BmpCanvas.GetHeight()-*/(t+h/2);
+ Figure()[PointIndex].y=BmpCanvas.GetHeight()-(t+h/2);
 
  GeometryGraphics.GetGeometry(FigureIndex)=Figure;
 
@@ -463,6 +464,7 @@ void TVideoOutputFrame::ABeforeCalculate(void)
  {
   CurrentBmpSequenceIndex++;
   UpdateVideo();
+  Sleep(0);
  }
  SendToComponentIO();
 }

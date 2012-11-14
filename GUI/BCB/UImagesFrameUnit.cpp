@@ -288,6 +288,7 @@ void TUImagesFrame::AUpdateInterface(void)
  }
  DrawGrid->Repaint();
  DrawGrid->Update();
+ Sleep(0);
 }
 
 
