@@ -401,3 +401,9 @@ void __fastcall TVideoGrabberControlFrame::ImageSequencePathBrowseButtonClick(TO
 }
 //---------------------------------------------------------------------------
 
+void __fastcall TVideoGrabberControlFrame::StreamButtonClick(TObject *Sender)
+{
+ VideoGrabber->ShowDialog(dlg_StreamConfig);
+}
+//---------------------------------------------------------------------------
+

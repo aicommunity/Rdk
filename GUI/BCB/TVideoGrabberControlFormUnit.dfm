@@ -2,7 +2,7 @@ object VideoGrabberControlForm: TVideoGrabberControlForm
   Left = 0
   Top = 0
   Caption = 'VideoGrabberControlForm'
-  ClientHeight = 262
+  ClientHeight = 298
   ClientWidth = 584
   Color = clBtnFace
   Constraints.MinHeight = 300
@@ -20,7 +20,7 @@ object VideoGrabberControlForm: TVideoGrabberControlForm
     Left = 0
     Top = 0
     Width = 584
-    Height = 262
+    Height = 298
     Align = alClient
     DoubleBuffered = True
     Font.Charset = DEFAULT_CHARSET
@@ -35,8 +35,7 @@ object VideoGrabberControlForm: TVideoGrabberControlForm
     ExplicitHeight = 262
     inherited VCapturePageControl: TPageControl
       Width = 584
-      Height = 262
-      ActivePage = VideoGrabberControlFrame.DeviceTabSheet
+      Height = 298
       ExplicitWidth = 584
       ExplicitHeight = 262
       inherited DeviceTabSheet: TTabSheet
@@ -44,7 +43,9 @@ object VideoGrabberControlForm: TVideoGrabberControlForm
         ExplicitHeight = 231
         inherited VDCapturePanel: TPanel
           Width = 576
-          Height = 231
+          Height = 267
+          ExplicitWidth = 576
+          ExplicitHeight = 231
           inherited ModeLabel: TLabel
             Width = 560
             ExplicitWidth = 560
@@ -88,46 +89,68 @@ object VideoGrabberControlForm: TVideoGrabberControlForm
         end
       end
       inherited IPCameraTabSheet: TTabSheet
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         inherited Panel1: TPanel
           Width = 576
           Height = 231
+          ExplicitWidth = 576
+          ExplicitHeight = 231
           inherited Label4: TLabel
             Width = 560
+            ExplicitWidth = 560
           end
           inherited Label5: TLabel
             Width = 560
+            ExplicitWidth = 560
           end
           inherited Label6: TLabel
             Width = 560
+            ExplicitWidth = 560
           end
           inherited IPCameraUrlEdit: TEdit
             Width = 560
+            ExplicitWidth = 560
           end
           inherited IPCameraUserNameEdit: TEdit
             Width = 560
+            ExplicitWidth = 560
           end
           inherited IPCameraUserPasswordEdit: TEdit
             Width = 560
+            ExplicitWidth = 560
           end
         end
       end
       inherited VideoFileTabSheet: TTabSheet
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         inherited VFCapturePanel: TPanel
           Width = 576
           Height = 231
+          ExplicitWidth = 576
+          ExplicitHeight = 231
           inherited VideoFileNameLabel: TLabel
             Width = 560
             ExplicitWidth = 560
           end
           inherited VFNameEdit: TEdit
             Width = 475
+            ExplicitWidth = 475
           end
           inherited VFBrowseButton: TButton
             Left = 489
+            ExplicitLeft = 489
           end
         end
       end
       inherited PictureFileTabSheet: TTabSheet
+        ExplicitLeft = 0
+        ExplicitTop = 0
         ExplicitWidth = 576
         ExplicitHeight = 231
         inherited Label3: TLabel
@@ -144,6 +167,8 @@ object VideoGrabberControlForm: TVideoGrabberControlForm
         end
       end
       inherited ImageSequenceTabSheet: TTabSheet
+        ExplicitLeft = 0
+        ExplicitTop = 0
         ExplicitWidth = 576
         ExplicitHeight = 231
         inherited ImageSequencePathEdit: TEdit

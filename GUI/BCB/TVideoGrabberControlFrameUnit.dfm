@@ -1,34 +1,37 @@
 inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
   Width = 453
-  Height = 269
+  Height = 297
   DoubleBuffered = True
   ParentDoubleBuffered = False
   ExplicitWidth = 453
-  ExplicitHeight = 269
+  ExplicitHeight = 297
   object VCapturePageControl: TPageControl
     Left = 0
     Top = 0
     Width = 453
-    Height = 269
-    ActivePage = ImageSequenceTabSheet
+    Height = 297
+    ActivePage = DeviceTabSheet
     Align = alClient
     DoubleBuffered = True
     ParentDoubleBuffered = False
     Style = tsFlatButtons
     TabOrder = 0
     OnChange = VCapturePageControlChange
+    ExplicitHeight = 269
     object DeviceTabSheet: TTabSheet
       Caption = 'Device'
+      ExplicitHeight = 238
       object VDCapturePanel: TPanel
         Left = 0
         Top = 0
         Width = 445
-        Height = 238
+        Height = 266
         Align = alClient
         TabOrder = 0
+        ExplicitHeight = 238
         DesignSize = (
           445
-          238)
+          266)
         object ModeLabel: TLabel
           Left = 8
           Top = 89
@@ -127,21 +130,32 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
           TabOrder = 4
           OnSelect = AnalogVideoStandardComboBoxSelect
         end
+        object StreamButton: TButton
+          Left = 8
+          Top = 231
+          Width = 75
+          Height = 25
+          Caption = 'Stream'
+          TabOrder = 5
+          OnClick = StreamButtonClick
+        end
       end
     end
     object IPCameraTabSheet: TTabSheet
       Caption = 'IP Camera'
       ImageIndex = 3
+      ExplicitHeight = 238
       object Panel1: TPanel
         Left = 0
         Top = 0
         Width = 445
-        Height = 238
+        Height = 266
         Align = alClient
         TabOrder = 0
+        ExplicitHeight = 238
         DesignSize = (
           445
-          238)
+          266)
         object Label4: TLabel
           Left = 8
           Top = 3
@@ -203,16 +217,18 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
     object VideoFileTabSheet: TTabSheet
       Caption = 'Video File'
       ImageIndex = 1
+      ExplicitHeight = 238
       object VFCapturePanel: TPanel
         Left = 0
         Top = 0
         Width = 445
-        Height = 238
+        Height = 266
         Align = alClient
         TabOrder = 0
+        ExplicitHeight = 238
         DesignSize = (
           445
-          238)
+          266)
         object VideoFileNameLabel: TLabel
           Left = 8
           Top = 3
@@ -254,9 +270,10 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
     object PictureFileTabSheet: TTabSheet
       Caption = 'Picture File'
       ImageIndex = 2
+      ExplicitHeight = 238
       DesignSize = (
         445
-        238)
+        266)
       object Label3: TLabel
         Left = 8
         Top = 3
@@ -297,9 +314,10 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
     object ImageSequenceTabSheet: TTabSheet
       Caption = 'Image Sequence'
       ImageIndex = 4
+      ExplicitHeight = 238
       DesignSize = (
         445
-        238)
+        266)
       object Label7: TLabel
         Left = 8
         Top = 3

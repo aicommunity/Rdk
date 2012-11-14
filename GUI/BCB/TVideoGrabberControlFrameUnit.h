@@ -60,6 +60,7 @@ __published:    // IDE-managed Components
 	TLabel *Label7;
 	TCheckBox *ImageSequencePathCheckBox;
 	TButton *ImageSequencePathBrowseButton;
+	TButton *StreamButton;
     void __fastcall DeviceComboBoxSelect(TObject *Sender);
     void __fastcall InputComboBoxSelect(TObject *Sender);
     void __fastcall VideoSizeComboBoxSelect(TObject *Sender);
@@ -69,6 +70,7 @@ __published:    // IDE-managed Components
     void __fastcall AnalogVideoStandardComboBoxSelect(TObject *Sender);
     void __fastcall OpenImageFileButtonClick(TObject *Sender);
 	void __fastcall ImageSequencePathBrowseButtonClick(TObject *Sender);
+	void __fastcall StreamButtonClick(TObject *Sender);
 private:    // User declarations
 public:        // User declarations
     __fastcall TVideoGrabberControlFrame(TComponent* Owner);
