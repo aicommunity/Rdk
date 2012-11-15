@@ -347,7 +347,7 @@ void __fastcall TUImagesFrame::DrawGridDrawCell(TObject *Sender, int ACol, int A
  dynamic_cast<TDrawGrid *>(Sender)->Canvas->
 		StretchDraw(Rect, Images[ACol][ARow]->Picture->Graphic);
  if(ShowLegendCheckBox->Checked)
-  dynamic_cast<TDrawGrid *>(Sender)->Canvas->TextOut(Rect.Left,Rect.Top,Model_GetComponentLongName(StringIds[ACol][ARow].c_str()));
+  dynamic_cast<TDrawGrid *>(Sender)->Canvas->TextOut(Rect.Left,Rect.Top,(std::string(Model_GetComponentLongName(StringIds[ACol][ARow].c_str()))+std::string("[")+RDK::sntoa(ComponentIndexes[ACol][ARow])+"]").c_str());
 }
 //---------------------------------------------------------------------------
 

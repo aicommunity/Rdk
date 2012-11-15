@@ -558,23 +558,57 @@ __declspec(dllexport) unsigned char* __cdecl GetCalibrationBoardImage(int camera
  return (unsigned char*)views[camera_index].data;
 }
 
-__declspec(dllexport) void __cdecl Undistortion(char *source, char *dest, int imagewidth, int imageheight, double IntMat[3][3], double DistCoeff[4][1])
+__declspec(dllexport) void __cdecl Undistortion(char *source, char *dest, int imagewidth, int imageheight, double IntMat[3][3], double DistCoeff[5][1], double NewIntMat[3][3], double alpha)
 {
+	/*
  int k, j;
  cv::Mat FRAME(imageheight,imagewidth,CV_8UC3), FRAME2(imageheight,imagewidth,CV_8UC3);
  cv::Mat cammatrix(3,3,CV_64FC1);
- cv::Mat distvec(4,1,CV_64FC1);
+ cv::Mat distvec(5,1,CV_64FC1);
  memcpy(FRAME.data, source, 3*imagewidth*imageheight);
  for(k=0; k<3; k++)
   for(j=0; j<3; j++)
   { 
    cammatrix.at<double>(k,j) = IntMat[k][j];
   }
- for(k=0; k<4; k++)
+ for(k=0; k<5; k++)
   distvec.at<double>(k,0)=DistCoeff[k][0];
  
  undistort(FRAME, FRAME2, cammatrix, distvec);
  memcpy(dest, FRAME2.data, 3*imagewidth*imageheight);
+ 
+ */
+	
+        cv::Mat FRAME(imageheight,imagewidth,CV_8UC3,(void*)source), FRAME2(imageheight,imagewidth,CV_8UC3,(void*)dest);
+        cv::Mat cammatrix(3,3,CV_64FC1, (void*)(IntMat)), cammatrix2;
+        cv::Mat distvec(5,1,CV_64FC1, (void*)(DistCoeff));
+cv::Size sz(imagewidth, imageheight);
+if ((alpha<=1)&&(alpha>=0)) cammatrix2=cv::getOptimalNewCameraMatrix(cammatrix, distvec, sz, alpha);
+else cammatrix2=cammatrix;
+
+        undistort(FRAME, FRAME2, cammatrix, distvec, cammatrix2);
+        memcpy(dest, FRAME2.data, 3*imageheight*imagewidth);
+memcpy(NewIntMat, cammatrix2.data, 3*3*sizeof(double));
+
+	
+ /*
+ cv::Mat FRAME(Size(imagewidth, imageheight), CV_8UC3, source, Mat::AUTO_STEP), FRAME2;
+ cv::Mat cammatrix(3,3,CV_64FC1, (void*)(IntMat)), cammatrix2;
+ cv::Mat distvec(5,1,CV_64FC1, (void*)(DistCoeff));
+ cv::Size sz(imagewidth, imageheight);
+
+ Mat map1, map2;
+ cv::Rect rect;
+ cv::initUndistortRectifyMap(cammatrix, distvec, Mat(),
+      cv::getOptimalNewCameraMatrix(cammatrix, distvec, sz, alpha, sz, &rect),
+      sz, CV_16SC2, map1, map2);
+ cv::remap(FRAME, FRAME2, map1, map2, CV_INTER_LINEAR);
+*newimagewidth=FRAME2.cols;
+*newimageheight=FRAME2.rows;
+        memcpy(dest, FRAME2.data, 3*(*newimagewidth)*(*newimageheight));
+//memcpy(NewIntMat, cammatrix2.data, 3*3*sizeof(double));
+//cvNamedWindow("Image View",1);
+//imshow("Image View", FRAME2);*/
 }
 
 }

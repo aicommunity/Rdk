@@ -331,22 +331,9 @@ void __fastcall TUDrawEngineForm::ImageMouseUp(TObject *Sender, TMouseButton But
    full_start_name=ComponentName+std::string(".")+StartName;
    full_stop_name=ComponentName+std::string(".")+StopName;
   }
-/*
-  ULinkSelectionForm->StartName=StartName;
-  ULinkSelectionForm->StopName=StopName;
-  ULinkSelectionForm->SetMode(0);
-  if(ULinkSelectionForm->ShowModal() != mrOk)
-   return;
-*/
+
   UComponentLinksForm->UComponentLinksFrame->Init(1, full_start_name,ComponentName,full_stop_name);
-/*   NANetFrameInputs->ViewComponentOwnerLongId=ComponentName;
-  UComponentLinksForm->UComponentLinksFrame->NANetFrameInputs->ViewComponentLongId=full_stop_name;
-  UComponentLinksForm->UComponentLinksFrame->NANetFrameOutputs->ViewComponentOwnerLongId=ComponentName;
-  UComponentLinksForm->UComponentLinksFrame->NANetFrameOutputs->ViewComponentLongId=full_start_name;
-  UComponentLinksForm->UComponentLinksFrame->NANetFrameLinks->ViewComponentOwnerLongId=ComponentName;
-  UComponentLinksForm->UComponentLinksFrame->NANetFrameLinks->ViewComponentLongId=full_start_name;
-  UComponentLinksForm->UComponentLinksFrame->NANetFrameLinks->ViewComponentLongId2=full_stop_name;
-  UComponentLinksForm->UComponentLinksFrame->SetMode(1); */
+
   if(UComponentLinksForm->ShowModal() == mrOk)
   {
    UComponentLinksForm->UComponentLinksFrame->UpdateInterface();

@@ -159,38 +159,42 @@ void TVideoOutputFrame::InitByIPCamera(const String camera_url, const String use
 bool TVideoOutputFrame::InitByImageSequence(const String &pathname)
 {
  StopButtonClick(this);
-/* VideoGrabber->BurstType = fc_TBitmap;
- VideoGrabber->BurstMode = True;
- VideoGrabber->BurstCount = 0;
- VideoGrabber->VideoSource=vs_VideoFromImages;
- VideoGrabber->VideoFromImages_SourceDirectory=pathname;
- VideoGrabber->VideoFromImages_TemporaryFile = "MyTempFile.dat";
- VideoGrabber->VideoFromImages_RepeatIndefinitely = false;
- VideoGrabber->FrameRate=30;
- */
  Mode=4;
 // StartButtonClick(this);
- std::vector<std::string> bmp_names;
- std::string path=AnsiString(pathname+"\\").c_str();
- FindFilesList(path, "*.bmp", true, bmp_names);
- BmpSequence.resize(bmp_names.size());
- for(size_t i=0;i<bmp_names.size();i++)
- {
-  RDK::LoadBitmapFromFile((path+bmp_names[i]).c_str(),BmpSequence[i]);
- }
+ BmpSequencePathName=AnsiString(pathname+"\\").c_str();
+
+ FindFilesList(BmpSequencePathName, "*.bmp", true, BmpSequenceNames);
 
  CurrentBmpSequenceIndex=0;
 
- if(BmpSequence.size()>0)
+ LastReadSequenceIndex=-1;
+ if(BmpSequenceNames.size()>0)
  {
-  BmpSource=BmpSequence[0];
+  LoadImageFromSequence(0,BmpSource);
   BmpSource.SetColorModel(RDK::ubmRGB24);
+  LastReadSequenceIndex=0;
  }
  else
+ {
   BmpSource.Clear();
+  LastReadSequenceIndex=-1;
+ }
  UpdateVideo();
+
  return true;
 }
+
+// «агружает выбранную картинку по индеку в массиве имен
+
+bool TVideoOutputFrame::LoadImageFromSequence(int index, RDK::UBitmap &bmp)
+{
+ if(LastReadSequenceIndex == index)
+  return true;
+
+ RDK::LoadBitmapFromFile((BmpSequencePathName+BmpSequenceNames[index]).c_str(),bmp);
+ return true;
+}
+
 
 // ”станавливает название окна
 bool TVideoOutputFrame::SetTitle(String title)
@@ -221,7 +225,7 @@ bool TVideoOutputFrame::UpdateVideo(void)
 // TrackBar->Position=CurrentFrameNumber;
 
  DrawCapture(Image->Picture->Bitmap);
-// Image->Repaint();
+ Image->Repaint();
  if(left != -1 || top != -1 || width != -1 || height != -1)
   DrawFrameRect(Image, left, top, left+width, top+height, 2, SelColor);
  Image->Repaint();
@@ -235,7 +239,7 @@ bool TVideoOutputFrame::UpdateVideo(void)
   RDK::UTimeStamp stamp(long(CurrentBmpSequenceIndex),1);
   stamp>>sstamp;
   TimeEdit->Text=sstamp.c_str();
-  TrackBar->Max=BmpSequence.size();
+  TrackBar->Max=BmpSequenceNames.size();
   TrackBar->Enabled=true;
   TrackBar->Position=CurrentBmpSequenceIndex;
   UpdateFlag=false;
@@ -441,13 +445,14 @@ void TVideoOutputFrame::SendToComponentIO(void)
 {
  if(LinkedComponentName.empty())
   return;
+ BmpSource.ReflectionX(&ReflectedBmpSource);
  switch(LinkedMode)
  {
  case 0:
-  Model_SetComponentBitmapInput(LinkedComponentName.c_str(), LinkedIndex, &BmpSource);
+  Model_SetComponentBitmapInput(LinkedComponentName.c_str(), LinkedIndex, &ReflectedBmpSource);
  break;
  case 1:
-  Model_SetComponentBitmapOutput(LinkedComponentName.c_str(), LinkedIndex, &BmpSource);
+  Model_SetComponentBitmapOutput(LinkedComponentName.c_str(), LinkedIndex, &ReflectedBmpSource);
  break;
  }
 }
@@ -482,13 +487,13 @@ void TVideoOutputFrame::AUpdateInterface(void)
   switch(LinkedMode)
   {
   case 0:
-   SendImageToComponentInput1->Caption=String("Send Image To Input ")+String(LinkedComponentName.c_str())+String("[")+IntToStr(LinkedIndex)+String("]");
+   SendImageToComponentInput1->Caption=String("Send Image To Input: ")+String(LinkedComponentName.c_str())+String("[")+IntToStr(LinkedIndex)+String("]");
    SendImageToComponentOutput1->Caption="Send Image To Component Output...";
   break;
 
   case 1:
    SendImageToComponentInput1->Caption="Send Image To Component Input...";
-   SendImageToComponentOutput1->Caption=String("Send Image To Output ")+String(LinkedComponentName.c_str())+String("[")+IntToStr(LinkedIndex)+String("]");
+   SendImageToComponentOutput1->Caption=String("Send Image To Output: ")+String(LinkedComponentName.c_str())+String("[")+IntToStr(LinkedIndex)+String("]");
   break;
   }
  }
@@ -566,9 +571,9 @@ void __fastcall TVideoOutputFrame::StartButtonClick(TObject *Sender)
  break;
 
  case 4:
-  if(CurrentBmpSequenceIndex<int(BmpSequence.size())-1)
+  if(CurrentBmpSequenceIndex<int(BmpSequenceNames.size())-1)
   {
-   BmpSource=BmpSequence[CurrentBmpSequenceIndex];
+   LoadImageFromSequence(CurrentBmpSequenceIndex,BmpSource);
    BmpSource.SetColorModel(RDK::ubmRGB24);
    UpdateVideo();
   }
@@ -840,7 +845,7 @@ void __fastcall TVideoOutputFrame::TimeEditChange(TObject *Sender)
   sstamp=AnsiString(TimeEdit->Text).c_str();
   stamp<<sstamp;
   CurrentBmpSequenceIndex=stamp.Frames;
-  BmpSource=BmpSequence[CurrentBmpSequenceIndex];
+  LoadImageFromSequence(CurrentBmpSequenceIndex,BmpSource);
   BmpSource.SetColorModel(RDK::ubmRGB24);
   UpdateVideo();
  }
@@ -898,10 +903,10 @@ void __fastcall TVideoOutputFrame::TrackBarChange(TObject *Sender)
  }
  else
  {
-  if(TrackBar->Position < BmpSequence.size())
+  if(TrackBar->Position < BmpSequenceNames.size())
   {
    CurrentBmpSequenceIndex=TrackBar->Position;
-   BmpSource=BmpSequence[CurrentBmpSequenceIndex];
+   LoadImageFromSequence(CurrentBmpSequenceIndex, BmpSource);
    BmpSource.SetColorModel(RDK::ubmRGB24);
    UpdateVideo();
   }
@@ -952,7 +957,7 @@ void __fastcall TVideoOutputFrame::SendImageToComponentOutput1Click(TObject *Sen
   return;
 
  LinkedMode=1;
- LinkedComponentName=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongId();
+ LinkedComponentName=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName();
  LinkedIndex=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput();
 }
 //---------------------------------------------------------------------------
@@ -963,8 +968,8 @@ void __fastcall TVideoOutputFrame::SendImageToComponentInput1Click(TObject *Send
   return;
 
  LinkedMode=0;
- LinkedComponentName=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongId();
- LinkedIndex=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput();
+ LinkedComponentName=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName();
+ LinkedIndex=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentInput();
 }
 //---------------------------------------------------------------------------
 

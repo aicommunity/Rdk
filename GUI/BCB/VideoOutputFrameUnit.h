@@ -103,7 +103,7 @@ TVideoGrabberControlForm* MyVideoGrabberControlForm;
 TUComponentsListForm *MyComponentsListForm;
 
 // »сточник изображени€
-RDK::UBitmap BmpSource;
+RDK::UBitmap BmpSource,ReflectedBmpSource;
 
 //  анва рисовани€
 RDK::UBitmap BmpCanvas;
@@ -115,7 +115,10 @@ RDK::UGraphics Graph;
 RDK::MGraphics<double,2> GeometryGraphics;
 
 // ћассив изображений дл€ режима последовательности картинок
-std::vector<RDK::UBitmap> BmpSequence;
+std::vector<std::string> BmpSequenceNames;
+
+// ѕуть до последовательности изображений
+std::string BmpSequencePathName;
 
 // “екущий кадр в последовательности картинок
 int CurrentBmpSequenceIndex;
@@ -188,6 +191,8 @@ std::string SelectedComponentParameterName;
 // ÷елева€ переменна€ состо€ни€-приемник данных о геометрии
 std::string SelectedComponentSName;
 std::string SelectedComponentStateName;
+
+int LastReadSequenceIndex;
 // ============================================================
 
 
@@ -208,6 +213,9 @@ void InitByIPCamera(const String camera_url, const String user_name, const Strin
 
 // »нициализаци€ последовательностью изображений
 bool InitByImageSequence(const String &pathname);
+
+// «агружает выбранную картинку по индеку в массиве имен
+bool LoadImageFromSequence(int index, RDK::UBitmap &bmp);
 
 // ”станавливает название окна
 bool SetTitle(String title);
