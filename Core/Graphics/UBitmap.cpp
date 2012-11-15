@@ -683,7 +683,7 @@ void UBitmap::FindColorRange(UBColorPoint &minval, UBColorPoint &maxval) const
  minval.Color.c=0xffffffff;
  maxval.Color.c=0;
  UBColor* pdata=Data;
- int minl,maxl;
+ int minl=0,maxl=0;
 
  switch(ColorModel)
  {
@@ -3502,7 +3502,7 @@ void UBitmap::ColorConvertRGB24_HSI(UBColor *source, UBColor *dest) const
   unsigned b=*(source++),g=*(source++),r=*(source++);
   unsigned tmin=(b<g)?b:g; tmin=(tmin<r)?tmin:r;
   unsigned tmax=(b>g)?b:g; tmax=(tmax>r)?tmax:r;
-  float res;
+  float res=0;
   if(tmax ==tmin)
    res=0;
   else
@@ -4078,7 +4078,6 @@ void UBitmap::ColorConvertHSI_RGB24(UBColor *source, UBColor *dest) const
   if(i < 0.5)
    q=i*(1+s);
   else
-  if(i>=0.5)
    q=(i+s-(i*s));
 
   float p=2*i-q;
