@@ -13,7 +13,7 @@ See file license.txt for more information
 #define UBGRAPHICS_LIBRARIES_GUI_CPP
 
 #include "Gui_lite.cpp"
-#include "UFont.cpp"    
+#include "UFont.cpp"
 #include "UDrawEngine.cpp"
                         
 #endif

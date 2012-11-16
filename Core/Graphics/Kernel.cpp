@@ -13,10 +13,10 @@ See file license.txt for more information
 #define UBGRAPHIC_KERNEL_CPP
 
 #include "Kernel_lite.cpp"
-#include "UGraphicsIO.cpp"
+//#include "UGraphicsIO.cpp"
 #include "UBEngine.cpp"       
-#include "UGraphicsBinarySerialize.cpp"
-#include "UGraphicsXMLSerialize.cpp"
+//#include "UGraphicsBinarySerialize.cpp"
+//#include "UGraphicsXMLSerialize.cpp"
 #include "UBAModel.cpp"
 
 #endif

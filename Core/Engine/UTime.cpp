@@ -21,6 +21,19 @@ double UTimeControl::DoubleRealTime=0;
 // ћгновенный шаг в реальном времени
 ULongTime UTimeControl::RealTimeStep=1;
 double UTimeControl::DoubleRealTimeStep=1.0e-6;
+
+
+// “екущее врем€ внешних источников данных в микросекундах
+ULongTime UTimeControl::SourceTime=0;
+
+// “екущее врем€ внешних источников данных в секундах
+double UTimeControl::DoubleSourceTime=0;
+
+// ћгновенный шаг во времени внешних источников данных в микросекундах
+ULongTime UTimeControl::SourceTimeStep=1;
+
+// ћгновенный шаг во времени внешних источников данных в секундах
+double UTimeControl::DoubleSourceTimeStep=1.0e-6;
 // --------------------------
 
 // --------------------------
