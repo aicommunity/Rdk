@@ -3448,7 +3448,9 @@ UBColor *dest, UBMColorModel destcmodel) const
    }
 }
 
+#ifdef __BORLANDC__
 #pragma warn -8057
+#endif
 void UBitmap::ColorConvertRGB24_Y32(UBColor *source, UBColor *dest) const
 {
  unsigned int* pdest=reinterpret_cast<unsigned int*>(dest);
@@ -4495,7 +4497,9 @@ void UBitmap::ColorConvertF32_YCrCb422(UBColor *source, UBColor *dest) const
 void UBitmap::ColorConvertF32_YCrCb444(UBColor *source, UBColor *dest) const
 {
 }
+#ifdef __BORLANDC__
 #pragma warn .8057
+#endif
 // -----------------------
 
 // Ìועמהû UBPoint

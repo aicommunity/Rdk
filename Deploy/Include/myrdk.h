@@ -1,6 +1,13 @@
 #ifndef MYRDK_H
 #define MYRDK_H
 
+#ifdef _MSC_VER
+#pragma warning(disable : 4100)
+#pragma warning(disable : 4355)
+#pragma warning(disable : 4800)
+#pragma warning(disable : 4503)
+#endif
+
 #include "../../Core/System/rdk_system.h"
 #include "../../ThirdParty/ThirdParty.h"
 #include "../../Core/Math/UMath.h"

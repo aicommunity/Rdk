@@ -48,7 +48,7 @@ void Sleep(int value)
 // 1 - если уже существует файл с таким именем
 // 2 - если такой путь не существует
 // 3 - если произошла другая ошибка
-int CreateDirectory(const char* path)
+int CreateNewDirectory(const char* path)
 {
  return 3;
 }

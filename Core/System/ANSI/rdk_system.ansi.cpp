@@ -24,17 +24,20 @@ unsigned long long CalcDiffTime(unsigned long long time1, unsigned long long tim
   return time2-time1;
 }             
 
+// Усыпляет процесс на заданное число миллисекунд
+void Sleep(int value)
+{
+}
+
 // Создает каталог
 // Возвращает 0 в случае успеха или если каталог уже существует
 // 1 - если уже существует файл с таким именем
 // 2 - если такой путь не существует
 // 3 - если произошла другая ошибка
-int CreateDirectory(const char* path)
+int CreateNewDirectory(const char* path)
 {
  return 3;
 }
-
-
 
 }
 

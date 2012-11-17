@@ -256,7 +256,7 @@ bool UAFont::DrawRect(const wstring &str, const UBRect &rect, int align, UAGraph
   graphics->SetPenPos(curr_x,curr_y);
   Draw(str.substr(curr_index,num_symbols_in_line),graphics);
   curr_index+=num_symbols_in_line;
-  curr_y+=Height+Height*0.5;
+  curr_y+=Height+Height/2;
  } while(curr_index<int(str.size()));
 
  return true;
@@ -275,7 +275,7 @@ bool UAFont::DrawRect(const string &str, const UBRect &rect, int align, UAGraphi
  {
   num_symbols_in_line=CalcTextLength(str,curr_index,rect.Width);
   if(num_symbols_in_line == str.size())
-   curr_y+=(rect.Height-Height*1.5)/2;
+   curr_y+=(rect.Height-(Height*3)/2)/2;
   switch(align)
   {
   case alRight:
@@ -299,7 +299,7 @@ bool UAFont::DrawRect(const string &str, const UBRect &rect, int align, UAGraphi
   graphics->SetPenPos(curr_x,curr_y);
   Draw(str.substr(curr_index,num_symbols_in_line),graphics);
   curr_index+=num_symbols_in_line;
-  curr_y+=Height+Height*0.5;
+  curr_y+=Height+Height/2;
  } while(curr_index<int(str.size()));
 
  return true;

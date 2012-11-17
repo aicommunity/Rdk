@@ -34,7 +34,7 @@ void Sleep(int value)
 // 1 - если уже существует файл с таким именем
 // 2 - если такой путь не существует
 // 3 - если произошла другая ошибка
-int CreateDirectory(const char* path)
+int CreateNewDirectory(const char* path)
 {
  DWORD dwFileAttributes = GetFileAttributes(path);
  if(dwFileAttributes == INVALID_FILE_ATTRIBUTES || (dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
@@ -42,7 +42,7 @@ int CreateDirectory(const char* path)
   if(!::CreateDirectory(path, 0))
   {
    if(GetLastError() == ERROR_PATH_NOT_FOUND)
-	return 2;
+    return 2;
 
    return 0;
   }

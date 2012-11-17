@@ -12,7 +12,7 @@ See file license.txt for more information
 #ifndef ENGINE_LITE_CPP
 #define ENGINE_LITE_CPP
 
-#include "UAEnvSupport.cpp"
+//#include "UAEnvSupport.cpp"
 #include "UModule.cpp"
 #include "UAStorage.cpp"
 #include "UALibrary.cpp"

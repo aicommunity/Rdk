@@ -583,7 +583,7 @@ __declspec(dllexport) void __cdecl Undistortion(char *source, char *dest, int im
         cv::Mat cammatrix(3,3,CV_64FC1, (void*)(IntMat)), cammatrix2;
         cv::Mat distvec(5,1,CV_64FC1, (void*)(DistCoeff));
 cv::Size sz(imagewidth, imageheight);
-if ((alpha<=1)&&(alpha>=0)) cammatrix2=cv::getOptimalNewCameraMatrix(cammatrix, distvec, sz, alpha);
+if ((alpha<=1)&&(alpha>=0)) cammatrix2=cv::getOptimalNewCameraMatrix(cammatrix, distvec, sz, alpha,sz,0, true);
 else cammatrix2=cammatrix;
 
         undistort(FRAME, FRAME2, cammatrix, distvec, cammatrix2);
