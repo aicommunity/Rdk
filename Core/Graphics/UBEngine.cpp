@@ -199,7 +199,7 @@ unsigned char* UBEngine::Env_GetOutputImageY8(int index)
 // Методы управления моделью
 // --------------------------
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
-const RDK::UBitmap* const UBEngine::Model_GetComponentOutput(const char *stringid, int index)
+const RDK::UBitmap* UBEngine::Model_GetComponentOutput(const char *stringid, int index)
 {
  UEPtr<RDK::UBAbstract> cont=dynamic_pointer_cast<RDK::UBAbstract>(FindComponent(stringid));
 
@@ -213,7 +213,7 @@ const RDK::UBitmap* const UBEngine::Model_GetComponentOutput(const char *stringi
 }
 
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
-const RDK::UBitmap* const UBEngine::Model_GetComponentBitmapOutput(const char *stringid, int index)
+const RDK::UBitmap* UBEngine::Model_GetComponentBitmapOutput(const char *stringid, int index)
 {
  UEPtr<RDK::UBAbstract> cont=dynamic_pointer_cast<RDK::UBAbstract>(FindComponent(stringid));
 
@@ -227,7 +227,7 @@ const RDK::UBitmap* const UBEngine::Model_GetComponentBitmapOutput(const char *s
 }
 
 // Возвращает указатель на вход с индексом 'index' компонента 'id'
-const RDK::UBitmap* const UBEngine::Model_GetComponentBitmapInput(const char *stringid, int index)
+const RDK::UBitmap* UBEngine::Model_GetComponentBitmapInput(const char *stringid, int index)
 {
  UEPtr<RDK::UBAbstract> cont=dynamic_pointer_cast<RDK::UBAbstract>(FindComponent(stringid));
 

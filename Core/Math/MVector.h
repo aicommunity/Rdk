@@ -65,8 +65,11 @@ MVector<T,Rows>::MVector(T defvalue)
  if(defvalue == 0)
   memset(MMatrix<T,Rows,1>::Data1D,0,Rows*sizeof(T));
  else
-  for(int i=0;i<Rows;i++)
-   MMatrix<T,Rows,1>::Data1D[i]=defvalue;
+ {
+  T* p=MMatrix<T,Rows,1>::Data1D;
+  for(unsigned i=0;i<Rows;i++)
+   *p++=defvalue;
+ }
 }
 
 template<class T, unsigned Rows>
@@ -84,7 +87,8 @@ MVector<T,Rows>::MVector(T xv, T yv, T zv, T dv)
 
 template<class T, unsigned Rows>
 MVector<T,Rows>::MVector(const MVector<T,Rows> &copy)
-{ *this=copy; };
+    : MMatrix<T,Rows,1>(copy)
+{ /**this=copy;*/ };
 
 template<class T, unsigned Rows>
 MVector<T,Rows>::MVector(const MMatrix<T,Rows,1> &copy)
@@ -128,7 +132,7 @@ MVector<T,Rows>& MVector<T,Rows>::operator = (T value)
 {
  T* pm1=MMatrix<T,Rows,1>::Data1D;
 
- for(int i=0;i<Rows;i++)
+ for(unsigned i=0;i<Rows;i++)
   *pm1++ = value;
  return *this;
 };
@@ -137,13 +141,13 @@ MVector<T,Rows>& MVector<T,Rows>::operator = (T value)
 template<class T, unsigned Rows>
 T& MVector<T,Rows>::operator () (int i)
 {
- return MMatrix<T,Rows,1>::Data1D[i];
+ return *(MMatrix<T,Rows,1>::Data1D+i);
 }
 
 template<class T, unsigned Rows>
 const T& MVector<T,Rows>::operator () (int i) const
 {
- return MMatrix<T,Rows,1>::Data1D[i];
+ return *(MMatrix<T,Rows,1>::Data1D+i);
 }
 // --------------------------
 

@@ -29,7 +29,9 @@ namespace RDK {
 
 using namespace std;
 
+#ifdef __BORLANDC__
 #pragma warning( disable : 4700)
+#endif
 
 // Класс - база для свойств
 template<typename T,class OwnerT>
@@ -208,8 +210,8 @@ operator T (void) const
    return (this->Owner->*GetterR)();
  }
 
- T val;
- return val;
+ //T val;
+ return T();
 };
 
 // Оператор присваивания
@@ -458,10 +460,10 @@ public:
 // --------------------------
 //Конструктор инициализации
 UCProperty(OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterT setmethod=0)
- : UVProperty<T,OwnerT>(owner, setmethod, 0), v(), VSetter(0), VSetterR(0) { this->PData=&v; };
+ : UVProperty<T,OwnerT>(owner, setmethod, 0), VSetter(0), VSetterR(0), v() { this->PData=&v; };
 
 UCProperty(OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod)
- : UVProperty<T,OwnerT>(owner, setmethod, 0), v(), VSetter(0), VSetterR(0) { this->PData=&v; };
+ : UVProperty<T,OwnerT>(owner, setmethod, 0), VSetter(0), VSetterR(0), v() { this->PData=&v; };
 
 //Конструктор инициализации для отдельных значений
 UCProperty(OwnerT * const owner, VSetterT setmethod)
@@ -580,7 +582,9 @@ TV& operator [] (int i)
 { return v[i]; };
 // -----------------------------
 };
+#ifdef __BORLANDC__
 #pragma warning( default : 4700)
+#endif
 /* ************************************************************************* */
 
 

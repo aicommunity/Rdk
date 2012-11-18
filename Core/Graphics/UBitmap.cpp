@@ -1906,7 +1906,7 @@ void UBitmap::InsertHorLine(int y, int thickness, UColorT color, UBitmap *target
  switch(ColorModel)
  {
  case ubmRGB24:
-  if(color.c == 0 || (color.rgb.r == color.rgb.b == color.rgb.g))
+     if(color.c == 0 || ((color.rgb.r == color.rgb.b) && (color.rgb.b == color.rgb.g)))
    memset(p, color.rgb.b, thickness*LineByteLength);
   else
   {
@@ -1924,7 +1924,8 @@ void UBitmap::InsertHorLine(int y, int thickness, UColorT color, UBitmap *target
  break;
 
  case ubmY32:
-  if(color.c == 0 || (color.rgb.r == color.rgb.b == color.rgb.g == color.rgb.d))
+  if(color.c == 0 || ((color.rgb.r == color.rgb.b) && (color.rgb.b == color.rgb.g)
+                      && (color.rgb.g == color.rgb.d)))
    memset(p, color.rgb.b, thickness*LineByteLength);
   else
   {
@@ -2035,7 +2036,7 @@ void UBitmap::InsertVertLine(int x, int thickness, UColorT color, UBitmap *targe
  switch(ColorModel)
  {
  case ubmRGB24:
-  if(color == 0 || (color.rgb.r == color.rgb.b == color.rgb.g))
+  if(color == 0 || ((color.rgb.r == color.rgb.b) && (color.rgb.b == color.rgb.g)))
   {
    for(int i=0;i<height;i++,p+=nLineByteLength)
     memset(p, color.rgb.b, thickness*PixelByteLength);
@@ -2062,7 +2063,8 @@ void UBitmap::InsertVertLine(int x, int thickness, UColorT color, UBitmap *targe
  break;
 
  case ubmY32:
-  if(color == 0 || (color.rgb.r == color.rgb.b == color.rgb.g == color.rgb.d))
+  if(color == 0 || ((color.rgb.r == color.rgb.b) && (color.rgb.b == color.rgb.g)
+                    && (color.rgb.g == color.rgb.d)))
   {
    for(int i=0;i<height;i++,p+=nLineByteLength)
     memset(p, color.rgb.b, thickness*PixelByteLength);

@@ -59,7 +59,7 @@ UPVariable::~UPVariable(void)
 // Конструкторы и деструкторы
 // --------------------------
 UAContainer::UAContainer(void)
- : PComponents(0), NumComponents(0), Id(0), LastId(0), Coord(0)
+ : Id(0), Coord(0), PComponents(0), NumComponents(0), LastId(0)
 {
  AddLookupProperty("Id",ptParameter | pgSystem,new UVProperty<UId,UAContainer>(this,&UAContainer::SetId,&UAContainer::GetId));
  AddLookupProperty("Name",ptParameter | pgSystem,new UVProperty<NameT,UAContainer>(this,&UAContainer::SetName,&UAContainer::GetName));
@@ -305,7 +305,9 @@ UId UAContainer::GenerateId(void)
  return LastId+1;
 }
 
+#ifdef __BORLANDC__
 #pragma warning (disable : 4996)
+#endif
 // Генерирует имя уникальное в компонентах этого объекта
 NameT& UAContainer::GenerateName(const NameT &prefix, NameT &namebuffer)
 {
@@ -334,7 +336,9 @@ NameT& UAContainer::GenerateName(const NameT &prefix, NameT &namebuffer)
 
  return namebuffer;
 }
+#ifdef __BORLANDC__
 #pragma warning (default : 4996)
+#endif
 
 // Устанавливает имя объекта.
 const NameT& UAContainer::GetName(void) const
@@ -1055,7 +1059,6 @@ bool UAContainer::SetComponentAs(const UId &id, const UId &pointerid)
 {
  UEPtr<UAContainer> cont=GetComponent(id);
 
- PointerMapIteratorT I=PointerLookupTable.end();
  PointerMapIteratorT K=PointerLookupTable.end();
  PointerMapIteratorT J=PointerLookupTable.begin();
 
@@ -1088,7 +1091,6 @@ bool UAContainer::SetComponentAs(const NameT &name,const NameT &pointername)
 {
  UEPtr<UAContainer> cont=GetComponent(name);
 
- PointerMapIteratorT I=PointerLookupTable.end();;
  PointerMapIteratorT K=PointerLookupTable.end();;
  PointerMapIteratorT J=PointerLookupTable.begin();
 

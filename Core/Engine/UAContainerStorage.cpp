@@ -123,7 +123,6 @@ UAContainerStorage::~UAContainerStorage(void)
 UId UAContainerStorage::AddClass(UEPtr<UAComponent> classtemplate, const UId &classid)
 {
  UEPtr<UAContainerStorage> storage=dynamic_pointer_cast<UAContainerStorage>(classtemplate->GetStorage());
- UObjectsStorageIterator temp=ObjectsStorage.find(classid);
  if(storage)
   storage->PopObject(dynamic_pointer_cast<UAContainer>(classtemplate));
 

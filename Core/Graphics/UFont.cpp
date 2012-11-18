@@ -274,7 +274,7 @@ bool UAFont::DrawRect(const string &str, const UBRect &rect, int align, UAGraphi
  do
  {
   num_symbols_in_line=CalcTextLength(str,curr_index,rect.Width);
-  if(num_symbols_in_line == str.size())
+  if(num_symbols_in_line == int(str.size()))
    curr_y+=(rect.Height-(Height*3)/2)/2;
   switch(align)
   {

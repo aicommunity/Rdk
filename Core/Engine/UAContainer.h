@@ -116,8 +116,6 @@ UId Id;
 // false - расчет объекта будет игнорироваться
 bool Activity;
 
-
-
 // Шаг счета в долях секунды
 // Реальный шаг = 1./TimeStep
 UTime TimeStep;

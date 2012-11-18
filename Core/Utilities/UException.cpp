@@ -318,7 +318,7 @@ ESystemException::ESystemException(const std::string &info)
 }
 
 ESystemException::ESystemException(const ESystemException &copy)
-: Info(copy.Info)
+: EFatal(copy), Info(copy.Info)
 {
 
 }

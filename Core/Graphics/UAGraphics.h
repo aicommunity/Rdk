@@ -72,13 +72,13 @@ int GetCHeight(void) const;
 const UColorT& GetPenColor(void) const;
 
 // Возвращает толщину пера
-const int GetPenWidth(void) const;
+int GetPenWidth(void) const;
 
 // Возвращает X координату пера
-const int GetPenX(void) const;
+int GetPenX(void) const;
 
 // Возвращает Y координату пера
-const int GetPenY(void) const;
+int GetPenY(void) const;
 
 // Устанавливает цвет пера
 void SetPenColor(const UColorT &color);

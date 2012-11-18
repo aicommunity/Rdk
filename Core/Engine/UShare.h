@@ -213,6 +213,7 @@ virtual bool Init(UEPtr<UADataComponent> main_owner)
 virtual bool UnInit(void)
 {
  VProperty=0;
+ return true;
 }
 
 const T Get(void) const

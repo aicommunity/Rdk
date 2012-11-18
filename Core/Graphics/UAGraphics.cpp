@@ -70,19 +70,19 @@ const UColorT& UAGraphics::GetPenColor(void) const
 }
 
 // Возвращает толщину пера
-const int UAGraphics::GetPenWidth(void) const
+int UAGraphics::GetPenWidth(void) const
 {
  return PenWidth;
 }
 
 // Возвращает X координату пера
-const int UAGraphics::GetPenX(void) const
+int UAGraphics::GetPenX(void) const
 {
  return PenX;
 }
 
 // Возвращает Y координату пера
-const int UAGraphics::GetPenY(void) const
+int UAGraphics::GetPenY(void) const
 {
  return PenY;
 }

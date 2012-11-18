@@ -125,13 +125,13 @@ virtual unsigned char* Env_GetOutputImageY8(int index);
 // Методы управления моделью
 // --------------------------
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
-virtual const RDK::UBitmap* const Model_GetComponentOutput(const char *stringid, int index);
+virtual const RDK::UBitmap* Model_GetComponentOutput(const char *stringid, int index);
 
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
-virtual const RDK::UBitmap* const Model_GetComponentBitmapOutput(const char *stringid, int index);
+virtual const RDK::UBitmap* Model_GetComponentBitmapOutput(const char *stringid, int index);
 
 // Возвращает указатель на вход с индексом 'index' компонента 'id'
-virtual const RDK::UBitmap* const Model_GetComponentBitmapInput(const char *stringid, int index);
+virtual const RDK::UBitmap* Model_GetComponentBitmapInput(const char *stringid, int index);
 
 // Замещает изображение выхода с индексом 'index' компонента 'id'
 virtual void Model_SetComponentBitmapOutput(const char *stringid, int index, const RDK::UBitmap* const bmp);

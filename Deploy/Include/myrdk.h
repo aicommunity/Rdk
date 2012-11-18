@@ -8,6 +8,11 @@
 #pragma warning(disable : 4503)
 #endif
 
+#ifdef __GNUC__
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wswitch"
+#endif
+
 #include "../../Core/System/rdk_system.h"
 #include "../../ThirdParty/ThirdParty.h"
 #include "../../Core/Math/UMath.h"

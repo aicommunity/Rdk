@@ -283,7 +283,7 @@ MMatrix<T,Rows,Cols> operator + (const MMatrix<T,Rows,Cols> &M1, const MMatrix<T
  T* pm1=res.Data1D;
  const T* pm2=M2.Data1D;
 
- for(int i=0;i<Cols*Rows;i++)
+ for(unsigned i=0;i<Cols*Rows;i++)
   *pm1++ += *pm2++;
 
  return res;
@@ -295,7 +295,7 @@ MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::operator -= (const MMatrix<T,Rows,Co
  T* pm1=Data1D;
  const T* pm2=M.Data1D;
 
- for(int i=0;i<Cols*Rows;i++)
+ for(unsigned i=0;i<Cols*Rows;i++)
   *pm1++ -= *pm2++;
 
  return *this;
@@ -308,7 +308,7 @@ MMatrix<T,Rows,Cols> operator - (const MMatrix<T,Rows,Cols> &M1, const MMatrix<T
  T* pm1=res.Data1D;
  const T* pm2=M2.Data1D;
 
- for(int i=0;i<Cols*Rows;i++)
+ for(unsigned i=0;i<Cols*Rows;i++)
   *pm1++ -= *pm2++;
 
  return res;
@@ -319,12 +319,12 @@ MMatrix<T,Rows,Cols2> operator * (const MMatrix<T,Rows,Cols> &M1, const MMatrix<
 {
  MMatrix<T,Rows,Cols2> res;
 
- for(int j=0;j<Cols2;j++)
+ for(unsigned j=0;j<Cols2;j++)
  {
   for(unsigned k=0;k<Rows;k++)
   {
    T sum=0;
-   for(int i=0;i<Cols;i++)
+   for(unsigned i=0;i<Cols;i++)
 //	sum+=M1.Data[i][k]*M2.Data[j][i];
 	sum+=M1.Data[k][i]*M2.Data[i][j];
    res.Data[k][j]=sum;
@@ -710,7 +710,7 @@ T MMatrix<T,Rows,Cols>::operator !(void) const
 {
  T res=0;
  const T* pm1=Data1D;
- for(int i=0;i<Cols*Rows;i++,pm1++)
+ for(unsigned i=0;i<Cols*Rows;i++,pm1++)
   res+=*pm1 * *pm1;
  return sqrt(res);
 }

@@ -103,7 +103,7 @@ UBitmapVector& operator = (const UBitmapVector &copy);
 
 // Оператор доступа
 PUBitmap operator [] (int index);
-const PUBitmap operator [] (int index) const;
+PUBitmap operator [] (int index) const;
 UBitmap& operator () (int index);
 const UBitmap& operator () (int index) const;
 // --------------------------

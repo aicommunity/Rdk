@@ -156,6 +156,7 @@ UBitmapVector::UBitmapVector(void)
 }
 
 UBitmapVector::UBitmapVector(const UBitmapVector &copy)
+    : UPBitmapVector(copy)
 {
  // Размер массива изображений
  Size=0;
@@ -235,7 +236,7 @@ PUBitmap UBitmapVector::operator [] (int index)
  return Buffer[index];
 }
 
-const PUBitmap UBitmapVector::operator [] (int index) const
+PUBitmap UBitmapVector::operator [] (int index) const
 {
  return Buffer[index];
 }
