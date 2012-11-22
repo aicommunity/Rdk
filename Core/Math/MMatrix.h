@@ -734,7 +734,7 @@ MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::Normalize(void)
 // Возвращает часть матрицы заданной величины
 // начиная с позиции i0,j0 в исходной матрицы
 template<class T, unsigned Rows, unsigned Cols, unsigned Rows2, unsigned Cols2>
-MMatrix<T,Rows2,Cols2>& GetSubMatrix(MMatrix<T,Rows,Cols>& source,int i0, int j0, MMatrix<T,Rows2,Cols2>& res)
+MMatrix<T,Rows2,Cols2>& GetSubMatrix(MMatrix<T,Rows,Cols>& source,unsigned i0, unsigned j0, MMatrix<T,Rows2,Cols2>& res)
 {
  unsigned cols2=(Cols2<Cols)?Cols2:Cols;
  unsigned rows2=(Rows2<Rows)?Rows2:Rows;
@@ -752,7 +752,7 @@ MMatrix<T,Rows2,Cols2>& GetSubMatrix(MMatrix<T,Rows,Cols>& source,int i0, int j0
 // Модифицирует часть матрицы заданной величины
 // начиная с позиции i0,j0 в исправляемой матрице
 template<class T, unsigned Rows, unsigned Cols, unsigned Rows2, unsigned Cols2>
-MMatrix<T,Rows,Cols>& SetSubMatrix(MMatrix<T,Rows,Cols>& dest,int i0, int j0, MMatrix<T,Rows2,Cols2>& source)
+MMatrix<T,Rows,Cols>& SetSubMatrix(MMatrix<T,Rows,Cols>& dest,unsigned i0, unsigned j0, MMatrix<T,Rows2,Cols2>& source)
 {
  unsigned cols2=(Cols2<Cols)?Cols2:Cols;
  unsigned rows2=(Rows2<Rows)?Rows2:Rows;
