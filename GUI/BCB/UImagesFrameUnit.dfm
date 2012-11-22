@@ -3,6 +3,15 @@ inherited UImagesFrame: TUImagesFrame
   Height = 505
   ExplicitWidth = 729
   ExplicitHeight = 505
+  object FullImage: TImage
+    Left = 272
+    Top = 200
+    Width = 105
+    Height = 105
+    IncrementalDisplay = True
+    Visible = False
+    OnDblClick = FullImageDblClick
+  end
   object DrawGrid: TDrawGrid
     Left = 0
     Top = 0
@@ -20,6 +29,7 @@ inherited UImagesFrame: TUImagesFrame
     ParentDoubleBuffered = False
     PopupMenu = PopupMenu
     TabOrder = 0
+    OnDblClick = DrawGridDblClick
     OnDrawCell = DrawGridDrawCell
   end
   object ShowLegendCheckBox: TCheckBox

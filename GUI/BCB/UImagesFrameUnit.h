@@ -15,6 +15,7 @@
 #include <Vcl.Dialogs.hpp>
 #include <Vcl.ExtDlgs.hpp>
 #include "TUVisualControllerFrameUnit.h"
+#include <Vcl.ExtCtrls.hpp>
 #include <vector>
 #include "UComponentsListFormUnit.h"
 #include "myrdk.h"
@@ -42,6 +43,7 @@ __published:    // IDE-managed Components
 	TMenuItem *DeleteColumn;
 	TMenuItem *DeleteRow;
 	TCheckBox *ShowLegendCheckBox;
+	TImage *FullImage;
     void __fastcall DrawGridDrawCell(TObject *Sender, int ACol, int ARow, TRect &Rect,
           TGridDrawState State);
 	void __fastcall SaveToBmpClick(TObject *Sender);
@@ -50,6 +52,8 @@ __published:    // IDE-managed Components
 	void __fastcall AddRowClick(TObject *Sender);
 	void __fastcall DeleteColumnClick(TObject *Sender);
 	void __fastcall DeleteRowClick(TObject *Sender);
+	void __fastcall DrawGridDblClick(TObject *Sender);
+	void __fastcall FullImageDblClick(TObject *Sender);
 
 private:    // User declarations
 public:        // User declarations

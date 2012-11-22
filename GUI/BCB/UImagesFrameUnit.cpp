@@ -277,17 +277,20 @@ void TUImagesFrame::AAfterCalculate(void)
 
 void TUImagesFrame::AUpdateInterface(void)
 {
- for(size_t i=0;i<Images.size();i++)
+ if(DrawGrid->Visible)
  {
-  for(size_t j=0;j<Images[i].size();j++)
+  for(size_t i=0;i<Images.size();i++)
   {
-   const RDK::UBitmap* bmp=(const RDK::UBitmap*)Model_GetComponentOutput(StringIds[i][j].c_str(), ComponentIndexes[i][j]);
-   if(bmp)
-	SetBitmap(i, j, *bmp);
+   for(size_t j=0;j<Images[i].size();j++)
+   {
+	const RDK::UBitmap* bmp=(const RDK::UBitmap*)Model_GetComponentOutput(StringIds[i][j].c_str(), ComponentIndexes[i][j]);
+	if(bmp)
+	 SetBitmap(i, j, *bmp);
+   }
   }
+  DrawGrid->Repaint();
+  DrawGrid->Update();
  }
- DrawGrid->Repaint();
- DrawGrid->Update();
  Sleep(0);
 }
 
@@ -421,6 +424,32 @@ void __fastcall TUImagesFrame::DeleteRowClick(TObject *Sender)
 
  SetNumCells(GetNumCellWidth(),GetNumCellHeight()-1);
  UpdateInterface();
+}
+//---------------------------------------------------------------------------
+
+
+
+void __fastcall TUImagesFrame::DrawGridDblClick(TObject *Sender)
+{
+  if(DrawGrid->Col < 0 || DrawGrid->Row <0)
+   return;
+  DrawGrid->Visible=false;
+  FullImage->Visible=true;
+  FullImage->Align=alClient;
+  FullImage->Picture->Bitmap->Assign(Images[DrawGrid->Col][DrawGrid->Row]->Picture->Bitmap);
+  if(ShowLegendCheckBox->Checked)
+  {
+   FullImage->Canvas->Font->Size=12;
+   FullImage->Canvas->TextOut(0,0,(std::string(Model_GetComponentLongName(StringIds[DrawGrid->Col][DrawGrid->Row].c_str()))+std::string("[")+RDK::sntoa(ComponentIndexes[DrawGrid->Col][DrawGrid->Row])+"]").c_str());
+  }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUImagesFrame::FullImageDblClick(TObject *Sender)
+{
+  DrawGrid->Visible=true;
+  FullImage->Visible=false;
+  UpdateInterface(true);
 }
 //---------------------------------------------------------------------------
 

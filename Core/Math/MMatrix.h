@@ -730,6 +730,43 @@ MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::Normalize(void)
 
  return *this;
 }
+
+// Возвращает часть матрицы заданной величины
+// начиная с позиции i0,j0 в исходной матрицы
+template<class T, unsigned Rows, unsigned Cols, unsigned Rows2, unsigned Cols2>
+MMatrix<T,Rows2,Cols2>& GetSubMatrix(MMatrix<T,Rows,Cols>& source,int i0, int j0, MMatrix<T,Rows2,Cols2>& res)
+{
+ unsigned cols2=(Cols2<Cols)?Cols2:Cols;
+ unsigned rows2=(Rows2<Rows)?Rows2:Rows;
+ unsigned work_cols=((Cols-i0)<=cols2)?cols2:Cols-i0;
+ unsigned work_rows=((Rows-i0)<=rows2)?rows2:Rows-j0;
+
+ for(unsigned i=0;i<work_cols;i++)
+  for(unsigned j=0;j<work_rows;j++)
+  {
+   res.Data[j][i]=source.Data[j+j0][i+i0];
+  }
+
+ return res;
+}
+// Модифицирует часть матрицы заданной величины
+// начиная с позиции i0,j0 в исправляемой матрице
+template<class T, unsigned Rows, unsigned Cols, unsigned Rows2, unsigned Cols2>
+MMatrix<T,Rows,Cols>& SetSubMatrix(MMatrix<T,Rows,Cols>& dest,int i0, int j0, MMatrix<T,Rows2,Cols2>& source)
+{
+ unsigned cols2=(Cols2<Cols)?Cols2:Cols;
+ unsigned rows2=(Rows2<Rows)?Rows2:Rows;
+ unsigned work_cols=((Cols-i0)<=cols2)?cols2:Cols-i0;
+ unsigned work_rows=((Rows-i0)<=rows2)?rows2:Rows-j0;
+
+ for(unsigned i=0;i<work_cols;i++)
+  for(unsigned j=0;j<work_rows;j++)
+  {
+   dest.Data[j0+j][i0+i]=source.Data[j][i];
+  }
+
+ return dest;
+}
 // --------------------------
 
 // --------------------------
