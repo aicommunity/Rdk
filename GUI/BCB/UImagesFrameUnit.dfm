@@ -51,6 +51,9 @@ inherited UImagesFrame: TUImagesFrame
       Height = 105
       IncrementalDisplay = True
       OnDblClick = FullImageDblClick
+      OnMouseDown = FullImageMouseDown
+      OnMouseMove = FullImageMouseMove
+      OnMouseUp = FullImageMouseUp
     end
   end
   object PopupMenu: TPopupMenu

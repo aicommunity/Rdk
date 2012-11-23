@@ -55,11 +55,22 @@ __published:    // IDE-managed Components
 	void __fastcall DeleteRowClick(TObject *Sender);
 	void __fastcall DrawGridDblClick(TObject *Sender);
 	void __fastcall FullImageDblClick(TObject *Sender);
+	void __fastcall FullImageMouseUp(TObject *Sender, TMouseButton Button, TShiftState Shift,
+          int X, int Y);
+	void __fastcall FullImageMouseMove(TObject *Sender, TShiftState Shift, int X, int Y);
+	void __fastcall FullImageMouseDown(TObject *Sender, TMouseButton Button, TShiftState Shift,
+          int X, int Y);
+
+
+
 
 private:    // User declarations
 public:        // User declarations
 	__fastcall TUImagesFrame(TComponent* Owner);
 	virtual __fastcall ~TUImagesFrame(void);
+
+bool presIm;
+int x2, y2;
 
 // Массив изображений
 std::vector<std::vector<TImage*> > Images;

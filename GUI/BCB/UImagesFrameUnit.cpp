@@ -291,6 +291,20 @@ void TUImagesFrame::AUpdateInterface(void)
   DrawGrid->Repaint();
   DrawGrid->Update();
  }
+
+ if(ScrollBox1->Visible)
+ {
+  if(DrawGrid->Col < 0 || DrawGrid->Row <0)
+   return;
+  Graphics::TBitmap * bmp=Images[DrawGrid->Col][DrawGrid->Row]->Picture->Bitmap;
+  FullImage->Width=bmp->Width;
+  FullImage->Height=bmp->Height;
+  FullImage->Picture->Bitmap->Assign(bmp);
+  FullImage->Top=0;
+  FullImage->Left=0;
+  FullImage->Repaint();
+ }
+
  Sleep(0);
 }
 
@@ -456,6 +470,32 @@ void __fastcall TUImagesFrame::FullImageDblClick(TObject *Sender)
   DrawGrid->Visible=true;
   ScrollBox1->Visible=false;
   UpdateInterface(true);
+}
+//---------------------------------------------------------------------------
+void __fastcall TUImagesFrame::FullImageMouseUp(TObject *Sender, TMouseButton Button,
+          TShiftState Shift, int X, int Y)
+{
+  presIm=false;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUImagesFrame::FullImageMouseMove(TObject *Sender, TShiftState Shift,
+          int X, int Y)
+{
+  if(presIm)
+  {
+	ScrollBox1->HorzScrollBar->Position = ScrollBox1->HorzScrollBar->Position + (x2 - X);
+	ScrollBox1->VertScrollBar->Position = ScrollBox1->VertScrollBar->Position + (y2 - Y);
+  }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUImagesFrame::FullImageMouseDown(TObject *Sender, TMouseButton Button,
+          TShiftState Shift, int X, int Y)
+{
+  presIm=true;
+  x2=X;
+  y2=Y;
 }
 //---------------------------------------------------------------------------
 
