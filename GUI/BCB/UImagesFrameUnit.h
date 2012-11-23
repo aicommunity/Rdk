@@ -44,6 +44,7 @@ __published:    // IDE-managed Components
 	TMenuItem *DeleteRow;
 	TCheckBox *ShowLegendCheckBox;
 	TImage *FullImage;
+	TScrollBox *ScrollBox1;
     void __fastcall DrawGridDrawCell(TObject *Sender, int ACol, int ARow, TRect &Rect,
           TGridDrawState State);
 	void __fastcall SaveToBmpClick(TObject *Sender);

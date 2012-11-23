@@ -3,15 +3,6 @@ inherited UImagesFrame: TUImagesFrame
   Height = 505
   ExplicitWidth = 729
   ExplicitHeight = 505
-  object FullImage: TImage
-    Left = 272
-    Top = 200
-    Width = 105
-    Height = 105
-    IncrementalDisplay = True
-    Visible = False
-    OnDblClick = FullImageDblClick
-  end
   object DrawGrid: TDrawGrid
     Left = 0
     Top = 0
@@ -44,6 +35,23 @@ inherited UImagesFrame: TUImagesFrame
     ParentDoubleBuffered = False
     State = cbChecked
     TabOrder = 1
+  end
+  object ScrollBox1: TScrollBox
+    Left = 0
+    Top = 0
+    Width = 729
+    Height = 488
+    Align = alClient
+    TabOrder = 2
+    Visible = False
+    object FullImage: TImage
+      Left = 237
+      Top = 172
+      Width = 105
+      Height = 105
+      IncrementalDisplay = True
+      OnDblClick = FullImageDblClick
+    end
   end
   object PopupMenu: TPopupMenu
     Left = 192

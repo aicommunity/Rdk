@@ -434,9 +434,15 @@ void __fastcall TUImagesFrame::DrawGridDblClick(TObject *Sender)
   if(DrawGrid->Col < 0 || DrawGrid->Row <0)
    return;
   DrawGrid->Visible=false;
-  FullImage->Visible=true;
-  FullImage->Align=alClient;
-  FullImage->Picture->Bitmap->Assign(Images[DrawGrid->Col][DrawGrid->Row]->Picture->Bitmap);
+  ScrollBox1->Visible=true;
+ // FullImage->Align=alClient;
+  Graphics::TBitmap * bmp=Images[DrawGrid->Col][DrawGrid->Row]->Picture->Bitmap;
+  FullImage->Width=bmp->Width;
+  FullImage->Height=bmp->Height;
+  FullImage->Picture->Bitmap->Assign(bmp);
+  FullImage->Top=0;
+  FullImage->Left=0;
+  FullImage->Repaint();
   if(ShowLegendCheckBox->Checked)
   {
    FullImage->Canvas->Font->Size=12;
@@ -448,7 +454,7 @@ void __fastcall TUImagesFrame::DrawGridDblClick(TObject *Sender)
 void __fastcall TUImagesFrame::FullImageDblClick(TObject *Sender)
 {
   DrawGrid->Visible=true;
-  FullImage->Visible=false;
+  ScrollBox1->Visible=false;
   UpdateInterface(true);
 }
 //---------------------------------------------------------------------------
