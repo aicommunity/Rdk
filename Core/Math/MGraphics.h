@@ -39,6 +39,9 @@ string Description;
 // Флаг видимости
 bool Visible;
 
+// Флаг отрисовки прицела на каждую отображемую точку
+bool TargetPoints;
+
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
@@ -53,6 +56,8 @@ MGeometryDescription(void)
 
  // Флаг видимости
  Visible=true;
+
+ TargetPoints=false;
 };
 
 MGeometryDescription(const MGeometryDescription &copy)
@@ -71,6 +76,8 @@ MGeometryDescription(const MGeometryDescription &copy)
 
  // Флаг видимости
  Visible=copy.Visible;
+
+ TargetPoints=copy.TargetPoints;
 };
 
 virtual ~MGeometryDescription(void)
@@ -277,7 +284,19 @@ void MGraphics<T,Rows>::Repaint(void)
    // Отрисовываем точки
    vertex=0;
    for(size_t i=0;i<vertex.GetNumVertex();i++,vertex++)
-    Graphics->Pixel(int(vertex().x),int(vertex().y));
+   {
+	Graphics->SetPenWidth(1);
+	Graphics->Pixel(int(vertex().x),int(vertex().y));
+    Graphics->SetPenWidth(Description[i].PenWidth);
+	if(Description[i].TargetPoints)
+	{
+	 Graphics->Line(int(vertex().x),0,int(vertex().x),int(vertex().y)-Description[i].PenWidth*2);
+	 Graphics->Line(int(vertex().x),int(vertex().y)+Description[i].PenWidth*2,int(vertex().x),Graphics->GetCHeight());
+	 Graphics->Line(0,int(vertex().y),int(vertex().x)-Description[i].PenWidth*2,int(vertex().y));
+	 Graphics->Line(int(vertex().x)+Description[i].PenWidth*2,int(vertex().y),Graphics->GetCWidth(),int(vertex().y));
+	}
+   }
+
 
    // Отрисовываем контуры
    for(size_t j=0;j<geometry.GetNumBorders();j++)
