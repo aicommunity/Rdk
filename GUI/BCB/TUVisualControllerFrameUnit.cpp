@@ -114,6 +114,7 @@ void TUVisualControllerFrame::SaveParameters(RDK::Serialize::USerStorageXML &xml
  xml.SelectNodeForce(AnsiString(Owner->Name).c_str());
  xml.SelectNodeForce(GetName());
  ASaveParameters(xml);
+ xml.WriteInteger("UpdateInterval",UpdateInterval);
  xml.SelectUp();
  xml.SelectUp();
 }
@@ -128,6 +129,7 @@ void TUVisualControllerFrame::LoadParameters(RDK::Serialize::USerStorageXML &xml
 {
  xml.SelectNodeForce(AnsiString(Owner->Name).c_str());
  xml.SelectNodeForce(GetName());
+ UpdateInterval=xml.ReadInteger("UpdateInterval",1000);
  ALoadParameters(xml);
  xml.SelectUp();
  xml.SelectUp();

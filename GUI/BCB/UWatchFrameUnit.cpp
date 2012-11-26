@@ -1042,6 +1042,7 @@ void TUWatchFrame::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
    xml.WriteInteger("YOutputIndex",NameList[seriesindex].YOutputIndex);
    xml.WriteInteger("YOutputElementIndex",NameList[seriesindex].YOutputElementIndex);
    xml.WriteInteger("XYSize", NameList[seriesindex].XYSize);
+   xml.WriteFloat("WatchInterval", NameList[seriesindex].WatchInterval);
 
    if(collectstate)
 	{
@@ -1094,7 +1095,7 @@ void TUWatchFrame::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
 
  Clear();
 
- int num_series=xml.GetNumNodes()-1;
+ int num_series=xml.GetNumNodes();
 
  String s=UShowProgressBarForm->GetBarHeader(1);
  UShowProgressBarForm->ResetBarStatus(1,0,num_series);
@@ -1102,6 +1103,12 @@ void TUWatchFrame::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
  for(int i=0;i<num_series;i++)
   {
    xml.SelectNode(i);
+   if(xml.GetNodeName() == "UpdateInterval" || xml.GetNodeName() == "WatchInterval")
+   {
+    xml.SelectUp();
+	UShowProgressBarForm->IncBarStatus(1);
+	continue;
+   }
    UShowProgressBarForm->SetBarHeader(1,s+String(" - ")+String(xml.GetNodeName().c_str())+":");
 
    {
@@ -1120,6 +1127,7 @@ void TUWatchFrame::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
 	wd->YOutputElementIndex=xml.ReadInteger("YOutputElementIndex",0);
 	wd->XYSize=xml.ReadInteger("XYSize", 1);
 	wd->Visible=xml.ReadBool("Visible",true);
+	wd->WatchInterval=xml.ReadFloat("WatchInterval", 5);
 
 	int grindex=Add(wd_data);
 	grseries=dynamic_cast<TFastLineSeries*>(Chart1->Series[grindex]);
@@ -1156,7 +1164,7 @@ void TUWatchFrame::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
    UShowProgressBarForm->IncBarStatus(1);
   }
 
- SetWatchInterval(xml.ReadFloat("WatchInterval",0));
+ SetWatchInterval(xml.ReadFloat("WatchInterval",5));
  ModifyState=false;
 }
 // -----------------------------
