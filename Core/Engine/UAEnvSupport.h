@@ -598,7 +598,7 @@ int ULinksListT<T>::Merge(const ULinkT<T> &link)
 
  for(size_t j=0;j<link.Connector.size();j++)
  {
-  typename vector<ULinkSideT<T> >::iterator I=find(Data[id].Connector.begin(),Data[id].Connector.end(),link.Connector[j]);
+  typename std::vector<ULinkSideT<T> >::iterator I=find(Data[id].Connector.begin(),Data[id].Connector.end(),link.Connector[j]);
   if(I == Data[id].Connector.end())
   {
    Data[id].Connector.push_back(link.Connector[j]);
