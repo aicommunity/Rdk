@@ -628,11 +628,15 @@ __declspec(dllexport) int __cdecl ExternalCalibrationStep(unsigned char *imageda
  Mat rotation(3,3,CV_64F);
  Mat rvec, tvec;
 
- vector<Point2f> imagePoints2;
+ if(boardSize.height == 0 || boardSize.width == 0)
+  return 0;
+
+ vector<Point2d> imagePoints2;
+ vector<Point2f> imagePoints2F;
  //int totalPoints = 0;
  //double totalErr = 0;
 
- vector<Point2f> pointbuf;
+ vector<Point2d> pointbuf;
  Mat viewGray(Size(ImageWidth, ImageHeight), CV_8UC1, imagedata, Mat::AUTO_STEP);
  cvtColor(viewGray, view, CV_GRAY2BGR); 
  bool found;
@@ -659,38 +663,86 @@ __declspec(dllexport) int __cdecl ExternalCalibrationStep(unsigned char *imageda
   return 0;
  }
 
- drawChessboardCorners( view, boardSize, Mat(pointbuf), found ); 
+ vector<Point2f> pointbufF;
+ pointbufF.resize(pointbuf.size());
+ for(size_t i=0;i<pointbufF.size();i++)
+ {
+  pointbufF[i].x=pointbuf[i].x;
+  pointbufF[i].y=pointbuf[i].y;
+ }
+
+ drawChessboardCorners( view, boardSize, Mat(pointbufF), found ); 
  views[camera_index]=view;
 
- vector<Point3f> objectPoints;
- calcChessboardCorners(boardSize, squareSize, objectPoints, pattern);
-
- Mat objectPointsMat(objectPoints);
- /*for(size_t i=0;i<objectPoints.size();i++)
+ vector<Point3f> objectPointsF;
+ vector<Point3d> objectPoints;
+ calcChessboardCorners(boardSize, squareSize, objectPointsF, pattern);
+ objectPoints.resize(objectPointsF.size());
+ for(size_t i=0;i<objectPoints.size();i++)
+ {
+  objectPoints[i].x=objectPointsF[i].x;
+  objectPoints[i].y=objectPointsF[i].y;
+  objectPoints[i].z=objectPointsF[i].z;
+ }
+/*
+ Mat objectPointsMat(objectPoints.size(),3,CV_64F);
+ for(size_t i=0;i<objectPoints.size();i++)
  {
   objectPointsMat.at<double>(i,0)=objectPoints[i].x;  
   objectPointsMat.at<double>(i,1)=objectPoints[i].y;  
   objectPointsMat.at<double>(i,1)=objectPoints[i].z;  
- }*/
+ }
 
- Mat imagePointsMat(pointbuf);
- /*for(size_t i=0;i<pointbuf.size();i++)
+ Mat imagePointsMat(pointbuf.size(),2,CV_64F);
+ for(size_t i=0;i<pointbuf.size();i++)
  {
   imagePointsMat.at<double>(i,0)=pointbuf[i].x;  
   imagePointsMat.at<double>(i,1)=objectPoints[i].y;  
  }*/
  
- cv::solvePnP(objectPointsMat,imagePointsMat,cameraMatrix,distCoeffs,rvec, tvec);
+ double test_icc1[3][3];
+ double test_dist[5];
+ int k=0;
+ for(int i=0;i<3;i++)
+ {
+  for(int j=0;j<3;j++)
+  {
+   test_icc1[i][j]=cameraMatrix[camera_index].at<double>(i, j);
+  }
+ }
+
+  for(int j=0;j<5;j++)
+  {
+   test_dist[j]=distCoeffs[camera_index].at<double>(j, 0);
+  }
  
- projectPoints(Mat(objectPoints), rvecs, tvecs,
-                      cameraMatrix[camera_index], distCoeffs[camera_index], imagePoints2);
+ cv::solvePnP(objectPoints,pointbuf,cameraMatrix[camera_index],distCoeffs[camera_index],rvec, tvec);
+ //cvFindExtrinsicCameraParams2(&Mat(objectPoints).operator CvMat() ,&Mat(imagePoints).operator CvMat(),&cameraMatrix[camera_index].operator CvMat(),&distCoeffs[camera_index].operator CvMat(),&rvec.operator CvMat(), &tvec.operator CvMat()); 
+ Mat cameraMatrixF(cameraMatrix[camera_index]);
+ cameraMatrixF.convertTo(cameraMatrixF, CV_32F);
+ Mat distCoeffsF(distCoeffs[camera_index]);
+ distCoeffsF.convertTo(distCoeffsF, CV_32F);
+
+ Mat rvecF(rvec);
+ rvecF.convertTo(rvec, CV_32F);
+ Mat tvecF(tvec);
+ tvecF.convertTo(tvec, CV_32F);
+
+ cv::projectPoints(Mat(objectPointsF), rvecF, tvecF,
+                      cameraMatrixF, distCoeffsF, imagePoints2F);
+ imagePoints2.resize(imagePoints2F.size());
+ for(size_t i=0;i<imagePoints2.size();i++)
+ {
+  imagePoints2[i].x=imagePoints2F[i].x;
+  imagePoints2[i].y=imagePoints2F[i].y;
+ }
 
  *avg_error=0;
  *min_error=100000;
  *max_error=0;
  for(size_t i=0;i<pointbuf.size();i++)
  {
-  Point2f sub=pointbuf[i]-imagePoints2[i];
+  Point2d sub=pointbuf[i]-imagePoints2[i];
   
   double error=sub.x*sub.x+sub.y*sub.y;
   if(*min_error>error)
@@ -701,10 +753,10 @@ __declspec(dllexport) int __cdecl ExternalCalibrationStep(unsigned char *imageda
    *avg_error+=error;
  }
  *avg_error/=pointbuf.size();
-    
+ /*   
  cv::Rodrigues(rvec,rotation);
-
- int k=0;
+ 
+ k=0;
  for(int i=0;i<3;i++)
  {
   for(int j=0;j<3;j++)
@@ -718,7 +770,7 @@ __declspec(dllexport) int __cdecl ExternalCalibrationStep(unsigned char *imageda
    ecc[k++]=0;
   }
   ecc[k++]=1;
-
+  */
  return 1;
 }
 
