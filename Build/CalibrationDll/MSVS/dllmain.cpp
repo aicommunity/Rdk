@@ -52,8 +52,6 @@ double totalAvgErr = 0;
 vector<Mat> views;
 Mat view;
 
-
-
 double computeReprojectionErrors(
         const vector<vector<Point3f> >& objectPoints,
         const vector<vector<Point2f> >& imagePoints,
@@ -392,6 +390,9 @@ __declspec(dllexport) int __cdecl CameraCalibrationStep(unsigned char *imagedata
             drawChessboardCorners( view, boardSize, Mat(pointbuf), found );
 			views[camera_index]=view;
             prevTimestamp[camera_index] = clock();
+
+			// «десь вычисл€ем ошибку репроекции на этом кадре, предварительно вычисл€€ внешнюю калибровку
+	//		void cvFindExtrinsicCameraParams2(const CvMat* objectPoints, pointbuf, const CvMat* cameraMatrix, const CvMat* distCoeffs, CvMat* rvec, CvMat* tvec);
         }
 		else
 		 return -3;
@@ -611,6 +612,117 @@ memcpy(NewIntMat, cammatrix2.data, 3*3*sizeof(double));
 //imshow("Image View", FRAME2);*/
 }
 
+
+// ќсуществл€ет инициализацию поиска маркера, определени€ его пространственной ориентации и ошибки репроекции
+__declspec(dllexport) void __cdecl CameraMarkerSearchInit(double *icc, double *dist_coeff, int camera_index)
+{
+ cv::Mat cammatrix(3,3,CV_64FC1,icc);
+ cv::Mat distvec(5,1,CV_64FC1,dist_coeff);
+ cameraMatrix[camera_index]=cammatrix;
+ distCoeffs[camera_index]=distvec;
+}
+
+// ќсуществл€ет определение внешней калибровки по последнему найденому калибровочному маркеру
+__declspec(dllexport) int __cdecl ExternalCalibrationStep(unsigned char *imagedata, double* ecc, double *avg_error, double *max_error, double *min_error, int camera_index)
+{
+ Mat rotation(3,3,CV_64F);
+ Mat rvec, tvec;
+
+ vector<Point2f> imagePoints2;
+ //int totalPoints = 0;
+ //double totalErr = 0;
+
+ vector<Point2f> pointbuf;
+ Mat viewGray(Size(ImageWidth, ImageHeight), CV_8UC1, imagedata, Mat::AUTO_STEP);
+ cvtColor(viewGray, view, CV_GRAY2BGR); 
+ bool found;
+ switch( pattern )
+ {
+ case CHESSBOARD:
+  found = findChessboardCorners( view, boardSize, pointbuf, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
+ break;
+ case CIRCLES_GRID:
+  found = findCirclesGrid( view, boardSize, pointbuf );
+ break;
+ case ASYMMETRIC_CIRCLES_GRID:
+  found = findCirclesGrid( view, boardSize, pointbuf, CALIB_CB_ASYMMETRIC_GRID );
+ break;
+ default:
+  return 0;
+ }
+
+ if(!found)
+ {
+  *avg_error=100;
+  *max_error=100;
+  *min_error=100; 
+  return 0;
+ }
+
+ drawChessboardCorners( view, boardSize, Mat(pointbuf), found ); 
+ views[camera_index]=view;
+
+ vector<Point3f> objectPoints;
+ calcChessboardCorners(boardSize, squareSize, objectPoints, pattern);
+
+ Mat objectPointsMat(objectPoints);
+ /*for(size_t i=0;i<objectPoints.size();i++)
+ {
+  objectPointsMat.at<double>(i,0)=objectPoints[i].x;  
+  objectPointsMat.at<double>(i,1)=objectPoints[i].y;  
+  objectPointsMat.at<double>(i,1)=objectPoints[i].z;  
+ }*/
+
+ Mat imagePointsMat(pointbuf);
+ /*for(size_t i=0;i<pointbuf.size();i++)
+ {
+  imagePointsMat.at<double>(i,0)=pointbuf[i].x;  
+  imagePointsMat.at<double>(i,1)=objectPoints[i].y;  
+ }*/
+ 
+ cv::solvePnP(objectPointsMat,imagePointsMat,cameraMatrix,distCoeffs,rvec, tvec);
+ 
+ projectPoints(Mat(objectPoints), rvecs, tvecs,
+                      cameraMatrix[camera_index], distCoeffs[camera_index], imagePoints2);
+
+ *avg_error=0;
+ *min_error=100000;
+ *max_error=0;
+ for(size_t i=0;i<pointbuf.size();i++)
+ {
+  Point2f sub=pointbuf[i]-imagePoints2[i];
+  
+  double error=sub.x*sub.x+sub.y*sub.y;
+  if(*min_error>error)
+   *min_error=error;
+  if(*max_error<error)
+   *max_error=error;
+
+   *avg_error+=error;
+ }
+ *avg_error/=pointbuf.size();
+    
+ cv::Rodrigues(rvec,rotation);
+
+ int k=0;
+ for(int i=0;i<3;i++)
+ {
+  for(int j=0;j<3;j++)
+  {
+   ecc[k++]=rotation.at<double>(i, j);
+  }
+   ecc[k++]=tvec.at<double>(i, 0);
+ }
+  for(int j=0;j<3;j++)
+  {
+   ecc[k++]=0;
+  }
+  ecc[k++]=1;
+
+ return 1;
+}
+
+ 
 }
 
 BOOL APIENTRY DllMain( HMODULE hModule,

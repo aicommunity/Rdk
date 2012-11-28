@@ -20,6 +20,11 @@ __declspec(dllexport) int __cdecl StereoCalibrateComplete(double* r, double* t, 
 
 __declspec(dllexport) void __cdecl Undistortion(char *data, int imagewidth, int imageheight, double IntMat[3][3], double DistCoeff[5][1], double NewIntMat[3][3], int *newimagewidth, int *newimageheight, double alpha)
 
+// Осуществляет инициализацию поиска маркера, определения его пространственной ориентации и ошибки репроекции
+__declspec(dllexport) void __cdecl CameraMarkerSearchInit(double *icc, double *dist_coeff, int camera_index=0);
+
+// Осуществляет определение внешней калибровки по последнему найденому калибровочному маркеру
+__declspec(dllexport) int __cdecl ExternalCalibrationStep(unsigned char *imagedata, double* ecc, double *avg_error, double *max_error, double *min_error, int camera_index);
 
 }
 
