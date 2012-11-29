@@ -327,6 +327,9 @@ void DelAllFonts(void);
 
 // Возвращает шрифт
 UAFont* GetFont(const string &name, int size);
+
+// Возвращает шрифт по умолчанию
+UAFont* GetDefaultFont(void);
 // --------------------------
 
 };

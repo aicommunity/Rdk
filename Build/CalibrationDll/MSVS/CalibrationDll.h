@@ -1,6 +1,12 @@
 #ifndef CALIBRATION_DLL_H
 #define CALIBRATION_DLL_H
 
+struct CProjectedPoint
+{
+ double x,y;
+ double error;
+};
+
 extern "C" {
 
 __declspec(dllexport) int __cdecl CameraCalibrateInit(int num_frames, int width, int height, int board_width, int board_height, double board_size, int num_cameras=1);
@@ -24,7 +30,7 @@ __declspec(dllexport) void __cdecl Undistortion(char *data, int imagewidth, int 
 __declspec(dllexport) void __cdecl CameraMarkerSearchInit(double *icc, double *dist_coeff, int camera_index=0);
 
 // Осуществляет определение внешней калибровки по последнему найденому калибровочному маркеру
-__declspec(dllexport) int __cdecl ExternalCalibrationStep(unsigned char *imagedata, double* ecc, double *avg_error, double *max_error, double *min_error, int camera_index);
+__declspec(dllexport) int __cdecl ExternalCalibrationStep(unsigned char *imagedata, double* ecc, double *avg_error, double *max_error, double *min_error, CProjectedPoint *all_errors, int camera_index);
 
 }
 

@@ -8,6 +8,13 @@
 #include <string.h>
 #include <time.h>
 
+
+struct CProjectedPoint
+{
+ double x,y;
+ double error;
+};
+
 enum { DETECTION = 0, CAPTURING = 1, CALIBRATED = 2 };
 enum Pattern { CHESSBOARD, CIRCLES_GRID, ASYMMETRIC_CIRCLES_GRID };
 
@@ -623,7 +630,7 @@ __declspec(dllexport) void __cdecl CameraMarkerSearchInit(double *icc, double *d
 }
 
 // Осуществляет определение внешней калибровки по последнему найденому калибровочному маркеру
-__declspec(dllexport) int __cdecl ExternalCalibrationStep(unsigned char *imagedata, double* ecc, double *avg_error, double *max_error, double *min_error, int camera_index)
+__declspec(dllexport) int __cdecl ExternalCalibrationStep(unsigned char *imagedata, double* ecc, double *avg_error, double *max_error, double *min_error, CProjectedPoint *all_errors, int camera_index)
 {
  Mat rotation(3,3,CV_64F);
  Mat rvec, tvec;
@@ -744,13 +751,16 @@ __declspec(dllexport) int __cdecl ExternalCalibrationStep(unsigned char *imageda
  {
   Point2d sub=pointbuf[i]-imagePoints2[i];
   
-  double error=sub.x*sub.x+sub.y*sub.y;
+  double error=sqrt(sub.x*sub.x+sub.y*sub.y);
   if(*min_error>error)
    *min_error=error;
   if(*max_error<error)
    *max_error=error;
 
    *avg_error+=error;
+   all_errors[i].error=error;
+   all_errors[i].x=imagePoints2[i].x;
+   all_errors[i].y=imagePoints2[i].y;
  }
  *avg_error/=pointbuf.size();
  /*   

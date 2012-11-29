@@ -637,6 +637,21 @@ UAFont* UBitmapFontCollection::GetFont(const string &name, int size)
 }
 
 
+// Возвращает шрифт по умолчанию
+UAFont* UBitmapFontCollection::GetDefaultFont(void)
+{
+ if(Fonts.begin() != Fonts.end())
+ {
+  map<string,FontSizeContainerT>::iterator fI=Fonts.begin();
+  if(fI->second.begin() != fI->second.end())
+  {
+   return &fI->second.begin()->second;
+  }
+ }
+ return 0;
+}
+
+
 }
 
 #endif
