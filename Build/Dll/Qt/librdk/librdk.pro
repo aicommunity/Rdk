@@ -13,7 +13,9 @@ DEFINES += LIBRDK_LIBRARY
 
 SOURCES += librdk.cpp \
     ../../../../Deploy/Include/rdk.qt.cpp \
-    ../../../../Deploy/Include/rdk_initlib.cpp
+    ../../../../Deploy/Include/myrdk.qt.cpp \
+    ../../../../Deploy/Include/rdk_new.cpp \
+    ../../../../Deploy/Include/rdk_cpp_initdll.cpp
 
 HEADERS += librdk.h\
         librdk_global.h \

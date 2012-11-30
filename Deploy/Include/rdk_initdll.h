@@ -2,12 +2,23 @@
 #define rdk_initdllH
 
 #ifdef __BORLANDC__
-#define RDK_LIB_TYPE __declspec(dllexport)
-#define RDK_CALL __cdecl
+    #define RDK_LIB_TYPE __declspec(dllexport)
+    #define RDK_CALL __cdecl
 #else
-#define RDK_LIB_TYPE __declspec(dllexport)
-#define RDK_CALL __cdecl
+    #ifdef QT_VERSION
+        #ifdef LIBRDK_LIBRARY
+            #define RDK_LIB_TYPE Q_DECL_EXPORT
+            #define RDK_CALL
+        #else
+            #define RDK_LIB_TYPE Q_DECL_IMPORT
+            #define RDK_CALL
+        #endif
+    #else
+        #define RDK_LIB_TYPE __declspec(dllexport)
+        #define RDK_CALL __cdecl
+    #endif
 #endif
+
 #include "rdk_init.h"
 
 #endif
