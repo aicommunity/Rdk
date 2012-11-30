@@ -19,8 +19,7 @@ SOURCES += librdk.cpp \
 
 HEADERS += librdk.h\
         librdk_global.h \
-    ../../../../Deploy/Include/rdk.qt.h \
-    ../../../../Deploy/Include/rdk_initlib.h
+    ../../../../Deploy/Include/rdk.qt.h
 
 symbian {
     MMP_RULES += EXPORTUNFROZEN

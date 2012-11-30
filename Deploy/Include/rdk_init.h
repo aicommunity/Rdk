@@ -21,7 +21,6 @@ enum {ptParameter=1, ptState=2, ptTemp=4, ptAny=255};
 // 0x1000 - Флаг смены режима работы компонента
 enum {pgPublic=0x100, pgSystem=0x200, pgInput=0x400, pgOutput=0x800, pgMode=0x1000, pgAny=0xFFFFFF};
 
-
 // ----------------------------
 // Функции инициализации
 // ----------------------------

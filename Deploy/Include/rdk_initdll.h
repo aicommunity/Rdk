@@ -14,8 +14,13 @@
             #define RDK_CALL
         #endif
     #else
-        #define RDK_LIB_TYPE __declspec(dllexport)
-        #define RDK_CALL __cdecl
+        #ifdef __GNUC__
+            #define RDK_LIB_TYPE
+            #define RDK_CALL
+        #else
+            #define RDK_LIB_TYPE __declspec(dllexport)
+            #define RDK_CALL __cdecl
+        #endif
     #endif
 #endif
 
