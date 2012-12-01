@@ -9,6 +9,6 @@
 #  define LIBRDKSHARED_EXPORT Q_DECL_IMPORT
 #endif
 
-#include "../../../../Deploy/Include/rdk_cpp_initdll.h"
+#include "../../../Deploy/Include/rdk_cpp_initdll.h"
 
 #endif // LIBRDK_GLOBAL_H

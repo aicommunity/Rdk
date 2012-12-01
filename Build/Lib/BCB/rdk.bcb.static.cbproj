@@ -79,7 +79,8 @@
 			<TASM_Debugging>None</TASM_Debugging>
 		</PropertyGroup>
 		<ItemGroup>
-			<ResFiles Include="librdk.bcb.static.res">
+			<ResFiles Include="rdk.bcb.res">
+				<ModuleName>rdk.bcb.res</ModuleName>
 				<BuildOrder>5</BuildOrder>
 			</ResFiles>
 			<CppCompile Include="..\..\..\Deploy\Include\myrdk.bcb.cpp">

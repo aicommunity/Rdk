@@ -6,20 +6,20 @@
 
 QT       -= gui
 
-TARGET = librdk.qt
+TARGET = rdk.qt
 TEMPLATE = lib
 
 DEFINES += LIBRDK_LIBRARY
 
 SOURCES += librdk.qt.cpp \
-    ../../../../Deploy/Include/rdk.qt.cpp \
-    ../../../../Deploy/Include/myrdk.qt.cpp \
-    ../../../../Deploy/Include/rdk_new.cpp \
-    ../../../../Deploy/Include/rdk_cpp_initdll.cpp
+    ../../../Deploy/Include/rdk.qt.cpp \
+    ../../../Deploy/Include/myrdk.qt.cpp \
+    ../../../Deploy/Include/rdk_new.cpp \
+    ../../../Deploy/Include/rdk_cpp_initdll.cpp
 
 HEADERS += librdk.qt.h\
         librdk.qt_global.h \
-    ../../../../Deploy/Include/rdk.qt.h
+    ../../../Deploy/Include/rdk.qt.h
 
 symbian {
     MMP_RULES += EXPORTUNFROZEN
@@ -38,9 +38,9 @@ unix:!symbian {
         target.path = /usr/lib
     }
     INSTALLS += target
-    DESTDIR = $$PWD/../../../../Bin/Platform/Unix
+    DESTDIR = $$PWD/../../../Bin/Platform/Unix
 }
 
 windows {
-    DESTDIR = $$PWD/../../../../Bin/Platform/Win
+    DESTDIR = $$PWD/../../../Bin/Platform/Win
 }
