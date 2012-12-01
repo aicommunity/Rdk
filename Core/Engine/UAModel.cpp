@@ -22,8 +22,8 @@ namespace RDK {
 // Конструкторы и деструкторы
 // --------------------------
 UAModel::UAModel(void)
- : Sources(this,"Sources"),
-   Receivers(this,"Receivers")
+ : Sources("Sources",this),
+   Receivers("Receivers",this)
 {
 }
 

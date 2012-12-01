@@ -41,7 +41,7 @@ public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UEPointer(OwnerT * const owner, const string &name)
+UEPointer(const string &name, OwnerT * const owner)
  : Owner(owner)
 { Source=0; reinterpret_cast<UAContainer* const>(Owner)->AddLookupPointer(name,this); };
 // --------------------------
@@ -97,7 +97,7 @@ public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UCPointer(OwnerT * const owner, const std::string &name)
+UCPointer(const string &name, OwnerT * const owner)
  : Owner(owner)
 { Size=0; Sources=0; reinterpret_cast<UAContainer* const>(Owner)->AddLookupPointer(name,this); };
 virtual ~UCPointer(void)
