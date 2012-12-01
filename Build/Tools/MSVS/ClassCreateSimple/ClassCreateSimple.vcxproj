@@ -37,10 +37,10 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\..\..\Bin\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\..\..\Bin\Platform\Win</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\..\..\..\RDK\Bin\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\..\..\..\Bin\Platform\Win</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
@@ -92,16 +92,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\..\Deploy\Include\myrdk.win.cpp" />
+    <ClCompile Include="..\..\ClassCreateSimpleCore.cpp" />
     <ClCompile Include="ClassCreateSimple.cpp" />
-    <ClCompile Include="..\ClassCreateSimpleCore.cpp" />
     <ClCompile Include="..\..\..\..\Deploy\Include\rdk.win.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\ClassCreateSimpleCore.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
     <None Include="..\..\..\..\Bin\CodeTemplates\TemplateTags.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\ClassCreateSimpleCore.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

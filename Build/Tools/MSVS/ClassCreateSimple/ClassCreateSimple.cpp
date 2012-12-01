@@ -5,7 +5,7 @@
 #include <windows.h>
 #include <tchar.h>
 #include <iostream>
-#include "../ClassCreateSimpleCore.h"
+#include "../../ClassCreateSimpleCore.h"
 
 
 int _tmain(int argc, _TCHAR* argv[])

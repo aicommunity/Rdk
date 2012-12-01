@@ -1,5 +1,5 @@
 #include "ClassCreateSimpleCore.h"
-#include "../../../Core/Utilities/USupport.h"
+#include "../../Core/Utilities/USupport.h"
 
 #include <string>
 #include <fstream>
@@ -197,7 +197,7 @@ void ACreateSimpleCore::SaveToFileH (string str, string name)
 	string Path = "CodeTemplates/";
 	string PathPlusName = Path+name;
 
-	fstream f(PathPlusName, ios::out | ios::trunc);
+	std::fstream f(PathPlusName.c_str(), ios::out | ios::trunc);
 	//string str; // содержимое будущего файла
 	f.write(str.c_str(),str.size());
 }
@@ -207,7 +207,7 @@ void ACreateSimpleCore::SaveToFileCPP (string str, string name)
 	string Path = "CodeTemplates/";
 	string PathPlusName = Path+name;
 	
-	fstream f(PathPlusName, ios::out | ios::trunc);
+	fstream f(PathPlusName.c_str(), ios::out | ios::trunc);
 	//string str; // содержимое будущего файла
 	f.write(str.c_str(),str.size());
 }
