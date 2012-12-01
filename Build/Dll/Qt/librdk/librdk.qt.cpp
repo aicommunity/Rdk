@@ -1,4 +1,4 @@
-#include "librdk.h"
+#include "librdk.qt.h"
 
 
 Librdk::Librdk()
