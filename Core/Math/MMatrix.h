@@ -734,7 +734,7 @@ MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::Normalize(void)
 // Возвращает часть матрицы заданной величины
 // начиная с позиции i0,j0 в исходной матрицы
 template<class T, unsigned Rows, unsigned Cols, unsigned Rows2, unsigned Cols2>
-MMatrix<T,Rows2,Cols2>& GetSubMatrix(MMatrix<T,Rows,Cols>& source,unsigned j0, unsigned i0, MMatrix<T,Rows2,Cols2>& res)
+MMatrix<T,Rows2,Cols2>& GetSubMatrix(const MMatrix<T,Rows,Cols>& source,unsigned j0, unsigned i0, MMatrix<T,Rows2,Cols2>& res)
 {
  unsigned cols2=(Cols2<Cols)?Cols2:Cols;
  unsigned rows2=(Rows2<Rows)?Rows2:Rows;
@@ -752,7 +752,7 @@ MMatrix<T,Rows2,Cols2>& GetSubMatrix(MMatrix<T,Rows,Cols>& source,unsigned j0, u
 // Модифицирует часть матрицы заданной величины
 // начиная с позиции i0,j0 в исправляемой матрице
 template<class T, unsigned Rows, unsigned Cols, unsigned Rows2, unsigned Cols2>
-MMatrix<T,Rows,Cols>& SetSubMatrix(MMatrix<T,Rows,Cols>& dest,unsigned j0, unsigned i0, MMatrix<T,Rows2,Cols2>& source)
+MMatrix<T,Rows,Cols>& SetSubMatrix(MMatrix<T,Rows,Cols>& dest,unsigned j0, unsigned i0, const MMatrix<T,Rows2,Cols2>& source)
 {
  unsigned cols2=(Cols2<Cols)?Cols2:Cols;
  unsigned rows2=(Rows2<Rows)?Rows2:Rows;
@@ -766,6 +766,26 @@ MMatrix<T,Rows,Cols>& SetSubMatrix(MMatrix<T,Rows,Cols>& dest,unsigned j0, unsig
   }
 
  return dest;
+}
+
+// Разделяет матрицу внешней калибровки на матрицу поворота и вектор перемещения
+template<class T>
+void SplitEcc(const MMatrix<T,4,4>& ecc, MMatrix<T,3,3>& rotation, MMatrix<T,3,1> &translation)
+{
+ GetSubMatrix(ecc,0,0,rotation);
+ GetSubMatrix(ecc,0,3,translation);
+ translation=-rotation.Transpose()*translation;
+ rotation=rotation.Transpose();
+}
+
+// Собирает матрицу внешней калибровки из матрицы поворота и вектора перемещения
+template<class T>
+void MergeEcc(const MMatrix<T,3,3>& rotation, const MMatrix<T,3,1> &translation, MMatrix<T,4,4>& ecc)
+{
+ ecc=MMatrix<T,4,4>::Zero();
+ SetSubMatrix(ecc,0, 0, rotation.Transpose());
+ SetSubMatrix(ecc,0, 3, -rotation.Transpose()*translation);
+ ecc.Data[3][3]=1;
 }
 // --------------------------
 

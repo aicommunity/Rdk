@@ -30,7 +30,9 @@ __declspec(dllexport) void __cdecl Undistortion(char *data, int imagewidth, int 
 __declspec(dllexport) void __cdecl CameraMarkerSearchInit(double *icc, double *dist_coeff, int camera_index=0);
 
 // Осуществляет определение внешней калибровки по последнему найденому калибровочному маркеру
-__declspec(dllexport) int __cdecl ExternalCalibrationStep(unsigned char *imagedata, double* ecc, double *avg_error, double *max_error, double *min_error, CProjectedPoint *all_errors, int camera_index);
+// если ecc_mode == true - то используется переданная матрица внешней калибровки
+// иначе матрица вычисляется по доске
+__declspec(dllexport) int __cdecl ExternalCalibrationStep(unsigned char *imagedata, double* ecc, double *avg_error, double *max_error, double *min_error, CProjectedPoint *all_errors, bool ecc_mode, int camera_index);
 
 }
 
