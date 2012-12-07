@@ -348,6 +348,11 @@ void __fastcall TUEngineControlForm::FormShow(TObject *Sender)
  std::vector<std::string> font_names;
  std::string font_path=AnsiString(ExtractFilePath(Application->ExeName)+"Fonts\\").c_str();
  FindFilesList(font_path, "*.fnt", true, font_names);
+ if(font_names.empty())
+ {
+  font_path=AnsiString("..\\..\\Fonts\\").c_str();
+  FindFilesList(font_path, "*.fnt", true, font_names);
+ }
 
  RDK::ClearClobalFonts();
  RDK::UBitmapFont font;

@@ -8,6 +8,8 @@
 #include "rdk_initdll.h"
 #include "myrdk.h"
 #include "UCRPerseptronFormUnit.h"
+#include "UCRSampleFormUnit.h"
+#include "UCRDeepLearningPerseptronFormUnit.h"
 #include "UComponentsListFormUnit.h"
 
 //---------------------------------------------------------------------------
@@ -55,6 +57,8 @@ void TUComponentsListFrame::AUpdateInterface(void)
  if(ComponentControllers.empty())
  {
   ComponentControllers["UCRPerseptron"]=UCRPerseptronForm;
+  ComponentControllers["UCRSample"]=UCRSampleForm;
+  ComponentControllers["UCRPerseptronDeepLearning"]=UCRDeepLearningPerseptronForm;
  }
 
 

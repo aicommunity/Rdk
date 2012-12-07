@@ -450,7 +450,7 @@ protected: // Данные
 VSetterT VSetter;
 VSetterRT VSetterR;
 
-protected:
+public:
 // Данные
 T v;
 

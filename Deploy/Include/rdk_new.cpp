@@ -6,17 +6,17 @@
 /*****************************************************************************/
 extern RDK::UAContainerStorage* CreateNewStorage(void)
 {
- return new RDK::UBAStorage;
+ return new RDK::UAContainerStorage;
 }
 
 extern RDK::UAContainerEnvironment* CreateNewEnvironment(void)
 {
- return new RDK::UBAEnvironment;
+ return new RDK::UAContainerEnvironment;
 }
 
 extern RDK::UEngine* CreateNewEngine(void)
 {
- return new RDK::UBEngine;
+ return new RDK::UEngine;
 }
 /*****************************************************************************/
 #endif
