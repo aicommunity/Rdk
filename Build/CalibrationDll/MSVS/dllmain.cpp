@@ -15,6 +15,11 @@ struct CProjectedPoint
  double error;
 };
 
+struct CMVector2D
+{
+ double x,y,z,d;
+};
+
 enum { DETECTION = 0, CAPTURING = 1, CALIBRATED = 2 };
 enum Pattern { CHESSBOARD, CIRCLES_GRID, ASYMMETRIC_CIRCLES_GRID };
 
@@ -513,7 +518,7 @@ __declspec(dllexport) int __cdecl StereoCalibrateInit(double* icc1, double* dist
 }
 
 
-__declspec(dllexport) int __cdecl StereoCalibrateComplete(double* r, double* t, double &error)
+__declspec(dllexport) int __cdecl StereoCalibrateComplete(double* r, double* t, double *e, double *f, double &error)
 {
     vector<vector<Point3f> > objectPoints(1);
     calcChessboardCorners(boardSize, squareSize, objectPoints[0], pattern);
@@ -548,6 +553,8 @@ __declspec(dllexport) int __cdecl StereoCalibrateComplete(double* r, double* t, 
  {
   for(int j=0;j<3;j++)
   {
+   e[k]=E.at<double>(i, j);
+   f[k]=F.at<double>(i, j);
    r[k++]=R.at<double>(i, j);
   }
    t[i]=T.at<double>(i,0);
@@ -789,7 +796,39 @@ __declspec(dllexport) int __cdecl ExternalCalibrationStep(unsigned char *imageda
  return 1;
 }
 
+
+__declspec(dllexport) int __cdecl ComputeEpilines(CMVector2D* points, int num_points, int camera_index, double* f, CMVector2D *lines,unsigned char *imagedata)
+{
+ Mat F(3,3,CV_64F,f);
+ Mat F32(3,3,CV_32F);
+ F.convertTo(F32, CV_32F);
+ vector<Point2f> cvpoints;
+ vector<cv::Vec3f> cvlines;
+
+ for(int i=0;i<num_points;i++,points++)
+ {
+  Point2f p;
+  p.x=points->x;
+  p.y=points->y;
+  cvpoints.push_back(p);
+ }
  
+ cv::computeCorrespondEpilines(cvpoints, camera_index+1, F32, cvlines);
+
+ Mat viewColor(Size(ImageWidth, ImageHeight), CV_8UC3, imagedata, Mat::AUTO_STEP);
+ for (vector<cv::Vec3f>::const_iterator it= cvlines.begin(); it!=cvlines.end(); ++it,lines++) 
+ {
+  lines->x=(*it)[0];
+  lines->y=(*it)[1];
+  lines->z=(*it)[2];
+
+  // draw the epipolar line between first and last column
+  cv::line(viewColor,cv::Point(0,-(*it)[2]/(*it)[1]),cv::Point(viewColor.cols,-((*it)[2]+(*it)[0]*viewColor.cols)/(*it)[1]),cv::Scalar(255,255,255));
+ }
+ memcpy(imagedata,viewColor.data,ImageWidth*ImageHeight*3);
+ return 1;
+}
+
 }
 
 BOOL APIENTRY DllMain( HMODULE hModule,

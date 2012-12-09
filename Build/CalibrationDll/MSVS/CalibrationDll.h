@@ -7,6 +7,11 @@ struct CProjectedPoint
  double error;
 };
 
+struct CMVector2D
+{
+ double x,y,z,d;
+}
+
 extern "C" {
 
 __declspec(dllexport) int __cdecl CameraCalibrateInit(int num_frames, int width, int height, int board_width, int board_height, double board_size, int num_cameras=1);
@@ -22,7 +27,7 @@ __declspec(dllexport) int __cdecl CameraCalibrateComplete(double* icc, double* d
 
 __declspec(dllexport) int __cdecl StereoCalibrateInit(double* icc1, double* dist_coeffs1, double* icc2, double* dist_coeffs2, int num_dist_coeffs);
 
-__declspec(dllexport) int __cdecl StereoCalibrateComplete(double* r, double* t, double &error);
+__declspec(dllexport) int __cdecl StereoCalibrateComplete(double* r, double* t, double *e, double *f, double &error);
 
 __declspec(dllexport) void __cdecl Undistortion(char *data, int imagewidth, int imageheight, double IntMat[3][3], double DistCoeff[5][1], double NewIntMat[3][3], int *newimagewidth, int *newimageheight, double alpha)
 
@@ -33,6 +38,8 @@ __declspec(dllexport) void __cdecl CameraMarkerSearchInit(double *icc, double *d
 // если ecc_mode == true - то используется переданная матрица внешней калибровки
 // иначе матрица вычисляется по доске
 __declspec(dllexport) int __cdecl ExternalCalibrationStep(unsigned char *imagedata, double* ecc, double *avg_error, double *max_error, double *min_error, CProjectedPoint *all_errors, bool ecc_mode, int camera_index);
+
+__declspec(dllexport) int __cdecl ComputeEpilines(CMVector2D* points, int num_points, int camera_index, double* f, CMVector2D *lines,unsigned char *imagedata)
 
 }
 

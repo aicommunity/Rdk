@@ -379,7 +379,7 @@ void TVideoOutputFrame::AddFigureRect(double l,double t,double w,double h)
   return;
 
  Figure()[PointIndex].x=l+w/2;
- Figure()[PointIndex].y=BmpCanvas.GetHeight()-(t+h/2);
+ Figure()[PointIndex].y=/*BmpCanvas.GetHeight()-*/(t+h/2);
 
  GeometryGraphics.GetGeometry(FigureIndex)=Figure;
 
