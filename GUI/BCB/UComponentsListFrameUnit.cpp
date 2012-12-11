@@ -945,6 +945,8 @@ void __fastcall TUComponentsListFrame::HeaderControl1SectionClick(THeaderControl
  {
 //  if(Application->MessageBox(L"Are you sure you want to change this value in all components of the same class?",L"Warning",MB_YESNO) != ID_YES)
 //   return;
+  if(UComponentsListForm->Visible)
+   UComponentsListForm->Hide();
   if(UComponentsListForm->ShowComponentSelect() == mrOk)
   {
    Model_SetGlobalComponentPropertyValue(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName().c_str(),Model_GetComponentClassName(GetSelectedComponentLongId().c_str()),AnsiString(StatesListStringGrid->Cells[1][StatesListStringGrid->Row]).c_str(), AnsiString(StateValueRichEdit->Text).c_str());
@@ -954,6 +956,8 @@ void __fastcall TUComponentsListFrame::HeaderControl1SectionClick(THeaderControl
  else
  if(Section->Index == 2)
  {
+  if(UComponentsListForm->Visible)
+   UComponentsListForm->Hide();
   if(UComponentsListForm->ShowComponentSelect() == mrOk)
   {
    std::string global_owner_stringid=Model_GetComponentClassName(CurrentComponentName.c_str());

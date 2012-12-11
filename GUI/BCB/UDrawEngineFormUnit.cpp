@@ -334,6 +334,8 @@ void __fastcall TUDrawEngineForm::ImageMouseUp(TObject *Sender, TMouseButton But
 
   UComponentLinksForm->UComponentLinksFrame->Init(1, full_start_name,ComponentName,full_stop_name);
 
+  if(UComponentLinksForm->Visible)
+   UComponentLinksForm->Hide();
   if(UComponentLinksForm->ShowModal() == mrOk)
   {
    UComponentLinksForm->UComponentLinksFrame->UpdateInterface();

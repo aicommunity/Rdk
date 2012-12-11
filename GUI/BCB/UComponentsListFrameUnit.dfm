@@ -194,10 +194,6 @@ inherited UComponentsListFrame: TUComponentsListFrame
       object TabSheet3: TTabSheet
         Caption = 'I/O'
         ImageIndex = 2
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object Splitter2: TSplitter
           Left = 0
           Top = 239
@@ -372,7 +368,6 @@ inherited UComponentsListFrame: TUComponentsListFrame
       OnDblClick = StringGridDblClick
       OnKeyPress = StringGridKeyPress
       OnSelectCell = StringGridSelectCell
-      ExplicitHeight = 531
     end
     object HeaderControl: THeaderControl
       Left = 1
