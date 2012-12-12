@@ -103,7 +103,7 @@ int RDK_CALL GraphicalEngineInit(int predefined_structure, int num_inputs,
 int RDK_CALL EngineUnInit(void)
 {
  if(PEngine)
-  if(Env_UnInit())
+  if(!Env_UnInit())
    return 1;
 
  return UnInit();
