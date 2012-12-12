@@ -39,7 +39,7 @@ __declspec(dllexport) void __cdecl CameraMarkerSearchInit(double *icc, double *d
 // иначе матрица вычисляется по доске
 __declspec(dllexport) int __cdecl ExternalCalibrationStep(unsigned char *imagedata, double* ecc, double *avg_error, double *max_error, double *min_error, CProjectedPoint *all_errors, bool ecc_mode, int camera_index);
 
-__declspec(dllexport) int __cdecl ComputeEpilines(CMVector2D* points, int num_points, int camera_index, double* f, CMVector2D *lines,unsigned char *imagedata)
+__declspec(dllexport) int __cdecl ComputeEpilines(CMVector2D* points, int num_points, int camera_index, double* f, double* cam_matrix, double *distcoeffs, CMVector2D *lines,unsigned char *imagedata)
 
 }
 

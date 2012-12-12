@@ -575,25 +575,7 @@ __declspec(dllexport) unsigned char* __cdecl GetCalibrationBoardImage(int camera
 
 __declspec(dllexport) void __cdecl Undistortion(char *source, char *dest, int imagewidth, int imageheight, double IntMat[3][3], double DistCoeff[5][1], double NewIntMat[3][3], double alpha)
 {
-	/*
- int k, j;
- cv::Mat FRAME(imageheight,imagewidth,CV_8UC3), FRAME2(imageheight,imagewidth,CV_8UC3);
- cv::Mat cammatrix(3,3,CV_64FC1);
- cv::Mat distvec(5,1,CV_64FC1);
- memcpy(FRAME.data, source, 3*imagewidth*imageheight);
- for(k=0; k<3; k++)
-  for(j=0; j<3; j++)
-  { 
-   cammatrix.at<double>(k,j) = IntMat[k][j];
-  }
- for(k=0; k<5; k++)
-  distvec.at<double>(k,0)=DistCoeff[k][0];
- 
- undistort(FRAME, FRAME2, cammatrix, distvec);
- memcpy(dest, FRAME2.data, 3*imagewidth*imageheight);
- 
- */
-	
+/*	
         cv::Mat FRAME(imageheight,imagewidth,CV_8UC3,(void*)source), FRAME2(imageheight,imagewidth,CV_8UC3,(void*)dest);
         cv::Mat cammatrix(3,3,CV_64FC1, (void*)(IntMat)), cammatrix2;
         cv::Mat distvec(5,1,CV_64FC1, (void*)(DistCoeff));
@@ -604,9 +586,9 @@ else cammatrix2=cammatrix;
         undistort(FRAME, FRAME2, cammatrix, distvec, cammatrix2);
         memcpy(dest, FRAME2.data, 3*imageheight*imagewidth);
 memcpy(NewIntMat, cammatrix2.data, 3*3*sizeof(double));
-
+*/
 	
- /*
+ 
  cv::Mat FRAME(Size(imagewidth, imageheight), CV_8UC3, source, Mat::AUTO_STEP), FRAME2;
  cv::Mat cammatrix(3,3,CV_64FC1, (void*)(IntMat)), cammatrix2;
  cv::Mat distvec(5,1,CV_64FC1, (void*)(DistCoeff));
@@ -614,16 +596,18 @@ memcpy(NewIntMat, cammatrix2.data, 3*3*sizeof(double));
 
  Mat map1, map2;
  cv::Rect rect;
+ //cvInitUndistortMap(cammatrix, distvec, map1, map2);
+ //cv::initUndistortRectifyMap( cammatrix, distvec, cv::Mat(), cammatrix,
+ //                                   map1.size(), map1.type(), map1, map2 );
  cv::initUndistortRectifyMap(cammatrix, distvec, Mat(),
       cv::getOptimalNewCameraMatrix(cammatrix, distvec, sz, alpha, sz, &rect),
       sz, CV_16SC2, map1, map2);
  cv::remap(FRAME, FRAME2, map1, map2, CV_INTER_LINEAR);
-*newimagewidth=FRAME2.cols;
-*newimageheight=FRAME2.rows;
-        memcpy(dest, FRAME2.data, 3*(*newimagewidth)*(*newimageheight));
+
+        memcpy(dest, FRAME2.data, 3*(imagewidth)*(imageheight));
 //memcpy(NewIntMat, cammatrix2.data, 3*3*sizeof(double));
 //cvNamedWindow("Image View",1);
-//imshow("Image View", FRAME2);*/
+//imshow("Image View", FRAME2);
 }
 
 
@@ -797,13 +781,19 @@ __declspec(dllexport) int __cdecl ExternalCalibrationStep(unsigned char *imageda
 }
 
 
-__declspec(dllexport) int __cdecl ComputeEpilines(CMVector2D* points, int num_points, int camera_index, double* f, CMVector2D *lines,unsigned char *imagedata)
+__declspec(dllexport) int __cdecl ComputeEpilines(CMVector2D* points, int num_points, int camera_index, double* f, double* cam_matrix, double *distcoeffs, CMVector2D *lines,unsigned char *imagedata)
 {
  Mat F(3,3,CV_64F,f);
  Mat F32(3,3,CV_32F);
  F.convertTo(F32, CV_32F);
- vector<Point2f> cvpoints;
+ vector<Point2f> cvpoints,ideal_cvpoint;
  vector<cv::Vec3f> cvlines;
+ Mat distCoeffs(5,1,CV_64F,distcoeffs);
+ Mat distCoeffsF(5,1,CV_32F);
+ distCoeffs.convertTo(distCoeffsF, CV_32F);
+ Mat cameraMatrix(3,3,CV_64F,cam_matrix);
+ Mat cameraMatrixF(3,3,CV_32F);
+ cameraMatrix.convertTo(cameraMatrixF, CV_32F);
 
  for(int i=0;i<num_points;i++,points++)
  {
@@ -813,6 +803,19 @@ __declspec(dllexport) int __cdecl ComputeEpilines(CMVector2D* points, int num_po
   cvpoints.push_back(p);
  }
  
+ cv::undistortPoints(cvpoints, ideal_cvpoint, cameraMatrixF, distCoeffsF);
+ for(int i=0;i<num_points;i++,points++)
+ {
+  Mat point(3,1,CV_32F);
+  point.at<float>(0,0)=ideal_cvpoint[i].x;
+  point.at<float>(1,0)=ideal_cvpoint[i].y;
+  point.at<float>(2,0)=1;
+  Mat point2(3,1,CV_32F);
+  point2=cameraMatrixF*point;
+  cvpoints[i].x=point2.at<float>(0,0);
+  cvpoints[i].y=point2.at<float>(1,0);  
+ }
+
  cv::computeCorrespondEpilines(cvpoints, camera_index+1, F32, cvlines);
 
  Mat viewColor(Size(ImageWidth, ImageHeight), CV_8UC3, imagedata, Mat::AUTO_STEP);
