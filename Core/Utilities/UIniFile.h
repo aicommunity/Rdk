@@ -687,7 +687,7 @@ bool DecodeAsSection(const StringT &str, SizeT &start, SizeT &stop)
  return true;
 };
 
-// Пытается декодировать строку 'str' как секцию
+// Пытается декодировать строку 'str' как переменную
 // В случае успеха возвращает true и
 // startname - начало имени переменной (после открывающих пробелов)
 // stopname - конец имени переменной (перед '=' или завершающими имя пробелами)
@@ -701,7 +701,11 @@ bool DecodeAsVariable(const StringT &str, SizeT &startname, SizeT &stopname, Siz
  std::string::size_type i=str.find_first_of('=');
 
  if(i == StringT::npos)
-  return false;
+ {
+  i=str.find_first_of(' \r\n',startname);
+  if(i == StringT::npos)
+   stopname=str.size()-1;
+ }
 
  stopname=i-1;
 

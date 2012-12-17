@@ -155,6 +155,7 @@ void TUVisualControllerForm::SaveParameters(RDK::Serialize::USerStorageXML &xml)
  xml.SelectNodeForce(GetName());
  ASaveParameters(xml);
  SaveFormPosition(xml, this);
+ xml.WriteString("ComponentControlName",ComponentControlName);
  xml.SelectUp();
 }
 
@@ -168,6 +169,7 @@ void TUVisualControllerForm::ASaveParameters(RDK::Serialize::USerStorageXML &xml
 void TUVisualControllerForm::LoadParameters(RDK::Serialize::USerStorageXML &xml)
 {
  xml.SelectNodeForce(GetName());
+ ComponentControlName=xml.ReadString("ComponentControlName","");
  LoadFormPosition(xml, this);
  ALoadParameters(xml);
  xml.SelectUp();

@@ -14,7 +14,7 @@ object UShowProgressBarForm: TUShowProgressBarForm
   Font.Style = []
   FormStyle = fsStayOnTop
   OldCreateOrder = False
-  Position = poDesktopCenter
+  Position = poScreenCenter
   OnShow = FormShow
   DesignSize = (
     569

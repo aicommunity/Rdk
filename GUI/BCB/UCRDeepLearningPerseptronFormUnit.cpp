@@ -5,6 +5,7 @@
 
 #include "UCRDeepLearningPerseptronFormUnit.h"
 #include "UEngineMonitorFrameUnit.h"
+#include "TUBitmap.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
@@ -35,32 +36,32 @@ void TUCRDeepLearningPerseptronForm::AUpdateInterface(void)
   catch(...){}
  if(!Learning)
   return;
-/*// RDK::ReadParameterValue<std::vector<std::vector<std::vector<double> > > >(ComponentName, "Weights", Weights);
- const std::vector<std::pair<RDK::UItemData,int> > &sample_data=Sample->GetSampleData();
 
- SampleStringGrid->RowCount=sample_data.size()+1;
- int col_count=2;
- for(size_t i=0;i<sample_data.size();i++)
- {
-  if(col_count<sample_data[i].first.GetSize()+2)
+ try{
+   Perseptron=Learning->DeepPerseptron;
+   }
+  catch(/*RDK::EUsingZeroPtr &*/...){}
+
+ if(!Perseptron)
+  return;
+
+  int index=LayersComboBox->ItemIndex;
+  if(LayersComboBox->Items->Count !=Perseptron->Weights.size())
   {
-   SampleStringGrid->ColCount=sample_data[i].first.GetSize()+2;
-   col_count=SampleStringGrid->ColCount;
+   LayersComboBox->Clear();
+   for(size_t i=0;i<Perseptron->Weights.size();i++)
+	LayersComboBox->Items->Add(IntToStr(int(i)));
+   if(index >=0 && index <LayersComboBox->Items->Count)
+	LayersComboBox->ItemIndex=index;
+   else
+    LayersComboBox->ItemIndex=0;
   }
-  for(size_t j=0;j<sample_data[i].first.GetSize();j++)
-  {
-   SampleStringGrid->Cells[0][i+1]=i;
-   SampleStringGrid->Cells[1][i+1]=IntToStr(sample_data[i].second);
-   SampleStringGrid->Cells[j+2][i+1]=FloatToStrF(sample_data[i].first.Double[j],ffFixed, 5,5);
-  }
- }
 
- int index=SampleStringGrid->Row-1;
- if(index>=0 && index<sample_data.size())
-  Bitmap=Sample->GetBitmapSampleData()[index].first;
+  DrawImageFromPerseptronData(Perseptron->Outputs.v[LayersComboBox->ItemIndex], Learning->TrainSample->SampleImageWidth, Learning->TrainSample->SampleImageHeight, Perseptron->MinOutputValue,
+								 Perseptron->MaxOutputValue, Bmp);
 
- Bitmap>>Image->Picture->Bitmap;
- Image->Repaint();  */
+  RDK::operator >>(Bmp,Image->Picture->Bitmap);
+  Image->Repaint();
 }
 
 // Сохраняет параметры интерфейса в xml
@@ -73,6 +74,17 @@ void TUCRDeepLearningPerseptronForm::ASaveParameters(RDK::Serialize::USerStorage
 void TUCRDeepLearningPerseptronForm::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
 {
 
+}
+
+void TUCRDeepLearningPerseptronForm::DrawImageFromPerseptronData(const std::vector<double> &data,
+					int image_width, int image_height, double min_output, double max_output, RDK::UBitmap &result)
+{
+ result.SetRes(image_width, image_height, RDK::ubmY8);
+ unsigned char * image_data=result.GetData();
+ for(size_t i=0;i<data.size();i++)
+ {
+  *image_data++=255-int((data[i]-min_output)*(255)/(max_output-min_output));
+ }
 }
 
 //---------------------------------------------------------------------------
@@ -91,6 +103,21 @@ void __fastcall TUCRDeepLearningPerseptronForm::ModeComboBoxSelect(TObject *Send
 
 {
  Learning->Mode=ModeComboBox->ItemIndex;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUCRDeepLearningPerseptronForm::Button1Click(TObject *Sender)
+{
+ Learning->Train1CreateLayer();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUCRDeepLearningPerseptronForm::FormShow(TObject *Sender)
+{
+  try{
+   Learning=RDK::dynamic_pointer_cast<RDK::UCRPerseptronDeepLearning>(GetModel()->GetComponentL(ComponentControlName));
+  }
+  catch(...){}
 }
 //---------------------------------------------------------------------------
 

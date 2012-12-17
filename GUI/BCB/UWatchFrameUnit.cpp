@@ -1103,7 +1103,7 @@ void TUWatchFrame::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
  for(int i=0;i<num_series;i++)
   {
    xml.SelectNode(i);
-   if(xml.GetNodeName() == "UpdateInterval" || xml.GetNodeName() == "WatchInterval")
+   if(xml.GetNodeName() == "UpdateInterval" || xml.GetNodeName() == "WatchInterval" || xml.GetNodeName() == "ComponentControlName")
    {
     xml.SelectUp();
 	UShowProgressBarForm->IncBarStatus(1);

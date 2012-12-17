@@ -523,8 +523,8 @@ bool UAContainer::SetActivity(bool activity)
  for(int i=0;i<NumComponents;i++,comps++)
   (*comps)->Activity=activity;
 
- if(activity)
-  return Reset(); // !!! Заглушка. Возможно это не нужно!
+// if(activity)
+//  return Reset(); // !!! Заглушка. Возможно это не нужно!
 
  Activity=activity;
  StepDuration=0;
