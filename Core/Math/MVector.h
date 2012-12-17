@@ -27,7 +27,7 @@ public:
 // --------------------------
 MVector(void);
 MVector(T defvalue);
-MVector(T xv, T yv, T zv);
+MVector(T xv, T yv, T zv=0);
 MVector(T xv, T yv, T zv, T dv);
 MVector(const MVector<T,Rows> &copy);
 MVector(const MMatrix<T,Rows,1> &copy);

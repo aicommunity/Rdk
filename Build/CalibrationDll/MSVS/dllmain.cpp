@@ -9,6 +9,11 @@
 #include <time.h>
 
 
+struct CPoint
+{
+ double x,y;
+};
+
 struct CProjectedPoint
 {
  double x,y;
@@ -596,18 +601,13 @@ memcpy(NewIntMat, cammatrix2.data, 3*3*sizeof(double));
 
  Mat map1, map2;
  cv::Rect rect;
- //cvInitUndistortMap(cammatrix, distvec, map1, map2);
- //cv::initUndistortRectifyMap( cammatrix, distvec, cv::Mat(), cammatrix,
- //                                   map1.size(), map1.type(), map1, map2 );
  cv::initUndistortRectifyMap(cammatrix, distvec, Mat(),
       cv::getOptimalNewCameraMatrix(cammatrix, distvec, sz, alpha, sz, &rect),
       sz, CV_16SC2, map1, map2);
  cv::remap(FRAME, FRAME2, map1, map2, CV_INTER_LINEAR);
 
+//cv::undistort(FRAME, FRAME2,cammatrix, distvec);
         memcpy(dest, FRAME2.data, 3*(imagewidth)*(imageheight));
-//memcpy(NewIntMat, cammatrix2.data, 3*3*sizeof(double));
-//cvNamedWindow("Image View",1);
-//imshow("Image View", FRAME2);
 }
 
 
@@ -621,7 +621,7 @@ __declspec(dllexport) void __cdecl CameraMarkerSearchInit(double *icc, double *d
 }
 
 // Осуществляет определение внешней калибровки по последнему найденому калибровочному маркеру
-__declspec(dllexport) int __cdecl ExternalCalibrationStep(unsigned char *imagedata, double* ecc, double *avg_error, double *max_error, double *min_error, CProjectedPoint *all_errors, bool ecc_mode, int camera_index)
+__declspec(dllexport) int __cdecl ExternalCalibrationStep(unsigned char *imagedata, double* ecc, double *avg_error, double *max_error, double *min_error, CProjectedPoint *all_errors, CPoint *detected_points, bool ecc_mode, int camera_index)
 {
  Mat rotation(3,3,CV_64F);
  Mat rvec, tvec;
@@ -667,6 +667,8 @@ __declspec(dllexport) int __cdecl ExternalCalibrationStep(unsigned char *imageda
  {
   pointbufF[i].x=pointbuf[i].x;
   pointbufF[i].y=pointbuf[i].y;
+  detected_points[i].x=pointbuf[i].x;
+  detected_points[i].y=pointbuf[i].y;
  }
 
  drawChessboardCorners( view, boardSize, Mat(pointbufF), found ); 

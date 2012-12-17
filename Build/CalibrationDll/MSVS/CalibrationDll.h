@@ -1,6 +1,11 @@
 #ifndef CALIBRATION_DLL_H
 #define CALIBRATION_DLL_H
 
+struct CPoint
+{
+ double x,y;
+};
+
 struct CProjectedPoint
 {
  double x,y;
@@ -37,7 +42,7 @@ __declspec(dllexport) void __cdecl CameraMarkerSearchInit(double *icc, double *d
 // Осуществляет определение внешней калибровки по последнему найденому калибровочному маркеру
 // если ecc_mode == true - то используется переданная матрица внешней калибровки
 // иначе матрица вычисляется по доске
-__declspec(dllexport) int __cdecl ExternalCalibrationStep(unsigned char *imagedata, double* ecc, double *avg_error, double *max_error, double *min_error, CProjectedPoint *all_errors, bool ecc_mode, int camera_index);
+__declspec(dllexport) int __cdecl ExternalCalibrationStep(unsigned char *imagedata, double* ecc, double *avg_error, double *max_error, double *min_error, CProjectedPoint *all_errors, CPoint *detected_points, bool ecc_mode, int camera_index);
 
 __declspec(dllexport) int __cdecl ComputeEpilines(CMVector2D* points, int num_points, int camera_index, double* f, double* cam_matrix, double *distcoeffs, CMVector2D *lines,unsigned char *imagedata)
 
