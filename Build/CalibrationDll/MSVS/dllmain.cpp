@@ -621,7 +621,7 @@ __declspec(dllexport) void __cdecl CameraMarkerSearchInit(double *icc, double *d
 }
 
 // Осуществляет определение внешней калибровки по последнему найденому калибровочному маркеру
-__declspec(dllexport) int __cdecl ExternalCalibrationStep(unsigned char *imagedata, double* ecc, double *avg_error, double *max_error, double *min_error, CProjectedPoint *all_errors, CPoint *detected_points, bool ecc_mode, int camera_index)
+__declspec(dllexport) int __cdecl ExternalCalibrationStep(unsigned char *imagedata, double* ecc, double *avg_error, double *max_error, double *min_error, CProjectedPoint *all_errors, CPoint *detected_points, bool ecc_mode, int undistort_mode, int camera_index)
 {
  Mat rotation(3,3,CV_64F);
  Mat rvec, tvec;
@@ -637,6 +637,17 @@ __declspec(dllexport) int __cdecl ExternalCalibrationStep(unsigned char *imageda
  vector<Point2d> pointbuf;
  Mat viewGray(Size(ImageWidth, ImageHeight), CV_8UC1, imagedata, Mat::AUTO_STEP);
  cvtColor(viewGray, view, CV_GRAY2BGR); 
+ Mat viewGray2(Size(ImageWidth, ImageHeight), CV_8UC1);
+ Mat view2(Size(ImageWidth, ImageHeight), CV_8UC3);
+
+ if(undistort_mode == 1)
+ {
+  cv::undistort(viewGray, viewGray2,cameraMatrix[camera_index], distCoeffs[camera_index]);
+  cv::undistort(view, view2,cameraMatrix[camera_index], distCoeffs[camera_index]);
+  viewGray=viewGray2;
+  view=view2;
+ }
+
  bool found;
  switch( pattern )
  {
@@ -685,10 +696,10 @@ __declspec(dllexport) int __cdecl ExternalCalibrationStep(unsigned char *imageda
   objectPoints[i].z=objectPointsF[i].z;
  }
  
- double test_icc1[3][3];
- double test_dist[5];
+ ///double test_icc1[3][3];
+ //double test_dist[5];
  int k=0;
- for(int i=0;i<3;i++)
+ /*for(int i=0;i<3;i++)
  {
   for(int j=0;j<3;j++)
   {
@@ -700,7 +711,7 @@ __declspec(dllexport) int __cdecl ExternalCalibrationStep(unsigned char *imageda
   {
    test_dist[j]=distCoeffs[camera_index].at<double>(j, 0);
   }
- 
+ */
  if(ecc_mode)
  {
   Mat cameraMatrixF(cameraMatrix[camera_index]);
@@ -708,6 +719,12 @@ __declspec(dllexport) int __cdecl ExternalCalibrationStep(unsigned char *imageda
   Mat distCoeffsF(distCoeffs[camera_index]);
   distCoeffsF.convertTo(distCoeffsF, CV_32F);
 
+  if(undistort_mode == 1)
+  {
+   for(int i=0;i<5;i++)
+    distCoeffsF.at<float>(i, 0)=0;
+  }
+ 
   Mat rotation(3,3,CV_32F);
   Mat tvecF(3,1,CV_32F);
   Mat rvecF;
@@ -727,12 +744,24 @@ __declspec(dllexport) int __cdecl ExternalCalibrationStep(unsigned char *imageda
  }
  else
  {
-  cv::solvePnP(objectPoints,pointbuf,cameraMatrix[camera_index],distCoeffs[camera_index],rvec, tvec);
   Mat cameraMatrixF(cameraMatrix[camera_index]);
-  cameraMatrixF.convertTo(cameraMatrixF, CV_32F);
   Mat distCoeffsF(distCoeffs[camera_index]);
-  distCoeffsF.convertTo(distCoeffsF, CV_32F);
-
+  if(undistort_mode == 1)
+  {
+   cameraMatrixF.convertTo(cameraMatrixF, CV_32F);
+   Mat undistort_dist_coeffs(distCoeffs[camera_index]);
+   for(int i=0;i<5;i++)
+	undistort_dist_coeffs.at<double>(i,0)=0;
+   cv::solvePnP(objectPoints,pointbuf,cameraMatrix[camera_index],undistort_dist_coeffs,rvec, tvec);
+   cameraMatrix[camera_index].convertTo(cameraMatrixF, CV_32F);
+   undistort_dist_coeffs.convertTo(distCoeffsF, CV_32F);
+  }
+  else
+  {
+   cv::solvePnP(objectPoints,pointbuf,cameraMatrix[camera_index],distCoeffs[camera_index],rvec, tvec);
+   cameraMatrixF.convertTo(cameraMatrixF, CV_32F);
+   distCoeffsF.convertTo(distCoeffsF, CV_32F);
+  }
   Mat rvecF(rvec);
   rvecF.convertTo(rvec, CV_32F);
   Mat tvecF(tvec);
