@@ -364,6 +364,7 @@ std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, MPlan
 }
 
 // MBorder
+/*
 template<typename CharT>
 std::basic_ostream<CharT>& operator << (std::basic_ostream<CharT>& stream, const MBorder &data)
 {
@@ -381,8 +382,9 @@ std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, MBord
  data=temp;
  return stream;
 }
-
+     */
 // MVertex
+/*
 template<typename CharT,typename T, int Rows>
 std::basic_ostream<CharT>& operator << (std::basic_ostream<CharT>& stream, const MVertex<T,Rows> &data)
 {
@@ -417,7 +419,8 @@ std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, MVert
  data=temp2;
  return stream;
 }
-
+	 */
+	 /*
 // MGeometry
 template<typename CharT,typename T, int Rows>
 std::basic_ostream<CharT>& operator << (std::basic_ostream<CharT>& stream, const MGeometry<T,Rows> &data)
@@ -452,7 +455,7 @@ std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, MGeom
  data.SetVertex(vtemp);
  data.SetBorders(btemp);
  return stream;
-}
+}       */
 /*
 // MCSystem
 template<typename CharT,typename T>

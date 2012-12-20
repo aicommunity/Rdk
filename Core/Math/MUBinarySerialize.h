@@ -15,6 +15,8 @@ See file license.txt for more information
 #include <iostream>
 #include "../Serialize/Serialize.h"
 #include "MVector.h"
+#include "MDVector.h"
+#include "MDMatrix.h"
 //#include "MDyad.h"
 //#include "MTensor.h"
 //#include "MTheormec.h"
@@ -78,6 +80,67 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, MMatrix<T,Rows,Cols>
  for(unsigned i=0;i<Rows;i++)
  {
   for(unsigned j=0;j<Cols;j++)
+   operator >>(storage,data.Data[i][j]);
+ }
+ return storage;
+}
+
+// MDVector
+template<typename T>
+USerStorageBinary& operator << (USerStorageBinary& storage, const MDVector<T> &data)
+{
+ unsigned int size=data.GetSize();
+ operator <<(storage,size);
+
+ for(unsigned i=0;i<data.GetRows();i++)
+  operator <<(storage,data.Data1D[i]);
+ return storage;
+}
+
+template<typename T>
+USerStorageBinary& operator >> (USerStorageBinary& storage, MDVector<T> &data)
+{
+ unsigned int size=0;
+ operator >>(storage,size);
+
+ data.Resize(size);
+
+ for(unsigned i=0;i<data.GetRows();i++)
+  operator >>(storage,data.Data1D[i]);
+ return storage;
+}
+
+// MDMatrix
+template<typename T>
+USerStorageBinary& operator << (USerStorageBinary& storage, const MDMatrix<T> &data)
+{
+ int rows=data.GetRows();
+ operator <<(storage,rows);
+
+ int cols=data.GetCols();
+ operator <<(storage,cols);
+
+ for(unsigned i=0;i<data.GetRows();i++)
+ {
+  for(unsigned j=0;j<data.GetCols();j++)
+   operator <<(storage,data.Data[i][j]);
+ }
+ return storage;
+}
+
+template<typename T>
+USerStorageBinary& operator >> (USerStorageBinary& storage, MDMatrix<T> &data)
+{
+ unsigned int rows=0;
+ operator >>(storage,rows);
+ unsigned int cols=0;
+ operator >>(storage,cols);
+
+ data.SetDim(rows,cols);
+
+ for(unsigned i=0;i<rows;i++)
+ {
+  for(unsigned j=0;j<cols;j++)
    operator >>(storage,data.Data[i][j]);
  }
  return storage;
@@ -247,7 +310,7 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, MPlane<T, Rows> &dat
  operator >> (storage,data.Distance);
  return storage;
 }
-
+					/*
 // MBorder
 USerStorageBinary& operator << (USerStorageBinary& storage, const MBorder &data);
 
@@ -273,12 +336,13 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, MVertex<T, Rows> &da
  data=temp2;
  return storage;
 }
-
+               */
 // MGeometry
 template<typename T, int Rows>
 USerStorageBinary& operator << (USerStorageBinary& storage, const MGeometry<T, Rows> &data)
 {
- operator << (storage,data.GetVertex());
+ operator << (storage,data.GetVerices());
+ operator << (storage,data.GetVericesNames());
  operator << (storage,data.GetBorders());
  return storage;
 }
@@ -286,12 +350,14 @@ USerStorageBinary& operator << (USerStorageBinary& storage, const MGeometry<T, R
 template<typename T, int Rows>
 USerStorageBinary& operator >> (USerStorageBinary& storage, MGeometry<T, Rows> &data)
 {
- MVertex<T,Rows> vtemp;
+ std::vector<MVector<T,Rows> > vtemp;
+ std::vector<std::string> vntemp;
  std::vector<MBorder> btemp;
 
  operator >> (storage,vtemp);
  operator >> (storage,btemp);
- data.SetVertex(vtemp);
+ data.SetVerices(vtemp);
+ data.SetVericesNames(vntemp);
  data.SetBorders(btemp);
 
  return storage;

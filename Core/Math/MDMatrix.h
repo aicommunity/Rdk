@@ -10,7 +10,15 @@ public:
 // Данные матрицы
 int Rows;
 int Cols;
-T** Data;
+union
+{
+ T* Data;
+ T* Data1D;
+ struct
+ {
+  T x,y,z,d;
+ };
+};
 public:
 // --------------------------
 // Конструкторы и деструкторы
@@ -23,9 +31,8 @@ MDMatrix(int rows, int cols, const T* data);
 ~MDMatrix();
 
 // Задание размерности
-void SetDim(int rows, int cols);
-// Проверка и изменения размерности
-void CheckDim(int rows, int cols);
+void Resize(int rows, int cols);
+
 
 // --------------------------
 // Операторы управления данными
@@ -40,6 +47,9 @@ int GetCols(void) const;
 int GetRows(void) const;
 
 // Доступ к элементу
+T& operator [] (int i);
+const T& operator [] (int i) const;
+
 T& operator () (int i, int j);
 const T& operator () (int i, int j) const;
 
@@ -127,90 +137,71 @@ protected:
 // --------------------------
 template<class T>
 MDMatrix<T>::MDMatrix(void)
+: Rows(0),Cols(0),Data(0)
 {
-	Data=NULL;
 };
 
 template<class T>
 MDMatrix<T>::MDMatrix(int rows, int cols)
+: Rows(0),Cols(0),Data(0)
 {
-	SetDim(rows, cols);
+	Resize(rows, cols);
 };
 
 template<class T>
 MDMatrix<T>::MDMatrix(int rows, int cols, T defvalue)
+: Rows(0),Cols(0),Data(0)
 {
-	SetDim(rows, cols);
-	for(int i=0;i<Rows;i++)
-		for(int j=0;j<Cols;j++)
-	Data[i][j]=defvalue;
+ Resize(rows, cols);
+ for(int i=0;i<Rows*Cols;i++)
+   Data[i]=defvalue;
 };
 
 template<class T>
 MDMatrix<T>::MDMatrix(const MDMatrix<T> &copy)
+: Rows(0),Cols(0),Data(0)
 {
-	//*this=copy;
-	SetDim(copy.Rows, copy.Cols);
-	for(int i=0;i<Rows;i++)
-		for(int j=0;j<Cols;j++)
-	Data[i][j]=copy.Data[i][j]; };
+ *this=copy;
+};
 
 template<class T>
 MDMatrix<T>::MDMatrix(const int rows, const  int cols, const T* data)
-{ 	SetDim(rows, cols);
-	for(int i=0;i<Rows;i++)
-		for(int j=0;j<Cols;j++)
-			Data[i][j]=data[i*Cols+j]; };
+: Rows(0),Cols(0),Data(0)
+{
+ Resize(rows, cols);
+ *this=data;
+};
 
 template<class T>
 MDMatrix<T>::~MDMatrix()
 {
-	delete[] Data;
+ delete[] Data;
 };
 // --------------------------
 
 // --------------------------
 // Задание размерности
 template<class T>
-void MDMatrix<T>::SetDim(int rows, int cols)
+void MDMatrix<T>::Resize(int rows, int cols)
 {
-	if(rows>0 && cols>0)
-	{
-		Rows=rows;
-		Cols=cols;
-		Data = new T *[Rows];
-		for(int i=0; i<Rows; i++)
-			Data[i] = new T [Cols];
-	}
-};
+ if(rows == Rows && cols == Cols)
+  return;
 
-// Проверка и изменения размерности
-template<class T>
-void MDMatrix<T>::CheckDim(int rows, int cols)
-{
-	if(Rows>rows && Cols>cols)
-	{
-		Rows=rows;
-		Cols=cols;
-	}
-	else
-	{
-		if(Rows>=rows && Cols<cols)
-		{
-			Cols=cols;
-			Rows=rows;
-			for(int i=0; i<Rows; i++)
-			{
-				delete[] Data[i];
-				Data[i] = new T [Cols];
-			}
-		}
-		else
-		{
-			delete[] Data;
-			SetDim(rows, cols);
-		}
-	}
+ if(rows<0 || cols<0)
+  return;
+
+ T* new_data=0;
+ if(rows && cols)
+ {
+  new_data = new T[rows*cols];
+  for(int i=0; i<(Rows<rows)?Rows:rows; i++)
+   for(int j=0;j<(Cols<cols)?Cols:cols; j++)
+    new_data[i*cols+j]=Data[i*Cols+j];
+ }
+ delete []Data;
+ Data=new_data;
+ Rows=rows;
+ Cols=cols;
 };
 // --------------------------
 
@@ -222,34 +213,25 @@ void MDMatrix<T>::CheckDim(int rows, int cols)
 template<class T>
 const MDMatrix<T>& MDMatrix<T>::operator = (const MDMatrix<T> &copy)
 {
-	if(Data==NULL) SetDim(copy.Rows, copy.Cols);
-
-	CheckDim(copy.Rows, copy.Cols);
-
-	for(int i=0;i<Rows;i++)
-		for(int j=0;j<Cols;j++)
-			Data[i][j]=copy.Data[i][j];
-
-	return *this;
+ Resize(copy.Rows, copy.Cols);
+ memcpy(Data,copy.Data,Rows*Cols*sizeof(T));
+ return *this;
 };
 
 template<class T>
 MDMatrix<T>& MDMatrix<T>::operator = (T value)
 {
- if(Data==NULL) SetDim(1, 1);
  for(int i=0;i<Rows;i++)
-		for(int j=0;j<Cols;j++)
-			Data[i][j]=value;
+  for(int j=0;j<Cols;j++)
+   Data[i][j]=value;
  return *this;
 };
 
 template<class T>
 MDMatrix<T>& MDMatrix<T>::operator = (const T* data)
 {
-	for(int i=0;i<Rows;i++)
-		for(int j=0;j<Cols;j++)
-			Data[i][j]=data[i*Cols+j];
-	return *this;
+ memcpy(Data,data,Rows*Cols*sizeof(T));
+ return *this;
 }
 
 // Получение размерности матриц
@@ -268,15 +250,27 @@ int MDMatrix<T>::GetRows(void) const
 // --------------------------
 // Доступ к элементу
 template<class T>
+T& MDMatrix<T>::operator [] (int i)
+{
+ return Data1D[i];
+}
+
+template<class T>
+const T& MDMatrix<T>::operator [] (int i) const
+{
+ return Data1D[i];
+}
+
+template<class T>
 T& MDMatrix<T>::operator () (int i, int j)
 {
- return Data[i][j];
+ return Data[i*Cols+j];
 };
 
 template<class T>
 const T& MDMatrix<T>::operator () (int i, int j) const
 {
- return Data[i][j];
+ return Data[i*Cols+j];
 };
 // --------------------------
 
@@ -284,9 +278,9 @@ const T& MDMatrix<T>::operator () (int i, int j) const
 template<class T>
 MDMatrix<T> MDMatrix<T>::GetRow(int i) const
 {
- MDMatrix<T> res(Cols,1);
+ MDMatrix<T> res(1,Cols);
  for(int j=0;j<Cols;j++)
-  res.Data[j][0]=Data[i][j];
+  res.Data[j]=Data[i*Cols+j];
  return res;
 };
 
@@ -296,7 +290,7 @@ MDMatrix<T> MDMatrix<T>::GetCol(int i) const
 {
  MDMatrix<T> res(Rows,1);
  for(int j=0;j<Rows;j++)
-  res.Data[j][0]=Data[j][i];
+  res.Data[j]=Data[j*Cols+i];
  return res;
 };
 
@@ -308,9 +302,11 @@ MDMatrix<T> MDMatrix<T>::GetCol(int i) const
 template<class T>
 MDMatrix<T>& MDMatrix<T>::operator += (const MDMatrix<T> &M)
 {
- for(int i=0;i<Rows;i++)
-		for(int j=0;j<Cols;j++)
-			Data[i][j]+=M.Data[i][j];
+ if(Rows != M.Rows || Cols != M.Cols)
+  return *this;
+
+ for(int i=0;i<Rows*Cols;i++)
+   Data[i]+=M.Data[i];
 
  return *this;
 }
@@ -319,9 +315,8 @@ template<class T>
 MDMatrix<T> operator + (const MDMatrix<T> &M1, const MDMatrix<T> &M2)
 {
  MDMatrix<T> res(M1);
-  for(int i=0;i<M1.Rows;i++)
-		for(int j=0;j<M1.Cols;j++)
-			res.Data[i][j]+=M2.Data[i][j];
+
+ res+=M2;
 
  return res;
 }
@@ -329,9 +324,11 @@ MDMatrix<T> operator + (const MDMatrix<T> &M1, const MDMatrix<T> &M2)
 template<class T>
 MDMatrix<T>& MDMatrix<T>::operator -= (const MDMatrix<T> &M)
 {
- for(int i=0;i<Rows;i++)
-		for(int j=0;j<Cols;j++)
-			Data[i][j]-=M.Data[i][j];
+ if(Rows != M.Rows || Cols != M.Cols)
+  return *this;
+
+ for(int i=0;i<Rows*Cols;i++)
+   Data[i]-=M.Data[i];
 
  return *this;
 }
@@ -340,9 +337,8 @@ template<class T>
 MDMatrix<T> operator - (const MDMatrix<T> &M1, const MDMatrix<T> &M2)
 {
  MDMatrix<T> res(M1);
-  for(int i=0;i<M1.Rows;i++)
-		for(int j=0;j<M1.Cols;j++)
-			res.Data[i][j]-=M2.Data[i][j];
+
+ res-=M2;
 
  return res;
 }
@@ -358,8 +354,8 @@ MDMatrix<T> operator * (const MDMatrix<T> &M1, const MDMatrix<T> &M2)
   {
    T sum=0;
    for(int i=0;i<M1.Cols;i++)
-	sum+=M1.Data[k][i]*M2.Data[i][j];
-   res.Data[k][j]=sum;
+	sum+=M1.Data[k*M1.Cols+i]*M2.Data[i*M2.Cols+j];
+   res.Data[k*res.Cols+j]=sum;
   }
  }
 
@@ -375,9 +371,8 @@ MDMatrix<T> MDMatrix<T>::operator - (void) const
 {
  MDMatrix<T> res(Rows,Cols);
 
-  for(int i=0;i<Rows;i++)
-		for(int j=0;j<Cols;j++)
-			res.Data[i][j]=-Data[i][j];
+ for(int i=0;i<Rows*Cols;i++)
+  res.Data[i]=-Data[i];
 
  return res;
 }
@@ -385,9 +380,8 @@ MDMatrix<T> MDMatrix<T>::operator - (void) const
 template<class T>
 MDMatrix<T>& MDMatrix<T>::operator *= (T v)
 {
- for(int i=0;i<Rows;i++)
-		for(int j=0;j<Cols;j++)
-			Data[i][j]*=v;
+ for(int i=0;i<Rows*Cols;i++)
+  Data[i]*=v;
 
  return *this;
 }
@@ -409,9 +403,8 @@ MDMatrix<T> operator * (T v, const MDMatrix<T> &M)
 template<class T>
 MDMatrix<T>& MDMatrix<T>::operator /= (T v)
 {
-  for(int i=0;i<Rows;i++)
-		for(int j=0;j<Cols;j++)
-			Data[i][j]/=v;
+ for(int i=0;i<Rows*Cols;i++)
+  Data[i]/=v;
 
   return *this;
 }
@@ -426,9 +419,8 @@ MDMatrix<T> operator / (const MDMatrix<T> &M, T v)
 template<class T>
 MDMatrix<T>& MDMatrix<T>::operator += (T v)
 {
- for(int i=0;i<Rows;i++)
-		for(int j=0;j<Cols;j++)
-			Data[i][j]+=v;
+ for(int i=0;i<Rows*Cols;i++)
+  Data[i]+=v;
 
  return *this;
 }
@@ -450,9 +442,8 @@ MDMatrix<T> operator + (T v, const MDMatrix<T> &M)
 template<class T>
 MDMatrix<T>& MDMatrix<T>::operator -= (T v)
 {
-for(int i=0;i<Rows;i++)
-		for(int j=0;j<Cols;j++)
-			Data[i][j]-=v;
+ for(int i=0;i<Rows*Cols;i++)
+  Data[i]-=v;
 
  return *this;
 }
@@ -479,10 +470,13 @@ MDMatrix<T> operator - (T v, const MDMatrix<T> &M)
 template<class T>
 bool operator == (const MDMatrix<T> &M1, const MDMatrix<T> &M2)
 {
-	bool flag = 1;
-	for(int i=0;i<M1.Rows;i++)
-		for(int j=0;j<M1.Cols;j++)
-			if(M1.Data[i][j]!=M2.Data[i][j]) flag=0;
+ if(M1.Rows != M2.Rows || M1.Cols != M2.Cols)
+  return false;
+
+ bool flag = 1;
+ for(int i=0;i<M1.Rows*M1.Cols;i++)
+  if(M1.Data[i] != M2.Data[i])
+   flag=0;
  return flag;
 }
 
@@ -502,11 +496,10 @@ bool operator != (const MDMatrix<T> &M1, const MDMatrix<T> &M2)
 template<class T>
 MDMatrix<T>& MDMatrix<T>::Transpose(MDMatrix<T> &res) const
 {
-	for(int i=0;i<Rows;i++)
-		for(int j=0;j<Cols;j++)
-		 {
-			res.Data[j][i]=Data[i][j];
-		}
+ res.Resize(Cols,Rows);
+ for(int i=0;i<Rows;i++)
+  for(int j=0;j<Cols;j++)
+   res.Data[j*Rows+i]=Data[i*Cols+j];
 
  return res;
 }
@@ -530,7 +523,7 @@ int MDMatrix<T>::TriangleGauss(void)
 
  for (i=0; i<Rows-1; i++)
  {
-  cWorkElem = Data[i][i];
+  cWorkElem = (*this)(i,i);
 
   if(cWorkElem == 0)
   {
@@ -538,12 +531,12 @@ int MDMatrix<T>::TriangleGauss(void)
    // среди строк, лежащих ниже
    for (j=i+1; i<Rows; i++)
    {
-	cWorkElem = Data[j][i];
+	cWorkElem = (*this)(j,i);
 	if (cWorkElem!=0)
 	{
 	 // добавляем найденную строку к рабочей
 	 for (k=0; k<Rows; k++)
-	  Data[i][k]+=Data[j][k];
+	  (*this)(i,k)+=(*this)(j,k);
 	 break;
 	}
    }
@@ -556,7 +549,7 @@ int MDMatrix<T>::TriangleGauss(void)
    for (j=i+1; j<Rows; j++)
    {
 	for (k=Rows-1;k>=i;k--)
-	 Data[j][k] -= Data[i][k] * Data[j][i] / cWorkElem;
+	 (*this)(j,k) -= (*this)(i,k) * (*this)(j,i) / cWorkElem;
    }
   }
  }
@@ -576,10 +569,10 @@ int MDMatrix<T>::TriangleBareis(void)
 	for(int l1=0; l1<Rows-1; ++l1)
 	{ //Перебираю все строки матрицы, кроме последней
 		int maxN=l1;
-		T maxValue=fabs(Data[l1][l1]);
+		T maxValue=fabs((*this)(l1,l1));
 		for(int l2=l1+1; l2<Rows; ++l2)
 		{ //Нахожу строку с максимальным по модулю элементом
-			T const value=fabs(Data[l2][l1]);
+			T const value=fabs((*this)(l2,l1));
 			if( value > maxValue ) { maxN=l2; maxValue=value; }
 		}
 
@@ -587,9 +580,9 @@ int MDMatrix<T>::TriangleBareis(void)
 		{ //Нужен обмен
 		 for(int i=0;i<Cols;i++)
 		 {
-		  T temp=Data[l1][i];
-		  Data[l1][i]=Data[maxN][i];
-		  Data[maxN][i]=temp;
+		  T temp=(*this)(l1,i);
+		  (*this)(l1,i)=(*this)(maxN,i);
+		  (*this)(maxN,i)=temp;
 		 }
 
 //			T *const temp=Data[l1];
@@ -600,15 +593,15 @@ int MDMatrix<T>::TriangleBareis(void)
             if(maxValue == T(0)) return exchanges;
         }
 
-		T const value1=Data[l1][l1]; //!
+		T const value1=(*this)(l1,l1); //!
 		  //!
 
 		for(int l2=l1+1; l2<Rows; ++l2)
 		{ //Вычитаю строку из всех последующих
-			T const value2=Data[l2][l1]; //!
-			Data[l2][l1] = T(0);
+			T const value2=(*this)(l2,l1); //!
+			(*this)(l2,l1) = T(0);
 			for(int c=l1+1; c<Rows; ++c) //!
-				Data[l2][c]=(Data[l2][c]*value1-Data[l1][c]*value2)/denom;
+				(*this)(l2,c)=((*this)(l2,c)*value1-(*this)(l1,c)*value2)/denom;
         }
 
         denom = value1; //!
@@ -639,9 +632,9 @@ MDMatrix<T>& MDMatrix<T>::Inverse(MDMatrix<T> &res) const
   {
    // get the co-factor (matrix) of A(j,i)
    GetMinor(Minor,j,i);
-   res.Data[i][j] = det*Minor.Det();
+   res(i,j) = det*Minor.Det();
    if( (i+j)%2 == 1)
-	res.Data[i][j] = -res.Data[i][j];
+	res(i,j) = -res(i,j);
    }
   }
 
@@ -664,33 +657,9 @@ T MDMatrix<T>::Det(void) const
 
  int numcombos=Temp.TriangleBareis();
 
- T det = Temp.Data[Rows-1][Cols-1];
-// for(int i=0;i<Rows;i++)
-//  det*=Temp.Data[i][i];
+ T det = Temp(Rows-1,Cols-1);
 
  return (numcombos%2)?-det:det;
-
-// if(Rows == 2)
-//  return Data[0][0]*Data[1][1]-Data[0][1]*Data[1][0];
-
-// if(Rows == 1)
-//  return Data[0][0];
-
- // the determinant value
-// T det = 0;
-
-// for(int i = 0; i < Rows; i++ )
-// {
-  // get minor of element (0,i)
- // MDMatrix<T,Cols-1,Rows-1> Res;
-
- // GetMinor( Res, 0, i);
-
-  // the recusion is here!
- // det += (i%2==1?-1.0:1.0) * Data[0][i] * (Res.GetRows()>1)?Res.Det():Res.Data[0][0];
-  //det += pow( -1.0, i ) * mat[0][i] * CalcDeterminant( minor,order-1 );
-// }
- //return det;
 }
 
 // Вычисление минорной матрицы
@@ -709,7 +678,7 @@ MDMatrix<T>& MDMatrix<T>::GetMinor(MDMatrix<T> &res, int row, int col) const
 				// when j is not the element
 				if( j != col )
 				{
-					res.Data[colCount][rowCount] = Data[i][j];
+					res(colCount,rowCount) = (*this)(i,j);
 					rowCount++;
 				}
 			}
@@ -735,7 +704,7 @@ T MDMatrix<T>::Trace(void) const
 
  T sum=0;
  for(int i=0;i<crmin;i++)
-  sum+=Data[i][i];
+  sum+=(*this)(i,i);
 
  return sum;
 }
@@ -747,7 +716,7 @@ T MDMatrix<T>::operator !(void) const
  T res=0;
   for(int i=0;i<Rows;i++)
 	for(int j=0;j<Cols;j++)
-		res+=Data[i][j] * Data[i][j];
+		res+=(*this)(i,j) * (*this)(i,j);
  return sqrt(res);
 }
 
@@ -760,9 +729,7 @@ MDMatrix<T>& MDMatrix<T>::Normalize(void)
  if(!norm)
   return *this;
 
- for(int i=0;i<Rows;i++)
-	for(int j=0;j<Cols;j++)
-		Data[i][j]/=norm;
+ (*this)/=norm;
 
  return *this;
 }
@@ -777,9 +744,7 @@ MDMatrix<T> MDMatrix<T>::Zero(void)
 {
  MDMatrix<T> res(Rows,Cols);
 
-  for(int i=0;i<Rows;i++)
-	for(int j=0;j<Cols;j++)
-		res.Data[i][j]=0;
+ res=T(0);
 
  return res;
 }
@@ -789,14 +754,12 @@ template<class T>
 MDMatrix<T> MDMatrix<T>::Eye(void)
 {
  MDMatrix<T> res(Rows,Cols);
-  for(int i=0;i<Rows;i++)
-	for(int j=0;j<Cols;j++)
-		res.Data[i][j]=0;
+ res=T(0);
 
  int crmin=(Cols<Rows)?Cols:Rows;
 
  for(int i=0;i<crmin;i++)
-  res.Data[i][i]=1;
+  res(i,i)=1;
 
  return res;
 }

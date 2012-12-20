@@ -25,53 +25,6 @@ See file license.txt for more information
 namespace RDK {
 namespace Serialize {
 
-// MVector
-/*template<typename T>
-USerStorageXML& operator << (USerStorageXML& storage, const MVector<T,3> &data)
-{
- storage.SetNodeAttribute("Type","MVector");
- storage.AddNode("x");
- storage<<data.x;
- storage.SelectUp();
-
- storage.AddNode("y");
- storage<<data.y;
- storage.SelectUp();
-
- storage.AddNode("z");
- storage<<data.z;
- storage.SelectUp();
-
- return storage;
-}
-
-template<typename T>
-USerStorageXML& operator >> (USerStorageXML& storage, MVector<T,3> &data)
-{
- if(storage.GetNodeAttribute("Type") != "MVector")
-  return storage;
-
- if(!storage.SelectNode("x"))
-  return storage;
-
- storage>>data.x;
- storage.SelectUp();
-
- if(!storage.SelectNode("y"))
-  return storage;
-
- storage>>data.y;
- storage.SelectUp();
-
- if(!storage.SelectNode("z"))
-  return storage;
-
- storage>>data.z;
- storage.SelectUp();
-
- return storage;
-}
-       */
 template<typename T, unsigned Rows>
 USerStorageXML& operator << (USerStorageXML& storage, const MVector<T,Rows> &data)
 {
@@ -81,7 +34,7 @@ USerStorageXML& operator << (USerStorageXML& storage, const MVector<T,Rows> &dat
  {
   stream<<data.Data1D[i];
   if(i<Rows-1)
-   stream<<"\t";
+   stream<<" ";
  }
 
  storage.SetNodeText(stream.str());
@@ -129,9 +82,9 @@ USerStorageXML& operator >> (USerStorageXML& storage, MMatrix<T,Rows,Cols> &data
  std::string rvalue=storage.GetNodeText();
  std::stringstream stream(storage.GetNodeText().c_str());
 
- for(unsigned i=0;i<Rows;i++)
+ for(int i=0;i<Rows;i++)
  {
-  for(unsigned j=0;j<Cols;j++)
+  for(int j=0;j<Cols;j++)
   {
    stream>>data.Data[i][j];
   }
@@ -141,213 +94,119 @@ USerStorageXML& operator >> (USerStorageXML& storage, MMatrix<T,Rows,Cols> &data
 }
 
 
-/*
-#ifdef MDVECTOR_H
-USerStorageXML& operator << (USerStorageXML& storage, const MDVector &data)
-{
-  storage.SetNodeAttribute("Type","MDVector");
- storage.AddNode("x");
- storage<<data.x;
- storage.SelectUp();
-
- storage.AddNode("y");
- storage<<data.y;
- storage.SelectUp();
-
- storage.AddNode("z");
- storage<<data.z;
- storage.SelectUp();
-
- return storage;
-}
-USerStorageXML& operator >> (USerStorageXML& storage, MDVector &data)
-{
- if(storage.GetNodeAttribute("Type") != "MDVector")
-  return storage;
-
- if(!storage.SelectNode("x"))
-  return storage;
-
- storage>>data.x;
- storage.SelectUp();
-
- if(!storage.SelectNode("y"))
-  return storage;
-
- storage>>data.y;
- storage.SelectUp();
-
- if(!storage.SelectNode("z"))
-  return storage;
-
- storage>>data.z;
- storage.SelectUp();
-
- return storage;
-}
-#endif
-*/                      /*
-// MRotationTensor
+// MDVector
 template<typename T>
-USerStorageXML& operator << (USerStorageXML& storage, const MRotationTensor<T> &data)
+USerStorageXML& operator << (USerStorageXML& storage, const MDVector<T> &data)
 {
- storage.SetNodeAttribute("Type","MRotationTensor");
- storage.AddNode("m");
- storage<<data.m;
- storage.SelectUp();
+ std::stringstream stream;
 
- storage.AddNode("angle");
- storage<<data.angle;
- storage.SelectUp();
+ int size=data.GetSize();
+ storage.SetNodeAttribute("Size",sntoa(size));
+ for(int i=0;i<data.GetRows();i++)
+ {
+  stream<<data.Data1D[i];
+  if(i<data.GetRows()-1)
+   stream<<" ";
+ }
+
+ storage.SetNodeText(stream.str());
 
  return storage;
 }
 
 template<typename T>
-USerStorageXML& operator >> (USerStorageXML& storage, MRotationTensor<T> &data)
+USerStorageXML& operator >> (USerStorageXML& storage, MDVector<T> &data)
 {
- if(storage.GetNodeAttribute("Type") != "MRotationTensor")
-  return storage;
+ if(storage.GetNodeAttribute("Type") == "std::vector")
+ {
+  unsigned int size=0;
+  size=RDK::atoi(storage.GetNodeAttribute("Size"));
 
- if(!storage.SelectNode("m"))
-  return storage;
+  if(size <= 0)
+  {
+   data.Resize(0);
+   return storage;
+  }
 
- storage>>data.m;
- storage.SelectUp();
+  data.Resize(size);
+  for(size_t i=0;i<size;i++)
+  {
+   if(!storage.SelectNode("elem",i))
+	return storage;
+   operator >>(storage,data.Data[i]);
+   storage.SelectUp();
+  }
+ }
+ else
+ {
+  int size=0;
+  size=RDK::atoi(storage.GetNodeAttribute("Size"));
 
- if(!storage.SelectNode("angle"))
-  return storage;
+  data.Resize(size);
 
- storage>>data.angle;
- storage.SelectUp();
+  if(size>0)
+  {
+   std::string rvalue=storage.GetNodeText();
+   std::stringstream stream(storage.GetNodeText().c_str());
 
+   for(int i=0;i<data.GetRows();i++)
+	stream>>data.Data1D[i];
+  }
+ }
  return storage;
-
 }
 
-
-// MKinematicBody
+// MDMatrix
 template<typename T>
-USerStorageXML& operator << (USerStorageXML& storage, const MKinematicBody<T> &data)
+USerStorageXML& operator << (USerStorageXML& storage, const MDMatrix<T> &data)
 {
- storage.SetNodeAttribute("Type","MKinematicBody");
- storage.AddNode("Rotation");
- storage<<data.Rotation;
- storage.SelectUp();
+ int rows=data.GetRows();
+ int cols=data.GetCols();
+ storage.SetNodeAttribute("Rows",sntoa(rows));
+ storage.SetNodeAttribute("Cols",sntoa(cols));
 
- storage.AddNode("TranslationSpeed");
- storage<<data.TranslationSpeed;
- storage.SelectUp();
+ std::stringstream stream;
 
- storage.AddNode("AngleSpeed");
- storage<<data.AngleSpeed;
- storage.SelectUp();
+ stream<<endl;
+ for(int i=0;i<rows;i++)
+ {
+  for(int j=0;j<cols;j++)
+  {
+   stream<<data.Data[i][j]<<"\t";
+  }
+  if(i<rows-1)
+   stream<<endl;
+ }
 
- return storage;
-}
-
-template<typename T>
-USerStorageXML& operator >> (USerStorageXML& storage, MKinematicBody<T> &data)
-{
- if(storage.GetNodeAttribute("Type") != "MKinematicBody")
-  return storage;
-
- if(!storage.SelectNode("Rotation"))
-  return storage;
-
- storage>>data.Rotation;
- storage.SelectUp();
-
- if(!storage.SelectNode("TranslationSpeed"))
-  return storage;
-
- storage>>data.TranslationSpeed;
- storage.SelectUp();
-
- if(!storage.SelectNode("AngleSpeed"))
-  return storage;
-
- storage>>data.AngleSpeed;
- storage.SelectUp();
-
- return storage;
-
-}
-
-// MCSystem
-template<typename T>
-USerStorageXML& operator << (USerStorageXML& storage, const MCSystem<T> &data)
-{
- storage.SetNodeAttribute("Type","MCSystem");
- storage.AddNode("Basis0");
- storage<<data.Basis[0];
- storage.SelectUp();
-
- storage.AddNode("Basis1");
- storage<<data.Basis[1];
- storage.SelectUp();
-
- storage.AddNode("Basis2");
- storage<<data.Basis[2];
- storage.SelectUp();
-
- storage.AddNode("Location");
- storage<<data.Location;
- storage.SelectUp();
+ storage.SetNodeText(stream.str());
 
  return storage;
 }
 
 template<typename T>
-USerStorageXML& operator >> (USerStorageXML& storage, MCSystem<T> &data)
+USerStorageXML& operator >> (USerStorageXML& storage, MDMatrix<T> &data)
 {
- if(storage.GetNodeAttribute("Type") != "MCSystem")
-  return storage;
+ int rows=0;
+ rows=RDK::atoi(storage.GetNodeAttribute("Rows"));
+ int cols=0;
+ cols=RDK::atoi(storage.GetNodeAttribute("Cols"));
 
- if(!storage.SelectNode("Basis0"))
-  return storage;
+ data.Resize(rows,cols);
 
- storage>>data.Basis[0];
- storage.SelectUp();
+ std::string rvalue=storage.GetNodeText();
+ std::stringstream stream(storage.GetNodeText().c_str());
 
- if(!storage.SelectNode("Basis1"))
-  return storage;
-
- storage>>data.Basis[1];
- storage.SelectUp();
-
- if(!storage.SelectNode("Basis2"))
-  return storage;
-
- storage>>data.Basis[2];
- storage.SelectUp();
-
- if(!storage.SelectNode("Location"))
-  return storage;
-
- storage>>data.Location;
- storage.SelectUp();
+ for(int i=0;i<rows;i++)
+ {
+  for(int j=0;j<cols;j++)
+  {
+   stream>>data.Data[i*cols+j];
+  }
+ }
 
  return storage;
 }
-
-
-// MCartesianCSystem
-template<typename T>
-USerStorageXML& operator << (USerStorageXML& storage, const MCartesianCSystem<T> &data)
-{
- storage<<static_cast<const MCSystem<T>& >(data);
-
- return storage;
-}
-
-template<typename T>
-USerStorageXML& operator >> (USerStorageXML& storage, MCartesianCSystem<T> &data)
-{
- storage>>static_cast<MCSystem<T>& >(data);
-
- return storage;
-}          */
+			/*
 
 // MBorder
 USerStorageXML& operator << (USerStorageXML& storage, const MBorder &data);
@@ -397,14 +256,18 @@ USerStorageXML& operator >> (USerStorageXML& storage, MVertex<T, Rows> &data)
  return storage;
 
 }
-
+            */
 // MGeometry
 template<typename T, int Rows>
 USerStorageXML& operator << (USerStorageXML& storage, const MGeometry<T, Rows> &data)
 {
  storage.SetNodeAttribute("Type","MGeometry");
- storage.AddNode("Vertex");
- storage<<data.GetVertex();
+ storage.AddNode("Vertices");
+ storage<<data.GetVertices();
+ storage.SelectUp();
+
+ storage.AddNode("VerticesNames");
+ storage<<data.GetVerticesNames();
  storage.SelectUp();
 
  storage.AddNode("Borders");
@@ -418,17 +281,25 @@ template<typename T, int Rows>
 USerStorageXML& operator >> (USerStorageXML& storage, MGeometry<T, Rows> &data)
 {
  //Временные переменные
- MVertex<T,Rows> varVertexVector;
+ std::vector<MVector<T,Rows> > varVertices;
+ std::vector<std::string> varVerticesNames;
  std::vector<MBorder> varBorders;
 
 // if(storage.GetNodeAttribute("Type") != "MGeometry")
 //  return storage;
 
- if(!storage.SelectNode("Vertex"))
+ if(!storage.SelectNode("Vertices"))
   return storage;
 
- storage>>varVertexVector;
- data.SetVertex(varVertexVector);
+ storage>>varVertices;
+ data.SetVertices(varVertices);
+ storage.SelectUp();
+
+ if(!storage.SelectNode("VerticesNames"))
+  return storage;
+
+ storage>>varVertices;
+ data.SetVerticesNames(varVerticesNames);
  storage.SelectUp();
 
  if(!storage.SelectNode("Borders"))

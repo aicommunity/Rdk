@@ -275,11 +275,11 @@ void TVideoOutputFrame::DrawCapture(Graphics::TBitmap *bmp)
    bmp->PixelFormat=pf32bit;
   break;
   }
-// BmpSource.ReflectionX(&BmpCanvas);
- BmpCanvas=BmpSource;
+ BmpSource.ReflectionX(&BmpCanvas);
+// BmpCanvas=BmpSource;
 
  GeometryGraphics.Repaint();
-// BmpCanvas.ReflectionX();
+ BmpCanvas.ReflectionX();
  BmpCanvas>>bmp;
 }
 
@@ -289,10 +289,10 @@ void TVideoOutputFrame::UpdateGeometryList(TCheckListBox *GeometryCheckListBox, 
  int ix=GeometryCheckListBox->ItemIndex;
 
  GeometryCheckListBox->Clear();
- for(size_t i=0;i<GeometryGraphics.GetNumGeometry();i++)
-  GeometryCheckListBox->Items->Add(GeometryGraphics.GetDescription(i).Name.c_str());
- for(size_t i=0;i<GeometryGraphics.GetNumGeometry();i++)
-  GeometryCheckListBox->Checked[i]=GeometryGraphics.GetDescription(i).Visible;
+ for(size_t i=0;i<GeometryGraphics.GetNumGeometries();i++)
+  GeometryCheckListBox->Items->Add(GeometryGraphics.Description(i).Name.c_str());
+ for(size_t i=0;i<GeometryGraphics.GetNumGeometries();i++)
+  GeometryCheckListBox->Checked[i]=GeometryGraphics.Description(i).Visible;
 
  if(ix>=0)
   GeometryCheckListBox->ItemIndex=ix;
@@ -307,19 +307,19 @@ void TVideoOutputFrame::UpdateGeometryList(TCheckListBox *GeometryCheckListBox, 
  else
   GeometryCheckListBox->Enabled=true;
   */
- if(GeometryGraphics.GetNumGeometry()<=FigureIndex)
+ if(GeometryGraphics.GetNumGeometries()<=FigureIndex)
   return;
 
  ix=PointsCheckListBox->ItemIndex;
 
  PointsCheckListBox->Clear();
- for(size_t i=0;i<GeometryGraphics.GetGeometry(GeometryCheckListBox->ItemIndex)().GetNumVertex();i++)
+ for(size_t i=0;i<GeometryGraphics.Geometry(GeometryCheckListBox->ItemIndex).GetNumVertices();i++)
  {
   std::stringstream stream;
-  stream<<GeometryGraphics.GetGeometry(GeometryCheckListBox->ItemIndex)().UseName(i)<<" ";
-  stream<<GeometryGraphics.GetGeometry(GeometryCheckListBox->ItemIndex)()[i];
+  stream<<GeometryGraphics.Geometry(GeometryCheckListBox->ItemIndex).VertexName(i)<<" ";
+  stream<<GeometryGraphics.Geometry(GeometryCheckListBox->ItemIndex).Vertex(i);
   PointsCheckListBox->Items->Add(stream.str().c_str());
-   if(GeometryGraphics.GetGeometry(GeometryCheckListBox->ItemIndex)()[i].z>=0)
+   if(GeometryGraphics.Geometry(GeometryCheckListBox->ItemIndex).Vertex(i).z>=0)
    {
     PointsCheckListBox->Checked[i]=true;
    }
@@ -378,10 +378,10 @@ void TVideoOutputFrame::AddFigureRect(double l,double t,double w,double h)
  if(l<0 || t<0)
   return;
 
- Figure()[PointIndex].x=l+w/2;
- Figure()[PointIndex].y=/*BmpCanvas.GetHeight()-*/(t+h/2);
+ Figure.Vertex(PointIndex).x=l+w/2;
+ Figure.Vertex(PointIndex).y=/*BmpCanvas.GetHeight()-*/(t+h/2);
 
- GeometryGraphics.GetGeometry(FigureIndex)=Figure;
+ GeometryGraphics.Geometry(FigureIndex)=Figure;
 
  UpdateVideo();
 }
@@ -408,7 +408,7 @@ void TVideoOutputFrame::SendToComponentParameter(const std::string &stringid, co
  if(figure_index<0)
   return;
 
- const std::vector<RDK::MVector<double,2> > &points=GeometryGraphics.GetGeometry(figure_index).GetVertex().GetVertex();
+ const std::vector<RDK::MVector<double,2> > &points=GeometryGraphics.Geometry(figure_index).GetVertices();
  RDK::WriteParameterValue(stringid, parameter_name, points);
 }
 
@@ -418,7 +418,7 @@ void TVideoOutputFrame::SendToComponentState(const std::string &stringid, const 
  if(figure_index<0)
   return;
 
- const std::vector<RDK::MVector<double,2> > &points=GeometryGraphics.GetGeometry(figure_index).GetVertex().GetVertex();
+ const std::vector<RDK::MVector<double,2> > &points=GeometryGraphics.Geometry(figure_index).GetVertices();
  RDK::WriteStateValue(stringid, state_name, points);
 }
 
@@ -768,11 +768,11 @@ void __fastcall TVideoOutputFrame::ImageMouseUp(TObject *Sender,
   if(PointIndex<0)
    return;
 
-  Figure().SetNumVertex(Figure().GetNumVertex()-1);
-  if(PointIndex>=Figure().GetNumVertex())
+  Figure.SetNumVertices(Figure.GetNumVertices()-1);
+  if(PointIndex>=Figure.GetNumVertices())
    --PointIndex;
 
-  GeometryGraphics.GetGeometry(FigureIndex)=Figure;
+  GeometryGraphics.Geometry(FigureIndex)=Figure;
 
   UpdateVideo();
   return;

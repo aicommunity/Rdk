@@ -253,6 +253,9 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::list<T> &data)
 USerStorageXML& operator << (USerStorageXML& storage, const std::vector<bool> &data);
 USerStorageXML& operator >> (USerStorageXML& storage, std::vector<bool> &data);
 
+USerStorageXML& operator << (USerStorageXML& storage, const std::vector<double> &data);
+USerStorageXML& operator >> (USerStorageXML& storage, std::vector<double> &data);
+
 template<typename T>
 USerStorageXML& operator << (USerStorageXML& storage, const std::vector<T> &data)
 {

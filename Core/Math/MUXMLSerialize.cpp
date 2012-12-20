@@ -17,7 +17,7 @@ See file license.txt for more information
 
 namespace RDK {
 namespace Serialize {
-
+				  /*
 // MBorder
 USerStorageXML& operator << (USerStorageXML& storage, const MBorder &data)
 {
@@ -47,7 +47,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, MBorder &data)
  return storage;
 
 }
-
+                 */
 
 }
 }

@@ -17,6 +17,8 @@ http://iproc.ru/parallel-programming/lection-4/
 #ifndef MMatrixH
 #define MMatrixH
 
+#include "MDMatrix.h"
+
 namespace RDK{
 
 template<class T, unsigned Rows, unsigned Cols=Rows>
@@ -24,12 +26,14 @@ class MMatrix
 {
 public:
 // Данные матрицы
-union {
-T Data[Rows][Cols];
-T Data1D[1];
-struct {
-T x,y,z,d;
-};
+union
+{
+ T Data[Rows][Cols];
+ T Data1D[1];
+ struct
+ {
+  T x,y,z,d;
+ };
 };
 
 public:
@@ -48,7 +52,7 @@ MMatrix(const T* data);
 // --------------------------
 // Оператор присваивания
 MMatrix<T,Rows,Cols>& operator = (const MMatrix<T,Rows,Cols> &copy);
-//MMatrix<T,Rows,Cols>& operator = (const T* data);
+MMatrix<T,Rows,Cols>& operator = (const MDMatrix<T> &copy);
 MMatrix<T,Rows,Cols>& operator = (T value);
 MMatrix<T,Rows,Cols>& operator = (const T data[Rows][Cols]);
 MMatrix<T,Rows,Cols>& operator = (const T* data);
@@ -58,6 +62,9 @@ unsigned GetCols(void) const;
 unsigned GetRows(void) const;
 
 // Доступ к элементу
+T& operator [] (int i);
+const T& operator [] (int i) const;
+
 T& operator () (int i, int j);
 const T& operator () (int i, int j) const;
 
@@ -179,13 +186,15 @@ MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::operator = (const MMatrix<T,Rows,Col
  memcpy(Data1D,copy.Data1D,sizeof(T)*Cols*Rows);
  return *this;
 };
-	 /*
+
 template<class T, unsigned Rows, unsigned Cols>
-MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::operator = (const T* data)
+MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::operator = (const MDMatrix<T> &copy)
 {
- memcpy(Data1D,data,sizeof(T)*Cols*Rows);
+ if(Rows == copy.GetRows() && Cols == copy.GetCols())
+  memcpy(Data1D,copy.Data1D,sizeof(T)*Cols*Rows);
  return *this;
-};     */
+}
+
 
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::operator = (T value)
@@ -228,6 +237,18 @@ unsigned MMatrix<T,Rows,Cols>::GetRows(void) const
 }
 
 // Доступ к элементу
+template<class T, unsigned Rows, unsigned Cols>
+T& MMatrix<T,Rows,Cols>::operator [] (int i)
+{
+ return Data1D[i];
+}
+
+template<class T, unsigned Rows, unsigned Cols>
+const T& MMatrix<T,Rows,Cols>::operator [] (int i) const
+{
+ return Data1D[i];
+}
+
 template<class T, unsigned Rows, unsigned Cols>
 T& MMatrix<T,Rows,Cols>::operator () (int i, int j)
 {
@@ -766,26 +787,6 @@ MMatrix<T,Rows,Cols>& SetSubMatrix(MMatrix<T,Rows,Cols>& dest,unsigned j0, unsig
   }
 
  return dest;
-}
-
-// Разделяет матрицу внешней калибровки на матрицу поворота и вектор перемещения
-template<class T>
-void SplitEcc(const MMatrix<T,4,4>& ecc, MMatrix<T,3,3>& rotation, MMatrix<T,3,1> &translation)
-{
- GetSubMatrix(ecc,0,0,rotation);
- GetSubMatrix(ecc,0,3,translation);
- translation=-rotation.Transpose()*translation;
- rotation=rotation.Transpose();
-}
-
-// Собирает матрицу внешней калибровки из матрицы поворота и вектора перемещения
-template<class T>
-void MergeEcc(const MMatrix<T,3,3>& rotation, const MMatrix<T,3,1> &translation, MMatrix<T,4,4>& ecc)
-{
- ecc=MMatrix<T,4,4>::Zero();
- SetSubMatrix(ecc,0, 0, rotation.Transpose());
- SetSubMatrix(ecc,0, 3, -rotation.Transpose()*translation);
- ecc.Data[3][3]=1;
 }
 // --------------------------
 
