@@ -51,6 +51,87 @@ void InverseEcc(const MMatrix<T,4,4>& source_ecc,MMatrix<T,4,4>& dest_ecc)
  SplitEcc(source_ecc, rotation, translation);
  MergeEcc(rotation.Transpose(),-rotation.Transpose()*translation,dest_ecc);
 }
+
+// Расчитывает матрицу приведения объекта из СК объекта в СК камеры без учета матрицы
+// внешней калибровки (предполагается, что матрица внешней калибровки единичная)
+// Углы передаются в радианах, расстояния в метрах
+template<class T>
+MMatrix<T, 4,4> CalcObjectPositionMatrix(const MVector<T,3> &angles, const MVector<T,3> &shifts)
+{
+	MMatrix<double, 4,4> res;
+
+	double cos_gamma, sin_gamma, cos_beta, sin_beta, cos_alpha, sin_alpha;
+	cos_gamma       = cos(angles(0));
+	sin_gamma       = sin(angles(0));
+	cos_beta       = cos(angles(1));
+	sin_beta       = sin(angles(1));
+	cos_alpha       = cos(angles(2));
+	sin_alpha       = sin(angles(2));
+
+	res(0,0)=cos_alpha*cos_beta;
+	res(1,0)=-sin_gamma*sin_beta*cos_alpha+cos_gamma*sin_alpha;
+	res(2,0)=cos_gamma*sin_beta*cos_alpha+sin_gamma*sin_alpha;
+	res(0,1)=-cos_beta * sin_alpha;
+	res(1,1)=sin_gamma*sin_beta*sin_alpha+cos_gamma*cos_alpha;
+	res(2,1)=-cos_gamma*sin_beta*sin_alpha+sin_gamma*cos_alpha;
+	res(0,2)=-sin_beta;
+	res(1,2)=-sin_gamma*cos_beta;
+	res(2,2)=cos_gamma*cos_beta;
+
+	res=res.Transpose();
+
+	res(0,3)=shifts(0);
+	res(1,3)=shifts(1);
+	res(2,3)=shifts(2);
+
+	res(3,0)=0;
+	res(3,1)=0;
+	res(3,2)=0;
+	res(3,3)=1;
+ return res;
+}
+
+// Расчитывает матрицу внешней калибровки
+// Углы передаются в радианах, расстояния в метрах
+template<class T>
+MMatrix<T, 4,4> CalcCameraPositionMatrix(const MVector<T,3> &angles, const MVector<T,3> &shifts)
+{
+ MMatrix<double, 4,4> res;
+ MMatrix<double, 3,3> res3;
+ MVector<double, 3> r_shifts;
+
+ double cos_gamma, sin_gamma, cos_beta, sin_beta, cos_alpha, sin_alpha;
+ cos_gamma       = cos(angles(0));
+ sin_gamma       = sin(angles(0));
+ cos_beta       = cos(angles(1));
+ sin_beta       = sin(angles(1));
+ cos_alpha       = cos(angles(2));
+ sin_alpha       = sin(angles(2));
+
+ res3(0,0)=res(0,0)=cos_alpha*cos_beta;
+ res3(1,0)=res(1,0)=sin_alpha*cos_gamma+cos_alpha*sin_beta*sin_gamma;
+ res3(2,0)=res(2,0)=-cos_gamma*sin_beta*cos_alpha+sin_alpha*sin_gamma;
+ res3(0,1)=res(0,1)=sin_alpha*cos_beta;
+ res3(1,1)=res(1,1)=-sin_alpha*sin_beta*sin_gamma+cos_alpha*cos_gamma;
+ res3(2,1)=res(2,1)=sin_alpha*sin_beta*cos_gamma+cos_alpha*sin_gamma;
+ res3(0,2)=res(0,2)=sin_beta;
+ res3(1,2)=res(1,2)=-cos_beta*sin_gamma;
+ res3(2,2)=res(2,2)=cos_beta*cos_gamma;
+
+ res=res.Transpose();
+ res3=res3.Transpose();
+ r_shifts=-res3*shifts;
+
+ res(0,3)=r_shifts(0);
+ res(1,3)=r_shifts(1);
+ res(2,3)=r_shifts(2);
+
+ res(3,0)=0;
+ res(3,1)=0;
+ res(3,2)=0;
+ res(3,3)=1;
+ return res;
+}
 // -----------------------------------------------------------------
 
 template<class T, int Rows>

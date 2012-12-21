@@ -23,6 +23,7 @@ See file license.txt for more information
 #include "MKalmanFilter.h"
 #include "MMatrix.h"
 #include "MDMatrix.h"   
-#include "MDVector.h"
+#include "MDVector.h"     
+#include "MCamera.h"
 #include "UMath_lite.h"
 

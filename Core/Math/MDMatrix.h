@@ -175,7 +175,8 @@ MDMatrix<T>::MDMatrix(const int rows, const  int cols, const T* data)
 template<class T>
 MDMatrix<T>::~MDMatrix()
 {
- delete[] Data;
+ if(Data)
+  delete[] Data;
 };
 // --------------------------
 

@@ -246,7 +246,6 @@ bool MGraphics<T,Rows>::DelGeometry(size_t value)
  return true;
 }
 
-
 // Удаляет все объекты отрисовки по индексу
 template<class T, int Rows>
 void MGraphics<T,Rows>::Clear(void)
@@ -293,7 +292,6 @@ void MGraphics<T,Rows>::Repaint(void)
 	}
    }
 
-
    // Отрисовываем контуры
    for(size_t j=0;j<geometry.GetNumBorders();j++)
    {
@@ -310,7 +308,6 @@ void MGraphics<T,Rows>::Repaint(void)
 }
 // --------------------------
 
-
 // --------------------------
 // Операторы
 // --------------------------
@@ -324,7 +321,6 @@ MGraphics<T,Rows>& MGraphics<T,Rows>::operator = (const MGraphics<T,Rows> &copy)
 
  // Список описаний соответствующего объекта
  Description=copy.Description;
-
 
  return *this;
 }

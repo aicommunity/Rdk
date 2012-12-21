@@ -25,6 +25,7 @@ See file license.txt for more information
 #include "MUBinarySerialize.cpp"
 #include "MKalmanFilter.cpp"
 #include "MMatrix.cpp"
+#include "MCamera.cpp"
 #include "UMath_lite.cpp"
 
 #endif
