@@ -124,18 +124,26 @@ inherited UComponentsControlFrame: TUComponentsControlFrame
             Height = 467
             ExplicitWidth = 235
             ExplicitHeight = 467
-            inherited TabSheet1: TTabSheet
+            inherited TabSheet4: TTabSheet
               ExplicitWidth = 227
               ExplicitHeight = 441
-              inherited ParametersHeaderControl: THeaderControl
+              inherited Splitter3: TSplitter
+                Top = 364
                 Width = 227
+              end
+              inherited ParametersListStringGrid: TStringGrid
+                Width = 227
+                Height = 364
+              end
+              inherited ParameterValueRichEdit: TRichEdit
+                Top = 374
+                Width = 227
+                ExplicitTop = 374
                 ExplicitWidth = 227
               end
-              inherited ParametersRichEdit: TRichEdit
+              inherited HeaderControl3: THeaderControl
+                Top = 407
                 Width = 227
-                Height = 407
-                ExplicitWidth = 227
-                ExplicitHeight = 407
               end
             end
             inherited TabSheet3: TTabSheet
@@ -144,17 +152,10 @@ inherited UComponentsControlFrame: TUComponentsControlFrame
               ExplicitWidth = 376
               ExplicitHeight = 539
             end
-            inherited TabSheet4: TTabSheet
-              ExplicitLeft = 4
-              ExplicitTop = 4
-              ExplicitWidth = 376
-              ExplicitHeight = 539
-            end
-            inherited TabSheet5: TTabSheet
-              ExplicitLeft = 4
-              ExplicitTop = 4
-              ExplicitWidth = 376
-              ExplicitHeight = 539
+            inherited TabSheet1: TTabSheet
+              inherited ParametersHeaderControl: THeaderControl
+                ExplicitWidth = 227
+              end
             end
           end
         end

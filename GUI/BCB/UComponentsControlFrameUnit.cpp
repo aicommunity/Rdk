@@ -189,6 +189,8 @@ void __fastcall TUComponentsControlFrame::TakeObjectButtonClick(TObject *Sender)
 void __fastcall TUComponentsControlFrame::ReturnObjectButtonClick(TObject *Sender)
 {
  std::string stringcompid=ComponentsListFrame->GetSelectedComponentId();
+ if(stringcompid == "..")
+  return;
  int compid=StrToInt(stringcompid.c_str());
  std::string stringid=ComponentsListFrame->GetCurrentComponentId();
  Model_DelComponent(stringid.c_str(), compid);
