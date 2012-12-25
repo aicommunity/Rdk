@@ -161,50 +161,6 @@ USerStorageXML& operator >> (USerStorageXML& storage, long double &data)
 // Вектора
 USerStorageXML& operator << (USerStorageXML& storage, const std::vector<bool> &data)
 {
- storage.SetNodeAttribute("Type","std::vector");
- unsigned int size=data.size();
- storage.SetNodeAttribute("Size",sntoa(size));
-
- if(size <= 0)
-  return storage;
-
- for(size_t i=0;i<size;i++)
- {
-  storage.AddNode("elem");
-  storage<<data[i];
-  storage.SelectUp();
- }
-
- return storage;
-}
-
-USerStorageXML& operator >> (USerStorageXML& storage, std::vector<bool> &data)
-{
- unsigned int size=0;
- size=RDK::atoi(storage.GetNodeAttribute("Size"));
-
- if(size <= 0)
- {
-  data.resize(0);
-  return storage;
- }
- data.resize(size);
-
- for(size_t i=0;i<size;i++)
- {
-  if(!storage.SelectNode("elem",i))
-   return storage;
-  bool element;
-  operator >>(storage,element);
-  data[i]=element;
-  storage.SelectUp();
- }
-
- return storage;
-}
-
-USerStorageXML& operator << (USerStorageXML& storage, const std::vector<double> &data)
-{
  storage.SetNodeAttribute("Type","simplevector");
  unsigned int size=data.size();
  storage.SetNodeAttribute("Size",sntoa(size));
@@ -215,13 +171,17 @@ USerStorageXML& operator << (USerStorageXML& storage, const std::vector<double> 
  std::stringstream stream;
 
  for(unsigned i=0;i<size;i++)
-  stream<<data[i]<<" ";
+ {
+  stream<<int(data[i]);
+  if(i<size-1)
+   stream<<" ";
+ }
 
+ storage.SetNodeText(stream.str());
  return storage;
-
 }
 
-USerStorageXML& operator >> (USerStorageXML& storage, std::vector<double> &data)
+USerStorageXML& operator >> (USerStorageXML& storage, std::vector<bool> &data)
 {
  if(storage.GetNodeAttribute("Type") == "std::vector")
  {
@@ -257,7 +217,77 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::vector<double> &data)
    std::stringstream stream(storage.GetNodeText().c_str());
 
    for(unsigned i=0;i<size;i++)
-    stream>>data[i];
+   {
+	int temp;
+	stream>>temp;
+	data[i]=temp;
+   }
+  }
+ }
+
+ return storage;
+}
+
+USerStorageXML& operator << (USerStorageXML& storage, const std::vector<double> &data)
+{
+ storage.SetNodeAttribute("Type","simplevector");
+ unsigned int size=data.size();
+ storage.SetNodeAttribute("Size",sntoa(size));
+
+ if(size <= 0)
+  return storage;
+
+ std::stringstream stream;
+
+ for(unsigned i=0;i<size;i++)
+ {
+  stream<<data[i];
+  if(i<size-1)
+   stream<<" ";
+ }
+
+ storage.SetNodeText(stream.str());
+
+ return storage;
+}
+
+USerStorageXML& operator >> (USerStorageXML& storage, std::vector<double> &data)
+{
+ if(storage.GetNodeAttribute("Type") == "std::vector")
+ {
+  unsigned int size=0;
+  size=RDK::atoi(storage.GetNodeAttribute("Size"));
+
+  if(size <= 0)
+  {
+   data.resize(0);
+   return storage;
+  }
+  data.resize(size);
+
+  for(size_t i=0;i<size;i++)
+  {
+   if(!storage.SelectNode("elem",i))
+	return storage;
+   double element;
+   operator >>(storage,element);
+   data[i]=element;
+   storage.SelectUp();
+  }
+ }
+ else
+ {
+  unsigned int size=data.size();
+  storage.SetNodeAttribute("Size",sntoa(size));
+  data.resize(size);
+
+  if(size>0)
+  {
+   std::string rvalue=storage.GetNodeText();
+   std::stringstream stream(storage.GetNodeText().c_str());
+
+   for(unsigned i=0;i<size;i++)
+	stream>>data[i];
   }
  }
  return storage;
