@@ -9,7 +9,8 @@
 #include "myrdk.h"
 #include "UCRPerseptronFormUnit.h"
 #include "UCRSampleFormUnit.h"
-#include "UCRDeepLearningPerseptronFormUnit.h"
+#include "UCRTeacherPerseptronDLFormUnit.h"
+#include "UCRTeacherPerseptronBPFormUnit.h"
 #include "UComponentsListFormUnit.h"
 
 //---------------------------------------------------------------------------
@@ -58,7 +59,8 @@ void TUComponentsListFrame::AUpdateInterface(void)
  {
   ComponentControllers["UCRPerseptron"]=UCRPerseptronForm;
   ComponentControllers["UCRSample"]=UCRSampleForm;
-  ComponentControllers["UCRPerseptronDeepLearning"]=UCRDeepLearningPerseptronForm;
+  ComponentControllers["UCRTeacherPerseptronDL"]=UCRTeacherPerseptronDLForm;
+  ComponentControllers["UCRTeacherPerseptronBP"]=UCRTeacherPerseptronBPForm;
  }
 
 

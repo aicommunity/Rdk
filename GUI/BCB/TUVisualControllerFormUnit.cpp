@@ -60,6 +60,7 @@ __fastcall TUVisualControllerForm::TUVisualControllerForm(TComponent* Owner)
  UpdateInterfaceFlag=false;
  AlwaysUpdateFlag=false;
  UpdateInterval=1000;
+ PureFormCaption=AnsiString(Caption).c_str();
 
  RDK::UIVisualControllerStorage::AddInterface(this);
 }
@@ -134,6 +135,10 @@ void TUVisualControllerForm::UpdateInterface(bool force_update)
   }
  }
 
+ if(ComponentControlName.size()>0)
+  Caption=(PureFormCaption+std::string(" [")+ComponentControlName+std::string("]")).c_str();
+ else
+  Caption=PureFormCaption.c_str();
  UpdateInterfaceFlag=true;
  AUpdateInterface();
  UpdateInterfaceFlag=false;
