@@ -207,8 +207,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::vector<bool> &data)
  }
  else
  {
-  unsigned int size=data.size();
-  storage.SetNodeAttribute("Size",sntoa(size));
+  unsigned int size=RDK::atoi(storage.GetNodeAttribute("Size"));
   data.resize(size);
 
   if(size>0)
@@ -277,8 +276,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::vector<double> &data)
  }
  else
  {
-  unsigned int size=data.size();
-  storage.SetNodeAttribute("Size",sntoa(size));
+  unsigned int size=RDK::atoi(storage.GetNodeAttribute("Size"));
   data.resize(size);
 
   if(size>0)
