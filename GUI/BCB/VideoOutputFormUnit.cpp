@@ -120,7 +120,7 @@ TVideoOutputFrame* TVideoOutputForm::GetVideoOutputFrame(int index)
 // Возвращает фрейм активного (выбранного) источника видео
 TVideoOutputFrame* TVideoOutputForm::GetActiveVideoOutputFrame(void)
 {
- if(GetActiveSource()>0)
+ if(GetActiveSource()>=0)
   return Sources[GetActiveSource()];
 
  return 0;

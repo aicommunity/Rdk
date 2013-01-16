@@ -192,6 +192,7 @@ bool TVideoOutputFrame::LoadImageFromSequence(int index, RDK::UBitmap &bmp)
   return true;
 
  RDK::LoadBitmapFromFile((BmpSequencePathName+BmpSequenceNames[index]).c_str(),bmp);
+ LastReadSequenceIndex = index;
  return true;
 }
 
@@ -220,11 +221,39 @@ bool TVideoOutputFrame::SetFrameRect(int x,int y, int x_width, int y_height, TCo
 // Обновляет отрисовку окна
 bool TVideoOutputFrame::UpdateVideo(void)
 {
+ Graphics::TBitmap *bmp=Image->Picture->Bitmap;
+ if(!bmp)
+  return false;
 
-// TrackBar->Max=VideoGrabber->G;
-// TrackBar->Position=CurrentFrameNumber;
+  bmp->Width=BmpSource.GetWidth();
+  bmp->Height=BmpSource.GetHeight();
+  bmp->HandleType=bmDIB;
+  switch(BmpSource.GetPixelByteLength())
+  {
+  case 1:
+   bmp->PixelFormat=pf8bit;
+  break;
 
- DrawCapture(Image->Picture->Bitmap);
+  case 2:
+   bmp->PixelFormat=pf16bit;
+  break;
+
+  case 3:
+   bmp->PixelFormat=pf24bit;
+  break;
+
+  case 4:
+   bmp->PixelFormat=pf32bit;
+  break;
+  }
+ BmpSource.ReflectionX(&BmpCanvas);
+// BmpCanvas=BmpSource;
+
+ GeometryGraphics.Repaint();
+ BmpCanvas.ReflectionX();
+ BmpCanvas>>bmp;
+
+// DrawCapture(Image->Picture->Bitmap);
  Image->Repaint();
  if(left != -1 || top != -1 || width != -1 || height != -1)
   DrawFrameRect(Image, left, top, left+width, top+height, 2, SelColor);
@@ -239,7 +268,7 @@ bool TVideoOutputFrame::UpdateVideo(void)
   RDK::UTimeStamp stamp(long(CurrentBmpSequenceIndex),1);
   stamp>>sstamp;
   TimeEdit->Text=sstamp.c_str();
-  TrackBar->Max=BmpSequenceNames.size();
+  TrackBar->Max=int(BmpSequenceNames.size())-1;
   TrackBar->Enabled=true;
   TrackBar->Position=CurrentBmpSequenceIndex;
   UpdateFlag=false;
@@ -251,7 +280,7 @@ bool TVideoOutputFrame::UpdateVideo(void)
 // Отрисовываем текущее состояние видеопотока
 void TVideoOutputFrame::DrawCapture(Graphics::TBitmap *bmp)
 {
- if(!bmp)
+/* if(!bmp)
   return;
 
   bmp->Width=BmpSource.GetWidth();
@@ -281,6 +310,7 @@ void TVideoOutputFrame::DrawCapture(Graphics::TBitmap *bmp)
  GeometryGraphics.Repaint();
  BmpCanvas.ReflectionX();
  BmpCanvas>>bmp;
+ */
 }
 
 // Обновляем список точек
@@ -678,7 +708,8 @@ void __fastcall TVideoOutputFrame::ImageMouseMove(TObject *Sender,
  bheight=Image->Picture->Bitmap->Height;
 
 
- DrawCapture(Image->Picture->Bitmap);
+ //DrawCapture(Image->Picture->Bitmap);
+ UpdateVideo();
  Image->Canvas->Pen->Color=clLime;
  Image->Canvas->PenPos=TPoint(X*bwidth/iwidth,0);
  Image->Canvas->LineTo(X*bwidth/iwidth,Image->Height*bheight/iheight);

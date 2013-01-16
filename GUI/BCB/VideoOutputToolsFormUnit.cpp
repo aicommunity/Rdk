@@ -124,7 +124,8 @@ void __fastcall TVideoOutputToolsForm::EditPointButtonClick(TObject *Sender)
 
  PointFlag=2;
  FigureIndex=GeometryCheckListBox->ItemIndex;
- Figure=GeometryGraphics.Geometry(FigureIndex);
+ if(FigureIndex>=0)
+  Figure=GeometryGraphics.Geometry(FigureIndex);
  MyVideoOutputFrame->UpdateVideo();
  PointIndex=PointsCheckListBox->ItemIndex;
 

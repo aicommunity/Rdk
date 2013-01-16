@@ -124,10 +124,8 @@ inherited VideoOutputFrame: TVideoOutputFrame
       Width = 536
       Height = 22
       Anchors = [akLeft, akTop, akRight]
-      Max = 1
-      Min = 1
+      Max = 0
       PageSize = 1
-      Position = 1
       TabOrder = 3
       OnChange = TrackBarChange
     end
