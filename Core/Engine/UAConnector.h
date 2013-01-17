@@ -95,7 +95,8 @@ void Resize(int newsize);
 
 // Ищет в контейнере первый заданный элемент начиная с индекса index
 // и возвращает его описание
-UCItem Find(UEPtr<UAItem> item, int index=0) const;
+UCItem Find(const UEPtr<UAItem> item, int index=0) const;
+UCItem Find(const UAItem *const item, int index=0) const;
 
 // Ищет в контейнере первый заданный элемент начиная с индекса index
 // и возвращает его индекс или -1 если элемент не найден
@@ -191,7 +192,8 @@ const UCItem& GetCItem(int c_index) const;
 
 // Возвращает информацию об индексах связей с этим item или -1, -1
 // если такая связь отсутствует
-UCLink GetCLink(UEPtr<UAItem> item) const;
+UCLink GetCLink(const UEPtr<UAItem> item) const;
+UCLink GetCLink(const UAItem* const item) const;
 // --------------------------
 
 // ----------------------
@@ -233,6 +235,15 @@ public:
 
 // Проверяет, допустимо ли подключение заданного item к этому коннектору
 virtual bool CheckItem(UEPtr<UAItem> item, int item_index, int conn_index);
+
+// Проверяет, существует ли связь с заданным коннектором
+bool CheckLink(const UEPtr<UAItem> &item) const;
+
+// Проверяет, существует ли связь с заданным коннектором и конкретным входом
+bool CheckLink(const UEPtr<UAItem> &item, int item_index) const;
+
+// Проверяет, существует ли связь с заданным коннектором и конкретным входом
+bool CheckLink(const UEPtr<UAItem> &item, int item_index, int conn_index) const;
 
 // Возвращает список подключений
 template<typename T>

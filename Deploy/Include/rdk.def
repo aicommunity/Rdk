@@ -105,6 +105,7 @@ EXPORTS
     Model_BreakAllComponentLinks = _Model_BreakAllComponentLinks
     Model_BreakAllComponentInputLinks = _Model_BreakAllComponentInputLinks
     Model_BreakAllComponentOutputLinks = _Model_BreakAllComponentOutputLinks
+    Model_CheckLink = _Model_CheckLink
     Model_GetComponentInternalLinks = _Model_GetComponentInternalLinks
     Model_SetComponentInternalLinks = _Model_SetComponentInternalLinks
     Model_GetComponentInputLinks = _Model_GetComponentInputLinks

@@ -490,6 +490,9 @@ virtual int Model_BreakAllComponentInputLinks(const char* stringid);
 // Разрывает все выходные связи выбранного контейнера
 virtual int Model_BreakAllComponentOutputLinks(const char* stringid);
 
+// Проверяет, существует ли заданна связь
+virtual bool Model_CheckLink(const char* stringid1, int output_number, const char* stringid2, int input_number);
+
 // Возращает все связи внутри компонента stringid в виде xml в буфер buffer
 // Имена формируются до уровня компонента owner_level_stringid
 // Если owner_level_stringid не задан, то имена формируются до уровня текущего компонента

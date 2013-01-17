@@ -1852,6 +1852,36 @@ int UEngine::Model_BreakAllComponentOutputLinks(const char* stringid)
  return 0;
 }
 
+// Проверяет, существует ли заданна связь
+bool UEngine::Model_CheckLink(const char* stringid1, int output_number, const char* stringid2, int input_number)
+{
+ try
+ {
+  UEPtr<RDK::UAItem> cont1;
+  UEPtr<RDK::UAConnector> cont2;
+  try
+  {
+   cont1=dynamic_pointer_cast<RDK::UAItem>(FindComponent(stringid1));
+   cont2=dynamic_pointer_cast<RDK::UAConnector>(FindComponent(stringid2));
+  }
+  catch (UException &exception)// Заглушка!! здесь другое исключение
+  {
+   return false;
+  }
+  if(!cont1 || !cont2)
+   return false;
+
+  return cont1->CheckLink(cont2,output_number,input_number);
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return false;
+}
+
+
+
 // Возращает все связи внутри компонента stringid в виде xml в буфер buffer
 // Имена формируются до уровня компонента owner_level_stringid
 // Если owner_level_stringid не задан, то имена формируются до уровня текущего компонента

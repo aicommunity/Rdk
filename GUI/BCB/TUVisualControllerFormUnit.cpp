@@ -161,6 +161,7 @@ void TUVisualControllerForm::SaveParameters(RDK::Serialize::USerStorageXML &xml)
  ASaveParameters(xml);
  SaveFormPosition(xml, this);
  xml.WriteString("ComponentControlName",ComponentControlName);
+ xml.WriteInteger("UpdateInterval",UpdateInterval);
  xml.SelectUp();
 }
 
@@ -175,6 +176,7 @@ void TUVisualControllerForm::LoadParameters(RDK::Serialize::USerStorageXML &xml)
 {
  xml.SelectNodeForce(GetName());
  ComponentControlName=xml.ReadString("ComponentControlName","");
+ UpdateInterval=xml.ReadInteger("UpdateInterval",UpdateInterval);
  LoadFormPosition(xml, this);
  ALoadParameters(xml);
  xml.SelectUp();

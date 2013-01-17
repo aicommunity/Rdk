@@ -127,7 +127,7 @@ virtual bool BreakLink(const ULongId &item_id, int item_index, const ULongId &co
 // Разрывает связь между выходом элемента сети, 'itemid'
 // и коннектором 'connectorid'
 virtual bool BreakLink(const NameT &itemname, int item_index,
-                        const NameT &connectorname, int connector_index);
+						const NameT &connectorname, int connector_index);
 
 // Разрывает все связи сети
 // исключая ее внутренние связи и обратные связи
@@ -139,6 +139,14 @@ virtual bool BreakLinks(const ULinksList &linkslist);
 
 // Разрывает все внутренние связи сети.
 virtual void BreakLinks(void);
+
+// Проверяет, существует ли заданная связь
+template<typename T>
+bool CheckLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector);
+
+virtual bool CheckLink(const ULongId &item_id, int item_index, const ULongId &conn_id, int conn_index);
+virtual bool CheckLink(const NameT &itemname, int item_index,
+						const NameT &connectorname, int connector_index);
 // ----------------------
 
 // --------------------------

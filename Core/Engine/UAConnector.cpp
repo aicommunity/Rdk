@@ -151,7 +151,12 @@ void UCItemList::Resize(int newsize)
 
 // Ищет в контейнере первый заданный элемент начиная с индекса index
 // и возвращает его описание
-UCItem UCItemList::Find(UEPtr<UAItem> item, int index) const
+UCItem UCItemList::Find(const UEPtr<UAItem> item, int index) const
+{
+ return Find(item.Get(),index);
+}
+
+UCItem UCItemList::Find(const UAItem *const item, int index) const
 {
  UCItem *pdata=Data;
 
@@ -342,7 +347,25 @@ const UCItem& UAConnector::GetCItem(int c_index) const
 
 // Возвращает информацию об индексах связей с этим item или -1, -1
 // если такая связь отсутствует
-UCLink UAConnector::GetCLink(UEPtr<UAItem> item) const
+UCLink UAConnector::GetCLink(const UEPtr<UAItem> item) const
+{
+ UCLink indexes;
+
+ if(!item)
+  return indexes;
+
+ UCItem citem=CItemList.Find(item);
+
+ if(citem.Item == 0)
+  return indexes;
+
+ indexes.Input=CItemList.Find(citem);
+ indexes.Output=citem.Index;
+
+ return indexes;
+}
+
+UCLink UAConnector::GetCLink(const UAItem* const item) const
 {
  UCLink indexes;
 
@@ -519,6 +542,42 @@ bool UAConnector::CheckItem(UEPtr<UAItem> item, int item_index, int conn_index)
   return true;
  return false;*/
  return true;
+}
+
+
+// Проверяет, существует ли связь с заданным коннектором
+bool UAConnector::CheckLink(const UEPtr<UAItem> &item) const
+{
+ UCLink link=GetCLink(item);
+ if(link.Output>=0 && link.Input >=0)
+  return true;
+
+ return false;
+}
+
+// Проверяет, существует ли связь с заданным коннектором и конкретным входом
+bool UAConnector::CheckLink(const UEPtr<UAItem> &item, int item_index) const
+{
+ UCLink link=GetCLink(item);
+ if(link.Input >=0)
+ {
+  if(link.Output == item_index || item_index <0)
+   return true;
+ }
+ return false;
+}
+
+// Проверяет, существует ли связь с заданным коннектором и конкретным входом
+bool UAConnector::CheckLink(const UEPtr<UAItem> &item, int item_index, int conn_index) const
+{
+ UCLink link=GetCLink(item);
+ if(link.Output>=0)
+ {
+  if(link.Input == conn_index || conn_index<0)
+   return true;
+ }
+
+ return false;
 }
 
 // Возвращает список подключений

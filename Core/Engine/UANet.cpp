@@ -405,6 +405,46 @@ void UANet::BreakLinks(void)
  if(dynamic_cast<UAConnector* const>(this))
   ((UAConnector* const)this)->DisconnectAllItems();
 }
+
+// Проверяет, существует ли заданная связь
+bool UANet::CheckLink(const ULongId &item_id, int item_index, const ULongId &conn_id, int conn_index)
+{
+ return CheckLink(ULinkSide(item_id,item_index),ULinkSide(conn_id,conn_index));
+}
+
+template<typename T>
+bool UANet::CheckLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
+{
+ UEPtr<UAItem> pitem;
+ if(!CheckLongId(item.Id))
+  pitem=this;
+ else
+  pitem=dynamic_pointer_cast<UAItem>(GetComponentL(item.Id));
+
+ UEPtr<UAConnector> pconnector=0;
+ if(!CheckLongId(connector.Id))
+  pconnector=this;
+ else
+  pconnector=dynamic_pointer_cast<UAConnector>(GetComponentL(connector.Id));
+
+ if(!pitem || !pconnector)
+  return false;
+
+ if(pitem->CheckLink(pconnector,item.Index, connector.Index))
+  return true;
+}
+
+bool UANet::CheckLink(const NameT &itemname, int item_index,
+						const NameT &connectorname, int connector_index)
+{
+ UEPtr<UAItem> item=dynamic_pointer_cast<UAItem>(GetComponentL(itemname));
+ UEPtr<UAConnector> connector=dynamic_pointer_cast<UAConnector>(GetComponentL(connectorname));
+ if(!item || !connector)
+  return false;
+
+ if(item->CheckLink(connector,item_index, connector_index))
+  return true;
+}
 // ----------------------
 
 // --------------------------

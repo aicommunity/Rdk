@@ -545,6 +545,95 @@ UEPtr<UAConnector> UAItem::GetAConnectorByIndex(int output, int index) const
  return AssociatedConnectors[output][index];
 }
 
+
+// Проверяет, существует ли связь с заданным коннектором
+bool UAItem::CheckLink(const UEPtr<UAConnector> &connector) const
+{
+ UCLink link=connector->GetCLink(this);
+ if(link.Output>=0 && link.Input >=0)
+  return true;
+/*
+ for(int i=0;i<AssociatedConnectors.GetSize();i++)
+  for(int j=0;j<AssociatedConnectors[i].GetSize();j++)
+   if(AssociatedConnectors[i][j] == connector)
+	return true;
+  */
+ return false;
+}
+
+// Проверяет, существует ли связь с заданным коннектором и конкретным входом
+bool UAItem::CheckLink(const UEPtr<UAConnector> &connector, int item_index) const
+{
+ UCLink link=connector->GetCLink(this);
+ if(link.Input >=0)
+ {
+  if(link.Output == item_index || item_index <0)
+   return true;
+ }
+
+/*
+ if(item_index>= AssociatedConnectors.GetSize())
+  return false;
+
+ if(item_index >=0)
+ {
+  for(int j=0;j<AssociatedConnectors[item_index].GetSize();j++)
+   if(AssociatedConnectors[item_index][i] == connector)
+	 return true;
+ }
+ else
+ {
+  return CheckLink(connector);
+ }
+  */
+ return false;
+}
+
+// Проверяет, существует ли связь с заданным коннектором и конкретным входом
+bool UAItem::CheckLink(const UEPtr<UAConnector> &connector, int item_index, int conn_index) const
+{
+ UCLink link=connector->GetCLink(this);
+ if(link.Output>=0)
+ {
+  if(link.Input == conn_index || conn_index<0)
+   return true;
+ }
+/*
+ if(item_index>= AssociatedConnectors.GetSize())
+  return false;
+
+ if(item_index >=0)
+ {
+  for(int j=0;j<AssociatedConnectors[item_index].GetSize();j++)
+   if(AssociatedConnectors[item_index][i] == connector)
+   {
+	if(conn_index <0)
+	 return true;
+
+	UCLink link=connector->GetCLink(this);
+	if(conn_index == link.Input)
+	 return true;
+   }
+ }
+ else
+ {
+  for(int i=0;i<AssociatedConnectors.GetSize();i++)
+   for(int j=0;j<AssociatedConnectors[i].GetSize();j++)
+	if(AssociatedConnectors[i][j] == connector)
+	{
+	 if(conn_index <0)
+	  return true;
+
+	 UCLink link=connector->GetCLink(this);
+	 if(conn_index == link.Input)
+	  return true;
+	}
+
+ }
+	*/
+ return false;
+}
+
 // Возвращает список подключений
 // Имена формируются до уровня компонента owner_level
 // Если owner_level не задан, то имена формируются до уровня текущего компонента

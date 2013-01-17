@@ -241,6 +241,15 @@ UEPtr<UAConnector> GetAConnector(const UId &id, int index) const;
 // Возвращает  коннектор из списка подключений.
 UEPtr<UAConnector> GetAConnectorByIndex(int output, int index) const;
 
+// Проверяет, существует ли связь с заданным коннектором
+bool CheckLink(const UEPtr<UAConnector> &connector) const;
+
+// Проверяет, существует ли связь с заданным коннектором и конкретным входом
+bool CheckLink(const UEPtr<UAConnector> &connector, int item_index) const;
+
+// Проверяет, существует ли связь с заданным коннектором и конкретным входом
+bool CheckLink(const UEPtr<UAConnector> &connector, int item_index, int conn_index) const;
+
 // Возвращает список подключений
 template<typename T>
 ULinksListT<T>& GetLinks(ULinksListT<T> &linkslist, UEPtr<UAContainer> netlevel, bool exclude_internals=false, UEPtr<UAContainer> internal_level=0) const;
