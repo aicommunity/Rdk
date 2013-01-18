@@ -33,8 +33,11 @@ void operator >> (UBitmap &source, Graphics::TBitmap *target)
  if(!target)
   return;
 
- target->Height=source.GetHeight();
- target->Width=source.GetWidth();
+ if(target->Height != source.GetHeight())
+  target->Height=source.GetHeight();
+
+ if(target->Width != source.GetWidth())
+  target->Width=source.GetWidth();
 
  if(!source.GetWidth() || !source.GetHeight())
   return;
@@ -45,8 +48,10 @@ void operator >> (UBitmap &source, Graphics::TBitmap *target)
  break;
 
  case ubmRGB24:
-  target->HandleType=bmDIB;
-  target->PixelFormat=pf24bit;
+  if(target->HandleType != bmDIB)
+   target->HandleType=bmDIB;
+  if(target->PixelFormat != pf24bit)
+   target->PixelFormat=pf24bit;
 
    if(!(source.GetWidth() % 4))
     memcpy(target->ScanLine[source.GetHeight()-1],source.GetData(),

@@ -168,7 +168,8 @@ void TUEngineControlForm::OpenProject(const String &FileName)
   delete RichEdit;
  }
 
- EngineInit(PredefinedStructure,ExceptionHandler);
+ Env_SetPredefinedStructure(PredefinedStructure);
+// EngineInit(PredefinedStructure,ExceptionHandler);
 
  if(PredefinedStructure == 0 && modelfilename.Length() != 0)
  {

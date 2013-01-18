@@ -77,6 +77,7 @@ EXPORTS
     Model_DelComponent = _Model_DelComponent
     Model_GetNumComponents = _Model_GetNumComponents
     Model_GetComponentsList = _Model_GetComponentsList
+    Model_GetComponentsNameList = _Model_GetComponentsNameList
     Model_GetConnectorsList = _Model_GetConnectorsList
     Model_GetItemsList = _Model_GetItemsList
     Model_GetNetsList = _Model_GetNetsList

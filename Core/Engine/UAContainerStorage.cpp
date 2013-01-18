@@ -227,6 +227,7 @@ UEPtr<UAComponent> UAContainerStorage::TakeObject(const UId &classid, const UEPt
 
    if(obj)
    {
+    obj->Default();
     if(!prototype)
 	 classtemplate->Copy(obj,this);
 	else

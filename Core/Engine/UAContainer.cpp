@@ -854,6 +854,15 @@ void UAContainer::GetComponentsList(std::vector<UId> &buffer) const
   buffer.push_back((*pcomps)->Id);
 }
 
+void UAContainer::GetComponentsList(vector<NameT> &buffer) const
+{
+ UEPtr<UAContainer> *pcomps=PComponents;
+ buffer.resize(0);
+ buffer.reserve(NumComponents);
+ for(int i=0;i<NumComponents;i++,pcomps++)
+  buffer.push_back((*pcomps)->Name);
+}
+
 // Копирует все компоненты этого объекта в объект 'comp', если возможно.
 void UAContainer::CopyComponents(UEPtr<UAContainer> comp, UEPtr<UAContainerStorage> stor) const
 {

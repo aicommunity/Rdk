@@ -482,6 +482,15 @@ int RDK_CALL Model_GetComponentsList(const char* stringid, int *buffer)
  return PEngine->Model_GetComponentsList(stringid, buffer);
 }
 
+// Возвращает строку, содержащую список имен всех компонент заданного компонента 'stringid'
+// имена разделяются сипволом ','
+const char* RDK_CALL Model_GetComponentsNameList(const char* stringid)
+{
+ return PEngine->Model_GetComponentsNameList(stringid);
+}
+
+
+
 // Возвращает xml-список длинных идентификаторов всех коннекторов сети.
 // 'sublevel' опеределяет число уровней вложенности подсетей для которых
 // коннекторы будут добавлены в список.

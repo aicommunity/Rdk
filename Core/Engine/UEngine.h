@@ -377,6 +377,10 @@ virtual int Model_GetNumComponents(const char* stringid);
 // если stringid - пуста€ строка, то возвращает массив всех id модели
 virtual int Model_GetComponentsList(const char* stringid, int *buffer);
 
+// ¬озвращает строку, содержащую список имен всех компонент заданного компонента 'stringid'
+// имена раздел€ютс€ сипволом ','
+virtual const char* Model_GetComponentsNameList(const char* stringid);
+
 // ¬озвращает xml-список длинных идентификаторов всех коннекторов сети.
 // 'sublevel' опередел€ет число уровней вложенности подсетей дл€ которых
 // коннекторы будут добавлены в список.

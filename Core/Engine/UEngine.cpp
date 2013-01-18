@@ -1213,6 +1213,37 @@ int UEngine::Model_GetComponentsList(const char* stringid, int *buffer)
  return 0;
 }
 
+// Возвращает строку, содержащую список имен всех компонент заданного компонента 'stringid'
+// имена разделяются сипволом ','
+const char* UEngine::Model_GetComponentsNameList(const char* stringid)
+{
+ try
+ {
+  TempString.clear();
+  RDK::UAContainer* destcont=FindComponent(stringid);
+
+  if(!destcont)
+   return TempString.c_str();
+
+  std::vector<std::string> tempbuffer;
+
+  destcont->GetComponentsList(tempbuffer);
+  for(size_t i=0;i<tempbuffer.size();i++)
+  {
+   TempString+=tempbuffer[i];
+   if(i<int(tempbuffer.size())-1)
+	TempString+=",";
+  }
+  return TempString.c_str();
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+
+ return 0;
+}
+
 // Возвращает xml-список длинных идентификаторов всех коннекторов сети.
 // 'sublevel' опеределяет число уровней вложенности подсетей для которых
 // коннекторы будут добавлены в список.

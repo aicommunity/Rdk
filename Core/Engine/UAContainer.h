@@ -400,6 +400,7 @@ void DelAllComponents(void);
 // в этом объекте
 // Память должна быть выделена
 void GetComponentsList(vector<UId> &buffer) const;
+void GetComponentsList(vector<NameT> &buffer) const;
 
 // Копирует все компоненты этого объекта в объект 'comp', если возможно
 // Если хранилище stor != 0 то используется оно

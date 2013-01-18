@@ -283,6 +283,10 @@ RDK_LIB_TYPE int RDK_CALL Model_GetNumComponents(const char* stringid);
 // если stringid - пуста€ строка, то возвращает массив всех id модели
 RDK_LIB_TYPE int RDK_CALL Model_GetComponentsList(const char* stringid, int *buffer);
 
+// ¬озвращает строку, содержащую список имен всех компонент заданного компонента 'stringid'
+// имена раздел€ютс€ сипволом ','
+RDK_LIB_TYPE const char* RDK_CALL Model_GetComponentsNameList(const char* stringid);
+
 // ¬озвращает xml-список длинных идентификаторов всех коннекторов сети.
 // 'sublevel' опередел€ет число уровней вложенности подсетей дл€ которых
 // коннекторы будут добавлены в список.

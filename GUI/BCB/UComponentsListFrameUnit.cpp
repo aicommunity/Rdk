@@ -83,18 +83,22 @@ void TUComponentsListFrame::AUpdateInterface(void)
   return;
  }
 
- std::vector<int> ids;
- ids.resize(numcomponents);
- Model_GetComponentsList(CurrentComponentId.c_str(), &ids[0]);
+ std::vector<std::string> ids;
+// ids.resize(numcomponents);
+ std::string names=Model_GetComponentsNameList(CurrentComponentName.c_str());
+ RDK::separatestring(names,ids,',');
  for(int i=0;i<numcomponents;i++)
  {
-  if(ids[i] == SelectedId)
-   row=i+2;
-  StringGrid->Cells[0][i+2]=IntToStr(ids[i]);
-  std::string longid=CurrentComponentId;
+  StringGrid->Cells[1][i+2]=ids[i].c_str();
+  std::string longid=CurrentComponentName;
   if(longid.size()>0)
    longid+=".";
-  StringGrid->Cells[1][i+2]=Model_GetComponentName((longid+AnsiString(IntToStr(ids[i])).c_str()).c_str());
+
+  std::string sid=Model_GetComponentLongId((longid+ids[i]).c_str(),CurrentComponentName.c_str());//IntToStr(ids[i]);
+  int id=RDK::atoi(sid);
+  StringGrid->Cells[0][i+2]=IntToStr(id);
+  if(id == SelectedId)
+   row=i+2;
  }
 
  StringGrid->ColWidths[0]=30;
@@ -153,7 +157,7 @@ void TUComponentsListFrame::UpdateParameters(void)
  if(ShowXMLComponentParameters)
  {
   Panel1->Visible=true;
-  TempParams=Model_GetComponentParametersEx(GetSelectedComponentLongId().c_str());
+  TempParams=Model_GetComponentParametersEx(GetSelectedComponentLongName().c_str());
   if(TempParams.Length() != LastParams.Length() || TempParams != LastParams)
    ParametersRichEdit->Text=LastParams=TempParams;
  }
@@ -186,7 +190,7 @@ void TUComponentsListFrame::UpdateState(void)
  if(ShowXMLComponentParameters)
  {
   Panel1->Visible=true;
-  TempStates=Model_GetComponentState(GetSelectedComponentLongId().c_str());
+  TempStates=Model_GetComponentState(GetSelectedComponentLongName().c_str());
   if(TempStates.Length() != LastStates.Length() || TempStates != LastStates)
    StateRichEdit->Text=LastStates=TempStates;
  }
@@ -207,7 +211,7 @@ void TUComponentsListFrame::UpdateIO(void)
   return;
  UpdateInterfaceFlag=true;
 
- int num=Model_GetComponentNumOutputs(GetSelectedComponentLongId().c_str());
+ int num=Model_GetComponentNumOutputs(GetSelectedComponentLongName().c_str());
  OutputsStringGrid->RowCount=1+num;
  OutputsStringGrid->ColCount=1+3;
 
@@ -219,13 +223,13 @@ void TUComponentsListFrame::UpdateIO(void)
  for(int i=0;i<num;i++)
  {
   OutputsStringGrid->Cells[0][i+1]=IntToStr(i);
-  OutputsStringGrid->Cells[1][i+1]=Model_GetComponentOutputDataSize(GetSelectedComponentLongId().c_str(), i);
-  OutputsStringGrid->Cells[2][i+1]=Model_GetComponentOutputDataSize(GetSelectedComponentLongId().c_str(), i);
-  OutputsStringGrid->Cells[3][i+1]=Model_GetComponentOutputElementSize(GetSelectedComponentLongId().c_str(), i);
+  OutputsStringGrid->Cells[1][i+1]=Model_GetComponentOutputDataSize(GetSelectedComponentLongName().c_str(), i);
+  OutputsStringGrid->Cells[2][i+1]=Model_GetComponentOutputDataSize(GetSelectedComponentLongName().c_str(), i);
+  OutputsStringGrid->Cells[3][i+1]=Model_GetComponentOutputElementSize(GetSelectedComponentLongName().c_str(), i);
  }
 
 
- num=Model_GetComponentNumInputs(GetSelectedComponentLongId().c_str());
+ num=Model_GetComponentNumInputs(GetSelectedComponentLongName().c_str());
  InputsStringGrid->RowCount=1+num;
  InputsStringGrid->ColCount=1+3;
 
@@ -237,9 +241,9 @@ void TUComponentsListFrame::UpdateIO(void)
  for(int i=0;i<num;i++)
  {
   InputsStringGrid->Cells[0][i+1]=IntToStr(i);
-  InputsStringGrid->Cells[1][i+1]=Model_GetComponentInputDataSize(GetSelectedComponentLongId().c_str(), i);
-  InputsStringGrid->Cells[2][i+1]=Model_GetComponentInputDataSize(GetSelectedComponentLongId().c_str(), i);
-  InputsStringGrid->Cells[3][i+1]=Model_GetComponentInputElementSize(GetSelectedComponentLongId().c_str(), i);
+  InputsStringGrid->Cells[1][i+1]=Model_GetComponentInputDataSize(GetSelectedComponentLongName().c_str(), i);
+  InputsStringGrid->Cells[2][i+1]=Model_GetComponentInputDataSize(GetSelectedComponentLongName().c_str(), i);
+  InputsStringGrid->Cells[3][i+1]=Model_GetComponentInputElementSize(GetSelectedComponentLongName().c_str(), i);
  }
 
  UpdateInterfaceFlag=false;
@@ -253,7 +257,7 @@ void TUComponentsListFrame::UpdateParametersList(void)
   return;
  UpdateInterfaceFlag=true;
 
- std::string xml_data=Model_GetComponentParametersEx(GetSelectedComponentLongId().c_str());
+ std::string xml_data=Model_GetComponentParametersEx(GetSelectedComponentLongName().c_str());
  RDK::Serialize::USerStorageXML xml;
  xml.Load(xml_data,"");
  xml.SelectNode("Parameters");
@@ -320,7 +324,7 @@ void TUComponentsListFrame::UpdateStatesList(void)
   return;
  UpdateInterfaceFlag=true;
 
- std::string xml_data=Model_GetComponentState(GetSelectedComponentLongId().c_str());
+ std::string xml_data=Model_GetComponentState(GetSelectedComponentLongName().c_str());
  RDK::Serialize::USerStorageXML xml;
  xml.Load(xml_data,"");
  xml.SelectNode("State");
@@ -383,7 +387,7 @@ void TUComponentsListFrame::UpdateStatesList(void)
   return;
  UpdateInterfaceFlag=true;
 
- std::string xml_data=Model_GetComponentState(GetSelectedComponentLongId().c_str());
+ std::string xml_data=Model_GetComponentState(GetSelectedComponentLongName().c_str());
  RDK::Serialize::USerStorageXML xml;
  xml.Load(xml_data,"");
  xml.SelectNode("Parameters");
@@ -623,7 +627,7 @@ void __fastcall TUComponentsListFrame::StringGridDblClick(TObject *Sender)
  if(StringGrid->Row <= 0)
   return;
 
- int num_components=Model_GetNumComponents(GetSelectedComponentLongId().c_str());
+ int num_components=Model_GetNumComponents(GetSelectedComponentLongName().c_str());
  if(!num_components)
   return;
 
@@ -753,7 +757,7 @@ void __fastcall TUComponentsListFrame::StateHeaderControlSectionClick(THeaderCon
 {
  if(Section->Index == 0)
  {
-  Model_SetComponentState(GetSelectedComponentLongId().c_str(),AnsiString(StateRichEdit->Text).c_str());
+  Model_SetComponentState(GetSelectedComponentLongName().c_str(),AnsiString(StateRichEdit->Text).c_str());
   UpdateInterface();
  }
  else
@@ -872,7 +876,7 @@ void __fastcall TUComponentsListFrame::ParametersHeaderControlSectionClick(THead
 {
  if(Section->Index == 0)
  {
-  Model_SetComponentParameters(GetSelectedComponentLongId().c_str(),AnsiString(ParametersRichEdit->Text).c_str());
+  Model_SetComponentParameters(GetSelectedComponentLongName().c_str(),AnsiString(ParametersRichEdit->Text).c_str());
   UpdateInterface();
  }
  else
@@ -895,7 +899,7 @@ void __fastcall TUComponentsListFrame::HeaderControl3SectionClick(THeaderControl
   return;
  if(Section->Index == 0)
  {
-  Model_SetComponentParameterValue(GetSelectedComponentLongId().c_str(),AnsiString(ParametersListStringGrid->Cells[1][ParametersListStringGrid->Row]).c_str(), AnsiString(ParameterValueRichEdit->Text).c_str());
+  Model_SetComponentParameterValue(GetSelectedComponentLongName().c_str(),AnsiString(ParametersListStringGrid->Cells[1][ParametersListStringGrid->Row]).c_str(), AnsiString(ParameterValueRichEdit->Text).c_str());
   UpdateInterface();
  }
  else
@@ -905,7 +909,7 @@ void __fastcall TUComponentsListFrame::HeaderControl3SectionClick(THeaderControl
 //   return;
   if(UComponentsListForm->ShowComponentSelect() == mrOk)
   {
-   Model_SetGlobalComponentPropertyValue(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName().c_str(), Model_GetComponentClassName(GetSelectedComponentLongId().c_str()),AnsiString(ParametersListStringGrid->Cells[1][ParametersListStringGrid->Row]).c_str(), AnsiString(ParameterValueRichEdit->Text).c_str());
+   Model_SetGlobalComponentPropertyValue(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName().c_str(), Model_GetComponentClassName(GetSelectedComponentLongName().c_str()),AnsiString(ParametersListStringGrid->Cells[1][ParametersListStringGrid->Row]).c_str(), AnsiString(ParameterValueRichEdit->Text).c_str());
    UpdateInterface();
   }
  }
@@ -915,7 +919,7 @@ void __fastcall TUComponentsListFrame::HeaderControl3SectionClick(THeaderControl
   if(UComponentsListForm->ShowComponentSelect() == mrOk)
   {
    std::string global_owner_stringid=Model_GetComponentClassName(CurrentComponentName.c_str());
-   Model_SetGlobalOwnerComponentPropertyValue(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName().c_str(), Model_GetComponentClassName(GetSelectedComponentLongId().c_str()),global_owner_stringid.c_str(),AnsiString(ParametersListStringGrid->Cells[1][ParametersListStringGrid->Row]).c_str(), AnsiString(ParameterValueRichEdit->Text).c_str());
+   Model_SetGlobalOwnerComponentPropertyValue(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName().c_str(), Model_GetComponentClassName(GetSelectedComponentLongName().c_str()),global_owner_stringid.c_str(),AnsiString(ParametersListStringGrid->Cells[1][ParametersListStringGrid->Row]).c_str(), AnsiString(ParameterValueRichEdit->Text).c_str());
    UpdateInterface();
   }
  }
@@ -939,7 +943,7 @@ void __fastcall TUComponentsListFrame::HeaderControl1SectionClick(THeaderControl
   return;
  if(Section->Index == 0)
  {
-  Model_SetComponentStateValue(GetSelectedComponentLongId().c_str(),AnsiString(StatesListStringGrid->Cells[1][StatesListStringGrid->Row]).c_str(), AnsiString(StateValueRichEdit->Text).c_str());
+  Model_SetComponentStateValue(GetSelectedComponentLongName().c_str(),AnsiString(StatesListStringGrid->Cells[1][StatesListStringGrid->Row]).c_str(), AnsiString(StateValueRichEdit->Text).c_str());
   UpdateInterface();
  }
  else
@@ -951,7 +955,7 @@ void __fastcall TUComponentsListFrame::HeaderControl1SectionClick(THeaderControl
    UComponentsListForm->Hide();
   if(UComponentsListForm->ShowComponentSelect() == mrOk)
   {
-   Model_SetGlobalComponentPropertyValue(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName().c_str(),Model_GetComponentClassName(GetSelectedComponentLongId().c_str()),AnsiString(StatesListStringGrid->Cells[1][StatesListStringGrid->Row]).c_str(), AnsiString(StateValueRichEdit->Text).c_str());
+   Model_SetGlobalComponentPropertyValue(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName().c_str(),Model_GetComponentClassName(GetSelectedComponentLongName().c_str()),AnsiString(StatesListStringGrid->Cells[1][StatesListStringGrid->Row]).c_str(), AnsiString(StateValueRichEdit->Text).c_str());
    UpdateInterface();
   }
  }
@@ -963,7 +967,7 @@ void __fastcall TUComponentsListFrame::HeaderControl1SectionClick(THeaderControl
   if(UComponentsListForm->ShowComponentSelect() == mrOk)
   {
    std::string global_owner_stringid=Model_GetComponentClassName(CurrentComponentName.c_str());
-   Model_SetGlobalOwnerComponentPropertyValue(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName().c_str(),Model_GetComponentClassName(GetSelectedComponentLongId().c_str()),global_owner_stringid.c_str(),AnsiString(StatesListStringGrid->Cells[1][StatesListStringGrid->Row]).c_str(), AnsiString(StateValueRichEdit->Text).c_str());
+   Model_SetGlobalOwnerComponentPropertyValue(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName().c_str(),Model_GetComponentClassName(GetSelectedComponentLongName().c_str()),global_owner_stringid.c_str(),AnsiString(StatesListStringGrid->Cells[1][StatesListStringGrid->Row]).c_str(), AnsiString(StateValueRichEdit->Text).c_str());
    UpdateInterface();
   }
  }
