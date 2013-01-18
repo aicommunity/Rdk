@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #include <vcl.h>
+#include <jpeg.hpp>
 #pragma hdrstop
 
 #include "VideoOutputFrameUnit.h"
@@ -102,7 +103,21 @@ void TVideoOutputFrame::InitByBmp(const String &filename)
 {
  StopButtonClick(this);
  try {
-  LoadBitmapFromFile(AnsiString(filename).c_str(),&BmpSource);
+  if(filename.Pos(".jpg") || filename.Pos(".jpeg") )
+  {
+   TJPEGImage* JpegIm=new TJPEGImage;
+   JpegIm->LoadFromFile(filename);
+   Image->Picture->Bitmap->Assign(JpegIm);
+   BmpSource<<Image->Picture->Bitmap;
+   delete JpegIm;
+  }
+  else
+  if(filename.Pos(".bmp"))
+  {
+   LoadBitmapFromFile(AnsiString(filename).c_str(),&BmpSource);
+  }
+  else
+   BmpSource.Fill(0);
  }
  catch (EFOpenError &exception) {
   BmpSource.SetRes(0,0);
@@ -164,6 +179,10 @@ bool TVideoOutputFrame::InitByImageSequence(const String &pathname)
  BmpSequencePathName=AnsiString(pathname+"\\").c_str();
 
  FindFilesList(BmpSequencePathName, "*.bmp", true, BmpSequenceNames);
+ if(BmpSequenceNames.size() == 0)
+  FindFilesList(BmpSequencePathName, "*.jpg", true, BmpSequenceNames);
+ if(BmpSequenceNames.size() == 0)
+  FindFilesList(BmpSequencePathName, "*.jpeg", true, BmpSequenceNames);
 
  CurrentBmpSequenceIndex=0;
 
@@ -191,7 +210,21 @@ bool TVideoOutputFrame::LoadImageFromSequence(int index, RDK::UBitmap &bmp)
  if(LastReadSequenceIndex == index)
   return true;
 
- RDK::LoadBitmapFromFile((BmpSequencePathName+BmpSequenceNames[index]).c_str(),bmp);
+ if(BmpSequenceNames[index].find(".bmp") != std::string::npos)
+ {
+  RDK::LoadBitmapFromFile((BmpSequencePathName+BmpSequenceNames[index]).c_str(),bmp);
+ }
+ else
+ if(BmpSequenceNames[index].find(".jpg") != std::string::npos || BmpSequenceNames[index].find(".jpeg") != std::string::npos)
+ {
+  TJPEGImage* JpegIm=new TJPEGImage;
+  JpegIm->LoadFromFile((BmpSequencePathName+BmpSequenceNames[index]).c_str());
+  Image->Picture->Bitmap->Assign(JpegIm);
+  bmp<<Image->Picture->Bitmap;
+  delete JpegIm;
+ }
+ else
+  bmp.Fill(0);
  LastReadSequenceIndex = index;
  return true;
 }
