@@ -32,20 +32,21 @@ object VideoGrabberControlForm: TVideoGrabberControlForm
     ParentFont = False
     TabOrder = 0
     ExplicitWidth = 584
-    ExplicitHeight = 298
+    ExplicitHeight = 292
     inherited VCapturePageControl: TPageControl
       Width = 584
       Height = 292
+      ActivePage = VideoGrabberControlFrame.DeviceTabSheet
       ExplicitWidth = 584
-      ExplicitHeight = 298
+      ExplicitHeight = 292
       inherited DeviceTabSheet: TTabSheet
         ExplicitWidth = 576
-        ExplicitHeight = 267
+        ExplicitHeight = 261
         inherited VDCapturePanel: TPanel
           Width = 576
           Height = 261
           ExplicitWidth = 576
-          ExplicitHeight = 267
+          ExplicitHeight = 261
           inherited ModeLabel: TLabel
             Width = 560
             ExplicitWidth = 560
@@ -90,35 +91,21 @@ object VideoGrabberControlForm: TVideoGrabberControlForm
       end
       inherited IPCameraTabSheet: TTabSheet
         inherited Panel1: TPanel
-          Width = 576
-          Height = 267
           inherited Label4: TLabel
-            Width = 560
             ExplicitWidth = 560
           end
           inherited Label5: TLabel
-            Width = 560
             ExplicitWidth = 560
           end
           inherited Label6: TLabel
-            Width = 560
             ExplicitWidth = 560
-          end
-          inherited IPCameraUrlEdit: TEdit
-            Width = 560
-          end
-          inherited IPCameraUserNameEdit: TEdit
-            Width = 560
-          end
-          inherited IPCameraUserPasswordEdit: TEdit
-            Width = 560
           end
         end
       end
       inherited VideoFileTabSheet: TTabSheet
         inherited VFCapturePanel: TPanel
           Width = 576
-          Height = 267
+          Height = 261
           inherited VideoFileNameLabel: TLabel
             Width = 560
             ExplicitWidth = 560
@@ -133,29 +120,34 @@ object VideoGrabberControlForm: TVideoGrabberControlForm
       end
       inherited PictureFileTabSheet: TTabSheet
         inherited Label3: TLabel
-          Width = 822
+          Width = 953
           ExplicitWidth = 560
         end
         inherited ImageFileNameEdit: TEdit
           Width = 476
-          ExplicitWidth = 544
+          ExplicitWidth = 476
         end
         inherited OpenImageFileButton: TButton
           Left = 490
-          ExplicitLeft = 558
+          ExplicitLeft = 490
         end
       end
       inherited ImageSequenceTabSheet: TTabSheet
         inherited Label7: TLabel
-          Width = 560
+          Width = 691
+          ExplicitWidth = 560
         end
         inherited ImageSequencePathEdit: TEdit
-          Width = 482
-          ExplicitWidth = 482
+          Width = 476
+          ExplicitWidth = 476
+        end
+        inherited ImageSequencePathCheckBox: TCheckBox
+          TabOrder = 2
         end
         inherited ImageSequencePathBrowseButton: TButton
-          Left = 496
-          ExplicitLeft = 496
+          Left = 490
+          TabOrder = 1
+          ExplicitLeft = 490
         end
       end
     end
