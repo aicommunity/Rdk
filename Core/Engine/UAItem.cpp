@@ -338,6 +338,7 @@ UAItem::UAItem(void)
 {
  NumOutputs=0;
  AddLookupProperty("NumOutputs",ptParameter & pgSystem,new UVProperty<int,UAItem>(this,&UAItem::SetNumOutputs,&UAItem::GetNumOutputs));
+ AddLookupProperty("AutoNumOutputs",ptParameter & pgSystem,new UVProperty<bool,UAItem>(this,&UAItem::SetAutoNumOutputs,&UAItem::GetAutoNumOutputs));
 }
 
 UAItem::~UAItem(void)
@@ -376,6 +377,22 @@ bool UAItem::SetNumOutputs(int value)
  Ready = false;
  return true;
 }
+
+// Признак включения/выключения режима автоматического увеличения числа входов
+// при подключении нового item.
+bool UAItem::GetAutoNumOutputs(void) const
+{
+ return AutoNumOutputs;
+}
+
+bool UAItem::SetAutoNumOutputs(bool value)
+{
+ if(AutoNumOutputs == value)
+  return true;
+
+ AutoNumOutputs=value;
+ return true;
+}
 // --------------------------
 
 
@@ -399,6 +416,9 @@ bool UAItem::Connect(UEPtr<UAConnector> c, int i_index, int c_index)
 {
  if(c == 0)
   return false;
+
+ if(i_index>=NumOutputs)
+  SetNumOutputs(i_index+1);
 
  if(!Build())
   return false;
@@ -765,6 +785,7 @@ ULinksListT<T>& UAItem::GetFullItemLinks(ULinksListT<T> &linkslist, UEPtr<UAItem
 bool UAItem::Default(void)
 {
  SetNumOutputs(1);
+ SetAutoNumOutputs(true);
  return UAConnector::Default();
 }
 

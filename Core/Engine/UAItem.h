@@ -165,6 +165,10 @@ protected: // Общедоступные свойства
 // Число выходов
 int NumOutputs;
 
+// Признак включения/выключения режима автоматического увеличения числа выходов
+// при подключении нового connector.
+bool AutoNumOutputs;
+
 protected: // Временные переменные. Read Only!
 // Указатель на первый элемент списка подключенных коннекторов
 //vector<UAConnector**> PAssociatedConnectors;
@@ -193,6 +197,10 @@ int GetNumOutputs(void) const;
 
 // Устанавливает число подключенных элементов item
 bool SetNumOutputs(int value);
+
+// Признак включения/выключения режима автоматического увеличения числа выходов
+bool GetAutoNumOutputs(void) const;
+bool SetAutoNumOutputs(bool value);
 // --------------------------
 
 
