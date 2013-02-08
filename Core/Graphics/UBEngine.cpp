@@ -201,87 +201,120 @@ unsigned char* UBEngine::Env_GetOutputImageY8(int index)
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
 const RDK::UBitmap* UBEngine::Model_GetComponentOutput(const char *stringid, int index)
 {
- UEPtr<RDK::UBAbstract> cont=dynamic_pointer_cast<RDK::UBAbstract>(FindComponent(stringid));
+ try {
+  UEPtr<RDK::UBAbstract> cont=dynamic_pointer_cast<RDK::UBAbstract>(FindComponent(stringid));
 
- if(!cont)
-  return 0;
+  if(!cont)
+   return 0;
 
- if(index<0 || index >= cont->GetNumOutputs())
-  return 0;
+  if(index<0 || index >= cont->GetNumOutputs())
+   return 0;
 
- return cont->GetOutputs()[index];
+  return cont->GetOutputs()[index];
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
 }
 
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
 const RDK::UBitmap* UBEngine::Model_GetComponentBitmapOutput(const char *stringid, int index)
 {
- UEPtr<RDK::UBAbstract> cont=dynamic_pointer_cast<RDK::UBAbstract>(FindComponent(stringid));
+ try {
+  UEPtr<RDK::UBAbstract> cont=dynamic_pointer_cast<RDK::UBAbstract>(FindComponent(stringid));
 
- if(!cont)
-  return 0;
+  if(!cont)
+   return 0;
 
- if(index<0 || index >= cont->GetNumOutputs())
-  return 0;
+  if(index<0 || index >= cont->GetNumOutputs())
+   return 0;
 
- return cont->GetOutputs()[index];
+  return cont->GetOutputs()[index];
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
 }
 
 // Возвращает указатель на вход с индексом 'index' компонента 'id'
 const RDK::UBitmap* UBEngine::Model_GetComponentBitmapInput(const char *stringid, int index)
 {
- UEPtr<RDK::UBAbstract> cont=dynamic_pointer_cast<RDK::UBAbstract>(FindComponent(stringid));
+ try {
+  UEPtr<RDK::UBAbstract> cont=dynamic_pointer_cast<RDK::UBAbstract>(FindComponent(stringid));
 
- if(!cont)
-  return 0;
+  if(!cont)
+   return 0;
 
- if(index<0 || index >= cont->GetNumInputs())
-  return 0;
+  if(index<0 || index >= cont->GetNumInputs())
+   return 0;
 
- return cont->GetInputs()[index];
+  return cont->GetInputs()[index];
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
 }
 
 // Замещает изображение выхода с индексом 'index' компонента 'id'
 void UBEngine::Model_SetComponentBitmapOutput(const char *stringid, int index, const RDK::UBitmap* const bmp)
 {
- UEPtr<RDK::UBAbstract> cont=dynamic_pointer_cast<RDK::UBAbstract>(FindComponent(stringid));
+ try{
+  UEPtr<RDK::UBAbstract> cont=dynamic_pointer_cast<RDK::UBAbstract>(FindComponent(stringid));
 
- if(!cont)
-  return;
+  if(!cont)
+   return;
 
- if(index<0 || index >= cont->GetNumOutputs())
-  return;
+  if(index<0 || index >= cont->GetNumOutputs())
+   return;
 
- UBitmap *output=cont->GetOutputs()[index];
+  UBitmap *output=cont->GetOutputs()[index];
 
- if(!output)
-  return;
+  if(!output)
+   return;
 
- UBitmap conversion;
- conversion.AttachBuffer(bmp->GetWidth(),bmp->GetHeight(),bmp->GetData(),bmp->GetColorModel());
- conversion.ConvertTo(*output);
- conversion.DetachBuffer();
+  UBitmap conversion;
+  conversion.AttachBuffer(bmp->GetWidth(),bmp->GetHeight(),bmp->GetData(),bmp->GetColorModel());
+  conversion.ConvertTo(*output);
+  conversion.DetachBuffer();
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
 }
 
 // Замещает изображение входа с индексом 'index' компонента 'id'
 void UBEngine::Model_SetComponentBitmapInput(const char *stringid, int index, const RDK::UBitmap* const bmp)
 {
- UEPtr<RDK::UBAbstract> cont=dynamic_pointer_cast<RDK::UBAbstract>(FindComponent(stringid));
+ try {
+  UEPtr<RDK::UBAbstract> cont=dynamic_pointer_cast<RDK::UBAbstract>(FindComponent(stringid));
 
- if(!cont)
-  return;
+  if(!cont)
+   return;
 
- if(index<0 || index >= cont->GetNumInputs())
-  return;
+  if(index<0 || index >= cont->GetNumInputs())
+   return;
 
- UBitmap *input=cont->GetInputs()[index];
+  UBitmap *input=cont->GetInputs()[index];
 
- if(!input)
-  return;
+  if(!input)
+   return;
 
- UBitmap conversion;
- conversion.AttachBuffer(bmp->GetWidth(),bmp->GetHeight(),bmp->GetData(),bmp->GetColorModel());
- conversion.ConvertTo(*input);
- conversion.DetachBuffer();
+  UBitmap conversion;
+  conversion.AttachBuffer(bmp->GetWidth(),bmp->GetHeight(),bmp->GetData(),bmp->GetColorModel());
+  conversion.ConvertTo(*input);
+  conversion.DetachBuffer();
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
 }
 // --------------------------
 

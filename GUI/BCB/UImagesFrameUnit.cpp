@@ -296,10 +296,14 @@ void TUImagesFrame::AUpdateInterface(void)
  {
   if(DrawGrid->Col < 0 || DrawGrid->Row <0)
    return;
-  Graphics::TBitmap * bmp=Images[DrawGrid->Col][DrawGrid->Row]->Picture->Bitmap;
-  FullImage->Width=bmp->Width;
-  FullImage->Height=bmp->Height;
-  FullImage->Picture->Bitmap->Assign(bmp);
+  const RDK::UBitmap* bmp=(const RDK::UBitmap*)Model_GetComponentOutput(StringIds[DrawGrid->Col][DrawGrid->Row].c_str(), ComponentIndexes[DrawGrid->Col][DrawGrid->Row]);
+  if(bmp)
+   SetBitmap(DrawGrid->Col, DrawGrid->Row, *bmp);
+
+  Graphics::TBitmap * tbmp=Images[DrawGrid->Col][DrawGrid->Row]->Picture->Bitmap;
+  FullImage->Width=tbmp->Width;
+  FullImage->Height=tbmp->Height;
+  FullImage->Picture->Bitmap->Assign(tbmp);
   FullImage->Top=0;
   FullImage->Left=0;
   FullImage->Repaint();
