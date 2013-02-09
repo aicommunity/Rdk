@@ -6,7 +6,7 @@
 
 namespace RDK {
 
-class UPropertyInputBase: public UIPropertyIO
+class UPropertyIOBase: public UIPropertyIO
 {
 protected:
 // Тип входа
@@ -20,7 +20,7 @@ public:
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UPropertyInputBase(int input_type=ipDataSingle, int min_range=0, int max_range=-1)
+UPropertyIOBase(int input_type=ipDataSingle, int min_range=0, int max_range=-1)
  : Type(input_type), MinRange(min_range), MaxRange(max_range)
 { };
 // -----------------------------
@@ -43,7 +43,7 @@ virtual bool CheckRange(int index)
 };
 
 template<typename T, typename OwnerT, unsigned int type>
-class UPropertyIO: public UVBaseLProperty<T,OwnerT,type>, public UPropertyInputBase
+class UPropertyInputBase: public UVBaseLProperty<T,OwnerT,type>, public UPropertyIOBase
 {
 protected:
 
@@ -52,8 +52,8 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UPropertyIO(const string &name, OwnerT * const owner, int input_type, int min_range=0, int max_range=-1)
- : UVBaseLProperty<T,OwnerT,type>(name, owner, (T * const)0), UPropertyInputBase(input_type, min_range, max_range)
+UPropertyInputBase(const string &name, OwnerT * const owner, int input_type, int min_range=0, int max_range=-1)
+ : UVBaseLProperty<T,OwnerT,type>(name, owner, (T * const)0), UPropertyIOBase(input_type, min_range, max_range)
 { };
 // -----------------------------
 
@@ -108,9 +108,8 @@ virtual bool Load(UEPtr<UVariableData> storage, bool simplemode=false)
 // --------------------------
 };
 
-
 template<typename T, typename OwnerT, unsigned int type=ptPubInput>
-class UPropertyInput: public UPropertyIO<T,OwnerT,type>
+class UPropertyInput: public UPropertyInputBase<T,OwnerT,type>
 {
 protected:
 
@@ -120,13 +119,13 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 UPropertyInput(const string &name, OwnerT * const owner, int input_type=ipSingle | ipComp, int min_range=0, int max_range=-1)
- : UPropertyIO<T,OwnerT,type>(name, owner, input_type | ipComp, min_range, max_range)
+ : UPropertyInputBase<T,OwnerT,type>(name, owner, input_type | ipComp, min_range, max_range)
 { };
 // -----------------------------
 };
 
 template<typename T, typename OwnerT, unsigned int type=ptPubInput>
-class UPropertyInputData: public UPropertyIO<T,OwnerT,type>
+class UPropertyInputData: public UPropertyInputBase<T,OwnerT,type>
 {
 protected:
 
@@ -137,13 +136,13 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 UPropertyInputData(const string &name, OwnerT * const owner, int input_type=ipSingle, int min_range=0, int max_range=-1)
- : UPropertyIO<T,OwnerT,type>(name, owner, input_type | ipData, min_range, max_range)
+ : UPropertyInputBase<T,OwnerT,type>(name, owner, input_type | ipData, min_range, max_range)
 { };
 // -----------------------------
 };
 
-template<typename T, typename OwnerT, unsigned int type=ptPubOutput>
-class UPropertyOutput: public UPropertyIO<T,OwnerT,type>
+template<typename T, typename OwnerT, unsigned int type>
+class UPropertyOutputBase: public ULProperty<T,OwnerT,type>, public UPropertyIOBase
 {
 protected:
 
@@ -152,14 +151,64 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UPropertyOutput(const string &name, OwnerT * const owner, int input_type=ipSingle | ipComp, int min_range=0, int max_range=-1)
- : UPropertyIO<T,OwnerT,type>(name, owner, input_type | ipComp, min_range, max_range)
+UPropertyOutputBase(const string &name, OwnerT * const owner, int input_type, int min_range=0, int max_range=-1)
+ : ULProperty<T,OwnerT,type>(name, owner), UPropertyIOBase(input_type, min_range, max_range)
 { };
 // -----------------------------
+
+// --------------------------
+// Методы управления указателем
+// --------------------------
+// Возвращает указатель на данные входа
+void const * GetPointer(void) const
+{
+ return this->PData;
+}
+
+// Устанавливает указатель на данные входа
+bool SetPointer(void* value)
+{
+ this->PData=reinterpret_cast<T*>(value);
+ return true;
+}
+
+bool operator ! (void) const
+{ return (this->PData)?false:true; };
+
+T* operator -> (void) const
+{
+ if(!this->PData)
+  return 0;
+
+ return this->PData;
+};
+
+T& operator * (void)
+{
+ return *this->PData;
+};
+
+operator T* (void) const
+{
+ return this->PData;
+}
+	   /*
+// Метод записывает значение свойства в поток
+virtual bool Save(UEPtr<UVariableData> storage, bool simplemode=false)
+{
+ return true;
+}
+
+// Метод читает значение свойства из потока
+virtual bool Load(UEPtr<UVariableData> storage, bool simplemode=false)
+{
+ return true;
+}        */
+// --------------------------
 };
 
 template<typename T, typename OwnerT, unsigned int type=ptPubOutput>
-class UPropertyOutputData: public UPropertyIO<T,OwnerT,type>
+class UPropertyOutputData: public UPropertyOutputBase<T,OwnerT,type>
 {
 protected:
 
@@ -170,12 +219,12 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 UPropertyOutputData(const string &name, OwnerT * const owner, int input_type=ipSingle, int min_range=0, int max_range=-1)
- : UPropertyIO<T,OwnerT,type>(name, owner, input_type | ipData, min_range, max_range)
-{ this->PData=new T; };
+ : UPropertyOutputBase<T,OwnerT,type>(name, owner, input_type | ipData, min_range, max_range)
+{ };
 
 virtual ~UPropertyOutputData(void)
 {
- delete this->PData;
+
 };
 // -----------------------------
 };
