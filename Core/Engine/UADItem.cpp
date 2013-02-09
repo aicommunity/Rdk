@@ -14,6 +14,7 @@ See file license.txt for more information
 
 #include <algorithm>
 #include "UADItem.h"
+#include "UPropertyIO.h"
 
 namespace RDK {
 
@@ -652,6 +653,46 @@ bool UADItem::Build(void)
  if(IsReady())
   return true;
 
+ // Выполняем подсчет минимального числа входов и выходов
+ int min_num_inputs=0;
+ int min_num_outputs=0;
+ VariableMapIteratorT I=PropertiesLookupTable.begin(),
+					  J=PropertiesLookupTable.end();
+ for(;I != J;++I)
+ {
+  if(I->second.Type & ptInput)
+  {
+   UPropertyIOBase* property=dynamic_cast<UPropertyIOBase*>(I->second.Property.Get());
+   if(!property)
+	continue;
+
+   if(property->GetMinRange()+1>min_num_inputs)
+	min_num_inputs=property->GetMinRange()+1;
+
+   if(property->GetMaxRange()+1>min_num_inputs)
+	min_num_inputs=property->GetMaxRange()+1;
+  }
+
+  if(I->second.Type & ptOutput)
+  {
+   UPropertyIOBase* property=dynamic_cast<UPropertyIOBase*>(I->second.Property.Get());
+   if(!property)
+	continue;
+
+   if(property->GetMinRange()+1>min_num_outputs)
+	min_num_outputs=property->GetMinRange()+1;
+
+   if(property->GetMaxRange()+1>min_num_outputs)
+	min_num_outputs=property->GetMaxRange()+1;
+  }
+ }
+
+ if(NumInputs<min_num_inputs)
+  SetNumInputs(min_num_inputs);
+
+ if(NumOutputs<min_num_outputs)
+  SetNumOutputs(min_num_outputs);
+
  OutputData.resize(NumOutputs);
  InputData.resize(NumInputs);
 // InputDataSize.resize(NumInputs);
@@ -679,6 +720,21 @@ bool UADItem::Build(void)
  InputNames.resize(NumInputs);
 
  UpdatePointers();
+
+ // Выполняем действия по настройке выходов
+ I=PropertiesLookupTable.begin(),
+ J=PropertiesLookupTable.end();
+ for(;I != J;++I)
+ {
+  if(I->second.Type & ptOutput || I->second.Type & ptInput)
+  {
+   UIPropertyIO* property=dynamic_cast<UIPropertyIO*>(I->second.Property.Get());
+   if(!property)
+	continue;
+
+   property->Init();
+  }
+ }
 
  if(!UAItem::Build())
   return false;

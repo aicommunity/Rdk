@@ -318,6 +318,9 @@ virtual void const * GetPointer(void) const=0;
 
 // Устанавливает указатель на данные входа
 virtual bool SetPointer(void* value)=0;
+
+// Первичная инициализация указателя
+virtual void Init(void)=0;
 // --------------------------
 };
 

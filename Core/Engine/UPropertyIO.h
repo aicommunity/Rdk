@@ -36,8 +36,16 @@ virtual int GetType(void) const
 
 virtual bool CheckRange(int index)
 {
- return ((Type == ipDataSingle || Type == ipCompSingle) && MinRange == index);
+ return (MinRange == index && MaxRange<0) | (index>=MinRange && index<=MaxRange);
+ //((Type == ipDataSingle || Type == ipCompSingle) && MinRange == index);
 }
+
+// Диапазон индексов входов
+int GetMinRange(void)
+{ return MinRange; };
+
+int GetMaxRange(void)
+{ return MaxRange; };
 // -----------------------------
 
 };
@@ -118,10 +126,17 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UPropertyInput(const string &name, OwnerT * const owner, int input_type=ipSingle | ipComp, int min_range=0, int max_range=-1)
- : UPropertyInputBase<T,OwnerT,type>(name, owner, input_type | ipComp, min_range, max_range)
+UPropertyInput(const string &name, OwnerT * const owner, /*int input_type=ipSingle | ipComp, */int min_range, int max_range=-1)
+ : UPropertyInputBase<T,OwnerT,type>(name, owner, /*input_type | */ipComp, min_range, max_range)
 { };
 // -----------------------------
+
+
+virtual void Init(void)
+{
+
+}
+
 };
 
 template<typename T, typename OwnerT, unsigned int type=ptPubInput>
@@ -135,10 +150,20 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UPropertyInputData(const string &name, OwnerT * const owner, int input_type=ipSingle, int min_range=0, int max_range=-1)
- : UPropertyInputBase<T,OwnerT,type>(name, owner, input_type | ipData, min_range, max_range)
+UPropertyInputData(const string &name, OwnerT * const owner, /*int input_type=ipSingle, */int min_range, int max_range=-1)
+ : UPropertyInputBase<T,OwnerT,type>(name, owner, /*input_type | */ipData, min_range, max_range)
 { };
 // -----------------------------
+
+
+virtual void Init(void)
+{
+ if(Owner && MinRange>=0)
+ {
+  Owner->SetInputDataInfo(MinRange,new UDataInfo<T>);
+ }
+}
+
 };
 
 template<typename T, typename OwnerT, unsigned int type>
@@ -218,15 +243,22 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UPropertyOutputData(const string &name, OwnerT * const owner, int input_type=ipSingle, int min_range=0, int max_range=-1)
- : UPropertyOutputBase<T,OwnerT,type>(name, owner, input_type | ipData, min_range, max_range)
-{ };
-
-virtual ~UPropertyOutputData(void)
+UPropertyOutputData(const string &name, OwnerT * const owner, /*int input_type=ipSingle, */int min_range, int max_range=-1)
+ : UPropertyOutputBase<T,OwnerT,type>(name, owner, /*input_type | */ipData, min_range, max_range)
 {
 
 };
 // -----------------------------
+
+virtual void Init(void)
+{
+ if(Owner && MinRange>=0)
+ {
+  Owner->SetOutputDataAsPointer(MinRange,&this->v);
+  Owner->SetOutputDataInfo(MinRange,new UDataInfo<T>);
+ }
+};
+
 };
 
 
