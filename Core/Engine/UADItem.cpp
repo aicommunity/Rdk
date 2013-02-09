@@ -563,14 +563,14 @@ bool UADItem::ConnectToItem(UEPtr<UAItem> na, int i_index, int &c_index)
  {
   if(I->second.Type & ptInput)
   {
-   UIInputProperty* input_property=dynamic_cast<UIInputProperty*>(I->second.Property.Get());
+   UIPropertyIO* input_property=dynamic_cast<UIPropertyIO*>(I->second.Property.Get());
    if(!input_property || !input_property->CheckRange(c_index))
 	continue;
 
-   if(input_property->GetInputType() & ipData)
+   if(input_property->GetType() & ipData)
 	input_property->SetPointer(nad->GetOutputDataAsPointer(i_index));
    else
-   if(input_property->GetInputType() & ipComp)
+   if(input_property->GetType() & ipComp)
 	input_property->SetPointer(nad);
   }
  }
@@ -591,7 +591,7 @@ void UADItem::DisconnectFromIndex(int c_index)
  {
   if(I->second.Type & ptInput)
   {
-   UIInputProperty* input_property=dynamic_cast<UIInputProperty*>(I->second.Property.Get());
+   UIPropertyIO* input_property=dynamic_cast<UIPropertyIO*>(I->second.Property.Get());
    if(!input_property || !input_property->CheckRange(c_index))
 	continue;
 

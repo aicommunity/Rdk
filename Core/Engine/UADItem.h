@@ -18,7 +18,7 @@ See file license.txt for more information
 
 namespace RDK {
 
-class UIInputProperty;
+class UIPropertyIO;
 
 enum { ipData=1, ipComp=2 };
 enum { ipSingle=16, ipRange=32, ipList=64 };
@@ -298,14 +298,14 @@ void CalcMinMaxInputDataSize(void);
 // ----------------------
 };
 
-class UIInputProperty
+class UIPropertyIO
 {
 public:
 
 // --------------------------
 // Методы управления данными
 // --------------------------
-virtual int GetInputType(void) const=0;
+virtual int GetType(void) const=0;
 
 virtual bool CheckRange(int index)=0;
 // --------------------------
@@ -323,6 +323,6 @@ virtual bool SetPointer(void* value)=0;
 
 }
 
-#include "UInputProperty.h"
+#include "UPropertyIO.h"
 #endif
 
