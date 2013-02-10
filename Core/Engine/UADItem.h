@@ -305,7 +305,7 @@ public:
 // --------------------------
 // Методы управления данными
 // --------------------------
-virtual int GetType(void) const=0;
+virtual int GetIoType(void) const=0;
 
 virtual bool CheckRange(int index)=0;
 // --------------------------

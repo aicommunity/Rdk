@@ -568,10 +568,10 @@ bool UADItem::ConnectToItem(UEPtr<UAItem> na, int i_index, int &c_index)
    if(!input_property || !input_property->CheckRange(c_index))
 	continue;
 
-   if(input_property->GetType() & ipData)
+   if(input_property->GetIoType() & ipData)
 	input_property->SetPointer(nad->GetOutputDataAsPointer(i_index));
    else
-   if(input_property->GetType() & ipComp)
+   if(input_property->GetIoType() & ipComp)
 	input_property->SetPointer(nad);
   }
  }

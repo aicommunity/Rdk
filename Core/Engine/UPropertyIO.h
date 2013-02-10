@@ -10,7 +10,7 @@ class UPropertyIOBase: public UIPropertyIO
 {
 protected:
 // Тип входа
-int Type;
+int IoType;
 
 // Диапазон индексов входов
 int MinRange, MaxRange;
@@ -20,8 +20,8 @@ public:
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UPropertyIOBase(int input_type=ipDataSingle, int min_range=0, int max_range=-1)
- : Type(input_type), MinRange(min_range), MaxRange(max_range)
+UPropertyIOBase(int min_range=0, int io_type=ipDataSingle, int max_range=-1)
+ : IoType(io_type), MinRange(min_range), MaxRange(max_range)
 { };
 // -----------------------------
 
@@ -29,9 +29,9 @@ UPropertyIOBase(int input_type=ipDataSingle, int min_range=0, int max_range=-1)
 // Методы управления параметрами
 // -----------------------------
 // Тип
-virtual int GetType(void) const
+virtual int GetIoType(void) const
 {
- return Type;
+ return IoType;
 }
 
 virtual bool CheckRange(int index)
@@ -60,8 +60,8 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UPropertyInputBase(const string &name, OwnerT * const owner, int input_type, int min_range=0, int max_range=-1)
- : UVBaseLProperty<T,OwnerT,type>(name, owner, (T * const)0), UPropertyIOBase(input_type, min_range, max_range)
+UPropertyInputBase(const string &name, OwnerT * const owner, int min_range, int input_type, int max_range=-1)
+ : UVBaseLProperty<T,OwnerT,type>(name, owner, (T * const)0), UPropertyIOBase(min_range, input_type, max_range)
 { };
 // -----------------------------
 
@@ -126,8 +126,8 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UPropertyInput(const string &name, OwnerT * const owner, /*int input_type=ipSingle | ipComp, */int min_range, int max_range=-1)
- : UPropertyInputBase<T,OwnerT,type>(name, owner, /*input_type | */ipComp, min_range, max_range)
+UPropertyInput(const string &name, OwnerT * const owner, int min_range, int input_type=ipSingle | ipComp, int max_range=-1)
+ : UPropertyInputBase<T,OwnerT,type>(name, owner, min_range, input_type | ipComp, max_range)
 { };
 // -----------------------------
 
@@ -150,8 +150,8 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UPropertyInputData(const string &name, OwnerT * const owner, /*int input_type=ipSingle, */int min_range, int max_range=-1)
- : UPropertyInputBase<T,OwnerT,type>(name, owner, /*input_type | */ipData, min_range, max_range)
+UPropertyInputData(const string &name, OwnerT * const owner, int min_range, int input_type=ipSingle, int max_range=-1)
+ : UPropertyInputBase<T,OwnerT,type>(name, owner, min_range, input_type | ipData, max_range)
 { };
 // -----------------------------
 
@@ -176,8 +176,8 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UPropertyOutputBase(const string &name, OwnerT * const owner, int input_type, int min_range=0, int max_range=-1)
- : ULProperty<T,OwnerT,type>(name, owner), UPropertyIOBase(input_type, min_range, max_range)
+UPropertyOutputBase(const string &name, OwnerT * const owner, int min_range, int input_type, int max_range=-1)
+ : ULProperty<T,OwnerT,type>(name, owner), UPropertyIOBase(min_range, input_type, max_range)
 { };
 // -----------------------------
 
@@ -243,8 +243,8 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UPropertyOutputData(const string &name, OwnerT * const owner, /*int input_type=ipSingle, */int min_range, int max_range=-1)
- : UPropertyOutputBase<T,OwnerT,type>(name, owner, /*input_type | */ipData, min_range, max_range)
+UPropertyOutputData(const string &name, OwnerT * const owner, int min_range, int input_type=ipSingle, int max_range=-1)
+ : UPropertyOutputBase<T,OwnerT,type>(name, owner, min_range, input_type | ipData, max_range)
 {
 
 };
