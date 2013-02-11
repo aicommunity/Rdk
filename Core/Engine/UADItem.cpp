@@ -569,10 +569,10 @@ bool UADItem::ConnectToItem(UEPtr<UAItem> na, int i_index, int &c_index)
 	continue;
 
    if(input_property->GetIoType() & ipData)
-	input_property->SetPointer(nad->GetOutputDataAsPointer(i_index));
+	input_property->SetPointer(c_index,nad->GetOutputDataAsPointer(i_index));
    else
    if(input_property->GetIoType() & ipComp)
-	input_property->SetPointer(nad);
+	input_property->SetPointer(c_index,nad);
   }
  }
 
@@ -596,7 +596,7 @@ void UADItem::DisconnectFromIndex(int c_index)
    if(!input_property || !input_property->CheckRange(c_index))
 	continue;
 
-   input_property->SetPointer(0);
+   input_property->SetPointer(c_index,0);
   }
  }
 

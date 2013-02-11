@@ -92,7 +92,7 @@ USerStorageBinary& operator << (USerStorageBinary& storage, const MDVector<T> &d
  unsigned int size=data.GetSize();
  operator <<(storage,size);
 
- for(unsigned i=0;i<data.GetRows();i++)
+ for(int i=0;i<data.GetRows();i++)
   operator <<(storage,data.Data1D[i]);
  return storage;
 }
@@ -105,7 +105,7 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, MDVector<T> &data)
 
  data.Resize(size);
 
- for(unsigned i=0;i<data.GetRows();i++)
+ for(int i=0;i<data.GetRows();i++)
   operator >>(storage,data.Data1D[i]);
  return storage;
 }

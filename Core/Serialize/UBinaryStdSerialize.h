@@ -107,6 +107,30 @@ USerStorageBinary& operator << (USerStorageBinary& storage, long double data);
 
 USerStorageBinary& operator >> (USerStorageBinary& storage, long double &data);
 
+// Указатели
+template<typename T>
+USerStorageBinary& operator << (USerStorageBinary& storage, const T *data)
+{
+ for(size_t i=0;i<sizeof(data);i++)
+  storage.push(reinterpret_cast<const unsigned char*>(&data)[i]);
+
+ return storage;
+}
+
+template<typename T>
+USerStorageBinary& operator >> (USerStorageBinary& storage, T* &data)
+{
+ for(size_t i=0;i<sizeof(data);i++)
+ {
+  if(storage.empty())
+   return storage;
+
+  reinterpret_cast<unsigned char*>(&data)[i]=storage.front();
+  storage.pop();
+ }
+ return storage;
+}
+
 // Пары
 template<typename T1, typename T2>
 USerStorageBinary& operator << (USerStorageBinary& storage, const std::pair<T1,T2> &data)

@@ -72,7 +72,7 @@ MDVector<T>::MDVector(int size, T defvalue)
  else
  {
   T* p=MDMatrix<T>::Data1D;
-  for(unsigned i=0;i<GetRows();i++)
+  for(int i=0;i<GetRows();i++)
    *p++=defvalue;
  }
 }

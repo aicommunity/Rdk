@@ -14,6 +14,8 @@ class UADataComponent;
 class UIProperty;
 class UIShare;
 
+#ifndef RDK_PROPERTY_TYPES
+#define RDK_PROPERTY_TYPES
 // Варианты типа свойства (битовая маска) pt - Property Type
 // 0x1 - Параметр
 // 0x2 - Переменная состояния
@@ -31,6 +33,7 @@ enum {pgPublic=0x100, pgSystem=0x200, pgInput=0x400, pgOutput=0x800, pgMode=0x10
 
 // Наиболее часто используемые сочетания типа и группы
 enum {ptPubParameter=ptParameter|pgPublic, ptPubState=ptState|pgPublic, ptPubInput=ptInput|pgPublic, ptPubOutput=ptOutput|pgPublic};
+#endif
 
 // Хранилище свойств параметра
 struct UVariable

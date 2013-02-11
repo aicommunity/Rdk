@@ -115,6 +115,34 @@ USerStorageXML& operator << (USerStorageXML& storage, long double data);
 
 USerStorageXML& operator >> (USerStorageXML& storage, long double &data);
 
+// Указатели
+template<typename T>
+USerStorageXML& operator << (USerStorageXML& storage, const T *data)
+{
+ storage.SetNodeAttribute("Type","pointer");
+ std::stringstream stream;
+ stream<<data;
+
+ std::string str;
+ str=stream.str();
+
+ storage.SetNodeText(str);
+
+ return storage;
+}
+
+template<typename T>
+USerStorageXML& operator >> (USerStorageXML& storage, T* &data)
+{
+ std::string rvalue=storage.GetNodeText();
+
+ std::stringstream stream(storage.GetNodeText().c_str());
+
+// stream>>data; // Заглушка!
+
+ return storage;
+}
+
 // Пары
 template<typename T1, typename T2>
 USerStorageXML& operator << (USerStorageXML& storage, const std::pair<T1,T2> &data)

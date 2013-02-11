@@ -1228,7 +1228,7 @@ const char* UEngine::Model_GetComponentsNameList(const char* stringid)
   std::vector<std::string> tempbuffer;
 
   destcont->GetComponentsList(tempbuffer);
-  for(size_t i=0;i<tempbuffer.size();i++)
+  for(int i=0;i<int(tempbuffer.size());i++)
   {
    TempString+=tempbuffer[i];
    if(i<int(tempbuffer.size())-1)

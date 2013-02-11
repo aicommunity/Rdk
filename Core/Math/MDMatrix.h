@@ -195,8 +195,8 @@ void MDMatrix<T>::Resize(int rows, int cols)
  if(rows && cols)
  {
   new_data = new T[rows*cols];
-  for(int i=0; i<(Rows<rows)?Rows:rows; i++)
-   for(int j=0;j<(Cols<cols)?Cols:cols; j++)
+  for(int i=0; i<((Rows<rows)?Rows:rows); i++)
+   for(int j=0;j<((Cols<cols)?Cols:cols); j++)
     new_data[i*cols+j]=Data[i*Cols+j];
  }
  delete []Data;

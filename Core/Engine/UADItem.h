@@ -314,10 +314,10 @@ virtual bool CheckRange(int index)=0;
 // Методы управления указателем
 // --------------------------
 // Возвращает указатель на данные входа
-virtual void const * GetPointer(void) const=0;
+virtual void const * GetPointer(int index) const=0;
 
 // Устанавливает указатель на данные входа
-virtual bool SetPointer(void* value)=0;
+virtual bool SetPointer(int index, void* value)=0;
 
 // Первичная инициализация указателя
 virtual void Init(void)=0;

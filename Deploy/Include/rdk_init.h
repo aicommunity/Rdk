@@ -7,11 +7,14 @@ extern "C"  {
 typedef int bool;
 #endif
 
+#ifndef RDK_PROPERTY_TYPES
+#define RDK_PROPERTY_TYPES
 // Варианты типа свойства (битовая маска) pt - Property Type
 // 0x1 - Параметр
 // 0x2 - Переменная состояния
 // 0x4 - Временная переменная
-enum {ptParameter=1, ptState=2, ptTemp=4, ptAny=255};
+// 0x8 - Вход
+enum {ptParameter=1, ptState=2, ptTemp=4, ptInput=8, ptOutput=16, ptAny=255};
 
 // Варианты групп свойства (битовая маска) pg - Property Group
 // 0x100 - Общедоступный
@@ -20,6 +23,10 @@ enum {ptParameter=1, ptState=2, ptTemp=4, ptAny=255};
 // 0x800 - Выходные данные
 // 0x1000 - Флаг смены режима работы компонента
 enum {pgPublic=0x100, pgSystem=0x200, pgInput=0x400, pgOutput=0x800, pgMode=0x1000, pgAny=0xFFFFFF};
+
+// Наиболее часто используемые сочетания типа и группы
+enum {ptPubParameter=ptParameter|pgPublic, ptPubState=ptState|pgPublic, ptPubInput=ptInput|pgPublic, ptPubOutput=ptOutput|pgPublic};
+#endif
 
 // ----------------------------
 // Функции инициализации
