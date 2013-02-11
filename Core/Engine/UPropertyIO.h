@@ -474,6 +474,148 @@ virtual void Init(void)
 
 };
 
+// -----------------------------------------------------------------------------
+// Output virtual properties
+// -----------------------------------------------------------------------------
+template<typename T, typename OwnerT>
+class UVPropertyOutputBase: public UVProperty<T,OwnerT>, public UPropertyIOBase
+{
+protected:
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+//Конструктор инициализации.
+UVPropertyOutputBase(OwnerT * const owner, T* data, int min_range, int input_type, int max_range=-1)
+ : UVProperty<T,OwnerT>(owner,data), UPropertyIOBase(min_range, input_type, max_range)
+{ };
+// -----------------------------
+
+// --------------------------
+// Методы управления указателем
+// --------------------------
+
+// --------------------------
+// Методы управления указателем
+// --------------------------
+// Возвращает указатель на данные выхода
+void const * GetPointer(int index) const
+{
+ return this->PData;
+}
+
+// Устанавливает указатель на данные выхода
+bool SetPointer(int index, void* value)
+{
+ return true;
+}
+// --------------------------
+};
+
+template<typename T, typename OwnerT>
+class UVPropertyOutputData: public UVPropertyOutputBase<T,OwnerT>
+{
+protected:
+
+public: // Методы
+
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+//Конструктор инициализации.
+UVPropertyOutputData(OwnerT * const owner, T* data, int min_range, int input_type=ipSingle, int max_range=-1)
+ : UVPropertyOutputBase<T,OwnerT>(owner, data, min_range, input_type | ipData, max_range)
+{
+
+};
+// -----------------------------
+
+virtual void Init(void)
+{
+ if(Owner && MinRange>=0)
+ {
+  Owner->SetOutputDataAsPointer(MinRange,this->PData);
+  Owner->SetOutputDataInfo(MinRange,new UDataInfo<T>);
+ }
+};
+
+};
+	  /*
+template<typename T, typename OwnerT, unsigned int type>
+class UVPropertyOutputCBase: protected UVCProperty<std::vector<T>,OwnerT,type>, public UPropertyIOBase
+{
+protected:
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+//Конструктор инициализации.
+UPropertyOutputCBase(const string &name, OwnerT * const owner, int min_range, int input_type, int max_range=-1)
+ : UCLProperty<std::vector<T>,OwnerT,type>(name, owner), UPropertyIOBase(min_range, input_type, max_range)
+{ };
+// -----------------------------
+
+// --------------------------
+// Методы управления указателем
+// --------------------------
+T& Value(int i)
+{
+ return this->v[i];
+}
+
+const T& Value(int i) const
+{
+ return this->v[i];
+}
+
+T& operator [] (int i)
+{
+ return this->v[i];
+}
+
+const T& operator [] (int i) const
+{
+ return this->v[i];
+}
+// --------------------------
+};
+
+template<typename T, typename OwnerT, unsigned int type=ptPubOutput>
+class UPropertyOutputCData: public UPropertyOutputCBase<T,OwnerT,type>
+{
+protected:
+
+public: // Методы
+
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+//Конструктор инициализации.
+UPropertyOutputCData(const string &name, OwnerT * const owner, int min_range, int input_type=ipSingle, int max_range=-1)
+ : UPropertyOutputCBase<T,OwnerT,type>(name, owner, min_range, input_type | ipData, max_range)
+{
+
+};
+// -----------------------------
+
+virtual void Init(void)
+{
+ if(Owner) //&& MinRange>=0)
+ {
+  int max_range=(MaxRange<0)?MinRange:MaxRange;
+  this->v.resize(max_range-MinRange+1);
+  for(int i=MinRange;i<=max_range;i++)
+  {
+   Owner->SetOutputDataAsPointer(i,&(this->v[i-MinRange]));
+   Owner->SetOutputDataInfo(i,new UDataInfo<T>);
+  }
+ }
+};
+
+};
+        */
 
 }
 #endif
