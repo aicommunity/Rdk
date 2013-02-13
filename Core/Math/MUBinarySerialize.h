@@ -120,10 +120,10 @@ USerStorageBinary& operator << (USerStorageBinary& storage, const MDMatrix<T> &d
  int cols=data.GetCols();
  operator <<(storage,cols);
 
- for(unsigned i=0;i<data.GetRows();i++)
+ for(int i=0;i<data.GetRows();i++)
  {
-  for(unsigned j=0;j<data.GetCols();j++)
-   operator <<(storage,data.Data[i][j]);
+  for(int j=0;j<data.GetCols();j++)
+   operator <<(storage,data(i,j));
  }
  return storage;
 }
@@ -136,12 +136,12 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, MDMatrix<T> &data)
  unsigned int cols=0;
  operator >>(storage,cols);
 
- data.SetDim(rows,cols);
+ data.Resize(rows,cols);
 
  for(unsigned i=0;i<rows;i++)
  {
   for(unsigned j=0;j<cols;j++)
-   operator >>(storage,data.Data[i][j]);
+   operator >>(storage,data(i,j));
  }
  return storage;
 }

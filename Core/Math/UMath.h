@@ -21,6 +21,7 @@ See file license.txt for more information
 #include "MUXMLSerialize.h"
 #include "MUBinarySerialize.h"
 #include "MKalmanFilter.h"
+#include "MDKalmanFilter.h"
 #include "MMatrix.h"
 #include "MDMatrix.h"   
 #include "MDVector.h"     

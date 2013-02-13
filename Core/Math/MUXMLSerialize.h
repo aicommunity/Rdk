@@ -172,7 +172,7 @@ USerStorageXML& operator << (USerStorageXML& storage, const MDMatrix<T> &data)
  {
   for(int j=0;j<cols;j++)
   {
-   stream<<data.Data[i][j]<<"\t";
+   stream<<data(i,j)<<"\t";
   }
   if(i<rows-1)
    stream<<endl;

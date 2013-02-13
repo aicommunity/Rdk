@@ -195,8 +195,10 @@ void MDMatrix<T>::Resize(int rows, int cols)
  if(rows && cols)
  {
   new_data = new T[rows*cols];
-  for(int i=0; i<((Rows<rows)?Rows:rows); i++)
-   for(int j=0;j<((Cols<cols)?Cols:cols); j++)
+  int c_rows=(Rows<rows)?Rows:rows;
+  int c_cols=(Cols<cols)?Cols:cols;
+  for(int i=0; i<c_rows; i++)
+   for(int j=0;j<c_cols; j++)
     new_data[i*cols+j]=Data[i*Cols+j];
  }
  delete []Data;
@@ -222,9 +224,9 @@ const MDMatrix<T>& MDMatrix<T>::operator = (const MDMatrix<T> &copy)
 template<class T>
 MDMatrix<T>& MDMatrix<T>::operator = (T value)
 {
- for(int i=0;i<Rows;i++)
-  for(int j=0;j<Cols;j++)
-   Data[i][j]=value;
+ T *p=Data;
+ for(int i=0;i<Rows*Cols;i++)
+   *p++=value;
  return *this;
 };
 
