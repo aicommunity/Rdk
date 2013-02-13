@@ -18,6 +18,7 @@
 #include "UFavoriteComponentInfoFormUnit.h"
 #include "UDrawEngineFormUnit.h"
 #include "UCreateProjectWizardFormUnit.h"
+#include "UWatchFormUnit.h"
 #include "TUFileSystem.h"
 #include "rdk_initdll.h"
 #include "myrdk.h"
@@ -674,6 +675,12 @@ void __fastcall TUGEngineControlForm::ProjectOptions1Click(TObject *Sender)
   ProjectName=UCreateProjectWizardForm->ProjectNameLabeledEdit->Text;
   ProjectDescription=UCreateProjectWizardForm->ProjectDescriptionRichEdit->Text;
  }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::WatchWindow1Click(TObject *Sender)
+{
+ UWatchForm->Show();
 }
 //---------------------------------------------------------------------------
 

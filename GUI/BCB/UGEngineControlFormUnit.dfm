@@ -354,6 +354,10 @@ object UGEngineControlForm: TUGEngineControlForm
         Caption = 'Draw Engine'
         OnClick = DrawEngine1Click
       end
+      object WatchWindow1: TMenuItem
+        Caption = 'Watch Window'
+        OnClick = WatchWindow1Click
+      end
     end
   end
   object ImageList: TImageList

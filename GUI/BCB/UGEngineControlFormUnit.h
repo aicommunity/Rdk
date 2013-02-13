@@ -84,6 +84,7 @@ __published:	// IDE-managed Components
 	TMenuItem *CopyProject1;
 	TMenuItem *N5;
 	TMenuItem *ProjectOptions1;
+	TMenuItem *WatchWindow1;
 	void __fastcall FormShow(TObject *Sender);
 	void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
 	void __fastcall Start1Click(TObject *Sender);
@@ -110,6 +111,7 @@ __published:	// IDE-managed Components
 	void __fastcall ReloadParameters1Click(TObject *Sender);
 	void __fastcall CopyProject1Click(TObject *Sender);
 	void __fastcall ProjectOptions1Click(TObject *Sender);
+	void __fastcall WatchWindow1Click(TObject *Sender);
 
 
 private:	// User declarations
