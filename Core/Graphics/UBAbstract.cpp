@@ -106,6 +106,11 @@ bool UBAbstract::SetOutputColorModel(int index, UBMColorModel cmodel)
 // ---------------------
 // Методы счета
 // ---------------------
+bool UBAbstract::PLACalculate(UBitmap **input, UBitmap **output, int num_inputs, int num_outputs)
+{
+ return true;
+}
+
 bool UBAbstract::PLCalculate(UBitmap **input, UBitmap **output, int num_inputs, int num_outputs)
 {
  if(!Build())
@@ -113,7 +118,7 @@ bool UBAbstract::PLCalculate(UBitmap **input, UBitmap **output, int num_inputs, 
 
  if(!input || !output || num_inputs<NumInputs || num_outputs<NumOutputs)
   return true;
-
+ /*
  for(int i=0;i<NumInputs;i++)
  {
   if(!input[i])
@@ -128,7 +133,7 @@ bool UBAbstract::PLCalculate(UBitmap **input, UBitmap **output, int num_inputs, 
    	 return true;
   }
  }
-
+         */
  for(int i=0;i<NumOutputs;i++)
  {
   if(!output[i])
@@ -308,6 +313,8 @@ bool UBAbstract::ACalculate(void)
 {
  if(InternalInputsFlag)
  {
+  throw int(1);
+ /*
   for(int i=0;i<NumInputs;i++)
   {
    const UCItem &citem=GetCItem(i);
@@ -332,7 +339,7 @@ bool UBAbstract::ACalculate(void)
     Inputs[i]->SetRes(bmp->GetWidth(),bmp->GetHeight(),InputColorModel[i]);
     bmp->ConvertTo(*Inputs[i]);
    }
-  }
+  }   */
  }
  else
  {

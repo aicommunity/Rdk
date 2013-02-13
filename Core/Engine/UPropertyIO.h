@@ -101,31 +101,6 @@ operator T* (void) const
 {
  return this->v;
 }
-
-		   /*
-// Метод записывает значение свойства в поток
-virtual bool Save(UEPtr<Serialize::USerStorage>  storage, bool simplemode=false)
-{
- return true;
-};
-
-// Метод читает значение свойства из потока
-virtual bool Load(UEPtr<Serialize::USerStorage>  storage, bool simplemode=false)
-{
- return true;
-}           */
-  /*
-// Метод записывает значение свойства в поток
-virtual bool Save(UEPtr<UVariableData> storage, bool simplemode=false)
-{
- return true;
-}
-
-// Метод читает значение свойства из потока
-virtual bool Load(UEPtr<UVariableData> storage, bool simplemode=false)
-{
- return true;
-}   */
 // --------------------------
 };
 
@@ -220,39 +195,6 @@ const T* operator [] (int i) const
 {
  return this->v[i];
 }
-/*
-bool operator ! (void) const
-{ return (this->PData)?false:true; };
-
-T* operator -> (void) const
-{
- if(!this->PData)
-  return 0;
-
- return this->PData;
-};
-
-T& operator * (void)
-{
- return *this->PData;
-};
-
-operator T* (void) const
-{
- return this->PData;
-}
-
-// Метод записывает значение свойства в поток
-virtual bool Save(UEPtr<UVariableData> storage, bool simplemode=false)
-{
- return true;
-}
-
-// Метод читает значение свойства из потока
-virtual bool Load(UEPtr<UVariableData> storage, bool simplemode=false)
-{
- return true;
-}               */
 // --------------------------
 };
 
@@ -298,7 +240,7 @@ UPropertyInputCData(const string &name, OwnerT * const owner, int min_range, int
 
 virtual void Init(void)
 {
- if(Owner) //&& MinRange>=0)
+ if(Owner && MinRange>=0)
  {
   int max_range=(MaxRange<0)?MinRange:MaxRange;
   this->v.resize(max_range-MinRange+1);
@@ -460,7 +402,7 @@ UPropertyOutputCData(const string &name, OwnerT * const owner, int min_range, in
 
 virtual void Init(void)
 {
- if(Owner) //&& MinRange>=0)
+ if(Owner && MinRange>=0)
  {
   int max_range=(MaxRange<0)?MinRange:MaxRange;
   this->v.resize(max_range-MinRange+1);
@@ -541,9 +483,9 @@ virtual void Init(void)
 };
 
 };
-	  /*
-template<typename T, typename OwnerT, unsigned int type>
-class UVPropertyOutputCBase: protected UVCProperty<std::vector<T>,OwnerT,type>, public UPropertyIOBase
+		  /*
+template<typename T, typename OwnerT>
+class UVPropertyOutputCBase: protected UVProperty<std::vector<T>,OwnerT>, public UPropertyIOBase
 {
 protected:
 
@@ -553,7 +495,7 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 UPropertyOutputCBase(const string &name, OwnerT * const owner, int min_range, int input_type, int max_range=-1)
- : UCLProperty<std::vector<T>,OwnerT,type>(name, owner), UPropertyIOBase(min_range, input_type, max_range)
+ : UVProperty<std::vector<T>,OwnerT,type>(name, owner), UPropertyIOBase(min_range, input_type, max_range)
 { };
 // -----------------------------
 
@@ -615,7 +557,7 @@ virtual void Init(void)
 };
 
 };
-        */
+         */
 
 }
 #endif
