@@ -74,10 +74,6 @@ virtual bool CheckComponentType(UEPtr<UAContainer> comp) const;
 // ---------------------
 // Создание новой копии этого объекта
 virtual UBPipeline* New(void);
-
-//virtual bool Calculate(void);
-
-virtual bool PLACalculate(UBitmap **input, UBitmap **output, int num_inputs=1, int num_outputs=1);
 // ---------------------
 
 // --------------------------
@@ -145,9 +141,21 @@ virtual ~UBParallelPipeline(void);
 // ---------------------
 // Создание новой копии этого объекта
 virtual UBParallelPipeline* New(void);
-
-virtual bool PLACalculate(UBitmap **input, UBitmap **output, int num_inputs=1, int num_outputs=1);
 // ---------------------
+
+// --------------------------
+// Скрытые методы управления счетом
+// --------------------------
+protected:
+/// Восстановление настроек по умолчанию и сброс процесса счета
+virtual bool AFDefault(void);
+
+/// Сброс процесса счета.
+virtual bool AFReset(void);
+
+/// Выполняет расчет этого объекта
+virtual bool AFCalculate(void);
+// --------------------------
 };
 
 }

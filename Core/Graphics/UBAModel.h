@@ -14,26 +14,11 @@ See file license.txt for more information
 #define UBAMODEL_H
 
 #include "UBAbstract.h"
-#include "UBASource.h"
-#include "UBAReceiver.h"
 
 namespace RDK {
 
-//class UBASource;
-//class UBAReceiver;
-
 class UBAModel: public UBAbstract
 {
-protected: // Основные свойства
-
-
-protected: // Указатели на источники и приемники сигналов модели
-// Массив источников
-//UCPointer<UBASource, UBAModel> Sources;
-
-// Массив приемников
-//UCPointer<UBAReceiver, UBAModel> Receivers;
-
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
@@ -47,8 +32,6 @@ virtual ~UBAModel(void);
 // --------------------------
 // Выделяет память для новой чистой копии объекта этого класса
 virtual UBAModel* New(void);
-
-virtual bool PLACalculate(UBitmap **input, UBitmap **output, int num_inputs=1, int num_outputs=1);
 // --------------------------
 };
 

@@ -9,8 +9,6 @@ File License:       New BSD License
 Project License:    New BSD License
 See file license.txt for more information
 *********************************************************** */
-
-
 #ifndef UBASOURCE_CPP
 #define UBASOURCE_CPP
 
@@ -49,8 +47,6 @@ bool UBASource::SetOutputData(int index, const UBitmap &bitmap)
 }
 // --------------------------
 
-
-
 // --------------------------
 // Системные методы управления объектом
 // --------------------------
@@ -61,15 +57,9 @@ UBASource* UBASource::New(void)
 }
 // --------------------------
 
-
 // --------------------------
 // Скрытые методы управления счетом
 // --------------------------
-bool UBASource::PLACalculate(UBitmap **input, UBitmap **output, int num_inputs, int num_outputs)
-{
- return true;
-}
-
 // Восстановление настроек по умолчанию и сброс процесса счета
 bool UBASource::AFDefault(void)
 {
@@ -83,20 +73,10 @@ bool UBASource::AFReset(void)
 }
 
 // Выполняет расчет этого объекта
-/*bool UBASource::ACalculate(void)
+bool UBASource::AFCalculate(void)
 {
- if(ActionCounter.v>0)
- {
-  ActionCounter-=TimeStep.v;
-  if(ActionCounter.v <= 0) // Выключаем импульс и включаем ожидание
-  {
-   ActionCounter=0;
-   Activity=false;
-  }
- }
-
  return true;
-}      */
+}
 // --------------------------
 }
 #endif

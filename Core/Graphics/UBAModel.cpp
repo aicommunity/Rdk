@@ -14,8 +14,6 @@ See file license.txt for more information
 #define UBAMODEL_CPP
 
 #include "UBAModel.h"
-#include "UBASource.h"
-#include "UBAReceiver.h"
 
 namespace RDK {
 
@@ -24,8 +22,6 @@ namespace RDK {
 // Конструкторы и деструкторы
 // --------------------------
 UBAModel::UBAModel(void)
-// : Sources(this,"Sources"),
-//   Receivers(this,"Receivers")
 {
 }
 
@@ -41,11 +37,6 @@ UBAModel::~UBAModel(void)
 UBAModel* UBAModel::New(void)
 {
  return new UBAModel;
-}
-
-bool UBAModel::PLACalculate(UBitmap **input, UBitmap **output, int num_inputs, int num_outputs)
-{
- return true;
 }
 // --------------------------
 

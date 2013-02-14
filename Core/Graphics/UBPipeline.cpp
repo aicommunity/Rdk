@@ -114,152 +114,6 @@ UBPipeline* UBPipeline::New(void)
 {
  return new UBPipeline;
 }
-	/*
-bool UBPipeline::Calculate(void)
-{
- if(!Build())
-  return false;
-
- CalcNumIOs();
-
- return ACalculate();
-} */
-
-bool UBPipeline::PLACalculate(UBitmap **input, UBitmap **output, int num_inputs, int num_outputs)
-{
-/*
- if(!NumComponents)
-  return true;
-
- int min_inputs=(NumInputs<num_inputs)?NumInputs:num_inputs;
- int min_outputs=(NumOutputs<num_outputs)?NumOutputs:num_outputs;
-
- // Отрабатываем случай 1 фильтра в конвеере
- if(NumComponents == 1)
- {
-  ExpandInputArray(NumInputs);
-  ExpandOutputArray(NumOutputs);
-  for(int i=0;i<min_inputs;i++)
-   InputArray[i]=(UBitmap *)input[i];
-
-  for(int i=0;i<min_outputs;i++)
-   OutputArray[i]=output[i];
-
-  if(PComponents[0])
-  {
-   if(!static_pointer_cast<UBAbstract>(PComponents[0])->SetInputs(InputArray))
-    return false;
-   if(!static_pointer_cast<UBAbstract>(PComponents[0])->SetOutputs(OutputArray))
-	return false;
-   return static_pointer_cast<UBAbstract>(PComponents[0])->Calculate();
-//   return Pipeline[0]->PLCalculate(InputArray,OutputArray,InputArraySize,OutputArraySize);
-  }
-  return false;
- }
-
- int max_buffer_size=0;
- // Находим максимально необходимое число выходов для фильтра
- for(int i=0;i<NumComponents;i++)
- {
-  if(static_pointer_cast<UBAbstract>(PComponents[i]))
-  {
-   if(max_buffer_size<static_pointer_cast<UBAbstract>(static_pointer_cast<UBAbstract>(PComponents[i]))->GetNumInputs())
-	max_buffer_size=static_pointer_cast<UBAbstract>(static_pointer_cast<UBAbstract>(PComponents[i]))->GetNumInputs();
-   if(max_buffer_size<static_pointer_cast<UBAbstract>(static_pointer_cast<UBAbstract>(PComponents[i]))->GetNumOutputs())
-	max_buffer_size=static_pointer_cast<UBAbstract>(static_pointer_cast<UBAbstract>(PComponents[i]))->GetNumOutputs();
-  }
- }
- ExpandInputBuffer(max_buffer_size);
- ExpandOutputBuffer(max_buffer_size);
-
- ExpandInputArray(max_buffer_size);
- ExpandOutputArray(max_buffer_size);
- for(int i=0;i<min_inputs;i++)
-  InputArray[i]=(UBitmap *)input[i];
-
- for(int i=0;i<max_buffer_size;i++)
-  OutputArray[i]=&OutputBuffer[i];
-
- for(int i=0;i<NumComponents;i++)
- {
-  if(static_pointer_cast<UBAbstract>(PComponents[i]))
-  {
-   if(!static_pointer_cast<UBAbstract>(static_pointer_cast<UBAbstract>(PComponents[i]))->SetInputs(InputArray))
-	return false;
-   if(!static_pointer_cast<UBAbstract>(static_pointer_cast<UBAbstract>(PComponents[i]))->SetOutputs(OutputArray))
-	return false;
-   if(!static_pointer_cast<UBAbstract>(static_pointer_cast<UBAbstract>(PComponents[i]))->Calculate())
-	return false;
-  }
-
-  // Пробрасываем неиспользуемые более выходы выполненного фильтра на выход конвеера
-  if(i<NumComponents-1)
-  for(int l=0;l<static_pointer_cast<UBAbstract>(PComponents[i])->GetNumOutputs();l++)
-  {
-   bool key=false;
-   int output_table_index=l;//static_pointer_cast<UBAbstract>(static_pointer_cast<UBAbstract>(PComponents[i]))->OutputTableValue(l);
-
-   for(int j=i+1;j<NumComponents;j++)
-   {
-	for(int k=0;k<static_pointer_cast<UBAbstract>(PComponents[j])->GetNumOutputs();k++)
-	{
-     int output_table_index2=k;//static_pointer_cast<UBAbstract>(PComponents[j])->OutputTableValue(k);
-     if(output_table_index == output_table_index2)
-     {
-      key=true;
-      break;
-     }
-    }
-
-    if(key)
-     break;
-   }
-
-   if(!key)
-   {
-    if(output_table_index<NumOutputs && output_table_index<NumOutputs)
-     *output[output_table_index]=*OutputArray[output_table_index];
-   }
-  }
-
-  // Если это был последний фильтр, выходим
-  if(i == NumComponents-1)
-   break;
-
-  for(int j=0;j<min_inputs;j++)
-   InputArray[j]=(UBitmap *)input[j];
-
-  // Создаем вектор входов для следующего фильтра
-  for(int l=0;l<static_pointer_cast<UBAbstract>(PComponents[i])->GetNumOutputs();l++)
-  {
-   int output_table_index=l;//static_pointer_cast<UBAbstract>(static_pointer_cast<UBAbstract>(PComponents[i]))->OutputTableValue(l);
-   // Поправили элемент вектора входов
-   InputArray[output_table_index]=OutputArray[output_table_index];
-  }
-
-  // Создаем вектор выходов для следующего фильтра
-  for(int l=0;l<static_pointer_cast<UBAbstract>(PComponents[i+1])->GetNumOutputs();l++)
-  {
-   int output_table_index=l;//static_pointer_cast<UBAbstract>(PComponents[i+1])->OutputTableValue(l);
-
-   if(i<NumComponents-2)
-   {
-    // Правим элемент вектора выходов
-    if(OutputArray[output_table_index] == &OutputBuffer[output_table_index])
-     OutputArray[output_table_index]=&InputBuffer[output_table_index];
-    else
-     OutputArray[output_table_index]=&OutputBuffer[output_table_index];
-   }
-   else
-   {
-    OutputArray[output_table_index]=output[output_table_index];
-   }
-  }
-
- }
-   */
- return true;
-}
 // ---------------------
 
 // --------------------------
@@ -415,19 +269,36 @@ UBParallelPipeline* UBParallelPipeline::New(void)
 {
  return new UBParallelPipeline;
 }
+// ---------------------
 
-bool UBParallelPipeline::PLACalculate(UBitmap **input, UBitmap **output, int num_inputs, int num_outputs)
+// --------------------------
+// Скрытые методы управления счетом
+// --------------------------
+// Восстановление настроек по умолчанию и сброс процесса счета
+bool UBParallelPipeline::AFDefault(void)
 {
- int min_inputs=(NumInputs<num_inputs)?NumInputs:num_inputs;
- int min_outputs=(NumOutputs<num_outputs)?NumOutputs:num_outputs;
+ return true;
+}
+
+// Сброс процесса счета.
+bool UBParallelPipeline::AFReset(void)
+{
+ return true;
+}
+
+// Выполняет расчет этого объекта
+bool UBParallelPipeline::AFCalculate(void)
+{
+ int min_inputs=(NumInputs<Inputs.GetSize())?NumInputs:Inputs.GetSize();
+ int min_outputs=(NumOutputs<Outputs.GetSize())?NumOutputs:Outputs.GetSize();
 
  ExpandInputArray(NumInputs);
  ExpandOutputArray(NumOutputs);
  for(int i=0;i<min_inputs;i++)
-  InputArray[i]=(UBitmap *)input[i];
+  InputArray[i]=(UBitmap *)Inputs[i];
 
  for(int i=0;i<min_outputs;i++)
-  OutputArray[i]=output[i];
+  OutputArray[i]=Outputs[i];
 
  for(int i=0;i<NumComponents;i++)
  {
@@ -439,14 +310,12 @@ bool UBParallelPipeline::PLACalculate(UBitmap **input, UBitmap **output, int num
     return false;
    if(!static_pointer_cast<UBAbstract>(static_pointer_cast<UBAbstract>(PComponents[i]))->Calculate())
     return false;
-//   if(!static_pointer_cast<UBAbstract>(PComponents)[i]->PLCalculate(InputArray,OutputArray,InputArraySize,OutputArraySize))
-//    return false;
   }
  }
 
  return true;
 }
-// ---------------------
+// --------------------------
 }
 
 #endif

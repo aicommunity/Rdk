@@ -23,7 +23,6 @@ namespace RDK {
 // Конструкторы и деструкторы
 // --------------------------
 UBAReceiver::UBAReceiver(void)
-//: NADItem(name)//NAConnector(name)
 {
 }
 
@@ -35,24 +34,40 @@ UBAReceiver::~UBAReceiver(void)
 // --------------------------
 // Системные методы управления объектом
 // --------------------------
-// Выделяет память для новой чистой копии объекта этого класса
+/// Выделяет память для новой чистой копии объекта этого класса
 UBAReceiver* UBAReceiver::New(void)
 {
  return new UBAReceiver;
 }
 // --------------------------
 
-bool UBAReceiver::PLACalculate(UBitmap **input, UBitmap **output, int num_inputs, int num_outputs)
+// --------------------------
+// Скрытые методы управления счетом
+// --------------------------
+/// Восстановление настроек по умолчанию и сброс процесса счета
+bool UBAReceiver::AFDefault(void)
 {
- int min=(num_inputs<num_outputs)?num_inputs:num_outputs;
+ return true;
+}
+
+/// Сброс процесса счета.
+bool UBAReceiver::AFReset(void)
+{
+ return true;
+}
+
+/// Выполняет расчет этого объекта
+bool UBAReceiver::AFCalculate(void)
+{
+ int min=(Inputs.GetSize()<Outputs.GetSize())?Inputs.GetSize():Outputs.GetSize();
  for(int i=0;i<min;i++)
  {
-  *output[i]=*input[i];
+  *Outputs[i]=*Inputs[i];
  }
 
  return true;
 }
-
+// --------------------------
 
 }
 #endif
