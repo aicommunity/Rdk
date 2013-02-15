@@ -341,8 +341,8 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, MVertex<T, Rows> &da
 template<typename T, int Rows>
 USerStorageBinary& operator << (USerStorageBinary& storage, const MGeometry<T, Rows> &data)
 {
- operator << (storage,data.GetVerices());
- operator << (storage,data.GetVericesNames());
+ operator << (storage,data.GetVertices());
+ operator << (storage,data.GetVerticesNames());
  operator << (storage,data.GetBorders());
  return storage;
 }
@@ -356,8 +356,8 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, MGeometry<T, Rows> &
 
  operator >> (storage,vtemp);
  operator >> (storage,btemp);
- data.SetVerices(vtemp);
- data.SetVericesNames(vntemp);
+ data.SetVertices(vtemp);
+ data.SetVerticesNames(vntemp);
  data.SetBorders(btemp);
 
  return storage;
