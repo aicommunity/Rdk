@@ -101,11 +101,6 @@ bool SetOutput(int index, PUBitmap bitmap);
 // ---------------------
 // Создание новой копии этого объекта
 virtual UBAbstract* New(void)=0;
-
-// Методы счета в составе конвеера
-// Pipeline calculation methods
-virtual bool PLACalculate(UBitmap **input, UBitmap **output, int num_inputs=1, int num_outputs=1);
-bool PLCalculate(UBitmap **input, UBitmap **output, int num_inputs=1, int num_outputs=1);
 // ---------------------
 
 // ----------------------

@@ -99,55 +99,8 @@ bool UBAbstract::SetOutputColorModel(int index, UBMColorModel cmodel)
 // ---------------------
 
 // ---------------------
-// Методы управления данными
-// ---------------------
-// ---------------------
-
-// ---------------------
 // Методы счета
 // ---------------------
-bool UBAbstract::PLACalculate(UBitmap **input, UBitmap **output, int num_inputs, int num_outputs)
-{
- return true;
-}
-
-bool UBAbstract::PLCalculate(UBitmap **input, UBitmap **output, int num_inputs, int num_outputs)
-{
- if(!Build())
-  return false;
-
- if(!input || !output || num_inputs<NumInputs || num_outputs<NumOutputs)
-  return true;
- /*
- for(int i=0;i<NumInputs;i++)
- {
-  if(!input[i])
-   return true;
-
-  if(InputColorModel[i] != ubmUnknown)
-  {
-   if(InternalInputsFlag)
-	input[i]->SetColorModel(InputColorModel[i]);
-   else
-	if(InputColorModel[i] != input[i]->GetColorModel())
-   	 return true;
-  }
- }
-         */
- for(int i=0;i<NumOutputs;i++)
- {
-  if(!output[i])
-   return true;
-  if(OutputColorModel[i] != ubmUnknown)
-   output[i]->SetColorModel(OutputColorModel[i]);
- }
-
- if(!PLACalculate(input, output, num_inputs, num_outputs))
-  return false;
-
- return true;
-}
-
 // Возвращает массив входных изображений
 UPBitmapVector& UBAbstract::GetInputs(void)
 {
@@ -359,9 +312,6 @@ bool UBAbstract::ACalculate(void)
   }
 
  }
-
- if(!PLCalculate(Inputs.GetBuffer(), Outputs.GetBuffer(), NumInputs, NumOutputs))
-  return false;
 
  return AFCalculate();
 }
