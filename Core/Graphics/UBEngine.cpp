@@ -423,10 +423,20 @@ int UBEngine::LoadPredefinedLibraries(void)
  filter->SetName("ColorConvert");
  bstorage->AddClass(filter,"ColorConvert");
 
- filter=new RDK::UBASearchNCC;
+ filter=new RDK::UBSearchSimulator;
  filter->Default();
- filter->SetName("SearchNCC");
+ filter->SetName("BSearch");
+ bstorage->AddClass(filter,"UBSearchSimulator");
+
+ filter=new RDK::UBSearchNCC;
+ filter->Default();
+ filter->SetName("BSearch");
  bstorage->AddClass(filter,"SearchNCC");
+
+ filter=new RDK::UBTrackerSimulator;
+ filter->Default();
+ filter->SetName("BTracker");
+ bstorage->AddClass(filter,"UBTrackerSimulator");
 
  filter=new RDK::UBAShowObjectsSimple;
  filter->Default();

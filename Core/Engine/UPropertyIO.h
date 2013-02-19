@@ -276,6 +276,21 @@ UPropertyOutputBase(const string &name, OwnerT * const owner, int min_range, int
 // --------------------------
 // Методы управления указателем
 // --------------------------
+T* const operator -> (void)
+{
+ return &this->v;
+};
+
+T& operator * (void)
+{
+ return this->v;
+};
+
+operator T* const (void)
+{
+ return &this->v;
+}
+
 T& Value(void)
 {
  return this->v;

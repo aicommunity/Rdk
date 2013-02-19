@@ -178,6 +178,9 @@ bool UBAbstract::AConnectToItem(UEPtr<UAItem> na, int i_index, int c_index)
 {
  UEPtr<UBAbstract> filter=dynamic_pointer_cast<UBAbstract>(na);
 
+ if(!filter)
+  return true;
+
  if(!InternalInputsFlag)
   Inputs[c_index]=filter->Outputs[i_index];
 
@@ -188,6 +191,9 @@ bool UBAbstract::AConnectToItem(UEPtr<UAItem> na, int i_index, int c_index)
 void UBAbstract::ADisconnectFromItem(UEPtr<UAItem> na, int i_index, int c_index)
 {
  UEPtr<UBAbstract> filter=dynamic_pointer_cast<UBAbstract>(na);
+
+ if(!filter)
+  return;
 
  AFDisconnectFromItem(filter,i_index,c_index);
 }
@@ -299,7 +305,7 @@ bool UBAbstract::ACalculate(void)
   for(int i=0;i<NumInputs;i++)
   {
    const UCItem &citem=GetCItem(i);
-   UBAbstract* input=static_cast<UBAbstract*>(citem.Item);
+   UBAbstract* input=dynamic_cast<UBAbstract*>(citem.Item);
    if(input)
    {
 	int index=citem.Index;
