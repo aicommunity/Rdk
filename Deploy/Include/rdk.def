@@ -164,4 +164,4 @@ EXPORTS
     Engine_GetLog = _Engine_GetLog
     Engine_GetUnreadLog = _Engine_GetUnreadLog
         
-
+    Model_GetComponentOutputAsMatrix = _Model_GetComponentOutputAsMatrix

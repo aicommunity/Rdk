@@ -7,9 +7,6 @@ template<class T>
 class MDMatrix
 {
 public:
-// Данные матрицы
-int Rows;
-int Cols;
 union
 {
  T* Data;
@@ -19,6 +16,12 @@ union
   T x,y,z,d;
  };
 };
+
+protected:
+// Данные матрицы
+int Rows;
+int Cols;
+
 public:
 // --------------------------
 // Конструкторы и деструкторы
@@ -32,7 +35,6 @@ MDMatrix(int rows, int cols, const T* data);
 
 // Задание размерности
 void Resize(int rows, int cols);
-
 
 // --------------------------
 // Операторы управления данными
@@ -124,10 +126,6 @@ MDMatrix<T> Zero(void);
 MDMatrix<T> Eye(void);
 // --------------------------
 
-// --------------------------
-// Скрытые методы счета
-// --------------------------
-protected:
 };
 // ---------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------
@@ -349,16 +347,16 @@ MDMatrix<T> operator - (const MDMatrix<T> &M1, const MDMatrix<T> &M2)
 template<class T>
 MDMatrix<T> operator * (const MDMatrix<T> &M1, const MDMatrix<T> &M2)
 {
- MDMatrix<T> res(M1.Rows,M2.Cols);
+ MDMatrix<T> res(M1.GetRows(),M2.GetCols());
 
- for(int j=0;j<M2.Cols;j++)
+ for(int j=0;j<M2.GetCols();j++)
  {
-  for(int k=0;k<M1.Rows;k++)
+  for(int k=0;k<M1.GetRows();k++)
   {
    T sum=0;
-   for(int i=0;i<M1.Cols;i++)
-	sum+=M1.Data[k*M1.Cols+i]*M2.Data[i*M2.Cols+j];
-   res.Data[k*res.Cols+j]=sum;
+   for(int i=0;i<M1.GetCols();i++)
+	sum+=M1.Data[k*M1.GetCols()+i]*M2.Data[i*M2.GetCols()+j];
+   res.Data[k*res.GetCols()+j]=sum;
   }
  }
 
@@ -473,11 +471,11 @@ MDMatrix<T> operator - (T v, const MDMatrix<T> &M)
 template<class T>
 bool operator == (const MDMatrix<T> &M1, const MDMatrix<T> &M2)
 {
- if(M1.Rows != M2.Rows || M1.Cols != M2.Cols)
+ if(M1.GetRows() != M2.GetRows() || M1.GetCols() != M2.GetCols())
   return false;
 
  bool flag = 1;
- for(int i=0;i<M1.Rows*M1.Cols;i++)
+ for(int i=0;i<M1.GetRows()*M1.GetCols();i++)
   if(M1.Data[i] != M2.Data[i])
    flag=0;
  return flag;

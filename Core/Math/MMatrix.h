@@ -36,6 +36,11 @@ union
  };
 };
 
+protected:
+// Данные матрицы
+int VRows;
+int VCols;
+
 public:
 // --------------------------
 // Конструкторы и деструкторы
@@ -152,11 +157,15 @@ protected:
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>::MMatrix(void)
 {
+ VRows=Rows;
+ VCols=Cols;
 };
 
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>::MMatrix(T defvalue)
 {
+ VRows=Rows;
+ VCols=Cols;
  if(defvalue == 0)
   memset(Data1D,0,Rows*Cols*sizeof(T));
  else
@@ -166,7 +175,9 @@ MMatrix<T,Rows,Cols>::MMatrix(T defvalue)
 
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>::MMatrix(const MMatrix<T,Rows,Cols> &copy)
-{ *this=copy; };
+{
+ *this=copy;
+};
 /*
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>::MMatrix(const T* data)
@@ -183,6 +194,8 @@ MMatrix<T,Rows,Cols>::~MMatrix(void) {};
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::operator = (const MMatrix<T,Rows,Cols> &copy)
 {
+ VRows=copy.VRows;
+ VCols=copy.VCols;
  memcpy(Data1D,copy.Data1D,sizeof(T)*Cols*Rows);
  return *this;
 };
@@ -191,7 +204,11 @@ template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::operator = (const MDMatrix<T> &copy)
 {
  if(Rows == copy.GetRows() && Cols == copy.GetCols())
+ {
   memcpy(Data1D,copy.Data1D,sizeof(T)*Cols*Rows);
+  VRows=copy.Rows;
+  VCols=copy.Cols;
+ }
  return *this;
 }
 

@@ -448,6 +448,13 @@ int UBEngine::LoadPredefinedLibraries(void)
  filter->SetName("DataSimulatorSimple");
  bstorage->AddClass(filter,"DataSimulatorSimple");
 
+ filter=new RDK::UBKeyPointsClarificatorAvg;
+ filter->Default();
+ filter->SetName("UBKeyPointsClarificator");
+ bstorage->AddClass(filter,"BKeyPointsClarificatorAvg");
+
+
+
 #ifdef RDK_WINAPI
  filter=new RDK::UBWDllCameraCalibrator;
  filter->Default();

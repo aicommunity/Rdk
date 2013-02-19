@@ -604,6 +604,11 @@ RDK_LIB_TYPE long long RDK_CALL Model_GetInterstepsInterval(const char *stringid
 // Функции управления моделью видеообработки
 // --------------------------
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
+// возвращаемое значение имеет фактический тип RDK::MDMatrix*
+// если выход не содержит данных такого типа, то возвращает 0
+RDK_LIB_TYPE const /* RDK::MDMatrix* */void* const RDK_CALL Model_GetComponentOutputAsMatrix(const char *stringid, int index);
+
+// Возвращает указатель на выход с индексом 'index' компонента 'id'
 // возвращаемое значение имеет фактический тип RDK::UBitmap*
 RDK_LIB_TYPE const /* RDK::UBitmap* */void* const RDK_CALL Model_GetComponentOutput(const char *stringid, int index);
 

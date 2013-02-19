@@ -9,6 +9,7 @@
 #include "UShowProgressBarUnit.h"
 #include "UComponentsListFormUnit.h"
 #include "rdk_initdll.h"
+#include "myrdk.h"
 //---------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------
@@ -618,15 +619,27 @@ void __fastcall TUWatchFrame::StepUpdate(void)
    continue;
 
    const double *x=0, *y=0;
+   const RDK::MDMatrix<double> *ym=0;
    double xdata;
    std::vector<double> vxdata, vydata;
    if(wd->YDataSourceName.size() && wd->XDataSourceName.size()==0)
    {
 	 xdata=Model_GetDoubleTime();
 	 x=&xdata;
-	 y=(double*)Model_GetComponentOutputData(wd->YDataSourceName.c_str(), wd->YOutputIndex);
-	 if(!y)
-	  continue;
+
+	 ym=(const RDK::MDMatrix<double>*)(Model_GetComponentOutputAsMatrix(wd->YDataSourceName.c_str(), wd->YOutputIndex));
+	 if(!ym)
+	 {
+	  y=(double*)Model_GetComponentOutputData(wd->YDataSourceName.c_str(), wd->YOutputIndex);
+	  if(!y)
+	   continue;
+	 }
+	 else
+	 {
+	  y=ym->Data;
+	  if(!y)
+	   continue;
+	 }
    }
    else
    if(wd->YDataSourceName.size()==0 && wd->XDataSourceName.size())
@@ -693,8 +706,9 @@ void __fastcall TUWatchFrame::StepUpdate(void)
 //	continue;
 
    static_cast<TFastLineSeries*>(series)->AutoRepaint=false;
-   for(int i=0;i<wd->XYSize;i++)
-	series->AddXY(x[i],y[i]+wd->YShift,"",wd->Color);
+
+	for(int i=0;i<wd->XYSize;i++)
+	 series->AddXY(x[i],y[i]+wd->YShift,"",wd->Color);
    static_cast<TFastLineSeries*>(series)->AutoRepaint=true;
   }
   else

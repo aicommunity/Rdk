@@ -3116,6 +3116,40 @@ int UEngine::Model_SaveComponentDrawInfo(RDK::UANet* cont, RDK::Serialize::USerS
 }
 // --------------------------
 
+// ¬озвращает указатель на выход с индексом 'index' компонента 'id'
+// возвращаемое значение имеет фактический тип RDK::MDMatrix*
+// если выход не содержит данных такого типа, то возвращает 0
+const /* RDK::MDMatrix* */void* const UEngine::Model_GetComponentOutputAsMatrix(const char *stringid, int index)
+{
+ try
+ {
+  UEPtr<UANet> cont=dynamic_pointer_cast<UANet>(FindComponent(stringid));
+
+  if(!cont)
+   return 0;
+
+  UDataInfo<MDMatrix<double> >* pt=new UDataInfo<MDMatrix<double> >;
+  UDataInfo<MDVector<double> >* ptv=new UDataInfo<MDVector<double> >;
+  std::string type1=pt->GetType().name();
+  std::string type2=cont->GetOutputDataInfo(index)->GetType().name();
+  if(pt->Compare(cont->GetOutputDataInfo(index)) || ptv->Compare(cont->GetOutputDataInfo(index)))
+  {
+   delete pt;
+   return cont->GetOutputDataAsPointer(index);
+  }
+
+  delete pt;
+  return 0;
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
+
+
 // --------------------------
 // ћетоды управлени€ исключени€ми
 // --------------------------
