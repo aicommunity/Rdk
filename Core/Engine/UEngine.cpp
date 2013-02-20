@@ -887,8 +887,11 @@ int UEngine::Env_Reset(const char* stringid)
   }
   else
   {
-   id.DecodeFromString(stringid);
-   Environment->SetModelCalculationComponent(id);
+   RDK::UAContainer* destcont=FindComponent(stringid);
+   if(destcont)
+	destcont->GetLongId(Environment->GetModel(),id);
+//   id.DecodeFromString(stringid);
+	Environment->SetModelCalculationComponent(id);
   }
 
   if(!Environment->Reset())
@@ -898,6 +901,7 @@ int UEngine::Env_Reset(const char* stringid)
  {
   ProcessException(exception);
  }
+
 
  return 0;
 }

@@ -308,6 +308,7 @@ void UBEngine::Model_SetComponentBitmapInput(const char *stringid, int index, co
 
   UBitmap conversion;
   conversion.AttachBuffer(bmp->GetWidth(),bmp->GetHeight(),bmp->GetData(),bmp->GetColorModel());
+  input->SetColorModel(ubmY8,false);
   conversion.ConvertTo(*input);
   conversion.DetachBuffer();
  }

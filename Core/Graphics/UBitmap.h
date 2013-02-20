@@ -41,12 +41,16 @@ struct UBRgb { UBColor r,g,b,d; }; // 32,24 бит RGB
 // YCrCb тип
 struct UBYCrCb { UBColor y,cr,cb; }; // YCrCb
 
+// HSV тип
+struct UBHsv { UBColor h,s,v; }; // YCrCb
+
 union UColorT
 {
 unsigned int c; // ÷елое, ч/б дл€ вычислений формата 000C
 float f; // ¬ещественное дл€ вычислений
 UBRgb rgb; // 32,24 бит RGB
 UBYCrCb ycrcb; // YCrCb
+UBHsv hsv; // HSV
 
 UColorT(void)
 { };
