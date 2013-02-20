@@ -25,6 +25,7 @@ TUWatchFrame *UWatchFrame;
 //---------------------------------------------------------------------------
 TUWatchInfo::TUWatchInfo(void)
 {
+ Type=0;
  YShift=0;
  FullUpdate=false;
  WatchInterval=5;
@@ -44,6 +45,10 @@ TUWatchInfo::TUWatchInfo(void)
  XOutputElementIndex=0;
  YOutputIndex=0;
  YOutputElementIndex=0;
+
+ // Координаты выхода, хранящего данные по оси Y для случая MDMatrix
+ MRow=0;
+ MCol=0;
 }
 
 TUWatchInfo::~TUWatchInfo(void)
@@ -52,6 +57,7 @@ TUWatchInfo::~TUWatchInfo(void)
 
 TUWatchInfo::TUWatchInfo(const TUWatchInfo &wd)
 {
+ Type=wd.Type;
  YShift=wd.YShift;
  Color=wd.Color;
  Legend=wd.Legend;
@@ -72,10 +78,13 @@ TUWatchInfo::TUWatchInfo(const TUWatchInfo &wd)
  YDataSourceName=wd.YDataSourceName;
  YOutputIndex=wd.YOutputIndex;
  YOutputElementIndex=wd.YOutputElementIndex;
+ MRow=wd.MRow;
+ MCol=wd.MCol;
 }
 
 TUWatchInfo& TUWatchInfo::operator = (const TUWatchInfo& wd)
 {
+ Type=wd.Type;
  YShift=wd.YShift;
  Color=wd.Color;
  Legend=wd.Legend;
@@ -95,6 +104,8 @@ TUWatchInfo& TUWatchInfo::operator = (const TUWatchInfo& wd)
  YDataSourceName=wd.YDataSourceName;
  YOutputIndex=wd.YOutputIndex;
  YOutputElementIndex=wd.YOutputElementIndex;
+ MRow=wd.MRow;
+ MCol=wd.MCol;
 
  return *this;
 }
@@ -435,11 +446,12 @@ int __fastcall TUWatchFrame::Add(TUWatchInfo& wd)
  int i=0;
  while(I != NameList.end())
   {
-   if((wd.Y && (wd.Y == I->Y)) ||
+   if((wd.Type != 0x200 && ((wd.Y && (wd.Y == I->Y)) ||
    (I->XDataSourceName == wd.XDataSourceName && I->XOutputIndex == wd.XOutputIndex &&
 	I->XOutputElementIndex == wd.XOutputElementIndex &&
 	I->YDataSourceName == wd.YDataSourceName && I->YOutputIndex == wd.YOutputIndex &&
-	I->YOutputElementIndex == wd.YOutputElementIndex))
+	I->YOutputElementIndex == wd.YOutputElementIndex))) ||
+	(wd.Type == 0x200 && wd.MRow == I->MRow && wd.MCol == I->MCol && wd.Y == I->Y))
 	return i;
    ++I; ++i;
   }
@@ -473,7 +485,7 @@ int __fastcall TUWatchFrame::Add(TUWatchInfo& wd)
 
 // Добавление нового наблюдения по имени компонента и индексу выхода
 // Возвращает индекс серии
-int __fastcall TUWatchFrame::Add(const string &xname, const string &yname, int xoutput, int xoutindex, int youtput, int youtindex, double yshift, TPenStyle style, TColor color)
+int __fastcall TUWatchFrame::Add(int type, const string &xname, const string &yname, int xoutput, int xoutindex, int youtput, int youtindex, int mrow, int mcol, double yshift, TPenStyle style, TColor color)
 {
  TUWatchInfo wd;
  wd.FullUpdate=false;
@@ -485,24 +497,35 @@ int __fastcall TUWatchFrame::Add(const string &xname, const string &yname, int x
 
  wd.YOutputIndex=youtput;
  wd.YOutputElementIndex=youtindex;
-/* if(itemd->GetOwner())
-  itemd->GetLongName(static_pointer_cast<NAContainer>(itemd->GetOwner()->GetOwner()),wd.Legend);
- else
-  itemd->GetLongName(0,wd.Legend);*/
- if(!yname.empty())
+ wd.MRow=mrow;
+ wd.MCol=mcol;
+ wd.Type=type;
+
+ if(wd.Type == 0x200)
  {
-  wd.Legend=yname;
-  wd.Legend+=string("[")+RDK::sntoa(youtput)+string(":");
-  wd.Legend+=RDK::sntoa(youtindex)+string("]");
+  if(!yname.empty())
+  {
+   wd.Legend=yname;
+   wd.Legend+=string("(")+RDK::sntoa(mrow)+string(",");
+   wd.Legend+=RDK::sntoa(mcol)+string(")");
+  }
  }
  else
- if(!xname.empty())
  {
-  wd.Legend=xname;
-  wd.Legend+=string("[")+RDK::sntoa(xoutput)+string(":");
-  wd.Legend+=RDK::sntoa(xoutindex)+string("]");
+  if(!yname.empty())
+  {
+   wd.Legend=yname;
+   wd.Legend+=string("[")+RDK::sntoa(youtput)+string(":");
+   wd.Legend+=RDK::sntoa(youtindex)+string("]");
+  }
+  else
+  if(!xname.empty())
+  {
+   wd.Legend=xname;
+   wd.Legend+=string("[")+RDK::sntoa(xoutput)+string(":");
+   wd.Legend+=RDK::sntoa(xoutindex)+string("]");
+  }
  }
-// wd.DataSource=item;
 
  if(color == 0) // Подбор подходящего цвета
   wd.Color=Chart1->GetFreeSeriesColor(true);
@@ -636,7 +659,9 @@ void __fastcall TUWatchFrame::StepUpdate(void)
 	 }
 	 else
 	 {
-	  y=ym->Data;
+	  if(ym->GetRows()<=wd->MRow || ym->GetCols()<=wd->MCol)
+	   continue;
+	  y=&(*ym)(wd->MRow,wd->MCol);
 	  if(!y)
 	   continue;
 	 }
@@ -1058,6 +1083,10 @@ void TUWatchFrame::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
    xml.WriteInteger("XYSize", NameList[seriesindex].XYSize);
    xml.WriteFloat("WatchInterval", NameList[seriesindex].WatchInterval);
 
+   xml.WriteInteger("MRow", NameList[seriesindex].MRow);
+   xml.WriteInteger("MCol", NameList[seriesindex].MCol);
+   xml.WriteInteger("Type", NameList[seriesindex].Type);
+
    if(collectstate)
 	{
 	 delete[] out;
@@ -1143,6 +1172,10 @@ void TUWatchFrame::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
 	wd->Visible=xml.ReadBool("Visible",true);
 	wd->WatchInterval=xml.ReadFloat("WatchInterval", 5);
 
+	wd->MRow=xml.ReadInteger("MRow", 0);
+	wd->MCol=xml.ReadInteger("MCol", 0);
+	wd->Type=xml.ReadInteger("Type", 0);
+
 	int grindex=Add(wd_data);
 	grseries=dynamic_cast<TFastLineSeries*>(Chart1->Series[grindex]);
 	if(collectstate)
@@ -1205,7 +1238,7 @@ void __fastcall TUWatchFrame::AddWatch1Click(TObject *Sender)
  if(UComponentsListForm->ShowIOSelect() != mrOk)
   return;
 
- Add("",UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName(),0,0,UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput());
+ Add(0, "",UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName(),0,0,UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput(),0,0,0);
 }
 //---------------------------------------------------------------------------
 
@@ -1215,7 +1248,7 @@ void __fastcall TUWatchFrame::AddXPulseWatch1Click(TObject *Sender)
  if(UComponentsListForm->ShowIOSelect() != mrOk)
   return;
 
- Add(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName(),"",UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput(),0,0);
+ Add(0x100, UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName(),"",UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput(),0,0,0,0,0);
 }
 //---------------------------------------------------------------------------
 
@@ -1223,6 +1256,40 @@ void __fastcall TUWatchFrame::DeleteAll1Click(TObject *Sender)
 {
  if(Application->MessageBox(L"Delete all watches! Are you sure?",L"Warining",MB_YESNO) == ID_YES)
   Clear();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUWatchFrame::AddTimeMatrixWatch1Click(TObject *Sender)
+{
+ UComponentsListForm->ComponentsListFrame1->PageControl1->ActivePageIndex=2;
+ if(UComponentsListForm->ShowIOSelect() != mrOk)
+  return;
+
+  const RDK::MDMatrix<double> *ym=0;
+  ym=(const RDK::MDMatrix<double>*)(Model_GetComponentOutputAsMatrix(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName().c_str(), UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput()));
+  if(!ym)
+   return;
+
+  UListInputForm->PresentSelect=true;
+  UListInputForm->MustInput=true;
+  vector<string> listvals;
+  listvals.resize(ym->GetRows());
+  for(size_t i=0;i<listvals.size();i++)
+   listvals[i]=RDK::sntoa(i,2);
+  UListInputForm->Init("Input Row Number",listvals,"0");
+  if(UListInputForm->ShowModal() != mrOk)
+   return;
+  int row=StrToInt(UListInputForm->Edit->Text);
+
+  listvals.resize(ym->GetCols());
+  for(size_t i=0;i<listvals.size();i++)
+   listvals[i]=RDK::sntoa(i,2);
+  UListInputForm->Init("Input Col Number",listvals,"0");
+  if(UListInputForm->ShowModal() != mrOk)
+   return;
+  int col=StrToInt(UListInputForm->Edit->Text);
+
+ Add(0x200, "",UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName(),0,0,UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput(),0,row,col);
 }
 //---------------------------------------------------------------------------
 

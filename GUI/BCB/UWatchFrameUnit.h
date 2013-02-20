@@ -43,6 +43,12 @@ using namespace std;
 class TUWatchInfo
 {
 public: // Связи
+// Тип серии
+// 0 - Обычная (выход по времени)
+// 0x100 - Зависимость X(Y)
+// 0x200 - MDMatrix
+int Type;
+
 // Индекс графика в массиве серий
 int SeriesIndex;
 
@@ -63,6 +69,9 @@ int YOutputIndex;
 
 // Индекс элемента выхода хранящего данные по оси X
 int YOutputElementIndex;
+
+// Координаты выхода, хранящего данные по оси Y для случая MDMatrix
+int MRow, MCol;
 
 public: // Данные графика
 const double *X;
@@ -126,11 +135,13 @@ __published:	// IDE-managed Components
 	TMenuItem *AddXYWatch1;
 	TMenuItem *DeleteAll1;
 	TMenuItem *N3;
+	TMenuItem *AddTimeMatrixWatch1;
 	void __fastcall N1Click(TObject *Sender);
 	void __fastcall bmp1Click(TObject *Sender);
 	void __fastcall AddWatch1Click(TObject *Sender);
 	void __fastcall AddXPulseWatch1Click(TObject *Sender);
 	void __fastcall DeleteAll1Click(TObject *Sender);
+	void __fastcall AddTimeMatrixWatch1Click(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
         __fastcall TUWatchFrame(TComponent* Owner);
@@ -267,7 +278,7 @@ public:	// Методы
 
 		// Добавление нового наблюдения по имени компонента и индексу выхода
 		// Возвращает индекс серии
-		int __fastcall Add(const string &xname, const string &yname, int xoutput=0, int xoutindex=0, int youtput=0, int youtindex=0, double yshift=0, TPenStyle style=psSolid, TColor color=TColor(0));
+		int __fastcall Add(int type, const string &xname, const string &yname, int xoutput, int xoutindex, int youtput, int youtindex, int mrow, int mcol, double yshift=0, TPenStyle style=psSolid, TColor color=TColor(0));
 
         // Удаление наблюдения
         void __fastcall Del(int seriesindex);

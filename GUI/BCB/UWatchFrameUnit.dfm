@@ -54,6 +54,10 @@ inherited UWatchFrame: TUWatchFrame
       Caption = 'Add Time-Y Watch'
       OnClick = AddWatch1Click
     end
+    object AddTimeMatrixWatch1: TMenuItem
+      Caption = 'Add Time-Matrix Watch'
+      OnClick = AddTimeMatrixWatch1Click
+    end
     object AddXPulseWatch1: TMenuItem
       Caption = 'Add X-Pulse Watch'
       OnClick = AddXPulseWatch1Click
