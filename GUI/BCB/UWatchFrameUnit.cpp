@@ -451,7 +451,7 @@ int __fastcall TUWatchFrame::Add(TUWatchInfo& wd)
 	I->XOutputElementIndex == wd.XOutputElementIndex &&
 	I->YDataSourceName == wd.YDataSourceName && I->YOutputIndex == wd.YOutputIndex &&
 	I->YOutputElementIndex == wd.YOutputElementIndex))) ||
-	(wd.Type == 0x200 && wd.MRow == I->MRow && wd.MCol == I->MCol && wd.Y == I->Y))
+	(wd.Type == 0x200 && I->YDataSourceName == wd.YDataSourceName && wd.MRow == I->MRow && wd.MCol == I->MCol && wd.Y == I->Y))
 	return i;
    ++I; ++i;
   }
