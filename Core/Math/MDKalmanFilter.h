@@ -18,6 +18,7 @@ public:
 
 protected: // Параметры
 int Size; // Размерность матриц
+int CalcCount; // Счетчик итераций
 
 public: // Данные
 
@@ -37,13 +38,14 @@ public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-MDKalmanFilter(void) : Size(1), FM(Size, Size, 0.0),BM(Size, Size, 0.0),QM(Size, Size, 0.0),HM(Size, Size, 0.0),RM(Size, Size, 0.0),Pk1(Size, Size, 0.0),Xk1(Size, 1, 0.0),Uk1(Size, 1, 0.0),Z(Size, 1, 0.0) {};
+MDKalmanFilter(void) : Size(1), CalcCount(0), FM(Size, Size, 0.0),BM(Size, Size, 0.0),QM(Size, Size, 0.0),HM(Size, Size, 0.0),RM(Size, Size, 0.0),Pk1(Size, Size, 0.0),Xk1(Size, 1, 0.0),Uk1(Size, 1, 0.0),Z(Size, 1, 0.0) {};
 virtual ~MDKalmanFilter(void) {};
 // --------------------------
 
 // --------------------------
 // Методы управления параметрами
 // --------------------------
+// Задаем размерность матриц Калмана(кол-во прогнозируемых параметров)
 bool SetKalmanSize(int value)
 {
  if(Size==value)
@@ -58,6 +60,20 @@ bool SetKalmanSize(int value)
 int GetKalmanSize(void) const
 {
  return Size;
+}
+// Методы доступа к счетчику итераций
+bool SetCalcCount(int value)   // Нужен ли
+{
+ if(CalcCount==value)
+  return true;
+
+ CalcCount=value;
+ return true;
+}
+
+int GetCalcCount(void) const
+{
+ return CalcCount;
 }
 
 // Задаем начальные параметры Фильтра Калмана
@@ -284,6 +300,8 @@ void KalmanCalculate(int i)
  MDMatrix<T> Kk=KalmanGain(PkL,HM,RM);
  Xk1=EstimationUpdate(xkL,Kk,Z,HM);
  Pk1=CovariationErrorUpdate(Kk,HM,PkL);
+ 
+ CalcCount++;
 }
 // --------------------------
 };
