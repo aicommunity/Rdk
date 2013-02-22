@@ -3318,6 +3318,7 @@ int UEngine::LoadPredefinedLibraries(void)
  LibrariesList.push_back(&StatisticLibrary);
  LibrariesList.push_back(&PredictionLibrary);
  LibrariesList.push_back(&SourceLibrary);
+ LibrariesList.push_back(&NoiseLibrary);
 
  return 0;
 }

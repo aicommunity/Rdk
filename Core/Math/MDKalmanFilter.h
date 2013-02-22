@@ -231,6 +231,7 @@ bool KalmanResize(int value)
 // —брос всех матриц в нулевые значени€
 bool KalmanReset(void)
 {
+ CalcCount=0;
  //FM=0.0;
  //BM=0.0;
  //QM=0.0;
@@ -292,6 +293,7 @@ void KalmanCalculate(int i)
 {
  MDMatrix<T> xkL=StatePrediction(FM,BM,Xk1,Uk1);
  MDMatrix<T> PkL;
+
  if (i>0)
   PkL=CovariationError(FM,Pk1,QM);
  else
@@ -300,7 +302,6 @@ void KalmanCalculate(int i)
  MDMatrix<T> Kk=KalmanGain(PkL,HM,RM);
  Xk1=EstimationUpdate(xkL,Kk,Z,HM);
  Pk1=CovariationErrorUpdate(Kk,HM,PkL);
- 
  CalcCount++;
 }
 // --------------------------
