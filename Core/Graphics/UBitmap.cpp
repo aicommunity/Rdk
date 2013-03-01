@@ -1074,18 +1074,18 @@ void UBitmap::CalcBrightness(unsigned *x_result, unsigned *y_result,
   {
    for(int i=x1,l=0;i<=x2;i++,l++,p+=4)
    {
-    y_result[k]+=*reinterpret_cast<unsigned int*>(p);
-    x_result[l]+=*reinterpret_cast<unsigned int*>(p);
+	y_result[k]+=*reinterpret_cast<unsigned int*>(p);
+	x_result[l]+=*reinterpret_cast<unsigned int*>(p);
    }
    p+=(Width-x2+x1-1)*4;
   }
  break;
  }
-}                     
+}
 
-                                   
-// Вычисляет относительную суммарную интенсивность раздельно по столбцам и 
-// строками изображения от столбца x1 до x2, и от строки y1 до y2. 
+
+// Вычисляет относительную суммарную интенсивность раздельно по столбцам и
+// строками изображения от столбца x1 до x2, и от строки y1 до y2.
 // Интенсивность считается раздельно по каналам в зависимости от цветовой модели
 // В x_result значения столбцов, в y_result - строк, память должна быть выделена
 // Поддерживает режимы ubmY8, ubmRGB24, ubmY32
@@ -1120,7 +1120,7 @@ void UBitmap::CalcBrightnessAverage(UColorT *x_result, UColorT *y_result,
   y1=y2;
   y2=temp;
  }
-        
+
  UBColor *p;
 
  // Временные буферы для цветного изображения
@@ -1145,12 +1145,12 @@ void UBitmap::CalcBrightnessAverage(UColorT *x_result, UColorT *y_result,
   }
 
   for(int j=y1,k=0;j<=y2;j++,k++)
-  {         
+  {
    for(int i=x1,l=0;i<=x2;i++,l++)
    {
     y_buf[0][k]+=*p;
     y_buf[1][k]+=*(p+1);
-    y_buf[2][k]+=*(p+2);
+	y_buf[2][k]+=*(p+2);
     x_buf[0][l]+=*p++;
     x_buf[1][l]+=*p++;
     x_buf[2][l]+=*p++;
@@ -1210,7 +1210,7 @@ void UBitmap::CalcBrightnessAverage(UColorT *x_result, UColorT *y_result,
    {
     y_result[k].c+=*reinterpret_cast<unsigned int*>(p);
     x_result[l].c+=*reinterpret_cast<unsigned int*>(p);
-    p+=4;
+	p+=4;
    }
    p+=(Width-x2+x1)*4;
   }                   
@@ -1224,12 +1224,47 @@ void UBitmap::CalcBrightnessAverage(UColorT *x_result, UColorT *y_result,
  }
 }
 
+// Подсчитывает число пикселей имеющих интенсивность выше порога UColorT
+int UBitmap::CalcNumPixels(UColorT threshold) const
+{
+ if(!Data || Width == 0 || Height == 0)
+  return 0;
+
+ UBColor *pdata=0;
+ int result=0;
+ switch(ColorModel)
+ {
+ case ubmY8:
+  pdata=Data;
+  for(int i=0;i<Length;i++,pdata++)
+   if(*pdata > threshold.ycrcb.y)
+	++result;
+ break;
+
+ case ubmRGB24:
+  pdata=Data;
+  for(int i=0;i<Length;i++,pdata+=PixelByteLength)
+   if(*pdata>threshold.rgb.r || *(pdata+1)>threshold.rgb.g || *(pdata+2)>threshold.rgb.b)
+    ++result;
+ break;
+
+ case ubmY32:
+  pdata=Data;
+  for(int i=0;i<Length;i++,pdata+=PixelByteLength)
+   if(*reinterpret_cast<unsigned*>(pdata)>threshold.c)
+    ++result;
+ break;
+ }
+ return result;
+}
+
+
 // Вычисляет ожидаемый размер гистограммы, если это возможно
 // и выделяет память на необходимое число элементов
 // result - указатель на возвращаемый массив данных гистограммы
 // Поддерживает режимы ubmY8
 /*void UBitmap::PrepareHistogram(UBHistogram &result,
-                    int x, int y, int width, int height) const
+					int x, int y, int width, int height) const
 {
  if(!Length || !Data)
   return;
@@ -4949,10 +4984,93 @@ void UBHistogram::Calc(const UBitmap &bmp, int x, int y, int width, int height, 
  CalcHistogramRange();
 }
 
+void UBHistogram::Calc(const UBitmap &bmp, const UBitmap &mask, int x, int y, int width, int height, int channel)
+{
+ if(!bmp.GetLength() || !bmp.GetData())
+  return;
+
+ if(mask.GetWidth() != bmp.GetWidth() || mask.GetHeight() != bmp.GetHeight() || mask.GetColorModel() != ubmY8)
+  return;
+
+ if(!Prepare(bmp))
+  return;
+
+ if(x<0 || x>=bmp.GetWidth())
+  x=0;
+
+ if(width<0 || width>=bmp.GetWidth())
+  width=bmp.GetWidth();
+
+ if(y<0 || y>=bmp.GetHeight())
+  y=0;
+
+ if(height<0 || height>=bmp.GetHeight())
+  height=bmp.GetHeight();
+
+ int x2,y2;
+
+ x2=x+width;
+ y2=y+height;
+ if(x2>=bmp.GetWidth())
+ {
+  x2=bmp.GetWidth()-1;
+ }
+ if(y2>=bmp.GetHeight())
+ {
+  y2=bmp.GetHeight()-1;
+ }
+
+ if(x==x2 || y == y2)
+ {
+  NumPixels=0;
+  return;
+ }
+
+ UBColor *p=0,*mp=0;
+
+ bool normalize_flag=NormalizeFlag;
+ Normalize(false,false);
+
+ switch(bmp.GetColorModel())
+ {
+ case ubmY8:
+ case ubmRGB24:
+ case ubmRGB32:
+  p=bmp.GetData()+y*bmp.GetLineByteLength()+x*bmp.GetPixelByteLength()+channel;
+  mp=mask.GetData()+y*mask.GetLineByteLength()+x*mask.GetPixelByteLength()+channel;
+
+  for(int j=y,k=0;j<=y2;j++,k++)
+  {
+   for(int i=x,l=0;i<=x2;i++,l++)
+   {
+	if(*p<Size && *mp)
+	 ++Data[*p++].Number.Int;
+	else
+	 ++p;
+	++mp;
+   }
+   p+=bmp.GetLineByteLength()-(x2-x+1)*bmp.GetPixelByteLength();
+   mp+=mask.GetLineByteLength()-(x2-x+1)*mask.GetPixelByteLength();
+  }
+ break;
+ }
+
+ NumPixels=width*height;
+ Normalize(normalize_flag,true);
+ CalcHistogramRange();
+}
+
+
 void UBHistogram::Calc(const UBitmap &bmp, int channel)
 {
  Calc(bmp,0,0,-1,-1,channel);
 }
+
+void UBHistogram::Calc(const UBitmap &bmp, const UBitmap &mask, int channel)
+{
+ Calc(bmp,mask, 0,0,-1,-1,channel);
+}
+
 
 // Вычисление оценки интегрального распределения по существующей гистограмме
 // Автоматически вычисляет диапазон значений распределения

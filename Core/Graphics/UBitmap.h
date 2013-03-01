@@ -42,7 +42,7 @@ struct UBRgb { UBColor r,g,b,d; }; // 32,24 бит RGB
 struct UBYCrCb { UBColor y,cr,cb; }; // YCrCb
 
 // HSV тип
-struct UBHsv { UBColor h,s,v; }; // YCrCb
+struct UBHsv { double h,s,b; }; // HSV
 
 union UColorT
 {
@@ -50,7 +50,6 @@ unsigned int c; // Целое, ч/б для вычислений формата 000C
 float f; // Вещественное для вычислений
 UBRgb rgb; // 32,24 бит RGB
 UBYCrCb ycrcb; // YCrCb
-UBHsv hsv; // HSV
 
 UColorT(void)
 { };
@@ -322,6 +321,9 @@ void CalcBrightness(unsigned *x_result, unsigned *y_result,
 // Поддерживает режимы ubmY8, ubmRGB24, ubmY32
 void CalcBrightnessAverage(UColorT *x_result, UColorT *y_result,
                                    int x1=-1, int x2=-1, int y1=-1, int y2=-1) const;
+
+// Подсчитывает число пикселей имеющих интенсивность выше порога UColorT
+int CalcNumPixels(UColorT threshold) const;
 
 // Вычисляет ожидаемый размер гистограммы, если это возможно
 // и выделяет память на необходимое число элементов
@@ -920,7 +922,9 @@ void Fill(float value);
 // Вычисление гистограммы по индексу цветового канала
 // Поддерживает режимы ubmY8, ubmRGB24, ubmRGB32
 void Calc(const UBitmap &bmp, int x, int y, int width, int height, int channel=0);
+void Calc(const UBitmap &bmp, const UBitmap &mask, int x, int y, int width, int height, int channel=0);
 void Calc(const UBitmap &bmp, int channel=0);
+void Calc(const UBitmap &bmp, const UBitmap &mask, int channel=0);
 
 // Вычисление оценки интегрального распределения по существующей гистограмме
 // Автоматически вычисляет диапазон значений распределения
