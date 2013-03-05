@@ -117,6 +117,18 @@ virtual std::string GetOwnerName(void) const
 {
  return typeid(Owner).name();
 };
+
+// ¬озвращает €зыковой тип хранимого свойства
+virtual const type_info& GetLanguageType(void) const
+{
+ return typeid(T);
+}
+
+// ћетод сравнивает тип этого свойства с другим свойством
+virtual bool CompareLanguageType(const UIProperty &dt) const
+{
+ return GetLanguageType() == dt.GetLanguageType();
+}
 // -----------------------------
 };
 

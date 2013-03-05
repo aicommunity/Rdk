@@ -87,36 +87,7 @@ private: // Хранилище входных связей
 // Массив указателей на вектора входов
 vector<UEPtr<const UItemData> > InputData;
 
-// Массив размеров векторов входов
-//vector<size_t> InputDataSize;
-
-protected: // Описание входов и выходов
-// Описание выходных данных
-vector<USharedPtr<UIDataInfo> > OutputDataInfo;
-
-// Описание входных данных
-vector<USharedPtr<UIDataInfo> > InputDataInfo;
-
-// Имена выходов
-vector<NameT> OutputNames;
-
-// Имена входов
-vector<NameT> InputNames;
-
-protected: // Общедоступные свойства
-// Размер выходных векторов
-//vector<size_t> OutputDataSize;
-
-// Размер единичного данного вектора выходов в байтах
-//vector<size_t> OutputDataElementSize;
-
 protected: // Переменные быстрого доступа к даннным входов. Read only!
-// Указатель на первый элемент массива указателей на вектора входов
-//const UItemData** PInputData;
-
-// Указатель на первый элемент массива размеров векторов входов
-//size_t* PInputDataSize;
-
 // Суммарное число всех входов
 size_t FullInputDataSize;
 
@@ -165,27 +136,11 @@ size_t GetFullInputDataSize(void) const;
 // --------------------------
 // Методы доступа к описанию входов и выходов
 // --------------------------
-// Описание выходных данных
-const USharedPtr<UIDataInfo>& GetOutputDataInfo(int index) const;
-bool SetOutputDataInfo(int index, const USharedPtr<UIDataInfo> value);
+/// Ищет свойство-выход по заданному индексу
+void FindOutputProperty(int index, UIProperty* &property, UIPropertyIO* &property_io);
 
-// Описание входных данных
-const USharedPtr<UIDataInfo>& GetInputDataInfo(int index) const;
-bool SetInputDataInfo(int index, const USharedPtr<UIDataInfo> value);
-
-// Имена выходов
-const NameT& GetOutputName(int index) const;
-bool SetOutputName(int index, const NameT& name);
-
-// Имена входов
-const NameT& GetInputName(int index) const;
-bool SetInputName(int index, const NameT& name);
-
-// Копирует описание входных и выходных данных в item
-virtual bool CopyDataInfo(UEPtr<UADItem> item) const;
-
-// Копирует имена входов и выходов в item
-virtual bool CopyIONames(UEPtr<UADItem> item) const;
+/// Ищет свойство-вход по заданному индексу
+void FindInputProperty(int index, UIProperty* &property, UIPropertyIO* &property_io);
 // --------------------------
 
 // ----------------------
@@ -314,7 +269,7 @@ virtual bool CheckRange(int index)=0;
 // Методы управления указателем
 // --------------------------
 // Возвращает указатель на данные входа
-virtual void const * GetPointer(int index) const=0;
+virtual void const* GetPointer(int index) const=0;
 
 // Устанавливает указатель на данные входа
 virtual bool SetPointer(int index, void* value)=0;

@@ -3132,17 +3132,30 @@ const /* RDK::MDMatrix* */void* const UEngine::Model_GetComponentOutputAsMatrix(
   if(!cont)
    return 0;
 
-  UDataInfo<MDMatrix<double> >* pt=new UDataInfo<MDMatrix<double> >;
-  UDataInfo<MDVector<double> >* ptv=new UDataInfo<MDVector<double> >;
-  std::string type1=pt->GetType().name();
-  std::string type2=cont->GetOutputDataInfo(index)->GetType().name();
-  if(pt->Compare(cont->GetOutputDataInfo(index)) || ptv->Compare(cont->GetOutputDataInfo(index)))
+  // »щем указатель на выходные данные
+  UIProperty *output_property_type=0;
+  UIPropertyIO* output_property=0;
+  cont->FindOutputProperty(index, output_property_type, output_property);
+  if(!output_property_type || !output_property)
+   return 0;
+
+  if(output_property_type->GetLanguageType() == typeid(MDMatrix<double>) ||
+	 output_property_type->GetLanguageType() == typeid(MDVector<double>))
+  {
+   return output_property->GetPointer(0);
+  }
+
+//  UDataInfo<MDMatrix<double> >* pt=new UDataInfo<MDMatrix<double> >;
+//  UDataInfo<MDVector<double> >* ptv=new UDataInfo<MDVector<double> >;
+//  std::string type1=pt->GetType().name();
+//  std::string type2=cont->GetOutputDataInfo(index)->GetType().name();
+/*  if(pt->Compare(cont->GetOutputDataInfo(index)) || ptv->Compare(cont->GetOutputDataInfo(index)))
   {
    delete pt;
    return cont->GetOutputDataAsPointer(index);
   }
 
-  delete pt;
+  delete pt;*/
   return 0;
  }
  catch (UException &exception)

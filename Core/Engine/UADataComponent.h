@@ -293,6 +293,12 @@ virtual bool Save(UEPtr<UVariableData> storage, bool simplemode=false)=0;
 
 // Метод читает значение свойства из потока
 virtual bool Load(UEPtr<UVariableData> storage, bool simplemode=false)=0;
+
+// Возвращает языковой тип хранимого свойства
+virtual const type_info& GetLanguageType(void) const=0;
+
+// Метод сравнивает тип этого свойства с другим свойством
+virtual bool CompareLanguageType(const UIProperty &dt) const=0;
 };
 
 // Класс управления общими свойствами

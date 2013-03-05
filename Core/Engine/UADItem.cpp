@@ -135,129 +135,61 @@ size_t UADItem::GetFullInputDataSize(void) const
 // --------------------------
 // Методы доступа к описанию входов и выходов
 // --------------------------
-// Описание выходных данных
-const USharedPtr<UIDataInfo>& UADItem::GetOutputDataInfo(int index) const
+/// Ищет свойство-выход по заданному индексу
+void UADItem::FindOutputProperty(int index, UIProperty* &property, UIPropertyIO* &property_io)
 {
- return OutputDataInfo[index];
+ // Ищем указатель на выходные данные
+ property=0;
+ property_io=0;
+ VariableMapIteratorT I=PropertiesLookupTable.begin(),
+					  J=PropertiesLookupTable.end();
+ for(;I != J;++I)
+ {
+  if(I->second.Type & ptOutput)
+  {
+   property_io=dynamic_cast<UIPropertyIO*>(I->second.Property.Get());
+   if(!property_io || !property_io->CheckRange(index))
+   {
+    property_io=0;
+	continue;
+   }
+
+   property=dynamic_cast<UIProperty*>(I->second.Property.Get());
+   break;
+  }
+ }
 }
 
-bool UADItem::SetOutputDataInfo(int index, const USharedPtr<UIDataInfo> value)
+/// Ищет свойство-вход по заданному индексу
+void UADItem::FindInputProperty(int index, UIProperty* &property, UIPropertyIO* &property_io)
 {
-// if(!Build())
-//  return false;
- if(int(OutputDataInfo.size())<=index)
-  return false;
+ // Ищем указатель на входные данные
+ property=0;
+ property_io=0;
 
- if(OutputDataInfo[index] == value)
-  return true;
+ VariableMapIteratorT I=PropertiesLookupTable.begin(),
+ J=PropertiesLookupTable.end();
+ for(;I != J;++I)
+ {
+  if(I->second.Type & ptInput)
+  {
+   property_io=dynamic_cast<UIPropertyIO*>(I->second.Property.Get());
+   if(!property_io || !property_io->CheckRange(index))
+   {
+    property_io=0;
+	continue;
+   }
 
-// if(OutputDataInfo[index])
-//  delete OutputDataInfo[index];
- OutputDataInfo[index]=value;
- return true;
-}
-
-// Описание входных данных
-const USharedPtr<UIDataInfo>& UADItem::GetInputDataInfo(int index) const
-{
- return InputDataInfo[index];
-}
-
-bool UADItem::SetInputDataInfo(int index, const USharedPtr<UIDataInfo> value)
-{
-// if(!Build())
-//  return false;
- if(int(InputDataInfo.size())<=index)
-  return false;
-
- if(InputDataInfo[index] == value)
-  return true;
-
-// if(InputDataInfo[index])
-//  delete InputDataInfo[index];
- InputDataInfo[index]=value;
- return true;
-}
-
-// Имена выходов
-const NameT& UADItem::GetOutputName(int index) const
-{
- return OutputNames[index];
-}
-
-bool UADItem::SetOutputName(int index, const NameT& name)
-{
- if(int(OutputNames.size())<=index)
-  return false;
-
- if(OutputNames[index] == name)
-  return true;
-
- OutputNames[index]=name;
- return true;
-}
-
-// Имена входов
-const NameT& UADItem::GetInputName(int index) const
-{
- return InputNames[index];
-}
-
-bool UADItem::SetInputName(int index, const NameT& name)
-{
- if(int(InputNames.size())<=index)
-  return false;
-
- if(InputNames[index] == name)
-  return true;
-
- InputNames[index]=name;
- return true;
-}
-
-// Копирует описание входных и выходных данных в item
-bool UADItem::CopyDataInfo(UEPtr<UADItem> item) const
-{
- if(!item)
-  return false;
-
- for(size_t i=0;i<InputDataInfo.size();i++)
-  item->SetInputDataInfo(i,InputDataInfo[i]);
-
- for(size_t i=0;i<OutputDataInfo.size();i++)
-  item->SetOutputDataInfo(i,OutputDataInfo[i]);
-
- return true;
-}
-
-// Копирует имена входов и выходов в item
-bool UADItem::CopyIONames(UEPtr<UADItem> item) const
-{
- if(!item)
-  return false;
-
- for(size_t i=0;i<InputNames.size();i++)
-  item->SetInputName(i,InputNames[i]);
-
- for(size_t i=0;i<OutputNames.size();i++)
-  item->SetOutputName(i,OutputNames[i]);
-
- return true;
+   property=dynamic_cast<UIProperty*>(I->second.Property.Get());
+   break;
+  }
+ }
 }
 // --------------------------
 
 // ----------------------
 // Методы управления выходными данными
 // ----------------------
-// Устанавливает размер вектора выходных данных
-/*size_t UADItem::GetOutputDataSize(int index) const
-{
-// if(index < 0 || index >= int(OutputData.size()))
-//  return 0;
-
- return OutputData[index].Size;
-} */
-
 bool UADItem::SetOutputDataSize(int index, int size, bool nobuild)
 {
 // if(!Build())
@@ -287,25 +219,6 @@ bool UADItem::SetOutputDataSize(int index, int size, bool nobuild)
   Ready=false;
  return true;
 }
-
-// Устанавливает размер вектора выходных данных в байтах
-// фиктивный метод, запрещает любые изменения переменной
-/*size_t UADItem::GetByteOutputDataSize(int index) const
-{
-// if(index>=int(OutputData.size()))
-//  return 0;
-
- return OutputData[index].ByteSize;
-}    */
-
-// Устанавливает размер единичного данного вектора выходных данных в байтах
-/*size_t UADItem::GetOutputDataElementSize(int index) const
-{
-// if(index>=int(OutputData.size()))
-//  return 0;
-
- return OutputData[index].DataSize;
-} */
 
 bool UADItem::SetOutputDataElementSize(int index, int size)
 {
@@ -538,7 +451,7 @@ bool UADItem::ConnectToItem(UEPtr<UAItem> na, int i_index, int &c_index)
 	return false;
   }
  }
-
+/*
  USharedPtr<UIDataInfo> iteminfo, conninfo;
  iteminfo=nad->OutputDataInfo[i_index];
  conninfo=InputDataInfo[c_index];
@@ -547,7 +460,7 @@ bool UADItem::ConnectToItem(UEPtr<UAItem> na, int i_index, int &c_index)
 
  if(iteminfo && conninfo && !iteminfo->Compare(conninfo))
   return false;
-
+ */
  InputData[c_index]=&nad->POutputData[i_index];
 
 
@@ -557,23 +470,25 @@ bool UADItem::ConnectToItem(UEPtr<UAItem> na, int i_index, int &c_index)
  if(!UAConnector::ConnectToItem(static_pointer_cast<UAItem>(nad), i_index, c_index))
   return false;
 
- // Выполняем действия по инициализации указателей
- VariableMapIteratorT I=PropertiesLookupTable.begin(),
-					  J=PropertiesLookupTable.end();
- for(;I != J;++I)
- {
-  if(I->second.Type & ptInput)
-  {
-   UIPropertyIO* input_property=dynamic_cast<UIPropertyIO*>(I->second.Property.Get());
-   if(!input_property || !input_property->CheckRange(c_index))
-	continue;
+ // Ищем указатель на выходные данные
+ UIProperty *output_property_type=0;
+ UIPropertyIO* output_property=0;
+ nad->FindOutputProperty(i_index, output_property_type, output_property);
 
-   if(input_property->GetIoType() & ipData)
-	input_property->SetPointer(c_index,nad->GetOutputDataAsPointer(i_index));
-   else
-   if(input_property->GetIoType() & ipComp)
-	input_property->SetPointer(c_index,nad);
+ // Ищем указатель на входные данные
+ UIProperty *input_property_type=0;
+ UIPropertyIO* input_property=0;
+ FindInputProperty(c_index, input_property_type, input_property);
+ if(input_property)
+ {
+  if(input_property->GetIoType() & ipData)
+  {
+   if(output_property_type && output_property_type->CompareLanguageType(*input_property_type))
+	input_property->SetPointer(c_index,const_cast<void*>(output_property->GetPointer(i_index)));
   }
+  else
+  if(input_property->GetIoType() & ipComp)
+   input_property->SetPointer(c_index,nad);
  }
 
  return true;
@@ -621,13 +536,6 @@ bool UADItem::Copy(UEPtr<UAContainer> target, UEPtr<UAContainerStorage> stor, bo
   return false;
 
  UEPtr<UADItem>item=dynamic_pointer_cast<UADItem>(target);
-
- if(!CopyDataInfo(item))
-  return false;
-
- if(!CopyIONames(item))
-  return false;
-
  return true;
 }
 // ----------------------
@@ -695,32 +603,9 @@ bool UADItem::Build(void)
 
  OutputData.resize(NumOutputs);
  InputData.resize(NumInputs);
-// InputDataSize.resize(NumInputs);
-
- size_t size=OutputDataInfo.size();
-// for(size_t i=NumOutputs;i<size;i++)
-//  if(OutputDataInfo[i])
-//   delete OutputDataInfo[i];
- OutputDataInfo.resize(NumOutputs);
- for(int i=size;i<NumOutputs;i++)
-  OutputDataInfo[i]=0;
-
- size=InputDataInfo.size();
-// for(size_t i=NumInputs;i<size;i++)
-//  if(InputDataInfo[i])
-//   delete InputDataInfo[i];
- InputDataInfo.resize(NumInputs);
- for(int i=size;i<NumInputs;i++)
-  InputDataInfo[i]=0;
-
- // Имена выходов
- OutputNames.resize(NumOutputs);
-
- // Имена входов
- InputNames.resize(NumInputs);
 
  UpdatePointers();
-
+/*
  // Выполняем действия по настройке выходов
  I=PropertiesLookupTable.begin(),
  J=PropertiesLookupTable.end();
@@ -734,7 +619,7 @@ bool UADItem::Build(void)
 
    property->Init();
   }
- }
+ }       */
 
  if(!UAItem::Build())
   return false;

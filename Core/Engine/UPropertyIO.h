@@ -101,6 +101,12 @@ operator T* (void) const
 {
  return this->v;
 }
+
+// ¬озвращает €зыковой тип хранимого свойства
+virtual const type_info& GetLanguageType(void) const
+{
+ return typeid(T);
+}
 // --------------------------
 };
 
@@ -148,7 +154,7 @@ virtual void Init(void)
 {
  if(Owner && MinRange>=0)
  {
-  Owner->SetInputDataInfo(MinRange,new UDataInfo<T>);
+//  Owner->SetInputDataInfo(MinRange,new UDataInfo<T>);
  }
 }
 
@@ -350,8 +356,8 @@ virtual void Init(void)
 {
  if(Owner && MinRange>=0)
  {
-  Owner->SetOutputDataAsPointer(MinRange,&this->v);
-  Owner->SetOutputDataInfo(MinRange,new UDataInfo<T>);
+ // Owner->SetOutputDataAsPointer(MinRange,&this->v);
+ // Owner->SetOutputDataInfo(MinRange,new UDataInfo<T>);
  }
 };
 
@@ -492,8 +498,8 @@ virtual void Init(void)
 {
  if(Owner && MinRange>=0)
  {
-  Owner->SetOutputDataAsPointer(MinRange,this->PData);
-  Owner->SetOutputDataInfo(MinRange,new UDataInfo<T>);
+//  Owner->SetOutputDataAsPointer(MinRange,this->PData);
+//  Owner->SetOutputDataInfo(MinRange,new UDataInfo<T>);
  }
 };
 
