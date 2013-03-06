@@ -15,11 +15,13 @@ SOURCES += librdk.qt.cpp \
     ../../../Deploy/Include/rdk.qt.cpp \
     ../../../Deploy/Include/myrdk.qt.cpp \
     ../../../Deploy/Include/rdk_new.cpp \
-    ../../../Deploy/Include/rdk_cpp_initdll.cpp
+    ../../../Deploy/Include/rdk_cpp_initdll.cpp \
+    ../../../Core/Engine/Libraries/UELibraries.cpp
 
 HEADERS += librdk.qt.h\
         librdk.qt_global.h \
-    ../../../Deploy/Include/rdk.qt.h
+    ../../../Deploy/Include/rdk.qt.h \
+    ../../../Core/Engine/Libraries/UELibraries.h
 
 symbian {
     MMP_RULES += EXPORTUNFROZEN

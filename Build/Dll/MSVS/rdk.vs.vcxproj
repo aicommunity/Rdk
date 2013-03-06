@@ -94,12 +94,14 @@ copy ..\..\..\Bin\Platform\Win\rdk.vs.lib ..\..\..\Deploy\Platform\Win\rdk.vs.li
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\Core\Engine\Libraries\UELibraries.h" />
     <ClInclude Include="..\..\..\Deploy\Include\rdk.h" />
     <ClInclude Include="..\..\..\Deploy\Include\rdk_cpp_initdll.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\Core\Engine\Libraries\UELibraries.cpp" />
     <ClCompile Include="..\..\..\Deploy\Include\myrdk.win.cpp" />
     <ClCompile Include="..\..\..\Deploy\Include\rdk.mod.opencv.cpp" />
     <ClCompile Include="..\..\..\Deploy\Include\rdk.win.cpp" />
