@@ -415,9 +415,9 @@ bool UEnvironment::BuildStorage(void)
  if(!DestroyModel())
   return false;
 
- GetStorage()->ClearObjectsStorage();
+// GetStorage()->ClearObjectsStorage();
 
- GetStorage()->ClearClassesStorage();
+// GetStorage()->ClearClassesStorage();
 
  for(int i=0;i<ClassLibraryList.GetSize();i++)
  {

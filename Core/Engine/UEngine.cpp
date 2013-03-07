@@ -152,14 +152,14 @@ bool UEngine::Init(UEPtr<UStorage> storage, UEPtr<UEnvironment> env)
 // {
   LibrariesList.clear();
   ClassesList.clear();
+  if(LoadPredefinedLibraries())
+   return false;
   if(LoadClasses())
    return false;
   if(LoadLibraries())
    return false;
 //  Environment=AddNewEnvironment();
   CreateEnvironment(true,&ClassesList, &LibrariesList);
-  if(LoadPredefinedLibraries())
-   return false;
 // }
 
  if(!Storage || !Environment || Environment->GetStorage() != Storage)
