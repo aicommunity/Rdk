@@ -38,9 +38,6 @@ enum {ptPubParameter=ptParameter|pgPublic, ptPubState=ptState|pgPublic, ptPubInp
 // Хранилище свойств параметра
 struct UVariable
 {
-// Id параметра
-UId Id;
-
 // Указатель на свойство
 UEPtr<UIProperty> Property;
 
@@ -57,7 +54,7 @@ unsigned int Type;
 // Конструкторы и деструкторы
 // --------------------------
 UVariable(void);
-UVariable(UId id, UEPtr<UIProperty> prop, unsigned int type=0);
+UVariable(UEPtr<UIProperty> prop, unsigned int type=0);
 UVariable(const UVariable &copy);
 virtual ~UVariable(void);
 // --------------------------
@@ -114,17 +111,6 @@ virtual ~UADataComponent(void);
 // --------------------------
 
 // --------------------------
-// Методы доступа к таблицам соотвествий
-// --------------------------
-public:
-// Возвращает имя параметра по его Id
-const NameT& GetPropertyName(const UId &id) const;
-
-// Возвращает Id параметра по его имени
-const UId& GetPropertyId(const NameT &name) const;
-// --------------------------
-
-// --------------------------
 // Системные методы управления объектом
 // --------------------------
 // Создает экземпляр описания класса
@@ -135,17 +121,9 @@ virtual UContainerDescription* ANewDescription(UComponentDescription* descriptio
 // --------------------------
 // Методы доступа к параметрам
 // --------------------------
-// Возвращает значение параметра по Id 'id'
-UEPtr<UVariableData> GetProperty(const UId &id, UEPtr<UVariableData> values) const;
-std::string& GetPropertyValue(const UId &id, std::string &values) const;
-
 // Возвращает значение параметра по имени 'name'
 UEPtr<UVariableData> GetProperty(const NameT &name, UEPtr<UVariableData> values) const;
 std::string& GetPropertyValue(const NameT &name, std::string &values) const;
-
-// Устанавливает значение параметра по Id 'id'
-void SetProperty(const UId &id, UEPtr<UVariableData> values);
-void SetPropertyValue(const UId &id, const std::string &values);
 
 // Устанавливает значение параметра по имени 'name'
 void SetProperty(const NameT &name, UEPtr<UVariableData> values);
@@ -176,7 +154,7 @@ public:
 // Добавляет параметр с именем 'name' в таблицу соотвествий
 // параметров и назначает ему корректный индекс
 // Должна вызываться в конструкторах классов
-UId AddLookupProperty(const NameT &name, unsigned int type, UEPtr<UIProperty> property, bool delenable=true);
+void AddLookupProperty(const NameT &name, unsigned int type, UEPtr<UIProperty> property, bool delenable=true);
 
 // Изменяет тип параметра
 bool ChangeLookupPropertyType(const NameT &name, unsigned int type);

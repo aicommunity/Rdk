@@ -10,20 +10,18 @@ namespace RDK {
 // --------------------------
 UVariable::UVariable(void)
 {
- Id=ForbiddenId;
  Property=0;
  DelEnable=true;
  Type=ptParameter & pgPublic;
 }
 
-UVariable::UVariable(UId id, UEPtr<UIProperty> prop, unsigned int type)
- : Id(id), Property(prop), DelEnable(true), Type(type)
+UVariable::UVariable(UEPtr<UIProperty> prop, unsigned int type)
+ : Property(prop), DelEnable(true), Type(type)
 {
 }
 
 UVariable::UVariable(const UVariable &copy)
 {
- Id=copy.Id;
  Property=copy.Property;
  DelEnable=copy.DelEnable;
  Type=copy.Type;
@@ -97,36 +95,6 @@ bool UVariable::CheckMask(unsigned int mask) const
 }
 // --------------------------
 
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-/*
-USharedVariable::USharedVariable(void)
-{
- Id=ForbiddenId;
-// Property=0;
- DelEnable=true;
-}
-
-USharedVariable::USharedVariable(UId id, UEPtr<UIProperty> prop)
- : Id(id), Property(prop), DelEnable(true)
-{
-}
-
-USharedVariable::USharedVariable(const USharedVariable &copy)
-{
- Id=copy.Id;
- Property=copy.Property;
- DelEnable=copy.DelEnable;
-}
-
-
-USharedVariable::~USharedVariable(void)
-{
-}     */
-// --------------------------
-
-
 
 // --------------------------
 // Конструкторы и деструкторы
@@ -140,32 +108,6 @@ UADataComponent::~UADataComponent(void)
 {
  ClearLookupPropertyTable();
  ShareLookupTable.clear();
-}
-// --------------------------
-
-// --------------------------
-// Методы доступа к таблицам соотвествий
-// --------------------------
-// Возвращает имя параметра по его Id
-const NameT& UADataComponent::GetPropertyName(const UId &id) const
-{
- for(VariableMapCIteratorT I=PropertiesLookupTable.begin(),
-                         J=PropertiesLookupTable.end(); I!=J;++I)
- {
-   if(I->second.Id == id)
-    return I->first;
- }
- throw new EPropertyIdNotExist(id);
-}
-
-// Возвращает Id параметра по его имени
-const UId& UADataComponent::GetPropertyId(const NameT &name) const
-{
- VariableMapCIteratorT I=PropertiesLookupTable.find(name);
- if(I == PropertiesLookupTable.end())
-   throw new EPropertyNameNotExist(name);
-
- return I->second.Id;
 }
 // --------------------------
 
@@ -201,103 +143,64 @@ UContainerDescription* UADataComponent::ANewDescription(UComponentDescription* d
 // --------------------------
 // Методы доступа к параметрам
 // --------------------------
-// Возвращает значение параметра по Id 'id'
-UEPtr<UVariableData> UADataComponent::GetProperty(const UId &id, UEPtr<UVariableData> values) const
-{
- for(VariableMapCIteratorT I=PropertiesLookupTable.begin(),
-                            J=PropertiesLookupTable.end(); I!=J;++I)
- {
-  if(I->second.Id == id)
-  {
-   I->second.Property->Save(values);
-   return values;
-  }
- }
-
- return values;
-}
-
-std::string& UADataComponent::GetPropertyValue(const UId &id, std::string &values) const
-{
- Serialize::USerStorageXML data;
-
- for(VariableMapCIteratorT I=PropertiesLookupTable.begin(),
-                            J=PropertiesLookupTable.end(); I!=J;++I)
- {
-  if(I->second.Id == id)
-  {
-   I->second.Property->Save(&data,true);
-   if(data.GetNumNodes() == 0)
-    values=data.GetNodeText();
-   else
-    data.Save(values);
-   return values;
-  }
- }
-
- return values;
-}
-
 // Возвращает значение параметра по имени 'name'
 UEPtr<UVariableData> UADataComponent::GetProperty(const NameT &name, UEPtr<UVariableData> values) const
 {
- return GetProperty(GetPropertyId(name),values);
+ VariableMapCIteratorT I=PropertiesLookupTable.find(name);
+
+ if(I != PropertiesLookupTable.end())
+  I->second.Property->Save(values);
+
+ return values;
 }
 
 std::string& UADataComponent::GetPropertyValue(const NameT &name, std::string &values) const
 {
- return GetPropertyValue(GetPropertyId(name),values);
-}
-
-// Устанавливает значение параметра по Id 'id'
-void UADataComponent::SetProperty(const UId &id, UEPtr<UVariableData> values)
-{
- for(VariableMapCIteratorT I=PropertiesLookupTable.begin(),
-                             J=PropertiesLookupTable.end(); I!=J; ++I)
- {
-  if(I->second.Id == id)
-  {
-   I->second.Property->Load(values);
-   return;
-  }
- }
-}
-
-void UADataComponent::SetPropertyValue(const UId &id, const std::string &values)
-{
  Serialize::USerStorageXML data;
- for(VariableMapCIteratorT I=PropertiesLookupTable.begin(),
-                             J=PropertiesLookupTable.end(); I!=J; ++I)
- {
-  if(I->second.Id == id)
-  {
-   if(values.size()>0 && values[0]=='<')
-   {
-    data.Load(values,"");
-    data.RenameNode(I->second.Property->GetName());
-    I->second.Property->Load(&data,true);
-   }
-   else
-   {
-    I->second.Property->Save(&data,true);
-    data.SetNodeText(values);
-    I->second.Property->Load(&data,true);
-   }
-   return;
-  }
- }
-}
 
+ VariableMapCIteratorT I=PropertiesLookupTable.find(name);
+
+ if(I != PropertiesLookupTable.end())
+ {
+  I->second.Property->Save(&data,true);
+  if(data.GetNumNodes() == 0)
+   values=data.GetNodeText();
+  else
+   data.Save(values);
+ }
+
+ return values;
+}
 
 // Устанавливает значение параметра по имени 'name'
 void UADataComponent::SetProperty(const NameT &name, UEPtr<UVariableData> values)
 {
- SetProperty(GetPropertyId(name),values);
+ VariableMapCIteratorT I=PropertiesLookupTable.find(name);
+
+ if(I != PropertiesLookupTable.end())
+  I->second.Property->Load(values);
 }
 
 void UADataComponent::SetPropertyValue(const NameT &name, const std::string &values)
 {
- SetPropertyValue(GetPropertyId(name),values);
+ Serialize::USerStorageXML data;
+ VariableMapCIteratorT I=PropertiesLookupTable.find(name);
+
+ if(I != PropertiesLookupTable.end())
+ {
+  if(values.size()>0 && values[0]=='<')
+  {
+   data.Load(values,"");
+   data.RenameNode(I->second.Property->GetName());
+   I->second.Property->Load(&data,true);
+  }
+  else
+  {
+   I->second.Property->Save(&data,true);
+   data.SetNodeText(values);
+   I->second.Property->Load(&data,true);
+  }
+ }
 }
 
 const UADataComponent::VariableMapT& UADataComponent::GetPropertiesList(void) const
@@ -316,7 +219,7 @@ void UADataComponent::CopyProperties(UEPtr<UADataComponent> comp, unsigned int t
   if(!(I->second.Type & type))
    continue;
   databuffer.clear();
-  comp->SetProperty(I->second.Id,GetProperty(I->second.Id,&databuffer));
+  comp->SetProperty(I->first,GetProperty(I->first,&databuffer));
  }
 }
 
@@ -363,26 +266,17 @@ unsigned int UADataComponent::FindPropertyType(UEPtr<const UIProperty> prop) con
 // Добавляет параметр с именем 'name' в таблицу соотвествий
 // параметров и назначает ему корректный индекс
 // Должна вызываться в конструкторах классов
-UId UADataComponent::AddLookupProperty(const NameT &name, unsigned int type, UEPtr<UIProperty> property, bool delenable)
+void UADataComponent::AddLookupProperty(const NameT &name, unsigned int type, UEPtr<UIProperty> property, bool delenable)
 {
  if(PropertiesLookupTable.find(name) != PropertiesLookupTable.end())
   throw new EPropertyNameAlreadyExist(name);
 
- UVariable P(1,property);
+ UVariable P(property);
  P.DelEnable=delenable;
  P.Type=type;
 
- for(VariableMapIteratorT I=PropertiesLookupTable.begin(),
-                      J=PropertiesLookupTable.end(); I!=J; ++I)
- {
-  if(P.Id <= I->second.Id)
-   P.Id=I->second.Id+1;
- }
-
  pair<VariableMapCIteratorT, bool> res=PropertiesLookupTable.insert(make_pair(name,P));
  P.Property->SetVariable(res.first);
-
- return P.Id;
 }
 
 // Изменяет тип параметра

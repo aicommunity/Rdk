@@ -2596,8 +2596,8 @@ bool UEngine::Model_GetComponentProperties(RDK::UAContainer* cont, RDK::Serializ
   {
    if(I->second.CheckMask(type_mask))
    {
-	cont->GetProperty(I->second.Id,serstorage);
-	std::string paramname=I->second.Property->GetName();
+	cont->GetProperty(I->first,serstorage);
+	std::string paramname=I->first;//I->second.Property->GetName();
 	if(serstorage->SelectNode(paramname))
 	{
 	 serstorage->SetNodeAttribute("PType",sntoa(I->second.Type));
@@ -2653,9 +2653,9 @@ bool UEngine::Model_GetComponentPropertiesEx(RDK::UAContainer* cont, RDK::Serial
   {
    if(I->second.CheckMask(type_mask))
    {
-	cont->GetProperty(I->second.Id,serstorage);
+	cont->GetProperty(I->first,serstorage);
 
-	std::string paramname=I->second.Property->GetName();
+	std::string paramname=I->first;//I->second.Property->GetName();
 	if(serstorage->SelectNode(paramname))
 	{
 	 serstorage->SetNodeAttribute("PType",sntoa(I->second.Type));
@@ -2696,7 +2696,7 @@ int UEngine::Model_SetComponentProperties(RDK::UAContainer* cont, RDK::Serialize
   J=props.end();
   while(I != J)
   {
-   cont->SetProperty(I->second.Id,serstorage);
+   cont->SetProperty(I->first,serstorage);
    ++I;
   }
  }
