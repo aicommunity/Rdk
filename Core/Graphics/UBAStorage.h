@@ -13,11 +13,11 @@ See file license.txt for more information
 #define UBASTORAGE_H
 
 #include "UBAbstract.h"
-#include "../Engine/UAContainerStorage.h"
+#include "../Engine/UAStorage.h"
 
 namespace RDK {
 
-class UBAStorage: public UAContainerStorage
+class UBAStorage: public UAStorage
 {
 public: // Типы данных
 

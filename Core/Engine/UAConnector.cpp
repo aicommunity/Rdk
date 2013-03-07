@@ -691,6 +691,37 @@ bool UAConnector::Build(void)
 
 /* *************************************************************************** */
 
+//class UIPropertyInput: public UIPropertyIO
+// Возвращает указатель на компонент-источник
+UEPtr<UAItem> UIPropertyInput::GetItem(void)
+{
+ return Item;
+}
+
+// Возвращает имя подключенного выхода
+const std::string& UIPropertyInput::GetItemOutputName(void)
+{
+ return ItemOutputName;
+}
+
+//class UIPropertyOutput: public UIPropertyIO
+// Возвращает число подключенных входов
+size_t UIPropertyOutput::GetNumConnectors(void)
+{
+ return Connectors.size();
+}
+
+// Возвращает указатель на компонент-приемник
+UEPtr<UAConnector> UIPropertyOutput::GetConnector(int index)
+{
+ return Connectors[index];
+}
+
+// Возвращает имя подключенного входа компонента-приемника
+const std::string& UIPropertyOutput::GetConnectorInputName(int index)
+{
+ return ConnectorInputNames[index];
+}
 
 }
 #endif

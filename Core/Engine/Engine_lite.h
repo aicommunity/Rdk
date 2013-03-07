@@ -18,7 +18,7 @@ See file license.txt for more information
 #include "UALibrary.h"
 #include "UAEnvironment.h"
 #include "UAContainer.h"
-#include "UAContainerStorage.h"
+#include "UAStorage.h"
 #include "UAConnector.h"
 #include "UAItem.h"
 #include "UADItem.h"

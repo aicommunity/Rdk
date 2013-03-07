@@ -253,6 +253,22 @@ UEPtr<UAContainer> UAEnvironment::GetModel(void)
  return Model;
 }
 
+// —оздает новую модель из хранилища по имени класса
+bool UAEnvironment::CreateModel(const NameT& classname)
+{
+ if(!IsStoragePresent())
+  return false;
+
+ CurrentComponent=Model=dynamic_pointer_cast<UAContainer>(GetStorage()->TakeObject(classname));
+ Ready=false;
+ if(Model)
+ {
+  return true;
+ }
+
+ return false;
+}
+
 // —оздает новую модель из хранилища по id класса
 bool UAEnvironment::CreateModel(const UId& classid)
 {
@@ -292,6 +308,31 @@ int UAEnvironment::GetNumClassLibraries(void) const
  return ClassLibraryList.GetSize();
 }
 
+// ¬озвращает библиотеку по имени
+UALibrary* UAEnvironment::GetClassLibrary(const string &name)
+{
+ for(int i=0;i<ClassLibraryList.GetSize();i++)
+ {
+  UALibrary *lib=dynamic_cast<UALibrary*>(ClassLibraryList[i]);
+  if(lib && lib->GetName() == name)
+   return lib;
+ }
+
+ return 0;
+}
+
+// ¬озвращает им€ библиотеки по индексу
+const string& UAEnvironment::GetClassLibraryName(int index)
+{
+ return ClassLibraryList[index]->GetName();
+}
+
+// ¬озвращает версию библиотеки по индексу
+const string& UAEnvironment::GetClassLibraryVersion(int index)
+{
+ return ClassLibraryList[index]->GetVersion();
+}
+
 // Ќепосредственно добав€лет новый образец класса в хранилище
 bool UAEnvironment::AddClass(UAContainer *newclass)
 {
@@ -313,6 +354,15 @@ bool UAEnvironment::AddClassLibrary(UALibrary *library)
  if(!library)
   return false;
 
+ UALibrary *newlib=dynamic_cast<UALibrary*>(library);
+
+ for(int i=0;i<ClassLibraryList.GetSize();i++)
+ {
+  UALibrary *lib=dynamic_cast<UALibrary*>(ClassLibraryList[i]);
+  if(lib && lib->GetName() == newlib->GetName())
+   return false;
+ }
+
  ClassLibraryList.PushBack(library);
  return true;
 }
@@ -325,6 +375,19 @@ bool UAEnvironment::DelClassLibrary(int index)
   return false;
 
  ClassLibraryList.Erase(index);
+ return true;
+}
+
+// ”дал€ет подключенную библиотеку из списка по имени
+// ќтветственность за освобождение пам€ти лежит на вызывающей стороне.
+bool UAEnvironment::DelClassLibrary(const string &name)
+{
+ for(int i=0;i<ClassLibraryList.GetSize();i++)
+ {
+  UALibrary *lib=dynamic_cast<UALibrary*>(ClassLibraryList[i]);
+  if(lib && lib->GetName() == name)
+   return DelClassLibrary(i);
+ }
  return true;
 }
 
@@ -346,12 +409,29 @@ bool UAEnvironment::BuildStorage(void)
  if(!DestroyModel())
   return false;
 
-// if(!Storage->ClearClassesStorage())
-//  return false;
+ if(!IsStoragePresent())
+  return false;
+
+ if(!DestroyModel())
+  return false;
+
+ GetStorage()->ClearObjectsStorage();
+
+ GetStorage()->ClearClassesStorage();
 
  for(int i=0;i<ClassLibraryList.GetSize();i++)
  {
-  ClassLibraryList[i]->Upload(Storage);
+  ClassLibraryList[i]->Upload(GetStorage());
+  UALibrary *lib=ClassLibraryList[i];
+  if(lib)
+  {
+   CompletedClassNames.insert(CompletedClassNames.end(),
+                             lib->GetComplete().begin(),
+                             lib->GetComplete().end());
+   IncompletedClassNames.insert(IncompletedClassNames.end(),
+                             lib->GetIncomplete().begin(),
+                             lib->GetIncomplete().end());
+  }
  }
  return true;
 }
@@ -366,15 +446,65 @@ bool UAEnvironment::BuildStorage(void)
 // ќператоры доступа к данным среды
 // --------------------------
 // ¬озвращает указатель на текущий компонент модели
-UEPtr<UAComponent> UAEnvironment::GetCurrentComponent(void)
+UEPtr<UAContainer> UAEnvironment::GetCurrentComponent(void)
 {
  return CurrentComponent;
+}
+
+// ”станавливает указатель на текущий компонент модели
+void UAEnvironment::SelectCurrentComponent(const NameT &name)
+{
+ if(name == ForbiddenName)
+  CurrentComponent=Model;
+ else
+  CurrentComponent=Model->GetComponentL(name);
+}
+
+void UAEnvironment::SelectCurrentComponent(const ULongId &id)
+{
+ if(id.GetSize() == 0 || id[0] == ForbiddenId)
+  CurrentComponent=Model;
+ else
+  CurrentComponent=Model->GetComponentL(id);
+}
+
+// ”станавливает указатель на текущий компонент модели на саму модель
+void UAEnvironment::ResetCurrentComponent(void)
+{
+ CurrentComponent=Model;
+}
+
+// ”станавливает указатель на текущий компонент модели на родительский компонент
+// (переход на уровень вверх). ≈сли уже указывает на модель, то не делает ничего
+void UAEnvironment::UpCurrentComponent(void)
+{
+ if(CurrentComponent == Model)
+  return;
+
+ CurrentComponent=CurrentComponent->GetOwner();
+}
+
+// ”станавливает указатель на текущий компонент модели на дочерней компонент на
+// любом уровне (переход на уровень вниз).
+void UAEnvironment::DownCurrentComponent(const NameT &name)
+{
+ CurrentComponent=GetCurrentComponent()->GetComponentL(name);
+}
+
+void UAEnvironment::DownCurrentComponent(const ULongId &id)
+{
+ CurrentComponent=GetCurrentComponent()->GetComponentL(id);
 }
 // --------------------------
 
 // --------------------------
-// ƒанные графического интерфеса пользовател€
+// ћетоды управлени€ счетом
 // --------------------------
+// ѕроизводит увеличение времени модели на требуемую величину
+void UAEnvironment::IncreaseModelTimeByStep(void)
+{
+ UTimeControl::IncreaseModelTimeByStep(GetModel()->GetTimeStep());
+}
 // --------------------------
 
 // --------------------------
@@ -626,6 +756,7 @@ bool UAEnvironment::AReset(void)
    return false;
  }
 
+ UAContainer::SetTime(0);
  return true;
 }
 
@@ -649,6 +780,11 @@ bool UAEnvironment::ACalculate(void)
   if(!destcont->Calculate())
    return false;
  }
+
+ // ≈сли мы считаем всю модель, то расчитываем врем€ модели здесь,
+ // иначе мы ожидаем, что вызывающий модуль сам расчитает врем€ модели
+ if(ModelCalculationComponent.GetSize() == 0)
+  IncreaseModelTimeByStep();
 
  return true;
 }

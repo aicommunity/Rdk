@@ -14,8 +14,8 @@ See file license.txt for more information
 
 #include "Engine_lite.h"   
 #include "UTime.h"
-#include "UAContainerStorage.h"
-#include "UAContainerEnvironment.h"
+#include "UAStorage.h"
+#include "UAEnvironment.h"
 #include "UEngine.h"
 #include "UEnvSupport.h"
 //#include "UProperty.h"

@@ -16,14 +16,14 @@ See file license.txt for more information
 #include <string.h>
 #include <cstdio>
 #include "UAContainer.h"
-#include "UAContainerStorage.h"
+#include "UAStorage.h"
 #include "UAConnector.h"
 #include "UAItem.h"
 #include "UANet.h"
 #include "../Serialize/Serialize.h"
 #include "../Math/MUBinarySerialize.h"
 #include "../Math/MUXMLSerialize.h"
-#include "UAContainerStorage.h"
+#include "UAStorage.h"
 #include "UContainerDescription.h"
 
 namespace RDK {
@@ -76,11 +76,8 @@ UAContainer::~UAContainer(void)
 
  BreakOwner();
 
- UEPtr<UAContainerStorage> cstorage=dynamic_pointer_cast<UAContainerStorage>(Storage);
- if(cstorage)
-  {
-   cstorage->PopObject(UEPtr<UAContainer>(this));
-  }
+ if(Storage)
+  Storage->PopObject(UEPtr<UAContainer>(this));
 }
 // --------------------------
 
@@ -100,9 +97,9 @@ UEPtr<UAContainer> UAContainer::GetMainOwner(void) const
 }
 
 // Возвращает хранилище компонент этого объекта
-UEPtr<UAContainerStorage> const UAContainer::GetStorage(void) const
+UEPtr<UAStorage> const UAContainer::GetStorage(void) const
 {
- return dynamic_pointer_cast<UAContainerStorage>(Storage);
+ return Storage;
 }
 
 // Проверяет, является ли объект owner
@@ -570,10 +567,10 @@ bool UAContainer::SetId(const UId &id)
 // и значений параметров.
 // Если 'stor' == 0, то создание объектов осуществляется
 // в том же хранилище где располагается этот объект
-UEPtr<UAContainer> UAContainer::Alloc(UEPtr<UAContainerStorage> stor, bool copystate)
+UEPtr<UAContainer> UAContainer::Alloc(UEPtr<UAStorage> stor, bool copystate)
 {
  UEPtr<UAContainer> copy;
- UEPtr<UAContainerStorage> storage=(stor!=0)?stor:GetStorage();
+ UEPtr<UAStorage> storage=(stor!=0)?stor:GetStorage();
 
  if(storage)
  {
@@ -590,7 +587,7 @@ UEPtr<UAContainer> UAContainer::Alloc(UEPtr<UAContainerStorage> stor, bool copys
 
 // Копирует этот объект в 'target' с сохранением всех компонент
 // и значений параметров
-bool UAContainer::Copy(UEPtr<UAContainer> target, UEPtr<UAContainerStorage> stor, bool copystate) const
+bool UAContainer::Copy(UEPtr<UAContainer> target, UEPtr<UAStorage> stor, bool copystate) const
 {
  CopyProperties(target, ptParameter);
  target->Build();
@@ -864,7 +861,7 @@ void UAContainer::GetComponentsList(vector<NameT> &buffer) const
 }
 
 // Копирует все компоненты этого объекта в объект 'comp', если возможно.
-void UAContainer::CopyComponents(UEPtr<UAContainer> comp, UEPtr<UAContainerStorage> stor) const
+void UAContainer::CopyComponents(UEPtr<UAContainer> comp, UEPtr<UAStorage> stor) const
 {
  UEPtr<UAContainer> bufcomp;
 

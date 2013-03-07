@@ -13,8 +13,8 @@ See file license.txt for more information
 #define UENGINE_H
 
 #include "UModule.h"
-#include "UAContainerEnvironment.h"
-#include "UAContainerStorage.h"
+#include "UAEnvironment.h"
+#include "UAStorage.h"
 #include "../Utilities/UIniFile.h"
 #include "UANet.h"
 
@@ -79,10 +79,10 @@ protected: // Данные
 UIniFile<char> Options;
 
 // Хранилище
-RDK::UEPtr<UAContainerStorage> Storage;
+RDK::UEPtr<UAStorage> Storage;
 
 // Среда
-RDK::UEPtr<UAContainerEnvironment> Environment;
+RDK::UEPtr<UAEnvironment> Environment;
 
 protected: // Обработка исключений
 // Лог исключений системы
@@ -154,7 +154,7 @@ int IsRunned(void);
 // Методы доступа к данным
 // --------------------------
 // Возвращает указатель на среду
-virtual UAContainerEnvironment* GetEnvironment(void);
+virtual UAEnvironment* GetEnvironment(void);
 
 // Возвращает указатель на модель
 virtual UAContainer* GetModel(void);
@@ -166,7 +166,7 @@ virtual UAContainer* GetModel(void);
 // --------------------------
 // Инициализирует данные движка
 virtual void Init(void);
-virtual bool Init(UEPtr<UAContainerStorage> storage, UEPtr<UAContainerEnvironment> env);
+virtual bool Init(UEPtr<UAStorage> storage, UEPtr<UAEnvironment> env);
 
 // Деинициализирует данные движка
 // и сохраняет текущие настройки

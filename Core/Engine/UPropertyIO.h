@@ -51,7 +51,7 @@ int GetMaxRange(void)
 };
 
 template<typename T, typename OwnerT, unsigned int type>
-class UPropertyInputBase: protected ULProperty<T*,OwnerT,type>, public UPropertyIOBase
+class UPropertyInputBase: protected ULProperty<T*,OwnerT,type>, public UPropertyIOBase, public UIPropertyInput
 {
 protected:
 
@@ -162,7 +162,7 @@ virtual void Init(void)
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 template<typename T, typename OwnerT, unsigned int type>
-class UPropertyInputCBase: public UCLProperty<std::vector<T*>,OwnerT,type>, public UPropertyIOBase
+class UPropertyInputCBase: public UCLProperty<std::vector<T*>,OwnerT,type>, public UPropertyIOBase, public UIPropertyInput
 {
 protected:
 
@@ -265,7 +265,7 @@ virtual void Init(void)
 // Output properties
 // -----------------------------------------------------------------------------
 template<typename T, typename OwnerT, unsigned int type>
-class UPropertyOutputBase: protected ULProperty<T,OwnerT,type>, public UPropertyIOBase
+class UPropertyOutputBase: protected ULProperty<T,OwnerT,type>, public UPropertyIOBase, public UIPropertyOutput
 {
 protected:
 
@@ -364,7 +364,7 @@ virtual void Init(void)
 };
 
 template<typename T, typename OwnerT, unsigned int type>
-class UPropertyOutputCBase: protected UCLProperty<std::vector<T>,OwnerT,type>, public UPropertyIOBase
+class UPropertyOutputCBase: protected UCLProperty<std::vector<T>,OwnerT,type>, public UPropertyIOBase, public UIPropertyOutput
 {
 protected:
 
@@ -441,7 +441,7 @@ virtual void Init(void)
 // Output virtual properties
 // -----------------------------------------------------------------------------
 template<typename T, typename OwnerT>
-class UVPropertyOutputBase: public UVProperty<T,OwnerT>, public UPropertyIOBase
+class UVPropertyOutputBase: public UVProperty<T,OwnerT>, public UPropertyIOBase, public UIPropertyOutput
 {
 protected:
 

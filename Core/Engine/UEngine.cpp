@@ -21,21 +21,21 @@ See file license.txt for more information
 // Объявления дополнительных функций
 // --------------------------------------
 // Возвращает хранилище по индексу
-extern RDK::UAContainerStorage* GetStorage(size_t i);
+extern RDK::UAStorage* GetStorage(size_t i);
 
 // Возвращает среду по индексу
-extern RDK::UAContainerEnvironment*  GetEnvironment(size_t i);
+extern RDK::UAEnvironment*  GetEnvironment(size_t i);
 
 // Возвращает движок по индексу
 extern RDK::UEngine*  GetEngine(size_t i);
 
 // Создает новое хранилище и помещает в конец массива
 // Возвращает указатель на хранилище
-extern RDK::UAContainerStorage*  AddNewStorage(void);
+extern RDK::UAStorage*  AddNewStorage(void);
 
 // Создает новую среду и помещает в конец массива
 // Возвращает указатель на среду
-extern RDK::UAContainerEnvironment*  AddNewEnvironment(void);
+extern RDK::UAEnvironment*  AddNewEnvironment(void);
 
 // Создает новый движок и помещает в конец массива
 // Возвращает указатель на движок
@@ -97,7 +97,7 @@ int UEngine::IsRunned(void)
 // Методы доступа к данным
 // --------------------------
 // Возвращает указатель на среду
-UAContainerEnvironment* UEngine::GetEnvironment(void)
+UAEnvironment* UEngine::GetEnvironment(void)
 {
  return Environment;
 }
@@ -118,7 +118,7 @@ void UEngine::Init(void)
  // Заглушка
 }
 
-bool UEngine::Init(UEPtr<UAContainerStorage> storage, UEPtr<UAContainerEnvironment> env)
+bool UEngine::Init(UEPtr<UAStorage> storage, UEPtr<UAEnvironment> env)
 {
  LastReadExceptionLogIndex=-1;
  //ExceptionsLog.clear();
@@ -152,14 +152,14 @@ bool UEngine::Init(UEPtr<UAContainerStorage> storage, UEPtr<UAContainerEnvironme
 // {
   LibrariesList.clear();
   ClassesList.clear();
-  if(LoadPredefinedLibraries())
-   return false;
   if(LoadClasses())
    return false;
   if(LoadLibraries())
    return false;
 //  Environment=AddNewEnvironment();
   CreateEnvironment(true,&ClassesList, &LibrariesList);
+  if(LoadPredefinedLibraries())
+   return false;
 // }
 
  if(!Storage || !Environment || Environment->GetStorage() != Storage)

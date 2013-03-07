@@ -50,7 +50,7 @@ ULinksListT<T>& GetPersonalLinks(UEPtr<RDK::UANet> cont, ULinksListT<T> &linksli
 // и значений параметров
 // Если 'stor' == 0, то создание объектов осуществляется
 // в том же хранилище где располагается этот объект
-virtual bool Copy(UEPtr<UAContainer> target, UEPtr<UAContainerStorage> stor=0, bool copystate=false) const;
+virtual bool Copy(UEPtr<UAContainer> target, UEPtr<UAStorage> stor=0, bool copystate=false) const;
 
 // Осуществляет освобождение этого объекта в его хранилище
 // или вызов деструктора, если Storage == 0

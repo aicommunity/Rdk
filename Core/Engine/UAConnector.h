@@ -17,6 +17,14 @@ See file license.txt for more information
 
 namespace RDK {
 
+class UIPropertyIO;
+
+enum { ipData=1, ipComp=2 };
+enum { ipSingle=16, ipRange=32, ipList=64 };
+enum { ipDataSingle=ipData|ipSingle, ipDataRange=ipData|ipRange,
+	   ipDataList=ipData|ipList, ipCompSingle=ipComp|ipSingle,
+	   ipCompRange=ipComp|ipRange, ipCompList=ipComp|ipList };
+
 class UAItem;
 
 // Описание подключаемого элемента "UConnectedITEM"
@@ -150,8 +158,6 @@ int NumInputs;
 // при подключении нового item.
 bool AutoNumInputs;
 
-protected: // Переменные быстрого доступа к даннным входов. Read only!
-
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
@@ -282,5 +288,72 @@ EInputIndexNotExist(void) : EInvalidIndex(-1) {};
 };
 };
 
+
+class UIPropertyIO
+{
+public:
+// --------------------------
+// Методы управления данными
+// --------------------------
+/// Возвращает тип свойства ввода-вывода
+virtual int GetIoType(void) const=0;
+
+/// Возвращает диапазон индексов входа/выхода
+virtual bool CheckRange(int index)=0;
+// --------------------------
+
+// --------------------------
+// Методы управления указателем
+// --------------------------
+/// Возвращает указатель на данные
+virtual void const* GetPointer(int index) const=0;
+
+/// Устанавливает указатель на данные
+virtual bool SetPointer(int index, void* value)=0;
+
+/// Первичная инициализация указателя
+virtual void Init(void)=0;
+// --------------------------
+};
+
+class UIPropertyInput
+{
+protected: // Данные
+/// Указатель на компонент-источник данных
+UEPtr<UAItem> Item;
+
+/// Имя выхода компнента-источника данных
+std::string ItemOutputName;
+
+public:
+/// Возвращает указатель на компонент-источник
+UEPtr<UAItem> GetItem(void);
+
+/// Возвращает имя подключенного выхода
+const std::string& GetItemOutputName(void);
+};
+
+class UIPropertyOutput
+{
+protected: // Данные
+/// Указатели на компоненты-приемники данных
+std::vector<UEPtr<UAItem> > Connectors;
+
+/// Имя выхода компнента-источника данных
+std::vector<std::string> ConnectorInputNames;
+
+public:
+/// Возвращает число подключенных входов
+size_t GetNumConnectors(void);
+
+/// Возвращает указатель на компонент-приемник
+UEPtr<UAConnector> GetConnector(int index);
+
+/// Возвращает имя подключенного входа компонента-приемника
+const std::string& GetConnectorInputName(int index);
+};
+
 }
+
+#include "UPropertyIO.h"
 #endif

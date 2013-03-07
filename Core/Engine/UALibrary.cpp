@@ -78,7 +78,7 @@ int UALibrary::Upload(UAStorage *storage)
  */
  int count=0;
 
- Storage=dynamic_cast<UAContainerStorage*>(storage);
+ Storage=storage;
 
  if(!Storage)
   return 0;
@@ -114,24 +114,11 @@ bool UALibrary::UploadClass(const string &name, UEPtr<UAComponent> cont)
   return false;
  }
 
- UAContainerStorage *storage=dynamic_cast<UAContainerStorage *>(Storage);
- if(!storage)
+ if(!Storage->AddClass(cont,name))
  {
-  if(!Storage->AddClass(cont,name))
-  {
-   Incomplete.push_back(name);
-   delete cont;
-   return false;
-  }
- }
- else
- {
-  if(!storage->AddClass(cont,name))
-  {
-   Incomplete.push_back(name);
-   delete cont;
-   return false;
-  }
+  Incomplete.push_back(name);
+  delete cont;
+  return false;
  }
 
  Complete.push_back(name);

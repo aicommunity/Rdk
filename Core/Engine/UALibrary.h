@@ -14,7 +14,7 @@ See file license.txt for more information
 #define UALibraryH
 
 //#include "UALibrary.h"
-#include "UAContainerStorage.h"
+#include "UAStorage.h"
 
 namespace RDK {
 
@@ -36,7 +36,7 @@ vector<string> Incomplete;
 
 private: // Внутренние данные
 // Хранилище для загрузки
-UAContainerStorage *Storage;
+UAStorage *Storage;
 // Массив образцов классов, формируемый библиотекой
 //map<string, UAComponent*> ClassSamples;
 

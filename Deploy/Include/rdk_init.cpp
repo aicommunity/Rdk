@@ -9,27 +9,27 @@
 // Объявления дополнительных функций
 // --------------------------------------
 // Возвращает хранилище по индексу
-RDK::UAContainerStorage* GetStorage(size_t i);
+RDK::UAStorage* GetStorage(size_t i);
 
 // Возвращает среду по индексу
-RDK::UAContainerEnvironment*  GetEnvironment(size_t i);
+RDK::UAEnvironment*  GetEnvironment(size_t i);
 
 // Возвращает движок по индексу
 RDK::UEngine*  GetEngine(size_t i);
 
 // Создает новое хранилище и помещает в конец массива
 // Возвращает указатель на хранилище
-RDK::UAContainerStorage*  AddNewStorage(void);
+RDK::UAStorage*  AddNewStorage(void);
 
 // Удаляет существующее хранилище
-void DelStorage(RDK::UAContainerStorage* env);
+void DelStorage(RDK::UAStorage* env);
 
 // Создает новую среду и помещает в конец массива
 // Возвращает указатель на среду
-RDK::UAContainerEnvironment*  AddNewEnvironment(void);
+RDK::UAEnvironment*  AddNewEnvironment(void);
 
 // Удаляет существующую среду
-void DelEnvironment(RDK::UAContainerEnvironment* env);
+void DelEnvironment(RDK::UAEnvironment* env);
 
 // Создает новый движок и помещает в конец массива
 // Возвращает указатель на движок
@@ -49,13 +49,13 @@ bool DllInit(void* pfstorage,void* pfenvironment,void* pfengine);
 // --------------------------------------
 
 RDK::UEPtr<RDK::UEngine> PEngine=0;
-RDK::UEPtr<RDK::UAContainerEnvironment> PEnvironment=0;
-RDK::UEPtr<RDK::UAContainerStorage> PStorage=0;
+RDK::UEPtr<RDK::UAEnvironment> PEnvironment=0;
+RDK::UEPtr<RDK::UAStorage> PStorage=0;
 
 /*****************************************************************************/
-extern RDK::UAContainerStorage* CreateNewStorage(void);
+extern RDK::UAStorage* CreateNewStorage(void);
 
-extern RDK::UAContainerEnvironment* CreateNewEnvironment(void);
+extern RDK::UAEnvironment* CreateNewEnvironment(void);
 
 extern RDK::UEngine* CreateNewEngine(void);
 /*****************************************************************************/
@@ -1199,10 +1199,10 @@ class RDKDllManager
 {
 public:
 // Массив хранилищ
-std::vector<RDK::UAContainerStorage*> StorageList;
+std::vector<RDK::UAStorage*> StorageList;
 
 // Массив сред
-std::vector<RDK::UAContainerEnvironment*> EnvironmentList;
+std::vector<RDK::UAEnvironment*> EnvironmentList;
 
 // Массив движков
 std::vector<RDK::UEngine*> EngineList;
@@ -1212,12 +1212,12 @@ std::vector<RDK::UEngine*> EngineList;
 // ----------------------------------------------------------
 // Создает новое хранилище и помещает в конец массива
 // Возвращает указатель на хранилище
-typedef RDK::UAContainerStorage* (*PCreateNewStorage)(void);
+typedef RDK::UAStorage* (*PCreateNewStorage)(void);
 PCreateNewStorage FuncCreateNewStorage;
 
 // Создает новую среду и помещает в конец массива
 // Возвращает указатель на среду
-typedef RDK::UAContainerEnvironment* (*PCreateNewEnvironment)(void);
+typedef RDK::UAEnvironment* (*PCreateNewEnvironment)(void);
 PCreateNewEnvironment FuncCreateNewEnvironment;
 
 // Создает новый движок и помещает в конец массива
@@ -1247,8 +1247,8 @@ bool Init(PCreateNewStorage fCreateNewStorage,
 RDKDllManager DllManager;
 
 extern RDK::UEPtr<RDK::UEngine> PEngine;
-extern RDK::UEPtr<RDK::UAContainerEnvironment> PEnvironment;
-extern RDK::UEPtr<RDK::UAContainerStorage> PStorage;
+extern RDK::UEPtr<RDK::UAEnvironment> PEnvironment;
+extern RDK::UEPtr<RDK::UAStorage> PStorage;
 
 
 // Менеджер DLL
@@ -1424,7 +1424,7 @@ int GetNumEngines(void)
 }
 
 // Возвращает хранилище по индексу
-RDK::UAContainerStorage* GetStorage(size_t i)
+RDK::UAStorage* GetStorage(size_t i)
 {
  if(i>=DllManager.StorageList.size())
   return 0;
@@ -1433,7 +1433,7 @@ RDK::UAContainerStorage* GetStorage(size_t i)
 }
 
 // Возвращает среду по индексу
-RDK::UAContainerEnvironment* GetEnvironment(size_t i)
+RDK::UAEnvironment* GetEnvironment(size_t i)
 {
  if(i>=DllManager.EnvironmentList.size())
   return 0;
@@ -1453,12 +1453,12 @@ RDK::UEngine* GetEngine(size_t i)
 
 // Создает новое хранилище и помещает в конец массива
 // Возвращает указатель на хранилище
-RDK::UAContainerStorage* AddNewStorage(void)
+RDK::UAStorage* AddNewStorage(void)
 {
  if(!DllManager.FuncCreateNewStorage)
   return 0;
 
- RDK::UAContainerStorage* storage=DllManager.FuncCreateNewStorage();
+ RDK::UAStorage* storage=DllManager.FuncCreateNewStorage();
  if(storage)
  {
 //  CreateStorage(storage);
@@ -1468,7 +1468,7 @@ RDK::UAContainerStorage* AddNewStorage(void)
 }
 
 // Удаляет существующее хранилище
-void DelStorage(RDK::UAContainerStorage* storage)
+void DelStorage(RDK::UAStorage* storage)
 {
  if(storage)
  {
@@ -1483,12 +1483,12 @@ void DelStorage(RDK::UAContainerStorage* storage)
 
 // Создает новую среду и помещает в конец массива
 // Возвращает указатель на среду
-RDK::UAContainerEnvironment* AddNewEnvironment(void)
+RDK::UAEnvironment* AddNewEnvironment(void)
 {
  if(!DllManager.FuncCreateNewEnvironment)
   return 0;
 
- RDK::UAContainerEnvironment* environment=DllManager.FuncCreateNewEnvironment();
+ RDK::UAEnvironment* environment=DllManager.FuncCreateNewEnvironment();
  if(environment)
  {
 //  CreateEnvironment(environment, storage,isinit,external_classes, external_libs);
@@ -1498,7 +1498,7 @@ RDK::UAContainerEnvironment* AddNewEnvironment(void)
 }
 
 // Удаляет существующую среду
-void DelEnvironment(RDK::UAContainerEnvironment* env)
+void DelEnvironment(RDK::UAEnvironment* env)
 {
  if(env)
  {

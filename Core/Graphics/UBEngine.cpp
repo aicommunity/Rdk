@@ -65,7 +65,7 @@ void UBEngine::Init(void)
  // Заглушка
 }
 
-bool UBEngine::Init(UEPtr<UAContainerStorage> storage, UEPtr<UAContainerEnvironment> env)
+bool UBEngine::Init(UEPtr<UAStorage> storage, UEPtr<UAEnvironment> env)
 {
  return UEngine::Init(storage, env);
 }

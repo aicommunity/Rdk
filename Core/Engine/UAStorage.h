@@ -15,12 +15,13 @@ See file license.txt for more information
 
 #include <map>
 #include "UEPtr.h"
-#include "UAComponent.h"
+#include "UAContainer.h"
 #include "../Serialize/USerStorageXML.h"
 #include "UComponentDescription.h"
 
 namespace RDK {
 
+/* *********************************************************************** */
 typedef UEPtr<UAComponent> UClassStorageElement;
 typedef std::map<UId, UClassStorageElement> UClassesStorage;
 typedef std::map<UId, UClassStorageElement>::iterator UClassesStorageIterator;
@@ -30,8 +31,58 @@ typedef std::map<std::string, UEPtr<UComponentDescription> > UClassesDescription
 typedef std::map<std::string, UEPtr<UComponentDescription> >::iterator UClassesDescriptionIterator;
 typedef std::map<std::string, UEPtr<UComponentDescription> >::const_iterator UClassesDescriptionCIterator;
 
+/* *********************************************************************** */
+// Элемент списка существующих объектов определенного класса
+class UInstancesStorageElement
+{
+public: // Данные
+// Указатель на объект
+UEPtr<UAContainer> Object;
+
+// Признак того свободен ли объект
+bool UseFlag;
+
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+UInstancesStorageElement(void);
+UInstancesStorageElement(const UInstancesStorageElement &copy);
+UInstancesStorageElement(const UEPtr<UAContainer> &object, bool useflag);
+virtual ~UInstancesStorageElement(void);
+// --------------------------
+
+// --------------------------
+// Операторы
+// --------------------------
+// Оператор присваивания
+UInstancesStorageElement& operator = (const UInstancesStorageElement &copy);
+
+// Операторы сравнения
+bool operator < (const UInstancesStorageElement &value);
+bool operator > (const UInstancesStorageElement &value);
+bool operator <= (const UInstancesStorageElement &value);
+bool operator >= (const UInstancesStorageElement &value);
+bool operator == (const UInstancesStorageElement &value);
+bool operator != (const UInstancesStorageElement &value);
+// --------------------------
+};
+
+typedef UInstancesStorageElement* PUInstancesStorageElement;
+typedef list<UInstancesStorageElement> UInstancesStorage;
+typedef list<UInstancesStorageElement>::iterator UInstancesStorageIterator;
+
+typedef pair<UId,UInstancesStorage> UObjectStorageElement;
+
+typedef map<UId, UInstancesStorage> UObjectsStorage;
+typedef map<UId, UInstancesStorage>::iterator UObjectsStorageIterator;
+typedef map<UId, UInstancesStorage>::const_iterator UObjectsStorageCIterator;
+/* *********************************************************************** */
+
 class UAStorage
 {
+friend class UAContainer;
 protected: // Системные свойства
 // Таблица соответствий имен и Id образцов классов
 std::map<std::string,UId> ClassesLookupTable;
@@ -44,6 +95,9 @@ protected: // Описания классов
 UClassesDescription ClassesDescription;
 
 protected: // Основные свойства
+// Список объектов
+UObjectsStorage ObjectsStorage;
+
 // Последний использованный Id образцов классов
 UId LastClassId;
 
@@ -104,7 +158,8 @@ virtual void GetClassIdList(std::vector<UId> &buffer) const;
 // Буфер 'buffer' будет очищен от предыдущих значений
 virtual void GetClassNameList(std::vector<std::string> &buffer) const;
 
-
+// Удаляет все не используемые образцы классов из хранилища
+virtual void FreeClassesStorage(void);
 
 // Удаляет все образцы классов из хранилища
 virtual void ClearClassesStorage(void);
@@ -120,9 +175,24 @@ virtual void ClearClassesStorage(void);
 // Если свободного объекта не существует он создается и добавляется
 // в хранилище
 virtual UEPtr<UAComponent> TakeObject(const UId &classid, const UEPtr<UAComponent> prototype=0);
+virtual UEPtr<UAComponent> TakeObject(const string &classname, const UEPtr<UAComponent> prototype=0);
 
 // Возвращает Id класса, отвечающий объекту 'object'
 virtual UId FindClass(UEPtr<UAComponent> object) const;
+
+// Проверяет существует ли объект 'object' в хранилище
+virtual bool CheckObject(UEPtr<UAContainer> object) const;
+
+// Вычисляет суммарное число объектов в хранилище
+virtual int CalcNumObjects(void) const;
+virtual int CalcNumObjects(const UId &classid) const;
+virtual size_t CalcNumObjects(const string &classname) const;
+
+// Удалаяет все свободные объекты из хранилища
+virtual void FreeObjectsStorage(void);
+
+// Удаляет все объекты из хранилища
+virtual void ClearObjectsStorage(void);
 // --------------------------
 
 // --------------------------
@@ -158,12 +228,32 @@ virtual bool LoadCommonClassesDescription(Serialize::USerStorageXML &xml);
 
 // --------------------------
 // Скрытые методы управления хранилищем объектов
+// Выводит уже созданный объект из хранилища и возвращает
+// его classid
 // --------------------------
 protected:
+// Добавляет уже созданный объект в хранилище
+// Если объект уже принадлежит иному хранилищу то возвращает false
+virtual void PushObject(const UId &classid, UEPtr<UAContainer> object);
+
+// Выводит уже созданный объект из хранилища и возвращает
+// его classid
+// В случае ошибки возвращает ForbiddenId
+virtual UId PopObject(UEPtr<UAContainer> object);
+
+// Перемещает объект в другое хранилище
+virtual void MoveObject(UEPtr<UAContainer> object, UEPtr<UAStorage> newstorage);
+
 // Возвращает объект в хранилище
-// В текущей реализации всегда удаляет объект и возвращает true
+// Выбранный объект помечается как свободный в хранилище
+// Флаг 'Activity' объекта выставляется в false
+// Если объект не существует в хранилище - возвращается false
 virtual void ReturnObject(UEPtr<UAComponent> object);
+
+// В случае ошибки возвращает ForbiddenId
+virtual UId PopObject(UObjectsStorageIterator instance_iterator, list<UInstancesStorageElement>::iterator object_iterator);
 // --------------------------
+
 
 // --------------------------
 // Скрытые методы таблицы соответствий классов
@@ -212,6 +302,20 @@ struct EInvalidClassName: public ENameError
 {
 EInvalidClassName(const std::string &name) : ENameError(name) {};
 };
+
+// Попытка работы с классом по идентификатору, отсутствующему в хранилище
+struct EObjectIdNotExist: public EIdNotExist
+{
+EObjectIdNotExist(UId id) : EIdNotExist(id) {};
+};
+
+// Попытка выполнения разрушающих действий к классом, объекты которого присутствуют в хранилище
+struct EObjectStorageNotEmpty: public EIdError
+{
+EObjectStorageNotEmpty(UId id) : EIdError(id) {};
+};
+// --------------------------
+
 // --------------------------
 };
 	 /*

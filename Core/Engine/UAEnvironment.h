@@ -108,10 +108,10 @@ UEPtr<UAContainer> Model;
 UClassLibraryList ClassLibraryList;
 
 // Массив имен загруженных классов
-//vector<string> CompletedClassNames;
+vector<string> CompletedClassNames;
 
 // Массив имен не загруженных классов
-//vector<string> IncompletedClassNames;
+vector<string> IncompletedClassNames;
 
 // Максимальный интеревал времени, который систем пытается "догнать" в режиме
 // расчета реального времени (мс)
@@ -180,6 +180,9 @@ virtual bool SetStorage(UAStorage *storage);
 // Возвращает указатель на модель
 UEPtr<UAContainer> GetModel(void);
 
+// Создает новую модель из хранилища по имени класса
+virtual bool CreateModel(const NameT& classname);
+
 // Создает новую модель из хранилища по id класса
 virtual bool CreateModel(const UId& classid);
 
@@ -192,6 +195,15 @@ UALibrary* GetClassLibrary(int index);
 // Возвращает число библиотек
 int GetNumClassLibraries(void) const;
 
+// Возвращает библиотеку по имени
+UALibrary* GetClassLibrary(const string &name);
+
+// Возвращает имя библиотеки по индексу
+const string& GetClassLibraryName(int index);
+
+// Возвращает версию библиотеки по индексу
+const string& GetClassLibraryVersion(int index);
+
 // Непосредственно добавялет новый образец класса в хранилище
 virtual bool AddClass(UAContainer *newclass);
 
@@ -203,6 +215,10 @@ virtual bool AddClassLibrary(UALibrary *library);
 // Удаляет подключенную библиотеку из списка по индексу
 // Ответственность за освобождение памяти лежит на вызывающей стороне.
 virtual bool DelClassLibrary(int index);
+
+// Удаляет подключенную библиотеку из списка по имени
+// Ответственность за освобождение памяти лежит на вызывающей стороне.
+bool DelClassLibrary(const string &name);
 
 // Удаляет из списка все библиотеки
 // Ответственность за освобождение памяти лежит на вызывающей стороне.
@@ -227,14 +243,34 @@ virtual bool BuildStorage(void);
 // Операторы доступа к данным среды
 // --------------------------
 // Возвращает указатель на текущий компонент модели
-UEPtr<UAComponent> GetCurrentComponent(void);
+UEPtr<UAContainer> GetCurrentComponent(void);
+
+// Устанавливает указатель на текущий компонент модели
+// Если имя или id не задано, или Forbidden, то устанавливает
+// указатель на модель
+virtual void SelectCurrentComponent(const NameT &name);
+virtual void SelectCurrentComponent(const ULongId &id);
+
+// Устанавливает указатель на текущий компонент модели на саму модель
+virtual void ResetCurrentComponent(void);
+
+// Устанавливает указатель на текущий компонент модели на родительский компонент
+// (переход на уровень вверх). Если уже указывает на модель, то не делает ничего
+virtual void UpCurrentComponent(void);
+
+// Устанавливает указатель на текущий компонент модели на дочерней компонент на
+// любом уровне (переход на уровень вниз).
+virtual void DownCurrentComponent(const NameT &name);
+virtual void DownCurrentComponent(const ULongId &id);
 // --------------------------
 
 // --------------------------
-// Данные графического интерфеса пользователя
+// Методы управления счетом
 // --------------------------
+public:
+// Производит увеличение времени модели на требуемую величину
+void IncreaseModelTimeByStep(void);
 // --------------------------
-
 
 // --------------------------
 // Методы управления
@@ -287,12 +323,6 @@ virtual bool AReset(void);
 
 // Выполняет расчет этого объекта
 virtual bool ACalculate(void);
-// --------------------------
-
-// --------------------------
-// Вспомогательные методы инициализации среды
-// --------------------------
-protected:
 // --------------------------
 };
 

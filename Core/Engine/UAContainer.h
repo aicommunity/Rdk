@@ -68,7 +68,7 @@ virtual ~UPVariable(void);
 };
 
 
-class UAContainerStorage;
+class UAStorage;
 class UInstancesStorageElement;
 
 typedef long int IndexT;
@@ -85,7 +85,7 @@ typedef std::map<NameT,UPVariable> PointerMapT;
 typedef std::map<NameT,UPVariable>::iterator PointerMapIteratorT;
 typedef std::map<NameT,UPVariable>::const_iterator PointerMapCIteratorT;
 
-friend class UAContainerStorage;
+friend class UAStorage;
 friend class UController;
 
 private: // Системные свойства
@@ -181,7 +181,7 @@ UEPtr<UAContainer> GetOwner(void) const;
 UEPtr<UAContainer> GetMainOwner(void) const;
 
 // Возвращает хранилище компонент этого объекта
-UEPtr<UAContainerStorage> const GetStorage(void) const;
+UEPtr<UAStorage> const GetStorage(void) const;
 
 // Проверяет, является ли объект owner
 // владельцем этого объекта на каком-либо уровне иерархии
@@ -315,13 +315,13 @@ virtual UAContainer* New(void)=0;
 // и значений параметров.
 // Если 'stor' == 0, то создание объектов осуществляется
 // в том же хранилище где располагается этот объект
-virtual UEPtr<UAContainer> Alloc(UEPtr<UAContainerStorage> stor=0, bool copystate=false);
+virtual UEPtr<UAContainer> Alloc(UEPtr<UAStorage> stor=0, bool copystate=false);
 
 // Копирует этот объект в 'target' с сохранением всех компонент
 // и значений параметров
 // Если 'stor' == 0, то создание объектов осуществляется
 // в том же хранилище где располагается этот объект
-virtual bool Copy(UEPtr<UAContainer> target, UEPtr<UAContainerStorage> stor=0, bool copystate=false) const;
+virtual bool Copy(UEPtr<UAContainer> target, UEPtr<UAStorage> stor=0, bool copystate=false) const;
 
 // Осуществляет освобождение этого объекта в его хранилище
 // или вызов деструктора, если Storage == 0
@@ -404,7 +404,7 @@ void GetComponentsList(vector<NameT> &buffer) const;
 
 // Копирует все компоненты этого объекта в объект 'comp', если возможно
 // Если хранилище stor != 0 то используется оно
-virtual void CopyComponents(UEPtr<UAContainer> comp, UEPtr<UAContainerStorage> stor=0) const;
+virtual void CopyComponents(UEPtr<UAContainer> comp, UEPtr<UAStorage> stor=0) const;
 // --------------------------
 
 

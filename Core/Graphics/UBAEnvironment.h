@@ -12,14 +12,14 @@ See file license.txt for more information
 #ifndef UBAENVIRONMENT_H
 #define UBAENVIRONMENT_H
 
-#include "../Engine/UAContainerEnvironment.h"
+#include "../Engine/UAEnvironment.h"
 #include "UBAStorage.h"
 #include "UBitmapVector.h"
 #include "UBPipeline.h"
 
 namespace RDK {
 
-class UBAEnvironment: public UAContainerEnvironment//, public UBPipeline
+class UBAEnvironment: public UAEnvironment//, public UBPipeline
 {
 protected: // Параметры
 // Цветовая модель расчетов по умолчанию

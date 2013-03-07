@@ -18,7 +18,7 @@ See file license.txt for more information
 #include "UALibrary.cpp"
 #include "UAEnvironment.cpp"
 #include "UAContainer.cpp"
-#include "UAContainerStorage.cpp"
+#include "UAStorage.cpp"
 #include "UAConnector.cpp"
 #include "UAItem.cpp"
 #include "UADItem.cpp"

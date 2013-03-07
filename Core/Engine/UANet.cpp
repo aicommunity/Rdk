@@ -114,7 +114,7 @@ bool UANet::ADelComponent(UEPtr<UAContainer> comp)
 // и значений параметров
 // Если 'stor' == 0, то создание объектов осуществляется
 // в том же хранилище где располагается этот объект
-bool UANet::Copy(UEPtr<UAContainer> target, UEPtr<UAContainerStorage> stor, bool copystate) const
+bool UANet::Copy(UEPtr<UAContainer> target, UEPtr<UAStorage> stor, bool copystate) const
 {
  ULinksList linkslist;
  ULinksList oldlinkslist;

@@ -11,13 +11,13 @@ RDK::UEPtr<RDK::UEngine>& RDK_CALL GetEngine(void)
 }
 
 // ¬озвращает ссылку на указатель среды выполнени€
-RDK::UEPtr<RDK::UAContainerEnvironment>& RDK_CALL GetEnvironment(void)
+RDK::UEPtr<RDK::UAEnvironment>& RDK_CALL GetEnvironment(void)
 {
  return PEnvironment;
 }
 
 // ¬озвращает ссылку на указатель хранилища
-RDK::UEPtr<RDK::UAContainerStorage>& RDK_CALL GetStorage(void)
+RDK::UEPtr<RDK::UAStorage>& RDK_CALL GetStorage(void)
 {
  return PStorage;
 }

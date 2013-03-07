@@ -14,8 +14,8 @@ See file license.txt for more information
 
 #include "Engine_lite.cpp"
 #include "UTime.cpp"
-#include "UAContainerStorage.cpp"
-#include "UAContainerEnvironment.cpp"
+#include "UAStorage.cpp"
+#include "UAEnvironment.cpp"
 #include "UEngine.cpp"
 //#include "UProperty.cpp"
 #include "UEnvSupport.cpp"

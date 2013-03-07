@@ -63,7 +63,7 @@ bool UBAEnvironment::CreateModel(const UId& classid)
 // Создает новую модель из хранилища по имени класса
 bool UBAEnvironment::CreateModel(const NameT& classname)
 {
- return UAContainerEnvironment::CreateModel(classname);
+ return UAEnvironment::CreateModel(classname);
 }
 
 
@@ -307,7 +307,7 @@ UBColor* UBAEnvironment::GetOutputImageData(int i)
 // Восстановление настроек по умолчанию и сброс процесса счета
 bool UBAEnvironment::ADefault(void)
 {
- if(!UAContainerEnvironment::ADefault())
+ if(!UAEnvironment::ADefault())
   return false;
 
  DefaultColorModel=ubmY8;
@@ -338,19 +338,19 @@ bool UBAEnvironment::ABuild(void)
   model->SetOutputs(InputImages.GetBuffer());
  }
 
- return UAContainerEnvironment::ABuild();
+ return UAEnvironment::ABuild();
 }
 
 // Сброс процесса счета.
 bool UBAEnvironment::AReset(void)
 {
- return UAContainerEnvironment::AReset();
+ return UAEnvironment::AReset();
 }
 
 // Выполняет расчет этого объекта
 bool UBAEnvironment::ACalculate(void)
 {
- if(!UAContainerEnvironment::ACalculate())
+ if(!UAEnvironment::ACalculate())
   return false;
 
  UEPtr<UBAbstract> model=dynamic_pointer_cast<UBAbstract>(GetModel());

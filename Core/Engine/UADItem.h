@@ -18,64 +18,6 @@ See file license.txt for more information
 
 namespace RDK {
 
-class UIPropertyIO;
-
-enum { ipData=1, ipComp=2 };
-enum { ipSingle=16, ipRange=32, ipList=64 };
-enum { ipDataSingle=ipData|ipSingle, ipDataRange=ipData|ipRange,
-	   ipDataList=ipData|ipList, ipCompSingle=ipComp|ipSingle,
-	   ipCompRange=ipComp|ipRange, ipCompList=ipComp|ipList };
-
-class UIDataInfo
-{
-public: // Методы
-// ------------------------
-// Конструкторы и деструкторы
-// ------------------------
-UIDataInfo(void);
-virtual ~UIDataInfo(void);
-// ------------------------
-
-// ------------------------
-// Методы управления информацией типов
-// ------------------------
-virtual const type_info& GetType(void) const=0;
-virtual bool Compare(const USharedPtr<UIDataInfo> &dt) const=0;
-virtual UIDataInfo* New(void)=0;
-// ------------------------
-};
-
-template<typename T>
-class UDataInfo: public UIDataInfo
-{
-public: // Методы
-// ------------------------
-// Конструкторы и деструкторы
-// ------------------------
-UDataInfo(void) {};
-virtual ~UDataInfo(void) {};
-// ------------------------
-
-// ------------------------
-// Методы управления информацией типов
-// ------------------------
-virtual const type_info& GetType(void) const
-{
- return typeid(T);
-};
-
-virtual bool Compare(const USharedPtr<UIDataInfo> &dt) const
-{
- return GetType() == dt->GetType();
-};
-
-virtual UIDataInfo* New(void)
-{
- return new UDataInfo<T>;
-};
-// ------------------------
-};
-
 class UADItem: public UAItem
 {
 friend class UItemData;
@@ -205,7 +147,7 @@ bool SetOutputDataElementSize(const vector<size_t> &value);
 // ----------------------
 // Копирует этот объект в 'target' с сохранением всех компонент
 // и значений параметров
-virtual bool Copy(UEPtr<UAContainer> target, UEPtr<UAContainerStorage> stor=0, bool copystate=false) const;
+virtual bool Copy(UEPtr<UAContainer> target, UEPtr<UAStorage> stor=0, bool copystate=false) const;
 // ----------------------
 
 // ----------------------
@@ -253,34 +195,9 @@ void CalcMinMaxInputDataSize(void);
 // ----------------------
 };
 
-class UIPropertyIO
-{
-public:
-
-// --------------------------
-// Методы управления данными
-// --------------------------
-virtual int GetIoType(void) const=0;
-
-virtual bool CheckRange(int index)=0;
-// --------------------------
-
-// --------------------------
-// Методы управления указателем
-// --------------------------
-// Возвращает указатель на данные входа
-virtual void const* GetPointer(int index) const=0;
-
-// Устанавливает указатель на данные входа
-virtual bool SetPointer(int index, void* value)=0;
-
-// Первичная инициализация указателя
-virtual void Init(void)=0;
-// --------------------------
-};
 
 }
 
-#include "UPropertyIO.h"
+
 #endif
 

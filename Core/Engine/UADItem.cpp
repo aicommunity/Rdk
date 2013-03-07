@@ -18,18 +18,6 @@ See file license.txt for more information
 
 namespace RDK {
 
-// ------------------------
-// Конструкторы и деструкторы
-// ------------------------
-UIDataInfo::UIDataInfo(void)
-{
-}
-
-UIDataInfo::~UIDataInfo(void)
-{
-}
-// ------------------------
-
 /* *************************************************************************** */
 // Методы
 // --------------------------
@@ -530,12 +518,12 @@ void UADItem::DisconnectFromIndex(int c_index)
 // ----------------------
 // Копирует этот объект в 'target' с сохранением всех компонент
 // и значений параметров
-bool UADItem::Copy(UEPtr<UAContainer> target, UEPtr<UAContainerStorage> stor, bool copystate) const
+bool UADItem::Copy(UEPtr<UAContainer> target, UEPtr<UAStorage> stor, bool copystate) const
 {
  if(!UAItem::Copy(target,stor,copystate))
   return false;
 
- UEPtr<UADItem>item=dynamic_pointer_cast<UADItem>(target);
+ UEPtr<UADItem> item=dynamic_pointer_cast<UADItem>(target);
  return true;
 }
 // ----------------------
