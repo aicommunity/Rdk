@@ -170,7 +170,7 @@ bool UDrawEngine::SetRectHeight(int value)
 // Методы доступа к данным
 // ---------------------------
 // Возвращает указатель на НС
-/*UEPtr<UANet> UDrawEngine::GetNet(void)
+/*UEPtr<UNet> UDrawEngine::GetNet(void)
 {
  return Net;
 } */
@@ -582,7 +582,7 @@ void UDrawEngine::PaintItem(UGEDescription &ndescr)
  }
 }
 
-// Отрисовывает элемент-сеть (UANet*) с центром в заданной позиции
+// Отрисовывает элемент-сеть (UNet*) с центром в заданной позиции
 void UDrawEngine::PaintNet(UGEDescription &ndescr)
 {
  int shift=0;

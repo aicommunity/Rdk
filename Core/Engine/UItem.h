@@ -12,12 +12,12 @@ See file license.txt for more information
 #ifndef UAItemH
 #define UAItemH
 
-#include "UAConnector.h"
+#include "UConnector.h"
 //#include "UEInterface.h"
 
 namespace RDK {
 
-typedef UEPtr<UAConnector> PUAConnector;
+typedef UEPtr<UConnector> PUAConnector;
 
 class UAConnectorVector
 {
@@ -155,7 +155,7 @@ int GetSize(void) const;
 // --------------------------
 };
 
-class UAItem: public UAConnector
+class UItem: public UConnector
 {
 protected: // Основные свойства
 // Список коннекторов подключенных к выходам этого объекта
@@ -171,7 +171,7 @@ bool AutoNumOutputs;
 
 protected: // Временные переменные. Read Only!
 // Указатель на первый элемент списка подключенных коннекторов
-//vector<UAConnector**> PAssociatedConnectors;
+//vector<UConnector**> PAssociatedConnectors;
 
 // Число элементов списка подключенных коннекторов
 //vector<size_t> NumAConnectors;
@@ -184,8 +184,8 @@ public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UAItem(void);
-virtual ~UAItem(void);
+UItem(void);
+virtual ~UItem(void);
 // --------------------------
 
 // --------------------------
@@ -218,10 +218,10 @@ public:
 // Коммуникационные методы
 // ----------------------
 // Устанавливает связь с коннектором 'c'
-virtual bool Connect(UEPtr<UAConnector> c, int i_index, int c_index=-1);
+virtual bool Connect(UEPtr<UConnector> c, int i_index, int c_index=-1);
 
 // Разрывает связь выхода этого объекта с коннектором 'c'
-virtual void Disconnect(UEPtr<UAConnector> c);
+virtual void Disconnect(UEPtr<UConnector> c);
 
 // Возвращает текущее число соединений для заданного выхода.
 int GetNumAConnectors(int index) const;
@@ -236,7 +236,7 @@ void DisconnectAll(void);
 // Разрывает все связи объекта
 // исключая его внутренние связи и обратные связи
 // brklevel - объект, относительно которого связи считаются внутренними
-virtual void DisconnectBy(UEPtr<UAContainer> brklevel);
+virtual void DisconnectBy(UEPtr<UContainer> brklevel);
 
 // Переустанавливает все связи этого item со всеми connectors которые получают
 // данные от этого item
@@ -244,33 +244,33 @@ virtual void BuildLinks(void);
 
 // Возвращает указатель на коннектор из списка подключений
 // по Id 'id'.
-UEPtr<UAConnector> GetAConnector(const UId &id, int index) const;
+UEPtr<UConnector> GetAConnector(const UId &id, int index) const;
 
 // Возвращает  коннектор из списка подключений.
-UEPtr<UAConnector> GetAConnectorByIndex(int output, int index) const;
+UEPtr<UConnector> GetAConnectorByIndex(int output, int index) const;
 
 // Проверяет, существует ли связь с заданным коннектором
-bool CheckLink(const UEPtr<UAConnector> &connector) const;
+bool CheckLink(const UEPtr<UConnector> &connector) const;
 
 // Проверяет, существует ли связь с заданным коннектором и конкретным входом
-bool CheckLink(const UEPtr<UAConnector> &connector, int item_index) const;
+bool CheckLink(const UEPtr<UConnector> &connector, int item_index) const;
 
 // Проверяет, существует ли связь с заданным коннектором и конкретным входом
-bool CheckLink(const UEPtr<UAConnector> &connector, int item_index, int conn_index) const;
+bool CheckLink(const UEPtr<UConnector> &connector, int item_index, int conn_index) const;
 
 // Возвращает список подключений
 template<typename T>
-ULinksListT<T>& GetLinks(ULinksListT<T> &linkslist, UEPtr<UAContainer> netlevel, bool exclude_internals=false, UEPtr<UAContainer> internal_level=0) const;
+ULinksListT<T>& GetLinks(ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel, bool exclude_internals=false, UEPtr<UContainer> internal_level=0) const;
 
 // Возвращает список подключений непосредственно коннектора cont
 template<typename T>
-ULinksListT<T>& GetPersonalLinks(UEPtr<UAContainer> cont, ULinksListT<T> &linkslist, UEPtr<UAContainer> netlevel) const;
+ULinksListT<T>& GetPersonalLinks(UEPtr<UContainer> cont, ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel) const;
 
 // Возвращает список подключений этого компонента и всех дочерних компонент
 // к заданному компоненту comp и всем его дочерним компонентам
 template<typename T>
-ULinksListT<T>& GetFullItemLinks(ULinksListT<T> &linkslist, UEPtr<UAItem> comp,
-                            UEPtr<UAContainer> netlevel) const;
+ULinksListT<T>& GetFullItemLinks(ULinksListT<T> &linkslist, UEPtr<UItem> comp,
+                            UEPtr<UContainer> netlevel) const;
 // ----------------------
 
 public:

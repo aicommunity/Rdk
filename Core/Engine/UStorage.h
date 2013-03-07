@@ -15,14 +15,14 @@ See file license.txt for more information
 
 #include <map>
 #include "UEPtr.h"
-#include "UAContainer.h"
+#include "UContainer.h"
 #include "../Serialize/USerStorageXML.h"
 #include "UComponentDescription.h"
 
 namespace RDK {
 
 /* *********************************************************************** */
-typedef UEPtr<UAComponent> UClassStorageElement;
+typedef UEPtr<UComponent> UClassStorageElement;
 typedef std::map<UId, UClassStorageElement> UClassesStorage;
 typedef std::map<UId, UClassStorageElement>::iterator UClassesStorageIterator;
 typedef std::map<UId, UClassStorageElement>::const_iterator UClassesStorageCIterator;
@@ -37,7 +37,7 @@ class UInstancesStorageElement
 {
 public: // Данные
 // Указатель на объект
-UEPtr<UAContainer> Object;
+UEPtr<UContainer> Object;
 
 // Признак того свободен ли объект
 bool UseFlag;
@@ -49,7 +49,7 @@ public: // Методы
 // --------------------------
 UInstancesStorageElement(void);
 UInstancesStorageElement(const UInstancesStorageElement &copy);
-UInstancesStorageElement(const UEPtr<UAContainer> &object, bool useflag);
+UInstancesStorageElement(const UEPtr<UContainer> &object, bool useflag);
 virtual ~UInstancesStorageElement(void);
 // --------------------------
 
@@ -80,9 +80,9 @@ typedef map<UId, UInstancesStorage>::iterator UObjectsStorageIterator;
 typedef map<UId, UInstancesStorage>::const_iterator UObjectsStorageCIterator;
 /* *********************************************************************** */
 
-class UAStorage
+class UStorage
 {
-friend class UAContainer;
+friend class UContainer;
 protected: // Системные свойства
 // Таблица соответствий имен и Id образцов классов
 std::map<std::string,UId> ClassesLookupTable;
@@ -108,8 +108,8 @@ public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UAStorage(void);
-virtual ~UAStorage(void);
+UStorage(void);
+virtual ~UStorage(void);
 // --------------------------
 
 // --------------------------
@@ -135,8 +135,8 @@ const NameT FindClassName(const UId &id) const;
 // Добавляет образец класса объекта в хранилище
 // Возвращает id класса
 // Если classid == ForbiddenId, то id назначается автоматически
-virtual UId AddClass(UEPtr<UAComponent> classtemplate, const UId &classid=ForbiddenId);
-virtual UId AddClass(UEPtr<UAComponent> classtemplate, const std::string &classname, const UId &classid=ForbiddenId);
+virtual UId AddClass(UEPtr<UComponent> classtemplate, const UId &classid=ForbiddenId);
+virtual UId AddClass(UEPtr<UComponent> classtemplate, const std::string &classname, const UId &classid=ForbiddenId);
 
 // Удаляет образец класса объекта из хранилища
 virtual void DelClass(const UId &classid);
@@ -145,7 +145,7 @@ virtual void DelClass(const UId &classid);
 virtual bool CheckClass(const UId &classid) const;
 
 // Возвращает образец класса
-virtual UEPtr<UAComponent> GetClass(const UId &classid) const;
+virtual UEPtr<UComponent> GetClass(const UId &classid) const;
 
 // Возвращает число классов
 int GetNumClasses(void) const;
@@ -174,14 +174,14 @@ virtual void ClearClassesStorage(void);
 // Флаг 'Activity' объекта выставляется в true
 // Если свободного объекта не существует он создается и добавляется
 // в хранилище
-virtual UEPtr<UAComponent> TakeObject(const UId &classid, const UEPtr<UAComponent> prototype=0);
-virtual UEPtr<UAComponent> TakeObject(const string &classname, const UEPtr<UAComponent> prototype=0);
+virtual UEPtr<UComponent> TakeObject(const UId &classid, const UEPtr<UComponent> prototype=0);
+virtual UEPtr<UComponent> TakeObject(const string &classname, const UEPtr<UComponent> prototype=0);
 
 // Возвращает Id класса, отвечающий объекту 'object'
-virtual UId FindClass(UEPtr<UAComponent> object) const;
+virtual UId FindClass(UEPtr<UComponent> object) const;
 
 // Проверяет существует ли объект 'object' в хранилище
-virtual bool CheckObject(UEPtr<UAContainer> object) const;
+virtual bool CheckObject(UEPtr<UContainer> object) const;
 
 // Вычисляет суммарное число объектов в хранилище
 virtual int CalcNumObjects(void) const;
@@ -234,21 +234,21 @@ virtual bool LoadCommonClassesDescription(Serialize::USerStorageXML &xml);
 protected:
 // Добавляет уже созданный объект в хранилище
 // Если объект уже принадлежит иному хранилищу то возвращает false
-virtual void PushObject(const UId &classid, UEPtr<UAContainer> object);
+virtual void PushObject(const UId &classid, UEPtr<UContainer> object);
 
 // Выводит уже созданный объект из хранилища и возвращает
 // его classid
 // В случае ошибки возвращает ForbiddenId
-virtual UId PopObject(UEPtr<UAContainer> object);
+virtual UId PopObject(UEPtr<UContainer> object);
 
 // Перемещает объект в другое хранилище
-virtual void MoveObject(UEPtr<UAContainer> object, UEPtr<UAStorage> newstorage);
+virtual void MoveObject(UEPtr<UContainer> object, UEPtr<UStorage> newstorage);
 
 // Возвращает объект в хранилище
 // Выбранный объект помечается как свободный в хранилище
 // Флаг 'Activity' объекта выставляется в false
 // Если объект не существует в хранилище - возвращается false
-virtual void ReturnObject(UEPtr<UAComponent> object);
+virtual void ReturnObject(UEPtr<UComponent> object);
 
 // В случае ошибки возвращает ForbiddenId
 virtual UId PopObject(UObjectsStorageIterator instance_iterator, list<UInstancesStorageElement>::iterator object_iterator);
@@ -320,7 +320,7 @@ EObjectStorageNotEmpty(UId id) : EIdError(id) {};
 };
 	 /*
 // Попытка работы с классом по идентификатору classid отсутствующим в хранилище
-class UAStorage::EClassIdNotExist: public EError
+class UStorage::EClassIdNotExist: public EError
 {
 public: // Данные
 // Ошибочный идентификатор
@@ -342,7 +342,7 @@ virtual std::string CreateLogMessage(void) const;
 };
 
 // Попытка работы с классом по имени, отсутствующему в хранилище
-class UAStorage::EClassNameNotExist: public EError
+class UStorage::EClassNameNotExist: public EError
 {
 public: // Данные
 // Ошибочный идентификатор
@@ -364,7 +364,7 @@ virtual std::string CreateLogMessage(void) const;
 };
 
 // Некорректное имя класса
-class UAStorage::EInvalidClassName: public EError
+class UStorage::EInvalidClassName: public EError
 {
 public: // Данные
 // Ошибочный идентификатор
@@ -386,7 +386,7 @@ virtual std::string CreateLogMessage(void) const;
 };
 
 // Класс с заданным именем уже существует
-class UAStorage::EClassNameAlreadyExist: public EError
+class UStorage::EClassNameAlreadyExist: public EError
 {
 public: // Данные
 // Ошибочное имя

@@ -13,7 +13,7 @@ See file license.txt for more information
 #define UAItemCPP
 
 #include <string.h>
-#include "UAItem.h"
+#include "UItem.h"
 
 namespace RDK {
 
@@ -334,14 +334,14 @@ int UAConnector2DVector::GetSize(void) const
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UAItem::UAItem(void)
+UItem::UItem(void)
 {
  NumOutputs=0;
- AddLookupProperty("NumOutputs",ptParameter & pgSystem,new UVProperty<int,UAItem>(this,&UAItem::SetNumOutputs,&UAItem::GetNumOutputs));
- AddLookupProperty("AutoNumOutputs",ptParameter & pgSystem,new UVProperty<bool,UAItem>(this,&UAItem::SetAutoNumOutputs,&UAItem::GetAutoNumOutputs));
+ AddLookupProperty("NumOutputs",ptParameter & pgSystem,new UVProperty<int,UItem>(this,&UItem::SetNumOutputs,&UItem::GetNumOutputs));
+ AddLookupProperty("AutoNumOutputs",ptParameter & pgSystem,new UVProperty<bool,UItem>(this,&UItem::SetAutoNumOutputs,&UItem::GetAutoNumOutputs));
 }
 
-UAItem::~UAItem(void)
+UItem::~UItem(void)
 {
  DisconnectAll();
 }
@@ -351,13 +351,13 @@ UAItem::~UAItem(void)
 // Методы управления общедоступными свойствами
 // --------------------------
 // Возвращает число подключенных элементов item
-int UAItem::GetNumOutputs(void) const
+int UItem::GetNumOutputs(void) const
 {
  return NumOutputs;//AssociatedConnectors.GetSize();
 }
 
 // Устанавливает число подключенных элементов item
-bool UAItem::SetNumOutputs(int value)
+bool UItem::SetNumOutputs(int value)
 {
  if(NumOutputs == value)
   return true;
@@ -380,12 +380,12 @@ bool UAItem::SetNumOutputs(int value)
 
 // Признак включения/выключения режима автоматического увеличения числа входов
 // при подключении нового item.
-bool UAItem::GetAutoNumOutputs(void) const
+bool UItem::GetAutoNumOutputs(void) const
 {
  return AutoNumOutputs;
 }
 
-bool UAItem::SetAutoNumOutputs(bool value)
+bool UItem::SetAutoNumOutputs(bool value)
 {
  if(AutoNumOutputs == value)
   return true;
@@ -401,10 +401,10 @@ bool UAItem::SetAutoNumOutputs(bool value)
 // --------------------------
 // Осуществляет освобождение этого объекта в его хранилище
 // или вызов деструктора, если Storage == 0
-void UAItem::Free(void)
+void UItem::Free(void)
 {
  DisconnectAll();
- UAConnector::Free();
+ UConnector::Free();
 }
 // --------------------------
 
@@ -412,7 +412,7 @@ void UAItem::Free(void)
 // Защищенные коммуникационные методы
 // ----------------------
 // Устанавливает связь с коннектором 'c'.
-bool UAItem::Connect(UEPtr<UAConnector> c, int i_index, int c_index)
+bool UItem::Connect(UEPtr<UConnector> c, int i_index, int c_index)
 {
  if(c == 0)
   return false;
@@ -435,7 +435,7 @@ bool UAItem::Connect(UEPtr<UAConnector> c, int i_index, int c_index)
 }
 
 // Разрывает связь выхода этого объекта с коннектором 'c'.
-void UAItem::Disconnect(UEPtr<UAConnector> c)
+void UItem::Disconnect(UEPtr<UConnector> c)
 {
  Build();
 
@@ -464,13 +464,13 @@ void UAItem::Disconnect(UEPtr<UAConnector> c)
 // Коммуникационные методы
 // ----------------------
 // Возвращает текущее число соединений.
-int UAItem::GetNumAConnectors(int index) const
+int UItem::GetNumAConnectors(int index) const
 {
  return AssociatedConnectors[index].GetSize();//NumAConnectors[index];
 }
 
 // Разрывает связь выхода этого объекта с коннектором по Id 'id'.
-bool UAItem::Disconnect(const UId &id)
+bool UItem::Disconnect(const UId &id)
 {
  Build();
 
@@ -488,7 +488,7 @@ bool UAItem::Disconnect(const UId &id)
 
 // Разрывает связь выхода этого объекта со всеми
 // подключенными коннекторами.
-void UAItem::DisconnectAll(void)
+void UItem::DisconnectAll(void)
 {
  Build();
  for(int i=0;i<AssociatedConnectors.GetSize();i++)
@@ -506,7 +506,7 @@ void UAItem::DisconnectAll(void)
 // Разрывает все связи объекта
 // исключая его внутренние связи и обратные связи
 // brklevel - объект, относительно которого связи считаются внутренними
-void UAItem::DisconnectBy(UEPtr<UAContainer> brklevel)
+void UItem::DisconnectBy(UEPtr<UContainer> brklevel)
 {
  Build();
 
@@ -526,7 +526,7 @@ void UAItem::DisconnectBy(UEPtr<UAContainer> brklevel)
 
 // Переустанавливает все связи этого item со всеми connectors которые получают
 // данные от этого item
-void UAItem::BuildLinks(void)
+void UItem::BuildLinks(void)
 {
 // PAssociatedConnectors.resize(NumOutputs);
 // NumAConnectors.resize(NumOutputs);
@@ -551,7 +551,7 @@ void UAItem::BuildLinks(void)
 // Возвращает указатель на коннектор из списка подключений
 // по имени 'name'.
 
-UEPtr<UAConnector> UAItem::GetAConnector(const UId &id, int index) const
+UEPtr<UConnector> UItem::GetAConnector(const UId &id, int index) const
 {
  for(int i=0;i<AssociatedConnectors[index].GetSize();i++)
   if(AssociatedConnectors[index][i]->Id == id)
@@ -560,14 +560,14 @@ UEPtr<UAConnector> UAItem::GetAConnector(const UId &id, int index) const
 }
 
 // Возвращает  коннектор из списка подключений.
-UEPtr<UAConnector> UAItem::GetAConnectorByIndex(int output, int index) const
+UEPtr<UConnector> UItem::GetAConnectorByIndex(int output, int index) const
 {
  return AssociatedConnectors[output][index];
 }
 
 
 // Проверяет, существует ли связь с заданным коннектором
-bool UAItem::CheckLink(const UEPtr<UAConnector> &connector) const
+bool UItem::CheckLink(const UEPtr<UConnector> &connector) const
 {
  UCLink link=connector->GetCLink(this);
  if(link.Output>=0 && link.Input >=0)
@@ -582,7 +582,7 @@ bool UAItem::CheckLink(const UEPtr<UAConnector> &connector) const
 }
 
 // Проверяет, существует ли связь с заданным коннектором и конкретным входом
-bool UAItem::CheckLink(const UEPtr<UAConnector> &connector, int item_index) const
+bool UItem::CheckLink(const UEPtr<UConnector> &connector, int item_index) const
 {
  UCLink link=connector->GetCLink(this);
  if(link.Input >=0)
@@ -610,7 +610,7 @@ bool UAItem::CheckLink(const UEPtr<UAConnector> &connector, int item_index) cons
 }
 
 // Проверяет, существует ли связь с заданным коннектором и конкретным входом
-bool UAItem::CheckLink(const UEPtr<UAConnector> &connector, int item_index, int conn_index) const
+bool UItem::CheckLink(const UEPtr<UConnector> &connector, int item_index, int conn_index) const
 {
  UCLink link=connector->GetCLink(this);
  if(link.Output>=0)
@@ -658,7 +658,7 @@ bool UAItem::CheckLink(const UEPtr<UAConnector> &connector, int item_index, int 
 // Имена формируются до уровня компонента owner_level
 // Если owner_level не задан, то имена формируются до уровня текущего компонента
 template<typename T>
-ULinksListT<T>& UAItem::GetLinks(ULinksListT<T> &linkslist, UEPtr<UAContainer> netlevel, bool exclude_internals, UEPtr<UAContainer> internal_level) const
+ULinksListT<T>& UItem::GetLinks(ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel, bool exclude_internals, UEPtr<UContainer> internal_level) const
 {
  ULinkT<T> link;
  ULinkSideT<T> item;
@@ -682,7 +682,7 @@ ULinksListT<T>& UAItem::GetLinks(ULinksListT<T> &linkslist, UEPtr<UAContainer> n
    AssociatedConnectors[j][i]->GetLongId(netlevel,connector.Id);
    if(connector.Id.size() != 0)
    {
-	UCLink indexes=AssociatedConnectors[j][i]->GetCLink(UEPtr<UAItem>(const_cast<UAItem*>(this)));
+	UCLink indexes=AssociatedConnectors[j][i]->GetCLink(UEPtr<UItem>(const_cast<UItem*>(this)));
 	item.Index=indexes.Output;
 	connector.Index=indexes.Input;
 
@@ -697,7 +697,7 @@ ULinksListT<T>& UAItem::GetLinks(ULinksListT<T> &linkslist, UEPtr<UAContainer> n
 
 // Возвращает список подключений непосредственно коннектора cont
 template<typename T>
-ULinksListT<T>& UAItem::GetPersonalLinks(UEPtr<UAContainer> cont, ULinksListT<T> &linkslist, UEPtr<UAContainer> netlevel) const
+ULinksListT<T>& UItem::GetPersonalLinks(UEPtr<UContainer> cont, ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel) const
 {
  ULinkT<T> link;
  ULinkSideT<T> item;
@@ -718,7 +718,7 @@ ULinksListT<T>& UAItem::GetPersonalLinks(UEPtr<UAContainer> cont, ULinksListT<T>
    AssociatedConnectors[j][i]->GetLongId(netlevel,connector.Id);
    if(connector.Id.size() != 0)
    {
-	UCLink indexes=AssociatedConnectors[j][i]->GetCLink(UEPtr<UAItem>(const_cast<UAItem*>(this)));
+	UCLink indexes=AssociatedConnectors[j][i]->GetCLink(UEPtr<UItem>(const_cast<UItem*>(this)));
 	item.Index=indexes.Output;
 	connector.Index=indexes.Input;
 
@@ -734,8 +734,8 @@ ULinksListT<T>& UAItem::GetPersonalLinks(UEPtr<UAContainer> cont, ULinksListT<T>
 // Возвращает список подключений этого компонента и всех дочерних компонент
 // к заданному компоненту comp и всем его дочерним компонентам
 template<typename T>
-ULinksListT<T>& UAItem::GetFullItemLinks(ULinksListT<T> &linkslist, UEPtr<UAItem> comp,
-                                     UEPtr<UAContainer> netlevel) const
+ULinksListT<T>& UItem::GetFullItemLinks(ULinksListT<T> &linkslist, UEPtr<UItem> comp,
+                                     UEPtr<UContainer> netlevel) const
 {
  ULinkT<T> link;
  ULinkSideT<T> item;
@@ -753,12 +753,12 @@ ULinksListT<T>& UAItem::GetFullItemLinks(ULinksListT<T> &linkslist, UEPtr<UAItem
  for(int j=0;j<AssociatedConnectors.GetSize();j++)
   for(int i=0;i<AssociatedConnectors[j].GetSize();i++)
   {
-   if(!AssociatedConnectors[j][i]->CheckOwner(static_pointer_cast<UAContainer>(comp)) && AssociatedConnectors[j][i] != comp)
+   if(!AssociatedConnectors[j][i]->CheckOwner(static_pointer_cast<UContainer>(comp)) && AssociatedConnectors[j][i] != comp)
 	continue;
    AssociatedConnectors[j][i]->GetLongId(netlevel,connector.Id);
    if(connector.Id.GetSize() != 0)
    {
-	UCLink indexes=AssociatedConnectors[j][i]->GetCLink(UEPtr<UAItem>(const_cast<UAItem*>(this)));
+	UCLink indexes=AssociatedConnectors[j][i]->GetCLink(UEPtr<UItem>(const_cast<UItem*>(this)));
 	item.Index=indexes.Output;
 	connector.Index=indexes.Input;
 
@@ -769,7 +769,7 @@ ULinksListT<T>& UAItem::GetFullItemLinks(ULinksListT<T> &linkslist, UEPtr<UAItem
 
  for(int i=0;i<NumComponents;i++)
  {
-  UEPtr<UAItem> item=dynamic_cast<UAItem*>(PComponents[i].operator->());
+  UEPtr<UItem> item=dynamic_cast<UItem*>(PComponents[i].operator->());
   item->GetFullItemLinks(linkslist, comp, netlevel);
  }
 
@@ -782,29 +782,29 @@ ULinksListT<T>& UAItem::GetFullItemLinks(ULinksListT<T> &linkslist, UEPtr<UAItem
 // Методы управления счетом
 // --------------------------
 // Восстановление настроек по умолчанию и сброс процесса счета
-bool UAItem::Default(void)
+bool UItem::Default(void)
 {
  SetNumOutputs(1);
  SetAutoNumOutputs(true);
- return UAConnector::Default();
+ return UConnector::Default();
 }
 
 // Обеспечивает сборку внутренней структуры объекта
 // после настройки параметров
 // Автоматически вызывает метод Reset() и выставляет Ready в true
 // в случае успешной сборки
-bool UAItem::Build(void)
+bool UItem::Build(void)
 {
  if(IsReady())
   return true;
 
  BuildLinks();
 
- return UAConnector::Build();
+ return UConnector::Build();
 }
 
 // Активирует все коннекторы, подключенные к выходу этого объекта.
-/*void UAItem::ActivateAll(void)
+/*void UItem::ActivateAll(void)
 {
  Build();
  for(size_t j=0;j<AssociatedConnectors.size();j++)

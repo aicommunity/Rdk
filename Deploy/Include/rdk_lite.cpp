@@ -13,20 +13,20 @@
 namespace RDK {
 
 // Создает пустое хранилище и возвращает указатель на него
-UAStorage* NewUAStorage(void)
+UStorage* NewUAStorage(void)
 {
- return new UAStorage;
+ return new UStorage;
 }
 
 // Создает среду и возвращает указатель на нее
-UAEnvironment* NewUAEnvironment(void)
+UEnvironment* NewUAEnvironment(void)
 {
- return new UAEnvironment;
+ return new UEnvironment;
 }
 
 
 // Создает пустое хранилище и возвращает указатель на него
-UAStorage* CreateAStorage(UAStorage *storage)
+UStorage* CreateAStorage(UStorage *storage)
 {
  return storage;
 }
@@ -35,9 +35,9 @@ UAStorage* CreateAStorage(UAStorage *storage)
 // Если задано хранилище 'storage', то связывает его со средой.
 // Если флаг 'isinit' == true, то инициализирует хранилище стандартными библиотеками
 // Если указатель на массив external_libs != 0, дополнительно инициализирует хранилище этими бибилиотеками
-UAEnvironment* CreateAEnvironment(UAEnvironment *environment, UAStorage *storage, bool isinit, UALibrary** external_libs, int numlibs)
+UEnvironment* CreateAEnvironment(UEnvironment *environment, UStorage *storage, bool isinit, ULibrary** external_libs, int numlibs)
 {
- UAEnvironment *env=environment;
+ UEnvironment *env=environment;
 
  if(!storage)
   return env;

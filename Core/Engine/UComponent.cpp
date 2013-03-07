@@ -12,17 +12,17 @@ See file license.txt for more information
 #ifndef UACOMPONENT_CPP
 #define UACOMPONENT_CPP
 
-#include "UAComponent.h"
-#include "UAStorage.h"
+#include "UComponent.h"
+#include "UStorage.h"
 #include "UComponentDescription.h"
 
 namespace RDK {
 
-//class UAComponent
+//class UComponent
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UAComponent::UAComponent(void)
+UComponent::UComponent(void)
 {
 // Owner=0;
 
@@ -33,7 +33,7 @@ UAComponent::UAComponent(void)
  Class=ForbiddenId;
 }
 
-UAComponent::~UAComponent(void)
+UComponent::~UComponent(void)
 {
 }
 // --------------------------
@@ -42,12 +42,12 @@ UAComponent::~UAComponent(void)
 // Методы доступа к свойствам
 // --------------------------
 // Возвращает владелца этого объекта.
-UEPtr<UAComponent> const UAComponent::GetOwner(void) const
+UEPtr<UComponent> const UComponent::GetOwner(void) const
 {
  return Owner;
 }
 
-bool UAComponent::SetOwner(UEPtr<UAComponent> owner)
+bool UComponent::SetOwner(UEPtr<UComponent> owner)
 {
  if(Owner == owner)
   return true;
@@ -58,24 +58,24 @@ bool UAComponent::SetOwner(UEPtr<UAComponent> owner)
 
 
 // Возвращает указатель на главного владельца этим объектом
-UEPtr<UAComponent> const UAComponent::GetMainOwner(void) const
+UEPtr<UComponent> const UComponent::GetMainOwner(void) const
 {
  return MainOwner;
 }
 
-void UAComponent::SetMainOwner(UEPtr<UAComponent> mainowner)
+void UComponent::SetMainOwner(UEPtr<UComponent> mainowner)
 {
  if(mainowner != MainOwner)
   MainOwner=mainowner;
 }
 
 // Возвращает хранилище компонент этого объекта
-UEPtr<UAStorage> const UAComponent::GetStorage(void) const
+UEPtr<UStorage> const UComponent::GetStorage(void) const
 {
  return Storage;
 }
 
-bool UAComponent::SetStorage(UEPtr<UAStorage> storage)
+bool UComponent::SetStorage(UEPtr<UStorage> storage)
 {
  if(Storage == storage)
   return true;
@@ -90,12 +90,12 @@ bool UAComponent::SetStorage(UEPtr<UAStorage> storage)
 // Методы управления данными
 // --------------------------
 // Идентификатор класса
-UId UAComponent::GetClass(void) const
+UId UComponent::GetClass(void) const
 {
  return Class;
 }
 
-bool UAComponent::SetClass(UId value)
+bool UComponent::SetClass(UId value)
 {
  if(Class == value)
   return true;
@@ -111,20 +111,20 @@ bool UAComponent::SetClass(UId value)
 // Методы управления счетом
 // --------------------------
 // Создает экземпляр описания класса
-UComponentDescription* UAComponent::NewDescription(void)
+UComponentDescription* UComponent::NewDescription(void)
 {
  UComponentDescription* result=new UComponentDescription;
 
  return ANewDescription(result);
 }
 
-UComponentDescription* UAComponent::ANewDescription(UComponentDescription* description)
+UComponentDescription* UComponent::ANewDescription(UComponentDescription* description)
 {
  return description;
 }
 
 // Уничтожение этого объекта
-void UAComponent::Free(void)
+void UComponent::Free(void)
 {
  delete this;
 }

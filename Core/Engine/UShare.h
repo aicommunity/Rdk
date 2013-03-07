@@ -1,7 +1,7 @@
 #ifndef UShareH
 #define UShareH
 
-#include "UADataComponent.h"
+#include "UDataComponent.h"
 
 namespace RDK {
 
@@ -20,13 +20,13 @@ T& RData;
 std::string PropertyName;
 
 // Владелец свойства
-UADataComponent* Owner;
+UDataComponent* Owner;
 
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UVShare(const std::string &property_name, UADataComponent* owner, T &rdata)
+UVShare(const std::string &property_name, UDataComponent* owner, T &rdata)
 : VProperty(0), RData(rdata), PropertyName(property_name), Owner(owner)
 {
  if(Owner)
@@ -43,11 +43,11 @@ virtual ~UVShare(void)
 // Методы управления данными
 // --------------------------
 // Метод инициализации общего свойства
-virtual bool Init(UEPtr<UADataComponent> main_owner)
+virtual bool Init(UEPtr<UDataComponent> main_owner)
 {
  UEPtr<MainOwnerT> main_owner_cast=dynamic_pointer_cast<MainOwnerT>(main_owner);
 
- UADataComponent::VariableMapCIteratorT I=main_owner_cast->GetPropertiesList().find(PropertyName);
+ UDataComponent::VariableMapCIteratorT I=main_owner_cast->GetPropertiesList().find(PropertyName);
  if(I != main_owner_cast->GetPropertiesList().end())
  {
   UVProperty<T,MainOwnerT> *prop=dynamic_pointer_cast<UVProperty<T,MainOwnerT> >(I->second.Property);
@@ -121,7 +121,7 @@ const T* GetPointer(void) const
  return Pointer;
 }
 
-void SetPointer(UAComponent *owner, T* pointer)
+void SetPointer(UComponent *owner, T* pointer)
 {
  MainOwnerT *mainowner=dynamic_cast<MainOwnerT*>(owner);
 
@@ -167,13 +167,13 @@ T Data;
 std::string PropertyName;
 
 // Владелец свойства
-UADataComponent* Owner;
+UDataComponent* Owner;
 
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UShare(const std::string &property_name, UADataComponent* owner)
+UShare(const std::string &property_name, UDataComponent* owner)
 : VProperty(0), PropertyName(property_name), Owner(owner)
 {
  if(Owner)
@@ -190,11 +190,11 @@ virtual ~UShare(void)
 // Методы управления данными
 // --------------------------
 // Метод инициализации общего свойства
-virtual bool Init(UEPtr<UADataComponent> main_owner)
+virtual bool Init(UEPtr<UDataComponent> main_owner)
 {
  UEPtr<MainOwnerT> main_owner_cast=dynamic_pointer_cast<MainOwnerT>(main_owner);
 
- UADataComponent::VariableMapCIteratorT I=main_owner_cast->GetPropertiesList().find(PropertyName);
+ UDataComponent::VariableMapCIteratorT I=main_owner_cast->GetPropertiesList().find(PropertyName);
  if(I != main_owner_cast->GetPropertiesList().end())
  {
   UVProperty<T,MainOwnerT> *prop=dynamic_pointer_cast<UVProperty<T,MainOwnerT> >(I->second.Property);

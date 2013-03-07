@@ -15,7 +15,7 @@ See file license.txt for more information
 #ifndef UDRAW_ENGINE_GRAPHICS_H
 #define UDRAW_ENGINE_GRAPHICS_H
 
-//#include "../Engine/UANet.h"
+//#include "../Engine/UNet.h"
 #include "../Serialize/USerStorageXML.h"
 #include "../Utilities/USupport.h"
 #include "../Engine/UEPtr.h"
@@ -24,7 +24,7 @@ See file license.txt for more information
 namespace RDK {
 
 /*
-    Структура, описывающая объект UAContainer как визуальный элемент
+    Структура, описывающая объект UContainer как визуальный элемент
 */
 struct UGEDescription
 {
@@ -108,7 +108,7 @@ typedef map<string,vector<DescriptionsTableIteratorT> >::iterator DescriptionsLi
 
 protected: // Данные
 // Указатель на сеть
-//UEPtr<UANet> Net;
+//UEPtr<UNet> Net;
 Serialize::USerStorageXML NetXml;
 
 // Таблица соответствий между нейронами сети и описаний визуальных элементов
@@ -194,7 +194,7 @@ bool SetRectHeight(int value);
 // Методы доступа к данным
 // ---------------------------
 // Возвращает указатель на НС
-//UEPtr<UANet> GetNet(void);
+//UEPtr<UNet> GetNet(void);
 const Serialize::USerStorageXML& GetNetXml(void) const;
 
 // Возвращает элемент таблицы соответствий
@@ -208,7 +208,7 @@ UEPtr<UAGraphics> GetGEngine(void);
 
 // Связывает класс с новой НС
 // Если net == 0 то отключает класс от текущей НС и возвращает true
-//bool SetNet(UEPtr<UANet> net);
+//bool SetNet(UEPtr<UNet> net);
 bool SetNetXml(Serialize::USerStorageXML &net_xml);
 
 // Связывает класс с новой НС
@@ -281,7 +281,7 @@ void Paint(UGEDescription &ndescr);
 // Отрисовывает конечный элемент (NAItem*) с центром в заданной позиции
 void PaintItem(UGEDescription &ndescr);
 
-// Отрисовывает элемент-сеть (UANet*) с центром в заданной позиции
+// Отрисовывает элемент-сеть (UNet*) с центром в заданной позиции
 void PaintNet(UGEDescription &ndescr);
 
 // Отрисовывает связь

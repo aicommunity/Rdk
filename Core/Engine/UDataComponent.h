@@ -1,8 +1,8 @@
 #ifndef UADATA_COMPONENT_H
 #define UADATA_COMPONENT_H
 
-#include "UAComponent.h"
-#include "UAEnvSupport.h"
+#include "UComponent.h"
+#include "UEnvSupport.h"
 #include "UContainerDescription.h"
 #include "../Serialize/Serialize.h"
 
@@ -10,7 +10,7 @@ namespace RDK {
 
 typedef Serialize::USerStorage UVariableData;
 
-class UADataComponent;
+class UDataComponent;
 class UIProperty;
 class UIShare;
 
@@ -82,7 +82,7 @@ bool CheckMask(unsigned int mask) const;
 // --------------------------
 };
 
-class UADataComponent: public UAComponent
+class UDataComponent: public UComponent
 {
 public: // Типы данных
 typedef std::map<NameT,UVariable> VariableMapT;
@@ -106,8 +106,8 @@ public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UADataComponent(void);
-virtual ~UADataComponent(void);
+UDataComponent(void);
+virtual ~UDataComponent(void);
 // --------------------------
 
 // --------------------------
@@ -131,7 +131,7 @@ void SetPropertyValue(const NameT &name, const std::string &values);
 
 // Возвращает список Id параметров, содержащихся непосредственно
 // в этом объекте
-const UADataComponent::VariableMapT& GetPropertiesList(void) const;
+const UDataComponent::VariableMapT& GetPropertiesList(void) const;
 
 // Ищет имя свойства по указателю на него
 const NameT& FindPropertyName(UEPtr<const UIProperty> prop) const;
@@ -140,11 +140,11 @@ const NameT& FindPropertyName(UEPtr<const UIProperty> prop) const;
 unsigned int FindPropertyType(UEPtr<const UIProperty> prop) const;
 
 // Ищет переменную свойства в таблице по указателю на него
-UADataComponent::VariableMapCIteratorT FindPropertyVariable(UEPtr<const UIProperty> prop) const;
+UDataComponent::VariableMapCIteratorT FindPropertyVariable(UEPtr<const UIProperty> prop) const;
 
 // Копирует все параметры этого объекта в объект 'comp', если возможно.
 // копируются только свойства типа type
-virtual void CopyProperties(UEPtr<UADataComponent> comp, unsigned int type) const;
+virtual void CopyProperties(UEPtr<UDataComponent> comp, unsigned int type) const;
 // --------------------------
 
 // --------------------------
@@ -235,7 +235,7 @@ class UIProperty
 public:
 // Метод устанавливает значение указателя на итератор-хранилище данных об этом
 // свойстве в родительском компоненте
-virtual void SetVariable(UADataComponent::VariableMapCIteratorT &var)=0;
+virtual void SetVariable(UDataComponent::VariableMapCIteratorT &var)=0;
 
 // Метод возвращает тип свойства
 virtual unsigned int GetType(void) const=0;
@@ -270,7 +270,7 @@ public:
 // virtual std::string GetOwnerName(void) const=0;
 
  // Метод инициализации общего свойства
- virtual bool Init(UEPtr<UADataComponent> main_owner)=0;
+ virtual bool Init(UEPtr<UDataComponent> main_owner)=0;
 
  // Метод деинициализации общего свойства
  virtual bool UnInit(void)=0;

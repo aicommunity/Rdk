@@ -23,7 +23,7 @@ See file license.txt for more information
 #include "../Serialize/UBinaryStdSerialize.h"
 #include "../Graphics/UGraphicsBinarySerialize.h"
 #include "../Graphics/UGraphicsXMLSerialize.h"
-#include "UADataComponent.h"
+#include "UDataComponent.h"
 
 namespace RDK {
 
@@ -45,7 +45,7 @@ protected: // ƒанные
 OwnerT* Owner;
 
 // ”казатель на итератор-хранилище данных об этом свойстве в родительском компоненте
-UADataComponent::VariableMapCIteratorT Variable;
+UDataComponent::VariableMapCIteratorT Variable;
 
 // ѕр€мой доступ к данным
 T* PData;
@@ -95,7 +95,7 @@ void Init(OwnerT * const owner, T * const pdata)
 // -----------------------------
 // ћетод устанавливает значение указател€ на итератор-хранилище данных об этом
 // свойстве в родительском компоненте
-virtual void SetVariable(UADataComponent::VariableMapCIteratorT &var)
+virtual void SetVariable(UDataComponent::VariableMapCIteratorT &var)
 {
  Variable=var;
 }
@@ -270,7 +270,7 @@ UVProperty& operator = (const UVProperty &v)
 // -----------------------------
 // ћетод устанавливает значение указател€ на итератор-хранилище данных об этом
 // свойстве в родительском компоненте
-virtual void SetVariable(UADataComponent::VariableMapCIteratorT &var)
+virtual void SetVariable(UDataComponent::VariableMapCIteratorT &var)
 {
  this->Variable=var;
 }

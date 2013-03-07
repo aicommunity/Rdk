@@ -32,7 +32,7 @@ public: // Классы описания исключений
  // Конструкторы и деструкторы
  // --------------------------
  IException(void);
-// IException(const UAContainer *cont);
+// IException(const UContainer *cont);
  IException(const IException &copy);
  virtual ~IException(void);
  // --------------------------

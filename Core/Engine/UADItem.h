@@ -13,12 +13,12 @@ See file license.txt for more information
 #define UADITEM_H
 
 #include <typeinfo>
-#include "UAItem.h"
+#include "UItem.h"
 #include "UItemData.h"
 
 namespace RDK {
 
-class UADItem: public UAItem
+class UADItem: public UItem
 {
 friend class UItemData;
 private: // Хранилище выходных данных
@@ -61,7 +61,7 @@ inline const UItemData& GetOutputData(int index) const
 
 // Возвращает указатель на вектор входов InputData по указателю на item
 // Возвращает 0 если citem == 0 или не найден в списке подключений
-const UEPtr<const UItemData>& GetInputData(const UEPtr<UAItem> &citem) const;
+const UEPtr<const UItemData>& GetInputData(const UEPtr<UItem> &citem) const;
 
 // Возвращает указатель на вектор входов InputData по индексу
 // Проверяет индекс на корректность и возвращает 0, если такого входа нет фактически
@@ -147,7 +147,7 @@ bool SetOutputDataElementSize(const vector<size_t> &value);
 // ----------------------
 // Копирует этот объект в 'target' с сохранением всех компонент
 // и значений параметров
-virtual bool Copy(UEPtr<UAContainer> target, UEPtr<UAStorage> stor=0, bool copystate=false) const;
+virtual bool Copy(UEPtr<UContainer> target, UEPtr<UStorage> stor=0, bool copystate=false) const;
 // ----------------------
 
 // ----------------------
@@ -157,7 +157,7 @@ protected:
 // Устанавливает связь с элементом сети 'na' со входом по индексу index.
 // Возвращает false если na уже подключен к этому входу.
 // При успешном подключении c_index содержит реальный индекс подключенного входа
-virtual bool ConnectToItem(UEPtr<UAItem> na, int i_index, int &c_index);
+virtual bool ConnectToItem(UEPtr<UItem> na, int i_index, int &c_index);
 
 // Разрывает связь с элементом сети подключенным ко входу 'index'
 virtual void DisconnectFromIndex(int c_index);

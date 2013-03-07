@@ -14,7 +14,7 @@ See file license.txt for more information
 
 #include <algorithm>
 #include "UController.h"
-#include "UAContainer.h"
+#include "UContainer.h"
 
 namespace RDK {
 
@@ -60,15 +60,15 @@ size_t UController::GetNumComponents(void) const
 }
 
 // Возвращает компонент к которому подключен контроллер по индексу
-UAContainer* UController::GetComponents(size_t index)
+UContainer* UController::GetComponents(size_t index)
 {
  return Components[index];
 }
 
 // Возвращает индекс компонента по указателю
-int UController::FindComponent(UAContainer* component) const
+int UController::FindComponent(UContainer* component) const
 {
- vector<UAContainer*>::const_iterator I=find(Components.begin(),Components.end(),component);
+ vector<UContainer*>::const_iterator I=find(Components.begin(),Components.end(),component);
 
  if(I != Components.end())
   return I-Components.begin();
@@ -81,7 +81,7 @@ int UController::FindComponent(UAContainer* component) const
 // Методы управления интерфейсом
 // --------------------------
 // Связывает интерфейс с компонентом
-bool UController::Link(UAContainer* component, bool forchilds)
+bool UController::Link(UContainer* component, bool forchilds)
 {
  if(find(Components.begin(),Components.end(),component) != Components.end())
   return true;
@@ -113,7 +113,7 @@ bool UController::UnLink(int index, bool forchilds)
  return true;
 }
 
-bool UController::UnLink(UAContainer* component, bool forchilds)
+bool UController::UnLink(UContainer* component, bool forchilds)
 {
  int index=FindComponent(component);
 

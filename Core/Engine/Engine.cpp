@@ -14,11 +14,11 @@ See file license.txt for more information
 
 #include "Engine_lite.cpp"
 #include "UTime.cpp"
-#include "UAStorage.cpp"
-#include "UAEnvironment.cpp"
+#include "UStorage.cpp"
+#include "UEnvironment.cpp"
 #include "UEngine.cpp"
 //#include "UProperty.cpp"
-#include "UEnvSupport.cpp"
+//#include "UEnvSupport.cpp"
 #include "UItemData.cpp"
 //#include "UXMLEnvSerialize.cpp"
 //#include "UThreadEnvironment.cpp"
@@ -26,7 +26,7 @@ See file license.txt for more information
 //#include "UEnvException.cpp"
 #include "UComponentDescription.cpp"
 #include "UContainerDescription.cpp"     
-#include "UADataComponent.cpp"
+#include "UDataComponent.cpp"
 
 //#include "Libraries/UELibraries.cpp"
 

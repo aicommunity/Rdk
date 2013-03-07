@@ -12,19 +12,19 @@ See file license.txt for more information
 #ifndef ENVIRONMENT_LITE_H
 #define ENVIRONMENT_LITE_H
 
-#include "UAEnvSupport.h"
+#include "UEnvSupport.h"
 #include "UModule.h"
-#include "UAStorage.h"
-#include "UALibrary.h"
-#include "UAEnvironment.h"
-#include "UAContainer.h"
-#include "UAStorage.h"
-#include "UAConnector.h"
-#include "UAItem.h"
+#include "UStorage.h"
+#include "ULibrary.h"
+#include "UEnvironment.h"
+#include "UContainer.h"
+#include "UStorage.h"
+#include "UConnector.h"
+#include "UItem.h"
 #include "UADItem.h"
 #include "UAModel.h"
-#include "UANet.h"
-#include "UAComponent.h"
+#include "UNet.h"
+#include "UComponent.h"
 #include "UController.h"
 
 #endif

@@ -66,7 +66,7 @@ virtual ~UBPipeline(void);
 // в качестве компоненты данного объекта
 // Метод возвращает 'true' в случае допустимости
 // и 'false' в случае некорректного типа
-virtual bool CheckComponentType(UEPtr<UAContainer> comp) const;
+virtual bool CheckComponentType(UEPtr<UContainer> comp) const;
 // --------------------------
 
 // ---------------------
@@ -85,13 +85,13 @@ protected:
 // Метод будет вызван только если comp был
 // успешно добавлен в список компонент
 // Может быть передан указатель на локальную переменную
-virtual bool AAddComponent(UEPtr<UAContainer> comp, UEPtr<UIPointer> pointer=0);
+virtual bool AAddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer=0);
 
 // Выполняет предварительные пользовательские действия
 // при удалении дочернего компонента из этого объекта
 // Метод будет вызван только если comp
 // существует в списке компонент
-virtual bool ADelComponent(UEPtr<UAContainer> comp);
+virtual bool ADelComponent(UEPtr<UContainer> comp);
 // --------------------------
 
 // ---------------------

@@ -21,21 +21,21 @@ See file license.txt for more information
 // Объявления дополнительных функций
 // --------------------------------------
 // Возвращает хранилище по индексу
-extern RDK::UAStorage* GetStorage(size_t i);
+extern RDK::UStorage* GetStorage(size_t i);
 
 // Возвращает среду по индексу
-extern RDK::UAEnvironment*  GetEnvironment(size_t i);
+extern RDK::UEnvironment*  GetEnvironment(size_t i);
 
 // Возвращает движок по индексу
 extern RDK::UEngine*  GetEngine(size_t i);
 
 // Создает новое хранилище и помещает в конец массива
 // Возвращает указатель на хранилище
-extern RDK::UAStorage*  AddNewStorage(void);
+extern RDK::UStorage*  AddNewStorage(void);
 
 // Создает новую среду и помещает в конец массива
 // Возвращает указатель на среду
-extern RDK::UAEnvironment*  AddNewEnvironment(void);
+extern RDK::UEnvironment*  AddNewEnvironment(void);
 
 // Создает новый движок и помещает в конец массива
 // Возвращает указатель на движок
@@ -97,13 +97,13 @@ int UEngine::IsRunned(void)
 // Методы доступа к данным
 // --------------------------
 // Возвращает указатель на среду
-UAEnvironment* UEngine::GetEnvironment(void)
+UEnvironment* UEngine::GetEnvironment(void)
 {
  return Environment;
 }
 
 // Возвращает указатель на модель
-UAContainer* UEngine::GetModel(void)
+UContainer* UEngine::GetModel(void)
 {
  return Environment->GetModel();
 }
@@ -118,7 +118,7 @@ void UEngine::Init(void)
  // Заглушка
 }
 
-bool UEngine::Init(UEPtr<UAStorage> storage, UEPtr<UAEnvironment> env)
+bool UEngine::Init(UEPtr<UStorage> storage, UEPtr<UEnvironment> env)
 {
  LastReadExceptionLogIndex=-1;
  //ExceptionsLog.clear();
@@ -840,7 +840,7 @@ int UEngine::Env_Calculate(const char* stringid)
   }
   else
   {
-   RDK::UAContainer* destcont=FindComponent(stringid);
+   RDK::UContainer* destcont=FindComponent(stringid);
    if(destcont)
 	destcont->GetLongId(Environment->GetModel(),id);
 //   id.DecodeFromString(stringid);
@@ -887,7 +887,7 @@ int UEngine::Env_Reset(const char* stringid)
   }
   else
   {
-   RDK::UAContainer* destcont=FindComponent(stringid);
+   RDK::UContainer* destcont=FindComponent(stringid);
    if(destcont)
 	destcont->GetLongId(Environment->GetModel(),id);
 //   id.DecodeFromString(stringid);
@@ -1071,7 +1071,7 @@ int UEngine::Model_Clear(void)
 {
  try
  {
-  UEPtr<RDK::UAContainer> model=dynamic_pointer_cast<RDK::UAContainer>(Environment->GetModel());
+  UEPtr<RDK::UContainer> model=dynamic_pointer_cast<RDK::UContainer>(Environment->GetModel());
 
   if(!model)
    return -2;
@@ -1090,7 +1090,7 @@ bool UEngine::Model_Check(void)
 {
  try
  {
-  UEPtr<RDK::UAContainer> model=dynamic_pointer_cast<RDK::UAContainer>(Environment->GetModel());
+  UEPtr<RDK::UContainer> model=dynamic_pointer_cast<RDK::UContainer>(Environment->GetModel());
 
   if(!model)
    return false;
@@ -1109,7 +1109,7 @@ bool UEngine::Model_CheckComponent(const char* stringid) const
 {
  try
  {
-  UEPtr<RDK::UAContainer> destcont=FindComponent(stringid);
+  UEPtr<RDK::UContainer> destcont=FindComponent(stringid);
   if(destcont)
    return true;
  }
@@ -1127,9 +1127,9 @@ const char* UEngine::Model_AddComponent(const char* stringid, int classid)
 {
  try
  {
-  UEPtr<RDK::UAContainer> destcont=FindComponent(stringid);
+  UEPtr<RDK::UContainer> destcont=FindComponent(stringid);
 
-  UEPtr<RDK::UAContainer> cont=dynamic_pointer_cast<RDK::UAContainer>(Storage->TakeObject(classid));
+  UEPtr<RDK::UContainer> cont=dynamic_pointer_cast<RDK::UContainer>(Storage->TakeObject(classid));
 
   if(!cont)
    return 0;
@@ -1157,7 +1157,7 @@ int UEngine::Model_DelComponent(const char* stringid, int id)
 {
  try
  {
-  RDK::UAContainer* destcont=FindComponent(stringid);
+  RDK::UContainer* destcont=FindComponent(stringid);
 
   if(!destcont)
    return -4;
@@ -1178,7 +1178,7 @@ int UEngine::Model_GetNumComponents(const char* stringid)
 {
  try
  {
-  RDK::UAContainer* destcont=FindComponent(stringid);
+  RDK::UContainer* destcont=FindComponent(stringid);
 
   if(!destcont)
    return 0;
@@ -1198,7 +1198,7 @@ int UEngine::Model_GetComponentsList(const char* stringid, int *buffer)
 {
  try
  {
-  RDK::UAContainer* destcont=FindComponent(stringid);
+  RDK::UContainer* destcont=FindComponent(stringid);
 
   if(!destcont)
    return -4;
@@ -1224,7 +1224,7 @@ const char* UEngine::Model_GetComponentsNameList(const char* stringid)
  try
  {
   TempString.clear();
-  RDK::UAContainer* destcont=FindComponent(stringid);
+  RDK::UContainer* destcont=FindComponent(stringid);
 
   if(!destcont)
    return TempString.c_str();
@@ -1262,8 +1262,8 @@ const char* UEngine::Model_GetConnectorsList(const char* stringid,
 {
  try
  {
-  UEPtr<RDK::UAContainer> cont=FindComponent(stringid);
-  UEPtr<RDK::UAContainer> owner_level=FindComponent(owner_level_stringid);
+  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
+  UEPtr<RDK::UContainer> owner_level=FindComponent(owner_level_stringid);
 
   TempString="";
   if(!cont)
@@ -1300,8 +1300,8 @@ const char* UEngine::Model_GetItemsList(const char* stringid,
 {
  try
  {
-  UEPtr<RDK::UAContainer> cont=FindComponent(stringid);
-  UEPtr<RDK::UAContainer> owner_level=FindComponent(owner_level_stringid);
+  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
+  UEPtr<RDK::UContainer> owner_level=FindComponent(owner_level_stringid);
 
   TempString="";
   if(!cont)
@@ -1337,8 +1337,8 @@ const char* UEngine::Model_GetNetsList(const char* stringid,
 {
  try
  {
-  UEPtr<RDK::UAContainer> cont=FindComponent(stringid);
-  UEPtr<RDK::UAContainer> owner_level=FindComponent(owner_level_stringid);
+  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
+  UEPtr<RDK::UContainer> owner_level=FindComponent(owner_level_stringid);
 
   TempString="";
   if(!cont)
@@ -1369,7 +1369,7 @@ const char* UEngine::Model_GetComponentName(const char* stringid)
  try
  {
   TempString="";
-  UEPtr<RDK::UAContainer> destcont=FindComponent(stringid);
+  UEPtr<RDK::UContainer> destcont=FindComponent(stringid);
 
   if(!destcont)
    return TempString.c_str();
@@ -1394,8 +1394,8 @@ const char* UEngine::Model_GetComponentLongName(const char* stringid, const char
  try
  {
   TempString="";
-  UEPtr<RDK::UAContainer> destcont=FindComponent(stringid);
-  UEPtr<RDK::UAContainer> owner_level=FindComponent(owner_level_stringid);
+  UEPtr<RDK::UContainer> destcont=FindComponent(stringid);
+  UEPtr<RDK::UContainer> owner_level=FindComponent(owner_level_stringid);
 
   if(!destcont)
    return TempString.c_str();
@@ -1419,8 +1419,8 @@ const char* UEngine::Model_GetComponentLongId(const char* stringid, const char* 
  try
  {
   TempString="";
-  UEPtr<RDK::UAContainer> destcont=FindComponent(stringid);
-  UEPtr<RDK::UAContainer> owner_level=FindComponent(owner_level_stringid);
+  UEPtr<RDK::UContainer> destcont=FindComponent(stringid);
+  UEPtr<RDK::UContainer> owner_level=FindComponent(owner_level_stringid);
 
   if(!destcont)
    return TempString.c_str();
@@ -1445,7 +1445,7 @@ const char* UEngine::Model_GetComponentClassName(const char* stringid)
  try
  {
   TempString="";
-  UEPtr<RDK::UAContainer> destcont=FindComponent(stringid);
+  UEPtr<RDK::UContainer> destcont=FindComponent(stringid);
 
   if(!destcont)
    return TempString.c_str();
@@ -1466,7 +1466,7 @@ const char* UEngine::Model_GetComponentProperties(const char *stringid, unsigned
  try
  {
   TempString="";
-  UEPtr<RDK::UAContainer> cont=FindComponent(stringid);
+  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
 
   if(!cont)
    return TempString.c_str();
@@ -1508,7 +1508,7 @@ const char* UEngine::Model_GetComponentPropertiesEx(const char *stringid, unsign
  try
  {
   TempString="";
-  UEPtr<RDK::UAContainer> cont=FindComponent(stringid);
+  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
   if(!cont)
    return TempString.c_str();
 
@@ -1535,7 +1535,7 @@ const char * UEngine::Model_GetComponentPropertyValue(const char *stringid, cons
  try
  {
   TempString="";
-  UEPtr<RDK::UAContainer> cont=FindComponent(stringid);
+  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
   if(!cont)
    return TempString.c_str();
 
@@ -1554,7 +1554,7 @@ int UEngine::Model_SetComponentProperties(const char *stringid, const char* buff
 {
  try
  {
-  UEPtr<RDK::UAContainer> cont=FindComponent(stringid);
+  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
   if(!cont)
    return 1;
 
@@ -1583,7 +1583,7 @@ void UEngine::Model_SetComponentPropertyValue(const char *stringid, const char *
 {
  try
  {
-  UEPtr<RDK::UAContainer> cont=FindComponent(stringid);
+  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
   if(!cont)
    return;
 
@@ -1602,7 +1602,7 @@ void UEngine::Model_SetGlobalComponentPropertyValue(const char *stringid, const 
 {
  try
  {
-  UEPtr<RDK::UAContainer> cont=FindComponent(stringid);
+  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
   if(!cont)
    return;
 
@@ -1624,7 +1624,7 @@ void UEngine::Model_SetGlobalOwnerComponentPropertyValue(const char *stringid, c
 {
  try
  {
-  UEPtr<RDK::UAContainer> cont=FindComponent(stringid);
+  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
   if(!cont)
    return;
 
@@ -1652,7 +1652,7 @@ int UEngine::Model_CreateLink(const char* stringid1, int output_number, const ch
   if(!stringid2)
    return -11;
 
-  UEPtr<RDK::UANet> model=dynamic_pointer_cast<RDK::UANet>(Environment->GetCurrentComponent());
+  UEPtr<RDK::UNet> model=dynamic_pointer_cast<RDK::UNet>(Environment->GetCurrentComponent());
 
   if(!model)
    return -2;
@@ -1662,7 +1662,7 @@ int UEngine::Model_CreateLink(const char* stringid1, int output_number, const ch
    longid1.DecodeFromString(stringid1);
   else
   {
-   UEPtr<UAContainer> cont=FindComponent(stringid1);
+   UEPtr<UContainer> cont=FindComponent(stringid1);
    longid1=cont->GetLongId(model);
   }
 
@@ -1670,7 +1670,7 @@ int UEngine::Model_CreateLink(const char* stringid1, int output_number, const ch
    longid2.DecodeFromString(stringid2);
   else
   {
-   UEPtr<UAContainer> cont=FindComponent(stringid2);
+   UEPtr<UContainer> cont=FindComponent(stringid2);
    longid2=cont->GetLongId(model);
   }
   bool res=model->CreateLink(longid1,output_number,longid2,input_number);
@@ -1689,7 +1689,7 @@ int UEngine::Model_ChainLinking(const char* stringid)
 {
  try
  {
-  UEPtr<UANet> cont=dynamic_pointer_cast<UANet>(FindComponent(stringid));
+  UEPtr<UNet> cont=dynamic_pointer_cast<UNet>(FindComponent(stringid));
 
   cont->BreakLinks(cont);
 
@@ -1699,7 +1699,7 @@ int UEngine::Model_ChainLinking(const char* stringid)
   ULongId id1,id2;
 
 
-  UEPtr<UANet> item=dynamic_pointer_cast<UANet>(cont->GetComponentByIndex(0));
+  UEPtr<UNet> item=dynamic_pointer_cast<UNet>(cont->GetComponentByIndex(0));
   item->GetLongId(cont,id1);
 
   // Подключаем выходы модели
@@ -1711,7 +1711,7 @@ int UEngine::Model_ChainLinking(const char* stringid)
 
   for(int i=1;i<cont->GetNumComponents();i++)
   {
-   UEPtr<UANet> connector=dynamic_pointer_cast<UANet>(cont->GetComponentByIndex(i));
+   UEPtr<UNet> connector=dynamic_pointer_cast<UNet>(cont->GetComponentByIndex(i));
    connector->GetLongId(cont,id2);
    minsize=item->GetNumOutputs();
    if(minsize>connector->GetNumInputs())
@@ -1743,7 +1743,7 @@ int UEngine::Model_ParallelLinking(const char* stringid)
 {
  try
  {
-  UEPtr<UANet> cont=dynamic_pointer_cast<UANet>(FindComponent(stringid));
+  UEPtr<UNet> cont=dynamic_pointer_cast<UNet>(FindComponent(stringid));
 
   cont->BreakLinks(cont);
 
@@ -1753,12 +1753,12 @@ int UEngine::Model_ParallelLinking(const char* stringid)
   ULongId id1,id2;
 
 
-  UEPtr<UANet> item=cont;//dynamic_pointer_cast<UANet>(cont->GetComponentByIndex(0));
+  UEPtr<UNet> item=cont;//dynamic_pointer_cast<UNet>(cont->GetComponentByIndex(0));
   //item->GetLongId(cont,id1);
 
   for(int i=0;i<cont->GetNumComponents();i++)
   {
-   UEPtr<UANet> connector=dynamic_pointer_cast<UANet>(cont->GetComponentByIndex(i));
+   UEPtr<UNet> connector=dynamic_pointer_cast<UNet>(cont->GetComponentByIndex(i));
    connector->GetLongId(cont,id2);
    int minsize=item->GetNumOutputs();
    if(minsize>connector->GetNumInputs())
@@ -1785,7 +1785,7 @@ int UEngine::Model_BreakLink(const char* stringid1, int output_number, const cha
   if(!stringid2)
    return -11;
 
-  UEPtr<RDK::UANet> model=dynamic_pointer_cast<RDK::UANet>(Environment->GetCurrentComponent());
+  UEPtr<RDK::UNet> model=dynamic_pointer_cast<RDK::UNet>(Environment->GetCurrentComponent());
 
   if(!model)
    return -2;
@@ -1795,7 +1795,7 @@ int UEngine::Model_BreakLink(const char* stringid1, int output_number, const cha
    longid1.DecodeFromString(stringid1);
   else
   {
-   UEPtr<UAContainer> cont=FindComponent(stringid1);
+   UEPtr<UContainer> cont=FindComponent(stringid1);
    longid1=cont->GetLongId(model);
   }
 
@@ -1803,7 +1803,7 @@ int UEngine::Model_BreakLink(const char* stringid1, int output_number, const cha
    longid2.DecodeFromString(stringid2);
   else
   {
-   UEPtr<UAContainer> cont=FindComponent(stringid2);
+   UEPtr<UContainer> cont=FindComponent(stringid2);
    longid2=cont->GetLongId(model);
   }
 
@@ -1824,7 +1824,7 @@ int UEngine::Model_BreakAllLinks(void)
 {
  try
  {
-  UEPtr<RDK::UANet> model=dynamic_pointer_cast<RDK::UANet>(Environment->GetCurrentComponent());
+  UEPtr<RDK::UNet> model=dynamic_pointer_cast<RDK::UNet>(Environment->GetCurrentComponent());
 
   if(!model)
    return -2;
@@ -1844,7 +1844,7 @@ int UEngine::Model_BreakAllComponentLinks(const char* stringid)
 {
  try
  {
-  UEPtr<RDK::UANet> model=dynamic_pointer_cast<RDK::UANet>(FindComponent(stringid));
+  UEPtr<RDK::UNet> model=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
 
   if(!model)
    return -2;
@@ -1892,12 +1892,12 @@ bool UEngine::Model_CheckLink(const char* stringid1, int output_number, const ch
 {
  try
  {
-  UEPtr<RDK::UAItem> cont1;
-  UEPtr<RDK::UAConnector> cont2;
+  UEPtr<RDK::UItem> cont1;
+  UEPtr<RDK::UConnector> cont2;
   try
   {
-   cont1=dynamic_pointer_cast<RDK::UAItem>(FindComponent(stringid1));
-   cont2=dynamic_pointer_cast<RDK::UAConnector>(FindComponent(stringid2));
+   cont1=dynamic_pointer_cast<RDK::UItem>(FindComponent(stringid1));
+   cont2=dynamic_pointer_cast<RDK::UConnector>(FindComponent(stringid2));
   }
   catch (UException &exception)// Заглушка!! здесь другое исключение
   {
@@ -1924,10 +1924,10 @@ const char* UEngine::Model_GetComponentInternalLinks(const char* stringid, const
 {
  try
  {
-  UEPtr<RDK::UANet> cont=dynamic_pointer_cast<RDK::UANet>(FindComponent(stringid));
-  UEPtr<RDK::UANet> owner;
+  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+  UEPtr<RDK::UNet> owner;
   if(owner_level_stringid)
-   dynamic_pointer_cast<RDK::UANet>(FindComponent(owner_level_stringid));
+   dynamic_pointer_cast<RDK::UNet>(FindComponent(owner_level_stringid));
 
   TempString="";
   if(!cont)
@@ -1954,10 +1954,10 @@ int UEngine::Model_SetComponentInternalLinks(const char* stringid, const char* b
 {
  try
  {
-  UEPtr<RDK::UANet> cont=dynamic_pointer_cast<RDK::UANet>(FindComponent(stringid));
-  UEPtr<RDK::UANet> owner;
+  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+  UEPtr<RDK::UNet> owner;
   if(owner_level_stringid)
-   dynamic_pointer_cast<RDK::UANet>(FindComponent(owner_level_stringid));
+   dynamic_pointer_cast<RDK::UNet>(FindComponent(owner_level_stringid));
 
   if(!cont)
    return -3;
@@ -1987,10 +1987,10 @@ const char * UEngine::Model_GetComponentInputLinks(const char* stringid, const c
 {
  try
  {
-  UEPtr<RDK::UANet> cont=dynamic_pointer_cast<RDK::UANet>(FindComponent(stringid));
-  UEPtr<RDK::UANet> owner;
+  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+  UEPtr<RDK::UNet> owner;
   if(owner_level_stringid)
-   dynamic_pointer_cast<RDK::UANet>(FindComponent(owner_level_stringid));
+   dynamic_pointer_cast<RDK::UNet>(FindComponent(owner_level_stringid));
 
   TempString="";
   if(!cont)
@@ -2023,10 +2023,10 @@ const char * UEngine::Model_GetComponentOutputLinks(const char* stringid, const 
 {
  try
  {
-  UEPtr<RDK::UANet> cont=dynamic_pointer_cast<RDK::UANet>(FindComponent(stringid));
-  UEPtr<RDK::UANet> owner;
+  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+  UEPtr<RDK::UNet> owner;
   if(owner_level_stringid)
-   dynamic_pointer_cast<RDK::UANet>(FindComponent(owner_level_stringid));
+   dynamic_pointer_cast<RDK::UNet>(FindComponent(owner_level_stringid));
 
   TempString="";
   if(!cont)
@@ -2055,10 +2055,10 @@ const char* UEngine::Model_GetComponentPersonalLinks(const char* stringid, const
 {
  try
  {
-  UEPtr<RDK::UANet> cont=dynamic_pointer_cast<RDK::UANet>(FindComponent(stringid));
-  UEPtr<RDK::UANet> owner;
+  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+  UEPtr<RDK::UNet> owner;
   if(owner_level_stringid)
-   owner=dynamic_pointer_cast<RDK::UANet>(FindComponent(owner_level_stringid));
+   owner=dynamic_pointer_cast<RDK::UNet>(FindComponent(owner_level_stringid));
 
   TempString="";
   if(!cont)
@@ -2084,7 +2084,7 @@ int UEngine::Model_GetComponentNumInputs(const char *stringid)
 {
  try
  {
-  UEPtr<RDK::UAItem> cont=dynamic_pointer_cast<RDK::UAItem>(FindComponent(stringid));
+  UEPtr<RDK::UItem> cont=dynamic_pointer_cast<RDK::UItem>(FindComponent(stringid));
 
   if(!cont)
    return 0;
@@ -2165,7 +2165,7 @@ int UEngine::Model_GetComponentNumOutputs(const char *stringid)
 {
  try
  {
-  UEPtr<RDK::UAItem> cont=dynamic_pointer_cast<RDK::UAItem>(FindComponent(stringid));
+  UEPtr<RDK::UItem> cont=dynamic_pointer_cast<RDK::UItem>(FindComponent(stringid));
 
   if(!cont)
    return 0;
@@ -2237,7 +2237,7 @@ unsigned char* UEngine::Model_GetComponentOutputData(const char *stringid, int i
 {
  try
  {
-  UEPtr<RDK::UANet> cont=dynamic_pointer_cast<RDK::UANet>(FindComponent(stringid));
+  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
 
   if(!cont)
    return 0;
@@ -2257,7 +2257,7 @@ const char *  UEngine::Model_SaveComponent(const char *stringid, unsigned int pa
 {
  try
  {
-  UEPtr<RDK::UANet> cont=dynamic_pointer_cast<RDK::UANet>(FindComponent(stringid));
+  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
 
   if(!cont)
    return 0;
@@ -2300,7 +2300,7 @@ int UEngine::Model_LoadComponent(const char *stringid, char* buffer)
    if(XmlStorage.GetNodeAttribute("ModelName") != Environment->GetModel()->GetName())
     return -10;
 
-   UEPtr<RDK::UANet> cont=dynamic_pointer_cast<RDK::UANet>(FindComponent(stringid));
+   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
 
    if(!cont)
 	return -3;
@@ -2321,7 +2321,7 @@ const char * UEngine::Model_SaveComponentProperties(const char *stringid, unsign
 {
  try
  {
-  UEPtr<RDK::UANet> cont=dynamic_pointer_cast<RDK::UANet>(FindComponent(stringid));
+  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
 
   if(!cont)
    return 0;
@@ -2348,7 +2348,7 @@ int UEngine::Model_LoadComponentProperties(const char *stringid, char* buffer)
 {
  try
  {
-  UEPtr<RDK::UANet> cont=dynamic_pointer_cast<RDK::UANet>(FindComponent(stringid));
+  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
 
   if(!cont)
    return -3;
@@ -2375,7 +2375,7 @@ const char* UEngine::Model_SaveComponentDrawInfo(const char *stringid)
 {
  try
  {
-  UEPtr<RDK::UANet> cont=dynamic_pointer_cast<RDK::UANet>(FindComponent(stringid));
+  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
 
   if(!cont)
    return 0;
@@ -2415,7 +2415,7 @@ int UEngine::Model_GetTimeStep(const char *stringid) const
 {
  try
  {
-  UEPtr<RDK::UANet> cont=dynamic_pointer_cast<RDK::UANet>(FindComponent(stringid));
+  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
 
   return cont->GetTimeStep();
  }
@@ -2430,7 +2430,7 @@ void UEngine::Model_SetTimeStep(const char *stringid, int value)
 {
  try
  {
-  UEPtr<RDK::UANet> cont=dynamic_pointer_cast<RDK::UANet>(FindComponent(stringid));
+  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
 
   cont->SetTimeStep(value);
  }
@@ -2445,7 +2445,7 @@ void UEngine::Model_SetGlobalTimeStep(const char *stringid, int value)
 {
  try
  {
-  UEPtr<RDK::UANet> cont=dynamic_pointer_cast<RDK::UANet>(FindComponent(stringid));
+  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
 
   cont->SetGlobalTimeStep(value);
  }
@@ -2511,7 +2511,7 @@ long long UEngine::Model_GetStepDuration(const char *stringid) const
 {
  try
  {
-  UEPtr<RDK::UANet> cont=dynamic_pointer_cast<RDK::UANet>(FindComponent(stringid));
+  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
 
   return cont->GetStepDuration();
  }
@@ -2528,7 +2528,7 @@ long long UEngine::Model_GetFullStepDuration(const char *stringid) const
 {
  try
  {
-  UEPtr<RDK::UANet> cont=dynamic_pointer_cast<RDK::UANet>(FindComponent(stringid));
+  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
 
   return cont->GetFullStepDuration();
  }
@@ -2546,7 +2546,7 @@ double UEngine::Model_GetInstantPerformance(const char *stringid) const
 {
  try
  {
-  UEPtr<RDK::UANet> cont=dynamic_pointer_cast<RDK::UANet>(FindComponent(stringid));
+  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
 
   return cont->GetInstantPerformance();
  }
@@ -2562,7 +2562,7 @@ long long UEngine::Model_GetInterstepsInterval(const char *stringid) const
 {
  try
  {
-  UEPtr<RDK::UANet> cont=dynamic_pointer_cast<RDK::UANet>(FindComponent(stringid));
+  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
 
   return cont->GetInterstepsInterval();
  }
@@ -2579,16 +2579,16 @@ long long UEngine::Model_GetInterstepsInterval(const char *stringid) const
 // --------------------------
 // Возвращает свойства компонента по идентификатору
 // Память для buffer должна быть выделена!
-bool UEngine::Model_GetComponentProperties(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage, unsigned int type_mask)
+bool UEngine::Model_GetComponentProperties(RDK::UContainer* cont, RDK::Serialize::USerStorageXML *serstorage, unsigned int type_mask)
 {
  try
  {
   if(!cont || !serstorage)
    return false;
 
-  RDK::UAContainer::VariableMapT props=cont->GetPropertiesList();
+  RDK::UContainer::VariableMapT props=cont->GetPropertiesList();
 
-  RDK::UAContainer::VariableMapCIteratorT I,J;
+  RDK::UContainer::VariableMapCIteratorT I,J;
 
   I=props.begin();
   J=props.end();
@@ -2617,7 +2617,7 @@ bool UEngine::Model_GetComponentProperties(RDK::UAContainer* cont, RDK::Serializ
 
 // Возвращает выборочные свойства компонента по идентификатору
 // Память для buffer должна быть выделена!
-bool UEngine::Model_GetComponentSelectedProperties(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage)
+bool UEngine::Model_GetComponentSelectedProperties(RDK::UContainer* cont, RDK::Serialize::USerStorageXML *serstorage)
 {
  try
  {
@@ -2634,16 +2634,16 @@ bool UEngine::Model_GetComponentSelectedProperties(RDK::UAContainer* cont, RDK::
 
 // Возвращает свойства компонента по идентификатору с описаниями
 // Память для buffer должна быть выделена!
-bool UEngine::Model_GetComponentPropertiesEx(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage, unsigned int type_mask)
+bool UEngine::Model_GetComponentPropertiesEx(RDK::UContainer* cont, RDK::Serialize::USerStorageXML *serstorage, unsigned int type_mask)
 {
  try
  {
   if(!cont || !serstorage)
    return false;
 
-  RDK::UAContainer::VariableMapT props=cont->GetPropertiesList();
+  RDK::UContainer::VariableMapT props=cont->GetPropertiesList();
 
-  RDK::UAContainer::VariableMapCIteratorT I,J;
+  RDK::UContainer::VariableMapCIteratorT I,J;
 
   UEPtr<UContainerDescription> descr=dynamic_pointer_cast<UContainerDescription>(Storage->GetClassDescription(cont->GetClass()));
 
@@ -2679,7 +2679,7 @@ bool UEngine::Model_GetComponentPropertiesEx(RDK::UAContainer* cont, RDK::Serial
 
 
 // устанавливает свойства компонента по идентификатору
-int UEngine::Model_SetComponentProperties(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage)
+int UEngine::Model_SetComponentProperties(RDK::UContainer* cont, RDK::Serialize::USerStorageXML *serstorage)
 {
  try
  {
@@ -2688,9 +2688,9 @@ int UEngine::Model_SetComponentProperties(RDK::UAContainer* cont, RDK::Serialize
 
   std::string name;
 
-  RDK::UAContainer::VariableMapT props=cont->GetPropertiesList();
+  RDK::UContainer::VariableMapT props=cont->GetPropertiesList();
 
-  RDK::UAContainer::VariableMapCIteratorT I,J;
+  RDK::UContainer::VariableMapCIteratorT I,J;
 
   I=props.begin();
   J=props.end();
@@ -2709,7 +2709,7 @@ int UEngine::Model_SetComponentProperties(RDK::UAContainer* cont, RDK::Serialize
 
 // Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
 // включая этот компонент
-void UEngine::Model_SetGlobalComponentPropertyValue(RDK::UAContainer* cont, UId classid, const char *paramname, const char *buffer)
+void UEngine::Model_SetGlobalComponentPropertyValue(RDK::UContainer* cont, UId classid, const char *paramname, const char *buffer)
 {
  try
  {
@@ -2732,7 +2732,7 @@ void UEngine::Model_SetGlobalComponentPropertyValue(RDK::UAContainer* cont, UId 
 
 // Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
 // и владельцем, производным от класса 'class_owner_stringid' включая этот компонент
-void UEngine::Model_SetGlobalOwnerComponentPropertyValue(RDK::UAContainer* cont, UId classid, UId owner_classid, const char *paramname, const char *buffer)
+void UEngine::Model_SetGlobalOwnerComponentPropertyValue(RDK::UContainer* cont, UId classid, UId owner_classid, const char *paramname, const char *buffer)
 {
  try
  {
@@ -2756,7 +2756,7 @@ void UEngine::Model_SetGlobalOwnerComponentPropertyValue(RDK::UAContainer* cont,
 // Возращает все связи внутри компонента stringid в виде xml в буфер buffer
 // Имена формируются до уровня компонента owner_level
 // Если owner_level не задан, то имена формируются до уровня текущего компонента
-int UEngine::Model_GetComponentInternalLinks(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage, RDK::UANet* owner_level)
+int UEngine::Model_GetComponentInternalLinks(RDK::UNet* cont, RDK::Serialize::USerStorageXML *serstorage, RDK::UNet* owner_level)
 {
  try
  {
@@ -2782,7 +2782,7 @@ int UEngine::Model_GetComponentInternalLinks(RDK::UANet* cont, RDK::Serialize::U
 // Устанавливает все связи внутри компонента stringid из строки xml в буфере buffer
 // Имена применяются до уровня компонента owner_level
 // Если owner_level не задан, то имена применяются до уровня текущего компонента
-int UEngine::Model_SetComponentInternalLinks(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage, RDK::UANet* owner_level)
+int UEngine::Model_SetComponentInternalLinks(RDK::UNet* cont, RDK::Serialize::USerStorageXML *serstorage, RDK::UNet* owner_level)
 {
  try
  {
@@ -2811,7 +2811,7 @@ int UEngine::Model_SetComponentInternalLinks(RDK::UANet* cont, RDK::Serialize::U
 // если 'sublevel' == 0, то возвращает связи подсетей только этой сети
 // Имена формируются до уровня компонента owner_level
 // Если owner_level не задан, то имена формируются до уровня текущего компонента
-int UEngine::Model_GetComponentInputLinks(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage, RDK::UANet* owner_level, int sublevel)
+int UEngine::Model_GetComponentInputLinks(RDK::UNet* cont, RDK::Serialize::USerStorageXML *serstorage, RDK::UNet* owner_level, int sublevel)
 {
  try
  {
@@ -2838,7 +2838,7 @@ int UEngine::Model_GetComponentInputLinks(RDK::UANet* cont, RDK::Serialize::USer
 // если 'sublevel' == 0, то возвращает связи подсетей только этой сети
 // Имена формируются до уровня компонента owner_level
 // Если owner_level не задан, то имена формируются до уровня текущего компонента
-int UEngine::Model_GetComponentOutputLinks(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage, RDK::UANet* owner_level, int sublevel)
+int UEngine::Model_GetComponentOutputLinks(RDK::UNet* cont, RDK::Serialize::USerStorageXML *serstorage, RDK::UNet* owner_level, int sublevel)
 {
  try
  {
@@ -2861,7 +2861,7 @@ int UEngine::Model_GetComponentOutputLinks(RDK::UANet* cont, RDK::Serialize::USe
 // Информация о связях формируется относительно владельца компонента cont!
 // Имена формируются до уровня компонента owner_level
 // Если owner_level не задан, то имена формируются до уровня текущего компонента
-int UEngine::Model_GetComponentPersonalLinks(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage, RDK::UANet* owner_level)
+int UEngine::Model_GetComponentPersonalLinks(RDK::UNet* cont, RDK::Serialize::USerStorageXML *serstorage, RDK::UNet* owner_level)
 {
  try
  {
@@ -2885,7 +2885,7 @@ int UEngine::Model_GetComponentPersonalLinks(RDK::UANet* cont, RDK::Serialize::U
 
 // Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния в xml
-int UEngine::Model_SaveComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage, bool links, unsigned int params_type_mask)
+int UEngine::Model_SaveComponent(RDK::UNet* cont, RDK::Serialize::USerStorageXML *serstorage, bool links, unsigned int params_type_mask)
 {
  try
  {
@@ -2910,7 +2910,7 @@ int UEngine::Model_SaveComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXM
   serstorage->AddNode("Components");
   for(int i=0;i<cont->GetNumComponents();i++)
   {
-   if(!Model_SaveComponent(dynamic_pointer_cast<RDK::UANet>(cont->GetComponentByIndex(i)),serstorage,false,params_type_mask))
+   if(!Model_SaveComponent(dynamic_pointer_cast<RDK::UNet>(cont->GetComponentByIndex(i)),serstorage,false,params_type_mask))
     return false;
   }
   serstorage->SelectUp();
@@ -2927,7 +2927,7 @@ int UEngine::Model_SaveComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXM
 
 // Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния из xml
-int UEngine::Model_LoadComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage, bool links)
+int UEngine::Model_LoadComponent(RDK::UNet* cont, RDK::Serialize::USerStorageXML *serstorage, bool links)
 {
  try
  {
@@ -2940,7 +2940,7 @@ int UEngine::Model_LoadComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXM
   if(!cont) // Создаем модель
   {
    Model_Create(name.c_str());
-   cont=dynamic_pointer_cast<RDK::UANet>(Environment->GetModel()).Get();
+   cont=dynamic_pointer_cast<RDK::UNet>(Environment->GetModel()).Get();
   }
   else
   if(cont->GetClass() != id)
@@ -2961,7 +2961,7 @@ int UEngine::Model_LoadComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXM
   cont->DelAllComponents();
 
   serstorage->SelectNode("Components");
-  UAStorage* storage=cont->GetStorage();
+  UStorage* storage=cont->GetStorage();
   for(int i=0;i<serstorage->GetNumNodes();i++)
   {
    serstorage->SelectNode(i);
@@ -2969,10 +2969,10 @@ int UEngine::Model_LoadComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXM
    name=serstorage->GetNodeAttribute("Class");
    id=Storage->FindClassId(name);
    //id=RDK::atoi(serstorage->GetNodeAttribute("Class"));
-   UEPtr<UANet> newcont=dynamic_pointer_cast<UANet>(storage->TakeObject(id));
+   UEPtr<UNet> newcont=dynamic_pointer_cast<UNet>(storage->TakeObject(id));
    if(!newcont)
     return false;
-   if(cont->AddComponent(static_pointer_cast<UAContainer>(newcont)) == ForbiddenId)
+   if(cont->AddComponent(static_pointer_cast<UContainer>(newcont)) == ForbiddenId)
     return false;
 
 //   if(!Model_LoadComponent(newcont,serstorage))
@@ -2999,7 +2999,7 @@ int UEngine::Model_LoadComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXM
 }
 
 // Сохраняет все свойства компонента и его дочерних компонент в xml
-int UEngine::Model_SaveComponentProperties(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage, unsigned int type_mask)
+int UEngine::Model_SaveComponentProperties(RDK::UNet* cont, RDK::Serialize::USerStorageXML *serstorage, unsigned int type_mask)
 {
  try
  {
@@ -3016,7 +3016,7 @@ int UEngine::Model_SaveComponentProperties(RDK::UANet* cont, RDK::Serialize::USe
   serstorage->AddNode("Components");
   for(int i=0;i<cont->GetNumComponents();i++)
   {
-   if(!Model_SaveComponentProperties(dynamic_pointer_cast<RDK::UANet>(cont->GetComponentByIndex(i)),serstorage,type_mask))
+   if(!Model_SaveComponentProperties(dynamic_pointer_cast<RDK::UNet>(cont->GetComponentByIndex(i)),serstorage,type_mask))
     return false;
   }
   serstorage->SelectUp();
@@ -3032,7 +3032,7 @@ int UEngine::Model_SaveComponentProperties(RDK::UANet* cont, RDK::Serialize::USe
 }
 
 // Загружает все свойства компонента и его дочерних компонент из xml
-int UEngine::Model_LoadComponentProperties(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage)
+int UEngine::Model_LoadComponentProperties(RDK::UNet* cont, RDK::Serialize::USerStorageXML *serstorage)
 {
  try
  {
@@ -3061,7 +3061,7 @@ int UEngine::Model_LoadComponentProperties(RDK::UANet* cont, RDK::Serialize::USe
     continue;
    std::string nodename=serstorage->GetNodeName();
 
-   if(!Model_LoadComponentProperties(dynamic_pointer_cast<RDK::UANet>(cont->GetComponentByIndex(i)),serstorage))
+   if(!Model_LoadComponentProperties(dynamic_pointer_cast<RDK::UNet>(cont->GetComponentByIndex(i)),serstorage))
     return false;
    serstorage->SelectUp();
   }
@@ -3077,7 +3077,7 @@ int UEngine::Model_LoadComponentProperties(RDK::UANet* cont, RDK::Serialize::USe
 
 // Сохраняет внутренние данные компонента, и его _непосредственных_ дочерних компонент, исключая
 // переменные состояния в xml
-int UEngine::Model_SaveComponentDrawInfo(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage)
+int UEngine::Model_SaveComponentDrawInfo(RDK::UNet* cont, RDK::Serialize::USerStorageXML *serstorage)
 {
  try
  {
@@ -3093,7 +3093,7 @@ int UEngine::Model_SaveComponentDrawInfo(RDK::UANet* cont, RDK::Serialize::USerS
 //  cont->GetLinks(linkslist, cont);
 
   for(int i=0;i<cont->GetNumComponents();i++)
-   static_pointer_cast<UANet>(cont->GetComponentByIndex(i))->GetLinks(linkslist, cont,true,cont->GetComponentByIndex(i));
+   static_pointer_cast<UNet>(cont->GetComponentByIndex(i))->GetLinks(linkslist, cont,true,cont->GetComponentByIndex(i));
   *serstorage<<linkslist;
   serstorage->SelectUp();
 
@@ -3102,7 +3102,7 @@ int UEngine::Model_SaveComponentDrawInfo(RDK::UANet* cont, RDK::Serialize::USerS
   {
    XmlStorage.AddNode(cont->GetComponentByIndex(i)->GetName());
    XmlStorage.AddNode("Parameters");
-   if(!Model_GetComponentProperties(dynamic_pointer_cast<RDK::UANet>(cont->GetComponentByIndex(i)),serstorage,ptParameter|pgAny))
+   if(!Model_GetComponentProperties(dynamic_pointer_cast<RDK::UNet>(cont->GetComponentByIndex(i)),serstorage,ptParameter|pgAny))
 	return false;
    XmlStorage.SelectUp();
    XmlStorage.SelectUp();
@@ -3127,7 +3127,7 @@ const /* RDK::MDMatrix* */void* const UEngine::Model_GetComponentOutputAsMatrix(
 {
  try
  {
-  UEPtr<UANet> cont=dynamic_pointer_cast<UANet>(FindComponent(stringid));
+  UEPtr<UNet> cont=dynamic_pointer_cast<UNet>(FindComponent(stringid));
 
   if(!cont)
    return 0;
@@ -3282,7 +3282,7 @@ void UEngine::CreateStorage(void)
 // Если задано хранилище 'storage', то связывает его со средой.
 // Если флаг 'isinit' == true, то инициализирует хранилище стандартными библиотеками
 // Если указатель на массив external_libs != 0, дополнительно инициализирует хранилище этими бибилиотеками
-void UEngine::CreateEnvironment(bool isinit, list<UAContainer*>* external_classes, list<UALibrary*>* external_libs)
+void UEngine::CreateEnvironment(bool isinit, list<UContainer*>* external_classes, list<ULibrary*>* external_libs)
 {
  if(!Storage)
   return;
@@ -3297,7 +3297,7 @@ void UEngine::CreateEnvironment(bool isinit, list<UAContainer*>* external_classe
 
  if(external_classes != 0)
  {
-  list<UAContainer*>::iterator I,J;
+  list<UContainer*>::iterator I,J;
   I=external_classes->begin();
   J=external_classes->end();
   while(I != J)
@@ -3309,7 +3309,7 @@ void UEngine::CreateEnvironment(bool isinit, list<UAContainer*>* external_classe
 
  if(external_libs != 0)
  {
-  list<UALibrary*>::iterator I,J;
+  list<ULibrary*>::iterator I,J;
   I=external_libs->begin();
   J=external_libs->end();
   while(I != J)
@@ -3341,7 +3341,7 @@ int UEngine::LoadClasses(void)
 {
  vector<string> variables;
  int res=0;
- UAContainer *dllclass=0;
+ UContainer *dllclass=0;
 
  Options.GetVariableList(ComponentClassesSectionName, variables);
 
@@ -3362,7 +3362,7 @@ int UEngine::LoadLibraries(void)
 {
  vector<string> variables;
  int res=0;
- UALibrary *library=0;
+ ULibrary *library=0;
 
  Options.GetVariableList(ComponentLibrariesSectionName, variables);
 
@@ -3387,17 +3387,17 @@ int UEngine::LoadLibraries(void)
 // --------------------------
 // Осуществляет поиск компонента по длинному строковому id
 // Если строковое id не задано, то возвращает указатель на модель
-UEPtr<UAContainer> UEngine::FindComponent(const char *stringid) const
+UEPtr<UContainer> UEngine::FindComponent(const char *stringid) const
 {
-// UEPtr<RDK::UANet> model=dynamic_pointer_cast<RDK::UANet>(Environment->GetModel());
- UEPtr<RDK::UANet> model=dynamic_pointer_cast<RDK::UANet>(Environment->GetCurrentComponent());
+// UEPtr<RDK::UNet> model=dynamic_pointer_cast<RDK::UNet>(Environment->GetModel());
+ UEPtr<RDK::UNet> model=dynamic_pointer_cast<RDK::UNet>(Environment->GetCurrentComponent());
 
  if(!model)
   return 0;
 
  RDK::ULongId longid;
 
- UEPtr<RDK::UAContainer> cont;
+ UEPtr<RDK::UContainer> cont;
  if(!stringid)
   cont=model;
  else
@@ -3409,14 +3409,14 @@ UEPtr<UAContainer> UEngine::FindComponent(const char *stringid) const
    if(!longid.GetSize() || longid[0] == ForbiddenId)
 	cont=model;
    else
-	cont=dynamic_pointer_cast<RDK::UAContainer>(model->GetComponentL(longid));
+	cont=dynamic_pointer_cast<RDK::UContainer>(model->GetComponentL(longid));
   }
   else // ...иначе декодируем как имя
   {
    if(strlen(stringid) == 0)
 	cont=model;
    else
-    cont=dynamic_pointer_cast<RDK::UAContainer>(model->GetComponentL(stringid));
+    cont=dynamic_pointer_cast<RDK::UContainer>(model->GetComponentL(stringid));
   }
 
  }

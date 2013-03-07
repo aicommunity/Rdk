@@ -13,10 +13,10 @@ See file license.txt for more information
 #define UENGINE_H
 
 #include "UModule.h"
-#include "UAEnvironment.h"
-#include "UAStorage.h"
+#include "UEnvironment.h"
+#include "UStorage.h"
 #include "../Utilities/UIniFile.h"
-#include "UANet.h"
+#include "UNet.h"
 
 namespace RDK{
 
@@ -79,10 +79,10 @@ protected: // Данные
 UIniFile<char> Options;
 
 // Хранилище
-RDK::UEPtr<UAStorage> Storage;
+RDK::UEPtr<UStorage> Storage;
 
 // Среда
-RDK::UEPtr<UAEnvironment> Environment;
+RDK::UEPtr<UEnvironment> Environment;
 
 protected: // Обработка исключений
 // Лог исключений системы
@@ -100,10 +100,10 @@ PExceptionHandler ExceptionHandler;
 
 protected: // Временные переменные
 // Список загруженных библиотек
-std::list<UALibrary*> LibrariesList;
+std::list<ULibrary*> LibrariesList;
 
 // Список загруженных образцов классов
-std::list<UAContainer*> ClassesList;
+std::list<UContainer*> ClassesList;
 
 RDK::Serialize::USerStorageXML XmlStorage;
 
@@ -154,10 +154,10 @@ int IsRunned(void);
 // Методы доступа к данным
 // --------------------------
 // Возвращает указатель на среду
-virtual UAEnvironment* GetEnvironment(void);
+virtual UEnvironment* GetEnvironment(void);
 
 // Возвращает указатель на модель
-virtual UAContainer* GetModel(void);
+virtual UContainer* GetModel(void);
 // --------------------------
 
 // --------------------------
@@ -166,7 +166,7 @@ virtual UAContainer* GetModel(void);
 // --------------------------
 // Инициализирует данные движка
 virtual void Init(void);
-virtual bool Init(UEPtr<UAStorage> storage, UEPtr<UAEnvironment> env);
+virtual bool Init(UEPtr<UStorage> storage, UEPtr<UEnvironment> env);
 
 // Деинициализирует данные движка
 // и сохраняет текущие настройки
@@ -675,7 +675,7 @@ void CreateStorage(void);
 // Если задано хранилище 'storage', то связывает его со средой.
 // Если флаг 'isinit' == true, то инициализирует хранилище стандартными библиотеками
 // Если указатель на массив external_libs != 0, дополнительно инициализирует хранилище этими бибилиотеками
-void CreateEnvironment(bool isinit=true, list<UAContainer*>* external_classes=0, list<UALibrary*>* external_libs=0);
+void CreateEnvironment(bool isinit=true, list<UContainer*>* external_classes=0, list<ULibrary*>* external_libs=0);
 
 // Загружает набор предустановленных библиотек
 virtual int LoadPredefinedLibraries(void);
@@ -692,34 +692,34 @@ int LoadLibraries(void);
 // --------------------------
 protected:
 // Возвращает свойства компонента по идентификатору
-virtual bool Model_GetComponentProperties(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage, unsigned int type_mask);
+virtual bool Model_GetComponentProperties(RDK::UContainer* cont, RDK::Serialize::USerStorageXML *serstorage, unsigned int type_mask);
 
 // Возвращает выборочные свойства компонента по идентификатору
-virtual bool Model_GetComponentSelectedProperties(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage);
+virtual bool Model_GetComponentSelectedProperties(RDK::UContainer* cont, RDK::Serialize::USerStorageXML *serstorage);
 
 // Возвращает свойства компонента по идентификатору с описаниями
-virtual bool Model_GetComponentPropertiesEx(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage, unsigned int type_mask);
+virtual bool Model_GetComponentPropertiesEx(RDK::UContainer* cont, RDK::Serialize::USerStorageXML *serstorage, unsigned int type_mask);
 
 // Устанавливает свойства компонента по идентификатору
-virtual int Model_SetComponentProperties(RDK::UAContainer* cont, RDK::Serialize::USerStorageXML *serstorage);
+virtual int Model_SetComponentProperties(RDK::UContainer* cont, RDK::Serialize::USerStorageXML *serstorage);
 
 // Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
 // включая этот компонент
-virtual void Model_SetGlobalComponentPropertyValue(RDK::UAContainer* cont, UId classid, const char *paramname, const char *buffer);
+virtual void Model_SetGlobalComponentPropertyValue(RDK::UContainer* cont, UId classid, const char *paramname, const char *buffer);
 
 // Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
 // и владельцем, производным от класса 'class_owner_stringid' включая этот компонент
-virtual void Model_SetGlobalOwnerComponentPropertyValue(RDK::UAContainer* cont, UId classid, UId owner_classid, const char *paramname, const char *buffer);
+virtual void Model_SetGlobalOwnerComponentPropertyValue(RDK::UContainer* cont, UId classid, UId owner_classid, const char *paramname, const char *buffer);
 
 // Возращает все связи внутри компонента cont в виде xml в буфер buffer
 // Имена формируются до уровня компонента owner_level
 // Если owner_level не задан, то имена формируются до уровня текущего компонента
-virtual int Model_GetComponentInternalLinks(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage, RDK::UANet* owner_level);
+virtual int Model_GetComponentInternalLinks(RDK::UNet* cont, RDK::Serialize::USerStorageXML *serstorage, RDK::UNet* owner_level);
 
 // Устанавливает все связи внутри компонента stringid из строки xml в буфере buffer
 // Имена применяются до уровня компонента owner_level
 // Если owner_level не задан, то имена применяются до уровня текущего компонента
-virtual int Model_SetComponentInternalLinks(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage, RDK::UANet* owner_level);
+virtual int Model_SetComponentInternalLinks(RDK::UNet* cont, RDK::Serialize::USerStorageXML *serstorage, RDK::UNet* owner_level);
 
 // Возращает все входные связи к компоненту stringid в виде xml в буфер buffer
 // если 'sublevel' == -2, то возвращает связи всех элементов включая
@@ -729,7 +729,7 @@ virtual int Model_SetComponentInternalLinks(RDK::UANet* cont, RDK::Serialize::US
 // если 'sublevel' == 0, то возвращает связи подсетей только этой сети
 // Имена формируются до уровня компонента owner_level
 // Если owner_level не задан, то имена формируются до уровня текущего компонента
-virtual int Model_GetComponentInputLinks(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage, RDK::UANet* owner_level, int sublevel=-1);
+virtual int Model_GetComponentInputLinks(RDK::UNet* cont, RDK::Serialize::USerStorageXML *serstorage, RDK::UNet* owner_level, int sublevel=-1);
 
 // Возращает все выходные связи из компонента stringid в виде xml в буфер buffer
 // если 'sublevel' == -2, то возвращает связи всех элементов включая
@@ -739,31 +739,31 @@ virtual int Model_GetComponentInputLinks(RDK::UANet* cont, RDK::Serialize::USerS
 // если 'sublevel' == 0, то возвращает связи подсетей только этой сети
 // Имена формируются до уровня компонента owner_level
 // Если owner_level не задан, то имена формируются до уровня текущего компонента
-virtual int Model_GetComponentOutputLinks(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage, RDK::UANet* owner_level, int sublevel=-1);
+virtual int Model_GetComponentOutputLinks(RDK::UNet* cont, RDK::Serialize::USerStorageXML *serstorage, RDK::UNet* owner_level, int sublevel=-1);
 
 // Возращает все внешние связи c компонентом cont и его дочерними компонентами в виде xml в буфер buffer
 // Информация о связях формируется относительно владельца компонента cont!
 // Имена формируются до уровня компонента owner_level
 // Если owner_level не задан, то имена формируются до уровня текущего компонента
-virtual int Model_GetComponentPersonalLinks(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage, RDK::UANet* owner_level);
+virtual int Model_GetComponentPersonalLinks(RDK::UNet* cont, RDK::Serialize::USerStorageXML *serstorage, RDK::UNet* owner_level);
 
 // Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния в xml
-virtual int Model_SaveComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage, bool links, unsigned int params_type_mask);
+virtual int Model_SaveComponent(RDK::UNet* cont, RDK::Serialize::USerStorageXML *serstorage, bool links, unsigned int params_type_mask);
 
 // Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния из xml
-virtual int Model_LoadComponent(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage, bool links);
+virtual int Model_LoadComponent(RDK::UNet* cont, RDK::Serialize::USerStorageXML *serstorage, bool links);
 
 // Сохраняет все свойства компонента и его дочерних компонент в xml
-virtual int Model_SaveComponentProperties(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage, unsigned int type_mask);
+virtual int Model_SaveComponentProperties(RDK::UNet* cont, RDK::Serialize::USerStorageXML *serstorage, unsigned int type_mask);
 
 // Загружает все свойства компонента и его дочерних компонент из xml
-virtual int Model_LoadComponentProperties(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage);
+virtual int Model_LoadComponentProperties(RDK::UNet* cont, RDK::Serialize::USerStorageXML *serstorage);
 
 // Сохраняет внутренние данные компонента, и его _непосредственных_ дочерних компонент, исключая
 // переменные состояния в xml
-virtual int Model_SaveComponentDrawInfo(RDK::UANet* cont, RDK::Serialize::USerStorageXML *serstorage);
+virtual int Model_SaveComponentDrawInfo(RDK::UNet* cont, RDK::Serialize::USerStorageXML *serstorage);
 // --------------------------
 
 // --------------------------
@@ -778,7 +778,7 @@ protected:
 protected:
 // Осуществляет поиск компонента по длинному строковому id
 // Если строковое id не задано, то возвращает указатель на модель
-UEPtr<UAContainer> FindComponent(const char *stringid) const;
+UEPtr<UContainer> FindComponent(const char *stringid) const;
 
 // Восстановление настроек по умолчанию и сброс процесса счета
 virtual bool ADefault(void);
@@ -836,7 +836,7 @@ extern "C" DLLPAddNewStorage DLLAddNewStorage;
 
 // Создает новую среду и помещает в конец массива
 // Возвращает указатель на среду
-typedef UAContainerEnvironment* (RDK_CALL *DLLPAddNewEnvironment)(UAContainerStorage *storage,bool isinit,list<UAContainer*>* external_classes, list<UALibrary*>* external_libs);
+typedef UAContainerEnvironment* (RDK_CALL *DLLPAddNewEnvironment)(UAContainerStorage *storage,bool isinit,list<UContainer*>* external_classes, list<ULibrary*>* external_libs);
 extern "C" DLLPAddNewEnvironment DLLAddNewEnvironment;
 
 // Создает новый движок и помещает в конец массива

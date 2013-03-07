@@ -10,13 +10,13 @@ extern "C++"  {
 RDK_LIB_TYPE RDK::UEPtr<RDK::UEngine>& RDK_CALL GetEngine(void);
 
 // Возвращает ссылку на указатель среды выполнения
-RDK_LIB_TYPE RDK::UEPtr<RDK::UAEnvironment>& RDK_CALL GetEnvironment(void);
+RDK_LIB_TYPE RDK::UEPtr<RDK::UEnvironment>& RDK_CALL GetEnvironment(void);
 
 // Возвращает ссылку на указатель хранилища
-RDK_LIB_TYPE RDK::UEPtr<RDK::UAStorage>& RDK_CALL GetStorage(void);
+RDK_LIB_TYPE RDK::UEPtr<RDK::UStorage>& RDK_CALL GetStorage(void);
 
 // Возвращает указатель на текущую модель
-RDK_LIB_TYPE RDK::UEPtr<RDK::UAContainer> RDK_CALL GetModel(void);
+RDK_LIB_TYPE RDK::UEPtr<RDK::UContainer> RDK_CALL GetModel(void);
 }
 
 namespace RDK {

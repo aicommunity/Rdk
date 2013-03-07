@@ -16,7 +16,7 @@ See file license.txt for more information
 
 namespace RDK {
 
-class UANet: public UADItem
+class UNet: public UADItem
 {
 protected: // Основные свойства
 
@@ -24,15 +24,15 @@ public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UANet(void);
-virtual ~UANet(void);
+UNet(void);
+virtual ~UNet(void);
 // --------------------------
 
 // --------------------------
 // Методы доступа к свойствам
 // --------------------------
 template<typename T>
-ULinksListT<T>& GetLinks(ULinksListT<T> &linkslist, UEPtr<UAContainer> netlevel, bool exclude_internals=false, UEPtr<UAContainer> internal_level=0) const;
+ULinksListT<T>& GetLinks(ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel, bool exclude_internals=false, UEPtr<UContainer> internal_level=0) const;
 
 // Возращает все связи между двумя компонентами в виде xml в буфер buffer
 // включая связи этого компонента
@@ -40,7 +40,7 @@ ULinksListT<T>& GetLinks(ULinksListT<T> &linkslist, UEPtr<UAContainer> netlevel,
 // второго объекта. Работает симметрично в обе стороны.
 // если 'sublevel' == 0, то возвращает связи только между этими объектами
 template<typename T>
-ULinksListT<T>& GetPersonalLinks(UEPtr<RDK::UANet> cont, ULinksListT<T> &linkslist, UEPtr<UAContainer> netlevel, int sublevel=-1);
+ULinksListT<T>& GetPersonalLinks(UEPtr<RDK::UNet> cont, ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel, int sublevel=-1);
 // --------------------------
 
 // --------------------------
@@ -50,7 +50,7 @@ ULinksListT<T>& GetPersonalLinks(UEPtr<RDK::UANet> cont, ULinksListT<T> &linksli
 // и значений параметров
 // Если 'stor' == 0, то создание объектов осуществляется
 // в том же хранилище где располагается этот объект
-virtual bool Copy(UEPtr<UAContainer> target, UEPtr<UAStorage> stor=0, bool copystate=false) const;
+virtual bool Copy(UEPtr<UContainer> target, UEPtr<UStorage> stor=0, bool copystate=false) const;
 
 // Осуществляет освобождение этого объекта в его хранилище
 // или вызов деструктора, если Storage == 0
@@ -64,7 +64,7 @@ virtual void Free(void);
 // в качестве компоненты данного объекта
 // Метод возвращает 'true' в случае допустимости
 // и 'false' в случае некорректного типа
-virtual bool CheckComponentType(UEPtr<UAContainer> comp) const;
+virtual bool CheckComponentType(UEPtr<UContainer> comp) const;
 // --------------------------
 
 // --------------------------
@@ -75,13 +75,13 @@ protected:
 // при добавлении дочернего компонента в этот объект
 // Метод будет вызван только если comp был
 // успешно добавлен в список компонент
-virtual bool AAddComponent(UEPtr<UAContainer> comp, UEPtr<UIPointer> pointer=0);
+virtual bool AAddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer=0);
 
 // Выполняет предварительные пользовательские действия
 // при удалении дочернего компонента из этого объекта
 // Метод будет вызван только если comp
 // существует в списке компонент
-virtual bool ADelComponent(UEPtr<UAContainer> comp);
+virtual bool ADelComponent(UEPtr<UContainer> comp);
 // --------------------------
 
 // ----------------------
@@ -105,7 +105,7 @@ virtual bool CreateLink(const NameT &item, int item_index,
 
 // Устанавливает все связи из массива 'linkslist'
 template<typename T>
-bool CreateLinks(const ULinksListT<T> &linkslist, UEPtr<UANet> owner_level=0);
+bool CreateLinks(const ULinksListT<T> &linkslist, UEPtr<UNet> owner_level=0);
 
 // Разрывает все связи с выходом элемента сети, если
 // 'id' - есть Id элемента сети.
@@ -132,7 +132,7 @@ virtual bool BreakLink(const NameT &itemname, int item_index,
 // Разрывает все связи сети
 // исключая ее внутренние связи и обратные связи
 // brklevel - объект, относительно которого связи считаются внутренними
-virtual void BreakLinks(UEPtr<UAContainer> brklevel);
+virtual void BreakLinks(UEPtr<UContainer> brklevel);
 
 // Разрывает заданные связи сети
 virtual bool BreakLinks(const ULinksList &linkslist);
@@ -154,10 +154,10 @@ virtual bool CheckLink(const NameT &itemname, int item_index,
 // --------------------------
 protected:
 template<typename T>
-ULinksListT<T>& GetLinks(UEPtr<UAContainer> cont, ULinksListT<T> &linkslist, UEPtr<UAContainer> netlevel, bool exclude_internals, UEPtr<UAContainer> internal_level=0) const;
+ULinksListT<T>& GetLinks(UEPtr<UContainer> cont, ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel, bool exclude_internals, UEPtr<UContainer> internal_level=0) const;
 
 template<typename T>
-ULinksListT<T>& GetPersonalLinks(UEPtr<UAContainer> cont, UEPtr<UAContainer> cont2, ULinksListT<T> &linkslist, UEPtr<UAContainer> netlevel) const;
+ULinksListT<T>& GetPersonalLinks(UEPtr<UContainer> cont, UEPtr<UContainer> cont2, ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel) const;
 // --------------------------
 
 

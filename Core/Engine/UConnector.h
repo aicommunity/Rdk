@@ -13,7 +13,7 @@ See file license.txt for more information
 #ifndef UAConnectorH
 #define UAConnectorH
 
-#include "UAContainer.h"
+#include "UContainer.h"
 
 namespace RDK {
 
@@ -25,13 +25,13 @@ enum { ipDataSingle=ipData|ipSingle, ipDataRange=ipData|ipRange,
 	   ipDataList=ipData|ipList, ipCompSingle=ipComp|ipSingle,
 	   ipCompRange=ipComp|ipRange, ipCompList=ipComp|ipList };
 
-class UAItem;
+class UItem;
 
 // Описание подключаемого элемента "UConnectedITEM"
 struct UCItem
 {
 // Подключаемый элемент
-UAItem* Item;
+UItem* Item;
 
 // Индекс выхода
 int Index;
@@ -103,8 +103,8 @@ void Resize(int newsize);
 
 // Ищет в контейнере первый заданный элемент начиная с индекса index
 // и возвращает его описание
-UCItem Find(const UEPtr<UAItem> item, int index=0) const;
-UCItem Find(const UAItem *const item, int index=0) const;
+UCItem Find(const UEPtr<UItem> item, int index=0) const;
+UCItem Find(const UItem *const item, int index=0) const;
 
 // Ищет в контейнере первый заданный элемент начиная с индекса index
 // и возвращает его индекс или -1 если элемент не найден
@@ -143,9 +143,9 @@ int GetSize(void) const;
 // --------------------------
 };
 
-class UAConnector: public UAContainer
+class UConnector: public UContainer
 {
-friend class UAItem;
+friend class UItem;
 private: // Хранилище связей
 // Список указателей на подключенные элементы сети
 UCItemList CItemList;
@@ -162,8 +162,8 @@ public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UAConnector(void);
-virtual ~UAConnector(void);
+UConnector(void);
+virtual ~UConnector(void);
 // --------------------------
 
 // --------------------------
@@ -198,8 +198,8 @@ const UCItem& GetCItem(int c_index) const;
 
 // Возвращает информацию об индексах связей с этим item или -1, -1
 // если такая связь отсутствует
-UCLink GetCLink(const UEPtr<UAItem> item) const;
-UCLink GetCLink(const UAItem* const item) const;
+UCLink GetCLink(const UEPtr<UItem> item) const;
+UCLink GetCLink(const UItem* const item) const;
 // --------------------------
 
 // ----------------------
@@ -209,19 +209,19 @@ protected:
 // Устанавливает связь с элементом сети 'na' со входом по индексу index.
 // Возвращает false если na уже подключен к этому входу.
 // При успешном подключении c_index содержит реальный индекс подключенного входа
-virtual bool ConnectToItem(UEPtr<UAItem> na, int i_index, int &c_index);
+virtual bool ConnectToItem(UEPtr<UItem> na, int i_index, int &c_index);
 
 // Разрывает связь с элементом сети 'na'
-virtual void DisconnectFromItem(UEPtr<UAItem> na);
+virtual void DisconnectFromItem(UEPtr<UItem> na);
 
 // Разрывает связь с элементом сети подключенным ко входу 'index'
 virtual void DisconnectFromIndex(int c_index);
 
 // Выполняет действия после физически установленой связи
-virtual bool AConnectToItem(UEPtr<UAItem> na, int i_index, int c_index);
+virtual bool AConnectToItem(UEPtr<UItem> na, int i_index, int c_index);
 
 // Выполняет действия после физически разорваной связи
-virtual void ADisconnectFromItem(UEPtr<UAItem> na, int i_index, int c_index);
+virtual void ADisconnectFromItem(UEPtr<UItem> na, int i_index, int c_index);
 
 public:
 // Разрывает все текущие связи
@@ -230,7 +230,7 @@ virtual void DisconnectAllItems(void);
 // Разрывает все связи объекта
 // исключая его внутренние связи и обратные связи
 // brklevel - объект, относительно которого связи считаются внутренними
-virtual void DisconnectByObject(UEPtr<UAContainer> brklevel);
+virtual void DisconnectByObject(UEPtr<UContainer> brklevel);
 
 public:
 // Возвращает интерфейс входа
@@ -240,24 +240,24 @@ public:
 //NameT GetInputInterfaceTypeName(int c_index);
 
 // Проверяет, допустимо ли подключение заданного item к этому коннектору
-virtual bool CheckItem(UEPtr<UAItem> item, int item_index, int conn_index);
+virtual bool CheckItem(UEPtr<UItem> item, int item_index, int conn_index);
 
 // Проверяет, существует ли связь с заданным коннектором
-bool CheckLink(const UEPtr<UAItem> &item) const;
+bool CheckLink(const UEPtr<UItem> &item) const;
 
 // Проверяет, существует ли связь с заданным коннектором и конкретным входом
-bool CheckLink(const UEPtr<UAItem> &item, int item_index) const;
+bool CheckLink(const UEPtr<UItem> &item, int item_index) const;
 
 // Проверяет, существует ли связь с заданным коннектором и конкретным входом
-bool CheckLink(const UEPtr<UAItem> &item, int item_index, int conn_index) const;
+bool CheckLink(const UEPtr<UItem> &item, int item_index, int conn_index) const;
 
 // Возвращает список подключений
 template<typename T>
-ULinksListT<T>& GetLinks(ULinksListT<T> &linkslist, UEPtr<UAContainer> netlevel, bool exclude_internals=false, UEPtr<UAContainer> internal_level=0) const;
+ULinksListT<T>& GetLinks(ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel, bool exclude_internals=false, UEPtr<UContainer> internal_level=0) const;
 
 // Возвращает список подключений непосредственно коннектора cont
 template<typename T>
-ULinksListT<T>& GetPersonalLinks(UEPtr<UAContainer> cont, ULinksListT<T> &linkslist, UEPtr<UAContainer> netlevel) const;
+ULinksListT<T>& GetPersonalLinks(UEPtr<UContainer> cont, ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel) const;
 // ----------------------
 
 // --------------------------
@@ -320,14 +320,14 @@ class UIPropertyInput
 {
 protected: // Данные
 /// Указатель на компонент-источник данных
-UEPtr<UAItem> Item;
+UEPtr<UItem> Item;
 
 /// Имя выхода компнента-источника данных
 std::string ItemOutputName;
 
 public:
 /// Возвращает указатель на компонент-источник
-UEPtr<UAItem> GetItem(void);
+UEPtr<UItem> GetItem(void);
 
 /// Возвращает имя подключенного выхода
 const std::string& GetItemOutputName(void);
@@ -337,7 +337,7 @@ class UIPropertyOutput
 {
 protected: // Данные
 /// Указатели на компоненты-приемники данных
-std::vector<UEPtr<UAItem> > Connectors;
+std::vector<UEPtr<UItem> > Connectors;
 
 /// Имя выхода компнента-источника данных
 std::vector<std::string> ConnectorInputNames;
@@ -347,7 +347,7 @@ public:
 size_t GetNumConnectors(void);
 
 /// Возвращает указатель на компонент-приемник
-UEPtr<UAConnector> GetConnector(int index);
+UEPtr<UConnector> GetConnector(int index);
 
 /// Возвращает имя подключенного входа компонента-приемника
 const std::string& GetConnectorInputName(int index);

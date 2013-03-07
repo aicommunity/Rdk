@@ -13,12 +13,12 @@ See file license.txt for more information
 #ifndef UALibraryH
 #define UALibraryH
 
-//#include "UALibrary.h"
-#include "UAStorage.h"
+//#include "ULibrary.h"
+#include "UStorage.h"
 
 namespace RDK {
 
-class UALibrary//: public UALibrary
+class ULibrary//: public ULibrary
 {
 protected: // Параметры
 // Имя библиотеки
@@ -36,16 +36,16 @@ vector<string> Incomplete;
 
 private: // Внутренние данные
 // Хранилище для загрузки
-UAStorage *Storage;
+UStorage *Storage;
 // Массив образцов классов, формируемый библиотекой
-//map<string, UAComponent*> ClassSamples;
+//map<string, UComponent*> ClassSamples;
 
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UALibrary(const string &name, const string &version);
-virtual ~UALibrary(void);
+ULibrary(const string &name, const string &version);
+virtual ~ULibrary(void);
 // --------------------------
 
 // --------------------------
@@ -74,7 +74,7 @@ const vector<string>& GetIncomplete(void) const;
 // Заполняет заданное хранилище набором образцов классов.
 // Если класс с заданным именем уже существует, то он пропускается.
 // Возвращает число реально загруженных классов.
-virtual int Upload(UAStorage *storage);
+virtual int Upload(UStorage *storage);
 // --------------------------
 
 // --------------------------
@@ -82,16 +82,16 @@ virtual int Upload(UAStorage *storage);
 // --------------------------
 protected:
 // Добавляет в хранилище очередной класс
-virtual bool UploadClass(const UId &classid, UEPtr<UAComponent> cont);
-virtual bool UploadClass(const string &name, UEPtr<UAComponent> cont);
+virtual bool UploadClass(const UId &classid, UEPtr<UComponent> cont);
+virtual bool UploadClass(const string &name, UEPtr<UComponent> cont);
 
 // Заполняет массив ClassSamples готовыми экземплярами образцов и их именами.
 // Не требуется предварительная очистка массива и уборка памяти.
-virtual void CreateClassSamples(UAStorage *storage)=0;
+virtual void CreateClassSamples(UStorage *storage)=0;
 // --------------------------
 };
 
-typedef UALibrary* PUALibrary;
+typedef ULibrary* PUALibrary;
 
 }
 

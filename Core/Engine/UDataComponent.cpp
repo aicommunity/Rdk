@@ -1,7 +1,7 @@
 #ifndef UADATA_COMPONENT_CPP
 #define UADATA_COMPONENT_CPP
 
-#include "UADataComponent.h"
+#include "UDataComponent.h"
 
 namespace RDK {
 
@@ -99,12 +99,12 @@ bool UVariable::CheckMask(unsigned int mask) const
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UADataComponent::UADataComponent(void)
+UDataComponent::UDataComponent(void)
 {
 
 }
 
-UADataComponent::~UADataComponent(void)
+UDataComponent::~UDataComponent(void)
 {
  ClearLookupPropertyTable();
  ShareLookupTable.clear();
@@ -115,14 +115,14 @@ UADataComponent::~UADataComponent(void)
 // Системные методы управления объектом
 // --------------------------
 // Создает экземпляр описания класса
-UContainerDescription* UADataComponent::NewDescription(void)
+UContainerDescription* UDataComponent::NewDescription(void)
 {
  UContainerDescription* result=new UContainerDescription;
 
  return result;
 }
 
-UContainerDescription* UADataComponent::ANewDescription(UComponentDescription* description)
+UContainerDescription* UDataComponent::ANewDescription(UComponentDescription* description)
 {
  UContainerDescription* result=dynamic_cast<UContainerDescription*>(description);
  if(!result)
@@ -144,7 +144,7 @@ UContainerDescription* UADataComponent::ANewDescription(UComponentDescription* d
 // Методы доступа к параметрам
 // --------------------------
 // Возвращает значение параметра по имени 'name'
-UEPtr<UVariableData> UADataComponent::GetProperty(const NameT &name, UEPtr<UVariableData> values) const
+UEPtr<UVariableData> UDataComponent::GetProperty(const NameT &name, UEPtr<UVariableData> values) const
 {
  VariableMapCIteratorT I=PropertiesLookupTable.find(name);
 
@@ -154,7 +154,7 @@ UEPtr<UVariableData> UADataComponent::GetProperty(const NameT &name, UEPtr<UVari
  return values;
 }
 
-std::string& UADataComponent::GetPropertyValue(const NameT &name, std::string &values) const
+std::string& UDataComponent::GetPropertyValue(const NameT &name, std::string &values) const
 {
  Serialize::USerStorageXML data;
 
@@ -173,7 +173,7 @@ std::string& UADataComponent::GetPropertyValue(const NameT &name, std::string &v
 }
 
 // Устанавливает значение параметра по имени 'name'
-void UADataComponent::SetProperty(const NameT &name, UEPtr<UVariableData> values)
+void UDataComponent::SetProperty(const NameT &name, UEPtr<UVariableData> values)
 {
  VariableMapCIteratorT I=PropertiesLookupTable.find(name);
 
@@ -181,7 +181,7 @@ void UADataComponent::SetProperty(const NameT &name, UEPtr<UVariableData> values
   I->second.Property->Load(values);
 }
 
-void UADataComponent::SetPropertyValue(const NameT &name, const std::string &values)
+void UDataComponent::SetPropertyValue(const NameT &name, const std::string &values)
 {
  Serialize::USerStorageXML data;
  VariableMapCIteratorT I=PropertiesLookupTable.find(name);
@@ -203,14 +203,14 @@ void UADataComponent::SetPropertyValue(const NameT &name, const std::string &val
  }
 }
 
-const UADataComponent::VariableMapT& UADataComponent::GetPropertiesList(void) const
+const UDataComponent::VariableMapT& UDataComponent::GetPropertiesList(void) const
 {
  return PropertiesLookupTable;
 }
 
 // Копирует все параметры этого объекта в объект 'comp', если возможно.
 // копируются только свойства типа type
-void UADataComponent::CopyProperties(UEPtr<UADataComponent> comp, unsigned int type) const
+void UDataComponent::CopyProperties(UEPtr<UDataComponent> comp, unsigned int type) const
 {
  Serialize::USerStorageBinary databuffer;
  for(VariableMapCIteratorT I=PropertiesLookupTable.begin(),
@@ -224,7 +224,7 @@ void UADataComponent::CopyProperties(UEPtr<UADataComponent> comp, unsigned int t
 }
 
 // Ищет имя свойства по указателю на него
-const NameT& UADataComponent::FindPropertyName(UEPtr<const UIProperty> prop) const
+const NameT& UDataComponent::FindPropertyName(UEPtr<const UIProperty> prop) const
 {
   for(VariableMapCIteratorT I=PropertiesLookupTable.begin(),
 						J=PropertiesLookupTable.end(); I!=J; ++I)
@@ -236,7 +236,7 @@ const NameT& UADataComponent::FindPropertyName(UEPtr<const UIProperty> prop) con
 }
 
 // Ищет переменную свойства в таблице по указателю на него
-UADataComponent::VariableMapCIteratorT UADataComponent::FindPropertyVariable(UEPtr<const UIProperty> prop) const
+UDataComponent::VariableMapCIteratorT UDataComponent::FindPropertyVariable(UEPtr<const UIProperty> prop) const
 {
   for(VariableMapCIteratorT I=PropertiesLookupTable.begin(),
 						J=PropertiesLookupTable.end(); I!=J; ++I)
@@ -248,7 +248,7 @@ UADataComponent::VariableMapCIteratorT UADataComponent::FindPropertyVariable(UEP
 }
 
 // Ищет тип свойства по указателю на него
-unsigned int UADataComponent::FindPropertyType(UEPtr<const UIProperty> prop) const
+unsigned int UDataComponent::FindPropertyType(UEPtr<const UIProperty> prop) const
 {
   for(VariableMapCIteratorT I=PropertiesLookupTable.begin(),
 						J=PropertiesLookupTable.end(); I!=J; ++I)
@@ -266,7 +266,7 @@ unsigned int UADataComponent::FindPropertyType(UEPtr<const UIProperty> prop) con
 // Добавляет параметр с именем 'name' в таблицу соотвествий
 // параметров и назначает ему корректный индекс
 // Должна вызываться в конструкторах классов
-void UADataComponent::AddLookupProperty(const NameT &name, unsigned int type, UEPtr<UIProperty> property, bool delenable)
+void UDataComponent::AddLookupProperty(const NameT &name, unsigned int type, UEPtr<UIProperty> property, bool delenable)
 {
  if(PropertiesLookupTable.find(name) != PropertiesLookupTable.end())
   throw new EPropertyNameAlreadyExist(name);
@@ -280,7 +280,7 @@ void UADataComponent::AddLookupProperty(const NameT &name, unsigned int type, UE
 }
 
 // Изменяет тип параметра
-bool UADataComponent::ChangeLookupPropertyType(const NameT &name, unsigned int type)
+bool UDataComponent::ChangeLookupPropertyType(const NameT &name, unsigned int type)
 {
  VariableMapIteratorT I=PropertiesLookupTable.find(name);
 
@@ -293,7 +293,7 @@ bool UADataComponent::ChangeLookupPropertyType(const NameT &name, unsigned int t
 
 // Удаляет параметр с именем 'name' из таблицы соотвествий
 // параметров
-void UADataComponent::DelLookupProperty(const NameT &name)
+void UDataComponent::DelLookupProperty(const NameT &name)
 {
  VariableMapIteratorT I=PropertiesLookupTable.find(name);
 
@@ -308,7 +308,7 @@ void UADataComponent::DelLookupProperty(const NameT &name)
 }
 
 // Удаляет всю таблицу соответствий
-void UADataComponent::ClearLookupPropertyTable(void)
+void UDataComponent::ClearLookupPropertyTable(void)
 {
  while(PropertiesLookupTable.begin() != PropertiesLookupTable.end())
  {
@@ -328,7 +328,7 @@ void UADataComponent::ClearLookupPropertyTable(void)
 // Добавляет общее свойство параметр с именем 'name' в таблицу соотвествий
 // общих свойств и назначает ему корректный индекс
 // Должна вызываться в конструкторах классов
-UId UADataComponent::AddLookupShare(const NameT &name, UEPtr<UIShare> property)
+UId UDataComponent::AddLookupShare(const NameT &name, UEPtr<UIShare> property)
 {
  ShareMapIteratorT I=ShareLookupTable.end();
  UId id=1;

@@ -70,7 +70,7 @@ UADItem::~UADItem(void)
 
 // Возвращает указатель на вектор входов InputData по указателю на item
 // Возвращает 0 если citem == 0 или не найден в списке подключений
-const UEPtr<const UItemData>& UADItem::GetInputData(const UEPtr<UAItem> &citem) const
+const UEPtr<const UItemData>& UADItem::GetInputData(const UEPtr<UItem> &citem) const
 {
  UItemData result;
 
@@ -394,7 +394,7 @@ bool UADItem::SetOutputDataElementSize(const vector<size_t> &value)
 // ----------------------
 // Устанавливает связь с элементом сети 'na' со входом по индексу index.
 // Переназначает связь если na уже подключен.
-bool UADItem::ConnectToItem(UEPtr<UAItem> na, int i_index, int &c_index)
+bool UADItem::ConnectToItem(UEPtr<UItem> na, int i_index, int &c_index)
 {
  UEPtr<UADItem> nad=dynamic_pointer_cast<UADItem>(na);
  if(!nad)
@@ -455,7 +455,7 @@ bool UADItem::ConnectToItem(UEPtr<UAItem> na, int i_index, int &c_index)
  UpdatePointers();
  CalcMinMaxInputDataSize();
 
- if(!UAConnector::ConnectToItem(static_pointer_cast<UAItem>(nad), i_index, c_index))
+ if(!UConnector::ConnectToItem(static_pointer_cast<UItem>(nad), i_index, c_index))
   return false;
 
  // Ищем указатель на выходные данные
@@ -503,7 +503,7 @@ void UADItem::DisconnectFromIndex(int c_index)
   }
  }
 
- UAConnector::DisconnectFromIndex(c_index);
+ UConnector::DisconnectFromIndex(c_index);
 
 // InputDataSize[c_index]=0;
  InputData[c_index]=0;
@@ -518,9 +518,9 @@ void UADItem::DisconnectFromIndex(int c_index)
 // ----------------------
 // Копирует этот объект в 'target' с сохранением всех компонент
 // и значений параметров
-bool UADItem::Copy(UEPtr<UAContainer> target, UEPtr<UAStorage> stor, bool copystate) const
+bool UADItem::Copy(UEPtr<UContainer> target, UEPtr<UStorage> stor, bool copystate) const
 {
- if(!UAItem::Copy(target,stor,copystate))
+ if(!UItem::Copy(target,stor,copystate))
   return false;
 
  UEPtr<UADItem> item=dynamic_pointer_cast<UADItem>(target);
@@ -537,7 +537,7 @@ bool UADItem::Default(void)
 // SetOutputDataElementSize(0,sizeof(void*));
  SetOutputDataSize(0,1);
 
- return UAItem::Default();
+ return UItem::Default();
 }
 
 // Обеспечивает сборку внутренней структуры объекта
@@ -609,7 +609,7 @@ bool UADItem::Build(void)
   }
  }       */
 
- if(!UAItem::Build())
+ if(!UItem::Build())
   return false;
 
  return true;
@@ -618,7 +618,7 @@ bool UADItem::Build(void)
 // Сброс процесса счета без потери настроек
 bool UADItem::Reset(void)
 {
- if(!UAContainer::Reset())
+ if(!UContainer::Reset())
   return false;
 // FillOutputData();
 

@@ -11,19 +11,19 @@ RDK::UEPtr<RDK::UEngine>& RDK_CALL GetEngine(void)
 }
 
 // Возвращает ссылку на указатель среды выполнения
-RDK::UEPtr<RDK::UAEnvironment>& RDK_CALL GetEnvironment(void)
+RDK::UEPtr<RDK::UEnvironment>& RDK_CALL GetEnvironment(void)
 {
  return PEnvironment;
 }
 
 // Возвращает ссылку на указатель хранилища
-RDK::UEPtr<RDK::UAStorage>& RDK_CALL GetStorage(void)
+RDK::UEPtr<RDK::UStorage>& RDK_CALL GetStorage(void)
 {
  return PStorage;
 }
 
 // Возвращает указатель на текущую модель
-RDK::UEPtr<RDK::UAContainer> RDK_CALL GetModel(void)
+RDK::UEPtr<RDK::UContainer> RDK_CALL GetModel(void)
 {
  return PEngine->GetModel();
 }

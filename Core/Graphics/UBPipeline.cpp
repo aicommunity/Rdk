@@ -98,7 +98,7 @@ UBPipeline::~UBPipeline(void)
 // в качестве компоненты данного объекта
 // Метод возвращает 'true' в случае допустимости
 // и 'false' в случае некорректного типа
-bool UBPipeline::CheckComponentType(UEPtr<UAContainer> comp) const
+bool UBPipeline::CheckComponentType(UEPtr<UContainer> comp) const
 {
  if(dynamic_pointer_cast<UBAbstract>(comp))
   return true;
@@ -124,7 +124,7 @@ UBPipeline* UBPipeline::New(void)
 // Метод будет вызван только если comp был
 // успешно добавлен в список компонент
 // Может быть передан указатель на локальную переменную
-bool UBPipeline::AAddComponent(UEPtr<UAContainer> comp, UEPtr<UIPointer> pointer)
+bool UBPipeline::AAddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer)
 {
  CalcNumIOs();
  return true;
@@ -134,7 +134,7 @@ bool UBPipeline::AAddComponent(UEPtr<UAContainer> comp, UEPtr<UIPointer> pointer
 // при удалении дочернего компонента из этого объекта
 // Метод будет вызван только если comp
 // существует в списке компонент
-bool UBPipeline::ADelComponent(UEPtr<UAContainer> comp)
+bool UBPipeline::ADelComponent(UEPtr<UContainer> comp)
 {
  CalcNumIOs();
  return true;

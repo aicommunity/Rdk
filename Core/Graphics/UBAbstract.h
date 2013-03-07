@@ -15,12 +15,12 @@ See file license.txt for more information
 
 #include "UBitmap.h"
 #include "UBitmapVector.h"
-#include "../Engine/UANet.h"
+#include "../Engine/UNet.h"
 
 namespace RDK {
 
 // Ѕазовый класс дл€ всех классов обработки изображений
-class UBAbstract: public UANet
+class UBAbstract: public UNet
 {
 protected: // ѕараметры
 // ‘лаг, разрешающий использовать массив внутренних входных данных
@@ -108,10 +108,10 @@ virtual UBAbstract* New(void)=0;
 // ----------------------
 protected:
 // ¬ыполн€ет действи€ после физически установленой св€зи
-virtual bool AConnectToItem(UEPtr<UAItem> na, int i_index, int c_index);
+virtual bool AConnectToItem(UEPtr<UItem> na, int i_index, int c_index);
 
 // ¬ыполн€ет действи€ после физически разорваной св€зи
-virtual void ADisconnectFromItem(UEPtr<UAItem> na, int i_index, int c_index);
+virtual void ADisconnectFromItem(UEPtr<UItem> na, int i_index, int c_index);
 // ----------------------
 
 // --------------------------

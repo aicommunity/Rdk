@@ -35,13 +35,13 @@ UBAEnvironment::~UBAEnvironment(void)
 // Возвращает указатель на хранилище
 UBAStorage* UBAEnvironment::GetStorage(void)
 {
- return dynamic_cast<UBAStorage*>(UAEnvironment::GetStorage());
+ return dynamic_cast<UBAStorage*>(UEnvironment::GetStorage());
 }
 
 // Возвращает указатель на модель
 UEPtr<UBAModel> UBAEnvironment::GetModel(void)
 {
- return dynamic_pointer_cast<UBAModel>(UAEnvironment::GetModel());
+ return dynamic_pointer_cast<UBAModel>(UEnvironment::GetModel());
 }
 
 // Создает новую модель из хранилища по id класса
@@ -50,11 +50,11 @@ bool UBAEnvironment::CreateModel(const UId& classid)
  if(!GetStorage())
   return false;
 
- UEPtr<UAComponent> component=GetStorage()->GetClass(classid);
+ UEPtr<UComponent> component=GetStorage()->GetClass(classid);
  if(!component)
   return false;
 
- if(!UAEnvironment::CreateModel(classid))
+ if(!UEnvironment::CreateModel(classid))
   return false;
 
  return true;
@@ -63,7 +63,7 @@ bool UBAEnvironment::CreateModel(const UId& classid)
 // Создает новую модель из хранилища по имени класса
 bool UBAEnvironment::CreateModel(const NameT& classname)
 {
- return UAEnvironment::CreateModel(classname);
+ return UEnvironment::CreateModel(classname);
 }
 
 
@@ -71,14 +71,14 @@ bool UBAEnvironment::CreateModel(const NameT& classname)
 // Уничтожает текущую модель
 bool UBAEnvironment::DestroyModel(void)
 {
- return UAEnvironment::DestroyModel();
+ return UEnvironment::DestroyModel();
 }
 
 // Заполняет хранилище данными библиотек
 // Операция предварительно уничтожает модель и очищает хранилище
 bool UBAEnvironment::BuildStorage(void)
 {
- return UAEnvironment::BuildStorage();
+ return UEnvironment::BuildStorage();
 }
 // --------------------------
 
@@ -307,7 +307,7 @@ UBColor* UBAEnvironment::GetOutputImageData(int i)
 // Восстановление настроек по умолчанию и сброс процесса счета
 bool UBAEnvironment::ADefault(void)
 {
- if(!UAEnvironment::ADefault())
+ if(!UEnvironment::ADefault())
   return false;
 
  DefaultColorModel=ubmY8;
@@ -338,19 +338,19 @@ bool UBAEnvironment::ABuild(void)
   model->SetOutputs(InputImages.GetBuffer());
  }
 
- return UAEnvironment::ABuild();
+ return UEnvironment::ABuild();
 }
 
 // Сброс процесса счета.
 bool UBAEnvironment::AReset(void)
 {
- return UAEnvironment::AReset();
+ return UEnvironment::AReset();
 }
 
 // Выполняет расчет этого объекта
 bool UBAEnvironment::ACalculate(void)
 {
- if(!UAEnvironment::ACalculate())
+ if(!UEnvironment::ACalculate())
   return false;
 
  UEPtr<UBAbstract> model=dynamic_pointer_cast<UBAbstract>(GetModel());

@@ -17,7 +17,7 @@ See file license.txt for more information
 
 namespace RDK {
 
-class UAContainer;
+class UContainer;
 
 class UController: public RDK::UModule
 {
@@ -27,7 +27,7 @@ bool Enabled;
 
 protected: // Данные
 // Указатель на компоненты
-std::vector<UAContainer*> Components;
+std::vector<UContainer*> Components;
 
 public:
 // --------------------------
@@ -52,10 +52,10 @@ bool IsEnabled(bool value);
 size_t GetNumComponents(void) const;
 
 // Возвращает компонент к которому подключен контроллер по индексу
-UAContainer* GetComponents(size_t index);
+UContainer* GetComponents(size_t index);
 
 // Возвращает индекс компонента по указателю
-int FindComponent(UAContainer* component) const;
+int FindComponent(UContainer* component) const;
 // --------------------------
 
 // --------------------------
@@ -63,11 +63,11 @@ int FindComponent(UAContainer* component) const;
 // --------------------------
 public:
 // Связывает интерфейс с компонентом
-virtual bool Link(UAContainer* component, bool forchilds=false);
+virtual bool Link(UContainer* component, bool forchilds=false);
 
 // Отвязывает интерфейс от компонента
 virtual bool UnLink(int index, bool forchilds=false);
-virtual bool UnLink(UAContainer* component, bool forchilds=false);
+virtual bool UnLink(UContainer* component, bool forchilds=false);
 virtual bool UnLinkAll(bool forchilds=false);
 
 // Обновляет интерфейс
@@ -79,7 +79,7 @@ virtual bool Update(void);
 // --------------------------
 protected:
 // Связывает интерфейс с компонентом
-virtual bool ALink(UAContainer* component, bool forchilds=false)=0;
+virtual bool ALink(UContainer* component, bool forchilds=false)=0;
 
 // Отвязывает интерфейс от компонента
 virtual bool AUnLink(int index, bool forchilds=false)=0;

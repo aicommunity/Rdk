@@ -13,13 +13,13 @@ See file license.txt for more information
 #define UAContainerH
 
 #include "../Math/MVector.h"
-#include "UADataComponent.h"
+#include "UDataComponent.h"
 #include "UController.h"
 #include "UTime.h"
 
 namespace RDK {
 
-class UAContainer;
+class UContainer;
 
 // Класс описания локальных указателей
 class UIPointer
@@ -27,20 +27,20 @@ class UIPointer
 protected: // Данные
 
 public:
-virtual UEPtr<UAContainer> const Get(void) const=0;
+virtual UEPtr<UContainer> const Get(void) const=0;
 
-virtual void Set(UEPtr<UAContainer> source)=0;
+virtual void Set(UEPtr<UContainer> source)=0;
 
-virtual void Del(UEPtr<UAContainer> source)=0;
+virtual void Del(UEPtr<UContainer> source)=0;
 
 // Проверяет, существует ли такой указатель в этом классе
 // Возвращает 0 если да, и <0 если нет
-virtual int Find(UEPtr<const UAContainer> cont) const=0;
+virtual int Find(UEPtr<const UContainer> cont) const=0;
 
 // -----------------
 // Операторы
 // -----------------
-UIPointer& operator = (UEPtr<UAContainer> source)
+UIPointer& operator = (UEPtr<UContainer> source)
 {
  Set(source);
  return *this;
@@ -68,24 +68,24 @@ virtual ~UPVariable(void);
 };
 
 
-class UAStorage;
+class UStorage;
 class UInstancesStorageElement;
 
 typedef long int IndexT;
-//class UAContainer;
-typedef UAContainer* PUAContainer;
+//class UContainer;
+typedef UContainer* PUAContainer;
 
 // Массив указателей на контейнеры
-typedef std::vector<UEPtr<UAContainer> > UAContainerVector;
+typedef std::vector<UEPtr<UContainer> > UAContainerVector;
 
-class UAContainer: public UADataComponent, public UTimeControl
+class UContainer: public UDataComponent, public UTimeControl
 {
 public: // Типы данных
 typedef std::map<NameT,UPVariable> PointerMapT;
 typedef std::map<NameT,UPVariable>::iterator PointerMapIteratorT;
 typedef std::map<NameT,UPVariable>::const_iterator PointerMapCIteratorT;
 
-friend class UAStorage;
+friend class UStorage;
 friend class UController;
 
 private: // Системные свойства
@@ -143,7 +143,7 @@ UTime CalcCounter;
 UTime OwnerTimeStep;
 
 // Указатель на 0-й элемент вектора компонент
-UEPtr<UAContainer>* PComponents;
+UEPtr<UContainer>* PComponents;
 
 // Количество компонент в векторе компонент
 int NumComponents;
@@ -167,25 +167,25 @@ long long LastCalcTime;
 // Конструкторы и деструкторы
 // --------------------------
 public:
-UAContainer(void);
-virtual ~UAContainer(void);
+UContainer(void);
+virtual ~UContainer(void);
 // --------------------------
 
 // --------------------------
 // Методы доступа к свойствам
 // --------------------------
 // Возвращает владелца этого объекта
-UEPtr<UAContainer> GetOwner(void) const;
+UEPtr<UContainer> GetOwner(void) const;
 
 // Возвращает указатель на главного владельца этим объектом
-UEPtr<UAContainer> GetMainOwner(void) const;
+UEPtr<UContainer> GetMainOwner(void) const;
 
 // Возвращает хранилище компонент этого объекта
-UEPtr<UAStorage> const GetStorage(void) const;
+UEPtr<UStorage> const GetStorage(void) const;
 
 // Проверяет, является ли объект owner
 // владельцем этого объекта на каком-либо уровне иерархии
-bool CheckOwner(UEPtr<UAContainer> owner) const;
+bool CheckOwner(UEPtr<UContainer> owner) const;
 
 // Возвращает полный Id объекта
 // (включая Id всех владельцев)
@@ -195,9 +195,9 @@ ULongId& GetFullId(ULongId &buffer=ULongIdemp) const;
 // (исключая имя владельца 'mainowner')
 // Метод возвращает пустой вектор, если 'mainowner' - не является
 // владельцем объекта ни на каком уровне иерархии
-ULongId& GetLongId(UEPtr<UAContainer> mainowner, ULongId &buffer=ULongIdemp) const;
+ULongId& GetLongId(UEPtr<UContainer> mainowner, ULongId &buffer=ULongIdemp) const;
 // Промежуточный вариант одноименного метода, возвращающего длинное имя
-std::string& GetLongId(UEPtr<UAContainer> mainowner, std::string &buffer) const;
+std::string& GetLongId(UEPtr<UContainer> mainowner, std::string &buffer) const;
 
 // Возвращает true если передаваемый идентификатор объекта корректен, в противном случае возвращает false
 bool CheckLongId(const ULongId &id) const;
@@ -214,8 +214,8 @@ void BreakOwner(void);
 
 // Указатель устанавливается на число уровней дочерних компонент
 // 'levels'. Если levels < 0 то устанавливается компонентам на всех уровнях
-void SetMainOwner(UEPtr<UAComponent> mainowner);
-void SetMainOwner(UEPtr<UAComponent> mainowner, int levels);
+void SetMainOwner(UEPtr<UComponent> mainowner);
+void SetMainOwner(UEPtr<UComponent> mainowner, int levels);
 
 // Проверяет предлагаемый Id 'id' на уникальность в рамках данного, объекта.
 bool CheckId(const UId &id);
@@ -281,7 +281,7 @@ NameT& GetFullName(NameT &buffer) const;
 // (исключая имя владельца 'mainowner').
 // Метод возвращает пустую строку, если 'mainowner' - не является
 // владельцем объекта ни на каком уровне иерархии
-NameT& GetLongName(const UEPtr<UAContainer> mainowner, NameT &buffer) const;
+NameT& GetLongName(const UEPtr<UContainer> mainowner, NameT &buffer) const;
 // --------------------------
 
 // --------------------------
@@ -306,7 +306,7 @@ public:
 // Системные методы управления объектом
 // --------------------------
 // Выделяет память для новой чистой копии объекта этого класса
-virtual UAContainer* New(void)=0;
+virtual UContainer* New(void)=0;
 
 // Создает экземпляр описания класса
 //virtual UContainerDescription* NewDescription(void);
@@ -315,13 +315,13 @@ virtual UAContainer* New(void)=0;
 // и значений параметров.
 // Если 'stor' == 0, то создание объектов осуществляется
 // в том же хранилище где располагается этот объект
-virtual UEPtr<UAContainer> Alloc(UEPtr<UAStorage> stor=0, bool copystate=false);
+virtual UEPtr<UContainer> Alloc(UEPtr<UStorage> stor=0, bool copystate=false);
 
 // Копирует этот объект в 'target' с сохранением всех компонент
 // и значений параметров
 // Если 'stor' == 0, то создание объектов осуществляется
 // в том же хранилище где располагается этот объект
-virtual bool Copy(UEPtr<UAContainer> target, UEPtr<UAStorage> stor=0, bool copystate=false) const;
+virtual bool Copy(UEPtr<UContainer> target, UEPtr<UStorage> stor=0, bool copystate=false) const;
 
 // Осуществляет освобождение этого объекта в его хранилище
 // или вызов деструктора, если Storage == 0
@@ -342,38 +342,38 @@ int GetNumAllComponents(void) const;
 // в качестве компоненты данного объекта
 // Метод возвращает 'true' в случае допустимости
 // и 'false' в случае некорректного типа
-virtual bool CheckComponentType(UEPtr<UAContainer> comp) const;
+virtual bool CheckComponentType(UEPtr<UContainer> comp) const;
 
 // Возвращает указатель на дочерний компонент, хранимый в этом
 // объекте по короткому Id 'id'
 // Если id == ForbiddenId то возвращает указатель на этот компонент
-virtual UEPtr<UAContainer> GetComponent(const UId &id) const;
+virtual UEPtr<UContainer> GetComponent(const UId &id) const;
 
 // Возвращает указатель на дочерний компонент, хранимый в этом
 // объекте по короткому имени 'name'
-virtual UEPtr<UAContainer> GetComponent(const NameT &name) const;
+virtual UEPtr<UContainer> GetComponent(const NameT &name) const;
 
 // Возвращает указатель на дочерний компонент, хранимый в этом
 // объекте по ДЛИННОМУ Id 'id'
 // Если id[0] == ForbiddenId или Id имеет нулевой размер,
 // то возвращает указатель на этот компонент
-UEPtr<UAContainer> GetComponentL(const ULongId &id) const;
+UEPtr<UContainer> GetComponentL(const ULongId &id) const;
 
 // Возвращает указатель на дочерний компонент, хранимый в этом
 // объекте по ДЛИННОМУ имени 'name'
-virtual UEPtr<UAContainer> GetComponentL(const NameT &name) const;
+virtual UEPtr<UContainer> GetComponentL(const NameT &name) const;
 
 // Возвращает указатель на дочерний компонент, хранимый в этом
 // объекте по порядковому индеку в списке компонент
 // Метод возвращает 0, если индекс выходит за границы массива
-UEPtr<UAContainer> GetComponentByIndex(int index) const;
+UEPtr<UContainer> GetComponentByIndex(int index) const;
 
 // Добавляет дочерний компонент в этот объект
 // Возвращает его Id или ForbiddenId если добавление неудачно
 // Может быть передан указатель на локальную переменную
-virtual void BeforeAddComponent(UEPtr<UAContainer> comp, UEPtr<UIPointer> pointer=0);
-virtual void AfterAddComponent(UEPtr<UAContainer> comp, UEPtr<UIPointer> pointer=0);
-virtual UId AddComponent(UEPtr<UAContainer> comp, UEPtr<UIPointer> pointer=0);
+virtual void BeforeAddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer=0);
+virtual void AfterAddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer=0);
+virtual UId AddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer=0);
 
 // Удаляет дочерний компонент из этого объекта.
 // Удаляемый компонент должен содержаться именно в этом объекте.
@@ -404,7 +404,7 @@ void GetComponentsList(vector<NameT> &buffer) const;
 
 // Копирует все компоненты этого объекта в объект 'comp', если возможно
 // Если хранилище stor != 0 то используется оно
-virtual void CopyComponents(UEPtr<UAContainer> comp, UEPtr<UAStorage> stor=0) const;
+virtual void CopyComponents(UEPtr<UContainer> comp, UEPtr<UStorage> stor=0) const;
 // --------------------------
 
 
@@ -422,7 +422,7 @@ public:
 // если 'sublevel' == 0, то возвращает идентификаторы коннекторов только этой сети
 // Предварительная очистка буфера не производится.
 virtual ULongIdVector& GetConnectorsList(ULongIdVector &buffer,
-						  int sublevel=-1, UEPtr<UAContainer> ownerlevel=0);
+						  int sublevel=-1, UEPtr<UContainer> ownerlevel=0);
 
 // Возвращает список длинных идентификаторов всех элементов сети.
 // 'sublevel' опеределяет число уровней вложенности подсетей для которых
@@ -434,7 +434,7 @@ virtual ULongIdVector& GetConnectorsList(ULongIdVector &buffer,
 // если 'sublevel' == 0, то возвращает идентификаторы элементов только этой сети
 // Предварительная очистка буфера не производится.
 virtual ULongIdVector& GetItemsList(ULongIdVector &buffer,
-							int sublevel=-1, UEPtr<UAContainer> ownerlevel=0);
+							int sublevel=-1, UEPtr<UContainer> ownerlevel=0);
 
 // Возвращает список длинных идентификаторов всех подсетей сети.
 // 'sublevel' опеределяет число уровней вложенности подсетей для которых
@@ -446,7 +446,7 @@ virtual ULongIdVector& GetItemsList(ULongIdVector &buffer,
 // если 'sublevel' == 0, то возвращает идентификаторы подсетей только этой сети
 // Предварительная очистка буфера не производится.
 virtual ULongIdVector& GetNetsList(ULongIdVector &buffer,
-							int sublevel=-1, UEPtr<UAContainer> ownerlevel=0);
+							int sublevel=-1, UEPtr<UContainer> ownerlevel=0);
 // ----------------------
 
 // --------------------------
@@ -575,17 +575,17 @@ protected:
 void DelLookupPointer(const NameT &name);
 
 // Осуществляет поиск в таблице указателя, соответствующего заданному источнику
-PointerMapCIteratorT FindLookupPointer(UEPtr<UAContainer> source) const;
+PointerMapCIteratorT FindLookupPointer(UEPtr<UContainer> source) const;
 // --------------------------
 
 // --------------------------
 // Скрытые методы управления таблицей компонент
 // --------------------------
 // Добавляет компонент 'comp' в таблицу компонент
-void AddComponentTable(UEPtr<UAContainer> comp, UEPtr<UIPointer> pointer=0);
+void AddComponentTable(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer=0);
 
 // Удаляет компонент 'comp' из таблицы компонент
-void DelComponentTable(UEPtr<UAContainer> comp);
+void DelComponentTable(UEPtr<UContainer> comp);
 // --------------------------
 
 // --------------------------
@@ -624,26 +624,26 @@ void DelLookupComponent(const NameT &name);
 protected:
 // Удаляет компонент comp
 // Метод предполагает, что компонент принадлежит объекту
-virtual void BeforeDelComponent(UEPtr<UAContainer> comp, bool canfree=true);
-virtual void AfterDelComponent(UEPtr<UAContainer> comp, bool canfree=true);
-void DelComponent(UEPtr<UAContainer> comp, bool canfree);
+virtual void BeforeDelComponent(UEPtr<UContainer> comp, bool canfree=true);
+virtual void AfterDelComponent(UEPtr<UContainer> comp, bool canfree=true);
+void DelComponent(UEPtr<UContainer> comp, bool canfree);
 
 // Выполняет завершающие пользовательские действия
 // при добавлении дочернего компонента в этот объект
 // Метод будет вызван только если comp был
 // успешно добавлен в список компонент
 // Может быть передан указатель на локальную переменную
-virtual void ABeforeAddComponent(UEPtr<UAContainer> comp, UEPtr<UIPointer> pointer=0);
-virtual void AAfterAddComponent(UEPtr<UAContainer> comp, UEPtr<UIPointer> pointer=0);
-virtual bool AAddComponent(UEPtr<UAContainer> comp, UEPtr<UIPointer> pointer=0);
+virtual void ABeforeAddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer=0);
+virtual void AAfterAddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer=0);
+virtual bool AAddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer=0);
 
 // Выполняет предварительные пользовательские действия
 // при удалении дочернего компонента из этого объекта
 // Метод будет вызван только если comp
 // существует в списке компонент
-virtual void ABeforeDelComponent(UEPtr<UAContainer> comp, bool canfree);
-virtual void AAfterDelComponent(UEPtr<UAContainer> comp, bool canfree);
-virtual bool ADelComponent(UEPtr<UAContainer> comp);
+virtual void ABeforeDelComponent(UEPtr<UContainer> comp, bool canfree);
+virtual void AAfterDelComponent(UEPtr<UContainer> comp, bool canfree);
+virtual bool ADelComponent(UEPtr<UContainer> comp);
 // --------------------------
 
 // --------------------------
@@ -683,7 +683,7 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 EIContainer(void);
-EIContainer(const UAContainer *cont);
+EIContainer(const UContainer *cont);
 EIContainer(const EIContainer &copy);
 virtual ~EIContainer(void);
 // --------------------------
@@ -772,7 +772,7 @@ class EICalculateContainer: public EIContainer
  // Конструкторы и деструкторы
  // --------------------------
  EICalculateContainer(void);
- EICalculateContainer(const UAContainer *cont, const UAContainer *subcont);
+ EICalculateContainer(const UContainer *cont, const UContainer *subcont);
  EICalculateContainer(const EICalculateContainer &copy);
  virtual ~EICalculateContainer(void);
  // --------------------------
@@ -794,7 +794,7 @@ public:
  // Конструкторы и деструкторы
  // --------------------------
  EComponentCalculate(void);
- EComponentCalculate(const UAContainer *cont, const UAContainer *subcont);
+ EComponentCalculate(const UContainer *cont, const UContainer *subcont);
  EComponentCalculate(const EComponentCalculate &copy);
  virtual ~EComponentCalculate(void);
  // --------------------------
@@ -816,7 +816,7 @@ class EComponentSystemException: public ESystemException, public EICalculateCont
  // Конструкторы и деструкторы
  // --------------------------
  EComponentSystemException(void);
- EComponentSystemException(const UAContainer *cont, const UAContainer *subcont, const std::string &info);
+ EComponentSystemException(const UContainer *cont, const UContainer *subcont, const std::string &info);
  EComponentSystemException(const EComponentSystemException &copy);
  virtual ~EComponentSystemException(void);
  // --------------------------

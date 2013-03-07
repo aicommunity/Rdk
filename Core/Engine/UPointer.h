@@ -17,11 +17,11 @@ See file license.txt for more information
 #include <string>
 #include <memory.h>
 #include "../Utilities/USupport.h"
-#include "UAContainer.h"
+#include "UContainer.h"
 
 namespace RDK {
 
-class UAContainer;
+class UContainer;
 
 
 // Указатель на локальный экземпляр компонента в классе
@@ -43,23 +43,23 @@ public: // Методы
 // --------------------------
 UEPointer(const string &name, OwnerT * const owner)
  : Owner(owner)
-{ Source=0; reinterpret_cast<UAContainer* const>(Owner)->AddLookupPointer(name,this); };
+{ Source=0; reinterpret_cast<UContainer* const>(Owner)->AddLookupPointer(name,this); };
 // --------------------------
 
-UEPtr<UAContainer> const Get(void) const
+UEPtr<UContainer> const Get(void) const
 { return Source; };
 
-virtual void Del(UEPtr<UAContainer> source)
+virtual void Del(UEPtr<UContainer> source)
 {
  Source=0;
 }
 
 // Проверяет, существует ли такой указатель в этом классе
 // Возвращает 0 если да, и <0 если нет
-virtual int Find(UEPtr<const UAContainer> cont) const
+virtual int Find(UEPtr<const UContainer> cont) const
 { return (cont == Source)?0:-1; };
 
-virtual void Set(UEPtr<UAContainer> source)
+virtual void Set(UEPtr<UContainer> source)
 {
  Source=static_pointer_cast<T>(source);
 };
@@ -68,7 +68,7 @@ virtual void Set(UEPtr<UAContainer> source)
 // Операторы
 // --------------------------
 // Оператор присваивания
-UEPointer<T,OwnerT>& operator = (UEPtr<UAContainer> pdata)
+UEPointer<T,OwnerT>& operator = (UEPtr<UContainer> pdata)
 {
  UIPointer::operator = (pdata);
  return *this;
@@ -99,7 +99,7 @@ public: // Методы
 // --------------------------
 UCPointer(const string &name, OwnerT * const owner)
  : Owner(owner)
-{ Size=0; Sources=0; reinterpret_cast<UAContainer* const>(Owner)->AddLookupPointer(name,this); };
+{ Size=0; Sources=0; reinterpret_cast<UContainer* const>(Owner)->AddLookupPointer(name,this); };
 virtual ~UCPointer(void)
 {
  if(Sources)
@@ -111,13 +111,13 @@ virtual ~UCPointer(void)
 };
 // --------------------------
 
-UEPtr<UAContainer> const Get(void) const
+UEPtr<UContainer> const Get(void) const
 { return *Sources; };
 
-UEPtr<UAContainer> const Get(size_t index) const
+UEPtr<UContainer> const Get(size_t index) const
 { return Sources[index]; };
 
-virtual void Set(UEPtr<UAContainer> source)
+virtual void Set(UEPtr<UContainer> source)
 {
  if(Find(source) >=0)
   return;
@@ -130,7 +130,7 @@ virtual void Set(UEPtr<UAContainer> source)
  ++Size;
 }
 
-virtual void Del(UEPtr<UAContainer> source)
+virtual void Del(UEPtr<UContainer> source)
 {
  int index=Find(source);
 
@@ -147,7 +147,7 @@ virtual void Del(UEPtr<UAContainer> source)
 
 // Проверяет, существует ли такой указатель в этом классе
 // Возвращает 0 если да, и <0 если нет
-virtual int Find(UEPtr<const UAContainer> cont) const
+virtual int Find(UEPtr<const UContainer> cont) const
 {
  T** sources=Sources;
  for(size_t i=0;i<Size;i++,sources++)
@@ -161,7 +161,7 @@ virtual int Find(UEPtr<const UAContainer> cont) const
 // Операторы
 // --------------------------
 // Оператор присваивания
-UEPointer<T,OwnerT>& operator = (UEPtr<UAContainer> pdata)
+UEPointer<T,OwnerT>& operator = (UEPtr<UContainer> pdata)
 {
  UIPointer::operator = (pdata);
  return *this;

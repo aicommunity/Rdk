@@ -13,8 +13,8 @@ See file license.txt for more information
 #ifndef UAENVIRONMENT_H
 #define UAENVIRONMENT_H
 
-#include "UAStorage.h"
-#include "UALibrary.h"
+#include "UStorage.h"
+#include "ULibrary.h"
 
 namespace RDK {
 
@@ -75,7 +75,7 @@ PUALibrary operator [] (int i);
 // --------------------------
 };
 
-class UAEnvironment: virtual public UModule
+class UEnvironment: virtual public UModule
 {
 protected: // Параметры
 // Индекс предарительно заданной модели обработки
@@ -99,10 +99,10 @@ ULongId ModelCalculationComponent;
 
 protected: // Данные
 // Хранилище
-UAStorage* Storage;
+UStorage* Storage;
 
 // Исследуемая модель
-UEPtr<UAContainer> Model;
+UEPtr<UContainer> Model;
 
 // Массив доступных библиотек
 UClassLibraryList ClassLibraryList;
@@ -124,7 +124,7 @@ protected: // Данные графического интерфеса пользователя
 
 protected: // Переменные быстрого доступа
 // Текущий компонент модели
-UEPtr<UAComponent> CurrentComponent;
+UEPtr<UComponent> CurrentComponent;
 
 protected: // Временные переменные
 long long StartupTime;
@@ -135,8 +135,8 @@ public: // Public methods
 // --------------------------
 // Constructors & destructors
 // --------------------------
-UAEnvironment(void);
-virtual ~UAEnvironment(void);
+UEnvironment(void);
+virtual ~UEnvironment(void);
 // --------------------------
 
 // --------------------------
@@ -169,16 +169,16 @@ virtual bool IsStructured(void) const;
 // Методы управления данными среды
 // --------------------------
 // Возвращает указатель на хранилище
-virtual UAStorage* GetStorage(void);
+virtual UStorage* GetStorage(void);
 
 // Устанавливает новое хранилище
 // Указатель на старое хранилище более не используется средой
 // Ответственность за освобождение памяти лежит на вызывающей стороне
 // Текущая модель уничтожается.
-virtual bool SetStorage(UAStorage *storage);
+virtual bool SetStorage(UStorage *storage);
 
 // Возвращает указатель на модель
-UEPtr<UAContainer> GetModel(void);
+UEPtr<UContainer> GetModel(void);
 
 // Создает новую модель из хранилища по имени класса
 virtual bool CreateModel(const NameT& classname);
@@ -190,13 +190,13 @@ virtual bool CreateModel(const UId& classid);
 virtual bool DestroyModel(void);
 
 // Возвращает библиотеку по индексу
-UALibrary* GetClassLibrary(int index);
+ULibrary* GetClassLibrary(int index);
 
 // Возвращает число библиотек
 int GetNumClassLibraries(void) const;
 
 // Возвращает библиотеку по имени
-UALibrary* GetClassLibrary(const string &name);
+ULibrary* GetClassLibrary(const string &name);
 
 // Возвращает имя библиотеки по индексу
 const string& GetClassLibraryName(int index);
@@ -205,12 +205,12 @@ const string& GetClassLibraryName(int index);
 const string& GetClassLibraryVersion(int index);
 
 // Непосредственно добавялет новый образец класса в хранилище
-virtual bool AddClass(UAContainer *newclass);
+virtual bool AddClass(UContainer *newclass);
 
 // Подключает динамическую библиотеку с набором образцов классов.
 // Если бибилиотека с таким именем уже существует то возвращает false.
 // Ответственность за освобождение памяти библиотекой лежит на вызывающей стороне.
-virtual bool AddClassLibrary(UALibrary *library);
+virtual bool AddClassLibrary(ULibrary *library);
 
 // Удаляет подключенную библиотеку из списка по индексу
 // Ответственность за освобождение памяти лежит на вызывающей стороне.
@@ -243,7 +243,7 @@ virtual bool BuildStorage(void);
 // Операторы доступа к данным среды
 // --------------------------
 // Возвращает указатель на текущий компонент модели
-UEPtr<UAContainer> GetCurrentComponent(void);
+UEPtr<UContainer> GetCurrentComponent(void);
 
 // Устанавливает указатель на текущий компонент модели
 // Если имя или id не задано, или Forbidden, то устанавливает

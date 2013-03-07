@@ -2,7 +2,7 @@
 #define UCOMPONENT_DESCRIPTION_CPP
 
 #include "UComponentDescription.h"
-//#include "UAComponent.h"
+//#include "UComponent.h"
 #include "../Utilities/USupport.h"
 
 namespace RDK {
@@ -15,7 +15,7 @@ UComponentDescription::IException::IException(void)
 {
 
 }
-// IException(const UAContainer *cont);
+// IException(const UContainer *cont);
 UComponentDescription::IException::IException(const IException &copy)
 {
 

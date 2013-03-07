@@ -13,7 +13,7 @@ See file license.txt for more information
 #ifndef UAMODEL_H
 #define UAMODEL_H
 
-#include "UANet.h"
+#include "UNet.h"
 
 namespace RDK {
 /*
@@ -27,16 +27,16 @@ class UAReceiver: public UASimpleNet
 
 };*/
 
-class UAModel: public UANet
+class UAModel: public UNet
 {
 protected: // Основные свойства
 
 protected: // Указатели на источники и приемники сигналов модели
 // Массив источников
-UCPointer<UANet, UAModel> Sources;
+UCPointer<UNet, UAModel> Sources;
 
 // Массив приемников
-UCPointer<UANet, UAModel> Receivers;
+UCPointer<UNet, UAModel> Receivers;
 
 public: // Методы
 // --------------------------

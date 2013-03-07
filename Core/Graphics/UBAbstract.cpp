@@ -174,7 +174,7 @@ bool UBAbstract::SetOutput(int index, PUBitmap bitmap)
 // Коммуникационные методы
 // ----------------------
 // Выполняет действия после физически установленой связи
-bool UBAbstract::AConnectToItem(UEPtr<UAItem> na, int i_index, int c_index)
+bool UBAbstract::AConnectToItem(UEPtr<UItem> na, int i_index, int c_index)
 {
  UEPtr<UBAbstract> filter=dynamic_pointer_cast<UBAbstract>(na);
 
@@ -188,7 +188,7 @@ bool UBAbstract::AConnectToItem(UEPtr<UAItem> na, int i_index, int c_index)
 }
 
 // Выполняет действия после физически разорваной связи
-void UBAbstract::ADisconnectFromItem(UEPtr<UAItem> na, int i_index, int c_index)
+void UBAbstract::ADisconnectFromItem(UEPtr<UItem> na, int i_index, int c_index)
 {
  UEPtr<UBAbstract> filter=dynamic_pointer_cast<UBAbstract>(na);
 

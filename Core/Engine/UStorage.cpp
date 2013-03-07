@@ -14,7 +14,7 @@ See file license.txt for more information
 #define UASTORAGE_CPP
 
 #include <string.h>
-#include "UAStorage.h"
+#include "UStorage.h"
 
 namespace RDK {
 
@@ -36,7 +36,7 @@ UInstancesStorageElement::UInstancesStorageElement(const UInstancesStorageElemen
 {
 }
 
-UInstancesStorageElement::UInstancesStorageElement(const UEPtr<UAContainer> &object, bool useflag)
+UInstancesStorageElement::UInstancesStorageElement(const UEPtr<UContainer> &object, bool useflag)
  : Object(object), UseFlag(useflag)
 {
 
@@ -96,18 +96,18 @@ bool UInstancesStorageElement::operator != (const UInstancesStorageElement &valu
 // --------------------------
 
 /* *************************************************************************** */
-// Class UAStorage
+// Class UStorage
 /* *************************************************************************** */
 // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UAStorage::UAStorage(void)
+UStorage::UStorage(void)
 {
  LastClassId=0;
 }
 
-UAStorage::~UAStorage(void)
+UStorage::~UStorage(void)
 {
  ClearObjectsStorage();
  ClearClassesStorage();
@@ -118,7 +118,7 @@ UAStorage::~UAStorage(void)
 // Методы управления свойствами
 // --------------------------
 // Возвращает последний использованный Id классов
-UId UAStorage::GetLastClassId(void) const
+UId UStorage::GetLastClassId(void) const
 {
  return LastClassId;
 }
@@ -128,7 +128,7 @@ UId UAStorage::GetLastClassId(void) const
 // Методы доступа к таблицам соотвествий
 // --------------------------
 // Возвращает Id класса по его имени
-const UId& UAStorage::FindClassId(const NameT &name) const
+const UId& UStorage::FindClassId(const NameT &name) const
 {
  map<NameT,UId>::const_iterator I=ClassesLookupTable.find(name);
  if(I == ClassesLookupTable.end())
@@ -137,7 +137,7 @@ const UId& UAStorage::FindClassId(const NameT &name) const
 }
 
 // Возвращает имя класса по его Id
-const NameT UAStorage::FindClassName(const UId &id) const
+const NameT UStorage::FindClassName(const UId &id) const
 {
  for(map<NameT,UId>::const_iterator I=ClassesLookupTable.begin(),
 									J=ClassesLookupTable.end();I != J;++I)
@@ -155,9 +155,9 @@ const NameT UAStorage::FindClassName(const UId &id) const
 // --------------------------
 // Добавляет образец класса объекта в хранилище
 // Возвращает id класса
-UId UAStorage::AddClass(UEPtr<UAComponent> classtemplate, const UId &classid)
+UId UStorage::AddClass(UEPtr<UComponent> classtemplate, const UId &classid)
 {
- UEPtr<UAStorage> storage=classtemplate->GetStorage();
+ UEPtr<UStorage> storage=classtemplate->GetStorage();
  if(storage)
   storage->PopObject(classtemplate);
 
@@ -182,7 +182,7 @@ UId UAStorage::AddClass(UEPtr<UAComponent> classtemplate, const UId &classid)
 }
 
 // Добавляет образец класса объекта в хранилище
-UId UAStorage::AddClass(UEPtr<UAComponent> classtemplate, const string &classname, const UId &classid)
+UId UStorage::AddClass(UEPtr<UComponent> classtemplate, const string &classname, const UId &classid)
 {
  if(ClassesLookupTable.find(classname) != ClassesLookupTable.end())
   throw new EClassNameAlreadyExist(classname);
@@ -195,7 +195,7 @@ UId UAStorage::AddClass(UEPtr<UAComponent> classtemplate, const string &classnam
 }
 
 // Удаляет образец класса объекта из хранилища
-void UAStorage::DelClass(const UId &classid)
+void UStorage::DelClass(const UId &classid)
 {
  UObjectsStorageCIterator temp=ObjectsStorage.find(classid);
 
@@ -237,7 +237,7 @@ void UAStorage::DelClass(const UId &classid)
 }
 
 // Проверяет наличие образца класса объекта в хранилище
-bool UAStorage::CheckClass(const UId &classid) const
+bool UStorage::CheckClass(const UId &classid) const
 {
  if(ClassesStorage.find(classid) == ClassesStorage.end())
   return false;
@@ -246,7 +246,7 @@ bool UAStorage::CheckClass(const UId &classid) const
 }
 
 // Возвращает образец класса
-UEPtr<UAComponent> UAStorage::GetClass(const UId &classid) const
+UEPtr<UComponent> UStorage::GetClass(const UId &classid) const
 {
  UClassesStorageCIterator I=ClassesStorage.find(classid);
 
@@ -257,14 +257,14 @@ UEPtr<UAComponent> UAStorage::GetClass(const UId &classid) const
 }
 
 // Возвращает число классов
-int UAStorage::GetNumClasses(void) const
+int UStorage::GetNumClasses(void) const
 {
  return ClassesStorage.size();
 }
 
 // Возвращает список идентификаторов всех классов хранилища
 // Буфер 'buffer' будет очищен от предыдущих значений
-void UAStorage::GetClassIdList(std::vector<UId> &buffer) const
+void UStorage::GetClassIdList(std::vector<UId> &buffer) const
 {
  buffer.resize(0);
  buffer.reserve(ClassesStorage.size());
@@ -274,7 +274,7 @@ void UAStorage::GetClassIdList(std::vector<UId> &buffer) const
 
 // Возвращает список имен всех классов хранилища
 // Буфер 'buffer' будет очищен от предыдущих значений
-void UAStorage::GetClassNameList(vector<NameT> &buffer) const
+void UStorage::GetClassNameList(vector<NameT> &buffer) const
 {
  map<NameT,UId>::const_iterator I,J;
 
@@ -293,7 +293,7 @@ void UAStorage::GetClassNameList(vector<NameT> &buffer) const
 
 
 // Удаляет все не используемые образцы классов из хранилища
-void UAStorage::FreeClassesStorage(void)
+void UStorage::FreeClassesStorage(void)
 {
  for(UClassesStorageCIterator I=ClassesStorage.begin(),
  							  J=ClassesStorage.end(); I!=J; ++I)
@@ -308,7 +308,7 @@ void UAStorage::FreeClassesStorage(void)
 }
 
 // Удаляет все образцы классов из хранилища
-void UAStorage::ClearClassesStorage(void)
+void UStorage::ClearClassesStorage(void)
 {
  for(UClassesStorageCIterator I=ClassesStorage.begin(),
  							  J=ClassesStorage.end(); I!=J; ++I)
@@ -344,14 +344,14 @@ void UAStorage::ClearClassesStorage(void)
 // Флаг 'Activity' объекта выставляется в true
 // Если свободного объекта не существует он создается и добавляется
 // в хранилище
-UEPtr<UAComponent> UAStorage::TakeObject(const UId &classid, const UEPtr<UAComponent> prototype)
+UEPtr<UComponent> UStorage::TakeObject(const UId &classid, const UEPtr<UComponent> prototype)
 {
  UClassesStorageIterator tmplI=ClassesStorage.find(classid);
  if(tmplI == ClassesStorage.end())
   throw EClassIdNotExist(classid);
 
  UClassStorageElement tmpl=tmplI->second;
- UEPtr<UAContainer> classtemplate=dynamic_pointer_cast<UAContainer>(tmpl);
+ UEPtr<UContainer> classtemplate=dynamic_pointer_cast<UContainer>(tmpl);
 
  UObjectsStorageIterator instances=ObjectsStorage.find(classid);
  if(instances != ObjectsStorage.end())
@@ -369,7 +369,7 @@ UEPtr<UAComponent> UAStorage::TakeObject(const UId &classid, const UEPtr<UACompo
 
   if(element)
   {
-   UEPtr<UAContainer> obj=element->Object;
+   UEPtr<UContainer> obj=element->Object;
 
    if(obj)
    {
@@ -377,18 +377,18 @@ UEPtr<UAComponent> UAStorage::TakeObject(const UId &classid, const UEPtr<UACompo
     if(!prototype)
 	 classtemplate->Copy(obj,this);
 	else
-	 dynamic_pointer_cast<const UAContainer>(prototype)->Copy(obj,this);
+	 dynamic_pointer_cast<const UContainer>(prototype)->Copy(obj,this);
 
     obj->SetActivity(true);
     element->UseFlag=true;
    }
-   return static_pointer_cast<UAComponent>(obj);
+   return static_pointer_cast<UComponent>(obj);
   }
  }
 
 
  // Если свободного объекта не нашли
- UEPtr<UAContainer> obj=classtemplate->New();
+ UEPtr<UContainer> obj=classtemplate->New();
  obj->Default();
 
  // В случае, если объект создается непосредственно как копия из хранилища...
@@ -397,22 +397,22 @@ UEPtr<UAComponent> UAStorage::TakeObject(const UId &classid, const UEPtr<UACompo
  else
   // В случае, если объект создается из хранилища как часть более сложного
   // объекта
-  dynamic_pointer_cast<const UAContainer>(prototype)->Copy(obj,this);
+  dynamic_pointer_cast<const UContainer>(prototype)->Copy(obj,this);
 
  PushObject(classid,obj);
  obj->SetActivity(true);
 
- return static_pointer_cast<UAComponent>(obj);
+ return static_pointer_cast<UComponent>(obj);
 }
 
-UEPtr<UAComponent> UAStorage::TakeObject(const NameT &classname, const UEPtr<UAComponent> prototype)
+UEPtr<UComponent> UStorage::TakeObject(const NameT &classname, const UEPtr<UComponent> prototype)
 {
  return TakeObject(FindClassId(classname),prototype);
 }
 
 
 // Возвращает Id класса, отвечающий объекту 'object'
-UId UAStorage::FindClass(UEPtr<UAComponent> object) const
+UId UStorage::FindClass(UEPtr<UComponent> object) const
 {
  if(!object)
   return ForbiddenId;
@@ -421,7 +421,7 @@ UId UAStorage::FindClass(UEPtr<UAComponent> object) const
 }
 
 // Проверяет существует ли объект 'object' в хранилище
-bool UAStorage::CheckObject(UEPtr<UAContainer> object) const
+bool UStorage::CheckObject(UEPtr<UContainer> object) const
 {
  if(!object)
   return false;
@@ -440,7 +440,7 @@ bool UAStorage::CheckObject(UEPtr<UAContainer> object) const
 }
 
 // Вычисляет суммарное число объектов в хранилище
-int UAStorage::CalcNumObjects(void) const
+int UStorage::CalcNumObjects(void) const
 {
  int result=0;
 
@@ -450,7 +450,7 @@ int UAStorage::CalcNumObjects(void) const
  return result;
 }
 
-int UAStorage::CalcNumObjects(const UId &classid) const
+int UStorage::CalcNumObjects(const UId &classid) const
 {
  UObjectsStorageCIterator instances=ObjectsStorage.find(classid);
 
@@ -460,14 +460,14 @@ int UAStorage::CalcNumObjects(const UId &classid) const
  return instances->second.size();
 }
 
-size_t UAStorage::CalcNumObjects(const string &classname) const
+size_t UStorage::CalcNumObjects(const string &classname) const
 {
  return CalcNumObjects(FindClassId(classname));
 }
 
 
 // Удалаяет все свободные объекты из хранилища
-void UAStorage::FreeObjectsStorage(void)
+void UStorage::FreeObjectsStorage(void)
 {
  for(UObjectsStorageIterator instances=ObjectsStorage.begin(),iend=ObjectsStorage.end();
 				 								instances != iend; ++instances)
@@ -477,7 +477,7 @@ void UAStorage::FreeObjectsStorage(void)
    if(!I->UseFlag)
    {
 	J=I; ++J;
-	UEPtr<UAContainer> object=I->Object;
+	UEPtr<UContainer> object=I->Object;
 	PopObject(instances,I);
 	delete object;
 	I=J;
@@ -490,7 +490,7 @@ void UAStorage::FreeObjectsStorage(void)
 }
 
 // Удаляет все объекты из хранилища
-void UAStorage::ClearObjectsStorage(void)
+void UStorage::ClearObjectsStorage(void)
 {
  for(UObjectsStorageIterator instances=ObjectsStorage.begin(),iend=ObjectsStorage.end();
 				 								instances != iend; ++instances)
@@ -508,7 +508,7 @@ void UAStorage::ClearObjectsStorage(void)
 // Методы управления описанием классов
 // --------------------------
 // Возвращает XML описание класса
-const UEPtr<UComponentDescription> UAStorage::GetClassDescription(const UId &classid) const
+const UEPtr<UComponentDescription> UStorage::GetClassDescription(const UId &classid) const
 {
  UClassesDescriptionCIterator I=ClassesDescription.find(FindClassName(classid));
 
@@ -520,7 +520,7 @@ const UEPtr<UComponentDescription> UAStorage::GetClassDescription(const UId &cla
 
 // Устанавливает XML описание класса
 // Класс в хранилище должен существовать
-void UAStorage::SetClassDescription(const UId &classid, const UEPtr<UComponentDescription>& description)
+void UStorage::SetClassDescription(const UId &classid, const UEPtr<UComponentDescription>& description)
 {
  UClassesStorageIterator I=ClassesStorage.find(classid);
 
@@ -531,21 +531,21 @@ void UAStorage::SetClassDescription(const UId &classid, const UEPtr<UComponentDe
 }
 
 // Сохраняет описание класса в xml
-void UAStorage::SaveClassDescription(const UId &classid,
+void UStorage::SaveClassDescription(const UId &classid,
 										Serialize::USerStorageXML &xml)
 {
  GetClassDescription(classid)->Save(xml);
 }
 
 // Загружает описание класса из xml
-void UAStorage::LoadClassDescription(const UId &classid,
+void UStorage::LoadClassDescription(const UId &classid,
 										Serialize::USerStorageXML &xml)
 {
  GetClassDescription(classid)->Load(xml);
 }
 
 // Сохраняет описание всех классов в xml
-void UAStorage::SaveClassesDescription(Serialize::USerStorageXML &xml)
+void UStorage::SaveClassesDescription(Serialize::USerStorageXML &xml)
 {
  for(UClassesDescriptionCIterator I = ClassesDescription.begin(), J=ClassesDescription.end(); I != J; ++I)
  {
@@ -556,7 +556,7 @@ void UAStorage::SaveClassesDescription(Serialize::USerStorageXML &xml)
 }
 
 // Загружает описание всех классов из xml
-void UAStorage::LoadClassesDescription(Serialize::USerStorageXML &xml)
+void UStorage::LoadClassesDescription(Serialize::USerStorageXML &xml)
 {
  for(UClassesDescriptionCIterator I = ClassesDescription.begin(), J=ClassesDescription.end(); I != J; ++I)
  {
@@ -568,7 +568,7 @@ void UAStorage::LoadClassesDescription(Serialize::USerStorageXML &xml)
 }
 
 // Сохраняет общее описание всех классов в xml
-bool UAStorage::SaveCommonClassesDescription(Serialize::USerStorageXML &xml)
+bool UStorage::SaveCommonClassesDescription(Serialize::USerStorageXML &xml)
 {
  xml.AddNode("Default");
  if(!UContainerDescription::SaveCommon(xml))
@@ -581,7 +581,7 @@ bool UAStorage::SaveCommonClassesDescription(Serialize::USerStorageXML &xml)
 }
 
 // Загружает общее описание всех классов из xml
-bool UAStorage::LoadCommonClassesDescription(Serialize::USerStorageXML &xml)
+bool UStorage::LoadCommonClassesDescription(Serialize::USerStorageXML &xml)
 {
  if(xml.SelectNode("Default"))
  {
@@ -608,9 +608,9 @@ bool UAStorage::LoadCommonClassesDescription(Serialize::USerStorageXML &xml)
 // --------------------------
 // Добавляет уже созданный объект в хранилище
 // Если объект уже принадлежит иному хранилищу то возвращает false
-void UAStorage::PushObject(const UId &classid, UEPtr<UAContainer> object)
+void UStorage::PushObject(const UId &classid, UEPtr<UContainer> object)
 {
- UEPtr<UAComponent> classtemplate=ClassesStorage.find(classid)->second;
+ UEPtr<UComponent> classtemplate=ClassesStorage.find(classid)->second;
 
  UInstancesStorage &instances=ObjectsStorage[classid];
 
@@ -625,7 +625,7 @@ void UAStorage::PushObject(const UId &classid, UEPtr<UAContainer> object)
 // Выводит уже созданный объект из хранилища и возвращает
 // его classid
 // В случае ошибки возвращает ForbiddenId
-UId UAStorage::PopObject(UEPtr<UAContainer> object)
+UId UStorage::PopObject(UEPtr<UContainer> object)
 {
  UObjectsStorageIterator instances=ObjectsStorage.find(object->GetClass());
  if(instances == ObjectsStorage.end())
@@ -642,7 +642,7 @@ UId UAStorage::PopObject(UEPtr<UAContainer> object)
 }
 
 // Перемещает объект в другое хранилище
-void UAStorage::MoveObject(UEPtr<UAContainer> object, UEPtr<UAStorage> newstorage)
+void UStorage::MoveObject(UEPtr<UContainer> object, UEPtr<UStorage> newstorage)
 {
  newstorage->PushObject(PopObject(object),object);
 }
@@ -651,18 +651,18 @@ void UAStorage::MoveObject(UEPtr<UAContainer> object, UEPtr<UAStorage> newstorag
 // Выбранный объект помечается как свободный в хранилище
 // Флаг 'Activity' объекта выставляется в false
 // Если объект не существует в хранилище - возвращается false
-void UAStorage::ReturnObject(UEPtr<UAComponent> object)
+void UStorage::ReturnObject(UEPtr<UComponent> object)
 {
- UEPtr<UAContainer> obj=dynamic_pointer_cast<UAContainer>(object);
+ UEPtr<UContainer> obj=dynamic_pointer_cast<UContainer>(object);
  obj->ObjectIterator->UseFlag=false;
  obj->Activity=false;
  obj->BreakOwner();
 }
 
 // В случае ошибки возвращает ForbiddenId
-UId UAStorage::PopObject(UObjectsStorageIterator instance_iterator, list<UInstancesStorageElement>::iterator object_iterator)
+UId UStorage::PopObject(UObjectsStorageIterator instance_iterator, list<UInstancesStorageElement>::iterator object_iterator)
 {
- UEPtr<UAContainer> object=object_iterator->Object;
+ UEPtr<UContainer> object=object_iterator->Object;
 
  instance_iterator->second.erase(object_iterator);
 
@@ -679,7 +679,7 @@ UId UAStorage::PopObject(UObjectsStorageIterator instance_iterator, list<UInstan
 // Скрытые методы таблицы соответствий классов
 // --------------------------
 // Добавляет класс с именем 'name' в таблицу соответствий
-UId UAStorage::AddLookupClass(const NameT &name)
+UId UStorage::AddLookupClass(const NameT &name)
 {
  if(ClassesLookupTable.find(name) != ClassesLookupTable.end())
   throw EClassNameAlreadyExist(name);
@@ -690,7 +690,7 @@ UId UAStorage::AddLookupClass(const NameT &name)
 }
 
 // Удаляет класс с именем 'name' из таблицы соотвествий
-void UAStorage::DelLookupClass(const NameT &name)
+void UStorage::DelLookupClass(const NameT &name)
 {
  map<NameT,UId>::iterator I=ClassesLookupTable.find(name);
 
@@ -705,7 +705,7 @@ void UAStorage::DelLookupClass(const NameT &name)
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UAStorage::EClassIdNotExist::EClassIdNotExist(UId id)
+UStorage::EClassIdNotExist::EClassIdNotExist(UId id)
  : Id(id)
 {
 
@@ -716,18 +716,18 @@ UAStorage::EClassIdNotExist::EClassIdNotExist(UId id)
 // Методы формирования лога
 // --------------------------
 // Формирует строку лога об исключении
-std::string UAStorage::EClassIdNotExist::CreateLogMessage(void) const
+std::string UStorage::EClassIdNotExist::CreateLogMessage(void) const
 {
  return Exception::CreateLogMessage()+std::string(" Id=")+sntoa(Id);
 }
 // --------------------------
 
 // Попытка работы с классом по имени, отсутствующему в хранилище
-//class UAStorage::EClassNameNotExist: public EError
+//class UStorage::EClassNameNotExist: public EError
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UAStorage::EClassNameNotExist::EClassNameNotExist(const std::string &name)
+UStorage::EClassNameNotExist::EClassNameNotExist(const std::string &name)
 : Name(name)
 {
 }
@@ -737,18 +737,18 @@ UAStorage::EClassNameNotExist::EClassNameNotExist(const std::string &name)
 // Методы формирования лога
 // --------------------------
 // Формирует строку лога об исключении
-std::string UAStorage::EClassNameNotExist::CreateLogMessage(void) const
+std::string UStorage::EClassNameNotExist::CreateLogMessage(void) const
 {
  return Exception::CreateLogMessage()+std::string(" Name=")+Name;
 }
 // --------------------------
 
 // Некорректное имя класса
-// class UAStorage::EInvalidClassName: public EError
+// class UStorage::EInvalidClassName: public EError
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UAStorage::EInvalidClassName::EInvalidClassName(const std::string &name)
+UStorage::EInvalidClassName::EInvalidClassName(const std::string &name)
 : Name(name)
 {
 }
@@ -758,7 +758,7 @@ UAStorage::EInvalidClassName::EInvalidClassName(const std::string &name)
 // Методы формирования лога
 // --------------------------
 // Формирует строку лога об исключении
-std::string UAStorage::EInvalidClassName::CreateLogMessage(void) const
+std::string UStorage::EInvalidClassName::CreateLogMessage(void) const
 {
  return Exception::CreateLogMessage()+std::string(" Name=")+Name;
 }
@@ -767,11 +767,11 @@ std::string UAStorage::EInvalidClassName::CreateLogMessage(void) const
 
 
 // Класс с заданным именем уже существует
-//class UAStorage::EClassNameAlredyExist: public EError
+//class UStorage::EClassNameAlredyExist: public EError
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UAStorage::EClassNameAlreadyExist::EClassNameAlreadyExist(const std::string &name)
+UStorage::EClassNameAlreadyExist::EClassNameAlreadyExist(const std::string &name)
 : Name(name)
 {
 }
@@ -781,7 +781,7 @@ UAStorage::EClassNameAlreadyExist::EClassNameAlreadyExist(const std::string &nam
 // Методы формирования лога
 // --------------------------
 // Формирует строку лога об исключении
-std::string UAStorage::EClassNameAlreadyExist::CreateLogMessage(void) const
+std::string UStorage::EClassNameAlreadyExist::CreateLogMessage(void) const
 {
  return Exception::CreateLogMessage()+std::string(" Name=")+Name;
 }

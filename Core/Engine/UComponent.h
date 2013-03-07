@@ -15,33 +15,33 @@ See file license.txt for more information
 #define UACOMPONENT_H
 
 #include "UModule.h"
-#include "UAEnvSupport.h"
+#include "UEnvSupport.h"
 #include "UEPtr.h"
 
 namespace RDK {
 
-class UAStorage;
+class UStorage;
 class UComponentDescription;
 
 //typedef long int UId;
 //extern UId ForbiddenId;
 
-class UAComponent: public UModule
+class UComponent: public UModule
 {
-friend class UAStorage;
+friend class UStorage;
 public: // Классы описания исключений
 class IException: public UException {};
 
 protected: // Основные свойства
 // Указатель на владельца этим объектом
-UEPtr<UAComponent> Owner;
+UEPtr<UComponent> Owner;
 
 // Указатель на главного владельца этим объектом
 // Автоматически устанавливается для всех дочерних объектов
-UEPtr<UAComponent> MainOwner;
+UEPtr<UComponent> MainOwner;
 
 // Указатель на хранилище компонент этого объекта
-UEPtr<UAStorage> Storage;
+UEPtr<UStorage> Storage;
 
 protected: // Данные
 // Идентификатор класса
@@ -54,24 +54,24 @@ public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UAComponent(void);
-virtual ~UAComponent(void);
+UComponent(void);
+virtual ~UComponent(void);
 // --------------------------
 
 // --------------------------
 // Методы доступа к свойствам
 // --------------------------
 // Возвращает владелца этого объекта
-UEPtr<UAComponent> const GetOwner(void) const;
-virtual bool SetOwner(UEPtr<UAComponent> owner);
+UEPtr<UComponent> const GetOwner(void) const;
+virtual bool SetOwner(UEPtr<UComponent> owner);
 
 // Возвращает указатель на главного владельца этим объектом
-UEPtr<UAComponent> const GetMainOwner(void) const;
-virtual void SetMainOwner(UEPtr<UAComponent> mainowner);
+UEPtr<UComponent> const GetMainOwner(void) const;
+virtual void SetMainOwner(UEPtr<UComponent> mainowner);
 
 // Возвращает хранилище компонент этого объекта
-UEPtr<UAStorage> const GetStorage(void) const;
-virtual bool SetStorage(UEPtr<UAStorage> storage);
+UEPtr<UStorage> const GetStorage(void) const;
+virtual bool SetStorage(UEPtr<UStorage> storage);
 // --------------------------
 
 
@@ -87,7 +87,7 @@ bool SetClass(UId value);
 // Методы управления счетом
 // --------------------------
 // Создает экземпляр этого класса
-virtual UAComponent* New(void)=0;
+virtual UComponent* New(void)=0;
 
 // Создает экземпляр описания класса
 virtual UComponentDescription* NewDescription(void);
