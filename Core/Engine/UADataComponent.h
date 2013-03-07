@@ -85,26 +85,6 @@ bool CheckMask(unsigned int mask) const;
 // --------------------------
 };
 
-   /*
-// Хранилище свойств параметра
-struct USharedVariable
-{
- // Id параметра
- UId Id;
-
- // Указатель на свойство
- UEPtr<UIShare> Property;
-
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-USharedVariable(void);
-USharedVariable(UId id, UEPtr<UIShare> prop);
-USharedVariable(const USharedVariable &copy);
-virtual ~USharedVariable(void);
-// --------------------------
-};    */
-
 class UADataComponent: public UAComponent
 {
 public: // Типы данных
