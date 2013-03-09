@@ -98,7 +98,7 @@ T& operator * (void)
 
 operator T* (void) const
 {
- return this->v;
+ return (this->v)?this->v:&Local;
 }
 
 // ¬озвращает €зыковой тип хранимого свойства

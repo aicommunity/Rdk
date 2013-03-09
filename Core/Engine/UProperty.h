@@ -34,8 +34,60 @@ using namespace std;
 #endif
 
 // Класс - база для свойств
+template<typename T>
+class UVBaseDataProperty: public UIProperty
+{
+protected: // Данные
+// Прямой доступ к данным
+T* PData;
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+//Конструктор инициализации.
+UVBaseDataProperty(void)
+ : PData(0)
+{
+}
+
+UVBaseDataProperty(T * const pdata)
+ : PData(pdata)
+{
+}
+// -----------------------------
+
+// -----------------------------
+// Методы сериализации
+// -----------------------------
+// Возвращает ссылку на данные
+T& GetData(void)
+{ return *this; };
+const T& GetData(void) const
+{ return *this; };
+
+// Модифицирует данные
+void SetData(const T& data)
+{ *this=data; };
+
+// Возвращает языковой тип хранимого свойства
+virtual const type_info& GetLanguageType(void) const
+{
+ return typeid(T);
+}
+
+// Метод сравнивает тип этого свойства с другим свойством
+virtual bool CompareLanguageType(const UIProperty &dt) const
+{
+ return GetLanguageType() == dt.GetLanguageType();
+}
+// -----------------------------
+};
+
+
+// Класс - база для свойств
 template<typename T,class OwnerT>
-class UVBaseProperty: public UIProperty
+class UVBaseProperty: public UVBaseDataProperty<T>
 {
 //friend class OwnerT;
 protected: // Типы методов ввода-вывода
@@ -47,47 +99,24 @@ OwnerT* Owner;
 // Указатель на итератор-хранилище данных об этом свойстве в родительском компоненте
 UComponent::VariableMapCIteratorT Variable;
 
-// Прямой доступ к данным
-T* PData;
-
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
 UVBaseProperty(OwnerT * const owner) :
-  Owner(owner), PData(0)
+  Owner(owner)
 {
    if(Owner)
 	Variable=Owner->FindPropertyVariable(this);
 }
 
 UVBaseProperty(OwnerT * const owner, T * const pdata) :
-  Owner(owner), PData(pdata)
+  Owner(owner), UVBaseDataProperty<T>(pdata)
 {
    if(Owner)
 	Variable=Owner->FindPropertyVariable(this);
 }
-// -----------------------------
-
-// -----------------------------
-// Методы управления
-// -----------------------------
-// Инициализация
-/*void Init(OwnerT * const owner)
-{
- Owner = owner; PData=0;
- if(Owner)
-  Variable=Owner->FindPropertyVariable(this);
-}
-
-void Init(OwnerT * const owner, T * const pdata)
-{
- Owner = owner; PData=pdata;
- if(Owner)
-  Variable=Owner->FindPropertyVariable(this);
-}
-  */
 // -----------------------------
 
 // -----------------------------
@@ -117,18 +146,6 @@ virtual std::string GetOwnerName(void) const
 {
  return typeid(Owner).name();
 };
-
-// Возвращает языковой тип хранимого свойства
-virtual const type_info& GetLanguageType(void) const
-{
- return typeid(T);
-}
-
-// Метод сравнивает тип этого свойства с другим свойством
-virtual bool CompareLanguageType(const UIProperty &dt) const
-{
- return GetLanguageType() == dt.GetLanguageType();
-}
 // -----------------------------
 };
 
@@ -178,23 +195,6 @@ UVProperty(OwnerT * const owner, T * const pdata) :
 // -----------------------------
 // Методы управления
 // -----------------------------
-/*// Инициализация
-void Init(OwnerT * const owner, SetterT setmethod, GetterT getmethod)
-{
- UVBaseProperty::Init(owner);
- Getter = getmethod; Setter = setmethod; SetterR=0;
-}
-void Init(OwnerT * const owner, SetterRT setmethod, GetterT getmethod)
-{
- UVBaseProperty::Init(owner);
- Getter = getmethod; SetterR = setmethod; Setter=0;
-}
-void Init(OwnerT * const owner, T * const pdata)
-{
- UVBaseProperty::Init(owner,pdata);
- Getter = 0; GetterR=0; SetterR = 0; Setter=0;
-}        */
-
 // Возврат значения
 virtual T Get(void)
 {

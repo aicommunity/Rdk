@@ -238,6 +238,17 @@ void UComponent::Free(void)
 // --------------------------
 // ћетоды доступа к параметрам
 // --------------------------
+// ¬озвращает указатель на данные свойства
+UEPtr<UIProperty> UComponent::FindProperty(const NameT &name)
+{
+ VariableMapCIteratorT I=PropertiesLookupTable.find(name);
+
+ if(I != PropertiesLookupTable.end())
+  return I->second.Property;
+
+ return UEPtr<UIProperty>(0);
+}
+
 // ¬озвращает значение параметра по имени 'name'
 UEPtr<UVariableData> UComponent::GetProperty(const NameT &name, UEPtr<UVariableData> values) const
 {

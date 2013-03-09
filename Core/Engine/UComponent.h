@@ -191,6 +191,9 @@ void Free(void);
 // --------------------------
 // ћетоды доступа к параметрам
 // --------------------------
+// ¬озвращает указатель на данные свойства
+UEPtr<UIProperty> FindProperty(const NameT &name);
+
 // ¬озвращает значение параметра по имени 'name'
 UEPtr<UVariableData> GetProperty(const NameT &name, UEPtr<UVariableData> values) const;
 std::string& GetPropertyValue(const NameT &name, std::string &values) const;

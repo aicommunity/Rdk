@@ -469,6 +469,14 @@ virtual void Model_SetGlobalComponentPropertyValue(const char *stringid, const c
 // и владельцем, производным от класса 'class_owner_stringid' включая этот компонент
 virtual void Model_SetGlobalOwnerComponentPropertyValue(const char *stringid, const char* class_stringid, const char* class_owner_stringid, const char *paramname, const char *buffer);
 
+// Возвращает указатель на данные свойства компонента
+template<class T>
+const T& Model_GetComponentPropertyData(const char *stringid, const char *property_name);
+
+// Копирует данные 'data' в заданное свойство компонента
+template<class T>
+int Model_SetComponentPropertyData(const char *stringid, const char *property_name, const T &data);
+
 // Связывает выбранные контейнеры друг с другом
 virtual int Model_CreateLink(const char* stringid1, int output_number, const char* stringid2, int input_number);
 
@@ -796,54 +804,44 @@ virtual bool AReset(void);
 virtual bool ACalculate(void);
 // --------------------------
 };
-	  /*
-#ifndef RDK_CALL
-#define RDK_CALL _cdecl
-#endif
 
-// Инициализация dll
-typedef bool (RDK_CALL *DLLPDllInit)(void* pfstorage,void* pfenvironment,void* pfengine);
-extern "C" DLLPDllInit DLLDllInit;
+// Возвращает ссылку на данные свойства компонента
+template<class T>
+const T& UEngine::Model_GetComponentPropertyData(const char *stringid, const char *property_name)
+{
+ try
+ {
+  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
+  UEPtr<UIProperty> iproperty=FindProperty(property_name);
+  UEPtr<UVBaseDataProperty<T> > property=dynamic_pointer_cast<UVBaseDataProperty<T> >(iproperty);
+  return property.GetData();
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
 
-// Указатель на функцию возвращающую число хранилищ в библиотеке
-typedef int (RDK_CALL *DLLPGetNumStorages)(void);
-extern "C" DLLPGetNumStorages DLLGetNumStorages;
+ return 0;
+}
 
-// Указатель на функцию возвращающую число сред в библиотеке
-typedef int (RDK_CALL *DLLPGetNumEnvironments)(void);
-extern "C" DLLPGetNumEnvironments DLLGetNumEnvironments;
+// Копирует данные 'data' в заданное свойство компонента
+template<class T>
+int UEngine::Model_SetComponentPropertyData(const char *stringid, const char *property_name, const T &data)
+{
+ try
+ {
+  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
+  UEPtr<UIProperty> iproperty=FindProperty(property_name);
+  UEPtr<UVBaseDataProperty<T> > property=dynamic_pointer_cast<UVBaseDataProperty<T> >(iproperty);
+  property.SetData(data);
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
 
-// Указатель на функцию возвращающую число движков в библиотеке
-typedef int (RDK_CALL *DLLPGetNumEngines)(void);
-extern "C" DLLPGetNumEngines DLLGetNumEngines;
-
-// Возвращает хранилище по индексу
-typedef UAContainerStorage* (RDK_CALL *DLLPGetStorage)(size_t i);
-extern "C" DLLPGetStorage DLLGetStorage;
-
-// Возвращает среду по индексу
-typedef UAContainerEnvironment* (RDK_CALL *DLLPGetEnvironment)(size_t i);
-extern "C" DLLPGetEnvironment DLLGetEnvironment;
-
-// Возвращает движок по индексу
-typedef UEngine* (RDK_CALL *DLLPGetEngine)(size_t i);
-extern "C" DLLPGetEngine DLLGetEngine;
-
-// Создает новое хранилище и помещает в конец массива
-// Возвращает указатель на хранилище
-typedef UAContainerStorage* (RDK_CALL *DLLPAddNewStorage)(void);
-extern "C" DLLPAddNewStorage DLLAddNewStorage;
-
-// Создает новую среду и помещает в конец массива
-// Возвращает указатель на среду
-typedef UAContainerEnvironment* (RDK_CALL *DLLPAddNewEnvironment)(UAContainerStorage *storage,bool isinit,list<UContainer*>* external_classes, list<ULibrary*>* external_libs);
-extern "C" DLLPAddNewEnvironment DLLAddNewEnvironment;
-
-// Создает новый движок и помещает в конец массива
-// Возвращает указатель на движок
-typedef UEngine* (RDK_CALL *DLLPAddNewEngine)(void);
-extern "C" DLLPAddNewEngine DLLAddNewEngine;
-          */
+ return 0;
+}
 
 }
 #endif
