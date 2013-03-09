@@ -109,7 +109,7 @@ std::string TUVisualControllerFrame::GetName(void)
 }
 
 // Сохраняет параметры интерфейса в xml
-void TUVisualControllerFrame::SaveParameters(RDK::Serialize::USerStorageXML &xml)
+void TUVisualControllerFrame::SaveParameters(RDK::USerStorageXML &xml)
 {
  xml.SelectNodeForce(AnsiString(Owner->Name).c_str());
  xml.SelectNodeForce(GetName());
@@ -121,13 +121,13 @@ void TUVisualControllerFrame::SaveParameters(RDK::Serialize::USerStorageXML &xml
  xml.SelectUp();
 }
 
-void TUVisualControllerFrame::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
+void TUVisualControllerFrame::ASaveParameters(RDK::USerStorageXML &xml)
 {
 
 }
 
 // Загружает параметры интерфейса из xml
-void TUVisualControllerFrame::LoadParameters(RDK::Serialize::USerStorageXML &xml)
+void TUVisualControllerFrame::LoadParameters(RDK::USerStorageXML &xml)
 {
  xml.SelectNodeForce(AnsiString(Owner->Name).c_str());
  xml.SelectNodeForce(GetName());
@@ -138,7 +138,7 @@ void TUVisualControllerFrame::LoadParameters(RDK::Serialize::USerStorageXML &xml
  xml.SelectUp();
 }
 
-void TUVisualControllerFrame::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
+void TUVisualControllerFrame::ALoadParameters(RDK::USerStorageXML &xml)
 {
 }
 

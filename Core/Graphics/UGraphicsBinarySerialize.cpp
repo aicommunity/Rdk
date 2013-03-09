@@ -17,7 +17,6 @@ See file license.txt for more information
 #include "Libraries/Simulator/UBAVideo3DSimulator.h"
 
 namespace RDK {
-namespace Serialize {
 
 // UBMColorModel
 USerStorageBinary& operator << (USerStorageBinary& storage, UBMColorModel data)
@@ -187,7 +186,6 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, UBVSObject3D &data)
  return storage;
 }
 
-}
 }
 
 #endif

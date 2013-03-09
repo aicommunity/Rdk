@@ -80,7 +80,7 @@ RDK::UBitmapFont Font;
 RDK::UBitmap GraphCanvas,ShowCanvas;
 
 // Xml описание сети
-RDK::Serialize::USerStorageXML NetXml;
+RDK::USerStorageXML NetXml;
 
 TShiftState DownShift;
 
@@ -116,10 +116,10 @@ virtual void AAfterCalculate(void);
 virtual void AUpdateInterface(void);
 
 // Сохраняет параметры интерфейса в xml
-virtual void ASaveParameters(RDK::Serialize::USerStorageXML &xml);
+virtual void ASaveParameters(RDK::USerStorageXML &xml);
 
 // Загружает параметры интерфейса из xml
-virtual void ALoadParameters(RDK::Serialize::USerStorageXML &xml);
+virtual void ALoadParameters(RDK::USerStorageXML &xml);
 // -----------------------------
 
 // -----------------------------

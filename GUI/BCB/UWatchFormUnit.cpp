@@ -39,7 +39,7 @@ void TUWatchForm::AAfterCalculate(void)
 }
 
 // Сохраняет параметры интерфейса в xml
-void TUWatchForm::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
+void TUWatchForm::ASaveParameters(RDK::USerStorageXML &xml)
 {
  xml.WriteInteger("PageCount",PageControl->PageCount);
  xml.SelectNodeForce("Pages");
@@ -51,7 +51,7 @@ void TUWatchForm::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
 }
 
 // Загружает параметры интерфейса из xml
-void TUWatchForm::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
+void TUWatchForm::ALoadParameters(RDK::USerStorageXML &xml)
 {
  int count=xml.ReadInteger("PageCount",0);
 

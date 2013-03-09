@@ -16,7 +16,6 @@ See file license.txt for more information
 #include "USerStorageBinary.h"
 
 namespace RDK {
-namespace Serialize {
 
 // Ìועמהû
 // --------------------------
@@ -210,7 +209,7 @@ void USerStorageBinary::InternalResize(int size)
  MaxSize=size;
 }
 // --------------------------
-}
+
 }
 #endif
 

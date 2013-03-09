@@ -22,7 +22,6 @@ See file license.txt for more information
 #include "UEnvSupport.h"
 
 namespace RDK {
-namespace Serialize {
 
 // UIdVector
 USerStorageXML& operator << (USerStorageXML& storage, const UIdVector &data);
@@ -150,7 +149,6 @@ USerStorageXML& operator >> (USerStorageXML& storage, ULinksListT<T> &data)
  return storage;
 }
 
-}
 }
 #endif
 

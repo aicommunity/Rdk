@@ -125,7 +125,7 @@ bool UContainerDescription::RemoveCommonDuplicatesProperties(void)
 // Методы ввода вывода данными
 // --------------------------
 // Сохраняет данные класса в XML
-bool UContainerDescription::Save(Serialize::USerStorageXML &xml)
+bool UContainerDescription::Save(USerStorageXML &xml)
 {
  if(!UComponentDescription::Save(xml))
   return false;
@@ -148,7 +148,7 @@ bool UContainerDescription::Save(Serialize::USerStorageXML &xml)
 }
 
 // Загружает данные класса из XML
-bool UContainerDescription::Load(Serialize::USerStorageXML &xml)
+bool UContainerDescription::Load(USerStorageXML &xml)
 {
  if(!UComponentDescription::Load(xml))
   return false;
@@ -188,7 +188,7 @@ bool UContainerDescription::Load(Serialize::USerStorageXML &xml)
 // Методы ввода вывода общих данных
 // --------------------------
 // Сохраняет данные класса в XML
-bool UContainerDescription::SaveCommon(Serialize::USerStorageXML &xml)
+bool UContainerDescription::SaveCommon(USerStorageXML &xml)
 {
  xml.AddNode("Properties");
  std::map<std::string, UPropertyDescription>::const_iterator I=CommonProperties.begin();
@@ -208,7 +208,7 @@ bool UContainerDescription::SaveCommon(Serialize::USerStorageXML &xml)
 }
 
 // Загружает данные класса из XML
-bool UContainerDescription::LoadCommon(Serialize::USerStorageXML &xml)
+bool UContainerDescription::LoadCommon(USerStorageXML &xml)
 {
  if(!xml.SelectNode("Properties"))
   return false;

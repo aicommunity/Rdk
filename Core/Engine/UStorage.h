@@ -207,23 +207,23 @@ void SetClassDescription(const UId &classid, const UEPtr<UComponentDescription>&
 
 // Сохраняет описание класса в xml
 virtual void SaveClassDescription(const UId &classid,
-										Serialize::USerStorageXML &xml);
+										USerStorageXML &xml);
 
 // Загружает описание класса из xml
 virtual void LoadClassDescription(const UId &classid,
-										Serialize::USerStorageXML &xml);
+										USerStorageXML &xml);
 
 // Сохраняет описание всех классов в xml
-virtual void SaveClassesDescription(Serialize::USerStorageXML &xml);
+virtual void SaveClassesDescription(USerStorageXML &xml);
 
 // Загружает описание всех классов из xml
-virtual void LoadClassesDescription(Serialize::USerStorageXML &xml);
+virtual void LoadClassesDescription(USerStorageXML &xml);
 
 // Сохраняет общее описание всех классов в xml
-virtual bool SaveCommonClassesDescription(Serialize::USerStorageXML &xml);
+virtual bool SaveCommonClassesDescription(USerStorageXML &xml);
 
 // Загружает общее описание всех классов из xml
-virtual bool LoadCommonClassesDescription(Serialize::USerStorageXML &xml);
+virtual bool LoadCommonClassesDescription(USerStorageXML &xml);
 // --------------------------
 
 // --------------------------

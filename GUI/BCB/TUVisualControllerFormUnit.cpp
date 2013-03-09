@@ -13,7 +13,7 @@ TUVisualControllerForm *UVisualControllerForm;
 // Вспомогательные функции сериализации
 // --------------------------
 // Сохраняет данные положения формы в xml
-void SaveFormPosition(RDK::Serialize::USerStorageXML &xml, TForm *form)
+void SaveFormPosition(RDK::USerStorageXML &xml, TForm *form)
 {
  if(!form)
   return;
@@ -29,7 +29,7 @@ void SaveFormPosition(RDK::Serialize::USerStorageXML &xml, TForm *form)
 }
 
 // Загружает данные положения формы из xml
-void LoadFormPosition(RDK::Serialize::USerStorageXML &xml, TForm *form)
+void LoadFormPosition(RDK::USerStorageXML &xml, TForm *form)
 {
  if(!form)
   return;
@@ -155,7 +155,7 @@ std::string TUVisualControllerForm::GetName(void)
 }
 
 // Сохраняет параметры интерфейса в xml
-void TUVisualControllerForm::SaveParameters(RDK::Serialize::USerStorageXML &xml)
+void TUVisualControllerForm::SaveParameters(RDK::USerStorageXML &xml)
 {
  xml.SelectNodeForce(GetName());
  ASaveParameters(xml);
@@ -165,14 +165,14 @@ void TUVisualControllerForm::SaveParameters(RDK::Serialize::USerStorageXML &xml)
  xml.SelectUp();
 }
 
-void TUVisualControllerForm::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
+void TUVisualControllerForm::ASaveParameters(RDK::USerStorageXML &xml)
 {
 
 }
 
 
 // Загружает параметры интерфейса из xml
-void TUVisualControllerForm::LoadParameters(RDK::Serialize::USerStorageXML &xml)
+void TUVisualControllerForm::LoadParameters(RDK::USerStorageXML &xml)
 {
  xml.SelectNodeForce(GetName());
  ComponentControlName=xml.ReadString("ComponentControlName","");
@@ -183,7 +183,7 @@ void TUVisualControllerForm::LoadParameters(RDK::Serialize::USerStorageXML &xml)
  UpdateInterface();
 }
 
-void TUVisualControllerForm::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
+void TUVisualControllerForm::ALoadParameters(RDK::USerStorageXML &xml)
 {
 }
 

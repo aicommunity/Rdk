@@ -11,7 +11,7 @@ class TUFormsSerialize
 {
 protected: // Данные
 // Хранилище настроек форм
-RDK::Serialize::USerStorageXML* Xml;
+RDK::USerStorageXML* Xml;
 
 // Список <имен разделов в xml,форм для сохранения/загрузки>
 std::map<std::string, TForm* > Forms;
@@ -28,8 +28,8 @@ TUFormsSerialize(void);
 // Методы управления данными
 // --------------------------
 // Управление хранилищем форм
-RDK::Serialize::USerStorageXML* GetXml(void);
-void SetXml(RDK::Serialize::USerStorageXML *xml);
+RDK::USerStorageXML* GetXml(void);
+void SetXml(RDK::USerStorageXML *xml);
 
 // Добавляет форму в список сериализуемых
 void AddForm(const std::string &name, TForm *form);
@@ -63,10 +63,10 @@ void LoadXmlFromFile(const String &filename);
 // --------------------------
 protected:
 // Сохраняет данные формы в xml
-void SaveForm(RDK::Serialize::USerStorageXML &xml, TForm *form);
+void SaveForm(RDK::USerStorageXML &xml, TForm *form);
 
 // Загружает данные формы из xml
-void LoadForm(RDK::Serialize::USerStorageXML &xml, TForm *form);
+void LoadForm(RDK::USerStorageXML &xml, TForm *form);
 // --------------------------
 };           */
 

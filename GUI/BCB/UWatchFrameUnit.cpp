@@ -1047,7 +1047,7 @@ void TUWatchFrame::AUpdateInterface(void)
 }
 
 // Сохраняет параметры интерфейса в xml
-void TUWatchFrame::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
+void TUWatchFrame::ASaveParameters(RDK::USerStorageXML &xml)
 {
  char *out=0;
  int len;
@@ -1126,7 +1126,7 @@ void TUWatchFrame::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
 }
 
 // Загружает параметры интерфейса из xml
-void TUWatchFrame::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
+void TUWatchFrame::ALoadParameters(RDK::USerStorageXML &xml)
 {
  map<string,TUWatchInfo*>::iterator I;
  TUWatchInfo *wd;

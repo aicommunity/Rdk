@@ -24,7 +24,7 @@ namespace RDK {
 template<typename T>
 T& DecodeParameterValue(const std::string &param_value, T &res)
 {
- using namespace RDK::Serialize;
+ using namespace RDK;
 
  USerStorageXML xml;
  if(param_value.size()>0 && param_value[0]=='<')
@@ -54,7 +54,7 @@ T DecodeParameterValue(const std::string &param_value)
 template<typename T>
 std::string& EncodeParameterValue(const T &param_data, std::string& res)
 {
- using namespace RDK::Serialize;
+ using namespace RDK;
 
  USerStorageXML xml;
  xml.Create("1");

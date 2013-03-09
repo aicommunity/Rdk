@@ -174,7 +174,7 @@ bool UDrawEngine::SetRectHeight(int value)
 {
  return Net;
 } */
-const Serialize::USerStorageXML& UDrawEngine::GetNetXml(void) const
+const USerStorageXML& UDrawEngine::GetNetXml(void) const
 {
  return NetXml;
 }
@@ -198,7 +198,7 @@ UEPtr<UAGraphics> UDrawEngine::GetGEngine(void)
  return GEngine;
 }
 
-bool UDrawEngine::SetNetXml(Serialize::USerStorageXML &net_xml)
+bool UDrawEngine::SetNetXml(USerStorageXML &net_xml)
 {
  NetXml = net_xml;
  BuildDestinations();
@@ -351,7 +351,7 @@ void UDrawEngine::UpdateDestinations(void)
 	if(NetXml.SelectNode("Coord"))
 	{
 	 RDK::MVector<double,3> coord(1);
-	 RDK::Serialize::operator >> (NetXml,coord);
+	 RDK::operator >> (NetXml,coord);
 	 NetXml.SelectUp();
 
 	 if(!coord>0)

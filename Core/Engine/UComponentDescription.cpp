@@ -111,7 +111,7 @@ void UComponentDescription::SetDescription(const std::string& value)
 // Методы ввода вывода данными
 // --------------------------
 // Сохраняет данные класса в XML
-bool UComponentDescription::Save(Serialize::USerStorageXML &xml)
+bool UComponentDescription::Save(USerStorageXML &xml)
 {
  xml.AddNode("ClassName");
  xml.SetNodeText(ClassName);
@@ -128,7 +128,7 @@ bool UComponentDescription::Save(Serialize::USerStorageXML &xml)
 }
 
 // Загружает данные класса из XML
-bool UComponentDescription::Load(Serialize::USerStorageXML &xml)
+bool UComponentDescription::Load(USerStorageXML &xml)
 {
  if(xml.SelectNode("ClassName"))
  {

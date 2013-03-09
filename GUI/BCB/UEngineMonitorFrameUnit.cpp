@@ -61,13 +61,13 @@ void TUEngineMonitorFrame::AUpdateInterface(void)
 }
 
 // Сохраняет параметры интерфейса в xml
-void TUEngineMonitorFrame::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
+void TUEngineMonitorFrame::ASaveParameters(RDK::USerStorageXML &xml)
 {
 // xml.WriteInteger("CalculateMode",GetCalculateMode());
 }
 
 // Загружает параметры интерфейса из xml
-void TUEngineMonitorFrame::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
+void TUEngineMonitorFrame::ALoadParameters(RDK::USerStorageXML &xml)
 {
 // SetCalculateMode(xml.ReadInteger("CalculateMode",0));
 }

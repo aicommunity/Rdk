@@ -396,7 +396,7 @@ const char* UEngine::Storage_GetClassDescription(int classid)
 {
  try
  {
-  Serialize::USerStorageXML xml;
+  USerStorageXML xml;
   xml.Create(sntoa(classid));
   Storage->SaveClassDescription(classid,xml);
   xml.SelectUp();
@@ -414,7 +414,7 @@ bool UEngine::Storage_SetClassDescription(int classid, const char* description)
 {
  try
  {
-  Serialize::USerStorageXML xml;
+  USerStorageXML xml;
   xml.Load(description, sntoa(classid));
   Storage->LoadClassDescription(classid,xml);
  }
@@ -430,7 +430,7 @@ const char* UEngine::Storage_SaveClassesDescription(void)
 {
  try
  {
-  Serialize::USerStorageXML xml;
+  USerStorageXML xml;
   xml.Create("Root");
   xml.AddNode("ClassesDescription");
   Storage->SaveClassesDescription(xml);
@@ -449,7 +449,7 @@ bool UEngine::Storage_LoadClassesDescription(const char* xmltext)
 {
  try
  {
-  Serialize::USerStorageXML xml;
+  USerStorageXML xml;
   xml.Load(xmltext, "Root");
   if(!xml.SelectNode("ClassesDescription"))
    return false;
@@ -467,7 +467,7 @@ const char* UEngine::Storage_SaveCommonClassesDescription(void)
 {
  try
  {
-  Serialize::USerStorageXML xml;
+  USerStorageXML xml;
   xml.Create("Root");
   xml.AddNode("CommonClassesDescription");
   Storage->SaveCommonClassesDescription(xml);
@@ -486,7 +486,7 @@ bool UEngine::Storage_LoadCommonClassesDescription(const char* xmltext)
 {
  try
  {
-  Serialize::USerStorageXML xml;
+  USerStorageXML xml;
   xml.Load(xmltext, "Root");
   if(!xml.SelectNode("CommonClassesDescription"))
    return false;
@@ -504,7 +504,7 @@ const char* UEngine::Storage_SaveAllClassesDescription(void)
 {
  try
  {
-  Serialize::USerStorageXML xml;
+  USerStorageXML xml;
   xml.Create("Root");
   xml.AddNode("CommonClassesDescription");
   Storage->SaveCommonClassesDescription(xml);
@@ -526,7 +526,7 @@ bool UEngine::Storage_LoadAllClassesDescription(const char* xmltext)
 {
  try
  {
-  Serialize::USerStorageXML xml;
+  USerStorageXML xml;
   xml.Load(xmltext, "Root");
   if(!xml.SelectNode("CommonClassesDescription"))
    return false;
@@ -2579,7 +2579,7 @@ long long UEngine::Model_GetInterstepsInterval(const char *stringid) const
 // --------------------------
 // Возвращает свойства компонента по идентификатору
 // Память для buffer должна быть выделена!
-bool UEngine::Model_GetComponentProperties(RDK::UContainer* cont, RDK::Serialize::USerStorageXML *serstorage, unsigned int type_mask)
+bool UEngine::Model_GetComponentProperties(RDK::UContainer* cont, RDK::USerStorageXML *serstorage, unsigned int type_mask)
 {
  try
  {
@@ -2617,7 +2617,7 @@ bool UEngine::Model_GetComponentProperties(RDK::UContainer* cont, RDK::Serialize
 
 // Возвращает выборочные свойства компонента по идентификатору
 // Память для buffer должна быть выделена!
-bool UEngine::Model_GetComponentSelectedProperties(RDK::UContainer* cont, RDK::Serialize::USerStorageXML *serstorage)
+bool UEngine::Model_GetComponentSelectedProperties(RDK::UContainer* cont, RDK::USerStorageXML *serstorage)
 {
  try
  {
@@ -2634,7 +2634,7 @@ bool UEngine::Model_GetComponentSelectedProperties(RDK::UContainer* cont, RDK::S
 
 // Возвращает свойства компонента по идентификатору с описаниями
 // Память для buffer должна быть выделена!
-bool UEngine::Model_GetComponentPropertiesEx(RDK::UContainer* cont, RDK::Serialize::USerStorageXML *serstorage, unsigned int type_mask)
+bool UEngine::Model_GetComponentPropertiesEx(RDK::UContainer* cont, RDK::USerStorageXML *serstorage, unsigned int type_mask)
 {
  try
  {
@@ -2679,7 +2679,7 @@ bool UEngine::Model_GetComponentPropertiesEx(RDK::UContainer* cont, RDK::Seriali
 
 
 // устанавливает свойства компонента по идентификатору
-int UEngine::Model_SetComponentProperties(RDK::UContainer* cont, RDK::Serialize::USerStorageXML *serstorage)
+int UEngine::Model_SetComponentProperties(RDK::UContainer* cont, RDK::USerStorageXML *serstorage)
 {
  try
  {
@@ -2756,7 +2756,7 @@ void UEngine::Model_SetGlobalOwnerComponentPropertyValue(RDK::UContainer* cont, 
 // Возращает все связи внутри компонента stringid в виде xml в буфер buffer
 // Имена формируются до уровня компонента owner_level
 // Если owner_level не задан, то имена формируются до уровня текущего компонента
-int UEngine::Model_GetComponentInternalLinks(RDK::UNet* cont, RDK::Serialize::USerStorageXML *serstorage, RDK::UNet* owner_level)
+int UEngine::Model_GetComponentInternalLinks(RDK::UNet* cont, RDK::USerStorageXML *serstorage, RDK::UNet* owner_level)
 {
  try
  {
@@ -2782,7 +2782,7 @@ int UEngine::Model_GetComponentInternalLinks(RDK::UNet* cont, RDK::Serialize::US
 // Устанавливает все связи внутри компонента stringid из строки xml в буфере buffer
 // Имена применяются до уровня компонента owner_level
 // Если owner_level не задан, то имена применяются до уровня текущего компонента
-int UEngine::Model_SetComponentInternalLinks(RDK::UNet* cont, RDK::Serialize::USerStorageXML *serstorage, RDK::UNet* owner_level)
+int UEngine::Model_SetComponentInternalLinks(RDK::UNet* cont, RDK::USerStorageXML *serstorage, RDK::UNet* owner_level)
 {
  try
  {
@@ -2811,7 +2811,7 @@ int UEngine::Model_SetComponentInternalLinks(RDK::UNet* cont, RDK::Serialize::US
 // если 'sublevel' == 0, то возвращает связи подсетей только этой сети
 // Имена формируются до уровня компонента owner_level
 // Если owner_level не задан, то имена формируются до уровня текущего компонента
-int UEngine::Model_GetComponentInputLinks(RDK::UNet* cont, RDK::Serialize::USerStorageXML *serstorage, RDK::UNet* owner_level, int sublevel)
+int UEngine::Model_GetComponentInputLinks(RDK::UNet* cont, RDK::USerStorageXML *serstorage, RDK::UNet* owner_level, int sublevel)
 {
  try
  {
@@ -2838,7 +2838,7 @@ int UEngine::Model_GetComponentInputLinks(RDK::UNet* cont, RDK::Serialize::USerS
 // если 'sublevel' == 0, то возвращает связи подсетей только этой сети
 // Имена формируются до уровня компонента owner_level
 // Если owner_level не задан, то имена формируются до уровня текущего компонента
-int UEngine::Model_GetComponentOutputLinks(RDK::UNet* cont, RDK::Serialize::USerStorageXML *serstorage, RDK::UNet* owner_level, int sublevel)
+int UEngine::Model_GetComponentOutputLinks(RDK::UNet* cont, RDK::USerStorageXML *serstorage, RDK::UNet* owner_level, int sublevel)
 {
  try
  {
@@ -2861,7 +2861,7 @@ int UEngine::Model_GetComponentOutputLinks(RDK::UNet* cont, RDK::Serialize::USer
 // Информация о связях формируется относительно владельца компонента cont!
 // Имена формируются до уровня компонента owner_level
 // Если owner_level не задан, то имена формируются до уровня текущего компонента
-int UEngine::Model_GetComponentPersonalLinks(RDK::UNet* cont, RDK::Serialize::USerStorageXML *serstorage, RDK::UNet* owner_level)
+int UEngine::Model_GetComponentPersonalLinks(RDK::UNet* cont, RDK::USerStorageXML *serstorage, RDK::UNet* owner_level)
 {
  try
  {
@@ -2885,7 +2885,7 @@ int UEngine::Model_GetComponentPersonalLinks(RDK::UNet* cont, RDK::Serialize::US
 
 // Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния в xml
-int UEngine::Model_SaveComponent(RDK::UNet* cont, RDK::Serialize::USerStorageXML *serstorage, bool links, unsigned int params_type_mask)
+int UEngine::Model_SaveComponent(RDK::UNet* cont, RDK::USerStorageXML *serstorage, bool links, unsigned int params_type_mask)
 {
  try
  {
@@ -2927,7 +2927,7 @@ int UEngine::Model_SaveComponent(RDK::UNet* cont, RDK::Serialize::USerStorageXML
 
 // Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния из xml
-int UEngine::Model_LoadComponent(RDK::UNet* cont, RDK::Serialize::USerStorageXML *serstorage, bool links)
+int UEngine::Model_LoadComponent(RDK::UNet* cont, RDK::USerStorageXML *serstorage, bool links)
 {
  try
  {
@@ -2999,7 +2999,7 @@ int UEngine::Model_LoadComponent(RDK::UNet* cont, RDK::Serialize::USerStorageXML
 }
 
 // Сохраняет все свойства компонента и его дочерних компонент в xml
-int UEngine::Model_SaveComponentProperties(RDK::UNet* cont, RDK::Serialize::USerStorageXML *serstorage, unsigned int type_mask)
+int UEngine::Model_SaveComponentProperties(RDK::UNet* cont, RDK::USerStorageXML *serstorage, unsigned int type_mask)
 {
  try
  {
@@ -3032,7 +3032,7 @@ int UEngine::Model_SaveComponentProperties(RDK::UNet* cont, RDK::Serialize::USer
 }
 
 // Загружает все свойства компонента и его дочерних компонент из xml
-int UEngine::Model_LoadComponentProperties(RDK::UNet* cont, RDK::Serialize::USerStorageXML *serstorage)
+int UEngine::Model_LoadComponentProperties(RDK::UNet* cont, RDK::USerStorageXML *serstorage)
 {
  try
  {
@@ -3077,7 +3077,7 @@ int UEngine::Model_LoadComponentProperties(RDK::UNet* cont, RDK::Serialize::USer
 
 // Сохраняет внутренние данные компонента, и его _непосредственных_ дочерних компонент, исключая
 // переменные состояния в xml
-int UEngine::Model_SaveComponentDrawInfo(RDK::UNet* cont, RDK::Serialize::USerStorageXML *serstorage)
+int UEngine::Model_SaveComponentDrawInfo(RDK::UNet* cont, RDK::USerStorageXML *serstorage)
 {
  try
  {

@@ -65,9 +65,9 @@ void __fastcall TUComponentIOFrame::ShowInputs(void)
 
  std::string xmlbuffer=Model_GetItemsList(ViewComponentLongId.c_str(),sublevel);
 
- RDK::Serialize::USerStorageXML storage;
+ RDK::USerStorageXML storage;
  storage.Load(xmlbuffer,"Items");
- RDK::Serialize::operator >> (storage,buffer);
+ RDK::operator >> (storage,buffer);
 
  ShowInputs(StringGrid,buffer);
 
@@ -101,9 +101,9 @@ void __fastcall TUComponentIOFrame::ShowOutputs(void)
 
  std::string xmlbuffer=Model_GetItemsList(ViewComponentLongId.c_str(),sublevel);
 
- RDK::Serialize::USerStorageXML storage;
+ RDK::USerStorageXML storage;
  storage.Load(xmlbuffer,"Items");
- RDK::Serialize::operator >> (storage,buffer);
+ RDK::operator >> (storage,buffer);
 
  ShowOutputs(StringGrid,buffer);
 
@@ -139,9 +139,9 @@ void __fastcall TUComponentIOFrame::ShowInputsOutputs(void)
   sublevel=-2;
  std::string xmlbuffer=Model_GetItemsList(ViewComponentLongId.c_str(),sublevel,ViewComponentOwnerLongId.c_str());
 
- RDK::Serialize::USerStorageXML storage;
+ RDK::USerStorageXML storage;
  storage.Load(xmlbuffer,"Items");
- RDK::Serialize::operator >> (storage,itemsbuffer);
+ RDK::operator >> (storage,itemsbuffer);
 
  for(int i=0;i<itemsbuffer.GetSize();i++)
  {
@@ -199,9 +199,9 @@ void __fastcall TUComponentIOFrame::ShowLinks(void)
 // std::string xmlbuffer=Model_GetComponentInternalLinks(ViewComponentLongId.c_str());
  std::string xmlbuffer=Model_GetComponentPersonalLinks(ViewComponentLongId.c_str(),ViewComponentOwnerLongId.c_str());
 
- RDK::Serialize::USerStorageXML storage;
+ RDK::USerStorageXML storage;
  storage.Load(xmlbuffer,"Links");
- RDK::Serialize::operator >> (storage,linkslist);
+ RDK::operator >> (storage,linkslist);
 
  StringGrid->RowCount=1;
 
@@ -342,13 +342,13 @@ void TUComponentIOFrame::AUpdateInterface(void)
 }
 
 // Сохраняет параметры интерфейса в xml
-void TUComponentIOFrame::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
+void TUComponentIOFrame::ASaveParameters(RDK::USerStorageXML &xml)
 {
 
 }
 
 // Загружает параметры интерфейса из xml
-void TUComponentIOFrame::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
+void TUComponentIOFrame::ALoadParameters(RDK::USerStorageXML &xml)
 {
  ViewComponentOwnerLongId="";
  ViewComponentLongId="";

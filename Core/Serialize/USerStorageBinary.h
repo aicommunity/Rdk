@@ -16,7 +16,6 @@ See file license.txt for more information
 #include "USerStorage.h"
 
 namespace RDK {
-namespace Serialize {
 
 class USerStorageBinary: public USerStorage
 {
@@ -106,6 +105,5 @@ void InternalResize(int size);
 // --------------------------
 };
 
-}
 }
 #endif

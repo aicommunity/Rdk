@@ -22,7 +22,7 @@ void TUFavoriteComponentInfoForm::AUpdateInterface(void)
 }
 
 // Сохраняет параметры интерфейса в xml
-void TUFavoriteComponentInfoForm::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
+void TUFavoriteComponentInfoForm::ASaveParameters(RDK::USerStorageXML &xml)
 {
  xml.WriteInteger("PageCount",PageControl->PageCount);
  xml.SelectNodeForce("Pages");
@@ -34,7 +34,7 @@ void TUFavoriteComponentInfoForm::ASaveParameters(RDK::Serialize::USerStorageXML
 }
 
 // Загружает параметры интерфейса из xml
-void TUFavoriteComponentInfoForm::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
+void TUFavoriteComponentInfoForm::ALoadParameters(RDK::USerStorageXML &xml)
 {
  int count=xml.ReadInteger("PageCount",0);
 

@@ -109,7 +109,7 @@ typedef map<string,vector<DescriptionsTableIteratorT> >::iterator DescriptionsLi
 protected: // Данные
 // Указатель на сеть
 //UEPtr<UNet> Net;
-Serialize::USerStorageXML NetXml;
+USerStorageXML NetXml;
 
 // Таблица соответствий между нейронами сети и описаний визуальных элементов
 DescriptionsTableT Descriptions;
@@ -195,7 +195,7 @@ bool SetRectHeight(int value);
 // ---------------------------
 // Возвращает указатель на НС
 //UEPtr<UNet> GetNet(void);
-const Serialize::USerStorageXML& GetNetXml(void) const;
+const USerStorageXML& GetNetXml(void) const;
 
 // Возвращает элемент таблицы соответствий
 UGEDescription& GetDescription(const string &name);
@@ -209,7 +209,7 @@ UEPtr<UAGraphics> GetGEngine(void);
 // Связывает класс с новой НС
 // Если net == 0 то отключает класс от текущей НС и возвращает true
 //bool SetNet(UEPtr<UNet> net);
-bool SetNetXml(Serialize::USerStorageXML &net_xml);
+bool SetNetXml(USerStorageXML &net_xml);
 
 // Связывает класс с новой НС
 // Если engine == 0 то возвращает false и не делеает ничего

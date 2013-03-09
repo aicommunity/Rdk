@@ -17,7 +17,6 @@ See file license.txt for more information
 #include "USerStorageXML.h"
 
 namespace RDK {
-namespace Serialize {
 
 // Методы
 // --------------------------
@@ -523,7 +522,6 @@ void USerStorageXML::WriteBool(const std::string &name, bool value)
 // Скрытые методы управления данными
 // --------------------------
 // --------------------------
-}
 }
 #endif
 

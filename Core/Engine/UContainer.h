@@ -13,7 +13,7 @@ See file license.txt for more information
 #define UAContainerH
 
 #include "../Math/MVector.h"
-#include "UDataComponent.h"
+#include "UComponent.h"
 #include "UController.h"
 #include "UTime.h"
 
@@ -78,7 +78,7 @@ typedef UContainer* PUAContainer;
 // Массив указателей на контейнеры
 typedef std::vector<UEPtr<UContainer> > UAContainerVector;
 
-class UContainer: public UDataComponent, public UTimeControl
+class UContainer: public UComponent, public UTimeControl
 {
 public: // Типы данных
 typedef std::map<NameT,UPVariable> PointerMapT;

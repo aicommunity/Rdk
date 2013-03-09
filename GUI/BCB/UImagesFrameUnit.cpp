@@ -314,7 +314,7 @@ void TUImagesFrame::AUpdateInterface(void)
 
 
 // Сохраняет параметры интерфейса в xml
-void TUImagesFrame::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
+void TUImagesFrame::ASaveParameters(RDK::USerStorageXML &xml)
 {
 
  xml.WriteInteger("NumCellWidth",GetNumCellWidth());
@@ -334,7 +334,7 @@ void TUImagesFrame::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
 }
 
 // Загружает параметры интерфейса из xml
-void TUImagesFrame::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
+void TUImagesFrame::ALoadParameters(RDK::USerStorageXML &xml)
 {
  Images.clear();
  StringIds.clear();

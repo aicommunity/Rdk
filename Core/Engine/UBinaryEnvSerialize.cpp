@@ -15,7 +15,6 @@ See file license.txt for more information
 #include "UBinaryEnvSerialize.h"
 
 namespace RDK {
-namespace Serialize {
 
 // UBMColorModel
 /*
@@ -53,8 +52,6 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, UItemData &data)
  return storage;
 }
 
-
-}
 }
 
 #endif

@@ -31,10 +31,6 @@ See file license.txt for more information
 #endif
 
 namespace RDK {
-namespace Serialize {
-
-//class USerStorageXMLBinary;
-//class USerStorageXMLXML;
 
 class USerStorageXML: public USerStorage
 {
@@ -182,6 +178,5 @@ protected:
 // --------------------------
 };
 
-}
 }
 #endif

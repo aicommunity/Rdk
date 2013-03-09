@@ -36,12 +36,12 @@ void TVideoGrabberControlForm::AUpdateInterface(void)
 }
 
 // Сохраняет параметры интерфейса в xml
-void TVideoGrabberControlForm::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
+void TVideoGrabberControlForm::ASaveParameters(RDK::USerStorageXML &xml)
 {
 }
 
 // Загружает параметры интерфейса из xml
-void TVideoGrabberControlForm::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
+void TVideoGrabberControlForm::ALoadParameters(RDK::USerStorageXML &xml)
 {
 }
 // -----------------------------

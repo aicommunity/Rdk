@@ -68,12 +68,12 @@ virtual void AUpdateInterface(void);
 virtual std::string GetName(void);
 
 // Сохраняет параметры интерфейса в xml
-virtual void SaveParameters(RDK::Serialize::USerStorageXML &xml);
-virtual void ASaveParameters(RDK::Serialize::USerStorageXML &xml);
+virtual void SaveParameters(RDK::USerStorageXML &xml);
+virtual void ASaveParameters(RDK::USerStorageXML &xml);
 
 // Загружает параметры интерфейса из xml
-virtual void LoadParameters(RDK::Serialize::USerStorageXML &xml);
-virtual void ALoadParameters(RDK::Serialize::USerStorageXML &xml);
+virtual void LoadParameters(RDK::USerStorageXML &xml);
+virtual void ALoadParameters(RDK::USerStorageXML &xml);
 
 // Управление длинным именем управляемого компонента
 // Длинное имя управляемого компонента модели (опционально)

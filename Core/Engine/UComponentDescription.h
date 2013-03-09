@@ -70,10 +70,10 @@ void SetDescription(const std::string& value);
 // Методы ввода вывода данными
 // --------------------------
 // Сохраняет данные класса в XML
-virtual bool Save(Serialize::USerStorageXML &xml);
+virtual bool Save(USerStorageXML &xml);
 
 // Загружает данные класса из XML
-virtual bool Load(Serialize::USerStorageXML &xml);
+virtual bool Load(USerStorageXML &xml);
 // --------------------------
 
 };

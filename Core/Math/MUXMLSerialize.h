@@ -23,7 +23,6 @@ See file license.txt for more information
 #include "../Serialize/UXMLStdSerialize.h"
 
 namespace RDK {
-namespace Serialize {
 
 template<typename T, unsigned Rows>
 USerStorageXML& operator << (USerStorageXML& storage, const MVector<T,Rows> &data)
@@ -313,7 +312,6 @@ USerStorageXML& operator >> (USerStorageXML& storage, MGeometry<T, Rows> &data)
 
 }
 
-}
 }
 #endif
 

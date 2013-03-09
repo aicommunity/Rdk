@@ -46,10 +46,10 @@ void ABeforeCalculate(void);
 void AAfterCalculate(void);
 
 // Сохраняет параметры интерфейса в xml
-virtual void ASaveParameters(RDK::Serialize::USerStorageXML &xml);
+virtual void ASaveParameters(RDK::USerStorageXML &xml);
 
 // Загружает параметры интерфейса из xml
-virtual void ALoadParameters(RDK::Serialize::USerStorageXML &xml);
+virtual void ALoadParameters(RDK::USerStorageXML &xml);
 // ------------------------------
 
 // ------------------------------

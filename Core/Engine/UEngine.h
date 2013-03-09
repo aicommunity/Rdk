@@ -105,7 +105,7 @@ std::list<ULibrary*> LibrariesList;
 // Список загруженных образцов классов
 std::list<UContainer*> ClassesList;
 
-RDK::Serialize::USerStorageXML XmlStorage;
+RDK::USerStorageXML XmlStorage;
 
 // Временное хранилище строк
 mutable string TempString;
@@ -692,16 +692,16 @@ int LoadLibraries(void);
 // --------------------------
 protected:
 // Возвращает свойства компонента по идентификатору
-virtual bool Model_GetComponentProperties(RDK::UContainer* cont, RDK::Serialize::USerStorageXML *serstorage, unsigned int type_mask);
+virtual bool Model_GetComponentProperties(RDK::UContainer* cont, RDK::USerStorageXML *serstorage, unsigned int type_mask);
 
 // Возвращает выборочные свойства компонента по идентификатору
-virtual bool Model_GetComponentSelectedProperties(RDK::UContainer* cont, RDK::Serialize::USerStorageXML *serstorage);
+virtual bool Model_GetComponentSelectedProperties(RDK::UContainer* cont, RDK::USerStorageXML *serstorage);
 
 // Возвращает свойства компонента по идентификатору с описаниями
-virtual bool Model_GetComponentPropertiesEx(RDK::UContainer* cont, RDK::Serialize::USerStorageXML *serstorage, unsigned int type_mask);
+virtual bool Model_GetComponentPropertiesEx(RDK::UContainer* cont, RDK::USerStorageXML *serstorage, unsigned int type_mask);
 
 // Устанавливает свойства компонента по идентификатору
-virtual int Model_SetComponentProperties(RDK::UContainer* cont, RDK::Serialize::USerStorageXML *serstorage);
+virtual int Model_SetComponentProperties(RDK::UContainer* cont, RDK::USerStorageXML *serstorage);
 
 // Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
 // включая этот компонент
@@ -714,12 +714,12 @@ virtual void Model_SetGlobalOwnerComponentPropertyValue(RDK::UContainer* cont, U
 // Возращает все связи внутри компонента cont в виде xml в буфер buffer
 // Имена формируются до уровня компонента owner_level
 // Если owner_level не задан, то имена формируются до уровня текущего компонента
-virtual int Model_GetComponentInternalLinks(RDK::UNet* cont, RDK::Serialize::USerStorageXML *serstorage, RDK::UNet* owner_level);
+virtual int Model_GetComponentInternalLinks(RDK::UNet* cont, RDK::USerStorageXML *serstorage, RDK::UNet* owner_level);
 
 // Устанавливает все связи внутри компонента stringid из строки xml в буфере buffer
 // Имена применяются до уровня компонента owner_level
 // Если owner_level не задан, то имена применяются до уровня текущего компонента
-virtual int Model_SetComponentInternalLinks(RDK::UNet* cont, RDK::Serialize::USerStorageXML *serstorage, RDK::UNet* owner_level);
+virtual int Model_SetComponentInternalLinks(RDK::UNet* cont, RDK::USerStorageXML *serstorage, RDK::UNet* owner_level);
 
 // Возращает все входные связи к компоненту stringid в виде xml в буфер buffer
 // если 'sublevel' == -2, то возвращает связи всех элементов включая
@@ -729,7 +729,7 @@ virtual int Model_SetComponentInternalLinks(RDK::UNet* cont, RDK::Serialize::USe
 // если 'sublevel' == 0, то возвращает связи подсетей только этой сети
 // Имена формируются до уровня компонента owner_level
 // Если owner_level не задан, то имена формируются до уровня текущего компонента
-virtual int Model_GetComponentInputLinks(RDK::UNet* cont, RDK::Serialize::USerStorageXML *serstorage, RDK::UNet* owner_level, int sublevel=-1);
+virtual int Model_GetComponentInputLinks(RDK::UNet* cont, RDK::USerStorageXML *serstorage, RDK::UNet* owner_level, int sublevel=-1);
 
 // Возращает все выходные связи из компонента stringid в виде xml в буфер buffer
 // если 'sublevel' == -2, то возвращает связи всех элементов включая
@@ -739,31 +739,31 @@ virtual int Model_GetComponentInputLinks(RDK::UNet* cont, RDK::Serialize::USerSt
 // если 'sublevel' == 0, то возвращает связи подсетей только этой сети
 // Имена формируются до уровня компонента owner_level
 // Если owner_level не задан, то имена формируются до уровня текущего компонента
-virtual int Model_GetComponentOutputLinks(RDK::UNet* cont, RDK::Serialize::USerStorageXML *serstorage, RDK::UNet* owner_level, int sublevel=-1);
+virtual int Model_GetComponentOutputLinks(RDK::UNet* cont, RDK::USerStorageXML *serstorage, RDK::UNet* owner_level, int sublevel=-1);
 
 // Возращает все внешние связи c компонентом cont и его дочерними компонентами в виде xml в буфер buffer
 // Информация о связях формируется относительно владельца компонента cont!
 // Имена формируются до уровня компонента owner_level
 // Если owner_level не задан, то имена формируются до уровня текущего компонента
-virtual int Model_GetComponentPersonalLinks(RDK::UNet* cont, RDK::Serialize::USerStorageXML *serstorage, RDK::UNet* owner_level);
+virtual int Model_GetComponentPersonalLinks(RDK::UNet* cont, RDK::USerStorageXML *serstorage, RDK::UNet* owner_level);
 
 // Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния в xml
-virtual int Model_SaveComponent(RDK::UNet* cont, RDK::Serialize::USerStorageXML *serstorage, bool links, unsigned int params_type_mask);
+virtual int Model_SaveComponent(RDK::UNet* cont, RDK::USerStorageXML *serstorage, bool links, unsigned int params_type_mask);
 
 // Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния из xml
-virtual int Model_LoadComponent(RDK::UNet* cont, RDK::Serialize::USerStorageXML *serstorage, bool links);
+virtual int Model_LoadComponent(RDK::UNet* cont, RDK::USerStorageXML *serstorage, bool links);
 
 // Сохраняет все свойства компонента и его дочерних компонент в xml
-virtual int Model_SaveComponentProperties(RDK::UNet* cont, RDK::Serialize::USerStorageXML *serstorage, unsigned int type_mask);
+virtual int Model_SaveComponentProperties(RDK::UNet* cont, RDK::USerStorageXML *serstorage, unsigned int type_mask);
 
 // Загружает все свойства компонента и его дочерних компонент из xml
-virtual int Model_LoadComponentProperties(RDK::UNet* cont, RDK::Serialize::USerStorageXML *serstorage);
+virtual int Model_LoadComponentProperties(RDK::UNet* cont, RDK::USerStorageXML *serstorage);
 
 // Сохраняет внутренние данные компонента, и его _непосредственных_ дочерних компонент, исключая
 // переменные состояния в xml
-virtual int Model_SaveComponentDrawInfo(RDK::UNet* cont, RDK::Serialize::USerStorageXML *serstorage);
+virtual int Model_SaveComponentDrawInfo(RDK::UNet* cont, RDK::USerStorageXML *serstorage);
 // --------------------------
 
 // --------------------------

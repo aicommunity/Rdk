@@ -532,20 +532,20 @@ void UStorage::SetClassDescription(const UId &classid, const UEPtr<UComponentDes
 
 // Сохраняет описание класса в xml
 void UStorage::SaveClassDescription(const UId &classid,
-										Serialize::USerStorageXML &xml)
+										USerStorageXML &xml)
 {
  GetClassDescription(classid)->Save(xml);
 }
 
 // Загружает описание класса из xml
 void UStorage::LoadClassDescription(const UId &classid,
-										Serialize::USerStorageXML &xml)
+										USerStorageXML &xml)
 {
  GetClassDescription(classid)->Load(xml);
 }
 
 // Сохраняет описание всех классов в xml
-void UStorage::SaveClassesDescription(Serialize::USerStorageXML &xml)
+void UStorage::SaveClassesDescription(USerStorageXML &xml)
 {
  for(UClassesDescriptionCIterator I = ClassesDescription.begin(), J=ClassesDescription.end(); I != J; ++I)
  {
@@ -556,7 +556,7 @@ void UStorage::SaveClassesDescription(Serialize::USerStorageXML &xml)
 }
 
 // Загружает описание всех классов из xml
-void UStorage::LoadClassesDescription(Serialize::USerStorageXML &xml)
+void UStorage::LoadClassesDescription(USerStorageXML &xml)
 {
  for(UClassesDescriptionCIterator I = ClassesDescription.begin(), J=ClassesDescription.end(); I != J; ++I)
  {
@@ -568,7 +568,7 @@ void UStorage::LoadClassesDescription(Serialize::USerStorageXML &xml)
 }
 
 // Сохраняет общее описание всех классов в xml
-bool UStorage::SaveCommonClassesDescription(Serialize::USerStorageXML &xml)
+bool UStorage::SaveCommonClassesDescription(USerStorageXML &xml)
 {
  xml.AddNode("Default");
  if(!UContainerDescription::SaveCommon(xml))
@@ -581,7 +581,7 @@ bool UStorage::SaveCommonClassesDescription(Serialize::USerStorageXML &xml)
 }
 
 // Загружает общее описание всех классов из xml
-bool UStorage::LoadCommonClassesDescription(Serialize::USerStorageXML &xml)
+bool UStorage::LoadCommonClassesDescription(USerStorageXML &xml)
 {
  if(xml.SelectNode("Default"))
  {

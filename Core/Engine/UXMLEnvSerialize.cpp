@@ -18,7 +18,6 @@ See file license.txt for more information
 #include "../Serialize/UXMLStdSerialize.h"
 
 namespace RDK {
-namespace Serialize {
 
 // UIdVector
 USerStorageXML& operator << (USerStorageXML& storage, const UIdVector &data)
@@ -278,7 +277,6 @@ USerStorageXML& operator >> (USerStorageXML& storage, ULinksList &data)
 }
       */
 
-}
 }
 #endif
 

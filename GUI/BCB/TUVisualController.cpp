@@ -23,12 +23,12 @@ TUFormsSerialize::~TUFormsSerialize(void)
 // Методы управления данными
 // --------------------------
 // Управление хранилищем форм
-RDK::Serialize::USerStorageXML* TUFormsSerialize::GetXml(void)
+RDK::USerStorageXML* TUFormsSerialize::GetXml(void)
 {
  return Xml;
 }
 
-void TUFormsSerialize::SetXml(RDK::Serialize::USerStorageXML *xml)
+void TUFormsSerialize::SetXml(RDK::USerStorageXML *xml)
 {
  Xml=xml;
 }
@@ -135,7 +135,7 @@ void TUFormsSerialize::LoadXmlFromFile(const String &filename)
 // Вспомогательные методы сериализации
 // --------------------------
 // Сохраняет данные формы в xml
-void TUFormsSerialize::SaveForm(RDK::Serialize::USerStorageXML &xml, TForm *form)
+void TUFormsSerialize::SaveForm(RDK::USerStorageXML &xml, TForm *form)
 {
  if(!form)
   return;
@@ -150,7 +150,7 @@ void TUFormsSerialize::SaveForm(RDK::Serialize::USerStorageXML &xml, TForm *form
 }
 
 // Загружает данные формы из xml
-void TUFormsSerialize::LoadForm(RDK::Serialize::USerStorageXML &xml, TForm *form)
+void TUFormsSerialize::LoadForm(RDK::USerStorageXML &xml, TForm *form)
 {
  if(!form)
   return;

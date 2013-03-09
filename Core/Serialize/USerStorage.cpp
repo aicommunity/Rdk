@@ -18,7 +18,6 @@ See file license.txt for more information
 //#include "Serialize.h"
 
 namespace RDK {
-namespace Serialize {
 
 // Методы
 // --------------------------
@@ -69,7 +68,6 @@ bool USerStorage::Load(T &value)
 // Скрытые методы управления данными
 // --------------------------
 // --------------------------
-}
 }
 #endif
 

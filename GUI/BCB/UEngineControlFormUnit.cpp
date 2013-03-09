@@ -59,12 +59,12 @@ void TUEngineControlForm::AUpdateInterface(void)
 }
 
 // Сохраняет параметры интерфейса в xml
-void TUEngineControlForm::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
+void TUEngineControlForm::ASaveParameters(RDK::USerStorageXML &xml)
 {
 }
 
 // Загружает параметры интерфейса из xml
-void TUEngineControlForm::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
+void TUEngineControlForm::ALoadParameters(RDK::USerStorageXML &xml)
 {
 }
 

@@ -17,7 +17,6 @@ See file license.txt for more information
 #include "MUBinarySerialize.h"
 
 namespace RDK {
-namespace Serialize {
 			/*
 // MBorder
 USerStorageBinary& operator << (USerStorageBinary& storage, const MBorder &data)
@@ -33,8 +32,7 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, MBorder &data)
  data=temp;
  return storage;
 }
-        */
-}
+		*/
 }
 #endif
 

@@ -21,8 +21,6 @@ namespace RDK {
 struct UBVSObject;
 struct UBVSObject3D;
 
-namespace Serialize {
-
 // UBMColorModel
 USerStorageXML& operator << (USerStorageXML& storage, const UBMColorModel &data);
 USerStorageXML& operator >> (USerStorageXML& storage, UBMColorModel &data);
@@ -70,6 +68,6 @@ USerStorageXML& operator >> (USerStorageXML& storage, UBVSObject &data);
 // struct UBVSObject
 USerStorageXML& operator << (USerStorageXML& storage, const UBVSObject3D &data);
 USerStorageXML& operator >> (USerStorageXML& storage, UBVSObject3D &data);
-}
+
 }
 #endif

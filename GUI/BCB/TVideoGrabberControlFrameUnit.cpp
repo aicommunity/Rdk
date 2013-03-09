@@ -141,7 +141,7 @@ void TVideoGrabberControlFrame::AUpdateInterface(void)
 }
 
 // Сохраняет параметры интерфейса в xml
-void TVideoGrabberControlFrame::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
+void TVideoGrabberControlFrame::ASaveParameters(RDK::USerStorageXML &xml)
 {
  xml.WriteInteger("Mode",GetMode());
  if(ExtractFilePath(VFNameEdit->Text).Length() == 0)
@@ -176,7 +176,7 @@ void TVideoGrabberControlFrame::ASaveParameters(RDK::Serialize::USerStorageXML &
 }
 
 // Загружает параметры интерфейса из xml
-void TVideoGrabberControlFrame::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
+void TVideoGrabberControlFrame::ALoadParameters(RDK::USerStorageXML &xml)
 {
  VFNameEdit->Text=xml.ReadString("VideoFileName","").c_str();
  if(ExtractFilePath(VFNameEdit->Text) == UGEngineControlForm->ProjectPath)

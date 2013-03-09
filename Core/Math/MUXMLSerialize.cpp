@@ -16,7 +16,6 @@ See file license.txt for more information
 #include "MUXMLSerialize.h"
 
 namespace RDK {
-namespace Serialize {
 				  /*
 // MBorder
 USerStorageXML& operator << (USerStorageXML& storage, const MBorder &data)
@@ -49,7 +48,6 @@ USerStorageXML& operator >> (USerStorageXML& storage, MBorder &data)
 }
                  */
 
-}
 }
 #endif
 

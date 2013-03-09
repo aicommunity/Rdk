@@ -13,10 +13,6 @@ See file license.txt for more information
 #define USerStorageH
 
 namespace RDK {
-namespace Serialize {
-
-//class USerStorageBinary;
-//class USerStorageXML;
 
 class USerStorage
 {
@@ -53,6 +49,5 @@ protected:
 // --------------------------
 };
 
-}
 }
 #endif

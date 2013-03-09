@@ -23,13 +23,13 @@ void TVideoOutputForm::AUpdateInterface(void)
 }
 
 // Сохраняет параметры интерфейса в xml
-void TVideoOutputForm::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
+void TVideoOutputForm::ASaveParameters(RDK::USerStorageXML &xml)
 {
  xml.WriteInteger("NumSources",GetNumSources());
 }
 
 // Загружает параметры интерфейса из xml
-void TVideoOutputForm::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
+void TVideoOutputForm::ALoadParameters(RDK::USerStorageXML &xml)
 {
  int num=xml.ReadInteger("NumSources",1);
  ClearSources();

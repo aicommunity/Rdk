@@ -18,8 +18,6 @@ See file license.txt for more information
 
 namespace RDK {
 
-namespace Serialize {
-
 // UBMColorModel
 //USerStorageBinary& operator << (USerStorageBinary& storage, UBMColorModel data);
 //USerStorageBinary& operator >> (USerStorageBinary& storage, UBMColorModel &data);
@@ -27,9 +25,6 @@ namespace Serialize {
 // UItemData
 USerStorageBinary& operator << (USerStorageBinary& storage, const UItemData &data);
 USerStorageBinary& operator >> (USerStorageBinary& storage, UItemData &data);
-
-
-}
 
 }
 #endif

@@ -26,7 +26,7 @@ See file license.txt for more information
 //#include "UEnvException.h"
 #include "UComponentDescription.h"
 #include "UContainerDescription.h"  
-#include "UDataComponent.h"
+//#include "UDataComponent.h"
 #include "Libraries/UELibraries.h"
 
 #endif

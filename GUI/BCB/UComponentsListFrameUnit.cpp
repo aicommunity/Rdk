@@ -129,13 +129,13 @@ void TUComponentsListFrame::AUpdateInterface(void)
 
 
 // Сохраняет параметры интерфейса в xml
-void TUComponentsListFrame::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
+void TUComponentsListFrame::ASaveParameters(RDK::USerStorageXML &xml)
 {
 
 }
 
 // Загружает параметры интерфейса из xml
-void TUComponentsListFrame::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
+void TUComponentsListFrame::ALoadParameters(RDK::USerStorageXML &xml)
 {
  SelectedComponentName.clear();
  SelectedComponentId.clear();
@@ -258,7 +258,7 @@ void TUComponentsListFrame::UpdateParametersList(void)
  UpdateInterfaceFlag=true;
 
  std::string xml_data=Model_GetComponentParametersEx(GetSelectedComponentLongName().c_str());
- RDK::Serialize::USerStorageXML xml;
+ RDK::USerStorageXML xml;
  xml.Load(xml_data,"");
  xml.SelectNode("Parameters");
  int num=xml.GetNumNodes();
@@ -325,7 +325,7 @@ void TUComponentsListFrame::UpdateStatesList(void)
  UpdateInterfaceFlag=true;
 
  std::string xml_data=Model_GetComponentState(GetSelectedComponentLongName().c_str());
- RDK::Serialize::USerStorageXML xml;
+ RDK::USerStorageXML xml;
  xml.Load(xml_data,"");
  xml.SelectNode("State");
  int num=xml.GetNumNodes();
@@ -388,7 +388,7 @@ void TUComponentsListFrame::UpdateStatesList(void)
  UpdateInterfaceFlag=true;
 
  std::string xml_data=Model_GetComponentState(GetSelectedComponentLongName().c_str());
- RDK::Serialize::USerStorageXML xml;
+ RDK::USerStorageXML xml;
  xml.Load(xml_data,"");
  xml.SelectNode("Parameters");
  int num=xml.GetNumNodes();

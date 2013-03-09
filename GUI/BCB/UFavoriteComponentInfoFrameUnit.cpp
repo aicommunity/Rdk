@@ -217,7 +217,7 @@ void TUFavoriteComponentInfoFrame::AUpdateInterface(void)
 }
 
 // Сохраняет параметры интерфейса в xml
-void TUFavoriteComponentInfoFrame::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
+void TUFavoriteComponentInfoFrame::ASaveParameters(RDK::USerStorageXML &xml)
 {
  xml.WriteInteger("ColWidth",StringGrid->ColWidths[0]);
 
@@ -237,7 +237,7 @@ void TUFavoriteComponentInfoFrame::ASaveParameters(RDK::Serialize::USerStorageXM
 }
 
 // Загружает параметры интерфейса из xml
-void TUFavoriteComponentInfoFrame::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
+void TUFavoriteComponentInfoFrame::ALoadParameters(RDK::USerStorageXML &xml)
 {
  Info.clear();
  StringGrid->ColWidths[0]=xml.ReadInteger("ColWidth",StringGrid->ColWidths[0]);

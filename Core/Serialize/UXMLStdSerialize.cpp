@@ -16,7 +16,6 @@ See file license.txt for more information
 #include "UXMLStdSerialize.h"
 
 namespace RDK {
-namespace Serialize {
 
 USerStorageXML& operator << (USerStorageXML& storage, bool data)
 {
@@ -324,7 +323,6 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::string &data)
  return storage;
 }
 
-}
 }
 #endif
 

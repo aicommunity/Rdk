@@ -71,12 +71,12 @@ virtual void AUpdateInterface(void);
 virtual std::string GetName(void);
 
 // Сохраняет параметры интерфейса в xml
-virtual void SaveParameters(RDK::Serialize::USerStorageXML &xml);
-virtual void ASaveParameters(RDK::Serialize::USerStorageXML &xml);
+virtual void SaveParameters(RDK::USerStorageXML &xml);
+virtual void ASaveParameters(RDK::USerStorageXML &xml);
 
 // Загружает параметры интерфейса из xml
-virtual void LoadParameters(RDK::Serialize::USerStorageXML &xml);
-virtual void ALoadParameters(RDK::Serialize::USerStorageXML &xml);
+virtual void LoadParameters(RDK::USerStorageXML &xml);
+virtual void ALoadParameters(RDK::USerStorageXML &xml);
 
 // Управление длинным именем управляемого компонента
 // Длинное имя управляемого компонента модели (опционально)
@@ -89,10 +89,10 @@ bool SetComponentControlName(const std::string& name);
 // Вспомогательные функции сериализации
 // --------------------------
 // Сохраняет данные положения формы в xml
-void SaveFormPosition(RDK::Serialize::USerStorageXML &xml, TForm *form);
+void SaveFormPosition(RDK::USerStorageXML &xml, TForm *form);
 
 // Загружает данные положения формы из xml
-void LoadFormPosition(RDK::Serialize::USerStorageXML &xml, TForm *form);
+void LoadFormPosition(RDK::USerStorageXML &xml, TForm *form);
 // --------------------------
 
 //---------------------------------------------------------------------------

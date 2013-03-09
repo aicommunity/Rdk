@@ -25,8 +25,6 @@ namespace RDK {
 
 //typedef UQueue<unsigned char> USerStorage;
 
-namespace Serialize {
-
 // Простые типы
 template<typename T>
 USerStorageBinary& USimpleToStorage (USerStorageBinary& storage, const T data)
@@ -319,8 +317,6 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, UTree<T> &data)
  return storage;
 }
 
-
-}
 }
 #endif
 

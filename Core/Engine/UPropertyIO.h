@@ -54,6 +54,8 @@ template<typename T, typename OwnerT, unsigned int type>
 class UPropertyInputBase: protected ULProperty<T*,OwnerT,type>, public UPropertyIOBase, public UIPropertyInput
 {
 protected:
+/// Временная переменная, использующаяся, если нет реального подключения
+mutable T Local;
 
 public: // Методы
 // --------------------------
@@ -86,15 +88,12 @@ bool operator ! (void) const
 
 T* operator -> (void) const
 {
- if(!this->v)
-  return 0;
-
- return this->v;
+ return (this->v)?this->v:&Local;
 };
 
 T& operator * (void)
 {
- return *this->v;
+ return (this->v)?*this->v:Local;
 };
 
 operator T* (void) const
@@ -165,6 +164,8 @@ template<typename T, typename OwnerT, unsigned int type>
 class UPropertyInputCBase: public UCLProperty<std::vector<T*>,OwnerT,type>, public UPropertyIOBase, public UIPropertyInput
 {
 protected:
+/// Временная переменная, использующаяся, если нет реального подключения
+std::vector<T> Local;
 
 public: // Методы
 // --------------------------
@@ -194,12 +195,12 @@ bool SetPointer(int index, void* value)
 
 T* operator [] (int i)
 {
- return this->v[i];
+ return (this->v[i])?this->v[i]:&Local[i];
 }
 
 const T* operator [] (int i) const
 {
- return this->v[i];
+ return (this->v[i])?this->v[i]:&Local[i];
 }
 // --------------------------
 };

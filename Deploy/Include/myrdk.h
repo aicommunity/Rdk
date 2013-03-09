@@ -65,10 +65,10 @@ virtual void UpdateInterface(bool force_update=true)=0;
 virtual std::string GetName(void)=0;
 
 // Сохраняет параметры интерфейса в xml
-virtual void SaveParameters(RDK::Serialize::USerStorageXML &xml)=0;
+virtual void SaveParameters(RDK::USerStorageXML &xml)=0;
 
 // Загружает параметры интерфейса из xml
-virtual void LoadParameters(RDK::Serialize::USerStorageXML &xml)=0;
+virtual void LoadParameters(RDK::USerStorageXML &xml)=0;
 };
 
 // Класс хранилище-визуальных интерфейсов
@@ -101,10 +101,10 @@ static void AfterCalculate(void);
 static void UpdateInterface(void);
 
 // Сохраняет параметры интерфейса в xml
-static void SaveParameters(RDK::Serialize::USerStorageXML &xml);
+static void SaveParameters(RDK::USerStorageXML &xml);
 
 // Загружает параметры интерфейса из xml
-static void LoadParameters(RDK::Serialize::USerStorageXML &xml);
+static void LoadParameters(RDK::USerStorageXML &xml);
 };
 
 }

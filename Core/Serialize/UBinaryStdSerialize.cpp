@@ -17,7 +17,6 @@ See file license.txt for more information
 #include "UBinaryStdSerialize.h"
 
 namespace RDK {
-namespace Serialize {
 
 USerStorageBinary& operator << (USerStorageBinary& storage, bool data)
 {
@@ -228,7 +227,6 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, std::string &data)
  return storage;
 }
 
-}
 }
 #endif
 

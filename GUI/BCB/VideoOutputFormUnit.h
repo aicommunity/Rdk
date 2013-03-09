@@ -52,10 +52,10 @@ std::vector<TVideoOutputFrame*> Sources;
 void AUpdateInterface(void);
 
 // Сохраняет параметры интерфейса в xml
-void ASaveParameters(RDK::Serialize::USerStorageXML &xml);
+void ASaveParameters(RDK::USerStorageXML &xml);
 
 // Загружает параметры интерфейса из xml
-void ALoadParameters(RDK::Serialize::USerStorageXML &xml);
+void ALoadParameters(RDK::USerStorageXML &xml);
 
 // Число источников видео
 int GetNumSources(void) const;

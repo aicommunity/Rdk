@@ -125,7 +125,7 @@ void TUDrawEngineForm::AUpdateInterface(void)
 }
 
 // Сохраняет параметры интерфейса в xml
-void TUDrawEngineForm::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
+void TUDrawEngineForm::ASaveParameters(RDK::USerStorageXML &xml)
 {
  xml.WriteString("FontFileName",FontFileName);
  xml.WriteInteger("CanvasWidth",GraphCanvas.GetWidth());
@@ -138,7 +138,7 @@ void TUDrawEngineForm::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
 }
 
 // Загружает параметры интерфейса из xml
-void TUDrawEngineForm::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
+void TUDrawEngineForm::ALoadParameters(RDK::USerStorageXML &xml)
 {
  // Имя компонента, содержимое которого будет отображено
  ComponentName.clear();
@@ -212,11 +212,11 @@ void TUDrawEngineForm::SaveComponentPosition(const std::string &name)
  if(name == "")
   return;
  const RDK::UGEDescription &descr=DrawEngine.GetDescription(name);
- RDK::Serialize::USerStorageXML xml;
+ RDK::USerStorageXML xml;
  xml.Create("Coord");
  std::string buffer;
  RDK::MVector<double,3> pos=(descr.Position-DrawEngine.GetOrigin())/DrawEngine.GetZoomCoeff();
- RDK::Serialize::operator << (xml,pos);
+ RDK::operator << (xml,pos);
  xml.Save(buffer);
 
  if(!ComponentName.empty())

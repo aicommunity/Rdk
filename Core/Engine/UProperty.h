@@ -23,7 +23,7 @@ See file license.txt for more information
 #include "../Serialize/UBinaryStdSerialize.h"
 #include "../Graphics/UGraphicsBinarySerialize.h"
 #include "../Graphics/UGraphicsXMLSerialize.h"
-#include "UDataComponent.h"
+#include "UComponent.h"
 
 namespace RDK {
 
@@ -45,7 +45,7 @@ protected: // ƒанные
 OwnerT* Owner;
 
 // ”казатель на итератор-хранилище данных об этом свойстве в родительском компоненте
-UDataComponent::VariableMapCIteratorT Variable;
+UComponent::VariableMapCIteratorT Variable;
 
 // ѕр€мой доступ к данным
 T* PData;
@@ -95,7 +95,7 @@ void Init(OwnerT * const owner, T * const pdata)
 // -----------------------------
 // ћетод устанавливает значение указател€ на итератор-хранилище данных об этом
 // свойстве в родительском компоненте
-virtual void SetVariable(UDataComponent::VariableMapCIteratorT &var)
+virtual void SetVariable(UComponent::VariableMapCIteratorT &var)
 {
  Variable=var;
 }
@@ -270,7 +270,7 @@ UVProperty& operator = (const UVProperty &v)
 // -----------------------------
 // ћетод устанавливает значение указател€ на итератор-хранилище данных об этом
 // свойстве в родительском компоненте
-virtual void SetVariable(UDataComponent::VariableMapCIteratorT &var)
+virtual void SetVariable(UComponent::VariableMapCIteratorT &var)
 {
  this->Variable=var;
 }
@@ -294,29 +294,29 @@ virtual std::string GetOwnerName(void) const
 };
 
 // ћетод записывает значение свойства в поток
-virtual bool Save(UEPtr<Serialize::USerStorage>  storage, bool simplemode=false)
+virtual bool Save(UEPtr<USerStorage>  storage, bool simplemode=false)
 {
- UEPtr<Serialize::USerStorageBinary> binary=dynamic_pointer_cast<Serialize::USerStorageBinary>(storage);
+ UEPtr<USerStorageBinary> binary=dynamic_pointer_cast<USerStorageBinary>(storage);
  if(binary)
  {
   *binary<<Get();
   return true;
  }
 
- UEPtr<Serialize::USerStorageXML> xml=dynamic_pointer_cast<Serialize::USerStorageXML>(storage);
+ UEPtr<USerStorageXML> xml=dynamic_pointer_cast<USerStorageXML>(storage);
  if(xml)
  {
   if(simplemode)
   {
    xml->Create(GetName());
-   Serialize::operator << (*xml,Get());
+   operator << (*xml,Get());
    xml->SelectUp();
    return true;
   }
   else
   {
    xml->AddNode(GetName());
-   Serialize::operator << (*xml,Get());
+   operator << (*xml,Get());
    xml->SelectUp();
    return true;
   }
@@ -326,19 +326,19 @@ virtual bool Save(UEPtr<Serialize::USerStorage>  storage, bool simplemode=false)
 };
 
 // ћетод читает значение свойства из потока
-virtual bool Load(UEPtr<Serialize::USerStorage>  storage, bool simplemode=false)
+virtual bool Load(UEPtr<USerStorage>  storage, bool simplemode=false)
 {
  T temp;
 
- UEPtr<Serialize::USerStorageBinary> binary=dynamic_pointer_cast<Serialize::USerStorageBinary>(storage);
+ UEPtr<USerStorageBinary> binary=dynamic_pointer_cast<USerStorageBinary>(storage);
  if(binary)
  {
-  Serialize::operator >> (*binary,temp);
+  operator >> (*binary,temp);
   Set(temp);
   return true;
  }
 
- UEPtr<Serialize::USerStorageXML> xml=dynamic_pointer_cast<Serialize::USerStorageXML>(storage);
+ UEPtr<USerStorageXML> xml=dynamic_pointer_cast<USerStorageXML>(storage);
  if(xml)
  {
   if(simplemode)
@@ -346,7 +346,7 @@ virtual bool Load(UEPtr<Serialize::USerStorage>  storage, bool simplemode=false)
    xml->SelectRoot();
    if(xml->GetNodeName() != GetName())
 	return false;
-   Serialize::operator >> (*xml,temp);
+   operator >> (*xml,temp);
    Set(temp);
    xml->SelectUp();
    return true;
@@ -355,7 +355,7 @@ virtual bool Load(UEPtr<Serialize::USerStorage>  storage, bool simplemode=false)
   {
    if(!xml->SelectNode(GetName()))
 	return false;
-   Serialize::operator >> (*xml,temp);
+   operator >> (*xml,temp);
    Set(temp);
    xml->SelectUp();
    return true;

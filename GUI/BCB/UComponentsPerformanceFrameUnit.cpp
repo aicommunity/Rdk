@@ -147,7 +147,7 @@ void TUComponentsPerformanceFrame::AUpdateInterface(void)
 
 
 // Сохраняет параметры интерфейса в xml
-void TUComponentsPerformanceFrame::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
+void TUComponentsPerformanceFrame::ASaveParameters(RDK::USerStorageXML &xml)
 {
  xml.WriteInteger("AverageIterations",AverageIterations);
  xml.WriteInteger("ShowModeRadioGroup",ShowModeRadioGroup->ItemIndex);
@@ -163,7 +163,7 @@ void TUComponentsPerformanceFrame::ASaveParameters(RDK::Serialize::USerStorageXM
 }
 
 // Загружает параметры интерфейса из xml
-void TUComponentsPerformanceFrame::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
+void TUComponentsPerformanceFrame::ALoadParameters(RDK::USerStorageXML &xml)
 {
  ClearComponents();
  ComponentData.clear();

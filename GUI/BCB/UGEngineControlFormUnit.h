@@ -119,10 +119,10 @@ public:		// User declarations
 	__fastcall TUGEngineControlForm(TComponent* Owner);
 
 // Файл настроек проекта
-RDK::Serialize::USerStorageXML ProjectXml;
+RDK::USerStorageXML ProjectXml;
 
 // Файл настроек интефрейса
-RDK::Serialize::USerStorageXML InterfaceXml;
+RDK::USerStorageXML InterfaceXml;
 
 // Признак наличия открытого проекта
 bool ProjectOpenFlag;

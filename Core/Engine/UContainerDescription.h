@@ -68,20 +68,20 @@ bool RemoveCommonDuplicatesProperties(void);
 // Методы ввода вывода данных
 // --------------------------
 // Сохраняет данные класса в XML
-virtual bool Save(Serialize::USerStorageXML &xml);
+virtual bool Save(USerStorageXML &xml);
 
 // Загружает данные класса из XML
-virtual bool Load(Serialize::USerStorageXML &xml);
+virtual bool Load(USerStorageXML &xml);
 // --------------------------
 
 // --------------------------
 // Методы ввода вывода общих данных
 // --------------------------
 // Сохраняет данные класса в XML
-static bool SaveCommon(Serialize::USerStorageXML &xml);
+static bool SaveCommon(USerStorageXML &xml);
 
 // Загружает данные класса из XML
-static bool LoadCommon(Serialize::USerStorageXML &xml);
+static bool LoadCommon(USerStorageXML &xml);
 // --------------------------
 };
 

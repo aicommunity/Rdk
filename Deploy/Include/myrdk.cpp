@@ -118,7 +118,7 @@ void UIVisualControllerStorage::UpdateInterface(void)
 }
 
 // Сохраняет параметры интерфейса в xml
-void UIVisualControllerStorage::SaveParameters(RDK::Serialize::USerStorageXML &xml)
+void UIVisualControllerStorage::SaveParameters(RDK::USerStorageXML &xml)
 {
  for(size_t i=0;i<InterfaceUpdaters.size();i++)
   if(InterfaceUpdaters[i])
@@ -126,7 +126,7 @@ void UIVisualControllerStorage::SaveParameters(RDK::Serialize::USerStorageXML &x
 }
 
 // Загружает параметры интерфейса из xml
-void UIVisualControllerStorage::LoadParameters(RDK::Serialize::USerStorageXML &xml)
+void UIVisualControllerStorage::LoadParameters(RDK::USerStorageXML &xml)
 {
  for(size_t i=0;i<InterfaceUpdaters.size();i++)
   if(InterfaceUpdaters[i])

@@ -576,7 +576,7 @@ void TVideoOutputFrame::AUpdateInterface(void)
 }
 
 // Сохраняет параметры интерфейса в xml
-void TVideoOutputFrame::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
+void TVideoOutputFrame::ASaveParameters(RDK::USerStorageXML &xml)
 {
  xml.WriteString("LinkedComponentName",LinkedComponentName);
  xml.WriteInteger("LinkedMode",LinkedMode);
@@ -589,7 +589,7 @@ void TVideoOutputFrame::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
 }
 
 // Загружает параметры интерфейса из xml
-void TVideoOutputFrame::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
+void TVideoOutputFrame::ALoadParameters(RDK::USerStorageXML &xml)
 {
  LinkedComponentName=xml.ReadString("LinkedComponentName","");
  LinkedMode=xml.ReadInteger("LinkedMode",1);

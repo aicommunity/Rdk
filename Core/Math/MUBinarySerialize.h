@@ -25,7 +25,6 @@ See file license.txt for more information
 //#include "MCSystem.h"
 
 namespace RDK {
-namespace Serialize {
 
 // MVector
 template<typename T>
@@ -429,7 +428,6 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, MPolarCSystem<T> &da
  return storage;
 }                       */
 
-}
 }
 #endif
 

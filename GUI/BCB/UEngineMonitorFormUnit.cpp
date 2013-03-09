@@ -35,12 +35,12 @@ __fastcall TUEngineMonitorForm::TUEngineMonitorForm(TComponent* Owner)
 }
 
 // Сохраняет параметры интерфейса в xml
-void TUEngineMonitorForm::ASaveParameters(RDK::Serialize::USerStorageXML &xml)
+void TUEngineMonitorForm::ASaveParameters(RDK::USerStorageXML &xml)
 {
 }
 
 // Загружает параметры интерфейса из xml
-void TUEngineMonitorForm::ALoadParameters(RDK::Serialize::USerStorageXML &xml)
+void TUEngineMonitorForm::ALoadParameters(RDK::USerStorageXML &xml)
 {
 }
 //---------------------------------------------------------------------------

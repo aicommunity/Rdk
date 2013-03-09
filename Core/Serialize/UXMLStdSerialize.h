@@ -23,7 +23,6 @@ See file license.txt for more information
 #include "../Utilities/USupport.h"
 
 namespace RDK {
-namespace Serialize {
 
 // Простые типы
 template<typename T>
@@ -400,8 +399,6 @@ USerStorageXML& operator >> (USerStorageXML& storage, UTree<T> &data)
  return storage;
 }
 
-
-}
 }
 #endif
 
