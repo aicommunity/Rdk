@@ -622,6 +622,18 @@ void RDK_CALL Model_SetGlobalOwnerComponentPropertyValue(const char *stringid, c
  PEngine->Model_SetGlobalOwnerComponentPropertyValue(stringid, class_stringid, class_owner_stringid, paramname,buffer);
 }
 
+// Возвращает указатель void* на данные свойства компонента
+const void* RDK_CALL Model_GetComponentPropertyData(const char *stringid, const char *property_name)
+{
+ return PEngine->Model_GetComponentPropertyData(stringid, property_name);
+}
+
+// Копирует данные 'data' в заданное свойство компонента
+int RDK_CALL Model_SetComponentPropertyData(const char *stringid, const char *property_name, const void *data)
+{
+ return PEngine->Model_SetComponentPropertyData(stringid, property_name, data);
+}
+
 // Возвращает параметры компонента по идентификатору
 // Память для buffer должна быть выделена!
 const char * RDK_CALL Model_GetComponentParameters(const char *stringid, unsigned int type_mask)

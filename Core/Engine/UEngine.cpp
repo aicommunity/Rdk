@@ -1641,6 +1641,41 @@ void UEngine::Model_SetGlobalOwnerComponentPropertyValue(const char *stringid, c
  }
 }
 
+// Возвращает указатель void* на данные свойства компонента
+const void* UEngine::Model_GetComponentPropertyData(const char *stringid, const char *property_name)
+{
+ try
+ {
+  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
+  UEPtr<UIProperty> iproperty=cont->FindProperty(property_name);
+  return iproperty->GetMemoryArea();
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+
+ return 0;
+}
+
+// Копирует данные 'data' в заданное свойство компонента
+int UEngine::Model_SetComponentPropertyData(const char *stringid, const char *property_name, const void *data)
+{
+ try
+ {
+  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
+  UEPtr<UIProperty> iproperty=cont->FindProperty(property_name);
+  if(!iproperty->ReadFromMemory(data))
+   return 1;
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+
+ return 0;
+}
+
 // Связывает выбранные контейнеры друг с другом
 int UEngine::Model_CreateLink(const char* stringid1, int output_number, const char* stringid2, int input_number)
 {

@@ -157,6 +157,25 @@ virtual bool Load(UEPtr<USerStorage>  storage, bool simplemode=false)
 
  return false;
 };
+
+// Метод возвращает указатель на область памяти, содержащую данные свойства
+virtual const void* GetMemoryArea(void)
+{
+ return &GetData();
+}
+
+// Метод копирует значение данных свойства из области памяти
+// штатными средствами копирования реального типа данных
+// входной указатель приводится к указателю на необходимый тип данных
+bool ReadFromMemory(const void *buffer)
+{
+ if(!buffer)
+  return false;
+
+ const T* temp=(const T*)buffer;
+ SetData(*temp);
+ return true;
+}
 // -----------------------------
 };
 

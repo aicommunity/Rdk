@@ -473,9 +473,15 @@ virtual void Model_SetGlobalOwnerComponentPropertyValue(const char *stringid, co
 template<class T>
 const T& Model_GetComponentPropertyData(const char *stringid, const char *property_name);
 
+// Возвращает указатель void* на данные свойства компонента
+const void* Model_GetComponentPropertyData(const char *stringid, const char *property_name);
+
 // Копирует данные 'data' в заданное свойство компонента
 template<class T>
 int Model_SetComponentPropertyData(const char *stringid, const char *property_name, const T &data);
+
+// Копирует данные 'data' в заданное свойство компонента
+int Model_SetComponentPropertyData(const char *stringid, const char *property_name, const void *data);
 
 // Связывает выбранные контейнеры друг с другом
 virtual int Model_CreateLink(const char* stringid1, int output_number, const char* stringid2, int input_number);

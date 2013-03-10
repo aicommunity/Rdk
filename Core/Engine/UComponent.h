@@ -328,6 +328,14 @@ virtual bool Save(UEPtr<UVariableData> storage, bool simplemode=false)=0;
 // Метод читает значение свойства из потока
 virtual bool Load(UEPtr<UVariableData> storage, bool simplemode=false)=0;
 
+// Метод возвращает указатель на область памяти, содержащую данные свойства
+virtual const void* GetMemoryArea(void)=0;
+
+// Метод копирует значение данных свойства из области памяти
+// штатными средствами копирования реального типа данных
+// входной указатель приводится к указателю на необходимый тип данных
+virtual bool ReadFromMemory(const void *buffer)=0;
+
 // Возвращает языковой тип хранимого свойства
 virtual const type_info& GetLanguageType(void) const=0;
 

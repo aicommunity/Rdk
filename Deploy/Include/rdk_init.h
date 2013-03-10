@@ -379,6 +379,12 @@ RDK_LIB_TYPE void RDK_CALL Model_SetGlobalComponentPropertyValue(const char *str
 // и владельцем, производным от класса 'class_owner_stringid' включая этот компонент
 RDK_LIB_TYPE void RDK_CALL Model_SetGlobalOwnerComponentPropertyValue(const char *stringid, const char* class_stringid, const char* class_owner_stringid, const char *paramname, const char *buffer);
 
+// Возвращает указатель void* на данные свойства компонента
+RDK_LIB_TYPE const void* RDK_CALL Model_GetComponentPropertyData(const char *stringid, const char *property_name);
+
+// Копирует данные 'data' в заданное свойство компонента
+RDK_LIB_TYPE int RDK_CALL Model_SetComponentPropertyData(const char *stringid, const char *property_name, const void *data);
+
 // Возвращает параметры компонента по идентификатору
 // Deprecated
 RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentParameters(const char *stringid, unsigned int type_mask=ptParameter | pgPublic);

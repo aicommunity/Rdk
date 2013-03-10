@@ -89,7 +89,9 @@ EXPORTS
     Model_GetComponentSelectedProperties = _Model_GetComponentSelectedProperties
     Model_GetComponentPropertyValue = _Model_GetComponentPropertyValue  
     Model_SetGlobalComponentPropertyValue = _Model_SetGlobalComponentPropertyValue
-    Model_SetGlobalOwnerComponentPropertyValue = _Model_SetGlobalOwnerComponentPropertyValue
+    Model_SetGlobalOwnerComponentPropertyValue = _Model_SetGlobalOwnerComponentPropertyValue 
+    Model_GetComponentPropertyData = _Model_GetComponentPropertyData
+    Model_SetComponentPropertyData = _Model_SetComponentPropertyData
     Model_SetComponentProperties = _Model_SetComponentProperties
     Model_SetComponentPropertyValue = _Model_SetComponentPropertyValue
     Model_GetComponentParameters = _Model_GetComponentParameters
