@@ -71,13 +71,13 @@ virtual bool UnInit(void)
 
 const T& Get(void) const
 {
- return (VProperty)?VProperty->Get():RData;//(Pointer)?*Pointer:RData;
+ return (VProperty)?VProperty->GetData():RData;//(Pointer)?*Pointer:RData;
 }
 
 void Set(const T& data)
 {
  if(VProperty)
-  *VProperty=data;
+  VProperty->SetData(data);
  else
   RData=data;
 /*
@@ -216,7 +216,7 @@ virtual bool UnInit(void)
  return true;
 }
 
-const T Get(void) const
+const T& Get(void) const
 {
  return (VProperty)?VProperty->GetData():Data;
 // return (Pointer)?*Pointer:Data;
