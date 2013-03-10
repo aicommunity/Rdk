@@ -35,8 +35,10 @@
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="../../../Deploy/Include/myrdk.gcc.cpp" />
 		<Unit filename="../../../Deploy/Include/rdk.gcc.cpp" />
 		<Unit filename="../../../Deploy/Include/rdk_cpp_initlib.cpp" />
+		<Unit filename="../../../Deploy/Include/rdk_libraries.cpp" />
 		<Unit filename="../../../Deploy/Include/rdk_new.cpp" />
 		<Extensions>
 			<code_completion />
