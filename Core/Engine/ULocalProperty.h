@@ -84,36 +84,36 @@ UVLProperty(const string &name, OwnerT * const owner, T * const pdata, typename 
 // -----------------------------
 operator T (void) const
 {
- return GetData();
+ return this->GetData();
 };
 
 const T& operator () (void) const
 {
- return GetData();
+ return this->GetData();
 };
 
 T* operator -> (void)
-{ return const_cast<T*>(&GetData()); };
+{ return const_cast<T*>(&this->GetData()); };
 
 const T* operator -> (void) const
-{ return &GetData(); };
+{ return &this->GetData(); };
 
 T& operator * (void)
-{ return const_cast<T&>(GetData()); };
+{ return const_cast<T&>(this->GetData()); };
 
 const T& operator * (void) const
-{ return GetData(); };
+{ return this->GetData(); };
 
 // Оператор присваивания
 UVLProperty& operator = (const T &value)
 {
- (*static_cast<UVProperty<T,OwnerT>* >(this)) = value;
+ this->SetData(value);
  return *this;
 };
 
 UVLProperty& operator = (const UVLProperty &v)
 {
- SetData(v.GetData());
+ this->SetData(v.GetData());
  return *this;
 };
 // -----------------------------
@@ -144,30 +144,30 @@ ULProperty(const string &name, OwnerT * const owner, typename UVProperty<T,Owner
 // -----------------------------
 operator T (void) const
 {
- return GetData();
+ return this->GetData();
 };
 
 const T& operator () (void) const
 {
- return GetData();
+ return this->GetData();
 };
 
 T* operator -> (void)
-{ return const_cast<T*>(&GetData()); };
+{ return const_cast<T*>(&this->GetData()); };
 
 const T* operator -> (void) const
-{ return &GetData(); };
+{ return &this->GetData(); };
 
 T& operator * (void)
-{ return const_cast<T&>(GetData()); };
+{ return const_cast<T&>(this->GetData()); };
 
 const T& operator * (void) const
-{ return GetData(); };
+{ return this->GetData(); };
 
 // Оператор присваивания
 ULProperty& operator = (const T &value)
 {
- SetData(value);
+ this->SetData(value);
  return *this;
 };
 // -----------------------------
@@ -209,54 +209,54 @@ UCLProperty(const string &name, OwnerT * const owner, typename UCProperty<T,Owne
 // -----------------------------
 // Чтение элемента контейнера
 const typename UCProperty<T,OwnerT>::TV& operator () (int i) const
-{ return v[i]; };
+{ return this->v[i]; };
 
 // Запись элемента контейнера
 bool operator () (int i, const typename UCProperty<T,OwnerT>::TV &value)
 {
- if(VSetterR && !(this->Owner->*VSetterR)(value))
+ if(UVProperty<T,OwnerT>::VSetterR && !(this->Owner->*(UVProperty<T,OwnerT>::VSetterR)(value)))
   return false;
 
- if(i<0 || i>v.size())
+ if(i<0 || i>this->v.size())
   return false;
 
- v[i]=value;
+ this->v[i]=value;
 
  return true;
 };
 
 operator T (void) const
 {
- return GetData();
+ return this->GetData();
 };
 
 const T& operator () (void) const
 {
- return GetData();
+ return this->GetData();
 };
 
 T* operator -> (void)
-{ return const_cast<T*>(&GetData()); };
+{ return const_cast<T*>(&this->GetData()); };
 
 const T* operator -> (void) const
-{ return &GetData(); };
+{ return &this->GetData(); };
 
 T& operator * (void)
-{ return const_cast<T&>(GetData()); };
+{ return const_cast<T&>(this->GetData()); };
 
 const T& operator * (void) const
-{ return GetData(); };
+{ return this->GetData(); };
 
 // Оператор присваивания
 UCLProperty& operator = (const T &value)
 {
- SetData(value);
+ this->SetData(value);
  return *this;
 };
 
 UCLProperty& operator = (const UCLProperty &value)
 {
- SetData(value.GetData());
+ this->SetData(value.GetData());
  return *this;
 };
 // -----------------------------
@@ -266,10 +266,10 @@ UCLProperty& operator = (const UCLProperty &value)
 // -----------------------------
 public:
 typename UCProperty<T,OwnerT>::TV& operator [] (int i)
-{ return v[i]; };
+{ return this->v[i]; };
 
 const typename UCProperty<T,OwnerT>::TV& operator [] (int i) const
-{ return v[i]; };
+{ return this->v[i]; };
 // -----------------------------
 };
 /* ************************************************************************* */

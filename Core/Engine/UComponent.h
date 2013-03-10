@@ -20,16 +20,6 @@ See file license.txt for more information
 #include "UContainerDescription.h"
 #include "../Serialize/Serialize.h"
 
-namespace RDK {
-
-class UStorage;
-class UComponentDescription;
-
-typedef USerStorage UVariableData;
-
-class UIProperty;
-class UIShare;
-
 #ifndef RDK_PROPERTY_TYPES
 #define RDK_PROPERTY_TYPES
 // Варианты типа свойства (битовая маска) pt - Property Type
@@ -50,6 +40,16 @@ enum {pgPublic=0x100, pgSystem=0x200, pgInput=0x400, pgOutput=0x800, pgMode=0x10
 // Наиболее часто используемые сочетания типа и группы
 enum {ptPubParameter=ptParameter|pgPublic, ptPubState=ptState|pgPublic, ptPubInput=ptInput|pgPublic, ptPubOutput=ptOutput|pgPublic};
 #endif
+
+namespace RDK {
+
+class UStorage;
+class UComponentDescription;
+
+typedef USerStorage UVariableData;
+
+class UIProperty;
+class UIShare;
 
 // Хранилище свойств параметра
 struct UVariable

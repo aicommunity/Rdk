@@ -151,7 +151,7 @@ UPropertyInputData(const string &name, OwnerT * const owner, int min_range, int 
 
 virtual void Init(void)
 {
- if(Owner && MinRange>=0)
+ if(this->Owner && this->MinRange>=0)
  {
 //  Owner->SetInputDataInfo(MinRange,new UDataInfo<T>);
  }
@@ -173,7 +173,7 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 UPropertyInputCBase(const string &name, OwnerT * const owner, int min_range, int input_type, int max_range=-1)
- : UCVLProperty<std::vector<T*>,OwnerT,type>(name, owner, (T * const)0), UPropertyIOBase(min_range, input_type, max_range)
+ : UCLProperty<std::vector<T*>,OwnerT,type>(name, owner, (T * const)0), UPropertyIOBase(min_range, input_type, max_range)
 { };
 // -----------------------------
 
@@ -247,13 +247,13 @@ UPropertyInputCData(const string &name, OwnerT * const owner, int min_range, int
 
 virtual void Init(void)
 {
- if(Owner && MinRange>=0)
+ if(this->Owner && this->MinRange>=0)
  {
-  int max_range=(MaxRange<0)?MinRange:MaxRange;
-  this->v.resize(max_range-MinRange+1);
-  for(int i=MinRange;i<=max_range;i++)
+  int max_range=(this->MaxRange<0)?this->MinRange:this->MaxRange;
+  this->v.resize(max_range-this->MinRange+1);
+  for(int i=this->MinRange;i<=max_range;i++)
   {
-   Owner->SetInputDataInfo(i,new UDataInfo<T>);
+//   this->Owner->SetInputDataInfo(i,new UDataInfo<T>);
   }
  }
 }
@@ -355,7 +355,7 @@ UPropertyOutputData(const string &name, OwnerT * const owner, int min_range, int
 
 virtual void Init(void)
 {
- if(Owner && MinRange>=0)
+ if(this->Owner && this->MinRange>=0)
  {
  // Owner->SetOutputDataAsPointer(MinRange,&this->v);
  // Owner->SetOutputDataInfo(MinRange,new UDataInfo<T>);
@@ -424,14 +424,14 @@ UPropertyOutputCData(const string &name, OwnerT * const owner, int min_range, in
 
 virtual void Init(void)
 {
- if(Owner && MinRange>=0)
+ if(this->Owner && this->MinRange>=0)
  {
-  int max_range=(MaxRange<0)?MinRange:MaxRange;
-  this->v.resize(max_range-MinRange+1);
-  for(int i=MinRange;i<=max_range;i++)
+  int max_range=(this->MaxRange<0)?this->MinRange:this->MaxRange;
+  this->v.resize(max_range-this->MinRange+1);
+  for(int i=this->MinRange;i<=max_range;i++)
   {
-   Owner->SetOutputDataAsPointer(i,&(this->v[i-MinRange]));
-   Owner->SetOutputDataInfo(i,new UDataInfo<T>);
+  // Owner->SetOutputDataAsPointer(i,&(this->v[i-this->MinRange]));
+  // Owner->SetOutputDataInfo(i,new UDataInfo<T>);
   }
  }
 };
@@ -497,7 +497,7 @@ UVPropertyOutputData(OwnerT * const owner, T* data, int min_range, int input_typ
 
 virtual void Init(void)
 {
- if(Owner && MinRange>=0)
+ if(this->Owner && this->MinRange>=0)
  {
 //  Owner->SetOutputDataAsPointer(MinRange,this->PData);
 //  Owner->SetOutputDataInfo(MinRange,new UDataInfo<T>);

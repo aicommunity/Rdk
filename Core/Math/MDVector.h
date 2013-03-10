@@ -68,11 +68,11 @@ MDVector<T>::MDVector(int size, T defvalue)
 {
  MDMatrix<T>::Resize(size,1);
  if(defvalue == 0)
-  memset(MDMatrix<T>::Data1D,0,GetRows()*sizeof(T));
+  memset(MDMatrix<T>::Data1D,0,this->GetRows()*sizeof(T));
  else
  {
   T* p=MDMatrix<T>::Data1D;
-  for(int i=0;i<GetRows();i++)
+  for(int i=0;i<MDMatrix<T>::GetRows();i++)
    *p++=defvalue;
  }
 }
@@ -116,7 +116,7 @@ MDVector<T>::~MDVector(void) {};
 template<class T>
 int MDVector<T>::GetSize(void) const
 {
- return Rows;
+ return this->Rows;
 }
 
 // Меняет длину вектора
@@ -131,7 +131,7 @@ template<class T>
 MDVector<T>& MDVector<T>::operator = (const MDVector<T> &copy)
 {
  Resize(copy.GetRows());
- memcpy(MDMatrix<T>::Data1D,copy.Data1D,sizeof(T)*GetRows());
+ memcpy(MDMatrix<T>::Data1D,copy.Data1D,sizeof(T)*this->GetRows());
  return *this;
 };
 
@@ -139,7 +139,7 @@ template<class T>
 MDVector<T>& MDVector<T>::operator = (const MDMatrix<T> &copy)
 {
  Resize(copy.GetRows());
- memcpy(MDMatrix<T>::Data1D,copy.Data1D,sizeof(T)*GetRows());
+ memcpy(MDMatrix<T>::Data1D,copy.Data1D,sizeof(T)*this->GetRows());
  return *this;
 }
 
@@ -148,7 +148,7 @@ MDVector<T>& MDVector<T>::operator = (T value)
 {
  T* pm1=MDMatrix<T>::Data1D;
 
- for(unsigned i=0;i<GetRows();i++)
+ for(unsigned i=0;i<this->GetRows();i++)
   *pm1++ = value;
  return *this;
 };
@@ -175,7 +175,7 @@ template<class T>
 double operator * (const MDVector<T> &M1, const MDVector<T> &M2)
 {
  double res=0;
- for(int k=0;k<GetRows();k++)
+ for(int k=0;k<MDMatrix<T>::GetRows();k++)
  {
   res+=M1.Data[k][0]*M2.Data[k][0];
  }

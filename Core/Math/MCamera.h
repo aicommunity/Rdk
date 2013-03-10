@@ -360,7 +360,7 @@ MVector<T,3> MCameraStandard<T>::CalcScreenBySpacePoint(const MVector<T,4> &spac
  MVector<T,3> cameraspacepoint;
  MMatrix<T,3,4> E=MMatrix<T,3,4>::Eye();
 
- cameraspacepoint=E*(GetEcc()*space_point);
+ cameraspacepoint=E*(MCamera<T>::GetEcc()*space_point);
  if(fabs(cameraspacepoint.z)>10e-7)
  {
   normalpoint.x=cameraspacepoint.x/cameraspacepoint.z;

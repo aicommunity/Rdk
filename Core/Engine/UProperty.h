@@ -277,7 +277,7 @@ virtual const T& GetData(void) const
    return (this->Owner->*GetterR)();
  }
 
- throw EPropertyZeroPtr(GetOwnerName(),GetName());
+ throw UIProperty::EPropertyZeroPtr(UVBaseDataProperty<T>::GetOwnerName(),UVBaseDataProperty<T>::GetName());
 };
 
 // Установка значения
@@ -288,7 +288,7 @@ virtual void SetData(const T &value)
 
  if(this->Owner && SetterR)
   if(!(this->Owner->*SetterR)(value))
-   throw EPropertySetterFail(GetOwnerName(),GetName());
+   throw UIProperty::EPropertySetterFail(UVBaseDataProperty<T>::GetOwnerName(),UVBaseDataProperty<T>::GetName());
 };
 // -----------------------------
 };
@@ -344,7 +344,7 @@ virtual const T& GetData(void) const
    return Temp=(this->Owner->*Getter)();
  }
 
- throw EPropertyZeroPtr(GetOwnerName(),GetName());
+ throw UIProperty::EPropertyZeroPtr(UVBaseDataProperty<T>::GetOwnerName(),UVBaseDataProperty<T>::GetName());
 };
 
 // Установка значения
@@ -355,7 +355,7 @@ virtual void SetData(const T &value)
 
  if(this->Owner && Setter)
   if(!(this->Owner->*Setter)(value))
-   throw EPropertySetterFail(GetOwnerName(),GetName());
+   throw UIProperty::EPropertySetterFail(UVBaseDataProperty<T>::GetOwnerName(),UVBaseDataProperty<T>::GetName());
 };
 // -----------------------------
 };
@@ -396,7 +396,7 @@ virtual void SetData(const T &value)
  if(this->Owner)
  {
   if(this->SetterR && !(this->Owner->*(this->SetterR))(value))
-   throw EPropertySetterFail(GetOwnerName(),GetName());
+   throw UIProperty::EPropertySetterFail(UVBaseDataProperty<T>::GetOwnerName(),UVBaseDataProperty<T>::GetName());
 
   v=value;
   return;
@@ -456,7 +456,7 @@ virtual void SetData(const T &value)
    while(I != J)
    {
 	if(!(this->Owner->*VSetterR)(*I))
-     throw EPropertySetterFail(GetOwnerName(),GetName());
+     throw UIProperty::EPropertySetterFail(UVBaseDataProperty<T>::GetOwnerName(),UVBaseDataProperty<T>::GetName());
 
 	++I;
    }
@@ -464,7 +464,7 @@ virtual void SetData(const T &value)
   else
   {
    if(this->SetterR && !(this->Owner->*(this->SetterR))(value))
-    throw EPropertySetterFail(GetOwnerName(),GetName());
+    throw UIProperty::EPropertySetterFail(UVBaseDataProperty<T>::GetOwnerName(),UVBaseDataProperty<T>::GetName());
   }
  }
 
