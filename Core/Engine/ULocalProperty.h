@@ -64,23 +64,46 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UVLProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterT setmethod ,
+/*UVLProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterT setmethod ,
 								typename UVProperty<T,OwnerT>::GetterT getmethod)
  : UVProperty<T,OwnerT>(owner, setmethod, getmethod)
 { reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); };
+*/
 UVLProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod ,
-								typename UVProperty<T,OwnerT>::GetterT getmethod)
+								typename UVProperty<T,OwnerT>::GetterRT getmethod)
  : UVProperty<T,OwnerT>(owner, setmethod, getmethod)
 { reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); };
 
-UVLProperty(const string &name, OwnerT * const owner, T * const pdata)
- : UVProperty<T,OwnerT>(owner, pdata)
+UVLProperty(const string &name, OwnerT * const owner, T * const pdata, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
+ : UVProperty<T,OwnerT>(owner, pdata,setmethod)
 { reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); };
 // -----------------------------
 
 // -----------------------------
 // Методы управления
 // -----------------------------
+operator T (void) const
+{
+ return GetData();
+};
+
+const T& operator () (void) const
+{
+ return GetData();
+};
+
+T* operator -> (void)
+{ return const_cast<T*>(&GetData()); };
+
+const T* operator -> (void) const
+{ return &GetData(); };
+
+T& operator * (void)
+{ return const_cast<T&>(GetData()); };
+
+const T& operator * (void) const
+{ return GetData(); };
+
 // Оператор присваивания
 UVLProperty& operator = (const T &value)
 {
@@ -90,7 +113,7 @@ UVLProperty& operator = (const T &value)
 
 UVLProperty& operator = (const UVLProperty &v)
 {
- (*static_cast<UVProperty<T,OwnerT>* >(this)) = v;
+ SetData(v.GetData());
  return *this;
 };
 // -----------------------------
@@ -107,11 +130,11 @@ public:
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации
-ULProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterT setmethod=0)
+/*ULProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterT setmethod=0)
  : UProperty<T,OwnerT>(owner, setmethod)
 { reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); };
-
-ULProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod)
+  */
+ULProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
  : UProperty<T,OwnerT>(owner, setmethod)
 { reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); };
 // -----------------------------
@@ -119,10 +142,32 @@ ULProperty(const string &name, OwnerT * const owner, typename UVProperty<T,Owner
 // -----------------------------
 // Операторы доступа
 // -----------------------------
+operator T (void) const
+{
+ return GetData();
+};
+
+const T& operator () (void) const
+{
+ return GetData();
+};
+
+T* operator -> (void)
+{ return const_cast<T*>(&GetData()); };
+
+const T* operator -> (void) const
+{ return &GetData(); };
+
+T& operator * (void)
+{ return const_cast<T&>(GetData()); };
+
+const T& operator * (void) const
+{ return GetData(); };
+
 // Оператор присваивания
 ULProperty& operator = (const T &value)
 {
- (*static_cast<UProperty<T,OwnerT>* >(this)) = value;
+ SetData(value);
  return *this;
 };
 // -----------------------------
@@ -141,19 +186,19 @@ public:
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации
-UCLProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterT setmethod=0)
+/*UCLProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterT setmethod=0)
  : UCProperty<T,OwnerT>(owner, setmethod)
 { reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); };
-
-UCLProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod)
+  */
+UCLProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
  : UCProperty<T,OwnerT>(owner, setmethod)
 { reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); };
 
 //Конструктор инициализации для отдельных значений
-UCLProperty(const string &name, OwnerT * const owner, typename UCProperty<T,OwnerT>::VSetterT setmethod)
+/*UCLProperty(const string &name, OwnerT * const owner, typename UCProperty<T,OwnerT>::VSetterT setmethod)
  : UCProperty<T,OwnerT>(owner,setmethod)
 { reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); };
-
+  */
 UCLProperty(const string &name, OwnerT * const owner, typename UCProperty<T,OwnerT>::VSetterRT setmethod)
  : UCProperty<T,OwnerT>(owner,setmethod)
 { reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); };
@@ -162,25 +207,69 @@ UCLProperty(const string &name, OwnerT * const owner, typename UCProperty<T,Owne
 // -----------------------------
 // Операторы доступа
 // -----------------------------
+// Чтение элемента контейнера
+const typename UCProperty<T,OwnerT>::TV& operator () (int i) const
+{ return v[i]; };
+
+// Запись элемента контейнера
+bool operator () (int i, const typename UCProperty<T,OwnerT>::TV &value)
+{
+ if(VSetterR && !(this->Owner->*VSetterR)(value))
+  return false;
+
+ if(i<0 || i>v.size())
+  return false;
+
+ v[i]=value;
+
+ return true;
+};
+
+operator T (void) const
+{
+ return GetData();
+};
+
+const T& operator () (void) const
+{
+ return GetData();
+};
+
+T* operator -> (void)
+{ return const_cast<T*>(&GetData()); };
+
+const T* operator -> (void) const
+{ return &GetData(); };
+
+T& operator * (void)
+{ return const_cast<T&>(GetData()); };
+
+const T& operator * (void) const
+{ return GetData(); };
+
 // Оператор присваивания
 UCLProperty& operator = (const T &value)
 {
- (*static_cast<UCProperty<T,OwnerT>* >(this)) = value;
+ SetData(value);
  return *this;
 };
 
 UCLProperty& operator = (const UCLProperty &value)
 {
- (*static_cast<UCProperty<T,OwnerT>* >(this)) = value;
+ SetData(value.GetData());
  return *this;
 };
+// -----------------------------
 
-// Оператор задания размера контейнера
-UCLProperty& operator = (size_t size)
-{
- (*static_cast<UCProperty<T,OwnerT>* >(this)) = size;
- return *this;
-};
+// -----------------------------
+// Скрытые операторы доступа только для дружественного класса
+// -----------------------------
+public:
+typename UCProperty<T,OwnerT>::TV& operator [] (int i)
+{ return v[i]; };
+
+const typename UCProperty<T,OwnerT>::TV& operator [] (int i) const
+{ return v[i]; };
 // -----------------------------
 };
 /* ************************************************************************* */

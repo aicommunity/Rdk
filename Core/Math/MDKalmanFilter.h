@@ -77,12 +77,12 @@ int GetCalcCount(void) const
 }
 
 // Задаем начальные параметры Фильтра Калмана
-MDMatrix<double> GetFM(void) const
+const MDMatrix<double>& GetFM(void) const
 {
  return FM;
 }
 
-bool SetFM(MDMatrix<double> matrix)
+bool SetFM(const MDMatrix<double> &matrix)
 {
  if(matrix==FM)
   return true;
@@ -91,12 +91,12 @@ bool SetFM(MDMatrix<double> matrix)
  return true;
 }
 
-MDMatrix<double> GetBM(void) const
+const MDMatrix<double>& GetBM(void) const
 {
  return BM;
 }
 
-bool SetBM(MDMatrix<double> matrix)
+bool SetBM(const MDMatrix<double> &matrix)
 {
  if(matrix==BM)
   return true;
@@ -105,12 +105,12 @@ bool SetBM(MDMatrix<double> matrix)
  return true;
 }
 
-MDMatrix<double> GetQM(void) const
+const MDMatrix<double>& GetQM(void) const
 {
  return QM;
 }
 
-bool SetQM(MDMatrix<double> matrix)
+bool SetQM(const MDMatrix<double> &matrix)
 {
  if(matrix==QM)
   return true;
@@ -119,12 +119,12 @@ bool SetQM(MDMatrix<double> matrix)
  return true;
 }
 
-MDMatrix<double> GetHM(void) const
+const MDMatrix<double>& GetHM(void) const
 {
  return HM;
 }
 
-bool SetHM(MDMatrix<double> matrix)
+bool SetHM(const MDMatrix<double> &matrix)
 {
  if(matrix==HM)
   return true;
@@ -133,12 +133,12 @@ bool SetHM(MDMatrix<double> matrix)
  return true;
 }
 
-MDMatrix<double> GetRM(void) const
+const MDMatrix<double>& GetRM(void) const
 {
  return RM;
 }
 
-bool SetRM(MDMatrix<double> matrix)
+bool SetRM(const MDMatrix<double> &matrix)
 {
  if(matrix==RM)
   return true;
@@ -147,12 +147,12 @@ bool SetRM(MDMatrix<double> matrix)
  return true;
 }
 
-MDMatrix<double> GetPk1(void) const
+const MDMatrix<double>& GetPk1(void) const
 {
  return Pk1;
 }
 
-bool SetPk1(MDMatrix<double> matrix)
+bool SetPk1(const MDMatrix<double> &matrix)
 {
  if(matrix==Pk1)
   return true;
@@ -176,12 +176,12 @@ bool SetXk1(MDMatrix<double> matrix)
 }
   */
 
-MDMatrix<double> GetUk1(void) const
+const MDMatrix<double>& GetUk1(void) const
 {
  return Uk1;
 }
 
-bool SetUk1(MDMatrix<double> matrix)
+bool SetUk1(const MDMatrix<double> &matrix)
 {
  if(matrix==Uk1)
   return true;
@@ -190,12 +190,12 @@ bool SetUk1(MDMatrix<double> matrix)
  return true;
 }
 
-MDMatrix<double> GetZ(void) const
+const MDMatrix<double>& GetZ(void) const
 {
  return Z;
 }
 
-bool SetZ(MDMatrix<double> matrix)
+bool SetZ(const MDMatrix<double> &matrix)
 {
  if(matrix==Z)
   return true;

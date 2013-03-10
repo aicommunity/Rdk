@@ -275,13 +275,13 @@ UConnector::~UConnector(void)
 // Методы управления общедоступными свойствами
 // --------------------------
 // Возвращает число подключенных элементов item
-int UConnector::GetNumInputs(void) const
+const int& UConnector::GetNumInputs(void) const
 {
  return NumInputs;
 }
 
 // Устанавливает число подключенных элементов item
-bool UConnector::SetNumInputs(int value)
+bool UConnector::SetNumInputs(const int &value)
 {
  if(NumInputs == value)
   return true;
@@ -309,12 +309,12 @@ bool UConnector::SetNumInputs(int value)
 
 // Признак включения/выключения режима автоматического увеличения числа входов
 // при подключении нового item.
-bool UConnector::GetAutoNumInputs(void) const
+const bool& UConnector::GetAutoNumInputs(void) const
 {
  return AutoNumInputs;
 }
 
-bool UConnector::SetAutoNumInputs(bool value)
+bool UConnector::SetAutoNumInputs(const bool &value)
 {
  if(AutoNumInputs == value)
   return true;

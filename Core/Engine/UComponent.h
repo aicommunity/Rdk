@@ -253,7 +253,7 @@ UId AddLookupShare(const NameT &name, UEPtr<UIShare> property);
 
 public: // Исключения
 // Id свойства не найден
-struct EPropertyIdNotExist: public EIdNotExist
+/*struct EPropertyIdNotExist: public EIdNotExist
 {
 EPropertyIdNotExist(UId id) : EIdNotExist(id) {};
 };
@@ -262,7 +262,7 @@ EPropertyIdNotExist(UId id) : EIdNotExist(id) {};
 struct EPropertyIdAlreadyExist: public EIdAlreadyExist
 {
 EPropertyIdAlreadyExist(UId id) : EIdAlreadyExist(id) {};
-};
+}; */
 
 // Имя свойства не найдено
 struct EPropertyNameNotExist: public ENameNotExist
@@ -316,8 +316,11 @@ virtual unsigned int GetType(void) const=0;
 // Метод возвращает строковое имя свойства
 virtual const std::string& GetName(void) const=0;
 
-// Метод возвращает строковое имя класса-владельца свойства
+// Метод возвращает строковое имя компонента-владельца свойства
 virtual std::string GetOwnerName(void) const=0;
+
+// Метод возвращает строковое имя класса-владельца свойства
+virtual std::string GetOwnerClassName(void) const=0;
 
 // Метод записывает значение свойства в поток
 virtual bool Save(UEPtr<UVariableData> storage, bool simplemode=false)=0;
@@ -330,6 +333,53 @@ virtual const type_info& GetLanguageType(void) const=0;
 
 // Метод сравнивает тип этого свойства с другим свойством
 virtual bool CompareLanguageType(const UIProperty &dt) const=0;
+
+public: // Исключения
+// Обращение к неинициализированным данным свойства
+struct EPropertyError: public EError
+{
+protected: // Данные исключения
+/// Имя компонента владельца
+std::string OwnerName;
+
+/// Имя свойства
+std::string PropertyName;
+
+public:
+EPropertyError(const std::string &owner_name, const std::string &property_name)
+: EError(), OwnerName(owner_name), PropertyName(property_name) {};
+
+// Формирует строку лога об исключении
+virtual std::string CreateLogMessage(void) const
+{
+ return EError::CreateLogMessage()+std::string(" ")+OwnerName+std::string(":")+PropertyName;
+}
+};
+
+// Обращение к неинициализированным данным свойства
+struct EPropertyZeroPtr: public EPropertyError
+{
+public:
+EPropertyZeroPtr(const std::string &owner_name, const std::string &property_name)
+: EPropertyError(owner_name, property_name) {};
+};
+
+// Вызов Getter завершен неудачно
+struct EPropertyGetterFail: public EPropertyError
+{
+public:
+EPropertyGetterFail(const std::string &owner_name, const std::string &property_name)
+: EPropertyError(owner_name, property_name) {};
+};
+
+// Вызов Setter завершен неудачно
+struct EPropertySetterFail: public EPropertyError
+{
+public:
+EPropertySetterFail(const std::string &owner_name, const std::string &property_name)
+: EPropertyError(owner_name, property_name) {};
+};
+
 };
 
 // Класс управления общими свойствами

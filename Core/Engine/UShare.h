@@ -218,14 +218,14 @@ virtual bool UnInit(void)
 
 const T Get(void) const
 {
- return (VProperty)?VProperty->Get():Data;
+ return (VProperty)?VProperty->GetData():Data;
 // return (Pointer)?*Pointer:Data;
 }
 
 void Set(const T& data)
 {
  if(VProperty)
-  *VProperty=data;
+  VProperty->SetData(data);
  else
   Data=data;
 /*

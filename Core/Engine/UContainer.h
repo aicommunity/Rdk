@@ -229,8 +229,8 @@ virtual UId GenerateId(void);
 // --------------------------
 public:
 // Координата компонента в пространстве сети
-RDK::MVector<double,3> GetCoord(void) const;
-bool SetCoord(RDK::MVector<double,3> value);
+const RDK::MVector<double,3>& GetCoord(void) const;
+bool SetCoord(const RDK::MVector<double,3> &value);
 
 // Время, затраченное на обработку объекта
 // (без учета времени обсчета дочерних объектов) (мс)
@@ -248,15 +248,15 @@ long long GetInterstepsInterval(void) const;
 double GetInstantPerformance(void) const;
 
 // Устанавливает величину шага интегрирования
-UTime GetTimeStep(void) const;
-bool SetTimeStep(UTime timestep);
+const UTime& GetTimeStep(void) const;
+bool SetTimeStep(const UTime &timestep);
 
 // Устанавливает величину шага интегрирования компоненту и всем его дочерним компонентам
 bool SetGlobalTimeStep(UTime timestep);
 
 // Устанавливает флаг активности объекта
-bool GetActivity(void) const;
-bool SetActivity(bool activity);
+const bool& GetActivity(void) const;
+bool SetActivity(const bool &activity);
 
 // Id объекта
 const UId& GetId(void) const;

@@ -188,12 +188,12 @@ bool UContainer::CheckLongId(const std::string &id) const
 // Методы управления свойствами
 // --------------------------
 // Координата компонента в пространстве сети
-RDK::MVector<double,3> UContainer::GetCoord(void) const
+const RDK::MVector<double,3>& UContainer::GetCoord(void) const
 {
  return Coord;
 }
 
-bool UContainer::SetCoord(RDK::MVector<double,3> value)
+bool UContainer::SetCoord(const RDK::MVector<double,3> &value)
 {
  if(Coord != value)
   Coord=value;
@@ -462,12 +462,12 @@ const UId& UContainer::GetPointerId(const NameT &name) const
 // Методы управления общедоступными свойствами
 // --------------------------
 // Устанавливает величину шага интегрирования
-UTime UContainer::GetTimeStep(void) const
+const UTime& UContainer::GetTimeStep(void) const
 {
  return TimeStep;
 }
 
-bool UContainer::SetTimeStep(UTime timestep)
+bool UContainer::SetTimeStep(const UTime &timestep)
 {
  if(timestep <= 0)
   return false;
@@ -505,12 +505,12 @@ bool UContainer::SetGlobalTimeStep(UTime timestep)
 
 
 // Устанавливает флаг активности объекта
-bool UContainer::GetActivity(void) const
+const bool& UContainer::GetActivity(void) const
 {
  return Activity;
 }
 
-bool UContainer::SetActivity(bool activity)
+bool UContainer::SetActivity(const bool &activity)
 {
  if(Activity == activity)
   return true;

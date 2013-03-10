@@ -97,8 +97,8 @@ bool SetIcc(const MMatrix<T,3,3>& value);
 bool SetInvIcc(const MMatrix<T,3,3>& value);
 
 // Модель дисторсии
-int GetDistortionMode(void) const;
-bool SetDistortionMode(int value);
+const int& GetDistortionMode(void) const;
+bool SetDistortionMode(const int &value);
 
 // К-ты дисторсии
 const MDVector<T>& GetDistortionCoeff(void) const;
@@ -259,13 +259,13 @@ bool MCameraStandard<T>::SetInvIcc(const MMatrix<T,3,3>& value)
 
 // Модель дисторсии
 template<class T>
-int MCameraStandard<T>::GetDistortionMode(void) const
+const int& MCameraStandard<T>::GetDistortionMode(void) const
 {
  return DistortionMode;
 }
 
 template<class T>
-bool MCameraStandard<T>::SetDistortionMode(int value)
+bool MCameraStandard<T>::SetDistortionMode(const int &value)
 {
  DistortionMode=value;
  return true;

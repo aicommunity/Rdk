@@ -61,14 +61,18 @@ UVBaseDataProperty(T * const pdata)
 // Методы сериализации
 // -----------------------------
 // Возвращает ссылку на данные
-T& GetData(void)
-{ return *this; };
-const T& GetData(void) const
-{ return *this; };
+virtual const T& GetData(void) const
+{
+ if(PData)
+  return *PData;
+ throw EPropertyZeroPtr(GetOwnerName(),GetName());
+};
 
 // Модифицирует данные
-void SetData(const T& data)
-{ *this=data; };
+virtual void SetData(const T& data)
+{
+ (PData)?*PData=data:throw EPropertyZeroPtr(GetOwnerName(),GetName());
+};
 
 // Возвращает языковой тип хранимого свойства
 virtual const type_info& GetLanguageType(void) const
@@ -81,6 +85,78 @@ virtual bool CompareLanguageType(const UIProperty &dt) const
 {
  return GetLanguageType() == dt.GetLanguageType();
 }
+
+// Метод записывает значение свойства в поток
+virtual bool Save(UEPtr<USerStorage>  storage, bool simplemode=false)
+{
+ UEPtr<USerStorageBinary> binary=dynamic_pointer_cast<USerStorageBinary>(storage);
+ if(binary)
+ {
+  *binary<<GetData();
+  return true;
+ }
+
+ UEPtr<USerStorageXML> xml=dynamic_pointer_cast<USerStorageXML>(storage);
+ if(xml)
+ {
+  if(simplemode)
+  {
+   xml->Create(GetName());
+   operator << (*xml,GetData());
+   xml->SelectUp();
+   return true;
+  }
+  else
+  {
+   xml->AddNode(GetName());
+   operator << (*xml,GetData());
+   xml->SelectUp();
+   return true;
+  }
+ }
+
+ return false;
+};
+
+// Метод читает значение свойства из потока
+virtual bool Load(UEPtr<USerStorage>  storage, bool simplemode=false)
+{
+ T temp;
+
+ UEPtr<USerStorageBinary> binary=dynamic_pointer_cast<USerStorageBinary>(storage);
+ if(binary)
+ {
+  operator >> (*binary,temp);
+  SetData(temp);
+  return true;
+ }
+
+ UEPtr<USerStorageXML> xml=dynamic_pointer_cast<USerStorageXML>(storage);
+ if(xml)
+ {
+  if(simplemode)
+  {
+   xml->SelectRoot();
+   if(xml->GetNodeName() != GetName())
+	return false;
+   operator >> (*xml,temp);
+   SetData(temp);
+   xml->SelectUp();
+   return true;
+  }
+  else
+  {
+   if(!xml->SelectNode(GetName()))
+	return false;
+   operator >> (*xml,temp);
+   SetData(temp);
+   xml->SelectUp();
+   return true;
+  }
+ }
+
+ return false;
+};
 // -----------------------------
 };
 
@@ -141,15 +217,19 @@ virtual unsigned int GetType(void) const
  return Variable->second.Type;
 };
 
-// Метод возвращает строковое имя класса-владельца свойства
+// Метод возвращает строковое имя компонента-владельца свойства
 virtual std::string GetOwnerName(void) const
+{
+ return (Owner)?Owner->GetName():std::string("");
+};
+
+// Метод возвращает строковое имя класса-владельца свойства
+virtual std::string GetOwnerClassName(void) const
 {
  return typeid(Owner).name();
 };
 // -----------------------------
 };
-
-
 
 // Класс - виртуальное свойство
 // Не содержит данного внутри себя
@@ -158,15 +238,11 @@ class UVProperty: public UVBaseProperty<T,OwnerT>
 {
 //friend class OwnerT;
 protected: // Типы методов ввода-вывода
-typedef T (OwnerT::*GetterT)(void) const;
 typedef const T& (OwnerT::*GetterRT)(void) const;
-typedef bool (OwnerT::*SetterT)(T);
 typedef bool (OwnerT::*SetterRT)(const T&);
 
 protected: // Данные
 // Методы ввода-вывода
-GetterT Getter;
-SetterT Setter;
 GetterRT GetterR;
 SetterRT SetterR;
 
@@ -175,19 +251,13 @@ public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-//Конструктор инициализации.
-UVProperty(OwnerT * const owner, SetterT setmethod , GetterT getmethod) :
-  UVBaseProperty<T,OwnerT>(owner), Getter(getmethod), Setter(setmethod), GetterR(0), SetterR(0)
-{
-}
-
 UVProperty(OwnerT * const owner, SetterRT setmethod , GetterRT getmethod) :
-  UVBaseProperty<T,OwnerT>(owner), Getter(0), Setter(0), GetterR(getmethod), SetterR(setmethod)
+  UVBaseProperty<T,OwnerT>(owner), /*Getter(0), Setter(0), */GetterR(getmethod), SetterR(setmethod)
 {
 }
 
-UVProperty(OwnerT * const owner, T * const pdata) :
-  UVBaseProperty<T,OwnerT>(owner,pdata), Getter(0), Setter(0), GetterR(0), SetterR(0)
+UVProperty(OwnerT * const owner, T * const pdata, SetterRT setmethod=0) :
+  UVBaseProperty<T,OwnerT>(owner,pdata), /*Getter(0), Setter(0), */GetterR(0), SetterR(setmethod)
 {
 }
 // -----------------------------
@@ -196,19 +266,74 @@ UVProperty(OwnerT * const owner, T * const pdata) :
 // Методы управления
 // -----------------------------
 // Возврат значения
-virtual T Get(void)
+virtual const T& GetData(void) const
 {
- return T(*this);
+ if(this->Owner)
+ {
+  if(this->PData)
+   return *this->PData;
+
+  if(GetterR)
+   return (this->Owner->*GetterR)();
+ }
+
+ throw EPropertyZeroPtr(GetOwnerName(),GetName());
 };
 
 // Установка значения
-virtual bool Set(const T &value)
+virtual void SetData(const T &value)
 {
- *this=value;
- return true;
+ if(this->PData && !SetterR)
+  *this->PData=value;
+
+ if(this->Owner && SetterR)
+  if(!(this->Owner->*SetterR)(value))
+   throw EPropertySetterFail(GetOwnerName(),GetName());
+};
+// -----------------------------
 };
 
-operator T (void) const
+
+/// Класс - виртуальное свойство
+/// Не содержит данного внутри себя
+/// Setter и Getter обеспечивают доступ по значению
+/// Вовзрат значения осуществляется через внутреннюю копию
+template<typename T,class OwnerT>
+class UVSProperty: public UVBaseProperty<T,OwnerT>
+{
+protected: // Типы методов ввода-вывода
+typedef T (OwnerT::*GetterT)(void) const;
+typedef bool (OwnerT::*SetterT)(T);
+
+protected: // Данные
+// Методы ввода-вывода
+GetterT Getter;
+SetterT Setter;
+
+private:
+mutable T Temp;
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+//Конструктор инициализации.
+UVSProperty(OwnerT * const owner, SetterT setmethod , GetterT getmethod) :
+  UVBaseProperty<T,OwnerT>(owner), Getter(getmethod), Setter(setmethod)
+{
+}
+
+UVSProperty(OwnerT * const owner, T * const pdata, SetterT setmethod=0) :
+  UVBaseProperty<T,OwnerT>(owner,pdata), Getter(0), Setter(setmethod)
+{
+}
+// -----------------------------
+
+// -----------------------------
+// Методы управления
+// -----------------------------
+// Возврат значения
+virtual const T& GetData(void) const
 {
  if(this->Owner)
  {
@@ -216,153 +341,21 @@ operator T (void) const
    return *this->PData;
 
   if(Getter)
-   return (this->Owner->*Getter)();
-
-  if(GetterR)
-   return (this->Owner->*GetterR)();
+   return Temp=(this->Owner->*Getter)();
  }
 
- //T val;
- return T();
+ throw EPropertyZeroPtr(GetOwnerName(),GetName());
 };
 
-// Оператор присваивания
-UVProperty& operator = (const T &value)
+// Установка значения
+virtual void SetData(const T &value)
 {
- if(this->PData)
+ if(this->PData && !Setter)
   *this->PData=value;
 
  if(this->Owner && Setter)
-  (this->Owner->*Setter)(value);
- else
- if(this->Owner && SetterR)
-  (this->Owner->*SetterR)(value);
-
- return *this;
-};
-
-UVProperty& operator = (const UVProperty &v)
-{
- if(v.Owner)
- {
-  if(v.PData)
-   (*this)=*v.PData;
-
-  if(v.Getter)
-  {
-   *this=(v.Owner->*Getter)();
-   return *this;
-  }
-
-  if(v.GetterR)
-  {
-   *this=(v.Owner->*GetterR)();
-   return *this;
-  }
- }
-
- return *this;
-};
-// -----------------------------
-
-// -----------------------------
-// Методы сериализации
-// -----------------------------
-// Метод устанавливает значение указателя на итератор-хранилище данных об этом
-// свойстве в родительском компоненте
-virtual void SetVariable(UComponent::VariableMapCIteratorT &var)
-{
- this->Variable=var;
-}
-
-// Метод возвращает строковое имя свойства
-virtual const std::string& GetName(void) const
-{
- return this->Variable->first;
-};
-
-// Метод возвращает тип свойства
-virtual unsigned int GetType(void) const
-{
- return this->Variable->second.Type;
-};
-
-// Метод возвращает строковое имя класса-владельца свойства
-virtual std::string GetOwnerName(void) const
-{
- return typeid(this->Owner).name();
-};
-
-// Метод записывает значение свойства в поток
-virtual bool Save(UEPtr<USerStorage>  storage, bool simplemode=false)
-{
- UEPtr<USerStorageBinary> binary=dynamic_pointer_cast<USerStorageBinary>(storage);
- if(binary)
- {
-  *binary<<Get();
-  return true;
- }
-
- UEPtr<USerStorageXML> xml=dynamic_pointer_cast<USerStorageXML>(storage);
- if(xml)
- {
-  if(simplemode)
-  {
-   xml->Create(GetName());
-   operator << (*xml,Get());
-   xml->SelectUp();
-   return true;
-  }
-  else
-  {
-   xml->AddNode(GetName());
-   operator << (*xml,Get());
-   xml->SelectUp();
-   return true;
-  }
- }
-
- return false;
-};
-
-// Метод читает значение свойства из потока
-virtual bool Load(UEPtr<USerStorage>  storage, bool simplemode=false)
-{
- T temp;
-
- UEPtr<USerStorageBinary> binary=dynamic_pointer_cast<USerStorageBinary>(storage);
- if(binary)
- {
-  operator >> (*binary,temp);
-  Set(temp);
-  return true;
- }
-
- UEPtr<USerStorageXML> xml=dynamic_pointer_cast<USerStorageXML>(storage);
- if(xml)
- {
-  if(simplemode)
-  {
-   xml->SelectRoot();
-   if(xml->GetNodeName() != GetName())
-	return false;
-   operator >> (*xml,temp);
-   Set(temp);
-   xml->SelectUp();
-   return true;
-  }
-  else
-  {
-   if(!xml->SelectNode(GetName()))
-	return false;
-   operator >> (*xml,temp);
-   Set(temp);
-   xml->SelectUp();
-   return true;
-  }
- }
-
- return false;
+  if(!(this->Owner->*Setter)(value))
+   throw EPropertySetterFail(GetOwnerName(),GetName());
 };
 // -----------------------------
 };
@@ -382,10 +375,6 @@ public:
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-//Конструктор инициализации
-UProperty(OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterT setmethod=0)
- : UVProperty<T,OwnerT>(owner, setmethod, 0), v() { this->PData=&v; };
-
 UProperty(OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod)
  : UVProperty<T,OwnerT>(owner, setmethod, 0), v() { this->PData=&v; };
 // -----------------------------
@@ -394,51 +383,28 @@ UProperty(OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmetho
 // Операторы доступа
 // -----------------------------
 // Возврат значения
-virtual T Get(void)
+virtual const T& GetData(void) const
 {
  return v;
 };
 
-virtual bool Set(const T &value)
-{
- (*this)=value;
- return true;
-};
-
-const T& operator () (void) const
-{ return v; };
-
-operator T (void) const
-{ return v; };
-
-// Оператор присваивания
-UProperty& operator = (const T &value)
+virtual void SetData(const T &value)
 {
  if(v == value)
-  return *this;
+  return;
 
  if(this->Owner)
  {
-	  if((this->Setter && !(this->Owner->*(this->Setter))(value)) ||
-		 (this->SetterR && !(this->Owner->*(this->SetterR))(value)))
-	   return *this;
+  if(this->SetterR && !(this->Owner->*(this->SetterR))(value))
+   throw EPropertySetterFail(GetOwnerName(),GetName());
 
   v=value;
-  return *this;
+  return;
  }
 
  v=value;
- return *this;
+ return;
 };
-
-UProperty& operator = (const UProperty &value)
-{ return (*this)=value.v; };
-
-T* operator -> (void)
-{ return &v; };
-
-T& operator * (void)
-{ return v; };
 // -----------------------------
 };
 /* ************************************************************************* */
@@ -449,17 +415,12 @@ T& operator * (void)
 template<typename T, typename OwnerT>
 class UCProperty: public UVProperty<T,OwnerT>
 {
-//friend class OwnerT;
 protected: // Типы методов ввода-вывода
 typedef typename T::value_type TV;
-
-//typedef T (OwnerT::*VGetterT)(void) const;
-typedef bool (OwnerT::*VSetterT)(TV);
 typedef bool (OwnerT::*VSetterRT)(const TV&);
 
 protected: // Данные
 // Методы ввода-вывода
-VSetterT VSetter;
 VSetterRT VSetterR;
 
 public:
@@ -470,17 +431,8 @@ public:
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-//Конструктор инициализации
-UCProperty(OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterT setmethod=0)
- : UVProperty<T,OwnerT>(owner, setmethod, 0), VSetter(0), VSetterR(0), v() { this->PData=&v; };
-
 UCProperty(OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod)
- : UVProperty<T,OwnerT>(owner, setmethod, 0), VSetter(0), VSetterR(0), v() { this->PData=&v; };
-
-//Конструктор инициализации для отдельных значений
-UCProperty(OwnerT * const owner, VSetterT setmethod)
- : UVProperty<T,OwnerT>(owner,(typename UVProperty<T,OwnerT>::SetterT)0,0), v()
-{ VSetter=setmethod; this->PData=&v; };
+ : UVProperty<T,OwnerT>(owner, setmethod, 0), VSetterR(0), v() { this->PData=&v; };
 
 UCProperty(OwnerT * const owner, VSetterRT setmethod)
  : UVProperty<T,OwnerT>(owner,(typename UVProperty<T,OwnerT>::SetterT)0,0), v()
@@ -490,108 +442,34 @@ UCProperty(OwnerT * const owner, VSetterRT setmethod)
 // -----------------------------
 // Операторы доступа
 // -----------------------------
-const T& operator () (void) const
-{ return v; };
-
-// Чтение элемента контейнера
-const TV& operator () (int i) const
-{ return v[i]; };
-
-// Запись элемента контейнера
-bool operator () (int i, const TV &value)
-{
- if(VSetterR && !(this->Owner->*VSetterR)(value))
-  return false;
-
- if(i<0 || i>v.size())
-  return false;
-
- v[i]=value;
-
- return true;
-};
-
-bool operator () (int i, TV value)
-{
- if(VSetter && !(this->Owner->*VSetter)(value))
-  return false;
-
- if(i<0 || i>v.size())
-  return false;
-
- v[i]=value;
-
- return true;
-};
-
- // Оператор присваивания
-UCProperty& operator = (const T &value)
+virtual void SetData(const T &value)
 {
  if(v == value)
-  return *this;
+  return;
 
  if(this->Owner)
  {
-  if(VSetter)
-  {
-   typename T::const_iterator I,J;
-   I=value.begin(); J=value.end();
-   while(I != J)
-   {
-    if(!(this->Owner->*VSetter)(*I))
-     return *this;
-
-    ++I;
-   }
-  }
-  else
   if(VSetterR)
   {
    typename T::const_iterator I,J;
    I=value.begin(); J=value.end();
    while(I != J)
    {
-    if(!(this->Owner->*VSetterR)(*I))
-     return *this;
+	if(!(this->Owner->*VSetterR)(*I))
+     throw EPropertySetterFail(GetOwnerName(),GetName());
 
-    ++I;
+	++I;
    }
   }
   else
   {
-   if((this->Setter && !(this->Owner->*(this->Setter))(value)) ||
-	 (this->SetterR && !(this->Owner->*(this->SetterR))(value)))
-	return *this;
+   if(this->SetterR && !(this->Owner->*(this->SetterR))(value))
+    throw EPropertySetterFail(GetOwnerName(),GetName());
   }
  }
 
  v=value;
- return *this;
 };
-
-UCProperty& operator = (const UCProperty &value)
-{ return (*this)=value.v; };
-
-// Оператор задания размера контейнера
-UCProperty& operator = (size_t size)
-{
- v.resize(size);
- return *this;
-};
-
-T* operator -> (void)
-{ return &v; };
-
-T& operator * (void)
-{ return v; };
-// -----------------------------
-
-// -----------------------------
-// Скрытые операторы доступа только для дружественного класса
-// -----------------------------
-public:
-TV& operator [] (int i)
-{ return v[i]; };
 // -----------------------------
 };
 #ifdef __BORLANDC__

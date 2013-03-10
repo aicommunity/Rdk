@@ -171,15 +171,15 @@ virtual ~UConnector(void);
 // --------------------------
 public:
 // Возвращает число подключенных элементов item
-int GetNumInputs(void) const;
+const int& GetNumInputs(void) const;
 
 // Устанавливает число подключенных элементов item
-bool SetNumInputs(int value);
+bool SetNumInputs(const int &value);
 
 // Признак включения/выключения режима автоматического увеличения числа входов
 // при подключении нового item.
-bool GetAutoNumInputs(void) const;
-bool SetAutoNumInputs(bool value);
+const bool& GetAutoNumInputs(void) const;
+bool SetAutoNumInputs(const bool &value);
 // --------------------------
 
 // --------------------------

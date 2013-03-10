@@ -193,14 +193,14 @@ virtual ~UItem(void);
 // --------------------------
 public:
 // Возвращает число подключенных элементов item
-int GetNumOutputs(void) const;
+const int& GetNumOutputs(void) const;
 
 // Устанавливает число подключенных элементов item
-bool SetNumOutputs(int value);
+bool SetNumOutputs(const int &value);
 
 // Признак включения/выключения режима автоматического увеличения числа выходов
-bool GetAutoNumOutputs(void) const;
-bool SetAutoNumOutputs(bool value);
+const bool& GetAutoNumOutputs(void) const;
+bool SetAutoNumOutputs(const bool &value);
 // --------------------------
 
 

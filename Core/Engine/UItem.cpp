@@ -351,13 +351,13 @@ UItem::~UItem(void)
 // Методы управления общедоступными свойствами
 // --------------------------
 // Возвращает число подключенных элементов item
-int UItem::GetNumOutputs(void) const
+const int& UItem::GetNumOutputs(void) const
 {
  return NumOutputs;//AssociatedConnectors.GetSize();
 }
 
 // Устанавливает число подключенных элементов item
-bool UItem::SetNumOutputs(int value)
+bool UItem::SetNumOutputs(const int &value)
 {
  if(NumOutputs == value)
   return true;
@@ -380,12 +380,12 @@ bool UItem::SetNumOutputs(int value)
 
 // Признак включения/выключения режима автоматического увеличения числа входов
 // при подключении нового item.
-bool UItem::GetAutoNumOutputs(void) const
+const bool& UItem::GetAutoNumOutputs(void) const
 {
  return AutoNumOutputs;
 }
 
-bool UItem::SetAutoNumOutputs(bool value)
+bool UItem::SetAutoNumOutputs(const bool &value)
 {
  if(AutoNumOutputs == value)
   return true;

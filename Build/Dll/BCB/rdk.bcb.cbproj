@@ -48,11 +48,11 @@
 copy $(OUTPUTDIR)\rdk.bcb.lib $(OUTPUTDIR)..\..\..\Deploy\Platform\Win\rdk.bcb.lib /Y
 $(PostBuildEvent)]]></PostBuildEvent>
 			<VerInfo_Locale>1049</VerInfo_Locale>
-			<ILINK_LibraryPath>..\..\..\GUI\BCB\;..\..\..\Deploy\Include\;$(ILINK_LibraryPath)</ILINK_LibraryPath>
+			<ILINK_LibraryPath>..\..\..\Core\Engine\Libraries\;..\..\..\GUI\BCB\;..\..\..\Deploy\Include\;$(ILINK_LibraryPath)</ILINK_LibraryPath>
 			<_TCHARMapping>char</_TCHARMapping>
 			<PackageImports>IPIndyImpl;bindcompfmx;fmx;rtl;dbrtl;IndySystem;DbxClientDriver;bindcomp;inetdb;DBXInterBaseDriver;DataSnapCommon;DataSnapClient;DataSnapServer;DataSnapProviderClient;xmlrtl;DbxCommonDriver;IndyProtocols;DBXMySQLDriver;dbxcds;bindengine;soaprtl;DBXOracleDriver;dsnap;DBXInformixDriver;IndyCore;fmxase;DBXFirebirdDriver;inet;fmxobj;inetdbxpress;DBXSybaseASADriver;fmxdae;dbexpress;DataSnapIndy10ServerTransport;$(PackageImports)</PackageImports>
 			<Multithreaded>true</Multithreaded>
-			<IncludePath>..\..\..\GUI\BCB\;..\..\..\Deploy\Include\;$(IncludePath)</IncludePath>
+			<IncludePath>..\..\..\Core\Engine\Libraries\;..\..\..\GUI\BCB\;..\..\..\Deploy\Include\;$(IncludePath)</IncludePath>
 			<DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;$(DCC_Namespace)</DCC_Namespace>
 			<ProjectType>CppDynamicLibrary</ProjectType>
 			<ILINK_GenerateImportLibrary>true</ILINK_GenerateImportLibrary>
@@ -104,6 +104,9 @@ $(PostBuildEvent)]]></PostBuildEvent>
 		<ItemGroup>
 			<CppCompile Include="rdkdll.cpp">
 				<BuildOrder>0</BuildOrder>
+			</CppCompile>
+			<CppCompile Include="..\..\..\Core\Engine\Libraries\UELibraries.cpp">
+				<BuildOrder>7</BuildOrder>
 			</CppCompile>
 			<CppCompile Include="..\..\..\Deploy\Include\myrdk.bcb.cpp">
 				<BuildOrder>6</BuildOrder>
