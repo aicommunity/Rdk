@@ -435,7 +435,7 @@ UCProperty(OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmeth
  : UVProperty<T,OwnerT>(owner, setmethod, 0), VSetterR(0), v() { this->PData=&v; };
 
 UCProperty(OwnerT * const owner, VSetterRT setmethod)
- : UVProperty<T,OwnerT>(owner,(typename UVProperty<T,OwnerT>::SetterT)0,0), v()
+ : UVProperty<T,OwnerT>(owner,(typename UVProperty<T,OwnerT>::SetterRT)0,0), v()
 { VSetterR=setmethod; this->PData=&v; };
 // -----------------------------
 
