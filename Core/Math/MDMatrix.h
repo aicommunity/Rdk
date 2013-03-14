@@ -32,9 +32,16 @@ MDMatrix(int rows, int cols, T defvalue);
 MDMatrix(const MDMatrix<T> &copy);
 MDMatrix(int rows, int cols, const T* data);
 ~MDMatrix();
+// --------------------------
 
-// Задание размерности
+// --------------------------
+// Задание размерности и данных
+// --------------------------
 void Resize(int rows, int cols);
+
+void Assign(int rows, int cols, const T *data);
+// --------------------------
+
 
 // --------------------------
 // Операторы управления данными
@@ -166,8 +173,7 @@ template<class T>
 MDMatrix<T>::MDMatrix(const int rows, const  int cols, const T* data)
 : Rows(0),Cols(0),Data(0)
 {
- Resize(rows, cols);
- *this=data;
+ Assign(rows,cols,data);
 };
 
 template<class T>
@@ -197,13 +203,20 @@ void MDMatrix<T>::Resize(int rows, int cols)
   int c_cols=(Cols<cols)?Cols:cols;
   for(int i=0; i<c_rows; i++)
    for(int j=0;j<c_cols; j++)
-    new_data[i*cols+j]=Data[i*Cols+j];
+	new_data[i*cols+j]=Data[i*Cols+j];
  }
  delete []Data;
  Data=new_data;
  Rows=rows;
  Cols=cols;
 };
+
+template<class T>
+void MDMatrix<T>::Assign(int rows, int cols, const T *data)
+{
+ Resize(rows, cols);
+ *this=data;
+}
 // --------------------------
 
 // --------------------------

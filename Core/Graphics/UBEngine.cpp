@@ -454,6 +454,11 @@ int UBEngine::LoadPredefinedLibraries(void)
  filter->SetName("UBKeyPointsClarificator");
  bstorage->AddClass(filter,"BKeyPointsClarificatorAvg");
 
+ filter=new RDK::UBObjectGeometry;
+ filter->Default();
+ filter->SetName("ObjectGeometry");
+ bstorage->AddClass(filter,"ObjectGeometry");
+
 
 
 #ifdef RDK_WINAPI
