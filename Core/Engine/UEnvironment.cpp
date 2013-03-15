@@ -687,7 +687,10 @@ bool UEnvironment::ADefault(void)
 
 // UComponent::SetTime(0);
  if(ModelCalculationComponent.GetSize() == 0)
-  return Model->Default();
+ {
+  if(!Model->Default())
+   return false;
+ }
  else
  {
   UEPtr<UContainer> destcont;
@@ -713,7 +716,10 @@ bool UEnvironment::ABuild(void)
   return true;
 
  if(ModelCalculationComponent.GetSize() == 0)
-  return Model->Build();
+ {
+  if(!Model->Build())
+   return false;
+ }
  else
  {
   UEPtr<UContainer> destcont;
@@ -743,7 +749,10 @@ bool UEnvironment::AReset(void)
 // Model->SetTimeStep(DefaultTimeStep);
 
  if(ModelCalculationComponent.GetSize() == 0)
-  return Model->Reset();
+ {
+  if(!Model->Reset())
+   return false;
+ }
  else
  {
   UEPtr<UContainer> destcont;
@@ -768,7 +777,10 @@ bool UEnvironment::ACalculate(void)
   return true;
 
  if(ModelCalculationComponent.GetSize() == 0)
-  return Model->Calculate();
+ {
+  if(!Model->Calculate())
+   return false;
+ }
  else
  {
   UEPtr<UContainer> destcont;
