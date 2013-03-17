@@ -17,6 +17,7 @@
 #include "VideoOutputFrameUnit.h"
 #include "TUVisualController.h"
 #include "TUVisualControllerFrameUnit.h"
+
 //---------------------------------------------------------------------------
 class TVideoGrabberControlFrame : public TUVisualControllerFrame
 {
@@ -38,7 +39,7 @@ __published:    // IDE-managed Components
     TTabSheet *PictureFileTabSheet;
     TComboBox *VideoSubTypeComboBox;
     TLabel *Label1;
-    TComboBox *AnalogVideoStandardComboBox;
+	TComboBox *AnalogVideoStandardComboBox;
     TLabel *Label2;
     TEdit *ImageFileNameEdit;
     TLabel *Label3;
@@ -61,6 +62,15 @@ __published:    // IDE-managed Components
 	TCheckBox *ImageSequencePathCheckBox;
 	TButton *ImageSequencePathBrowseButton;
 	TButton *StreamButton;
+	TButton *IpMoveUpButton;
+	TButton *IpMoveLeftButton;
+	TButton *IpMoveRightButton;
+	TButton *IpMoveDownButton;
+	TButton *ZoomInButton;
+	TButton *ZoomOutButton;
+	TButton *ResetButton;
+	TLabel *Label8;
+	TEdit *IPCameraControlPostfixEdit;
     void __fastcall DeviceComboBoxSelect(TObject *Sender);
     void __fastcall InputComboBoxSelect(TObject *Sender);
     void __fastcall VideoSizeComboBoxSelect(TObject *Sender);
@@ -71,6 +81,13 @@ __published:    // IDE-managed Components
     void __fastcall OpenImageFileButtonClick(TObject *Sender);
 	void __fastcall ImageSequencePathBrowseButtonClick(TObject *Sender);
 	void __fastcall StreamButtonClick(TObject *Sender);
+	void __fastcall IpMoveUpButtonClick(TObject *Sender);
+	void __fastcall IpMoveLeftButtonClick(TObject *Sender);
+	void __fastcall IpMoveDownButtonClick(TObject *Sender);
+	void __fastcall IpMoveRightButtonClick(TObject *Sender);
+	void __fastcall ZoomInButtonClick(TObject *Sender);
+	void __fastcall ZoomOutButtonClick(TObject *Sender);
+	void __fastcall ResetButtonClick(TObject *Sender);
 private:    // User declarations
 public:        // User declarations
     __fastcall TVideoGrabberControlFrame(TComponent* Owner);
@@ -79,6 +96,8 @@ protected:
 
 TVideoGrabber* VideoGrabber;
 TVideoOutputFrame *VideoOutputFrame;
+
+RDK::UBPtzCameraData IpPtzInfo;
 
 // -----------------------------
 // Методы управления устройством ввода видео
@@ -94,6 +113,8 @@ int GetMode(void) const;
 void SelectMode(int mode);
 
 void __fastcall AssignListToComboBox (TComboBox* ComboBox, String List, int Index);
+
+void SendIpPtzCommand(void);
 // -----------------------------
 
 // -----------------------------

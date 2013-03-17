@@ -30,6 +30,7 @@
 #include "../../Core/Graphics/UDrawEngine.h"
 #include "../../Core/Graphics/UGraphicsXMLSerialize.h"
 #include "../../Core/Graphics/UGraphicsBinarySerialize.h"
+#include "../../Core/Graphics/UBPtzCamera.h"
 
 #include "../../Core/Application/UApplication.h"
 

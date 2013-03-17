@@ -186,6 +186,32 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, UBVSObject3D &data)
  return storage;
 }
 
+//class UBPtzCameraInfo
+USerStorageBinary& operator << (USerStorageBinary& storage, const UBPtzCameraInfo &data)
+{
+
+ return storage;
+}
+
+USerStorageBinary& operator >> (USerStorageBinary& storage, UBPtzCameraInfo &data)
+{
+
+ return storage;
+}
+
+//class UBPtzCameraData
+USerStorageBinary& operator << (USerStorageBinary& storage, const UBPtzCameraData &data)
+{
+
+ return storage;
+}
+
+USerStorageBinary& operator >> (USerStorageBinary& storage, UBPtzCameraData &data)
+{
+
+ return storage;
+}
+
 }
 
 #endif

@@ -10,7 +10,7 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
     Top = 0
     Width = 453
     Height = 297
-    ActivePage = PictureFileTabSheet
+    ActivePage = IPCameraTabSheet
     Align = alClient
     DoubleBuffered = True
     ParentDoubleBuffered = False
@@ -154,12 +154,11 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
         object Label4: TLabel
           Left = 8
           Top = 3
-          Width = 429
+          Width = 177
           Height = 13
           Anchors = [akLeft, akTop, akRight]
           AutoSize = False
           Caption = 'IP Camera URL:'
-          ExplicitWidth = 369
         end
         object Label5: TLabel
           Left = 8
@@ -181,10 +180,19 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
           Caption = 'User Password:'
           ExplicitWidth = 390
         end
+        object Label8: TLabel
+          Left = 216
+          Top = 1
+          Width = 152
+          Height = 13
+          Anchors = [akLeft, akTop, akRight]
+          AutoSize = False
+          Caption = 'Camera control URL:'
+        end
         object IPCameraUrlEdit: TEdit
           Left = 8
           Top = 20
-          Width = 429
+          Width = 202
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           TabOrder = 0
@@ -206,6 +214,78 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           TabOrder = 2
+        end
+        object IpMoveUpButton: TButton
+          Left = 96
+          Top = 144
+          Width = 75
+          Height = 25
+          Caption = 'Up'
+          TabOrder = 3
+          OnClick = IpMoveUpButtonClick
+        end
+        object IpMoveLeftButton: TButton
+          Left = 24
+          Top = 175
+          Width = 75
+          Height = 25
+          Caption = 'Left'
+          TabOrder = 4
+          OnClick = IpMoveLeftButtonClick
+        end
+        object IpMoveRightButton: TButton
+          Left = 168
+          Top = 175
+          Width = 75
+          Height = 25
+          Caption = 'Right'
+          TabOrder = 5
+          OnClick = IpMoveRightButtonClick
+        end
+        object IpMoveDownButton: TButton
+          Left = 96
+          Top = 206
+          Width = 75
+          Height = 25
+          Caption = 'Down'
+          TabOrder = 6
+          OnClick = IpMoveDownButtonClick
+        end
+        object ZoomInButton: TButton
+          Left = 249
+          Top = 144
+          Width = 75
+          Height = 25
+          Caption = 'Zoom Im'
+          TabOrder = 7
+          OnClick = ZoomInButtonClick
+        end
+        object ZoomOutButton: TButton
+          Left = 249
+          Top = 206
+          Width = 75
+          Height = 25
+          Caption = 'Zoom Out'
+          TabOrder = 8
+          OnClick = ZoomOutButtonClick
+        end
+        object ResetButton: TButton
+          Left = 344
+          Top = 175
+          Width = 75
+          Height = 25
+          Caption = 'Reset'
+          TabOrder = 9
+          OnClick = ResetButtonClick
+        end
+        object IPCameraControlPostfixEdit: TEdit
+          Left = 216
+          Top = 20
+          Width = 221
+          Height = 21
+          Anchors = [akLeft, akTop, akRight]
+          TabOrder = 10
+          Text = 'http://127.0.0.1/video/mjpg.cgi'
         end
       end
     end

@@ -17,6 +17,7 @@ __fastcall TVideoGrabberControlFrame::TVideoGrabberControlFrame(TComponent* Owne
 {
  VideoGrabber=0;
  VideoOutputFrame=0;
+ IpPtzInfo.InitCanonVBM40();
 }
 
 
@@ -94,6 +95,15 @@ void __fastcall TVideoGrabberControlFrame::AssignListToComboBox (TComboBox* Comb
 	  ComboBox->ItemIndex = Index;
    }
 }
+
+void TVideoGrabberControlFrame::SendIpPtzCommand(void)
+{
+ std::string prefix, result;
+ prefix=AnsiString(IPCameraControlPostfixEdit->Text).c_str();// "http://194.85.99.186/-wvhttp-01-/control.cgi?";
+ IpPtzInfo.GenerateCanonVBM40Command(prefix,result);
+
+ VideoGrabber->SendIPCameraCommand(result.c_str());
+}
 // -----------------------------
 
 // -----------------------------
@@ -168,6 +178,9 @@ void TVideoGrabberControlFrame::ASaveParameters(RDK::USerStorageXML &xml)
  xml.WriteString("IPCameraUserName",AnsiString(IPCameraUserNameEdit->Text).c_str());
  xml.WriteString("IPCameraUserPassword",AnsiString(IPCameraUserPasswordEdit->Text).c_str());
 
+ xml.WriteString("IPCameraControlPostfix",AnsiString(IPCameraControlPostfixEdit->Text).c_str());
+
+
  xml.WriteInteger("DeviceId",DeviceComboBox->ItemIndex);
  xml.WriteInteger("InputId",InputComboBox->ItemIndex);
  xml.WriteInteger("VideoSizeId",VideoSizeComboBox->ItemIndex);
@@ -191,6 +204,7 @@ void TVideoGrabberControlFrame::ALoadParameters(RDK::USerStorageXML &xml)
  IPCameraUrlEdit->Text=xml.ReadString("IPCameraUrl","").c_str();
  IPCameraUserNameEdit->Text=xml.ReadString("IPCameraUserName","").c_str();
  IPCameraUserPasswordEdit->Text=xml.ReadString("IPCameraUserPassword","").c_str();
+ IPCameraControlPostfixEdit->Text=xml.ReadString("IPCameraControlPostfix","").c_str();
 
  SelectMode(xml.ReadInteger("Mode",1));
  UpdateInterface();
@@ -404,6 +418,57 @@ void __fastcall TVideoGrabberControlFrame::ImageSequencePathBrowseButtonClick(TO
 void __fastcall TVideoGrabberControlFrame::StreamButtonClick(TObject *Sender)
 {
  VideoGrabber->ShowDialog(dlg_StreamConfig);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoGrabberControlFrame::IpMoveUpButtonClick(TObject *Sender)
+{
+ IpPtzInfo.MoveUp(100);
+ SendIpPtzCommand();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoGrabberControlFrame::IpMoveLeftButtonClick(TObject *Sender)
+
+{
+ IpPtzInfo.MoveLeft(100);
+ SendIpPtzCommand();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoGrabberControlFrame::IpMoveDownButtonClick(TObject *Sender)
+{
+ IpPtzInfo.MoveDown(100);
+ SendIpPtzCommand();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoGrabberControlFrame::IpMoveRightButtonClick(TObject *Sender)
+
+{
+ IpPtzInfo.MoveRight(100);
+ SendIpPtzCommand();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoGrabberControlFrame::ZoomInButtonClick(TObject *Sender)
+{
+ IpPtzInfo.ZoomOut(100);
+ SendIpPtzCommand();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoGrabberControlFrame::ZoomOutButtonClick(TObject *Sender)
+{
+ IpPtzInfo.ZoomIn(100);
+ SendIpPtzCommand();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoGrabberControlFrame::ResetButtonClick(TObject *Sender)
+{
+ IpPtzInfo.ZeroPosition();
+ SendIpPtzCommand();
 }
 //---------------------------------------------------------------------------
 
