@@ -516,6 +516,11 @@ int UBEngine::LoadPredefinedLibraries(void)
  filter->SetName("Camera");
  bstorage->AddClass(filter,"CameraSimple");
 
+ filter=new RDK::UBPtzTrackerControlBasic;
+ filter->Default();
+ filter->SetName("PtzTrackerControl");
+ bstorage->AddClass(filter,"BPtzTrackerControlBasic");
+
  return 0;
 }
 // --------------------------
