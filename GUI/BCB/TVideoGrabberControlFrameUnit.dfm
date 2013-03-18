@@ -188,11 +188,12 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
           Anchors = [akLeft, akTop, akRight]
           AutoSize = False
           Caption = 'Camera control URL:'
+          Visible = False
         end
         object IPCameraUrlEdit: TEdit
           Left = 8
           Top = 20
-          Width = 202
+          Width = 429
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           TabOrder = 0
@@ -222,6 +223,7 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
           Height = 25
           Caption = 'Up'
           TabOrder = 3
+          Visible = False
           OnClick = IpMoveUpButtonClick
         end
         object IpMoveLeftButton: TButton
@@ -231,6 +233,7 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
           Height = 25
           Caption = 'Left'
           TabOrder = 4
+          Visible = False
           OnClick = IpMoveLeftButtonClick
         end
         object IpMoveRightButton: TButton
@@ -240,6 +243,7 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
           Height = 25
           Caption = 'Right'
           TabOrder = 5
+          Visible = False
           OnClick = IpMoveRightButtonClick
         end
         object IpMoveDownButton: TButton
@@ -249,6 +253,7 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
           Height = 25
           Caption = 'Down'
           TabOrder = 6
+          Visible = False
           OnClick = IpMoveDownButtonClick
         end
         object ZoomInButton: TButton
@@ -258,6 +263,7 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
           Height = 25
           Caption = 'Zoom Im'
           TabOrder = 7
+          Visible = False
           OnClick = ZoomInButtonClick
         end
         object ZoomOutButton: TButton
@@ -267,6 +273,7 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
           Height = 25
           Caption = 'Zoom Out'
           TabOrder = 8
+          Visible = False
           OnClick = ZoomOutButtonClick
         end
         object ResetButton: TButton
@@ -276,6 +283,7 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
           Height = 25
           Caption = 'Reset'
           TabOrder = 9
+          Visible = False
           OnClick = ResetButtonClick
         end
         object IPCameraControlPostfixEdit: TEdit
@@ -286,6 +294,7 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
           Anchors = [akLeft, akTop, akRight]
           TabOrder = 10
           Text = 'http://127.0.0.1/video/mjpg.cgi'
+          Visible = False
         end
       end
     end
