@@ -81,22 +81,36 @@ virtual ~UBPtzCameraData(void);
 
 std::string& GenerateCanonVBM40Command(const std::string &addr, std::string &result);
 
+/// Устанавливает камеру в нулевую позицию с минимальным зумом
+/// Устанавливает максимальные скорости перемещения
 virtual void ZeroPosition(void);
 
-virtual void MoveUp(double shift);
+/// Перемещает камеру по оси X в зависимости от знака shift
+virtual void MovePan(double shift, double speed=-1);
 
-virtual void MoveDown(double shift);
+/// Перемещает камеру по оси Y в зависимости от знака shift
+virtual void MoveTilt(double shift, double speed=-1);
 
-virtual void MoveLeft(double shift);
+/// Зуммирует камеру в зависимости от знака shift
+virtual void MoveZoom(double shift, double speed=-1);
 
-virtual void MoveRight(double shift);
+virtual void MoveUp(double shift, double speed=-1);
 
-virtual void ZoomIn(double shift);
+virtual void MoveDown(double shift, double speed=-1);
 
-virtual void ZoomOut(double shift);
+virtual void MoveLeft(double shift, double speed=-1);
+
+virtual void MoveRight(double shift, double speed=-1);
+
+virtual void ZoomIn(double shift, double speed=-1);
+
+virtual void ZoomOut(double shift, double speed=-1);
 
 bool operator == (const UBPtzCameraData &copy);
 bool operator != (const UBPtzCameraData &copy);
+
+UBPtzCameraData& operator = (const UBPtzCameraInfo &info);
+
 
 
 

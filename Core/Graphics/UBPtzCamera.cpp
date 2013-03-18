@@ -77,46 +77,97 @@ void UBPtzCameraData::ZeroPosition(void)
  PanSpeed=MaxPanSpeed;//(MaxPanSpeed-MinPanSpeed)/2;
 }
 
-void UBPtzCameraData::MoveUp(double shift)
+/// Перемещает камеру по оси X в зависимости от знака shift
+void UBPtzCameraData::MovePan(double shift, double speed)
 {
- Tilt+=shift;
- if(Tilt>MaxTilt)
-  Tilt=MaxTilt;
-}
+ if(speed>=0)
+ {
+  PanSpeed=speed;
+  PanSpeed=(PanSpeed<MinPanSpeed)?MinPanSpeed:PanSpeed;
+  PanSpeed=(PanSpeed>MaxPanSpeed)?MaxPanSpeed:PanSpeed;
+ }
 
-void UBPtzCameraData::MoveDown(double shift)
-{
- Tilt-=shift;
- if(Tilt<MinTilt)
-  Tilt=MinTilt;
-}
-
-void UBPtzCameraData::MoveLeft(double shift)
-{
- Pan-=shift;
- if(Pan<MinPan)
-  Pan=MinPan;
-}
-
-void UBPtzCameraData::MoveRight(double shift)
-{
  Pan+=shift;
- if(Pan>MaxPan)
-  Pan=MaxPan;
+ Pan=(Pan<MinPan)?MinPan:Pan;
+ Pan=(Pan>MaxPan)?MaxPan:Pan;
 }
 
-void UBPtzCameraData::ZoomIn(double shift)
+/// Перемещает камеру по оси Y в зависимости от знака shift
+void UBPtzCameraData::MoveTilt(double shift, double speed)
 {
+ if(speed>=0)
+ {
+  TiltSpeed=speed;
+  TiltSpeed=(TiltSpeed<MinTiltSpeed)?MinTiltSpeed:TiltSpeed;
+  TiltSpeed=(TiltSpeed>MaxTiltSpeed)?MaxTiltSpeed:TiltSpeed;
+ }
+
+ Tilt+=shift;
+ Tilt=(Tilt<MinTilt)?MinTilt:Tilt;
+ Tilt=(Tilt>MaxTilt)?MaxTilt:Tilt;
+}
+
+/// Зуммирует камеру в зависимости от знака shift
+void UBPtzCameraData::MoveZoom(double shift, double speed)
+{
+ if(speed>=0)
+ {
+  ZoomSpeed=speed;
+  ZoomSpeed=(ZoomSpeed<MinZoomSpeed)?MinZoomSpeed:ZoomSpeed;
+  ZoomSpeed=(ZoomSpeed>MaxZoomSpeed)?MaxZoomSpeed:ZoomSpeed;
+ }
+
  Zoom+=shift;
- if(Zoom>MaxZoom)
-  Zoom=MaxZoom;
+ Zoom=(Zoom<MinZoom)?MinZoom:Zoom;
+ Zoom=(Zoom>MaxZoom)?MaxZoom:Zoom;
 }
 
-void UBPtzCameraData::ZoomOut(double shift)
+void UBPtzCameraData::MoveUp(double shift, double speed)
 {
- Zoom-=shift;
- if(Zoom<MinZoom)
-  Zoom=MinZoom;
+ MoveTilt(shift,speed);
+}
+
+void UBPtzCameraData::MoveDown(double shift, double speed)
+{
+ MoveTilt(-shift,speed);
+}
+
+void UBPtzCameraData::MoveLeft(double shift, double speed)
+{
+ MovePan(-shift,speed);
+}
+
+void UBPtzCameraData::MoveRight(double shift, double speed)
+{
+ MovePan(shift,speed);
+}
+
+void UBPtzCameraData::ZoomIn(double shift, double speed)
+{
+ MoveZoom(-shift,speed);
+}
+
+void UBPtzCameraData::ZoomOut(double shift, double speed)
+{
+ MoveZoom(shift,speed);
+}
+
+UBPtzCameraData& UBPtzCameraData::operator = (const UBPtzCameraInfo &info)
+{
+ MinPan=info.MinPan;
+ MaxPan=info.MaxPan;
+ MinPanSpeed=info.MinPanSpeed;
+ MaxPanSpeed=info.MaxPanSpeed;
+ MinTilt=info.MinTilt;
+ MaxTilt=info.MaxTilt;
+ MinTiltSpeed=info.MinTiltSpeed;
+ MaxTiltSpeed=info.MaxTiltSpeed;
+ MinZoom=info.MinZoom;
+ MaxZoom=info.MaxZoom;
+ MinZoomSpeed=info.MinZoomSpeed;
+ MaxZoomSpeed=info.MaxZoomSpeed;
+
+ return *this;
 }
 
       
