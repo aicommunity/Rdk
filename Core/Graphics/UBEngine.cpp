@@ -471,6 +471,11 @@ int UBEngine::LoadPredefinedLibraries(void)
  filter->Default();
  filter->SetName("BUndistortion");
  bstorage->AddClass(filter,"BDllOpenCvUndistortion");
+
+ filter=new RDK::UBPtzCameraControlHttpVcl;
+ filter->Default();
+ filter->SetName("PtzCameraControl");
+ bstorage->AddClass(filter,"PtzCameraControlHttpVcl");
 #endif
 
  filter=new RDK::UBABitmapSourceSimple;

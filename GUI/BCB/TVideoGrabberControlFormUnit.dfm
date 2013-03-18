@@ -36,7 +36,6 @@ object VideoGrabberControlForm: TVideoGrabberControlForm
     inherited VCapturePageControl: TPageControl
       Width = 584
       Height = 292
-      ActivePage = VideoGrabberControlFrame.DeviceTabSheet
       ExplicitWidth = 584
       ExplicitHeight = 292
       inherited DeviceTabSheet: TTabSheet
@@ -111,8 +110,8 @@ object VideoGrabberControlForm: TVideoGrabberControlForm
             ExplicitWidth = 219
           end
           inherited IPCameraUrlEdit: TEdit
-            Width = 266
-            ExplicitWidth = 266
+            Width = 560
+            ExplicitWidth = 560
           end
           inherited IPCameraUserNameEdit: TEdit
             Width = 560
