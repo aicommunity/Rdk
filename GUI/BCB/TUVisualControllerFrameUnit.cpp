@@ -81,7 +81,7 @@ void TUVisualControllerFrame::UpdateInterface(bool force_update)
 {
  if(!force_update)
  {
-  if((!AlwaysUpdateFlag && !Parent->Visible) || (UpdateInterval<0 && CalculationModeFlag))
+  if(!Parent || (!AlwaysUpdateFlag && !Parent->Visible) || (UpdateInterval<0 && CalculationModeFlag))
    return;
   if(UpdateInterval>0 && CalculationModeFlag)
   {
