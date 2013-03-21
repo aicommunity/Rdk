@@ -2,6 +2,8 @@
 #define UBPtzCameraInfo_CPP
 
 #include <string>
+#include "UBPtzCamera.h"
+#include "../Utilities/USupport.h"
 
 namespace RDK {
 

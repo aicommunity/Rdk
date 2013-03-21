@@ -20,6 +20,10 @@ namespace RDK {
 
 class ULibrary//: public ULibrary
 {
+protected: // Данные единой коллекции библиотек
+/// Список статически загруженных библиотек
+static std::list<ULibrary* const> LibraryList;
+
 protected: // Параметры
 // Имя библиотеки
 string Name;
@@ -46,6 +50,16 @@ public: // Методы
 // --------------------------
 ULibrary(const string &name, const string &version);
 virtual ~ULibrary(void);
+// --------------------------
+
+// --------------------------
+// Методы управления статически загруженными библиотеками
+// --------------------------
+/// Возвращает коллекцию статически загруженных библиотек
+static const std::list<ULibrary* const>& GetLibraryList(void);
+
+/// Очищает коллекцию библиотек
+static void ClearLibraryList(void);
 // --------------------------
 
 // --------------------------
