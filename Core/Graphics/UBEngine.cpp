@@ -475,7 +475,13 @@ int UBEngine::LoadPredefinedLibraries(void)
  filter=new RDK::UBPtzCameraControlHttpVcl;
  filter->Default();
  filter->SetName("PtzCameraControl");
- bstorage->AddClass(filter,"PtzCameraControlHttpVcl");
+ bstorage->AddClass(filter,"PtzCameraControlHttpVcl");     
+ 
+ filter=new RDK::TDllTldTracking;
+ filter->Default();
+ filter->SetName("Tracker");
+ bstorage->AddClass(filter,"TDllTldTracking");     
+
 #endif
 
  filter=new RDK::UBABitmapSourceSimple;
