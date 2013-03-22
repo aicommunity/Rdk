@@ -457,9 +457,12 @@ int UBEngine::LoadPredefinedLibraries(void)
  filter=new RDK::UBObjectGeometry;
  filter->Default();
  filter->SetName("ObjectGeometry");
- bstorage->AddClass(filter,"ObjectGeometry");
-
-
+ bstorage->AddClass(filter,"ObjectGeometry");    
+ 
+ filter=new RDK::UBOrientationSimulatorExhaustive;
+ filter->Default();
+ filter->SetName("OrientationSimulator");
+ bstorage->AddClass(filter,"BOrientationSimulatorExhaustive");
 
 #ifdef RDK_WINAPI
  filter=new RDK::UBWDllCameraCalibrator;
