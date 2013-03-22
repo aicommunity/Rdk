@@ -22,7 +22,7 @@ class ULibrary//: public ULibrary
 {
 protected: // Данные единой коллекции библиотек
 /// Список статически загруженных библиотек
-static std::list<ULibrary* const> LibraryList;
+static std::list<ULibrary*> LibraryList;
 
 protected: // Параметры
 // Имя библиотеки
@@ -56,10 +56,16 @@ virtual ~ULibrary(void);
 // Методы управления статически загруженными библиотеками
 // --------------------------
 /// Возвращает коллекцию статически загруженных библиотек
-static const std::list<ULibrary* const>& GetLibraryList(void);
+static const std::list<ULibrary*>& GetLibraryList(void);
 
 /// Очищает коллекцию библиотек
 static void ClearLibraryList(void);
+
+/// Проверяет наличие библиотеки по ее имени
+static bool CheckLibrary(const std::string &name);
+
+/// Добавляет библиотеку в список, если библиотеки с таким именем еще нет в списке
+static bool AddUniqueLibrary(ULibrary* const lib);
 // --------------------------
 
 // --------------------------

@@ -13,7 +13,8 @@ See file license.txt for more information
 #define UBAENVIRONMENT_H
 
 #include "../Engine/UEnvironment.h"
-#include "UBAStorage.h"
+#include "../Engine/UStorage.h"
+//#include "UBAStorage.h"
 #include "UBitmapVector.h"
 #include "UBPipeline.h"
 
@@ -66,7 +67,7 @@ virtual ~UBAEnvironment(void);
 // Методы управления данными среды
 // --------------------------
 // Возвращает указатель на хранилище
-virtual UBAStorage* GetStorage(void);
+//virtual UBAStorage* GetStorage(void);
 
 // Возвращает указатель на модель
 UEPtr<UBAModel> GetModel(void);

@@ -33,10 +33,10 @@ UBAEnvironment::~UBAEnvironment(void)
 // Методы управления данными среды
 // --------------------------
 // Возвращает указатель на хранилище
-UBAStorage* UBAEnvironment::GetStorage(void)
+/*UBAStorage* UBAEnvironment::GetStorage(void)
 {
  return dynamic_cast<UBAStorage*>(UEnvironment::GetStorage());
-}
+} */
 
 // Возвращает указатель на модель
 UEPtr<UBAModel> UBAEnvironment::GetModel(void)

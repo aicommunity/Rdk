@@ -13,7 +13,7 @@ See file license.txt for more information
 #define UBGRAPHIC_KERNEL_LITE_CPP
 
 #include "UBAEnvironment.cpp"
-#include "UBAStorage.cpp"
+//#include "UBAStorage.cpp"
 #include "UBAbstract.cpp"
 //#include "UBitmap.cpp"
 //#include "UBitmapVector.cpp"

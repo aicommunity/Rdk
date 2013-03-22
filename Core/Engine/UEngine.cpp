@@ -3360,14 +3360,15 @@ void UEngine::CreateEnvironment(bool isinit, list<UContainer*>* external_classes
 // «агружает набор предустановленных библиотек
 int UEngine::LoadPredefinedLibraries(void)
 {
- LibrariesList.push_back(&BCLLibrary);
+ LibrariesList=ULibrary::GetLibraryList();
+/* LibrariesList.push_back(&BCLLibrary);
  LibrariesList.push_back(&IOLibrary);
  LibrariesList.push_back(&CRLibrary);
  LibrariesList.push_back(&StatisticLibrary);
  LibrariesList.push_back(&PredictionLibrary);
  LibrariesList.push_back(&SourceLibrary);
  LibrariesList.push_back(&NoiseLibrary);
-
+  */
  return 0;
 }
 

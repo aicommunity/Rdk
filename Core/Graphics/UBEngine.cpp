@@ -321,7 +321,7 @@ void UBEngine::Model_SetComponentBitmapInput(const char *stringid, int index, co
 
 
 
-// -------------------------b-
+// --------------------------
 // Методы внутреннего управления движком
 // --------------------------
 // Загружает набор предустановленных библиотек
@@ -334,7 +334,7 @@ int UBEngine::LoadPredefinedLibraries(void)
  if(!Storage)
   return 1;
 
- UEPtr<RDK::UBAStorage> bstorage=dynamic_pointer_cast<RDK::UBAStorage>(Storage);
+ UEPtr<RDK::UStorage> bstorage=Storage;
 
  if(!bstorage)
   return 2;
@@ -436,7 +436,7 @@ int UBEngine::LoadPredefinedLibraries(void)
 
  filter=new RDK::UBTrackerSimulator;
  filter->Default();
- filter->SetName("BTracker");
+ filter->SetName("Tracker");
  bstorage->AddClass(filter,"UBTrackerSimulator");
 
  filter=new RDK::UBAShowObjectsSimple;

@@ -18,7 +18,7 @@ See file license.txt for more information
 namespace RDK {
 
 /// —писок статически загруженных библиотек
-std::list<ULibrary* const> ULibrary::LibraryList;
+std::list<ULibrary*> ULibrary::LibraryList;
 
 
 // --------------------------
@@ -29,7 +29,7 @@ ULibrary::ULibrary(const string &name, const string &version)
  Name=name;
  Version=version;
 
-// LibraryList.push_back(this);
+ AddUniqueLibrary(this);
 }
 
 ULibrary::~ULibrary(void)
@@ -41,7 +41,7 @@ ULibrary::~ULibrary(void)
 // ћетоды управлени€ статически загруженными библиотеками
 // --------------------------
 /// ¬озвращает коллекцию статически загруженных библиотек
-const std::list<ULibrary* const>& ULibrary::GetLibraryList(void)
+const std::list<ULibrary*>& ULibrary::GetLibraryList(void)
 {
  return LibraryList;
 }
@@ -50,6 +50,32 @@ const std::list<ULibrary* const>& ULibrary::GetLibraryList(void)
 void ULibrary::ClearLibraryList(void)
 {
  LibraryList.clear();
+}
+
+/// ѕровер€ет наличие библиотеки по ее имени
+bool ULibrary::CheckLibrary(const std::string &name)
+{
+ std::list<ULibrary*>::const_iterator I=LibraryList.begin();
+ std::list<ULibrary*>::const_iterator J=LibraryList.end();
+ for(;I!=J;++I)
+ {
+  if((*I)->GetName() == name)
+   return true;
+ }
+ return false;
+}
+
+/// ƒобавл€ет библиотеку в список, если библиотеки с таким именем еще нет в списке
+bool ULibrary::AddUniqueLibrary(ULibrary* const lib)
+{
+ if(!lib)
+  return false;
+
+ if(CheckLibrary(lib->GetName()))
+  return false;  /// «аглушка!! здесь может быть warning исключение
+
+ LibraryList.push_back(lib);
+ return true;
 }
 // --------------------------
 

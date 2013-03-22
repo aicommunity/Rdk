@@ -169,7 +169,7 @@ MMatrix<T,Rows,Cols>::MMatrix(T defvalue)
  if(defvalue == 0)
   memset(Data1D,0,Rows*Cols*sizeof(T));
  else
-  for(int i=0;i<Rows*Cols;i++)
+  for(unsigned i=0;i<Rows*Cols;i++)
    Data1D[i]=defvalue;
 }
 
@@ -575,11 +575,11 @@ unsigned MMatrix<T,Rows,Cols>::TriangleBareis(void)
     T denom(1); //!
 	int exchanges(0);
 
-	for(int l1=0; l1<Rows-1; ++l1)
+	for(unsigned l1=0; l1<Rows-1; ++l1)
 	{ //Перебираю все строки матрицы, кроме последней
-		int maxN=l1;
+		unsigned maxN=l1;
 		T maxValue=fabs(Data[l1][l1]);
-		for(int l2=l1+1; l2<Rows; ++l2)
+		for(unsigned l2=l1+1; l2<Rows; ++l2)
 		{ //Нахожу строку с максимальным по модулю элементом
 			T const value=fabs(Data[l2][l1]);
 			if( value > maxValue ) { maxN=l2; maxValue=value; }
@@ -587,7 +587,7 @@ unsigned MMatrix<T,Rows,Cols>::TriangleBareis(void)
 
         if( maxN > l1 )
 		{ //Нужен обмен
-		 for(int i=0;i<Cols;i++)
+		 for(unsigned i=0;i<Cols;i++)
 		 {
 		  T temp=Data[l1][i];
 		  Data[l1][i]=Data[maxN][i];
@@ -605,11 +605,11 @@ unsigned MMatrix<T,Rows,Cols>::TriangleBareis(void)
 		T const value1=Data[l1][l1]; //!
 		  //!
 
-		for(int l2=l1+1; l2<Rows; ++l2)
+		for(unsigned l2=l1+1; l2<Rows; ++l2)
 		{ //Вычитаю строку из всех последующих
 			T const value2=Data[l2][l1]; //!
 			Data[l2][l1] = T(0);
-			for(int c=l1+1; c<Rows; ++c) //!
+			for(unsigned c=l1+1; c<Rows; ++c) //!
 				Data[l2][c]=(Data[l2][c]*value1-Data[l1][c]*value2)/denom;
         }
 
@@ -635,9 +635,9 @@ MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::Inverse(MMatrix<T,Cols,Rows> &res) c
 
  MMatrix<T,Rows-1,Cols-1> Minor;
 
- for(int j=0;j<Rows;j++)
+ for(unsigned j=0;j<Rows;j++)
  {
-  for(int i=0;i<Cols;i++)
+  for(unsigned i=0;i<Cols;i++)
   {
    // get the co-factor (matrix) of A(j,i)
    GetMinor(Minor,j,i);
