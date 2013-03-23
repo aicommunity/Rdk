@@ -26,14 +26,24 @@ std::list<ULibrary*> ULibrary::LibraryList;
 // --------------------------
 ULibrary::ULibrary(const string &name, const string &version)
 {
+// if(!LibraryList)
+//  LibraryList=new std::list<ULibrary*>;
+
  Name=name;
  Version=version;
 
- AddUniqueLibrary(this);
+// AddUniqueLibrary(this);
 }
 
 ULibrary::~ULibrary(void)
 {
+// RemoveLibrary(this);
+
+/* if(LibraryList && LibraryList->empty())
+ {
+  delete LibraryList.Get();
+  LibraryList=0;
+ }*/
 }
 // --------------------------
 
@@ -70,12 +80,39 @@ bool ULibrary::AddUniqueLibrary(ULibrary* const lib)
 {
  if(!lib)
   return false;
-
+/*
+ if(!LibraryList)
+ {
+  LibraryList=new std::list<ULibrary*>;
+ }
+  */
  if(CheckLibrary(lib->GetName()))
   return false;  /// Заглушка!! здесь может быть warning исключение
 
  LibraryList.push_back(lib);
  return true;
+}
+
+/// Удаляет библиотеку из списка.
+/// Если список становится пуст, то уничтожает его
+void ULibrary::RemoveLibrary(ULibrary* const lib)
+{
+ std::list<ULibrary*>::iterator I=LibraryList.begin();
+ std::list<ULibrary*>::iterator J=LibraryList.end();
+ for(;I!=J;++I)
+ {
+  if((*I) == lib)
+  {
+   LibraryList.erase(I);
+   break;
+  }
+ }
+/*
+ if(LibraryList->empty())
+ {
+  delete LibraryList;
+  LibraryList=0;
+ }*/
 }
 // --------------------------
 

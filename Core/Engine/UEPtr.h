@@ -6,7 +6,8 @@
 
 namespace RDK {
 
-/* Указатель c подсчетом ссылок (слабый аналог shared_ptr) */
+
+/// Указатель c подсчетом ссылок (слабый аналог shared_ptr)
 template<typename T>
 class UESharedPtr
 {
@@ -58,7 +59,8 @@ bool operator != (const UESharedPtr<T>&p);
 
 bool operator ! (void) const;
 
-T* operator -> (void) const;
+T* operator -> (void);
+const T* operator -> (void) const;
 
 T& operator * (void);
 
@@ -103,10 +105,10 @@ public: // Методы
 UEPtr(void);
 UEPtr(T* pdata);
 UEPtr(const UEPtr<T> &p);
-UEPtr(const UESharedPtr<T> &p);
+//UEPtr(const UESharedPtr<T> &p);
 //template<typename Y> UEPtr(Y* p) : PData(p){};
 template<typename Y> UEPtr(UEPtr<Y> &p) : /*PData(p.Get()){};*/PData(dynamic_cast<T*>(p.Get())){};
-template<typename Y> UEPtr(UESharedPtr<Y> &p) : /*PData(p.Get()){};*/PData(dynamic_cast<T*>(p.Get())){};
+//template<typename Y> UEPtr(UESharedPtr<Y> &p) : /*PData(p.Get()){};*/PData(dynamic_cast<T*>(p.Get())){};
 ~UEPtr(void);
 // --------------------------
 
@@ -119,9 +121,9 @@ T* Get(void) const;
 // --------------------------
 // Операторы
 // --------------------------
-UEPtr<T>& operator = (UEPtr<T> &p);
+UEPtr<T>& operator = (const UEPtr<T> &p);
 
-UEPtr<T>& operator = (UESharedPtr<T> &p);
+//UEPtr<T>& operator = (UESharedPtr<T> &p);
  /*
 template<typename Y> UEPtr<T>& operator = (UESharedPtr<Y> &p)
 {
@@ -175,13 +177,13 @@ UEPtr<T>::UEPtr(const UEPtr<T> &p)
 {
 // PData=p.PData;
 };
-
+/*
 template<typename T>
 UEPtr<T>::UEPtr(const UESharedPtr<T> &p)
 : PData(p.Get())
 {
 
-}
+} */
 /*
 template<typename T, typename Y>
 UEPtr<T>::UEPtr(Y* p)
@@ -211,18 +213,18 @@ T* UEPtr<T>::Get(void) const
 // Операторы
 // --------------------------
 template<typename T>
-UEPtr<T>& UEPtr<T>::operator = (UEPtr<T> &p)
+UEPtr<T>& UEPtr<T>::operator = (const UEPtr<T> &p)
 {
  PData=p.PData;
  return *this;
 };
-
+/*
 template<typename T>
 UEPtr<T>& UEPtr<T>::operator = (UESharedPtr<T> &p)
 {
  PData=p.get();
  return *this;
-}
+}     */
 
 
 template<typename T>
@@ -385,21 +387,22 @@ bool UESharedPtr<T>::operator == (const UESharedPtr<T> &p)
 template<typename T>
 bool UESharedPtr<T>::operator != (const UESharedPtr<T> &p)
 { return (PData != p.PData)?true:false; };
-/*
-template<typename T>
-bool UESharedPtr<T>::operator == (const T *p)
-{ return (PData == p)?true:false; };
 
-template<typename T>
-bool UESharedPtr<T>::operator != (const T *p)
-{ return (PData != p)?true:false; };
-*/
 template<typename T>
 bool UESharedPtr<T>::operator ! (void) const
 { return (PData)?false:true; };
 
 template<typename T>
-T* UESharedPtr<T>::operator -> (void) const
+T* UESharedPtr<T>::operator -> (void)
+{
+ if(!PData)
+  throw EUsingZeroPtr();
+
+ return PData;
+};
+
+template<typename T>
+const T* UESharedPtr<T>::operator -> (void) const
 {
  if(!PData)
   throw EUsingZeroPtr();
@@ -505,9 +508,10 @@ UEPtr<T> const_pointer_cast(UEPtr<U> const & r)
 template<class T, class U>
 UEPtr<T> dynamic_pointer_cast(UEPtr<U> const & r)
 {
- UEPtr<T> result;
- result=dynamic_cast<T*>(r.Get());
- return result;
+// UEPtr<T> result;
+// result=dynamic_cast<T*>(r.Get());
+// return result;
+ return UEPtr<T>(dynamic_cast<T*>(r.Get()));
 }
 // -----------------------------------------------------------
 

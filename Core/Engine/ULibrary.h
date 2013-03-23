@@ -66,6 +66,10 @@ static bool CheckLibrary(const std::string &name);
 
 /// ƒобавл€ет библиотеку в список, если библиотеки с таким именем еще нет в списке
 static bool AddUniqueLibrary(ULibrary* const lib);
+
+/// ”дал€ет библиотеку из списка.
+/// ≈сли список становитс€ пуст, то уничтожает его
+static void RemoveLibrary(ULibrary* const lib);
 // --------------------------
 
 // --------------------------
