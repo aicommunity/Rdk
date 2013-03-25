@@ -278,10 +278,11 @@ void UBEngine::Model_SetComponentBitmapOutput(const char *stringid, int index, c
   if(!output)
    return;
 
-  UBitmap conversion;
-  conversion.AttachBuffer(bmp->GetWidth(),bmp->GetHeight(),bmp->GetData(),bmp->GetColorModel());
-  conversion.ConvertTo(*output);
-  conversion.DetachBuffer();
+  *output=*bmp;
+//  UBitmap conversion;
+//  conversion.AttachBuffer(bmp->GetWidth(),bmp->GetHeight(),bmp->GetData(),bmp->GetColorModel());
+//  conversion.ConvertTo(*output);
+//  conversion.DetachBuffer();
  }
  catch (UException &exception)
  {
@@ -306,11 +307,12 @@ void UBEngine::Model_SetComponentBitmapInput(const char *stringid, int index, co
   if(!input)
    return;
 
-  UBitmap conversion;
-  conversion.AttachBuffer(bmp->GetWidth(),bmp->GetHeight(),bmp->GetData(),bmp->GetColorModel());
-  input->SetColorModel(ubmY8,false);
-  conversion.ConvertTo(*input);
-  conversion.DetachBuffer();
+//  UBitmap conversion;
+//  conversion.AttachBuffer(bmp->GetWidth(),bmp->GetHeight(),bmp->GetData(),bmp->GetColorModel());
+//  input->SetColorModel(ubmY8,false);
+//  conversion.ConvertTo(*input);
+//  conversion.DetachBuffer();
+  *input=*bmp;
  }
  catch (UException &exception)
  {

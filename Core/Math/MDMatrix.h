@@ -133,6 +133,13 @@ MDMatrix<T> Zero(void);
 MDMatrix<T> Eye(void);
 // --------------------------
 
+// --------------------------
+// Сравнение матриц
+// --------------------------
+bool operator == (const MDMatrix<T> &M) const;
+bool operator != (const MDMatrix<T> &M) const;
+// --------------------------
+
 };
 // ---------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------
@@ -777,9 +784,30 @@ MDMatrix<T> MDMatrix<T>::Eye(void)
 
  return res;
 }
+// --------------------------
 
+// --------------------------
+// Сравнение матриц
+// --------------------------
+template<class T>
+bool MDMatrix<T>::operator == (const MDMatrix<T> &M) const
+{
+ if(Cols != M.Cols || Rows != M.Rows)
+  return false;
 
+ if(!Cols || !Rows)
+  return true;
 
+ if(!memcmp(Data,M.Data,sizeof(T)*Cols*Rows))
+  return true;
+ return false;
+}
+
+template<class T>
+bool MDMatrix<T>::operator != (const MDMatrix<T> &M) const
+{
+ return !((*this) == M);
+}
 // --------------------------
 
 }

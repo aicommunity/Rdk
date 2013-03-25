@@ -14,6 +14,7 @@ See file license.txt for more information
 
 #include <string.h>
 #include "UEnvironment.h"
+#include "../System/rdk_system.h"
 
 namespace RDK {
 

@@ -18,7 +18,7 @@ See file license.txt for more information
 //#include "UGraphicsBinarySerialize.cpp"
 //#include "UGraphicsXMLSerialize.cpp"
 #include "UBAModel.cpp"    
-#include "UBPtzCamera.cpp"
+//#include "UBPtzCamera.cpp"
 
 
 #endif

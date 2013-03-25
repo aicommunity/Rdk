@@ -203,6 +203,10 @@ inherited VideoOutputFrame: TVideoOutputFrame
       Caption = 'Send Image To Component Output...'
       OnClick = SendImageToComponentOutput1Click
     end
+    object SendImageToComponentProperty1: TMenuItem
+      Caption = 'Send Image To Component Property ...'
+      OnClick = SendImageToComponentProperty1Click
+    end
     object N2: TMenuItem
       Caption = '-'
     end

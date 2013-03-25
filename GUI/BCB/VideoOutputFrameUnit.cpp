@@ -514,8 +514,13 @@ void TVideoOutputFrame::SendToComponentIO(void)
  case 0:
   Model_SetComponentBitmapInput(LinkedComponentName.c_str(), LinkedIndex, &ReflectedBmpSource);
  break;
+
  case 1:
   Model_SetComponentBitmapOutput(LinkedComponentName.c_str(), LinkedIndex, &ReflectedBmpSource);
+ break;
+
+ case 2:
+  Model_SetComponentPropertyData(LinkedComponentName.c_str(), LinkedComponentPropertyName.c_str(), &ReflectedBmpSource);
  break;
  }
 }
@@ -544,6 +549,7 @@ void TVideoOutputFrame::AUpdateInterface(void)
  {
   SendImageToComponentInput1->Caption="Send Image To Component Input...";
   SendImageToComponentOutput1->Caption="Send Image To Component Output...";
+  SendImageToComponentProperty1->Caption="Send Image To Component Property...";
  }
  else
  {
@@ -552,11 +558,19 @@ void TVideoOutputFrame::AUpdateInterface(void)
   case 0:
    SendImageToComponentInput1->Caption=String("Send Image To Input: ")+String(LinkedComponentName.c_str())+String("[")+IntToStr(LinkedIndex)+String("]");
    SendImageToComponentOutput1->Caption="Send Image To Component Output...";
+   SendImageToComponentProperty1->Caption="Send Image To Component Property...";
   break;
 
   case 1:
    SendImageToComponentInput1->Caption="Send Image To Component Input...";
+   SendImageToComponentProperty1->Caption="Send Image To Component Property...";
    SendImageToComponentOutput1->Caption=String("Send Image To Output: ")+String(LinkedComponentName.c_str())+String("[")+IntToStr(LinkedIndex)+String("]");
+  break;
+
+  case 2:
+   SendImageToComponentInput1->Caption="Send Image To Component Input...";
+   SendImageToComponentProperty1->Caption="Send Image To Component Output...";
+   SendImageToComponentOutput1->Caption=String("Send Image To Property: ")+String(LinkedComponentName.c_str())+String("[")+String(LinkedComponentPropertyName.c_str())+String("]");
   break;
   }
  }
@@ -579,6 +593,7 @@ void TVideoOutputFrame::AUpdateInterface(void)
 void TVideoOutputFrame::ASaveParameters(RDK::USerStorageXML &xml)
 {
  xml.WriteString("LinkedComponentName",LinkedComponentName);
+ xml.WriteString("LinkedComponentPropertyName",LinkedComponentPropertyName);
  xml.WriteInteger("LinkedMode",LinkedMode);
  xml.WriteInteger("LinkedIndex",LinkedIndex);
 
@@ -592,6 +607,7 @@ void TVideoOutputFrame::ASaveParameters(RDK::USerStorageXML &xml)
 void TVideoOutputFrame::ALoadParameters(RDK::USerStorageXML &xml)
 {
  LinkedComponentName=xml.ReadString("LinkedComponentName","");
+ LinkedComponentPropertyName=xml.ReadString("LinkedComponentPropertyName","");
  LinkedMode=xml.ReadInteger("LinkedMode",1);
  LinkedIndex=xml.ReadInteger("LinkedIndex",0);
 
@@ -1065,4 +1081,17 @@ void __fastcall TVideoOutputFrame::Button1Click(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+
+void __fastcall TVideoOutputFrame::SendImageToComponentProperty1Click(TObject *Sender)
+
+{
+ if(MyComponentsListForm->ShowComponentSelect() != mrOk)
+  return;
+
+ LinkedMode=2;
+ LinkedComponentName=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName();
+ LinkedComponentPropertyName=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentStateName();
+// LinkedIndex=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput();
+}
+//---------------------------------------------------------------------------
 

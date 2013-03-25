@@ -52,6 +52,7 @@ __published:    // IDE-managed Components
 	TPopupMenu *SelectPopupMenu;
 	TMenuItem *Parameter1;
 	TMenuItem *State1;
+	TMenuItem *SendImageToComponentProperty1;
     void __fastcall TimerTimer(TObject *Sender);
     void __fastcall StartButtonClick(TObject *Sender);
     void __fastcall StopButtonClick(TObject *Sender);
@@ -76,6 +77,7 @@ __published:    // IDE-managed Components
 	void __fastcall Parameter1Click(TObject *Sender);
 	void __fastcall State1Click(TObject *Sender);
 	void __fastcall Button1Click(TObject *Sender);
+	void __fastcall SendImageToComponentProperty1Click(TObject *Sender);
 
 
 private:    // User declarations
@@ -130,10 +132,14 @@ std::string LinkedComponentName;
 // Режим привязки
 // 0 - ко входу
 // 1 - к выходу
+// 2 - к свойству
 int LinkedMode;
 
 // Выход, к которому привязан источник
 int LinkedIndex;
+
+// Свойство, к которому привязан источник
+std::string LinkedComponentPropertyName;
 
 
 public:

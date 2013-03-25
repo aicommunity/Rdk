@@ -105,10 +105,7 @@ public: // Методы
 UEPtr(void);
 UEPtr(T* pdata);
 UEPtr(const UEPtr<T> &p);
-//UEPtr(const UESharedPtr<T> &p);
-//template<typename Y> UEPtr(Y* p) : PData(p){};
-template<typename Y> UEPtr(UEPtr<Y> &p) : /*PData(p.Get()){};*/PData(dynamic_cast<T*>(p.Get())){};
-//template<typename Y> UEPtr(UESharedPtr<Y> &p) : /*PData(p.Get()){};*/PData(dynamic_cast<T*>(p.Get())){};
+template<typename Y> UEPtr(UEPtr<Y> &p) : PData(dynamic_cast<T*>(p.Get())){};
 ~UEPtr(void);
 // --------------------------
 
@@ -121,25 +118,9 @@ T* Get(void) const;
 // --------------------------
 // Операторы
 // --------------------------
-UEPtr<T>& operator = (const UEPtr<T> &p);
-
-//UEPtr<T>& operator = (UESharedPtr<T> &p);
- /*
-template<typename Y> UEPtr<T>& operator = (UESharedPtr<Y> &p)
-{
- PData=p.get();
- return *this;
-}  */
+UEPtr<T>& operator = (UEPtr<T> &p);
 
 UEPtr<T>& operator = (T *p);
-
-//bool operator == (const UEPtr<T> &p);
-
-//bool operator != (const UEPtr<T> &p);
-
-//bool operator == (const T *p);
-
-//bool operator != (const T *p);
 
 bool operator ! (void) const;
 
@@ -168,34 +149,18 @@ template<typename T>
 UEPtr<T>::UEPtr(T* pdata)
 : PData(pdata)
 {
-// PData=pdata;
 };
 
 template<typename T>
 UEPtr<T>::UEPtr(const UEPtr<T> &p)
 : PData(p.PData)
 {
-// PData=p.PData;
 };
-/*
-template<typename T>
-UEPtr<T>::UEPtr(const UESharedPtr<T> &p)
-: PData(p.Get())
-{
-
-} */
-/*
-template<typename T, typename Y>
-UEPtr<T>::UEPtr(Y* p)
- : PData(p)
-{
-} */
 
 
 template<typename T>
 UEPtr<T>::~UEPtr(void)
 {
-// PData=0;
 };
 // --------------------------
 
@@ -213,19 +178,11 @@ T* UEPtr<T>::Get(void) const
 // Операторы
 // --------------------------
 template<typename T>
-UEPtr<T>& UEPtr<T>::operator = (const UEPtr<T> &p)
+UEPtr<T>& UEPtr<T>::operator = (UEPtr<T> &p)
 {
  PData=p.PData;
  return *this;
 };
-/*
-template<typename T>
-UEPtr<T>& UEPtr<T>::operator = (UESharedPtr<T> &p)
-{
- PData=p.get();
- return *this;
-}     */
-
 
 template<typename T>
 UEPtr<T>& UEPtr<T>::operator = (T *p)
@@ -233,23 +190,7 @@ UEPtr<T>& UEPtr<T>::operator = (T *p)
  PData=p;
  return *this;
 };
-/*
-template<typename T>
-bool UEPtr<T>::operator == (const UEPtr<T> &p)
-{ return (PData == p.PData)?true:false; };
 
-template<typename T>
-bool UEPtr<T>::operator != (const UEPtr<T> &p)
-{ return (PData != p.PData)?true:false; };
-
-template<typename T>
-bool UEPtr<T>::operator == (const T *p)
-{ return (PData == p)?true:false; };
-
-template<typename T>
-bool UEPtr<T>::operator != (const T *p)
-{ return (PData != p)?true:false; };
-*/
 template<typename T>
 bool UEPtr<T>::operator ! (void) const
 { return (PData)?false:true; };
@@ -508,9 +449,9 @@ UEPtr<T> const_pointer_cast(UEPtr<U> const & r)
 template<class T, class U>
 UEPtr<T> dynamic_pointer_cast(UEPtr<U> const & r)
 {
-// UEPtr<T> result;
-// result=dynamic_cast<T*>(r.Get());
-// return result;
+ //UEPtr<T> result;
+ //result=dynamic_cast<T*>(r.Get());
+ //return result;
  return UEPtr<T>(dynamic_cast<T*>(r.Get()));
 }
 // -----------------------------------------------------------

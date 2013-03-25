@@ -51,11 +51,11 @@ int GetMaxRange(void)
 };
 
 template<typename T, typename OwnerT, unsigned int type>
-class UPropertyInputBase: protected ULProperty<T*,OwnerT,type>, public UPropertyIOBase, public UIPropertyInput
+class UPropertyInputBase: protected ULProperty<T,OwnerT,type>, public UPropertyIOBase, public UIPropertyInput
 {
 protected:
 /// Временная переменная, использующаяся, если нет реального подключения
-mutable T Local;
+//mutable T Local;
 
 public: // Методы
 // --------------------------
@@ -63,7 +63,34 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 UPropertyInputBase(const string &name, OwnerT * const owner, int min_range, int input_type, int max_range=-1)
- : ULProperty<T*,OwnerT,type>(name, owner), UPropertyIOBase(min_range, input_type, max_range)
+ : ULProperty<T,OwnerT,type>(name, owner), UPropertyIOBase(min_range, input_type, max_range)
+{ };
+// -----------------------------
+
+// --------------------------
+// Методы управления указателем
+// --------------------------
+// Возвращает языковой тип хранимого свойства
+virtual const type_info& GetLanguageType(void) const
+{
+ return typeid(T);
+}
+// --------------------------
+};
+
+template<typename T, typename OwnerT, unsigned int type=ptPubInput>
+class UPropertyInput: public UPropertyInputBase<T*,OwnerT,type>
+{
+protected:
+mutable T Local;
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+//Конструктор инициализации.
+UPropertyInput(const string &name, OwnerT * const owner, int min_range, int input_type=ipSingle | ipComp, int max_range=-1)
+ : UPropertyInputBase<T*,OwnerT,type>(name, owner, min_range, input_type | ipComp, max_range)
 { };
 // -----------------------------
 
@@ -100,29 +127,8 @@ operator T* (void) const
 {
  return (this->v)?this->v:&Local;
 }
-
-// Возвращает языковой тип хранимого свойства
-virtual const type_info& GetLanguageType(void) const
-{
- return typeid(T);
-}
 // --------------------------
-};
 
-template<typename T, typename OwnerT, unsigned int type=ptPubInput>
-class UPropertyInput: public UPropertyInputBase<T,OwnerT,type>
-{
-protected:
-
-public: // Методы
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-//Конструктор инициализации.
-UPropertyInput(const string &name, OwnerT * const owner, int min_range, int input_type=ipSingle | ipComp, int max_range=-1)
- : UPropertyInputBase<T,OwnerT,type>(name, owner, min_range, input_type | ipComp, max_range)
-{ };
-// -----------------------------
 
 
 virtual void Init(void)
@@ -147,6 +153,41 @@ UPropertyInputData(const string &name, OwnerT * const owner, int min_range, int 
  : UPropertyInputBase<T,OwnerT,type>(name, owner, min_range, input_type | ipData, max_range)
 { };
 // -----------------------------
+
+// --------------------------
+// Методы управления указателем
+// --------------------------
+// Возвращает указатель на данные входа
+void const * GetPointer(int index) const
+{
+ return this->PData;
+}
+
+// Устанавливает указатель на данные входа
+bool SetPointer(int index, void* value)
+{
+ this->PData=reinterpret_cast<T*>(value);
+ return true;
+}
+
+bool operator ! (void) const
+{ return (this->PData)?false:true; };
+
+T* operator -> (void) const
+{
+ return (this->PData)?this->PData:&v;
+};
+
+T& operator * (void)
+{
+ return (this->PData)?*this->PData:v;
+};
+
+operator T* (void) const
+{
+ return (this->PData)?this->PData:&v;
+}
+// --------------------------
 
 
 virtual void Init(void)
@@ -225,6 +266,27 @@ virtual void Init(void)
 {
 
 }
+
+
+
+// Метод записывает значение свойства в поток
+virtual bool Save(UEPtr<USerStorage>  storage, bool simplemode=false)
+{
+ return true;
+};
+
+// Метод читает значение свойства из потока
+virtual bool Load(UEPtr<USerStorage>  storage, bool simplemode=false)
+{
+ return true;
+};
+
+
+virtual void SetData(const T &value)
+{
+ return;
+};
+
 
 };
 

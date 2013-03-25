@@ -41,7 +41,7 @@ class UVBaseDataProperty: public UIProperty
 {
 protected: // Данные
 // Прямой доступ к данным
-T* PData;
+mutable T* PData;
 
 public: // Методы
 // --------------------------
@@ -390,7 +390,7 @@ class UProperty: public UVProperty<T,OwnerT>
 public:
 //protected:
 // Данные
-T v;
+mutable T v;
 
 public:
 // --------------------------

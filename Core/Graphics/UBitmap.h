@@ -478,6 +478,17 @@ inline UBColor& operator () (int ix, int iy) const
 // в пределах канала
 inline UBColor& operator () (int index, UBMColorChannel channel) const
 { return *(Data+ChannelOffset[channel]+index); };
+
+
+inline bool operator == (const UBitmap &value) const
+{
+ return false;
+}
+
+bool operator != (const UBitmap &value) const
+{
+ return true;
+}
 // -----------------------
 
 // -----------------------
