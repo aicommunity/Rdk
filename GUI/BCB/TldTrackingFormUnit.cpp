@@ -8,7 +8,7 @@
 #include "UEngineMonitorFormUnit.h"
 #include "UGEngineControlFormUnit.h"
 #include "VideoOutputFormUnit.h"
-#include "rdk_cpp_initdll.h"
+#include "rdk_initdll.h"
 //#include "RTVSupport.h"
 //#include "RTVXMLSerialize.h"
 //---------------------------------------------------------------------------
@@ -48,9 +48,12 @@ void TTldTrackingForm::AUpdateInterface(void)
   return;
  int num_inputs=1;//RDK::ReadParameterValue<int>(ComponentControlName, "NumInputs");
  LoadVideoInputs(num_inputs, VideoSourceComboBox);
- num_inputs=1;//RDK::ReadParameterValue<int>(ComponentControlName, "NumTrackers");
+
+ const RDK::MDMatrix<double>* points=(const RDK::MDMatrix<double>*)Model_GetComponentPropertyData("MatrixSource", "DoubleMatrix");
+
+ num_inputs=points->GetRows();//RDK::ReadParameterValue<int>(ComponentControlName, "NumTrackers");
  LoadVideoInputs(num_inputs, ObjectReceiverComboBox);
- LoadVideoInputs(num_inputs, ObjectReceiver2ComboBox);
+// LoadVideoInputs(num_inputs, ObjectReceiver2ComboBox);
 }
 
 // Метод, вызываемый после шага расчета
@@ -177,14 +180,16 @@ void __fastcall TTldTrackingForm::SendObjectToButtonClick(TObject *Sender)
  if(ObjectReceiverComboBox->ItemIndex < 0)
   return;
 
- RDK::MDMatrix<double> points(1,4);
- points(0,0)=VideoOutputFrame1->left;
- points(0,1)=VideoOutputFrame1->top;
- points(0,2)=VideoOutputFrame1->width;
- points(0,3)=VideoOutputFrame1->height;
+ const RDK::MDMatrix<double>* old_points=(const RDK::MDMatrix<double>*)Model_GetComponentPropertyData("MatrixSource", "DoubleMatrix");
+ RDK::MDMatrix<double> points(*old_points);//(ObjectReceiverComboBox->Items->Count,4);
+ points.Resize(points.GetRows(),4);
+ points(ObjectReceiverComboBox->ItemIndex,0)=VideoOutputFrame1->left;
+ points(ObjectReceiverComboBox->ItemIndex,1)=VideoOutputFrame1->top;
+ points(ObjectReceiverComboBox->ItemIndex,2)=VideoOutputFrame1->width;
+ points(ObjectReceiverComboBox->ItemIndex,3)=VideoOutputFrame1->height;
 
- RDK::MDVector<double> initial_flags(1);
- initial_flags[0]=1;
+ RDK::MDVector<int> initial_flags(points.GetRows());
+ initial_flags[ObjectReceiverComboBox->ItemIndex]=1;
 
  bool started=UEngineMonitorForm->EngineMonitorFrame->Timer->Enabled;
  if(started)
@@ -196,8 +201,11 @@ void __fastcall TTldTrackingForm::SendObjectToButtonClick(TObject *Sender)
  ResultBmp.ReflectionX();
  Env_Calculate(0);
  Model_SetComponentBitmapInput(ComponentControlName.c_str(), ObjectReceiverComboBox->ItemIndex, &ResultBmp);
- RDK::WriteStateValue(ComponentControlName, "InitialFlags", initial_flags);
- RDK::WriteStateValue("MatrixSource", "DoubleMatrix", points);
+
+ Model_SetComponentPropertyData(ComponentControlName.c_str(), "InitialFlags", &initial_flags);
+ Model_SetComponentPropertyData("MatrixSource", "DoubleMatrix", &points);
+ // RDK::WriteStateValue(ComponentControlName, "InitialFlags", initial_flags);
+// RDK::WriteStateValue("MatrixSource", "DoubleMatrix", points);
  Env_Calculate(ComponentControlName.c_str());
  AAfterCalculate();
  VideoOutputFrame1->UpdateVideo();
@@ -225,8 +233,9 @@ void __fastcall TTldTrackingForm::SaveTrackerDataButtonClick(TObject *Sender)
  filename+="TrackerData";
  filename+=RDK::sntoa(ObjectReceiverComboBox->ItemIndex);
  filename+=".tld";
- RDK::WriteParameterValue(ComponentControlName, "TrackerDataFileName", filename);
- RDK::WriteStateValue(ComponentControlName, "SaveTrackerDataIndex", ObjectReceiverComboBox->ItemIndex);
+ Model_SetComponentPropertyData(ComponentControlName.c_str(), "TrackerDataFileName", &filename);
+ int item_index=ObjectReceiverComboBox->ItemIndex;
+ Model_SetComponentPropertyData(ComponentControlName.c_str(), "SaveTrackerDataIndex", &item_index);
  Env_Calculate(ComponentControlName.c_str());
 }
 //---------------------------------------------------------------------------
@@ -237,8 +246,9 @@ void __fastcall TTldTrackingForm::LoadTrackerDataButtonClick(TObject *Sender)
  filename+="TrackerData";
  filename+=RDK::sntoa(ObjectReceiverComboBox->ItemIndex);
  filename+=".tld";
- RDK::WriteParameterValue(ComponentControlName, "TrackerDataFileName", filename);
- RDK::WriteStateValue(ComponentControlName, "LoadTrackerDataIndex", ObjectReceiverComboBox->ItemIndex);
+ Model_SetComponentPropertyData(ComponentControlName.c_str(), "TrackerDataFileName", &filename);
+ int item_index=ObjectReceiverComboBox->ItemIndex;
+ Model_SetComponentPropertyData(ComponentControlName.c_str(), "LoadTrackerDataIndex", &item_index);
  //UEngineMonitorForm->EngineMonitorFrame->Step1Click(Sender);
 }
 //---------------------------------------------------------------------------

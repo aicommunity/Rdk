@@ -843,9 +843,6 @@ MMatrix<T,Rows,Cols> MMatrix<T,Rows,Cols>::Eye(void)
 template<class T, unsigned Rows, unsigned Cols>
 bool MMatrix<T,Rows,Cols>::operator == (const MMatrix<T,Rows,Cols> &M) const
 {
- if(!Cols || !Rows)
-  return true;
-
  if(!memcmp(Data,M.Data,sizeof(T)*Cols*Rows))
   return true;
  return false;

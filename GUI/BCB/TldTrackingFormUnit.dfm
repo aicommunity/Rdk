@@ -39,9 +39,9 @@ object TldTrackingForm: TTldTrackingForm
     object Label2: TLabel
       Left = 6
       Top = 120
-      Width = 57
+      Width = 79
       Height = 13
-      Caption = 'Tracker #1:'
+      Caption = 'Tracker number:'
     end
     object Label3: TLabel
       Left = 6
@@ -49,6 +49,7 @@ object TldTrackingForm: TTldTrackingForm
       Width = 57
       Height = 13
       Caption = 'Tracker #2:'
+      Visible = False
     end
     object GetFrameButton: TButton
       Left = 6
@@ -107,7 +108,7 @@ object TldTrackingForm: TTldTrackingForm
     end
     object SendObjectToButton: TButton
       Left = 6
-      Top = 94
+      Top = 89
       Width = 171
       Height = 25
       Caption = 'Send selected object to ...'
@@ -129,6 +130,7 @@ object TldTrackingForm: TTldTrackingForm
       Height = 21
       Style = csDropDownList
       TabOrder = 8
+      Visible = False
     end
     object CopyTrackerDataButton: TButton
       Left = 6
@@ -137,6 +139,7 @@ object TldTrackingForm: TTldTrackingForm
       Height = 25
       Caption = 'Copy Tracker Data'
       TabOrder = 9
+      Visible = False
       OnClick = CopyTrackerDataButtonClick
     end
     object SaveTrackerDataButton: TButton
