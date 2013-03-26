@@ -179,21 +179,21 @@ void TUComponentsControlFrame::LoadStatesFromFile(const String &filename)
 
 void __fastcall TUComponentsControlFrame::TakeObjectButtonClick(TObject *Sender)
 {
- int classid=ClassesListFrame->GetSelectedId();
+ std::string classid=AnsiString(ClassesListFrame->GetSelectedName()).c_str();
  std::string stringid=ComponentsListFrame->GetCurrentComponentId();
- Model_AddComponent(stringid.c_str(), classid);
+ Model_AddComponent(stringid.c_str(), classid.c_str());
 
  ComponentsListFrame->UpdateInterface();
 }
 //---------------------------------------------------------------------------
 void __fastcall TUComponentsControlFrame::ReturnObjectButtonClick(TObject *Sender)
 {
- std::string stringcompid=ComponentsListFrame->GetSelectedComponentId();
+ std::string stringcompid=ComponentsListFrame->GetSelectedComponentName();
  if(stringcompid == "..")
   return;
- int compid=StrToInt(stringcompid.c_str());
+// int compid=StrToInt(stringcompid.c_str());
  std::string stringid=ComponentsListFrame->GetCurrentComponentId();
- Model_DelComponent(stringid.c_str(), compid);
+ Model_DelComponent(stringid.c_str(), stringcompid.c_str());
 
  ComponentsListFrame->UpdateInterface();
 }

@@ -508,40 +508,40 @@ void UStorage::ClearObjectsStorage(void)
 // Методы управления описанием классов
 // --------------------------
 // Возвращает XML описание класса
-const UEPtr<UComponentDescription> UStorage::GetClassDescription(const UId &classid) const
+const UEPtr<UComponentDescription> UStorage::GetClassDescription(const std::string &classname) const
 {
- UClassesDescriptionCIterator I=ClassesDescription.find(FindClassName(classid));
+ UClassesDescriptionCIterator I=ClassesDescription.find(classname);
 
  if(I == ClassesDescription.end())
-  throw EClassIdNotExist(classid);
+  throw EClassNameNotExist(classname);
 
  return I->second;
 }
 
 // Устанавливает XML описание класса
 // Класс в хранилище должен существовать
-void UStorage::SetClassDescription(const UId &classid, const UEPtr<UComponentDescription>& description)
+void UStorage::SetClassDescription(const std::string &classname, const UEPtr<UComponentDescription>& description)
 {
- UClassesStorageIterator I=ClassesStorage.find(classid);
+ UClassesStorageIterator I=ClassesStorage.find(FindClassId(classname));
 
  if(I == ClassesStorage.end())
-  throw EClassIdNotExist(classid);
+  throw EClassNameNotExist(classname);
 
- ClassesDescription[FindClassName(classid)]=description;
+ ClassesDescription[classname]=description;
 }
 
 // Сохраняет описание класса в xml
-void UStorage::SaveClassDescription(const UId &classid,
+void UStorage::SaveClassDescription(const std::string &classname,
 										USerStorageXML &xml)
 {
- GetClassDescription(classid)->Save(xml);
+ GetClassDescription(classname)->Save(xml);
 }
 
 // Загружает описание класса из xml
-void UStorage::LoadClassDescription(const UId &classid,
+void UStorage::LoadClassDescription(const std::string &classname,
 										USerStorageXML &xml)
 {
- GetClassDescription(classid)->Load(xml);
+ GetClassDescription(classname)->Load(xml);
 }
 
 // Сохраняет описание всех классов в xml

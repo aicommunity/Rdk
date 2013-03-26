@@ -52,6 +52,9 @@ RDK_LIB_TYPE int RDK_CALL Storage_GetNumClasses(void);
 // Возвращает id классов в хранилище. Память должна быть выделена
 RDK_LIB_TYPE void RDK_CALL Storage_GetClassesList(int *buffer);
 
+// Возвращает имена классов в хранилище в виде строки разделенной запятыми
+RDK_LIB_TYPE const char * RDK_CALL Storage_GetClassesNameList(void);
+
 // Возвращает имя класса по его id.
 RDK_LIB_TYPE const char * RDK_CALL Storage_GetClassName(int id);
 
@@ -75,10 +78,10 @@ RDK_LIB_TYPE int RDK_CALL Storage_CalcNumObjectsById(int classid);
 RDK_LIB_TYPE int RDK_CALL Storage_CalcNumObjectsByName(const char* classname);
 
 // Возвращает описание класса по его id в формате xml
-RDK_LIB_TYPE const char* RDK_CALL Storage_GetClassDescription(int classid);
+RDK_LIB_TYPE const char* RDK_CALL Storage_GetClassDescription(const char* classname);
 
 // Устанавливает описание класса по его id, считывая его из формата xml
-RDK_LIB_TYPE bool RDK_CALL Storage_SetClassDescription(int classid, const char* description);
+RDK_LIB_TYPE bool RDK_CALL Storage_SetClassDescription(const char* classname, const char* description);
 
 // Сохраняет описание всех классов в xml
 RDK_LIB_TYPE const char* RDK_CALL Storage_SaveClassesDescription(void);
@@ -133,7 +136,7 @@ RDK_LIB_TYPE const char * RDK_CALL Env_GetClassLibraryVersion(int index);
 // Перемещает объект в Storage как образец классов.
 // Объект удаляется из модели
 // Возвращает id нового класса в хранилище
-RDK_LIB_TYPE int RDK_CALL Env_CreateClass(const char* stringid);
+RDK_LIB_TYPE int RDK_CALL Env_CreateClass(const char* stringid, const char *classname);
 
 // Метод счета
 // Если stringid == 0 то вычисляет всю модель целиком,
@@ -262,7 +265,7 @@ RDK_LIB_TYPE int RDK_CALL Model_Destroy(void);
 
 // Создает новую модель по имени класса в хранилище
 // Предварительно удаляет существующую модель
-RDK_LIB_TYPE int RDK_CALL Model_Create(const char *classid);
+RDK_LIB_TYPE int RDK_CALL Model_Create(const char *classname);
 
 // Очищает модель
 RDK_LIB_TYPE int RDK_CALL Model_Clear(void);
@@ -273,14 +276,16 @@ RDK_LIB_TYPE bool RDK_CALL Model_Check(void);
 // Проверяет, существует ли в модели компонент с именем stringid)
 RDK_LIB_TYPE bool RDK_CALL Model_CheckComponent(const char* stringid);
 
-// Добавляет в выбранный компонент модели с идентификатором 'stringid' экземпляр компонента с заданным 'classid'
+// Добавляет в выбранный компонент модели с идентификатором 'stringid' экземпляр
+// компонента с заданным 'classname'
 // если stringid - пустая строка, то добавляет в саму модель
 // Возвращает имя компонента в случае успеха
-RDK_LIB_TYPE const char* RDK_CALL Model_AddComponent(const char* stringid, int classid);
+RDK_LIB_TYPE const char* RDK_CALL Model_AddComponent(const char* stringid, const char *classname);
 
-// Удаляет из выбранного компонента модели с идентификатором 'stringid' экземпляр компонента с заданным 'id'
+// Удаляет из выбранного компонента модели с идентификатором 'stringid' экземпляр
+// компонента с заданным 'name'
 // если stringid - пустая строка, то удаляет из самой модели
-RDK_LIB_TYPE int RDK_CALL Model_DelComponent(const char* stringid, int id);
+RDK_LIB_TYPE int RDK_CALL Model_DelComponent(const char* stringid, const char *name);
 
 // Возвращает число всех компонент в заданном компоненте 'stringid'
 // если stringid - пустая строка, то возвращает число всех компонент модели

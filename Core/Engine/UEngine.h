@@ -193,6 +193,9 @@ virtual int Storage_GetNumClasses(void);
 // Возвращает id классов в хранилище. Память должна быть выделена
 virtual void Storage_GetClassesList(int *buffer) const;
 
+// Возвращает имена классов в хранилище в виде строки, разделенной запятыми
+virtual const char* Storage_GetClassesNameList(void) const;
+
 // Возвращает имя класса по его id.
 virtual const char * Storage_GetClassName(int id) const;
 
@@ -216,10 +219,10 @@ virtual int Storage_CalcNumObjectsById(int classid) const;
 virtual int Storage_CalcNumObjectsByName(const char* classname) const;
 
 // Возвращает описание класса по его id в формате xml
-virtual const char* Storage_GetClassDescription(int classid);
+virtual const char* Storage_GetClassDescription(const char* classname);
 
 // Устанавливает описание класса по его id, считывая его из формата xml
-virtual bool Storage_SetClassDescription(int classid, const char* description);
+virtual bool Storage_SetClassDescription(const char* classname, const char* description);
 
 // Сохраняет описание всех классов в xml
 virtual const char* Storage_SaveClassesDescription(void);
@@ -301,8 +304,7 @@ virtual const char * Env_GetClassLibraryVersion(int index);
 
 // Перемещает объект в Storage как образец классов.
 // Объект удаляется из модели
-// Возвращает id нового класса в хранилище
-virtual int Env_CreateClass(const char* stringid);
+virtual int Env_CreateClass(const char* stringid, const char *classname);
 
 // Метод счета
 // Если stringid == 0 то вычисляет всю модель целиком,
@@ -347,9 +349,9 @@ virtual const char* Env_GetCurrentComponentId(void) const;
 // Удаляет модель
 virtual int Model_Destroy(void);
 
-// Создает новую модель по id класса в хранилище
+// Создает новую модель по имени класса в хранилище
 // Предварительно удаляет существующую модель
-virtual int Model_Create(const char *classid);
+virtual int Model_Create(const char *classname);
 
 // Очищает модель
 virtual int Model_Clear(void);
@@ -360,14 +362,16 @@ virtual bool Model_Check(void);
 // Проверяет, существует ли в модели компонент с именем stringid)
 virtual bool Model_CheckComponent(const char* stringid) const;
 
-// Добавляет в выбранный контейнер модели с идентификатором 'stringid' экземпляр контейнера с заданным 'classid'
+// Добавляет в выбранный контейнер модели с идентификатором 'stringid' экземпляр
+// контейнера с заданным 'classname'
 // если stringid - пустая строка, то добавляет в саму модель
 // Возвращает длинное имя компонента в случае успеха
-virtual const char*  Model_AddComponent(const char* stringid, int classid);
+virtual const char*  Model_AddComponent(const char* stringid, const char *classname);
 
-// Удаляет из выбранного контейнера модели с идентификатором 'stringid' экземпляр контейнера с заданным 'id'
+// Удаляет из выбранного контейнера модели с идентификатором 'stringid' экземпляр
+// контейнера с заданным 'name'
 // если stringid - пустая строка, то удаляет из самой модели
-virtual int Model_DelComponent(const char* stringid, int id);
+virtual int Model_DelComponent(const char* stringid, const char *name);
 
 // Возвращает число всех компонент в заданного компоненте 'stringid'
 // если stringid - пустая строка, то возвращает число всех компонент модели

@@ -385,8 +385,8 @@ void __fastcall TUDrawEngineForm::ImageDragDrop(TObject *Sender, TObject *Source
   return;
  DragDropFlag=false;
 
- int classid=UClassesListFrame->GetSelectedId();
- const char* pname=Model_AddComponent(ComponentName.c_str(), classid);
+ std::string classname=AnsiString(UClassesListFrame->GetSelectedId()).c_str();
+ const char* pname=Model_AddComponent(ComponentName.c_str(), classname.c_str());
  if(pname)
  {
   std::string name=pname;

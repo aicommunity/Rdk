@@ -199,18 +199,18 @@ virtual void ClearObjectsStorage(void);
 // Методы управления описанием классов
 // --------------------------
 // Возвращает XML описание класса
-const UEPtr<UComponentDescription> GetClassDescription(const UId &classid) const;
+const UEPtr<UComponentDescription> GetClassDescription(const std::string &classname) const;
 
 // Устанавливает XML описание класса
 // Класс в хранилище должен существовать
-void SetClassDescription(const UId &classid, const UEPtr<UComponentDescription>& description);
+void SetClassDescription(const std::string &classname, const UEPtr<UComponentDescription>& description);
 
 // Сохраняет описание класса в xml
-virtual void SaveClassDescription(const UId &classid,
+virtual void SaveClassDescription(const std::string &classname,
 										USerStorageXML &xml);
 
 // Загружает описание класса из xml
-virtual void LoadClassDescription(const UId &classid,
+virtual void LoadClassDescription(const std::string &classname,
 										USerStorageXML &xml);
 
 // Сохраняет описание всех классов в xml

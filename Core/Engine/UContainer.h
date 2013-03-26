@@ -391,7 +391,7 @@ virtual void DelComponent(const UId &id, bool canfree=true);
 // Если 'canfree' == true - предпринимается попытка вернуть объект в хранилище
 // или удалить его. Иначе объект сохраняется в хранилище в состоянии занят
 // либо повисает, если хранилище не установлено
-void DelComponent(const NameT &name, bool canfree);
+void DelComponent(const NameT &name, bool canfree=true);
 
 // Принудительно удаляет все дочерние компоненты
 void DelAllComponents(void);

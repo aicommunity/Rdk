@@ -281,6 +281,31 @@ void UEngine::Storage_GetClassesList(int *buffer) const
  }
 }
 
+
+// Возвращает имена классов в хранилище в виде строки, разделенной запятыми
+const char* UEngine::Storage_GetClassesNameList(void) const
+{
+ try
+ {
+  TempString="";
+  std::vector<std::string> temp;
+  Storage->GetClassNameList(temp);
+  for(size_t i=0;i<temp.size();i++)
+  {
+   TempString+=temp[i];
+   if(i<temp.size()-1)
+    TempString+=",";
+  }
+  return TempString.c_str();
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
+
  // Возвращает имя класса по его id.
 const char * UEngine::Storage_GetClassName(int id) const
 {
@@ -392,13 +417,13 @@ int UEngine::Storage_CalcNumObjectsByName(const char* classname) const
 }
 
 // Возвращает описание класса по его id в формате xml
-const char* UEngine::Storage_GetClassDescription(int classid)
+const char* UEngine::Storage_GetClassDescription(const char* classname)
 {
  try
  {
   USerStorageXML xml;
-  xml.Create(sntoa(classid));
-  Storage->SaveClassDescription(classid,xml);
+  xml.Create(classname);
+  Storage->SaveClassDescription(classname,xml);
   xml.SelectUp();
   xml.Save(TempString);
  }
@@ -410,13 +435,13 @@ const char* UEngine::Storage_GetClassDescription(int classid)
 }
 
 // Устанавливает описание класса по его id, считывая его из формата xml
-bool UEngine::Storage_SetClassDescription(int classid, const char* description)
+bool UEngine::Storage_SetClassDescription(const char* classname, const char* description)
 {
  try
  {
   USerStorageXML xml;
-  xml.Load(description, sntoa(classid));
-  Storage->LoadClassDescription(classid,xml);
+  xml.Load(description, classname);
+  Storage->LoadClassDescription(classname,xml);
  }
  catch (UException &exception)
  {
@@ -812,8 +837,7 @@ const char * UEngine::Env_GetClassLibraryVersion(int index)
 
 // Перемещает объект в Storage как образец классов.
 // Объект удаляется из модели
-// Возвращает id нового класса в хранилище
-int UEngine::Env_CreateClass(const char* stringid)
+int UEngine::Env_CreateClass(const char* stringid, const char *classname)
 {
  try
  {
@@ -1049,13 +1073,13 @@ int UEngine::Model_Destroy(void)
  return -1;
 }
 
-// Создает новую модель по id класса в хранилище
+// Создает новую модель по имени класса в хранилище
 // Предварительно удаляет существующую модель
-int UEngine::Model_Create(const char *classid)
+int UEngine::Model_Create(const char *classname)
 {
  try
  {
-  if(Environment->CreateModel(Storage->FindClassId(classid)))
+  if(Environment->CreateModel(classname))
    return 0;
  }
  catch (UException &exception)
@@ -1120,16 +1144,17 @@ bool UEngine::Model_CheckComponent(const char* stringid) const
  return false;
 }
 
-// Добавляет в выбранный контейнер модели с идентификатором 'stringid' экземпляр контейнера с заданным 'classid'
+// Добавляет в выбранный контейнер модели с идентификатором 'stringid' экземпляр
+// контейнера с заданным 'classname'
 // если stringid - пустая строка, то добавляет в саму модель
 // Возвращает имя компонента в случае успеха
-const char* UEngine::Model_AddComponent(const char* stringid, int classid)
+const char* UEngine::Model_AddComponent(const char* stringid, const char *classname)
 {
  try
  {
   UEPtr<RDK::UContainer> destcont=FindComponent(stringid);
 
-  UEPtr<RDK::UContainer> cont=dynamic_pointer_cast<RDK::UContainer>(Storage->TakeObject(classid));
+  UEPtr<RDK::UContainer> cont=dynamic_pointer_cast<RDK::UContainer>(Storage->TakeObject(classname));
 
   if(!cont)
    return 0;
@@ -1151,9 +1176,10 @@ const char* UEngine::Model_AddComponent(const char* stringid, int classid)
  return TempString.c_str();
 }
 
-// Удаляет из выбранного контейнера модели с идентификатором 'stringid' экземпляр контейнера с заданным 'id'
+// Удаляет из выбранного контейнера модели с идентификатором 'stringid' экземпляр
+// контейнера с заданным 'name'
 // если stringid - пустая строка, то удаляет из самой модели
-int UEngine::Model_DelComponent(const char* stringid, int id)
+int UEngine::Model_DelComponent(const char* stringid, const char *name)
 {
  try
  {
@@ -1162,7 +1188,7 @@ int UEngine::Model_DelComponent(const char* stringid, int id)
   if(!destcont)
    return -4;
 
-  destcont->DelComponent(id);
+  destcont->DelComponent(name);
  }
  catch (UException &exception)
  {
@@ -2680,7 +2706,7 @@ bool UEngine::Model_GetComponentPropertiesEx(RDK::UContainer* cont, RDK::USerSto
 
   RDK::UContainer::VariableMapCIteratorT I,J;
 
-  UEPtr<UContainerDescription> descr=dynamic_pointer_cast<UContainerDescription>(Storage->GetClassDescription(cont->GetClass()));
+  UEPtr<UContainerDescription> descr=dynamic_pointer_cast<UContainerDescription>(Storage->GetClassDescription(Storage->FindClassName(cont->GetClass())));
 
   I=props.begin();
   J=props.end();

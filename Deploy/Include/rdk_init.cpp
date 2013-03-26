@@ -125,6 +125,12 @@ void RDK_CALL Storage_GetClassesList(int *buffer)
  PEngine->Storage_GetClassesList(buffer);
 }
 
+// Возвращает имена классов в хранилище в виде строки разделенной запятыми
+const char * RDK_CALL Storage_GetClassesNameList(void)
+{
+ return PEngine->Storage_GetClassesNameList();
+}
+
 // Возвращает имя класса по его id.
 const char * RDK_CALL Storage_GetClassName(int id)
 {
@@ -174,15 +180,15 @@ int RDK_CALL Storage_CalcNumObjectsByName(const char* classname)
 }
 
 // Возвращает описание класса по его id в формате xml
-const char* RDK_CALL Storage_GetClassDescription(int classid)
+const char* RDK_CALL Storage_GetClassDescription(const char* classname)
 {
- return PEngine->Storage_GetClassDescription(classid);
+ return PEngine->Storage_GetClassDescription(classname);
 }
 
 // Устанавливает описание класса по его id, считывая его из формата xml
-bool RDK_CALL Storage_SetClassDescription(int classid, const char* description)
+bool RDK_CALL Storage_SetClassDescription(const char* classname, const char* description)
 {
- return PEngine->Storage_SetClassDescription(classid, description);
+ return PEngine->Storage_SetClassDescription(classname, description);
 }
 
 // Сохраняет описание всех классов в xml
@@ -340,10 +346,9 @@ const char * RDK_CALL Env_GetClassLibraryVersion(int index)
 
 // Перемещает объект в Storage как образец классов.
 // Объект удаляется из модели
-// Возвращает id нового класса в хранилище
-int RDK_CALL Env_CreateClass(const char* stringid)
+int RDK_CALL Env_CreateClass(const char* stringid, const char *classname)
 {
- return PEngine->Env_CreateClass(stringid);
+ return PEngine->Env_CreateClass(stringid, classname);
 }
 
 // Метод счета
@@ -430,9 +435,9 @@ int RDK_CALL Model_Destroy(void)
 
 // Создает новую модель по имени класса в хранилище
 // Предварительно удаляет существующую модель
-int RDK_CALL Model_Create(const char *classid)
+int RDK_CALL Model_Create(const char *classname)
 {
- return PEngine->Model_Create(classid);
+ return PEngine->Model_Create(classname);
 }
 
 // Очищает модель
@@ -453,19 +458,21 @@ bool RDK_CALL Model_CheckComponent(const char* stringid)
  return PEngine->Model_CheckComponent(stringid);
 }
 
-// Добавляет в выбранный контейнер модели с идентификатором 'stringid' экземпляр контейнера с заданным 'classid'
+// Добавляет в выбранный контейнер модели с идентификатором 'stringid' экземпляр
+// контейнера с заданным 'classname'
 // если stringid - пустая строка, то добавляет в саму модель
 // Возвращает имя компонента в случае успеха
-const char* RDK_CALL Model_AddComponent(const char* stringid, int classid)
+const char* RDK_CALL Model_AddComponent(const char* stringid, const char *classname)
 {
- return PEngine->Model_AddComponent(stringid, classid);
+ return PEngine->Model_AddComponent(stringid, classname);
 }
 
-// Удаляет из выбранного контейнера модели с идентификатором 'stringid' экземпляр контейнера с заданным 'id'
+// Удаляет из выбранного контейнера модели с идентификатором 'stringid' экземпляр
+// контейнера с заданным 'name'
 // если stringid - пустая строка, то удаляет из самой модели
-int RDK_CALL Model_DelComponent(const char* stringid, int id)
+int RDK_CALL Model_DelComponent(const char* stringid, const char *name)
 {
- return PEngine->Model_DelComponent(stringid, id);
+ return PEngine->Model_DelComponent(stringid, name);
 }
 
 // Возвращает число всех компонент в заданного компоненте 'stringid'
