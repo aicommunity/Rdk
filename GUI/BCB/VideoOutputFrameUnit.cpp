@@ -9,7 +9,7 @@
 #include "TVideoGrabberControlFormUnit.h"
 #include "myrdk.h"
 #include "rdk_cpp_initdll.h"
-#include "TUFileSystem.h"
+//#include "TUFileSystem.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "VidGrab"

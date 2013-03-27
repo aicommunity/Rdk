@@ -308,8 +308,13 @@ virtual void SetData(const T &value)
   *this->PData=value;
 
  if(this->Owner && SetterR)
+ {
   if(!(this->Owner->*SetterR)(value))
    throw UIProperty::EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
+
+  if(this->PData)
+   *this->PData=value;
+ }
 };
 // -----------------------------
 };
@@ -375,8 +380,13 @@ virtual void SetData(const T &value)
   *this->PData=value;
 
  if(this->Owner && Setter)
+ {
   if(!(this->Owner->*Setter)(value))
    throw UIProperty::EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
+
+  if(this->PData)
+   *this->PData=value;
+ }
 };
 // -----------------------------
 };
@@ -477,7 +487,7 @@ virtual void SetData(const T &value)
    while(I != J)
    {
 	if(!(this->Owner->*VSetterR)(*I))
-     throw UIProperty::EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
+	 throw UIProperty::EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
 
 	++I;
    }
@@ -485,7 +495,7 @@ virtual void SetData(const T &value)
   else
   {
    if(this->SetterR && !(this->Owner->*(this->SetterR))(value))
-    throw UIProperty::EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
+	throw UIProperty::EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
   }
  }
 

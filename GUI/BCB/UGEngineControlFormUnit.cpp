@@ -19,7 +19,7 @@
 #include "UDrawEngineFormUnit.h"
 #include "UCreateProjectWizardFormUnit.h"
 #include "UWatchFormUnit.h"
-#include "TUFileSystem.h"
+//#include "TUFileSystem.h"
 #include "rdk_initdll.h"
 #include "myrdk.h"
 
@@ -85,7 +85,7 @@ void __fastcall TUGEngineControlForm::FormShow(TObject *Sender)
  // Грузим шрифты
  std::vector<std::string> font_names;
  std::string font_path=AnsiString(ExtractFilePath(Application->ExeName)+"Fonts\\").c_str();
- FindFilesList(font_path, "*.fnt", true, font_names);
+ RDK::FindFilesList(font_path, "*.fnt", true, font_names);
 
  RDK::ClearClobalFonts();
  RDK::UBitmapFont font;
@@ -623,7 +623,7 @@ void __fastcall TUGEngineControlForm::CopyProject1Click(TObject *Sender)
  if(SelectDirectory("Select project directory", ExtractFilePath(Application->ExeName), chosenDir,TSelectDirExtOpts() << sdNewFolder << sdNewUI))
  {
   SaveProject();
-  CopyDir(AnsiString(ProjectPath).c_str(), AnsiString(chosenDir+"\\").c_str(), "*.*");
+  RDK::CopyDir(AnsiString(ProjectPath).c_str(), AnsiString(chosenDir+"\\").c_str(), "*.*");
  }
 }
 //---------------------------------------------------------------------------

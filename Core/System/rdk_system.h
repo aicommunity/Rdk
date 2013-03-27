@@ -1,24 +1,38 @@
 #ifndef RDK_SYSTEM_H
-#define RDK_SYSTEM_H
+#define RDK_SYSTEM_H   
+
+#include <vector>
+#include <string>
 
 namespace RDK {
 
-// ¬озвращает текущее врем€ в миллисекундах от некоторого фиксированного момента
-// (зависит от реализации)
+/// ¬озвращает текущее врем€ в миллисекундах от некоторого фиксированного момента
+/// (зависит от реализации)
 unsigned long long GetCurrentStartupTime(void);
 
-// ¬ычисл€ет разницу во времени в миллисекундах
+/// ¬ычисл€ет разницу во времени в миллисекундах
 unsigned long long CalcDiffTime(unsigned long long time1, unsigned long long time2);
 
-// ”сыпл€ет процесс на заданное число миллисекунд
+/// ”сыпл€ет процесс на заданное число миллисекунд
 void Sleep(int value);
 
-// —оздает каталог
-// ¬озвращает 0 в случае успеха или если каталог уже существует
-// 1 - если уже существует файл с таким именем
-// 2 - если такой путь не существует
-// 3 - если произошла друга€ ошибка
-int CreateNewDirectory(const char* path);
+/// —оздает каталог
+/// ¬озвращает 0 в случае успеха или если каталог уже существует
+/// 1 - если уже существует файл с таким именем
+/// 2 - если такой путь не существует
+/// 3 - если произошла друга€ ошибка
+int CreateNewDirectory(const char* path);    
+
+/// ѕолучает список файлов или каталогов по заданному пути
+int FindFilesList(const std::string &path, const std::string &mask, bool isfile, std::vector<std::string> &results);
+          
+///  опирует файл
+int CopyFile(const std::string &source_file, const std::string &dest_file);
+                
+///  опирует каталог с содержимым
+int CopyDir(const std::string &source_dir, const std::string &dest_dir, const std::string &mask);
+
+
 
 }
 

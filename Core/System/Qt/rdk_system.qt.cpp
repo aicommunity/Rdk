@@ -39,6 +39,22 @@ int CreateNewDirectory(const char* path)
  return 3;
 }
 
+// Получает список файлов или каталогов по заданному пути
+int FindFilesList(const std::string &path, const std::string &mask, bool isfile, std::vector<std::string> &results)
+{
+ return 0;
+}
+
+int CopyFile(const std::string &source_file, const std::string &dest_file)
+{
+ return 1;
+}
+
+int CopyDir(const std::string &source_dir, const std::string &dest_dir, const std::string &mask)
+{
+ return 0;
+}
+
 }
 #endif
 
