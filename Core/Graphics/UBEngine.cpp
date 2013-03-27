@@ -532,6 +532,12 @@ int UBEngine::LoadPredefinedLibraries(void)
  filter->SetName("PtzTrackerControl");
  bstorage->AddClass(filter,"BPtzTrackerControlBasic");
 
+ filter=new RDK::UBShowRect;
+ filter->Default();
+ filter->SetName("ShowRect");
+ bstorage->AddClass(filter,"UBShowRect");
+
+
  return 0;
 }
 // --------------------------

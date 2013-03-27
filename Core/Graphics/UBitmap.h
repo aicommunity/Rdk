@@ -69,10 +69,10 @@ UColorT operator = (const UColorT &color)
 UColorT operator = (const unsigned color)
 { c=color; return *this; };
 
-bool operator == (const UColorT color)
+bool operator == (const UColorT color) const
 { return (c==color.c)?true:false; };
 
-bool operator != (const UColorT color)
+bool operator != (const UColorT color) const
 { return (c!=color.c)?true:false; };
 
 UBColor& operator [] (int i)
