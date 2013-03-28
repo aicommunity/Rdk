@@ -62,7 +62,7 @@ int GetKalmanSize(void) const
  return Size;
 }
 // Методы доступа к счетчику итераций
-bool SetCalcCount(int value)   // Нужен ли
+bool SetCalcCount(int value)
 {
  if(CalcCount==value)
   return true;
@@ -160,21 +160,6 @@ bool SetPk1(const MDMatrix<double> &matrix)
  Pk1=matrix;
  return true;
 }
-/*
-MDMatrix<double> GetXk1(void) const
-{
- return Xk1;
-}
-
-bool SetXk1(MDMatrix<double> matrix)
-{
- if(matrix==Xk1)
-  return true;
-
- Xk1=matrix;
- return true;
-}
-  */
 
 const MDMatrix<double>& GetUk1(void) const
 {
@@ -232,17 +217,6 @@ bool KalmanResize(int value)
 bool KalmanReset(void)
 {
  CalcCount=0;
- //FM=0.0;
- //BM=0.0;
- //QM=0.0;
- //HM=0.0;
- //RM=0.0;
-
- //Pk1=0.0;
-
- //Xk1=0.0;
- //Uk1=0.0;
- //Z=0.0;
 
  return true;
 }
@@ -264,12 +238,6 @@ MDMatrix<T> CovariationError(const MDMatrix<T> &F, const MDMatrix<T> &Pk1,
 MDMatrix<T> KalmanGain(const MDMatrix<T> &PkL, const MDMatrix<T> &H,
 					 const MDMatrix<T> &R)
 {
- MDMatrix<T> test;
- test.Resize(Size,Size);
- test=(H*PkL*H.Transpose()+R);
- double a=test.Det();
- test=test.Inverse();
-
  return PkL*H.Transpose()*(H*PkL*H.Transpose()+R).Inverse(); // Kk Ошибка на итерации 211
 }
 
