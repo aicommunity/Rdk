@@ -8,7 +8,7 @@
 #include "TUBitmap.h"
 #include "TVideoGrabberControlFormUnit.h"
 #include "myrdk.h"
-#include "rdk_cpp_initdll.h"
+#include "rdk_initdll.h"
 //#include "TUFileSystem.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -178,11 +178,11 @@ bool TVideoOutputFrame::InitByImageSequence(const String &pathname)
 // StartButtonClick(this);
  BmpSequencePathName=AnsiString(pathname+"\\").c_str();
 
- FindFilesList(BmpSequencePathName, "*.bmp", true, BmpSequenceNames);
+ RDK::FindFilesList(BmpSequencePathName, "*.bmp", true, BmpSequenceNames);
  if(BmpSequenceNames.size() == 0)
-  FindFilesList(BmpSequencePathName, "*.jpg", true, BmpSequenceNames);
+  RDK::FindFilesList(BmpSequencePathName, "*.jpg", true, BmpSequenceNames);
  if(BmpSequenceNames.size() == 0)
-  FindFilesList(BmpSequencePathName, "*.jpeg", true, BmpSequenceNames);
+  RDK::FindFilesList(BmpSequencePathName, "*.jpeg", true, BmpSequenceNames);
 
  CurrentBmpSequenceIndex=0;
 
@@ -472,7 +472,8 @@ void TVideoOutputFrame::SendToComponentParameter(const std::string &stringid, co
   return;
 
  const std::vector<RDK::MVector<double,2> > &points=GeometryGraphics.Geometry(figure_index).GetVertices();
- RDK::WriteParameterValue(stringid, parameter_name, points);
+ Model_SetComponentPropertyData(stringid.c_str(), parameter_name.c_str(), &points);
+// RDK::WriteParameterValue(stringid, parameter_name, points);
 }
 
 // Отправляет набор точек в переменную состояния компонента
@@ -482,21 +483,24 @@ void TVideoOutputFrame::SendToComponentState(const std::string &stringid, const 
   return;
 
  const std::vector<RDK::MVector<double,2> > &points=GeometryGraphics.Geometry(figure_index).GetVertices();
- RDK::WriteStateValue(stringid, state_name, points);
+ Model_SetComponentPropertyData(stringid.c_str(), state_name.c_str(), &points);
+// RDK::WriteStateValue(stringid, state_name, points);
 }
 
 // Считывает набор точек из параметра компонента
 void TVideoOutputFrame::ReceiveFromComponentParameter(const std::string &stringid, const std::string &parameter_name, int figure_index)
 {
  std::vector<RDK::MVector<double,2> > points;
- RDK::ReadParameterValue(stringid, parameter_name, points);
+ points=*(const std::vector<RDK::MVector<double,2> > *)Model_GetComponentPropertyData(stringid.c_str(), parameter_name.c_str());
+// RDK::ReadParameterValue(stringid, parameter_name, points);
 }
 
 // Считывает набор точек из переменной состояния компонента
 void TVideoOutputFrame::ReceiveFromComponentState(const std::string &stringid, const std::string &state_name, int figure_index)
 {
  std::vector<RDK::MVector<double,2> > points;
- RDK::ReadStateValue(stringid, state_name, points);
+ points=*(const std::vector<RDK::MVector<double,2> > *)Model_GetComponentPropertyData(stringid.c_str(), state_name.c_str());
+// RDK::ReadStateValue(stringid, state_name, points);
 }
 // -------------------------
 

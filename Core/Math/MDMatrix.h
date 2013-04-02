@@ -129,6 +129,9 @@ MDMatrix<T>& Normalize(void);
 // Нулевая матрица
 MDMatrix<T> Zero(void);
 
+// Сбрасывает текущую матрицу в 0
+void ToZero(void);
+
 // Единичная матрица
 MDMatrix<T> Eye(void);
 // --------------------------
@@ -768,6 +771,15 @@ MDMatrix<T> MDMatrix<T>::Zero(void)
  res=T(0);
 
  return res;
+}
+
+// Сбрасывает текущую матрицу в 0
+template<class T>
+void MDMatrix<T>::ToZero(void)
+{
+ T* p=Data;
+  for(int i=0;i<Rows*Cols;i++)
+   *p++=T(0);
 }
 
 // Единичная матрица

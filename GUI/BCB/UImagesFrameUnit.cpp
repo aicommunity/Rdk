@@ -451,10 +451,13 @@ void __fastcall TUImagesFrame::DrawGridDblClick(TObject *Sender)
 {
   if(DrawGrid->Col < 0 || DrawGrid->Row <0)
    return;
+  Graphics::TBitmap * bmp=Images[DrawGrid->Col][DrawGrid->Row]->Picture->Bitmap;
+
+  if(bmp && (bmp->Width == 0 || bmp->Height == 0))
+   return;
   DrawGrid->Visible=false;
   ScrollBox1->Visible=true;
  // FullImage->Align=alClient;
-  Graphics::TBitmap * bmp=Images[DrawGrid->Col][DrawGrid->Row]->Picture->Bitmap;
   FullImage->Width=bmp->Width;
   FullImage->Height=bmp->Height;
   FullImage->Picture->Bitmap->Assign(bmp);
