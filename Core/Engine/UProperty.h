@@ -209,7 +209,7 @@ UVBaseProperty(OwnerT * const owner) :
 }
 
 UVBaseProperty(OwnerT * const owner, T * const pdata) :
-  Owner(owner), UVBaseDataProperty<T>(pdata)
+  UVBaseDataProperty<T>(pdata), Owner(owner)
 {
    if(Owner)
 	Variable=Owner->FindPropertyVariable(this);

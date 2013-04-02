@@ -152,20 +152,20 @@ bool operator != (const MDMatrix<T> &M) const;
 // --------------------------
 template<class T>
 MDMatrix<T>::MDMatrix(void)
-: Rows(0),Cols(0),Data(0)
+: Data(0),Rows(0),Cols(0)
 {
 };
 
 template<class T>
 MDMatrix<T>::MDMatrix(int rows, int cols)
-: Rows(0),Cols(0),Data(0)
+: Data(0),Rows(0),Cols(0)
 {
 	Resize(rows, cols);
 };
 
 template<class T>
 MDMatrix<T>::MDMatrix(int rows, int cols, T defvalue)
-: Rows(0),Cols(0),Data(0)
+: Data(0),Rows(0),Cols(0)
 {
  Resize(rows, cols);
  for(int i=0;i<Rows*Cols;i++)
@@ -174,14 +174,14 @@ MDMatrix<T>::MDMatrix(int rows, int cols, T defvalue)
 
 template<class T>
 MDMatrix<T>::MDMatrix(const MDMatrix<T> &copy)
-: Rows(0),Cols(0),Data(0)
+: Data(0),Rows(0),Cols(0)
 {
  *this=copy;
 };
 
 template<class T>
 MDMatrix<T>::MDMatrix(const int rows, const  int cols, const T* data)
-: Rows(0),Cols(0),Data(0)
+: Data(0),Rows(0),Cols(0)
 {
  Assign(rows,cols,data);
 };

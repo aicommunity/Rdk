@@ -1175,25 +1175,25 @@ unsigned char* RDK_CALL Env_GetOutputImageY8(int index)
 // ¬озвращает указатель на выход с индексом 'index' компонента 'id'
 // возвращаемое значение имеет фактический тип RDK::MDMatrix*
 // если выход не содержит данных такого типа, то возвращает 0
-const /* RDK::MDMatrix* */void* const RDK_CALL Model_GetComponentOutputAsMatrix(const char *stringid, int index)
+const /* RDK::MDMatrix* */void* RDK_CALL Model_GetComponentOutputAsMatrix(const char *stringid, int index)
 {
  return (PEngine)->Model_GetComponentOutputAsMatrix(stringid, index);
 }
 
 // ¬озвращает указатель на выход с индексом 'index' компонента 'id'
-const /* RDK::UBitmap* */ void* const RDK_CALL Model_GetComponentOutput(const char *stringid, int index)
+const /* RDK::UBitmap* */ void* RDK_CALL Model_GetComponentOutput(const char *stringid, int index)
 {
  return RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Model_GetComponentOutput(stringid, index);
 }
 
 // ¬озвращает указатель на выход с индексом 'index' компонента 'id'
-const /*RDK::UBitmap* */ void* const RDK_CALL Model_GetComponentBitmapOutput(const char *stringid, int index)
+const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapOutput(const char *stringid, int index)
 {
  return RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Model_GetComponentBitmapOutput(stringid, index);
 }
 
 // ¬озвращает указатель на вход с индексом 'index' компонента 'id'
-const /*RDK::UBitmap* */ void* const RDK_CALL Model_GetComponentBitmapInput(const char *stringid, int index)
+const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapInput(const char *stringid, int index)
 {
  return RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Model_GetComponentBitmapInput(stringid, index);
 }

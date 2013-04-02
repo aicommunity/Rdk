@@ -3184,7 +3184,7 @@ int UEngine::Model_SaveComponentDrawInfo(RDK::UNet* cont, RDK::USerStorageXML *s
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
 // возвращаемое значение имеет фактический тип RDK::MDMatrix*
 // если выход не содержит данных такого типа, то возвращает 0
-const /* RDK::MDMatrix* */void* const UEngine::Model_GetComponentOutputAsMatrix(const char *stringid, int index)
+const /* RDK::MDMatrix* */void* UEngine::Model_GetComponentOutputAsMatrix(const char *stringid, int index)
 {
  try
  {

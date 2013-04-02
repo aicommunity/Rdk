@@ -175,17 +175,17 @@ bool operator ! (void) const
 
 T* operator -> (void) const
 {
- return (this->PData)?this->PData:&v;
+ return (this->PData)?this->PData:&this->v;
 };
 
 T& operator * (void)
 {
- return (this->PData)?*this->PData:v;
+ return (this->PData)?*this->PData:this->v;
 };
 
 operator T* (void) const
 {
- return (this->PData)?this->PData:&v;
+ return (this->PData)?this->PData:&this->v;
 }
 // --------------------------
 
@@ -345,7 +345,7 @@ UPropertyOutputBase(const string &name, OwnerT * const owner, int min_range, int
 // --------------------------
 // Методы управления указателем
 // --------------------------
-T* const operator -> (void)
+T* operator -> (void)
 {
  return &this->v;
 };
@@ -355,7 +355,7 @@ T& operator * (void)
  return this->v;
 };
 
-operator T* const (void)
+operator T* (void)
 {
  return &this->v;
 }

@@ -651,7 +651,7 @@ long long Model_GetInterstepsInterval(const char *stringid) const;
 // ¬озвращает указатель на выход с индексом 'index' компонента 'id'
 // возвращаемое значение имеет фактический тип RDK::MDMatrix*
 // если выход не содержит данных такого типа, то возвращает 0
-const /* RDK::MDMatrix* */void* const Model_GetComponentOutputAsMatrix(const char *stringid, int index);
+const /* RDK::MDMatrix* */void* Model_GetComponentOutputAsMatrix(const char *stringid, int index);
 
 // --------------------------
 // ћетоды управлени€ исключени€ми

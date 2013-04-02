@@ -81,9 +81,9 @@ USerStorageXML& operator >> (USerStorageXML& storage, MMatrix<T,Rows,Cols> &data
  std::string rvalue=storage.GetNodeText();
  std::stringstream stream(storage.GetNodeText().c_str());
 
- for(int i=0;i<Rows;i++)
+ for(unsigned i=0;i<Rows;i++)
  {
-  for(int j=0;j<Cols;j++)
+  for(unsigned j=0;j<Cols;j++)
   {
    stream>>data.Data[i][j];
   }

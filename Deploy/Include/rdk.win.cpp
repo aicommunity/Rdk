@@ -5,4 +5,5 @@
 #include "rdk_exceptions.win.cpp"
 //#include "../../Core/System/Win/rdk_system.win.cpp"
 #include "rdk.cpp"
-
+#include "../../Core/Engine/Libraries/UELibraries.cpp"
+#include "../../Core/Graphics/Libraries/Libraries.cpp"
