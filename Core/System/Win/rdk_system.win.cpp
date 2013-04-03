@@ -72,9 +72,9 @@ int FindFilesList(const std::string &path, const std::string &mask, bool isfile,
  {
   do
   {      
-   samplefilename=AnsiString(ExtractFileName(finddata.cFileName)).c_str();
-   string::size_t i=samplefilename.find_last_of("\\/");
-   if(i != string::npos)
+ //  samplefilename=AnsiString(ExtractFileName(finddata.cFileName)).c_str();
+   std::string::size_type i=samplefilename.find_last_of("\\/");
+   if(i != std::string::npos)
     samplefilename.erase(0,i+1);
 
    if(samplefilename != "." && samplefilename != ".." && ((!isfile && (finddata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) || isfile)))
