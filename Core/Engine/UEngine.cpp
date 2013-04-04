@@ -3393,6 +3393,7 @@ int UEngine::LoadPredefinedLibraries(void)
  ULibrary::AddUniqueLibrary(&PredictionLibrary);
  ULibrary::AddUniqueLibrary(&SourceLibrary);
  ULibrary::AddUniqueLibrary(&NoiseLibrary);
+ ULibrary::AddUniqueLibrary(&AriphmeticLibrary);
 
  const std::list<ULibrary*>& lst=ULibrary::GetLibraryList();
  LibrariesList=lst;
