@@ -68,10 +68,29 @@ bool UBPtzCameraData::operator != (const UBPtzCameraData &copy)
  return !((*this) == copy);
 }
 
+
+/// ¬озвращает угол зрени€ в градусах по углу в попуга€х
+double UBPtzCameraData::CalcZoomAngle(double zoom)
+{
+ return ((zoom-MinZoom)*(MinZoomAngle-MaxZoomAngle))/(MaxZoom-MinZoom)+MaxZoomAngle;
+}
+
+/// ¬озвращает угол зрени€ в попуга€х по углу в градусах
+double UBPtzCameraData::CalcZoom(double zoom)
+{
+ //
+ double coeff=(MinZoom-MaxZoom)/(MinZoomAngle-MaxZoomAngle);
+ double res=zoom-min(MinZoomAngle,MaxZoomAngle);
+ res*=coeff;
+ res+=min(MinZoom,MaxZoom);
+ return res;
+// return ((zoom-MaxZoomAngle)*(MaxZoom-MinZoom))/(MinZoomAngle-MaxZoomAngle)+MinZoom;
+}
+
 /// ¬озвращает текущий угол зрени€ в градусах
 double UBPtzCameraData::CalcCurrentZoomAngle(void)
 {
- return ((Zoom-MinZoom)*(MaxZoomAngle-MinZoomAngle))/(MaxZoom-MinZoom)+MinZoomAngle;
+ return CalcZoomAngle(Zoom);
 }
 
 void UBPtzCameraData::ZeroPosition(void)
@@ -118,6 +137,8 @@ void UBPtzCameraData::MoveTilt(double shift, double speed)
 /// «уммирует камеру в зависимости от знака shift
 void UBPtzCameraData::MoveZoom(double shift, double speed)
 {
+ double zoom_sign=(shift<0)?-1:1;
+ shift=CalcZoom(fabs(shift)+min(MinZoomAngle,MaxZoomAngle));
  if(speed>=0)
  {
   ZoomSpeed=speed;
@@ -125,9 +146,17 @@ void UBPtzCameraData::MoveZoom(double shift, double speed)
   ZoomSpeed=(ZoomSpeed>MaxZoomSpeed)?MaxZoomSpeed:ZoomSpeed;
  }
 
- Zoom+=shift;
- Zoom=(Zoom<MinZoom)?MinZoom:Zoom;
- Zoom=(Zoom>MaxZoom)?MaxZoom:Zoom;
+ Zoom+=shift*zoom_sign;
+ if(MinZoom<MaxZoom)
+ {
+  Zoom=(Zoom<MinZoom)?MinZoom:Zoom;
+  Zoom=(Zoom>MaxZoom)?MaxZoom:Zoom;
+ }
+ else
+ {
+  Zoom=(Zoom>MinZoom)?MinZoom:Zoom;
+  Zoom=(Zoom<MaxZoom)?MaxZoom:Zoom;
+ }
 }
 
 void UBPtzCameraData::MoveUp(double shift, double speed)
@@ -159,6 +188,13 @@ void UBPtzCameraData::ZoomOut(double shift, double speed)
 {
  MoveZoom(shift,speed);
 }
+
+void UBPtzCameraData::ContinuesMove(double pan_speed, double tilt_speed)
+{
+ PanSpeed=pan_speed;
+ TiltSpeed=tilt_speed;
+}
+
 
 UBPtzCameraData& UBPtzCameraData::operator = (const UBPtzCameraInfo &info)
 {
