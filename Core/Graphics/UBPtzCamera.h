@@ -87,6 +87,12 @@ virtual ~UBPtzCameraData(void);
 
 std::string& GenerateCanonVBM40Command(const std::string &addr, std::string &result);
 
+/// ¬озвращает угол зрени€ в градусах по углу в попуга€х
+double CalcZoomAngle(double zoom);
+
+/// ¬озвращает угол зрени€ в попуга€х по углу в градусах
+double CalcZoom(double zoom);
+
 /// ¬озвращает текущий угол зрени€ в градусах
 double CalcCurrentZoomAngle(void);
 
@@ -114,6 +120,8 @@ virtual void MoveRight(double shift, double speed=-1);
 virtual void ZoomIn(double shift, double speed=-1);
 
 virtual void ZoomOut(double shift, double speed=-1);
+
+virtual void ContinuesMove(double pan_speed, double tilt_speed);
 
 bool operator == (const UBPtzCameraData &copy);
 bool operator != (const UBPtzCameraData &copy);
