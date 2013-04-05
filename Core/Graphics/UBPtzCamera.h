@@ -38,6 +38,12 @@ double MinZoom;
 /// ћаксимальное значение зума
 double MaxZoom;
 
+/// ћинимальное значение зума в градусах
+double MinZoomAngle;
+
+/// ћаксимальное значение зума в градусах
+double MaxZoomAngle;
+
 /// ћинимальное значение скорости зума
 double MinZoomSpeed;
 
@@ -80,6 +86,9 @@ UBPtzCameraData(void);
 virtual ~UBPtzCameraData(void);
 
 std::string& GenerateCanonVBM40Command(const std::string &addr, std::string &result);
+
+/// ¬озвращает текущий угол зрени€ в градусах
+double CalcCurrentZoomAngle(void);
 
 /// ”станавливает камеру в нулевую позицию с минимальным зумом
 /// ”станавливает максимальные скорости перемещени€

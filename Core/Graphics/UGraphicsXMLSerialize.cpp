@@ -614,6 +614,14 @@ USerStorageXML& operator << (USerStorageXML& storage, const UBPtzCameraInfo &dat
  operator << (storage,data.MaxZoom);
  storage.SelectUp();
 
+ storage.AddNode("MinZoomAngle");
+ operator << (storage,data.MinZoomAngle);
+ storage.SelectUp();
+
+ storage.AddNode("MaxZoomAngle");
+ operator << (storage,data.MaxZoomAngle);
+ storage.SelectUp();
+
  storage.AddNode("MinZoomSpeed");
  operator << (storage,data.MinZoomSpeed);
  storage.SelectUp();
@@ -675,6 +683,16 @@ USerStorageXML& operator >> (USerStorageXML& storage, UBPtzCameraInfo &data)
  if(!storage.SelectNode("MaxZoom"))
   return storage;
  operator >> (storage,data.MaxZoom);
+ storage.SelectUp();
+
+ if(!storage.SelectNode("MinZoomAngle"))
+  return storage;
+ operator >> (storage,data.MinZoomAngle);
+ storage.SelectUp();
+
+ if(!storage.SelectNode("MaxZoomAngle"))
+  return storage;
+ operator >> (storage,data.MaxZoomAngle);
  storage.SelectUp();
 
  if(!storage.SelectNode("MinZoomSpeed"))

@@ -68,6 +68,12 @@ bool UBPtzCameraData::operator != (const UBPtzCameraData &copy)
  return !((*this) == copy);
 }
 
+/// ¬озвращает текущий угол зрени€ в градусах
+double UBPtzCameraData::CalcCurrentZoomAngle(void)
+{
+ return ((Zoom-MinZoom)*(MaxZoomAngle-MinZoomAngle))/(MaxZoom-MinZoom)+MinZoomAngle;
+}
+
 void UBPtzCameraData::ZeroPosition(void)
 {
  Pan=0;
@@ -166,6 +172,8 @@ UBPtzCameraData& UBPtzCameraData::operator = (const UBPtzCameraInfo &info)
  MaxTiltSpeed=info.MaxTiltSpeed;
  MinZoom=info.MinZoom;
  MaxZoom=info.MaxZoom;
+ MinZoomAngle=info.MinZoomAngle;
+ MaxZoomAngle=info.MaxZoomAngle;
  MinZoomSpeed=info.MinZoomSpeed;
  MaxZoomSpeed=info.MaxZoomSpeed;
 
