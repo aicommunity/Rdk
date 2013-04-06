@@ -72,7 +72,9 @@ bool UBPtzCameraData::operator != (const UBPtzCameraData &copy)
 /// ¬озвращает угол зрени€ в градусах по углу в попуга€х
 double UBPtzCameraData::CalcZoomAngle(double zoom)
 {
- return ((zoom-MinZoom)*(MinZoomAngle-MaxZoomAngle))/(MaxZoom-MinZoom)+MaxZoomAngle;
+ if(fabs(MaxZoom-MinZoom)>0)
+  return ((zoom-MinZoom)*(MinZoomAngle-MaxZoomAngle))/(MaxZoom-MinZoom)+MaxZoomAngle;
+ return zoom;
 }
 
 /// ¬озвращает угол зрени€ в попуга€х по углу в градусах
