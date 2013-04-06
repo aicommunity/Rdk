@@ -50,9 +50,9 @@ UBAEnvironment* UBEngine::GetEnvironment(void)
  return dynamic_pointer_cast<UBAEnvironment>(Environment);
 }
 
-UBAbstract* UBEngine::GetModel(void)
+UNet* UBEngine::GetModel(void)
 {
- return dynamic_pointer_cast<UBAbstract>(Environment->GetModel());
+ return dynamic_pointer_cast<UNet>(Environment->GetModel());
 }
 // --------------------------
 

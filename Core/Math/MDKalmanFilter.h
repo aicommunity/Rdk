@@ -17,8 +17,11 @@ public:
 
 
 protected: // Параметры
-int Size; // Размерность матриц
-int CalcCount; // Счетчик итераций
+// Размерность матриц
+int Size;
+
+// Счетчик итераций
+int CalcCount;
 
 public: // Данные
 

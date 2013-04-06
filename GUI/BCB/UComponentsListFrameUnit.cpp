@@ -867,6 +867,7 @@ void __fastcall TUComponentsListFrame::GUI1Click(TObject *Sender)
  {
   I->second->SetComponentControlName(SelectedComponentName);
   I->second->Show();
+  I->second->UpdateInterface(true);
  }
 }
 //---------------------------------------------------------------------------
