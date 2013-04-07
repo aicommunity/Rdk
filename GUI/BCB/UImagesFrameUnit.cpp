@@ -51,11 +51,13 @@ void TUImagesFrame::SetNumCells(int width, int height)
  Images.resize(width);
  StringIds.resize(width);
  ComponentIndexes.resize(width);
+ MouseClickComponents.resize(width);
  for(size_t i=0;i<Images.size();i++)
  {
   Images[i].resize(height);
   StringIds[i].resize(height);
   ComponentIndexes[i].resize(height);
+  MouseClickComponents[i].resize(height);
   for(size_t j=0;j<Images[i].size();j++)
    Images[i][j]=new TImage(this);
  }
@@ -327,6 +329,9 @@ void TUImagesFrame::ASaveParameters(RDK::USerStorageXML &xml)
    std::string name=RDK::sntoa(int(i))+std::string("_")+RDK::sntoa(int(j));
    xml.WriteString(std::string("CellName")+name,StringIds[i][j].c_str());
    xml.WriteInteger(std::string("CellIndex")+name,ComponentIndexes[i][j]);
+
+   xml.WriteString(std::string("CellMouseClickComponent")+name,MouseClickComponents[i][j].first.c_str());
+   xml.WriteString(std::string("CellMouseClickProperty")+name,MouseClickComponents[i][j].second.c_str());
   }
  }
 
@@ -351,6 +356,9 @@ void TUImagesFrame::ALoadParameters(RDK::USerStorageXML &xml)
    std::string name=RDK::sntoa(int(i))+std::string("_")+RDK::sntoa(int(j));
    StringIds[i][j]=xml.ReadString(std::string("CellName")+name,"");
    ComponentIndexes[i][j]=xml.ReadInteger(std::string("CellIndex")+name,0);
+
+   MouseClickComponents[i][j].first=xml.ReadString(std::string("CellMouseClickComponent")+name,"");
+   MouseClickComponents[i][j].second=xml.ReadString(std::string("CellMouseClickProperty")+name,"");
   }
  }
 
@@ -503,6 +511,35 @@ void __fastcall TUImagesFrame::FullImageMouseDown(TObject *Sender, TMouseButton 
   presIm=true;
   x2=X;
   y2=Y;
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TUImagesFrame::DrawGridClick(TObject *Sender)
+{
+ if(MouseClickComponents.empty() || MouseClickComponents[0].empty())
+  return;
+
+ if(DrawGrid->Col<0 || DrawGrid->Row<0)
+  return;
+
+ // Заглушка!!
+ MouseClickComponents[0][0].first="Tracker";
+ MouseClickComponents[0][0].second="MouseClickPoint";
+
+ if(Model_CheckComponent(MouseClickComponents[DrawGrid->Col][DrawGrid->Row].first.c_str()))
+ {
+  RDK::UBPoint point;
+  TRect rect=DrawGrid->CellRect(DrawGrid->Col, DrawGrid->Row);
+  TPoint tpoint=::Mouse->CursorPos;
+  tpoint=ScreenToClient(tpoint);
+
+  //DrawGrid->MouseCoord()
+
+  point.X=double(tpoint.X)*double(Images[DrawGrid->Col][DrawGrid->Row]->Picture->Bitmap->Width)/double(rect.Width());
+  point.Y=double(tpoint.Y)*double(Images[DrawGrid->Col][DrawGrid->Row]->Picture->Bitmap->Height)/double(rect.Height());
+  Model_SetComponentPropertyData(MouseClickComponents[DrawGrid->Col][DrawGrid->Row].first.c_str(), MouseClickComponents[DrawGrid->Col][DrawGrid->Row].second.c_str(), &point);
+ }
 }
 //---------------------------------------------------------------------------
 

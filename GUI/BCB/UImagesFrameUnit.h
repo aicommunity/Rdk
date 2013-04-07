@@ -60,6 +60,7 @@ __published:    // IDE-managed Components
 	void __fastcall FullImageMouseMove(TObject *Sender, TShiftState Shift, int X, int Y);
 	void __fastcall FullImageMouseDown(TObject *Sender, TMouseButton Button, TShiftState Shift,
           int X, int Y);
+	void __fastcall DrawGridClick(TObject *Sender);
 
 
 
@@ -80,6 +81,9 @@ std::vector<std::vector<std::string> > StringIds;
 
 // Массив индексов выходов компонент, связанных с изображениями
 std::vector<std::vector<int> > ComponentIndexes;
+
+// Массив имен компонент и их свойств, связанных с кликом мыши
+std::vector<std::vector<std::pair<std::string,std::string> > > MouseClickComponents;
 
 // Флаг отражения вокруг оси X изображений при выводе
 bool ReflectionXFlag;

@@ -50,6 +50,9 @@ double MinZoomSpeed;
 /// Максимальное значение скорости зума
 double MaxZoomSpeed;
 
+/// Минимальный интервал времени между командами (мс)
+int MinCommandDelay;
+
 public: // Методы
 /// Инициализация
 void InitCanonVBM40(void);

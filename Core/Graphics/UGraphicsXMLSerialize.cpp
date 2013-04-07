@@ -630,6 +630,10 @@ USerStorageXML& operator << (USerStorageXML& storage, const UBPtzCameraInfo &dat
  operator << (storage,data.MaxZoomSpeed);
  storage.SelectUp();
 
+ storage.AddNode("MinCommandDelay");
+ operator << (storage,data.MinCommandDelay);
+ storage.SelectUp();
+
  return storage;
 }
 
@@ -703,6 +707,11 @@ USerStorageXML& operator >> (USerStorageXML& storage, UBPtzCameraInfo &data)
  if(!storage.SelectNode("MaxZoomSpeed"))
   return storage;
  operator >> (storage,data.MaxZoomSpeed);
+ storage.SelectUp();
+
+ if(!storage.SelectNode("MinCommandDelay"))
+  return storage;
+ operator >> (storage,data.MinCommandDelay);
  storage.SelectUp();
 
  return storage;

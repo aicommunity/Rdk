@@ -147,6 +147,12 @@ void UBPtzCameraData::MoveZoom(double shift, double speed)
   ZoomSpeed=(ZoomSpeed<MinZoomSpeed)?MinZoomSpeed:ZoomSpeed;
   ZoomSpeed=(ZoomSpeed>MaxZoomSpeed)?MaxZoomSpeed:ZoomSpeed;
  }
+ else
+ {
+  ZoomSpeed=speed;
+  ZoomSpeed=(ZoomSpeed<MinZoomSpeed)?MinZoomSpeed:ZoomSpeed;
+  ZoomSpeed=(ZoomSpeed>MaxZoomSpeed)?MaxZoomSpeed:ZoomSpeed;
+ }
 
  Zoom+=shift*zoom_sign;
  if(MinZoom<MaxZoom)
@@ -214,6 +220,7 @@ UBPtzCameraData& UBPtzCameraData::operator = (const UBPtzCameraInfo &info)
  MaxZoomAngle=info.MaxZoomAngle;
  MinZoomSpeed=info.MinZoomSpeed;
  MaxZoomSpeed=info.MaxZoomSpeed;
+ MinCommandDelay=info.MinCommandDelay;
 
  return *this;
 }

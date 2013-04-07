@@ -20,6 +20,7 @@ inherited UImagesFrame: TUImagesFrame
     ParentDoubleBuffered = False
     PopupMenu = PopupMenu
     TabOrder = 0
+    OnClick = DrawGridClick
     OnDblClick = DrawGridDblClick
     OnDrawCell = DrawGridDrawCell
   end
