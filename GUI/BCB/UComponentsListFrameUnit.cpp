@@ -628,8 +628,8 @@ void __fastcall TUComponentsListFrame::StringGridDblClick(TObject *Sender)
   return;
 
  int num_components=Model_GetNumComponents(GetSelectedComponentLongName().c_str());
- if(!num_components)
-  return;
+// if(!num_components)
+//  return;
 
  if(StringGrid->Row == 1 && StringGrid->Cells[0][StringGrid->Row] == "..")
  {

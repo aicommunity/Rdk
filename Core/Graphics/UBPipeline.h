@@ -18,33 +18,11 @@ See file license.txt for more information
 namespace RDK {
 
 // Класс конвеера обработки  изображений
-class UBPipeline: public UBAModel
+class UBPipeline: public UBAbstract
 {
 protected: // Типы данных
-typedef UBAbstract* PUBAbstract;
-protected: // Данные
 
 protected: // Временные переменные
-// Массив промежуточных изображений
-UBitmap *InputBuffer,*OutputBuffer;
-
-// Размер массива промежуточных изображений
-int InputBufferSize;
-int OutputBufferSize;
-
-// Реальный размер массива
-int InputBufferRealSize;
-int OutputBufferRealSize;
-
-// Промежуточные массивы входов и выходов
-PUBitmap *InputArray;
-PUBitmap *OutputArray;
-
-// Размеры промежуточных массивов входов и выходов
-int InputArraySize, OutputArraySize;
-
-// Реальные размеры промежуточных массивов входов и выходов
-int InputArrayRealSize, OutputArrayRealSize;
 
 public: // Методы
 // --------------------------
@@ -98,28 +76,6 @@ virtual bool ADelComponent(UEPtr<UContainer> comp);
 // Скрытые методы счета
 // ---------------------
 protected:
-// Расширяет размер буфера изображений на заданную величину
-void ExpandInputBuffer(int size);
-void ExpandOutputBuffer(int size);
-void ExpandImageBuffer(UBitmap* &buffer, int &currentsize, int &realsize, int newsize);
-
-// Расширяет размер промежуточного массива входов
-void ExpandInputArray(int size);
-void ExpandArray(PUBitmap* &array, int &currentsize, int &realsize, int newsize);
-
-// Расширяет размер промежуточного массива выходов
-void ExpandOutputArray(int size);
-
-// Расчитывает и устанавливается для конвеера минимально необходимое числов входов и выходов
-// если размер входа и выхода конвеера недостаточен
-void CalcNumIOs(void);
-// ---------------------
-
-// ---------------------
-// Операторы
-// ---------------------
-public:
-UBAbstract* operator [] (int index);
 // ---------------------
 
 };

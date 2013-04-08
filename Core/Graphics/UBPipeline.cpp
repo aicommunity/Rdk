@@ -24,64 +24,10 @@ namespace RDK {
 // --------------------------
 UBPipeline::UBPipeline(void)
 {
- // Массив промежуточных изображений
- InputBuffer=0;
- OutputBuffer=0;
-
- // Размер массива промежуточных изображений
- InputBufferSize=0;
- OutputBufferSize=0;
-
- // Реальный размер массива
- InputBufferRealSize=0;
- OutputBufferRealSize=0;
-
- // Промежуточные массивы входов и выходов
- InputArray=0;
- OutputArray=0;
-
- // Размеры промежуточных массивов входов и выходов
- InputArraySize=0;
- OutputArraySize=0;
-
- // Реальные размеры промежуточных массивов входов и выходов
- InputArrayRealSize=0;
- OutputArrayRealSize=0;
 }
 
 UBPipeline::~UBPipeline(void)
 {
- if(InputBuffer)
- {
-  delete []InputBuffer;
-  InputBuffer=0;
- }
- InputBufferSize=InputBufferRealSize=0;
-
- if(OutputBuffer)
- {
-  delete []OutputBuffer;
-  OutputBuffer=0;
- }
- OutputBufferSize=OutputBufferRealSize=0;
-
- // Промежуточные массивы входов и выходов
- if(InputArray)
- {
-  delete []InputArray;
-  InputArray=0;
-  InputArraySize=0;
-  InputArrayRealSize=0;
- }
-
- if(OutputArray)
- {
-  delete []OutputArray;
-  OutputArray=0;
-  OutputArraySize=0;
-  OutputArrayRealSize=0;
- }
-
 }
 // --------------------------
 
@@ -100,9 +46,7 @@ UBPipeline::~UBPipeline(void)
 // и 'false' в случае некорректного типа
 bool UBPipeline::CheckComponentType(UEPtr<UContainer> comp) const
 {
- if(dynamic_pointer_cast<UBAbstract>(comp))
-  return true;
- return false;
+ return true;
 }
 // --------------------------
 
@@ -126,7 +70,6 @@ UBPipeline* UBPipeline::New(void)
 // Может быть передан указатель на локальную переменную
 bool UBPipeline::AAddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer)
 {
- CalcNumIOs();
  return true;
 }
 
@@ -136,7 +79,6 @@ bool UBPipeline::AAddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer)
 // существует в списке компонент
 bool UBPipeline::ADelComponent(UEPtr<UContainer> comp)
 {
- CalcNumIOs();
  return true;
 }
 // --------------------------
@@ -144,105 +86,6 @@ bool UBPipeline::ADelComponent(UEPtr<UContainer> comp)
 // ---------------------
 // Скрытые методы счета
 // ---------------------
-// Расширяет размер буфера изображений на заданную величину
-void UBPipeline::ExpandInputBuffer(int size)
-{
- ExpandImageBuffer(InputBuffer,InputBufferSize,InputBufferRealSize,size);
-}
-
-void UBPipeline::ExpandOutputBuffer(int size)
-{
- ExpandImageBuffer(OutputBuffer,OutputBufferSize,OutputBufferRealSize,size);
-}
-
-void UBPipeline::ExpandImageBuffer(UBitmap* &buffer, int &currentsize, int &realsize, int newsize)
-{
- if(realsize<newsize || !buffer)
- {
-  UBitmap *newbuffer=new UBitmap[newsize];
-  for(int i=0;i<currentsize;i++)
-   newbuffer[i]=buffer[i];
-
-  if(buffer)
-   delete []buffer;
-  buffer=newbuffer;
-  realsize=currentsize=newsize;
- }
- else
- {
-  currentsize=newsize;
- }
-}
-
-
-// Расширяет размер промежуточного массива входов
-void UBPipeline::ExpandInputArray(int size)
-{
- ExpandArray(InputArray,InputArraySize,InputArrayRealSize,size);
-}
-
-// Расширяет размер промежуточного массива выходов
-void UBPipeline::ExpandOutputArray(int size)
-{
- ExpandArray(OutputArray,OutputArraySize,OutputArrayRealSize,size);
-}
-
-void UBPipeline::ExpandArray(PUBitmap* &array, int &currentsize, int &realsize, int newsize)
-{
- if(realsize<newsize || !array)
- {
-  PUBitmap *buffer=new PUBitmap[newsize];
-  for(int i=0;i<currentsize;i++)
-   buffer[i]=array[i];
-
-  if(array)
-  {
-   delete []array;
-   array=0;
-  }
-  array=buffer;
-  realsize=currentsize=newsize;
- }
- else
- {
-  currentsize=newsize;
- }
-}
-
-
-// Расчитывает и устанавливается для конвеера минимально необходимое числов входов и выходов
-// если размер входа и выхода конвеера недостаточен
-void UBPipeline::CalcNumIOs(void)
-{
- // Находим максимально необходимое число выходов для фильтра
- int max_output_size=0, max_input_size=0;
- for(int i=0;i<NumComponents;i++)
- {
-  if(static_pointer_cast<UBAbstract>(PComponents[i]))
-  {
-   if(max_output_size<static_pointer_cast<UBAbstract>(PComponents[i])->GetNumOutputs())
-    max_output_size=static_pointer_cast<UBAbstract>(PComponents[i])->GetNumOutputs();
-   if(max_input_size<static_pointer_cast<UBAbstract>(PComponents[i])->GetNumInputs())
-    max_input_size=static_pointer_cast<UBAbstract>(PComponents[i])->GetNumInputs();
-  }
- }
-
- if(NumOutputs<max_output_size)
-  SetNumOutputs(max_output_size);
-
- if(NumInputs<max_input_size)
-  SetNumInputs(max_input_size);
-}
-// ---------------------
-
-
-// ---------------------
-// Операторы
-// ---------------------
-UBAbstract* UBPipeline::operator [] (int index)
-{
- return static_pointer_cast<UBAbstract>(PComponents[index]);
-}
 // ---------------------
 
 
@@ -289,30 +132,6 @@ bool UBParallelPipeline::AFReset(void)
 // Выполняет расчет этого объекта
 bool UBParallelPipeline::AFCalculate(void)
 {
- int min_inputs=(NumInputs<Inputs.GetSize())?NumInputs:Inputs.GetSize();
- int min_outputs=(NumOutputs<Outputs.GetSize())?NumOutputs:Outputs.GetSize();
-
- ExpandInputArray(NumInputs);
- ExpandOutputArray(NumOutputs);
- for(int i=0;i<min_inputs;i++)
-  InputArray[i]=(UBitmap *)Inputs[i];
-
- for(int i=0;i<min_outputs;i++)
-  OutputArray[i]=Outputs[i];
-
- for(int i=0;i<NumComponents;i++)
- {
-  if(static_pointer_cast<UBAbstract>(PComponents[i]))
-  {
-   if(!static_pointer_cast<UBAbstract>(static_pointer_cast<UBAbstract>(PComponents[i]))->SetInputs(InputArray))
-    return false;
-   if(!static_pointer_cast<UBAbstract>(static_pointer_cast<UBAbstract>(PComponents[i]))->SetOutputs(OutputArray))
-    return false;
-   if(!static_pointer_cast<UBAbstract>(static_pointer_cast<UBAbstract>(PComponents[i]))->Calculate())
-    return false;
-  }
- }
-
  return true;
 }
 // --------------------------

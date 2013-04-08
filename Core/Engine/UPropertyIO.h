@@ -214,7 +214,7 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 UPropertyInputCBase(const string &name, OwnerT * const owner, int min_range, int input_type, int max_range=-1)
- : UCLProperty<std::vector<T*>,OwnerT,type>(name, owner, (T * const)0), UPropertyIOBase(min_range, input_type, max_range)
+ : UCLProperty<std::vector<T*>,OwnerT,type>(name, owner), UPropertyIOBase(min_range, input_type, max_range)
 { };
 // -----------------------------
 
