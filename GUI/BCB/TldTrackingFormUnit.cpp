@@ -202,8 +202,17 @@ void __fastcall TTldTrackingForm::SendObjectToButtonClick(TObject *Sender)
  Env_Calculate(0);
  Model_SetComponentBitmapInput(ComponentControlName.c_str(), ObjectReceiverComboBox->ItemIndex, &ResultBmp);
 
+ size_t pos=ComponentControlName.find_last_of(".");
+ std::string source_name;
+ if(pos != std::string::npos)
+ {
+  source_name=ComponentControlName.substr(0,ComponentControlName.find_last_of(".")+1)+"MatrixSource";
+ }
+ else
+  source_name="MatrixSource";
+
  Model_SetComponentPropertyData(ComponentControlName.c_str(), "InitialFlags", &initial_flags);
- Model_SetComponentPropertyData("MatrixSource", "DoubleMatrix", &points);
+ Model_SetComponentPropertyData(source_name.c_str(), "DoubleMatrix", &points);
  // RDK::WriteStateValue(ComponentControlName, "InitialFlags", initial_flags);
 // RDK::WriteStateValue("MatrixSource", "DoubleMatrix", points);
  Env_Calculate(ComponentControlName.c_str());

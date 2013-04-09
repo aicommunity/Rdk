@@ -1435,6 +1435,7 @@ void UContainer::UnInit(void)
   return;
 
  AUnInit();
+ InitFlag=false;
 }
 // Обновляет состояние MainOwner после расчета этого объекта
 void UContainer::UpdateMainOwner(void)

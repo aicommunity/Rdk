@@ -36,8 +36,13 @@ virtual int GetIoType(void) const
 
 virtual bool CheckRange(int index)
 {
- return (MinRange == index && MaxRange<0) | (index>=MinRange && index<=MaxRange);
- //((Type == ipDataSingle || Type == ipCompSingle) && MinRange == index);
+ if(IoType & ipSingle)
+  return (MinRange == index && MaxRange<0) | (index>=MinRange && index<=MaxRange);
+ else
+ if(IoType & ipRange)
+  return (MinRange <= index && MaxRange<0) | (index>=MinRange && index<=MaxRange);
+
+ return false;
 }
 
 // Диапазон индексов входов
@@ -224,12 +229,16 @@ UPropertyInputCBase(const string &name, OwnerT * const owner, int min_range, int
 // Возвращает указатель на данные входа
 void const * GetPointer(int index) const
 {
+ if(this->v.size()<=index-MinRange)
+  return 0;
  return this->v[index-MinRange];
 }
 
 // Устанавливает указатель на данные входа
 bool SetPointer(int index, void* value)
 {
+ if(this->v.size()<=index-MinRange)
+  this->v.resize(index-MinRange+1);
  this->v[index-MinRange]=reinterpret_cast<T*>(value);
  return true;
 }
@@ -256,7 +265,7 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UPropertyInputC(const string &name, OwnerT * const owner, int min_range, int input_type=ipSingle | ipComp, int max_range=-1)
+UPropertyInputC(const string &name, OwnerT * const owner, int min_range, int input_type=ipRange | ipComp, int max_range=-1)
  : UPropertyInputCBase<T,OwnerT,type>(name, owner, min_range, input_type | ipComp, max_range)
 { };
 // -----------------------------
@@ -301,7 +310,7 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UPropertyInputCData(const string &name, OwnerT * const owner, int min_range, int input_type=ipSingle, int max_range=-1)
+UPropertyInputCData(const string &name, OwnerT * const owner, int min_range, int input_type=ipRange, int max_range=-1)
  : UPropertyInputCBase<T,OwnerT,type>(name, owner, min_range, input_type | ipData, max_range)
 { };
 // -----------------------------
@@ -309,6 +318,7 @@ UPropertyInputCData(const string &name, OwnerT * const owner, int min_range, int
 
 virtual void Init(void)
 {
+/*
  if(this->Owner && this->MinRange>=0)
  {
   int max_range=(this->MaxRange<0)?this->MinRange:this->MaxRange;
@@ -317,7 +327,7 @@ virtual void Init(void)
   {
 //   this->Owner->SetInputDataInfo(i,new UDataInfo<T>);
   }
- }
+ }*/
 }
 
 };
@@ -477,7 +487,7 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UPropertyOutputCData(const string &name, OwnerT * const owner, int min_range, int input_type=ipSingle, int max_range=-1)
+UPropertyOutputCData(const string &name, OwnerT * const owner, int min_range, int input_type=ipRange, int max_range=-1)
  : UPropertyOutputCBase<T,OwnerT,type>(name, owner, min_range, input_type | ipData, max_range)
 {
 

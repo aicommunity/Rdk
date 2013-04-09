@@ -471,8 +471,17 @@ bool UADItem::ConnectToItem(UEPtr<UItem> na, int i_index, int &c_index)
  {
   if(input_property->GetIoType() & ipData)
   {
-   if(output_property_type && output_property_type->CompareLanguageType(*input_property_type))
-	input_property->SetPointer(c_index,const_cast<void*>(output_property->GetPointer(i_index)));
+   if(input_property->GetIoType() & ipSingle)
+   {
+	if(output_property_type && output_property_type->CompareLanguageType(*input_property_type))
+	 input_property->SetPointer(c_index,const_cast<void*>(output_property->GetPointer(i_index)));
+   }
+   else
+   if(input_property->GetIoType() & ipRange)
+   {
+	if(output_property_type)
+	 input_property->SetPointer(c_index,const_cast<void*>(output_property->GetPointer(i_index)));
+   }
   }
   else
   if(input_property->GetIoType() & ipComp)
