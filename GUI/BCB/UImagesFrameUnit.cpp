@@ -527,7 +527,8 @@ void __fastcall TUImagesFrame::DrawGridClick(TObject *Sender)
  MouseClickComponents[0][0].first="Tracker";
  MouseClickComponents[0][0].second="MouseClickPoint";
 
- if(Model_CheckComponent(MouseClickComponents[DrawGrid->Col][DrawGrid->Row].first.c_str()))
+ if(Model_CheckComponent(MouseClickComponents[DrawGrid->Col][DrawGrid->Row].first.c_str()) &&
+	Model_GetComponentClassName(MouseClickComponents[DrawGrid->Col][DrawGrid->Row].first.c_str()) == "TTrackerSample")
  {
   RDK::UBPoint point;
   TRect rect=DrawGrid->CellRect(DrawGrid->Col, DrawGrid->Row);
