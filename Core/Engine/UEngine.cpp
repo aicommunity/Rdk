@@ -1137,6 +1137,10 @@ bool UEngine::Model_CheckComponent(const char* stringid) const
   if(destcont)
    return true;
  }
+ catch (UContainer::EComponentNameNotExist &exception)
+ {
+  return false;
+ }
  catch (UException &exception)
  {
   ProcessException(exception);
