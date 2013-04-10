@@ -466,6 +466,16 @@ int UBEngine::LoadPredefinedLibraries(void)
  filter->SetName("OrientationSimulator");
  bstorage->AddClass(filter,"BOrientationSimulatorExhaustive");
 
+ filter=new RDK::UBTrajectoryBuilderSimple;
+ filter->Default();
+ filter->SetName("TrajectoryBuilder");
+ bstorage->AddClass(filter,"UBTrajectoryBuilderSimple");
+
+ filter=new RDK::UBOrientationClarificatorAvg;
+ filter->Default();
+ filter->SetName("OrientationClarificator");
+ bstorage->AddClass(filter,"UBOrientationClarificatorAvg");
+
 #ifdef RDK_WINAPI
  filter=new RDK::UBWDllCameraCalibrator;
  filter->Default();
