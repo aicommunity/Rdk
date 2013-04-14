@@ -16,7 +16,7 @@ TUImagesFrame *UImagesFrame;
 __fastcall TUImagesFrame::TUImagesFrame(TComponent* Owner)
 	: TUVisualControllerFrame(Owner)
 {
- ReflectionXFlag=false;
+ ReflectionXFlag=true;
  MyComponentsListForm=new TUComponentsListForm(this);
  UpdateInterval=100;
 }

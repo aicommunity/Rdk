@@ -83,21 +83,31 @@ void TUGEngineControlForm::AUpdateInterface(void)
 
 void __fastcall TUGEngineControlForm::FormShow(TObject *Sender)
 {
- // Грузим шрифты
- std::vector<std::string> font_names;
- std::string font_path=AnsiString(ExtractFilePath(Application->ExeName)+"Fonts\\").c_str();
- RDK::FindFilesList(font_path, "*.fnt", true, font_names);
-
- RDK::ClearClobalFonts();
- RDK::UBitmapFont font;
- for(size_t i=0;i<font_names.size();i++)
+ if(MainFormName.Length()>0)
  {
-  RDK::AddGlobalFont(font_path+font_names[i]);
+  TComponent *component=Application->FindComponent(MainFormName);
+  TForm* form=dynamic_cast<TForm*>(component);
+  if(form)
+   form->Show();
+
+  MainFormName="";
  }
 
- GraphicalEngineInit(0,1,1,320,240,1,ExceptionHandler);
- UImagesForm->ImagesFrame->SetReflectionXFlag(true);
  UpdateInterface();
+
+ HideTimer->Enabled=true;
+
+ if(FileExists(AutoexecProjectFileName))
+ {
+  OpenProject(AutoexecProjectFileName);
+  AutoexecProjectFileName="";
+ }
+
+ if(AutoStartProjectFlag)
+ {
+  AutoStartProjectFlag=false;
+  Start1Click(Sender);
+ }
 }
 
 // Создает новый проект
@@ -682,6 +692,42 @@ void __fastcall TUGEngineControlForm::ProjectOptions1Click(TObject *Sender)
 void __fastcall TUGEngineControlForm::WatchWindow1Click(TObject *Sender)
 {
  UWatchForm->Show();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
+{
+ // Грузим настройки приложения
+ TMemIniFile *app_ini=new TMemIniFile("options.ini");
+ MainFormName=app_ini->ReadString("General", "MainFormName", "");
+ HideAdminFormFlag=app_ini->ReadBool("General", "HideAdminForm", false);
+ AutoexecProjectFileName=app_ini->ReadString("General", "AutoexecProjectFileName", "");
+ AutoStartProjectFlag=app_ini->ReadBool("General", "AutoStartProjectFlag", false);
+
+ // Грузим шрифты
+ std::vector<std::string> font_names;
+ std::string font_path=AnsiString(ExtractFilePath(Application->ExeName)+"Fonts\\").c_str();
+ RDK::FindFilesList(font_path, "*.fnt", true, font_names);
+
+ RDK::ClearClobalFonts();
+ RDK::UBitmapFont font;
+ for(size_t i=0;i<font_names.size();i++)
+ {
+  RDK::AddGlobalFont(font_path+font_names[i]);
+ }
+
+ GraphicalEngineInit(0,1,1,320,240,1,ExceptionHandler);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::HideTimerTimer(TObject *Sender)
+{
+ if(HideAdminFormFlag)
+ {
+  HideAdminFormFlag=false;
+  Hide();
+ }
+ HideTimer->Enabled=false;
 }
 //---------------------------------------------------------------------------
 

@@ -85,6 +85,7 @@ __published:	// IDE-managed Components
 	TMenuItem *N5;
 	TMenuItem *ProjectOptions1;
 	TMenuItem *WatchWindow1;
+	TTimer *HideTimer;
 	void __fastcall FormShow(TObject *Sender);
 	void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
 	void __fastcall Start1Click(TObject *Sender);
@@ -112,11 +113,18 @@ __published:	// IDE-managed Components
 	void __fastcall CopyProject1Click(TObject *Sender);
 	void __fastcall ProjectOptions1Click(TObject *Sender);
 	void __fastcall WatchWindow1Click(TObject *Sender);
+	void __fastcall FormCreate(TObject *Sender);
+	void __fastcall HideTimerTimer(TObject *Sender);
 
 
 private:	// User declarations
 public:		// User declarations
 	__fastcall TUGEngineControlForm(TComponent* Owner);
+
+String MainFormName;
+bool HideAdminFormFlag;
+String AutoexecProjectFileName;
+bool AutoStartProjectFlag;
 
 // Файл настроек проекта
 RDK::USerStorageXML ProjectXml;

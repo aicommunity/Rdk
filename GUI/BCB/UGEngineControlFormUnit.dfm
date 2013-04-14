@@ -14,6 +14,7 @@ object UGEngineControlForm: TUGEngineControlForm
   OldCreateOrder = False
   Position = poDesigned
   OnClose = FormClose
+  OnCreate = FormCreate
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
@@ -364,7 +365,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 376
     Top = 24
     Bitmap = {
-      494C01011B006000C80010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B006000CC0010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -1306,5 +1307,12 @@ object UGEngineControlForm: TUGEngineControlForm
     Filter = 'Project Ini File (*.ini)|*.ini'
     Left = 224
     Top = 16
+  end
+  object HideTimer: TTimer
+    Enabled = False
+    Interval = 1
+    OnTimer = HideTimerTimer
+    Left = 592
+    Top = 64
   end
 end
