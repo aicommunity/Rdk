@@ -96,18 +96,6 @@ void __fastcall TUGEngineControlForm::FormShow(TObject *Sender)
  UpdateInterface();
 
  HideTimer->Enabled=true;
-
- if(FileExists(AutoexecProjectFileName))
- {
-  OpenProject(AutoexecProjectFileName);
-  AutoexecProjectFileName="";
- }
-
- if(AutoStartProjectFlag)
- {
-  AutoStartProjectFlag=false;
-  Start1Click(Sender);
- }
 }
 
 // Создает новый проект
@@ -417,11 +405,6 @@ void TUGEngineControlForm::SaveProject(void)
  ProjectXml.SaveToFile(AnsiString(ProjectPath+ProjectFileName).c_str());
 }
 //---------------------------------------------------------------------------
-void __fastcall TUGEngineControlForm::FormClose(TObject *Sender, TCloseAction &Action)
-{
- CloseProject();
-}
-//---------------------------------------------------------------------------
 
 void __fastcall TUGEngineControlForm::Start1Click(TObject *Sender)
 {
@@ -727,7 +710,29 @@ void __fastcall TUGEngineControlForm::HideTimerTimer(TObject *Sender)
   HideAdminFormFlag=false;
   Hide();
  }
+
+ if(FileExists(AutoexecProjectFileName))
+ {
+  OpenProject(AutoexecProjectFileName);
+  AutoexecProjectFileName="";
+ }
+
+ if(AutoStartProjectFlag)
+ {
+  AutoStartProjectFlag=false;
+  Start1Click(Sender);
+ }
+
  HideTimer->Enabled=false;
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TUGEngineControlForm::FormCloseQuery(TObject *Sender, bool &CanClose)
+
+{
+ CloseProject();
+ CanClose=true;
 }
 //---------------------------------------------------------------------------
 

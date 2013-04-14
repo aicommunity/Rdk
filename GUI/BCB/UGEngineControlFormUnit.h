@@ -87,7 +87,6 @@ __published:	// IDE-managed Components
 	TMenuItem *WatchWindow1;
 	TTimer *HideTimer;
 	void __fastcall FormShow(TObject *Sender);
-	void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
 	void __fastcall Start1Click(TObject *Sender);
 	void __fastcall Pause1Click(TObject *Sender);
 	void __fastcall EngineMonitor1Click(TObject *Sender);
@@ -115,6 +114,7 @@ __published:	// IDE-managed Components
 	void __fastcall WatchWindow1Click(TObject *Sender);
 	void __fastcall FormCreate(TObject *Sender);
 	void __fastcall HideTimerTimer(TObject *Sender);
+	void __fastcall FormCloseQuery(TObject *Sender, bool &CanClose);
 
 
 private:	// User declarations
