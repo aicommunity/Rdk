@@ -1199,15 +1199,15 @@ const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapInput(const char
 }
 
 // Замещает изображение выхода с индексом 'index' компонента 'id'
-void RDK_CALL Model_SetComponentBitmapOutput(const char *stringid, int index, const /*RDK::UBitmap* */ void* const bmp)
+void RDK_CALL Model_SetComponentBitmapOutput(const char *stringid, int index, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
 {
- RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Model_SetComponentBitmapOutput(stringid, index, reinterpret_cast<const RDK::UBitmap* const >(bmp));
+ RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Model_SetComponentBitmapOutput(stringid, index, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
 }
 
 // Замещает изображение входа с индексом 'index' компонента 'id'
-void RDK_CALL Model_SetComponentBitmapInput(const char *stringid, int index, const /*RDK::UBitmap* */ void* const bmp)
+void RDK_CALL Model_SetComponentBitmapInput(const char *stringid, int index, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
 {
- RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Model_SetComponentBitmapInput(stringid, index, reinterpret_cast<const RDK::UBitmap* const >(bmp));
+ RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Model_SetComponentBitmapInput(stringid, index, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
 }
 // --------------------------
 

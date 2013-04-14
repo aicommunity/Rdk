@@ -48,6 +48,9 @@ public:		// User declarations
 // Источники видео
 std::vector<TVideoOutputFrame*> Sources;
 
+// Метод, вызываемый перед шагом расчета
+void ABeforeCalculate(void);
+
 // Обновляет интерфейс
 void AUpdateInterface(void);
 

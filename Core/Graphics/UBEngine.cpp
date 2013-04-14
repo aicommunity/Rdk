@@ -262,7 +262,7 @@ const RDK::UBitmap* UBEngine::Model_GetComponentBitmapInput(const char *stringid
 }
 
 // Замещает изображение выхода с индексом 'index' компонента 'id'
-void UBEngine::Model_SetComponentBitmapOutput(const char *stringid, int index, const RDK::UBitmap* const bmp)
+void UBEngine::Model_SetComponentBitmapOutput(const char *stringid, int index, const RDK::UBitmap* const bmp, bool reflect)
 {
  try{
   UEPtr<RDK::UBAbstract> cont=dynamic_pointer_cast<RDK::UBAbstract>(FindComponent(stringid));
@@ -278,7 +278,10 @@ void UBEngine::Model_SetComponentBitmapOutput(const char *stringid, int index, c
   if(!output)
    return;
 
-  *output=*bmp;
+  if(reflect)
+   const_cast<UBitmap*>(bmp)->ReflectionX(output);
+  else
+   *output=*bmp;
 //  UBitmap conversion;
 //  conversion.AttachBuffer(bmp->GetWidth(),bmp->GetHeight(),bmp->GetData(),bmp->GetColorModel());
 //  conversion.ConvertTo(*output);
@@ -291,7 +294,7 @@ void UBEngine::Model_SetComponentBitmapOutput(const char *stringid, int index, c
 }
 
 // Замещает изображение входа с индексом 'index' компонента 'id'
-void UBEngine::Model_SetComponentBitmapInput(const char *stringid, int index, const RDK::UBitmap* const bmp)
+void UBEngine::Model_SetComponentBitmapInput(const char *stringid, int index, const RDK::UBitmap* const bmp, bool reflect)
 {
  try {
   UEPtr<RDK::UBAbstract> cont=dynamic_pointer_cast<RDK::UBAbstract>(FindComponent(stringid));
@@ -312,7 +315,10 @@ void UBEngine::Model_SetComponentBitmapInput(const char *stringid, int index, co
 //  input->SetColorModel(ubmY8,false);
 //  conversion.ConvertTo(*input);
 //  conversion.DetachBuffer();
-  *input=*bmp;
+  if(reflect)
+   const_cast<UBitmap*>(bmp)->ReflectionX(input);
+  else
+   *input=*bmp;
  }
  catch (UException &exception)
  {

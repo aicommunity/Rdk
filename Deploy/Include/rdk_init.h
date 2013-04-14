@@ -630,10 +630,10 @@ RDK_LIB_TYPE const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapOut
 RDK_LIB_TYPE const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapInput(const char *stringid, int index);
 
 // Замещает изображение выхода с индексом 'index' компонента 'id'
-RDK_LIB_TYPE void RDK_CALL Model_SetComponentBitmapOutput(const char *stringid, int index, const /*RDK::UBitmap* */ void* const bmp);
+RDK_LIB_TYPE void RDK_CALL Model_SetComponentBitmapOutput(const char *stringid, int index, const /*RDK::UBitmap* */ void* const bmp, bool reflect=false);
 
 // Замещает изображение входа с индексом 'index' компонента 'id'
-RDK_LIB_TYPE void RDK_CALL Model_SetComponentBitmapInput(const char *stringid, int index, const /*RDK::UBitmap* */ void* const bmp);
+RDK_LIB_TYPE void RDK_CALL Model_SetComponentBitmapInput(const char *stringid, int index, const /*RDK::UBitmap* */ void* const bmp, bool reflect=false);
 // --------------------------
 
 // --------------------------

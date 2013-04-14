@@ -6,6 +6,7 @@
 #include "VideoOutputFormUnit.h"
 #include "VideoOutputToolsFormUnit.h"
 #include "TVideoGrabberControlFormUnit.h"
+#include "rdk_initdll.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "TUVisualControllerFormUnit"
@@ -15,6 +16,29 @@ TVideoOutputForm *VideoOutputForm;
 __fastcall TVideoOutputForm::TVideoOutputForm(TComponent* Owner)
 	: TUVisualControllerForm(Owner)
 {
+}
+
+// Метод, вызываемый перед шагом расчета
+void TVideoOutputForm::ABeforeCalculate(void)
+{
+ if(!Model_Check())
+  return;
+
+ int num_outputs=Model_GetComponentNumOutputs("");
+ for(int i=0;i<num_outputs;i++)
+ {
+  if(!GetVideoOutputFrame(i))
+   continue;
+  RDK::UBitmap &source=GetVideoOutputFrame(i)->BmpSource;
+
+  if(source.GetByteLength()>0)
+  {
+   Model_SetComponentBitmapOutput("", i, &source,true);
+
+   //Env_SetInputRes(i, InputEnvImageWidth, InputEnvImageHeight);
+   //Env_SetInputImage(i,(unsigned char*)source.GetData(),source.GetWidth(), source.GetHeight(),source.GetColorModel());
+  }
+ }
 }
 
 // Обновляет интерфейс

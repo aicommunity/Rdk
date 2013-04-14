@@ -41,6 +41,7 @@ __fastcall TUGEngineControlForm::TUGEngineControlForm(TComponent* Owner)
 // Метод, вызываемый перед шагом расчета
 void TUGEngineControlForm::ABeforeCalculate(void)
 {
+/*
  for(int i=0;i<Env_GetNumInputImages();i++)
  {
   if(!VideoOutputForm->GetVideoOutputFrame(i))
@@ -53,7 +54,7 @@ void TUGEngineControlForm::ABeforeCalculate(void)
    Env_SetInputImage(i,(unsigned char*)source.GetData(),source.GetWidth(), source.GetHeight(),source.GetColorModel());
   }
  }
-
+*/
 }
 
 // Метод, вызываемый после шага расчета
