@@ -21,8 +21,9 @@ namespace RDK {
 
 
 // Отправляет данные объекта UBitmap в TBitmap
-void operator >> (UBitmap &source, Graphics::TBitmap *target)
+void operator >> (const UBitmap &source, Graphics::TBitmap *target)
 {
+ UBColor *source_data;
  UColorT c;
  struct {
   TLogPalette lpal;
@@ -59,9 +60,9 @@ void operator >> (UBitmap &source, Graphics::TBitmap *target)
    else
    {
     linebytelength=source.GetLineByteLength();
-    source=0;
-    for(int i=source.GetHeight()-1;i>=0;--i,source+=linebytelength)
-     memcpy(target->ScanLine[i],&source(),
+    source_data=source.GetData();
+    for(int i=source.GetHeight()-1;i>=0;--i,source_data+=linebytelength)
+     memcpy(target->ScanLine[i],source_data,
           linebytelength*sizeof(UBColor));
    }
  break;
@@ -76,10 +77,10 @@ void operator >> (UBitmap &source, Graphics::TBitmap *target)
    else
    {
     linebytelength=source.GetLineByteLength();
-    source=0;
-    for(int i=source.GetHeight()-1;i>=0;--i,source+=linebytelength)
-     memcpy(target->ScanLine[i],&source(),
-          linebytelength*sizeof(UBColor));
+    source_data=source.GetData();
+	for(int i=source.GetHeight()-1;i>=0;--i,source_data+=linebytelength)
+	 memcpy(target->ScanLine[i],source_data,
+		  linebytelength*sizeof(UBColor));
    }
  break;
 
@@ -110,9 +111,9 @@ void operator >> (UBitmap &source, Graphics::TBitmap *target)
    else
    {
     linebytelength=source.GetLineByteLength();
-    source=0;
-    for(int i=source.GetHeight()-1;i>=0;--i,source+=linebytelength)
-     memcpy(target->ScanLine[i],&source(),
+	source_data=source.GetData();
+	for(int i=source.GetHeight()-1;i>=0;--i,source_data+=linebytelength)
+	 memcpy(target->ScanLine[i],source_data,
           linebytelength*sizeof(UBColor));
    }
  break;

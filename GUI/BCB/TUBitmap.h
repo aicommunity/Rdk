@@ -22,7 +22,7 @@ See file license.txt for more information
 namespace RDK {
 
 // Отправляет данные объекта UBitmap в TBitmap
-void operator >> (UBitmap &source, Graphics::TBitmap *target);
+void operator >> (const UBitmap &source, Graphics::TBitmap *target);
 
 // Отправляет данные объекта TBitmap в UBitmap
 void operator << (UBitmap &target, Graphics::TBitmap *source);
