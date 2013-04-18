@@ -547,6 +547,11 @@ int UBEngine::LoadPredefinedLibraries(void)
  filter->SetName("ShowRect");
  bstorage->AddClass(filter,"UBShowRect");
 
+ filter=new RDK::UBOrientationSimulatorExhaustive;
+ filter->Default();
+ filter->SetName("OrientationSimulatorExhaustive");
+ bstorage->AddClass(filter,"UBOrientationSimulatorExhaustive");
+
 
  return 0;
 }
