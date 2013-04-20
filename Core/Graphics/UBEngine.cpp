@@ -341,42 +341,42 @@ int UBEngine::LoadPredefinedLibraries(void)
  if(!bstorage)
   return 2;
 
- RDK::UBAbstract *filter=new RDK::UBAQLinearContrasting;
- filter->Default();
- filter->SetName("QLinerarContrasting");
- bstorage->AddClass(filter,"QLinerarContrasting");
+ //RDK::UBAbstract *filter=new RDK::UBAQLinearContrasting;
+ //filter->Default();
+ //filter->SetName("QLinerarContrasting");
+ //bstorage->AddClass(filter,"QLinerarContrasting");
 
- filter=new RDK::UBAQSolarize;
- filter->Default();
- filter->SetName("QSolarize");
- bstorage->AddClass(filter,"QSolarize");
+ //filter=new RDK::UBAQSolarize;
+ //filter->Default();
+ //filter->SetName("QSolarize");
+ //bstorage->AddClass(filter,"QSolarize");
 
- filter=new RDK::UBAQEqualizeHist;
- filter->Default();
- filter->SetName("QEqualizeHist");
- bstorage->AddClass(filter,"QEqualizeHist");
+ //filter=new RDK::UBAQEqualizeHist;
+ //filter->Default();
+ //filter->SetName("QEqualizeHist");
+ //bstorage->AddClass(filter,"QEqualizeHist");
 
- filter=new RDK::UBAQCropHist;
- filter->Default();
- filter->SetName("QCropHist");
- bstorage->AddClass(filter,"QCropHist");
+ //filter=new RDK::UBAQCropHist;
+ //filter->Default();
+ //filter->SetName("QCropHist");
+ //bstorage->AddClass(filter,"QCropHist");
 
- filter=new RDK::UBAQModifyHist;
- filter->Default();
- filter->SetName("QModifyHist");
- bstorage->AddClass(filter,"QModifyHist");
+ //filter=new RDK::UBAQModifyHist;
+ //filter->Default();
+ //filter->SetName("QModifyHist");
+ //bstorage->AddClass(filter,"QModifyHist");
 
- filter=new RDK::UBAQLocalEqualizeHist;
- filter->Default();
- filter->SetName("QLocalEqualizeHist");
- bstorage->AddClass(filter,"QLocalEqualizeHist");
+ //filter=new RDK::UBAQLocalEqualizeHist;
+ //filter->Default();
+ //filter->SetName("QLocalEqualizeHist");
+ //bstorage->AddClass(filter,"QLocalEqualizeHist");
 
- filter=new RDK::UBAQCombineHist;
- filter->Default();
- filter->SetName("QCombineHist");
- bstorage->AddClass(filter,"QCombineHist");
+ //filter=new RDK::UBAQCombineHist;
+ //filter->Default();
+ //filter->SetName("QCombineHist");
+ //bstorage->AddClass(filter,"QCombineHist");
 
- filter=new RDK::UBPipeline;
+ RDK::UBAbstract *filter=new RDK::UBPipeline;
  filter->Default();
  filter->SetName("Pipeline");
  bstorage->AddClass(filter,"Pipeline");
@@ -386,10 +386,10 @@ int UBEngine::LoadPredefinedLibraries(void)
  filter->SetName("ParallelPipeline");
  bstorage->AddClass(filter,"ParallelPipeline");
 
- filter=new RDK::UBAResizeEdges;
- filter->Default();
- filter->SetName("ResizeEdges");
- bstorage->AddClass(filter,"ResizeEdges");
+ //filter=new RDK::UBAResizeEdges;
+ //filter->Default();
+ //filter->SetName("ResizeEdges");
+ //bstorage->AddClass(filter,"ResizeEdges");
 
  filter=new RDK::UBAModel;
  filter->Default();
@@ -406,75 +406,75 @@ int UBEngine::LoadPredefinedLibraries(void)
  filter->SetName("Receiver");
  bstorage->AddClass(filter,"Receiver");
 
- filter=new RDK::UBAVideoSimulatorSimple;
- filter->Default();
- filter->SetName("VideoSimulatorSimple");
- bstorage->AddClass(filter,"VideoSimulatorSimple");
+ //filter=new RDK::UBAVideoSimulatorSimple;
+ //filter->Default();
+ //filter->SetName("VideoSimulatorSimple");
+ //bstorage->AddClass(filter,"VideoSimulatorSimple");
 
- filter=new RDK::UBADifferenceFrameSimple;
- filter->Default();
- filter->SetName("DifferenceFrameSimple");
- bstorage->AddClass(filter,"DifferenceFrameSimple");
+ //filter=new RDK::UBADifferenceFrameSimple;
+ //filter->Default();
+ //filter->SetName("DifferenceFrameSimple");
+ //bstorage->AddClass(filter,"DifferenceFrameSimple");
 
- filter=new RDK::UBAMaskFilteringSimple;
- filter->Default();
- filter->SetName("MaskFilteringSimple");
- bstorage->AddClass(filter,"MaskFilteringSimple");
+ //filter=new RDK::UBAMaskFilteringSimple;
+ //filter->Default();
+ //filter->SetName("MaskFilteringSimple");
+ //bstorage->AddClass(filter,"MaskFilteringSimple");
 
- filter=new RDK::UBAColorConvert;
- filter->Default();
- filter->SetName("ColorConvert");
- bstorage->AddClass(filter,"ColorConvert");
+ //filter=new RDK::UBAColorConvert;
+ //filter->Default();
+ //filter->SetName("ColorConvert");
+ //bstorage->AddClass(filter,"ColorConvert");
 
- filter=new RDK::UBSearchSimulator;
- filter->Default();
- filter->SetName("BSearch");
- bstorage->AddClass(filter,"UBSearchSimulator");
+ //filter=new RDK::UBSearchSimulator;
+ //filter->Default();
+ //filter->SetName("BSearch");
+ //bstorage->AddClass(filter,"UBSearchSimulator");
 
- filter=new RDK::UBSearchNCC;
- filter->Default();
- filter->SetName("BSearch");
- bstorage->AddClass(filter,"SearchNCC");
+ //filter=new RDK::UBSearchNCC;
+ //filter->Default();
+ //filter->SetName("BSearch");
+ //bstorage->AddClass(filter,"SearchNCC");
 
- filter=new RDK::UBTrackerSimulator;
- filter->Default();
- filter->SetName("Tracker");
- bstorage->AddClass(filter,"UBTrackerSimulator");
+ //filter=new RDK::UBTrackerSimulator;
+ //filter->Default();
+ //filter->SetName("Tracker");
+ //bstorage->AddClass(filter,"UBTrackerSimulator");
 
- filter=new RDK::UBAShowObjectsSimple;
- filter->Default();
- filter->SetName("ShowObjectsSimple");
- bstorage->AddClass(filter,"ShowObjectsSimple");
+ //filter=new RDK::UBAShowObjectsSimple;
+ //filter->Default();
+ //filter->SetName("ShowObjectsSimple");
+ //bstorage->AddClass(filter,"ShowObjectsSimple");
 
- filter=new RDK::UBADataSimulatorSimple;
- filter->Default();
- filter->SetName("DataSimulatorSimple");
- bstorage->AddClass(filter,"DataSimulatorSimple");
+ //filter=new RDK::UBADataSimulatorSimple;
+ //filter->Default();
+ //filter->SetName("DataSimulatorSimple");
+ //bstorage->AddClass(filter,"DataSimulatorSimple");
 
- filter=new RDK::UBKeyPointsClarificatorAvg;
- filter->Default();
- filter->SetName("UBKeyPointsClarificator");
- bstorage->AddClass(filter,"BKeyPointsClarificatorAvg");
+ //filter=new RDK::UBKeyPointsClarificatorAvg;
+ //filter->Default();
+ //filter->SetName("UBKeyPointsClarificator");
+ //bstorage->AddClass(filter,"BKeyPointsClarificatorAvg");
 
- filter=new RDK::UBObjectGeometry;
- filter->Default();
- filter->SetName("ObjectGeometry");
- bstorage->AddClass(filter,"ObjectGeometry");    
+ //filter=new RDK::UBObjectGeometry;
+ //filter->Default();
+ //filter->SetName("ObjectGeometry");
+ //bstorage->AddClass(filter,"ObjectGeometry");
  
- filter=new RDK::UBOrientationSimulatorExhaustive;
- filter->Default();
- filter->SetName("OrientationSimulator");
- bstorage->AddClass(filter,"BOrientationSimulatorExhaustive");
+ //filter=new RDK::UBOrientationSimulatorExhaustive;
+ //filter->Default();
+ //filter->SetName("OrientationSimulator");
+ //bstorage->AddClass(filter,"BOrientationSimulatorExhaustive");
 
- filter=new RDK::UBTrajectoryBuilderSimple;
- filter->Default();
- filter->SetName("TrajectoryBuilder");
- bstorage->AddClass(filter,"UBTrajectoryBuilderSimple");
+ //filter=new RDK::UBTrajectoryBuilderSimple;
+ //filter->Default();
+ //filter->SetName("TrajectoryBuilder");
+ //bstorage->AddClass(filter,"UBTrajectoryBuilderSimple");
 
- filter=new RDK::UBOrientationClarificatorAvg;
- filter->Default();
- filter->SetName("OrientationClarificator");
- bstorage->AddClass(filter,"UBOrientationClarificatorAvg");
+ //filter=new RDK::UBOrientationClarificatorAvg;
+ //filter->Default();
+ //filter->SetName("OrientationClarificator");
+ //bstorage->AddClass(filter,"UBOrientationClarificatorAvg");
 
 #ifdef RDK_WINAPI
  filter=new RDK::UBWDllCameraCalibrator;
@@ -492,65 +492,65 @@ int UBEngine::LoadPredefinedLibraries(void)
  filter->SetName("PtzCameraControl");
  bstorage->AddClass(filter,"PtzCameraControlHttpVcl");     
  
- filter=new RDK::TDllTldTracking;
- filter->Default();
- filter->SetName("Tracker");
- bstorage->AddClass(filter,"TDllTldTracking");     
+ //filter=new RDK::TDllTldTracking;
+ //filter->Default();
+ //filter->SetName("Tracker");
+ //bstorage->AddClass(filter,"TDllTldTracking");
 
 #endif
 
- filter=new RDK::UBABitmapSourceSimple;
- filter->Default();
- filter->SetName("BitmapSourceSimple");
- bstorage->AddClass(filter,"BitmapSourceSimple");
+ //filter=new RDK::UBABitmapSourceSimple;
+ //filter->Default();
+ //filter->SetName("BitmapSourceSimple");
+ //bstorage->AddClass(filter,"BitmapSourceSimple");
 
- filter=new RDK::UBABitmapSourceFile;
- filter->Default();
- filter->SetName("BitmapSourceFile");
- bstorage->AddClass(filter,"BitmapSourceFile");
+ //filter=new RDK::UBABitmapSourceFile;
+ //filter->Default();
+ //filter->SetName("BitmapSourceFile");
+ //bstorage->AddClass(filter,"BitmapSourceFile");
 
 //#define RDK_OPENCV
-#ifdef RDK_OPENCV
- filter=new RDK::UBOpenCVSurf;
- filter->Default();
- filter->SetName("OpenCVSurf");
- bstorage->AddClass(filter,"OpenCVSurf");
-#endif
+//#ifdef RDK_OPENCV
+ //filter=new RDK::UBOpenCVSurf;
+ //filter->Default();
+ //filter->SetName("OpenCVSurf");
+ //bstorage->AddClass(filter,"OpenCVSurf");
+//#endif
 
- filter=new RDK::UBAVideo3DSimulatorSimple;
- filter->Default();
- filter->SetName("Video3DSimulatorSimple");
- bstorage->AddClass(filter,"Video3DSimulatorSimple");
+ //filter=new RDK::UBAVideo3DSimulatorSimple;
+ //filter->Default();
+ //filter->SetName("Video3DSimulatorSimple");
+ //bstorage->AddClass(filter,"Video3DSimulatorSimple");
 
- filter=new RDK::UBStatisticSimple;
- filter->Default();
- filter->SetName("BStatisticSimple");
- bstorage->AddClass(filter,"BStatisticSimple");
+ //filter=new RDK::UBStatisticSimple;
+ //filter->Default();
+ //filter->SetName("BStatisticSimple");
+ //bstorage->AddClass(filter,"BStatisticSimple");
 
  filter=new RDK::UBMathOperator;
  filter->Default();
  filter->SetName("BMathOperator");
  bstorage->AddClass(filter,"BMathOperator");
 
- filter=new RDK::UBACameraSimple;
- filter->Default();
- filter->SetName("Camera");
- bstorage->AddClass(filter,"CameraSimple");
+ //filter=new RDK::UBACameraSimple;
+ //filter->Default();
+ //filter->SetName("Camera");
+ //bstorage->AddClass(filter,"CameraSimple");
 
- filter=new RDK::UBPtzTrackerControlBasic;
- filter->Default();
- filter->SetName("PtzTrackerControl");
- bstorage->AddClass(filter,"BPtzTrackerControlBasic");
+ //filter=new RDK::UBPtzTrackerControlBasic;
+ //filter->Default();
+ //filter->SetName("PtzTrackerControl");
+ //bstorage->AddClass(filter,"BPtzTrackerControlBasic");
 
- filter=new RDK::UBShowRect;
- filter->Default();
- filter->SetName("ShowRect");
- bstorage->AddClass(filter,"UBShowRect");
+ //filter=new RDK::UBShowRect;
+ //filter->Default();
+ //filter->SetName("ShowRect");
+ //bstorage->AddClass(filter,"UBShowRect");
 
- filter=new RDK::UBOrientationSimulatorExhaustive;
- filter->Default();
- filter->SetName("OrientationSimulatorExhaustive");
- bstorage->AddClass(filter,"UBOrientationSimulatorExhaustive");
+ //filter=new RDK::UBOrientationSimulatorExhaustive;
+ //filter->Default();
+ //filter->SetName("OrientationSimulatorExhaustive");
+ //bstorage->AddClass(filter,"UBOrientationSimulatorExhaustive");
 
 
  return 0;
