@@ -382,35 +382,35 @@ int UBEngine::LoadPredefinedLibraries(void)
  //filter->SetName("QCombineHist");
  //bstorage->AddClass(filter,"QCombineHist");
 
- RDK::UBAbstract *filter=new RDK::UBPipeline;
- filter->Default();
- filter->SetName("Pipeline");
- bstorage->AddClass(filter,"Pipeline");
+ //RDK::UBAbstract *filter=new RDK::UBPipeline;
+ //filter->Default();
+ //filter->SetName("Pipeline");
+ //bstorage->AddClass(filter,"Pipeline");
 
- filter=new RDK::UBParallelPipeline;
- filter->Default();
- filter->SetName("ParallelPipeline");
- bstorage->AddClass(filter,"ParallelPipeline");
+ //filter=new RDK::UBParallelPipeline;
+ //filter->Default();
+ //filter->SetName("ParallelPipeline");
+ //bstorage->AddClass(filter,"ParallelPipeline");
 
  //filter=new RDK::UBAResizeEdges;
  //filter->Default();
  //filter->SetName("ResizeEdges");
  //bstorage->AddClass(filter,"ResizeEdges");
 
- filter=new RDK::UBAModel;
- filter->Default();
- filter->SetName("Model");
- bstorage->AddClass(filter,"Model");
+ //filter=new RDK::UBAModel;
+ //filter->Default();
+ //filter->SetName("Model");
+ //bstorage->AddClass(filter,"Model");
 
- filter=new RDK::UBASource;
- filter->Default();
- filter->SetName("Source");
- bstorage->AddClass(filter,"Source");
+ //filter=new RDK::UBASource;
+ //filter->Default();
+ //filter->SetName("Source");
+ //bstorage->AddClass(filter,"Source");
 
- filter=new RDK::UBAReceiver;
- filter->Default();
- filter->SetName("Receiver");
- bstorage->AddClass(filter,"Receiver");
+ //filter=new RDK::UBAReceiver;
+ //filter->Default();
+ //filter->SetName("Receiver");
+ //bstorage->AddClass(filter,"Receiver");
 
  //filter=new RDK::UBAVideoSimulatorSimple;
  //filter->Default();
@@ -482,28 +482,28 @@ int UBEngine::LoadPredefinedLibraries(void)
  //filter->SetName("OrientationClarificator");
  //bstorage->AddClass(filter,"UBOrientationClarificatorAvg");
 
-#ifdef RDK_WINAPI
- filter=new RDK::UBWDllCameraCalibrator;
- filter->Default();
- filter->SetName("CameraCalibrator");
- bstorage->AddClass(filter,"WDllCameraCalibrator");
+//#ifdef RDK_WINAPI
+ //filter=new RDK::UBWDllCameraCalibrator;
+ //filter->Default();
+ //filter->SetName("CameraCalibrator");
+ //bstorage->AddClass(filter,"WDllCameraCalibrator");
 
- filter=new RDK::UBDllOpenCvUndistortion;
- filter->Default();
- filter->SetName("BUndistortion");
- bstorage->AddClass(filter,"BDllOpenCvUndistortion");
+ //filter=new RDK::UBDllOpenCvUndistortion;
+ //filter->Default();
+ //filter->SetName("BUndistortion");
+ //bstorage->AddClass(filter,"BDllOpenCvUndistortion");
 
- filter=new RDK::UBPtzCameraControlHttpVcl;
- filter->Default();
- filter->SetName("PtzCameraControl");
- bstorage->AddClass(filter,"PtzCameraControlHttpVcl");     
+ ///filter=new RDK::UBPtzCameraControlHttpVcl;
+ //filter->Default();
+ //filter->SetName("PtzCameraControl");
+ //bstorage->AddClass(filter,"PtzCameraControlHttpVcl");
  
  //filter=new RDK::TDllTldTracking;
  //filter->Default();
  //filter->SetName("Tracker");
  //bstorage->AddClass(filter,"TDllTldTracking");
 
-#endif
+//#endif
 
  //filter=new RDK::UBABitmapSourceSimple;
  //filter->Default();
@@ -533,10 +533,10 @@ int UBEngine::LoadPredefinedLibraries(void)
  //filter->SetName("BStatisticSimple");
  //bstorage->AddClass(filter,"BStatisticSimple");
 
- filter=new RDK::UBMathOperator;
- filter->Default();
- filter->SetName("BMathOperator");
- bstorage->AddClass(filter,"BMathOperator");
+ //filter=new RDK::UBMathOperator;
+ //filter->Default();
+ //filter->SetName("BMathOperator");
+ //bstorage->AddClass(filter,"BMathOperator");
 
  //filter=new RDK::UBACameraSimple;
  //filter->Default();
