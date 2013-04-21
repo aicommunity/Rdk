@@ -705,6 +705,7 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::HideTimerTimer(TObject *Sender)
 {
+ HideTimer->Enabled=false;
  if(HideAdminFormFlag)
  {
   HideAdminFormFlag=false;
