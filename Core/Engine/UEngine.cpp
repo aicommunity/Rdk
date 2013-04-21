@@ -3398,6 +3398,17 @@ int UEngine::LoadPredefinedLibraries(void)
  ULibrary::AddUniqueLibrary(&SourceLibrary);
  ULibrary::AddUniqueLibrary(&NoiseLibrary);
  ULibrary::AddUniqueLibrary(&AriphmeticLibrary);
+ ULibrary::AddUniqueLibrary(&BasicLibrary);
+ ULibrary::AddUniqueLibrary(&DetectionLibrary);
+ ULibrary::AddUniqueLibrary(&FilteringLibrary);
+ ULibrary::AddUniqueLibrary(&GUILibrary);
+ ULibrary::AddUniqueLibrary(&HardwareLibrary);
+ ULibrary::AddUniqueLibrary(&ObjectSearchLibrary);
+ ULibrary::AddUniqueLibrary(&ObjectTrackingLibrary);
+ ULibrary::AddUniqueLibrary(&QualifierLibrary);
+ ULibrary::AddUniqueLibrary(&SimulatorLibrary);
+ ULibrary::AddUniqueLibrary(&SpatialGeometryLibrary);
+ ULibrary::AddUniqueLibrary(&StatisticLibrary);
 
  const std::list<ULibrary*>& lst=ULibrary::GetLibraryList();
  LibrariesList=lst;
