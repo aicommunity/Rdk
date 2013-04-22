@@ -423,7 +423,7 @@ void __fastcall TVideoGrabberControlFrame::StreamButtonClick(TObject *Sender)
 
 void __fastcall TVideoGrabberControlFrame::IpMoveUpButtonClick(TObject *Sender)
 {
- IpPtzInfo.MoveUp(100);
+// IpPtzInfo.MoveUp(100);
  SendIpPtzCommand();
 }
 //---------------------------------------------------------------------------
@@ -431,14 +431,14 @@ void __fastcall TVideoGrabberControlFrame::IpMoveUpButtonClick(TObject *Sender)
 void __fastcall TVideoGrabberControlFrame::IpMoveLeftButtonClick(TObject *Sender)
 
 {
- IpPtzInfo.MoveLeft(100);
+// IpPtzInfo.MoveLeft(100);
  SendIpPtzCommand();
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TVideoGrabberControlFrame::IpMoveDownButtonClick(TObject *Sender)
 {
- IpPtzInfo.MoveDown(100);
+// IpPtzInfo.MoveDown(100);
  SendIpPtzCommand();
 }
 //---------------------------------------------------------------------------
@@ -446,21 +446,21 @@ void __fastcall TVideoGrabberControlFrame::IpMoveDownButtonClick(TObject *Sender
 void __fastcall TVideoGrabberControlFrame::IpMoveRightButtonClick(TObject *Sender)
 
 {
- IpPtzInfo.MoveRight(100);
+// IpPtzInfo.MoveRight(100);
  SendIpPtzCommand();
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TVideoGrabberControlFrame::ZoomInButtonClick(TObject *Sender)
 {
- IpPtzInfo.ZoomOut(100);
+// IpPtzInfo.ZoomOut(100);
  SendIpPtzCommand();
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TVideoGrabberControlFrame::ZoomOutButtonClick(TObject *Sender)
 {
- IpPtzInfo.ZoomIn(100);
+// IpPtzInfo.ZoomIn(100);
  SendIpPtzCommand();
 }
 //---------------------------------------------------------------------------

@@ -723,8 +723,6 @@ void __fastcall TUGEngineControlForm::HideTimerTimer(TObject *Sender)
   AutoStartProjectFlag=false;
   Start1Click(Sender);
  }
-
- HideTimer->Enabled=false;
 }
 //---------------------------------------------------------------------------
 

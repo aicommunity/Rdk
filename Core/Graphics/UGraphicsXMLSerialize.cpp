@@ -582,6 +582,14 @@ USerStorageXML& operator << (USerStorageXML& storage, const UBPtzCameraInfo &dat
  operator << (storage,data.MaxPan);
  storage.SelectUp();
 
+ storage.AddNode("MinPanAngle");
+ operator << (storage,data.MinPanAngle);
+ storage.SelectUp();
+
+ storage.AddNode("MaxPanAngle");
+ operator << (storage,data.MaxPanAngle);
+ storage.SelectUp();
+
  storage.AddNode("MinPanSpeed");
  operator << (storage,data.MinPanSpeed);
  storage.SelectUp();
@@ -596,6 +604,14 @@ USerStorageXML& operator << (USerStorageXML& storage, const UBPtzCameraInfo &dat
 
  storage.AddNode("MaxTilt");
  operator << (storage,data.MaxTilt);
+ storage.SelectUp();
+
+ storage.AddNode("MinTiltAngle");
+ operator << (storage,data.MinTiltAngle);
+ storage.SelectUp();
+
+ storage.AddNode("MaxTiltAngle");
+ operator << (storage,data.MaxTiltAngle);
  storage.SelectUp();
 
  storage.AddNode("MinTiltSpeed");
@@ -630,6 +646,30 @@ USerStorageXML& operator << (USerStorageXML& storage, const UBPtzCameraInfo &dat
  operator << (storage,data.MaxZoomSpeed);
  storage.SelectUp();
 
+ storage.AddNode("MinFocusSpeed");
+ operator << (storage,data.MinFocusSpeed);
+ storage.SelectUp();
+
+ storage.AddNode("MaxFocusSpeed");
+ operator << (storage,data.MaxFocusSpeed);
+ storage.SelectUp();
+
+ storage.AddNode("MinIrisSpeed");
+ operator << (storage,data.MinIrisSpeed);
+ storage.SelectUp();
+
+ storage.AddNode("MaxIrisSpeed");
+ operator << (storage,data.MaxIrisSpeed);
+ storage.SelectUp();
+
+ storage.AddNode("MinBrightnessSpeed");
+ operator << (storage,data.MinBrightnessSpeed);
+ storage.SelectUp();
+
+ storage.AddNode("MaxBrightnessSpeed");
+ operator << (storage,data.MaxBrightnessSpeed);
+ storage.SelectUp();
+
  storage.AddNode("MinCommandDelay");
  operator << (storage,data.MinCommandDelay);
  storage.SelectUp();
@@ -647,6 +687,16 @@ USerStorageXML& operator >> (USerStorageXML& storage, UBPtzCameraInfo &data)
  if(!storage.SelectNode("MaxPan"))
   return storage;
  operator >> (storage,data.MaxPan);
+ storage.SelectUp();
+
+ if(!storage.SelectNode("MinPanAngle"))
+  return storage;
+ operator >> (storage,data.MinPanAngle);
+ storage.SelectUp();
+
+ if(!storage.SelectNode("MaxPanAngle"))
+  return storage;
+ operator >> (storage,data.MaxPanAngle);
  storage.SelectUp();
 
  if(!storage.SelectNode("MinPanSpeed"))
@@ -667,6 +717,16 @@ USerStorageXML& operator >> (USerStorageXML& storage, UBPtzCameraInfo &data)
  if(!storage.SelectNode("MaxTilt"))
   return storage;
  operator >> (storage,data.MaxTilt);
+ storage.SelectUp();
+
+ if(!storage.SelectNode("MinTiltAngle"))
+  return storage;
+ operator >> (storage,data.MinTiltAngle);
+ storage.SelectUp();
+
+ if(!storage.SelectNode("MaxTiltAngle"))
+  return storage;
+ operator >> (storage,data.MaxTiltAngle);
  storage.SelectUp();
 
  if(!storage.SelectNode("MinTiltSpeed"))
@@ -714,6 +774,36 @@ USerStorageXML& operator >> (USerStorageXML& storage, UBPtzCameraInfo &data)
  operator >> (storage,data.MinCommandDelay);
  storage.SelectUp();
 
+ if(!storage.SelectNode("MinFocusSpeed"))
+  return storage;
+ operator >> (storage,data.MinFocusSpeed);
+ storage.SelectUp();
+
+ if(!storage.SelectNode("MaxFocusSpeed"))
+  return storage;
+ operator >> (storage,data.MaxFocusSpeed);
+ storage.SelectUp();
+
+ if(!storage.SelectNode("MinIrisSpeed"))
+  return storage;
+ operator >> (storage,data.MinIrisSpeed);
+ storage.SelectUp();
+
+ if(!storage.SelectNode("MaxIrisSpeed"))
+  return storage;
+ operator >> (storage,data.MaxIrisSpeed);
+ storage.SelectUp();
+
+ if(!storage.SelectNode("MinBrightnessSpeed"))
+  return storage;
+ operator >> (storage,data.MinBrightnessSpeed);
+ storage.SelectUp();
+
+ if(!storage.SelectNode("MaxBrightnessSpeed"))
+  return storage;
+ operator >> (storage,data.MaxBrightnessSpeed);
+ storage.SelectUp();
+
  return storage;
 }
 
@@ -723,27 +813,51 @@ USerStorageXML& operator << (USerStorageXML& storage, const UBPtzCameraData &dat
  storage<<static_cast<const UBPtzCameraInfo&>(data);
 
  storage.AddNode("Pan");
- operator << (storage,data.Pan);
+ operator << (storage,data.GetPanNative());
  storage.SelectUp();
 
  storage.AddNode("PanSpeed");
- operator << (storage,data.PanSpeed);
+ operator << (storage,data.GetPanSpeedNative());
  storage.SelectUp();
 
  storage.AddNode("Tilt");
- operator << (storage,data.Tilt);
+ operator << (storage,data.GetTiltNative());
  storage.SelectUp();
 
  storage.AddNode("TiltSpeed");
- operator << (storage,data.TiltSpeed);
+ operator << (storage,data.GetTiltSpeedNative());
  storage.SelectUp();
 
  storage.AddNode("Zoom");
- operator << (storage,data.Zoom);
+ operator << (storage,data.GetZoomNative());
  storage.SelectUp();
 
  storage.AddNode("ZoomSpeed");
- operator << (storage,data.ZoomSpeed);
+ operator << (storage,data.GetZoomSpeedNative());
+ storage.SelectUp();
+
+ storage.AddNode("Focus");
+ operator << (storage,data.GetFocusNative());
+ storage.SelectUp();
+
+ storage.AddNode("FocusSpeed");
+ operator << (storage,data.GetFocusSpeedNative());
+ storage.SelectUp();
+
+ storage.AddNode("Iris");
+ operator << (storage,data.GetIrisNative());
+ storage.SelectUp();
+
+ storage.AddNode("IrisSpeed");
+ operator << (storage,data.GetIrisSpeedNative());
+ storage.SelectUp();
+
+ storage.AddNode("Brightness");
+ operator << (storage,data.GetBrightnessNative());
+ storage.SelectUp();
+
+ storage.AddNode("BrightnessSpeed");
+ operator << (storage,data.GetBrightnessSpeedNative());
  storage.SelectUp();
 
  return storage;
@@ -753,35 +867,79 @@ USerStorageXML& operator >> (USerStorageXML& storage, UBPtzCameraData &data)
 {
  storage>>static_cast<UBPtzCameraInfo&>(data);
 
+ double value;
+
  if(!storage.SelectNode("Pan"))
   return storage;
- operator >> (storage,data.Pan);
+ operator >> (storage,value);
  storage.SelectUp();
+ data.SetPanNative(value);
 
  if(!storage.SelectNode("PanSpeed"))
   return storage;
- operator >> (storage,data.PanSpeed);
+ operator >> (storage,value);
  storage.SelectUp();
+ data.SetPanSpeedNative(value);
 
  if(!storage.SelectNode("Tilt"))
   return storage;
- operator >> (storage,data.Tilt);
+ operator >> (storage,value);
  storage.SelectUp();
+ data.SetTiltNative(value);
 
  if(!storage.SelectNode("TiltSpeed"))
   return storage;
- operator >> (storage,data.TiltSpeed);
+ operator >> (storage,value);
  storage.SelectUp();
+ data.SetTiltSpeedNative(value);
 
  if(!storage.SelectNode("Zoom"))
   return storage;
- operator >> (storage,data.Zoom);
+ operator >> (storage,value);
  storage.SelectUp();
+ data.SetZoomNative(value);
 
  if(!storage.SelectNode("ZoomSpeed"))
   return storage;
- operator >> (storage,data.ZoomSpeed);
+ operator >> (storage,value);
  storage.SelectUp();
+ data.SetZoomSpeedNative(value);
+
+ if(!storage.SelectNode("Focus"))
+  return storage;
+ operator >> (storage,value);
+ storage.SelectUp();
+ data.SetFocusNative(value);
+
+ if(!storage.SelectNode("FocusSpeed"))
+  return storage;
+ operator >> (storage,value);
+ storage.SelectUp();
+ data.SetFocusSpeedNative(value);
+
+ if(!storage.SelectNode("Iris"))
+  return storage;
+ operator >> (storage,value);
+ storage.SelectUp();
+ data.SetIrisNative(value);
+
+ if(!storage.SelectNode("IrisSpeed"))
+  return storage;
+ operator >> (storage,value);
+ storage.SelectUp();
+ data.SetIrisSpeedNative(value);
+
+ if(!storage.SelectNode("Brightness"))
+  return storage;
+ operator >> (storage,value);
+ storage.SelectUp();
+ data.SetBrightnessNative(value);
+
+ if(!storage.SelectNode("BrightnessSpeed"))
+  return storage;
+ operator >> (storage,value);
+ storage.SelectUp();
+ data.SetBrightnessSpeedNative(value);
 
  return storage;
 }
