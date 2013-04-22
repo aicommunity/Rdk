@@ -42,8 +42,6 @@ object VideoGrabberControlForm: TVideoGrabberControlForm
         ExplicitWidth = 576
         ExplicitHeight = 261
         inherited VDCapturePanel: TPanel
-          Width = 576
-          Height = 261
           ExplicitWidth = 576
           ExplicitHeight = 261
           inherited ModeLabel: TLabel
@@ -89,11 +87,18 @@ object VideoGrabberControlForm: TVideoGrabberControlForm
         end
       end
       inherited IPCameraTabSheet: TTabSheet
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         inherited Panel1: TPanel
           Width = 576
           Height = 261
+          ExplicitWidth = 576
+          ExplicitHeight = 261
           inherited Label4: TLabel
             Width = 308
+            ExplicitWidth = 308
           end
           inherited Label5: TLabel
             Width = 560
@@ -115,9 +120,11 @@ object VideoGrabberControlForm: TVideoGrabberControlForm
           end
           inherited IPCameraUserNameEdit: TEdit
             Width = 560
+            ExplicitWidth = 560
           end
           inherited IPCameraUserPasswordEdit: TEdit
             Width = 560
+            ExplicitWidth = 560
           end
           inherited IPCameraControlPostfixEdit: TEdit
             Left = 280
@@ -128,6 +135,10 @@ object VideoGrabberControlForm: TVideoGrabberControlForm
         end
       end
       inherited VideoFileTabSheet: TTabSheet
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         inherited VFCapturePanel: TPanel
           inherited VideoFileNameLabel: TLabel
             ExplicitWidth = 560
@@ -135,6 +146,8 @@ object VideoGrabberControlForm: TVideoGrabberControlForm
         end
       end
       inherited PictureFileTabSheet: TTabSheet
+        ExplicitLeft = 0
+        ExplicitTop = 0
         ExplicitWidth = 576
         ExplicitHeight = 261
         inherited Label3: TLabel
@@ -151,6 +164,10 @@ object VideoGrabberControlForm: TVideoGrabberControlForm
         end
       end
       inherited ImageSequenceTabSheet: TTabSheet
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         inherited Label7: TLabel
           Width = 691
           ExplicitWidth = 560
