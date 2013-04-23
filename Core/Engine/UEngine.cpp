@@ -3408,7 +3408,7 @@ int UEngine::LoadPredefinedLibraries(void)
  ULibrary::AddUniqueLibrary(&QualifierLibrary);
  ULibrary::AddUniqueLibrary(&SimulatorLibrary);
  ULibrary::AddUniqueLibrary(&SpatialGeometryLibrary);
- ULibrary::AddUniqueLibrary(&StatisticLibrary);
+ ULibrary::AddUniqueLibrary(&BStatisticLibrary);
 
  const std::list<ULibrary*>& lst=ULibrary::GetLibraryList();
  LibrariesList=lst;

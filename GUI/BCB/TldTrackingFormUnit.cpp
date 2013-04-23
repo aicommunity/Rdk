@@ -51,7 +51,10 @@ void TTldTrackingForm::AUpdateInterface(void)
 
  const RDK::MDMatrix<double>* points=(const RDK::MDMatrix<double>*)Model_GetComponentPropertyData("MatrixSource", "DoubleMatrix");
 
- num_inputs=points->GetRows();//RDK::ReadParameterValue<int>(ComponentControlName, "NumTrackers");
+ if(points)
+  num_inputs=points->GetRows();//RDK::ReadParameterValue<int>(ComponentControlName, "NumTrackers");
+ else
+  num_inputs=0;
  LoadVideoInputs(num_inputs, ObjectReceiverComboBox);
 // LoadVideoInputs(num_inputs, ObjectReceiver2ComboBox);
 }
