@@ -166,7 +166,7 @@ void TVideoOutputFrame::InitByIPCamera(const String camera_url, const String use
 
  VideoGrabber->SetAuthentication(at_IPCamera,user_name,user_password);
  Mode=3;
- StartButtonClick(this);
+// StartButtonClick(this);
  UpdateVideo();
 }
 
