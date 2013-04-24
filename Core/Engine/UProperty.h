@@ -43,18 +43,24 @@ protected: // Данные
 // Прямой доступ к данным
 mutable T* PData;
 
+// Тип входа
+int IoType;
+
+// Диапазон индексов входов
+int MinRange, MaxRange;
+
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
 UVBaseDataProperty(void)
- : PData(0)
+ : PData(0),IoType(0),MinRange(0), MaxRange(-1)
 {
 }
 
 UVBaseDataProperty(T * const pdata)
- : PData(pdata)
+ : PData(pdata),IoType(0),MinRange(0), MaxRange(-1)
 {
 }
 // -----------------------------
@@ -179,6 +185,51 @@ bool ReadFromMemory(const void *buffer)
  return true;
 }
 // -----------------------------
+
+// --------------------------
+// Методы управления данными
+// --------------------------
+// Тип
+virtual int GetIoType(void) const
+{
+ return IoType;
+}
+
+virtual bool CheckRange(int index)
+{
+ if(IoType & ipSingle)
+  return (MinRange == index && MaxRange<0) | (index>=MinRange && index<=MaxRange);
+ else
+ if(IoType & ipRange)
+  return (MinRange <= index && MaxRange<0) | (index>=MinRange && index<=MaxRange);
+
+ return false;
+}
+
+// Диапазон индексов входов
+virtual int GetMinRange(void)
+{ return MinRange; };
+
+virtual int GetMaxRange(void)
+{ return MaxRange; };
+// --------------------------
+
+// --------------------------
+// Методы управления указателем
+// --------------------------
+/// Возвращает указатель на данные
+virtual void const* GetPointer(int index) const
+{
+ return 0;
+}
+
+/// Устанавливает указатель на данные
+virtual bool SetPointer(int index, void* value)
+{
+ return false;
+}
+// --------------------------
+
 };
 
 

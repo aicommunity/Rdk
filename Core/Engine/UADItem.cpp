@@ -124,36 +124,33 @@ size_t UADItem::GetFullInputDataSize(void) const
 // ћетоды доступа к описанию входов и выходов
 // --------------------------
 /// »щет свойство-выход по заданному индексу
-void UADItem::FindOutputProperty(int index, UIProperty* &property, UIPropertyIO* &property_io)
+void UADItem::FindOutputProperty(int index, UIProperty* &property)
 {
  // »щем указатель на выходные данные
  property=0;
- property_io=0;
  VariableMapIteratorT I=PropertiesLookupTable.begin(),
 					  J=PropertiesLookupTable.end();
  for(;I != J;++I)
  {
   if(I->second.Type & ptOutput)
   {
-   property_io=dynamic_cast<UIPropertyIO*>(I->second.Property.Get());
-   if(!property_io || !property_io->CheckRange(index))
+   property=I->second.Property.Get();
+   if(!property || !property->CheckRange(index))
    {
-    property_io=0;
+    property=0;
 	continue;
    }
 
-   property=dynamic_cast<UIProperty*>(I->second.Property.Get());
    break;
   }
  }
 }
 
 /// »щет свойство-вход по заданному индексу
-void UADItem::FindInputProperty(int index, UIProperty* &property, UIPropertyIO* &property_io)
+void UADItem::FindInputProperty(int index, UIProperty* &property)
 {
  // »щем указатель на входные данные
  property=0;
- property_io=0;
 
  VariableMapIteratorT I=PropertiesLookupTable.begin(),
  J=PropertiesLookupTable.end();
@@ -161,14 +158,13 @@ void UADItem::FindInputProperty(int index, UIProperty* &property, UIPropertyIO* 
  {
   if(I->second.Type & ptInput)
   {
-   property_io=dynamic_cast<UIPropertyIO*>(I->second.Property.Get());
-   if(!property_io || !property_io->CheckRange(index))
+   property=I->second.Property.Get();
+   if(!property || !property->CheckRange(index))
    {
-    property_io=0;
+	property=0;
 	continue;
    }
 
-   property=dynamic_cast<UIProperty*>(I->second.Property.Get());
    break;
   }
  }
@@ -459,27 +455,25 @@ bool UADItem::ConnectToItem(UEPtr<UItem> na, int i_index, int &c_index)
   return false;
 
  // »щем указатель на выходные данные
- UIProperty *output_property_type=0;
- UIPropertyIO* output_property=0;
- nad->FindOutputProperty(i_index, output_property_type, output_property);
+ UIProperty* output_property=0;
+ nad->FindOutputProperty(i_index, output_property);
 
  // »щем указатель на входные данные
- UIProperty *input_property_type=0;
- UIPropertyIO* input_property=0;
- FindInputProperty(c_index, input_property_type, input_property);
+ UIProperty* input_property=0;
+ FindInputProperty(c_index, input_property);
  if(input_property)
  {
   if(input_property->GetIoType() & ipData)
   {
    if(input_property->GetIoType() & ipSingle)
    {
-	if(output_property_type && output_property_type->CompareLanguageType(*input_property_type))
+	if(output_property && output_property->CompareLanguageType(*input_property))
 	 input_property->SetPointer(c_index,const_cast<void*>(output_property->GetPointer(i_index)));
    }
    else
    if(input_property->GetIoType() & ipRange)
    {
-	if(output_property_type)
+	if(output_property)
 	 input_property->SetPointer(c_index,const_cast<void*>(output_property->GetPointer(i_index)));
    }
   }
@@ -504,7 +498,7 @@ void UADItem::DisconnectFromIndex(int c_index)
  {
   if(I->second.Type & ptInput)
   {
-   UIPropertyIO* input_property=dynamic_cast<UIPropertyIO*>(I->second.Property.Get());
+   UIProperty* input_property=dynamic_cast<UIProperty*>(I->second.Property.Get());
    if(!input_property || !input_property->CheckRange(c_index))
 	continue;
 
@@ -567,7 +561,7 @@ bool UADItem::Build(void)
  {
   if(I->second.Type & ptInput)
   {
-   UPropertyIOBase* property=dynamic_cast<UPropertyIOBase*>(I->second.Property.Get());
+   UIProperty* property=dynamic_cast<UIProperty*>(I->second.Property.Get());
    if(!property)
 	continue;
 
@@ -580,7 +574,7 @@ bool UADItem::Build(void)
 
   if(I->second.Type & ptOutput)
   {
-   UPropertyIOBase* property=dynamic_cast<UPropertyIOBase*>(I->second.Property.Get());
+   UIProperty* property=dynamic_cast<UIProperty*>(I->second.Property.Get());
    if(!property)
 	continue;
 

@@ -5,8 +5,8 @@
 #include "UADItem.h"
 
 namespace RDK {
-
-class UPropertyIOBase: public UIPropertyIO
+	  /*
+class UPropertyIOBase: public UIProperty
 {
 protected:
 // Тип входа
@@ -54,9 +54,9 @@ int GetMaxRange(void)
 // -----------------------------
 
 };
-
+      */
 template<typename T, typename OwnerT, unsigned int type>
-class UPropertyInputBase: protected ULProperty<T,OwnerT,type>, public UPropertyIOBase, public UIPropertyInput
+class UPropertyInputBase: protected ULProperty<T,OwnerT,type>, /*public UPropertyIOBase, */public UIPropertyInput
 {
 protected:
 /// Временная переменная, использующаяся, если нет реального подключения
@@ -68,8 +68,12 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 UPropertyInputBase(const string &name, OwnerT * const owner, int min_range, int input_type, int max_range=-1)
- : ULProperty<T,OwnerT,type>(name, owner), UPropertyIOBase(min_range, input_type, max_range)
-{ };
+ : ULProperty<T,OwnerT,type>(name, owner)
+{
+ IoType=input_type;
+ MinRange=min_range;
+ MaxRange=max_range;
+};
 // -----------------------------
 
 // --------------------------
@@ -133,14 +137,6 @@ operator T* (void) const
  return (this->v)?this->v:&Local;
 }
 // --------------------------
-
-
-
-virtual void Init(void)
-{
-
-}
-
 };
 
 template<typename T, typename OwnerT, unsigned int type=ptPubInput>
@@ -193,21 +189,11 @@ operator T* (void) const
  return (this->PData)?this->PData:&this->v;
 }
 // --------------------------
-
-
-virtual void Init(void)
-{
- if(this->Owner && this->MinRange>=0)
- {
-//  Owner->SetInputDataInfo(MinRange,new UDataInfo<T>);
- }
-}
-
 };
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 template<typename T, typename OwnerT, unsigned int type>
-class UPropertyInputCBase: public UCLProperty<std::vector<T*>,OwnerT,type>, public UPropertyIOBase, public UIPropertyInput
+class UPropertyInputCBase: public UCLProperty<std::vector<T*>,OwnerT,type>, /*public UPropertyIOBase, */public UIPropertyInput
 {
 protected:
 /// Временная переменная, использующаяся, если нет реального подключения
@@ -219,8 +205,12 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 UPropertyInputCBase(const string &name, OwnerT * const owner, int min_range, int input_type, int max_range=-1)
- : UCLProperty<std::vector<T*>,OwnerT,type>(name, owner), UPropertyIOBase(min_range, input_type, max_range)
-{ };
+ : UCLProperty<std::vector<T*>,OwnerT,type>(name, owner)
+{
+ IoType=input_type;
+ MinRange=min_range;
+ MaxRange=max_range;
+};
 // -----------------------------
 
 // --------------------------
@@ -270,14 +260,6 @@ UPropertyInputC(const string &name, OwnerT * const owner, int min_range, int inp
 { };
 // -----------------------------
 
-
-virtual void Init(void)
-{
-
-}
-
-
-
 // Метод записывает значение свойства в поток
 virtual bool Save(UEPtr<USerStorage>  storage, bool simplemode=false)
 {
@@ -314,22 +296,6 @@ UPropertyInputCData(const string &name, OwnerT * const owner, int min_range, int
  : UPropertyInputCBase<T,OwnerT,type>(name, owner, min_range, input_type | ipData, max_range)
 { };
 // -----------------------------
-
-
-virtual void Init(void)
-{
-/*
- if(this->Owner && this->MinRange>=0)
- {
-  int max_range=(this->MaxRange<0)?this->MinRange:this->MaxRange;
-  this->v.resize(max_range-this->MinRange+1);
-  for(int i=this->MinRange;i<=max_range;i++)
-  {
-//   this->Owner->SetInputDataInfo(i,new UDataInfo<T>);
-  }
- }*/
-}
-
 };
 
 
@@ -338,7 +304,7 @@ virtual void Init(void)
 // Output properties
 // -----------------------------------------------------------------------------
 template<typename T, typename OwnerT, unsigned int type>
-class UPropertyOutputBase: protected ULProperty<T,OwnerT,type>, public UPropertyIOBase, public UIPropertyOutput
+class UPropertyOutputBase: protected ULProperty<T,OwnerT,type>, /*public UPropertyIOBase, */public UIPropertyOutput
 {
 protected:
 
@@ -348,8 +314,12 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 UPropertyOutputBase(const string &name, OwnerT * const owner, int min_range, int input_type, int max_range=-1)
- : ULProperty<T,OwnerT,type>(name, owner), UPropertyIOBase(min_range, input_type, max_range)
-{ };
+ : ULProperty<T,OwnerT,type>(name, owner)
+{
+ IoType=input_type;
+ MinRange=min_range;
+ MaxRange=max_range;
+};
 // -----------------------------
 
 // --------------------------
@@ -424,20 +394,10 @@ UPropertyOutputData(const string &name, OwnerT * const owner, int min_range, int
 
 };
 // -----------------------------
-
-virtual void Init(void)
-{
- if(this->Owner && this->MinRange>=0)
- {
- // Owner->SetOutputDataAsPointer(MinRange,&this->v);
- // Owner->SetOutputDataInfo(MinRange,new UDataInfo<T>);
- }
-};
-
 };
 
 template<typename T, typename OwnerT, unsigned int type>
-class UPropertyOutputCBase: protected UCLProperty<std::vector<T>,OwnerT,type>, public UPropertyIOBase, public UIPropertyOutput
+class UPropertyOutputCBase: protected UCLProperty<std::vector<T>,OwnerT,type>, /*public UPropertyIOBase, */public UIPropertyOutput
 {
 protected:
 
@@ -447,8 +407,12 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 UPropertyOutputCBase(const string &name, OwnerT * const owner, int min_range, int input_type, int max_range=-1)
- : UCLProperty<std::vector<T>,OwnerT,type>(name, owner), UPropertyIOBase(min_range, input_type, max_range)
-{ };
+ : UCLProperty<std::vector<T>,OwnerT,type>(name, owner)
+{
+ IoType=input_type;
+ MinRange=min_range;
+ MaxRange=max_range;
+};
 // -----------------------------
 
 // --------------------------
@@ -493,28 +457,13 @@ UPropertyOutputCData(const string &name, OwnerT * const owner, int min_range, in
 
 };
 // -----------------------------
-
-virtual void Init(void)
-{
- if(this->Owner && this->MinRange>=0)
- {
-  int max_range=(this->MaxRange<0)?this->MinRange:this->MaxRange;
-  this->v.resize(max_range-this->MinRange+1);
-  for(int i=this->MinRange;i<=max_range;i++)
-  {
-  // Owner->SetOutputDataAsPointer(i,&(this->v[i-this->MinRange]));
-  // Owner->SetOutputDataInfo(i,new UDataInfo<T>);
-  }
- }
-};
-
 };
 
 // -----------------------------------------------------------------------------
 // Output virtual properties
 // -----------------------------------------------------------------------------
 template<typename T, typename OwnerT>
-class UVPropertyOutputBase: public UVProperty<T,OwnerT>, public UPropertyIOBase, public UIPropertyOutput
+class UVPropertyOutputBase: public UVProperty<T,OwnerT>, /*public UPropertyIOBase, */public UIPropertyOutput
 {
 protected:
 
@@ -524,8 +473,12 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 UVPropertyOutputBase(OwnerT * const owner, T* data, int min_range, int input_type, int max_range=-1)
- : UVProperty<T,OwnerT>(owner,data), UPropertyIOBase(min_range, input_type, max_range)
-{ };
+ : UVProperty<T,OwnerT>(owner,data)
+{
+ IoType=input_type;
+ MinRange=min_range;
+ MaxRange=max_range;
+};
 // -----------------------------
 
 // --------------------------
@@ -566,16 +519,6 @@ UVPropertyOutputData(OwnerT * const owner, T* data, int min_range, int input_typ
 
 };
 // -----------------------------
-
-virtual void Init(void)
-{
- if(this->Owner && this->MinRange>=0)
- {
-//  Owner->SetOutputDataAsPointer(MinRange,this->PData);
-//  Owner->SetOutputDataInfo(MinRange,new UDataInfo<T>);
- }
-};
-
 };
 		  /*
 template<typename T, typename OwnerT>

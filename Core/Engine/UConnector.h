@@ -288,7 +288,7 @@ EInputIndexNotExist(void) : EInvalidIndex(-1) {};
 };
 };
 
-
+	   /*
 class UIPropertyIO
 {
 public:
@@ -314,7 +314,7 @@ virtual bool SetPointer(int index, void* value)=0;
 /// Первичная инициализация указателя
 virtual void Init(void)=0;
 // --------------------------
-};
+};     */
 
 class UIPropertyInput
 {

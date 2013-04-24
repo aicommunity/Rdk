@@ -3198,14 +3198,13 @@ const /* RDK::MDMatrix* */void* UEngine::Model_GetComponentOutputAsMatrix(const 
    return 0;
 
   // »щем указатель на выходные данные
-  UIProperty *output_property_type=0;
-  UIPropertyIO* output_property=0;
-  cont->FindOutputProperty(index, output_property_type, output_property);
-  if(!output_property_type || !output_property)
+  UIProperty* output_property=0;
+  cont->FindOutputProperty(index, output_property);
+  if(!output_property)
    return 0;
 
-  if(output_property_type->GetLanguageType() == typeid(MDMatrix<double>) ||
-	 output_property_type->GetLanguageType() == typeid(MDVector<double>))
+  if(output_property->GetLanguageType() == typeid(MDMatrix<double>) ||
+	 output_property->GetLanguageType() == typeid(MDVector<double>))
   {
    return output_property->GetPointer(0);
   }

@@ -342,6 +342,31 @@ virtual const type_info& GetLanguageType(void) const=0;
 // Метод сравнивает тип этого свойства с другим свойством
 virtual bool CompareLanguageType(const UIProperty &dt) const=0;
 
+// --------------------------
+// Методы управления данными
+// --------------------------
+/// Возвращает тип свойства ввода-вывода
+virtual int GetIoType(void) const=0;
+
+/// Возвращает диапазон индексов входа/выхода
+virtual bool CheckRange(int index)=0;
+
+// Диапазон индексов входов
+virtual int GetMinRange(void)=0;
+
+virtual int GetMaxRange(void)=0;
+// --------------------------
+
+// --------------------------
+// Методы управления указателем
+// --------------------------
+/// Возвращает указатель на данные
+virtual void const* GetPointer(int index) const=0;
+
+/// Устанавливает указатель на данные
+virtual bool SetPointer(int index, void* value)=0;
+// --------------------------
+
 public: // Исключения
 // Обращение к неинициализированным данным свойства
 struct EPropertyError: public EError
