@@ -518,7 +518,7 @@ bool UContainer::SetActivity(const bool &activity)
  Activity=true;
  UEPtr<UContainer>* comps=PComponents;
  for(int i=0;i<NumComponents;i++,comps++)
-  (*comps)->Activity=activity;
+  (*comps)->SetActivity(activity);
 
 // if(activity)
 //  return Reset(); // !!! Заглушка. Возможно это не нужно!
@@ -526,6 +526,9 @@ bool UContainer::SetActivity(const bool &activity)
  Activity=activity;
  StepDuration=0;
  InterstepsInterval=0;
+
+ if(!Activity)
+  return Reset();
 
  return true;
 }
