@@ -1,5 +1,5 @@
 object UGEngineControlForm: TUGEngineControlForm
-  Left = 0
+  Left = 150
   Top = 0
   Caption = 'Engine Control'
   ClientHeight = 117
