@@ -219,7 +219,7 @@ UPropertyInputCBase(const string &name, OwnerT * const owner, int min_range, int
 // Возвращает указатель на данные входа
 void const * GetPointer(int index) const
 {
- if(this->v.size()<=index-MinRange)
+ if(int(this->v.size())<=index-MinRange)
   return 0;
  return this->v[index-MinRange];
 }
@@ -227,7 +227,7 @@ void const * GetPointer(int index) const
 // Устанавливает указатель на данные входа
 bool SetPointer(int index, void* value)
 {
- if(this->v.size()<=index-MinRange)
+ if(int(this->v.size())<=index-MinRange)
   this->v.resize(index-MinRange+1);
  this->v[index-MinRange]=reinterpret_cast<T*>(value);
  return true;

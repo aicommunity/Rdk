@@ -9,10 +9,10 @@ class UBPtzCameraInfo
 {
 public:
 /// ћинимальна€ условна€ величина
-static const MinCValue=-10000;
+static const int MinCValue=-10000;
 
 /// ћаксимальна€ условна€ величина
-static const MaxCValue=10000;
+static const int MaxCValue=10000;
 
 public:
 /// ћинимальное значение поворота по оси X в единицах камеры
