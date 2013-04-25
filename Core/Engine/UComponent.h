@@ -39,6 +39,12 @@ enum {pgPublic=0x100, pgSystem=0x200, pgInput=0x400, pgOutput=0x800, pgMode=0x10
 
 // Наиболее часто используемые сочетания типа и группы
 enum {ptPubParameter=ptParameter|pgPublic, ptPubState=ptState|pgPublic, ptPubInput=ptInput|pgPublic, ptPubOutput=ptOutput|pgPublic};
+
+enum { ipData=1, ipComp=2 };
+enum { ipSingle=16, ipRange=32, ipList=64 };
+enum { ipDataSingle=ipData|ipSingle, ipDataRange=ipData|ipRange,
+       ipDataList=ipData|ipList, ipCompSingle=ipComp|ipSingle,
+       ipCompRange=ipComp|ipRange, ipCompList=ipComp|ipList };
 #endif
 
 namespace RDK {

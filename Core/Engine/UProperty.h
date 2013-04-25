@@ -208,10 +208,10 @@ virtual bool CheckRange(int index)
 
 // Диапазон индексов входов
 virtual int GetMinRange(void)
-{ return MinRange; };
+{ return UVBaseDataProperty<T>::MinRange; };
 
 virtual int GetMaxRange(void)
-{ return MaxRange; };
+{ return UVBaseDataProperty<T>::MaxRange; };
 // --------------------------
 
 // --------------------------
