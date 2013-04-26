@@ -17,7 +17,7 @@
 #include "UFavoriteComponentInfoFormUnit.h"
 #include "UDrawEngineFormUnit.h"
 #include "UCreateProjectWizardFormUnit.h"
-#include "TUFileSystem.h"
+#include "myrdk.h"
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -348,11 +348,11 @@ void __fastcall TUEngineControlForm::FormShow(TObject *Sender)
  // Грузим шрифты
  std::vector<std::string> font_names;
  std::string font_path=AnsiString(ExtractFilePath(Application->ExeName)+"Fonts\\").c_str();
- FindFilesList(font_path, "*.fnt", true, font_names);
+ RDK::FindFilesList(font_path, "*.fnt", true, font_names);
  if(font_names.empty())
  {
   font_path=AnsiString("..\\..\\Fonts\\").c_str();
-  FindFilesList(font_path, "*.fnt", true, font_names);
+  RDK::FindFilesList(font_path, "*.fnt", true, font_names);
  }
 
  RDK::ClearClobalFonts();
@@ -534,7 +534,7 @@ void __fastcall TUEngineControlForm::CopyProject1Click(TObject *Sender)
  if(SelectDirectory("Select project directory", ExtractFilePath(Application->ExeName), chosenDir,TSelectDirExtOpts() << sdNewFolder << sdNewUI))
  {
   SaveProject();
-  CopyDir(AnsiString(ProjectPath).c_str(), AnsiString(chosenDir+"\\").c_str(), "*.*");
+  RDK::CopyDir(AnsiString(ProjectPath).c_str(), AnsiString(chosenDir+"\\").c_str(), "*.*");
  }
 }
 //---------------------------------------------------------------------------
