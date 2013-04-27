@@ -159,6 +159,7 @@ void TUGEngineControlForm::CloseProject(void)
   ProjectPath="";
  }
  ProjectOpenFlag=false;
+ Env_UnInit();
  EngineUnInit();
 // UpdateInterface();
 }

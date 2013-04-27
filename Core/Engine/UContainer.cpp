@@ -1426,6 +1426,9 @@ void UContainer::Init(void)
  if(IsInit())
   return;
 
+ for(int i=0;i<NumComponents;i++)
+  PComponents[i]->Init();
+
  AInit();
  InitFlag=true;
  Build();
@@ -1438,6 +1441,10 @@ void UContainer::UnInit(void)
   return;
 
  AUnInit();
+
+ for(int i=0;i<NumComponents;i++)
+  PComponents[i]->UnInit();
+
  InitFlag=false;
 }
 // Обновляет состояние MainOwner после расчета этого объекта
