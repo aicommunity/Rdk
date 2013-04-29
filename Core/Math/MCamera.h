@@ -57,6 +57,11 @@ virtual T CalcSpaceByScreenSegmentDistance(const UBRect &screen_segment, T segme
 // ѕреобразует 3D геометрию в 2D
 virtual void Convert3Dto2DGeometry(const MGeometry<T,4> &geometry_3d, MGeometry<T,3> &geometry_2d);
 
+/// ѕреобразует 3D геометрию в 2D
+/// geometry_3d - N строк по 3 координаты точек
+/// geometry_2d - N строк по 2 координаты точек
+virtual void Convert3Dto2DGeometry(const MDMatrix<T> &geometry_3d, MDMatrix<T> &geometry_2d);
+
 protected: // —крытые методы
 
 };
@@ -200,6 +205,28 @@ void MCamera<T>::Convert3Dto2DGeometry(const MGeometry<T,4> &geometry_3d, MGeome
  for(size_t i=0;i<geometry_2d.GetNumBorders();i++)
   geometry_2d.Border(i)=geometry_3d.Border(i);
 }
+
+
+/// ѕреобразует 3D геометрию в 2D
+/// geometry_3d - N строк по 3 координаты точек
+/// geometry_2d - N строк по 2 координаты точек
+template<class T>
+void MCamera<T>::Convert3Dto2DGeometry(const MDMatrix<T> &geometry_3d, MDMatrix<T> &geometry_2d)
+{
+ geometry_2d.Resize(geometry_3d.GetRows(),2);
+ for(size_t i=0;i<geometry_3d.GetRows();i++)
+ {
+  MVector<T,4> v;
+  for(int j=0;j<3;j++)
+   v(j)=geometry_3d(i,j);
+  v(3)=1;
+  MVector<T,3> res;
+  res=CalcScreenBySpacePoint(v);
+  for(int j=0;j<2;j++)
+   geometry_2d(i,j)=res(j);
+ }
+}
+
 
 // ****************************************************************************
 // MCameraStandard
