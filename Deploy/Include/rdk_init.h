@@ -364,6 +364,9 @@ RDK_LIB_TYPE const char* RDK_CALL Model_GetComponentLongId(const char* stringid,
 // если stringid - пустая строка, то возвращает имя класса модели
 RDK_LIB_TYPE const char* RDK_CALL Model_GetComponentClassName(const char* stringid);
 
+// Возвращает список свойств компонента разделенный запятыми
+RDK_LIB_TYPE const char* RDK_CALL Model_GetComponentPropertiesList(const char* stringid, unsigned int type_mask);
+
 // Возвращает свойства компонента по идентификатору
 RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentProperties(const char *stringid, unsigned int type_mask);
 

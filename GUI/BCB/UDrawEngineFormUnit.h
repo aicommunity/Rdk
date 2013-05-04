@@ -36,6 +36,10 @@ __published:	// IDE-managed Components
 	TLabeledEdit *RectHeightLabeledEdit;
 	TButton *ApplyButton;
 	TButton *RestoreButton;
+	TMenuItem *Createlonglink1;
+	TMenuItem *Finishlonglink1;
+	TMenuItem *Cancellonglink1;
+	TMenuItem *N2;
 	void __fastcall ImageMouseDown(TObject *Sender, TMouseButton Button, TShiftState Shift,
           int X, int Y);
 	void __fastcall ImageMouseMove(TObject *Sender, TShiftState Shift, int X, int Y);
@@ -53,6 +57,9 @@ __published:	// IDE-managed Components
 	void __fastcall ApplyButtonClick(TObject *Sender);
 	void __fastcall RestoreButtonClick(TObject *Sender);
 	void __fastcall FontTypeComboBoxSelect(TObject *Sender);
+	void __fastcall Createlonglink1Click(TObject *Sender);
+	void __fastcall Finishlonglink1Click(TObject *Sender);
+	void __fastcall Cancellonglink1Click(TObject *Sender);
 
 private:	// User declarations
 public:		// User declarations
@@ -84,7 +91,7 @@ RDK::USerStorageXML NetXml;
 
 TShiftState DownShift;
 
-int StartX,StartY,StopX,StopY;
+int StartX,StartY,StopX,StopY,PopupX,PopupY;
 
 std::string StartName,StopName;
 
@@ -96,6 +103,9 @@ std::string FontFileName;
 
 // Флаг, выставляемый в процессе drag&drop
 bool DragDropFlag;
+
+// Флаг, выставляемый в процессе создания "длинной" связи
+bool LongLinkFlag;
 
 // -----------------------------
 // Методы управления визуальным интерфейсом

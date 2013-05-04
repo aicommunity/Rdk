@@ -1490,6 +1490,45 @@ const char* UEngine::Model_GetComponentClassName(const char* stringid)
  return TempString.c_str();
 }
 
+// Возвращает список свойств компонента разделенный запятыми
+const char* UEngine::Model_GetComponentPropertiesList(const char* stringid, unsigned int type_mask)
+{
+ try
+ {
+  TempString="";
+  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
+
+  if(!cont)
+   return TempString.c_str();
+
+  RDK::UContainer::VariableMapT props=cont->GetPropertiesList();
+
+  RDK::UContainer::VariableMapCIteratorT I,J;
+
+  I=props.begin();
+  J=props.end();
+  while(I != J)
+  {
+   if(I->second.CheckMask(type_mask))
+   {
+	TempString+=I->first;
+	++I;
+	if(I != J)
+	 TempString+=",";
+   }
+   else
+  	++I;
+  }
+
+  return TempString.c_str();
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
 // Возвращает свойства компонента по идентификатору
 const char* UEngine::Model_GetComponentProperties(const char *stringid, unsigned int type_mask)
 {

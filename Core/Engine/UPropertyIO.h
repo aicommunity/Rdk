@@ -55,7 +55,7 @@ int GetMaxRange(void)
 
 };
       */
-template<typename T, typename OwnerT, unsigned int type>
+template<typename T, typename OwnerT, unsigned int type=ptPubInput>
 class UPropertyInputBase: protected ULProperty<T,OwnerT,type>, /*public UPropertyIOBase, */public UIPropertyInput
 {
 protected:
@@ -192,7 +192,7 @@ operator T* (void) const
 };
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-template<typename T, typename OwnerT, unsigned int type>
+template<typename T, typename OwnerT, unsigned int type=ptPubInput>
 class UPropertyInputCBase: public UCLProperty<std::vector<T*>,OwnerT,type>, /*public UPropertyIOBase, */public UIPropertyInput
 {
 protected:
@@ -303,7 +303,7 @@ UPropertyInputCData(const string &name, OwnerT * const owner, int min_range, int
 // -----------------------------------------------------------------------------
 // Output properties
 // -----------------------------------------------------------------------------
-template<typename T, typename OwnerT, unsigned int type>
+template<typename T, typename OwnerT, unsigned int type=ptPubOutput>
 class UPropertyOutputBase: protected ULProperty<T,OwnerT,type>, /*public UPropertyIOBase, */public UIPropertyOutput
 {
 protected:
@@ -396,7 +396,7 @@ UPropertyOutputData(const string &name, OwnerT * const owner, int min_range, int
 // -----------------------------
 };
 
-template<typename T, typename OwnerT, unsigned int type>
+template<typename T, typename OwnerT, unsigned int type=ptPubOutput>
 class UPropertyOutputCBase: protected UCLProperty<std::vector<T>,OwnerT,type>, /*public UPropertyIOBase, */public UIPropertyOutput
 {
 protected:

@@ -50,9 +50,10 @@ void __fastcall TUComponentIOFrame::ShowInputs(void)
 {
  int current_row=StringGrid->Row;
 
- StringGrid->ColCount=3;
+ StringGrid->ColCount=4;
  StringGrid->Cells[1][0]="#";
  StringGrid->Cells[2][0]="Вход";
+ StringGrid->Cells[3][0]="Имя входа";
 
  RDK::ULongIdVector buffer;
 
@@ -86,9 +87,10 @@ void __fastcall TUComponentIOFrame::ShowOutputs(void)
 {        
  int current_row=StringGrid->Row;
 
- StringGrid->ColCount=3;
+ StringGrid->ColCount=4;
  StringGrid->Cells[1][0]="#";
  StringGrid->Cells[2][0]="Выход";
+ StringGrid->Cells[3][0]="Имя выхода";
 
  RDK::ULongIdVector buffer;
 
@@ -125,7 +127,7 @@ void __fastcall TUComponentIOFrame::ShowInputsOutputs(void)
  StringGrid->ColCount=4;
  StringGrid->Cells[1][0]="#In";
  StringGrid->Cells[2][0]="Имя";
- StringGrid->Cells[2][0]="#Out";
+ StringGrid->Cells[3][0]="#Out";
 
  RDK::ULongIdVector itemsbuffer;
  std::string stringid;
@@ -250,6 +252,11 @@ void __fastcall TUComponentIOFrame::ShowLinks(void)
 void __fastcall TUComponentIOFrame::ShowOutputs(TStringGrid *string_grid, RDK::ULongIdVector &linkslist)
 {
  std::string stringid;
+
+ std::string properties_names;
+ std::vector<std::string> propertries_names_list;
+ properties_names=Model_GetComponentPropertiesList(stringid.c_str(),pgPublic | ptOutput);
+ RDK::separatestring(properties_names,propertries_names_list,',');
  for(int i=0;i<linkslist.GetSize();i++)
  {
   for(int j=0;j<Model_GetComponentNumOutputs(linkslist[i].EncodeToString(stringid).c_str());j++)
@@ -259,11 +266,19 @@ void __fastcall TUComponentIOFrame::ShowOutputs(TStringGrid *string_grid, RDK::U
    {
 	string_grid->Cells[0][string_grid->RowCount-1]=IntToStr(i);
 	string_grid->Cells[2][string_grid->RowCount-1]=Model_GetComponentLongName(stringid.c_str(),ViewComponentOwnerLongId.c_str());
+	if(propertries_names_list.size()>j)
+	 string_grid->Cells[3][string_grid->RowCount-1]=propertries_names_list[j].c_str();
+	else
+	 string_grid->Cells[3][string_grid->RowCount-1]="FAIL";
    }
    else
    {
 	string_grid->Cells[0][string_grid->RowCount-1]="";
 	string_grid->Cells[2][string_grid->RowCount-1]="";
+	if(propertries_names_list.size()>j)
+	 string_grid->Cells[3][string_grid->RowCount-1]=propertries_names_list[j].c_str();
+	else
+	 string_grid->Cells[3][string_grid->RowCount-1]="FAIL";
    }
    string_grid->Cells[1][string_grid->RowCount-1]=IntToStr(int(j));
   }
@@ -284,12 +299,13 @@ void __fastcall TUComponentIOFrame::ShowInputs(TStringGrid *string_grid, RDK::UL
    {
 	string_grid->Cells[0][string_grid->RowCount-1]=IntToStr(i);
 	string_grid->Cells[2][string_grid->RowCount-1]=Model_GetComponentLongName(stringid.c_str(),ViewComponentOwnerLongId.c_str());
+	string_grid->Cells[3][string_grid->RowCount-1]="имя входа-выхода";
    }
    else
    {
 	string_grid->Cells[0][string_grid->RowCount-1]="";
 	string_grid->Cells[2][string_grid->RowCount-1]="";
-
+	string_grid->Cells[3][string_grid->RowCount-1]="";
    }
    string_grid->Cells[1][string_grid->RowCount-1]=IntToStr(j);
   }
@@ -362,13 +378,15 @@ void __fastcall TUComponentIOFrame::FrameResize(TObject *Sender)
  case 1:
   StringGrid->ColWidths[0]=40;
   StringGrid->ColWidths[1]=40;
-  StringGrid->ColWidths[2]=StringGrid->Width-StringGrid->ColWidths[0]-StringGrid->ColWidths[1];
+  StringGrid->ColWidths[2]=(StringGrid->Width-StringGrid->ColWidths[0]-StringGrid->ColWidths[1])/2;
+  StringGrid->ColWidths[3]=(StringGrid->Width-StringGrid->ColWidths[0]-StringGrid->ColWidths[1])/2;
  break;
 
  case 2:
   StringGrid->ColWidths[0]=40;
   StringGrid->ColWidths[1]=40;
-  StringGrid->ColWidths[2]=StringGrid->Width-StringGrid->ColWidths[0]-StringGrid->ColWidths[1];
+  StringGrid->ColWidths[2]=(StringGrid->Width-StringGrid->ColWidths[0]-StringGrid->ColWidths[1])/2;
+  StringGrid->ColWidths[3]=(StringGrid->Width-StringGrid->ColWidths[0]-StringGrid->ColWidths[1])/2;
  break;
 
  case 3:

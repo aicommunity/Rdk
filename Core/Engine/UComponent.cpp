@@ -74,6 +74,10 @@ std::string UVariable::GetPropertyTypeNameByType(unsigned int type)
   return std::string("State");
  case ptTemp:
   return std::string("Temp");
+ case ptInput:
+  return std::string("Input");
+ case ptOutput:
+  return std::string("Output");
 
  default:
   return std::string("ptUnknown");
@@ -91,6 +95,10 @@ unsigned int UVariable::GetPropertyTypeByTypeName(const std::string &name)
   return ptState;
  if(name == "Temp")
   return ptTemp;
+ if(name == "Input")
+  return ptInput;
+ if(name == "Output")
+  return ptOutput;
 
  return 0;
 }
