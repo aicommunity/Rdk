@@ -52,6 +52,11 @@ __published:	// IDE-managed Components
 	TSplitter *Splitter4;
 	TRichEdit *StateValueRichEdit;
 	TPanel *ClassNamePanel;
+	TMenuItem *Moveup1;
+	TMenuItem *Movedown1;
+	TMenuItem *Rename1;
+	TMenuItem *N1;
+	TMenuItem *N2;
 	void __fastcall FrameResize(TObject *Sender);
 	void __fastcall StringGridDblClick(TObject *Sender);
 	void __fastcall StringGridSelectCell(TObject *Sender, int ACol, int ARow, bool &CanSelect);
@@ -81,6 +86,9 @@ __published:	// IDE-managed Components
           THeaderSection *Section);
 	void __fastcall HeaderControl3SectionClick(THeaderControl *HeaderControl, THeaderSection *Section);
 	void __fastcall HeaderControl1SectionClick(THeaderControl *HeaderControl, THeaderSection *Section);
+	void __fastcall Moveup1Click(TObject *Sender);
+	void __fastcall Movedown1Click(TObject *Sender);
+	void __fastcall Rename1Click(TObject *Sender);
 
 
 

@@ -3064,7 +3064,8 @@ int UEngine::Model_LoadComponent(RDK::UNet* cont, RDK::USerStorageXML *serstorag
 
   cont->DelAllComponents();
 
-  serstorage->SelectNode("Components");
+  if(!serstorage->SelectNode("Components"))
+   return false;
   UStorage* storage=cont->GetStorage();
   for(int i=0;i<serstorage->GetNumNodes();i++)
   {

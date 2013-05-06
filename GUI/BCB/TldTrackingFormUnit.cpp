@@ -70,16 +70,17 @@ void TTldTrackingForm::AAfterCalculate(void)
  if(VideoSourceComboBox->ItemIndex >= 0)
   video_index=VideoSourceComboBox->ItemIndex;
 
- RDK::UBitmap* bmp=0;
- if(VideoOutputForm->GetVideoOutputFrame(VideoSourceComboBox->ItemIndex))
+ const RDK::UBitmap* bmp=(const RDK::UBitmap*)Model_GetComponentBitmapInput(ComponentControlName.c_str(), 0);
+ if(bmp)
  {
+  const_cast<RDK::UBitmap*>(bmp)->ReflectionX(&ResultBmp);
+//  ResultBmp=*bmp;
+
   VideoOutputFrame1->ZoneSelectEnable=true;
-  ResultBmp=VideoOutputForm->GetVideoOutputFrame(VideoSourceComboBox->ItemIndex)->BmpSource;
+  VideoOutputFrame1->InitByBmp(ResultBmp);
  }
  else
   ResultBmp.Fill(0);
-
- VideoOutputFrame1->InitByBmp(ResultBmp);
 
  const RDK::MDMatrix<double> *results;
  results=(const RDK::MDMatrix<double>*)(Model_GetComponentOutputAsMatrix(ComponentControlName.c_str(), 0));
@@ -149,7 +150,13 @@ void __fastcall TTldTrackingForm::GetFrameButtonClick(TObject *Sender)
  if(VideoOutputForm->GetVideoOutputFrame(VideoSourceComboBox->ItemIndex))
  {
   VideoOutputFrame1->ZoneSelectEnable=true;
-  VideoOutputFrame1->InitByBmp(VideoOutputForm->GetVideoOutputFrame(VideoSourceComboBox->ItemIndex)->BmpSource);
+  const RDK::UBitmap* bmp=(const RDK::UBitmap*)Model_GetComponentBitmapInput(ComponentControlName.c_str(), 0);
+  if(bmp)
+  {
+   const_cast<RDK::UBitmap*>(bmp)->ReflectionX(&ResultBmp);
+   VideoOutputFrame1->InitByBmp(ResultBmp);
+   ResultBmp.ReflectionX();
+  }
  }
 }
 //---------------------------------------------------------------------------
