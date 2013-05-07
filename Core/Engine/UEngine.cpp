@@ -1511,13 +1511,13 @@ const char* UEngine::Model_GetComponentPropertiesList(const char* stringid, unsi
   {
    if(I->second.CheckMask(type_mask))
    {
-	TempString+=I->first;
-	++I;
-	if(I != J)
+	if(TempString.size()>0)
 	 TempString+=",";
+	TempString+=I->first;
+	TempString+=":";
+	TempString+=sntoa(I->second.Property->GetMinRange());
    }
-   else
-  	++I;
+   ++I;
   }
 
   return TempString.c_str();

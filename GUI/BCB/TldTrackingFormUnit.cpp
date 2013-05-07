@@ -249,7 +249,7 @@ void __fastcall TTldTrackingForm::CopyTrackerDataButtonClick(TObject *Sender)
 void __fastcall TTldTrackingForm::SaveTrackerDataButtonClick(TObject *Sender)
 {
  std::string filename=AnsiString(UGEngineControlForm->ProjectPath).c_str();
- filename+="TrackerData";
+ filename+=ComponentControlName.c_str();
  filename+=RDK::sntoa(ObjectReceiverComboBox->ItemIndex);
  filename+=".tld";
  Model_SetComponentPropertyData(ComponentControlName.c_str(), "TrackerDataFileName", &filename);
@@ -262,13 +262,18 @@ void __fastcall TTldTrackingForm::SaveTrackerDataButtonClick(TObject *Sender)
 void __fastcall TTldTrackingForm::LoadTrackerDataButtonClick(TObject *Sender)
 {
  std::string filename=AnsiString(UGEngineControlForm->ProjectPath).c_str();
- filename+="TrackerData";
+ filename+=ComponentControlName.c_str();
  filename+=RDK::sntoa(ObjectReceiverComboBox->ItemIndex);
  filename+=".tld";
+
+ if(!OpenDialog1->Execute())
+  return;
+
+ filename=AnsiString(OpenDialog1->FileName).c_str();
  Model_SetComponentPropertyData(ComponentControlName.c_str(), "TrackerDataFileName", &filename);
  int item_index=ObjectReceiverComboBox->ItemIndex;
  Model_SetComponentPropertyData(ComponentControlName.c_str(), "LoadTrackerDataIndex", &item_index);
- //UEngineMonitorForm->EngineMonitorFrame->Step1Click(Sender);
+ Env_Calculate(ComponentControlName.c_str());
 }
 //---------------------------------------------------------------------------
 
