@@ -276,6 +276,46 @@ MDMatrix<T> CalcObjectPositionMatrixD(const MDMatrix<T> &anglesANDshifts)
  return res;
 }
 
+
+//3.2.1 //for SetEcc
+template<class T>
+MMatrix<T,4,4> CalcObjectPositionMatrixM(const MDMatrix<T> &anglesANDshifts)
+{
+	MMatrix<T,4,4> res;
+
+    MDVector<T> AnS(6);
+    if(anglesANDshifts.GetCols()==1) AnS=anglesANDshifts;
+    else AnS=anglesANDshifts.Transpose();
+
+	T cos_gamma, sin_gamma, cos_beta, sin_beta, cos_alpha, sin_alpha;
+	cos_gamma       = cos(AnS(0));
+	sin_gamma       = sin(AnS(0));
+	cos_beta       = cos(AnS(1));
+	sin_beta       = sin(AnS(1));
+	cos_alpha       = cos(AnS(2));
+	sin_alpha       = sin(AnS(2));
+
+	res(0,0)=cos_alpha*cos_beta;
+	res(1,0)=-sin_gamma*sin_beta*cos_alpha+cos_gamma*sin_alpha;
+	res(2,0)=cos_gamma*sin_beta*cos_alpha+sin_gamma*sin_alpha;
+	res(0,1)=-cos_beta * sin_alpha;
+	res(1,1)=sin_gamma*sin_beta*sin_alpha+cos_gamma*cos_alpha;
+	res(2,1)=-cos_gamma*sin_beta*sin_alpha+sin_gamma*cos_alpha;
+	res(0,2)=-sin_beta;
+	res(1,2)=-sin_gamma*cos_beta;
+	res(2,2)=cos_gamma*cos_beta;
+
+	res(0,3)=AnS(3);
+	res(1,3)=AnS(4);
+	res(2,3)=AnS(5);
+
+	res(3,0)=0;
+	res(3,1)=0;
+	res(3,2)=0;
+	res(3,3)=1;
+ return res;
+}
+
 //4.1
 template<class T>
 void CalcObjectAnglesAndShiftsD(const MDMatrix<T> &ExtMat, MDVector<T> &angles, MDVector<T> &shifts)

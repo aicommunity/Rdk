@@ -10,6 +10,8 @@ inherited UComponentIOFrame: TUComponentIOFrame
     Width = 599
     Height = 403
     Align = alClient
+    ColCount = 7
+    RowCount = 6
     Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goDrawFocusSelected, goColSizing, goRowSelect]
     TabOrder = 0
   end
