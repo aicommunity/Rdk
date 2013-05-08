@@ -251,4 +251,9 @@ object TldTrackingForm: TTldTrackingForm
       end
     end
   end
+  object OpenDialog1: TOpenDialog
+    Options = [ofHideReadOnly, ofPathMustExist, ofFileMustExist, ofEnableSizing]
+    Left = 296
+    Top = 192
+  end
 end

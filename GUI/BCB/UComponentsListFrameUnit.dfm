@@ -399,5 +399,23 @@ inherited UComponentsListFrame: TUComponentsListFrame
       Caption = 'GUI'
       OnClick = GUI1Click
     end
+    object N1: TMenuItem
+      Caption = '-'
+    end
+    object Moveup1: TMenuItem
+      Caption = 'Move up'
+      OnClick = Moveup1Click
+    end
+    object Movedown1: TMenuItem
+      Caption = 'Move down'
+      OnClick = Movedown1Click
+    end
+    object N2: TMenuItem
+      Caption = '-'
+    end
+    object Rename1: TMenuItem
+      Caption = 'Rename'
+      OnClick = Rename1Click
+    end
   end
 end

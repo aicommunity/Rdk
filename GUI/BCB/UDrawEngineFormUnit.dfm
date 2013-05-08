@@ -174,8 +174,25 @@ object UDrawEngineForm: TUDrawEngineForm
     Left = 384
     Top = 176
     object Breakinputlink1: TMenuItem
-      Caption = 'Break input link'
+      Caption = 'Break link'
       OnClick = Breakinputlink1Click
+    end
+    object N2: TMenuItem
+      Caption = '-'
+    end
+    object Createlonglink1: TMenuItem
+      Caption = 'Create link'
+      OnClick = Createlonglink1Click
+    end
+    object Finishlonglink1: TMenuItem
+      Caption = 'Finish link'
+      Enabled = False
+      OnClick = Finishlonglink1Click
+    end
+    object Cancellonglink1: TMenuItem
+      Caption = 'Cancel link'
+      Enabled = False
+      OnClick = Cancellonglink1Click
     end
   end
 end

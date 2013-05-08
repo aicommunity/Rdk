@@ -12,6 +12,7 @@
 #include "TUVisualControllerFrameUnit.h"
 #include "VideoOutputFrameUnit.h"
 #include "TUVisualControllerFormUnit.h"
+#include <Vcl.Dialogs.hpp>
 //---------------------------------------------------------------------------
 class TTldTrackingForm : public TUVisualControllerForm
 {
@@ -35,6 +36,7 @@ __published:	// IDE-managed Components
 	TButton *CopyTrackerDataButton;
 	TButton *SaveTrackerDataButton;
 	TButton *LoadTrackerDataButton;
+	TOpenDialog *OpenDialog1;
 	void __fastcall StartTrackingButtonClick(TObject *Sender);
 	void __fastcall StopTrackingButtonClick(TObject *Sender);
 	void __fastcall GetFrameButtonClick(TObject *Sender);

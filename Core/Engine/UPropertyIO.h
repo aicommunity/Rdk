@@ -55,7 +55,7 @@ int GetMaxRange(void)
 
 };
       */
-template<typename T, typename OwnerT, unsigned int type>
+template<typename T, typename OwnerT, unsigned int type=ptPubInput>
 class UPropertyInputBase: protected ULProperty<T,OwnerT,type>, /*public UPropertyIOBase, */public UIPropertyInput
 {
 protected:
@@ -70,9 +70,9 @@ public: // Методы
 UPropertyInputBase(const string &name, OwnerT * const owner, int min_range, int input_type, int max_range=-1)
  : ULProperty<T,OwnerT,type>(name, owner)
 {
- IoType=input_type;
- MinRange=min_range;
- MaxRange=max_range;
+ UVBaseDataProperty<T>::IoType=input_type;
+ UVBaseDataProperty<T>::MinRange=min_range;
+ UVBaseDataProperty<T>::MaxRange=max_range;
 };
 // -----------------------------
 
@@ -192,7 +192,7 @@ operator T* (void) const
 };
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-template<typename T, typename OwnerT, unsigned int type>
+template<typename T, typename OwnerT, unsigned int type=ptPubInput>
 class UPropertyInputCBase: public UCLProperty<std::vector<T*>,OwnerT,type>, /*public UPropertyIOBase, */public UIPropertyInput
 {
 protected:
@@ -207,9 +207,9 @@ public: // Методы
 UPropertyInputCBase(const string &name, OwnerT * const owner, int min_range, int input_type, int max_range=-1)
  : UCLProperty<std::vector<T*>,OwnerT,type>(name, owner)
 {
- IoType=input_type;
- MinRange=min_range;
- MaxRange=max_range;
+ this->IoType=input_type;
+ this->MinRange=min_range;
+ this->MaxRange=max_range;
 };
 // -----------------------------
 
@@ -219,17 +219,17 @@ UPropertyInputCBase(const string &name, OwnerT * const owner, int min_range, int
 // Возвращает указатель на данные входа
 void const * GetPointer(int index) const
 {
- if(int(this->v.size())<=index-MinRange)
+ if(int(this->v.size())<=index-this->MinRange)
   return 0;
- return this->v[index-MinRange];
+ return this->v[index-this->MinRange];
 }
 
 // Устанавливает указатель на данные входа
 bool SetPointer(int index, void* value)
 {
- if(int(this->v.size())<=index-MinRange)
-  this->v.resize(index-MinRange+1);
- this->v[index-MinRange]=reinterpret_cast<T*>(value);
+ if(int(this->v.size())<=index-this->MinRange)
+  this->v.resize(index-this->MinRange+1);
+ this->v[index-this->MinRange]=reinterpret_cast<T*>(value);
  return true;
 }
 
@@ -303,7 +303,7 @@ UPropertyInputCData(const string &name, OwnerT * const owner, int min_range, int
 // -----------------------------------------------------------------------------
 // Output properties
 // -----------------------------------------------------------------------------
-template<typename T, typename OwnerT, unsigned int type>
+template<typename T, typename OwnerT, unsigned int type=ptPubOutput>
 class UPropertyOutputBase: protected ULProperty<T,OwnerT,type>, /*public UPropertyIOBase, */public UIPropertyOutput
 {
 protected:
@@ -316,9 +316,9 @@ public: // Методы
 UPropertyOutputBase(const string &name, OwnerT * const owner, int min_range, int input_type, int max_range=-1)
  : ULProperty<T,OwnerT,type>(name, owner)
 {
- IoType=input_type;
- MinRange=min_range;
- MaxRange=max_range;
+ this->IoType=input_type;
+ this->MinRange=min_range;
+ this->MaxRange=max_range;
 };
 // -----------------------------
 
@@ -396,7 +396,7 @@ UPropertyOutputData(const string &name, OwnerT * const owner, int min_range, int
 // -----------------------------
 };
 
-template<typename T, typename OwnerT, unsigned int type>
+template<typename T, typename OwnerT, unsigned int type=ptPubOutput>
 class UPropertyOutputCBase: protected UCLProperty<std::vector<T>,OwnerT,type>, /*public UPropertyIOBase, */public UIPropertyOutput
 {
 protected:
@@ -409,9 +409,9 @@ public: // Методы
 UPropertyOutputCBase(const string &name, OwnerT * const owner, int min_range, int input_type, int max_range=-1)
  : UCLProperty<std::vector<T>,OwnerT,type>(name, owner)
 {
- IoType=input_type;
- MinRange=min_range;
- MaxRange=max_range;
+ this->IoType=input_type;
+ this->MinRange=min_range;
+ this->MaxRange=max_range;
 };
 // -----------------------------
 
@@ -475,9 +475,9 @@ public: // Методы
 UVPropertyOutputBase(OwnerT * const owner, T* data, int min_range, int input_type, int max_range=-1)
  : UVProperty<T,OwnerT>(owner,data)
 {
- IoType=input_type;
- MinRange=min_range;
- MaxRange=max_range;
+ this->IoType=input_type;
+ this->MinRange=min_range;
+ this->MaxRange=max_range;
 };
 // -----------------------------
 

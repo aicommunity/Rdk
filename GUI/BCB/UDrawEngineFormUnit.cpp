@@ -24,6 +24,7 @@ __fastcall TUDrawEngineForm::TUDrawEngineForm(TComponent* Owner)
  DrawEngine.SetEngine(&Graph);
  UpdateInterval=-1;
  DragDropFlag=false;
+ LongLinkFlag=false;
 }
 
 // -----------------------------
@@ -233,18 +234,24 @@ void __fastcall TUDrawEngineForm::ImageMouseDown(TObject *Sender, TMouseButton B
 		  TShiftState Shift, int X, int Y)
 {
  DownShift=Shift;
- if(DownShift.Contains(ssShift))
+// if(DownShift.Contains(ssShift))
+ if(DownShift.Contains(ssRight))
  {
-  BreakLinkComponentName=DrawEngine.FindComponent(X,Y);
+  std::string name=DrawEngine.FindComponent(X,Y);
   TPoint pos=Mouse->CursorPos;
-  if(!BreakLinkComponentName.empty())
+  PopupX=X; PopupY=Y;
+  if(!name.empty())
    PopupMenu->Popup(pos.X,pos.Y);
   return;
  }
- MoveComponentName=StartName=DrawEngine.FindComponent(X,Y);
- if(MoveComponentName != "")
+
+ if(!LongLinkFlag)
  {
-  StartX=X; StartY=Y;
+  MoveComponentName=DrawEngine.FindComponent(X,Y);
+  if(MoveComponentName != "")
+  {
+   StartX=X; StartY=Y;
+  }
  }
 }
 //---------------------------------------------------------------------------
@@ -260,8 +267,8 @@ void __fastcall TUDrawEngineForm::ImageMouseMove(TObject *Sender, TShiftState Sh
   DrawEngine.MoveComponent(MoveComponentName, X,Y);
   UpdateInterface();
  }
- else
- if(DownShift.Contains(ssRight) && !StartName.empty())
+ /*
+ if(LongLinkFlag)//DownShift.Contains(ssRight) && !StartName.empty())
  {
   ShowCanvas>>Image->Picture->Bitmap;
   Image->Canvas->Pen->Color=clGreen;
@@ -270,7 +277,7 @@ void __fastcall TUDrawEngineForm::ImageMouseMove(TObject *Sender, TShiftState Sh
   Image->Canvas->PenPos=TPoint(StartX,StartY);
   Image->Canvas->LineTo(StopX,StopY);
  }
-
+*/
 }
 //---------------------------------------------------------------------------
 
@@ -311,43 +318,17 @@ void __fastcall TUDrawEngineForm::ImageMouseUp(TObject *Sender, TMouseButton But
    ImageDragDrop(Sender, UClassesListFrame->StringGrid, X, Y);
   }
  }
- else
+/* else
  if(DownShift.Contains(ssRight) && !DownShift.Contains(ssDouble))
  {
-  StopName=DrawEngine.FindComponent(StopX,StopY);
-  if(StartName.empty() || StopName.empty())
-   return;
-
-  // Отображаем окно установки связи
-  std::string full_start_name;
-  std::string full_stop_name;
-  if(ComponentName.empty())
+  if(!LongLinkFlag)
   {
-   full_start_name=StartName;
-   full_stop_name=StopName;
+   PopupX=X; PopupY=Y;
+   Finishlonglink1Click(Sender);
   }
-  else
-  {
-   full_start_name=ComponentName+std::string(".")+StartName;
-   full_stop_name=ComponentName+std::string(".")+StopName;
-  }
-
-  UComponentLinksForm->UComponentLinksFrame->Init(1, full_start_name,ComponentName,full_stop_name);
-
-  if(UComponentLinksForm->Visible)
-   UComponentLinksForm->Hide();
-  if(UComponentLinksForm->ShowModal() == mrOk)
-  {
-   UComponentLinksForm->UComponentLinksFrame->UpdateInterface();
-//   SetNet(UComponentsControlForm->ComponentsControlFrame->ComponentsListFrame->GetCurrentComponentName());
-   ReloadNet();
-   UpdateInterface();
-  }
- }
+ }*/
 
  StartX=StartY=StopX=StopY=-1;
- StartName.clear();
- StopName.clear();
 }
 //---------------------------------------------------------------------------
 
@@ -385,7 +366,7 @@ void __fastcall TUDrawEngineForm::ImageDragDrop(TObject *Sender, TObject *Source
   return;
  DragDropFlag=false;
 
- std::string classname=AnsiString(UClassesListFrame->GetSelectedId()).c_str();
+ std::string classname=AnsiString(UClassesListFrame->GetSelectedName()).c_str();
  const char* pname=Model_AddComponent(ComponentName.c_str(), classname.c_str());
  if(pname)
  {
@@ -421,14 +402,16 @@ void __fastcall TUDrawEngineForm::ImageDragOver(TObject *Sender, TObject *Source
 
 void __fastcall TUDrawEngineForm::Breakinputlink1Click(TObject *Sender)
 {
-  if(BreakLinkComponentName.empty())
+ std::string name=DrawEngine.FindComponent(PopupX,PopupY);
+ PopupX=-1; PopupY=-1;
+  if(name.empty())
    return;
   if(!ComponentName.empty())
   {
-   BreakLinkComponentName=ComponentName+std::string(".")+BreakLinkComponentName;
+   name=ComponentName+std::string(".")+name;
   }
 
-  UComponentLinksForm->UComponentLinksFrame->Init(2, BreakLinkComponentName,ComponentName);
+  UComponentLinksForm->UComponentLinksFrame->Init(2, name,ComponentName);
   if(UComponentLinksForm->ShowModal() == mrOk)
   {
    UComponentLinksForm->UComponentLinksFrame->UpdateInterface();
@@ -483,6 +466,92 @@ void __fastcall TUDrawEngineForm::FontTypeComboBoxSelect(TObject *Sender)
 
  FontType=AnsiString(FontTypeComboBox->Text).c_str();
  UpdateInterface(true);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUDrawEngineForm::Createlonglink1Click(TObject *Sender)
+{
+ LongLinkFlag=true;
+ Image->Cursor=crCross;
+ Createlonglink1->Enabled=false;
+ Finishlonglink1->Enabled=true;
+ Cancellonglink1->Enabled=true;
+ Breakinputlink1->Enabled=false;
+
+ if(ComponentName.empty())
+ {
+  StartName=DrawEngine.FindComponent(PopupX,PopupY);
+ }
+ else
+ {
+  StartName=ComponentName+std::string(".")+DrawEngine.FindComponent(PopupX,PopupY);
+ }
+
+ //StartX=PopupX; StartY=PopupY;
+ PopupX=-1;
+ PopupY=-1;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUDrawEngineForm::Finishlonglink1Click(TObject *Sender)
+{
+ if(ComponentName.empty())
+ {
+  StopName=DrawEngine.FindComponent(PopupX,PopupY);
+ }
+ else
+ {
+  StopName=ComponentName+std::string(".")+DrawEngine.FindComponent(PopupX,PopupY);
+ }
+ PopupX=-1;
+ PopupY=-1;
+
+ if(StartName.empty() || StopName.empty())
+  return;
+
+ // Отображаем окно установки связи
+/* std::string full_start_name;
+ std::string full_stop_name;
+ if(ComponentName.empty())
+ {
+  full_start_name=StartName;
+  full_stop_name=StopName;
+ }
+ else
+ {
+  full_start_name=ComponentName+std::string(".")+StartName;
+  full_stop_name=ComponentName+std::string(".")+StopName;
+ }
+
+ UComponentLinksForm->UComponentLinksFrame->Init(1, full_start_name,ComponentName,full_stop_name);
+  */
+ UComponentLinksForm->UComponentLinksFrame->Init(1, StartName,"",StopName);
+ if(UComponentLinksForm->Visible)
+  UComponentLinksForm->Hide();
+ if(UComponentLinksForm->ShowModal() == mrOk)
+ {
+  UComponentLinksForm->UComponentLinksFrame->UpdateInterface();
+//   SetNet(UComponentsControlForm->ComponentsControlFrame->ComponentsListFrame->GetCurrentComponentName());
+  ReloadNet();
+  UpdateInterface();
+ }
+
+ Cancellonglink1Click(Sender);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUDrawEngineForm::Cancellonglink1Click(TObject *Sender)
+{
+ StartX=StartY=StopX=StopY=-1;
+ StartName.clear();
+ StopName.clear();
+
+ Createlonglink1->Enabled=true;
+ Finishlonglink1->Enabled=false;
+ Cancellonglink1->Enabled=false;
+ Breakinputlink1->Enabled=true;
+ Image->Cursor=crDefault;
+ LongLinkFlag=false;
 }
 //---------------------------------------------------------------------------
 

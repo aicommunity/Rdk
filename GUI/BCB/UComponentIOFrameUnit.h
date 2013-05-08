@@ -63,6 +63,9 @@ void __fastcall ShowInputsOutputs(void);
 
 // Заполняет таблицу установленными связями
 void __fastcall ShowLinks(void);
+
+// Декодирует список свойств-входов/выходов в map
+void DecodePropertiesIOList(const std::string &source, std::map<int, std::string> &result);
 // -----------------
 
 // -----------------

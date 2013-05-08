@@ -113,6 +113,10 @@ T Det(void) const;
 MDMatrix<T>& GetMinor(MDMatrix<T> &res, int row, int col) const;
 MDMatrix<T> GetMinor(int row, int col) const;
 
+// Выделяет часть матрицы
+MDMatrix<T>& Split(MDMatrix<T> &res, int row_beg, int row_end, int col_beg, int col_end) const;
+MDMatrix<T> Split(int row_beg, int row_end, int col_beg, int col_end) const;
+
 // След
 T Trace(void) const;
 
@@ -718,6 +722,23 @@ MDMatrix<T> MDMatrix<T>::GetMinor(int row, int col) const
 {
  MDMatrix<T> res(Rows-1,Cols-1);
  return GetMinor(res,row,col);
+}
+
+// Выделяет часть матрицы
+template<class T>
+MDMatrix<T>& MDMatrix<T>::Split(MDMatrix<T> &res, int row_beg, int row_end, int col_beg, int col_end) const
+{
+	for(int i=row_beg;i<=row_end;i++)
+		for(int j=col_beg;j<=col_end;j++)
+			res(i-row_beg,j-col_beg)=(*this)(i,j);
+	return res;
+}
+
+template<class T>
+MDMatrix<T> MDMatrix<T>::Split(int row_beg, int row_end, int col_beg, int col_end) const
+{
+ MDMatrix<T> res(row_end-row_beg+1,col_end-col_beg+1);
+ return Split(res,row_beg, row_end, col_beg, col_end);
 }
 
 // След

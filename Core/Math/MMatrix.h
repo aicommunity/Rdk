@@ -124,6 +124,27 @@ T Det(void) const;
 MMatrix<T,Rows-1,Cols-1>& GetMinor(MMatrix<T,Rows-1,Cols-1> &res, unsigned row, unsigned col) const;
 MMatrix<T,Rows-1,Cols-1> GetMinor(unsigned row, unsigned col) const;
 
+
+// Выделяет часть матрицы
+template<unsigned row_beg, unsigned row_end, unsigned col_beg, unsigned col_end>
+MMatrix<T,row_end-row_beg+1,col_end-col_beg+1>& Split(MMatrix<T,row_end-row_beg+1,col_end-col_beg+1> &res) const
+{
+	for(int i=row_beg;i<=row_end;i++)
+		for(int j=col_beg;j<=col_end;j++)
+			res(i-row_beg,j-col_beg)=(*this)(i,j);
+	return res;
+}
+
+template<unsigned row_beg, unsigned row_end, unsigned col_beg, unsigned col_end>
+MMatrix<T,row_end-row_beg+1,col_end-col_beg+1> Split() const
+{
+ MMatrix<T,row_end-row_beg+1,col_end-col_beg+1> res;
+ return Split<row_beg, row_end, col_beg, col_end>(res);
+}
+
+
+
+
 // След
 T Trace(void) const;
 

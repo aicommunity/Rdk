@@ -205,7 +205,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::map<T1,T2> &data)
 // if(storage.GetNodeAttribute("Type") != "std::map")
 //  return storage;
 
- unsigned int size=0;
+ size_t size=0;
  size=atoi(storage.GetNodeAttribute("Size"));
  data.clear();
 
@@ -216,10 +216,16 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::map<T1,T2> &data)
  for(size_t i=0;i<size;i++)
  {
   if(!storage.SelectNode("elem",i))
-   return storage;
-  operator >>(storage,p);
-  data.insert(p);
-  storage.SelectUp();
+  {
+   std::pair<T1,T2> dummy_p;
+   data.insert(dummy_p);
+  }
+  else
+  {
+   operator >>(storage,p);
+   data.insert(p);
+   storage.SelectUp();
+  }
  }
 
  return storage;
@@ -267,10 +273,16 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::list<T> &data)
  for(size_t i=0;i<size;i++)
  {
   if(!storage.SelectNode("elem",i))
-   return storage;
-  operator >>(storage,p);
-  data.push_back(p);
-  storage.SelectUp();
+  {
+   T dummy_p;
+   data.push_back(dummy_p);
+  }
+  else
+  {
+   operator >>(storage,p);
+   data.push_back(p);
+   storage.SelectUp();
+  }
  }
 
  return storage;

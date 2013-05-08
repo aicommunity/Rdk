@@ -579,6 +579,12 @@ const char* RDK_CALL Model_GetComponentClassName(const char* stringid)
  return PEngine->Model_GetComponentClassName(stringid);
 }
 
+// Возвращает список свойств компонента разделенный запятыми
+const char* RDK_CALL Model_GetComponentPropertiesList(const char* stringid, unsigned int type_mask)
+{
+ return PEngine->Model_GetComponentPropertiesList(stringid,type_mask);
+}
+
 // Возвращает свойства компонента по идентификатору
 const char * RDK_CALL Model_GetComponentProperties(const char *stringid, unsigned int type_mask)
 {

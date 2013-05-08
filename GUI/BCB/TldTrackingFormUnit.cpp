@@ -70,16 +70,17 @@ void TTldTrackingForm::AAfterCalculate(void)
  if(VideoSourceComboBox->ItemIndex >= 0)
   video_index=VideoSourceComboBox->ItemIndex;
 
- RDK::UBitmap* bmp=0;
- if(VideoOutputForm->GetVideoOutputFrame(VideoSourceComboBox->ItemIndex))
+ const RDK::UBitmap* bmp=(const RDK::UBitmap*)Model_GetComponentBitmapInput(ComponentControlName.c_str(), 0);
+ if(bmp)
  {
+  const_cast<RDK::UBitmap*>(bmp)->ReflectionX(&ResultBmp);
+//  ResultBmp=*bmp;
+
   VideoOutputFrame1->ZoneSelectEnable=true;
-  ResultBmp=VideoOutputForm->GetVideoOutputFrame(VideoSourceComboBox->ItemIndex)->BmpSource;
+  VideoOutputFrame1->InitByBmp(ResultBmp);
  }
  else
   ResultBmp.Fill(0);
-
- VideoOutputFrame1->InitByBmp(ResultBmp);
 
  const RDK::MDMatrix<double> *results;
  results=(const RDK::MDMatrix<double>*)(Model_GetComponentOutputAsMatrix(ComponentControlName.c_str(), 0));
@@ -149,7 +150,13 @@ void __fastcall TTldTrackingForm::GetFrameButtonClick(TObject *Sender)
  if(VideoOutputForm->GetVideoOutputFrame(VideoSourceComboBox->ItemIndex))
  {
   VideoOutputFrame1->ZoneSelectEnable=true;
-  VideoOutputFrame1->InitByBmp(VideoOutputForm->GetVideoOutputFrame(VideoSourceComboBox->ItemIndex)->BmpSource);
+  const RDK::UBitmap* bmp=(const RDK::UBitmap*)Model_GetComponentBitmapInput(ComponentControlName.c_str(), 0);
+  if(bmp)
+  {
+   const_cast<RDK::UBitmap*>(bmp)->ReflectionX(&ResultBmp);
+   VideoOutputFrame1->InitByBmp(ResultBmp);
+   ResultBmp.ReflectionX();
+  }
  }
 }
 //---------------------------------------------------------------------------
@@ -242,7 +249,7 @@ void __fastcall TTldTrackingForm::CopyTrackerDataButtonClick(TObject *Sender)
 void __fastcall TTldTrackingForm::SaveTrackerDataButtonClick(TObject *Sender)
 {
  std::string filename=AnsiString(UGEngineControlForm->ProjectPath).c_str();
- filename+="TrackerData";
+ filename+=ComponentControlName.c_str();
  filename+=RDK::sntoa(ObjectReceiverComboBox->ItemIndex);
  filename+=".tld";
  Model_SetComponentPropertyData(ComponentControlName.c_str(), "TrackerDataFileName", &filename);
@@ -255,13 +262,18 @@ void __fastcall TTldTrackingForm::SaveTrackerDataButtonClick(TObject *Sender)
 void __fastcall TTldTrackingForm::LoadTrackerDataButtonClick(TObject *Sender)
 {
  std::string filename=AnsiString(UGEngineControlForm->ProjectPath).c_str();
- filename+="TrackerData";
+ filename+=ComponentControlName.c_str();
  filename+=RDK::sntoa(ObjectReceiverComboBox->ItemIndex);
  filename+=".tld";
+
+ if(!OpenDialog1->Execute())
+  return;
+
+ filename=AnsiString(OpenDialog1->FileName).c_str();
  Model_SetComponentPropertyData(ComponentControlName.c_str(), "TrackerDataFileName", &filename);
  int item_index=ObjectReceiverComboBox->ItemIndex;
  Model_SetComponentPropertyData(ComponentControlName.c_str(), "LoadTrackerDataIndex", &item_index);
- //UEngineMonitorForm->EngineMonitorFrame->Step1Click(Sender);
+ Env_Calculate(ComponentControlName.c_str());
 }
 //---------------------------------------------------------------------------
 

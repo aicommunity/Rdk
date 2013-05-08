@@ -683,7 +683,7 @@ ULinksListT<T>& UItem::GetLinks(ULinksListT<T> &linkslist, UEPtr<UContainer> net
    if(connector.Id.size() != 0)
    {
 	UCLink indexes=AssociatedConnectors[j][i]->GetCLink(UEPtr<UItem>(const_cast<UItem*>(this)));
-	item.Index=indexes.Output;
+	link.Item.Index=indexes.Output;
 	connector.Index=indexes.Input;
 
 	link.Connector.push_back(connector);
@@ -719,7 +719,7 @@ ULinksListT<T>& UItem::GetPersonalLinks(UEPtr<UContainer> cont, ULinksListT<T> &
    if(connector.Id.size() != 0)
    {
 	UCLink indexes=AssociatedConnectors[j][i]->GetCLink(UEPtr<UItem>(const_cast<UItem*>(this)));
-	item.Index=indexes.Output;
+	link.Item.Index=indexes.Output;
 	connector.Index=indexes.Input;
 
 	link.Connector.push_back(connector);
@@ -759,7 +759,7 @@ ULinksListT<T>& UItem::GetFullItemLinks(ULinksListT<T> &linkslist, UEPtr<UItem> 
    if(connector.Id.GetSize() != 0)
    {
 	UCLink indexes=AssociatedConnectors[j][i]->GetCLink(UEPtr<UItem>(const_cast<UItem*>(this)));
-	item.Index=indexes.Output;
+	link.Item.Index=indexes.Output;
 	connector.Index=indexes.Input;
 
 	link.Connector.push_back(connector);

@@ -413,7 +413,7 @@ double USerStorageXML::ReadFloat(const std::string &name, double default_value)
  if(!SelectNode(name))
   return default_value;
 
- double res=atoi(GetNodeText());
+ double res=atof(GetNodeText());
 
  SelectUp();
  return res;
@@ -424,7 +424,7 @@ double USerStorageXML::ReadFloat(const std::string &name, int node_index, double
  if(!SelectNode(name,node_index))
   return default_value;
 
- double res=atoi(GetNodeText());
+ double res=atof(GetNodeText());
 
  SelectUp();
  return res;
@@ -435,7 +435,7 @@ double USerStorageXML::ReadFloat(int node_index, double default_value)
  if(!SelectNode(node_index))
   return default_value;
 
- double res=atoi(GetNodeText());
+ double res=atof(GetNodeText());
 
  SelectUp();
  return res;

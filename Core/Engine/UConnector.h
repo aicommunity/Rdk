@@ -17,13 +17,9 @@ See file license.txt for more information
 
 namespace RDK {
 
-class UIPropertyIO;
+//class UIPropertyIO;
 
-enum { ipData=1, ipComp=2 };
-enum { ipSingle=16, ipRange=32, ipList=64 };
-enum { ipDataSingle=ipData|ipSingle, ipDataRange=ipData|ipRange,
-	   ipDataList=ipData|ipList, ipCompSingle=ipComp|ipSingle,
-	   ipCompRange=ipComp|ipRange, ipCompList=ipComp|ipList };
+
 
 class UItem;
 

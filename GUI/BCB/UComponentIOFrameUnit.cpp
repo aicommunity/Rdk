@@ -50,9 +50,10 @@ void __fastcall TUComponentIOFrame::ShowInputs(void)
 {
  int current_row=StringGrid->Row;
 
- StringGrid->ColCount=3;
+ StringGrid->ColCount=4;
  StringGrid->Cells[1][0]="#";
  StringGrid->Cells[2][0]="Вход";
+ StringGrid->Cells[3][0]="Имя входа";
 
  RDK::ULongIdVector buffer;
 
@@ -86,9 +87,10 @@ void __fastcall TUComponentIOFrame::ShowOutputs(void)
 {        
  int current_row=StringGrid->Row;
 
- StringGrid->ColCount=3;
+ StringGrid->ColCount=4;
  StringGrid->Cells[1][0]="#";
  StringGrid->Cells[2][0]="Выход";
+ StringGrid->Cells[3][0]="Имя выхода";
 
  RDK::ULongIdVector buffer;
 
@@ -125,7 +127,7 @@ void __fastcall TUComponentIOFrame::ShowInputsOutputs(void)
  StringGrid->ColCount=4;
  StringGrid->Cells[1][0]="#In";
  StringGrid->Cells[2][0]="Имя";
- StringGrid->Cells[2][0]="#Out";
+ StringGrid->Cells[3][0]="#Out";
 
  RDK::ULongIdVector itemsbuffer;
  std::string stringid;
@@ -187,14 +189,18 @@ void __fastcall TUComponentIOFrame::ShowInputsOutputs(void)
 void __fastcall TUComponentIOFrame::ShowLinks(void)
 {
  int current_row=StringGrid->Row;
- StringGrid->ColCount=5;
+ StringGrid->ColCount=7;
  StringGrid->Cells[1][0]="Out #";
  StringGrid->Cells[2][0]="In #";
  StringGrid->Cells[3][0]="Выход";
- StringGrid->Cells[4][0]="Вход";
+ StringGrid->Cells[4][0]="Имя выхода";
+ StringGrid->Cells[5][0]="Вход";
+ StringGrid->Cells[6][0]="Имя входа";
 
  RDK::UStringLinksList linkslist;
  std::string stringid;
+ std::string conn_properties_names,item_properties_names;
+ std::map<int,std::string> conn_propertries_names_list,item_propertries_names_list;
 
 // std::string xmlbuffer=Model_GetComponentInternalLinks(ViewComponentLongId.c_str());
  std::string xmlbuffer=Model_GetComponentPersonalLinks(ViewComponentLongId.c_str(),ViewComponentOwnerLongId.c_str());
@@ -220,14 +226,28 @@ void __fastcall TUComponentIOFrame::ShowLinks(void)
   {
    itemname=linkslist[i].Item.Id;//Model_GetComponentLongName(linkslist[i].Item.Id.EncodeToString(stringid).c_str());
    StringGrid->RowCount=StringGrid->RowCount+linkslist[i].Connector.size();
+
+   item_properties_names=Model_GetComponentPropertiesList(itemname.c_str(),ptPubOutput);
+   DecodePropertiesIOList(item_properties_names,item_propertries_names_list);
+
    for(size_t j=0;j<linkslist[i].Connector.size();j++)
 	{
-     connname=linkslist[i].Connector[j].Id;//Model_GetComponentLongName(linkslist[i].Connector[j].Id.EncodeToString(stringid).c_str());
+	 connname=linkslist[i].Connector[j].Id;//Model_GetComponentLongName(linkslist[i].Connector[j].Id.EncodeToString(stringid).c_str());
+	 conn_properties_names=Model_GetComponentPropertiesList(connname.c_str(),ptPubInput);
+	 DecodePropertiesIOList(conn_properties_names,conn_propertries_names_list);
+
 	 StringGrid->Cells[0][k]=IntToStr(int(i));
 	 StringGrid->Cells[1][k]=StrToInt(linkslist[i].Item.Index);
 	 StringGrid->Cells[2][k]=StrToInt(linkslist[i].Connector[j].Index);
 	 StringGrid->Cells[3][k]=itemname.c_str();
-	 StringGrid->Cells[4][k]=connname.c_str();
+
+	 if(item_propertries_names_list.size()>linkslist[i].Item.Index)
+	  StringGrid->Cells[4][k]=item_propertries_names_list[linkslist[i].Item.Index].c_str();
+	 else
+      StringGrid->Cells[4][k]="";
+	 StringGrid->Cells[5][k]=connname.c_str();
+	 if(conn_propertries_names_list.size()>linkslist[i].Connector[j].Index)
+	  StringGrid->Cells[6][k]=conn_propertries_names_list[linkslist[i].Connector[j].Index].c_str();
 	 ++k;
 	}
   }
@@ -241,6 +261,22 @@ void __fastcall TUComponentIOFrame::ShowLinks(void)
  if(StringGrid->RowCount>current_row && current_row>0)
   StringGrid->Row=current_row;
 }
+
+// Декодирует список свойств-входов/выходов в map
+void TUComponentIOFrame::DecodePropertiesIOList(const std::string &source, std::map<int, std::string> &result)
+{
+ result.clear();
+ std::vector<std::string> propertries_names_list;
+ std::vector<std::string> name_list;
+ RDK::separatestring(source,propertries_names_list,',');
+
+ for(size_t i=0;i<propertries_names_list.size();i++)
+ {
+  RDK::separatestring(propertries_names_list[i],name_list,':');
+  if(name_list.size() == 2)
+   result[RDK::atoi(name_list[1])]=name_list[0];
+ }
+}
 // -----------------
 
 // -----------------
@@ -250,8 +286,13 @@ void __fastcall TUComponentIOFrame::ShowLinks(void)
 void __fastcall TUComponentIOFrame::ShowOutputs(TStringGrid *string_grid, RDK::ULongIdVector &linkslist)
 {
  std::string stringid;
+
  for(int i=0;i<linkslist.GetSize();i++)
  {
+  std::string properties_names;
+  std::map<int, std::string> propertries_names_list;
+  properties_names=Model_GetComponentPropertiesList(linkslist[i].EncodeToString(stringid).c_str(),ptPubOutput);
+  DecodePropertiesIOList(properties_names, propertries_names_list);
   for(int j=0;j<Model_GetComponentNumOutputs(linkslist[i].EncodeToString(stringid).c_str());j++)
   {
    string_grid->RowCount=string_grid->RowCount+1;
@@ -259,11 +300,19 @@ void __fastcall TUComponentIOFrame::ShowOutputs(TStringGrid *string_grid, RDK::U
    {
 	string_grid->Cells[0][string_grid->RowCount-1]=IntToStr(i);
 	string_grid->Cells[2][string_grid->RowCount-1]=Model_GetComponentLongName(stringid.c_str(),ViewComponentOwnerLongId.c_str());
+	if(propertries_names_list.size()>j)
+	 string_grid->Cells[3][string_grid->RowCount-1]=propertries_names_list[j].c_str();
+	else
+	 string_grid->Cells[3][string_grid->RowCount-1]="";
    }
    else
    {
 	string_grid->Cells[0][string_grid->RowCount-1]="";
 	string_grid->Cells[2][string_grid->RowCount-1]="";
+	if(propertries_names_list.size()>j)
+	 string_grid->Cells[3][string_grid->RowCount-1]=propertries_names_list[j].c_str();
+	else
+	 string_grid->Cells[3][string_grid->RowCount-1]="";
    }
    string_grid->Cells[1][string_grid->RowCount-1]=IntToStr(int(j));
   }
@@ -277,6 +326,10 @@ void __fastcall TUComponentIOFrame::ShowInputs(TStringGrid *string_grid, RDK::UL
  std::string stringid;
  for(int i=0;i<linkslist.GetSize();i++)
  {
+  std::string properties_names;
+  std::map<int, std::string> propertries_names_list;
+  properties_names=Model_GetComponentPropertiesList(linkslist[i].EncodeToString(stringid).c_str(),ptPubInput);
+  DecodePropertiesIOList(properties_names, propertries_names_list);
   for(int j=-1;j<Model_GetComponentNumInputs(linkslist[i].EncodeToString(stringid).c_str());j++)
   {
    string_grid->RowCount=string_grid->RowCount+1;
@@ -284,12 +337,16 @@ void __fastcall TUComponentIOFrame::ShowInputs(TStringGrid *string_grid, RDK::UL
    {
 	string_grid->Cells[0][string_grid->RowCount-1]=IntToStr(i);
 	string_grid->Cells[2][string_grid->RowCount-1]=Model_GetComponentLongName(stringid.c_str(),ViewComponentOwnerLongId.c_str());
+	string_grid->Cells[3][string_grid->RowCount-1]="";
    }
    else
    {
 	string_grid->Cells[0][string_grid->RowCount-1]="";
 	string_grid->Cells[2][string_grid->RowCount-1]="";
-
+	if(propertries_names_list.size()>j)
+	 string_grid->Cells[3][string_grid->RowCount-1]=propertries_names_list[j].c_str();
+	else
+	 string_grid->Cells[3][string_grid->RowCount-1]="";
    }
    string_grid->Cells[1][string_grid->RowCount-1]=IntToStr(j);
   }
@@ -362,13 +419,15 @@ void __fastcall TUComponentIOFrame::FrameResize(TObject *Sender)
  case 1:
   StringGrid->ColWidths[0]=40;
   StringGrid->ColWidths[1]=40;
-  StringGrid->ColWidths[2]=StringGrid->Width-StringGrid->ColWidths[0]-StringGrid->ColWidths[1];
+  StringGrid->ColWidths[2]=(StringGrid->Width-StringGrid->ColWidths[0]-StringGrid->ColWidths[1])/2;
+  StringGrid->ColWidths[3]=(StringGrid->Width-StringGrid->ColWidths[0]-StringGrid->ColWidths[1])/2;
  break;
 
  case 2:
   StringGrid->ColWidths[0]=40;
   StringGrid->ColWidths[1]=40;
-  StringGrid->ColWidths[2]=StringGrid->Width-StringGrid->ColWidths[0]-StringGrid->ColWidths[1];
+  StringGrid->ColWidths[2]=(StringGrid->Width-StringGrid->ColWidths[0]-StringGrid->ColWidths[1])/2;
+  StringGrid->ColWidths[3]=(StringGrid->Width-StringGrid->ColWidths[0]-StringGrid->ColWidths[1])/2;
  break;
 
  case 3:
@@ -383,9 +442,12 @@ void __fastcall TUComponentIOFrame::FrameResize(TObject *Sender)
   StringGrid->ColWidths[0]=40;
   StringGrid->ColWidths[1]=40;
   StringGrid->ColWidths[2]=40;
-  StringGrid->ColWidths[3]=(StringGrid->Width-120)/2;
-  StringGrid->ColWidths[4]=StringGrid->Width-(StringGrid->ColWidths[0]+
-						StringGrid->ColWidths[1]+StringGrid->ColWidths[2]);
+  StringGrid->ColWidths[3]=(StringGrid->Width-120)/4;
+  StringGrid->ColWidths[4]=(StringGrid->Width-120)/4;
+  StringGrid->ColWidths[5]=(StringGrid->Width-120)/4;
+  StringGrid->ColWidths[6]=(StringGrid->Width-120)/4;
+//  StringGrid->ColWidths[4]=StringGrid->Width-(StringGrid->ColWidths[0]+
+//						StringGrid->ColWidths[1]+StringGrid->ColWidths[2]);
  break;
  }
 }

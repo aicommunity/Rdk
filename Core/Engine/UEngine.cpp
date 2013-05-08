@@ -1490,6 +1490,45 @@ const char* UEngine::Model_GetComponentClassName(const char* stringid)
  return TempString.c_str();
 }
 
+// Возвращает список свойств компонента разделенный запятыми
+const char* UEngine::Model_GetComponentPropertiesList(const char* stringid, unsigned int type_mask)
+{
+ try
+ {
+  TempString="";
+  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
+
+  if(!cont)
+   return TempString.c_str();
+
+  RDK::UContainer::VariableMapT props=cont->GetPropertiesList();
+
+  RDK::UContainer::VariableMapCIteratorT I,J;
+
+  I=props.begin();
+  J=props.end();
+  while(I != J)
+  {
+   if(I->second.CheckMask(type_mask))
+   {
+	if(TempString.size()>0)
+	 TempString+=",";
+	TempString+=I->first;
+	TempString+=":";
+	TempString+=sntoa(I->second.Property->GetMinRange());
+   }
+   ++I;
+  }
+
+  return TempString.c_str();
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
 // Возвращает свойства компонента по идентификатору
 const char* UEngine::Model_GetComponentProperties(const char *stringid, unsigned int type_mask)
 {
@@ -3025,7 +3064,8 @@ int UEngine::Model_LoadComponent(RDK::UNet* cont, RDK::USerStorageXML *serstorag
 
   cont->DelAllComponents();
 
-  serstorage->SelectNode("Components");
+  if(!serstorage->SelectNode("Components"))
+   return false;
   UStorage* storage=cont->GetStorage();
   for(int i=0;i<serstorage->GetNumNodes();i++)
   {

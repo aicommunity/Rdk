@@ -20,7 +20,7 @@
 #include "UCreateProjectWizardFormUnit.h"
 #include "UWatchFormUnit.h"
 //#include "TUFileSystem.h"
-#include "rdk_initdll.h"
+#include "rdk_cpp_initdll.h"
 #include "myrdk.h"
 
 //---------------------------------------------------------------------------
@@ -159,6 +159,8 @@ void TUGEngineControlForm::CloseProject(void)
   ProjectPath="";
  }
  ProjectOpenFlag=false;
+ if(GetEngine())
+  Env_UnInit();
  EngineUnInit();
 // UpdateInterface();
 }

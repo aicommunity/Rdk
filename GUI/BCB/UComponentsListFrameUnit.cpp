@@ -12,6 +12,7 @@
 #include "UCRTeacherPerseptronDLFormUnit.h"
 #include "UCRTeacherPerseptronBPFormUnit.h"
 #include "UComponentsListFormUnit.h"
+#include "UListInputFormUnit.h"
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -982,6 +983,36 @@ void __fastcall TUComponentsListFrame::HeaderControl1SectionClick(THeaderControl
  {
 
  }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::Moveup1Click(TObject *Sender)
+{
+//
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::Movedown1Click(TObject *Sender)
+{
+//
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::Rename1Click(TObject *Sender)
+{
+ vector<string> listvals;
+ UListInputForm->PresentSelect=false;
+ UListInputForm->MustInput=true;
+ UListInputForm->Init("Select new name",listvals,SelectedComponentName);
+ if(UListInputForm->ShowModal() != mrOk)
+  return;
+ // std::string name=Model_GetComponentClassName(SelectedComponentName.c_str());
+ std::string new_name=AnsiString(UListInputForm->Edit->Text).c_str();
+ if(new_name == SelectedComponentName)
+  return;
+
+ Model_SetComponentPropertyData(SelectedComponentName.c_str(),"Name",&new_name);
+ RDK::UIVisualControllerStorage::UpdateInterface();
 }
 //---------------------------------------------------------------------------
 

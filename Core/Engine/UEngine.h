@@ -444,6 +444,9 @@ virtual const char* Model_GetComponentLongId(const char* stringid, const char* o
 // если stringid - пустая строка, то возвращает имя класса модели
 virtual const char* Model_GetComponentClassName(const char* stringid);
 
+// Возвращает список свойств компонента разделенный запятыми
+virtual const char* Model_GetComponentPropertiesList(const char* stringid, unsigned int type_mask);
+
 // Возвращает свойства компонента по идентификатору
 // Память для buffer должна быть выделена!
 virtual const char* Model_GetComponentProperties(const char *stringid, unsigned int type_mask=0xFFFFFFFF);
