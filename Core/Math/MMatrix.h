@@ -180,6 +180,7 @@ MMatrix<T,Rows,Cols>::MMatrix(void)
 {
  VRows=Rows;
  VCols=Cols;
+ memset(Data,0,sizeof(Data));
 };
 
 template<class T, unsigned Rows, unsigned Cols>

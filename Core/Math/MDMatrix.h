@@ -40,6 +40,7 @@ MDMatrix(int rows, int cols, const T* data);
 void Resize(int rows, int cols);
 
 void Assign(int rows, int cols, const T *data);
+void Assign(int rows, int cols, T value);
 // --------------------------
 
 
@@ -213,11 +214,20 @@ void MDMatrix<T>::Resize(int rows, int cols)
  if(rows && cols)
  {
   new_data = new T[rows*cols];
-  int c_rows=(Rows<rows)?Rows:rows;
-  int c_cols=(Cols<cols)?Cols:cols;
-  for(int i=0; i<c_rows; i++)
-   for(int j=0;j<c_cols; j++)
-	new_data[i*cols+j]=Data[i*Cols+j];
+  if(!Data)
+   memset(new_data,0,rows*cols*sizeof(T));
+  else
+  {
+   int c_rows=(Rows<rows)?Rows:rows;
+   int c_cols=(Cols<cols)?Cols:cols;
+   for(int i=0; i<c_rows; i++)
+	for(int j=0;j<c_cols; j++)
+	 new_data[i*cols+j]=Data[i*Cols+j];
+
+   for(int i=c_rows; i<rows; i++)
+	for(int j=c_cols;j<cols; j++)
+	 new_data[i*cols+j]=0;
+  }
  }
  delete []Data;
  Data=new_data;
@@ -230,6 +240,13 @@ void MDMatrix<T>::Assign(int rows, int cols, const T *data)
 {
  Resize(rows, cols);
  *this=data;
+}
+
+template<class T>
+void MDMatrix<T>::Assign(int rows, int cols, T value)
+{
+ Resize(rows, cols);
+ *this=value;
 }
 // --------------------------
 
