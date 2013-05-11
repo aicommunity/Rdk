@@ -120,57 +120,6 @@ size_t UADItem::GetFullInputDataSize(void) const
 }
 // --------------------------
 
-// --------------------------
-// ћетоды доступа к описанию входов и выходов
-// --------------------------
-/// »щет свойство-выход по заданному индексу
-void UADItem::FindOutputProperty(int index, UIProperty* &property)
-{
- // »щем указатель на выходные данные
- property=0;
- VariableMapIteratorT I=PropertiesLookupTable.begin(),
-					  J=PropertiesLookupTable.end();
- for(;I != J;++I)
- {
-  if(I->second.Type & ptOutput)
-  {
-   property=I->second.Property.Get();
-   if(!property || !property->CheckRange(index))
-   {
-    property=0;
-	continue;
-   }
-
-   break;
-  }
- }
-}
-
-/// »щет свойство-вход по заданному индексу
-void UADItem::FindInputProperty(int index, UIProperty* &property)
-{
- // »щем указатель на входные данные
- property=0;
-
- VariableMapIteratorT I=PropertiesLookupTable.begin(),
- J=PropertiesLookupTable.end();
- for(;I != J;++I)
- {
-  if(I->second.Type & ptInput)
-  {
-   property=I->second.Property.Get();
-   if(!property || !property->CheckRange(index))
-   {
-	property=0;
-	continue;
-   }
-
-   break;
-  }
- }
-}
-// --------------------------
-
 // ----------------------
 // ћетоды управлени€ выходными данными
 // ----------------------

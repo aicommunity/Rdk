@@ -1968,6 +1968,12 @@ int UEngine::Model_BreakAllComponentInputLinks(const char* stringid)
 {
  try
  {
+  UEPtr<RDK::UNet> model=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+
+  if(!model)
+   return -2;
+
+  model->DisconnectAllItems();
   return 0;
  }
  catch (UException &exception)

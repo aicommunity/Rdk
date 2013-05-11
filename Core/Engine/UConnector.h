@@ -210,9 +210,6 @@ virtual bool ConnectToItem(UEPtr<UItem> na, int i_index, int &c_index);
 // Разрывает связь с элементом сети 'na'
 virtual void DisconnectFromItem(UEPtr<UItem> na);
 
-// Разрывает связь с элементом сети подключенным ко входу 'index'
-virtual void DisconnectFromIndex(int c_index);
-
 // Выполняет действия после физически установленой связи
 virtual bool AConnectToItem(UEPtr<UItem> na, int i_index, int c_index);
 
@@ -220,6 +217,9 @@ virtual bool AConnectToItem(UEPtr<UItem> na, int i_index, int c_index);
 virtual void ADisconnectFromItem(UEPtr<UItem> na, int i_index, int c_index);
 
 public:
+// Разрывает связь с элементом сети подключенным ко входу 'index'
+virtual void DisconnectFromIndex(int c_index);
+
 // Разрывает все текущие связи
 virtual void DisconnectAllItems(void);
 

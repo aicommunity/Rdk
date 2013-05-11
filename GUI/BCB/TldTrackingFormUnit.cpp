@@ -270,6 +270,7 @@ void __fastcall TTldTrackingForm::LoadTrackerDataButtonClick(TObject *Sender)
   return;
 
  filename=AnsiString(OpenDialog1->FileName).c_str();
+ filename=filename.substr(0,filename.size()-5);
  Model_SetComponentPropertyData(ComponentControlName.c_str(), "TrackerDataFileName", &filename);
  int item_index=ObjectReceiverComboBox->ItemIndex;
  Model_SetComponentPropertyData(ComponentControlName.c_str(), "LoadTrackerDataIndex", &item_index);

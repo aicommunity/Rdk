@@ -75,16 +75,6 @@ size_t GetInputDataSize(size_t index) const;
 size_t GetFullInputDataSize(void) const;
 // --------------------------
 
-// --------------------------
-// ћетоды доступа к описанию входов и выходов
-// --------------------------
-/// »щет свойство-выход по заданному индексу
-void FindOutputProperty(int index, UIProperty* &property);
-
-/// »щет свойство-вход по заданному индексу
-void FindInputProperty(int index, UIProperty* &property);
-// --------------------------
-
 // ----------------------
 // ћетоды управлени€ выходными данными
 // ----------------------

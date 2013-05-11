@@ -203,6 +203,16 @@ const bool& GetAutoNumOutputs(void) const;
 bool SetAutoNumOutputs(const bool &value);
 // --------------------------
 
+// --------------------------
+// ћетоды доступа к описанию входов и выходов
+// --------------------------
+/// »щет свойство-выход по заданному индексу
+void FindOutputProperty(int index, UIProperty* &property);
+
+/// »щет свойство-вход по заданному индексу
+void FindInputProperty(int index, UIProperty* &property);
+// --------------------------
+
 
 // --------------------------
 // —истемные методы управлени€ объектом
