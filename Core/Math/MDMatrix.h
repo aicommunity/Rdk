@@ -41,6 +41,11 @@ void Resize(int rows, int cols);
 
 void Assign(int rows, int cols, const T *data);
 void Assign(int rows, int cols, T value);
+
+void InsertRows(int index, int num_rows=1);
+void InsertCols(int index, int num_cols=1);
+void DeleteRows(int index, int num_rows=1);
+void DeleteCols(int index, int num_cols=1);
 // --------------------------
 
 
@@ -247,6 +252,70 @@ void MDMatrix<T>::Assign(int rows, int cols, T value)
 {
  Resize(rows, cols);
  *this=value;
+}
+
+template<class T>
+void MDMatrix<T>::InsertRows(int index, int num_rows)
+{
+ if(num_rows<=0)
+  return;
+ Resize(Rows+num_rows,Cols);
+ memmove(Data+Cols*index,Data+Cols*(index+num_rows),num_rows*Cols*sizeof(T));
+ memset(Data+Cols*index,0,Cols*sizeof(T));
+}
+
+template<class T>
+void MDMatrix<T>::InsertCols(int index, int num_cols)
+{
+ if(num_cols<=0)
+  return;
+
+ Resize(Rows,Cols+num_cols);
+ for(int i=0;i<Rows;i++)
+ {
+  for(int j=Cols-1;j>index;j--)
+  {
+   Data[i*Cols+j]=Data[i*Cols+j-num_cols];
+  }
+  for(int j=index;j<index+num_cols;j++)
+   Data[i*Cols+j]=0;
+ }
+}
+
+template<class T>
+void MDMatrix<T>::DeleteRows(int index, int num_rows)
+{
+ if(num_rows<=0)
+  return;
+ if(num_rows>=Rows)
+ {
+  Resize(0,Cols);
+  return;
+ }
+ memmove(Data+Cols*index,Data+Cols*(index+num_rows),(Rows-index-num_rows)*Cols*sizeof(T));
+ Resize(Rows-num_rows,Cols);
+}
+
+template<class T>
+void MDMatrix<T>::DeleteCols(int index, int num_cols)
+{
+ if(num_cols<=0)
+  return;
+
+ if(num_cols>=Cols)
+ {
+  Resize(Rows,0);
+  return;
+ }
+
+ for(int i=0;i<Rows;i++)
+ {
+  for(int j=index;j<=index+num_cols;j++)
+  {
+   Data[i*Cols+j]=Data[i*Cols+j+num_cols];
+  }
+ }
+ Resize(Rows,Cols-num_cols);
 }
 // --------------------------
 
