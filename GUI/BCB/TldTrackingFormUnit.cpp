@@ -49,7 +49,16 @@ void TTldTrackingForm::AUpdateInterface(void)
  int num_inputs=1;//RDK::ReadParameterValue<int>(ComponentControlName, "NumInputs");
  LoadVideoInputs(num_inputs, VideoSourceComboBox);
 
- const RDK::MDMatrix<double>* points=(const RDK::MDMatrix<double>*)Model_GetComponentPropertyData("MatrixSource", "DoubleMatrix");
+ size_t pos=ComponentControlName.find_last_of(".");
+ std::string source_name;
+ if(pos != std::string::npos)
+ {
+  source_name=ComponentControlName.substr(0,ComponentControlName.find_last_of(".")+1)+"MatrixSource";
+ }
+ else
+  source_name="MatrixSource";
+
+ const RDK::MDMatrix<double>* points=(const RDK::MDMatrix<double>*)Model_GetComponentPropertyData(source_name.c_str(), "DoubleMatrix");
 
  if(points)
   num_inputs=points->GetRows();//RDK::ReadParameterValue<int>(ComponentControlName, "NumTrackers");
@@ -190,7 +199,16 @@ void __fastcall TTldTrackingForm::SendObjectToButtonClick(TObject *Sender)
  if(ObjectReceiverComboBox->ItemIndex < 0)
   return;
 
- const RDK::MDMatrix<double>* old_points=(const RDK::MDMatrix<double>*)Model_GetComponentPropertyData("MatrixSource", "DoubleMatrix");
+ size_t pos=ComponentControlName.find_last_of(".");
+ std::string source_name;
+ if(pos != std::string::npos)
+ {
+  source_name=ComponentControlName.substr(0,ComponentControlName.find_last_of(".")+1)+"MatrixSource";
+ }
+ else
+  source_name="MatrixSource";
+
+ const RDK::MDMatrix<double>* old_points=(const RDK::MDMatrix<double>*)Model_GetComponentPropertyData(source_name.c_str(), "DoubleMatrix");
  RDK::MDMatrix<double> points(*old_points);//(ObjectReceiverComboBox->Items->Count,4);
  points.Resize(points.GetRows(),4);
  points(ObjectReceiverComboBox->ItemIndex,0)=VideoOutputFrame1->left;
@@ -211,15 +229,6 @@ void __fastcall TTldTrackingForm::SendObjectToButtonClick(TObject *Sender)
  ResultBmp.ReflectionX();
  Env_Calculate(0);
  Model_SetComponentBitmapInput(ComponentControlName.c_str(), ObjectReceiverComboBox->ItemIndex, &ResultBmp);
-
- size_t pos=ComponentControlName.find_last_of(".");
- std::string source_name;
- if(pos != std::string::npos)
- {
-  source_name=ComponentControlName.substr(0,ComponentControlName.find_last_of(".")+1)+"MatrixSource";
- }
- else
-  source_name="MatrixSource";
 
  Model_SetComponentPropertyData(ComponentControlName.c_str(), "InitialFlags", &initial_flags);
  Model_SetComponentPropertyData(source_name.c_str(), "DoubleMatrix", &points);
