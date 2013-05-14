@@ -248,6 +248,8 @@ void __fastcall TUComponentIOFrame::ShowLinks(void)
 	 StringGrid->Cells[5][k]=connname.c_str();
 	 if(conn_propertries_names_list.size()>linkslist[i].Connector[j].Index)
 	  StringGrid->Cells[6][k]=conn_propertries_names_list[linkslist[i].Connector[j].Index].c_str();
+	 else
+	  StringGrid->Cells[6][k]="";
 	 ++k;
 	}
   }
