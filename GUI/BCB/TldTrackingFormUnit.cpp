@@ -156,7 +156,7 @@ void __fastcall TTldTrackingForm::GetFrameButtonClick(TObject *Sender)
  if(started)
   StopTrackingButtonClick(Sender);
 
- if(VideoOutputForm->GetVideoOutputFrame(VideoSourceComboBox->ItemIndex))
+// if(VideoOutputForm->GetVideoOutputFrame(VideoSourceComboBox->ItemIndex))
  {
   VideoOutputFrame1->ZoneSelectEnable=true;
   const RDK::UBitmap* bmp=(const RDK::UBitmap*)Model_GetComponentBitmapInput(ComponentControlName.c_str(), 0);
