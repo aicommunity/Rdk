@@ -32,6 +32,7 @@
 #pragma link "UComponentsPerformanceFrameUnit"
 #pragma link "UImagesFrameUnit"
 #pragma link "UWatchFrameUnit"
+#pragma link "UDrawEngineFrameUnit"
 #pragma resource "*.dfm"
 TUGEngineControlForm *UGEngineControlForm;
 //---------------------------------------------------------------------------
@@ -107,8 +108,9 @@ void TUGEngineControlForm::ASaveParameters(RDK::USerStorageXML &xml)
  xml.SelectNodeForce("Pages");
  xml.DelNodeInternalContent();
  int count=0;
- for(int i=2;i<PageControl1->PageCount;i++)
+ for(int i=1;i<PageControl1->PageCount;i++)
  {
+  bool is_saved=false;
   for(int j=0;j<ComponentCount;j++)
   {
    TUVisualControllerFrame *frame=dynamic_cast<TUVisualControllerFrame*>(Components[j]);
@@ -117,9 +119,24 @@ void TUGEngineControlForm::ASaveParameters(RDK::USerStorageXML &xml)
 	xml.WriteString(string("Caption_")+RDK::sntoa(i+1),AnsiString(PageControl1->Pages[i]->Caption).c_str());
 	xml.WriteString(string("Type_")+RDK::sntoa(i+1),AnsiString(Components[j]->ClassName()).c_str());
 	++count;
+	is_saved=true;
+	break;
    }
   }
+  if(!is_saved) // Делаем попытку сохранить данные как данные формы
+  {
+   std::map<std::string, TUVisualControllerForm*>::iterator I=UComponentsListFrame1->ComponentControllers.begin();
+   for(;I != UComponentsListFrame1->ComponentControllers.end();++I)
+   {
+	if(I->second->Parent == PageControl1->Pages[i])
+	{
+	 xml.WriteString(string("Caption_")+RDK::sntoa(i+1),AnsiString(I->second->Caption).c_str());
+	 xml.WriteString(string("Type_")+RDK::sntoa(i+1),I->first);
 
+	 ++count;
+	}
+   }
+  }
  }
  xml.SelectUp();
  xml.WriteInteger("PageCount",count);
@@ -132,13 +149,35 @@ void TUGEngineControlForm::ALoadParameters(RDK::USerStorageXML &xml)
 
  ClearPages();
  xml.SelectNodeForce("Pages");
- for(int i=2;i<count+2;i++)
+ for(int i=1;i<count+1;i++)
  {
   String caption=xml.ReadString(string("Caption_")+RDK::sntoa(i+1),std::string("Untitled")).c_str();
   String type=xml.ReadString(string("Type_")+RDK::sntoa(i+1),std::string("")).c_str();
 
+  bool is_loaded=false;
   if(type.Length() != 0)
-   AddPage(type,caption);
+  {
+   std::map<std::string, TUVisualControllerForm*>::iterator I=UComponentsListFrame1->ComponentControllers.begin();
+   for(;I != UComponentsListFrame1->ComponentControllers.end();++I)
+   {
+	if(I->first == AnsiString(type).c_str())
+	{
+	 I->second->SetComponentControlName(UComponentsListFrame1->GetSelectedComponentLongName());
+	 TTabSheet* tab=AddPage("", I->second->Caption);
+	 if(!tab)
+	  return;
+	 I->second->Parent=tab;
+	 I->second->Align=alClient;
+	 I->second->BorderStyle=bsNone;
+	 I->second->Show();
+
+	 is_loaded=true;
+	}
+   }
+
+   if(!is_loaded)
+    AddPage(type,caption);
+  }
  }
  xml.SelectUp();
 }
@@ -454,7 +493,7 @@ void TUGEngineControlForm::SaveProject(void)
 
 
 // Добавляет страницу
-void TUGEngineControlForm::AddPage(const String &type, const String &caption)
+TTabSheet* TUGEngineControlForm::AddPage(const String &type, const String &caption)
 {
  TTabSheet* tab=new TTabSheet(PageControl1);
  tab->PageControl=PageControl1;
@@ -471,7 +510,8 @@ void TUGEngineControlForm::AddPage(const String &type, const String &caption)
  }
  else
  {
-  return;
+  tab->Caption=caption;
+  return tab;
  }
 
  int count=1;
@@ -488,8 +528,13 @@ void TUGEngineControlForm::AddPage(const String &type, const String &caption)
  InsertComponent(frame);
  frame->Parent=tab;
  frame->Align=alClient;
- if(count>1)
- tab->Caption=caption+String("_")+count;
+
+ std::string str=AnsiString(caption).c_str();
+
+ if(count>1 && str.find_last_of("_") == string::npos)
+  tab->Caption=caption+String("_")+count;
+ else
+  tab->Caption=caption;
 
 // tab->Caption=String("Page")+IntToStr(PageControl->PageCount);
 
@@ -506,12 +551,13 @@ void TUGEngineControlForm::AddPage(const String &type, const String &caption)
  tab->Caption="Watches";
 
  */
+ return tab;
 }
 
 // Удаляет страницу
 void TUGEngineControlForm::DelPage(int index)
 {
- if(index < PageControl1->PageCount && index >= 2)
+ if(index < PageControl1->PageCount && index >= 1)
   delete PageControl1->Pages[index];
 
 }
@@ -519,14 +565,14 @@ void TUGEngineControlForm::DelPage(int index)
 // Переименовывает заголовок страницы
 void TUGEngineControlForm::RenamePage(int index, String new_name)
 {
- if(index < PageControl1->PageCount && index >= 2)
+ if(index < PageControl1->PageCount && index >= 1)
   PageControl1->Pages[index]->Caption=new_name;
 }
 
 // Удаляет все лишние вкладки (оставляет 2 начальные)
 void TUGEngineControlForm::ClearPages(void)
 {
- while(PageControl1->PageCount > 2)
+ while(PageControl1->PageCount > 1)
   delete PageControl1->Pages[PageControl1->PageCount-1];
 }
 //---------------------------------------------------------------------------
@@ -825,6 +871,9 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  }
 
  GraphicalEngineInit(0,1,1,320,240,1,ExceptionHandler);
+
+ UDrawEngineFrame1->ComponentsListFrame=UComponentsListFrame1;
+ UComponentsListFrame1->DrawEngineFrame=UDrawEngineFrame1;
 }
 //---------------------------------------------------------------------------
 
@@ -890,6 +939,34 @@ void __fastcall TUGEngineControlForm::Images3Click(TObject *Sender)
 void __fastcall TUGEngineControlForm::Watches2Click(TObject *Sender)
 {
  Watches1Click(Sender);
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TUGEngineControlForm::UComponentsListFrame1GUI1Click(TObject *Sender)
+
+{
+ //  UComponentsListFrame1->GUI1Click
+ std::string name=Model_GetComponentClassName(UComponentsListFrame1->GetSelectedComponentLongName().c_str());
+ std::map<std::string, TUVisualControllerForm*>::iterator I=UComponentsListFrame1->ComponentControllers.find(name);
+ if(I != UComponentsListFrame1->ComponentControllers.end() && I->second)
+ {
+  I->second->SetComponentControlName(UComponentsListFrame1->GetSelectedComponentLongName());
+  TTabSheet* tab=AddPage("", I->second->Caption);
+  if(!tab)
+   return;
+
+//  GetClass(I->second->GetClassName());
+
+//  I->second->
+//  TControl *ctrl=I->second->ClassType(); //TControlClass(I->second->ClassType())-> Create(0);
+  I->second->Parent=tab;
+  I->second->Align=alClient;
+  I->second->BorderStyle=bsNone;
+  I->second->Show();
+  I->second->UpdateInterface(true);
+ }
+
 }
 //---------------------------------------------------------------------------
 

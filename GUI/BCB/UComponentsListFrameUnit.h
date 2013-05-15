@@ -17,6 +17,7 @@
 #include <string>
 #include <vector>
 #include "TUVisualController.h"
+class TUDrawEngineFrame;
 //---------------------------------------------------------------------------
 class TUComponentsListFrame : public TUVisualControllerFrame
 {
@@ -137,6 +138,8 @@ protected:		// User declarations
 public: // —писок интерфейсных форм дл€ управлени€ компонентами
 		// —обственно список форм
 		static std::map<std::string, TUVisualControllerForm*> ComponentControllers;
+
+		TUDrawEngineFrame *DrawEngineFrame;
 
 protected: // ¬ременные переменные		// Ёлемент который должен быть найден и выделен после обновлени€ списка
 		int SelectedId;

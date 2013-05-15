@@ -76,6 +76,9 @@ virtual void ALoadParameters(RDK::USerStorageXML &xml);
 
 // Заполняет ComboBox списком видео входов Tld
 void LoadVideoInputs(int num_inputs, TComboBox *box);
+
+// Создание копии этого компонента
+virtual TTldTrackingForm* New(TComponent *owner=0);
 // -----------------------------
 };
 //---------------------------------------------------------------------------

@@ -25,6 +25,7 @@
 #include "UComponentsPerformanceFrameUnit.h"
 #include "UImagesFrameUnit.h"
 #include "UWatchFrameUnit.h"
+#include "UDrawEngineFrameUnit.h"
 //---------------------------------------------------------------------------
 #pragma warn -8130
 class TUGEngineControlForm : public TUVisualControllerForm
@@ -84,9 +85,7 @@ __published:	// IDE-managed Components
 	TMenuItem *WatchWindow1;
 	TTimer *HideTimer;
 	TPanel *Panel2;
-	TPanel *Panel3;
 	TPanel *Panel4;
-	TSplitter *Splitter1;
 	TSplitter *Splitter2;
 	TSplitter *Splitter3;
 	TUEngineMonitorFrame *UEngineMonitorFrame1;
@@ -102,8 +101,11 @@ __published:	// IDE-managed Components
 	TMenuItem *Watches2;
 	TPageControl *PageControl1;
 	TTabSheet *Draw;
-	TTabSheet *Performance;
 	TUComponentsPerformanceFrame *UComponentsPerformanceFrame1;
+	TUDrawEngineFrame *UDrawEngineFrame1;
+	TPageControl *PageControl2;
+	TTabSheet *TabSheet1;
+	TTabSheet *TabSheet2;
 	void __fastcall FormShow(TObject *Sender);
 	void __fastcall Start1Click(TObject *Sender);
 	void __fastcall Pause1Click(TObject *Sender);
@@ -138,6 +140,8 @@ __published:	// IDE-managed Components
 	void __fastcall DeletePage1Click(TObject *Sender);
 	void __fastcall Images3Click(TObject *Sender);
 	void __fastcall Watches2Click(TObject *Sender);
+	void __fastcall UComponentsListFrame1GUI1Click(TObject *Sender);
+
 
 
 private:	// User declarations
@@ -229,7 +233,7 @@ void SaveProject(void);
 
 // Создает новую вкладку с заданным именем
 // type - строковое имя типа фрейма на вкладке
-void AddPage(const String &type, const String &caption);
+TTabSheet* AddPage(const String &type, const String &caption);
 
 // Удаляет страницу
 void DelPage(int index);

@@ -13,6 +13,7 @@
 #include "UCRTeacherPerseptronBPFormUnit.h"
 #include "UComponentsListFormUnit.h"
 #include "UListInputFormUnit.h"
+#include "UDrawEngineFrameUnit.h"
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -29,6 +30,7 @@ __fastcall TUComponentsListFrame::TUComponentsListFrame(TComponent* Owner)
 {
  ShowXMLComponentParameters=true;
  UpdateInterval=-1;
+ DrawEngineFrame=0;
 }
 //---------------------------------------------------------------------------
 
@@ -659,6 +661,9 @@ void __fastcall TUComponentsListFrame::StringGridDblClick(TObject *Sender)
   }
 
   UpdateInterface();
+  if(DrawEngineFrame)
+   DrawEngineFrame->SetNet(GetCurrentComponentName());
+//   DrawEngineFrame->SelectComponent(GetCurrentComponentName());
   return;
  }
 
@@ -671,6 +676,10 @@ void __fastcall TUComponentsListFrame::StringGridDblClick(TObject *Sender)
  CurrentComponentName+=AnsiString(StringGrid->Cells[1][StringGrid->Row]).c_str();
  CurrentComponentId+=AnsiString(StringGrid->Cells[0][StringGrid->Row]).c_str();
  UpdateInterface();
+
+ if(DrawEngineFrame)
+//  DrawEngineFrame->SelectComponent(GetCurrentComponentName());
+  DrawEngineFrame->SetNet(GetCurrentComponentName());
 }
 //---------------------------------------------------------------------------
 
@@ -733,6 +742,9 @@ void __fastcall TUComponentsListFrame::StringGridClick(TObject *Sender)
   UpdateParametersList();
  if(PageControl1->ActivePage == TabSheet5)
   UpdateStatesList();
+
+ if(DrawEngineFrame)
+  DrawEngineFrame->SelectComponent(GetSelectedComponentName());
 }
 //---------------------------------------------------------------------------
 

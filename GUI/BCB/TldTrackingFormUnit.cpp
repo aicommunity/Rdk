@@ -117,6 +117,13 @@ void TTldTrackingForm::ALoadParameters(RDK::USerStorageXML &xml)
 
 }
 
+
+// Создание копии этого компонента
+TTldTrackingForm* TTldTrackingForm::New(TComponent *owner)
+{
+ return new TTldTrackingForm(owner);
+}
+
 // Заполняет ComboBox списком видео входов Tld
 void TTldTrackingForm::LoadVideoInputs(int num_inputs, TComboBox *box)
 {
