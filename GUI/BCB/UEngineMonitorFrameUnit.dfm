@@ -15,6 +15,8 @@ inherited UEngineMonitorFrame: TUEngineMonitorFrame
     Font.Name = 'Tahoma'
     Font.Style = []
     ParentFont = False
+    ReadOnly = True
+    ScrollBars = ssBoth
     TabOrder = 0
   end
   object StatusBar: TStatusBar

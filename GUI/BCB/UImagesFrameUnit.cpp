@@ -19,6 +19,7 @@ __fastcall TUImagesFrame::TUImagesFrame(TComponent* Owner)
  ReflectionXFlag=true;
  MyComponentsListForm=new TUComponentsListForm(this);
  UpdateInterval=100;
+ SetNumCells(2, 2);
 }
 
 __fastcall TUImagesFrame::~TUImagesFrame(void)

@@ -113,6 +113,7 @@ void TUVisualControllerFrame::SaveParameters(RDK::USerStorageXML &xml)
 {
  xml.SelectNodeForce(AnsiString(Owner->Name).c_str());
  xml.SelectNodeForce(GetName());
+// xml.WriteString("FrameTypeName",AnsiString(ClassName()).c_str());
  ASaveParameters(xml);
  xml.WriteInteger("UpdateInterval",UpdateInterval);
  xml.WriteString("ComponentControlName",ComponentControlName);

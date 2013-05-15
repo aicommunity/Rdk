@@ -19,6 +19,12 @@
 #include "myrdk.h"
 #include "TUVisualController.h"
 #include "TUVisualControllerFormUnit.h"
+#include "TUVisualControllerFrameUnit.h"
+#include "UEngineMonitorFrameUnit.h"
+#include "UComponentsListFrameUnit.h"
+#include "UComponentsPerformanceFrameUnit.h"
+#include "UImagesFrameUnit.h"
+#include "UWatchFrameUnit.h"
 //---------------------------------------------------------------------------
 #pragma warn -8130
 class TUGEngineControlForm : public TUVisualControllerForm
@@ -52,20 +58,13 @@ __published:	// IDE-managed Components
 	TToolButton *ToolButton1;
 	TToolButton *ToolButton2;
 	TToolButton *ToolButton3;
-	TToolButton *ToolButton4;
-	TToolButton *ToolButton5;
-	TToolButton *ToolButton6;
-	TToolButton *ToolButton8;
-	TToolButton *ToolButton9;
 	TToolButton *ToolButton10;
-	TToolButton *ToolButton11;
 	TToolButton *ToolButton12;
 	TToolButton *ToolButton13;
 	TMenuItem *N3;
 	TMenuItem *Step1;
 	TToolButton *ToolButton14;
 	TToolButton *ToolButton15;
-	TToolButton *ToolButton7;
 	TToolButton *ToolButton16;
 	TMenuItem *Performance1;
 	TOpenDialog *OpenDialog;
@@ -73,19 +72,38 @@ __published:	// IDE-managed Components
 	TMenuItem *CreateProjectItem;
 	TMenuItem *CreateModel;
 	TToolButton *ToolButton17;
-	TToolButton *ToolButton18;
 	TMenuItem *FavoriteInformation1;
 	TMenuItem *DrawEngine1;
 	TToolButton *ToolButton19;
 	TToolButton *ToolButton21;
 	TMenuItem *N4;
 	TMenuItem *ReloadParameters1;
-	TToolButton *ToolButton22;
 	TMenuItem *CopyProject1;
 	TMenuItem *N5;
 	TMenuItem *ProjectOptions1;
 	TMenuItem *WatchWindow1;
 	TTimer *HideTimer;
+	TPanel *Panel2;
+	TPanel *Panel3;
+	TPanel *Panel4;
+	TSplitter *Splitter1;
+	TSplitter *Splitter2;
+	TSplitter *Splitter3;
+	TUEngineMonitorFrame *UEngineMonitorFrame1;
+	TUComponentsListFrame *UComponentsListFrame1;
+	TMenuItem *New1;
+	TMenuItem *Images2;
+	TMenuItem *Watches1;
+	TPopupMenu *PageControlPopupMenu;
+	TMenuItem *AddPage1;
+	TMenuItem *DeletePage1;
+	TMenuItem *RenamePage1;
+	TMenuItem *Images3;
+	TMenuItem *Watches2;
+	TPageControl *PageControl1;
+	TTabSheet *Draw;
+	TTabSheet *Performance;
+	TUComponentsPerformanceFrame *UComponentsPerformanceFrame1;
 	void __fastcall FormShow(TObject *Sender);
 	void __fastcall Start1Click(TObject *Sender);
 	void __fastcall Pause1Click(TObject *Sender);
@@ -115,6 +133,11 @@ __published:	// IDE-managed Components
 	void __fastcall FormCreate(TObject *Sender);
 	void __fastcall HideTimerTimer(TObject *Sender);
 	void __fastcall FormCloseQuery(TObject *Sender, bool &CanClose);
+	void __fastcall Images2Click(TObject *Sender);
+	void __fastcall Watches1Click(TObject *Sender);
+	void __fastcall DeletePage1Click(TObject *Sender);
+	void __fastcall Images3Click(TObject *Sender);
+	void __fastcall Watches2Click(TObject *Sender);
 
 
 private:	// User declarations
@@ -186,6 +209,12 @@ void ABeforeCalculate(void);
 // Метод, вызываемый после шага расчета
 void AAfterCalculate(void);
 
+// Сохраняет параметры интерфейса в xml
+void ASaveParameters(RDK::USerStorageXML &xml);
+
+// Загружает параметры интерфейса из xml
+void ALoadParameters(RDK::USerStorageXML &xml);
+
 // Создает новый проект
 void CreateProject(const String &FileName, const String &model_comp_name="", const String &model_file_name="");
 
@@ -197,6 +226,21 @@ void OpenProject(const String &FileName);
 
 // Сохраняет проект
 void SaveProject(void);
+
+// Создает новую вкладку с заданным именем
+// type - строковое имя типа фрейма на вкладке
+void AddPage(const String &type, const String &caption);
+
+// Удаляет страницу
+void DelPage(int index);
+
+// Переименовывает заголовок страницы
+void RenamePage(int index, String new_name);
+
+
+// Удаляет все лишние вкладки (оставляет 2 начальные)
+void ClearPages(void);
+
 };
 #pragma warn .8130
 //---------------------------------------------------------------------------

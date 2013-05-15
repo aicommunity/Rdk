@@ -16,7 +16,7 @@ inherited UImagesFrame: TUImagesFrame
     FixedCols = 0
     RowCount = 2
     FixedRows = 0
-    Options = [goVertLine, goHorzLine, goDrawFocusSelected, goRowSizing, goColSizing, goEditing, goAlwaysShowEditor]
+    Options = [goVertLine, goHorzLine, goDrawFocusSelected, goRowSizing, goColSizing, goAlwaysShowEditor]
     ParentDoubleBuffered = False
     PopupMenu = PopupMenu
     TabOrder = 0

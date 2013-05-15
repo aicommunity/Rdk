@@ -26,6 +26,12 @@
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "TUVisualControllerFormUnit"
+#pragma link "TUVisualControllerFrameUnit"
+#pragma link "UEngineMonitorFrameUnit"
+#pragma link "UComponentsListFrameUnit"
+#pragma link "UComponentsPerformanceFrameUnit"
+#pragma link "UImagesFrameUnit"
+#pragma link "UWatchFrameUnit"
 #pragma resource "*.dfm"
 TUGEngineControlForm *UGEngineControlForm;
 //---------------------------------------------------------------------------
@@ -67,9 +73,6 @@ void TUGEngineControlForm::AUpdateInterface(void)
  CaptureVideo1->Caption=String("Capture Video (")+IntToStr(VideoOutputForm->GetActiveSource())+")";
  OpenVideo1->Caption=String("Open Video File (")+IntToStr(VideoOutputForm->GetActiveSource())+")";
  OpenImage1->Caption=String("Open Image (")+IntToStr(VideoOutputForm->GetActiveSource())+")";
- ToolButton6->Caption=CaptureVideo1->Caption;
- ToolButton8->Caption=OpenVideo1->Caption;
- ToolButton9->Caption=OpenImage1->Caption;
 
  Caption="Engine Control";
  if(ProjectOpenFlag)
@@ -96,6 +99,48 @@ void __fastcall TUGEngineControlForm::FormShow(TObject *Sender)
  UpdateInterface();
 
  HideTimer->Enabled=true;
+}
+
+// Сохраняет параметры интерфейса в xml
+void TUGEngineControlForm::ASaveParameters(RDK::USerStorageXML &xml)
+{
+ xml.SelectNodeForce("Pages");
+ xml.DelNodeInternalContent();
+ int count=0;
+ for(int i=2;i<PageControl1->PageCount;i++)
+ {
+  for(int j=0;j<ComponentCount;j++)
+  {
+   TUVisualControllerFrame *frame=dynamic_cast<TUVisualControllerFrame*>(Components[j]);
+   if(frame && frame->Parent == PageControl1->Pages[i])
+   {
+	xml.WriteString(string("Caption_")+RDK::sntoa(i+1),AnsiString(PageControl1->Pages[i]->Caption).c_str());
+	xml.WriteString(string("Type_")+RDK::sntoa(i+1),AnsiString(Components[j]->ClassName()).c_str());
+	++count;
+   }
+  }
+
+ }
+ xml.SelectUp();
+ xml.WriteInteger("PageCount",count);
+}
+
+// Загружает параметры интерфейса из xml
+void TUGEngineControlForm::ALoadParameters(RDK::USerStorageXML &xml)
+{
+ int count=xml.ReadInteger("PageCount",0);
+
+ ClearPages();
+ xml.SelectNodeForce("Pages");
+ for(int i=2;i<count+2;i++)
+ {
+  String caption=xml.ReadString(string("Caption_")+RDK::sntoa(i+1),std::string("Untitled")).c_str();
+  String type=xml.ReadString(string("Type_")+RDK::sntoa(i+1),std::string("")).c_str();
+
+  if(type.Length() != 0)
+   AddPage(type,caption);
+ }
+ xml.SelectUp();
 }
 
 // Создает новый проект
@@ -405,6 +450,84 @@ void TUGEngineControlForm::SaveProject(void)
  ProjectXml.WriteString("ProjectName",AnsiString(ProjectName).c_str());
 
  ProjectXml.SaveToFile(AnsiString(ProjectPath+ProjectFileName).c_str());
+}
+
+
+// Добавляет страницу
+void TUGEngineControlForm::AddPage(const String &type, const String &caption)
+{
+ TTabSheet* tab=new TTabSheet(PageControl1);
+ tab->PageControl=PageControl1;
+ TUVisualControllerFrame *frame=0;
+
+ if(type == "TUImagesFrame")
+ {
+  frame=new TUImagesFrame(0);
+ }
+ else
+ if(type == "TUWatchFrame")
+ {
+  frame=new TUWatchFrame(0);
+ }
+ else
+ {
+  return;
+ }
+
+ int count=1;
+ for(int j=0;j<ComponentCount;j++)
+ {
+  TUVisualControllerFrame *frame=dynamic_cast<TUVisualControllerFrame*>(Components[j]);
+  if(frame && frame->ClassNameIs(type))
+  {
+   ++count;
+  }
+ }
+
+ frame->Name=frame->Name+String("_")+count;
+ InsertComponent(frame);
+ frame->Parent=tab;
+ frame->Align=alClient;
+ if(count>1)
+ tab->Caption=caption+String("_")+count;
+
+// tab->Caption=String("Page")+IntToStr(PageControl->PageCount);
+
+ /*
+ TTabSheet *tab=new TTabSheet(PageControl1);
+ tab->PageControl=PageControl1;
+ TUWatchFrame *frame=new TUWatchFrame(tab);
+// tab->InsertComponent(images);
+ frame->Parent=tab;
+ frame->Align=alClient;
+
+// InsertComponent(tab);
+// tab->Parent=PageControl1;
+ tab->Caption="Watches";
+
+ */
+}
+
+// Удаляет страницу
+void TUGEngineControlForm::DelPage(int index)
+{
+ if(index < PageControl1->PageCount && index >= 2)
+  delete PageControl1->Pages[index];
+
+}
+
+// Переименовывает заголовок страницы
+void TUGEngineControlForm::RenamePage(int index, String new_name)
+{
+ if(index < PageControl1->PageCount && index >= 2)
+  PageControl1->Pages[index]->Caption=new_name;
+}
+
+// Удаляет все лишние вкладки (оставляет 2 начальные)
+void TUGEngineControlForm::ClearPages(void)
+{
+ while(PageControl1->PageCount > 2)
+  delete PageControl1->Pages[PageControl1->PageCount-1];
 }
 //---------------------------------------------------------------------------
 
@@ -734,6 +857,39 @@ void __fastcall TUGEngineControlForm::FormCloseQuery(TObject *Sender, bool &CanC
 {
  CloseProject();
  CanClose=true;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::Images2Click(TObject *Sender)
+{
+ AddPage("TUImagesFrame", "Images");
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::Watches1Click(TObject *Sender)
+{
+ AddPage("TUWatchFrame", "Watches");
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TUGEngineControlForm::DeletePage1Click(TObject *Sender)
+{
+ if(PageControl1->ActivePageIndex != 0)
+  DelPage(PageControl1->ActivePageIndex);
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TUGEngineControlForm::Images3Click(TObject *Sender)
+{
+ Images2Click(Sender);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::Watches2Click(TObject *Sender)
+{
+ Watches1Click(Sender);
 }
 //---------------------------------------------------------------------------
 

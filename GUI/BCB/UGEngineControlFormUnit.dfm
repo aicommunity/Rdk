@@ -2,8 +2,8 @@ object UGEngineControlForm: TUGEngineControlForm
   Left = 150
   Top = 0
   Caption = 'Engine Control'
-  ClientHeight = 117
-  ClientWidth = 752
+  ClientHeight = 532
+  ClientWidth = 775
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -20,17 +20,272 @@ object UGEngineControlForm: TUGEngineControlForm
   TextHeight = 13
   object Panel1: TPanel
     Left = 0
-    Top = 96
-    Width = 752
-    Height = 2
+    Top = 44
+    Width = 775
+    Height = 469
     Align = alClient
     TabOrder = 0
+    object Splitter1: TSplitter
+      Left = 583
+      Top = 1
+      Width = 6
+      Height = 398
+      Align = alRight
+      ExplicitLeft = 563
+      ExplicitHeight = 363
+    end
+    object Splitter2: TSplitter
+      Left = 250
+      Top = 1
+      Width = 7
+      Height = 398
+      ExplicitLeft = 182
+      ExplicitHeight = 363
+    end
+    object Splitter3: TSplitter
+      Left = 1
+      Top = 399
+      Width = 773
+      Height = 8
+      Cursor = crVSplit
+      Align = alBottom
+      ExplicitTop = 361
+      ExplicitWidth = 750
+    end
+    object Panel2: TPanel
+      Left = 1
+      Top = 1
+      Width = 249
+      Height = 398
+      Align = alLeft
+      TabOrder = 0
+      inline UComponentsListFrame1: TUComponentsListFrame
+        Left = 1
+        Top = 1
+        Width = 247
+        Height = 396
+        Align = alClient
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ParentFont = False
+        TabOrder = 0
+        ExplicitLeft = 1
+        ExplicitTop = 1
+        ExplicitWidth = 247
+        ExplicitHeight = 396
+        inherited Splitter1: TSplitter
+          Left = 0
+          Top = 217
+          Width = 247
+          Height = 8
+          Cursor = crVSplit
+          Align = alTop
+          ExplicitLeft = 0
+          ExplicitTop = 217
+          ExplicitWidth = 155
+          ExplicitHeight = 8
+        end
+        inherited Panel1: TPanel
+          Left = 0
+          Top = 225
+          Width = 247
+          Height = 171
+          ExplicitLeft = 0
+          ExplicitTop = 225
+          ExplicitWidth = 247
+          ExplicitHeight = 171
+          inherited PageControl1: TPageControl
+            Width = 245
+            Height = 169
+            ExplicitWidth = 245
+            ExplicitHeight = 169
+            inherited TabSheet4: TTabSheet
+              ExplicitWidth = 237
+              ExplicitHeight = 143
+              inherited Splitter3: TSplitter
+                Top = 66
+                Width = 237
+                ExplicitTop = 66
+                ExplicitWidth = 237
+              end
+              inherited ParametersListStringGrid: TStringGrid
+                Width = 237
+                Height = 66
+                ExplicitWidth = 237
+                ExplicitHeight = 66
+              end
+              inherited ParameterValueRichEdit: TRichEdit
+                Top = 76
+                Width = 237
+                ExplicitTop = 76
+                ExplicitWidth = 237
+              end
+              inherited HeaderControl3: THeaderControl
+                Top = 109
+                Width = 237
+                ExplicitTop = 109
+                ExplicitWidth = 237
+              end
+            end
+            inherited TabSheet5: TTabSheet
+              inherited Splitter4: TSplitter
+                ExplicitTop = 461
+              end
+            end
+            inherited TabSheet3: TTabSheet
+              ExplicitLeft = 4
+              ExplicitTop = 4
+              ExplicitWidth = 376
+              ExplicitHeight = 539
+              inherited Splitter2: TSplitter
+                ExplicitTop = 239
+              end
+            end
+          end
+        end
+        inherited Panel2: TPanel
+          Width = 247
+          Height = 217
+          Align = alTop
+          ExplicitWidth = 247
+          ExplicitHeight = 217
+          inherited StringGrid: TStringGrid
+            Width = 245
+            Height = 159
+            ExplicitWidth = 245
+            ExplicitHeight = 159
+          end
+          inherited HeaderControl: THeaderControl
+            Width = 245
+            ExplicitWidth = 245
+          end
+          inherited ClassNamePanel: TPanel
+            Top = 194
+            Width = 245
+            ExplicitTop = 194
+            ExplicitWidth = 245
+          end
+        end
+      end
+    end
+    object Panel3: TPanel
+      Left = 589
+      Top = 1
+      Width = 185
+      Height = 398
+      Align = alRight
+      TabOrder = 1
+    end
+    object Panel4: TPanel
+      Left = 1
+      Top = 407
+      Width = 773
+      Height = 61
+      Align = alBottom
+      TabOrder = 2
+      inline UEngineMonitorFrame1: TUEngineMonitorFrame
+        Left = 1
+        Top = 1
+        Width = 771
+        Height = 59
+        Align = alClient
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ParentFont = False
+        TabOrder = 0
+        ExplicitLeft = 1
+        ExplicitTop = 1
+        ExplicitWidth = 771
+        ExplicitHeight = 59
+        inherited RichEdit: TRichEdit
+          Width = 771
+          Height = 40
+          ExplicitWidth = 771
+          ExplicitHeight = 40
+        end
+        inherited StatusBar: TStatusBar
+          Top = 40
+          Width = 771
+          Visible = False
+          ExplicitTop = 40
+          ExplicitWidth = 771
+        end
+      end
+    end
+    object PageControl1: TPageControl
+      Left = 257
+      Top = 1
+      Width = 326
+      Height = 398
+      ActivePage = Draw
+      Align = alClient
+      DoubleBuffered = True
+      ParentDoubleBuffered = False
+      PopupMenu = PageControlPopupMenu
+      TabOrder = 3
+      object Draw: TTabSheet
+        Caption = 'Draw'
+      end
+      object Performance: TTabSheet
+        Caption = 'Performance'
+        ImageIndex = 2
+        inline UComponentsPerformanceFrame1: TUComponentsPerformanceFrame
+          Left = 0
+          Top = 0
+          Width = 318
+          Height = 370
+          Align = alClient
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ParentFont = False
+          TabOrder = 0
+          ExplicitWidth = 318
+          ExplicitHeight = 370
+          inherited Chart: TChart
+            Width = 318
+            Height = 324
+            ExplicitWidth = 318
+            ExplicitHeight = 324
+            inherited Series1: TBarSeries
+              Data = {
+                00060000000000000000C87E400000000000187A400000000000F07940000000
+                0000A0794000000000000074400000000000807140}
+            end
+          end
+          inherited Panel1: TPanel
+            Top = 324
+            Width = 318
+            ExplicitTop = 324
+            ExplicitWidth = 318
+            inherited ShowModeRadioGroup: TRadioGroup
+              ExplicitHeight = 44
+            end
+            inherited GroupBox1: TGroupBox
+              Width = 180
+              ExplicitLeft = 137
+              ExplicitTop = 1
+              ExplicitWidth = 180
+              ExplicitHeight = 44
+            end
+          end
+        end
+      end
+    end
   end
   object ToolBar: TToolBar
     Left = 0
     Top = 0
-    Width = 752
-    Height = 96
+    Width = 775
+    Height = 44
     AutoSize = True
     ButtonHeight = 44
     ButtonWidth = 104
@@ -70,40 +325,8 @@ object UGEngineControlForm: TUGEngineControlForm
       ImageIndex = 2
       Style = tbsSeparator
     end
-    object ToolButton18: TToolButton
-      Left = 232
-      Top = 0
-      AutoSize = True
-      Caption = 'Create Model'
-      ImageIndex = 24
-      MenuItem = CreateModel
-    end
-    object ToolButton4: TToolButton
-      Left = 307
-      Top = 0
-      AutoSize = True
-      Caption = 'Load Model'
-      ImageIndex = 2
-      MenuItem = LoadModel1
-    end
-    object ToolButton5: TToolButton
-      Left = 372
-      Top = 0
-      AutoSize = True
-      Caption = 'Save Model'
-      ImageIndex = 3
-      MenuItem = SaveModel1
-    end
-    object ToolButton7: TToolButton
-      Left = 438
-      Top = 0
-      Width = 8
-      Caption = 'ToolButton7'
-      ImageIndex = 11
-      Style = tbsSeparator
-    end
     object ToolButton19: TToolButton
-      Left = 446
+      Left = 232
       Top = 0
       AutoSize = True
       Caption = 'Reload Parameters'
@@ -111,97 +334,56 @@ object UGEngineControlForm: TUGEngineControlForm
       MenuItem = ReloadParameters1
     end
     object ToolButton14: TToolButton
-      Left = 0
+      Left = 334
       Top = 0
       Width = 8
       Caption = 'ToolButton14'
       ImageIndex = 10
-      Wrap = True
-      Style = tbsSeparator
-    end
-    object ToolButton22: TToolButton
-      Left = 0
-      Top = 52
-      Width = 8
-      Caption = 'ToolButton22'
-      ImageIndex = 11
-      Style = tbsSeparator
-    end
-    object ToolButton6: TToolButton
-      Left = 8
-      Top = 52
-      AutoSize = True
-      Caption = 'Capture Video'
-      ImageIndex = 4
-      MenuItem = CaptureVideo1
-    end
-    object ToolButton8: TToolButton
-      Left = 87
-      Top = 52
-      AutoSize = True
-      Caption = 'Open Video File'
-      ImageIndex = 5
-      MenuItem = OpenVideo1
-    end
-    object ToolButton9: TToolButton
-      Left = 172
-      Top = 52
-      AutoSize = True
-      Caption = 'Open Image'
-      ImageIndex = 6
-      MenuItem = OpenImage1
-    end
-    object ToolButton11: TToolButton
-      Left = 242
-      Top = 52
-      Width = 8
-      Caption = 'ToolButton11'
-      ImageIndex = 8
       Style = tbsSeparator
     end
     object ToolButton10: TToolButton
-      Left = 250
-      Top = 52
+      Left = 342
+      Top = 0
       AutoSize = True
       Caption = 'Start'
       ImageIndex = 7
       MenuItem = Start1
     end
     object ToolButton12: TToolButton
-      Left = 285
-      Top = 52
+      Left = 377
+      Top = 0
       AutoSize = True
       Caption = 'Pause'
       ImageIndex = 8
       MenuItem = Pause1
     end
     object ToolButton13: TToolButton
-      Left = 325
-      Top = 52
+      Left = 417
+      Top = 0
       AutoSize = True
       Caption = 'Reset'
       ImageIndex = 9
       MenuItem = Reset1
     end
     object ToolButton16: TToolButton
-      Left = 364
-      Top = 52
+      Left = 456
+      Top = 0
       AutoSize = True
       Caption = 'Step'
       ImageIndex = 20
       MenuItem = Step1
     end
     object ToolButton21: TToolButton
-      Left = 397
-      Top = 52
+      Left = 489
+      Top = 0
       Width = 8
       Caption = 'ToolButton21'
       ImageIndex = 21
       Style = tbsSeparator
     end
     object ToolButton15: TToolButton
-      Left = 405
-      Top = 52
+      Left = 497
+      Top = 0
       AutoSize = True
       Caption = 'Window'
       ImageIndex = 10
@@ -211,16 +393,16 @@ object UGEngineControlForm: TUGEngineControlForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 98
-    Width = 752
+    Top = 513
+    Width = 775
     Height = 19
     Panels = <>
     SimplePanel = True
   end
   object MainMenu: TMainMenu
     Images = ImageList
-    Left = 320
-    Top = 32
+    Left = 304
+    Top = 65528
     object File1: TMenuItem
       Caption = 'File'
       object CreateProjectItem: TMenuItem
@@ -360,12 +542,23 @@ object UGEngineControlForm: TUGEngineControlForm
         OnClick = WatchWindow1Click
       end
     end
+    object New1: TMenuItem
+      Caption = 'New'
+      object Images2: TMenuItem
+        Caption = 'Images'
+        OnClick = Images2Click
+      end
+      object Watches1: TMenuItem
+        Caption = 'Watches'
+        OnClick = Watches1Click
+      end
+    end
   end
   object ImageList: TImageList
-    Left = 376
-    Top = 24
+    Left = 360
+    Top = 65528
     Bitmap = {
-      494C01011B006000D80010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B006000E00010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -1299,14 +1492,14 @@ object UGEngineControlForm: TUGEngineControlForm
   object OpenDialog: TOpenDialog
     DefaultExt = 'ini'
     Filter = 'Project Ini File (*.ini)|*.ini'
-    Left = 280
-    Top = 32
+    Left = 256
+    Top = 65528
   end
   object SaveDialog: TSaveDialog
     DefaultExt = 'ini'
     Filter = 'Project Ini File (*.ini)|*.ini'
-    Left = 224
-    Top = 16
+    Left = 176
+    Top = 65528
   end
   object HideTimer: TTimer
     Enabled = False
@@ -1314,5 +1507,28 @@ object UGEngineControlForm: TUGEngineControlForm
     OnTimer = HideTimerTimer
     Left = 592
     Top = 64
+  end
+  object PageControlPopupMenu: TPopupMenu
+    Left = 632
+    Top = 8
+    object AddPage1: TMenuItem
+      Caption = 'Add Page'
+      object Images3: TMenuItem
+        Caption = 'Images'
+        OnClick = Images3Click
+      end
+      object Watches2: TMenuItem
+        Caption = 'Watches'
+        OnClick = Watches2Click
+      end
+    end
+    object DeletePage1: TMenuItem
+      Caption = 'Delete Page'
+      OnClick = DeletePage1Click
+    end
+    object RenamePage1: TMenuItem
+      Caption = 'Rename Page'
+      Enabled = False
+    end
   end
 end
