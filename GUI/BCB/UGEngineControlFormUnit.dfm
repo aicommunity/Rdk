@@ -106,7 +106,7 @@ object UGEngineControlForm: TUGEngineControlForm
                 Width = 237
                 Height = 3
                 ExplicitWidth = 237
-                ExplicitHeight = 66
+                ExplicitHeight = 3
               end
               inherited ParameterValueRichEdit: TRichEdit
                 Top = -16
@@ -117,7 +117,7 @@ object UGEngineControlForm: TUGEngineControlForm
               inherited HeaderControl3: THeaderControl
                 Top = 17
                 Width = 237
-                ExplicitTop = 109
+                ExplicitTop = 17
                 ExplicitWidth = 237
               end
             end
@@ -126,36 +126,15 @@ object UGEngineControlForm: TUGEngineControlForm
                 ExplicitTop = 461
                 ExplicitWidth = 237
               end
-              inherited StatesListStringGrid: TStringGrid
-                ExplicitWidth = 237
-                ExplicitHeight = 65
-              end
-              inherited HeaderControl1: THeaderControl
-                ExplicitTop = 109
-                ExplicitWidth = 237
-              end
             end
             inherited TabSheet3: TTabSheet
+              ExplicitLeft = 4
+              ExplicitTop = 4
+              ExplicitWidth = 376
+              ExplicitHeight = 539
               inherited Splitter2: TSplitter
-                Width = 237
                 ExplicitTop = 239
                 ExplicitWidth = 237
-              end
-              inherited GroupBox: TGroupBox
-                Width = 237
-                ExplicitWidth = 237
-                inherited OutputsStringGrid: TStringGrid
-                  Width = 233
-                  ExplicitWidth = 233
-                end
-              end
-              inherited GroupBox2: TGroupBox
-                Width = 237
-                ExplicitWidth = 237
-                inherited InputsStringGrid: TStringGrid
-                  Width = 233
-                  ExplicitWidth = 233
-                end
               end
             end
           end
@@ -173,7 +152,7 @@ object UGEngineControlForm: TUGEngineControlForm
             DefaultRowHeight = 18
             ExplicitTop = 21
             ExplicitWidth = 245
-            ExplicitHeight = 159
+            ExplicitHeight = 173
           end
           inherited HeaderControl: THeaderControl
             Width = 245
@@ -207,42 +186,17 @@ object UGEngineControlForm: TUGEngineControlForm
         Top = 1
         Width = 771
         Height = 151
-        ActivePage = TabSheet1
+        ActivePage = LogsTabSheet
         Align = alClient
         MultiLine = True
         TabOrder = 0
         TabPosition = tpRight
-        object TabSheet1: TTabSheet
+        object LogsTabSheet: TTabSheet
           Caption = 'Logs'
-          inline UEngineMonitorFrame1: TUEngineMonitorFrame
-            Left = 0
-            Top = 0
-            Width = 743
-            Height = 143
-            Align = alClient
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clWindowText
-            Font.Height = -11
-            Font.Name = 'Tahoma'
-            Font.Style = []
-            ParentFont = False
-            TabOrder = 0
-            ExplicitWidth = 743
-            ExplicitHeight = 143
-            inherited RichEdit: TRichEdit
-              Width = 743
-              Height = 124
-              ExplicitWidth = 743
-              ExplicitHeight = 124
-            end
-            inherited StatusBar: TStatusBar
-              Top = 124
-              Width = 743
-              Visible = False
-              ExplicitTop = 69
-              ExplicitWidth = 723
-            end
-          end
+          ExplicitLeft = 0
+          ExplicitTop = 0
+          ExplicitWidth = 0
+          ExplicitHeight = 0
         end
         object TabSheet2: TTabSheet
           Caption = 'Performance'
@@ -265,8 +219,8 @@ object UGEngineControlForm: TUGEngineControlForm
             inherited Chart: TChart
               Width = 604
               Height = 143
-              ExplicitWidth = 723
-              ExplicitHeight = 42
+              ExplicitWidth = 604
+              ExplicitHeight = 143
               inherited Series1: TBarSeries
                 Data = {
                   00060000000000000000C87E400000000000187A400000000000F07940000000
@@ -279,15 +233,15 @@ object UGEngineControlForm: TUGEngineControlForm
               Width = 139
               Height = 143
               Align = alRight
-              ExplicitLeft = 584
+              ExplicitLeft = 604
               ExplicitTop = 0
               ExplicitWidth = 139
-              ExplicitHeight = 88
+              ExplicitHeight = 143
               inherited ShowModeRadioGroup: TRadioGroup
                 Width = 137
                 Height = 32
                 Align = alTop
-                ExplicitWidth = 271
+                ExplicitWidth = 137
                 ExplicitHeight = 32
               end
               inherited GroupBox1: TGroupBox
@@ -295,10 +249,10 @@ object UGEngineControlForm: TUGEngineControlForm
                 Top = 33
                 Width = 137
                 Height = 109
-                ExplicitLeft = 137
-                ExplicitTop = 1
-                ExplicitWidth = 585
-                ExplicitHeight = 44
+                ExplicitLeft = 1
+                ExplicitTop = 33
+                ExplicitWidth = 137
+                ExplicitHeight = 109
               end
             end
           end
@@ -377,6 +331,11 @@ object UGEngineControlForm: TUGEngineControlForm
             inherited RestoreButton: TButton
               Left = 424
               ExplicitLeft = 424
+            end
+          end
+          inherited PopupMenu: TPopupMenu
+            inherited GUI1: TMenuItem
+              OnClick = UDrawEngineFrame1GUI1Click
             end
           end
         end
@@ -660,7 +619,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 360
     Top = 65528
     Bitmap = {
-      494C01011B006000E80010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B006000EC0010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

@@ -22,10 +22,6 @@ object UFavoriteComponentInfoForm: TUFavoriteComponentInfoForm
     Align = alClient
     PopupMenu = PopupMenu
     TabOrder = 0
-    ExplicitLeft = 160
-    ExplicitTop = 112
-    ExplicitWidth = 289
-    ExplicitHeight = 193
   end
   object PopupMenu: TPopupMenu
     Left = 224

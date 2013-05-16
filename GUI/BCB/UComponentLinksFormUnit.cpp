@@ -16,6 +16,12 @@ __fastcall TUComponentLinksForm::TUComponentLinksForm(TComponent* Owner)
 	: TUVisualControllerForm(Owner)
 {
 }
+
+// Создание копии этого компонента
+TUComponentLinksForm* TUComponentLinksForm::New(TComponent *owner)
+{
+ return new TUComponentLinksForm(owner);
+}
 //---------------------------------------------------------------------------
 void __fastcall TUComponentLinksForm::FormShow(TObject *Sender)
 {

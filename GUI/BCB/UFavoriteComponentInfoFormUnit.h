@@ -36,6 +36,9 @@ void ASaveParameters(RDK::USerStorageXML &xml);
 // Загружает параметры интерфейса из xml
 void ALoadParameters(RDK::USerStorageXML &xml);
 
+// Создание копии этого компонента
+virtual TUFavoriteComponentInfoForm* New(TComponent *owner=0);
+
 // ------------------------------
 // Методы управления страницами
 // ------------------------------

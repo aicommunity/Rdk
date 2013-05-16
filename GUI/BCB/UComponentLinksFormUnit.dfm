@@ -74,14 +74,10 @@ object UComponentLinksForm: TUComponentLinksForm
       ExplicitWidth = 820
       inherited NANetFrameLinks: TUComponentIOFrame
         Width = 816
-        ExplicitLeft = 2
-        ExplicitTop = 15
         ExplicitWidth = 816
-        ExplicitHeight = 151
         inherited StringGrid: TStringGrid
           Width = 816
           ExplicitWidth = 816
-          ExplicitHeight = 151
         end
       end
     end

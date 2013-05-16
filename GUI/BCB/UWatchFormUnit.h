@@ -50,6 +50,9 @@ virtual void ASaveParameters(RDK::USerStorageXML &xml);
 
 // Загружает параметры интерфейса из xml
 virtual void ALoadParameters(RDK::USerStorageXML &xml);
+
+// Создание копии этого компонента
+virtual TUWatchForm* New(TComponent *owner=0);
 // ------------------------------
 
 // ------------------------------

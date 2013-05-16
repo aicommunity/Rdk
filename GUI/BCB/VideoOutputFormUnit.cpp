@@ -62,6 +62,12 @@ void TVideoOutputForm::ALoadParameters(RDK::USerStorageXML &xml)
  UpdateInterface();
 }
 
+// Создание копии этого компонента
+TVideoOutputForm* TVideoOutputForm::New(TComponent *owner)
+{
+ return new TVideoOutputForm(owner);
+}
+
 // Число источников видео
 int TVideoOutputForm::GetNumSources(void) const
 {

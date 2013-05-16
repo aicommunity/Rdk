@@ -3,22 +3,24 @@
 #include <vcl.h>
 #pragma hdrstop
 
-#include "UComponentsControlFormUnit.h"
-#include "UDrawEngineFormUnit.h"
+//#include "UComponentsControlFormUnit.h"
+#include "UDrawEngineFrameUnit.h"
 #include "../../Core/Graphics/UDrawEngine.cpp"
 #include "TUBitmap.h"
 //#include "ULinkSelectionFormUnit.h"
 #include "UComponentLinksFormUnit.h"
+#include "UComponentsListFrameUnit.h"
+
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "TUVisualControllerFrameUnit"
 #pragma link "UClassesListFrameUnit"
 #pragma resource "*.dfm"
-TUDrawEngineForm *UDrawEngineForm;
 //---------------------------------------------------------------------------
-__fastcall TUDrawEngineForm::TUDrawEngineForm(TComponent* Owner)
-	: TUVisualControllerForm(Owner)
+__fastcall TUDrawEngineFrame::TUDrawEngineFrame(TComponent* Owner)
+    : TUVisualControllerFrame(Owner)
 {
+ ComponentsListFrame=0;
  Graph.SetCanvas(&GraphCanvas);
  Graph.SetFont(&Font);
  DrawEngine.SetEngine(&Graph);
@@ -31,31 +33,31 @@ __fastcall TUDrawEngineForm::TUDrawEngineForm(TComponent* Owner)
 // Методы управления визуальным интерфейсом
 // -----------------------------
 // Метод, вызываемый перед сбросом модели
-void TUDrawEngineForm::ABeforeReset(void)
+void TUDrawEngineFrame::ABeforeReset(void)
 {
 
 }
 
 // Метод, вызываемый после сброса модели
-void TUDrawEngineForm::AAfterReset(void)
+void TUDrawEngineFrame::AAfterReset(void)
 {
 
 }
 
 // Метод, вызываемый перед шагом расчета
-void TUDrawEngineForm::ABeforeCalculate(void)
+void TUDrawEngineFrame::ABeforeCalculate(void)
 {
 
 }
 
 // Метод, вызываемый после шага расчета
-void TUDrawEngineForm::AAfterCalculate(void)
+void TUDrawEngineFrame::AAfterCalculate(void)
 {
 
 }
 
 // Обновление интерфейса
-void TUDrawEngineForm::AUpdateInterface(void)
+void TUDrawEngineFrame::AUpdateInterface(void)
 {
  if(!NetXml.GetNumNodes())
  {
@@ -126,7 +128,7 @@ void TUDrawEngineForm::AUpdateInterface(void)
 }
 
 // Сохраняет параметры интерфейса в xml
-void TUDrawEngineForm::ASaveParameters(RDK::USerStorageXML &xml)
+void TUDrawEngineFrame::ASaveParameters(RDK::USerStorageXML &xml)
 {
  xml.WriteString("FontFileName",FontFileName);
  xml.WriteInteger("CanvasWidth",GraphCanvas.GetWidth());
@@ -139,7 +141,7 @@ void TUDrawEngineForm::ASaveParameters(RDK::USerStorageXML &xml)
 }
 
 // Загружает параметры интерфейса из xml
-void TUDrawEngineForm::ALoadParameters(RDK::USerStorageXML &xml)
+void TUDrawEngineFrame::ALoadParameters(RDK::USerStorageXML &xml)
 {
  // Имя компонента, содержимое которого будет отображено
  ComponentName.clear();
@@ -165,18 +167,12 @@ void TUDrawEngineForm::ALoadParameters(RDK::USerStorageXML &xml)
  GraphCanvas.SetRes(xml.ReadInteger("CanvasWidth",640),xml.ReadInteger("CanvasHeight",480));
  SetNet(ComponentName);
 }
-
-// Создание копии этого компонента
-TUDrawEngineForm* TUDrawEngineForm::New(TComponent *owner)
-{
- return new TUDrawEngineForm(owner);
-}
 // -----------------------------
 
 // -----------------------------
 // Методы управления данными
 // -----------------------------
-void TUDrawEngineForm::SetNet(const std::string &comp_name)
+void TUDrawEngineFrame::SetNet(const std::string &comp_name)
 {
  if(ComponentName == comp_name)
   return;
@@ -191,7 +187,7 @@ void TUDrawEngineForm::SetNet(const std::string &comp_name)
   UpdateInterface(false);
 }
 
-void TUDrawEngineForm::ReloadNet(void)
+void TUDrawEngineFrame::ReloadNet(void)
 {
 
  if(!Model_Check())
@@ -204,7 +200,7 @@ void TUDrawEngineForm::ReloadNet(void)
 }
 
 
-void TUDrawEngineForm::SelectComponent(const std::string &comp_name)
+void TUDrawEngineFrame::SelectComponent(const std::string &comp_name)
 {
  DrawEngine.SelectSingleComponent(comp_name);
 
@@ -214,7 +210,7 @@ void TUDrawEngineForm::SelectComponent(const std::string &comp_name)
 
 
 // Сохраняет положение компонента в заданных координатах
-void TUDrawEngineForm::SaveComponentPosition(const std::string &name)
+void TUDrawEngineFrame::SaveComponentPosition(const std::string &name)
 {
  if(name == "")
   return;
@@ -236,8 +232,8 @@ void TUDrawEngineForm::SaveComponentPosition(const std::string &name)
 
 
 //---------------------------------------------------------------------------
-void __fastcall TUDrawEngineForm::ImageMouseDown(TObject *Sender, TMouseButton Button,
-		  TShiftState Shift, int X, int Y)
+void __fastcall TUDrawEngineFrame::ImageMouseDown(TObject *Sender, TMouseButton Button,
+          TShiftState Shift, int X, int Y)
 {
  DownShift=Shift;
 // if(DownShift.Contains(ssShift))
@@ -261,8 +257,8 @@ void __fastcall TUDrawEngineForm::ImageMouseDown(TObject *Sender, TMouseButton B
  }
 }
 //---------------------------------------------------------------------------
-void __fastcall TUDrawEngineForm::ImageMouseMove(TObject *Sender, TShiftState Shift,
-		  int X, int Y)
+void __fastcall TUDrawEngineFrame::ImageMouseMove(TObject *Sender, TShiftState Shift,
+          int X, int Y)
 {
  if(StartX<0 || StartY <0)
   return;
@@ -287,13 +283,16 @@ void __fastcall TUDrawEngineForm::ImageMouseMove(TObject *Sender, TShiftState Sh
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TUDrawEngineForm::ImageMouseUp(TObject *Sender, TMouseButton Button,
+void __fastcall TUDrawEngineFrame::ImageMouseUp(TObject *Sender, TMouseButton Button,
           TShiftState Shift, int X, int Y)
 {
  if(DownShift.Contains(ssRight) && DownShift.Contains(ssDouble))
  {
-  UComponentsControlForm->ComponentsControlFrame->ComponentsListFrame->SelectUp();
-  SetNet(UComponentsControlForm->ComponentsControlFrame->ComponentsListFrame->GetCurrentComponentName());
+  if(ComponentsListFrame)
+  {
+  ComponentsListFrame->SelectUp();
+  SetNet(ComponentsListFrame->GetCurrentComponentName());
+  }
  }
  else
  if(DownShift.Contains(ssLeft) && !DownShift.Contains(ssDouble))
@@ -302,7 +301,8 @@ void __fastcall TUDrawEngineForm::ImageMouseUp(TObject *Sender, TMouseButton But
 
   if(name != "")
   {
-   UComponentsControlForm->ComponentsControlFrame->ComponentsListFrame->SetSelectedComponentName(name);
+   if(ComponentsListFrame)
+    ComponentsListFrame->SetSelectedComponentName(name);
    SaveComponentPosition(name);
    UpdateInterface();
   }
@@ -316,8 +316,11 @@ void __fastcall TUDrawEngineForm::ImageMouseUp(TObject *Sender, TMouseButton But
 
   if(name != "")
   {
-   UComponentsControlForm->ComponentsControlFrame->ComponentsListFrame->SelectComponentByName(name);
-   SetNet(UComponentsControlForm->ComponentsControlFrame->ComponentsListFrame->GetCurrentComponentName());
+   if(ComponentsListFrame)
+   {
+	ComponentsListFrame->SelectComponentByName(name);
+    SetNet(ComponentsListFrame->GetCurrentComponentName());
+   }
   }
   else
   {
@@ -338,15 +341,15 @@ void __fastcall TUDrawEngineForm::ImageMouseUp(TObject *Sender, TMouseButton But
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TUDrawEngineForm::ScrollBoxResize(TObject *Sender)
+void __fastcall TUDrawEngineFrame::ScrollBoxResize(TObject *Sender)
 {
  UpdateInterface();
 }
 //---------------------------------------------------------------------------
 
 
-void __fastcall TUDrawEngineForm::UClassesListFrameStringGridMouseMove(TObject *Sender,
-		  TShiftState Shift, int X, int Y)
+void __fastcall TUDrawEngineFrame::UClassesListFrameStringGridMouseMove(TObject *Sender,
+          TShiftState Shift, int X, int Y)
 {
  if(Shift.Contains(ssLeft))
  {
@@ -356,8 +359,8 @@ void __fastcall TUDrawEngineForm::UClassesListFrameStringGridMouseMove(TObject *
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TUDrawEngineForm::UClassesListFrameStringGridMouseUp(TObject *Sender,
-		  TMouseButton Button, TShiftState Shift, int X, int Y)
+void __fastcall TUDrawEngineFrame::UClassesListFrameStringGridMouseUp(TObject *Sender,
+          TMouseButton Button, TShiftState Shift, int X, int Y)
 {
  UClassesListFrame->StringGrid->DragMode=dmManual;
  DragDropFlag=false;
@@ -365,8 +368,8 @@ void __fastcall TUDrawEngineForm::UClassesListFrameStringGridMouseUp(TObject *Se
 //---------------------------------------------------------------------------
 
 
-void __fastcall TUDrawEngineForm::ImageDragDrop(TObject *Sender, TObject *Source,
-		  int X, int Y)
+void __fastcall TUDrawEngineFrame::ImageDragDrop(TObject *Sender, TObject *Source,
+          int X, int Y)
 {
  if(!DragDropFlag)
   return;
@@ -383,30 +386,31 @@ void __fastcall TUDrawEngineForm::ImageDragDrop(TObject *Sender, TObject *Source
   DrawEngine.MoveComponent(name, X,Y);
   SaveComponentPosition(name);
 
-  UComponentsControlForm->ComponentsControlFrame->UpdateInterface();
+  if(ComponentsListFrame)
+   ComponentsListFrame->UpdateInterface();
   UpdateInterface();
  }
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TUDrawEngineForm::ImageDragOver(TObject *Sender, TObject *Source,
-		  int X, int Y, TDragState State, bool &Accept)
+void __fastcall TUDrawEngineFrame::ImageDragOver(TObject *Sender, TObject *Source,
+          int X, int Y, TDragState State, bool &Accept)
 {
  if(Source == UClassesListFrame->StringGrid)
  {
-	 Accept = true;
-	// установка изображения курсора
-//	if(State == dsDragLeave)
-//	  Source->DragCursor = crDrag;
-//	if((State == dsDragEnter)  && UClassesListFrame->StringGrid->Row >= 1))
-//	  Source->DragCursor = crMultiDrag;
+     Accept = true;
+    // установка изображения курсора
+//    if(State == dsDragLeave)
+//      Source->DragCursor = crDrag;
+//    if((State == dsDragEnter)  && UClassesListFrame->StringGrid->Row >= 1))
+//      Source->DragCursor = crMultiDrag;
  }
 
 }
 //---------------------------------------------------------------------------
 
 
-void __fastcall TUDrawEngineForm::Breakinputlink1Click(TObject *Sender)
+void __fastcall TUDrawEngineFrame::Breakinputlink1Click(TObject *Sender)
 {
  std::string name=DrawEngine.FindComponent(PopupX,PopupY);
  PopupX=-1; PopupY=-1;
@@ -428,7 +432,7 @@ void __fastcall TUDrawEngineForm::Breakinputlink1Click(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TUDrawEngineForm::ApplyButtonClick(TObject *Sender)
+void __fastcall TUDrawEngineFrame::ApplyButtonClick(TObject *Sender)
 {
  FontType=AnsiString(FontTypeComboBox->Text).c_str();
  FontSize=StrToInt(FontSizeComboBox->Text);
@@ -446,7 +450,7 @@ void __fastcall TUDrawEngineForm::ApplyButtonClick(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TUDrawEngineForm::RestoreButtonClick(TObject *Sender)
+void __fastcall TUDrawEngineFrame::RestoreButtonClick(TObject *Sender)
 {
  for(int i=0;i<FontTypeComboBox->Items->Count;i++)
  {
@@ -465,7 +469,7 @@ void __fastcall TUDrawEngineForm::RestoreButtonClick(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TUDrawEngineForm::FontTypeComboBoxSelect(TObject *Sender)
+void __fastcall TUDrawEngineFrame::FontTypeComboBoxSelect(TObject *Sender)
 {
  if(UpdateInterfaceFlag)
   return;
@@ -475,7 +479,7 @@ void __fastcall TUDrawEngineForm::FontTypeComboBoxSelect(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TUDrawEngineForm::Createlonglink1Click(TObject *Sender)
+void __fastcall TUDrawEngineFrame::Createlonglink1Click(TObject *Sender)
 {
  LongLinkFlag=true;
  Image->Cursor=crCross;
@@ -499,7 +503,7 @@ void __fastcall TUDrawEngineForm::Createlonglink1Click(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TUDrawEngineForm::Finishlonglink1Click(TObject *Sender)
+void __fastcall TUDrawEngineFrame::Finishlonglink1Click(TObject *Sender)
 {
  if(ComponentName.empty())
  {
@@ -546,7 +550,7 @@ void __fastcall TUDrawEngineForm::Finishlonglink1Click(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TUDrawEngineForm::Cancellonglink1Click(TObject *Sender)
+void __fastcall TUDrawEngineFrame::Cancellonglink1Click(TObject *Sender)
 {
  StartX=StartY=StopX=StopY=-1;
  StartName.clear();
@@ -558,6 +562,21 @@ void __fastcall TUDrawEngineForm::Cancellonglink1Click(TObject *Sender)
  Breakinputlink1->Enabled=true;
  Image->Cursor=crDefault;
  LongLinkFlag=false;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUDrawEngineFrame::FrameContextPopup(TObject *Sender, TPoint &MousePos,
+		  bool &Handled)
+{
+ Handled=true;
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TUDrawEngineFrame::Rename1Click(TObject *Sender)
+{
+ if(ComponentsListFrame)
+  ComponentsListFrame->Rename1Click(Sender);
 }
 //---------------------------------------------------------------------------
 

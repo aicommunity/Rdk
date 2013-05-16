@@ -60,6 +60,9 @@ void ASaveParameters(RDK::USerStorageXML &xml);
 // Загружает параметры интерфейса из xml
 void ALoadParameters(RDK::USerStorageXML &xml);
 
+// Создание копии этого компонента
+virtual TVideoOutputForm* New(TComponent *owner=0);
+
 // Число источников видео
 int GetNumSources(void) const;
 

@@ -85,6 +85,9 @@ int& PointFlag;
 
 // Индекс текущей редактируемой точки
 int& PointIndex;
+
+// Создание копии этого компонента
+virtual TVideoOutputToolsForm* New(TComponent *owner=0);
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TVideoOutputToolsForm *VideoOutputToolsForm;

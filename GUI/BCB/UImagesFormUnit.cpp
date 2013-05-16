@@ -18,5 +18,9 @@ __fastcall TUImagesForm::TUImagesForm(TComponent* Owner)
 {
 }
 
-
+// Создание копии этого компонента
+TUImagesForm* TUImagesForm::New(TComponent *owner)
+{
+ return new TUImagesForm(owner);
+}
 

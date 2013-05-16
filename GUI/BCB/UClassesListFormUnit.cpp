@@ -17,3 +17,9 @@ __fastcall TUClassesListForm::TUClassesListForm(TComponent* Owner)
 {
 }
 //---------------------------------------------------------------------------
+
+// Создание копии этого компонента
+TUClassesListForm* TUClassesListForm::New(TComponent *owner)
+{
+ return new TUClassesListForm(owner);
+}

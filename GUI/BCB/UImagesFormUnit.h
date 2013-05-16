@@ -23,6 +23,10 @@ private:	// User declarations
 public:		// User declarations
 	__fastcall TUImagesForm(TComponent* Owner);
 
+
+// Создание копии этого компонента
+virtual TUImagesForm* New(TComponent *owner=0);
+
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TUImagesForm *UImagesForm;

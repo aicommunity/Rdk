@@ -57,6 +57,9 @@ int ShowStateSelect(void);
 
 // Метод открытия диалога для выбора входа или выхода
 int ShowIOSelect(void);
+
+// Создание копии этого компонента
+virtual TUComponentsListForm* New(TComponent *owner=0);
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TUComponentsListForm *UComponentsListForm;

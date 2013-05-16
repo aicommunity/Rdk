@@ -84,7 +84,7 @@ const std::string& GetComponentControlName(void) const;
 bool SetComponentControlName(const std::string& name);
 
 // Создание копии этого компонента
-//virtual TUVisualControllerForm* New(TComponent *owner=0)=0;
+virtual TUVisualControllerForm* New(TComponent *owner=0)=0;
 // -----------------------------
 };
 

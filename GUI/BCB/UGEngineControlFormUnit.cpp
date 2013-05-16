@@ -100,6 +100,13 @@ void __fastcall TUGEngineControlForm::FormShow(TObject *Sender)
  UpdateInterface();
 
  HideTimer->Enabled=true;
+
+ UDrawEngineFrame1->ComponentsListFrame=UComponentsListFrame1;
+ UComponentsListFrame1->DrawEngineFrame=UDrawEngineFrame1;
+ UEngineMonitorForm->Parent=LogsTabSheet;
+ UEngineMonitorForm->BorderStyle=bsNone;
+ UEngineMonitorForm->Align=alClient;
+ UEngineMonitorForm->Show();
 }
 
 // Сохраняет параметры интерфейса в xml
@@ -117,10 +124,31 @@ void TUGEngineControlForm::ASaveParameters(RDK::USerStorageXML &xml)
    if(frame && frame->Parent == PageControl1->Pages[i])
    {
 	xml.WriteString(string("Caption_")+RDK::sntoa(i+1),AnsiString(PageControl1->Pages[i]->Caption).c_str());
-	xml.WriteString(string("Type_")+RDK::sntoa(i+1),AnsiString(Components[j]->ClassName()).c_str());
+	xml.WriteString(string("Class_")+RDK::sntoa(i+1),AnsiString(Components[j]->ClassName()).c_str());
+	xml.WriteString(string("Type_")+RDK::sntoa(i+1),AnsiString("Frame").c_str());
+	xml.WriteString(string("ComponentControlName_")+RDK::sntoa(i+1),frame->GetComponentControlName());
 	++count;
 	is_saved=true;
 	break;
+   }
+
+   TUVisualControllerForm *form=dynamic_cast<TUVisualControllerForm*>(Components[j]);
+   if(form)
+   {
+	std::map<std::string, TUVisualControllerForm*>::iterator I=UComponentsListFrame1->ComponentControllers.begin();
+	for(;I != UComponentsListFrame1->ComponentControllers.end();++I)
+	{
+	 if(I->second->Parent == PageControl1->Pages[i])
+	 {
+	  xml.WriteString(string("Caption_")+RDK::sntoa(i+1),AnsiString(I->second->Caption).c_str());
+	  xml.WriteString(string("Type_")+RDK::sntoa(i+1),"MultiForm");
+	  xml.WriteString(string("Class_")+RDK::sntoa(i+1),I->first);
+	  xml.WriteString(string("ComponentControlName_")+RDK::sntoa(i+1),I->second->GetComponentControlName());
+
+	  ++count;
+	  is_saved=true;
+	 }
+	}
    }
   }
   if(!is_saved) // Делаем попытку сохранить данные как данные формы
@@ -131,7 +159,9 @@ void TUGEngineControlForm::ASaveParameters(RDK::USerStorageXML &xml)
 	if(I->second->Parent == PageControl1->Pages[i])
 	{
 	 xml.WriteString(string("Caption_")+RDK::sntoa(i+1),AnsiString(I->second->Caption).c_str());
-	 xml.WriteString(string("Type_")+RDK::sntoa(i+1),I->first);
+	 xml.WriteString(string("Type_")+RDK::sntoa(i+1),"SingleForm");
+	 xml.WriteString(string("Class_")+RDK::sntoa(i+1),I->first);
+	 xml.WriteString(string("ComponentControlName_")+RDK::sntoa(i+1),I->second->GetComponentControlName());
 
 	 ++count;
 	}
@@ -153,30 +183,39 @@ void TUGEngineControlForm::ALoadParameters(RDK::USerStorageXML &xml)
  {
   String caption=xml.ReadString(string("Caption_")+RDK::sntoa(i+1),std::string("Untitled")).c_str();
   String type=xml.ReadString(string("Type_")+RDK::sntoa(i+1),std::string("")).c_str();
+  String str_class=xml.ReadString(string("Class_")+RDK::sntoa(i+1),std::string("")).c_str();
+  string component_name=xml.ReadString(string("ComponentControlName_")+RDK::sntoa(i+1),std::string("")).c_str();
 
   bool is_loaded=false;
   if(type.Length() != 0)
   {
-   std::map<std::string, TUVisualControllerForm*>::iterator I=UComponentsListFrame1->ComponentControllers.begin();
-   for(;I != UComponentsListFrame1->ComponentControllers.end();++I)
+   if(type == "Frame" && str_class != "TUImagesFrame" && str_class != "TUWatchFrame")
    {
-	if(I->first == AnsiString(type).c_str())
+	std::map<std::string, TUVisualControllerForm*>::iterator I=UComponentsListFrame1->ComponentControllers.find(AnsiString(str_class).c_str());
+	if(I != UComponentsListFrame1->ComponentControllers.end())
 	{
-	 I->second->SetComponentControlName(UComponentsListFrame1->GetSelectedComponentLongName());
-	 TTabSheet* tab=AddPage("", I->second->Caption);
-	 if(!tab)
-	  return;
-	 I->second->Parent=tab;
-	 I->second->Align=alClient;
-	 I->second->BorderStyle=bsNone;
-	 I->second->Show();
+	  I->second->SetComponentControlName(component_name);
+	  TTabSheet* tab=AddPage("", I->second->Caption);
+	  if(!tab)
+	   return;
 
-	 is_loaded=true;
-	}
+	  TUVisualControllerForm *form=I->second->New(tab);
+	  if(!form)
+	   form=I->second;
+	  else
+	   InsertComponent(form);
+      form->SetComponentControlName(component_name);
+	  form->Parent=tab;
+	  form->Align=alClient;
+	  form->BorderStyle=bsNone;
+	  form->Show();
+
+	  is_loaded=true;
+    }
    }
 
    if(!is_loaded)
-    AddPage(type,caption);
+    AddPage(str_class,caption);
   }
  }
  xml.SelectUp();
@@ -558,7 +597,22 @@ TTabSheet* TUGEngineControlForm::AddPage(const String &type, const String &capti
 void TUGEngineControlForm::DelPage(int index)
 {
  if(index < PageControl1->PageCount && index >= 1)
+ {
+  std::map<std::string, TUVisualControllerForm*>::iterator I=UComponentsListFrame1->ComponentControllers.begin();
+  for(;I != UComponentsListFrame1->ComponentControllers.end();++I)
+  {
+   TUVisualControllerForm *form=dynamic_cast<TUVisualControllerForm*>(I->second);
+   if(form && form->Parent == PageControl1->Pages[index])
+   {
+	form->BorderStyle=bsSizeable;
+	form->Align=alNone;
+	form->Hide();
+	form->Parent=0;
+	break;
+   }
+  }
   delete PageControl1->Pages[index];
+ }
 
 }
 
@@ -573,8 +627,37 @@ void TUGEngineControlForm::RenamePage(int index, String new_name)
 void TUGEngineControlForm::ClearPages(void)
 {
  while(PageControl1->PageCount > 1)
-  delete PageControl1->Pages[PageControl1->PageCount-1];
+  DelPage(PageControl1->PageCount-1);
 }
+
+// Ищет, существует ли уже вкладка, управляющая компонентом с заданным именем
+// Возвращает индекс вкладки или -1, если вкладка не найдена
+int TUGEngineControlForm::FindComponentControlPage(const std::string &component_long_name)
+{
+ for(int i=1;i<PageControl1->PageCount;i++)
+ {
+  if(PageControl1->Pages[i]->ComponentCount != 0)
+  {
+   TUVisualControllerForm *form=dynamic_cast<TUVisualControllerForm*>(PageControl1->Pages[i]->Components[0]);
+   if(form && form->GetComponentControlName() == component_long_name)
+	return i;
+  }
+  else
+  {
+   std::map<std::string, TUVisualControllerForm*>::iterator I=UComponentsListFrame1->ComponentControllers.begin();
+   for(;I != UComponentsListFrame1->ComponentControllers.end();++I)
+   {
+	TUVisualControllerForm *form=dynamic_cast<TUVisualControllerForm*>(I->second);
+	if(form && form->Parent == PageControl1->Pages[i] && form->GetComponentControlName() == component_long_name)
+	 return i;
+   }
+  }
+ }
+
+ return -1;
+}
+
+
 //---------------------------------------------------------------------------
 
 void __fastcall TUGEngineControlForm::Start1Click(TObject *Sender)
@@ -871,9 +954,6 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  }
 
  GraphicalEngineInit(0,1,1,320,240,1,ExceptionHandler);
-
- UDrawEngineFrame1->ComponentsListFrame=UComponentsListFrame1;
- UComponentsListFrame1->DrawEngineFrame=UDrawEngineFrame1;
 }
 //---------------------------------------------------------------------------
 
@@ -946,27 +1026,44 @@ void __fastcall TUGEngineControlForm::Watches2Click(TObject *Sender)
 void __fastcall TUGEngineControlForm::UComponentsListFrame1GUI1Click(TObject *Sender)
 
 {
- //  UComponentsListFrame1->GUI1Click
+ int control_index=FindComponentControlPage(UComponentsListFrame1->GetSelectedComponentLongName());
+
+ if(control_index>=0)
+ {
+  PageControl1->ActivePageIndex=control_index;
+  return;
+ }
+
  std::string name=Model_GetComponentClassName(UComponentsListFrame1->GetSelectedComponentLongName().c_str());
+
  std::map<std::string, TUVisualControllerForm*>::iterator I=UComponentsListFrame1->ComponentControllers.find(name);
  if(I != UComponentsListFrame1->ComponentControllers.end() && I->second)
  {
-  I->second->SetComponentControlName(UComponentsListFrame1->GetSelectedComponentLongName());
   TTabSheet* tab=AddPage("", I->second->Caption);
   if(!tab)
    return;
 
-//  GetClass(I->second->GetClassName());
-
-//  I->second->
-//  TControl *ctrl=I->second->ClassType(); //TControlClass(I->second->ClassType())-> Create(0);
-  I->second->Parent=tab;
-  I->second->Align=alClient;
-  I->second->BorderStyle=bsNone;
-  I->second->Show();
-  I->second->UpdateInterface(true);
+  TUVisualControllerForm *form=I->second->New(tab);
+  if(!form)
+   form=I->second;
+  else
+   InsertComponent(form);
+  form->SetComponentControlName(UComponentsListFrame1->GetSelectedComponentLongName());
+  form->Parent=tab;
+  form->Align=alClient;
+  form->BorderStyle=bsNone;
+  form->Show();
+  form->UpdateInterface(true);
  }
 
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TUGEngineControlForm::UDrawEngineFrame1GUI1Click(TObject *Sender)
+
+{
+ UComponentsListFrame1GUI1Click(Sender);
 }
 //---------------------------------------------------------------------------
 

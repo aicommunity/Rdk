@@ -33,6 +33,10 @@ __published:	// IDE-managed Components
 private:	// User declarations
 public:		// User declarations
 	__fastcall TUComponentsControlForm(TComponent* Owner);
+
+
+// Создание копии этого компонента
+virtual TUComponentsControlForm* New(TComponent *owner=0);
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TUComponentsControlForm *UComponentsControlForm;

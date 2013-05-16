@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 
-#ifndef UDrawEngineFormUnitH
-#define UDrawEngineFormUnitH
+#ifndef UDrawEngineFrameUnitH
+#define UDrawEngineFrameUnitH
 //---------------------------------------------------------------------------
 #include <System.Classes.hpp>
 #include <Vcl.Controls.hpp>
@@ -15,55 +15,67 @@
 #include "TUVisualControllerFrameUnit.h"
 #include "UClassesListFrameUnit.h"
 #include <Vcl.Menus.hpp>
-//---------------------------------------------------------------------------
-class TUDrawEngineForm : public TUVisualControllerForm
-{
-__published:	// IDE-managed Components
-	TPanel *Panel1;
-	TPanel *Panel2;
-	TScrollBox *ScrollBox;
-	TImage *Image;
-	TSplitter *Splitter1;
-	TUClassesListFrame *UClassesListFrame;
-	TPopupMenu *PopupMenu;
-	TMenuItem *Breakinputlink1;
-	TPanel *Panel3;
-	TLabeledEdit *RectWidthLabeledEdit;
-	TLabel *Label1;
-	TComboBox *FontTypeComboBox;
-	TLabel *Label2;
-	TComboBox *FontSizeComboBox;
-	TLabeledEdit *RectHeightLabeledEdit;
-	TButton *ApplyButton;
-	TButton *RestoreButton;
-	TMenuItem *Createlonglink1;
-	TMenuItem *Finishlonglink1;
-	TMenuItem *Cancellonglink1;
-	TMenuItem *N2;
-	void __fastcall ImageMouseDown(TObject *Sender, TMouseButton Button, TShiftState Shift,
-          int X, int Y);
-	void __fastcall ImageMouseMove(TObject *Sender, TShiftState Shift, int X, int Y);
-	void __fastcall ImageMouseUp(TObject *Sender, TMouseButton Button, TShiftState Shift,
-          int X, int Y);
-	void __fastcall ScrollBoxResize(TObject *Sender);
-	void __fastcall UClassesListFrameStringGridMouseMove(TObject *Sender, TShiftState Shift,
-          int X, int Y);
-	void __fastcall UClassesListFrameStringGridMouseUp(TObject *Sender, TMouseButton Button,
-          TShiftState Shift, int X, int Y);
-	void __fastcall ImageDragDrop(TObject *Sender, TObject *Source, int X, int Y);
-	void __fastcall ImageDragOver(TObject *Sender, TObject *Source, int X, int Y, TDragState State,
-          bool &Accept);
-	void __fastcall Breakinputlink1Click(TObject *Sender);
-	void __fastcall ApplyButtonClick(TObject *Sender);
-	void __fastcall RestoreButtonClick(TObject *Sender);
-	void __fastcall FontTypeComboBoxSelect(TObject *Sender);
-	void __fastcall Createlonglink1Click(TObject *Sender);
-	void __fastcall Finishlonglink1Click(TObject *Sender);
-	void __fastcall Cancellonglink1Click(TObject *Sender);
 
-private:	// User declarations
-public:		// User declarations
-	__fastcall TUDrawEngineForm(TComponent* Owner);
+class TUComponentsListFrame;
+//---------------------------------------------------------------------------
+class TUDrawEngineFrame : public TUVisualControllerFrame
+{
+__published:    // IDE-managed Components
+    TPanel *Panel1;
+    TPanel *Panel2;
+    TScrollBox *ScrollBox;
+    TImage *Image;
+    TSplitter *Splitter1;
+    TUClassesListFrame *UClassesListFrame;
+    TPopupMenu *PopupMenu;
+    TMenuItem *Breakinputlink1;
+    TPanel *Panel3;
+    TLabeledEdit *RectWidthLabeledEdit;
+    TLabel *Label1;
+    TComboBox *FontTypeComboBox;
+    TLabel *Label2;
+    TComboBox *FontSizeComboBox;
+    TLabeledEdit *RectHeightLabeledEdit;
+    TButton *ApplyButton;
+    TButton *RestoreButton;
+    TMenuItem *Createlonglink1;
+    TMenuItem *Finishlonglink1;
+    TMenuItem *Cancellonglink1;
+    TMenuItem *N2;
+	TMenuItem *N1;
+	TMenuItem *GUI1;
+	TMenuItem *N3;
+	TMenuItem *Rename1;
+    void __fastcall ImageMouseDown(TObject *Sender, TMouseButton Button, TShiftState Shift,
+          int X, int Y);
+    void __fastcall ImageMouseMove(TObject *Sender, TShiftState Shift, int X, int Y);
+    void __fastcall ImageMouseUp(TObject *Sender, TMouseButton Button, TShiftState Shift,
+          int X, int Y);
+    void __fastcall ScrollBoxResize(TObject *Sender);
+    void __fastcall UClassesListFrameStringGridMouseMove(TObject *Sender, TShiftState Shift,
+          int X, int Y);
+    void __fastcall UClassesListFrameStringGridMouseUp(TObject *Sender, TMouseButton Button,
+          TShiftState Shift, int X, int Y);
+    void __fastcall ImageDragDrop(TObject *Sender, TObject *Source, int X, int Y);
+    void __fastcall ImageDragOver(TObject *Sender, TObject *Source, int X, int Y, TDragState State,
+          bool &Accept);
+    void __fastcall Breakinputlink1Click(TObject *Sender);
+    void __fastcall ApplyButtonClick(TObject *Sender);
+    void __fastcall RestoreButtonClick(TObject *Sender);
+    void __fastcall FontTypeComboBoxSelect(TObject *Sender);
+    void __fastcall Createlonglink1Click(TObject *Sender);
+    void __fastcall Finishlonglink1Click(TObject *Sender);
+    void __fastcall Cancellonglink1Click(TObject *Sender);
+	void __fastcall FrameContextPopup(TObject *Sender, TPoint &MousePos, bool &Handled);
+	void __fastcall Rename1Click(TObject *Sender);
+
+
+private:    // User declarations
+public:        // User declarations
+    __fastcall TUDrawEngineFrame(TComponent* Owner);
+
+// Указатель на фрейм управления списком компонент
+TUComponentsListFrame * ComponentsListFrame;
 
 // Имя компонента, содержимое которого будет отображено
 std::string ComponentName;
@@ -130,9 +142,6 @@ virtual void ASaveParameters(RDK::USerStorageXML &xml);
 
 // Загружает параметры интерфейса из xml
 virtual void ALoadParameters(RDK::USerStorageXML &xml);
-
-// Создание копии этого компонента
-virtual TUDrawEngineForm* New(TComponent *owner=0);
 // -----------------------------
 
 // -----------------------------
@@ -148,7 +157,5 @@ void SelectComponent(const std::string &comp_name);
 void SaveComponentPosition(const std::string &name);
 // -----------------------------
 };
-//---------------------------------------------------------------------------
-extern PACKAGE TUDrawEngineForm *UDrawEngineForm;
-//---------------------------------------------------------------------------
+
 #endif

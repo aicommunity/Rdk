@@ -23,9 +23,17 @@ void ExceptionHandler(void)
 
  if(!new_log_data.empty())
  {
-  UEngineMonitorForm->Show();
-  UEngineMonitorForm->WindowState=wsNormal;
   UEngineMonitorForm->EngineMonitorFrame->Pause1Click(UEngineMonitorForm);
+  TTabSheet *tab=dynamic_cast<TTabSheet*>(UEngineMonitorForm->Parent);
+  if(tab)
+  {
+   tab->PageControl->ActivePage=tab;
+  }
+  else
+  {
+   UEngineMonitorForm->Show();
+   UEngineMonitorForm->WindowState=wsNormal;
+  }
  }
 }
 //---------------------------------------------------------------------------
@@ -43,6 +51,13 @@ void TUEngineMonitorForm::ASaveParameters(RDK::USerStorageXML &xml)
 void TUEngineMonitorForm::ALoadParameters(RDK::USerStorageXML &xml)
 {
 }
+
+// Создание копии этого компонента
+TUEngineMonitorForm* TUEngineMonitorForm::New(TComponent *owner)
+{
+ return new TUEngineMonitorForm(owner);
+}
+
 //---------------------------------------------------------------------------
 void __fastcall TUEngineMonitorForm::FormDestroy(TObject *Sender)
 {

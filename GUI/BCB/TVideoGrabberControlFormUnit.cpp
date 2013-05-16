@@ -44,6 +44,12 @@ void TVideoGrabberControlForm::ASaveParameters(RDK::USerStorageXML &xml)
 void TVideoGrabberControlForm::ALoadParameters(RDK::USerStorageXML &xml)
 {
 }
+
+// Создание копии этого компонента
+TVideoGrabberControlForm* TVideoGrabberControlForm::New(TComponent *owner)
+{
+ return new TVideoGrabberControlForm(owner);
+}
 // -----------------------------
 
 

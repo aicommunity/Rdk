@@ -19,6 +19,9 @@ __published:	// IDE-managed Components
 private:	// User declarations
 public:		// User declarations
 	__fastcall TUComponentsPerformanceForm(TComponent* Owner);
+
+// Создание копии этого компонента
+virtual TUComponentsPerformanceForm* New(TComponent *owner=0);
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TUComponentsPerformanceForm *UComponentsPerformanceForm;

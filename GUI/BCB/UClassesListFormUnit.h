@@ -24,6 +24,10 @@ __published:	// IDE-managed Components
 private:	// User declarations
 public:		// User declarations
 	__fastcall TUClassesListForm(TComponent* Owner);
+
+
+// Создание копии этого компонента
+virtual TUClassesListForm* New(TComponent *owner=0);
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TUClassesListForm *UClassesListForm;

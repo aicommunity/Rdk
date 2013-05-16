@@ -88,7 +88,6 @@ __published:	// IDE-managed Components
 	TPanel *Panel4;
 	TSplitter *Splitter2;
 	TSplitter *Splitter3;
-	TUEngineMonitorFrame *UEngineMonitorFrame1;
 	TUComponentsListFrame *UComponentsListFrame1;
 	TMenuItem *New1;
 	TMenuItem *Images2;
@@ -104,7 +103,7 @@ __published:	// IDE-managed Components
 	TUComponentsPerformanceFrame *UComponentsPerformanceFrame1;
 	TUDrawEngineFrame *UDrawEngineFrame1;
 	TPageControl *PageControl2;
-	TTabSheet *TabSheet1;
+	TTabSheet *LogsTabSheet;
 	TTabSheet *TabSheet2;
 	void __fastcall FormShow(TObject *Sender);
 	void __fastcall Start1Click(TObject *Sender);
@@ -141,6 +140,7 @@ __published:	// IDE-managed Components
 	void __fastcall Images3Click(TObject *Sender);
 	void __fastcall Watches2Click(TObject *Sender);
 	void __fastcall UComponentsListFrame1GUI1Click(TObject *Sender);
+	void __fastcall UDrawEngineFrame1GUI1Click(TObject *Sender);
 
 
 
@@ -241,6 +241,9 @@ void DelPage(int index);
 // Переименовывает заголовок страницы
 void RenamePage(int index, String new_name);
 
+// Ищет, существует ли уже вкладка, управляющая компонентом с заданным именем
+// Возвращает индекс вкладки или -1, если вкладка не найдена
+int FindComponentControlPage(const std::string &component_long_name);
 
 // Удаляет все лишние вкладки (оставляет 2 начальные)
 void ClearPages(void);

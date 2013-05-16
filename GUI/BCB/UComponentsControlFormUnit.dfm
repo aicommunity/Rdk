@@ -72,20 +72,29 @@ object UComponentsControlForm: TUComponentsControlForm
               Height = 377
               ExplicitWidth = 257
               ExplicitHeight = 377
-              inherited TabSheet1: TTabSheet
-                ExplicitWidth = 249
-                ExplicitHeight = 351
-                inherited ParametersHeaderControl: THeaderControl
+              inherited TabSheet4: TTabSheet
+                inherited Splitter3: TSplitter
+                  Top = 274
                   Width = 249
+                end
+                inherited ParametersListStringGrid: TStringGrid
+                  Width = 249
+                  Height = 274
+                end
+                inherited ParameterValueRichEdit: TRichEdit
+                  Top = 284
+                  Width = 249
+                end
+                inherited HeaderControl3: THeaderControl
+                  Top = 317
+                  Width = 249
+                end
+              end
+              inherited TabSheet1: TTabSheet
+                inherited ParametersHeaderControl: THeaderControl
                   ExplicitLeft = 1
                   ExplicitTop = -6
                   ExplicitWidth = 249
-                end
-                inherited ParametersRichEdit: TRichEdit
-                  Width = 249
-                  Height = 317
-                  ExplicitWidth = 249
-                  ExplicitHeight = 317
                 end
               end
             end

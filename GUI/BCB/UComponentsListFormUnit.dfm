@@ -76,7 +76,6 @@ object UComponentsListForm: TUComponentsListForm
         inherited TabSheet5: TTabSheet
           inherited StatesListStringGrid: TStringGrid
             OnDblClick = ComponentsListFrame1StatesListStringGridDblClick
-            ExplicitHeight = 461
           end
         end
         inherited TabSheet3: TTabSheet

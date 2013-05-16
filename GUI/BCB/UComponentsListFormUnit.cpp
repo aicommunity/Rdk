@@ -57,6 +57,11 @@ int TUComponentsListForm::ShowIOSelect(void)
  return ShowModal();
 }
 
+// Создание копии этого компонента
+TUComponentsListForm* TUComponentsListForm::New(TComponent *owner)
+{
+ return new TUComponentsListForm(owner);
+}
 //---------------------------------------------------------------------------
 
 void __fastcall TUComponentsListForm::FormShow(TObject *Sender)

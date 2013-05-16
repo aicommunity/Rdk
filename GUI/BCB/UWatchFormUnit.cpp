@@ -66,6 +66,12 @@ void TUWatchForm::ALoadParameters(RDK::USerStorageXML &xml)
  }
  xml.SelectUp();
 }
+
+// Создание копии этого компонента
+TUWatchForm* TUWatchForm::New(TComponent *owner)
+{
+ return new TUWatchForm(owner);
+}
 // ------------------------------
 
 

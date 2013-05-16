@@ -50,6 +50,11 @@ void TUFavoriteComponentInfoForm::ALoadParameters(RDK::USerStorageXML &xml)
  xml.SelectUp();
 }
 
+// Создание копии этого компонента
+TUFavoriteComponentInfoForm* TUFavoriteComponentInfoForm::New(TComponent *owner)
+{
+ return new TUFavoriteComponentInfoForm(owner);
+}
 
 // ------------------------------
 // Методы управления страницами

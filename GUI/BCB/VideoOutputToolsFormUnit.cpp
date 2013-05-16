@@ -35,6 +35,13 @@ __fastcall TVideoOutputToolsForm::TVideoOutputToolsForm(TComponent* Owner,
 {
 
 }
+
+// Создание копии этого компонента
+TVideoOutputToolsForm* TVideoOutputToolsForm::New(TComponent *owner)
+{
+ return 0;
+}
+
 //---------------------------------------------------------------------------
 void __fastcall TVideoOutputToolsForm::AddFigureButtonClick(TObject *Sender)
 {

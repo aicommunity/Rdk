@@ -39,11 +39,7 @@ object VideoGrabberControlForm: TVideoGrabberControlForm
       ExplicitWidth = 584
       ExplicitHeight = 292
       inherited DeviceTabSheet: TTabSheet
-        ExplicitWidth = 576
-        ExplicitHeight = 261
         inherited VDCapturePanel: TPanel
-          ExplicitWidth = 576
-          ExplicitHeight = 261
           inherited ModeLabel: TLabel
             Width = 560
             ExplicitWidth = 560
