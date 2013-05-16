@@ -259,6 +259,23 @@ MDMatrix<T> CovariationErrorUpdate(const MDMatrix<T> &Kk, const MDMatrix<T> &H,
  return (eye_matrix-Kk*H)*PkL; // Pk
 }
 
+//Калман предсказание без корректировки
+void KalmanPredict(int i)
+{
+ MDMatrix<T> xkL=StatePrediction(FM,BM,Xk1,Uk1);
+ MDMatrix<T> PkL;
+
+ if (i>0)
+  PkL=CovariationError(FM,Pk1,QM);
+ else
+  PkL=Pk1;
+
+ Xk1=xkL;
+ Pk1=PkL;
+
+ //MDMatrix<T> Kk=KalmanGain(PkL,HM,RM);
+ CalcCount++;
+}
 // Калман
 void KalmanCalculate(int i)
 {
