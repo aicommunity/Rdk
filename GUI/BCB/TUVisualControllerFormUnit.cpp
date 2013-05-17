@@ -157,11 +157,17 @@ std::string TUVisualControllerForm::GetName(void)
 // Сохраняет параметры интерфейса в xml
 void TUVisualControllerForm::SaveParameters(RDK::USerStorageXML &xml)
 {
+ TTabSheet *tab=dynamic_cast<TTabSheet*>(Parent);
+ if(tab)
+  xml.SelectNodeForce(AnsiString(tab->PageControl->Owner->Name).c_str());
  xml.SelectNodeForce(GetName());
  ASaveParameters(xml);
  SaveFormPosition(xml, this);
  xml.WriteString("ComponentControlName",ComponentControlName);
  xml.WriteInteger("UpdateInterval",UpdateInterval);
+ if(tab)
+  xml.SelectUp();
+
  xml.SelectUp();
 }
 
@@ -174,11 +180,17 @@ void TUVisualControllerForm::ASaveParameters(RDK::USerStorageXML &xml)
 // Загружает параметры интерфейса из xml
 void TUVisualControllerForm::LoadParameters(RDK::USerStorageXML &xml)
 {
+ TTabSheet *tab=dynamic_cast<TTabSheet*>(Parent);
+ if(tab)
+  xml.SelectNodeForce(AnsiString(tab->PageControl->Owner->Name).c_str());
  xml.SelectNodeForce(GetName());
  ComponentControlName=xml.ReadString("ComponentControlName","");
  UpdateInterval=xml.ReadInteger("UpdateInterval",UpdateInterval);
  LoadFormPosition(xml, this);
  ALoadParameters(xml);
+
+ if(tab)
+  xml.SelectUp();
  xml.SelectUp();
  UpdateInterface();
 }
