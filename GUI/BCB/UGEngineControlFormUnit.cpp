@@ -105,6 +105,7 @@ void __fastcall TUGEngineControlForm::FormShow(TObject *Sender)
  UComponentsListFrame1->DrawEngineFrame=UDrawEngineFrame1;
  UEngineMonitorForm->Parent=LogsTabSheet;
  UEngineMonitorForm->BorderStyle=bsNone;
+ UEngineMonitorForm->EngineMonitorFrame->StatusBar->Visible=false;
  UEngineMonitorForm->Align=alClient;
  UEngineMonitorForm->Show();
 }
