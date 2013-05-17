@@ -138,6 +138,7 @@ protected:		// User declarations
 public: // Список интерфейсных форм для управления компонентами
 		// Собственно список форм
 		static std::map<std::string, TUVisualControllerForm*> ComponentControllers;
+//		static std::map<std::string, std::pair<TUVisualControllerForm*,std::vector<TUVisualControllerForm*> > > ComponentControllers;
 
 		TUDrawEngineFrame *DrawEngineFrame;
 

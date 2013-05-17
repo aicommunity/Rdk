@@ -231,9 +231,16 @@ void OpenProject(const String &FileName);
 // Сохраняет проект
 void SaveProject(void);
 
-// Создает новую вкладку с заданным именем
+// Добавляет заданный фрейм типа TUImagesFrame, TUWatchFrame и т.п. на заданную вкладку
+bool AddSpecialFrameToPage(TUVisualControllerFrame *frame, TTabSheet* tab, const String &caption);
+
+// Создает новую вкладку с заданным именем для специальных фреймов
 // type - строковое имя типа фрейма на вкладке
-TTabSheet* AddPage(const String &type, const String &caption);
+TTabSheet* AddSpecialFramePage(const String &type, const String &caption);
+
+// Создает новую вкладку с заданным именем для формы управления компонентом
+// Если этим копонентом уже упрвляют, то возвращает указатель на такую вкладку
+TTabSheet* AddComponentControlFormPage(const string &component_name);
 
 // Удаляет страницу
 void DelPage(int index);
