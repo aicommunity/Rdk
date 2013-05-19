@@ -695,7 +695,7 @@ void __fastcall TUGEngineControlForm::Start1Click(TObject *Sender)
 void __fastcall TUGEngineControlForm::Pause1Click(TObject *Sender)
 {
  UEngineMonitorForm->EngineMonitorFrame->Pause1Click(Sender);
- VideoOutputForm->Stop();
+ VideoOutputForm->StopOffline();
 // Timer->Enabled=false;
 }
 //---------------------------------------------------------------------------

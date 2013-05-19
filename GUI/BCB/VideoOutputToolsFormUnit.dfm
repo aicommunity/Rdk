@@ -22,7 +22,7 @@ object VideoOutputToolsForm: TVideoOutputToolsForm
     Top = 0
     Width = 113
     Height = 386
-    Align = alLeft
+    Align = alClient
     BevelOuter = bvNone
     TabOrder = 0
     object GroupBox1: TGroupBox
@@ -105,7 +105,7 @@ object VideoOutputToolsForm: TVideoOutputToolsForm
     Top = 0
     Width = 105
     Height = 386
-    Align = alClient
+    Align = alRight
     TabOrder = 1
     object GroupBox2: TGroupBox
       Left = 1

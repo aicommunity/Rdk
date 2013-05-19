@@ -13,6 +13,8 @@
 #include "VideoOutputFrameUnit.h"
 #include "TUVisualControllerFormUnit.h"
 #include <Vcl.Dialogs.hpp>
+#include <Vcl.ComCtrls.hpp>
+#include <Vcl.Menus.hpp>
 //---------------------------------------------------------------------------
 class TTldTrackingForm : public TUVisualControllerForm
 {
@@ -22,31 +24,35 @@ __published:	// IDE-managed Components
 	TPanel *Panel3;
 	TVideoOutputFrame *VideoOutputFrame1;
 	TButton *GetFrameButton;
-	TButton *StartTrackingButton;
-	TButton *StopTrackingButton;
 	TCheckBox *EnableLogCheckBox;
-	TButton *GotoFirstFrameButton;
-	TLabel *Label1;
-	TComboBox *VideoSourceComboBox;
-	TButton *SendObjectToButton;
-	TComboBox *ObjectReceiverComboBox;
-	TLabel *Label2;
-	TComboBox *ObjectReceiver2ComboBox;
-	TLabel *Label3;
 	TButton *CopyTrackerDataButton;
+	TOpenDialog *OpenDialog1;
 	TButton *SaveTrackerDataButton;
 	TButton *LoadTrackerDataButton;
-	TOpenDialog *OpenDialog1;
+	TButton *StartTrackingButton;
+	TButton *StopTrackingButton;
+	TPageControl *PageControl1;
+	TTabSheet *RectangleTabSheet;
+	TLabel *Label2;
+	TButton *SendObjectToButton;
+	TComboBox *ObjectReceiverComboBox;
+	TTabSheet *PointsTabSheet;
+	TButton *SendPointsButton;
+	TGroupBox *GroupBox1;
+	TLabeledEdit *RectWidthLabeledEdit;
+	TLabeledEdit *RectHeightLabeledEdit;
 	void __fastcall StartTrackingButtonClick(TObject *Sender);
 	void __fastcall StopTrackingButtonClick(TObject *Sender);
 	void __fastcall GetFrameButtonClick(TObject *Sender);
 	void __fastcall FormCreate(TObject *Sender);
 	void __fastcall EnableLogCheckBoxClick(TObject *Sender);
-	void __fastcall GotoFirstFrameButtonClick(TObject *Sender);
 	void __fastcall SendObjectToButtonClick(TObject *Sender);
 	void __fastcall CopyTrackerDataButtonClick(TObject *Sender);
 	void __fastcall SaveTrackerDataButtonClick(TObject *Sender);
 	void __fastcall LoadTrackerDataButtonClick(TObject *Sender);
+	void __fastcall PointsTabSheetShow(TObject *Sender);
+	void __fastcall SendPointsButtonClick(TObject *Sender);
+	void __fastcall FormShow(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
 	__fastcall TTldTrackingForm(TComponent* Owner);

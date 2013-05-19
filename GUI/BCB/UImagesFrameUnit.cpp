@@ -57,7 +57,7 @@ void TUImagesFrame::SetNumCells(int width, int height)
  {
   Images[i].resize(height);
   StringIds[i].resize(height);
-  ComponentIndexes[i].resize(height);
+  ComponentIndexes[i].resize(height,-1);
   MouseClickComponents[i].resize(height);
   for(size_t j=0;j<Images[i].size();j++)
    Images[i][j]=new TImage(this);
@@ -286,6 +286,9 @@ void TUImagesFrame::AUpdateInterface(void)
   {
    for(size_t j=0;j<Images[i].size();j++)
    {
+	if(ComponentIndexes[i][j] < 0)
+	 continue;
+
 	const RDK::UBitmap* bmp=(const RDK::UBitmap*)Model_GetComponentOutput(StringIds[i][j].c_str(), ComponentIndexes[i][j]);
 	if(bmp)
 	 SetBitmap(i, j, *bmp);

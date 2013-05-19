@@ -198,11 +198,28 @@ void TVideoOutputForm::Start(int index)
 void TVideoOutputForm::Stop(int index)
 {
  if(index>=0 && index<GetNumSources())
-  Sources[index]->StartButtonClick(this);
+  Sources[index]->StopButtonClick(this);
  else
   for(int i=0;i<GetNumSources();i++)
    Sources[i]->StopButtonClick(this);
 }
+
+// Останавливает выбранный источник видео, или все если index == -1
+// Не изменяяет состояние онлайн-источников (камеры)
+void TVideoOutputForm::StopOffline(int index)
+{
+ if(index>=0 && index<GetNumSources())
+ {
+  if(Sources[index]->Mode != 2 && Sources[index]->Mode != 3)
+   Sources[index]->StopButtonClick(this);
+ }
+ else
+  for(int i=0;i<GetNumSources();i++)
+   if(Sources[i]->Mode != 2 && Sources[i]->Mode != 3)
+    Sources[i]->StopButtonClick(this);
+}
+
+
 //---------------------------------------------------------------------------
 void __fastcall TVideoOutputForm::PageControlChange(TObject *Sender)
 {

@@ -421,7 +421,7 @@ void __fastcall TUDrawEngineFrame::Breakinputlink1Click(TObject *Sender)
    name=ComponentName+std::string(".")+name;
   }
 
-  UComponentLinksForm->UComponentLinksFrame->Init(2, name,ComponentName);
+  UComponentLinksForm->UComponentLinksFrame->Init(2, name,"");
   if(UComponentLinksForm->ShowModal() == mrOk)
   {
    UComponentLinksForm->UComponentLinksFrame->UpdateInterface();

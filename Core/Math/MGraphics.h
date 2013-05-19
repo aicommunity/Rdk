@@ -284,10 +284,10 @@ void MGraphics<T,Rows>::Repaint(void)
 	if(Descriptions[i].TargetPoints)
 	{
      Graphics->SetPenWidth(Descriptions[i].PenWidth);
-	 Graphics->Line(int(vertex.x),int(vertex.y)-Descriptions[i].PenWidth*12,int(vertex.x),int(vertex.y)-Descriptions[i].PenWidth*2);
-	 Graphics->Line(int(vertex.x),int(vertex.y)+Descriptions[i].PenWidth*2,int(vertex.x),int(vertex.y)+Descriptions[i].PenWidth*12);
-	 Graphics->Line(int(vertex.x)-Descriptions[i].PenWidth*12,int(vertex.y),int(vertex.x)-Descriptions[i].PenWidth*2,int(vertex.y));
-	 Graphics->Line(int(vertex.x)+Descriptions[i].PenWidth*2,int(vertex.y),int(vertex.x)+Descriptions[i].PenWidth*12,int(vertex.y));
+	 Graphics->Line(int(vertex.x),int(vertex.y)-Descriptions[i].PenWidth*7,int(vertex.x),int(vertex.y)-Descriptions[i].PenWidth*2);
+	 Graphics->Line(int(vertex.x),int(vertex.y)+Descriptions[i].PenWidth*2,int(vertex.x),int(vertex.y)+Descriptions[i].PenWidth*7);
+	 Graphics->Line(int(vertex.x)-Descriptions[i].PenWidth*7,int(vertex.y),int(vertex.x)-Descriptions[i].PenWidth*2,int(vertex.y));
+	 Graphics->Line(int(vertex.x)+Descriptions[i].PenWidth*2,int(vertex.y),int(vertex.x)+Descriptions[i].PenWidth*7,int(vertex.y));
  	 Graphics->SetPenWidth(1);
 	}
    }

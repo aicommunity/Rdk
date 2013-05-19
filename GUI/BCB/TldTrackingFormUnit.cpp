@@ -47,7 +47,7 @@ void TTldTrackingForm::AUpdateInterface(void)
  if(ComponentControlName.empty())
   return;
  int num_inputs=1;//RDK::ReadParameterValue<int>(ComponentControlName, "NumInputs");
- LoadVideoInputs(num_inputs, VideoSourceComboBox);
+// LoadVideoInputs(num_inputs, VideoSourceComboBox);
 
  size_t pos=ComponentControlName.find_last_of(".");
  std::string source_name;
@@ -74,10 +74,10 @@ void TTldTrackingForm::AAfterCalculate(void)
  if(ComponentControlName.empty())
   return;
 
- int video_index=0;
+// int video_index=0;
 
- if(VideoSourceComboBox->ItemIndex >= 0)
-  video_index=VideoSourceComboBox->ItemIndex;
+// if(VideoSourceComboBox->ItemIndex >= 0)
+//  video_index=VideoSourceComboBox->ItemIndex;
 
  const RDK::UBitmap* bmp=(const RDK::UBitmap*)Model_GetComponentBitmapInput(ComponentControlName.c_str(), 0);
  if(bmp)
@@ -191,15 +191,6 @@ void __fastcall TTldTrackingForm::EnableLogCheckBoxClick(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TTldTrackingForm::GotoFirstFrameButtonClick(TObject *Sender)
-{
- if(VideoOutputForm->GetVideoOutputFrame(VideoSourceComboBox->ItemIndex))
- {
-  VideoOutputForm->GetVideoOutputFrame(VideoSourceComboBox->ItemIndex)->TrackBar->Position=0;
-  VideoOutputForm->GetVideoOutputFrame(VideoSourceComboBox->ItemIndex)->UpdateVideo();
- }
-}
-//---------------------------------------------------------------------------
 
 void __fastcall TTldTrackingForm::SendObjectToButtonClick(TObject *Sender)
 {
@@ -239,16 +230,12 @@ void __fastcall TTldTrackingForm::SendObjectToButtonClick(TObject *Sender)
 
  Model_SetComponentPropertyData(ComponentControlName.c_str(), "InitialFlags", &initial_flags);
  Model_SetComponentPropertyData(source_name.c_str(), "DoubleMatrix", &points);
- // RDK::WriteStateValue(ComponentControlName, "InitialFlags", initial_flags);
-// RDK::WriteStateValue("MatrixSource", "DoubleMatrix", points);
+
  Env_Calculate(ComponentControlName.c_str());
  AAfterCalculate();
+ VideoOutputFrame1->MyVideoOutputToolsForm->DelAllFiguresButtonClick(Sender);
+ VideoOutputFrame1->MyVideoOutputToolsForm->AddFigureButtonClick(Sender);
  VideoOutputFrame1->UpdateVideo();
- //RDK::UIVisualControllerStorage::AfterCalculate();
- //RDK::UIVisualControllerStorage::UpdateInterface();
- // UEngineMonitorForm->EngineMonitorFrame->Step1Click(Sender);
-// if(started)
-//  StartTrackingButtonClick(Sender);
 }
 //---------------------------------------------------------------------------
 
@@ -291,6 +278,84 @@ void __fastcall TTldTrackingForm::LoadTrackerDataButtonClick(TObject *Sender)
  int item_index=ObjectReceiverComboBox->ItemIndex;
  Model_SetComponentPropertyData(ComponentControlName.c_str(), "LoadTrackerDataIndex", &item_index);
  Env_Calculate(ComponentControlName.c_str());
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TTldTrackingForm::PointsTabSheetShow(TObject *Sender)
+{
+ VideoOutputFrame1->MyVideoOutputToolsForm->Parent=PointsTabSheet;
+ VideoOutputFrame1->MyVideoOutputToolsForm->BorderStyle=bsNone;
+ VideoOutputFrame1->MyVideoOutputToolsForm->FigurePanel->Visible=false;
+ VideoOutputFrame1->MyVideoOutputToolsForm->Align=alClient;
+ VideoOutputFrame1->MyVideoOutputToolsForm->Show();
+}
+//---------------------------------------------------------------------------
+
+
+
+
+void __fastcall TTldTrackingForm::SendPointsButtonClick(TObject *Sender)
+{
+ size_t pos=ComponentControlName.find_last_of(".");
+ std::string source_name;
+ if(pos != std::string::npos)
+ {
+  source_name=ComponentControlName.substr(0,ComponentControlName.find_last_of(".")+1)+"MatrixSource";
+ }
+ else
+  source_name="MatrixSource";
+
+ const std::vector<RDK::MVector<double,2> > &new_points=VideoOutputFrame1->GeometryGraphics.Geometry(0).GetVertices();
+
+ const RDK::MDMatrix<double>* old_points=(const RDK::MDMatrix<double>*)Model_GetComponentPropertyData(source_name.c_str(), "DoubleMatrix");
+ RDK::MDMatrix<double> points(*old_points);//(ObjectReceiverComboBox->Items->Count,4);
+ points.Resize(points.GetRows(),4);
+
+ int area_width=StrToInt(RectWidthLabeledEdit->Text);
+ int area_height=StrToInt(RectHeightLabeledEdit->Text);
+ for(int i=0;i<new_points.size();i++)
+ {
+  if(i>=points.GetRows())
+   break;
+  points(i,0)=new_points[i](0)-area_width/2;
+  points(i,1)=new_points[i](1)-area_height/2;
+  points(i,2)=area_width;
+  points(i,3)=area_height;
+ }
+
+ RDK::MDVector<int> initial_flags;
+ initial_flags.Resize(points.GetRows());
+ for(int i=0;i<initial_flags.GetSize();i++)
+  initial_flags(i)=1;
+// initial_flags.Assign(points.GetRows(),1);
+
+ bool started=UEngineMonitorForm->EngineMonitorFrame->Timer->Enabled;
+ if(started)
+  StopTrackingButtonClick(Sender);
+ UEngineMonitorForm->EngineMonitorFrame->Step1Click(Sender);
+
+ ResultBmp.SetColorModel(RDK::ubmY8);
+ VideoOutputFrame1->BmpSource.ConvertTo(ResultBmp);
+ ResultBmp.ReflectionX();
+ Env_Calculate(0);
+ Model_SetComponentBitmapInput(ComponentControlName.c_str(), 0, &ResultBmp);
+
+ Model_SetComponentPropertyData(ComponentControlName.c_str(), "InitialFlags", &initial_flags);
+ Model_SetComponentPropertyData(source_name.c_str(), "DoubleMatrix", &points);
+
+ Env_Calculate(ComponentControlName.c_str());
+ Env_Calculate();
+ VideoOutputFrame1->MyVideoOutputToolsForm->DelAllFiguresButtonClick(Sender);
+ VideoOutputFrame1->MyVideoOutputToolsForm->AddFigureButtonClick(Sender);
+ VideoOutputFrame1->UpdateVideo();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TTldTrackingForm::FormShow(TObject *Sender)
+{
+ VideoOutputFrame1->MyVideoOutputToolsForm->DelAllFiguresButtonClick(Sender);
+ VideoOutputFrame1->MyVideoOutputToolsForm->AddFigureButtonClick(Sender);
 }
 //---------------------------------------------------------------------------
 
