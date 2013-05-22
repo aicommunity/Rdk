@@ -137,6 +137,8 @@ PUALibrary UClassLibraryList::operator [] (int i)
 }
 // --------------------------
 
+// Имя текущего каталога хранения данных
+std::string UEnvironment::CurrentDataDir;
 
 // --------------------------
 // Constructors & destructors
@@ -205,6 +207,25 @@ bool UEnvironment::SetModelCalculationComponent(const ULongId& value)
 
  return true;
 }
+
+// Имя текущего каталога хранения данных
+const std::string& UEnvironment::GetCurrentDataDir(void)
+{
+ return CurrentDataDir;
+}
+
+void UEnvironment::SetCurrentDataDir(const std::string& dir)
+{
+ CurrentDataDir=dir;
+
+ for(std::string::size_type i=0; i<CurrentDataDir.size();i++)
+  if(CurrentDataDir[i] == '\\')
+   CurrentDataDir[i]='/';
+
+ if(CurrentDataDir.size()>0 && CurrentDataDir[CurrentDataDir.size()-1] != '/')
+  CurrentDataDir+='/';
+}
+
 // --------------------------
 
 

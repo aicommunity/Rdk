@@ -41,6 +41,7 @@ __published:	// IDE-managed Components
 	TGroupBox *GroupBox1;
 	TLabeledEdit *RectWidthLabeledEdit;
 	TLabeledEdit *RectHeightLabeledEdit;
+	TCheckBox *CheckBox1;
 	void __fastcall StartTrackingButtonClick(TObject *Sender);
 	void __fastcall StopTrackingButtonClick(TObject *Sender);
 	void __fastcall GetFrameButtonClick(TObject *Sender);

@@ -69,7 +69,9 @@ EXPORTS
     Env_GetOutputImageColorModel = _Env_GetOutputImageColorModel
     Env_GetInputImage = _Env_GetInputImage
     Env_GetOutputImage = _Env_GetOutputImage
-    Env_GetOutputImageY8 = _Env_GetOutputImageY8
+    Env_GetOutputImageY8 = _Env_GetOutputImageY8  
+    Env_GetCurrentDataDir = _Env_GetCurrentDataDir
+    Env_SetCurrentDataDir = _Env_SetCurrentDataDir
     Model_Destroy = _Model_Destroy
     Model_Create = _Model_Create
     Model_Clear = _Model_Clear

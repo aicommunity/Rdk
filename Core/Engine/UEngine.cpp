@@ -1055,6 +1055,35 @@ const char* UEngine::Env_GetCurrentComponentId(void) const
  return TempString.c_str();
 }
 
+// ¬озвращает им€ текущего каталога дл€ хранени€ данных
+const char* UEngine::Env_GetCurrentDataDir(void) const
+{
+ try
+ {
+  return UEnvironment::GetCurrentDataDir().c_str();
+ }
+ catch (RDK::UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
+// ”станавливает им€ текущего каталога дл€ хранени€ данных
+int UEngine::Env_SetCurrentDataDir(const char *dir)
+{
+ try
+ {
+  UEnvironment::SetCurrentDataDir(dir);
+ }
+ catch (RDK::UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
+
 // ћетоды управлени€ моделью
 // ----------------------------
 // ”дал€ет модель

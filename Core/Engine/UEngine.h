@@ -344,6 +344,12 @@ virtual const char* Env_GetCurrentComponentName(void) const;
 // Возвращает длинный строковой id текущего компонента
 virtual const char* Env_GetCurrentComponentId(void) const;
 
+// Возвращает имя текущего каталога для хранения данных
+virtual const char* Env_GetCurrentDataDir(void) const;
+
+// Устанавливает имя текущего каталога для хранения данных
+virtual int Env_SetCurrentDataDir(const char *dir);
+
 // Методы управления моделью
 // ----------------------------
 // Удаляет модель

@@ -333,6 +333,7 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
 
  GraphicalEngineInit(PredefinedStructure,NumEnvInputs,NumEnvOutputs,InputEnvImageWidth, InputEnvImageHeight ,ReflectionFlag,ExceptionHandler);
  Model_SetDefaultTimeStep(DefaultTimeStep);
+ Env_SetCurrentDataDir(AnsiString(ProjectPath).c_str());
 
  for(int i=0;i<NumEnvInputs;i++)
   VideoOutputForm->AddSource();
@@ -781,7 +782,7 @@ void __fastcall TUGEngineControlForm::CaptureVideo1Click(TObject *Sender)
 void __fastcall TUGEngineControlForm::Reset1Click(TObject *Sender)
 {
  UEngineMonitorForm->EngineMonitorFrame->Reset1Click(Sender);
- VideoOutputForm->Stop();
+ VideoOutputForm->StopOffline();
 // Timer->Enabled=false;
 }
 //---------------------------------------------------------------------------

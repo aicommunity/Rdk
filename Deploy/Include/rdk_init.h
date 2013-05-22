@@ -160,6 +160,11 @@ RDK_LIB_TYPE int RDK_CALL Env_Reset(const char* stringid);
 // ѕроизводит увеличение времени модели на требуемую величину
 RDK_LIB_TYPE void RDK_CALL Env_IncreaseModelTimeByStep(void);
 
+// ¬озвращает им€ текущего каталога дл€ хранени€ данных
+RDK_LIB_TYPE const char* RDK_CALL Env_GetCurrentDataDir(void);
+
+// ”станавливает им€ текущего каталога дл€ хранени€ данных
+RDK_LIB_TYPE int RDK_CALL Env_SetCurrentDataDir(const char *dir);
 
 // ***********************************************
 // ћетоды управлени€ текущим компонентом

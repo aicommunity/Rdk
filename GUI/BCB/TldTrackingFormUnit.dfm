@@ -22,7 +22,6 @@ object TldTrackingForm: TTldTrackingForm
     Height = 41
     Align = alBottom
     TabOrder = 0
-    ExplicitWidth = 718
     DesignSize = (
       759
       41)
@@ -72,7 +71,6 @@ object TldTrackingForm: TTldTrackingForm
     Height = 453
     Align = alRight
     TabOrder = 1
-    ExplicitLeft = 533
     object GetFrameButton: TButton
       Left = 1
       Top = 1
@@ -82,9 +80,6 @@ object TldTrackingForm: TTldTrackingForm
       Caption = 'Get frame from video'
       TabOrder = 0
       OnClick = GetFrameButtonClick
-      ExplicitLeft = 6
-      ExplicitTop = 52
-      ExplicitWidth = 171
     end
     object EnableLogCheckBox: TCheckBox
       Left = 1
@@ -97,9 +92,6 @@ object TldTrackingForm: TTldTrackingForm
       State = cbChecked
       TabOrder = 1
       OnClick = EnableLogCheckBoxClick
-      ExplicitLeft = 6
-      ExplicitTop = 430
-      ExplicitWidth = 171
     end
     object CopyTrackerDataButton: TButton
       Left = 1
@@ -111,9 +103,6 @@ object TldTrackingForm: TTldTrackingForm
       TabOrder = 2
       Visible = False
       OnClick = CopyTrackerDataButtonClick
-      ExplicitLeft = 2
-      ExplicitTop = 399
-      ExplicitWidth = 171
     end
     object PageControl1: TPageControl
       Left = -5
@@ -156,15 +145,14 @@ object TldTrackingForm: TTldTrackingForm
         OnShow = PointsTabSheetShow
         object SendPointsButton: TButton
           Left = 0
-          Top = 105
+          Top = 122
           Width = 181
           Height = 25
           Align = alTop
           Caption = 'Send selected objects'
           TabOrder = 0
           OnClick = SendPointsButtonClick
-          ExplicitLeft = -3
-          ExplicitTop = 136
+          ExplicitTop = 105
         end
         object GroupBox1: TGroupBox
           Left = 0
@@ -174,8 +162,6 @@ object TldTrackingForm: TTldTrackingForm
           Align = alTop
           Caption = ' Points rect options '
           TabOrder = 1
-          ExplicitTop = 72
-          ExplicitWidth = 185
           object RectWidthLabeledEdit: TLabeledEdit
             Left = 7
             Top = 32
@@ -199,6 +185,17 @@ object TldTrackingForm: TTldTrackingForm
             Text = '30'
           end
         end
+        object CheckBox1: TCheckBox
+          Left = 0
+          Top = 105
+          Width = 181
+          Height = 17
+          Align = alTop
+          Caption = 'Init TLD now'
+          TabOrder = 2
+          ExplicitLeft = 4
+          ExplicitTop = 101
+        end
       end
     end
   end
@@ -211,7 +208,6 @@ object TldTrackingForm: TTldTrackingForm
     DoubleBuffered = True
     ParentDoubleBuffered = False
     TabOrder = 2
-    ExplicitWidth = 533
     inline VideoOutputFrame1: TVideoOutputFrame
       Left = 1
       Top = 1
@@ -231,12 +227,12 @@ object TldTrackingForm: TTldTrackingForm
       TabStop = True
       ExplicitLeft = 1
       ExplicitTop = 1
-      ExplicitWidth = 531
+      ExplicitWidth = 572
       ExplicitHeight = 451
       inherited GroupBox: TGroupBox
         Width = 572
         Height = 379
-        ExplicitWidth = 531
+        ExplicitWidth = 572
         ExplicitHeight = 379
         inherited Image: TImage
           Width = 568
@@ -247,7 +243,7 @@ object TldTrackingForm: TTldTrackingForm
         inherited VideoGrabber: TVideoGrabber
           Width = 568
           Height = 362
-          ExplicitWidth = 527
+          ExplicitWidth = 568
           ExplicitHeight = 362
         end
       end
@@ -256,22 +252,22 @@ object TldTrackingForm: TTldTrackingForm
         Width = 572
         Visible = False
         ExplicitTop = 410
-        ExplicitWidth = 531
+        ExplicitWidth = 572
         inherited StopButton: TButton
           Left = 535
-          ExplicitLeft = 494
+          ExplicitLeft = 535
         end
         inherited StartButton: TButton
           Left = 499
-          ExplicitLeft = 458
+          ExplicitLeft = 499
         end
         inherited TimeEdit: TMaskEdit
           Left = 414
-          ExplicitLeft = 373
+          ExplicitLeft = 414
         end
         inherited TrackBar: TTrackBar
           Width = 406
-          ExplicitWidth = 365
+          ExplicitWidth = 406
         end
       end
       inherited Panel2: TPanel
@@ -279,18 +275,18 @@ object TldTrackingForm: TTldTrackingForm
         Width = 572
         Visible = False
         ExplicitTop = 379
-        ExplicitWidth = 531
+        ExplicitWidth = 572
         inherited SendToEdit: TEdit
           Width = 391
-          ExplicitWidth = 350
+          ExplicitWidth = 391
         end
         inherited Button1: TButton
           Left = 414
-          ExplicitLeft = 373
+          ExplicitLeft = 414
         end
         inherited SelectSendToButton: TButton
           Left = 499
-          ExplicitLeft = 458
+          ExplicitLeft = 499
         end
       end
     end

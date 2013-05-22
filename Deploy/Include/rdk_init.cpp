@@ -379,6 +379,18 @@ void RDK_CALL Env_IncreaseModelTimeByStep(void)
  return PEngine->Env_IncreaseModelTimeByStep();
 }
 
+// Возвращает имя текущего каталога для хранения данных
+const char* RDK_CALL Env_GetCurrentDataDir(void)
+{
+ return PEngine->Env_GetCurrentDataDir();
+}
+
+// Устанавливает имя текущего каталога для хранения данных
+int RDK_CALL Env_SetCurrentDataDir(const char *dir)
+{
+ return PEngine->Env_SetCurrentDataDir(dir);
+}
+
 // ***********************************************
 // Методы управления текущим компонентом
 // !!! Следующие методы влияют на все

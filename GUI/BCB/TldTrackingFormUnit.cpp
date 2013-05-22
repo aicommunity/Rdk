@@ -333,19 +333,25 @@ void __fastcall TTldTrackingForm::SendPointsButtonClick(TObject *Sender)
  bool started=UEngineMonitorForm->EngineMonitorFrame->Timer->Enabled;
  if(started)
   StopTrackingButtonClick(Sender);
- UEngineMonitorForm->EngineMonitorFrame->Step1Click(Sender);
+ if(CheckBox1->Checked)
+ {
+  UEngineMonitorForm->EngineMonitorFrame->Step1Click(Sender);
 
- ResultBmp.SetColorModel(RDK::ubmY8);
- VideoOutputFrame1->BmpSource.ConvertTo(ResultBmp);
- ResultBmp.ReflectionX();
- Env_Calculate(0);
- Model_SetComponentBitmapInput(ComponentControlName.c_str(), 0, &ResultBmp);
-
+  ResultBmp.SetColorModel(RDK::ubmY8);
+  VideoOutputFrame1->BmpSource.ConvertTo(ResultBmp);
+  ResultBmp.ReflectionX();
+  Env_Calculate(0);
+  Model_SetComponentBitmapInput(ComponentControlName.c_str(), 0, &ResultBmp);
+ }
  Model_SetComponentPropertyData(ComponentControlName.c_str(), "InitialFlags", &initial_flags);
  Model_SetComponentPropertyData(source_name.c_str(), "DoubleMatrix", &points);
 
- Env_Calculate(ComponentControlName.c_str());
- Env_Calculate();
+ if(CheckBox1->Checked)
+ {
+  Env_Calculate(ComponentControlName.c_str());
+ }
+ Env_Calculate(0);
+
  VideoOutputFrame1->MyVideoOutputToolsForm->DelAllFiguresButtonClick(Sender);
  VideoOutputFrame1->MyVideoOutputToolsForm->AddFigureButtonClick(Sender);
  VideoOutputFrame1->UpdateVideo();

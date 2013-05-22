@@ -82,6 +82,9 @@ protected: // Параметры
 // 0 - Структура определяется извне
 int PredefinedStructure;
 
+// Имя текущего каталога хранения данных
+static std::string CurrentDataDir;
+
 protected: // Состояния
 // Флаг состояния инициализации
 // true - хранилище готово к использованию
@@ -150,6 +153,12 @@ bool SetPredefinedStructure(int value);
 // Идентификатор компонента модели, который будет обсчитываться
 const ULongId& GetModelCalculationComponent(void) const;
 bool SetModelCalculationComponent(const ULongId& value);
+
+// Имя текущего каталога хранения данных
+static const std::string& GetCurrentDataDir(void);
+static void SetCurrentDataDir(const std::string& dir);
+
+
 // --------------------------
 
 // --------------------------
