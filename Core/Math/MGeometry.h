@@ -95,7 +95,7 @@ MMatrix<T,4,4> CalcObjectPositionMatrix(const MVector<T,3> &angles, const MVecto
 template<class T>
 MMatrix<T,4,4> CalcObjectPositionMatrix(const MVector<T,6> &anglesANDshifts)
 {
-	MMatrix<T,4,4> res(4,4);
+	MMatrix<T,4,4> res;
 
 	T cos_gamma, sin_gamma, cos_beta, sin_beta, cos_alpha, sin_alpha;
 	cos_gamma       = cos(anglesANDshifts(3));
@@ -202,6 +202,50 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
 	return;
 }
 
+//2.2.1!!! //MMatrix-->MDVector
+template<class T>
+void CalcObjectAnglesAndShiftsM(const MMatrix<T,4,4> &ExtMat, MDMatrix<T> &anglesANDshifts)
+{
+	T C, trX, trY;
+	MDVector<T> AnS(6);
+	if(anglesANDshifts.GetCols()==1) AnS=anglesANDshifts;
+    else AnS=anglesANDshifts.Transpose();
+
+	AnS(4) = -asin( ExtMat(0,2));        // Вычисления угла вращения вокруг оси Y 
+    C           =  cos( AnS(4) );
+
+    if ( fabs( C ) > 0.005 )          // "Шарнирный замок" (Gimball lock)? 
+      {
+      trX      =  ExtMat(2,2) / C;        // Если нет, то получаем угол вращения вокруг оси X 
+      trY      = -ExtMat(1,2) / C;
+
+      AnS(3)  = atan2( trY, trX );
+
+      trX      =  ExtMat(0,0) / C;            // Получаем угол вращения вокруг оси  Z 
+      trY      =  -ExtMat(0,1) / C;
+
+      AnS(5)  = atan2( trY, trX );
+      }
+    else                                 // Имеет место "Шарнирный замок" (Gimball lock) 
+      {
+      AnS(3)  = 0;                      // Угол вращения вокруг оси X приравниваем к нулю 
+
+      trX      = ExtMat(1,1);                 // И вычисляем угол вращения вокруг оси Z 
+      trY      = ExtMat(1,0);
+
+      AnS(5)  = atan2( trY, trX );
+      }
+
+	AnS(0)=ExtMat(0,3);
+	AnS(1)=ExtMat(1,3);
+	AnS(2)=ExtMat(2,3);
+
+	if(anglesANDshifts.GetCols()==1) anglesANDshifts=AnS;
+    else anglesANDshifts=AnS.Transpose();
+
+	return;
+}
+
 //3.1
 template<class T>
 MDMatrix<T> CalcObjectPositionMatrixD(const MDVector<T> &angles, const MDVector<T> &shifts)
@@ -277,7 +321,7 @@ MDMatrix<T> CalcObjectPositionMatrixD(const MDMatrix<T> &anglesANDshifts)
 }
 
 
-//3.2.1!!! //for SetEcc
+//3.2.1!!! //for SetEcc //MMatrix<--MDVector
 template<class T>
 MMatrix<T,4,4> CalcObjectPositionMatrixM(const MDMatrix<T> &anglesANDshifts)
 {
@@ -401,6 +445,7 @@ void CalcObjectAnglesAndShiftsD(const MDMatrix<T> &ExtMat, MDMatrix<T> &anglesAN
 
 // Расчитывает матрицу внешней калибровки
 // Углы передаются в радианах, расстояния в метрах
+// ЛУЧШЕ НЕ ИСПОЛЬЗОВАТЬ! НАПРАВЛЕНИЕ y ДРУГОЕ, А ТАКЖЕ ТРАНСПОНИРОВАНИЕ
 template<class T>
 MMatrix<T, 4,4> CalcCameraPositionMatrix(const MVector<T,3> &angles, const MVector<T,3> &shifts)
 {
