@@ -293,6 +293,7 @@ void MGraphics<T,Rows>::Repaint(void)
    }
 
    // Отрисовываем контуры
+   Graphics->SetPenWidth(Descriptions[i].PenWidth);
    for(size_t j=0;j<geometry.GetNumBorders();j++)
    {
 	if(geometry.Border(j).size()>0)
