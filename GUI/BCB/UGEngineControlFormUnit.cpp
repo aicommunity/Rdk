@@ -7,12 +7,16 @@
 #include <Vcl.FileCtrl.hpp>
 #include <System.IOUtils.hpp>
 #include "UGEngineControlFormUnit.h"
+#ifdef RDK_VIDEO
 #include "TVideoGrabberControlFormUnit.h"
+#endif
 #include "UImagesFormUnit.h"
 #include "UComponentsControlFormUnit.h"
 #include "UComponentLinksFormUnit.h"
 #include "UEngineMonitorFormUnit.h"
+#ifdef RDK_VIDEO
 #include "VideoOutputFormUnit.h"
+#endif
 #include "UClassesListFormUnit.h"
 #include "UComponentsPerformanceFormUnit.h"
 #include "UFavoriteComponentInfoFormUnit.h"
@@ -71,9 +75,11 @@ void TUGEngineControlForm::AAfterCalculate(void)
 
 void TUGEngineControlForm::AUpdateInterface(void)
 {
+#ifdef RDK_VIDEO
  CaptureVideo1->Caption=String("Capture Video (")+IntToStr(VideoOutputForm->GetActiveSource())+")";
  OpenVideo1->Caption=String("Open Video File (")+IntToStr(VideoOutputForm->GetActiveSource())+")";
  OpenImage1->Caption=String("Open Image (")+IntToStr(VideoOutputForm->GetActiveSource())+")";
+#endif
 
  Caption="Engine Control";
  if(ProjectOpenFlag)
@@ -266,9 +272,9 @@ void TUGEngineControlForm::CloseProject(void)
   ProjectPath="";
  }
  ProjectOpenFlag=false;
- if(GetEngine())
-  Env_UnInit();
- EngineUnInit();
+// if(GetEngine())
+//  Env_UnInit();
+// EngineUnInit();
 // UpdateInterface();
 }
 
@@ -331,12 +337,15 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
 
  String modelfilename=ProjectXml.ReadString("ModelFileName","").c_str();
 
- GraphicalEngineInit(PredefinedStructure,NumEnvInputs,NumEnvOutputs,InputEnvImageWidth, InputEnvImageHeight ,ReflectionFlag,ExceptionHandler);
+ Env_SetPredefinedStructure(PredefinedStructure);
+
+// GraphicalEngineInit(PredefinedStructure,NumEnvInputs,NumEnvOutputs,InputEnvImageWidth, InputEnvImageHeight ,ReflectionFlag,ExceptionHandler);
  Model_SetDefaultTimeStep(DefaultTimeStep);
  Env_SetCurrentDataDir(AnsiString(ProjectPath).c_str());
-
+ #ifdef RDK_VIDEO
  for(int i=0;i<NumEnvInputs;i++)
   VideoOutputForm->AddSource();
+ #endif
 
  if(PredefinedStructure == 0 && modelfilename.Length() != 0)
  {
@@ -681,14 +690,9 @@ int TUGEngineControlForm::FindComponentControlPage(const std::string &component_
 
 void __fastcall TUGEngineControlForm::Start1Click(TObject *Sender)
 {
-// UImagesForm->ImagesFrame->SetNumCells(2,2);
-// UImagesForm->ImagesFrame->LinkToComponent(0,0,"Pipeline1.ShowTZoneExtVector2",0);
-// UImagesForm->ImagesFrame->LinkToComponent(0,1,"Pipeline1.TrackingSimple",1);
-// UImagesForm->ImagesFrame->LinkToComponent(1,0,"Pipeline1.DifferenceFrameSimple",0);
-// UImagesForm->ImagesFrame->LinkToComponent(1,1,"Pipeline1.BackgroundSimple",2);
-
-// Timer->Enabled=true;
+#ifdef RDK_VIDEO
  VideoOutputForm->Start();
+#endif
  UEngineMonitorForm->EngineMonitorFrame->Start1Click(Sender);
 }
 //---------------------------------------------------------------------------
@@ -696,8 +700,9 @@ void __fastcall TUGEngineControlForm::Start1Click(TObject *Sender)
 void __fastcall TUGEngineControlForm::Pause1Click(TObject *Sender)
 {
  UEngineMonitorForm->EngineMonitorFrame->Pause1Click(Sender);
+#ifdef RDK_VIDEO
  VideoOutputForm->StopOffline();
-// Timer->Enabled=false;
+#endif
 }
 //---------------------------------------------------------------------------
 
@@ -716,7 +721,9 @@ void __fastcall TUGEngineControlForm::Images1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::VideoSource1Click(TObject *Sender)
 {
+#ifdef RDK_VIDEO
  VideoOutputForm->Show();
+#endif
 }
 //---------------------------------------------------------------------------
 
@@ -753,37 +760,44 @@ void __fastcall TUGEngineControlForm::SaveModel1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::OpenImage1Click(TObject *Sender)
 {
+#ifdef RDK_VIDEO
  if(!VideoOutputForm->GetActiveVideoOutputFrame())
   return;
 
  VideoOutputForm->GetActiveVideoOutputFrame()->MyVideoGrabberControlForm->VideoGrabberControlFrame->OpenImageFileButtonClick(Sender);
+#endif
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUGEngineControlForm::OpenVideo1Click(TObject *Sender)
 {
+#ifdef RDK_VIDEO
  if(!VideoOutputForm->GetActiveVideoOutputFrame())
   return;
 
  VideoOutputForm->GetActiveVideoOutputFrame()->MyVideoGrabberControlForm->VideoGrabberControlFrame->VFBrowseButtonClick(Sender);
+#endif
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUGEngineControlForm::CaptureVideo1Click(TObject *Sender)
 {
+#ifdef RDK_VIDEO
  if(!VideoOutputForm->GetActiveVideoOutputFrame())
   return;
 
  VideoOutputForm->GetActiveVideoOutputFrame()->MyVideoGrabberControlForm->VideoGrabberControlFrame->SelectMode(0);
  VideoOutputForm->GetActiveVideoOutputFrame()->MyVideoGrabberControlForm->Show();
+#endif
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUGEngineControlForm::Reset1Click(TObject *Sender)
 {
  UEngineMonitorForm->EngineMonitorFrame->Reset1Click(Sender);
+#ifdef RDK_VIDEO
  VideoOutputForm->StopOffline();
-// Timer->Enabled=false;
+#endif
 }
 //---------------------------------------------------------------------------
 
