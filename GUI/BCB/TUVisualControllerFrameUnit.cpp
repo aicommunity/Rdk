@@ -4,6 +4,7 @@
 #pragma hdrstop
 
 #include "TUVisualControllerFrameUnit.h"
+#include "rdk_initdll.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
@@ -93,6 +94,10 @@ void TUVisualControllerFrame::UpdateInterface(bool force_update)
   }
  }
 
+ if(!IsEngineInit())
+  return;
+ if(!Model_Check())
+  return;
  UpdateInterfaceFlag=true;
  AUpdateInterface();
  UpdateInterfaceFlag=false;

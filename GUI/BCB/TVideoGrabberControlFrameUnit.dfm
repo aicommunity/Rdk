@@ -19,10 +19,6 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
     OnChange = VCapturePageControlChange
     object DeviceTabSheet: TTabSheet
       Caption = 'Device'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object VDCapturePanel: TPanel
         Left = 0
         Top = 0
@@ -145,10 +141,6 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
     object IPCameraTabSheet: TTabSheet
       Caption = 'IP Camera'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Panel1: TPanel
         Left = 0
         Top = 0
@@ -309,10 +301,6 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
     object VideoFileTabSheet: TTabSheet
       Caption = 'Video File'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object VFCapturePanel: TPanel
         Left = 0
         Top = 0
@@ -364,10 +352,6 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
     object PictureFileTabSheet: TTabSheet
       Caption = 'Picture File'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         445
         266)
@@ -411,10 +395,6 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
     object ImageSequenceTabSheet: TTabSheet
       Caption = 'Image Sequence'
       ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         445
         266)

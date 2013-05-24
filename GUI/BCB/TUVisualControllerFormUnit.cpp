@@ -4,6 +4,7 @@
 #pragma hdrstop
 
 #include "TUVisualControllerFormUnit.h"
+#include "rdk_initdll.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
@@ -139,6 +140,11 @@ void TUVisualControllerForm::UpdateInterface(bool force_update)
   Caption=(PureFormCaption+std::string(" [")+ComponentControlName+std::string("]")).c_str();
  else
   Caption=PureFormCaption.c_str();
+
+ if(!IsEngineInit())
+  return;
+ if(!Model_Check())
+  return;
  UpdateInterfaceFlag=true;
  AUpdateInterface();
  UpdateInterfaceFlag=false;

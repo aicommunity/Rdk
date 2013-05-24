@@ -108,6 +108,13 @@ int RDK_CALL EngineUnInit(void)
 
  return UnInit();
 }
+
+
+/// Проверяет инициализирован ли движок
+bool RDK_CALL IsEngineInit(void)
+{
+ return (PEngine)?true:false;
+}
 // ----------------------------
 
 // --------------------------

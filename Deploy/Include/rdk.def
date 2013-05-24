@@ -4,7 +4,8 @@ EXPORTS
     ; VC funcname           = BCB funcname
     EngineInit = _EngineInit
     GraphicalEngineInit = _GraphicalEngineInit
-    EngineUnInit = _EngineUnInit
+    EngineUnInit = _EngineUnInit   
+    IsEngineInit = _IsEngineInit
     Storage_GetNumClasses = _Storage_GetNumClasses
     Storage_GetClassesList = _Storage_GetClassesList 
     Storage_GetClassesNameList = _Storage_GetClassesNameList

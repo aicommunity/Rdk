@@ -79,6 +79,11 @@ See file license.txt for more information
 #define M_SQRT1_2 0.707106781186547524401
 #endif
 
+#ifndef ISNAN
+#define ISNAN(x) ((x) != (x))
+#endif
+
+
 namespace RDK {
 
 using namespace std;

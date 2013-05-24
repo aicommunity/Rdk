@@ -272,10 +272,10 @@ void TUGEngineControlForm::CloseProject(void)
   ProjectPath="";
  }
  ProjectOpenFlag=false;
-// if(GetEngine())
-//  Env_UnInit();
-// EngineUnInit();
-// UpdateInterface();
+ if(GetEngine())
+  Env_UnInit();
+ EngineUnInit();
+ UpdateInterface();
 }
 
 // Открывает проект
@@ -337,9 +337,9 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
 
  String modelfilename=ProjectXml.ReadString("ModelFileName","").c_str();
 
- Env_SetPredefinedStructure(PredefinedStructure);
+ //Env_SetPredefinedStructure(PredefinedStructure);
 
-// GraphicalEngineInit(PredefinedStructure,NumEnvInputs,NumEnvOutputs,InputEnvImageWidth, InputEnvImageHeight ,ReflectionFlag,ExceptionHandler);
+ GraphicalEngineInit(PredefinedStructure,NumEnvInputs,NumEnvOutputs,InputEnvImageWidth, InputEnvImageHeight ,ReflectionFlag,ExceptionHandler);
  Model_SetDefaultTimeStep(DefaultTimeStep);
  Env_SetCurrentDataDir(AnsiString(ProjectPath).c_str());
  #ifdef RDK_VIDEO

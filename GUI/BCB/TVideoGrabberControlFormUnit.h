@@ -1,3 +1,6 @@
+#ifndef RDK_VIDEO
+#define RDK_VIDEO
+#endif
 //---------------------------------------------------------------------------
 
 #ifndef TVideoGrabberControlFormUnitH

@@ -47,6 +47,9 @@ RDK_LIB_TYPE int RDK_CALL GraphicalEngineInit(int predefined_structure, int num_
 
 // Деинициализирует движок (функция автоматически вызывается при вызове инициализации)
 RDK_LIB_TYPE int RDK_CALL EngineUnInit(void);
+
+/// Проверяет инициализирован ли движок
+RDK_LIB_TYPE bool RDK_CALL IsEngineInit(void);
 // ----------------------------
 
 // --------------------------
