@@ -36,8 +36,17 @@ void LoadFormPosition(RDK::USerStorageXML &xml, TForm *form)
   return;
 
  xml.SelectNodeForce("FormPosition");
- form->Left=xml.ReadInteger("Left",form->Left);
- form->Top=xml.ReadInteger("Top",form->Top);
+ int value=0;
+ value=xml.ReadInteger("Left",form->Left);
+ if(value<Screen->DesktopLeft || value>= Screen->DesktopLeft+Screen->DesktopWidth)
+  value=Screen->DesktopLeft;
+ form->Left=value;
+
+ value=xml.ReadInteger("Top",form->Top);
+ if(value<Screen->DesktopTop || value>= Screen->DesktopTop+Screen->DesktopHeight)
+  value=Screen->DesktopTop;
+ form->Top=value;
+
  form->Width=xml.ReadInteger("Width",form->Width);
  form->Height=xml.ReadInteger("Height",form->Height);
  form->Visible=xml.ReadBool("Visible",form->Visible);
