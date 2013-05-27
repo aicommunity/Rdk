@@ -3353,7 +3353,7 @@ const char* UEngine::GetLog(void) const
 // этой функцией
 const char* UEngine::GetUnreadLog(void)
 {
- if(LastReadExceptionLogIndex<=0 && TempLogString.size())
+ if(LastReadExceptionLogIndex<=0/* && TempLogString.size()*/)
  {
   LastReadExceptionLogIndex=TempLogString.size();
   return TempLogString.c_str();
