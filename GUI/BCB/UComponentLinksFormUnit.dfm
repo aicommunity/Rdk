@@ -70,7 +70,7 @@ object UComponentLinksForm: TUComponentLinksForm
     inherited GroupBox3: TGroupBox
       Top = 289
       Width = 820
-      ExplicitTop = 330
+      ExplicitTop = 289
       ExplicitWidth = 820
       inherited NANetFrameLinks: TUComponentIOFrame
         Width = 816
@@ -84,7 +84,7 @@ object UComponentLinksForm: TUComponentLinksForm
     inherited Panel1: TPanel
       Top = 457
       Width = 820
-      ExplicitTop = 498
+      ExplicitTop = 457
       ExplicitWidth = 820
       inherited HeaderControl1: THeaderControl
         Width = 818
@@ -94,8 +94,7 @@ object UComponentLinksForm: TUComponentLinksForm
     inherited ButtonPanel: TPanel
       Top = 494
       Width = 820
-      ExplicitLeft = 3
-      ExplicitTop = 521
+      ExplicitTop = 494
       ExplicitWidth = 820
       DesignSize = (
         820
