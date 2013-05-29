@@ -1024,6 +1024,8 @@ void __fastcall TUComponentsListFrame::Rename1Click(TObject *Sender)
   return;
 
  Model_SetComponentPropertyData(SelectedComponentName.c_str(),"Name",&new_name);
+ if(DrawEngineFrame)
+  DrawEngineFrame->ReloadNet();
  RDK::UIVisualControllerStorage::UpdateInterface();
 }
 //---------------------------------------------------------------------------
