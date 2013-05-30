@@ -1030,3 +1030,18 @@ void __fastcall TUComponentsListFrame::Rename1Click(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+void __fastcall TUComponentsListFrame::Delete1Click(TObject *Sender)
+{
+ std::string stringcompid=GetSelectedComponentName();
+ if(stringcompid == "..")
+  return;
+
+ std::string stringid=GetCurrentComponentId();
+ Model_DelComponent(stringid.c_str(), stringcompid.c_str());
+
+ if(DrawEngineFrame)
+  DrawEngineFrame->ReloadNet();
+ RDK::UIVisualControllerStorage::UpdateInterface();
+}
+//---------------------------------------------------------------------------
+

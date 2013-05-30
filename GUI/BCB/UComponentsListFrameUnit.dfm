@@ -194,10 +194,6 @@ inherited UComponentsListFrame: TUComponentsListFrame
       object TabSheet3: TTabSheet
         Caption = 'I/O'
         ImageIndex = 2
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object Splitter2: TSplitter
           Left = 0
           Top = 239
@@ -420,6 +416,13 @@ inherited UComponentsListFrame: TUComponentsListFrame
     object Rename1: TMenuItem
       Caption = 'Rename'
       OnClick = Rename1Click
+    end
+    object N3: TMenuItem
+      Caption = '-'
+    end
+    object Delete1: TMenuItem
+      Caption = 'Delete'
+      OnClick = Delete1Click
     end
   end
 end

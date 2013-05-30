@@ -58,6 +58,8 @@ __published:	// IDE-managed Components
 	TMenuItem *Rename1;
 	TMenuItem *N1;
 	TMenuItem *N2;
+	TMenuItem *N3;
+	TMenuItem *Delete1;
 	void __fastcall FrameResize(TObject *Sender);
 	void __fastcall StringGridDblClick(TObject *Sender);
 	void __fastcall StringGridSelectCell(TObject *Sender, int ACol, int ARow, bool &CanSelect);
@@ -90,6 +92,7 @@ __published:	// IDE-managed Components
 	void __fastcall Moveup1Click(TObject *Sender);
 	void __fastcall Movedown1Click(TObject *Sender);
 	void __fastcall Rename1Click(TObject *Sender);
+	void __fastcall Delete1Click(TObject *Sender);
 
 
 

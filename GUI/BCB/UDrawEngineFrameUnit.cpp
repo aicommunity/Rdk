@@ -580,3 +580,10 @@ void __fastcall TUDrawEngineFrame::Rename1Click(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+void __fastcall TUDrawEngineFrame::Delete1Click(TObject *Sender)
+{
+ if(ComponentsListFrame)
+  ComponentsListFrame->Delete1Click(Sender);
+}
+//---------------------------------------------------------------------------
+

@@ -193,6 +193,13 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
       Caption = 'Rename'
       OnClick = Rename1Click
     end
+    object N4: TMenuItem
+      Caption = '-'
+    end
+    object Delete1: TMenuItem
+      Caption = 'Delete'
+      OnClick = Delete1Click
+    end
     object N3: TMenuItem
       Caption = '-'
     end

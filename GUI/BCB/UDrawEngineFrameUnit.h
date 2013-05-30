@@ -46,6 +46,8 @@ __published:    // IDE-managed Components
 	TMenuItem *GUI1;
 	TMenuItem *N3;
 	TMenuItem *Rename1;
+	TMenuItem *N4;
+	TMenuItem *Delete1;
     void __fastcall ImageMouseDown(TObject *Sender, TMouseButton Button, TShiftState Shift,
           int X, int Y);
     void __fastcall ImageMouseMove(TObject *Sender, TShiftState Shift, int X, int Y);
@@ -68,6 +70,7 @@ __published:    // IDE-managed Components
     void __fastcall Cancellonglink1Click(TObject *Sender);
 	void __fastcall FrameContextPopup(TObject *Sender, TPoint &MousePos, bool &Handled);
 	void __fastcall Rename1Click(TObject *Sender);
+	void __fastcall Delete1Click(TObject *Sender);
 
 
 private:    // User declarations
