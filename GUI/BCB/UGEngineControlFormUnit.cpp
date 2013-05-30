@@ -619,6 +619,60 @@ TTabSheet* TUGEngineControlForm::AddComponentControlFormPage(const string &compo
 }
 
 
+/// Ищет и возвращает указатель на форму или фрейм, соответствующий вкладке с заданным индексом
+void TUGEngineControlForm::FindVisualController(int index, TUVisualControllerFrame* &frame, TUVisualControllerForm* &form)
+{
+ frame=0;
+ form=0;
+
+ if(index <0 || index>=PageControl1->PageCount)
+  return;
+
+ int i=index;
+  bool is_saved=false;
+  for(int j=0;j<ComponentCount;j++)
+  {
+   frame=dynamic_cast<TUVisualControllerFrame*>(Components[j]);
+   if(frame && frame->Parent == PageControl1->Pages[i])
+   {
+	return;
+   }
+  }
+
+ frame=0;
+  if(PageControl1->Pages[i]->ComponentCount>0)
+  {
+   form=dynamic_cast<TUVisualControllerForm*>(PageControl1->Pages[i]->Components[0]);
+   if(form)
+   {
+	std::map<std::string, TUVisualControllerForm*>::iterator I=UComponentsListFrame1->ComponentControllers.begin();
+	for(;I != UComponentsListFrame1->ComponentControllers.end();++I)
+	{
+	 if(I->second->ClassNameIs(form->ClassName()))
+	 {
+	  return;
+	 }
+	}
+   }
+  }
+
+  if(!is_saved) // Делаем попытку сохранить данные как данные формы
+  {
+   std::map<std::string, TUVisualControllerForm*>::iterator I=UComponentsListFrame1->ComponentControllers.begin();
+   for(;I != UComponentsListFrame1->ComponentControllers.end();++I)
+   {
+	if(I->second->Parent == PageControl1->Pages[i])
+	{
+	 return;
+	}
+   }
+  }
+
+ form=0;
+}
+
+
+
 // Удаляет страницу
 void TUGEngineControlForm::DelPage(int index)
 {
@@ -1070,6 +1124,18 @@ void __fastcall TUGEngineControlForm::UDrawEngineFrame1GUI1Click(TObject *Sender
 
 {
  UComponentsListFrame1GUI1Click(Sender);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::PageControl1Change(TObject *Sender)
+{
+ TUVisualControllerFrame* frame;
+ TUVisualControllerForm* form;
+ FindVisualController(PageControl1->ActivePageIndex, frame, form);
+ if(frame)
+  frame->UpdateInterface(true);
+ if(form)
+  form->UpdateInterface(true);
 }
 //---------------------------------------------------------------------------
 

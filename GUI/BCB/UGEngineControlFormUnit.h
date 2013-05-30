@@ -141,6 +141,7 @@ __published:	// IDE-managed Components
 	void __fastcall Watches2Click(TObject *Sender);
 	void __fastcall UComponentsListFrame1GUI1Click(TObject *Sender);
 	void __fastcall UDrawEngineFrame1GUI1Click(TObject *Sender);
+	void __fastcall PageControl1Change(TObject *Sender);
 
 
 
@@ -241,6 +242,9 @@ TTabSheet* AddSpecialFramePage(const String &type, const String &caption);
 // Создает новую вкладку с заданным именем для формы управления компонентом
 // Если этим копонентом уже упрвляют, то возвращает указатель на такую вкладку
 TTabSheet* AddComponentControlFormPage(const string &component_name);
+
+/// Ищет и возвращает указатель на форму или фрейм, соответствующий вкладке с заданным индексом
+void FindVisualController(int index, TUVisualControllerFrame* &frame, TUVisualControllerForm* &form);
 
 // Удаляет страницу
 void DelPage(int index);
