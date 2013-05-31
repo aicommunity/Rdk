@@ -1021,6 +1021,8 @@ void __fastcall TUGEngineControlForm::WatchWindow1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
 {
+ DecimalSeparator = '.';
+
  // Грузим настройки приложения
  TMemIniFile *app_ini=new TMemIniFile("options.ini");
  MainFormName=app_ini->ReadString("General", "MainFormName", "");
