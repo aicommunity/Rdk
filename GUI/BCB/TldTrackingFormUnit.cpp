@@ -354,7 +354,8 @@ void __fastcall TTldTrackingForm::SendPointsButtonClick(TObject *Sender)
 
  VideoOutputFrame1->MyVideoOutputToolsForm->DelAllFiguresButtonClick(Sender);
  VideoOutputFrame1->MyVideoOutputToolsForm->AddFigureButtonClick(Sender);
- VideoOutputFrame1->UpdateVideo();
+// VideoOutputFrame1->UpdateVideo();
+ RDK::UIVisualControllerStorage::UpdateInterface();
 }
 //---------------------------------------------------------------------------
 

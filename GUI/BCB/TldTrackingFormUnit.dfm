@@ -152,7 +152,6 @@ object TldTrackingForm: TTldTrackingForm
           Caption = 'Send selected objects'
           TabOrder = 0
           OnClick = SendPointsButtonClick
-          ExplicitTop = 105
         end
         object GroupBox1: TGroupBox
           Left = 0
@@ -193,8 +192,6 @@ object TldTrackingForm: TTldTrackingForm
           Align = alTop
           Caption = 'Init TLD now'
           TabOrder = 2
-          ExplicitLeft = 4
-          ExplicitTop = 101
         end
       end
     end
