@@ -356,6 +356,7 @@ void __fastcall TTldTrackingForm::SendPointsButtonClick(TObject *Sender)
  VideoOutputFrame1->MyVideoOutputToolsForm->AddFigureButtonClick(Sender);
 // VideoOutputFrame1->UpdateVideo();
  RDK::UIVisualControllerStorage::UpdateInterface();
+// Hide();
 }
 //---------------------------------------------------------------------------
 
