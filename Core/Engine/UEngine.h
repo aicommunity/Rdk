@@ -391,6 +391,13 @@ virtual int Model_GetComponentsList(const char* stringid, int *buffer);
 // имена раздел€ютс€ сипволом ','
 virtual const char* Model_GetComponentsNameList(const char* stringid);
 
+// ѕеремещает компонент с текущим индексом index или именем 'name' вверх или
+// вниз по списку на заданное число элементов
+// ѕримен€етс€ дл€ изменени€ пор€дка расчета компонент
+// ≈сли значение 'step' выводит за границы массива, то компонент устанавливаетс€
+// на эту границу
+virtual int Model_ChangeComponentPosition(const char* stringid, int step);
+
 // ¬озвращает xml-список длинных идентификаторов всех коннекторов сети.
 // 'sublevel' опередел€ет число уровней вложенности подсетей дл€ которых
 // коннекторы будут добавлены в список.

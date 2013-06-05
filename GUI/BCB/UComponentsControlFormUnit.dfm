@@ -73,28 +73,36 @@ object UComponentsControlForm: TUComponentsControlForm
               ExplicitWidth = 257
               ExplicitHeight = 377
               inherited TabSheet4: TTabSheet
+                ExplicitWidth = 249
+                ExplicitHeight = 351
                 inherited Splitter3: TSplitter
                   Top = 274
                   Width = 249
+                  ExplicitTop = 274
+                  ExplicitWidth = 249
                 end
                 inherited ParametersListStringGrid: TStringGrid
                   Width = 249
                   Height = 274
+                  ExplicitWidth = 249
+                  ExplicitHeight = 274
                 end
                 inherited ParameterValueRichEdit: TRichEdit
                   Top = 284
                   Width = 249
+                  ExplicitTop = 284
+                  ExplicitWidth = 249
                 end
                 inherited HeaderControl3: THeaderControl
                   Top = 317
                   Width = 249
+                  ExplicitTop = 317
+                  ExplicitWidth = 249
                 end
               end
               inherited TabSheet1: TTabSheet
                 inherited ParametersHeaderControl: THeaderControl
-                  ExplicitLeft = 1
-                  ExplicitTop = -6
-                  ExplicitWidth = 249
+                  ExplicitWidth = 376
                 end
               end
             end
@@ -103,12 +111,16 @@ object UComponentsControlForm: TUComponentsControlForm
             Height = 379
             ExplicitHeight = 379
             inherited StringGrid: TStringGrid
-              Height = 343
+              Height = 321
               OnClick = ComponentsListFrameStringGridClick
               OnDblClick = ComponentsListFrameStringGridDblClick
-              OnKeyPress = ComponentsListFrameStringGridKeyPress
+              OnKeyDown = ComponentsListFrameStringGridKeyDown
               OnSelectCell = ComponentsListFrameStringGridSelectCell
-              ExplicitHeight = 343
+              ExplicitHeight = 321
+            end
+            inherited ClassNamePanel: TPanel
+              Top = 356
+              ExplicitTop = 356
             end
           end
         end
@@ -122,7 +134,6 @@ object UComponentsControlForm: TUComponentsControlForm
           inherited StringGrid: TStringGrid
             Height = 379
             OnDblClick = ClassesListFrameStringGridDblClick
-            OnKeyPress = ClassesListFrameStringGridKeyPress
             ExplicitHeight = 379
           end
         end

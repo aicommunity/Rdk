@@ -708,14 +708,6 @@ void __fastcall TUComponentsListFrame::StringGridSelectCell(TObject *Sender, int
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TUComponentsListFrame::StringGridKeyPress(TObject *Sender, System::WideChar &Key)
-{
- if(Key == VK_RETURN)
- {
-  StringGridDblClick(Sender);
- }
-}
-//---------------------------------------------------------------------------
 
 void __fastcall TUComponentsListFrame::StringGridClick(TObject *Sender)
 {
@@ -1000,13 +992,15 @@ void __fastcall TUComponentsListFrame::HeaderControl1SectionClick(THeaderControl
 
 void __fastcall TUComponentsListFrame::Moveup1Click(TObject *Sender)
 {
-//
+ Model_ChangeComponentPosition(SelectedComponentName.c_str(),-1);
+ UpdateInterface();
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUComponentsListFrame::Movedown1Click(TObject *Sender)
 {
-//
+ Model_ChangeComponentPosition(SelectedComponentName.c_str(),1);
+ UpdateInterface();
 }
 //---------------------------------------------------------------------------
 
@@ -1042,6 +1036,52 @@ void __fastcall TUComponentsListFrame::Delete1Click(TObject *Sender)
  if(DrawEngineFrame)
   DrawEngineFrame->ReloadNet();
  RDK::UIVisualControllerStorage::UpdateInterface();
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TUComponentsListFrame::StringGridKeyPress(TObject *Sender, System::WideChar &Key)
+
+{
+ //
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::StringGridKeyDown(TObject *Sender, WORD &Key,
+          TShiftState Shift)
+{
+ if(Key == VK_RETURN)
+ {
+  StringGridDblClick(Sender);
+ }
+ else
+ {
+  TKeyboardState State;
+  GetKeyboardState(State);
+  bool result = ((State[VK_SHIFT] & 128) != 0);
+  if(result)
+  {
+   if(Key == VK_UP || Key == VK_RIGHT)
+   {
+	Model_ChangeComponentPosition(SelectedComponentName.c_str(),-1);
+	std::string name=SelectedComponentName;
+	if(StringGrid->Row > 2)
+	 StringGrid->Row=StringGrid->Row-1;
+//	SelectedComponentName=name;
+	UpdateInterface();
+   }
+   else
+   if(Key == VK_DOWN || Key == VK_LEFT)
+   {
+	Model_ChangeComponentPosition(SelectedComponentName.c_str(),+1);
+	std::string name=SelectedComponentName;
+	if(StringGrid->Row < StringGrid->RowCount-1)
+	 StringGrid->Row=StringGrid->Row+1;
+//	SelectedComponentName=name;
+	UpdateInterface();
+   }
+  }
+ }
 }
 //---------------------------------------------------------------------------
 

@@ -1307,6 +1307,38 @@ const char* UEngine::Model_GetComponentsNameList(const char* stringid)
  return 0;
 }
 
+// ѕеремещает компонент с текущим индексом index или именем 'name' вверх или
+// вниз по списку на заданное число элементов
+// ѕримен€етс€ дл€ изменени€ пор€дка расчета компонент
+// ≈сли значение 'step' выводит за границы массива, то компонент устанавливаетс€
+// на эту границу
+int UEngine::Model_ChangeComponentPosition(const char* stringid, int step)
+{
+ try
+ {
+  RDK::UContainer* destcont=FindComponent(stringid);
+
+  if(destcont == Environment->GetModel())
+   return 0;
+
+  if(!destcont)
+   return 1;
+
+  if(!destcont->GetOwner())
+   return 2;
+
+  if(destcont->GetOwner()->ChangeComponentPosition(destcont->GetName(),step))
+   return 0;
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+
+ return 3;
+}
+
+
 // ¬озвращает xml-список длинных идентификаторов всех коннекторов сети.
 // 'sublevel' опередел€ет число уровней вложенности подсетей дл€ которых
 // коннекторы будут добавлены в список.

@@ -907,7 +907,7 @@ void UContainer::CopyComponents(UEPtr<UContainer> comp, UEPtr<UStorage> stor) co
   {
    bufcomp=comp->GetComponent(PComponents[i]->Id());
    if(bufcomp)
-    if(!comp->DelComponent(bufcomp->Id()))
+	if(!comp->DelComponent(bufcomp->Id()))
      return false;
 
    bufcomp=PComponents[i]->Alloc(PComponents[i]->Name(),stor);
@@ -927,6 +927,54 @@ void UContainer::CopyComponents(UEPtr<UContainer> comp, UEPtr<UStorage> stor) co
    comp->SetLookupComponent(bufcomp->Name(), bufcomp->Id());
   }
  return true;    */
+}
+
+
+// Перемещает компонент с текущим индексом index или именем 'name' вверх или
+// вниз по списку на заданное число элементов
+// Применяется для изменения порядка расчета компонент
+// Если значение 'step' выводит за границы массива, то компонент устанавливается
+// на эту границу
+bool UContainer::ChangeComponentPosition(int index, int step)
+{
+ if(index<0 || index >= NumComponents)
+  return false;
+
+ if(step == 0)
+  return true;
+
+ int result=index+step;
+ if(result<0)
+  result=0;
+ if(result>=NumComponents)
+  result=NumComponents-1;
+
+ UEPtr<UContainer> comp=PComponents[index];
+ if(result>index)
+ {
+  for(size_t i=index;i<=result;i++)
+   PComponents[i]=PComponents[i+1];
+  PComponents[result]=comp;
+ }
+ else
+ {
+  for(size_t i=result;i<index;i++)
+   PComponents[i+1]=PComponents[i];
+  PComponents[result]=comp;
+ }
+
+// Components.insert(Components.begin()+result+1,Components[index]);
+// Components.erase(Components.begin()+index);
+// PComponents=&Components[0];
+}
+
+bool UContainer::ChangeComponentPosition(const NameT &name, int step)
+{
+ for(size_t i=0;i<NumComponents;i++)
+  if(PComponents[i]->GetName() == name)
+   return ChangeComponentPosition(i,step);
+
+ return false;
 }
 // --------------------------
 

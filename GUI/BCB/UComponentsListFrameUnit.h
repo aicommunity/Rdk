@@ -63,7 +63,6 @@ __published:	// IDE-managed Components
 	void __fastcall FrameResize(TObject *Sender);
 	void __fastcall StringGridDblClick(TObject *Sender);
 	void __fastcall StringGridSelectCell(TObject *Sender, int ACol, int ARow, bool &CanSelect);
-	void __fastcall StringGridKeyPress(TObject *Sender, System::WideChar &Key);
 	void __fastcall StringGridClick(TObject *Sender);
 	void __fastcall ParametersRichEditChange(TObject *Sender);
 	void __fastcall StateRichEditChange(TObject *Sender);
@@ -93,6 +92,10 @@ __published:	// IDE-managed Components
 	void __fastcall Movedown1Click(TObject *Sender);
 	void __fastcall Rename1Click(TObject *Sender);
 	void __fastcall Delete1Click(TObject *Sender);
+	void __fastcall StringGridKeyPress(TObject *Sender, System::WideChar &Key);
+	void __fastcall StringGridKeyDown(TObject *Sender, WORD &Key, TShiftState Shift);
+
+
 
 
 

@@ -313,6 +313,13 @@ RDK_LIB_TYPE int RDK_CALL Model_GetComponentsList(const char* stringid, int *buf
 // имена раздел€ютс€ сипволом ','
 RDK_LIB_TYPE const char* RDK_CALL Model_GetComponentsNameList(const char* stringid);
 
+// ѕеремещает компонент с текущим индексом index или именем 'name' вверх или
+// вниз по списку на заданное число элементов
+// ѕримен€етс€ дл€ изменени€ пор€дка расчета компонент
+// ≈сли значение 'step' выводит за границы массива, то компонент устанавливаетс€
+// на эту границу
+RDK_LIB_TYPE int RDK_CALL Model_ChangeComponentPosition(const char* stringid, int step);
+
 // ¬озвращает xml-список длинных идентификаторов всех коннекторов сети.
 // 'sublevel' опередел€ет число уровней вложенности подсетей дл€ которых
 // коннекторы будут добавлены в список.

@@ -366,6 +366,7 @@ inherited UComponentsListFrame: TUComponentsListFrame
       TabOrder = 0
       OnClick = StringGridClick
       OnDblClick = StringGridDblClick
+      OnKeyDown = StringGridKeyDown
       OnKeyPress = StringGridKeyPress
       OnSelectCell = StringGridSelectCell
     end

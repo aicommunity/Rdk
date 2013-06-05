@@ -65,15 +65,6 @@ void __fastcall TUComponentsControlForm::ComponentsListFrameStringGridSelectCell
 //---------------------------------------------------------------------------
 
 
-void __fastcall TUComponentsControlForm::ComponentsListFrameStringGridKeyPress(TObject *Sender,
-		  System::WideChar &Key)
-{
- ComponentsControlFrame->ComponentsListFrame->StringGridKeyPress(Sender, Key);
- UComponentLinksForm->UComponentLinksFrame->UpdateInterface();
- if(Key == VK_RETURN)
-  UDrawEngineForm->SetNet(ComponentsControlFrame->ComponentsListFrame->GetCurrentComponentName());
-}
-//---------------------------------------------------------------------------
 
 void __fastcall TUComponentsControlForm::ClassesListFrameStringGridDblClick(TObject *Sender)
 
@@ -82,12 +73,6 @@ void __fastcall TUComponentsControlForm::ClassesListFrameStringGridDblClick(TObj
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TUComponentsControlForm::ClassesListFrameStringGridKeyPress(TObject *Sender,
-		  System::WideChar &Key)
-{
- ComponentsControlFrame->ClassesListFrameStringGridKeyPress(Sender,Key);
-}
-//---------------------------------------------------------------------------
 
 
 void __fastcall TUComponentsControlForm::ComponentsControlFrameTakeObjectButtonClick(TObject *Sender)
@@ -102,6 +87,18 @@ void __fastcall TUComponentsControlForm::ComponentsControlFrameReturnObjectButto
 
 {
   ComponentsControlFrame->ReturnObjectButtonClick(Sender);
+  UDrawEngineForm->SetNet(ComponentsControlFrame->ComponentsListFrame->GetCurrentComponentName());
+}
+//---------------------------------------------------------------------------
+
+
+
+void __fastcall TUComponentsControlForm::ComponentsListFrameStringGridKeyDown(TObject *Sender,
+          WORD &Key, TShiftState Shift)
+{
+ ComponentsControlFrame->ComponentsListFrame->StringGridKeyDown(Sender, Key,Shift);
+ UComponentLinksForm->UComponentLinksFrame->UpdateInterface();
+ if(Key == VK_RETURN)
   UDrawEngineForm->SetNet(ComponentsControlFrame->ComponentsListFrame->GetCurrentComponentName());
 }
 //---------------------------------------------------------------------------

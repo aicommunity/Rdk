@@ -405,6 +405,14 @@ void GetComponentsList(vector<NameT> &buffer) const;
 // Копирует все компоненты этого объекта в объект 'comp', если возможно
 // Если хранилище stor != 0 то используется оно
 virtual void CopyComponents(UEPtr<UContainer> comp, UEPtr<UStorage> stor=0) const;
+
+// Перемещает компонент с текущим индексом index или именем 'name' вверх или
+// вниз по списку на заданное число элементов
+// Применяется для изменения порядка расчета компонент
+// Если значение 'step' выводит за границы массива, то компонент устанавливается
+// на эту границу
+virtual bool ChangeComponentPosition(int index, int step);
+virtual bool ChangeComponentPosition(const NameT &name, int step);
 // --------------------------
 
 

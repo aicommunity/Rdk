@@ -21,11 +21,13 @@ __published:	// IDE-managed Components
 	void __fastcall ComponentsListFrameStringGridDblClick(TObject *Sender);
 	void __fastcall ComponentsListFrameStringGridSelectCell(TObject *Sender, int ACol,
           int ARow, bool &CanSelect);
-	void __fastcall ComponentsListFrameStringGridKeyPress(TObject *Sender, System::WideChar &Key);
 	void __fastcall ClassesListFrameStringGridDblClick(TObject *Sender);
-	void __fastcall ClassesListFrameStringGridKeyPress(TObject *Sender, System::WideChar &Key);
 	void __fastcall ComponentsControlFrameTakeObjectButtonClick(TObject *Sender);
 	void __fastcall ComponentsControlFrameReturnObjectButtonClick(TObject *Sender);
+	void __fastcall ComponentsListFrameStringGridKeyDown(TObject *Sender, WORD &Key,
+          TShiftState Shift);
+
+
 
 
 
