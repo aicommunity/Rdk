@@ -16,6 +16,7 @@ See file license.txt for more information
 //#include "UEnvException.h"
 #include "UXMLEnvSerialize.h"
 #include "Libraries/IO/UFileIO.h"
+#include "../Application/UIVisualController.h"
 
 // --------------------------------------
 // Объявления дополнительных функций
@@ -177,6 +178,18 @@ bool UEngine::Init(UEPtr<UStorage> storage, UEPtr<UEnvironment> env)
   Storage_LoadCommonClassesDescription(FileIO.GetDataString().c_str());
   Storage_LoadClassesDescription(FileIO.GetDataString().c_str());
  }
+
+  // Грузим шрифты
+  std::vector<std::string> font_names;
+  std::string font_path="Fonts\\";
+  FindFilesList(font_path, "*.fnt", true, font_names);
+
+  RDK::ClearClobalFonts();
+  RDK::UBitmapFont font;
+  for(size_t i=0;i<font_names.size();i++)
+  {
+   RDK::AddGlobalFont(font_path+font_names[i]);
+  }
 
  return true;
 }
