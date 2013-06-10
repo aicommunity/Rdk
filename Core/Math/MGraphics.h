@@ -62,6 +62,15 @@ MGeometryDescription(void)
 
 MGeometryDescription(const MGeometryDescription &copy)
 {
+ *this=copy;
+};
+
+virtual ~MGeometryDescription(void)
+{
+};
+
+MGeometryDescription& operator = (const MGeometryDescription& copy)
+{
  // Цвет
  Color=copy.Color;
 
@@ -78,10 +87,8 @@ MGeometryDescription(const MGeometryDescription &copy)
  Visible=copy.Visible;
 
  TargetPoints=copy.TargetPoints;
-};
 
-virtual ~MGeometryDescription(void)
-{
+ return *this;
 };
 // --------------------------
 
@@ -321,7 +328,7 @@ MGraphics<T,Rows>& MGraphics<T,Rows>::operator = (const MGraphics<T,Rows> &copy)
  Geometries=copy.Geometries;
 
  // Список описаний соответствующего объекта
- Description=copy.Description;
+ //Description=copy.Description;
 
  return *this;
 }

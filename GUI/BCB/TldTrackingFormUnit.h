@@ -42,6 +42,7 @@ __published:	// IDE-managed Components
 	TLabeledEdit *RectWidthLabeledEdit;
 	TLabeledEdit *RectHeightLabeledEdit;
 	TCheckBox *CheckBox1;
+	TTimer *Timer1;
 	void __fastcall StartTrackingButtonClick(TObject *Sender);
 	void __fastcall StopTrackingButtonClick(TObject *Sender);
 	void __fastcall GetFrameButtonClick(TObject *Sender);
@@ -54,11 +55,17 @@ __published:	// IDE-managed Components
 	void __fastcall PointsTabSheetShow(TObject *Sender);
 	void __fastcall SendPointsButtonClick(TObject *Sender);
 	void __fastcall FormShow(TObject *Sender);
+	void __fastcall Timer1Timer(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
 	__fastcall TTldTrackingForm(TComponent* Owner);
 
 RDK::UBitmap ResultBmp;
+
+/// Тип источика видео
+/// 0 - с входа трекера
+/// 1 - с камеры, определяемой настройками 0 источника программы
+int VideoSourceType;
 
 // -----------------------------
 // Методы управления визуальным интерфейсом

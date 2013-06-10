@@ -41,14 +41,14 @@ __fastcall TVideoOutputFrame::TVideoOutputFrame(TComponent* Owner)
  ZoneSelectEvent=CreateEvent(0,0,0,0);
  UpdateFlag=false;
 
- PointFlag=0;
+ PointFlag=1;
 // FigureFlag=false;
 
  MyVideoOutputToolsForm=new TVideoOutputToolsForm(this,
     this,
     GeometryGraphics,
 //    SampleGeometryGraphics,
-    Figure,
+//    Figure,
     FigureIndex,
 //    FigureFlag,
     PointIndex,
@@ -374,13 +374,37 @@ void TVideoOutputFrame::UpdateGeometryList(TCheckListBox *GeometryCheckListBox, 
 
  ix=PointsCheckListBox->ItemIndex;
 
- PointsCheckListBox->Clear();
- for(size_t i=0;i<GeometryGraphics.Geometry(GeometryCheckListBox->ItemIndex).GetNumVertices();i++)
+// PointsCheckListBox->Clear();
+ if(CurrentGeometryGraphics.GetNumGeometries()>GeometryCheckListBox->ItemIndex)
+ {
+  if(GeometryGraphics.Geometry(GeometryCheckListBox->ItemIndex) == CurrentGeometryGraphics.Geometry(GeometryCheckListBox->ItemIndex))
+   return;
+ }
+ else
+  CurrentGeometryGraphics=GeometryGraphics;
+
+ CurrentGeometryGraphics.Geometry(GeometryCheckListBox->ItemIndex)=GeometryGraphics.Geometry(GeometryCheckListBox->ItemIndex);
+ int new_value=GeometryGraphics.Geometry(GeometryCheckListBox->ItemIndex).GetNumVertices();
+ int diff=abs(PointsCheckListBox->Count-new_value);
+ if(PointsCheckListBox->Count<new_value)
+ {
+  for(int i=0;i<diff;i++)
+   PointsCheckListBox->Items->Add("");
+ }
+ else
+ if(PointsCheckListBox->Count>new_value)
+ {
+  for(int i=0;i<diff;i++)
+   PointsCheckListBox->Items->Delete(PointsCheckListBox->Count-1);
+ }
+ //PointsCheckListBox->Count=new_value;
+ for(size_t i=0;i<new_value;i++)
  {
   std::stringstream stream;
   stream<<GeometryGraphics.Geometry(GeometryCheckListBox->ItemIndex).VertexName(i)<<" ";
   stream<<GeometryGraphics.Geometry(GeometryCheckListBox->ItemIndex).Vertex(i);
-  PointsCheckListBox->Items->Add(stream.str().c_str());
+  PointsCheckListBox->Items->Strings[i]=stream.str().c_str();// Add(stream.str().c_str());
+//  PointsCheckListBox->Items->Add(stream.str().c_str());
    if(GeometryGraphics.Geometry(GeometryCheckListBox->ItemIndex).Vertex(i).z>=0)
    {
     PointsCheckListBox->Checked[i]=true;
@@ -440,10 +464,13 @@ void TVideoOutputFrame::AddFigureRect(double l,double t,double w,double h)
  if(l<0 || t<0)
   return;
 
- Figure.Vertex(PointIndex).x=l+w/2;
- Figure.Vertex(PointIndex).y=/*BmpCanvas.GetHeight()-*/(t+h/2);
+ if(FigureIndex<0)
+  return;
 
- GeometryGraphics.Geometry(FigureIndex)=Figure;
+ GeometryGraphics.Geometry(FigureIndex).Vertex(PointIndex).x=l+w/2;
+ GeometryGraphics.Geometry(FigureIndex).Vertex(PointIndex).y=/*BmpCanvas.GetHeight()-*/(t+h/2);
+
+// GeometryGraphics.Geometry(FigureIndex)=Figure;
 
  UpdateVideo();
 }
@@ -737,10 +764,25 @@ void __fastcall TVideoOutputFrame::ImageMouseDown(TObject *Sender,
    CorrSelectFlag=false;
   }
 // if(FigureFlag && !PointFlag)
-  MyVideoOutputToolsForm->AddPointButtonClick(Sender);
+ if(PointFlag == 1)
+ {
+  if(FigureIndex<0)
+   MyVideoOutputToolsForm->AddFigureButtonClick(Sender);
+  GeometryGraphics.Geometry(FigureIndex).SetNumVertices(GeometryGraphics.Geometry(FigureIndex).GetNumVertices()+1);
+  PointIndex=GeometryGraphics.Geometry(FigureIndex).GetNumVertices()-1;
+  GeometryGraphics.Geometry(FigureIndex).VertexName(PointIndex)=std::string(AnsiString(MyVideoOutputToolsForm->PointNameEdit->Text).c_str())+RDK::sntoa(PointIndex+1,3);
+ }
+ else
+ if(PointFlag == 2)
+ {
+//  if(FigureIndex<0 || PointIndex<0)
+//  {
+//   PointFlag=0;
+//   return;
+//  }
 
- //if(SampleGeometryGraphics.GetNumGeometry())
-  MyVideoOutputToolsForm->EditPointButtonClick(Sender);
+//  MyVideoOutputToolsForm->EditPointButtonClick(Sender);
+ }
 }
 //---------------------------------------------------------------------------
 
@@ -851,11 +893,11 @@ void __fastcall TVideoOutputFrame::ImageMouseUp(TObject *Sender,
   if(PointIndex<0)
    return;
 
-  Figure.SetNumVertices(Figure.GetNumVertices()-1);
-  if(PointIndex>=Figure.GetNumVertices())
-   --PointIndex;
+//  Figure.SetNumVertices(Figure.GetNumVertices()-1);
+//  if(PointIndex>=Figure.GetNumVertices())
+//   --PointIndex;
 
-  GeometryGraphics.Geometry(FigureIndex)=Figure;
+//  GeometryGraphics.Geometry(FigureIndex)=Figure;
 
   UpdateVideo();
   return;
@@ -894,9 +936,12 @@ void __fastcall TVideoOutputFrame::ImageMouseUp(TObject *Sender,
  if(PointFlag)
  {
   AddFigureRect(left,top,width,height);
-//  if(SampleGeometryGraphics.GetNumGeometry())
-//   MyVideoOutputToolsForm->EditPointButtonClick(Sender);
-
+/*
+ if(Shift.Contains(ssShift))
+  MyVideoOutputToolsForm->PointsCheckListBox->Checked[MyVideoOutputToolsForm->PointsCheckListBox->ItemIndex] = false;
+ else
+  MyVideoOutputToolsForm->PointsCheckListBox->Checked[MyVideoOutputToolsForm->PointsCheckListBox->ItemIndex] = true;
+ */
  }
 }
 //---------------------------------------------------------------------------

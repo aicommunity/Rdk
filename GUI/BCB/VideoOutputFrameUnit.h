@@ -119,6 +119,9 @@ RDK::UGraphics Graph;
 // Отрисовка геометрии
 RDK::MGraphics<double,2> GeometryGraphics;
 
+// Текущая геометрия
+RDK::MGraphics<double,2> CurrentGeometryGraphics;
+
 // Массив изображений для режима последовательности картинок
 std::vector<std::string> BmpSequenceNames;
 
@@ -147,7 +150,7 @@ std::string LinkedComponentPropertyName;
 
 public:
 // Текущая создаваемая фигура
-RDK::MGeometry<double,2> Figure;
+//RDK::MGeometry<double,2> Figure;
 
 // Индекс текущей редактируемой фигуры
 int FigureIndex;

@@ -24,6 +24,7 @@ __fastcall TTldTrackingForm::TTldTrackingForm(TComponent* Owner)
 	: TUVisualControllerForm(Owner)
 {
  ComponentControlName="TldTracking";
+ VideoSourceType=1;
 }
 
 // -----------------------------
@@ -79,17 +80,20 @@ void TTldTrackingForm::AAfterCalculate(void)
 // if(VideoSourceComboBox->ItemIndex >= 0)
 //  video_index=VideoSourceComboBox->ItemIndex;
 
- const RDK::UBitmap* bmp=(const RDK::UBitmap*)Model_GetComponentBitmapInput(ComponentControlName.c_str(), 0);
- if(bmp)
+ if(VideoSourceType == 0)
  {
-  const_cast<RDK::UBitmap*>(bmp)->ReflectionX(&ResultBmp);
+  const RDK::UBitmap* bmp=(const RDK::UBitmap*)Model_GetComponentBitmapInput(ComponentControlName.c_str(), 0);
+  if(bmp)
+  {
+   const_cast<RDK::UBitmap*>(bmp)->ReflectionX(&ResultBmp);
 //  ResultBmp=*bmp;
 
-  VideoOutputFrame1->ZoneSelectEnable=true;
-  VideoOutputFrame1->InitByBmp(ResultBmp);
+   VideoOutputFrame1->ZoneSelectEnable=true;
+   VideoOutputFrame1->InitByBmp(ResultBmp);
+  }
+  else
+   ResultBmp.Fill(0);
  }
- else
-  ResultBmp.Fill(0);
 
  const RDK::MDMatrix<double> *results;
  results=(const RDK::MDMatrix<double>*)(Model_GetComponentOutputAsMatrix(ComponentControlName.c_str(), 0));
@@ -324,10 +328,21 @@ void __fastcall TTldTrackingForm::SendPointsButtonClick(TObject *Sender)
   points(i,3)=area_height;
  }
 
- RDK::MDVector<int> initial_flags;
- initial_flags.Resize(points.GetRows());
- for(int i=0;i<initial_flags.GetSize();i++)
-  initial_flags(i)=1;
+ RDK::MDMatrix<int> initial_flags;
+ RDK::MDMatrix<double> initial_reliability;
+ initial_flags.Resize(points.GetRows(),1);
+ initial_reliability.Resize(points.GetRows(),1);
+ for(int i=0;i<initial_flags.GetRows();i++)
+  if(VideoOutputFrame1->MyVideoOutputToolsForm->PointsCheckListBox->Count>i && VideoOutputFrame1->MyVideoOutputToolsForm->PointsCheckListBox->Checked[i] == true)
+  {
+   initial_flags(i,0)=1;
+   initial_reliability(i,0)=1.0;
+  }
+  else
+  {
+   initial_flags(i,0)=0;
+   initial_reliability(i,0)=0.0;
+  }
 // initial_flags.Assign(points.GetRows(),1);
 
  bool started=UEngineMonitorForm->EngineMonitorFrame->Timer->Enabled;
@@ -345,17 +360,18 @@ void __fastcall TTldTrackingForm::SendPointsButtonClick(TObject *Sender)
  }
  Model_SetComponentPropertyData(ComponentControlName.c_str(), "InitialFlags", &initial_flags);
  Model_SetComponentPropertyData(source_name.c_str(), "DoubleMatrix", &points);
+ Model_SetComponentPropertyData("MatrixSource", "DoubleMatrix", &initial_reliability);
 
  if(CheckBox1->Checked)
  {
   Env_Calculate(ComponentControlName.c_str());
  }
- Env_Calculate(0);
+ UEngineMonitorForm->EngineMonitorFrame->Step1Click(Sender);
 
  VideoOutputFrame1->MyVideoOutputToolsForm->DelAllFiguresButtonClick(Sender);
  VideoOutputFrame1->MyVideoOutputToolsForm->AddFigureButtonClick(Sender);
 // VideoOutputFrame1->UpdateVideo();
- RDK::UIVisualControllerStorage::UpdateInterface();
+// RDK::UIVisualControllerStorage::UpdateInterface();
 // Hide();
 }
 //---------------------------------------------------------------------------
@@ -364,6 +380,24 @@ void __fastcall TTldTrackingForm::FormShow(TObject *Sender)
 {
  VideoOutputFrame1->MyVideoOutputToolsForm->DelAllFiguresButtonClick(Sender);
  VideoOutputFrame1->MyVideoOutputToolsForm->AddFigureButtonClick(Sender);
+
+ if(PageControl1->ActivePage == PointsTabSheet)
+ {
+  PointsTabSheetShow(Sender);
+ }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TTldTrackingForm::Timer1Timer(TObject *Sender)
+{
+ if(VideoSourceType == 1)
+ {
+  if(VideoOutputForm && VideoOutputForm->GetActiveVideoOutputFrame())
+  {
+   VideoOutputFrame1->ZoneSelectEnable=true;
+   VideoOutputFrame1->InitByBmp(VideoOutputForm->GetActiveVideoOutputFrame()->BmpSource);
+  }
+ }
 }
 //---------------------------------------------------------------------------
 

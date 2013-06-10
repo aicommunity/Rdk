@@ -247,7 +247,6 @@ object TldTrackingForm: TTldTrackingForm
       inherited Panel1: TPanel
         Top = 410
         Width = 572
-        Visible = False
         ExplicitTop = 410
         ExplicitWidth = 572
         inherited StopButton: TButton
@@ -292,5 +291,11 @@ object TldTrackingForm: TTldTrackingForm
     Options = [ofHideReadOnly, ofPathMustExist, ofFileMustExist, ofEnableSizing]
     Left = 296
     Top = 192
+  end
+  object Timer1: TTimer
+    Interval = 30
+    OnTimer = Timer1Timer
+    Left = 48
+    Top = 200
   end
 end

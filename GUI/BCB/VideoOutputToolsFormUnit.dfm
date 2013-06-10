@@ -22,7 +22,7 @@ object VideoOutputToolsForm: TVideoOutputToolsForm
     Top = 0
     Width = 113
     Height = 386
-    Align = alClient
+    Align = alLeft
     BevelOuter = bvNone
     TabOrder = 0
     object GroupBox1: TGroupBox
@@ -105,7 +105,7 @@ object VideoOutputToolsForm: TVideoOutputToolsForm
     Top = 0
     Width = 105
     Height = 386
-    Align = alRight
+    Align = alClient
     TabOrder = 1
     object GroupBox2: TGroupBox
       Left = 1
@@ -116,8 +116,8 @@ object VideoOutputToolsForm: TVideoOutputToolsForm
       Caption = ' '#1058#1086#1095#1082#1080' '
       TabOrder = 0
       object AddPointButton: TButton
-        Left = 6
-        Top = 46
+        Left = 5
+        Top = 45
         Width = 99
         Height = 25
         Caption = #1044#1086#1073#1072#1074#1080#1090#1100' '#1090#1086#1095#1082#1091
@@ -131,6 +131,7 @@ object VideoOutputToolsForm: TVideoOutputToolsForm
         Height = 25
         Caption = #1059#1076#1072#1083#1080#1090#1100' '#1090#1086#1095#1082#1091
         TabOrder = 1
+        OnClick = DelPointButtonClick
       end
       object DelAllPointsButton: TButton
         Left = 6

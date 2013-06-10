@@ -699,6 +699,9 @@ bool SetVerticesNames(const std::vector<std::string>& value);
 // Границы объекта
 const std::vector<MBorder>& GetBorders(void) const;
 bool SetBorders(const std::vector<MBorder>& value);
+
+// Удаляет вершину
+void DelVertex(int index);
 // --------------------------
 
 // --------------------------
@@ -868,6 +871,17 @@ bool MGeometry<T,Rows>::SetBorders(const std::vector<MBorder>& value)
 {
  Borders=value;
  return true;
+}
+
+// Удаляет вершину
+template<class T, int Rows>
+void MGeometry<T,Rows>::DelVertex(int index)
+{
+ if(index<0 || index>=Vertices.size())
+  return;
+
+ Vertices.erase(Vertices.begin()+index);
+ VerticesNames.erase(VerticesNames.begin()+index);
 }
 // --------------------------
 
