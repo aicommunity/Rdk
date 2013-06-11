@@ -293,6 +293,7 @@ void __fastcall TTldTrackingForm::PointsTabSheetShow(TObject *Sender)
  VideoOutputFrame1->MyVideoOutputToolsForm->FigurePanel->Visible=false;
  VideoOutputFrame1->MyVideoOutputToolsForm->Align=alClient;
  VideoOutputFrame1->MyVideoOutputToolsForm->Show();
+ PointsTabSheet->Repaint();
 }
 //---------------------------------------------------------------------------
 
@@ -381,10 +382,9 @@ void __fastcall TTldTrackingForm::FormShow(TObject *Sender)
  VideoOutputFrame1->MyVideoOutputToolsForm->DelAllFiguresButtonClick(Sender);
  VideoOutputFrame1->MyVideoOutputToolsForm->AddFigureButtonClick(Sender);
 
- if(PageControl1->ActivePage == PointsTabSheet)
- {
-  PointsTabSheetShow(Sender);
- }
+ PointsTabSheetShow(Sender);
+ PageControl1->ActivePageIndex=0;
+ PageControl1->ActivePageIndex=1;
 }
 //---------------------------------------------------------------------------
 
