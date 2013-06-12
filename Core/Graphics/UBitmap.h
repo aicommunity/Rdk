@@ -474,6 +474,9 @@ inline UColorT& operator () (int index) const
 inline UBColor& operator () (int ix, int iy) const
 { return *(Data+iy*LineByteLength+ix*PixelByteLength); };
 
+inline UBColor& operator () (int ix, int iy, int ch) const
+{ return *(Data+iy*LineByteLength+ix*PixelByteLength+ch); };
+
 // ¬озвращают значение цветовой составл€ющей пиксел€ с линейной координатой
 // в пределах канала
 inline UBColor& operator () (int index, UBMColorChannel channel) const
