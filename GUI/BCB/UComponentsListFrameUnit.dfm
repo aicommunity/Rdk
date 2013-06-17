@@ -425,5 +425,12 @@ inherited UComponentsListFrame: TUComponentsListFrame
       Caption = 'Delete'
       OnClick = Delete1Click
     end
+    object N4: TMenuItem
+      Caption = '-'
+    end
+    object Reset1: TMenuItem
+      Caption = 'Reset'
+      OnClick = Reset1Click
+    end
   end
 end

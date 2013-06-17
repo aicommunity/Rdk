@@ -1085,3 +1085,16 @@ void __fastcall TUComponentsListFrame::StringGridKeyDown(TObject *Sender, WORD &
 }
 //---------------------------------------------------------------------------
 
+void __fastcall TUComponentsListFrame::Reset1Click(TObject *Sender)
+{
+ std::string stringcompid=GetSelectedComponentName();
+ if(stringcompid == "..")
+  return;
+
+ std::string stringid=GetCurrentComponentId();
+ Env_Reset(stringid.c_str());
+
+ RDK::UIVisualControllerStorage::UpdateInterface();
+}
+//---------------------------------------------------------------------------
+

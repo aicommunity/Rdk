@@ -60,6 +60,8 @@ __published:	// IDE-managed Components
 	TMenuItem *N2;
 	TMenuItem *N3;
 	TMenuItem *Delete1;
+	TMenuItem *N4;
+	TMenuItem *Reset1;
 	void __fastcall FrameResize(TObject *Sender);
 	void __fastcall StringGridDblClick(TObject *Sender);
 	void __fastcall StringGridSelectCell(TObject *Sender, int ACol, int ARow, bool &CanSelect);
@@ -94,6 +96,7 @@ __published:	// IDE-managed Components
 	void __fastcall Delete1Click(TObject *Sender);
 	void __fastcall StringGridKeyPress(TObject *Sender, System::WideChar &Key);
 	void __fastcall StringGridKeyDown(TObject *Sender, WORD &Key, TShiftState Shift);
+	void __fastcall Reset1Click(TObject *Sender);
 
 
 
