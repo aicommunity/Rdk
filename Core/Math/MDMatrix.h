@@ -123,6 +123,10 @@ MDMatrix<T> GetMinor(int row, int col) const;
 MDMatrix<T>& Split(MDMatrix<T> &res, int row_beg, int row_end, int col_beg, int col_end) const;
 MDMatrix<T> Split(int row_beg, int row_end, int col_beg, int col_end) const;
 
+// Вставляет в матрицу заданную
+MDMatrix<T>& Merge(MDMatrix<T> &res, int row_beg, int row_end, int col_beg, int col_end);
+MDMatrix<T> Merge(int row_beg, int row_end, int col_beg, int col_end);
+
 // След
 T Trace(void) const;
 
@@ -817,6 +821,7 @@ MDMatrix<T> MDMatrix<T>::GetMinor(int row, int col) const
 template<class T>
 MDMatrix<T>& MDMatrix<T>::Split(MDMatrix<T> &res, int row_beg, int row_end, int col_beg, int col_end) const
 {
+ res.Resize(row_end-row_beg+1,col_end-col_beg+1);
 	for(int i=row_beg;i<=row_end;i++)
 		for(int j=col_beg;j<=col_end;j++)
 			res(i-row_beg,j-col_beg)=(*this)(i,j);
@@ -828,6 +833,23 @@ MDMatrix<T> MDMatrix<T>::Split(int row_beg, int row_end, int col_beg, int col_en
 {
  MDMatrix<T> res(row_end-row_beg+1,col_end-col_beg+1);
  return Split(res,row_beg, row_end, col_beg, col_end);
+}
+
+// Вставляет в матрицу заданную
+template<class T>
+MDMatrix<T>& MDMatrix<T>::Merge(MDMatrix<T> &res, int row_beg, int row_end, int col_beg, int col_end)
+{
+	for(int i=row_beg;i<=row_end;i++)
+		for(int j=col_beg;j<=col_end;j++)
+			(*this)(i,j)=res(i-row_beg,j-col_beg);
+	return res;
+}
+
+template<class T>
+MDMatrix<T> MDMatrix<T>::Merge(int row_beg, int row_end, int col_beg, int col_end)
+{
+ MDMatrix<T> res(row_end-row_beg+1,col_end-col_beg+1);
+ return Merge(res,row_beg, row_end, col_beg, col_end);
 }
 
 // След

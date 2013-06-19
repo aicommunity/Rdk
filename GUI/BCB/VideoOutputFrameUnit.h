@@ -56,6 +56,10 @@ __published:    // IDE-managed Components
 	TMenuItem *Parameter1;
 	TMenuItem *State1;
 	TMenuItem *SendImageToComponentProperty1;
+	TPanel *Panel3;
+	TCheckBox *ShowCentralPointCheckBox;
+	TEdit *PointXEdit;
+	TEdit *PointYEdit;
     void __fastcall TimerTimer(TObject *Sender);
     void __fastcall StartButtonClick(TObject *Sender);
     void __fastcall StopButtonClick(TObject *Sender);
@@ -247,7 +251,7 @@ void UpdateGeometryList(TCheckListBox *GeometryCheckListBox, TCheckListBox *Poin
 
 // Метод отрисовки прямоугольной зоны
 void __fastcall TVideoOutputFrame::DrawFrameRect(TImage *image, int x1, int y1, int x2,
-                                                int y2, int framewidth, TColor color);
+												int y2, int framewidth, TColor color);
 
 // Добавляет очередной элемент фигуры
 void AddFigureRect(double l,double t,double w,double h);

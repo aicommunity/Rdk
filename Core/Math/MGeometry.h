@@ -278,6 +278,12 @@ MDMatrix<T> CalcObjectPositionMatrixD(const MDVector<T> &angles, const MDVector<
 	res(3,1)=0;
 	res(3,2)=0;
 	res(3,3)=1;
+
+  MDMatrix<double> ortrotation,rotation;
+  res.Split(rotation,0,2,0,2);
+  rotation.Orthogonolize(ortrotation);
+  res.Merge(rotation,0,2,0,2);
+
  return res;
 }
 

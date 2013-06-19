@@ -11,16 +11,17 @@ inherited VideoOutputFrame: TVideoOutputFrame
     Left = 0
     Top = 0
     Width = 702
-    Height = 386
+    Height = 351
     Align = alClient
     DoubleBuffered = True
     ParentDoubleBuffered = False
     TabOrder = 0
+    ExplicitHeight = 386
     object Image: TImage
       Left = 2
       Top = 15
       Width = 698
-      Height = 369
+      Height = 334
       Cursor = crCross
       Align = alClient
       Stretch = True
@@ -34,7 +35,7 @@ inherited VideoOutputFrame: TVideoOutputFrame
       Left = 2
       Top = 15
       Width = 698
-      Height = 369
+      Height = 334
       Align = alClient
       Caption = 'VideoGrabber'
       Color = clBlack
@@ -74,15 +75,17 @@ inherited VideoOutputFrame: TVideoOutputFrame
       VideoSource_FileOrURL_StartTime = -1
       VideoSource_FileOrURL_StopTime = -1
       OnFrameCaptureCompleted = VideoGrabberFrameCaptureCompleted
+      ExplicitHeight = 369
     end
   end
   object Panel1: TPanel
     Left = 0
-    Top = 417
+    Top = 382
     Width = 702
     Height = 41
     Align = alBottom
     TabOrder = 1
+    ExplicitTop = 417
     DesignSize = (
       702
       41)
@@ -134,11 +137,12 @@ inherited VideoOutputFrame: TVideoOutputFrame
   end
   object Panel2: TPanel
     Left = 0
-    Top = 386
+    Top = 351
     Width = 702
     Height = 31
     Align = alBottom
     TabOrder = 2
+    ExplicitTop = 386
     DesignSize = (
       702
       31)
@@ -172,6 +176,41 @@ inherited VideoOutputFrame: TVideoOutputFrame
       DropDownMenu = SelectPopupMenu
       Style = bsSplitButton
       TabOrder = 2
+    end
+  end
+  object Panel3: TPanel
+    Left = 0
+    Top = 423
+    Width = 702
+    Height = 35
+    Align = alBottom
+    TabOrder = 3
+    ExplicitLeft = 17
+    ExplicitTop = 452
+    object ShowCentralPointCheckBox: TCheckBox
+      Left = 1
+      Top = 1
+      Width = 120
+      Height = 33
+      Align = alLeft
+      Caption = ' Show central point'
+      TabOrder = 0
+    end
+    object PointXEdit: TEdit
+      Left = 127
+      Top = 6
+      Width = 58
+      Height = 21
+      TabOrder = 1
+      Text = '0'
+    end
+    object PointYEdit: TEdit
+      Left = 191
+      Top = 6
+      Width = 58
+      Height = 21
+      TabOrder = 2
+      Text = '0'
     end
   end
   object Timer: TTimer

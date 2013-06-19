@@ -282,6 +282,23 @@ bool TVideoOutputFrame::UpdateVideo(void)
 // BmpCanvas=BmpSource;
 
  GeometryGraphics.Repaint();
+ if(ShowCentralPointCheckBox->Checked)
+ {
+  RDK::UGraphics gr(&BmpCanvas);
+  gr.SetPenColor(0x000000FF);
+  gr.SetPenWidth(1);
+  int x=StrToInt(PointXEdit->Text);
+  int y=StrToInt(PointYEdit->Text);
+  gr.Line(x,0,x,BmpCanvas.GetHeight());
+  gr.Line(0,y,BmpCanvas.GetWidth(),y);
+//  Image->Canvas->Pen->Color=clRed;
+//  Image->Canvas->Pen->Width=1;
+//  Image->Canvas->MoveTo(Image->Width/2,0);
+//  Image->Canvas->LineTo(Image->Width/2,Image->Height-1);
+//  Image->Canvas->MoveTo(0,Image->Height/2);
+//  Image->Canvas->LineTo(Image->Width-1,Image->Height/2);
+ }
+
  BmpCanvas.ReflectionX();
  BmpCanvas>>bmp;
 
@@ -289,6 +306,7 @@ bool TVideoOutputFrame::UpdateVideo(void)
  Image->Repaint();
  if(left != -1 || top != -1 || width != -1 || height != -1)
   DrawFrameRect(Image, left, top, left+width, top+height, 2, SelColor);
+
  Image->Repaint();
  UpdateGeometryList(MyVideoOutputToolsForm->GeometryCheckListBox,
 					MyVideoOutputToolsForm->PointsCheckListBox);
