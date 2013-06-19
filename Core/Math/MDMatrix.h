@@ -131,6 +131,9 @@ T operator !(void) const;
 
 // Нормализация матрицы
 MDMatrix<T>& Normalize(void);
+
+// Ортогонализация квадратной матрицы
+bool Orthogonolize(MDMatrix<T> &res);
 // --------------------------
 
 // --------------------------
@@ -863,6 +866,59 @@ MDMatrix<T>& MDMatrix<T>::Normalize(void)
  (*this)/=norm;
 
  return *this;
+}
+
+
+// Ортогонализация квадратной матрицы
+template<class T>
+bool MDMatrix<T>::Orthogonolize(MDMatrix<T> &res)
+{
+ MDMatrix<T> &src=*this;
+ if(src.GetRows() != src.GetCols())
+  return false;
+
+ res.Resize(src.GetRows(),src.GetCols());
+
+ if(src.GetRows() == 0 || src.GetCols() == 0)
+  return true;
+
+ if(!src.Det())
+ 	return false;
+
+ int i, j ,n;
+ T numerator, consequent;
+ int size = src.GetRows();
+
+ // Первая строка
+ for(i = 0; i < size; i++)
+	res(0,i) = src(0,i);
+ if(size == 1) return true;
+
+ // Следующие строки
+ for(i = 1; i < size; i++)
+ {
+	for(j = 0; j < size; j++)
+		res(i,j) = src(i,j);
+
+	for(j = 0; j < i; j++)
+	{
+		numerator = 0;
+		for(n = 0; n < size; n++)
+			numerator += src(i,n) * res(j,n);
+		consequent = 0;
+		for(n = 0; n < size; n++)
+			consequent += res(j,n) * res(j,n);
+		if(consequent)
+			for(n = 0; n < size; n++)
+				res(i,n) = res(i,n) - (T((double)numerator/double(consequent))) * res(j,n);
+		else
+			for(n = 0; n < size; n++)
+				res(i,n) = res(i,n);
+
+	}
+ }
+
+ return true;
 }
 // --------------------------
 

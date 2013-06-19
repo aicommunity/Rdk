@@ -228,8 +228,8 @@ MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::operator = (const MDMatrix<T> &copy)
  if(Rows == copy.GetRows() && Cols == copy.GetCols())
  {
   memcpy(Data1D,copy.Data1D,sizeof(T)*Cols*Rows);
-  VRows=copy.Rows;
-  VCols=copy.Cols;
+  VRows=copy.GetRows();
+  VCols=copy.GetCols();
  }
  return *this;
 }
