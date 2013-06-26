@@ -47,6 +47,7 @@ public:
 // --------------------------
 MMatrix(void);
 MMatrix(T defvalue);
+MMatrix(const MDMatrix<T> &copy);
 MMatrix(const MMatrix<T,Rows,Cols> &copy);
 MMatrix(const T* data);
 ~MMatrix(void);
@@ -200,6 +201,13 @@ MMatrix<T,Rows,Cols>::MMatrix(const MMatrix<T,Rows,Cols> &copy)
 {
  *this=copy;
 };
+
+template<class T, unsigned Rows, unsigned Cols>
+MMatrix<T,Rows,Cols>::MMatrix(const MDMatrix<T> &copy)
+{
+ *this=copy;
+}
+
 /*
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>::MMatrix(const T* data)
