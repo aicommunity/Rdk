@@ -60,42 +60,21 @@ void InverseEcc(const MMatrix<T,4,4>& source_ecc,MMatrix<T,4,4>& dest_ecc)
 template<class T>
 MMatrix<T,4,4> CalcObjectPositionMatrix(const MVector<T,3> &angles, const MVector<T,3> &shifts)
 {
-	MMatrix<double, 4,4> res;
-
-	double cos_gamma, sin_gamma, cos_beta, sin_beta, cos_alpha, sin_alpha;
-	cos_gamma       = cos(angles(0));
-	sin_gamma       = sin(angles(0));
-	cos_beta       = cos(angles(1));
-	sin_beta       = sin(angles(1));
-	cos_alpha       = cos(angles(2));
-	sin_alpha       = sin(angles(2));
-
-	res(0,0)=cos_alpha*cos_beta;
-	res(1,0)=-sin_gamma*sin_beta*cos_alpha+cos_gamma*sin_alpha;
-	res(2,0)=cos_gamma*sin_beta*cos_alpha+sin_gamma*sin_alpha;
-	res(0,1)=-cos_beta * sin_alpha;
-	res(1,1)=sin_gamma*sin_beta*sin_alpha+cos_gamma*cos_alpha;
-	res(2,1)=-cos_gamma*sin_beta*sin_alpha+sin_gamma*cos_alpha;
-	res(0,2)=-sin_beta;
-	res(1,2)=-sin_gamma*cos_beta;
-	res(2,2)=cos_gamma*cos_beta;
-
-	res(0,3)=shifts(0);
-	res(1,3)=shifts(1);
-	res(2,3)=shifts(2);
-
-	res(3,0)=0;
-	res(3,1)=0;
-	res(3,2)=0;
-	res(3,3)=1;
- return res;
+	MMatrix<T,4,4> res;
+	MVector<T,6> anglesANDshifts;
+	for(int i=0;i<3;i++)
+		anglesANDshifts(i)=shifts(i);
+	for(int i=3;i<6;i++)
+		anglesANDshifts(i)=angles(i-3);
+	res=CalcObjectPositionMatrix(anglesANDshifts);
+	return res;
 }
 
 //1.2!!!
 template<class T>
 MMatrix<T,4,4> CalcObjectPositionMatrix(const MVector<T,6> &anglesANDshifts)
 {
-	MMatrix<T,4,4> res;
+ MMatrix<T,4,4> res;
 
 	T cos_gamma, sin_gamma, cos_beta, sin_beta, cos_alpha, sin_alpha;
 	cos_gamma       = cos(anglesANDshifts(3));
@@ -105,15 +84,27 @@ MMatrix<T,4,4> CalcObjectPositionMatrix(const MVector<T,6> &anglesANDshifts)
 	cos_alpha       = cos(anglesANDshifts(5));
 	sin_alpha       = sin(anglesANDshifts(5));
 
-	res(0,0)=cos_alpha*cos_beta;
-	res(1,0)=-sin_gamma*sin_beta*cos_alpha+cos_gamma*sin_alpha;
-	res(2,0)=cos_gamma*sin_beta*cos_alpha+sin_gamma*sin_alpha;
-	res(0,1)=-cos_beta * sin_alpha;
-	res(1,1)=sin_gamma*sin_beta*sin_alpha+cos_gamma*cos_alpha;
-	res(2,1)=-cos_gamma*sin_beta*sin_alpha+sin_gamma*cos_alpha;
-	res(0,2)=-sin_beta;
-	res(1,2)=-sin_gamma*cos_beta;
-	res(2,2)=cos_gamma*cos_beta;
+	MMatrix<T,3,3> Mx, My, Mz, M;
+	
+	Mx(0,0)=1; Mx(0,1)=0;		  Mx(0,2)=0;
+	Mx(1,0)=0; Mx(1,1)=cos_gamma; Mx(1,2)=-sin_gamma;
+	Mx(2,0)=0; Mx(2,1)=sin_gamma; Mx(2,2)=cos_gamma;
+
+	My(0,0)=cos_beta;   My(0,1)=0; My(0,2)=sin_beta;
+	My(1,0)=0;			My(1,1)=1; My(1,2)=0;
+	My(2,0)=-sin_beta;  My(2,1)=0; My(2,2)=cos_beta;
+
+	Mz(0,0)=cos_alpha; Mz(0,1)=-sin_alpha;	Mz(0,2)=0;
+	Mz(1,0)=sin_alpha; Mz(1,1)=cos_alpha;	Mz(1,2)=0;
+	Mz(2,0)=0;		   Mz(2,1)=0;			Mz(2,2)=1;
+
+	//!!!Порядок перемножения!!!
+	M=Mx*My*Mz;
+	//!!!!!!
+
+	for(int i=0;i<3;i++)
+		for(int j=0;j<3;j++)
+			res(i,j)=M(i,j);
 
 	res(0,3)=anglesANDshifts(0);
 	res(1,3)=anglesANDshifts(1);
@@ -130,37 +121,12 @@ MMatrix<T,4,4> CalcObjectPositionMatrix(const MVector<T,6> &anglesANDshifts)
 template<class T>
 void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,3> &angles, MVector<T,3> &shifts)
 {
-     T C, trX, trY;
-
-    angles(1) = -asin( ExtMat(0,2));        // Вычисления угла вращения вокруг оси Y 
-    C           =  cos( angles(1) );
-
-    if ( fabs( C ) > 0.005 )          // "Шарнирный замок" (Gimball lock)? 
-      {
-      trX      =  ExtMat(2,2) / C;        // Если нет, то получаем угол вращения вокруг оси X 
-      trY      = -ExtMat(1,2) / C;
-
-      angles(0)  = atan2( trY, trX );
-
-      trX      =  ExtMat(0,0) / C;            // Получаем угол вращения вокруг оси  Z 
-      trY      =  -ExtMat(0,1) / C;
-
-      angles(2)  = atan2( trY, trX );
-      }
-    else                                 // Имеет место "Шарнирный замок" (Gimball lock) 
-      {
-      angles(0)  = 0;                      // Угол вращения вокруг оси X приравниваем к нулю 
-
-      trX      = ExtMat(1,1);                 // И вычисляем угол вращения вокруг оси Z 
-      trY      = ExtMat(1,0);
-
-      angles(2)  = atan2( trY, trX );
-      }
-
-	shifts(0)=ExtMat(0,3);
-	shifts(1)=ExtMat(1,3);
-	shifts(2)=ExtMat(2,3);
-
+    MVector<T,6> anglesANDshifts;
+	CalcObjectAnglesAndShifts(ExtMat, anglesANDshifts)
+	for(int i=0;i<3;i++)
+		shifts(i)=anglesANDshifts(i);
+	for(int i=3;i<6;i++)
+		angles(i-3)=anglesANDshifts(i);
 	return;
 }
 
@@ -170,7 +136,7 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
 {
 	T C, trX, trY;
 
-	anglesANDshifts(4) = -asin( ExtMat(0,2));        // Вычисления угла вращения вокруг оси Y 
+	anglesANDshifts(4) = -asin( -ExtMat(0,2));        // Вычисления угла вращения вокруг оси Y 
     C           =  cos( anglesANDshifts(4) );
 
     if ( fabs( C ) > 0.005 )          // "Шарнирный замок" (Gimball lock)? 
@@ -206,39 +172,12 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
 template<class T>
 void CalcObjectAnglesAndShiftsM(const MMatrix<T,4,4> &ExtMat, MDMatrix<T> &anglesANDshifts)
 {
-	T C, trX, trY;
 	MDVector<T> AnS(6);
-	if(anglesANDshifts.GetCols()==1) AnS=anglesANDshifts;
-    else AnS=anglesANDshifts.Transpose();
 
-	AnS(4) = -asin( ExtMat(0,2));        // Вычисления угла вращения вокруг оси Y 
-    C           =  cos( AnS(4) );
-
-    if ( fabs( C ) > 0.005 )          // "Шарнирный замок" (Gimball lock)? 
-      {
-      trX      =  ExtMat(2,2) / C;        // Если нет, то получаем угол вращения вокруг оси X 
-      trY      = -ExtMat(1,2) / C;
-
-      AnS(3)  = atan2( trY, trX );
-
-      trX      =  ExtMat(0,0) / C;            // Получаем угол вращения вокруг оси  Z 
-      trY      =  -ExtMat(0,1) / C;
-
-      AnS(5)  = atan2( trY, trX );
-      }
-    else                                 // Имеет место "Шарнирный замок" (Gimball lock) 
-      {
-      AnS(3)  = 0;                      // Угол вращения вокруг оси X приравниваем к нулю 
-
-      trX      = ExtMat(1,1);                 // И вычисляем угол вращения вокруг оси Z 
-      trY      = ExtMat(1,0);
-
-      AnS(5)  = atan2( trY, trX );
-      }
-
-	AnS(0)=ExtMat(0,3);
-	AnS(1)=ExtMat(1,3);
-	AnS(2)=ExtMat(2,3);
+	MVector<T,6> M_anglesANDshifts;
+	CalcObjectAnglesAndShifts(ExtMat, M_anglesANDshifts);
+	for(int i=0;i<6;i++)
+		AnS(i)=M_anglesANDshifts(i);
 
 	if(anglesANDshifts.GetCols()==1) anglesANDshifts=AnS;
     else anglesANDshifts=AnS.Transpose();
@@ -251,40 +190,20 @@ template<class T>
 MDMatrix<T> CalcObjectPositionMatrixD(const MDVector<T> &angles, const MDVector<T> &shifts)
 {
 	MDMatrix<T> res(4,4);
+	MMatrix<T,4,4> M_res;
+	MVector<T,6> M_anglesANDshifts;
+	for(int i=0;i<3;i++)
+		M_anglesANDshifts(i)=shifts(i);
+	for(int i=3;i<6;i++)
+		M_anglesANDshifts(i)=angles(i-3);
 
-	T cos_gamma, sin_gamma, cos_beta, sin_beta, cos_alpha, sin_alpha;
-	cos_gamma       = cos(angles(0));
-	sin_gamma       = sin(angles(0));
-	cos_beta       = cos(angles(1));
-	sin_beta       = sin(angles(1));
-	cos_alpha       = cos(angles(2));
-	sin_alpha       = sin(angles(2));
+	M_res=CalcObjectPositionMatrix(M_anglesANDshifts);
 
-	res(0,0)=cos_alpha*cos_beta;
-	res(1,0)=-sin_gamma*sin_beta*cos_alpha+cos_gamma*sin_alpha;
-	res(2,0)=cos_gamma*sin_beta*cos_alpha+sin_gamma*sin_alpha;
-	res(0,1)=-cos_beta * sin_alpha;
-	res(1,1)=sin_gamma*sin_beta*sin_alpha+cos_gamma*cos_alpha;
-	res(2,1)=-cos_gamma*sin_beta*sin_alpha+sin_gamma*cos_alpha;
-	res(0,2)=-sin_beta;
-	res(1,2)=-sin_gamma*cos_beta;
-	res(2,2)=cos_gamma*cos_beta;
+	for(int i=0;i<4;i++)
+		for(int j=0;j<4;j++)
+			res(i,j)=M_res(i,j);
 
-	res(0,3)=shifts(0);
-	res(1,3)=shifts(1);
-	res(2,3)=shifts(2);
-
-	res(3,0)=0;
-	res(3,1)=0;
-	res(3,2)=0;
-	res(3,3)=1;
-
-  MDMatrix<double> ortrotation,rotation;
-  res.Split(rotation,0,2,0,2);
-  rotation.Orthogonolize(ortrotation);
-  res.Merge(ortrotation,0,2,0,2);
-
- return res;
+	return res;
 }
 
 //3.2!!!
@@ -292,38 +211,22 @@ template<class T>
 MDMatrix<T> CalcObjectPositionMatrixD(const MDMatrix<T> &anglesANDshifts)
 {
 	MDMatrix<T> res(4,4);
-
-    MDVector<T> AnS(6);
+	MMatrix<T,4,4> M_res;
+	MVector<T,6> M_anglesANDshifts;
+	MDVector<T> AnS(6);
     if(anglesANDshifts.GetCols()==1) AnS=anglesANDshifts;
     else AnS=anglesANDshifts.Transpose();
 
-	T cos_gamma, sin_gamma, cos_beta, sin_beta, cos_alpha, sin_alpha;
-	cos_gamma       = cos(AnS(3));
-	sin_gamma       = sin(AnS(3));
-	cos_beta       = cos(AnS(4));
-	sin_beta       = sin(AnS(4));
-	cos_alpha       = cos(AnS(5));
-	sin_alpha       = sin(AnS(5));
+	for(int i=0;i<6;i++)
+		M_anglesANDshifts(i)=AnS(i);
 
-	res(0,0)=cos_alpha*cos_beta;
-	res(1,0)=-sin_gamma*sin_beta*cos_alpha+cos_gamma*sin_alpha;
-	res(2,0)=cos_gamma*sin_beta*cos_alpha+sin_gamma*sin_alpha;
-	res(0,1)=-cos_beta * sin_alpha;
-	res(1,1)=sin_gamma*sin_beta*sin_alpha+cos_gamma*cos_alpha;
-	res(2,1)=-cos_gamma*sin_beta*sin_alpha+sin_gamma*cos_alpha;
-	res(0,2)=-sin_beta;
-	res(1,2)=-sin_gamma*cos_beta;
-	res(2,2)=cos_gamma*cos_beta;
+	M_res=CalcObjectPositionMatrix(M_anglesANDshifts);
 
-	res(0,3)=AnS(0);
-	res(1,3)=AnS(1);
-	res(2,3)=AnS(2);
+	for(int i=0;i<4;i++)
+		for(int j=0;j<4;j++)
+			res(i,j)=M_res(i,j);
 
-	res(3,0)=0;
-	res(3,1)=0;
-	res(3,2)=0;
-	res(3,3)=1;
- return res;
+	return res;
 }
 
 
@@ -332,74 +235,33 @@ template<class T>
 MMatrix<T,4,4> CalcObjectPositionMatrixM(const MDMatrix<T> &anglesANDshifts)
 {
 	MMatrix<T,4,4> res;
-
-    MDVector<T> AnS(6);
+	MVector<T,6> M_anglesANDshifts;
+	MDVector<T> AnS(6);
     if(anglesANDshifts.GetCols()==1) AnS=anglesANDshifts;
     else AnS=anglesANDshifts.Transpose();
+	for(int i=0;i<6;i++)
+		M_anglesANDshifts(i)=AnS(i);
 
-	T cos_gamma, sin_gamma, cos_beta, sin_beta, cos_alpha, sin_alpha;
-	cos_gamma       = cos(AnS(3));
-	sin_gamma       = sin(AnS(3));
-	cos_beta       = cos(AnS(4));
-	sin_beta       = sin(AnS(4));
-	cos_alpha       = cos(AnS(5));
-	sin_alpha       = sin(AnS(5));
+	res=CalcObjectPositionMatrix(M_anglesANDshifts);
 
-	res(0,0)=cos_alpha*cos_beta;
-	res(1,0)=-sin_gamma*sin_beta*cos_alpha+cos_gamma*sin_alpha;
-	res(2,0)=cos_gamma*sin_beta*cos_alpha+sin_gamma*sin_alpha;
-	res(0,1)=-cos_beta * sin_alpha;
-	res(1,1)=sin_gamma*sin_beta*sin_alpha+cos_gamma*cos_alpha;
-	res(2,1)=-cos_gamma*sin_beta*sin_alpha+sin_gamma*cos_alpha;
-	res(0,2)=-sin_beta;
-	res(1,2)=-sin_gamma*cos_beta;
-	res(2,2)=cos_gamma*cos_beta;
-
-	res(0,3)=AnS(0);
-	res(1,3)=AnS(1);
-	res(2,3)=AnS(2);
-
-	res(3,0)=0;
-	res(3,1)=0;
-	res(3,2)=0;
-	res(3,3)=1;
- return res;
+	return res;
 }
 
 //4.1
 template<class T>
 void CalcObjectAnglesAndShiftsD(const MDMatrix<T> &ExtMat, MDVector<T> &angles, MDVector<T> &shifts)
 {
-	T C, trX, trY;
+	MVector<T,6> M_anglesANDshifts;
+	MMatrix<T,4,4> M_ExtMat;
+	for(int i=0;i<4;i++)
+		for(int j=0;j<4;j++)
+			M_ExtMat(i,j)=ExtMat(i,j);
 
-	angles(1) = -asin( ExtMat(0,2));        // Вычисления угла вращения вокруг оси Y 
-    C           =  cos( angles(1) );
-
-    if ( fabs( C ) > 0.005 )          // "Шарнирный замок" (Gimball lock)? 
-      {
-      trX      =  ExtMat(2,2) / C;        // Если нет, то получаем угол вращения вокруг оси X 
-      trY      = -ExtMat(1,2) / C;
-
-      angles(0)  = atan2( trY, trX );
-
-      trX      =  ExtMat(0,0) / C;            // Получаем угол вращения вокруг оси  Z 
-      trY      =  -ExtMat(0,1) / C;
-
-      angles(2)  = atan2( trY, trX );
-      }
-    else                                 // Имеет место "Шарнирный замок" (Gimball lock) 
-      {
-      angles(0)  = 0;                      // Угол вращения вокруг оси X приравниваем к нулю 
-
-      trX      = ExtMat(1,1);                 // И вычисляем угол вращения вокруг оси Z 
-      trY      = ExtMat(1,0);
-
-      angles(2)  = atan2( trY, trX );
-      }
-
-	shifts(0)=ExtMat(0,3);
-	shifts(1)=ExtMat(1,3);
-	shifts(2)=ExtMat(2,3);
+	CalcObjectAnglesAndShifts(M_ExtMat, M_anglesANDshifts);
+	for(int i=0;i<3;i++)
+		shifts(i)=M_anglesANDshifts(i);
+	for(int i=3;i<6;i++)
+		angles(i-3)=M_anglesANDshifts(i);
 
 	return;
 }
@@ -408,39 +270,18 @@ void CalcObjectAnglesAndShiftsD(const MDMatrix<T> &ExtMat, MDVector<T> &angles, 
 template<class T>
 void CalcObjectAnglesAndShiftsD(const MDMatrix<T> &ExtMat, MDMatrix<T> &anglesANDshifts)
 {
-	T C, trX, trY;
     MDVector<T> AnS(6);
-    if(anglesANDshifts.GetCols()==1) AnS=anglesANDshifts;
-    else AnS=anglesANDshifts.Transpose();
+	MVector<T,6> M_anglesANDshifts;
+	MMatrix<T,4,4> M_ExtMat;
 
-	AnS(4) = -asin( ExtMat(0,2));        // Вычисления угла вращения вокруг оси Y 
-    C           =  cos( AnS(4) );
+	for(int i=0;i<4;i++)
+		for(int j=0;j<4;j++)
+			M_ExtMat(i,j)=ExtMat(i,j);
 
-    if ( fabs( C ) > 0.005 )          // "Шарнирный замок" (Gimball lock)? 
-      {
-      trX      =  ExtMat(2,2) / C;        // Если нет, то получаем угол вращения вокруг оси X 
-      trY      = -ExtMat(1,2) / C;
+	CalcObjectAnglesAndShifts(M_ExtMat, M_anglesANDshifts);
 
-      AnS(3)  = atan2( trY, trX );
-
-      trX      =  ExtMat(0,0) / C;            // Получаем угол вращения вокруг оси  Z 
-      trY      =  -ExtMat(0,1) / C;
-
-      AnS(5)  = atan2( trY, trX );
-      }
-    else                                 // Имеет место "Шарнирный замок" (Gimball lock) 
-      {
-      AnS(3)  = 0;                      // Угол вращения вокруг оси X приравниваем к нулю 
-
-      trX      = ExtMat(1,1);                 // И вычисляем угол вращения вокруг оси Z 
-      trY      = ExtMat(1,0);
-
-      AnS(5)  = atan2( trY, trX );
-      }
-
-	AnS(0)=ExtMat(0,3);
-	AnS(1)=ExtMat(1,3);
-	AnS(2)=ExtMat(2,3);
+	for(int i=0;i<6;i++)
+		AnS(i)=M_anglesANDshifts(i);
 
     if(anglesANDshifts.GetCols()==1) anglesANDshifts=AnS;
     else anglesANDshifts=AnS.Transpose();
