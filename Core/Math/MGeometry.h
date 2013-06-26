@@ -58,7 +58,7 @@ void InverseEcc(const MMatrix<T,4,4>& source_ecc,MMatrix<T,4,4>& dest_ecc)
 // Углы передаются в радианах, расстояния в метрах
 //1.1
 template<class T>
-MMatrix<T,4,4> CalcObjectPositionMatrix(const MVector<T,3> &angles, const MVector<T,3> &shifts)
+MMatrix<T,4,4> CalcObjectPositionMatrix(const MVector<T,3> &angles, const MVector<T,3> &shifts, int seqmat=1)
 {
 	MMatrix<T,4,4> res;
 	MVector<T,6> anglesANDshifts;
@@ -66,13 +66,13 @@ MMatrix<T,4,4> CalcObjectPositionMatrix(const MVector<T,3> &angles, const MVecto
 		anglesANDshifts(i)=shifts(i);
 	for(int i=3;i<6;i++)
 		anglesANDshifts(i)=angles(i-3);
-	res=CalcObjectPositionMatrix(anglesANDshifts);
+	res=CalcObjectPositionMatrix(anglesANDshifts, seqmat);
 	return res;
 }
 
 //1.2!!!
 template<class T>
-MMatrix<T,4,4> CalcObjectPositionMatrix(const MVector<T,6> &anglesANDshifts)
+MMatrix<T,4,4> CalcObjectPositionMatrix(const MVector<T,6> &anglesANDshifts, int seqmat=1)
 {
  MMatrix<T,4,4> res;
 
@@ -99,7 +99,20 @@ MMatrix<T,4,4> CalcObjectPositionMatrix(const MVector<T,6> &anglesANDshifts)
 	Mz(2,0)=0;		   Mz(2,1)=0;			Mz(2,2)=1;
 
 	//!!!Порядок перемножения!!!
-	M=Mx*My*Mz;
+	switch (seqmat){
+	case 1:
+	M=Mx*My*Mz; break;
+	case 2:
+	M=Mx*Mz*My; break;
+	case 3:
+	M=My*Mx*Mz; break;
+	case 4:
+	M=My*Mz*Mx; break;
+	case 5:
+	M=Mz*Mx*My; break;
+	case 6:
+	M=Mz*My*Mx; break;
+	}
 	//!!!!!!
 
 	for(int i=0;i<3;i++)
@@ -119,10 +132,10 @@ MMatrix<T,4,4> CalcObjectPositionMatrix(const MVector<T,6> &anglesANDshifts)
 
 //2.1
 template<class T>
-void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,3> &angles, MVector<T,3> &shifts)
+void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,3> &angles, MVector<T,3> &shifts, int seqmat=1)
 {
     MVector<T,6> anglesANDshifts;
-	CalcObjectAnglesAndShifts(ExtMat, anglesANDshifts)
+	CalcObjectAnglesAndShifts(ExtMat, anglesANDshifts, seqmat)
 	for(int i=0;i<3;i++)
 		shifts(i)=anglesANDshifts(i);
 	for(int i=3;i<6;i++)
@@ -132,25 +145,30 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,3> &angle
 
 //2.2!!!
 template<class T>
-void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &anglesANDshifts)
+void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &anglesANDshifts, int seqmat=1)
 {
 	T C, trX, trY;
 
-	anglesANDshifts(4) = -asin( -ExtMat(0,2));        // Вычисления угла вращения вокруг оси Y 
-    C           =  cos( anglesANDshifts(4) );
+		//!!!Порядок перемножения!!!
+	switch (seqmat)
+	{
+	case 1:
+	{
+		anglesANDshifts(4) = asin( ExtMat(0,2));        // Вычисления угла вращения вокруг оси Y 
+		C = cos( anglesANDshifts(4) );
 
-    if ( fabs( C ) > 0.005 )          // "Шарнирный замок" (Gimball lock)? 
-      {
-      trX      =  ExtMat(2,2) / C;        // Если нет, то получаем угол вращения вокруг оси X 
-      trY      = -ExtMat(1,2) / C;
+		if ( fabs( C ) > 0.005 )          // "Шарнирный замок" (Gimball lock)? 
+		{
+			trX      =  ExtMat(2,2) / C;        // Если нет, то получаем угол вращения вокруг оси X 
+			trY      = -ExtMat(1,2) / C;
 
-      anglesANDshifts(3)  = atan2( trY, trX );
+		anglesANDshifts(3)  = atan2( trY, trX );
 
-      trX      =  ExtMat(0,0) / C;            // Получаем угол вращения вокруг оси  Z 
-      trY      =  -ExtMat(0,1) / C;
+		trX      =  ExtMat(0,0) / C;            // Получаем угол вращения вокруг оси  Z 
+		trY      =  -ExtMat(0,1) / C;
 
-      anglesANDshifts(5)  = atan2( trY, trX );
-      }
+		anglesANDshifts(5)  = atan2( trY, trX );
+		}
     else                                 // Имеет место "Шарнирный замок" (Gimball lock) 
       {
       anglesANDshifts(3)  = 0;                      // Угол вращения вокруг оси X приравниваем к нулю 
@@ -160,6 +178,151 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
 
       anglesANDshifts(5)  = atan2( trY, trX );
       }
+	break;
+	} 
+	case 2:
+	{
+		anglesANDshifts(5) = -asin( ExtMat(0,1));        // Вычисления угла вращения вокруг оси Z 
+		C = cos( anglesANDshifts(5) );
+
+		if ( fabs( C ) > 0.005 )          // "Шарнирный замок" (Gimball lock)? 
+		{
+			trX      =  ExtMat(0,0) / C;        // Если нет, то получаем угол вращения вокруг оси Y
+			trY      = ExtMat(0,2) / C;
+
+		anglesANDshifts(4)  = atan2( trY, trX );
+
+		trX      =  ExtMat(1,1) / C;            // Получаем угол вращения вокруг оси  X
+		trY      =  ExtMat(2,1) / C;
+
+		anglesANDshifts(3)  = atan2( trY, trX );
+		}
+	else                                 // Имеет место "Шарнирный замок" (Gimball lock) 
+    {
+      anglesANDshifts(3)  = 0;                      // Угол вращения вокруг оси X приравниваем к нулю 
+
+      trX      = ExtMat(2,2);                 // И вычисляем угол вращения вокруг оси Y 
+      trY      = -ExtMat(2,0);
+
+      anglesANDshifts(4)  = atan2( trY, trX );
+    }
+	break;
+	} 
+	case 3:
+	{
+		anglesANDshifts(3) = -asin( ExtMat(1,2));
+		C = cos( anglesANDshifts(3) );
+
+		if ( fabs( C ) > 0.005 )
+		{
+			trX      =  ExtMat(1,1) / C;
+			trY      = ExtMat(1,0) / C;
+
+		anglesANDshifts(5)  = atan2( trY, trX );
+
+		trX      =  ExtMat(2,2) / C;
+		trY      =  ExtMat(0,2) / C;
+
+		anglesANDshifts(4)  = atan2( trY, trX );
+		}
+    else
+      {
+      anglesANDshifts(4)  = 0;
+
+      trX      = ExtMat(0,0);
+      trY      = -ExtMat(0,1);
+
+      anglesANDshifts(5)  = atan2( trY, trX );
+      }
+	break;
+	} 
+	case 4:
+	{
+		anglesANDshifts(5) = asin( ExtMat(1,0));
+		C = cos( anglesANDshifts(5) );
+
+		if ( fabs( C ) > 0.005 )
+		{
+			trX      =  ExtMat(1,1) / C;
+			trY      = -ExtMat(1,2) / C;
+
+		anglesANDshifts(3)  = atan2( trY, trX );
+
+		trX      =  ExtMat(0,0) / C;
+		trY      =  -ExtMat(2,0) / C;
+
+		anglesANDshifts(4)  = atan2( trY, trX );
+		}
+    else
+      {
+      anglesANDshifts(4)  = 0;
+
+      trX      = ExtMat(2,2);
+      trY      = ExtMat(2,1);
+
+      anglesANDshifts(3)  = atan2( trY, trX );
+      }
+	break;
+	} 
+	case 5:
+	{
+		anglesANDshifts(3) = asin( ExtMat(2,1));
+		C = cos( anglesANDshifts(3) );
+
+		if ( fabs( C ) > 0.005 )
+		{
+			trX      =  ExtMat(2,2) / C;
+			trY      = -ExtMat(2,0) / C;
+
+		anglesANDshifts(4)  = atan2( trY, trX );
+
+		trX      =  ExtMat(1,1) / C;
+		trY      =  -ExtMat(0,1) / C;
+
+		anglesANDshifts(5)  = atan2( trY, trX );
+		}
+    else
+      {
+      anglesANDshifts(5)  = 0;
+
+      trX      = ExtMat(0,0);
+      trY      = ExtMat(0,2);
+
+      anglesANDshifts(4)  = atan2( trY, trX );
+      }
+	break;
+	} 
+	case 6:
+	{
+		anglesANDshifts(4) = -asin( ExtMat(2,0));
+		C = cos( anglesANDshifts(4) );
+
+		if ( fabs( C ) > 0.005 )
+		{
+			trX      =  ExtMat(2,2) / C;
+			trY      = ExtMat(2,1) / C;
+
+		anglesANDshifts(3)  = atan2( trY, trX );
+
+		trX      =  ExtMat(0,0) / C;
+		trY      =  ExtMat(1,0) / C;
+
+		anglesANDshifts(5)  = atan2( trY, trX );
+		}
+    else
+      {
+      anglesANDshifts(5)  = 0;
+
+      trX      = ExtMat(1,1);
+      trY      = -ExtMat(1,2);
+
+      anglesANDshifts(3)  = atan2( trY, trX );
+      }
+	break;
+	} 
+	}
+	//!!!!!!
+
 
 	anglesANDshifts(0)=ExtMat(0,3);
 	anglesANDshifts(1)=ExtMat(1,3);
@@ -170,12 +333,12 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
 
 //2.2.1!!! //MMatrix-->MDVector
 template<class T>
-void CalcObjectAnglesAndShiftsM(const MMatrix<T,4,4> &ExtMat, MDMatrix<T> &anglesANDshifts)
+void CalcObjectAnglesAndShiftsM(const MMatrix<T,4,4> &ExtMat, MDMatrix<T> &anglesANDshifts, int seqmat=1)
 {
 	MDVector<T> AnS(6);
 
 	MVector<T,6> M_anglesANDshifts;
-	CalcObjectAnglesAndShifts(ExtMat, M_anglesANDshifts);
+	CalcObjectAnglesAndShifts(ExtMat, M_anglesANDshifts, seqmat);
 	for(int i=0;i<6;i++)
 		AnS(i)=M_anglesANDshifts(i);
 
@@ -187,7 +350,7 @@ void CalcObjectAnglesAndShiftsM(const MMatrix<T,4,4> &ExtMat, MDMatrix<T> &angle
 
 //3.1
 template<class T>
-MDMatrix<T> CalcObjectPositionMatrixD(const MDVector<T> &angles, const MDVector<T> &shifts)
+MDMatrix<T> CalcObjectPositionMatrixD(const MDVector<T> &angles, const MDVector<T> &shifts, int seqmat=1)
 {
 	MDMatrix<T> res(4,4);
 	MMatrix<T,4,4> M_res;
@@ -197,7 +360,7 @@ MDMatrix<T> CalcObjectPositionMatrixD(const MDVector<T> &angles, const MDVector<
 	for(int i=3;i<6;i++)
 		M_anglesANDshifts(i)=angles(i-3);
 
-	M_res=CalcObjectPositionMatrix(M_anglesANDshifts);
+	M_res=CalcObjectPositionMatrix(M_anglesANDshifts, seqmat);
 
 	for(int i=0;i<4;i++)
 		for(int j=0;j<4;j++)
@@ -208,7 +371,7 @@ MDMatrix<T> CalcObjectPositionMatrixD(const MDVector<T> &angles, const MDVector<
 
 //3.2!!!
 template<class T>
-MDMatrix<T> CalcObjectPositionMatrixD(const MDMatrix<T> &anglesANDshifts)
+MDMatrix<T> CalcObjectPositionMatrixD(const MDMatrix<T> &anglesANDshifts, int seqmat=1)
 {
 	MDMatrix<T> res(4,4);
 	MMatrix<T,4,4> M_res;
@@ -220,7 +383,7 @@ MDMatrix<T> CalcObjectPositionMatrixD(const MDMatrix<T> &anglesANDshifts)
 	for(int i=0;i<6;i++)
 		M_anglesANDshifts(i)=AnS(i);
 
-	M_res=CalcObjectPositionMatrix(M_anglesANDshifts);
+	M_res=CalcObjectPositionMatrix(M_anglesANDshifts, seqmat);
 
 	for(int i=0;i<4;i++)
 		for(int j=0;j<4;j++)
@@ -232,7 +395,7 @@ MDMatrix<T> CalcObjectPositionMatrixD(const MDMatrix<T> &anglesANDshifts)
 
 //3.2.1!!! //for SetEcc //MMatrix<--MDVector
 template<class T>
-MMatrix<T,4,4> CalcObjectPositionMatrixM(const MDMatrix<T> &anglesANDshifts)
+MMatrix<T,4,4> CalcObjectPositionMatrixM(const MDMatrix<T> &anglesANDshifts, int seqmat=1)
 {
 	MMatrix<T,4,4> res;
 	MVector<T,6> M_anglesANDshifts;
@@ -242,14 +405,14 @@ MMatrix<T,4,4> CalcObjectPositionMatrixM(const MDMatrix<T> &anglesANDshifts)
 	for(int i=0;i<6;i++)
 		M_anglesANDshifts(i)=AnS(i);
 
-	res=CalcObjectPositionMatrix(M_anglesANDshifts);
+	res=CalcObjectPositionMatrix(M_anglesANDshifts, seqmat);
 
 	return res;
 }
 
 //4.1
 template<class T>
-void CalcObjectAnglesAndShiftsD(const MDMatrix<T> &ExtMat, MDVector<T> &angles, MDVector<T> &shifts)
+void CalcObjectAnglesAndShiftsD(const MDMatrix<T> &ExtMat, MDVector<T> &angles, MDVector<T> &shifts, int seqmat=1)
 {
 	MVector<T,6> M_anglesANDshifts;
 	MMatrix<T,4,4> M_ExtMat;
@@ -257,7 +420,7 @@ void CalcObjectAnglesAndShiftsD(const MDMatrix<T> &ExtMat, MDVector<T> &angles, 
 		for(int j=0;j<4;j++)
 			M_ExtMat(i,j)=ExtMat(i,j);
 
-	CalcObjectAnglesAndShifts(M_ExtMat, M_anglesANDshifts);
+	CalcObjectAnglesAndShifts(M_ExtMat, M_anglesANDshifts, seqmat);
 	for(int i=0;i<3;i++)
 		shifts(i)=M_anglesANDshifts(i);
 	for(int i=3;i<6;i++)
@@ -268,7 +431,7 @@ void CalcObjectAnglesAndShiftsD(const MDMatrix<T> &ExtMat, MDVector<T> &angles, 
 
 //4.2!!!
 template<class T>
-void CalcObjectAnglesAndShiftsD(const MDMatrix<T> &ExtMat, MDMatrix<T> &anglesANDshifts)
+void CalcObjectAnglesAndShiftsD(const MDMatrix<T> &ExtMat, MDMatrix<T> &anglesANDshifts, int seqmat=1)
 {
     MDVector<T> AnS(6);
 	MVector<T,6> M_anglesANDshifts;
@@ -278,7 +441,7 @@ void CalcObjectAnglesAndShiftsD(const MDMatrix<T> &ExtMat, MDMatrix<T> &anglesAN
 		for(int j=0;j<4;j++)
 			M_ExtMat(i,j)=ExtMat(i,j);
 
-	CalcObjectAnglesAndShifts(M_ExtMat, M_anglesANDshifts);
+	CalcObjectAnglesAndShifts(M_ExtMat, M_anglesANDshifts, seqmat);
 
 	for(int i=0;i<6;i++)
 		AnS(i)=M_anglesANDshifts(i);
