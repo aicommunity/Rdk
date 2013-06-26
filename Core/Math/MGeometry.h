@@ -100,8 +100,6 @@ MMatrix<T,4,4> CalcObjectPositionMatrix(const MVector<T,6> &anglesANDshifts, int
 
 	//!!!Порядок перемножения!!!
 	switch (seqmat){
-	case 1:
-	M=Mx*My*Mz; break;
 	case 2:
 	M=Mx*Mz*My; break;
 	case 3:
@@ -112,6 +110,7 @@ MMatrix<T,4,4> CalcObjectPositionMatrix(const MVector<T,6> &anglesANDshifts, int
 	M=Mz*Mx*My; break;
 	case 6:
 	M=Mz*My*Mx; break;
+	default: M=Mx*My*Mz;
 	}
 	//!!!!!!
 
@@ -152,34 +151,6 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
 		//!!!Порядок перемножения!!!
 	switch (seqmat)
 	{
-	case 1:
-	{
-		anglesANDshifts(4) = asin( ExtMat(0,2));        // Вычисления угла вращения вокруг оси Y 
-		C = cos( anglesANDshifts(4) );
-
-		if ( fabs( C ) > 0.005 )          // "Шарнирный замок" (Gimball lock)? 
-		{
-			trX      =  ExtMat(2,2) / C;        // Если нет, то получаем угол вращения вокруг оси X 
-			trY      = -ExtMat(1,2) / C;
-
-		anglesANDshifts(3)  = atan2( trY, trX );
-
-		trX      =  ExtMat(0,0) / C;            // Получаем угол вращения вокруг оси  Z 
-		trY      =  -ExtMat(0,1) / C;
-
-		anglesANDshifts(5)  = atan2( trY, trX );
-		}
-    else                                 // Имеет место "Шарнирный замок" (Gimball lock) 
-      {
-      anglesANDshifts(3)  = 0;                      // Угол вращения вокруг оси X приравниваем к нулю 
-
-      trX      = ExtMat(1,1);                 // И вычисляем угол вращения вокруг оси Z 
-      trY      = ExtMat(1,0);
-
-      anglesANDshifts(5)  = atan2( trY, trX );
-      }
-	break;
-	} 
 	case 2:
 	{
 		anglesANDshifts(5) = -asin( ExtMat(0,1));        // Вычисления угла вращения вокруг оси Z 
@@ -320,9 +291,35 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
       }
 	break;
 	} 
+	default:
+	{
+		anglesANDshifts(4) = asin( ExtMat(0,2));        // Вычисления угла вращения вокруг оси Y 
+		C = cos( anglesANDshifts(4) );
+
+		if ( fabs( C ) > 0.005 )          // "Шарнирный замок" (Gimball lock)? 
+		{
+			trX      =  ExtMat(2,2) / C;        // Если нет, то получаем угол вращения вокруг оси X 
+			trY      = -ExtMat(1,2) / C;
+
+		anglesANDshifts(3)  = atan2( trY, trX );
+
+		trX      =  ExtMat(0,0) / C;            // Получаем угол вращения вокруг оси  Z 
+		trY      =  -ExtMat(0,1) / C;
+
+		anglesANDshifts(5)  = atan2( trY, trX );
+		}
+    else                                 // Имеет место "Шарнирный замок" (Gimball lock) 
+      {
+      anglesANDshifts(3)  = 0;                      // Угол вращения вокруг оси X приравниваем к нулю 
+
+      trX      = ExtMat(1,1);                 // И вычисляем угол вращения вокруг оси Z 
+      trY      = ExtMat(1,0);
+
+      anglesANDshifts(5)  = atan2( trY, trX );
+      }
+	} 
 	}
 	//!!!!!!
-
 
 	anglesANDshifts(0)=ExtMat(0,3);
 	anglesANDshifts(1)=ExtMat(1,3);
