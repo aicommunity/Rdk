@@ -14,11 +14,15 @@
 #include "TUVisualController.h"
 #include "TUVisualControllerFormUnit.h"
 #include "TUVisualControllerFrameUnit.h"
+#include <Vcl.ExtCtrls.hpp>
 //---------------------------------------------------------------------------
 class TVideoGrabberControlForm : public TUVisualControllerForm
 {
 __published:	// IDE-managed Components
 	TVideoGrabberControlFrame *VideoGrabberControlFrame;
+	TPanel *Panel1;
+	TButton *CloseButton;
+	void __fastcall CloseButtonClick(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
 	__fastcall TVideoGrabberControlForm(TComponent* Owner);

@@ -54,3 +54,10 @@ TVideoGrabberControlForm* TVideoGrabberControlForm::New(TComponent *owner)
 
 
 
+void __fastcall TVideoGrabberControlForm::CloseButtonClick(TObject *Sender)
+{
+ VideoGrabberControlFrame->VCapturePageControlChange(Sender);
+ Hide();
+}
+//---------------------------------------------------------------------------
+
