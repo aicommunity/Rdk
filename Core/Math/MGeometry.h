@@ -71,6 +71,18 @@ MMatrix<T,4,4> CalcObjectPositionMatrix(const MVector<T,3> &angles, const MVecto
 }
 
 //1.2!!!
+//    1:
+//    M=Mx*My*Mz;
+//    2:
+//    M=Mx*Mz*My;
+//    3:
+//    M=My*Mx*Mz;
+//    4:
+//    M=My*Mz*Mx;
+//    5:
+//    M=Mz*Mx*My;
+//    6:
+//    M=Mz*My*Mx;
 template<class T>
 MMatrix<T,4,4> CalcObjectPositionMatrix(const MVector<T,6> &anglesANDshifts, int seqmat=1)
 {
@@ -143,6 +155,18 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,3> &angle
 }
 
 //2.2!!!
+//    1:
+//    M=Mx*My*Mz;
+//    2:
+//    M=Mx*Mz*My;
+//    3:
+//    M=My*Mx*Mz;
+//    4:
+//    M=My*Mz*Mx;
+//    5:
+//    M=Mz*Mx*My;
+//    6:
+//    M=Mz*My*Mx;
 template<class T>
 void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &anglesANDshifts, int seqmat=1)
 {
