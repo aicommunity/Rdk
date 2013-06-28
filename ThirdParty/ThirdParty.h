@@ -10,4 +10,7 @@
 #ifdef RDK_UNICODE_RUN
 #undef _UNICODE
 #undef RDK_UNICODE_RUN
-#endif
+#endif             
+
+#define CURL_STATICLIB
+#include "curl/include/curl/curl.h"

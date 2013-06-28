@@ -966,6 +966,7 @@ bool UContainer::ChangeComponentPosition(int index, int step)
 // Components.insert(Components.begin()+result+1,Components[index]);
 // Components.erase(Components.begin()+index);
 // PComponents=&Components[0];
+ return true;
 }
 
 bool UContainer::ChangeComponentPosition(const NameT &name, int step)

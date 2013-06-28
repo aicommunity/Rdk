@@ -214,7 +214,7 @@ template<class T>
 void MCamera<T>::Convert3Dto2DGeometry(const MDMatrix<T> &geometry_3d, MDMatrix<T> &geometry_2d)
 {
  geometry_2d.Resize(geometry_3d.GetRows(),2);
- for(size_t i=0;i<geometry_3d.GetRows();i++)
+ for(int i=0;i<geometry_3d.GetRows();i++)
  {
   MVector<T,4> v;
   for(int j=0;j<3;j++)
