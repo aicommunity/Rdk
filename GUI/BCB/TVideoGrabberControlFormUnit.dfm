@@ -31,17 +31,16 @@ object VideoGrabberControlForm: TVideoGrabberControlForm
     ParentDoubleBuffered = False
     ParentFont = False
     TabOrder = 0
-    ExplicitWidth = 584
-    ExplicitHeight = 292
+    ExplicitWidth = 599
+    ExplicitHeight = 299
     inherited VCapturePageControl: TPageControl
       Width = 599
       Height = 299
-      ExplicitWidth = 584
-      ExplicitHeight = 292
+      ActivePage = VideoGrabberControlFrame.ImageSequenceTabSheet
+      ExplicitWidth = 599
+      ExplicitHeight = 299
       inherited DeviceTabSheet: TTabSheet
         inherited VDCapturePanel: TPanel
-          Width = 591
-          Height = 268
           inherited ModeLabel: TLabel
             Width = 706
             ExplicitWidth = 560
@@ -64,97 +63,61 @@ object VideoGrabberControlForm: TVideoGrabberControlForm
           end
           inherited VideoSizeComboBox: TComboBox
             Width = 706
-            ExplicitWidth = 560
+            ExplicitWidth = 706
           end
           inherited InputComboBox: TComboBox
             Width = 706
-            ExplicitWidth = 560
+            ExplicitWidth = 706
           end
           inherited DeviceComboBox: TComboBox
             Width = 706
-            ExplicitWidth = 560
+            ExplicitWidth = 706
           end
           inherited VideoSubTypeComboBox: TComboBox
             Width = 706
-            ExplicitWidth = 560
+            ExplicitWidth = 706
           end
           inherited AnalogVideoStandardComboBox: TComboBox
             Width = 706
-            ExplicitWidth = 560
+            ExplicitWidth = 706
           end
         end
       end
       inherited IPCameraTabSheet: TTabSheet
-        ExplicitWidth = 576
-        ExplicitHeight = 261
         inherited Panel1: TPanel
-          Width = 591
-          Height = 268
-          ExplicitWidth = 576
-          ExplicitHeight = 261
           inherited Label4: TLabel
-            Width = 323
             ExplicitWidth = 308
           end
           inherited Label5: TLabel
-            Width = 575
             ExplicitWidth = 560
           end
           inherited Label6: TLabel
-            Width = 575
             ExplicitWidth = 560
           end
           inherited Label8: TLabel
             Left = 280
-            Width = 234
+            Width = 88
             ExplicitLeft = 280
             ExplicitWidth = 219
           end
-          inherited IPCameraUrlEdit: TEdit
-            Width = 575
-            ExplicitWidth = 560
-          end
-          inherited IPCameraUserNameEdit: TEdit
-            Width = 575
-            ExplicitWidth = 560
-          end
-          inherited IPCameraUserPasswordEdit: TEdit
-            Width = 575
-            ExplicitWidth = 560
-          end
           inherited IPCameraControlPostfixEdit: TEdit
             Left = 280
-            Width = 303
+            Width = 157
             ExplicitLeft = 280
-            ExplicitWidth = 288
+            ExplicitWidth = 157
           end
         end
       end
       inherited VideoFileTabSheet: TTabSheet
-        ExplicitWidth = 576
-        ExplicitHeight = 261
         inherited VFCapturePanel: TPanel
-          Width = 591
-          Height = 268
-          ExplicitWidth = 576
-          ExplicitHeight = 261
           inherited VideoFileNameLabel: TLabel
-            Width = 575
             ExplicitWidth = 560
-          end
-          inherited VFNameEdit: TEdit
-            Width = 490
-            ExplicitWidth = 475
-          end
-          inherited VFBrowseButton: TButton
-            Left = 504
-            ExplicitLeft = 489
           end
         end
       end
       inherited PictureFileTabSheet: TTabSheet
-        ExplicitWidth = 576
-        ExplicitHeight = 261
+        ExplicitWidth = 591
+        ExplicitHeight = 268
         inherited Label3: TLabel
           Width = 1099
           ExplicitWidth = 560
@@ -174,22 +137,22 @@ object VideoGrabberControlForm: TVideoGrabberControlForm
       end
       inherited ImageSequenceTabSheet: TTabSheet
         inherited Label7: TLabel
-          Width = 837
+          Width = 983
           ExplicitWidth = 560
         end
         inherited ImageSequencePathEdit: TEdit
-          Width = 496
-          ExplicitWidth = 496
+          Width = 491
+          ExplicitWidth = 491
         end
         inherited ImageSequencePathCheckBox: TCheckBox
           TabOrder = 2
         end
         inherited ImageSequencePathBrowseButton: TButton
-          Left = 510
+          Left = 505
           Top = 21
           Height = 23
           TabOrder = 1
-          ExplicitLeft = 510
+          ExplicitLeft = 505
           ExplicitTop = 21
           ExplicitHeight = 23
         end
@@ -203,14 +166,15 @@ object VideoGrabberControlForm: TVideoGrabberControlForm
     Height = 41
     Align = alBottom
     TabOrder = 1
-    ExplicitLeft = 272
-    ExplicitTop = 272
-    ExplicitWidth = 185
+    DesignSize = (
+      599
+      41)
     object CloseButton: TButton
       Left = 496
       Top = 8
       Width = 92
       Height = 25
+      Anchors = [akRight, akBottom]
       Caption = 'Apply && Close'
       TabOrder = 0
       OnClick = CloseButtonClick
