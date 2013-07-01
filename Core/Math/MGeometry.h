@@ -97,7 +97,7 @@ MMatrix<T,4,4> CalcObjectPositionMatrix(const MVector<T,6> &anglesANDshifts, int
 	sin_alpha       = sin(anglesANDshifts(5));
 
 	MMatrix<T,3,3> Mx, My, Mz, M;
-	
+
 	Mx(0,0)=1; Mx(0,1)=0;		  Mx(0,2)=0;
 	Mx(1,0)=0; Mx(1,1)=cos_gamma; Mx(1,2)=-sin_gamma;
 	Mx(2,0)=0; Mx(2,1)=sin_gamma; Mx(2,2)=cos_gamma;
@@ -146,7 +146,7 @@ template<class T>
 void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,3> &angles, MVector<T,3> &shifts, int seqmat=1)
 {
     MVector<T,6> anglesANDshifts;
-	CalcObjectAnglesAndShifts(ExtMat, anglesANDshifts, seqmat)
+	CalcObjectAnglesAndShifts(ExtMat, anglesANDshifts, seqmat);
 	for(int i=0;i<3;i++)
 		shifts(i)=anglesANDshifts(i);
 	for(int i=3;i<6;i++)
@@ -177,10 +177,10 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
 	{
 	case 2:
 	{
-		anglesANDshifts(5) = -asin( ExtMat(0,1));        // Вычисления угла вращения вокруг оси Z 
+		anglesANDshifts(5) = -asin( ExtMat(0,1));        // Вычисления угла вращения вокруг оси Z
 		C = cos( anglesANDshifts(5) );
 
-		if ( fabs( C ) > 0.005 )          // "Шарнирный замок" (Gimball lock)? 
+		if ( fabs( C ) > 0.005 )          // "Шарнирный замок" (Gimball lock)?
 		{
 			trX      =  ExtMat(0,0) / C;        // Если нет, то получаем угол вращения вокруг оси Y
 			trY      = ExtMat(0,2) / C;
@@ -192,17 +192,17 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
 
 		anglesANDshifts(3)  = atan2( trY, trX );
 		}
-	else                                 // Имеет место "Шарнирный замок" (Gimball lock) 
+	else                                 // Имеет место "Шарнирный замок" (Gimball lock)
     {
-      anglesANDshifts(3)  = 0;                      // Угол вращения вокруг оси X приравниваем к нулю 
+      anglesANDshifts(3)  = 0;                      // Угол вращения вокруг оси X приравниваем к нулю
 
-      trX      = ExtMat(2,2);                 // И вычисляем угол вращения вокруг оси Y 
+      trX      = ExtMat(2,2);                 // И вычисляем угол вращения вокруг оси Y
       trY      = -ExtMat(2,0);
 
       anglesANDshifts(4)  = atan2( trY, trX );
     }
 	break;
-	} 
+	}
 	case 3:
 	{
 		anglesANDshifts(3) = -asin( ExtMat(1,2));
@@ -230,7 +230,7 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
       anglesANDshifts(5)  = atan2( trY, trX );
       }
 	break;
-	} 
+	}
 	case 4:
 	{
 		anglesANDshifts(5) = asin( ExtMat(1,0));
@@ -258,7 +258,7 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
       anglesANDshifts(3)  = atan2( trY, trX );
       }
 	break;
-	} 
+	}
 	case 5:
 	{
 		anglesANDshifts(3) = asin( ExtMat(2,1));
@@ -286,7 +286,7 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
       anglesANDshifts(4)  = atan2( trY, trX );
       }
 	break;
-	} 
+	}
 	case 6:
 	{
 		anglesANDshifts(4) = -asin( ExtMat(2,0));
@@ -314,34 +314,34 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
       anglesANDshifts(3)  = atan2( trY, trX );
       }
 	break;
-	} 
+	}
 	default:
 	{
-		anglesANDshifts(4) = asin( ExtMat(0,2));        // Вычисления угла вращения вокруг оси Y 
+		anglesANDshifts(4) = asin( ExtMat(0,2));        // Вычисления угла вращения вокруг оси Y
 		C = cos( anglesANDshifts(4) );
 
-		if ( fabs( C ) > 0.005 )          // "Шарнирный замок" (Gimball lock)? 
+		if ( fabs( C ) > 0.005 )          // "Шарнирный замок" (Gimball lock)?
 		{
-			trX      =  ExtMat(2,2) / C;        // Если нет, то получаем угол вращения вокруг оси X 
+			trX      =  ExtMat(2,2) / C;        // Если нет, то получаем угол вращения вокруг оси X
 			trY      = -ExtMat(1,2) / C;
 
 		anglesANDshifts(3)  = atan2( trY, trX );
 
-		trX      =  ExtMat(0,0) / C;            // Получаем угол вращения вокруг оси  Z 
+		trX      =  ExtMat(0,0) / C;            // Получаем угол вращения вокруг оси  Z
 		trY      =  -ExtMat(0,1) / C;
 
 		anglesANDshifts(5)  = atan2( trY, trX );
 		}
-    else                                 // Имеет место "Шарнирный замок" (Gimball lock) 
+    else                                 // Имеет место "Шарнирный замок" (Gimball lock)
       {
-      anglesANDshifts(3)  = 0;                      // Угол вращения вокруг оси X приравниваем к нулю 
+      anglesANDshifts(3)  = 0;                      // Угол вращения вокруг оси X приравниваем к нулю
 
-      trX      = ExtMat(1,1);                 // И вычисляем угол вращения вокруг оси Z 
+      trX      = ExtMat(1,1);                 // И вычисляем угол вращения вокруг оси Z
       trY      = ExtMat(1,0);
 
       anglesANDshifts(5)  = atan2( trY, trX );
       }
-	} 
+	}
 	}
 	//!!!!!!
 
