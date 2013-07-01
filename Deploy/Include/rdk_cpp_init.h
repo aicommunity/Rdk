@@ -71,7 +71,9 @@ std::string& EncodeParameterValue(const T &param_data, std::string& res)
 template<typename T>
 T& ReadParameterValue(const std::string &comp_name, const std::string &param_name, T &res)
 {
- std::string param_value=Model_GetComponentParameterValue(comp_name.c_str(),param_name.c_str());
+ const char *param_value=Model_GetComponentParameterValue(comp_name.c_str(),param_name.c_str());
+ if(!param_value)
+  throw int(1); // TODO здесь исключение
 
  return RDK::DecodeParameterValue(param_value,res);
 }
@@ -87,7 +89,11 @@ T ReadParameterValue(const std::string &comp_name, const std::string &param_name
 template<typename T>
 T& ReadStateValue(const std::string &comp_name, const std::string &state_name, T &res)
 {
- std::string state_value=Model_GetComponentStateValue(comp_name.c_str(),state_name.c_str());
+ T v;
+ const char* state_value=Model_GetComponentStateValue(comp_name.c_str(),state_name.c_str());
+
+ if(!state_value)
+  throw int(1); // TODO здесь исключение
 
  return RDK::DecodeParameterValue(state_value,res);
 }

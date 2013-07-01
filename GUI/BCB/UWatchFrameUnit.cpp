@@ -11,7 +11,7 @@
 #include "rdk_initdll.h"
 #include "myrdk.h"
 //---------------------------------------------------------------------------
-
+#define ISNAN(x) ((x) != (x))
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "TUVisualControllerFrameUnit"
@@ -733,7 +733,11 @@ void __fastcall TUWatchFrame::StepUpdate(void)
    static_cast<TFastLineSeries*>(series)->AutoRepaint=false;
 
 	for(int i=0;i<wd->XYSize;i++)
+	{
+	 if(ISNAN(x[i]) || ISNAN(y[i]))
+	  continue;
 	 series->AddXY(x[i],y[i]+wd->YShift,"",wd->Color);
+	}
    static_cast<TFastLineSeries*>(series)->AutoRepaint=true;
   }
   else
@@ -746,7 +750,11 @@ void __fastcall TUWatchFrame::StepUpdate(void)
 
    static_cast<TFastLineSeries*>(series)->AutoRepaint=false;
    for(int i=0;i<wd->XYSize;i++)
+   {
+	if(ISNAN(x[i]) || ISNAN(y[i]))
+	 continue;
 	series->AddXY(x[i],y[i]+wd->YShift,"",wd->Color);
+   }
 
    Chart1->BottomAxis->Automatic=false;
    if(wd->WatchInterval>0)
