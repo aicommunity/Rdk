@@ -925,7 +925,7 @@ const char * RDK_CALL Model_SaveComponent(const char *stringid, unsigned int par
 
 // Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния из xml
-int RDK_CALL Model_LoadComponent(const char *stringid, char* buffer)
+int RDK_CALL Model_LoadComponent(const char *stringid, const char* buffer)
 {
  return PEngine->Model_LoadComponent(stringid, buffer);
 }

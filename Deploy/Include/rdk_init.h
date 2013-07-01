@@ -560,7 +560,7 @@ RDK_LIB_TYPE const char * RDK_CALL Model_SaveComponent(const char *stringid, uns
 
 // Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния из xml
-RDK_LIB_TYPE int RDK_CALL Model_LoadComponent(const char *stringid, char* buffer);
+RDK_LIB_TYPE int RDK_CALL Model_LoadComponent(const char *stringid, const char* buffer);
 
 // Сохраняет все свойства компонента и его дочерних компонент в xml
 RDK_LIB_TYPE const char * RDK_CALL Model_SaveComponentProperties(const char *stringid, unsigned int type_mask);

@@ -2465,7 +2465,7 @@ const char *  UEngine::Model_SaveComponent(const char *stringid, unsigned int pa
 
 // Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния из xml
-int UEngine::Model_LoadComponent(const char *stringid, char* buffer)
+int UEngine::Model_LoadComponent(const char *stringid, const char* buffer)
 {
  try
  {
