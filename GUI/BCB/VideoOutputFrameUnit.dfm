@@ -16,7 +16,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
     DoubleBuffered = True
     ParentDoubleBuffered = False
     TabOrder = 0
-    ExplicitHeight = 386
     object Image: TImage
       Left = 2
       Top = 15
@@ -75,7 +74,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
       VideoSource_FileOrURL_StartTime = -1
       VideoSource_FileOrURL_StopTime = -1
       OnFrameCaptureCompleted = VideoGrabberFrameCaptureCompleted
-      ExplicitHeight = 369
     end
   end
   object Panel1: TPanel
@@ -85,7 +83,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
     Height = 41
     Align = alBottom
     TabOrder = 1
-    ExplicitTop = 417
     DesignSize = (
       702
       41)
@@ -142,7 +139,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
     Height = 31
     Align = alBottom
     TabOrder = 2
-    ExplicitTop = 386
     DesignSize = (
       702
       31)
@@ -185,8 +181,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
     Height = 35
     Align = alBottom
     TabOrder = 3
-    ExplicitLeft = 17
-    ExplicitTop = 452
     object ShowCentralPointCheckBox: TCheckBox
       Left = 1
       Top = 1

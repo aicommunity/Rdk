@@ -95,6 +95,9 @@ void TVideoOutputFrame::InitByAvi(const String &filename)
 
    VideoGrabber->OpenPlayer();
    Mode=1;
+   UpdateInterfaceFlag=true;
+   TrackBar->Position=0;
+   UpdateInterfaceFlag=false;
 }
 
 // Инициализация фрейма bmp-файлом
@@ -197,6 +200,11 @@ bool TVideoOutputFrame::InitByImageSequence(const String &pathname)
   BmpSource.Clear();
   LastReadSequenceIndex=-1;
  }
+
+ UpdateInterfaceFlag=true;
+ TrackBar->Position=0;
+ CurrentBmpSequenceIndex=0;
+ UpdateInterfaceFlag=false;
  UpdateVideo();
 
  return true;
@@ -1042,6 +1050,9 @@ Graphics::TBitmap *Frame_Bitmap;
 //---------------------------------------------------------------------------
 void __fastcall TVideoOutputFrame::TrackBarChange(TObject *Sender)
 {
+ if(UpdateInterfaceFlag)
+  return;
+
  if(Mode != 4)
  {
   if(!VideoGrabber->InFrameProgressEvent)
