@@ -150,10 +150,10 @@ void TUGEngineControlForm::ASaveParameters(RDK::USerStorageXML &xml)
 	{
 	 if(I->second->ClassNameIs(form->ClassName()))
 	 {
-	  xml.WriteString(string("Caption_")+RDK::sntoa(i+1),AnsiString(I->second->Caption).c_str());
+	  xml.WriteString(string("Caption_")+RDK::sntoa(i+1),AnsiString(form->Caption).c_str());
 	  xml.WriteString(string("Type_")+RDK::sntoa(i+1),"MultiForm");
 	  xml.WriteString(string("Class_")+RDK::sntoa(i+1),I->first);
-	  xml.WriteString(string("ComponentControlName_")+RDK::sntoa(i+1),I->second->GetComponentControlName());
+	  xml.WriteString(string("ComponentControlName_")+RDK::sntoa(i+1),form->GetComponentControlName());
 
 	  ++count;
 	  is_saved=true;
@@ -734,7 +734,6 @@ int TUGEngineControlForm::FindComponentControlPage(const std::string &component_
 	return i;
   }
  }
-
 
  return -1;
 }
