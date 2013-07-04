@@ -45,7 +45,7 @@
 #define POLLHUP     0x10
 #define POLLNVAL    0x20
 
-#ifndef WIN32
+#if(_WIN32_WINNT < 0x0600)
 struct pollfd
 {
 	curl_socket_t fd;
