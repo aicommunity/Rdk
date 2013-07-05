@@ -60,6 +60,10 @@ __published:    // IDE-managed Components
 	TCheckBox *ShowCentralPointCheckBox;
 	TEdit *PointXEdit;
 	TEdit *PointYEdit;
+	TButton *SendAsMatrixButton;
+	TMenuItem *PropertyMatrix1;
+	TCheckBox *SendPointsByStepCheckBox;
+	TCheckBox *DeletePointsAfterSendCheckBox;
     void __fastcall TimerTimer(TObject *Sender);
     void __fastcall StartButtonClick(TObject *Sender);
     void __fastcall StopButtonClick(TObject *Sender);
@@ -85,6 +89,8 @@ __published:    // IDE-managed Components
 	void __fastcall State1Click(TObject *Sender);
 	void __fastcall Button1Click(TObject *Sender);
 	void __fastcall SendImageToComponentProperty1Click(TObject *Sender);
+	void __fastcall SendAsMatrixButtonClick(TObject *Sender);
+	void __fastcall PropertyMatrix1Click(TObject *Sender);
 
 
 private:    // User declarations
@@ -208,6 +214,10 @@ std::string SelectedComponentParameterName;
 std::string SelectedComponentSName;
 std::string SelectedComponentStateName;
 
+// Целевое свойство матрица-приемник данных о геометрии
+std::string SelectedComponentPropertyMatrixName;
+std::string SelectedComponentMatrixName;
+
 int LastReadSequenceIndex;
 // ============================================================
 
@@ -262,6 +272,9 @@ void SetSampleGeometryGraphics(RDK::MGraphics<double,2>& samplegraphics);
 // -------------------------
 // Методы ввода вывода точек геометрии из параметров и переменных состояния компонент
 // -------------------------
+// Отправляет набор точек в свойство компонента
+void SendToComponentPropertyMatrix(const std::string &stringid, const std::string &parameter_name, int figure_index);
+
 // Отправляет набор точек в параметр компонента
 void SendToComponentParameter(const std::string &stringid, const std::string &parameter_name, int figure_index);
 

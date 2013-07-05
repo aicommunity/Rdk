@@ -177,6 +177,7 @@ template<class T>
 bool MCamera<T>::SetEcc(const MMatrix<T,4,4>& value)
 {
  Ecc=value;
+ InverseEcc(Ecc,InvEcc);
  InvEcc=Ecc.Inverse();
  return true;
 }
@@ -185,7 +186,7 @@ template<class T>
 bool MCamera<T>::SetInvEcc(const MMatrix<T,4,4>& value)
 {
  InvEcc=value;
- Ecc=InvEcc.Inverse();
+ InverseEcc(InvEcc,Ecc);
  return true;
 }
 

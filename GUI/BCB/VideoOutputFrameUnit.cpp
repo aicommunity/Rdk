@@ -517,6 +517,24 @@ void TVideoOutputFrame::SetSampleGeometryGraphics(RDK::MGraphics<double,2>& samp
 // -------------------------
 // Методы ввода вывода точек геометрии из параметров и переменных состояния компонент
 // -------------------------
+// Отправляет набор точек в свойство компонента
+void TVideoOutputFrame::SendToComponentPropertyMatrix(const std::string &stringid, const std::string &parameter_name, int figure_index)
+{
+ if(figure_index<0)
+  return;
+
+ RDK::MDMatrix<double> matrix;
+ const std::vector<RDK::MVector<double,2> > &points=GeometryGraphics.Geometry(figure_index).GetVertices();
+ int num_points=int(points.size());
+ matrix.Resize(num_points,2);
+ for(int i=0;i<num_points;i++)
+ {
+  matrix(i,0)=points[i][0];
+  matrix(i,1)=points[i][1];
+ }
+ Model_SetComponentPropertyData(stringid.c_str(), parameter_name.c_str(), &matrix);
+}
+
 // Отправляет набор точек в параметр компонента
 void TVideoOutputFrame::SendToComponentParameter(const std::string &stringid, const std::string &parameter_name, int figure_index)
 {
@@ -596,6 +614,15 @@ void TVideoOutputFrame::ABeforeCalculate(void)
   Sleep(0);
  }
  SendToComponentIO();
+ if(SendPointsByStepCheckBox->Checked)
+ {
+  SendAsMatrixButtonClick(this);
+  Button1Click(this);
+ }
+ if(DeletePointsAfterSendCheckBox->Checked)
+ {
+  MyVideoOutputToolsForm->DelAllPointsButtonClick(this);
+ }
 }
 
 // Обновление интерфейса
@@ -641,6 +668,11 @@ void TVideoOutputFrame::AUpdateInterface(void)
   SendToEdit->Text=String("Parameter ")+SelectedComponentPName.c_str()+String(":")+SelectedComponentParameterName.c_str();
  }
  else
+ if(!SelectedComponentMatrixName.empty())
+ {
+  SendToEdit->Text=String("Mat-Property ")+SelectedComponentMatrixName.c_str()+String(":")+SelectedComponentPropertyMatrixName.c_str();
+ }
+ else
   SendToEdit->Text="";
 
 }
@@ -657,6 +689,10 @@ void TVideoOutputFrame::ASaveParameters(RDK::USerStorageXML &xml)
  xml.WriteString("SelectedComponentStateName",SelectedComponentStateName);
  xml.WriteString("SelectedComponentPName",SelectedComponentPName);
  xml.WriteString("SelectedComponentParameterName",SelectedComponentParameterName);
+ xml.WriteString("SelectedComponentMatrixName",SelectedComponentMatrixName);
+ xml.WriteString("SelectedComponentPropertyMatrixName",SelectedComponentPropertyMatrixName);
+ xml.WriteInteger("SendPointsByStep",SendPointsByStepCheckBox->Checked);
+ xml.WriteInteger("DeletePointsAfterSendCheckBox",DeletePointsAfterSendCheckBox->Checked);
 }
 
 // Загружает параметры интерфейса из xml
@@ -671,6 +707,11 @@ void TVideoOutputFrame::ALoadParameters(RDK::USerStorageXML &xml)
  SelectedComponentStateName=xml.ReadString("SelectedComponentStateName","");
  SelectedComponentPName=xml.ReadString("SelectedComponentPName","");
  SelectedComponentParameterName=xml.ReadString("SelectedComponentParameterName","");
+ SelectedComponentMatrixName=xml.ReadString("SelectedComponentMatrixName","");
+ SelectedComponentPropertyMatrixName=xml.ReadString("SelectedComponentPropertyMatrixName","");
+ SendPointsByStepCheckBox->Checked=xml.ReadInteger("SendPointsByStep",0);
+ DeletePointsAfterSendCheckBox->Checked=xml.ReadInteger("DeletePointsAfterSendCheckBox",0);
+
  UpdateInterface();
 }
 // -----------------------------
@@ -1169,6 +1210,34 @@ void __fastcall TVideoOutputFrame::SendImageToComponentProperty1Click(TObject *S
  LinkedComponentName=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName();
  LinkedComponentPropertyName=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentStateName();
 // LinkedIndex=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoOutputFrame::SendAsMatrixButtonClick(TObject *Sender)
+{
+ if(!SelectedComponentMatrixName.empty())
+ {
+  SendToComponentPropertyMatrix(SelectedComponentMatrixName, SelectedComponentPropertyMatrixName, FigureIndex);
+ }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoOutputFrame::PropertyMatrix1Click(TObject *Sender)
+{
+ if(MyComponentsListForm->ShowParameterSelect() != mrOk)
+  return;
+
+ SelectedComponentPropertyMatrixName=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentStateName();
+ if(SelectedComponentPropertyMatrixName=="")
+  SelectedComponentPropertyMatrixName=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentParameterName();
+
+ SelectedComponentMatrixName=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName();
+ SelectedComponentSName="";
+ SelectedComponentStateName="";
+ SelectedComponentPName="";
+ SelectedComponentParameterName="";
+ SendToComponentPropertyMatrix(SelectedComponentMatrixName, SelectedComponentPropertyMatrixName, FigureIndex);
+ UpdateInterface();
 }
 //---------------------------------------------------------------------------
 

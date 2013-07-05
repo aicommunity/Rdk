@@ -58,7 +58,7 @@ void InverseEcc(const MMatrix<T,4,4>& source_ecc,MMatrix<T,4,4>& dest_ecc)
 // ”глы передаютс€ в радианах, рассто€ни€ в метрах
 //1.1
 template<class T>
-MMatrix<T,4,4> CalcObjectPositionMatrix(const MVector<T,3> &angles, const MVector<T,3> &shifts, int seqmat=1)
+MMatrix<T,4,4> CalcObjectPositionMatrix(const MVector<T,3> &angles, const MVector<T,3> &shifts, int seqmat=3)
 {
 	MMatrix<T,4,4> res;
 	MVector<T,6> anglesANDshifts;
@@ -84,7 +84,7 @@ MMatrix<T,4,4> CalcObjectPositionMatrix(const MVector<T,3> &angles, const MVecto
 //    6:
 //    M=Mz*My*Mx;
 template<class T>
-MMatrix<T,4,4> CalcObjectPositionMatrix(const MVector<T,6> &anglesANDshifts, int seqmat=1)
+MMatrix<T,4,4> CalcObjectPositionMatrix(const MVector<T,6> &anglesANDshifts, int seqmat=3)
 {
  MMatrix<T,4,4> res;
 
@@ -143,7 +143,7 @@ MMatrix<T,4,4> CalcObjectPositionMatrix(const MVector<T,6> &anglesANDshifts, int
 
 //2.1
 template<class T>
-void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,3> &angles, MVector<T,3> &shifts, int seqmat=1)
+void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,3> &angles, MVector<T,3> &shifts, int seqmat=3)
 {
     MVector<T,6> anglesANDshifts;
 	CalcObjectAnglesAndShifts(ExtMat, anglesANDshifts, seqmat);
@@ -168,7 +168,7 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,3> &angle
 //    6:
 //    M=Mz*My*Mx;
 template<class T>
-void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &anglesANDshifts, int seqmat=1)
+void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &anglesANDshifts, int seqmat=3)
 {
 	T C, trX, trY;
 
@@ -354,7 +354,7 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
 
 //2.2.1!!! //MMatrix-->MDVector
 template<class T>
-void CalcObjectAnglesAndShiftsM(const MMatrix<T,4,4> &ExtMat, MDMatrix<T> &anglesANDshifts, int seqmat=1)
+void CalcObjectAnglesAndShiftsM(const MMatrix<T,4,4> &ExtMat, MDMatrix<T> &anglesANDshifts, int seqmat=3)
 {
 	MDVector<T> AnS(6);
 
@@ -371,7 +371,7 @@ void CalcObjectAnglesAndShiftsM(const MMatrix<T,4,4> &ExtMat, MDMatrix<T> &angle
 
 //3.1
 template<class T>
-MDMatrix<T> CalcObjectPositionMatrixD(const MDVector<T> &angles, const MDVector<T> &shifts, int seqmat=1)
+MDMatrix<T> CalcObjectPositionMatrixD(const MDVector<T> &angles, const MDVector<T> &shifts, int seqmat=3)
 {
 	MDMatrix<T> res(4,4);
 	MMatrix<T,4,4> M_res;
@@ -392,7 +392,7 @@ MDMatrix<T> CalcObjectPositionMatrixD(const MDVector<T> &angles, const MDVector<
 
 //3.2!!!
 template<class T>
-MDMatrix<T> CalcObjectPositionMatrixD(const MDMatrix<T> &anglesANDshifts, int seqmat=1)
+MDMatrix<T> CalcObjectPositionMatrixD(const MDMatrix<T> &anglesANDshifts, int seqmat=3)
 {
 	MDMatrix<T> res(4,4);
 	MMatrix<T,4,4> M_res;
@@ -416,7 +416,7 @@ MDMatrix<T> CalcObjectPositionMatrixD(const MDMatrix<T> &anglesANDshifts, int se
 
 //3.2.1!!! //for SetEcc //MMatrix<--MDVector
 template<class T>
-MMatrix<T,4,4> CalcObjectPositionMatrixM(const MDMatrix<T> &anglesANDshifts, int seqmat=1)
+MMatrix<T,4,4> CalcObjectPositionMatrixM(const MDMatrix<T> &anglesANDshifts, int seqmat=3)
 {
 	MMatrix<T,4,4> res;
 	MVector<T,6> M_anglesANDshifts;
@@ -433,7 +433,7 @@ MMatrix<T,4,4> CalcObjectPositionMatrixM(const MDMatrix<T> &anglesANDshifts, int
 
 //4.1
 template<class T>
-void CalcObjectAnglesAndShiftsD(const MDMatrix<T> &ExtMat, MDVector<T> &angles, MDVector<T> &shifts, int seqmat=1)
+void CalcObjectAnglesAndShiftsD(const MDMatrix<T> &ExtMat, MDVector<T> &angles, MDVector<T> &shifts, int seqmat=3)
 {
 	MVector<T,6> M_anglesANDshifts;
 	MMatrix<T,4,4> M_ExtMat;
@@ -452,7 +452,7 @@ void CalcObjectAnglesAndShiftsD(const MDMatrix<T> &ExtMat, MDVector<T> &angles, 
 
 //4.2!!!
 template<class T>
-void CalcObjectAnglesAndShiftsD(const MDMatrix<T> &ExtMat, MDMatrix<T> &anglesANDshifts, int seqmat=1)
+void CalcObjectAnglesAndShiftsD(const MDMatrix<T> &ExtMat, MDMatrix<T> &anglesANDshifts, int seqmat=3)
 {
     MDVector<T> AnS(6);
 	MVector<T,6> M_anglesANDshifts;

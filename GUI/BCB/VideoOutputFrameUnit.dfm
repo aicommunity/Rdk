@@ -11,16 +11,17 @@ inherited VideoOutputFrame: TVideoOutputFrame
     Left = 0
     Top = 0
     Width = 702
-    Height = 351
+    Height = 336
     Align = alClient
     DoubleBuffered = True
     ParentDoubleBuffered = False
     TabOrder = 0
+    ExplicitHeight = 351
     object Image: TImage
       Left = 2
       Top = 15
       Width = 698
-      Height = 334
+      Height = 319
       Cursor = crCross
       Align = alClient
       Stretch = True
@@ -34,7 +35,7 @@ inherited VideoOutputFrame: TVideoOutputFrame
       Left = 2
       Top = 15
       Width = 698
-      Height = 334
+      Height = 319
       Align = alClient
       Caption = 'VideoGrabber'
       Color = clBlack
@@ -74,6 +75,7 @@ inherited VideoOutputFrame: TVideoOutputFrame
       VideoSource_FileOrURL_StartTime = -1
       VideoSource_FileOrURL_StopTime = -1
       OnFrameCaptureCompleted = VideoGrabberFrameCaptureCompleted
+      ExplicitHeight = 334
     end
   end
   object Panel1: TPanel
@@ -134,18 +136,18 @@ inherited VideoOutputFrame: TVideoOutputFrame
   end
   object Panel2: TPanel
     Left = 0
-    Top = 351
+    Top = 336
     Width = 702
-    Height = 31
+    Height = 46
     Align = alBottom
     TabOrder = 2
     DesignSize = (
       702
-      31)
+      46)
     object SendToEdit: TEdit
-      Left = 17
+      Left = 16
       Top = 4
-      Width = 521
+      Width = 437
       Height = 21
       Anchors = [akLeft, akTop, akRight]
       Color = clBtnFace
@@ -172,6 +174,32 @@ inherited VideoOutputFrame: TVideoOutputFrame
       DropDownMenu = SelectPopupMenu
       Style = bsSplitButton
       TabOrder = 2
+    end
+    object SendAsMatrixButton: TButton
+      Left = 459
+      Top = 2
+      Width = 79
+      Height = 25
+      Anchors = [akTop, akRight]
+      Caption = 'Send as Matrix'
+      TabOrder = 3
+      OnClick = SendAsMatrixButtonClick
+    end
+    object SendPointsByStepCheckBox: TCheckBox
+      Left = 5
+      Top = 27
+      Width = 220
+      Height = 17
+      Caption = 'Send points before even calculation step'
+      TabOrder = 4
+    end
+    object DeletePointsAfterSendCheckBox: TCheckBox
+      Left = 230
+      Top = 27
+      Width = 147
+      Height = 17
+      Caption = 'Delete points after send'
+      TabOrder = 5
     end
   end
   object Panel3: TPanel
@@ -265,6 +293,10 @@ inherited VideoOutputFrame: TVideoOutputFrame
     object State1: TMenuItem
       Caption = 'State'
       OnClick = State1Click
+    end
+    object PropertyMatrix1: TMenuItem
+      Caption = 'Property Matrix'
+      OnClick = PropertyMatrix1Click
     end
   end
 end
