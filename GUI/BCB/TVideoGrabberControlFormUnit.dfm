@@ -109,28 +109,41 @@ object VideoGrabberControlForm: TVideoGrabberControlForm
         end
       end
       inherited VideoFileTabSheet: TTabSheet
+        ExplicitWidth = 591
+        ExplicitHeight = 268
         inherited VFCapturePanel: TPanel
+          Width = 591
+          Height = 268
+          ExplicitWidth = 591
+          ExplicitHeight = 268
           inherited VideoFileNameLabel: TLabel
+            Width = 575
             ExplicitWidth = 560
+          end
+          inherited VFNameEdit: TEdit
+            Width = 490
+            ExplicitWidth = 490
+          end
+          inherited VFBrowseButton: TButton
+            Left = 504
+            ExplicitLeft = 504
           end
         end
       end
       inherited PictureFileTabSheet: TTabSheet
-        ExplicitWidth = 591
-        ExplicitHeight = 268
         inherited Label3: TLabel
-          Width = 1099
+          Width = 1245
           ExplicitWidth = 560
         end
         inherited ImageFileNameEdit: TEdit
-          Width = 494
-          ExplicitWidth = 494
+          Width = 491
+          ExplicitWidth = 491
         end
         inherited OpenImageFileButton: TButton
-          Left = 508
+          Left = 505
           Top = 21
           Height = 23
-          ExplicitLeft = 508
+          ExplicitLeft = 505
           ExplicitTop = 21
           ExplicitHeight = 23
         end
@@ -171,7 +184,7 @@ object VideoGrabberControlForm: TVideoGrabberControlForm
       41)
     object CloseButton: TButton
       Left = 496
-      Top = 8
+      Top = 6
       Width = 92
       Height = 25
       Anchors = [akRight, akBottom]
