@@ -344,9 +344,6 @@
     <ClInclude Include="..\..\..\lib\warnless.h" />
     <ClInclude Include="..\..\..\lib\wildcard.h" />
   </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="..\..\..\lib\libcurl.rc" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
