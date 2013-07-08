@@ -20,7 +20,7 @@
 #define RDK_CURL
 
 #ifdef __BORLANDC__
-#pragma link "curl/Bin/Platform/Win/libcurl.bcb.lib"
+#pragma link "libcurl.bcb.lib"
 #pragma link "Ws2_32.lib"
 #endif
 
