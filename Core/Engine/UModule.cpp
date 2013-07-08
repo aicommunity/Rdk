@@ -23,8 +23,8 @@ namespace RDK {
 // Конструкторы и деструкторы
 // --------------------------
 UModule::UModule(void)
+: Ready(false), InitFlag(false)
 {
- Ready=false;
 }
 
 UModule::~UModule(void)
@@ -145,19 +145,53 @@ bool UModule::Calculate(void)
  if(!IsReady())
   Build();
 
- ABeforeCalculate();
+ BeforeCalculate();
  ACalculate();
- AAfterCalculate();
+ AfterCalculate();
  return true;
 }
 
 // Выполняет инициализацию этого объекта
+void UModule::BeforeInit(void)
+{
+ ABeforeInit();
+}
+
+void UModule::AfterInit(void)
+{
+ AAfterInit();
+}
+
 void UModule::Init(void)
 {
  if(IsInit())
   return;
 
+ BeforeInit();
  AInit();
+ AfterInit();
+}
+
+// Выполняет деинициализацию этого объекта
+void UModule::BeforeUnInit(void)
+{
+ ABeforeUnInit();
+}
+
+void UModule::AfterUnInit(void)
+{
+ AAfterUnInit();
+}
+
+void UModule::UnInit(void)
+{
+ if(!IsInit())
+  return;
+
+
+ BeforeUnInit();
+ AUnInit();
+ AfterUnInit();
 }
 // --------------------------
 
@@ -232,9 +266,33 @@ bool UModule::ACalculate(void)
 }
 
 // Выполняет инициализацию этого объекта
+void UModule::ABeforeInit(void)
+{
+
+}
+
+void UModule::AAfterInit(void)
+{
+
+}
+
 void UModule::AInit(void)
 {
- return;
+}
+
+// Выполняет деинициализацию этого объекта
+void UModule::ABeforeUnInit(void)
+{
+
+}
+
+void UModule::AAfterUnInit(void)
+{
+
+}
+
+void UModule::AUnInit(void)
+{
 }
 // --------------------------
 
