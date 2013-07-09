@@ -473,6 +473,170 @@ void CalcObjectAnglesAndShiftsD(const MDMatrix<T> &ExtMat, MDMatrix<T> &anglesAN
 	return;
 }
 
+//=======================================================================================
+//  ватернион
+template<class T>
+struct Quaternion{
+  T x,y,z; // ¬ектор
+  T w;     // —кал€р
+};
+
+// Ќормализаци€ кватерниона
+template<class T>
+void QuaternionNormalise(Quaternion<T> *quat, bool mymet=true)
+{
+	Quaternion<T> quattemp=*quat;
+	T Sin=sin(quat->w/2);
+	T Cos=cos(quat->w/2);
+	// нормализаци€ вектора x,y,z, заданный угол сохран€етс€
+	if(mymet)
+	{
+		quat->x=Sin*quattemp.x/sqrt(quattemp.x*quattemp.x+quattemp.y*quattemp.y+quattemp.z*quattemp.z);
+		quat->y=Sin*quattemp.y/sqrt(quattemp.x*quattemp.x+quattemp.y*quattemp.y+quattemp.z*quattemp.z);
+		quat->z=Sin*quattemp.z/sqrt(quattemp.x*quattemp.x+quattemp.y*quattemp.y+quattemp.z*quattemp.z);
+		quat->w=Cos;
+	}
+	// нормализаци€ вектора x,y,z,w, заданный угол не сохран€етс€
+	else
+	{
+		quat->x=Sin*quattemp.x/sqrt((quattemp.x*quattemp.x+quattemp.y*quattemp.y+quattemp.z*quattemp.z)*Sin*Sin+Cos*Cos);
+		quat->y=Sin*quattemp.y/sqrt((quattemp.x*quattemp.x+quattemp.y*quattemp.y+quattemp.z*quattemp.z)*Sin*Sin+Cos*Cos);
+		quat->z=Sin*quattemp.z/sqrt((quattemp.x*quattemp.x+quattemp.y*quattemp.y+quattemp.z*quattemp.z)*Sin*Sin+Cos*Cos);
+		quat->w=Cos/sqrt((quattemp.x*quattemp.x+quattemp.y*quattemp.y+quattemp.z*quattemp.z)*Sin*Sin+Cos*Cos);
+	}
+	//std::cout<<quat->x<<"\t"<<quat->y<<"\t"<<quat->z<<"\t"<<quat->w<<"\n";
+}
+
+// ѕроизведение кватернионов
+template<class T>
+void MulQuaternions(Quaternion<T> *res, const Quaternion<T> *q1, const Quaternion<T> *q2)
+{
+  T A, B, C, D, E, F, G, H;
+
+  A = (q1->w + q1->x) * (q2->w + q2->x);
+  B = (q1->z - q1->y) * (q2->y - q2->z);
+  C = (q1->x - q1->w) * (q2->y + q2->z);
+  D = (q1->y + q1->z) * (q2->x - q2->w);
+  E = (q1->x + q1->z) * (q2->x + q2->y);
+  F = (q1->x - q1->z) * (q2->x - q2->y);
+  G = (q1->w + q1->y) * (q2->w - q2->z);
+  H = (q1->w - q1->y) * (q2->w + q2->z);
+
+  res->w = B + (-E - F + G + H) * 0.5;
+  res->x = A - ( E + F + G + H) * 0.5; 
+  res->y =-C + ( E - F + G - H) * 0.5;
+  res->z =-D + ( E - F - G + H) * 0.5;
+}
+
+// ѕреобразование матрицы в кватернион
+template<class T>
+void MatrixToQuaternion(Quaternion<T> *quat, const T m[4][4])
+{
+  T  tr, s, q[4];
+  int    i, j, k;
+
+  int nxt[3] = {1, 2, 0};
+
+  tr = m[0][0] + m[1][1] + m[2][2];
+
+  if (tr > 0.0)
+  {
+    s = sqrt (tr + 1.0);
+    quat->w = s / 2.0;
+    s = 0.5 / s;
+    quat->x = -(m[1][2] - m[2][1]) * s;
+    quat->y = -(m[2][0] - m[0][2]) * s;
+    quat->z = -(m[0][1] - m[1][0]) * s;
+  }
+  else
+  {
+    i = 0;
+    if (m[1][1] > m[0][0]) i = 1;
+    if (m[2][2] > m[i][i]) i = 2;
+    j = nxt[i];
+    k = nxt[j];
+
+    s = sqrt ((m[i][i] - (m[j][j] + m[k][k])) + 1.0);
+
+    q[i] = s * 0.5;
+
+    if (s != 0.0) s = 0.5 / s;
+
+    q[3] = -(m[j][k] - m[k][j]) * s;
+    q[j] = (m[i][j] + m[j][i]) * s;
+    q[k] = (m[i][k] + m[k][i]) * s;
+
+    quat->x = q[0];
+    quat->y = q[1];
+    quat->z = q[2];
+    quat->w = q[3];
+  }
+}
+
+// ѕреобразование кватерниона в матрицу
+template<class T>
+void QuaternionToMatrix(T m[4][4], const Quaternion<T> *quat)
+{
+  T wx, wy, wz, xx, yy, yz, xy, xz, zz, x2, y2, z2;
+  x2 = quat->x + quat->x;
+  y2 = quat->y + quat->y;
+  z2 = quat->z + quat->z;
+  xx = quat->x * x2;   xy = quat->x * y2;   xz = quat->x * z2;
+  yy = quat->y * y2;   yz = quat->y * z2;   zz = quat->z * z2;
+  wx = quat->w * x2;   wy = quat->w * y2;   wz = quat->w * z2;
+
+  m[0][0]=1.0f-(yy+zz); m[0][1]=xy-wz;        m[0][2]=xz+wy;
+  m[1][0]=xy+wz;        m[1][1]=1.0f-(xx+zz); m[1][2]=yz-wx;
+  m[2][0]=xz-wy;        m[2][1]=yz+wx;        m[2][2]=1.0f-(xx+yy);
+
+  m[0][3] = m[1][3] = m[2][3] = 0;
+  m[3][0] = m[3][1] = m[3][2] = 0;
+  m[3][3] = 1;
+}
+
+// ѕолучение матрицы из кватерниона
+template<class T>
+MMatrix<T,4,4> CalcObjectPositionMatrixFromQuatern(const MVector<T,7> &anglesANDshifts)
+{
+ MMatrix<T,4,4> res;
+
+ Quaternion<T> *quatent;
+ quatent->x=anglesANDshifts(3);
+ quatent->y=anglesANDshifts(4);
+ quatent->z=anglesANDshifts(5);
+ quatent->w=anglesANDshifts(6);
+
+ QuaternionNormalise<T>(quatent,true);
+ QuaternionToMatrix<T>(res.Data, quatent);
+
+	res(0,3)=anglesANDshifts(0);
+	res(1,3)=anglesANDshifts(1);
+	res(2,3)=anglesANDshifts(2);
+
+ return res;
+}
+
+// ѕолучение кватерниона из матрицы
+template<class T>
+void CalcObjectQuatern(const MMatrix<T,4,4> &ExtMat, MVector<T,7> &anglesANDshifts)
+{
+	Quaternion<T> *quatex;
+
+	MatrixToQuaternion<T>(quatex, ExtMat.Data);
+
+	anglesANDshifts(3)=quatex->x;
+	anglesANDshifts(4)=quatex->y;
+	anglesANDshifts(5)=quatex->z;
+	anglesANDshifts(6)=quatex->w;
+
+	anglesANDshifts(0)=ExtMat(0,3);
+	anglesANDshifts(1)=ExtMat(1,3);
+	anglesANDshifts(2)=ExtMat(2,3);
+
+	return;
+}
+//=======================================================================================
+
 
 // –асчитывает матрицу внешней калибровки
 // ”глы передаютс€ в радианах, рассто€ни€ в метрах
