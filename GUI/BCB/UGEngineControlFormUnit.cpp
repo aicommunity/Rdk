@@ -274,7 +274,8 @@ void TUGEngineControlForm::CloseProject(void)
  ProjectOpenFlag=false;
  if(GetEngine())
   Env_UnInit();
- EngineUnInit();
+// EngineUnInit();
+ Model_Destroy();
  UpdateInterface();
 }
 
@@ -337,11 +338,15 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
 
  String modelfilename=ProjectXml.ReadString("ModelFileName","").c_str();
 
- //Env_SetPredefinedStructure(PredefinedStructure);
+ Env_SetPredefinedStructure(PredefinedStructure);
 
- GraphicalEngineInit(PredefinedStructure,NumEnvInputs,NumEnvOutputs,InputEnvImageWidth, InputEnvImageHeight ,ReflectionFlag,ExceptionHandler);
+// GraphicalEngineInit(PredefinedStructure,NumEnvInputs,NumEnvOutputs,InputEnvImageWidth, InputEnvImageHeight ,ReflectionFlag,ExceptionHandler);
  Model_SetDefaultTimeStep(DefaultTimeStep);
  Env_SetCurrentDataDir(AnsiString(ProjectPath).c_str());
+
+ Env_CreateStructure();
+ Env_Init();
+
  #ifdef RDK_VIDEO
  for(int i=0;i<NumEnvInputs;i++)
   VideoOutputForm->AddSource();
