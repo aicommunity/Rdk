@@ -142,6 +142,7 @@ __published:	// IDE-managed Components
 	void __fastcall UComponentsListFrame1GUI1Click(TObject *Sender);
 	void __fastcall UDrawEngineFrame1GUI1Click(TObject *Sender);
 	void __fastcall PageControl1Change(TObject *Sender);
+	void __fastcall DrawShow(TObject *Sender);
 
 
 

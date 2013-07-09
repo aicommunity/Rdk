@@ -1146,3 +1146,9 @@ void __fastcall TUGEngineControlForm::PageControl1Change(TObject *Sender)
 //---------------------------------------------------------------------------
 
 
+void __fastcall TUGEngineControlForm::DrawShow(TObject *Sender)
+{
+ UDrawEngineFrame1->ReloadNet();
+}
+//---------------------------------------------------------------------------
+
