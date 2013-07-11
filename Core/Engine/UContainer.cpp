@@ -1358,10 +1358,10 @@ bool UContainer::Reset(void)
 {
  Build();
 
- Init(); // Заглушка
+// Init(); // Заглушка
 
  if(!IsInit())
-  return false;
+  return true; // TODO //false;
 
  for(int i=0;i<NumComponents;i++)
   PComponents[i]->Reset();
@@ -1480,7 +1480,7 @@ void UContainer::Init(void)
 
  AInit();
  InitFlag=true;
- Build();
+ Reset();
 }
 
 // Выполняет деинициализацию этого объекта
