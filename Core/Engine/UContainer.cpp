@@ -1472,6 +1472,9 @@ RDK_SYS_TRY {
 // Выполняет начальную инициализацию этого объекта
 void UContainer::Init(void)
 {
+ if(!Activity)
+  return;
+
  if(IsInit())
   return;
 
