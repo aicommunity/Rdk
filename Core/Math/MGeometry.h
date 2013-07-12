@@ -504,7 +504,7 @@ void QuaternionNormalise(Quaternion<T> *quat, bool vectnorm=true)
 		quat->z=quattemp.z/sqrt(quattemp.x*quattemp.x+quattemp.y*quattemp.y+quattemp.z*quattemp.z+quattemp.w*quattemp.w);
 		quat->w=quattemp.w/sqrt(quattemp.x*quattemp.x+quattemp.y*quattemp.y+quattemp.z*quattemp.z+quattemp.w*quattemp.w);
 	}
-	std::cout<<quat->x<<"\t"<<quat->y<<"\t"<<quat->z<<"\t"<<quat->w<<"\n";
+	//std::cout<<quat->x<<"\t"<<quat->y<<"\t"<<quat->z<<"\t"<<quat->w<<"\n";
 }
 
 // Произведение кватернионов
