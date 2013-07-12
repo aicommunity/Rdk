@@ -483,28 +483,28 @@ struct Quaternion{
 
 // Нормализация кватерниона
 template<class T>
-void QuaternionNormalise(Quaternion<T> *quat, bool mymet=true)
+void QuaternionNormalise(Quaternion<T> *quat, bool vectnorm=true)
 {
 	Quaternion<T> quattemp=*quat;
 	T Sin=sin(quat->w/2);
 	T Cos=cos(quat->w/2);
 	// нормализация вектора x,y,z, заданный угол сохраняется
-	if(mymet)
+	if(vectnorm)
 	{
 		quat->x=Sin*quattemp.x/sqrt(quattemp.x*quattemp.x+quattemp.y*quattemp.y+quattemp.z*quattemp.z);
 		quat->y=Sin*quattemp.y/sqrt(quattemp.x*quattemp.x+quattemp.y*quattemp.y+quattemp.z*quattemp.z);
 		quat->z=Sin*quattemp.z/sqrt(quattemp.x*quattemp.x+quattemp.y*quattemp.y+quattemp.z*quattemp.z);
 		quat->w=Cos;
 	}
-	// нормализация вектора x,y,z,w, заданный угол не сохраняется
+	// нормализация кватериона по x,y,z,w
 	else
 	{
-		quat->x=Sin*quattemp.x/sqrt((quattemp.x*quattemp.x+quattemp.y*quattemp.y+quattemp.z*quattemp.z)*Sin*Sin+Cos*Cos);
-		quat->y=Sin*quattemp.y/sqrt((quattemp.x*quattemp.x+quattemp.y*quattemp.y+quattemp.z*quattemp.z)*Sin*Sin+Cos*Cos);
-		quat->z=Sin*quattemp.z/sqrt((quattemp.x*quattemp.x+quattemp.y*quattemp.y+quattemp.z*quattemp.z)*Sin*Sin+Cos*Cos);
-		quat->w=Cos/sqrt((quattemp.x*quattemp.x+quattemp.y*quattemp.y+quattemp.z*quattemp.z)*Sin*Sin+Cos*Cos);
+		quat->x=quattemp.x/sqrt(quattemp.x*quattemp.x+quattemp.y*quattemp.y+quattemp.z*quattemp.z+quattemp.w*quattemp.w);
+		quat->y=quattemp.y/sqrt(quattemp.x*quattemp.x+quattemp.y*quattemp.y+quattemp.z*quattemp.z+quattemp.w*quattemp.w);
+		quat->z=quattemp.z/sqrt(quattemp.x*quattemp.x+quattemp.y*quattemp.y+quattemp.z*quattemp.z+quattemp.w*quattemp.w);
+		quat->w=quattemp.w/sqrt(quattemp.x*quattemp.x+quattemp.y*quattemp.y+quattemp.z*quattemp.z+quattemp.w*quattemp.w);
 	}
-	//std::cout<<quat->x<<"\t"<<quat->y<<"\t"<<quat->z<<"\t"<<quat->w<<"\n";
+	std::cout<<quat->x<<"\t"<<quat->y<<"\t"<<quat->z<<"\t"<<quat->w<<"\n";
 }
 
 // Произведение кватернионов
@@ -594,9 +594,9 @@ void QuaternionToMatrix(T m[4][4], const Quaternion<T> *quat)
   m[3][3] = 1;
 }
 
-// Получение матрицы из кватерниона
+// Получение матрицы из вектора и угла или кватериона
 template<class T>
-MMatrix<T,4,4> CalcObjectPositionMatrixFromQuatern(const MVector<T,7> &anglesANDshifts)
+MMatrix<T,4,4> CalcObjectPositionMatrixFromQuatern(const MVector<T,7> &anglesANDshifts, bool vect=true)
 {
  MMatrix<T,4,4> res;
 
@@ -606,8 +606,16 @@ MMatrix<T,4,4> CalcObjectPositionMatrixFromQuatern(const MVector<T,7> &anglesAND
  quatent->z=anglesANDshifts(5);
  quatent->w=anglesANDshifts(6);
 
- QuaternionNormalise<T>(quatent,true);
- QuaternionToMatrix<T>(res.Data, quatent);
+ if(vect)
+ {
+  QuaternionNormalise<T>(quatent,true);
+  QuaternionToMatrix<T>(res.Data, quatent);
+ }
+ else
+ {
+  QuaternionNormalise<T>(quatent,false);
+  QuaternionToMatrix<T>(res.Data, quatent);
+ }
 
 	res(0,3)=anglesANDshifts(0);
 	res(1,3)=anglesANDshifts(1);
@@ -616,13 +624,27 @@ MMatrix<T,4,4> CalcObjectPositionMatrixFromQuatern(const MVector<T,7> &anglesAND
  return res;
 }
 
-// Получение кватерниона из матрицы
+// Получение кватерниона или вектора с углом из матрицы
 template<class T>
-void CalcObjectQuatern(const MMatrix<T,4,4> &ExtMat, MVector<T,7> &anglesANDshifts)
+void CalcObjectQuatern(const MMatrix<T,4,4> &ExtMat, MVector<T,7> &anglesANDshifts, bool vect=true)
 {
 	Quaternion<T> *quatex;
 
 	MatrixToQuaternion<T>(quatex, ExtMat.Data);
+
+    if(vect)
+    {
+     double cos_angle  = quatex -> w;
+     quatex -> w       = acos( cos_angle ) * 2;
+     double sin_angle  = sqrt( 1.0 - cos_angle * cos_angle );
+
+     if ( fabs( sin_angle ) < 0.0005 )
+       sin_angle = 1;
+
+     quatex -> x = quatex -> x / sin_angle;
+     quatex -> y = quatex -> y / sin_angle;
+     quatex -> z = quatex -> z / sin_angle;
+    }
 
 	anglesANDshifts(3)=quatex->x;
 	anglesANDshifts(4)=quatex->y;
