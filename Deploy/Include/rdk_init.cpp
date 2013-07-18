@@ -949,7 +949,7 @@ const char * RDK_CALL Model_SaveComponentParameters(const char *stringid, unsign
 }
 
 // Загружает все параметры компонента и его дочерних компонент из xml
-int RDK_CALL Model_LoadComponentParameters(const char *stringid, char* buffer)
+int RDK_CALL Model_LoadComponentParameters(const char *stringid, const char* buffer)
 {
  return PEngine->Model_LoadComponentProperties(stringid, buffer);
 }

@@ -611,7 +611,7 @@ virtual int Model_LoadComponent(const char *stringid, const char* buffer);
 virtual const char* Model_SaveComponentProperties(const char *stringid, unsigned int type_mask=0xFFFFFFFF);
 
 // Загружает все свойства компонента и его дочерних компонент из xml
-virtual int Model_LoadComponentProperties(const char *stringid, char* buffer);
+virtual int Model_LoadComponentProperties(const char *stringid, const char* buffer);
 
 // Сохраняет внутренние данные компонента, и его _непосредственных_ дочерних компонент, исключая
 // переменные состояния в xml

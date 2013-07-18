@@ -574,7 +574,7 @@ RDK_LIB_TYPE const char * RDK_CALL Model_SaveComponentParameters(const char *str
 
 // Загружает все параметры компонента и его дочерних компонент из xml
 // Deprecated
-RDK_LIB_TYPE int RDK_CALL Model_LoadComponentParameters(const char *stringid, char* buffer);
+RDK_LIB_TYPE int RDK_CALL Model_LoadComponentParameters(const char *stringid, const char* buffer);
 
 // Сохраняет состояние компонента и его дочерних компонент в xml
 // Deprecated

@@ -2528,7 +2528,7 @@ const char * UEngine::Model_SaveComponentProperties(const char *stringid, unsign
 }
 
 // Загружает все свойства компонента и его дочерних компонент из xml
-int UEngine::Model_LoadComponentProperties(const char *stringid, char* buffer)
+int UEngine::Model_LoadComponentProperties(const char *stringid, const char* buffer)
 {
  try
  {
