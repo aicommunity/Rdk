@@ -2,6 +2,7 @@
 #define RDK_SYSTEM_LINUX_CPP
 
 #include <ctime>
+#include <unistd.h>
 #include <sys/time.h>
 #include "../rdk_system.h"
 
@@ -41,7 +42,7 @@ unsigned long long CalcDiffTime(unsigned long long time1, unsigned long long tim
 void Sleep(int value)
 {
  usleep(value*1000);
-}             
+}
 
 // —оздает каталог
 // ¬озвращает 0 в случае успеха или если каталог уже существует
