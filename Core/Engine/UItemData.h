@@ -71,7 +71,7 @@ UItemData(const UItemData &copy);
 // Методы доступа к параметрам
 // --------------------------
 // Размер вектора данных
-int GetSize(void) const;
+virtual int GetSize(void) const;
 
 // Размер данных в байтах
 int GetByteSize(void) const;

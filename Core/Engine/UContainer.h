@@ -256,7 +256,7 @@ bool SetGlobalTimeStep(UTime timestep);
 
 // Устанавливает флаг активности объекта
 const bool& GetActivity(void) const;
-bool SetActivity(const bool &activity);
+virtual bool SetActivity(const bool &activity);
 
 // Id объекта
 const UId& GetId(void) const;
