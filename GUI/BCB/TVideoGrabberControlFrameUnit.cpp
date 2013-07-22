@@ -127,7 +127,7 @@ void TVideoGrabberControlFrame::AUpdateInterface(void)
  if(!VideoGrabber)
   return;
 
- if(VCapturePageControl->ActivePage != PictureFileTabSheet && VCapturePageControl->ActivePage != ImageSequenceTabSheet)
+ if(VCapturePageControl->ActivePage != PictureFileTabSheet && VCapturePageControl->ActivePage != ImageSequenceTabSheet && VCapturePageControl->ActivePage != HttpServerTabSheet)
  {
   if(VideoGrabber->VideoSource == vs_VideoCaptureDevice)
    VCapturePageControl->ActivePage = DeviceTabSheet;
@@ -339,6 +339,11 @@ void __fastcall TVideoGrabberControlFrame::VCapturePageControlChange(TObject *Se
  if(VCapturePageControl->ActivePage == ImageSequenceTabSheet)
  {
   VideoOutputFrame->InitByImageSequence(ImageSequencePathEdit->Text);
+ }
+ else
+ if(VCapturePageControl->ActivePage == HttpServerTabSheet)
+ {
+  VideoOutputFrame->InitByHttpServer(StrToInt(ListerPortEdit->Text));
  }
 
  UpdateInterface();

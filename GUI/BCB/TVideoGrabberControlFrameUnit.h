@@ -74,6 +74,10 @@ __published:    // IDE-managed Components
 	TButton *ResetButton;
 	TLabel *Label8;
 	TEdit *IPCameraControlPostfixEdit;
+	TTabSheet *HttpServerTabSheet;
+	TEdit *ListerPortEdit;
+	TLabel *Label9;
+	TLabel *Label10;
     void __fastcall DeviceComboBoxSelect(TObject *Sender);
     void __fastcall InputComboBoxSelect(TObject *Sender);
     void __fastcall VideoSizeComboBoxSelect(TObject *Sender);

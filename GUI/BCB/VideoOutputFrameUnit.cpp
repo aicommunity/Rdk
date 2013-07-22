@@ -6,6 +6,7 @@
 #include "VideoOutputFrameUnit.h"
 #include "TUBitmap.h"
 #include "TVideoGrabberControlFormUnit.h"
+#include "UEngineMonitorFormUnit.h"
 #include "myrdk.h"
 #include "rdk_initdll.h"
 //#include "TUFileSystem.h"
@@ -13,6 +14,7 @@
 #pragma package(smart_init)
 #pragma link "VidGrab"
 #pragma link "TUVisualControllerFrameUnit"
+#pragma link "TUHttpServerUnit"
 #pragma resource "*.dfm"
 TVideoOutputFrame *VideoOutputFrame;
 
@@ -236,6 +238,21 @@ bool TVideoOutputFrame::LoadImageFromSequence(int index, RDK::UBitmap &bmp)
  return true;
 }
 
+// Инициализация http-сервера
+bool TVideoOutputFrame::InitByHttpServer(int listen_port)
+{
+ StopButtonClick(this);
+ Mode=5;
+ UHttpServerFrame->IdHTTPServer->Bindings->DefaultPort=listen_port;
+ TIdSocketHandle* bind=0;
+ if(UHttpServerFrame->IdHTTPServer->Bindings->Count == 0)
+  bind=UHttpServerFrame->IdHTTPServer->Bindings->Add();
+ else
+  bind=UHttpServerFrame->IdHTTPServer->Bindings->Items[0];
+
+ bind->Port=listen_port;
+ return true;
+}
 
 // Устанавливает название окна
 bool TVideoOutputFrame::SetTitle(String title)
@@ -759,6 +776,10 @@ void __fastcall TVideoOutputFrame::StartButtonClick(TObject *Sender)
 //  VideoGrabber->PlayerFrameStep(1);
  break;
 
+ case 5:
+  UHttpServerFrame->IdHTTPServer->Active=true;
+ break;
+
  default:
      ;
  }  
@@ -785,6 +806,11 @@ void __fastcall TVideoOutputFrame::StopButtonClick(TObject *Sender)
  case 4:
 	VideoGrabber->PausePlayer();
  break;
+
+ case 5:
+  UHttpServerFrame->IdHTTPServer->Active=false;
+ break;
+
 
  default:
 	 ;
@@ -1083,9 +1109,9 @@ Graphics::TBitmap *Frame_Bitmap;
 
          CurrentFrameNumber=FrameNumber;
 //         DrawCapture(Image->Picture->Bitmap);
-         UpdateVideo();
+		 UpdateVideo();
 
-      break;
+	  break;
    }
 }
 //---------------------------------------------------------------------------
@@ -1238,6 +1264,47 @@ void __fastcall TVideoOutputFrame::PropertyMatrix1Click(TObject *Sender)
  SelectedComponentParameterName="";
  SendToComponentPropertyMatrix(SelectedComponentMatrixName, SelectedComponentPropertyMatrixName, FigureIndex);
  UpdateInterface();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoOutputFrame::UHttpServerFrameIdHTTPServerCommandGet(TIdContext *AContext,
+		  TIdHTTPRequestInfo *ARequestInfo, TIdHTTPResponseInfo *AResponseInfo)
+
+{
+ std::vector<char> &time_stamp=UHttpServerFrame->ParsedRequestArgs["TimeStamp"];
+ if(!time_stamp.empty())
+ {
+  std::string temp_stamp;
+  temp_stamp.assign(&time_stamp[0],time_stamp.size());
+  ServerTimeStamp=RDK::atoi(temp_stamp);
+
+  std::string sstamp;
+  RDK::UTimeStamp stamp(double(ServerTimeStamp/1000),25);
+  stamp>>sstamp;
+  TimeEdit->Text=sstamp.c_str();
+ }
+
+ UHttpServerFrame->IdHTTPServerCommandGet(AContext, ARequestInfo, AResponseInfo);
+ if(ARequestInfo->Document == "/images.cgi")
+ {
+  std::vector<char> &image_data=UHttpServerFrame->ParsedRequestArgs["Image"];
+  RDK::UBitmap &bmp=UHttpServerFrame->DecodeParamAsBitmap(image_data);
+  BmpSource=bmp;
+  UpdateVideo();
+  AResponseInfo->ContentText="OK";
+ }
+ else
+ {
+  AResponseInfo->ResponseNo=404;
+  AResponseInfo->ResponseText="404 Not Found";
+  AResponseInfo->ContentText="404 Not Found";
+ }
+
+ std::vector<char> &step=UHttpServerFrame->ParsedRequestArgs["StepEnable"];
+ if(!step.empty() && step[0]=='1')
+ {
+  UEngineMonitorForm->EngineMonitorFrame->CalculateSignal=true;
+ }
 }
 //---------------------------------------------------------------------------
 

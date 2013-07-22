@@ -21,6 +21,12 @@
 #include "VidGrab.hpp"
 #include "TUVisualController.h"
 #include "TUVisualControllerFrameUnit.h"
+#include <IdBaseComponent.hpp>
+#include <IdComponent.hpp>
+#include <IdCustomHTTPServer.hpp>
+#include <IdCustomTCPServer.hpp>
+#include <IdHTTPServer.hpp>
+#include "TUHttpServerUnit.h"
 
 class TVideoGrabberControlForm;
 
@@ -64,6 +70,8 @@ __published:    // IDE-managed Components
 	TMenuItem *PropertyMatrix1;
 	TCheckBox *SendPointsByStepCheckBox;
 	TCheckBox *DeletePointsAfterSendCheckBox;
+	TUHttpServerFrame *UHttpServerFrame;
+	TGroupBox *GroupBox1;
     void __fastcall TimerTimer(TObject *Sender);
     void __fastcall StartButtonClick(TObject *Sender);
     void __fastcall StopButtonClick(TObject *Sender);
@@ -91,6 +99,8 @@ __published:    // IDE-managed Components
 	void __fastcall SendImageToComponentProperty1Click(TObject *Sender);
 	void __fastcall SendAsMatrixButtonClick(TObject *Sender);
 	void __fastcall PropertyMatrix1Click(TObject *Sender);
+	void __fastcall UHttpServerFrameIdHTTPServerCommandGet(TIdContext *AContext, TIdHTTPRequestInfo *ARequestInfo,
+          TIdHTTPResponseInfo *AResponseInfo);
 
 
 private:    // User declarations
@@ -104,6 +114,7 @@ public:        // User declarations
 // 2 - Camera
 // 3 - IP Camera
 // 4 - Image sequence
+// 5 - Http Server
 int Mode;
 
 Graphics::TBitmap* ConvertBitmap;
@@ -159,6 +170,9 @@ std::string LinkedComponentPropertyName;
 
 
 public:
+// Временная метка сервера
+long long ServerTimeStamp;
+
 // Текущая создаваемая фигура
 //RDK::MGeometry<double,2> Figure;
 
@@ -239,6 +253,9 @@ void InitByIPCamera(const String camera_url, const String user_name, const Strin
 
 // Инициализация последовательностью изображений
 bool InitByImageSequence(const String &pathname);
+
+// Инициализация http-сервера
+bool InitByHttpServer(int listen_port);
 
 // Загружает выбранную картинку по индеку в массиве имен
 bool LoadImageFromSequence(int index, RDK::UBitmap &bmp);

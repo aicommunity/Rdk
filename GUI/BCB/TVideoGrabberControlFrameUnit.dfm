@@ -10,7 +10,7 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
     Top = 0
     Width = 453
     Height = 297
-    ActivePage = VideoFileTabSheet
+    ActivePage = DeviceTabSheet
     Align = alClient
     DoubleBuffered = True
     ParentDoubleBuffered = False
@@ -19,6 +19,18 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
     OnChange = VCapturePageControlChange
     object DeviceTabSheet: TTabSheet
       Caption = 'Device'
+      DesignSize = (
+        445
+        266)
+      object Label9: TLabel
+        Left = 8
+        Top = 3
+        Width = 177
+        Height = 13
+        Anchors = [akLeft, akTop, akRight]
+        AutoSize = False
+        Caption = 'IP Camera URL:'
+      end
       object VDCapturePanel: TPanel
         Left = 0
         Top = 0
@@ -57,7 +69,6 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
           Anchors = [akLeft, akTop, akRight]
           AutoSize = False
           Caption = 'Video device:'
-          ExplicitWidth = 369
         end
         object Label1: TLabel
           Left = 8
@@ -433,6 +444,33 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
         Caption = 'Browse'
         TabOrder = 2
         OnClick = ImageSequencePathBrowseButtonClick
+      end
+    end
+    object HttpServerTabSheet: TTabSheet
+      Caption = 'Http Server'
+      ImageIndex = 5
+      ExplicitLeft = 8
+      ExplicitTop = 31
+      DesignSize = (
+        445
+        266)
+      object Label10: TLabel
+        Left = 8
+        Top = 3
+        Width = 177
+        Height = 13
+        Anchors = [akLeft, akTop, akRight]
+        AutoSize = False
+        Caption = 'Listen port:'
+      end
+      object ListerPortEdit: TEdit
+        Left = 8
+        Top = 20
+        Width = 429
+        Height = 21
+        Anchors = [akLeft, akTop, akRight]
+        TabOrder = 0
+        Text = '80'
       end
     end
   end

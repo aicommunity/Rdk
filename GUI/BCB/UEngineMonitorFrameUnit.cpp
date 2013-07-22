@@ -17,6 +17,7 @@ __fastcall TUEngineMonitorFrame::TUEngineMonitorFrame(TComponent* Owner)
 	: TUVisualControllerFrame(Owner)
 {
  CalculateMode=0;
+ CalculateSignal=false;
  AlwaysUpdateFlag=true;
  UpdateInterval=100;
 }
@@ -115,21 +116,35 @@ void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
   return;
  }
 
- RDK::UIVisualControllerStorage::BeforeCalculate();
 
  switch(CalculateMode)
  {
  case 0:
+  RDK::UIVisualControllerStorage::BeforeCalculate();
   Env_Calculate(0);
+  RDK::UIVisualControllerStorage::AfterCalculate();
+  RDK::UIVisualControllerStorage::UpdateInterface();
  break;
 
  case 1:
+  RDK::UIVisualControllerStorage::BeforeCalculate();
   Env_RTCalculate();
+  RDK::UIVisualControllerStorage::AfterCalculate();
+  RDK::UIVisualControllerStorage::UpdateInterface();
+ break;
+
+ case 2:
+  if(CalculateSignal)
+  {
+   CalculateSignal=false;
+   RDK::UIVisualControllerStorage::BeforeCalculate();
+   Env_RTCalculate();
+   RDK::UIVisualControllerStorage::AfterCalculate();
+   RDK::UIVisualControllerStorage::UpdateInterface();
+  }
  break;
  }
 
- RDK::UIVisualControllerStorage::AfterCalculate();
- RDK::UIVisualControllerStorage::UpdateInterface();
 }
 //---------------------------------------------------------------------------
 

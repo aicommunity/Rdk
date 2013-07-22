@@ -16,7 +16,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
     DoubleBuffered = True
     ParentDoubleBuffered = False
     TabOrder = 0
-    ExplicitHeight = 351
     object Image: TImage
       Left = 2
       Top = 15
@@ -75,7 +74,49 @@ inherited VideoOutputFrame: TVideoOutputFrame
       VideoSource_FileOrURL_StartTime = -1
       VideoSource_FileOrURL_StopTime = -1
       OnFrameCaptureCompleted = VideoGrabberFrameCaptureCompleted
-      ExplicitHeight = 334
+    end
+    object GroupBox1: TGroupBox
+      Left = 2
+      Top = 15
+      Width = 698
+      Height = 319
+      Align = alClient
+      Caption = 'GroupBox1'
+      TabOrder = 1
+      Visible = False
+      ExplicitLeft = 296
+      ExplicitTop = 32
+      ExplicitWidth = 185
+      ExplicitHeight = 105
+      inline UHttpServerFrame: TUHttpServerFrame
+        Left = 2
+        Top = 15
+        Width = 694
+        Height = 302
+        Align = alClient
+        TabOrder = 0
+        ExplicitLeft = 2
+        ExplicitTop = 15
+        ExplicitWidth = 698
+        ExplicitHeight = 319
+        inherited Image1: TImage
+          Left = 0
+          Top = 0
+          Width = 694
+          Height = 302
+          Align = alClient
+          Proportional = True
+          Stretch = True
+        end
+        inherited IdHTTPServer: TIdHTTPServer
+          OnStatus = nil
+          OnConnect = nil
+          OnDisconnect = nil
+          OnSessionStart = nil
+          OnSessionEnd = nil
+          OnCommandGet = UHttpServerFrameIdHTTPServerCommandGet
+        end
+      end
     end
   end
   object Panel1: TPanel
