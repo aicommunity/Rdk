@@ -586,30 +586,113 @@ bool UBitmap::GetRect(int x, int y, UBitmap &target) const
 }
 
 
-// Разделяет текущее изображение на RGB цветовые каналы
-// Каналы формируются в цветовой модели 'Y8'
-// Поддерживает режимы ubmRGB24
+// Разделяет текущее изображение на цветовые каналы
+// Каналы формируются в цветовой модели 'Y8' для исходного 'RGB24' и
+// в 'Y32' для исходного 'RGB96'
+// Поддерживает режимы ubmRGB24, ubmRGB96
 void UBitmap::Separate(UBitmap* channels)
 {
- UBColor* *pdata;
-
  switch(ColorModel)
  {
  case ubmRGB24:
-  pdata=new UBColor*[3];
+ {
+  UBColor* *pdata=new UBColor*[3];
+  UBColor* sdata=Data;
   for(int i=0;i<3;i++)
   {
    channels[i].SetRes(Width,Height,ubmY8);
    pdata[i]=channels[i].Data;
   }
 
-  for(int i=0;i<ByteLength;++i)
+  for(int i=0;i<Length;++i)
+  {
+   *(pdata[0]++)=*sdata++;
+   *(pdata[1]++)=*sdata++;
+   *(pdata[2]++)=*sdata++;
+  }
+  delete []pdata;
+ }
+ break;
+
+ case ubmRGB96:
+ {
+  unsigned* *pdata=new unsigned*[3];
+  unsigned* sdata=(unsigned*)Data;
+  for(int i=0;i<3;i++)
+  {
+   channels[i].SetRes(Width,Height,ubmY32);
+   pdata[i]=(unsigned*)channels[i].Data;
+  }
+
+  for(int i=0;i<Length;++i)
   {
    *(pdata[0]++)=*Data++;
    *(pdata[1]++)=*Data++;
    *(pdata[2]++)=*Data++;
   }
   delete []pdata;
+ }
+ break;
+ }
+}
+
+// Совмещает в себе каналы в одно цветное изображение
+// Поддерживает режимы ubmRGB24, ubmRGB96
+void UBitmap::Merge(UBitmap* channels)
+{
+ switch(ColorModel)
+ {
+ case ubmRGB24:
+ {
+  UBColor* *pdata=new UBColor*[3];
+  UBColor* data=0;
+  for(int i=0;i<3;i++)
+  {
+   if(channels[i].GetColorModel() != ubmY8)
+   {
+	delete []pdata;
+	return;
+   }
+   pdata[i]=channels[i].Data;
+  }
+
+  SetRes(channels[0].GetWidth(),channels[0].GetHeight());
+  data=Data;
+
+  for(int i=0;i<Length;++i)
+  {
+   *data++=*(pdata[0]++);
+   *data++=*(pdata[1]++);
+   *data++=*(pdata[2]++);
+  }
+  delete []pdata;
+ }
+ break;
+
+ case ubmRGB96:
+ {
+  unsigned* *pdata=new unsigned*[3];
+  for(int i=0;i<3;i++)
+  {
+   if(channels[i].GetColorModel() != ubmY32)
+   {
+	delete []pdata;
+	return;
+   }
+   pdata[i]=(unsigned*)channels[i].Data;
+  }
+
+  SetRes(channels[0].GetWidth(),channels[0].GetHeight());
+  unsigned* sdata=(unsigned*)Data;
+
+  for(int i=0;i<Length;++i)
+  {
+   *sdata++=*(pdata[0]++);
+   *sdata++=*(pdata[1]++);
+   *sdata++=*(pdata[2]++);
+  }
+  delete []pdata;
+ }
  break;
  }
 }
@@ -2802,7 +2885,11 @@ UBColor *dest, UBMColorModel destcmodel) const
         case ubmF32:
          ColorConvertF32_RGB24(source, dest);
         break;
-    }
+
+		case ubmRGB96:
+		 ColorConvertRGB96_RGB24(source, dest);
+		break;
+	}
    break;
 
    case ubmRGB32:
@@ -4541,6 +4628,81 @@ void UBitmap::ColorConvertF32_YCrCb422(UBColor *source, UBColor *dest) const
 void UBitmap::ColorConvertF32_YCrCb444(UBColor *source, UBColor *dest) const
 {
 }
+
+
+void UBitmap::ColorConvertRGB96_Y32(UBColor *source, UBColor *dest) const
+{
+
+}
+
+void UBitmap::ColorConvertRGB96_RGB24(UBColor *source, UBColor *dest) const
+{
+ unsigned int* psource=reinterpret_cast<unsigned int*>(source);
+
+ for(int i=0;i<ByteLength;i++)
+  *(dest++)=*(psource++)>>24;
+}
+
+void UBitmap::ColorConvertRGB96_RGB32(UBColor *source, UBColor *dest) const
+{
+
+}
+
+void UBitmap::ColorConvertRGB96_Y8(UBColor *source, UBColor *dest) const
+{
+
+}
+
+void UBitmap::ColorConvertRGB96_YUYV(UBColor *source, UBColor *dest) const
+{
+
+}
+
+void UBitmap::ColorConvertRGB96_YVYU(UBColor *source, UBColor *dest) const
+{
+
+}
+
+void UBitmap::ColorConvertRGB96_UYVY(UBColor *source, UBColor *dest) const
+{
+
+}
+
+void UBitmap::ColorConvertRGB96_YUY2(UBColor *source, UBColor *dest) const
+{
+
+}
+
+void UBitmap::ColorConvertRGB96_HSI(UBColor *source, UBColor *dest) const
+{
+
+}
+
+void UBitmap::ColorConvertRGB96_HSV(UBColor *source, UBColor *dest) const
+{
+
+}
+
+void UBitmap::ColorConvertRGB96_YCrCb411(UBColor *source, UBColor *dest) const
+{
+
+}
+
+void UBitmap::ColorConvertRGB96_YCrCb422(UBColor *source, UBColor *dest) const
+{
+
+}
+
+void UBitmap::ColorConvertRGB96_YCrCb444(UBColor *source, UBColor *dest) const
+{
+
+}
+
+void UBitmap::ColorConvertRGB96_F32(UBColor *source, UBColor *dest) const
+{
+
+}
+
 #ifdef __BORLANDC__
 #pragma warn .8057
 #endif

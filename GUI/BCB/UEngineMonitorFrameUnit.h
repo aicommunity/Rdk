@@ -56,6 +56,9 @@ int CalculateMode;
 // сбрасывается при итерации счета
 bool CalculateSignal;
 
+// Временная метка сервера
+long long ServerTimeStamp;
+
 // Управление режимом расчетов
 int GetCalculateMode(void) const;
 void SetCalculateMode(int value);

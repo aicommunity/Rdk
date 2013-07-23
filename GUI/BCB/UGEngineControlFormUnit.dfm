@@ -600,6 +600,13 @@ object UGEngineControlForm: TUGEngineControlForm
         Caption = 'Watch Window'
         OnClick = WatchWindow1Click
       end
+      object N6: TMenuItem
+        Caption = '-'
+      end
+      object Broadcasters1: TMenuItem
+        Caption = 'Broadcasters'
+        OnClick = Broadcasters1Click
+      end
     end
     object New1: TMenuItem
       Caption = 'New Window'
@@ -617,7 +624,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 360
     Top = 65528
     Bitmap = {
-      494C01011B006000140110001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B006000180110001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

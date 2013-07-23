@@ -1277,6 +1277,7 @@ void __fastcall TVideoOutputFrame::UHttpServerFrameIdHTTPServerCommandGet(TIdCon
   std::string temp_stamp;
   temp_stamp.assign(&time_stamp[0],time_stamp.size());
   ServerTimeStamp=RDK::atoi(temp_stamp);
+  UEngineMonitorForm->EngineMonitorFrame->ServerTimeStamp=ServerTimeStamp;
 
   std::string sstamp;
   RDK::UTimeStamp stamp(double(ServerTimeStamp/1000),25);

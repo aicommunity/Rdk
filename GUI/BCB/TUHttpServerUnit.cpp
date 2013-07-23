@@ -12,7 +12,7 @@
 TUHttpServerFrame *UHttpServerFrame;
 //---------------------------------------------------------------------------
 __fastcall TUHttpServerFrame::TUHttpServerFrame(TComponent* Owner)
-	: TFrame(Owner)
+	: TUVisualControllerFrame(Owner)
 {
  MemStream=0;
  Bitmap=0;

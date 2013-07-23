@@ -273,9 +273,14 @@ void MaskTo(int x, int y, UBitmap &target, UColorT transp, UColorT color);
 bool GetRect(int x, int y, UBitmap &target) const;
 
 // Разделяет текущее изображение на цветовые каналы
-// Каналы формируются в цветовой модели 'Y8'
-// Поддерживает режимы ubmRGB24
+// Каналы формируются в цветовой модели 'Y8' для исходного 'RGB24' и
+// в 'Y32' для исходного 'RGB96'
+// Поддерживает режимы ubmRGB24, ubmRGB96
 void Separate(UBitmap* channels);
+
+// Совмещает в себе каналы в одно цветное изображение
+// Поддерживает режимы ubmRGB24, ubmRGB96
+void Merge(UBitmap* channels);
 // -------------------------
 
 // -------------------------
@@ -742,6 +747,21 @@ void ColorConvertF32_HSV(UBColor *source, UBColor *dest) const;
 void ColorConvertF32_YCrCb411(UBColor *source, UBColor *dest) const;
 void ColorConvertF32_YCrCb422(UBColor *source, UBColor *dest) const;
 void ColorConvertF32_YCrCb444(UBColor *source, UBColor *dest) const;
+
+void ColorConvertRGB96_Y32(UBColor *source, UBColor *dest) const;
+void ColorConvertRGB96_RGB24(UBColor *source, UBColor *dest) const;
+void ColorConvertRGB96_RGB32(UBColor *source, UBColor *dest) const;
+void ColorConvertRGB96_Y8(UBColor *source, UBColor *dest) const;
+void ColorConvertRGB96_YUYV(UBColor *source, UBColor *dest) const;
+void ColorConvertRGB96_YVYU(UBColor *source, UBColor *dest) const;
+void ColorConvertRGB96_UYVY(UBColor *source, UBColor *dest) const;
+void ColorConvertRGB96_YUY2(UBColor *source, UBColor *dest) const;
+void ColorConvertRGB96_HSI(UBColor *source, UBColor *dest) const;
+void ColorConvertRGB96_HSV(UBColor *source, UBColor *dest) const;
+void ColorConvertRGB96_YCrCb411(UBColor *source, UBColor *dest) const;
+void ColorConvertRGB96_YCrCb422(UBColor *source, UBColor *dest) const;
+void ColorConvertRGB96_YCrCb444(UBColor *source, UBColor *dest) const;
+void ColorConvertRGB96_F32(UBColor *source, UBColor *dest) const;
 // -----------------------
 };
 

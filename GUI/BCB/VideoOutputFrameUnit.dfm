@@ -84,10 +84,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
       Caption = 'GroupBox1'
       TabOrder = 1
       Visible = False
-      ExplicitLeft = 296
-      ExplicitTop = 32
-      ExplicitWidth = 185
-      ExplicitHeight = 105
       inline UHttpServerFrame: TUHttpServerFrame
         Left = 2
         Top = 15
@@ -97,8 +93,8 @@ inherited VideoOutputFrame: TVideoOutputFrame
         TabOrder = 0
         ExplicitLeft = 2
         ExplicitTop = 15
-        ExplicitWidth = 698
-        ExplicitHeight = 319
+        ExplicitWidth = 694
+        ExplicitHeight = 302
         inherited Image1: TImage
           Left = 0
           Top = 0
@@ -107,13 +103,12 @@ inherited VideoOutputFrame: TVideoOutputFrame
           Align = alClient
           Proportional = True
           Stretch = True
+          ExplicitLeft = 0
+          ExplicitTop = 0
+          ExplicitWidth = 694
+          ExplicitHeight = 302
         end
         inherited IdHTTPServer: TIdHTTPServer
-          OnStatus = nil
-          OnConnect = nil
-          OnDisconnect = nil
-          OnSessionStart = nil
-          OnSessionEnd = nil
           OnCommandGet = UHttpServerFrameIdHTTPServerCommandGet
         end
       end

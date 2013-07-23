@@ -32,9 +32,10 @@
 #include <string>
 #include <map>
 #include <vector>
+#include "TUVisualControllerFrameUnit.h"
 #include "myrdk.h"
 //---------------------------------------------------------------------------
-class TUHttpServerFrame : public TFrame
+class TUHttpServerFrame : public TUVisualControllerFrame
 {
 __published:	// IDE-managed Components
 	TIdHTTPServer *IdHTTPServer;

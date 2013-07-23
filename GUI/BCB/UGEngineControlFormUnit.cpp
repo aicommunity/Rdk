@@ -23,6 +23,7 @@
 #include "UDrawEngineFormUnit.h"
 #include "UCreateProjectWizardFormUnit.h"
 #include "UWatchFormUnit.h"
+#include "TIdHttpResultBroadcasterFormUnit.h"
 //#include "TUFileSystem.h"
 #include "rdk_cpp_initdll.h"
 #include "myrdk.h"
@@ -1149,6 +1150,12 @@ void __fastcall TUGEngineControlForm::PageControl1Change(TObject *Sender)
 void __fastcall TUGEngineControlForm::DrawShow(TObject *Sender)
 {
  UDrawEngineFrame1->ReloadNet();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::Broadcasters1Click(TObject *Sender)
+{
+ IdHttpResultBroadcasterForm->Show();
 }
 //---------------------------------------------------------------------------
 
