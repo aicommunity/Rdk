@@ -2524,6 +2524,9 @@ int UBitmap::CalcLineByteLength(int width, UBMColorModel cmodel) const
  case ubmRGB1:
   return width/8;
 
+ case ubmRGB96:
+  return width*3*4;
+
  case ubmYUY2:
   return width*2;
 
@@ -2588,6 +2591,10 @@ void UBitmap::CalcChannelOffset(int width, int height, UBMColorModel cmodel, int
  break;
 
  case ubmRGB32:
+  memset(offset,0,4*sizeof(int));
+ break;
+
+ case ubmRGB96:
   memset(offset,0,4*sizeof(int));
  break;
 

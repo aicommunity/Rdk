@@ -17,7 +17,7 @@ namespace RDK {
 
 // Режим изображения
 typedef enum {ubmUnknown=0, ubmY32=1, ubmF32=2, ubmRGB24=3, ubmRGB32=4, ubmRGB555=5,
-              ubmRGB565=6, ubmRGB8=7, ubmRGB4=8, ubmRGB1=9, ubmYUY2=100,
+              ubmRGB565=6, ubmRGB8=7, ubmRGB4=8, ubmRGB1=9, ubmRGB96=10, ubmYUY2=100,
               ubmYUYV=101, ubmYVU9=103, ubmYVYU=105,
               ubmUYVY=106, ubmY211=107, ubmY8=400,
               ubmYCrCb411=411, ubmYCrCb422=422, ubmYCrCb444=444,
