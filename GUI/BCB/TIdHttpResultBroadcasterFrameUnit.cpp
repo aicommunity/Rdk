@@ -70,7 +70,7 @@ void TIdHttpResultBroadcasterFrame::AAfterCalculate(void)
  }
 
 // System::Classes::TStream* AResponseContent;
- IdHTTP->Post(AUrl, ASource);
+// IdHTTP->Post(AUrl, ASource);
 
  delete ASource;
 }
