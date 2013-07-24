@@ -149,6 +149,11 @@ int LineByteLength;
 // Длина пикселя изображения в байтах
 int PixelByteLength;
 
+// Смещение данных пикселя (канала) в битах для масштабирования
+// в 1 байт на пиксель (канал).
+// Применяется для форматов ubmY32, ubmRGB96
+int Shift;
+
 protected: // Данные обхода изображения
 // Указатель на текущий элемент изображения
 UBColor* PData;
@@ -186,6 +191,10 @@ inline int GetLength(void) const
 // Число байт изображения
 inline int GetByteLength(void) const
 { return ByteLength; };
+
+// Смещение данных пикселя (канала) в битах для масштабирования
+int GetShift(void) const;
+bool SetShift(int value);
 
 // Длина линии изображения в байтах
 int GetLineByteLength(void) const;

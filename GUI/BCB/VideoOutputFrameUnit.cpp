@@ -1291,7 +1291,7 @@ void __fastcall TVideoOutputFrame::UHttpServerFrameIdHTTPServerCommandGet(TIdCon
   std::vector<char> &image_data=UHttpServerFrame->ParsedRequestArgs["Image"];
   RDK::UBitmap &bmp=UHttpServerFrame->DecodeParamAsBitmap(image_data);
   BmpSource=bmp;
-  UpdateVideo();
+//  UpdateVideo();
   AResponseInfo->ContentText="OK";
  }
  else

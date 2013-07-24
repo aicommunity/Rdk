@@ -6,6 +6,7 @@
 #include "UImagesFrameUnit.h"
 #include "UComponentsListFormUnit.h"
 #include "rdk_initdll.h"
+#include "TUBitmap.h"
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -107,9 +108,9 @@ bool TUImagesFrame::SetBitmap(int i, int j, const RDK::UBitmap &bitmap)
  if(i <0 || j<0 || i>= DrawGrid->ColCount || j>= DrawGrid->RowCount)
   return false;
 
-// bitmap>>Images[i][j]->Picture->Bitmap;
+ UBitmapToTBitmap(bitmap,Images[i][j]->Picture->Bitmap,true);
 
- SetImage(i, j, bitmap.GetWidth(), bitmap.GetHeight(), bitmap.GetColorModel(), bitmap.GetData());
+// SetImage(i, j, bitmap.GetWidth(), bitmap.GetHeight(), bitmap.GetColorModel(), bitmap.GetData());
  return true;
 }
 

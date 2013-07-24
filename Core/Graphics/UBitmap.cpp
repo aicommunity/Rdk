@@ -59,6 +59,7 @@ UBitmap::UBitmap(void)
  : UBitmapParam()
 {
  Data=PData=0;
+ Shift=0;
  Clear();
 }
 
@@ -66,6 +67,7 @@ UBitmap::UBitmap(const UBitmap &bitmap)
  : UBitmapParam(bitmap)
 {
  Data=PData=0;
+ Shift=0;
  Clear();
  *this=bitmap;
 }
@@ -74,6 +76,7 @@ UBitmap::UBitmap(UBMColorModel cmodel)
  : UBitmapParam(cmodel)
 {
  Data=PData=0;
+ Shift=0;
  Clear();
 }
 
@@ -81,6 +84,7 @@ UBitmap::UBitmap(int width, int height, UColorT color,
 				UBMColorModel cmodel)
 {
  Data=PData=0;
+ Shift=0;
  Clear();
  ColorModel=ubmRGB24;
 
@@ -97,6 +101,7 @@ UBitmap::UBitmap(int width, int height, const UBColor* data,
 				UBMColorModel cmodel)
 {
  Data=PData=0;
+ Shift=0;
  Clear();
  ColorModel=ubmRGB24;
 
@@ -115,6 +120,21 @@ UBitmap::~UBitmap(void)
 // -------------------------
 // Методы управления данными
 // -------------------------
+// Смещение данных пикселя (канала) в битах для масштабирования
+int UBitmap::GetShift(void) const
+{
+ return Shift;
+}
+
+bool UBitmap::SetShift(int value)
+{
+ if(value<0 || value>32)
+  return false;
+
+ Shift=value;
+ return true;
+}
+
 // Длина линии изображения в байтах
 int UBitmap::GetLineByteLength(void) const
 {
@@ -2339,7 +2359,7 @@ void UBitmap::Contrasting(UColorT minb, UColorT maxb, UBitmap *target)
 // Поддерживает режимы ubmY8, ubmRGB24, ubmY32
 void UBitmap::Contrasting(UBRect rect, UColorT minb, UColorT maxb, UColorT threshold, UBitmap *target)
 {
- UColorT minf, maxf; // Минимум и максимум освщённости
+ UColorT minf, maxf; // Минимум и максимум освещённости
  UBColor *out=0,*pout=0,*pdata=0;
  unsigned int dif_b,dif_c;
 
@@ -2552,6 +2572,7 @@ UBitmap& UBitmap::operator = (const UBitmap &bitmap)
    ColorModel=bitmap.ColorModel;
    LineByteLength=bitmap.LineByteLength;
    PixelByteLength=bitmap.PixelByteLength;
+   Shift=bitmap.Shift;
 
    if(MemoryLength<bitmap.MemoryLength)
    {
@@ -4640,7 +4661,7 @@ void UBitmap::ColorConvertRGB96_RGB24(UBColor *source, UBColor *dest) const
  unsigned int* psource=reinterpret_cast<unsigned int*>(source);
 
  for(int i=0;i<ByteLength;i++)
-  *(dest++)=*(psource++)>>24;
+  *(dest++)=*(psource++)>>Shift;
 }
 
 void UBitmap::ColorConvertRGB96_RGB32(UBColor *source, UBColor *dest) const

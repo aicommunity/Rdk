@@ -21,7 +21,7 @@ namespace RDK {
 
 
 // Отправляет данные объекта UBitmap в TBitmap
-void operator >> (const UBitmap &source, Graphics::TBitmap *target)
+void UBitmapToTBitmap(const UBitmap &source, Graphics::TBitmap *target, bool reflect)
 {
  UBColor *source_data;
  UColorT c;
@@ -46,6 +46,72 @@ void operator >> (const UBitmap &source, Graphics::TBitmap *target)
  switch(source.GetColorModel())
  {
  case ubmY32:
+ {
+   target->HandleType=bmDIB;
+   target->PixelFormat=pf8bit;
+   SysPal.lpal.palVersion = 0x300;
+   SysPal.lpal.palNumEntries = 256;
+   for(int i=0;i<256;i++)
+   {
+	SysPal.lpal.palPalEntry[i].peRed=SysPal.lpal.palPalEntry[i].peGreen=SysPal.lpal.palPalEntry[i].peBlue=i;
+	SysPal.lpal.palPalEntry[i].peFlags = 0;
+   }
+
+   if(target->Palette)
+	DeleteObject(target->Palette);
+   target->Palette = CreatePalette((const tagLOGPALETTE *)&SysPal.lpal);
+
+   unsigned char *out=(unsigned char*)target->ScanLine[source.GetHeight()-1];
+   unsigned int *in=(unsigned int*)source.GetData();
+   int shift=source.GetShift();
+   if(!reflect)
+   {
+	for(int i=0;i<source.GetLength();i++)
+	 *out++=*in++>>shift;
+   }
+   else
+   {
+	for(int i=0;i<source.GetHeight();i++)
+	{
+	 out=(unsigned char*)target->ScanLine[i];
+	 for(int j=0;j<source.GetWidth();j++)
+	 {
+	  *out++=*in++>>shift;
+	 }
+	}
+   }
+ }
+ break;
+
+ case ubmRGB96:
+ {
+  if(target->HandleType != bmDIB)
+   target->HandleType=bmDIB;
+  if(target->PixelFormat != pf24bit)
+   target->PixelFormat=pf24bit;
+
+   unsigned char *out=(unsigned char*)target->ScanLine[source.GetHeight()-1];
+   unsigned int *in=(unsigned int*)source.GetData();
+   int shift=source.GetShift();
+   if(!reflect)
+   {
+	for(int i=0;i<source.GetLength()*3;i++)
+	 *out++=*in++>>shift;
+   }
+   else
+   {
+	for(int i=0;i<source.GetHeight();i++)
+	{
+	 out=(unsigned char*)target->ScanLine[i];
+	 for(int j=0;j<source.GetWidth();j++)
+	 {
+	  *out++=*in++>>shift;
+	  *out++=*in++>>shift;
+	  *out++=*in++>>shift;
+	 }
+	}
+   }
+ }
  break;
 
  case ubmRGB24:
@@ -54,32 +120,54 @@ void operator >> (const UBitmap &source, Graphics::TBitmap *target)
   if(target->PixelFormat != pf24bit)
    target->PixelFormat=pf24bit;
 
+  if(!reflect)
+  {
    if(!(source.GetWidth() % 4))
-    memcpy(target->ScanLine[source.GetHeight()-1],source.GetData(),
-          source.GetByteLength()*sizeof(UBColor));
+	memcpy(target->ScanLine[source.GetHeight()-1],source.GetData(),
+		  source.GetByteLength()*sizeof(UBColor));
    else
    {
-    linebytelength=source.GetLineByteLength();
-    source_data=source.GetData();
-    for(int i=source.GetHeight()-1;i>=0;--i,source_data+=linebytelength)
-     memcpy(target->ScanLine[i],source_data,
-          linebytelength*sizeof(UBColor));
+	linebytelength=source.GetLineByteLength();
+	source_data=source.GetData();
+	for(int i=source.GetHeight()-1;i>=0;--i,source_data+=linebytelength)
+	 memcpy(target->ScanLine[i],source_data,
+		  linebytelength*sizeof(UBColor));
    }
+  }
+  else
+  {
+	linebytelength=source.GetLineByteLength();
+	source_data=source.GetData();
+	for(int i=0;i<source.GetHeight();++i,source_data+=linebytelength)
+	 memcpy(target->ScanLine[i],source_data,
+		  linebytelength*sizeof(UBColor));
+  }
  break;
 
  case ubmRGB32:
    target->HandleType=bmDIB;
    target->PixelFormat=pf32bit;
 
-   if(!(source.GetWidth() % 4))
-    memcpy(target->ScanLine[source.GetHeight()-1],source.GetData(),
-          source.GetByteLength()*sizeof(UBColor));
+   if(!reflect)
+   {
+	if(!(source.GetWidth() % 4))
+	 memcpy(target->ScanLine[source.GetHeight()-1],source.GetData(),
+		  source.GetByteLength()*sizeof(UBColor));
+	else
+	{
+	 linebytelength=source.GetLineByteLength();
+	 source_data=source.GetData();
+	 for(int i=source.GetHeight()-1;i>=0;--i,source_data+=linebytelength)
+	  memcpy(target->ScanLine[i],source_data,
+		  linebytelength*sizeof(UBColor));
+	}
+   }
    else
    {
-    linebytelength=source.GetLineByteLength();
-    source_data=source.GetData();
-	for(int i=source.GetHeight()-1;i>=0;--i,source_data+=linebytelength)
-	 memcpy(target->ScanLine[i],source_data,
+	 linebytelength=source.GetLineByteLength();
+	 source_data=source.GetData();
+	 for(int i=0;i<source.GetHeight();++i,source_data+=linebytelength)
+	  memcpy(target->ScanLine[i],source_data,
 		  linebytelength*sizeof(UBColor));
    }
  break;
@@ -97,7 +185,7 @@ void operator >> (const UBitmap &source, Graphics::TBitmap *target)
    SysPal.lpal.palNumEntries = 256;
    for(int i=0;i<256;i++)
    {
-    SysPal.lpal.palPalEntry[i].peRed=SysPal.lpal.palPalEntry[i].peGreen=SysPal.lpal.palPalEntry[i].peBlue=i;
+	SysPal.lpal.palPalEntry[i].peRed=SysPal.lpal.palPalEntry[i].peGreen=SysPal.lpal.palPalEntry[i].peBlue=i;
     SysPal.lpal.palPalEntry[i].peFlags = 0;
    }
 
@@ -105,16 +193,27 @@ void operator >> (const UBitmap &source, Graphics::TBitmap *target)
     DeleteObject(target->Palette);
    target->Palette = CreatePalette((const tagLOGPALETTE *)&SysPal.lpal);
 
-   if(!(source.GetWidth() % 4))
-    memcpy(target->ScanLine[source.GetHeight()-1],source.GetData(),
-          source.GetByteLength()*sizeof(UBColor));
+   if(!reflect)
+   {
+	if(!(source.GetWidth() % 4))
+	 memcpy(target->ScanLine[source.GetHeight()-1],source.GetData(),
+		  source.GetByteLength()*sizeof(UBColor));
+	else
+	{
+	 linebytelength=source.GetLineByteLength();
+	 source_data=source.GetData();
+	 for(int i=source.GetHeight()-1;i>=0;--i,source_data+=linebytelength)
+	  memcpy(target->ScanLine[i],source_data,
+		  linebytelength*sizeof(UBColor));
+    }
+   }
    else
    {
-    linebytelength=source.GetLineByteLength();
-	source_data=source.GetData();
-	for(int i=source.GetHeight()-1;i>=0;--i,source_data+=linebytelength)
-	 memcpy(target->ScanLine[i],source_data,
-          linebytelength*sizeof(UBColor));
+	 linebytelength=source.GetLineByteLength();
+	 source_data=source.GetData();
+	 for(int i=0;i<source.GetHeight();++i,source_data+=linebytelength)
+	  memcpy(target->ScanLine[i],source_data,
+		  linebytelength*sizeof(UBColor));
    }
  break;
 
@@ -123,8 +222,13 @@ void operator >> (const UBitmap &source, Graphics::TBitmap *target)
  }
 }
 
+void operator >> (const UBitmap &source, Graphics::TBitmap *target)
+{
+ UBitmapToTBitmap(source, target);
+}
+
 // Отправляет данные объекта TBitmap в UBitmap
-void operator << (UBitmap &target, Graphics::TBitmap *source)
+void TBitmapToUBitmap(UBitmap &target, Graphics::TBitmap *source, bool reflect)
 {
  if(!source)
   return;
@@ -190,6 +294,11 @@ void operator << (UBitmap &target, Graphics::TBitmap *source)
    }
  break;
  }
+}
+
+void operator << (UBitmap &target, Graphics::TBitmap *source)
+{
+ TBitmapToUBitmap(target,source);
 }
 
 
