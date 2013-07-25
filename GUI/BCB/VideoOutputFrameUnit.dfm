@@ -90,6 +90,12 @@ inherited VideoOutputFrame: TVideoOutputFrame
         Width = 694
         Height = 302
         Align = alClient
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ParentFont = False
         TabOrder = 0
         ExplicitLeft = 2
         ExplicitTop = 15

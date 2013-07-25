@@ -1113,6 +1113,7 @@ Graphics::TBitmap *Frame_Bitmap;
 
 	  break;
    }
+ UEngineMonitorForm->EngineMonitorFrame->CalculateSignal=true;
 }
 //---------------------------------------------------------------------------
 void __fastcall TVideoOutputFrame::TrackBarChange(TObject *Sender)
