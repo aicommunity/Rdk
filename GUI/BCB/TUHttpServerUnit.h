@@ -28,6 +28,7 @@
 #include <Vcl.ExtCtrls.hpp>
 #include <IdMessageCoder.hpp>
 #include <IdMessageCoderMIME.hpp>
+#include "TUVisualControllerFrameUnit.h"
 
 #include <string>
 #include <map>
@@ -69,7 +70,7 @@ void __fastcall ParsingMultiRequest(TIdContext *AContext, TIdHTTPRequestInfo *AR
 
 void __fastcall ProcessMimePart(TIdMessageDecoder *&VDecoder, bool &VMsgEnd, std::vector<char> &arg);
 
-RDK::UBitmap& DecodeParamAsBitmap(const std::vector<char> &param);
+RDK::UBitmap& DecodeParamAsBitmap(std::vector<char> &param);
 
 };
 //---------------------------------------------------------------------------

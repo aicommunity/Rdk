@@ -1,4 +1,4 @@
-object IdHttpResultBroadcasterFrame: TIdHttpResultBroadcasterFrame
+inherited IdHttpResultBroadcasterFrame: TIdHttpResultBroadcasterFrame
   Left = 0
   Top = 0
   Width = 536

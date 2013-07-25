@@ -8,6 +8,7 @@
 #include "TUBitmap.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
+#pragma link "TUVisualControllerFrameUnit"
 #pragma resource "*.dfm"
 TUHttpServerFrame *UHttpServerFrame;
 //---------------------------------------------------------------------------
@@ -58,8 +59,24 @@ void __fastcall TUHttpServerFrame::ProcessMimePart(TIdMessageDecoder *&VDecoder,
    if(arg.size()>0)
    {
 	LMStream->ReadBuffer(&arg[0],LMStream->Size);
-	if(arg.size()>1 && (arg[0] == '\r' && arg[1] == '\n'))
+	LMStream->Position=0;
+	if(arg.size()>1)
+	{
+//	int move_index=0;
+	char* data=&arg[0];
+//	size_t size=arg.size();
+	if((data[0] == '\r' && data[1] == '\n'))
+/*	 move_index=2;
+
+	for(size_t i=2;i<size;i++)
+	{
+	 if(data[i]=='\r')
+	  ++move_index;
+	 else
+	  data[i-move_index]=data[i];
+	}*/
 	 arg.erase(arg.begin(),arg.begin()+2);
+	}
    }
   }
   catch(...)
@@ -212,7 +229,7 @@ void __fastcall TUHttpServerFrame::IdHTTPServerCommandGet(TIdContext *AContext, 
  }
 }
 
-RDK::UBitmap& TUHttpServerFrame::DecodeParamAsBitmap(const std::vector<char> &param)
+RDK::UBitmap& TUHttpServerFrame::DecodeParamAsBitmap(std::vector<char> &param)
 {
  if(param.empty())
  {
@@ -220,7 +237,16 @@ RDK::UBitmap& TUHttpServerFrame::DecodeParamAsBitmap(const std::vector<char> &pa
   return TempUBitmap;
  }
  MemStream->Clear();
+/*
+ for(int i=0;i<param.size()-1;i++)
+  if(param[i]=='\r' && param[i+1]=='\n')
+  {
+   param.erase(param.begin()+i,param.begin()+i+1);
+  }
+*/
  MemStream->Write(&param[0],param.size());
+ MemStream->Position=0;
+ MemStream->SaveToFile("tmp.bmp");
  MemStream->Position=0;
 
  Image1->Picture->Bitmap->LoadFromStream(MemStream);
