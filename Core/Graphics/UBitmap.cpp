@@ -4660,7 +4660,7 @@ void UBitmap::ColorConvertRGB96_RGB24(UBColor *source, UBColor *dest) const
 {
  unsigned int* psource=reinterpret_cast<unsigned int*>(source);
 
- for(int i=0;i<ByteLength;i++)
+ for(int i=0;i<Length*3;i++)
   *(dest++)=*(psource++)>>Shift;
 }
 
