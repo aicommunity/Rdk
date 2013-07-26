@@ -4,7 +4,7 @@
 			<ProjectVersion>13.4</ProjectVersion>
 			<FrameworkType>None</FrameworkType>
 			<Base>True</Base>
-			<Config Condition="'$(Config)'==''">Debug</Config>
+			<Config Condition="'$(Config)'==''">Release</Config>
 			<Platform Condition="'$(Platform)'==''">Win32</Platform>
 			<TargetedPlatforms>1</TargetedPlatforms>
 			<AppType>StaticLibrary</AppType>
@@ -31,6 +31,12 @@
 		<PropertyGroup Condition="'$(Config)'=='Release' or '$(Cfg_2)'!=''">
 			<Cfg_2>true</Cfg_2>
 			<CfgParent>Base</CfgParent>
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Cfg_2)'=='true') or '$(Cfg_2_Win32)'!=''">
+			<Cfg_2_Win32>true</Cfg_2_Win32>
+			<CfgParent>Cfg_2</CfgParent>
+			<Cfg_2>true</Cfg_2>
 			<Base>true</Base>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base)'!=''">
@@ -82,11 +88,23 @@
 			<ILINK_LibraryPath>$(BDSLIB)\$(PLATFORM)\debug;$(ILINK_LibraryPath)</ILINK_LibraryPath>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
+			<BCC_EliminateDeadStore>true</BCC_EliminateDeadStore>
+			<BCC_ExpandIntrinsics>true</BCC_ExpandIntrinsics>
+			<BCC_DisableOptimizations>false</BCC_DisableOptimizations>
+			<BCC_EliminateDuplicateExpressions>true</BCC_EliminateDuplicateExpressions>
+			<BCC_OptimizeJumps>true</BCC_OptimizeJumps>
+			<BCC_PentiumInstructionScheduling>true</BCC_PentiumInstructionScheduling>
+			<BCC_OptimizeVariables>true</BCC_OptimizeVariables>
+			<BCC_OptimizeForSpeed>true</BCC_OptimizeForSpeed>
+			<BCC_LoopInductionReduction>true</BCC_LoopInductionReduction>
 			<DynamicRTL>false</DynamicRTL>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_2)'!=''">
 			<Defines>NDEBUG;$(Defines)</Defines>
 			<TASM_Debugging>None</TASM_Debugging>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
+			<BCC_InlineFunctionExpansion>false</BCC_InlineFunctionExpansion>
 		</PropertyGroup>
 		<ItemGroup>
 			<CppCompile Include="..\..\lib\amigaos.c">
