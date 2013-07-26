@@ -10,7 +10,7 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
     Top = 0
     Width = 453
     Height = 297
-    ActivePage = DeviceTabSheet
+    ActivePage = SharedMemoryTabSheet
     Align = alClient
     DoubleBuffered = True
     ParentDoubleBuffered = False
@@ -449,8 +449,6 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
     object HttpServerTabSheet: TTabSheet
       Caption = 'Http Server'
       ImageIndex = 5
-      ExplicitLeft = 8
-      ExplicitTop = 31
       DesignSize = (
         445
         266)
@@ -471,6 +469,49 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
         Anchors = [akLeft, akTop, akRight]
         TabOrder = 0
         Text = '80'
+      end
+    end
+    object SharedMemoryTabSheet: TTabSheet
+      Caption = 'Shared Memory'
+      ImageIndex = 6
+      DesignSize = (
+        445
+        266)
+      object Label11: TLabel
+        Left = 8
+        Top = 3
+        Width = 177
+        Height = 13
+        Anchors = [akLeft, akTop, akRight]
+        AutoSize = False
+        Caption = 'Pipe index:'
+      end
+      object Label12: TLabel
+        Left = 8
+        Top = 51
+        Width = 177
+        Height = 13
+        Anchors = [akLeft, akTop, akRight]
+        AutoSize = False
+        Caption = 'Pipe uid:'
+      end
+      object PipeIndexEdit: TEdit
+        Left = 8
+        Top = 20
+        Width = 429
+        Height = 21
+        Anchors = [akLeft, akTop, akRight]
+        TabOrder = 0
+        Text = '0'
+      end
+      object PipeUidEdit: TEdit
+        Left = 8
+        Top = 68
+        Width = 429
+        Height = 21
+        Anchors = [akLeft, akTop, akRight]
+        TabOrder = 1
+        Text = 'USharedMemory0'
       end
     end
   end

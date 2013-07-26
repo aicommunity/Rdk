@@ -3,6 +3,7 @@
 
 #include <windows.h>
 #include "../rdk_system.h"
+#include "../win/USharedMemoryLoader.win.cpp"
 #include <System.SysUtils.hpp>  
 #include <windows.h>
 #include <vcl.h>

@@ -78,6 +78,11 @@ __published:    // IDE-managed Components
 	TEdit *ListerPortEdit;
 	TLabel *Label9;
 	TLabel *Label10;
+	TTabSheet *SharedMemoryTabSheet;
+	TEdit *PipeIndexEdit;
+	TLabel *Label11;
+	TEdit *PipeUidEdit;
+	TLabel *Label12;
     void __fastcall DeviceComboBoxSelect(TObject *Sender);
     void __fastcall InputComboBoxSelect(TObject *Sender);
     void __fastcall VideoSizeComboBoxSelect(TObject *Sender);

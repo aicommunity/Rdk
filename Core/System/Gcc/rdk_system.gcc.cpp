@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include "../rdk_system.h"
+#include "USharedMemoryLoader.gcc.cpp"
 
 namespace RDK {
 

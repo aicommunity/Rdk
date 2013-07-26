@@ -36,11 +36,17 @@ object VideoGrabberControlForm: TVideoGrabberControlForm
     inherited VCapturePageControl: TPageControl
       Width = 599
       Height = 299
-      ActivePage = VideoGrabberControlFrame.ImageSequenceTabSheet
+      ActivePage = VideoGrabberControlFrame.SharedMemoryTabSheet
       ExplicitWidth = 599
       ExplicitHeight = 299
       inherited DeviceTabSheet: TTabSheet
+        ExplicitWidth = 591
+        ExplicitHeight = 268
         inherited VDCapturePanel: TPanel
+          Width = 591
+          Height = 268
+          ExplicitWidth = 591
+          ExplicitHeight = 268
           inherited ModeLabel: TLabel
             Width = 706
             ExplicitWidth = 560
@@ -109,24 +115,9 @@ object VideoGrabberControlForm: TVideoGrabberControlForm
         end
       end
       inherited VideoFileTabSheet: TTabSheet
-        ExplicitWidth = 591
-        ExplicitHeight = 268
         inherited VFCapturePanel: TPanel
-          Width = 591
-          Height = 268
-          ExplicitWidth = 591
-          ExplicitHeight = 268
           inherited VideoFileNameLabel: TLabel
-            Width = 575
             ExplicitWidth = 560
-          end
-          inherited VFNameEdit: TEdit
-            Width = 490
-            ExplicitWidth = 490
-          end
-          inherited VFBrowseButton: TButton
-            Left = 504
-            ExplicitLeft = 504
           end
         end
       end
@@ -149,6 +140,8 @@ object VideoGrabberControlForm: TVideoGrabberControlForm
         end
       end
       inherited ImageSequenceTabSheet: TTabSheet
+        ExplicitWidth = 591
+        ExplicitHeight = 268
         inherited Label7: TLabel
           Width = 983
           ExplicitWidth = 560
@@ -168,6 +161,26 @@ object VideoGrabberControlForm: TVideoGrabberControlForm
           ExplicitLeft = 505
           ExplicitTop = 21
           ExplicitHeight = 23
+        end
+      end
+      inherited HttpServerTabSheet: TTabSheet
+        inherited Label10: TLabel
+          Width = 323
+        end
+        inherited ListerPortEdit: TEdit
+          Width = 575
+        end
+      end
+      inherited SharedMemoryTabSheet: TTabSheet
+        ExplicitWidth = 591
+        ExplicitHeight = 268
+        inherited PipeIndexEdit: TEdit
+          Width = 576
+          ExplicitWidth = 576
+        end
+        inherited PipeUidEdit: TEdit
+          Width = 576
+          ExplicitWidth = 576
         end
       end
     end

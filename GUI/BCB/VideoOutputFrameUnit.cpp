@@ -9,6 +9,7 @@
 #include "UEngineMonitorFormUnit.h"
 #include "myrdk.h"
 #include "rdk_initdll.h"
+//#include "USharedMemoryLoader.h"
 //#include "TUFileSystem.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -251,6 +252,16 @@ bool TVideoOutputFrame::InitByHttpServer(int listen_port)
   bind=UHttpServerFrame->IdHTTPServer->Bindings->Items[0];
 
  bind->Port=listen_port;
+ return true;
+}
+
+// Инициализация общей памяти
+bool TVideoOutputFrame::InitBySharedMemory(int pipe_index, const std::string &pipe_name)
+{
+ PipeIndex=pipe_index;
+ PipeName=pipe_name;
+ SharedMemoryPipeSize=0;
+ Mode=6;
  return true;
 }
 
@@ -630,6 +641,62 @@ void TVideoOutputFrame::ABeforeCalculate(void)
   UpdateVideo();
   Sleep(0);
  }
+ else
+ if(Mode == 6)
+ {
+  if(Usm_IsPipeInit)
+  {
+   int real_size=0;
+   if(Usm_IsPipeInit(PipeIndex)<0)
+	return;
+
+   SharedMemoryPipeSize=Usm_GetPipeSize(PipeIndex);
+   if(SharedMemoryPipeSize<0)
+	SharedMemoryPipeSize=0;
+   Buffer.resize(SharedMemoryPipeSize);
+   if(!SharedMemoryPipeSize || SharedMemoryPipeSize<16)
+	return;
+
+   real_size=Usm_ReadData(PipeIndex,&Buffer[0],Buffer.size());
+   if(real_size>0)
+   {
+	int shift=0;
+	long long time_stamp;
+	memcpy(&time_stamp,&Buffer[0],sizeof(ServerTimeStamp));
+
+	if(ServerTimeStamp == time_stamp)
+	{
+	 // Здесь извещение движку о том, что итерацию расчета следует пропустить
+	 return;
+	}
+	shift+=sizeof(ServerTimeStamp);
+
+	UEngineMonitorForm->EngineMonitorFrame->ServerTimeStamp=ServerTimeStamp;
+	std::string sstamp;
+	RDK::UTimeStamp stamp(double(ServerTimeStamp/1000),25);
+	stamp>>sstamp;
+	TimeEdit->Text=sstamp.c_str();
+
+	int width=0;
+	int height=0;
+	memcpy(&width,&Buffer[shift],sizeof(width));
+	shift+=sizeof(width);
+	memcpy(&height,&Buffer[shift],sizeof(height));
+	shift+=sizeof(height);
+	BmpSource.SetRes(width,Height,RDK::ubmRGB24);
+	if(shift<SharedMemoryPipeSize)
+	{
+	 int image_size=width*height*3;
+	 if(image_size>SharedMemoryPipeSize-16)
+	  image_size=SharedMemoryPipeSize-16;
+	 memcpy(BmpSource.GetData(),&Buffer[shift],image_size);
+	}
+	UpdateVideo();
+   }
+  }
+ }
+
+
  SendToComponentIO();
  if(SendPointsByStepCheckBox->Checked)
  {
@@ -780,6 +847,15 @@ void __fastcall TVideoOutputFrame::StartButtonClick(TObject *Sender)
   UHttpServerFrame->IdHTTPServer->Active=true;
  break;
 
+ case 6:
+ {
+  if(Usm_SetNumPipes)
+   Usm_SetNumPipes(PipeIndex+1);
+
+  int res=Usm_InitPipe(PipeIndex,SharedMemoryPipeSize,0,PipeName.c_str());
+ }
+ break;
+
  default:
      ;
  }  
@@ -809,6 +885,11 @@ void __fastcall TVideoOutputFrame::StopButtonClick(TObject *Sender)
 
  case 5:
   UHttpServerFrame->IdHTTPServer->Active=false;
+ break;
+
+ case 6:
+  if(Usm_UnInitPipe)
+   Usm_UnInitPipe(PipeIndex);
  break;
 
 

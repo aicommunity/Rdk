@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include "USharedMemoryLoader.h"
 
 namespace RDK {
 

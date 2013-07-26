@@ -115,6 +115,7 @@ public:        // User declarations
 // 3 - IP Camera
 // 4 - Image sequence
 // 5 - Http Server
+// 6 - Shared memory
 int Mode;
 
 Graphics::TBitmap* ConvertBitmap;
@@ -197,6 +198,10 @@ bool ZoneSelectEnable;
 // Событие, устанавливаемое при окончании выделения зоны
 HANDLE ZoneSelectEvent;
 
+int PipeIndex;
+std::string PipeName;
+int SharedMemoryPipeSize;
+
 // ============================================================
 // Временные переменные
 // ============================================================
@@ -232,8 +237,12 @@ std::string SelectedComponentStateName;
 std::string SelectedComponentPropertyMatrixName;
 std::string SelectedComponentMatrixName;
 
+std::vector<char> Buffer;
+
 int LastReadSequenceIndex;
 // ============================================================
+
+
 
 
 // Инициализация фрейма avi-файлом
@@ -256,6 +265,9 @@ bool InitByImageSequence(const String &pathname);
 
 // Инициализация http-сервера
 bool InitByHttpServer(int listen_port);
+
+// Инициализация общей памяти
+bool InitBySharedMemory(int pipe_index, const std::string &pipe_name);
 
 // Загружает выбранную картинку по индеку в массиве имен
 bool LoadImageFromSequence(int index, RDK::UBitmap &bmp);

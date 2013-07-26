@@ -56,6 +56,11 @@ int TVideoGrabberControlFrame::GetMode(void) const
   return 3;
  if(VCapturePageControl->ActivePage == ImageSequenceTabSheet)
   return 4;
+ if(VCapturePageControl->ActivePage == HttpServerTabSheet)
+  return 5;
+ if(VCapturePageControl->ActivePage == SharedMemoryTabSheet)
+  return 6;
+
 
  return -1;
 }
@@ -82,6 +87,14 @@ void TVideoGrabberControlFrame::SelectMode(int mode)
 
  case 4:
   VCapturePageControl->ActivePage = ImageSequenceTabSheet;
+ break;
+
+ case 5:
+  VCapturePageControl->ActivePage = HttpServerTabSheet;
+ break;
+
+ case 6:
+  VCapturePageControl->ActivePage = SharedMemoryTabSheet;
  break;
  }
 
@@ -127,7 +140,10 @@ void TVideoGrabberControlFrame::AUpdateInterface(void)
  if(!VideoGrabber)
   return;
 
- if(VCapturePageControl->ActivePage != PictureFileTabSheet && VCapturePageControl->ActivePage != ImageSequenceTabSheet && VCapturePageControl->ActivePage != HttpServerTabSheet)
+ if(VCapturePageControl->ActivePage != PictureFileTabSheet &&
+	VCapturePageControl->ActivePage != ImageSequenceTabSheet &&
+	VCapturePageControl->ActivePage != HttpServerTabSheet &&
+	VCapturePageControl->ActivePage != SharedMemoryTabSheet)
  {
   if(VideoGrabber->VideoSource == vs_VideoCaptureDevice)
    VCapturePageControl->ActivePage = DeviceTabSheet;
@@ -186,6 +202,10 @@ void TVideoGrabberControlFrame::ASaveParameters(RDK::USerStorageXML &xml)
  xml.WriteInteger("VideoSizeId",VideoSizeComboBox->ItemIndex);
  xml.WriteInteger("VideoSubTypeId",VideoSubTypeComboBox->ItemIndex);
  xml.WriteInteger("AnalogVideoStandardId",AnalogVideoStandardComboBox->ItemIndex);
+
+ xml.WriteString("ListenPort",AnsiString(ListerPortEdit->Text).c_str());
+ xml.WriteString("PipeIndex",AnsiString(PipeIndexEdit->Text).c_str());
+ xml.WriteString("PipeUid",AnsiString(PipeUidEdit->Text).c_str());
 }
 
 // Загружает параметры интерфейса из xml
@@ -205,6 +225,11 @@ void TVideoGrabberControlFrame::ALoadParameters(RDK::USerStorageXML &xml)
  IPCameraUserNameEdit->Text=xml.ReadString("IPCameraUserName","").c_str();
  IPCameraUserPasswordEdit->Text=xml.ReadString("IPCameraUserPassword","").c_str();
  IPCameraControlPostfixEdit->Text=xml.ReadString("IPCameraControlPostfix","").c_str();
+
+ ListerPortEdit->Text=xml.ReadString("ListenPort","80").c_str();
+
+ PipeIndexEdit->Text=xml.ReadString("PipeIndex","0").c_str();
+ PipeUidEdit->Text=xml.ReadString("PipeUid","USharedMemory0").c_str();
 
  SelectMode(xml.ReadInteger("Mode",1));
  UpdateInterface();
@@ -344,6 +369,11 @@ void __fastcall TVideoGrabberControlFrame::VCapturePageControlChange(TObject *Se
  if(VCapturePageControl->ActivePage == HttpServerTabSheet)
  {
   VideoOutputFrame->InitByHttpServer(StrToInt(ListerPortEdit->Text));
+ }
+ else
+ if(VCapturePageControl->ActivePage == SharedMemoryTabSheet)
+ {
+  VideoOutputFrame->InitBySharedMemory(StrToInt(PipeIndexEdit->Text),AnsiString(PipeUidEdit->Text).c_str());
  }
 
  UpdateInterface();

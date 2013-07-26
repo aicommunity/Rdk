@@ -3,6 +3,7 @@
 
 #include <windows.h>
 #include "../rdk_system.h"
+#include "USharedMemoryLoader.win.cpp"
 
 namespace RDK {
 

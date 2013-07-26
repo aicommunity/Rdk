@@ -3,6 +3,7 @@
 
 #include <ctime>
 #include "../rdk_system.h"
+#include "USharedMemoryLoader.ansi.cpp"
 
 namespace RDK {
 

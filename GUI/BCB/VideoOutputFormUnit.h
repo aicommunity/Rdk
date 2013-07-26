@@ -44,6 +44,8 @@ __published:	// IDE-managed Components
 	void __fastcall AddSource2Click(TObject *Sender);
 	void __fastcall DelSource2Click(TObject *Sender);
 	void __fastcall ClearSource1Click(TObject *Sender);
+	void __fastcall FormCreate(TObject *Sender);
+	void __fastcall FormDestroy(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
 	__fastcall TVideoOutputForm(TComponent* Owner);

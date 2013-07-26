@@ -2,7 +2,8 @@
 #define RDK_SYSTEM_QT_CPP
 
 #include <ctime>
-#include "../rdk_system.h"
+#include "../rdk_system.h"     
+#include "USharedMemoryLoader.qt.cpp"
 
 namespace RDK {
 
