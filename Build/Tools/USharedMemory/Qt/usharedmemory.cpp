@@ -48,7 +48,7 @@ void CALLING_CONVERSION SetNumPipes(int value)
 /// Эта функция не должна вызываться во время обмена по выбранному каналу!
 int CALLING_CONVERSION InitPipe(int pipe_index, int &pipe_byte_size, int mode, const char *pipe_uid)
 {
- if(pipe_index<0 || pipe_index>NumPipes)
+ if(pipe_index<0 || pipe_index>=NumPipes)
   return -1;
 
  if(mode != 0 && mode != 1)
@@ -79,7 +79,7 @@ int CALLING_CONVERSION InitPipe(int pipe_index, int &pipe_byte_size, int mode, c
 /// Отключается от канала
 int CALLING_CONVERSION UnInitPipe(int pipe_index)
 {
- if(pipe_index<0 || pipe_index>NumPipes)
+ if(pipe_index<0 || pipe_index>=NumPipes)
   return -1;
 
  if(!MemoryPage[pipe_index])
@@ -96,7 +96,7 @@ int CALLING_CONVERSION UnInitPipe(int pipe_index)
 /// или сообщение об ошибке < 0.
 int CALLING_CONVERSION IsPipeInit(int pipe_index)
 {
- if(pipe_index<0 || pipe_index>NumPipes)
+ if(pipe_index<0 || pipe_index>=NumPipes)
   return -1;
 
  if(!MemoryPage[pipe_index])
@@ -112,7 +112,7 @@ int CALLING_CONVERSION IsPipeInit(int pipe_index)
 /// Возвращает размер общей памяти канала
 int CALLING_CONVERSION GetPipeSize(int pipe_index)
 {
- if(pipe_index<0 || pipe_index>NumPipes)
+ if(pipe_index<0 || pipe_index>=NumPipes)
   return -1;
 
  if(!MemoryPage[pipe_index])
@@ -125,7 +125,7 @@ int CALLING_CONVERSION GetPipeSize(int pipe_index)
 /// Возвращает число записанных байт
 int CALLING_CONVERSION WriteData(int pipe_index, const char* buffer, int buffer_byte_size)
 {
- if(pipe_index<0 || pipe_index>NumPipes)
+ if(pipe_index<0 || pipe_index>=NumPipes)
   return -1;
 
  QSharedMemory* p=MemoryPage[pipe_index];
@@ -154,7 +154,7 @@ int CALLING_CONVERSION WriteData(int pipe_index, const char* buffer, int buffer_
 /// Возвращает число прочитанных байт
 int CALLING_CONVERSION ReadData(int pipe_index, char* buffer, int buffer_byte_size)
 {
- if(pipe_index<0 || pipe_index>NumPipes)
+ if(pipe_index<0 || pipe_index>=NumPipes)
   return -1;
 
  QSharedMemory* p=MemoryPage[pipe_index];

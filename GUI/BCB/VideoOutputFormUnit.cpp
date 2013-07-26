@@ -19,6 +19,12 @@ __fastcall TVideoOutputForm::TVideoOutputForm(TComponent* Owner)
 {
 }
 
+__fastcall TVideoOutputForm::~TVideoOutputForm(void)
+{
+
+}
+
+
 // Метод, вызываемый перед шагом расчета
 void TVideoOutputForm::ABeforeCalculate(void)
 {

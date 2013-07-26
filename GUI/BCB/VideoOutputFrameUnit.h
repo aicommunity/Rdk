@@ -237,7 +237,7 @@ std::string SelectedComponentStateName;
 std::string SelectedComponentPropertyMatrixName;
 std::string SelectedComponentMatrixName;
 
-std::vector<char> Buffer;
+std::vector<char> PipeBuffer;
 
 int LastReadSequenceIndex;
 // ============================================================

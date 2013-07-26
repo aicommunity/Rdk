@@ -49,6 +49,7 @@ __published:	// IDE-managed Components
 private:	// User declarations
 public:		// User declarations
 	__fastcall TVideoOutputForm(TComponent* Owner);
+	virtual __fastcall ~TVideoOutputForm(void);
 
 // Источники видео
 std::vector<TVideoOutputFrame*> Sources;

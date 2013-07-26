@@ -648,21 +648,25 @@ void TVideoOutputFrame::ABeforeCalculate(void)
   {
    int real_size=0;
    if(Usm_IsPipeInit(PipeIndex)<0)
-	return;
+   {
+	StartButtonClick(this);
+	if(Usm_IsPipeInit(PipeIndex)<0)
+	 return;
+   }
 
    SharedMemoryPipeSize=Usm_GetPipeSize(PipeIndex);
    if(SharedMemoryPipeSize<0)
 	SharedMemoryPipeSize=0;
-   Buffer.resize(SharedMemoryPipeSize);
+   PipeBuffer.resize(SharedMemoryPipeSize);
    if(!SharedMemoryPipeSize || SharedMemoryPipeSize<16)
 	return;
 
-   real_size=Usm_ReadData(PipeIndex,&Buffer[0],Buffer.size());
+   real_size=Usm_ReadData(PipeIndex,&PipeBuffer[0],PipeBuffer.size());
    if(real_size>0)
    {
 	int shift=0;
 	long long time_stamp;
-	memcpy(&time_stamp,&Buffer[0],sizeof(ServerTimeStamp));
+	memcpy(&time_stamp,&PipeBuffer[0],sizeof(ServerTimeStamp));
 
 	if(ServerTimeStamp == time_stamp)
 	{
@@ -679,17 +683,17 @@ void TVideoOutputFrame::ABeforeCalculate(void)
 
 	int width=0;
 	int height=0;
-	memcpy(&width,&Buffer[shift],sizeof(width));
+	memcpy(&width,&PipeBuffer[shift],sizeof(width));
 	shift+=sizeof(width);
-	memcpy(&height,&Buffer[shift],sizeof(height));
+	memcpy(&height,&PipeBuffer[shift],sizeof(height));
 	shift+=sizeof(height);
-	BmpSource.SetRes(width,Height,RDK::ubmRGB24);
+	BmpSource.SetRes(width,height,RDK::ubmRGB24);
 	if(shift<SharedMemoryPipeSize)
 	{
 	 int image_size=width*height*3;
 	 if(image_size>SharedMemoryPipeSize-16)
 	  image_size=SharedMemoryPipeSize-16;
-	 memcpy(BmpSource.GetData(),&Buffer[shift],image_size);
+	 memcpy(BmpSource.GetData(),&PipeBuffer[shift],image_size);
 	}
 	UpdateVideo();
    }
@@ -863,6 +867,7 @@ void __fastcall TVideoOutputFrame::StartButtonClick(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TVideoOutputFrame::StopButtonClick(TObject *Sender)
 {
+ int res=0;
  switch (Mode) {
  case 0:
  break;
@@ -888,8 +893,10 @@ void __fastcall TVideoOutputFrame::StopButtonClick(TObject *Sender)
  break;
 
  case 6:
+ {
   if(Usm_UnInitPipe)
-   Usm_UnInitPipe(PipeIndex);
+   res=Usm_UnInitPipe(PipeIndex);
+ }
  break;
 
 
