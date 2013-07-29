@@ -138,8 +138,10 @@ USerStorageBinary& operator << (USerStorageBinary& storage, const UBVSObject &da
  operator << (storage,data.ObjectHeight);
  operator << (storage,data.XShift);
  operator << (storage,data.YShift);
- operator << (storage,data.ObjectColor);
- operator << (storage,data.ObjectColor2);
+ operator << (storage,data.Color);
+ operator << (storage,data.Color2);
+ operator << (storage,data.Color3);
+ operator << (storage,data.Color4);
  operator << (storage,data.Visible);
  operator << (storage,data.MovingDirection);
 
@@ -154,8 +156,10 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, UBVSObject &data)
  operator >> (storage,data.ObjectHeight);
  operator >> (storage,data.XShift);
  operator >> (storage,data.YShift);
- operator >> (storage,data.ObjectColor);
- operator >> (storage,data.ObjectColor2);
+ operator >> (storage,data.Color);
+ operator >> (storage,data.Color2);
+ operator >> (storage,data.Color3);
+ operator >> (storage,data.Color4);
  operator >> (storage,data.Visible);
  operator >> (storage,data.MovingDirection);
 

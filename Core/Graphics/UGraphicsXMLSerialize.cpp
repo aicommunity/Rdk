@@ -413,12 +413,20 @@ USerStorageXML& operator << (USerStorageXML& storage, const UBVSObject &data)
  operator << (storage,data.YShift);
  storage.SelectUp();
 
- storage.AddNode("ObjectColor");
- operator << (storage,data.ObjectColor);
+ storage.AddNode("Color");
+ operator << (storage,data.Color);
  storage.SelectUp();
 
- storage.AddNode("ObjectColor2");
- operator << (storage,data.ObjectColor2);
+ storage.AddNode("Color2");
+ operator << (storage,data.Color2);
+ storage.SelectUp();
+
+ storage.AddNode("Color3");
+ operator << (storage,data.Color2);
+ storage.SelectUp();
+
+ storage.AddNode("Color4");
+ operator << (storage,data.Color2);
  storage.SelectUp();
 
  storage.AddNode("Mode");
@@ -468,14 +476,24 @@ USerStorageXML& operator >> (USerStorageXML& storage, UBVSObject &data)
  operator >> (storage,data.YShift);
  storage.SelectUp();
 
- if(!storage.SelectNode("ObjectColor"))
+ if(!storage.SelectNode("Color"))
   return storage;
- operator >> (storage,data.ObjectColor);
+ operator >> (storage,data.Color);
  storage.SelectUp();
 
- if(!storage.SelectNode("ObjectColor2"))
+ if(!storage.SelectNode("Color2"))
   return storage;
- operator >> (storage,data.ObjectColor2);
+ operator >> (storage,data.Color2);
+ storage.SelectUp();
+
+ if(!storage.SelectNode("Color3"))
+  return storage;
+ operator >> (storage,data.Color3);
+ storage.SelectUp();
+
+ if(!storage.SelectNode("Color4"))
+  return storage;
+ operator >> (storage,data.Color4);
  storage.SelectUp();
 
  if(!storage.SelectNode("Mode"))
