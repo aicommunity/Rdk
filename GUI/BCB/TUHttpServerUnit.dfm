@@ -1,9 +1,14 @@
 inherited UHttpServerFrame: TUHttpServerFrame
   object Image1: TImage
-    Left = 32
-    Top = 24
-    Width = 249
-    Height = 201
+    Left = 0
+    Top = 0
+    Width = 320
+    Height = 240
+    Align = alClient
+    ExplicitLeft = 32
+    ExplicitTop = 24
+    ExplicitWidth = 249
+    ExplicitHeight = 201
   end
   object IdHTTPServer: TIdHTTPServer
     Bindings = <
@@ -14,11 +19,11 @@ inherited UHttpServerFrame: TUHttpServerFrame
     AutoStartSession = True
     KeepAlive = True
     OnCommandGet = IdHTTPServerCommandGet
-    Left = 120
-    Top = 88
+    Left = 16
+    Top = 16
   end
   object PageProducer: TPageProducer
-    Left = 208
-    Top = 32
+    Left = 56
+    Top = 16
   end
 end
