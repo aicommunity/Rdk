@@ -40,7 +40,6 @@ __published:	// IDE-managed Components
 	TLabeledEdit *NumberOfChannelsLabeledEdit;
 	TGroupBox *GroupBox2;
 	TValueListEditor *ChannelNamesValueListEditor;
-	TButton *ApplyChannelsNumberButton;
 	TGroupBox *GroupBox3;
 	TChart *PerformanceChart;
 	TBarSeries *Series1;
@@ -49,13 +48,33 @@ __published:	// IDE-managed Components
 	TRadioButton *RadioButton2;
 	TPanel *Panel2;
 	TUHttpServerFrame *UHttpServerFrame;
+	TPanel *Panel3;
+	TPanel *Panel4;
+	TButton *ServerStartButton;
+	TButton *ServerStopButton;
+	TButton *ApplyOptionsButton;
+	TButton *ReturnOptionsButton;
 	void __fastcall UHttpServerFrameIdHTTPServerCommandGet(TIdContext *AContext, TIdHTTPRequestInfo *ARequestInfo,
           TIdHTTPResponseInfo *AResponseInfo);
 	void __fastcall FormCreate(TObject *Sender);
 	void __fastcall FormDestroy(TObject *Sender);
+	void __fastcall ServerStartButtonClick(TObject *Sender);
+	void __fastcall ServerStopButtonClick(TObject *Sender);
+	void __fastcall ReturnOptionsButtonClick(TObject *Sender);
+	void __fastcall ApplyOptionsButtonClick(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
 	__fastcall TUServerControlForm(TComponent* Owner);
+
+// -----------------
+// Параметры сервера
+// -----------------
+/// Флаг разрешения запуска сервера при старте
+bool AutoStartFlag;
+
+/// Массив уникальных имен каналов
+std::vector<std::string> ChannelNames;
+// -----------------
 
 /// Указатель на функцию, осуществляющую декодирование параметров запроса
 int (*CommandRequestDecoder)(std::map<std::string,std::vector<char> > &source, std::map<std::string,std::vector<char> > &dest);
@@ -92,19 +111,27 @@ std::string Command;
 std::string ChannelIndex;
 
 TMemoryStream* MemStream;
-	TBitmap *Bitmap;
-
-	RDK::UBitmap TempUBitmap;
+TBitmap *Bitmap;
+RDK::UBitmap TempUBitmap;
 
 // Функция, обрабатывающая команды управления сервером
-void ProcessControlCommand(const std::string &cmd_name, std::map<std::string,std::vector<char> > &args, std::string &response_type, std::vector<char> &response_data);
+// Возвращает true если команда была найдена и обработана
+bool ProcessControlCommand(const std::string &cmd_name, std::map<std::string,std::vector<char> > &args, std::string &response_type, std::vector<char> &response_data);
 
 // Функция, обрабатывающая команды удаленного вызова процедур
-void ProcessRPCCommand(int channel, const std::string &cmd_name, std::map<std::string,std::vector<char> > &args, std::string &response_type, std::vector<char> &response_data);
+// Возвращает true если команда была найдена и обработана
+bool ProcessRPCCommand(int channel, const std::string &cmd_name, std::map<std::string,std::vector<char> > &args, std::string &response_type, std::vector<char> &response_data);
 
 /// Кодирует строку в вектор
 void ConvertStringToVector(const std::string &source, std::vector<char> &dest);
 
+/// Кодирует вектор в строку
+void ConvertVectorToString(const std::vector<char> &source, std::string &dest);
+
+/// Декодирует параметр массива команды с именем 'param_name' в целое число
+/// и записывает его в value
+/// Возвращает 0 в случае успеха
+int DecodeParamAsInteger(const std::string &param_name, const std::map<std::string,std::vector<char> > &args, int &value);
 
 // -----------------------------
 // Методы управления визуальным интерфейсом
@@ -120,6 +147,41 @@ virtual void ASaveParameters(RDK::USerStorageXML &xml);
 
 // Загружает параметры интерфейса из xml
 virtual void ALoadParameters(RDK::USerStorageXML &xml);
+// -----------------------------
+
+// -----------------------------
+// Обработчики команд сервера
+// -----------------------------
+/// Возвращает число каналов
+int GetNumChannels(void) const;
+
+/// Устанавливает число каналов
+/// также выставляет число источников видео
+int SetNumChannels(int value);
+
+/// Возвращает тип источника видео для канала
+/// в соответствии с режимами VideoOutputFrame
+int GetChannelVideoSource(int channel_id);
+
+/// Задает источник видео для канала
+/// в соответствии с режимами VideoOutputFrame
+int SetChannelVideoSource(int channel_id, int source_mode);
+
+/// Сбрасывает аналитику выбранного канала в исходное состояние
+/// или всех каналов, если channel_id<0
+int ResetChannel(int channel_id);
+
+/// Запускает выбранный канал
+/// или все каналы, если channel_id<0
+int StartChannel(int channel_id);
+
+/// Останавливает выбранный канал
+/// или все каналы, если channel_id<0
+int StopChannel(int channel_id);
+
+/// Загружает проект аналитики для канала
+/// или загружает проект для всех каналов, если channel_id<0
+int LoadProject(int channel_id, const std::string &project_file_name);
 // -----------------------------
 };
 //---------------------------------------------------------------------------

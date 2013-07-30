@@ -49,18 +49,35 @@ public:		// User declarations
 	__fastcall TUHttpServerFrame(TComponent* Owner);
 	__fastcall ~TUHttpServerFrame(void);
 
-	TMemoryStream* MemStream;
-	TStringStream* DataStream;
-	TBitmap *Bitmap;
+TMemoryStream* MemStream;
+TStringStream* DataStream;
+TBitmap *Bitmap;
 
-	std::map<std::string,std::vector<char> > ParsedRequestArgs;
+std::map<std::string,std::vector<char> > ParsedRequestArgs;
+
+RDK::UBitmap TempUBitmap;
+
+// --------------------------
+// Методы управления сервером
+// --------------------------
+/// Возвращает порт
+int GetListenPort(void) const;
+
+/// Устанавливает новый порт
+/// Возвращает 0 в случае успеха
+int SetListenPort(int port);
+
+void Init(void);
+void UnInit(void);
+
+/// Включает сервер
+int ServerListenOn(void);
+
+/// Выключает сервер
+int ServerListenOff(void);
+// --------------------------
 
 
-	RDK::UBitmap TempUBitmap;
-
-
-	void Init(void);
-	void UnInit(void);
 
 void __fastcall ParsingSimpleRequest(TIdContext *AContext, TIdHTTPRequestInfo *ARequestInfo,
 		  TIdHTTPResponseInfo *AResponseInfo, std::map<std::string,std::vector<char> > &args);

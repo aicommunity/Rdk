@@ -25,6 +25,24 @@ __fastcall TUHttpServerFrame::~TUHttpServerFrame(void)
  UnInit();
 }
 //---------------------------------------------------------------------------
+// --------------------------
+// Методы управления сервером
+// --------------------------
+/// Возвращает порт
+int TUHttpServerFrame::GetListenPort(void) const
+{
+ return IdHTTPServer->Bindings->Items[0]->Port;
+}
+
+/// Устанавливает новый порт
+/// Возвращает 0 в случае успеха
+int TUHttpServerFrame::SetListenPort(int port)
+{
+ ServerListenOff();
+ IdHTTPServer->Bindings->Items[0]->Port=port;
+ return 0;
+}
+
 void TUHttpServerFrame::Init(void)
 {
  MemStream=new TMemoryStream;
@@ -33,6 +51,8 @@ void TUHttpServerFrame::Init(void)
 
 void TUHttpServerFrame::UnInit(void)
 {
+ ServerListenOff();
+
  if(MemStream)
   delete MemStream;
 
@@ -40,6 +60,19 @@ void TUHttpServerFrame::UnInit(void)
   delete Bitmap;
 }
 
+
+/// Включает сервер
+int TUHttpServerFrame::ServerListenOn(void)
+{
+ IdHTTPServer->Active=true;
+}
+
+/// Выключает сервер
+int TUHttpServerFrame::ServerListenOff(void)
+{
+ IdHTTPServer->Active=false;
+}
+// -------------------------
 
 //---------------------------------------------------------------------------
 void __fastcall TUHttpServerFrame::ProcessMimePart(TIdMessageDecoder *&VDecoder, bool &VMsgEnd, std::vector<char> &arg)
@@ -60,22 +93,14 @@ void __fastcall TUHttpServerFrame::ProcessMimePart(TIdMessageDecoder *&VDecoder,
    {
 	LMStream->ReadBuffer(&arg[0],LMStream->Size);
 	LMStream->Position=0;
-	if(arg.size()>1)
+	int data_size=arg.size();
+	if(data_size>1)
 	{
-//	int move_index=0;
-	char* data=&arg[0];
-//	size_t size=arg.size();
-	if((data[0] == '\r' && data[1] == '\n'))
-/*	 move_index=2;
-
-	for(size_t i=2;i<size;i++)
-	{
-	 if(data[i]=='\r')
-	  ++move_index;
-	 else
-	  data[i-move_index]=data[i];
-	}*/
-	 arg.erase(arg.begin(),arg.begin()+2);
+	 char* data=&arg[0];
+	 if((data[0] == '\r' && data[1] == '\n'))
+	  arg.erase(arg.begin(),arg.begin()+2);
+	 if(data[data_size-2]== '\r')
+	  arg.resize(data_size-2);
 	}
    }
   }

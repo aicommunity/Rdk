@@ -24,6 +24,7 @@
 #include "UCreateProjectWizardFormUnit.h"
 #include "UWatchFormUnit.h"
 #include "TIdHttpResultBroadcasterFormUnit.h"
+#include "UServerControlFormUnit.h"
 //#include "TUFileSystem.h"
 #include "rdk_cpp_initdll.h"
 #include "myrdk.h"
@@ -1156,6 +1157,12 @@ void __fastcall TUGEngineControlForm::DrawShow(TObject *Sender)
 void __fastcall TUGEngineControlForm::Broadcasters1Click(TObject *Sender)
 {
  IdHttpResultBroadcasterForm->Show();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::Servercontrol1Click(TObject *Sender)
+{
+ UServerControlForm->Show();
 }
 //---------------------------------------------------------------------------
 

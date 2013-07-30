@@ -107,6 +107,7 @@ __published:	// IDE-managed Components
 	TTabSheet *TabSheet2;
 	TMenuItem *N6;
 	TMenuItem *Broadcasters1;
+	TMenuItem *Servercontrol1;
 	void __fastcall FormShow(TObject *Sender);
 	void __fastcall Start1Click(TObject *Sender);
 	void __fastcall Pause1Click(TObject *Sender);
@@ -146,6 +147,7 @@ __published:	// IDE-managed Components
 	void __fastcall PageControl1Change(TObject *Sender);
 	void __fastcall DrawShow(TObject *Sender);
 	void __fastcall Broadcasters1Click(TObject *Sender);
+	void __fastcall Servercontrol1Click(TObject *Sender);
 
 
 

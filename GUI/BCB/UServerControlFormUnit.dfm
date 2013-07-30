@@ -20,11 +20,13 @@ object UServerControlForm: TUServerControlForm
     Top = 0
     Width = 721
     Height = 490
-    ActivePage = ControlTabSheet
+    ActivePage = OptionsTabSheet
     Align = alClient
     TabOrder = 0
     object ControlTabSheet: TTabSheet
       Caption = 'Control'
+      ExplicitLeft = 8
+      ExplicitTop = 28
       object GroupBox3: TGroupBox
         Left = 0
         Top = 0
@@ -136,6 +138,35 @@ object UServerControlForm: TUServerControlForm
           end
         end
       end
+      object Panel4: TPanel
+        Left = 0
+        Top = 421
+        Width = 713
+        Height = 41
+        Align = alBottom
+        TabOrder = 1
+        ExplicitLeft = 280
+        ExplicitTop = 240
+        ExplicitWidth = 185
+        object ServerStartButton: TButton
+          Left = 10
+          Top = 8
+          Width = 75
+          Height = 25
+          Caption = 'Start'
+          TabOrder = 0
+          OnClick = ServerStartButtonClick
+        end
+        object ServerStopButton: TButton
+          Left = 91
+          Top = 8
+          Width = 75
+          Height = 25
+          Caption = 'Stop'
+          TabOrder = 1
+          OnClick = ServerStopButtonClick
+        end
+      end
     end
     object OptionsTabSheet: TTabSheet
       Caption = 'Options'
@@ -146,9 +177,10 @@ object UServerControlForm: TUServerControlForm
         Left = 0
         Top = 0
         Width = 317
-        Height = 462
+        Height = 421
         Align = alLeft
         TabOrder = 0
+        ExplicitHeight = 462
         object GroupBox1: TGroupBox
           Left = 1
           Top = 1
@@ -173,13 +205,13 @@ object UServerControlForm: TUServerControlForm
             EditLabel.Height = 13
             EditLabel.Caption = 'Server control port'
             TabOrder = 0
-            Text = '80'
+            Text = '45045'
             ExplicitWidth = 222
           end
           object NumberOfChannelsLabeledEdit: TLabeledEdit
             Left = 6
             Top = 79
-            Width = 218
+            Width = 299
             Height = 21
             Anchors = [akLeft, akTop, akRight]
             EditLabel.Width = 83
@@ -188,20 +220,12 @@ object UServerControlForm: TUServerControlForm
             TabOrder = 1
             Text = '1'
           end
-          object ApplyChannelsNumberButton: TButton
-            Left = 230
-            Top = 77
-            Width = 75
-            Height = 25
-            Caption = 'Apply'
-            TabOrder = 2
-          end
         end
         object GroupBox2: TGroupBox
           Left = 1
           Top = 111
           Width = 315
-          Height = 350
+          Height = 309
           Align = alClient
           Caption = ' Channel names '
           TabOrder = 1
@@ -213,11 +237,11 @@ object UServerControlForm: TUServerControlForm
             Left = 2
             Top = 15
             Width = 311
-            Height = 333
+            Height = 292
             Align = alClient
             TabOrder = 0
-            ExplicitWidth = 237
-            ExplicitHeight = 296
+            ExplicitLeft = 3
+            ExplicitTop = 20
             ColWidths = (
               150
               155)
@@ -228,7 +252,7 @@ object UServerControlForm: TUServerControlForm
         Left = 317
         Top = 0
         Width = 396
-        Height = 462
+        Height = 421
         Align = alClient
         TabOrder = 1
         ExplicitLeft = 432
@@ -259,6 +283,35 @@ object UServerControlForm: TUServerControlForm
           inherited IdHTTPServer: TIdHTTPServer
             OnCommandGet = UHttpServerFrameIdHTTPServerCommandGet
           end
+        end
+      end
+      object Panel3: TPanel
+        Left = 0
+        Top = 421
+        Width = 713
+        Height = 41
+        Align = alBottom
+        TabOrder = 2
+        ExplicitLeft = 280
+        ExplicitTop = 240
+        ExplicitWidth = 185
+        object ApplyOptionsButton: TButton
+          Left = 7
+          Top = 8
+          Width = 75
+          Height = 25
+          Caption = 'Apply'
+          TabOrder = 0
+          OnClick = ApplyOptionsButtonClick
+        end
+        object ReturnOptionsButton: TButton
+          Left = 88
+          Top = 8
+          Width = 75
+          Height = 25
+          Caption = 'Return'
+          TabOrder = 1
+          OnClick = ReturnOptionsButtonClick
         end
       end
     end
