@@ -164,6 +164,11 @@ void TVideoGrabberControlFrame::AUpdateInterface(void)
 
   VFNameEdit->Text=VideoGrabber->PlayerFileName;
  }
+ else
+ {
+//  PipeIndexEdit->Text=IntToStr(GetVideoOutputFrame()->PipeIndex);
+//  PipeUidEdit->Text=GetVideoOutputFrame()->PipeName.c_str();
+ }
 }
 
 // Сохраняет параметры интерфейса в xml

@@ -762,7 +762,6 @@ void TVideoOutputFrame::AUpdateInterface(void)
  }
  else
   SendToEdit->Text="";
-
 }
 
 // Сохраняет параметры интерфейса в xml

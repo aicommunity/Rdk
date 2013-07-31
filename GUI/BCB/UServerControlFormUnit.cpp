@@ -490,11 +490,31 @@ int TUServerControlForm::GetNumChannels(void) const
 int TUServerControlForm::SetNumChannels(int value)
 {
  // Здесь установка числа каналов
-
  int num=GetNumChannels();
- if(VideoOutputForm->GetNumSources()<num)
-  for(int i=VideoOutputForm->GetNumSources();i<num;i++)
+ if(num == value)
+  return 0;
+
+ if(value<=0)
+  return 1;
+
+ if(VideoOutputForm->GetNumSources()<value)
+ {
+  for(int i=VideoOutputForm->GetNumSources();i<value;i++)
+  {
    VideoOutputForm->AddSource();
+   VideoOutputForm->GetVideoOutputFrame(i)->MyVideoGrabberControlForm->VideoGrabberControlFrame->PipeUidEdit->Text=(std::string("USharedMemory")+RDK::sntoa(i)).c_str();
+   VideoOutputForm->GetVideoOutputFrame(i)->MyVideoGrabberControlForm->VideoGrabberControlFrame->PipeIndexEdit->Text=IntToStr(i);
+   VideoOutputForm->GetVideoOutputFrame(i)->PipeIndex=i;
+  }
+  VideoOutputForm->UpdateInterface();
+ }
+ else
+ {
+  while(VideoOutputForm->GetNumSources()>value)
+  {
+   VideoOutputForm->DelSource(VideoOutputForm->GetNumSources()-1);
+  }
+ }
 
  ChannelNames.resize(value);
  for(size_t i=0;i<ChannelNames.size();i++)

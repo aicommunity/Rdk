@@ -102,11 +102,8 @@ inherited VideoOutputFrame: TVideoOutputFrame
         ExplicitWidth = 694
         ExplicitHeight = 302
         inherited Image1: TImage
-          Left = 0
-          Top = 0
           Width = 694
           Height = 302
-          Align = alClient
           Proportional = True
           Stretch = True
           ExplicitLeft = 0
