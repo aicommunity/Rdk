@@ -7,6 +7,7 @@
 #include "VideoOutputToolsFormUnit.h"
 #include "TVideoGrabberControlFormUnit.h"
 #include "rdk_initdll.h"
+#include "UGEngineControlFormUnit.h"
 //#include "USharedMemoryLoader.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -282,6 +283,7 @@ void __fastcall TVideoOutputForm::ClearSource1Click(TObject *Sender)
 
 void __fastcall TVideoOutputForm::FormCreate(TObject *Sender)
 {
+ UGEngineControlForm->SpecialForms["TVideoOutputForm"]=this;
  int res=LoadUSharedMemoryLibrary("USharedMemory.dll");
 }
 //---------------------------------------------------------------------------
@@ -289,6 +291,7 @@ void __fastcall TVideoOutputForm::FormCreate(TObject *Sender)
 void __fastcall TVideoOutputForm::FormDestroy(TObject *Sender)
 {
  UnLoadUSharedMemoryLibrary();
+// UGEngineControlForm->SpecialForms.erase("TVideoOutputForm");
 }
 //---------------------------------------------------------------------------
 

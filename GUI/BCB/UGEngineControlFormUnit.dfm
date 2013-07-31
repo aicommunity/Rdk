@@ -150,7 +150,8 @@ object UGEngineControlForm: TUGEngineControlForm
             Width = 245
             Height = 173
             DefaultRowHeight = 18
-            ExplicitTop = 21
+            ExplicitLeft = 4
+            ExplicitTop = 25
             ExplicitWidth = 245
             ExplicitHeight = 173
           end

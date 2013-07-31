@@ -23,6 +23,7 @@ __fastcall TIdHttpResultBroadcasterFrame::TIdHttpResultBroadcasterFrame(TCompone
 
 __fastcall TIdHttpResultBroadcasterFrame::~TIdHttpResultBroadcasterFrame(void)
 {
+ IdHTTP->Disconnect();
  if(MemStream)
   delete MemStream;
 
@@ -69,8 +70,11 @@ void TIdHttpResultBroadcasterFrame::AAfterCalculate(void)
   }
  }
 
-// System::Classes::TStream* AResponseContent;
-// IdHTTP->Post(AUrl, ASource);
+ if(EnableXmlTranslationCheckBox->Checked || EnableImagesTranslationCheckBox->Checked)
+ {
+  System::Classes::TStream* AResponseContent;
+  IdHTTP->Post(AUrl, ASource);
+ }
 
  delete ASource;
 }

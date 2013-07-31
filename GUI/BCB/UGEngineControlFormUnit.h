@@ -212,6 +212,9 @@ bool ReflectionFlag;
 // Режим счета
 int CalculationMode;
 
+// Список специальных форм (не имеющих компонента управления в модели)
+std::map<std::string, TUVisualControllerForm*> SpecialForms;
+
 // Обновление интерфейса
 void AUpdateInterface(void);
 
@@ -242,12 +245,18 @@ void SaveProject(void);
 // Добавляет заданный фрейм типа TUImagesFrame, TUWatchFrame и т.п. на заданную вкладку
 bool AddSpecialFrameToPage(TUVisualControllerFrame *frame, TTabSheet* tab, const String &caption);
 
+// Добавляет заданную форму на заданную вкладку
+bool AddSpecialFormToPage(TUVisualControllerForm *form, TTabSheet* tab, const String &caption);
+
 // Создает новую вкладку с заданным именем для специальных фреймов
 // type - строковое имя типа фрейма на вкладке
 TTabSheet* AddSpecialFramePage(const String &type, const String &caption);
 
+// Создает новую вкладку с заданным именем для специальных форм
+TTabSheet* AddSpecialFormPage(const String &type);
+
 // Создает новую вкладку с заданным именем для формы управления компонентом
-// Если этим копонентом уже упрвляют, то возвращает указатель на такую вкладку
+// Если этим копонентом уже управляют, то возвращает указатель на такую вкладку
 TTabSheet* AddComponentControlFormPage(const string &component_name);
 
 /// Ищет и возвращает указатель на форму или фрейм, соответствующий вкладке с заданным индексом

@@ -180,6 +180,21 @@ void TUGEngineControlForm::ASaveParameters(RDK::USerStorageXML &xml)
 	}
    }
   }
+  if(!is_saved) // ƒелаем попытку сохранить данные как данные специальной формы
+  {
+   std::map<std::string, TUVisualControllerForm*>::iterator I=SpecialForms.begin();
+   for(;I != SpecialForms.end();++I)
+   {
+	if(I->second->Parent == PageControl1->Pages[i])
+	{
+	 xml.WriteString(string("Caption_")+RDK::sntoa(i+1),AnsiString(I->second->Caption).c_str());
+	 xml.WriteString(string("Type_")+RDK::sntoa(i+1),"SpecialForm");
+	 xml.WriteString(string("Class_")+RDK::sntoa(i+1),I->first);
+
+	 ++count;
+	}
+   }
+  }
  }
  xml.SelectUp();
  xml.WriteInteger("PageCount",count);
@@ -207,7 +222,10 @@ void TUGEngineControlForm::ALoadParameters(RDK::USerStorageXML &xml)
    }
    else
    if(type == "Frame")
-    AddSpecialFramePage(str_class,caption);
+	AddSpecialFramePage(str_class,caption);
+   else
+   if(type == "SpecialForm")
+    AddSpecialFormPage(str_class);
 
  }
  xml.SelectUp();
@@ -563,21 +581,44 @@ bool TUGEngineControlForm::AddSpecialFrameToPage(TUVisualControllerFrame *frame,
  return true;
 }
 
+// ƒобавл€ет заданную форму на заданную вкладку
+bool TUGEngineControlForm::AddSpecialFormToPage(TUVisualControllerForm *form, TTabSheet* tab, const String &caption)
+{
+ if(!form|| !tab)
+  return false;
+
+ tab->InsertComponent(form);
+ form->Parent=tab;
+ form->Align=alClient;
+ form->BorderStyle=bsNone;
+ form->Show();
+ form->UpdateInterface(true);
+
+ std::string str=AnsiString(caption).c_str();
+
+ tab->Caption=caption;
+
+ return true;
+}
+
 // ƒобавл€ет страницу
 TTabSheet* TUGEngineControlForm::AddSpecialFramePage(const String &type, const String &caption)
 {
  TTabSheet* tab=new TTabSheet(PageControl1);
  tab->PageControl=PageControl1;
  TUVisualControllerFrame *frame=0;
+ TUVisualControllerForm *form=0;
 
  if(type == "TUImagesFrame")
  {
   frame=new TUImagesFrame(0);
+  AddSpecialFrameToPage(frame, tab, caption);
  }
  else
  if(type == "TUWatchFrame")
  {
   frame=new TUWatchFrame(0);
+  AddSpecialFrameToPage(frame, tab, caption);
  }
  else
  {
@@ -585,7 +626,27 @@ TTabSheet* TUGEngineControlForm::AddSpecialFramePage(const String &type, const S
   return tab;
  }
 
- AddSpecialFrameToPage(frame, tab, caption);
+ return tab;
+}
+
+// —оздает новую вкладку с заданным именем дл€ специальных форм
+TTabSheet* TUGEngineControlForm::AddSpecialFormPage(const String &type)
+{
+ TTabSheet* tab=0;
+  std::map<std::string, TUVisualControllerForm*>::iterator I;
+  I=SpecialForms.begin();
+  for(;I != SpecialForms.end();++I)
+  {
+   TUVisualControllerForm *form=dynamic_cast<TUVisualControllerForm*>(I->second);
+   if(form && form->ClassNameIs(type))
+   {
+	tab=new TTabSheet(PageControl1);
+	tab->PageControl=PageControl1;
+
+	AddSpecialFormToPage(form, tab, form->Caption);
+	break;
+   }
+  }
  return tab;
 }
 
@@ -698,6 +759,22 @@ void TUGEngineControlForm::DelPage(int index)
 	break;
    }
   }
+
+  I=SpecialForms.begin();
+  for(;I != SpecialForms.end();++I)
+  {
+   TUVisualControllerForm *form=dynamic_cast<TUVisualControllerForm*>(I->second);
+   if(form && form->Parent == PageControl1->Pages[index])
+   {
+	form->BorderStyle=bsSizeable;
+	form->Align=alNone;
+	form->Hide();
+	form->Parent=0;
+	PageControl1->Pages[index]->RemoveComponent(form);
+	break;
+   }
+  }
+
   delete PageControl1->Pages[index];
  }
 
@@ -782,6 +859,7 @@ void __fastcall TUGEngineControlForm::Images1Click(TObject *Sender)
 void __fastcall TUGEngineControlForm::VideoSource1Click(TObject *Sender)
 {
 #ifdef RDK_VIDEO
+ AddSpecialFormPage("TVideoOutputForm");
  VideoOutputForm->Show();
 #endif
 }
@@ -1156,13 +1234,14 @@ void __fastcall TUGEngineControlForm::DrawShow(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::Broadcasters1Click(TObject *Sender)
 {
- IdHttpResultBroadcasterForm->Show();
+ AddSpecialFormPage("TIdHttpResultBroadcasterForm");
+// IdHttpResultBroadcasterForm->Show();
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUGEngineControlForm::Servercontrol1Click(TObject *Sender)
 {
- UServerControlForm->Show();
+ AddSpecialFormPage("TUServerControlForm");
 }
 //---------------------------------------------------------------------------
 

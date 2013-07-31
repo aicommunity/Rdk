@@ -1,9 +1,8 @@
 inherited IdHttpResultBroadcasterFrame: TIdHttpResultBroadcasterFrame
-  Left = 0
-  Top = 0
   Width = 536
   Height = 376
-  TabOrder = 0
+  ExplicitWidth = 536
+  ExplicitHeight = 376
   object GroupBox2: TGroupBox
     Left = 0
     Top = 0
@@ -12,10 +11,6 @@ inherited IdHttpResultBroadcasterFrame: TIdHttpResultBroadcasterFrame
     Align = alClient
     Caption = ' Client data '
     TabOrder = 0
-    ExplicitLeft = 352
-    ExplicitTop = 152
-    ExplicitWidth = 185
-    ExplicitHeight = 105
     DesignSize = (
       536
       376)
@@ -97,9 +92,6 @@ inherited IdHttpResultBroadcasterFrame: TIdHttpResultBroadcasterFrame
       Height = 41
       Align = alBottom
       TabOrder = 7
-      ExplicitLeft = 336
-      ExplicitTop = 328
-      ExplicitWidth = 185
       object ConnectButton: TButton
         Left = 6
         Top = 8

@@ -12,6 +12,8 @@ object IdHttpResultBroadcasterForm: TIdHttpResultBroadcasterForm
   Font.Style = []
   Menu = MainMenu
   OldCreateOrder = False
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
   object PageControl: TPageControl
@@ -21,10 +23,6 @@ object IdHttpResultBroadcasterForm: TIdHttpResultBroadcasterForm
     Height = 243
     Align = alClient
     TabOrder = 0
-    ExplicitLeft = 80
-    ExplicitTop = 48
-    ExplicitWidth = 289
-    ExplicitHeight = 193
   end
   object MainMenu: TMainMenu
     Left = 144

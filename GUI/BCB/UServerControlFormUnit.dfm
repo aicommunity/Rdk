@@ -233,18 +233,18 @@ object UServerControlForm: TUServerControlForm
           ExplicitTop = 119
           ExplicitWidth = 241
           ExplicitHeight = 313
-          object ChannelNamesValueListEditor: TValueListEditor
+          object ChannelNamesStringGrid: TStringGrid
             Left = 2
             Top = 15
             Width = 311
             Height = 292
             Align = alClient
+            ColCount = 2
+            DefaultRowHeight = 20
+            RowCount = 2
+            Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goEditing]
             TabOrder = 0
-            ExplicitLeft = 3
-            ExplicitTop = 20
-            ColWidths = (
-              150
-              155)
+            OnKeyDown = ChannelNamesStringGridKeyDown
           end
         end
       end
@@ -297,18 +297,18 @@ object UServerControlForm: TUServerControlForm
         ExplicitWidth = 185
         object ApplyOptionsButton: TButton
           Left = 7
-          Top = 8
+          Top = 6
           Width = 75
-          Height = 25
+          Height = 27
           Caption = 'Apply'
           TabOrder = 0
           OnClick = ApplyOptionsButtonClick
         end
         object ReturnOptionsButton: TButton
           Left = 88
-          Top = 8
+          Top = 6
           Width = 75
-          Height = 25
+          Height = 27
           Caption = 'Return'
           TabOrder = 1
           OnClick = ReturnOptionsButtonClick

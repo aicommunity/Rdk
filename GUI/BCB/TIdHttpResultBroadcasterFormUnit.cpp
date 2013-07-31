@@ -4,6 +4,7 @@
 #pragma hdrstop
 
 #include "TIdHttpResultBroadcasterFormUnit.h"
+#include "UGEngineControlFormUnit.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
@@ -166,3 +167,16 @@ void __fastcall TIdHttpResultBroadcasterForm::DisconnectAll1Click(TObject *Sende
  Disconnect();
 }
 //---------------------------------------------------------------------------
+
+void __fastcall TIdHttpResultBroadcasterForm::FormDestroy(TObject *Sender)
+{
+// UGEngineControlForm->SpecialForms.erase("TIdHttpResultBroadcasterForm");
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TIdHttpResultBroadcasterForm::FormCreate(TObject *Sender)
+{
+ UGEngineControlForm->SpecialForms["TIdHttpResultBroadcasterForm"]=this;
+}
+//---------------------------------------------------------------------------
+

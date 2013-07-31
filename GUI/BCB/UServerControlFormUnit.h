@@ -39,7 +39,6 @@ __published:	// IDE-managed Components
 	TLabeledEdit *ServerControlPortLabeledEdit;
 	TLabeledEdit *NumberOfChannelsLabeledEdit;
 	TGroupBox *GroupBox2;
-	TValueListEditor *ChannelNamesValueListEditor;
 	TGroupBox *GroupBox3;
 	TChart *PerformanceChart;
 	TBarSeries *Series1;
@@ -54,6 +53,7 @@ __published:	// IDE-managed Components
 	TButton *ServerStopButton;
 	TButton *ApplyOptionsButton;
 	TButton *ReturnOptionsButton;
+	TStringGrid *ChannelNamesStringGrid;
 	void __fastcall UHttpServerFrameIdHTTPServerCommandGet(TIdContext *AContext, TIdHTTPRequestInfo *ARequestInfo,
           TIdHTTPResponseInfo *AResponseInfo);
 	void __fastcall FormCreate(TObject *Sender);
@@ -62,6 +62,11 @@ __published:	// IDE-managed Components
 	void __fastcall ServerStopButtonClick(TObject *Sender);
 	void __fastcall ReturnOptionsButtonClick(TObject *Sender);
 	void __fastcall ApplyOptionsButtonClick(TObject *Sender);
+	void __fastcall ChannelNamesStringGridKeyDown(TObject *Sender, WORD &Key, TShiftState Shift);
+
+
+
+
 private:	// User declarations
 public:		// User declarations
 	__fastcall TUServerControlForm(TComponent* Owner);
@@ -166,6 +171,12 @@ int GetChannelVideoSource(int channel_id);
 /// «адает источник видео дл€ канала
 /// в соответствии с режимами VideoOutputFrame
 int SetChannelVideoSource(int channel_id, int source_mode);
+
+/// ¬озвращает им€ канала
+const std::string GetChannelName(int channel);
+
+/// ”станавливает им€ канала
+bool SetChannelName(int channel, const std::string& name);
 
 /// —брасывает аналитику выбранного канала в исходное состо€ние
 /// или всех каналов, если channel_id<0

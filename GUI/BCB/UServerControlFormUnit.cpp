@@ -434,12 +434,15 @@ void TUServerControlForm::AUpdateInterface(void)
  ServerControlPortLabeledEdit->Text=IntToStr(UHttpServerFrame->GetListenPort());
  NumberOfChannelsLabeledEdit->Text=IntToStr(GetNumChannels());
 
- if(ChannelNamesValueListEditor->RowCount<ChannelNames.size())
-  for(int i=ChannelNamesValueListEditor->RowCount;i<ChannelNames.size();i++)
-   ChannelNamesValueListEditor->InsertRow("","",true);
+ ChannelNamesStringGrid->RowCount=ChannelNames.size()+1;
+ ChannelNamesStringGrid->ColWidths[0]=20;
+ ChannelNamesStringGrid->ColWidths[1]=ChannelNamesStringGrid->Width-ChannelNamesStringGrid->ColWidths[0]-20;
+ ChannelNamesStringGrid->Cells[0][0]="Channel #";
+ ChannelNamesStringGrid->Cells[1][0]="Channel Name";
  for(int i=0;i<ChannelNames.size();i++)
  {
-//  ChannelNamesValueListEditor->Strings->Strings[i]=IntToStr(i)+String("|")+ChannelNames[i].c_str();
+  ChannelNamesStringGrid->Cells[0][i+1]=IntToStr(i);
+  ChannelNamesStringGrid->Cells[1][i+1]=ChannelNames[i].c_str();
  }
 }
 
@@ -449,6 +452,10 @@ void TUServerControlForm::ASaveParameters(RDK::USerStorageXML &xml)
  xml.WriteInteger("ServerControlPort", UHttpServerFrame->GetListenPort());
  xml.WriteInteger("NumberOfChannels",GetNumChannels());
  xml.WriteInteger("AutoStartFlag",AutoStartFlag);
+ for(size_t i=0;i<ChannelNames.size();i++)
+ {
+  xml.WriteString(std::string("ChannelName_")+RDK::sntoa(i),ChannelNames[i]);
+ }
 }
 
 // Загружает параметры интерфейса из xml
@@ -456,6 +463,11 @@ void TUServerControlForm::ALoadParameters(RDK::USerStorageXML &xml)
 {
  UHttpServerFrame->SetListenPort(xml.ReadInteger("ServerControlPort",80));
  SetNumChannels(xml.ReadInteger("NumberOfChannels",1));
+ for(size_t i=0;i<ChannelNames.size();i++)
+ {
+  SetChannelName(i,xml.ReadString(std::string("ChannelName_")+RDK::sntoa(i),RDK::sntoa(i)));
+ }
+
  AutoStartFlag=xml.ReadInteger("AutoStartFlag",true);
 
  if(AutoStartFlag)
@@ -470,7 +482,7 @@ void TUServerControlForm::ALoadParameters(RDK::USerStorageXML &xml)
 /// Возвращает число каналов
 int TUServerControlForm::GetNumChannels(void) const
 {
- return 1;
+ return ChannelNames.size();
 }
 
 /// Устанавливает число каналов
@@ -485,6 +497,12 @@ int TUServerControlForm::SetNumChannels(int value)
    VideoOutputForm->AddSource();
 
  ChannelNames.resize(value);
+ for(size_t i=0;i<ChannelNames.size();i++)
+ {
+  if(ChannelNames[i].empty())
+   SetChannelName(i,RDK::sntoa(i));
+ }
+
 
  return 0;
 }
@@ -526,6 +544,33 @@ int TUServerControlForm::SetChannelVideoSource(int channel_id, int source_mode)
  }
  return 0;
 }
+
+
+/// Возвращает имя канала
+const std::string TUServerControlForm::GetChannelName(int channel)
+{
+ if(channel<0 || channel>=int(ChannelNames.size()))
+  return std::string("");
+
+ return ChannelNames[channel];
+}
+
+/// Устанавливает имя канала
+bool TUServerControlForm::SetChannelName(int channel, const std::string& name)
+{
+ if(channel<0 || channel>=int(ChannelNames.size()))
+  return false;
+
+ if(ChannelNames[channel] == name)
+  return true;
+
+ if(find(ChannelNames.begin(),ChannelNames.end(),name) != ChannelNames.end())
+  return false;
+
+ ChannelNames[channel]=name;
+ return true;
+}
+
 
 /// Сбрасывает аналитику выбранного канала в исходное состояние
 /// или всех каналов, если channel_id<0
@@ -645,11 +690,12 @@ void __fastcall TUServerControlForm::FormCreate(TObject *Sender)
 {
  MemStream=new TMemoryStream;
  Bitmap=new Graphics::TBitmap;
+ UGEngineControlForm->SpecialForms["TUServerControlForm"]=this;
 }
 //---------------------------------------------------------------------------
 void __fastcall TUServerControlForm::FormDestroy(TObject *Sender)
 {
- UHttpServerFrame->IdHTTPServer->Active=false;
+// UGEngineControlForm->SpecialForms.erase("TUServerControlForm");
 
  if(MemStream)
   delete MemStream;
@@ -680,6 +726,22 @@ void __fastcall TUServerControlForm::ApplyOptionsButtonClick(TObject *Sender)
   return;
 
  UHttpServerFrame->SetListenPort(StrToInt(ServerControlPortLabeledEdit->Text));
+
+ SetNumChannels(StrToInt(NumberOfChannelsLabeledEdit->Text));
+
  UpdateInterface();
+}
+//---------------------------------------------------------------------------
+void __fastcall TUServerControlForm::ChannelNamesStringGridKeyDown(TObject *Sender,
+          WORD &Key, TShiftState Shift)
+{
+ if(UpdateInterfaceFlag)
+  return;
+
+ if(Key == VK_RETURN)
+ {
+  SetChannelName(ChannelNamesStringGrid->Row-1,AnsiString(ChannelNamesStringGrid->Cells[1][ChannelNamesStringGrid->Row]).c_str());
+  UpdateInterface(true);
+ }
 }
 //---------------------------------------------------------------------------
