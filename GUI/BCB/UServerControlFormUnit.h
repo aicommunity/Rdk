@@ -54,6 +54,8 @@ __published:	// IDE-managed Components
 	TButton *ApplyOptionsButton;
 	TButton *ReturnOptionsButton;
 	TStringGrid *ChannelNamesStringGrid;
+	TBarSeries *Series2;
+	TBarSeries *Series3;
 	void __fastcall UHttpServerFrameIdHTTPServerCommandGet(TIdContext *AContext, TIdHTTPRequestInfo *ARequestInfo,
           TIdHTTPResponseInfo *AResponseInfo);
 	void __fastcall FormCreate(TObject *Sender);
@@ -79,6 +81,13 @@ bool AutoStartFlag;
 
 /// Массив уникальных имен каналов
 std::vector<std::string> ChannelNames;
+
+/// Результаты измерений производительности, мс
+std::vector<std::vector<long long> > ModelPerformanceResults;
+std::vector<std::vector<long long> > TransportPerformanceResults;
+
+/// Число шагов усреднения оценки производительности
+int AverageIterations;
 // -----------------
 
 /// Указатель на функцию, осуществляющую декодирование параметров запроса
@@ -119,6 +128,9 @@ TMemoryStream* MemStream;
 TBitmap *Bitmap;
 RDK::UBitmap TempUBitmap;
 
+// Индекс складывания данных в массив оценки производительности
+int PerformancePushIndex;
+
 // Функция, обрабатывающая команды управления сервером
 // Возвращает true если команда была найдена и обработана
 bool ProcessControlCommand(const std::string &cmd_name, std::map<std::string,std::vector<char> > &args, std::string &response_type, std::vector<char> &response_data);
@@ -143,6 +155,9 @@ int DecodeParamAsInteger(const std::string &param_name, const std::map<std::stri
 // -----------------------------
 // Метод, вызываемый после сброса модели
 virtual void AAfterReset(void);
+
+// Метод, вызываемый после шага расчета
+virtual void AAfterCalculate(void);
 
 // Обновление интерфейса
 virtual void AUpdateInterface(void);

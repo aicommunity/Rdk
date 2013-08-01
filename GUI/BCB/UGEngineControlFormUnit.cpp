@@ -1108,7 +1108,11 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  DecimalSeparator = '.';
 
  // Грузим настройки приложения
- TMemIniFile *app_ini=new TMemIniFile("options.ini");
+ String opt_name=ExtractFileName(Application->ExeName);
+ if(opt_name.Length()>4)
+ opt_name=opt_name.SubString(0,opt_name.Length()-4);
+ opt_name=opt_name+".ini";
+ TMemIniFile *app_ini=new TMemIniFile(opt_name);
  MainFormName=app_ini->ReadString("General", "MainFormName", "");
  HideAdminFormFlag=app_ini->ReadBool("General", "HideAdminForm", false);
  AutoexecProjectFileName=app_ini->ReadString("General", "AutoexecProjectFileName", "");

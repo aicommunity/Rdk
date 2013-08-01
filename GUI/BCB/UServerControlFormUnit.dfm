@@ -20,29 +20,27 @@ object UServerControlForm: TUServerControlForm
     Top = 0
     Width = 721
     Height = 490
-    ActivePage = OptionsTabSheet
+    ActivePage = ControlTabSheet
     Align = alClient
     TabOrder = 0
     object ControlTabSheet: TTabSheet
       Caption = 'Control'
-      ExplicitLeft = 8
-      ExplicitTop = 28
       object GroupBox3: TGroupBox
         Left = 0
         Top = 0
         Width = 713
-        Height = 201
-        Align = alTop
+        Height = 421
+        Align = alClient
         Caption = ' Channels performance '
         TabOrder = 0
+        ExplicitHeight = 201
         object PerformanceChart: TChart
           Left = 2
           Top = 15
           Width = 709
-          Height = 153
+          Height = 373
           BackWall.Brush.Gradient.Direction = gdBottomTop
           BackWall.Brush.Gradient.EndColor = clWhite
-          BackWall.Brush.Gradient.MidColor = clNone
           BackWall.Brush.Gradient.StartColor = 15395562
           BackWall.Brush.Gradient.Visible = True
           BackWall.Transparent = False
@@ -53,8 +51,8 @@ object UServerControlForm: TUServerControlForm
           Gradient.StartColor = 15395562
           Gradient.Visible = True
           LeftWall.Color = 14745599
+          Legend.Alignment = laTop
           Legend.Font.Name = 'Verdana'
-          Legend.Visible = False
           RightWall.Color = 14745599
           SubFoot.Font.Name = 'Verdana'
           SubTitle.Font.Name = 'Verdana'
@@ -94,17 +92,36 @@ object UServerControlForm: TUServerControlForm
           TopAxis.Title.Font.Name = 'Verdana'
           Align = alClient
           TabOrder = 0
-          ExplicitLeft = 256
-          ExplicitTop = 40
-          ExplicitWidth = 400
-          ExplicitHeight = 250
+          ExplicitHeight = 153
           ColorPaletteIndex = 13
           object Series1: TBarSeries
             Marks.Arrow.Visible = True
             Marks.Callout.Brush.Color = clBlack
             Marks.Callout.Arrow.Visible = True
             Marks.Visible = True
-            Title = 'Performance'
+            Title = 'Model'
+            XValues.Name = 'X'
+            XValues.Order = loAscending
+            YValues.Name = 'Bar'
+            YValues.Order = loNone
+          end
+          object Series2: TBarSeries
+            Marks.Arrow.Visible = True
+            Marks.Callout.Brush.Color = clBlack
+            Marks.Callout.Arrow.Visible = True
+            Marks.Visible = True
+            Title = 'Transport'
+            XValues.Name = 'X'
+            XValues.Order = loAscending
+            YValues.Name = 'Bar'
+            YValues.Order = loNone
+          end
+          object Series3: TBarSeries
+            Marks.Arrow.Visible = True
+            Marks.Callout.Brush.Color = clBlack
+            Marks.Callout.Arrow.Visible = True
+            Marks.Visible = True
+            Title = 'Total'
             XValues.Name = 'X'
             XValues.Order = loAscending
             YValues.Name = 'Bar'
@@ -113,11 +130,13 @@ object UServerControlForm: TUServerControlForm
         end
         object Panel: TPanel
           Left = 2
-          Top = 168
+          Top = 388
           Width = 709
           Height = 31
           Align = alBottom
           TabOrder = 1
+          Visible = False
+          ExplicitTop = 168
           object FpsRadioButton: TRadioButton
             Left = 8
             Top = 6
@@ -145,9 +164,6 @@ object UServerControlForm: TUServerControlForm
         Height = 41
         Align = alBottom
         TabOrder = 1
-        ExplicitLeft = 280
-        ExplicitTop = 240
-        ExplicitWidth = 185
         object ServerStartButton: TButton
           Left = 10
           Top = 8
@@ -171,8 +187,6 @@ object UServerControlForm: TUServerControlForm
     object OptionsTabSheet: TTabSheet
       Caption = 'Options'
       ImageIndex = 1
-      ExplicitLeft = 8
-      ExplicitTop = 28
       object Panel1: TPanel
         Left = 0
         Top = 0
@@ -180,7 +194,6 @@ object UServerControlForm: TUServerControlForm
         Height = 421
         Align = alLeft
         TabOrder = 0
-        ExplicitHeight = 462
         object GroupBox1: TGroupBox
           Left = 1
           Top = 1
@@ -189,9 +202,6 @@ object UServerControlForm: TUServerControlForm
           Align = alTop
           Caption = ' Main options '
           TabOrder = 0
-          ExplicitLeft = 79
-          ExplicitTop = 3
-          ExplicitWidth = 238
           DesignSize = (
             315
             110)
@@ -206,7 +216,6 @@ object UServerControlForm: TUServerControlForm
             EditLabel.Caption = 'Server control port'
             TabOrder = 0
             Text = '45045'
-            ExplicitWidth = 222
           end
           object NumberOfChannelsLabeledEdit: TLabeledEdit
             Left = 6
@@ -229,10 +238,6 @@ object UServerControlForm: TUServerControlForm
           Align = alClient
           Caption = ' Channel names '
           TabOrder = 1
-          ExplicitLeft = 76
-          ExplicitTop = 119
-          ExplicitWidth = 241
-          ExplicitHeight = 313
           object ChannelNamesStringGrid: TStringGrid
             Left = 2
             Top = 15
@@ -255,10 +260,6 @@ object UServerControlForm: TUServerControlForm
         Height = 421
         Align = alClient
         TabOrder = 1
-        ExplicitLeft = 432
-        ExplicitTop = 136
-        ExplicitWidth = 185
-        ExplicitHeight = 41
         inline UHttpServerFrame: TUHttpServerFrame
           Left = 1
           Top = 1
@@ -279,6 +280,8 @@ object UServerControlForm: TUServerControlForm
           inherited Image1: TImage
             Width = 394
             Height = 52
+            ExplicitWidth = 394
+            ExplicitHeight = 52
           end
           inherited IdHTTPServer: TIdHTTPServer
             OnCommandGet = UHttpServerFrameIdHTTPServerCommandGet
@@ -292,9 +295,6 @@ object UServerControlForm: TUServerControlForm
         Height = 41
         Align = alBottom
         TabOrder = 2
-        ExplicitLeft = 280
-        ExplicitTop = 240
-        ExplicitWidth = 185
         object ApplyOptionsButton: TButton
           Left = 7
           Top = 6

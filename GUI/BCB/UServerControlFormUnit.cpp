@@ -46,6 +46,7 @@ __fastcall TUServerControlForm::TUServerControlForm(TComponent* Owner)
  MemStream=0;
  CommandRequestDecoder=StandardCommandRequestDecoder;
  CommandResponseEncoder=StandardCommandResponseEncoder;
+ AverageIterations=4;
 }
 
 // Функция, обрабатывающая команды управления сервером
@@ -425,7 +426,43 @@ int TUServerControlForm::DecodeParamAsInteger(const std::string &param_name, con
 // Метод, вызываемый после сброса модели
 void TUServerControlForm::AAfterReset(void)
 {
+ PerformancePushIndex=0;
+ if(AverageIterations<=0)
+  AverageIterations=4;
+ ModelPerformanceResults.resize(AverageIterations);
+ TransportPerformanceResults.resize(AverageIterations);
+ for(size_t i=0;i<ModelPerformanceResults.size();i++)
+ {
+  ModelPerformanceResults[i].clear();
+  TransportPerformanceResults[i].clear();
+ }
+}
 
+// Метод, вызываемый после шага расчета
+void TUServerControlForm::AAfterCalculate(void)
+{
+ if(!Model_Check())
+  return;
+
+ if(PerformancePushIndex>=ModelPerformanceResults.size())
+  PerformancePushIndex=0;
+
+ if(ModelPerformanceResults.size() == 0)
+  AAfterReset();
+ ModelPerformanceResults[PerformancePushIndex].assign(GetNumChannels(),0);
+ TransportPerformanceResults[PerformancePushIndex].assign(GetNumChannels(),0);
+ for(size_t i=0;i<ModelPerformanceResults[PerformancePushIndex].size();i++)
+ {
+  long long model_time=Model_GetFullStepDuration("");
+  long long ext_gui=Model_GetInterstepsInterval("");
+  ModelPerformanceResults[PerformancePushIndex][i]=model_time;
+  TransportPerformanceResults[PerformancePushIndex][i]=ext_gui;
+
+  break; // Заглушка, пока некуда обращаться ко многим каналам
+ }
+ ++PerformancePushIndex;
+ if(PerformancePushIndex>=ModelPerformanceResults.size())
+  PerformancePushIndex=0;
 }
 
 // Обновление интерфейса
@@ -444,11 +481,44 @@ void TUServerControlForm::AUpdateInterface(void)
   ChannelNamesStringGrid->Cells[0][i+1]=IntToStr(i);
   ChannelNamesStringGrid->Cells[1][i+1]=ChannelNames[i].c_str();
  }
+
+ std::vector<long long> model_avg,transport_avg;
+ model_avg.assign(GetNumChannels(),0);
+ transport_avg.assign(GetNumChannels(),0);
+ int sum_number=0;
+ for(size_t i=0;i<ModelPerformanceResults.size();i++)
+ {
+  for(size_t j=0;j<ModelPerformanceResults[i].size();j++)
+  {
+   model_avg[j]+=ModelPerformanceResults[i][j];
+   transport_avg[j]+=TransportPerformanceResults[i][j];
+  }
+  if(ModelPerformanceResults[i].size()>0)
+   ++sum_number;
+ }
+
+ if(sum_number>0)
+  for(size_t j=0;j<model_avg.size();j++)
+  {
+   model_avg[j]/=sum_number;
+   transport_avg[j]/=sum_number;
+  }
+
+ PerformanceChart->Series[0]->Clear();
+ PerformanceChart->Series[1]->Clear();
+ PerformanceChart->Series[2]->Clear();
+ for(size_t i=0;i<model_avg.size();i++)
+ {
+  PerformanceChart->Series[0]->AddY(model_avg[i]);
+  PerformanceChart->Series[1]->AddY(transport_avg[i]);
+  PerformanceChart->Series[2]->AddY(model_avg[i]+transport_avg[i]);
+ }
 }
 
 // Сохраняет параметры интерфейса в xml
 void TUServerControlForm::ASaveParameters(RDK::USerStorageXML &xml)
 {
+ xml.WriteInteger("AverageIterations",AverageIterations);
  xml.WriteInteger("ServerControlPort", UHttpServerFrame->GetListenPort());
  xml.WriteInteger("NumberOfChannels",GetNumChannels());
  xml.WriteInteger("AutoStartFlag",AutoStartFlag);
@@ -461,6 +531,7 @@ void TUServerControlForm::ASaveParameters(RDK::USerStorageXML &xml)
 // Загружает параметры интерфейса из xml
 void TUServerControlForm::ALoadParameters(RDK::USerStorageXML &xml)
 {
+ AverageIterations=xml.ReadInteger("AverageIterations",AverageIterations);
  UHttpServerFrame->SetListenPort(xml.ReadInteger("ServerControlPort",80));
  SetNumChannels(xml.ReadInteger("NumberOfChannels",1));
  for(size_t i=0;i<ChannelNames.size();i++)
@@ -523,7 +594,7 @@ int TUServerControlForm::SetNumChannels(int value)
    SetChannelName(i,RDK::sntoa(i));
  }
 
-
+ AAfterReset();
  return 0;
 }
 
