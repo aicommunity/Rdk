@@ -36,6 +36,8 @@ __published:	// IDE-managed Components
 	TPageProducer *PageProducer;
 	void __fastcall ConnectButtonClick(TObject *Sender);
 	void __fastcall DisconnectButtonClick(TObject *Sender);
+	void __fastcall IdHTTPConnected(TObject *Sender);
+	void __fastcall IdHTTPDisconnected(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
 	__fastcall TIdHttpResultBroadcasterFrame(TComponent* Owner);
@@ -44,6 +46,8 @@ public:		// User declarations
 
 TMemoryStream *MemStream;
 TBitmap *Bitmap;
+
+bool ConnectionEstablishedFlag;
 
 // --------------------------
 // Методы управления фреймом

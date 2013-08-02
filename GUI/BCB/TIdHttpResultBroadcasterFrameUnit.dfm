@@ -124,6 +124,8 @@ inherited IdHttpResultBroadcasterFrame: TIdHttpResultBroadcasterFrame
     end
   end
   object IdHTTP: TIdHTTP
+    OnDisconnected = IdHTTPDisconnected
+    OnConnected = IdHTTPConnected
     AllowCookies = True
     ProxyParams.BasicAuthentication = False
     ProxyParams.ProxyPort = 0

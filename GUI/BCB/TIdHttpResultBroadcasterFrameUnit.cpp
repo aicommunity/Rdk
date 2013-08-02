@@ -19,10 +19,12 @@ __fastcall TIdHttpResultBroadcasterFrame::TIdHttpResultBroadcasterFrame(TCompone
  MemStream=new TMemoryStream;
 
  Bitmap=new TBitmap;
+ ConnectionEstablishedFlag=false;
 }
 
 __fastcall TIdHttpResultBroadcasterFrame::~TIdHttpResultBroadcasterFrame(void)
 {
+ ConnectionEstablishedFlag=false;
  IdHTTP->Disconnect();
  if(MemStream)
   delete MemStream;
@@ -44,13 +46,41 @@ void TIdHttpResultBroadcasterFrame::ABeforeCalculate(void)
 void TIdHttpResultBroadcasterFrame::AAfterCalculate(void)
 {
  String AUrl=ServerAddressLabeledEdit->Text;
+
+ if(!ConnectionEstablishedFlag)
+ {
+  try
+  {
+   IdHTTP->Connect("127.0.0.1",45046);
+  }
+  catch (EIdConnectTimeout &ex)
+  {
+   return;
+  }
+  catch (EIdAlreadyConnected &ex)
+  {
+   ConnectionEstablishedFlag=true;
+  }
+  catch (EIdSocketError &ex)
+  {
+   ConnectionEstablishedFlag=false;
+   IdHTTP->Disconnect();
+  }
+ }
+
+
  TIdMultiPartFormDataStream* ASource=new TIdMultiPartFormDataStream;
 
  ASource->AddFormField("TimeStamp",IntToStr(UEngineMonitorForm->EngineMonitorFrame->ServerTimeStamp));
  if(EnableXmlTranslationCheckBox->Checked)
  {
-  const char* xml_data=Model_GetComponentStateValue(AnsiString(XmlComponentNameLabeledEdit->Text).c_str(),
+  const char* xml_data=0;
+  if(XmlComponentStateNameLabeledEdit->Text.Length()>0)
+   xml_data=Model_GetComponentStateValue(AnsiString(XmlComponentNameLabeledEdit->Text).c_str(),
 												AnsiString(XmlComponentStateNameLabeledEdit->Text).c_str());
+  else
+   xml_data=Model_GetComponentState(AnsiString(XmlComponentNameLabeledEdit->Text).c_str());
+
   if(xml_data)
    ASource->AddFormField("Response",xml_data,"","text/plain");
  }
@@ -72,8 +102,32 @@ void TIdHttpResultBroadcasterFrame::AAfterCalculate(void)
 
  if(EnableXmlTranslationCheckBox->Checked || EnableImagesTranslationCheckBox->Checked)
  {
-  System::Classes::TStream* AResponseContent;
-  IdHTTP->Post(AUrl, ASource);
+  try
+  {
+   IdHTTP->Post(AUrl, ASource);
+  }
+  catch (EIdConnectTimeout &ex)
+  {
+   ConnectionEstablishedFlag=false;
+  }
+  catch (EIdReadTimeout &ex)
+  {
+   ConnectionEstablishedFlag=false;
+  }
+  catch (EIdSocketError &ex)
+  {
+   ConnectionEstablishedFlag=false;
+//   IdHTTP->Disconnect();
+  }
+  catch(...)
+  {
+   delete ASource;
+   throw;
+  }
+/*  catch (EIdNotASocket &ex)
+  {
+   int a=0;
+  }*/
  }
 
  delete ASource;
@@ -108,6 +162,9 @@ void TIdHttpResultBroadcasterFrame::ALoadParameters(RDK::USerStorageXML &xml)
  EnableXmlTranslationCheckBox->Checked=xml.ReadBool("EnableXmlTranslation",false);
  EnableImagesTranslationCheckBox->Checked=xml.ReadBool("EnableImagesTranslation",false);
  ChannelIndexLabeledEdit->Text=IntToStr(xml.ReadInteger("ChannelIndex",0));
+
+IdHTTP->ConnectTimeout=100;
+IdHTTP->ReadTimeout=10;
 }
 
 
@@ -131,3 +188,18 @@ void __fastcall TIdHttpResultBroadcasterFrame::DisconnectButtonClick(TObject *Se
  //
 }
 //---------------------------------------------------------------------------
+
+
+void __fastcall TIdHttpResultBroadcasterFrame::IdHTTPConnected(TObject *Sender)
+{
+ ConnectionEstablishedFlag=true;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TIdHttpResultBroadcasterFrame::IdHTTPDisconnected(TObject *Sender)
+
+{
+ ConnectionEstablishedFlag=false;
+}
+//---------------------------------------------------------------------------
+

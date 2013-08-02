@@ -675,7 +675,7 @@ void TVideoOutputFrame::ABeforeCalculate(void)
 	}
 	shift+=sizeof(ServerTimeStamp);
 
-	UEngineMonitorForm->EngineMonitorFrame->ServerTimeStamp=ServerTimeStamp;
+	UEngineMonitorForm->EngineMonitorFrame->ServerTimeStamp=time_stamp;
 	std::string sstamp;
 	RDK::UTimeStamp stamp(double(ServerTimeStamp/1000),25);
 	stamp>>sstamp;
