@@ -16,3 +16,12 @@ SOURCES += main.cpp\
         codewizard.cpp
 
 HEADERS  += codewizard.h
+
+unix:!symbian {
+    DESTDIR = $$PWD/../../../Bin/Platform/Linux
+}
+
+windows {
+    DESTDIR = $$PWD/../../../Bin/Platform/Win
+}
+
