@@ -1,7 +1,7 @@
 object IdHttpResultBroadcasterForm: TIdHttpResultBroadcasterForm
   Left = 0
   Top = 0
-  Caption = 'Result Broadcaster'
+  Caption = 'Http Broadcaster'
   ClientHeight = 243
   ClientWidth = 527
   Color = clBtnFace
@@ -48,6 +48,14 @@ object IdHttpResultBroadcasterForm: TIdHttpResultBroadcasterForm
         Caption = 'Disconnect All'
         OnClick = DisconnectAll1Click
       end
+    end
+  end
+  object PopupMenu1: TPopupMenu
+    Left = 344
+    Top = 80
+    object HttpBroadcaster1: TMenuItem
+      Caption = 'Http Broadcaster'
+      OnClick = HttpBroadcaster1Click
     end
   end
 end

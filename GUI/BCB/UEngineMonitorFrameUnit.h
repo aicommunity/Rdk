@@ -17,6 +17,30 @@
 #include "TUVisualController.h"
 
 #pragma warn -8130
+
+class TEngineThread: public TThread
+{
+protected: // Параметры
+/// Индекс канала в библиотеке аналитики, управляемый тредом
+int ChannelIndex;
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+__fastcall TEngineThread(int channel_index, bool CreateSuspended);
+virtual __fastcall ~TEngineThread(void);
+// --------------------------
+
+// --------------------------
+// Управление потоком
+// --------------------------
+virtual void __fastcall Execute(void);
+// --------------------------
+
+
+};
+
 //---------------------------------------------------------------------------
 
 class TUEngineMonitorFrame : public TUVisualControllerFrame
@@ -46,22 +70,40 @@ private:	// User declarations
 public:		// User declarations
 	__fastcall TUEngineMonitorFrame(TComponent* Owner);
 
+/// Режим работы
+/// 0 - однопоточный (одноканальный) режим
+/// 1 - многопоточный режим
+int ChannelsMode;
+
 // Режим расчетов
 // 0 - простой расчет
 // 1 - расчет в реальном времени
 // 2 - простой расчет по сигналу
-int CalculateMode;
+std::vector<int> CalculateMode;
 
 // Сигнал, выставляемый при необходимости расчета
 // сбрасывается при итерации счета
-bool CalculateSignal;
+std::vector<bool> CalculateSignal;
 
 // Временная метка сервера
-long long ServerTimeStamp;
+std::vector<long long> ServerTimeStamp;
+
+/// Потоки запуска многоканальной аналитики
+std::vector<TEngineThread*> ThreadChannels;
+
+/// Управление режимом работы
+/// 0 - однопоточный режим
+/// 1 - многопоточный режим
+int GetChannelsMode(void) const;
+void SetChannelsMode(int mode);
 
 // Управление режимом расчетов
-int GetCalculateMode(void) const;
-void SetCalculateMode(int value);
+int GetCalculateMode(int channel_index) const;
+void SetCalculateMode(int channel_index, int value);
+
+/// Управление числом каналов
+int GetNumChannels(void) const;
+bool SetNumChannels(int num);
 
 void AUpdateInterface(void);
 

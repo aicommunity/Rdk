@@ -675,7 +675,7 @@ void TVideoOutputFrame::ABeforeCalculate(void)
 	}
 	shift+=sizeof(ServerTimeStamp);
 
-	UEngineMonitorForm->EngineMonitorFrame->ServerTimeStamp=time_stamp;
+	UEngineMonitorForm->EngineMonitorFrame->ServerTimeStamp[GetSelectedEngineIndex()]=time_stamp;
 	std::string sstamp;
 	RDK::UTimeStamp stamp(double(ServerTimeStamp/1000),25);
 	stamp>>sstamp;
@@ -1200,7 +1200,7 @@ Graphics::TBitmap *Frame_Bitmap;
 
 	  break;
    }
- UEngineMonitorForm->EngineMonitorFrame->CalculateSignal=true;
+ UEngineMonitorForm->EngineMonitorFrame->CalculateSignal[GetSelectedEngineIndex()]=true;
 }
 //---------------------------------------------------------------------------
 void __fastcall TVideoOutputFrame::TrackBarChange(TObject *Sender)
@@ -1365,7 +1365,7 @@ void __fastcall TVideoOutputFrame::UHttpServerFrameIdHTTPServerCommandGet(TIdCon
   std::string temp_stamp;
   temp_stamp.assign(&time_stamp[0],time_stamp.size());
   ServerTimeStamp=RDK::atoi(temp_stamp);
-  UEngineMonitorForm->EngineMonitorFrame->ServerTimeStamp=ServerTimeStamp;
+  UEngineMonitorForm->EngineMonitorFrame->ServerTimeStamp[GetSelectedEngineIndex()]=ServerTimeStamp;
 
   std::string sstamp;
   RDK::UTimeStamp stamp(double(ServerTimeStamp/1000),25);
@@ -1392,7 +1392,7 @@ void __fastcall TVideoOutputFrame::UHttpServerFrameIdHTTPServerCommandGet(TIdCon
  std::vector<char> &step=UHttpServerFrame->ParsedRequestArgs["StepEnable"];
  if(!step.empty() && step[0]=='1')
  {
-  UEngineMonitorForm->EngineMonitorFrame->CalculateSignal=true;
+  UEngineMonitorForm->EngineMonitorFrame->CalculateSignal[GetSelectedEngineIndex()]=true;
  }
 }
 //---------------------------------------------------------------------------

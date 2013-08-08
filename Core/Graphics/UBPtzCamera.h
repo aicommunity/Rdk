@@ -3,17 +3,16 @@
 
 #include <string>
 
+/// Минимальная условная величина
+#define MinCValue -10000
+
+/// Максимальная условная величина
+#define MaxCValue 10000
+
 namespace RDK {
 
 class UBPtzCameraInfo
 {
-public:
-/// Минимальная условная величина
-static const int MinCValue=-10000;
-
-/// Максимальная условная величина
-static const int MaxCValue=10000;
-
 public:
 /// Минимальное значение поворота по оси X в единицах камеры
 double MinPan;

@@ -9,7 +9,6 @@
 #include <Forms.hpp>
 #include <ComCtrls.hpp>
 #include "UEngineMonitorFrameUnit.h"
-#include "UEngineMonitorFrameUnit.h"
 #include "TUVisualController.h"
 #include "TUVisualControllerFormUnit.h"
 #include "TUVisualControllerFrameUnit.h"

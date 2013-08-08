@@ -177,6 +177,15 @@ void __fastcall TIdHttpResultBroadcasterForm::FormDestroy(TObject *Sender)
 void __fastcall TIdHttpResultBroadcasterForm::FormCreate(TObject *Sender)
 {
  UGEngineControlForm->SpecialForms["TIdHttpResultBroadcasterForm"]=this;
+ UGEngineControlForm->AddBroadcasterMenu(HttpBroadcaster1,PopupMenu1);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TIdHttpResultBroadcasterForm::HttpBroadcaster1Click(TObject *Sender)
+
+{
+ UGEngineControlForm->AddSpecialFormPage("TIdHttpResultBroadcasterForm");
+ Show();
 }
 //---------------------------------------------------------------------------
 

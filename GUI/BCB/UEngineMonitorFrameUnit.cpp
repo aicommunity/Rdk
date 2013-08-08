@@ -6,32 +6,120 @@
 #include <algorithm>
 #include "UEngineMonitorFrameUnit.h"
 #include "rdk_initdll.h"
+#ifdef RDK_VIDEO
+#include "VideoOutputFormUnit.h"
+#endif
+
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "TUVisualControllerFrameUnit"
 #pragma resource "*.dfm"
 TUEngineMonitorFrame *UEngineMonitorFrame;
 
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+__fastcall TEngineThread::TEngineThread(int channel_index, bool CreateSuspended)
+: ChannelIndex(channel_index), TThread(CreateSuspended)
+{
+
+}
+
+__fastcall TEngineThread::~TEngineThread(void)
+{
+
+}
+// --------------------------
+
+// --------------------------
+// Управление потоком
+// --------------------------
+void __fastcall TEngineThread::Execute(void)
+{
+ while(!Terminated)
+ {
+#ifdef RDK_VIDEO
+ TVideoOutputFrame* video=VideoOutputForm->GetVideoOutputFrame(ChannelIndex);
+ if(video)
+  video->BeforeCalculate();
+ MEnv_Calculate(ChannelIndex,0);
+#endif
+ }
+}
+// --------------------------
+
+
 //---------------------------------------------------------------------------
 __fastcall TUEngineMonitorFrame::TUEngineMonitorFrame(TComponent* Owner)
 	: TUVisualControllerFrame(Owner)
 {
- CalculateMode=0;
- CalculateSignal=false;
+ CalculateMode.assign(GetNumEngines(),0);
+ CalculateSignal.assign(GetNumEngines(),false);
  AlwaysUpdateFlag=true;
  UpdateInterval=100;
+ ChannelsMode=0;
 }
+
+/// Управление режимом работы
+/// 0 - однопоточный (одноканальный) режим
+/// 1 - многопоточный режим
+int TUEngineMonitorFrame::GetChannelsMode(void) const
+{
+ return ChannelsMode;
+}
+
+void TUEngineMonitorFrame::SetChannelsMode(int mode)
+{
+ if(ChannelsMode == mode)
+  return;
+
+ Pause1Click(this);
+ ChannelsMode=mode;
+}
+
 
 // Управление режимом расчетов
-int TUEngineMonitorFrame::GetCalculateMode(void) const
+int TUEngineMonitorFrame::GetCalculateMode(int channel_index) const
 {
- return CalculateMode;
+ return CalculateMode[channel_index];
 }
 
-void TUEngineMonitorFrame::SetCalculateMode(int value)
+void TUEngineMonitorFrame::SetCalculateMode(int channel_index,int value)
 {
- CalculateMode=value;
+ CalculateMode[channel_index]=value;
 }
+
+
+/// Управление числом каналов
+int TUEngineMonitorFrame::GetNumChannels(void) const
+{
+ return GetNumEngines();
+}
+
+bool TUEngineMonitorFrame::SetNumChannels(int num)
+{
+ if(num == int(ThreadChannels.size()))
+  return true;
+
+ SetNumEngines(num);
+ CalculateMode.resize(num,0);
+ CalculateSignal.resize(num,false);
+ ServerTimeStamp.resize(num,0);
+
+ for(int i=num;i<int(ThreadChannels.size());i++)
+ {
+  ThreadChannels[i]->Terminate();
+  ThreadChannels[i]->WaitFor();
+  delete ThreadChannels[i];
+ }
+
+ ThreadChannels.resize(num);
+ for(int i=int(ThreadChannels.size());i<num;i++)
+  ThreadChannels[i]=new TEngineThread(i,true);
+
+ return true;
+}
+
 
 void TUEngineMonitorFrame::AUpdateInterface(void)
 {
@@ -76,19 +164,39 @@ void TUEngineMonitorFrame::ALoadParameters(RDK::USerStorageXML &xml)
 
 void __fastcall TUEngineMonitorFrame::Start1Click(TObject *Sender)
 {
- if(CalculateMode == 1)
-  Reset1Click(Sender);
- TUVisualControllerFrame::CalculationModeFlag=true;
- TUVisualControllerForm::CalculationModeFlag=true;
- Timer->Enabled=true;
+ switch(ChannelsMode)
+ {
+ case 0:
+  if(CalculateMode[GetSelectedEngineIndex()] == 1)
+   Reset1Click(Sender);
+  TUVisualControllerFrame::CalculationModeFlag=true;
+  TUVisualControllerForm::CalculationModeFlag=true;
+  Timer->Enabled=true;
+ break;
+
+ case 1:
+  for(int i=0;i<GetNumChannels();i++)
+   ThreadChannels[i]->Resume();
+ break;
+ }
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUEngineMonitorFrame::Pause1Click(TObject *Sender)
 {
- Timer->Enabled=false;
- TUVisualControllerFrame::CalculationModeFlag=false;
- TUVisualControllerForm::CalculationModeFlag=false;
+ switch(ChannelsMode)
+ {
+ case 0:
+  Timer->Enabled=false;
+  TUVisualControllerFrame::CalculationModeFlag=false;
+  TUVisualControllerForm::CalculationModeFlag=false;
+ break;
+
+ case 1:
+  for(int i=0;i<GetNumChannels();i++)
+   ThreadChannels[i]->Suspend();
+ break;
+ }
 }
 //---------------------------------------------------------------------------
 
@@ -101,7 +209,8 @@ void __fastcall TUEngineMonitorFrame::Reset1Click(TObject *Sender)
  }
 
  RDK::UIVisualControllerStorage::BeforeReset();
- Env_Reset(0);
+ for(int i=0;i<GetNumEngines();i++)
+  MEnv_Reset(i,0);
  RDK::UIVisualControllerStorage::AfterReset();
  RDK::UIVisualControllerStorage::UpdateInterface();
 }
@@ -109,42 +218,53 @@ void __fastcall TUEngineMonitorFrame::Reset1Click(TObject *Sender)
 
 void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
 {
- if(!Model_Check())
- {
-  Timer->Enabled=false;
-  RDK::UIVisualControllerStorage::UpdateInterface();
-  return;
- }
-
-
- switch(CalculateMode)
+ switch(ChannelsMode)
  {
  case 0:
-  RDK::UIVisualControllerStorage::BeforeCalculate();
-  Env_Calculate(0);
+ {
+  for(int i=0;i<GetNumEngines();i++)
+  {
+   if(!MIsEngineInit(i) || !MModel_Check(i))
+   {
+	continue;
+   }
+
+   if(CalculateMode[GetSelectedEngineIndex()] == 2)
+   {
+	if(!CalculateSignal[GetSelectedEngineIndex()])
+	 continue;
+
+	CalculateSignal[GetSelectedEngineIndex()]=false;
+   }
+
+   RDK::UIVisualControllerStorage::BeforeCalculate();
+
+   switch(CalculateMode[GetSelectedEngineIndex()])
+   {
+   case 0:
+	MEnv_Calculate(i,0);
+   break;
+
+   case 1:
+	MEnv_RTCalculate(i);
+   break;
+
+   case 2:
+	MEnv_Calculate(i,0);
+   break;
+   }
+  }
   RDK::UIVisualControllerStorage::AfterCalculate();
   RDK::UIVisualControllerStorage::UpdateInterface();
+ }
  break;
 
  case 1:
-  RDK::UIVisualControllerStorage::BeforeCalculate();
-  Env_RTCalculate();
-  RDK::UIVisualControllerStorage::AfterCalculate();
+ {
   RDK::UIVisualControllerStorage::UpdateInterface();
- break;
-
- case 2:
-  if(CalculateSignal)
-  {
-   CalculateSignal=false;
-   RDK::UIVisualControllerStorage::BeforeCalculate();
-   Env_RTCalculate();
-   RDK::UIVisualControllerStorage::AfterCalculate();
-   RDK::UIVisualControllerStorage::UpdateInterface();
-  }
+ }
  break;
  }
-
 }
 //---------------------------------------------------------------------------
 

@@ -29,6 +29,8 @@ void TUComponentsControlFrame::AUpdateInterface(void)
 // ≈сли filename == "", то открывает окно запроса диалога
 void TUComponentsControlFrame::SaveModelToFile(const String &filename)
 {
+ if(!IsEngineInit())
+  return;
  String FileName=filename;
  if(filename == "")
  {
@@ -52,6 +54,9 @@ void TUComponentsControlFrame::SaveModelToFile(const String &filename)
 // ≈сли filename == "", то открывает окно запроса диалога
 void TUComponentsControlFrame::LoadModelFromFile(const String &filename)
 {
+ if(!IsEngineInit())
+  return;
+
  String FileName=filename;
  if(filename == "")
  {
@@ -80,6 +85,9 @@ void TUComponentsControlFrame::LoadModelFromFile(const String &filename)
 // ≈сли filename == "", то открывает окно запроса диалога
 void TUComponentsControlFrame::SaveParametersToFile(const String &filename)
 {
+ if(!IsEngineInit())
+  return;
+
  String FileName=filename;
  if(filename == "")
  {
@@ -103,6 +111,9 @@ void TUComponentsControlFrame::SaveParametersToFile(const String &filename)
 // ≈сли filename == "", то открывает окно запроса диалога
 void TUComponentsControlFrame::LoadParametersFromFile(const String &filename)
 {
+ if(!IsEngineInit())
+  return;
+
  String FileName=filename;
  if(filename == "")
  {
@@ -130,6 +141,9 @@ void TUComponentsControlFrame::LoadParametersFromFile(const String &filename)
 // ≈сли filename == "", то открывает окно запроса диалога
 void TUComponentsControlFrame::SaveStatesToFile(const String &filename)
 {
+ if(!IsEngineInit())
+  return;
+
  String FileName=filename;
  if(filename == "")
  {
@@ -153,6 +167,9 @@ void TUComponentsControlFrame::SaveStatesToFile(const String &filename)
 // ≈сли filename == "", то открывает окно запроса диалога
 void TUComponentsControlFrame::LoadStatesFromFile(const String &filename)
 {
+ if(!IsEngineInit())
+  return;
+
  String FileName=filename;
  if(filename == "")
  {

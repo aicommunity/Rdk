@@ -37,19 +37,41 @@ enum { ipDataSingle=ipData|ipSingle, ipDataRange=ipData|ipRange,
 // ----------------------------
 // Функции инициализации
 // ----------------------------
+// Возвращает число дивжков
+RDK_LIB_TYPE int RDK_CALL GetNumEngines(void);
+
+// Создает требуемое число движков
+// num > 0
+RDK_LIB_TYPE int RDK_CALL SetNumEngines(int num);
+
+// Возвращает индекс текущего выбранного движка
+RDK_LIB_TYPE int RDK_CALL GetSelectedEngineIndex(void);
+
+// Настраивает обычный интерфейс на работу с заданным движком
+// В случае удаления движка, интерфейс автоматически перенастраивается на 0 движок
+RDK_LIB_TYPE int RDK_CALL SelectEngine(int index);
+
 // Инициализирует движок (функция должна быть вызвана первой!)
+// Upd: Функция может быть вызвана после SetNumEngines и SelectEngine
 RDK_LIB_TYPE int RDK_CALL EngineInit(int predefined_structure, void* exception_handler=0);
+RDK_LIB_TYPE int RDK_CALL MEngineInit(int engine_index, int predefined_structure, void* exception_handler=0);
 
 // Инициализирует графический движок (функция должна быть вызвана первой!)
+// Upd: Функция может быть вызвана после SetNumEngines и SelectEngine
 RDK_LIB_TYPE int RDK_CALL GraphicalEngineInit(int predefined_structure, int num_inputs,
+		int num_outputs, int input_width, int input_height, bool reflectionx=false,
+		void* exception_handler=0);
+RDK_LIB_TYPE int RDK_CALL MGraphicalEngineInit(int engine_index, int predefined_structure, int num_inputs,
 		int num_outputs, int input_width, int input_height, bool reflectionx=false,
 		void* exception_handler=0);
 
 // Деинициализирует движок (функция автоматически вызывается при вызове инициализации)
 RDK_LIB_TYPE int RDK_CALL EngineUnInit(void);
+RDK_LIB_TYPE int RDK_CALL MEngineUnInit(int engine_index);
 
 /// Проверяет инициализирован ли движок
 RDK_LIB_TYPE bool RDK_CALL IsEngineInit(void);
+RDK_LIB_TYPE bool RDK_CALL MIsEngineInit(int engine_index);
 // ----------------------------
 
 // --------------------------
@@ -151,14 +173,17 @@ RDK_LIB_TYPE int RDK_CALL Env_CreateClass(const char* stringid, const char *clas
 // Если stringid == 0 то вычисляет всю модель целиком,
 // иначе вычисляет только указанный компонент модели
 RDK_LIB_TYPE int RDK_CALL Env_Calculate(const char* stringid);
+RDK_LIB_TYPE int RDK_CALL MEnv_Calculate(int engine_index, const char* stringid);
 
 // Расчет всей модели в реальном времени
 RDK_LIB_TYPE void RDK_CALL Env_RTCalculate(void);
+RDK_LIB_TYPE void RDK_CALL MEnv_RTCalculate(int engine_index);
 
 // Метод сброса счета
 // Если stringid == 0 то сбрасывает всю модель целиком,
 // иначе - только указанный компонент модели
 RDK_LIB_TYPE int RDK_CALL Env_Reset(const char* stringid);
+RDK_LIB_TYPE int RDK_CALL MEnv_Reset(int engine_index, const char* stringid);
 
 // Производит увеличение времени модели на требуемую величину
 RDK_LIB_TYPE void RDK_CALL Env_IncreaseModelTimeByStep(void);
@@ -200,33 +225,43 @@ RDK_LIB_TYPE const char* RDK_CALL Env_GetCurrentComponentId(void);
 // ***********************************************
 // Индекс предварительно заданной модели обработки
 RDK_LIB_TYPE int RDK_CALL Env_GetPredefinedStructure(void);
+RDK_LIB_TYPE int RDK_CALL MEnv_GetPredefinedStructure(int engine_index);
 RDK_LIB_TYPE bool RDK_CALL Env_SetPredefinedStructure(int value);
+RDK_LIB_TYPE bool RDK_CALL MEnv_SetPredefinedStructure(int engine_index, int value);
 
 // Флаг состояния инициализации
 // true - хранилище готово к использованию
 // false - хранилище не готово
 RDK_LIB_TYPE bool RDK_CALL Env_IsStoragePresent(void);
+RDK_LIB_TYPE bool RDK_CALL MEnv_IsStoragePresent(int engine_index);
 
 // Возвращает состояние инициализации
 RDK_LIB_TYPE bool RDK_CALL Env_IsInit(void);
+RDK_LIB_TYPE bool RDK_CALL MEnv_IsInit(int engine_index);
 
 // Признак наличия сформированной структуры
 RDK_LIB_TYPE bool RDK_CALL Env_IsStructured(void);
+RDK_LIB_TYPE bool RDK_CALL MEnv_IsStructured(int engine_index);
 
 // Инициализация среды
 RDK_LIB_TYPE bool RDK_CALL Env_Init(void);
+RDK_LIB_TYPE bool RDK_CALL MEnv_Init(int engine_index);
 
 // Деинициализация среды
 RDK_LIB_TYPE bool RDK_CALL Env_UnInit(void);
+RDK_LIB_TYPE bool RDK_CALL MEnv_UnInit(int engine_index);
 
 // Формирует предварительно заданную модель обработки
 RDK_LIB_TYPE bool RDK_CALL Env_CreateStructure(void);
+RDK_LIB_TYPE bool RDK_CALL MEnv_CreateStructure(int engine_index);
 
 // Уничтожает текущую модель обработки
 RDK_LIB_TYPE bool RDK_CALL Env_DestroyStructure(void);
+RDK_LIB_TYPE bool RDK_CALL MEnv_DestroyStructure(int engine_index);
 
 // Удаляет модель и все библиотеки, очищает хранилище, приводя среду в исходное состояние
 RDK_LIB_TYPE void RDK_CALL Env_Destroy(void);
+RDK_LIB_TYPE void RDK_CALL MEnv_Destroy(int engine_index);
 // ***********************************************
 // ----------------------------
 
@@ -236,9 +271,11 @@ RDK_LIB_TYPE void RDK_CALL Env_Destroy(void);
 // --------------------------
 // Задает число входов среды
 RDK_LIB_TYPE void RDK_CALL Env_SetNumInputImages(int number);
+RDK_LIB_TYPE void RDK_CALL MEnv_SetNumInputImages(int engine_index, int number);
 
 // Задает число выходов среды
 RDK_LIB_TYPE void RDK_CALL Env_SetNumOutputImages(int number);
+RDK_LIB_TYPE void RDK_CALL MEnv_SetNumOutputImages(int engine_index, int number);
 
 // Возвращает число входов среды
 RDK_LIB_TYPE int RDK_CALL Env_GetNumInputImages(void);
@@ -248,12 +285,14 @@ RDK_LIB_TYPE int RDK_CALL Env_GetNumOutputImages(void);
 
 // Задает разрешение по умолчанию (рабочее разрешение)
 RDK_LIB_TYPE void RDK_CALL Env_SetInputRes(int number, int width, int height);
+RDK_LIB_TYPE void RDK_CALL MEnv_SetInputRes(int engine_index, int number, int width, int height);
 
 // Задает данные изображения
 RDK_LIB_TYPE void RDK_CALL Env_SetInputImage(int number, unsigned char* image, int width, int height,int cmodel);
 
 // Задает флаг отражения входного изображения вокруг горизонтальной оси
 RDK_LIB_TYPE void Env_SetReflectionXFlag(bool value);
+RDK_LIB_TYPE void MEnv_SetReflectionXFlag(int engine_index, bool value);
 
 // Возвращает разрешение по умолчанию (рабочее разрешение)
 RDK_LIB_TYPE int RDK_CALL Env_GetInputImageWidth(int number);
@@ -286,6 +325,7 @@ RDK_LIB_TYPE int RDK_CALL Model_Clear(void);
 
 // Проверяет, существует ли модель
 RDK_LIB_TYPE bool RDK_CALL Model_Check(void);
+RDK_LIB_TYPE bool RDK_CALL MModel_Check(int engine_index);
 
 // Проверяет, существует ли в модели компонент с именем stringid)
 RDK_LIB_TYPE bool RDK_CALL Model_CheckComponent(const char* stringid);
@@ -665,14 +705,18 @@ RDK_LIB_TYPE void RDK_CALL Model_SetComponentBitmapInput(const char *stringid, i
 // ----------------------------
 // Управление функцией-обработчиком исключений
 RDK_LIB_TYPE void* RDK_CALL Engine_GetExceptionHandler(void);
+RDK_LIB_TYPE void* RDK_CALL MEngine_GetExceptionHandler(int engine_index);
 RDK_LIB_TYPE bool RDK_CALL Engine_SetExceptionHandler(void* value);
+RDK_LIB_TYPE bool RDK_CALL MEngine_SetExceptionHandler(int engine_index, void* value);
 
 // Возвращает массив строк лога
 RDK_LIB_TYPE const char* RDK_CALL Engine_GetLog(void);
+RDK_LIB_TYPE const char* RDK_CALL MEngine_GetLog(int engine_index);
 
 // Возвращает частичный массив строк лога с момента последнего считывания лога
 // этой функцией
 RDK_LIB_TYPE const char* RDK_CALL Engine_GetUnreadLog(void);
+RDK_LIB_TYPE const char* RDK_CALL MEngine_GetUnreadLog(int engine_index);
 // ----------------------------
 
 #ifdef __cplusplus

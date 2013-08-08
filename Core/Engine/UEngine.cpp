@@ -2845,7 +2845,7 @@ bool UEngine::Model_GetComponentPropertiesEx(RDK::UContainer* cont, RDK::USerSto
 	 serstorage->SetNodeAttribute("PType",sntoa(I->second.Type));
 	 if(descr)
 	 {
-	  serstorage->SetNodeAttribute("Header",descr->GetProperty(paramname).Header);
+	  serstorage->SetNodeAttribute("Header",descr->GetDescription(paramname).Header);
 	 }
 	 serstorage->SelectUp();
 	}

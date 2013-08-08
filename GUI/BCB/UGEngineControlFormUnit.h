@@ -108,6 +108,11 @@ __published:	// IDE-managed Components
 	TMenuItem *N6;
 	TMenuItem *Broadcasters1;
 	TMenuItem *Servercontrol1;
+	TStringGrid *ChannelsStringGrid;
+	TMenuItem *Channels1;
+	TMenuItem *AddNew1;
+	TMenuItem *DeleteLast1;
+	TMenuItem *DeleteAll1;
 	void __fastcall FormShow(TObject *Sender);
 	void __fastcall Start1Click(TObject *Sender);
 	void __fastcall Pause1Click(TObject *Sender);
@@ -146,8 +151,13 @@ __published:	// IDE-managed Components
 	void __fastcall UDrawEngineFrame1GUI1Click(TObject *Sender);
 	void __fastcall PageControl1Change(TObject *Sender);
 	void __fastcall DrawShow(TObject *Sender);
-	void __fastcall Broadcasters1Click(TObject *Sender);
 	void __fastcall Servercontrol1Click(TObject *Sender);
+	void __fastcall ChannelsStringGridClick(TObject *Sender);
+	void __fastcall ChannelsStringGridSelectCell(TObject *Sender, int ACol, int ARow,
+          bool &CanSelect);
+	void __fastcall AddNew1Click(TObject *Sender);
+	void __fastcall DeleteLast1Click(TObject *Sender);
+	void __fastcall DeleteAll1Click(TObject *Sender);
 
 
 
@@ -198,19 +208,19 @@ int NumEnvOutputs;
 int InputEnvImageWidth, InputEnvImageHeight;
 
 // Индекс предварительно заданной модели
-int PredefinedStructure;
+std::vector<int> PredefinedStructure;
 
 // Шаг счета по умолчанию
-int DefaultTimeStep;
+std::vector<int> DefaultTimeStep;
 
 // Глобальный шаг счета модели
-int GlobalTimeStep;
+std::vector<int> GlobalTimeStep;
 
 // Флаг необходимости переворачивать входные изображения
 bool ReflectionFlag;
 
 // Режим счета
-int CalculationMode;
+std::vector<int> CalculationMode;
 
 // Список специальных форм (не имеющих компонента управления в модели)
 std::map<std::string, TUVisualControllerForm*> SpecialForms;
@@ -274,6 +284,9 @@ int FindComponentControlPage(const std::string &component_long_name);
 
 // Удаляет все лишние вкладки (оставляет 2 начальные)
 void ClearPages(void);
+
+/// Добавляет новый пункт в подменю сетевого вещания событиями
+void AddBroadcasterMenu(TMenuItem *item, TMenu *owner);
 
 };
 #pragma warn .8130

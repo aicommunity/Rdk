@@ -5,9 +5,78 @@
 #include "rdk_init.h"
 #include "rdk.h"
 
+
+// Менеджер DLL
+class RDKDllManager
+{
+public:
+// Массив хранилищ
+std::vector<RDK::UStorage*> StorageList;
+
+// Массив сред
+std::vector<RDK::UEnvironment*> EnvironmentList;
+
+// Массив движков
+std::vector<RDK::UEngine*> EngineList;
+
+// ----------------------------------------------------------
+// Глобальные указатели на функции создания хранилища и среды
+// ----------------------------------------------------------
+// Создает новое хранилище и помещает в конец массива
+// Возвращает указатель на хранилище
+typedef RDK::UStorage* (*PCreateNewStorage)(void);
+PCreateNewStorage FuncCreateNewStorage;
+
+// Создает новую среду и помещает в конец массива
+// Возвращает указатель на среду
+typedef RDK::UEnvironment* (*PCreateNewEnvironment)(void);
+PCreateNewEnvironment FuncCreateNewEnvironment;
+
+// Создает новый движок и помещает в конец массива
+// Возвращает указатель на движок
+typedef RDK::UEngine* (*PCreateNewEngine)(void);
+PCreateNewEngine FuncCreateNewEngine;
+// ----------------------------------------------------------
+
+public:
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+RDKDllManager(void);
+~RDKDllManager(void);
+// --------------------------
+
+// --------------------------
+// Методы управления
+// --------------------------
+bool Init(PCreateNewStorage fCreateNewStorage,
+            PCreateNewEnvironment fCreateNewEnvironment,
+			PCreateNewEngine fCreateNewEngine);
+
+/// Возвращает число движков
+int GetNumEngines(void) const;
+
+/// Создает требуемое число пустых движков
+int SetNumEngines(int num);
+
+/// Создаает требуемый движок
+/// (если движок уже инициализирован, то не делает ничего
+int EngineCreate(int index);
+
+/// Уничтожает требуемый движок
+/// (если движок уже уничтожен, то не делает ничего
+int EngineDestroy(int index);
+// --------------------------
+};
+
+// Экземпляр менеджера
+RDKDllManager DllManager;
+
+
 // --------------------------------------
 // Объявления дополнительных функций
 // --------------------------------------
+/*
 // Возвращает хранилище по индексу
 RDK::UStorage* GetStorage(size_t i);
 
@@ -37,12 +106,12 @@ RDK::UEngine*  AddNewEngine(void);
 
 // Удаляет существующий движок
 void DelEngine(RDK::UEngine* engine);
-
+						  */
 // Инициализация библиотеки
-int Init(void* exception_handler);
+//int Init(void* exception_handler);
 
 // Деинициализация библиотеки
-int UnInit(void);
+//int UnInit(void);
 
 // Инициализация dll
 bool DllInit(void* pfstorage,void* pfenvironment,void* pfengine);
@@ -51,6 +120,8 @@ bool DllInit(void* pfstorage,void* pfenvironment,void* pfengine);
 RDK::UEPtr<RDK::UEngine> PEngine=0;
 RDK::UEPtr<RDK::UEnvironment> PEnvironment=0;
 RDK::UEPtr<RDK::UStorage> PStorage=0;
+
+int SelectedEngineIndex=0;
 
 /*****************************************************************************/
 extern RDK::UStorage* CreateNewStorage(void);
@@ -63,38 +134,165 @@ extern RDK::UEngine* CreateNewEngine(void);
 // ----------------------------
 // Методы инициализации
 // ----------------------------
-int RDK_CALL EngineInit(int predefined_structure, void* exception_handler)
+// Возвращает число дивжков
+int RDK_CALL GetNumEngines(void)
 {
- EngineUnInit();
- Init(exception_handler);
+ return DllManager.GetNumEngines();
+}
 
- Env_SetPredefinedStructure(predefined_structure);
- Env_CreateStructure();
- Env_Init();
+// Создает требуемое число движков
+// num > 0
+int RDK_CALL SetNumEngines(int num)
+{
+ if(num<=0)
+  return 1;
+
+ if(num == GetNumEngines())
+  return 0;
+
+ if(!DllInit((void*)CreateNewStorage, (void*)CreateNewEnvironment, (void*)CreateNewEngine))
+  return -2;
+
+
+ int res=DllManager.SetNumEngines(num);
+ if(res != 0)
+  return res;
+
+ if(SelectedEngineIndex>=num)
+  SelectedEngineIndex=0;
+
+ if(num>0)
+ {
+  PEngine=DllManager.EngineList[SelectedEngineIndex];
+  PEnvironment=DllManager.EnvironmentList[SelectedEngineIndex];
+  PStorage=DllManager.StorageList[SelectedEngineIndex];
+ }
+ return 0;
+}
+
+// Возвращает индекс текущего выбранного движка
+int RDK_CALL GetSelectedEngineIndex(void)
+{
+ return SelectedEngineIndex;
+}
+
+
+// Настраивает обычный интерфейс на работу с заданным движком
+// В случае удаления движка, интерфейс автоматически перенастраивается на 0 движок
+int RDK_CALL SelectEngine(int index)
+{
+ if(index<0 || index>=GetNumEngines())
+  return 1;
+
+ if(SelectedEngineIndex == index)
+  return 0;
+
+ SelectedEngineIndex=index;
+ PEngine=DllManager.EngineList[index];
+ PEnvironment=DllManager.EnvironmentList[index];
+ PStorage=DllManager.StorageList[index];
 
  return 0;
 }
+
+int RDK_CALL EngineInit(int predefined_structure, void* exception_handler)
+{
+ int res=0;
+ if(GetNumEngines()<=SelectedEngineIndex)
+  res=SetNumEngines(SelectedEngineIndex+1);
+
+ if(res != 0)
+  return res;
+
+ res=MEngineInit(SelectedEngineIndex, predefined_structure, exception_handler);
+
+ if(res != 0)
+  return res;
+
+ PEngine=DllManager.EngineList[SelectedEngineIndex];
+ PEnvironment=DllManager.EnvironmentList[SelectedEngineIndex];
+ PStorage=DllManager.StorageList[SelectedEngineIndex];
+
+ return 0;
+}
+
+int RDK_CALL MEngineInit(int engine_index, int predefined_structure, void* exception_handler)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+
+ MEngineUnInit(engine_index);
+
+ int res=0;
+
+ res=DllManager.EngineCreate(engine_index);
+ if(res != 0)
+  return res;
+
+ MEngine_SetExceptionHandler(engine_index, exception_handler);
+
+ MEnv_SetPredefinedStructure(engine_index, predefined_structure);
+ MEnv_CreateStructure(engine_index);
+ MEnv_Init(engine_index);
+
+ return 0;
+}
+
 
 int RDK_CALL GraphicalEngineInit(int predefined_structure, int num_inputs,
 		int num_outputs, int input_width, int input_height, bool reflectionx,
 		void* exception_handler)
 {
- EngineUnInit();
- Init(exception_handler);
+ int res=0;
+ if(GetNumEngines()<=SelectedEngineIndex)
+  res=SetNumEngines(SelectedEngineIndex+1);
+
+ if(res != 0)
+  return res;
+
+ res=MGraphicalEngineInit(SelectedEngineIndex, predefined_structure, num_inputs,
+		num_outputs, input_width, input_height, reflectionx, exception_handler);
+ if(res != 0)
+  return res;
+
+ PEngine=DllManager.EngineList[SelectedEngineIndex];
+ PEnvironment=DllManager.EnvironmentList[SelectedEngineIndex];
+ PStorage=DllManager.StorageList[SelectedEngineIndex];
+
+ return 0;
+}
+
+int RDK_CALL MGraphicalEngineInit(int engine_index, int predefined_structure, int num_inputs,
+		int num_outputs, int input_width, int input_height, bool reflectionx,
+		void* exception_handler)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+
+ MEngineUnInit(engine_index);
+// Init(exception_handler);
+
+ int res=0;
+
+ res=DllManager.EngineCreate(SelectedEngineIndex);
+ if(res != 0)
+  return res;
+
+ MEngine_SetExceptionHandler(engine_index, exception_handler);
 
  // Задает число входов среды
- Env_SetNumInputImages(num_inputs);
- Env_SetNumOutputImages(num_outputs);
+ MEnv_SetNumInputImages(engine_index, num_inputs);
+ MEnv_SetNumOutputImages(engine_index, num_outputs);
 
  // Задает разрешение по умолчанию (рабочее разрешение)
  for(int i=0;i<num_inputs;i++)
-  Env_SetInputRes(i, input_width, input_height);
+  MEnv_SetInputRes(engine_index, i, input_width, input_height);
 
- Env_SetReflectionXFlag(reflectionx);
+ MEnv_SetReflectionXFlag(engine_index, reflectionx);
 
- Env_SetPredefinedStructure(predefined_structure);
- Env_CreateStructure();
- Env_Init();
+ MEnv_SetPredefinedStructure(engine_index, predefined_structure);
+ MEnv_CreateStructure(engine_index);
+ MEnv_Init(engine_index);
 
  return 0;
 }
@@ -106,7 +304,19 @@ int RDK_CALL EngineUnInit(void)
   if(!Env_UnInit())
    return 1;
 
- return UnInit();
+ return DllManager.EngineDestroy(SelectedEngineIndex);
+}
+
+int RDK_CALL MEngineUnInit(int engine_index)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+
+ if(DllManager.EngineList[engine_index])
+  if(!MEnv_UnInit(engine_index))
+   return 1;
+
+ return DllManager.EngineDestroy(engine_index);
 }
 
 
@@ -114,6 +324,14 @@ int RDK_CALL EngineUnInit(void)
 bool RDK_CALL IsEngineInit(void)
 {
  return (PEngine)?true:false;
+}
+
+bool RDK_CALL MIsEngineInit(int engine_index)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return false;
+
+ return (DllManager.EngineList[engine_index])?true:false;
 }
 // ----------------------------
 
@@ -244,9 +462,23 @@ int RDK_CALL Env_GetPredefinedStructure(void)
  return PEngine->Env_GetPredefinedStructure();
 }
 
+int RDK_CALL MEnv_GetPredefinedStructure(int engine_index)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+ return DllManager.EngineList[engine_index]->Env_GetPredefinedStructure();
+}
+
 bool RDK_CALL Env_SetPredefinedStructure(int value)
 {
  return PEngine->Env_SetPredefinedStructure(value);
+}
+
+bool RDK_CALL MEnv_SetPredefinedStructure(int engine_index, int value)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+ return DllManager.EngineList[engine_index]->Env_SetPredefinedStructure(value);
 }
 
 // Флаг состояния инициализации
@@ -257,16 +489,38 @@ bool RDK_CALL Env_IsStoragePresent(void)
  return PEngine->Env_IsStoragePresent();
 }
 
+bool RDK_CALL MEnv_IsStoragePresent(int engine_index)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+ return DllManager.EngineList[engine_index]->Env_IsStoragePresent();
+}
+
 // Возвращает состояние инициализации
 bool RDK_CALL Env_IsInit(void)
 {
  return PEngine->Env_IsInit();
 }
 
+bool RDK_CALL MEnv_IsInit(int engine_index)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+ return DllManager.EngineList[engine_index]->Env_IsInit();
+}
+
+
 // Признак наличия сформированной структуры
 bool RDK_CALL Env_IsStructured(void)
 {
  return PEngine->Env_IsStructured();
+}
+
+bool RDK_CALL MEnv_IsStructured(int engine_index)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+ return DllManager.EngineList[engine_index]->Env_IsStructured();
 }
 
 // Инициализация среды
@@ -275,10 +529,24 @@ bool RDK_CALL Env_Init(void)
  return PEngine->Env_Init();
 }
 
+bool RDK_CALL MEnv_Init(int engine_index)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+ return DllManager.EngineList[engine_index]->Env_Init();
+}
+
 // Деинициализация среды
 bool RDK_CALL Env_UnInit(void)
 {
  return PEngine->Env_UnInit();
+}
+
+bool RDK_CALL MEnv_UnInit(int engine_index)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+ return DllManager.EngineList[engine_index]->Env_UnInit();
 }
 
 // Формирует предварительно заданную модель обработки
@@ -287,16 +555,38 @@ bool RDK_CALL Env_CreateStructure(void)
  return PEngine->Env_CreateStructure();
 }
 
+bool RDK_CALL MEnv_CreateStructure(int engine_index)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+ return DllManager.EngineList[engine_index]->Env_CreateStructure();
+}
+
 // Уничтожает текущую модель обработки
 bool RDK_CALL Env_DestroyStructure(void)
 {
  return PEngine->Env_DestroyStructure();
 }
 
+bool RDK_CALL MEnv_DestroyStructure(int engine_index)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+ return DllManager.EngineList[engine_index]->Env_DestroyStructure();
+}
+
 // Удаляет модель и все библиотеки, очищает хранилище, приводя среду в исходное состояние
 void RDK_CALL Env_Destroy(void)
 {
  return PEngine->Env_Destroy();
+}
+
+void RDK_CALL MEnv_Destroy(int engine_index)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return;
+
+ return DllManager.EngineList[engine_index]->Env_Destroy();
 }
 
 // Загружает библиотеку по имени dll-файла
@@ -366,10 +656,23 @@ int RDK_CALL Env_Calculate(const char* stringid)
  return PEngine->Env_Calculate(stringid);
 }
 
+int RDK_CALL MEnv_Calculate(int engine_index, const char* stringid)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+ return DllManager.EngineList[engine_index]->Env_Calculate(stringid);
+}
+
+
 // Расчет всей модели в реальном времени
 void RDK_CALL Env_RTCalculate(void)
 {
  PEngine->Env_RTCalculate();
+}
+
+void RDK_CALL MEnv_RTCalculate(int engine_index)
+{
+ DllManager.EngineList[engine_index]->Env_RTCalculate();
 }
 
 // Метод сброса счета
@@ -378,6 +681,13 @@ void RDK_CALL Env_RTCalculate(void)
 int RDK_CALL Env_Reset(const char* stringid)
 {
  return PEngine->Env_Reset(stringid);
+}
+
+int RDK_CALL MEnv_Reset(int engine_index, const char* stringid)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+ return DllManager.EngineList[engine_index]->Env_Reset(stringid);
 }
 
 // Производит увеличение времени модели на требуемую величину
@@ -469,6 +779,11 @@ int RDK_CALL Model_Clear(void)
 bool RDK_CALL Model_Check(void)
 {
  return PEngine->Model_Check();
+}
+
+bool RDK_CALL MModel_Check(int engine_index)
+{
+ return DllManager.EngineList[engine_index]->Model_Check();
 }
 
 // Проверяет, существует ли в модели компонент с именем stringid)
@@ -1088,9 +1403,24 @@ void* RDK_CALL Engine_GetExceptionHandler(void)
  return reinterpret_cast<void*>(PEngine->GetExceptionHandler());
 }
 
+void* RDK_CALL MEngine_GetExceptionHandler(int engine_index)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 0;
+
+ return reinterpret_cast<void*>(DllManager.EngineList[engine_index]->GetExceptionHandler());
+}
+
 bool RDK_CALL Engine_SetExceptionHandler(void* value)
 {
  return PEngine->SetExceptionHandler(reinterpret_cast<RDK::UEngine::PExceptionHandler>(value));
+}
+
+bool RDK_CALL MEngine_SetExceptionHandler(int engine_index, void* value)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+ return DllManager.EngineList[engine_index]->SetExceptionHandler(reinterpret_cast<RDK::UEngine::PExceptionHandler>(value));
 }
 
 // Возвращает массив строк лога
@@ -1099,11 +1429,27 @@ const char* RDK_CALL Engine_GetLog(void)
  return PEngine->GetLog();
 }
 
+const char* RDK_CALL MEngine_GetLog(int engine_index)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 0;
+
+ return DllManager.EngineList[engine_index]->GetLog();
+}
+
 // Возвращает частичный массив строк лога с момента последнего считывания лога
 // этой функцией
 const char* RDK_CALL Engine_GetUnreadLog(void)
 {
  return PEngine->GetUnreadLog();
+}
+
+const char* RDK_CALL MEngine_GetUnreadLog(int engine_index)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 0;
+
+ return DllManager.EngineList[engine_index]->GetUnreadLog();
 }
 // ----------------------------
 
@@ -1117,10 +1463,26 @@ void RDK_CALL Env_SetNumInputImages(int number)
  return RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Env_SetNumInputImages(number);
 }
 
+void RDK_CALL MEnv_SetNumInputImages(int engine_index, int number)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return;
+
+ return dynamic_cast<RDK::UBEngine*>(DllManager.EngineList[engine_index])->Env_SetNumInputImages(number);
+}
+
 // Задает число выходов среды
 void RDK_CALL Env_SetNumOutputImages(int number)
 {
  return RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Env_SetNumOutputImages(number);
+}
+
+void RDK_CALL MEnv_SetNumOutputImages(int engine_index, int number)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return;
+
+ return dynamic_cast<RDK::UBEngine*>(DllManager.EngineList[engine_index])->Env_SetNumOutputImages(number);
 }
 
 // Задает число входов среды
@@ -1141,6 +1503,14 @@ void RDK_CALL Env_SetInputRes(int number, int width, int height)
  return RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Env_SetInputRes(number, width, height);
 }
 
+void RDK_CALL MEnv_SetInputRes(int engine_index, int number, int width, int height)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return;
+
+ return dynamic_cast<RDK::UBEngine*>(DllManager.EngineList[engine_index])->Env_SetInputRes(number, width, height);
+}
+
 // Задает данные изображения
 void RDK_CALL Env_SetInputImage(int number, unsigned char* image, int width, int height,int cmodel)
 {
@@ -1151,6 +1521,14 @@ void RDK_CALL Env_SetInputImage(int number, unsigned char* image, int width, int
 RDK_LIB_TYPE void Env_SetReflectionXFlag(bool value)
 {
  return RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Env_SetReflectionXFlag(value);
+}
+
+RDK_LIB_TYPE void MEnv_SetReflectionXFlag(int engine_index, bool value)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return;
+
+ return dynamic_cast<RDK::UBEngine*>(DllManager.EngineList[engine_index])->Env_SetReflectionXFlag(value);
 }
 
 
@@ -1246,58 +1624,6 @@ void RDK_CALL Model_SetComponentBitmapInput(const char *stringid, int index, con
 
 /* ************************************************************************** */
 
-// Менеджер DLL
-class RDKDllManager
-{
-public:
-// Массив хранилищ
-std::vector<RDK::UStorage*> StorageList;
-
-// Массив сред
-std::vector<RDK::UEnvironment*> EnvironmentList;
-
-// Массив движков
-std::vector<RDK::UEngine*> EngineList;
-
-// ----------------------------------------------------------
-// Глобальные указатели на функции создания хранилища и среды
-// ----------------------------------------------------------
-// Создает новое хранилище и помещает в конец массива
-// Возвращает указатель на хранилище
-typedef RDK::UStorage* (*PCreateNewStorage)(void);
-PCreateNewStorage FuncCreateNewStorage;
-
-// Создает новую среду и помещает в конец массива
-// Возвращает указатель на среду
-typedef RDK::UEnvironment* (*PCreateNewEnvironment)(void);
-PCreateNewEnvironment FuncCreateNewEnvironment;
-
-// Создает новый движок и помещает в конец массива
-// Возвращает указатель на движок
-typedef RDK::UEngine* (*PCreateNewEngine)(void);
-PCreateNewEngine FuncCreateNewEngine;
-// ----------------------------------------------------------
-
-public:
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-RDKDllManager(void);
-~RDKDllManager(void);
-// --------------------------
-
-// --------------------------
-// Методы управления
-// --------------------------
-bool Init(PCreateNewStorage fCreateNewStorage,
-            PCreateNewEnvironment fCreateNewEnvironment,
-            PCreateNewEngine fCreateNewEngine);
-// --------------------------
-};
-
-// Экземпляр менеджера
-RDKDllManager DllManager;
-
 extern RDK::UEPtr<RDK::UEngine> PEngine;
 extern RDK::UEPtr<RDK::UEnvironment> PEnvironment;
 extern RDK::UEPtr<RDK::UStorage> PStorage;
@@ -1342,14 +1668,109 @@ RDKDllManager::~RDKDllManager(void)
 // Методы управления
 // --------------------------
 bool RDKDllManager::Init(PCreateNewStorage fCreateNewStorage,
-                            PCreateNewEnvironment fCreateNewEnvironment,
-                            PCreateNewEngine fCreateNewEngine)
+							PCreateNewEnvironment fCreateNewEnvironment,
+							PCreateNewEngine fCreateNewEngine)
 {
  FuncCreateNewStorage=fCreateNewStorage;
  FuncCreateNewEnvironment=fCreateNewEnvironment;
  FuncCreateNewEngine=fCreateNewEngine;
 
  return true;
+}
+
+/// Возвращает число движков
+int RDKDllManager::GetNumEngines(void) const
+{
+ return int(EngineList.size());
+}
+
+/// Создает требуемое число пустых движков
+int RDKDllManager::SetNumEngines(int num)
+{
+ if(num<0)
+  return 1;
+
+ for(int i=num;i<int(EngineList.size());i++)
+  EngineDestroy(i);
+
+ EngineList.resize(num);
+ StorageList.resize(num);
+ EnvironmentList.resize(num);
+ return 0;
+}
+
+/// Создаает требуемый движок
+/// (если движок уже инициализирован, то не делает ничего
+int RDKDllManager::EngineCreate(int index)
+{
+ if(index<0 || index>=GetNumEngines())
+  return 1;
+
+ if(EngineList[index])
+  return 0;
+
+ EngineList[index]=FuncCreateNewEngine();
+ if(!EngineList[index])
+ {
+  EngineDestroy(index);
+  return 2;
+ }
+
+ try
+ {
+  StorageList[index]=FuncCreateNewStorage();
+  if(!StorageList[index])
+  {
+   EngineDestroy(index);
+   return 3;
+  }
+
+  EnvironmentList[index]=FuncCreateNewEnvironment();
+  if(!EnvironmentList[index])
+  {
+   EngineDestroy(index);
+   return 4;
+  }
+
+  EngineList[index]->Default();
+  if(!EngineList[index]->Init(StorageList[index],EnvironmentList[index]))
+  {
+   EngineDestroy(index);
+   return 5;
+  }
+ }
+ catch (RDK::UException &exception)
+ {
+  EngineList[index]->ProcessException(exception);
+ }
+ return 0;
+}
+
+/// Уничтожает требуемый движок
+/// (если движок уже уничтожен, то не делает ничего
+int RDKDllManager::EngineDestroy(int index)
+{
+ if(index<0 || index>=GetNumEngines())
+  return 1;
+
+ if(EngineList[index])
+ {
+  delete EngineList[index];
+  EngineList[index]=0;
+ }
+
+ if(EnvironmentList[index])
+ {
+  delete EnvironmentList[index];
+  EnvironmentList[index]=0;
+ }
+
+ if(StorageList[index])
+ {
+  delete StorageList[index];
+  StorageList[index]=0;
+ }
+ return 0;
 }
 // --------------------------
 
@@ -1358,15 +1779,7 @@ bool RDKDllManager::Init(PCreateNewStorage fCreateNewStorage,
 // ----------------------------
 // Внутренние методы инициализации
 // ----------------------------
-// Деинициализация движка
-/*int Engine_Destroy(void)
-{
- PEngine=0;
- PEnvironment=0;
- PStorage=0;
- return 0;
-} */
-
+/*
 int Init(void* exception_handler)
 {
  UnInit();
@@ -1432,7 +1845,7 @@ int UnInit(void)
 
  return 0;
 }
-
+        */
 // Обработчик исключений библиотеки
 // Должен быть вызван в глобальном обработчике пользовательского ПО
 int RDK_CALL ExceptionDispatcher(void *exception)
@@ -1456,7 +1869,7 @@ bool DllInit(void* pfstorage,void* pfenvironment,void* pfengine)
 						reinterpret_cast<RDKDllManager::PCreateNewEnvironment>(pfenvironment),
 						reinterpret_cast<RDKDllManager::PCreateNewEngine>(pfengine));
 }
-
+	   /*
 // Возвращает число хранилищ в библиотеке
 int GetNumStorages(void)
 {
@@ -1467,14 +1880,14 @@ int GetNumStorages(void)
 int GetNumEnvironments(void)
 {
  return DllManager.EnvironmentList.size();
-}
-
+}                     */
+ /*
 // Возвращает число движков в библиотеке
 int GetNumEngines(void)
 {
  return DllManager.EngineList.size();
 }
-
+	  */      /*
 // Возвращает хранилище по индексу
 RDK::UStorage* GetStorage(size_t i)
 {
@@ -1590,7 +2003,7 @@ void DelEngine(RDK::UEngine* engine)
 	delete engine;
    }
  }
-}
+}                    */
 // ----------------------------
 
 

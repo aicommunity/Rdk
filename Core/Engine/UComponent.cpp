@@ -229,7 +229,7 @@ UContainerDescription* UComponent::ANewDescription(UComponentDescription* descri
  UPropertyDescription dummydescr;
  while(I != PropertiesLookupTable.end())
  {
-  result->SetProperty(I->first,dummydescr);
+  result->SetDescription(I->first,dummydescr);
   ++I;
  }
 

@@ -37,7 +37,7 @@ typedef vector<UIdT> ULongIdIterator;
 
 protected: // Статические данные
 // Разделительный символ в длинных именах узлов дерева
-static char Separator;
+char Separator;
 
 protected: // Данные
 // Id узла
@@ -67,6 +67,7 @@ UTree(void)
  Root=0;
  Current=this;
  Name="Root";
+ Separator='.';
 };
 
 UTree(const UTree<T> &node)
@@ -105,14 +106,14 @@ virtual ~UTree(void)
 // -------------------------
 // Методы доступа к статическим данным
 // -------------------------
-static char GetSeparator(void)
+char GetSeparator(void)
 { return Separator; };
 // -------------------------
 
 // -------------------------
 // Методы управления статическими данными
 // -------------------------
-static void SetSeparator(char separator)
+void SetSeparator(char separator)
 { Separator=separator; };
 // -------------------------
 
@@ -655,11 +656,6 @@ NoNodeException(UTree<T> *owner, const UIdT &id)
 };
 // ---------------------------------------
 };
-
-// Статические данные
-// Разделительный символ в длинных именах узлов дерева
-template <class T>
-char UTree<T>::Separator='.';
 
 } // end namespace Utility
 #endif

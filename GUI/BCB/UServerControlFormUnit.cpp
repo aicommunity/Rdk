@@ -533,7 +533,7 @@ void TUServerControlForm::ALoadParameters(RDK::USerStorageXML &xml)
 {
  AverageIterations=xml.ReadInteger("AverageIterations",AverageIterations);
  UHttpServerFrame->SetListenPort(xml.ReadInteger("ServerControlPort",80));
- SetNumChannels(xml.ReadInteger("NumberOfChannels",1));
+ SetNumChannels(GetNumEngines());
  for(size_t i=0;i<ChannelNames.size();i++)
  {
   SetChannelName(i,xml.ReadString(std::string("ChannelName_")+RDK::sntoa(i),RDK::sntoa(i)));
@@ -553,7 +553,7 @@ void TUServerControlForm::ALoadParameters(RDK::USerStorageXML &xml)
 /// Возвращает число каналов
 int TUServerControlForm::GetNumChannels(void) const
 {
- return ChannelNames.size();
+ return GetNumEngines();
 }
 
 /// Устанавливает число каналов
@@ -561,7 +561,7 @@ int TUServerControlForm::GetNumChannels(void) const
 int TUServerControlForm::SetNumChannels(int value)
 {
  // Здесь установка числа каналов
- int num=GetNumChannels();
+ int num=GetNumEngines();
  if(num == value)
   return 0;
 
@@ -594,7 +594,10 @@ int TUServerControlForm::SetNumChannels(int value)
    SetChannelName(i,RDK::sntoa(i));
  }
 
+ UEngineMonitorForm->EngineMonitorFrame->SetNumChannels(value);
+
  AAfterReset();
+ RDK::UIVisualControllerStorage::UpdateInterface();
  return 0;
 }
 

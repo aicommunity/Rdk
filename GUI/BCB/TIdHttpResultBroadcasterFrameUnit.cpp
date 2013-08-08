@@ -71,7 +71,7 @@ void TIdHttpResultBroadcasterFrame::AAfterCalculate(void)
 
  TIdMultiPartFormDataStream* ASource=new TIdMultiPartFormDataStream;
 
- ASource->AddFormField("TimeStamp",IntToStr(UEngineMonitorForm->EngineMonitorFrame->ServerTimeStamp));
+ ASource->AddFormField("TimeStamp",IntToStr(UEngineMonitorForm->EngineMonitorFrame->ServerTimeStamp[GetSelectedEngineIndex()]));
  if(EnableXmlTranslationCheckBox->Checked)
  {
   const char* xml_data=0;

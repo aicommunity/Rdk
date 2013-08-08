@@ -24,12 +24,15 @@ __published:	// IDE-managed Components
 	TMenuItem *Servers1;
 	TMenuItem *Add1;
 	TMenuItem *Del1;
+	TPopupMenu *PopupMenu1;
+	TMenuItem *HttpBroadcaster1;
 	void __fastcall Add1Click(TObject *Sender);
 	void __fastcall Del1Click(TObject *Sender);
 	void __fastcall ConnectAll1Click(TObject *Sender);
 	void __fastcall DisconnectAll1Click(TObject *Sender);
 	void __fastcall FormDestroy(TObject *Sender);
 	void __fastcall FormCreate(TObject *Sender);
+	void __fastcall HttpBroadcaster1Click(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
 	__fastcall TIdHttpResultBroadcasterForm(TComponent* Owner);

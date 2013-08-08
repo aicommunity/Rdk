@@ -25,7 +25,7 @@ class UContainerDescription: public UComponentDescription
 {
 protected: // Данные
 // Описания общих свойств
-static std::map<std::string, UPropertyDescription> CommonProperties;
+//static std::map<std::string, UPropertyDescription> CommonProperties;
 
 // Описания свойств
 std::map<std::string, UPropertyDescription> Properties;
@@ -43,25 +43,26 @@ virtual ~UContainerDescription(void);
 // Методы управления общими свойствами
 // --------------------------
 // Описание общего свойства
-static const UPropertyDescription& GetCommonProperty(const std::string &name);
+/*static const UPropertyDescription& GetCommonProperty(const std::string &name);
 static bool SetCommonProperty(const std::string &name, const UPropertyDescription& value);
 
 // Проверяет наличие общего свойства с заданным именем
 static bool CheckCommonProperty(const std::string &name);
+*/
 // --------------------------
 
 // --------------------------
 // Методы управления данными
 // --------------------------
 // Описание свойства
-const UPropertyDescription& GetProperty(const std::string &name);
-bool SetProperty(const std::string &name, const UPropertyDescription& value, bool force=false);
+const UPropertyDescription& GetDescription(const std::string &name);
+bool SetDescription(const std::string &name, const UPropertyDescription& value, bool force=false);
 
 // Удаляет свойство из этого описания, если он есть в общих описаниях
-bool RemoveCommonDuplicatesProperty(const std::string &name);
+bool RemoveCommonDuplicatesDescription(const std::map<std::string, UPropertyDescription> &common_descriptions, const std::string &name);
 
 // Удаляет все свойства из этого описания, если они есть в общих описаниях
-bool RemoveCommonDuplicatesProperties(void);
+bool RemoveCommonDuplicatesDescriptions(const std::map<std::string, UPropertyDescription> &common_descriptions);
 // --------------------------
 
 // --------------------------
@@ -77,11 +78,13 @@ virtual bool Load(USerStorageXML &xml);
 // --------------------------
 // Методы ввода вывода общих данных
 // --------------------------
+/*
 // Сохраняет данные класса в XML
 static bool SaveCommon(USerStorageXML &xml);
 
 // Загружает данные класса из XML
 static bool LoadCommon(USerStorageXML &xml);
+*/
 // --------------------------
 };
 

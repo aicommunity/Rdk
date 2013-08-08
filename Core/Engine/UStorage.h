@@ -94,6 +94,9 @@ protected: // Описания классов
 // XML описания всех классов хранилища
 UClassesDescription ClassesDescription;
 
+/// Описания общих свойств компонент
+std::map<std::string, UPropertyDescription> CommonDescriptions;
+
 protected: // Основные свойства
 // Список объектов
 UObjectsStorage ObjectsStorage;

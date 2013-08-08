@@ -571,11 +571,23 @@ void UStorage::LoadClassesDescription(USerStorageXML &xml)
 bool UStorage::SaveCommonClassesDescription(USerStorageXML &xml)
 {
  xml.AddNode("Default");
- if(!UContainerDescription::SaveCommon(xml))
+
+ xml.AddNode("Properties");
+ std::map<std::string, UPropertyDescription>::const_iterator I=CommonDescriptions.begin();
+ while(I != CommonDescriptions.end())
  {
+  xml.AddNode(I->first);
+
+  xml.AddNode("Header");
+  xml.SetNodeText(I->second.Header);
   xml.SelectUp();
-  return false;
+
+  xml.SelectUp();
+  ++I;
  }
+ xml.SelectUp();
+ return true;
+
  xml.SelectUp();
  return true;
 }
@@ -585,7 +597,29 @@ bool UStorage::LoadCommonClassesDescription(USerStorageXML &xml)
 {
  if(xml.SelectNode("Default"))
  {
-  UContainerDescription::LoadCommon(xml);
+  if(!xml.SelectNode("Properties"))
+   return false;
+
+  CommonDescriptions.clear();
+  int num_parameters=xml.GetNumNodes();
+  for(int i=0;i<num_parameters;i++)
+  {
+   if(!xml.SelectNode(i))
+   {
+	continue;
+   }
+
+   std::string nodename=xml.GetNodeName();
+   if(xml.SelectNode("Header"))
+   {
+	CommonDescriptions[nodename].Header=xml.GetNodeText();
+	xml.SelectUp();
+   }
+
+   xml.SelectUp();
+  }
+  xml.SelectUp();
+
   xml.SelectUp();
  }
 
@@ -593,7 +627,7 @@ bool UStorage::LoadCommonClassesDescription(USerStorageXML &xml)
 
  while(I != ClassesDescription.end())
  {
-  dynamic_pointer_cast<UContainerDescription>(I->second)->RemoveCommonDuplicatesProperties();
+  dynamic_pointer_cast<UContainerDescription>(I->second)->RemoveCommonDuplicatesDescriptions(CommonDescriptions);
   ++I;
  }
 

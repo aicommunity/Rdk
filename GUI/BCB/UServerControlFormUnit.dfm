@@ -25,6 +25,10 @@ object UServerControlForm: TUServerControlForm
     TabOrder = 0
     object ControlTabSheet: TTabSheet
       Caption = 'Control'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object GroupBox3: TGroupBox
         Left = 0
         Top = 0
@@ -33,7 +37,6 @@ object UServerControlForm: TUServerControlForm
         Align = alClient
         Caption = ' Channels performance '
         TabOrder = 0
-        ExplicitHeight = 201
         object PerformanceChart: TChart
           Left = 2
           Top = 15
@@ -92,7 +95,6 @@ object UServerControlForm: TUServerControlForm
           TopAxis.Title.Font.Name = 'Verdana'
           Align = alClient
           TabOrder = 0
-          ExplicitHeight = 153
           ColorPaletteIndex = 13
           object Series1: TBarSeries
             Marks.Arrow.Visible = True
@@ -136,7 +138,6 @@ object UServerControlForm: TUServerControlForm
           Align = alBottom
           TabOrder = 1
           Visible = False
-          ExplicitTop = 168
           object FpsRadioButton: TRadioButton
             Left = 8
             Top = 6

@@ -6,7 +6,7 @@
 namespace RDK {
 
 // Описания общих свойств
-std::map<std::string, UPropertyDescription> UContainerDescription::CommonProperties;
+//std::map<std::string, UPropertyDescription> UContainerDescription::CommonProperties;
 
 // --------------------------
 // Конструкторы и деструкторы
@@ -32,6 +32,7 @@ UContainerDescription::~UContainerDescription(void)
 // --------------------------
 // Методы управления общими свойствами
 // --------------------------
+/*
 // Описание общего свойства
 const UPropertyDescription& UContainerDescription::GetCommonProperty(const std::string &name)
 {
@@ -55,7 +56,7 @@ bool UContainerDescription::CheckCommonProperty(const std::string &name)
  std::map<std::string, UPropertyDescription>::const_iterator I=CommonProperties.find(name);
 
  return I != CommonProperties.end();
-}
+}   */
 // --------------------------
 
 
@@ -63,14 +64,14 @@ bool UContainerDescription::CheckCommonProperty(const std::string &name)
 // Методы управления данными
 // --------------------------
 // Описание свойства
-const UPropertyDescription& UContainerDescription::GetProperty(const std::string &name)
+const UPropertyDescription& UContainerDescription::GetDescription(const std::string &name)
 {
  std::map<std::string, UPropertyDescription>::const_iterator I=Properties.find(name);
 
  if(I == Properties.end())
  {
-  I=CommonProperties.find(name);
-  if(I == CommonProperties.end())
+//  I=CommonProperties.find(name);
+//  if(I == CommonProperties.end())
   {
    UPropertyDescription descr;
    I=Properties.insert(Properties.end(),pair<std::string, UPropertyDescription>(name,descr));
@@ -80,35 +81,34 @@ const UPropertyDescription& UContainerDescription::GetProperty(const std::string
  return I->second;
 }
 
-bool UContainerDescription::SetProperty(const std::string &name, const UPropertyDescription& value, bool force)
+bool UContainerDescription::SetDescription(const std::string &name, const UPropertyDescription& value, bool force)
 {
- if(CheckCommonProperty(name) && !force)
-  return true;
+// if(CheckCommonProperty(name) && !force)
+//  return true;
 
-// I->second=value;
  Properties[name]=value;
 
  return true;
 }
 
 // Удаляет свойство из этого описания, если он есть в общих описаниях
-bool UContainerDescription::RemoveCommonDuplicatesProperty(const std::string &name)
+bool UContainerDescription::RemoveCommonDuplicatesDescription(const std::map<std::string, UPropertyDescription> &common_descriptions, const std::string &name)
 {
- std::map<std::string, UPropertyDescription>::const_iterator I=CommonProperties.find(name);
+ std::map<std::string, UPropertyDescription>::const_iterator I=common_descriptions.find(name);
 
- if(I != CommonProperties.begin())
+ if(I != common_descriptions.begin())
   Properties.erase(name);
 
  return true;
 }
 
 // Удаляет все свойства из этого описания, если они есть в общих описаниях
-bool UContainerDescription::RemoveCommonDuplicatesProperties(void)
+bool UContainerDescription::RemoveCommonDuplicatesDescriptions(const std::map<std::string, UPropertyDescription> &common_descriptions)
 {
  std::map<std::string, UPropertyDescription>::iterator I,J;
  for(J=Properties.begin();J != Properties.end();)
  {
-  if(CommonProperties.find(J->first) != CommonProperties.end())
+  if(common_descriptions.find(J->first) != common_descriptions.end())
   {
    I=J; ++I;
    Properties.erase(J);
@@ -187,6 +187,7 @@ bool UContainerDescription::Load(USerStorageXML &xml)
 // --------------------------
 // Методы ввода вывода общих данных
 // --------------------------
+/*
 // Сохраняет данные класса в XML
 bool UContainerDescription::SaveCommon(USerStorageXML &xml)
 {
@@ -237,7 +238,7 @@ bool UContainerDescription::LoadCommon(USerStorageXML &xml)
  }
  xml.SelectUp();
  return true;
-}
+}         */
 // --------------------------
 
 
