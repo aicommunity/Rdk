@@ -24,6 +24,7 @@ TVideoOutputFrame *VideoOutputFrame;
 __fastcall TVideoOutputFrame::TVideoOutputFrame(TComponent* Owner)
     : TUVisualControllerFrame(Owner)
 {
+ FrameIndex=0;
 // Capture=0;
 
  // Модуль графики
@@ -700,6 +701,20 @@ void TVideoOutputFrame::ABeforeCalculate(void)
   }
  }
 
+
+ if(Model_Check())
+ {
+  if(BmpSource.GetByteLength()>0)
+  {
+   if(GetNumEngines() == 1)
+	Model_SetComponentBitmapOutput("", FrameIndex, &BmpSource,true);
+   else
+   {
+	if(GetNumEngines()>FrameIndex)
+ 	 MModel_SetComponentBitmapOutput(FrameIndex, "", 0, &BmpSource,true);
+   }
+  }
+ }
 
  SendToComponentIO();
  if(SendPointsByStepCheckBox->Checked)

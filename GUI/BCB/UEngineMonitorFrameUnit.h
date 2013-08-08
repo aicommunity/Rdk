@@ -35,6 +35,8 @@ virtual __fastcall ~TEngineThread(void);
 // --------------------------
 // ”правление потоком
 // --------------------------
+void __fastcall BeforeCalculate(void);
+
 virtual void __fastcall Execute(void);
 // --------------------------
 

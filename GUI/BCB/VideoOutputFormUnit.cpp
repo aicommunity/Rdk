@@ -29,7 +29,7 @@ __fastcall TVideoOutputForm::~TVideoOutputForm(void)
 // Метод, вызываемый перед шагом расчета
 void TVideoOutputForm::ABeforeCalculate(void)
 {
- if(!Model_Check())
+/* if(!Model_Check())
   return;
 
  int num_outputs=Model_GetComponentNumOutputs("");
@@ -46,7 +46,7 @@ void TVideoOutputForm::ABeforeCalculate(void)
    //Env_SetInputRes(i, InputEnvImageWidth, InputEnvImageHeight);
    //Env_SetInputImage(i,(unsigned char*)source.GetData(),source.GetWidth(), source.GetHeight(),source.GetColorModel());
   }
- }
+ }    */
 }
 
 // Обновляет интерфейс
@@ -93,6 +93,7 @@ void TVideoOutputForm::AddSource(void)
  size_t index=Sources.size()-1;
 
  Sources[index]=new TVideoOutputFrame(0);
+ Sources[index]->FrameIndex=index;
  Sources[index]->Name=Sources[index]->Name+String("_")+PageControl->PageCount;
  Sources[index]->MyVideoGrabberControlForm->Name=Sources[index]->Name+"_VideoGrabberControlForm";
 

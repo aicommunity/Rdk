@@ -108,6 +108,9 @@ public:        // User declarations
     __fastcall TVideoOutputFrame(TComponent* Owner);
     __fastcall ~TVideoOutputFrame(void);
 
+// Индекс этого источника на форме всех источников
+int FrameIndex;
+
 // Режим работы
 // 0 - Bmp
 // 1 - Avi

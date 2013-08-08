@@ -1615,6 +1615,11 @@ void RDK_CALL Model_SetComponentBitmapOutput(const char *stringid, int index, co
  RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Model_SetComponentBitmapOutput(stringid, index, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
 }
 
+void RDK_CALL MModel_SetComponentBitmapOutput(int engine_index, const char *stringid, int index, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
+{
+ dynamic_cast<RDK::UBEngine*>(DllManager.EngineList[engine_index])->Model_SetComponentBitmapOutput(stringid, index, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
+}
+
 // Замещает изображение входа с индексом 'index' компонента 'id'
 void RDK_CALL Model_SetComponentBitmapInput(const char *stringid, int index, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
 {

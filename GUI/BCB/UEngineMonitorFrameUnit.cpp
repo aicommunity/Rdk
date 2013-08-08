@@ -34,16 +34,22 @@ __fastcall TEngineThread::~TEngineThread(void)
 // --------------------------
 // ”правление потоком
 // --------------------------
+void __fastcall TEngineThread::BeforeCalculate(void)
+{
+#ifdef RDK_VIDEO
+//   RDK::UIVisualControllerStorage::BeforeCalculate();
+ TVideoOutputFrame* video=VideoOutputForm->GetVideoOutputFrame(ChannelIndex);
+ if(video)
+  video->BeforeCalculate();
+#endif
+}
+
 void __fastcall TEngineThread::Execute(void)
 {
  while(!Terminated)
  {
-#ifdef RDK_VIDEO
- TVideoOutputFrame* video=VideoOutputForm->GetVideoOutputFrame(ChannelIndex);
- if(video)
-  video->BeforeCalculate();
- MEnv_Calculate(ChannelIndex,0);
-#endif
+  Synchronize(BeforeCalculate);
+  MEnv_Calculate(ChannelIndex,0);
  }
 }
 // --------------------------
@@ -106,7 +112,8 @@ bool TUEngineMonitorFrame::SetNumChannels(int num)
  CalculateSignal.resize(num,false);
  ServerTimeStamp.resize(num,0);
 
- for(int i=num;i<int(ThreadChannels.size());i++)
+ int old_size=int(ThreadChannels.size());
+ for(int i=num;i<old_size;i++)
  {
   ThreadChannels[i]->Terminate();
   ThreadChannels[i]->WaitFor();
@@ -114,7 +121,7 @@ bool TUEngineMonitorFrame::SetNumChannels(int num)
  }
 
  ThreadChannels.resize(num);
- for(int i=int(ThreadChannels.size());i<num;i++)
+ for(int i=old_size;i<num;i++)
   ThreadChannels[i]=new TEngineThread(i,true);
 
  return true;
@@ -177,6 +184,7 @@ void __fastcall TUEngineMonitorFrame::Start1Click(TObject *Sender)
  case 1:
   for(int i=0;i<GetNumChannels();i++)
    ThreadChannels[i]->Resume();
+  Timer->Enabled=true;
  break;
  }
 }
@@ -193,8 +201,10 @@ void __fastcall TUEngineMonitorFrame::Pause1Click(TObject *Sender)
  break;
 
  case 1:
+  Timer->Enabled=false;
   for(int i=0;i<GetNumChannels();i++)
    ThreadChannels[i]->Suspend();
+   //Suspend();
  break;
  }
 }
@@ -261,6 +271,7 @@ void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
 
  case 1:
  {
+  RDK::UIVisualControllerStorage::AfterCalculate();
   RDK::UIVisualControllerStorage::UpdateInterface();
  }
  break;
