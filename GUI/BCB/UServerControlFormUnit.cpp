@@ -441,9 +441,6 @@ void TUServerControlForm::AAfterReset(void)
 // Метод, вызываемый после шага расчета
 void TUServerControlForm::AAfterCalculate(void)
 {
- if(!Model_Check())
-  return;
-
  if(PerformancePushIndex>=ModelPerformanceResults.size())
   PerformancePushIndex=0;
 
@@ -453,12 +450,12 @@ void TUServerControlForm::AAfterCalculate(void)
  TransportPerformanceResults[PerformancePushIndex].assign(GetNumChannels(),0);
  for(size_t i=0;i<ModelPerformanceResults[PerformancePushIndex].size();i++)
  {
-  long long model_time=Model_GetFullStepDuration("");
-  long long ext_gui=Model_GetInterstepsInterval("");
+  if(!MIsEngineInit(i) || !MModel_Check(i))
+   continue;
+  long long model_time=MModel_GetFullStepDuration(i,"");
+  long long ext_gui=MModel_GetInterstepsInterval(i,"");
   ModelPerformanceResults[PerformancePushIndex][i]=model_time;
   TransportPerformanceResults[PerformancePushIndex][i]=ext_gui;
-
-  break; // Заглушка, пока некуда обращаться ко многим каналам
  }
  ++PerformancePushIndex;
  if(PerformancePushIndex>=ModelPerformanceResults.size())
@@ -561,9 +558,9 @@ int TUServerControlForm::GetNumChannels(void) const
 int TUServerControlForm::SetNumChannels(int value)
 {
  // Здесь установка числа каналов
- int num=GetNumEngines();
- if(num == value)
-  return 0;
+// int num=GetNumEngines();
+// if(num == value)
+//  return 0;
 
  if(value<=0)
   return 1;
@@ -594,7 +591,7 @@ int TUServerControlForm::SetNumChannels(int value)
    SetChannelName(i,RDK::sntoa(i));
  }
 
- UEngineMonitorForm->EngineMonitorFrame->SetNumChannels(value);
+ //UEngineMonitorForm->EngineMonitorFrame->SetNumChannels(value);
 
  AAfterReset();
  RDK::UIVisualControllerStorage::UpdateInterface();

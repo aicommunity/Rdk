@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include "UEngineMonitorFrameUnit.h"
+#include "UEngineMonitorFormUnit.h"
 #include "rdk_initdll.h"
 #ifdef RDK_VIDEO
 #include "VideoOutputFormUnit.h"
@@ -22,12 +23,12 @@ TUEngineMonitorFrame *UEngineMonitorFrame;
 __fastcall TEngineThread::TEngineThread(int channel_index, bool CreateSuspended)
 : ChannelIndex(channel_index), TThread(CreateSuspended)
 {
-
+ CalcEnable=CreateEvent(0,0,0,0);
 }
 
 __fastcall TEngineThread::~TEngineThread(void)
 {
-
+ CloseHandle(CalcEnable);
 }
 // --------------------------
 
@@ -44,12 +45,31 @@ void __fastcall TEngineThread::BeforeCalculate(void)
 #endif
 }
 
+void __fastcall TEngineThread::AfterCalculate(void)
+{
+ UEngineMonitorForm->EngineMonitorFrame->LastCalculatedServerTimeStamp[ChannelIndex]=
+ UEngineMonitorForm->EngineMonitorFrame->GetServerTimeStamp(ChannelIndex);
+ RDK::UIVisualControllerStorage::AfterCalculate();
+}
+
+
+
 void __fastcall TEngineThread::Execute(void)
 {
  while(!Terminated)
  {
-  Synchronize(BeforeCalculate);
+//  Synchronize(BeforeCalculate);
+  if(WaitForSingleObject(CalcEnable,30) == WAIT_TIMEOUT)
+   continue;
+  ResetEvent(CalcEnable);
+
+#ifdef RDK_VIDEO
+ TVideoOutputFrame* video=VideoOutputForm->GetVideoOutputFrame(ChannelIndex);
+ if(video)
+  MModel_SetComponentBitmapOutput(ChannelIndex, "", 0, &video->BmpSource,true);
+#endif
   MEnv_Calculate(ChannelIndex,0);
+  Synchronize(AfterCalculate);
  }
 }
 // --------------------------
@@ -95,6 +115,23 @@ void TUEngineMonitorFrame::SetCalculateMode(int channel_index,int value)
  CalculateMode[channel_index]=value;
 }
 
+// Управление временной меткой сервера
+long long TUEngineMonitorFrame::GetServerTimeStamp(int channel_index) const
+{
+ return ServerTimeStamp[channel_index];
+}
+
+void TUEngineMonitorFrame::SetServerTimeStamp(int channel_index, long long stamp)
+{
+ if(ServerTimeStamp[channel_index] == stamp)
+  return;
+
+ ServerTimeStamp[channel_index]=stamp;
+ CalculateSignal[channel_index]=true;
+ SetEvent(ThreadChannels[channel_index]->CalcEnable);
+}
+
+
 
 /// Управление числом каналов
 int TUEngineMonitorFrame::GetNumChannels(void) const
@@ -111,12 +148,13 @@ bool TUEngineMonitorFrame::SetNumChannels(int num)
  CalculateMode.resize(num,0);
  CalculateSignal.resize(num,false);
  ServerTimeStamp.resize(num,0);
+ LastCalculatedServerTimeStamp.resize(num,0);
 
  int old_size=int(ThreadChannels.size());
  for(int i=num;i<old_size;i++)
  {
   ThreadChannels[i]->Terminate();
-  ThreadChannels[i]->WaitFor();
+//  ThreadChannels[i]->WaitFor();
   delete ThreadChannels[i];
  }
 
@@ -178,12 +216,14 @@ void __fastcall TUEngineMonitorFrame::Start1Click(TObject *Sender)
    Reset1Click(Sender);
   TUVisualControllerFrame::CalculationModeFlag=true;
   TUVisualControllerForm::CalculationModeFlag=true;
+  Timer->Interval=1;
   Timer->Enabled=true;
  break;
 
  case 1:
   for(int i=0;i<GetNumChannels();i++)
    ThreadChannels[i]->Resume();
+  Timer->Interval=30;
   Timer->Enabled=true;
  break;
  }
@@ -239,17 +279,16 @@ void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
 	continue;
    }
 
-   if(CalculateMode[GetSelectedEngineIndex()] == 2)
+   if(CalculateMode == 2)
    {
-	if(!CalculateSignal[GetSelectedEngineIndex()])
+	if(!CalculateSignal[i])
 	 continue;
-
-	CalculateSignal[GetSelectedEngineIndex()]=false;
    }
+   CalculateSignal[i]=false;
 
    RDK::UIVisualControllerStorage::BeforeCalculate();
 
-   switch(CalculateMode[GetSelectedEngineIndex()])
+   switch(CalculateMode[i])
    {
    case 0:
 	MEnv_Calculate(i,0);
@@ -263,6 +302,7 @@ void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
 	MEnv_Calculate(i,0);
    break;
    }
+   LastCalculatedServerTimeStamp[i]=ServerTimeStamp[i];
   }
   RDK::UIVisualControllerStorage::AfterCalculate();
   RDK::UIVisualControllerStorage::UpdateInterface();
@@ -271,7 +311,7 @@ void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
 
  case 1:
  {
-  RDK::UIVisualControllerStorage::AfterCalculate();
+//  RDK::UIVisualControllerStorage::AfterCalculate();
   RDK::UIVisualControllerStorage::UpdateInterface();
  }
  break;

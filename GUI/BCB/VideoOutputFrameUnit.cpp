@@ -640,6 +640,13 @@ void TVideoOutputFrame::ABeforeCalculate(void)
  {
   CurrentBmpSequenceIndex++;
   UpdateVideo();
+  long long time_stamp=GetTickCount();
+  if(GetNumEngines() == 1)
+   UEngineMonitorForm->EngineMonitorFrame->SetServerTimeStamp(0,time_stamp);
+  else
+  if(GetNumEngines() > FrameIndex)
+   UEngineMonitorForm->EngineMonitorFrame->SetServerTimeStamp(FrameIndex,time_stamp);
+
   Sleep(0);
  }
  else
@@ -676,7 +683,12 @@ void TVideoOutputFrame::ABeforeCalculate(void)
 	}
 	shift+=sizeof(ServerTimeStamp);
 
-	UEngineMonitorForm->EngineMonitorFrame->ServerTimeStamp[GetSelectedEngineIndex()]=time_stamp;
+	if(GetNumEngines() == 1)
+	 UEngineMonitorForm->EngineMonitorFrame->SetServerTimeStamp(0,time_stamp);
+	else
+	if(GetNumEngines() > FrameIndex)
+	 UEngineMonitorForm->EngineMonitorFrame->SetServerTimeStamp(FrameIndex,time_stamp);
+
 	std::string sstamp;
 	RDK::UTimeStamp stamp(double(ServerTimeStamp/1000),25);
 	stamp>>sstamp;
@@ -701,6 +713,16 @@ void TVideoOutputFrame::ABeforeCalculate(void)
   }
  }
 
+ SendToComponentIO();
+ if(SendPointsByStepCheckBox->Checked)
+ {
+  SendAsMatrixButtonClick(this);
+  Button1Click(this);
+ }
+ if(DeletePointsAfterSendCheckBox->Checked)
+ {
+  MyVideoOutputToolsForm->DelAllPointsButtonClick(this);
+ }
 
  if(Model_Check())
  {
@@ -714,17 +736,6 @@ void TVideoOutputFrame::ABeforeCalculate(void)
  	 MModel_SetComponentBitmapOutput(FrameIndex, "", 0, &BmpSource,true);
    }
   }
- }
-
- SendToComponentIO();
- if(SendPointsByStepCheckBox->Checked)
- {
-  SendAsMatrixButtonClick(this);
-  Button1Click(this);
- }
- if(DeletePointsAfterSendCheckBox->Checked)
- {
-  MyVideoOutputToolsForm->DelAllPointsButtonClick(this);
  }
 }
 
@@ -823,8 +834,10 @@ void TVideoOutputFrame::ALoadParameters(RDK::USerStorageXML &xml)
 //---------------------------------------------------------------------------
 void __fastcall TVideoOutputFrame::TimerTimer(TObject *Sender)
 {
- UpdateFlag=false;
- Image->Repaint();
+// UpdateFlag=false;
+ if(UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode() == 1)
+  ABeforeCalculate();
+// Image->Repaint();
 }
 //---------------------------------------------------------------------------
 void __fastcall TVideoOutputFrame::StartButtonClick(TObject *Sender)
@@ -876,11 +889,15 @@ void __fastcall TVideoOutputFrame::StartButtonClick(TObject *Sender)
 
  default:
      ;
- }  
+ }
+ if(UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode() == 1)
+  Timer->Enabled=true;
 }
 //---------------------------------------------------------------------------
 void __fastcall TVideoOutputFrame::StopButtonClick(TObject *Sender)
 {
+ Timer->Enabled=false;
+
  int res=0;
  switch (Mode) {
  case 0:
@@ -1204,8 +1221,8 @@ Graphics::TBitmap *Frame_Bitmap;
 
          UpdateFlag=true;
          std::string sstamp;
-         RDK::UTimeStamp stamp(CurrentFrameNumber,VideoGrabber->CurrentFrameRate);
-         stamp>>sstamp;
+		 RDK::UTimeStamp stamp(CurrentFrameNumber,VideoGrabber->CurrentFrameRate);
+		 stamp>>sstamp;
          TimeEdit->Text=sstamp.c_str();
          UpdateFlag=false;
 
@@ -1215,7 +1232,12 @@ Graphics::TBitmap *Frame_Bitmap;
 
 	  break;
    }
- UEngineMonitorForm->EngineMonitorFrame->CalculateSignal[GetSelectedEngineIndex()]=true;
+
+ if(GetNumEngines() == 1)
+  UEngineMonitorForm->EngineMonitorFrame->SetServerTimeStamp(0,FrameTime);
+ else
+ if(GetNumEngines() > FrameIndex)
+  UEngineMonitorForm->EngineMonitorFrame->SetServerTimeStamp(FrameIndex,FrameTime);
 }
 //---------------------------------------------------------------------------
 void __fastcall TVideoOutputFrame::TrackBarChange(TObject *Sender)
@@ -1380,7 +1402,12 @@ void __fastcall TVideoOutputFrame::UHttpServerFrameIdHTTPServerCommandGet(TIdCon
   std::string temp_stamp;
   temp_stamp.assign(&time_stamp[0],time_stamp.size());
   ServerTimeStamp=RDK::atoi(temp_stamp);
-  UEngineMonitorForm->EngineMonitorFrame->ServerTimeStamp[GetSelectedEngineIndex()]=ServerTimeStamp;
+
+  if(GetNumEngines() == 1)
+   UEngineMonitorForm->EngineMonitorFrame->SetServerTimeStamp(0,ServerTimeStamp);
+  else
+  if(GetNumEngines() > FrameIndex)
+   UEngineMonitorForm->EngineMonitorFrame->SetServerTimeStamp(FrameIndex,ServerTimeStamp);
 
   std::string sstamp;
   RDK::UTimeStamp stamp(double(ServerTimeStamp/1000),25);
@@ -1403,12 +1430,12 @@ void __fastcall TVideoOutputFrame::UHttpServerFrameIdHTTPServerCommandGet(TIdCon
   AResponseInfo->ResponseText="404 Not Found";
   AResponseInfo->ContentText="404 Not Found";
  }
-
+/*
  std::vector<char> &step=UHttpServerFrame->ParsedRequestArgs["StepEnable"];
  if(!step.empty() && step[0]=='1')
  {
   UEngineMonitorForm->EngineMonitorFrame->CalculateSignal[GetSelectedEngineIndex()]=true;
- }
+ }*/
 }
 //---------------------------------------------------------------------------
 

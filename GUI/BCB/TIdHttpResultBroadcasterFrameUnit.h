@@ -49,6 +49,8 @@ TBitmap *Bitmap;
 
 bool ConnectionEstablishedFlag;
 
+long long LastSentTimeStamp;
+
 // --------------------------
 // Методы управления фреймом
 // --------------------------

@@ -20,6 +20,8 @@ __fastcall TIdHttpResultBroadcasterFrame::TIdHttpResultBroadcasterFrame(TCompone
 
  Bitmap=new TBitmap;
  ConnectionEstablishedFlag=false;
+
+ LastSentTimeStamp=-1;
 }
 
 __fastcall TIdHttpResultBroadcasterFrame::~TIdHttpResultBroadcasterFrame(void)
@@ -45,6 +47,14 @@ void TIdHttpResultBroadcasterFrame::ABeforeCalculate(void)
 
 void TIdHttpResultBroadcasterFrame::AAfterCalculate(void)
 {
+ int channel_index=StrToInt(ChannelIndexLabeledEdit->Text);
+ if(channel_index>GetNumEngines())
+  return;
+
+ if(LastSentTimeStamp == UEngineMonitorForm->EngineMonitorFrame->LastCalculatedServerTimeStamp[channel_index])
+  return;
+ LastSentTimeStamp=UEngineMonitorForm->EngineMonitorFrame->LastCalculatedServerTimeStamp[channel_index];
+
  String AUrl=ServerAddressLabeledEdit->Text;
 
  if(!ConnectionEstablishedFlag)
@@ -71,7 +81,7 @@ void TIdHttpResultBroadcasterFrame::AAfterCalculate(void)
 
  TIdMultiPartFormDataStream* ASource=new TIdMultiPartFormDataStream;
 
- ASource->AddFormField("TimeStamp",IntToStr(UEngineMonitorForm->EngineMonitorFrame->ServerTimeStamp[GetSelectedEngineIndex()]));
+ ASource->AddFormField("TimeStamp",IntToStr(LastSentTimeStamp));
  if(EnableXmlTranslationCheckBox->Checked)
  {
   const char* xml_data=0;

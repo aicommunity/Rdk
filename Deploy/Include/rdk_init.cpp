@@ -1373,11 +1373,21 @@ long long RDK_CALL Model_GetStepDuration(const char *stringid)
  return PEngine->Model_GetStepDuration(stringid);
 }
 
+long long RDK_CALL MModel_GetStepDuration(int engine_index, const char *stringid)
+{
+ return DllManager.EngineList[engine_index]->Model_GetStepDuration(stringid);
+}
+
 // Возвращает время, затраченное на обработку объекта
 // (вместе со времени обсчета дочерних объектов) (мс)
 long long RDK_CALL Model_GetFullStepDuration(const char *stringid)
 {
  return PEngine->Model_GetFullStepDuration(stringid);
+}
+
+long long RDK_CALL MModel_GetFullStepDuration(int engine_index, const char *stringid)
+{
+ return DllManager.EngineList[engine_index]->Model_GetFullStepDuration(stringid);
 }
 
 // Возвращает мгновенное быстродействие, равное отношению
@@ -1387,10 +1397,20 @@ double RDK_CALL Model_GetInstantPerformance(const char *stringid)
  return PEngine->Model_GetInstantPerformance(stringid);
 }
 
+double RDK_CALL MModel_GetInstantPerformance(int engine_index, const char *stringid)
+{
+ return DllManager.EngineList[engine_index]->Model_GetInstantPerformance(stringid);
+}
+
 // Время, прошедшее между двумя последними итерациями счета
 long long RDK_CALL Model_GetInterstepsInterval(const char *stringid)
 {
  return PEngine->Model_GetInterstepsInterval(stringid);
+}
+
+long long RDK_CALL MModel_GetInterstepsInterval(int engine_index, const char *stringid)
+{
+ return DllManager.EngineList[engine_index]->Model_GetInterstepsInterval(stringid);
 }
 // --------------------------
 

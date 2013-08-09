@@ -662,17 +662,21 @@ RDK_LIB_TYPE double RDK_CALL Model_GetDoubleRealTimeStep(void);
 
 // Возвращает время расчета компонента без времени расчета дочерних компонент (мс)
 RDK_LIB_TYPE long long RDK_CALL Model_GetStepDuration(const char *stringid);
+RDK_LIB_TYPE long long RDK_CALL MModel_GetStepDuration(int engine_index, const char *stringid);
 
 // Возвращает время, затраченное на обработку объекта
 // (вместе со времени расчета дочерних компонент) (мс)
 RDK_LIB_TYPE long long RDK_CALL Model_GetFullStepDuration(const char *stringid);
+RDK_LIB_TYPE long long RDK_CALL MModel_GetFullStepDuration(int engine_index, const char *stringid);
 
 // Возвращает мгновенное быстродействие, равное отношению
 // полного затраченного времени к ожидаемому времени шага счета
 RDK_LIB_TYPE double RDK_CALL Model_GetInstantPerformance(const char *stringid);
+RDK_LIB_TYPE double RDK_CALL MModel_GetInstantPerformance(int engine_index, const char *stringid);
 
 // Время, прошедшее между двумя последними итерациями счета
 RDK_LIB_TYPE long long RDK_CALL Model_GetInterstepsInterval(const char *stringid);
+RDK_LIB_TYPE long long RDK_CALL MModel_GetInterstepsInterval(int engine_index, const char *stringid);
 // --------------------------
 
 // --------------------------

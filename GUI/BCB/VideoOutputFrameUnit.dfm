@@ -276,7 +276,7 @@ inherited VideoOutputFrame: TVideoOutputFrame
   end
   object Timer: TTimer
     Enabled = False
-    Interval = 39
+    Interval = 10
     OnTimer = TimerTimer
     Left = 8
     Top = 264

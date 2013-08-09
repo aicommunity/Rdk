@@ -1452,7 +1452,7 @@ void __fastcall TUGEngineControlForm::ChannelsStringGridSelectCell(TObject *Send
 void __fastcall TUGEngineControlForm::AddNew1Click(TObject *Sender)
 {
  UEngineMonitorForm->EngineMonitorFrame->SetNumChannels(GetNumEngines()+1);
- UpdateInterface(true);
+ RDK::UIVisualControllerStorage::UpdateInterface();
 }
 //---------------------------------------------------------------------------
 
@@ -1462,14 +1462,14 @@ void __fastcall TUGEngineControlForm::DeleteLast1Click(TObject *Sender)
   return;
 
  UEngineMonitorForm->EngineMonitorFrame->SetNumChannels(GetNumEngines()-1);
- UpdateInterface(true);
+ RDK::UIVisualControllerStorage::UpdateInterface();
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUGEngineControlForm::DeleteAll1Click(TObject *Sender)
 {
  UEngineMonitorForm->EngineMonitorFrame->SetNumChannels(1);
- UpdateInterface(true);
+ RDK::UIVisualControllerStorage::UpdateInterface();
 }
 //---------------------------------------------------------------------------
 

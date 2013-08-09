@@ -24,6 +24,10 @@ protected: // Параметры
 /// Индекс канала в библиотеке аналитики, управляемый тредом
 int ChannelIndex;
 
+public:
+HANDLE CalcEnable;
+
+
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
@@ -36,6 +40,8 @@ virtual __fastcall ~TEngineThread(void);
 // Управление потоком
 // --------------------------
 void __fastcall BeforeCalculate(void);
+
+void __fastcall AfterCalculate(void);
 
 virtual void __fastcall Execute(void);
 // --------------------------
@@ -83,6 +89,11 @@ int ChannelsMode;
 // 2 - простой расчет по сигналу
 std::vector<int> CalculateMode;
 
+// Временная метка последнего расчета
+std::vector<long long> LastCalculatedServerTimeStamp;
+
+protected:
+
 // Сигнал, выставляемый при необходимости расчета
 // сбрасывается при итерации счета
 std::vector<bool> CalculateSignal;
@@ -93,6 +104,8 @@ std::vector<long long> ServerTimeStamp;
 /// Потоки запуска многоканальной аналитики
 std::vector<TEngineThread*> ThreadChannels;
 
+
+public:
 /// Управление режимом работы
 /// 0 - однопоточный режим
 /// 1 - многопоточный режим
@@ -102,6 +115,10 @@ void SetChannelsMode(int mode);
 // Управление режимом расчетов
 int GetCalculateMode(int channel_index) const;
 void SetCalculateMode(int channel_index, int value);
+
+// Управление временной меткой сервера
+long long GetServerTimeStamp(int channel_index) const;
+void SetServerTimeStamp(int channel_index, long long stamp);
 
 /// Управление числом каналов
 int GetNumChannels(void) const;
