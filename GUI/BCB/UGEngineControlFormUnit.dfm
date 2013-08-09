@@ -471,8 +471,10 @@ object UGEngineControlForm: TUGEngineControlForm
     Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goDrawFocusSelected, goRowSelect]
     ScrollBars = ssVertical
     TabOrder = 3
+    Visible = False
     OnClick = ChannelsStringGridClick
     OnSelectCell = ChannelsStringGridSelectCell
+    ExplicitTop = 38
   end
   object MainMenu: TMainMenu
     Images = ImageList
@@ -658,7 +660,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 360
     Top = 65528
     Bitmap = {
-      494C01011B0060003C0110001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B006000400110001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
