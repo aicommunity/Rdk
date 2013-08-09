@@ -279,7 +279,7 @@ void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
 	continue;
    }
 
-   if(CalculateMode == 2)
+   if(CalculateMode[i] == 2)
    {
 	if(!CalculateSignal[i])
 	 continue;

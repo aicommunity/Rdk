@@ -4,6 +4,7 @@
 #include <exception>
 #include "rdk_init.h"
 #include "rdk.h"
+#include "rdk_rpc.cpp"
 
 
 // Менеджер DLL
@@ -130,6 +131,21 @@ extern RDK::UEnvironment* CreateNewEnvironment(void);
 
 extern RDK::UEngine* CreateNewEngine(void);
 /*****************************************************************************/
+
+// ----------------------------
+// Функции RPC
+// С помощью этих функций возможно вызвать любую функицю библиотеки,
+// возвращающую строковые данные
+// ----------------------------
+/// Выполняет запрос и возвращает xml-описание ответа
+/// request - xml описание запроса
+/// return_value - возвращаемое значение для тех функций, которые его имеют
+/// для остальных возвращает 0
+const char* RDK_CALL RemoteCall(const char *request, int &return_value)
+{
+ return RDK::RemoteCallInternal(request, return_value);
+}
+// ----------------------------
 
 // ----------------------------
 // Методы инициализации
