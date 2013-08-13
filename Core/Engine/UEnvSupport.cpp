@@ -18,8 +18,10 @@ See file license.txt for more information
 
 namespace RDK {
 
-UId ForbiddenId=0;
-ULongId ULongIdemp;
+const UId ForbiddenId=0;
+const NameT ForbiddenName="";
+
+//ULongId ULongIdemp;
 
 /* *********************************************************************** */
 /* *********************************************************************** */

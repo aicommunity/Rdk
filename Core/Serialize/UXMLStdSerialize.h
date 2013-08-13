@@ -33,7 +33,6 @@ USerStorageXML& USimpleToStorage (USerStorageXML& storage, const T data)
  stream<<data;
 
  std::string str;
-// static std::string str;
  str=stream.str();
 
  storage.SetNodeText(str);

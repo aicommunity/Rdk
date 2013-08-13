@@ -86,6 +86,12 @@ __fastcall TUEngineMonitorFrame::TUEngineMonitorFrame(TComponent* Owner)
  ChannelsMode=0;
 }
 
+__fastcall TUEngineMonitorFrame::~TUEngineMonitorFrame(void)
+{
+ SetNumChannels(0);
+}
+
+
 /// Управление режимом работы
 /// 0 - однопоточный (одноканальный) режим
 /// 1 - многопоточный режим

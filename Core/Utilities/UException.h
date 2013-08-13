@@ -13,9 +13,6 @@ protected: // Общие данные
 // Последний порядковый номер исключения
 static long long LastNumber;
 
-// Диспетчер исключений. Осуществляет запись логов и другую деятельность
-//static ExceptionDispatcher* Dispatcher;
-
 protected: // Данные исключения
 // Порядковый номер исключения
 long long Number;
@@ -46,10 +43,6 @@ virtual ~UException(void);
 // --------------------------
 // Последний порядковый номер исключения
 static long long GetLastNumber(void);
-
-// Диспетчер исключений. Осуществляет запись логов и другую деятельность
-//static ExceptionDispatcher* GetDispatcher(void);
-//static bool SetDispatcher(ExceptionDispatcher* value);
 // --------------------------
 
 // --------------------------

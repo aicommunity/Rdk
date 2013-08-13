@@ -83,7 +83,7 @@ protected: // Параметры
 int PredefinedStructure;
 
 // Имя текущего каталога хранения данных
-static std::string CurrentDataDir;
+std::string CurrentDataDir;
 
 protected: // Состояния
 // Флаг состояния инициализации
@@ -115,6 +115,9 @@ vector<string> CompletedClassNames;
 
 // Массив имен не загруженных классов
 vector<string> IncompletedClassNames;
+
+/// Время среды
+UTimeControl Time;
 
 // Максимальный интеревал времени, который систем пытается "догнать" в режиме
 // расчета реального времени (мс)
@@ -155,10 +158,8 @@ const ULongId& GetModelCalculationComponent(void) const;
 bool SetModelCalculationComponent(const ULongId& value);
 
 // Имя текущего каталога хранения данных
-static const std::string& GetCurrentDataDir(void);
-static void SetCurrentDataDir(const std::string& dir);
-
-
+const std::string& GetCurrentDataDir(void);
+void SetCurrentDataDir(const std::string& dir);
 // --------------------------
 
 // --------------------------
@@ -236,6 +237,9 @@ virtual bool DelAllClassLibraries(void);
 // Заполняет хранилище данными библиотек
 // Операция предварительно уничтожает модель и очищает хранилище
 virtual bool BuildStorage(void);
+
+/// Время среды
+const UTimeControl& GetTime(void) const;
 // --------------------------
 
 // --------------------------

@@ -14,6 +14,7 @@ See file license.txt for more information
 
 #include "UComponent.h"
 #include "UStorage.h"
+#include "UEnvironment.h"
 #include "UComponentDescription.h"
 
 namespace RDK {
@@ -182,6 +183,21 @@ bool UComponent::SetStorage(UEPtr<UStorage> storage)
   return true;
 
  Storage=storage;
+ return true;
+}
+
+// Возвращает среду выполнения этого объекта
+UEPtr<UEnvironment> const UComponent::GetEnvironment(void) const
+{
+ return Environment;
+}
+
+bool UComponent::SetEnvironment(UEPtr<UEnvironment> environment)
+{
+ if(Environment == environment)
+  return true;
+
+ Environment=environment;
  return true;
 }
 // --------------------------

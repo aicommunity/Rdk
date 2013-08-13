@@ -25,8 +25,8 @@ See file license.txt for more information
 namespace RDK {
 
 // Системный буфер
-string ustrbuf;
-wstring uwstrbuf;
+//string ustrbuf;
+//wstring uwstrbuf;
 // --------------------------------------------------
 
 
@@ -89,14 +89,14 @@ std::string narrow(const std::wstring& wstr, const std::locale& loc)
   return result;
 }
 
-std::locale my_locale("");
-
+//std::locale my_locale("");
+				 /*
 std::string narrow2(const std::wstring& wstr)
 {
 // static std::locale my_locale("");
 // std::locale cp866(std::locale(), new codecvt_cp866);
  return narrow(wstr,my_locale);
-}
+}       */
 
 //@brief Расширяет строку, используя локализацию loc
 //   @return Возвращает расширенную строку или пустую расширенную строку, в
@@ -123,12 +123,12 @@ std::wstring widen(const std::string& str, const std::locale& loc)
     return std::wstring();
   return result;
 }
-
+				/*
 std::wstring widen2(const std::string& str)
 {
 // static std::locale my_locale("");
  return widen(str,my_locale);
-}
+}                 */
 
 
 }

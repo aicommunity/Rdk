@@ -41,6 +41,10 @@ XMLNode RootNode;
 // Текущий узел
 XMLNode CurrentNode;
 
+protected: // Временные переменные
+std::locale Locale;
+
+
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы

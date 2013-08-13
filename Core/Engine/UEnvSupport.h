@@ -19,10 +19,10 @@ See file license.txt for more information
 namespace RDK {
 
 typedef int UId;
-extern UId ForbiddenId;
+extern const UId ForbiddenId;
 
 typedef std::string NameT;
-extern NameT ForbiddenName;
+extern const NameT ForbiddenName;
 
 /* *********************************************************************** */
 /* *********************************************************************** */
@@ -206,7 +206,7 @@ const ULongId& operator [] (int index) const;
 /* *********************************************************************** */
 /* *********************************************************************** */
 
-extern ULongId ULongIdemp;
+//extern ULongId ULongIdemp;
 
 
 /* *********************************************************************** */

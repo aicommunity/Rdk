@@ -50,6 +50,7 @@ enum { ipDataSingle=ipData|ipSingle, ipDataRange=ipData|ipRange,
 namespace RDK {
 
 class UStorage;
+class UEnvironment;
 class UComponentDescription;
 
 typedef USerStorage UVariableData;
@@ -131,6 +132,9 @@ UEPtr<UComponent> MainOwner;
 // Указатель на хранилище компонент этого объекта
 UEPtr<UStorage> Storage;
 
+// Указатель на среду выполнения этого объекта
+UEPtr<UEnvironment> Environment;
+
 protected: // Данные
 // Идентификатор класса
 UId Class;
@@ -170,6 +174,10 @@ virtual void SetMainOwner(UEPtr<UComponent> mainowner);
 // Возвращает хранилище компонент этого объекта
 UEPtr<UStorage> const GetStorage(void) const;
 virtual bool SetStorage(UEPtr<UStorage> storage);
+
+// Возвращает среду выполнения этого объекта
+UEPtr<UEnvironment> const GetEnvironment(void) const;
+virtual bool SetEnvironment(UEPtr<UEnvironment> environment);
 // --------------------------
 
 // --------------------------

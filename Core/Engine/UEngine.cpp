@@ -1073,7 +1073,7 @@ const char* UEngine::Env_GetCurrentDataDir(void) const
 {
  try
  {
-  return UEnvironment::GetCurrentDataDir().c_str();
+  return Environment->GetCurrentDataDir().c_str();
  }
  catch (RDK::UException &exception)
  {
@@ -1087,7 +1087,7 @@ int UEngine::Env_SetCurrentDataDir(const char *dir)
 {
  try
  {
-  UEnvironment::SetCurrentDataDir(dir);
+  Environment->SetCurrentDataDir(dir);
  }
  catch (RDK::UException &exception)
  {

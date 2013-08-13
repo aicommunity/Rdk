@@ -24,9 +24,6 @@ public: // Методы
 class UContainerDescription: public UComponentDescription
 {
 protected: // Данные
-// Описания общих свойств
-//static std::map<std::string, UPropertyDescription> CommonProperties;
-
 // Описания свойств
 std::map<std::string, UPropertyDescription> Properties;
 
@@ -37,18 +34,6 @@ public: // Методы
 UContainerDescription(void);
 UContainerDescription(const UContainerDescription &copy);
 virtual ~UContainerDescription(void);
-// --------------------------
-
-// --------------------------
-// Методы управления общими свойствами
-// --------------------------
-// Описание общего свойства
-/*static const UPropertyDescription& GetCommonProperty(const std::string &name);
-static bool SetCommonProperty(const std::string &name, const UPropertyDescription& value);
-
-// Проверяет наличие общего свойства с заданным именем
-static bool CheckCommonProperty(const std::string &name);
-*/
 // --------------------------
 
 // --------------------------
@@ -73,18 +58,6 @@ virtual bool Save(USerStorageXML &xml);
 
 // Загружает данные класса из XML
 virtual bool Load(USerStorageXML &xml);
-// --------------------------
-
-// --------------------------
-// Методы ввода вывода общих данных
-// --------------------------
-/*
-// Сохраняет данные класса в XML
-static bool SaveCommon(USerStorageXML &xml);
-
-// Загружает данные класса из XML
-static bool LoadCommon(USerStorageXML &xml);
-*/
 // --------------------------
 };
 

@@ -138,7 +138,7 @@ PUALibrary UClassLibraryList::operator [] (int i)
 // --------------------------
 
 // Имя текущего каталога хранения данных
-std::string UEnvironment::CurrentDataDir;
+//std::string UEnvironment::CurrentDataDir;
 
 // --------------------------
 // Constructors & destructors
@@ -282,6 +282,7 @@ bool UEnvironment::CreateModel(const NameT& classname)
   return false;
 
  CurrentComponent=Model=dynamic_pointer_cast<UContainer>(GetStorage()->TakeObject(classname));
+ Model->SetEnvironment(this);
  Ready=false;
  if(Model)
  {
@@ -298,6 +299,7 @@ bool UEnvironment::CreateModel(const UId& classid)
   return false;
 
  CurrentComponent=Model=dynamic_pointer_cast<UContainer>(Storage->TakeObject(classid));
+ Model->SetEnvironment(this);
  Ready=false;
  if(Model)
   return true;
@@ -516,6 +518,12 @@ void UEnvironment::DownCurrentComponent(const NameT &name)
 void UEnvironment::DownCurrentComponent(const ULongId &id)
 {
  CurrentComponent=GetCurrentComponent()->GetComponentL(id);
+}
+
+/// Время среды
+const UTimeControl& UEnvironment::GetTime(void) const
+{
+ return Time;
 }
 // --------------------------
 

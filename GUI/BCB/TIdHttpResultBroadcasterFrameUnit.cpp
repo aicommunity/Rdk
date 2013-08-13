@@ -63,7 +63,8 @@ void TIdHttpResultBroadcasterFrame::AAfterCalculate(void)
   try
   {
    int i = LastDelimiter(':', AUrl);
-   int port=StrToInt(AUrl.SubString(i + 1, AUrl.Length() - (i)));
+   int j = LastDelimiter('/', AUrl);
+   int port=StrToInt(AUrl.SubString(i + 1, j - i-1));
    String url=AUrl.SubString(1, i-1);
    IdHTTP->Connect(url,port);
   }

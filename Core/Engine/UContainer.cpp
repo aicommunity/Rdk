@@ -28,9 +28,6 @@ See file license.txt for more information
 
 namespace RDK {
 
-NameT ForbiddenName="";
-
-
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
@@ -131,6 +128,14 @@ ULongId& UContainer::GetFullId(ULongId &buffer) const
  return buffer;
 }
 
+ULongId UContainer::GetFullId(void) const
+{
+ ULongId id;
+
+ return GetFullId(id);
+}
+
+
 // Возвращает  'длинный' Id объекта
 // (исключая имя владельца 'mainowner').
 // Метод возвращает пустой вектор, если 'mainowner' - не является
@@ -157,6 +162,14 @@ ULongId& UContainer::GetLongId(UEPtr<UContainer> mainowner, ULongId &buffer) con
 
  return buffer;
 }
+
+ULongId UContainer::GetLongId(UEPtr<UContainer> mainowner) const
+{
+ ULongId id;
+
+ return GetLongId(mainowner,id);
+}
+
 
 // Промежуточный вариант одноименного метода, возвращающего длинное имя
 std::string& UContainer::GetLongId(UEPtr<UContainer> mainowner, std::string &buffer) const
@@ -787,6 +800,8 @@ UId UContainer::AddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer)
 
  if(MainOwner)
   comp->SetMainOwner(MainOwner);
+
+ comp->SetEnvironment(Environment);
 
  try{
   AAddComponent(comp,pointer);
@@ -1823,6 +1838,8 @@ void UContainer::DelComponent(UEPtr<UContainer> comp, bool canfree)
  BeforeDelComponent(comp,canfree);
  SharesUnInit();
  ADelComponent(comp);
+
+ comp->SetEnvironment(0);
 
  if(comp->GetMainOwner() == MainOwner)
   comp->SetMainOwner(0);

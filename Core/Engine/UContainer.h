@@ -68,7 +68,6 @@ virtual ~UPVariable(void);
 };
 
 
-class UStorage;
 class UInstancesStorageElement;
 
 typedef long int IndexT;
@@ -189,13 +188,15 @@ bool CheckOwner(UEPtr<UContainer> owner) const;
 
 // Возвращает полный Id объекта
 // (включая Id всех владельцев)
-ULongId& GetFullId(ULongId &buffer=ULongIdemp) const;
+ULongId& GetFullId(ULongId &buffer) const;
+ULongId GetFullId(void) const;
 
 // Возвращает  'длинный' Id объекта
 // (исключая имя владельца 'mainowner')
 // Метод возвращает пустой вектор, если 'mainowner' - не является
 // владельцем объекта ни на каком уровне иерархии
-ULongId& GetLongId(UEPtr<UContainer> mainowner, ULongId &buffer=ULongIdemp) const;
+ULongId& GetLongId(UEPtr<UContainer> mainowner, ULongId &buffer) const;
+ULongId GetLongId(UEPtr<UContainer> mainowner) const;
 // Промежуточный вариант одноименного метода, возвращающего длинное имя
 std::string& GetLongId(UEPtr<UContainer> mainowner, std::string &buffer) const;
 

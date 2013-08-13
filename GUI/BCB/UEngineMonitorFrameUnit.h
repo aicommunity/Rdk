@@ -77,6 +77,7 @@ __published:	// IDE-managed Components
 private:	// User declarations
 public:		// User declarations
 	__fastcall TUEngineMonitorFrame(TComponent* Owner);
+	virtual __fastcall ~TUEngineMonitorFrame(void);
 
 /// –ежим работы
 /// 0 - однопоточный (одноканальный) режим

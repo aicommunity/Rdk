@@ -89,8 +89,8 @@ namespace RDK {
 using namespace std;
 
 // Cистемные буферы
-extern string ustrbuf;
-extern wstring uwstrbuf;
+//extern string ustrbuf;
+//extern wstring uwstrbuf;
 
 /*
  Функции возвращают указатель на внутренний буфер
@@ -109,13 +109,15 @@ basic_string<CharT>& ntoa(NumT n, basic_string<CharT> &buf)
 template<typename NumT>
 string sntoa(NumT n)
 {
- return ntoa(n,ustrbuf);
+ std::string res;
+ return ntoa(n,res);
 }
 
 template<typename NumT>
 wstring wntoa(NumT n)
 {
- return ntoa(n,uwstrbuf);
+ std::wstring res;
+ return ntoa(n,res);
 }
 
 template<typename CharT, typename NumT>
@@ -131,13 +133,15 @@ basic_string<CharT>& ntoa(NumT n, int digs, basic_string<CharT> &buf)
 template<typename NumT>
 string sntoa(NumT n,int digs)
 {
- return ntoa(n,digs,ustrbuf);
+ string res;
+ return ntoa(n,digs,res);
 }
 
 template<typename NumT>
 wstring wntoa(NumT n,int digs)
 {
- return ntoa(n,digs,uwstrbuf);
+ wstring res;
+ return ntoa(n,digs,res);
 }
 
 // Функция, преобразующая число в шестнадцатиричную строку
@@ -152,13 +156,15 @@ basic_string<CharT>& ntohex(NumT n, basic_string<CharT> &buf)
 template<typename NumT>
 string sntohex(NumT n)
 {
- return ntohex(n,ustrbuf);
+ std::string res;
+ return ntohex(n,res);
 }
 
 template<typename NumT>
 wstring wntohex(NumT n)
 {
- return ntohex(n,uwstrbuf);
+ std::wstring res;
+ return ntohex(n,res);
 }
 
 // Функция, преобразующая строку в вещественное число
@@ -245,14 +251,14 @@ std::string get_text_time(time_t time_data, char date_sep='.', char time_sep=':'
 //   случае. если возникла ошибка
 std::string narrow(const std::wstring& wstr, const std::locale& loc);
 
-std::string narrow2(const std::wstring& wstr);
+//std::string narrow2(const std::wstring& wstr);
 
 //@brief Расширяет строку, используя локализацию loc
 //   @return Возвращает расширенную строку или пустую расширенную строку, в
 //   случае, если возникла ошибка.
 std::wstring widen(const std::string& str, const std::locale& loc);
 
-std::wstring widen2(const std::string& str);
+//std::wstring widen2(const std::string& str);
 
 }
 #endif
