@@ -8,44 +8,51 @@ namespace RDK {
 UTime DefaultTimeStep=(UTime)2000;
 
 // --------------------------
-// √лобальные свойства
+//  онструкторы и деструкторы
 // --------------------------
-// “екущее врем€ модели
-ULongTime UTimeControl::Time=0;
-double UTimeControl::DoubleTime=0;
+UTimeControl::UTimeControl(void)
+{
+ // “екущее врем€ модели
+ Time=0;
+ DoubleTime=0;
 
-// –еальное врем€
-ULongTime UTimeControl::RealTime=0;
-double UTimeControl::DoubleRealTime=0;
+ // –еальное врем€
+ RealTime=0;
+ DoubleRealTime=0;
 
-// ћгновенный шаг в реальном времени
-ULongTime UTimeControl::RealTimeStep=1;
-double UTimeControl::DoubleRealTimeStep=1.0e-6;
+ // ћгновенный шаг в реальном времени
+ RealTimeStep=1;
+ DoubleRealTimeStep=1.0e-6;
 
+ // “екущее врем€ внешних источников данных в микросекундах
+ SourceTime=0;
 
-// “екущее врем€ внешних источников данных в микросекундах
-ULongTime UTimeControl::SourceTime=0;
+ // “екущее врем€ внешних источников данных в секундах
+ DoubleSourceTime=0;
 
-// “екущее врем€ внешних источников данных в секундах
-double UTimeControl::DoubleSourceTime=0;
+ // ћгновенный шаг во времени внешних источников данных в микросекундах
+ SourceTimeStep=1;
 
-// ћгновенный шаг во времени внешних источников данных в микросекундах
-ULongTime UTimeControl::SourceTimeStep=1;
+ // ћгновенный шаг во времени внешних источников данных в секундах
+ DoubleSourceTimeStep=1.0e-6;
+}
 
-// ћгновенный шаг во времени внешних источников данных в секундах
-double UTimeControl::DoubleSourceTimeStep=1.0e-6;
+UTimeControl::~UTimeControl(void)
+{
+
+}
 // --------------------------
 
 // --------------------------
 // ћетоды управлени€ глобальными свойствами
 // --------------------------
 // ¬озвращает текущее врем€ модели
-const ULongTime& UTimeControl::GetTime(void)
+const ULongTime& UTimeControl::GetTime(void) const
 {
  return Time;
 }
 
-const double& UTimeControl::GetDoubleTime(void)
+const double& UTimeControl::GetDoubleTime(void) const
 {
  return DoubleTime;
 }
@@ -64,23 +71,23 @@ bool UTimeControl::SetTime(ULongTime value)
 // ”величивает врем€ модели на заданную величину
 bool UTimeControl::IncreaseModelTime(ULongTime value)
 {
- return UTimeControl::SetTime(UTimeControl::GetTime()+value);
+ return SetTime(UTimeControl::GetTime()+value);
 }
 
 // ”величивает врем€ модели на заданную величину при заданном шаге вычислений
 // в тыс€чных дол€х секунды
 bool UTimeControl::IncreaseModelTimeByStep(ULongTime step)
 {
- return UTimeControl::IncreaseModelTime(1000000/step);
+ return IncreaseModelTime(1000000/step);
 }
 
 // ¬озвращает реальное врем€
-const ULongTime& UTimeControl::GetRealTime(void)
+const ULongTime& UTimeControl::GetRealTime(void) const
 {
  return RealTime;
 }
 
-const double& UTimeControl::GetDoubleRealTime(void)
+const double& UTimeControl::GetDoubleRealTime(void) const
 {
  return DoubleRealTime;
 }
@@ -106,23 +113,23 @@ bool UTimeControl::IncreaseRealTime(ULongTime value)
 }
 
 // ¬озвращает мгновенный шаг в реальном времени
-const ULongTime& UTimeControl::GetRealTimeStep(void)
+const ULongTime& UTimeControl::GetRealTimeStep(void) const
 {
  return RealTimeStep;
 }
 
-const double& UTimeControl::GetDoubleRealTimeStep(void)
+const double& UTimeControl::GetDoubleRealTimeStep(void) const
 {
  return DoubleRealTimeStep;
 }
 
 // “екущее врем€ внешних источников данных в микросекундах
-const ULongTime& UTimeControl::GetSourceTime(void)
+const ULongTime& UTimeControl::GetSourceTime(void) const
 {
  return SourceTime;
 }
 
-const double& UTimeControl::GetDoubleSourceTime(void)
+const double& UTimeControl::GetDoubleSourceTime(void) const
 {
  return DoubleSourceTime;
 }
@@ -148,12 +155,12 @@ bool UTimeControl::IncreaseSourceTime(ULongTime value)
 }
 
 // ћгновенный шаг во времени внешних источников данных в микросекундах
-const ULongTime& UTimeControl::GetSourceTimeStep(void)
+const ULongTime& UTimeControl::GetSourceTimeStep(void) const
 {
  return SourceTimeStep;
 }
 
-const double& UTimeControl::GetDoubleSourceTimeStep(void)
+const double& UTimeControl::GetDoubleSourceTimeStep(void) const
 {
  return DoubleSourceTimeStep;
 }

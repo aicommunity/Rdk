@@ -525,6 +525,11 @@ const UTimeControl& UEnvironment::GetTime(void) const
 {
  return Time;
 }
+
+UTimeControl& UEnvironment::GetTime(void)
+{
+ return Time;
+}
 // --------------------------
 
 // --------------------------
@@ -533,7 +538,7 @@ const UTimeControl& UEnvironment::GetTime(void) const
 // Производит увеличение времени модели на требуемую величину
 void UEnvironment::IncreaseModelTimeByStep(void)
 {
- UTimeControl::IncreaseModelTimeByStep(GetModel()->GetTimeStep());
+ Time.IncreaseModelTimeByStep(GetModel()->GetTimeStep());
 }
 // --------------------------
 
@@ -629,7 +634,7 @@ void UEnvironment::RTCalculate(void)
 // StartProcTime=GetCurrentStartupTime();
 
  CurrentTime=GetCurrentStartupTime();
- UContainer::SetRealTime(CalcDiffTime(GetCurrentStartupTime(),StartupTime)*1000);
+ Time.SetRealTime(CalcDiffTime(GetCurrentStartupTime(),StartupTime)*1000);
 
  long long curtime;
  long long TimerInterval=0;
@@ -642,7 +647,7 @@ void UEnvironment::RTCalculate(void)
  int i=0;
  if(LastDuration < TimerInterval)
   LastDuration=TimerInterval;
- double model_duration=(UContainer::GetRealTime()-Model->GetDoubleTime()*1e6)/1000.0;
+ double model_duration=(Time.GetRealTime()-Time.GetDoubleTime()*1e6)/1000.0;
 
  if(model_duration>MaxModelDuration)
   model_duration=MaxModelDuration;
@@ -667,10 +672,10 @@ void UEnvironment::RTCalculate(void)
  }
 
 // LastSentTime=GetCurrentStartupTime();
- if(UContainer::GetRealTime()/1e6<Model->GetDoubleTime())
+ if(Time.GetRealTime()/1e6<Time.GetDoubleTime())
  {
-  Sleep(int(Model->GetDoubleTime()*1000-UContainer::GetRealTime()/1000));
-  UContainer::SetRealTime(CalcDiffTime(GetCurrentStartupTime(),StartupTime)*1000);
+  Sleep(int(Time.GetDoubleTime()*1000-Time.GetRealTime()/1000));
+  Time.SetRealTime(CalcDiffTime(GetCurrentStartupTime(),StartupTime)*1000);
  }
 
  LastDuration=GetCurrentStartupTime()-CurrentTime;
@@ -795,14 +800,14 @@ bool UEnvironment::AReset(void)
    return false;
  }
 
- UContainer::SetTime(0);
+ Time.SetTime(0);
  return true;
 }
 
 // Выполняет расчет этого объекта
 bool UEnvironment::ACalculate(void)
 {
- UContainer::SetRealTime(CalcDiffTime(GetCurrentStartupTime(),StartupTime)*1000);
+ Time.SetRealTime(CalcDiffTime(GetCurrentStartupTime(),StartupTime)*1000);
  if(!Model)
   return true;
 

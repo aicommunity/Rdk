@@ -14,8 +14,8 @@ See file license.txt for more information
 
 #include "../Math/MVector.h"
 #include "UComponent.h"
-#include "UController.h"
 #include "UTime.h"
+#include "UController.h"
 
 namespace RDK {
 
@@ -77,7 +77,7 @@ typedef UContainer* PUAContainer;
 // Массив указателей на контейнеры
 typedef std::vector<UEPtr<UContainer> > UAContainerVector;
 
-class UContainer: public UComponent, public UTimeControl
+class UContainer: public UComponent
 {
 public: // Типы данных
 typedef std::map<NameT,UPVariable> PointerMapT;

@@ -18,7 +18,7 @@ See file license.txt for more information
 namespace RDK {
 
 /// Список статически загруженных библиотек
-std::list<ULibrary*> ULibrary::LibraryList;
+//std::list<ULibrary*> ULibrary::LibraryList;
 
 
 // --------------------------
@@ -50,6 +50,7 @@ ULibrary::~ULibrary(void)
 // --------------------------
 // Методы управления статически загруженными библиотеками
 // --------------------------
+/*
 /// Возвращает коллекцию статически загруженных библиотек
 const std::list<ULibrary*>& ULibrary::GetLibraryList(void)
 {
@@ -80,12 +81,7 @@ bool ULibrary::AddUniqueLibrary(ULibrary* const lib)
 {
  if(!lib)
   return false;
-/*
- if(!LibraryList)
- {
-  LibraryList=new std::list<ULibrary*>;
- }
-  */
+
  if(CheckLibrary(lib->GetName()))
   return false;  /// Заглушка!! здесь может быть warning исключение
 
@@ -107,13 +103,7 @@ void ULibrary::RemoveLibrary(ULibrary* const lib)
    break;
   }
  }
-/*
- if(LibraryList->empty())
- {
-  delete LibraryList;
-  LibraryList=0;
- }*/
-}
+} */
 // --------------------------
 
 // --------------------------

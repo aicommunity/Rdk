@@ -11,11 +11,11 @@ class UException
 {
 protected: // Общие данные
 // Последний порядковый номер исключения
-static long long LastNumber;
+//static long long LastNumber;
 
 protected: // Данные исключения
 // Порядковый номер исключения
-long long Number;
+//long long Number;
 
 // Тип исключения
 // 0 - неопределено
@@ -42,14 +42,14 @@ virtual ~UException(void);
 // Методы управления общими данными
 // --------------------------
 // Последний порядковый номер исключения
-static long long GetLastNumber(void);
+//static long long GetLastNumber(void);
 // --------------------------
 
 // --------------------------
 // Методы упрвления данными исключения
 // --------------------------
 // Возвращает порядковый номер исключения
-long long GetNumber(void) const;
+//long long GetNumber(void) const;
 
 // Тип исключения
 int GetType(void) const;

@@ -2642,52 +2642,52 @@ void UEngine::Model_SetGlobalTimeStep(const char *stringid, int value)
 // Возвращает текущее время модели
 long long UEngine::Model_GetTime(void)
 {
- return UTimeControl::GetTime();
+ return Environment->GetTime().GetTime();
 }
 
 double UEngine::Model_GetDoubleTime(void)
 {
- return UTimeControl::GetDoubleTime();
+ return Environment->GetTime().GetDoubleTime();
 }
 
 // Устанавливает текущее время модели
 bool UEngine::Model_SetTime(long long value)
 {
- return UTimeControl::SetTime(value);
+ return Environment->GetTime().SetTime(value);
 }
 
 // Возвращает реальное время
 long long UEngine::Model_GetRealTime(void)
 {
- return UTimeControl::GetRealTime();
+ return Environment->GetTime().GetRealTime();
 }
 
 double UEngine::Model_GetDoubleRealTime(void)
 {
- return UTimeControl::GetDoubleRealTime();
+ return Environment->GetTime().GetDoubleRealTime();
 }
 
 // Устанавливает реальное время
 bool UEngine::Model_SetRealTime(long long value)
 {
- return UTimeControl::SetRealTime(value);
+ return Environment->GetTime().SetRealTime(value);
 }
 
 // Увеличивает реальное время на заданную величину
 bool UEngine::Model_IncreaseRealTime(long long value)
 {
- return UTimeControl::IncreaseRealTime(value);
+ return Environment->GetTime().IncreaseRealTime(value);
 }
 
 // Возвращает мгновенный шаг в реальном времени
 long long UEngine::Model_GetRealTimeStep(void)
 {
- return UTimeControl::GetRealTimeStep();
+ return Environment->GetTime().GetRealTimeStep();
 }
 
 double UEngine::Model_GetDoubleRealTimeStep(void)
 {
- return UTimeControl::GetDoubleRealTimeStep();
+ return Environment->GetTime().GetDoubleRealTimeStep();
 }
 
 // Возвращает время расчета компонента без времени расчета дочерних компонент (мс)
@@ -3509,28 +3509,26 @@ void UEngine::CreateEnvironment(bool isinit, list<UContainer*>* external_classes
 // Загружает набор предустановленных библиотек
 int UEngine::LoadPredefinedLibraries(void)
 {
- ULibrary::AddUniqueLibrary(&BCLLibrary);
- ULibrary::AddUniqueLibrary(&IOLibrary);
- ULibrary::AddUniqueLibrary(&CRLibrary);
- ULibrary::AddUniqueLibrary(&StatisticLibrary);
- ULibrary::AddUniqueLibrary(&PredictionLibrary);
- ULibrary::AddUniqueLibrary(&SourceLibrary);
- ULibrary::AddUniqueLibrary(&NoiseLibrary);
- ULibrary::AddUniqueLibrary(&AriphmeticLibrary);
- ULibrary::AddUniqueLibrary(&BasicLibrary);
- ULibrary::AddUniqueLibrary(&DetectionLibrary);
- ULibrary::AddUniqueLibrary(&FilteringLibrary);
- ULibrary::AddUniqueLibrary(&GUILibrary);
- ULibrary::AddUniqueLibrary(&HardwareLibrary);
- ULibrary::AddUniqueLibrary(&ObjectSearchLibrary);
- ULibrary::AddUniqueLibrary(&ObjectTrackingLibrary);
- ULibrary::AddUniqueLibrary(&QualifierLibrary);
- ULibrary::AddUniqueLibrary(&SimulatorLibrary);
- ULibrary::AddUniqueLibrary(&SpatialGeometryLibrary);
- ULibrary::AddUniqueLibrary(&BStatisticLibrary);
+ LibrariesList.push_back(&BCLLibrary);
+ LibrariesList.push_back(&IOLibrary);
+ LibrariesList.push_back(&CRLibrary);
+ LibrariesList.push_back(&StatisticLibrary);
+ LibrariesList.push_back(&PredictionLibrary);
+ LibrariesList.push_back(&SourceLibrary);
+ LibrariesList.push_back(&NoiseLibrary);
+ LibrariesList.push_back(&AriphmeticLibrary);
+ LibrariesList.push_back(&BasicLibrary);
+ LibrariesList.push_back(&DetectionLibrary);
+ LibrariesList.push_back(&FilteringLibrary);
+ LibrariesList.push_back(&GUILibrary);
+ LibrariesList.push_back(&HardwareLibrary);
+ LibrariesList.push_back(&ObjectSearchLibrary);
+ LibrariesList.push_back(&ObjectTrackingLibrary);
+ LibrariesList.push_back(&QualifierLibrary);
+ LibrariesList.push_back(&SimulatorLibrary);
+ LibrariesList.push_back(&SpatialGeometryLibrary);
+ LibrariesList.push_back(&BStatisticLibrary);
 
- const std::list<ULibrary*>& lst=ULibrary::GetLibraryList();
- LibrariesList=lst;
  return 0;
 }
 

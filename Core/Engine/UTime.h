@@ -12,82 +12,89 @@ class UTimeControl
 {
 private: // Глобальные свойства
 // Текущее время модели в микросекундах
-static ULongTime Time;
+ULongTime Time;
 
 // Текущее время модели в секундах
-static double DoubleTime;
+double DoubleTime;
 
 // Реальное время в микросекундах
-static ULongTime RealTime;
+ULongTime RealTime;
 
 // Реальное время в секундах
-static double DoubleRealTime;
+double DoubleRealTime;
 
 // Мгновенный шаг в реальном времени в микросекундах
-static ULongTime RealTimeStep;
+ULongTime RealTimeStep;
 
 // Мгновенный шаг в реальном времени в секундах
-static double DoubleRealTimeStep;
+double DoubleRealTimeStep;
 
 // Текущее время внешних источников данных в микросекундах
-static ULongTime SourceTime;
+ULongTime SourceTime;
 
 // Текущее время внешних источников данных в секундах
-static double DoubleSourceTime;
+double DoubleSourceTime;
 
 // Мгновенный шаг во времени внешних источников данных в микросекундах
-static ULongTime SourceTimeStep;
+ULongTime SourceTimeStep;
 
 // Мгновенный шаг во времени внешних источников данных в секундах
-static double DoubleSourceTimeStep;
+double DoubleSourceTimeStep;
 
 
 public: // Открытые методы
 // --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+UTimeControl(void);
+virtual ~UTimeControl(void);
+// --------------------------
+
+// --------------------------
 // Методы управления глобальными свойствами
 // --------------------------
 // Возвращает текущее время модели
-static const ULongTime& GetTime(void);
-static const double& GetDoubleTime(void);
+const ULongTime& GetTime(void) const;
+const double& GetDoubleTime(void) const;
 
 // Устанавливает текущее время модели
-static bool SetTime(ULongTime value);
+bool SetTime(ULongTime value);
 
 // Увеличивает время модели на заданную величину
-static bool IncreaseModelTime(ULongTime value);
+bool IncreaseModelTime(ULongTime value);
 
 // Увеличивает время модели на заданную величину при заданном шаге вычислений
 // в тысячных долях секунды
-static bool IncreaseModelTimeByStep(ULongTime step);
+bool IncreaseModelTimeByStep(ULongTime step);
 
 // Возвращает реальное время
-static const ULongTime& GetRealTime(void);
-static const double& GetDoubleRealTime(void);
+const ULongTime& GetRealTime(void) const;
+const double& GetDoubleRealTime(void) const;
 
 // Устанавливает реальное время
-static bool SetRealTime(ULongTime value);
+bool SetRealTime(ULongTime value);
 
 // Увеличивает реальное время на заданную величину
-static bool IncreaseRealTime(ULongTime value);
+bool IncreaseRealTime(ULongTime value);
 
 // Возвращает мгновенный шаг в реальном времени
-static const ULongTime& GetRealTimeStep(void);
-static const double& GetDoubleRealTimeStep(void);
+const ULongTime& GetRealTimeStep(void) const;
+const double& GetDoubleRealTimeStep(void) const;
 
 
 // Текущее время внешних источников данных в микросекундах
-static const ULongTime& GetSourceTime(void);
-static const double& GetDoubleSourceTime(void);
+const ULongTime& GetSourceTime(void) const;
+const double& GetDoubleSourceTime(void) const;
 
 // Устанавливает время внешних источников данных
-static bool SetSourceTime(ULongTime value);
+bool SetSourceTime(ULongTime value);
 
 // Увеличивает время внешних источников данных на заданную величину
-static bool IncreaseSourceTime(ULongTime value);
+bool IncreaseSourceTime(ULongTime value);
 
 // Мгновенный шаг во времени внешних источников данных в микросекундах
-static const ULongTime& GetSourceTimeStep(void);
-static const double& GetDoubleSourceTimeStep(void);
+const ULongTime& GetSourceTimeStep(void) const;
+const double& GetDoubleSourceTimeStep(void) const;
 // --------------------------
 
 

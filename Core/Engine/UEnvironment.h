@@ -240,6 +240,7 @@ virtual bool BuildStorage(void);
 
 /// Время среды
 const UTimeControl& GetTime(void) const;
+UTimeControl& GetTime(void);
 // --------------------------
 
 // --------------------------

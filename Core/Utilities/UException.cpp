@@ -7,7 +7,7 @@
 namespace RDK {
 
 // Последний порядковый номер исключения
-long long UException::LastNumber=0;
+//long long UException::LastNumber=0;
 
 // Диспетчер исключений
 //ExceptionDispatcher* UException::Dispatcher=0;
@@ -17,10 +17,10 @@ long long UException::LastNumber=0;
 // Методы управления общими данными
 // --------------------------
 // Последний порядковый номер исключения
-long long UException::GetLastNumber(void)
+/*long long UException::GetLastNumber(void)
 {
  return LastNumber;
-}
+} */
 /*
 // Диспетчер исключений. Осуществляет запись логов и другую деятельность
 ExceptionDispatcher* UException::GetDispatcher(void)
@@ -44,13 +44,13 @@ bool UException::SetDispatcher(ExceptionDispatcher* value)
 UException::UException(void)
 : Type(0)
 {
- Number=++LastNumber;
+//Number=++LastNumber;
  std::time(&Time);
 }
 
 UException::UException(const UException &copy)
 {
- Number=copy.Number;
+// Number=copy.Number;
  Time=copy.Time;
 }
 
@@ -66,10 +66,10 @@ UException::~UException(void)
 // Методы упрвления данными исключения
 // --------------------------
 // Возвращает порядковый номер исключения
-long long UException::GetNumber(void) const
+/*long long UException::GetNumber(void) const
 {
  return Number;
-}
+} */
 
 // Тип исключения
 int UException::GetType(void) const
@@ -95,10 +95,10 @@ void UException::SetTime(std::time_t ex_time)
 std::string UException::CreateLogMessage(void) const
 {
  std::string result;
-
+  /*
  result+=sntoa(GetNumber(),4);
  result+=" ";
-
+    */
  std::time_t ex_time=GetTime();
  tm* time_stuct=localtime(&ex_time);
 
