@@ -49,6 +49,69 @@ __fastcall TUServerControlForm::TUServerControlForm(TComponent* Owner)
  AverageIterations=4;
 }
 
+const char* TUServerControlForm::ControlRemoteCall(const char *request, int &return_value)
+{
+ return_value=0;
+
+ RDK::USerStorageXML xml,xml_data;
+
+ xml.Load(request,"RPC_Request");
+
+ int engine_index=xml.ReadInteger("Engine",0);
+ std::string cmd=xml.ReadString("Cmd","");
+
+ ControlResponseString.clear();
+ if(cmd == "SetNumEngines")
+ {
+  int num_engines=xml.ReadInteger("NumEngines",GetNumEngines());
+  return_value=SetNumChannels(num_engines);
+ }
+ else
+ if(cmd == "GetNumEngines")
+ {
+  return_value=GetNumChannels();
+ }
+ else
+ if(cmd == "GetEngineVideoSourceType")
+ {
+  int channel_id=0;
+  return_value=GetChannelVideoSource(engine_index);
+ }
+ else
+ if(cmd == "SetEngineVideoSourceType")
+ {
+  int mode=xml.ReadInteger("Mode",5);
+  return_value=SetChannelVideoSource(engine_index,mode);
+ }
+ else
+ if(cmd == "ResetEngine")
+ {
+  return_value=ResetChannel(engine_index);
+ }
+ else
+ if(cmd == "StartEngine")
+ {
+  return_value=StartChannel(engine_index);
+ }
+ else
+ if(cmd == "StopEngine")
+ {
+  return_value=StopChannel(engine_index);
+ }
+ else
+ if(cmd == "LoadProject")
+ {
+  std::string file_name=xml.ReadString("FileName","");
+  if(!file_name.empty())
+  {
+   return_value=LoadProject(engine_index,file_name);
+  }
+ }
+
+ return ControlResponseString.c_str();
+}
+
+
 // Функция, обрабатывающая команды управления сервером
 bool TUServerControlForm::ProcessControlCommand(const std::string &cmd_name, std::map<std::string,std::vector<char> > &args, std::string &response_type, std::vector<char> &response_data)
 {
@@ -175,6 +238,33 @@ bool TUServerControlForm::ProcessControlCommand(const std::string &cmd_name, std
  }
 
  return false;
+}
+
+// Функция, обрабатывающая команды управления сервером
+bool TUServerControlForm::ProcessControlCommand(const std::map<std::string,std::vector<char> > &args, std::string &response_type, std::vector<char> &response_data)
+{
+ std::map<std::string,std::vector<char> >::const_iterator I;
+ std::string request;
+
+ response_type="text/plain";
+
+ I=args.find("Request");
+ if(I == args.end())
+ {
+  ConvertStringToVector("RPC: Request not found", response_data);
+  return true;
+ }
+
+ ConvertVectorToString(I->second, request);
+ int response_status=0;
+ const char* response=ControlRemoteCall(request.c_str(), response_status);
+
+ if(response)
+  ConvertStringToVector(response, response_data);
+ else
+  ConvertStringToVector(RDK::sntoa(response_status), response_data);
+
+ return true;
 }
 
 // Функция, обрабатывающая команды удаленного вызова процедур
@@ -381,6 +471,32 @@ bool TUServerControlForm::ProcessRPCCommand(int channel, const std::string &cmd_
  }
 
  return false;
+}
+
+bool TUServerControlForm::ProcessRPCCommand(const std::map<std::string,std::vector<char> > &args, std::string &response_type, std::vector<char> &response_data)
+{
+ std::map<std::string,std::vector<char> >::const_iterator I;
+ std::string request;
+
+ response_type="text/plain";
+
+ I=args.find("Request");
+ if(I == args.end())
+ {
+  ConvertStringToVector("RPC: Request not found", response_data);
+  return true;
+ }
+
+ ConvertVectorToString(I->second, request);
+ int response_status=0;
+ const char* response=RemoteCall(request.c_str(), response_status);
+
+ if(response)
+  ConvertStringToVector(response, response_data);
+ else
+  ConvertStringToVector(RDK::sntoa(response_status), response_data);
+
+ return true;
 }
 
 
@@ -738,7 +854,7 @@ void __fastcall TUServerControlForm::UHttpServerFrameIdHTTPServerCommandGet(TIdC
  }
  else
   Command.clear();
-
+	/*
  I=DecodedRequest.find("Channel");
  if(I != DecodedRequest.end())
  {
@@ -748,11 +864,11 @@ void __fastcall TUServerControlForm::UHttpServerFrameIdHTTPServerCommandGet(TIdC
  }
  else
   ChannelIndex="0";
-
- bool is_processed=ProcessControlCommand(Command, DecodedRequest, ResponseType, Response);
+          */
+ bool is_processed=ProcessControlCommand(DecodedRequest, ResponseType, Response);
 
  if(!is_processed)
-  is_processed=ProcessRPCCommand(atoi(ChannelIndex), Command, DecodedRequest, ResponseType, Response);
+  is_processed=ProcessRPCCommand(DecodedRequest, ResponseType, Response);
 
  int encode_res=0;
  if(CommandResponseEncoder)

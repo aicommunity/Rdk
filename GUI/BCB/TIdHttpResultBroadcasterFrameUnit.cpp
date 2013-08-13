@@ -8,6 +8,7 @@
 #include "myrdk.h"
 #include "rdk_initdll.h"
 #include "TUBitmap.h"
+#include "TUHttpServerUnit.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
@@ -61,7 +62,10 @@ void TIdHttpResultBroadcasterFrame::AAfterCalculate(void)
  {
   try
   {
-   IdHTTP->Connect("127.0.0.1",45046);
+   int i = LastDelimiter(':', AUrl);
+   int port=StrToInt(AUrl.SubString(i + 1, AUrl.Length() - (i)));
+   String url=AUrl.SubString(1, i-1);
+   IdHTTP->Connect(url,port);
   }
   catch (EIdConnectTimeout &ex)
   {
@@ -81,7 +85,7 @@ void TIdHttpResultBroadcasterFrame::AAfterCalculate(void)
 
  TIdMultiPartFormDataStream* ASource=new TIdMultiPartFormDataStream;
 
- ASource->AddFormField("TimeStamp",IntToStr(LastSentTimeStamp));
+// ASource->AddFormField("TimeStamp",IntToStr(LastSentTimeStamp));
  if(EnableXmlTranslationCheckBox->Checked)
  {
   const char* xml_data=0;
@@ -92,7 +96,11 @@ void TIdHttpResultBroadcasterFrame::AAfterCalculate(void)
    xml_data=Model_GetComponentState(AnsiString(XmlComponentNameLabeledEdit->Text).c_str());
 
   if(xml_data)
-   ASource->AddFormField("Response",xml_data,"","text/plain");
+  {
+   EncodeMetaPackage(xml_data, LastSentTimeStamp, Metadata);
+
+   ASource->AddFormField("Response",Metadata.c_str(),"","text/plain");
+  }
  }
 
  if(EnableImagesTranslationCheckBox->Checked)

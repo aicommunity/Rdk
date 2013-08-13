@@ -5,6 +5,8 @@
 
 namespace RDK{
 
+extern std::vector<std::string> RpcReturnString;
+
 const char* RemoteCallInternal(const char *request, int &return_value);
 
 }

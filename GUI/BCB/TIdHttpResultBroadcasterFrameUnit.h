@@ -47,6 +47,8 @@ public:		// User declarations
 TMemoryStream *MemStream;
 TBitmap *Bitmap;
 
+std::string Metadata;
+
 bool ConnectionEstablishedFlag;
 
 long long LastSentTimeStamp;

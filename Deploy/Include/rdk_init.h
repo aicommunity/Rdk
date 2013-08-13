@@ -341,6 +341,7 @@ RDK_LIB_TYPE int RDK_CALL Model_Destroy(void);
 // Создает новую модель по имени класса в хранилище
 // Предварительно удаляет существующую модель
 RDK_LIB_TYPE int RDK_CALL Model_Create(const char *classname);
+RDK_LIB_TYPE int RDK_CALL MModel_Create(int engine_index, const char *classname);
 
 // Очищает модель
 RDK_LIB_TYPE int RDK_CALL Model_Clear(void);
@@ -479,6 +480,7 @@ RDK_LIB_TYPE int RDK_CALL Model_SetComponentPropertyData(const char *stringid, c
 // Возвращает параметры компонента по идентификатору
 // Deprecated
 RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentParameters(const char *stringid, unsigned int type_mask=ptParameter | pgPublic);
+RDK_LIB_TYPE const char * RDK_CALL MModel_GetComponentParameters(int engine_index, const char *stringid, unsigned int type_mask=ptParameter | pgPublic);
 
 // Возвращает параметры компонента по идентификатору с описаниями
 // Deprecated
@@ -495,6 +497,7 @@ RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentParameterValue(const char *
 // Устанавливает параметры компонента по идентификатору
 // Deprecated
 RDK_LIB_TYPE int RDK_CALL Model_SetComponentParameters(const char *stringid, const char* buffer);
+RDK_LIB_TYPE int RDK_CALL MModel_SetComponentParameters(int engine_index, const char *stringid, const char* buffer);
 
 // Устанавливает значение параметра компонента по идентификатору компонента и имени параметра
 // Deprecated
@@ -503,6 +506,7 @@ RDK_LIB_TYPE void RDK_CALL Model_SetComponentParameterValue(const char *stringid
 // Возвращает состояние компонента по идентификатору
 // Deprecated
 RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentState(const char *stringid, unsigned int type_mask=0xFFFFFFFF);
+RDK_LIB_TYPE const char * RDK_CALL MModel_GetComponentState(int engine_index, const char *stringid, unsigned int type_mask=0xFFFFFFFF);
 
 // Возвращает выборочные данные состояния компонента по идентификатору
 // Deprecated
@@ -515,6 +519,7 @@ RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentStateValue(const char *stri
 // Устанавливает состояние компонента по идентификатору
 // Deprecated
 RDK_LIB_TYPE int RDK_CALL Model_SetComponentState(const char *stringid, const char* buffer);
+RDK_LIB_TYPE int RDK_CALL MModel_SetComponentState(int engine_index, const char *stringid, const char* buffer);
 
 // Устанавливает значение переменной состояния компонента по идентификатору компонента и имени переменной
 // Deprecated
@@ -619,10 +624,12 @@ RDK_LIB_TYPE unsigned char* RDK_CALL Model_GetComponentOutputData(const char *st
 // Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния в xml
 RDK_LIB_TYPE const char * RDK_CALL Model_SaveComponent(const char *stringid, unsigned int params_type_mask=ptParameter | pgPublic);
+RDK_LIB_TYPE const char * RDK_CALL MModel_SaveComponent(int engine_index, const char *stringid, unsigned int params_type_mask=ptParameter | pgPublic);
 
 // Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния из xml
 RDK_LIB_TYPE int RDK_CALL Model_LoadComponent(const char *stringid, const char* buffer);
+RDK_LIB_TYPE int RDK_CALL MModel_LoadComponent(int engine_index, const char *stringid, const char* buffer);
 
 // Сохраняет все свойства компонента и его дочерних компонент в xml
 RDK_LIB_TYPE const char * RDK_CALL Model_SaveComponentProperties(const char *stringid, unsigned int type_mask);
@@ -637,6 +644,7 @@ RDK_LIB_TYPE const char * RDK_CALL Model_SaveComponentParameters(const char *str
 // Загружает все параметры компонента и его дочерних компонент из xml
 // Deprecated
 RDK_LIB_TYPE int RDK_CALL Model_LoadComponentParameters(const char *stringid, const char* buffer);
+RDK_LIB_TYPE int RDK_CALL MModel_LoadComponentParameters(int engine_index, const char *stringid, const char* buffer);
 
 // Сохраняет состояние компонента и его дочерних компонент в xml
 // Deprecated

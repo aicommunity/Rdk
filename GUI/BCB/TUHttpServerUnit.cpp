@@ -11,6 +11,32 @@
 #pragma link "TUVisualControllerFrameUnit"
 #pragma resource "*.dfm"
 TUHttpServerFrame *UHttpServerFrame;
+
+
+// Формирует из xml описания и временной метки пакет метаданных
+void EncodeMetaPackage(const std::string &xml_description, long long time_stamp, std::string &metadata)
+{
+ metadata="<Meta>\r\n";
+ metadata+="<TimeStamp>";
+ metadata+=RDK::sntoa(time_stamp);
+ metadata+="</TimeStamp>\r\n";
+ metadata+="<Response>\r\n";
+ metadata+=xml_description+"\r\n";
+ metadata+="</Response>\r\n";
+ metadata+="</Meta>";
+}
+
+// Формирует из пакета метаданных xml описание и временную метку
+void DecodeMetaPackage(const std::string &metadata, std::string &xml_description, long long &time_stamp)
+{
+ RDK::USerStorageXML xml;
+
+ xml.Load(metadata,"Meta");
+ time_stamp=RDK::atoi(xml.ReadString("TimeStamp","0"));
+ xml.SelectNodeRoot("Meta/Response");
+ xml.SaveFromNode(xml_description);
+}
+
 //---------------------------------------------------------------------------
 __fastcall TUHttpServerFrame::TUHttpServerFrame(TComponent* Owner)
 	: TUVisualControllerFrame(Owner)

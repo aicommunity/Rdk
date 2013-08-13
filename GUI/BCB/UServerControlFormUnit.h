@@ -124,6 +124,9 @@ std::string Command;
 /// Индекс канала запроса
 std::string ChannelIndex;
 
+/// Строка результирующего ответа от обработчика сервера
+std::string ControlResponseString;
+
 TMemoryStream* MemStream;
 TBitmap *Bitmap;
 RDK::UBitmap TempUBitmap;
@@ -131,13 +134,17 @@ RDK::UBitmap TempUBitmap;
 // Индекс складывания данных в массив оценки производительности
 int PerformancePushIndex;
 
+const char* ControlRemoteCall(const char *request, int &return_value);
+
 // Функция, обрабатывающая команды управления сервером
 // Возвращает true если команда была найдена и обработана
 bool ProcessControlCommand(const std::string &cmd_name, std::map<std::string,std::vector<char> > &args, std::string &response_type, std::vector<char> &response_data);
+bool ProcessControlCommand(const std::map<std::string,std::vector<char> > &args, std::string &response_type, std::vector<char> &response_data);
 
 // Функция, обрабатывающая команды удаленного вызова процедур
 // Возвращает true если команда была найдена и обработана
 bool ProcessRPCCommand(int channel, const std::string &cmd_name, std::map<std::string,std::vector<char> > &args, std::string &response_type, std::vector<char> &response_data);
+bool ProcessRPCCommand(const std::map<std::string,std::vector<char> > &args, std::string &response_type, std::vector<char> &response_data);
 
 /// Кодирует строку в вектор
 void ConvertStringToVector(const std::string &source, std::vector<char> &dest);

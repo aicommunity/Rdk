@@ -183,6 +183,8 @@ int RDK_CALL SetNumEngines(int num)
   PEnvironment=DllManager.EnvironmentList[SelectedEngineIndex];
   PStorage=DllManager.StorageList[SelectedEngineIndex];
  }
+
+ RpcReturnString.resize(num);
  return 0;
 }
 
@@ -785,6 +787,13 @@ int RDK_CALL Model_Create(const char *classname)
  return PEngine->Model_Create(classname);
 }
 
+int RDK_CALL MModel_Create(int engine_index, const char *classname)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+ return DllManager.EngineList[engine_index]->Model_Create(classname);
+}
+
 // Очищает модель
 int RDK_CALL Model_Clear(void)
 {
@@ -1012,6 +1021,14 @@ const char * RDK_CALL Model_GetComponentParameters(const char *stringid, unsigne
  return PEngine->Model_GetComponentProperties(stringid,type_mask & 0xFFFFFF01);
 }
 
+const char * RDK_CALL MModel_GetComponentParameters(int engine_index, const char *stringid, unsigned int type_mask)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 0;
+
+ return DllManager.EngineList[engine_index]->Model_GetComponentProperties(stringid,type_mask & 0xFFFFFF01);
+}
+
 // Возвращает выборочные параметры компонента по идентификатору
 // Память для buffer должна быть выделена!
 const char * RDK_CALL Model_GetComponentSelectedParameters(const char *stringid)
@@ -1035,6 +1052,14 @@ const char * RDK_CALL Model_GetComponentParameterValue(const char *stringid, con
 int RDK_CALL Model_SetComponentParameters(const char *stringid, const char* buffer)
 {
  return PEngine->Model_SetComponentProperties(stringid, buffer);
+}
+
+int RDK_CALL MModel_SetComponentParameters(int engine_index, const char *stringid, const char* buffer)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+
+ return DllManager.EngineList[engine_index]->Model_SetComponentProperties(stringid, buffer);
 }
 
 // Устанавливает значение параметра компонента по идентификатору компонента и имени параметра
@@ -1160,6 +1185,14 @@ const char * RDK_CALL Model_GetComponentState(const char *stringid, unsigned int
  return PEngine->Model_GetComponentProperties(stringid, type_mask & 0xFFFFFF02);
 }
 
+const char * RDK_CALL MModel_GetComponentState(int engine_index, const char *stringid, unsigned int type_mask)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 0;
+
+ return DllManager.EngineList[engine_index]->Model_GetComponentProperties(stringid, type_mask & 0xFFFFFF02);
+}
+
 // Возвращает выборочные данные состояния компонента по идентификатору
 // Память для buffer должна быть выделена!
 const char * RDK_CALL Model_GetComponentSelectedState(const char *stringid)
@@ -1177,6 +1210,14 @@ const char * RDK_CALL Model_GetComponentStateValue(const char *stringid, const c
 int RDK_CALL Model_SetComponentState(const char *stringid, const char* buffer)
 {
  return PEngine->Model_SetComponentProperties(stringid, buffer);
+}
+
+int RDK_CALL MModel_SetComponentState(int engine_index, const char *stringid, const char* buffer)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+
+ return DllManager.EngineList[engine_index]->Model_SetComponentProperties(stringid, buffer);
 }
 
 // Устанавливает значение переменной состояния компонента по идентификатору компонента и имени переменной
@@ -1254,11 +1295,27 @@ const char * RDK_CALL Model_SaveComponent(const char *stringid, unsigned int par
  return PEngine->Model_SaveComponent(stringid, params_type_mask);
 }
 
+const char * RDK_CALL MModel_SaveComponent(int engine_index, const char *stringid, unsigned int params_type_mask)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 0;
+
+ return DllManager.EngineList[engine_index]->Model_SaveComponent(stringid, params_type_mask);
+}
+
 // Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния из xml
 int RDK_CALL Model_LoadComponent(const char *stringid, const char* buffer)
 {
  return PEngine->Model_LoadComponent(stringid, buffer);
+}
+
+int RDK_CALL MModel_LoadComponent(int engine_index, const char *stringid, const char* buffer)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+
+ return DllManager.EngineList[engine_index]->Model_LoadComponent(stringid, buffer);
 }
 
 // Сохраняет все свойства компонента и его дочерних компонент в xml
@@ -1283,6 +1340,14 @@ const char * RDK_CALL Model_SaveComponentParameters(const char *stringid, unsign
 int RDK_CALL Model_LoadComponentParameters(const char *stringid, const char* buffer)
 {
  return PEngine->Model_LoadComponentProperties(stringid, buffer);
+}
+
+int RDK_CALL MModel_LoadComponentParameters(int engine_index, const char *stringid, const char* buffer)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+
+ return DllManager.EngineList[engine_index]->Model_LoadComponentProperties(stringid, buffer);
 }
 
 // Сохраняет состояние компонента и его дочерних компонент в xml

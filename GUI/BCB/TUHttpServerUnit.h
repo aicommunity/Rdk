@@ -35,6 +35,13 @@
 #include <vector>
 #include "TUVisualControllerFrameUnit.h"
 #include "myrdk.h"
+
+// Формирует из xml описания и временной метки пакет метаданных
+void EncodeMetaPackage(const std::string &xml_description, long long time_stamp, std::string &metadata);
+
+// Формирует из пакета метаданных xml описание и временную метку
+void DecodeMetaPackage(const std::string &metadata, std::string &xml_description, long long &time_stamp);
+
 //---------------------------------------------------------------------------
 class TUHttpServerFrame : public TUVisualControllerFrame
 {
