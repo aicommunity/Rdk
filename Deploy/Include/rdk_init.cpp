@@ -1048,6 +1048,14 @@ const char * RDK_CALL Model_GetComponentParameterValue(const char *stringid, con
  return PEngine->Model_GetComponentPropertyValue(stringid,paramname);
 }
 
+const char * RDK_CALL MModel_GetComponentParameterValue(int engine_index, const char *stringid, const char *paramname)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 0;
+
+ return DllManager.EngineList[engine_index]->Model_GetComponentPropertyValue(stringid,paramname);
+}
+
 // Устанавливает параметры компонента по идентификатору
 int RDK_CALL Model_SetComponentParameters(const char *stringid, const char* buffer)
 {
@@ -1204,6 +1212,14 @@ const char * RDK_CALL Model_GetComponentSelectedState(const char *stringid)
 const char * RDK_CALL Model_GetComponentStateValue(const char *stringid, const char *statename)
 {
  return PEngine->Model_GetComponentPropertyValue(stringid,statename);
+}
+
+const char * RDK_CALL MModel_GetComponentStateValue(int engine_index, const char *stringid, const char *statename)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 0;
+
+ return DllManager.EngineList[engine_index]->Model_GetComponentPropertyValue(stringid,statename);
 }
 
 // Устанавливает состояние компонента по идентификатору

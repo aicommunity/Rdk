@@ -22,13 +22,13 @@ const char* RemoteCallInternal(const char *request, int &return_value)
 
  RDK::USerStorageXML xml,xml_data;
 
- xml.Load(request,"RPC_Request");
+ xml.Load(request,"RpcRequest");
 
- int engine_index=xml.ReadInteger("Engine",0);
+ int engine_index=xml.ReadInteger("Channel",0);
  std::string cmd=xml.ReadString("Cmd","");
 
  if((engine_index < 0 || engine_index >= GetNumEngines()) &&
-	(cmd != "GetNumEngines" || cmd !="SetNumEngines"))
+	(cmd != "GetNumChannels" || cmd !="SetNumChannels"))
  {
   return_value=2001;
   return 0;
@@ -86,7 +86,7 @@ const char* RemoteCallInternal(const char *request, int &return_value)
  if(cmd == "Model_LoadComponent")
  {
   std::string component_name=xml.ReadString("Name","");
-  xml.SelectNodeRoot("RPC_Request/Data/Save");
+  xml.SelectNodeRoot("RpcRequest/Data/Save");
   std::string data;
   xml.SaveFromNode(data);
 
@@ -96,7 +96,7 @@ const char* RemoteCallInternal(const char *request, int &return_value)
  if(cmd == "Model_LoadComponentParameters")
  {
   std::string component_name=xml.ReadString("Name","");
-  xml.SelectNodeRoot("RPC_Request/Data/SaveProperties");
+  xml.SelectNodeRoot("RpcRequest/Data/SaveProperties");
   std::string data;
   xml.SaveFromNode(data);
 
@@ -128,7 +128,7 @@ const char* RemoteCallInternal(const char *request, int &return_value)
  if(cmd == "Model_SetComponentParameters")
  {
   std::string component_name=xml.ReadString("Name","");
-  xml.SelectNodeRoot(std::string("RPC_Request/Data/")+component_name);
+  xml.SelectNodeRoot(std::string("RpcRequest/Data/")+component_name);
   std::string data;
   xml.SaveFromNode(data);
 
@@ -138,12 +138,20 @@ const char* RemoteCallInternal(const char *request, int &return_value)
  if(cmd == "Model_SetComponentState")
  {
   std::string component_name=xml.ReadString("Name","");
-  xml.SelectNodeRoot(std::string("RPC_Request/Data/")+component_name);
+  xml.SelectNodeRoot(std::string("RpcRequest/Data/")+component_name);
   std::string data;
   xml.SaveFromNode(data);
 
   return_value=MModel_SetComponentState(engine_index, component_name.c_str(),data.c_str());
  }
+
+ RDK::USerStorageXML result;
+
+ result.Create("RpcResponse");
+ result.WriteString("Id", xml.ReadString("Id",""));
+ result.WriteString("Data",RpcReturnString[engine_index]);
+ result.WriteInteger("Res",return_value);
+ result.Save(RpcReturnString[engine_index]);
 
  return RpcReturnString[engine_index].c_str();
 }

@@ -20,7 +20,7 @@ object UServerControlForm: TUServerControlForm
     Top = 0
     Width = 721
     Height = 490
-    ActivePage = ControlTabSheet
+    ActivePage = OptionsTabSheet
     Align = alClient
     TabOrder = 0
     object ControlTabSheet: TTabSheet
@@ -112,7 +112,7 @@ object UServerControlForm: TUServerControlForm
             Marks.Callout.Brush.Color = clBlack
             Marks.Callout.Arrow.Visible = True
             Marks.Visible = True
-            Title = 'Transport'
+            Title = 'Transport+Standby'
             XValues.Name = 'X'
             XValues.Order = loAscending
             YValues.Name = 'Bar'
@@ -298,7 +298,7 @@ object UServerControlForm: TUServerControlForm
         TabOrder = 2
         object ApplyOptionsButton: TButton
           Left = 7
-          Top = 6
+          Top = 5
           Width = 75
           Height = 27
           Caption = 'Apply'

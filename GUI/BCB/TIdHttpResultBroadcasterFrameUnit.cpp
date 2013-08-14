@@ -91,14 +91,14 @@ void TIdHttpResultBroadcasterFrame::AAfterCalculate(void)
  {
   const char* xml_data=0;
   if(XmlComponentStateNameLabeledEdit->Text.Length()>0)
-   xml_data=Model_GetComponentStateValue(AnsiString(XmlComponentNameLabeledEdit->Text).c_str(),
+   xml_data=MModel_GetComponentStateValue(channel_index, AnsiString(XmlComponentNameLabeledEdit->Text).c_str(),
 												AnsiString(XmlComponentStateNameLabeledEdit->Text).c_str());
   else
-   xml_data=Model_GetComponentState(AnsiString(XmlComponentNameLabeledEdit->Text).c_str());
+   xml_data=MModel_GetComponentState(channel_index, AnsiString(XmlComponentNameLabeledEdit->Text).c_str());
 
   if(xml_data)
   {
-   EncodeMetaPackage(xml_data, LastSentTimeStamp, Metadata);
+   EncodeMetaPackage(xml_data, LastSentTimeStamp, channel_index, Metadata);
 
    ASource->AddFormField("Response",Metadata.c_str(),"","text/plain");
   }

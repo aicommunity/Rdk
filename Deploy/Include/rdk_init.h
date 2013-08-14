@@ -45,14 +45,20 @@ enum { ipDataSingle=ipData|ipSingle, ipDataRange=ipData|ipRange,
 /// для остальных возвращает 0
 /// запрос request имеет следующий вид (часть полей может отсутстовать в зависимости
 /// от вызываемой фукнции):
-/// <RPC_Request>
-///     <Engine>индекс движка</Engine>
+/// <RpcRequest>
+///	    <Id>уникальный идентификатор запроса</Id>
+///     <Channel>индекс движка</Channel>
 ///     <Cmd>имя вызываемой функции</Cmd>
 ///     <Name>имя компонента</Name>
 ///     <Class>имя класса</Class>
 ///     <Data>xml-описание данных функции, например xml с параметрами компонента</Data>
-/// </RPC_Request>
-/// Ответ представляет собой данные в том виде в котором их отдает запрашиваемая функция
+/// </RpcRequest>
+/// Ответ представляет собой данные в следующем виде:
+/// <RpcResponse>
+///	    <Id>уникальный идентификатор запроса</Id>
+///     <Data>xml-описание данных функции, например xml с параметрами компонента</Data>
+///     <Res>идентификатор возвращаемой ошибки или 0 если вызов успешен</Res>
+/// </RpcResponse>
 RDK_LIB_TYPE const char* RDK_CALL RemoteCall(const char *request, int &return_value);
 // ----------------------------
 
@@ -502,6 +508,7 @@ RDK_LIB_TYPE int RDK_CALL MModel_SetComponentParameters(int engine_index, const 
 // Устанавливает значение параметра компонента по идентификатору компонента и имени параметра
 // Deprecated
 RDK_LIB_TYPE void RDK_CALL Model_SetComponentParameterValue(const char *stringid, const char *paramname, const char *buffer);
+RDK_LIB_TYPE void RDK_CALL MModel_SetComponentParameterValue(int engine_index, const char *stringid, const char *paramname, const char *buffer);
 
 // Возвращает состояние компонента по идентификатору
 // Deprecated
@@ -515,6 +522,7 @@ RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentSelectedState(const char *s
 // Возвращает значение параметра перменной состояния по идентификатору компонента и имени переменной
 // Deprecated
 RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentStateValue(const char *stringid, const char *statename);
+RDK_LIB_TYPE const char * RDK_CALL MModel_GetComponentStateValue(int engine_index, const char *stringid, const char *statename);
 
 // Устанавливает состояние компонента по идентификатору
 // Deprecated

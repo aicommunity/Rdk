@@ -15,6 +15,7 @@
 #ifdef RDK_VIDEO
 #include "VideoOutputFormUnit.h"
 #endif
+#include "TIdTcpResultBroadcasterFormUnit.h"
 #include "rdk_cpp_initdll.h"
 #include "TUBitmap.h"
 //---------------------------------------------------------------------------
@@ -55,46 +56,59 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
 
  RDK::USerStorageXML xml,xml_data;
 
- xml.Load(request,"RPC_Request");
+ xml.Load(request,"RpcRequest");
 
- int engine_index=xml.ReadInteger("Engine",0);
+ int engine_index=xml.ReadInteger("Channel",0);
  std::string cmd=xml.ReadString("Cmd","");
 
  ControlResponseString.clear();
- if(cmd == "SetNumEngines")
+ if(cmd == "SetNumChannels")
  {
-  int num_engines=xml.ReadInteger("NumEngines",GetNumEngines());
+  int num_engines=xml.ReadInteger("NumChannels",GetNumEngines());
   return_value=SetNumChannels(num_engines);
  }
  else
- if(cmd == "GetNumEngines")
+ if(cmd == "GetNumChannels")
  {
-  return_value=GetNumChannels();
+  ControlResponseString=RDK::sntoa(GetNumChannels());
+ }
+ if(cmd == "GetChannelName")
+ {
+  ControlResponseString=GetChannelName(engine_index);
  }
  else
- if(cmd == "GetEngineVideoSourceType")
+ if(cmd == "SetChannelName")
  {
-  int channel_id=0;
-  return_value=GetChannelVideoSource(engine_index);
+  std::string ch_name=xml.ReadString("Name","");
+  if(!ch_name.empty())
+   if(SetChannelName(engine_index,ch_name))
+	return_value=0;
+   else
+	return_value=5005;
  }
  else
- if(cmd == "SetEngineVideoSourceType")
+ if(cmd == "GetChannelVideoSourceType")
+ {
+  ControlResponseString=RDK::sntoa(GetChannelVideoSource(engine_index));
+ }
+ else
+ if(cmd == "SetChannelVideoSourceType")
  {
   int mode=xml.ReadInteger("Mode",5);
   return_value=SetChannelVideoSource(engine_index,mode);
  }
  else
- if(cmd == "ResetEngine")
+ if(cmd == "ResetChannel")
  {
   return_value=ResetChannel(engine_index);
  }
  else
- if(cmd == "StartEngine")
+ if(cmd == "StartChannel")
  {
   return_value=StartChannel(engine_index);
  }
  else
- if(cmd == "StopEngine")
+ if(cmd == "StopChannel")
  {
   return_value=StopChannel(engine_index);
  }
@@ -107,6 +121,14 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
    return_value=LoadProject(engine_index,file_name);
   }
  }
+
+ RDK::USerStorageXML result;
+
+ result.Create("RpcResponse");
+ result.WriteString("Id", xml.ReadString("Id",""));
+ result.WriteString("Data",ControlResponseString);
+ result.WriteInteger("Res",return_value);
+ result.Save(ControlResponseString);
 
  return ControlResponseString.c_str();
 }
@@ -700,6 +722,32 @@ int TUServerControlForm::SetNumChannels(int value)
   }
  }
 
+ if(IdTcpResultBroadcasterForm->GetNumBroadcasters()<value)
+ {
+  for(int i=IdTcpResultBroadcasterForm->GetNumBroadcasters();i<value;i++)
+  {
+   IdTcpResultBroadcasterForm->AddBroadcaster();
+
+   TIdTcpResultBroadcasterFrame *frame=IdTcpResultBroadcasterForm->GetBroadcasterFrame(i);
+   if(frame)
+   {
+	frame->ChannelIndexLabeledEdit->Text=IntToStr(i);
+	frame->ServerAddressLabeledEdit->Text=IdTcpResultBroadcasterForm->GetBroadcasterFrame(0)->ServerAddressLabeledEdit->Text;
+	frame->XmlComponentNameLabeledEdit->Text=IdTcpResultBroadcasterForm->GetBroadcasterFrame(0)->XmlComponentNameLabeledEdit->Text;
+    frame->XmlComponentStateNameLabeledEdit->Text=IdTcpResultBroadcasterForm->GetBroadcasterFrame(0)->XmlComponentStateNameLabeledEdit->Text;
+    frame->EnableXmlTranslationCheckBox->Checked=IdTcpResultBroadcasterForm->GetBroadcasterFrame(0)->EnableXmlTranslationCheckBox->Checked;
+   }
+  }
+  IdTcpResultBroadcasterForm->UpdateInterface();
+ }
+ else
+ {
+  while(IdTcpResultBroadcasterForm->GetNumBroadcasters()>value)
+  {
+   IdTcpResultBroadcasterForm->DelBroadcaster(IdTcpResultBroadcasterForm->GetNumBroadcasters()-1);
+  }
+ }
+
  ChannelNames.resize(value);
  for(size_t i=0;i<ChannelNames.size();i++)
  {
@@ -841,7 +889,7 @@ void __fastcall TUServerControlForm::UHttpServerFrameIdHTTPServerCommandGet(TIdC
   AResponseInfo->ContentText="Request decode fail";
   return;
  }
-
+   /*
  std::map<std::string,std::vector<char> >::iterator I;
 
  int engine_index=0;
@@ -854,17 +902,7 @@ void __fastcall TUServerControlForm::UHttpServerFrameIdHTTPServerCommandGet(TIdC
  }
  else
   Command.clear();
-	/*
- I=DecodedRequest.find("Channel");
- if(I != DecodedRequest.end())
- {
-  TStream* file=0;
-  if(I->second.size()>0)
-   ChannelIndex.assign(&I->second[0],I->second.size());
- }
- else
-  ChannelIndex="0";
-          */
+     */
  bool is_processed=ProcessControlCommand(DecodedRequest, ResponseType, Response);
 
  if(!is_processed)
@@ -934,7 +972,8 @@ void __fastcall TUServerControlForm::ApplyOptionsButtonClick(TObject *Sender)
 
  UHttpServerFrame->SetListenPort(StrToInt(ServerControlPortLabeledEdit->Text));
 
- SetNumChannels(StrToInt(NumberOfChannelsLabeledEdit->Text));
+ UEngineMonitorForm->EngineMonitorFrame->SetNumChannels(StrToInt(NumberOfChannelsLabeledEdit->Text));
+ SetNumChannels(GetNumEngines());
 
  UpdateInterface();
 }
