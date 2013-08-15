@@ -210,7 +210,7 @@ bool SetAutoNumOutputs(const bool &value);
 void FindOutputProperty(int index, UIProperty* &property);
 
 /// Ищет свойство-вход по заданному индексу
-void FindInputProperty(int index, UIProperty* &property);
+//void FindInputProperty(int index, UIProperty* &property);
 // --------------------------
 
 

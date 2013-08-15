@@ -221,6 +221,9 @@ T Id;
 // Индекс связываемого входа/выхода
 int Index;
 
+// Имя связываемого входа/выхода
+std::string Name;
+
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
@@ -402,6 +405,7 @@ ULinkSideT<T>::ULinkSideT(const ULinkSideT<T> &link)
 {
  Id=link.Id;
  Index=link.Index;
+ Name=link.Name;
 }
 
 template<typename T>

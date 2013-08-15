@@ -407,6 +407,9 @@ bool UADItem::ConnectToItem(UEPtr<UItem> na, int i_index, int &c_index)
  UIProperty* output_property=0;
  nad->FindOutputProperty(i_index, output_property);
 
+ if(output_property)
+  CItemList[c_index].Name=output_property->GetName();
+
  // »щем указатель на входные данные
  UIProperty* input_property=0;
  FindInputProperty(c_index, input_property);

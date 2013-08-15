@@ -32,6 +32,9 @@ UItem* Item;
 // Индекс выхода
 int Index;
 
+// Имя выхода
+std::string Name;
+
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
@@ -55,6 +58,12 @@ int Output;
 
 // Индекс входа
 int Input;
+
+// Имя выхода
+std::string OutputName;
+
+// Имя входа
+std::string InputName;
 
 // --------------------------
 // Конструкторы и деструкторы
@@ -142,7 +151,7 @@ int GetSize(void) const;
 class UConnector: public UContainer
 {
 friend class UItem;
-private: // Хранилище связей
+protected: // Хранилище связей
 // Список указателей на подключенные элементы сети
 UCItemList CItemList;
 
@@ -196,6 +205,13 @@ const UCItem& GetCItem(int c_index) const;
 // если такая связь отсутствует
 UCLink GetCLink(const UEPtr<UItem> item) const;
 UCLink GetCLink(const UItem* const item) const;
+// --------------------------
+
+// --------------------------
+// Методы доступа к описанию входов и выходов
+// --------------------------
+/// Ищет свойство-вход по заданному индексу
+void FindInputProperty(int index, UIProperty* &property) const;
 // --------------------------
 
 // ----------------------

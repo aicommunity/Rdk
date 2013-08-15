@@ -38,6 +38,7 @@ USerStorageXML& operator << (USerStorageXML& storage, const ULinkSideT<T> &data)
  storage<<data.Id;
  storage.SetNodeAttribute("Type","ULinkSide");
  storage.SetNodeAttribute("Index",sntoa(data.Index));
+ storage.SetNodeAttribute("Name",data.Name);
 
  return storage;
 }
@@ -49,6 +50,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, ULinkSideT<T> &data)
   return storage;
  operator >>(storage,data.Id);
  data.Index=RDK::atoi(storage.GetNodeAttribute("Index"));
+ data.Name=storage.GetNodeAttribute("Name");
 
  return storage;
 }

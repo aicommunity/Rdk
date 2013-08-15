@@ -39,6 +39,7 @@ UCItem::UCItem(const UCItem &copy)
 {
  Item=copy.Item;
  Index=copy.Index;
+ Name=copy.Name;
 }
 // --------------------------
 
@@ -74,6 +75,8 @@ UCLink::UCLink(const UCLink &copy)
 {
  Input=copy.Input;
  Output=copy.Output;
+ InputName=copy.InputName;
+ OutputName=copy.OutputName;
 }
 // --------------------------
 /* *************************************************************************** */
@@ -360,7 +363,12 @@ UCLink UConnector::GetCLink(const UEPtr<UItem> item) const
   return indexes;
 
  indexes.Input=CItemList.Find(citem);
+ UIProperty* property=0;
+ FindInputProperty(indexes.Input, property);
+ if(property)
+  indexes.InputName=property->GetName();
  indexes.Output=citem.Index;
+ indexes.OutputName=citem.Name;
 
  return indexes;
 }
@@ -378,9 +386,42 @@ UCLink UConnector::GetCLink(const UItem* const item) const
   return indexes;
 
  indexes.Input=CItemList.Find(citem);
+ UIProperty* property=0;
+ FindInputProperty(indexes.Input, property);
+ if(property)
+  indexes.InputName=property->GetName();
  indexes.Output=citem.Index;
+ indexes.OutputName=citem.Name;
 
  return indexes;
+}
+// --------------------------
+
+// --------------------------
+// ћетоды доступа к описанию входов и выходов
+// --------------------------
+/// »щет свойство-вход по заданному индексу
+void UConnector::FindInputProperty(int index, UIProperty* &property) const
+{
+ // »щем указатель на входные данные
+ property=0;
+
+ VariableMapCIteratorT I=PropertiesLookupTable.begin(),
+ J=PropertiesLookupTable.end();
+ for(;I != J;++I)
+ {
+  if(I->second.Type & ptInput)
+  {
+   property=I->second.Property.Get();
+   if(!property || !property->CheckRange(index))
+   {
+	property=0;
+	continue;
+   }
+
+   break;
+  }
+ }
 }
 // --------------------------
 
@@ -602,7 +643,13 @@ ULinksListT<T>& UConnector::GetLinks(ULinksListT<T> &linkslist, UEPtr<UContainer
    }
    CItemList[i].Item->GetLongId(netlevel,item.Id);
    connector.Index=i;
+   UIProperty* property=0;
+   FindInputProperty(i, property);
+   if(property)
+	connector.Name=property->GetName();
+
    item.Index=CItemList[i].Index;
+   item.Name=CItemList[i].Name;
    if(connector.Id.size() != 0)
    {
 	int item_id=linkslist.FindItem(item);
@@ -643,7 +690,12 @@ ULinksListT<T>& UConnector::GetPersonalLinks(UEPtr<UContainer> cont, ULinksListT
   {
    CItemList[i].Item->GetLongId(netlevel,item.Id);
    connector.Index=i;
+   UIProperty* property=0;
+   FindInputProperty(i, property);
+   if(property)
+	connector.Name=property->GetName();
    item.Index=CItemList[i].Index;
+   item.Name=CItemList[i].Name;
    if(connector.Id.size() != 0)
    {
 	int item_id=linkslist.FindItem(item);

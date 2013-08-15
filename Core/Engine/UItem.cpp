@@ -420,7 +420,7 @@ void UItem::FindOutputProperty(int index, UIProperty* &property)
   }
  }
 }
-
+   /*
 /// Ищет свойство-вход по заданному индексу
 void UItem::FindInputProperty(int index, UIProperty* &property)
 {
@@ -443,7 +443,7 @@ void UItem::FindInputProperty(int index, UIProperty* &property)
    break;
   }
  }
-}
+}     */
 // --------------------------
 
 
@@ -735,7 +735,9 @@ ULinksListT<T>& UItem::GetLinks(ULinksListT<T> &linkslist, UEPtr<UContainer> net
    {
 	UCLink indexes=AssociatedConnectors[j][i]->GetCLink(UEPtr<UItem>(const_cast<UItem*>(this)));
 	link.Item.Index=indexes.Output;
+	link.Item.Name=indexes.OutputName;
 	connector.Index=indexes.Input;
+	connector.Name=indexes.InputName;
 
 	link.Connector.push_back(connector);
 	linkslist.Set(link);
@@ -771,7 +773,9 @@ ULinksListT<T>& UItem::GetPersonalLinks(UEPtr<UContainer> cont, ULinksListT<T> &
    {
 	UCLink indexes=AssociatedConnectors[j][i]->GetCLink(UEPtr<UItem>(const_cast<UItem*>(this)));
 	link.Item.Index=indexes.Output;
+	link.Item.Name=indexes.OutputName;
 	connector.Index=indexes.Input;
+	connector.Name=indexes.InputName;
 
 	link.Connector.push_back(connector);
 	linkslist.Set(link);
@@ -811,7 +815,9 @@ ULinksListT<T>& UItem::GetFullItemLinks(ULinksListT<T> &linkslist, UEPtr<UItem> 
    {
 	UCLink indexes=AssociatedConnectors[j][i]->GetCLink(UEPtr<UItem>(const_cast<UItem*>(this)));
 	link.Item.Index=indexes.Output;
+	link.Item.Name=indexes.OutputName;
 	connector.Index=indexes.Input;
+	connector.Name=indexes.InputName;
 
 	link.Connector.push_back(connector);
 	linkslist.Set(link);
