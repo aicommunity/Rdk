@@ -22,6 +22,8 @@ See file license.txt for more information
 namespace RDK {
 
 /* *********************************************************************** */
+class ULibrary;
+
 typedef UEPtr<UComponent> UClassStorageElement;
 typedef std::map<UId, UClassStorageElement> UClassesStorage;
 typedef std::map<UId, UClassStorageElement>::iterator UClassesStorageIterator;
@@ -31,6 +33,7 @@ typedef std::map<std::string, UEPtr<UComponentDescription> > UClassesDescription
 typedef std::map<std::string, UEPtr<UComponentDescription> >::iterator UClassesDescriptionIterator;
 typedef std::map<std::string, UEPtr<UComponentDescription> >::const_iterator UClassesDescriptionCIterator;
 
+typedef std::vector<ULibrary*> UClassLibraryList;
 /* *********************************************************************** */
 // Элемент списка существующих объектов определенного класса
 class UInstancesStorageElement
@@ -96,6 +99,20 @@ UClassesDescription ClassesDescription;
 
 /// Описания общих свойств компонент
 std::map<std::string, UPropertyDescription> CommonDescriptions;
+
+protected: // Описания библиотек
+// Массив доступных библиотек
+UClassLibraryList ClassLibraryList;
+
+/// Таблица соответствий между именами классов и библиотек
+/// имеет вид <имя класса, имя его библиотеки>
+//std::map<std::string, std::string> ClassLibraryLookupTable;
+
+// Массив имен загруженных классов
+vector<string> CompletedClassNames;
+
+// Массив имен не загруженных классов
+vector<string> IncompletedClassNames;
 
 protected: // Основные свойства
 // Список объектов
@@ -227,6 +244,48 @@ virtual bool SaveCommonClassesDescription(USerStorageXML &xml);
 
 // Загружает общее описание всех классов из xml
 virtual bool LoadCommonClassesDescription(USerStorageXML &xml);
+// --------------------------
+
+// --------------------------
+// Методы управления библиотеками
+// --------------------------
+// Возвращает библиотеку по индексу
+UEPtr<ULibrary> GetClassLibrary(int index);
+
+// Возвращает число библиотек
+int GetNumClassLibraries(void) const;
+
+// Возвращает библиотеку по имени
+UEPtr<ULibrary> GetClassLibrary(const string &name);
+
+// Возвращает имя библиотеки по индексу
+const string& GetClassLibraryName(int index);
+
+// Возвращает версию библиотеки по индексу
+const string& GetClassLibraryVersion(int index);
+
+// Непосредственно добавялет новый образец класса в хранилище
+virtual bool AddClass(UContainer *newclass);
+
+// Подключает динамическую библиотеку с набором образцов классов.
+// Если бибилиотека с таким именем уже существует то возвращает false.
+// Ответственность за освобождение памяти библиотекой лежит на вызывающей стороне.
+virtual bool AddClassLibrary(ULibrary *library);
+
+// Удаляет подключенную библиотеку из списка по индексу
+// Ответственность за освобождение памяти лежит на вызывающей стороне.
+virtual bool DelClassLibrary(int index);
+
+// Удаляет подключенную библиотеку из списка по имени
+// Ответственность за освобождение памяти лежит на вызывающей стороне.
+bool DelClassLibrary(const string &name);
+
+// Удаляет из списка все библиотеки
+// Ответственность за освобождение памяти лежит на вызывающей стороне.
+virtual bool DelAllClassLibraries(void);
+
+// Заполняет хранилище данными библиотек
+virtual bool BuildStorage(void);
 // --------------------------
 
 // --------------------------

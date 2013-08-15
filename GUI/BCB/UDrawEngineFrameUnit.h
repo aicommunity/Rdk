@@ -71,6 +71,10 @@ __published:    // IDE-managed Components
 	void __fastcall FrameContextPopup(TObject *Sender, TPoint &MousePos, bool &Handled);
 	void __fastcall Rename1Click(TObject *Sender);
 	void __fastcall Delete1Click(TObject *Sender);
+	void __fastcall UClassesListFrameTreeViewMouseMove(TObject *Sender, TShiftState Shift,
+          int X, int Y);
+	void __fastcall UClassesListFrameTreeViewMouseUp(TObject *Sender, TMouseButton Button,
+          TShiftState Shift, int X, int Y);
 
 
 private:    // User declarations

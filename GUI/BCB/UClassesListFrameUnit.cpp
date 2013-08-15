@@ -22,44 +22,93 @@ __fastcall TUClassesListFrame::TUClassesListFrame(TComponent* Owner)
 // Отрисовка фрейма
 void TUClassesListFrame::AUpdateInterface(void)
 {
- int numclasses=Storage_GetNumClasses();
-
- int row=StringGrid->Row;
- StringGrid->ColCount=2;
- StringGrid->RowCount=numclasses+1;
-
- std::vector<int> ids;
- ids.resize(numclasses);
- Storage_GetClassesList(&ids[0]);
- for(int i=0;i<numclasses;i++)
+ if(PageControl->ActivePage == LibsTabSheet)
  {
-  StringGrid->Cells[0][i+1]=IntToStr(ids[i]);
-  StringGrid->Cells[1][i+1]=Storage_GetClassName(ids[i]);
+// const char* lib_list=Storage_GetClassLibrariesList();
+// LibrariesListNames=lib_list;
+// std::ve
+
+  int num_classes=0;
+  LibraryClassNames.clear();
+  LibraryNames.resize(Storage_GetNumClassLibraries());
+  for(size_t i=0;i<LibraryNames.size();i++)
+  {
+   LibraryNames[i]=Storage_GetClassLibraryNameByIndex(i);
+   const char* class_names=Storage_GetLibraryClassNamesByIndex(i);
+   num_classes+=RDK::separatestring(std::string(class_names),TempLibraryNames, ',');
+   sort(TempLibraryNames.begin(),TempLibraryNames.end());
+   LibraryClassNames[LibraryNames[i]]=TempLibraryNames;
+  }
+
+  TTreeNode* sel=TreeView->Selected;
+  String SelectedName;
+
+  if(sel)
+   SelectedName=sel->Text;
+
+  TreeView->Items->Clear();
+  for(size_t i=0;i<LibraryNames.size();i++)
+  {
+   TTreeNode* tn;
+   tn=TreeView->Items->AddChild(0,LibraryNames[i].c_str());
+   std::vector<std::string> &class_names=LibraryClassNames[LibraryNames[i]];
+   for(size_t j=0;j<class_names.size();j++)
+   {
+	TTreeNode* node=0;
+	node=TreeView->Items->AddChild(tn,class_names[j].c_str());
+	if(SelectedName == class_names[j].c_str())
+	 TreeView->Selected=node;
+   }
+
+   tn->Expand(true);
+  }
  }
+ else
+ {
+  int numclasses=Storage_GetNumClasses();
 
- StringGrid->ColWidths[0]=30;
- StringGrid->ColWidths[1]=Width-StringGrid->ColWidths[0];
+  int row=StringGrid->Row;
+  StringGrid->ColCount=1;
+  StringGrid->RowCount=numclasses+1;
 
- StringGrid->Cells[0][0]="Id";
- StringGrid->Cells[1][0]="Class name";
+  std::vector<int> ids;
+  ids.resize(numclasses);
+  Storage_GetClassesList(&ids[0]);
+  ClassNames.resize(numclasses);
+  for(int i=0;i<numclasses;i++)
+   ClassNames[i]=Storage_GetClassName(ids[i]);
 
- if(row<StringGrid->RowCount)
-  StringGrid->Row=row;
-}
+  sort(ClassNames.begin(),ClassNames.end());
+  for(int i=0;i<numclasses;i++)
+  {
+   StringGrid->Cells[0][i+1]=ClassNames[i].c_str();
+  }
 
+  StringGrid->ColWidths[0]=Width;
 
-// Возвращает id выбранного класса
-int TUClassesListFrame::GetSelectedId(void)
-{
- return StrToInt(StringGrid->Cells[0][StringGrid->Row]);
+  StringGrid->Cells[0][0]="Class name";
+
+  if(row<StringGrid->RowCount)
+   StringGrid->Row=row;
+ }
 }
 
 // Возвращает имя выбранного класса
 String TUClassesListFrame::GetSelectedName(void)
 {
- return StringGrid->Cells[1][StringGrid->Row];
+ if(PageControl->ActivePage == LibsTabSheet)
+ {
+  TTreeNode* sel=TreeView->Selected;
+  if(sel && sel->Parent)
+   return sel->Text;
+ }
+ else
+  return StringGrid->Cells[0][StringGrid->Row];
+
+ return String("");
 }
-void __fastcall TUClassesListFrame::FrameResize(TObject *Sender)
+
+void __fastcall TUClassesListFrame::PageControlChange(TObject *Sender)
 {
  UpdateInterface();
 }

@@ -469,6 +469,85 @@ bool RDK_CALL Storage_LoadAllClassesDescription(const char* xmltext)
 {
  return PEngine->Storage_LoadAllClassesDescription(xmltext);
 }
+
+// Загружает библиотеку по имени dll-файла
+int RDK_CALL Storage_LoadStorageLibrary(const char *filename)
+{
+ return PEngine->Storage_LoadStorageLibrary(filename);
+}
+
+// Удаляет подключенную библиотеку из списка по индексу
+// Ответственность за освобождение памяти лежит на вызывающей стороне.
+bool RDK_CALL Storage_DelClassLibraryByIndex(int index)
+{
+ return PEngine->Storage_DelClassLibraryByIndex(index);
+}
+
+// Удаляет подключенную библиотеку из списка по имени
+// Ответственность за освобождение памяти лежит на вызывающей стороне.
+bool RDK_CALL Storage_DelClassLibraryByName(const char *name)
+{
+ return PEngine->Storage_DelClassLibraryByName(name);
+}
+
+// Удаляет из списка все библиотеки
+// Ответственность за освобождение памяти лежит на вызывающей стороне.
+bool RDK_CALL Storage_DelAllClassLibraries(void)
+{
+ return PEngine->Storage_DelAllClassLibraries();
+}
+
+// Заполняет хранилище данными библиотек
+// Операция предварительно уничтожает модель и очищает хранилище
+bool RDK_CALL Storage_BuildStorage(void)
+{
+ return PEngine->Storage_BuildStorage();
+}
+
+// Возвращает число библиотек
+int RDK_CALL Storage_GetNumClassLibraries(void)
+{
+ return PEngine->Storage_GetNumClassLibraries();
+}
+
+// Возвращает список библиотек в виде строки, разделенной запятыми
+const char* RDK_CALL Storage_GetClassLibrariesList(void)
+{
+ return PEngine->Storage_GetClassLibrariesList();
+}
+
+// Возвращает список классов библиотеки в виде строки, разделенной запятыми
+// library_name - имя библиотеки
+const char* RDK_CALL Storage_GetLibraryClassNames(const char *library_name)
+{
+ return PEngine->Storage_GetLibraryClassNames(library_name);
+}
+
+// Возвращает список классов библиотеки в виде строки, разделенной запятыми
+// index - индекс библиотеки
+const char* RDK_CALL Storage_GetLibraryClassNamesByIndex(int index)
+{
+ return PEngine->Storage_GetLibraryClassNamesByIndex(index);
+}
+
+// Возвращает имя библиотеки по индексу
+const char * RDK_CALL Storage_GetClassLibraryNameByIndex(int index)
+{
+ return PEngine->Storage_GetClassLibraryNameByIndex(index);
+}
+
+// Возвращает версию библиотеки по индексу
+const char * RDK_CALL Storage_GetClassLibraryVersionByIndex(int index)
+{
+ return PEngine->Storage_GetClassLibraryVersionByIndex(index);
+}
+
+// Перемещает объект в Storage как образец классов.
+// Объект удаляется из модели
+int RDK_CALL Storage_CreateClass(const char* stringid, const char *classname)
+{
+ return PEngine->Storage_CreateClass(stringid, classname);
+}
 // ----------------------------
 
 // ----------------------------
@@ -605,65 +684,6 @@ void RDK_CALL MEnv_Destroy(int engine_index)
   return;
 
  return DllManager.EngineList[engine_index]->Env_Destroy();
-}
-
-// Загружает библиотеку по имени dll-файла
-int RDK_CALL Env_LoadStorageLibrary(const char *filename)
-{
- return PEngine->Env_LoadStorageLibrary(filename);
-}
-
-// Удаляет подключенную библиотеку из списка по индексу
-// Ответственность за освобождение памяти лежит на вызывающей стороне.
-bool RDK_CALL Env_DelClassLibraryByIndex(int index)
-{
- return PEngine->Env_DelClassLibraryByIndex(index);
-}
-
-// Удаляет подключенную библиотеку из списка по имени
-// Ответственность за освобождение памяти лежит на вызывающей стороне.
-bool RDK_CALL Env_DelClassLibraryByName(const char *name)
-{
- return PEngine->Env_DelClassLibraryByName(name);
-}
-
-// Удаляет из списка все библиотеки
-// Ответственность за освобождение памяти лежит на вызывающей стороне.
-bool RDK_CALL Env_DelAllClassLibraries(void)
-{
- return PEngine->Env_DelAllClassLibraries();
-}
-
-// Заполняет хранилище данными библиотек
-// Операция предварительно уничтожает модель и очищает хранилище
-bool RDK_CALL Env_BuildStorage(void)
-{
- return PEngine->Env_BuildStorage();
-}
-
-// Возвращает число библиотек
-int RDK_CALL Env_GetNumClassLibraries(void)
-{
- return PEngine->Env_GetNumClassLibraries();
-}
-
-// Возвращает имя библиотеки по индексу
-const char * RDK_CALL Env_GetClassLibraryName(int index)
-{
- return PEngine->Env_GetClassLibraryName(index);
-}
-
-// Возвращает версию библиотеки по индексу
-const char * RDK_CALL Env_GetClassLibraryVersion(int index)
-{
- return PEngine->Env_GetClassLibraryVersion(index);
-}
-
-// Перемещает объект в Storage как образец классов.
-// Объект удаляется из модели
-int RDK_CALL Env_CreateClass(const char* stringid, const char *classname)
-{
- return PEngine->Env_CreateClass(stringid, classname);
 }
 
 // Метод счета

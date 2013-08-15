@@ -104,7 +104,7 @@ object UGEngineControlForm: TUGEngineControlForm
               end
               inherited ParametersListStringGrid: TStringGrid
                 Width = 237
-                Height = 3
+                Height = 18
                 ExplicitWidth = 237
                 ExplicitHeight = 3
               end
@@ -299,9 +299,28 @@ object UGEngineControlForm: TUGEngineControlForm
             inherited UClassesListFrame: TUClassesListFrame
               Height = 227
               ExplicitHeight = 227
-              inherited StringGrid: TStringGrid
+              inherited PageControl: TPageControl
                 Height = 227
                 ExplicitHeight = 227
+                inherited NameTabSheet: TTabSheet
+                  ExplicitLeft = 4
+                  ExplicitTop = 24
+                  ExplicitWidth = 499
+                  ExplicitHeight = 419
+                  inherited StringGrid: TStringGrid
+                    Width = 499
+                    Height = 419
+                    ExplicitWidth = 499
+                    ExplicitHeight = 419
+                  end
+                end
+                inherited LibsTabSheet: TTabSheet
+                  ExplicitHeight = 199
+                  inherited TreeView: TTreeView
+                    Height = 199
+                    ExplicitHeight = 199
+                  end
+                end
               end
             end
           end
@@ -340,6 +359,31 @@ object UGEngineControlForm: TUGEngineControlForm
       end
     end
   end
+  object StatusBar: TStatusBar
+    Left = 0
+    Top = 513
+    Width = 775
+    Height = 19
+    Panels = <>
+    SimplePanel = True
+  end
+  object ChannelsStringGrid: TStringGrid
+    Left = 0
+    Top = 44
+    Width = 44
+    Height = 469
+    Align = alLeft
+    ColCount = 1
+    DefaultColWidth = 24
+    FixedCols = 0
+    FixedRows = 0
+    Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goDrawFocusSelected, goRowSelect]
+    ScrollBars = ssVertical
+    TabOrder = 2
+    Visible = False
+    OnClick = ChannelsStringGridClick
+    OnSelectCell = ChannelsStringGridSelectCell
+  end
   object ToolBar: TToolBar
     Left = 0
     Top = 0
@@ -349,9 +393,11 @@ object UGEngineControlForm: TUGEngineControlForm
     ButtonHeight = 44
     ButtonWidth = 104
     Caption = 'ToolBar'
+    Color = clBtnFace
     Images = ImageList
+    ParentColor = False
     ShowCaptions = True
-    TabOrder = 1
+    TabOrder = 3
     object ToolButton17: TToolButton
       Left = 0
       Top = 0
@@ -449,32 +495,6 @@ object UGEngineControlForm: TUGEngineControlForm
       MenuItem = Window1
       Style = tbsDropDown
     end
-  end
-  object StatusBar: TStatusBar
-    Left = 0
-    Top = 513
-    Width = 775
-    Height = 19
-    Panels = <>
-    SimplePanel = True
-  end
-  object ChannelsStringGrid: TStringGrid
-    Left = 0
-    Top = 44
-    Width = 44
-    Height = 469
-    Align = alLeft
-    ColCount = 1
-    DefaultColWidth = 24
-    FixedCols = 0
-    FixedRows = 0
-    Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goDrawFocusSelected, goRowSelect]
-    ScrollBars = ssVertical
-    TabOrder = 3
-    Visible = False
-    OnClick = ChannelsStringGridClick
-    OnSelectCell = ChannelsStringGridSelectCell
-    ExplicitTop = 38
   end
   object MainMenu: TMainMenu
     Images = ImageList
@@ -660,7 +680,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 360
     Top = 65528
     Bitmap = {
-      494C01011B006000400110001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B0060004C0110001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

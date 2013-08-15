@@ -159,44 +159,55 @@ RDK_LIB_TYPE const char* RDK_CALL Storage_SaveAllClassesDescription(void);
 
 // Загружает описание всех классов из xml включая общее описание
 RDK_LIB_TYPE bool RDK_CALL Storage_LoadAllClassesDescription(const char* xmltext);
+
+// Загружает библиотеку по имени dll-файла
+RDK_LIB_TYPE int RDK_CALL Storage_LoadStorageLibrary(const char *filename);
+
+// Удаляет подключенную библиотеку из списка по индексу
+// Ответственность за освобождение памяти лежит на вызывающей стороне.
+RDK_LIB_TYPE bool RDK_CALL Storage_DelClassLibraryByIndex(int index);
+
+// Удаляет подключенную библиотеку из списка по имени
+// Ответственность за освобождение памяти лежит на вызывающей стороне.
+RDK_LIB_TYPE bool RDK_CALL Storage_DelClassLibraryByName(const char *name);
+
+// Удаляет из списка все библиотеки
+// Ответственность за освобождение памяти лежит на вызывающей стороне.
+RDK_LIB_TYPE bool RDK_CALL Storage_DelAllClassLibraries(void);
+
+// Заполняет хранилище данными библиотек
+// Операция предварительно уничтожает модель и очищает хранилище
+RDK_LIB_TYPE bool RDK_CALL Storage_BuildStorage(void);
+
+// Возвращает число библиотек
+RDK_LIB_TYPE int RDK_CALL Storage_GetNumClassLibraries(void);
+
+// Возвращает список библиотек в виде строки, разделенной запятыми
+RDK_LIB_TYPE const char* RDK_CALL Storage_GetClassLibrariesList(void);
+
+// Возвращает список классов библиотеки в виде строки, разделенной запятыми
+// library_name - имя библиотеки
+RDK_LIB_TYPE const char* RDK_CALL Storage_GetLibraryClassNames(const char *library_name);
+
+// Возвращает список классов библиотеки в виде строки, разделенной запятыми
+// index - индекс библиотеки
+RDK_LIB_TYPE const char* RDK_CALL Storage_GetLibraryClassNamesByIndex(int index);
+
+// Возвращает имя библиотеки по индексу
+RDK_LIB_TYPE const char* RDK_CALL Storage_GetClassLibraryNameByIndex(int index);
+
+// Возвращает версию библиотеки по индексу
+RDK_LIB_TYPE const char* RDK_CALL Storage_GetClassLibraryVersionByIndex(int index);
+
+// Перемещает объект в Storage как образец классов.
+// Объект удаляется из модели
+// Возвращает id нового класса в хранилище
+RDK_LIB_TYPE int RDK_CALL Storage_CreateClass(const char* stringid, const char *classname);
 // --------------------------
 
 // --------------------------
 // Функции управления средой
 // ----------------------------
-// Загружает библиотеку по имени dll-файла
-RDK_LIB_TYPE int RDK_CALL Env_LoadStorageLibrary(const char *filename);
-
-// Удаляет подключенную библиотеку из списка по индексу
-// Ответственность за освобождение памяти лежит на вызывающей стороне.
-RDK_LIB_TYPE bool RDK_CALL Env_DelClassLibraryByIndex(int index);
-
-// Удаляет подключенную библиотеку из списка по имени
-// Ответственность за освобождение памяти лежит на вызывающей стороне.
-RDK_LIB_TYPE bool RDK_CALL Env_DelClassLibraryByName(const char *name);
-
-// Удаляет из списка все библиотеки
-// Ответственность за освобождение памяти лежит на вызывающей стороне.
-RDK_LIB_TYPE bool RDK_CALL Env_DelAllClassLibraries(void);
-
-// Заполняет хранилище данными библиотек
-// Операция предварительно уничтожает модель и очищает хранилище
-RDK_LIB_TYPE bool RDK_CALL Env_BuildStorage(void);
-
-// Возвращает число библиотек
-RDK_LIB_TYPE int RDK_CALL Env_GetNumClassLibraries(void);
-
-// Возвращает имя библиотеки по индексу
-RDK_LIB_TYPE const char * RDK_CALL Env_GetClassLibraryName(int index);
-
-// Возвращает версию библиотеки по индексу
-RDK_LIB_TYPE const char * RDK_CALL Env_GetClassLibraryVersion(int index);
-
-// Перемещает объект в Storage как образец классов.
-// Объект удаляется из модели
-// Возвращает id нового класса в хранилище
-RDK_LIB_TYPE int RDK_CALL Env_CreateClass(const char* stringid, const char *classname);
-
 // Метод счета
 // Если stringid == 0 то вычисляет всю модель целиком,
 // иначе вычисляет только указанный компонент модели

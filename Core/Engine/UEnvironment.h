@@ -18,63 +18,6 @@ See file license.txt for more information
 
 namespace RDK {
 
-class UClassLibraryList
-{
-public:
-protected: // Data
-// Classes list
-PUALibrary* Libraries;
-
-// Number of libraries into storage
-int Size;
-
-// real number of allocated elements
-int RealSize;
-
-public: // Methods
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-UClassLibraryList(void);
-UClassLibraryList(const UClassLibraryList &copy);
-virtual ~UClassLibraryList(void);
-// --------------------------
-
-// --------------------------
-// Методы управления
-// --------------------------
-// Очищает хранилище
-void Clear(void);
-
-// Изменяет размер хранилища
-// Метод сохраняет старые данные
-void Resize(int newsize);
-
-// Возвращает размер массива
-int GetSize(void) const;
-
-// Удаляет из массива библиотеку по индексу
-// Возвращает указатель на удаленную библиотеку
-PUALibrary Erase(int index);
-
-// Добавляет новый элемент в конец хранилища
-void PushBack(PUALibrary classelement);
-
-// Возвращает указатель на массив классов
-PUALibrary* GetLibraries(void) const;
-// --------------------------
-
-// --------------------------
-// Операторы
-// --------------------------
-// Оператор присваивания
-UClassLibraryList& operator = (const UClassLibraryList &copy);
-
-// Оператор доступа
-PUALibrary operator [] (int i);
-// --------------------------
-};
-
 class UEnvironment: virtual public UModule
 {
 protected: // Параметры
@@ -106,15 +49,6 @@ UStorage* Storage;
 
 // Исследуемая модель
 UEPtr<UContainer> Model;
-
-// Массив доступных библиотек
-UClassLibraryList ClassLibraryList;
-
-// Массив имен загруженных классов
-vector<string> CompletedClassNames;
-
-// Массив имен не загруженных классов
-vector<string> IncompletedClassNames;
 
 /// Время среды
 UTimeControl Time;
@@ -198,45 +132,6 @@ virtual bool CreateModel(const UId& classid);
 
 // Уничтожает текущую модель
 virtual bool DestroyModel(void);
-
-// Возвращает библиотеку по индексу
-ULibrary* GetClassLibrary(int index);
-
-// Возвращает число библиотек
-int GetNumClassLibraries(void) const;
-
-// Возвращает библиотеку по имени
-ULibrary* GetClassLibrary(const string &name);
-
-// Возвращает имя библиотеки по индексу
-const string& GetClassLibraryName(int index);
-
-// Возвращает версию библиотеки по индексу
-const string& GetClassLibraryVersion(int index);
-
-// Непосредственно добавялет новый образец класса в хранилище
-virtual bool AddClass(UContainer *newclass);
-
-// Подключает динамическую библиотеку с набором образцов классов.
-// Если бибилиотека с таким именем уже существует то возвращает false.
-// Ответственность за освобождение памяти библиотекой лежит на вызывающей стороне.
-virtual bool AddClassLibrary(ULibrary *library);
-
-// Удаляет подключенную библиотеку из списка по индексу
-// Ответственность за освобождение памяти лежит на вызывающей стороне.
-virtual bool DelClassLibrary(int index);
-
-// Удаляет подключенную библиотеку из списка по имени
-// Ответственность за освобождение памяти лежит на вызывающей стороне.
-bool DelClassLibrary(const string &name);
-
-// Удаляет из списка все библиотеки
-// Ответственность за освобождение памяти лежит на вызывающей стороне.
-virtual bool DelAllClassLibraries(void);
-
-// Заполняет хранилище данными библиотек
-// Операция предварительно уничтожает модель и очищает хранилище
-virtual bool BuildStorage(void);
 
 /// Время среды
 const UTimeControl& GetTime(void) const;

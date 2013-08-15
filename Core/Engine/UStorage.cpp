@@ -15,6 +15,7 @@ See file license.txt for more information
 
 #include <string.h>
 #include "UStorage.h"
+#include "ULibrary.h"
 
 namespace RDK {
 
@@ -631,6 +632,133 @@ bool UStorage::LoadCommonClassesDescription(USerStorageXML &xml)
   ++I;
  }
 
+ return true;
+}
+// --------------------------
+
+
+
+// --------------------------
+// ћетоды управлени€ библиотеками
+// --------------------------
+// ¬озвращает библиотеку по индексу
+UEPtr<ULibrary> UStorage::GetClassLibrary(int index)
+{
+ return ClassLibraryList[index];
+}
+
+// ¬озвращает число библиотек
+int UStorage::GetNumClassLibraries(void) const
+{
+ return int(ClassLibraryList.size());
+}
+
+// ¬озвращает библиотеку по имени
+UEPtr<ULibrary> UStorage::GetClassLibrary(const string &name)
+{
+ for(size_t i=0;i<ClassLibraryList.size();i++)
+ {
+  UEPtr<ULibrary> lib=ClassLibraryList[i];
+  if(lib && lib->GetName() == name)
+   return lib;
+ }
+
+ return 0;
+}
+
+// ¬озвращает им€ библиотеки по индексу
+const string& UStorage::GetClassLibraryName(int index)
+{
+ return ClassLibraryList[index]->GetName();
+}
+
+// ¬озвращает версию библиотеки по индексу
+const string& UStorage::GetClassLibraryVersion(int index)
+{
+ return ClassLibraryList[index]->GetVersion();
+}
+
+// Ќепосредственно добав€лет новый образец класса в хранилище
+bool UStorage::AddClass(UContainer *newclass)
+{
+ UId classid=newclass->GetClass();
+ if(!AddClass(newclass,classid) == ForbiddenId)
+  return false;
+
+ return true;
+}
+
+// ѕодключает динамическую библиотеку с набором образцов классов.
+// ≈сли бибилиотека с таким именем уже существует то возвращает false.
+// ќтветственность за освобождение пам€ти библиотекой лежит на вызывающей стороне.
+bool UStorage::AddClassLibrary(ULibrary *library)
+{
+ if(!library)
+  return false;
+
+ UEPtr<ULibrary> newlib=dynamic_cast<ULibrary*>(library);
+
+ for(size_t i=0;i<ClassLibraryList.size();i++)
+ {
+  UEPtr<ULibrary> lib=ClassLibraryList[i];
+  if(lib && lib->GetName() == newlib->GetName())
+   return false;
+ }
+
+ ClassLibraryList.push_back(library);
+ return true;
+}
+
+// ”дал€ет подключенную библиотеку из списка по индексу
+// ќтветственность за освобождение пам€ти библиотекой лежит на вызывающей стороне.
+bool UStorage::DelClassLibrary(int index)
+{
+ if(index < 0 || index >= int(ClassLibraryList.size()))
+  return false;
+
+ ClassLibraryList.erase(ClassLibraryList.begin()+index);
+ return true;
+}
+
+// ”дал€ет подключенную библиотеку из списка по имени
+// ќтветственность за освобождение пам€ти лежит на вызывающей стороне.
+bool UStorage::DelClassLibrary(const string &name)
+{
+ for(size_t i=0;i<ClassLibraryList.size();i++)
+ {
+  UEPtr<ULibrary> lib=ClassLibraryList[i];
+  if(lib && lib->GetName() == name)
+   return DelClassLibrary(i);
+ }
+ return true;
+}
+
+// ”дал€ет из списка все библиотеки
+// ќтветственность за освобождение пам€ти лежит на вызывающей стороне.
+bool UStorage::DelAllClassLibraries(void)
+{
+ ClassLibraryList.clear();
+ return true;
+}
+
+// «аполн€ет хранилище данными библиотек
+// ќпераци€ предварительно уничтожает модель и очищает хранилище
+bool UStorage::BuildStorage(void)
+{
+ for(size_t i=0;i<ClassLibraryList.size();i++)
+ {
+  ClassLibraryList[i]->Upload(this);
+  UEPtr<ULibrary> lib=ClassLibraryList[i];
+  if(lib)
+  {
+   CompletedClassNames.insert(CompletedClassNames.end(),
+                             lib->GetComplete().begin(),
+                             lib->GetComplete().end());
+   IncompletedClassNames.insert(IncompletedClassNames.end(),
+                             lib->GetIncomplete().begin(),
+                             lib->GetIncomplete().end());
+  }
+ }
  return true;
 }
 // --------------------------

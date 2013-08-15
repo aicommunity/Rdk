@@ -80,10 +80,6 @@ virtual bool CreateModel(const NameT& classname);
 
 // Уничтожает текущую модель
 virtual bool DestroyModel(void);
-
-// Заполняет хранилище данными библиотек
-// Операция предварительно уничтожает модель и очищает хранилище
-virtual bool BuildStorage(void);
 // --------------------------
 
 // --------------------------

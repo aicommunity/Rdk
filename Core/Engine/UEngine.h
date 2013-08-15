@@ -242,6 +242,49 @@ virtual const char* Storage_SaveAllClassesDescription(void);
 // Загружает описание всех классов из xml включая общее описание
 virtual bool Storage_LoadAllClassesDescription(const char* xmltext);
 
+// Загружает библиотеку по имени dll-файла
+virtual int Storage_LoadStorageLibrary(const char *filename);
+
+// Удаляет подключенную библиотеку из списка по индексу
+// Ответственность за освобождение памяти лежит на вызывающей стороне.
+virtual bool Storage_DelClassLibraryByIndex(int index);
+
+// Удаляет подключенную библиотеку из списка по имени
+// Ответственность за освобождение памяти лежит на вызывающей стороне.
+virtual bool Storage_DelClassLibraryByName(const char *name);
+
+// Удаляет из списка все библиотеки
+// Ответственность за освобождение памяти лежит на вызывающей стороне.
+virtual bool Storage_DelAllClassLibraries(void);
+
+// Заполняет хранилище данными библиотек
+// Операция предварительно уничтожает модель и очищает хранилище
+virtual bool Storage_BuildStorage(void);
+
+// Возвращает число библиотек
+virtual int Storage_GetNumClassLibraries(void) const;
+
+// Возвращает список библиотек в виде строки, разделенной запятыми
+virtual const char * Storage_GetClassLibrariesList(void) const;
+
+// Возвращает список классов библиотеки в виде строки, разделенной запятыми
+// library_name - имя библиотеки
+virtual const char * Storage_GetLibraryClassNames(const char *library_name) const;
+
+// Возвращает список классов библиотеки в виде строки, разделенной запятыми
+// index - индекс библиотеки
+virtual const char * Storage_GetLibraryClassNamesByIndex(int index) const;
+
+// Возвращает имя библиотеки по индексу
+virtual const char * Storage_GetClassLibraryNameByIndex(int index);
+
+// Возвращает версию библиотеки по индексу
+virtual const char * Storage_GetClassLibraryVersionByIndex(int index);
+
+// Перемещает объект в Storage как образец классов.
+// Объект удаляется из модели
+virtual int Storage_CreateClass(const char* stringid, const char *classname);
+
 // Методы управления средой
 // ----------------------------
 // Индекс предарительно заданной модели обработки
@@ -273,38 +316,6 @@ virtual bool Env_DestroyStructure(void);
 
 // Удаляет модель и все библиотеки, очищает хранилище, приводя среду в исходное состояние
 virtual void Env_Destroy(void);
-
-// Загружает библиотеку по имени dll-файла
-virtual int Env_LoadStorageLibrary(const char *filename);
-
-// Удаляет подключенную библиотеку из списка по индексу
-// Ответственность за освобождение памяти лежит на вызывающей стороне.
-virtual bool Env_DelClassLibraryByIndex(int index);
-
-// Удаляет подключенную библиотеку из списка по имени
-// Ответственность за освобождение памяти лежит на вызывающей стороне.
-virtual bool Env_DelClassLibraryByName(const char *name);
-
-// Удаляет из списка все библиотеки
-// Ответственность за освобождение памяти лежит на вызывающей стороне.
-virtual bool Env_DelAllClassLibraries(void);
-
-// Заполняет хранилище данными библиотек
-// Операция предварительно уничтожает модель и очищает хранилище
-virtual bool Env_BuildStorage(void);
-
-// Возвращает число библиотек
-virtual int Env_GetNumClassLibraries(void) const;
-
-// Возвращает имя библиотеки по индексу
-virtual const char * Env_GetClassLibraryName(int index);
-
-// Возвращает версию библиотеки по индексу
-virtual const char * Env_GetClassLibraryVersion(int index);
-
-// Перемещает объект в Storage как образец классов.
-// Объект удаляется из модели
-virtual int Env_CreateClass(const char* stringid, const char *classname);
 
 // Метод счета
 // Если stringid == 0 то вычисляет всю модель целиком,

@@ -73,13 +73,6 @@ bool UBAEnvironment::DestroyModel(void)
 {
  return UEnvironment::DestroyModel();
 }
-
-// Заполняет хранилище данными библиотек
-// Операция предварительно уничтожает модель и очищает хранилище
-bool UBAEnvironment::BuildStorage(void)
-{
- return UEnvironment::BuildStorage();
-}
 // --------------------------
 
 // --------------------------

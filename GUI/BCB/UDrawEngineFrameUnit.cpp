@@ -376,6 +376,9 @@ void __fastcall TUDrawEngineFrame::ImageDragDrop(TObject *Sender, TObject *Sourc
  DragDropFlag=false;
 
  std::string classname=AnsiString(UClassesListFrame->GetSelectedName()).c_str();
+ if(classname.empty())
+  return;
+
  const char* pname=Model_AddComponent(ComponentName.c_str(), classname.c_str());
  if(pname)
  {
@@ -584,6 +587,25 @@ void __fastcall TUDrawEngineFrame::Delete1Click(TObject *Sender)
 {
  if(ComponentsListFrame)
   ComponentsListFrame->Delete1Click(Sender);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUDrawEngineFrame::UClassesListFrameTreeViewMouseMove(TObject *Sender,
+          TShiftState Shift, int X, int Y)
+{
+ if(Shift.Contains(ssLeft))
+ {
+  UClassesListFrame->StringGrid->BeginDrag(true);
+  DragDropFlag=true;
+ }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUDrawEngineFrame::UClassesListFrameTreeViewMouseUp(TObject *Sender,
+          TMouseButton Button, TShiftState Shift, int X, int Y)
+{
+ UClassesListFrame->StringGrid->DragMode=dmManual;
+ DragDropFlag=false;
 }
 //---------------------------------------------------------------------------
 

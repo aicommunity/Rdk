@@ -16,20 +16,30 @@
 class TUClassesListFrame : public TUVisualControllerFrame
 {
 __published:	// IDE-managed Components
+	TPageControl *PageControl;
+	TTabSheet *NameTabSheet;
+	TTabSheet *LibsTabSheet;
 	TStringGrid *StringGrid;
-	void __fastcall FrameResize(TObject *Sender);
+	TTreeView *TreeView;
+	void __fastcall PageControlChange(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
 	__fastcall TUClassesListFrame(TComponent* Owner);
 
 protected:
 
+std::string LibrariesListNames;
+std::vector<std::string> LibraryNames;
+std::vector<std::string> TempLibraryNames;
+std::map<std::string, std::vector<std::string> > LibraryClassNames;
+std::vector<std::string> ClassNames;
+
 public:
 // Отрисовка фрейма
 void AUpdateInterface(void);
 
 // Возвращает id выбранного класса
-int GetSelectedId(void);
+//int GetSelectedId(void);
 
 // Возвращает имя выбранного класса
 String GetSelectedName(void);
