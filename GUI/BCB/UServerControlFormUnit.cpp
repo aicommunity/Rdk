@@ -409,10 +409,10 @@ bool TUServerControlForm::ProcessRPCCommand(int channel, const std::string &cmd_
  if(cmd_name == "Model_GetComponentBitmapOutput")
  {
   ConvertVectorToString(args["Name"], name);
-  int output_number=0;
-  res=DecodeParamAsInteger("Index",args,output_number);
+  string output_name=0;
+  ConvertVectorToString(args["Index"],output_name);
 
-  const RDK::UBitmap* value=(const RDK::UBitmap*)Model_GetComponentBitmapOutput(name.c_str(),output_number);
+  const RDK::UBitmap* value=(const RDK::UBitmap*)Model_GetComponentBitmapOutput(name.c_str(),output_name.c_str());
   if(value)
   {
    *value>>Bitmap;
@@ -437,10 +437,10 @@ bool TUServerControlForm::ProcessRPCCommand(int channel, const std::string &cmd_
  if(cmd_name == "Model_GetComponentBitmapInput")
  {
   ConvertVectorToString(args["Name"], name);
-  int output_number=0;
-  res=DecodeParamAsInteger("Index",args,output_number);
+  string output_name;
+  ConvertVectorToString(args["Index"],output_name);
 
-  const RDK::UBitmap* value=(const RDK::UBitmap*)Model_GetComponentBitmapInput(name.c_str(),output_number);
+  const RDK::UBitmap* value=(const RDK::UBitmap*)Model_GetComponentBitmapInput(name.c_str(),output_name.c_str());
   if(value)
   {
    *value>>Bitmap;
@@ -464,8 +464,8 @@ bool TUServerControlForm::ProcessRPCCommand(int channel, const std::string &cmd_
  if(cmd_name == "Model_SetComponentBitmapOutput")
  {
   ConvertVectorToString(args["Name"], name);
-  int output_number=0;
-  res=DecodeParamAsInteger("Index",args,output_number);
+  string output_name;
+  ConvertVectorToString(args["Index"],output_name);
 
   vector<char> &image_data=args["Image"];
 
@@ -486,7 +486,7 @@ bool TUServerControlForm::ProcessRPCCommand(int channel, const std::string &cmd_
  //  TempUBitmap>>Image1->Picture->Bitmap;
  //  Image1->Repaint();
 
-   Model_SetComponentBitmapOutput(name.c_str(),output_number,&TempUBitmap);
+   Model_SetComponentBitmapOutput(name.c_str(),output_name.c_str(),&TempUBitmap);
    ConvertStringToVector("0", response_data);
   }
   return true;

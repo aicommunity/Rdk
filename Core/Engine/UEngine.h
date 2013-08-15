@@ -119,6 +119,8 @@ mutable string CompName;
 // Индекс последнего считанного символа лога исключений
 int LastReadExceptionLogIndex;
 
+UBitmap TempBmp;
+
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
@@ -360,6 +362,43 @@ virtual const char* Env_GetCurrentDataDir(void) const;
 
 // Устанавливает имя текущего каталога для хранения данных
 virtual int Env_SetCurrentDataDir(const char *dir);
+
+// Перенесено из UBEngine
+// Задает число входов среды
+virtual void Env_SetNumInputImages(int number);
+
+// Задает число выходов среды
+virtual void Env_SetNumOutputImages(int number);
+
+// Возвращает число входов среды
+virtual int Env_GetNumInputImages(void);
+
+// Возвращает число выходов среды
+virtual int Env_GetNumOutputImages(void);
+
+// Задает разрешение по умолчанию (рабочее разрешение)
+virtual void Env_SetInputRes(int number, int width, int height);
+
+// Задает флаг отражения входного изображения вокруг горизонтальной оси
+virtual void Env_SetReflectionXFlag(bool value);
+
+// Возвращает разрешение по умолчанию (рабочее разрешение)
+virtual int Env_GetInputImageWidth(int number);
+virtual int Env_GetInputImageHeight(int number);
+virtual int Env_GetInputImageColorModel(int number);
+
+// Возвращает текущее выходное разрешение
+virtual int Env_GetOutputImageWidth(int number);
+virtual int Env_GetOutputImageHeight(int number);
+virtual int Env_GetOutputImageColorModel(int number);
+
+virtual void Env_SetInputImage(int number, unsigned char* image, int width, int height,int cmodel);
+
+virtual unsigned char* Env_GetInputImage(int index);
+
+virtual unsigned char* Env_GetOutputImage(int index);
+
+virtual unsigned char* Env_GetOutputImageY8(int index);
 
 // Методы управления моделью
 // ----------------------------
@@ -678,7 +717,22 @@ long long Model_GetInterstepsInterval(const char *stringid) const;
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
 // возвращаемое значение имеет фактический тип RDK::MDMatrix*
 // если выход не содержит данных такого типа, то возвращает 0
-const /* RDK::MDMatrix* */void* Model_GetComponentOutputAsMatrix(const char *stringid, int index);
+const /* RDK::MDMatrix* */void* Model_GetComponentOutputAsMatrix(const char *stringid, const char *property_name);
+
+// Возвращает указатель на выход с индексом 'index' компонента 'id'
+virtual const RDK::UBitmap* Model_GetComponentOutput(const char *stringid, const char *property_name);
+
+// Возвращает указатель на выход с индексом 'index' компонента 'id'
+virtual const RDK::UBitmap* Model_GetComponentBitmapOutput(const char *stringid, const char *property_name);
+
+// Возвращает указатель на вход с индексом 'index' компонента 'id'
+virtual const RDK::UBitmap* Model_GetComponentBitmapInput(const char *stringid, const char *property_name);
+
+// Замещает изображение выхода с индексом 'index' компонента 'id'
+virtual void Model_SetComponentBitmapOutput(const char *stringid, const char *property_name, const RDK::UBitmap* bmp, bool reflect=false);
+
+// Замещает изображение входа с индексом 'index' компонента 'id'
+virtual void Model_SetComponentBitmapInput(const char *stringid, const char *property_name, const RDK::UBitmap* const bmp, bool reflect=false);
 
 // --------------------------
 // Методы управления исключениями

@@ -14,15 +14,19 @@ See file license.txt for more information
 #ifndef UBARECEIVER_H
 #define UBARECEIVER_H
 
-#include "UBAbstract.h"
+#include "../Engine/UNet.h"
+#include "UBitmap.h"
 
 namespace RDK {
 
 /// Простой класс-приемник изображений
 /// копирует входные изображения в выходные
-class UBAReceiver: public UBAbstract
+class UBAReceiver: public UNet
 {
 protected: // Основные свойства
+UPropertyInputData<UBitmap, UBAReceiver> Input;
+
+UPropertyOutputData<UBitmap, UBAReceiver> Output;
 
 public: // Методы
 // --------------------------
@@ -45,13 +49,13 @@ virtual UBAReceiver* New(void);
 // --------------------------
 protected:
 /// Восстановление настроек по умолчанию и сброс процесса счета
-virtual bool AFDefault(void);
+virtual bool ADefault(void);
 
 /// Сброс процесса счета.
-virtual bool AFReset(void);
+virtual bool AReset(void);
 
 /// Выполняет расчет этого объекта
-virtual bool AFCalculate(void);
+virtual bool ACalculate(void);
 // --------------------------
 };
 

@@ -13,12 +13,15 @@ See file license.txt for more information
 #ifndef UBAMODEL_H
 #define UBAMODEL_H
 
-#include "UBAbstract.h"
+#include "../Engine/UNet.h"
 
 namespace RDK {
 
-class UBAModel: public UBAbstract
+class UBAModel: public UNet
 {
+protected: // Входы и выходы
+UPropertyOutputData<UBitmap,UBAModel> Output;
+
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы

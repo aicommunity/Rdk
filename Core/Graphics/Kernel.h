@@ -14,7 +14,7 @@ See file license.txt for more information
 
 #include "Kernel_lite.h"
 #include "UGraphicsIO.h"
-#include "UBEngine.h"
+//#include "UBEngine.h"
 #include "UGraphicsBinarySerialize.h"
 #include "UGraphicsXMLSerialize.h"
 #include "UBAModel.h"

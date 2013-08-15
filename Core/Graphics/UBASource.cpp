@@ -21,6 +21,7 @@ namespace RDK {
 // Конструкторы и деструкторы
 // --------------------------
 UBASource::UBASource(void)
+: Output("Output",this,0)
 {
 }
 
@@ -35,13 +36,13 @@ UBASource::~UBASource(void)
 // Непосредственно задает выходное изображение
 bool UBASource::SetOutputData(int index, const UBitmap &bitmap)
 {
- if(index<0 || index>=NumOutputs)
+ if(index<0 || index>0)
   return false;
 
  if(!Build())
   return false;
 
- Outputs(index)=bitmap;
+ *Output=bitmap;
 
  return true;
 }
@@ -61,19 +62,19 @@ UBASource* UBASource::New(void)
 // Скрытые методы управления счетом
 // --------------------------
 // Восстановление настроек по умолчанию и сброс процесса счета
-bool UBASource::AFDefault(void)
+bool UBASource::ADefault(void)
 {
  return true;
 }
 
 // Сброс процесса счета.
-bool UBASource::AFReset(void)
+bool UBASource::AReset(void)
 {
  return true;
 }
 
 // Выполняет расчет этого объекта
-bool UBASource::AFCalculate(void)
+bool UBASource::ACalculate(void)
 {
  return true;
 }

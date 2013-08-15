@@ -80,7 +80,7 @@ std::vector<std::vector<TImage*> > Images;
 std::vector<std::vector<std::string> > StringIds;
 
 // Массив индексов выходов компонент, связанных с изображениями
-std::vector<std::vector<int> > ComponentIndexes;
+std::vector<std::vector<std::string> > ComponentIndexes;
 
 // Массив имен компонент и их свойств, связанных с кликом мыши
 std::vector<std::vector<std::pair<std::string,std::string> > > MouseClickComponents;

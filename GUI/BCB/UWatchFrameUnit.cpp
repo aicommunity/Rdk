@@ -41,9 +41,9 @@ TUWatchInfo::TUWatchInfo(void)
 
  Visible=true;
 
- XOutputIndex=0;
+// XOutputIndex=0;
  XOutputElementIndex=0;
- YOutputIndex=0;
+// YOutputIndex=0;
  YOutputElementIndex=0;
 
  //  оординаты выхода, хран€щего данные по оси Y дл€ случа€ MDMatrix
@@ -485,7 +485,7 @@ int __fastcall TUWatchFrame::Add(TUWatchInfo& wd)
 
 // ƒобавление нового наблюдени€ по имени компонента и индексу выхода
 // ¬озвращает индекс серии
-int __fastcall TUWatchFrame::Add(int type, const string &xname, const string &yname, int xoutput, int xoutindex, int youtput, int youtindex, int mrow, int mcol, double yshift, TPenStyle style, TColor color)
+int __fastcall TUWatchFrame::Add(int type, const string &xname, const string &yname, const string &xoutput, int xoutindex, const string &youtput, int youtindex, int mrow, int mcol, double yshift, TPenStyle style, TColor color)
 {
  TUWatchInfo wd;
  wd.FullUpdate=false;
@@ -650,12 +650,12 @@ void __fastcall TUWatchFrame::StepUpdate(void)
 	 xdata=Model_GetDoubleTime();
 	 x=&xdata;
 
-	 ym=(const RDK::MDMatrix<double>*)(Model_GetComponentOutputAsMatrix(wd->YDataSourceName.c_str(), wd->YOutputIndex));
+	 ym=(const RDK::MDMatrix<double>*)(Model_GetComponentOutputAsMatrix(wd->YDataSourceName.c_str(), wd->YOutputIndex.c_str()));
 	 if(!ym)
 	 {
-	  y=(double*)Model_GetComponentOutputData(wd->YDataSourceName.c_str(), wd->YOutputIndex);
-	  if(!y)
-	   continue;
+//	  y=(double*)Model_GetComponentOutputData(wd->YDataSourceName.c_str(), wd->YOutputIndex);
+//	  if(!y)
+//	   continue;
 	 }
 	 else
 	 {
@@ -666,7 +666,7 @@ void __fastcall TUWatchFrame::StepUpdate(void)
 	   continue;
 	 }
    }
-   else
+/*   else
    if(wd->YDataSourceName.size()==0 && wd->XDataSourceName.size())
    {
 	int xdata_size=Model_GetComponentOutputDataSize(wd->XDataSourceName.c_str(), wd->XOutputIndex);
@@ -720,7 +720,7 @@ void __fastcall TUWatchFrame::StepUpdate(void)
 	 y=&vydata[0];
 	 x=&vxdata[0];
 	 wd->XYSize=data_size;
-   }
+   } */
 
   // —мотрим способ обновлени€ данных наблюдени€...
   if(wd->FullUpdate)
@@ -1083,10 +1083,10 @@ void TUWatchFrame::ASaveParameters(RDK::USerStorageXML &xml)
    xml.WriteBool("Visible",NameList[seriesindex].Visible);
    xml.WriteInteger("LineWidth",NameList[seriesindex].LineWidth);
    xml.WriteString("XDataSourceName",NameList[seriesindex].XDataSourceName);
-   xml.WriteInteger("XOutputIndex",NameList[seriesindex].XOutputIndex);
+   xml.WriteString("XOutputIndex",NameList[seriesindex].XOutputIndex);
    xml.WriteInteger("XOutputElementIndex",NameList[seriesindex].XOutputElementIndex);
    xml.WriteString("YDataSourceName",NameList[seriesindex].YDataSourceName);
-   xml.WriteInteger("YOutputIndex",NameList[seriesindex].YOutputIndex);
+   xml.WriteString("YOutputIndex",NameList[seriesindex].YOutputIndex);
    xml.WriteInteger("YOutputElementIndex",NameList[seriesindex].YOutputElementIndex);
    xml.WriteInteger("XYSize", NameList[seriesindex].XYSize);
    xml.WriteFloat("WatchInterval", NameList[seriesindex].WatchInterval);
@@ -1171,10 +1171,10 @@ void TUWatchFrame::ALoadParameters(RDK::USerStorageXML &xml)
 	wd->Style=(TPenStyle)xml.ReadInteger("Style",psSolid);
 	wd->LineWidth=xml.ReadInteger("LineWidth",1);
 	wd->XDataSourceName=xml.ReadString("XDataSourceName","");
-	wd->XOutputIndex=xml.ReadInteger("XOutputIndex",0);
+	wd->XOutputIndex=xml.ReadString("XOutputIndex","");
 	wd->XOutputElementIndex=xml.ReadInteger("XOutputElementIndex",0);
 	wd->YDataSourceName=xml.ReadString("YDataSourceName","");
-	wd->YOutputIndex=xml.ReadInteger("YOutputIndex",0);
+	wd->YOutputIndex=xml.ReadString("YOutputIndex","");
 	wd->YOutputElementIndex=xml.ReadInteger("YOutputElementIndex",0);
 	wd->XYSize=xml.ReadInteger("XYSize", 1);
 	wd->Visible=xml.ReadBool("Visible",true);
@@ -1274,7 +1274,7 @@ void __fastcall TUWatchFrame::AddTimeMatrixWatch1Click(TObject *Sender)
   return;
 
   const RDK::MDMatrix<double> *ym=0;
-  ym=(const RDK::MDMatrix<double>*)(Model_GetComponentOutputAsMatrix(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName().c_str(), UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput()));
+  ym=(const RDK::MDMatrix<double>*)(Model_GetComponentOutputAsMatrix(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName().c_str(), UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput().c_str()));
   if(!ym)
    return;
 

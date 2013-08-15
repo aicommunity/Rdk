@@ -127,10 +127,10 @@ protected:		// User declarations
 		std::vector<std::string> CurrentPath;
 
 		// Выбранный выход объекта
-		int SelectedComponentOutput;
+		std::string SelectedComponentOutput;
 
 		// Выбранный вход объекта
-		int SelectedComponentInput;
+		std::string SelectedComponentInput;
 
 		// true если запрещено изменение значений дерева реестра
 		bool TreeReadOnlyFlag;
@@ -206,10 +206,10 @@ public:
 		const std::string& GetCurrentComponentId(void) const;
 
 		// Выбранный выход объекта
-		int GetSelectedComponentOutput(void) const;
+		const std::string& GetSelectedComponentOutput(void) const;
 
 		// Выбранный вход объекта
-		int GetSelectedComponentInput(void) const;
+		const std::string& GetSelectedComponentInput(void) const;
 
 		// Включение-выключение отображения параметров в виде xml
 		bool GetShowXMLComponentParameters(void) const;

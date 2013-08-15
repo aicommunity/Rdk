@@ -13,13 +13,17 @@ See file license.txt for more information
 #ifndef UBASOURCE_H
 #define UBASOURCE_H
 
-#include "UBAbstract.h"
+#include "../Engine/UNet.h"
+#include "UBitmap.h"
 
 namespace RDK {
 
 /// Простой класс-источник изображений
-class UBASource: public UBAbstract
+class UBASource: public UNet
 {
+protected:
+UPropertyOutputData<UBitmap, UBASource> Output;
+
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
@@ -48,13 +52,13 @@ virtual UBASource* New(void);
 // --------------------------
 protected:
 /// Восстановление настроек по умолчанию и сброс процесса счета
-virtual bool AFDefault(void);
+virtual bool ADefault(void);
 
 /// Сброс процесса счета.
-virtual bool AFReset(void);
+virtual bool AReset(void);
 
 /// Выполняет расчет этого объекта
-virtual bool AFCalculate(void);
+virtual bool ACalculate(void);
 // --------------------------
 };
 

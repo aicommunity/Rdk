@@ -615,11 +615,11 @@ void TVideoOutputFrame::SendToComponentIO(void)
  switch(LinkedMode)
  {
  case 0:
-  Model_SetComponentBitmapInput(LinkedComponentName.c_str(), LinkedIndex, &ReflectedBmpSource);
+  Model_SetComponentBitmapInput(LinkedComponentName.c_str(), LinkedIndex.c_str(), &ReflectedBmpSource);
  break;
 
  case 1:
-  Model_SetComponentBitmapOutput(LinkedComponentName.c_str(), LinkedIndex, &ReflectedBmpSource);
+  Model_SetComponentBitmapOutput(LinkedComponentName.c_str(), LinkedIndex.c_str(), &ReflectedBmpSource);
  break;
 
  case 2:
@@ -729,11 +729,12 @@ void TVideoOutputFrame::ABeforeCalculate(void)
   if(BmpSource.GetByteLength()>0)
   {
    if(GetNumEngines() == 1)
-	Model_SetComponentBitmapOutput("", FrameIndex, &BmpSource,true);
+	Model_SetComponentBitmapOutput("", "Output", &BmpSource,true); // Заглушка!!
+	//в модели должна быть возможность задания множества выходов
    else
    {
 	if(GetNumEngines()>FrameIndex)
- 	 MModel_SetComponentBitmapOutput(FrameIndex, "", 0, &BmpSource,true);
+ 	 MModel_SetComponentBitmapOutput(FrameIndex, "", "Output", &BmpSource,true);
    }
   }
  }
@@ -753,7 +754,7 @@ void TVideoOutputFrame::AUpdateInterface(void)
   switch(LinkedMode)
   {
   case 0:
-   SendImageToComponentInput1->Caption=String("Send Image To Input: ")+String(LinkedComponentName.c_str())+String("[")+IntToStr(LinkedIndex)+String("]");
+   SendImageToComponentInput1->Caption=String("Send Image To Input: ")+String(LinkedComponentName.c_str())+String("[")+String(LinkedIndex.c_str())+String("]");
    SendImageToComponentOutput1->Caption="Send Image To Component Output...";
    SendImageToComponentProperty1->Caption="Send Image To Component Property...";
   break;
@@ -761,7 +762,7 @@ void TVideoOutputFrame::AUpdateInterface(void)
   case 1:
    SendImageToComponentInput1->Caption="Send Image To Component Input...";
    SendImageToComponentProperty1->Caption="Send Image To Component Property...";
-   SendImageToComponentOutput1->Caption=String("Send Image To Output: ")+String(LinkedComponentName.c_str())+String("[")+IntToStr(LinkedIndex)+String("]");
+   SendImageToComponentOutput1->Caption=String("Send Image To Output: ")+String(LinkedComponentName.c_str())+String("[")+String(LinkedIndex.c_str())+String("]");
   break;
 
   case 2:
@@ -796,7 +797,7 @@ void TVideoOutputFrame::ASaveParameters(RDK::USerStorageXML &xml)
  xml.WriteString("LinkedComponentName",LinkedComponentName);
  xml.WriteString("LinkedComponentPropertyName",LinkedComponentPropertyName);
  xml.WriteInteger("LinkedMode",LinkedMode);
- xml.WriteInteger("LinkedIndex",LinkedIndex);
+ xml.WriteString("LinkedIndex",LinkedIndex);
 
  xml.WriteString("SelectedComponentSName",SelectedComponentSName);
  xml.WriteString("SelectedComponentStateName",SelectedComponentStateName);
@@ -814,7 +815,7 @@ void TVideoOutputFrame::ALoadParameters(RDK::USerStorageXML &xml)
  LinkedComponentName=xml.ReadString("LinkedComponentName","");
  LinkedComponentPropertyName=xml.ReadString("LinkedComponentPropertyName","");
  LinkedMode=xml.ReadInteger("LinkedMode",1);
- LinkedIndex=xml.ReadInteger("LinkedIndex",0);
+ LinkedIndex=xml.ReadString("LinkedIndex","");
 
  SelectedComponentSName=xml.ReadString("SelectedComponentSName","");
  SelectedComponentStateName=xml.ReadString("SelectedComponentStateName","");

@@ -18,7 +18,7 @@ See file license.txt for more information
 namespace RDK {
 
 // Класс конвеера обработки  изображений
-class UBPipeline: public UBAbstract
+class UBPipeline: public UNet
 {
 protected: // Типы данных
 
@@ -104,13 +104,13 @@ virtual UBParallelPipeline* New(void);
 // --------------------------
 protected:
 /// Восстановление настроек по умолчанию и сброс процесса счета
-virtual bool AFDefault(void);
+virtual bool ADefault(void);
 
 /// Сброс процесса счета.
-virtual bool AFReset(void);
+virtual bool AReset(void);
 
 /// Выполняет расчет этого объекта
-virtual bool AFCalculate(void);
+virtual bool ACalculate(void);
 // --------------------------
 };
 

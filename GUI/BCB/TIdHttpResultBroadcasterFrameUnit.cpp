@@ -107,7 +107,7 @@ void TIdHttpResultBroadcasterFrame::AAfterCalculate(void)
  if(EnableImagesTranslationCheckBox->Checked)
  {
   const RDK::UBitmap* bmp=(const RDK::UBitmap*)Model_GetComponentBitmapOutput(AnsiString(ImagesComponentNameLabeledEdit->Text).c_str(),
-												StrToInt(ImagesComponentOutputNameLabeledEdit->Text));
+												AnsiString(ImagesComponentOutputNameLabeledEdit->Text).c_str());
   if(bmp)
   {
    *bmp>>Bitmap;

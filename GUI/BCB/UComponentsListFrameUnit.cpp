@@ -214,39 +214,37 @@ void TUComponentsListFrame::UpdateIO(void)
   return;
  UpdateInterfaceFlag=true;
 
- int num=Model_GetComponentNumOutputs(GetSelectedComponentLongName().c_str());
- OutputsStringGrid->RowCount=1+num;
- OutputsStringGrid->ColCount=1+3;
+ std::string output_names=Model_GetComponentPropertiesList(GetSelectedComponentLongName().c_str(), ptOutput | pgPublic);
+ std::string input_names=Model_GetComponentPropertiesList(GetSelectedComponentLongName().c_str(), ptInput | pgPublic);
 
- OutputsStringGrid->Cells[0][0]="#";
- OutputsStringGrid->Cells[1][0]="Size";
- OutputsStringGrid->Cells[2][0]="Element Size";
- OutputsStringGrid->Cells[3][0]="Type";
+ std::vector<std::string> outputs,inputs;
+ RDK::separatestring(output_names,outputs,',');
+ RDK::separatestring(input_names,inputs,',');
 
- for(int i=0;i<num;i++)
+// int num=Model_GetComponentNumOutputs(GetSelectedComponentLongName().c_str());
+ OutputsStringGrid->RowCount=1+outputs.size();
+ OutputsStringGrid->ColCount=2;
+
+ OutputsStringGrid->Cells[0][0]="Name";
+ OutputsStringGrid->Cells[1][0]="Type";
+
+ for(int i=0;i<outputs.size();i++)
  {
-  OutputsStringGrid->Cells[0][i+1]=IntToStr(i);
-  OutputsStringGrid->Cells[1][i+1]=Model_GetComponentOutputDataSize(GetSelectedComponentLongName().c_str(), i);
-  OutputsStringGrid->Cells[2][i+1]=Model_GetComponentOutputDataSize(GetSelectedComponentLongName().c_str(), i);
-  OutputsStringGrid->Cells[3][i+1]=Model_GetComponentOutputElementSize(GetSelectedComponentLongName().c_str(), i);
+  OutputsStringGrid->Cells[0][i+1]=outputs[i].c_str();
+  OutputsStringGrid->Cells[1][i+1]="";
  }
 
+// num=Model_GetComponentNumInputs(GetSelectedComponentLongName().c_str());
+ InputsStringGrid->RowCount=1+inputs.size();
+ InputsStringGrid->ColCount=2;
 
- num=Model_GetComponentNumInputs(GetSelectedComponentLongName().c_str());
- InputsStringGrid->RowCount=1+num;
- InputsStringGrid->ColCount=1+3;
+ InputsStringGrid->Cells[0][0]="Name";
+ InputsStringGrid->Cells[1][0]="Type";
 
- InputsStringGrid->Cells[0][0]="#";
- InputsStringGrid->Cells[1][0]="Size";
- InputsStringGrid->Cells[2][0]="Element Size";
- InputsStringGrid->Cells[3][0]="Type";
-
- for(int i=0;i<num;i++)
+ for(int i=0;i<inputs.size();i++)
  {
-  InputsStringGrid->Cells[0][i+1]=IntToStr(i);
-  InputsStringGrid->Cells[1][i+1]=Model_GetComponentInputDataSize(GetSelectedComponentLongName().c_str(), i);
-  InputsStringGrid->Cells[2][i+1]=Model_GetComponentInputDataSize(GetSelectedComponentLongName().c_str(), i);
-  InputsStringGrid->Cells[3][i+1]=Model_GetComponentInputElementSize(GetSelectedComponentLongName().c_str(), i);
+  InputsStringGrid->Cells[0][i+1]=inputs[i].c_str();
+  InputsStringGrid->Cells[1][i+1]="";
  }
 
  UpdateInterfaceFlag=false;
@@ -536,13 +534,13 @@ const std::string& TUComponentsListFrame::GetCurrentComponentId(void) const
 }
 
 // Выбранный выход объекта
-int TUComponentsListFrame::GetSelectedComponentOutput(void) const
+const std::string& TUComponentsListFrame::GetSelectedComponentOutput(void) const
 {
  return SelectedComponentOutput;
 }
 
 // Выбранный вход объекта
-int TUComponentsListFrame::GetSelectedComponentInput(void) const
+const std::string& TUComponentsListFrame::GetSelectedComponentInput(void) const
 {
  return SelectedComponentInput;
 }
@@ -780,7 +778,7 @@ void __fastcall TUComponentsListFrame::StateHeaderControlSectionClick(THeaderCon
 
 void __fastcall TUComponentsListFrame::OutputsStringGridClick(TObject *Sender)
 {
- SelectedComponentOutput=OutputsStringGrid->Row-1;
+ SelectedComponentOutput=AnsiString(OutputsStringGrid->Cells[0][OutputsStringGrid->Row]).c_str();
 }
 //---------------------------------------------------------------------------
 
@@ -812,7 +810,7 @@ void __fastcall TUComponentsListFrame::InputsStringGridDblClick(TObject *Sender)
 
 void __fastcall TUComponentsListFrame::InputsStringGridClick(TObject *Sender)
 {
- SelectedComponentInput=InputsStringGrid->Row-1;
+ SelectedComponentInput=AnsiString(InputsStringGrid->Cells[0][InputsStringGrid->Row]).c_str();
 }
 //---------------------------------------------------------------------------
 

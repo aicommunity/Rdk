@@ -143,6 +143,10 @@ object TldTrackingForm: TTldTrackingForm
         Caption = 'PointsTabSheet'
         ImageIndex = 1
         OnShow = PointsTabSheetShow
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object SendPointsButton: TButton
           Left = 0
           Top = 122
@@ -228,24 +232,40 @@ object TldTrackingForm: TTldTrackingForm
       ExplicitHeight = 451
       inherited GroupBox: TGroupBox
         Width = 572
-        Height = 379
+        Height = 329
         ExplicitWidth = 572
-        ExplicitHeight = 379
+        ExplicitHeight = 329
         inherited Image: TImage
           Width = 568
-          Height = 362
+          Height = 312
           ExplicitWidth = 527
           ExplicitHeight = 268
         end
         inherited VideoGrabber: TVideoGrabber
           Width = 568
-          Height = 362
+          Height = 312
           ExplicitWidth = 568
           ExplicitHeight = 362
         end
+        inherited GroupBox1: TGroupBox
+          Width = 568
+          Height = 312
+          ExplicitWidth = 568
+          ExplicitHeight = 312
+          inherited UHttpServerFrame: TUHttpServerFrame
+            Width = 564
+            Height = 295
+            ExplicitWidth = 564
+            ExplicitHeight = 295
+            inherited Image1: TImage
+              Width = 564
+              Height = 295
+            end
+          end
+        end
       end
       inherited Panel1: TPanel
-        Top = 410
+        Top = 375
         Width = 572
         ExplicitTop = 410
         ExplicitWidth = 572
@@ -267,7 +287,7 @@ object TldTrackingForm: TTldTrackingForm
         end
       end
       inherited Panel2: TPanel
-        Top = 379
+        Top = 329
         Width = 572
         Visible = False
         ExplicitTop = 379
@@ -284,6 +304,10 @@ object TldTrackingForm: TTldTrackingForm
           Left = 499
           ExplicitLeft = 499
         end
+      end
+      inherited Panel3: TPanel
+        Top = 416
+        Width = 572
       end
     end
   end

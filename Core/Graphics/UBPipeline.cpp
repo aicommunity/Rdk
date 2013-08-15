@@ -118,19 +118,19 @@ UBParallelPipeline* UBParallelPipeline::New(void)
 // Скрытые методы управления счетом
 // --------------------------
 // Восстановление настроек по умолчанию и сброс процесса счета
-bool UBParallelPipeline::AFDefault(void)
+bool UBParallelPipeline::ADefault(void)
 {
  return true;
 }
 
 // Сброс процесса счета.
-bool UBParallelPipeline::AFReset(void)
+bool UBParallelPipeline::AReset(void)
 {
  return true;
 }
 
 // Выполняет расчет этого объекта
-bool UBParallelPipeline::AFCalculate(void)
+bool UBParallelPipeline::ACalculate(void)
 {
  return true;
 }

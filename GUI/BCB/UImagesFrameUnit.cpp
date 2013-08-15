@@ -58,7 +58,7 @@ void TUImagesFrame::SetNumCells(int width, int height)
  {
   Images[i].resize(height);
   StringIds[i].resize(height);
-  ComponentIndexes[i].resize(height,-1);
+  ComponentIndexes[i].resize(height);
   MouseClickComponents[i].resize(height);
   for(size_t j=0;j<Images[i].size();j++)
    Images[i][j]=new TImage(this);
@@ -287,10 +287,10 @@ void TUImagesFrame::AUpdateInterface(void)
   {
    for(size_t j=0;j<Images[i].size();j++)
    {
-	if(ComponentIndexes[i][j] < 0)
+	if(ComponentIndexes[i][j].empty())
 	 continue;
 
-	const RDK::UBitmap* bmp=(const RDK::UBitmap*)Model_GetComponentOutput(StringIds[i][j].c_str(), ComponentIndexes[i][j]);
+	const RDK::UBitmap* bmp=(const RDK::UBitmap*)Model_GetComponentOutput(StringIds[i][j].c_str(), ComponentIndexes[i][j].c_str());
 	if(bmp)
 	 SetBitmap(i, j, *bmp);
    }
@@ -303,7 +303,7 @@ void TUImagesFrame::AUpdateInterface(void)
  {
   if(DrawGrid->Col < 0 || DrawGrid->Row <0)
    return;
-  const RDK::UBitmap* bmp=(const RDK::UBitmap*)Model_GetComponentOutput(StringIds[DrawGrid->Col][DrawGrid->Row].c_str(), ComponentIndexes[DrawGrid->Col][DrawGrid->Row]);
+  const RDK::UBitmap* bmp=(const RDK::UBitmap*)Model_GetComponentOutput(StringIds[DrawGrid->Col][DrawGrid->Row].c_str(), ComponentIndexes[DrawGrid->Col][DrawGrid->Row].c_str());
   if(bmp)
    SetBitmap(DrawGrid->Col, DrawGrid->Row, *bmp);
 
@@ -333,7 +333,7 @@ void TUImagesFrame::ASaveParameters(RDK::USerStorageXML &xml)
   {
    std::string name=RDK::sntoa(int(i))+std::string("_")+RDK::sntoa(int(j));
    xml.WriteString(std::string("CellName")+name,StringIds[i][j].c_str());
-   xml.WriteInteger(std::string("CellIndex")+name,ComponentIndexes[i][j]);
+   xml.WriteString(std::string("CellIndex")+name,ComponentIndexes[i][j]);
 
    xml.WriteString(std::string("CellMouseClickComponent")+name,MouseClickComponents[i][j].first.c_str());
    xml.WriteString(std::string("CellMouseClickProperty")+name,MouseClickComponents[i][j].second.c_str());
@@ -360,7 +360,7 @@ void TUImagesFrame::ALoadParameters(RDK::USerStorageXML &xml)
   {
    std::string name=RDK::sntoa(int(i))+std::string("_")+RDK::sntoa(int(j));
    StringIds[i][j]=xml.ReadString(std::string("CellName")+name,"");
-   ComponentIndexes[i][j]=xml.ReadInteger(std::string("CellIndex")+name,0);
+   ComponentIndexes[i][j]=xml.ReadString(std::string("CellIndex")+name,"");
 
    MouseClickComponents[i][j].first=xml.ReadString(std::string("CellMouseClickComponent")+name,"");
    MouseClickComponents[i][j].second=xml.ReadString(std::string("CellMouseClickProperty")+name,"");

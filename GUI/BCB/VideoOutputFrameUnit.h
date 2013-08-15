@@ -167,7 +167,7 @@ std::string LinkedComponentName;
 int LinkedMode;
 
 // ¬ыход, к которому прив€зан источник
-int LinkedIndex;
+std::string LinkedIndex;
 
 // —войство, к которому прив€зан источник
 std::string LinkedComponentPropertyName;

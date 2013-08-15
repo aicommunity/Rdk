@@ -1172,6 +1172,100 @@ int UEngine::Env_SetCurrentDataDir(const char *dir)
  return 0;
 }
 
+// Задает число входов среды
+void UEngine::Env_SetNumInputImages(int number)
+{
+ //GetEnvironment()->SetNumInputImages(number);
+}
+
+// Задает число выходов среды
+void UEngine::Env_SetNumOutputImages(int number)
+{
+ //GetEnvironment()->SetNumOutputImages(number);
+}
+
+// Возвращает число входов среды
+int UEngine::Env_GetNumInputImages(void)
+{
+ return 0;//return GetEnvironment()->GetNumInputImages();
+}
+
+// Возвращает число выходов среды
+int UEngine::Env_GetNumOutputImages(void)
+{
+ return 0;//return GetEnvironment()->GetNumOutputImages();
+}
+
+// Задает разрешение по умолчанию (рабочее разрешение)
+void UEngine::Env_SetInputRes(int number, int width, int height)
+{
+ //GetEnvironment()->SetInputImageRes(number,width,height);
+}
+
+// Задает флаг отражения входного изображения вокруг горизонтальной оси
+void UEngine::Env_SetReflectionXFlag(bool value)
+{
+ //GetEnvironment()->SetReflectionXFlag(value);
+}
+
+// Возвращает разрешение по умолчанию (рабочее разрешение)
+int UEngine::Env_GetInputImageWidth(int number)
+{
+ return 0;//return GetEnvironment()->GetInputImageWidth(number);
+}
+
+int UEngine::Env_GetInputImageHeight(int number)
+{
+ return 0;//return GetEnvironment()->GetInputImageHeight(number);
+}
+
+int UEngine::Env_GetInputImageColorModel(int number)
+{
+ return 0;//return GetEnvironment()->GetInputImageColorModel(number);
+}
+
+// Возвращает текущее выходное разрешение
+int UEngine::Env_GetOutputImageWidth(int number)
+{
+ return 0;// return GetEnvironment()->GetOutputImageWidth(number);
+}
+
+int UEngine::Env_GetOutputImageHeight(int number)
+{
+ return 0;// return GetEnvironment()->GetOutputImageHeight(number);
+}
+
+int UEngine::Env_GetOutputImageColorModel(int number)
+{
+ return 0;// return GetEnvironment()->GetOutputImageColorModel(number);
+}
+
+void UEngine::Env_SetInputImage(int number, unsigned char* image, int width, int height,int cmodel)
+{
+/* TempBmp.AttachBuffer(width,height,image,RDK::UBMColorModel(cmodel));
+ BResizeEdges.SetNewWidth(GetEnvironment()->GetInputImageWidth(number));
+ BResizeEdges.SetNewHeight(GetEnvironment()->GetInputImageHeight(number));
+ BResizeEdges(TempBmp,TempBmp2);
+ GetEnvironment()->SetInputImage(number,TempBmp2);
+ TempBmp.DetachBuffer();*/
+}
+
+unsigned char* UEngine::Env_GetInputImage(int index)
+{
+ return 0;// return GetEnvironment()->GetInputImage(index).GetData();
+}
+
+unsigned char* UEngine::Env_GetOutputImage(int index)
+{
+ return 0;// return GetEnvironment()->GetOutputImage(index).GetData();
+}
+
+unsigned char* UEngine::Env_GetOutputImageY8(int index)
+{
+ return 0;// return GetEnvironment()->GetOutputImage(index).GetData();
+}
+
+
 
 // Методы управления моделью
 // ----------------------------
@@ -1664,8 +1758,8 @@ const char* UEngine::Model_GetComponentPropertiesList(const char* stringid, unsi
 	if(TempString.size()>0)
 	 TempString+=",";
 	TempString+=I->first;
-	TempString+=":";
-	TempString+=sntoa(I->second.Property->GetMinRange());
+//	TempString+=":";
+//	TempString+=sntoa(I->second.Property->GetMinRange());
    }
    ++I;
   }
@@ -3384,7 +3478,7 @@ int UEngine::Model_SaveComponentDrawInfo(RDK::UNet* cont, RDK::USerStorageXML *s
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
 // возвращаемое значение имеет фактический тип RDK::MDMatrix*
 // если выход не содержит данных такого типа, то возвращает 0
-const /* RDK::MDMatrix* */void* UEngine::Model_GetComponentOutputAsMatrix(const char *stringid, int index)
+const /* RDK::MDMatrix* */void* UEngine::Model_GetComponentOutputAsMatrix(const char *stringid, const char *property_name)
 {
  try
  {
@@ -3395,7 +3489,8 @@ const /* RDK::MDMatrix* */void* UEngine::Model_GetComponentOutputAsMatrix(const 
 
   // Ищем указатель на выходные данные
   UIProperty* output_property=0;
-  cont->FindOutputProperty(index, output_property);
+//  cont->FindOutputProperty(index, output_property);
+  output_property=cont->FindProperty(property_name);
   if(!output_property)
    return 0;
 
@@ -3425,6 +3520,201 @@ const /* RDK::MDMatrix* */void* UEngine::Model_GetComponentOutputAsMatrix(const 
  return 0;
 }
 
+// Возвращает указатель на выход с индексом 'index' компонента 'id'
+const RDK::UBitmap* UEngine::Model_GetComponentOutput(const char *stringid, const char *property_name)
+{
+ try
+ {
+  if(!property_name)
+   return 0;
+
+  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
+  UEPtr<UIProperty> iproperty=cont->FindProperty(property_name);
+  if(iproperty)
+   return (const RDK::UBitmap*)iproperty->GetMemoryArea();
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+
+ return 0;
+/*
+ try {
+  UEPtr<RDK::UBAbstract> cont=dynamic_pointer_cast<RDK::UBAbstract>(FindComponent(stringid));
+
+  if(!cont)
+   return 0;
+
+  if(index<0 || index >= cont->GetNumOutputs())
+   return 0;
+
+  return cont->GetOutputs()[index];
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;   */
+}
+
+// Возвращает указатель на выход с индексом 'index' компонента 'id'
+const RDK::UBitmap* UEngine::Model_GetComponentBitmapOutput(const char *stringid, const char *property_name)
+{
+/*
+ try {
+  UEPtr<RDK::UBAbstract> cont=dynamic_pointer_cast<RDK::UBAbstract>(FindComponent(stringid));
+
+  if(!cont)
+   return 0;
+
+  if(index<0 || index >= cont->GetNumOutputs())
+   return 0;
+
+  return cont->GetOutputs()[index];
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;   */
+ return Model_GetComponentOutput(stringid, property_name);
+}
+
+// Возвращает указатель на вход с индексом 'index' компонента 'id'
+const RDK::UBitmap* UEngine::Model_GetComponentBitmapInput(const char *stringid, const char *property_name)
+{
+ try
+ {
+  if(!property_name)
+   return 0;
+
+  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
+  UEPtr<UIProperty> iproperty=cont->FindProperty(property_name);
+  if(iproperty)
+   return (const RDK::UBitmap*)iproperty->GetMemoryArea();
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+
+ return 0;
+/*
+ try {
+  UEPtr<RDK::UBAbstract> cont=dynamic_pointer_cast<RDK::UBAbstract>(FindComponent(stringid));
+
+  if(!cont)
+   return 0;
+
+  if(index<0 || index >= cont->GetNumInputs())
+   return 0;
+
+  return cont->GetInputs()[index];
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;  */
+}
+
+// Замещает изображение выхода с индексом 'index' компонента 'id'
+void UEngine::Model_SetComponentBitmapOutput(const char *stringid, const char *property_name, const RDK::UBitmap* bmp, bool reflect)
+{
+ try{
+  if(!bmp || !property_name)
+   return;
+  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
+  UEPtr<UIProperty> iproperty=cont->FindProperty(property_name);
+  UEPtr<UVBaseDataProperty<UBitmap> > property=dynamic_pointer_cast<UVBaseDataProperty<UBitmap> >(iproperty);
+  if(reflect)
+  {
+   const_cast<UBitmap*>(bmp)->ReflectionX(&TempBmp);
+   property->SetData(TempBmp);
+  }
+  else
+   property->SetData(*bmp);
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+
+// Model_SetComponentPropertyData(stringid, "Output", bmp);
+
+/*
+ try{
+  UEPtr<RDK::UBAbstract> cont=dynamic_pointer_cast<RDK::UBAbstract>(FindComponent(stringid));
+
+  if(!cont)
+   return;
+
+  if(index<0 || index >= cont->GetNumOutputs())
+   return;
+
+  UBitmap *output=cont->GetOutputs()[index];
+
+  if(!output)
+   return;
+
+  if(reflect)
+   const_cast<UBitmap*>(bmp)->ReflectionX(output);
+  else
+   *output=*bmp;
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ } */
+}
+
+// Замещает изображение входа с индексом 'index' компонента 'id'
+void UEngine::Model_SetComponentBitmapInput(const char *stringid, const char *property_name, const RDK::UBitmap* const bmp, bool reflect)
+{
+ try{
+  if(!bmp || !property_name)
+   return;
+  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
+  UEPtr<UIProperty> iproperty=cont->FindProperty(property_name);
+  UEPtr<UVBaseDataProperty<UBitmap> > property=dynamic_pointer_cast<UVBaseDataProperty<UBitmap> >(iproperty);
+  if(reflect)
+  {
+   const_cast<UBitmap*>(bmp)->ReflectionX(&TempBmp);
+   property->SetData(TempBmp);
+  }
+  else
+   property->SetData(*bmp);
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+/*
+ try {
+  UEPtr<RDK::UBAbstract> cont=dynamic_pointer_cast<RDK::UBAbstract>(FindComponent(stringid));
+
+  if(!cont)
+   return;
+
+  if(index<0 || index >= cont->GetNumInputs())
+   return;
+
+  UBitmap *input=cont->GetInputs()[index];
+
+  if(!input)
+   return;
+
+  if(reflect)
+   const_cast<UBitmap*>(bmp)->ReflectionX(input);
+  else
+   *input=*bmp;
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }*/
+}
 
 
 // --------------------------

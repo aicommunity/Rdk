@@ -1597,7 +1597,7 @@ const char* RDK_CALL MEngine_GetUnreadLog(int engine_index)
 // Задает число входов среды
 void RDK_CALL Env_SetNumInputImages(int number)
 {
- return RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Env_SetNumInputImages(number);
+ return PEngine->Env_SetNumInputImages(number);
 }
 
 void RDK_CALL MEnv_SetNumInputImages(int engine_index, int number)
@@ -1605,13 +1605,13 @@ void RDK_CALL MEnv_SetNumInputImages(int engine_index, int number)
  if(engine_index<0 || engine_index>=GetNumEngines())
   return;
 
- return dynamic_cast<RDK::UBEngine*>(DllManager.EngineList[engine_index])->Env_SetNumInputImages(number);
+ return DllManager.EngineList[engine_index]->Env_SetNumInputImages(number);
 }
 
 // Задает число выходов среды
 void RDK_CALL Env_SetNumOutputImages(int number)
 {
- return RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Env_SetNumOutputImages(number);
+ return PEngine->Env_SetNumOutputImages(number);
 }
 
 void RDK_CALL MEnv_SetNumOutputImages(int engine_index, int number)
@@ -1619,25 +1619,25 @@ void RDK_CALL MEnv_SetNumOutputImages(int engine_index, int number)
  if(engine_index<0 || engine_index>=GetNumEngines())
   return;
 
- return dynamic_cast<RDK::UBEngine*>(DllManager.EngineList[engine_index])->Env_SetNumOutputImages(number);
+ return DllManager.EngineList[engine_index]->Env_SetNumOutputImages(number);
 }
 
 // Задает число входов среды
 int RDK_CALL Env_GetNumInputImages(void)
 {
- return RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Env_GetNumInputImages();
+ return PEngine->Env_GetNumInputImages();
 }
 
 // Задает число выходов среды
 int RDK_CALL Env_GetNumOutputImages(void)
 {
- return RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Env_GetNumInputImages();
+ return PEngine->Env_GetNumInputImages();
 }
 
 // Задает разрешение по умолчанию (рабочее разрешение)
 void RDK_CALL Env_SetInputRes(int number, int width, int height)
 {
- return RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Env_SetInputRes(number, width, height);
+ return PEngine->Env_SetInputRes(number, width, height);
 }
 
 void RDK_CALL MEnv_SetInputRes(int engine_index, int number, int width, int height)
@@ -1645,19 +1645,19 @@ void RDK_CALL MEnv_SetInputRes(int engine_index, int number, int width, int heig
  if(engine_index<0 || engine_index>=GetNumEngines())
   return;
 
- return dynamic_cast<RDK::UBEngine*>(DllManager.EngineList[engine_index])->Env_SetInputRes(number, width, height);
+ return DllManager.EngineList[engine_index]->Env_SetInputRes(number, width, height);
 }
 
 // Задает данные изображения
 void RDK_CALL Env_SetInputImage(int number, unsigned char* image, int width, int height,int cmodel)
 {
- return RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Env_SetInputImage(number, image, width, height,cmodel);
+ return PEngine->Env_SetInputImage(number, image, width, height,cmodel);
 }
 
 // Задает флаг отражения входного изображения вокруг горизонтальной оси
 RDK_LIB_TYPE void Env_SetReflectionXFlag(bool value)
 {
- return RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Env_SetReflectionXFlag(value);
+ return PEngine->Env_SetReflectionXFlag(value);
 }
 
 RDK_LIB_TYPE void MEnv_SetReflectionXFlag(int engine_index, bool value)
@@ -1665,55 +1665,55 @@ RDK_LIB_TYPE void MEnv_SetReflectionXFlag(int engine_index, bool value)
  if(engine_index<0 || engine_index>=GetNumEngines())
   return;
 
- return dynamic_cast<RDK::UBEngine*>(DllManager.EngineList[engine_index])->Env_SetReflectionXFlag(value);
+ return DllManager.EngineList[engine_index]->Env_SetReflectionXFlag(value);
 }
 
 
 // Возвращает разрешение по умолчанию (рабочее разрешение)
 int RDK_CALL Env_GetInputImageWidth(int number)
 {
- return RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Env_GetInputImageWidth(number);
+ return PEngine->Env_GetInputImageWidth(number);
 }
 
 int RDK_CALL Env_GetInputImageHeight(int number)
 {
- return RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Env_GetInputImageHeight(number);
+ return PEngine->Env_GetInputImageHeight(number);
 }
 
 int RDK_CALL Env_GetInputImageColorModel(int number)
 {
- return RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Env_GetInputImageColorModel(number);
+ return PEngine->Env_GetInputImageColorModel(number);
 }
 
 // Возвращает текущее выходное разрешение
 int RDK_CALL Env_GetOutputImageWidth(int number)
 {
- return RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Env_GetOutputImageWidth(number);
+ return PEngine->Env_GetOutputImageWidth(number);
 }
 
 int RDK_CALL Env_GetOutputImageHeight(int number)
 {
- return RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Env_GetOutputImageHeight(number);
+ return PEngine->Env_GetOutputImageHeight(number);
 }
 
 int RDK_CALL Env_GetOutputImageColorModel(int number)
 {
- return RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Env_GetOutputImageColorModel(number);
+ return PEngine->Env_GetOutputImageColorModel(number);
 }
 
 unsigned char* RDK_CALL Env_GetInputImage(int index)
 {
- return RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Env_GetInputImage(index);
+ return PEngine->Env_GetInputImage(index);
 }
 
 unsigned char* RDK_CALL Env_GetOutputImage(int index)
 {
- return RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Env_GetOutputImage(index);
+ return PEngine->Env_GetOutputImage(index);
 }
 
 unsigned char* RDK_CALL Env_GetOutputImageY8(int index)
 {
- return RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Env_GetOutputImageY8(index);
+ return PEngine->Env_GetOutputImageY8(index);
 }
 // --------------------------
 
@@ -1723,44 +1723,44 @@ unsigned char* RDK_CALL Env_GetOutputImageY8(int index)
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
 // возвращаемое значение имеет фактический тип RDK::MDMatrix*
 // если выход не содержит данных такого типа, то возвращает 0
-const /* RDK::MDMatrix* */void* RDK_CALL Model_GetComponentOutputAsMatrix(const char *stringid, int index)
+const /* RDK::MDMatrix* */void* RDK_CALL Model_GetComponentOutputAsMatrix(const char *stringid, const char *property_name)
 {
- return (PEngine)->Model_GetComponentOutputAsMatrix(stringid, index);
+ return (PEngine)->Model_GetComponentOutputAsMatrix(stringid, property_name);
 }
 
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
-const /* RDK::UBitmap* */ void* RDK_CALL Model_GetComponentOutput(const char *stringid, int index)
+const /* RDK::UBitmap* */ void* RDK_CALL Model_GetComponentOutput(const char *stringid, const char *property_name)
 {
- return RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Model_GetComponentOutput(stringid, index);
+ return PEngine->Model_GetComponentOutput(stringid, property_name);
 }
 
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
-const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapOutput(const char *stringid, int index)
+const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapOutput(const char *stringid, const char *property_name)
 {
- return RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Model_GetComponentBitmapOutput(stringid, index);
+ return PEngine->Model_GetComponentBitmapOutput(stringid, property_name);
 }
 
 // Возвращает указатель на вход с индексом 'index' компонента 'id'
-const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapInput(const char *stringid, int index)
+const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapInput(const char *stringid, const char *property_name)
 {
- return RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Model_GetComponentBitmapInput(stringid, index);
+ return PEngine->Model_GetComponentBitmapInput(stringid, property_name);
 }
 
 // Замещает изображение выхода с индексом 'index' компонента 'id'
-void RDK_CALL Model_SetComponentBitmapOutput(const char *stringid, int index, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
+void RDK_CALL Model_SetComponentBitmapOutput(const char *stringid, const char *property_name, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
 {
- RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Model_SetComponentBitmapOutput(stringid, index, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
+ PEngine->Model_SetComponentBitmapOutput(stringid, property_name, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
 }
 
-void RDK_CALL MModel_SetComponentBitmapOutput(int engine_index, const char *stringid, int index, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
+void RDK_CALL MModel_SetComponentBitmapOutput(int engine_index, const char *stringid, const char *property_name, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
 {
- dynamic_cast<RDK::UBEngine*>(DllManager.EngineList[engine_index])->Model_SetComponentBitmapOutput(stringid, index, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
+ DllManager.EngineList[engine_index]->Model_SetComponentBitmapOutput(stringid, property_name, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
 }
 
 // Замещает изображение входа с индексом 'index' компонента 'id'
-void RDK_CALL Model_SetComponentBitmapInput(const char *stringid, int index, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
+void RDK_CALL Model_SetComponentBitmapInput(const char *stringid, const char *property_name, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
 {
- RDK::dynamic_pointer_cast<RDK::UBEngine>(PEngine)->Model_SetComponentBitmapInput(stringid, index, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
+ PEngine->Model_SetComponentBitmapInput(stringid, property_name, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
 }
 // --------------------------
 

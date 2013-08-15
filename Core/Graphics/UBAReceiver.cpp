@@ -23,6 +23,8 @@ namespace RDK {
 // Конструкторы и деструкторы
 // --------------------------
 UBAReceiver::UBAReceiver(void)
+: Input("Input",this,0),
+  Output("Output",this,0)
 {
 }
 
@@ -45,26 +47,21 @@ UBAReceiver* UBAReceiver::New(void)
 // Скрытые методы управления счетом
 // --------------------------
 /// Восстановление настроек по умолчанию и сброс процесса счета
-bool UBAReceiver::AFDefault(void)
+bool UBAReceiver::ADefault(void)
 {
  return true;
 }
 
 /// Сброс процесса счета.
-bool UBAReceiver::AFReset(void)
+bool UBAReceiver::AReset(void)
 {
  return true;
 }
 
 /// Выполняет расчет этого объекта
-bool UBAReceiver::AFCalculate(void)
+bool UBAReceiver::ACalculate(void)
 {
- int min=(Inputs.GetSize()<Outputs.GetSize())?Inputs.GetSize():Outputs.GetSize();
- for(int i=0;i<min;i++)
- {
-  *Outputs[i]=*Inputs[i];
- }
-
+ *Output=*Input;
  return true;
 }
 // --------------------------

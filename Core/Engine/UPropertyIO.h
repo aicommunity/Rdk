@@ -106,6 +106,12 @@ UPropertyInput(const string &name, OwnerT * const owner, int min_range, int inpu
 // --------------------------
 // Методы управления указателем
 // --------------------------
+// Возвращает true если вход имеет подключение
+bool IsConnected(void) const
+{
+ return (this->v)?true:false;
+}
+
 // Возвращает указатель на данные входа
 void const * GetPointer(int index) const
 {
@@ -158,6 +164,12 @@ UPropertyInputData(const string &name, OwnerT * const owner, int min_range, int 
 // --------------------------
 // Методы управления указателем
 // --------------------------
+// Возвращает true если вход имеет подключение
+bool IsConnected(void) const
+{
+ return (this->PData)?true:false;
+}
+
 // Возвращает указатель на данные входа
 void const * GetPointer(int index) const
 {
