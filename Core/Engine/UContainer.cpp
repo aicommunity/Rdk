@@ -195,6 +195,19 @@ bool UContainer::CheckLongId(const std::string &id) const
  return true;
 }
 
+// ”правление средой выполнени€ этого объекта
+bool UContainer::SetEnvironment(UEPtr<UEnvironment> environment)
+{
+ if(!UComponent::SetEnvironment(environment))
+  return false;
+
+ bool res=true;
+
+ for(int i=0;i<NumComponents;i++)
+  res&=PComponents[i]->SetEnvironment(environment);
+
+ return res;
+}
 // --------------------------
 
 // --------------------------

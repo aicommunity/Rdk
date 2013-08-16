@@ -204,6 +204,9 @@ std::string& GetLongId(UEPtr<UContainer> mainowner, std::string &buffer) const;
 bool CheckLongId(const ULongId &id) const;
 // Промежуточный вариант одноименного метода, обрабатывающего длинное имя
 bool CheckLongId(const std::string &id) const;
+
+// Управление средой выполнения этого объекта
+virtual bool SetEnvironment(UEPtr<UEnvironment> environment);
 // --------------------------
 // --------------------------
 

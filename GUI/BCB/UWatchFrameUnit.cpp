@@ -762,9 +762,9 @@ void __fastcall TUWatchFrame::StepUpdate(void)
 	 ym=(const RDK::MDMatrix<double>*)(Model_GetComponentOutputAsMatrix(wd->YDataSourceName.c_str(), wd->YOutputIndex.c_str()));
 	 if(!ym)
 	 {
-//	  y=(double*)Model_GetComponentOutputData(wd->YDataSourceName.c_str(), wd->YOutputIndex);
-//	  if(!y)
-//	   continue;
+	  y=(double*)Model_GetComponentOutputData(wd->YDataSourceName.c_str(), wd->YOutputIndexOld);
+	  if(!y)
+	   continue;
 	 }
 	 else
 	 {
