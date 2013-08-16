@@ -29,10 +29,11 @@ public:		// User declarations
 protected:
 
 std::string LibrariesListNames;
-std::vector<std::string> LibraryNames;
+std::vector<std::string> LibraryNames,NewLibraryNames;
 std::vector<std::string> TempLibraryNames;
 std::map<std::string, std::vector<std::string> > LibraryClassNames;
 std::vector<std::string> ClassNames;
+bool RepaintNeeded;
 
 public:
 // Отрисовка фрейма

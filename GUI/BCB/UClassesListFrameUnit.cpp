@@ -28,17 +28,23 @@ void TUClassesListFrame::AUpdateInterface(void)
 // LibrariesListNames=lib_list;
 // std::ve
 
+  RepaintNeeded=false;
   int num_classes=0;
   LibraryClassNames.clear();
-  LibraryNames.resize(Storage_GetNumClassLibraries());
+  NewLibraryNames.resize(Storage_GetNumClassLibraries());
   for(size_t i=0;i<LibraryNames.size();i++)
   {
-   LibraryNames[i]=Storage_GetClassLibraryNameByIndex(i);
+   NewLibraryNames[i]=Storage_GetClassLibraryNameByIndex(i);
    const char* class_names=Storage_GetLibraryClassNamesByIndex(i);
    num_classes+=RDK::separatestring(std::string(class_names),TempLibraryNames, ',');
    sort(TempLibraryNames.begin(),TempLibraryNames.end());
-   LibraryClassNames[LibraryNames[i]]=TempLibraryNames;
+   LibraryClassNames[NewLibraryNames[i]]=TempLibraryNames;
   }
+
+  if(NewLibraryNames == LibraryNames)
+   return;
+
+  LibraryNames=NewLibraryNames;
 
   TTreeNode* sel=TreeView->Selected;
   String SelectedName;
@@ -46,6 +52,7 @@ void TUClassesListFrame::AUpdateInterface(void)
   if(sel)
    SelectedName=sel->Text;
 
+  TreeView->Perform(WM_SETREDRAW, 0, 0);
   TreeView->Items->Clear();
   for(size_t i=0;i<LibraryNames.size();i++)
   {
@@ -62,6 +69,7 @@ void TUClassesListFrame::AUpdateInterface(void)
 
    tn->Expand(true);
   }
+  TreeView->Perform(WM_SETREDRAW, 1, 0);
  }
  else
  {
