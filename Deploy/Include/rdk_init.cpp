@@ -1728,10 +1728,20 @@ const /* RDK::MDMatrix* */void* RDK_CALL Model_GetComponentOutputAsMatrix(const 
  return (PEngine)->Model_GetComponentOutputAsMatrix(stringid, property_name);
 }
 
+const /* RDK::MDMatrix* */void* RDK_CALL Model_GetComponentOutputAsMatrixByIndex(const char *stringid, int  index)
+{
+ return (PEngine)->Model_GetComponentOutputAsMatrix(stringid, index);
+}
+
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
 const /* RDK::UBitmap* */ void* RDK_CALL Model_GetComponentOutput(const char *stringid, const char *property_name)
 {
  return PEngine->Model_GetComponentOutput(stringid, property_name);
+}
+
+const /* RDK::UBitmap* */ void* RDK_CALL Model_GetComponentOutputByIndex(const char *stringid, int index)
+{
+ return PEngine->Model_GetComponentOutput(stringid, index);
 }
 
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
@@ -1740,10 +1750,20 @@ const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapOutput(const cha
  return PEngine->Model_GetComponentBitmapOutput(stringid, property_name);
 }
 
+const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapOutputByIndex(const char *stringid, int index)
+{
+ return PEngine->Model_GetComponentBitmapOutput(stringid, index);
+}
+
 // Возвращает указатель на вход с индексом 'index' компонента 'id'
 const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapInput(const char *stringid, const char *property_name)
 {
  return PEngine->Model_GetComponentBitmapInput(stringid, property_name);
+}
+
+const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapInputByIndex(const char *stringid, int index)
+{
+ return PEngine->Model_GetComponentBitmapInput(stringid, index);
 }
 
 // Замещает изображение выхода с индексом 'index' компонента 'id'
@@ -1757,10 +1777,25 @@ void RDK_CALL MModel_SetComponentBitmapOutput(int engine_index, const char *stri
  DllManager.EngineList[engine_index]->Model_SetComponentBitmapOutput(stringid, property_name, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
 }
 
+void RDK_CALL Model_SetComponentBitmapOutput(const char *stringid, int index, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
+{
+ PEngine->Model_SetComponentBitmapOutput(stringid, index, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
+}
+
+void RDK_CALL MModel_SetComponentBitmapOutput(int engine_index, const char *stringid, int index, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
+{
+ DllManager.EngineList[engine_index]->Model_SetComponentBitmapOutput(stringid, index, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
+}
+
 // Замещает изображение входа с индексом 'index' компонента 'id'
 void RDK_CALL Model_SetComponentBitmapInput(const char *stringid, const char *property_name, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
 {
  PEngine->Model_SetComponentBitmapInput(stringid, property_name, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
+}
+
+void RDK_CALL Model_SetComponentBitmapInputByIndex(const char *stringid, int index, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
+{
+ PEngine->Model_SetComponentBitmapInput(stringid, index, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
 }
 // --------------------------
 

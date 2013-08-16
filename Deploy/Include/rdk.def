@@ -167,13 +167,20 @@ EXPORTS
     Model_GetInstantPerformance = _Model_GetInstantPerformance
     Model_GetInterstepsInterval = _Model_GetInterstepsInterval
     Model_GetComponentOutput = _Model_GetComponentOutput
+    Model_GetComponentOutputByIndex = _Model_GetComponentOutputByIndex
     Model_GetComponentBitmapOutput = _Model_GetComponentBitmapOutput
+    Model_GetComponentBitmapOutputByIndex = _Model_GetComponentBitmapOutputByIndex
     Model_GetComponentBitmapInput = _Model_GetComponentBitmapInput
+    Model_GetComponentBitmapInputByIndex = _Model_GetComponentBitmapInputByIndex
     Model_SetComponentBitmapOutput = _Model_SetComponentBitmapOutput
+    Model_SetComponentBitmapOutputByIndex = _Model_SetComponentBitmapOutputByIndex
     Model_SetComponentBitmapInput = _Model_SetComponentBitmapInput
+    Model_SetComponentBitmapInputByIndex = _Model_SetComponentBitmapInputByIndex
     Engine_GetExceptionHandler = _Engine_GetExceptionHandler
     Engine_SetExceptionHandler = _Engine_SetExceptionHandler
     Engine_GetLog = _Engine_GetLog
     Engine_GetUnreadLog = _Engine_GetUnreadLog
         
     Model_GetComponentOutputAsMatrix = _Model_GetComponentOutputAsMatrix
+    Model_GetComponentOutputAsMatrixByIndex = _Model_GetComponentOutputAsMatrixByIndex
+

@@ -230,8 +230,7 @@ void __fastcall TTldTrackingForm::SendObjectToButtonClick(TObject *Sender)
  VideoOutputFrame1->BmpSource.ConvertTo(ResultBmp);
  ResultBmp.ReflectionX();
  Env_Calculate(0);
- // Заглушка
-// Model_SetComponentBitmapInput(ComponentControlName.c_str(), ObjectReceiverComboBox->ItemIndex, &ResultBmp);
+ Model_SetComponentBitmapInputByIndex(ComponentControlName.c_str(), ObjectReceiverComboBox->ItemIndex, &ResultBmp);
 
  Model_SetComponentPropertyData(ComponentControlName.c_str(), "InitialFlags", &initial_flags);
  Model_SetComponentPropertyData(source_name.c_str(), "DoubleMatrix", &points);

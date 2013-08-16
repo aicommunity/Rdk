@@ -57,6 +57,7 @@ string XDataSourceName;
 
 // Индекс выхода хранящего данные по оси X
 string XOutputIndex;
+int XOutputIndexOld;
 
 // Индекс элемента выхода хранящего данные по оси X
 int XOutputElementIndex;
@@ -66,6 +67,7 @@ string YDataSourceName;
 
 // Индекс выхода хранящего данные по оси X
 string YOutputIndex;
+int YOutputIndexOld;
 
 // Индекс элемента выхода хранящего данные по оси X
 int YOutputElementIndex;
@@ -279,6 +281,7 @@ public:	// Методы
 		// Добавление нового наблюдения по имени компонента и индексу выхода
 		// Возвращает индекс серии
 		int __fastcall Add(int type, const string &xname, const string &yname, const string &xoutput, int xoutindex, const string &youtput, int youtindex, int mrow, int mcol, double yshift=0, TPenStyle style=psSolid, TColor color=TColor(0));
+		int __fastcall Add(int type, const string &xname, const string &yname, int xoutput, int xoutindex, int youtput, int youtindex, int mrow, int mcol, double yshift=0, TPenStyle style=psSolid, TColor color=TColor(0));
 
         // Удаление наблюдения
         void __fastcall Del(int seriesindex);

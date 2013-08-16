@@ -53,12 +53,14 @@ void TUImagesFrame::SetNumCells(int width, int height)
  Images.resize(width);
  StringIds.resize(width);
  ComponentIndexes.resize(width);
+ ComponentIndexesOld.resize(width);
  MouseClickComponents.resize(width);
  for(size_t i=0;i<Images.size();i++)
  {
   Images[i].resize(height);
   StringIds[i].resize(height);
   ComponentIndexes[i].resize(height);
+  ComponentIndexesOld[i].resize(height,-1);
   MouseClickComponents[i].resize(height);
   for(size_t j=0;j<Images[i].size();j++)
    Images[i][j]=new TImage(this);
@@ -288,11 +290,17 @@ void TUImagesFrame::AUpdateInterface(void)
    for(size_t j=0;j<Images[i].size();j++)
    {
 	if(ComponentIndexes[i][j].empty())
-	 continue;
-
-	const RDK::UBitmap* bmp=(const RDK::UBitmap*)Model_GetComponentOutput(StringIds[i][j].c_str(), ComponentIndexes[i][j].c_str());
-	if(bmp)
-	 SetBitmap(i, j, *bmp);
+	{
+	 const RDK::UBitmap* bmp=(const RDK::UBitmap*)Model_GetComponentOutputByIndex(StringIds[i][j].c_str(), ComponentIndexesOld[i][j]);
+	 if(bmp)
+	  SetBitmap(i, j, *bmp);
+	}
+	else
+	{
+	 const RDK::UBitmap* bmp=(const RDK::UBitmap*)Model_GetComponentOutput(StringIds[i][j].c_str(), ComponentIndexes[i][j].c_str());
+	 if(bmp)
+	  SetBitmap(i, j, *bmp);
+	}
    }
   }
   DrawGrid->Repaint();
@@ -303,7 +311,12 @@ void TUImagesFrame::AUpdateInterface(void)
  {
   if(DrawGrid->Col < 0 || DrawGrid->Row <0)
    return;
-  const RDK::UBitmap* bmp=(const RDK::UBitmap*)Model_GetComponentOutput(StringIds[DrawGrid->Col][DrawGrid->Row].c_str(), ComponentIndexes[DrawGrid->Col][DrawGrid->Row].c_str());
+
+  const RDK::UBitmap* bmp=0;
+  if(ComponentIndexes[DrawGrid->Col][DrawGrid->Row].empty())
+   bmp=(const RDK::UBitmap*)Model_GetComponentOutputByIndex(StringIds[DrawGrid->Col][DrawGrid->Row].c_str(), ComponentIndexesOld[DrawGrid->Col][DrawGrid->Row]);
+  else
+   bmp=(const RDK::UBitmap*)Model_GetComponentOutput(StringIds[DrawGrid->Col][DrawGrid->Row].c_str(), ComponentIndexes[DrawGrid->Col][DrawGrid->Row].c_str());
   if(bmp)
    SetBitmap(DrawGrid->Col, DrawGrid->Row, *bmp);
 
@@ -333,7 +346,8 @@ void TUImagesFrame::ASaveParameters(RDK::USerStorageXML &xml)
   {
    std::string name=RDK::sntoa(int(i))+std::string("_")+RDK::sntoa(int(j));
    xml.WriteString(std::string("CellName")+name,StringIds[i][j].c_str());
-   xml.WriteString(std::string("CellIndex")+name,ComponentIndexes[i][j]);
+   xml.WriteInteger(std::string("CellIndex")+name,ComponentIndexesOld[i][j]);
+   xml.WriteString(std::string("CellIndexNew")+name,ComponentIndexes[i][j]);
 
    xml.WriteString(std::string("CellMouseClickComponent")+name,MouseClickComponents[i][j].first.c_str());
    xml.WriteString(std::string("CellMouseClickProperty")+name,MouseClickComponents[i][j].second.c_str());
@@ -360,7 +374,8 @@ void TUImagesFrame::ALoadParameters(RDK::USerStorageXML &xml)
   {
    std::string name=RDK::sntoa(int(i))+std::string("_")+RDK::sntoa(int(j));
    StringIds[i][j]=xml.ReadString(std::string("CellName")+name,"");
-   ComponentIndexes[i][j]=xml.ReadString(std::string("CellIndex")+name,"");
+   ComponentIndexes[i][j]=xml.ReadString(std::string("CellIndexNew")+name,"");
+   ComponentIndexesOld[i][j]=xml.ReadInteger(std::string("CellIndex")+name,-1);
 
    MouseClickComponents[i][j].first=xml.ReadString(std::string("CellMouseClickComponent")+name,"");
    MouseClickComponents[i][j].second=xml.ReadString(std::string("CellMouseClickProperty")+name,"");
@@ -381,7 +396,12 @@ void __fastcall TUImagesFrame::DrawGridDrawCell(TObject *Sender, int ACol, int A
  dynamic_cast<TDrawGrid *>(Sender)->Canvas->
 		StretchDraw(Rect, Images[ACol][ARow]->Picture->Graphic);
  if(ShowLegendCheckBox->Checked)
-  dynamic_cast<TDrawGrid *>(Sender)->Canvas->TextOut(Rect.Left,Rect.Top,(std::string(Model_GetComponentLongName(StringIds[ACol][ARow].c_str()))+std::string("[")+RDK::sntoa(ComponentIndexes[ACol][ARow])+"]").c_str());
+ {
+  if(ComponentIndexes[ACol][ARow].empty())
+   dynamic_cast<TDrawGrid *>(Sender)->Canvas->TextOut(Rect.Left,Rect.Top,(std::string(Model_GetComponentLongName(StringIds[ACol][ARow].c_str()))+std::string("[")+RDK::sntoa(ComponentIndexesOld[ACol][ARow])+"]").c_str());
+  else
+   dynamic_cast<TDrawGrid *>(Sender)->Canvas->TextOut(Rect.Left,Rect.Top,(std::string(Model_GetComponentLongName(StringIds[ACol][ARow].c_str()))+std::string("[")+ComponentIndexes[ACol][ARow]+"]").c_str());
+ }
 }
 //---------------------------------------------------------------------------
 
@@ -480,7 +500,10 @@ void __fastcall TUImagesFrame::DrawGridDblClick(TObject *Sender)
   if(ShowLegendCheckBox->Checked)
   {
    FullImage->Canvas->Font->Size=12;
-   FullImage->Canvas->TextOut(0,0,(std::string(Model_GetComponentLongName(StringIds[DrawGrid->Col][DrawGrid->Row].c_str()))+std::string("[")+RDK::sntoa(ComponentIndexes[DrawGrid->Col][DrawGrid->Row])+"]").c_str());
+   if(ComponentIndexes[DrawGrid->Col][DrawGrid->Row].empty())
+	FullImage->Canvas->TextOut(0,0,(std::string(Model_GetComponentLongName(StringIds[DrawGrid->Col][DrawGrid->Row].c_str()))+std::string("[")+RDK::sntoa(ComponentIndexesOld[DrawGrid->Col][DrawGrid->Row])+"]").c_str());
+   else
+    FullImage->Canvas->TextOut(0,0,(std::string(Model_GetComponentLongName(StringIds[DrawGrid->Col][DrawGrid->Row].c_str()))+std::string("[")+ComponentIndexes[DrawGrid->Col][DrawGrid->Row]+"]").c_str());
   }
 }
 //---------------------------------------------------------------------------

@@ -260,6 +260,8 @@ object TldTrackingForm: TTldTrackingForm
             inherited Image1: TImage
               Width = 564
               Height = 295
+              ExplicitWidth = 564
+              ExplicitHeight = 295
             end
           end
         end
@@ -308,6 +310,8 @@ object TldTrackingForm: TTldTrackingForm
       inherited Panel3: TPanel
         Top = 416
         Width = 572
+        ExplicitTop = 416
+        ExplicitWidth = 572
       end
     end
   end

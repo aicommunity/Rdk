@@ -82,6 +82,9 @@ std::vector<std::vector<std::string> > StringIds;
 // Массив индексов выходов компонент, связанных с изображениями
 std::vector<std::vector<std::string> > ComponentIndexes;
 
+// Массив индексов выходов компонент, связанных с изображениями
+std::vector<std::vector<int> > ComponentIndexesOld;
+
 // Массив имен компонент и их свойств, связанных с кликом мыши
 std::vector<std::vector<std::pair<std::string,std::string> > > MouseClickComponents;
 
