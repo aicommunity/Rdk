@@ -27,6 +27,8 @@ int ChannelIndex;
 public:
 HANDLE CalcEnable;
 
+RDK::UBitmap Source;
+
 
 public: // Ìועמהû
 // --------------------------

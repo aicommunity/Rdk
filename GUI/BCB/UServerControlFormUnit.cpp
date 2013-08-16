@@ -831,7 +831,7 @@ bool TUServerControlForm::SetChannelName(int channel, const std::string& name)
 /// или всех каналов, если channel_id<0
 int TUServerControlForm::ResetChannel(int channel_id)
 {
- UEngineMonitorForm->EngineMonitorFrame->Reset1Click(this);
+ UGEngineControlForm->Reset1Click(this);
  return 0;
 }
 
@@ -839,7 +839,7 @@ int TUServerControlForm::ResetChannel(int channel_id)
 /// или все каналы, если channel_id<0
 int TUServerControlForm::StartChannel(int channel_id)
 {
- UEngineMonitorForm->EngineMonitorFrame->Start1Click(this);
+ UGEngineControlForm->Start1Click(this);
  return 0;
 }
 
@@ -847,7 +847,7 @@ int TUServerControlForm::StartChannel(int channel_id)
 /// или все каналы, если channel_id<0
 int TUServerControlForm::StopChannel(int channel_id)
 {
- UEngineMonitorForm->EngineMonitorFrame->Pause1Click(this);
+ UGEngineControlForm->Pause1Click(this);
  return 0;
 }
 

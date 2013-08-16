@@ -23,7 +23,7 @@ TUEngineMonitorFrame *UEngineMonitorFrame;
 __fastcall TEngineThread::TEngineThread(int channel_index, bool CreateSuspended)
 : ChannelIndex(channel_index), TThread(CreateSuspended)
 {
- CalcEnable=CreateEvent(0,0,0,0);
+ CalcEnable=CreateEvent(0,TRUE,0,0);
 }
 
 __fastcall TEngineThread::~TEngineThread(void)
@@ -38,10 +38,14 @@ __fastcall TEngineThread::~TEngineThread(void)
 void __fastcall TEngineThread::BeforeCalculate(void)
 {
 #ifdef RDK_VIDEO
-//   RDK::UIVisualControllerStorage::BeforeCalculate();
+#ifdef RDK_VIDEO
  TVideoOutputFrame* video=VideoOutputForm->GetVideoOutputFrame(ChannelIndex);
  if(video)
-  video->BeforeCalculate();
+  Source=video->BmpSource;
+ else
+  Source.Clear();
+#endif
+
 #endif
 }
 
@@ -63,11 +67,8 @@ void __fastcall TEngineThread::Execute(void)
    continue;
   ResetEvent(CalcEnable);
 
-#ifdef RDK_VIDEO
- TVideoOutputFrame* video=VideoOutputForm->GetVideoOutputFrame(ChannelIndex);
- if(video)
-  MModel_SetComponentBitmapOutput(ChannelIndex, "", 0, &video->BmpSource,true);
-#endif
+  Synchronize(BeforeCalculate);
+  MModel_SetComponentBitmapOutput(ChannelIndex, "", 0, &Source,true);
   MEnv_Calculate(ChannelIndex,0);
   Synchronize(AfterCalculate);
  }
