@@ -64,6 +64,9 @@ void TIdTcpResultBroadcasterFrame::AAfterCalculate(void)
   {
    int i = LastDelimiter(':', AUrl);
    int j = AUrl.Length();
+   if(!i || !j)
+	return;
+
    int port=StrToInt(AUrl.SubString(i + 1, j - i));
    String url=AUrl.SubString(1, i-1);
    IdTCPClient->Host=url;
