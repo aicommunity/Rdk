@@ -153,7 +153,14 @@ class UConnector: public UContainer
 friend class UItem;
 protected: // Хранилище связей
 // Список указателей на подключенные элементы сети
-UCItemList CItemList;
+//UCItemList CItemList;
+
+// Список указателей на подключенные элементы сети в формате
+// <имя свойства к которому подключены, список подключенных компонент>
+std::map<std::string, std::vector<UCItem> > ConnectedItemList;
+
+// Заглушка, возвращаемая в случае, когда корректную ссылку на CItem вернуть невозможно
+UCItem DummyItem;
 
 protected: // Общедоступные свойства
 // Число доступных входов
@@ -185,6 +192,12 @@ bool SetNumInputs(const int &value);
 // при подключении нового item.
 const bool& GetAutoNumInputs(void) const;
 bool SetAutoNumInputs(const bool &value);
+
+/// Возвращает число свойств в которым что-то подключено
+int GetNumActiveInputs(void) const;
+
+/// Возвращает число реально подключенных элементов к заданному свойству
+int GetNumActiveInputs(const NameT &connector_property_name) const;
 // --------------------------
 
 // --------------------------
@@ -200,6 +213,7 @@ virtual void Free(void);
 // --------------------------
 // Возвращает подключенный к этому коннектору объект по индексу
 const UCItem& GetCItem(int c_index) const;
+const UCItem& GetCItem(const NameT &connector_property_name, int index=0) const;
 
 // Возвращает информацию об индексах связей с этим item или -1, -1
 // если такая связь отсутствует
@@ -222,19 +236,23 @@ protected:
 // Возвращает false если na уже подключен к этому входу.
 // При успешном подключении c_index содержит реальный индекс подключенного входа
 virtual bool ConnectToItem(UEPtr<UItem> na, int i_index, int &c_index);
+virtual bool ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int &c_index);
 
 // Разрывает связь с элементом сети 'na'
 virtual void DisconnectFromItem(UEPtr<UItem> na);
 
 // Выполняет действия после физически установленой связи
 virtual bool AConnectToItem(UEPtr<UItem> na, int i_index, int c_index);
+virtual bool AConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name);
 
 // Выполняет действия после физически разорваной связи
 virtual void ADisconnectFromItem(UEPtr<UItem> na, int i_index, int c_index);
+virtual void ADisconnectFromItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name);
 
 public:
 // Разрывает связь с элементом сети подключенным ко входу 'index'
 virtual void DisconnectFromIndex(int c_index);
+virtual void DisconnectFromIndex(const NameT &connector_property_name, int index=0);
 
 // Разрывает все текущие связи
 virtual void DisconnectAllItems(void);
@@ -253,15 +271,18 @@ public:
 
 // Проверяет, допустимо ли подключение заданного item к этому коннектору
 virtual bool CheckItem(UEPtr<UItem> item, int item_index, int conn_index);
+virtual bool CheckItem(UEPtr<UItem> item, const NameT &item_property_name, const NameT &connector_property_name);
 
 // Проверяет, существует ли связь с заданным коннектором
 bool CheckLink(const UEPtr<UItem> &item) const;
 
 // Проверяет, существует ли связь с заданным коннектором и конкретным входом
 bool CheckLink(const UEPtr<UItem> &item, int item_index) const;
+bool CheckLink(const UEPtr<UItem> &item, const NameT &item_property_name) const;
 
 // Проверяет, существует ли связь с заданным коннектором и конкретным входом
 bool CheckLink(const UEPtr<UItem> &item, int item_index, int conn_index) const;
+bool CheckLink(const UEPtr<UItem> &item, const NameT &item_property_name, const NameT &connector_property_name) const;
 
 // Возвращает список подключений
 template<typename T>

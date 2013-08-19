@@ -125,10 +125,7 @@ size_t UADItem::GetFullInputDataSize(void) const
 // ----------------------
 bool UADItem::SetOutputDataSize(int index, int size, bool nobuild)
 {
-// if(!Build())
-//  return false;
-
- if(index < 0)// || index >= int(OutputData.size()))
+ if(index < 0)
   return false;
 
  if(OutputData.size() > size_t(index))
@@ -141,11 +138,12 @@ bool UADItem::SetOutputDataSize(int index, int size, bool nobuild)
 
  OutputData[index].Resize(size);
 
- if(index<AssociatedConnectors.GetSize())
-  for(int j=0;j<AssociatedConnectors[index].GetSize();j++)
+ std::map<std::string, std::vector<PUAConnector> >::const_iterator I=RelatedConnectors.begin();
+ for(;I != RelatedConnectors.end();++I)
+  for(size_t i=0;i<I->second.size();i++)
   {
-   static_pointer_cast<UADItem>(AssociatedConnectors[index][j])->UpdatePointers();
-   static_pointer_cast<UADItem>(AssociatedConnectors[index][j])->CalcMinMaxInputDataSize();
+   static_pointer_cast<UADItem>(I->second[i])->UpdatePointers();
+   static_pointer_cast<UADItem>(I->second[i])->CalcMinMaxInputDataSize();
   }
 
  if(!nobuild)
@@ -170,13 +168,13 @@ bool UADItem::SetOutputDataElementSize(int index, int size)
   OutputData.resize(index+1);
 
  OutputData[index].SetDataSize(size);
- if(index<AssociatedConnectors.GetSize())
-  for(int j=0;j<AssociatedConnectors[index].GetSize();j++)
+ std::map<std::string, std::vector<PUAConnector> >::const_iterator I=RelatedConnectors.begin();
+ for(;I != RelatedConnectors.end();++I)
+  for(size_t i=0;i<I->second.size();i++)
   {
-   static_pointer_cast<UADItem>(AssociatedConnectors[index][j])->UpdatePointers();
-   static_pointer_cast<UADItem>(AssociatedConnectors[index][j])->CalcMinMaxInputDataSize();
+   static_pointer_cast<UADItem>(I->second[i])->UpdatePointers();
+   static_pointer_cast<UADItem>(I->second[i])->CalcMinMaxInputDataSize();
   }
-
 
  Ready=false;
  return true;
@@ -400,9 +398,9 @@ bool UADItem::ConnectToItem(UEPtr<UItem> na, int i_index, int &c_index)
  UpdatePointers();
  CalcMinMaxInputDataSize();
 
- if(!UConnector::ConnectToItem(static_pointer_cast<UItem>(nad), i_index, c_index))
+ if(!UItem::ConnectToItem(static_pointer_cast<UItem>(nad), i_index, c_index))
   return false;
-
+   /*
  // »щем указатель на выходные данные
  UIProperty* output_property=0;
  nad->FindOutputProperty(i_index, output_property);
@@ -433,6 +431,14 @@ bool UADItem::ConnectToItem(UEPtr<UItem> na, int i_index, int &c_index)
   if(input_property->GetIoType() & ipComp)
    input_property->SetPointer(c_index,nad);
  }
+     */
+ return true;
+}
+
+bool UADItem::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int &c_index)
+{
+ if(!UItem::ConnectToItem(na, item_property_name, connector_property_name, c_index))
+  return false;
 
  return true;
 }
@@ -465,6 +471,11 @@ void UADItem::DisconnectFromIndex(int c_index)
 
  UpdatePointers();
  CalcMinMaxInputDataSize();
+}
+
+void UADItem::DisconnectFromIndex(const NameT &connector_property_name, int index)
+{
+
 }
 // --------------------------
 

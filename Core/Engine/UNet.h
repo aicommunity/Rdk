@@ -102,6 +102,8 @@ virtual bool CreateLink(const ULongId &item_id, int item_index, const ULongId &c
 // 'item' и коннектором 'connector'
 virtual bool CreateLink(const NameT &item, int item_index,
 						const NameT &connector, int connector_index=-1);
+virtual bool CreateLink(const NameT &item, const NameT &item_property_name,
+						const NameT &connector, const NameT &connector_property_name);
 
 // ”станавливает все св€зи из массива 'linkslist'
 template<typename T>
@@ -128,6 +130,8 @@ virtual bool BreakLink(const ULongId &item_id, int item_index, const ULongId &co
 // и коннектором 'connectorid'
 virtual bool BreakLink(const NameT &itemname, int item_index,
 						const NameT &connectorname, int connector_index);
+virtual bool BreakLink(const NameT &item, const NameT &item_property_name,
+						const NameT &connector, const NameT &connector_property_name);
 
 // –азрывает все св€зи сети
 // исключа€ ее внутренние св€зи и обратные св€зи
@@ -147,6 +151,8 @@ bool CheckLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector);
 virtual bool CheckLink(const ULongId &item_id, int item_index, const ULongId &conn_id, int conn_index);
 virtual bool CheckLink(const NameT &itemname, int item_index,
 						const NameT &connectorname, int connector_index);
+virtual bool CheckLink(const NameT &itemname, const NameT &item_property_name,
+						const NameT &connectorname, const NameT &connector_property_name);
 // ----------------------
 
 // --------------------------

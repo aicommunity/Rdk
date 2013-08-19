@@ -170,8 +170,17 @@ bool UNet::CreateLink(const ULinkT<T> &link)
   if(!pconnector)
    res=false;
 
-  if(!(pitem->Connect(pconnector,link.Item.Index,connector.Index)))
-   res=false;
+  if(!link.Item.Name.empty() && !connector.Name.empty())
+  {
+   int c_index;
+   if(!(pitem->Connect(pconnector,link.Item.Name,connector.Name,c_index)))
+	res=false;
+  }
+  else
+  {
+   if(!(pitem->Connect(pconnector,link.Item.Index,connector.Index)))
+	res=false;
+  }
  }
  return res;
 }
@@ -196,8 +205,17 @@ bool UNet::CreateLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
  if(!pitem || !pconnector)
   return false;
 
- if(!(pitem->Connect(pconnector,item.Index,connector.Index)))
-  return false;
+  if(!item.Name.empty() && !connector.Name.empty())
+  {
+   int c_index;
+   if(!(pitem->Connect(pconnector,item.Name,connector.Name,c_index)))
+	return false;
+  }
+  else
+  {
+   if(!(pitem->Connect(pconnector,item.Index,connector.Index)))
+    return false;
+  }
 
  return true;
 }
@@ -207,11 +225,10 @@ bool UNet::CreateLink(const ULongId &item_id, int item_index, const ULongId &con
  return CreateLink(ULinkSide(item_id,item_index),ULinkSide(conn_id,conn_index));
 }
 
-
 // Устанавливает новую связь между выходом элемента сети
 // 'item' и коннектором 'connector'
 bool UNet::CreateLink(const NameT &item, int item_index,
-                        const NameT &connector, int connector_index)
+						const NameT &connector, int connector_index)
 {
  UEPtr<UItem> pitem=0;
  UEPtr<UConnector> pconnector=0;
@@ -236,6 +253,35 @@ bool UNet::CreateLink(const NameT &item, int item_index,
 
  return true;
 }
+
+bool UNet::CreateLink(const NameT &item, const NameT &item_property_name,
+						const NameT &connector, const NameT &connector_property_name)
+{
+ UEPtr<UItem> pitem=0;
+ UEPtr<UConnector> pconnector=0;
+ if(!item.size())
+  pitem=this;
+ else
+  pitem=dynamic_pointer_cast<UItem>(GetComponentL(item));
+
+ if(!connector.size())
+  pconnector=this;
+ else
+  pconnector=dynamic_pointer_cast<UConnector>(GetComponentL(connector));
+
+ if(!pitem)
+  return false;
+
+ if(!pconnector)
+  return false;
+
+ int c_index;
+ if(!(pitem->Connect(pconnector,item_property_name,connector_property_name, c_index)))
+  return false;
+
+ return true;
+}
+
 
 // Устанавливает все связи из массива 'linkslist'.
 template<typename T>
@@ -369,6 +415,26 @@ bool UNet::BreakLink(const NameT &itemname, int item_index,
  return true;
 }
 
+bool UNet::BreakLink(const NameT &itemname, const NameT &item_property_name,
+						const NameT &connectorname, const NameT &connector_property_name)
+{
+ UEPtr<UItem> item;
+ UEPtr<UConnector> connector;
+ if(itemname.size() == 0)
+  item=this;
+ else
+  item=dynamic_pointer_cast<UItem>(GetComponentL(itemname));
+
+ if(connectorname.size() == 0)
+  connector=this;
+ else
+  connector=dynamic_pointer_cast<UConnector>(GetComponentL(connectorname));
+
+ item->Disconnect(connector);
+
+ return true;
+}
+
 // Разрывает все связи сети
 // исключая ее внутренние связи и обратные связи
 // brklevel - объект, относительно которого связи считаются внутренними
@@ -439,8 +505,16 @@ bool UNet::CheckLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
  if(!pitem || !pconnector)
   return false;
 
- if(pitem->CheckLink(pconnector,item.Index, connector.Index))
-  return true;
+  if(!item.Name.empty() && !connector.Name.empty())
+  {
+   if(pitem->CheckLink(pconnector,item.Name, connector.Name))
+	return true;
+  }
+  else
+  {
+   if(pitem->CheckLink(pconnector,item.Index, connector.Index))
+	return true;
+  }
 
  return true;
 }
@@ -454,6 +528,20 @@ bool UNet::CheckLink(const NameT &itemname, int item_index,
   return false;
 
  if(item->CheckLink(connector,item_index, connector_index))
+  return true;
+
+ return true;
+}
+
+bool UNet::CheckLink(const NameT &itemname, const NameT &item_property_name,
+						const NameT &connectorname, const NameT &connector_property_name)
+{
+ UEPtr<UItem> item=dynamic_pointer_cast<UItem>(GetComponentL(itemname));
+ UEPtr<UConnector> connector=dynamic_pointer_cast<UConnector>(GetComponentL(connectorname));
+ if(!item || !connector)
+  return false;
+
+ if(item->CheckLink(connector,item_property_name, connector_property_name))
   return true;
 
  return true;

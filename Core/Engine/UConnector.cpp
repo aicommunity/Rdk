@@ -263,6 +263,8 @@ int UCItemList::GetSize(void) const
 UConnector::UConnector(void)
 {
  NumInputs=0;
+ DummyItem.Index=-1;
+ DummyItem.Item=0;
  AddLookupProperty("NumInputs",ptParameter & pgSystem,new UVProperty<int,UConnector>(this,&UConnector::SetNumInputs,&UConnector::GetNumInputs));
  AddLookupProperty("AutoNumInputs",ptParameter & pgSystem,new UVProperty<bool,UConnector>(this,&UConnector::SetAutoNumInputs,&UConnector::GetAutoNumInputs));
 }
@@ -288,13 +290,12 @@ bool UConnector::SetNumInputs(const int &value)
 {
  if(NumInputs == value)
   return true;
-
-// NumInputs=CItemList.size();
+/*
  if(NumInputs > value)
  {
   for(int i=value;i<NumInputs;++i)
    if(CItemList[i].Item)
-    CItemList[i].Item->Disconnect(this);
+	CItemList[i].Item->Disconnect(this);
  }
 
  int index=NumInputs;
@@ -306,7 +307,11 @@ bool UConnector::SetNumInputs(const int &value)
  }
 
  Ready=false;
- NumInputs=CItemList.GetSize();
+ NumInputs=CItemList.GetSize();*/
+
+ Ready=false;
+ NumInputs=value;
+
  return true;
 }
 
@@ -324,6 +329,22 @@ bool UConnector::SetAutoNumInputs(const bool &value)
 
  AutoNumInputs=value;
  return true;
+}
+
+/// Возвращает число реально подключенных элементов
+int UConnector::GetNumActiveInputs(void) const
+{
+ return int(ConnectedItemList.size());
+}
+
+/// Возвращает число реально подключенных элементов к заданному свойству
+int UConnector::GetNumActiveInputs(const NameT &connector_property_name) const
+{
+ std::map<std::string, std::vector<UCItem> >::const_iterator I=ConnectedItemList.find(connector_property_name);
+ if(I == ConnectedItemList.end())
+  return 0;
+
+ return int(I->second.size());
 }
 // --------------------------
 
@@ -345,14 +366,41 @@ void UConnector::Free(void)
 // Возвращает подключенный к этому коннектору объект по индексу
 const UCItem& UConnector::GetCItem(int c_index) const
 {
- return CItemList[c_index];
+// return CItemList[c_index];
+
+ UIProperty* i_conn_property=0;
+
+ FindInputProperty(c_index, i_conn_property);
+
+ if(!i_conn_property)
+  return DummyItem;
+
+ std::map<std::string, std::vector<UCItem> >::const_iterator I=ConnectedItemList.find(i_conn_property->GetName());
+ if(I == ConnectedItemList.end())
+  return DummyItem;
+
+ if(I->second.empty())
+  return DummyItem;
+
+ return I->second[0];
+}
+
+const UCItem& UConnector::GetCItem(const NameT &connector_property_name, int index) const
+{
+ std::map<std::string, std::vector<UCItem> >::const_iterator I=ConnectedItemList.find(connector_property_name);
+ if(I == ConnectedItemList.end())
+  return DummyItem;
+
+ if(index>=int(I->second.size()))
+  return DummyItem;
+ return I->second[index];
 }
 
 // Возвращает информацию об индексах связей с этим item или -1, -1
 // если такая связь отсутствует
 UCLink UConnector::GetCLink(const UEPtr<UItem> item) const
 {
- UCLink indexes;
+/* UCLink indexes;
 
  if(!item)
   return indexes;
@@ -367,6 +415,43 @@ UCLink UConnector::GetCLink(const UEPtr<UItem> item) const
  FindInputProperty(indexes.Input, property);
  if(property)
   indexes.InputName=property->GetName();
+ indexes.Output=citem.Index;
+ indexes.OutputName=citem.Name;
+
+ return indexes;
+ */
+
+ UCLink indexes;
+
+ if(!item)
+  return indexes;
+
+ std::map<std::string, std::vector<UCItem> >::const_iterator I=ConnectedItemList.begin();
+ UCItem citem;
+ bool flag=false;
+ for(;I != ConnectedItemList.end();++I)
+ {
+  for(size_t i=0;i<I->second.size();i++)
+   if(I->second[i].Item == item)
+   {
+	citem=I->second[i];
+	flag=true;
+	break;
+   }
+  if(flag)
+   break;
+ }
+
+ if(citem.Item == 0)
+  return indexes;
+
+ UIProperty* property=0;
+ FindInputProperty(indexes.Input, property);
+ if(property)
+ {
+  indexes.InputName=property->GetName();
+  indexes.Input=property->GetMinRange();
+ }
  indexes.Output=citem.Index;
  indexes.OutputName=citem.Name;
 
@@ -375,6 +460,7 @@ UCLink UConnector::GetCLink(const UEPtr<UItem> item) const
 
 UCLink UConnector::GetCLink(const UItem* const item) const
 {
+/*
  UCLink indexes;
 
  if(!item)
@@ -394,6 +480,9 @@ UCLink UConnector::GetCLink(const UItem* const item) const
  indexes.OutputName=citem.Name;
 
  return indexes;
+ */
+ const UEPtr<UItem> uitem=const_cast<UItem*>(item);
+ return GetCLink(uitem);
 }
 // --------------------------
 
@@ -431,6 +520,18 @@ void UConnector::FindInputProperty(int index, UIProperty* &property) const
 // Устанавливает связь с элементом сети 'na'.
 bool UConnector::ConnectToItem(UEPtr<UItem> na, int i_index, int &c_index)
 {
+ UIProperty* i_item_property=0;
+ UIProperty* i_conn_property=0;
+
+ na->FindOutputProperty(i_index,i_item_property);
+ FindInputProperty(c_index,i_conn_property);
+
+ if(!i_item_property || !i_conn_property)
+  return false;
+
+ return ConnectToItem(na, i_item_property->GetName(), i_conn_property->GetName(), c_index);
+
+/*
  if(!na)
   return false;
 
@@ -485,12 +586,75 @@ bool UConnector::ConnectToItem(UEPtr<UItem> na, int i_index, int &c_index)
  CItemList[c_index].Item=na;
  CItemList[c_index].Index=i_index;
 
- return AConnectToItem(na, i_index, c_index);
+ return AConnectToItem(na, i_index, c_index);    */
+}
+
+bool UConnector::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int &c_index)
+{
+ if(!na)
+  return false;
+
+ UIProperty* i_item_property=na->FindProperty(item_property_name);
+ UIProperty* i_conn_property=FindProperty(connector_property_name);
+
+ if(!i_item_property || !i_conn_property)
+  return false;
+
+ if(!Build())
+  return false;
+
+ if(!CheckItem(na, item_property_name, connector_property_name))
+  return false;
+
+ std::map<std::string, std::vector<UCItem> >::iterator I=ConnectedItemList.find(connector_property_name);
+ if(I != ConnectedItemList.end())
+  for(size_t i=0;i<I->second.size();i++)
+  {
+   if(I->second[i].Item == na)
+   {
+	if(I->second[i].Name == item_property_name)
+	{
+	 c_index=i;
+	 return true;
+	}
+	else
+	{
+	 I->second[i].Name = item_property_name;
+	 c_index=i;
+//CItemList[i_conn_property->GetMinRange()].Index = i_item_property->GetMinRange();
+	 return true;
+	}
+   }
+  }
+
+ UCItem item;
+ item.Item=na;
+ item.Index=-1;
+ item.Name=item_property_name;
+ ConnectedItemList[connector_property_name].push_back(item);
+ c_index=int(ConnectedItemList[connector_property_name].size()-1);
+
+//CItemList[i_conn_property->GetMinRange()].Item = na;
+//CItemList[i_conn_property->GetMinRange()].Index = i_item_property->GetMinRange();
+
+ return AConnectToItem(na, item_property_name, connector_property_name);
 }
 
 // Разрывает связь с элементом сети 'na'
 void UConnector::DisconnectFromItem(UEPtr<UItem> na)
 {
+ if(!na)
+  return;
+
+ std::map<std::string, std::vector<UCItem> >::iterator I=ConnectedItemList.begin();
+ for(;I != ConnectedItemList.end();++I)
+ {
+  for(size_t i=0;i<I->second.size();i++)
+   if(I->second[i].Item == na)
+	DisconnectFromIndex(I->first, i);
+ }
+
+ /*
  if(!na)
   return;
 
@@ -501,11 +665,14 @@ void UConnector::DisconnectFromItem(UEPtr<UItem> na)
    DisconnectFromIndex(i);
   }
  }
+
+ */
 }
 
 // Разрывает связь с элементом сети подключенным ко входу 'index'
 void UConnector::DisconnectFromIndex(int c_index)
 {
+/*
  if(c_index<0 || c_index >=NumInputs)
   return;
 
@@ -514,18 +681,30 @@ void UConnector::DisconnectFromIndex(int c_index)
  CItemList[c_index].Item=0;
  CItemList[c_index].Index=-1;
 
- // Подчищаем лишние входы, если разрешено
-/* if(AutoNumInputs)
- {
-  int newsize=NumInputs;
-  for(int i=NumInputs-1;i>=0;i--)
-  {
-   if(CItemList[i].Item != 0)
-	break;
-   --newsize;
-  }
-  SetNumInputs(newsize);
- }*/
+ */
+ UIProperty* i_conn_property=0;
+ FindInputProperty(c_index,i_conn_property);
+
+ if(!i_conn_property)
+  return;
+
+ DisconnectFromIndex(i_conn_property->GetName(), 0);
+}
+
+void UConnector::DisconnectFromIndex(const NameT &connector_property_name, int index)
+{
+ std::map<std::string, std::vector<UCItem> >::iterator I=ConnectedItemList.find(connector_property_name);
+ if(I == ConnectedItemList.end())
+  return;
+
+ if(index<0 || index >=int(I->second.size()))
+  return;
+
+
+ ADisconnectFromItem(I->second[index].Item,I->second[index].Name,connector_property_name);
+ I->second.erase(I->second.begin()+index);
+// if(I->second.empty())
+//  ConnectedItemList.erase(I);
 }
 
 // Выполняет действия после физически установленой связи
@@ -534,18 +713,48 @@ bool UConnector::AConnectToItem(UEPtr<UItem> na, int i_index, int c_index)
  return true;
 }
 
+bool UConnector::AConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name)
+{
+ UIProperty* i_item_property=na->FindProperty(item_property_name);
+ UIProperty* i_conn_property=FindProperty(connector_property_name);
+
+ if(!i_item_property || !i_conn_property)
+  return false;
+
+ return AConnectToItem(na,i_item_property->GetMinRange(), i_conn_property->GetMinRange());
+}
+
 // Выполняет действия после физически разорваной связи
 void UConnector::ADisconnectFromItem(UEPtr<UItem> na, int i_index, int c_index)
 {
 }
 
+void UConnector::ADisconnectFromItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name)
+{
+ UIProperty* i_item_property=na->FindProperty(item_property_name);
+ UIProperty* i_conn_property=FindProperty(connector_property_name);
+
+ if(!i_item_property || !i_conn_property)
+  return;
+
+ AConnectToItem(na,i_item_property->GetMinRange(), i_conn_property->GetMinRange());
+}
+
 // Разрывает все текущие связи
 void UConnector::DisconnectAllItems(void)
 {
-// Build();
+/*
  for(int i=0;i<CItemList.GetSize();i++)
   if(CItemList[i].Item)
    CItemList[i].Item->Disconnect(this);
+   */
+ std::map<std::string, std::vector<UCItem> >::iterator I=ConnectedItemList.begin();
+ for(;I != ConnectedItemList.end();++I)
+ {
+  for(size_t i=0;i<I->second.size();i++)
+   I->second[i].Item->Disconnect(this);
+ }
+
 }
 
 // Разрывает все связи объекта
@@ -553,28 +762,20 @@ void UConnector::DisconnectAllItems(void)
 // brklevel - объект, относительно которого связи считаются внутренними
 void UConnector::DisconnectByObject(UEPtr<UContainer> brklevel)
 {
-// Build();
- for(int i=0;i<CItemList.GetSize();i++)
+/* for(int i=0;i<CItemList.GetSize();i++)
   if(CItemList[i].Item)
    if(!CItemList[i].Item->CheckOwner(brklevel))
-    CItemList[i].Item->Disconnect(this);
-}
-                      /*
-// Возвращает интерфейс входа
-UEInterface* UConnector::GetInputInterface(int c_index)
-{
- return 0;
-}
+	CItemList[i].Item->Disconnect(this);
+	*/
+ std::map<std::string, std::vector<UCItem> >::iterator I=ConnectedItemList.begin();
+ for(;I != ConnectedItemList.end();++I)
+ {
+  for(size_t i=0;i<I->second.size();i++)
+   if(!I->second[i].Item->CheckOwner(brklevel))
+	I->second[i].Item->Disconnect(this);
+ }
 
-// Возвращает интерфейс входа
-NameT UConnector::GetInputInterfaceTypeName(int c_index)
-{
- UEInterface* ueinterface=GetInputInterface(c_index);
- if(ueinterface)
-  return ueinterface->GetTypeName();
-
- return NameT("");
-}                       */
+}
 
 // Проверяет, допустимо ли подключение заданного item к этому коннектору
 bool UConnector::CheckItem(UEPtr<UItem> item, int item_index, int conn_index)
@@ -582,6 +783,11 @@ bool UConnector::CheckItem(UEPtr<UItem> item, int item_index, int conn_index)
 /* if(item->GetOutputType(item_index) == GetInputType(conn_index))
   return true;
  return false;*/
+ return true;
+}
+
+bool UConnector::CheckItem(UEPtr<UItem> item, const NameT &item_property_name, const NameT &connector_property_name)
+{
  return true;
 }
 
@@ -608,6 +814,18 @@ bool UConnector::CheckLink(const UEPtr<UItem> &item, int item_index) const
  return false;
 }
 
+bool UConnector::CheckLink(const UEPtr<UItem> &item, const NameT &item_property_name) const
+{
+ UCLink link=GetCLink(item);
+ if(!link.InputName.empty())
+ {
+  if(link.OutputName == item_property_name)
+   return true;
+ }
+ return false;
+}
+
+
 // Проверяет, существует ли связь с заданным коннектором и конкретным входом
 bool UConnector::CheckLink(const UEPtr<UItem> &item, int item_index, int conn_index) const
 {
@@ -621,10 +839,23 @@ bool UConnector::CheckLink(const UEPtr<UItem> &item, int item_index, int conn_in
  return false;
 }
 
+bool UConnector::CheckLink(const UEPtr<UItem> &item, const NameT &item_property_name, const NameT &connector_property_name) const
+{
+ UCLink link=GetCLink(item);
+ if(!link.OutputName.empty())
+ {
+  if(link.InputName == connector_property_name)
+   return true;
+ }
+
+ return false;
+}
+
 // Возвращает список подключений
 template<typename T>
 ULinksListT<T>& UConnector::GetLinks(ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel, bool exclude_internals, UEPtr<UContainer> internal_level) const
 {
+/*
  ULinkT<T> link;
  ULinkSideT<T> connector;
  ULinkSideT<T> item;
@@ -671,12 +902,64 @@ ULinksListT<T>& UConnector::GetLinks(ULinksListT<T> &linkslist, UEPtr<UContainer
  }
 
  return linkslist;
+ */
+
+ ULinkT<T> link;
+ ULinkSideT<T> connector;
+ ULinkSideT<T> item;
+ GetLongId(netlevel,connector.Id);
+ if(connector.Id.size()==0)
+  return linkslist;
+
+
+ std::map<std::string, std::vector<UCItem> >::const_iterator I=ConnectedItemList.begin();
+ for(;I != ConnectedItemList.end();++I)
+  for(size_t i=0;i<I->second.size();i++)
+  {
+   if(I->second[i].Item)
+   {
+	if(exclude_internals)
+	{
+	 if(I->second[i].Item->CheckOwner(internal_level))
+	  continue;
+	}
+   I->second[i].Item->GetLongId(netlevel,item.Id);
+   connector.Index=-1;//i;
+//   UIProperty* property=0;
+//   FindInputProperty(i, property);
+//   if(property)
+	connector.Name=I->first;
+
+   item.Index=-1;//CItemList[i].Index;
+   item.Name=I->second[i].Name;//CItemList[i].Name;
+   if(connector.Id.size() != 0)
+   {
+	int item_id=linkslist.FindItem(item);
+	if(item_id >= 0)
+	{
+	 if(linkslist[item_id].FindConnector(connector) >= 0)
+	  continue;
+	 linkslist[item_id].Connector.push_back(connector);
+	}
+	else
+	{
+	 link.Item=item;
+	 link.Connector.clear();
+	 link.Connector.push_back(connector);
+	 linkslist.Add(link);
+	}
+   }
+  }
+ }
+
+ return linkslist;
 }
 
 // Возвращает список подключений непосредственно коннектора cont
 template<typename T>
 ULinksListT<T>& UConnector::GetPersonalLinks(UEPtr<UContainer> cont, ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel) const
 {
+/*
  ULinkT<T> link;
  ULinkSideT<T> connector;
  ULinkSideT<T> item;
@@ -703,6 +986,46 @@ ULinksListT<T>& UConnector::GetPersonalLinks(UEPtr<UContainer> cont, ULinksListT
 	{
 	 if(linkslist[item_id].FindConnector(connector) >= 0)
 	  continue;
+	 linkslist[item_id].Connector.push_back(connector);
+	}
+	else
+	{
+	 link.Item=item;
+	 link.Connector.clear();
+	 link.Connector.push_back(connector);
+	 linkslist.Add(link);
+	}
+   }
+  }
+ }
+
+ return linkslist;*/
+
+ ULinkT<T> link;
+ ULinkSideT<T> connector;
+ ULinkSideT<T> item;
+ GetLongId(netlevel,connector.Id);
+ if(connector.Id.size()==0)
+  return linkslist;
+
+ std::map<std::string, std::vector<UCItem> >::const_iterator I=ConnectedItemList.begin();
+ for(;I != ConnectedItemList.end();++I)
+  for(size_t i=0;i<I->second.size();i++)
+  {
+   if(I->second[i].Item == cont)
+   {
+	I->second[i].Item->GetLongId(netlevel,item.Id);
+	connector.Index=i;
+	connector.Name=I->first;
+	item.Index=-1;//CItemList[i].Index;
+	item.Name=I->second[i].Name;
+	if(connector.Id.size() != 0)
+	{
+	 int item_id=linkslist.FindItem(item);
+	 if(item_id >= 0)
+	 {
+	  if(linkslist[item_id].FindConnector(connector) >= 0)
+	   continue;
 	 linkslist[item_id].Connector.push_back(connector);
 	}
 	else

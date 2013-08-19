@@ -148,9 +148,11 @@ protected:
 // Возвращает false если na уже подключен к этому входу.
 // При успешном подключении c_index содержит реальный индекс подключенного входа
 virtual bool ConnectToItem(UEPtr<UItem> na, int i_index, int &c_index);
+virtual bool ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int &c_index);
 
 // Разрывает связь с элементом сети подключенным ко входу 'index'
 virtual void DisconnectFromIndex(int c_index);
+virtual void DisconnectFromIndex(const NameT &connector_property_name, int index=0);
 // ----------------------
 
 // --------------------------
