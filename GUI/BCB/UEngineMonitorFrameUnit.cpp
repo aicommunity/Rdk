@@ -6,6 +6,8 @@
 #include <algorithm>
 #include "UEngineMonitorFrameUnit.h"
 #include "UEngineMonitorFormUnit.h"
+#include "TIdTcpResultBroadcasterFormUnit.h"
+#include "TIdHttpResultBroadcasterFormUnit.h"
 #include "rdk_initdll.h"
 #ifdef RDK_VIDEO
 #include "VideoOutputFormUnit.h"
@@ -51,13 +53,21 @@ void __fastcall TEngineThread::BeforeCalculate(void)
 
 void __fastcall TEngineThread::AfterCalculate(void)
 {
-  UEngineMonitorForm->EngineMonitorFrame->LastCalculatedServerTimeStamp[ChannelIndex]=
+ UEngineMonitorForm->EngineMonitorFrame->LastCalculatedServerTimeStamp[ChannelIndex]=
   UEngineMonitorForm->EngineMonitorFrame->GetServerTimeStamp(ChannelIndex);
- if(ChannelIndex == GetNumEngines()-1)
- {
-  RDK::UIVisualControllerStorage::AfterCalculate();
-  RDK::UIVisualControllerStorage::UpdateInterface();
- }
+
+ TIdTcpResultBroadcasterFrame *tcp_frame=IdTcpResultBroadcasterForm->GetBroadcasterFrame(ChannelIndex);
+ if(tcp_frame)
+  tcp_frame->AfterCalculate();
+ TIdHttpResultBroadcasterFrame *http_frame=IdHttpResultBroadcasterForm->GetBroadcasterFrame(ChannelIndex);
+ if(http_frame)
+  http_frame->AfterCalculate();
+
+ //RDK::UIVisualControllerStorage::AfterCalculate();
+// RDK::UIVisualControllerStorage::UpdateInterface();
+// if(ChannelIndex == GetNumEngines()-1)
+// {
+// }
 }
 
 
@@ -322,8 +332,8 @@ void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
 
  case 1:
  {
-//  RDK::UIVisualControllerStorage::AfterCalculate();
-//  RDK::UIVisualControllerStorage::UpdateInterface();
+  RDK::UIVisualControllerStorage::AfterCalculate();
+  RDK::UIVisualControllerStorage::UpdateInterface();
  }
  break;
  }

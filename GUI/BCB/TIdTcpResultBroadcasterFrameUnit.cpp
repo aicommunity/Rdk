@@ -28,12 +28,18 @@ __fastcall TIdTcpResultBroadcasterFrame::TIdTcpResultBroadcasterFrame(TComponent
 __fastcall TIdTcpResultBroadcasterFrame::~TIdTcpResultBroadcasterFrame(void)
 {
  ConnectionEstablishedFlag=false;
- IdTCPClient->Disconnect();
  if(MemStream)
   delete MemStream;
 
  if(Bitmap)
   delete Bitmap;
+ try{
+ IdTCPClient->Disconnect();
+ }
+ catch(EIdNotConnected &ex)
+ {
+
+ }
 }
 
 //---------------------------------------------------------------------------
