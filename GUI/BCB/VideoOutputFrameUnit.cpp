@@ -674,25 +674,14 @@ void TVideoOutputFrame::ABeforeCalculate(void)
    {
 	int shift=0;
 	long long time_stamp;
-	memcpy(&time_stamp,&PipeBuffer[0],sizeof(ServerTimeStamp));
+	memcpy(&time_stamp,&PipeBuffer[0],sizeof(time_stamp));
 
-	if(ServerTimeStamp == time_stamp)
+/*	if(ServerTimeStamp == time_stamp)
 	{
 	 // Здесь извещение движку о том, что итерацию расчета следует пропустить
 	 return;
-	}
-	shift+=sizeof(ServerTimeStamp);
-
-	if(GetNumEngines() == 1)
-	 UEngineMonitorForm->EngineMonitorFrame->SetServerTimeStamp(0,time_stamp);
-	else
-	if(GetNumEngines() > FrameIndex)
-	 UEngineMonitorForm->EngineMonitorFrame->SetServerTimeStamp(FrameIndex,time_stamp);
-
-	std::string sstamp;
-	RDK::UTimeStamp stamp(double(ServerTimeStamp/1000),25);
-	stamp>>sstamp;
-	TimeEdit->Text=sstamp.c_str();
+	}*/
+	shift+=sizeof(time_stamp);
 
 	int width=0;
 	int height=0;
@@ -708,21 +697,35 @@ void TVideoOutputFrame::ABeforeCalculate(void)
 	  image_size=SharedMemoryPipeSize-16;
 	 memcpy(BmpSource.GetData(),&PipeBuffer[shift],image_size);
 	}
+
+	if(GetNumEngines() == 1)
+	 UEngineMonitorForm->EngineMonitorFrame->SetServerTimeStamp(0,time_stamp);
+	else
+	if(GetNumEngines() > FrameIndex)
+	 UEngineMonitorForm->EngineMonitorFrame->SetServerTimeStamp(FrameIndex,time_stamp);
+
+	std::string sstamp;
+	RDK::UTimeStamp stamp(double(time_stamp/1000.0),25);
+	stamp>>sstamp;
+	TimeEdit->Text=sstamp.c_str();
+
 	UpdateVideo();
    }
   }
  }
 
- SendToComponentIO();
- if(SendPointsByStepCheckBox->Checked)
+ if(UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode() != 1)
  {
-  SendAsMatrixButtonClick(this);
-  Button1Click(this);
- }
- if(DeletePointsAfterSendCheckBox->Checked)
- {
-  MyVideoOutputToolsForm->DelAllPointsButtonClick(this);
- }
+  SendToComponentIO();
+  if(SendPointsByStepCheckBox->Checked)
+  {
+   SendAsMatrixButtonClick(this);
+   Button1Click(this);
+  }
+  if(DeletePointsAfterSendCheckBox->Checked)
+  {
+   MyVideoOutputToolsForm->DelAllPointsButtonClick(this);
+  }
 
  if(Model_Check())
  {
@@ -737,6 +740,7 @@ void TVideoOutputFrame::ABeforeCalculate(void)
  	 MModel_SetComponentBitmapOutput(FrameIndex, "", "Output", &BmpSource,true);
    }
   }
+ }
  }
 }
 

@@ -51,9 +51,13 @@ void __fastcall TEngineThread::BeforeCalculate(void)
 
 void __fastcall TEngineThread::AfterCalculate(void)
 {
- UEngineMonitorForm->EngineMonitorFrame->LastCalculatedServerTimeStamp[ChannelIndex]=
- UEngineMonitorForm->EngineMonitorFrame->GetServerTimeStamp(ChannelIndex);
- RDK::UIVisualControllerStorage::AfterCalculate();
+  UEngineMonitorForm->EngineMonitorFrame->LastCalculatedServerTimeStamp[ChannelIndex]=
+  UEngineMonitorForm->EngineMonitorFrame->GetServerTimeStamp(ChannelIndex);
+ if(ChannelIndex == GetNumEngines()-1)
+ {
+  RDK::UIVisualControllerStorage::AfterCalculate();
+  RDK::UIVisualControllerStorage::UpdateInterface();
+ }
 }
 
 
@@ -68,7 +72,7 @@ void __fastcall TEngineThread::Execute(void)
   ResetEvent(CalcEnable);
 
   Synchronize(BeforeCalculate);
-  MModel_SetComponentBitmapOutput(ChannelIndex, "", 0, &Source,true);
+  MModel_SetComponentBitmapOutput(ChannelIndex, "", "Output", &Source,true);
   MEnv_Calculate(ChannelIndex,0);
   Synchronize(AfterCalculate);
  }
@@ -319,7 +323,7 @@ void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
  case 1:
  {
 //  RDK::UIVisualControllerStorage::AfterCalculate();
-  RDK::UIVisualControllerStorage::UpdateInterface();
+//  RDK::UIVisualControllerStorage::UpdateInterface();
  }
  break;
  }
