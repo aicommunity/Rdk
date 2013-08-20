@@ -54,6 +54,9 @@ void TIdTcpResultBroadcasterFrame::ABeforeCalculate(void)
 
 void TIdTcpResultBroadcasterFrame::AAfterCalculate(void)
 {
+ if(!EnableXmlTranslationCheckBox->Checked)
+  return;
+
  int channel_index=StrToInt(ChannelIndexLabeledEdit->Text);
  if(channel_index>GetNumEngines())
   return;

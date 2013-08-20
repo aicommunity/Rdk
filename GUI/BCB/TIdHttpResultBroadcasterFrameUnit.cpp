@@ -48,6 +48,9 @@ void TIdHttpResultBroadcasterFrame::ABeforeCalculate(void)
 
 void TIdHttpResultBroadcasterFrame::AAfterCalculate(void)
 {
+ if(!EnableXmlTranslationCheckBox->Checked && !EnableImagesTranslationCheckBox->Checked)
+  return;
+
  int channel_index=StrToInt(ChannelIndexLabeledEdit->Text);
  if(channel_index>GetNumEngines())
   return;

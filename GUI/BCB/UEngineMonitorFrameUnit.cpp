@@ -8,6 +8,7 @@
 #include "UEngineMonitorFormUnit.h"
 #include "TIdTcpResultBroadcasterFormUnit.h"
 #include "TIdHttpResultBroadcasterFormUnit.h"
+#include "UServerControlFormUnit.h"
 #include "rdk_initdll.h"
 #ifdef RDK_VIDEO
 #include "VideoOutputFormUnit.h"
@@ -55,14 +56,14 @@ void __fastcall TEngineThread::AfterCalculate(void)
 {
  UEngineMonitorForm->EngineMonitorFrame->LastCalculatedServerTimeStamp[ChannelIndex]=
   UEngineMonitorForm->EngineMonitorFrame->GetServerTimeStamp(ChannelIndex);
-
+	/*
  TIdTcpResultBroadcasterFrame *tcp_frame=IdTcpResultBroadcasterForm->GetBroadcasterFrame(ChannelIndex);
  if(tcp_frame)
   tcp_frame->AfterCalculate();
  TIdHttpResultBroadcasterFrame *http_frame=IdHttpResultBroadcasterForm->GetBroadcasterFrame(ChannelIndex);
  if(http_frame)
   http_frame->AfterCalculate();
-
+      */
  //RDK::UIVisualControllerStorage::AfterCalculate();
 // RDK::UIVisualControllerStorage::UpdateInterface();
 // if(ChannelIndex == GetNumEngines()-1)
@@ -174,14 +175,18 @@ bool TUEngineMonitorFrame::SetNumChannels(int num)
  int old_size=int(ThreadChannels.size());
  for(int i=num;i<old_size;i++)
  {
-  ThreadChannels[i]->Terminate();
+//  ThreadChannels[i]->Suspend();
 //  ThreadChannels[i]->WaitFor();
+  ThreadChannels[i]->Terminate();
   delete ThreadChannels[i];
  }
 
  ThreadChannels.resize(num);
  for(int i=old_size;i<num;i++)
-  ThreadChannels[i]=new TEngineThread(i,true);
+ {
+  ThreadChannels[i]=new TEngineThread(i,false);
+  ThreadChannels[i]->FreeOnTerminate=false;
+ }
 
  return true;
 }
@@ -243,7 +248,7 @@ void __fastcall TUEngineMonitorFrame::Start1Click(TObject *Sender)
 
  case 1:
   for(int i=0;i<GetNumChannels();i++)
-   ThreadChannels[i]->Resume();
+//   ThreadChannels[i]->Start();//Resume();
   Timer->Interval=30;
   Timer->Enabled=true;
  break;
@@ -264,7 +269,10 @@ void __fastcall TUEngineMonitorFrame::Pause1Click(TObject *Sender)
  case 1:
   Timer->Enabled=false;
   for(int i=0;i<GetNumChannels();i++)
-   ThreadChannels[i]->Suspend();
+  {
+//   ThreadChannels[i]->Terminate();//Suspend();
+//   ThreadChannels[i]->WaitFor();
+  }
    //Suspend();
  break;
  }
@@ -333,6 +341,8 @@ void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
  case 1:
  {
   RDK::UIVisualControllerStorage::AfterCalculate();
+//  UServerControlForm->AfterCalculate();
+//  UServerControlForm->UpdateInterface();
   RDK::UIVisualControllerStorage::UpdateInterface();
  }
  break;
