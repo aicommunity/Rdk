@@ -7,14 +7,14 @@
 
 namespace RDK {
 
-// Возвращает текущее время в миллисекундах от некоторого фиксированного момента
-// (зависит от реализации)
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// (пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ)
 unsigned long long GetCurrentStartupTime(void)
 {
  return GetTickCount();
 }
 
-// Вычисляет разницу во времени в миллисекундах
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 unsigned long long CalcDiffTime(unsigned long long time1, unsigned long long time2)
 {
  if(time1>time2)
@@ -23,23 +23,23 @@ unsigned long long CalcDiffTime(unsigned long long time1, unsigned long long tim
   return time2-time1;
 }
 
-// Усыпляет процесс на заданное число миллисекунд
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void Sleep(int value)
 {
  ::Sleep(value);
 }
 
-// Создает каталог
-// Возвращает 0 в случае успеха или если каталог уже существует
-// 1 - если уже существует файл с таким именем
-// 2 - если такой путь не существует
-// 3 - если произошла другая ошибка
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ 0 пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// 1 - пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+// 2 - пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// 3 - пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 int CreateNewDirectory(const char* path)
 {
- DWORD dwFileAttributes = GetFileAttributes(path);
+ DWORD dwFileAttributes = GetFileAttributesA(path);
  if(dwFileAttributes == INVALID_FILE_ATTRIBUTES || (dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
  {
-  if(!::CreateDirectory(path, 0))
+  if(!::CreateDirectoryA(path, 0))
   {
    if(GetLastError() == ERROR_PATH_NOT_FOUND)
     return 2;
@@ -55,16 +55,16 @@ int CreateNewDirectory(const char* path)
 
 //---------------------------------------------------------------------------
 
-// Получает список файлов или каталогов по заданному пути
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
 int FindFilesList(const std::string &path, const std::string &mask, bool isfile, std::vector<std::string> &results)
 {
    results.clear();
    HANDLE findhandle;
  std::string filemask=path+mask;
- WIN32_FIND_DATA finddata;
+ WIN32_FIND_DATAA finddata;
  std::string samplefilename;
 
- findhandle=FindFirstFile(
+ findhandle=FindFirstFileA(
     filemask.c_str(),    // pointer to name of file to search for
     &finddata     // pointer to returned information
     );
@@ -83,7 +83,7 @@ int FindFilesList(const std::string &path, const std::string &mask, bool isfile,
     results.push_back(samplefilename);
    }
 
-  } while(FindNextFile(findhandle,&finddata));
+  } while(FindNextFileA(findhandle,&finddata));
  }
  FindClose(findhandle);
  return 0;
@@ -91,7 +91,7 @@ int FindFilesList(const std::string &path, const std::string &mask, bool isfile,
 
 int CopyFile(const std::string &source_file, const std::string &dest_file)
 {
- if(CopyFileEx(source_file.c_str(), dest_file.c_str(),0,0,
+ if(CopyFileExA(source_file.c_str(), dest_file.c_str(),0,0,
   false, COPY_FILE_OPEN_SOURCE_FOR_WRITE))
   return 0;
 
