@@ -18,7 +18,7 @@ PUsm_GetPipeSize Usm_GetPipeSize=0;
 /// Загружает библиотеку
 int LoadUSharedMemoryLibrary(const char *library_file_name)
 {
- USharedMemoryLibrary=LoadLibrary(library_file_name);
+ USharedMemoryLibrary=LoadLibraryA(library_file_name);
  if(!USharedMemoryLibrary)
   return 1;
 
