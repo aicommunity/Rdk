@@ -522,6 +522,100 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
  ProjectOpenFlag=true;
 }
 
+
+// Загружает проект с индексом source_id, в движок с индексом cloned_id
+void TUGEngineControlForm::CloneProject(int source_id, int cloned_id)
+{
+ if(source_id>=GetNumEngines() || cloned_id >= GetNumEngines())
+  return;
+
+ PredefinedStructure.resize(GetNumEngines());
+ PredefinedStructure[cloned_id]=PredefinedStructure[source_id];
+
+ // Шаг счета по умолчанию
+ DefaultTimeStep.resize(GetNumEngines());
+ DefaultTimeStep[cloned_id]=DefaultTimeStep[source_id];
+
+ // Глобальный шаг счета модели
+ GlobalTimeStep.resize(GetNumEngines());
+ GlobalTimeStep[cloned_id]=GlobalTimeStep[source_id];
+
+ ReflectionFlag=ProjectXml.ReadBool("ReflectionFlag",true);
+
+ CalculationMode.resize(GetNumEngines());
+ CalculationMode[cloned_id]=CalculationMode[source_id];
+
+
+ int selected_engine=GetSelectedEngineIndex();
+ SelectEngine(cloned_id);
+ String modelfilename;
+
+ if(source_id == 0)
+   modelfilename=ProjectXml.ReadString("ModelFileName","").c_str();
+  else
+   modelfilename=ProjectXml.ReadString(std::string("ModelFileName_")+RDK::sntoa(source_id),"").c_str();
+
+
+ if(!IsEngineInit())
+  GraphicalEngineInit(PredefinedStructure[cloned_id],NumEnvInputs,NumEnvOutputs,InputEnvImageWidth, InputEnvImageHeight ,ReflectionFlag,ExceptionHandler);
+ else
+  Env_SetPredefinedStructure(PredefinedStructure[cloned_id]);
+
+ Model_SetDefaultTimeStep(DefaultTimeStep[cloned_id]);
+ Env_SetCurrentDataDir(AnsiString(ProjectPath).c_str());
+
+ Env_CreateStructure();
+ Env_Init();
+
+ if(PredefinedStructure[cloned_id] == 0 && modelfilename.Length() != 0)
+ {
+  if(ExtractFilePath(modelfilename).Length() == 0)
+   UComponentsControlForm->ComponentsControlFrame->LoadModelFromFile(ProjectPath+modelfilename);
+  else
+   UComponentsControlForm->ComponentsControlFrame->LoadModelFromFile(modelfilename);
+ }
+
+ String paramsfilename;
+
+ if(source_id == 0)
+  paramsfilename=ProjectXml.ReadString("ParametersFileName","").c_str();
+ else
+  paramsfilename=ProjectXml.ReadString(std::string("ParametersFileName_")+RDK::sntoa(source_id),"").c_str();
+
+ if(paramsfilename.Length() != 0)
+ {
+  if(ExtractFilePath(paramsfilename).Length() == 0)
+   UComponentsControlForm->ComponentsControlFrame->LoadParametersFromFile(ProjectPath+paramsfilename);
+  else
+   UComponentsControlForm->ComponentsControlFrame->LoadParametersFromFile(paramsfilename);
+ }
+
+ if(ProjectAutoSaveStateFlag)
+ {
+  String statesfilename;
+  if(source_id == 0)
+   statesfilename=ProjectXml.ReadString("StatesFileName","").c_str();
+  else
+   statesfilename=ProjectXml.ReadString(std::string("StatesFileName_")+RDK::sntoa(source_id),"").c_str();
+
+  if(statesfilename.Length() != 0)
+  {
+   if(ExtractFilePath(statesfilename).Length() == 0)
+	UComponentsControlForm->ComponentsControlFrame->LoadStatesFromFile(ProjectPath+statesfilename);
+   else
+	UComponentsControlForm->ComponentsControlFrame->LoadStatesFromFile(statesfilename);
+  }
+ }
+
+ if(Model_Check())
+ {
+  Model_SetGlobalTimeStep("",GlobalTimeStep[cloned_id]);
+ }
+
+ SelectEngine(selected_engine);
+}
+
+
 // Сохраняет проект
 void TUGEngineControlForm::SaveProject(void)
 {
@@ -712,6 +806,7 @@ void TUGEngineControlForm::SaveProject(void)
 
  ProjectXml.SaveToFile(AnsiString(ProjectPath+ProjectFileName).c_str());
 }
+
 
 // Добавляет заданный фрейм типа TUImagesFrame, TUWatchFrame и т.п. на заданную вкладку
 bool TUGEngineControlForm::AddSpecialFrameToPage(TUVisualControllerFrame *frame, TTabSheet* tab, const String &caption)

@@ -249,6 +249,9 @@ void CloseProject(void);
 // Открывает проект
 void OpenProject(const String &FileName);
 
+// Загружает проект с индексом source_id, в движок с индексом cloned_id
+void CloneProject(int source_id, int cloned_id);
+
 // Сохраняет проект
 void SaveProject(void);
 

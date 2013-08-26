@@ -94,29 +94,15 @@ object UGEngineControlForm: TUGEngineControlForm
             ExplicitWidth = 245
             ExplicitHeight = 77
             inherited TabSheet4: TTabSheet
-              ExplicitWidth = 237
-              ExplicitHeight = 51
               inherited Splitter3: TSplitter
-                Top = -26
-                Width = 237
                 ExplicitTop = 66
                 ExplicitWidth = 237
               end
               inherited ParametersListStringGrid: TStringGrid
-                Width = 237
-                Height = 18
                 ExplicitWidth = 237
                 ExplicitHeight = 3
               end
-              inherited ParameterValueRichEdit: TRichEdit
-                Top = -16
-                Width = 237
-                ExplicitTop = -16
-                ExplicitWidth = 237
-              end
               inherited HeaderControl3: THeaderControl
-                Top = 17
-                Width = 237
                 ExplicitTop = 17
                 ExplicitWidth = 237
               end
@@ -193,6 +179,10 @@ object UGEngineControlForm: TUGEngineControlForm
         TabPosition = tpRight
         object LogsTabSheet: TTabSheet
           Caption = 'Logs'
+          ExplicitLeft = 0
+          ExplicitTop = 0
+          ExplicitWidth = 0
+          ExplicitHeight = 0
         end
         object TabSheet2: TTabSheet
           Caption = 'Performance'
@@ -312,13 +302,6 @@ object UGEngineControlForm: TUGEngineControlForm
                     Height = 419
                     ExplicitWidth = 499
                     ExplicitHeight = 419
-                  end
-                end
-                inherited LibsTabSheet: TTabSheet
-                  ExplicitHeight = 199
-                  inherited TreeView: TTreeView
-                    Height = 199
-                    ExplicitHeight = 199
                   end
                 end
               end
@@ -680,7 +663,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 360
     Top = 65528
     Bitmap = {
-      494C01011B0060004C0110001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B006000500110001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

@@ -703,6 +703,18 @@ int TUServerControlForm::SetNumChannels(int value)
  if(value<=0)
   return 1;
 
+ int selected=GetSelectedEngineIndex();
+ for(int i=0;i<value;i++)
+ {
+  if(GetNumEngines()<=i)
+   break;
+
+  if(!MIsEngineInit(i) || !MModel_Check(i))
+  {
+   UGEngineControlForm->CloneProject(0, i);
+  }
+ }
+
  if(VideoOutputForm->GetNumSources()<value)
  {
   for(int i=VideoOutputForm->GetNumSources();i<value;i++)
