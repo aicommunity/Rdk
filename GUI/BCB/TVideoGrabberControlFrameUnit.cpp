@@ -40,7 +40,7 @@ void TVideoGrabberControlFrame::Init(TVideoOutputFrame* video_output_frame, TVid
 {
  VideoGrabber=grabber;
  VideoOutputFrame=video_output_frame;
- UpdateInterface();
+// UpdateInterface();
 }
 
 // Выбор активного режима видеоввода
@@ -326,20 +326,20 @@ void __fastcall TVideoGrabberControlFrame::VCapturePageControlChange(TObject *Se
  if(UpdateInterfaceFlag)
   return;
 
- if(!VideoOutputFrame || !VideoGrabber)
+ if(!VideoOutputFrame)
   return;
 
  VideoOutputFrame->StopButtonClick(Sender);
 
  if(VCapturePageControl->ActivePage == DeviceTabSheet)
  {
-  VideoGrabber->VideoSource=vs_VideoCaptureDevice;
-  VideoOutputFrame->InitByCamera(VideoGrabber->VideoDevice, VideoGrabber->VideoInput, VideoGrabber->VideoSize, VideoGrabber->VideoSubtype, VideoGrabber->AnalogVideoStandard);
+//  VideoGrabber->VideoSource=vs_VideoCaptureDevice;
+  VideoOutputFrame->InitByCamera(DeviceComboBox->ItemIndex, InputComboBox->ItemIndex, VideoSizeComboBox->ItemIndex, VideoSubTypeComboBox->ItemIndex, AnalogVideoStandardComboBox->ItemIndex);
  }
  else
  if(VCapturePageControl->ActivePage == VideoFileTabSheet)
  {
-  VideoGrabber->VideoSource=vs_VideoFileOrURL;
+//  VideoGrabber->VideoSource=vs_VideoFileOrURL;
   if(VFNameEdit->Text != "")
   {
    if(ExtractFilePath(VFNameEdit->Text).Length() == 0)
@@ -362,7 +362,7 @@ void __fastcall TVideoGrabberControlFrame::VCapturePageControlChange(TObject *Se
  else
  if(VCapturePageControl->ActivePage == IPCameraTabSheet)
  {
-  VideoGrabber->VideoSource=vs_IPCamera;
+ // VideoGrabber->VideoSource=vs_IPCamera;
   VideoOutputFrame->InitByIPCamera(IPCameraUrlEdit->Text, IPCameraUserNameEdit->Text, IPCameraUserPasswordEdit->Text);
  }
  else
@@ -412,7 +412,7 @@ void __fastcall TVideoGrabberControlFrame::OpenImageFileButtonClick(TObject *Sen
  if(!PicturesOpenDialog->Execute())
   return;
 
- if(!VideoOutputFrame || !VideoGrabber)
+ if(!VideoOutputFrame)
   return;
 
  String FileName;

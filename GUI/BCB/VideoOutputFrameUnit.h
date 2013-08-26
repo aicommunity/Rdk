@@ -29,8 +29,470 @@
 #include "TUHttpServerUnit.h"
 
 class TVideoGrabberControlForm;
+class TVideoOutputFrame;
 
-//using namespace RDK::VCapture;
+class TVideoCaptureThread: public TThread
+{
+protected: // Параметры
+/// Источник видео
+int SourceMode;
+
+/// Индекс канала в библиотеке аналитики, управляемый тредом
+int ChannelIndex;
+
+/// Режим синхронизации с расчетом
+/// 0 - Нет сихнронизации с расчетом
+/// 1 - Синхронизация с расчетом включена
+int SyncMode;
+
+protected: // Данные
+/// Временная метка последнего кадра
+long long LastTimeStamp;
+
+/// Данные изображения
+RDK::UBitmap Source;
+
+/// Указатель на владельца
+TVideoOutputFrame *Frame;
+
+protected: // События
+/// Снимается на время захвата кадра
+HANDLE FrameNotInProgress;
+
+/// Выставлено всегда. Сбрасывается на время доступа к изображению
+HANDLE SourceUnlock;
+
+/// Выставляется на время работы видеозахвата
+HANDLE CaptureEnabled;
+
+/// Сбрасывается на время ожидания расчета
+HANDLE CalcCompleteEvent;
+
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+__fastcall TVideoCaptureThread(TVideoOutputFrame *frame, bool CreateSuspended);
+virtual __fastcall ~TVideoCaptureThread(void);
+// --------------------------
+
+// --------------------------
+// Управление параметрами
+// --------------------------
+/// Источник видео
+int GetSourceMode(void) const;
+
+/// Индекс канала в библиотеке аналитики, управляемый тредом
+int GetChannelIndex(void) const;
+bool SetChannelIndex(int value);
+
+/// Режим синхронизации с расчетом
+int GetSyncMode(void) const;
+bool SetSyncMode(int mode);
+// --------------------------
+
+// --------------------------
+// Управление данными
+// --------------------------
+/// Указатель на владельца
+TVideoOutputFrame *GetFrame(void) const;
+bool SetFrame(TVideoOutputFrame * frame);
+// --------------------------
+
+// --------------------------
+// Управление событиями
+// --------------------------
+/// Выставляется по завершении захвата нового кадра
+HANDLE GetFrameNotInProgress(void) const;
+
+/// Выставлено всегда. Сбрасывается на время доступа к изображению
+HANDLE GetSourceUnlock(void) const;
+
+/// Выставляется на время работы видеозахвата
+HANDLE GetCaptureEnabled(void) const;
+
+/// Сбрасывается на время ожидания расчета
+HANDLE GetCalcCompleteEvent(void) const;
+// --------------------------
+
+// --------------------------
+// Управление потоком
+// --------------------------
+virtual void __fastcall Start(void);
+
+virtual void __fastcall Stop(void);
+
+virtual void __fastcall BeforeCalculate(void);
+
+virtual void __fastcall AfterCalculate(void);
+
+virtual void __fastcall Calculate(void)=0;
+
+virtual void __fastcall Execute(void);
+
+/// Возвращает копию изображения с блокировкой
+bool ReadSourceSafe(RDK::UBitmap& dest, long long &time_stamp, bool reflect);
+
+/// Записывает изображение в тред с блокировкой
+bool WriteSourceSafe(const RDK::UBitmap& src, long long time_stamp, bool reflect);
+bool WriteSourceSafe(Graphics::TBitmap *src, long long time_stamp, bool reflect);
+
+// Меняет временную метку с блокировкой
+virtual bool SetLastTimeStampSafe(long long time_stamp);
+// --------------------------
+};
+
+class TVideoCaptureThreadBmp: public TVideoCaptureThread
+{
+protected: // Параметры
+/// Имя файла изображения
+std::string FileName;
+
+protected: // Временные изображения
+RDK::UBitmap TempSource;
+Graphics::TBitmap* TempBitmap;
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+__fastcall TVideoCaptureThreadBmp(TVideoOutputFrame *frame, bool CreateSuspended);
+virtual __fastcall ~TVideoCaptureThreadBmp(void);
+// --------------------------
+
+// --------------------------
+// Управление параметрами
+// --------------------------
+/// Имя файла изображения
+const std::string& GetFileName(void) const;
+bool SetFileName(const std::string& value);
+// --------------------------
+
+// --------------------------
+// Управление потоком
+// --------------------------
+virtual void __fastcall Start(void);
+
+virtual void __fastcall Stop(void);
+
+virtual void __fastcall BeforeCalculate(void);
+
+virtual void __fastcall AfterCalculate(void);
+
+virtual void __fastcall Calculate(void);
+// --------------------------
+};
+
+class TVideoCaptureThreadBmpSequence: public TVideoCaptureThread
+{
+protected: // Параметры
+/// Имя пути до файлов изображения
+std::string PathName;
+
+protected: // Временные изображения
+// Массив изображений для режима последовательности картинок
+std::vector<std::string> BmpSequenceNames;
+
+// Текущий кадр в последовательности картинок
+int CurrentBmpSequenceIndex;
+
+int LastReadSequenceIndex;
+
+
+
+RDK::UBitmap TempSource;
+Graphics::TBitmap* TempBitmap;
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+__fastcall TVideoCaptureThreadBmpSequence(TVideoOutputFrame *frame, bool CreateSuspended);
+virtual __fastcall ~TVideoCaptureThreadBmpSequence(void);
+// --------------------------
+
+// --------------------------
+// Управление параметрами
+// --------------------------
+/// Имя пути до файлов изображения
+const std::string& GetPathName(void) const;
+bool SetPathName(const std::string& value);
+// --------------------------
+
+// --------------------------
+// Управление потоком
+// --------------------------
+virtual void __fastcall AfterCalculate(void);
+
+virtual void __fastcall Calculate(void);
+
+// Загружает выбранную картинку по индеку в массиве имен
+bool LoadImageFromSequence(int index, RDK::UBitmap &bmp);
+
+// Меняет временную метку с блокировкой
+virtual bool SetLastTimeStampSafe(long long time_stamp);
+// --------------------------
+};
+
+class TVideoCaptureThreadHttpServer: public TVideoCaptureThread
+{
+protected: // Параметры
+/// Порт сервера
+int ListenPort;
+
+protected: // Временные переменные
+TUHttpServerFrame *UHttpServerFrame;
+
+RDK::UBitmap TempSource;
+Graphics::TBitmap* TempBitmap;
+
+protected: // События
+/// Выставляется при получении очередного кадра
+HANDLE HttpServerCompleted;
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+__fastcall TVideoCaptureThreadHttpServer(TVideoOutputFrame *frame, bool CreateSuspended);
+virtual __fastcall ~TVideoCaptureThreadHttpServer(void);
+// --------------------------
+
+// --------------------------
+// Управление параметрами
+// --------------------------
+/// Имя файла изображения
+int GetListenPort(void) const;
+bool SetListenPort(int value);
+// --------------------------
+
+// --------------------------
+// Управление потоком
+// --------------------------
+virtual void __fastcall Start(void);
+
+virtual void __fastcall Stop(void);
+
+virtual void __fastcall BeforeCalculate(void);
+
+virtual void __fastcall AfterCalculate(void);
+
+virtual void __fastcall Calculate(void);
+
+void __fastcall IdHTTPServerCommandGet(TIdContext *AContext, TIdHTTPRequestInfo *ARequestInfo,
+		  TIdHTTPResponseInfo *AResponseInfo);
+// --------------------------
+};
+
+class TVideoCaptureThreadVideoGrabber: public TVideoCaptureThread
+{
+protected: // Параметры
+
+protected: // Данные
+TVideoGrabber* VideoGrabber;
+
+Graphics::TBitmap* ConvertBitmap;
+
+protected: // События
+/// Выставляется при получении очередного кадра
+HANDLE VideoGrabberCompleted;
+
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+__fastcall TVideoCaptureThreadVideoGrabber(TVideoOutputFrame *frame, bool CreateSuspended);
+virtual __fastcall ~TVideoCaptureThreadVideoGrabber(void);
+// --------------------------
+
+// --------------------------
+// Управление потоком
+// --------------------------
+TVideoGrabber* GetVideoGrabber(void);
+
+void __fastcall OnFrameCaptureCompleted(System::TObject* Sender, void * FrameBitmap, int BitmapWidth, int BitmapHeight, unsigned FrameNumber, __int64 FrameTime, TFrameCaptureDest DestType, System::UnicodeString FileName, bool Success, int FrameId);
+
+virtual void __fastcall Calculate(void);
+
+virtual void __fastcall BeforeCalculate(void);
+
+virtual void __fastcall AfterCalculate(void);
+// --------------------------
+};
+
+class TVideoCaptureThreadVideoGrabberAvi: public TVideoCaptureThreadVideoGrabber
+{
+protected: // Параметры
+/// Имя файла
+std::string FileName;
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+__fastcall TVideoCaptureThreadVideoGrabberAvi(TVideoOutputFrame *frame, bool CreateSuspended);
+virtual __fastcall ~TVideoCaptureThreadVideoGrabberAvi(void);
+// --------------------------
+
+// --------------------------
+// Управление параметрами
+// --------------------------
+/// Имя канала общей памяти
+const std::string& GetFileName(void) const;
+bool SetFileName(const std::string& value);
+// --------------------------
+
+// --------------------------
+// Управление потоком
+// --------------------------
+virtual void __fastcall Start(void);
+
+virtual void __fastcall Stop(void);
+
+
+// Меняет временную метку с блокировкой
+virtual bool SetLastTimeStampSafe(long long time_stamp);
+// --------------------------
+};
+
+
+class TVideoCaptureThreadVideoGrabberCamera: public TVideoCaptureThreadVideoGrabber
+{
+protected: // Параметры
+int CameraIndex;
+int InputIndex;
+int SizeIndex;
+int SubtypeIndex;
+int AnalogIndex;
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+__fastcall TVideoCaptureThreadVideoGrabberCamera(TVideoOutputFrame *frame, bool CreateSuspended);
+virtual __fastcall ~TVideoCaptureThreadVideoGrabberCamera(void);
+// --------------------------
+
+// --------------------------
+// Управление параметрами
+// --------------------------
+int GetCameraIndex(void) const;
+int GetInputIndex(void) const;
+int GetSizeIndex(void) const;
+int GetSubtypeIndex(void) const;
+int GetAnalogIndex(void) const;
+
+bool Init(int camera_index, int input_index, int size_index, int subtype_index, int analog_index);
+// --------------------------
+
+// --------------------------
+// Управление потоком
+// --------------------------
+virtual void __fastcall Start(void);
+
+virtual void __fastcall Stop(void);
+// --------------------------
+};
+
+class TVideoCaptureThreadVideoGrabberIpCamera: public TVideoCaptureThreadVideoGrabber
+{
+protected: // Параметры
+/// Имя камеры
+String Url;
+
+/// Имя пользователя
+String UserName;
+
+/// Пароль
+String Password;
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+__fastcall TVideoCaptureThreadVideoGrabberIpCamera(TVideoOutputFrame *frame, bool CreateSuspended);
+virtual __fastcall ~TVideoCaptureThreadVideoGrabberIpCamera(void);
+// --------------------------
+
+// --------------------------
+// Управление параметрами
+// --------------------------
+/// Имя камеры
+const String& GetUrl(void) const;
+
+/// Имя пользователя
+const String& GetUserName(void) const;
+
+/// Пароль
+const String& GetPassword(void) const;
+
+bool Init(const String camera_url, const String user_name, const String user_password);
+// --------------------------
+
+// --------------------------
+// Управление потоком
+// --------------------------
+virtual void __fastcall Start(void);
+
+virtual void __fastcall Stop(void);
+// --------------------------
+};
+
+
+class TVideoCaptureThreadSharedMemory: public TVideoCaptureThread
+{
+protected: // Параметры
+/// Индекс канала общей памяти
+int PipeIndex;
+
+/// Имя канала общей памяти
+std::string PipeName;
+
+/// Размер канала общей памяти
+int SharedMemoryPipeSize;
+
+protected: // Данные
+/// Буфер приема данных из канала
+std::vector<char> PipeBuffer;
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+__fastcall TVideoCaptureThreadSharedMemory(TVideoOutputFrame *frame, bool CreateSuspended);
+virtual __fastcall ~TVideoCaptureThreadSharedMemory(void);
+// --------------------------
+
+// --------------------------
+// Управление параметрами
+// --------------------------
+/// Индекс канала общей памяти
+int GetPipeIndex(void) const;
+bool SetPipeIndex(int value);
+
+/// Имя канала общей памяти
+const std::string& GetPipeName(void) const;
+bool SetPipeName(const std::string& value);
+
+/// Размер канала общей памяти
+int GetSharedMemoryPipeSize(void) const;
+// --------------------------
+
+// --------------------------
+// Управление потоком
+// --------------------------
+virtual void __fastcall BeforeCalculate(void);
+
+virtual void __fastcall AfterCalculate(void);
+
+virtual void __fastcall Calculate(void);
+
+virtual void __fastcall UnsafeInit(void);
+// --------------------------
+};
+
 //---------------------------------------------------------------------------
 class TVideoOutputFrame : public TUVisualControllerFrame
 {
@@ -44,7 +506,6 @@ __published:    // IDE-managed Components
     TMaskEdit *TimeEdit;
     TPopupMenu *PopupMenu;
     TMenuItem *N1;
-    TVideoGrabber *VideoGrabber;
     TTrackBar *TrackBar;
     TMenuItem *SourceControl1;
     TMenuItem *N2;
@@ -70,10 +531,9 @@ __published:    // IDE-managed Components
 	TMenuItem *PropertyMatrix1;
 	TCheckBox *SendPointsByStepCheckBox;
 	TCheckBox *DeletePointsAfterSendCheckBox;
-	TUHttpServerFrame *UHttpServerFrame;
 	TGroupBox *GroupBox1;
     void __fastcall TimerTimer(TObject *Sender);
-    void __fastcall StartButtonClick(TObject *Sender);
+	void __fastcall StartButtonClick(TObject *Sender);
     void __fastcall StopButtonClick(TObject *Sender);
     void __fastcall ImageMouseDown(TObject *Sender, TMouseButton Button,
           TShiftState Shift, int X, int Y);
@@ -83,10 +543,10 @@ __published:    // IDE-managed Components
           TShiftState Shift, int X, int Y);
     void __fastcall TimeEditChange(TObject *Sender);
     void __fastcall N1Click(TObject *Sender);
-    void __fastcall VideoGrabberFrameCaptureCompleted(TObject *Sender, Pointer FrameBitmap,
-          int BitmapWidth, int BitmapHeight, DWORD FrameNumber, __int64 FrameTime,
-          TFrameCaptureDest DestType, UnicodeString FileName, bool Success,
-          int FrameId);
+//    void __fastcall VideoGrabberFrameCaptureCompleted(TObject *Sender, Pointer FrameBitmap,
+//          int BitmapWidth, int BitmapHeight, DWORD FrameNumber, __int64 FrameTime,
+//          TFrameCaptureDest DestType, UnicodeString FileName, bool Success,
+//          int FrameId);
     void __fastcall TrackBarChange(TObject *Sender);
     void __fastcall SourceControl1Click(TObject *Sender);
     void __fastcall SendToComponentClick(TObject *Sender);
@@ -99,8 +559,8 @@ __published:    // IDE-managed Components
 	void __fastcall SendImageToComponentProperty1Click(TObject *Sender);
 	void __fastcall SendAsMatrixButtonClick(TObject *Sender);
 	void __fastcall PropertyMatrix1Click(TObject *Sender);
-	void __fastcall UHttpServerFrameIdHTTPServerCommandGet(TIdContext *AContext, TIdHTTPRequestInfo *ARequestInfo,
-          TIdHTTPResponseInfo *AResponseInfo);
+//	void __fastcall UHttpServerFrameIdHTTPServerCommandGet(TIdContext *AContext, TIdHTTPRequestInfo *ARequestInfo,
+//          TIdHTTPResponseInfo *AResponseInfo);
 
 
 private:    // User declarations
@@ -121,7 +581,7 @@ int FrameIndex;
 // 6 - Shared memory
 int Mode;
 
-Graphics::TBitmap* ConvertBitmap;
+//Graphics::TBitmap* ConvertBitmap;
 
 // Форма управления выводом видео
 TVideoOutputToolsForm* MyVideoOutputToolsForm;
@@ -131,6 +591,9 @@ TVideoGrabberControlForm* MyVideoGrabberControlForm;
 
 // Указатель на форму выбора компоненты-источника
 TUComponentsListForm *MyComponentsListForm;
+
+// Поток видеозахвата
+TVideoCaptureThread* CaptureThread;
 
 // Источник изображения
 RDK::UBitmap BmpSource,ReflectedBmpSource;
@@ -148,13 +611,13 @@ RDK::MGraphics<double,2> GeometryGraphics;
 RDK::MGraphics<double,2> CurrentGeometryGraphics;
 
 // Массив изображений для режима последовательности картинок
-std::vector<std::string> BmpSequenceNames;
+//std::vector<std::string> BmpSequenceNames;
 
 // Путь до последовательности изображений
-std::string BmpSequencePathName;
+//std::string BmpSequencePathName;
 
 // Текущий кадр в последовательности картинок
-int CurrentBmpSequenceIndex;
+//int CurrentBmpSequenceIndex;
 
 protected: // Привязка источника видео к входу-выходу компонента
 // Имя компонента, к которому привязан источник
@@ -175,7 +638,7 @@ std::string LinkedComponentPropertyName;
 
 public:
 // Временная метка сервера
-long long ServerTimeStamp;
+//long long ServerTimeStamp;
 
 // Текущая создаваемая фигура
 //RDK::MGeometry<double,2> Figure;
@@ -201,9 +664,9 @@ bool ZoneSelectEnable;
 // Событие, устанавливаемое при окончании выделения зоны
 HANDLE ZoneSelectEvent;
 
-int PipeIndex;
-std::string PipeName;
-int SharedMemoryPipeSize;
+//int PipeIndex;
+//std::string PipeName;
+//int SharedMemoryPipeSize;
 
 // ============================================================
 // Временные переменные
@@ -226,7 +689,7 @@ bool CorrSelectFlag;
 bool UpdateFlag;
 
 // Текущий обрабатываемый кадр
-long CurrentFrameNumber;
+//long CurrentFrameNumber;
 
 // Целевой параметр-приемник данных о геометрии
 std::string SelectedComponentPName;
@@ -240,13 +703,18 @@ std::string SelectedComponentStateName;
 std::string SelectedComponentPropertyMatrixName;
 std::string SelectedComponentMatrixName;
 
-std::vector<char> PipeBuffer;
+//std::vector<char> PipeBuffer;
 
-int LastReadSequenceIndex;
+//int LastReadSequenceIndex;
+
+// Флаг, выставляемый при включении видеозахвата
+bool IsStarted;
 // ============================================================
 
 
 
+/// Уничтожает созданный поток
+bool DestroyCaptureThread(void);
 
 // Инициализация фрейма avi-файлом
 void InitByAvi(const String &filename);
@@ -273,7 +741,7 @@ bool InitByHttpServer(int listen_port);
 bool InitBySharedMemory(int pipe_index, const std::string &pipe_name);
 
 // Загружает выбранную картинку по индеку в массиве имен
-bool LoadImageFromSequence(int index, RDK::UBitmap &bmp);
+//bool LoadImageFromSequence(int index, RDK::UBitmap &bmp);
 
 // Устанавливает название окна
 bool SetTitle(String title);
@@ -332,6 +800,9 @@ void SendToComponentIO(void);
 // -----------------------------
 // Метод, вызываемый перед шагом расчета
 virtual void ABeforeCalculate(void);
+
+// Метод, вызываемый после шага расчета
+virtual void AAfterCalculate(void);
 
 // Обновление интерфейса
 virtual void AUpdateInterface(void);

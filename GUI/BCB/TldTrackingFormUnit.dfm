@@ -114,6 +114,10 @@ object TldTrackingForm: TTldTrackingForm
       TabOrder = 3
       object RectangleTabSheet: TTabSheet
         Caption = 'Rectangle'
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object Label2: TLabel
           Left = 7
           Top = 40
@@ -241,29 +245,11 @@ object TldTrackingForm: TTldTrackingForm
           ExplicitWidth = 527
           ExplicitHeight = 268
         end
-        inherited VideoGrabber: TVideoGrabber
-          Width = 568
-          Height = 312
-          ExplicitWidth = 568
-          ExplicitHeight = 362
-        end
         inherited GroupBox1: TGroupBox
           Width = 568
           Height = 312
           ExplicitWidth = 568
           ExplicitHeight = 312
-          inherited UHttpServerFrame: TUHttpServerFrame
-            Width = 564
-            Height = 295
-            ExplicitWidth = 564
-            ExplicitHeight = 295
-            inherited Image1: TImage
-              Width = 564
-              Height = 295
-              ExplicitWidth = 564
-              ExplicitHeight = 295
-            end
-          end
         end
       end
       inherited Panel1: TPanel

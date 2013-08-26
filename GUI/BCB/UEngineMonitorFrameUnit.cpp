@@ -44,7 +44,15 @@ void __fastcall TEngineThread::BeforeCalculate(void)
 #ifdef RDK_VIDEO
  TVideoOutputFrame* video=VideoOutputForm->GetVideoOutputFrame(ChannelIndex);
  if(video)
-  Source=video->BmpSource;
+ {
+//  video->BeforeCalculate();
+//  Source=video->BmpSource;
+  if(video->CaptureThread)
+  {
+   long long time_stamp=0;
+   video->CaptureThread->ReadSourceSafe(Source,time_stamp,true);
+  }
+ }
  else
   Source.Clear();
 #endif
@@ -56,14 +64,14 @@ void __fastcall TEngineThread::AfterCalculate(void)
 {
  UEngineMonitorForm->EngineMonitorFrame->LastCalculatedServerTimeStamp[ChannelIndex]=
   UEngineMonitorForm->EngineMonitorFrame->GetServerTimeStamp(ChannelIndex);
-	/*
+
  TIdTcpResultBroadcasterFrame *tcp_frame=IdTcpResultBroadcasterForm->GetBroadcasterFrame(ChannelIndex);
  if(tcp_frame)
   tcp_frame->AfterCalculate();
  TIdHttpResultBroadcasterFrame *http_frame=IdHttpResultBroadcasterForm->GetBroadcasterFrame(ChannelIndex);
  if(http_frame)
   http_frame->AfterCalculate();
-      */
+
  //RDK::UIVisualControllerStorage::AfterCalculate();
 // RDK::UIVisualControllerStorage::UpdateInterface();
 // if(ChannelIndex == GetNumEngines()-1)
@@ -78,14 +86,19 @@ void __fastcall TEngineThread::Execute(void)
  while(!Terminated)
  {
 //  Synchronize(BeforeCalculate);
+//  BeforeCalculate();
   if(WaitForSingleObject(CalcEnable,30) == WAIT_TIMEOUT)
    continue;
   ResetEvent(CalcEnable);
-
-  Synchronize(BeforeCalculate);
-  MModel_SetComponentBitmapOutput(ChannelIndex, "", "Output", &Source,true);
-  MEnv_Calculate(ChannelIndex,0);
-  Synchronize(AfterCalculate);
+//  Synchronize(BeforeCalculate);
+  BeforeCalculate();
+  if(GetNumEngines()>ChannelIndex)
+  {
+   MModel_SetComponentBitmapOutput(ChannelIndex, "", "Output", &Source,false);
+   MEnv_Calculate(ChannelIndex,0);
+  }
+  AfterCalculate();
+  //Synchronize(AfterCalculate);
  }
 }
 // --------------------------
@@ -301,6 +314,8 @@ void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
  {
  case 0:
  {
+  RDK::UIVisualControllerStorage::BeforeCalculate();
+
   for(int i=0;i<GetNumEngines();i++)
   {
    if(!MIsEngineInit(i) || !MModel_Check(i))
@@ -314,8 +329,6 @@ void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
 	 continue;
    }
    CalculateSignal[i]=false;
-
-   RDK::UIVisualControllerStorage::BeforeCalculate();
 
    switch(CalculateMode[i])
    {
@@ -340,10 +353,10 @@ void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
 
  case 1:
  {
-  RDK::UIVisualControllerStorage::AfterCalculate();
-//  UServerControlForm->AfterCalculate();
-//  UServerControlForm->UpdateInterface();
-  RDK::UIVisualControllerStorage::UpdateInterface();
+//  RDK::UIVisualControllerStorage::AfterCalculate();
+  UServerControlForm->AfterCalculate();
+  UServerControlForm->UpdateInterface();
+//  RDK::UIVisualControllerStorage::UpdateInterface();
  }
  break;
  }

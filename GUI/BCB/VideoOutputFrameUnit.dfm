@@ -30,51 +30,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
       ExplicitTop = 14
       ExplicitHeight = 400
     end
-    object VideoGrabber: TVideoGrabber
-      Left = 2
-      Top = 15
-      Width = 698
-      Height = 319
-      Align = alClient
-      Caption = 'VideoGrabber'
-      Color = clBlack
-      Visible = False
-      ASFVideoWidth = -1
-      AspectRatioToUse = -1.000000000000000000
-      AudioCompressor = 0
-      AutoFilePrefix = 'vg'
-      DoubleBuffered = True
-      Cropping_Zoom = 1.000000000000000000
-      LicenseString = 'N/A'
-      MotionDetector_Grid = 
-        '5555555555 5555555555 5555555555 5555555555 5555555555 555555555' +
-        '5 5555555555 5555555555 5555555555 5555555555'
-      PlayerSpeedRatio = 1.000000000000000000
-      PlayerTrackBar = TrackBar
-      Reencoding_StartTime = -1
-      Reencoding_StartFrame = -1
-      Reencoding_StopTime = -1
-      Reencoding_StopFrame = -1
-      TextOverlay_Font.Charset = DEFAULT_CHARSET
-      TextOverlay_Font.Color = clAqua
-      TextOverlay_Font.Height = -16
-      TextOverlay_Font.Name = 'Tahoma'
-      TextOverlay_Font.Style = []
-      TextOverlay_String = 
-        'Note: the date/time formats '#13#10'can be easily modified.'#13#10#13#10'system ' +
-        'date/time: %sys_time[dd/mm/yy hh:nn:ss]%'#13#10'DV time code: %time_co' +
-        'de%'#13#10'DV date/time: %dv_time[dd/mm/yy hh:nn:ss]%'#13#10'frame number: %' +
-        'frame_count%'#13#10'time (full): %time_full%'#13#10'time (sec): %time_sec%'#13#10 +
-        'time (ns): %time_100ns%'
-      VideoCompression_Quality = 1.000000000000000000
-      VideoCompressor = 0
-      VideoFromImages_TemporaryFile = 'SetOfBitmaps01.dat'
-      VideoProcessing_RotationCustomAngle = 45.500000000000000000
-      VideoSource = vs_VideoFileOrURL
-      VideoSource_FileOrURL_StartTime = -1
-      VideoSource_FileOrURL_StopTime = -1
-      OnFrameCaptureCompleted = VideoGrabberFrameCaptureCompleted
-    end
     object GroupBox1: TGroupBox
       Left = 2
       Top = 15
@@ -82,39 +37,8 @@ inherited VideoOutputFrame: TVideoOutputFrame
       Height = 319
       Align = alClient
       Caption = 'GroupBox1'
-      TabOrder = 1
+      TabOrder = 0
       Visible = False
-      inline UHttpServerFrame: TUHttpServerFrame
-        Left = 2
-        Top = 15
-        Width = 694
-        Height = 302
-        Align = alClient
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        ParentFont = False
-        TabOrder = 0
-        ExplicitLeft = 2
-        ExplicitTop = 15
-        ExplicitWidth = 694
-        ExplicitHeight = 302
-        inherited Image1: TImage
-          Width = 694
-          Height = 302
-          Proportional = True
-          Stretch = True
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 694
-          ExplicitHeight = 302
-        end
-        inherited IdHTTPServer: TIdHTTPServer
-          OnCommandGet = UHttpServerFrameIdHTTPServerCommandGet
-        end
-      end
     end
   end
   object Panel1: TPanel

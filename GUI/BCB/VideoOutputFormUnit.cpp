@@ -101,10 +101,11 @@ void TVideoOutputForm::AddSource(void)
  Sources[index]->Parent=sheet;
  Sources[index]->Align=alClient;
  PageControl->Pages[index]->Caption=IntToStr(int(index));
- if(index == 0)
+/* if(index == 0)
   Sources[index]->VideoGrabber->SynchronizationRole=sr_Master;
  else
   Sources[index]->VideoGrabber->SynchronizationRole=sr_Slave;
+  */
 }
 
 // Удаляет источник видео

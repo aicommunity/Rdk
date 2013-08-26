@@ -710,7 +710,6 @@ int TUServerControlForm::SetNumChannels(int value)
    VideoOutputForm->AddSource();
    VideoOutputForm->GetVideoOutputFrame(i)->MyVideoGrabberControlForm->VideoGrabberControlFrame->PipeUidEdit->Text=(std::string("USharedMemory")+RDK::sntoa(i)).c_str();
    VideoOutputForm->GetVideoOutputFrame(i)->MyVideoGrabberControlForm->VideoGrabberControlFrame->PipeIndexEdit->Text=IntToStr(i);
-   VideoOutputForm->GetVideoOutputFrame(i)->PipeIndex=i;
   }
   VideoOutputForm->UpdateInterface();
  }
