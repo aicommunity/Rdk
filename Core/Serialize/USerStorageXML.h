@@ -13,6 +13,7 @@ See file license.txt for more information
 #define USerStorage_XMLH
 
 #include <string>
+#include <locale>
 #include "USerStorage.h"
 //#undef _XMLWINDOWS
 //#define XML_NO_WIDE_CHAR
