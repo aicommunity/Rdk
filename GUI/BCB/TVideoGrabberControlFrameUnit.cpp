@@ -340,7 +340,7 @@ void __fastcall TVideoGrabberControlFrame::VCapturePageControlChange(TObject *Se
  if(VCapturePageControl->ActivePage == VideoFileTabSheet)
  {
 //  VideoGrabber->VideoSource=vs_VideoFileOrURL;
-  if(VFNameEdit->Text != "")
+//  if(VFNameEdit->Text != "")
   {
    if(ExtractFilePath(VFNameEdit->Text).Length() == 0)
 	VideoOutputFrame->InitByAvi(UGEngineControlForm->ProjectPath+VFNameEdit->Text);
