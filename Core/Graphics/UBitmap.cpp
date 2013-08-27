@@ -1139,7 +1139,7 @@ void UBitmap::CalcBrightness(unsigned *x_result, unsigned *y_result,
 
  memset(x_result,0,(x2-x1+1)*sizeof(unsigned));
  memset(y_result,0,(y2-y1+1)*sizeof(unsigned));
- UBColor *p;
+ UBColor *p=0;
 
  switch(ColorModel)
  {

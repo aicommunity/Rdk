@@ -248,7 +248,7 @@ MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::operator = (T value)
 {
  T* pm1=Data1D;
 
- for(int i=0;i<Cols*Rows;i++)
+ for(unsigned i=0;i<Cols*Rows;i++)
   *pm1++ = value;
  return *this;
 };
