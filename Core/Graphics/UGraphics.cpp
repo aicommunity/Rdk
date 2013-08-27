@@ -445,6 +445,9 @@ void UGraphics::Fill(int x, int y, UColorT BorderColor)
  CWidth=Canvas->GetWidth();
  CHeight=Canvas->GetHeight();
 
+ if(!CWidth || !CHeight)
+  return;
+
  list<int> points;
  int pos=y*CWidth+x;
 

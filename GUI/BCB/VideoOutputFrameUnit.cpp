@@ -1863,6 +1863,21 @@ void TVideoOutputFrame::ABeforeCalculate(void)
 {
  if(!IsStarted)
   return;
+
+ if(UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode() == 0)
+  if(CaptureThread)
+  {
+   long long time_stamp=0;
+   CaptureThread->ReadSourceSafe(BmpSource,time_stamp,false);
+
+	std::string sstamp;
+	RDK::UTimeStamp stamp(double(time_stamp/1000.0),25);
+	stamp>>sstamp;
+	TimeEdit->Text=sstamp.c_str();
+
+	UpdateVideo();
+  }
+
    /*
  if(Mode == 4)
  {
@@ -1986,6 +2001,7 @@ void TVideoOutputFrame::AAfterCalculate(void)
 // Обновление интерфейса
 void TVideoOutputFrame::AUpdateInterface(void)
 {
+ if(UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode() == 1)
   if(CaptureThread)
   {
    long long time_stamp=0;

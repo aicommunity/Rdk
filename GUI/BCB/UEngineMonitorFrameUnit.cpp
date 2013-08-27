@@ -163,7 +163,8 @@ void TUEngineMonitorFrame::SetServerTimeStamp(int channel_index, long long stamp
 
  ServerTimeStamp[channel_index]=stamp;
  CalculateSignal[channel_index]=true;
- SetEvent(ThreadChannels[channel_index]->CalcEnable);
+ if(ChannelsMode == 1)
+  SetEvent(ThreadChannels[channel_index]->CalcEnable);
 }
 
 
