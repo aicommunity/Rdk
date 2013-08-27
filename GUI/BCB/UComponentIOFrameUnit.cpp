@@ -241,12 +241,12 @@ void __fastcall TUComponentIOFrame::ShowLinks(void)
 	 StringGrid->Cells[2][k]=StrToInt(linkslist[i].Connector[j].Index);
 	 StringGrid->Cells[3][k]=itemname.c_str();
 
-	 if(item_propertries_names_list.size()>linkslist[i].Item.Index)
+	 if(int(item_propertries_names_list.size())>linkslist[i].Item.Index)
 	  StringGrid->Cells[4][k]=item_propertries_names_list[linkslist[i].Item.Index].c_str();
 	 else
       StringGrid->Cells[4][k]="";
 	 StringGrid->Cells[5][k]=connname.c_str();
-	 if(conn_propertries_names_list.size()>linkslist[i].Connector[j].Index)
+	 if(int(conn_propertries_names_list.size())>linkslist[i].Connector[j].Index)
 	  StringGrid->Cells[6][k]=conn_propertries_names_list[linkslist[i].Connector[j].Index].c_str();
 	 else
 	  StringGrid->Cells[6][k]="";
@@ -302,7 +302,7 @@ void __fastcall TUComponentIOFrame::ShowOutputs(TStringGrid *string_grid, RDK::U
    {
 	string_grid->Cells[0][string_grid->RowCount-1]=IntToStr(i);
 	string_grid->Cells[2][string_grid->RowCount-1]=Model_GetComponentLongName(stringid.c_str(),ViewComponentOwnerLongId.c_str());
-	if(propertries_names_list.size()>j)
+	if(int(propertries_names_list.size())>j)
 	 string_grid->Cells[3][string_grid->RowCount-1]=propertries_names_list[j].c_str();
 	else
 	 string_grid->Cells[3][string_grid->RowCount-1]="";
@@ -311,7 +311,7 @@ void __fastcall TUComponentIOFrame::ShowOutputs(TStringGrid *string_grid, RDK::U
    {
 	string_grid->Cells[0][string_grid->RowCount-1]="";
 	string_grid->Cells[2][string_grid->RowCount-1]="";
-	if(propertries_names_list.size()>j)
+	if(int(propertries_names_list.size())>j)
 	 string_grid->Cells[3][string_grid->RowCount-1]=propertries_names_list[j].c_str();
 	else
 	 string_grid->Cells[3][string_grid->RowCount-1]="";
@@ -345,7 +345,7 @@ void __fastcall TUComponentIOFrame::ShowInputs(TStringGrid *string_grid, RDK::UL
    {
 	string_grid->Cells[0][string_grid->RowCount-1]="";
 	string_grid->Cells[2][string_grid->RowCount-1]="";
-	if(propertries_names_list.size()>j)
+	if(int(propertries_names_list.size())>j)
 	 string_grid->Cells[3][string_grid->RowCount-1]=propertries_names_list[j].c_str();
 	else
 	 string_grid->Cells[3][string_grid->RowCount-1]="";

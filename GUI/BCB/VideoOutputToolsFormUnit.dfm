@@ -45,7 +45,6 @@ object VideoOutputToolsForm: TVideoOutputToolsForm
         ItemHeight = 13
         TabOrder = 0
         OnClick = GeometryCheckListBoxClick
-        ExplicitHeight = 195
       end
     end
     object GroupBox4: TGroupBox
@@ -217,7 +216,6 @@ object VideoOutputToolsForm: TVideoOutputToolsForm
         ItemHeight = 13
         TabOrder = 0
         OnClick = PointsCheckListBoxClick
-        ExplicitHeight = 193
       end
     end
   end

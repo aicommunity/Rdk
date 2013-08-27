@@ -197,7 +197,7 @@ void __fastcall TVideoOutputToolsForm::DelPointButtonClick(TObject *Sender)
  if(FigureIndex<0 || PointIndex<0)
   return;
  GeometryGraphics.Geometry(FigureIndex).DelVertex(PointIndex);
- if(PointIndex >= GeometryGraphics.Geometry(FigureIndex).GetNumVertices())
+ if(PointIndex >= int(GeometryGraphics.Geometry(FigureIndex).GetNumVertices()))
   PointIndex=GeometryGraphics.Geometry(FigureIndex).GetNumVertices()-1;
  MyVideoOutputFrame->UpdateVideo();
 }

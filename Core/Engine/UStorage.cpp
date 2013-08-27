@@ -587,8 +587,6 @@ bool UStorage::SaveCommonClassesDescription(USerStorageXML &xml)
   ++I;
  }
  xml.SelectUp();
- return true;
-
  xml.SelectUp();
  return true;
 }

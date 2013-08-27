@@ -1094,7 +1094,7 @@ bool MGeometry<T,Rows>::SetBorders(const std::vector<MBorder>& value)
 template<class T, int Rows>
 void MGeometry<T,Rows>::DelVertex(int index)
 {
- if(index<0 || index>=Vertices.size())
+ if(index<0 || index>=int(Vertices.size()))
   return;
 
  Vertices.erase(Vertices.begin()+index);

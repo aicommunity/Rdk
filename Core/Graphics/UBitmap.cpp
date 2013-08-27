@@ -646,9 +646,9 @@ void UBitmap::Separate(UBitmap* channels)
 
   for(int i=0;i<Length;++i)
   {
-   *(pdata[0]++)=*Data++;
-   *(pdata[1]++)=*Data++;
-   *(pdata[2]++)=*Data++;
+   *(pdata[0]++)=*sdata++;
+   *(pdata[1]++)=*sdata++;
+   *(pdata[2]++)=*sdata++;
   }
   delete []pdata;
  }

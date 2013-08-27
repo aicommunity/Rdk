@@ -579,7 +579,7 @@ void TUServerControlForm::AAfterReset(void)
 // Метод, вызываемый после шага расчета
 void TUServerControlForm::AAfterCalculate(void)
 {
- if(PerformancePushIndex>=ModelPerformanceResults.size())
+ if(PerformancePushIndex>=int(ModelPerformanceResults.size()))
   PerformancePushIndex=0;
 
  if(ModelPerformanceResults.size() == 0)
@@ -596,7 +596,7 @@ void TUServerControlForm::AAfterCalculate(void)
   TransportPerformanceResults[PerformancePushIndex][i]=ext_gui;
  }
  ++PerformancePushIndex;
- if(PerformancePushIndex>=ModelPerformanceResults.size())
+ if(PerformancePushIndex>=int(ModelPerformanceResults.size()))
   PerformancePushIndex=0;
 }
 
@@ -611,7 +611,7 @@ void TUServerControlForm::AUpdateInterface(void)
  ChannelNamesStringGrid->ColWidths[1]=ChannelNamesStringGrid->Width-ChannelNamesStringGrid->ColWidths[0]-20;
  ChannelNamesStringGrid->Cells[0][0]="Channel #";
  ChannelNamesStringGrid->Cells[1][0]="Channel Name";
- for(int i=0;i<ChannelNames.size();i++)
+ for(int i=0;i<int(ChannelNames.size());i++)
  {
   ChannelNamesStringGrid->Cells[0][i+1]=IntToStr(i);
   ChannelNamesStringGrid->Cells[1][i+1]=ChannelNames[i].c_str();
@@ -703,7 +703,7 @@ int TUServerControlForm::SetNumChannels(int value)
  if(value<=0)
   return 1;
 
- int selected=GetSelectedEngineIndex();
+// int selected=GetSelectedEngineIndex();
  for(int i=0;i<value;i++)
  {
   if(GetNumEngines()<=i)
@@ -888,10 +888,10 @@ void __fastcall TUServerControlForm::UHttpServerFrameIdHTTPServerCommandGet(TIdC
 
  UHttpServerFrame->IdHTTPServerCommandGet(AContext, ARequestInfo, AResponseInfo);
 
- int decode_res=0;
+ //int decode_res=0;
  if(CommandRequestDecoder)
  {
-  decode_res=CommandRequestDecoder(UHttpServerFrame->ParsedRequestArgs, DecodedRequest);
+  /*decode_res=*/CommandRequestDecoder(UHttpServerFrame->ParsedRequestArgs, DecodedRequest);
  }
  else
  {
@@ -919,10 +919,10 @@ void __fastcall TUServerControlForm::UHttpServerFrameIdHTTPServerCommandGet(TIdC
  if(!is_processed)
   is_processed=ProcessRPCCommand(DecodedRequest, ResponseType, Response);
 
- int encode_res=0;
+// int encode_res=0;
  if(CommandResponseEncoder)
  {
-  encode_res=CommandResponseEncoder(ResponseType, Response, EncodedResponse);
+  /*encode_res=*/CommandResponseEncoder(ResponseType, Response, EncodedResponse);
  }
  else
  {

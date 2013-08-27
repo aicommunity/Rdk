@@ -574,7 +574,7 @@ bool RDK_CALL Env_SetPredefinedStructure(int value)
 bool RDK_CALL MEnv_SetPredefinedStructure(int engine_index, int value)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
-  return 1000;
+  return false;
  return DllManager.EngineList[engine_index]->Env_SetPredefinedStructure(value);
 }
 
@@ -589,7 +589,7 @@ bool RDK_CALL Env_IsStoragePresent(void)
 bool RDK_CALL MEnv_IsStoragePresent(int engine_index)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
-  return 1000;
+  return false;
  return DllManager.EngineList[engine_index]->Env_IsStoragePresent();
 }
 
@@ -602,7 +602,7 @@ bool RDK_CALL Env_IsInit(void)
 bool RDK_CALL MEnv_IsInit(int engine_index)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
-  return 1000;
+  return false;
  return DllManager.EngineList[engine_index]->Env_IsInit();
 }
 
@@ -616,7 +616,7 @@ bool RDK_CALL Env_IsStructured(void)
 bool RDK_CALL MEnv_IsStructured(int engine_index)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
-  return 1000;
+  return false;
  return DllManager.EngineList[engine_index]->Env_IsStructured();
 }
 
@@ -629,7 +629,7 @@ bool RDK_CALL Env_Init(void)
 bool RDK_CALL MEnv_Init(int engine_index)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
-  return 1000;
+  return false;
  return DllManager.EngineList[engine_index]->Env_Init();
 }
 
@@ -642,7 +642,7 @@ bool RDK_CALL Env_UnInit(void)
 bool RDK_CALL MEnv_UnInit(int engine_index)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
-  return 1000;
+  return false;
  return DllManager.EngineList[engine_index]->Env_UnInit();
 }
 
@@ -655,7 +655,7 @@ bool RDK_CALL Env_CreateStructure(void)
 bool RDK_CALL MEnv_CreateStructure(int engine_index)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
-  return 1000;
+  return false;
  return DllManager.EngineList[engine_index]->Env_CreateStructure();
 }
 
@@ -668,7 +668,7 @@ bool RDK_CALL Env_DestroyStructure(void)
 bool RDK_CALL MEnv_DestroyStructure(int engine_index)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
-  return 1000;
+  return false;
  return DllManager.EngineList[engine_index]->Env_DestroyStructure();
 }
 
@@ -1556,7 +1556,7 @@ bool RDK_CALL Engine_SetExceptionHandler(void* value)
 bool RDK_CALL MEngine_SetExceptionHandler(int engine_index, void* value)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
-  return 1000;
+  return false;
  return DllManager.EngineList[engine_index]->SetExceptionHandler(reinterpret_cast<RDK::UEngine::PExceptionHandler>(value));
 }
 

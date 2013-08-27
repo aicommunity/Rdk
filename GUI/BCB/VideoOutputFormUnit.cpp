@@ -286,7 +286,7 @@ void __fastcall TVideoOutputForm::ClearSource1Click(TObject *Sender)
 void __fastcall TVideoOutputForm::FormCreate(TObject *Sender)
 {
  UGEngineControlForm->SpecialForms["TVideoOutputForm"]=this;
- int res=LoadUSharedMemoryLibrary("USharedMemory.dll");
+ LoadUSharedMemoryLibrary("USharedMemory.dll");
 }
 //---------------------------------------------------------------------------
 

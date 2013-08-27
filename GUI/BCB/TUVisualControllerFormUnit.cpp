@@ -50,7 +50,7 @@ void LoadFormPosition(RDK::USerStorageXML &xml, TForm *form)
  form->Width=xml.ReadInteger("Width",form->Width);
  form->Height=xml.ReadInteger("Height",form->Height);
  form->Visible=xml.ReadBool("Visible",form->Visible);
- form->WindowState=xml.ReadInteger("WindowState",form->WindowState);
+ form->WindowState=xml.ReadInteger("WindowState",(int)form->WindowState);
  form->Repaint();
  xml.SelectUp();
 }
@@ -138,7 +138,7 @@ void TUVisualControllerForm::UpdateInterface(bool force_update)
   if(UpdateInterval>0 && CalculationModeFlag)
   {
    DWORD curr_time=GetTickCount();
-   if(curr_time-LastUpdateTime<UpdateInterval)
+   if(curr_time-LastUpdateTime<DWORD(UpdateInterval))
 	return;
 
    LastUpdateTime=curr_time;

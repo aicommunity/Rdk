@@ -1059,7 +1059,7 @@ void __fastcall TVideoCaptureThreadSharedMemory::Calculate(void)
 	 memcpy(&color_model,&PipeBuffer[shift],sizeof(color_model));
 	 shift+=sizeof(color_model);
 
-	 Source.SetRes(width,height,color_model);
+	 Source.SetRes(width,height,(RDK::UBMColorModel)color_model);
 	 if(shift<SharedMemoryPipeSize)
 	 {
 	  int image_size=Source.GetByteLength();
@@ -1078,7 +1078,7 @@ void __fastcall TVideoCaptureThreadSharedMemory::UnsafeInit(void)
  if(!Usm_GetNumPipes || Usm_GetNumPipes() <= PipeIndex)
   return;
 
- int res=Usm_InitPipe(PipeIndex,SharedMemoryPipeSize,0,PipeName.c_str());
+ Usm_InitPipe(PipeIndex,SharedMemoryPipeSize,0,PipeName.c_str());
 }
 
 // --------------------------
@@ -1640,6 +1640,9 @@ void TVideoOutputFrame::UpdateGeometryList(TCheckListBox *GeometryCheckListBox, 
   GeometryCheckListBox->ItemIndex=ix;
  else
   GeometryCheckListBox->ItemIndex=0;
+
+ if(GeometryCheckListBox->ItemIndex<0)
+  return;
 /*
  if(FigureFlag)
  {
@@ -1649,13 +1652,13 @@ void TVideoOutputFrame::UpdateGeometryList(TCheckListBox *GeometryCheckListBox, 
  else
   GeometryCheckListBox->Enabled=true;
   */
- if(GeometryGraphics.GetNumGeometries()<=FigureIndex)
+ if(int(GeometryGraphics.GetNumGeometries())<=FigureIndex)
   return;
 
  ix=PointsCheckListBox->ItemIndex;
 
 // PointsCheckListBox->Clear();
- if(CurrentGeometryGraphics.GetNumGeometries()>GeometryCheckListBox->ItemIndex)
+ if(GeometryCheckListBox->ItemIndex>=0 && int(CurrentGeometryGraphics.GetNumGeometries())>GeometryCheckListBox->ItemIndex)
  {
   if(GeometryGraphics.Geometry(GeometryCheckListBox->ItemIndex) == CurrentGeometryGraphics.Geometry(GeometryCheckListBox->ItemIndex))
    return;
@@ -1678,7 +1681,7 @@ void TVideoOutputFrame::UpdateGeometryList(TCheckListBox *GeometryCheckListBox, 
    PointsCheckListBox->Items->Delete(PointsCheckListBox->Count-1);
  }
  //PointsCheckListBox->Count=new_value;
- for(size_t i=0;i<new_value;i++)
+ for(int i=0;i<new_value;i++)
  {
   std::stringstream stream;
   stream<<GeometryGraphics.Geometry(GeometryCheckListBox->ItemIndex).VertexName(i)<<" ";

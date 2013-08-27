@@ -47,7 +47,7 @@ void TUComponentsPerformanceFrame::AUpdateInterface(void)
  if(!Model_Check())
   return;
 
- if(ComponentData.size()>=AverageIterations && AverageIterations>0)
+ if(int(ComponentData.size())>=AverageIterations && AverageIterations>0)
   ComponentData.erase(ComponentData.begin());
 
  long long model_time=Model_GetFullStepDuration("");
@@ -101,7 +101,7 @@ void TUComponentsPerformanceFrame::AUpdateInterface(void)
   Chart->Series[1]->Visible=true;
  }
 
- if(ComponentData.size()<AverageIterations)
+ if(int(ComponentData.size())<AverageIterations)
   return;
 
  for(size_t i=0;i<ComponentNames.size();i++)

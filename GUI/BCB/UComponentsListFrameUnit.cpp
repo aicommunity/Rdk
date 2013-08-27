@@ -228,7 +228,7 @@ void TUComponentsListFrame::UpdateIO(void)
  OutputsStringGrid->Cells[0][0]="Name";
  OutputsStringGrid->Cells[1][0]="Type";
 
- for(int i=0;i<outputs.size();i++)
+ for(int i=0;i<int(outputs.size());i++)
  {
   OutputsStringGrid->Cells[0][i+1]=outputs[i].c_str();
   OutputsStringGrid->Cells[1][i+1]="";
@@ -241,7 +241,7 @@ void TUComponentsListFrame::UpdateIO(void)
  InputsStringGrid->Cells[0][0]="Name";
  InputsStringGrid->Cells[1][0]="Type";
 
- for(int i=0;i<inputs.size();i++)
+ for(int i=0;i<int(inputs.size());i++)
  {
   InputsStringGrid->Cells[0][i+1]=inputs[i].c_str();
   InputsStringGrid->Cells[1][i+1]="";
@@ -628,7 +628,7 @@ void __fastcall TUComponentsListFrame::StringGridDblClick(TObject *Sender)
  if(StringGrid->Row <= 0)
   return;
 
- int num_components=Model_GetNumComponents(GetSelectedComponentLongName().c_str());
+// int num_components=Model_GetNumComponents(GetSelectedComponentLongName().c_str());
 // if(!num_components)
 //  return;
 

@@ -229,7 +229,7 @@ void TUGEngineControlForm::ALoadParameters(RDK::USerStorageXML &xml)
   String str_class=xml.ReadString(string("Class_")+RDK::sntoa(i+1),std::string("")).c_str();
   string component_name=xml.ReadString(string("ComponentControlName_")+RDK::sntoa(i+1),std::string("")).c_str();
 
-  bool is_loaded=false;
+//  bool is_loaded=false;
    if(type == "SingleForm" || type == "MultiForm")
    {
 	TTabSheet* tab=AddComponentControlFormPage(component_name);
@@ -865,7 +865,7 @@ TTabSheet* TUGEngineControlForm::AddSpecialFramePage(const String &type, const S
  TTabSheet* tab=new TTabSheet(PageControl1);
  tab->PageControl=PageControl1;
  TUVisualControllerFrame *frame=0;
- TUVisualControllerForm *form=0;
+// TUVisualControllerForm *form=0;
 
  if(type == "TUImagesFrame")
  {
@@ -1309,7 +1309,7 @@ void __fastcall TUGEngineControlForm::CopyProject1Click(TObject *Sender)
  if(!ProjectOpenFlag)
   return;
 
- const SELDIRHELP = 1000;
+// const SELDIRHELP = 1000;
  String chosenDir=ExtractFilePath(Application->ExeName);
 
  if(SelectDirectory("Select project directory", ExtractFilePath(Application->ExeName), chosenDir,TSelectDirExtOpts() << sdNewFolder << sdNewUI))

@@ -102,12 +102,14 @@ void TUHttpServerFrame::UnInit(void)
 int TUHttpServerFrame::ServerListenOn(void)
 {
  IdHTTPServer->Active=true;
+ return 0;
 }
 
 /// Выключает сервер
 int TUHttpServerFrame::ServerListenOff(void)
 {
  IdHTTPServer->Active=false;
+ return 0;
 }
 // -------------------------
 

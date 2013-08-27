@@ -980,13 +980,13 @@ bool UContainer::ChangeComponentPosition(int index, int step)
  UEPtr<UContainer> comp=PComponents[index];
  if(result>index)
  {
-  for(size_t i=index;i<=result;i++)
+  for(int i=index;i<=result;i++)
    PComponents[i]=PComponents[i+1];
   PComponents[result]=comp;
  }
  else
  {
-  for(size_t i=result;i<index;i++)
+  for(int i=result;i<index;i++)
    PComponents[i+1]=PComponents[i];
   PComponents[result]=comp;
  }
@@ -999,7 +999,7 @@ bool UContainer::ChangeComponentPosition(int index, int step)
 
 bool UContainer::ChangeComponentPosition(const NameT &name, int step)
 {
- for(size_t i=0;i<NumComponents;i++)
+ for(int i=0;i<NumComponents;i++)
   if(PComponents[i]->GetName() == name)
    return ChangeComponentPosition(i,step);
 

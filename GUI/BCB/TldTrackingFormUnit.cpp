@@ -319,7 +319,7 @@ void __fastcall TTldTrackingForm::SendPointsButtonClick(TObject *Sender)
 
  int area_width=StrToInt(RectWidthLabeledEdit->Text);
  int area_height=StrToInt(RectHeightLabeledEdit->Text);
- for(int i=0;i<new_points.size();i++)
+ for(int i=0;i<int(new_points.size());i++)
  {
   if(i>=points.GetRows())
    break;
