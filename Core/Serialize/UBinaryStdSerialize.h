@@ -153,7 +153,7 @@ USerStorageBinary& operator << (USerStorageBinary& storage, const std::map<T1,T2
  size_t size=data.size();
  operator <<(storage,size);
 
- if(size <= 0)
+ if(size == 0)
   return storage;
 
  typename std::map<T1,T2>::const_iterator I,J;
@@ -175,7 +175,7 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, std::map<T1,T2> &dat
  operator >>(storage,size);
  data.clear();
 
- if(size <= 0)
+ if(size == 0)
   return storage;
 
  std::pair<T1,T2> p;
@@ -195,7 +195,7 @@ USerStorageBinary& operator << (USerStorageBinary& storage, const std::list<T> &
  unsigned int size=data.size();
  operator <<(storage,size);
 
- if(size <= 0)
+ if(size == 0)
   return storage;
 
  typename std::list<T>::const_iterator I,J;
@@ -217,7 +217,7 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, std::list<T> &data)
  operator >>(storage,size);
  data.clear();
 
- if(size <= 0)
+ if(size == 0)
   return storage;
 
  T p;
@@ -241,7 +241,7 @@ USerStorageBinary& operator << (USerStorageBinary& storage, const std::vector<T>
  unsigned int size=data.size();
  operator <<(storage,size);
 
- if(size <= 0)
+ if(size == 0)
   return storage;
 
  for(size_t i=0;i<size;i++)
@@ -257,7 +257,7 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, std::vector<T> &data
  operator >>(storage,size);
  data.resize(size);
 
- if(size <= 0)
+ if(size == 0)
   return storage;
 
  T* pdata=&data[0];

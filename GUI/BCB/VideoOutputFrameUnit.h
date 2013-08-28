@@ -50,7 +50,13 @@ protected: // Данные
 long long LastTimeStamp;
 
 /// Данные изображения
-RDK::UBitmap Source;
+RDK::UBitmap Source[2];
+
+/// Указатель на текущее изображение для чтения
+RDK::UBitmap* ReadSource;
+
+/// Указатель на текущее изображение для записи
+RDK::UBitmap* WriteSource;
 
 /// Указатель на владельца
 TVideoOutputFrame *Frame;

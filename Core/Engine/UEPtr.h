@@ -304,10 +304,7 @@ UESharedPtr<T>& UESharedPtr<T>::operator = (T *p)
  }
  PData=p;
 
- if(PData)
-  Counter=new long(1);
- else
-  Counter=new long(1);
+ Counter=new long(1);
 
  return *this;
 };

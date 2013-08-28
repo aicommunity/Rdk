@@ -533,7 +533,6 @@ template<class T>
 void MatrixToQuaternion(Quaternion<T> *quat, const T m[4][4])
 {
   T  tr, s, q[4];
-  int    i, j, k;
 
   int nxt[3] = {1, 2, 0};
 
@@ -550,6 +549,7 @@ void MatrixToQuaternion(Quaternion<T> *quat, const T m[4][4])
   }
   else
   {
+   int    i, j, k;
     i = 0;
     if (m[1][1] > m[0][0]) i = 1;
     if (m[2][2] > m[i][i]) i = 2;
@@ -600,21 +600,21 @@ MMatrix<T,4,4> CalcObjectPositionMatrixFromQuatern(const MVector<T,7> &anglesAND
 {
  MMatrix<T,4,4> res;
 
- Quaternion<T> *quatent;
- quatent->x=anglesANDshifts(3);
- quatent->y=anglesANDshifts(4);
- quatent->z=anglesANDshifts(5);
- quatent->w=anglesANDshifts(6);
+ Quaternion<T> quatent;
+ quatent.x=anglesANDshifts(3);
+ quatent.y=anglesANDshifts(4);
+ quatent.z=anglesANDshifts(5);
+ quatent.w=anglesANDshifts(6);
 
  if(vect)
  {
-  QuaternionNormalise<T>(quatent,true);
+  QuaternionNormalise<T>(&quatent,true);
   QuaternionToMatrix<T>(res.Data, quatent);
  }
  else
  {
-  QuaternionNormalise<T>(quatent,false);
-  QuaternionToMatrix<T>(res.Data, quatent);
+  QuaternionNormalise<T>(&quatent,false);
+  QuaternionToMatrix<T>(res.Data, &quatent);
  }
 
 	res(0,3)=anglesANDshifts(0);
@@ -723,7 +723,8 @@ MRay(void)
 MRay(const MRay &copy)
 { *this=copy; };
 MRay(MVector<T,Rows> &o, MVector<T,Rows> &d)
-{ Origin=o; Direction=d; };
+: Origin(o), Direction(d)
+{ };
 // --------------------------
 
 // --------------------------
@@ -802,11 +803,13 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 MPlane(void)
-{ Normal=0; Distance=0; };
+ : Normal(0), Distance(0)
+{ };
 MPlane(const MPlane &copy)
 { *this=copy; };
 MPlane(MVector<T,Rows> n, T dist)
-{ Normal=n; Distance=dist; };
+ : Normal(n), Distance(dist)
+{ };
 virtual ~MPlane(void){};
 // --------------------------
 

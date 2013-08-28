@@ -109,7 +109,7 @@ USerStorageXML& operator << (USerStorageXML& storage, const ULinksListT<T> &data
  unsigned int size=data.GetSize();
  storage.SetNodeAttribute("Size",sntoa(size));
 
- if(size <= 0)
+ if(size == 0)
   return storage;
 
  for(unsigned int i=0;i<size;i++)

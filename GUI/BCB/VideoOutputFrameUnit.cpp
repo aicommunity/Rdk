@@ -31,6 +31,8 @@ __fastcall TVideoCaptureThread::TVideoCaptureThread(TVideoOutputFrame *frame, bo
  SourceUnlock=CreateEvent(0,TRUE,TRUE,0);
  FrameNotInProgress=CreateEvent(0,TRUE,TRUE,0);
  CalcCompleteEvent=CreateEvent(0,TRUE,TRUE,0);
+ ReadSource=&Source[0];
+ WriteSource=&Source[1];
 }
 
 __fastcall TVideoCaptureThread::~TVideoCaptureThread(void)
@@ -210,43 +212,51 @@ bool TVideoCaptureThread::ReadSourceSafe(RDK::UBitmap& dest, long long &time_sta
  if(WaitForSingleObject(SourceUnlock,30) == WAIT_TIMEOUT)
   return false;
  ResetEvent(SourceUnlock);
+ time_stamp=LastTimeStamp;
+ RDK::UBitmap* source=ReadSource;
+ SetEvent(SourceUnlock);
 
  if(reflect)
-  Source.ReflectionX(&dest);
+  source->ReflectionX(&dest);
  else
-  dest=Source;
+  dest=*source;
 
- time_stamp=LastTimeStamp;
- SetEvent(SourceUnlock);
+// SetEvent(SourceUnlock);
  return true;
 }
 
 /// «аписывает изображение в тред с блокировкой
 bool TVideoCaptureThread::WriteSourceSafe(const RDK::UBitmap& src, long long time_stamp, bool reflect)
 {
+ if(reflect)
+  const_cast<RDK::UBitmap&>(src).ReflectionX(WriteSource);
+ else
+  *WriteSource=src;
+
  if(WaitForSingleObject(SourceUnlock,30) == WAIT_TIMEOUT)
   return false;
  ResetEvent(SourceUnlock);
 
- if(reflect)
-  const_cast<RDK::UBitmap&>(src).ReflectionX(&Source);
- else
-  Source=src;
-
  LastTimeStamp=time_stamp;
+ RDK::UBitmap* old_read_source=ReadSource;
+ ReadSource=WriteSource;
+ WriteSource=old_read_source;
  SetEvent(SourceUnlock);
  return true;
 }
 
 bool TVideoCaptureThread::WriteSourceSafe(Graphics::TBitmap *src, long long time_stamp, bool reflect)
 {
+ TBitmapToUBitmap(*WriteSource, src, reflect);
+
  if(WaitForSingleObject(SourceUnlock,30) == WAIT_TIMEOUT)
   return false;
  ResetEvent(SourceUnlock);
 
- TBitmapToUBitmap(Source, src, reflect);
-
  LastTimeStamp=time_stamp;
+ RDK::UBitmap* old_read_source=ReadSource;
+ ReadSource=WriteSource;
+ WriteSource=old_read_source;
  SetEvent(SourceUnlock);
  return true;
 }
@@ -1059,13 +1069,13 @@ void __fastcall TVideoCaptureThreadSharedMemory::Calculate(void)
 	 memcpy(&color_model,&PipeBuffer[shift],sizeof(color_model));
 	 shift+=sizeof(color_model);
 
-	 Source.SetRes(width,height,(RDK::UBMColorModel)color_model);
+	 WriteSource->SetRes(width,height,(RDK::UBMColorModel)color_model);
 	 if(shift<SharedMemoryPipeSize)
 	 {
-	  int image_size=Source.GetByteLength();
+	  int image_size=WriteSource->GetByteLength();
 	  if(image_size>SharedMemoryPipeSize-20)
 	   image_size=SharedMemoryPipeSize-20;
-	  memcpy(Source.GetData(),&PipeBuffer[shift],image_size);
+	  memcpy(WriteSource->GetData(),&PipeBuffer[shift],image_size);
 	 }
 	}
    }

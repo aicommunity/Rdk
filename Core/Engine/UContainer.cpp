@@ -1569,7 +1569,7 @@ void UContainer::AUnInit(void)
 // ќбновл€ет таблицу соответствий компонент замен€€ 'oldname'
 // им€ компонента на 'newname'
 void UContainer::ModifyLookupComponent(const NameT &oldname,
-                                        const NameT newname)
+                                        const NameT &newname)
 {
  UId id;
 

@@ -117,11 +117,11 @@ std::basic_ostream<CharT>& operator << (std::basic_ostream<CharT>& stream, const
  typename std::map<T1,T2>::const_iterator I,J;
  I=data.begin();
  J=data.end();
- size_t i=0;
 
  stream<<"{";
  if(size > 0)
  {
+  size_t i=0;
   while(I != J)
   {
    stream<<*I;
@@ -170,11 +170,11 @@ std::basic_ostream<CharT>& operator << (std::basic_ostream<CharT>& stream, const
  typename std::list<T>::const_iterator I,J;
  I=data.begin();
  J=data.end();
- size_t i=0;
 
  stream<<"{";
  if(size > 0)
  {
+  size_t i=0;
   while(I != J)
   {
    stream<<*I;

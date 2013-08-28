@@ -619,7 +619,7 @@ protected:
 // --------------------------
 // ќбновл€ет таблицу соответствий компонент замен€€ 'oldname'
 // им€ компонента на 'newname'
-void ModifyLookupComponent(const NameT &oldname, const NameT newname);
+void ModifyLookupComponent(const NameT &oldname, const NameT &newname);
 
 // ќбновл€ет таблицу соответствий компонент устанавлива€ Id 'id'
 // дл€ компонента с именем 'name'

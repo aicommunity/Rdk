@@ -44,7 +44,7 @@ USerStorageXML& operator << (USerStorageXML& storage, const MVector<T,Rows> &dat
 template<typename T, unsigned Rows>
 USerStorageXML& operator >> (USerStorageXML& storage, MVector<T,Rows> &data)
 {
- std::string rvalue=storage.GetNodeText();
+// std::string rvalue=storage.GetNodeText();
  std::stringstream stream(storage.GetNodeText().c_str());
 
  for(unsigned i=0;i<Rows;i++)
@@ -78,7 +78,7 @@ USerStorageXML& operator << (USerStorageXML& storage, const MMatrix<T,Rows,Cols>
 template<typename T, unsigned Rows, unsigned Cols>
 USerStorageXML& operator >> (USerStorageXML& storage, MMatrix<T,Rows,Cols> &data)
 {
- std::string rvalue=storage.GetNodeText();
+// std::string rvalue=storage.GetNodeText();
  std::stringstream stream(storage.GetNodeText().c_str());
 
  for(unsigned i=0;i<Rows;i++)
@@ -121,7 +121,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, MDVector<T> &data)
   unsigned int size=0;
   size=RDK::atoi(storage.GetNodeAttribute("Size"));
 
-  if(size <= 0)
+  if(size == 0)
   {
    data.Resize(0);
    return storage;
@@ -145,7 +145,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, MDVector<T> &data)
 
   if(size>0)
   {
-   std::string rvalue=storage.GetNodeText();
+//   std::string rvalue=storage.GetNodeText();
    std::stringstream stream(storage.GetNodeText().c_str());
 
    for(int i=0;i<data.GetRows();i++)
@@ -192,7 +192,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, MDMatrix<T> &data)
 
  data.Resize(rows,cols);
 
- std::string rvalue=storage.GetNodeText();
+// std::string rvalue=storage.GetNodeText();
  std::stringstream stream(storage.GetNodeText().c_str());
 
  for(int i=0;i<rows;i++)

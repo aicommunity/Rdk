@@ -211,7 +211,7 @@ int separatestring(const basic_string<CharT> &str, vector<basic_string<CharT> > 
 
  if(lastpos) *lastpos=0;
  output.resize(0);
- if(!str.size())
+ if(str.empty())
   return 0;
 
  while(i != string::npos && (nnum>=0) )

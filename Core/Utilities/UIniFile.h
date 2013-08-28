@@ -88,9 +88,9 @@ UIniFile(void)
 };
 
 UIniFile(const UIniFile<CharT> &ini)
+ : SComment(ini.SComment), 
+   Lines(ini.Lines)
 {
- SComment=ini.SComment;
- Lines=ini.Lines;
 };
 
 ~UIniFile(void)
@@ -512,7 +512,7 @@ StringListIteratorT FindSection(const StringT &section)
  {
   if(DecodeAsSection(*I, start, stop))
   {
-   StringT str=I->substr(start,stop-start+1);
+ //  StringT str=I->substr(start,stop-start+1);
    if(section == I->substr(start,stop-start+1))
     break;
   }
