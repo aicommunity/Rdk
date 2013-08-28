@@ -981,9 +981,12 @@ void __fastcall TUServerControlForm::ApplyOptionsButtonClick(TObject *Sender)
  if(UpdateInterfaceFlag)
   return;
 
- UHttpServerFrame->SetListenPort(StrToInt(ServerControlPortLabeledEdit->Text));
+ int new_num_channels=StrToInt(ServerControlPortLabeledEdit->Text);
+ if(new_num_channels < 1)
+  return;
+ UHttpServerFrame->SetListenPort(new_num_channels);
 
- UEngineMonitorForm->EngineMonitorFrame->SetNumChannels(StrToInt(NumberOfChannelsLabeledEdit->Text));
+ UEngineMonitorForm->EngineMonitorFrame->SetNumChannels(new_num_channels);
  SetNumChannels(GetNumEngines());
 
  UpdateInterface();

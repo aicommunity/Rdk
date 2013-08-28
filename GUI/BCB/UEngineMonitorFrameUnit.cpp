@@ -354,10 +354,10 @@ void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
 
  case 1:
  {
-//  RDK::UIVisualControllerStorage::AfterCalculate();
-  UServerControlForm->AfterCalculate();
-  UServerControlForm->UpdateInterface();
-//  RDK::UIVisualControllerStorage::UpdateInterface();
+  RDK::UIVisualControllerStorage::AfterCalculate();
+//  UServerControlForm->AfterCalculate();
+//  UServerControlForm->UpdateInterface();
+  RDK::UIVisualControllerStorage::UpdateInterface();
  }
  break;
  }

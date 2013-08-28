@@ -1053,8 +1053,6 @@ void __fastcall TVideoCaptureThreadSharedMemory::Calculate(void)
 	  Sleep(20);
 	  return;
 	 }
-	 else
-	  LastTimeStamp=time_stamp;
 
  	 real_size=Usm_ReadData(PipeIndex,&PipeBuffer[0],mem_size);
 	 shift+=sizeof(time_stamp)+sizeof(mem_size);
@@ -1077,6 +1075,15 @@ void __fastcall TVideoCaptureThreadSharedMemory::Calculate(void)
 	   image_size=SharedMemoryPipeSize-20;
 	  memcpy(WriteSource->GetData(),&PipeBuffer[shift],image_size);
 	 }
+
+	 if(WaitForSingleObject(SourceUnlock,30) == WAIT_TIMEOUT)
+	  return;
+	 ResetEvent(SourceUnlock);
+	 RDK::UBitmap* old_read_source=ReadSource;
+	 ReadSource=WriteSource;
+	 WriteSource=old_read_source;
+	 LastTimeStamp=time_stamp;
+	 SetEvent(SourceUnlock);
 	}
    }
   }

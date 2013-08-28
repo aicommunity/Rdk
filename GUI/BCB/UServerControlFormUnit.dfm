@@ -25,10 +25,6 @@ object UServerControlForm: TUServerControlForm
     TabOrder = 0
     object ControlTabSheet: TTabSheet
       Caption = 'Control'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object GroupBox3: TGroupBox
         Left = 0
         Top = 0
@@ -298,7 +294,7 @@ object UServerControlForm: TUServerControlForm
         TabOrder = 2
         object ApplyOptionsButton: TButton
           Left = 7
-          Top = 5
+          Top = 6
           Width = 75
           Height = 27
           Caption = 'Apply'
