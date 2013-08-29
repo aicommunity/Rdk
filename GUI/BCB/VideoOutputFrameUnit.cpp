@@ -677,14 +677,28 @@ void __fastcall TVideoCaptureThreadVideoGrabber::OnFrameCaptureCompleted(System:
  case fc_TBitmap:
   if(Frame_Bitmap->PixelFormat == pf24bit)
   {
-   WriteSourceSafe(Frame_Bitmap, FrameTime, false);
+   LastTimeStamp=FrameTime/10000;
+   *WriteSource<<Frame_Bitmap;
+  // WriteSourceSafe(Frame_Bitmap, FrameTime/10000, false);
   }
   else
   {
+   LastTimeStamp=FrameTime/10000;
    ConvertBitmap->Assign(Frame_Bitmap);
    ConvertBitmap->PixelFormat=pf24bit;
-   WriteSourceSafe(ConvertBitmap, FrameTime/10000, false);
+   *WriteSource<<ConvertBitmap;
+//   WriteSourceSafe(ConvertBitmap, FrameTime/10000, false);
   }
+
+//	 if(WaitForSingleObject(SourceUnlock,30) == WAIT_TIMEOUT)
+//	  return;
+//	 ResetEvent(SourceUnlock);
+	 RDK::UBitmap* old_read_source=ReadSource;
+	 ReadSource=WriteSource;
+	 WriteSource=old_read_source;
+//	 LastTimeStamp=time_stamp;
+//	 SetEvent(SourceUnlock);
+
   SetEvent(VideoGrabberCompleted);
   TVideoCaptureThread::AfterCalculate();
  break;
@@ -1230,6 +1244,7 @@ void TVideoOutputFrame::InitByAvi(const String &filename)
   }
  }
 
+ UpdateInterface(true);
 }
 
 // Инициализация фрейма bmp-файлом
@@ -1272,7 +1287,7 @@ void TVideoOutputFrame::InitByBmp(const String &filename)
   }
  }
  Mode=0;
- UpdateVideo();
+ UpdateInterface(true);
 }
 
 // Устанавливает отдельное изображение
@@ -1299,7 +1314,8 @@ bool TVideoOutputFrame::InitByBmp(const RDK::UBitmap &bmp)
  }
  Mode=0;
 
- return UpdateVideo();
+ UpdateInterface(true);
+ return true;//UpdateVideo();
 }
 
 
@@ -1332,6 +1348,7 @@ void TVideoOutputFrame::InitByCamera(int camera_index, int input_index, int size
    MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, thread->GetVideoGrabber());
   }
  }
+ UpdateInterface(true);
 }
 
 // Инициализация фрейма IP-камерой
@@ -1361,6 +1378,7 @@ void TVideoOutputFrame::InitByIPCamera(const String camera_url, const String use
  Mode=3;
 // StartButtonClick(this);
 // UpdateVideo();
+ UpdateInterface(true);
 }
 
 // Инициализация последовательностью изображений
@@ -1410,7 +1428,7 @@ bool TVideoOutputFrame::InitByImageSequence(const String &pathname)
  }
 // CurrentBmpSequenceIndex=0;
  TrackBar->Position=0;
- UpdateVideo();
+ UpdateInterface(true);
 
  return true;
 }
@@ -1505,6 +1523,7 @@ bool TVideoOutputFrame::InitBySharedMemory(int pipe_index, const std::string &pi
   }
  }
 
+ UpdateInterface(true);
  return true;
 }
 

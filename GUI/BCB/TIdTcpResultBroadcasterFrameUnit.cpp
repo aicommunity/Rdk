@@ -14,10 +14,37 @@
 #pragma resource "*.dfm"
 TIdTcpResultBroadcasterFrame *IdTcpResultBroadcasterFrame;
 //---------------------------------------------------------------------------
+
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+__fastcall TTcpResultBroadcasterThread::TTcpResultBroadcasterThread(bool CreateSuspended)
+: TResultBroadcasterThread(CreateSuspended)
+{
+}
+
+__fastcall TTcpResultBroadcasterThread::~TTcpResultBroadcasterThread(void)
+{
+}
+// --------------------------
+
+// --------------------------
+// Управление потоком
+// --------------------------
+bool __fastcall TTcpResultBroadcasterThread::ASend(void)
+{
+ return true;
+}
+// --------------------------
+
+
+
 __fastcall TIdTcpResultBroadcasterFrame::TIdTcpResultBroadcasterFrame(TComponent* Owner)
 	: TUVisualControllerFrame(Owner)
 {
  MemStream=new TMemoryStream;
+
+ Thread=new TTcpResultBroadcasterThread(false);
 
  Bitmap=new TBitmap;
  ConnectionEstablishedFlag=false;
@@ -27,6 +54,13 @@ __fastcall TIdTcpResultBroadcasterFrame::TIdTcpResultBroadcasterFrame(TComponent
 
 __fastcall TIdTcpResultBroadcasterFrame::~TIdTcpResultBroadcasterFrame(void)
 {
+ if(Thread)
+ {
+  Thread->Terminate();
+  delete Thread;
+  Thread=0;
+ }
+
  ConnectionEstablishedFlag=false;
  if(MemStream)
   delete MemStream;

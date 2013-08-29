@@ -96,7 +96,7 @@ void TTldTrackingForm::AAfterCalculate(void)
  }
 
  const RDK::MDMatrix<double> *results;
- results=(const RDK::MDMatrix<double>*)(Model_GetComponentOutputAsMatrix(ComponentControlName.c_str(), 0));
+ results=(const RDK::MDMatrix<double>*)(Model_GetComponentOutputAsMatrixByIndex(ComponentControlName.c_str(), 0));
  if(!results)
   return;
 

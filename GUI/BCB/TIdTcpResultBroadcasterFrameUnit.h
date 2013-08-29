@@ -16,6 +16,28 @@
 #include "TUVisualControllerFrameUnit.h"
 #include <Web.HTTPApp.hpp>
 #include <Web.HTTPProd.hpp>
+#include "TServerBroadcasterCommonUnit.h"
+
+class TTcpResultBroadcasterThread: public TResultBroadcasterThread
+{
+protected: // Параметры
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+__fastcall TTcpResultBroadcasterThread(bool CreateSuspended);
+virtual __fastcall ~TTcpResultBroadcasterThread(void);
+// --------------------------
+
+// --------------------------
+// Управление потоком
+// --------------------------
+bool __fastcall ASend(void);
+// --------------------------
+};
+
+
 //---------------------------------------------------------------------------
 class TIdTcpResultBroadcasterFrame : public TUVisualControllerFrame
 {
@@ -39,6 +61,7 @@ public:		// User declarations
 	__fastcall TIdTcpResultBroadcasterFrame(TComponent* Owner);
 	__fastcall ~TIdTcpResultBroadcasterFrame(void);
 
+TTcpResultBroadcasterThread* Thread;
 
 TMemoryStream *MemStream;
 TBitmap *Bitmap;
