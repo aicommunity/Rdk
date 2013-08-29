@@ -94,7 +94,13 @@ UBitmap::UBitmap(int width, int height, UColorT color,
    Fill(color);
   }
  else
-  UBitmap(cmodel);
+ {
+  Width=Height=0;
+  ColorModel=cmodel;
+  Data=PData=0;
+  Shift=0;
+  Clear();
+ }
 }
 
 UBitmap::UBitmap(int width, int height, const UBColor* data,
@@ -108,7 +114,13 @@ UBitmap::UBitmap(int width, int height, const UBColor* data,
  if(width >= 0 && height >=0)
   SetImage(width, height, data, cmodel);
  else
-  UBitmap(cmodel);
+ {
+  Width=Height=0;
+  ColorModel=cmodel;
+  Data=PData=0;
+  Shift=0;
+  Clear();
+ }
 }
 
 UBitmap::~UBitmap(void)
@@ -2563,6 +2575,9 @@ void UBitmap::Inverse(UBitmap *target)
 // Цветовая модель приемника всегда замещается моделью источника
 UBitmap& UBitmap::operator = (const UBitmap &bitmap)
 {
+ if(this == &bitmap)
+  return *this;
+
  if(Width != bitmap.Width || Height != bitmap.Height || ColorModel != bitmap.ColorModel)
   {
    Width=bitmap.Width;
@@ -4933,6 +4948,8 @@ UBHistogram::UBHistogram(void)
  NumPixels=1;
 
  NormalizeFlag=false;
+ Min.Number.Int=0;
+ Max.Number.Int=0;
 }
 
 UBHistogram::~UBHistogram(void)

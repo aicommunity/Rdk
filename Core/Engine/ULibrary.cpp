@@ -25,12 +25,11 @@ namespace RDK {
 // Конструкторы и деструкторы
 // --------------------------
 ULibrary::ULibrary(const string &name, const string &version)
+: Name(name), Version(version), Storage(0)
 {
 // if(!LibraryList)
 //  LibraryList=new std::list<ULibrary*>;
 
- Name=name;
- Version=version;
 
 // AddUniqueLibrary(this);
 }

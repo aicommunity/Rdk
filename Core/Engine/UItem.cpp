@@ -280,7 +280,9 @@ void UAConnector2DVector::Del(int index)
  if(index<0 || index >= Size)
   return;
 
- memcpy(Data+index,Data+index+1,(Size-1)*sizeof(UAConnectorVector));
+ for(int i=index;i<Size-1;i++)
+  Data[i]=Data[i+1];
+// memcpy(Data+index,Data+index+1,(Size-1)*sizeof(UAConnectorVector));
  Resize(Size-1);
 }
 /*

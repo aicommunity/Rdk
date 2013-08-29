@@ -53,6 +53,8 @@ UEngine::UEngine(void)
  Runned=-1;
  Storage=0;
  Environment=0;
+ CurrentExceptionsLogSize=0;
+ ExceptionHandler=0;
 
  LastReadExceptionLogIndex=-1;
  MaxExceptionsLogSize=1000;

@@ -137,7 +137,9 @@ void UCItemList::Resize(int newsize)
   if(newsize)
   {
    newbuffer=new UCItem[newsize];
-   memcpy(newbuffer,Data,sizeof(UCItem)*Size);
+   for(int i=0;i<Size;i++)
+	newbuffer[i]=Data[i];
+//   memcpy(newbuffer,Data,sizeof(UCItem)*Size);
   }
 
   if(Data)
@@ -226,7 +228,9 @@ void UCItemList::Del(UCItem *item)
 UCItemList& UCItemList::operator = (const UCItemList &copy)
 {
  Resize(copy.Size);
- memcpy(Data,copy.Data,Size*sizeof(UCItem));
+ for(int i=0;i<Size;i++)
+  Data[i]=copy.Data[i];
+ //memcpy(Data,copy.Data,Size*sizeof(UCItem));
 
  return *this;
 }

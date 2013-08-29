@@ -512,7 +512,7 @@ void UGraphics::Fill(int x, int y, UColorT BorderColor)
   }
 
   points.pop_front();
- }while(points.size()>0);
+ }while(!points.empty());
 }
 
 // ¬ыводит изображение с началом в заданной позиции

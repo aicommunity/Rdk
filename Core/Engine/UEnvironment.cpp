@@ -43,6 +43,11 @@ UEnvironment::UEnvironment(void)
 
  // Текущий компонент модели
 // CurrentComponent=0;
+
+ StartupTime=0;
+ CurrentTime=0;
+ LastDuration=1;
+ ProcEndTime=0;
 }
 
 UEnvironment::~UEnvironment(void)

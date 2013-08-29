@@ -606,7 +606,7 @@ void UADItem::UpdatePointers(void)
  {
   POutputData=0;
  }
-
+	   /*
  if(NumInputs>0)
  {
   // ”казатель на первый элемент массива указателей на вектора входов
@@ -623,7 +623,7 @@ void UADItem::UpdatePointers(void)
   // ”казатель на первый элемент массива размеров векторов входов
 //  PInputDataSize=0;
  }
-
+         */
  // —уммарное число всех входов
  FullInputDataSize=0;
  for(int i=0;i<NumInputs;i++)
