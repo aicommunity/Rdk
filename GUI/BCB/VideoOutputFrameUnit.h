@@ -96,6 +96,13 @@ bool SetChannelIndex(int value);
 /// Режим синхронизации с расчетом
 int GetSyncMode(void) const;
 bool SetSyncMode(int mode);
+
+/// Возвращает число изображений в последовательности
+virtual long long GetNumBitmaps(void) const=0;
+
+/// Устанавливает текущую позицию в последовательности
+virtual long long GetPosition(void) const=0;
+virtual bool SetPosition(long long index)=0;
 // --------------------------
 
 // --------------------------
@@ -173,6 +180,13 @@ virtual __fastcall ~TVideoCaptureThreadBmp(void);
 /// Имя файла изображения
 const std::string& GetFileName(void) const;
 bool SetFileName(const std::string& value);
+
+/// Возвращает число изображений в последовательности
+virtual long long GetNumBitmaps(void) const;
+
+/// Устанавливает текущую позицию в последовательности
+virtual long long GetPosition(void) const;
+virtual bool SetPosition(long long index);
 // --------------------------
 
 // --------------------------
@@ -224,6 +238,13 @@ virtual __fastcall ~TVideoCaptureThreadBmpSequence(void);
 /// Имя пути до файлов изображения
 const std::string& GetPathName(void) const;
 bool SetPathName(const std::string& value);
+
+/// Возвращает число изображений в последовательности
+long long GetNumBitmaps(void) const;
+
+/// Устанавливает текущую позицию в последовательности
+long long GetPosition(void) const;
+bool SetPosition(long long index);
 // --------------------------
 
 // --------------------------
@@ -271,6 +292,13 @@ virtual __fastcall ~TVideoCaptureThreadHttpServer(void);
 /// Имя файла изображения
 int GetListenPort(void) const;
 bool SetListenPort(int value);
+
+/// Возвращает число изображений в последовательности
+virtual long long GetNumBitmaps(void) const;
+
+/// Устанавливает текущую позицию в последовательности
+virtual long long GetPosition(void) const;
+virtual bool SetPosition(long long index);
 // --------------------------
 
 // --------------------------
@@ -325,6 +353,13 @@ virtual void __fastcall Calculate(void);
 virtual void __fastcall BeforeCalculate(void);
 
 virtual void __fastcall AfterCalculate(void);
+
+/// Возвращает число изображений в последовательности
+virtual long long GetNumBitmaps(void) const;
+
+/// Устанавливает текущую позицию в последовательности
+virtual long long GetPosition(void) const;
+virtual bool SetPosition(long long index);
 // --------------------------
 };
 
@@ -484,6 +519,13 @@ bool SetPipeName(const std::string& value);
 
 /// Размер канала общей памяти
 int GetSharedMemoryPipeSize(void) const;
+
+/// Возвращает число изображений в последовательности
+virtual long long GetNumBitmaps(void) const;
+
+/// Устанавливает текущую позицию в последовательности
+virtual long long GetPosition(void) const;
+virtual bool SetPosition(long long index);
 // --------------------------
 
 // --------------------------

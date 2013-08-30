@@ -334,6 +334,23 @@ bool TVideoCaptureThreadBmp::SetFileName(const std::string& value)
  WriteSourceSafe(TempSource,time_stamp,false);
  return true;
 }
+
+/// ¬озвращает число изображений в последовательности
+long long TVideoCaptureThreadBmp::GetNumBitmaps(void) const
+{
+ return 1;
+}
+
+/// ”станавливает текущую позицию в последовательности
+long long TVideoCaptureThreadBmp::GetPosition(void) const
+{
+ return 0;
+}
+
+bool TVideoCaptureThreadBmp::SetPosition(long long index)
+{
+ return true;
+}
 // --------------------------
 
 // --------------------------
@@ -426,8 +443,27 @@ bool TVideoCaptureThreadBmpSequence::SetPathName(const std::string& value)
  WriteSourceSafe(TempSource,time_stamp,false);
 
  CurrentBmpSequenceIndex=0;
+// Calculate();
  return true;
 }
+
+/// ¬озвращает число изображений в последовательности
+long long TVideoCaptureThreadBmpSequence::GetNumBitmaps(void) const
+{
+ return int(BmpSequenceNames.size());
+}
+
+/// ”станавливает текущую позицию в последовательности
+long long TVideoCaptureThreadBmpSequence::GetPosition(void) const
+{
+ return CurrentBmpSequenceIndex;
+}
+
+bool TVideoCaptureThreadBmpSequence::SetPosition(long long index)
+{
+ return SetLastTimeStampSafe(index);
+}
+
 // --------------------------
 
 // --------------------------
@@ -456,6 +492,11 @@ void __fastcall TVideoCaptureThreadBmpSequence::Calculate(void)
  WriteSourceSafe(TempSource,time_stamp,false);
 
  CurrentBmpSequenceIndex++;
+ if(CurrentBmpSequenceIndex>=int(BmpSequenceNames.size()))
+ {
+  --CurrentBmpSequenceIndex;
+  Stop();
+ }
 }
 
 // «агружает выбранную картинку по индеку в массиве имен
@@ -549,6 +590,24 @@ bool TVideoCaptureThreadHttpServer::SetListenPort(int value)
 
  bind->Port=ListenPort;
 
+ return true;
+}
+
+
+/// ¬озвращает число изображений в последовательности
+long long TVideoCaptureThreadHttpServer::GetNumBitmaps(void) const
+{
+ return 0;
+}
+
+/// ”станавливает текущую позицию в последовательности
+long long TVideoCaptureThreadHttpServer::GetPosition(void) const
+{
+ return 0;
+}
+
+bool TVideoCaptureThreadHttpServer::SetPosition(long long index)
+{
  return true;
 }
 // --------------------------
@@ -721,6 +780,38 @@ void __fastcall TVideoCaptureThreadVideoGrabber::BeforeCalculate(void)
 void __fastcall TVideoCaptureThreadVideoGrabber::AfterCalculate(void)
 {
 
+}
+
+/// ¬озвращает число изображений в последовательности
+long long TVideoCaptureThreadVideoGrabber::GetNumBitmaps(void) const
+{
+ if(VideoGrabber)
+ {
+  return VideoGrabber->PlayerDuration/10000000;
+ }
+ return 0;
+}
+
+/// ”станавливает текущую позицию в последовательности
+long long TVideoCaptureThreadVideoGrabber::GetPosition(void) const
+{
+ if(VideoGrabber)
+ {
+  return VideoGrabber->PlayerTimePosition/10000000;
+ }
+
+ return 0;
+}
+
+bool TVideoCaptureThreadVideoGrabber::SetPosition(long long index)
+{
+ if(VideoGrabber)
+ {
+  if(!VideoGrabber->InFrameProgressEvent)
+   VideoGrabber->PlayerTimePosition = index*10000000;
+  return true;
+ }
+ return false;
 }
 // --------------------------
 
@@ -1013,6 +1104,23 @@ bool TVideoCaptureThreadSharedMemory::SetPipeName(const std::string& value)
 int TVideoCaptureThreadSharedMemory::GetSharedMemoryPipeSize(void) const
 {
  return SharedMemoryPipeSize;
+}
+
+/// ¬озвращает число изображений в последовательности
+long long TVideoCaptureThreadSharedMemory::GetNumBitmaps(void) const
+{
+ return 0;
+}
+
+/// ”станавливает текущую позицию в последовательности
+long long TVideoCaptureThreadSharedMemory::GetPosition(void) const
+{
+ return LastTimeStamp;
+}
+
+bool TVideoCaptureThreadSharedMemory::SetPosition(long long index)
+{
+ return true;
 }
 // --------------------------
 
@@ -1495,6 +1603,10 @@ bool TVideoOutputFrame::InitBySharedMemory(int pipe_index, const std::string &pi
  PipeName=pipe_name;
  SharedMemoryPipeSize=0;*/
  Mode=6;
+
+ if(!Usm_GetNumPipes)
+  return false;
+
  if(Usm_GetNumPipes() <= pipe_index)
   Usm_SetNumPipes(pipe_index+1);
 
@@ -2040,7 +2152,7 @@ void TVideoOutputFrame::AAfterCalculate(void)
 // ќбновление интерфейса
 void TVideoOutputFrame::AUpdateInterface(void)
 {
- if(UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode() == 1)
+// if(UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode() == 1)
   if(CaptureThread)
   {
    long long time_stamp=0;
@@ -2050,6 +2162,9 @@ void TVideoOutputFrame::AUpdateInterface(void)
 	RDK::UTimeStamp stamp(double(time_stamp/1000.0),25);
 	stamp>>sstamp;
 	TimeEdit->Text=sstamp.c_str();
+
+	TrackBar->Max=CaptureThread->GetNumBitmaps();
+	TrackBar->Position=CaptureThread->GetPosition();
 
 	UpdateVideo();
   }
@@ -2183,77 +2298,6 @@ void __fastcall TVideoOutputFrame::StartButtonClick(TObject *Sender)
   {
    CaptureThread->Start();
   }
-/*
- switch (Mode) {
- case 0:
- break;
-
- case 1:
-//  VideoGrabber->StartSynchronized();
-//  VideoGrabber->RunPlayer();
-  if(CaptureThread)
-  {
-   CaptureThread->Start();
-  }
- break;
-
- case 2:
-  if(CaptureThread)
-  {
-   CaptureThread->Start();
-  }
-//   VideoGrabber->StartPreview();
-//   VideoGrabber->StartSynchronized();
- break;
-
- case 3:
-  if(CaptureThread)
-  {
-   CaptureThread->Start();
-  }
-//   VideoGrabber->StartPreview();
-//   VideoGrabber->StartSynchronized();
- break;
-
- case 4:
-  if(CaptureThread)
-  {
-   CaptureThread->Start();
-  }
-//  if(CurrentBmpSequenceIndex<int(BmpSequenceNames.size())-1)
-//  {
-//   LoadImageFromSequence(CurrentBmpSequenceIndex,BmpSource);
-//   BmpSource.SetColorModel(RDK::ubmRGB24);
-//   UpdateVideo();
-//  }
-
-//  VideoGrabber->StartPreview();
-//  VideoGrabber->StartSynchronized();
-//  VideoGrabber->PlayerFrameStep(1);
- break;
-
- case 5:
-  UHttpServerFrame->IdHTTPServer->Active=true;
- break;
-
- case 6:
- {
-//  if(Usm_SetNumPipes)
-//   Usm_SetNumPipes(PipeIndex+1);
-
-//  int res=Usm_InitPipe(PipeIndex,SharedMemoryPipeSize,0,PipeName.c_str());
-
-  if(CaptureThread)
-  {
-   CaptureThread->Start();
-  }
- }
- break;
-
- default:
-     ;
- } */
-// if(UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode() == 1)
  Timer->Enabled=true;
 
  IsStarted=true;
@@ -2269,64 +2313,6 @@ void __fastcall TVideoOutputFrame::StopButtonClick(TObject *Sender)
  {
   CaptureThread->Stop();
  }
- /*
- int res=0;
- switch (Mode) {
- case 0:
- break;
-
- case 1:
-  if(CaptureThread)
-  {
-   CaptureThread->Stop();
-  }
-//    VideoGrabber->PausePlayer();
- break;
-
- case 2:
-  if(CaptureThread)
-  {
-   CaptureThread->Stop();
-  }
-//   VideoGrabber->PausePreview();
- break;
-
- case 3:
-  if(CaptureThread)
-  {
-   CaptureThread->Stop();
-  }
-//   VideoGrabber->PausePreview();
- break;
-
- case 4:
-  if(CaptureThread)
-  {
-   CaptureThread->Stop();
-  }
-//	VideoGrabber->PausePlayer();
- break;
-
- case 5:
-  UHttpServerFrame->IdHTTPServer->Active=false;
- break;
-
- case 6:
- {
-  if(CaptureThread)
-  {
-   CaptureThread->Stop();
-  }
-
-//  if(Usm_UnInitPipe)
-//   res=Usm_UnInitPipe(PipeIndex);
- }
- break;
-
-
- default:
-	 ;
- }   */
 }
 //---------------------------------------------------------------------------
 void __fastcall TVideoOutputFrame::ImageMouseDown(TObject *Sender,
@@ -2638,6 +2624,28 @@ void __fastcall TVideoOutputFrame::TrackBarChange(TObject *Sender)
 {
  if(UpdateInterfaceFlag)
   return;
+
+ if(CaptureThread)
+ {
+  CaptureThread->SetPosition(TrackBar->Position);
+/*
+  TVideoCaptureThreadVideoGrabber *vg_thread=dynamic_cast<TVideoCaptureThreadVideoGrabber*>(CaptureThread);
+  if(vg_thread)
+  {
+   if(!vg_thread->GetVideoGrabber()->InFrameProgressEvent)
+	vg_thread->GetVideoGrabber()->PlayerFramePosition = TrackBar->Position;
+  }
+
+  TVideoCaptureThreadBmpSequence *bmpseq_thread=dynamic_cast<TVideoCaptureThreadBmpSequence*>(CaptureThread);
+  if(bmpseq_thread)
+  {
+   if(TrackBar->Position < bmpseq_thread->GetNumBitmaps())
+   {
+	bmpseq_thread->SetPosition(TrackBar->Position);
+	UpdateInterface();
+   }
+  }*/
+ }
 	/*
  if(Mode != 4)
  {
