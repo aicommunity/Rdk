@@ -133,8 +133,13 @@ void TUVisualControllerForm::UpdateInterface(bool force_update)
 {
  if(!force_update)
  {
-  if((!AlwaysUpdateFlag && !Visible) || (UpdateInterval<0 && CalculationModeFlag))
+  if((!AlwaysUpdateFlag && (!Visible || (Parent && !Parent->Visible))) || (UpdateInterval<0 && CalculationModeFlag))
    return;
+
+  UpdateControlState();
+  if(!Showing)
+   return;
+
   if(UpdateInterval>0 && CalculationModeFlag)
   {
    DWORD curr_time=GetTickCount();

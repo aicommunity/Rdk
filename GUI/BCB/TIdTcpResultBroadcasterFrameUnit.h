@@ -18,22 +18,51 @@
 #include <Web.HTTPProd.hpp>
 #include "TServerBroadcasterCommonUnit.h"
 
+class TIdTcpResultBroadcasterFrame;
+
 class TTcpResultBroadcasterThread: public TResultBroadcasterThread
 {
 protected: // Параметры
+/// Адрес принимающей стороны
+std::string Address;
+
+/// Порт принимающей стороны
+int Port;
+
+protected: // Данные
+// Управляющий фрейм
+TIdTcpResultBroadcasterFrame *Frame;
+
+bool ConnectionEstablishedFlag;
+
+long long LastSentTimeStamp;
+
+TIdTCPClient *IdTCPClient;
+
+
 
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-__fastcall TTcpResultBroadcasterThread(bool CreateSuspended);
+__fastcall TTcpResultBroadcasterThread(TIdTcpResultBroadcasterFrame * frame, bool CreateSuspended);
 virtual __fastcall ~TTcpResultBroadcasterThread(void);
 // --------------------------
 
 // --------------------------
 // Управление потоком
 // --------------------------
+virtual bool Init(const std::string &address, int port);
+virtual const std::string& GetAddress(void) const;
+virtual int GetPort(void) const;
+
+virtual void Connect(void);
+virtual void Disconnect(void);
+
 bool __fastcall ASend(void);
+
+void __fastcall IdHTTPConnected(TObject *Sender);
+void __fastcall IdHTTPDisconnected(TObject *Sender);
 // --------------------------
 };
 
@@ -56,6 +85,7 @@ __published:	// IDE-managed Components
 	void __fastcall DisconnectButtonClick(TObject *Sender);
 	void __fastcall IdHTTPConnected(TObject *Sender);
 	void __fastcall IdHTTPDisconnected(TObject *Sender);
+	void __fastcall EnableXmlTranslationCheckBoxClick(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
 	__fastcall TIdTcpResultBroadcasterFrame(TComponent* Owner);
@@ -75,6 +105,12 @@ long long LastSentTimeStamp;
 // --------------------------
 // Методы управления фреймом
 // --------------------------
+/// Инициализация канала связи в соответствии с настройками
+bool Init(void);
+
+/// Функция добавления метаданных в очередь на отправку в соответствии с настройками
+bool AddMetadata(int channel_index, long long time_stamp);
+
 void ABeforeCalculate(void);
 void AAfterCalculate(void);
 

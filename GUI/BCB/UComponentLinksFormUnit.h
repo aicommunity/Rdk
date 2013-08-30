@@ -21,6 +21,8 @@ private:	// User declarations
 public:		// User declarations
 	__fastcall TUComponentLinksForm(TComponent* Owner);
 
+void AUpdateInterface(void);
+
 // Создание копии этого компонента
 virtual TUComponentLinksForm* New(TComponent *owner=0);
 };

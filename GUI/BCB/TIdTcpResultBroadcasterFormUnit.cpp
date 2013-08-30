@@ -15,6 +15,27 @@ __fastcall TIdTcpResultBroadcasterForm::TIdTcpResultBroadcasterForm(TComponent* 
 {
 }
 
+/// Функция добавления метаданных в очередь на отправку в соответствии с настройками
+bool TIdTcpResultBroadcasterForm::AddMetadata(int channel_index, long long time_stamp)
+{
+ bool res=true;
+ for(size_t i=0;i<Broadcasters.size();i++)
+ {
+  res&=Broadcasters[i]->AddMetadata(channel_index, time_stamp);
+ }
+ return res;
+}
+
+/// Инициирует процедуру отправки метаданных
+bool TIdTcpResultBroadcasterForm::SendMetadata(void)
+{
+ for(size_t i=0;i<Broadcasters.size();i++)
+  SetEvent(Broadcasters[i]->Thread->SendEnable);
+
+ return true;
+}
+
+
 // Метод, вызываемый перед шагом расчета
 void TIdTcpResultBroadcasterForm::ABeforeCalculate(void)
 {

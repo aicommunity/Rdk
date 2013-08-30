@@ -20,7 +20,7 @@ std::string ServerId;
 std::string ChannelId;
 
 /// Индекс канала
-std::string ChannelIndex;
+int ChannelIndex;
 
 /// Метаданные Xml
 std::string Metadata;
@@ -32,9 +32,13 @@ protected: // Параметры
 /// Данные для отправки в билижайшую сессию
 std::list<TServerMetadata> MetaList;
 
+/// Флаг разрешения отправки
+bool SendEnableFlag;
+
 public:
 HANDLE SendEnable;
 HANDLE MetaUnlockEvent;
+HANDLE SendNotInProgressEvent;
 
 protected:
 
@@ -58,6 +62,13 @@ virtual bool __fastcall Send(void);
 virtual bool __fastcall ASend(void)=0;
 
 virtual void __fastcall Execute(void);
+
+/// Добавляет метаданные в очередь
+virtual bool __fastcall AddMetadataSafe(int channel_index, long long time_stamp, const std::string &component_name, const std::string &property_name);
+
+/// Флаг разрешения отправки
+bool GetSendEnableFlag(void) const;
+bool SetSendEnableFlag(bool value);
 // --------------------------
 };
 

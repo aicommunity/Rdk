@@ -65,13 +65,15 @@ void __fastcall TEngineThread::AfterCalculate(void)
  UEngineMonitorForm->EngineMonitorFrame->LastCalculatedServerTimeStamp[ChannelIndex]=
   UEngineMonitorForm->EngineMonitorFrame->GetServerTimeStamp(ChannelIndex);
 
+ IdTcpResultBroadcasterForm->AddMetadata(ChannelIndex, UEngineMonitorForm->EngineMonitorFrame->LastCalculatedServerTimeStamp[ChannelIndex]);
+ /*
  TIdTcpResultBroadcasterFrame *tcp_frame=IdTcpResultBroadcasterForm->GetBroadcasterFrame(ChannelIndex);
  if(tcp_frame)
   tcp_frame->AfterCalculate();
  TIdHttpResultBroadcasterFrame *http_frame=IdHttpResultBroadcasterForm->GetBroadcasterFrame(ChannelIndex);
  if(http_frame)
   http_frame->AfterCalculate();
-
+  */
  //RDK::UIVisualControllerStorage::AfterCalculate();
 // RDK::UIVisualControllerStorage::UpdateInterface();
 // if(ChannelIndex == GetNumEngines()-1)
@@ -346,7 +348,9 @@ void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
    break;
    }
    LastCalculatedServerTimeStamp[i]=ServerTimeStamp[i];
+   IdTcpResultBroadcasterForm->AddMetadata(i, ServerTimeStamp[i]);
   }
+  IdTcpResultBroadcasterForm->SendMetadata();
   RDK::UIVisualControllerStorage::AfterCalculate();
   RDK::UIVisualControllerStorage::UpdateInterface();
  }
@@ -354,6 +358,8 @@ void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
 
  case 1:
  {
+  IdTcpResultBroadcasterForm->SendMetadata();
+
   RDK::UIVisualControllerStorage::AfterCalculate();
 //  UServerControlForm->AfterCalculate();
 //  UServerControlForm->UpdateInterface();

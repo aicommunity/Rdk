@@ -18,22 +18,142 @@ TIdTcpResultBroadcasterFrame *IdTcpResultBroadcasterFrame;
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-__fastcall TTcpResultBroadcasterThread::TTcpResultBroadcasterThread(bool CreateSuspended)
-: TResultBroadcasterThread(CreateSuspended)
+__fastcall TTcpResultBroadcasterThread::TTcpResultBroadcasterThread(TIdTcpResultBroadcasterFrame * frame, bool CreateSuspended)
+: TResultBroadcasterThread(CreateSuspended), Frame(frame)
 {
+ IdTCPClient=new TIdTCPClient(Frame);
+ IdTCPClient->OnConnected=IdHTTPConnected;
+ IdTCPClient->OnDisconnected=IdHTTPDisconnected;
 }
 
 __fastcall TTcpResultBroadcasterThread::~TTcpResultBroadcasterThread(void)
 {
+ Disconnect();
+ if(IdTCPClient)
+ {
+  delete IdTCPClient;
+  IdTCPClient=0;
+ }
 }
 // --------------------------
 
 // --------------------------
 // Управление потоком
 // --------------------------
+const std::string& TTcpResultBroadcasterThread::GetAddress(void) const
+{
+ return Address;
+}
+
+int TTcpResultBroadcasterThread::GetPort(void) const
+{
+ return Port;
+}
+
+bool TTcpResultBroadcasterThread::Init(const std::string &address, int port)
+{
+ if(!IdTCPClient)
+  return false;
+
+ if(WaitForSingleObject(SendNotInProgressEvent,30) == WAIT_TIMEOUT)
+  return false;
+
+ if(IdTCPClient->Host == address.c_str() && IdTCPClient->Port == port)
+  return true;
+ Disconnect();
+ Address=address;
+ Port=port;
+
+ return true;
+}
+
+void TTcpResultBroadcasterThread::Connect(void)
+{
+  try
+  {
+   IdTCPClient->Host=Address.c_str();
+   IdTCPClient->Port=Port;
+   IdTCPClient->Connect();
+  }
+  catch (EIdConnectTimeout &ex)
+  {
+   return;
+  }
+  catch (EIdAlreadyConnected &ex)
+  {
+   ConnectionEstablishedFlag=true;
+  }
+  catch (EIdSocketError &ex)
+  {
+   ConnectionEstablishedFlag=false;
+   IdTCPClient->Disconnect();
+  }
+}
+
+void TTcpResultBroadcasterThread::Disconnect(void)
+{
+ if(IdTCPClient)
+ {
+  try
+  {
+   IdTCPClient->Disconnect();
+   ConnectionEstablishedFlag=false;
+  }
+  catch(EIdNotConnected &ex)
+  {
+
+  }
+ }
+}
+
+
+
 bool __fastcall TTcpResultBroadcasterThread::ASend(void)
 {
+ if(!ConnectionEstablishedFlag)
+ {
+  Connect();
+  if(!ConnectionEstablishedFlag)
+   return false;
+ }
+
+  try
+  {
+   TIdBytes Buf;
+   Buf.set_length(SendString.size());
+   memcpy(&Buf[0],&SendString[0],SendString.size());
+   if(IdTCPClient->IOHandler)
+    IdTCPClient->IOHandler->WriteDirect(Buf,Buf.Length,0);
+  }
+  catch (EIdConnectTimeout &ex)
+  {
+   ConnectionEstablishedFlag=false;
+  }
+  catch (EIdReadTimeout &ex)
+  {
+   ConnectionEstablishedFlag=false;
+  }
+  catch (EIdSocketError &ex)
+  {
+   ConnectionEstablishedFlag=false;
+//   IdHTTP->Disconnect();
+  }
+  catch(...)
+  {
+   throw;
+  }
+
  return true;
+}
+
+void __fastcall TTcpResultBroadcasterThread::IdHTTPConnected(TObject *Sender)
+{
+ ConnectionEstablishedFlag=true;
+}
+
+void __fastcall TTcpResultBroadcasterThread::IdHTTPDisconnected(TObject *Sender)
+{
+ ConnectionEstablishedFlag=false;
 }
 // --------------------------
 
@@ -44,7 +164,7 @@ __fastcall TIdTcpResultBroadcasterFrame::TIdTcpResultBroadcasterFrame(TComponent
 {
  MemStream=new TMemoryStream;
 
- Thread=new TTcpResultBroadcasterThread(false);
+ Thread=new TTcpResultBroadcasterThread(this, false);
 
  Bitmap=new TBitmap;
  ConnectionEstablishedFlag=false;
@@ -81,6 +201,39 @@ __fastcall TIdTcpResultBroadcasterFrame::~TIdTcpResultBroadcasterFrame(void)
 // --------------------------
 // Методы управления фреймом
 // --------------------------
+/// Инициализация канала связи в соответствии с настройками
+bool TIdTcpResultBroadcasterFrame::Init(void)
+{
+ if(!Thread)
+  return false;
+
+ String AUrl=ServerAddressLabeledEdit->Text;
+
+ int i = LastDelimiter(':', AUrl);
+ int j = AUrl.Length();
+ if(!i || !j)
+  return false;
+
+ int port=StrToInt(AUrl.SubString(i + 1, j - i));
+ std::string url=AnsiString(AUrl.SubString(1, i-1)).c_str();
+ Thread->Init(url,port);
+ return true;
+}
+
+/// Функция добавления метаданных в очередь на отправку в соответствии с настройками
+bool TIdTcpResultBroadcasterFrame::AddMetadata(int channel_index, long long time_stamp)
+{
+ if(!EnableXmlTranslationCheckBox->Checked)
+  return true;
+
+ if(!Thread)
+  return false;
+
+ return Thread->AddMetadataSafe(channel_index,time_stamp,AnsiString(XmlComponentNameLabeledEdit->Text).c_str(),
+   AnsiString(XmlComponentStateNameLabeledEdit->Text).c_str());
+}
+
+
 void TIdTcpResultBroadcasterFrame::ABeforeCalculate(void)
 {
 
@@ -88,6 +241,7 @@ void TIdTcpResultBroadcasterFrame::ABeforeCalculate(void)
 
 void TIdTcpResultBroadcasterFrame::AAfterCalculate(void)
 {
+/*
  if(!EnableXmlTranslationCheckBox->Checked)
   return;
 
@@ -171,12 +325,9 @@ void TIdTcpResultBroadcasterFrame::AAfterCalculate(void)
   {
    throw;
   }
-/*  catch (EIdNotASocket &ex)
-  {
-   int a=0;
-  }*/
- }
 
+ }
+ */
 }
 
 void TIdTcpResultBroadcasterFrame::AUpdateInterface(void)
@@ -202,6 +353,7 @@ void TIdTcpResultBroadcasterFrame::ALoadParameters(RDK::USerStorageXML &xml)
  XmlComponentStateNameLabeledEdit->Text=xml.ReadString("XmlComponentStateName","").c_str();
  EnableXmlTranslationCheckBox->Checked=xml.ReadBool("EnableXmlTranslation",false);
  ChannelIndexLabeledEdit->Text=IntToStr(xml.ReadInteger("ChannelIndex",0));
+ Init();
 }
 
 
@@ -215,14 +367,18 @@ TIdTcpResultBroadcasterFrame* TIdTcpResultBroadcasterFrame::New(TComponent *owne
 void __fastcall TIdTcpResultBroadcasterFrame::ConnectButtonClick(TObject *Sender)
 
 {
- //
+ Init();
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TIdTcpResultBroadcasterFrame::DisconnectButtonClick(TObject *Sender)
-
 {
- //
+ if(Thread)
+ {
+  ServerAddressLabeledEdit->Text=Thread->GetAddress().c_str();
+  ServerAddressLabeledEdit->Text+=":";
+  ServerAddressLabeledEdit->Text=IntToStr(Thread->GetPort());
+ }
 }
 //---------------------------------------------------------------------------
 
@@ -237,6 +393,19 @@ void __fastcall TIdTcpResultBroadcasterFrame::IdHTTPDisconnected(TObject *Sender
 
 {
  ConnectionEstablishedFlag=false;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TIdTcpResultBroadcasterFrame::EnableXmlTranslationCheckBoxClick(TObject *Sender)
+
+{
+ if(Thread)
+ {
+  if(EnableXmlTranslationCheckBox->Checked)
+   Thread->SetSendEnableFlag(true);
+  else
+   Thread->SetSendEnableFlag(false);
+ }
 }
 //---------------------------------------------------------------------------
 

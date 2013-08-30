@@ -11,7 +11,6 @@ inherited IdTcpResultBroadcasterFrame: TIdTcpResultBroadcasterFrame
     Align = alClient
     Caption = ' Client data '
     TabOrder = 0
-    ExplicitHeight = 376
     DesignSize = (
       536
       258)
@@ -55,6 +54,7 @@ inherited IdTcpResultBroadcasterFrame: TIdTcpResultBroadcasterFrame
       Height = 17
       Caption = 'Enable Xml Translation '
       TabOrder = 3
+      OnClick = EnableXmlTranslationCheckBoxClick
     end
     object Panel1: TPanel
       Left = 2
@@ -63,13 +63,12 @@ inherited IdTcpResultBroadcasterFrame: TIdTcpResultBroadcasterFrame
       Height = 41
       Align = alBottom
       TabOrder = 4
-      ExplicitTop = 333
       object ConnectButton: TButton
         Left = 6
         Top = 8
         Width = 75
         Height = 25
-        Caption = 'Connect'
+        Caption = 'Apply'
         TabOrder = 0
         OnClick = ConnectButtonClick
       end
@@ -78,7 +77,7 @@ inherited IdTcpResultBroadcasterFrame: TIdTcpResultBroadcasterFrame
         Top = 8
         Width = 75
         Height = 25
-        Caption = 'Disconnect'
+        Caption = 'Restore'
         TabOrder = 1
         OnClick = DisconnectButtonClick
       end
