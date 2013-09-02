@@ -39,6 +39,9 @@ bool __fastcall TResultBroadcasterThread::GenerateSendString(void)
  SendString.clear();
 
  SendString=std::string("<Meta Size=")+RDK::sntoa(MetaList.size())+">\r\n";
+  SendString+="<Server>";
+  SendString+="server_id";
+  SendString+="</Server>\r\n";
  int i=0;
  std::list<TServerMetadata>::iterator I=MetaList.begin();
  for(;I != MetaList.end();++I)
@@ -50,9 +53,6 @@ bool __fastcall TResultBroadcasterThread::GenerateSendString(void)
   SendString+="<Channel>";
   SendString+=RDK::sntoa(I->ChannelIndex);
   SendString+="</Channel>\r\n";
-  SendString+="<Server>";
-  SendString+="server_id";
-  SendString+="</Server>\r\n";
   SendString+="<Response>\r\n";
   SendString+=I->Metadata+"\r\n";
   SendString+="</Response>\r\n";
