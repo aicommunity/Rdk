@@ -45,6 +45,9 @@ protected:
 RDK::USerStorageXML SendXml;
 std::string SendString;
 
+RDK::UTransferPacket SendPacket;
+std::vector<unsigned char> SendBuffer;
+
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы

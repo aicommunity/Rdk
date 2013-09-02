@@ -59,6 +59,7 @@ bool __fastcall TResultBroadcasterThread::GenerateSendString(void)
   SendString+="</Packet>\r\n";
  }
  SendString+="</Meta>";
+ MetaList.clear();
 
  SetEvent(MetaUnlockEvent);
  return true;
@@ -66,12 +67,17 @@ bool __fastcall TResultBroadcasterThread::GenerateSendString(void)
 
 bool __fastcall TResultBroadcasterThread::Send(void)
 {
+ SendPacket.SetCmdId(0);
+ SendPacket.SetNumParams(1);
+ SendPacket.SetParam(0,SendString);
+ SendBuffer.resize(SendPacket.GetPacketSize());
+ SendPacket.Save(SendBuffer);
+
  if(ASend())
  {
   return true;
  }
 
- MetaList.clear();
  return false;
 }
 
@@ -82,13 +88,13 @@ void __fastcall TResultBroadcasterThread::Execute(void)
   if(WaitForSingleObject(SendEnable,30) == WAIT_TIMEOUT)
    continue;
   ResetEvent(SendEnable);
-  ResetEvent(MetaUnlockEvent);
+//  ResetEvent(MetaUnlockEvent);
   ResetEvent(SendNotInProgressEvent);
   if(!MetaList.empty())
   {
    if(!GenerateSendString())
    {
-	SetEvent(MetaUnlockEvent);
+//	SetEvent(MetaUnlockEvent);
 	Sleep(30);
    }
    else
@@ -96,22 +102,22 @@ void __fastcall TResultBroadcasterThread::Execute(void)
 	if(SendEnableFlag)
 	{
 	 Send();
-	 SetEvent(MetaUnlockEvent);
+//	 SetEvent(MetaUnlockEvent);
 	}
 	else
 	{
-     SetEvent(MetaUnlockEvent);
+//	 SetEvent(MetaUnlockEvent);
 	 Sleep(30);
 	}
    }
   }
   else
   {
-   SetEvent(MetaUnlockEvent);
+//   SetEvent(MetaUnlockEvent);
    Sleep(30);
   }
+  SetEvent(SendNotInProgressEvent);
  }
- SetEvent(SendNotInProgressEvent);
 }
 
 /// Добавляет метаданные в очередь

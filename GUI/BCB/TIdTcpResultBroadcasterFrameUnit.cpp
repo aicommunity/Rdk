@@ -120,8 +120,8 @@ bool __fastcall TTcpResultBroadcasterThread::ASend(void)
   try
   {
    TIdBytes Buf;
-   Buf.set_length(SendString.size());
-   memcpy(&Buf[0],&SendString[0],SendString.size());
+   Buf.set_length(SendBuffer.size());
+   memcpy(&Buf[0],&SendBuffer[0],SendBuffer.size());
    if(IdTCPClient->IOHandler)
     IdTCPClient->IOHandler->WriteDirect(Buf,Buf.Length,0);
   }

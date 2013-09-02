@@ -10,7 +10,7 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
     Top = 0
     Width = 453
     Height = 297
-    ActivePage = DeviceTabSheet
+    ActivePage = ImageSequenceTabSheet
     Align = alClient
     DoubleBuffered = True
     ParentDoubleBuffered = False
