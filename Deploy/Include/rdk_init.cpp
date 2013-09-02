@@ -734,6 +734,36 @@ void RDK_CALL Env_IncreaseModelTimeByStep(void)
  return PEngine->Env_IncreaseModelTimeByStep();
 }
 
+/// Устанавливает минимальный интервал времени между шагами расчета (мс)
+/// Итерации расчета будут пропускаться до тех пор, пока время прошедшее с начала
+/// последней итерации не станет больше чем эта величина
+int RDK_CALL Env_SetMinInterstepsInterval(long long value)
+{
+ return PEngine->Env_SetMinInterstepsInterval(value);
+}
+
+int RDK_CALL MEnv_SetMinInterstepsInterval(int engine_index, long long value)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+ return DllManager.EngineList[engine_index]->Env_SetMinInterstepsInterval(value);
+}
+
+/// Возвращает минимальный интервал времени между шагами расчета (мс)
+/// Итерации расчета будут пропускаться до тех пор, пока время прошедшее с начала
+/// последней итерации не станет больше чем эта величина
+long long RDK_CALL Env_GetMinInterstepsInterval(void)
+{
+ return PEngine->Env_GetMinInterstepsInterval();
+}
+
+long long RDK_CALL Env_GetMinInterstepsInterval(int engine_index)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 0;
+ return DllManager.EngineList[engine_index]->Env_GetMinInterstepsInterval();
+}
+
 // Возвращает имя текущего каталога для хранения данных
 const char* RDK_CALL Env_GetCurrentDataDir(void)
 {

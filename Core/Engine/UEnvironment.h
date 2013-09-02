@@ -28,6 +28,9 @@ int PredefinedStructure;
 // »м€ текущего каталога хранени€ данных
 std::string CurrentDataDir;
 
+/// ћинимальный интервал времени между итераци€ми счета (мс)
+long long MinInterstepsInterval;
+
 protected: // —осто€ни€
 // ‘лаг состо€ни€ инициализации
 // true - хранилище готово к использованию
@@ -69,7 +72,7 @@ UEPtr<UComponent> CurrentComponent;
 protected: // ¬ременные переменные
 long long StartupTime;
 
-long long /*StartProcTime,*/CurrentTime,LastDuration/*,LastSentTime*/, ProcEndTime;
+long long /*StartProcTime,*/CurrentTime,LastDuration/*,LastSentTime*/, ProcEndTime, LastStepStartTime;
 
 public: // Public methods
 // --------------------------
@@ -94,6 +97,10 @@ bool SetModelCalculationComponent(const ULongId& value);
 // »м€ текущего каталога хранени€ данных
 const std::string& GetCurrentDataDir(void);
 void SetCurrentDataDir(const std::string& dir);
+
+/// ћинимальный интервал времени между итераци€ми счета (мс)
+long long GetMinInterstepsInterval(void) const;
+bool SetMinInterstepsInterval(long long value);
 // --------------------------
 
 // --------------------------

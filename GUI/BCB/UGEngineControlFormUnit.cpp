@@ -404,6 +404,14 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
   CalculationMode[i]=ProjectXml.ReadInteger(std::string("CalculationMode_")+RDK::sntoa(i),0);
  }
 
+ MinInterstepsInterval.resize(GetNumEngines());
+ MinInterstepsInterval[0]=ProjectXml.ReadInteger("MinInterstepsInterval",0);
+ for(int i=1;i<GetNumEngines();i++)
+ {
+  MinInterstepsInterval[i]=ProjectXml.ReadInteger(std::string("MinInterstepsInterval_")+RDK::sntoa(i),0);
+ }
+
+
  String descriptionfilename=ProjectXml.ReadString("ProjectDescriptionFileName","").c_str();
 
  if(descriptionfilename.Length() != 0 && FileExists(descriptionfilename))
@@ -544,6 +552,9 @@ void TUGEngineControlForm::CloneProject(int source_id, int cloned_id)
 
  CalculationMode.resize(GetNumEngines());
  CalculationMode[cloned_id]=CalculationMode[source_id];
+
+ MinInterstepsInterval.resize(GetNumEngines());
+ MinInterstepsInterval[cloned_id]=MinInterstepsInterval[source_id];
 
 
  int selected_engine=GetSelectedEngineIndex();
@@ -764,6 +775,7 @@ void TUGEngineControlForm::SaveProject(void)
    ProjectXml.WriteInteger("GlobalTimeStep",GlobalTimeStep[0]);
 
    ProjectXml.WriteInteger("CalculationMode",CalculationMode[0]);
+   ProjectXml.WriteInteger("MinInterstepsInterval",MinInterstepsInterval[0]);
   }
   else
   {
@@ -776,6 +788,8 @@ void TUGEngineControlForm::SaveProject(void)
    ProjectXml.WriteInteger(std::string("GlobalTimeStep_")+suffix,GlobalTimeStep[i]);
 
    ProjectXml.WriteInteger(std::string("CalculationMode_")+suffix,CalculationMode[i]);
+
+   ProjectXml.WriteInteger(std::string("MinInterstepsInterval_")+suffix,MinInterstepsInterval[i]);
   }
  }
  SelectEngine(selected_engine_index);
@@ -1251,6 +1265,9 @@ void __fastcall TUGEngineControlForm::CreateProjectItemClick(TObject *Sender)
 
   CalculationMode.resize(1);
   CalculationMode[0]=UCreateProjectWizardForm->ProjectCalculationModeRadioGroup->ItemIndex;
+
+  MinInterstepsInterval.resize(1);
+  MinInterstepsInterval[0]=0;
 
   CreateProject(UCreateProjectWizardForm->ProjectDirectoryLabeledEdit->Text+String("\\Project.ini"),UCreateProjectWizardForm->UClassesListFrame1->GetSelectedName(),UCreateProjectWizardForm->ProjectModelFileNameLabeledEdit->Text);
 

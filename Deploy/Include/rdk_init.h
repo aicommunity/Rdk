@@ -227,6 +227,18 @@ RDK_LIB_TYPE int RDK_CALL MEnv_Reset(int engine_index, const char* stringid);
 // Производит увеличение времени модели на требуемую величину
 RDK_LIB_TYPE void RDK_CALL Env_IncreaseModelTimeByStep(void);
 
+/// Устанавливает минимальный интервал времени между шагами расчета (мс)
+/// Итерации расчета будут пропускаться до тех пор, пока время прошедшее с начала
+/// последней итерации не станет больше чем эта величина
+RDK_LIB_TYPE int RDK_CALL Env_SetMinInterstepsInterval(long long value);
+RDK_LIB_TYPE int RDK_CALL MEnv_SetMinInterstepsInterval(int engine_index, long long value);
+
+/// Возвращает минимальный интервал времени между шагами расчета (мс)
+/// Итерации расчета будут пропускаться до тех пор, пока время прошедшее с начала
+/// последней итерации не станет больше чем эта величина
+RDK_LIB_TYPE long long RDK_CALL Env_GetMinInterstepsInterval(void);
+RDK_LIB_TYPE long long RDK_CALL MEnv_GetMinInterstepsInterval(int engine_index);
+
 // Возвращает имя текущего каталога для хранения данных
 RDK_LIB_TYPE const char* RDK_CALL Env_GetCurrentDataDir(void);
 

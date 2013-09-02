@@ -222,6 +222,9 @@ bool ReflectionFlag;
 // Режим счета
 std::vector<int> CalculationMode;
 
+/// Минимальный интервал между итерациями счета
+std::vector<long long> MinInterstepsInterval;
+
 // Список специальных форм (не имеющих компонента управления в модели)
 std::map<std::string, TUVisualControllerForm*> SpecialForms;
 

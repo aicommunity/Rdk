@@ -1034,6 +1034,39 @@ void UEngine::Env_IncreaseModelTimeByStep(void)
  }
 }
 
+/// Устанавливает минимальный интервал времени между шагами расчета (мс)
+/// Итерации расчета будут пропускаться до тех пор, пока время прошедшее с начала
+/// последней итерации не станет больше чем эта величина
+int UEngine::Env_SetMinInterstepsInterval(long long value)
+{
+ try
+ {
+  if(Environment->SetMinInterstepsInterval(value))
+   return 0;
+ }
+ catch (RDK::UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return -2000;
+}
+
+/// Возвращает минимальный интервал времени между шагами расчета (мс)
+/// Итерации расчета будут пропускаться до тех пор, пока время прошедшее с начала
+/// последней итерации не станет больше чем эта величина
+long long UEngine::Env_GetMinInterstepsInterval(void) const
+{
+ try
+ {
+  return Environment->GetMinInterstepsInterval();
+ }
+ catch (RDK::UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
 // !!! Следующие методы управления текущим компонентом влияют на все
 // методы, обращающиеся к компонентам по строковому id !!!
 // Устанавливает текущий компонент (адресация относительно корня - модели)

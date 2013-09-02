@@ -41,7 +41,11 @@ EXPORTS
     Env_Calculate = _Env_Calculate
     Env_RTCalculate = _Env_RTCalculate
     Env_Reset = _Env_Reset
-    Env_IncreaseModelTimeByStep = _Env_IncreaseModelTimeByStep
+    Env_IncreaseModelTimeByStep = _Env_IncreaseModelTimeByStep   
+    Env_GetMinInterstepsInterval = _Env_GetMinInterstepsInterval
+    MEnv_GetMinInterstepsInterval = _MEnv_GetMinInterstepsInterval
+    Env_SetMinInterstepsInterval = _Env_SetMinInterstepsInterval
+    MEnv_SetMinInterstepsInterval = _MEnv_SetMinInterstepsInterval
     Env_SelectCurrentComponent = _Env_SelectCurrentComponent
     Env_ResetCurrentComponent = _Env_ResetCurrentComponent
     Env_UpCurrentComponent = _Env_UpCurrentComponent

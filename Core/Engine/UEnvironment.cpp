@@ -48,6 +48,7 @@ UEnvironment::UEnvironment(void)
  CurrentTime=0;
  LastDuration=1;
  ProcEndTime=0;
+ MinInterstepsInterval=0;
 }
 
 UEnvironment::~UEnvironment(void)
@@ -109,6 +110,20 @@ void UEnvironment::SetCurrentDataDir(const std::string& dir)
   CurrentDataDir+='/';
 }
 
+/// Минимальный интервал времени между итерациями счета (мс)
+long long UEnvironment::GetMinInterstepsInterval(void) const
+{
+ return MinInterstepsInterval;
+}
+
+bool UEnvironment::SetMinInterstepsInterval(long long value)
+{
+ if(MinInterstepsInterval == value)
+  return true;
+
+ MinInterstepsInterval = value;
+ return true;
+}
 // --------------------------
 
 
@@ -463,6 +478,8 @@ bool UEnvironment::ADefault(void)
  if(!Model)
   return true;
 
+ MinInterstepsInterval=200;
+
 // UComponent::SetTime(0);
  if(ModelCalculationComponent.GetSize() == 0)
  {
@@ -519,6 +536,7 @@ bool UEnvironment::AReset(void)
  StartupTime=GetCurrentStartupTime();
  LastDuration=1;
  ProcEndTime=StartupTime;
+ LastStepStartTime=0;
 
  if(!Model)
   return true;
@@ -550,10 +568,16 @@ bool UEnvironment::AReset(void)
 // Выполняет расчет этого объекта
 bool UEnvironment::ACalculate(void)
 {
- Time.SetRealTime(CalcDiffTime(GetCurrentStartupTime(),StartupTime)*1000);
+ long long cur_time=GetCurrentStartupTime();
+ Time.SetRealTime(CalcDiffTime(cur_time,StartupTime)*1000);
  if(!Model)
   return true;
 
+ // Проверяем, достаточно ли велик интервал времени между итерациями счета
+ if(cur_time-LastStepStartTime<MinInterstepsInterval)
+  return true;
+
+ LastStepStartTime=cur_time;
  if(ModelCalculationComponent.GetSize() == 0)
  {
   if(!Model->Calculate())
