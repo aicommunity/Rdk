@@ -263,7 +263,7 @@ void __fastcall TUEngineMonitorFrame::Start1Click(TObject *Sender)
  break;
 
  case 1:
-  for(int i=0;i<GetNumChannels();i++)
+//  for(int i=0;i<GetNumChannels();i++)
 //   ThreadChannels[i]->Start();//Resume();
   Timer->Interval=30;
   Timer->Enabled=true;
