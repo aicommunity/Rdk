@@ -23,8 +23,13 @@ object UServerControlForm: TUServerControlForm
     ActivePage = ControlTabSheet
     Align = alClient
     TabOrder = 0
+    OnChange = PageControlChange
     object ControlTabSheet: TTabSheet
       Caption = 'Control'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object GroupBox3: TGroupBox
         Left = 0
         Top = 0

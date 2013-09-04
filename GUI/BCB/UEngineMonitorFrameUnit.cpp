@@ -28,11 +28,15 @@ __fastcall TEngineThread::TEngineThread(int channel_index, bool CreateSuspended)
 : ChannelIndex(channel_index), TThread(CreateSuspended)
 {
  CalcEnable=CreateEvent(0,TRUE,0,0);
+ CalcStarted=CreateEvent(0,TRUE,0,0);
+ CalculationNotInProgress=CreateEvent(0,TRUE,TRUE,0);
 }
 
 __fastcall TEngineThread::~TEngineThread(void)
 {
+ CloseHandle(CalcStarted);
  CloseHandle(CalcEnable);
+ CloseHandle(CalculationNotInProgress);
 }
 // --------------------------
 
@@ -90,9 +94,12 @@ void __fastcall TEngineThread::Execute(void)
  {
 //  Synchronize(BeforeCalculate);
 //  BeforeCalculate();
+  if(WaitForSingleObject(CalcStarted,30) == WAIT_TIMEOUT)
+   continue;
   if(WaitForSingleObject(CalcEnable,30) == WAIT_TIMEOUT)
    continue;
   ResetEvent(CalcEnable);
+  ResetEvent(CalculationNotInProgress);
 //  Synchronize(BeforeCalculate);
   BeforeCalculate();
   if(GetNumEngines()>ChannelIndex)
@@ -102,6 +109,7 @@ void __fastcall TEngineThread::Execute(void)
   }
   AfterCalculate();
   //Synchronize(AfterCalculate);
+  SetEvent(CalculationNotInProgress);
  }
 }
 // --------------------------
@@ -120,7 +128,7 @@ __fastcall TUEngineMonitorFrame::TUEngineMonitorFrame(TComponent* Owner)
 
 __fastcall TUEngineMonitorFrame::~TUEngineMonitorFrame(void)
 {
- SetNumChannels(0);
+// SetNumChannels(0);
 }
 
 
@@ -269,12 +277,17 @@ void __fastcall TUEngineMonitorFrame::Start1Click(TObject *Sender)
  case 1:
 //  for(int i=0;i<GetNumChannels();i++)
 //   ThreadChannels[i]->Start();//Resume();
+  TUVisualControllerFrame::CalculationModeFlag=true;
+  TUVisualControllerForm::CalculationModeFlag=true;
   Timer->Interval=30;
   Timer->Enabled=true;
   for(size_t i=0;i<ThreadChannels.size();i++)
   {
    if(ThreadChannels[i])
-	WaitForSingleObject(ThreadChannels[i]->CalcEnable,100);
+   {
+    SetEvent(ThreadChannels[i]->CalcStarted);
+	WaitForSingleObject(ThreadChannels[i]->CalculationNotInProgress,1000);
+   }
    UShowProgressBarForm->IncBarStatus(1);
   }
  break;
@@ -285,6 +298,9 @@ void __fastcall TUEngineMonitorFrame::Start1Click(TObject *Sender)
 
 void __fastcall TUEngineMonitorFrame::Pause1Click(TObject *Sender)
 {
+ if(Timer->Enabled == false)
+  return;
+
  UShowProgressBarForm->SetBarHeader(1,"Stopping Channel Calculation...");
  UShowProgressBarForm->ResetBarStatus(1, 1, int(ThreadChannels.size()));
 
@@ -298,6 +314,8 @@ void __fastcall TUEngineMonitorFrame::Pause1Click(TObject *Sender)
 
  case 1:
   Timer->Enabled=false;
+  TUVisualControllerFrame::CalculationModeFlag=false;
+  TUVisualControllerForm::CalculationModeFlag=false;
   for(int i=0;i<GetNumChannels();i++)
   {
 //   ThreadChannels[i]->Terminate();//Suspend();
@@ -307,7 +325,10 @@ void __fastcall TUEngineMonitorFrame::Pause1Click(TObject *Sender)
   for(size_t i=0;i<ThreadChannels.size();i++)
   {
    if(ThreadChannels[i])
-	WaitForSingleObject(ThreadChannels[i]->CalcEnable,100);
+   {
+    ResetEvent(ThreadChannels[i]->CalcStarted);
+	WaitForSingleObject(ThreadChannels[i]->CalculationNotInProgress,1000);
+   }
    UShowProgressBarForm->IncBarStatus(1);
   }
  break;

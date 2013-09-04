@@ -27,6 +27,10 @@ int ChannelIndex;
 public:
 HANDLE CalcEnable;
 
+HANDLE CalcStarted;
+
+HANDLE CalculationNotInProgress;
+
 RDK::UBitmap Source;
 
 

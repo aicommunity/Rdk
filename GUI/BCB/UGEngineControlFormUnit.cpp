@@ -1537,8 +1537,8 @@ void __fastcall TUGEngineControlForm::HideTimerTimer(TObject *Sender)
 
 
 void __fastcall TUGEngineControlForm::FormCloseQuery(TObject *Sender, bool &CanClose)
-
 {
+ Pause1Click(Sender);
  CloseProject();
  CanClose=true;
 }

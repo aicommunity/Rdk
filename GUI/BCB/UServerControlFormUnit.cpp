@@ -603,20 +603,6 @@ void TUServerControlForm::AAfterCalculate(void)
 // Обновление интерфейса
 void TUServerControlForm::AUpdateInterface(void)
 {
- ServerControlPortLabeledEdit->Text=IntToStr(UHttpServerFrame->GetListenPort());
- NumberOfChannelsLabeledEdit->Text=IntToStr(GetNumChannels());
-
- ChannelNamesStringGrid->RowCount=ChannelNames.size()+1;
- ChannelNamesStringGrid->ColWidths[0]=20;
- ChannelNamesStringGrid->ColWidths[1]=ChannelNamesStringGrid->Width-ChannelNamesStringGrid->ColWidths[0]-20;
- ChannelNamesStringGrid->Cells[0][0]="Channel #";
- ChannelNamesStringGrid->Cells[1][0]="Channel Name";
- for(int i=0;i<int(ChannelNames.size());i++)
- {
-  ChannelNamesStringGrid->Cells[0][i+1]=IntToStr(i);
-  ChannelNamesStringGrid->Cells[1][i+1]=ChannelNames[i].c_str();
- }
-
  std::vector<long long> model_avg,transport_avg;
  model_avg.assign(GetNumChannels(),0);
  transport_avg.assign(GetNumChannels(),0);
@@ -973,6 +959,7 @@ void __fastcall TUServerControlForm::ServerStopButtonClick(TObject *Sender)
 void __fastcall TUServerControlForm::ReturnOptionsButtonClick(TObject *Sender)
 {
  UpdateInterface(true);
+ PageControlChange(Sender);
 }
 //---------------------------------------------------------------------------
 
@@ -981,9 +968,15 @@ void __fastcall TUServerControlForm::ApplyOptionsButtonClick(TObject *Sender)
  if(UpdateInterfaceFlag)
   return;
 
- int new_num_channels=StrToInt(ServerControlPortLabeledEdit->Text);
+ int new_num_channels=StrToInt(NumberOfChannelsLabeledEdit->Text);
  if(new_num_channels < 1)
   return;
+
+ if(new_num_channels == GetNumEngines())
+  return;
+
+ UGEngineControlForm->Pause1Click(Sender);
+
  UHttpServerFrame->SetListenPort(new_num_channels);
 
  UEngineMonitorForm->EngineMonitorFrame->SetNumChannels(new_num_channels);
@@ -1005,3 +998,21 @@ void __fastcall TUServerControlForm::ChannelNamesStringGridKeyDown(TObject *Send
  }
 }
 //---------------------------------------------------------------------------
+void __fastcall TUServerControlForm::PageControlChange(TObject *Sender)
+{
+ ServerControlPortLabeledEdit->Text=IntToStr(UHttpServerFrame->GetListenPort());
+ NumberOfChannelsLabeledEdit->Text=IntToStr(GetNumChannels());
+
+ ChannelNamesStringGrid->RowCount=ChannelNames.size()+1;
+ ChannelNamesStringGrid->ColWidths[0]=20;
+ ChannelNamesStringGrid->ColWidths[1]=ChannelNamesStringGrid->Width-ChannelNamesStringGrid->ColWidths[0]-20;
+ ChannelNamesStringGrid->Cells[0][0]="Channel #";
+ ChannelNamesStringGrid->Cells[1][0]="Channel Name";
+ for(int i=0;i<int(ChannelNames.size());i++)
+ {
+  ChannelNamesStringGrid->Cells[0][i+1]=IntToStr(i);
+  ChannelNamesStringGrid->Cells[1][i+1]=ChannelNames[i].c_str();
+ }
+}
+//---------------------------------------------------------------------------
+

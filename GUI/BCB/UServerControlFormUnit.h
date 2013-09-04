@@ -65,6 +65,7 @@ __published:	// IDE-managed Components
 	void __fastcall ReturnOptionsButtonClick(TObject *Sender);
 	void __fastcall ApplyOptionsButtonClick(TObject *Sender);
 	void __fastcall ChannelNamesStringGridKeyDown(TObject *Sender, WORD &Key, TShiftState Shift);
+	void __fastcall PageControlChange(TObject *Sender);
 
 
 

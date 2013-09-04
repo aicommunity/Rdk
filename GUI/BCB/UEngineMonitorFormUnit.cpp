@@ -61,7 +61,7 @@ TUEngineMonitorForm* TUEngineMonitorForm::New(TComponent *owner)
 //---------------------------------------------------------------------------
 void __fastcall TUEngineMonitorForm::FormDestroy(TObject *Sender)
 {
- EngineMonitorFrame->Timer->Enabled=false;
+// EngineMonitorFrame->Timer->Enabled=false;
 }
 //---------------------------------------------------------------------------
 
