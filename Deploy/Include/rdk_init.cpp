@@ -1002,6 +1002,13 @@ const char* RDK_CALL Model_GetComponentPropertiesList(const char* stringid, unsi
  return PEngine->Model_GetComponentPropertiesList(stringid,type_mask);
 }
 
+// Возвращает список имен и индексов свойств компонента разделенный запятыми
+// каждый элемент имеет вид имя_свойства:индекс_входа(выхода)
+const char* RDK_CALL Model_GetComponentPropertiesLookupList(const char* stringid, unsigned int type_mask)
+{
+ return PEngine->Model_GetComponentPropertiesLookupList(stringid,type_mask);
+}
+
 // Возвращает свойства компонента по идентификатору
 const char * RDK_CALL Model_GetComponentProperties(const char *stringid, unsigned int type_mask)
 {

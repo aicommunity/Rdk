@@ -98,6 +98,7 @@ EXPORTS
     Model_GetComponentLongName = _Model_GetComponentLongName
     Model_GetComponentLongId = _Model_GetComponentLongId
     Model_GetComponentPropertiesList = _Model_GetComponentPropertiesList
+    Model_GetComponentPropertiesLookupList = _Model_GetComponentPropertiesLookupList
     Model_GetComponentProperties = _Model_GetComponentProperties
     Model_GetComponentPropertiesEx = _Model_GetComponentPropertiesEx
     Model_GetComponentSelectedProperties = _Model_GetComponentSelectedProperties

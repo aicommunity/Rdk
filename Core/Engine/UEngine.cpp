@@ -1808,6 +1808,45 @@ const char* UEngine::Model_GetComponentPropertiesList(const char* stringid, unsi
  return 0;
 }
 
+const char* UEngine::Model_GetComponentPropertiesLookupList(const char* stringid, unsigned int type_mask)
+{
+ try
+ {
+  TempString="";
+  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
+
+  if(!cont)
+   return TempString.c_str();
+
+  RDK::UContainer::VariableMapT props=cont->GetPropertiesList();
+
+  RDK::UContainer::VariableMapCIteratorT I,J;
+
+  I=props.begin();
+  J=props.end();
+  while(I != J)
+  {
+   if(I->second.CheckMask(type_mask))
+   {
+	if(TempString.size()>0)
+	 TempString+=",";
+	TempString+=I->first;
+	TempString+=":";
+	TempString+=sntoa(I->second.Property->GetMinRange());
+   }
+   ++I;
+  }
+
+  return TempString.c_str();
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
+
 // Возвращает свойства компонента по идентификатору
 const char* UEngine::Model_GetComponentProperties(const char *stringid, unsigned int type_mask)
 {

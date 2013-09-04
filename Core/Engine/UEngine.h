@@ -520,6 +520,10 @@ virtual const char* Model_GetComponentClassName(const char* stringid);
 // Возвращает список свойств компонента разделенный запятыми
 virtual const char* Model_GetComponentPropertiesList(const char* stringid, unsigned int type_mask);
 
+// Возвращает список имен и индексов свойств компонента разделенный запятыми
+// каждый элемент имеет вид имя_свойства:индекс_входа(выхода)
+virtual const char* UEngine::Model_GetComponentPropertiesLookupList(const char* stringid, unsigned int type_mask);
+
 // Возвращает свойства компонента по идентификатору
 // Память для buffer должна быть выделена!
 virtual const char* Model_GetComponentProperties(const char *stringid, unsigned int type_mask=0xFFFFFFFF);

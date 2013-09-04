@@ -227,13 +227,13 @@ void __fastcall TUComponentIOFrame::ShowLinks(void)
    itemname=linkslist[i].Item.Id;//Model_GetComponentLongName(linkslist[i].Item.Id.EncodeToString(stringid).c_str());
    StringGrid->RowCount=StringGrid->RowCount+linkslist[i].Connector.size();
 
-   item_properties_names=Model_GetComponentPropertiesList(itemname.c_str(),ptPubOutput);
+   item_properties_names=Model_GetComponentPropertiesLookupList(itemname.c_str(),ptPubOutput);
    DecodePropertiesIOList(item_properties_names,item_propertries_names_list);
 
    for(size_t j=0;j<linkslist[i].Connector.size();j++)
 	{
 	 connname=linkslist[i].Connector[j].Id;//Model_GetComponentLongName(linkslist[i].Connector[j].Id.EncodeToString(stringid).c_str());
-	 conn_properties_names=Model_GetComponentPropertiesList(connname.c_str(),ptPubInput);
+	 conn_properties_names=Model_GetComponentPropertiesLookupList(connname.c_str(),ptPubInput);
 	 DecodePropertiesIOList(conn_properties_names,conn_propertries_names_list);
 
 	 StringGrid->Cells[0][k]=IntToStr(int(i));
@@ -293,7 +293,7 @@ void __fastcall TUComponentIOFrame::ShowOutputs(TStringGrid *string_grid, RDK::U
  {
   std::string properties_names;
   std::map<int, std::string> propertries_names_list;
-  properties_names=Model_GetComponentPropertiesList(linkslist[i].EncodeToString(stringid).c_str(),ptPubOutput);
+  properties_names=Model_GetComponentPropertiesLookupList(linkslist[i].EncodeToString(stringid).c_str(),ptPubOutput);
   DecodePropertiesIOList(properties_names, propertries_names_list);
   for(int j=0;j<Model_GetComponentNumOutputs(linkslist[i].EncodeToString(stringid).c_str());j++)
   {
@@ -330,7 +330,7 @@ void __fastcall TUComponentIOFrame::ShowInputs(TStringGrid *string_grid, RDK::UL
  {
   std::string properties_names;
   std::map<int, std::string> propertries_names_list;
-  properties_names=Model_GetComponentPropertiesList(linkslist[i].EncodeToString(stringid).c_str(),ptPubInput);
+  properties_names=Model_GetComponentPropertiesLookupList(linkslist[i].EncodeToString(stringid).c_str(),ptPubInput);
   DecodePropertiesIOList(properties_names, propertries_names_list);
   for(int j=-1;j<Model_GetComponentNumInputs(linkslist[i].EncodeToString(stringid).c_str());j++)
   {
