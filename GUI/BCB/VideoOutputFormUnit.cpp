@@ -8,6 +8,7 @@
 #include "TVideoGrabberControlFormUnit.h"
 #include "rdk_initdll.h"
 #include "UGEngineControlFormUnit.h"
+#include "UShowProgressBarUnit.h"
 //#include "USharedMemoryLoader.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -193,6 +194,9 @@ void TVideoOutputForm::LoadFromIni(TMemIniFile *ini, const String &section)
 // Запускает выбранный источник видео, или все если index == -1
 void TVideoOutputForm::Start(int index)
 {
+ UShowProgressBarForm->SetBarHeader(0,"Starting video sources...");
+ UShowProgressBarForm->ResetBarStatus(0, 0, GetNumSources());
+
  if(index>=0 && index<GetNumSources())
   Sources[index]->StartButtonClick(this);
  else
@@ -200,18 +204,27 @@ void TVideoOutputForm::Start(int index)
 //  if(GetNumSources()>0)
 //   Sources[i]->
   for(int i=0;i<GetNumSources();i++)
+  {
    Sources[i]->StartButtonClick(this);
+   UShowProgressBarForm->IncBarStatus(0);
+  }
  }
 }
 
 // Останавливает выбранный источник видео, или все если index == -1
 void TVideoOutputForm::Stop(int index)
 {
+ UShowProgressBarForm->SetBarHeader(0,"Stopping video sources...");
+ UShowProgressBarForm->ResetBarStatus(0, 0, GetNumSources());
+
  if(index>=0 && index<GetNumSources())
   Sources[index]->StopButtonClick(this);
  else
   for(int i=0;i<GetNumSources();i++)
+  {
    Sources[i]->StopButtonClick(this);
+   UShowProgressBarForm->IncBarStatus(0);
+  }
 }
 
 // Останавливает выбранный источник видео, или все если index == -1

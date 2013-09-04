@@ -25,6 +25,7 @@
 #include "UWatchFormUnit.h"
 #include "TIdHttpResultBroadcasterFormUnit.h"
 #include "UServerControlFormUnit.h"
+#include "UShowProgressBarUnit.h"
 //#include "TUFileSystem.h"
 #include "rdk_cpp_initdll.h"
 #include "myrdk.h"
@@ -1107,19 +1108,38 @@ void TUGEngineControlForm::AddBroadcasterMenu(TMenuItem *item, TMenu *owner)
 
 void __fastcall TUGEngineControlForm::Start1Click(TObject *Sender)
 {
+ UShowProgressBarForm->SetWinTitle("Starting...");
+ UShowProgressBarForm->SetBarHeader(0,"");
+ UShowProgressBarForm->SetBarHeader(1,"Total");
+ UShowProgressBarForm->ResetBarStatus(0, 0, 1);
+ UShowProgressBarForm->ResetBarStatus(1, 0, 2);
+ UShowProgressBarForm->Show();
+
 #ifdef RDK_VIDEO
  VideoOutputForm->Start();
 #endif
+ UShowProgressBarForm->IncBarStatus(1);
  UEngineMonitorForm->EngineMonitorFrame->Start1Click(Sender);
+
+ UShowProgressBarForm->Hide();
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUGEngineControlForm::Pause1Click(TObject *Sender)
 {
+ UShowProgressBarForm->SetWinTitle("Stopping...");
+ UShowProgressBarForm->SetBarHeader(0,"");
+ UShowProgressBarForm->SetBarHeader(1,"Total");
+ UShowProgressBarForm->ResetBarStatus(0, 0, 1);
+ UShowProgressBarForm->ResetBarStatus(1, 0, 2);
+ UShowProgressBarForm->Show();
+
  UEngineMonitorForm->EngineMonitorFrame->Pause1Click(Sender);
+ UShowProgressBarForm->IncBarStatus(1);
 #ifdef RDK_VIDEO
  VideoOutputForm->StopOffline();
 #endif
+ UShowProgressBarForm->Hide();
 }
 //---------------------------------------------------------------------------
 
