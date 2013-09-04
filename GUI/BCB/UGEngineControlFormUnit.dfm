@@ -98,14 +98,6 @@ object UGEngineControlForm: TUGEngineControlForm
                 ExplicitTop = 66
                 ExplicitWidth = 237
               end
-              inherited ParametersListStringGrid: TStringGrid
-                ExplicitWidth = 237
-                ExplicitHeight = 3
-              end
-              inherited HeaderControl3: THeaderControl
-                ExplicitTop = 17
-                ExplicitWidth = 237
-              end
             end
             inherited TabSheet5: TTabSheet
               inherited Splitter4: TSplitter
@@ -116,11 +108,30 @@ object UGEngineControlForm: TUGEngineControlForm
             inherited TabSheet3: TTabSheet
               ExplicitLeft = 4
               ExplicitTop = 4
-              ExplicitWidth = 376
-              ExplicitHeight = 539
+              ExplicitWidth = 237
+              ExplicitHeight = 51
               inherited Splitter2: TSplitter
+                Width = 237
                 ExplicitTop = 239
                 ExplicitWidth = 237
+              end
+              inherited GroupBox: TGroupBox
+                Width = 237
+                ExplicitWidth = 237
+                inherited OutputsStringGrid: TStringGrid
+                  Width = 233
+                  ExplicitLeft = 2
+                  ExplicitTop = 15
+                  ExplicitWidth = 233
+                end
+              end
+              inherited GroupBox2: TGroupBox
+                Width = 237
+                ExplicitWidth = 237
+                inherited InputsStringGrid: TStringGrid
+                  Width = 233
+                  ExplicitWidth = 233
+                end
               end
             end
           end
@@ -179,10 +190,6 @@ object UGEngineControlForm: TUGEngineControlForm
         TabPosition = tpRight
         object LogsTabSheet: TTabSheet
           Caption = 'Logs'
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
         end
         object TabSheet2: TTabSheet
           Caption = 'Performance'
@@ -295,13 +302,10 @@ object UGEngineControlForm: TUGEngineControlForm
                 inherited NameTabSheet: TTabSheet
                   ExplicitLeft = 4
                   ExplicitTop = 24
-                  ExplicitWidth = 499
-                  ExplicitHeight = 419
+                  ExplicitHeight = 199
                   inherited StringGrid: TStringGrid
-                    Width = 499
-                    Height = 419
-                    ExplicitWidth = 499
-                    ExplicitHeight = 419
+                    Height = 199
+                    ExplicitHeight = 199
                   end
                 end
               end
@@ -663,7 +667,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 360
     Top = 65528
     Bitmap = {
-      494C01011B006000540110001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B006000580110001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

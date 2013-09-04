@@ -1585,3 +1585,4 @@ void __fastcall TUGEngineControlForm::DeleteAll1Click(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+
