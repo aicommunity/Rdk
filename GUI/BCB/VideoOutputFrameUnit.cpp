@@ -703,6 +703,8 @@ __fastcall TVideoCaptureThreadVideoGrabber::~TVideoCaptureThreadVideoGrabber(voi
 {
  if(VideoGrabber)
  {
+  Terminate();
+  WaitForSingleObject(GetFrameNotInProgress(),1000);
   delete VideoGrabber;
   VideoGrabber=0;
  }
@@ -2297,8 +2299,10 @@ void __fastcall TVideoOutputFrame::StartButtonClick(TObject *Sender)
   if(CaptureThread)
   {
    CaptureThread->Start();
+   WaitForSingleObject(CaptureThread->GetFrameNotInProgress(),30);
   }
  Timer->Enabled=true;
+
 
  IsStarted=true;
 }
@@ -2312,6 +2316,7 @@ void __fastcall TVideoOutputFrame::StopButtonClick(TObject *Sender)
  if(CaptureThread)
  {
   CaptureThread->Stop();
+  WaitForSingleObject(CaptureThread->GetFrameNotInProgress(),30);
  }
 }
 //---------------------------------------------------------------------------

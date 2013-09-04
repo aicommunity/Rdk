@@ -339,6 +339,8 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
 {
  CloseProject();
 
+ UShowProgressBarForm->SetWinTitle("Loading Project...");
+
  ProjectXml.LoadFromFile(AnsiString(FileName).c_str(),"");
  ProjectPath=ExtractFilePath(FileName);
  ProjectFileName=ExtractFileName(FileName);
@@ -350,6 +352,16 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
  int num_engines=ProjectXml.ReadInteger("NumEngines",1);
  if(num_engines<=0)
   num_engines=1;
+
+ UShowProgressBarForm->SetBarHeader(1,"Loading data...");
+ UShowProgressBarForm->SetBarHeader(2,"Total");
+ UShowProgressBarForm->ResetBarStatus(1, 1, num_engines-1);
+ UShowProgressBarForm->ResetBarStatus(2, 1, 2);
+ UShowProgressBarForm->Show();
+ UShowProgressBarForm->Update();
+
+try{
+
  UEngineMonitorForm->EngineMonitorFrame->SetNumChannels(num_engines);
 
  int selected_engine_index=ProjectXml.ReadInteger("SelectedEngineIndex",0);
@@ -500,7 +512,18 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
   {
    Model_SetGlobalTimeStep("",GlobalTimeStep[i]);
   }
+  UShowProgressBarForm->IncBarStatus(1);
+  UShowProgressBarForm->Update();
+  Sleep(0);
  }
+ UShowProgressBarForm->IncBarStatus(1);
+ UShowProgressBarForm->Update();
+ Sleep(0);
+ UShowProgressBarForm->IncBarStatus(2);
+ UShowProgressBarForm->SetBarHeader(1,"Update Interface...");
+ UShowProgressBarForm->ResetBarStatus(1, 1, 1);
+ UShowProgressBarForm->Update();
+ Sleep(0);
 
  if(selected_engine_index>=GetNumEngines())
   selected_engine_index=0;
@@ -529,6 +552,17 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
   UEngineMonitorForm->EngineMonitorFrame->SetCalculateMode(i, CalculationMode[i]);
  RDK::UIVisualControllerStorage::UpdateInterface();
  ProjectOpenFlag=true;
+}
+catch(...)
+{
+ UShowProgressBarForm->Hide();
+ throw;
+}
+ UShowProgressBarForm->IncBarStatus(1);
+ UShowProgressBarForm->IncBarStatus(2);
+ UShowProgressBarForm->Update();
+ Sleep(0);
+ UShowProgressBarForm->Hide();
 }
 
 
@@ -634,6 +668,15 @@ void TUGEngineControlForm::SaveProject(void)
  if(!ProjectOpenFlag)
   return;
 
+ UShowProgressBarForm->SetWinTitle("Saving Project...");
+ UShowProgressBarForm->SetBarHeader(1,"Saving interface...");
+ UShowProgressBarForm->SetBarHeader(2,"Total");
+ UShowProgressBarForm->ResetBarStatus(1, 1, 1);
+ UShowProgressBarForm->ResetBarStatus(2, 1, 2);
+ UShowProgressBarForm->Show();
+ UShowProgressBarForm->Update();
+try{
+
  InterfaceXml.SelectNodeRoot(std::string("Interfaces"));
  RDK::UIVisualControllerStorage::SaveParameters(InterfaceXml);
 
@@ -679,6 +722,12 @@ void TUGEngineControlForm::SaveProject(void)
    RichEdit->Lines->SaveToFile(descriptionfilename);
   delete RichEdit;
  }
+
+ UShowProgressBarForm->IncBarStatus(2);
+ UShowProgressBarForm->SetBarHeader(1,"Saving data...");
+ UShowProgressBarForm->ResetBarStatus(1, 1, GetNumEngines()-1);
+ UShowProgressBarForm->Update();
+ Sleep(0);
 
  int selected_engine_index=GetSelectedEngineIndex();
  for(int i=0;i<GetNumEngines();i++)
@@ -792,7 +841,12 @@ void TUGEngineControlForm::SaveProject(void)
 
    ProjectXml.WriteInteger(std::string("MinInterstepsInterval_")+suffix,MinInterstepsInterval[i]);
   }
+
+  UShowProgressBarForm->IncBarStatus(1);
+  UShowProgressBarForm->Update();
+  Sleep(0);
  }
+
  SelectEngine(selected_engine_index);
 
  ProjectXml.WriteInteger("ProjectAutoSaveFlag",ProjectAutoSaveFlag);
@@ -820,6 +874,17 @@ void TUGEngineControlForm::SaveProject(void)
  ProjectXml.WriteInteger("SelectedEngineIndex",GetSelectedEngineIndex());
 
  ProjectXml.SaveToFile(AnsiString(ProjectPath+ProjectFileName).c_str());
+}
+catch(...)
+{
+ UShowProgressBarForm->Hide();
+ throw;
+}
+ UShowProgressBarForm->IncBarStatus(1);
+ UShowProgressBarForm->IncBarStatus(2);
+ UShowProgressBarForm->Update();
+ Sleep(0);
+ UShowProgressBarForm->Hide();
 }
 
 
@@ -1109,16 +1174,16 @@ void TUGEngineControlForm::AddBroadcasterMenu(TMenuItem *item, TMenu *owner)
 void __fastcall TUGEngineControlForm::Start1Click(TObject *Sender)
 {
  UShowProgressBarForm->SetWinTitle("Starting...");
- UShowProgressBarForm->SetBarHeader(0,"");
- UShowProgressBarForm->SetBarHeader(1,"Total");
- UShowProgressBarForm->ResetBarStatus(0, 0, 1);
- UShowProgressBarForm->ResetBarStatus(1, 0, 2);
+ UShowProgressBarForm->SetBarHeader(1,"");
+ UShowProgressBarForm->SetBarHeader(2,"Total");
+ UShowProgressBarForm->ResetBarStatus(1, 1, 1);
+ UShowProgressBarForm->ResetBarStatus(2, 1, 2);
  UShowProgressBarForm->Show();
 
 #ifdef RDK_VIDEO
  VideoOutputForm->Start();
 #endif
- UShowProgressBarForm->IncBarStatus(1);
+ UShowProgressBarForm->IncBarStatus(2);
  UEngineMonitorForm->EngineMonitorFrame->Start1Click(Sender);
 
  UShowProgressBarForm->Hide();
@@ -1128,14 +1193,14 @@ void __fastcall TUGEngineControlForm::Start1Click(TObject *Sender)
 void __fastcall TUGEngineControlForm::Pause1Click(TObject *Sender)
 {
  UShowProgressBarForm->SetWinTitle("Stopping...");
- UShowProgressBarForm->SetBarHeader(0,"");
- UShowProgressBarForm->SetBarHeader(1,"Total");
- UShowProgressBarForm->ResetBarStatus(0, 0, 1);
- UShowProgressBarForm->ResetBarStatus(1, 0, 2);
+ UShowProgressBarForm->SetBarHeader(1,"");
+ UShowProgressBarForm->SetBarHeader(2,"Total");
+ UShowProgressBarForm->ResetBarStatus(1, 1, 1);
+ UShowProgressBarForm->ResetBarStatus(2, 1, 2);
  UShowProgressBarForm->Show();
 
  UEngineMonitorForm->EngineMonitorFrame->Pause1Click(Sender);
- UShowProgressBarForm->IncBarStatus(1);
+ UShowProgressBarForm->IncBarStatus(2);
 #ifdef RDK_VIDEO
  VideoOutputForm->StopOffline();
 #endif

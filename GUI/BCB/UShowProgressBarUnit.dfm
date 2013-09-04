@@ -7,6 +7,7 @@ object UShowProgressBarForm: TUShowProgressBarForm
   ClientHeight = 102
   ClientWidth = 569
   Color = clBtnFace
+  DoubleBuffered = True
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -10
@@ -35,7 +36,7 @@ object UShowProgressBarForm: TUShowProgressBarForm
   end
   object ProgressBar2: TProgressBar
     Left = 0
-    Top = 80
+    Top = 84
     Width = 569
     Height = 16
     Margins.Left = 4

@@ -194,8 +194,8 @@ void TVideoOutputForm::LoadFromIni(TMemIniFile *ini, const String &section)
 // «апускает выбранный источник видео, или все если index == -1
 void TVideoOutputForm::Start(int index)
 {
- UShowProgressBarForm->SetBarHeader(0,"Starting video sources...");
- UShowProgressBarForm->ResetBarStatus(0, 0, GetNumSources());
+ UShowProgressBarForm->SetBarHeader(1,"Starting video sources...");
+ UShowProgressBarForm->ResetBarStatus(1, 1, GetNumSources());
 
  if(index>=0 && index<GetNumSources())
   Sources[index]->StartButtonClick(this);
@@ -206,7 +206,8 @@ void TVideoOutputForm::Start(int index)
   for(int i=0;i<GetNumSources();i++)
   {
    Sources[i]->StartButtonClick(this);
-   UShowProgressBarForm->IncBarStatus(0);
+   UShowProgressBarForm->IncBarStatus(1);
+   UShowProgressBarForm->Update();
   }
  }
 }
@@ -214,8 +215,8 @@ void TVideoOutputForm::Start(int index)
 // ќстанавливает выбранный источник видео, или все если index == -1
 void TVideoOutputForm::Stop(int index)
 {
- UShowProgressBarForm->SetBarHeader(0,"Stopping video sources...");
- UShowProgressBarForm->ResetBarStatus(0, 0, GetNumSources());
+ UShowProgressBarForm->SetBarHeader(1,"Stopping video sources...");
+ UShowProgressBarForm->ResetBarStatus(1, 1, GetNumSources());
 
  if(index>=0 && index<GetNumSources())
   Sources[index]->StopButtonClick(this);
@@ -223,7 +224,8 @@ void TVideoOutputForm::Stop(int index)
   for(int i=0;i<GetNumSources();i++)
   {
    Sources[i]->StopButtonClick(this);
-   UShowProgressBarForm->IncBarStatus(0);
+   UShowProgressBarForm->IncBarStatus(1);
+   UShowProgressBarForm->Update();
   }
 }
 
@@ -231,6 +233,9 @@ void TVideoOutputForm::Stop(int index)
 // Ќе измен€€ет состо€ние онлайн-источников (камеры)
 void TVideoOutputForm::StopOffline(int index)
 {
+ UShowProgressBarForm->SetBarHeader(1,"Stopping video sources...");
+ UShowProgressBarForm->ResetBarStatus(1, 1, GetNumSources());
+
  if(index>=0 && index<GetNumSources())
  {
   if(Sources[index]->Mode != 2 && Sources[index]->Mode != 3)
@@ -238,8 +243,13 @@ void TVideoOutputForm::StopOffline(int index)
  }
  else
   for(int i=0;i<GetNumSources();i++)
+  {
    if(Sources[i]->Mode != 2 && Sources[i]->Mode != 3)
-    Sources[i]->StopButtonClick(this);
+	Sources[i]->StopButtonClick(this);
+
+   UShowProgressBarForm->IncBarStatus(1);
+   UShowProgressBarForm->Update();
+  }
 }
 
 

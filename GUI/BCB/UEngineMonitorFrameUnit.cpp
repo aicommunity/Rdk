@@ -13,6 +13,7 @@
 #ifdef RDK_VIDEO
 #include "VideoOutputFormUnit.h"
 #endif
+#include "UShowProgressBarUnit.h"
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -251,6 +252,9 @@ void TUEngineMonitorFrame::ALoadParameters(RDK::USerStorageXML &xml)
 
 void __fastcall TUEngineMonitorFrame::Start1Click(TObject *Sender)
 {
+ UShowProgressBarForm->SetBarHeader(1,"Starting Channel Calculation...");
+ UShowProgressBarForm->ResetBarStatus(1, 1, int(ThreadChannels.size()));
+
  switch(ChannelsMode)
  {
  case 0:
@@ -267,13 +271,23 @@ void __fastcall TUEngineMonitorFrame::Start1Click(TObject *Sender)
 //   ThreadChannels[i]->Start();//Resume();
   Timer->Interval=30;
   Timer->Enabled=true;
+  for(size_t i=0;i<ThreadChannels.size();i++)
+  {
+   if(ThreadChannels[i])
+	WaitForSingleObject(ThreadChannels[i]->CalcEnable,100);
+   UShowProgressBarForm->IncBarStatus(1);
+  }
  break;
  }
+
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUEngineMonitorFrame::Pause1Click(TObject *Sender)
 {
+ UShowProgressBarForm->SetBarHeader(1,"Stopping Channel Calculation...");
+ UShowProgressBarForm->ResetBarStatus(1, 1, int(ThreadChannels.size()));
+
  switch(ChannelsMode)
  {
  case 0:
@@ -290,8 +304,15 @@ void __fastcall TUEngineMonitorFrame::Pause1Click(TObject *Sender)
 //   ThreadChannels[i]->WaitFor();
   }
    //Suspend();
+  for(size_t i=0;i<ThreadChannels.size();i++)
+  {
+   if(ThreadChannels[i])
+	WaitForSingleObject(ThreadChannels[i]->CalcEnable,100);
+   UShowProgressBarForm->IncBarStatus(1);
+  }
  break;
  }
+
 }
 //---------------------------------------------------------------------------
 
