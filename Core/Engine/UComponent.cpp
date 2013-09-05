@@ -342,13 +342,15 @@ const UComponent::VariableMapT& UComponent::GetPropertiesList(void) const
 // копируются только свойства типа type
 void UComponent::CopyProperties(UEPtr<UComponent> comp, unsigned int type) const
 {
- USerStorageBinary databuffer;
+ USerStorageXML databuffer;
  for(VariableMapCIteratorT I=PropertiesLookupTable.begin(),
                             J=PropertiesLookupTable.end(); I!=J; ++I)
  {
   if(!(I->second.Type & type))
    continue;
-  databuffer.clear();
+//  databuffer.clear();
+  databuffer.Destroy();
+  databuffer.Create(I->first);
   comp->SetProperty(I->first,GetProperty(I->first,&databuffer));
  }
 }

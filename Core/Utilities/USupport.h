@@ -153,6 +153,17 @@ basic_string<CharT>& ntohex(NumT n, basic_string<CharT> &buf)
  return buf=stream.str();
 }
 
+template<typename CharT, typename NumT>
+basic_string<CharT>& ntohex(NumT n, int digs, basic_string<CharT> &buf)
+{
+ basic_stringstream<CharT> stream;
+ stream.width(digs);
+ stream.fill('0');
+ stream<<hex<<fixed<<setprecision(digs)<<n;
+ return buf=stream.str();
+}
+
+
 template<typename NumT>
 string sntohex(NumT n)
 {
@@ -161,10 +172,24 @@ string sntohex(NumT n)
 }
 
 template<typename NumT>
+string sntohex(NumT n, int digs)
+{
+ std::string res;
+ return ntohex(n,digs, res);
+}
+
+template<typename NumT>
 wstring wntohex(NumT n)
 {
  std::wstring res;
  return ntohex(n,res);
+}
+
+template<typename NumT>
+wstring wntohex(NumT n, int digs)
+{
+ std::wstring res;
+ return ntohex(n,digs, res);
 }
 
 // Функция, преобразующая строку в вещественное число
