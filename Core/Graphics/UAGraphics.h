@@ -14,7 +14,7 @@ See file license.txt for more information
 
 #include <string>
 #include "UBitmap.h"
-//#include "UFont.h"
+#include "UFont.h"
 
 namespace RDK {
 
@@ -27,7 +27,8 @@ enum {alLeft=1, alRight=2, alCenter=3, alJustify=4};
 class UAGraphics
 {
 protected: // Данные
-//UAFont *Font;
+// Шрифт
+UAFont *Font;
 
 protected: // Атрибуты инструментов рисования
 // Цвет пера
@@ -63,6 +64,12 @@ virtual ~UAGraphics(void);
 // Разрешение канвы рисования
 int GetCWidth(void) const;
 int GetCHeight(void) const;
+
+// Устанавливает шрифт
+bool SetFont(UAFont* font);
+
+// Возвращает текущий шрифт
+UAFont* GetFont(void);
 // --------------------------
 
 // --------------------------

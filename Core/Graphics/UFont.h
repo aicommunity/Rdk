@@ -64,6 +64,9 @@ float Interval;
 // Масштаб в % от оригинала
 float Scale;
 
+// Метрический размер шрифта
+int Size;
+
 protected: // Данные
 
 public: // Методы
@@ -92,6 +95,10 @@ virtual bool SetInterval(float value);
 // Масштаб в % от оригинала
 float GetScale(void) const;
 virtual bool SetScale(float value);
+
+// Метрический размер шрифта
+int GetSize(void) const;
+virtual bool SetSize(int size);
 // --------------------------
 
 

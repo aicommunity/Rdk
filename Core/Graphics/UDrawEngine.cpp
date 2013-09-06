@@ -70,6 +70,7 @@ UGEDescription& UGEDescription::operator = (const UGEDescription &copy)
 Index=copy.Index;
 Position=copy.Position;
 Header=copy.Header;
+ClassName=copy.ClassName;
 Type=copy.Type;
 NumInputs=copy.NumInputs;
 NumOutputs=copy.NumOutputs;
@@ -336,7 +337,7 @@ void UDrawEngine::UpdateDestinations(void)
 	descr.Type=1;
    else
    {
-    if(NetXml.GetNumNodes())
+	if(NetXml.GetNumNodes())
 	 descr.Type=2;
 	else
 	 descr.Type=1;
@@ -363,6 +364,7 @@ void UDrawEngine::UpdateDestinations(void)
 	NetXml.SelectUp();
    }
 
+   descr.ClassName=NetXml.GetNodeAttribute("Class");
    descr.Header=dI->first;
    descr.Width=RectWidth;
    descr.Height=RectHeight;
@@ -543,8 +545,17 @@ void UDrawEngine::Paint(UGEDescription &ndescr)
  rect.X=int(ndescr.Position.x)-(ndescr.Width-2);
  rect.Y=int(ndescr.Position.y)-ndescr.Height;
  rect.Width=(ndescr.Width-2)*2;
- rect.Height=ndescr.Height*2;
+ rect.Height=ndescr.Height;
+ UAFont *font=GEngine->GetFont();
  GEngine->TextRect(ndescr.Header,rect,alCenter);
+ rect.Y+=ndescr.Height*1.2;
+ UAFont *class_font=RDK::GlobalFonts.GetFont(font->GetName(),font->GetSize()-4);
+ if(class_font)
+ {
+  GEngine->SetFont(class_font);
+  GEngine->TextRect(ndescr.Header,rect,alRight);
+  GEngine->SetFont(font);
+ }
 }
 
 // Отрисовывает конечный элемент (NAItem*) с центром в заданной позиции

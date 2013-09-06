@@ -40,6 +40,9 @@ MVector<double, 3> Position;
 // Понятное имя элемента
 std::string Header;
 
+// Класс элемента
+std::string ClassName;
+
 // Тип элемента
 // 0 - не определено
 // 1 - элемент без дочерних объектов

@@ -59,6 +59,19 @@ int UAGraphics::GetCHeight(void) const
 {
  return CHeight;
 }
+
+// Устанавливает шрифт
+bool UAGraphics::SetFont(UAFont* font)
+{
+ Font=font;
+ return true;
+}
+
+// Возвращает текущий шрифт
+UAFont* UAGraphics::GetFont(void)
+{
+ return Font;
+}
 // --------------------------
 
 // --------------------------

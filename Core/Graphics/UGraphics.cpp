@@ -78,19 +78,6 @@ bool UGraphics::SetCanvas(UBitmap *canvas)
  CHeight=Canvas->GetHeight();
  return true;
 }
-
-// Устанавливает шрифт
-bool UGraphics::SetFont(UAFont* font)
-{
- Font=font;
- return true;
-}
-
-// Возвращает текущий шрифт
-UAFont* UGraphics::GetFont(void)
-{
- return Font;
-}
 // --------------------------
 
 // --------------------------

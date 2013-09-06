@@ -29,9 +29,6 @@ map<string,UBitmapFont> Fonts;
 // Канва рисования
 UBitmap* Canvas;
 
-// Шрифт
-UAFont *Font;
-
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
@@ -49,12 +46,6 @@ UBitmap* GetCanvas(void);
 
 // Задает канву рисования
 bool SetCanvas(UBitmap *canvas);
-
-// Устанавливает шрифт
-bool SetFont(UAFont* font);
-
-// Возвращает текущий шрифт
-UAFont* GetFont(void);
 // --------------------------
 
 // --------------------------

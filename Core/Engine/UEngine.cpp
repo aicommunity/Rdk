@@ -3530,6 +3530,7 @@ int UEngine::Model_SaveComponentDrawInfo(RDK::UNet* cont, RDK::USerStorageXML *s
   for(int i=0;i<cont->GetNumComponents();i++)
   {
    XmlStorage.AddNode(cont->GetComponentByIndex(i)->GetName());
+   serstorage->SetNodeAttribute("Class",Storage->FindClassName(cont->GetComponentByIndex(i)->GetClass()));
    XmlStorage.AddNode("Parameters");
    if(!Model_GetComponentProperties(dynamic_pointer_cast<RDK::UNet>(cont->GetComponentByIndex(i)),serstorage,ptParameter|pgAny))
 	return false;
