@@ -87,7 +87,7 @@ void TUGEngineControlForm::AUpdateInterface(void)
  Caption="Engine Control";
  if(ProjectOpenFlag)
  {
-  Caption=Caption+String(" [")+ProjectFileName+"]";
+  Caption=Caption+String(" [")+ProjectName+": "+ProjectPath+ProjectFileName+"]";
  }
  StatusBar->SimpleText=UEngineMonitorForm->EngineMonitorFrame->StatusBar->SimpleText;
  StatusBar->Repaint();
@@ -411,10 +411,10 @@ try{
  ReflectionFlag=ProjectXml.ReadBool("ReflectionFlag",true);
 
  CalculationMode.resize(GetNumEngines());
- CalculationMode[0]=ProjectXml.ReadInteger("CalculationMode",0);
+ CalculationMode[0]=ProjectXml.ReadInteger("CalculationMode",2);
  for(int i=1;i<GetNumEngines();i++)
  {
-  CalculationMode[i]=ProjectXml.ReadInteger(std::string("CalculationMode_")+RDK::sntoa(i),0);
+  CalculationMode[i]=ProjectXml.ReadInteger(std::string("CalculationMode_")+RDK::sntoa(i),2);
  }
 
  MinInterstepsInterval.resize(GetNumEngines());
@@ -426,18 +426,18 @@ try{
 
 
  String descriptionfilename=ProjectXml.ReadString("ProjectDescriptionFileName","").c_str();
+ if(ExtractFilePath(descriptionfilename).Length() == 0)
+  descriptionfilename=ProjectPath+descriptionfilename;
 
  if(descriptionfilename.Length() != 0 && FileExists(descriptionfilename))
  {
   TRichEdit* RichEdit=new TRichEdit(this);
   RichEdit->Parent=this;
-  RichEdit->PlainText=true;
   RichEdit->Visible=false;
 
-  if(ExtractFilePath(descriptionfilename).Length() == 0)
-   RichEdit->Lines->LoadFromFile(ProjectPath+descriptionfilename);
-  else
-   RichEdit->Lines->LoadFromFile(descriptionfilename);
+  RichEdit->PlainText=true;
+
+  RichEdit->Lines->LoadFromFile(descriptionfilename);
   ProjectDescription=RichEdit->Text;
   delete RichEdit;
  }
@@ -550,8 +550,8 @@ try{
 
  for(size_t i=0;i<CalculationMode.size();i++)
   UEngineMonitorForm->EngineMonitorFrame->SetCalculateMode(i, CalculationMode[i]);
- RDK::UIVisualControllerStorage::UpdateInterface();
  ProjectOpenFlag=true;
+ RDK::UIVisualControllerStorage::UpdateInterface();
 }
 catch(RDK::UException &exception)
 {
@@ -1335,7 +1335,7 @@ void __fastcall TUGEngineControlForm::CreateProjectItemClick(TObject *Sender)
 {
  UCreateProjectWizardForm->ClearWizard();
  UCreateProjectWizardForm->Caption="Create Project Wizard";
- if(UCreateProjectWizardForm->ShowModal() == mrOk)
+ if(UCreateProjectWizardForm->ShowCreateProject() == mrOk)
  {
   CloseProject();
   PredefinedStructure.resize(1);
@@ -1432,7 +1432,7 @@ void __fastcall TUGEngineControlForm::ProjectOptions1Click(TObject *Sender)
 {
  if(!ProjectOpenFlag)
   return;
-  /*
+
  UCreateProjectWizardForm->ProjectDirectoryLabeledEdit->Text=ProjectPath;
  UCreateProjectWizardForm->ProjectNameLabeledEdit->Text=ProjectName;
  UCreateProjectWizardForm->ProjectDescriptionRichEdit->Text=ProjectDescription;
@@ -1464,20 +1464,21 @@ void __fastcall TUGEngineControlForm::ProjectOptions1Click(TObject *Sender)
   UCreateProjectWizardForm->UpendInputImageCheckBox->Checked=ReflectionFlag;
 
  UCreateProjectWizardForm->Caption="Update Project Wizard";
- if(UCreateProjectWizardForm->ShowModal() == mrOk)
+ if(UCreateProjectWizardForm->ShowProjectOptions() == mrOk)
  {
-  CloseProject();
-  PredefinedStructure=UCreateProjectWizardForm->PredefinedStructure;
+//  CloseProject();
+  PredefinedStructure[GetSelectedEngineIndex()]=UCreateProjectWizardForm->PredefinedStructure;
   ProjectAutoSaveFlag=UCreateProjectWizardForm->ProjectAutoSaveFlagCheckBox->Checked;
-  DefaultTimeStep=StrToInt(UCreateProjectWizardForm->ProjectTimeStepEdit->Text);
-  GlobalTimeStep=DefaultTimeStep;
-  CalculationMode=UCreateProjectWizardForm->ProjectCalculationModeRadioGroup->ItemIndex;
+  DefaultTimeStep[GetSelectedEngineIndex()]=StrToInt(UCreateProjectWizardForm->ProjectTimeStepEdit->Text);
+  GlobalTimeStep[GetSelectedEngineIndex()]=DefaultTimeStep[GetSelectedEngineIndex()];
+  CalculationMode[GetSelectedEngineIndex()]=UCreateProjectWizardForm->ProjectCalculationModeRadioGroup->ItemIndex;
 
-  CreateProject(UCreateProjectWizardForm->ProjectDirectoryLabeledEdit->Text+String("\\Project.ini"),UCreateProjectWizardForm->UClassesListFrame1->GetSelectedName(),UCreateProjectWizardForm->ProjectModelFileNameLabeledEdit->Text);
+//  CreateProject(UCreateProjectWizardForm->ProjectDirectoryLabeledEdit->Text+String("\\Project.ini"),UCreateProjectWizardForm->UClassesListFrame1->GetSelectedName(),UCreateProjectWizardForm->ProjectModelFileNameLabeledEdit->Text);
 
   ProjectName=UCreateProjectWizardForm->ProjectNameLabeledEdit->Text;
   ProjectDescription=UCreateProjectWizardForm->ProjectDescriptionRichEdit->Text;
- }    */
+  UpdateInterface(true);
+ }
 }
 //---------------------------------------------------------------------------
 

@@ -143,10 +143,6 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
     object TabSheet2: TTabSheet
       Caption = 'Type'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object TitlePanel2: TPanel
         Left = 0
         Top = 0
@@ -164,7 +160,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
         Height = 66
         Align = alTop
         Caption = 'Project type '
-        ItemIndex = 0
+        ItemIndex = 1
         Items.Strings = (
           'Universal'
           'Video analysis')
@@ -192,7 +188,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
           Width = 45
           Height = 21
           TabOrder = 0
-          Text = '2000'
+          Text = '30'
         end
       end
       object ProjectCalculationModeRadioGroup: TRadioGroup
@@ -202,10 +198,11 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
         Height = 66
         Align = alTop
         Caption = ' Calculation mode '
-        ItemIndex = 1
+        ItemIndex = 2
         Items.Strings = (
           'Sequential'
-          'Real-time simulation')
+          'Real-time simulation'
+          'By "Data Ready" signal')
         TabOrder = 3
       end
       object VideoAnalysisGroupBox: TGroupBox
@@ -272,7 +269,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
           Top = 63
           Width = 316
           Height = 17
-          Caption = 'Upend Input Image'
+          Caption = 'Reflect Input Image'
           Checked = True
           State = cbChecked
           TabOrder = 4
@@ -282,10 +279,6 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
     object TabSheet3: TTabSheet
       Caption = 'Model'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object TitlePanel3: TPanel
         Left = 0
         Top = 0
@@ -322,11 +315,29 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
           ExplicitTop = 32
           ExplicitWidth = 515
           ExplicitHeight = 115
-          inherited StringGrid: TStringGrid
+          inherited PageControl: TPageControl
             Width = 515
             Height = 115
             ExplicitWidth = 515
             ExplicitHeight = 115
+            inherited NameTabSheet: TTabSheet
+              ExplicitLeft = 4
+              ExplicitTop = 24
+              ExplicitWidth = 507
+              ExplicitHeight = 87
+              inherited StringGrid: TStringGrid
+                Width = 507
+                Height = 87
+                ExplicitWidth = 507
+                ExplicitHeight = 87
+              end
+            end
+            inherited LibsTabSheet: TTabSheet
+              ExplicitLeft = 4
+              ExplicitTop = 24
+              ExplicitWidth = 499
+              ExplicitHeight = 419
+            end
           end
         end
         object RootModelComponentNameRadioButton: TRadioButton

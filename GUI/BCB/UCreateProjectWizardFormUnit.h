@@ -101,6 +101,12 @@ void ClearPredefinedModels(void);
 
 // Добавить вариант в список предустановленных моделей
 void AddPredefinedModel(const std::string &name, int index);
+
+// Отображает визард для создания проекта
+int ShowCreateProject(void);
+
+// Отображает визард для модификации проекта
+int ShowProjectOptions(void);
 // ----------------------
 
 };
