@@ -553,6 +553,12 @@ try{
  RDK::UIVisualControllerStorage::UpdateInterface();
  ProjectOpenFlag=true;
 }
+catch(RDK::UException &exception)
+{
+
+ UShowProgressBarForm->Hide();
+ throw;
+}
 catch(...)
 {
  UShowProgressBarForm->Hide();
