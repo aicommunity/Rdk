@@ -156,9 +156,9 @@ void TUDrawEngineFrame::ALoadParameters(RDK::USerStorageXML &xml)
  BreakLinkComponentName.clear();
  FontFileName.clear();
 
- FontType=xml.ReadString("FontType","Times New Roman");
- FontSize=xml.ReadInteger("FontSize",15);
- DrawEngine.SetRectWidth(xml.ReadInteger("RectWidth",80));
+ FontType=xml.ReadString("FontType","Tahoma");
+ FontSize=xml.ReadInteger("FontSize",16);
+ DrawEngine.SetRectWidth(xml.ReadInteger("RectWidth",100));
  DrawEngine.SetRectHeight(xml.ReadInteger("RectHeight",25));
 
  RDK::UBitmapFont* font=dynamic_cast<RDK::UBitmapFont*>(RDK::GlobalFonts.GetFont(FontType,FontSize));

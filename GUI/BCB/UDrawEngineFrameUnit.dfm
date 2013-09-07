@@ -45,8 +45,6 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
         ExplicitWidth = 227
         ExplicitHeight = 422
         inherited NameTabSheet: TTabSheet
-          ExplicitLeft = 4
-          ExplicitTop = 24
           ExplicitWidth = 219
           ExplicitHeight = 394
           inherited StringGrid: TStringGrid
@@ -59,13 +57,15 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
           end
         end
         inherited LibsTabSheet: TTabSheet
-          ExplicitLeft = 4
-          ExplicitTop = 24
-          ExplicitWidth = 499
-          ExplicitHeight = 419
+          ExplicitWidth = 219
+          ExplicitHeight = 394
           inherited TreeView: TTreeView
+            Width = 219
+            Height = 394
             OnMouseMove = UClassesListFrameTreeViewMouseMove
             OnMouseUp = UClassesListFrameTreeViewMouseUp
+            ExplicitWidth = 219
+            ExplicitHeight = 394
           end
         end
       end
@@ -132,7 +132,7 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
       EditLabel.Height = 13
       EditLabel.Caption = 'Width'
       TabOrder = 2
-      Text = '80'
+      Text = '100'
     end
     object FontTypeComboBox: TComboBox
       Left = 3

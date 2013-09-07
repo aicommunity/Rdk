@@ -32,7 +32,7 @@ void TUClassesListFrame::AUpdateInterface(void)
   int num_classes=0;
   LibraryClassNames.clear();
   NewLibraryNames.resize(Storage_GetNumClassLibraries());
-  for(size_t i=0;i<LibraryNames.size();i++)
+  for(size_t i=0;i<NewLibraryNames.size();i++)
   {
    NewLibraryNames[i]=Storage_GetClassLibraryNameByIndex(i);
    const char* class_names=Storage_GetLibraryClassNamesByIndex(i);
@@ -70,6 +70,7 @@ void TUClassesListFrame::AUpdateInterface(void)
    tn->Expand(true);
   }
   TreeView->Perform(WM_SETREDRAW, 1, 0);
+  TreeView->Update();
  }
  else
  {

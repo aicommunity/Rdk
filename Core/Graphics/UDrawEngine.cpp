@@ -553,7 +553,7 @@ void UDrawEngine::Paint(UGEDescription &ndescr)
  if(class_font)
  {
   GEngine->SetFont(class_font);
-  GEngine->TextRect(ndescr.Header,rect,alRight);
+  GEngine->TextRect(ndescr.ClassName,rect,alRight);
   GEngine->SetFont(font);
  }
 }

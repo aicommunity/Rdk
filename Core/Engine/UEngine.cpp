@@ -708,9 +708,9 @@ const char * UEngine::Storage_GetLibraryClassNames(const char *library_name) con
    const vector<string> &classes=lib->GetComplete();
    for(int i=0;i<int(classes.size());i++)
    {
-	TempString+=classes[i];
-	if(i<int(classes.size())-1)
-	 TempString+=",";
+    TempString+=classes[i];
+    if(i<int(classes.size())-1)
+     TempString+=",";
    }
   }
  }
@@ -734,9 +734,9 @@ const char * UEngine::Storage_GetLibraryClassNamesByIndex(int index) const
    const vector<string> &classes=lib->GetComplete();
    for(int i=0;i<int(classes.size());i++)
    {
-	TempString+=classes[i];
-	if(i<int(classes.size())-1)
-	 TempString+=",";
+    TempString+=classes[i];
+    if(i<int(classes.size())-1)
+     TempString+=",";
    }
   }
  }
@@ -957,9 +957,9 @@ int UEngine::Env_Calculate(const char* stringid)
   {
    RDK::UContainer* destcont=FindComponent(stringid);
    if(destcont)
-	destcont->GetLongId(Environment->GetModel(),id);
+    destcont->GetLongId(Environment->GetModel(),id);
 //   id.DecodeFromString(stringid);
-	Environment->SetModelCalculationComponent(id);
+    Environment->SetModelCalculationComponent(id);
   }
 
   if(!Environment->Calculate())
@@ -1004,9 +1004,9 @@ int UEngine::Env_Reset(const char* stringid)
   {
    RDK::UContainer* destcont=FindComponent(stringid);
    if(destcont)
-	destcont->GetLongId(Environment->GetModel(),id);
+    destcont->GetLongId(Environment->GetModel(),id);
 //   id.DecodeFromString(stringid);
-	Environment->SetModelCalculationComponent(id);
+    Environment->SetModelCalculationComponent(id);
   }
 
   if(!Environment->Reset())
@@ -1513,7 +1513,7 @@ const char* UEngine::Model_GetComponentsNameList(const char* stringid)
   {
    TempString+=tempbuffer[i];
    if(i<int(tempbuffer.size())-1)
-	TempString+=",";
+    TempString+=",";
   }
   return TempString.c_str();
  }
@@ -1567,7 +1567,7 @@ int UEngine::Model_ChangeComponentPosition(const char* stringid, int step)
 // если 'sublevel' == 0, то возвращает идентификаторы коннекторов только этой сети
 // ѕредварительна€ очистка буфера не производитс€.
 const char* UEngine::Model_GetConnectorsList(const char* stringid,
-						  int sublevel, const char* owner_level_stringid)
+                          int sublevel, const char* owner_level_stringid)
 {
  try
  {
@@ -1605,7 +1605,7 @@ const char* UEngine::Model_GetConnectorsList(const char* stringid,
 // если 'sublevel' == 0, то возвращает идентификаторы элементов только этой сети
 // ѕредварительна€ очистка буфера не производитс€.
 const char* UEngine::Model_GetItemsList(const char* stringid,
-							int sublevel, const char* owner_level_stringid)
+                            int sublevel, const char* owner_level_stringid)
 {
  try
  {
@@ -1642,7 +1642,7 @@ const char* UEngine::Model_GetItemsList(const char* stringid,
 // если 'sublevel' == 0, то возвращает идентификаторы подсетей только этой сети
 // ѕредварительна€ очистка буфера не производитс€.
 const char* UEngine::Model_GetNetsList(const char* stringid,
-							int sublevel, const char* owner_level_stringid)
+                            int sublevel, const char* owner_level_stringid)
 {
  try
  {
@@ -1790,11 +1790,11 @@ const char* UEngine::Model_GetComponentPropertiesList(const char* stringid, unsi
   {
    if(I->second.CheckMask(type_mask))
    {
-	if(TempString.size()>0)
-	 TempString+=",";
-	TempString+=I->first;
-//	TempString+=":";
-//	TempString+=sntoa(I->second.Property->GetMinRange());
+    if(TempString.size()>0)
+     TempString+=",";
+    TempString+=I->first;
+//    TempString+=":";
+//    TempString+=sntoa(I->second.Property->GetMinRange());
    }
    ++I;
   }
@@ -1828,11 +1828,11 @@ const char* UEngine::Model_GetComponentPropertiesLookupList(const char* stringid
   {
    if(I->second.CheckMask(type_mask))
    {
-	if(TempString.size()>0)
-	 TempString+=",";
-	TempString+=I->first;
-	TempString+=":";
-	TempString+=sntoa(I->second.Property->GetMinRange());
+    if(TempString.size()>0)
+     TempString+=",";
+    TempString+=I->first;
+    TempString+=":";
+    TempString+=sntoa(I->second.Property->GetMinRange());
    }
    ++I;
   }
@@ -1950,10 +1950,10 @@ int UEngine::Model_SetComponentProperties(const char *stringid, const char* buff
   {
    if(XmlStorage.SelectNode(UVariable::GetPropertyTypeNameByType(mask)))
    {
-	if(Model_SetComponentProperties(cont,&XmlStorage))
-	 return 2;
+    if(Model_SetComponentProperties(cont,&XmlStorage))
+     return 2;
 
-	XmlStorage.SelectUp();
+    XmlStorage.SelectUp();
    }
   }
  }
@@ -2137,9 +2137,9 @@ int UEngine::Model_ChainLinking(const char* stringid)
    connector->GetLongId(cont,id2);
    minsize=item->GetNumOutputs();
    if(minsize>connector->GetNumInputs())
-	minsize=connector->GetNumInputs();
+    minsize=connector->GetNumInputs();
    for(int j=0;j<minsize;j++)
-	cont->CreateLink(id1,j,id2,j);
+    cont->CreateLink(id1,j,id2,j);
    id1=id2;
    item=connector;
   }
@@ -2184,9 +2184,9 @@ int UEngine::Model_ParallelLinking(const char* stringid)
    connector->GetLongId(cont,id2);
    int minsize=item->GetNumOutputs();
    if(minsize>connector->GetNumInputs())
-	minsize=connector->GetNumInputs();
+    minsize=connector->GetNumInputs();
    for(int j=0;j<minsize;j++)
-	cont->CreateLink(id1,j,id2,j);
+    cont->CreateLink(id1,j,id2,j);
   }
  }
  catch (UException &exception)
@@ -2721,7 +2721,7 @@ int UEngine::Model_LoadComponent(const char *stringid, const char* buffer)
   if(!Environment->GetModel())
   {
    if(!Model_LoadComponent(0,&XmlStorage,true))
-	return -4;
+    return -4;
   }
   else
   {
@@ -2731,7 +2731,7 @@ int UEngine::Model_LoadComponent(const char *stringid, const char* buffer)
    UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
 
    if(!cont)
-	return -3;
+    return -3;
 
    if(!Model_LoadComponent(cont,&XmlStorage,true))
     return -4;
@@ -3024,12 +3024,12 @@ bool UEngine::Model_GetComponentProperties(RDK::UContainer* cont, RDK::USerStora
   {
    if(I->second.CheckMask(type_mask))
    {
-	cont->GetProperty(I->first,serstorage);
-	std::string paramname=I->first;//I->second.Property->GetName();
-	if(serstorage->SelectNode(paramname))
-	{
-	 serstorage->SetNodeAttribute("PType",sntoa(I->second.Type));
-	 serstorage->SelectUp();
+    cont->GetProperty(I->first,serstorage);
+    std::string paramname=I->first;//I->second.Property->GetName();
+    if(serstorage->SelectNode(paramname))
+    {
+     serstorage->SetNodeAttribute("PType",sntoa(I->second.Type));
+     serstorage->SelectUp();
     }
    }
    ++I;
@@ -3081,18 +3081,18 @@ bool UEngine::Model_GetComponentPropertiesEx(RDK::UContainer* cont, RDK::USerSto
   {
    if(I->second.CheckMask(type_mask))
    {
-	cont->GetProperty(I->first,serstorage);
+    cont->GetProperty(I->first,serstorage);
 
-	std::string paramname=I->first;//I->second.Property->GetName();
-	if(serstorage->SelectNode(paramname))
-	{
-	 serstorage->SetNodeAttribute("PType",sntoa(I->second.Type));
-	 if(descr)
-	 {
-	  serstorage->SetNodeAttribute("Header",descr->GetDescription(paramname).Header);
-	 }
-	 serstorage->SelectUp();
-	}
+    std::string paramname=I->first;//I->second.Property->GetName();
+    if(serstorage->SelectNode(paramname))
+    {
+     serstorage->SetNodeAttribute("PType",sntoa(I->second.Type));
+     if(descr)
+     {
+      serstorage->SetNodeAttribute("Header",descr->GetDescription(paramname).Header);
+     }
+     serstorage->SelectUp();
+    }
    }
    ++I;
   }
@@ -3331,7 +3331,7 @@ int UEngine::Model_SaveComponent(RDK::UNet* cont, RDK::USerStorageXML *serstorag
   {
    serstorage->AddNode("Links");
    if(Model_GetComponentInternalLinks(cont,serstorage,0))
-	return false;
+    return false;
    serstorage->SelectUp();
   }
 
@@ -3380,8 +3380,8 @@ int UEngine::Model_LoadComponent(RDK::UNet* cont, RDK::USerStorageXML *serstorag
   {
    if(serstorage->SelectNode(UVariable::GetPropertyTypeNameByType(mask)))
    {
-	if(Model_SetComponentProperties(cont, serstorage))
-	 return false;
+    if(Model_SetComponentProperties(cont, serstorage))
+     return false;
     serstorage->SelectUp();
    }
   }
@@ -3406,7 +3406,7 @@ int UEngine::Model_LoadComponent(RDK::UNet* cont, RDK::USerStorageXML *serstorag
 
 //   if(!Model_LoadComponent(newcont,serstorage))
    if(!Model_LoadComponent(newcont,serstorage,false))
-	return false;
+    return false;
    serstorage->SelectUp();
   }
   serstorage->SelectUp();
@@ -3415,7 +3415,7 @@ int UEngine::Model_LoadComponent(RDK::UNet* cont, RDK::USerStorageXML *serstorag
   {
    serstorage->SelectNode("Links");
    if(!Model_SetComponentInternalLinks(cont,serstorage,0))
-	return false;
+    return false;
    serstorage->SelectUp();
   }
  }
@@ -3477,8 +3477,8 @@ int UEngine::Model_LoadComponentProperties(RDK::UNet* cont, RDK::USerStorageXML 
   {
    if(serstorage->SelectNode(UVariable::GetPropertyTypeNameByType(mask)))
    {
-	if(Model_SetComponentProperties(cont, serstorage))
-	 return false;
+    if(Model_SetComponentProperties(cont, serstorage))
+     return false;
     serstorage->SelectUp();
    }
   }
@@ -3533,7 +3533,7 @@ int UEngine::Model_SaveComponentDrawInfo(RDK::UNet* cont, RDK::USerStorageXML *s
    serstorage->SetNodeAttribute("Class",Storage->FindClassName(cont->GetComponentByIndex(i)->GetClass()));
    XmlStorage.AddNode("Parameters");
    if(!Model_GetComponentProperties(dynamic_pointer_cast<RDK::UNet>(cont->GetComponentByIndex(i)),serstorage,ptParameter|pgAny))
-	return false;
+    return false;
    XmlStorage.SelectUp();
    XmlStorage.SelectUp();
   }
@@ -3570,7 +3570,7 @@ const /* RDK::MDMatrix* */void* UEngine::Model_GetComponentOutputAsMatrix(const 
    return 0;
 
   if(output_property->GetLanguageType() == typeid(MDMatrix<double>) ||
-	 output_property->GetLanguageType() == typeid(MDVector<double>))
+     output_property->GetLanguageType() == typeid(MDVector<double>))
   {
    return output_property->GetPointer(0);
   }
@@ -3600,7 +3600,7 @@ const /* RDK::MDMatrix* */void* UEngine::Model_GetComponentOutputAsMatrix(const 
    return 0;
 
   if(output_property->GetLanguageType() == typeid(MDMatrix<double>) ||
-	 output_property->GetLanguageType() == typeid(MDVector<double>))
+     output_property->GetLanguageType() == typeid(MDVector<double>))
   {
    return output_property->GetPointer(0);
   }
@@ -4130,6 +4130,7 @@ int UEngine::LoadPredefinedLibraries(void)
  LibrariesList.push_back(&FilteringLibrary);
  LibrariesList.push_back(&GUILibrary);
  LibrariesList.push_back(&HardwareLibrary);
+ LibrariesList.push_back(&UPtzCameraLibrary);
  LibrariesList.push_back(&ObjectSearchLibrary);
  LibrariesList.push_back(&ObjectTrackingLibrary);
  LibrariesList.push_back(&QualifierLibrary);
@@ -4211,14 +4212,14 @@ UEPtr<UContainer> UEngine::FindComponent(const char *stringid) const
   {
    longid.DecodeFromString(stringid);
    if(!longid.GetSize() || longid[0] == ForbiddenId)
-	cont=model;
+    cont=model;
    else
-	cont=dynamic_pointer_cast<RDK::UContainer>(model->GetComponentL(longid));
+    cont=dynamic_pointer_cast<RDK::UContainer>(model->GetComponentL(longid));
   }
   else // ...иначе декодируем как им€
   {
    if(strlen(stringid) == 0)
-	cont=model;
+    cont=model;
    else
     cont=dynamic_pointer_cast<RDK::UContainer>(model->GetComponentL(stringid));
   }

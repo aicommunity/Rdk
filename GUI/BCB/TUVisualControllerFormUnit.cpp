@@ -160,7 +160,15 @@ void TUVisualControllerForm::UpdateInterface(bool force_update)
  if(!Model_Check())
   return;
  UpdateInterfaceFlag=true;
- AUpdateInterface();
+ try
+ {
+  AUpdateInterface();
+ }
+ catch(...)
+ {
+  UpdateInterfaceFlag=false;
+  throw;
+ }
  UpdateInterfaceFlag=false;
 }
 
