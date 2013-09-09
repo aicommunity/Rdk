@@ -43,6 +43,8 @@ __published:	// IDE-managed Components
 	TLabeledEdit *RectHeightLabeledEdit;
 	TCheckBox *CheckBox1;
 	TTimer *Timer1;
+	TPanel *Panel4;
+	TRadioGroup *InitInputModeRadioGroup;
 	void __fastcall StartTrackingButtonClick(TObject *Sender);
 	void __fastcall StopTrackingButtonClick(TObject *Sender);
 	void __fastcall GetFrameButtonClick(TObject *Sender);

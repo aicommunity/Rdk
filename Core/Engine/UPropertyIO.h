@@ -176,6 +176,34 @@ void const * GetPointer(int index) const
  return this->PData;
 }
 
+// Возврат значения
+virtual const T& GetData(void) const
+{
+ return (PData)?*PData:v;
+};
+
+virtual void SetData(const T &value)
+{
+ if(PData)
+ {
+  if(*PData == value)
+   return;
+
+  if(this->Owner)
+  {
+   if(this->SetterR && !(this->Owner->*(this->SetterR))(value))
+	throw UIProperty::EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
+
+   *PData=value;
+   return;
+  }
+
+  *PData=value;
+ }
+ else
+  ULProperty<T,OwnerT,type>::SetData(value);
+};
+
 // Устанавливает указатель на данные входа
 bool SetPointer(int index, void* value)
 {

@@ -106,18 +106,15 @@ object TldTrackingForm: TTldTrackingForm
     end
     object PageControl1: TPageControl
       Left = -5
-      Top = 26
+      Top = 97
       Width = 189
-      Height = 384
-      ActivePage = PointsTabSheet
+      Height = 313
+      ActivePage = RectangleTabSheet
       Align = alRight
+      MultiLine = True
       TabOrder = 3
       object RectangleTabSheet: TTabSheet
-        Caption = 'Rectangle'
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
+        Caption = 'One Tracker By Rect'
         object Label2: TLabel
           Left = 7
           Top = 40
@@ -144,13 +141,9 @@ object TldTrackingForm: TTldTrackingForm
         end
       end
       object PointsTabSheet: TTabSheet
-        Caption = 'PointsTabSheet'
+        Caption = 'All Trackers By Point'
         ImageIndex = 1
         OnShow = PointsTabSheetShow
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object SendPointsButton: TButton
           Left = 0
           Top = 122
@@ -203,6 +196,27 @@ object TldTrackingForm: TTldTrackingForm
         end
       end
     end
+    object Panel4: TPanel
+      Left = 1
+      Top = 26
+      Width = 183
+      Height = 71
+      Align = alTop
+      TabOrder = 4
+      object InitInputModeRadioGroup: TRadioGroup
+        Left = 1
+        Top = 1
+        Width = 181
+        Height = 69
+        Align = alClient
+        Caption = 'Init Input'
+        ItemIndex = 1
+        Items.Strings = (
+          'Directly to Tracker'
+          'To External "MatrixSource"')
+        TabOrder = 0
+      end
+    end
   end
   object Panel3: TPanel
     Left = 0
@@ -248,6 +262,8 @@ object TldTrackingForm: TTldTrackingForm
         inherited GroupBox1: TGroupBox
           Width = 568
           Height = 312
+          ExplicitLeft = 1
+          ExplicitTop = 13
           ExplicitWidth = 568
           ExplicitHeight = 312
         end
@@ -255,7 +271,7 @@ object TldTrackingForm: TTldTrackingForm
       inherited Panel1: TPanel
         Top = 375
         Width = 572
-        ExplicitTop = 410
+        ExplicitTop = 375
         ExplicitWidth = 572
         inherited StopButton: TButton
           Left = 535
@@ -278,7 +294,7 @@ object TldTrackingForm: TTldTrackingForm
         Top = 329
         Width = 572
         Visible = False
-        ExplicitTop = 379
+        ExplicitTop = 329
         ExplicitWidth = 572
         inherited SendToEdit: TEdit
           Width = 391
