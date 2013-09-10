@@ -192,6 +192,11 @@ String ProjectName;
 // Описание проекта
 String ProjectDescription;
 
+// Тип проекта
+// 0 - Обычный проект
+// 1 - Серверный проект
+int ProjectMode;
+
 // Флаг автоматического сохранения проекта
 bool ProjectAutoSaveFlag;
 

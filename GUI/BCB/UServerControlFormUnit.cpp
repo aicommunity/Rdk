@@ -701,47 +701,50 @@ int TUServerControlForm::SetNumChannels(int value)
   }
  }
 
- if(VideoOutputForm->GetNumSources()<value)
+ if(UGEngineControlForm->ProjectMode == 1)
  {
-  for(int i=VideoOutputForm->GetNumSources();i<value;i++)
+  if(VideoOutputForm->GetNumSources()<value)
   {
-   VideoOutputForm->AddSource();
-   VideoOutputForm->GetVideoOutputFrame(i)->MyVideoGrabberControlForm->VideoGrabberControlFrame->PipeUidEdit->Text=(std::string("USharedMemory")+RDK::sntoa(i)).c_str();
-   VideoOutputForm->GetVideoOutputFrame(i)->MyVideoGrabberControlForm->VideoGrabberControlFrame->PipeIndexEdit->Text=IntToStr(i);
-  }
-  VideoOutputForm->UpdateInterface();
- }
- else
- {
-  while(VideoOutputForm->GetNumSources()>value)
-  {
-   VideoOutputForm->DelSource(VideoOutputForm->GetNumSources()-1);
-  }
- }
-
- if(IdTcpResultBroadcasterForm->GetNumBroadcasters()<value)
- {
-  for(int i=IdTcpResultBroadcasterForm->GetNumBroadcasters();i<value;i++)
-  {
-   IdTcpResultBroadcasterForm->AddBroadcaster();
-
-   TIdTcpResultBroadcasterFrame *frame=IdTcpResultBroadcasterForm->GetBroadcasterFrame(i);
-   if(frame)
+   for(int i=VideoOutputForm->GetNumSources();i<value;i++)
    {
-	frame->ChannelIndexLabeledEdit->Text=IntToStr(i);
-	frame->ServerAddressLabeledEdit->Text=IdTcpResultBroadcasterForm->GetBroadcasterFrame(0)->ServerAddressLabeledEdit->Text;
-	frame->XmlComponentNameLabeledEdit->Text=IdTcpResultBroadcasterForm->GetBroadcasterFrame(0)->XmlComponentNameLabeledEdit->Text;
-    frame->XmlComponentStateNameLabeledEdit->Text=IdTcpResultBroadcasterForm->GetBroadcasterFrame(0)->XmlComponentStateNameLabeledEdit->Text;
-    frame->EnableXmlTranslationCheckBox->Checked=IdTcpResultBroadcasterForm->GetBroadcasterFrame(0)->EnableXmlTranslationCheckBox->Checked;
+	VideoOutputForm->AddSource();
+	VideoOutputForm->GetVideoOutputFrame(i)->MyVideoGrabberControlForm->VideoGrabberControlFrame->PipeUidEdit->Text=(std::string("USharedMemory")+RDK::sntoa(i)).c_str();
+	VideoOutputForm->GetVideoOutputFrame(i)->MyVideoGrabberControlForm->VideoGrabberControlFrame->PipeIndexEdit->Text=IntToStr(i);
+   }
+   VideoOutputForm->UpdateInterface();
+  }
+  else
+  {
+   while(VideoOutputForm->GetNumSources()>value)
+   {
+	VideoOutputForm->DelSource(VideoOutputForm->GetNumSources()-1);
    }
   }
-  IdTcpResultBroadcasterForm->UpdateInterface();
- }
- else
- {
-  while(IdTcpResultBroadcasterForm->GetNumBroadcasters()>value)
+
+  if(IdTcpResultBroadcasterForm->GetNumBroadcasters()<value)
   {
-   IdTcpResultBroadcasterForm->DelBroadcaster(IdTcpResultBroadcasterForm->GetNumBroadcasters()-1);
+   for(int i=IdTcpResultBroadcasterForm->GetNumBroadcasters();i<value;i++)
+   {
+	IdTcpResultBroadcasterForm->AddBroadcaster();
+
+	TIdTcpResultBroadcasterFrame *frame=IdTcpResultBroadcasterForm->GetBroadcasterFrame(i);
+	if(frame)
+	{
+	 frame->ChannelIndexLabeledEdit->Text=IntToStr(i);
+	 frame->ServerAddressLabeledEdit->Text=IdTcpResultBroadcasterForm->GetBroadcasterFrame(0)->ServerAddressLabeledEdit->Text;
+	 frame->XmlComponentNameLabeledEdit->Text=IdTcpResultBroadcasterForm->GetBroadcasterFrame(0)->XmlComponentNameLabeledEdit->Text;
+	 frame->XmlComponentStateNameLabeledEdit->Text=IdTcpResultBroadcasterForm->GetBroadcasterFrame(0)->XmlComponentStateNameLabeledEdit->Text;
+	 frame->EnableXmlTranslationCheckBox->Checked=IdTcpResultBroadcasterForm->GetBroadcasterFrame(0)->EnableXmlTranslationCheckBox->Checked;
+	}
+   }
+   IdTcpResultBroadcasterForm->UpdateInterface();
+  }
+  else
+  {
+   while(IdTcpResultBroadcasterForm->GetNumBroadcasters()>value)
+   {
+	IdTcpResultBroadcasterForm->DelBroadcaster(IdTcpResultBroadcasterForm->GetNumBroadcasters()-1);
+   }
   }
  }
 

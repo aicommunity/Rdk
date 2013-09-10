@@ -27,6 +27,8 @@
 #include <IdCustomTCPServer.hpp>
 #include <IdHTTPServer.hpp>
 #include "TUHttpServerUnit.h"
+#include <Vcl.Dialogs.hpp>
+#include <Vcl.ExtDlgs.hpp>
 
 class TVideoGrabberControlForm;
 class TVideoOutputFrame;
@@ -580,6 +582,9 @@ __published:    // IDE-managed Components
 	TCheckBox *SendPointsByStepCheckBox;
 	TCheckBox *DeletePointsAfterSendCheckBox;
 	TGroupBox *GroupBox1;
+	TMenuItem *N5;
+	TMenuItem *SaveImage1;
+	TSavePictureDialog *SavePictureDialog;
     void __fastcall TimerTimer(TObject *Sender);
 	void __fastcall StartButtonClick(TObject *Sender);
     void __fastcall StopButtonClick(TObject *Sender);
@@ -607,6 +612,7 @@ __published:    // IDE-managed Components
 	void __fastcall SendImageToComponentProperty1Click(TObject *Sender);
 	void __fastcall SendAsMatrixButtonClick(TObject *Sender);
 	void __fastcall PropertyMatrix1Click(TObject *Sender);
+	void __fastcall SaveImage1Click(TObject *Sender);
 //	void __fastcall UHttpServerFrameIdHTTPServerCommandGet(TIdContext *AContext, TIdHTTPRequestInfo *ARequestInfo,
 //          TIdHTTPResponseInfo *AResponseInfo);
 

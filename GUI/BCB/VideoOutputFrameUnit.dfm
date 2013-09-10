@@ -231,6 +231,13 @@ inherited VideoOutputFrame: TVideoOutputFrame
       Caption = 'Send Image To Component Property ...'
       OnClick = SendImageToComponentProperty1Click
     end
+    object N5: TMenuItem
+      Caption = '-'
+    end
+    object SaveImage1: TMenuItem
+      Caption = 'Save Image'
+      OnClick = SaveImage1Click
+    end
     object N2: TMenuItem
       Caption = '-'
     end
@@ -261,5 +268,10 @@ inherited VideoOutputFrame: TVideoOutputFrame
       Caption = 'Property Matrix'
       OnClick = PropertyMatrix1Click
     end
+  end
+  object SavePictureDialog: TSavePictureDialog
+    DefaultExt = 'bmp'
+    Left = 112
+    Top = 48
   end
 end

@@ -379,6 +379,8 @@ try{
  InputEnvImageWidth=ProjectXml.ReadInteger("InputEnvImageWidth",360);
  InputEnvImageHeight=ProjectXml.ReadInteger("InputEnvImageHeight",240);
 
+ ProjectMode=ProjectXml.ReadInteger("ProjectMode",0);
+
  PredefinedStructure.resize(GetNumEngines());
  PredefinedStructure[0]=ProjectXml.ReadInteger("PredefinedStructure",0);
  for(int i=1;i<GetNumEngines();i++)
@@ -442,10 +444,10 @@ try{
   delete RichEdit;
  }
 
- #ifdef RDK_VIDEO
-  for(int j=0;j<NumEnvInputs;j++)
-   VideoOutputForm->AddSource();
- #endif
+// #ifdef RDK_VIDEO
+//  for(int j=0;j<NumEnvInputs;j++)
+//   VideoOutputForm->AddSource();
+// #endif
 
  for(int i=0;i<GetNumEngines();i++)
  {
@@ -865,6 +867,8 @@ try{
 
  // Число выходов среды
  ProjectXml.WriteInteger("NumEnvOutputs",NumEnvOutputs);
+
+ ProjectXml.WriteInteger("ProjectMode",ProjectMode);
 
  ProjectXml.WriteInteger("InputEnvImageWidth",InputEnvImageWidth);
  ProjectXml.WriteInteger("InputEnvImageHeight",InputEnvImageHeight);

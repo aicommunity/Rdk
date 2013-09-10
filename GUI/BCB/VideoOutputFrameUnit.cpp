@@ -2840,3 +2840,12 @@ void __fastcall TVideoOutputFrame::UHttpServerFrameIdHTTPServerCommandGet(TIdCon
 }*/
 //---------------------------------------------------------------------------
 
+
+void __fastcall TVideoOutputFrame::SaveImage1Click(TObject *Sender)
+{
+ if(!SavePictureDialog->Execute())
+  return;
+ Image->Picture->SaveToFile(SavePictureDialog->FileName);
+}
+//---------------------------------------------------------------------------
+
