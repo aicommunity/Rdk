@@ -225,8 +225,9 @@ void __fastcall TTldTrackingForm::EnableLogCheckBoxClick(TObject *Sender)
 
 void __fastcall TTldTrackingForm::SendObjectToButtonClick(TObject *Sender)
 {
- if(ObjectReceiverComboBox->ItemIndex < 0)
-  return;
+ int tracker_index=0;//ObjectReceiverComboBox->ItemIndex;
+// if(tracker_index < 0)
+//  return;
 
  if(!Model_CheckComponent(ComponentControlName.c_str()))
   return;
@@ -257,13 +258,13 @@ void __fastcall TTldTrackingForm::SendObjectToButtonClick(TObject *Sender)
 
  RDK::MDMatrix<double> points(*old_points);//(ObjectReceiverComboBox->Items->Count,4);
  points.Resize(points.GetRows(),4);
- points(ObjectReceiverComboBox->ItemIndex,0)=VideoOutputFrame1->left;
- points(ObjectReceiverComboBox->ItemIndex,1)=VideoOutputFrame1->top;
- points(ObjectReceiverComboBox->ItemIndex,2)=VideoOutputFrame1->width;
- points(ObjectReceiverComboBox->ItemIndex,3)=VideoOutputFrame1->height;
+ points(tracker_index,0)=VideoOutputFrame1->left;
+ points(tracker_index,1)=VideoOutputFrame1->top;
+ points(tracker_index,2)=VideoOutputFrame1->width;
+ points(tracker_index,3)=VideoOutputFrame1->height;
 
  RDK::MDVector<int> initial_flags(points.GetRows());
- initial_flags[ObjectReceiverComboBox->ItemIndex]=1;
+ initial_flags[tracker_index]=1;
 
  bool started=UEngineMonitorForm->EngineMonitorFrame->Timer->Enabled;
  if(started)
@@ -274,7 +275,7 @@ void __fastcall TTldTrackingForm::SendObjectToButtonClick(TObject *Sender)
  VideoOutputFrame1->BmpSource.ConvertTo(ResultBmp);
  ResultBmp.ReflectionX();
 // Env_Calculate(0);
- Model_SetComponentBitmapInputByIndex(ComponentControlName.c_str(), ObjectReceiverComboBox->ItemIndex, &ResultBmp);
+ Model_SetComponentBitmapInputByIndex(ComponentControlName.c_str(), tracker_index, &ResultBmp);
 
  Model_SetComponentPropertyData(ComponentControlName.c_str(), "InitialFlags", &initial_flags);
 
@@ -306,10 +307,10 @@ void __fastcall TTldTrackingForm::SaveTrackerDataButtonClick(TObject *Sender)
 {
  std::string filename=AnsiString(UGEngineControlForm->ProjectPath).c_str();
  filename+=ComponentControlName.c_str();
- filename+=RDK::sntoa(ObjectReceiverComboBox->ItemIndex);
- filename+=".tld";
+// filename+="0";//RDK::sntoa(ObjectReceiverComboBox->ItemIndex);
+// filename+=".tld";
  Model_SetComponentPropertyData(ComponentControlName.c_str(), "TrackerDataFileName", &filename);
- int item_index=ObjectReceiverComboBox->ItemIndex;
+ int item_index=0;//ObjectReceiverComboBox->ItemIndex;
  Model_SetComponentPropertyData(ComponentControlName.c_str(), "SaveTrackerDataIndex", &item_index);
  Env_Calculate(ComponentControlName.c_str());
 }
@@ -328,7 +329,7 @@ void __fastcall TTldTrackingForm::LoadTrackerDataButtonClick(TObject *Sender)
  filename=AnsiString(OpenDialog1->FileName).c_str();
  filename=filename.substr(0,filename.size()-5);
  Model_SetComponentPropertyData(ComponentControlName.c_str(), "TrackerDataFileName", &filename);
- int item_index=ObjectReceiverComboBox->ItemIndex;
+ int item_index=0;//ObjectReceiverComboBox->ItemIndex;
  Model_SetComponentPropertyData(ComponentControlName.c_str(), "LoadTrackerDataIndex", &item_index);
  Env_Calculate(ComponentControlName.c_str());
 }

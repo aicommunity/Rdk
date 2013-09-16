@@ -42,6 +42,8 @@ public:
 // Флаг, сообщающий что идет расчет
 static bool CalculationModeFlag;
 
+bool CalculationStepUpdatedFlag;
+
 public:
 // -----------------------------
 // Методы управления визуальным интерфейсом
@@ -85,6 +87,16 @@ bool SetComponentControlName(const std::string& name);
 
 // Создание копии этого компонента
 virtual TUVisualControllerForm* New(TComponent *owner=0)=0;
+
+// Служебные методы управления интерфейсом
+/// Сбрасывает флаг прошедшей перерисовки в этой итерации счета
+virtual void ResetCalculationStepUpdatedFlag(void);
+
+/// Выставляет флаг прошедшей перерисовки в этой итерации счета
+virtual void SetCalculationStepUpdatedFlag(void);
+
+/// Возвращает состояние флага прошедшей перерисовки в этой итерации счета
+virtual bool GetCalculationStepUpdatedFlag(void);
 // -----------------------------
 };
 

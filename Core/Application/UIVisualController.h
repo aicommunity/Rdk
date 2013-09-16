@@ -45,6 +45,16 @@ virtual void SaveParameters(RDK::USerStorageXML &xml)=0;
 
 // Загружает параметры интерфейса из xml
 virtual void LoadParameters(RDK::USerStorageXML &xml)=0;
+
+// Служебные методы управления интерфейсом
+/// Сбрасывает флаг прошедшей перерисовки в этой итерации счета
+virtual void ResetCalculationStepUpdatedFlag(void)=0;
+
+/// Выставляет флаг прошедшей перерисовки в этой итерации счета
+virtual void SetCalculationStepUpdatedFlag(void)=0;
+
+/// Возвращает состояние флага прошедшей перерисовки в этой итерации счета
+virtual bool GetCalculationStepUpdatedFlag(void)=0;
 };
 
 // Класс хранилище-визуальных интерфейсов

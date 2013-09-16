@@ -210,7 +210,7 @@ object TldTrackingForm: TTldTrackingForm
         Height = 69
         Align = alClient
         Caption = 'Init Input'
-        ItemIndex = 1
+        ItemIndex = 0
         Items.Strings = (
           'Directly to Tracker'
           'To External "MatrixSource"')
@@ -262,8 +262,6 @@ object TldTrackingForm: TTldTrackingForm
         inherited GroupBox1: TGroupBox
           Width = 568
           Height = 312
-          ExplicitLeft = 1
-          ExplicitTop = 13
           ExplicitWidth = 568
           ExplicitHeight = 312
         end
@@ -271,6 +269,7 @@ object TldTrackingForm: TTldTrackingForm
       inherited Panel1: TPanel
         Top = 375
         Width = 572
+        Visible = False
         ExplicitTop = 375
         ExplicitWidth = 572
         inherited StopButton: TButton
@@ -312,6 +311,7 @@ object TldTrackingForm: TTldTrackingForm
       inherited Panel3: TPanel
         Top = 416
         Width = 572
+        Visible = False
         ExplicitTop = 416
         ExplicitWidth = 572
       end

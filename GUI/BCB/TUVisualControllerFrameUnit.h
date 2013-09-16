@@ -34,6 +34,8 @@ long UpdateInterval;
 // Время последнего обновления
 DWORD LastUpdateTime;
 
+bool CalculationStepUpdatedFlag;
+
 public:
 // Флаг, сообщающий что идет расчет
 static bool CalculationModeFlag;
@@ -79,6 +81,16 @@ virtual void ALoadParameters(RDK::USerStorageXML &xml);
 // Длинное имя управляемого компонента модели (опционально)
 const std::string& GetComponentControlName(void) const;
 bool SetComponentControlName(const std::string& name);
+
+// Служебные методы управления интерфейсом
+/// Сбрасывает флаг прошедшей перерисовки в этой итерации счета
+virtual void ResetCalculationStepUpdatedFlag(void);
+
+/// Выставляет флаг прошедшей перерисовки в этой итерации счета
+virtual void SetCalculationStepUpdatedFlag(void);
+
+/// Возвращает состояние флага прошедшей перерисовки в этой итерации счета
+virtual bool GetCalculationStepUpdatedFlag(void);
 // -----------------------------
 };
 //---------------------------------------------------------------------------

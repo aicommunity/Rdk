@@ -17,11 +17,11 @@ SOURCES += main.cpp\
 
 HEADERS  += codewizard.h
 
-unix:!symbian {
-    DESTDIR = $$PWD/../../../Bin/Platform/Linux
+unix {
+        target.path = /usr/lib
+    INSTALLS += target
+    DESTDIR = $$PWD/../../../Bin/Platform/Unix
 }
-
 windows {
     DESTDIR = $$PWD/../../../Bin/Platform/Win
 }
-

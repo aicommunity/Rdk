@@ -154,6 +154,26 @@ const std::string GetNodeText(void) const;
 // --------------------------
 // Дополнительные методы управления данными текущего элемента как ini-файлом
 // --------------------------
+template<typename T>
+bool ReadData(const std::string &name, T &data)
+{
+ if(!SelectNode(name))
+  return false;
+ (*this)>>data;
+ SelectUp();
+ return true;
+}
+
+template<typename T>
+bool WriteData(const std::string &name, T &data)
+{
+ if(!AddNode(name))
+  return false;
+ (*this)<<data;
+ SelectUp();
+ return true;
+}
+
 // Считывает данные как соответствующий тип, если данное не найдено или не приводимо в
 // ожидаемый тип - оно инициализируется значением по умолчанию
 const std::string ReadString(const std::string &name, const std::string &default_value);

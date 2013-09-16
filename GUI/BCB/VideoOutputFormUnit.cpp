@@ -53,6 +53,10 @@ void TVideoOutputForm::ABeforeCalculate(void)
 // Обновляет интерфейс
 void TVideoOutputForm::AUpdateInterface(void)
 {
+ for(int i=0;i<GetNumSources();i++)
+ {
+  Sources[i]->UpdateInterface();
+ }
 }
 
 // Сохраняет параметры интерфейса в xml

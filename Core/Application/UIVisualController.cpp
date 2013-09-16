@@ -79,8 +79,13 @@ void UIVisualControllerStorage::AfterReset(void)
 void UIVisualControllerStorage::BeforeCalculate(void)
 {
  for(size_t i=0;i<InterfaceUpdaters.size();i++)
+ {
   if(InterfaceUpdaters[i])
+  {
+   InterfaceUpdaters[i]->ResetCalculationStepUpdatedFlag();
    InterfaceUpdaters[i]->BeforeCalculate();
+  }
+ }
 }
 
 // Метод, вызываемый после шага расчета

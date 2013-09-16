@@ -72,6 +72,8 @@ __fastcall TUVisualControllerForm::TUVisualControllerForm(TComponent* Owner)
  UpdateInterval=1000;
  PureFormCaption=AnsiString(Caption).c_str();
 
+ CalculationStepUpdatedFlag=0;
+
  RDK::UIVisualControllerStorage::AddInterface(this);
 }
 
@@ -145,6 +147,11 @@ void TUVisualControllerForm::UpdateInterface(bool force_update)
    DWORD curr_time=GetTickCount();
    if(curr_time-LastUpdateTime<DWORD(UpdateInterval))
 	return;
+
+   if(GetCalculationStepUpdatedFlag() == true)
+	return;
+   else
+    SetCalculationStepUpdatedFlag();
 
    LastUpdateTime=curr_time;
   }
@@ -242,6 +249,25 @@ bool TUVisualControllerForm::SetComponentControlName(const std::string& name)
  ComponentControlName=name;
  UpdateInterface();
  return true;
+}
+
+// Служебные методы управления интерфейсом
+/// Сбрасывает флаг прошедшей перерисовки в этой итерации счета
+void TUVisualControllerForm::ResetCalculationStepUpdatedFlag(void)
+{
+ CalculationStepUpdatedFlag=false;
+}
+
+/// Выставляет флаг прошедшей перерисовки в этой итерации счета
+void TUVisualControllerForm::SetCalculationStepUpdatedFlag(void)
+{
+ CalculationStepUpdatedFlag=true;
+}
+
+/// Возвращает состояние флага прошедшей перерисовки в этой итерации счета
+bool TUVisualControllerForm::GetCalculationStepUpdatedFlag(void)
+{
+ return CalculationStepUpdatedFlag;
 }
 // -----------------------------
 

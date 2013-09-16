@@ -1072,15 +1072,25 @@ void TUGEngineControlForm::FindVisualController(int index, TUVisualControllerFra
    }
   }
 
-  if(!is_saved) // ƒелаем попытку сохранить данные как данные формы
   {
    std::map<std::string, TUVisualControllerForm*>::iterator I=UComponentsListFrame1->ComponentControllers.begin();
    for(;I != UComponentsListFrame1->ComponentControllers.end();++I)
    {
+	form=I->second;
 	if(I->second->Parent == PageControl1->Pages[i])
 	{
 	 return;
 	}
+   }
+  }
+
+  {
+   std::map<std::string, TUVisualControllerForm*>::iterator I=SpecialForms.begin();
+   for(;I != SpecialForms.end();++I)
+   {
+	form=I->second;
+	if(I->second->Parent == PageControl1->Pages[i])
+	 return;
    }
   }
 

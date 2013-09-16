@@ -11,6 +11,7 @@ CodeWizard::CodeWizard(QWidget *parent)
     setWizardStyle(ModernStyle);
     setWindowTitle("CodeWizard");
     setMinimumWidth(500);
+    setGeometry(500,300,800,500);
 
     QPushButton *createBut = new QPushButton;
     QPushButton *setBut = new QPushButton;
@@ -172,7 +173,7 @@ InitialPage::InitialPage(QWidget *parent)
     tree->setColumnHidden(2,true);
     tree->setColumnHidden(3,true);
     tree->setHeaderHidden(true);
-    tree->setRootIndex(dstModel->index(corePath+"\\Engine\\Libraries"));//
+    tree->setRootIndex(dstModel->index(corePath/*+"\\Engine\\Libraries"*/));//
 
 
     QHBoxLayout *hboxlayout = new QHBoxLayout;
@@ -201,8 +202,8 @@ InitialPage::InitialPage(QWidget *parent)
     connect(namespaceCBox,SIGNAL(currentTextChanged(QString)), SLOT(slotNamespaceChanged()));
     connect(templateCBox, SIGNAL(customContextMenuRequested(QPoint)), SLOT(slotSettingsChanged()));
     //
-    connect(this, SIGNAL(expand()),tree, SLOT(expandAll()));//придумать получше
-    connect(tree, SIGNAL(clicked(QModelIndex)),tree, SLOT(expandAll()));//придумать получше
+    //connect(this, SIGNAL(expand()),tree, SLOT(expandAll()));//придумать получше
+    //connect(tree, SIGNAL(clicked(QModelIndex)),tree, SLOT(expandAll()));//придумать получше
     connect(libListView, SIGNAL(clicked(QModelIndex)), SLOT(slotLibChanged()));
     connect(expandAllBut, SIGNAL(clicked()), tree, SLOT(expandAll()));
     connect(selectBut, SIGNAL(clicked()), SLOT(slotPathSelected()));
@@ -758,7 +759,7 @@ void InitialPage::slotSettingsChanged()
 
 void InitialPage::slotLibChanged()
 {
-    tree->setRootIndex(dstModel->index(corePath+"\\"+libModel->data(libListView->currentIndex(),0).toString()+"\\Libraries"));
+    tree->setRootIndex(dstModel->index(corePath+"\\"+libModel->data(libListView->currentIndex(),0).toString()));
     emit expand();
 }
 

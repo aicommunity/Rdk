@@ -472,6 +472,13 @@ bool TVideoCaptureThreadBmpSequence::SetPosition(long long index)
 void __fastcall TVideoCaptureThreadBmpSequence::AfterCalculate(void)
 {
   TVideoCaptureThread::AfterCalculate();
+  CurrentBmpSequenceIndex++;
+ if(CurrentBmpSequenceIndex>=int(BmpSequenceNames.size()))
+ {
+  --CurrentBmpSequenceIndex;
+  Stop();
+ }
+
   Sleep(30);
 }
 
@@ -490,13 +497,6 @@ void __fastcall TVideoCaptureThreadBmpSequence::Calculate(void)
  }
  long long time_stamp=CurrentBmpSequenceIndex;
  WriteSourceSafe(TempSource,time_stamp,false);
-
- CurrentBmpSequenceIndex++;
- if(CurrentBmpSequenceIndex>=int(BmpSequenceNames.size()))
- {
-  --CurrentBmpSequenceIndex;
-  Stop();
- }
 }
 
 // Загружает выбранную картинку по индеку в массиве имен
@@ -507,7 +507,9 @@ bool TVideoCaptureThreadBmpSequence::LoadImageFromSequence(int index, RDK::UBitm
 
  if(BmpSequenceNames[index].find(".bmp") != std::string::npos)
  {
-  RDK::LoadBitmapFromFile((PathName+BmpSequenceNames[index]).c_str(),bmp);
+  TempBitmap->LoadFromFile((PathName+BmpSequenceNames[index]).c_str());
+  bmp<<TempBitmap;
+//  RDK::LoadBitmapFromFile((PathName+BmpSequenceNames[index]).c_str(),bmp);
  }
  else
  if(BmpSequenceNames[index].find(".jpg") != std::string::npos || BmpSequenceNames[index].find(".jpeg") != std::string::npos)
@@ -2167,7 +2169,7 @@ void TVideoOutputFrame::AUpdateInterface(void)
 
 	TrackBar->Max=CaptureThread->GetNumBitmaps();
 	TrackBar->Position=CaptureThread->GetPosition();
-
+    TrackBar->UpdateControlState();
 	UpdateVideo();
   }
 
@@ -2633,6 +2635,8 @@ void __fastcall TVideoOutputFrame::TrackBarChange(TObject *Sender)
  if(CaptureThread)
  {
   CaptureThread->SetPosition(TrackBar->Position);
+  CaptureThread->Calculate();
+  UpdateInterface();
 /*
   TVideoCaptureThreadVideoGrabber *vg_thread=dynamic_cast<TVideoCaptureThreadVideoGrabber*>(CaptureThread);
   if(vg_thread)
