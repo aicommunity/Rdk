@@ -1525,6 +1525,52 @@ const char* UEngine::Model_GetComponentsNameList(const char* stringid)
  return 0;
 }
 
+// Возвращает строку, содержащую список имен всех компонент заданного компонента 'stringid'
+// имена разделяются сипволом ',' и имеющих имя класса 'class_name'
+// Если find_all == true то поиск ведется и во всех сабкомпонентах
+const char* UEngine::Model_FindComponentsByClassName(const char* stringid, const char* class_name, bool find_all)
+{
+ try
+ {
+  TempString.clear();
+
+  if(!class_name || !strlen(class_name))
+   return TempString.c_str();
+
+  RDK::UContainer* destcont=FindComponent(stringid);
+
+  if(!destcont)
+   return TempString.c_str();
+
+  std::vector<std::string> tempbuffer;
+
+
+  destcont->GetComponentsList(tempbuffer);
+  std::string name;
+  int class_id=Storage->FindClassId(class_name);
+
+  if(class_id == ForbiddenId)
+   return TempString.c_str();
+
+  for(int i=0;i<destcont->GetNumComponents();i++)
+  {
+   if(destcont->GetComponentByIndex(i)->GetClass() == class_id)
+   {
+	TempString+=destcont->GetComponentByIndex(i)->GetLongName(destcont,name);
+	if(i<int(tempbuffer.size())-1)
+	 TempString+=",";
+   }
+  }
+  return TempString.c_str();
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+
+ return 0;
+}
+
 // Перемещает компонент с текущим индексом index или именем 'name' вверх или
 // вниз по списку на заданное число элементов
 // Применяется для изменения порядка расчета компонент

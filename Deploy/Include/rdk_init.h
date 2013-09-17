@@ -405,6 +405,11 @@ RDK_LIB_TYPE int RDK_CALL Model_GetComponentsList(const char* stringid, int *buf
 // имена разделяются сипволом ','
 RDK_LIB_TYPE const char* RDK_CALL Model_GetComponentsNameList(const char* stringid);
 
+// Возвращает строку, содержащую список имен всех компонент заданного компонента 'stringid'
+// имена разделяются сипволом ',' и имеющих имя класса 'class_name'
+// Если find_all == true то поиск ведется и во всех сабкомпонентах
+RDK_LIB_TYPE const char* RDK_CALL Model_FindComponentsByClassName(const char* stringid, const char* class_name, bool find_all);
+
 // Перемещает компонент с текущим индексом index или именем 'name' вверх или
 // вниз по списку на заданное число элементов
 // Применяется для изменения порядка расчета компонент

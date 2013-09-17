@@ -905,6 +905,14 @@ const char* RDK_CALL Model_GetComponentsNameList(const char* stringid)
  return PEngine->Model_GetComponentsNameList(stringid);
 }
 
+// Возвращает строку, содержащую список имен всех компонент заданного компонента 'stringid'
+// имена разделяются сипволом ',' и имеющих имя класса 'class_name'
+// Если find_all == true то поиск ведется и во всех сабкомпонентах
+const char* RDK_CALL Model_FindComponentsByClassName(const char* stringid, const char* class_name, bool find_all)
+{
+ return PEngine->Model_FindComponentsByClassName(stringid,class_name,find_all);
+}
+
 // Перемещает компонент с текущим индексом index или именем 'name' вверх или
 // вниз по списку на заданное число элементов
 // Применяется для изменения порядка расчета компонент

@@ -106,15 +106,18 @@ object TldTrackingForm: TTldTrackingForm
     end
     object PageControl1: TPageControl
       Left = -5
-      Top = 97
+      Top = 173
       Width = 189
-      Height = 313
-      ActivePage = RectangleTabSheet
+      Height = 237
+      ActivePage = PointsTabSheet
       Align = alRight
       MultiLine = True
       TabOrder = 3
+      ExplicitTop = 97
+      ExplicitHeight = 313
       object RectangleTabSheet: TTabSheet
         Caption = 'One Tracker By Rect'
+        ExplicitHeight = 267
         object Label2: TLabel
           Left = 7
           Top = 40
@@ -144,6 +147,7 @@ object TldTrackingForm: TTldTrackingForm
         Caption = 'All Trackers By Point'
         ImageIndex = 1
         OnShow = PointsTabSheetShow
+        ExplicitHeight = 267
         object SendPointsButton: TButton
           Left = 0
           Top = 122
@@ -192,6 +196,8 @@ object TldTrackingForm: TTldTrackingForm
           Height = 17
           Align = alTop
           Caption = 'Init TLD now'
+          Checked = True
+          State = cbChecked
           TabOrder = 2
         end
       end
@@ -200,21 +206,36 @@ object TldTrackingForm: TTldTrackingForm
       Left = 1
       Top = 26
       Width = 183
-      Height = 71
+      Height = 147
       Align = alTop
       TabOrder = 4
       object InitInputModeRadioGroup: TRadioGroup
         Left = 1
         Top = 1
         Width = 181
-        Height = 69
-        Align = alClient
+        Height = 53
+        Align = alTop
         Caption = 'Init Input'
         ItemIndex = 0
         Items.Strings = (
           'Directly to Tracker'
           'To External "MatrixSource"')
         TabOrder = 0
+        ExplicitHeight = 64
+      end
+      object TrackersCheckListBox: TCheckListBox
+        Left = 1
+        Top = 54
+        Width = 181
+        Height = 92
+        OnClickCheck = TrackersCheckListBoxClickCheck
+        Align = alClient
+        ItemHeight = 13
+        TabOrder = 1
+        ExplicitLeft = 32
+        ExplicitTop = 80
+        ExplicitWidth = 121
+        ExplicitHeight = 97
       end
     end
   end

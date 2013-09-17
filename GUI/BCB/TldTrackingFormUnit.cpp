@@ -47,6 +47,35 @@ void TTldTrackingForm::AUpdateInterface(void)
 {
  if(ComponentControlName.empty())
   return;
+
+ UpdateTrackersList();
+
+ int i=TrackersCheckListBox->ItemIndex;
+ if(TrackersCheckListBox->Items->Count<Trackers.size())
+ {
+  int new_size=int(Trackers.size())-TrackersCheckListBox->Items->Count;
+  for(int i=0;i<new_size;i++)
+   TrackersCheckListBox->Items->Add("");
+ }
+ else
+ if(TrackersCheckListBox->Items->Count>Trackers.size())
+ {
+  int new_size=TrackersCheckListBox->Items->Count-int(Trackers.size());
+  for(int i=0;i<new_size;i++)
+   TrackersCheckListBox->Items->Delete(TrackersCheckListBox->Items->Count-1);
+ }
+
+ for(size_t i=0;i<Trackers.size();i++)
+ {
+  TrackersCheckListBox->Items->Strings[i]=Trackers[i].first.c_str();
+  TrackersCheckListBox->Checked[i]=Trackers[i].second;
+ }
+
+ if(i>0 && i<TrackersCheckListBox->Items->Count)
+ {
+  TrackersCheckListBox->ItemIndex=i;
+ }
+
   /*
  int num_inputs=1;//RDK::ReadParameterValue<int>(ComponentControlName, "NumInputs");
 // LoadVideoInputs(num_inputs, VideoSourceComboBox);
@@ -136,12 +165,24 @@ void TTldTrackingForm::AAfterCalculate(void)
 void TTldTrackingForm::ASaveParameters(RDK::USerStorageXML &xml)
 {
  xml.WriteInteger("InitInputMode",InitInputModeRadioGroup->ItemIndex);
+ xml.WriteInteger("NumTrackers",int(Trackers.size()));
+ for(size_t i=0;i<Trackers.size();i++)
+ {
+  xml.WriteString(string("TrackerName_")+RDK::sntoa(i),Trackers[i].first);
+  xml.WriteBool(string("TrackerCheck_")+RDK::sntoa(i),Trackers[i].second);
+ }
 }
 
 // Загружает параметры интерфейса из xml
 void TTldTrackingForm::ALoadParameters(RDK::USerStorageXML &xml)
 {
  InitInputModeRadioGroup->ItemIndex=xml.ReadInteger("InitInputMode",1);
+ Trackers.resize(xml.ReadInteger("NumTrackers",0));
+ for(size_t i=0;i<Trackers.size();i++)
+ {
+  Trackers[i].first=xml.ReadString(string("TrackerName_")+RDK::sntoa(i),"");
+  Trackers[i].second=xml.ReadBool(string("TrackerCheck_")+RDK::sntoa(i),false);
+ }
 }
 
 // Создание копии этого компонента
@@ -166,6 +207,52 @@ void TTldTrackingForm::LoadVideoInputs(int num_inputs, TComboBox *box)
  else
   box->ItemIndex=0;
 }
+
+
+/// Обновляет список трекеров
+void TTldTrackingForm::UpdateTrackersList(void)
+{
+ std::string str=Model_FindComponentsByClassName("", "TDllTldTracking", true);
+ std::vector<std::string> trackers;
+ RDK::separatestring(str, trackers, ',');
+
+ for(size_t i=0;i<trackers.size();i++)
+ {
+  bool present=false;
+  for(size_t j=0;j<Trackers.size();j++)
+  {
+   if(Trackers[j].first == trackers[i])
+   {
+	present=true;
+	break;
+   }
+  }
+
+  if(!present)
+  {
+   Trackers.push_back(pair<string,bool>(trackers[i],false));
+  }
+ }
+
+ for(size_t i=0;i<Trackers.size();i++)
+ {
+  bool present=false;
+  for(size_t j=0;j<trackers.size();j++)
+  {
+   if(Trackers[i].first == trackers[j])
+   {
+	present=true;
+	break;
+   }
+  }
+
+  if(!present)
+  {
+   Trackers.erase(Trackers.begin()+i);
+  }
+ }
+}
+
 // -----------------------------
 //---------------------------------------------------------------------------
 void __fastcall TTldTrackingForm::StartTrackingButtonClick(TObject *Sender)
@@ -263,9 +350,6 @@ void __fastcall TTldTrackingForm::SendObjectToButtonClick(TObject *Sender)
  points(tracker_index,2)=VideoOutputFrame1->width;
  points(tracker_index,3)=VideoOutputFrame1->height;
 
- RDK::MDVector<int> initial_flags(points.GetRows());
- initial_flags[tracker_index]=1;
-
  bool started=UEngineMonitorForm->EngineMonitorFrame->Timer->Enabled;
  if(started)
   StopTrackingButtonClick(Sender);
@@ -275,16 +359,29 @@ void __fastcall TTldTrackingForm::SendObjectToButtonClick(TObject *Sender)
  VideoOutputFrame1->BmpSource.ConvertTo(ResultBmp);
  ResultBmp.ReflectionX();
 // Env_Calculate(0);
- Model_SetComponentBitmapInputByIndex(ComponentControlName.c_str(), tracker_index, &ResultBmp);
-
- Model_SetComponentPropertyData(ComponentControlName.c_str(), "InitialFlags", &initial_flags);
-
- if(InitInputModeRadioGroup->ItemIndex == 0)
-  Model_SetComponentPropertyData(source_name.c_str(), "InitialZones", &points);
- else
+// Model_SetComponentBitmapInputByIndex(ComponentControlName.c_str(), tracker_index, &ResultBmp);
+ if(InitInputModeRadioGroup->ItemIndex != 0)
   Model_SetComponentPropertyData(source_name.c_str(), "DoubleMatrix", &points);
 
- Env_Calculate(ComponentControlName.c_str());
+
+ RDK::MDVector<int> initial_flags(points.GetRows());
+ initial_flags[tracker_index]=1;
+for(size_t k=0;k<Trackers.size();k++)
+{
+ if(!Trackers[k].second)
+  continue;
+ std::string name=Trackers[k].first;
+
+ if(InitInputModeRadioGroup->ItemIndex == 0)
+  Model_SetComponentPropertyData(name.c_str(), "InitialZones", &points);
+
+ Model_SetComponentBitmapInputByIndex(name.c_str(), tracker_index, &ResultBmp);
+
+ Model_SetComponentPropertyData(name.c_str(), "InitialFlags", &initial_flags);
+
+ Env_Calculate(name.c_str());
+}
+
 // AAfterCalculate();
  VideoOutputFrame1->MyVideoOutputToolsForm->DelAllFiguresButtonClick(Sender);
  VideoOutputFrame1->MyVideoOutputToolsForm->AddFigureButtonClick(Sender);
@@ -381,14 +478,14 @@ void __fastcall TTldTrackingForm::SendPointsButtonClick(TObject *Sender)
  const std::vector<RDK::MVector<double,2> > &new_points=VideoOutputFrame1->GeometryGraphics.Geometry(0).GetVertices();
 
  RDK::MDMatrix<double> points(*old_points);//(ObjectReceiverComboBox->Items->Count,4);
- points.Resize(points.GetRows(),4);
+ points.Resize(new_points.size(),4);
 
  int area_width=StrToInt(RectWidthLabeledEdit->Text);
  int area_height=StrToInt(RectHeightLabeledEdit->Text);
  for(int i=0;i<int(new_points.size());i++)
  {
-  if(i>=points.GetRows())
-   break;
+//  if(i>=points.GetRows())
+//   break;
   points(i,0)=new_points[i](0)-area_width/2;
   points(i,1)=new_points[i](1)-area_height/2;
   points(i,2)=area_width;
@@ -417,24 +514,31 @@ void __fastcall TTldTrackingForm::SendPointsButtonClick(TObject *Sender)
   StopTrackingButtonClick(Sender);
  if(CheckBox1->Checked)
  {
-//  UEngineMonitorForm->EngineMonitorFrame->Step1Click(Sender);
-
   ResultBmp.SetColorModel(RDK::ubmY8);
   VideoOutputFrame1->BmpSource.ConvertTo(ResultBmp);
   ResultBmp.ReflectionX();
-//  Env_Calculate(0);
-  Model_SetComponentBitmapInput(ComponentControlName.c_str(), "Input", &ResultBmp);
- }
- Model_SetComponentPropertyData(ComponentControlName.c_str(), "InitialFlags", &initial_flags);
- if(InitInputModeRadioGroup->ItemIndex == 0)
-  Model_SetComponentPropertyData(source_name.c_str(), "InitialZones", &points);
- else
+
+ if(InitInputModeRadioGroup->ItemIndex != 0)
   Model_SetComponentPropertyData(source_name.c_str(), "DoubleMatrix", &points);
 
- if(CheckBox1->Checked)
- {
-  Env_Calculate(ComponentControlName.c_str());
- }
+for(size_t k=0;k<Trackers.size();k++)
+{
+ if(!Trackers[k].second)
+  continue;
+
+ string name=Trackers[k].first;
+
+// int num_trackers=points.GetRows();
+// Model_SetComponentPropertyData(name.c_str(), "NumTrackers", &num_trackers);
+ Model_SetComponentBitmapInput(name.c_str(), "Input", &ResultBmp);
+ Model_SetComponentPropertyData(name.c_str(), "InitialFlags", &initial_flags);
+ if(InitInputModeRadioGroup->ItemIndex == 0)
+  Model_SetComponentPropertyData(name.c_str(), "InitialZones", &points);
+
+  Env_Calculate(name.c_str());
+}
+}
+
 // UEngineMonitorForm->EngineMonitorFrame->Step1Click(Sender);
 
  VideoOutputFrame1->MyVideoOutputToolsForm->DelAllFiguresButtonClick(Sender);
@@ -465,6 +569,16 @@ void __fastcall TTldTrackingForm::Timer1Timer(TObject *Sender)
    VideoOutputFrame1->InitByBmp(VideoOutputForm->GetActiveVideoOutputFrame()->BmpSource);
   }
  }*/
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TTldTrackingForm::TrackersCheckListBoxClickCheck(TObject *Sender)
+{
+ if(UpdateInterfaceFlag)
+  return;
+
+ for(int i=0;i<TrackersCheckListBox->Items->Count;i++)
+  Trackers[i].second=TrackersCheckListBox->Checked[i];
 }
 //---------------------------------------------------------------------------
 

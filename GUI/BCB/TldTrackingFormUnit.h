@@ -15,6 +15,7 @@
 #include <Vcl.Dialogs.hpp>
 #include <Vcl.ComCtrls.hpp>
 #include <Vcl.Menus.hpp>
+#include <Vcl.CheckLst.hpp>
 //---------------------------------------------------------------------------
 class TTldTrackingForm : public TUVisualControllerForm
 {
@@ -45,6 +46,7 @@ __published:	// IDE-managed Components
 	TTimer *Timer1;
 	TPanel *Panel4;
 	TRadioGroup *InitInputModeRadioGroup;
+	TCheckListBox *TrackersCheckListBox;
 	void __fastcall StartTrackingButtonClick(TObject *Sender);
 	void __fastcall StopTrackingButtonClick(TObject *Sender);
 	void __fastcall GetFrameButtonClick(TObject *Sender);
@@ -58,6 +60,7 @@ __published:	// IDE-managed Components
 	void __fastcall SendPointsButtonClick(TObject *Sender);
 	void __fastcall FormShow(TObject *Sender);
 	void __fastcall Timer1Timer(TObject *Sender);
+	void __fastcall TrackersCheckListBoxClickCheck(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
 	__fastcall TTldTrackingForm(TComponent* Owner);
@@ -68,6 +71,9 @@ RDK::UBitmap ResultBmp;
 /// 0 - с входа трекера
 /// 1 - с камеры, определяемой настройками 0 источника программы
 int VideoSourceType;
+
+/// Список трекеров
+std::vector<std::pair<std::string,bool> > Trackers;
 
 // -----------------------------
 // Методы управления визуальным интерфейсом
@@ -95,6 +101,9 @@ void LoadVideoInputs(int num_inputs, TComboBox *box);
 
 // Создание копии этого компонента
 virtual TTldTrackingForm* New(TComponent *owner=0);
+
+/// Обновляет список трекеров
+void UpdateTrackersList(void);
 // -----------------------------
 };
 //---------------------------------------------------------------------------
