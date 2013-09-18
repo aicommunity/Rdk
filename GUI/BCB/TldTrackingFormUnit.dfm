@@ -113,11 +113,8 @@ object TldTrackingForm: TTldTrackingForm
       Align = alRight
       MultiLine = True
       TabOrder = 3
-      ExplicitTop = 97
-      ExplicitHeight = 313
       object RectangleTabSheet: TTabSheet
         Caption = 'One Tracker By Rect'
-        ExplicitHeight = 267
         object Label2: TLabel
           Left = 7
           Top = 40
@@ -147,7 +144,6 @@ object TldTrackingForm: TTldTrackingForm
         Caption = 'All Trackers By Point'
         ImageIndex = 1
         OnShow = PointsTabSheetShow
-        ExplicitHeight = 267
         object SendPointsButton: TButton
           Left = 0
           Top = 122
@@ -221,7 +217,6 @@ object TldTrackingForm: TTldTrackingForm
           'Directly to Tracker'
           'To External "MatrixSource"')
         TabOrder = 0
-        ExplicitHeight = 64
       end
       object TrackersCheckListBox: TCheckListBox
         Left = 1
@@ -232,10 +227,6 @@ object TldTrackingForm: TTldTrackingForm
         Align = alClient
         ItemHeight = 13
         TabOrder = 1
-        ExplicitLeft = 32
-        ExplicitTop = 80
-        ExplicitWidth = 121
-        ExplicitHeight = 97
       end
     end
   end

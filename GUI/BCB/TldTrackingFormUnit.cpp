@@ -251,6 +251,19 @@ void TTldTrackingForm::UpdateTrackersList(void)
    Trackers.erase(Trackers.begin()+i);
   }
  }
+
+ bool curr_present=false;
+ for(size_t i=0;i<Trackers.size();i++)
+ {
+  if(Trackers[i].first == ComponentControlName)
+  {
+   curr_present=true;
+   break;
+  }
+ }
+
+ if(!curr_present)
+  Trackers.push_back(pair<string,bool>(ComponentControlName,true));
 }
 
 // -----------------------------
@@ -537,6 +550,7 @@ for(size_t k=0;k<Trackers.size();k++)
 
   Env_Calculate(name.c_str());
 }
+
 }
 
 // UEngineMonitorForm->EngineMonitorFrame->Step1Click(Sender);
