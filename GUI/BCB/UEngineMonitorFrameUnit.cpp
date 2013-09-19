@@ -414,6 +414,8 @@ void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
 
 void __fastcall TUEngineMonitorFrame::Step1Click(TObject *Sender)
 {
+ for(size_t i=0;i<GetNumChannels();i++)
+  SetServerTimeStamp(i,GetTickCount());
  TimerTimer(Sender);
 }
 //---------------------------------------------------------------------------
