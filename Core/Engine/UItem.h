@@ -233,6 +233,9 @@ virtual bool Connect(UEPtr<UConnector> c, int i_index, int c_index=-1);
 // Разрывает связь выхода этого объекта с коннектором 'c'
 virtual void Disconnect(UEPtr<UConnector> c);
 
+// Разрывает связь выхода этого объекта с коннектором 'c' по индексу
+virtual void Disconnect(UEPtr<UConnector> c, int i_index, int c_index);
+
 // Возвращает текущее число соединений для заданного выхода.
 int GetNumAConnectors(int index) const;
 

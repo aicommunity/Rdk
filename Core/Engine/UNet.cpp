@@ -310,7 +310,7 @@ bool UNet::BreakLink(const ULinkT<T> &link)
   if(!pitem || !pconnector)
    return false;
 
-  pitem->Disconnect(pconnector);
+  pitem->Disconnect(pconnector, link.Item.Index,connector.Index);
  }
 
  return true;
@@ -336,7 +336,7 @@ bool UNet::BreakLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
  if(!pitem || !pconnector)
   return false;
 
- pitem->Disconnect(pconnector);
+ pitem->Disconnect(pconnector, item.Index, connector.Index);
 
  return true;
 }
@@ -364,7 +364,7 @@ bool UNet::BreakLink(const NameT &itemname, int item_index,
  else
   connector=dynamic_pointer_cast<UConnector>(GetComponentL(connectorname));
 
- item->Disconnect(connector);
+ item->Disconnect(connector, item_index, connector_index);
 
  return true;
 }
@@ -414,6 +414,25 @@ void UNet::BreakLinks(void)
  if(dynamic_cast<UConnector* const>(this))
   ((UConnector* const)this)->DisconnectAllItems();
 }
+
+// Разрывает связь ко входу connector_index коннектора 'connectorid'
+void UNet::BreakConnectorLink(const NameT &connectorname, int connector_index)
+{
+ UEPtr<UConnector> connector;
+ if(connectorname.size() == 0)
+  connector=this;
+ else
+  connector=dynamic_pointer_cast<UConnector>(GetComponentL(connectorname));
+
+ const UCItem &item = connector->GetCItem(connector_index);
+// item.Item->Disconnect(connector);
+// std::string item_name;
+// item.Item->GetLongName(this,item_name);
+// BreakLink(
+ item.Item->Disconnect(connector,item.Index, connector_index);
+// connector->DisconnectFromIndex(connector_index);
+}
+
 
 // Проверяет, существует ли заданная связь
 bool UNet::CheckLink(const ULongId &item_id, int item_index, const ULongId &conn_id, int conn_index)

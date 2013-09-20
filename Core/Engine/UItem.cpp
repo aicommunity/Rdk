@@ -503,13 +503,56 @@ void UItem::Disconnect(UEPtr<UConnector> c)
    AssociatedConnectors[i].Del(index);
 //   NumAConnectors[i]=AssociatedConnectors[i].GetSize();
 /*   if(NumAConnectors[i]>0)
-    PAssociatedConnectors[i]=&AssociatedConnectors[i][0];
+	PAssociatedConnectors[i]=&AssociatedConnectors[i][0];
    else
-    PAssociatedConnectors[i]=0;
+	PAssociatedConnectors[i]=0;
   */
    index=AssociatedConnectors[i].Find(c,index);
   }
  }
+}
+
+// Разрывает связь выхода этого объекта с коннектором 'c' по индексу
+void UItem::Disconnect(UEPtr<UConnector> c, int i_index, int c_index)
+{
+ Build();
+
+ if(c)
+  c->DisconnectFromItem(this);
+
+// for(int i=0;i<AssociatedConnectors.GetSize();i++)
+ int i=i_index;
+ if(i<AssociatedConnectors.GetSize())
+ {
+  int index=AssociatedConnectors[i].Find(c);
+  while(index>=0)
+  {
+   AssociatedConnectors[i].Del(index);
+//   NumAConnectors[i]=AssociatedConnectors[i].GetSize();
+/*   if(NumAConnectors[i]>0)
+	PAssociatedConnectors[i]=&AssociatedConnectors[i][0];
+   else
+	PAssociatedConnectors[i]=0;
+  */
+   index=AssociatedConnectors[i].Find(c,index);
+  }
+ }
+
+/*
+ Build();
+
+// for(int i=0;i<AssociatedConnectors.GetSize();i++)
+// {
+  if(i_index<AssociatedConnectors.GetSize() && c_index < AssociatedConnectors[i_index].GetSize())
+  {
+   if(c)
+    c->DisconnectFromIndex(c_index);
+
+   AssociatedConnectors[i_index].Del(c_index);
+  }
+// }
+
+*/
 }
 // ----------------------
 

@@ -140,6 +140,9 @@ virtual bool BreakLinks(const ULinksList &linkslist);
 // Разрывает все внутренние связи сети.
 virtual void BreakLinks(void);
 
+// Разрывает связь ко входу connector_index коннектора 'connectorid'
+virtual void BreakConnectorLink(const NameT &connectorname, int connector_index);
+
 // Проверяет, существует ли заданная связь
 template<typename T>
 bool CheckLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector);
