@@ -266,6 +266,63 @@ virtual std::string CreateLogMessage(void) const;
 
 };
 
+// Исключения, связанные с обработкой возвращаемых значений методов
+struct EFunctionReturnFalse: public EError
+{
+// Имя файла
+std::string FileName;
+
+// Имя функции в которой произошла ошибка
+std::string FunctionName;
+
+// Строка в исходнике
+int Line;
+
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EFunctionReturnFalse(const std::string &file_name, const std::string &function_name, int line);
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+virtual std::string CreateLogMessage(void) const;
+// --------------------------
+};
+
+// Исключения, связанные с обработкой возвращаемых значений методов
+struct EFunctionReturnError: public EError
+{
+// Имя файла
+std::string FileName;
+
+// Имя функции в которой произошла ошибка
+std::string FunctionName;
+
+// Строка в исходнике
+int Line;
+
+// Код ошибки
+int Code;
+
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EFunctionReturnError(const std::string &file_name, const std::string &function_name, int line, int code);
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+virtual std::string CreateLogMessage(void) const;
+// --------------------------
+};
+
+
+
 }
 
 #endif

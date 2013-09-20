@@ -271,7 +271,7 @@ int UEngine::Storage_GetNumClasses(void)
 {
  try
  {
-     return Storage->GetNumClasses();
+  return Storage->GetNumClasses();
  }
  catch (UException &exception)
  {
@@ -2772,7 +2772,8 @@ int UEngine::Model_LoadComponent(const char *stringid, const char* buffer)
   else
   {
    if(XmlStorage.GetNodeAttribute("ModelName") != Environment->GetModel()->GetName())
-    return -10;
+	throw EErrorEngineModelNameDontMatch(XmlStorage.GetNodeAttribute("ModelName"), Environment->GetModel()->GetName());
+	//return -10;
 
    UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
 
@@ -2829,7 +2830,8 @@ int UEngine::Model_LoadComponentProperties(const char *stringid, const char* buf
 
   XmlStorage.Load(buffer,"SaveProperties");
   if(XmlStorage.GetNodeAttribute("ModelName") != Environment->GetModel()->GetName())
-   return -10;
+	throw EErrorEngineModelNameDontMatch(XmlStorage.GetNodeAttribute("ModelName"), Environment->GetModel()->GetName());
+//   return -10;
 
   XmlStorage.SelectNode(0);
 
@@ -3052,7 +3054,6 @@ long long UEngine::Model_GetInterstepsInterval(const char *stringid) const
 // Скрытые методы управления средой
 // --------------------------
 // Возвращает свойства компонента по идентификатору
-// Память для buffer должна быть выделена!
 bool UEngine::Model_GetComponentProperties(RDK::UContainer* cont, RDK::USerStorageXML *serstorage, unsigned int type_mask)
 {
  try
@@ -3359,7 +3360,7 @@ int UEngine::Model_GetComponentPersonalLinks(RDK::UNet* cont, RDK::USerStorageXM
 
 // Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния в xml
-int UEngine::Model_SaveComponent(RDK::UNet* cont, RDK::USerStorageXML *serstorage, bool links, unsigned int params_type_mask)
+bool UEngine::Model_SaveComponent(RDK::UNet* cont, RDK::USerStorageXML *serstorage, bool links, unsigned int params_type_mask)
 {
  try
  {
@@ -3401,7 +3402,7 @@ int UEngine::Model_SaveComponent(RDK::UNet* cont, RDK::USerStorageXML *serstorag
 
 // Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния из xml
-int UEngine::Model_LoadComponent(RDK::UNet* cont, RDK::USerStorageXML *serstorage, bool links)
+bool UEngine::Model_LoadComponent(RDK::UNet* cont, RDK::USerStorageXML *serstorage, bool links)
 {
  try
  {
@@ -3474,7 +3475,7 @@ int UEngine::Model_LoadComponent(RDK::UNet* cont, RDK::USerStorageXML *serstorag
 }
 
 // Сохраняет все свойства компонента и его дочерних компонент в xml
-int UEngine::Model_SaveComponentProperties(RDK::UNet* cont, RDK::USerStorageXML *serstorage, unsigned int type_mask)
+bool UEngine::Model_SaveComponentProperties(RDK::UNet* cont, RDK::USerStorageXML *serstorage, unsigned int type_mask)
 {
  try
  {
@@ -3507,7 +3508,7 @@ int UEngine::Model_SaveComponentProperties(RDK::UNet* cont, RDK::USerStorageXML 
 }
 
 // Загружает все свойства компонента и его дочерних компонент из xml
-int UEngine::Model_LoadComponentProperties(RDK::UNet* cont, RDK::USerStorageXML *serstorage)
+bool UEngine::Model_LoadComponentProperties(RDK::UNet* cont, RDK::USerStorageXML *serstorage)
 {
  try
  {
@@ -3552,7 +3553,7 @@ int UEngine::Model_LoadComponentProperties(RDK::UNet* cont, RDK::USerStorageXML 
 
 // Сохраняет внутренние данные компонента, и его _непосредственных_ дочерних компонент, исключая
 // переменные состояния в xml
-int UEngine::Model_SaveComponentDrawInfo(RDK::UNet* cont, RDK::USerStorageXML *serstorage)
+bool UEngine::Model_SaveComponentDrawInfo(RDK::UNet* cont, RDK::USerStorageXML *serstorage)
 {
  try
  {

@@ -340,6 +340,51 @@ std::string ESystemException::CreateLogMessage(void) const
 }
 // --------------------------
 
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EFunctionReturnFalse::EFunctionReturnFalse(const std::string &file_name, const std::string &function_name, int line)
+ : FileName(file_name), FunctionName(function_name), Line(line)
+{
+
+}
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+std::string EFunctionReturnFalse::CreateLogMessage(void) const
+{
+ return EError::CreateLogMessage()+std::string(" File=")+FileName+
+			std::string(" Function=")+FunctionName+
+			std::string(" Line=")+sntoa(Line);
+}
+// --------------------------
+
+
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EFunctionReturnError::EFunctionReturnError(const std::string &file_name, const std::string &function_name, int line, int code)
+ : FileName(file_name), FunctionName(function_name), Line(line), Code(code)
+{
+
+}
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+std::string EFunctionReturnError::CreateLogMessage(void) const
+{
+ return EError::CreateLogMessage()+std::string(" File=")+FileName+
+			std::string(" Function=")+FunctionName+
+			std::string(" Line=")+sntoa(Line)+
+			std::string(" Code=")+sntoa(Code);
+}
+// --------------------------
 }
 #endif
 

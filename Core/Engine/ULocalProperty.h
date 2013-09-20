@@ -204,21 +204,50 @@ UCLProperty(const string &name, OwnerT * const owner, typename UCProperty<T,Owne
 { reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); };
 // -----------------------------
 
+public: // Исключения
+// Выход за границы массива C (container) property
+struct EPropertyRangeError: public EPropertyError
+{
+ int MinValue, MaxValue, ErrorValue;
+public:
+EPropertyRangeError(const std::string &owner_name, const std::string &property_name,
+	 int min_value, int max_value, int error_value)
+: EPropertyError(owner_name, property_name),
+  MinValue(min_value), MaxValue(max_value), ErrorValue(error_value) {};
+
+
+// Формирует строку лога об исключении
+virtual std::string CreateLogMessage(void) const
+{
+ return EPropertyError::CreateLogMessage()+std::string(" MinValue=")+
+  sntoa(MinValue)+std::string(" MaxValue=")+sntoa(MaxValue)+
+  std::string(" ErrorValue=")+sntoa(ErrorValue);
+}
+};
+
+
 // -----------------------------
 // Операторы доступа
 // -----------------------------
 // Чтение элемента контейнера
 const typename UCProperty<T,OwnerT>::TV& operator () (int i) const
-{ return this->v[i]; };
+{
+ if(i<0 || i>=this->v.size())
+  throw EPropertyRangeError(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName(),
+	0,int(this->v.size()),i);
+
+ return this->v[i];
+};
 
 // Запись элемента контейнера
 bool operator () (int i, const typename UCProperty<T,OwnerT>::TV &value)
 {
  if(UVProperty<T,OwnerT>::VSetterR && !(this->Owner->*(UVProperty<T,OwnerT>::VSetterR)(value)))
-  return false;
+  throw EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
 
- if(i<0 || i>this->v.size())
-  return false;
+ if(i<0 || i>=this->v.size())
+  throw EPropertyRangeError(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName(),
+	0,int(this->v.size()),i);
 
  this->v[i]=value;
 

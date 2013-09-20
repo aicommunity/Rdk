@@ -260,7 +260,9 @@ UPropertyInputCBase(const string &name, OwnerT * const owner, int min_range, int
 void const * GetPointer(int index) const
 {
  if(int(this->v.size())<=index-this->MinRange)
-  return 0;
+//  return 0;
+  throw EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
+	this->MinRange,int(this->v.size()+this->MinRange),index);
  return this->v[index-this->MinRange];
 }
 
@@ -275,11 +277,21 @@ bool SetPointer(int index, void* value)
 
 T* operator [] (int i)
 {
+ if(int(this->v.size())<=i-this->MinRange)
+//  return 0;
+  throw EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
+	this->MinRange,int(this->v.size()+this->MinRange),i);
+
  return (this->v[i])?this->v[i]:&Local[i];
 }
 
 const T* operator [] (int i) const
 {
+ if(int(this->v.size())<=i-this->MinRange)
+//  return 0;
+  throw EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
+	this->MinRange,int(this->v.size()+this->MinRange),i);
+
  return (this->v[i])?this->v[i]:&Local[i];
 }
 // --------------------------
@@ -460,21 +472,37 @@ UPropertyOutputCBase(const string &name, OwnerT * const owner, int min_range, in
 // --------------------------
 T& Value(int i)
 {
+ if(int(this->v.size())<=i)
+  throw EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
+	0,int(this->v.size()),i);
+
  return this->v[i];
 }
 
 const T& Value(int i) const
 {
+ if(int(this->v.size())<=i)
+  throw EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
+	0,int(this->v.size()),i);
+
  return this->v[i];
 }
 
 T& operator [] (int i)
 {
+ if(int(this->v.size())<=i)
+  throw EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
+	0,int(this->v.size()),i);
+
  return this->v[i];
 }
 
 const T& operator [] (int i) const
 {
+ if(int(this->v.size())<=i)
+  throw EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
+	0,int(this->v.size()),i);
+
  return this->v[i];
 }
 // --------------------------

@@ -873,21 +873,21 @@ virtual int Model_GetComponentPersonalLinks(RDK::UNet* cont, RDK::USerStorageXML
 
 // Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния в xml
-virtual int Model_SaveComponent(RDK::UNet* cont, RDK::USerStorageXML *serstorage, bool links, unsigned int params_type_mask);
+virtual bool Model_SaveComponent(RDK::UNet* cont, RDK::USerStorageXML *serstorage, bool links, unsigned int params_type_mask);
 
 // Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния из xml
-virtual int Model_LoadComponent(RDK::UNet* cont, RDK::USerStorageXML *serstorage, bool links);
+virtual bool Model_LoadComponent(RDK::UNet* cont, RDK::USerStorageXML *serstorage, bool links);
 
 // Сохраняет все свойства компонента и его дочерних компонент в xml
-virtual int Model_SaveComponentProperties(RDK::UNet* cont, RDK::USerStorageXML *serstorage, unsigned int type_mask);
+virtual bool Model_SaveComponentProperties(RDK::UNet* cont, RDK::USerStorageXML *serstorage, unsigned int type_mask);
 
 // Загружает все свойства компонента и его дочерних компонент из xml
-virtual int Model_LoadComponentProperties(RDK::UNet* cont, RDK::USerStorageXML *serstorage);
+virtual bool Model_LoadComponentProperties(RDK::UNet* cont, RDK::USerStorageXML *serstorage);
 
 // Сохраняет внутренние данные компонента, и его _непосредственных_ дочерних компонент, исключая
 // переменные состояния в xml
-virtual int Model_SaveComponentDrawInfo(RDK::UNet* cont, RDK::USerStorageXML *serstorage);
+virtual bool Model_SaveComponentDrawInfo(RDK::UNet* cont, RDK::USerStorageXML *serstorage);
 // --------------------------
 
 // --------------------------
@@ -920,6 +920,91 @@ virtual bool AReset(void);
 // Выполняет расчет этого объекта
 virtual bool ACalculate(void);
 // --------------------------
+
+public: // Исключения
+// Общая ошибка движка
+struct EErrorEngine: public EError
+{
+protected: // Данные исключения
+int EngineIndex;
+
+public:
+EErrorEngine(void)//int engine_index)
+: EError() /*EngineIndex(engine_index) */{};
+/*
+// Формирует строку лога об исключении
+virtual std::string CreateLogMessage(void) const
+{
+ return EError::CreateLogMessage()+std::string(" EngineIndex=")+sntoa(EngineIndex);
+} */
+};
+
+// Имя модели не совпадает с ожидаемым
+struct EErrorEngineModelNameDontMatch: public EErrorEngine
+{
+protected: // Данные исключения
+/// Полученное имя
+std::string GotModelName;
+
+/// Ожидаемое имя
+std::string ExpectedModelName;
+
+public:
+EErrorEngineModelNameDontMatch(const std::string &got_name, const std::string &expected_name)
+: EErrorEngine(), GotModelName(got_name), ExpectedModelName(expected_name) {};
+
+// Формирует строку лога об исключении
+virtual std::string CreateLogMessage(void) const
+{
+ return EErrorEngine::CreateLogMessage()+std::string(" GotModelName=")+GotModelName+
+ 				std::string(" ExpectedModelName=")+ExpectedModelName;
+}
+};
+/*
+// Тип класса компонента не может быть приведен к требуемому
+struct EErrorEngineIncompatibleCast: public EErrorEngine
+{
+protected: // Данные исключения
+/// Полученное имя
+std::string GotModelName;
+
+/// Ожидаемое имя
+std::string ExpectedModelName;
+
+public:
+EErrorEngineModelNameDontMatch(const std::string &got_name, const std::string &expected_name)
+: EErrorEngine(), GotModelName(got_name), ExpectedModelName(expected_name) {};
+
+// Формирует строку лога об исключении
+virtual std::string CreateLogMessage(void) const
+{
+ return EErrorEngine::CreateLogMessage()+std::string(" GotModelName=")+GotModelName+
+				std::string(" ExpectedModelName=")+ExpectedModelName;
+}
+};  */
+/*
+// Имя модели не совпадает с ожидаемым
+struct EErrorEngineModelNameDontMatch: public EErrorEngine
+{
+protected: // Данные исключения
+/// Полученное имя
+std::string GotModelName;
+
+/// Ожидаемое имя
+std::string ExpectedModelName;
+
+public:
+EErrorEngineModelNameDontMatch(const std::string &got_name, const std::string &expected_name)
+: EErrorEngine(), GotModelName(got_name), ExpectedModelName(expected_name) {};
+
+// Формирует строку лога об исключении
+virtual std::string CreateLogMessage(void) const
+{
+ return EErrorEngine::CreateLogMessage()+std::string(" GotModelName=")+GotModelName+
+ 				std::string(" ExpectedModelName=")+ExpectedModelName;
+}
+};
+    */
 };
 
 // Возвращает ссылку на данные свойства компонента
