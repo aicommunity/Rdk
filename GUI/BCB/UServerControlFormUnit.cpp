@@ -951,7 +951,17 @@ void __fastcall TUServerControlForm::FormDestroy(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TUServerControlForm::ServerStartButtonClick(TObject *Sender)
 {
+ try{
  UHttpServerFrame->ServerListenOn();
+ }
+ catch(EIdSocketError &ex)
+ {
+
+ }
+ catch(EIdCouldNotBindSocket &ex)
+ {
+
+ }
 }
 //---------------------------------------------------------------------------
 void __fastcall TUServerControlForm::ServerStopButtonClick(TObject *Sender)
