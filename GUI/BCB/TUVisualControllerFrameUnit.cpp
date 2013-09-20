@@ -4,7 +4,7 @@
 #pragma hdrstop
 
 #include "TUVisualControllerFrameUnit.h"
-#include "rdk_initdll.h"
+#include "rdk_cpp_initdll.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
@@ -38,7 +38,14 @@ __fastcall TUVisualControllerFrame::~TUVisualControllerFrame(void)
 // Метод, вызываемый перед сбросом модели
 void TUVisualControllerFrame::BeforeReset(void)
 {
- ABeforeReset();
+ try
+ {
+  ABeforeReset();
+ }
+ catch (RDK::UException &exception)
+ {
+  GetEngine()->ProcessException(exception);
+ }
 }
 
 void TUVisualControllerFrame::ABeforeReset(void)
@@ -49,8 +56,15 @@ void TUVisualControllerFrame::ABeforeReset(void)
 // Метод, вызываемый после сброса модели
 void TUVisualControllerFrame::AfterReset(void)
 {
- LastUpdateTime=0;
- AAfterReset();
+ try
+ {
+  LastUpdateTime=0;
+  AAfterReset();
+ }
+ catch (RDK::UException &exception)
+ {
+  GetEngine()->ProcessException(exception);
+ }
 }
 
 void TUVisualControllerFrame::AAfterReset(void)
@@ -61,7 +75,14 @@ void TUVisualControllerFrame::AAfterReset(void)
 // Метод, вызываемый перед шагом расчета
 void TUVisualControllerFrame::BeforeCalculate(void)
 {
- ABeforeCalculate();
+ try
+ {
+  ABeforeCalculate();
+ }
+ catch (RDK::UException &exception)
+ {
+  GetEngine()->ProcessException(exception);
+ }
 }
 
 void TUVisualControllerFrame::ABeforeCalculate(void)
@@ -71,7 +92,14 @@ void TUVisualControllerFrame::ABeforeCalculate(void)
 // Метод, вызываемый после шага расчета
 void TUVisualControllerFrame::AfterCalculate(void)
 {
- AAfterCalculate();
+ try
+ {
+  AAfterCalculate();
+ }
+ catch (RDK::UException &exception)
+ {
+  GetEngine()->ProcessException(exception);
+ }
 }
 
 void TUVisualControllerFrame::AAfterCalculate(void)
@@ -81,6 +109,8 @@ void TUVisualControllerFrame::AAfterCalculate(void)
 // Обновление интерфейса
 void TUVisualControllerFrame::UpdateInterface(bool force_update)
 {
+ try
+ {
  if(!force_update)
  {
   UpdateControlState();
@@ -108,9 +138,12 @@ void TUVisualControllerFrame::UpdateInterface(bool force_update)
  if(!Model_Check())
   return;
  UpdateInterfaceFlag=true;
- try
- {
   AUpdateInterface();
+ }
+ catch (RDK::UException &exception)
+ {
+  GetEngine()->ProcessException(exception);
+  UpdateInterfaceFlag=false;
  }
  catch(...)
  {
@@ -133,6 +166,8 @@ std::string TUVisualControllerFrame::GetName(void)
 // Сохраняет параметры интерфейса в xml
 void TUVisualControllerFrame::SaveParameters(RDK::USerStorageXML &xml)
 {
+ try
+ {
  xml.SelectNodeForce(AnsiString(Owner->Name).c_str());
  xml.SelectNodeForce(GetName());
 // xml.WriteString("FrameTypeName",AnsiString(ClassName()).c_str());
@@ -142,6 +177,11 @@ void TUVisualControllerFrame::SaveParameters(RDK::USerStorageXML &xml)
 
  xml.SelectUp();
  xml.SelectUp();
+ }
+ catch (RDK::UException &exception)
+ {
+  GetEngine()->ProcessException(exception);
+ }
 }
 
 void TUVisualControllerFrame::ASaveParameters(RDK::USerStorageXML &xml)
@@ -152,6 +192,8 @@ void TUVisualControllerFrame::ASaveParameters(RDK::USerStorageXML &xml)
 // Загружает параметры интерфейса из xml
 void TUVisualControllerFrame::LoadParameters(RDK::USerStorageXML &xml)
 {
+ try
+ {
  xml.SelectNodeForce(AnsiString(Owner->Name).c_str());
  xml.SelectNodeForce(GetName());
  ComponentControlName=xml.ReadString("ComponentControlName","");
@@ -159,6 +201,11 @@ void TUVisualControllerFrame::LoadParameters(RDK::USerStorageXML &xml)
  ALoadParameters(xml);
  xml.SelectUp();
  xml.SelectUp();
+ }
+ catch (RDK::UException &exception)
+ {
+  GetEngine()->ProcessException(exception);
+ }
 }
 
 void TUVisualControllerFrame::ALoadParameters(RDK::USerStorageXML &xml)

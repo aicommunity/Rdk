@@ -4,7 +4,7 @@
 #pragma hdrstop
 
 #include "TUVisualControllerFormUnit.h"
-#include "rdk_initdll.h"
+#include "rdk_cpp_initdll.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
@@ -89,7 +89,14 @@ __fastcall TUVisualControllerForm::~TUVisualControllerForm(void)
 // Метод, вызываемый перед сбросом модели
 void TUVisualControllerForm::BeforeReset(void)
 {
- ABeforeReset();
+ try
+ {
+  ABeforeReset();
+ }
+ catch (RDK::UException &exception)
+ {
+  GetEngine()->ProcessException(exception);
+ }
 }
 
 void TUVisualControllerForm::ABeforeReset(void)
@@ -100,9 +107,16 @@ void TUVisualControllerForm::ABeforeReset(void)
 // Метод, вызываемый после сброса модели
 void TUVisualControllerForm::AfterReset(void)
 {
- LastUpdateTime=0;
+ try
+ {
+  LastUpdateTime=0;
 
- AAfterReset();
+  AAfterReset();
+ }
+ catch (RDK::UException &exception)
+ {
+  GetEngine()->ProcessException(exception);
+ }
 }
 
 void TUVisualControllerForm::AAfterReset(void)
@@ -113,7 +127,14 @@ void TUVisualControllerForm::AAfterReset(void)
 // Метод, вызываемый перед шагом расчета
 void TUVisualControllerForm::BeforeCalculate(void)
 {
- ABeforeCalculate();
+ try
+ {
+  ABeforeCalculate();
+ }
+ catch (RDK::UException &exception)
+ {
+  GetEngine()->ProcessException(exception);
+ }
 }
 
 void TUVisualControllerForm::ABeforeCalculate(void)
@@ -123,7 +144,14 @@ void TUVisualControllerForm::ABeforeCalculate(void)
 // Метод, вызываемый после шага расчета
 void TUVisualControllerForm::AfterCalculate(void)
 {
- AAfterCalculate();
+ try
+ {
+  AAfterCalculate();
+ }
+ catch (RDK::UException &exception)
+ {
+  GetEngine()->ProcessException(exception);
+ }
 }
 
 void TUVisualControllerForm::AAfterCalculate(void)
@@ -133,6 +161,8 @@ void TUVisualControllerForm::AAfterCalculate(void)
 // Обновление интерфейса
 void TUVisualControllerForm::UpdateInterface(bool force_update)
 {
+ try
+ {
  if(!force_update)
  {
   if((!AlwaysUpdateFlag && (!Visible || (Parent && !Parent->Visible))) || (UpdateInterval<0 && CalculationModeFlag))
@@ -167,9 +197,12 @@ void TUVisualControllerForm::UpdateInterface(bool force_update)
  if(!Model_Check())
   return;
  UpdateInterfaceFlag=true;
- try
- {
   AUpdateInterface();
+ }
+ catch (RDK::UException &exception)
+ {
+  GetEngine()->ProcessException(exception);
+  UpdateInterfaceFlag=false;
  }
  catch(...)
  {
@@ -192,6 +225,8 @@ std::string TUVisualControllerForm::GetName(void)
 // Сохраняет параметры интерфейса в xml
 void TUVisualControllerForm::SaveParameters(RDK::USerStorageXML &xml)
 {
+ try
+ {
  TTabSheet *tab=dynamic_cast<TTabSheet*>(Parent);
  if(tab)
   xml.SelectNodeForce(AnsiString(tab->PageControl->Owner->Name).c_str());
@@ -204,6 +239,12 @@ void TUVisualControllerForm::SaveParameters(RDK::USerStorageXML &xml)
   xml.SelectUp();
 
  xml.SelectUp();
+ }
+ catch (RDK::UException &exception)
+ {
+  GetEngine()->ProcessException(exception);
+ }
+
 }
 
 void TUVisualControllerForm::ASaveParameters(RDK::USerStorageXML &xml)
@@ -215,6 +256,8 @@ void TUVisualControllerForm::ASaveParameters(RDK::USerStorageXML &xml)
 // Загружает параметры интерфейса из xml
 void TUVisualControllerForm::LoadParameters(RDK::USerStorageXML &xml)
 {
+ try
+ {
  TTabSheet *tab=dynamic_cast<TTabSheet*>(Parent);
  if(tab)
   xml.SelectNodeForce(AnsiString(tab->PageControl->Owner->Name).c_str());
@@ -228,6 +271,11 @@ void TUVisualControllerForm::LoadParameters(RDK::USerStorageXML &xml)
   xml.SelectUp();
  xml.SelectUp();
  UpdateInterface();
+ }
+ catch (RDK::UException &exception)
+ {
+  GetEngine()->ProcessException(exception);
+ }
 }
 
 void TUVisualControllerForm::ALoadParameters(RDK::USerStorageXML &xml)
