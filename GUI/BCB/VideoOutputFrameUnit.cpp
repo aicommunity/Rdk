@@ -1409,19 +1409,28 @@ bool TVideoOutputFrame::InitByBmp(const RDK::UBitmap &bmp)
 // BmpSource=bmp;
 // BmpSource.SetColorModel(RDK::ubmRGB24);
 
- if(!DestroyCaptureThread())
-  return false;
-
- if(!CaptureThread)
+ if(CaptureThread && dynamic_cast<TVideoCaptureThreadBmp*>(CaptureThread))
  {
-  CaptureThread=new TVideoCaptureThreadBmp(this,false);
-  CaptureThread->SetChannelIndex(FrameIndex);
-  TVideoCaptureThreadBmp* thread=dynamic_cast<TVideoCaptureThreadBmp*>(CaptureThread);
-  if(thread)
+	long long time_stamp=0;
+	CaptureThread->WriteSourceSafe(bmp,time_stamp,false);
+	MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, 0);
+ }
+ else
+ {
+  if(!DestroyCaptureThread())
+   return false;
+
+  if(!CaptureThread)
   {
-   long long time_stamp=0;
-   thread->WriteSourceSafe(bmp,time_stamp,false);
-   MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, 0);
+   CaptureThread=new TVideoCaptureThreadBmp(this,false);
+   CaptureThread->SetChannelIndex(FrameIndex);
+   TVideoCaptureThreadBmp* thread=dynamic_cast<TVideoCaptureThreadBmp*>(CaptureThread);
+   if(thread)
+   {
+	long long time_stamp=0;
+	thread->WriteSourceSafe(bmp,time_stamp,false);
+	MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, 0);
+   }
   }
  }
  Mode=0;
@@ -2030,6 +2039,9 @@ void TVideoOutputFrame::ABeforeCalculate(void)
 	stamp>>sstamp;
 	TimeEdit->Text=sstamp.c_str();
 
+	TrackBar->Max=CaptureThread->GetNumBitmaps();
+	TrackBar->Position=CaptureThread->GetPosition();
+    TrackBar->UpdateControlState();
 	UpdateVideo();
   }
 
@@ -2157,6 +2169,7 @@ void TVideoOutputFrame::AAfterCalculate(void)
 void TVideoOutputFrame::AUpdateInterface(void)
 {
 // if(UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode() == 1)
+ if(UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode() != 0)
   if(CaptureThread)
   {
    long long time_stamp=0;

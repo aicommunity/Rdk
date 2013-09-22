@@ -51,7 +51,7 @@ void LoadFormPosition(RDK::USerStorageXML &xml, TForm *form)
  form->Height=xml.ReadInteger("Height",form->Height);
  form->Visible=xml.ReadBool("Visible",form->Visible);
  form->WindowState=xml.ReadInteger("WindowState",(int)form->WindowState);
- form->Repaint();
+// form->Repaint();
  xml.SelectUp();
 }
 // --------------------------
