@@ -26,31 +26,15 @@ namespace RDK{
 class UEngine: public UModule
 {
 public:
-// Создает новое хранилище
-//typedef RDK::UAContainerStorage* (*PCreateNewStorage)(void);
-
-// Создает новую среду
-//typedef RDK::UAContainerEnvironment* (*PCreateNewEnvironment)(void);
-
 // Прототип функции обратного вызова обработчика исключений
-typedef void (*PExceptionHandler)(void);
+//typedef void (*PExceptionHandler)(void);
 
 protected: // Параметры инициализации
-// Указатели на функции создания экземпляров хранилища и среды
-//PCreateNewStorage FuncCreateNewStorage;
-//PCreateNewEnvironment FuncCreateNewEnvironment;
-
 // Имя файла инициализации
 string OptionsFileName;
 
 // Имя файла описаний параметров классов
 string ClassesDescriptionFileName;
-
-// Имя секции выбора основной библиотеки
-//string MainLibrarySectionName;
-
-// Имя переменной основной библиотеки
-//string MainLibraryName;
 
 // Имя секции выбора библиотек компонент
 string ComponentLibrariesSectionName;
@@ -89,14 +73,14 @@ protected: // Обработка исключений
 //mutable vector<USharedPtr<UException> > ExceptionsLog;
 
 // Текущее число исключений системы
-mutable int CurrentExceptionsLogSize;
+//mutable int CurrentExceptionsLogSize;
 
 // Максимальное число хранимых исключений
 // Если 0, то неограниченно
-int MaxExceptionsLogSize;
+//int MaxExceptionsLogSize;
 
 // Внешний обработчик исключений
-PExceptionHandler ExceptionHandler;
+//PExceptionHandler ExceptionHandler;
 
 protected: // Временные переменные
 // Список загруженных библиотек
@@ -111,13 +95,13 @@ RDK::USerStorageXML XmlStorage;
 mutable string TempString;
 
 // Временное хранилище буфера для лога
-mutable string TempLogString;
+//mutable string TempLogString;
 
 // Временное хранилище имени компонента
 mutable string CompName;
 
 // Индекс последнего считанного символа лога исключений
-int LastReadExceptionLogIndex;
+//int LastReadExceptionLogIndex;
 
 UBitmap TempBmp;
 
@@ -784,8 +768,11 @@ const char* GetLog(void) const;
 const char* GetUnreadLog(void);
 
 // Управление функцией-обработчиком исключений
-PExceptionHandler GetExceptionHandler(void) const;
-bool SetExceptionHandler(PExceptionHandler value);
+UEnvironment::PExceptionHandler GetExceptionHandler(void) const;
+bool SetExceptionHandler(UEnvironment::PExceptionHandler value);
+
+/// Очищает лог
+void ClearLog(void);
 // --------------------------
 
 // --------------------------

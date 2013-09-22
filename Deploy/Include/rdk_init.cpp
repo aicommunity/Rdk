@@ -1595,14 +1595,14 @@ void* RDK_CALL MEngine_GetExceptionHandler(int engine_index)
 
 bool RDK_CALL Engine_SetExceptionHandler(void* value)
 {
- return PEngine->SetExceptionHandler(reinterpret_cast<RDK::UEngine::PExceptionHandler>(value));
+ return PEngine->SetExceptionHandler(reinterpret_cast<RDK::UEnvironment::PExceptionHandler>(value));
 }
 
 bool RDK_CALL MEngine_SetExceptionHandler(int engine_index, void* value)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return false;
- return DllManager.EngineList[engine_index]->SetExceptionHandler(reinterpret_cast<RDK::UEngine::PExceptionHandler>(value));
+ return DllManager.EngineList[engine_index]->SetExceptionHandler(reinterpret_cast<RDK::UEnvironment::PExceptionHandler>(value));
 }
 
 // Возвращает массив строк лога

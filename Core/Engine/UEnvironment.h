@@ -20,6 +20,10 @@ namespace RDK {
 
 class UEnvironment: virtual public UModule
 {
+public:
+// Прототип функции обратного вызова обработчика исключений
+typedef void (*PExceptionHandler)(void);
+
 protected: // Параметры
 // Индекс предарительно заданной модели обработки
 // 0 - Структура определяется извне
@@ -60,6 +64,21 @@ UTimeControl Time;
 // расчета реального времени (мс)
 double MaxModelDuration;
 
+// Внешний обработчик исключений
+PExceptionHandler ExceptionHandler;
+
+// Текущее число исключений системы
+mutable int CurrentExceptionsLogSize;
+
+// Максимальное число хранимых исключений
+// Если 0, то неограниченно
+int MaxExceptionsLogSize;
+
+// Индекс последнего считанного символа лога исключений
+int LastReadExceptionLogIndex;
+
+
+
 protected: // Контроллеры
 
 protected: // Данные графического интерфеса пользователя
@@ -73,6 +92,12 @@ protected: // Временные переменные
 long long StartupTime;
 
 long long /*StartProcTime,*/CurrentTime,LastDuration/*,LastSentTime*/, ProcEndTime, LastStepStartTime;
+
+// Временное хранилище буфера для лога
+mutable string TempLogString;
+
+// Временное хранилище строк
+mutable string TempString;
 
 public: // Public methods
 // --------------------------
@@ -206,6 +231,33 @@ virtual bool DestroyStructure(void);
 
 // Расчет модели в реальном времени
 virtual void RTCalculate(void);
+// --------------------------
+
+// --------------------------
+// Методы управления исключениями
+// --------------------------
+public:
+// Обрабатывает возникшее исключение
+virtual void ProcessException(UException &exception) const;
+
+// Максимальное число хранимых исключений
+// Если 0, то неограниченно
+int GetMaxExceptionsLogSize(void) const;
+void SetMaxExceptionsLogSize(int value);
+
+// Возвращает массив строк лога
+const char* GetLog(void) const;
+
+// Возвращает частичный массив строк лога с момента последнего считывания лога
+// этой функцией
+const char* GetUnreadLog(void);
+
+// Управление функцией-обработчиком исключений
+PExceptionHandler GetExceptionHandler(void) const;
+bool SetExceptionHandler(PExceptionHandler value);
+
+/// Очищает лог
+void ClearLog(void);
 // --------------------------
 
 // --------------------------

@@ -53,11 +53,11 @@ UEngine::UEngine(void)
  Runned=-1;
  Storage=0;
  Environment=0;
- CurrentExceptionsLogSize=0;
- ExceptionHandler=0;
+// CurrentExceptionsLogSize=0;
+// ExceptionHandler=0;
 
- LastReadExceptionLogIndex=-1;
- MaxExceptionsLogSize=1000;
+// LastReadExceptionLogIndex=-1;
+// MaxExceptionsLogSize=1000;
 }
 
 UEngine::~UEngine(void)
@@ -123,10 +123,6 @@ void UEngine::Init(void)
 
 bool UEngine::Init(UEPtr<UStorage> storage, UEPtr<UEnvironment> env)
 {
- LastReadExceptionLogIndex=-1;
- //ExceptionsLog.clear();
- CurrentExceptionsLogSize=0;
- TempLogString.clear();
 // if(!Options.LoadFromFile(OptionsFileName))
 // {
   if(!Default())
@@ -144,6 +140,7 @@ bool UEngine::Init(UEPtr<UStorage> storage, UEPtr<UEnvironment> env)
  Storage=storage;
  Environment=env;
 
+ Environment->ClearLog();
  CreateStorage();
 
  if(!Storage)
@@ -963,13 +960,13 @@ int UEngine::Env_Calculate(const char* stringid)
   }
 
   if(!Environment->Calculate())
-   return 1;
+   throw EFunctionReturnFalse(__FILE__,__FUNCTION__,__LINE__);
+   // return 1;
  }
  catch (RDK::UException &exception)
  {
   ProcessException(exception);
  }
-
 
  return 0;
 }
@@ -1010,7 +1007,8 @@ int UEngine::Env_Reset(const char* stringid)
   }
 
   if(!Environment->Reset())
-   return 1;
+   throw EFunctionReturnFalse(__FILE__,__FUNCTION__,__LINE__);
+//   return 1;
  }
  catch (RDK::UException &exception)
  {
@@ -1041,14 +1039,15 @@ int UEngine::Env_SetMinInterstepsInterval(long long value)
 {
  try
  {
-  if(Environment->SetMinInterstepsInterval(value))
-   return 0;
+  if(!Environment->SetMinInterstepsInterval(value))
+   throw EFunctionReturnFalse(__FILE__,__FUNCTION__,__LINE__);
+//   return -2000;
  }
  catch (RDK::UException &exception)
  {
   ProcessException(exception);
  }
- return -2000;
+ return 0;
 }
 
 /// Возвращает минимальный интервал времени между шагами расчета (мс)
@@ -1309,15 +1308,16 @@ int UEngine::Model_Destroy(void)
 {
  try
  {
-  if(Environment->DestroyModel())
-   return 0;
+  if(!Environment->DestroyModel())
+   throw EFunctionReturnFalse(__FILE__,__FUNCTION__,__LINE__);
+//   return -1;
  }
  catch (UException &exception)
  {
   ProcessException(exception);
  }
 
- return -1;
+ return 0;
 }
 
 // Создает новую модель по имени класса в хранилище
@@ -1326,15 +1326,16 @@ int UEngine::Model_Create(const char *classname)
 {
  try
  {
-  if(Environment->CreateModel(classname))
-   return 0;
+  if(!Environment->CreateModel(classname))
+   throw EFunctionReturnFalse(__FILE__,__FUNCTION__,__LINE__);
+//   return -1;
  }
  catch (UException &exception)
  {
   ProcessException(exception);
  }
 
- return -1;
+ return 0;
 }
 
 // Очищает модель
@@ -3071,7 +3072,15 @@ bool UEngine::Model_GetComponentProperties(RDK::UContainer* cont, RDK::USerStora
   {
    if(I->second.CheckMask(type_mask))
    {
-    cont->GetProperty(I->first,serstorage);
+	try
+	{
+	 cont->GetProperty(I->first,serstorage);
+	}
+	catch(UIProperty::EPropertyError &exception)
+	{
+	 ProcessException(exception);
+	}
+
     std::string paramname=I->first;//I->second.Property->GetName();
     if(serstorage->SelectNode(paramname))
     {
@@ -3128,17 +3137,24 @@ bool UEngine::Model_GetComponentPropertiesEx(RDK::UContainer* cont, RDK::USerSto
   {
    if(I->second.CheckMask(type_mask))
    {
-    cont->GetProperty(I->first,serstorage);
+	try
+	{
+	 cont->GetProperty(I->first,serstorage);
+	}
+	catch(UIProperty::EPropertyError &exception)
+	{
+	 ProcessException(exception);
+	}
 
-    std::string paramname=I->first;//I->second.Property->GetName();
+	std::string paramname=I->first;//I->second.Property->GetName();
     if(serstorage->SelectNode(paramname))
     {
      serstorage->SetNodeAttribute("PType",sntoa(I->second.Type));
      if(descr)
-     {
-      serstorage->SetNodeAttribute("Header",descr->GetDescription(paramname).Header);
+	 {
+	  serstorage->SetNodeAttribute("Header",descr->GetDescription(paramname).Header);
      }
-     serstorage->SelectUp();
+	 serstorage->SelectUp();
     }
    }
    ++I;
@@ -3171,7 +3187,14 @@ int UEngine::Model_SetComponentProperties(RDK::UContainer* cont, RDK::USerStorag
   J=props.end();
   while(I != J)
   {
-   cont->SetProperty(I->first,serstorage);
+   try
+   {
+	cont->SetProperty(I->first,serstorage);
+   }
+   catch(UIProperty::EPropertyError &exception)
+   {
+	ProcessException(exception);
+   }
    ++I;
   }
  }
@@ -3192,7 +3215,16 @@ void UEngine::Model_SetGlobalComponentPropertyValue(RDK::UContainer* cont, UId c
    return;
 
   if(cont->GetClass() == classid)
-   cont->SetPropertyValue(paramname,buffer);
+  {
+   try
+   {
+	cont->SetPropertyValue(paramname,buffer);
+   }
+   catch(UIProperty::EPropertyError &exception)
+   {
+	ProcessException(exception);
+   }
+  }
 
   for(int i=0;i<cont->GetNumComponents();i++)
   {
@@ -3215,7 +3247,18 @@ void UEngine::Model_SetGlobalOwnerComponentPropertyValue(RDK::UContainer* cont, 
    return;
 
   if(cont->GetClass() == classid && cont->GetOwner() && cont->GetOwner()->GetClass() == owner_classid)
-   cont->SetPropertyValue(paramname,buffer);
+  {
+  {
+   try
+   {
+    cont->SetPropertyValue(paramname,buffer);
+   }
+   catch(UIProperty::EPropertyError &exception)
+   {
+	ProcessException(exception);
+   }
+  }
+  }
 
   for(int i=0;i<cont->GetNumComponents();i++)
   {
@@ -3427,8 +3470,15 @@ bool UEngine::Model_LoadComponent(RDK::UNet* cont, RDK::USerStorageXML *serstora
   {
    if(serstorage->SelectNode(UVariable::GetPropertyTypeNameByType(mask)))
    {
-    if(Model_SetComponentProperties(cont, serstorage))
-     return false;
+	try
+	{
+	 if(Model_SetComponentProperties(cont, serstorage))
+	  return false;
+	}
+	catch(UException &exception)
+	{
+	 ProcessException(exception);
+    }
     serstorage->SelectUp();
    }
   }
@@ -3443,17 +3493,23 @@ bool UEngine::Model_LoadComponent(RDK::UNet* cont, RDK::USerStorageXML *serstora
    serstorage->SelectNode(i);
    std::string nodename=serstorage->GetNodeName();
    name=serstorage->GetNodeAttribute("Class");
-   id=Storage->FindClassId(name);
-   //id=RDK::atoi(serstorage->GetNodeAttribute("Class"));
-   UEPtr<UNet> newcont=dynamic_pointer_cast<UNet>(storage->TakeObject(id));
-   if(!newcont)
-    return false;
-   if(cont->AddComponent(static_pointer_cast<UContainer>(newcont)) == ForbiddenId)
-    return false;
+   try
+   {
+    id=Storage->FindClassId(name);
+	UEPtr<UNet> newcont=dynamic_pointer_cast<UNet>(storage->TakeObject(id));
+	if(!newcont)
+	 continue;
+	if(cont->AddComponent(static_pointer_cast<UContainer>(newcont)) == ForbiddenId)
+	 continue;
 
 //   if(!Model_LoadComponent(newcont,serstorage))
-   if(!Model_LoadComponent(newcont,serstorage,false))
-    return false;
+	if(!Model_LoadComponent(newcont,serstorage,false))
+	 return false;
+   }
+   catch(UException &exception)
+   {
+	ProcessException(exception);
+   }
    serstorage->SelectUp();
   }
   serstorage->SelectUp();
@@ -3462,7 +3518,7 @@ bool UEngine::Model_LoadComponent(RDK::UNet* cont, RDK::USerStorageXML *serstora
   {
    serstorage->SelectNode("Links");
    if(!Model_SetComponentInternalLinks(cont,serstorage,0))
-    return false;
+	return false;
    serstorage->SelectUp();
   }
  }
@@ -3492,8 +3548,15 @@ bool UEngine::Model_SaveComponentProperties(RDK::UNet* cont, RDK::USerStorageXML
   serstorage->AddNode("Components");
   for(int i=0;i<cont->GetNumComponents();i++)
   {
-   if(!Model_SaveComponentProperties(dynamic_pointer_cast<RDK::UNet>(cont->GetComponentByIndex(i)),serstorage,type_mask))
-    return false;
+   try
+   {
+	if(!Model_SaveComponentProperties(dynamic_pointer_cast<RDK::UNet>(cont->GetComponentByIndex(i)),serstorage,type_mask))
+	 return false;
+   }
+   catch (UException &exception)
+   {
+	ProcessException(exception);
+   }
   }
   serstorage->SelectUp();
 
@@ -3524,8 +3587,15 @@ bool UEngine::Model_LoadComponentProperties(RDK::UNet* cont, RDK::USerStorageXML
   {
    if(serstorage->SelectNode(UVariable::GetPropertyTypeNameByType(mask)))
    {
-    if(Model_SetComponentProperties(cont, serstorage))
-     return false;
+	try
+	{
+	 if(Model_SetComponentProperties(cont, serstorage))
+	  return false;
+	}
+	catch (UException &exception)
+	{
+	 ProcessException(exception);
+    }
     serstorage->SelectUp();
    }
   }
@@ -3534,11 +3604,17 @@ bool UEngine::Model_LoadComponentProperties(RDK::UNet* cont, RDK::USerStorageXML
   for(int i=0;i<cont->GetNumComponents();i++)
   {
    if(!serstorage->SelectNode(cont->GetComponentByIndex(i)->GetName()))
-    continue;
+	continue;
    std::string nodename=serstorage->GetNodeName();
-
-   if(!Model_LoadComponentProperties(dynamic_pointer_cast<RDK::UNet>(cont->GetComponentByIndex(i)),serstorage))
-    return false;
+   try
+   {
+	if(!Model_LoadComponentProperties(dynamic_pointer_cast<RDK::UNet>(cont->GetComponentByIndex(i)),serstorage))
+	 return false;
+   }
+   catch (UException &exception)
+   {
+	ProcessException(exception);
+   }
    serstorage->SelectUp();
   }
   serstorage->SelectUp();
@@ -3579,8 +3655,15 @@ bool UEngine::Model_SaveComponentDrawInfo(RDK::UNet* cont, RDK::USerStorageXML *
    XmlStorage.AddNode(cont->GetComponentByIndex(i)->GetName());
    serstorage->SetNodeAttribute("Class",Storage->FindClassName(cont->GetComponentByIndex(i)->GetClass()));
    XmlStorage.AddNode("Parameters");
-   if(!Model_GetComponentProperties(dynamic_pointer_cast<RDK::UNet>(cont->GetComponentByIndex(i)),serstorage,ptParameter|pgAny))
-    return false;
+   try
+   {
+	if(!Model_GetComponentProperties(dynamic_pointer_cast<RDK::UNet>(cont->GetComponentByIndex(i)),serstorage,ptParameter|pgAny))
+	 return false;
+   }
+   catch (UException &exception)
+   {
+	ProcessException(exception);
+   }
    XmlStorage.SelectUp();
    XmlStorage.SelectUp();
   }
@@ -4012,6 +4095,7 @@ void UEngine::Model_SetComponentBitmapInput(const char *stringid, int index, con
 // Обрабатывает возникшее исключение
 void UEngine::ProcessException(UException &exception) const
 {
+/*
 // if(!exception)
 //  throw exception;
 
@@ -4019,7 +4103,7 @@ void UEngine::ProcessException(UException &exception) const
 // ExceptionsLog.push_back(ptr);
 
  ++CurrentExceptionsLogSize;
- if(CurrentExceptionsLogSize/*ExceptionsLog.size()*/ > MaxExceptionsLogSize)
+ if(CurrentExceptionsLogSize > MaxExceptionsLogSize)
  {
 //  ExceptionsLog.erase(ExceptionsLog.begin());
   size_t i=TempLogString.find_first_of("\n");
@@ -4033,6 +4117,9 @@ void UEngine::ProcessException(UException &exception) const
 
  if(ExceptionHandler)
   ExceptionHandler();
+  */
+ if(Environment)
+  Environment->ProcessException(exception);
 }
 
 
@@ -4046,14 +4133,16 @@ void UEngine::ProcessException(UException &exception) const
 // Возвращает массив строк лога
 const char* UEngine::GetLog(void) const
 {
- return TempLogString.c_str();
+ return Environment->GetLog();
+// return TempLogString.c_str();
 }
 
 // Возвращает частичный массив строк лога с момента последнего считывания лога
 // этой функцией
 const char* UEngine::GetUnreadLog(void)
 {
- if(LastReadExceptionLogIndex<=0/* && TempLogString.size()*/)
+/*
+ if(LastReadExceptionLogIndex<=0)
  {
   LastReadExceptionLogIndex=TempLogString.size();
   return TempLogString.c_str();
@@ -4067,42 +4156,51 @@ const char* UEngine::GetUnreadLog(void)
  }
 
  TempString="";
- return TempString.c_str();
+ return TempString.c_str();  */
+ return Environment->GetUnreadLog();
 }
 
 // Управление функцией-обработчиком исключений
-UEngine::PExceptionHandler UEngine::GetExceptionHandler(void) const
+UEnvironment::PExceptionHandler UEngine::GetExceptionHandler(void) const
 {
- return ExceptionHandler;
+ return Environment->GetExceptionHandler();
+// return ExceptionHandler;
 }
 
-bool UEngine::SetExceptionHandler(PExceptionHandler value)
+bool UEngine::SetExceptionHandler(UEnvironment::PExceptionHandler value)
 {
+/*
  if(ExceptionHandler == value)
   return true;
 
  ExceptionHandler=value;
  return true;
+ */
+ return Environment->SetExceptionHandler(value);
 }
 
 // Максимальное число хранимых исключений
 // Если 0, то неограниченно
 int UEngine::GetMaxExceptionsLogSize(void) const
 {
- return MaxExceptionsLogSize;
+ return Environment->GetMaxExceptionsLogSize();
+// return MaxExceptionsLogSize;
 }
 
 void UEngine::SetMaxExceptionsLogSize(int value)
 {
+/*
  if(MaxExceptionsLogSize == value)
   return;
 
  MaxExceptionsLogSize=value;
- if(MaxExceptionsLogSize>0 && /*ExceptionsLog.size()*/CurrentExceptionsLogSize>MaxExceptionsLogSize)
+ if(MaxExceptionsLogSize>0 && CurrentExceptionsLogSize>MaxExceptionsLogSize)
  {
   //ExceptionsLog.erase(ExceptionsLog.begin(), ExceptionsLog.begin()+int(ExceptionsLog.size())-MaxExceptionsLogSize);
   CurrentExceptionsLogSize=MaxExceptionsLogSize;
  }
+ */
+ Environment->SetMaxExceptionsLogSize(value);
 }
 // --------------------------
 

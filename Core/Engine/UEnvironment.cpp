@@ -49,6 +49,12 @@ UEnvironment::UEnvironment(void)
  LastDuration=1;
  ProcEndTime=0;
  MinInterstepsInterval=0;
+
+ CurrentExceptionsLogSize=0;
+ ExceptionHandler=0;
+
+ LastReadExceptionLogIndex=-1;
+ MaxExceptionsLogSize=1000;
 }
 
 UEnvironment::~UEnvironment(void)
@@ -440,6 +446,114 @@ void UEnvironment::RTCalculate(void)
  ProcEndTime=GetCurrentStartupTime();
 
  return;
+}
+// --------------------------
+
+// --------------------------
+// Методы управления исключениями
+// --------------------------
+// Обрабатывает возникшее исключение
+void UEnvironment::ProcessException(UException &exception) const
+{
+// if(!exception)
+//  throw exception;
+
+// USharedPtr<UException> ptr=exception;
+// ExceptionsLog.push_back(ptr);
+
+ ++CurrentExceptionsLogSize;
+ if(CurrentExceptionsLogSize/*ExceptionsLog.size()*/ > MaxExceptionsLogSize)
+ {
+//  ExceptionsLog.erase(ExceptionsLog.begin());
+  size_t i=TempLogString.find_first_of("\n");
+  if(i != string::npos)
+  {
+   TempLogString.erase(0,i);
+  }
+ }
+ TempLogString+=exception.CreateLogMessage();
+ TempLogString+="\r\n";
+
+ if(ExceptionHandler)
+  ExceptionHandler();
+}
+
+
+// Возвращает массив зарегистрированных исключений
+/*const vector<USharedPtr<UException> > UEnvironment::GetExceptionsLog(void) const
+{
+ return ExceptionsLog;
+}*/
+
+
+// Возвращает массив строк лога
+const char* UEnvironment::GetLog(void) const
+{
+ return TempLogString.c_str();
+}
+
+// Возвращает частичный массив строк лога с момента последнего считывания лога
+// этой функцией
+const char* UEnvironment::GetUnreadLog(void)
+{
+ if(LastReadExceptionLogIndex<=0/* && TempLogString.size()*/)
+ {
+  LastReadExceptionLogIndex=TempLogString.size();
+  return TempLogString.c_str();
+ }
+
+ if(LastReadExceptionLogIndex<int(TempLogString.size()))
+ {
+  TempString=TempLogString.substr(LastReadExceptionLogIndex);
+  LastReadExceptionLogIndex=TempLogString.size();
+  return TempString.c_str();
+ }
+
+ TempString="";
+ return TempString.c_str();
+}
+
+// Управление функцией-обработчиком исключений
+UEnvironment::PExceptionHandler UEnvironment::GetExceptionHandler(void) const
+{
+ return ExceptionHandler;
+}
+
+bool UEnvironment::SetExceptionHandler(PExceptionHandler value)
+{
+ if(ExceptionHandler == value)
+  return true;
+
+ ExceptionHandler=value;
+ return true;
+}
+
+// Максимальное число хранимых исключений
+// Если 0, то неограниченно
+int UEnvironment::GetMaxExceptionsLogSize(void) const
+{
+ return MaxExceptionsLogSize;
+}
+
+void UEnvironment::SetMaxExceptionsLogSize(int value)
+{
+ if(MaxExceptionsLogSize == value)
+  return;
+
+ MaxExceptionsLogSize=value;
+ if(MaxExceptionsLogSize>0 && /*ExceptionsLog.size()*/CurrentExceptionsLogSize>MaxExceptionsLogSize)
+ {
+  //ExceptionsLog.erase(ExceptionsLog.begin(), ExceptionsLog.begin()+int(ExceptionsLog.size())-MaxExceptionsLogSize);
+  CurrentExceptionsLogSize=MaxExceptionsLogSize;
+ }
+}
+
+/// Очищает лог
+void UEnvironment::ClearLog(void)
+{
+ LastReadExceptionLogIndex=-1;
+ CurrentExceptionsLogSize=0;
+ TempLogString.clear();
 }
 // --------------------------
 
