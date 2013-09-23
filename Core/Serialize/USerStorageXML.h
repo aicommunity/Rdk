@@ -165,7 +165,7 @@ bool ReadData(const std::string &name, T &data)
 }
 
 template<typename T>
-bool WriteData(const std::string &name, T &data)
+bool WriteData(const std::string &name, const T &data)
 {
  if(!AddNode(name))
   return false;
