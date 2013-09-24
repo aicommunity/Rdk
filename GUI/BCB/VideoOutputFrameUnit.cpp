@@ -2278,6 +2278,12 @@ void TVideoOutputFrame::ALoadParameters(RDK::USerStorageXML &xml)
 //---------------------------------------------------------------------------
 void __fastcall TVideoOutputFrame::TimerTimer(TObject *Sender)
 {
+ if(CaptureThread)
+ {
+  if(WaitForSingleObject(CaptureThread->GetFrameNotInProgress(),30) != WAIT_TIMEOUT)
+   UpdateInterface();
+ }
+
 /*
 // UpdateFlag=false;
 // if(UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode() != 1)
