@@ -80,6 +80,8 @@ object TldTrackingForm: TTldTrackingForm
       Caption = 'Get frame from video'
       TabOrder = 0
       OnClick = GetFrameButtonClick
+      ExplicitLeft = 3
+      ExplicitTop = -4
     end
     object EnableLogCheckBox: TCheckBox
       Left = 1

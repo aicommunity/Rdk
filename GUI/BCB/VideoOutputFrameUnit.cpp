@@ -2169,7 +2169,7 @@ void TVideoOutputFrame::AAfterCalculate(void)
 void TVideoOutputFrame::AUpdateInterface(void)
 {
 // if(UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode() == 1)
- if(UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode() != 0 /*&& !IsStarted*/)
+// if(UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode() != 0 /*&& !IsStarted*/)
   if(CaptureThread)
   {
    long long time_stamp=0;
