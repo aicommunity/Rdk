@@ -525,14 +525,15 @@ void __fastcall TTldTrackingForm::SendPointsButtonClick(TObject *Sender)
  bool started=UEngineMonitorForm->EngineMonitorFrame->Timer->Enabled;
  if(started)
   StopTrackingButtonClick(Sender);
+
+ if(InitInputModeRadioGroup->ItemIndex != 0)
+  Model_SetComponentPropertyData(source_name.c_str(), "DoubleMatrix", &points);
+
  if(CheckBox1->Checked)
  {
   ResultBmp.SetColorModel(RDK::ubmY8);
   VideoOutputFrame1->BmpSource.ConvertTo(ResultBmp);
   ResultBmp.ReflectionX();
-
- if(InitInputModeRadioGroup->ItemIndex != 0)
-  Model_SetComponentPropertyData(source_name.c_str(), "DoubleMatrix", &points);
 
 for(size_t k=0;k<Trackers.size();k++)
 {
