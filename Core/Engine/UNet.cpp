@@ -158,6 +158,9 @@ bool UNet::CreateLink(const ULinkT<T> &link)
  if(!pitem)
   return false;
 
+ if(link.Item.Index < 0)
+  return false;
+
  for(size_t i=0;i<link.Connector.size();i++)
  {
   UEPtr<UConnector> pconnector=0;
@@ -186,6 +189,9 @@ bool UNet::CreateLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
   pitem=this;
  else
   pitem=dynamic_pointer_cast<UItem>(GetComponentL(item.Id));
+
+ if(item.Index < 0)
+  return false;
 
  UEPtr<UConnector> pconnector=0;
  if(!CheckLongId(connector.Id))
@@ -229,6 +235,9 @@ bool UNet::CreateLink(const NameT &item, int item_index,
   return false;
 
  if(!pconnector)
+  return false;
+
+ if(item_index < 0)
   return false;
 
  if(!(pitem->Connect(pconnector,item_index,connector_index)))
