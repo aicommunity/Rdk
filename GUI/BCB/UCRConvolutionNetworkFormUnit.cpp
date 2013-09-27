@@ -33,7 +33,7 @@ void TUCRConvolutionNetworkForm::AUpdateInterface(void)
 {
  try{
    if(!GetModel())
-    return;
+	return;
    Network=RDK::static_pointer_cast<RDK::UCRConvolutionNetwork>(GetModel()->GetComponentL(ComponentControlName));
   }
   catch(/*RDK::EUsingZeroPtr &*/...){}
@@ -86,6 +86,11 @@ void TUCRConvolutionNetworkForm::AUpdateInterface(void)
   UShowProgressBarForm->Hide();
  } */
 
+ //NumExamplesList->Clear();
+ //NumExamplesList->Items->Add(IntToStr(int(Teacher->TestSample->SampleSize)));
+
+ //CurrentSampleList->Clear();
+ //CurrentSampleList->Items->Add(IntToStr(Teacher->TestSample->CurrentSample));
 
  Result=*(Network->Result);
 

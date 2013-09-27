@@ -12,22 +12,22 @@
 #include <Vcl.ExtCtrls.hpp>
 #include <Vcl.Grids.hpp>
 #include "rdk_cpp_initdll.h"
+
+#include "UCRTeacherCVNetworkBP.cpp"
 //---------------------------------------------------------------------------
 class TUCRConvolutionNetworkForm : public TUVisualControllerForm
 {
 __published:	// IDE-managed Components
-	TPageControl *PageControl1;
-	TTabSheet *TabSheet1;
-	TTabSheet *TabSheet2;
 	TPanel *Panel1;
-	TStringGrid *WeightsStringGrid;
-	TStringGrid *OutputsStringGrid;
-	TComboBox *WeightsComboBox;
 	TButton *Button1;
+	TPageControl *PageControl1;
+	TTabSheet *TabSheet2;
+	TStringGrid *OutputsStringGrid;
 	void __fastcall WeightsComboBoxSelect(TObject *Sender);
 	void __fastcall FormShow(TObject *Sender);
 	void __fastcall Button1Click(TObject *Sender);
 	void __fastcall FormCreate(TObject *Sender);
+
 private:	// User declarations
 public:		// User declarations
 	__fastcall TUCRConvolutionNetworkForm(TComponent* Owner);
@@ -39,6 +39,7 @@ public:
 RDK::MDMatrix<double> Result;
 
 RDK::UEPtr<RDK::UCRConvolutionNetwork> Network;
+RDK::UEPtr<RDK::UCRTeacherCVNetworkBP> Teacher;
 
 bool ShowWeightFlag;
 
