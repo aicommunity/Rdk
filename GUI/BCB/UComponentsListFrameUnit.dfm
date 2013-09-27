@@ -22,7 +22,7 @@ inherited UComponentsListFrame: TUComponentsListFrame
       Top = 1
       Width = 384
       Height = 565
-      ActivePage = TabSheet3
+      ActivePage = TabSheet4
       Align = alClient
       TabOrder = 0
       TabPosition = tpBottom
@@ -194,10 +194,6 @@ inherited UComponentsListFrame: TUComponentsListFrame
       object TabSheet3: TTabSheet
         Caption = 'I/O'
         ImageIndex = 2
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object Splitter2: TSplitter
           Left = 0
           Top = 239
@@ -227,8 +223,6 @@ inherited UComponentsListFrame: TUComponentsListFrame
             OnClick = OutputsStringGridClick
             OnDblClick = OutputsStringGridDblClick
             OnSelectCell = OutputsStringGridSelectCell
-            ExplicitLeft = 3
-            ExplicitTop = 19
           end
         end
         object GroupBox2: TGroupBox

@@ -2025,8 +2025,8 @@ void TVideoOutputFrame::SendToComponentIO(void)
 // Метод, вызываемый перед шагом расчета
 void TVideoOutputFrame::ABeforeCalculate(void)
 {
- if(!IsStarted)
-  return;
+// if(!IsStarted)
+//  return;
 
  if(UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode() == 0)
   if(CaptureThread)

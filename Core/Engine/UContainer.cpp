@@ -1932,7 +1932,6 @@ void UContainer::AUpdateMainOwner(void)
 // --------------------------
 UContainer::EIContainer::EIContainer(void)
 {
-
 }
 
 UContainer::EIContainer::EIContainer(const UContainer *cont)
@@ -2000,39 +1999,31 @@ UContainer::EIContainer::~EIContainer(void)
 // Формирует строку лога об исключении
 std::string UContainer::EIContainer::CreateLogMessage(void) const
 {
- string result;//=UException::CreateLogMessage();
-
-// EIContainer *iexception=dynamic_cast<EIContainer*>(exception);
-
-// if(iexception)
- if(Name.size()>0)
- {
-  // Короткое имя компонента в котором сгенерировано исключение
-  result+=" Name=";
-  result+=Name;
- }
-  // Короткий идентификатор компонента в котором сгенерировано исключение
-//  result+=" Id=";
-//  result+=iexception->Id;
+ string result;
 
  if(OwnerName.size()>0)
  {
-  // Полное имя владельца компонента в котором сгенерировано исключение
-  result+=" OwnerName=";
+  // Полное имя компонента в котором сгенерировано исключение
+  result+=" Component=";
   result+=OwnerName;
+  result+=".";
+  result+=Name;
  }
-
-  // Полный идентификатор владельца компонента в котором сгенерировано исключение
-//  result+=" OwnerId=";
-//  result+=iexception->OwnerId;
-
+ else
+ if(Name.size()>0)
+ {
+  // Короткое имя компонента в котором сгенерировано исключение
+  result+=" Component=";
+  result+=Name;
+ }
+/*
  if(MainOwnerName != OwnerName && MainOwnerName.size()>0)
  {
   // Полное имя главного владельца компонента в котором сгенерировано исключение
   result+=" MainOwnerName=";
   result+=MainOwnerName;
  }
-
+  */
   // Полный идентификатор главного владельца компонента в котором сгенерировано исключение
 //  result+=" MainOwnerId=";
 //  result+=iexception->MainOwnerId;
