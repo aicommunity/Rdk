@@ -5,4 +5,5 @@
 #include "../../Core/Graphics/Libraries/Libraries.cpp"
 #include "../../Core/Graphics/Libraries/Detection/Detection.cpp"
 #include "../../Core/Graphics/Libraries/SpatialGeometry/SpatialGeometry.cpp"
+#include "../../Core/Graphics/Libraries/Hardware/Hardware.cpp"
 
