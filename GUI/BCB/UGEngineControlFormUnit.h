@@ -221,6 +221,12 @@ std::vector<int> DefaultTimeStep;
 // Глобальный шаг счета модели
 std::vector<int> GlobalTimeStep;
 
+// Флаг необходимости вызова инициализации после загрузки
+std::vector<int> InitAfterLoadFlag;
+
+// Флаг необходимости вызова сброса после загрузки
+std::vector<int> ResetAfterLoadFlag;
+
 // Флаг необходимости переворачивать входные изображения
 bool ReflectionFlag;
 

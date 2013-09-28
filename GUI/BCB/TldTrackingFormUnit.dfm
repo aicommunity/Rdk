@@ -12,6 +12,7 @@ object TldTrackingForm: TTldTrackingForm
   Font.Style = []
   OldCreateOrder = False
   OnCreate = FormCreate
+  OnHide = FormHide
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
@@ -80,8 +81,6 @@ object TldTrackingForm: TTldTrackingForm
       Caption = 'Get frame from video'
       TabOrder = 0
       OnClick = GetFrameButtonClick
-      ExplicitLeft = 3
-      ExplicitTop = -4
     end
     object EnableLogCheckBox: TCheckBox
       Left = 1
@@ -337,6 +336,7 @@ object TldTrackingForm: TTldTrackingForm
     Top = 192
   end
   object Timer1: TTimer
+    Enabled = False
     Interval = 30
     OnTimer = Timer1Timer
     Left = 48

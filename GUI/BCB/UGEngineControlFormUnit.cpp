@@ -275,6 +275,9 @@ void TUGEngineControlForm::CreateProject(const String &FileName, const String &m
 
  ProjectXml.WriteInteger("CalculationMode",CalculationMode[GetSelectedEngineIndex()]);
 
+ ProjectXml.WriteBool("InitAfterLoadFlag",InitAfterLoadFlag[GetSelectedEngineIndex()]);
+ ProjectXml.WriteBool("ResetAfterLoadFlag",ResetAfterLoadFlag[GetSelectedEngineIndex()]);
+
  if(PredefinedStructure[GetSelectedEngineIndex()] == 0 && model_file_name.Length()>0)
  {
   if(GetSelectedEngineIndex() == 0)
@@ -419,6 +422,20 @@ try{
   CalculationMode[i]=ProjectXml.ReadInteger(std::string("CalculationMode_")+RDK::sntoa(i),2);
  }
 
+ InitAfterLoadFlag.resize(GetNumEngines());
+ InitAfterLoadFlag[0]=ProjectXml.ReadBool("InitAfterLoadFlag",1);
+ for(int i=1;i<GetNumEngines();i++)
+ {
+  InitAfterLoadFlag[i]=ProjectXml.ReadBool(std::string("InitAfterLoadFlag_")+RDK::sntoa(i),1);
+ }
+
+ ResetAfterLoadFlag.resize(GetNumEngines());
+ ResetAfterLoadFlag[0]=ProjectXml.ReadBool("ResetAfterLoadFlag",true);
+ for(int i=1;i<GetNumEngines();i++)
+ {
+  ResetAfterLoadFlag[i]=ProjectXml.ReadBool(std::string("ResetAfterLoadFlag_")+RDK::sntoa(i),true);
+ }
+
  MinInterstepsInterval.resize(GetNumEngines());
  MinInterstepsInterval[0]=ProjectXml.ReadInteger("MinInterstepsInterval",0);
  for(int i=1;i<GetNumEngines();i++)
@@ -513,6 +530,10 @@ try{
   if(Model_Check())
   {
    Model_SetGlobalTimeStep("",GlobalTimeStep[i]);
+   if(InitAfterLoadFlag[i])
+    MEnv_Init(i);
+   if(ResetAfterLoadFlag[i])
+	MEnv_Reset(i,0);
   }
   UShowProgressBarForm->IncBarStatus(1);
   UShowProgressBarForm->Update();
@@ -596,6 +617,12 @@ void TUGEngineControlForm::CloneProject(int source_id, int cloned_id)
  CalculationMode.resize(GetNumEngines());
  CalculationMode[cloned_id]=CalculationMode[source_id];
 
+ InitAfterLoadFlag.resize(GetNumEngines());
+ InitAfterLoadFlag[cloned_id]=InitAfterLoadFlag[source_id];
+
+ ResetAfterLoadFlag.resize(GetNumEngines());
+ ResetAfterLoadFlag[cloned_id]=ResetAfterLoadFlag[source_id];
+
  MinInterstepsInterval.resize(GetNumEngines());
  MinInterstepsInterval[cloned_id]=MinInterstepsInterval[source_id];
 
@@ -664,6 +691,10 @@ void TUGEngineControlForm::CloneProject(int source_id, int cloned_id)
  if(Model_Check())
  {
   Model_SetGlobalTimeStep("",GlobalTimeStep[cloned_id]);
+  if(InitAfterLoadFlag[cloned_id])
+   MEnv_Init(cloned_id);
+  if(ResetAfterLoadFlag[cloned_id])
+   MEnv_Reset(cloned_id,0);
  }
 
  SelectEngine(selected_engine);
@@ -834,6 +865,8 @@ try{
 
    ProjectXml.WriteInteger("CalculationMode",CalculationMode[0]);
    ProjectXml.WriteInteger("MinInterstepsInterval",MinInterstepsInterval[0]);
+   ProjectXml.WriteBool("InitAfterLoadFlag",InitAfterLoadFlag[0]);
+   ProjectXml.WriteBool("ResetAfterLoadFlag",ResetAfterLoadFlag[0]);
   }
   else
   {
@@ -848,6 +881,8 @@ try{
    ProjectXml.WriteInteger(std::string("CalculationMode_")+suffix,CalculationMode[i]);
 
    ProjectXml.WriteInteger(std::string("MinInterstepsInterval_")+suffix,MinInterstepsInterval[i]);
+   ProjectXml.WriteBool(std::string("InitAfterLoadFlag_")+suffix,InitAfterLoadFlag[i]);
+   ProjectXml.WriteBool(std::string("ResetAfterLoadFlag_")+suffix,ResetAfterLoadFlag[i]);
   }
 
   UShowProgressBarForm->IncBarStatus(1);

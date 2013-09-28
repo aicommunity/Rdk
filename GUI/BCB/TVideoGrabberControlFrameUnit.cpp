@@ -335,6 +335,7 @@ void __fastcall TVideoGrabberControlFrame::VCapturePageControlChange(TObject *Se
  {
 //  VideoGrabber->VideoSource=vs_VideoCaptureDevice;
   VideoOutputFrame->InitByCamera(DeviceComboBox->ItemIndex, InputComboBox->ItemIndex, VideoSizeComboBox->ItemIndex, VideoSubTypeComboBox->ItemIndex, AnalogVideoStandardComboBox->ItemIndex);
+  VideoOutputFrame->StartButtonClick(this);
  }
  else
  if(VCapturePageControl->ActivePage == VideoFileTabSheet)
@@ -382,6 +383,7 @@ void __fastcall TVideoGrabberControlFrame::VCapturePageControlChange(TObject *Se
  }
 
  UpdateInterface();
+ VideoOutputFrame->UpdateInterface();
 }
 //---------------------------------------------------------------------------
 

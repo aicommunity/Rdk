@@ -570,6 +570,7 @@ void __fastcall TTldTrackingForm::FormShow(TObject *Sender)
  PointsTabSheetShow(Sender);
  PageControl1->ActivePageIndex=0;
  PageControl1->ActivePageIndex=1;
+ Timer1->Enabled=true;
 }
 //---------------------------------------------------------------------------
 
@@ -584,6 +585,7 @@ void __fastcall TTldTrackingForm::Timer1Timer(TObject *Sender)
    VideoOutputFrame1->InitByBmp(VideoOutputForm->GetActiveVideoOutputFrame()->BmpSource);
   }
  }*/
+ GetFrameButtonClick(Sender);
 }
 //---------------------------------------------------------------------------
 
@@ -594,6 +596,12 @@ void __fastcall TTldTrackingForm::TrackersCheckListBoxClickCheck(TObject *Sender
 
  for(int i=0;i<TrackersCheckListBox->Items->Count;i++)
   Trackers[i].second=TrackersCheckListBox->Checked[i];
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TTldTrackingForm::FormHide(TObject *Sender)
+{
+ Timer1->Enabled=false;
 }
 //---------------------------------------------------------------------------
 
