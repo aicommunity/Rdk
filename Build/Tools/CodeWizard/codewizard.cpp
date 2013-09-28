@@ -37,8 +37,6 @@ InitialPage::InitialPage(QWidget *parent)
     templateLabel = new QLabel("Template:");
     templateCBox = new QComboBox;
 
-    //templates = new QStringList;
-    //templates<<"EngineClassSimple";
 
     fileNameLabel = new QLabel("File Name:");
     fileNameLineEdit = new QLineEdit;
@@ -53,6 +51,8 @@ InitialPage::InitialPage(QWidget *parent)
     //
     baseNameLabel = new QLabel("Base Class:");
     baseNameLineEdit = new QLineEdit;
+    baseNameCBox = new QComboBox;
+
     baseFileNameLabel = new QLabel("Include file:");
     baseFileNameLineEdit = new QLineEdit;
     namespaceLabel = new QLabel("Namespace:");
@@ -64,17 +64,21 @@ InitialPage::InitialPage(QWidget *parent)
     loadSettings();
     templateCBox->addItems(templates);
     //dstPathCBox->addItem(dstPathLineEdit->text());
-    srcPath;
+    //srcPath;
     dstPathCBox->addItems(paths);
     dstPathCBox->setEditable(true);
     dstPathCBox->setMaxCount(maxHistorySize);
     dstPathCBox->setMaxVisibleItems(5);
-    classNameCBox->addItem("");
+    //classNameCBox->addItem("");
     classNameCBox->addItems(classNameHistory);
     classNameCBox->setEditable(true);
     classNameCBox->setMaxCount(maxHistorySize);
     classNameCBox->setMaxVisibleItems(5);
     //dstPathCBox->setLineEdit(dstPathLineEdit);
+    baseNameCBox->addItems(baseNameHistory);
+    baseNameCBox->setEditable(true);
+    baseNameCBox->setMaxCount(maxHistorySize);
+    baseNameCBox->setMaxVisibleItems(5);
     //
     //namespaces<<"RDK"<<"RTV"<<"NMSDK"<<"DVA";
     namespaceCBox->addItems(namespaces);
@@ -131,7 +135,8 @@ InitialPage::InitialPage(QWidget *parent)
     layout->addWidget(dstPathCBox,4,1);
 
     layout->addWidget(baseNameLabel,5,0);
-    layout->addWidget(baseNameLineEdit,5,1);
+    //layout->addWidget(baseNameLineEdit,5,1);
+    layout->addWidget(baseNameCBox,5,1);
 
     layout->addWidget(baseFileNameLabel,6,0);
     layout->addWidget(baseFileNameLineEdit,6,1);
@@ -156,7 +161,7 @@ InitialPage::InitialPage(QWidget *parent)
 
     layout->addWidget(browseBut,4,2);
 
-    //corePath.insert(0,"C:\\Users\\Obald\\Documents\\РТК\\Core");
+    //corePath.insert(0,"C:\\Users\\Obald\\Documents\\� ТК\\Core");
 
     libModel = new QStringListModel;
     libModel->setStringList(libList);
@@ -196,7 +201,7 @@ InitialPage::InitialPage(QWidget *parent)
 
     connect(browseBut, SIGNAL(clicked()), SLOT(slotBrowse()));
     connect(classNameLineEdit, SIGNAL(textChanged(QString)), SLOT(slotClassChanged()));
-    connect(baseNameLineEdit, SIGNAL(textChanged(QString)), SLOT(slotBaseChanged()));
+    connect(baseNameCBox, SIGNAL(currentTextChanged(QString)), SLOT(slotBaseChanged()));
     connect(dstPathCBox, SIGNAL(currentTextChanged(QString)), SLOT(slotDstChanged()));
     connect(classNameCBox, SIGNAL(currentTextChanged(QString)), SLOT(slotClassNameChanged()));
     connect(namespaceCBox,SIGNAL(currentTextChanged(QString)), SLOT(slotNamespaceChanged()));
@@ -305,189 +310,15 @@ SettingsDialog::SettingsDialog(QWidget *parent)
 
 void CodeWizard::accept()
 {
-
-    //Creating H file
-    QFile srcHfile(IP->templatePaths.value(IP->templateCBox->currentIndex()) + "h");
-    if (!srcHfile.open(QIODevice::ReadOnly | QIODevice::Text)){
-        QMessageBox::warning(0, QObject::tr("Simple Wizard"),
-                             QObject::tr("Cannot open file %1:\n%2")
-                             .arg(srcHfile.fileName())
-                             .arg(srcHfile.errorString()));
-        return;
-    }
-
-    QFile dstHfile(field("dstPath").toString()+"/"+field("fileName").toString()+".h");
-
-        if(QFile::exists(dstHfile.fileName()))
-        {
-            QMessageBox::warning(0,QObject::tr("Writing err0r"),
-                                 QObject::tr("File %1 already exists")
-                                 .arg(dstHfile.fileName()));
-            return;
-        }
-        if (!dstHfile.open(QIODevice::WriteOnly | QIODevice::Text)){
-            QMessageBox::warning(0, QObject::tr("Writing err0r"),
-                                 QObject::tr("Cannot write to file %1:\n%2")
-                                 .arg(dstHfile.fileName())
-                                 .arg(dstHfile.errorString()));
-            return;
-        }
-
-    QTextStream outH(&dstHfile);
-    QTextStream inH(&srcHfile);
-      while (!inH.atEnd())
-      {
-          QString line = inH.readLine();
-          if(line.contains("@CLASS_NAME@"))
-          {
-              line.replace("@CLASS_NAME@",field("className").toString());
-          }
-          if(line.contains("@FILE_NAME@"))
-          {
-              line.replace("@FILE_NAME@",field("fileName").toString());
-          }
-          if(line.contains("@INHERITANCE_NAME@"))
-          {
-              line.replace("@INHERITANCE_NAME@",field("baseName").toString());
-          }
-          if(line.contains("@INCLUDE_FILE_NAME@"))
-          {
-              line.replace("@INCLUDE_FILE_NAME@",field("baseFile").toString());
-          }
-          if(line.contains("@NAMESPACE_NAME@"))
-          {
-              line.replace("@NAMESPACE_NAME@", field("namespace").toString());
-          }
-          if(line.contains("@COPYRIGHT_NAME@"))
-          {
-              if(!(field("crName").toString().isEmpty()))
-                  line.replace("@COPYRIGHT_NAME@",field("crName").toString());
-              else
-                  line.clear();
-          }
-          if(line.contains("@COPYRIGHT_YEAR@"))
-          {
-              if(!(field("crYear").toString().isEmpty()))
-                  line.replace("@COPYRIGHT_YEAR@",field("crYear").toString());
-              else
-                  line.clear();
-          }
-          if(line.contains("@COPYRIGHT_EMAIL@"))
-          {
-              if(!(field("crEmail").toString().isEmpty()))
-                  line.replace("@COPYRIGHT_EMAIL@",field("crEmail").toString());
-              else
-                  line.clear();
-          }
-          if(line.contains("@COPYRIGHT_URL@"))
-          {
-              if(!(field("crUrl").toString().isEmpty()))
-                  line.replace("@COPYRIGHT_URL@",field("crUrl").toString());
-              else
-                  line.clear();
-          }
-          if(line.contains("@COPYRIGHT_PROJECT_NAME@"))
-          {
-              if(!(field("crPrName").toString().isEmpty()))
-                  line.replace("@COPYRIGHT_PROJECT_NAME@",field("crPrName").toString());
-              else
-                  line.clear();
-          }
-          if(!(line.isEmpty()))
-          {
-              outH<<line<<'\n';
-          }
-      }
-
-      //Creating CPP file
-      QFile srcCPPfile(IP->templatePaths.value(IP->templateCBox->currentIndex()) + "cpp");
-      if (!srcCPPfile.open(QIODevice::ReadOnly | QIODevice::Text)){
-          QMessageBox::warning(0, QObject::tr("Simple Wizard"),
-                               QObject::tr("Cannot open file %1:\n%2")
-                               .arg(srcCPPfile.fileName())
-                               .arg(srcCPPfile.errorString()));
-          return;
-      }
-
-      QFile dstCPPfile(field("dstPath").toString()+"/"+field("fileName").toString()+".cpp");
-          if (!dstCPPfile.open(QIODevice::WriteOnly | QIODevice::Text)){
-              QMessageBox::warning(0, QObject::tr("Simple Wizard"),
-                                   QObject::tr("Cannot write file %1:\n%2")
-                                   .arg(dstCPPfile.fileName())
-                                   .arg(dstCPPfile.errorString()));
-              return;
-          }
-      QTextStream outCPP(&dstCPPfile);
-      QTextStream inCPP(&srcCPPfile);
-        while (!inCPP.atEnd())
-        {
-            QString line = inCPP.readLine();
-            if(line.contains("@CLASS_NAME@"))
-            {
-                line.replace("@CLASS_NAME@",field("className").toString());
-            }
-            if(line.contains("@FILE_NAME@"))
-            {
-                line.replace("@FILE_NAME@",field("fileName").toString());
-            }
-            if(line.contains("@INHERITANCE_NAME@"))
-            {
-                line.replace("@INHERITANCE_NAME@",field("baseName").toString());
-            }
-            if(line.contains("@INCLUDE_FILE_NAME@"))
-            {
-                line.replace("@INCLUDE_FILE_NAME@",field("baseFile").toString());
-            }
-            if(line.contains("@NAMESPACE_NAME@"))
-            {
-                line.replace("@NAMESPACE_NAME@", field("namespace").toString());
-            }
-            if(line.contains("@COPYRIGHT_NAME@"))
-            {
-                if(!(field("crName").toString().isEmpty()))
-                    line.replace("@COPYRIGHT_NAME@",field("crName").toString());
-                else
-                    line.clear();
-            }
-            if(line.contains("@COPYRIGHT_YEAR@"))
-            {
-                if(!(field("crYear").toString().isEmpty()))
-                    line.replace("@COPYRIGHT_YEAR@",field("crYear").toString());
-                else
-                    line.clear();
-            }
-            if(line.contains("@COPYRIGHT_EMAIL@"))
-            {
-                if(!(field("crEmail").toString().isEmpty()))
-                    line.replace("@COPYRIGHT_EMAIL@",field("crEmail").toString());
-                else
-                    line.clear();
-            }
-            if(line.contains("@COPYRIGHT_URL@"))
-            {
-                if(!(field("crUrl").toString().isEmpty()))
-                    line.replace("@COPYRIGHT_URL@",field("crUrl").toString());
-                else
-                    line.clear();
-            }
-            if(line.contains("@COPYRIGHT_PROJECT_NAME@"))
-            {
-                if(!(field("crPrName").toString().isEmpty()))
-                    line.replace("@COPYRIGHT_PROJECT_NAME@",field("crPrName").toString());
-                else
-                    line.clear();
-            }
-            if(!(line.isEmpty()))
-            {
-                outCPP<<line<<'\n';
-            }
-        }
+      CodeWizard::slotaccept();
       QDialog::accept();
-
 }
 
 void CodeWizard::slotaccept()
 {
+
+    IP->AddToULib();
+
     //Creating H file
     QFile srcHfile(IP->templatePaths.value(IP->templateCBox->currentIndex()) + "h");
     if (!srcHfile.open(QIODevice::ReadOnly | QIODevice::Text)){
@@ -663,10 +494,131 @@ void CodeWizard::slotaccept()
                 outCPP<<line<<'\n';
             }
         }
-        QWizard::restart();
+        QWizard::restart();//вернуть, если закомментировано
+
+}
+//test
+void InitialPage::AddToULib()
+{
+    QString uLibFileName;
+    QModelIndex parentIndex = dstModel->index(field("dstPath").toString());
+    int numOfChilds = dstModel->rowCount(parentIndex);
+    for(int i=0; i<numOfChilds; i++)
+    {
+        QString childFileName = dstModel->fileName(dstModel->index(i,0,parentIndex));
+        if(childFileName.contains(".h"))
+        {
+            QFile childFile(field("dstPath").toString()+"/"+childFileName);
+            if (!childFile.open(QIODevice::ReadOnly | QIODevice::Text)){
+                QMessageBox::warning(0, QObject::tr("Simple Wizard"),
+                                     QObject::tr("Cannot open file %1:\n%2")
+                                     .arg(childFile.fileName())
+                                     .arg(childFile.errorString()));
+                return;
+            }
+            QTextStream childFileStream(&childFile);
+            while (!childFileStream.atEnd())
+            {
+                if(childFileStream.readAll().contains("public ULibrary"))
+                {
+                    uLibFileName = childFileName;
+                    uLibFileName.chop(2);
+                    break;
+                }
+            }
+
+        }
+    }
+
+    QFile uLibHFile(field("dstPath").toString()+"/"+uLibFileName+".h");
+    if (!uLibHFile.open(QIODevice::ReadOnly | QIODevice::Text)){
+        QMessageBox::warning(0, QObject::tr("Simple Wizard"),
+                             QObject::tr("Cannot open file %1:\n%2")
+                             .arg(uLibHFile.fileName())
+                             .arg(uLibHFile.errorString()));
+        return;
+    }
+    QTextStream uLibInHStream(&uLibHFile);
+    QByteArray tempArray;
+    QTextStream uLibOutHStream(&uLibHFile);
+    while (!uLibInHStream.atEnd())
+    {
+        QString uLibStreamLine = uLibInHStream.readLine();
+        tempArray.append(uLibStreamLine);
+        if(uLibStreamLine.contains("#include") && uLibStreamLine.contains("ULibrary.h"))
+        {
+            tempArray.append("\n"); //для Win
+            tempArray.append("#include \""+field("fileName").toString()+".h\"");
+        }
+        tempArray.append("\n"); //для Win
+    }
+    uLibHFile.close();
+    if (!uLibHFile.open(QIODevice::WriteOnly | QIODevice::Text)){
+        QMessageBox::warning(0, QObject::tr("Simple Wizard"),
+                             QObject::tr("Cannot open file %1:\n%2")
+                             .arg(uLibHFile.fileName())
+                             .arg(uLibHFile.errorString()));
+        return;
+    }
+    uLibOutHStream<<tempArray;//
+
+    //CPP
+    QFile uLibCppFile(field("dstPath").toString()+"/"+uLibFileName+".cpp");
+    if (!uLibCppFile.open(QIODevice::ReadOnly | QIODevice::Text)){
+        QMessageBox::warning(0, QObject::tr("Simple Wizard"),
+                             QObject::tr("Cannot open file %1:\n%2")
+                             .arg(uLibCppFile.fileName())
+                             .arg(uLibCppFile.errorString()));
+        return;
+    }
+
+    QTextStream uLibInCppStream(&uLibCppFile);
+    QByteArray tempCppArray;
+    QTextStream uLibOutCppStream(&uLibCppFile);
+    QString prevStreamLine("");//для UploadClass
+
+    while (!uLibInCppStream.atEnd())
+    {
+        QString uLibStreamLine = uLibInCppStream.readLine();
+        QString temp2;
+        temp2.append(uLibStreamLine);
+        if(uLibStreamLine.contains("#include") && uLibStreamLine.contains(uLibFileName))
+        {
+            temp2.append("\n"); //для Win
+            temp2.append("#include \""+field("fileName").toString()+".cpp\"");
+
+        }
+        if(prevStreamLine.contains("UploadClass") && uLibStreamLine.contains("}"))
+        {
+            prevStreamLine = uLibStreamLine;
+            QString uploadClassString("\n UEPtr<UContainer> generated_cont=new "+
+                                      field("fileName").toString()+";"+
+                                      "\n generated_cont->SetName(\""+
+                                      field("fileName").toString().remove(0,1)+"\");"+
+                                      "\n generated_cont->Default();"+
+                                      "\n UploadClass(\""+field("fileName").toString()+"\",generated_cont);\n");//
+            temp2.push_front(uploadClassString);
+        }
+        else
+        {
+            prevStreamLine = uLibStreamLine;
+        }
+        temp2.append("\n"); //для Win
+        tempCppArray.append(temp2);
+    }
+    uLibCppFile.close();
+    if (!uLibCppFile.open(QIODevice::WriteOnly | QIODevice::Text)){
+        QMessageBox::warning(0, QObject::tr("Simple Wizard"),
+                             QObject::tr("Cannot open file %1:\n%2")
+                             .arg(uLibCppFile.fileName())
+                             .arg(uLibCppFile.errorString()));
+        return;
+    }
+    uLibOutCppStream<<tempCppArray;//
 
 }
 
+//end test
 void CodeWizard::slotSettings()
 {
     Settings->exec();
@@ -697,6 +649,7 @@ void InitialPage::saveSettings()
     settings.setValue("/split", splitter->saveState());
     settings.setValue("/tempPaths", templatePaths);
     settings.setValue("/dstPathString", dstPathLineEdit->text());
+    settings.setValue("/baseName", baseNameHistory);
     settings.endGroup();
 }
 
@@ -712,6 +665,7 @@ void InitialPage::loadSettings()
     splitter->restoreState(settings.value("/split").toByteArray());
     templatePaths<<settings.value("/tempPaths", "").toStringList();
     dstPathLineEdit->setText(settings.value("/dstPathString", "").toString());
+    baseNameHistory<<settings.value("/baseName", "").toStringList();
 
     settings.endGroup();
 }
@@ -725,7 +679,7 @@ void InitialPage::slotClassChanged()
 
 void InitialPage::slotBaseChanged()
 {
-    baseFileNameLineEdit->setText(baseNameLineEdit->text()+".h");
+    baseFileNameLineEdit->setText(baseNameCBox->currentText()+".h");
 }
 void InitialPage::slotDstChanged()
 {

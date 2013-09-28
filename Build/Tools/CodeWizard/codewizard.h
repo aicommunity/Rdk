@@ -80,18 +80,28 @@ public://
     QLabel *copyrightEmailLabel;
     QLabel *copyrightUrlLabel;
     QLabel *copyrightProjectNameLabel;
+
     QComboBox *templateCBox;
     QStringList templates;
+
     QLineEdit *fileNameLineEdit;
+
     QLineEdit *classNameLineEdit;
     QComboBox *classNameCBox;
+
     QLineEdit *componentNameLineEdit;
+
     QLineEdit *dstPathLineEdit;
     QComboBox *dstPathCBox;//
+
     QLineEdit *baseNameLineEdit;
+    QComboBox *baseNameCBox;
+
     QLineEdit *baseFileNameLineEdit;
+
     QComboBox *namespaceCBox;
     QLineEdit *namespaceLineEdit;
+
     QLineEdit *copyrightNameLineEdit;
     QLineEdit *copyrightYearLineEdit;
     QLineEdit *copyrightEmailLineEdit;
@@ -103,6 +113,7 @@ public://
     QStringList paths;
     QString srcPath;
     QStringList classNameHistory;
+    QStringList baseNameHistory;
     QStringList namespaces;
 
     QStringList templatePaths;
@@ -119,6 +130,8 @@ public://
     QSplitter *splitter;
 
     const int maxHistorySize;
+
+    void AddToULib();//test
 };
 
 class SettingsDialog : public QDialog
