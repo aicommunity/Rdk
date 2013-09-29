@@ -1362,40 +1362,27 @@ void TVideoOutputFrame::InitByAvi(const String &filename)
 // Инициализация фрейма bmp-файлом
 void TVideoOutputFrame::InitByBmp(const String &filename)
 {
- StopButtonClick(this);
-/* try {
-  if(filename.Pos(".jpg") || filename.Pos(".jpeg") )
-  {
-   TJPEGImage* JpegIm=new TJPEGImage;
-   JpegIm->LoadFromFile(filename);
-   Image->Picture->Bitmap->Assign(JpegIm);
-   BmpSource<<Image->Picture->Bitmap;
-   delete JpegIm;
-  }
-  else
-  if(filename.Pos(".bmp"))
-  {
-   LoadBitmapFromFile(AnsiString(filename).c_str(),&BmpSource);
-  }
-  else
-   BmpSource.Fill(0);
- }
- catch (EFOpenError &exception) {
-  BmpSource.SetRes(0,0);
- }
- BmpSource.SetColorModel(RDK::ubmRGB24);  */
-
- if(!DestroyCaptureThread())
-  return;
- if(!CaptureThread)
+ if(CaptureThread && dynamic_cast<TVideoCaptureThreadBmp*>(CaptureThread))
  {
-  CaptureThread=new TVideoCaptureThreadBmp(this,false);
-  CaptureThread->SetChannelIndex(FrameIndex);
-  TVideoCaptureThreadBmp* thread=dynamic_cast<TVideoCaptureThreadBmp*>(CaptureThread);
-  if(thread)
+  dynamic_cast<TVideoCaptureThreadBmp*>(CaptureThread)->SetFileName(AnsiString(filename).c_str());
+  MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, 0);
+ }
+ else
+ {
+  StopButtonClick(this);
+  if(!DestroyCaptureThread())
+   return;
+
+  if(!CaptureThread)
   {
-   thread->SetFileName(AnsiString(filename).c_str());
-   MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, 0);
+   CaptureThread=new TVideoCaptureThreadBmp(this,false);
+   CaptureThread->SetChannelIndex(FrameIndex);
+   TVideoCaptureThreadBmp* thread=dynamic_cast<TVideoCaptureThreadBmp*>(CaptureThread);
+   if(thread)
+   {
+	thread->SetFileName(AnsiString(filename).c_str());
+	MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, 0);
+   }
   }
  }
  Mode=0;
@@ -1405,18 +1392,18 @@ void TVideoOutputFrame::InitByBmp(const String &filename)
 // Устанавливает отдельное изображение
 bool TVideoOutputFrame::InitByBmp(const RDK::UBitmap &bmp)
 {
- StopButtonClick(this);
 // BmpSource=bmp;
 // BmpSource.SetColorModel(RDK::ubmRGB24);
 
  if(CaptureThread && dynamic_cast<TVideoCaptureThreadBmp*>(CaptureThread))
  {
-	long long time_stamp=0;
+	long long time_stamp=0;//GetTickCount();
 	CaptureThread->WriteSourceSafe(bmp,time_stamp,false);
 	MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, 0);
  }
  else
  {
+  StopButtonClick(this);
   if(!DestroyCaptureThread())
    return false;
 
