@@ -161,8 +161,6 @@ InitialPage::InitialPage(QWidget *parent)
 
     layout->addWidget(browseBut,4,2);
 
-    //corePath.insert(0,"C:\\Users\\Obald\\Documents\\� ТК\\Core");
-
     libModel = new QStringListModel;
     libModel->setStringList(libList);
     libListView = new  QListView;
@@ -178,7 +176,7 @@ InitialPage::InitialPage(QWidget *parent)
     tree->setColumnHidden(2,true);
     tree->setColumnHidden(3,true);
     tree->setHeaderHidden(true);
-    tree->setRootIndex(dstModel->index(corePath/*+"\\Engine\\Libraries"*/));//
+    tree->setRootIndex(dstModel->index(corePath));//
 
 
     QHBoxLayout *hboxlayout = new QHBoxLayout;
@@ -207,8 +205,7 @@ InitialPage::InitialPage(QWidget *parent)
     connect(namespaceCBox,SIGNAL(currentTextChanged(QString)), SLOT(slotNamespaceChanged()));
     connect(templateCBox, SIGNAL(customContextMenuRequested(QPoint)), SLOT(slotSettingsChanged()));
     //
-    //connect(this, SIGNAL(expand()),tree, SLOT(expandAll()));//придумать получше
-    //connect(tree, SIGNAL(clicked(QModelIndex)),tree, SLOT(expandAll()));//придумать получше
+    connect(tree, SIGNAL(clicked(QModelIndex)),tree, SLOT(expand(QModelIndex)));
     connect(libListView, SIGNAL(clicked(QModelIndex)), SLOT(slotLibChanged()));
     connect(expandAllBut, SIGNAL(clicked()), tree, SLOT(expandAll()));
     connect(selectBut, SIGNAL(clicked()), SLOT(slotPathSelected()));
@@ -216,7 +213,7 @@ InitialPage::InitialPage(QWidget *parent)
 }
 /*virtual*/ InitialPage::~InitialPage()
 {
-    saveSettings();
+    //saveSettings();
 }
 
 SettingsDialog::SettingsDialog(QWidget *parent)
@@ -305,6 +302,7 @@ SettingsDialog::SettingsDialog(QWidget *parent)
     connect(setTemplatePathLineEdit1, SIGNAL(textChanged(QString)), SLOT(slotTempPathChanged1()));
     connect(setTemplatePathLineEdit2, SIGNAL(textChanged(QString)), SLOT(slotTempPathChanged2()));
     connect(setTemplatePathLineEdit3, SIGNAL(textChanged(QString)), SLOT(slotTempPathChanged3()));
+
 }
 
 
@@ -318,7 +316,7 @@ void CodeWizard::slotaccept()
 {
 
     IP->AddToULib();
-
+    IP->saveSettings();
     //Creating H file
     QFile srcHfile(IP->templatePaths.value(IP->templateCBox->currentIndex()) + "h");
     if (!srcHfile.open(QIODevice::ReadOnly | QIODevice::Text)){
@@ -494,7 +492,7 @@ void CodeWizard::slotaccept()
                 outCPP<<line<<'\n';
             }
         }
-        QWizard::restart();//вернуть, если закомментировано
+        //QWizard::restart();//вернуть, если закомментировано
 
 }
 //test
@@ -544,12 +542,13 @@ void InitialPage::AddToULib()
     while (!uLibInHStream.atEnd())
     {
         QString uLibStreamLine = uLibInHStream.readLine();
-        tempArray.append(uLibStreamLine);
-        if(uLibStreamLine.contains("#include") && uLibStreamLine.contains("ULibrary.h"))
+
+        if(uLibStreamLine.contains("namespace"))
         {
-            tempArray.append("\n"); //для Win
-            tempArray.append("#include \""+field("fileName").toString()+".h\"");
+            uLibStreamLine.prepend("#include \""+field("fileName").toString()+".h\"\n\n");
+            tempArray.chop(1);
         }
+        tempArray.append(uLibStreamLine);
         tempArray.append("\n"); //для Win
     }
     uLibHFile.close();
@@ -561,6 +560,7 @@ void InitialPage::AddToULib()
         return;
     }
     uLibOutHStream<<tempArray;//
+    uLibHFile.close();
 
     //CPP
     QFile uLibCppFile(field("dstPath").toString()+"/"+uLibFileName+".cpp");
@@ -575,36 +575,55 @@ void InitialPage::AddToULib()
     QTextStream uLibInCppStream(&uLibCppFile);
     QByteArray tempCppArray;
     QTextStream uLibOutCppStream(&uLibCppFile);
-    QString prevStreamLine("");//для UploadClass
+    QString tempStreamLine;
+    //
+    int braceCount = 0;
+    while(!uLibInCppStream.atEnd())
+    {
+        if(uLibInCppStream.readLine().contains("}"))
+        {
+            braceCount++;
+        }
+    }
+    uLibCppFile.close();
 
+    if (!uLibCppFile.open(QIODevice::ReadOnly | QIODevice::Text)){
+        QMessageBox::warning(0, QObject::tr("Simple Wizard"),
+                             QObject::tr("Cannot open file %1:\n%2")
+                             .arg(uLibCppFile.fileName())
+                             .arg(uLibCppFile.errorString()));
+        return;
+    }
+    //
     while (!uLibInCppStream.atEnd())
     {
         QString uLibStreamLine = uLibInCppStream.readLine();
-        QString temp2;
-        temp2.append(uLibStreamLine);
-        if(uLibStreamLine.contains("#include") && uLibStreamLine.contains(uLibFileName))
+        //QString temp2;
+        //temp2.append(uLibStreamLine);
+        if(uLibStreamLine.contains("namespace"))
         {
-            temp2.append("\n"); //для Win
-            temp2.append("#include \""+field("fileName").toString()+".cpp\"");
+            uLibStreamLine.prepend("#include \""+field("fileName").toString()+".cpp\"\n\n");
+            tempCppArray.chop(1);
 
         }
-        if(prevStreamLine.contains("UploadClass") && uLibStreamLine.contains("}"))
+        if(uLibStreamLine.contains("}"))
         {
-            prevStreamLine = uLibStreamLine;
-            QString uploadClassString("\n UEPtr<UContainer> generated_cont=new "+
-                                      field("fileName").toString()+";"+
-                                      "\n generated_cont->SetName(\""+
-                                      field("fileName").toString().remove(0,1)+"\");"+
-                                      "\n generated_cont->Default();"+
-                                      "\n UploadClass(\""+field("fileName").toString()+"\",generated_cont);\n");//
-            temp2.push_front(uploadClassString);
+            braceCount--;
+            if (braceCount == 1)
+            {
+                QString uploadClassString("\n{\n UEPtr<UContainer> generated_cont=new "+
+                                          field("fileName").toString()+";"+
+                                          "\n generated_cont->SetName(\""+
+                                          field("componentName").toString()+"\");"+
+                                          "\n generated_cont->Default();"+
+                                          "\n UploadClass(\""+field("fileName").toString()+"\",generated_cont);\n}\n");//
+                uLibStreamLine.push_front(uploadClassString);
+            }
         }
-        else
-        {
-            prevStreamLine = uLibStreamLine;
-        }
-        temp2.append("\n"); //для Win
-        tempCppArray.append(temp2);
+
+        //temp2.append("\n"); //для Win
+        tempCppArray.append(uLibStreamLine);
+        tempCppArray.append("\n");
     }
     uLibCppFile.close();
     if (!uLibCppFile.open(QIODevice::WriteOnly | QIODevice::Text)){
@@ -716,6 +735,7 @@ void InitialPage::slotLibChanged()
     tree->setRootIndex(dstModel->index(corePath+"\\"+libModel->data(libListView->currentIndex(),0).toString()));
     emit expand();
 }
+
 
 void CodeWizard::slotSettingsAccepted()
 {
