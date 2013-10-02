@@ -559,6 +559,9 @@ for(size_t k=0;k<Trackers.size();k++)
  VideoOutputFrame1->MyVideoOutputToolsForm->DelAllFiguresButtonClick(Sender);
  VideoOutputFrame1->MyVideoOutputToolsForm->AddFigureButtonClick(Sender);
  AfterCalculate();
+ if(CalcAfterSendCheckBox->Checked)
+  UGEngineControlForm->Step1Click(Sender);
+
 }
 //---------------------------------------------------------------------------
 
