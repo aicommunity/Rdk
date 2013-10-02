@@ -22,7 +22,9 @@ namespace RDK {
 // Конструкторы и деструкторы
 // --------------------------
 UBAModel::UBAModel(void)
- : Output("Output",this,0)
+ : Output("Output",this,0),
+   WorkWidth("WorkWidth",this),
+   WorkHeight("WorkHeight",this)
 {
 }
 
@@ -41,6 +43,60 @@ UBAModel* UBAModel::New(void)
 }
 // --------------------------
 
+// --------------------------
+// Скрытые методы управления счетом
+// --------------------------
+// Восстановление настроек по умолчанию и сброс процесса счета
+bool UBAModel::ADefault(void)
+{
+ return AMDefault();
+}
+
+bool UBAModel::AMDefault(void)
+{
+ return true;
+}
+
+// Обеспечивает сборку внутренней структуры объекта
+// после настройки параметров
+// Автоматически вызывает метод Reset() и выставляет Ready в true
+// в случае успешной сборки
+bool UBAModel::ABuild(void)
+{
+ return AMBuild();
+}
+
+bool UBAModel::AMBuild(void)
+{
+ return true;
+}
+
+// Сброс процесса счета.
+bool UBAModel::AReset(void)
+{
+ *WorkWidth=Output->GetWidth();
+ *WorkHeight=Output->GetHeight();
+ return AMReset();
+}
+
+bool UBAModel::AMReset(void)
+{
+ return true;
+}
+
+// Выполняет расчет этого объекта
+bool UBAModel::ACalculate(void)
+{
+ *WorkWidth=Output->GetWidth();
+ *WorkHeight=Output->GetHeight();
+ return AMCalculate();
+}
+
+bool UBAModel::AMCalculate(void)
+{
+ return true;
+}
+// --------------------------
 
 
 }
