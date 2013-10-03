@@ -1,7 +1,19 @@
 #ifndef MDMatrixH
 #define MDMatrixH
 
+#include "../Utilities/UException.h"
+
 namespace RDK{
+
+
+// Исключения
+/// Нулевой определитель. Исключение генерируется при обращении матриц и т.п.
+class EMatrixZeroDet: public EError
+{
+public:
+EMatrixZeroDet(void) : EError() {};
+};
+
 
 template<class T>
 class MDMatrix
@@ -159,7 +171,6 @@ MDMatrix<T> Eye(void);
 bool operator == (const MDMatrix<T> &M) const;
 bool operator != (const MDMatrix<T> &M) const;
 // --------------------------
-
 };
 // ---------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------
@@ -740,7 +751,7 @@ MDMatrix<T>& MDMatrix<T>::Inverse(MDMatrix<T> &res) const
  T det=Det();
 
  if(!det)
-  return res;
+  throw EMatrixZeroDet();
 
  // get the determinant of a
  det = 1.0/det;
