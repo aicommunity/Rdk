@@ -147,13 +147,14 @@ object TldTrackingForm: TTldTrackingForm
         OnShow = PointsTabSheetShow
         object SendPointsButton: TButton
           Left = 0
-          Top = 122
+          Top = 139
           Width = 181
           Height = 25
           Align = alTop
           Caption = 'Send selected objects'
           TabOrder = 0
           OnClick = SendPointsButtonClick
+          ExplicitTop = 122
         end
         object GroupBox1: TGroupBox
           Left = 0
@@ -196,6 +197,19 @@ object TldTrackingForm: TTldTrackingForm
           Checked = True
           State = cbChecked
           TabOrder = 2
+          ExplicitLeft = -1
+          ExplicitTop = 101
+        end
+        object CalcAfterSendCheckBox: TCheckBox
+          Left = 0
+          Top = 122
+          Width = 181
+          Height = 17
+          Align = alTop
+          Caption = 'Step After Send'
+          TabOrder = 3
+          ExplicitLeft = 3
+          ExplicitTop = 138
         end
       end
     end

@@ -2140,6 +2140,24 @@ void TVideoOutputFrame::ABeforeCalculate(void)
  }
 }
 
+// Метод, вызываемый перед сбросом
+void TVideoOutputFrame::ABeforeReset(void)
+{
+ if(Model_Check())
+ {
+  if(BmpSource.GetByteLength()>0)
+  {
+   if(GetNumEngines() == 1)
+	Model_SetComponentBitmapOutput("", "Output", &BmpSource,true); // Заглушка!!
+	//в модели должна быть возможность задания множества выходов
+   else
+   {
+	if(GetNumEngines()>FrameIndex)
+ 	 MModel_SetComponentBitmapOutput(FrameIndex, "", "Output", &BmpSource,true);
+   }
+  }
+ }
+}
 
 // Метод, вызываемый после шага расчета
 void TVideoOutputFrame::AAfterCalculate(void)

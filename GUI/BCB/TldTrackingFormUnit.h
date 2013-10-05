@@ -47,6 +47,7 @@ __published:	// IDE-managed Components
 	TPanel *Panel4;
 	TRadioGroup *InitInputModeRadioGroup;
 	TCheckListBox *TrackersCheckListBox;
+	TCheckBox *CalcAfterSendCheckBox;
 	void __fastcall StartTrackingButtonClick(TObject *Sender);
 	void __fastcall StopTrackingButtonClick(TObject *Sender);
 	void __fastcall GetFrameButtonClick(TObject *Sender);
