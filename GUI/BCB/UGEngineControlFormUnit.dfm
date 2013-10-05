@@ -104,6 +104,7 @@ object UGEngineControlForm: TUGEngineControlForm
               end
               inherited ParametersListStringGrid: TStringGrid
                 Width = 237
+                ExplicitWidth = 237
               end
               inherited ParameterValueRichEdit: TRichEdit
                 Top = -16
@@ -114,6 +115,8 @@ object UGEngineControlForm: TUGEngineControlForm
               inherited HeaderControl3: THeaderControl
                 Top = 17
                 Width = 237
+                ExplicitTop = 17
+                ExplicitWidth = 237
               end
             end
             inherited TabSheet5: TTabSheet
@@ -686,7 +689,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 360
     Top = 65528
     Bitmap = {
-      494C01011B006000740110001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B006000780110001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

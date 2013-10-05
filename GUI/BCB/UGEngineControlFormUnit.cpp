@@ -468,6 +468,8 @@ try{
 
  for(int i=0;i<GetNumEngines();i++)
  {
+  try
+  {
   SelectEngine(i);
   String modelfilename;
 
@@ -538,6 +540,11 @@ try{
   UShowProgressBarForm->IncBarStatus(1);
   UShowProgressBarForm->Update();
   Sleep(0);
+  }
+  catch(RDK::UException &exception)
+  {
+   GetEngine()->ProcessException(exception);
+  }
  }
  UShowProgressBarForm->IncBarStatus(1);
  UShowProgressBarForm->Update();
@@ -578,9 +585,8 @@ try{
 }
 catch(RDK::UException &exception)
 {
-
  UShowProgressBarForm->Hide();
- throw;
+ GetEngine()->ProcessException(exception);
 }
 catch(...)
 {
