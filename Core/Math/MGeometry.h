@@ -185,10 +185,16 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
 			trX      =  ExtMat(0,0) / C;        // Если нет, то получаем угол вращения вокруг оси Y
 			trY      = ExtMat(0,2) / C;
 
+		 if(fabs(trX)<std::numeric_limits<T>::epsilon() &&
+			fabs(trY)<std::numeric_limits<T>::epsilon())
+		  throw EMatrixZeroDiv();
 		anglesANDshifts(4)  = atan2( trY, trX );
 
 		trX      =  ExtMat(1,1) / C;            // Получаем угол вращения вокруг оси  X
 		trY      =  ExtMat(2,1) / C;
+		 if(fabs(trX)<std::numeric_limits<T>::epsilon() &&
+			fabs(trY)<std::numeric_limits<T>::epsilon())
+		  throw EMatrixZeroDiv();
 
 		anglesANDshifts(3)  = atan2( trY, trX );
 		}
@@ -199,8 +205,11 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
       trX      = ExtMat(2,2);                 // И вычисляем угол вращения вокруг оси Y
       trY      = -ExtMat(2,0);
 
-      anglesANDshifts(4)  = atan2( trY, trX );
-    }
+	  if(fabs(trX)<std::numeric_limits<T>::epsilon() &&
+			fabs(trY)<std::numeric_limits<T>::epsilon())
+		  throw EMatrixZeroDiv();
+	  anglesANDshifts(4)  = atan2( trY, trX );
+	}
 	break;
 	}
 	case 3:
@@ -213,22 +222,31 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
 			trX      =  ExtMat(1,1) / C;
 			trY      = ExtMat(1,0) / C;
 
+		 if(fabs(trX)<std::numeric_limits<T>::epsilon() &&
+			fabs(trY)<std::numeric_limits<T>::epsilon())
+		  throw EMatrixZeroDiv();
 		anglesANDshifts(5)  = atan2( trY, trX );
 
 		trX      =  ExtMat(2,2) / C;
 		trY      =  ExtMat(0,2) / C;
 
+		 if(fabs(trX)<std::numeric_limits<T>::epsilon() &&
+			fabs(trY)<std::numeric_limits<T>::epsilon())
+		  throw EMatrixZeroDiv();
 		anglesANDshifts(4)  = atan2( trY, trX );
 		}
-    else
-      {
-      anglesANDshifts(4)  = 0;
+	else
+	  {
+	  anglesANDshifts(4)  = 0;
 
-      trX      = ExtMat(0,0);
-      trY      = -ExtMat(0,1);
+	  trX      = ExtMat(0,0);
+	  trY      = -ExtMat(0,1);
 
-      anglesANDshifts(5)  = atan2( trY, trX );
-      }
+		 if(fabs(trX)<std::numeric_limits<T>::epsilon() &&
+			fabs(trY)<std::numeric_limits<T>::epsilon())
+		  throw EMatrixZeroDiv();
+	  anglesANDshifts(5)  = atan2( trY, trX );
+	  }
 	break;
 	}
 	case 4:
@@ -241,22 +259,31 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
 			trX      =  ExtMat(1,1) / C;
 			trY      = -ExtMat(1,2) / C;
 
+		 if(fabs(trX)<std::numeric_limits<T>::epsilon() &&
+			fabs(trY)<std::numeric_limits<T>::epsilon())
+		  throw EMatrixZeroDiv();
 		anglesANDshifts(3)  = atan2( trY, trX );
 
 		trX      =  ExtMat(0,0) / C;
 		trY      =  -ExtMat(2,0) / C;
 
+		 if(fabs(trX)<std::numeric_limits<T>::epsilon() &&
+			fabs(trY)<std::numeric_limits<T>::epsilon())
+		  throw EMatrixZeroDiv();
 		anglesANDshifts(4)  = atan2( trY, trX );
 		}
-    else
-      {
-      anglesANDshifts(4)  = 0;
+	else
+	  {
+	  anglesANDshifts(4)  = 0;
 
-      trX      = ExtMat(2,2);
-      trY      = ExtMat(2,1);
+	  trX      = ExtMat(2,2);
+	  trY      = ExtMat(2,1);
 
-      anglesANDshifts(3)  = atan2( trY, trX );
-      }
+		 if(fabs(trX)<std::numeric_limits<T>::epsilon() &&
+			fabs(trY)<std::numeric_limits<T>::epsilon())
+		  throw EMatrixZeroDiv();
+	  anglesANDshifts(3)  = atan2( trY, trX );
+	  }
 	break;
 	}
 	case 5:
@@ -269,22 +296,31 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
 			trX      =  ExtMat(2,2) / C;
 			trY      = -ExtMat(2,0) / C;
 
+		 if(fabs(trX)<std::numeric_limits<T>::epsilon() &&
+			fabs(trY)<std::numeric_limits<T>::epsilon())
+		  throw EMatrixZeroDiv();
 		anglesANDshifts(4)  = atan2( trY, trX );
 
 		trX      =  ExtMat(1,1) / C;
 		trY      =  -ExtMat(0,1) / C;
 
+		 if(fabs(trX)<std::numeric_limits<T>::epsilon() &&
+			fabs(trY)<std::numeric_limits<T>::epsilon())
+		  throw EMatrixZeroDiv();
 		anglesANDshifts(5)  = atan2( trY, trX );
 		}
-    else
-      {
-      anglesANDshifts(5)  = 0;
+	else
+	  {
+	  anglesANDshifts(5)  = 0;
 
-      trX      = ExtMat(0,0);
-      trY      = ExtMat(0,2);
+	  trX      = ExtMat(0,0);
+	  trY      = ExtMat(0,2);
 
-      anglesANDshifts(4)  = atan2( trY, trX );
-      }
+		 if(fabs(trX)<std::numeric_limits<T>::epsilon() &&
+			fabs(trY)<std::numeric_limits<T>::epsilon())
+		  throw EMatrixZeroDiv();
+	  anglesANDshifts(4)  = atan2( trY, trX );
+	  }
 	break;
 	}
 	case 6:
@@ -297,22 +333,31 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
 			trX      =  ExtMat(2,2) / C;
 			trY      = ExtMat(2,1) / C;
 
+		 if(fabs(trX)<std::numeric_limits<T>::epsilon() &&
+			fabs(trY)<std::numeric_limits<T>::epsilon())
+		  throw EMatrixZeroDiv();
 		anglesANDshifts(3)  = atan2( trY, trX );
 
 		trX      =  ExtMat(0,0) / C;
 		trY      =  ExtMat(1,0) / C;
 
+		 if(fabs(trX)<std::numeric_limits<T>::epsilon() &&
+			fabs(trY)<std::numeric_limits<T>::epsilon())
+		  throw EMatrixZeroDiv();
 		anglesANDshifts(5)  = atan2( trY, trX );
 		}
-    else
-      {
-      anglesANDshifts(5)  = 0;
+	else
+	  {
+	  anglesANDshifts(5)  = 0;
 
-      trX      = ExtMat(1,1);
-      trY      = -ExtMat(1,2);
+	  trX      = ExtMat(1,1);
+	  trY      = -ExtMat(1,2);
 
-      anglesANDshifts(3)  = atan2( trY, trX );
-      }
+		 if(fabs(trX)<std::numeric_limits<T>::epsilon() &&
+			fabs(trY)<std::numeric_limits<T>::epsilon())
+		  throw EMatrixZeroDiv();
+	  anglesANDshifts(3)  = atan2( trY, trX );
+	  }
 	break;
 	}
 	default:
@@ -325,22 +370,31 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
 			trX      =  ExtMat(2,2) / C;        // Если нет, то получаем угол вращения вокруг оси X
 			trY      = -ExtMat(1,2) / C;
 
+		 if(fabs(trX)<std::numeric_limits<T>::epsilon() &&
+			fabs(trY)<std::numeric_limits<T>::epsilon())
+		  throw EMatrixZeroDiv();
 		anglesANDshifts(3)  = atan2( trY, trX );
 
 		trX      =  ExtMat(0,0) / C;            // Получаем угол вращения вокруг оси  Z
 		trY      =  -ExtMat(0,1) / C;
 
+		 if(fabs(trX)<std::numeric_limits<T>::epsilon() &&
+			fabs(trY)<std::numeric_limits<T>::epsilon())
+		  throw EMatrixZeroDiv();
 		anglesANDshifts(5)  = atan2( trY, trX );
 		}
-    else                                 // Имеет место "Шарнирный замок" (Gimball lock)
-      {
-      anglesANDshifts(3)  = 0;                      // Угол вращения вокруг оси X приравниваем к нулю
+	else                                 // Имеет место "Шарнирный замок" (Gimball lock)
+	  {
+	  anglesANDshifts(3)  = 0;                      // Угол вращения вокруг оси X приравниваем к нулю
 
-      trX      = ExtMat(1,1);                 // И вычисляем угол вращения вокруг оси Z
-      trY      = ExtMat(1,0);
+	  trX      = ExtMat(1,1);                 // И вычисляем угол вращения вокруг оси Z
+	  trY      = ExtMat(1,0);
 
-      anglesANDshifts(5)  = atan2( trY, trX );
-      }
+		 if(fabs(trX)<std::numeric_limits<T>::epsilon() &&
+			fabs(trY)<std::numeric_limits<T>::epsilon())
+		  throw EMatrixZeroDiv();
+	  anglesANDshifts(5)  = atan2( trY, trX );
+	  }
 	}
 	}
 	//!!!!!!

@@ -36,6 +36,8 @@ MDMatrix<T> Xk1; // Вектор состояния системы в прошлый момент времени
 MDMatrix<T> Uk1; // Вектор управляющего воздействия в прошлый момент времени
 MDMatrix<T> Z;   // Вектор состояния системы в текущий момент времени
 
+public: // Исключения
+class EKalmanGainOverflow: public EError {};
 
 public: // Методы
 // --------------------------
@@ -228,26 +230,48 @@ bool KalmanReset(void)
 MDMatrix<T> StatePrediction(const MDMatrix<T> &F, const MDMatrix<T> &B,
 					 const MDMatrix<T> &xk1, const MDMatrix<T> &uk1)
 {
- return F*xk1+B*uk1;// xkL
+ MDMatrix<T> M1(F*xk1);
+ MDMatrix<T> M2(B*uk1);
+ return M1+M2;// xkL
 }
 
 MDMatrix<T> CovariationError(const MDMatrix<T> &F, const MDMatrix<T> &Pk1,
 					 const MDMatrix<T> &Q)
 {
- return F*Pk1*F.Transpose()+Q; // PkL
+ MDMatrix<T> M1(F*Pk1);
+ MDMatrix<T> M2(M1*F.Transpose());
+
+ return M2+Q; // PkL
 }
 
 // Корректировка
 MDMatrix<T> KalmanGain(const MDMatrix<T> &PkL, const MDMatrix<T> &H,
 					 const MDMatrix<T> &R)
 {
- return PkL*H.Transpose()*(H*PkL*H.Transpose()+R).Inverse(); // Kk Ошибка на итерации 211
+ MDMatrix<T> M1(PkL*H.Transpose());
+ MDMatrix<T> M2(H*PkL);
+ MDMatrix<T> M3(M2*H.Transpose());
+ MDMatrix<T> M4(M3+R);
+
+ for(int i=0;i<M4.GetCols()*M4.GetRows();i++)
+  if(fabs(M4.Data[i])>1e20)
+   throw EKalmanGainOverflow();
+ MDMatrix<T> M5(M4.Inverse());
+ MDMatrix<T> M6(M1*M5);
+
+ return M6;
+// return PkL*H.Transpose()*(H*PkL*H.Transpose()+R).Inverse(); // Kk Ошибка на итерации 211
 }
 
 MDMatrix<T> EstimationUpdate(const MDMatrix<T> &xkL, const MDMatrix<T> &Kk,
 					 const MDMatrix<T> &zk, const MDMatrix<T> &H)
 {
- return xkL+Kk*(zk-H*xkL); // xk
+ MDMatrix<double> M1(zk-H*xkL);
+ MDMatrix<double> M2(Kk*M1);
+
+
+// return xkL+Kk*(zk-H*xkL); // xk
+ return xkL+M2; // xk
 }
 
 MDMatrix<T> CovariationErrorUpdate(const MDMatrix<T> &Kk, const MDMatrix<T> &H,

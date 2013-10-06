@@ -208,6 +208,42 @@ bool UContainer::SetEnvironment(UEPtr<UEnvironment> environment)
 
  return res;
 }
+
+// Вызов обработчика исключений среды
+void UContainer::ProcessException(UException &exception)
+{
+ if(Environment)
+  Environment->ProcessException(exception);
+ else
+  throw exception;
+}
+
+
+// Вызов обработчика исключений среды для простой записи данных в лог
+// как предупреждения
+void UContainer::WriteWarningLineToLog(const std::string &line)
+{
+ EStringWarning exception(line);
+ if(Environment)
+ {
+  Environment->ProcessException(exception);
+ }
+ else
+  throw exception;
+}
+
+// Вызов обработчика исключений среды для простой записи данных в лог
+// как информационного сообщения
+void UContainer::WriteInfoLineToLog(const std::string &line)
+{
+ EStringInfo exception(line);
+ if(Environment)
+ {
+  Environment->ProcessException(exception);
+ }
+ else
+  throw exception;
+}
 // --------------------------
 
 // --------------------------

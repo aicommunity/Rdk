@@ -285,9 +285,9 @@ void __fastcall TTldTrackingForm::StopTrackingButtonClick(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TTldTrackingForm::GetFrameButtonClick(TObject *Sender)
 {
- bool started=UEngineMonitorForm->EngineMonitorFrame->Timer->Enabled;
- if(started)
-  StopTrackingButtonClick(Sender);
+// bool started=UEngineMonitorForm->EngineMonitorFrame->Timer->Enabled;
+// if(started)
+//  StopTrackingButtonClick(Sender);
 
 // if(VideoOutputForm->GetVideoOutputFrame(VideoSourceComboBox->ItemIndex))
  {

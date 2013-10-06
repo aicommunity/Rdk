@@ -385,6 +385,45 @@ std::string EFunctionReturnError::CreateLogMessage(void) const
 			std::string(" Code=")+sntoa(Code);
 }
 // --------------------------
+
+// Исключение с простой строкой текста как предупреждение
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EStringWarning::EStringWarning(const std::string &str) : Str(str)
+{
+}
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+std::string EStringWarning::CreateLogMessage(void) const
+{
+ return EWarning::CreateLogMessage()+std::string(" ")+Str;
+}
+// --------------------------
+
+
+// Исключение с простой строкой текста как информационное сообщение
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EStringInfo::EStringInfo(const std::string &str) : Str(str)
+{
+}
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+std::string EStringInfo::CreateLogMessage(void) const
+{
+ return EInfo::CreateLogMessage()+std::string(" ")+Str;
+}
+// --------------------------
 }
 #endif
 

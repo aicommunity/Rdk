@@ -615,6 +615,7 @@ int __fastcall TUWatchFrame::Add(int type, const string &xname, const string &yn
   if(!yname.empty())
   {
    wd.Legend=yname;
+   wd.Legend+=string("[")+RDK::sntoa(youtput)+string("]");
    wd.Legend+=string("(")+RDK::sntoa(mrow)+string(",");
    wd.Legend+=RDK::sntoa(mcol)+string(")");
   }
@@ -759,7 +760,7 @@ void __fastcall TUWatchFrame::StepUpdate(void)
 	 xdata=Model_GetDoubleTime();
 	 x=&xdata;
 
-	 ym=(const RDK::MDMatrix<double>*)(Model_GetComponentOutputAsMatrix(wd->YDataSourceName.c_str(), wd->YOutputIndex.c_str()));
+	 ym=(const RDK::MDMatrix<double>*)(Model_GetComponentOutputAsMatrixByIndex(wd->YDataSourceName.c_str(), wd->YOutputIndexOld));
 	 if(!ym)
 	 {
 	  y=(double*)Model_GetComponentOutputData(wd->YDataSourceName.c_str(), wd->YOutputIndexOld);
