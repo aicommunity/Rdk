@@ -438,7 +438,10 @@ void UNet::BreakConnectorLink(const NameT &connectorname, int connector_index)
 // std::string item_name;
 // item.Item->GetLongName(this,item_name);
 // BreakLink(
- item.Item->Disconnect(connector,item.Index, connector_index);
+ if(!item.Item)
+  return;
+
+  item.Item->Disconnect(connector,item.Index, connector_index);
 // connector->DisconnectFromIndex(connector_index);
 }
 
