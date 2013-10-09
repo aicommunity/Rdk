@@ -114,7 +114,7 @@ void TUVisualControllerFrame::UpdateInterface(bool force_update)
  if(!force_update)
  {
   UpdateControlState();
-  if(!Showing)
+  if(!Showing && !AlwaysUpdateFlag)
    return;
   if(!Parent || (!AlwaysUpdateFlag && !Parent->Visible) || (UpdateInterval<0 && CalculationModeFlag))
    return;
@@ -174,6 +174,7 @@ void TUVisualControllerFrame::SaveParameters(RDK::USerStorageXML &xml)
  ASaveParameters(xml);
  xml.WriteInteger("UpdateInterval",UpdateInterval);
  xml.WriteString("ComponentControlName",ComponentControlName);
+ xml.WriteBool("AlwaysUpdateFlag",AlwaysUpdateFlag);
 
  xml.SelectUp();
  xml.SelectUp();
@@ -198,6 +199,7 @@ void TUVisualControllerFrame::LoadParameters(RDK::USerStorageXML &xml)
  xml.SelectNodeForce(GetName());
  ComponentControlName=xml.ReadString("ComponentControlName","");
  UpdateInterval=xml.ReadInteger("UpdateInterval",UpdateInterval);
+ AlwaysUpdateFlag=xml.ReadBool("AlwaysUpdateFlag",false);
  ALoadParameters(xml);
  xml.SelectUp();
  xml.SelectUp();

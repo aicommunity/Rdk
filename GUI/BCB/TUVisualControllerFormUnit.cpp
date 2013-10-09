@@ -169,7 +169,7 @@ void TUVisualControllerForm::UpdateInterface(bool force_update)
    return;
 
   UpdateControlState();
-  if(!Showing)
+  if(!Showing && !AlwaysUpdateFlag)
    return;
 
   if(UpdateInterval>0 && CalculationModeFlag)
@@ -235,6 +235,7 @@ void TUVisualControllerForm::SaveParameters(RDK::USerStorageXML &xml)
  SaveFormPosition(xml, this);
  xml.WriteString("ComponentControlName",ComponentControlName);
  xml.WriteInteger("UpdateInterval",UpdateInterval);
+ xml.WriteBool("AlwaysUpdateFlag",AlwaysUpdateFlag);
  if(tab)
   xml.SelectUp();
 
@@ -264,6 +265,7 @@ void TUVisualControllerForm::LoadParameters(RDK::USerStorageXML &xml)
  xml.SelectNodeForce(GetName());
  ComponentControlName=xml.ReadString("ComponentControlName","");
  UpdateInterval=xml.ReadInteger("UpdateInterval",UpdateInterval);
+ AlwaysUpdateFlag=xml.ReadBool("AlwaysUpdateFlag",false);
  LoadFormPosition(xml, this);
  ALoadParameters(xml);
 
