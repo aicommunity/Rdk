@@ -91,6 +91,13 @@ static void SaveParameters(RDK::USerStorageXML &xml);
 
 // Загружает параметры интерфейса из xml
 static void LoadParameters(RDK::USerStorageXML &xml);
+
+// Служебные методы управления интерфейсом
+/// Сбрасывает флаг прошедшей перерисовки в этой итерации счета
+static void ResetCalculationStepUpdatedFlag(void);
+
+/// Выставляет флаг прошедшей перерисовки в этой итерации счета
+static void SetCalculationStepUpdatedFlag(void);
 };
 
 }

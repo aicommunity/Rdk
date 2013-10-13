@@ -91,6 +91,7 @@ void TUVisualControllerForm::BeforeReset(void)
 {
  try
  {
+  ResetCalculationStepUpdatedFlag();
   ABeforeReset();
  }
  catch (RDK::UException &exception)

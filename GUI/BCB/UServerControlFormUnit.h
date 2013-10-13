@@ -137,6 +137,8 @@ int PerformancePushIndex;
 
 const char* ControlRemoteCall(const char *request, int &return_value);
 
+const char* PtzRemoteCall(const char *request, int &return_value);
+
 // ‘ункци€, обрабатывающа€ команды управлени€ сервером
 // ¬озвращает true если команда была найдена и обработана
 bool ProcessControlCommand(const std::string &cmd_name, std::map<std::string,std::vector<char> > &args, std::string &response_type, std::vector<char> &response_data);
@@ -146,6 +148,9 @@ bool ProcessControlCommand(const std::map<std::string,std::vector<char> > &args,
 // ¬озвращает true если команда была найдена и обработана
 bool ProcessRPCCommand(int channel, const std::string &cmd_name, std::map<std::string,std::vector<char> > &args, std::string &response_type, std::vector<char> &response_data);
 bool ProcessRPCCommand(const std::map<std::string,std::vector<char> > &args, std::string &response_type, std::vector<char> &response_data);
+
+// ћетод, обрабатывающий команды управлени€ PTZ камерами
+bool ProcessPtzCommand(const std::map<std::string,std::vector<char> > &args, std::string &response_type, std::vector<char> &response_data);
 
 ///  одирует строку в вектор
 void ConvertStringToVector(const std::string &source, std::vector<char> &dest);
