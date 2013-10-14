@@ -53,7 +53,7 @@ __fastcall TUServerControlForm::TUServerControlForm(TComponent* Owner)
 
 const char* TUServerControlForm::ControlRemoteCall(const char *request, int &return_value)
 {
- return_value=0;
+ return_value=2001;
 
  RDK::USerStorageXML xml,xml_data;
 
@@ -72,10 +72,12 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
  if(cmd == "GetNumChannels")
  {
   ControlResponseString=RDK::sntoa(GetNumChannels());
+  return_value=0;
  }
  if(cmd == "GetChannelName")
  {
   ControlResponseString=GetChannelName(engine_index);
+  return_value=0;
  }
  else
  if(cmd == "SetChannelName")
@@ -91,6 +93,7 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
  if(cmd == "GetChannelVideoSourceType")
  {
   ControlResponseString=RDK::sntoa(GetChannelVideoSource(engine_index));
+  return_value=0;
  }
  else
  if(cmd == "SetChannelVideoSourceType")
@@ -136,7 +139,7 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
 
 const char* TUServerControlForm::PtzRemoteCall(const char *request, int &return_value)
 {
- return_value=0;
+ return_value=2001;
 
  RDK::USerStorageXML xml,xml_data;
 
@@ -150,24 +153,25 @@ const char* TUServerControlForm::PtzRemoteCall(const char *request, int &return_
  if(cmd == "Ptz_GetCameraNames")
  {
   ControlResponseString=PtzControl.Ptz_GetCameraNames();
-//  int num_engines=xml.ReadInteger("NumChannels",GetNumEngines());
-//  return_value=SetNumChannels(num_engines);
+  return_value=0;
  }
  else
  if(cmd == "Ptz_GetCameraType")
  {
   ControlResponseString=PtzControl.Ptz_GetCameraType(camera.c_str());
+  return_value=0;
  }
  if(cmd == "Ptz_GetCameraParameter")
  {
   std::string param_name=xml.ReadString("Parameter","");
   ControlResponseString=PtzControl.Ptz_GetCameraParameter(camera.c_str(),param_name.c_str());
-//  ControlResponseString=GetChannelName(engine_index);
+  return_value=0;
  }
  else
  if(cmd == "Ptz_GetImplementedCommands")
  {
   ControlResponseString=PtzControl.Ptz_GetImplementedCommands(camera.c_str());
+  return_value=0;
  }
  else
  if(cmd == "Ptz_CameraConnect")
@@ -284,6 +288,9 @@ bool TUServerControlForm::ProcessControlCommand(const std::map<std::string,std::
  int response_status=0;
  const char* response=ControlRemoteCall(request.c_str(), response_status);
 
+ if(response_status == 2001)
+  return false;
+
  if(response)
   ConvertStringToVector(response, response_data);
  else
@@ -310,6 +317,9 @@ bool TUServerControlForm::ProcessRPCCommand(const std::map<std::string,std::vect
  int response_status=0;
  const char* response=RemoteCall(request.c_str(), response_status);
 
+ if(response_status == 2001)
+  return false;
+
  if(response)
   ConvertStringToVector(response, response_data);
  else
@@ -335,6 +345,9 @@ bool TUServerControlForm::ProcessPtzCommand(const std::map<std::string,std::vect
  ConvertVectorToString(I->second, request);
  int response_status=0;
  const char* response=PtzRemoteCall(request.c_str(), response_status);
+
+ if(response_status == 2001)
+  return false;
 
  if(response)
   ConvertStringToVector(response, response_data);
@@ -816,7 +829,7 @@ void __fastcall TUServerControlForm::ApplyOptionsButtonClick(TObject *Sender)
 
  UGEngineControlForm->Pause1Click(Sender);
 
- UHttpServerFrame->SetListenPort(new_num_channels);
+ UHttpServerFrame->SetListenPort(StrToInt(ServerControlPortLabeledEdit->Text));
 
  UEngineMonitorForm->EngineMonitorFrame->SetNumChannels(new_num_channels);
  SetNumChannels(GetNumEngines());

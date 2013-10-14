@@ -18,7 +18,7 @@ std::vector<std::string> RpcReturnString;
 /// </RPC_Request>
 const char* RemoteCallInternal(const char *request, int &return_value)
 {
- return_value=0;
+ return_value=INT_MAX;
 
  RDK::USerStorageXML xml,xml_data;
 
@@ -109,7 +109,10 @@ const char* RemoteCallInternal(const char *request, int &return_value)
 
   const char * data=MModel_GetComponentParameters(engine_index, component_name.c_str());
   if(data)
+  {
    RpcReturnString[engine_index]=data;
+   return_value=0;
+  }
   else
    return_value=2002;
  }
@@ -120,7 +123,10 @@ const char* RemoteCallInternal(const char *request, int &return_value)
 
   const char * data=MModel_GetComponentState(engine_index, component_name.c_str());
   if(data)
+  {
    RpcReturnString[engine_index]=data;
+   return_value=0;
+  }
   else
    return_value=2002;
  }
