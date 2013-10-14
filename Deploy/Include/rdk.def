@@ -120,6 +120,7 @@ EXPORTS
     Model_ChainLinking = _Model_ChainLinking
     Model_ParallelLinking = _Model_ParallelLinking
     Model_BreakLink = _Model_BreakLink
+    Model_BreakConnectorLink = _Model_BreakConnectorLink
     Model_BreakAllLinks = _Model_BreakAllLinks
     Model_BreakAllComponentLinks = _Model_BreakAllComponentLinks
     Model_BreakAllComponentInputLinks = _Model_BreakAllComponentInputLinks

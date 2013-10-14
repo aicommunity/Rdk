@@ -1172,6 +1172,11 @@ int RDK_CALL Model_BreakAllLinks(void)
  return PEngine->Model_BreakAllLinks();
 }
 
+// Разрывает связь ко входу connector_index коннектора 'connectorid'
+int RDK_CALL Model_BreakConnectorLink(const char* connectorname, int connector_index)
+{
+ return PEngine->Model_BreakConnectorLink(connectorname, connector_index);
+}
 
 // Разрывает все входные и выходные связи выбранного контейнера
 int RDK_CALL Model_BreakAllComponentLinks(const char* stringid)
