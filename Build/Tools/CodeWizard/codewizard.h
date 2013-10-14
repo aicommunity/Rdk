@@ -22,6 +22,8 @@
 #include <QStringListModel>
 #include <QListView>
 #include <QSplitter>
+#include <QXmlStreamWriter>
+#include <QXmlStreamReader>
 
 class InitialPage;
 class SettingsDialog;
@@ -50,8 +52,10 @@ class InitialPage : public QWizardPage
 public:
     InitialPage(QWidget *parent = 0);
     virtual ~InitialPage();
-    void saveSettings();
-    void loadSettings();
+    void readXMLSettings();
+    void AddToULib();
+    void writeSettingsToXML();//test
+    void writeHistoryToXML();
     friend class SettingsDialog;
 signals:
     void expand();
@@ -131,7 +135,6 @@ public://
 
     const int maxHistorySize;
 
-    void AddToULib();//test
 };
 
 class SettingsDialog : public QDialog
@@ -139,8 +142,7 @@ class SettingsDialog : public QDialog
     Q_OBJECT
 public:
     SettingsDialog(QWidget *parent = 0);
-    void saveSettingsDialog();
-    void loadSettingsDialog();
+    void readSettings();
 public slots:
     //void slotAccepted();
     void slotRootBrowse();

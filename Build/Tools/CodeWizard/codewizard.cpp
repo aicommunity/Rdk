@@ -61,15 +61,16 @@ InitialPage::InitialPage(QWidget *parent)
 
 
     //
-    loadSettings();
+    //loadSettings();
+    readXMLSettings();
     templateCBox->addItems(templates);
     //dstPathCBox->addItem(dstPathLineEdit->text());
-    //srcPath;
     dstPathCBox->addItems(paths);
     dstPathCBox->setEditable(true);
     dstPathCBox->setMaxCount(maxHistorySize);
     dstPathCBox->setMaxVisibleItems(5);
-    //classNameCBox->addItem("");
+    dstPathLineEdit->setText(dstPathCBox->currentText());
+    classNameCBox->addItem("");//
     classNameCBox->addItems(classNameHistory);
     classNameCBox->setEditable(true);
     classNameCBox->setMaxCount(maxHistorySize);
@@ -102,7 +103,7 @@ InitialPage::InitialPage(QWidget *parent)
 
     //Registering fields
     registerField("template", templateCBox);
-    registerField("className*", classNameLineEdit);
+    registerField("className", classNameLineEdit);
     registerField("componentName", componentNameLineEdit);
     registerField("fileName", fileNameLineEdit);
     registerField("dstPath", dstPathLineEdit);
@@ -176,11 +177,10 @@ InitialPage::InitialPage(QWidget *parent)
     tree->setColumnHidden(2,true);
     tree->setColumnHidden(3,true);
     tree->setHeaderHidden(true);
-    tree->setRootIndex(dstModel->index(corePath));//
+    tree->setRootIndex(dstModel->index(dstPathLineEdit->text()));//
 
 
     QHBoxLayout *hboxlayout = new QHBoxLayout;
-    //QSplitter *hspltr = new QSplitter(Qt::Horizontal);
 
     QHBoxLayout *h2boxlayout = new QHBoxLayout;
     QVBoxLayout *vboxlayout = new QVBoxLayout;
@@ -209,11 +209,12 @@ InitialPage::InitialPage(QWidget *parent)
     connect(libListView, SIGNAL(clicked(QModelIndex)), SLOT(slotLibChanged()));
     connect(expandAllBut, SIGNAL(clicked()), tree, SLOT(expandAll()));
     connect(selectBut, SIGNAL(clicked()), SLOT(slotPathSelected()));
+    connect(tree, SIGNAL(clicked(QModelIndex)), SLOT(slotPathSelected()));//
 
 }
 /*virtual*/ InitialPage::~InitialPage()
 {
-    //saveSettings();
+
 }
 
 SettingsDialog::SettingsDialog(QWidget *parent)
@@ -250,7 +251,7 @@ SettingsDialog::SettingsDialog(QWidget *parent)
     setLibsLineEdit2 = new QLineEdit;
     setLibsLineEdit3 = new QLineEdit;
 
-    loadSettingsDialog();
+    readSettings();
 
     QPushButton *setRootPathBrowse = new QPushButton("Browse");
     QPushButton *setTemplatePathBrowse1 = new QPushButton("Browse");
@@ -316,11 +317,12 @@ void CodeWizard::slotaccept()
 {
 
     IP->AddToULib();
-    IP->saveSettings();
+    IP->writeHistoryToXML();
+
     //Creating H file
     QFile srcHfile(IP->templatePaths.value(IP->templateCBox->currentIndex()) + "h");
     if (!srcHfile.open(QIODevice::ReadOnly | QIODevice::Text)){
-        QMessageBox::warning(0, QObject::tr("Simple Wizard"),
+        QMessageBox::warning(0, QObject::tr("Wizard"),
                              QObject::tr("Cannot open file %1:\n%2")
                              .arg(srcHfile.fileName())
                              .arg(srcHfile.errorString()));
@@ -336,7 +338,7 @@ void CodeWizard::slotaccept()
             return;
         }
         if (!dstHfile.open(QIODevice::WriteOnly | QIODevice::Text)){
-            QMessageBox::warning(0, QObject::tr("Simple Wizard"),
+            QMessageBox::warning(0, QObject::tr("Wizard"),
                                  QObject::tr("Cannot write file %1:\n%2")
                                  .arg(dstHfile.fileName())
                                  .arg(dstHfile.errorString()));
@@ -492,10 +494,10 @@ void CodeWizard::slotaccept()
                 outCPP<<line<<'\n';
             }
         }
-        //QWizard::restart();//вернуть, если закомментировано
+        //QWizard::restart();//сброс введённого
 
 }
-//test
+
 void InitialPage::AddToULib()
 {
     QString uLibFileName;
@@ -508,7 +510,7 @@ void InitialPage::AddToULib()
         {
             QFile childFile(field("dstPath").toString()+"/"+childFileName);
             if (!childFile.open(QIODevice::ReadOnly | QIODevice::Text)){
-                QMessageBox::warning(0, QObject::tr("Simple Wizard"),
+                QMessageBox::warning(0, QObject::tr("Wizard"),
                                      QObject::tr("Cannot open file %1:\n%2")
                                      .arg(childFile.fileName())
                                      .arg(childFile.errorString()));
@@ -530,7 +532,7 @@ void InitialPage::AddToULib()
 
     QFile uLibHFile(field("dstPath").toString()+"/"+uLibFileName+".h");
     if (!uLibHFile.open(QIODevice::ReadOnly | QIODevice::Text)){
-        QMessageBox::warning(0, QObject::tr("Simple Wizard"),
+        QMessageBox::warning(0, QObject::tr("Code Wizard"),
                              QObject::tr("Cannot open file %1:\n%2")
                              .arg(uLibHFile.fileName())
                              .arg(uLibHFile.errorString()));
@@ -549,7 +551,7 @@ void InitialPage::AddToULib()
             tempArray.chop(1);
         }
         tempArray.append(uLibStreamLine);
-        tempArray.append("\n"); //для Win
+        tempArray.append("\n");
     }
     uLibHFile.close();
     if (!uLibHFile.open(QIODevice::WriteOnly | QIODevice::Text)){
@@ -575,7 +577,7 @@ void InitialPage::AddToULib()
     QTextStream uLibInCppStream(&uLibCppFile);
     QByteArray tempCppArray;
     QTextStream uLibOutCppStream(&uLibCppFile);
-    QString tempStreamLine;
+//    QString tempStreamLine;
     //
     int braceCount = 0;
     while(!uLibInCppStream.atEnd())
@@ -637,6 +639,195 @@ void InitialPage::AddToULib()
 
 }
 
+//test
+
+void InitialPage::writeSettingsToXML()
+{
+    QFile xmlSettingsFile("CodeWizard.xml");
+    if (!xmlSettingsFile.open(QIODevice::WriteOnly | QIODevice::Text)){
+        QMessageBox::warning(0, QObject::tr("Simple Wizard"),
+                             QObject::tr("Cannot open file %1:\n%2")
+                             .arg(xmlSettingsFile.fileName())
+                             .arg(xmlSettingsFile.errorString()));
+        return;
+    }
+    QXmlStreamWriter stream(&xmlSettingsFile);
+    stream.setAutoFormatting(true);
+    stream.writeStartDocument();
+    stream.writeStartElement("settings");
+    stream.writeTextElement("corePath", corePath);
+
+    stream.writeStartElement("namespaces");
+    for(int i=0; i<=namespaces.indexOf(namespaces.last()); i++)
+    {
+        QVariant temp = i+1;
+        stream.writeStartElement("namespace");
+        stream.writeAttribute("number", temp.toString());
+        stream.writeCharacters(namespaces[i]);
+        stream.writeEndElement();
+    }
+    stream.writeEndElement();
+    stream.writeStartElement("templates");
+    for(int i=0; i<=templates.indexOf(templates.last()); i++)
+    {
+        QVariant temp = i+1;
+        stream.writeStartElement("template");
+        stream.writeAttribute("number", temp.toString());
+        stream.writeAttribute("name", templates[i]);
+        stream.writeCharacters(templatePaths[i]+"h");
+        stream.writeEndElement();
+    }
+    stream.writeEndElement();
+    stream.writeStartElement("libList");
+    for(int i=0; i<=libList.indexOf(libList.last()); i++)
+    {
+        QVariant temp = i+1;
+        stream.writeStartElement("lib");
+        stream.writeAttribute("number", temp.toString());
+        stream.writeCharacters(libList[i]);
+        stream.writeEndElement();
+    }
+    stream.writeEndElement();
+    stream.writeEndElement();
+    stream.writeEndDocument();
+
+    xmlSettingsFile.close();
+
+}
+void InitialPage::writeHistoryToXML()
+{
+    if(!field("dstPath").toString().isEmpty())
+    {
+        paths.push_front(field("dstPath").toString());
+    }
+    paths.removeDuplicates();
+    while(paths.size()>maxHistorySize) paths.removeLast();
+    if(!field("className").toString().isEmpty())
+    {
+        classNameHistory.push_front(field("className").toString());
+    }
+    classNameHistory.removeDuplicates();
+    while(classNameHistory.size()>maxHistorySize) classNameHistory.removeLast();
+    if(!field("baseName").toString().isEmpty())
+    {
+        baseNameHistory.push_front(field("baseName").toString());
+    }
+    baseNameHistory.removeDuplicates();
+    while(baseNameHistory.size()>maxHistorySize) baseNameHistory.removeLast();
+
+    QFile xmlHistoryFile("CodeWizard.history.xml");
+    if (!xmlHistoryFile.open(QIODevice::WriteOnly | QIODevice::Text)){
+        QMessageBox::warning(0, QObject::tr("Wizard"),
+                             QObject::tr("Cannot open file %1:\n%2")
+                             .arg(xmlHistoryFile.fileName())
+                             .arg(xmlHistoryFile.errorString()));
+        return;
+    }
+    QXmlStreamWriter stream(&xmlHistoryFile);
+    stream.setAutoFormatting(true);
+    stream.writeStartDocument();
+    stream.writeStartElement("history");
+    stream.writeStartElement("classNames");
+    for(int i=0; i<=classNameHistory.indexOf(classNameHistory.last()); i++)
+    {
+        QVariant temp = i+1;
+        stream.writeStartElement("className");
+        stream.writeAttribute("number", temp.toString());
+        stream.writeCharacters(classNameHistory[i]);
+        stream.writeEndElement();
+    }
+    stream.writeEndElement();
+    stream.writeStartElement("paths");
+    for(int i=0; i<=paths.indexOf(paths.last()); i++)
+    {
+        QVariant temp = i+1;
+        stream.writeStartElement("path");
+        stream.writeAttribute("number", temp.toString());
+        stream.writeCharacters(paths[i]);
+        stream.writeEndElement();
+    }
+    stream.writeEndElement();
+    stream.writeStartElement("baseNames");
+    for(int i=0; i<=baseNameHistory.indexOf(baseNameHistory.last()); i++)
+    {
+        QVariant temp = i+1;
+        stream.writeStartElement("baseName");
+        stream.writeAttribute("number", temp.toString());
+        stream.writeCharacters(baseNameHistory[i]);
+        stream.writeEndElement();
+    }
+    stream.writeEndElement();
+    stream.writeEndElement();
+    stream.writeEndDocument();
+
+    xmlHistoryFile.close();
+
+}
+
+void InitialPage::readXMLSettings()
+{
+    QFile xmlSettingsFile("CodeWizard.xml");
+    if (!xmlSettingsFile.open(QIODevice::ReadOnly | QIODevice::Text)){
+        QMessageBox::warning(0, QObject::tr("Wizard"),
+                             QObject::tr("Cannot open file %1:\n%2")
+                             .arg(xmlSettingsFile.fileName())
+                             .arg(xmlSettingsFile.errorString()));
+        return;
+    }
+    QFile xmlHistoryFile("CodeWizard.history.xml");
+    if (!xmlHistoryFile.open(QIODevice::ReadOnly | QIODevice::Text)){
+        QMessageBox::warning(0, QObject::tr("Wizard"),
+                             QObject::tr("Cannot open file %1:\n%2")
+                             .arg(xmlHistoryFile.fileName())
+                             .arg(xmlHistoryFile.errorString()));
+        return;
+    }
+    QXmlStreamReader setReader(&xmlSettingsFile);
+    QXmlStreamReader histReader(&xmlHistoryFile);
+    while(!setReader.atEnd())
+    {
+        setReader.readNext();
+        if(setReader.isStartElement() && (setReader.name() == "namespace"))
+        {
+            namespaces.append(setReader.readElementText());
+        }
+        if(setReader.isStartElement() && (setReader.name() == "template"))
+        {
+            templates.append(setReader.attributes().value("name").toString());
+            QString tempPathString = setReader.readElementText();
+            tempPathString.chop(1);
+            templatePaths.append(tempPathString);
+        }
+        if(setReader.isStartElement() && (setReader.name() == "lib"))
+        {
+            libList.append(setReader.readElementText());
+        }
+        if(setReader.isStartElement() && (setReader.name() == "corePath"))
+        {
+            corePath.append(setReader.readElementText());
+        }
+    }
+    xmlSettingsFile.close();
+    while(!histReader.atEnd())
+    {
+        histReader.readNext();
+        if(histReader.isStartElement() && (histReader.name() == "className"))
+        {
+            classNameHistory.append(histReader.readElementText());
+        }
+        if(histReader.isStartElement() && (histReader.name() == "baseName"))
+        {
+            baseNameHistory.append(histReader.readElementText());
+        }
+        if(histReader.isStartElement() && (histReader.name() == "path"))
+        {
+            paths.append(histReader.readElementText());
+        }
+    }
+    xmlHistoryFile.close();
+
+}
+
 //end test
 void CodeWizard::slotSettings()
 {
@@ -651,44 +842,6 @@ void InitialPage::slotBrowse()
 
 }
 
-void InitialPage::saveSettings()
-{
-    settings.beginGroup("/Settings");
-    paths.push_front(field("dstPath").toString());
-    while(paths.size()>maxHistorySize) paths.removeLast();
-    classNameHistory.push_front(field("className").toString());
-    while(classNameHistory.size()>maxHistorySize) classNameHistory.removeLast();
-    //paths.clear();
-    settings.setValue("/path", paths);
-    settings.setValue("/className", classNameHistory);
-    settings.setValue("/corePath", corePath);
-    settings.setValue("/libList", libList);
-    settings.setValue("/namespaces", namespaces);
-    settings.setValue("/templates", templates);
-    settings.setValue("/split", splitter->saveState());
-    settings.setValue("/tempPaths", templatePaths);
-    settings.setValue("/dstPathString", dstPathLineEdit->text());
-    settings.setValue("/baseName", baseNameHistory);
-    settings.endGroup();
-}
-
-void InitialPage::loadSettings()
-{
-    settings.beginGroup("/Settings");
-    paths<<settings.value("/path", "").toStringList();
-    classNameHistory<<settings.value("/className", "").toStringList();
-    corePath.append(settings.value("/corePath","").toString());
-    libList<<settings.value("/libList","").toStringList();
-    namespaces<<settings.value("/namespaces", "").toStringList();
-    templates<<settings.value("/templates", "").toStringList();
-    splitter->restoreState(settings.value("/split").toByteArray());
-    templatePaths<<settings.value("/tempPaths", "").toStringList();
-    dstPathLineEdit->setText(settings.value("/dstPathString", "").toString());
-    baseNameHistory<<settings.value("/baseName", "").toStringList();
-
-    settings.endGroup();
-}
-
 
 void InitialPage::slotClassChanged()
 {
@@ -698,6 +851,7 @@ void InitialPage::slotClassChanged()
 
 void InitialPage::slotBaseChanged()
 {
+    baseNameLineEdit->setText(baseNameCBox->currentText());
     baseFileNameLineEdit->setText(baseNameCBox->currentText()+".h");
 }
 void InitialPage::slotDstChanged()
@@ -784,7 +938,7 @@ void CodeWizard::slotSettingsAccepted()
     }
 
 
-    Settings->saveSettingsDialog();
+    IP->writeSettingsToXML();
     emit IP->templateCBox->customContextMenuRequested(QPoint(20,20));
     Settings->accept();
 }
@@ -794,48 +948,68 @@ void SettingsDialog::slotRootBrowse()
     setRootPathLineEdit->home(true);
     setRootPathLineEdit->insert(QFileDialog::getExistingDirectory());
 }
-void SettingsDialog::saveSettingsDialog()
-{
-    presets.beginGroup("/Presets");
-    presets.setValue("/root", setRootPathLineEdit->text());
-    presets.setValue("/tempName1", setTemplateNameLineEdit1->text());
-    presets.setValue("/tempName2", setTemplateNameLineEdit2->text());
-    presets.setValue("/tempName3", setTemplateNameLineEdit3->text());
-    presets.setValue("/tempPath1", setTemplatePathLineEdit1->text());
-    presets.setValue("/tempPath2", setTemplatePathLineEdit2->text());
-    presets.setValue("/tempPath3", setTemplatePathLineEdit3->text());
-    presets.setValue("/namespace1", setNamespaceLineEdit1->text());
-    presets.setValue("/namespace2", setNamespaceLineEdit2->text());
-    presets.setValue("/namespace3", setNamespaceLineEdit3->text());
-    presets.setValue("/namespace4", setNamespaceLineEdit4->text());
-    presets.setValue("/namespace5", setNamespaceLineEdit5->text());
-    presets.setValue("/Lib1", setLibsLineEdit1->text());
-    presets.setValue("/Lib2", setLibsLineEdit2->text());
-    presets.setValue("/Lib3", setLibsLineEdit3->text());
-    presets.endGroup();
-}
-void SettingsDialog::loadSettingsDialog()
-{
-    presets.beginGroup("/Presets");
-    setRootPathLineEdit->setText(presets.value("/root", "").toString());
-    setTemplateNameLineEdit1->setText(presets.value("/tempName1", "").toString());
-    setTemplateNameLineEdit2->setText(presets.value("/tempName2", "").toString());
-    setTemplateNameLineEdit3->setText(presets.value("/tempName3", "").toString());
-    setTemplatePathLineEdit1->setText(presets.value("/tempPath1", "").toString());
-    setTemplatePathLineEdit2->setText(presets.value("/tempPath2", "").toString());
-    setTemplatePathLineEdit3->setText(presets.value("/tempPath3", "").toString());
-    setNamespaceLineEdit1->setText(presets.value("/namespace1", "").toString());
-    setNamespaceLineEdit2->setText(presets.value("/namespace2", "").toString());
-    setNamespaceLineEdit3->setText(presets.value("/namespace3", "").toString());
-    setNamespaceLineEdit4->setText(presets.value("/namespace4", "").toString());
-    setNamespaceLineEdit5->setText(presets.value("/namespace5", "").toString());
-    setLibsLineEdit1->setText(presets.value("/Lib1", "").toString());
-    setLibsLineEdit2->setText(presets.value("/Lib2", "").toString());
-    setLibsLineEdit3->setText(presets.value("/Lib3", "").toString());
-    presets.endGroup();
 
+//test
+void SettingsDialog::readSettings()
+{
+    QFile xmlSettingsFile("CodeWizard.xml");
+    if (!xmlSettingsFile.open(QIODevice::ReadOnly | QIODevice::Text)){
+        QMessageBox::warning(0, QObject::tr("Simple Wizard"),
+                             QObject::tr("Cannot open file %1:\n%2")
+                             .arg(xmlSettingsFile.fileName())
+                             .arg(xmlSettingsFile.errorString()));
+        return;
+    }
+    QXmlStreamReader reader(&xmlSettingsFile);
+    while(!reader.atEnd())
+    {
+        reader.readNext();
+        if(reader.isStartElement() && (reader.name() == "namespace"))
+        {
+            switch(reader.attributes().value("number").toString().toInt())
+            {
+                case 1: setNamespaceLineEdit1->setText(reader.readElementText()); break;
+                case 2: setNamespaceLineEdit2->setText(reader.readElementText()); break;
+                case 3: setNamespaceLineEdit3->setText(reader.readElementText()); break;
+                case 4: setNamespaceLineEdit4->setText(reader.readElementText()); break;
+                case 5: setNamespaceLineEdit5->setText(reader.readElementText()); break;
+                default: break;
+            }
+        }
+        if(reader.isStartElement() && (reader.name() == "template"))
+        {
+            switch(reader.attributes().value("number").toString().toInt())
+            {
+                case 1: setTemplateNameLineEdit1->setText(reader.attributes().value("name").toString());
+                        setTemplatePathLineEdit1->setText(reader.readElementText());
+                        break;
+                case 2: setTemplateNameLineEdit2->setText(reader.attributes().value("name").toString());
+                        setTemplatePathLineEdit2->setText(reader.readElementText());
+                        break;
+                case 3: setTemplateNameLineEdit3->setText(reader.attributes().value("name").toString());
+                        setTemplatePathLineEdit3->setText(reader.readElementText());
+                        break;
+                default: break;
+            }
+        }
+        if(reader.isStartElement() && (reader.name() == "lib"))
+        {
+            switch(reader.attributes().value("number").toString().toInt())
+            {
+                case 1: setLibsLineEdit1->setText(reader.readElementText()); break;
+                case 2: setLibsLineEdit2->setText(reader.readElementText()); break;
+                case 3: setLibsLineEdit3->setText(reader.readElementText()); break;
+                default: break;
+            }
+        }
+        if(reader.isStartElement() && (reader.name() == "corePath"))
+        {
+            setRootPathLineEdit->setText(reader.readElementText());
+        }
+    }
 }
 
+//end test
 void SettingsDialog::slotTemplateBrowse1()
 {
     setTemplatePathLineEdit1->home(true);
