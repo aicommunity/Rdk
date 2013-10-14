@@ -18,6 +18,7 @@
 #include <VCLTee.TeeProcs.hpp>
 #include "TUHttpServerUnit.h"
 #include "TUVisualControllerFrameUnit.h"
+#include "../../Core/Graphics/Libraries/Hardware/PtzRpc.h"
 
 #include "myrdk.h"
 
@@ -134,6 +135,8 @@ RDK::UBitmap TempUBitmap;
 
 // Индекс складывания данных в массив оценки производительности
 int PerformancePushIndex;
+
+RDK::ExternalPtzControl PtzControl;
 
 const char* ControlRemoteCall(const char *request, int &return_value);
 

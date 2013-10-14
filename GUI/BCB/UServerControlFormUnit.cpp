@@ -144,110 +144,115 @@ const char* TUServerControlForm::PtzRemoteCall(const char *request, int &return_
 
  int engine_index=xml.ReadInteger("Channel",0);
  std::string cmd=xml.ReadString("Cmd","");
+ std::string camera=xml.ReadString("Camera","");
 
  ControlResponseString.clear();
  if(cmd == "Ptz_GetCameraNames")
  {
+  ControlResponseString=PtzControl.Ptz_GetCameraNames();
 //  int num_engines=xml.ReadInteger("NumChannels",GetNumEngines());
 //  return_value=SetNumChannels(num_engines);
  }
  else
  if(cmd == "Ptz_GetCameraType")
  {
-//  ControlResponseString=RDK::sntoa(GetNumChannels());
+  ControlResponseString=PtzControl.Ptz_GetCameraType(camera.c_str());
  }
  if(cmd == "Ptz_GetCameraParameter")
  {
+  std::string param_name=xml.ReadString("Parameter","");
+  ControlResponseString=PtzControl.Ptz_GetCameraParameter(camera.c_str(),param_name.c_str());
 //  ControlResponseString=GetChannelName(engine_index);
  }
  else
  if(cmd == "Ptz_GetImplementedCommands")
  {
-/*  std::string ch_name=xml.ReadString("Name","");
-  if(!ch_name.empty())
-   if(SetChannelName(engine_index,ch_name))
-	return_value=0;
-   else
-	return_value=5005;
-	*/
+  ControlResponseString=PtzControl.Ptz_GetImplementedCommands(camera.c_str());
  }
  else
  if(cmd == "Ptz_CameraConnect")
  {
-//  ControlResponseString=RDK::sntoa(GetChannelVideoSource(engine_index));
+  return_value=PtzControl.Ptz_CameraConnect(camera.c_str());
  }
  else
  if(cmd == "Ptz_CameraDisconnect")
  {
-//  int mode=xml.ReadInteger("Mode",5);
-//  return_value=SetChannelVideoSource(engine_index,mode);
+  return_value=PtzControl.Ptz_CameraDisconnect(camera.c_str());
  }
  else
  if(cmd == "Ptz_Stop")
  {
-//  return_value=ResetChannel(engine_index);
+  return_value=PtzControl.Ptz_Stop(camera.c_str());
  }
  else
  if(cmd == "Ptz_GotoHome")
  {
-//  return_value=StartChannel(engine_index);
+  return_value=PtzControl.Ptz_GotoHome(camera.c_str());
  }
  else
  if(cmd == "Ptz_PresetPoint")
  {
-//  return_value=StopChannel(engine_index);
+  std::string point_name=xml.ReadString("Point","");
+  return_value=PtzControl.Ptz_PresetPoint(camera.c_str(),point_name.c_str());
  }
  else
  if(cmd == "Ptz_GotoPoint")
  {
-/*  std::string file_name=xml.ReadString("FileName","");
-  if(!file_name.empty())
-  {
-   return_value=LoadProject(engine_index,file_name);
-  } */
+  std::string point_name=xml.ReadString("Point","");
+  return_value=PtzControl.Ptz_GotoPoint(camera.c_str(),point_name.c_str());
  }
  else
  if(cmd == "Ptz_Move")
  {
-//  return_value=StopChannel(engine_index);
+  double pan_speed=xml.ReadFloat("PanSpeed",0.0);
+  double tilt_speed=xml.ReadFloat("TiltSpeed",0.0);
+  double zoom_speed=xml.ReadFloat("ZoomSpeed",0.0);
+  return_value=PtzControl.Ptz_Move(camera.c_str(),pan_speed,tilt_speed,zoom_speed);
  }
  else
  if(cmd == "Ptz_MovePan")
  {
-//  return_value=StopChannel(engine_index);
+  double pan_speed=xml.ReadFloat("PanSpeed",0.0);
+  return_value=PtzControl.Ptz_MovePan(camera.c_str(),pan_speed);
  }
  else
  if(cmd == "Ptz_MoveTilt")
  {
-//  return_value=StopChannel(engine_index);
+  double tilt_speed=xml.ReadFloat("TiltSpeed",0.0);
+  return_value=PtzControl.Ptz_MoveTilt(camera.c_str(),tilt_speed);
  }
  else
  if(cmd == "Ptz_MoveZoom")
  {
-//  return_value=StopChannel(engine_index);
+  double zoom_speed=xml.ReadFloat("ZoomSpeed",0.0);
+  return_value=PtzControl.Ptz_MoveZoom(camera.c_str(),zoom_speed);
  }
  else
  if(cmd == "Ptz_MoveNative")
  {
-//  return_value=StopChannel(engine_index);
+  double pan_speed=xml.ReadFloat("PanSpeed",0.0);
+  double tilt_speed=xml.ReadFloat("TiltSpeed",0.0);
+  double zoom_speed=xml.ReadFloat("ZoomSpeed",0.0);
+  return_value=PtzControl.Ptz_MoveNative(camera.c_str(),pan_speed,tilt_speed,zoom_speed);
  }
  else
  if(cmd == "Ptz_MovePanNative")
  {
-//  return_value=StopChannel(engine_index);
+  double pan_speed=xml.ReadFloat("PanSpeed",0.0);
+  return_value=PtzControl.Ptz_MovePanNative(camera.c_str(),pan_speed);
  }
  else
  if(cmd == "Ptz_MoveTiltNative")
  {
-//  return_value=StopChannel(engine_index);
+  double tilt_speed=xml.ReadFloat("TiltSpeed",0.0);
+  return_value=PtzControl.Ptz_MoveTiltNative(camera.c_str(),tilt_speed);
  }
  else
  if(cmd == "Ptz_MoveZoomNative")
  {
-//  return_value=StopChannel(engine_index);
+  double zoom_speed=xml.ReadFloat("ZoomSpeed",0.0);
+  return_value=PtzControl.Ptz_MoveZoomNative(camera.c_str(),zoom_speed);
  }
-
-
 
  RDK::USerStorageXML result;
 
