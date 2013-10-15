@@ -518,6 +518,66 @@ const UId& UContainer::GetPointerId(const NameT &name) const
 
  return I->second.Id;
 }
+
+// Осуществляет поиск всех компонент по заданному имени класса
+// и возвращает вектор длинных имен компонент либо пустой вектор
+// false - искать на уровне текущей компоненты
+// true -  искать на уровне текущей компоненты и глубже
+const vector<UEPtr<UContainer> >& UContainer::GetComponentsByClassName(const NameT &name, vector<UEPtr<UContainer> > &buffer, bool recursionFlag)
+{
+ vector<NameT> compNames;
+ UEPtr<UContainer> comp;
+ compNames=this->GetComponentsNameByClassName(name, compNames, recursionFlag);
+ size_t numComp=compNames.size();
+
+ for(size_t i=0; i<numComp; i++)
+ {
+  comp=this->GetOwner()->GetComponentL(compNames[i]);
+  buffer.push_back(comp);
+ }
+ return buffer;
+}
+
+// Осуществляет поиск всех компонент по заданному имени класса
+// и возвращает вектор длинных имен компонент либо пустой вектор
+// false - искать на уровне текущей компоненты
+// true -  искать на уровне текущей компоненты и глубже
+const vector<NameT>& UContainer::GetComponentsNameByClassName(const NameT &name, vector<NameT> &buffer, bool recursionFlag)
+{
+ size_t numComp=this->GetNumComponents();
+ UEPtr<UContainer> comp;
+ string compFullName;
+
+ switch(recursionFlag)
+ {
+  case false:
+   for(size_t i=0; i<numComp; i++)
+   {
+	comp=this->GetComponentByIndex(i);
+	if( comp->GetCompClassName() == name )
+	{
+	 comp->GetLongName(Owner, compFullName);
+	 buffer.push_back(compFullName);
+	}
+   }
+   break;
+
+  case true:
+   for(size_t i=0; i<numComp; i++)
+   {
+	comp=this->GetComponentByIndex(i);
+	comp->GetComponentsNameByClassName(name, buffer, true);
+	if( comp->GetCompClassName() == name )
+	{
+	 comp->GetLongName(Owner, compFullName);
+	 buffer.push_back(compFullName);
+	}
+   }
+   break;
+ }
+
+ return buffer;
+}
 // --------------------------
 
 // --------------------------
