@@ -2308,6 +2308,26 @@ int UEngine::Model_BreakAllLinks(void)
  return 0;
 }
 
+// Разрывает связь ко входу connector_index коннектора 'connectorid'
+int UEngine::Model_BreakConnectorLink(const char* connectorname, int connector_index)
+{
+ try
+ {
+  UEPtr<RDK::UNet> model=dynamic_pointer_cast<RDK::UNet>(Environment->GetCurrentComponent());
+
+  if(!model)
+   return -2;
+
+  model->BreakConnectorLink(connectorname, connector_index);
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+
+ return 0;
+}
+
 // Разрывает все входные и выходные связи выбранного контейнера
 int UEngine::Model_BreakAllComponentLinks(const char* stringid)
 {

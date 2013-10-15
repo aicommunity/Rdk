@@ -186,6 +186,10 @@ virtual bool SetEnvironment(UEPtr<UEnvironment> environment);
 // Идентификатор класса
 UId GetClass(void) const;
 bool SetClass(UId value);
+
+
+// Возвращает имя класса компоненты
+const NameT GetCompClassName(void) const;
 // --------------------------
 
 // --------------------------

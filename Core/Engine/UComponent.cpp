@@ -220,6 +220,12 @@ bool UComponent::SetClass(UId value)
  Class=value;
  return true;
 }
+
+// Возвращает имя класса компоненты
+const NameT UComponent::GetCompClassName(void) const
+{
+ return Storage->FindClassName(Class);
+}
 // --------------------------
 
 
