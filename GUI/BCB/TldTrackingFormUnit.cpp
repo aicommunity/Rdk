@@ -447,40 +447,59 @@ void __fastcall TTldTrackingForm::CopyTrackerDataButtonClick(TObject *Sender)
 
 void __fastcall TTldTrackingForm::SaveTrackerDataButtonClick(TObject *Sender)
 {
- std::string filename=AnsiString(UGEngineControlForm->ProjectPath).c_str();
- filename+=ComponentControlName.c_str();
+ std::string filepath=AnsiString(UGEngineControlForm->ProjectPath).c_str();
+ std::string filename;
+// filename+=ComponentControlName.c_str();
 // filename+="0";//RDK::sntoa(ObjectReceiverComboBox->ItemIndex);
 // filename+=".tld";
  int item_index=ObjectReceiverComboBox->ItemIndex;
- if(item_index<0)
-  return;
+ bool flag=true;
+// if(item_index<0)
+//  return;
 
- Model_SetComponentPropertyData(ComponentControlName.c_str(), "TrackerDataFileName", &filename);
+for(size_t k=0;k<Trackers.size();k++)
+{
+ if(!Trackers[k].second)
+  continue;
+ filename=filepath+Trackers[k].first;
+ Model_SetComponentPropertyData(Trackers[k].first.c_str(), "TrackerDataFileName", &filename);
 
- Model_SetComponentPropertyData(ComponentControlName.c_str(), "SaveTrackerDataIndex", &item_index);
- Env_Calculate(ComponentControlName.c_str());
+ Model_SetComponentPropertyData(Trackers[k].first.c_str(), "SaveTrackerDataIndex", &item_index);
+ Model_SetComponentPropertyData(Trackers[k].first.c_str(), "SaveTrackerDataFlag", &flag);
+ Env_Calculate(Trackers[k].first.c_str());
+}
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TTldTrackingForm::LoadTrackerDataButtonClick(TObject *Sender)
 {
- if(ObjectReceiverComboBox->ItemIndex<0)
-  return;
+// if(ObjectReceiverComboBox->ItemIndex<0)
+//  return;
 
- std::string filename=AnsiString(UGEngineControlForm->ProjectPath).c_str();
- filename+=ComponentControlName.c_str();
- filename+=RDK::sntoa(ObjectReceiverComboBox->ItemIndex);
- filename+=".tld";
+ std::string filepath=AnsiString(UGEngineControlForm->ProjectPath).c_str();
+ std::string filename;
+// filename+=ComponentControlName.c_str();
+// filename+=RDK::sntoa(ObjectReceiverComboBox->ItemIndex);
+// filename+=".tld";
 
- if(!OpenDialog1->Execute())
-  return;
+// if(!OpenDialog1->Execute())
+//  return;
 
- filename=AnsiString(OpenDialog1->FileName).c_str();
- filename=filename.substr(0,filename.size()-5);
- Model_SetComponentPropertyData(ComponentControlName.c_str(), "TrackerDataFileName", &filename);
- int item_index=0;//ObjectReceiverComboBox->ItemIndex;
- Model_SetComponentPropertyData(ComponentControlName.c_str(), "LoadTrackerDataIndex", &item_index);
- Env_Calculate(ComponentControlName.c_str());
+// filename=AnsiString(OpenDialog1->FileName).c_str();
+// filename=filename.substr(0,filename.size()-5);
+  UEngineMonitorForm->EngineMonitorFrame->Step1Click(Sender);
+for(size_t k=0;k<Trackers.size();k++)
+{
+ if(!Trackers[k].second)
+  continue;
+ filename=filepath+Trackers[k].first;
+ Model_SetComponentPropertyData(Trackers[k].first.c_str(), "TrackerDataFileName", &filename);
+ int item_index=ObjectReceiverComboBox->ItemIndex;
+ bool flag=true;
+ Model_SetComponentPropertyData(Trackers[k].first.c_str(), "LoadTrackerDataFlag", &flag);
+ Model_SetComponentPropertyData(Trackers[k].first.c_str(), "LoadTrackerDataIndex", &item_index);
+ Env_Calculate(Trackers[k].first.c_str());
+}
 }
 //---------------------------------------------------------------------------
 
