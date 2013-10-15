@@ -63,6 +63,7 @@ __published:	// IDE-managed Components
 	void __fastcall Timer1Timer(TObject *Sender);
 	void __fastcall TrackersCheckListBoxClickCheck(TObject *Sender);
 	void __fastcall FormHide(TObject *Sender);
+	void __fastcall TrackersCheckListBoxClick(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
 	__fastcall TTldTrackingForm(TComponent* Owner);
@@ -76,6 +77,9 @@ int VideoSourceType;
 
 /// Список трекеров
 std::vector<std::pair<std::string,bool> > Trackers;
+
+/// Список числа фактических трекеров каждом компоненте
+std::vector<int> TrackersSize;
 
 // -----------------------------
 // Методы управления визуальным интерфейсом

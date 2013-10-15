@@ -54,27 +54,41 @@ void TTldTrackingForm::AUpdateInterface(void)
  if(TrackersCheckListBox->Items->Count<Trackers.size())
  {
   int new_size=int(Trackers.size())-TrackersCheckListBox->Items->Count;
-  for(int i=0;i<new_size;i++)
+  for(int j=0;j<new_size;j++)
    TrackersCheckListBox->Items->Add("");
  }
  else
  if(TrackersCheckListBox->Items->Count>Trackers.size())
  {
   int new_size=TrackersCheckListBox->Items->Count-int(Trackers.size());
-  for(int i=0;i<new_size;i++)
+  for(int j=0;j<new_size;j++)
    TrackersCheckListBox->Items->Delete(TrackersCheckListBox->Items->Count-1);
  }
 
- for(size_t i=0;i<Trackers.size();i++)
+ for(size_t j=0;j<Trackers.size();j++)
  {
-  TrackersCheckListBox->Items->Strings[i]=Trackers[i].first.c_str();
-  TrackersCheckListBox->Checked[i]=Trackers[i].second;
+  TrackersCheckListBox->Items->Strings[j]=Trackers[j].first.c_str();
+  TrackersCheckListBox->Checked[j]=Trackers[j].second;
  }
 
  if(i>0 && i<TrackersCheckListBox->Items->Count)
  {
   TrackersCheckListBox->ItemIndex=i;
  }
+
+ int ii=ObjectReceiverComboBox->ItemIndex;
+ ObjectReceiverComboBox->Clear();
+ if(TrackersCheckListBox->ItemIndex>=0 && int(Trackers.size())>TrackersCheckListBox->ItemIndex)
+ {
+  for(int j=0;j<TrackersSize[TrackersCheckListBox->ItemIndex];j++)
+  {
+   ObjectReceiverComboBox->Items->Add(IntToStr(j));
+  }
+  if(ii<ObjectReceiverComboBox->Items->Count)
+   ObjectReceiverComboBox->ItemIndex=ii;
+ }
+
+
 
   /*
  int num_inputs=1;//RDK::ReadParameterValue<int>(ComponentControlName, "NumInputs");
@@ -231,6 +245,11 @@ void TTldTrackingForm::UpdateTrackersList(void)
   if(!present)
   {
    Trackers.push_back(pair<string,bool>(trackers[i],false));
+   int num=0;
+
+   const void* p=Model_GetComponentPropertyData(trackers[i].c_str(), "NumTrackers");
+   num=*((int*)p);
+   TrackersSize.push_back(num);
   }
  }
 
@@ -249,6 +268,7 @@ void TTldTrackingForm::UpdateTrackersList(void)
   if(!present)
   {
    Trackers.erase(Trackers.begin()+i);
+   TrackersSize.erase(TrackersSize.begin()+i);
   }
  }
 
@@ -263,7 +283,13 @@ void TTldTrackingForm::UpdateTrackersList(void)
  }
 
  if(!curr_present)
+ {
   Trackers.push_back(pair<string,bool>(ComponentControlName,true));
+  int num=0;
+  const void* p=Model_GetComponentPropertyData(ComponentControlName.c_str(), "NumTrackers");
+  num=*((int*)p);
+  TrackersSize.push_back(num);
+ }
 }
 
 // -----------------------------
@@ -325,9 +351,9 @@ void __fastcall TTldTrackingForm::EnableLogCheckBoxClick(TObject *Sender)
 
 void __fastcall TTldTrackingForm::SendObjectToButtonClick(TObject *Sender)
 {
- int tracker_index=0;//ObjectReceiverComboBox->ItemIndex;
-// if(tracker_index < 0)
-//  return;
+ int tracker_index=ObjectReceiverComboBox->ItemIndex;
+ if(tracker_index < 0)
+  tracker_index=0;
 
  if(!Model_CheckComponent(ComponentControlName.c_str()))
   return;
@@ -419,8 +445,12 @@ void __fastcall TTldTrackingForm::SaveTrackerDataButtonClick(TObject *Sender)
  filename+=ComponentControlName.c_str();
 // filename+="0";//RDK::sntoa(ObjectReceiverComboBox->ItemIndex);
 // filename+=".tld";
+ int item_index=ObjectReceiverComboBox->ItemIndex;
+ if(item_index<0)
+  return;
+
  Model_SetComponentPropertyData(ComponentControlName.c_str(), "TrackerDataFileName", &filename);
- int item_index=0;//ObjectReceiverComboBox->ItemIndex;
+
  Model_SetComponentPropertyData(ComponentControlName.c_str(), "SaveTrackerDataIndex", &item_index);
  Env_Calculate(ComponentControlName.c_str());
 }
@@ -428,6 +458,9 @@ void __fastcall TTldTrackingForm::SaveTrackerDataButtonClick(TObject *Sender)
 
 void __fastcall TTldTrackingForm::LoadTrackerDataButtonClick(TObject *Sender)
 {
+ if(ObjectReceiverComboBox->ItemIndex<0)
+  return;
+
  std::string filename=AnsiString(UGEngineControlForm->ProjectPath).c_str();
  filename+=ComponentControlName.c_str();
  filename+=RDK::sntoa(ObjectReceiverComboBox->ItemIndex);
@@ -605,6 +638,12 @@ void __fastcall TTldTrackingForm::TrackersCheckListBoxClickCheck(TObject *Sender
 void __fastcall TTldTrackingForm::FormHide(TObject *Sender)
 {
  Timer1->Enabled=false;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TTldTrackingForm::TrackersCheckListBoxClick(TObject *Sender)
+{
+ UpdateInterface();
 }
 //---------------------------------------------------------------------------
 

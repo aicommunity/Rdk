@@ -110,16 +110,12 @@ object TldTrackingForm: TTldTrackingForm
       Top = 173
       Width = 189
       Height = 237
-      ActivePage = PointsTabSheet
+      ActivePage = RectangleTabSheet
       Align = alRight
       MultiLine = True
       TabOrder = 3
       object RectangleTabSheet: TTabSheet
         Caption = 'One Tracker By Rect'
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object Label2: TLabel
           Left = 7
           Top = 40
@@ -138,7 +134,7 @@ object TldTrackingForm: TTldTrackingForm
         end
         object ObjectReceiverComboBox: TComboBox
           Left = 7
-          Top = 56
+          Top = 57
           Width = 171
           Height = 21
           Style = csDropDownList
@@ -149,10 +145,6 @@ object TldTrackingForm: TTldTrackingForm
         Caption = 'All Trackers By Point'
         ImageIndex = 1
         OnShow = PointsTabSheetShow
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object SendPointsButton: TButton
           Left = 0
           Top = 139
@@ -162,7 +154,6 @@ object TldTrackingForm: TTldTrackingForm
           Caption = 'Send selected objects'
           TabOrder = 0
           OnClick = SendPointsButtonClick
-          ExplicitTop = 122
         end
         object GroupBox1: TGroupBox
           Left = 0
@@ -205,8 +196,6 @@ object TldTrackingForm: TTldTrackingForm
           Checked = True
           State = cbChecked
           TabOrder = 2
-          ExplicitLeft = -1
-          ExplicitTop = 101
         end
         object CalcAfterSendCheckBox: TCheckBox
           Left = 0
@@ -216,8 +205,6 @@ object TldTrackingForm: TTldTrackingForm
           Align = alTop
           Caption = 'Step After Send'
           TabOrder = 3
-          ExplicitLeft = 3
-          ExplicitTop = 138
         end
       end
     end
@@ -250,6 +237,7 @@ object TldTrackingForm: TTldTrackingForm
         Align = alClient
         ItemHeight = 13
         TabOrder = 1
+        OnClick = TrackersCheckListBoxClick
       end
     end
   end
