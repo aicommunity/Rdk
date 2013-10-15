@@ -179,6 +179,8 @@ void TTldTrackingForm::AAfterCalculate(void)
 void TTldTrackingForm::ASaveParameters(RDK::USerStorageXML &xml)
 {
  xml.WriteInteger("InitInputMode",InitInputModeRadioGroup->ItemIndex);
+ xml.WriteInteger("InputImage",InputImageRadioGroup->ItemIndex);
+
  xml.WriteInteger("NumTrackers",int(Trackers.size()));
  for(size_t i=0;i<Trackers.size();i++)
  {
@@ -190,6 +192,7 @@ void TTldTrackingForm::ASaveParameters(RDK::USerStorageXML &xml)
 // Загружает параметры интерфейса из xml
 void TTldTrackingForm::ALoadParameters(RDK::USerStorageXML &xml)
 {
+ InputImageRadioGroup->ItemIndex=xml.ReadInteger("InputImage",0);
  InitInputModeRadioGroup->ItemIndex=xml.ReadInteger("InitInputMode",1);
  Trackers.resize(xml.ReadInteger("NumTrackers",0));
  for(size_t i=0;i<Trackers.size();i++)
@@ -414,7 +417,10 @@ for(size_t k=0;k<Trackers.size();k++)
  if(InitInputModeRadioGroup->ItemIndex == 0)
   Model_SetComponentPropertyData(name.c_str(), "InitialZones", &points);
 
- Model_SetComponentBitmapInputByIndex(name.c_str(), tracker_index, &ResultBmp);
+ if(InputImageRadioGroup->ItemIndex == 0)
+  Model_SetComponentBitmapInputByIndex(name.c_str(), tracker_index, &ResultBmp);
+ else
+  UEngineMonitorForm->EngineMonitorFrame->Step1Click(Sender);
 
  Model_SetComponentPropertyData(name.c_str(), "InitialFlags", &initial_flags);
 

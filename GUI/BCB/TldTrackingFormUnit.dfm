@@ -227,17 +227,36 @@ object TldTrackingForm: TTldTrackingForm
           'Directly to Tracker'
           'To External "MatrixSource"')
         TabOrder = 0
+        ExplicitLeft = 4
+        ExplicitTop = 6
       end
       object TrackersCheckListBox: TCheckListBox
         Left = 1
-        Top = 54
+        Top = 107
         Width = 181
-        Height = 92
+        Height = 39
         OnClickCheck = TrackersCheckListBoxClickCheck
         Align = alClient
         ItemHeight = 13
         TabOrder = 1
         OnClick = TrackersCheckListBoxClick
+        ExplicitTop = 54
+        ExplicitHeight = 92
+      end
+      object InputImageRadioGroup: TRadioGroup
+        Left = 1
+        Top = 54
+        Width = 181
+        Height = 53
+        Align = alTop
+        Caption = 'Input Image Source'
+        ItemIndex = 0
+        Items.Strings = (
+          'From this window'
+          'From component input')
+        TabOrder = 2
+        ExplicitLeft = -7
+        ExplicitTop = 88
       end
     end
   end
