@@ -120,6 +120,23 @@ void UIVisualControllerStorage::LoadParameters(RDK::USerStorageXML &xml)
    InterfaceUpdaters[i]->LoadParameters(xml);
 }
 
+// Служебные методы управления интерфейсом
+/// Сбрасывает флаг прошедшей перерисовки в этой итерации счета
+void UIVisualControllerStorage::ResetCalculationStepUpdatedFlag(void)
+{
+ for(size_t i=0;i<InterfaceUpdaters.size();i++)
+  if(InterfaceUpdaters[i])
+   InterfaceUpdaters[i]->ResetCalculationStepUpdatedFlag();
+}
+
+/// Выставляет флаг прошедшей перерисовки в этой итерации счета
+void UIVisualControllerStorage::SetCalculationStepUpdatedFlag(void)
+{
+ for(size_t i=0;i<InterfaceUpdaters.size();i++)
+  if(InterfaceUpdaters[i])
+   InterfaceUpdaters[i]->SetCalculationStepUpdatedFlag();
+}
+
 
 }
 

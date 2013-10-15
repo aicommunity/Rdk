@@ -405,6 +405,7 @@ void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
   RDK::UIVisualControllerStorage::AfterCalculate();
 //  UServerControlForm->AfterCalculate();
 //  UServerControlForm->UpdateInterface();
+  RDK::UIVisualControllerStorage::ResetCalculationStepUpdatedFlag();
   RDK::UIVisualControllerStorage::UpdateInterface();
  }
  break;

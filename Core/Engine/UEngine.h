@@ -889,7 +889,7 @@ protected:
 public:
 // Осуществляет поиск компонента по длинному строковому id
 // Если строковое id не задано, то возвращает указатель на модель
-UEPtr<UContainer> FindComponent(const char *stringid) const;
+virtual UEPtr<UContainer> FindComponent(const char *stringid) const;
 
 // Восстановление настроек по умолчанию и сброс процесса счета
 virtual bool ADefault(void);

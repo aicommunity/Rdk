@@ -18,6 +18,7 @@
 #include "TIdTcpResultBroadcasterFormUnit.h"
 #include "rdk_cpp_initdll.h"
 #include "TUBitmap.h"
+#include "../../Core/Graphics/Libraries/Hardware/PtzRpc.cpp"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "TUHttpServerUnit"
@@ -52,7 +53,7 @@ __fastcall TUServerControlForm::TUServerControlForm(TComponent* Owner)
 
 const char* TUServerControlForm::ControlRemoteCall(const char *request, int &return_value)
 {
- return_value=0;
+ return_value=2001;
 
  RDK::USerStorageXML xml,xml_data;
 
@@ -71,10 +72,12 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
  if(cmd == "GetNumChannels")
  {
   ControlResponseString=RDK::sntoa(GetNumChannels());
+  return_value=0;
  }
  if(cmd == "GetChannelName")
  {
   ControlResponseString=GetChannelName(engine_index);
+  return_value=0;
  }
  else
  if(cmd == "SetChannelName")
@@ -90,6 +93,7 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
  if(cmd == "GetChannelVideoSourceType")
  {
   ControlResponseString=RDK::sntoa(GetChannelVideoSource(engine_index));
+  return_value=0;
  }
  else
  if(cmd == "SetChannelVideoSourceType")
@@ -133,133 +137,136 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
  return ControlResponseString.c_str();
 }
 
-
-// Функция, обрабатывающая команды управления сервером
-bool TUServerControlForm::ProcessControlCommand(const std::string &cmd_name, std::map<std::string,std::vector<char> > &args, std::string &response_type, std::vector<char> &response_data)
+const char* TUServerControlForm::PtzRemoteCall(const char *request, int &return_value)
 {
- std::map<std::string,std::vector<char> >::const_iterator I;
- int res=0;
- std::string response,temp;
- std::string name;
+ return_value=2001;
 
- response_type="text/plain";
- if(cmd_name == "SetNumChannels")
+ RDK::USerStorageXML xml,xml_data;
+
+ xml.Load(request,"RpcRequest");
+
+ int engine_index=xml.ReadInteger("Channel",0);
+ std::string cmd=xml.ReadString("Cmd","");
+ std::string camera=xml.ReadString("Camera","");
+
+ ControlResponseString.clear();
+ if(cmd == "Ptz_GetCameraNames")
  {
-  int num_engines=0;
-  res=DecodeParamAsInteger("Num",args,num_engines);
-  if(res == 0)
-  {
-   res=SetNumChannels(num_engines);
-  }
-
-  ntoa(res,response);
-  ConvertStringToVector(response, response_data);
-  return true;
+  ControlResponseString=PtzControl.Ptz_GetCameraNames();
+  return_value=0;
  }
  else
- if(cmd_name == "GetNumChannels")
+ if(cmd == "Ptz_GetCameraType")
  {
-  res=GetNumChannels();
-  ntoa(res,response);
-  ConvertStringToVector(response, response_data);
-  return true;
+  ControlResponseString=PtzControl.Ptz_GetCameraType(camera.c_str());
+  return_value=0;
+ }
+ if(cmd == "Ptz_GetCameraParameter")
+ {
+  std::string param_name=xml.ReadString("Parameter","");
+  ControlResponseString=PtzControl.Ptz_GetCameraParameter(camera.c_str(),param_name.c_str());
+  return_value=0;
  }
  else
- if(cmd_name == "GetChannelVideoSource")
+ if(cmd == "Ptz_GetImplementedCommands")
  {
-  int channel_id=0;
-  res=DecodeParamAsInteger("Channel",args,channel_id);
-  if(res == 0)
-  {
-   res=GetChannelVideoSource(channel_id);
-  }
-  else
-   res=-1;
-
-  ntoa(res,response);
-  ConvertStringToVector(response, response_data);
-  return true;
+  ControlResponseString=PtzControl.Ptz_GetImplementedCommands(camera.c_str());
+  return_value=0;
  }
  else
- if(cmd_name == "SetChannelVideoSource")
+ if(cmd == "Ptz_CameraConnect")
  {
-  int channel_id=0, mode=-1;
-  res=0;
-  res|=DecodeParamAsInteger("Channel",args,channel_id);
-  res|=DecodeParamAsInteger("Mode",args,mode);
-  if(res == 0)
-  {
-   res=SetChannelVideoSource(channel_id,mode);
-  }
-
-  ntoa(res,response);
-  ConvertStringToVector(response, response_data);
-  return true;
+  return_value=PtzControl.Ptz_CameraConnect(camera.c_str());
  }
  else
- if(cmd_name == "ResetChannel")
+ if(cmd == "Ptz_CameraDisconnect")
  {
-  int channel_id=0;
-  res=0;
-  res|=DecodeParamAsInteger("Channel",args,channel_id);
-  if(res == 0)
-  {
-   res=ResetChannel(channel_id);
-  }
-
-  ntoa(res,response);
-  ConvertStringToVector(response, response_data);
-  return true;
+  return_value=PtzControl.Ptz_CameraDisconnect(camera.c_str());
  }
  else
- if(cmd_name == "StartChannel")
+ if(cmd == "Ptz_Stop")
  {
-  int channel_id=0;
-  res=0;
-  res|=DecodeParamAsInteger("Channel",args,channel_id);
-  if(res == 0)
-  {
-   res=StartChannel(channel_id);
-  }
-
-  ntoa(res,response);
-  ConvertStringToVector(response, response_data);
-  return true;
+  return_value=PtzControl.Ptz_Stop(camera.c_str());
  }
  else
- if(cmd_name == "StopChannel")
+ if(cmd == "Ptz_GotoHome")
  {
-  int channel_id=0;
-  res=0;
-  res|=DecodeParamAsInteger("Channel",args,channel_id);
-  if(res == 0)
-  {
-   res=StopChannel(channel_id);
-  }
-
-  ntoa(res,response);
-  ConvertStringToVector(response, response_data);
-  return true;
+  return_value=PtzControl.Ptz_GotoHome(camera.c_str());
  }
  else
- if(cmd_name == "LoadProject")
+ if(cmd == "Ptz_PresetPoint")
  {
-  int channel_id=0;
-  std::string file_name;
-  res=0;
-  res|=DecodeParamAsInteger("Channel",args,channel_id);
-  ConvertVectorToString(args["FileName"],file_name);
-  if(res == 0 && !file_name.empty())
-  {
-   res=LoadProject(channel_id,file_name);
-  }
-
-  ntoa(res,response);
-  ConvertStringToVector(response, response_data);
-  return true;
+  std::string point_name=xml.ReadString("Point","");
+  return_value=PtzControl.Ptz_PresetPoint(camera.c_str(),point_name.c_str());
+ }
+ else
+ if(cmd == "Ptz_GotoPoint")
+ {
+  std::string point_name=xml.ReadString("Point","");
+  return_value=PtzControl.Ptz_GotoPoint(camera.c_str(),point_name.c_str());
+ }
+ else
+ if(cmd == "Ptz_Move")
+ {
+  double pan_speed=xml.ReadFloat("PanSpeed",0.0);
+  double tilt_speed=xml.ReadFloat("TiltSpeed",0.0);
+  double zoom_speed=xml.ReadFloat("ZoomSpeed",0.0);
+  return_value=PtzControl.Ptz_Move(camera.c_str(),pan_speed,tilt_speed,zoom_speed);
+ }
+ else
+ if(cmd == "Ptz_MovePan")
+ {
+  double pan_speed=xml.ReadFloat("PanSpeed",0.0);
+  return_value=PtzControl.Ptz_MovePan(camera.c_str(),pan_speed);
+ }
+ else
+ if(cmd == "Ptz_MoveTilt")
+ {
+  double tilt_speed=xml.ReadFloat("TiltSpeed",0.0);
+  return_value=PtzControl.Ptz_MoveTilt(camera.c_str(),tilt_speed);
+ }
+ else
+ if(cmd == "Ptz_MoveZoom")
+ {
+  double zoom_speed=xml.ReadFloat("ZoomSpeed",0.0);
+  return_value=PtzControl.Ptz_MoveZoom(camera.c_str(),zoom_speed);
+ }
+ else
+ if(cmd == "Ptz_MoveNative")
+ {
+  double pan_speed=xml.ReadFloat("PanSpeed",0.0);
+  double tilt_speed=xml.ReadFloat("TiltSpeed",0.0);
+  double zoom_speed=xml.ReadFloat("ZoomSpeed",0.0);
+  return_value=PtzControl.Ptz_MoveNative(camera.c_str(),pan_speed,tilt_speed,zoom_speed);
+ }
+ else
+ if(cmd == "Ptz_MovePanNative")
+ {
+  double pan_speed=xml.ReadFloat("PanSpeed",0.0);
+  return_value=PtzControl.Ptz_MovePanNative(camera.c_str(),pan_speed);
+ }
+ else
+ if(cmd == "Ptz_MoveTiltNative")
+ {
+  double tilt_speed=xml.ReadFloat("TiltSpeed",0.0);
+  return_value=PtzControl.Ptz_MoveTiltNative(camera.c_str(),tilt_speed);
+ }
+ else
+ if(cmd == "Ptz_MoveZoomNative")
+ {
+  double zoom_speed=xml.ReadFloat("ZoomSpeed",0.0);
+  return_value=PtzControl.Ptz_MoveZoomNative(camera.c_str(),zoom_speed);
  }
 
- return false;
+ RDK::USerStorageXML result;
+
+ result.Create("RpcResponse");
+ result.WriteString("Id", xml.ReadString("Id",""));
+ result.WriteString("Data",ControlResponseString);
+ result.WriteInteger("Res",return_value);
+ result.Save(ControlResponseString);
+
+ return ControlResponseString.c_str();
 }
 
 // Функция, обрабатывающая команды управления сервером
@@ -281,218 +288,15 @@ bool TUServerControlForm::ProcessControlCommand(const std::map<std::string,std::
  int response_status=0;
  const char* response=ControlRemoteCall(request.c_str(), response_status);
 
+ if(response_status == 2001)
+  return false;
+
  if(response)
   ConvertStringToVector(response, response_data);
  else
   ConvertStringToVector(RDK::sntoa(response_status), response_data);
 
  return true;
-}
-
-// Функция, обрабатывающая команды удаленного вызова процедур
-bool TUServerControlForm::ProcessRPCCommand(int channel, const std::string &cmd_name, std::map<std::string,std::vector<char> > &args, std::string &response_type, std::vector<char> &response_data)
-{
- std::map<std::string,std::vector<char> >::const_iterator I;
- int res=0;
- std::string response,temp;
- std::string name;
-
- response_type="text/plain";
- if(cmd_name == "EngineInit")
- {
-  int predefined_structure=0;
-  res=DecodeParamAsInteger("PredefinedStructure",args,predefined_structure);
-
-  res=EngineInit(predefined_structure);
-  ntoa(res,response);
-  ConvertStringToVector(response, response_data);
-  return true;
- }
- else
- if(cmd_name == "EngineUnInit")
- {
-  res=EngineUnInit();
-  ntoa(res,response);
-  ConvertStringToVector(response, response_data);
-  return true;
- }
- else
- if(cmd_name == "Env_Reset")
- {
-  ConvertVectorToString(args["Name"], name);
-  res=Env_Reset(name.c_str());
-  ntoa(res,response);
-  ConvertStringToVector(response, response_data);
-  return true;
- }
- else
- if(cmd_name == "Env_Calculate")
- {
-  ConvertVectorToString(args["Name"], name);
-  res=Env_Calculate(name.c_str());
-  ntoa(res,response);
-  ConvertStringToVector(response, response_data);
-  return true;
- }
- else
- if(cmd_name == "Model_Create")
- {
-  I=args.find("Class");
-  if(I != args.end())
-  {
-   ConvertVectorToString(I->second, temp);
-   res=Model_Create(temp.c_str());
-  }
-  else
-   res=100;
-  ntoa(res,response);
-  ConvertStringToVector(response, response_data);
-  return true;
- }
- else
- if(cmd_name == "Model_LoadComponent")
- {
-  ConvertVectorToString(args["Name"], name);
-  ConvertVectorToString(args["Xml"], temp);
-
-  res=Model_LoadComponent(name.c_str(),temp.c_str());
-  ntoa(res,response);
-  ConvertStringToVector(response, response_data);
-  return true;
- }
- else
- if(cmd_name == "Model_LoadComponentParameters")
- {
-  ConvertVectorToString(args["Name"], name);
-  ConvertVectorToString(args["Xml"], temp);
-
-  res=Model_LoadComponentParameters(name.c_str(),temp.c_str());
-  ntoa(res,response);
-  ConvertStringToVector(response, response_data);
-  return true;
- }
- else
- if(cmd_name == "Model_GetComponentParameters")
- {
-  ConvertVectorToString(args["Name"], name);
-  const char* value=Model_GetComponentParameters(name.c_str());
-  if(value)
-  {
-   ConvertStringToVector(value, response_data);
-   res=0;
-  }
-  else
-  {
-   res=1;
-   response_data.clear();
-  }
-  return true;
- }
- else
- if(cmd_name == "Model_GetComponentStates")
- {
-  ConvertVectorToString(args["Name"], name);
-  const char* value=Model_GetComponentState(name.c_str());
-  if(value)
-  {
-   ConvertStringToVector(value, response_data);
-   res=0;
-  }
-  else
-  {
-   res=1;
-   response_data.clear();
-  }
-  return true;
- }
- else
- if(cmd_name == "Model_GetComponentBitmapOutput")
- {
-  ConvertVectorToString(args["Name"], name);
-  string output_name=0;
-  ConvertVectorToString(args["Index"],output_name);
-
-  const RDK::UBitmap* value=(const RDK::UBitmap*)Model_GetComponentBitmapOutput(name.c_str(),output_name.c_str());
-  if(value)
-  {
-   *value>>Bitmap;
-   MemStream->Clear();
-   Bitmap->SaveToStream(MemStream);
-   MemStream->Position=0;
-   response_data.resize(MemStream->Size);
-   if(response_data.size()>0)
-    MemStream->ReadBuffer(&response_data[0],MemStream->Size);
-
-   response_type="image/bmp";
-   res=0;
-  }
-  else
-  {
-   res=1;
-   response_data.clear();
-  }
-  return true;
- }
- else
- if(cmd_name == "Model_GetComponentBitmapInput")
- {
-  ConvertVectorToString(args["Name"], name);
-  string output_name;
-  ConvertVectorToString(args["Index"],output_name);
-
-  const RDK::UBitmap* value=(const RDK::UBitmap*)Model_GetComponentBitmapInput(name.c_str(),output_name.c_str());
-  if(value)
-  {
-   *value>>Bitmap;
-   MemStream->Clear();
-   Bitmap->SaveToStream(MemStream);
-   MemStream->Position=0;
-   response_data.resize(MemStream->Size);
-   if(response_data.size()>0)
-	MemStream->ReadBuffer(&response_data[0],MemStream->Size);
-
-   res=0;
-  }
-  else
-  {
-   response_data.clear();
-   res=1;
-  }
-  return true;
- }
- else
- if(cmd_name == "Model_SetComponentBitmapOutput")
- {
-  ConvertVectorToString(args["Name"], name);
-  string output_name;
-  ConvertVectorToString(args["Index"],output_name);
-
-  vector<char> &image_data=args["Image"];
-
-  if(image_data.empty())
-  {
-   res=1;
-   response_data.clear();
-  }
-  else
-  {
-   MemStream->Clear();
-   if(image_data.size()>0)
-	MemStream->Write(&image_data[0],image_data.size());
-   MemStream->Position=0;
-
-   Bitmap->LoadFromStream(MemStream);
-   TempUBitmap<<Bitmap;
- //  TempUBitmap>>Image1->Picture->Bitmap;
- //  Image1->Repaint();
-
-   Model_SetComponentBitmapOutput(name.c_str(),output_name.c_str(),&TempUBitmap);
-   ConvertStringToVector("0", response_data);
-  }
-  return true;
- }
-
- return false;
 }
 
 bool TUServerControlForm::ProcessRPCCommand(const std::map<std::string,std::vector<char> > &args, std::string &response_type, std::vector<char> &response_data)
@@ -512,6 +316,38 @@ bool TUServerControlForm::ProcessRPCCommand(const std::map<std::string,std::vect
  ConvertVectorToString(I->second, request);
  int response_status=0;
  const char* response=RemoteCall(request.c_str(), response_status);
+
+ if(response_status == 2001)
+  return false;
+
+ if(response)
+  ConvertStringToVector(response, response_data);
+ else
+  ConvertStringToVector(RDK::sntoa(response_status), response_data);
+
+ return true;
+}
+
+bool TUServerControlForm::ProcessPtzCommand(const std::map<std::string,std::vector<char> > &args, std::string &response_type, std::vector<char> &response_data)
+{
+ std::map<std::string,std::vector<char> >::const_iterator I;
+ std::string request;
+
+ response_type="text/plain";
+
+ I=args.find("Request");
+ if(I == args.end())
+ {
+  ConvertStringToVector("RPC: Request not found", response_data);
+  return true;
+ }
+
+ ConvertVectorToString(I->second, request);
+ int response_status=0;
+ const char* response=PtzRemoteCall(request.c_str(), response_status);
+
+ if(response_status == 2001)
+  return false;
 
  if(response)
   ConvertStringToVector(response, response_data);
@@ -908,6 +744,9 @@ void __fastcall TUServerControlForm::UHttpServerFrameIdHTTPServerCommandGet(TIdC
  if(!is_processed)
   is_processed=ProcessRPCCommand(DecodedRequest, ResponseType, Response);
 
+ if(!is_processed)
+  is_processed=ProcessPtzCommand(DecodedRequest, ResponseType, Response);
+
 // int encode_res=0;
  if(CommandResponseEncoder)
  {
@@ -990,7 +829,7 @@ void __fastcall TUServerControlForm::ApplyOptionsButtonClick(TObject *Sender)
 
  UGEngineControlForm->Pause1Click(Sender);
 
- UHttpServerFrame->SetListenPort(new_num_channels);
+ UHttpServerFrame->SetListenPort(StrToInt(ServerControlPortLabeledEdit->Text));
 
  UEngineMonitorForm->EngineMonitorFrame->SetNumChannels(new_num_channels);
  SetNumChannels(GetNumEngines());

@@ -77,6 +77,7 @@ void TUVisualControllerFrame::BeforeCalculate(void)
 {
  try
  {
+  ResetCalculationStepUpdatedFlag();
   ABeforeCalculate();
  }
  catch (RDK::UException &exception)
