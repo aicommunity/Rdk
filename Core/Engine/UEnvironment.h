@@ -22,7 +22,7 @@ class UEnvironment: virtual public UModule
 {
 public:
 // Прототип функции обратного вызова обработчика исключений
-typedef void (*PExceptionHandler)(void);
+typedef void (*PExceptionHandler)(int channel_index);
 
 protected: // Параметры
 // Индекс предарительно заданной модели обработки
@@ -83,6 +83,8 @@ int LastReadExceptionLogIndex;
 // Максимальный уровень непрочитанных сообщений в логе
 mutable int LastErrorLevel;
 
+/// Индекс текущего канала в многоканальной библиотеке
+int ChannelIndex;
 
 
 protected: // Контроллеры
@@ -178,6 +180,10 @@ virtual bool DestroyModel(void);
 /// Время среды
 const UTimeControl& GetTime(void) const;
 UTimeControl& GetTime(void);
+
+/// Индекс текущего канала в многоканальной библиотеке
+int GetChannelIndex(void) const;
+bool SetChannelIndex(int value);
 // --------------------------
 
 // --------------------------

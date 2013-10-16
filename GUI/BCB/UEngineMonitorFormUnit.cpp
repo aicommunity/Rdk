@@ -16,10 +16,14 @@
 TUEngineMonitorForm *UEngineMonitorForm;
 
 //---------------------------------------------------------------------------
-void ExceptionHandler(void)
+void ExceptionHandler(int channel_index)
 {
  int error_level=-1;
- std::string new_log_data=Engine_GetUnreadLog(error_level);
+ const char * data=MEngine_GetUnreadLog(channel_index, error_level);
+ if(!data)
+  return;
+
+ std::string new_log_data=data;
  UEngineMonitorForm->EngineMonitorFrame->RichEdit->Text=UEngineMonitorForm->EngineMonitorFrame->RichEdit->Text+new_log_data.c_str();
 
  if(!new_log_data.empty())

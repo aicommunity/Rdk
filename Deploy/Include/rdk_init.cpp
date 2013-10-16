@@ -247,6 +247,7 @@ int RDK_CALL MEngineInit(int engine_index, int predefined_structure, void* excep
  if(res != 0)
   return res;
 
+ DllManager.EngineList[engine_index]->SetChannelIndex(engine_index);
  MEngine_SetExceptionHandler(engine_index, exception_handler);
 
  MEnv_SetPredefinedStructure(engine_index, predefined_structure);
@@ -296,6 +297,7 @@ int RDK_CALL MGraphicalEngineInit(int engine_index, int predefined_structure, in
  if(res != 0)
   return res;
 
+ DllManager.EngineList[engine_index]->SetChannelIndex(engine_index);
  MEngine_SetExceptionHandler(engine_index, exception_handler);
 
  // Задает число входов среды

@@ -93,6 +93,23 @@ int UEngine::IsRunned(void)
 {
  return Runned;
 }
+
+/// Индекс текущего канала в многоканальной библиотеке
+int UEngine::GetChannelIndex(void) const
+{
+ return ChannelIndex;
+}
+
+bool UEngine::SetChannelIndex(int value)
+{
+ if(ChannelIndex == value)
+  return true;
+
+ ChannelIndex=value;
+ if(Environment)
+  Environment->SetChannelIndex(ChannelIndex);
+ return true;
+}
 // --------------------------
 
 
@@ -141,6 +158,7 @@ bool UEngine::Init(UEPtr<UStorage> storage, UEPtr<UEnvironment> env)
  Environment=env;
 
  Environment->ClearLog();
+ Environment->SetChannelIndex(ChannelIndex);
  CreateStorage();
 
  if(!Storage)

@@ -58,6 +58,9 @@ protected: // Переменные состояния
 // -1 - система отключена
 int Runned;
 
+/// Индекс текущего канала в многоканальной библиотеке
+int ChannelIndex;
+
 protected: // Данные
 // Данные инициализации
 UIniFile<char> Options;
@@ -134,6 +137,10 @@ bool SetOptionsFileName(const string& value);
 // --------------------------
 // Флаг работы системы
 int IsRunned(void);
+
+/// Индекс текущего канала в многоканальной библиотеке
+int GetChannelIndex(void) const;
+bool SetChannelIndex(int value);
 // --------------------------
 
 // --------------------------

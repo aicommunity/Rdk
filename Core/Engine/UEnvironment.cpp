@@ -309,6 +309,21 @@ UTimeControl& UEnvironment::GetTime(void)
 {
  return Time;
 }
+
+/// Индекс текущего канала в многоканальной библиотеке
+int UEnvironment::GetChannelIndex(void) const
+{
+ return ChannelIndex;
+}
+
+bool UEnvironment::SetChannelIndex(int value)
+{
+ if(ChannelIndex == value)
+  return true;
+
+ ChannelIndex=value;
+ return true;
+}
 // --------------------------
 
 // --------------------------
@@ -488,11 +503,13 @@ void UEnvironment::ProcessException(UException &exception) const
    TempLogString.erase(0,i);
   }
  }
+ TempLogString+=sntoa(ChannelIndex);
+ TempLogString+="> ";
  TempLogString+=exception.CreateLogMessage();
  TempLogString+="\r\n";
 
  if(ExceptionHandler)
-  ExceptionHandler();
+  ExceptionHandler(ChannelIndex);
 }
 
 
@@ -631,6 +648,7 @@ bool UEnvironment::ADefault(void)
    return false;
  }
 
+ ChannelIndex=0;
  return true;
 }
 

@@ -14,7 +14,7 @@
 #include "TUVisualControllerFrameUnit.h"
 //---------------------------------------------------------------------------
 
-void ExceptionHandler(void);
+void ExceptionHandler(int channel_index);
 
 //---------------------------------------------------------------------------
 class TUEngineMonitorForm : public TUVisualControllerForm
