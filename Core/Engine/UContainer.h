@@ -218,6 +218,9 @@ virtual void WriteWarningLineToLog(const std::string &line);
 // Вызов обработчика исключений среды для простой записи данных в лог
 // как информационного сообщения
 virtual void WriteInfoLineToLog(const std::string &line);
+
+/// Возвращает состояние флага режима отладки
+virtual bool CheckDebugMode(void) const;
 // --------------------------
 
 // --------------------------

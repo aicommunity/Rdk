@@ -80,6 +80,10 @@ EXPORTS
     Env_GetOutputImageY8 = _Env_GetOutputImageY8  
     Env_GetCurrentDataDir = _Env_GetCurrentDataDir
     Env_SetCurrentDataDir = _Env_SetCurrentDataDir
+    Env_GetDebugMode = _Env_GetDebugMode
+    MEnv_GetDebugMode = _MEnv_GetDebugMode
+    Env_SetDebugMode = _Env_SetDebugMode
+    MEnv_SetDebugMode = _MEnv_SetDebugMode
     Model_Destroy = _Model_Destroy
     Model_Create = _Model_Create
     Model_Clear = _Model_Clear

@@ -1206,6 +1206,34 @@ int UEngine::Env_SetCurrentDataDir(const char *dir)
  return 0;
 }
 
+/// Возвращает состояние флага отладочного режима среды
+bool UEngine::Env_GetDebugMode(void) const
+{
+ try
+ {
+  return Environment->GetDebugMode();
+ }
+ catch (RDK::UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return false;
+}
+
+/// Устанавливает состояние флага отладочного режима среды
+int UEngine::Env_SetDebugMode(bool value)
+{
+ try
+ {
+  return Environment->SetDebugMode(value);
+ }
+ catch (RDK::UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return -1;
+}
+
 // Задает число входов среды
 void UEngine::Env_SetNumInputImages(int number)
 {
@@ -4151,15 +4179,15 @@ void UEngine::ProcessException(UException &exception) const
 
 
 // Возвращает массив строк лога
-const char* UEngine::GetLog(void) const
+const char* UEngine::GetLog(int &error_level) const
 {
- return Environment->GetLog();
+ return Environment->GetLog(error_level);
 // return TempLogString.c_str();
 }
 
 // Возвращает частичный массив строк лога с момента последнего считывания лога
 // этой функцией
-const char* UEngine::GetUnreadLog(void)
+const char* UEngine::GetUnreadLog(int &error_level)
 {
 /*
  if(LastReadExceptionLogIndex<=0)
@@ -4177,7 +4205,7 @@ const char* UEngine::GetUnreadLog(void)
 
  TempString="";
  return TempString.c_str();  */
- return Environment->GetUnreadLog();
+ return Environment->GetUnreadLog(error_level);
 }
 
 // Управление функцией-обработчиком исключений

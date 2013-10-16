@@ -277,6 +277,7 @@ void TUGEngineControlForm::CreateProject(const String &FileName, const String &m
 
  ProjectXml.WriteBool("InitAfterLoadFlag",InitAfterLoadFlag[GetSelectedEngineIndex()]);
  ProjectXml.WriteBool("ResetAfterLoadFlag",ResetAfterLoadFlag[GetSelectedEngineIndex()]);
+ ProjectXml.WriteBool("DebugModeFlag",DebugModeFlag[GetSelectedEngineIndex()]);
 
  if(PredefinedStructure[GetSelectedEngineIndex()] == 0 && model_file_name.Length()>0)
  {
@@ -436,6 +437,13 @@ try{
   ResetAfterLoadFlag[i]=ProjectXml.ReadBool(std::string("ResetAfterLoadFlag_")+RDK::sntoa(i),true);
  }
 
+ DebugModeFlag.resize(GetNumEngines());
+ DebugModeFlag[0]=ProjectXml.ReadBool("DebugModeFlag",false);
+ for(int i=1;i<GetNumEngines();i++)
+ {
+  DebugModeFlag[i]=ProjectXml.ReadBool(std::string("DebugModeFlag_")+RDK::sntoa(i),false);
+ }
+
  MinInterstepsInterval.resize(GetNumEngines());
  MinInterstepsInterval[0]=ProjectXml.ReadInteger("MinInterstepsInterval",0);
  for(int i=1;i<GetNumEngines();i++)
@@ -489,6 +497,8 @@ try{
 
   Env_CreateStructure();
   Env_Init();
+
+  Env_SetDebugMode(DebugModeFlag[i]);
 
   if(PredefinedStructure[i] == 0 && modelfilename.Length() != 0)
   {
@@ -628,6 +638,9 @@ void TUGEngineControlForm::CloneProject(int source_id, int cloned_id)
 
  ResetAfterLoadFlag.resize(GetNumEngines());
  ResetAfterLoadFlag[cloned_id]=ResetAfterLoadFlag[source_id];
+
+ DebugModeFlag.resize(GetNumEngines());
+ DebugModeFlag[cloned_id]=DebugModeFlag[source_id];
 
  MinInterstepsInterval.resize(GetNumEngines());
  MinInterstepsInterval[cloned_id]=MinInterstepsInterval[source_id];
@@ -873,6 +886,7 @@ try{
    ProjectXml.WriteInteger("MinInterstepsInterval",MinInterstepsInterval[0]);
    ProjectXml.WriteBool("InitAfterLoadFlag",InitAfterLoadFlag[0]);
    ProjectXml.WriteBool("ResetAfterLoadFlag",ResetAfterLoadFlag[0]);
+   ProjectXml.WriteBool("DebugModeFlag",DebugModeFlag[0]);
   }
   else
   {
@@ -889,6 +903,7 @@ try{
    ProjectXml.WriteInteger(std::string("MinInterstepsInterval_")+suffix,MinInterstepsInterval[i]);
    ProjectXml.WriteBool(std::string("InitAfterLoadFlag_")+suffix,InitAfterLoadFlag[i]);
    ProjectXml.WriteBool(std::string("ResetAfterLoadFlag_")+suffix,ResetAfterLoadFlag[i]);
+   ProjectXml.WriteBool(std::string("DebugModeFlag_")+suffix,DebugModeFlag[i]);
   }
 
   UShowProgressBarForm->IncBarStatus(1);

@@ -130,6 +130,21 @@ bool UEnvironment::SetMinInterstepsInterval(long long value)
  MinInterstepsInterval = value;
  return true;
 }
+
+/// Флаг включения режима отладки
+bool UEnvironment::GetDebugMode(void) const
+{
+ return DebugMode;
+}
+
+bool UEnvironment::SetDebugMode(bool value)
+{
+ if(DebugMode == value)
+  return true;
+
+ DebugMode=value;
+ return true;
+}
 // --------------------------
 
 
@@ -461,6 +476,8 @@ void UEnvironment::ProcessException(UException &exception) const
 // USharedPtr<UException> ptr=exception;
 // ExceptionsLog.push_back(ptr);
 
+ if(LastErrorLevel>exception.GetType())
+  LastErrorLevel=exception.GetType();
  ++CurrentExceptionsLogSize;
  if(CurrentExceptionsLogSize/*ExceptionsLog.size()*/ > MaxExceptionsLogSize)
  {
@@ -487,14 +504,15 @@ void UEnvironment::ProcessException(UException &exception) const
 
 
 // Возвращает массив строк лога
-const char* UEnvironment::GetLog(void) const
+const char* UEnvironment::GetLog(int &error_level) const
 {
+ LastErrorLevel=INT_MAX;
  return TempLogString.c_str();
 }
 
 // Возвращает частичный массив строк лога с момента последнего считывания лога
 // этой функцией
-const char* UEnvironment::GetUnreadLog(void)
+const char* UEnvironment::GetUnreadLog(int &error_level)
 {
  if(LastReadExceptionLogIndex<=0/* && TempLogString.size()*/)
  {
@@ -593,6 +611,7 @@ bool UEnvironment::ADefault(void)
   return true;
 
  MinInterstepsInterval=200;
+ DebugMode=false;
 
 // UComponent::SetTime(0);
  if(ModelCalculationComponent.GetSize() == 0)
@@ -651,6 +670,7 @@ bool UEnvironment::AReset(void)
  LastDuration=1;
  ProcEndTime=StartupTime;
  LastStepStartTime=0;
+ LastErrorLevel=INT_MAX;
 
  if(!Model)
   return true;

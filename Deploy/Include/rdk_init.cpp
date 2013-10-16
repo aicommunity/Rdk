@@ -776,6 +776,35 @@ int RDK_CALL Env_SetCurrentDataDir(const char *dir)
  return PEngine->Env_SetCurrentDataDir(dir);
 }
 
+/// Возвращает состояние флага отладочного режима среды
+bool RDK_CALL Env_GetDebugMode(void)
+{
+ return PEngine->Env_GetDebugMode();
+}
+
+bool RDK_CALL MEnv_GetDebugMode(int engine_index)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 0;
+
+ return DllManager.EngineList[engine_index]->Env_GetDebugMode();
+}
+
+/// Устанавливает состояние флага отладочного режима среды
+int RDK_CALL Env_SetDebugMode(bool value)
+{
+ return PEngine->Env_SetDebugMode(value);
+}
+
+int RDK_CALL MEnv_SetDebugMode(int engine_index, bool value)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 0;
+
+ return DllManager.EngineList[engine_index]->Env_SetDebugMode(value);
+}
+
+
 // ***********************************************
 // Методы управления текущим компонентом
 // !!! Следующие методы влияют на все
@@ -1611,32 +1640,32 @@ bool RDK_CALL MEngine_SetExceptionHandler(int engine_index, void* value)
 }
 
 // Возвращает массив строк лога
-const char* RDK_CALL Engine_GetLog(void)
+const char* RDK_CALL Engine_GetLog(int &error_level)
 {
- return PEngine->GetLog();
+ return PEngine->GetLog(error_level);
 }
 
-const char* RDK_CALL MEngine_GetLog(int engine_index)
+const char* RDK_CALL MEngine_GetLog(int engine_index, int &error_level)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 0;
 
- return DllManager.EngineList[engine_index]->GetLog();
+ return DllManager.EngineList[engine_index]->GetLog(error_level);
 }
 
 // Возвращает частичный массив строк лога с момента последнего считывания лога
 // этой функцией
-const char* RDK_CALL Engine_GetUnreadLog(void)
+const char* RDK_CALL Engine_GetUnreadLog(int &error_level)
 {
- return PEngine->GetUnreadLog();
+ return PEngine->GetUnreadLog(error_level);
 }
 
-const char* RDK_CALL MEngine_GetUnreadLog(int engine_index)
+const char* RDK_CALL MEngine_GetUnreadLog(int engine_index, int &error_level)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 0;
 
- return DllManager.EngineList[engine_index]->GetUnreadLog();
+ return DllManager.EngineList[engine_index]->GetUnreadLog(error_level);
 }
 // ----------------------------
 

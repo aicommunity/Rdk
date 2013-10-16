@@ -18,21 +18,25 @@ TUEngineMonitorForm *UEngineMonitorForm;
 //---------------------------------------------------------------------------
 void ExceptionHandler(void)
 {
- std::string new_log_data=Engine_GetUnreadLog();
+ int error_level=-1;
+ std::string new_log_data=Engine_GetUnreadLog(error_level);
  UEngineMonitorForm->EngineMonitorFrame->RichEdit->Text=UEngineMonitorForm->EngineMonitorFrame->RichEdit->Text+new_log_data.c_str();
 
  if(!new_log_data.empty())
  {
-  UEngineMonitorForm->EngineMonitorFrame->Pause1Click(UEngineMonitorForm);
-  TTabSheet *tab=dynamic_cast<TTabSheet*>(UEngineMonitorForm->Parent);
-  if(tab)
+  if(error_level<3)
   {
-   tab->PageControl->ActivePage=tab;
-  }
-  else
-  {
-   UEngineMonitorForm->Show();
-   UEngineMonitorForm->WindowState=wsNormal;
+   UEngineMonitorForm->EngineMonitorFrame->Pause1Click(UEngineMonitorForm);
+   TTabSheet *tab=dynamic_cast<TTabSheet*>(UEngineMonitorForm->Parent);
+   if(tab)
+   {
+	tab->PageControl->ActivePage=tab;
+   }
+   else
+   {
+	UEngineMonitorForm->Show();
+	UEngineMonitorForm->WindowState=wsNormal;
+   }
   }
  }
 }

@@ -227,6 +227,9 @@ std::vector<int> InitAfterLoadFlag;
 // Флаг необходимости вызова сброса после загрузки
 std::vector<int> ResetAfterLoadFlag;
 
+// Флаг включения отладочного режима
+std::vector<bool> DebugModeFlag;
+
 // Флаг необходимости переворачивать входные изображения
 bool ReflectionFlag;
 

@@ -357,6 +357,12 @@ virtual const char* Env_GetCurrentDataDir(void) const;
 // Устанавливает имя текущего каталога для хранения данных
 virtual int Env_SetCurrentDataDir(const char *dir);
 
+/// Возвращает состояние флага отладочного режима среды
+virtual bool Env_GetDebugMode(void) const;
+
+/// Устанавливает состояние флага отладочного режима среды
+virtual int Env_SetDebugMode(bool value);
+
 // Перенесено из UBEngine
 // Задает число входов среды
 virtual void Env_SetNumInputImages(int number);
@@ -764,11 +770,11 @@ int GetMaxExceptionsLogSize(void) const;
 void SetMaxExceptionsLogSize(int value);
 
 // Возвращает массив строк лога
-const char* GetLog(void) const;
+const char* GetLog(int &error_level) const;
 
 // Возвращает частичный массив строк лога с момента последнего считывания лога
 // этой функцией
-const char* GetUnreadLog(void);
+const char* GetUnreadLog(int &error_level);
 
 // Управление функцией-обработчиком исключений
 UEnvironment::PExceptionHandler GetExceptionHandler(void) const;

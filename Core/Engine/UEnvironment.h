@@ -35,6 +35,9 @@ std::string CurrentDataDir;
 /// Минимальный интервал времени между итерациями счета (мс)
 long long MinInterstepsInterval;
 
+/// Флаг включения режима отладки
+bool DebugMode;
+
 protected: // Состояния
 // Флаг состояния инициализации
 // true - хранилище готово к использованию
@@ -76,6 +79,9 @@ int MaxExceptionsLogSize;
 
 // Индекс последнего считанного символа лога исключений
 int LastReadExceptionLogIndex;
+
+// Максимальный уровень непрочитанных сообщений в логе
+mutable int LastErrorLevel;
 
 
 
@@ -126,6 +132,10 @@ void SetCurrentDataDir(const std::string& dir);
 /// Минимальный интервал времени между итерациями счета (мс)
 long long GetMinInterstepsInterval(void) const;
 bool SetMinInterstepsInterval(long long value);
+
+/// Флаг включения режима отладки
+bool GetDebugMode(void) const;
+bool SetDebugMode(bool value);
 // --------------------------
 
 // --------------------------
@@ -246,11 +256,11 @@ int GetMaxExceptionsLogSize(void) const;
 void SetMaxExceptionsLogSize(int value);
 
 // Возвращает массив строк лога
-const char* GetLog(void) const;
+const char* GetLog(int &error_level) const;
 
 // Возвращает частичный массив строк лога с момента последнего считывания лога
 // этой функцией
-const char* GetUnreadLog(void);
+const char* GetUnreadLog(int &error_level);
 
 // Управление функцией-обработчиком исключений
 PExceptionHandler GetExceptionHandler(void) const;

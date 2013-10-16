@@ -244,6 +244,16 @@ void UContainer::WriteInfoLineToLog(const std::string &line)
  else
   throw exception;
 }
+
+/// Возвращает состояние флага режима отладки
+bool UContainer::CheckDebugMode(void) const
+{
+ if(Environment)
+ {
+  return Environment->GetDebugMode();
+ }
+ return false;
+}
 // --------------------------
 
 // --------------------------
