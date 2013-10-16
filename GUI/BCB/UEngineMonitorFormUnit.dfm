@@ -13,6 +13,7 @@ object UEngineMonitorForm: TUEngineMonitorForm
   Menu = EngineMonitorFrame.MainMenu
   OldCreateOrder = False
   Position = poDesigned
+  OnCreate = FormCreate
   OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13

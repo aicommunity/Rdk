@@ -15,9 +15,18 @@
 #pragma resource "*.dfm"
 TUEngineMonitorForm *UEngineMonitorForm;
 
+HANDLE RdkExceptionHandlerEvent=0;
+
 //---------------------------------------------------------------------------
 void ExceptionHandler(int channel_index)
 {
+ if(!RdkExceptionHandlerEvent)
+  return;
+
+ if(WaitForSingleObject(RdkExceptionHandlerEvent,1000) == WAIT_TIMEOUT)
+  return;
+ ResetEvent(RdkExceptionHandlerEvent);
+
  int error_level=-1;
  const char * data=MEngine_GetUnreadLog(channel_index, error_level);
  if(!data)
@@ -43,6 +52,7 @@ void ExceptionHandler(int channel_index)
    }
   }
  }
+ SetEvent(RdkExceptionHandlerEvent);
 }
 //---------------------------------------------------------------------------
 __fastcall TUEngineMonitorForm::TUEngineMonitorForm(TComponent* Owner)
@@ -69,8 +79,20 @@ TUEngineMonitorForm* TUEngineMonitorForm::New(TComponent *owner)
 //---------------------------------------------------------------------------
 void __fastcall TUEngineMonitorForm::FormDestroy(TObject *Sender)
 {
+ if(RdkExceptionHandlerEvent)
+ {
+  CloseHandle(RdkExceptionHandlerEvent);
+  RdkExceptionHandlerEvent=0;
+ }
 // EngineMonitorFrame->Timer->Enabled=false;
 }
 //---------------------------------------------------------------------------
 
+
+void __fastcall TUEngineMonitorForm::FormCreate(TObject *Sender)
+{
+ if(!RdkExceptionHandlerEvent)
+  RdkExceptionHandlerEvent=CreateEvent(0,TRUE,TRUE,0);
+}
+//---------------------------------------------------------------------------
 

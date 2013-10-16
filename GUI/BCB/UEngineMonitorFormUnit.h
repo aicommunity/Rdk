@@ -22,6 +22,7 @@ class TUEngineMonitorForm : public TUVisualControllerForm
 __published:	// IDE-managed Components
 	TUEngineMonitorFrame *EngineMonitorFrame;
 	void __fastcall FormDestroy(TObject *Sender);
+	void __fastcall FormCreate(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
 	__fastcall TUEngineMonitorForm(TComponent* Owner);
