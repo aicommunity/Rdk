@@ -451,6 +451,7 @@ virtual const char* Model_GetComponentsNameList(const char* stringid);
 // Возвращает строку, содержащую список имен всех компонент заданного компонента 'stringid'
 // имена разделяются сипволом ',' и имеющих имя класса 'class_name'
 // Если find_all == true то поиск ведется и во всех сабкомпонентах
+//virtual const char* Model_FindComponentsByClassName(const char* stringid, const char* class_name, bool find_all=false);
 virtual const char* Model_FindComponentsByClassName(const char* stringid, const char* class_name, bool find_all=false);
 
 // Перемещает компонент с текущим индексом index или именем 'name' вверх или

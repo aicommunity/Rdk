@@ -319,16 +319,17 @@ const UId& GetPointerId(const NameT &name) const;
 
 // Осуществляет поиск всех компонент по заданному имени класса
 // и возвращает вектор компонент либо пустой вектор
-// recursionFlag
-// false - искать на уровне текущей компоненты
-// true -  искать на уровне текущей компоненты и глубже
-const vector<UEPtr<UContainer> >& GetComponentsByClassName(const NameT &name, vector<UEPtr<UContainer> > &buffer, bool recursionFlag=false);
+// find_all
+// false - искать в текущей компоненте
+// true -  искать в текущей компоненте и глубже
+const vector<UEPtr<UContainer> >& GetComponentsByClassName(const NameT &name, vector<UEPtr<UContainer> > &buffer, bool find_all=false);
 
 // Осуществляет поиск всех компонент по заданному имени класса
 // и возвращает вектор длинных имен компонент либо пустой вектор
-// false - искать на уровне текущей компоненты
-// true -  искать на уровне текущей компоненты и глубже
-const vector<NameT>& GetComponentsNameByClassName(const NameT &name, vector<NameT> &buffer, bool recursionFlag=false);
+// find_all
+// false - искать в текущей компоненте
+// true -  искать в текущей компоненте и глубже
+const vector<NameT>& GetComponentsNameByClassName(const NameT &name, vector<NameT> &buffer, bool find_all=false);
 // --------------------------
 
 public:

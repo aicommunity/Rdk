@@ -1589,8 +1589,48 @@ const char* UEngine::Model_FindComponentsByClassName(const char* stringid, const
   if(!destcont)
    return TempString.c_str();
 
+  int class_id=Storage->FindClassId(class_name);
+
+  if(class_id == ForbiddenId)
+   return TempString.c_str();
+
+  std::vector<std::string> tempbuffer;
+  destcont->GetComponentsNameByClassName(class_name, tempbuffer, find_all);
+  size_t numComp=tempbuffer.size();
+
+  for(size_t i=0; i<numComp; i++)
+  {
+   TempString+=tempbuffer[i];
+   if( i < int(tempbuffer.size())-1 )
+	 TempString+=",";
+  }
+
+  return TempString.c_str();
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+
+ return 0;
+}
+
+/* Старый вариант, не работает поиск в субкомпанентах
+const char* UEngine::Model_FindComponentsByClassName(const char* stringid, const char* class_name, bool find_all)
+{
+ try
+ {
+  TempString.clear();
+
+  if(!class_name || !strlen(class_name))
+   return TempString.c_str();
+
+  RDK::UContainer* destcont=FindComponent(stringid);
+
   std::vector<std::string> tempbuffer;
 
+  if(!destcont)
+   return TempString.c_str();
 
   destcont->GetComponentsList(tempbuffer);
   std::string name;
@@ -1617,6 +1657,7 @@ const char* UEngine::Model_FindComponentsByClassName(const char* stringid, const
 
  return 0;
 }
+*/
 
 // Перемещает компонент с текущим индексом index или именем 'name' вверх или
 // вниз по списку на заданное число элементов
