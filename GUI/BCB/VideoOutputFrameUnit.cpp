@@ -33,6 +33,7 @@ __fastcall TVideoCaptureThread::TVideoCaptureThread(TVideoOutputFrame *frame, bo
  CalcCompleteEvent=CreateEvent(0,TRUE,TRUE,0);
  ReadSource=&Source[0];
  WriteSource=&Source[1];
+ FreeOnTerminate=false;
 }
 
 __fastcall TVideoCaptureThread::~TVideoCaptureThread(void)
@@ -1463,23 +1464,26 @@ void TVideoOutputFrame::InitByCamera(int camera_index, int input_index, int size
 void TVideoOutputFrame::InitByIPCamera(const String camera_url, const String user_name, const String user_password)
 {
  StopButtonClick(this);
-/* VideoGrabber->BurstType = fc_TBitmap;
- VideoGrabber->BurstMode = True;
- VideoGrabber->BurstCount = 0;
- VideoGrabber->IPCameraURL=camera_url;
-
- VideoGrabber->SetAuthentication(at_IPCamera,user_name,user_password);*/
- if(!DestroyCaptureThread())
-  return;
- if(!CaptureThread)
+ if(CaptureThread && dynamic_cast<TVideoCaptureThreadVideoGrabberIpCamera*>(CaptureThread))
  {
-  CaptureThread=new TVideoCaptureThreadVideoGrabberIpCamera(this,false);
-  CaptureThread->SetChannelIndex(FrameIndex);
   TVideoCaptureThreadVideoGrabberIpCamera* thread=dynamic_cast<TVideoCaptureThreadVideoGrabberIpCamera*>(CaptureThread);
-  if(thread)
+  thread->Init(camera_url, user_name, user_password);
+  MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, thread->GetVideoGrabber());
+ }
+ else
+ {
+  if(!DestroyCaptureThread())
+   return;
+  if(!CaptureThread)
   {
-   thread->Init(camera_url, user_name, user_password);
-   MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, thread->GetVideoGrabber());
+   CaptureThread=new TVideoCaptureThreadVideoGrabberIpCamera(this,false);
+   CaptureThread->SetChannelIndex(FrameIndex);
+   TVideoCaptureThreadVideoGrabberIpCamera* thread=dynamic_cast<TVideoCaptureThreadVideoGrabberIpCamera*>(CaptureThread);
+   if(thread)
+   {
+	thread->Init(camera_url, user_name, user_password);
+	MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, thread->GetVideoGrabber());
+   }
   }
  }
 

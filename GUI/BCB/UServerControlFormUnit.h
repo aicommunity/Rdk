@@ -21,6 +21,7 @@
 #include "../../Core/Graphics/Libraries/Hardware/PtzRpc.h"
 
 #include "myrdk.h"
+#include <Web.Win.Sockets.hpp>
 
 /// Стандартная функция, осуществляющую декодирование параметров запроса
 int StandardCommandRequestDecoder(std::map<std::string,std::vector<char> > &source, std::map<std::string,std::vector<char> > &dest);
@@ -57,6 +58,8 @@ __published:	// IDE-managed Components
 	TStringGrid *ChannelNamesStringGrid;
 	TBarSeries *Series2;
 	TBarSeries *Series3;
+	TTimer *CommandTimer;
+	TTcpServer *TcpServer;
 	void __fastcall UHttpServerFrameIdHTTPServerCommandGet(TIdContext *AContext, TIdHTTPRequestInfo *ARequestInfo,
           TIdHTTPResponseInfo *AResponseInfo);
 	void __fastcall FormCreate(TObject *Sender);
@@ -67,6 +70,13 @@ __published:	// IDE-managed Components
 	void __fastcall ApplyOptionsButtonClick(TObject *Sender);
 	void __fastcall ChannelNamesStringGridKeyDown(TObject *Sender, WORD &Key, TShiftState Shift);
 	void __fastcall PageControlChange(TObject *Sender);
+	void __fastcall CommandTimerTimer(TObject *Sender);
+	void __fastcall TcpServerAccept(TObject *Sender, TCustomIpClient *ClientSocket);
+	void __fastcall TcpServerListening(TObject *Sender);
+	void __fastcall TcpServerGetThread(TObject *Sender, TClientSocketThread *&ClientSocketThread);
+
+
+
 
 
 
@@ -138,18 +148,27 @@ int PerformancePushIndex;
 
 RDK::ExternalPtzControl PtzControl;
 
+HANDLE CommandQueueUnlockEvent;
+
+// Очередь команд
+std::list<std::map<std::string,std::vector<char> > > CommandQueue;
+
+RDK::UTransferPacket Packet;
+RDK::UTransferReader PacketReader;
+std::string PacketXml;
+
 const char* ControlRemoteCall(const char *request, int &return_value);
 
 const char* PtzRemoteCall(const char *request, int &return_value);
 
 // Функция, обрабатывающая команды управления сервером
 // Возвращает true если команда была найдена и обработана
-bool ProcessControlCommand(const std::string &cmd_name, std::map<std::string,std::vector<char> > &args, std::string &response_type, std::vector<char> &response_data);
+//bool ProcessControlCommand(const std::string &cmd_name, std::map<std::string,std::vector<char> > &args, std::string &response_type, std::vector<char> &response_data);
 bool ProcessControlCommand(const std::map<std::string,std::vector<char> > &args, std::string &response_type, std::vector<char> &response_data);
 
 // Функция, обрабатывающая команды удаленного вызова процедур
 // Возвращает true если команда была найдена и обработана
-bool ProcessRPCCommand(int channel, const std::string &cmd_name, std::map<std::string,std::vector<char> > &args, std::string &response_type, std::vector<char> &response_data);
+//bool ProcessRPCCommand(int channel, const std::string &cmd_name, std::map<std::string,std::vector<char> > &args, std::string &response_type, std::vector<char> &response_data);
 bool ProcessRPCCommand(const std::map<std::string,std::vector<char> > &args, std::string &response_type, std::vector<char> &response_data);
 
 // Метод, обрабатывающий команды управления PTZ камерами

@@ -20,7 +20,7 @@ object UServerControlForm: TUServerControlForm
     Top = 0
     Width = 721
     Height = 490
-    ActivePage = OptionsTabSheet
+    ActivePage = ControlTabSheet
     Align = alClient
     TabOrder = 0
     OnChange = PageControlChange
@@ -164,7 +164,7 @@ object UServerControlForm: TUServerControlForm
         TabOrder = 1
         object ServerStartButton: TButton
           Left = 10
-          Top = 8
+          Top = 6
           Width = 75
           Height = 25
           Caption = 'Start'
@@ -313,5 +313,20 @@ object UServerControlForm: TUServerControlForm
         end
       end
     end
+  end
+  object CommandTimer: TTimer
+    Interval = 1
+    OnTimer = CommandTimerTimer
+    Left = 80
+    Top = 40
+  end
+  object TcpServer: TTcpServer
+    LocalHost = '127.0.0.1'
+    LocalPort = '45050'
+    OnAccept = TcpServerAccept
+    OnGetThread = TcpServerGetThread
+    OnListening = TcpServerListening
+    Left = 144
+    Top = 40
   end
 end

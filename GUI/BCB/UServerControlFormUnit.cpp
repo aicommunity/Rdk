@@ -476,7 +476,8 @@ void TUServerControlForm::AUpdateInterface(void)
 void TUServerControlForm::ASaveParameters(RDK::USerStorageXML &xml)
 {
  xml.WriteInteger("AverageIterations",AverageIterations);
- xml.WriteInteger("ServerControlPort", UHttpServerFrame->GetListenPort());
+// xml.WriteInteger("ServerControlPort", UHttpServerFrame->GetListenPort());
+ xml.WriteInteger("ServerControlPort", StrToInt(TcpServer->LocalPort));
  xml.WriteInteger("NumberOfChannels",GetNumChannels());
  xml.WriteInteger("AutoStartFlag",AutoStartFlag);
  for(size_t i=0;i<ChannelNames.size();i++)
@@ -489,7 +490,8 @@ void TUServerControlForm::ASaveParameters(RDK::USerStorageXML &xml)
 void TUServerControlForm::ALoadParameters(RDK::USerStorageXML &xml)
 {
  AverageIterations=xml.ReadInteger("AverageIterations",AverageIterations);
- UHttpServerFrame->SetListenPort(xml.ReadInteger("ServerControlPort",80));
+// UHttpServerFrame->SetListenPort(xml.ReadInteger("ServerControlPort",80));
+ TcpServer->LocalPort=xml.ReadInteger("ServerControlPort",80);
  SetNumChannels(GetNumEngines());
  for(size_t i=0;i<ChannelNames.size();i++)
  {
@@ -725,20 +727,19 @@ void __fastcall TUServerControlForm::UHttpServerFrameIdHTTPServerCommandGet(TIdC
   AResponseInfo->ContentText="Request decode fail";
   return;
  }
-   /*
- std::map<std::string,std::vector<char> >::iterator I;
 
- int engine_index=0;
- I=DecodedRequest.find("Cmd");
- if(I != DecodedRequest.end())
+ if(WaitForSingleObject(CommandQueueUnlockEvent,1000) == WAIT_TIMEOUT)
  {
-  TStream* file=0;
-  if(I->second.size()>0)
-   Command.assign(&I->second[0],I->second.size());
+  AResponseInfo->ResponseNo=404;
+  AResponseInfo->ResponseText="Request decode fail";
+  AResponseInfo->ContentText="Request decode fail";
+  return;
  }
- else
-  Command.clear();
-     */
+ ResetEvent(CommandQueueUnlockEvent);
+ CommandQueue.push_back(DecodedRequest);
+ SetEvent(CommandQueueUnlockEvent);
+
+/*
  bool is_processed=ProcessControlCommand(DecodedRequest, ResponseType, Response);
 
  if(!is_processed)
@@ -750,7 +751,7 @@ void __fastcall TUServerControlForm::UHttpServerFrameIdHTTPServerCommandGet(TIdC
 // int encode_res=0;
  if(CommandResponseEncoder)
  {
-  /*encode_res=*/CommandResponseEncoder(ResponseType, Response, EncodedResponse);
+  CommandResponseEncoder(ResponseType, Response, EncodedResponse);
  }
  else
  {
@@ -759,7 +760,9 @@ void __fastcall TUServerControlForm::UHttpServerFrameIdHTTPServerCommandGet(TIdC
   AResponseInfo->ContentText="Response encode fail";
   return;
  }
+    */
 
+ AResponseInfo->ContentText="Command added to queue";
  TMemoryStream *DataStream=new TMemoryStream;
 
  if(EncodedResponse.size()>0)
@@ -772,6 +775,7 @@ void __fastcall TUServerControlForm::UHttpServerFrameIdHTTPServerCommandGet(TIdC
 //---------------------------------------------------------------------------
 void __fastcall TUServerControlForm::FormCreate(TObject *Sender)
 {
+ CommandQueueUnlockEvent=CreateEvent(0,TRUE,TRUE,0);
  MemStream=new TMemoryStream;
  Bitmap=new Graphics::TBitmap;
  UGEngineControlForm->SpecialForms["TUServerControlForm"]=this;
@@ -786,12 +790,16 @@ void __fastcall TUServerControlForm::FormDestroy(TObject *Sender)
 
  if(Bitmap)
   delete Bitmap;
+
+ CloseHandle(CommandQueueUnlockEvent);
 }
 //---------------------------------------------------------------------------
 void __fastcall TUServerControlForm::ServerStartButtonClick(TObject *Sender)
 {
- try{
- UHttpServerFrame->ServerListenOn();
+/*
+ try
+ {
+  UHttpServerFrame->ServerListenOn();
  }
  catch(EIdSocketError &ex)
  {
@@ -801,11 +809,14 @@ void __fastcall TUServerControlForm::ServerStartButtonClick(TObject *Sender)
  {
 
  }
+ */
+ TcpServer->Active=true;
 }
 //---------------------------------------------------------------------------
 void __fastcall TUServerControlForm::ServerStopButtonClick(TObject *Sender)
 {
- UHttpServerFrame->ServerListenOff();
+ TcpServer->Active=false;
+// UHttpServerFrame->ServerListenOff();
 }
 //---------------------------------------------------------------------------
 void __fastcall TUServerControlForm::ReturnOptionsButtonClick(TObject *Sender)
@@ -829,10 +840,18 @@ void __fastcall TUServerControlForm::ApplyOptionsButtonClick(TObject *Sender)
 
  UGEngineControlForm->Pause1Click(Sender);
 
- UHttpServerFrame->SetListenPort(StrToInt(ServerControlPortLabeledEdit->Text));
-
  UEngineMonitorForm->EngineMonitorFrame->SetNumChannels(new_num_channels);
  SetNumChannels(GetNumEngines());
+
+// UHttpServerFrame->SetListenPort(StrToInt(ServerControlPortLabeledEdit->Text));
+
+ int new_port=StrToInt(ServerControlPortLabeledEdit->Text);
+ if(StrToInt(TcpServer->LocalPort) != new_port)
+ {
+  TcpServer->LocalPort=IntToStr(new_port);
+  if(AutoStartFlag)
+   ServerStartButtonClick(Sender);
+ }
 
  UpdateInterface();
 }
@@ -852,7 +871,8 @@ void __fastcall TUServerControlForm::ChannelNamesStringGridKeyDown(TObject *Send
 //---------------------------------------------------------------------------
 void __fastcall TUServerControlForm::PageControlChange(TObject *Sender)
 {
- ServerControlPortLabeledEdit->Text=IntToStr(UHttpServerFrame->GetListenPort());
+// ServerControlPortLabeledEdit->Text=IntToStr(UHttpServerFrame->GetListenPort());
+ ServerControlPortLabeledEdit->Text=TcpServer->LocalPort;
  NumberOfChannelsLabeledEdit->Text=IntToStr(GetNumChannels());
 
  ChannelNamesStringGrid->RowCount=ChannelNames.size()+1;
@@ -865,6 +885,98 @@ void __fastcall TUServerControlForm::PageControlChange(TObject *Sender)
   ChannelNamesStringGrid->Cells[0][i+1]=IntToStr(i);
   ChannelNamesStringGrid->Cells[1][i+1]=ChannelNames[i].c_str();
  }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUServerControlForm::CommandTimerTimer(TObject *Sender)
+{
+ if(WaitForSingleObject(CommandQueueUnlockEvent,10) == WAIT_TIMEOUT)
+  return;
+ ResetEvent(CommandQueueUnlockEvent);
+
+try {
+ while(!CommandQueue.empty())
+ {
+  const std::map<std::string,std::vector<char> > &cmd=CommandQueue.back();
+
+  bool is_processed=ProcessControlCommand(cmd, ResponseType, Response);
+
+  if(!is_processed)
+   is_processed=ProcessRPCCommand(cmd, ResponseType, Response);
+
+  if(!is_processed)
+   is_processed=ProcessPtzCommand(cmd, ResponseType, Response);
+
+  if(CommandResponseEncoder)
+  {
+   CommandResponseEncoder(ResponseType, Response, EncodedResponse);
+  }
+  else
+  {
+//   AResponseInfo->ResponseNo=404;
+//   AResponseInfo->ResponseText="Response encode fail";
+//   AResponseInfo->ContentText="Response encode fail";
+  }
+  CommandQueue.pop_back();
+ }
+}
+catch (...)
+{
+ SetEvent(CommandQueueUnlockEvent);
+ throw;
+}
+ SetEvent(CommandQueueUnlockEvent);
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TUServerControlForm::TcpServerAccept(TObject *Sender, TCustomIpClient *ClientSocket)
+{
+ vector<unsigned char> client_buffer;
+ while(ClientSocket->Connected)
+ {
+  bool ReadReady = false;
+  if(ClientSocket->Select(&ReadReady, NULL, NULL, 1000) )
+  {
+   client_buffer.resize(200000);
+   int length=client_buffer.size();
+   length=ClientSocket->ReceiveBuf(&client_buffer[0], length);
+   if(length>0)
+   {
+	client_buffer.resize(length);
+	PacketReader.ProcessDataPart(client_buffer);
+	if(PacketReader.GetNumPackets()>0)
+	{
+	 Packet=PacketReader.GetLastPacket();
+	 PacketReader.DelLastPacket();
+	 if(Packet.GetNumParams()>0)
+	 {
+//	  PacketXml.resize(Packet.GetParamSize(0));
+	  std::map<std::string,std::vector<char> > args;
+	  args["Request"].resize(Packet.GetParamSize(0));
+	  if(Packet.GetParamSize(0)>0)
+	   memcpy(&args["Request"][0],&Packet(0)[0],Packet.GetParamSize(0));
+	  ResetEvent(CommandQueueUnlockEvent);
+	  CommandQueue.push_back(args);
+	  SetEvent(CommandQueueUnlockEvent);
+	 }
+	}
+   }
+  }
+ }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUServerControlForm::TcpServerListening(TObject *Sender)
+{
+ //
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUServerControlForm::TcpServerGetThread(TObject *Sender, TClientSocketThread *&ClientSocketThread)
+
+{
+ //
 }
 //---------------------------------------------------------------------------
 
