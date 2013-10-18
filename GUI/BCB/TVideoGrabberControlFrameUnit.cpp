@@ -514,3 +514,4 @@ void __fastcall TVideoGrabberControlFrame::ResetButtonClick(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+

@@ -766,8 +766,10 @@ bool IsStarted;
 // ============================================================
 
 
+// Возвращает форму управления инициализацией видео
+TVideoGrabberControlForm* GetMyVideoGrabberControlForm(void);
 
-/// Уничтожает созданный поток
+// Уничтожает созданный поток
 bool DestroyCaptureThread(void);
 
 // Инициализация фрейма avi-файлом

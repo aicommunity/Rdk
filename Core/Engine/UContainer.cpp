@@ -535,7 +535,7 @@ const UId& UContainer::GetPointerId(const NameT &name) const
 // true -  искать в текущей компоненте и глубже
 const vector<UEPtr<UContainer> >& UContainer::GetComponentsByClassName(const NameT &name, vector<UEPtr<UContainer> > &buffer, bool find_all)
 {
- size_t numComp=this->GetNumComponents();
+ size_t numComp=GetNumComponents();
  UEPtr<UContainer> comp;
 
  switch(find_all)
@@ -543,7 +543,7 @@ const vector<UEPtr<UContainer> >& UContainer::GetComponentsByClassName(const Nam
   case false:
    for(size_t i=0; i<numComp; i++)
    {
-	comp=this->GetComponentByIndex(i);
+	comp=GetComponentByIndex(i);
 	if( comp->GetCompClassName() == name )
 	{
 	 buffer.push_back(comp);
@@ -554,7 +554,7 @@ const vector<UEPtr<UContainer> >& UContainer::GetComponentsByClassName(const Nam
   case true:
    for(size_t i=0; i<numComp; i++)
    {
-	comp=this->GetComponentByIndex(i);
+	comp=GetComponentByIndex(i);
 	comp->GetComponentsByClassName(name, buffer, true);
 	if( comp->GetCompClassName() == name )
 	{
@@ -575,13 +575,12 @@ const vector<NameT>& UContainer::GetComponentsNameByClassName(const NameT &name,
 {
  vector<UEPtr<UContainer> > components;
  string compName;
- UEPtr<UContainer> ownerComp=this->GetOwner();
- this->GetComponentsByClassName(name, components, find_all);
+ GetComponentsByClassName(name, components, find_all);
  size_t numComp=components.size();
 
  for(size_t i=0; i<numComp; i++)
  {
-  compName=components[i]->GetLongName(ownerComp, compName);
+  compName=components[i]->GetLongName(this, compName);
   buffer.push_back(compName);
  }
 

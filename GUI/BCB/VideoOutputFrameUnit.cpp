@@ -1301,7 +1301,13 @@ __fastcall TVideoOutputFrame::~TVideoOutputFrame(void)
 }
 
 //---------------------------------------------------------------------------
-/// Уничтожает созданный поток
+// Возвращает форму управления инициализацией видео
+TVideoGrabberControlForm* TVideoOutputFrame::GetMyVideoGrabberControlForm(void)
+{
+ return MyVideoGrabberControlForm;
+}
+
+// Уничтожает созданный поток
 bool TVideoOutputFrame::DestroyCaptureThread(void)
 {
  if(CaptureThread)
