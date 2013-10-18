@@ -27,14 +27,14 @@
 TUServerControlForm *UServerControlForm;
 
 /// Стандартная функция, осуществляющую декодирование параметров запроса
-int StandardCommandRequestDecoder(std::map<std::string,std::vector<char> > &source, std::map<std::string,std::vector<char> > &dest)
+int StandardCommandRequestDecoder(UServerCommand &source, UServerCommand &dest)
 {
  dest=source;
  return 0;
 }
 
 /// Стандартная функция, осуществляющую кодирование параметров ответа
-int StandardCommandResponseEncoder(const std::string &response_type, std::vector<char> &source, std::vector<char> &dest)
+int StandardCommandResponseEncoder(const std::string &response_type, UParamT &source, UParamT &dest)
 {
  dest=source;
  return 0;
@@ -279,21 +279,21 @@ const char* TUServerControlForm::PtzRemoteCall(const char *request, int &return_
 }
 
 // Функция, обрабатывающая команды управления сервером
-bool TUServerControlForm::ProcessControlCommand(const std::map<std::string,std::vector<char> > &args, std::string &response_type, std::vector<char> &response_data)
+bool TUServerControlForm::ProcessControlCommand(const UServerCommand &args, std::string &response_type, UParamT &response_data)
 {
- std::map<std::string,std::vector<char> >::const_iterator I;
+// UServerCommand::const_iterator I;
  std::string request;
 
  response_type="text/plain";
-
+/*
  I=args.find("Request");
  if(I == args.end())
  {
   ConvertStringToVector("RPC: Request not found", response_data);
   return true;
  }
-
- ConvertVectorToString(I->second, request);
+  */
+ ConvertVectorToString(args.second, request);
  int response_status=0;
  const char* response=ControlRemoteCall(request.c_str(), response_status);
 
@@ -308,13 +308,13 @@ bool TUServerControlForm::ProcessControlCommand(const std::map<std::string,std::
  return true;
 }
 
-bool TUServerControlForm::ProcessRPCCommand(const std::map<std::string,std::vector<char> > &args, std::string &response_type, std::vector<char> &response_data)
+bool TUServerControlForm::ProcessRPCCommand(const UServerCommand &args, std::string &response_type, UParamT &response_data)
 {
- std::map<std::string,std::vector<char> >::const_iterator I;
+// UServerCommand::const_iterator I;
  std::string request;
 
  response_type="text/plain";
-
+/*
  I=args.find("Request");
  if(I == args.end())
  {
@@ -322,7 +322,8 @@ bool TUServerControlForm::ProcessRPCCommand(const std::map<std::string,std::vect
   return true;
  }
 
- ConvertVectorToString(I->second, request);
+ ConvertVectorToString(I->second, request);*/
+ ConvertVectorToString(args.second, request);
  int response_status=0;
  const char* response=RemoteCall(request.c_str(), response_status);
 
@@ -337,13 +338,13 @@ bool TUServerControlForm::ProcessRPCCommand(const std::map<std::string,std::vect
  return true;
 }
 
-bool TUServerControlForm::ProcessPtzCommand(const std::map<std::string,std::vector<char> > &args, std::string &response_type, std::vector<char> &response_data)
+bool TUServerControlForm::ProcessPtzCommand(const UServerCommand &args, std::string &response_type, UParamT &response_data)
 {
- std::map<std::string,std::vector<char> >::const_iterator I;
+// UServerCommand::const_iterator I;
  std::string request;
 
  response_type="text/plain";
-
+				/*
  I=args.find("Request");
  if(I == args.end())
  {
@@ -351,7 +352,8 @@ bool TUServerControlForm::ProcessPtzCommand(const std::map<std::string,std::vect
   return true;
  }
 
- ConvertVectorToString(I->second, request);
+ ConvertVectorToString(I->second, request);*/
+ ConvertVectorToString(args.second, request);
  int response_status=0;
  const char* response=PtzRemoteCall(request.c_str(), response_status);
 
@@ -368,7 +370,7 @@ bool TUServerControlForm::ProcessPtzCommand(const std::map<std::string,std::vect
 
 
 /// Кодирует строку в вектор
-void TUServerControlForm::ConvertStringToVector(const std::string &source, std::vector<char> &dest)
+void TUServerControlForm::ConvertStringToVector(const std::string &source, UParamT &dest)
 {
  dest.resize(source.size());
  if(source.size()>0)
@@ -376,7 +378,7 @@ void TUServerControlForm::ConvertStringToVector(const std::string &source, std::
 }
 
 /// Кодирует вектор в строку
-void TUServerControlForm::ConvertVectorToString(const std::vector<char> &source, std::string &dest)
+void TUServerControlForm::ConvertVectorToString(const UParamT &source, std::string &dest)
 {
  dest.resize(source.size());
  if(source.size()>0)
@@ -387,9 +389,9 @@ void TUServerControlForm::ConvertVectorToString(const std::vector<char> &source,
 /// Декодирует параметр массива команды с именем 'param_name' в целое число
 /// и записывает его в value
 /// Возвращает 0 в случае успеха
-int TUServerControlForm::DecodeParamAsInteger(const std::string &param_name, const std::map<std::string,std::vector<char> > &args, int &value)
+/*int TUServerControlForm::DecodeParamAsInteger(const std::string &param_name, const UServerCommand &args, int &value)
 {
- std::map<std::string,std::vector<char> >::const_iterator I;
+ UServerCommand::const_iterator I;
  I=args.find(param_name);
  if(I != args.end() && I->second.size()>0)
  {
@@ -399,11 +401,11 @@ int TUServerControlForm::DecodeParamAsInteger(const std::string &param_name, con
   return 0;
  }
  return 1;
-}
+} */
 
 
 /// Отправляет ответ на команду
-void TUServerControlForm::SendCommandResponse(std::vector<char> &dest)
+void TUServerControlForm::SendCommandResponse(const std::string &client_binding, UParamT &dest)
 {
  UTransferPacket packet;
 
@@ -421,10 +423,19 @@ void TUServerControlForm::SendCommandResponse(std::vector<char> &dest)
   try
   {
    TList *list=IdTCPServer->Contexts->LockList();
+   std::string current_bind;
    for(int i=0;i<list->Count;i++)
    {
 	TIdContext *context=static_cast<TIdContext*>(list->Items[i]);
-	context->Connection->IOHandler->Write(arr, arr.get_length());
+	current_bind=AnsiString(context->Binding->PeerIP).c_str();
+	current_bind+=":";
+	current_bind+=RDK::sntoa(context->Binding->PeerPort);
+
+	if(current_bind == client_binding)
+	{
+	 context->Connection->IOHandler->Write(arr, arr.get_length());
+	 break;
+    }
    }
 
 //  TcpServer-> SendTo(&dest[0],dest.size(),TcpServer->GetSocketAddr(),0);
@@ -440,7 +451,7 @@ void TUServerControlForm::SendCommandResponse(std::vector<char> &dest)
 /// Отправляет сообщение об ошибке в ответ на команду
 /// 0 - неизвестная ошибка
 /// 1 - Команда не опознана
-void TUServerControlForm::SendCommandError(int request_id, int error_code)
+void TUServerControlForm::SendCommandError(const std::string &client_binding, int request_id, int error_code)
 {
  RDK::USerStorageXML result;
 
@@ -448,9 +459,9 @@ void TUServerControlForm::SendCommandError(int request_id, int error_code)
  result.WriteString("Id", sntoa(request_id));
  result.WriteString("Error",sntoa(error_code));
  result.Save(ControlResponseString);
- std::vector<char> error_response;
+ UParamT error_response;
  ConvertStringToVector(ControlResponseString, error_response);
- SendCommandResponse(error_response);
+ SendCommandResponse(client_binding, error_response);
 }
 
 
@@ -765,7 +776,7 @@ void __fastcall TUServerControlForm::UHttpServerFrameIdHTTPServerCommandGet(TIdC
 		  TIdHTTPRequestInfo *ARequestInfo, TIdHTTPResponseInfo *AResponseInfo)
 
 {
- Mode=-1;
+/* Mode=-1;
 
  if(ARequestInfo->Document != "/control.cgi")
  {
@@ -780,7 +791,7 @@ void __fastcall TUServerControlForm::UHttpServerFrameIdHTTPServerCommandGet(TIdC
  //int decode_res=0;
  if(CommandRequestDecoder)
  {
-  /*decode_res=*/CommandRequestDecoder(UHttpServerFrame->ParsedRequestArgs, DecodedRequest);
+  CommandRequestDecoder(UHttpServerFrame->ParsedRequestArgs, DecodedRequest);
  }
  else
  {
@@ -801,29 +812,6 @@ void __fastcall TUServerControlForm::UHttpServerFrameIdHTTPServerCommandGet(TIdC
  CommandQueue.push_back(DecodedRequest);
  SetEvent(CommandQueueUnlockEvent);
 
-/*
- bool is_processed=ProcessControlCommand(DecodedRequest, ResponseType, Response);
-
- if(!is_processed)
-  is_processed=ProcessRPCCommand(DecodedRequest, ResponseType, Response);
-
- if(!is_processed)
-  is_processed=ProcessPtzCommand(DecodedRequest, ResponseType, Response);
-
-// int encode_res=0;
- if(CommandResponseEncoder)
- {
-  CommandResponseEncoder(ResponseType, Response, EncodedResponse);
- }
- else
- {
-  AResponseInfo->ResponseNo=404;
-  AResponseInfo->ResponseText="Response encode fail";
-  AResponseInfo->ContentText="Response encode fail";
-  return;
- }
-    */
-
  AResponseInfo->ContentText="Command added to queue";
  TMemoryStream *DataStream=new TMemoryStream;
 
@@ -832,7 +820,7 @@ void __fastcall TUServerControlForm::UHttpServerFrameIdHTTPServerCommandGet(TIdC
  DataStream->Position=0;
 
  AResponseInfo->ContentType=ResponseType.c_str();
- AResponseInfo->ContentStream=DataStream;
+ AResponseInfo->ContentStream=DataStream;*/
 }
 //---------------------------------------------------------------------------
 void __fastcall TUServerControlForm::FormCreate(TObject *Sender)
@@ -977,7 +965,7 @@ try {
   if(CommandResponseEncoder)
   {
    CommandResponseEncoder(ResponseType, Response, EncodedResponse);
-   SendCommandResponse(EncodedResponse);
+   SendCommandResponse(CurrentProcessedCommand.first, EncodedResponse);
   }
   else
   {
@@ -998,7 +986,7 @@ catch (...)
 
 void __fastcall TUServerControlForm::TcpServerAccept(TObject *Sender, TCustomIpClient *ClientSocket)
 {
- vector<unsigned char> client_buffer;
+/* vector<unsigned char> client_buffer;
  while(ClientSocket->Connected)
  {
   bool ReadReady = false;
@@ -1018,7 +1006,7 @@ void __fastcall TUServerControlForm::TcpServerAccept(TObject *Sender, TCustomIpC
 	 if(Packet.GetNumParams()>0)
 	 {
 //	  PacketXml.resize(Packet.GetParamSize(0));
-	  std::map<std::string,std::vector<char> > args;
+	  UServerCommand args;
 	  args["Request"].resize(Packet.GetParamSize(0));
 	  if(Packet.GetParamSize(0)>0)
 	   memcpy(&args["Request"][0],&Packet(0)[0],Packet.GetParamSize(0));
@@ -1029,7 +1017,7 @@ void __fastcall TUServerControlForm::TcpServerAccept(TObject *Sender, TCustomIpC
 	}
    }
   }
- }
+ } */
 }
 //---------------------------------------------------------------------------
 
@@ -1064,6 +1052,10 @@ void __fastcall TUServerControlForm::IdTCPServerExecute(TIdContext *AContext)
  int length=AContext->Connection->IOHandler->InputBuffer->Size;
  if(length>0)
  {
+  std::string bind=AnsiString(AContext->Binding->PeerIP).c_str();
+  bind+=":";
+  bind+=RDK::sntoa(AContext->Binding->PeerPort);
+
    client_buffer.resize(length);
    int length=client_buffer.size();
    if(length<=0)
@@ -1075,20 +1067,26 @@ void __fastcall TUServerControlForm::IdTCPServerExecute(TIdContext *AContext)
    {
 	memcpy(&client_buffer[0],&VBuffer[0],length);
 	client_buffer.resize(length);
-	PacketReader.ProcessDataPart(client_buffer);
-	if(PacketReader.GetNumPackets()>0)
+	std::map<std::string, RDK::UTransferReader>::iterator I=PacketReaders.find(bind);
+	if(I == PacketReaders.end())
+	 return;
+	I->second.ProcessDataPart(client_buffer);
+	while(I->second.GetNumPackets()>0)
 	{
-	 Packet=PacketReader.GetLastPacket();
-	 PacketReader.DelLastPacket();
-	 if(Packet.GetNumParams()>0)
+	 UTransferPacket packet=I->second.GetFirstPacket();
+	 I->second.DelFirstPacket();
+	 if(packet.GetNumParams()>0)
 	 {
 //	  PacketXml.resize(Packet.GetParamSize(0));
-	  std::map<std::string,std::vector<char> > args;
-	  args["Request"].resize(Packet.GetParamSize(0));
-	  if(Packet.GetParamSize(0)>0)
-	   memcpy(&args["Request"][0],&Packet(0)[0],Packet.GetParamSize(0));
+	  UServerCommand args;
+//	  args.resize(Packet.GetParamSize(0));
+//	  if(Packet.GetParamSize(0)>0)
+//	   memcpy(&args[0],&Packet(0)[0],Packet.GetParamSize(0));
 	  ResetEvent(CommandQueueUnlockEvent);
-	  CommandQueue.push_back(args);
+	  UServerCommand cmd;
+	  cmd.first=bind;
+	  cmd.second=packet(0);
+	  CommandQueue.push_back(cmd);
 	  SetEvent(CommandQueueUnlockEvent);
 	 }
 	}
@@ -1102,7 +1100,11 @@ void __fastcall TUServerControlForm::IdTCPServerExecute(TIdContext *AContext)
 
 void __fastcall TUServerControlForm::IdTCPServerConnect(TIdContext *AContext)
 {
- //
+ std::string bind=AnsiString(AContext->Binding->PeerIP).c_str();
+ bind+=":";
+ bind+=RDK::sntoa(AContext->Binding->PeerPort);
+ PacketReaders[bind].ResetProcessing();
+ PacketReaders[bind].ClearPacketList();
 }
 //---------------------------------------------------------------------------
 
