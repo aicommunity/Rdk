@@ -315,7 +315,7 @@ object UServerControlForm: TUServerControlForm
     end
   end
   object CommandTimer: TTimer
-    Interval = 1
+    Interval = 10
     OnTimer = CommandTimerTimer
     Left = 80
     Top = 40
@@ -327,6 +327,19 @@ object UServerControlForm: TUServerControlForm
     OnGetThread = TcpServerGetThread
     OnListening = TcpServerListening
     Left = 144
+    Top = 40
+  end
+  object IdTCPServer: TIdTCPServer
+    Bindings = <
+      item
+        IP = '127.0.0.1'
+        Port = 80
+      end>
+    DefaultPort = 0
+    OnConnect = IdTCPServerConnect
+    OnDisconnect = IdTCPServerDisconnect
+    OnExecute = IdTCPServerExecute
+    Left = 208
     Top = 40
   end
 end

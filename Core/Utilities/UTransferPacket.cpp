@@ -123,6 +123,19 @@ bool UTransferPacket::SetParam(int i, const std::string &value)
  return true;
 }
 
+bool UTransferPacket::SetParam(int i, const std::vector<char> &value)
+{
+ if(i<0 || i >= NumParams)
+  return false;
+
+ Params[i].resize(value.size());
+ if(!value.empty())
+  memcpy(&Params[i][0],&value[0],value.size()*sizeof(char));
+
+ return true;
+}
+
+
 
 // Устанавливает значение i-го параметра
 // декодируя буфер 'value' и возвращает индекс на следующий
@@ -198,6 +211,20 @@ int UTransferPacket::CheckBuffer(const UParamT &buffer, int buffersize)
  return IntCompose(buffer,20)-buffersize;
 }
 
+int UTransferPacket::CheckBuffer(const UParamT &buffer, int buffersize, int start_index)
+{
+ if((buffersize-start_index) < sizeof(UPacketPrefix)+sizeof(int)*2)
+  return sizeof(UPacketPrefix)+sizeof(int)*2-(buffersize-start_index);
+
+ if(memcmp(UPacketPrefix,&buffer[start_index],sizeof(UPacketPrefix)))
+  return 0;
+
+ if(IntCompose(buffer,start_index+20) > MAX_PACKET_SIZE)
+  return 0;
+
+ return IntCompose(buffer,start_index+20)-buffersize;
+}
+
 // Ищет в буфере начало пакета и возвращает индекс начала
 // или -1 если пакет не найден
 int UTransferPacket::FindPacketInBuffer(const UParamT &buffer, int start_index)
@@ -216,7 +243,7 @@ int UTransferPacket::FindPacketInBuffer(const UParamT &buffer, int start_index)
 }
 
 // Загружает все данные пакета из массива 'buffer'
-bool UTransferPacket::Load(const UParamT &buffer)
+bool UTransferPacket::Load(const UParamT &buffer, int start_index)
 {
  int pbuf=sizeof(UPacketPrefix)+sizeof(int)*3;
  int tmpPacketSize=sizeof(UPacketPrefix)+sizeof(int)*3;
@@ -224,38 +251,38 @@ bool UTransferPacket::Load(const UParamT &buffer)
 
 // if(buffer.size() < sizeof(UPacketPrefix)+sizeof(int)*4)
 //  return false;
- if(buffer.size() < sizeof(UPacketPrefix)+sizeof(int)*2)
+ if(int(buffer.size())-start_index < sizeof(UPacketPrefix)+sizeof(int)*2)
   return false;
 
 
- if(memcmp(UPacketPrefix,&buffer[0],sizeof(UPacketPrefix)))
+ if(memcmp(UPacketPrefix,&buffer[start_index],sizeof(UPacketPrefix)))
   return false;
 
- if(!SetCmdId(IntCompose(buffer,sizeof(UPacketPrefix))))
+ if(!SetCmdId(IntCompose(buffer,start_index+sizeof(UPacketPrefix))))
   return false;
 
- PacketSize=IntCompose(buffer,sizeof(UPacketPrefix)+4);
+ PacketSize=IntCompose(buffer,start_index+sizeof(UPacketPrefix)+4);
  if(PacketSize > MAX_PACKET_SIZE)
   return false;
 
- if(PacketSize > (int)buffer.size())
+ if(PacketSize > (int)buffer.size()-start_index)
   return false;
 
- if(IntCompose(buffer,sizeof(UPacketPrefix)+8) > MAX_NUM_PARAMS)
+ if(IntCompose(buffer,start_index+sizeof(UPacketPrefix)+8) > MAX_NUM_PARAMS)
   return false;
 
- if(!SetNumParams(IntCompose(buffer,sizeof(UPacketPrefix)+8)))
+ if(!SetNumParams(IntCompose(buffer,start_index+sizeof(UPacketPrefix)+8)))
   return false;
 
  for(int i=0;i<NumParams;i++)
   {
-   pbuf=DecodeParam(i,buffer,pbuf);
+   pbuf=DecodeParam(i,buffer,start_index+pbuf);
    if(pbuf == -1)
     return false;
    tmpPacketSize+=GetParamSize(i)+sizeof(int);
   }
 
- unsigned int checksum=IntCompose(buffer,pbuf);
+ unsigned int checksum=IntCompose(buffer,start_index+pbuf);
  tmpPacketSize+=sizeof(int);
  if(PacketSize != tmpPacketSize)
   return false;
@@ -423,30 +450,39 @@ int UTransferReader::GetNumPackets(void) const
 // Обрабатывает очередную порцию данных
 int UTransferReader::ProcessDataPart(const UParamT &buffer)
 {
+ ClientBuffer.insert(ClientBuffer.end(),buffer.begin(), buffer.end());
  if(!PacketInProgress)
  {
   int start_search=0;
   do
   {
-   if(start_search>int(buffer.size()))
+
+/*   if(start_search>int(buffer.size()))
    {
 	ResetProcessing();
 	return 1;
-   }
-   int i=Packet.FindPacketInBuffer(buffer, start_search);
-   if(i<0)
-	return 1;
-
-   ClientBuffer.assign(buffer.begin()+i, buffer.end());
-   LastSize=Packet.CheckBuffer(ClientBuffer,ClientBuffer.size());
-   if(LastSize<=ClientBuffer.size()+24)
+   } */
+   start_search=Packet.FindPacketInBuffer(ClientBuffer, start_search);
+   if(start_search<0)
    {
-	if(!Packet.Load(ClientBuffer))
+	return 1;
+   }
+
+
+   if(start_search>0)
+   {
+	ClientBuffer.erase(ClientBuffer.begin(),ClientBuffer.begin()+start_search);
+    start_search=0;
+   }
+   LastSize=Packet.CheckBuffer(ClientBuffer,ClientBuffer.size(),start_search);
+   if(LastSize<=int(ClientBuffer.size())-start_search+24)
+   {
+	if(!Packet.Load(ClientBuffer,start_search))
 	{
 	 ResetProcessing();
-	 return 1;
+	 start_search+=24;
+	 continue;
 //	 ClientError=2;
-	 start_search+=int(buffer.size())-LastSize;
 	}
 	else
 	{
@@ -455,29 +491,50 @@ int UTransferReader::ProcessDataPart(const UParamT &buffer)
 	 start_search+=Packet.GetPacketSize();
 	 PacketInProgress=false;
 	}
-	int i=Packet.FindPacketInBuffer(buffer, start_search);
-	if(i<0)
-	 return 1;
+//	int j=Packet.FindPacketInBuffer(buffer, start_search);
+//	if(j<0)
+//	 return 1;
 
-   ClientBuffer.assign(buffer.begin()+i, buffer.end());
-   LastSize=Packet.CheckBuffer(ClientBuffer,ClientBuffer.size());
-
+//   ClientBuffer.assign(buffer.begin()+j, buffer.end());
+//    LastSize=Packet.CheckBuffer(ClientBuffer,ClientBuffer.size());
    }
    else
    {
-	LastSize-=i-24;
+//	LastSize-=i-24;
 	PacketInProgress=true;
+	return 1;
    }
   } while(!PacketInProgress);
  }
  else
  {
-  ClientBuffer.insert(ClientBuffer.end(),buffer.begin(),buffer.end());
+//  ClientBuffer.insert(ClientBuffer.end(),buffer.begin(),buffer.end());
+  if(LastSize<0)
+  {
+   ResetProcessing();
+   return 1;
+  }
   if(LastSize<=ClientBuffer.size()+24)
   {
    PacketInProgress=false;
    int start_search=0;
-   do
+	if(!Packet.Load(ClientBuffer))
+	{
+	 ResetProcessing();
+	 ClientBuffer.erase(ClientBuffer.begin(),ClientBuffer.begin()+24);
+//	 start_search+=int(buffer.size())-LastSize;
+	 return 1;
+	}
+	else
+	{
+	 PacketList.push_back(Packet);
+	 LastSize=0;
+	 PacketInProgress=false;
+	 start_search+=Packet.GetPacketSize();
+	 ClientBuffer.erase(ClientBuffer.begin(),ClientBuffer.begin()+start_search);
+	}
+
+/*   do
    {
 	if(!Packet.Load(ClientBuffer))
 	{
@@ -511,11 +568,11 @@ int UTransferReader::ProcessDataPart(const UParamT &buffer)
 	 LastSize-=i-24;
 	 PacketInProgress=true;
 	}
-   } while(!PacketInProgress);
+   } while(!PacketInProgress);  */
   }
   else
   {
-   LastSize-=int(ClientBuffer.size())-24;
+//   LastSize-=int(ClientBuffer.size())-24;
   }
  }
  return 0;

@@ -22,6 +22,11 @@
 
 #include "myrdk.h"
 #include <Web.Win.Sockets.hpp>
+#include <IdBaseComponent.hpp>
+#include <IdComponent.hpp>
+#include <IdContext.hpp>
+#include <IdCustomTCPServer.hpp>
+#include <IdTCPServer.hpp>
 
 /// Стандартная функция, осуществляющую декодирование параметров запроса
 int StandardCommandRequestDecoder(std::map<std::string,std::vector<char> > &source, std::map<std::string,std::vector<char> > &dest);
@@ -60,6 +65,7 @@ __published:	// IDE-managed Components
 	TBarSeries *Series3;
 	TTimer *CommandTimer;
 	TTcpServer *TcpServer;
+	TIdTCPServer *IdTCPServer;
 	void __fastcall UHttpServerFrameIdHTTPServerCommandGet(TIdContext *AContext, TIdHTTPRequestInfo *ARequestInfo,
           TIdHTTPResponseInfo *AResponseInfo);
 	void __fastcall FormCreate(TObject *Sender);
@@ -74,6 +80,9 @@ __published:	// IDE-managed Components
 	void __fastcall TcpServerAccept(TObject *Sender, TCustomIpClient *ClientSocket);
 	void __fastcall TcpServerListening(TObject *Sender);
 	void __fastcall TcpServerGetThread(TObject *Sender, TClientSocketThread *&ClientSocketThread);
+	void __fastcall IdTCPServerDisconnect(TIdContext *AContext);
+	void __fastcall IdTCPServerExecute(TIdContext *AContext);
+	void __fastcall IdTCPServerConnect(TIdContext *AContext);
 
 
 
@@ -84,6 +93,7 @@ __published:	// IDE-managed Components
 private:	// User declarations
 public:		// User declarations
 	__fastcall TUServerControlForm(TComponent* Owner);
+	virtual __fastcall ~TUServerControlForm(void);
 
 // -----------------
 // Параметры сервера
@@ -157,6 +167,10 @@ RDK::UTransferPacket Packet;
 RDK::UTransferReader PacketReader;
 std::string PacketXml;
 
+std::map<std::string,std::vector<char> > CurrentProcessedCommand;
+
+TThreadList *Clients;
+
 const char* ControlRemoteCall(const char *request, int &return_value);
 
 const char* PtzRemoteCall(const char *request, int &return_value);
@@ -184,6 +198,15 @@ void ConvertVectorToString(const std::vector<char> &source, std::string &dest);
 /// и записывает его в value
 /// Возвращает 0 в случае успеха
 int DecodeParamAsInteger(const std::string &param_name, const std::map<std::string,std::vector<char> > &args, int &value);
+
+/// Отправляет ответ на команду
+void SendCommandResponse(std::vector<char> &dest);
+
+/// Отправляет сообщение об ошибке в ответ на команду
+/// 0 - неизвестная ошибка
+/// 1 - Команда не опознана
+void SendCommandError(int request_id, int error_code);
+
 
 // -----------------------------
 // Методы управления визуальным интерфейсом

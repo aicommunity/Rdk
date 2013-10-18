@@ -85,6 +85,7 @@ class UTransferPacket
 		// Устанавливает значение i-го параметра
 		// Меняет текущий размер буфера параметра на требуемое значение
 		bool SetParam(int i, const std::string &value);
+		bool SetParam(int i, const std::vector<char> &value);
 
 		// Устанавливает значение i-го параметра
         // декодируя буфер 'value' и возвращает индекс на следующий 
@@ -111,13 +112,14 @@ class UTransferPacket
         // - число байт лишних в буфере
         // 0 - если декодирование возможно
         int CheckBuffer(const UParamT &buffer, int buffersize);
+		int CheckBuffer(const UParamT &buffer, int buffersize, int start_index);
 
 		// Ищет в буфере начало пакета и возвращает индекс начала
 		// или -1 если пакет не найден
 		int FindPacketInBuffer(const UParamT &buffer, int start_index);
 
         // Загружает все данные пакета из массива 'buffer'
-        bool Load(const UParamT &buffer);
+        bool Load(const UParamT &buffer, int start_index=0);
 
         // Сохраняет все данные пакета в массив 'buffer'
         // Память должна быть выделена
