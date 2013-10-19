@@ -17,7 +17,7 @@ __fastcall TVideoGrabberControlFrame::TVideoGrabberControlFrame(TComponent* Owne
 {
  VideoGrabber=0;
  VideoOutputFrame=0;
- IpPtzInfo.InitCanonVBM40();
+// IpPtzInfo.InitCanonVBM40();
 }
 
 
@@ -113,7 +113,7 @@ void TVideoGrabberControlFrame::SendIpPtzCommand(void)
 {
  std::string prefix, result;
  prefix=AnsiString(IPCameraControlPostfixEdit->Text).c_str();// "http://194.85.99.186/-wvhttp-01-/control.cgi?";
- IpPtzInfo.GenerateCanonVBM40Command(prefix,result);
+// IpPtzInfo.GenerateCanonVBM40Command(prefix,result);
 
  VideoGrabber->SendIPCameraCommand(result.c_str());
 }
@@ -509,7 +509,7 @@ void __fastcall TVideoGrabberControlFrame::ZoomOutButtonClick(TObject *Sender)
 
 void __fastcall TVideoGrabberControlFrame::ResetButtonClick(TObject *Sender)
 {
- IpPtzInfo.ZeroPosition();
+// IpPtzInfo.ZeroPosition();
  SendIpPtzCommand();
 }
 //---------------------------------------------------------------------------

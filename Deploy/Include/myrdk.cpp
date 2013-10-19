@@ -20,7 +20,7 @@
 #include "../../Core/Graphics/UDrawEngine.cpp"
 #include "../../Core/Graphics/UGraphicsXMLSerialize.cpp"
 #include "../../Core/Graphics/UGraphicsBinarySerialize.cpp"
-#include "../../Core/Graphics/UBPtzCamera.cpp"
+//#include "../../Core/Graphics/UBPtzCamera.cpp"
 #include "../../Core/Engine/UModule.cpp"
 #include "../../Core/Engine/UItemData.cpp"
 

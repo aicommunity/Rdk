@@ -588,7 +588,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, UBVSObject3D &data)
  return storage;
 }
 
-
+   /*
 //class UBPtzCameraInfo
 USerStorageXML& operator << (USerStorageXML& storage, const UBPtzCameraInfo &data)
 {
@@ -960,7 +960,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, UBPtzCameraData &data)
  data.SetBrightnessSpeedNative(value);
 
  return storage;
-}
+}       */
 
 }
 

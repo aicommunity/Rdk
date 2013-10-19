@@ -109,7 +109,7 @@ protected:
 TVideoGrabber* VideoGrabber;
 TVideoOutputFrame *VideoOutputFrame;
 
-RDK::UBPtzCameraData IpPtzInfo;
+//RDK::TPtzCameraData IpPtzInfo;
 
 // -----------------------------
 // Методы управления устройством ввода видео

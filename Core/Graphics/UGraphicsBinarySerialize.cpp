@@ -189,7 +189,7 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, UBVSObject3D &data)
 
  return storage;
 }
-
+               /*
 //class UBPtzCameraInfo
 USerStorageBinary& operator << (USerStorageBinary& storage, const UBPtzCameraInfo &data)
 {
@@ -215,7 +215,7 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, UBPtzCameraData &dat
 
  return storage;
 }
-
+	  */
 }
 
 #endif
