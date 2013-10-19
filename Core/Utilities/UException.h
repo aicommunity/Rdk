@@ -4,6 +4,13 @@
 #include <ctime>
 #include <string>
 
+#define RDK_EX_UNKNOWN 0
+#define RDK_EX_FATAL 1
+#define RDK_EX_ERROR 2
+#define RDK_EX_WARNING 3
+#define RDK_EX_INFO 4
+#define RDK_EX_DEBUG 5
+
 namespace RDK {
 
 /* Базовый класс исключений */
@@ -23,6 +30,7 @@ protected: // Данные исключения
 // 2 - ошибка, требующая вмешательства
 // 3 - предупреждение
 // 4 - информация
+// 5 - отладка
 int Type;
 
 // Время возникновения исключения
@@ -116,6 +124,18 @@ struct EInfo: public UException
 EInfo(void);
 EInfo(const EInfo &copy);
 virtual ~EInfo(void);
+// --------------------------
+};
+
+/* Отладочные сообщения, выдача которых инициируется пользователем */
+struct EDebug: public UException
+{
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EDebug(void);
+EDebug(const EDebug &copy);
+virtual ~EDebug(void);
 // --------------------------
 };
 
@@ -321,6 +341,44 @@ virtual std::string CreateLogMessage(void) const;
 // --------------------------
 };
 
+// Исключение с простой строкой текста как фатальная ошибка
+struct EStringFatal: public EFatal
+{
+std::string Str;
+
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EStringFatal(const std::string &str);
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+virtual std::string CreateLogMessage(void) const;
+// --------------------------
+};
+
+// Исключение с простой строкой текста как ошибка
+struct EStringError: public EError
+{
+std::string Str;
+
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EStringError(const std::string &str);
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+virtual std::string CreateLogMessage(void) const;
+// --------------------------
+};
+
 // Исключение с простой строкой текста как предупреждение
 struct EStringWarning: public EWarning
 {
@@ -359,6 +417,24 @@ virtual std::string CreateLogMessage(void) const;
 // --------------------------
 };
 
+// Исключение с простой строкой текста как информационное сообщение
+struct EStringDebug: public EDebug
+{
+std::string Str;
+
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EStringDebug(const std::string &str);
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+virtual std::string CreateLogMessage(void) const;
+// --------------------------
+};
 
 
 }

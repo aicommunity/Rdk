@@ -590,6 +590,44 @@ void UEnvironment::ClearLog(void)
  CurrentExceptionsLogSize=0;
  TempLogString.clear();
 }
+
+// Вызов обработчика исключений среды для простой записи данных в лог
+void UEnvironment::LogMessage(int msg_level, const std::string &line)
+{
+ switch (msg_level)
+ {
+ case RDK_EX_FATAL:
+ {
+  EStringFatal exception(line);
+  ProcessException(exception);
+ }
+ break;
+
+ case RDK_EX_ERROR:
+ {
+  EStringError exception(line);
+  ProcessException(exception);
+ }
+ break;
+
+ case RDK_EX_INFO:
+ {
+  EStringInfo exception(line);
+  ProcessException(exception);
+ }
+ break;
+
+ case RDK_EX_DEBUG:
+ {
+  if(DebugMode)
+  {
+   EStringDebug exception(line);
+   ProcessException(exception);
+  }
+ }
+ break;
+ }
+}
 // --------------------------
 
 

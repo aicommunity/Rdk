@@ -220,29 +220,12 @@ void UContainer::ProcessException(UException &exception)
 
 
 // Вызов обработчика исключений среды для простой записи данных в лог
-// как предупреждения
-void UContainer::WriteWarningLineToLog(const std::string &line)
+void UContainer::LogMessage(int msg_level, const std::string &line)
 {
- EStringWarning exception(line);
  if(Environment)
  {
-  Environment->ProcessException(exception);
+  Environment->LogMessage(msg_level, line);
  }
- else
-  throw exception;
-}
-
-// Вызов обработчика исключений среды для простой записи данных в лог
-// как информационного сообщения
-void UContainer::WriteInfoLineToLog(const std::string &line)
-{
- EStringInfo exception(line);
- if(Environment)
- {
-  Environment->ProcessException(exception);
- }
- else
-  throw exception;
 }
 
 /// Возвращает состояние флага режима отладки

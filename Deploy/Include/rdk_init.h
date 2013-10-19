@@ -7,6 +7,16 @@ extern "C"  {
 typedef int bool;
 #endif
 
+#ifndef RDK_EX_UNKNOWN
+#define RDK_EX_UNKNOWN 0
+#define RDK_EX_FATAL 1
+#define RDK_EX_ERROR 2
+#define RDK_EX_WARNING 3
+#define RDK_EX_INFO 4
+#define RDK_EX_DEBUG 5
+#endif
+
+
 #ifndef RDK_PROPERTY_TYPES
 #define RDK_PROPERTY_TYPES
 // Варианты типа свойства (битовая маска) pt - Property Type

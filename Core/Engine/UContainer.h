@@ -212,12 +212,7 @@ virtual bool SetEnvironment(UEPtr<UEnvironment> environment);
 virtual void ProcessException(UException &exception);
 
 // Вызов обработчика исключений среды для простой записи данных в лог
-// как предупреждения
-virtual void WriteWarningLineToLog(const std::string &line);
-
-// Вызов обработчика исключений среды для простой записи данных в лог
-// как информационного сообщения
-virtual void WriteInfoLineToLog(const std::string &line);
+virtual void LogMessage(int msg_level, const std::string &line);
 
 /// Возвращает состояние флага режима отладки
 virtual bool CheckDebugMode(void) const;
