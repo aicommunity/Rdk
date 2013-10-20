@@ -205,14 +205,14 @@ const char* TUServerControlForm::PtzRemoteCall(const char *request, int &return_
  else
  if(cmd == "Ptz_PresetPoint")
  {
-  std::string point_name=xml.ReadString("Point","");
-  return_value=PtzControl.Ptz_PresetPoint(camera.c_str(),point_name.c_str());
+  int point_index=xml.ReadInteger("Point",0);
+  return_value=PtzControl.Ptz_PresetPoint(camera.c_str(),point_index);
  }
  else
  if(cmd == "Ptz_GotoPoint")
  {
-  std::string point_name=xml.ReadString("Point","");
-  return_value=PtzControl.Ptz_GotoPoint(camera.c_str(),point_name.c_str());
+  int point_index=xml.ReadInteger("Point",0);
+  return_value=PtzControl.Ptz_GotoPoint(camera.c_str(),point_index);
  }
  else
  if(cmd == "Ptz_Move")
