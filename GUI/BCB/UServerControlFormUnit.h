@@ -69,6 +69,7 @@ __published:	// IDE-managed Components
 	TTimer *CommandTimer;
 	TTcpServer *TcpServer;
 	TIdTCPServer *IdTCPServer;
+	TTimer *ServerRestartTimer;
 	void __fastcall UHttpServerFrameIdHTTPServerCommandGet(TIdContext *AContext, TIdHTTPRequestInfo *ARequestInfo,
           TIdHTTPResponseInfo *AResponseInfo);
 	void __fastcall FormCreate(TObject *Sender);
@@ -86,6 +87,7 @@ __published:	// IDE-managed Components
 	void __fastcall IdTCPServerDisconnect(TIdContext *AContext);
 	void __fastcall IdTCPServerExecute(TIdContext *AContext);
 	void __fastcall IdTCPServerConnect(TIdContext *AContext);
+	void __fastcall ServerRestartTimerTimer(TObject *Sender);
 
 
 

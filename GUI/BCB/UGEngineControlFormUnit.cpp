@@ -319,6 +319,8 @@ void TUGEngineControlForm::CloseProject(void)
  if(ProjectAutoSaveFlag)
   SaveProject();
 
+ UServerControlForm->ServerRestartTimer->Enabled=false;
+
  if(ProjectOpenFlag)
  {
   ProjectFileName="";
@@ -592,6 +594,7 @@ try{
   UEngineMonitorForm->EngineMonitorFrame->SetCalculateMode(i, CalculationMode[i]);
  ProjectOpenFlag=true;
  RDK::UIVisualControllerStorage::UpdateInterface();
+ UServerControlForm->ServerRestartTimer->Enabled=true;
 }
 catch(RDK::UException &exception)
 {

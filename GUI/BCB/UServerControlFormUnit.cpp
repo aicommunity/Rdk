@@ -833,6 +833,7 @@ void __fastcall TUServerControlForm::FormCreate(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TUServerControlForm::FormDestroy(TObject *Sender)
 {
+ IdTCPServer->Active=false;
 // UGEngineControlForm->SpecialForms.erase("TUServerControlForm");
 
  if(MemStream)
@@ -846,7 +847,7 @@ void __fastcall TUServerControlForm::FormDestroy(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TUServerControlForm::ServerStartButtonClick(TObject *Sender)
 {
-
+ ServerRestartTimer->Enabled=true;
  try
  {
   //UHttpServerFrame->ServerListenOn();
@@ -866,6 +867,7 @@ void __fastcall TUServerControlForm::ServerStartButtonClick(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TUServerControlForm::ServerStopButtonClick(TObject *Sender)
 {
+ ServerRestartTimer->Enabled=false;
 // TcpServer->Active=false;
  IdTCPServer->Active=false;
 // UHttpServerFrame->ServerListenOff();
@@ -1059,12 +1061,12 @@ void __fastcall TUServerControlForm::IdTCPServerExecute(TIdContext *AContext)
   bind+=":";
   bind+=RDK::sntoa(AContext->Binding->PeerPort);
 
-   client_buffer.resize(length);
-   int length=client_buffer.size();
+//   int length=client_buffer.size();
    if(length<=0)
 	return;
    AContext->Connection->IOHandler->ReadBytes(VBuffer, length);
    length=VBuffer.Length;
+   client_buffer.resize(length);
    Engine_LogMessage(RDK_EX_DEBUG, (std::string("Data received from: ")+bind+std::string(" size (bytes)=")+sntoa(length)).c_str());
 
    if(length>0)
@@ -1114,6 +1116,18 @@ void __fastcall TUServerControlForm::IdTCPServerConnect(TIdContext *AContext)
  PacketReaders[bind].ResetProcessing();
  PacketReaders[bind].ClearPacketList();
  Engine_LogMessage(RDK_EX_INFO, (std::string("Client connected: ")+bind).c_str());
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUServerControlForm::ServerRestartTimerTimer(TObject *Sender)
+{
+ if(IdTCPServer->Active)
+  return;
+
+ if(AutoStartFlag)
+ {
+  ServerStartButtonClick(Sender);
+ }
 }
 //---------------------------------------------------------------------------
 

@@ -20,7 +20,7 @@ object UServerControlForm: TUServerControlForm
     Top = 0
     Width = 721
     Height = 490
-    ActivePage = OptionsTabSheet
+    ActivePage = ControlTabSheet
     Align = alClient
     TabOrder = 0
     OnChange = PageControlChange
@@ -166,7 +166,7 @@ object UServerControlForm: TUServerControlForm
           Left = 10
           Top = 6
           Width = 75
-          Height = 25
+          Height = 27
           Caption = 'Start'
           TabOrder = 0
           OnClick = ServerStartButtonClick
@@ -341,5 +341,11 @@ object UServerControlForm: TUServerControlForm
     OnExecute = IdTCPServerExecute
     Left = 208
     Top = 40
+  end
+  object ServerRestartTimer: TTimer
+    Enabled = False
+    OnTimer = ServerRestartTimerTimer
+    Left = 112
+    Top = 144
   end
 end
