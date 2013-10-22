@@ -1065,6 +1065,7 @@ void __fastcall TUServerControlForm::IdTCPServerExecute(TIdContext *AContext)
 	return;
    AContext->Connection->IOHandler->ReadBytes(VBuffer, length);
    length=VBuffer.Length;
+   Engine_LogMessage(RDK_EX_DEBUG, (std::string("Data received from: ")+bind+std::string(" size (bytes)=")+sntoa(length)).c_str());
 
    if(length>0)
    {
@@ -1074,6 +1075,7 @@ void __fastcall TUServerControlForm::IdTCPServerExecute(TIdContext *AContext)
 	if(I == PacketReaders.end())
 	 return;
 	I->second.ProcessDataPart(client_buffer);
+	Engine_LogMessage(RDK_EX_DEBUG, (std::string("Number of decoded packets: ")+sntoa(I->second.GetNumPackets())).c_str());
 	while(I->second.GetNumPackets()>0)
 	{
 	 UTransferPacket packet=I->second.GetFirstPacket();
@@ -1091,6 +1093,9 @@ void __fastcall TUServerControlForm::IdTCPServerExecute(TIdContext *AContext)
 	  cmd.second=packet(0);
 	  CommandQueue.push_back(cmd);
 	  SetEvent(CommandQueueUnlockEvent);
+	  std::string str;
+	  ConvertVectorToString(cmd.second,str);
+	  Engine_LogMessage(RDK_EX_DEBUG, (std::string("Command pushed to queue: \n")+str).c_str());
 	 }
 	}
    }
