@@ -20,7 +20,7 @@ object UServerControlForm: TUServerControlForm
     Top = 0
     Width = 721
     Height = 490
-    ActivePage = ControlTabSheet
+    ActivePage = OptionsTabSheet
     Align = alClient
     TabOrder = 0
     OnChange = PageControlChange

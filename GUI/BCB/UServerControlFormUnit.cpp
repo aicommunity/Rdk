@@ -887,13 +887,13 @@ void __fastcall TUServerControlForm::ApplyOptionsButtonClick(TObject *Sender)
  if(new_num_channels < 1)
   return;
 
- if(new_num_channels == GetNumEngines())
-  return;
+ if(new_num_channels != GetNumEngines())
+ {
+  UGEngineControlForm->Pause1Click(Sender);
 
- UGEngineControlForm->Pause1Click(Sender);
-
- UEngineMonitorForm->EngineMonitorFrame->SetNumChannels(new_num_channels);
- SetNumChannels(GetNumEngines());
+  UEngineMonitorForm->EngineMonitorFrame->SetNumChannels(new_num_channels);
+  SetNumChannels(GetNumEngines());
+ }
 
 // UHttpServerFrame->SetListenPort(StrToInt(ServerControlPortLabeledEdit->Text));
 
