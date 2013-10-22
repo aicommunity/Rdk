@@ -257,6 +257,12 @@ UEPtr<UComponent> UStorage::GetClass(const UId &classid) const
  return I->second;
 }
 
+UEPtr<UComponent> UStorage::GetClass(const std::string &class_name) const
+{
+ UId id=FindClassId(class_name);
+ return GetClass(id);
+}
+
 // Возвращает число классов
 int UStorage::GetNumClasses(void) const
 {

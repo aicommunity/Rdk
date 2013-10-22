@@ -166,6 +166,7 @@ virtual bool CheckClass(const UId &classid) const;
 
 // Возвращает образец класса
 virtual UEPtr<UComponent> GetClass(const UId &classid) const;
+virtual UEPtr<UComponent> GetClass(const std::string &class_name) const;
 
 // Возвращает число классов
 int GetNumClasses(void) const;
