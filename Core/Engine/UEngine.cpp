@@ -4267,6 +4267,17 @@ const char* UEngine::GetUnreadLog(int &error_level)
  return Environment->GetUnreadLog(error_level);
 }
 
+/// Записывает в лог новое сообщение
+int UEngine::Engine_LogMessage(int log_level, const char *message)
+{
+ if(!Environment)
+  return 100001;
+
+ Environment->LogMessage(log_level,message);
+ return 0;
+}
+
+
 // Управление функцией-обработчиком исключений
 UEnvironment::PExceptionHandler UEngine::GetExceptionHandler(void) const
 {

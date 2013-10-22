@@ -1039,7 +1039,10 @@ void __fastcall TUServerControlForm::TcpServerGetThread(TObject *Sender, TClient
 
 void __fastcall TUServerControlForm::IdTCPServerDisconnect(TIdContext *AContext)
 {
- //
+ std::string bind=AnsiString(AContext->Binding->PeerIP).c_str();
+ bind+=":";
+ bind+=RDK::sntoa(AContext->Binding->PeerPort);
+ Engine_LogMessage(RDK_EX_INFO, (std::string("Client Disconnected: ")+bind).c_str());
 }
 //---------------------------------------------------------------------------
 
@@ -1105,6 +1108,7 @@ void __fastcall TUServerControlForm::IdTCPServerConnect(TIdContext *AContext)
  bind+=RDK::sntoa(AContext->Binding->PeerPort);
  PacketReaders[bind].ResetProcessing();
  PacketReaders[bind].ClearPacketList();
+ Engine_LogMessage(RDK_EX_INFO, (std::string("Client connected: ")+bind).c_str());
 }
 //---------------------------------------------------------------------------
 

@@ -1655,6 +1655,21 @@ const char* RDK_CALL MEngine_GetLog(int engine_index, int &error_level)
  return DllManager.EngineList[engine_index]->GetLog(error_level);
 }
 
+// Записывает в лог новое сообщение
+int RDK_CALL Engine_LogMessage(int log_level, const char *message)
+{
+ return PEngine->Engine_LogMessage(log_level, message);
+}
+
+int RDK_CALL MEngine_LogMessage(int engine_index, int log_level, const char *message)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 0;
+
+ return DllManager.EngineList[engine_index]->Engine_LogMessage(log_level, message);
+}
+
+
 // Возвращает частичный массив строк лога с момента последнего считывания лога
 // этой функцией
 const char* RDK_CALL Engine_GetUnreadLog(int &error_level)

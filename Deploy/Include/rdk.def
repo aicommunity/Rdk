@@ -190,7 +190,9 @@ EXPORTS
     Engine_GetExceptionHandler = _Engine_GetExceptionHandler
     Engine_SetExceptionHandler = _Engine_SetExceptionHandler
     Engine_GetLog = _Engine_GetLog
-    Engine_GetUnreadLog = _Engine_GetUnreadLog
+    Engine_GetUnreadLog = _Engine_GetUnreadLog  
+    Engine_LogMessage = _Engine_LogMessage
+    MEngine_LogMessage = _MEngine_LogMessage
         
     Model_GetComponentOutputAsMatrix = _Model_GetComponentOutputAsMatrix
     Model_GetComponentOutputAsMatrixByIndex = _Model_GetComponentOutputAsMatrixByIndex

@@ -784,6 +784,9 @@ const char* GetLog(int &error_level) const;
 // этой функцией
 const char* GetUnreadLog(int &error_level);
 
+/// Записывает в лог новое сообщение
+int Engine_LogMessage(int log_level, const char *message);
+
 // Управление функцией-обработчиком исключений
 UEnvironment::PExceptionHandler GetExceptionHandler(void) const;
 bool SetExceptionHandler(UEnvironment::PExceptionHandler value);
