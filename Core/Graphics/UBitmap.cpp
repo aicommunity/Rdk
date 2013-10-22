@@ -403,7 +403,7 @@ void UBitmap::ConvertTo(UBitmap &target) const
 
  if(!Width && !Height)
  {
-  target=*this;
+  target.Clear();
   return;
  }
 
