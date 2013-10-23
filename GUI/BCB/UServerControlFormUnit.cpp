@@ -438,7 +438,7 @@ void TUServerControlForm::SendCommandResponse(const std::string &client_binding,
     }
    }
 
-//  TcpServer-> SendTo(&dest[0],dest.size(),TcpServer->GetSocketAddr(),0);
+   IdTCPServer->Contexts->UnlockList();
   }
   catch (...)
   {
