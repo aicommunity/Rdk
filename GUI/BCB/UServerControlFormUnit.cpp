@@ -833,7 +833,7 @@ void __fastcall TUServerControlForm::FormCreate(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TUServerControlForm::FormDestroy(TObject *Sender)
 {
- IdTCPServer->Active=false;
+ ServerStopButtonClick(Sender);
 // UGEngineControlForm->SpecialForms.erase("TUServerControlForm");
 
  if(MemStream)
@@ -855,11 +855,11 @@ void __fastcall TUServerControlForm::ServerStartButtonClick(TObject *Sender)
  }
  catch(EIdSocketError &ex)
  {
-
+  Engine_LogMessage(RDK_EX_ERROR, AnsiString(ex.ToString()).c_str());
  }
  catch(EIdCouldNotBindSocket &ex)
  {
-
+  Engine_LogMessage(RDK_EX_ERROR, AnsiString(ex.ToString()).c_str());
  }
 
 // TcpServer->Active=true;
@@ -954,7 +954,6 @@ try {
  {
   CurrentProcessedCommand=CommandQueue.back();
   CommandQueue.pop_back();
-  SetEvent(CommandQueueUnlockEvent);
 
   bool is_processed=ProcessControlCommand(CurrentProcessedCommand, ResponseType, Response);
 
@@ -973,15 +972,15 @@ try {
   {
 //   SendCommandErrorResponse(CurrentProcessedCommand,0);
   }
-  ResetEvent(CommandQueueUnlockEvent);
  }
+ SetEvent(CommandQueueUnlockEvent);
 }
 catch (...)
 {
  SetEvent(CommandQueueUnlockEvent);
  throw;
 }
- SetEvent(CommandQueueUnlockEvent);
+// SetEvent(CommandQueueUnlockEvent);
 }
 //---------------------------------------------------------------------------
 
@@ -1044,26 +1043,29 @@ void __fastcall TUServerControlForm::IdTCPServerDisconnect(TIdContext *AContext)
  std::string bind=AnsiString(AContext->Binding->PeerIP).c_str();
  bind+=":";
  bind+=RDK::sntoa(AContext->Binding->PeerPort);
+
+ std::map<std::string, RDK::UTransferReader>::iterator I=PacketReaders.find(bind);
+ if(I != PacketReaders.end())
+ {
+  PacketReaders.erase(I);
+ }
+
  Engine_LogMessage(RDK_EX_INFO, (std::string("Client Disconnected: ")+bind).c_str());
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUServerControlForm::IdTCPServerExecute(TIdContext *AContext)
 {
-// TIdNotify.NotifyMethod( ShowStartServerdMessage );
  vector<unsigned char> client_buffer;
  TIdBytes VBuffer;
-// AContext->Connection->IOHandler->ReadTimeout=1;
  int length=AContext->Connection->IOHandler->InputBuffer->Size;
  if(length>0)
  {
+  ResetEvent(CommandQueueUnlockEvent);
   std::string bind=AnsiString(AContext->Binding->PeerIP).c_str();
   bind+=":";
   bind+=RDK::sntoa(AContext->Binding->PeerPort);
 
-//   int length=client_buffer.size();
-   if(length<=0)
-	return;
    AContext->Connection->IOHandler->ReadBytes(VBuffer, length);
    length=VBuffer.Length;
    client_buffer.resize(length);
@@ -1075,7 +1077,10 @@ void __fastcall TUServerControlForm::IdTCPServerExecute(TIdContext *AContext)
 	client_buffer.resize(length);
 	std::map<std::string, RDK::UTransferReader>::iterator I=PacketReaders.find(bind);
 	if(I == PacketReaders.end())
+	{
+     SetEvent(CommandQueueUnlockEvent);
 	 return;
+	}
 	I->second.ProcessDataPart(client_buffer);
 	Engine_LogMessage(RDK_EX_DEBUG, (std::string("Number of decoded packets: ")+sntoa(I->second.GetNumPackets())).c_str());
 	while(I->second.GetNumPackets()>0)
@@ -1089,18 +1094,17 @@ void __fastcall TUServerControlForm::IdTCPServerExecute(TIdContext *AContext)
 //	  args.resize(Packet.GetParamSize(0));
 //	  if(Packet.GetParamSize(0)>0)
 //	   memcpy(&args[0],&Packet(0)[0],Packet.GetParamSize(0));
-	  ResetEvent(CommandQueueUnlockEvent);
 	  UServerCommand cmd;
 	  cmd.first=bind;
 	  cmd.second=packet(0);
 	  CommandQueue.push_back(cmd);
-	  SetEvent(CommandQueueUnlockEvent);
 	  std::string str;
 	  ConvertVectorToString(cmd.second,str);
 	  Engine_LogMessage(RDK_EX_DEBUG, (std::string("Command pushed to queue: \n")+str).c_str());
 	 }
 	}
    }
+  SetEvent(CommandQueueUnlockEvent);
  }
 //  Memo1.Lines.Add(LLine);
 //  AContext.Connection.IOHandler.WriteLn('OK');
@@ -1130,4 +1134,5 @@ void __fastcall TUServerControlForm::ServerRestartTimerTimer(TObject *Sender)
  }
 }
 //---------------------------------------------------------------------------
+
 

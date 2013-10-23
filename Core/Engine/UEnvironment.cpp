@@ -503,10 +503,12 @@ void UEnvironment::ProcessException(UException &exception) const
    TempLogString.erase(0,i);
   }
  }
+// if(!TempLogString.empty())
+//  TempLogString+="\r\n";
+
  TempLogString+=sntoa(ChannelIndex);
  TempLogString+="> ";
  TempLogString+=exception.CreateLogMessage();
- TempLogString+="\r\n";
 
  if(ExceptionHandler)
   ExceptionHandler(ChannelIndex);
@@ -523,6 +525,7 @@ void UEnvironment::ProcessException(UException &exception) const
 // Возвращает массив строк лога
 const char* UEnvironment::GetLog(int &error_level) const
 {
+ error_level=LastErrorLevel;
  LastErrorLevel=INT_MAX;
  return TempLogString.c_str();
 }
@@ -531,7 +534,9 @@ const char* UEnvironment::GetLog(int &error_level) const
 // этой функцией
 const char* UEnvironment::GetUnreadLog(int &error_level)
 {
- if(LastReadExceptionLogIndex<=0/* && TempLogString.size()*/)
+ error_level=LastErrorLevel;
+ LastErrorLevel=INT_MAX;
+ if(LastReadExceptionLogIndex<=0)
  {
   LastReadExceptionLogIndex=TempLogString.size();
   return TempLogString.c_str();
@@ -588,6 +593,7 @@ void UEnvironment::ClearLog(void)
 {
  LastReadExceptionLogIndex=-1;
  CurrentExceptionsLogSize=0;
+ LastErrorLevel=INT_MAX;
  TempLogString.clear();
 }
 

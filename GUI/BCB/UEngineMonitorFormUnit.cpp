@@ -33,7 +33,8 @@ void ExceptionHandler(int channel_index)
   return;
 
  std::string new_log_data=data;
- UEngineMonitorForm->EngineMonitorFrame->RichEdit->Text=UEngineMonitorForm->EngineMonitorFrame->RichEdit->Text+new_log_data.c_str();
+ UEngineMonitorForm->EngineMonitorFrame->RichEdit->Lines->Add(new_log_data.c_str());
+// UEngineMonitorForm->EngineMonitorFrame->RichEdit->Text=/*UEngineMonitorForm->EngineMonitorFrame->RichEdit->Text+*/new_log_data.c_str();
 
  if(!new_log_data.empty())
  {
