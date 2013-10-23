@@ -954,6 +954,7 @@ try {
  {
   CurrentProcessedCommand=CommandQueue.back();
   CommandQueue.pop_back();
+  SetEvent(CommandQueueUnlockEvent);
 
   bool is_processed=ProcessControlCommand(CurrentProcessedCommand, ResponseType, Response);
 
@@ -972,6 +973,7 @@ try {
   {
 //   SendCommandErrorResponse(CurrentProcessedCommand,0);
   }
+  ResetEvent(CommandQueueUnlockEvent);
  }
  SetEvent(CommandQueueUnlockEvent);
 }
@@ -1061,7 +1063,6 @@ void __fastcall TUServerControlForm::IdTCPServerExecute(TIdContext *AContext)
  int length=AContext->Connection->IOHandler->InputBuffer->Size;
  if(length>0)
  {
-  ResetEvent(CommandQueueUnlockEvent);
   std::string bind=AnsiString(AContext->Binding->PeerIP).c_str();
   bind+=":";
   bind+=RDK::sntoa(AContext->Binding->PeerPort);
@@ -1097,14 +1098,15 @@ void __fastcall TUServerControlForm::IdTCPServerExecute(TIdContext *AContext)
 	  UServerCommand cmd;
 	  cmd.first=bind;
 	  cmd.second=packet(0);
+	  ResetEvent(CommandQueueUnlockEvent);
 	  CommandQueue.push_back(cmd);
+	  SetEvent(CommandQueueUnlockEvent);
 	  std::string str;
 	  ConvertVectorToString(cmd.second,str);
 	  Engine_LogMessage(RDK_EX_DEBUG, (std::string("Command pushed to queue: \n")+str).c_str());
 	 }
 	}
    }
-  SetEvent(CommandQueueUnlockEvent);
  }
 //  Memo1.Lines.Add(LLine);
 //  AContext.Connection.IOHandler.WriteLn('OK');
