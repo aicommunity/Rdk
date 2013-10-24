@@ -861,6 +861,13 @@ int RDK_CALL Model_Destroy(void)
  return PEngine->Model_Destroy();
 }
 
+int RDK_CALL MModel_Destroy(int engine_index)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+ return DllManager.EngineList[engine_index]->Model_Destroy();
+}
+
 // Создает новую модель по имени класса в хранилище
 // Предварительно удаляет существующую модель
 int RDK_CALL Model_Create(const char *classname)

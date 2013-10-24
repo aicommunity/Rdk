@@ -18,7 +18,8 @@
 #include "TIdTcpResultBroadcasterFormUnit.h"
 #include "rdk_cpp_initdll.h"
 #include "TUBitmap.h"
-#include "../../Core/Graphics/Libraries/Hardware/PtzRpc.cpp"
+//#include "../../Core/Graphics/Libraries/Hardware/PtzRpc.cpp"
+#include "../../Deploy/PtzLib/ptzlib_initdll.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "TUHttpServerUnit"
@@ -161,58 +162,58 @@ const char* TUServerControlForm::PtzRemoteCall(const char *request, int &return_
  ControlResponseString.clear();
  if(cmd == "Ptz_GetCameraNames")
  {
-  ControlResponseString=PtzControl.Ptz_GetCameraNames();
+  ControlResponseString=Ptz_GetCameraNames(engine_index);
   return_value=0;
  }
  else
  if(cmd == "Ptz_GetCameraType")
  {
-  ControlResponseString=PtzControl.Ptz_GetCameraType(camera.c_str());
+  ControlResponseString=Ptz_GetCameraType(engine_index,camera.c_str());
   return_value=0;
  }
  if(cmd == "Ptz_GetCameraParameter")
  {
   std::string param_name=xml.ReadString("Parameter","");
-  ControlResponseString=PtzControl.Ptz_GetCameraParameter(camera.c_str(),param_name.c_str());
+  ControlResponseString=Ptz_GetCameraParameter(engine_index,camera.c_str(),param_name.c_str());
   return_value=0;
  }
  else
  if(cmd == "Ptz_GetImplementedCommands")
  {
-  ControlResponseString=PtzControl.Ptz_GetImplementedCommands(camera.c_str());
+  ControlResponseString=Ptz_GetImplementedCommands(engine_index,camera.c_str());
   return_value=0;
  }
  else
  if(cmd == "Ptz_CameraConnect")
  {
-  return_value=PtzControl.Ptz_CameraConnect(camera.c_str());
+  return_value=Ptz_CameraConnect(engine_index,camera.c_str());
  }
  else
  if(cmd == "Ptz_CameraDisconnect")
  {
-  return_value=PtzControl.Ptz_CameraDisconnect(camera.c_str());
+  return_value=Ptz_CameraDisconnect(engine_index,camera.c_str());
  }
  else
  if(cmd == "Ptz_Stop")
  {
-  return_value=PtzControl.Ptz_Stop(camera.c_str());
+  return_value=Ptz_Stop(engine_index,camera.c_str());
  }
  else
  if(cmd == "Ptz_GotoHome")
  {
-  return_value=PtzControl.Ptz_GotoHome(camera.c_str());
+  return_value=Ptz_GotoHome(engine_index,camera.c_str());
  }
  else
  if(cmd == "Ptz_PresetPoint")
  {
   int point_index=xml.ReadInteger("Point",0);
-  return_value=PtzControl.Ptz_PresetPoint(camera.c_str(),point_index);
+  return_value=Ptz_PresetPoint(engine_index,camera.c_str(),point_index);
  }
  else
  if(cmd == "Ptz_GotoPoint")
  {
   int point_index=xml.ReadInteger("Point",0);
-  return_value=PtzControl.Ptz_GotoPoint(camera.c_str(),point_index);
+  return_value=Ptz_GotoPoint(engine_index,camera.c_str(),point_index);
  }
  else
  if(cmd == "Ptz_Move")
@@ -220,25 +221,25 @@ const char* TUServerControlForm::PtzRemoteCall(const char *request, int &return_
   double pan_speed=xml.ReadFloat("PanSpeed",0.0);
   double tilt_speed=xml.ReadFloat("TiltSpeed",0.0);
   double zoom_speed=xml.ReadFloat("ZoomSpeed",0.0);
-  return_value=PtzControl.Ptz_Move(camera.c_str(),pan_speed,tilt_speed,zoom_speed);
+  return_value=Ptz_Move(engine_index,camera.c_str(),pan_speed,tilt_speed,zoom_speed);
  }
  else
  if(cmd == "Ptz_MovePan")
  {
   double pan_speed=xml.ReadFloat("PanSpeed",0.0);
-  return_value=PtzControl.Ptz_MovePan(camera.c_str(),pan_speed);
+  return_value=Ptz_MovePan(engine_index,camera.c_str(),pan_speed);
  }
  else
  if(cmd == "Ptz_MoveTilt")
  {
   double tilt_speed=xml.ReadFloat("TiltSpeed",0.0);
-  return_value=PtzControl.Ptz_MoveTilt(camera.c_str(),tilt_speed);
+  return_value=Ptz_MoveTilt(engine_index,camera.c_str(),tilt_speed);
  }
  else
  if(cmd == "Ptz_MoveZoom")
  {
   double zoom_speed=xml.ReadFloat("ZoomSpeed",0.0);
-  return_value=PtzControl.Ptz_MoveZoom(camera.c_str(),zoom_speed);
+  return_value=Ptz_MoveZoom(engine_index,camera.c_str(),zoom_speed);
  }
  else
  if(cmd == "Ptz_MoveNative")
@@ -246,25 +247,25 @@ const char* TUServerControlForm::PtzRemoteCall(const char *request, int &return_
   double pan_speed=xml.ReadFloat("PanSpeed",0.0);
   double tilt_speed=xml.ReadFloat("TiltSpeed",0.0);
   double zoom_speed=xml.ReadFloat("ZoomSpeed",0.0);
-  return_value=PtzControl.Ptz_MoveNative(camera.c_str(),pan_speed,tilt_speed,zoom_speed);
+  return_value=Ptz_MoveNative(engine_index,camera.c_str(),pan_speed,tilt_speed,zoom_speed);
  }
  else
  if(cmd == "Ptz_MovePanNative")
  {
   double pan_speed=xml.ReadFloat("PanSpeed",0.0);
-  return_value=PtzControl.Ptz_MovePanNative(camera.c_str(),pan_speed);
+  return_value=Ptz_MovePanNative(engine_index,camera.c_str(),pan_speed);
  }
  else
  if(cmd == "Ptz_MoveTiltNative")
  {
   double tilt_speed=xml.ReadFloat("TiltSpeed",0.0);
-  return_value=PtzControl.Ptz_MoveTiltNative(camera.c_str(),tilt_speed);
+  return_value=Ptz_MoveTiltNative(engine_index,camera.c_str(),tilt_speed);
  }
  else
  if(cmd == "Ptz_MoveZoomNative")
  {
   double zoom_speed=xml.ReadFloat("ZoomSpeed",0.0);
-  return_value=PtzControl.Ptz_MoveZoomNative(camera.c_str(),zoom_speed);
+  return_value=Ptz_MoveZoomNative(engine_index,camera.c_str(),zoom_speed);
  }
 
  RDK::USerStorageXML result;

@@ -108,6 +108,12 @@ mutable string CompName;
 
 UBitmap TempBmp;
 
+public:
+// Временное хранилище строк
+mutable string PubTempString;
+
+
+
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы

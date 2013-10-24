@@ -18,7 +18,6 @@
 #include <VCLTee.TeeProcs.hpp>
 #include "TUHttpServerUnit.h"
 #include "TUVisualControllerFrameUnit.h"
-#include "../../Core/Graphics/Libraries/Hardware/PtzRpc.h"
 
 #include "myrdk.h"
 #include <Web.Win.Sockets.hpp>
@@ -161,7 +160,7 @@ RDK::UBitmap TempUBitmap;
 // Индекс складывания данных в массив оценки производительности
 int PerformancePushIndex;
 
-RDK::ExternalPtzControl PtzControl;
+//RDK::ExternalPtzControl PtzControl;
 
 HANDLE CommandQueueUnlockEvent;
 

@@ -384,6 +384,7 @@ RDK_LIB_TYPE unsigned char* RDK_CALL Env_GetOutputImageY8(int index);
 // ----------------------------
 // Удаляет модель
 RDK_LIB_TYPE int RDK_CALL Model_Destroy(void);
+RDK_LIB_TYPE int RDK_CALL MModel_Destroy(int engine_index);
 
 // Создает новую модель по имени класса в хранилище
 // Предварительно удаляет существующую модель
