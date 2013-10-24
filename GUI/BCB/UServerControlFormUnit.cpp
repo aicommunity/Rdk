@@ -613,6 +613,7 @@ int TUServerControlForm::SetNumChannels(int value)
   }
  }
 
+#ifdef RDK_VIDEO
  if(UGEngineControlForm->ProjectMode == 1)
  {
   if(VideoOutputForm->GetNumSources()<value)
@@ -659,6 +660,7 @@ int TUServerControlForm::SetNumChannels(int value)
    }
   }
  }
+#endif
 
  ChannelNames.resize(value);
  for(size_t i=0;i<ChannelNames.size();i++)
@@ -678,17 +680,22 @@ int TUServerControlForm::SetNumChannels(int value)
 /// в соответствии с режимами VideoOutputFrame
 int TUServerControlForm::GetChannelVideoSource(int channel_id)
 {
+#ifdef RDK_VIDEO
  TVideoOutputFrame *frame=VideoOutputForm->GetVideoOutputFrame(channel_id);
  if(!frame)
   return -1;
 
  return frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GetMode();
+#else
+ return -1;
+#endif
 }
 
 /// Задает источник видео для канала
 /// в соответствии с режимами VideoOutputFrame
 int TUServerControlForm::SetChannelVideoSource(int channel_id, int source_mode)
 {
+#ifdef RDK_VIDEO
  int num=GetNumChannels();
  if(channel_id<0)
  {
@@ -709,7 +716,11 @@ int TUServerControlForm::SetChannelVideoSource(int channel_id, int source_mode)
 
   frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->SelectMode(source_mode);
  }
+
  return 0;
+#else
+ return 1000;
+#endif
 }
 
 
