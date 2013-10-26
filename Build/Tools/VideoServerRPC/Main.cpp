@@ -107,6 +107,7 @@ int RDK_CALL Rpc_StartChannel(int channel_index, int timeout)
    std::string answ;
    response.Save(answ);
    ServerAnswerDebug=answ.c_str();
+   return response.ReadInteger("Res", RDK_RPC_UNSUCCESSFULL_DECODING);
   }
   else if(res == 0)
    return RDK_RPC_RESPONSE_NOT_RECIEVED;
@@ -133,6 +134,7 @@ int RDK_CALL Rpc_ResetChannel(int channel_index, int timeout)
    std::string answ;
    response.Save(answ);
    ServerAnswerDebug=answ.c_str();
+   return response.ReadInteger("Res", RDK_RPC_UNSUCCESSFULL_DECODING);
   }
   else if(res == 0)
    return RDK_RPC_RESPONSE_NOT_RECIEVED;
@@ -159,6 +161,7 @@ int RDK_CALL Rpc_StopChannel(int channel_index, int timeout)
    std::string answ;
    response.Save(answ);
    ServerAnswerDebug=answ.c_str();
+   return response.ReadInteger("Res", RDK_RPC_UNSUCCESSFULL_DECODING);
   }
   else if(res == 0)
    return RDK_RPC_RESPONSE_NOT_RECIEVED;
@@ -166,6 +169,32 @@ int RDK_CALL Rpc_StopChannel(int channel_index, int timeout)
   else
   {
    return res;
+  }
+ }
+}
+//------------------------------------------------------------------------------
+/// Возвращает список текущих камер в виде строки разделяемой ','
+const char* RDK_CALL Ptz_GetCameraNames(int channel_index, int timeout)
+{
+ RDK::USerStorageXML PtzControlXml;
+ int cmdId=MainForm->PrepareCommandXml(PtzControlXml, "Ptz_GetCameraNames", channel_index);
+ MainForm->SendControlCommand(PtzControlXml);
+
+ if(timeout > 0)
+ {
+  RDK::USerStorageXML response;
+  int res=MainForm->WaitServerResponse(cmdId, response, timeout);
+  if(res == 1)
+  {
+   std::string answ;
+   response.Save(answ);
+   ServerAnswerDebug=answ.c_str();
+   return (response.ReadString("Data", "")).c_str();
+  }
+  else
+  {
+   // заглушка
+   return 0;
   }
  }
 }

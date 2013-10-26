@@ -63,7 +63,7 @@ RDK_LIB_TYPE int RDK_CALL Rpc_ResetChannel(int channel_index, int timeout);
 //RDK_LIB_TYPE int RDK_CALL Ptz_UnInitLib(int channel_index);
 
 /// Возвращает список текущих камер в виде строки разделяемой ','
-RDK_LIB_TYPE const char* RDK_CALL Ptz_GetCameraNames(int channel_index);
+RDK_LIB_TYPE const char* RDK_CALL Ptz_GetCameraNames(int channel_index, int timeout);
 
 /// Возвращает список доступных типов (классов) камер в виде строки разделяемой ','
 //RDK_LIB_TYPE const char* RDK_CALL Ptz_GetCameraTypes(int channel_index);
