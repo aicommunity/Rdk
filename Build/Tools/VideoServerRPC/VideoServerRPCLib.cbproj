@@ -93,10 +93,6 @@
 			<TASM_Debugging>None</TASM_Debugging>
 		</PropertyGroup>
 		<ItemGroup>
-			<LibFiles Condition="'$(Platform)'=='Win32'" Include="..\..\..\Bin\Platform\Win\libcurl.bcb.lib">
-				<BuildOrder>4</BuildOrder>
-				<IgnorePath>true</IgnorePath>
-			</LibFiles>
 			<CppCompile Include="DllMainFormUnit.cpp">
 				<Form>DllMainForm</Form>
 				<FormType>dfm</FormType>

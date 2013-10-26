@@ -393,6 +393,7 @@ RDK_LIB_TYPE int RDK_CALL MModel_Create(int engine_index, const char *classname)
 
 // Очищает модель
 RDK_LIB_TYPE int RDK_CALL Model_Clear(void);
+RDK_LIB_TYPE int RDK_CALL MModel_Clear(int engine_index);
 
 // Проверяет, существует ли модель
 RDK_LIB_TYPE bool RDK_CALL Model_Check(void);

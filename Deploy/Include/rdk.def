@@ -85,9 +85,13 @@ EXPORTS
     Env_SetDebugMode = _Env_SetDebugMode
     MEnv_SetDebugMode = _MEnv_SetDebugMode
     Model_Destroy = _Model_Destroy
+    MModel_Destroy = _MModel_Destroy
     Model_Create = _Model_Create
-    Model_Clear = _Model_Clear
+    MModel_Create = _MModel_Create
+    Model_Clear = _Model_Clear  
+    MModel_Clear = _MModel_Clear
     Model_Check = _Model_Check
+    MModel_Check = _MModel_Check
     Model_CheckComponent = _Model_CheckComponent
     Model_AddComponent = _Model_AddComponent
     Model_DelComponent = _Model_DelComponent

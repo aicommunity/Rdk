@@ -888,6 +888,14 @@ int RDK_CALL Model_Clear(void)
  return PEngine->Model_Clear();
 }
 
+int RDK_CALL MModel_Clear(int engine_index)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+ return DllManager.EngineList[engine_index]->Model_Clear();
+}
+
+
 // Проверяет, существует ли модель
 bool RDK_CALL Model_Check(void)
 {
