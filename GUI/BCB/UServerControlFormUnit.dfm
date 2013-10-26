@@ -26,10 +26,6 @@ object UServerControlForm: TUServerControlForm
     OnChange = PageControlChange
     object ControlTabSheet: TTabSheet
       Caption = 'Control'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object GroupBox3: TGroupBox
         Left = 0
         Top = 0
@@ -337,7 +333,7 @@ object UServerControlForm: TUServerControlForm
     Bindings = <
       item
         IP = '127.0.0.1'
-        Port = 80
+        Port = 45045
       end>
     DefaultPort = 0
     OnConnect = IdTCPServerConnect
