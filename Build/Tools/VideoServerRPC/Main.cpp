@@ -28,25 +28,8 @@
 TDllMainForm *MainForm=0;
 
 //----------------------------------------------------
-//int ResponseTimeOut=100;
 const char* ServerAnswerDebug=NULL;
 
-/*
-int RDK_CALL Rpc_GetResponseTimeOut(void)
-{
- return ResponseTimeOut;
-}
-
-bool RDK_CALL Rpc_SetResponseTimeOut(const int &value)
-{
- if(ResponseTimeOut == value)
-  return true;
-
- ResponseTimeOut=value;
- return true;
-}
-*/
-/// Управление параметрами
 const char* RDK_CALL Rpc_GetServerAnswerDebug(void)
 {
  return ServerAnswerDebug;
@@ -61,7 +44,6 @@ bool RDK_CALL Rpc_SetServerAnswerDebug(const char* value)
  return true;
 }
 //----------------------------------------------------
-/// Инициализация
 int RDK_CALL Rpc_Init(void)
 {
  if(!MainForm)
@@ -81,7 +63,6 @@ int RDK_CALL Rpc_UnInit(void)
  return 0;
 }
 
-/// Коммуникация с сервером
 int RDK_CALL Rpc_Connect(const char* serverAddress, int serverPort)
 {
  if(MainForm)
@@ -93,9 +74,7 @@ int RDK_CALL Rpc_Connect(const char* serverAddress, int serverPort)
   MainForm->IdTCPClient->Host=serverAddress;
   MainForm->IdTCPClient->Port=serverPort;
   MainForm->IdTCPClient->Connect();
-  //MainForm->Timer1->Enabled=true;
   SetEvent(MainForm->Thread->CalcStarted);
-  //MainForm->Thread->Start();
  }
 
  return 0;
@@ -107,16 +86,12 @@ int RDK_CALL Rpc_Disconnect(void)
  {
   ResetEvent(MainForm->Thread->CalcStarted);
   MainForm->IdTCPClient->Disconnect(true);
-  //MainForm->Timer1->Enabled=false;
   ResetEvent(MainForm->Thread->CalcStarted);
  }
 
  return 0;
 }
 
-/// timeOut, мс
-/// 0 - работа без подтверждения
-/// value - синхронный режим, время ожидания
 int RDK_CALL Rpc_StartChannel(int channel_index, int timeout)
 {
  RDK::USerStorageXML xml;
@@ -125,22 +100,22 @@ int RDK_CALL Rpc_StartChannel(int channel_index, int timeout)
 
  if(timeout > 0)
  {
-  if(WaitForSingleObject(MainForm->Thread->PacketReceivedEvent, timeout) != WAIT_TIMEOUT)
+  RDK::USerStorageXML response;
+  int res=MainForm->WaitServerResponse(cmdId, response, timeout);
+  if(res == 1)
   {
-   RDK::USerStorageXML response;
-   if(MainForm->FindPacketById(cmdId, response))
-   {
-	std::string answ;
-	response.Save(answ);
-	ServerAnswerDebug=answ.c_str();
-   }
+   std::string answ;
+   response.Save(answ);
+   ServerAnswerDebug=answ.c_str();
   }
+  else if(res == 0)
+   return RDK_RPC_RESPONSE_NOT_RECIEVED;
+
   else
   {
-   return RDK_RPC_RESPONSE_RECEIVE_TIMEOUT;
+   return res;
   }
  }
-
 }
 
 int RDK_CALL Rpc_ResetChannel(int channel_index, int timeout)
@@ -151,22 +126,22 @@ int RDK_CALL Rpc_ResetChannel(int channel_index, int timeout)
 
  if(timeout > 0)
  {
-  if(WaitForSingleObject(MainForm->Thread->PacketReceivedEvent, timeout) != WAIT_TIMEOUT)
+  RDK::USerStorageXML response;
+  int res=MainForm->WaitServerResponse(cmdId, response, timeout);
+  if(res == 1)
   {
-   RDK::USerStorageXML response;
-   if(MainForm->FindPacketById(cmdId, response))
-   {
-	std::string answ;
-	response.Save(answ);
-	ServerAnswerDebug=answ.c_str();
-   }
+   std::string answ;
+   response.Save(answ);
+   ServerAnswerDebug=answ.c_str();
   }
+  else if(res == 0)
+   return RDK_RPC_RESPONSE_NOT_RECIEVED;
+
   else
   {
-   return RDK_RPC_RESPONSE_RECEIVE_TIMEOUT;
+   return res;
   }
  }
-
 }
 
 int RDK_CALL Rpc_StopChannel(int channel_index, int timeout)
@@ -177,202 +152,146 @@ int RDK_CALL Rpc_StopChannel(int channel_index, int timeout)
 
  if(timeout > 0)
  {
-  if(WaitForSingleObject(MainForm->Thread->PacketReceivedEvent, timeout) != WAIT_TIMEOUT)
+  RDK::USerStorageXML response;
+  int res=MainForm->WaitServerResponse(cmdId, response, timeout);
+  if(res == 1)
   {
-   RDK::USerStorageXML response;
-   if(MainForm->FindPacketById(cmdId, response))
-   {
-	std::string answ;
-	response.Save(answ);
-	ServerAnswerDebug=answ.c_str();
-   }
+   std::string answ;
+   response.Save(answ);
+   ServerAnswerDebug=answ.c_str();
   }
+  else if(res == 0)
+   return RDK_RPC_RESPONSE_NOT_RECIEVED;
+
   else
   {
-   return RDK_RPC_RESPONSE_RECEIVE_TIMEOUT;
+   return res;
   }
  }
-
 }
-
-/// Команды управления камерами
-int RDK_CALL Rpc_CameraLeft(int channel_index, const char* cameraname, int timeout)
+// ---------------------
+// Общие функции управления движением
+// ---------------------
+/// Прекращает текущее движение камеры.
+int RDK_CALL Ptz_Stop(int channel_index, const char* camera_name, int timeout)
 {
  RDK::USerStorageXML PtzControlXml;
- int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_MovePan", cameraname, channel_index);
- PtzControlXml.WriteFloat("PanSpeed",-10.0);
+ int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_Stop", camera_name, channel_index);
  MainForm->SendControlCommand(PtzControlXml);
 
  if(timeout > 0)
  {
-  if(WaitForSingleObject(MainForm->Thread->PacketReceivedEvent, timeout) != WAIT_TIMEOUT)
+  RDK::USerStorageXML response;
+  int res=MainForm->WaitServerResponse(cmdId, response, timeout);
+  if(res == 1)
   {
-   RDK::USerStorageXML response;
-   if(MainForm->FindPacketById(cmdId, response))
-   {
-	std::string answ;
-	response.Save(answ);
-	ServerAnswerDebug=answ.c_str();
-   }
+   std::string answ;
+   response.Save(answ);
+   ServerAnswerDebug=answ.c_str();
+   return response.ReadInteger("Res", RDK_RPC_UNSUCCESSFULL_DECODING);
   }
   else
   {
-   return RDK_RPC_RESPONSE_RECEIVE_TIMEOUT;
+   return res;
   }
  }
 }
+// ---------------------
+// Функции управления перемещением по скорости
+// Скорость задается в станадартизованных библиотекой ед/с
+// Непрерывно перемещает камеру в заданном знаком скорости направлении
+// ---------------------
+/// Перемещает камеру одновременно по 3 направлениям Pan, Tilt, Zoom, со
+/// скоростями соответственно pan_speed, tilt_speed, zoom_speed, если камера поддерживает такой режим.
+//int RDK_CALL Ptz_Move(int channel_index, const char* camera_name, double pan_speed=0, double tilt_speed=0, double zoom_speed=0);
 
-int RDK_CALL Rpc_CameraRight(int channel_index, const char* cameraname, int timeout)
+/// Перемещает камеру в направлении TPtzDirection со скоростью speed
+/// (здесь предполагается, что speed >=0).
+//RDK_LIB_TYPE int RDK_CALL Ptz_MoveDirection(int channel_index, const char* camera_name, TPtzDirection direction, double speed);
+
+/// Перемещает камеру по горизонтальной оси с скоростью speed.
+int RDK_CALL Ptz_MovePan(int channel_index, const char* camera_name, double speed, int timeout)
 {
  RDK::USerStorageXML PtzControlXml;
- int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_MovePan", cameraname, channel_index);
- PtzControlXml.WriteFloat("PanSpeed",10.0);
+ int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_MovePan", camera_name, channel_index);
+ PtzControlXml.WriteFloat("Speed", speed);
  MainForm->SendControlCommand(PtzControlXml);
 
  if(timeout > 0)
  {
-  if(WaitForSingleObject(MainForm->Thread->PacketReceivedEvent, timeout) != WAIT_TIMEOUT)
+  RDK::USerStorageXML response;
+  int res=MainForm->WaitServerResponse(cmdId, response, timeout);
+  if(res == 1)
   {
-   RDK::USerStorageXML response;
-   if(MainForm->FindPacketById(cmdId, response))
-   {
-	std::string answ;
-	response.Save(answ);
-	ServerAnswerDebug=answ.c_str();
-   }
+   std::string answ;
+   response.Save(answ);
+   ServerAnswerDebug=answ.c_str();
+   return response.ReadInteger("Res", RDK_RPC_UNSUCCESSFULL_DECODING);
   }
+  else if(res == 0)
+   return RDK_RPC_RESPONSE_NOT_RECIEVED;
+
   else
   {
-   return RDK_RPC_RESPONSE_RECEIVE_TIMEOUT;
+   return res;
   }
  }
 }
 
-int RDK_CALL Rpc_CameraUp(int channel_index, const char* cameraname, int timeout)
+/// Перемещает камеру по вертикальной оси с скоростью speed.
+int RDK_CALL Ptz_MoveTilt(int channel_index, const char* camera_name, double speed, int timeout)
 {
  RDK::USerStorageXML PtzControlXml;
- int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_MoveTilt", cameraname, channel_index);
- PtzControlXml.WriteFloat("TiltSpeed",-10.0);
+ int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_MoveTilt", camera_name, channel_index);
+ PtzControlXml.WriteFloat("Speed", speed);
  MainForm->SendControlCommand(PtzControlXml);
 
  if(timeout > 0)
  {
-  if(WaitForSingleObject(MainForm->Thread->PacketReceivedEvent, timeout) != WAIT_TIMEOUT)
+  RDK::USerStorageXML response;
+  int res=MainForm->WaitServerResponse(cmdId, response, timeout);
+  if(res == 1)
   {
-   RDK::USerStorageXML response;
-   if(MainForm->FindPacketById(cmdId, response))
-   {
-	std::string answ;
-	response.Save(answ);
-	ServerAnswerDebug=answ.c_str();
-   }
+   std::string answ;
+   response.Save(answ);
+   ServerAnswerDebug=answ.c_str();
+   return response.ReadInteger("Res", RDK_RPC_UNSUCCESSFULL_DECODING);
   }
+  else if(res == 0)
+   return RDK_RPC_RESPONSE_NOT_RECIEVED;
+
   else
   {
-   return RDK_RPC_RESPONSE_RECEIVE_TIMEOUT;
+   return res;
   }
  }
 }
 
-int RDK_CALL Rpc_CameraDown(int channel_index, const char* cameraname, int timeout)
+/// Изменение поля зрения камеры  с скоростью speed.
+int RDK_CALL Ptz_MoveZoom(int channel_index, const char* camera_name, double speed, int timeout)
 {
  RDK::USerStorageXML PtzControlXml;
- int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_MoveTilt", cameraname, channel_index);
- PtzControlXml.WriteFloat("TiltSpeed",10.0);
+ int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_MoveZoom", camera_name, channel_index);
+ PtzControlXml.WriteFloat("Speed", speed);
  MainForm->SendControlCommand(PtzControlXml);
 
  if(timeout > 0)
  {
-  if(WaitForSingleObject(MainForm->Thread->PacketReceivedEvent, timeout) != WAIT_TIMEOUT)
+  RDK::USerStorageXML response;
+  int res=MainForm->WaitServerResponse(cmdId, response, timeout);
+  if(res == 1)
   {
-   RDK::USerStorageXML response;
-   if(MainForm->FindPacketById(cmdId, response))
-   {
-	std::string answ;
-	response.Save(answ);
-	ServerAnswerDebug=answ.c_str();
-   }
+   std::string answ;
+   response.Save(answ);
+   ServerAnswerDebug=answ.c_str();
+   return response.ReadInteger("Res", RDK_RPC_UNSUCCESSFULL_DECODING);
   }
+  else if(res == 0)
+   return RDK_RPC_RESPONSE_NOT_RECIEVED;
+
   else
   {
-   return RDK_RPC_RESPONSE_RECEIVE_TIMEOUT;
-  }
- }
-}
-
-int RDK_CALL Rpc_CameraStop(int channel_index, const char* cameraname, int timeout)
-{
- RDK::USerStorageXML PtzControlXml;
- int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_Stop", cameraname, channel_index);
- MainForm->SendControlCommand(PtzControlXml);
-
- if(timeout > 0)
- {
-  if(WaitForSingleObject(MainForm->Thread->PacketReceivedEvent, timeout) != WAIT_TIMEOUT)
-  {
-   RDK::USerStorageXML response;
-   if(MainForm->FindPacketById(cmdId, response))
-   {
-	std::string answ;
-	response.Save(answ);
-	ServerAnswerDebug=answ.c_str();
-   }
-  }
-  else
-  {
-   return RDK_RPC_RESPONSE_RECEIVE_TIMEOUT;
-  }
- }
-}
-
-int RDK_CALL Rpc_CameraZoomIn(int channel_index, const char* cameraname, int timeout)
-{
- RDK::USerStorageXML PtzControlXml;
- int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_MoveZoom", cameraname, channel_index);
- PtzControlXml.WriteFloat("ZoomSpeed",-10.0);
- MainForm->SendControlCommand(PtzControlXml);
-
- if(timeout > 0)
- {
-  if(WaitForSingleObject(MainForm->Thread->PacketReceivedEvent, timeout) != WAIT_TIMEOUT)
-  {
-   RDK::USerStorageXML response;
-   if(MainForm->FindPacketById(cmdId, response))
-   {
-	std::string answ;
-	response.Save(answ);
-	ServerAnswerDebug=answ.c_str();
-   }
-  }
-  else
-  {
-   return RDK_RPC_RESPONSE_RECEIVE_TIMEOUT;
-  }
- }
-}
-
-int RDK_CALL Rpc_CameraZoomOut(int channel_index, const char* cameraname, int timeout)
-{
- RDK::USerStorageXML PtzControlXml;
- int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_MoveZoom", cameraname, channel_index);
- PtzControlXml.WriteFloat("ZoomSpeed",10.0);
- MainForm->SendControlCommand(PtzControlXml);
-
- if(timeout > 0)
- {
-  if(WaitForSingleObject(MainForm->Thread->PacketReceivedEvent, timeout) != WAIT_TIMEOUT)
-  {
-   RDK::USerStorageXML response;
-   if(MainForm->FindPacketById(cmdId, response))
-   {
-	std::string answ;
-	response.Save(answ);
-	ServerAnswerDebug=answ.c_str();
-   }
-  }
-  else
-  {
-   return RDK_RPC_RESPONSE_RECEIVE_TIMEOUT;
+   return res;
   }
  }
 }

@@ -4,7 +4,7 @@
 #pragma hdrstop
 
 #include "DllMainFormUnit.h"
-//#include "TUBitmap.h"
+#include "VideoServerRPCLib.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
@@ -130,94 +130,52 @@ void TDllMainForm::SendControlCommand(RDK::USerStorageXML &xml)
 }
 
 // Поиск пакета по id комманды
-bool TDllMainForm::FindPacketById(int id, RDK::USerStorageXML &xml)
+int TDllMainForm::FindPacketById(int cmdId, RDK::USerStorageXML &xml)
 {
  if(WaitForSingleObject(Thread->PacketReaderUnlockEvent,10) != WAIT_TIMEOUT)
  {
   ResetEvent(Thread->PacketReaderUnlockEvent);
   std::list<RDK::UTransferPacket> packetList=PacketReader.GetPacketList();
-  RDK::UTransferPacket packet;
   RDK::USerStorageXML xmlTemp;
 
   for (std::list<RDK::UTransferPacket>::iterator  it = packetList.begin(), end = packetList.end(); it != end; ++it)
   {
-   packet=*it;
-   packetList.erase(it);
-   PacketXml.resize(packet.GetParamSize(0));
-   memcpy(&PacketXml[0],&packet(0)[0],packet.GetParamSize(0));
+   PacketXml.resize(it->GetParamSize(0));
+   memcpy(&PacketXml[0],&(it->operator ()((0),0)), it->GetParamSize(0));
    xmlTemp.Load(PacketXml, "RpcResponse");
 
-   if( xmlTemp.ReadInteger("Id", 0) == id)
+   if( xmlTemp.ReadInteger("Id", 0) == cmdId)
    {
+    packetList.erase(it);
 	xml=xmlTemp;
 	SetEvent(Thread->PacketReaderUnlockEvent);
-	return true;
+	return 1;
    }
-   /*if(packet.GetCmdId() == id)
-   {
-	PacketXml.resize(packet.GetParamSize(0));
-	memcpy(&PacketXml[0],&packet(0)[0],packet.GetParamSize(0));
-	xml.Load(PacketXml, "RpcResponse");
-	//packetList.remove(it);  ?
-	SetEvent(Thread->PacketReaderUnlockEvent);
-	return true;
-   } */
   }
   SetEvent(Thread->PacketReaderUnlockEvent);
  }
  else
  {
-  // Ошибка
+  return RDK_RPC_PACKET_READER_ACCESS_TIMEOUT;
  }
 
- return false;
+ // пакет не найден
+ return 0;
 }
-/*
-const char* TDllMainForm::WaitData()
+//---------------------------------------------------------------------------
+// Ожидание ответа сервера
+int TDllMainForm::WaitServerResponse(int cmdId, RDK::USerStorageXML &response, int timeout)
 {
- if((IdTCPClient->Connected()) && !(IdTCPClient->IOHandler->InputBufferIsEmpty()))
+ if(WaitForSingleObject(Thread->PacketReceivedEvent, timeout) != WAIT_TIMEOUT)
  {
-  bool ReadReady = true;
-  //if( TcpClient->Select(&ReadReady, NULL, NULL, 10) )
-  //{
-  // if(ReadReady)
-  // {
-	ClientBuffer.resize(1);
-	TStream* dataInputStream=new TMemoryStream();
-	int len=IdTCPClient->IOHandler->InputBuffer->Size;
-	IdTCPClient->IOHandler->ReadStream(dataInputStream, len, false);
-	ClientBuffer.resize(len/sizeof(ClientBuffer[0]));
-    dataInputStream->Position=0;
-	dataInputStream->ReadBuffer(&ClientBuffer[0], len);
-	dataInputStream->Free();
-	//ClientBuffer.resize(20000);
-	//int len=TcpClient->ReceiveBuf(&ClientBuffer[0],ClientBuffer.size(),0);
-	//if(len>0)
-	//{
-	// ClientBuffer.resize(len);
-	 PacketReader.ProcessDataPart(ClientBuffer);
-	 if(PacketReader.GetNumPackets()>0)
-	 {
-	  Packet=PacketReader.GetLastPacket();
-	  PacketReader.DelLastPacket();
-	  if(Packet.GetNumParams()>0)
-	  {
-	   PacketXml.resize(Packet.GetParamSize(0));
-	   memcpy(&PacketXml[0],&Packet(0)[0],Packet.GetParamSize(0));
-	   //StaticText1->Caption=String("Последний XML размера: ")+IntToStr(int(PacketXml.size()));
-	   //StaticText2->Caption=String("Пакетов в очереди: ")+IntToStr(int(PacketReader.GetPacketList().size()));
-	   //RichEdit1->Lines->Clear();
-	   //RichEdit1->Lines->Add(PacketXml.c_str());
-	   return PacketXml.c_str();
-	  }
-	 }
-	//}
-   //}
-  //}
+  int res=FindPacketById(cmdId, response);
+  return res;
  }
-
- return NULL;
-}  */
+ else
+ {
+  return RDK_RPC_RESPONSE_RECEIVE_TIMEOUT;
+ }
+}
 //---------------------------------------------------------------------------
 __fastcall TDllMainForm::TDllMainForm(TComponent* Owner)
 	: TForm(Owner)
@@ -226,9 +184,6 @@ __fastcall TDllMainForm::TDllMainForm(TComponent* Owner)
 //---------------------------------------------------------------------------
 void __fastcall TDllMainForm::FormCreate(TObject *Sender)
 {
- //PacketReceivedEvent=CreateEvent(0,TRUE,0,0);
- //PacketReaderUnlockEvent=CreateEvent(0,TRUE,TRUE,0);
-
  Thread=new TEngineThread(IdTCPClient, PacketReader, false);
  Thread->PacketReceivedEvent=CreateEvent(0,TRUE,0,0);
  Thread->PacketReaderUnlockEvent=CreateEvent(0,TRUE,TRUE,0);
@@ -243,32 +198,6 @@ void __fastcall TDllMainForm::FormDestroy(TObject *Sender)
   CloseHandle(Thread->PacketReceivedEvent);
   CloseHandle(Thread->PacketReaderUnlockEvent);
   delete Thread;
- }
- //CloseHandle(ThreadPacketReceivedEvent);
- //CloseHandle(ThreadPacketReaderUnlockEvent);
-}
-//---------------------------------------------------------------------------
-void __fastcall TDllMainForm::Timer1Timer(TObject *Sender)
-{
- if((IdTCPClient->Connected()) && !(IdTCPClient->IOHandler->InputBufferIsEmpty()))
- { /*
-  ClientBuffer.resize(1);
-  TStream* dataInputStream=new TMemoryStream();
-  int len=IdTCPClient->IOHandler->InputBuffer->Size;
-  IdTCPClient->IOHandler->ReadStream(dataInputStream, len, false);
-  ClientBuffer.resize(len/sizeof(ClientBuffer[0]));
-  dataInputStream->Position=0;
-  dataInputStream->ReadBuffer(&ClientBuffer[0], len);
-  dataInputStream->Free();
-  if(WaitForSingleObject(PacketReaderUnlockEvent, 10) != WAIT_TIMEOUT)
-  {
-   ResetEvent(PacketReaderUnlockEvent);
-   PacketReader.ProcessDataPart(ClientBuffer);
-   if(PacketReader.GetNumPackets()>0)
-	PulseEvent(PacketReceivedEvent);
-
-   SetEvent(PacketReaderUnlockEvent);
-  }  */
  }
 }
 //---------------------------------------------------------------------------

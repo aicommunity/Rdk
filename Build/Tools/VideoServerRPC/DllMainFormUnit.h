@@ -66,10 +66,8 @@ class TDllMainForm : public TForm
 {
 __published:	// IDE-managed Components
 	TIdTCPClient *IdTCPClient;
-	TTimer *Timer1;
 	void __fastcall FormCreate(TObject *Sender);
 	void __fastcall FormDestroy(TObject *Sender);
-	void __fastcall Timer1Timer(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
 
@@ -77,11 +75,8 @@ public:		// User declarations
 TEngineThread *Thread;
 RDK::UTransferPacket Packet;
 RDK::UTransferReader PacketReader;
-//RDK::UParamT ClientBuffer;
 std::string PacketXml;
 
-//HANDLE PacketReceivedEvent;
-//HANDLE PacketReaderUnlockEvent;
 
 // Подготовка запроса
 int PrepareCommandXml(RDK::USerStorageXML &xml, const char* cmd, int channel);
@@ -94,10 +89,10 @@ void SendControlCommand(RDK::USerStorageXML &xml);
 
 // Поиск пакета по id комманды
 // Возвращает true в случае успеха
-bool FindPacketById(int id, RDK::USerStorageXML &xml);
+int FindPacketById(int cmdId, RDK::USerStorageXML &xml);
 
-// Ожидание ответа от сервера
-//const char* WaitData(void);
+// Ожидание ответа сервера
+int WaitServerResponse(int cmdId, RDK::USerStorageXML &response, int timeout);
 
 	__fastcall TDllMainForm(TComponent* Owner);
 };

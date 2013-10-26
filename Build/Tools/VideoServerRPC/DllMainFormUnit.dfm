@@ -24,11 +24,4 @@ object DllMainForm: TDllMainForm
     Left = 264
     Top = 88
   end
-  object Timer1: TTimer
-    Enabled = False
-    Interval = 100
-    OnTimer = Timer1Timer
-    Left = 160
-    Top = 88
-  end
 end
