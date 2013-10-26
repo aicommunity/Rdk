@@ -152,6 +152,7 @@ const char* TUServerControlForm::PtzRemoteCall(const char *request, int &return_
  return_value=2001;
 
  RDK::USerStorageXML xml,xml_data;
+ USerStorageXML response;
 
  xml.Load(request,"RpcRequest");
 
@@ -178,6 +179,13 @@ const char* TUServerControlForm::PtzRemoteCall(const char *request, int &return_
   return_value=0;
  }
  else
+ if(cmd == "Ptz_SetCameraParameter")
+ {
+  std::string param_name=xml.ReadString("Parameter","");
+  std::string value=xml.ReadString("Value","");
+  return_value=Ptz_SetCameraParameter(engine_index,camera.c_str(),param_name.c_str(),value.c_str());
+ }
+ else
  if(cmd == "Ptz_GetImplementedCommands")
  {
   ControlResponseString=Ptz_GetImplementedCommands(engine_index,camera.c_str());
@@ -192,6 +200,97 @@ const char* TUServerControlForm::PtzRemoteCall(const char *request, int &return_
  if(cmd == "Ptz_CameraDisconnect")
  {
   return_value=Ptz_CameraDisconnect(engine_index,camera.c_str());
+ }
+ else
+ if(cmd == "Ptz_GetImplementedMoveParamsList")
+ {
+  ControlResponseString=Ptz_GetImplementedMoveParamsList(engine_index,camera.c_str());
+  return_value=0;
+ }
+ else
+ if(cmd == "Ptz_IsMoveParamImplemented")
+ {
+  std::string param_name=xml.ReadString("ParamName","");
+  ControlResponseString=sntoa(Ptz_IsMoveParamImplemented(engine_index,camera.c_str(),param_name.c_str()));
+  return_value=0;
+ }
+ else
+ if(cmd == "Ptz_SetMoveParamImplemented")
+ {
+  std::string param_name=xml.ReadString("ParamName","");
+  bool param_value=xml.ReadBool("ParamValue","");
+  if(Ptz_SetMoveParamImplemented(engine_index,camera.c_str(),param_name.c_str(),param_value))
+   return_value=0;
+  else
+   return_value=11000; // Исходная функция вернула false
+ }
+ else
+ if(cmd == "Ptz_GetMoveParamMinNativeValue")
+ {
+  std::string param_name=xml.ReadString("ParamName","");
+  ControlResponseString=sntoa(Ptz_GetMoveParamMinNativeValue(engine_index,camera.c_str(),param_name.c_str()));
+  return_value=0;
+ }
+ else
+ if(cmd == "Ptz_SetMoveParamMinNativeValue")
+ {
+  std::string param_name=xml.ReadString("ParamName","");
+  double param_value=xml.ReadFloat("ParamValue",0.0);
+  if(Ptz_SetMoveParamMinNativeValue(engine_index,camera.c_str(),param_name.c_str(),param_value))
+   return_value=0;
+  else
+   return_value=11000; // Исходная функция вернула false
+ }
+ else
+ if(cmd == "Ptz_GetMoveParamMaxNativeValue")
+ {
+  std::string param_name=xml.ReadString("ParamName","");
+  ControlResponseString=sntoa(Ptz_GetMoveParamMaxNativeValue(engine_index,camera.c_str(),param_name.c_str()));
+  return_value=0;
+ }
+ else
+ if(cmd == "Ptz_SetMoveParamMaxNativeValue")
+ {
+  std::string param_name=xml.ReadString("ParamName","");
+  double param_value=xml.ReadFloat("ParamValue",0.0);
+  if(Ptz_SetMoveParamMaxNativeValue(engine_index,camera.c_str(),param_name.c_str(),param_value))
+   return_value=0;
+  else
+   return_value=11000; // Исходная функция вернула false
+ }
+ else
+ if(cmd == "Ptz_GetMoveParamMinValue")
+ {
+  std::string param_name=xml.ReadString("ParamName","");
+  ControlResponseString=sntoa(Ptz_GetMoveParamMinValue(engine_index,camera.c_str(),param_name.c_str()));
+  return_value=0;
+ }
+ else
+ if(cmd == "Ptz_SetMoveParamMinValue")
+ {
+  std::string param_name=xml.ReadString("ParamName","");
+  double param_value=xml.ReadFloat("ParamValue",0.0);
+  if(Ptz_SetMoveParamMinValue(engine_index,camera.c_str(),param_name.c_str(),param_value))
+   return_value=0;
+  else
+   return_value=11000; // Исходная функция вернула false
+ }
+ else
+ if(cmd == "Ptz_GetMoveParamMaxValue")
+ {
+  std::string param_name=xml.ReadString("ParamName","");
+  ControlResponseString=sntoa(Ptz_GetMoveParamMaxValue(engine_index,camera.c_str(),param_name.c_str()));
+  return_value=0;
+ }
+ else
+ if(cmd == "Ptz_SetMoveParamMaxValue")
+ {
+  std::string param_name=xml.ReadString("ParamName","");
+  double param_value=xml.ReadFloat("ParamValue",0.0);
+  if(Ptz_SetMoveParamMaxValue(engine_index,camera.c_str(),param_name.c_str(),param_value))
+   return_value=0;
+  else
+   return_value=11000; // Исходная функция вернула false
  }
  else
  if(cmd == "Ptz_Stop")
@@ -214,6 +313,162 @@ const char* TUServerControlForm::PtzRemoteCall(const char *request, int &return_
  {
   int point_index=xml.ReadInteger("Point",0);
   return_value=Ptz_GotoPoint(engine_index,camera.c_str(),point_index);
+ }
+ else
+ if(cmd == "Ptz_RemovePoint")
+ {
+  int point_index=xml.ReadInteger("Point",0);
+  return_value=Ptz_RemovePoint(engine_index,camera.c_str(),point_index);
+ }
+ else
+ if(cmd == "Ptz_ReadPTZPosition")
+ {
+  double pan,tilt,zoom;
+  return_value=Ptz_ReadPTZPosition(engine_index,camera.c_str(),pan, tilt, zoom);
+  response.Create("Position");
+  response.WriteFloat("Pan",pan);
+  response.WriteFloat("Tilt",tilt);
+  response.WriteFloat("Zoom",zoom);
+  response.Save(ControlResponseString);
+ }
+ else
+ if(cmd == "Ptz_ReadPTPosition")
+ {
+  double pan,tilt;
+  return_value=Ptz_ReadPTPosition(engine_index,camera.c_str(),pan, tilt);
+  response.Create("Position");
+  response.WriteFloat("Pan",pan);
+  response.WriteFloat("Tilt",tilt);
+  response.Save(ControlResponseString);
+ }
+ else
+ if(cmd == "Ptz_ReadPanPosition")
+ {
+  double value;
+  return_value=Ptz_ReadPanPosition(engine_index,camera.c_str(),value);
+  response.Create("Position");
+  response.WriteFloat("Pan",value);
+  response.Save(ControlResponseString);
+ }
+ else
+ if(cmd == "Ptz_ReadTiltPosition")
+ {
+  double value;
+  return_value=Ptz_ReadTiltPosition(engine_index,camera.c_str(),value);
+  response.Create("Position");
+  response.WriteFloat("Tilt",value);
+  response.Save(ControlResponseString);
+ }
+ else
+ if(cmd == "Ptz_ReadZoomPosition")
+ {
+  double value;
+  return_value=Ptz_ReadZoomPosition(engine_index,camera.c_str(),value);
+  response.Create("Position");
+  response.WriteFloat("Zoom",value);
+  response.Save(ControlResponseString);
+ }
+ else
+ if(cmd == "Ptz_ReadFocusPosition")
+ {
+  double value;
+  return_value=Ptz_ReadFocusPosition(engine_index,camera.c_str(),value);
+  response.Create("Position");
+  response.WriteFloat("Focus",value);
+  response.Save(ControlResponseString);
+ }
+ else
+ if(cmd == "Ptz_ReadIrisPosition")
+ {
+  double value;
+  return_value=Ptz_ReadIrisPosition(engine_index,camera.c_str(),value);
+  response.Create("Position");
+  response.WriteFloat("Iris",value);
+  response.Save(ControlResponseString);
+ }
+ else
+ if(cmd == "Ptz_ReadBrightnessPosition")
+ {
+  double value;
+  return_value=Ptz_ReadBrightnessPosition(engine_index,camera.c_str(),value);
+  response.Create("Position");
+  response.WriteFloat("Brightness",value);
+  response.Save(ControlResponseString);
+ }
+ else
+ if(cmd == "Ptz_ReadPTZPositionNative")
+ {
+  double pan,tilt,zoom;
+  return_value=Ptz_ReadPTZPositionNative(engine_index,camera.c_str(),pan, tilt, zoom);
+  response.Create("Position");
+  response.WriteFloat("Pan",pan);
+  response.WriteFloat("Tilt",tilt);
+  response.WriteFloat("Zoom",zoom);
+  response.Save(ControlResponseString);
+ }
+ else
+ if(cmd == "Ptz_ReadPTPositionNative")
+ {
+  double pan,tilt;
+  return_value=Ptz_ReadPTPositionNative(engine_index,camera.c_str(),pan, tilt);
+  response.Create("Position");
+  response.WriteFloat("Pan",pan);
+  response.WriteFloat("Tilt",tilt);
+  response.Save(ControlResponseString);
+ }
+ else
+ if(cmd == "Ptz_ReadPanPositionNative")
+ {
+  double value;
+  return_value=Ptz_ReadPanPositionNative(engine_index,camera.c_str(),value);
+  response.Create("Position");
+  response.WriteFloat("Pan",value);
+  response.Save(ControlResponseString);
+ }
+ else
+ if(cmd == "Ptz_ReadTiltPositionNative")
+ {
+  double value;
+  return_value=Ptz_ReadTiltPositionNative(engine_index,camera.c_str(),value);
+  response.Create("Position");
+  response.WriteFloat("Tilt",value);
+  response.Save(ControlResponseString);
+ }
+ else
+ if(cmd == "Ptz_ReadZoomPositionNative")
+ {
+  double value;
+  return_value=Ptz_ReadZoomPositionNative(engine_index,camera.c_str(),value);
+  response.Create("Position");
+  response.WriteFloat("Zoom",value);
+  response.Save(ControlResponseString);
+ }
+ else
+ if(cmd == "Ptz_ReadFocusPositionNative")
+ {
+  double value;
+  return_value=Ptz_ReadFocusPositionNative(engine_index,camera.c_str(),value);
+  response.Create("Position");
+  response.WriteFloat("Focus",value);
+  response.Save(ControlResponseString);
+ }
+ else
+ if(cmd == "Ptz_ReadIrisPositionNative")
+ {
+  double value;
+  return_value=Ptz_ReadIrisPositionNative(engine_index,camera.c_str(),value);
+  response.Create("Position");
+  response.WriteFloat("Iris",value);
+  response.Save(ControlResponseString);
+ }
+ else
+ if(cmd == "Ptz_ReadBrightnessPositionNative")
+ {
+  double value;
+  return_value=Ptz_ReadBrightnessPositionNative(engine_index,camera.c_str(),value);
+  response.Create("Position");
+  response.WriteFloat("Brightness",value);
+  response.Save(ControlResponseString);
  }
  else
  if(cmd == "Ptz_Move")
