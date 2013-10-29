@@ -191,11 +191,11 @@ int RDK_CALL Rpc_GetNumChannels(int channel_index, int timeout)
    return StrToInt(response.ReadString("Data", "").c_str());
   }
   else if(res == 0)
-   return RDK_RPC_RESPONSE_NOT_RECIEVED;
+   return 0;//RDK_RPC_RESPONSE_NOT_RECIEVED;
 
   else
   {
-   return res;
+   return 0;//res;
   }
  }
 }

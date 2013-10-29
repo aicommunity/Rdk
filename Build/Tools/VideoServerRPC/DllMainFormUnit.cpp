@@ -104,7 +104,7 @@ int TDllMainForm::PreparePtzControlXml(RDK::USerStorageXML &xml, const std::stri
  int id=GetTickCount();
  xml.WriteInteger("Id",GetTickCount());
  xml.WriteInteger("Channel",channel);
- xml.WriteString("Camera",camera);
+ xml.WriteString("Component",camera);
  return id;
 }
 

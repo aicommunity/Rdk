@@ -199,6 +199,8 @@ const char* RemoteCallInternal(const char *request, int &return_value)
 
   return_value=MModel_SetComponentState(engine_index, component_name.c_str(),data.c_str());
  }
+ else
+  return_value=2001;
 
  RDK::USerStorageXML result;
 
@@ -230,18 +232,24 @@ const char* PtzRemoteCall(const char *request, int &return_value)
   return 0;
  }
 
+
+ if(!ExtractCC(xml,engine_index, camera))
+ {
+  if(!ExtractChannel(xml,engine_index))
+   return 0;
+  ExtractComponent(xml,camera);
+ }
+
  if(engine_index < 0 || engine_index >= GetNumEngines())
  {
   return_value=2001;
   return 0;
  }
  else
-  RpcReturnString[engine_index].clear();
-
- if(!ExtractCC(xml,engine_index, camera))
  {
-  if(!ExtractChannel(xml,engine_index) || !ExtractComponent(xml,camera))
-   return 0;
+  if(RpcReturnString.size()<=engine_index)
+   RpcReturnString.resize(engine_index+1);
+  RpcReturnString[engine_index].clear();
  }
 
  RpcReturnString[engine_index].clear();
