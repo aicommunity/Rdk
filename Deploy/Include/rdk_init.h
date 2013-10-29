@@ -59,7 +59,7 @@ enum { ipDataSingle=ipData|ipSingle, ipDataRange=ipData|ipRange,
 ///	    <Id>уникальный идентификатор запроса</Id>
 ///     <Channel>индекс движка</Channel>
 ///     <Cmd>имя вызываемой функции</Cmd>
-///     <Name>имя компонента</Name>
+///     <Component>имя компонента</Component>
 ///     <Class>имя класса</Class>
 ///     <Data>xml-описание данных функции, например xml с параметрами компонента</Data>
 /// </RpcRequest>

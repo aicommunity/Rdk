@@ -178,7 +178,7 @@ TThreadList *Clients;
 
 const char* ControlRemoteCall(const char *request, int &return_value);
 
-const char* PtzRemoteCall(const char *request, int &return_value);
+//const char* PtzRemoteCall(const char *request, int &return_value);
 
 // Функция, обрабатывающая команды управления сервером
 // Возвращает true если команда была найдена и обработана
