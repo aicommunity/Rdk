@@ -188,7 +188,7 @@ int RDK_CALL Rpc_GetNumChannels(int channel_index, int timeout)
    std::string answ;
    response.Save(answ);
    ServerAnswerDebug=answ.c_str();
-   return response.ReadInteger("Res", RDK_RPC_UNSUCCESSFULL_DECODING);
+   return StrToInt(response.ReadString("Data", "").c_str());
   }
   else if(res == 0)
    return RDK_RPC_RESPONSE_NOT_RECIEVED;
