@@ -16,10 +16,6 @@ typedef int bool;
 #endif
 
 /// Управление параметрами
-//RDK_LIB_TYPE int RDK_CALL Rpc_GetResponseTimeOut(void);
-
-//RDK_LIB_TYPE bool RDK_CALL Rpc_SetResponseTimeOut(const int &value);
-
 RDK_LIB_TYPE const char* RDK_CALL Rpc_GetServerAnswerDebug(void);
 
 RDK_LIB_TYPE bool RDK_CALL Rpc_SetServerAnswerDebug(const char* value);
@@ -42,6 +38,8 @@ RDK_LIB_TYPE int RDK_CALL Rpc_StartChannel(int channel_index, int timeout);
 RDK_LIB_TYPE int RDK_CALL Rpc_StopChannel(int channel_index, int timeout);
 
 RDK_LIB_TYPE int RDK_CALL Rpc_ResetChannel(int channel_index, int timeout);
+
+RDK_LIB_TYPE int RDK_CALL Rpc_GetNumChannels(int channel_index, int timeout);
 
 
 /// Команды управления камерами
@@ -85,7 +83,7 @@ RDK_LIB_TYPE const char* RDK_CALL Ptz_GetCameraType(int channel_index, const cha
 RDK_LIB_TYPE int RDK_CALL Ptz_SetCameraParameter(int channel_index, const char* camera_name, const char* param_name, const char* param_value);
 
 /// Считывает значение параметра компонента управления камерой
-RDK_LIB_TYPE const char* Ptz_GetCameraParameter(int channel_index, const char* camera_name, const char* param_name);
+RDK_LIB_TYPE const char* Ptz_GetCameraParameter(int channel_index, const char* camera_name, const char* param_name, int timeout);
 
 /// Возвращает конфигурацию и состояние камеры
 //RDK_LIB_TYPE TPtzCameraInfo* Ptz_GetPtzInfo(const char* camera_name);
@@ -95,7 +93,7 @@ RDK_LIB_TYPE const char* Ptz_GetCameraParameter(int channel_index, const char* c
 //RDK_LIB_TYPE int RDK_CALL Ptz_ReadCurrentCameraState(int channel_index, const char* camera_name);
 
 /// Возвращает список поддерживаемых команд в виде списка, разделенного ','
-RDK_LIB_TYPE const char* Ptz_GetImplementedCommands(int channel_index, const char* camera_name);
+RDK_LIB_TYPE const char* Ptz_GetImplementedCommands(int channel_index, const char* camera_name, int timeout);
 
 /// Выполняет действия по подключению к физической камере
 RDK_LIB_TYPE int RDK_CALL Ptz_CameraConnect(int channel_index, const char* camera_name);
@@ -154,7 +152,7 @@ RDK_LIB_TYPE int RDK_CALL Ptz_RemovePoint(int channel_index, const char* camera_
 // ---------------------
 // Функции считывания состояния камеры в стандартизированных величинах
 // ---------------------
-RDK_LIB_TYPE int RDK_CALL Ptz_ReadPTZPosition(int channel_index, const char* camera_name, double &pan, double &tilt, double &zoom);
+RDK_LIB_TYPE int RDK_CALL Ptz_ReadPTZPosition(int channel_index, const char* camera_name, double &pan, double &tilt, double &zoom, int timeout);
 RDK_LIB_TYPE int RDK_CALL Ptz_ReadPTPosition(int channel_index, const char* camera_name, double &pan, double &tilt);
 RDK_LIB_TYPE int RDK_CALL Ptz_ReadPanPosition(int channel_index, const char* camera_name, double &value);
 RDK_LIB_TYPE int RDK_CALL Ptz_ReadTiltPosition(int channel_index, const char* camera_name, double &value);

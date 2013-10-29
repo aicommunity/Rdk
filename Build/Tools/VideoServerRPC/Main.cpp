@@ -172,6 +172,33 @@ int RDK_CALL Rpc_StopChannel(int channel_index, int timeout)
   }
  }
 }
+
+int RDK_CALL Rpc_GetNumChannels(int channel_index, int timeout)
+{
+ RDK::USerStorageXML xml;
+ int cmdId=MainForm->PrepareCommandXml(xml, "GetNumChannels", channel_index);
+ MainForm->SendControlCommand(xml);
+
+ if(timeout > 0)
+ {
+  RDK::USerStorageXML response;
+  int res=MainForm->WaitServerResponse(cmdId, response, timeout);
+  if(res == 1)
+  {
+   std::string answ;
+   response.Save(answ);
+   ServerAnswerDebug=answ.c_str();
+   return response.ReadInteger("Res", RDK_RPC_UNSUCCESSFULL_DECODING);
+  }
+  else if(res == 0)
+   return RDK_RPC_RESPONSE_NOT_RECIEVED;
+
+  else
+  {
+   return res;
+  }
+ }
+}
 //------------------------------------------------------------------------------
 /// ¬озвращает список текущих камер в виде строки раздел€емой ','
 const char* RDK_CALL Ptz_GetCameraNames(int channel_index, int timeout)
@@ -190,6 +217,59 @@ const char* RDK_CALL Ptz_GetCameraNames(int channel_index, int timeout)
    response.Save(answ);
    ServerAnswerDebug=answ.c_str();
    return (response.ReadString("Data", "")).c_str();
+  }
+  else
+  {
+   // заглушка
+   return 0;
+  }
+ }
+}
+
+/// —читывает значение параметра компонента управлени€ камерой
+const char* Ptz_GetCameraParameter(int channel_index, const char* camera_name, const char* param_name, int timeout)
+{
+ RDK::USerStorageXML PtzControlXml;
+ int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_GetCameraParameter", camera_name, channel_index);
+ PtzControlXml.WriteString("Parameter", param_name);
+ MainForm->SendControlCommand(PtzControlXml);
+
+ if(timeout > 0)
+ {
+  RDK::USerStorageXML response;
+  int res=MainForm->WaitServerResponse(cmdId, response, timeout);
+  if(res == 1)
+  {
+   std::string answ;
+   response.Save(answ);
+   ServerAnswerDebug=answ.c_str();
+   return response.ReadString("Data", "").c_str();
+  }
+  else
+  {
+   // заглушка
+   return 0;
+  }
+ }
+}
+
+/// ¬озвращает список поддерживаемых команд в виде списка, разделенного ','
+const char* Ptz_GetImplementedCommands(int channel_index, const char* camera_name, int timeout)
+{
+ RDK::USerStorageXML PtzControlXml;
+ int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_GetImplementedCommands", camera_name, channel_index);
+ MainForm->SendControlCommand(PtzControlXml);
+
+ if(timeout > 0)
+ {
+  RDK::USerStorageXML response;
+  int res=MainForm->WaitServerResponse(cmdId, response, timeout);
+  if(res == 1)
+  {
+   std::string answ;
+   response.Save(answ);
+   ServerAnswerDebug=answ.c_str();
+   return response.ReadString("Data", "").c_str();
   }
   else
   {
@@ -313,6 +393,40 @@ int RDK_CALL Ptz_MoveZoom(int channel_index, const char* camera_name, double spe
    std::string answ;
    response.Save(answ);
    ServerAnswerDebug=answ.c_str();
+   return response.ReadInteger("Res", RDK_RPC_UNSUCCESSFULL_DECODING);
+  }
+  else if(res == 0)
+   return RDK_RPC_RESPONSE_NOT_RECIEVED;
+
+  else
+  {
+   return res;
+  }
+ }
+}
+
+// ---------------------
+// ‘ункции считывани€ состо€ни€ камеры в стандартизированных величинах
+// ---------------------
+int RDK_CALL Ptz_ReadPTZPosition(int channel_index, const char* camera_name, double &pan, double &tilt, double &zoom, int timeout)
+{
+ RDK::USerStorageXML PtzControlXml;
+ int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_MoveZoom", camera_name, channel_index);
+ MainForm->SendControlCommand(PtzControlXml);
+
+ if(timeout > 0)
+ {
+  RDK::USerStorageXML response;
+  int res=MainForm->WaitServerResponse(cmdId, response, timeout);
+  if(res == 1)
+  {
+   std::string answ;
+   response.Save(answ);
+   ServerAnswerDebug=answ.c_str();
+   response.SelectNodeRoot("Data/Position");
+   pan=response.ReadFloat("Pan",RDK_RPC_UNSUCCESSFULL_DECODING);
+   tilt=response.ReadFloat("Tilt",RDK_RPC_UNSUCCESSFULL_DECODING);
+   zoom=response.ReadFloat("Zoom",RDK_RPC_UNSUCCESSFULL_DECODING);
    return response.ReadInteger("Res", RDK_RPC_UNSUCCESSFULL_DECODING);
   }
   else if(res == 0)
