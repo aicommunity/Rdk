@@ -153,13 +153,13 @@ RDK_LIB_TYPE int RDK_CALL Ptz_RemovePoint(int channel_index, const char* camera_
 // Функции считывания состояния камеры в стандартизированных величинах
 // ---------------------
 RDK_LIB_TYPE int RDK_CALL Ptz_ReadPTZPosition(int channel_index, const char* camera_name, double &pan, double &tilt, double &zoom, int timeout);
-RDK_LIB_TYPE int RDK_CALL Ptz_ReadPTPosition(int channel_index, const char* camera_name, double &pan, double &tilt);
-RDK_LIB_TYPE int RDK_CALL Ptz_ReadPanPosition(int channel_index, const char* camera_name, double &value);
-RDK_LIB_TYPE int RDK_CALL Ptz_ReadTiltPosition(int channel_index, const char* camera_name, double &value);
-RDK_LIB_TYPE int RDK_CALL Ptz_ReadZoomPosition(int channel_index, const char* camera_name, double &value);
-RDK_LIB_TYPE int RDK_CALL Ptz_ReadFocusPosition(int channel_index, const char* camera_name, double &value);
-RDK_LIB_TYPE int RDK_CALL Ptz_ReadIrisPosition(int channel_index, const char* camera_name, double &value);
-RDK_LIB_TYPE int RDK_CALL Ptz_ReadBrightnessPosition(int channel_index, const char* camera_name, double &value);
+RDK_LIB_TYPE int RDK_CALL Ptz_ReadPTPosition(int channel_index, const char* camera_name, double &pan, double &tilt, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_ReadPanPosition(int channel_index, const char* camera_name, double &value, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_ReadTiltPosition(int channel_index, const char* camera_name, double &value, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_ReadZoomPosition(int channel_index, const char* camera_name, double &value, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_ReadFocusPosition(int channel_index, const char* camera_name, double &value, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_ReadIrisPosition(int channel_index, const char* camera_name, double &value, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_ReadBrightnessPosition(int channel_index, const char* camera_name, double &value, int timeout);
 // ---------------------
 // Функции считывания состояния камеры в родных для камеры величинах
 // ---------------------

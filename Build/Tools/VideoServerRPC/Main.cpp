@@ -411,7 +411,7 @@ int RDK_CALL Ptz_MoveZoom(int channel_index, const char* camera_name, double spe
 int RDK_CALL Ptz_ReadPTZPosition(int channel_index, const char* camera_name, double &pan, double &tilt, double &zoom, int timeout)
 {
  RDK::USerStorageXML PtzControlXml;
- int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_MoveZoom", camera_name, channel_index);
+ int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_ReadPTZPosition", camera_name, channel_index);
  MainForm->SendControlCommand(PtzControlXml);
 
  if(timeout > 0)
@@ -423,10 +423,10 @@ int RDK_CALL Ptz_ReadPTZPosition(int channel_index, const char* camera_name, dou
    std::string answ;
    response.Save(answ);
    ServerAnswerDebug=answ.c_str();
-   response.SelectNodeRoot("Data/Position");
-   pan=response.ReadFloat("Pan",RDK_RPC_UNSUCCESSFULL_DECODING);
-   tilt=response.ReadFloat("Tilt",RDK_RPC_UNSUCCESSFULL_DECODING);
-   zoom=response.ReadFloat("Zoom",RDK_RPC_UNSUCCESSFULL_DECODING);
+   response.SelectNodeRoot("RpcResponse/Data/Position");
+   pan=response.ReadFloat("Pan",0.0);
+   tilt=response.ReadFloat("Tilt",0.0);
+   zoom=response.ReadFloat("Zoom",0.0);
    return response.ReadInteger("Res", RDK_RPC_UNSUCCESSFULL_DECODING);
   }
   else if(res == 0)
@@ -438,6 +438,212 @@ int RDK_CALL Ptz_ReadPTZPosition(int channel_index, const char* camera_name, dou
   }
  }
 }
+
+int RDK_CALL Ptz_ReadPTPosition(int channel_index, const char* camera_name, double &pan, double &tilt, int timeout)
+{
+ RDK::USerStorageXML PtzControlXml;
+ int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_ReadPTPosition", camera_name, channel_index);
+ MainForm->SendControlCommand(PtzControlXml);
+
+ if(timeout > 0)
+ {
+  RDK::USerStorageXML response;
+  int res=MainForm->WaitServerResponse(cmdId, response, timeout);
+  if(res == 1)
+  {
+   std::string answ;
+   response.Save(answ);
+   ServerAnswerDebug=answ.c_str();
+   response.SelectNodeRoot("RpcResponse/Data/Position");
+   pan=response.ReadFloat("Pan",0.0);
+   tilt=response.ReadFloat("Tilt",0.0);
+   return response.ReadInteger("Res", 0.0);
+  }
+  else if(res == 0)
+   return RDK_RPC_RESPONSE_NOT_RECIEVED;
+
+  else
+  {
+   return res;
+  }
+ }
+}
+
+int RDK_CALL Ptz_ReadPanPosition(int channel_index, const char* camera_name, double &value, int timeout)
+{
+ RDK::USerStorageXML PtzControlXml;
+ int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_ReadPanPosition", camera_name, channel_index);
+ MainForm->SendControlCommand(PtzControlXml);
+
+ if(timeout > 0)
+ {
+  RDK::USerStorageXML response;
+  int res=MainForm->WaitServerResponse(cmdId, response, timeout);
+  if(res == 1)
+  {
+   std::string answ;
+   response.Save(answ);
+   ServerAnswerDebug=answ.c_str();
+   response.SelectNodeRoot("RpcResponse/Data/Position");
+   value=response.ReadFloat("Pan",0.0);
+   return response.ReadInteger("Res", RDK_RPC_UNSUCCESSFULL_DECODING);
+  }
+  else if(res == 0)
+   return RDK_RPC_RESPONSE_NOT_RECIEVED;
+
+  else
+  {
+   return res;
+  }
+ }
+}
+
+int RDK_CALL Ptz_ReadTiltPosition(int channel_index, const char* camera_name, double &value, int timeout)
+{
+ RDK::USerStorageXML PtzControlXml;
+ int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_ReadTiltPosition", camera_name, channel_index);
+ MainForm->SendControlCommand(PtzControlXml);
+
+ if(timeout > 0)
+ {
+  RDK::USerStorageXML response;
+  int res=MainForm->WaitServerResponse(cmdId, response, timeout);
+  if(res == 1)
+  {
+   std::string answ;
+   response.Save(answ);
+   ServerAnswerDebug=answ.c_str();
+   response.SelectNodeRoot("RpcResponse/Data/Position");
+   value=response.ReadFloat("Tilt",0.0);
+   return response.ReadInteger("Res", RDK_RPC_UNSUCCESSFULL_DECODING);
+  }
+  else if(res == 0)
+   return RDK_RPC_RESPONSE_NOT_RECIEVED;
+
+  else
+  {
+   return res;
+  }
+ }
+}
+
+int RDK_CALL Ptz_ReadZoomPosition(int channel_index, const char* camera_name, double &value, int timeout)
+{
+ RDK::USerStorageXML PtzControlXml;
+ int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_ReadZoomPosition", camera_name, channel_index);
+ MainForm->SendControlCommand(PtzControlXml);
+
+ if(timeout > 0)
+ {
+  RDK::USerStorageXML response;
+  int res=MainForm->WaitServerResponse(cmdId, response, timeout);
+  if(res == 1)
+  {
+   std::string answ;
+   response.Save(answ);
+   ServerAnswerDebug=answ.c_str();
+   response.SelectNodeRoot("RpcResponse/Data/Position");
+   value=response.ReadFloat("Zoom",0.0);
+   return response.ReadInteger("Res", RDK_RPC_UNSUCCESSFULL_DECODING);
+  }
+  else if(res == 0)
+   return RDK_RPC_RESPONSE_NOT_RECIEVED;
+
+  else
+  {
+   return res;
+  }
+ }
+}
+
+int RDK_CALL Ptz_ReadFocusPosition(int channel_index, const char* camera_name, double &value, int timeout)
+{
+ RDK::USerStorageXML PtzControlXml;
+ int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_ReadFocusPosition", camera_name, channel_index);
+ MainForm->SendControlCommand(PtzControlXml);
+
+ if(timeout > 0)
+ {
+  RDK::USerStorageXML response;
+  int res=MainForm->WaitServerResponse(cmdId, response, timeout);
+  if(res == 1)
+  {
+   std::string answ;
+   response.Save(answ);
+   ServerAnswerDebug=answ.c_str();
+   response.SelectNodeRoot("RpcResponse/Data/Position");
+   value=response.ReadFloat("Focus",0.0);
+   return response.ReadInteger("Res", RDK_RPC_UNSUCCESSFULL_DECODING);
+  }
+  else if(res == 0)
+   return RDK_RPC_RESPONSE_NOT_RECIEVED;
+
+  else
+  {
+   return res;
+  }
+ }
+}
+
+int RDK_CALL Ptz_ReadIrisPosition(int channel_index, const char* camera_name, double &value, int timeout)
+{
+ RDK::USerStorageXML PtzControlXml;
+ int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_ReadIrisPosition", camera_name, channel_index);
+ MainForm->SendControlCommand(PtzControlXml);
+
+ if(timeout > 0)
+ {
+  RDK::USerStorageXML response;
+  int res=MainForm->WaitServerResponse(cmdId, response, timeout);
+  if(res == 1)
+  {
+   std::string answ;
+   response.Save(answ);
+   ServerAnswerDebug=answ.c_str();
+   response.SelectNodeRoot("RpcResponse/Data/Position");
+   value=response.ReadFloat("Iris",0.0);
+   return response.ReadInteger("Res", RDK_RPC_UNSUCCESSFULL_DECODING);
+  }
+  else if(res == 0)
+   return RDK_RPC_RESPONSE_NOT_RECIEVED;
+
+  else
+  {
+   return res;
+  }
+ }
+}
+
+int RDK_CALL Ptz_ReadBrightnessPosition(int channel_index, const char* camera_name, double &value, int timeout)
+{
+ RDK::USerStorageXML PtzControlXml;
+ int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_ReadBrightnessPosition", camera_name, channel_index);
+ MainForm->SendControlCommand(PtzControlXml);
+
+ if(timeout > 0)
+ {
+  RDK::USerStorageXML response;
+  int res=MainForm->WaitServerResponse(cmdId, response, timeout);
+  if(res == 1)
+  {
+   std::string answ;
+   response.Save(answ);
+   ServerAnswerDebug=answ.c_str();
+   response.SelectNodeRoot("RpcResponse/Data/Position");
+   value=response.ReadFloat("Brightness",0.0);
+   return response.ReadInteger("Res", RDK_RPC_UNSUCCESSFULL_DECODING);
+  }
+  else if(res == 0)
+   return RDK_RPC_RESPONSE_NOT_RECIEVED;
+
+  else
+  {
+   return res;
+  }
+ }
+}
+
+
 
 int WINAPI DllEntryPoint(HINSTANCE hinst, unsigned long reason, void* lpReserved)
 {

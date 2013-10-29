@@ -253,6 +253,8 @@ const char* PtzRemoteCall(const char *request, int &return_value)
  }
 
  RpcReturnString[engine_index].clear();
+ response.Create("RpcResponse");
+
  if(cmd == "Ptz_GetCameraNames")
  {
   RpcReturnString[engine_index]=Ptz_GetCameraNames(engine_index);
@@ -447,150 +449,150 @@ const char* PtzRemoteCall(const char *request, int &return_value)
  {
   double pan,tilt,zoom;
   return_value=Ptz_ReadPTZPosition(engine_index,camera.c_str(),pan, tilt, zoom);
-  response.SelectNodeRoot("Data/Position");
+  response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Pan",pan);
   response.WriteFloat("Tilt",tilt);
   response.WriteFloat("Zoom",zoom);
-  response.Save(RpcReturnString[engine_index]);
+//  response.Save(RpcReturnString[engine_index]);
  }
  else
  if(cmd == "Ptz_ReadPTPosition")
  {
   double pan,tilt;
   return_value=Ptz_ReadPTPosition(engine_index,camera.c_str(),pan, tilt);
-  response.SelectNodeRoot("Data/Position");
+  response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Pan",pan);
   response.WriteFloat("Tilt",tilt);
-  response.Save(RpcReturnString[engine_index]);
+//  response.Save(RpcReturnString[engine_index]);
  }
  else
  if(cmd == "Ptz_ReadPanPosition")
  {
   double value;
   return_value=Ptz_ReadPanPosition(engine_index,camera.c_str(),value);
-  response.SelectNodeRoot("Data/Position");
+  response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Pan",value);
-  response.Save(RpcReturnString[engine_index]);
+//  response.Save(RpcReturnString[engine_index]);
  }
  else
  if(cmd == "Ptz_ReadTiltPosition")
  {
   double value;
   return_value=Ptz_ReadTiltPosition(engine_index,camera.c_str(),value);
-  response.SelectNodeRoot("Data/Position");
+  response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Tilt",value);
-  response.Save(RpcReturnString[engine_index]);
+//  response.Save(RpcReturnString[engine_index]);
  }
  else
  if(cmd == "Ptz_ReadZoomPosition")
  {
   double value;
   return_value=Ptz_ReadZoomPosition(engine_index,camera.c_str(),value);
-  response.SelectNodeRoot("Data/Position");
+  response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Zoom",value);
-  response.Save(RpcReturnString[engine_index]);
+//  response.Save(RpcReturnString[engine_index]);
  }
  else
  if(cmd == "Ptz_ReadFocusPosition")
  {
   double value;
   return_value=Ptz_ReadFocusPosition(engine_index,camera.c_str(),value);
-  response.SelectNodeRoot("Data/Position");
+  response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Focus",value);
-  response.Save(RpcReturnString[engine_index]);
+//  response.Save(RpcReturnString[engine_index]);
  }
  else
  if(cmd == "Ptz_ReadIrisPosition")
  {
   double value;
   return_value=Ptz_ReadIrisPosition(engine_index,camera.c_str(),value);
-  response.SelectNodeRoot("Data/Position");
+  response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Iris",value);
-  response.Save(RpcReturnString[engine_index]);
+//  response.Save(RpcReturnString[engine_index]);
  }
  else
  if(cmd == "Ptz_ReadBrightnessPosition")
  {
   double value;
   return_value=Ptz_ReadBrightnessPosition(engine_index,camera.c_str(),value);
-  response.SelectNodeRoot("Data/Position");
+  response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Brightness",value);
-  response.Save(RpcReturnString[engine_index]);
+//  response.Save(RpcReturnString[engine_index]);
  }
  else
  if(cmd == "Ptz_ReadPTZPositionNative")
  {
   double pan,tilt,zoom;
   return_value=Ptz_ReadPTZPositionNative(engine_index,camera.c_str(),pan, tilt, zoom);
-  response.SelectNodeRoot("Data/Position");
+  response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Pan",pan);
   response.WriteFloat("Tilt",tilt);
   response.WriteFloat("Zoom",zoom);
-  response.Save(RpcReturnString[engine_index]);
+//  response.Save(RpcReturnString[engine_index]);
  }
  else
  if(cmd == "Ptz_ReadPTPositionNative")
  {
   double pan,tilt;
   return_value=Ptz_ReadPTPositionNative(engine_index,camera.c_str(),pan, tilt);
-  response.SelectNodeRoot("Data/Position");
+  response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Pan",pan);
   response.WriteFloat("Tilt",tilt);
-  response.Save(RpcReturnString[engine_index]);
+//  response.Save(RpcReturnString[engine_index]);
  }
  else
  if(cmd == "Ptz_ReadPanPositionNative")
  {
   double value;
   return_value=Ptz_ReadPanPositionNative(engine_index,camera.c_str(),value);
-  response.SelectNodeRoot("Data/Position");
+  response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Pan",value);
-  response.Save(RpcReturnString[engine_index]);
+//  response.Save(RpcReturnString[engine_index]);
  }
  else
  if(cmd == "Ptz_ReadTiltPositionNative")
  {
   double value;
   return_value=Ptz_ReadTiltPositionNative(engine_index,camera.c_str(),value);
-  response.SelectNodeRoot("Data/Position");
+  response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Tilt",value);
-  response.Save(RpcReturnString[engine_index]);
+//  response.Save(RpcReturnString[engine_index]);
  }
  else
  if(cmd == "Ptz_ReadZoomPositionNative")
  {
   double value;
   return_value=Ptz_ReadZoomPositionNative(engine_index,camera.c_str(),value);
-  response.SelectNodeRoot("Data/Position");
+  response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Zoom",value);
-  response.Save(RpcReturnString[engine_index]);
+//  response.Save(RpcReturnString[engine_index]);
  }
  else
  if(cmd == "Ptz_ReadFocusPositionNative")
  {
   double value;
   return_value=Ptz_ReadFocusPositionNative(engine_index,camera.c_str(),value);
-  response.SelectNodeRoot("Data/Position");
+  response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Focus",value);
-  response.Save(RpcReturnString[engine_index]);
+//  response.Save(RpcReturnString[engine_index]);
  }
  else
  if(cmd == "Ptz_ReadIrisPositionNative")
  {
   double value;
   return_value=Ptz_ReadIrisPositionNative(engine_index,camera.c_str(),value);
-  response.SelectNodeRoot("Data/Position");
+  response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Iris",value);
-  response.Save(RpcReturnString[engine_index]);
+//  response.Save(RpcReturnString[engine_index]);
  }
  else
  if(cmd == "Ptz_ReadBrightnessPositionNative")
  {
   double value;
   return_value=Ptz_ReadBrightnessPositionNative(engine_index,camera.c_str(),value);
-  response.SelectNodeRoot("Data/Position");
+  response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Brightness",value);
-  response.Save(RpcReturnString[engine_index]);
+//  response.Save(RpcReturnString[engine_index]);
  }
  else
  if(cmd == "Ptz_MovePTZ")
@@ -739,20 +741,14 @@ const char* PtzRemoteCall(const char *request, int &return_value)
   return_value=Ptz_AutoBrightness(engine_index,camera.c_str(),state);
  }
 
- RDK::USerStorageXML result;
-
- result.Create("RpcResponse");
- result.WriteString("Id", xml.ReadString("Id",""));
- result.WriteInteger("Res",return_value);
- if(!RpcReturnString[engine_index].empty() && RpcReturnString[engine_index][0] == '<')
+ response.SelectRoot();
+ response.WriteString("Id", xml.ReadString("Id",""));
+ response.WriteInteger("Res",return_value);
+ if(!RpcReturnString[engine_index].empty())
  {
-  result.LoadToNode(RpcReturnString[engine_index],"Data");
+  response.WriteString("Data",RpcReturnString[engine_index]);
  }
- else
- {
-  result.WriteString("Data",RpcReturnString[engine_index]);
- }
- result.Save(RpcReturnString[engine_index]);
+ response.Save(RpcReturnString[engine_index]);
 
  return RpcReturnString[engine_index].c_str();
 }
