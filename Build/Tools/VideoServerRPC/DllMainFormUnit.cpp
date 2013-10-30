@@ -71,6 +71,8 @@ void __fastcall TEngineThread::Execute(void)
 	SetEvent(PacketReaderUnlockEvent);
    }
   }
+ // else
+ //  Sleep(10);
  // IdTCPClient
 //  if(WaitForSingleObject(CalcEnable,30) == WAIT_TIMEOUT)
 //   continue;
@@ -79,7 +81,7 @@ void __fastcall TEngineThread::Execute(void)
   BeforeCalculate();
   AfterCalculate();
   SetEvent(CalculationNotInProgress);
-  //Sleep(10);
+//  Sleep(1);
  }
 }
 // --------------------------

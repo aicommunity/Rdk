@@ -66,7 +66,7 @@ virtual void AAfterCalculate(void);
 
 // Если force_update == true, то интерфейс обновляется
 // вне зависимости от UpdateInterval
-virtual void UpdateInterface(bool force_update=true);
+virtual void UpdateInterface(bool force_update=false);
 virtual void AUpdateInterface(void);
 
 // Возвращает уникальное имя интерфейса

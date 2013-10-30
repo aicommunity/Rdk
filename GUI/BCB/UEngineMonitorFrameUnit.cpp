@@ -24,12 +24,13 @@ TUEngineMonitorFrame *UEngineMonitorFrame;
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-__fastcall TEngineThread::TEngineThread(int channel_index, bool CreateSuspended)
-: ChannelIndex(channel_index), TThread(CreateSuspended)
+__fastcall TEngineThread::TEngineThread(int channel_index, int calculate_mode, int min_inerval, bool CreateSuspended)
+: ChannelIndex(channel_index), CalculateMode(calculate_mode), MinInterstepsInterval(min_inerval), TThread(CreateSuspended)
 {
  CalcEnable=CreateEvent(0,TRUE,0,0);
  CalcStarted=CreateEvent(0,TRUE,0,0);
  CalculationNotInProgress=CreateEvent(0,TRUE,TRUE,0);
+ RealLastCalculationTime=0;
 }
 
 __fastcall TEngineThread::~TEngineThread(void)
@@ -37,6 +38,48 @@ __fastcall TEngineThread::~TEngineThread(void)
  CloseHandle(CalcStarted);
  CloseHandle(CalcEnable);
  CloseHandle(CalculationNotInProgress);
+}
+// --------------------------
+
+
+// --------------------------
+// Управление параметрами
+// --------------------------
+/// Режим счета
+int TEngineThread::GetCalculateMode(void) const
+{
+ return CalculateMode;
+}
+
+bool TEngineThread::SetCalculateMode(int value)
+{
+ if(CalculateMode == value)
+  return true;
+
+ if(WaitForSingleObject(CalculationNotInProgress,1000) == WAIT_TIMEOUT)
+  return false;
+
+ CalculateMode=value;
+
+ return true;
+}
+
+/// Минимальный интервал времени между итерациями расчета в режиме 0 и 2, мс
+int TEngineThread::GetMinInterstepsInterval(void) const
+{
+ return MinInterstepsInterval;
+}
+
+bool TEngineThread::SetMinInterstepsInterval(int value)
+{
+ if(MinInterstepsInterval == value)
+  return true;
+
+ if(WaitForSingleObject(CalculationNotInProgress,1000) == WAIT_TIMEOUT)
+  return false;
+
+ MinInterstepsInterval=value;
+ return true;
 }
 // --------------------------
 
@@ -96,8 +139,21 @@ void __fastcall TEngineThread::Execute(void)
 //  BeforeCalculate();
   if(WaitForSingleObject(CalcStarted,30) == WAIT_TIMEOUT)
    continue;
-  if(WaitForSingleObject(CalcEnable,30) == WAIT_TIMEOUT)
-   continue;
+  if(CalculateMode == 2)
+  {
+   if(WaitForSingleObject(CalcEnable,30) == WAIT_TIMEOUT)
+	continue;
+  }
+  else
+  if(CalculateMode == 0)
+  {
+   unsigned long long diff=GetTickCount()-RealLastCalculationTime;
+   if(diff<MinInterstepsInterval)
+   {
+	Sleep(MinInterstepsInterval-diff);
+	continue;
+   }
+  }
   ResetEvent(CalcEnable);
   ResetEvent(CalculationNotInProgress);
 //  Synchronize(BeforeCalculate);
@@ -108,6 +164,7 @@ void __fastcall TEngineThread::Execute(void)
    MEnv_Calculate(ChannelIndex,0);
   }
   AfterCalculate();
+  RealLastCalculationTime=GetTickCount();
   //Synchronize(AfterCalculate);
   SetEvent(CalculationNotInProgress);
  }
@@ -121,6 +178,7 @@ __fastcall TUEngineMonitorFrame::TUEngineMonitorFrame(TComponent* Owner)
 {
  CalculateMode.assign(GetNumEngines(),0);
  CalculateSignal.assign(GetNumEngines(),false);
+ MinInterstepsInterval.assign(GetNumEngines(),0);
  AlwaysUpdateFlag=true;
  UpdateInterval=100;
  ChannelsMode=0;
@@ -159,6 +217,15 @@ int TUEngineMonitorFrame::GetCalculateMode(int channel_index) const
 void TUEngineMonitorFrame::SetCalculateMode(int channel_index,int value)
 {
  CalculateMode[channel_index]=value;
+ if(ThreadChannels.size()>channel_index)
+  ThreadChannels[channel_index]->SetCalculateMode(value);
+}
+
+void TUEngineMonitorFrame::SetMinInterstepsInterval(int channel_index, int value)
+{
+ MinInterstepsInterval[channel_index]=value;
+ if(ThreadChannels.size()>channel_index)
+  ThreadChannels[channel_index]->SetMinInterstepsInterval(value);
 }
 
 // Управление временной меткой сервера
@@ -190,12 +257,23 @@ bool TUEngineMonitorFrame::SetNumChannels(int num)
 {
  if(num == int(ThreadChannels.size()))
   return true;
-
+ int old_num=GetNumEngines();
  SetNumEngines(num);
- CalculateMode.resize(num,0);
+ if(old_num>0)
+ {
+  CalculateMode.resize(num,CalculateMode[old_num-1]);
+  MinInterstepsInterval.resize(num,MinInterstepsInterval[old_num-1]);
+ }
+ else
+ {
+  CalculateMode.resize(num,0);
+  MinInterstepsInterval.resize(num,0);
+ }
+
  CalculateSignal.resize(num,false);
  ServerTimeStamp.resize(num,0);
  LastCalculatedServerTimeStamp.resize(num,0);
+ RealLastCalculationTime.resize(num,0);
 
  int old_size=int(ThreadChannels.size());
  for(int i=num;i<old_size;i++)
@@ -209,7 +287,7 @@ bool TUEngineMonitorFrame::SetNumChannels(int num)
  ThreadChannels.resize(num);
  for(int i=old_size;i<num;i++)
  {
-  ThreadChannels[i]=new TEngineThread(i,false);
+  ThreadChannels[i]=new TEngineThread(i,CalculateMode[i],MinInterstepsInterval[i],false);
   ThreadChannels[i]->FreeOnTerminate=false;
  }
 
@@ -347,7 +425,10 @@ void __fastcall TUEngineMonitorFrame::Reset1Click(TObject *Sender)
 
  RDK::UIVisualControllerStorage::BeforeReset();
  for(int i=0;i<GetNumEngines();i++)
+ {
   MEnv_Reset(i,0);
+  RealLastCalculationTime[i]=0;
+ }
  RDK::UIVisualControllerStorage::AfterReset();
  RDK::UIVisualControllerStorage::UpdateInterface();
 }
@@ -373,6 +454,12 @@ void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
 	if(!CalculateSignal[i])
 	 continue;
    }
+   else
+   if(CalculateMode[i] == 0)
+   {
+	if(GetTickCount()-RealLastCalculationTime[i]<MinInterstepsInterval[i])
+	 continue;
+   }
    CalculateSignal[i]=false;
 
    switch(CalculateMode[i])
@@ -391,6 +478,7 @@ void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
    }
    LastCalculatedServerTimeStamp[i]=ServerTimeStamp[i];
    IdTcpResultBroadcasterForm->AddMetadata(i, ServerTimeStamp[i]);
+   RealLastCalculationTime[i]=GetTickCount();
   }
   IdTcpResultBroadcasterForm->SendMetadata();
   RDK::UIVisualControllerStorage::AfterCalculate();

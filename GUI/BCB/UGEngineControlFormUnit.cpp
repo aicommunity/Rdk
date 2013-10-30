@@ -448,9 +448,11 @@ try{
 
  MinInterstepsInterval.resize(GetNumEngines());
  MinInterstepsInterval[0]=ProjectXml.ReadInteger("MinInterstepsInterval",0);
+ UEngineMonitorForm->EngineMonitorFrame->SetMinInterstepsInterval(0,MinInterstepsInterval[0]);
  for(int i=1;i<GetNumEngines();i++)
  {
   MinInterstepsInterval[i]=ProjectXml.ReadInteger(std::string("MinInterstepsInterval_")+RDK::sntoa(i),0);
+  UEngineMonitorForm->EngineMonitorFrame->SetMinInterstepsInterval(i,MinInterstepsInterval[i]);
  }
 
 
