@@ -79,6 +79,7 @@ void __fastcall TEngineThread::Execute(void)
   BeforeCalculate();
   AfterCalculate();
   SetEvent(CalculationNotInProgress);
+  Sleep(10);
  }
 }
 // --------------------------
