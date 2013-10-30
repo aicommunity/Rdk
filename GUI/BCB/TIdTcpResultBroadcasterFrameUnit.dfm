@@ -95,6 +95,8 @@ inherited IdTcpResultBroadcasterFrame: TIdTcpResultBroadcasterFrame
     end
   end
   object IdTCPClient: TIdTCPClient
+    OnDisconnected = IdTCPClientDisconnected
+    OnConnected = IdTCPClientConnected
     ConnectTimeout = 0
     IPVersion = Id_IPv4
     Port = 0

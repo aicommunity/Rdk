@@ -83,9 +83,9 @@ __published:	// IDE-managed Components
 	TIdTCPClient *IdTCPClient;
 	void __fastcall ConnectButtonClick(TObject *Sender);
 	void __fastcall DisconnectButtonClick(TObject *Sender);
-	void __fastcall IdHTTPConnected(TObject *Sender);
-	void __fastcall IdHTTPDisconnected(TObject *Sender);
 	void __fastcall EnableXmlTranslationCheckBoxClick(TObject *Sender);
+	void __fastcall IdTCPClientConnected(TObject *Sender);
+	void __fastcall IdTCPClientDisconnected(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
 	__fastcall TIdTcpResultBroadcasterFrame(TComponent* Owner);

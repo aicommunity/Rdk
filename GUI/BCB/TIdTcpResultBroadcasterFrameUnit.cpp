@@ -28,6 +28,9 @@ __fastcall TTcpResultBroadcasterThread::TTcpResultBroadcasterThread(TIdTcpResult
 
 __fastcall TTcpResultBroadcasterThread::~TTcpResultBroadcasterThread(void)
 {
+ Terminate();
+ WaitForSingleObject(SendNotInProgressEvent,100);
+
  Disconnect();
  if(IdTCPClient)
  {
@@ -69,6 +72,8 @@ bool TTcpResultBroadcasterThread::Init(const std::string &address, int port)
 
 void TTcpResultBroadcasterThread::Connect(void)
 {
+ if(!IdTCPClient)
+  return;
   try
   {
    IdTCPClient->Host=Address.c_str();
@@ -92,6 +97,8 @@ void TTcpResultBroadcasterThread::Connect(void)
 
 void TTcpResultBroadcasterThread::Disconnect(void)
 {
+ if(!IdTCPClient)
+  return;
  if(IdTCPClient)
  {
   try
@@ -177,6 +184,8 @@ __fastcall TIdTcpResultBroadcasterFrame::~TIdTcpResultBroadcasterFrame(void)
  if(Thread)
  {
   Thread->Terminate();
+  WaitForSingleObject(Thread->SendNotInProgressEvent,100);
+
   delete Thread;
   Thread=0;
  }
@@ -383,18 +392,7 @@ void __fastcall TIdTcpResultBroadcasterFrame::DisconnectButtonClick(TObject *Sen
 //---------------------------------------------------------------------------
 
 
-void __fastcall TIdTcpResultBroadcasterFrame::IdHTTPConnected(TObject *Sender)
-{
- ConnectionEstablishedFlag=true;
-}
-//---------------------------------------------------------------------------
 
-void __fastcall TIdTcpResultBroadcasterFrame::IdHTTPDisconnected(TObject *Sender)
-
-{
- ConnectionEstablishedFlag=false;
-}
-//---------------------------------------------------------------------------
 
 void __fastcall TIdTcpResultBroadcasterFrame::EnableXmlTranslationCheckBoxClick(TObject *Sender)
 
@@ -406,6 +404,21 @@ void __fastcall TIdTcpResultBroadcasterFrame::EnableXmlTranslationCheckBoxClick(
   else
    Thread->SetSendEnableFlag(false);
  }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TIdTcpResultBroadcasterFrame::IdTCPClientConnected(TObject *Sender)
+
+{
+ ConnectionEstablishedFlag=true;
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TIdTcpResultBroadcasterFrame::IdTCPClientDisconnected(TObject *Sender)
+
+{
+ ConnectionEstablishedFlag=false;
 }
 //---------------------------------------------------------------------------
 
