@@ -213,11 +213,7 @@ const char* RDK_CALL Ptz_GetCameraNames(int channel_index, int timeout)
    std::string answ;
    response.Save(answ);
    ServerAnswerDebug=answ.c_str();
-   const char* p=(response.ReadString("Data", "")).c_str();
-   if(p != NULL)
-	return p;
-
-   return "";
+   return (response.ReadString("Data", "")).c_str();
   }
   else
   {
@@ -243,11 +239,7 @@ const char* RDK_CALL Ptz_GetCameraTypes(int channel_index, int timeout)
    std::string answ;
    response.Save(answ);
    ServerAnswerDebug=answ.c_str();
-   const char* p=(response.ReadString("Data", "")).c_str();
-   if(p != NULL)
-	return p;
-
-   return "";
+   return response.ReadString("Data", "").c_str();
   }
   else
   {
@@ -273,11 +265,7 @@ const char* RDK_CALL Ptz_GetCameraType(int channel_index, const char* camera_nam
    std::string answ;
    response.Save(answ);
    ServerAnswerDebug=answ.c_str();
-   const char* p=(response.ReadString("Data", "")).c_str();
-   if(p != NULL)
-	return p;
-
-   return "";
+   return response.ReadString("Data", "").c_str();
   }
   else
   {
@@ -420,11 +408,7 @@ const char* Ptz_GetCameraParameter(int channel_index, const char* camera_name, c
    std::string answ;
    response.Save(answ);
    ServerAnswerDebug=answ.c_str();
-   const char* p=(response.ReadString("Data", "")).c_str();
-   if(p != NULL)
-	return p;
-
-   return "";
+   return response.ReadString("Data", "").c_str();
   }
   else
   {
@@ -450,11 +434,7 @@ const char* Ptz_GetImplementedCommands(int channel_index, const char* camera_nam
    std::string answ;
    response.Save(answ);
    ServerAnswerDebug=answ.c_str();
-   const char* p=(response.ReadString("Data", "")).c_str();
-   if(p != NULL)
-	return p;
-
-   return "";
+   return response.ReadString("Data", "").c_str();
   }
   else
   {
@@ -574,11 +554,7 @@ const char* RDK_CALL Ptz_GetImplementedMoveParamsList(int channel_index, const c
    std::string answ;
    response.Save(answ);
    ServerAnswerDebug=answ.c_str();
-   const char* p=(response.ReadString("Data", "")).c_str();
-   if(p != NULL)
-	return p;
-
-   return "";
+   return response.ReadString("Data", "").c_str();
   }
   else
   {
