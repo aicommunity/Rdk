@@ -24,6 +24,15 @@ protected: // Параметры
 /// Индекс канала в библиотеке аналитики, управляемый тредом
 int ChannelIndex;
 
+/// Режим счета
+int CalculateMode;
+
+/// Минимальный интервал времени между итерациями расчета в режиме 0 и 2, мс
+int MinInterstepsInterval;
+
+/// Метка реального времени окончания последнего расчета
+unsigned long long RealLastCalculationTime;
+
 public:
 HANDLE CalcEnable;
 
@@ -38,9 +47,22 @@ public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-__fastcall TEngineThread(int channel_index, bool CreateSuspended);
+__fastcall TEngineThread(int channel_index, int calculate_mode, int min_inerval, bool CreateSuspended);
 virtual __fastcall ~TEngineThread(void);
 // --------------------------
+
+// --------------------------
+// Управление параметрами
+// --------------------------
+/// Режим счета
+int GetCalculateMode(void) const;
+bool SetCalculateMode(int value);
+
+/// Минимальный интервал времени между итерациями расчета в режиме 0 и 2, мс
+int GetMinInterstepsInterval(void) const;
+bool SetMinInterstepsInterval(int value);
+// --------------------------
+
 
 // --------------------------
 // Управление потоком
@@ -99,6 +121,9 @@ std::vector<int> CalculateMode;
 // Временная метка последнего расчета
 std::vector<long long> LastCalculatedServerTimeStamp;
 
+/// Минимальный интервал времени между итерациями расчета в режиме 0 и 2, мс
+std::vector<int> MinInterstepsInterval;
+
 protected:
 
 // Сигнал, выставляемый при необходимости расчета
@@ -111,6 +136,8 @@ std::vector<long long> ServerTimeStamp;
 /// Потоки запуска многоканальной аналитики
 std::vector<TEngineThread*> ThreadChannels;
 
+/// Метка реального времени окончания последнего расчета в однопоточном режиме
+std::vector<unsigned long long> RealLastCalculationTime;
 
 public:
 /// Управление режимом работы
@@ -122,6 +149,8 @@ void SetChannelsMode(int mode);
 // Управление режимом расчетов
 int GetCalculateMode(int channel_index) const;
 void SetCalculateMode(int channel_index, int value);
+
+void SetMinInterstepsInterval(int channel_index, int value);
 
 // Управление временной меткой сервера
 long long GetServerTimeStamp(int channel_index) const;

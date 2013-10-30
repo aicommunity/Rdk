@@ -236,7 +236,7 @@ bool ReflectionFlag;
 // Режим счета
 std::vector<int> CalculationMode;
 
-/// Минимальный интервал между итерациями счета
+/// Минимальный интервал между итерациями счета, мс
 std::vector<long long> MinInterstepsInterval;
 
 // Список специальных форм (не имеющих компонента управления в модели)
