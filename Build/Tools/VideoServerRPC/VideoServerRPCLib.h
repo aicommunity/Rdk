@@ -1,6 +1,8 @@
 #ifndef VIDEO_SERVER_RPC_LIB_H
 #define VIDEO_SERVER_RPC_LIB_H
 
+#define RDK_RPC_CLIENT_NOT_CONNECTED 9999
+#define RDK_RPC_LIBRARY_NOT_INIT 100000
 #define RDK_RPC_RESPONSE_RECEIVE_TIMEOUT 10000
 #define RDK_RPC_PACKET_READER_ACCESS_TIMEOUT 1000
 #define RDK_RPC_RESPONSE_NOT_RECIEVED 100
@@ -30,6 +32,9 @@ extern "C"  {
 #else
 typedef int bool;
 #endif
+
+/// Проверка состояния IdTCPClient
+RDK_LIB_TYPE bool RDK_CALL Rpc_IsClientConnected(void);
 
 /// Управление параметрами
 RDK_LIB_TYPE const char* RDK_CALL Rpc_GetServerAnswerDebug(void);

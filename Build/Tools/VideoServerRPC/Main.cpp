@@ -27,6 +27,15 @@
 
 TDllMainForm *MainForm=0;
 
+bool RDK_CALL Rpc_IsClientConnected(void)
+{
+ if(MainForm)
+ {
+  return MainForm->IdTCPClient->Connected();
+ }
+
+ return false;
+}
 //----------------------------------------------------
 const char* ServerAnswerDebug=NULL;
 
@@ -94,6 +103,12 @@ int RDK_CALL Rpc_Disconnect(void)
 
 int RDK_CALL Rpc_StartChannel(int channel_index, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+  
  RDK::USerStorageXML xml;
  int cmdId=MainForm->PrepareCommandXml(xml, "StartChannel", channel_index);
  MainForm->SendControlCommand(xml);
@@ -121,6 +136,12 @@ int RDK_CALL Rpc_StartChannel(int channel_index, int timeout)
 
 int RDK_CALL Rpc_ResetChannel(int channel_index, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+	
  RDK::USerStorageXML xml;
  int cmdId=MainForm->PrepareCommandXml(xml, "ResetChannel", channel_index);
  MainForm->SendControlCommand(xml);
@@ -148,6 +169,12 @@ int RDK_CALL Rpc_ResetChannel(int channel_index, int timeout)
 
 int RDK_CALL Rpc_StopChannel(int channel_index, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+	
  RDK::USerStorageXML xml;
  int cmdId=MainForm->PrepareCommandXml(xml, "StopChannel", channel_index);
  MainForm->SendControlCommand(xml);
@@ -175,6 +202,12 @@ int RDK_CALL Rpc_StopChannel(int channel_index, int timeout)
 
 int RDK_CALL Rpc_GetNumChannels(int channel_index, int timeout)
 {
+ if(!MainForm)
+  return 0;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return 0;
+	
  RDK::USerStorageXML xml;
  int cmdId=MainForm->PrepareCommandXml(xml, "GetNumChannels", channel_index);
  MainForm->SendControlCommand(xml);
@@ -200,6 +233,12 @@ int RDK_CALL Rpc_GetNumChannels(int channel_index, int timeout)
 /// Возвращает список текущих камер в виде строки разделяемой ','
 const char* RDK_CALL Ptz_GetCameraNames(int channel_index, int timeout)
 {
+ if(!MainForm)
+  return 0;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return 0;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PrepareCommandXml(PtzControlXml, "Ptz_GetCameraNames", channel_index);
  MainForm->SendControlCommand(PtzControlXml);
@@ -226,6 +265,12 @@ const char* RDK_CALL Ptz_GetCameraNames(int channel_index, int timeout)
 /// Возвращает список доступных типов (классов) камер в виде строки разделяемой ','
 const char* RDK_CALL Ptz_GetCameraTypes(int channel_index, int timeout)
 {
+ if(!MainForm)
+  return 0;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return 0;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PrepareCommandXml(PtzControlXml, "Ptz_GetCameraTypes", channel_index);
  MainForm->SendControlCommand(PtzControlXml);
@@ -252,6 +297,12 @@ const char* RDK_CALL Ptz_GetCameraTypes(int channel_index, int timeout)
 /// Возвращает тип (класс) камеры по имени
 const char* RDK_CALL Ptz_GetCameraType(int channel_index, const char* camera_name, int timeout)
 {
+ if(!MainForm)
+  return 0;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return 0;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_GetCameraType", camera_name, channel_index);
  MainForm->SendControlCommand(PtzControlXml);
@@ -279,6 +330,12 @@ const char* RDK_CALL Ptz_GetCameraType(int channel_index, const char* camera_nam
 /// Инициализирует камеру с новым именем camera_name создавая управление типа camera_type
 int RDK_CALL Ptz_AddCamera(int channel_index, const char* camera_name, const char* camera_type, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_AddCamera", camera_name, channel_index);
  PtzControlXml.WriteString("CameraType", camera_type);
@@ -308,6 +365,12 @@ int RDK_CALL Ptz_AddCamera(int channel_index, const char* camera_name, const cha
 /// Удаляет камеру
 int RDK_CALL Ptz_DelCamera(int channel_index, const char* camera_name, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_DelCamera", camera_name, channel_index);
  MainForm->SendControlCommand(PtzControlXml);
@@ -336,6 +399,12 @@ int RDK_CALL Ptz_DelCamera(int channel_index, const char* camera_name, int timeo
 /// Удаляет все камеры
 int RDK_CALL Ptz_DelAllCameras(int channel_index, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PrepareCommandXml(PtzControlXml, "Ptz_DelAllCameras", channel_index);
  MainForm->SendControlCommand(PtzControlXml);
@@ -364,6 +433,12 @@ int RDK_CALL Ptz_DelAllCameras(int channel_index, int timeout)
 /// Задает значение параметра компонента управления камерой
 int RDK_CALL Ptz_SetCameraParameter(int channel_index, const char* camera_name, const char* param_name, const char* param_value, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_SetCameraParameter", camera_name, channel_index);
  PtzControlXml.WriteString("Parameter", param_name);
@@ -394,6 +469,12 @@ int RDK_CALL Ptz_SetCameraParameter(int channel_index, const char* camera_name, 
 /// Считывает значение параметра компонента управления камерой
 const char* Ptz_GetCameraParameter(int channel_index, const char* camera_name, const char* param_name, int timeout)
 {
+ if(!MainForm)
+  return 0;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return 0;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_GetCameraParameter", camera_name, channel_index);
  PtzControlXml.WriteString("Parameter", param_name);
@@ -421,6 +502,12 @@ const char* Ptz_GetCameraParameter(int channel_index, const char* camera_name, c
 /// Возвращает список поддерживаемых команд в виде списка, разделенного ','
 const char* Ptz_GetImplementedCommands(int channel_index, const char* camera_name, int timeout)
 {
+ if(!MainForm)
+  return 0;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return 0;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_GetImplementedCommands", camera_name, channel_index);
  MainForm->SendControlCommand(PtzControlXml);
@@ -451,6 +538,12 @@ const char* Ptz_GetImplementedCommands(int channel_index, const char* camera_nam
 /// Выполняет действия по подключению к физической камере
 int RDK_CALL Ptz_CameraConnect(int channel_index, const char* camera_name, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_CameraConnect", camera_name, channel_index);
  MainForm->SendControlCommand(PtzControlXml);
@@ -479,6 +572,12 @@ int RDK_CALL Ptz_CameraConnect(int channel_index, const char* camera_name, int t
 /// Выполняет действия по отключению от физической камеры
 int RDK_CALL Ptz_CameraDisconnect(int channel_index, const char* camera_name, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_CameraDisconnect", camera_name, channel_index);
  MainForm->SendControlCommand(PtzControlXml);
@@ -508,6 +607,12 @@ int RDK_CALL Ptz_CameraDisconnect(int channel_index, const char* camera_name, in
 //RDK_LIB_TYPE bool RDK_CALL Ptz_IsCmdImplementedById(int channel_index, const char* camera_name, int cmd);
 bool RDK_CALL Ptz_IsCmdImplemented(int channel_index, const char* camera_name, const char* cmd, int timeout)
 {
+ if(!MainForm)
+  return false;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return false;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_IsCmdImplemented", camera_name, channel_index);
  PtzControlXml.WriteString("CommandName", cmd);
@@ -541,6 +646,12 @@ bool RDK_CALL Ptz_IsCmdImplemented(int channel_index, const char* camera_name, c
 /// Возвращает список поддерживаемых параметров, разделенных запятой
 const char* RDK_CALL Ptz_GetImplementedMoveParamsList(int channel_index, const char* camera_name, int timeout)
 {
+ if(!MainForm)
+  return 0;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return 0;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_GetImplementedMoveParamsList", camera_name, channel_index);
  MainForm->SendControlCommand(PtzControlXml);
@@ -567,6 +678,12 @@ const char* RDK_CALL Ptz_GetImplementedMoveParamsList(int channel_index, const c
 /// Возвращает true если параметр поддерживается
 bool RDK_CALL Ptz_IsMoveParamImplemented(int channel_index, const char* camera_name, const char *param_name, int timeout)
 {
+ if(!MainForm)
+  return false;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return false;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_IsMoveParamImplemented", camera_name, channel_index);
  PtzControlXml.WriteString("ParamName", param_name);
@@ -593,6 +710,12 @@ bool RDK_CALL Ptz_IsMoveParamImplemented(int channel_index, const char* camera_n
 
 bool RDK_CALL Ptz_SetMoveParamImplemented(int channel_index, const char* camera_name, const char *param_name, bool value, int timeout)
 {
+ if(!MainForm)
+  return false;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return false;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_SetMoveParamImplemented", camera_name, channel_index);
  PtzControlXml.WriteString("ParamName", param_name);
@@ -621,6 +744,12 @@ bool RDK_CALL Ptz_SetMoveParamImplemented(int channel_index, const char* camera_
 /// Возвращает true если параметр поддерживается
 double RDK_CALL Ptz_GetMoveParamMinNativeValue(int channel_index, const char* camera_name, const char *param_name, int timeout)
 {
+ if(!MainForm)
+  return 0.0;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return 0.0;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_GetMoveParamMinNativeValue", camera_name, channel_index);
  PtzControlXml.WriteString("ParamName", param_name);
@@ -647,6 +776,12 @@ double RDK_CALL Ptz_GetMoveParamMinNativeValue(int channel_index, const char* ca
 
 bool RDK_CALL Ptz_SetMoveParamMinNativeValue(int channel_index, const char* camera_name, const char *param_name, double value, int timeout)
 {
+ if(!MainForm)
+  return false;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return false;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_SetMoveParamMinNativeValue", camera_name, channel_index);
  PtzControlXml.WriteString("ParamName", param_name);
@@ -675,6 +810,12 @@ bool RDK_CALL Ptz_SetMoveParamMinNativeValue(int channel_index, const char* came
 /// Максимальное "родное" значение параметра
 double RDK_CALL Ptz_GetMoveParamMaxNativeValue(int channel_index, const char* camera_name, const char *param_name, int timeout)
 {
+ if(!MainForm)
+  return 0.0;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return 0.0;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_GetMoveParamMaxNativeValue", camera_name, channel_index);
  PtzControlXml.WriteString("ParamName", param_name);
@@ -701,6 +842,12 @@ double RDK_CALL Ptz_GetMoveParamMaxNativeValue(int channel_index, const char* ca
 
 bool RDK_CALL Ptz_SetMoveParamMaxNativeValue(int channel_index, const char* camera_name, const char *param_name, double value, int timeout)
 {
+ if(!MainForm)
+  return false;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return false;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_SetMoveParamMaxNativeValue", camera_name, channel_index);
  PtzControlXml.WriteString("ParamName", param_name);
@@ -729,6 +876,12 @@ bool RDK_CALL Ptz_SetMoveParamMaxNativeValue(int channel_index, const char* came
 /// Минимальное общепринятое значение параметра
 double RDK_CALL Ptz_GetMoveParamMinValue(int channel_index, const char* camera_name, const char *param_name, int timeout)
 {
+ if(!MainForm)
+  return 0.0;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return 0.0;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_GetMoveParamMinValue", camera_name, channel_index);
  PtzControlXml.WriteString("ParamName", param_name);
@@ -755,6 +908,12 @@ double RDK_CALL Ptz_GetMoveParamMinValue(int channel_index, const char* camera_n
 
 bool RDK_CALL Ptz_SetMoveParamMinValue(int channel_index, const char* camera_name, const char *param_name, double value, int timeout)
 {
+ if(!MainForm)
+  return false;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return false;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_SetMoveParamMinValue", camera_name, channel_index);
  PtzControlXml.WriteString("ParamName", param_name);
@@ -783,6 +942,12 @@ bool RDK_CALL Ptz_SetMoveParamMinValue(int channel_index, const char* camera_nam
 /// Максимальное общепринятое значение параметра
 double RDK_CALL Ptz_GetMoveParamMaxValue(int channel_index, const char* camera_name, const char *param_name, int timeout)
 {
+ if(!MainForm)
+  return 0.0;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return 0.0;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_GetMoveParamMaxValue", camera_name, channel_index);
  PtzControlXml.WriteString("ParamName", param_name);
@@ -809,6 +974,12 @@ double RDK_CALL Ptz_GetMoveParamMaxValue(int channel_index, const char* camera_n
 
 bool RDK_CALL Ptz_SetMoveParamMaxValue(int channel_index, const char* camera_name, const char *param_name, double value, int timeout)
 {
+ if(!MainForm)
+  return false;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return false;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_SetMoveParamMaxValue", camera_name, channel_index);
  PtzControlXml.WriteString("ParamName", param_name);
@@ -840,6 +1011,12 @@ bool RDK_CALL Ptz_SetMoveParamMaxValue(int channel_index, const char* camera_nam
 /// Прекращает текущее движение камеры.
 int RDK_CALL Ptz_Stop(int channel_index, const char* camera_name, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_Stop", camera_name, channel_index);
  MainForm->SendControlCommand(PtzControlXml);
@@ -868,6 +1045,12 @@ int RDK_CALL Ptz_Stop(int channel_index, const char* camera_name, int timeout)
 /// Возвращает камеру в начальное положение.
 int RDK_CALL Ptz_GotoHome(int channel_index, const char* camera_name, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_GotoHome", camera_name, channel_index);
  MainForm->SendControlCommand(PtzControlXml);
@@ -896,6 +1079,12 @@ int RDK_CALL Ptz_GotoHome(int channel_index, const char* camera_name, int timeou
 /// Запоминает текущее положение камеры как некоторое предустановленное.
 int RDK_CALL Ptz_PresetPoint(int channel_index, const char* camera_name, int i, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_PresetPoint", camera_name, channel_index);
  PtzControlXml.WriteInteger("Point", i);
@@ -925,6 +1114,12 @@ int RDK_CALL Ptz_PresetPoint(int channel_index, const char* camera_name, int i, 
 /// Перемещает камеру в предустановленное положение.
 int RDK_CALL Ptz_GotoPoint(int channel_index, const char* camera_name, int i, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_GotoPoint", camera_name, channel_index);
  PtzControlXml.WriteInteger("Point", i);
@@ -954,6 +1149,12 @@ int RDK_CALL Ptz_GotoPoint(int channel_index, const char* camera_name, int i, in
 /// Удаляет сохраненное предустановленное положение
 int RDK_CALL Ptz_RemovePoint(int channel_index, const char* camera_name, int i, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_RemovePoint", camera_name, channel_index);
  PtzControlXml.WriteInteger("Point", i);
@@ -988,6 +1189,12 @@ int RDK_CALL Ptz_RemovePoint(int channel_index, const char* camera_name, int i, 
 /// скоростями соответственно pan_speed, tilt_speed, zoom_speed, если камера поддерживает такой режим.
 int RDK_CALL Ptz_MovePTZ(int channel_index, const char* camera_name, double pan_speed, double tilt_speed, double zoom_speed, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_MovePTZ", camera_name, channel_index);
  PtzControlXml.WriteFloat("PanSpeed", pan_speed);
@@ -1020,6 +1227,12 @@ int RDK_CALL Ptz_MovePTZ(int channel_index, const char* camera_name, double pan_
 /// скоростями соответственно pan_speed, tilt_speed, zoom_speed, если камера поддерживает такой режим.
 int RDK_CALL Ptz_MovePT(int channel_index, const char* camera_name, double pan_speed, double tilt_speed, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_MovePT", camera_name, channel_index);
  PtzControlXml.WriteFloat("PanSpeed", pan_speed);
@@ -1051,6 +1264,12 @@ int RDK_CALL Ptz_MovePT(int channel_index, const char* camera_name, double pan_s
 /// (здесь предполагается, что speed >=0).
 int RDK_CALL Ptz_MoveDirection(int channel_index, const char* camera_name, TPtzDirection direction, double speed, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_MoveDirection", camera_name, channel_index);
  PtzControlXml.WriteFloat("Speed", speed);
@@ -1081,6 +1300,12 @@ int RDK_CALL Ptz_MoveDirection(int channel_index, const char* camera_name, TPtzD
 /// Перемещает камеру по горизонтальной оси с скоростью speed.
 int RDK_CALL Ptz_MovePan(int channel_index, const char* camera_name, double speed, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_MovePan", camera_name, channel_index);
  PtzControlXml.WriteFloat("Speed", speed);
@@ -1110,6 +1335,12 @@ int RDK_CALL Ptz_MovePan(int channel_index, const char* camera_name, double spee
 /// Перемещает камеру по вертикальной оси с скоростью speed.
 int RDK_CALL Ptz_MoveTilt(int channel_index, const char* camera_name, double speed, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_MoveTilt", camera_name, channel_index);
  PtzControlXml.WriteFloat("Speed", speed);
@@ -1139,6 +1370,12 @@ int RDK_CALL Ptz_MoveTilt(int channel_index, const char* camera_name, double spe
 /// Изменение поля зрения камеры  с скоростью speed.
 int RDK_CALL Ptz_MoveZoom(int channel_index, const char* camera_name, double speed, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_MoveZoom", camera_name, channel_index);
  PtzControlXml.WriteFloat("Speed", speed);
@@ -1168,6 +1405,12 @@ int RDK_CALL Ptz_MoveZoom(int channel_index, const char* camera_name, double spe
 /// Изменение фокусировки камеры  с скоростью speed.
 int RDK_CALL Ptz_MoveFocus(int channel_index, const char* camera_name, double speed, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_MoveFocus", camera_name, channel_index);
  PtzControlXml.WriteFloat("Speed", speed);
@@ -1197,6 +1440,12 @@ int RDK_CALL Ptz_MoveFocus(int channel_index, const char* camera_name, double sp
 /// Изменение величины диафрагмы камеры  с скоростью speed.
 int RDK_CALL Ptz_MoveIris(int channel_index, const char* camera_name, double speed, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_MoveIris", camera_name, channel_index);
  PtzControlXml.WriteFloat("Speed", speed);
@@ -1226,6 +1475,12 @@ int RDK_CALL Ptz_MoveIris(int channel_index, const char* camera_name, double spe
 /// Изменение величины к-та усиления камеры  с скоростью speed.
 int RDK_CALL Ptz_MoveBrightness(int channel_index, const char* camera_name, double speed, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_MoveBrightness", camera_name, channel_index);
  PtzControlXml.WriteFloat("Speed", speed);
@@ -1258,6 +1513,12 @@ int RDK_CALL Ptz_MoveBrightness(int channel_index, const char* camera_name, doub
 // ---------------------
 int RDK_CALL Ptz_MovePTZNative(int channel_index, const char* camera_name, double pan_speed, double tilt_speed, double zoom_speed, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_MovePTZNative", camera_name, channel_index);
  PtzControlXml.WriteFloat("PanSpeed", pan_speed);
@@ -1288,6 +1549,12 @@ int RDK_CALL Ptz_MovePTZNative(int channel_index, const char* camera_name, doubl
 
 int RDK_CALL Ptz_MovePTNative(int channel_index, const char* camera_name, double pan_speed, double tilt_speed, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_MovePTNative", camera_name, channel_index);
  PtzControlXml.WriteFloat("PanSpeed", pan_speed);
@@ -1317,6 +1584,12 @@ int RDK_CALL Ptz_MovePTNative(int channel_index, const char* camera_name, double
 
 int RDK_CALL Ptz_MoveDirectionNative(int channel_index, const char* camera_name, TPtzDirection direction, double speed, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_MoveDirectionNative", camera_name, channel_index);
  PtzControlXml.WriteFloat("Speed", speed);
@@ -1346,6 +1619,12 @@ int RDK_CALL Ptz_MoveDirectionNative(int channel_index, const char* camera_name,
 
 int RDK_CALL Ptz_MovePanNative(int channel_index, const char* camera_name, double speed, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_MovePanNative", camera_name, channel_index);
  PtzControlXml.WriteFloat("Speed", speed);
@@ -1374,6 +1653,12 @@ int RDK_CALL Ptz_MovePanNative(int channel_index, const char* camera_name, doubl
 
 int RDK_CALL Ptz_MoveTiltNative(int channel_index, const char* camera_name, double speed, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_MoveTiltNative", camera_name, channel_index);
  PtzControlXml.WriteFloat("Speed", speed);
@@ -1402,6 +1687,12 @@ int RDK_CALL Ptz_MoveTiltNative(int channel_index, const char* camera_name, doub
 
 int RDK_CALL Ptz_MoveZoomNative(int channel_index, const char* camera_name, double speed, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_MoveZoomNative", camera_name, channel_index);
  PtzControlXml.WriteFloat("Speed", speed);
@@ -1430,6 +1721,12 @@ int RDK_CALL Ptz_MoveZoomNative(int channel_index, const char* camera_name, doub
 
 int RDK_CALL Ptz_MoveFocusNative(int channel_index, const char* camera_name, double speed, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_MoveFocusNative", camera_name, channel_index);
  PtzControlXml.WriteFloat("Speed", speed);
@@ -1458,6 +1755,12 @@ int RDK_CALL Ptz_MoveFocusNative(int channel_index, const char* camera_name, dou
 
 int RDK_CALL Ptz_MoveIrisNative(int channel_index, const char* camera_name, double speed, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_MoveIrisNative", camera_name, channel_index);
  PtzControlXml.WriteFloat("Speed", speed);
@@ -1486,6 +1789,12 @@ int RDK_CALL Ptz_MoveIrisNative(int channel_index, const char* camera_name, doub
 
 int RDK_CALL Ptz_MoveBrightnessNative(int channel_index, const char* camera_name, double speed, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+ 
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+   
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_MoveBrightnessNative", camera_name, channel_index);
  PtzControlXml.WriteFloat("Speed", speed);
@@ -1516,6 +1825,12 @@ int RDK_CALL Ptz_MoveBrightnessNative(int channel_index, const char* camera_name
 // ---------------------
 int RDK_CALL Ptz_ReadPTZPosition(int channel_index, const char* camera_name, double &pan, double &tilt, double &zoom, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+ 
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+   
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_ReadPTZPosition", camera_name, channel_index);
  MainForm->SendControlCommand(PtzControlXml);
@@ -1547,6 +1862,12 @@ int RDK_CALL Ptz_ReadPTZPosition(int channel_index, const char* camera_name, dou
 
 int RDK_CALL Ptz_ReadPTPosition(int channel_index, const char* camera_name, double &pan, double &tilt, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+ 
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+   
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_ReadPTPosition", camera_name, channel_index);
  MainForm->SendControlCommand(PtzControlXml);
@@ -1577,6 +1898,12 @@ int RDK_CALL Ptz_ReadPTPosition(int channel_index, const char* camera_name, doub
 
 int RDK_CALL Ptz_ReadPanPosition(int channel_index, const char* camera_name, double &value, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+ 
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+   
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_ReadPanPosition", camera_name, channel_index);
  MainForm->SendControlCommand(PtzControlXml);
@@ -1606,6 +1933,12 @@ int RDK_CALL Ptz_ReadPanPosition(int channel_index, const char* camera_name, dou
 
 int RDK_CALL Ptz_ReadTiltPosition(int channel_index, const char* camera_name, double &value, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+ 
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+   
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_ReadTiltPosition", camera_name, channel_index);
  MainForm->SendControlCommand(PtzControlXml);
@@ -1635,6 +1968,12 @@ int RDK_CALL Ptz_ReadTiltPosition(int channel_index, const char* camera_name, do
 
 int RDK_CALL Ptz_ReadZoomPosition(int channel_index, const char* camera_name, double &value, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+	
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_ReadZoomPosition", camera_name, channel_index);
  MainForm->SendControlCommand(PtzControlXml);
@@ -1664,6 +2003,12 @@ int RDK_CALL Ptz_ReadZoomPosition(int channel_index, const char* camera_name, do
 
 int RDK_CALL Ptz_ReadFocusPosition(int channel_index, const char* camera_name, double &value, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+ 
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+   
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_ReadFocusPosition", camera_name, channel_index);
  MainForm->SendControlCommand(PtzControlXml);
@@ -1693,6 +2038,12 @@ int RDK_CALL Ptz_ReadFocusPosition(int channel_index, const char* camera_name, d
 
 int RDK_CALL Ptz_ReadIrisPosition(int channel_index, const char* camera_name, double &value, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+ 
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+   
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_ReadIrisPosition", camera_name, channel_index);
  MainForm->SendControlCommand(PtzControlXml);
@@ -1722,6 +2073,12 @@ int RDK_CALL Ptz_ReadIrisPosition(int channel_index, const char* camera_name, do
 
 int RDK_CALL Ptz_ReadBrightnessPosition(int channel_index, const char* camera_name, double &value, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+ 
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+   
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_ReadBrightnessPosition", camera_name, channel_index);
  MainForm->SendControlCommand(PtzControlXml);
@@ -1748,12 +2105,17 @@ int RDK_CALL Ptz_ReadBrightnessPosition(int channel_index, const char* camera_na
   }
  }
 }
-
 // ---------------------
 // Функции считывания состояния камеры в родных для камеры величинах
 // ---------------------
 int RDK_CALL Ptz_ReadPTZPositionNative(int channel_index, const char* camera_name, double &pan, double &tilt, double &zoom, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+  
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+  
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_ReadPTZPositionNative", camera_name, channel_index);
  MainForm->SendControlCommand(PtzControlXml);
@@ -1785,6 +2147,12 @@ int RDK_CALL Ptz_ReadPTZPositionNative(int channel_index, const char* camera_nam
 
 int RDK_CALL Ptz_ReadPTPositionNative(int channel_index, const char* camera_name, double &pan, double &tilt, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+ 
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+   
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_ReadPTPositionNative", camera_name, channel_index);
  MainForm->SendControlCommand(PtzControlXml);
@@ -1815,6 +2183,12 @@ int RDK_CALL Ptz_ReadPTPositionNative(int channel_index, const char* camera_name
 
 int RDK_CALL Ptz_ReadPanPositionNative(int channel_index, const char* camera_name, double &value, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+  
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+  
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_ReadPanPositionNative", camera_name, channel_index);
  MainForm->SendControlCommand(PtzControlXml);
@@ -1844,6 +2218,12 @@ int RDK_CALL Ptz_ReadPanPositionNative(int channel_index, const char* camera_nam
 
 int RDK_CALL Ptz_ReadTiltPositionNative(int channel_index, const char* camera_name, double &value, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+  
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+  
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_ReadTiltPositionNative", camera_name, channel_index);
  MainForm->SendControlCommand(PtzControlXml);
@@ -1873,6 +2253,12 @@ int RDK_CALL Ptz_ReadTiltPositionNative(int channel_index, const char* camera_na
 
 int RDK_CALL Ptz_ReadZoomPositionNative(int channel_index, const char* camera_name, double &value, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+ 
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+   
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_ReadZoomPositionNative", camera_name, channel_index);
  MainForm->SendControlCommand(PtzControlXml);
@@ -1902,6 +2288,12 @@ int RDK_CALL Ptz_ReadZoomPositionNative(int channel_index, const char* camera_na
 
 int RDK_CALL Ptz_ReadFocusPositionNative(int channel_index, const char* camera_name, double &value, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+  
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+  
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_ReadFocusPositionNative", camera_name, channel_index);
  MainForm->SendControlCommand(PtzControlXml);
@@ -1931,6 +2323,12 @@ int RDK_CALL Ptz_ReadFocusPositionNative(int channel_index, const char* camera_n
 
 int RDK_CALL Ptz_ReadIrisPositionNative(int channel_index, const char* camera_name, double &value, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+ 
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+   
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_ReadIrisPositionNative", camera_name, channel_index);
  MainForm->SendControlCommand(PtzControlXml);
@@ -1960,6 +2358,12 @@ int RDK_CALL Ptz_ReadIrisPositionNative(int channel_index, const char* camera_na
 
 int RDK_CALL Ptz_ReadBrightnessPositionNative(int channel_index, const char* camera_name, double &value, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+ 
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+   
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_ReadBrightnessPositionNative", camera_name, channel_index);
  MainForm->SendControlCommand(PtzControlXml);
@@ -1997,6 +2401,12 @@ int RDK_CALL Ptz_ReadBrightnessPositionNative(int channel_index, const char* cam
 /// Дворники
 int RDK_CALL Ptz_Rain(int channel_index, const char* camera_name, double value, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+ 
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+   
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_Rain", camera_name, channel_index);
  PtzControlXml.WriteFloat("State", value);
@@ -2026,6 +2436,12 @@ int RDK_CALL Ptz_Rain(int channel_index, const char* camera_name, double value, 
 /// Подсветка
 int RDK_CALL Ptz_Light(int channel_index, const char* camera_name, double value, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+ 
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+   
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_Light", camera_name, channel_index);
  PtzControlXml.WriteFloat("State", value);
@@ -2055,6 +2471,12 @@ int RDK_CALL Ptz_Light(int channel_index, const char* camera_name, double value,
 /// Автофокусировка
 int RDK_CALL Ptz_AutoFocus(int channel_index, const char* camera_name, double value, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+ 
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+   
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_AutoFocus", camera_name, channel_index);
  PtzControlXml.WriteFloat("State", value);
@@ -2084,6 +2506,12 @@ int RDK_CALL Ptz_AutoFocus(int channel_index, const char* camera_name, double va
 /// Автодиафрагма
 int RDK_CALL Ptz_AutoIris(int channel_index, const char* camera_name, double value, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+ 
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+   
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_AutoIris", camera_name, channel_index);
  PtzControlXml.WriteFloat("State", value);
@@ -2113,6 +2541,12 @@ int RDK_CALL Ptz_AutoIris(int channel_index, const char* camera_name, double val
 /// Автоподстройка к-та усиления
 int RDK_CALL Ptz_AutoBrightness(int channel_index, const char* camera_name, double value, int timeout)
 {
+ if(!MainForm)
+  return RDK_RPC_LIBRARY_NOT_INIT;
+ 
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+   
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_AutoBrightness", camera_name, channel_index);
  PtzControlXml.WriteFloat("State", value);
