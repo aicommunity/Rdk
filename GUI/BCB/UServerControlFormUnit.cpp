@@ -81,6 +81,10 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
  }
 
  ControlResponseString.clear();
+ RDK::USerStorageXML result;
+
+ result.Create("RpcResponse");
+ result.WriteString("Id", xml.ReadString("Id",""));
  if(cmd == "SetNumChannels")
  {
   int num_engines=xml.ReadInteger("NumChannels",GetNumEngines());
@@ -92,6 +96,7 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
   ControlResponseString=RDK::sntoa(GetNumChannels());
   return_value=0;
  }
+ else
  if(cmd == "GetChannelName")
  {
   ControlResponseString=GetChannelName(engine_index);
@@ -143,11 +148,9 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
    return_value=LoadProject(engine_index,file_name);
   }
  }
+ else
+  return_value=2001;
 
- RDK::USerStorageXML result;
-
- result.Create("RpcResponse");
- result.WriteString("Id", xml.ReadString("Id",""));
  result.WriteString("Data",ControlResponseString);
  result.WriteInteger("Res",return_value);
  result.Save(ControlResponseString);
@@ -842,6 +845,10 @@ try {
 
   if(!is_processed)
    is_processed=ProcessPtzCommand(CurrentProcessedCommand, ResponseType, Response);
+
+  if(!is_processed)
+  {
+  }
 
   if(CommandResponseEncoder)
   {

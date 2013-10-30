@@ -107,6 +107,9 @@ const char* RemoteCallInternal(const char *request, int &return_value)
  std::string response,temp;
  std::string name;
 
+ RDK::USerStorageXML result;
+ result.Create("RpcResponse");
+ result.WriteString("Id", xml.ReadString("Id",""));
  if(cmd == "EngineInit")
  {
   int predefined_structure=xml.ReadInteger("PredefinedStructure",0);
@@ -202,10 +205,7 @@ const char* RemoteCallInternal(const char *request, int &return_value)
  else
   return_value=2001;
 
- RDK::USerStorageXML result;
-
- result.Create("RpcResponse");
- result.WriteString("Id", xml.ReadString("Id",""));
+ result.SelectRoot();
  result.WriteString("Data",RpcReturnString[engine_index]);
  result.WriteInteger("Res",return_value);
  result.Save(RpcReturnString[engine_index]);
@@ -254,6 +254,7 @@ const char* PtzRemoteCall(const char *request, int &return_value)
 
  RpcReturnString[engine_index].clear();
  response.Create("RpcResponse");
+ response.WriteString("Id", xml.ReadString("Id",""));
 
  if(cmd == "Ptz_GetCameraNames")
  {
@@ -740,9 +741,10 @@ const char* PtzRemoteCall(const char *request, int &return_value)
   double state=xml.ReadFloat("State",0.0);
   return_value=Ptz_AutoBrightness(engine_index,camera.c_str(),state);
  }
+ else
+  return_value=2001;
 
  response.SelectRoot();
- response.WriteString("Id", xml.ReadString("Id",""));
  response.WriteInteger("Res",return_value);
  if(!RpcReturnString[engine_index].empty())
  {
