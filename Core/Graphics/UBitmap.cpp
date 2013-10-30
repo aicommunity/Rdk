@@ -1579,12 +1579,14 @@ void UBitmap::ReflectionX(UBitmap *target)
   target->SetRes(Width,Height,ColorModel);
   beg=Data;
   fin=target->GetData()+ByteLength-LineWidth;
-  for(i=0; i<Height; i++)
+  for(i=0; i<Height-1; i++)
   {
    memcpy(fin,beg,LineWidth);
    beg+=LineWidth;
    fin-=LineWidth;
   }
+  if(Height>0)
+   memcpy(fin,beg,LineWidth);
  }
  else
  {
