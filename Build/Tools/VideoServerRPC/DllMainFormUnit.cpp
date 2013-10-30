@@ -51,6 +51,9 @@ void __fastcall TEngineThread::Execute(void)
   if(WaitForSingleObject(CalcStarted,30) == WAIT_TIMEOUT)
    continue;
 
+  if(WaitForSingleObject(CalcEnable,30) == WAIT_TIMEOUT)
+   continue;
+
   if((IdTCPClient->Connected()) && !(IdTCPClient->IOHandler->InputBufferIsEmpty()))
   {
    ClientBuffer.resize(1);
@@ -70,6 +73,7 @@ void __fastcall TEngineThread::Execute(void)
 
 	SetEvent(PacketReaderUnlockEvent);
    }
+   ResetEvent(CalcEnable);
   }
  // else
  //  Sleep(10);
@@ -129,6 +133,7 @@ void TDllMainForm::SendControlCommand(RDK::USerStorageXML &xml)
   dataOutputStream->Position=0;
   IdTCPClient->IOHandler->Write(dataOutputStream, dataOutputStream->Size, true);
   dataOutputStream->Free();
+  SetEvent(Thread->CalcEnable);
  }
 }
 

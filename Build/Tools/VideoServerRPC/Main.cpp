@@ -200,7 +200,7 @@ int RDK_CALL Rpc_StopChannel(int channel_index, int timeout)
  }
 }
 
-int RDK_CALL Rpc_GetNumChannels(int channel_index, int timeout)
+int RDK_CALL Rpc_GetNumChannels(int timeout)
 {
  if(!MainForm)
   return 0;
@@ -209,7 +209,7 @@ int RDK_CALL Rpc_GetNumChannels(int channel_index, int timeout)
   return 0;
 	
  RDK::USerStorageXML xml;
- int cmdId=MainForm->PrepareCommandXml(xml, "GetNumChannels", channel_index);
+ int cmdId=MainForm->PrepareCommandXml(xml, "GetNumChannels", -1);
  MainForm->SendControlCommand(xml);
 
  if(timeout > 0)

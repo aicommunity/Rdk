@@ -60,7 +60,7 @@ RDK_LIB_TYPE int RDK_CALL Rpc_StopChannel(int channel_index, int timeout);
 
 RDK_LIB_TYPE int RDK_CALL Rpc_ResetChannel(int channel_index, int timeout);
 
-RDK_LIB_TYPE int RDK_CALL Rpc_GetNumChannels(int channel_index, int timeout);
+RDK_LIB_TYPE int RDK_CALL Rpc_GetNumChannels(int timeout);
 
 
 /// Команды управления камерами

@@ -994,6 +994,8 @@ void __fastcall TUServerControlForm::IdTCPServerExecute(TIdContext *AContext)
 	}
    }
  }
+ else
+  Sleep(10);
 //  Memo1.Lines.Add(LLine);
 //  AContext.Connection.IOHandler.WriteLn('OK');
 //  TIdNotify.NotifyMethod( StopStartServerdMessage );
