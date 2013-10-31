@@ -22,12 +22,13 @@ __fastcall TTcpResultBroadcasterThread::TTcpResultBroadcasterThread(TIdTcpResult
 : TResultBroadcasterThread(CreateSuspended), Frame(frame)
 {
  IdTCPClient=new TIdTCPClient(Frame);
- IdTCPClient->OnConnected=IdHTTPConnected;
- IdTCPClient->OnDisconnected=IdHTTPDisconnected;
+ IdTCPClient->OnConnected=IdTCPConnected;
+ IdTCPClient->OnDisconnected=IdTCPDisconnected;
 }
 
 __fastcall TTcpResultBroadcasterThread::~TTcpResultBroadcasterThread(void)
 {
+ SetSendEnableFlag(false);
  Terminate();
  WaitForSingleObject(SendNotInProgressEvent,100);
 
@@ -153,12 +154,12 @@ bool __fastcall TTcpResultBroadcasterThread::ASend(void)
  return true;
 }
 
-void __fastcall TTcpResultBroadcasterThread::IdHTTPConnected(TObject *Sender)
+void __fastcall TTcpResultBroadcasterThread::IdTCPConnected(TObject *Sender)
 {
  ConnectionEstablishedFlag=true;
 }
 
-void __fastcall TTcpResultBroadcasterThread::IdHTTPDisconnected(TObject *Sender)
+void __fastcall TTcpResultBroadcasterThread::IdTCPDisconnected(TObject *Sender)
 {
  ConnectionEstablishedFlag=false;
 }
@@ -407,18 +408,6 @@ void __fastcall TIdTcpResultBroadcasterFrame::EnableXmlTranslationCheckBoxClick(
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TIdTcpResultBroadcasterFrame::IdTCPClientConnected(TObject *Sender)
-
-{
- ConnectionEstablishedFlag=true;
-}
-//---------------------------------------------------------------------------
 
 
-void __fastcall TIdTcpResultBroadcasterFrame::IdTCPClientDisconnected(TObject *Sender)
-
-{
- ConnectionEstablishedFlag=false;
-}
-//---------------------------------------------------------------------------
 
