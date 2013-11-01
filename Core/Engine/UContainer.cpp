@@ -1497,6 +1497,7 @@ bool UContainer::Calculate(void)
 {
  if(!Activity)
   return true;
+  int i=0;
 RDK_SYS_TRY {
  try
  {
@@ -1507,7 +1508,6 @@ RDK_SYS_TRY {
 
   Build();
 
-  int i=0;
   long long tempstepduration=GetCurrentStartupTime();
   InterstepsInterval=(LastCalcTime>=0)?CalcDiffTime(tempstepduration,LastCalcTime):0;
   LastCalcTime=tempstepduration;
@@ -1575,9 +1575,13 @@ RDK_SYS_TRY {
  {
   throw;
  }
-} RDK_SYS_CATCH
+}
+RDK_SYS_CATCH
 {
- throw EComponentSystemException(this,0,GET_SYSTEM_EXCEPTION_DATA);
+ if(PComponents && i<NumComponents)
+  throw EComponentSystemException(this,PComponents[i],GET_SYSTEM_EXCEPTION_DATA);
+ else
+  throw EComponentSystemException(this,0,GET_SYSTEM_EXCEPTION_DATA);
 }
 
  return true;
