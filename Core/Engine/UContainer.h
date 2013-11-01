@@ -119,6 +119,13 @@ bool Activity;
 // Реальный шаг = 1./TimeStep
 UTime TimeStep;
 
+/// Максимально допустимое время расчета компонента вместе с дочерними компонентами
+/// в миллисекундах.
+/// Если время расчета превышено, то расчет последующих дочерних компонент
+/// не выполняется
+/// Если значение параметра <0, то нет ограничений
+long long MaxCalculationDuration;
+
 public: // Физические свойства
 // Координата компонента в пространстве сети
 RDK::MVector<double,3> Coord;
@@ -158,6 +165,9 @@ bool SkipComponentCalculation;
 
 // Флаг запроса на повторный обсчет компонент в текущей итерации расчетов сначала
 bool ComponentReCalculation;
+
+// Время начала счета компонента на текущем шаге
+long long StartCalcTime;
 
 // Время окончания счета компонента на предыдущем шаге
 long long LastCalcTime;
@@ -294,6 +304,14 @@ NameT& GetFullName(NameT &buffer) const;
 // Метод возвращает пустую строку, если 'mainowner' - не является
 // владельцем объекта ни на каком уровне иерархии
 NameT& GetLongName(const UEPtr<UContainer> mainowner, NameT &buffer) const;
+
+/// Максимально допустимое время расчета компонента вместе с дочерними компонентами
+/// в миллисекундах.
+/// Если время расчета превышено, то расчет последующих дочерних компонент
+/// не выполняется
+/// Если значение параметра <0, то нет ограничений
+const long long& GetMaxCalculationDuration(void) const;
+bool SetMaxCalculationDuration(const long long &value);
 // --------------------------
 
 // --------------------------
@@ -558,6 +576,11 @@ virtual void ForceSkipComponentCalculation(void);
 // Обычно вызывается дочерним компонентом и требует перерасчет цепочки дочерних
 // компонент на этом шаге счета сначала
 virtual void ForceComponentReCalculation(void);
+
+/// Проверяет текущую длительность расчета этого компонента
+/// и если она превышает MaxCalculationDuration и MaxCalculationDuration>=0
+/// то прерывает обсчет остальной цепочки дочерних компонент
+virtual bool CheckDurationAndSkipComponentCalculation(void);
 // --------------------------
 
 // --------------------------

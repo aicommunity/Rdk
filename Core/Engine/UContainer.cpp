@@ -63,6 +63,8 @@ UContainer::UContainer(void)
  AddLookupProperty("TimeStep",ptParameter | pgSystem,new UVProperty<UTime,UContainer>(this,&UContainer::SetTimeStep,&UContainer::GetTimeStep));
  AddLookupProperty("Activity",ptParameter | pgPublic,new UVProperty<bool,UContainer>(this,&UContainer::SetActivity,&UContainer::GetActivity));
  AddLookupProperty("Coord",ptParameter | pgPublic,new UVProperty<RDK::MVector<double,3>,UContainer>(this,&UContainer::SetCoord,&UContainer::GetCoord));
+ AddLookupProperty("MaxCalculationDuration",ptParameter | pgPublic,new UVProperty<long long,UContainer>(this,&UContainer::SetMaxCalculationDuration,&UContainer::GetMaxCalculationDuration));
+
  InitFlag=false;
 }
 
@@ -672,6 +674,25 @@ bool UContainer::SetId(const UId &id)
    GetOwner()->SetLookupComponent(Name, id);
   }
  Id=id;
+ return true;
+}
+
+/// Максимально допустимое время расчета компонента вместе с дочерними компонентами
+/// в миллисекундах.
+/// Если время расчета превышено, то расчет последующих дочерних компонент
+/// не выполняется
+/// Если значение параметра <0, то нет ограничений
+const long long& UContainer::GetMaxCalculationDuration(void) const
+{
+ return MaxCalculationDuration;
+}
+
+bool UContainer::SetMaxCalculationDuration(const long long &value)
+{
+ if(MaxCalculationDuration == value)
+  return true;
+
+ MaxCalculationDuration=value;
  return true;
 }
 // --------------------------
@@ -1436,6 +1457,7 @@ bool UContainer::Default(void)
   original=dynamic_pointer_cast<UContainer>(GetStorage()->GetClass(Class));
 
  SetTimeStep(2000);
+ SetMaxCalculationDuration(-1);
 
  if(original && original != this)
  {
@@ -1508,7 +1530,7 @@ RDK_SYS_TRY {
 
   Build();
 
-  long long tempstepduration=GetCurrentStartupTime();
+  long long tempstepduration=StartCalcTime=GetCurrentStartupTime();
   InterstepsInterval=(LastCalcTime>=0)?CalcDiffTime(tempstepduration,LastCalcTime):0;
   LastCalcTime=tempstepduration;
 
@@ -1523,6 +1545,7 @@ RDK_SYS_TRY {
    }
    else
    {
+	CheckDurationAndSkipComponentCalculation();
 	++i,++comps;
    }
   }
@@ -1558,6 +1581,13 @@ RDK_SYS_TRY {
 
   UpdateMainOwner();
   InterstepsInterval-=StepDuration;
+
+  if((MaxCalculationDuration >= 0) && ((GetCurrentStartupTime()-tempstepduration) < MaxCalculationDuration))
+  {
+   if(Owner)
+	GetOwner()->ForceSkipComponentCalculation();
+  }
+
   StepDuration=CalcDiffTime(GetCurrentStartupTime(),tempstepduration);
   // Обрабатываем контроллеры
   int numcontrollers=Controllers.size();
@@ -1639,6 +1669,19 @@ void UContainer::ForceSkipComponentCalculation(void)
 void UContainer::ForceComponentReCalculation(void)
 {
  ComponentReCalculation=true;
+}
+
+/// Проверяет текущую длительность расчета этого компонента
+/// и если она превышает MaxCalculationDuration и MaxCalculationDuration>=0
+/// то прерывает обсчет остальной цепочки дочерних компонент
+bool UContainer::CheckDurationAndSkipComponentCalculation(void)
+{
+ if((MaxCalculationDuration >= 0) && ((GetCurrentStartupTime()-StartCalcTime) > MaxCalculationDuration))
+ {
+  ForceSkipComponentCalculation();
+  return true;
+ }
+ return false;
 }
 // --------------------------
 
