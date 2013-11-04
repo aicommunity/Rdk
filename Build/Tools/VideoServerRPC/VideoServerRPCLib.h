@@ -104,7 +104,7 @@ RDK_LIB_TYPE int RDK_CALL Ptz_DelAllCameras(int channel_index, int timeout);
 RDK_LIB_TYPE int RDK_CALL Ptz_SetCameraParameter(int channel_index, const char* camera_name, const char* param_name, const char* param_value, int timeout);
 
 /// Считывает значение параметра компонента управления камерой
-RDK_LIB_TYPE int Ptz_GetCameraParameter(int channel_index, const char* camera_name, const char* param_name, const char* &results, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_GetCameraParameter(int channel_index, const char* camera_name, const char* param_name, const char* &results, int timeout);
 
 /// Возвращает конфигурацию и состояние камеры
 //RDK_LIB_TYPE TPtzCameraInfo* Ptz_GetPtzInfo(const char* camera_name);
@@ -114,7 +114,7 @@ RDK_LIB_TYPE int Ptz_GetCameraParameter(int channel_index, const char* camera_na
 //RDK_LIB_TYPE int RDK_CALL Ptz_ReadCurrentCameraState(int channel_index, const char* camera_name);
 
 /// Возвращает список поддерживаемых команд в виде списка, разделенного ','
-RDK_LIB_TYPE int Ptz_GetImplementedCommands(int channel_index, const char* camera_name, const char* &results, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_GetImplementedCommands(int channel_index, const char* camera_name, const char* &results, int timeout);
 
 /// Выполняет действия по подключению к физической камере
 RDK_LIB_TYPE int RDK_CALL Ptz_CameraConnect(int channel_index, const char* camera_name, int timeout);
@@ -124,7 +124,7 @@ RDK_LIB_TYPE int RDK_CALL Ptz_CameraDisconnect(int channel_index, const char* ca
 
 /// Возвращает true если заданная функция реализована
 //RDK_LIB_TYPE bool RDK_CALL Ptz_IsCmdImplementedById(int channel_index, const char* camera_name, int cmd);
-RDK_LIB_TYPE bool RDK_CALL Ptz_IsCmdImplemented(int channel_index, const char* camera_name, const char* cmd, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_IsCmdImplemented(int channel_index, const char* camera_name, const char* cmd, int timeout);
 /// -------------------------------
 /// Функции чтения/записи параметров движения камеры
 /// Список возможных имен параметров движения:
