@@ -60,7 +60,7 @@ RDK_LIB_TYPE int RDK_CALL Rpc_StopChannel(int channel_index, int timeout);
 
 RDK_LIB_TYPE int RDK_CALL Rpc_ResetChannel(int channel_index, int timeout);
 
-RDK_LIB_TYPE int RDK_CALL Rpc_GetNumChannels(int timeout);
+RDK_LIB_TYPE int RDK_CALL Rpc_GetNumChannels(int &results, int timeout);
 
 
 /// Команды управления камерами
@@ -82,13 +82,13 @@ RDK_LIB_TYPE int RDK_CALL Rpc_GetNumChannels(int timeout);
 //RDK_LIB_TYPE int RDK_CALL Ptz_UnInitLib(int channel_index);
 
 /// Возвращает список текущих камер в виде строки разделяемой ','
-RDK_LIB_TYPE const char* RDK_CALL Ptz_GetCameraNames(int channel_index, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_GetCameraNames(int channel_index, const char* &results, int timeout);
 
 /// Возвращает список доступных типов (классов) камер в виде строки разделяемой ','
-RDK_LIB_TYPE const char* RDK_CALL Ptz_GetCameraTypes(int channel_index, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_GetCameraTypes(int channel_index, const char* &results, int timeout);
 
 /// Возвращает тип (класс) камеры по имени
-RDK_LIB_TYPE const char* RDK_CALL Ptz_GetCameraType(int channel_index, const char* camera_name, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_GetCameraType(int channel_index, const char* camera_name, const char* &results, int timeout);
 
 /// Добавляет новую камеру
 /// Инициализирует камеру с новым именем camera_name создавая управление типа camera_type
@@ -104,7 +104,7 @@ RDK_LIB_TYPE int RDK_CALL Ptz_DelAllCameras(int channel_index, int timeout);
 RDK_LIB_TYPE int RDK_CALL Ptz_SetCameraParameter(int channel_index, const char* camera_name, const char* param_name, const char* param_value, int timeout);
 
 /// Считывает значение параметра компонента управления камерой
-RDK_LIB_TYPE const char* Ptz_GetCameraParameter(int channel_index, const char* camera_name, const char* param_name, int timeout);
+RDK_LIB_TYPE int Ptz_GetCameraParameter(int channel_index, const char* camera_name, const char* param_name, const char* &results, int timeout);
 
 /// Возвращает конфигурацию и состояние камеры
 //RDK_LIB_TYPE TPtzCameraInfo* Ptz_GetPtzInfo(const char* camera_name);
@@ -114,7 +114,7 @@ RDK_LIB_TYPE const char* Ptz_GetCameraParameter(int channel_index, const char* c
 //RDK_LIB_TYPE int RDK_CALL Ptz_ReadCurrentCameraState(int channel_index, const char* camera_name);
 
 /// Возвращает список поддерживаемых команд в виде списка, разделенного ','
-RDK_LIB_TYPE const char* Ptz_GetImplementedCommands(int channel_index, const char* camera_name, int timeout);
+RDK_LIB_TYPE int Ptz_GetImplementedCommands(int channel_index, const char* camera_name, const char* &results, int timeout);
 
 /// Выполняет действия по подключению к физической камере
 RDK_LIB_TYPE int RDK_CALL Ptz_CameraConnect(int channel_index, const char* camera_name, int timeout);
@@ -132,27 +132,27 @@ RDK_LIB_TYPE bool RDK_CALL Ptz_IsCmdImplemented(int channel_index, const char* c
 /// Iris, IrisSpeed, Brightness, BrightnessSpeed
 /// -------------------------------
 /// Возвращает список поддерживаемых параметров, разделенных запятой
-RDK_LIB_TYPE const char* RDK_CALL Ptz_GetImplementedMoveParamsList(int channel_index, const char* camera_name, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_GetImplementedMoveParamsList(int channel_index, const char* camera_name, const char* &results, int timeout);
 
 /// Возвращает true если параметр поддерживается
-RDK_LIB_TYPE bool RDK_CALL Ptz_IsMoveParamImplemented(int channel_index, const char* camera_name, const char *param_name, int timeout);
-RDK_LIB_TYPE bool RDK_CALL Ptz_SetMoveParamImplemented(int channel_index, const char* camera_name, const char *param_name, bool value, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_IsMoveParamImplemented(int channel_index, const char* camera_name, const char *param_name, bool results, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_SetMoveParamImplemented(int channel_index, const char* camera_name, const char *param_name, bool value, bool &results, int timeout);
 
-/// Возвращает true если параметр поддерживается
-RDK_LIB_TYPE double RDK_CALL Ptz_GetMoveParamMinNativeValue(int channel_index, const char* camera_name, const char *param_name, int timeout);
-RDK_LIB_TYPE bool RDK_CALL Ptz_SetMoveParamMinNativeValue(int channel_index, const char* camera_name, const char *param_name, double value, int timeout);
+/// Минимальное "родное" значение параметра
+RDK_LIB_TYPE int RDK_CALL Ptz_GetMoveParamMinNativeValue(int channel_index, const char* camera_name, const char *param_name, double &results, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_SetMoveParamMinNativeValue(int channel_index, const char* camera_name, const char *param_name, double value, bool &results, int timeout);
 
 /// Максимальное "родное" значение параметра
-RDK_LIB_TYPE double RDK_CALL Ptz_GetMoveParamMaxNativeValue(int channel_index, const char* camera_name, const char *param_name, int timeout);
-RDK_LIB_TYPE bool RDK_CALL Ptz_SetMoveParamMaxNativeValue(int channel_index, const char* camera_name, const char *param_name, double value, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_GetMoveParamMaxNativeValue(int channel_index, const char* camera_name, const char *param_name, double &results, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_SetMoveParamMaxNativeValue(int channel_index, const char* camera_name, const char *param_name, double value, bool &results, int timeout);
 
 /// Минимальное общепринятое значение параметра
-RDK_LIB_TYPE double RDK_CALL Ptz_GetMoveParamMinValue(int channel_index, const char* camera_name, const char *param_name, int timeout);
-RDK_LIB_TYPE bool RDK_CALL Ptz_SetMoveParamMinValue(int channel_index, const char* camera_name, const char *param_name, double value, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_GetMoveParamMinValue(int channel_index, const char* camera_name, const char *param_name, double &results, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_SetMoveParamMinValue(int channel_index, const char* camera_name, const char *param_name, double value, bool &results, int timeout);
 
 /// Максимальное общепринятое значение параметра
-RDK_LIB_TYPE double RDK_CALL Ptz_GetMoveParamMaxValue(int channel_index, const char* camera_name, const char *param_name, int timeout);
-RDK_LIB_TYPE bool RDK_CALL Ptz_SetMoveParamMaxValue(int channel_index, const char* camera_name, const char *param_name, double value, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_GetMoveParamMaxValue(int channel_index, const char* camera_name, const char *param_name, double &results, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_SetMoveParamMaxValue(int channel_index, const char* camera_name, const char *param_name, double value, bool &results, int timeout);
 // ---------------------
 // Общие функции управления движением
 // ---------------------

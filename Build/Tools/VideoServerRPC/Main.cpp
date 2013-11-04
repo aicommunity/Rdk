@@ -200,14 +200,15 @@ int RDK_CALL Rpc_StopChannel(int channel_index, int timeout)
  }
 }
 
-int RDK_CALL Rpc_GetNumChannels(int timeout)
+int RDK_CALL Rpc_GetNumChannels(int &results, int timeout)
 {
  if(!MainForm)
-  return 0;
+  return RDK_RPC_LIBRARY_NOT_INIT;
 
  if(!MainForm->IdTCPClient->Connected())
-  return 0;
-	
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+
+ results=0;
  RDK::USerStorageXML xml;
  int cmdId=MainForm->PrepareCommandXml(xml, "GetNumChannels", -1);
  MainForm->SendControlCommand(xml);
@@ -221,24 +222,26 @@ int RDK_CALL Rpc_GetNumChannels(int timeout)
    std::string answ;
    response.Save(answ);
    ServerAnswerDebug=answ.c_str();
-   return StrToInt(response.ReadString("Data", "").c_str());
+   results=StrToInt(response.ReadString("Data", "").c_str());
+   return response.ReadInteger("Res", RDK_RPC_UNSUCCESSFULL_DECODING);
   }
   else
   {
-   return 0;
+   return res;
   }
  }
 }
 //------------------------------------------------------------------------------
 /// ¬озвращает список текущих камер в виде строки раздел€емой ','
-const char* RDK_CALL Ptz_GetCameraNames(int channel_index, int timeout)
+int RDK_CALL Ptz_GetCameraNames(int channel_index, const char* &results, int timeout)
 {
  if(!MainForm)
-  return 0;
+  return RDK_RPC_LIBRARY_NOT_INIT;
 
  if(!MainForm->IdTCPClient->Connected())
-  return 0;
-	
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+
+ results = NULL;
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PrepareCommandXml(PtzControlXml, "Ptz_GetCameraNames", channel_index);
  MainForm->SendControlCommand(PtzControlXml);
@@ -252,25 +255,26 @@ const char* RDK_CALL Ptz_GetCameraNames(int channel_index, int timeout)
    std::string answ;
    response.Save(answ);
    ServerAnswerDebug=answ.c_str();
-   return (response.ReadString("Data", "")).c_str();
+   results=response.ReadString("Data", "").c_str();
+   return response.ReadInteger("Res", RDK_RPC_UNSUCCESSFULL_DECODING);
   }
   else
   {
-   // заглушка
-   return 0;
+   return res;
   }
  }
 }
 
 /// ¬озвращает список доступных типов (классов) камер в виде строки раздел€емой ','
-const char* RDK_CALL Ptz_GetCameraTypes(int channel_index, int timeout)
+int RDK_CALL Ptz_GetCameraTypes(int channel_index, const char* &results, int timeout)
 {
  if(!MainForm)
-  return 0;
+  return RDK_RPC_LIBRARY_NOT_INIT;
 
  if(!MainForm->IdTCPClient->Connected())
-  return 0;
-	
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+
+ results = NULL;
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PrepareCommandXml(PtzControlXml, "Ptz_GetCameraTypes", channel_index);
  MainForm->SendControlCommand(PtzControlXml);
@@ -284,25 +288,26 @@ const char* RDK_CALL Ptz_GetCameraTypes(int channel_index, int timeout)
    std::string answ;
    response.Save(answ);
    ServerAnswerDebug=answ.c_str();
-   return response.ReadString("Data", "").c_str();
+   results=response.ReadString("Data", "").c_str();
+   return response.ReadInteger("Res", RDK_RPC_UNSUCCESSFULL_DECODING);
   }
   else
   {
-   // заглушка
-   return 0;
+   return res;
   }
  }
 }
 
 /// ¬озвращает тип (класс) камеры по имени
-const char* RDK_CALL Ptz_GetCameraType(int channel_index, const char* camera_name, int timeout)
+int RDK_CALL Ptz_GetCameraType(int channel_index, const char* camera_name, const char* &results, int timeout)
 {
  if(!MainForm)
-  return 0;
+  return RDK_RPC_LIBRARY_NOT_INIT;
 
  if(!MainForm->IdTCPClient->Connected())
-  return 0;
-	
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+
+ results = NULL;
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_GetCameraType", camera_name, channel_index);
  MainForm->SendControlCommand(PtzControlXml);
@@ -316,12 +321,12 @@ const char* RDK_CALL Ptz_GetCameraType(int channel_index, const char* camera_nam
    std::string answ;
    response.Save(answ);
    ServerAnswerDebug=answ.c_str();
-   return response.ReadString("Data", "").c_str();
+   results=response.ReadString("Data", "").c_str();
+   return response.ReadInteger("Res", RDK_RPC_UNSUCCESSFULL_DECODING);
   }
   else
   {
-   // заглушка
-   return 0;
+   return res;
   }
  }
 }
@@ -467,14 +472,15 @@ int RDK_CALL Ptz_SetCameraParameter(int channel_index, const char* camera_name, 
 }
 
 /// —читывает значение параметра компонента управлени€ камерой
-const char* Ptz_GetCameraParameter(int channel_index, const char* camera_name, const char* param_name, int timeout)
+int Ptz_GetCameraParameter(int channel_index, const char* camera_name, const char* param_name, const char* &results, int timeout)
 {
  if(!MainForm)
-  return 0;
+  return RDK_RPC_LIBRARY_NOT_INIT;
 
  if(!MainForm->IdTCPClient->Connected())
-  return 0;
-	
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+
+ results = NULL;
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_GetCameraParameter", camera_name, channel_index);
  PtzControlXml.WriteString("Parameter", param_name);
@@ -489,25 +495,26 @@ const char* Ptz_GetCameraParameter(int channel_index, const char* camera_name, c
    std::string answ;
    response.Save(answ);
    ServerAnswerDebug=answ.c_str();
-   return response.ReadString("Data", "").c_str();
+   results=response.ReadString("Data", "").c_str();
+   return response.ReadInteger("Res", RDK_RPC_UNSUCCESSFULL_DECODING);
   }
   else
   {
-   // заглушка
-   return 0;
+   return res;
   }
  }
 }
 
 /// ¬озвращает список поддерживаемых команд в виде списка, разделенного ','
-const char* Ptz_GetImplementedCommands(int channel_index, const char* camera_name, int timeout)
+int Ptz_GetImplementedCommands(int channel_index, const char* camera_name, const char* &results, int timeout)
 {
  if(!MainForm)
-  return 0;
+  return RDK_RPC_LIBRARY_NOT_INIT;
 
  if(!MainForm->IdTCPClient->Connected())
-  return 0;
-	
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+
+ results = NULL;
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_GetImplementedCommands", camera_name, channel_index);
  MainForm->SendControlCommand(PtzControlXml);
@@ -521,12 +528,12 @@ const char* Ptz_GetImplementedCommands(int channel_index, const char* camera_nam
    std::string answ;
    response.Save(answ);
    ServerAnswerDebug=answ.c_str();
-   return response.ReadString("Data", "").c_str();
+   results=response.ReadString("Data", "").c_str();
+   return response.ReadInteger("Res", RDK_RPC_UNSUCCESSFULL_DECODING);
   }
   else
   {
-   // заглушка
-   return 0;
+   return res;
   }
  }
 }
@@ -605,14 +612,15 @@ int RDK_CALL Ptz_CameraDisconnect(int channel_index, const char* camera_name, in
 
 /// ¬озвращает true если заданна€ функци€ реализована
 //RDK_LIB_TYPE bool RDK_CALL Ptz_IsCmdImplementedById(int channel_index, const char* camera_name, int cmd);
-bool RDK_CALL Ptz_IsCmdImplemented(int channel_index, const char* camera_name, const char* cmd, int timeout)
+int RDK_CALL Ptz_IsCmdImplemented(int channel_index, const char* camera_name, const char* cmd, bool &results, int timeout)
 {
  if(!MainForm)
-  return false;
+  return RDK_RPC_LIBRARY_NOT_INIT;
 
  if(!MainForm->IdTCPClient->Connected())
-  return false;
-	
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+
+ results=0;
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_IsCmdImplemented", camera_name, channel_index);
  PtzControlXml.WriteString("CommandName", cmd);
@@ -627,12 +635,12 @@ bool RDK_CALL Ptz_IsCmdImplemented(int channel_index, const char* camera_name, c
    std::string answ;
    response.Save(answ);
    ServerAnswerDebug=answ.c_str();
-   return StrToBool(response.ReadString("Data", "").c_str());
+   results=StrToBool(response.ReadString("Data", "").c_str());
+   return response.ReadInteger("Res", RDK_RPC_UNSUCCESSFULL_DECODING);
   }
   else
   {
-   // заглушка
-   return false;
+   return res;
   }
  }
 }
@@ -644,14 +652,15 @@ bool RDK_CALL Ptz_IsCmdImplemented(int channel_index, const char* camera_name, c
 /// Iris, IrisSpeed, Brightness, BrightnessSpeed
 /// -------------------------------
 /// ¬озвращает список поддерживаемых параметров, разделенных зап€той
-const char* RDK_CALL Ptz_GetImplementedMoveParamsList(int channel_index, const char* camera_name, int timeout)
+int RDK_CALL Ptz_GetImplementedMoveParamsList(int channel_index, const char* camera_name, const char* &results, int timeout)
 {
  if(!MainForm)
-  return 0;
+  return RDK_RPC_LIBRARY_NOT_INIT;
 
  if(!MainForm->IdTCPClient->Connected())
-  return 0;
-	
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+
+ results = NULL;
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_GetImplementedMoveParamsList", camera_name, channel_index);
  MainForm->SendControlCommand(PtzControlXml);
@@ -665,25 +674,26 @@ const char* RDK_CALL Ptz_GetImplementedMoveParamsList(int channel_index, const c
    std::string answ;
    response.Save(answ);
    ServerAnswerDebug=answ.c_str();
-   return response.ReadString("Data", "").c_str();
+   results=response.ReadString("Data", "").c_str();
+   return response.ReadInteger("Res", RDK_RPC_UNSUCCESSFULL_DECODING);
   }
   else
   {
-   // заглушка
-   return 0;
+   return res;
   }
  }
 }
 
-/// ¬озвращает true если параметр поддерживаетс€
-bool RDK_CALL Ptz_IsMoveParamImplemented(int channel_index, const char* camera_name, const char *param_name, int timeout)
+/// results = true если параметр поддерживаетс€
+int RDK_CALL Ptz_IsMoveParamImplemented(int channel_index, const char* camera_name, const char *param_name, bool &results, int timeout)
 {
  if(!MainForm)
-  return false;
+  return RDK_RPC_LIBRARY_NOT_INIT;
 
  if(!MainForm->IdTCPClient->Connected())
-  return false;
-	
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+
+ results=0;
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_IsMoveParamImplemented", camera_name, channel_index);
  PtzControlXml.WriteString("ParamName", param_name);
@@ -698,24 +708,25 @@ bool RDK_CALL Ptz_IsMoveParamImplemented(int channel_index, const char* camera_n
    std::string answ;
    response.Save(answ);
    ServerAnswerDebug=answ.c_str();
-   return StrToBool(response.ReadString("Data", "").c_str());
+   results=StrToBool(response.ReadString("Data", "").c_str());
+   return response.ReadInteger("Res", RDK_RPC_UNSUCCESSFULL_DECODING);
   }
   else
   {
-   // заглушка
-   return false;
+   return res;
   }
  }
 }
 
-bool RDK_CALL Ptz_SetMoveParamImplemented(int channel_index, const char* camera_name, const char *param_name, bool value, int timeout)
+int RDK_CALL Ptz_SetMoveParamImplemented(int channel_index, const char* camera_name, const char *param_name, bool value, bool &results, int timeout)
 {
  if(!MainForm)
-  return false;
+  return RDK_RPC_LIBRARY_NOT_INIT;
 
  if(!MainForm->IdTCPClient->Connected())
-  return false;
-	
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+
+ results=0;
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_SetMoveParamImplemented", camera_name, channel_index);
  PtzControlXml.WriteString("ParamName", param_name);
@@ -731,25 +742,26 @@ bool RDK_CALL Ptz_SetMoveParamImplemented(int channel_index, const char* camera_
    std::string answ;
    response.Save(answ);
    ServerAnswerDebug=answ.c_str();
-   return bool(response.ReadInteger("Res", 0));
+   results=StrToBool(response.ReadString("Data", "").c_str());
+   return response.ReadInteger("Res", RDK_RPC_UNSUCCESSFULL_DECODING);
   }
   else
   {
-   // заглушка
-   return false;
+   return res;
   }
  }
 }
 
-/// ¬озвращает true если параметр поддерживаетс€
-double RDK_CALL Ptz_GetMoveParamMinNativeValue(int channel_index, const char* camera_name, const char *param_name, int timeout)
+/// ћинимальное "родное" значение параметра
+int RDK_CALL Ptz_GetMoveParamMinNativeValue(int channel_index, const char* camera_name, const char *param_name, double &results, int timeout)
 {
  if(!MainForm)
-  return 0.0;
+  return RDK_RPC_LIBRARY_NOT_INIT;
 
  if(!MainForm->IdTCPClient->Connected())
-  return 0.0;
-	
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+
+ results=0.0;
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_GetMoveParamMinNativeValue", camera_name, channel_index);
  PtzControlXml.WriteString("ParamName", param_name);
@@ -764,24 +776,25 @@ double RDK_CALL Ptz_GetMoveParamMinNativeValue(int channel_index, const char* ca
    std::string answ;
    response.Save(answ);
    ServerAnswerDebug=answ.c_str();
-   return StrToFloat(response.ReadString("Data", "").c_str());
+   results=StrToFloat(response.ReadString("Data", "").c_str());
+   return response.ReadInteger("Res", RDK_RPC_UNSUCCESSFULL_DECODING);
   }
   else
   {
-   // заглушка
-   return 0.0;
+   return res;
   }
  }
 }
 
-bool RDK_CALL Ptz_SetMoveParamMinNativeValue(int channel_index, const char* camera_name, const char *param_name, double value, int timeout)
+int RDK_CALL Ptz_SetMoveParamMinNativeValue(int channel_index, const char* camera_name, const char *param_name, double value, bool &results, int timeout)
 {
  if(!MainForm)
-  return false;
+  return RDK_RPC_LIBRARY_NOT_INIT;
 
  if(!MainForm->IdTCPClient->Connected())
-  return false;
-	
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+
+ results=0;
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_SetMoveParamMinNativeValue", camera_name, channel_index);
  PtzControlXml.WriteString("ParamName", param_name);
@@ -797,25 +810,26 @@ bool RDK_CALL Ptz_SetMoveParamMinNativeValue(int channel_index, const char* came
    std::string answ;
    response.Save(answ);
    ServerAnswerDebug=answ.c_str();
-   return bool(response.ReadInteger("Res", 0));
+   results=StrToBool(response.ReadString("Data", "").c_str());
+   return response.ReadInteger("Res", RDK_RPC_UNSUCCESSFULL_DECODING);
   }
   else
   {
-   // заглушка
-   return false;
+   return res;
   }
  }
 }
 
 /// ћаксимальное "родное" значение параметра
-double RDK_CALL Ptz_GetMoveParamMaxNativeValue(int channel_index, const char* camera_name, const char *param_name, int timeout)
+int RDK_CALL Ptz_GetMoveParamMaxNativeValue(int channel_index, const char* camera_name, const char *param_name, double &results, int timeout)
 {
  if(!MainForm)
-  return 0.0;
+  return RDK_RPC_LIBRARY_NOT_INIT;
 
  if(!MainForm->IdTCPClient->Connected())
-  return 0.0;
-	
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+
+ results=0.0;
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_GetMoveParamMaxNativeValue", camera_name, channel_index);
  PtzControlXml.WriteString("ParamName", param_name);
@@ -830,24 +844,25 @@ double RDK_CALL Ptz_GetMoveParamMaxNativeValue(int channel_index, const char* ca
    std::string answ;
    response.Save(answ);
    ServerAnswerDebug=answ.c_str();
-   return StrToFloat(response.ReadString("Data", "").c_str());
+   results=StrToFloat(response.ReadString("Data", "").c_str());
+   return response.ReadInteger("Res", RDK_RPC_UNSUCCESSFULL_DECODING);
   }
   else
   {
-   // заглушка
-   return 0.0;
+   return res;
   }
  }
 }
 
-bool RDK_CALL Ptz_SetMoveParamMaxNativeValue(int channel_index, const char* camera_name, const char *param_name, double value, int timeout)
+int RDK_CALL Ptz_SetMoveParamMaxNativeValue(int channel_index, const char* camera_name, const char *param_name, double value, bool &results, int timeout)
 {
  if(!MainForm)
-  return false;
+  return RDK_RPC_LIBRARY_NOT_INIT;
 
  if(!MainForm->IdTCPClient->Connected())
-  return false;
-	
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+
+ results=0;
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_SetMoveParamMaxNativeValue", camera_name, channel_index);
  PtzControlXml.WriteString("ParamName", param_name);
@@ -863,25 +878,26 @@ bool RDK_CALL Ptz_SetMoveParamMaxNativeValue(int channel_index, const char* came
    std::string answ;
    response.Save(answ);
    ServerAnswerDebug=answ.c_str();
-   return bool(response.ReadInteger("Res", 0));
+   results=StrToBool(response.ReadString("Data", "").c_str());
+   return response.ReadInteger("Res", RDK_RPC_UNSUCCESSFULL_DECODING);
   }
   else
   {
-   // заглушка
-   return false;
+   return res;
   }
  }
 }
 
 /// ћинимальное общеприн€тое значение параметра
-double RDK_CALL Ptz_GetMoveParamMinValue(int channel_index, const char* camera_name, const char *param_name, int timeout)
+int RDK_CALL Ptz_GetMoveParamMinValue(int channel_index, const char* camera_name, const char *param_name, double &results, int timeout)
 {
  if(!MainForm)
-  return 0.0;
+  return RDK_RPC_LIBRARY_NOT_INIT;
 
  if(!MainForm->IdTCPClient->Connected())
-  return 0.0;
-	
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+
+ results=0.0;
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_GetMoveParamMinValue", camera_name, channel_index);
  PtzControlXml.WriteString("ParamName", param_name);
@@ -896,24 +912,25 @@ double RDK_CALL Ptz_GetMoveParamMinValue(int channel_index, const char* camera_n
    std::string answ;
    response.Save(answ);
    ServerAnswerDebug=answ.c_str();
-   return StrToFloat(response.ReadString("Data", "").c_str());
+   results=StrToFloat(response.ReadString("Data", "").c_str());
+   return response.ReadInteger("Res", RDK_RPC_UNSUCCESSFULL_DECODING);
   }
   else
   {
-   // заглушка
-   return 0.0;
+   return res;
   }
  }
 }
 
-bool RDK_CALL Ptz_SetMoveParamMinValue(int channel_index, const char* camera_name, const char *param_name, double value, int timeout)
+int RDK_CALL Ptz_SetMoveParamMinValue(int channel_index, const char* camera_name, const char *param_name, double value, bool &results, int timeout)
 {
  if(!MainForm)
-  return false;
+  return RDK_RPC_LIBRARY_NOT_INIT;
 
  if(!MainForm->IdTCPClient->Connected())
-  return false;
-	
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+
+ results=0;
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_SetMoveParamMinValue", camera_name, channel_index);
  PtzControlXml.WriteString("ParamName", param_name);
@@ -929,25 +946,26 @@ bool RDK_CALL Ptz_SetMoveParamMinValue(int channel_index, const char* camera_nam
    std::string answ;
    response.Save(answ);
    ServerAnswerDebug=answ.c_str();
-   return bool(response.ReadInteger("Res", 0));
+   results=StrToBool(response.ReadString("Data", "").c_str());
+   return response.ReadInteger("Res", RDK_RPC_UNSUCCESSFULL_DECODING);
   }
   else
   {
-   // заглушка
-   return false;
+   return res;
   }
  }
 }
 
 /// ћаксимальное общеприн€тое значение параметра
-double RDK_CALL Ptz_GetMoveParamMaxValue(int channel_index, const char* camera_name, const char *param_name, int timeout)
+int RDK_CALL Ptz_GetMoveParamMaxValue(int channel_index, const char* camera_name, const char *param_name, double &results, int timeout)
 {
  if(!MainForm)
-  return 0.0;
+  return RDK_RPC_LIBRARY_NOT_INIT;
 
  if(!MainForm->IdTCPClient->Connected())
-  return 0.0;
-	
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+
+ results=0.0;
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_GetMoveParamMaxValue", camera_name, channel_index);
  PtzControlXml.WriteString("ParamName", param_name);
@@ -962,24 +980,25 @@ double RDK_CALL Ptz_GetMoveParamMaxValue(int channel_index, const char* camera_n
    std::string answ;
    response.Save(answ);
    ServerAnswerDebug=answ.c_str();
-   return StrToFloat(response.ReadString("Data", "").c_str());
+   results=StrToFloat(response.ReadString("Data", "").c_str());
+   return response.ReadInteger("Res", RDK_RPC_UNSUCCESSFULL_DECODING);
   }
   else
   {
-   // заглушка
-   return 0.0;
+   return res;
   }
  }
 }
 
-bool RDK_CALL Ptz_SetMoveParamMaxValue(int channel_index, const char* camera_name, const char *param_name, double value, int timeout)
+int RDK_CALL Ptz_SetMoveParamMaxValue(int channel_index, const char* camera_name, const char *param_name, double value, bool &results, int timeout)
 {
  if(!MainForm)
-  return false;
+  return RDK_RPC_LIBRARY_NOT_INIT;
 
  if(!MainForm->IdTCPClient->Connected())
-  return false;
-	
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+
+ results=0;
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_SetMoveParamMaxValue", camera_name, channel_index);
  PtzControlXml.WriteString("ParamName", param_name);
@@ -995,12 +1014,12 @@ bool RDK_CALL Ptz_SetMoveParamMaxValue(int channel_index, const char* camera_nam
    std::string answ;
    response.Save(answ);
    ServerAnswerDebug=answ.c_str();
-   return bool(response.ReadInteger("Res", 0));
+   results=StrToBool(response.ReadString("Data", "").c_str());
+   return response.ReadInteger("Res", RDK_RPC_UNSUCCESSFULL_DECODING);
   }
   else
   {
-   // заглушка
-   return false;
+   return res;
   }
  }
 }
