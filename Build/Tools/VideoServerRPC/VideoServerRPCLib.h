@@ -130,7 +130,7 @@ RDK_LIB_TYPE int RDK_CALL Ptz_IsCmdImplemented(int channel_index, const char* ca
 RDK_LIB_TYPE int RDK_CALL Ptz_GetImplementedMoveParamsList(int channel_index, const char* camera_name, const char* &results, int timeout);
 
 /// Возвращает true если параметр поддерживается
-RDK_LIB_TYPE int RDK_CALL Ptz_IsMoveParamImplemented(int channel_index, const char* camera_name, const char *param_name, bool results, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_IsMoveParamImplemented(int channel_index, const char* camera_name, const char *param_name, bool &results, int timeout);
 RDK_LIB_TYPE int RDK_CALL Ptz_SetMoveParamImplemented(int channel_index, const char* camera_name, const char *param_name, bool value, bool &results, int timeout);
 
 /// Минимальное "родное" значение параметра
