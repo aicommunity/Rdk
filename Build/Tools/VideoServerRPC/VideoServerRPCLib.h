@@ -124,7 +124,7 @@ RDK_LIB_TYPE int RDK_CALL Ptz_CameraDisconnect(int channel_index, const char* ca
 
 /// Возвращает true если заданная функция реализована
 //RDK_LIB_TYPE bool RDK_CALL Ptz_IsCmdImplementedById(int channel_index, const char* camera_name, int cmd);
-RDK_LIB_TYPE int RDK_CALL Ptz_IsCmdImplemented(int channel_index, const char* camera_name, const char* cmd, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_IsCmdImplemented(int channel_index, const char* camera_name, const char* cmd, bool &results, int timeout);
 
 /// Возвращает список поддерживаемых параметров, разделенных запятой
 RDK_LIB_TYPE int RDK_CALL Ptz_GetImplementedMoveParamsList(int channel_index, const char* camera_name, const char* &results, int timeout);
