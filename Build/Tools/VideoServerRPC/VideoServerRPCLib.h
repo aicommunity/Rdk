@@ -33,6 +33,10 @@ extern "C"  {
 typedef int bool;
 #endif
 
+/// Вспомогательные методы
+/// Выделение имени камеры и индекса канала из составного имени компоненты
+RDK_LIB_TYPE bool RDK_CALL Rpc_CameraNameSeparator(const char* &source, const char* &camera_name, int &channel_index);
+
 /// Проверка состояния IdTCPClient
 RDK_LIB_TYPE bool RDK_CALL Rpc_IsClientConnected(void);
 
@@ -90,12 +94,22 @@ RDK_LIB_TYPE int RDK_CALL Ptz_GetCameraTypes(int channel_index, const char* &res
 /// Возвращает тип (класс) камеры по имени
 RDK_LIB_TYPE int RDK_CALL Ptz_GetCameraType(int channel_index, const char* camera_name, const char* &results, int timeout);
 
+/// Возвращает тип (класс) камеры по составному имени
+// составное имя камеры channel_index@camera_name
+RDK_LIB_TYPE int RDK_CALL Ptz_GetCameraTypeCN(const char* compaund_camera_name, const char* &results, int timeout);
+
 /// Добавляет новую камеру
 /// Инициализирует камеру с новым именем camera_name создавая управление типа camera_type
 RDK_LIB_TYPE int RDK_CALL Ptz_AddCamera(int channel_index, const char* camera_name, const char* camera_type, int timeout);
 
+// Инициализирует камеру через составное имя
+RDK_LIB_TYPE int RDK_CALL Ptz_AddCameraCN(const char* compaund_camera_name, const char* camera_type, int timeout);
+
 /// Удаляет камеру
 RDK_LIB_TYPE int RDK_CALL Ptz_DelCamera(int channel_index, const char* camera_name, int timeout);
+
+/// Удаляет камеру по состовному имени
+RDK_LIB_TYPE int RDK_CALL Ptz_DelCameraCN(const char* compaund_camera_name, int timeout);
 
 /// Удаляет все камеры
 RDK_LIB_TYPE int RDK_CALL Ptz_DelAllCameras(int channel_index, int timeout);
@@ -103,8 +117,14 @@ RDK_LIB_TYPE int RDK_CALL Ptz_DelAllCameras(int channel_index, int timeout);
 /// Задает значение параметра компонента управления камерой
 RDK_LIB_TYPE int RDK_CALL Ptz_SetCameraParameter(int channel_index, const char* camera_name, const char* param_name, const char* param_value, int timeout);
 
+/// Задает значение параметра компонента управления камерой по составному имени камеры
+RDK_LIB_TYPE int RDK_CALL Ptz_SetCameraParameterCN(const char* compaund_camera_name, const char* param_name, const char* param_value, int timeout);
+
 /// Считывает значение параметра компонента управления камерой
 RDK_LIB_TYPE int RDK_CALL Ptz_GetCameraParameter(int channel_index, const char* camera_name, const char* param_name, const char* &results, int timeout);
+
+/// Считывает значение параметра компонента управления камерой
+RDK_LIB_TYPE int RDK_CALL Ptz_GetCameraParameterCN(const char* compaund_camera_name, const char* param_name, const char* &results, int timeout);
 
 /// Возвращает конфигурацию и состояние камеры
 //RDK_LIB_TYPE TPtzCameraInfo* Ptz_GetPtzInfo(const char* camera_name);
@@ -116,38 +136,74 @@ RDK_LIB_TYPE int RDK_CALL Ptz_GetCameraParameter(int channel_index, const char* 
 /// Возвращает список поддерживаемых команд в виде списка, разделенного ','
 RDK_LIB_TYPE int RDK_CALL Ptz_GetImplementedCommands(int channel_index, const char* camera_name, const char* &results, int timeout);
 
+/// Возвращает список поддерживаемых команд камеры по составному имени в виде списка, разделенного ','
+RDK_LIB_TYPE int RDK_CALL Ptz_GetImplementedCommandsCN(const char* compaund_camera_name, const char* &results, int timeout);
+
 /// Выполняет действия по подключению к физической камере
 RDK_LIB_TYPE int RDK_CALL Ptz_CameraConnect(int channel_index, const char* camera_name, int timeout);
 
+/// Выполняет действия по подключению к физической камере  по составному имени
+RDK_LIB_TYPE int RDK_CALL Ptz_CameraConnectCN(const char* compaund_camera_name, int timeout);
+
 /// Выполняет действия по отключению от физической камеры
 RDK_LIB_TYPE int RDK_CALL Ptz_CameraDisconnect(int channel_index, const char* camera_name, int timeout);
+
+/// Выполняет действия по отключению от физической камеры по составному имени
+RDK_LIB_TYPE int RDK_CALL Ptz_CameraDisconnectCN(const char* compaund_camera_name, int timeout);
 
 /// Возвращает true если заданная функция реализована
 //RDK_LIB_TYPE bool RDK_CALL Ptz_IsCmdImplementedById(int channel_index, const char* camera_name, int cmd);
 RDK_LIB_TYPE int RDK_CALL Ptz_IsCmdImplemented(int channel_index, const char* camera_name, const char* cmd, bool &results, int timeout);
 
+/// Возвращает true если заданная функция реализована
+//RDK_LIB_TYPE bool RDK_CALL Ptz_IsCmdImplementedById(int channel_index, const char* camera_name, int cmd);
+RDK_LIB_TYPE int RDK_CALL Ptz_IsCmdImplementedCN(const char* compaund_camera_name, const char* cmd, bool &results, int timeout);
+
 /// Возвращает список поддерживаемых параметров, разделенных запятой
 RDK_LIB_TYPE int RDK_CALL Ptz_GetImplementedMoveParamsList(int channel_index, const char* camera_name, const char* &results, int timeout);
+
+/// Возвращает список поддерживаемых параметров камеры, разделенных запятой по составному имени
+RDK_LIB_TYPE int RDK_CALL Ptz_GetImplementedMoveParamsListCN(const char* compaund_camera_name, const char* &results, int timeout);
 
 /// Возвращает true если параметр поддерживается
 RDK_LIB_TYPE int RDK_CALL Ptz_IsMoveParamImplemented(int channel_index, const char* camera_name, const char *param_name, bool &results, int timeout);
 RDK_LIB_TYPE int RDK_CALL Ptz_SetMoveParamImplemented(int channel_index, const char* camera_name, const char *param_name, bool value, bool &results, int timeout);
 
+// По составному имени
+RDK_LIB_TYPE int RDK_CALL Ptz_IsMoveParamImplementedCN(const char* compaund_camera_name, const char *param_name, bool &results, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_SetMoveParamImplementedCN(const char* compaund_camera_name, const char *param_name, bool value, bool &results, int timeout);
+
 /// Минимальное "родное" значение параметра
 RDK_LIB_TYPE int RDK_CALL Ptz_GetMoveParamMinNativeValue(int channel_index, const char* camera_name, const char *param_name, double &results, int timeout);
 RDK_LIB_TYPE int RDK_CALL Ptz_SetMoveParamMinNativeValue(int channel_index, const char* camera_name, const char *param_name, double value, bool &results, int timeout);
+
+// По составному имени
+RDK_LIB_TYPE int RDK_CALL Ptz_GetMoveParamMinNativeValueCN(const char* compaund_camera_name, const char *param_name, double &results, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_SetMoveParamMinNativeValueCN(const char* compaund_camera_name, const char *param_name, double value, bool &results, int timeout);
 
 /// Максимальное "родное" значение параметра
 RDK_LIB_TYPE int RDK_CALL Ptz_GetMoveParamMaxNativeValue(int channel_index, const char* camera_name, const char *param_name, double &results, int timeout);
 RDK_LIB_TYPE int RDK_CALL Ptz_SetMoveParamMaxNativeValue(int channel_index, const char* camera_name, const char *param_name, double value, bool &results, int timeout);
 
+/// По составному имени
+RDK_LIB_TYPE int RDK_CALL Ptz_GetMoveParamMaxNativeValueCN(const char* compaund_camera_name, const char *param_name, double &results, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_SetMoveParamMaxNativeValueCN(const char* compaund_camera_name, const char *param_name, double value, bool &results, int timeout);
+
 /// Минимальное общепринятое значение параметра
 RDK_LIB_TYPE int RDK_CALL Ptz_GetMoveParamMinValue(int channel_index, const char* camera_name, const char *param_name, double &results, int timeout);
 RDK_LIB_TYPE int RDK_CALL Ptz_SetMoveParamMinValue(int channel_index, const char* camera_name, const char *param_name, double value, bool &results, int timeout);
 
+/// По составному имени
+RDK_LIB_TYPE int RDK_CALL Ptz_GetMoveParamMinValueCN(const char* compaund_camera_name, const char *param_name, double &results, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_SetMoveParamMinValueCN(const char* compaund_camera_name, const char *param_name, double value, bool &results, int timeout);
+
 /// Максимальное общепринятое значение параметра
 RDK_LIB_TYPE int RDK_CALL Ptz_GetMoveParamMaxValue(int channel_index, const char* camera_name, const char *param_name, double &results, int timeout);
 RDK_LIB_TYPE int RDK_CALL Ptz_SetMoveParamMaxValue(int channel_index, const char* camera_name, const char *param_name, double value, bool &results, int timeout);
+
+/// По составному имени
+RDK_LIB_TYPE int RDK_CALL Ptz_GetMoveParamMaxValueCN(const char* compaund_camera_name, const char *param_name, double &results, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_SetMoveParamMaxValueCN(const char* compaund_camera_name, const char *param_name, double value, bool &results, int timeout);
 // ---------------------
 // Общие функции управления движением
 // ---------------------
@@ -165,34 +221,23 @@ RDK_LIB_TYPE int RDK_CALL Ptz_GotoPoint(int channel_index, const char* camera_na
 
 /// Удаляет сохраненное предустановленное положение
 RDK_LIB_TYPE int RDK_CALL Ptz_RemovePoint(int channel_index, const char* camera_name, int i, int timeout);
-/// -------------------------------
-/// Функции чтения/записи параметров движения камеры
-/// Список возможных имен параметров движения:
-/// Pan, PanSpeed, Tilt, TiltSpeed, Zoom, ZoomSpeed, Focus, FocusSpeed,
-/// Iris, IrisSpeed, Brightness, BrightnessSpeed
-/// -------------------------------
-// ---------------------
-// Функции считывания состояния камеры в стандартизированных величинах
-// ---------------------
-RDK_LIB_TYPE int RDK_CALL Ptz_ReadPTZPosition(int channel_index, const char* camera_name, double &pan, double &tilt, double &zoom, int timeout);
-RDK_LIB_TYPE int RDK_CALL Ptz_ReadPTPosition(int channel_index, const char* camera_name, double &pan, double &tilt, int timeout);
-RDK_LIB_TYPE int RDK_CALL Ptz_ReadPanPosition(int channel_index, const char* camera_name, double &value, int timeout);
-RDK_LIB_TYPE int RDK_CALL Ptz_ReadTiltPosition(int channel_index, const char* camera_name, double &value, int timeout);
-RDK_LIB_TYPE int RDK_CALL Ptz_ReadZoomPosition(int channel_index, const char* camera_name, double &value, int timeout);
-RDK_LIB_TYPE int RDK_CALL Ptz_ReadFocusPosition(int channel_index, const char* camera_name, double &value, int timeout);
-RDK_LIB_TYPE int RDK_CALL Ptz_ReadIrisPosition(int channel_index, const char* camera_name, double &value, int timeout);
-RDK_LIB_TYPE int RDK_CALL Ptz_ReadBrightnessPosition(int channel_index, const char* camera_name, double &value, int timeout);
-// ---------------------
-// Функции считывания состояния камеры в родных для камеры величинах
-// ---------------------
-RDK_LIB_TYPE int RDK_CALL Ptz_ReadPTZPositionNative(int channel_index, const char* camera_name, double &pan, double &tilt, double &zoom, int timeout);
-RDK_LIB_TYPE int RDK_CALL Ptz_ReadPTPositionNative(int channel_index, const char* camera_name, double &pan, double &tilt, int timeout);
-RDK_LIB_TYPE int RDK_CALL Ptz_ReadPanPositionNative(int channel_index, const char* camera_name, double &value, int timeout);
-RDK_LIB_TYPE int RDK_CALL Ptz_ReadTiltPositionNative(int channel_index, const char* camera_name, double &value, int timeout);
-RDK_LIB_TYPE int RDK_CALL Ptz_ReadZoomPositionNative(int channel_index, const char* camera_name, double &value, int timeout);
-RDK_LIB_TYPE int RDK_CALL Ptz_ReadFocusPositionNative(int channel_index, const char* camera_name, double &value, int timeout);
-RDK_LIB_TYPE int RDK_CALL Ptz_ReadIrisPositionNative(int channel_index, const char* camera_name, double &value, int timeout);
-RDK_LIB_TYPE int RDK_CALL Ptz_ReadBrightnessPositionNative(int channel_index, const char* camera_name, double &value, int timeout);
+
+/// По составному имени
+/// Прекращает текущее движение камеры.
+RDK_LIB_TYPE int RDK_CALL Ptz_StopCN(const char* compaund_camera_name, int timeout);
+
+/// Возвращает камеру в начальное положение.
+RDK_LIB_TYPE int RDK_CALL Ptz_GotoHomeCN(const char* compaund_camera_name, int timeout);
+
+/// Запоминает текущее положение камеры как некоторое предустановленное.
+RDK_LIB_TYPE int RDK_CALL Ptz_PresetPointCN(const char* compaund_camera_name, int i, int timeout);
+
+/// Перемещает камеру в предустановленное положение.
+RDK_LIB_TYPE int RDK_CALL Ptz_GotoPointCN(const char* compaund_camera_name, int i, int timeout);
+
+/// Удаляет сохраненное предустановленное положение
+RDK_LIB_TYPE int RDK_CALL Ptz_RemovePointCN(const char* compaund_camera_name, int i, int timeout);
+
 // ---------------------
 // Функции управления перемещением по скорости
 // Скорость задается в станадартизованных библиотекой ед/с
@@ -227,6 +272,37 @@ RDK_LIB_TYPE int RDK_CALL Ptz_MoveIris(int channel_index, const char* camera_nam
 
 /// Изменение величины к-та усиления камеры  с скоростью speed.
 RDK_LIB_TYPE int RDK_CALL Ptz_MoveBrightness(int channel_index, const char* camera_name, double speed, int timeout);
+
+/// По составному имени
+/// Перемещает камеру одновременно по 3 направлениям Pan, Tilt, Zoom, со
+/// скоростями соответственно pan_speed, tilt_speed, zoom_speed, если камера поддерживает такой режим.
+RDK_LIB_TYPE int RDK_CALL Ptz_MovePTZCN(const char* compaund_camera_name, double pan_speed=0, double tilt_speed=0, double zoom_speed=0, int timeout=100);
+
+/// Перемещает камеру одновременно по 2 направлениям Pan, Tilt со
+/// скоростями соответственно pan_speed, tilt_speed, zoom_speed, если камера поддерживает такой режим.
+RDK_LIB_TYPE int RDK_CALL Ptz_MovePTCN(const char* compaund_camera_name, double pan_speed=0, double tilt_speed=0, int timeout=100);
+
+/// Перемещает камеру в направлении TPtzDirection со скоростью speed
+/// (здесь предполагается, что speed >=0).
+RDK_LIB_TYPE int RDK_CALL Ptz_MoveDirectionCN(const char* compaund_camera_name, TPtzDirection direction, double speed, int timeout);
+
+/// Перемещает камеру по горизонтальной оси с скоростью speed.
+RDK_LIB_TYPE int RDK_CALL Ptz_MovePanCN(const char* compaund_camera_name, double speed, int timeout);
+
+/// Перемещает камеру по вертикальной оси с скоростью speed.
+RDK_LIB_TYPE int RDK_CALL Ptz_MoveTiltCN(const char* compaund_camera_name, double speed, int timeout);
+
+/// Изменение поля зрения камеры  с скоростью speed.
+RDK_LIB_TYPE int RDK_CALL Ptz_MoveZoomCN(const char* compaund_camera_name, double speed, int timeout);
+
+/// Изменение фокусировки камеры  с скоростью speed.
+RDK_LIB_TYPE int RDK_CALL Ptz_MoveFocusCN(const char* compaund_camera_name, double speed, int timeout);
+
+/// Изменение величины диафрагмы камеры  с скоростью speed.
+RDK_LIB_TYPE int RDK_CALL Ptz_MoveIrisCN(const char* compaund_camera_name, double speed, int timeout);
+
+/// Изменение величины к-та усиления камеры  с скоростью speed.
+RDK_LIB_TYPE int RDK_CALL Ptz_MoveBrightnessCN(const char* compaund_camera_name, double speed, int timeout);
 // ---------------------
 // Функции управления перемещением по скорости
 // Скорость задается в родных для камеры единицах
@@ -241,6 +317,66 @@ RDK_LIB_TYPE int RDK_CALL Ptz_MoveZoomNative(int channel_index, const char* came
 RDK_LIB_TYPE int RDK_CALL Ptz_MoveFocusNative(int channel_index, const char* camera_name, double speed, int timeout);
 RDK_LIB_TYPE int RDK_CALL Ptz_MoveIrisNative(int channel_index, const char* camera_name, double speed, int timeout);
 RDK_LIB_TYPE int RDK_CALL Ptz_MoveBrightnessNative(int channel_index, const char* camera_name, double speed, int timeout);
+
+/// По составному имени
+RDK_LIB_TYPE int RDK_CALL Ptz_MovePTZNativeCN(const char* compaund_camera_name, double pan_speed=0, double tilt_speed=0, double zoom_speed=0, int timeout=100);
+RDK_LIB_TYPE int RDK_CALL Ptz_MovePTNativeCN(const char* compaund_camera_name, double pan_speed=0, double tilt_speed=0, int timeout=100);
+RDK_LIB_TYPE int RDK_CALL Ptz_MoveDirectionNativeCN(const char* compaund_camera_name, TPtzDirection direction, double speed, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_MovePanNativeCN(const char* compaund_camera_name, double speed, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_MoveTiltNativeCN(const char* compaund_camera_name, double speed, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_MoveZoomNativeCN(const char* compaund_camera_name, double speed, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_MoveFocusNativeCN(const char* compaund_camera_name, double speed, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_MoveIrisNativeCN(const char* compaund_camera_name, double speed, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_MoveBrightnessNativeCN(const char* compaund_camera_name, double speed, int timeout);
+/// -------------------------------
+/// Функции чтения/записи параметров движения камеры
+/// Список возможных имен параметров движения:
+/// Pan, PanSpeed, Tilt, TiltSpeed, Zoom, ZoomSpeed, Focus, FocusSpeed,
+/// Iris, IrisSpeed, Brightness, BrightnessSpeed
+/// -------------------------------
+// ---------------------
+// Функции считывания состояния камеры в стандартизированных величинах
+// ---------------------
+RDK_LIB_TYPE int RDK_CALL Ptz_ReadPTZPosition(int channel_index, const char* camera_name, double &pan, double &tilt, double &zoom, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_ReadPTPosition(int channel_index, const char* camera_name, double &pan, double &tilt, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_ReadPanPosition(int channel_index, const char* camera_name, double &value, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_ReadTiltPosition(int channel_index, const char* camera_name, double &value, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_ReadZoomPosition(int channel_index, const char* camera_name, double &value, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_ReadFocusPosition(int channel_index, const char* camera_name, double &value, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_ReadIrisPosition(int channel_index, const char* camera_name, double &value, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_ReadBrightnessPosition(int channel_index, const char* camera_name, double &value, int timeout);
+
+/// По составному имени
+RDK_LIB_TYPE int RDK_CALL Ptz_ReadPTZPositionCN(const char* compaund_camera_name, double &pan, double &tilt, double &zoom, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_ReadPTPositionCN(const char* compaund_camera_name, double &pan, double &tilt, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_ReadPanPositionCN(const char* compaund_camera_name, double &value, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_ReadTiltPositionCN(const char* compaund_camera_name, double &value, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_ReadZoomPositionCN(const char* compaund_camera_name, double &value, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_ReadFocusPositionCN(const char* compaund_camera_name, double &value, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_ReadIrisPositionCN(const char* compaund_camera_name, double &value, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_ReadBrightnessPositionCN(const char* compaund_camera_name, double &value, int timeout);
+// ---------------------
+// Функции считывания состояния камеры в родных для камеры величинах
+// ---------------------
+RDK_LIB_TYPE int RDK_CALL Ptz_ReadPTZPositionNative(int channel_index, const char* camera_name, double &pan, double &tilt, double &zoom, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_ReadPTPositionNative(int channel_index, const char* camera_name, double &pan, double &tilt, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_ReadPanPositionNative(int channel_index, const char* camera_name, double &value, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_ReadTiltPositionNative(int channel_index, const char* camera_name, double &value, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_ReadZoomPositionNative(int channel_index, const char* camera_name, double &value, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_ReadFocusPositionNative(int channel_index, const char* camera_name, double &value, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_ReadIrisPositionNative(int channel_index, const char* camera_name, double &value, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_ReadBrightnessPositionNative(int channel_index, const char* camera_name, double &value, int timeout);
+
+/// По составному имени
+RDK_LIB_TYPE int RDK_CALL Ptz_ReadPTZPositionNativeCN(const char* compaund_camera_name, double &pan, double &tilt, double &zoom, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_ReadPTPositionNativeCN(const char* compaund_camera_name, double &pan, double &tilt, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_ReadPanPositionNativeCN(const char* compaund_camera_name, double &value, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_ReadTiltPositionNativeCN(const char* compaund_camera_name, double &value, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_ReadZoomPositionNativeCN(const char* compaund_camera_name, double &value, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_ReadFocusPositionNativeCN(const char* compaund_camera_name, double &value, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_ReadIrisPositionNativeCN(const char* compaund_camera_name, double &value, int timeout);
+RDK_LIB_TYPE int RDK_CALL Ptz_ReadBrightnessPositionNativeCN(const char* compaund_camera_name, double &value, int timeout);
+// ---------------------
 /// -----------------------------------
 // Функции абсолютного позиционирования
 // Параметры задаются в станадартизованных библиотекой ед/с
@@ -310,6 +446,22 @@ RDK_LIB_TYPE int RDK_CALL Ptz_AutoIris(int channel_index, const char* camera_nam
 
 /// Автоподстройка к-та усиления
 RDK_LIB_TYPE int RDK_CALL Ptz_AutoBrightness(int channel_index, const char* camera_name, double value, int timeout);
+
+/// По составному имени
+/// Дворники
+RDK_LIB_TYPE int RDK_CALL Ptz_RainCN(const char* compaund_camera_name, double value, int timeout);
+
+/// Подсветка
+RDK_LIB_TYPE int RDK_CALL Ptz_LightCN(const char* compaund_camera_name, double value, int timeout);
+
+/// Автофокусировка
+RDK_LIB_TYPE int RDK_CALL Ptz_AutoFocusCN(const char* compaund_camera_name, double value, int timeout);
+
+/// Автодиафрагма
+RDK_LIB_TYPE int RDK_CALL Ptz_AutoIrisCN(const char* compaund_camera_name, double value, int timeout);
+
+/// Автоподстройка к-та усиления
+RDK_LIB_TYPE int RDK_CALL Ptz_AutoBrightnessCN(const char* compaund_camera_name, double value, int timeout);
 // ---------------------
 // Функции считывания состояния камеры в родных для камеры величинах
 // ---------------------

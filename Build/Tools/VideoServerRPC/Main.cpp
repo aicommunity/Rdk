@@ -27,6 +27,21 @@
 
 TDllMainForm *MainForm=0;
 
+/// Вспомогательные методы
+/// Выделение имени камеры и индекса канала из составного имени компоненты
+bool RDK_CALL Rpc_CameraNameSeparator(const char* &source, const char* &camera_name, int &channel_index)
+{
+ std::string sourceStr=source;
+ std::string::size_type i=sourceStr.find_first_of("@");
+ if(i == std::string::npos)
+  return false;
+
+ channel_index=atoi(sourceStr.substr(0,i).c_str());
+ camera_name=(sourceStr.substr(i+1)).c_str();
+ return true;
+}
+
+/// Проверка состояния IdTCPClient
 bool RDK_CALL Rpc_IsClientConnected(void)
 {
  if(MainForm)
@@ -53,6 +68,7 @@ bool RDK_CALL Rpc_SetServerAnswerDebug(const char* value)
  return true;
 }
 //----------------------------------------------------
+/// Инициализация
 int RDK_CALL Rpc_Init(void)
 {
  if(!MainForm)
@@ -72,6 +88,7 @@ int RDK_CALL Rpc_UnInit(void)
  return 0;
 }
 
+/// Коммуникация с сервером
 int RDK_CALL Rpc_Connect(const char* serverAddress, int serverPort)
 {
  if(MainForm)
@@ -331,6 +348,17 @@ int RDK_CALL Ptz_GetCameraType(int channel_index, const char* camera_name, const
  }
 }
 
+/// Возвращает тип (класс) камеры по составному имени
+// составное имя камеры channel_index@camera_name
+int RDK_CALL Ptz_GetCameraTypeCN(const char* compaund_camera_name, const char* &results, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_GetCameraType(channel_index, camera_name, results, timeout);
+}
+
 /// Добавляет новую камеру
 /// Инициализирует камеру с новым именем camera_name создавая управление типа camera_type
 int RDK_CALL Ptz_AddCamera(int channel_index, const char* camera_name, const char* camera_type, int timeout)
@@ -367,6 +395,16 @@ int RDK_CALL Ptz_AddCamera(int channel_index, const char* camera_name, const cha
  }
 }
 
+// Инициализирует камеру через составное имя
+int RDK_CALL Ptz_AddCameraCN(const char* compaund_camera_name, const char* camera_type, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_AddCamera(channel_index, camera_name, camera_type, timeout);
+}
+
 /// Удаляет камеру
 int RDK_CALL Ptz_DelCamera(int channel_index, const char* camera_name, int timeout)
 {
@@ -399,6 +437,16 @@ int RDK_CALL Ptz_DelCamera(int channel_index, const char* camera_name, int timeo
    return res;
   }
  }
+}
+
+/// Удаляет камеру по состовному имени
+int RDK_CALL Ptz_DelCameraCN(const char* compaund_camera_name, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_DelCamera(channel_index, camera_name, timeout);
 }
 
 /// Удаляет все камеры
@@ -443,7 +491,7 @@ int RDK_CALL Ptz_SetCameraParameter(int channel_index, const char* camera_name, 
 
  if(!MainForm->IdTCPClient->Connected())
   return RDK_RPC_CLIENT_NOT_CONNECTED;
-	
+
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_SetCameraParameter", camera_name, channel_index);
  PtzControlXml.WriteString("Parameter", param_name);
@@ -469,6 +517,16 @@ int RDK_CALL Ptz_SetCameraParameter(int channel_index, const char* camera_name, 
    return res;
   }
  }
+}
+
+/// Задает значение параметра компонента управления камерой по составному имени камеры
+int RDK_CALL Ptz_SetCameraParameterCN(const char* compaund_camera_name, const char* param_name, const char* param_value, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_SetCameraParameter(channel_index, camera_name, param_name, param_value, timeout);
 }
 
 /// Считывает значение параметра компонента управления камерой
@@ -505,6 +563,16 @@ int Ptz_GetCameraParameter(int channel_index, const char* camera_name, const cha
  }
 }
 
+/// Считывает значение параметра компонента управления камерой
+int RDK_CALL Ptz_GetCameraParameterCN(const char* compaund_camera_name, const char* param_name, const char* &results, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_GetCameraParameter(channel_index, camera_name, param_name, results, timeout);
+}
+
 /// Возвращает список поддерживаемых команд в виде списка, разделенного ','
 int Ptz_GetImplementedCommands(int channel_index, const char* camera_name, const char* &results, int timeout)
 {
@@ -538,9 +606,15 @@ int Ptz_GetImplementedCommands(int channel_index, const char* camera_name, const
  }
 }
 
+/// Возвращает список поддерживаемых команд камеры по составному имени в виде списка, разделенного ','
+int RDK_CALL Ptz_GetImplementedCommandsCN(const char* compaund_camera_name, const char* &results, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
 
-
-
+ return Ptz_GetImplementedCommands(channel_index, camera_name, results, timeout);
+}
 
 /// Выполняет действия по подключению к физической камере
 int RDK_CALL Ptz_CameraConnect(int channel_index, const char* camera_name, int timeout)
@@ -576,6 +650,16 @@ int RDK_CALL Ptz_CameraConnect(int channel_index, const char* camera_name, int t
  }
 }
 
+/// Выполняет действия по подключению к физической камере  по составному имени
+int RDK_CALL Ptz_CameraConnectCN(const char* compaund_camera_name, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_CameraConnect(channel_index, camera_name, timeout);
+}
+
 /// Выполняет действия по отключению от физической камеры
 int RDK_CALL Ptz_CameraDisconnect(int channel_index, const char* camera_name, int timeout)
 {
@@ -608,6 +692,16 @@ int RDK_CALL Ptz_CameraDisconnect(int channel_index, const char* camera_name, in
    return res;
   }
  }
+}
+
+/// Выполняет действия по отключению от физической камеры по составному имени
+int RDK_CALL Ptz_CameraDisconnectCN(const char* compaund_camera_name, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_CameraDisconnect(channel_index, camera_name, timeout);
 }
 
 /// Возвращает true если заданная функция реализована
@@ -645,6 +739,16 @@ int RDK_CALL Ptz_IsCmdImplemented(int channel_index, const char* camera_name, co
  }
 }
 
+/// Возвращает true если заданная функция реализована
+//RDK_LIB_TYPE bool RDK_CALL Ptz_IsCmdImplementedById(int channel_index, const char* camera_name, int cmd);
+int RDK_CALL Ptz_IsCmdImplementedCN(const char* compaund_camera_name, const char* cmd, bool &results, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_IsCmdImplemented(channel_index, camera_name, cmd, results, timeout);
+}
 
 /// Возвращает список поддерживаемых параметров, разделенных запятой
 int RDK_CALL Ptz_GetImplementedMoveParamsList(int channel_index, const char* camera_name, const char* &results, int timeout)
@@ -677,6 +781,16 @@ int RDK_CALL Ptz_GetImplementedMoveParamsList(int channel_index, const char* cam
    return res;
   }
  }
+}
+
+/// Возвращает список поддерживаемых параметров камеры, разделенных запятой по составному имени
+RDK_LIB_TYPE int RDK_CALL Ptz_GetImplementedMoveParamsListCN(const char* compaund_camera_name, const char* &results, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_GetImplementedMoveParamsList(channel_index, camera_name, results, timeout);
 }
 
 /// results = true если параметр поддерживается
@@ -747,6 +861,25 @@ int RDK_CALL Ptz_SetMoveParamImplemented(int channel_index, const char* camera_n
  }
 }
 
+// По составному имени
+int RDK_CALL Ptz_IsMoveParamImplementedCN(const char* compaund_camera_name, const char *param_name, bool &results, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_IsMoveParamImplemented(channel_index, camera_name, param_name, results, timeout);
+}
+
+int RDK_CALL Ptz_SetMoveParamImplementedCN(const char* compaund_camera_name, const char *param_name, bool value, bool &results, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_SetMoveParamImplemented(channel_index, camera_name, param_name, value, results, timeout);
+}
+
 /// Минимальное "родное" значение параметра
 int RDK_CALL Ptz_GetMoveParamMinNativeValue(int channel_index, const char* camera_name, const char *param_name, double &results, int timeout)
 {
@@ -813,6 +946,25 @@ int RDK_CALL Ptz_SetMoveParamMinNativeValue(int channel_index, const char* camer
    return res;
   }
  }
+}
+
+// По составному имени
+int RDK_CALL Ptz_GetMoveParamMinNativeValueCN(const char* compaund_camera_name, const char *param_name, double &results, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_GetMoveParamMinNativeValue(channel_index, camera_name, param_name, results, timeout);
+}
+
+int RDK_CALL Ptz_SetMoveParamMinNativeValueCN(const char* compaund_camera_name, const char *param_name, double value, bool &results, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_SetMoveParamMinNativeValue(channel_index, camera_name, param_name, value, results, timeout);
 }
 
 /// Максимальное "родное" значение параметра
@@ -883,6 +1035,25 @@ int RDK_CALL Ptz_SetMoveParamMaxNativeValue(int channel_index, const char* camer
  }
 }
 
+/// По составному имени
+int RDK_CALL Ptz_GetMoveParamMaxNativeValueCN(const char* compaund_camera_name, const char *param_name, double &results, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_GetMoveParamMaxNativeValue(channel_index, camera_name, param_name, results, timeout);
+}
+
+int RDK_CALL Ptz_SetMoveParamMaxNativeValueCN(const char* compaund_camera_name, const char *param_name, double value, bool &results, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_SetMoveParamMaxNativeValue(channel_index, camera_name, param_name, value, results, timeout);
+}
+
 /// Минимальное общепринятое значение параметра
 int RDK_CALL Ptz_GetMoveParamMinValue(int channel_index, const char* camera_name, const char *param_name, double &results, int timeout)
 {
@@ -951,6 +1122,25 @@ int RDK_CALL Ptz_SetMoveParamMinValue(int channel_index, const char* camera_name
  }
 }
 
+/// По составному имени
+int RDK_CALL Ptz_GetMoveParamMinValueCN(const char* compaund_camera_name, const char *param_name, double &results, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_GetMoveParamMinValue(channel_index, camera_name, param_name, results, timeout);
+}
+
+int RDK_CALL Ptz_SetMoveParamMinValueCN(const char* compaund_camera_name, const char *param_name, double value, bool &results, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_SetMoveParamMinValue(channel_index, camera_name, param_name, value, results, timeout);
+}
+
 /// Максимальное общепринятое значение параметра
 int RDK_CALL Ptz_GetMoveParamMaxValue(int channel_index, const char* camera_name, const char *param_name, double &results, int timeout)
 {
@@ -1017,6 +1207,25 @@ int RDK_CALL Ptz_SetMoveParamMaxValue(int channel_index, const char* camera_name
    return res;
   }
  }
+}
+
+/// По составному имени
+int RDK_CALL Ptz_GetMoveParamMaxValueCN(const char* compaund_camera_name, const char *param_name, double &results, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_GetMoveParamMaxValue(channel_index, camera_name, param_name, results, timeout);
+}
+
+int RDK_CALL Ptz_SetMoveParamMaxValueCN(const char* compaund_camera_name, const char *param_name, double value, bool &results, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_SetMoveParamMaxValue(channel_index, camera_name, param_name, value, results, timeout);
 }
 
 // ---------------------
@@ -1193,6 +1402,57 @@ int RDK_CALL Ptz_RemovePoint(int channel_index, const char* camera_name, int i, 
    return res;
   }
  }
+}
+
+/// По составному имени
+/// Прекращает текущее движение камеры.
+int RDK_CALL Ptz_StopCN(const char* compaund_camera_name, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_Stop(channel_index, camera_name, timeout);
+}
+
+/// Возвращает камеру в начальное положение.
+int RDK_CALL Ptz_GotoHomeCN(const char* compaund_camera_name, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_GotoHome(channel_index, camera_name, timeout);
+}
+
+/// Запоминает текущее положение камеры как некоторое предустановленное.
+int RDK_CALL Ptz_PresetPointCN(const char* compaund_camera_name, int i, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_PresetPoint(channel_index, camera_name, i, timeout);
+}
+
+/// Перемещает камеру в предустановленное положение.
+int RDK_CALL Ptz_GotoPointCN(const char* compaund_camera_name, int i, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_GotoPoint(channel_index, camera_name, i, timeout);
+}
+
+/// Удаляет сохраненное предустановленное положение
+int RDK_CALL Ptz_RemovePointCN(const char* compaund_camera_name, int i, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_RemovePoint(channel_index, camera_name, i, timeout);
 }
 // ---------------------
 // Функции управления перемещением по скорости
@@ -1520,6 +1780,100 @@ int RDK_CALL Ptz_MoveBrightness(int channel_index, const char* camera_name, doub
   }
  }
 }
+
+/// По составному имени
+/// Перемещает камеру одновременно по 3 направлениям Pan, Tilt, Zoom, со
+/// скоростями соответственно pan_speed, tilt_speed, zoom_speed, если камера поддерживает такой режим.
+int RDK_CALL Ptz_MovePTZCN(const char* compaund_camera_name, double pan_speed, double tilt_speed, double zoom_speed, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_MovePTZ(channel_index, camera_name, pan_speed, tilt_speed, zoom_speed, timeout);
+}
+
+/// Перемещает камеру одновременно по 2 направлениям Pan, Tilt со
+/// скоростями соответственно pan_speed, tilt_speed, zoom_speed, если камера поддерживает такой режим.
+int RDK_CALL Ptz_MovePTCN(const char* compaund_camera_name, double pan_speed, double tilt_speed, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_MovePT(channel_index, camera_name, pan_speed, tilt_speed, timeout);
+}
+
+/// Перемещает камеру в направлении TPtzDirection со скоростью speed
+/// (здесь предполагается, что speed >=0).
+int RDK_CALL Ptz_MoveDirectionCN(const char* compaund_camera_name, TPtzDirection direction, double speed, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_MoveDirection(channel_index, camera_name, direction, speed, timeout);
+}
+
+/// Перемещает камеру по горизонтальной оси с скоростью speed.
+int RDK_CALL Ptz_MovePanCN(const char* compaund_camera_name, double speed, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_MovePan(channel_index, camera_name, speed, timeout);
+}
+
+/// Перемещает камеру по вертикальной оси с скоростью speed.
+int RDK_CALL Ptz_MoveTiltCN(const char* compaund_camera_name, double speed, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_MoveTilt(channel_index, camera_name, speed, timeout);
+}
+
+/// Изменение поля зрения камеры  с скоростью speed.
+int RDK_CALL Ptz_MoveZoomCN(const char* compaund_camera_name, double speed, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_MoveZoom(channel_index, camera_name, speed, timeout);
+}
+
+/// Изменение фокусировки камеры  с скоростью speed.
+int RDK_CALL Ptz_MoveFocusCN(const char* compaund_camera_name, double speed, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_MoveFocus(channel_index, camera_name, speed, timeout);
+}
+
+/// Изменение величины диафрагмы камеры  с скоростью speed.
+int RDK_CALL Ptz_MoveIrisCN(const char* compaund_camera_name, double speed, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_MoveIris(channel_index, camera_name, speed, timeout);
+}
+
+/// Изменение величины к-та усиления камеры  с скоростью speed.
+int RDK_CALL Ptz_MoveBrightnessCN(const char* compaund_camera_name, double speed, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_MoveBrightness(channel_index, camera_name, speed, timeout);
+}
 // ---------------------
 // Функции управления перемещением по скорости
 // Скорость задается в родных для камеры единицах
@@ -1834,6 +2188,88 @@ int RDK_CALL Ptz_MoveBrightnessNative(int channel_index, const char* camera_name
   }
  }
 }
+
+/// По составному имени
+int RDK_CALL Ptz_MovePTZNativeCN(const char* compaund_camera_name, double pan_speed, double tilt_speed, double zoom_speed, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_MovePTZNative(channel_index, camera_name, pan_speed, tilt_speed, zoom_speed, timeout);
+}
+
+int RDK_CALL Ptz_MovePTNativeCN(const char* compaund_camera_name, double pan_speed, double tilt_speed, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_MovePTNative(channel_index, camera_name, pan_speed, tilt_speed, timeout);
+}
+
+int RDK_CALL Ptz_MoveDirectionNativeCN(const char* compaund_camera_name, TPtzDirection direction, double speed, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_MoveDirectionNative(channel_index, camera_name, direction, speed, timeout);
+}
+
+int RDK_CALL Ptz_MovePanNativeCN(const char* compaund_camera_name, double speed, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_MovePanNative(channel_index, camera_name, speed, timeout);
+}
+
+int RDK_CALL Ptz_MoveTiltNativeCN(const char* compaund_camera_name, double speed, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_MoveTiltNative(channel_index, camera_name, speed, timeout);
+}
+
+int RDK_CALL Ptz_MoveZoomNativeCN(const char* compaund_camera_name, double speed, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_MoveZoomNative(channel_index, camera_name, speed, timeout);
+}
+
+int RDK_CALL Ptz_MoveFocusNativeCN(const char* compaund_camera_name, double speed, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_MoveFocusNative(channel_index, camera_name, speed, timeout);
+}
+
+int RDK_CALL Ptz_MoveIrisNativeCN(const char* compaund_camera_name, double speed, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_MoveIrisNative(channel_index, camera_name, speed, timeout);
+}
+
+int RDK_CALL Ptz_MoveBrightnessNativeCN(const char* compaund_camera_name, double speed, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_MoveBrightnessNative(channel_index, camera_name, speed, timeout);
+}
 /// -------------------------------
 /// Функции чтения/записи параметров движения камеры
 /// Список возможных имен параметров движения:
@@ -2125,6 +2561,79 @@ int RDK_CALL Ptz_ReadBrightnessPosition(int channel_index, const char* camera_na
   }
  }
 }
+
+/// По составному имени
+int RDK_CALL Ptz_ReadPTZPositionCN(const char* compaund_camera_name, double &pan, double &tilt, double &zoom, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_ReadPTZPosition(channel_index, camera_name, pan, tilt, zoom, timeout);
+}
+
+int RDK_CALL Ptz_ReadPTPositionCN(const char* compaund_camera_name, double &pan, double &tilt, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_ReadPTPosition(channel_index, camera_name, pan, tilt, timeout);
+}
+
+int RDK_CALL Ptz_ReadPanPositionCN(const char* compaund_camera_name, double &value, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_ReadPanPosition(channel_index, camera_name, value, timeout);
+}
+
+int RDK_CALL Ptz_ReadTiltPositionCN(const char* compaund_camera_name, double &value, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_ReadTiltPosition(channel_index, camera_name, value, timeout);
+}
+
+int RDK_CALL Ptz_ReadZoomPositionCN(const char* compaund_camera_name, double &value, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_ReadZoomPosition(channel_index, camera_name, value, timeout);
+}
+
+int RDK_CALL Ptz_ReadFocusPositionCN(const char* compaund_camera_name, double &value, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_ReadFocusPosition(channel_index, camera_name, value, timeout);
+}
+
+int RDK_CALL Ptz_ReadIrisPositionCN(const char* compaund_camera_name, double &value, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_ReadIrisPosition(channel_index, camera_name, value, timeout);
+}
+
+int RDK_CALL Ptz_ReadBrightnessPositionCN(const char* compaund_camera_name, double &value, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_ReadBrightnessPosition(channel_index, camera_name, value, timeout);
+}
 // ---------------------
 // Функции считывания состояния камеры в родных для камеры величинах
 // ---------------------
@@ -2411,6 +2920,79 @@ int RDK_CALL Ptz_ReadBrightnessPositionNative(int channel_index, const char* cam
  }
 }
 
+/// По составному имени
+int RDK_CALL Ptz_ReadPTZPositionNativeCN(const char* compaund_camera_name, double &pan, double &tilt, double &zoom, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_ReadPTZPositionNative(channel_index, camera_name, pan, tilt, zoom, timeout);
+}
+
+int RDK_CALL Ptz_ReadPTPositionNativeCN(const char* compaund_camera_name, double &pan, double &tilt, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_ReadPTPositionNative(channel_index, camera_name, pan, tilt, timeout);
+}
+
+int RDK_CALL Ptz_ReadPanPositionNativeCN(const char* compaund_camera_name, double &value, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_ReadPanPositionNative(channel_index, camera_name, value, timeout);
+}
+
+int RDK_CALL Ptz_ReadTiltPositionNativeCN(const char* compaund_camera_name, double &value, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_ReadTiltPositionNative(channel_index, camera_name, value, timeout);
+}
+
+int RDK_CALL Ptz_ReadZoomPositionNativeCN(const char* compaund_camera_name, double &value, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_ReadZoomPositionNative(channel_index, camera_name, value, timeout);
+}
+
+int RDK_CALL Ptz_ReadFocusPositionNativeCN(const char* compaund_camera_name, double &value, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_ReadFocusPositionNative(channel_index, camera_name, value, timeout);
+}
+
+int RDK_CALL Ptz_ReadIrisPositionNativeCN(const char* compaund_camera_name, double &value, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_ReadIrisPositionNative(channel_index, camera_name, value, timeout);
+}
+
+int RDK_CALL Ptz_ReadBrightnessPositionNativeCN(const char* compaund_camera_name, double &value, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_ReadBrightnessPositionNative(channel_index, camera_name, value, timeout);
+}
+
 // ---------------------
 // Функции управления вспомогательными параметрами камеры
 // Эти функции управляют параметрами, представляющими собой флаг
@@ -2593,6 +3175,57 @@ int RDK_CALL Ptz_AutoBrightness(int channel_index, const char* camera_name, doub
  }
 }
 
+/// По составному имени
+/// Дворники
+int RDK_CALL Ptz_RainCN(const char* compaund_camera_name, double value, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_Rain(channel_index, camera_name, value, timeout);
+}
+
+/// Подсветка
+int RDK_CALL Ptz_LightCN(const char* compaund_camera_name, double value, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_Light(channel_index, camera_name, value, timeout);
+}
+
+/// Автофокусировка
+int RDK_CALL Ptz_AutoFocusCN(const char* compaund_camera_name, double value, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_AutoFocus(channel_index, camera_name, value, timeout);
+}
+
+/// Автодиафрагма
+int RDK_CALL Ptz_AutoIrisCN(const char* compaund_camera_name, double value, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_AutoIris(channel_index, camera_name, value, timeout);
+}
+
+/// Автоподстройка к-та усиления
+int RDK_CALL Ptz_AutoBrightnessCN(const char* compaund_camera_name, double value, int timeout)
+{
+ int channel_index;
+ const char* camera_name;
+ Rpc_CameraNameSeparator(compaund_camera_name, camera_name, channel_index);
+
+ return Ptz_AutoBrightness(channel_index, camera_name, value, timeout);
+}
+// ---------------------
 int WINAPI DllEntryPoint(HINSTANCE hinst, unsigned long reason, void* lpReserved)
 {
 	return 1;
