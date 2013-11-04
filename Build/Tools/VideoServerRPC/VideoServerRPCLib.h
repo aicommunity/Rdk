@@ -125,12 +125,7 @@ RDK_LIB_TYPE int RDK_CALL Ptz_CameraDisconnect(int channel_index, const char* ca
 /// Возвращает true если заданная функция реализована
 //RDK_LIB_TYPE bool RDK_CALL Ptz_IsCmdImplementedById(int channel_index, const char* camera_name, int cmd);
 RDK_LIB_TYPE int RDK_CALL Ptz_IsCmdImplemented(int channel_index, const char* camera_name, const char* cmd, int timeout);
-/// -------------------------------
-/// Функции чтения/записи параметров движения камеры
-/// Список возможных имен параметров движения:
-/// Pan, PanSpeed, Tilt, TiltSpeed, Zoom, ZoomSpeed, Focus, FocusSpeed,
-/// Iris, IrisSpeed, Brightness, BrightnessSpeed
-/// -------------------------------
+
 /// Возвращает список поддерживаемых параметров, разделенных запятой
 RDK_LIB_TYPE int RDK_CALL Ptz_GetImplementedMoveParamsList(int channel_index, const char* camera_name, const char* &results, int timeout);
 
@@ -170,6 +165,12 @@ RDK_LIB_TYPE int RDK_CALL Ptz_GotoPoint(int channel_index, const char* camera_na
 
 /// Удаляет сохраненное предустановленное положение
 RDK_LIB_TYPE int RDK_CALL Ptz_RemovePoint(int channel_index, const char* camera_name, int i, int timeout);
+/// -------------------------------
+/// Функции чтения/записи параметров движения камеры
+/// Список возможных имен параметров движения:
+/// Pan, PanSpeed, Tilt, TiltSpeed, Zoom, ZoomSpeed, Focus, FocusSpeed,
+/// Iris, IrisSpeed, Brightness, BrightnessSpeed
+/// -------------------------------
 // ---------------------
 // Функции считывания состояния камеры в стандартизированных величинах
 // ---------------------

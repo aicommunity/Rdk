@@ -645,12 +645,7 @@ int RDK_CALL Ptz_IsCmdImplemented(int channel_index, const char* camera_name, co
  }
 }
 
-/// -------------------------------
-/// Функции чтения/записи параметров движения камеры
-/// Список возможных имен параметров движения:
-/// Pan, PanSpeed, Tilt, TiltSpeed, Zoom, ZoomSpeed, Focus, FocusSpeed,
-/// Iris, IrisSpeed, Brightness, BrightnessSpeed
-/// -------------------------------
+
 /// Возвращает список поддерживаемых параметров, разделенных запятой
 int RDK_CALL Ptz_GetImplementedMoveParamsList(int channel_index, const char* camera_name, const char* &results, int timeout)
 {
@@ -1839,6 +1834,12 @@ int RDK_CALL Ptz_MoveBrightnessNative(int channel_index, const char* camera_name
   }
  }
 }
+/// -------------------------------
+/// Функции чтения/записи параметров движения камеры
+/// Список возможных имен параметров движения:
+/// Pan, PanSpeed, Tilt, TiltSpeed, Zoom, ZoomSpeed, Focus, FocusSpeed,
+/// Iris, IrisSpeed, Brightness, BrightnessSpeed
+/// -------------------------------
 // ---------------------
 // Функции считывания состояния камеры в стандартизированных величинах
 // ---------------------
