@@ -185,6 +185,45 @@ int TDllMainForm::WaitServerResponse(int cmdId, RDK::USerStorageXML &response, i
  }
 }
 //---------------------------------------------------------------------------
+// Разбиение строки по символу sep
+int TDllMainForm::SeparateString(const std::string &str, std::vector<std::string> &output, char sep, int num, int *lastpos)
+{
+ std::string::size_type i=0,j=0;
+ int size=0;
+ int nnum=(num>0)?num-1:0;
+
+ if(lastpos) *lastpos=0;
+ output.resize(0);
+ if(str.empty())
+  return 0;
+
+ while(i != std::string::npos && (nnum>=0) )
+ {
+  i=str.find_first_of(sep,j);
+  if(i == j)
+  {
+   j++;
+   continue;
+  }
+
+  ++size;
+  output.resize(size);
+  if(num)
+   nnum--;
+  if(i == std::string::npos)
+   output[size-1]=str.substr(j);
+  else
+   output[size-1]=str.substr(j,i-j);
+  j=i+1;
+  if(j >= str.size())
+   break;
+ }
+
+ if(lastpos) *lastpos=i;
+
+ return size;
+}
+//---------------------------------------------------------------------------
 __fastcall TDllMainForm::TDllMainForm(TComponent* Owner)
 	: TForm(Owner)
 {

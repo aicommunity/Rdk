@@ -94,6 +94,8 @@ int FindPacketById(int cmdId, RDK::USerStorageXML &xml);
 // Ожидание ответа сервера
 int WaitServerResponse(int cmdId, RDK::USerStorageXML &response, int timeout);
 
+// Разбиение строки по символу sep
+int SeparateString(const std::string &str, std::vector<std::string> &output, char sep, int num=0, int *lastpos=0);
 	__fastcall TDllMainForm(TComponent* Owner);
 };
 //---------------------------------------------------------------------------

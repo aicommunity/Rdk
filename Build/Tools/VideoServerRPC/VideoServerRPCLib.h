@@ -88,6 +88,9 @@ RDK_LIB_TYPE int RDK_CALL Rpc_GetNumChannels(int &results, int timeout);
 /// Возвращает список текущих камер в виде строки разделяемой ','
 RDK_LIB_TYPE int RDK_CALL Ptz_GetCameraNames(int channel_index, const char* &results, int timeout);
 
+/// Возвращает список составных имен текущих камер по всем каналам в виде строки разделяемой ','
+RDK_LIB_TYPE int RDK_CALL Ptz_GetCameraNamesAllChannels(const char* &results, int timeout);
+
 /// Возвращает список доступных типов (классов) камер в виде строки разделяемой ','
 RDK_LIB_TYPE int RDK_CALL Ptz_GetCameraTypes(int channel_index, const char* &results, int timeout);
 

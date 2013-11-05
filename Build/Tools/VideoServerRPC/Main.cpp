@@ -37,7 +37,8 @@ bool RDK_CALL Rpc_CameraNameSeparator(const char* &source, const char* &camera_n
   return false;
 
  channel_index=atoi(sourceStr.substr(0,i).c_str());
- camera_name=(sourceStr.substr(i+1)).c_str();
+ std::string temp=sourceStr.substr(i+1);
+ camera_name=temp.c_str();
  return true;
 }
 
@@ -280,6 +281,36 @@ int RDK_CALL Ptz_GetCameraNames(int channel_index, const char* &results, int tim
    return res;
   }
  }
+}
+
+/// Возвращает список составных имен текущих камер по всем каналам в виде строки разделяемой ','
+int RDK_CALL Ptz_GetCameraNamesAllChannels(const char* &results, int timeout)
+{
+ std::vector<std::string> camera_names_vector;
+ std::string camera_names;
+ int numChannels;
+ int res;
+
+ res=Rpc_GetNumChannels(numChannels, 1000);
+ for(int i=0; i<numChannels; i++)
+ {
+  std::string cams;
+  std::string temp;
+  const char* p;
+  res=Ptz_GetCameraNames(i, p, 1000);
+  if(p != NULL)
+   cams=p;
+
+  MainForm->SeparateString(cams, camera_names_vector, ',');
+  for(int j=0; j<camera_names_vector.size(); j++)
+  {
+   temp=AnsiString(IntToStr(i)).c_str();
+   camera_names+=temp+"@"+camera_names_vector[j]+",";
+  }
+ }
+
+ results=camera_names.c_str();
+ return res;
 }
 
 /// Возвращает список доступных типов (классов) камер в виде строки разделяемой ','
