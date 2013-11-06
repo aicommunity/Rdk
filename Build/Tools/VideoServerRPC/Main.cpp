@@ -31,13 +31,14 @@ TDllMainForm *MainForm=0;
 /// Выделение имени камеры и индекса канала из составного имени компоненты
 bool RDK_CALL Rpc_CameraNameSeparator(const char* &source, const char* &camera_name, int &channel_index)
 {
+ static std::string temp;
  std::string sourceStr=source;
  std::string::size_type i=sourceStr.find_first_of("@");
  if(i == std::string::npos)
   return false;
 
  channel_index=atoi(sourceStr.substr(0,i).c_str());
- std::string temp=sourceStr.substr(i+1);
+ temp=sourceStr.substr(i+1);
  camera_name=temp.c_str();
  return true;
 }
@@ -259,6 +260,7 @@ int RDK_CALL Ptz_GetCameraNames(int channel_index, const char* &results, int tim
  if(!MainForm->IdTCPClient->Connected())
   return RDK_RPC_CLIENT_NOT_CONNECTED;
 
+ static std::string res_string;
  results = NULL;
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PrepareCommandXml(PtzControlXml, "Ptz_GetCameraNames", channel_index);
@@ -273,7 +275,8 @@ int RDK_CALL Ptz_GetCameraNames(int channel_index, const char* &results, int tim
    std::string answ;
    response.Save(answ);
    ServerAnswerDebug=answ.c_str();
-   results=response.ReadString("Data", "").c_str();
+   res_string=response.ReadString("Data", "").c_str();
+   results=res_string.c_str();
    return response.ReadInteger("Res", RDK_RPC_UNSUCCESSFULL_DECODING);
   }
   else
@@ -305,7 +308,7 @@ int RDK_CALL Ptz_GetCameraNamesAllChannels(const char* &results, int timeout)
   for(int j=0; j<camera_names_vector.size(); j++)
   {
    temp=AnsiString(IntToStr(i)).c_str();
-   camera_names+=temp+"@"+camera_names_vector[j]+",";
+   camera_names+=temp+std::string("@")+camera_names_vector[j]+",";
   }
  }
 
@@ -322,6 +325,7 @@ int RDK_CALL Ptz_GetCameraTypes(int channel_index, const char* &results, int tim
  if(!MainForm->IdTCPClient->Connected())
   return RDK_RPC_CLIENT_NOT_CONNECTED;
 
+ static std::string res_string;
  results = NULL;
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PrepareCommandXml(PtzControlXml, "Ptz_GetCameraTypes", channel_index);
@@ -336,7 +340,8 @@ int RDK_CALL Ptz_GetCameraTypes(int channel_index, const char* &results, int tim
    std::string answ;
    response.Save(answ);
    ServerAnswerDebug=answ.c_str();
-   results=response.ReadString("Data", "").c_str();
+   res_string=response.ReadString("Data", "");
+   results=res_string.c_str();
    return response.ReadInteger("Res", RDK_RPC_UNSUCCESSFULL_DECODING);
   }
   else
@@ -355,6 +360,7 @@ int RDK_CALL Ptz_GetCameraType(int channel_index, const char* camera_name, const
  if(!MainForm->IdTCPClient->Connected())
   return RDK_RPC_CLIENT_NOT_CONNECTED;
 
+ static std::string res_string;
  results = NULL;
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_GetCameraType", camera_name, channel_index);
@@ -369,7 +375,8 @@ int RDK_CALL Ptz_GetCameraType(int channel_index, const char* camera_name, const
    std::string answ;
    response.Save(answ);
    ServerAnswerDebug=answ.c_str();
-   results=response.ReadString("Data", "").c_str();
+   res_string=response.ReadString("Data", "");
+   results=res_string.c_str();
    return response.ReadInteger("Res", RDK_RPC_UNSUCCESSFULL_DECODING);
   }
   else
@@ -569,6 +576,7 @@ int Ptz_GetCameraParameter(int channel_index, const char* camera_name, const cha
  if(!MainForm->IdTCPClient->Connected())
   return RDK_RPC_CLIENT_NOT_CONNECTED;
 
+ static std::string res_string;
  results = NULL;
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_GetCameraParameter", camera_name, channel_index);
@@ -584,7 +592,8 @@ int Ptz_GetCameraParameter(int channel_index, const char* camera_name, const cha
    std::string answ;
    response.Save(answ);
    ServerAnswerDebug=answ.c_str();
-   results=response.ReadString("Data", "").c_str();
+   res_string=response.ReadString("Data", "");
+   results=res_string.c_str();
    return response.ReadInteger("Res", RDK_RPC_UNSUCCESSFULL_DECODING);
   }
   else
@@ -613,6 +622,7 @@ int Ptz_GetImplementedCommands(int channel_index, const char* camera_name, const
  if(!MainForm->IdTCPClient->Connected())
   return RDK_RPC_CLIENT_NOT_CONNECTED;
 
+ static std::string res_string;
  results = NULL;
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_GetImplementedCommands", camera_name, channel_index);
@@ -627,7 +637,8 @@ int Ptz_GetImplementedCommands(int channel_index, const char* camera_name, const
    std::string answ;
    response.Save(answ);
    ServerAnswerDebug=answ.c_str();
-   results=response.ReadString("Data", "").c_str();
+   res_string=response.ReadString("Data", "");
+   results=res_string.c_str();
    return response.ReadInteger("Res", RDK_RPC_UNSUCCESSFULL_DECODING);
   }
   else
@@ -790,6 +801,7 @@ int RDK_CALL Ptz_GetImplementedMoveParamsList(int channel_index, const char* cam
  if(!MainForm->IdTCPClient->Connected())
   return RDK_RPC_CLIENT_NOT_CONNECTED;
 
+ static std::string res_string;
  results = NULL;
  RDK::USerStorageXML PtzControlXml;
  int cmdId=MainForm->PreparePtzControlXml(PtzControlXml, "Ptz_GetImplementedMoveParamsList", camera_name, channel_index);
@@ -804,7 +816,8 @@ int RDK_CALL Ptz_GetImplementedMoveParamsList(int channel_index, const char* cam
    std::string answ;
    response.Save(answ);
    ServerAnswerDebug=answ.c_str();
-   results=response.ReadString("Data", "").c_str();
+   res_string=response.ReadString("Data", "");
+   results=res_string.c_str();
    return response.ReadInteger("Res", RDK_RPC_UNSUCCESSFULL_DECODING);
   }
   else
