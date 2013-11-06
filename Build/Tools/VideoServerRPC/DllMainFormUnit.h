@@ -12,6 +12,9 @@
 #include <IdTCPClient.hpp>
 #include <IdTCPConnection.hpp>
 #include <Vcl.ExtCtrls.hpp>
+#include <IdIcmpClient.hpp>
+#include <IdRawBase.hpp>
+#include <IdRawClient.hpp>
 #include <vector>
 #include <map>
 #include <string>
@@ -66,6 +69,7 @@ class TDllMainForm : public TForm
 {
 __published:	// IDE-managed Components
 	TIdTCPClient *IdTCPClient;
+	TIdIcmpClient *IdIcmpClient;
 	void __fastcall FormCreate(TObject *Sender);
 	void __fastcall FormDestroy(TObject *Sender);
 private:	// User declarations

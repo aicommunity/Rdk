@@ -91,32 +91,55 @@ int RDK_CALL Rpc_UnInit(void)
 }
 
 /// Коммуникация с сервером
+int RDK_CALL Rpc_Ping(const char* serverAddress)
+{
+ if(!MainForm)
+ return RDK_RPC_LIBRARY_NOT_INIT;
+
+ try
+ {
+  MainForm->IdIcmpClient->Host=serverAddress;
+  MainForm->IdIcmpClient->Ping();
+
+  if (MainForm->IdIcmpClient->ReplyStatus->FromIpAddress==MainForm->IdIcmpClient->Host && MainForm->IdIcmpClient->ReplyStatus->ReplyStatusType==rsEcho)
+  {
+   return 0;
+  }
+ }
+ catch(EIdSocketError &err)
+ {
+  return RDK_RPC_SERVER_NOT_ACTIVE;    // что возвращать
+ }
+
+ return RDK_RPC_SERVER_NOT_ACTIVE;
+}
+
 int RDK_CALL Rpc_Connect(const char* serverAddress, int serverPort)
 {
- if(MainForm)
- {
-  if(MainForm->IdTCPClient->Connected())
-   MainForm->IdTCPClient->Disconnect(true);
+ if(!MainForm)
+ return RDK_RPC_LIBRARY_NOT_INIT;
 
-  //MainForm->IdTCPClient->Connect(serverAddress, serverPort);
+ const char* old_host=AnsiString(MainForm->IdTCPClient->Host).c_str();
+ int old_port=MainForm->IdTCPClient->Port;
+
+ if( !(MainForm->IdTCPClient->Connected())||(*old_host!=*serverAddress)||(old_port!=serverPort))
+ {
   MainForm->IdTCPClient->Host=serverAddress;
   MainForm->IdTCPClient->Port=serverPort;
   MainForm->IdTCPClient->Connect();
   SetEvent(MainForm->Thread->CalcStarted);
+  return 0;
  }
-
- return 0;
 }
 
 int RDK_CALL Rpc_Disconnect(void)
 {
- if(MainForm)
- {
-  ResetEvent(MainForm->Thread->CalcStarted);
-  MainForm->IdTCPClient->Disconnect(true);
-  ResetEvent(MainForm->Thread->CalcStarted);
- }
+ if(!MainForm)
+ return RDK_RPC_LIBRARY_NOT_INIT;
 
+ ResetEvent(MainForm->Thread->CalcStarted);
+ MainForm->IdTCPClient->Disconnect(true);
+ ResetEvent(MainForm->Thread->CalcStarted);
  return 0;
 }
 

@@ -1,6 +1,7 @@
 #ifndef VIDEO_SERVER_RPC_LIB_H
 #define VIDEO_SERVER_RPC_LIB_H
 
+#define RDK_RPC_SERVER_NOT_ACTIVE 9998
 #define RDK_RPC_CLIENT_NOT_CONNECTED 9999
 #define RDK_RPC_LIBRARY_NOT_INIT 100000
 #define RDK_RPC_RESPONSE_RECEIVE_TIMEOUT 10000
@@ -51,6 +52,8 @@ RDK_LIB_TYPE int RDK_CALL Rpc_Init(void);
 RDK_LIB_TYPE int RDK_CALL Rpc_UnInit(void);
 
 /// Коммуникация с сервером
+RDK_LIB_TYPE int RDK_CALL Rpc_Ping(const char* serverAddress);
+
 RDK_LIB_TYPE int RDK_CALL Rpc_Connect(const char* serverAddress, int serverPort);
 
 RDK_LIB_TYPE int RDK_CALL Rpc_Disconnect(void);
