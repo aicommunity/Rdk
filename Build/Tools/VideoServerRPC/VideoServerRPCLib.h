@@ -52,7 +52,7 @@ RDK_LIB_TYPE int RDK_CALL Rpc_Init(void);
 RDK_LIB_TYPE int RDK_CALL Rpc_UnInit(void);
 
 /// Коммуникация с сервером
-RDK_LIB_TYPE int RDK_CALL Rpc_Ping(const char* serverAddress);
+RDK_LIB_TYPE int RDK_CALL Rpc_Ping(void);
 
 RDK_LIB_TYPE int RDK_CALL Rpc_Connect(const char* serverAddress, int serverPort);
 

@@ -26,6 +26,7 @@
 #pragma argsused
 
 TDllMainForm *MainForm=0;
+const char* ServerAnswerDebug=NULL;
 
 /// Вспомогательные методы
 /// Выделение имени камеры и индекса канала из составного имени компоненты
@@ -54,8 +55,6 @@ bool RDK_CALL Rpc_IsClientConnected(void)
  return false;
 }
 //----------------------------------------------------
-const char* ServerAnswerDebug=NULL;
-
 const char* RDK_CALL Rpc_GetServerAnswerDebug(void)
 {
  return ServerAnswerDebug;
@@ -91,27 +90,32 @@ int RDK_CALL Rpc_UnInit(void)
 }
 
 /// Коммуникация с сервером
-int RDK_CALL Rpc_Ping(const char* serverAddress)
+int RDK_CALL Rpc_Ping(void)
 {
  if(!MainForm)
- return RDK_RPC_LIBRARY_NOT_INIT;
+  return RDK_RPC_LIBRARY_NOT_INIT;
 
- try
+ if(!MainForm->IdTCPClient->Connected())
+  return RDK_RPC_CLIENT_NOT_CONNECTED;
+
+ RDK::USerStorageXML xml;
+ int cmdId=MainForm->PrepareCommandXml(xml, "RpcPing", -1);
+ MainForm->SendControlCommand(xml);
+
+ RDK::USerStorageXML response;
+ int res=MainForm->WaitServerResponse(cmdId, response, 100);
+ if(res == 1)
  {
-  MainForm->IdIcmpClient->Host=serverAddress;
-  MainForm->IdIcmpClient->Ping();
-
-  if (MainForm->IdIcmpClient->ReplyStatus->FromIpAddress==MainForm->IdIcmpClient->Host && MainForm->IdIcmpClient->ReplyStatus->ReplyStatusType==rsEcho)
-  {
-   return 0;
-  }
+  std::string answ="Server is active";
+  ServerAnswerDebug=answ.c_str();
+  return 0;
  }
- catch(EIdSocketError &err)
+ else
  {
-  return RDK_RPC_SERVER_NOT_ACTIVE;    // что возвращать
+  std::string answ="Server is not active";
+  ServerAnswerDebug=answ.c_str();
+  return RDK_RPC_SERVER_NOT_ACTIVE;
  }
-
- return RDK_RPC_SERVER_NOT_ACTIVE;
 }
 
 int RDK_CALL Rpc_Connect(const char* serverAddress, int serverPort)
