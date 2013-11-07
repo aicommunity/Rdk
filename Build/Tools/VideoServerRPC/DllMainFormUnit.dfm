@@ -24,13 +24,4 @@ object DllMainForm: TDllMainForm
     Left = 264
     Top = 88
   end
-  object IdIcmpClient: TIdIcmpClient
-    ReceiveTimeout = 1000
-    Protocol = 1
-    ProtocolIPv6 = 0
-    IPVersion = Id_IPv4
-    PacketSize = 1024
-    Left = 136
-    Top = 88
-  end
 end

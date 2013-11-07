@@ -69,7 +69,6 @@ class TDllMainForm : public TForm
 {
 __published:	// IDE-managed Components
 	TIdTCPClient *IdTCPClient;
-	TIdIcmpClient *IdIcmpClient;
 	void __fastcall FormCreate(TObject *Sender);
 	void __fastcall FormDestroy(TObject *Sender);
 private:	// User declarations
