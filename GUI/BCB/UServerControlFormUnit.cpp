@@ -85,6 +85,11 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
 
  result.Create("RpcResponse");
  result.WriteString("Id", xml.ReadString("Id",""));
+ if(cmd == "RpcPing")
+ {
+  return_value=0;
+ }
+ else
  if(cmd == "SetNumChannels")
  {
   int num_engines=xml.ReadInteger("NumChannels",GetNumEngines());
