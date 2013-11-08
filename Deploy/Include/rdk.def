@@ -184,7 +184,8 @@ EXPORTS
     Model_GetComponentOutput = _Model_GetComponentOutput
     Model_GetComponentOutputByIndex = _Model_GetComponentOutputByIndex
     Model_GetComponentBitmapOutput = _Model_GetComponentBitmapOutput
-    Model_GetComponentBitmapOutputByIndex = _Model_GetComponentBitmapOutputByIndex
+    Model_GetComponentBitmapOutputByIndex = _Model_GetComponentBitmapOutputByIndex  
+    MModel_SetComponentBitmapOutputByIndex = _MModel_SetComponentBitmapOutputByIndex
     Model_GetComponentBitmapInput = _Model_GetComponentBitmapInput
     Model_GetComponentBitmapInputByIndex = _Model_GetComponentBitmapInputByIndex
     Model_SetComponentBitmapOutput = _Model_SetComponentBitmapOutput

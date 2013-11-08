@@ -296,11 +296,6 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::vector<double> &data)
 USerStorageXML& operator << (USerStorageXML& storage, const std::string &data)
 {
  storage.SetNodeAttribute("Type","std::string");
-// unsigned int size=data.size();
-// storage.SetNodeAttribute("Size",sntoa(size));
-
-// if(size <= 0)
-//  return storage;
 
  storage.SetNodeText(data);
  return storage;
@@ -308,17 +303,22 @@ USerStorageXML& operator << (USerStorageXML& storage, const std::string &data)
 
 USerStorageXML& operator >> (USerStorageXML& storage, std::string &data)
 {
-// if(storage.GetNodeAttribute("Type") != "std::string")
-//  return storage;
-
-// size_t size=0;
-// size=atoi(storage.GetNodeAttribute("Size"));
-// data.resize(size);
-
-// if(size <= 0)
-//  return storage;
-
  data=storage.GetNodeText();
+
+ return storage;
+}
+
+USerStorageXML& operator << (USerStorageXML& storage, const std::wstring &data)
+{
+// storage.SetNodeAttribute("Type","std::wstring");
+
+// storage.SetNodeText(data);
+ return storage;
+}
+
+USerStorageXML& operator >> (USerStorageXML& storage, std::wstring &data)
+{
+// data=storage.GetNodeText();
 
  return storage;
 }

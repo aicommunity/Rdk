@@ -345,9 +345,10 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::vector<T> &data)
 
 // Строки
 USerStorageXML& operator << (USerStorageXML& storage, const std::string &data);
-
 USerStorageXML& operator >> (USerStorageXML& storage, std::string &data);
 
+USerStorageXML& operator << (USerStorageXML& storage, const std::wstring &data);
+USerStorageXML& operator >> (USerStorageXML& storage, std::wstring &data);
 
 // Деревья
 template<typename T>
