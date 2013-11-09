@@ -130,7 +130,15 @@ int RDK_CALL Rpc_Connect(const char* serverAddress, int serverPort)
  {
   MainForm->IdTCPClient->Host=serverAddress;
   MainForm->IdTCPClient->Port=serverPort;
-  MainForm->IdTCPClient->Connect();
+  try
+  {
+   MainForm->IdTCPClient->Connect();
+  }
+  catch(EIdSocketError &ex)
+  {
+   return RDK_RPC_CONNECTION_ERROR;
+  }
+
   SetEvent(MainForm->Thread->CalcStarted);
   return 0;
  }
