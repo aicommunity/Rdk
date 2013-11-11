@@ -753,6 +753,27 @@ RDK_LIB_TYPE bool RDK_CALL Model_IncreaseRealTime(long long value);
 RDK_LIB_TYPE long long RDK_CALL Model_GetRealTimeStep(void);
 RDK_LIB_TYPE double RDK_CALL Model_GetDoubleRealTimeStep(void);
 
+// “екущее врем€ внешних источников данных в микросекундах
+RDK_LIB_TYPE long long RDK_CALL Model_GetSourceTime(void);
+RDK_LIB_TYPE long long RDK_CALL MModel_GetSourceTime(int engine_index);
+RDK_LIB_TYPE double RDK_CALL Model_GetDoubleSourceTime(void);
+RDK_LIB_TYPE double RDK_CALL MModel_GetDoubleSourceTime(int engine_index);
+
+// ”станавливает врем€ внешних источников данных
+RDK_LIB_TYPE bool RDK_CALL Model_SetSourceTime(long long value);
+RDK_LIB_TYPE bool RDK_CALL MModel_SetSourceTime(int engine_index, long long value);
+RDK_LIB_TYPE bool RDK_CALL Model_SetSourceTimeAll(long long value);
+
+// ”величивает врем€ внешних источников данных на заданную величину
+RDK_LIB_TYPE bool RDK_CALL Model_IncreaseSourceTime(long long value);
+RDK_LIB_TYPE bool RDK_CALL MModel_IncreaseSourceTime(int engine_index, long long value);
+
+// ћгновенный шаг во времени внешних источников данных в микросекундах
+RDK_LIB_TYPE long long RDK_CALL Model_GetSourceTimeStep(void);
+RDK_LIB_TYPE long long RDK_CALL MModel_GetSourceTimeStep(int engine_index);
+RDK_LIB_TYPE double RDK_CALL Model_GetDoubleSourceTimeStep(void);
+RDK_LIB_TYPE double RDK_CALL MModel_GetDoubleSourceTimeStep(int engine_index);
+
 // ¬озвращает врем€ расчета компонента без времени расчета дочерних компонент (мс)
 RDK_LIB_TYPE long long RDK_CALL Model_GetStepDuration(const char *stringid);
 RDK_LIB_TYPE long long RDK_CALL MModel_GetStepDuration(int engine_index, const char *stringid);

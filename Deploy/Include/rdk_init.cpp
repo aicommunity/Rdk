@@ -1580,6 +1580,96 @@ double RDK_CALL Model_GetDoubleRealTimeStep(void)
  return PEngine->Model_GetDoubleRealTimeStep();
 }
 
+// “екущее врем€ внешних источников данных в микросекундах
+long long RDK_CALL Model_GetSourceTime(void)
+{
+ return PEngine->Model_GetSourceTime();
+}
+
+long long RDK_CALL MModel_GetSourceTime(int engine_index)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+
+ return DllManager.EngineList[engine_index]->Model_GetSourceTime();
+}
+
+double RDK_CALL Model_GetDoubleSourceTime(void)
+{
+ return PEngine->Model_GetDoubleSourceTime();
+}
+
+double RDK_CALL MModel_GetDoubleSourceTime(int engine_index)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+
+ return DllManager.EngineList[engine_index]->Model_GetDoubleSourceTime();
+}
+
+// ”станавливает врем€ внешних источников данных
+bool RDK_CALL Model_SetSourceTime(long long value)
+{
+ return PEngine->Model_SetSourceTime(value);
+}
+
+bool RDK_CALL MModel_SetSourceTime(int engine_index, long long value)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+
+ return DllManager.EngineList[engine_index]->Model_SetSourceTime(value);
+}
+
+bool RDK_CALL Model_SetSourceTimeAll(long long value)
+{
+ bool res=true;
+ for(int i=0;i<GetNumEngines();i++)
+  res&=DllManager.EngineList[i]->Model_SetSourceTime(value);
+ return true;
+}
+
+// ”величивает врем€ внешних источников данных на заданную величину
+bool RDK_CALL Model_IncreaseSourceTime(long long value)
+{
+ return PEngine->Model_IncreaseSourceTime(value);
+}
+
+bool RDK_CALL MModel_IncreaseSourceTime(int engine_index, long long value)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+
+ return DllManager.EngineList[engine_index]->Model_IncreaseSourceTime(value);
+}
+
+// ћгновенный шаг во времени внешних источников данных в микросекундах
+long long RDK_CALL Model_GetSourceTimeStep(void)
+{
+ return PEngine->Model_GetSourceTimeStep();
+}
+
+long long RDK_CALL MModel_GetSourceTimeStep(int engine_index)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+
+ return DllManager.EngineList[engine_index]->Model_GetSourceTimeStep();
+}
+
+double RDK_CALL Model_GetDoubleSourceTimeStep(void)
+{
+ return PEngine->Model_GetDoubleSourceTimeStep();
+}
+
+double RDK_CALL MModel_GetDoubleSourceTimeStep(int engine_index)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+
+ return DllManager.EngineList[engine_index]->Model_GetDoubleSourceTimeStep();
+}
+
 // ¬озвращает врем€ расчета компонента без времени расчета дочерних компонент (мс)
 long long RDK_CALL Model_GetStepDuration(const char *stringid)
 {

@@ -218,7 +218,7 @@ inherited UComponentsListFrame: TUComponentsListFrame
             Height = 222
             Align = alClient
             DefaultRowHeight = 18
-            Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goRowSelect]
+            Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goColSizing, goRowSelect]
             TabOrder = 0
             OnClick = OutputsStringGridClick
             OnDblClick = OutputsStringGridDblClick
@@ -240,7 +240,7 @@ inherited UComponentsListFrame: TUComponentsListFrame
             Height = 275
             Align = alClient
             DefaultRowHeight = 18
-            Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goRowSelect]
+            Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goColSizing, goRowSelect]
             TabOrder = 0
             OnClick = InputsStringGridClick
             OnDblClick = InputsStringGridDblClick

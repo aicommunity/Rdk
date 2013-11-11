@@ -3090,6 +3090,41 @@ double UEngine::Model_GetDoubleRealTimeStep(void)
  return Environment->GetTime().GetDoubleRealTimeStep();
 }
 
+// “екущее врем€ внешних источников данных в микросекундах
+long long UEngine::Model_GetSourceTime(void) const
+{
+ return Environment->GetTime().GetSourceTime();
+}
+
+double UEngine::Model_GetDoubleSourceTime(void) const
+{
+ return Environment->GetTime().GetDoubleSourceTime();
+}
+
+// ”станавливает врем€ внешних источников данных
+bool UEngine::Model_SetSourceTime(long long value)
+{
+ return Environment->GetTime().SetSourceTime(value);
+}
+
+// ”величивает врем€ внешних источников данных на заданную величину
+bool UEngine::Model_IncreaseSourceTime(long long value)
+{
+ return Environment->GetTime().IncreaseSourceTime(value);
+}
+
+// ћгновенный шаг во времени внешних источников данных в микросекундах
+long long UEngine::Model_GetSourceTimeStep(void) const
+{
+ return Environment->GetTime().GetSourceTimeStep();
+}
+
+double UEngine::Model_GetDoubleSourceTimeStep(void) const
+{
+ return Environment->GetTime().GetDoubleSourceTimeStep();
+}
+
+
 // ¬озвращает врем€ расчета компонента без времени расчета дочерних компонент (мс)
 long long UEngine::Model_GetStepDuration(const char *stringid) const
 {
