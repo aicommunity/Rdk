@@ -730,6 +730,22 @@ int RDK_CALL MEnv_Reset(int engine_index, const char* stringid)
  return DllManager.EngineList[engine_index]->Env_Reset(stringid);
 }
 
+/// Метод сброса параметров на значения по умолчанию
+/// Если stringid == 0 то сбрасывает всю модель целиком,
+/// иначе - только указанный компонент модели
+/// Если subcomps == true то также сбрасывает параметры всех дочерних компонент
+int RDK_CALL Env_Default(const char* stringid, bool subcomps)
+{
+ return PEngine->Env_Default(stringid,subcomps);
+}
+
+int RDK_CALL MEnv_Default(int engine_index, const char* stringid, bool subcomps)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+ return DllManager.EngineList[engine_index]->Env_Default(stringid,subcomps);
+}
+
 // Производит увеличение времени модели на требуемую величину
 void RDK_CALL Env_IncreaseModelTimeByStep(void)
 {

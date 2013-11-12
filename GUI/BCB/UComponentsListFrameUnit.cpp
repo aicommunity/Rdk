@@ -662,7 +662,7 @@ void __fastcall TUComponentsListFrame::StringGridDblClick(TObject *Sender)
    CurrentComponentId="";
   }
 
-  UpdateInterface();
+  UpdateInterface(true);
   if(DrawEngineFrame)
    DrawEngineFrame->SetNet(GetCurrentComponentName());
 //   DrawEngineFrame->SelectComponent(GetCurrentComponentName());
@@ -677,7 +677,7 @@ void __fastcall TUComponentsListFrame::StringGridDblClick(TObject *Sender)
  SelectedId=StrToInt(StringGrid->Cells[0][StringGrid->Row]);
  CurrentComponentName+=AnsiString(StringGrid->Cells[1][StringGrid->Row]).c_str();
  CurrentComponentId+=AnsiString(StringGrid->Cells[0][StringGrid->Row]).c_str();
- UpdateInterface();
+ UpdateInterface(true);
 
  if(DrawEngineFrame)
 //  DrawEngineFrame->SelectComponent(GetCurrentComponentName());
@@ -765,7 +765,7 @@ void __fastcall TUComponentsListFrame::StateHeaderControlSectionClick(THeaderCon
  if(Section->Index == 0)
  {
   Model_SetComponentState(GetSelectedComponentLongName().c_str(),AnsiString(StateRichEdit->Text).c_str());
-  UpdateInterface();
+  UpdateInterface(true);
  }
  else
  if(Section->Index == 1)
@@ -820,7 +820,7 @@ void __fastcall TUComponentsListFrame::InputsStringGridClick(TObject *Sender)
 
 void __fastcall TUComponentsListFrame::PageControl1Change(TObject *Sender)
 {
- UpdateInterface();
+ UpdateInterface(true);
 }
 //---------------------------------------------------------------------------
 
@@ -885,7 +885,7 @@ void __fastcall TUComponentsListFrame::ParametersHeaderControlSectionClick(THead
  if(Section->Index == 0)
  {
   Model_SetComponentParameters(GetSelectedComponentLongName().c_str(),AnsiString(ParametersRichEdit->Text).c_str());
-  UpdateInterface();
+  UpdateInterface(true);
  }
  else
  if(Section->Index == 1)
@@ -895,7 +895,22 @@ void __fastcall TUComponentsListFrame::ParametersHeaderControlSectionClick(THead
  else
  if(Section->Index == 2)
  {
-
+  if(Application->MessageBox(L"Значения всех параметров этого компонента будут заменены на значения по умолчанию", L"Предупреждение", MB_YESNO) == ID_YES)
+  {
+   Env_Default(GetSelectedComponentLongName().c_str(), false);
+   Env_Reset(GetSelectedComponentLongName().c_str());
+   UpdateParameters();
+  }
+ }
+ else
+ if(Section->Index == 3)
+ {
+  if(Application->MessageBox(L"Значения всех параметров этого компонента и его дочерних компонент будут заменены на значения по умолчанию", L"Предупреждение", MB_YESNO) == ID_YES)
+  {
+   Env_Default(GetSelectedComponentLongName().c_str(), true);
+   Env_Reset(GetSelectedComponentLongName().c_str());
+   UpdateParameters();
+  }
  }
 }
 //---------------------------------------------------------------------------
@@ -908,7 +923,7 @@ void __fastcall TUComponentsListFrame::HeaderControl3SectionClick(THeaderControl
  if(Section->Index == 0)
  {
   Model_SetComponentParameterValue(GetSelectedComponentLongName().c_str(),AnsiString(ParametersListStringGrid->Cells[1][ParametersListStringGrid->Row]).c_str(), AnsiString(ParameterValueRichEdit->Text).c_str());
-  UpdateInterface();
+  UpdateInterface(true);
  }
  else
  if(Section->Index == 1)
@@ -918,7 +933,7 @@ void __fastcall TUComponentsListFrame::HeaderControl3SectionClick(THeaderControl
   if(UComponentsListForm->ShowComponentSelect() == mrOk)
   {
    Model_SetGlobalComponentPropertyValue(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName().c_str(), Model_GetComponentClassName(GetSelectedComponentLongName().c_str()),AnsiString(ParametersListStringGrid->Cells[1][ParametersListStringGrid->Row]).c_str(), AnsiString(ParameterValueRichEdit->Text).c_str());
-   UpdateInterface();
+   UpdateInterface(true);
   }
  }
  else
@@ -928,7 +943,7 @@ void __fastcall TUComponentsListFrame::HeaderControl3SectionClick(THeaderControl
   {
    std::string global_owner_stringid=Model_GetComponentClassName(CurrentComponentName.c_str());
    Model_SetGlobalOwnerComponentPropertyValue(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName().c_str(), Model_GetComponentClassName(GetSelectedComponentLongName().c_str()),global_owner_stringid.c_str(),AnsiString(ParametersListStringGrid->Cells[1][ParametersListStringGrid->Row]).c_str(), AnsiString(ParameterValueRichEdit->Text).c_str());
-   UpdateInterface();
+   UpdateInterface(true);
   }
  }
  else
@@ -939,7 +954,21 @@ void __fastcall TUComponentsListFrame::HeaderControl3SectionClick(THeaderControl
  else
  if(Section->Index == 4)
  {
-
+  if(Application->MessageBox(L"Значения всех параметров этого компонента будут заменены на значения по умолчанию", L"Предупреждение", MB_YESNO) == ID_YES)
+  {
+   Env_Default(GetSelectedComponentLongName().c_str(), false);
+   UpdateParameters();
+  }
+ }
+ else
+ if(Section->Index == 5)
+ {
+  if(Application->MessageBox(L"Значения всех параметров этого компонента и его дочерних компонент будут заменены на значения по умолчанию", L"Предупреждение", MB_YESNO) == ID_YES)
+  {
+   Env_Default(GetSelectedComponentLongName().c_str(), true);
+   Env_Reset(GetSelectedComponentLongName().c_str());
+   UpdateParameters();
+  }
  }
 }
 //---------------------------------------------------------------------------
@@ -952,7 +981,7 @@ void __fastcall TUComponentsListFrame::HeaderControl1SectionClick(THeaderControl
  if(Section->Index == 0)
  {
   Model_SetComponentStateValue(GetSelectedComponentLongName().c_str(),AnsiString(StatesListStringGrid->Cells[1][StatesListStringGrid->Row]).c_str(), AnsiString(StateValueRichEdit->Text).c_str());
-  UpdateInterface();
+  UpdateInterface(true);
  }
  else
  if(Section->Index == 1)
@@ -964,7 +993,7 @@ void __fastcall TUComponentsListFrame::HeaderControl1SectionClick(THeaderControl
   if(UComponentsListForm->ShowComponentSelect() == mrOk)
   {
    Model_SetGlobalComponentPropertyValue(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName().c_str(),Model_GetComponentClassName(GetSelectedComponentLongName().c_str()),AnsiString(StatesListStringGrid->Cells[1][StatesListStringGrid->Row]).c_str(), AnsiString(StateValueRichEdit->Text).c_str());
-   UpdateInterface();
+   UpdateInterface(true);
   }
  }
  else
@@ -976,7 +1005,7 @@ void __fastcall TUComponentsListFrame::HeaderControl1SectionClick(THeaderControl
   {
    std::string global_owner_stringid=Model_GetComponentClassName(CurrentComponentName.c_str());
    Model_SetGlobalOwnerComponentPropertyValue(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName().c_str(),Model_GetComponentClassName(GetSelectedComponentLongName().c_str()),global_owner_stringid.c_str(),AnsiString(StatesListStringGrid->Cells[1][StatesListStringGrid->Row]).c_str(), AnsiString(StateValueRichEdit->Text).c_str());
-   UpdateInterface();
+   UpdateInterface(true);
   }
  }
  else
@@ -995,14 +1024,14 @@ void __fastcall TUComponentsListFrame::HeaderControl1SectionClick(THeaderControl
 void __fastcall TUComponentsListFrame::Moveup1Click(TObject *Sender)
 {
  Model_ChangeComponentPosition(SelectedComponentName.c_str(),-1);
- UpdateInterface();
+ UpdateInterface(true);
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUComponentsListFrame::Movedown1Click(TObject *Sender)
 {
  Model_ChangeComponentPosition(SelectedComponentName.c_str(),1);
- UpdateInterface();
+ UpdateInterface(true);
 }
 //---------------------------------------------------------------------------
 
@@ -1070,7 +1099,7 @@ void __fastcall TUComponentsListFrame::StringGridKeyDown(TObject *Sender, WORD &
 	if(StringGrid->Row > 2)
 	 StringGrid->Row=StringGrid->Row-1;
 //	SelectedComponentName=name;
-	UpdateInterface();
+	UpdateInterface(true);
    }
    else
    if(Key == VK_DOWN || Key == VK_LEFT)
@@ -1080,7 +1109,7 @@ void __fastcall TUComponentsListFrame::StringGridKeyDown(TObject *Sender, WORD &
 	if(StringGrid->Row < StringGrid->RowCount-1)
 	 StringGrid->Row=StringGrid->Row+1;
 //	SelectedComponentName=name;
-	UpdateInterface();
+	UpdateInterface(true);
    }
   }
  }

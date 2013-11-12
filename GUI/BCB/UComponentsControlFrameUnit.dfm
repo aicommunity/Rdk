@@ -152,15 +152,31 @@ inherited UComponentsControlFrame: TUComponentsControlFrame
                 ExplicitWidth = 227
               end
             end
-            inherited TabSheet3: TTabSheet
-              ExplicitLeft = 4
-              ExplicitTop = 4
-              ExplicitWidth = 376
-              ExplicitHeight = 539
+            inherited TabSheet5: TTabSheet
+              inherited Splitter4: TSplitter
+                Top = 430
+                Width = 227
+              end
+              inherited StatesListStringGrid: TStringGrid
+                Width = 227
+                Height = 363
+              end
+              inherited HeaderControl1: THeaderControl
+                Top = 396
+                Width = 227
+              end
+              inherited StateValueRichEdit: TRichEdit
+                Top = 363
+                Width = 227
+              end
             end
             inherited TabSheet1: TTabSheet
               inherited ParametersHeaderControl: THeaderControl
-                ExplicitWidth = 227
+                Width = 227
+              end
+              inherited ParametersRichEdit: TRichEdit
+                Width = 227
+                Height = 407
               end
             end
           end
@@ -202,13 +218,27 @@ inherited UComponentsControlFrame: TUComponentsControlFrame
         ExplicitTop = 15
         ExplicitWidth = 300
         ExplicitHeight = 469
-        inherited StringGrid: TStringGrid
+        inherited PageControl: TPageControl
           Width = 300
           Height = 469
-          OnDblClick = ClassesListFrameStringGridDblClick
-          OnKeyPress = ClassesListFrameStringGridKeyPress
           ExplicitWidth = 300
           ExplicitHeight = 469
+          inherited NameTabSheet: TTabSheet
+            inherited StringGrid: TStringGrid
+              Width = 300
+              Height = 469
+              OnDblClick = ClassesListFrameStringGridDblClick
+              OnKeyPress = ClassesListFrameStringGridKeyPress
+              ExplicitWidth = 300
+              ExplicitHeight = 469
+            end
+          end
+          inherited LibsTabSheet: TTabSheet
+            ExplicitLeft = 4
+            ExplicitTop = 24
+            ExplicitWidth = 499
+            ExplicitHeight = 419
+          end
         end
       end
     end

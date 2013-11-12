@@ -329,6 +329,12 @@ virtual void Env_RTCalculate(void);
 // иначе - только указанный компонент модели
 virtual int Env_Reset(const char* stringid=0);
 
+/// Метод сброса параметров на значения по умолчанию
+/// Если stringid == 0 то сбрасывает всю модель целиком,
+/// иначе - только указанный компонент модели
+/// Если subcomps == true то также сбрасывает параметры всех дочерних компонент
+virtual int Env_Default(const char* stringid, bool subcomps=false);
+
 // Производит увеличение времени модели на требуемую величину
 virtual void Env_IncreaseModelTimeByStep(void);
 
@@ -845,6 +851,10 @@ int LoadLibraries(void);
 // Скрытые методы управления средой
 // --------------------------
 protected:
+/// Метод сброса параметров на значения по умолчанию
+/// Если subcomps == true то также сбрасывает параметры всех дочерних компонент
+virtual bool Env_Default(RDK::UContainer* cont, bool subcomps);
+
 // Возвращает свойства компонента по идентификатору
 virtual bool Model_GetComponentProperties(RDK::UContainer* cont, RDK::USerStorageXML *serstorage, unsigned int type_mask);
 

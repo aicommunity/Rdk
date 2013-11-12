@@ -234,6 +234,13 @@ RDK_LIB_TYPE void RDK_CALL MEnv_RTCalculate(int engine_index);
 RDK_LIB_TYPE int RDK_CALL Env_Reset(const char* stringid);
 RDK_LIB_TYPE int RDK_CALL MEnv_Reset(int engine_index, const char* stringid);
 
+/// Метод сброса параметров на значения по умолчанию
+/// Если stringid == 0 то сбрасывает всю модель целиком,
+/// иначе - только указанный компонент модели
+/// Если subcomps == true то также сбрасывает параметры всех дочерних компонент
+RDK_LIB_TYPE int RDK_CALL Env_Default(const char* stringid, bool subcomps=false);
+RDK_LIB_TYPE int RDK_CALL MEnv_Default(int engine_index, const char* stringid, bool subcomps=false);
+
 // Производит увеличение времени модели на требуемую величину
 RDK_LIB_TYPE void RDK_CALL Env_IncreaseModelTimeByStep(void);
 

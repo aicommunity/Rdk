@@ -103,6 +103,11 @@ inherited UComponentsListFrame: TUComponentsListFrame
               ImageIndex = -1
               Text = 'Default'
               Width = 50
+            end
+            item
+              ImageIndex = -1
+              Text = 'Default All'
+              Width = 65
             end>
           OnSectionClick = HeaderControl3SectionClick
           ShowHint = False
@@ -274,6 +279,11 @@ inherited UComponentsListFrame: TUComponentsListFrame
               ImageIndex = -1
               Text = 'Default'
               Width = 50
+            end
+            item
+              ImageIndex = -1
+              Text = 'Default All'
+              Width = 65
             end>
           OnSectionClick = ParametersHeaderControlSectionClick
           ShowHint = False

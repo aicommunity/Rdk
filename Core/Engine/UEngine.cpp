@@ -1014,28 +1014,59 @@ int UEngine::Env_Reset(const char* stringid)
   if(!stringid)
   {
    Environment->SetModelCalculationComponent(id);
+   if(!Environment->Reset())
+	throw EFunctionReturnFalse(__FILE__,__FUNCTION__,__LINE__);
   }
   else
   {
    RDK::UContainer* destcont=FindComponent(stringid);
    if(destcont)
-    destcont->GetLongId(Environment->GetModel(),id);
-//   id.DecodeFromString(stringid);
-    Environment->SetModelCalculationComponent(id);
+   {
+	if(!destcont->Reset())
+	 throw EFunctionReturnFalse(__FILE__,__FUNCTION__,__LINE__);
+   }
+   else
+	return 100000;
   }
-
-  if(!Environment->Reset())
-   throw EFunctionReturnFalse(__FILE__,__FUNCTION__,__LINE__);
-//   return 1;
  }
  catch (RDK::UException &exception)
  {
   ProcessException(exception);
  }
 
+ return 0;
+}
+
+/// Метод сброса параметров на значения по умолчанию
+/// Если stringid == 0 то сбрасывает всю модель целиком,
+/// иначе - только указанный компонент модели
+/// Если subcomps == true то также сбрасывает параметры всех дочерних компонент
+int UEngine::Env_Default(const char* stringid, bool subcomps)
+{
+ try
+ {
+  RDK::UContainer* destcont;
+  if(!stringid)
+  {
+   destcont=GetModel();
+  }
+  else
+  {
+   destcont=FindComponent(stringid);
+  }
+
+  if(!Env_Default(destcont,subcomps))
+   throw EFunctionReturnFalse(__FILE__,__FUNCTION__,__LINE__);
+ }
+ catch (RDK::UException &exception)
+ {
+  ProcessException(exception);
+ }
 
  return 0;
 }
+
+
 
 // Производит увеличение времени модели на требуемую величину
 void UEngine::Env_IncreaseModelTimeByStep(void)
@@ -3202,6 +3233,25 @@ long long UEngine::Model_GetInterstepsInterval(const char *stringid) const
 // --------------------------
 // Скрытые методы управления средой
 // --------------------------
+/// Метод сброса параметров на значения по умолчанию
+/// Если subcomps == true то также сбрасывает параметры всех дочерних компонент
+bool UEngine::Env_Default(RDK::UContainer* cont, bool subcomps)
+{
+ if(!cont)
+  return false;
+
+ if(!cont->Default())
+  return false;
+
+ bool res=true;
+ if(subcomps)
+ {
+  for(int i=0;i<cont->GetNumComponents();i++)
+   res &= Env_Default(cont->GetComponentByIndex(i),subcomps);
+ }
+ return res;
+}
+
 // Возвращает свойства компонента по идентификатору
 bool UEngine::Model_GetComponentProperties(RDK::UContainer* cont, RDK::USerStorageXML *serstorage, unsigned int type_mask)
 {
