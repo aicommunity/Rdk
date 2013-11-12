@@ -1446,6 +1446,7 @@ void UContainer::SharesUnInit(void)
 // Восстановление настроек по умолчанию и сброс процесса счета
 bool UContainer::Default(void)
 {
+ BeforeDefault();
  Ready=false;
  for(int i=0;i<NumComponents;i++)
   PComponents[i]->Default();
@@ -1468,7 +1469,10 @@ bool UContainer::Default(void)
   SetActivity(activity);
  }
 
- return ADefault();
+ if(!ADefault())
+  return false;
+ AfterDefault();
+ return true;
 }
 
 // Обеспечивает сборку внутренней структуры объекта
@@ -1480,6 +1484,8 @@ bool UContainer::Build(void)
  if(Ready)
   return true;
 
+ BeforeBuild();
+
  for(int i=0;i<NumComponents;i++)
   PComponents[i]->Build();
 
@@ -1487,6 +1493,7 @@ bool UContainer::Build(void)
  Ready=true;
  Reset();
 
+ AfterBuild();
  return true;
 }
 
@@ -1496,6 +1503,7 @@ bool UContainer::Reset(void)
  Build();
 
 // Init(); // Заглушка
+ BeforeReset();
 
  if(!IsInit())
   return true; // TODO //false;
@@ -1511,6 +1519,7 @@ bool UContainer::Reset(void)
  LastCalcTime=-1;
  InterstepsInterval=0;
  StepDuration=0;
+ AfterReset();
  return true;
 }
 
@@ -1529,6 +1538,7 @@ RDK_SYS_TRY {
    return false;
 
   Build();
+  BeforeCalculate();
 
   long long tempstepduration=StartCalcTime=GetCurrentStartupTime();
   InterstepsInterval=(LastCalcTime>=0)?CalcDiffTime(tempstepduration,LastCalcTime):0;
@@ -1600,6 +1610,7 @@ RDK_SYS_TRY {
 	(*controllers)->Update();
    }
   }
+  AfterCalculate();
  }
  catch(UException &exception)
  {
