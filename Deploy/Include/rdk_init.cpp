@@ -1629,6 +1629,28 @@ bool RDK_CALL Model_SetSourceTimeAll(long long value)
  return true;
 }
 
+// Устанавливает время внешних источников данных
+bool RDK_CALL Model_SetDoubleSourceTime(double value)
+{
+ return PEngine->Model_SetDoubleSourceTime(value);
+}
+
+bool RDK_CALL MModel_SetDoubleSourceTime(int engine_index, double value)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+
+ return DllManager.EngineList[engine_index]->Model_SetDoubleSourceTime(value);
+}
+
+bool RDK_CALL Model_SetDoubleSourceTimeAll(double value)
+{
+ bool res=true;
+ for(int i=0;i<GetNumEngines();i++)
+  res&=DllManager.EngineList[i]->Model_SetDoubleSourceTime(value);
+ return true;
+}
+
 // Увеличивает время внешних источников данных на заданную величину
 bool RDK_CALL Model_IncreaseSourceTime(long long value)
 {

@@ -3107,6 +3107,12 @@ bool UEngine::Model_SetSourceTime(long long value)
  return Environment->GetTime().SetSourceTime(value);
 }
 
+// Устанавливает время внешних источников данных в днях
+bool UEngine::Model_SetDoubleSourceTime(double value)
+{
+ return Environment->GetTime().SetDoubleSourceTime(value);
+}
+
 // Увеличивает время внешних источников данных на заданную величину
 bool UEngine::Model_IncreaseSourceTime(long long value)
 {

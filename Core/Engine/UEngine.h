@@ -732,6 +732,9 @@ virtual double Model_GetDoubleSourceTime(void) const;
 // Устанавливает время внешних источников данных
 virtual bool Model_SetSourceTime(long long value);
 
+// Устанавливает время внешних источников данных в днях
+virtual bool Model_SetDoubleSourceTime(double value);
+
 // Увеличивает время внешних источников данных на заданную величину
 virtual bool Model_IncreaseSourceTime(long long value);
 

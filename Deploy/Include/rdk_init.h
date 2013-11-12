@@ -764,6 +764,11 @@ RDK_LIB_TYPE bool RDK_CALL Model_SetSourceTime(long long value);
 RDK_LIB_TYPE bool RDK_CALL MModel_SetSourceTime(int engine_index, long long value);
 RDK_LIB_TYPE bool RDK_CALL Model_SetSourceTimeAll(long long value);
 
+// Устанавливает время внешних источников данных в днях
+RDK_LIB_TYPE bool RDK_CALL Model_SetDoubleSourceTime(double value);
+RDK_LIB_TYPE bool RDK_CALL MModel_SetDoubleSourceTime(int engine_index, double value);
+RDK_LIB_TYPE bool RDK_CALL Model_SetDoubleSourceTimeAll(double value);
+
 // Увеличивает время внешних источников данных на заданную величину
 RDK_LIB_TYPE bool RDK_CALL Model_IncreaseSourceTime(long long value);
 RDK_LIB_TYPE bool RDK_CALL MModel_IncreaseSourceTime(int engine_index, long long value);

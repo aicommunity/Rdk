@@ -148,6 +148,21 @@ bool UTimeControl::SetSourceTime(ULongTime value)
  return true;
 }
 
+// Устанавливает время внешних источников данных в днях
+bool UTimeControl::SetDoubleSourceTime(double value)
+{
+ DoubleSourceTime=value*86400;
+
+ long long new_source_time=DoubleSourceTime/1.0e6;
+
+ SourceTimeStep=new_source_time-SourceTime;
+ if(SourceTimeStep == 0)
+  SourceTimeStep=1;
+
+ SourceTime=new_source_time;
+ return true;
+}
+
 // Увеличивает время внешних источников данных на заданную величину
 bool UTimeControl::IncreaseSourceTime(ULongTime value)
 {

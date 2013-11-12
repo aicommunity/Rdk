@@ -89,6 +89,9 @@ const double& GetDoubleSourceTime(void) const;
 // Устанавливает время внешних источников данных
 bool SetSourceTime(ULongTime value);
 
+// Устанавливает время внешних источников данных в днях
+bool SetDoubleSourceTime(double value);
+
 // Увеличивает время внешних источников данных на заданную величину
 bool IncreaseSourceTime(ULongTime value);
 
