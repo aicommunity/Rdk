@@ -1592,10 +1592,14 @@ RDK_SYS_TRY {
   UpdateMainOwner();
   InterstepsInterval-=StepDuration;
 
-  if((MaxCalculationDuration >= 0) && ((GetCurrentStartupTime()-tempstepduration) < MaxCalculationDuration))
+  if((MaxCalculationDuration >= 0) && ((GetCurrentStartupTime()-tempstepduration) > MaxCalculationDuration))
   {
    if(Owner)
+   {
 	GetOwner()->ForceSkipComponentCalculation();
+	std::string temp;
+    LogMessage(RDK_EX_DEBUG, string("CalcTime>MaxCalculationDuration after ")+GetFullName(temp));
+   }
   }
 
   StepDuration=CalcDiffTime(GetCurrentStartupTime(),tempstepduration);
