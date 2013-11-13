@@ -1594,11 +1594,23 @@ void UBitmap::Reduce(int n, int m, UBitmap *target)
    for(int j=0; j<Width; j+=n)
    {
 	memcpy(p, s, PixelByteLength);
-	s+=PixelByteLength*(n-1);
 	p+=PixelByteLength;
-	s+=PixelByteLength;
+
+	if(Width-j >= n )
+	{
+	 s+=PixelByteLength*n;
+	}
+	else
+	{
+	 s+=PixelByteLength*(Width-j);
+	}
    }
-   s+=LineByteLength*(m-1);
+   if(Height-i >= m )
+	s+=LineByteLength*(m-1);
+   else
+   {
+	s+=LineByteLength*(Height-i);
+   }
   }
  }
  else if(!target || target==this)
@@ -1612,9 +1624,16 @@ void UBitmap::Reduce(int n, int m, UBitmap *target)
    for(int j=0; j<Width; j+=n)
    {
 	memcpy(p, s, PixelByteLength);
-	s+=PixelByteLength*(n-1);
 	p+=PixelByteLength;
-	s+=PixelByteLength;
+
+	if(Width-j >= n )
+	{
+	 s+=PixelByteLength*n;
+	}
+	else
+	{
+	 s+=PixelByteLength*(Width-j);
+	}
    }
    s+=LineByteLength*(m-1);
   }
