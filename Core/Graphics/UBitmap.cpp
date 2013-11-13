@@ -1563,6 +1563,73 @@ int UBitmap::CalcNumPixels(UColorT threshold) const
 // -------------------------
 // Методы обработки изображения
 // -------------------------
+// Прорежение изображения
+// Сохраняет каждый n-ый столбец изображения по горизонтали
+// и каждую m-ю строку по вертикали
+// Если 'target' != 0 то результат операции сохраняется в него
+void UBitmap::Reduce(int n, int m, UBitmap *target)
+{
+ if(n==0 || m==0)
+  return;
+
+ UBColor *p, *s;
+ int num_rows=Height/m;
+ int num_cols=Width/n;
+
+ if(num_rows==0 && num_cols==0)
+  return;
+
+ //int LineByteLength=CalcLineByteLength(Width,ColorModel);
+ //int nLineByteLength=CalcLineByteLength(Width-num_removed_cols, ColorModel);
+ //int PixelByteLength=LineByteLength/Width;
+
+ if(target)
+ {
+  target->SetRes(num_cols, num_rows, ColorModel);
+  p=target->Data;
+  s=Data;
+
+  for(int i=0; i<Height; i+=m)
+  {
+   for(int j=0; j<Width; j+=n)
+   {
+	memcpy(p, s, PixelByteLength);
+	s+=PixelByteLength*(n-1);
+	p+=PixelByteLength;
+	s+=PixelByteLength;
+   }
+   s+=LineByteLength*(m-1);
+  }
+ }
+ else if(!target || target==this)
+ {
+  UBColor *temp=new UBColor[num_cols*num_rows*PixelByteLength];
+  p=temp;
+  s=Data;
+
+  for(int i=0; i<Height; i+=m)
+  {
+   for(int j=0; j<Width; j+=n)
+   {
+	memcpy(p, s, PixelByteLength);
+	s+=PixelByteLength*(n-1);
+	p+=PixelByteLength;
+	s+=PixelByteLength;
+   }
+   s+=LineByteLength*(m-1);
+  }
+
+  delete []Data;
+  Data=temp;
+  ByteLength=MemoryLength=num_cols*num_rows*PixelByteLength;
+  Length=num_cols*num_rows;
+  Height=num_rows;
+  Width=num_cols;
+  CalcChannelOffset(Width, Height, ColorModel, ChannelOffset);
+  LineByteLength=CalcLineByteLength(Width,ColorModel);
+ }
+}
+
 // Отражение по вертикали
 // Если 'target' != 0 то результат операции сохраняется в него
 // и цветовая модель 'target' замещается моделью источника
@@ -2105,26 +2172,26 @@ void UBitmap::RemoveHorLine(int y, int thickness, UBitmap *target)
  if(target)
   {
    if(Height-thickness == 0)
-    {
-     target->SetRes(Width,0);
-     return;
+	{
+	 target->SetRes(Width,0);
+	 return;
     }
 
    target->SetRes(Width,Height-thickness,ColorModel);
    memcpy(target->Data,Data,y*LineByteLength);
    memcpy(target->Data+y*LineByteLength,Data+(y+thickness)*LineByteLength,
-                                           (Height-y-thickness)*LineByteLength);
+										   (Height-y-thickness)*LineByteLength);
   }
  else
   {
    if(Height-thickness == 0)
     {
-     SetRes(Width,0);
-     return;
-    }
+	 SetRes(Width,0);
+	 return;
+	}
 
    memmove(Data+y*LineByteLength, Data+(y+thickness)*LineByteLength,
-                                   (Height-y-thickness)*LineByteLength);
+								   (Height-y-thickness)*LineByteLength);
    Height-=thickness;
    ByteLength=Height*LineByteLength;
    Length=Width*Height;
