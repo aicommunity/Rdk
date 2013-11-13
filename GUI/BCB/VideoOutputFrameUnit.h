@@ -691,6 +691,7 @@ std::string LinkedComponentPropertyName;
 
 
 public:
+String LicenseString;
 // Временная метка сервера
 //long long ServerTimeStamp;
 

@@ -106,6 +106,7 @@ void TVideoOutputForm::AddSource(void)
  Sources[index]->Parent=sheet;
  Sources[index]->Align=alClient;
  PageControl->Pages[index]->Caption=IntToStr(int(index));
+ Sources[index]->LicenseString=UGEngineControlForm->VideoGrabberLicenseString;
 /* if(index == 0)
   Sources[index]->VideoGrabber->SynchronizationRole=sr_Master;
  else

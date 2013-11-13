@@ -46,6 +46,35 @@ UTimeControl::~UTimeControl(void)
 // --------------------------
 // Методы управления глобальными свойствами
 // --------------------------
+/// Время начала расчета в днях
+double UTimeControl::GetStartDayTime(void) const
+{
+ return StartDayTime;
+}
+
+bool UTimeControl::SetStartDayTime(double value)
+{
+ StartDayTime=value;
+ return true;
+}
+
+/// Текущее время в днях
+double UTimeControl::GetCurrentDayTime(void) const
+{
+ return CurrentDayTime;
+}
+
+double UTimeControl::SetCurrentDayTime(double value)
+{
+ CurrentDayTime=value;
+ return true;
+}
+// --------------------------
+
+
+// --------------------------
+// Методы управления глобальными свойствами
+// --------------------------
 // Возвращает текущее время модели
 const ULongTime& UTimeControl::GetTime(void) const
 {

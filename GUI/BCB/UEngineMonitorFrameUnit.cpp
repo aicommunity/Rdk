@@ -160,7 +160,7 @@ void __fastcall TEngineThread::Execute(void)
   BeforeCalculate();
   if(GetNumEngines()>ChannelIndex)
   {
-   TDateTime dt;
+   TDateTime dt=TDateTime::CurrentDateTime();
    MModel_SetDoubleSourceTime(ChannelIndex,dt.operator double());
    MModel_SetComponentBitmapOutput(ChannelIndex, "", "Output", &Source,false);
    MEnv_Calculate(ChannelIndex,0);
@@ -464,7 +464,7 @@ void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
    }
    CalculateSignal[i]=false;
 
-   TDateTime dt;
+   TDateTime dt=TDateTime::CurrentDateTime();
    MModel_SetDoubleSourceTime(i,dt.operator double());
    switch(CalculateMode[i])
    {

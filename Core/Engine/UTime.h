@@ -10,7 +10,14 @@ extern UTime DefaultTimeStep;
 
 class UTimeControl
 {
-private: // Глобальные свойства
+private: // Свойства времени в процессе работы в днях от начала времен
+/// Время начала расчета в днях
+double StartDayTime;
+
+/// Текущее время в днях
+double CurrentDayTime;
+
+private: // Свойства времени в процессе работы в микросекундах и секундах от начала расчета
 // Текущее время модели в микросекундах
 ULongTime Time;
 
@@ -48,6 +55,18 @@ public: // Открытые методы
 // --------------------------
 UTimeControl(void);
 virtual ~UTimeControl(void);
+// --------------------------
+
+// --------------------------
+// Методы управления глобальными свойствами
+// --------------------------
+/// Время начала расчета в днях
+double GetStartDayTime(void) const;
+bool SetStartDayTime(double value);
+
+/// Текущее время в днях
+double GetCurrentDayTime(void) const;
+double SetCurrentDayTime(double value);
 // --------------------------
 
 // --------------------------
@@ -100,6 +119,12 @@ const ULongTime& GetSourceTimeStep(void) const;
 const double& GetDoubleSourceTimeStep(void) const;
 // --------------------------
 
+// --------------------------
+/// Методы доступа к текущему времени расчета от начала времен в днях
+// --------------------------
+/// Возвращает
+//double CalcDoubleRealTime
+// --------------------------
 
 };
 

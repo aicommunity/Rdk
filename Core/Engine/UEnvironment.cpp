@@ -671,7 +671,7 @@ bool UEnvironment::ADefault(void)
  if(!Model)
   return true;
 
- MinInterstepsInterval=200;
+ MinInterstepsInterval=0;
  DebugMode=false;
 
 // UComponent::SetTime(0);
@@ -770,7 +770,7 @@ bool UEnvironment::ACalculate(void)
   return true;
 
  // Проверяем, достаточно ли велик интервал времени между итерациями счета
- if(cur_time-LastStepStartTime<MinInterstepsInterval)
+ if(MinInterstepsInterval>0 && cur_time-LastStepStartTime<MinInterstepsInterval)
   return true;
 
  LastStepStartTime=cur_time;

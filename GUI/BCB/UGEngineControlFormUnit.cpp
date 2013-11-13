@@ -1577,6 +1577,8 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  HideAdminFormFlag=app_ini->ReadBool("General", "HideAdminForm", false);
  AutoexecProjectFileName=app_ini->ReadString("General", "AutoexecProjectFileName", "");
  AutoStartProjectFlag=app_ini->ReadBool("General", "AutoStartProjectFlag", false);
+ VideoGrabberLicenseString=app_ini->ReadString("General","VideoGrabberLicenseString","");
+
 
  // Грузим шрифты
  std::vector<std::string> font_names;

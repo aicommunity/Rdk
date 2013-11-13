@@ -242,6 +242,9 @@ std::vector<long long> MinInterstepsInterval;
 // Список специальных форм (не имеющих компонента управления в модели)
 std::map<std::string, TUVisualControllerForm*> SpecialForms;
 
+/// Лицензия TVideoGrabber
+String VideoGrabberLicenseString;
+
 // Обновление интерфейса
 void AUpdateInterface(void);
 
