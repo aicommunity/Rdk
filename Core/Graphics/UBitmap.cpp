@@ -1573,8 +1573,8 @@ void UBitmap::Reduce(int n, int m, UBitmap *target)
   return;
 
  UBColor *p, *s;
- int num_rows=Height/m+1;
- int num_cols=Width/n+1;
+ int num_rows=Height/m;
+ int num_cols=Width/n;
 
  if(num_rows==0 && num_cols==0)
   return;
