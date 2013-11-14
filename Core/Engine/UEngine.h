@@ -732,21 +732,21 @@ virtual long long Model_GetRealTimeStep(void);
 virtual double Model_GetDoubleRealTimeStep(void);
 
 // “екущее врем€ внешних источников данных в микросекундах
-virtual long long Model_GetSourceTime(void) const;
+//virtual long long Model_GetSourceTime(void) const;
 virtual double Model_GetDoubleSourceTime(void) const;
 
 // ”станавливает врем€ внешних источников данных
-virtual bool Model_SetSourceTime(long long value);
+//virtual bool Model_SetSourceTime(long long value);
 
 // ”станавливает врем€ внешних источников данных в дн€х
 virtual bool Model_SetDoubleSourceTime(double value);
 
 // ”величивает врем€ внешних источников данных на заданную величину
-virtual bool Model_IncreaseSourceTime(long long value);
+//virtual bool Model_IncreaseSourceTime(long long value);
 
 // ћгновенный шаг во времени внешних источников данных в микросекундах
-virtual long long Model_GetSourceTimeStep(void) const;
-virtual double Model_GetDoubleSourceTimeStep(void) const;
+//virtual long long Model_GetSourceTimeStep(void) const;
+//virtual double Model_GetDoubleSourceTimeStep(void) const;
 
 // ¬озвращает врем€ расчета компонента без времени расчета дочерних компонент (мс)
 long long Model_GetStepDuration(const char *stringid) const;

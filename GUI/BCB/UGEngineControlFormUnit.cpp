@@ -46,7 +46,7 @@ TUGEngineControlForm *UGEngineControlForm;
 __fastcall TUGEngineControlForm::TUGEngineControlForm(TComponent* Owner)
 	: TUVisualControllerForm(Owner)
 {
- ProjectAutoSaveFlag=true;
+	 ProjectAutoSaveFlag=true;
 
  // Признак наличия открытого проекта
  ProjectOpenFlag=false;

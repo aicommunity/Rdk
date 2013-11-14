@@ -428,7 +428,18 @@ void UEnvironment::RTCalculate(void)
 // StartProcTime=GetCurrentStartupTime();
 
  CurrentTime=GetCurrentStartupTime();
- Time.SetRealTime(CalcDiffTime(GetCurrentStartupTime(),StartupTime)*1000);
+// Time.SetRealTime(CalcDiffTime(GetCurrentStartupTime(),StartupTime)*1000);
+ Time.SetSourceStepLocalTime(double(GetCurrentStartupTime())/1000.0);
+
+ // Если первый шаг расчета после Reset
+ if(Time.GetTime() == 0)
+ {
+  Time.SetSourceStartLocalTime(Time.GetSourceStepLocalTime());
+  Time.SetSourceStartGlobalTime(Time.GetSourceStepGlobalTime());
+  StartupTime=CurrentTime;
+  ProcEndTime=StartupTime;
+ }
+
 
  long long curtime;
  long long TimerInterval=0;
@@ -469,7 +480,8 @@ void UEnvironment::RTCalculate(void)
  if(Time.GetRealTime()/1e6<Time.GetDoubleTime())
  {
   Sleep(int(Time.GetDoubleTime()*1000-Time.GetRealTime()/1000));
-  Time.SetRealTime(CalcDiffTime(GetCurrentStartupTime(),StartupTime)*1000);
+  Time.SetSourceStepLocalTime(double(GetCurrentStartupTime())/1000.0);
+//  Time.SetRealTime(CalcDiffTime(GetCurrentStartupTime(),StartupTime)*1000);
  }
 
  LastDuration=GetCurrentStartupTime()-CurrentTime;
@@ -728,9 +740,11 @@ bool UEnvironment::ABuild(void)
 // Сброс процесса счета.
 bool UEnvironment::AReset(void)
 {
- StartupTime=GetCurrentStartupTime();
- LastDuration=1;
+// Time.SetModelStartSecondTime(double(GetCurrentStartupTime())/1000.0);
+// StartupTime=GetCurrentStartupTime();
+ StartupTime=0;
  ProcEndTime=StartupTime;
+ LastDuration=1;
  LastStepStartTime=0;
  LastErrorLevel=INT_MAX;
 
@@ -765,7 +779,18 @@ bool UEnvironment::AReset(void)
 bool UEnvironment::ACalculate(void)
 {
  long long cur_time=GetCurrentStartupTime();
- Time.SetRealTime(CalcDiffTime(cur_time,StartupTime)*1000);
+ Time.SetSourceStepLocalTime(cur_time/1000.0);
+
+ // Если первый шаг расчета после Reset
+ if(Time.GetTime() == 0)
+ {
+  Time.SetSourceStartLocalTime(Time.GetSourceStepLocalTime());
+  Time.SetSourceStartGlobalTime(Time.GetSourceStepGlobalTime());
+  StartupTime=cur_time;
+  ProcEndTime=StartupTime;
+ }
+
+ // Time.SetRealTime(CalcDiffTime(cur_time,StartupTime)*1000);
  if(!Model)
   return true;
 

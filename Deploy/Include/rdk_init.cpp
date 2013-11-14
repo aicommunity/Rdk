@@ -1597,7 +1597,7 @@ double RDK_CALL Model_GetDoubleRealTimeStep(void)
 }
 
 // “екущее врем€ внешних источников данных в микросекундах
-long long RDK_CALL Model_GetSourceTime(void)
+/*long long RDK_CALL Model_GetSourceTime(void)
 {
  return PEngine->Model_GetSourceTime();
 }
@@ -1608,7 +1608,7 @@ long long RDK_CALL MModel_GetSourceTime(int engine_index)
   return 1000;
 
  return DllManager.EngineList[engine_index]->Model_GetSourceTime();
-}
+} */
 
 double RDK_CALL Model_GetDoubleSourceTime(void)
 {
@@ -1624,7 +1624,7 @@ double RDK_CALL MModel_GetDoubleSourceTime(int engine_index)
 }
 
 // ”станавливает врем€ внешних источников данных
-bool RDK_CALL Model_SetSourceTime(long long value)
+/*bool RDK_CALL Model_SetSourceTime(long long value)
 {
  return PEngine->Model_SetSourceTime(value);
 }
@@ -1643,7 +1643,7 @@ bool RDK_CALL Model_SetSourceTimeAll(long long value)
  for(int i=0;i<GetNumEngines();i++)
   res&=DllManager.EngineList[i]->Model_SetSourceTime(value);
  return true;
-}
+}              */
 
 // ”станавливает врем€ внешних источников данных
 bool RDK_CALL Model_SetDoubleSourceTime(double value)
@@ -1666,7 +1666,7 @@ bool RDK_CALL Model_SetDoubleSourceTimeAll(double value)
   res&=DllManager.EngineList[i]->Model_SetDoubleSourceTime(value);
  return true;
 }
-
+/*
 // ”величивает врем€ внешних источников данных на заданную величину
 bool RDK_CALL Model_IncreaseSourceTime(long long value)
 {
@@ -1706,7 +1706,7 @@ double RDK_CALL MModel_GetDoubleSourceTimeStep(int engine_index)
   return 1000;
 
  return DllManager.EngineList[engine_index]->Model_GetDoubleSourceTimeStep();
-}
+}       */
 
 // ¬озвращает врем€ расчета компонента без времени расчета дочерних компонент (мс)
 long long RDK_CALL Model_GetStepDuration(const char *stringid)
