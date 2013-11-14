@@ -9,6 +9,7 @@
 #include "UEngineMonitorFormUnit.h"
 #include "myrdk.h"
 #include "rdk_initdll.h"
+#include "UGEngineControlFormUnit.h"
 //#include "USharedMemoryLoader.h"
 //#include "TUFileSystem.h"
 //---------------------------------------------------------------------------
@@ -1474,7 +1475,7 @@ void TVideoOutputFrame::InitByIPCamera(const String camera_url, const String use
  {
   TVideoCaptureThreadVideoGrabberIpCamera* thread=dynamic_cast<TVideoCaptureThreadVideoGrabberIpCamera*>(CaptureThread);
   thread->Init(camera_url, user_name, user_password);
-  thread->GetVideoGrabber()->LicenseString=LicenseString;
+  thread->GetVideoGrabber()->LicenseString=UGEngineControlForm->VideoGrabberLicenseString;
   MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, thread->GetVideoGrabber());
  }
  else
@@ -1489,7 +1490,7 @@ void TVideoOutputFrame::InitByIPCamera(const String camera_url, const String use
    if(thread)
    {
 	thread->Init(camera_url, user_name, user_password);
-    thread->GetVideoGrabber()->LicenseString=LicenseString;
+	thread->GetVideoGrabber()->LicenseString=UGEngineControlForm->VideoGrabberLicenseString;
 	MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, thread->GetVideoGrabber());
    }
   }

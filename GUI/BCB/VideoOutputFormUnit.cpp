@@ -98,6 +98,7 @@ void TVideoOutputForm::AddSource(void)
  size_t index=Sources.size()-1;
 
  Sources[index]=new TVideoOutputFrame(0);
+ Sources[index]->LicenseString=UGEngineControlForm->VideoGrabberLicenseString;
  Sources[index]->FrameIndex=index;
  Sources[index]->Name=Sources[index]->Name+String("_")+PageControl->PageCount;
  Sources[index]->MyVideoGrabberControlForm->Name=Sources[index]->Name+"_VideoGrabberControlForm";
@@ -106,7 +107,6 @@ void TVideoOutputForm::AddSource(void)
  Sources[index]->Parent=sheet;
  Sources[index]->Align=alClient;
  PageControl->Pages[index]->Caption=IntToStr(int(index));
- Sources[index]->LicenseString=UGEngineControlForm->VideoGrabberLicenseString;
 /* if(index == 0)
   Sources[index]->VideoGrabber->SynchronizationRole=sr_Master;
  else
