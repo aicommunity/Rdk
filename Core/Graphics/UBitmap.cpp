@@ -1579,11 +1579,23 @@ void UBitmap::Reduce(int n, int m, UBitmap *target)
  if(num_rows==0 && num_cols==0)
   return;
 
+ if(n == 1 && m == 1)
+ {
+  if((target && target == this) || !target)
+   return;
+
+  if(target && target != this)
+  {
+   *target=*this;
+   return;
+  }
+ }
+
  //int LineByteLength=CalcLineByteLength(Width,ColorModel);
  //int nLineByteLength=CalcLineByteLength(Width-num_removed_cols, ColorModel);
  //int PixelByteLength=LineByteLength/Width;
 
- if(target)
+ if(target && target != this)
  {
   target->SetRes(num_cols, num_rows, ColorModel);
   p=target->Data;
@@ -1613,7 +1625,8 @@ void UBitmap::Reduce(int n, int m, UBitmap *target)
    }
   }
  }
- else if(!target || target==this)
+ else
+ if(!target || target==this)
  {
   UBColor *temp=new UBColor[num_cols*num_rows*PixelByteLength];
   p=temp;
