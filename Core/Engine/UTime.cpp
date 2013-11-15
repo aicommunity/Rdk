@@ -213,12 +213,12 @@ const double& UTimeControl::GetDoubleRealTimeStep(void) const
 /// Принимает аргументом текущее локальное время в секундах или миллисекундах
 double UTimeControl::CalcCurrentGlobalTime(double current_local_time)
 {
- return SourceStepGlobalTime+(current_local_time-SourceStepLocalTime)/86400;
+ return SourceStepGlobalTime+(current_local_time-SourceStepLocalTime)/86400.0;
 }
 
 double UTimeControl::CalcCurrentGlobalTime(ULongTime current_local_time)
 {
- return SourceStepGlobalTime+(double(current_local_time)/1000.0-SourceStepLocalTime)/86400;
+ return SourceStepGlobalTime+(double(current_local_time)/1000.0-SourceStepLocalTime)/86400.0;
 }
 // --------------------------
 
