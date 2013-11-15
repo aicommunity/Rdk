@@ -32,6 +32,7 @@ USerStorageXML::USerStorageXML(void)
 
 USerStorageXML::~USerStorageXML(void)
 {
+ Destroy();
 }
 // --------------------------
 
