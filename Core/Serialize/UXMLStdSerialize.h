@@ -30,7 +30,8 @@ USerStorageXML& USimpleToStorage (USerStorageXML& storage, const T data)
 {
  storage.SetNodeAttribute("Type",typeid(T).name());
  std::stringstream stream;
- stream<<data;
+
+ stream<<std::setprecision(40)<<data;
 
  std::string str;
  str=stream.str();
@@ -50,6 +51,33 @@ USerStorageXML& USimpleFromStorage (USerStorageXML& storage, T &data)
 
 // std::string rvalue=storage.GetNodeText();
 
+ std::stringstream stream(storage.GetNodeText().c_str());
+
+ stream>>data;
+
+ return storage;
+}
+
+// Простые вещественные типы
+template<typename T>
+USerStorageXML& USimpleToStorageF(USerStorageXML& storage, const T data, int prec)
+{
+ storage.SetNodeAttribute("Type",typeid(T).name());
+ std::stringstream stream;
+
+ stream<<std::setprecision(prec)<<data;
+
+ std::string str;
+ str=stream.str();
+
+ storage.SetNodeText(str);
+
+ return storage;
+}
+
+template<typename T>
+USerStorageXML& USimpleFromStorageF(USerStorageXML& storage, T &data)
+{
  std::stringstream stream(storage.GetNodeText().c_str());
 
  stream>>data;

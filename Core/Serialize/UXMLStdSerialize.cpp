@@ -129,32 +129,32 @@ USerStorageXML& operator >> (USerStorageXML& storage, unsigned long long &data)
 
 USerStorageXML& operator << (USerStorageXML& storage, float data)
 {
- return USimpleToStorage(storage,data);
+ return USimpleToStorageF(storage,data,20);
 }
 
 USerStorageXML& operator >> (USerStorageXML& storage, float &data)
 {
- return USimpleFromStorage(storage,data);
+ return USimpleFromStorageF(storage,data);
 }
 
 USerStorageXML& operator << (USerStorageXML& storage, double data)
 {
- return USimpleToStorage(storage,data);
+ return USimpleToStorageF(storage,data,40);
 }
 
 USerStorageXML& operator >> (USerStorageXML& storage, double &data)
 {
- return USimpleFromStorage(storage,data);
+ return USimpleFromStorageF(storage,data);
 }
 
 USerStorageXML& operator << (USerStorageXML& storage, long double data)
 {
- return USimpleToStorage(storage,data);
+ return USimpleToStorageF(storage,data,40);
 }
 
 USerStorageXML& operator >> (USerStorageXML& storage, long double &data)
 {
- return USimpleFromStorage(storage,data);
+ return USimpleFromStorageF(storage,data);
 }
 
 // Вектора
