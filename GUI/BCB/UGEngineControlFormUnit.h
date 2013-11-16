@@ -26,6 +26,7 @@
 #include "UImagesFrameUnit.h"
 #include "UWatchFrameUnit.h"
 #include "UDrawEngineFrameUnit.h"
+#include <Vcl.AppEvnts.hpp>
 //---------------------------------------------------------------------------
 #pragma warn -8130
 class TUGEngineControlForm : public TUVisualControllerForm
@@ -113,6 +114,8 @@ __published:	// IDE-managed Components
 	TToolButton *ToolButton16;
 	TToolButton *ToolButton21;
 	TToolButton *ToolButton15;
+	TTrayIcon *TrayIcon;
+	TApplicationEvents *ApplicationEvents;
 	void __fastcall FormShow(TObject *Sender);
 	void __fastcall Start1Click(TObject *Sender);
 	void __fastcall Pause1Click(TObject *Sender);
@@ -158,6 +161,9 @@ __published:	// IDE-managed Components
 	void __fastcall AddNew1Click(TObject *Sender);
 	void __fastcall DeleteLast1Click(TObject *Sender);
 	void __fastcall DeleteAll1Click(TObject *Sender);
+	void __fastcall ApplicationEventsMinimize(TObject *Sender);
+	void __fastcall TrayIconDblClick(TObject *Sender);
+
 
 
 
@@ -170,6 +176,9 @@ String MainFormName;
 bool HideAdminFormFlag;
 String AutoexecProjectFileName;
 bool AutoStartProjectFlag;
+bool MinimizeToTray;
+bool StartMinimized;
+String ProgramName;
 
 // Файл настроек проекта
 RDK::USerStorageXML ProjectXml;

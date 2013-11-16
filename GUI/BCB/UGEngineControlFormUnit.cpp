@@ -1578,7 +1578,11 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  AutoexecProjectFileName=app_ini->ReadString("General", "AutoexecProjectFileName", "");
  AutoStartProjectFlag=app_ini->ReadBool("General", "AutoStartProjectFlag", false);
  VideoGrabberLicenseString=app_ini->ReadString("General","VideoGrabberLicenseString","");
+ MinimizeToTray=app_ini->ReadBool("General","MinimizeToTray",false);
+ StartMinimized=app_ini->ReadBool("General","StartMinimized",false);
+ ProgramName=app_ini->ReadString("General","ProgramName","Server");
 
+ TrayIcon->Hint=ProgramName;
 
  // Грузим шрифты
  std::vector<std::string> font_names;
@@ -1603,6 +1607,11 @@ void __fastcall TUGEngineControlForm::HideTimerTimer(TObject *Sender)
  {
   HideAdminFormFlag=false;
   Hide();
+ }
+
+ if(StartMinimized)
+ {
+  ShowWindow(Handle,SW_HIDE);  // Скрываем программу
  }
 
  if(FileExists(AutoexecProjectFileName))
@@ -1754,5 +1763,27 @@ void __fastcall TUGEngineControlForm::DeleteAll1Click(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+
+
+void __fastcall TUGEngineControlForm::ApplicationEventsMinimize(TObject *Sender)
+{
+ if(MinimizeToTray)
+ {
+  //Убираем с панели задач
+  TrayIcon->Visible=true;
+  ShowWindow(Handle,SW_HIDE);  // Скрываем программу
+  ShowWindow(Application->Handle,SW_HIDE);  // Скрываем кнопку с TaskBar'а
+  SetWindowLong(Application->Handle, GWL_EXSTYLE, GetWindowLong(Application->Handle, GWL_EXSTYLE) | !WS_EX_APPWINDOW);
+ }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::TrayIconDblClick(TObject *Sender)
+{
+ TrayIcon->ShowBalloonHint();
+ ShowWindow(Handle,SW_RESTORE);
+ SetForegroundWindow(Handle);
+}
+//---------------------------------------------------------------------------
 
 
