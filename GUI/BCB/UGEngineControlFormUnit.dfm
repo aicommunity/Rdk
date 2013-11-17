@@ -668,7 +668,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 360
     Top = 65528
     Bitmap = {
-      494C01011B006000940110001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B006000980110001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -1667,6 +1667,7 @@ object UGEngineControlForm: TUGEngineControlForm
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       000000000000000000000000000000000000000000000000000000000000}
+    PopupMenu = TrayPopupMenu
     Visible = True
     OnDblClick = TrayIconDblClick
     Left = 112
@@ -1676,5 +1677,40 @@ object UGEngineControlForm: TUGEngineControlForm
     OnMinimize = ApplicationEventsMinimize
     Left = 184
     Top = 88
+  end
+  object TrayPopupMenu: TPopupMenu
+    Left = 120
+    Top = 152
+    object Open1: TMenuItem
+      Caption = 'Open'
+      Default = True
+      OnClick = Open1Click
+    end
+    object Hide1: TMenuItem
+      Caption = 'Hide'
+      OnClick = Hide1Click
+    end
+    object N7: TMenuItem
+      Caption = '-'
+    end
+    object Start2: TMenuItem
+      Caption = 'Start'
+      OnClick = Start2Click
+    end
+    object Pause2: TMenuItem
+      Caption = 'Pause'
+      OnClick = Pause2Click
+    end
+    object Reset2: TMenuItem
+      Caption = 'Reset'
+      OnClick = Reset2Click
+    end
+    object N8: TMenuItem
+      Caption = '-'
+    end
+    object Close1: TMenuItem
+      Caption = 'Exit'
+      OnClick = Close1Click
+    end
   end
 end

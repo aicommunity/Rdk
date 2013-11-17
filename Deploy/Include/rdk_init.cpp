@@ -920,6 +920,9 @@ bool RDK_CALL Model_Check(void)
 
 bool RDK_CALL MModel_Check(int engine_index)
 {
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return false;
+
  return DllManager.EngineList[engine_index]->Model_Check();
 }
 
@@ -927,6 +930,13 @@ bool RDK_CALL MModel_Check(int engine_index)
 bool RDK_CALL Model_CheckComponent(const char* stringid)
 {
  return PEngine->Model_CheckComponent(stringid);
+}
+
+bool RDK_CALL MModel_CheckComponent(int engine_index, const char* stringid)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+ return DllManager.EngineList[engine_index]->Model_CheckComponent(stringid);
 }
 
 // Добавляет в выбранный контейнер модели с идентификатором 'stringid' экземпляр
@@ -938,12 +948,26 @@ const char* RDK_CALL Model_AddComponent(const char* stringid, const char *classn
  return PEngine->Model_AddComponent(stringid, classname);
 }
 
+const char* RDK_CALL MModel_AddComponent(int engine_index, const char* stringid, const char *classname)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 0;
+ return DllManager.EngineList[engine_index]->Model_AddComponent(stringid, classname);
+}
+
 // Удаляет из выбранного контейнера модели с идентификатором 'stringid' экземпляр
 // контейнера с заданным 'name'
 // если stringid - пустая строка, то удаляет из самой модели
 int RDK_CALL Model_DelComponent(const char* stringid, const char *name)
 {
  return PEngine->Model_DelComponent(stringid, name);
+}
+
+int RDK_CALL MModel_DelComponent(int engine_index, const char* stringid, const char *name)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+ return DllManager.EngineList[engine_index]->Model_DelComponent(stringid, name);
 }
 
 // Возвращает число всех компонент в заданного компоненте 'stringid'
@@ -1066,6 +1090,15 @@ const char* RDK_CALL Model_GetComponentClassName(const char* stringid)
  return PEngine->Model_GetComponentClassName(stringid);
 }
 
+const char* RDK_CALL MModel_GetComponentClassName(int engine_index, const char* stringid)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 0;
+
+ return DllManager.EngineList[engine_index]->Model_GetComponentClassName(stringid);
+}
+
+
 // Возвращает список свойств компонента разделенный запятыми
 const char* RDK_CALL Model_GetComponentPropertiesList(const char* stringid, unsigned int type_mask)
 {
@@ -1135,10 +1168,26 @@ const void* RDK_CALL Model_GetComponentPropertyData(const char *stringid, const 
  return PEngine->Model_GetComponentPropertyData(stringid, property_name);
 }
 
+const void* RDK_CALL MModel_GetComponentPropertyData(int engine_index, const char *stringid, const char *property_name)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 0;
+
+ return DllManager.EngineList[engine_index]->Model_GetComponentPropertyData(stringid, property_name);
+}
+
 // Копирует данные 'data' в заданное свойство компонента
 int RDK_CALL Model_SetComponentPropertyData(const char *stringid, const char *property_name, const void *data)
 {
  return PEngine->Model_SetComponentPropertyData(stringid, property_name, data);
+}
+
+int RDK_CALL MModel_SetComponentPropertyData(int engine_index, const char *stringid, const char *property_name, const void *data)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 0;
+
+ return DllManager.EngineList[engine_index]->Model_SetComponentPropertyData(stringid, property_name, data);
 }
 
 // Возвращает параметры компонента по идентификатору
@@ -1198,9 +1247,19 @@ int RDK_CALL MModel_SetComponentParameters(int engine_index, const char *stringi
 }
 
 // Устанавливает значение параметра компонента по идентификатору компонента и имени параметра
-void RDK_CALL Model_SetComponentParameterValue(const char *stringid, const char *paramname, const char *buffer)
+int RDK_CALL Model_SetComponentParameterValue(const char *stringid, const char *paramname, const char *buffer)
 {
  PEngine->Model_SetComponentPropertyValue(stringid,paramname,buffer);
+ return 0;
+}
+
+int RDK_CALL MModel_SetComponentParameterValue(int engine_index, const char *stringid, const char *paramname, const char *buffer)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+
+ DllManager.EngineList[engine_index]->Model_SetComponentPropertyValue(stringid,paramname,buffer);
+ return 0;
 }
 
 // Связывает выбранные контейнеры друг с другом

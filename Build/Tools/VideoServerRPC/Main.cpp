@@ -339,6 +339,7 @@ int RDK_CALL Ptz_GetCameraNamesAllChannels(const char* &results, int timeout)
   if(p != NULL)
    cams=p;
 
+  camera_names_vector.clear();
   MainForm->SeparateString(cams, camera_names_vector, ',');
   for(int j=0; j<camera_names_vector.size(); j++)
   {

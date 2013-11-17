@@ -1787,3 +1787,39 @@ void __fastcall TUGEngineControlForm::TrayIconDblClick(TObject *Sender)
 //---------------------------------------------------------------------------
 
 
+void __fastcall TUGEngineControlForm::Open1Click(TObject *Sender)
+{
+ TrayIconDblClick(Sender);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::Hide1Click(TObject *Sender)
+{
+ Application->Minimize();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::Close1Click(TObject *Sender)
+{
+ Close();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::Start2Click(TObject *Sender)
+{
+// Start1Click(Sender);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::Pause2Click(TObject *Sender)
+{
+// Pause1Click(Sender);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::Reset2Click(TObject *Sender)
+{
+// Reset1Click(Sender);
+}
+//---------------------------------------------------------------------------
+

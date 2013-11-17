@@ -52,13 +52,17 @@ __fastcall TUServerControlForm::TUServerControlForm(TComponent* Owner)
  CommandResponseEncoder=StandardCommandResponseEncoder;
  AverageIterations=4;
 
- Clients=new TThreadList;
+ Clients=0;
+// Clients=new TThreadList;
 }
 
 __fastcall TUServerControlForm::~TUServerControlForm(void)
 {
- if(Clients)
+/* if(Clients)
+ {
+
   delete Clients;
+ }*/
 }
 
 
@@ -311,7 +315,7 @@ void TUServerControlForm::SendCommandResponse(const std::string &client_binding,
 	{
 	 context->Connection->IOHandler->Write(arr, arr.get_length());
 	 break;
-    }
+	}
    }
 
    IdTCPServer->Contexts->UnlockList();
@@ -755,9 +759,17 @@ void __fastcall TUServerControlForm::ServerStartButtonClick(TObject *Sender)
 void __fastcall TUServerControlForm::ServerStopButtonClick(TObject *Sender)
 {
  ServerRestartTimer->Enabled=false;
-// TcpServer->Active=false;
+
+ TList *list=IdTCPServer->Contexts->LockList();
+ for(int i=0;i<list->Count;i++)
+ {
+	TIdContext *context=static_cast<TIdContext*>(list->Items[i]);
+	context->Connection->Disconnect();
+ }
+
+   IdTCPServer->Contexts->UnlockList();
+
  IdTCPServer->Active=false;
-// UHttpServerFrame->ServerListenOff();
 }
 //---------------------------------------------------------------------------
 void __fastcall TUServerControlForm::ReturnOptionsButtonClick(TObject *Sender)
@@ -1030,4 +1042,12 @@ void __fastcall TUServerControlForm::ServerRestartTimerTimer(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+
+void __fastcall TUServerControlForm::FormClose(TObject *Sender, TCloseAction &Action)
+
+{
+ ServerStopButtonClick(Sender);
+// Sleep(100);
+}
+//---------------------------------------------------------------------------
 

@@ -116,6 +116,15 @@ __published:	// IDE-managed Components
 	TToolButton *ToolButton15;
 	TTrayIcon *TrayIcon;
 	TApplicationEvents *ApplicationEvents;
+	TPopupMenu *TrayPopupMenu;
+	TMenuItem *Open1;
+	TMenuItem *Hide1;
+	TMenuItem *N7;
+	TMenuItem *Start2;
+	TMenuItem *Pause2;
+	TMenuItem *Reset2;
+	TMenuItem *N8;
+	TMenuItem *Close1;
 	void __fastcall FormShow(TObject *Sender);
 	void __fastcall Start1Click(TObject *Sender);
 	void __fastcall Pause1Click(TObject *Sender);
@@ -163,6 +172,12 @@ __published:	// IDE-managed Components
 	void __fastcall DeleteAll1Click(TObject *Sender);
 	void __fastcall ApplicationEventsMinimize(TObject *Sender);
 	void __fastcall TrayIconDblClick(TObject *Sender);
+	void __fastcall Open1Click(TObject *Sender);
+	void __fastcall Hide1Click(TObject *Sender);
+	void __fastcall Close1Click(TObject *Sender);
+	void __fastcall Start2Click(TObject *Sender);
+	void __fastcall Pause2Click(TObject *Sender);
+	void __fastcall Reset2Click(TObject *Sender);
 
 
 

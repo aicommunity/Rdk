@@ -87,6 +87,7 @@ __published:	// IDE-managed Components
 	void __fastcall IdTCPServerExecute(TIdContext *AContext);
 	void __fastcall IdTCPServerConnect(TIdContext *AContext);
 	void __fastcall ServerRestartTimerTimer(TObject *Sender);
+	void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
 
 
 

@@ -408,17 +408,20 @@ RDK_LIB_TYPE bool RDK_CALL MModel_Check(int engine_index);
 
 // Проверяет, существует ли в модели компонент с именем stringid)
 RDK_LIB_TYPE bool RDK_CALL Model_CheckComponent(const char* stringid);
+RDK_LIB_TYPE bool RDK_CALL MModel_CheckComponent(int engine_index, const char* stringid);
 
 // Добавляет в выбранный компонент модели с идентификатором 'stringid' экземпляр
 // компонента с заданным 'classname'
 // если stringid - пустая строка, то добавляет в саму модель
 // Возвращает имя компонента в случае успеха
 RDK_LIB_TYPE const char* RDK_CALL Model_AddComponent(const char* stringid, const char *classname);
+RDK_LIB_TYPE const char* RDK_CALL MModel_AddComponent(int engine_index, const char* stringid, const char *classname);
 
 // Удаляет из выбранного компонента модели с идентификатором 'stringid' экземпляр
 // компонента с заданным 'name'
 // если stringid - пустая строка, то удаляет из самой модели
 RDK_LIB_TYPE int RDK_CALL Model_DelComponent(const char* stringid, const char *name);
+RDK_LIB_TYPE int RDK_CALL MModel_DelComponent(int engine_index, const char* stringid, const char *name);
 
 // Возвращает число всех компонент в заданном компоненте 'stringid'
 // если stringid - пустая строка, то возвращает число всех компонент модели
@@ -502,6 +505,7 @@ RDK_LIB_TYPE const char* RDK_CALL Model_GetComponentLongId(const char* stringid,
 // Возвращает имя класса компонента в хранилище по длинному 'stringid'
 // если stringid - пустая строка, то возвращает имя класса модели
 RDK_LIB_TYPE const char* RDK_CALL Model_GetComponentClassName(const char* stringid);
+RDK_LIB_TYPE const char* RDK_CALL MModel_GetComponentClassName(int engine_index, const char* stringid);
 
 // Возвращает список свойств компонента разделенный запятыми
 RDK_LIB_TYPE const char* RDK_CALL Model_GetComponentPropertiesList(const char* stringid, unsigned int type_mask);
@@ -538,9 +542,11 @@ RDK_LIB_TYPE void RDK_CALL Model_SetGlobalOwnerComponentPropertyValue(const char
 
 // Возвращает указатель void* на данные свойства компонента
 RDK_LIB_TYPE const void* RDK_CALL Model_GetComponentPropertyData(const char *stringid, const char *property_name);
+RDK_LIB_TYPE const void* RDK_CALL MModel_GetComponentPropertyData(int engine_index, const char *stringid, const char *property_name);
 
 // Копирует данные 'data' в заданное свойство компонента
 RDK_LIB_TYPE int RDK_CALL Model_SetComponentPropertyData(const char *stringid, const char *property_name, const void *data);
+RDK_LIB_TYPE int RDK_CALL MModel_SetComponentPropertyData(int engine_index, const char *stringid, const char *property_name, const void *data);
 
 // Возвращает параметры компонента по идентификатору
 // Deprecated
@@ -558,6 +564,7 @@ RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentSelectedParameters(const ch
 // Возвращает значение параметра компонента по идентификатору компонента и имени параметра
 // Deprecated
 RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentParameterValue(const char *stringid, const char *paramname);
+RDK_LIB_TYPE const char * RDK_CALL MModel_GetComponentParameterValue(int engine_index, const char *stringid, const char *paramname);
 
 // Устанавливает параметры компонента по идентификатору
 // Deprecated
@@ -566,8 +573,8 @@ RDK_LIB_TYPE int RDK_CALL MModel_SetComponentParameters(int engine_index, const 
 
 // Устанавливает значение параметра компонента по идентификатору компонента и имени параметра
 // Deprecated
-RDK_LIB_TYPE void RDK_CALL Model_SetComponentParameterValue(const char *stringid, const char *paramname, const char *buffer);
-RDK_LIB_TYPE void RDK_CALL MModel_SetComponentParameterValue(int engine_index, const char *stringid, const char *paramname, const char *buffer);
+RDK_LIB_TYPE int RDK_CALL Model_SetComponentParameterValue(const char *stringid, const char *paramname, const char *buffer);
+RDK_LIB_TYPE int RDK_CALL MModel_SetComponentParameterValue(int engine_index, const char *stringid, const char *paramname, const char *buffer);
 
 // Возвращает состояние компонента по идентификатору
 // Deprecated
