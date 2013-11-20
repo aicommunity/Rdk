@@ -111,6 +111,76 @@ bool TUImagesFrame::SetBitmap(int i, int j, const RDK::UBitmap &bitmap)
   return false;
 
  UBitmapToTBitmap(bitmap,Images[i][j]->Picture->Bitmap,true);
+ if(ShowHistogramCheckBox->Checked)
+ {
+  RDK::UBitmap HistBmp;
+  TBitmap *bmp=Images[i][j]->Picture->Bitmap;
+
+  if(bitmap.GetColorModel() == RDK::ubmY8)
+  {
+   RDK::UBHistogram Hist;
+   Hist.Prepare(HistBmp.GetColorModel());
+   Hist.Calc(bitmap,0);
+
+   int y=bmp->Height-1;
+   bmp->Canvas->Rectangle(1,y,256,y-101);
+
+   bmp->Canvas->Pen->Color=clBlack;
+   bmp->Canvas->Pen->Style=psSolid;
+   bmp->Canvas->Pen->Width=1;
+   float divisor=Hist.GetMax().Number.Int;
+   if(Hist.GetMax().Number.Int>0)
+   for(int i=0;i<Hist.GetSize();i++)
+   {
+	int item=(float(Hist[i].Number.Int)/divisor)*100.0;
+	bmp->Canvas->MoveTo(i+1,y);
+	bmp->Canvas->LineTo(i+1,y-item);
+   }
+  }
+  else
+  if(bitmap.GetColorModel() == RDK::ubmRGB24)
+  {
+   RDK::UBHistogram HistR,HistG,HistB;
+   HistB.Calc(bitmap,0);
+   HistG.Calc(bitmap,1);
+   HistR.Calc(bitmap,2);
+
+   int y=bmp->Height-1;
+   bmp->Canvas->Rectangle(1,y,256,y-101);
+
+   bmp->Canvas->Pen->Style=psSolid;
+   bmp->Canvas->Pen->Width=1;
+   for(int i=0;i<HistR.GetSize();i++)
+   {
+	float divisor=HistR.GetMax().Number.Int;
+	if(HistR.GetMax().Number.Int>0)
+	{
+	 bmp->Canvas->Pen->Color=clRed;
+	 int item=(float(HistR[i].Number.Int)/divisor)*33.0;
+	 bmp->Canvas->MoveTo(i+1,y);
+	 bmp->Canvas->LineTo(i+1,y-item);
+	}
+
+	divisor=HistG.GetMax().Number.Int;
+	if(HistG.GetMax().Number.Int>0)
+	{
+	 bmp->Canvas->Pen->Color=clGreen;
+	 int item=(float(HistG[i].Number.Int)/divisor)*33.0;
+	 bmp->Canvas->MoveTo(i+1,y-33);
+	 bmp->Canvas->LineTo(i+1,y-item-33);
+	}
+
+	divisor=HistB.GetMax().Number.Int;
+	if(HistB.GetMax().Number.Int>0)
+	{
+	 bmp->Canvas->Pen->Color=clBlue;
+	 int item=(float(HistB[i].Number.Int)/divisor)*33.0;
+	 bmp->Canvas->MoveTo(i+1,y-66);
+	 bmp->Canvas->LineTo(i+1,y-item-66);
+	}
+   }
+  }
+ }
 
 // SetImage(i, j, bitmap.GetWidth(), bitmap.GetHeight(), bitmap.GetColorModel(), bitmap.GetData());
  return true;
@@ -355,6 +425,8 @@ void TUImagesFrame::ASaveParameters(RDK::USerStorageXML &xml)
  }
 
  xml.WriteBool("ShowLegendCheckBox",ShowLegendCheckBox->Checked);
+ xml.WriteBool("ShowHistogramCheckBox",ShowHistogramCheckBox->Checked);
+
 }
 
 // Загружает параметры интерфейса из xml
@@ -383,6 +455,7 @@ void TUImagesFrame::ALoadParameters(RDK::USerStorageXML &xml)
  }
 
  ShowLegendCheckBox->Checked=xml.ReadBool("ShowLegendCheckBox",true);
+ ShowHistogramCheckBox->Checked=xml.ReadBool("ShowHistogramCheckBox",false);
 
  UpdateInterface();
 }

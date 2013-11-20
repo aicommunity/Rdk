@@ -24,27 +24,15 @@ inherited UImagesFrame: TUImagesFrame
     OnDblClick = DrawGridDblClick
     OnDrawCell = DrawGridDrawCell
   end
-  object ShowLegendCheckBox: TCheckBox
-    Left = 0
-    Top = 488
-    Width = 729
-    Height = 17
-    Align = alBottom
-    Caption = 'Show legend'
-    Checked = True
-    DoubleBuffered = True
-    ParentDoubleBuffered = False
-    State = cbChecked
-    TabOrder = 1
-  end
   object ScrollBox1: TScrollBox
     Left = 0
     Top = 0
     Width = 729
     Height = 488
     Align = alClient
-    TabOrder = 2
+    TabOrder = 1
     Visible = False
+    ExplicitHeight = 471
     object FullImage: TImage
       Left = 237
       Top = 172
@@ -55,6 +43,39 @@ inherited UImagesFrame: TUImagesFrame
       OnMouseDown = FullImageMouseDown
       OnMouseMove = FullImageMouseMove
       OnMouseUp = FullImageMouseUp
+    end
+  end
+  object Panel1: TPanel
+    Left = 0
+    Top = 488
+    Width = 729
+    Height = 17
+    Align = alBottom
+    TabOrder = 2
+    object ShowLegendCheckBox: TCheckBox
+      Left = 1
+      Top = 1
+      Width = 88
+      Height = 15
+      Align = alLeft
+      Caption = 'Show legend'
+      Checked = True
+      DoubleBuffered = True
+      ParentDoubleBuffered = False
+      State = cbChecked
+      TabOrder = 0
+      ExplicitHeight = 39
+    end
+    object ShowHistogramCheckBox: TCheckBox
+      Left = 89
+      Top = 1
+      Width = 104
+      Height = 15
+      Align = alLeft
+      Caption = 'Show histogram'
+      DoubleBuffered = True
+      ParentDoubleBuffered = False
+      TabOrder = 1
     end
   end
   object PopupMenu: TPopupMenu

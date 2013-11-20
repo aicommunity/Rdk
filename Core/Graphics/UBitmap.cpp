@@ -5274,9 +5274,8 @@ void UBHistogram::Calc(const UBitmap &bmp, int x, int y, int width, int height, 
    for(int i=x,l=0;i<=x2;i++,l++)
    {
     if(*p<Size)
-     ++Data[*p++].Number.Int;
-    else
-     ++p;
+	 ++Data[*p].Number.Int;
+    p+=bmp.GetPixelByteLength();
    }
    p+=bmp.GetLineByteLength()-(x2-x+1)*bmp.GetPixelByteLength();
   }
