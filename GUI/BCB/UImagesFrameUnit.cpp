@@ -496,6 +496,7 @@ void __fastcall TUImagesFrame::SelectSourceClick(TObject *Sender)
  if(DrawGrid->Col < 0 || DrawGrid->Row <0)
   return;
 
+ MyComponentsListForm->UpdateInterface(true);
  if(MyComponentsListForm->ShowComponentSelect() != mrOk)
   return;
 

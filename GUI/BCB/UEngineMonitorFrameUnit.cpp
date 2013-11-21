@@ -93,13 +93,11 @@ void __fastcall TEngineThread::BeforeCalculate(void)
  TVideoOutputFrame* video=VideoOutputForm->GetVideoOutputFrame(ChannelIndex);
  if(video)
  {
-//  video->BeforeCalculate();
-//  Source=video->BmpSource;
-  if(video->CaptureThread)
+/*  if(video->CaptureThread)
   {
    long long time_stamp=0;
    video->CaptureThread->ReadSourceSafe(Source,time_stamp,true);
-  }
+  }*/
  }
  else
   Source.Clear();
@@ -156,18 +154,21 @@ void __fastcall TEngineThread::Execute(void)
   }
   ResetEvent(CalcEnable);
   ResetEvent(CalculationNotInProgress);
-//  Synchronize(BeforeCalculate);
   BeforeCalculate();
   if(GetNumEngines()>ChannelIndex)
   {
    TDateTime dt=TDateTime::CurrentDateTime();
    MModel_SetDoubleSourceTime(ChannelIndex,dt.operator double());
-   MModel_SetComponentBitmapOutput(ChannelIndex, "", "Output", &Source,false);
+   #ifdef RDK_VIDEO
+   TVideoOutputFrame* video=VideoOutputForm->GetVideoOutputFrame(ChannelIndex);
+   if(video)
+	video->BeforeCalculate();
+   //   MModel_SetComponentBitmapOutput(ChannelIndex, "", "Output", &Source,false);
+   #endif
    MEnv_Calculate(ChannelIndex,0);
   }
   AfterCalculate();
   RealLastCalculationTime=GetTickCount();
-  //Synchronize(AfterCalculate);
   SetEvent(CalculationNotInProgress);
  }
 }

@@ -158,6 +158,7 @@ void __fastcall TVideoCaptureThread::BeforeCalculate(void)
 
 void __fastcall TVideoCaptureThread::AfterCalculate(void)
 {
+ Frame->UpdateInterface();
  if(GetNumEngines() == 1)
   UEngineMonitorForm->EngineMonitorFrame->SetServerTimeStamp(0,LastTimeStamp);
  else
@@ -772,8 +773,26 @@ void __fastcall TVideoCaptureThreadVideoGrabber::OnFrameCaptureCompleted(System:
 
 void __fastcall TVideoCaptureThreadVideoGrabber::Calculate(void)
 {
- if(WaitForSingleObject(VideoGrabberCompleted,30) == WAIT_TIMEOUT)
+ if(Terminated)
   return;
+
+ int wait_time=30;
+ if(VideoGrabber->FrameRate>0)
+  wait_time=1000.0/VideoGrabber->FrameRate;
+ if(VideoGrabber->PlayerFrameRate>0)
+  wait_time=1000.0/VideoGrabber->PlayerFrameRate;
+
+ Frame->UpdateInterval=wait_time;
+ if(WaitForSingleObject(VideoGrabberCompleted, wait_time) == WAIT_TIMEOUT)
+ {
+  TVideoCaptureThread::AfterCalculate();
+/*  WriteSource->Fill(0);
+  RDK::UBitmap* old_read_source=ReadSource;
+  ReadSource=WriteSource;
+  WriteSource=old_read_source;
+  TVideoCaptureThread::AfterCalculate();*/
+  return;
+ }
  ResetEvent(VideoGrabberCompleted);
 }
 
@@ -1317,7 +1336,6 @@ bool TVideoOutputFrame::DestroyCaptureThread(void)
   CaptureThread->Terminate();
   if(WaitForSingleObject(CaptureThread->GetFrameNotInProgress(),1000) != WAIT_TIMEOUT)
   {
-   delete CaptureThread;
    CaptureThread=0;
   }
   else
@@ -2025,15 +2043,12 @@ void TVideoOutputFrame::SendToComponentIO(void)
 // Метод, вызываемый перед шагом расчета
 void TVideoOutputFrame::ABeforeCalculate(void)
 {
-// if(!IsStarted)
-//  return;
-
- if(UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode() == 0)
+// if(UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode() == 0)
   if(CaptureThread)
   {
    long long time_stamp=0;
    CaptureThread->ReadSourceSafe(BmpSource,time_stamp,false);
-
+ /*
 	std::string sstamp;
 	RDK::UTimeStamp stamp(double(time_stamp/1000.0),25);
 	stamp>>sstamp;
@@ -2041,89 +2056,11 @@ void TVideoOutputFrame::ABeforeCalculate(void)
 
 	TrackBar->Max=CaptureThread->GetNumBitmaps();
 	TrackBar->Position=CaptureThread->GetPosition();
-    TrackBar->UpdateControlState();
-	UpdateVideo();
+	TrackBar->UpdateControlState();
+	UpdateVideo();*/
   }
 
-   /*
- if(Mode == 4)
- {
-  CurrentBmpSequenceIndex++;
-  UpdateVideo();
-  long long time_stamp=GetTickCount();
-  if(GetNumEngines() == 1)
-   UEngineMonitorForm->EngineMonitorFrame->SetServerTimeStamp(0,time_stamp);
-  else
-  if(GetNumEngines() > FrameIndex)
-   UEngineMonitorForm->EngineMonitorFrame->SetServerTimeStamp(FrameIndex,time_stamp);
-
-  Sleep(0);
- }
- else
- if(Mode == 6)
- {
- if(UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode() != 1)
- {
-  if(Usm_IsPipeInit)
-  {
-   int real_size=0;
-   if(Usm_IsPipeInit(PipeIndex)<0)
-   {
-	StartButtonClick(this);
-	if(Usm_IsPipeInit(PipeIndex)<0)
-	 return;
-   }
-
-   SharedMemoryPipeSize=Usm_GetPipeSize(PipeIndex);
-   if(SharedMemoryPipeSize<0)
-	SharedMemoryPipeSize=0;
-   PipeBuffer.resize(SharedMemoryPipeSize);
-   if(!SharedMemoryPipeSize || SharedMemoryPipeSize<16)
-	return;
-
-   real_size=Usm_ReadData(PipeIndex,&PipeBuffer[0],PipeBuffer.size());
-   if(real_size>0)
-   {
-	int shift=0;
-	long long time_stamp;
-	memcpy(&time_stamp,&PipeBuffer[0],sizeof(time_stamp));
-
-
-	shift+=sizeof(time_stamp);
-
-	int width=0;
-	int height=0;
-	memcpy(&width,&PipeBuffer[shift],sizeof(width));
-	shift+=sizeof(width);
-	memcpy(&height,&PipeBuffer[shift],sizeof(height));
-	shift+=sizeof(height);
-	BmpSource.SetRes(width,height,RDK::ubmRGB24);
-	if(shift<SharedMemoryPipeSize)
-	{
-	 int image_size=width*height*3;
-	 if(image_size>SharedMemoryPipeSize-16)
-	  image_size=SharedMemoryPipeSize-16;
-	 memcpy(BmpSource.GetData(),&PipeBuffer[shift],image_size);
-	}
-
-	if(GetNumEngines() == 1)
-	 UEngineMonitorForm->EngineMonitorFrame->SetServerTimeStamp(0,time_stamp);
-	else
-	if(GetNumEngines() > FrameIndex)
-	 UEngineMonitorForm->EngineMonitorFrame->SetServerTimeStamp(FrameIndex,time_stamp);
-
-	std::string sstamp;
-	RDK::UTimeStamp stamp(double(time_stamp/1000.0),25);
-	stamp>>sstamp;
-	TimeEdit->Text=sstamp.c_str();
-
-	UpdateVideo();
-   }
-  }
- }
- }  */
-
- if(UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode() != 1)
+// if(UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode() == 0)
  {
   SendToComponentIO();
   if(SendPointsByStepCheckBox->Checked)
@@ -2188,10 +2125,10 @@ void TVideoOutputFrame::AUpdateInterface(void)
 {
 // if(UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode() == 1)
 // if(UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode() != 0 /*&& !IsStarted*/)
-  if(CaptureThread)
+//  if(CaptureThread)
   {
    long long time_stamp=0;
-   CaptureThread->ReadSourceSafe(BmpSource,time_stamp,false);
+	CaptureThread->ReadSourceSafe(BmpSource,time_stamp,false);
 
 	std::string sstamp;
 	RDK::UTimeStamp stamp(double(time_stamp/1000.0),25);
@@ -2296,12 +2233,12 @@ void TVideoOutputFrame::ALoadParameters(RDK::USerStorageXML &xml)
 //---------------------------------------------------------------------------
 void __fastcall TVideoOutputFrame::TimerTimer(TObject *Sender)
 {
- if(CaptureThread)
+/* if(CaptureThread)
  {
   if(WaitForSingleObject(CaptureThread->GetFrameNotInProgress(),30) != WAIT_TIMEOUT)
    UpdateInterface();
  }
-
+  */
 /*
 // UpdateFlag=false;
 // if(UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode() != 1)
@@ -2889,4 +2826,5 @@ void __fastcall TVideoOutputFrame::SaveImage1Click(TObject *Sender)
  Image->Picture->SaveToFile(SavePictureDialog->FileName);
 }
 //---------------------------------------------------------------------------
+
 
