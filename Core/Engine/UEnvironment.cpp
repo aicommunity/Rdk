@@ -326,6 +326,46 @@ bool UEnvironment::SetChannelIndex(int value)
 }
 // --------------------------
 
+
+// --------------------------
+// Методы управления контроллерами
+// --------------------------
+/// Инициализация компонента и переменной состояния модели которому может
+/// передаваться сигнал о сбое в работе
+/// источника данных
+bool UEnvironment::RegisterSourceController(const std::string &component_name, const std::string &property_name)
+{
+ SourceControllerName=component_name;
+ SourceControllerProperty=property_name;
+ return true;
+}
+
+
+/// Активация извещения о сбое в работе источника данных
+bool UEnvironment::CallSourceController(void)
+{
+ if(SourceControllerName.empty() || SourceControllerProperty.empty())
+  return false;
+ try
+ {
+  if(!GetModel())
+   return false;
+  UEPtr<UContainer> cont=GetModel()->GetComponentL(SourceControllerName);
+
+  UEPtr<UIProperty> iproperty=cont->FindProperty(SourceControllerProperty);
+  bool value=true;
+  if(!iproperty->ReadFromMemory(&value))
+   return false;
+ }
+ catch(UContainer::EComponentNameNotExist &exception)
+ {
+  return false;
+ }
+ return true;
+}
+// --------------------------
+
+
 // --------------------------
 // Методы управления счетом
 // --------------------------

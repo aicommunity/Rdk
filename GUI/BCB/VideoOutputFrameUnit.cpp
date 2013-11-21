@@ -158,7 +158,9 @@ void __fastcall TVideoCaptureThread::BeforeCalculate(void)
 
 void __fastcall TVideoCaptureThread::AfterCalculate(void)
 {
- Frame->UpdateInterface();
+// Frame->UpdateInterface();
+ if(!UEngineMonitorForm || !UEngineMonitorForm->EngineMonitorFrame)
+  return;
  if(GetNumEngines() == 1)
   UEngineMonitorForm->EngineMonitorFrame->SetServerTimeStamp(0,LastTimeStamp);
  else
@@ -783,9 +785,14 @@ void __fastcall TVideoCaptureThreadVideoGrabber::Calculate(void)
   wait_time=1000.0/VideoGrabber->PlayerFrameRate;
 
  Frame->UpdateInterval=wait_time;
- if(WaitForSingleObject(VideoGrabberCompleted, wait_time) == WAIT_TIMEOUT)
+ if(WaitForSingleObject(VideoGrabberCompleted, 1000) == WAIT_TIMEOUT)
  {
-  TVideoCaptureThread::AfterCalculate();
+  if(WaitForSingleObject(CaptureEnabled,10) != WAIT_TIMEOUT)
+  {
+   ++LastTimeStamp;
+   MEnv_CallSourceController(Frame->FrameIndex);
+   TVideoCaptureThread::AfterCalculate();
+  }
 /*  WriteSource->Fill(0);
   RDK::UBitmap* old_read_source=ReadSource;
   ReadSource=WriteSource;
@@ -1310,14 +1317,15 @@ __fastcall TVideoOutputFrame::~TVideoOutputFrame(void)
 
  if(MyComponentsListForm)
   delete MyComponentsListForm;
-	   /*
+
  if(CaptureThread)
  {
   CaptureThread->Terminate();
+  WaitForSingleObject(CaptureThread->GetFrameNotInProgress(),1000);
   CaptureThread->WaitFor();
   delete CaptureThread;
   CaptureThread=0;
- }       */
+ }
 }
 
 //---------------------------------------------------------------------------
@@ -2239,7 +2247,7 @@ void __fastcall TVideoOutputFrame::TimerTimer(TObject *Sender)
    UpdateInterface();
  }
   */
-/*
+
 // UpdateFlag=false;
 // if(UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode() != 1)
  {
@@ -2256,7 +2264,7 @@ void __fastcall TVideoOutputFrame::TimerTimer(TObject *Sender)
 
 	UpdateVideo();
   }
- }*/
+ }
 // Image->Repaint();
 }
 //---------------------------------------------------------------------------

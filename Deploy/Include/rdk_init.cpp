@@ -866,6 +866,19 @@ const char* RDK_CALL Env_GetCurrentComponentId(void)
  return PEngine->Env_GetCurrentComponentId();
 }
 // ***********************************************
+
+/// Инициирует извещение о сбое в работе источника данных
+bool RDK_CALL Env_CallSourceController(void)
+{
+ return PEngine->Env_CallSourceController();
+}
+
+bool RDK_CALL MEnv_CallSourceController(int engine_index)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+ return DllManager.EngineList[engine_index]->Env_CallSourceController();
+}
 // --------------------------
 
 // --------------------------

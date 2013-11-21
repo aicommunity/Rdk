@@ -1377,6 +1377,23 @@ unsigned char* UEngine::Env_GetOutputImageY8(int index)
 }
 
 
+/// Инициирует извещение о сбое в работе источника данных
+bool UEngine::Env_CallSourceController(void)
+{
+ try
+ {
+  if(!Environment)
+   return false;
+  return Environment->CallSourceController();
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+
+ return 0;
+}
+
 
 // Методы управления моделью
 // ----------------------------

@@ -419,6 +419,9 @@ virtual unsigned char* Env_GetOutputImage(int index);
 
 virtual unsigned char* Env_GetOutputImageY8(int index);
 
+/// Инициирует извещение о сбое в работе источника данных
+virtual bool Env_CallSourceController(void);
+
 // Методы управления моделью
 // ----------------------------
 // Удаляет модель

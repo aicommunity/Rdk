@@ -384,6 +384,10 @@ RDK_LIB_TYPE int RDK_CALL Env_GetOutputImageColorModel(int number);
 RDK_LIB_TYPE unsigned char* RDK_CALL Env_GetInputImage(int index);
 RDK_LIB_TYPE unsigned char* RDK_CALL Env_GetOutputImage(int index);
 RDK_LIB_TYPE unsigned char* RDK_CALL Env_GetOutputImageY8(int index);
+
+/// Инициирует извещение о сбое в работе источника данных
+RDK_LIB_TYPE bool RDK_CALL Env_CallSourceController(void);
+RDK_LIB_TYPE bool RDK_CALL MEnv_CallSourceController(int engine_index);
 // --------------------------
 
 // ----------------------------
