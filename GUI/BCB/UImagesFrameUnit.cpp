@@ -156,7 +156,7 @@ bool TUImagesFrame::SetBitmap(int i, int j, const RDK::UBitmap &bitmap)
 	if(HistR.GetMax().Number.Int>0)
 	{
 	 bmp->Canvas->Pen->Color=clRed;
-	 int item=(float(HistR[i].Number.Int)/divisor)*33.0;
+	 int item=(float(HistR[i].Number.Int)/divisor)*100.0;
 	 bmp->Canvas->MoveTo(i+1,y);
 	 bmp->Canvas->LineTo(i+1,y-item);
 	}
@@ -165,7 +165,7 @@ bool TUImagesFrame::SetBitmap(int i, int j, const RDK::UBitmap &bitmap)
 	if(HistG.GetMax().Number.Int>0)
 	{
 	 bmp->Canvas->Pen->Color=clGreen;
-	 int item=(float(HistG[i].Number.Int)/divisor)*33.0;
+	 int item=(float(HistG[i].Number.Int)/divisor)*100.0;
 	 bmp->Canvas->MoveTo(i+1,y-33);
 	 bmp->Canvas->LineTo(i+1,y-item-33);
 	}
@@ -174,7 +174,7 @@ bool TUImagesFrame::SetBitmap(int i, int j, const RDK::UBitmap &bitmap)
 	if(HistB.GetMax().Number.Int>0)
 	{
 	 bmp->Canvas->Pen->Color=clBlue;
-	 int item=(float(HistB[i].Number.Int)/divisor)*33.0;
+	 int item=(float(HistB[i].Number.Int)/divisor)*100.0;
 	 bmp->Canvas->MoveTo(i+1,y-66);
 	 bmp->Canvas->LineTo(i+1,y-item-66);
 	}
