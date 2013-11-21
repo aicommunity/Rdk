@@ -91,7 +91,7 @@ double UTimeControl::GetSourceStepLocalTime(void) const
 double UTimeControl::SetSourceStepLocalTime(double value)
 {
  SourceStepLocalTime=value;
- return SetRealTime((SourceStepLocalTime-SourceStartLocalTime)*1000.0);
+ return SetRealTime((SourceStepLocalTime-SourceStartLocalTime)*1000000.0);
 }
 // --------------------------
 

@@ -123,7 +123,7 @@ bool TUImagesFrame::SetBitmap(int i, int j, const RDK::UBitmap &bitmap)
    Hist.Calc(bitmap,0);
 
    int y=bmp->Height-1;
-   bmp->Canvas->Rectangle(1,y,256,y-101);
+ //  bmp->Canvas->Rectangle(1,y,256,y-101);
 
    bmp->Canvas->Pen->Color=clBlack;
    bmp->Canvas->Pen->Style=psSolid;
@@ -146,7 +146,7 @@ bool TUImagesFrame::SetBitmap(int i, int j, const RDK::UBitmap &bitmap)
    HistR.Calc(bitmap,2);
 
    int y=bmp->Height-1;
-   bmp->Canvas->Rectangle(1,y,256,y-101);
+ //  bmp->Canvas->Rectangle(1,y,256,y-101);
 
    bmp->Canvas->Pen->Style=psSolid;
    bmp->Canvas->Pen->Width=1;
