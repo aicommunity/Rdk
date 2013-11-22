@@ -178,6 +178,7 @@ __published:	// IDE-managed Components
 	void __fastcall Start2Click(TObject *Sender);
 	void __fastcall Pause2Click(TObject *Sender);
 	void __fastcall Reset2Click(TObject *Sender);
+	void __fastcall FormDestroy(TObject *Sender);
 
 
 
@@ -268,6 +269,8 @@ std::map<std::string, TUVisualControllerForm*> SpecialForms;
 
 /// Лицензия TVideoGrabber
 String VideoGrabberLicenseString;
+
+Word Saved8087CW;
 
 // Обновление интерфейса
 void AUpdateInterface(void);

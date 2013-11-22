@@ -1566,6 +1566,8 @@ void __fastcall TUGEngineControlForm::WatchWindow1Click(TObject *Sender)
 void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
 {
  DecimalSeparator = '.';
+ Saved8087CW = Default8087CW;
+ System::Set8087CW(0x133f);
 
  // Грузим настройки приложения
  String opt_name=ExtractFileName(Application->ExeName);
@@ -1821,6 +1823,12 @@ void __fastcall TUGEngineControlForm::Pause2Click(TObject *Sender)
 void __fastcall TUGEngineControlForm::Reset2Click(TObject *Sender)
 {
 // Reset1Click(Sender);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::FormDestroy(TObject *Sender)
+{
+ System::Set8087CW(Saved8087CW);
 }
 //---------------------------------------------------------------------------
 
