@@ -110,7 +110,7 @@ object TldTrackingForm: TTldTrackingForm
       Top = 173
       Width = 189
       Height = 237
-      ActivePage = RectangleTabSheet
+      ActivePage = PointsTabSheet
       Align = alRight
       MultiLine = True
       TabOrder = 3
@@ -147,7 +147,7 @@ object TldTrackingForm: TTldTrackingForm
         OnShow = PointsTabSheetShow
         object SendPointsButton: TButton
           Left = 0
-          Top = 139
+          Top = 156
           Width = 181
           Height = 25
           Align = alTop
@@ -206,6 +206,15 @@ object TldTrackingForm: TTldTrackingForm
           Caption = 'Step After Send'
           TabOrder = 3
         end
+        object SetOnTheFlyCheckBox: TCheckBox
+          Left = 0
+          Top = 139
+          Width = 181
+          Height = 17
+          Align = alTop
+          Caption = 'Set on the fly'
+          TabOrder = 4
+        end
       end
     end
     object Panel4: TPanel
@@ -227,8 +236,6 @@ object TldTrackingForm: TTldTrackingForm
           'Directly to Tracker'
           'To External "MatrixSource"')
         TabOrder = 0
-        ExplicitLeft = 4
-        ExplicitTop = 6
       end
       object TrackersCheckListBox: TCheckListBox
         Left = 1
@@ -240,8 +247,6 @@ object TldTrackingForm: TTldTrackingForm
         ItemHeight = 13
         TabOrder = 1
         OnClick = TrackersCheckListBoxClick
-        ExplicitTop = 54
-        ExplicitHeight = 92
       end
       object InputImageRadioGroup: TRadioGroup
         Left = 1
@@ -255,8 +260,6 @@ object TldTrackingForm: TTldTrackingForm
           'From this window'
           'From component input')
         TabOrder = 2
-        ExplicitLeft = -7
-        ExplicitTop = 88
       end
     end
   end

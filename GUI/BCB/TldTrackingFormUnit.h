@@ -49,6 +49,7 @@ __published:	// IDE-managed Components
 	TCheckListBox *TrackersCheckListBox;
 	TCheckBox *CalcAfterSendCheckBox;
 	TRadioGroup *InputImageRadioGroup;
+	TCheckBox *SetOnTheFlyCheckBox;
 	void __fastcall StartTrackingButtonClick(TObject *Sender);
 	void __fastcall StopTrackingButtonClick(TObject *Sender);
 	void __fastcall GetFrameButtonClick(TObject *Sender);

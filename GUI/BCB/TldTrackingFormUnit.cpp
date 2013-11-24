@@ -181,6 +181,9 @@ void TTldTrackingForm::ASaveParameters(RDK::USerStorageXML &xml)
  xml.WriteInteger("InitInputMode",InitInputModeRadioGroup->ItemIndex);
  xml.WriteInteger("InputImage",InputImageRadioGroup->ItemIndex);
 
+ xml.WriteBool("SetOnTheFlyCheckBox",SetOnTheFlyCheckBox->Checked);
+
+
  xml.WriteInteger("NumTrackers",int(Trackers.size()));
  for(size_t i=0;i<Trackers.size();i++)
  {
@@ -194,6 +197,8 @@ void TTldTrackingForm::ALoadParameters(RDK::USerStorageXML &xml)
 {
  InputImageRadioGroup->ItemIndex=xml.ReadInteger("InputImage",0);
  InitInputModeRadioGroup->ItemIndex=xml.ReadInteger("InitInputMode",1);
+ SetOnTheFlyCheckBox->Checked=xml.ReadBool("SetOnTheFlyCheckBox",false);
+
  Trackers.resize(xml.ReadInteger("NumTrackers",0));
  for(size_t i=0;i<Trackers.size();i++)
  {
@@ -386,14 +391,14 @@ void __fastcall TTldTrackingForm::SendObjectToButtonClick(TObject *Sender)
   return;
 
  RDK::MDMatrix<double> points(*old_points);//(ObjectReceiverComboBox->Items->Count,4);
- points.Resize(points.GetRows(),4);
+ points.Resize((points.GetRows()<=tracker_index)?tracker_index+1:points.GetRows(),4);
  points(tracker_index,0)=VideoOutputFrame1->left;
  points(tracker_index,1)=VideoOutputFrame1->top;
  points(tracker_index,2)=VideoOutputFrame1->width;
  points(tracker_index,3)=VideoOutputFrame1->height;
 
  bool started=UEngineMonitorForm->EngineMonitorFrame->Timer->Enabled;
- if(started)
+ if(started && SetOnTheFlyCheckBox->Checked == false)
   StopTrackingButtonClick(Sender);
 // UEngineMonitorForm->EngineMonitorFrame->Step1Click(Sender);
 
