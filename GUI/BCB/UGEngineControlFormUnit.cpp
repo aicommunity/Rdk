@@ -50,6 +50,8 @@ __fastcall TUGEngineControlForm::TUGEngineControlForm(TComponent* Owner)
 
  // Признак наличия открытого проекта
  ProjectOpenFlag=false;
+
+ AppWinState=true;
 }
 //---------------------------------------------------------------------------
 // Метод, вызываемый перед шагом расчета
@@ -363,7 +365,9 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
  UShowProgressBarForm->SetBarHeader(2,"Total");
  UShowProgressBarForm->ResetBarStatus(1, 1, num_engines-1);
  UShowProgressBarForm->ResetBarStatus(2, 1, 2);
- UShowProgressBarForm->Show();
+
+ if(AppWinState)
+  UShowProgressBarForm->Show();
  UShowProgressBarForm->Update();
 
 try{
@@ -736,7 +740,8 @@ void TUGEngineControlForm::SaveProject(void)
  UShowProgressBarForm->SetBarHeader(2,"Total");
  UShowProgressBarForm->ResetBarStatus(1, 1, 1);
  UShowProgressBarForm->ResetBarStatus(2, 1, 2);
- UShowProgressBarForm->Show();
+ if(AppWinState)
+  UShowProgressBarForm->Show();
  UShowProgressBarForm->Update();
 try{
 
@@ -1259,7 +1264,8 @@ void __fastcall TUGEngineControlForm::Start1Click(TObject *Sender)
  UShowProgressBarForm->SetBarHeader(2,"Total");
  UShowProgressBarForm->ResetBarStatus(1, 1, 1);
  UShowProgressBarForm->ResetBarStatus(2, 1, 2);
- UShowProgressBarForm->Show();
+ if(AppWinState)
+  UShowProgressBarForm->Show();
 
 #ifdef RDK_VIDEO
  VideoOutputForm->Start();
@@ -1278,7 +1284,8 @@ void __fastcall TUGEngineControlForm::Pause1Click(TObject *Sender)
  UShowProgressBarForm->SetBarHeader(2,"Total");
  UShowProgressBarForm->ResetBarStatus(1, 1, 1);
  UShowProgressBarForm->ResetBarStatus(2, 1, 2);
- UShowProgressBarForm->Show();
+ if(AppWinState)
+  UShowProgressBarForm->Show();
 
  UEngineMonitorForm->EngineMonitorFrame->Pause1Click(Sender);
  UShowProgressBarForm->IncBarStatus(2);
@@ -1569,6 +1576,8 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  Saved8087CW = Default8087CW;
  System::Set8087CW(0x133f);
 
+ TrayIcon->Icon->Assign(Application->Icon);
+
  // Грузим настройки приложения
  String opt_name=ExtractFileName(Application->ExeName);
  if(opt_name.Length()>4)
@@ -1613,6 +1622,8 @@ void __fastcall TUGEngineControlForm::HideTimerTimer(TObject *Sender)
 
  if(StartMinimized)
  {
+  AppWinState=false;
+//  Application->Minimize();
   ShowWindow(Handle,SW_HIDE);  // Скрываем программу
  }
 
@@ -1778,14 +1789,17 @@ void __fastcall TUGEngineControlForm::ApplicationEventsMinimize(TObject *Sender)
   ShowWindow(Application->Handle,SW_HIDE);  // Скрываем кнопку с TaskBar'а
   SetWindowLong(Application->Handle, GWL_EXSTYLE, GetWindowLong(Application->Handle, GWL_EXSTYLE) | !WS_EX_APPWINDOW);
  }
+ AppWinState=false;
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUGEngineControlForm::TrayIconDblClick(TObject *Sender)
 {
  TrayIcon->ShowBalloonHint();
+// Application->Restore();
  ShowWindow(Handle,SW_RESTORE);
  SetForegroundWindow(Handle);
+ AppWinState=true;
 }
 //---------------------------------------------------------------------------
 
@@ -1832,4 +1846,11 @@ void __fastcall TUGEngineControlForm::FormDestroy(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+
+
+void __fastcall TUGEngineControlForm::ApplicationEventsRestore(TObject *Sender)
+{
+ AppWinState=true;
+}
+//---------------------------------------------------------------------------
 
