@@ -397,6 +397,8 @@ virtual void __fastcall Stop(void);
 
 // Меняет временную метку с блокировкой
 virtual bool SetLastTimeStampSafe(long long time_stamp);
+
+void __fastcall AfterCalculate(void);
 // --------------------------
 };
 

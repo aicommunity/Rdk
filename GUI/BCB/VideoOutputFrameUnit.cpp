@@ -915,6 +915,17 @@ void __fastcall TVideoCaptureThreadVideoGrabberAvi::Stop(void)
  if(VideoGrabber)
   VideoGrabber->PausePlayer();
 }
+
+void __fastcall TVideoCaptureThreadVideoGrabberAvi::AfterCalculate(void)
+{
+ if(VideoGrabber->PlayerFramePosition>0 && VideoGrabber->PlayerFramePosition>=VideoGrabber->PlayerFrameCount-1)
+ {
+  VideoGrabber->PlayerFramePosition=0;
+  Sleep(1);
+  Start();
+  Sleep(1);
+ }
+}
 // --------------------------
 //---------------------------------------------------------------------------
 
