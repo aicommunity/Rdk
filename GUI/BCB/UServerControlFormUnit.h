@@ -69,6 +69,7 @@ __published:	// IDE-managed Components
 	TTcpServer *TcpServer;
 	TIdTCPServer *IdTCPServer;
 	TTimer *ServerRestartTimer;
+	TLabeledEdit *ServerNameLabeledEdit;
 	void __fastcall UHttpServerFrameIdHTTPServerCommandGet(TIdContext *AContext, TIdHTTPRequestInfo *ARequestInfo,
           TIdHTTPResponseInfo *AResponseInfo);
 	void __fastcall FormCreate(TObject *Sender);

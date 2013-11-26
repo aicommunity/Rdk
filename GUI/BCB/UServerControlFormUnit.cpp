@@ -106,6 +106,12 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
   return_value=0;
  }
  else
+ if(cmd == "GetServerName")
+ {
+  ControlResponseString=AnsiString(ServerNameLabeledEdit->Text).c_str();
+  return_value=0;
+ }
+ else
  if(cmd == "GetChannelName")
  {
   ControlResponseString=GetChannelName(engine_index);
@@ -122,13 +128,27 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
 	return_value=5005;
  }
  else
- if(cmd == "GetChannelVideoSourceType")
+ if(cmd == "GetChannelVideoSource")
  {
-  ControlResponseString=RDK::sntoa(GetChannelVideoSource(engine_index));
+#ifdef RDK_VIDEO
+ TVideoOutputFrame *frame=VideoOutputForm->GetVideoOutputFrame(engine_index);
+ if(!frame)
+  return_value=1;
+
+  result.WriteString("Mode",RDK::sntoa(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GetMode()));
+  if(GetChannelVideoSource(engine_index) == 3)
+  {
+   result.WriteString("IPCameraUrl",AnsiString(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->IPCameraUrlEdit).c_str());
+   result.WriteString("IPCameraUsername",AnsiString(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->IPCameraUsernameEdit).c_str());
+   result.WriteString("IPCameraPassword",AnsiString(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->IPCameraPasswordEdit).c_str());
+  }
   return_value=0;
+#else
+  return_value=1;
+#endif
  }
  else
- if(cmd == "SetChannelVideoSourceType")
+ if(cmd == "SetChannelVideoSource")
  {
   int mode=xml.ReadInteger("Mode",5);
   return_value=SetChannelVideoSource(engine_index,mode);
@@ -432,6 +452,8 @@ void TUServerControlForm::ASaveParameters(RDK::USerStorageXML &xml)
  xml.WriteInteger("ServerControlPort", StrToInt(IdTCPServer->Bindings->Items[0]->Port));
  xml.WriteInteger("NumberOfChannels",GetNumChannels());
  xml.WriteInteger("AutoStartFlag",AutoStartFlag);
+ xml.WriteString("AutoStartFlag",AnsiString(ServerNameLabeledEdit->Text).c_str());
+
  for(size_t i=0;i<ChannelNames.size();i++)
  {
   xml.WriteString(std::string("ChannelName_")+RDK::sntoa(i),ChannelNames[i]);
@@ -452,6 +474,7 @@ void TUServerControlForm::ALoadParameters(RDK::USerStorageXML &xml)
  }
 
  AutoStartFlag=xml.ReadInteger("AutoStartFlag",true);
+ ServerNameLabeledEdit->Text=xml.ReadString("AutoStartFlag","").c_str();
 
  if(AutoStartFlag)
   ServerStartButtonClick(this);

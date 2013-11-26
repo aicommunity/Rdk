@@ -21,7 +21,7 @@ object UServerControlForm: TUServerControlForm
     Top = 0
     Width = 721
     Height = 490
-    ActivePage = ControlTabSheet
+    ActivePage = OptionsTabSheet
     Align = alClient
     TabOrder = 0
     OnChange = PageControlChange
@@ -197,16 +197,16 @@ object UServerControlForm: TUServerControlForm
           Left = 1
           Top = 1
           Width = 315
-          Height = 110
+          Height = 152
           Align = alTop
           Caption = ' Main options '
           TabOrder = 0
           DesignSize = (
             315
-            110)
+            152)
           object ServerControlPortLabeledEdit: TLabeledEdit
             Left = 6
-            Top = 31
+            Top = 73
             Width = 299
             Height = 21
             Anchors = [akLeft, akTop, akRight]
@@ -218,7 +218,7 @@ object UServerControlForm: TUServerControlForm
           end
           object NumberOfChannelsLabeledEdit: TLabeledEdit
             Left = 6
-            Top = 79
+            Top = 121
             Width = 299
             Height = 21
             Anchors = [akLeft, akTop, akRight]
@@ -228,20 +228,34 @@ object UServerControlForm: TUServerControlForm
             TabOrder = 1
             Text = '1'
           end
+          object ServerNameLabeledEdit: TLabeledEdit
+            Left = 6
+            Top = 29
+            Width = 299
+            Height = 21
+            Anchors = [akLeft, akTop, akRight]
+            EditLabel.Width = 62
+            EditLabel.Height = 13
+            EditLabel.Caption = 'Server Name'
+            TabOrder = 2
+            Text = 'Server'
+          end
         end
         object GroupBox2: TGroupBox
           Left = 1
-          Top = 111
+          Top = 153
           Width = 315
-          Height = 309
+          Height = 267
           Align = alClient
           Caption = ' Channel names '
           TabOrder = 1
+          ExplicitTop = 111
+          ExplicitHeight = 309
           object ChannelNamesStringGrid: TStringGrid
             Left = 2
             Top = 15
             Width = 311
-            Height = 292
+            Height = 250
             Align = alClient
             ColCount = 2
             DefaultRowHeight = 20
@@ -249,6 +263,7 @@ object UServerControlForm: TUServerControlForm
             Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goEditing]
             TabOrder = 0
             OnKeyDown = ChannelNamesStringGridKeyDown
+            ExplicitHeight = 292
           end
         end
       end
