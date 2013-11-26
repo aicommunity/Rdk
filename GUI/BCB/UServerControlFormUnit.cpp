@@ -139,8 +139,8 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
   if(GetChannelVideoSource(engine_index) == 3)
   {
    result.WriteString("IPCameraUrl",AnsiString(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->IPCameraUrlEdit->Text).c_str());
-   result.WriteString("IPCameraUsername",AnsiString(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->IPCameraUsernameEdit->Text).c_str());
-   result.WriteString("IPCameraPassword",AnsiString(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->IPCameraPasswordEdit->Text).c_str());
+   result.WriteString("IPCameraUsername",AnsiString(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->IPCameraUserNameEdit->Text).c_str());
+   result.WriteString("IPCameraPassword",AnsiString(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->IPCameraUserPasswordEdit->Text).c_str());
   }
   return_value=0;
 #else
