@@ -1488,17 +1488,26 @@ void TVideoOutputFrame::InitByCamera(int camera_index, int input_index, int size
 // StartButtonClick(this);
 // UpdateVideo();
 
- if(!DestroyCaptureThread())
-  return;
- if(!CaptureThread)
+ if(CaptureThread && dynamic_cast<TVideoCaptureThreadVideoGrabberCamera*>(CaptureThread))
  {
-  CaptureThread=new TVideoCaptureThreadVideoGrabberCamera(this,false);
-  CaptureThread->SetChannelIndex(FrameIndex);
   TVideoCaptureThreadVideoGrabberCamera* thread=dynamic_cast<TVideoCaptureThreadVideoGrabberCamera*>(CaptureThread);
-  if(thread)
+  thread->Init(camera_index, input_index, size_index, subtype_index, analog_index);
+  MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, thread->GetVideoGrabber());
+ }
+ else
+ {
+  if(!DestroyCaptureThread())
+   return;
+  if(!CaptureThread)
   {
-   thread->Init(camera_index, input_index, size_index, subtype_index, analog_index);
-   MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, thread->GetVideoGrabber());
+   CaptureThread=new TVideoCaptureThreadVideoGrabberCamera(this,false);
+   CaptureThread->SetChannelIndex(FrameIndex);
+   TVideoCaptureThreadVideoGrabberCamera* thread=dynamic_cast<TVideoCaptureThreadVideoGrabberCamera*>(CaptureThread);
+   if(thread)
+   {
+	thread->Init(camera_index, input_index, size_index, subtype_index, analog_index);
+	MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, thread->GetVideoGrabber());
+   }
   }
  }
  UpdateInterface(true);

@@ -40,13 +40,7 @@ object VideoGrabberControlForm: TVideoGrabberControlForm
       ExplicitWidth = 599
       ExplicitHeight = 299
       inherited DeviceTabSheet: TTabSheet
-        ExplicitWidth = 591
-        ExplicitHeight = 268
         inherited VDCapturePanel: TPanel
-          Width = 591
-          Height = 268
-          ExplicitWidth = 591
-          ExplicitHeight = 268
           inherited ModeLabel: TLabel
             Width = 706
             ExplicitWidth = 560
@@ -116,8 +110,17 @@ object VideoGrabberControlForm: TVideoGrabberControlForm
       end
       inherited VideoFileTabSheet: TTabSheet
         inherited VFCapturePanel: TPanel
+          Width = 591
+          Height = 268
           inherited VideoFileNameLabel: TLabel
+            Width = 575
             ExplicitWidth = 560
+          end
+          inherited VFNameEdit: TEdit
+            Width = 490
+          end
+          inherited VFBrowseButton: TButton
+            Left = 504
           end
         end
       end
@@ -166,9 +169,11 @@ object VideoGrabberControlForm: TVideoGrabberControlForm
       inherited HttpServerTabSheet: TTabSheet
         inherited Label10: TLabel
           Width = 323
+          ExplicitWidth = 323
         end
         inherited ListerPortEdit: TEdit
           Width = 575
+          ExplicitWidth = 575
         end
       end
       inherited SharedMemoryTabSheet: TTabSheet
