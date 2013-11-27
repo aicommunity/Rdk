@@ -1574,7 +1574,12 @@ void UBitmap::Reduce(int n, int m, UBitmap *target)
 
  UBColor *p, *s;
  int num_rows=Height/m;
+ if(Height%m > 0)
+  num_rows++;
+
  int num_cols=Width/n;
+ if(Width%n > 0)
+  num_cols++;
 
  if(num_rows==0 && num_cols==0)
   return;
@@ -1604,7 +1609,7 @@ void UBitmap::Reduce(int n, int m, UBitmap *target)
 	memcpy(p, s, PixelByteLength);
 	p+=PixelByteLength;
 
-	if(Width-j >= n )
+	if(Width-j > n )
 	{
 	 s+=PixelByteLength*n;
 	}
@@ -1613,7 +1618,7 @@ void UBitmap::Reduce(int n, int m, UBitmap *target)
 	 s+=PixelByteLength*(Width-j);
 	}
    }
-   if(Height-i >= m )
+   if(Height-i > m )
 	s+=LineByteLength*(m-1);
    else
    {
@@ -1635,7 +1640,7 @@ void UBitmap::Reduce(int n, int m, UBitmap *target)
 	memcpy(p, s, PixelByteLength);
 	p+=PixelByteLength;
 
-	if(Width-j >= n )
+	if(Width-j > n )
 	{
 	 s+=PixelByteLength*n;
 	}
@@ -1644,7 +1649,12 @@ void UBitmap::Reduce(int n, int m, UBitmap *target)
 	 s+=PixelByteLength*(Width-j);
 	}
    }
-   s+=LineByteLength*(m-1);
+   if(Height-i > m )
+	s+=LineByteLength*(m-1);
+   else
+   {
+	s+=LineByteLength*(Height-i);
+   }
   }
 
   delete []Data;
