@@ -70,6 +70,7 @@ __published:	// IDE-managed Components
 	TIdTCPServer *IdTCPServer;
 	TTimer *ServerRestartTimer;
 	TLabeledEdit *ServerNameLabeledEdit;
+	TLabeledEdit *ServerIdLabeledEdit;
 	void __fastcall UHttpServerFrameIdHTTPServerCommandGet(TIdContext *AContext, TIdHTTPRequestInfo *ARequestInfo,
           TIdHTTPResponseInfo *AResponseInfo);
 	void __fastcall FormCreate(TObject *Sender);
@@ -113,6 +114,10 @@ std::vector<std::string> ChannelNames;
 /// Результаты измерений производительности, мс
 std::vector<std::vector<long long> > ModelPerformanceResults;
 std::vector<std::vector<long long> > TransportPerformanceResults;
+
+std::string ServerName;
+
+std::string ServerId;
 
 /// Число шагов усреднения оценки производительности
 int AverageIterations;

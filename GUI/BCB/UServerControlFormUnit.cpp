@@ -108,7 +108,13 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
  else
  if(cmd == "GetServerName")
  {
-  ControlResponseString=AnsiString(ServerNameLabeledEdit->Text).c_str();
+  ControlResponseString=ServerName;
+  return_value=0;
+ }
+ else
+ if(cmd == "GetServerId")
+ {
+  ControlResponseString=ServerId;
   return_value=0;
  }
  else
@@ -441,6 +447,9 @@ void TUServerControlForm::AUpdateInterface(void)
   PerformanceChart->Series[1]->AddY(transport_avg[i]);
   PerformanceChart->Series[2]->AddY(model_avg[i]+transport_avg[i]);
  }
+
+ ServerNameLabeledEdit->Text=ServerName.c_str();
+ ServerIdLabeledEdit->Text=ServerId.c_str();
 }
 
 // Сохраняет параметры интерфейса в xml
@@ -452,7 +461,8 @@ void TUServerControlForm::ASaveParameters(RDK::USerStorageXML &xml)
  xml.WriteInteger("ServerControlPort", StrToInt(IdTCPServer->Bindings->Items[0]->Port));
  xml.WriteInteger("NumberOfChannels",GetNumChannels());
  xml.WriteInteger("AutoStartFlag",AutoStartFlag);
- xml.WriteString("AutoStartFlag",AnsiString(ServerNameLabeledEdit->Text).c_str());
+ xml.WriteString("ServerName",ServerName);
+ xml.WriteString("ServerId",ServerId);
 
  for(size_t i=0;i<ChannelNames.size();i++)
  {
@@ -474,7 +484,10 @@ void TUServerControlForm::ALoadParameters(RDK::USerStorageXML &xml)
  }
 
  AutoStartFlag=xml.ReadInteger("AutoStartFlag",true);
- ServerNameLabeledEdit->Text=xml.ReadString("AutoStartFlag","").c_str();
+ ServerName=xml.ReadString("ServerName","Server");
+ ServerId=xml.ReadString("ServerId","Server");
+
+ UpdateInterface(true);
 
  if(AutoStartFlag)
   ServerStartButtonClick(this);
@@ -830,6 +843,8 @@ void __fastcall TUServerControlForm::ApplyOptionsButtonClick(TObject *Sender)
    ServerStartButtonClick(Sender);
  }
 
+ ServerName=AnsiString(ServerNameLabeledEdit->Text).c_str();
+ ServerId=AnsiString(ServerIdLabeledEdit->Text).c_str();
  UpdateInterface();
 }
 //---------------------------------------------------------------------------

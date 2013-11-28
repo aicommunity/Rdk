@@ -3,6 +3,7 @@
 #pragma hdrstop
 
 #include "TServerBroadcasterCommonUnit.h"
+#include "UServerControlFormUnit.h"
 #include "rdk_initdll.h"
 //---------------------------------------------------------------------------
 
@@ -40,7 +41,7 @@ bool __fastcall TResultBroadcasterThread::GenerateSendString(void)
 
  SendString=std::string("<Meta Size=")+RDK::sntoa(MetaList.size())+">\r\n";
   SendString+="<Server>";
-  SendString+="server_id";
+  SendString+=UServerControlForm->ServerId;
   SendString+="</Server>\r\n";
  int i=0;
  std::list<TServerMetadata>::iterator I=MetaList.begin();
