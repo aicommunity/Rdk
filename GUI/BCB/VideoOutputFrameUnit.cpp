@@ -2153,7 +2153,7 @@ void TVideoOutputFrame::AUpdateInterface(void)
 {
 // if(UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode() == 1)
 // if(UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode() != 0 /*&& !IsStarted*/)
-//  if(CaptureThread)
+  if(CaptureThread)
   {
    long long time_stamp=0;
 	CaptureThread->ReadSourceSafe(BmpSource,time_stamp,false);
