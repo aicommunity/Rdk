@@ -785,7 +785,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::Calculate(void)
   wait_time=1000.0/VideoGrabber->PlayerFrameRate;
 
  Frame->UpdateInterval=wait_time;
- if(WaitForSingleObject(VideoGrabberCompleted, 1000) == WAIT_TIMEOUT)
+ if(WaitForSingleObject(VideoGrabberCompleted, wait_time) == WAIT_TIMEOUT)
  {
   if(WaitForSingleObject(CaptureEnabled,10) != WAIT_TIMEOUT)
   {
@@ -799,8 +799,8 @@ void __fastcall TVideoCaptureThreadVideoGrabber::Calculate(void)
   WriteSource=old_read_source;
   TVideoCaptureThread::AfterCalculate();*/
   return;
+  ResetEvent(VideoGrabberCompleted);
  }
- ResetEvent(VideoGrabberCompleted);
 }
 
 
