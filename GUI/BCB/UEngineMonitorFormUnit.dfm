@@ -45,4 +45,10 @@ object UEngineMonitorForm: TUEngineMonitorForm
       ExplicitWidth = 527
     end
   end
+  object LogTimer: TTimer
+    Interval = 100
+    OnTimer = LogTimerTimer
+    Left = 128
+    Top = 16
+  end
 end

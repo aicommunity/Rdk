@@ -17,6 +17,8 @@ TUEngineMonitorForm *UEngineMonitorForm;
 
 HANDLE RdkExceptionHandlerEvent=0;
 
+std::list<std::string> UnsentLog;
+
 //---------------------------------------------------------------------------
 void ExceptionHandler(int channel_index)
 {
@@ -27,14 +29,15 @@ void ExceptionHandler(int channel_index)
   return;
  ResetEvent(RdkExceptionHandlerEvent);
 
+ try
+ {
  int error_level=-1;
  const char * data=MEngine_GetUnreadLog(channel_index, error_level);
  if(!data)
   return;
 
  std::string new_log_data=data;
- UEngineMonitorForm->EngineMonitorFrame->RichEdit->Lines->Add(new_log_data.c_str());
-// UEngineMonitorForm->EngineMonitorFrame->RichEdit->Text=/*UEngineMonitorForm->EngineMonitorFrame->RichEdit->Text+*/new_log_data.c_str();
+ UnsentLog.push_back(new_log_data);
 
  if(!new_log_data.empty())
  {
@@ -52,6 +55,13 @@ void ExceptionHandler(int channel_index)
 	UEngineMonitorForm->WindowState=wsNormal;
    }
   }
+ }
+
+ }
+ catch(...)
+ {
+  SetEvent(RdkExceptionHandlerEvent);
+  throw;
  }
  SetEvent(RdkExceptionHandlerEvent);
 }
@@ -94,6 +104,35 @@ void __fastcall TUEngineMonitorForm::FormCreate(TObject *Sender)
 {
  if(!RdkExceptionHandlerEvent)
   RdkExceptionHandlerEvent=CreateEvent(0,TRUE,TRUE,0);
+}
+//---------------------------------------------------------------------------
+
+
+
+void __fastcall TUEngineMonitorForm::LogTimerTimer(TObject *Sender)
+{
+ if(!RdkExceptionHandlerEvent)
+  return;
+
+ if(WaitForSingleObject(RdkExceptionHandlerEvent,10) == WAIT_TIMEOUT)
+  return;
+ ResetEvent(RdkExceptionHandlerEvent);
+
+ try
+ {
+  while(!UnsentLog.empty())
+  {
+   UEngineMonitorForm->EngineMonitorFrame->RichEdit->Lines->Add(UnsentLog.front().c_str());
+   UnsentLog.pop_front();
+  }
+ }
+ catch(...)
+ {
+  SetEvent(RdkExceptionHandlerEvent);
+  throw;
+ }
+
+ SetEvent(RdkExceptionHandlerEvent);
 }
 //---------------------------------------------------------------------------
 

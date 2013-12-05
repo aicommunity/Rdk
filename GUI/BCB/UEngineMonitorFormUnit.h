@@ -12,6 +12,7 @@
 #include "TUVisualController.h"
 #include "TUVisualControllerFormUnit.h"
 #include "TUVisualControllerFrameUnit.h"
+#include <Vcl.ExtCtrls.hpp>
 //---------------------------------------------------------------------------
 
 void ExceptionHandler(int channel_index);
@@ -21,8 +22,10 @@ class TUEngineMonitorForm : public TUVisualControllerForm
 {
 __published:	// IDE-managed Components
 	TUEngineMonitorFrame *EngineMonitorFrame;
+	TTimer *LogTimer;
 	void __fastcall FormDestroy(TObject *Sender);
 	void __fastcall FormCreate(TObject *Sender);
+	void __fastcall LogTimerTimer(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
 	__fastcall TUEngineMonitorForm(TComponent* Owner);
