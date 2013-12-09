@@ -745,30 +745,30 @@ void __fastcall TVideoCaptureThreadVideoGrabber::OnFrameCaptureCompleted(System:
  case fc_TBitmap:
   if(Frame_Bitmap->PixelFormat == pf24bit)
   {
-   LastTimeStamp=FrameTime/10000;
-   *WriteSource<<Frame_Bitmap;
-  // WriteSourceSafe(Frame_Bitmap, FrameTime/10000, false);
+//   LastTimeStamp=FrameTime/10000;
+//   *WriteSource<<Frame_Bitmap;
+   WriteSourceSafe(Frame_Bitmap, FrameTime/10000, false);
   }
   else
   {
-   LastTimeStamp=FrameTime/10000;
+//   LastTimeStamp=FrameTime/10000;
    ConvertBitmap->Assign(Frame_Bitmap);
    ConvertBitmap->PixelFormat=pf24bit;
-   *WriteSource<<ConvertBitmap;
-//   WriteSourceSafe(ConvertBitmap, FrameTime/10000, false);
+//   *WriteSource<<ConvertBitmap;
+   WriteSourceSafe(ConvertBitmap, FrameTime/10000, false);
   }
 
 //	 if(WaitForSingleObject(SourceUnlock,30) == WAIT_TIMEOUT)
 //	  return;
 //	 ResetEvent(SourceUnlock);
-	 RDK::UBitmap* old_read_source=ReadSource;
-	 ReadSource=WriteSource;
-	 WriteSource=old_read_source;
+//	 RDK::UBitmap* old_read_source=ReadSource;
+//	 ReadSource=WriteSource;
+//	 WriteSource=old_read_source;
 //	 LastTimeStamp=time_stamp;
 //	 SetEvent(SourceUnlock);
 
   SetEvent(VideoGrabberCompleted);
-  TVideoCaptureThread::AfterCalculate();
+//  TVideoCaptureThread::AfterCalculate();
  break;
  }
 }
@@ -798,9 +798,10 @@ void __fastcall TVideoCaptureThreadVideoGrabber::Calculate(void)
   ReadSource=WriteSource;
   WriteSource=old_read_source;
   TVideoCaptureThread::AfterCalculate();*/
-  return;
   ResetEvent(VideoGrabberCompleted);
+  return;
  }
+ ResetEvent(VideoGrabberCompleted);
 }
 
 

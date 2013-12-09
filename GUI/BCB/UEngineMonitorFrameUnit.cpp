@@ -494,10 +494,7 @@ void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
  case 1:
  {
   IdTcpResultBroadcasterForm->SendMetadata();
-
   RDK::UIVisualControllerStorage::AfterCalculate();
-//  UServerControlForm->AfterCalculate();
-//  UServerControlForm->UpdateInterface();
   RDK::UIVisualControllerStorage::ResetCalculationStepUpdatedFlag();
   RDK::UIVisualControllerStorage::UpdateInterface();
  }
