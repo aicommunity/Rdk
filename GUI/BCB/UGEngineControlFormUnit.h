@@ -125,6 +125,9 @@ __published:	// IDE-managed Components
 	TMenuItem *Reset2;
 	TMenuItem *N8;
 	TMenuItem *Close1;
+	TPopupMenu *ChannelsPopupMenu;
+	TMenuItem *AddChannel1;
+	TMenuItem *DelChannel1;
 	void __fastcall FormShow(TObject *Sender);
 	void __fastcall Start1Click(TObject *Sender);
 	void __fastcall Pause1Click(TObject *Sender);
@@ -180,6 +183,8 @@ __published:	// IDE-managed Components
 	void __fastcall Reset2Click(TObject *Sender);
 	void __fastcall FormDestroy(TObject *Sender);
 	void __fastcall ApplicationEventsRestore(TObject *Sender);
+	void __fastcall AddChannel1Click(TObject *Sender);
+	void __fastcall DelChannel1Click(TObject *Sender);
 
 
 

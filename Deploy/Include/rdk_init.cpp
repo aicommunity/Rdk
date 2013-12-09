@@ -188,6 +188,36 @@ int RDK_CALL SetNumEngines(int num)
  return 0;
 }
 
+// Удаляет движок по индексу
+int RDK_CALL DelEngine(int index)
+{
+ if(index<0)
+  return 1;
+
+ if(index >= GetNumEngines())
+  return 2;
+/*
+ int res=DllManager.SetNumEngines(num);
+ if(res != 0)
+  return res;
+
+ if(SelectedEngineIndex>=num)
+  SelectedEngineIndex=0;
+
+ if(num>0)
+ {
+  PEngine=DllManager.EngineList[SelectedEngineIndex];
+  PEnvironment=DllManager.EnvironmentList[SelectedEngineIndex];
+  PStorage=DllManager.StorageList[SelectedEngineIndex];
+ }
+
+ RpcReturnString.resize(num);
+
+ return 0;*/
+ return 3;
+}
+
+
 // Возвращает индекс текущего выбранного движка
 int RDK_CALL GetSelectedEngineIndex(void)
 {

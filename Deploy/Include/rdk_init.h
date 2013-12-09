@@ -82,6 +82,9 @@ RDK_LIB_TYPE int RDK_CALL GetNumEngines(void);
 // num > 0
 RDK_LIB_TYPE int RDK_CALL SetNumEngines(int num);
 
+// Удаляет движок по индексу
+RDK_LIB_TYPE int RDK_CALL DelEngine(int index);
+
 // Возвращает индекс текущего выбранного движка
 RDK_LIB_TYPE int RDK_CALL GetSelectedEngineIndex(void);
 

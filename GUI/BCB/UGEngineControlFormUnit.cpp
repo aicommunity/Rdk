@@ -1854,3 +1854,22 @@ void __fastcall TUGEngineControlForm::ApplicationEventsRestore(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+void __fastcall TUGEngineControlForm::AddChannel1Click(TObject *Sender)
+{
+ AddNew1Click(Sender);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::DelChannel1Click(TObject *Sender)
+{
+ if(ChannelsStringGrid->RowCount<=0 || ChannelsStringGrid->Row<0)
+  return;
+
+ Pause1Click(Sender);
+// DelChannel(
+
+
+ RDK::UIVisualControllerStorage::UpdateInterface();
+}
+//---------------------------------------------------------------------------
+

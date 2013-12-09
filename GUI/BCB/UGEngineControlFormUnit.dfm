@@ -367,6 +367,7 @@ object UGEngineControlForm: TUGEngineControlForm
     FixedCols = 0
     FixedRows = 0
     Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goDrawFocusSelected, goRowSelect]
+    PopupMenu = ChannelsPopupMenu
     ScrollBars = ssVertical
     TabOrder = 2
     Visible = False
@@ -669,7 +670,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 360
     Top = 65528
     Bitmap = {
-      494C01011B006000A40110001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B006000A80110001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -1688,6 +1689,18 @@ object UGEngineControlForm: TUGEngineControlForm
     object Close1: TMenuItem
       Caption = 'Exit'
       OnClick = Close1Click
+    end
+  end
+  object ChannelsPopupMenu: TPopupMenu
+    Left = 344
+    Top = 128
+    object AddChannel1: TMenuItem
+      Caption = 'Add Channel'
+      OnClick = AddChannel1Click
+    end
+    object DelChannel1: TMenuItem
+      Caption = 'Del Channel'
+      OnClick = DelChannel1Click
     end
   end
 end
