@@ -399,6 +399,7 @@ __fastcall TVideoCaptureThreadBmpSequence::TVideoCaptureThreadBmpSequence(TVideo
  : TVideoCaptureThread(frame, CreateSuspended)
 {
  TempBitmap=new Graphics::TBitmap;
+ SyncMode=1;
 }
 
 __fastcall TVideoCaptureThreadBmpSequence::~TVideoCaptureThreadBmpSequence(void)
