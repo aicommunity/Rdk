@@ -221,21 +221,43 @@ void TUComponentsListFrame::UpdateIO(void)
  RDK::separatestring(output_names,outputs,',');
  RDK::separatestring(input_names,inputs,',');
 
-// int num=Model_GetComponentNumOutputs(GetSelectedComponentLongName().c_str());
- OutputsStringGrid->RowCount=1+outputs.size();
- OutputsStringGrid->ColCount=2;
-
- OutputsStringGrid->Cells[0][0]="Name";
- OutputsStringGrid->Cells[1][0]="Type";
-
- for(int i=0;i<int(outputs.size());i++)
+ if(outputs.size()>0)
  {
-  OutputsStringGrid->Cells[0][i+1]=outputs[i].c_str();
-  OutputsStringGrid->Cells[1][i+1]="";
+// int num=Model_GetComponentNumOutputs(GetSelectedComponentLongName().c_str());
+  OutputsStringGrid->RowCount=1+outputs.size();
+  OutputsStringGrid->ColCount=2;
+
+  OutputsStringGrid->Cells[0][0]="Name";
+  OutputsStringGrid->Cells[1][0]="Type";
+
+  for(int i=0;i<int(outputs.size());i++)
+  {
+   OutputsStringGrid->Cells[0][i+1]=outputs[i].c_str();
+   OutputsStringGrid->Cells[1][i+1]="";
+  }
+
+  OutputsStringGrid->ColWidths[0]=OutputsStringGrid->Width-OutputsStringGrid->ColWidths[0]-24;
  }
+ else
+ {
+  int num=Model_GetComponentNumOutputs(GetSelectedComponentLongName().c_str());
+  if(num>0)
+  {
+   OutputsStringGrid->RowCount=1+num;
+   OutputsStringGrid->ColCount=2;
 
- OutputsStringGrid->ColWidths[0]=OutputsStringGrid->Width-OutputsStringGrid->ColWidths[0]-24;
+   OutputsStringGrid->Cells[0][0]="Name";
+   OutputsStringGrid->Cells[1][0]="Type";
 
+   for(int i=0;i<num;i++)
+   {
+	OutputsStringGrid->Cells[0][i+1]=IntToStr(i);
+	OutputsStringGrid->Cells[1][i+1]="";
+   }
+
+   OutputsStringGrid->ColWidths[0]=OutputsStringGrid->Width-OutputsStringGrid->ColWidths[0]-24;
+  }
+ }
 // num=Model_GetComponentNumInputs(GetSelectedComponentLongName().c_str());
  InputsStringGrid->RowCount=1+inputs.size();
  InputsStringGrid->ColCount=2;

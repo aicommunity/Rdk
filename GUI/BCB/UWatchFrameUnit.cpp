@@ -1415,3 +1415,16 @@ void __fastcall TUWatchFrame::AddTimeMatrixWatch1Click(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+void __fastcall TUWatchFrame::AddTimeYWatchold1Click(TObject *Sender)
+{
+ UComponentsListForm->ComponentsListFrame1->PageControl1->ActivePageIndex=2;
+ if(UComponentsListForm->ShowIOSelect() != mrOk)
+  return;
+
+ int index=UComponentsListForm->ComponentsListFrame1->OutputsStringGrid->Row-1;
+ if(index>=0)
+  Add(0, "", UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName(), 0, 0, index, 0, 0, 0);
+// Add(0, "",UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName(),0,0,UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput(),0,0,0);
+}
+//---------------------------------------------------------------------------
+
