@@ -457,7 +457,7 @@ const char* PtzRemoteCall(const char *request, int &return_value)
  {
   int point_index=xml.ReadInteger("Point",0);
   std::string name=xml.ReadString("PointName","");
-  return_value=Ptz_SetPointName(engine_index,camera.c_str(),point_index,name.c_str());
+  return_value=Ptz_SetPresetPointName(engine_index,camera.c_str(),point_index,name.c_str());
  }
  else
  if(cmd == "Ptz_GetPresetPointsList")
