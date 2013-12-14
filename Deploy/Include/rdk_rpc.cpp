@@ -446,6 +446,32 @@ const char* PtzRemoteCall(const char *request, int &return_value)
   return_value=Ptz_RemovePoint(engine_index,camera.c_str(),point_index);
  }
  else
+ if(cmd == "Ptz_GetNumPresetPoints")
+ {
+  int value=0;
+  return_value=Ptz_GetNumPresetPoints(engine_index,camera.c_str(),value);
+  response.WriteInteger("NumPresetPoints",value);
+ }
+ else
+ if(cmd == "Ptz_SetPresetPointName")
+ {
+  int point_index=xml.ReadInteger("Point",0);
+  std::string name=xml.ReadString("PointName","");
+  return_value=Ptz_SetPointName(engine_index,camera.c_str(),point_index,name.c_str());
+ }
+ else
+ if(cmd == "Ptz_GetPresetPointsList")
+ {
+  const char *str=Ptz_GetPresetPointsList(engine_index,camera.c_str());
+  if(str)
+  {
+   return_value=0;
+   response.WriteString("PresetPointsList",str);
+  }
+  else
+   return_value=11000;
+ }
+ else
  if(cmd == "Ptz_ReadPTZPosition")
  {
   double pan,tilt,zoom;
