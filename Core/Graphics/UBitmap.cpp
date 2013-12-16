@@ -367,7 +367,7 @@ void UBitmap::Fill(UColorT color, const UBRect &rect)
  case ubmY8:
   pdata=Data+realrect.Y*LineByteLength+realrect.X*PixelByteLength;
   for(int i=0;i<realrect.Height;i++,pdata+=LineByteLength)
-   memset(pdata,color.ycrcb.y,LineByteLength);
+   memset(pdata,color.ycrcb.y,realrect.Width*PixelByteLength);
  break;
 
  case ubmRGB24:
