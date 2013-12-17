@@ -450,6 +450,9 @@ void TUServerControlForm::AUpdateInterface(void)
 
  ServerNameLabeledEdit->Text=ServerName.c_str();
  ServerIdLabeledEdit->Text=ServerId.c_str();
+ ServerControlPortLabeledEdit->Text=IdTCPServer->Bindings->Items[0]->Port;
+ BindingAddressLabeledEdit->Text=IdTCPServer->Bindings->Items[0]->IP;
+
 }
 
 // Сохраняет параметры интерфейса в xml
@@ -459,6 +462,8 @@ void TUServerControlForm::ASaveParameters(RDK::USerStorageXML &xml)
 // xml.WriteInteger("ServerControlPort", UHttpServerFrame->GetListenPort());
 // xml.WriteInteger("ServerControlPort", StrToInt(TcpServer->LocalPort));
  xml.WriteInteger("ServerControlPort", StrToInt(IdTCPServer->Bindings->Items[0]->Port));
+ xml.WriteString("ServerControlAddress", AnsiString(IdTCPServer->Bindings->Items[0]->IP).c_str());
+
  xml.WriteInteger("NumberOfChannels",GetNumChannels());
  xml.WriteInteger("AutoStartFlag",AutoStartFlag);
  xml.WriteString("ServerName",ServerName);
@@ -477,6 +482,8 @@ void TUServerControlForm::ALoadParameters(RDK::USerStorageXML &xml)
 // UHttpServerFrame->SetListenPort(xml.ReadInteger("ServerControlPort",80));
 // TcpServer->LocalPort=xml.ReadInteger("ServerControlPort",80);
  IdTCPServer->Bindings->Items[0]->Port=xml.ReadInteger("ServerControlPort",80);
+ IdTCPServer->Bindings->Items[0]->IP=xml.ReadString("ServerControlAddress", "127.0.0.1").c_str();
+
  SetNumChannels(GetNumEngines());
  for(size_t i=0;i<ChannelNames.size();i++)
  {
@@ -835,10 +842,12 @@ void __fastcall TUServerControlForm::ApplyOptionsButtonClick(TObject *Sender)
 // UHttpServerFrame->SetListenPort(StrToInt(ServerControlPortLabeledEdit->Text));
 
  int new_port=StrToInt(ServerControlPortLabeledEdit->Text);
- if(StrToInt(IdTCPServer->Bindings->Items[0]->Port) != new_port)
+ String new_address=BindingAddressLabeledEdit->Text;
+ if(StrToInt(IdTCPServer->Bindings->Items[0]->Port) != new_port || IdTCPServer->Bindings->Items[0]->IP != new_address)
  {
   IdTCPServer->Active=false;
   IdTCPServer->Bindings->Items[0]->Port=new_port;
+  IdTCPServer->Bindings->Items[0]->IP=new_address;
   if(AutoStartFlag)
    ServerStartButtonClick(Sender);
  }
@@ -1088,4 +1097,7 @@ void __fastcall TUServerControlForm::FormClose(TObject *Sender, TCloseAction &Ac
 // Sleep(100);
 }
 //---------------------------------------------------------------------------
+
+
+
 

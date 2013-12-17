@@ -21,7 +21,7 @@ object UServerControlForm: TUServerControlForm
     Top = 0
     Width = 721
     Height = 490
-    ActivePage = ControlTabSheet
+    ActivePage = OptionsTabSheet
     Align = alClient
     TabOrder = 0
     OnChange = PageControlChange
@@ -205,14 +205,14 @@ object UServerControlForm: TUServerControlForm
             315
             192)
           object ServerControlPortLabeledEdit: TLabeledEdit
-            Left = 6
+            Left = 200
             Top = 116
-            Width = 299
+            Width = 105
             Height = 21
             Anchors = [akLeft, akTop, akRight]
-            EditLabel.Width = 91
+            EditLabel.Width = 57
             EditLabel.Height = 13
-            EditLabel.Caption = 'Server control port'
+            EditLabel.Caption = 'Binding port'
             TabOrder = 0
             Text = '45045'
           end
@@ -252,6 +252,18 @@ object UServerControlForm: TUServerControlForm
             TabOrder = 3
             Text = 'Server'
           end
+          object BindingAddressLabeledEdit: TLabeledEdit
+            Left = 6
+            Top = 116
+            Width = 188
+            Height = 21
+            Anchors = [akLeft, akTop, akRight]
+            EditLabel.Width = 75
+            EditLabel.Height = 13
+            EditLabel.Caption = 'Binging address'
+            TabOrder = 4
+            Text = '127.0.0.1'
+          end
         end
         object GroupBox2: TGroupBox
           Left = 1
@@ -261,8 +273,6 @@ object UServerControlForm: TUServerControlForm
           Align = alClient
           Caption = ' Channel names '
           TabOrder = 1
-          ExplicitTop = 153
-          ExplicitHeight = 267
           object ChannelNamesStringGrid: TStringGrid
             Left = 2
             Top = 15
@@ -275,7 +285,6 @@ object UServerControlForm: TUServerControlForm
             Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goEditing]
             TabOrder = 0
             OnKeyDown = ChannelNamesStringGridKeyDown
-            ExplicitHeight = 250
           end
         end
       end
@@ -373,7 +382,7 @@ object UServerControlForm: TUServerControlForm
   object ServerRestartTimer: TTimer
     Enabled = False
     OnTimer = ServerRestartTimerTimer
-    Left = 112
-    Top = 144
+    Left = 256
+    Top = 40
   end
 end

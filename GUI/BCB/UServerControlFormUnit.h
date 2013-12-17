@@ -71,6 +71,7 @@ __published:	// IDE-managed Components
 	TTimer *ServerRestartTimer;
 	TLabeledEdit *ServerNameLabeledEdit;
 	TLabeledEdit *ServerIdLabeledEdit;
+	TLabeledEdit *BindingAddressLabeledEdit;
 	void __fastcall UHttpServerFrameIdHTTPServerCommandGet(TIdContext *AContext, TIdHTTPRequestInfo *ARequestInfo,
           TIdHTTPResponseInfo *AResponseInfo);
 	void __fastcall FormCreate(TObject *Sender);
