@@ -3950,8 +3950,9 @@ void UBitmap::ColorConvertY32_Y8(UBColor *source, UBColor *dest) const
 {
  unsigned int* psource=reinterpret_cast<unsigned int*>(source);
 
+ int shift=GetShift(); // Заглушка!! Возможно это не всегда так
  for(int i=0;i<ByteLength;i+=4)
-  *(dest++)=*(psource++);
+  *(dest++)=*(psource++)>>shift;
 }
 
 void UBitmap::ColorConvertY32_YUYV(UBColor *source, UBColor *dest) const
