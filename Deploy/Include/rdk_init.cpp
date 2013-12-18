@@ -164,6 +164,7 @@ const char* RDK_CALL GetSystemDir(void)
 int RDK_CALL SetSystemDir(const char *dir)
 {
  RdkSystemDir=dir;
+ return 0;
 // return PEngine->Env_SetSystemDir(dir);
 }
 
