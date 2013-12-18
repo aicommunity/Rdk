@@ -376,6 +376,12 @@ virtual const char* Env_GetCurrentDataDir(void) const;
 // Устанавливает имя текущего каталога для хранения данных
 virtual int Env_SetCurrentDataDir(const char *dir);
 
+// Возвращает имя каталога бинарных файлов
+virtual const char* Env_GetSystemDir(void) const;
+
+// Устанавливает имя каталога бинарных файлов
+virtual int Env_SetSystemDir(const char *dir);
+
 /// Возвращает состояние флага отладочного режима среды
 virtual bool Env_GetDebugMode(void) const;
 

@@ -75,6 +75,12 @@ RDK_LIB_TYPE const char* RDK_CALL RemoteCall(const char *request, int &return_va
 // ----------------------------
 // Функции инициализации
 // ----------------------------
+// Возвращает имя каталога бинарных файлов
+RDK_LIB_TYPE const char* RDK_CALL GetSystemDir(void);
+
+// Устанавливает имя каталога бинарных файлов
+RDK_LIB_TYPE int RDK_CALL SetSystemDir(const char *dir);
+
 // Возвращает число дивжков
 RDK_LIB_TYPE int RDK_CALL GetNumEngines(void);
 
@@ -262,6 +268,9 @@ RDK_LIB_TYPE long long RDK_CALL MEnv_GetMinInterstepsInterval(int engine_index);
 // Возвращает имя текущего каталога для хранения данных
 RDK_LIB_TYPE const char* RDK_CALL Env_GetCurrentDataDir(void);
 
+// Устанавливает имя текущего каталога для хранения данных
+RDK_LIB_TYPE int RDK_CALL Env_SetCurrentDataDir(const char *dir);
+
 /// Возвращает состояние флага отладочного режима среды
 RDK_LIB_TYPE bool RDK_CALL Env_GetDebugMode(void);
 RDK_LIB_TYPE bool RDK_CALL MEnv_GetDebugMode(int engine_index);
@@ -269,9 +278,6 @@ RDK_LIB_TYPE bool RDK_CALL MEnv_GetDebugMode(int engine_index);
 /// Устанавливает состояние флага отладочного режима среды
 RDK_LIB_TYPE int RDK_CALL Env_SetDebugMode(bool value);
 RDK_LIB_TYPE int RDK_CALL MEnv_SetDebugMode(int engine_index, bool value);
-
-// Устанавливает имя текущего каталога для хранения данных
-RDK_LIB_TYPE int RDK_CALL Env_SetCurrentDataDir(const char *dir);
 
 // ***********************************************
 // Методы управления текущим компонентом
