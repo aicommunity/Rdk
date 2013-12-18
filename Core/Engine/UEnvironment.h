@@ -32,6 +32,9 @@ int PredefinedStructure;
 // Имя текущего каталога хранения данных
 std::string CurrentDataDir;
 
+// Имя каталога бинарных файлов
+std::string SystemDir;
+
 /// Минимальный интервал времени между итерациями счета (мс)
 long long MinInterstepsInterval;
 
@@ -137,6 +140,10 @@ bool SetModelCalculationComponent(const ULongId& value);
 // Имя текущего каталога хранения данных
 const std::string& GetCurrentDataDir(void);
 void SetCurrentDataDir(const std::string& dir);
+
+// Имя каталога бинарных файлов
+const std::string& GetSystemDir(void) const;
+void SetSystemDir(const std::string& dir);
 
 /// Минимальный интервал времени между итерациями счета (мс)
 long long GetMinInterstepsInterval(void) const;

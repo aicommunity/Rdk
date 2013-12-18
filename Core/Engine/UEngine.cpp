@@ -198,7 +198,7 @@ bool UEngine::Init(UEPtr<UStorage> storage, UEPtr<UEnvironment> env)
 
   // Грузим шрифты
   std::vector<std::string> font_names;
-  std::string font_path="Fonts\\";
+  std::string font_path=Environment->GetSystemDir()+"Fonts/";
   FindFilesList(font_path, "*.fnt", true, font_names);
 
   RDK::ClearClobalFonts();
@@ -207,6 +207,7 @@ bool UEngine::Init(UEPtr<UStorage> storage, UEPtr<UEnvironment> env)
   {
    RDK::AddGlobalFont(font_path+font_names[i]);
   }
+
 
  return true;
 }
@@ -1247,6 +1248,34 @@ int UEngine::Env_SetCurrentDataDir(const char *dir)
  try
  {
   Environment->SetCurrentDataDir(dir);
+ }
+ catch (RDK::UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
+// Возвращает имя каталога бинарных файлов
+const char* UEngine::Env_GetSystemDir(void) const
+{
+ try
+ {
+  return Environment->GetSystemDir().c_str();
+ }
+ catch (RDK::UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
+// Устанавливает имя каталога бинарных файлов
+int UEngine::Env_SetSystemDir(const char *dir)
+{
+ try
+ {
+  Environment->SetSystemDir(dir);
  }
  catch (RDK::UException &exception)
  {

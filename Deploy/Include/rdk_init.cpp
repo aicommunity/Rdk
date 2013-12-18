@@ -124,6 +124,8 @@ RDK::UEPtr<RDK::UStorage> PStorage=0;
 
 int SelectedEngineIndex=0;
 
+std::string RdkSystemDir;
+
 /*****************************************************************************/
 extern RDK::UStorage* CreateNewStorage(void);
 
@@ -150,7 +152,23 @@ const char* RDK_CALL RemoteCall(const char *request, int &return_value)
 // ----------------------------
 // Методы инициализации
 // ----------------------------
-// Возвращает число дивжков
+
+// Возвращает имя каталога бинарных файлов
+const char* RDK_CALL GetSystemDir(void)
+{
+ return RdkSystemDir.c_str();
+// return PEngine->GetSystemDir();
+}
+
+// Устанавливает имя каталога бинарных файлов
+int RDK_CALL SetSystemDir(const char *dir)
+{
+ RdkSystemDir=dir;
+ return 0;
+// return PEngine->Env_SetSystemDir(dir);
+}
+
+// Возвращает число движков
 int RDK_CALL GetNumEngines(void)
 {
  return DllManager.GetNumEngines();
@@ -2251,6 +2269,8 @@ int RDKDllManager::EngineCreate(int index)
   }
 
   EngineList[index]->Default();
+
+  EnvironmentList[index]->SetSystemDir(RdkSystemDir);
   if(!EngineList[index]->Init(StorageList[index],EnvironmentList[index]))
   {
    EngineDestroy(index);

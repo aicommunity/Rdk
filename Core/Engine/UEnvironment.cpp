@@ -116,6 +116,23 @@ void UEnvironment::SetCurrentDataDir(const std::string& dir)
   CurrentDataDir+='/';
 }
 
+// Имя каталога бинарных файлов
+const std::string& UEnvironment::GetSystemDir(void) const
+{
+ return SystemDir;
+}
+
+void UEnvironment::SetSystemDir(const std::string& dir)
+{
+ SystemDir=dir;
+ for(std::string::size_type i=0; i<SystemDir.size();i++)
+  if(SystemDir[i] == '\\')
+   SystemDir[i]='/';
+
+ if(SystemDir.size()>0 && SystemDir[SystemDir.size()-1] != '/')
+  SystemDir+='/';
+}
+
 /// Минимальный интервал времени между итерациями счета (мс)
 long long UEnvironment::GetMinInterstepsInterval(void) const
 {
