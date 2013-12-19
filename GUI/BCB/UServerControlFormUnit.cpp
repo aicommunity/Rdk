@@ -743,6 +743,7 @@ int TUServerControlForm::StopChannel(int channel_id)
 int TUServerControlForm::RegisterMetadataReceiver(const std::string &address, int port,
 		const std::string &component_name, const std::string &component_state)
 {
+ UnRegisterMetadataReceiver(address, port);
  TIdTcpResultBroadcasterFrame *broadcaster=IdTcpResultBroadcasterForm->FindBroadcasterFrame(address,port);
  if(broadcaster)
  {
@@ -763,6 +764,7 @@ int TUServerControlForm::RegisterMetadataReceiver(const std::string &address, in
    broadcaster->XmlComponentStateNameLabeledEdit->Text=component_state.c_str();
    broadcaster->EnableXmlTranslationCheckBox->Checked=true;
    broadcaster->ConnectButtonClick(this);
+   Engine_LogMessage(RDK_EX_DEBUG, (std::string("Metadata receiver registered: ")+bind2).c_str());
   }
  }
 
@@ -782,6 +784,7 @@ int TUServerControlForm::UnRegisterMetadataReceiver(const std::string &address, 
   {
    IdTcpResultBroadcasterForm->DelBroadcaster(index);
   }
+  Engine_LogMessage(RDK_EX_DEBUG, (std::string("Metadata receiver unregistered: ")+address+string(":")+sntoa(port)).c_str());
  }
 
  return 0;

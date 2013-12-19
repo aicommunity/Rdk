@@ -313,7 +313,7 @@ object UServerControlForm: TUServerControlForm
           ParentFont = False
           TabOrder = 0
           ExplicitLeft = 1
-          ExplicitTop = 1
+          ExplicitTop = 368
           ExplicitWidth = 394
           ExplicitHeight = 52
           inherited Image1: TImage
