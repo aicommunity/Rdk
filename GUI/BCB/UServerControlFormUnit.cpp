@@ -448,6 +448,7 @@ void TUServerControlForm::AUpdateInterface(void)
   PerformanceChart->Series[2]->AddY(model_avg[i]+transport_avg[i]);
  }
 
+
  ChannelNamesStringGrid->RowCount=ChannelNames.size()+1;
  if(ChannelNamesStringGrid->RowCount>1)
   ChannelNamesStringGrid->FixedRows=1;
