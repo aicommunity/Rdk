@@ -764,7 +764,7 @@ int TUServerControlForm::RegisterMetadataReceiver(const std::string &address, in
    broadcaster->XmlComponentStateNameLabeledEdit->Text=component_state.c_str();
    broadcaster->EnableXmlTranslationCheckBox->Checked=true;
    broadcaster->ConnectButtonClick(this);
-   Engine_LogMessage(RDK_EX_Info, (std::string("Metadata receiver registered: ")+bind2).c_str());
+   Engine_LogMessage(RDK_EX_INFO, (std::string("Metadata receiver registered: ")+bind2).c_str());
   }
  }
 
@@ -784,7 +784,7 @@ int TUServerControlForm::UnRegisterMetadataReceiver(const std::string &address, 
   {
    IdTcpResultBroadcasterForm->DelBroadcaster(index);
   }
-  Engine_LogMessage(RDK_EX_Info, (std::string("Metadata receiver unregistered: ")+address+string(":")+sntoa(port)).c_str());
+  Engine_LogMessage(RDK_EX_INFO, (std::string("Metadata receiver unregistered: ")+address+string(":")+sntoa(port)).c_str());
  }
 
  return 0;
