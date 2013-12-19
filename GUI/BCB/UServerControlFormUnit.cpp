@@ -1074,6 +1074,8 @@ void __fastcall TUServerControlForm::IdTCPServerConnect(TIdContext *AContext)
  PacketReaders[bind].ResetProcessing();
  PacketReaders[bind].ClearPacketList();
  Engine_LogMessage(RDK_EX_INFO, (std::string("Client connected: ")+bind).c_str());
+
+// TIdTcpResultBroadcasterFrame *broadcaster=IdTcpResultBroadcasterForm->FindBroadcasterFrame();
 }
 //---------------------------------------------------------------------------
 

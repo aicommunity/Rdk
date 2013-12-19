@@ -83,6 +83,9 @@ TIdTcpResultBroadcasterFrame* GetBroadcasterFrame(int index);
 // Возвращает фрейм активного (выбранного) вещателя
 TIdTcpResultBroadcasterFrame* GetActiveBroadcasterFrame(void);
 
+/// Возвращает фрейм вещателя по заданному IP и порту
+TIdTcpResultBroadcasterFrame* FindBroadcasterFrame(const std::string &address, int port);
+
 // Подключает вещатель, или все, если index == -1
 void Connect(int index=-1);
 

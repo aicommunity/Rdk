@@ -260,9 +260,14 @@ UPropertyInputCBase(const string &name, OwnerT * const owner, int min_range, int
 void const * GetPointer(int index) const
 {
  if(int(this->v.size())<=index-this->MinRange)
+ #ifdef __BORLANDC__
 //  return 0;
+  throw UCLProperty<std::vector<T*>,OwnerT>::EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
+	this->MinRange,int(this->v.size()+this->MinRange),index);
+ #else
   throw typename UCLProperty<std::vector<T*>,OwnerT>::EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
 	this->MinRange,int(this->v.size()+this->MinRange),index);
+ #endif
  return this->v[index-this->MinRange];
 }
 
@@ -278,9 +283,13 @@ bool SetPointer(int index, void* value)
 T* operator [] (int i)
 {
  if(int(this->v.size())<=i-this->MinRange)
-
- throw typename UCLProperty<std::vector<T*>,OwnerT>::EPropertyRangeError(this->GetOwnerName(),this->GetName(),
+ #ifdef __BORLANDC__
+  throw UCLProperty<std::vector<T*>,OwnerT>::EPropertyRangeError(this->GetOwnerName(),this->GetName(),
 	this->MinRange,int(this->v.size()+this->MinRange),i);
+ #else
+  throw typename UCLProperty<std::vector<T*>,OwnerT>::EPropertyRangeError(this->GetOwnerName(),this->GetName(),
+	this->MinRange,int(this->v.size()+this->MinRange),i);
+ #endif
 // throw EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
 //	this->MinRange,int(this->v.size()+this->MinRange),i);
 
@@ -290,9 +299,14 @@ T* operator [] (int i)
 const T* operator [] (int i) const
 {
  if(int(this->v.size())<=i-this->MinRange)
-//  return 0;
+ #ifdef __BORLANDC__
+  throw UCLProperty<std::vector<T*>,OwnerT>::EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
+	this->MinRange,int(this->v.size()+this->MinRange),i);
+ #else
   throw typename UCLProperty<std::vector<T*>,OwnerT>::EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
 	this->MinRange,int(this->v.size()+this->MinRange),i);
+ #endif
+
 
  return (this->v[i])?this->v[i]:&Local[i];
 }
@@ -475,8 +489,13 @@ UPropertyOutputCBase(const string &name, OwnerT * const owner, int min_range, in
 T& Value(int i)
 {
  if(int(this->v.size())<=i)
+ #ifdef __BORLANDC__
+  throw UCLProperty<std::vector<T>,OwnerT>::EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
+	0,int(this->v.size()),i);
+ #else
   throw typename UCLProperty<std::vector<T>,OwnerT>::EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
 	0,int(this->v.size()),i);
+ #endif
 
  return this->v[i];
 }
@@ -484,8 +503,13 @@ T& Value(int i)
 const T& Value(int i) const
 {
  if(int(this->v.size())<=i)
+ #ifdef __BORLANDC__
+  throw UCLProperty<std::vector<T>,OwnerT>::EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
+	0,int(this->v.size()),i);
+ #else
   throw typename UCLProperty<std::vector<T>,OwnerT>::EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
 	0,int(this->v.size()),i);
+ #endif
 
  return this->v[i];
 }
@@ -493,8 +517,13 @@ const T& Value(int i) const
 T& operator [] (int i)
 {
  if(int(this->v.size())<=i)
+ #ifdef __BORLANDC__
+  throw UCLProperty<std::vector<T>,OwnerT>::EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
+	0,int(this->v.size()),i);
+ #else
   throw typename UCLProperty<std::vector<T>,OwnerT>::EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
 	0,int(this->v.size()),i);
+ #endif
 
  return this->v[i];
 }
@@ -502,8 +531,13 @@ T& operator [] (int i)
 const T& operator [] (int i) const
 {
  if(int(this->v.size())<=i)
+ #ifdef __BORLANDC__
+  throw UCLProperty<std::vector<T>,OwnerT>::EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
+	0,int(this->v.size()),i);
+ #else
   throw typename UCLProperty<std::vector<T>,OwnerT>::EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
 	0,int(this->v.size()),i);
+ #endif
 
  return this->v[i];
 }
