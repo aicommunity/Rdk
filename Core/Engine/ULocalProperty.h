@@ -206,20 +206,20 @@ UCLProperty(const string &name, OwnerT * const owner, typename UCProperty<T,Owne
 
 public: // Исключения
 // Выход за границы массива C (container) property
-struct EPropertyRangeError: public EPropertyError
+struct EPropertyRangeError: public UIProperty::EPropertyError
 {
  int MinValue, MaxValue, ErrorValue;
 public:
 EPropertyRangeError(const std::string &owner_name, const std::string &property_name,
 	 int min_value, int max_value, int error_value)
-: EPropertyError(owner_name, property_name),
+: UIProperty::EPropertyError(owner_name, property_name),
   MinValue(min_value), MaxValue(max_value), ErrorValue(error_value) {};
 
 
 // Формирует строку лога об исключении
 virtual std::string CreateLogMessage(void) const
 {
- return EPropertyError::CreateLogMessage()+std::string(" MinValue=")+
+ return UIProperty::EPropertyError::CreateLogMessage()+std::string(" MinValue=")+
   sntoa(MinValue)+std::string(" MaxValue=")+sntoa(MaxValue)+
   std::string(" ErrorValue=")+sntoa(ErrorValue);
 }
