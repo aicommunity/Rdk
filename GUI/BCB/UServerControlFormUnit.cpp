@@ -181,7 +181,7 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
  if(cmd == "RegisterMetadataReceiver")
  {
   string address=xml.ReadString("Address","");
-  int port=xml.ReadInteger("Address",8888);
+  int port=xml.ReadInteger("Port",8888);
   return_value=RegisterMetadataReceiver(address, port,
 		MetaComponentName, MetaComponentStateName);
  }
@@ -189,7 +189,7 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
  if(cmd == "UnRegisterMetadataReceiver")
  {
   string address=xml.ReadString("Address","");
-  int port=xml.ReadInteger("Address",port);
+  int port=xml.ReadInteger("Port",port);
   return_value=UnRegisterMetadataReceiver(address, port);
  }
  else
