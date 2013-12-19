@@ -72,6 +72,9 @@ __published:	// IDE-managed Components
 	TLabeledEdit *ServerNameLabeledEdit;
 	TLabeledEdit *ServerIdLabeledEdit;
 	TLabeledEdit *BindingAddressLabeledEdit;
+	TGroupBox *GroupBox4;
+	TLabeledEdit *MetadataComponentNameLabeledEdit;
+	TLabeledEdit *MetadataComponentStateNameLabeledEdit;
 	void __fastcall UHttpServerFrameIdHTTPServerCommandGet(TIdContext *AContext, TIdHTTPRequestInfo *ARequestInfo,
           TIdHTTPResponseInfo *AResponseInfo);
 	void __fastcall FormCreate(TObject *Sender);
@@ -119,6 +122,10 @@ std::vector<std::vector<long long> > TransportPerformanceResults;
 std::string ServerName;
 
 std::string ServerId;
+
+std::string MetaComponentName;
+
+std::string MetaComponentStateName;
 
 /// „исло шагов усреднени€ оценки производительности
 int AverageIterations;
@@ -183,6 +190,9 @@ std::string PacketXml;
 UServerCommand CurrentProcessedCommand;
 
 TThreadList *Clients;
+
+TCriticalSection* CriticalSection;
+
 
 const char* ControlRemoteCall(const char *request, int &return_value);
 
@@ -275,6 +285,13 @@ int StartChannel(int channel_id);
 /// ќстанавливает выбранный канал
 /// или все каналы, если channel_id<0
 int StopChannel(int channel_id);
+
+/// –егистрирует удаленный приемник метаданных
+int RegisterMetadataReceiver(const std::string &address, int port,
+		const std::string &component_name, const std::string &component_state);
+
+/// ”дал€ет удаленный приемник метаданных
+int UnRegisterMetadataReceiver(const std::string &address, int port);
 
 /// «агружает проект аналитики дл€ канала
 /// или загружает проект дл€ всех каналов, если channel_id<0

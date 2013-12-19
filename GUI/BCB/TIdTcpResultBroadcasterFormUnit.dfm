@@ -18,11 +18,25 @@ object IdTcpResultBroadcasterForm: TIdTcpResultBroadcasterForm
   TextHeight = 13
   object PageControl: TPageControl
     Left = 0
-    Top = 0
+    Top = 29
     Width = 527
-    Height = 243
+    Height = 214
     Align = alClient
     TabOrder = 0
+    ExplicitTop = 0
+    ExplicitHeight = 243
+  end
+  object ToolBar: TToolBar
+    Left = 0
+    Top = 0
+    Width = 527
+    Height = 29
+    ButtonHeight = 21
+    ButtonWidth = 70
+    Caption = 'ToolBar'
+    Menu = MainMenu
+    ShowCaptions = True
+    TabOrder = 1
   end
   object MainMenu: TMainMenu
     Left = 144

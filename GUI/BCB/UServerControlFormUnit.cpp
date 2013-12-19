@@ -54,10 +54,13 @@ __fastcall TUServerControlForm::TUServerControlForm(TComponent* Owner)
 
  Clients=0;
 // Clients=new TThreadList;
+
+ CriticalSection=new TCriticalSection;
 }
 
 __fastcall TUServerControlForm::~TUServerControlForm(void)
 {
+ delete CriticalSection;
 /* if(Clients)
  {
 
@@ -173,6 +176,21 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
  if(cmd == "StopChannel")
  {
   return_value=StopChannel(engine_index);
+ }
+ else
+ if(cmd == "RegisterMetadataReceiver")
+ {
+  string address=xml.ReadString("Address","");
+  int port=xml.ReadInteger("Address",8888);
+  return_value=RegisterMetadataReceiver(address, port,
+		MetaComponentName, MetaComponentStateName);
+ }
+ else
+ if(cmd == "UnRegisterMetadataReceiver")
+ {
+  string address=xml.ReadString("Address","");
+  int port=xml.ReadInteger("Address",port);
+  return_value=UnRegisterMetadataReceiver(address, port);
  }
  else
  if(cmd == "LoadProject")
@@ -469,6 +487,8 @@ void TUServerControlForm::AUpdateInterface(void)
  ServerControlPortLabeledEdit->Text=IdTCPServer->Bindings->Items[0]->Port;
  BindingAddressLabeledEdit->Text=IdTCPServer->Bindings->Items[0]->IP;
 
+ MetadataComponentNameLabeledEdit->Text=MetaComponentName.c_str();
+ MetadataComponentStateNameLabeledEdit->Text=MetaComponentStateName.c_str();
 }
 
 // —охран€ет параметры интерфейса в xml
@@ -485,6 +505,9 @@ void TUServerControlForm::ASaveParameters(RDK::USerStorageXML &xml)
  xml.WriteString("ServerName",ServerName);
  xml.WriteString("ServerId",ServerId);
 
+ xml.WriteString("MetadataComponentName",MetaComponentName);
+ xml.WriteString("MetadataComponentStateName",MetaComponentStateName);
+
  for(size_t i=0;i<ChannelNames.size();i++)
  {
   xml.WriteString(std::string("ChannelName_")+RDK::sntoa(i),ChannelNames[i]);
@@ -499,6 +522,9 @@ void TUServerControlForm::ALoadParameters(RDK::USerStorageXML &xml)
 // TcpServer->LocalPort=xml.ReadInteger("ServerControlPort",80);
  IdTCPServer->Bindings->Items[0]->Port=xml.ReadInteger("ServerControlPort",80);
  IdTCPServer->Bindings->Items[0]->IP=xml.ReadString("ServerControlAddress", "127.0.0.1").c_str();
+
+ MetaComponentName=xml.ReadString("MetadataComponentName","");
+ MetaComponentStateName=xml.ReadString("MetadataComponentStateName","");
 
  SetNumChannels(GetNumEngines());
  for(size_t i=0;i<ChannelNames.size();i++)
@@ -712,6 +738,55 @@ int TUServerControlForm::StopChannel(int channel_id)
  return 0;
 }
 
+
+/// –егистрирует удаленный приемник метаданных
+int TUServerControlForm::RegisterMetadataReceiver(const std::string &address, int port,
+		const std::string &component_name, const std::string &component_state)
+{
+ TIdTcpResultBroadcasterFrame *broadcaster=IdTcpResultBroadcasterForm->FindBroadcasterFrame(address,port);
+ if(broadcaster)
+ {
+
+ }
+ else
+ {
+  IdTcpResultBroadcasterForm->AddBroadcaster();
+  broadcaster=IdTcpResultBroadcasterForm->GetBroadcasterFrame(IdTcpResultBroadcasterForm->GetNumBroadcasters()-1);
+
+  if(broadcaster)
+  {
+   string bind2=address;
+   bind2+=":";
+   bind2+=sntoa(port);
+   broadcaster->ServerAddressLabeledEdit->Text=bind2.c_str();
+   broadcaster->XmlComponentNameLabeledEdit->Text=component_name.c_str();//"Pipeline1.AggrPureOutput";
+   broadcaster->XmlComponentStateNameLabeledEdit->Text=component_state.c_str();
+   broadcaster->EnableXmlTranslationCheckBox->Checked=true;
+   broadcaster->ConnectButtonClick(this);
+  }
+ }
+
+ return 0;
+}
+
+/// ”дал€ет удаленный приемник метаданных
+int TUServerControlForm::UnRegisterMetadataReceiver(const std::string &address, int port)
+{
+ TIdTcpResultBroadcasterFrame *broadcaster=IdTcpResultBroadcasterForm->FindBroadcasterFrame(address,port);
+ if(broadcaster)
+ {
+  broadcaster->EnableXmlTranslationCheckBox->Checked=false;
+ // broadcaster->ConnectButtonClick(this);
+  int index=IdTcpResultBroadcasterForm->GetBroadcasterFrameIndex(broadcaster);
+  if(index >= 0)
+  {
+   IdTcpResultBroadcasterForm->DelBroadcaster(index);
+  }
+ }
+
+ return 0;
+}
+
 /// «агружает проект аналитики дл€ канала
 /// или загружает проект дл€ всех каналов, если channel_id<0
 int TUServerControlForm::LoadProject(int channel_id, const std::string &project_file_name)
@@ -870,6 +945,9 @@ void __fastcall TUServerControlForm::ApplyOptionsButtonClick(TObject *Sender)
 
  ServerName=AnsiString(ServerNameLabeledEdit->Text).c_str();
  ServerId=AnsiString(ServerIdLabeledEdit->Text).c_str();
+ MetaComponentName=AnsiString(MetadataComponentNameLabeledEdit->Text).c_str();
+ MetaComponentStateName=AnsiString(MetadataComponentStateNameLabeledEdit->Text).c_str();
+
  UpdateInterface();
 }
 //---------------------------------------------------------------------------
@@ -1090,8 +1168,6 @@ void __fastcall TUServerControlForm::IdTCPServerConnect(TIdContext *AContext)
  PacketReaders[bind].ResetProcessing();
  PacketReaders[bind].ClearPacketList();
  Engine_LogMessage(RDK_EX_INFO, (std::string("Client connected: ")+bind).c_str());
-
-// TIdTcpResultBroadcasterFrame *broadcaster=IdTcpResultBroadcasterForm->FindBroadcasterFrame();
 }
 //---------------------------------------------------------------------------
 

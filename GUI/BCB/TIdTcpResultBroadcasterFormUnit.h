@@ -11,6 +11,7 @@
 #include <Vcl.Menus.hpp>
 #include "TUVisualControllerFormUnit.h"
 #include "TIdTcpResultBroadcasterFrameUnit.h"
+#include <Vcl.ToolWin.hpp>
 #include <vector>
 //---------------------------------------------------------------------------
 class TIdTcpResultBroadcasterForm : public TUVisualControllerForm
@@ -26,6 +27,7 @@ __published:	// IDE-managed Components
 	TMenuItem *Del1;
 	TPopupMenu *PopupMenu1;
 	TMenuItem *HttpBroadcaster1;
+	TToolBar *ToolBar;
 	void __fastcall Add1Click(TObject *Sender);
 	void __fastcall Del1Click(TObject *Sender);
 	void __fastcall ConnectAll1Click(TObject *Sender);
@@ -79,6 +81,9 @@ int GetActiveBroadcaster(void) const;
 
 // Возвращает фрейм вещателя
 TIdTcpResultBroadcasterFrame* GetBroadcasterFrame(int index);
+
+// Возвращает индекс фрейма вещателя
+int GetBroadcasterFrameIndex(TIdTcpResultBroadcasterFrame* frame);
 
 // Возвращает фрейм активного (выбранного) вещателя
 TIdTcpResultBroadcasterFrame* GetActiveBroadcasterFrame(void);

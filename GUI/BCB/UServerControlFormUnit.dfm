@@ -301,10 +301,10 @@ object UServerControlForm: TUServerControlForm
         TabOrder = 1
         inline UHttpServerFrame: TUHttpServerFrame
           Left = 1
-          Top = 1
+          Top = 368
           Width = 394
           Height = 52
-          Align = alTop
+          Align = alBottom
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
           Font.Height = -11
@@ -324,6 +324,43 @@ object UServerControlForm: TUServerControlForm
           end
           inherited IdHTTPServer: TIdHTTPServer
             OnCommandGet = UHttpServerFrameIdHTTPServerCommandGet
+          end
+        end
+        object GroupBox4: TGroupBox
+          Left = 1
+          Top = 1
+          Width = 394
+          Height = 105
+          Align = alTop
+          Caption = ' Metadata options '
+          TabOrder = 1
+          ExplicitLeft = 72
+          ExplicitTop = 80
+          ExplicitWidth = 185
+          DesignSize = (
+            394
+            105)
+          object MetadataComponentNameLabeledEdit: TLabeledEdit
+            Left = 4
+            Top = 34
+            Width = 386
+            Height = 21
+            Anchors = [akLeft, akTop, akRight]
+            EditLabel.Width = 85
+            EditLabel.Height = 13
+            EditLabel.Caption = 'Component Name'
+            TabOrder = 0
+          end
+          object MetadataComponentStateNameLabeledEdit: TLabeledEdit
+            Left = 5
+            Top = 73
+            Width = 386
+            Height = 21
+            Anchors = [akLeft, akTop, akRight]
+            EditLabel.Width = 114
+            EditLabel.Height = 13
+            EditLabel.Caption = 'Component State Name'
+            TabOrder = 1
           end
         end
       end

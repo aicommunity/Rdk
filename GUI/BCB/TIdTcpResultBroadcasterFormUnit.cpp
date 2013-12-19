@@ -131,6 +131,16 @@ TIdTcpResultBroadcasterFrame* TIdTcpResultBroadcasterForm::GetBroadcasterFrame(i
  return Broadcasters[index];
 }
 
+// Возвращает индекс фрейма вещателя
+int TIdTcpResultBroadcasterForm::GetBroadcasterFrameIndex(TIdTcpResultBroadcasterFrame* frame)
+{
+ for(int i=0;i<GetNumBroadcasters();i++)
+  if(Broadcasters[i] == frame)
+   return i;
+
+ return -1;
+}
+
 // Возвращает фрейм активного (выбранного) вещателя
 TIdTcpResultBroadcasterFrame* TIdTcpResultBroadcasterForm::GetActiveBroadcasterFrame(void)
 {
