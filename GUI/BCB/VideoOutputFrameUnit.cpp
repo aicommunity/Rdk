@@ -470,7 +470,7 @@ void __fastcall TVideoCaptureThreadBmpSequence::AfterCalculate(void)
   Stop();
  }
 
-  Sleep(30);
+ Sleep(30);
 }
 
 void __fastcall TVideoCaptureThreadBmpSequence::Calculate(void)
@@ -2128,6 +2128,12 @@ void TVideoOutputFrame::AAfterCalculate(void)
   if(CaptureThread)
    SetEvent(CaptureThread->GetCalcCompleteEvent());
  }
+ else
+ {
+  if(Mode == 4)
+   if(CaptureThread)
+    SetEvent(CaptureThread->GetCalcCompleteEvent());
+ }
 }
 
 
@@ -2141,14 +2147,26 @@ void TVideoOutputFrame::AUpdateInterface(void)
    long long time_stamp=0;
 	CaptureThread->ReadSourceSafe(BmpSource,time_stamp,false);
 
+   if(Mode == 4)
+   {
+//	std::string sstamp;
+//	RDK::UTimeStamp stamp(double(time_stamp),1);
+//	stamp>>sstamp;
+	TimeEdit->EditMask="";
+	TimeEdit->Text=IntToStr(time_stamp);
+   }
+   else
+   {
 	std::string sstamp;
 	RDK::UTimeStamp stamp(double(time_stamp/1000.0),25);
 	stamp>>sstamp;
+	TimeEdit->EditMask="000\:00\:00\:00;1;_";
 	TimeEdit->Text=sstamp.c_str();
+   }
 
 	TrackBar->Max=CaptureThread->GetNumBitmaps();
 	TrackBar->Position=CaptureThread->GetPosition();
-    TrackBar->UpdateControlState();
+	TrackBar->UpdateControlState();
 	UpdateVideo();
   }
 
@@ -2244,20 +2262,13 @@ void TVideoOutputFrame::ALoadParameters(RDK::USerStorageXML &xml)
 //---------------------------------------------------------------------------
 void __fastcall TVideoOutputFrame::TimerTimer(TObject *Sender)
 {
-/* if(CaptureThread)
- {
-  if(WaitForSingleObject(CaptureThread->GetFrameNotInProgress(),30) != WAIT_TIMEOUT)
-   UpdateInterface();
- }
-  */
-
-// UpdateFlag=false;
 // if(UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode() != 1)
  {
-  ABeforeCalculate();
-  if(CaptureThread)
+//  ABeforeCalculate();
+//  if(CaptureThread)
   {
-   long long time_stamp=0;
+   UpdateInterface();
+/*   long long time_stamp=0;
    CaptureThread->ReadSourceSafe(BmpSource,time_stamp,false);
 
 	std::string sstamp;
@@ -2265,10 +2276,9 @@ void __fastcall TVideoOutputFrame::TimerTimer(TObject *Sender)
 	stamp>>sstamp;
 	TimeEdit->Text=sstamp.c_str();
 
-	UpdateVideo();
+	UpdateVideo();*/
   }
  }
-// Image->Repaint();
 }
 //---------------------------------------------------------------------------
 void __fastcall TVideoOutputFrame::StartButtonClick(TObject *Sender)
