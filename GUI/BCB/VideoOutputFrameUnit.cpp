@@ -168,22 +168,6 @@ void __fastcall TVideoCaptureThread::AfterCalculate(void)
  else
   if(GetNumEngines() > ChannelIndex)
    UEngineMonitorForm->EngineMonitorFrame->SetServerTimeStamp(ChannelIndex,LastTimeStamp);
-/*
- UEngineMonitorForm->EngineMonitorFrame->LastCalculatedServerTimeStamp[ChannelIndex]=
-  UEngineMonitorForm->EngineMonitorFrame->GetServerTimeStamp(ChannelIndex);
-	/*
- TIdTcpResultBroadcasterFrame *tcp_frame=IdTcpResultBroadcasterForm->GetBroadcasterFrame(ChannelIndex);
- if(tcp_frame)
-  tcp_frame->AfterCalculate();
- TIdHttpResultBroadcasterFrame *http_frame=IdHttpResultBroadcasterForm->GetBroadcasterFrame(ChannelIndex);
- if(http_frame)
-  http_frame->AfterCalculate();
-      */
- //RDK::UIVisualControllerStorage::AfterCalculate();
-// RDK::UIVisualControllerStorage::UpdateInterface();
-// if(ChannelIndex == GetNumEngines()-1)
-// {
-// }
 }
 
 
@@ -197,11 +181,10 @@ void __fastcall TVideoCaptureThread::Execute(void)
 
   if(SyncMode == 1)
   {
-   if(WaitForSingleObject(CalcCompleteEvent,30) == WAIT_TIMEOUT)
+   if(WaitForSingleObject(CalcCompleteEvent,10) == WAIT_TIMEOUT)
 	continue;
    else
-    ResetEvent(CalcCompleteEvent);
-
+	ResetEvent(CalcCompleteEvent);
   }
 
   ResetEvent(FrameNotInProgress);
@@ -796,11 +779,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::Calculate(void)
    MEnv_CallSourceController(Frame->FrameIndex);
    TVideoCaptureThread::AfterCalculate();
   }
-/*  WriteSource->Fill(0);
-  RDK::UBitmap* old_read_source=ReadSource;
-  ReadSource=WriteSource;
-  WriteSource=old_read_source;
-  TVideoCaptureThread::AfterCalculate();*/
+
   ResetEvent(VideoGrabberCompleted);
   return;
  }
@@ -922,12 +901,12 @@ void __fastcall TVideoCaptureThreadVideoGrabberAvi::Stop(void)
 
 void __fastcall TVideoCaptureThreadVideoGrabberAvi::AfterCalculate(void)
 {
- if(VideoGrabber->PlayerFramePosition>0 && VideoGrabber->PlayerFramePosition>=VideoGrabber->PlayerFrameCount-1)
+ if(VideoGrabber->PlayerFramePosition>0 && VideoGrabber->PlayerFramePosition>=VideoGrabber->PlayerFrameCount-100)
  {
   VideoGrabber->PlayerFramePosition=0;
-  Sleep(1);
-  Start();
-  Sleep(1);
+//  Sleep(1);
+//  Start();
+//  Sleep(1);
  }
 }
 // --------------------------

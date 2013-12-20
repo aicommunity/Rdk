@@ -270,6 +270,7 @@ inherited VideoOutputFrame: TVideoOutputFrame
   end
   object SavePictureDialog: TSavePictureDialog
     DefaultExt = 'bmp'
+    Filter = 'Bitmaps (*.bmp)|*.bmp|JPEG Image File (*.jpg)|*.jpg'
     Left = 112
     Top = 48
   end

@@ -131,7 +131,10 @@ bool __fastcall TTcpResultBroadcasterThread::ASend(void)
    Buf.set_length(SendBuffer.size());
    memcpy(&Buf[0],&SendBuffer[0],SendBuffer.size());
    if(IdTCPClient->IOHandler)
-    IdTCPClient->IOHandler->WriteDirect(Buf,Buf.Length,0);
+   {
+	IdTCPClient->IOHandler->WriteDirect(Buf,Buf.Length,0);
+	Engine_LogMessage(RDK_EX_DEBUG, (std::string("Metadata sent to ")+Address+std::string(":")+RDK::sntoa(Port)+std::string(": ")+RDK::sntoa(Buf.Length)+std::string(" bytes")).c_str());
+   }
   }
   catch (EIdConnectTimeout &ex)
   {
@@ -352,7 +355,7 @@ void TIdTcpResultBroadcasterFrame::ASaveParameters(RDK::USerStorageXML &xml)
  xml.WriteString("XmlComponentName",AnsiString(XmlComponentNameLabeledEdit->Text).c_str());
  xml.WriteString("XmlComponentStateName",AnsiString(XmlComponentStateNameLabeledEdit->Text).c_str());
  xml.WriteBool("EnableXmlTranslation",EnableXmlTranslationCheckBox->Checked);
- xml.WriteInteger("ChannelIndex",StrToInt(ChannelIndexLabeledEdit->Text));
+// xml.WriteInteger("ChannelIndex",StrToInt(ChannelIndexLabeledEdit->Text));
 }
 
 // Загружает параметры интерфейса из xml
@@ -362,7 +365,7 @@ void TIdTcpResultBroadcasterFrame::ALoadParameters(RDK::USerStorageXML &xml)
  XmlComponentNameLabeledEdit->Text=xml.ReadString("XmlComponentName","").c_str();
  XmlComponentStateNameLabeledEdit->Text=xml.ReadString("XmlComponentStateName","").c_str();
  EnableXmlTranslationCheckBox->Checked=xml.ReadBool("EnableXmlTranslation",false);
- ChannelIndexLabeledEdit->Text=IntToStr(xml.ReadInteger("ChannelIndex",0));
+// ChannelIndexLabeledEdit->Text=IntToStr(xml.ReadInteger("ChannelIndex",0));
  Init();
 }
 
