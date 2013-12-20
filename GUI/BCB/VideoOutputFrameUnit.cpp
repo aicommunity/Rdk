@@ -204,12 +204,12 @@ bool TVideoCaptureThread::ReadSourceSafe(RDK::UBitmap& dest, long long &time_sta
  ResetEvent(SourceUnlock);
  time_stamp=LastTimeStamp;
  RDK::UBitmap* source=ReadSource;
- SetEvent(SourceUnlock);
 
  if(reflect)
   source->ReflectionX(&dest);
  else
   dest=*source;
+ SetEvent(SourceUnlock);
 
 // SetEvent(SourceUnlock);
  return true;
@@ -218,14 +218,14 @@ bool TVideoCaptureThread::ReadSourceSafe(RDK::UBitmap& dest, long long &time_sta
 /// «аписывает изображение в тред с блокировкой
 bool TVideoCaptureThread::WriteSourceSafe(const RDK::UBitmap& src, long long time_stamp, bool reflect)
 {
+ if(WaitForSingleObject(SourceUnlock,30) == WAIT_TIMEOUT)
+  return false;
+ ResetEvent(SourceUnlock);
+
  if(reflect)
   const_cast<RDK::UBitmap&>(src).ReflectionX(WriteSource);
  else
   *WriteSource=src;
-
- if(WaitForSingleObject(SourceUnlock,30) == WAIT_TIMEOUT)
-  return false;
- ResetEvent(SourceUnlock);
 
  LastTimeStamp=time_stamp;
  RDK::UBitmap* old_read_source=ReadSource;
@@ -237,11 +237,11 @@ bool TVideoCaptureThread::WriteSourceSafe(const RDK::UBitmap& src, long long tim
 
 bool TVideoCaptureThread::WriteSourceSafe(Graphics::TBitmap *src, long long time_stamp, bool reflect)
 {
- TBitmapToUBitmap(*WriteSource, src, reflect);
-
  if(WaitForSingleObject(SourceUnlock,30) == WAIT_TIMEOUT)
   return false;
  ResetEvent(SourceUnlock);
+
+ TBitmapToUBitmap(*WriteSource, src, reflect);
 
  LastTimeStamp=time_stamp;
  RDK::UBitmap* old_read_source=ReadSource;

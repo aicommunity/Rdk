@@ -130,10 +130,6 @@ bool __fastcall TResultBroadcasterThread::AddMetadataSafe(int channel_index, lon
  if(channel_index>GetNumEngines())
   return false;
 
- if(WaitForSingleObject(MetaUnlockEvent,30) == WAIT_TIMEOUT)
-  return false;
- ResetEvent(MetaUnlockEvent);
-
  const char* xml_data=0;
  if(!property_name.empty())
   xml_data=MModel_GetComponentStateValue(channel_index, component_name.c_str(),
@@ -143,7 +139,6 @@ bool __fastcall TResultBroadcasterThread::AddMetadataSafe(int channel_index, lon
 
  if(!xml_data)
  {
-  SetEvent(MetaUnlockEvent);
   return false;
  }
 
@@ -158,6 +153,10 @@ bool __fastcall TResultBroadcasterThread::AddMetadataSafe(int channel_index, lon
  meta.ChannelIndex=channel_index;
  meta.Metadata=xml_data;
 
+
+ if(WaitForSingleObject(MetaUnlockEvent,30) == WAIT_TIMEOUT)
+  return false;
+ ResetEvent(MetaUnlockEvent);
 
  MetaList.push_back(meta);
 
