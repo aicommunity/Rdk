@@ -22,6 +22,8 @@ __published:	// IDE-managed Components
 	TStringGrid *StringGrid;
 	TTreeView *TreeView;
 	void __fastcall PageControlChange(TObject *Sender);
+	void __fastcall StringGridMouseEnter(TObject *Sender);
+	void __fastcall TreeViewMouseEnter(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
 	__fastcall TUClassesListFrame(TComponent* Owner);

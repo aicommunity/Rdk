@@ -123,3 +123,15 @@ void __fastcall TUClassesListFrame::PageControlChange(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+void __fastcall TUClassesListFrame::StringGridMouseEnter(TObject *Sender)
+{
+ StringGrid->SetFocus();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUClassesListFrame::TreeViewMouseEnter(TObject *Sender)
+{
+ TreeView->SetFocus();
+}
+//---------------------------------------------------------------------------
+

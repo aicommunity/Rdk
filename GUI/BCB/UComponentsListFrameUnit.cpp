@@ -341,6 +341,7 @@ void TUComponentsListFrame::UpdateParametersList(void)
  }
 
  SelectedComponentParameterName=AnsiString(ParametersListStringGrid->Cells[1][1]).c_str();
+ ParameterValueRichEdit->Text=ParametersListStringGrid->Cells[2][ParametersListStringGrid->Row];
  UpdateInterfaceFlag=false;
 }
 
@@ -1148,6 +1149,56 @@ void __fastcall TUComponentsListFrame::Reset1Click(TObject *Sender)
  Env_Reset(stringid.c_str());
 
  RDK::UIVisualControllerStorage::UpdateInterface();
+}
+//---------------------------------------------------------------------------
+
+
+
+void __fastcall TUComponentsListFrame::ParametersListStringGridMouseEnter(TObject *Sender)
+
+{
+ ParametersListStringGrid->SetFocus();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::StringGridMouseEnter(TObject *Sender)
+{
+ StringGrid->SetFocus();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::StatesListStringGridMouseEnter(TObject *Sender)
+
+{
+ StatesListStringGrid->SetFocus();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::OutputsStringGridMouseEnter(TObject *Sender)
+
+{
+ OutputsStringGrid->SetFocus();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::InputsStringGridMouseEnter(TObject *Sender)
+
+{
+ InputsStringGrid->SetFocus();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::ParameterValueRichEditMouseEnter(TObject *Sender)
+
+{
+ ParameterValueRichEdit->SetFocus();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::StateValueRichEditMouseEnter(TObject *Sender)
+
+{
+ StateValueRichEdit->SetFocus();
 }
 //---------------------------------------------------------------------------
 

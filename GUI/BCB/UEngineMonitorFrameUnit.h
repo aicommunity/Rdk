@@ -102,6 +102,7 @@ __published:	// IDE-managed Components
 	void __fastcall Step1Click(TObject *Sender);
 	void __fastcall SaveClassesDescriptions1Click(TObject *Sender);
 	void __fastcall LoadAllClassesDescriptions1Click(TObject *Sender);
+	void __fastcall RichEditMouseEnter(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
 	__fastcall TUEngineMonitorFrame(TComponent* Owner);

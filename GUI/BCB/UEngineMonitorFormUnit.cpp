@@ -122,7 +122,10 @@ void __fastcall TUEngineMonitorForm::LogTimerTimer(TObject *Sender)
  {
   while(!UnsentLog.empty())
   {
+   UEngineMonitorForm->EngineMonitorFrame->RichEdit->SetFocus();
    UEngineMonitorForm->EngineMonitorFrame->RichEdit->Lines->Add(UnsentLog.front().c_str());
+   UEngineMonitorForm->EngineMonitorFrame->RichEdit->SelStart =
+	UEngineMonitorForm->EngineMonitorFrame->RichEdit->Perform(EM_LINEINDEX, UEngineMonitorForm->EngineMonitorFrame->RichEdit->Lines->Count-1, 0);
    UnsentLog.pop_front();
   }
  }

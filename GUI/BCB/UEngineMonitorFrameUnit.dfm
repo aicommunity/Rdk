@@ -18,6 +18,7 @@ inherited UEngineMonitorFrame: TUEngineMonitorFrame
     ReadOnly = True
     ScrollBars = ssBoth
     TabOrder = 0
+    OnMouseEnter = RichEditMouseEnter
   end
   object StatusBar: TStatusBar
     Left = 0

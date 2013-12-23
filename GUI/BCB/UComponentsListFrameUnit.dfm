@@ -50,6 +50,7 @@ inherited UComponentsListFrame: TUComponentsListFrame
           TabOrder = 0
           OnClick = ParametersListStringGridClick
           OnDblClick = ParametersListStringGridDblClick
+          OnMouseEnter = ParametersListStringGridMouseEnter
           OnSelectCell = ParametersListStringGridSelectCell
         end
         object ParameterValueRichEdit: TRichEdit
@@ -66,7 +67,8 @@ inherited UComponentsListFrame: TUComponentsListFrame
           ParentFont = False
           PlainText = True
           ScrollBars = ssBoth
-          TabOrder = 1
+          TabOrder = 2
+          OnMouseEnter = ParameterValueRichEditMouseEnter
         end
         object HeaderControl3: THeaderControl
           Left = 0
@@ -134,9 +136,10 @@ inherited UComponentsListFrame: TUComponentsListFrame
           Align = alClient
           DefaultRowHeight = 18
           Options = [goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goRowSelect]
-          TabOrder = 0
+          TabOrder = 1
           OnClick = StatesListStringGridClick
           OnDblClick = StatesListStringGridDblClick
+          OnMouseEnter = StatesListStringGridMouseEnter
           OnSelectCell = StatesListStringGridSelectCell
         end
         object HeaderControl1: THeaderControl
@@ -194,6 +197,7 @@ inherited UComponentsListFrame: TUComponentsListFrame
           PlainText = True
           ScrollBars = ssBoth
           TabOrder = 2
+          OnMouseEnter = StateValueRichEditMouseEnter
         end
       end
       object TabSheet3: TTabSheet
@@ -227,6 +231,7 @@ inherited UComponentsListFrame: TUComponentsListFrame
             TabOrder = 0
             OnClick = OutputsStringGridClick
             OnDblClick = OutputsStringGridDblClick
+            OnMouseEnter = OutputsStringGridMouseEnter
             OnSelectCell = OutputsStringGridSelectCell
           end
         end
@@ -249,6 +254,7 @@ inherited UComponentsListFrame: TUComponentsListFrame
             TabOrder = 0
             OnClick = InputsStringGridClick
             OnDblClick = InputsStringGridDblClick
+            OnMouseEnter = InputsStringGridMouseEnter
             OnSelectCell = InputsStringGridSelectCell
           end
         end
@@ -378,6 +384,7 @@ inherited UComponentsListFrame: TUComponentsListFrame
       OnDblClick = StringGridDblClick
       OnKeyDown = StringGridKeyDown
       OnKeyPress = StringGridKeyPress
+      OnMouseEnter = StringGridMouseEnter
       OnSelectCell = StringGridSelectCell
     end
     object HeaderControl: THeaderControl

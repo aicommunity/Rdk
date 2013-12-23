@@ -26,6 +26,7 @@ inherited UClassesListFrame: TUClassesListFrame
         FixedCols = 0
         Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRowSelect]
         TabOrder = 0
+        OnMouseEnter = StringGridMouseEnter
       end
     end
     object LibsTabSheet: TTabSheet
@@ -43,6 +44,7 @@ inherited UClassesListFrame: TUClassesListFrame
         RowSelect = True
         ShowLines = False
         TabOrder = 0
+        OnMouseEnter = TreeViewMouseEnter
       end
     end
   end
