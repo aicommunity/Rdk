@@ -47,6 +47,9 @@ int ChannelIndex;
 /// 1 - Синхронизация с расчетом включена
 int SyncMode;
 
+/// Флаг повтора воспроизведения сначала после завершения
+bool RepeatFlag;
+
 protected: // Данные
 /// Временная метка последнего кадра
 long long LastTimeStamp;
@@ -105,6 +108,10 @@ virtual long long GetNumBitmaps(void) const=0;
 /// Устанавливает текущую позицию в последовательности
 virtual long long GetPosition(void) const=0;
 virtual bool SetPosition(long long index)=0;
+
+/// Флаг повтора воспроизведения сначала после завершения
+bool GetRepeatFlag(void) const;
+bool SetRepeatFlag(bool value);
 // --------------------------
 
 // --------------------------
@@ -766,6 +773,11 @@ std::string SelectedComponentMatrixName;
 
 // Флаг, выставляемый при включении видеозахвата
 bool IsStarted;
+
+protected:
+bool RepeatSequenceFlag;
+bool RepeatVideoFlag;
+public:
 // ============================================================
 
 
@@ -827,6 +839,10 @@ void AddFigureRect(double l,double t,double w,double h);
 
 // Устанавливает образец графики
 void SetSampleGeometryGraphics(RDK::MGraphics<double,2>& samplegraphics);
+
+/// Флаг повтора воспроизведения сначала после завершения
+bool SetRepeatVideoFlag(bool value);
+bool SetRepeatSequenceFlag(bool value);
 
 // -------------------------
 // Методы ввода вывода точек геометрии из параметров и переменных состояния компонент

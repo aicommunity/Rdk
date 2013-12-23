@@ -105,6 +105,7 @@ long long LastSentTimeStamp;
 // --------------------------
 /// Инициализация канала связи в соответствии с настройками
 bool Init(void);
+bool UnInit(void);
 
 /// Функция добавления метаданных в очередь на отправку в соответствии с настройками
 bool AddMetadata(int channel_index, long long time_stamp);

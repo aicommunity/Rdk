@@ -211,6 +211,10 @@ void TVideoGrabberControlFrame::ASaveParameters(RDK::USerStorageXML &xml)
  xml.WriteString("ListenPort",AnsiString(ListerPortEdit->Text).c_str());
  xml.WriteString("PipeIndex",AnsiString(PipeIndexEdit->Text).c_str());
  xml.WriteString("PipeUid",AnsiString(PipeUidEdit->Text).c_str());
+
+ xml.WriteBool("RepeatSequenceCheckBox",RepeatSequenceCheckBox->Checked);
+ xml.WriteBool("RepeatVideoCheckBox",RepeatVideoCheckBox->Checked);
+
 }
 
 // Загружает параметры интерфейса из xml
@@ -225,6 +229,9 @@ void TVideoGrabberControlFrame::ALoadParameters(RDK::USerStorageXML &xml)
   ImageFileNameEdit->Text=ExtractFileName(ImageFileNameEdit->Text);
 
  ImageSequencePathEdit->Text=xml.ReadString("ImageSequencePath","").c_str();
+
+ RepeatSequenceCheckBox->Checked=xml.ReadBool("RepeatSequenceCheckBox",false);
+ RepeatVideoCheckBox->Checked=xml.ReadBool("RepeatVideoCheckBox",false);
 
  IPCameraUrlEdit->Text=xml.ReadString("IPCameraUrl","").c_str();
  IPCameraUserNameEdit->Text=xml.ReadString("IPCameraUserName","").c_str();
@@ -347,6 +354,8 @@ void __fastcall TVideoGrabberControlFrame::VCapturePageControlChange(TObject *Se
 	VideoOutputFrame->InitByAvi(UGEngineControlForm->ProjectPath+VFNameEdit->Text);
    else
 	VideoOutputFrame->InitByAvi(VFNameEdit->Text);
+
+   VideoOutputFrame->SetRepeatVideoFlag(RepeatVideoCheckBox->Checked);
   }
  }
  else
@@ -370,6 +379,7 @@ void __fastcall TVideoGrabberControlFrame::VCapturePageControlChange(TObject *Se
  if(VCapturePageControl->ActivePage == ImageSequenceTabSheet)
  {
   VideoOutputFrame->InitByImageSequence(ImageSequencePathEdit->Text);
+  VideoOutputFrame->SetRepeatSequenceFlag(RepeatSequenceCheckBox->Checked);
  }
  else
  if(VCapturePageControl->ActivePage == HttpServerTabSheet)

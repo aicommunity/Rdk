@@ -83,6 +83,8 @@ __published:    // IDE-managed Components
 	TLabel *Label11;
 	TEdit *PipeUidEdit;
 	TLabel *Label12;
+	TCheckBox *RepeatVideoCheckBox;
+	TCheckBox *RepeatSequenceCheckBox;
     void __fastcall DeviceComboBoxSelect(TObject *Sender);
     void __fastcall InputComboBoxSelect(TObject *Sender);
     void __fastcall VideoSizeComboBoxSelect(TObject *Sender);

@@ -99,6 +99,7 @@ void TIdTcpResultBroadcasterForm::DelBroadcaster(int index)
  if(index<0 || index >=int(Broadcasters.size()))
   return;
 
+ Broadcasters[index]->UnInit();
  delete Broadcasters[index];
  Broadcasters.erase(Broadcasters.begin()+index);
  delete PageControl->Pages[index];
@@ -109,6 +110,7 @@ void TIdTcpResultBroadcasterForm::ClearBroadcasters(void)
 {
  for(size_t i=0;i<Broadcasters.size();i++)
  {
+  Broadcasters[i]->UnInit();
   delete Broadcasters[i];
   delete PageControl->Pages[0];
  }

@@ -36,6 +36,8 @@ __fastcall TVideoCaptureThread::TVideoCaptureThread(TVideoOutputFrame *frame, bo
  CalcCompleteEvent=CreateEvent(0,TRUE,TRUE,0);
  ReadSource=&Source[0];
  WriteSource=&Source[1];
+ RepeatFlag=false;
+
  FreeOnTerminate=false;
 }
 
@@ -85,6 +87,18 @@ bool TVideoCaptureThread::SetSyncMode(int mode)
   return false;
 
  SyncMode=mode;
+ return true;
+}
+
+/// Флаг повтора воспроизведения сначала после завершения
+bool TVideoCaptureThread::GetRepeatFlag(void) const
+{
+ return RepeatFlag;
+}
+
+bool TVideoCaptureThread::SetRepeatFlag(bool value)
+{
+ RepeatFlag=value;
  return true;
 }
 // --------------------------
@@ -462,12 +476,19 @@ bool TVideoCaptureThreadBmpSequence::SetPosition(long long index)
 // --------------------------
 void __fastcall TVideoCaptureThreadBmpSequence::AfterCalculate(void)
 {
-  TVideoCaptureThread::AfterCalculate();
-  CurrentBmpSequenceIndex++;
+ TVideoCaptureThread::AfterCalculate();
+ CurrentBmpSequenceIndex++;
  if(CurrentBmpSequenceIndex>=int(BmpSequenceNames.size()))
  {
-  --CurrentBmpSequenceIndex;
-  Stop();
+  if(RepeatFlag)
+  {
+   CurrentBmpSequenceIndex=0;
+  }
+  else
+  {
+   --CurrentBmpSequenceIndex;
+   Stop();
+  }
  }
 
  Sleep(30);
@@ -903,7 +924,10 @@ void __fastcall TVideoCaptureThreadVideoGrabberAvi::AfterCalculate(void)
 {
  if(VideoGrabber->PlayerFramePosition>0 && VideoGrabber->PlayerFramePosition>=VideoGrabber->PlayerFrameCount-100)
  {
-  VideoGrabber->PlayerFramePosition=0;
+  if(RepeatFlag)
+   VideoGrabber->PlayerFramePosition=0;
+  else
+   Stop();
 //  Sleep(1);
 //  Start();
 //  Sleep(1);
@@ -1370,16 +1394,27 @@ void TVideoOutputFrame::InitByAvi(const String &filename)
 //   TrackBar->Position=0;
 //   UpdateInterfaceFlag=false;
 
- if(!DestroyCaptureThread())
-  return;
- if(!CaptureThread)
+ if(CaptureThread && dynamic_cast<TVideoCaptureThreadVideoGrabberAvi*>(CaptureThread))
  {
-  CaptureThread=new TVideoCaptureThreadVideoGrabberAvi(this,false);
-  CaptureThread->SetChannelIndex(FrameIndex);
+  TVideoCaptureThreadVideoGrabberAvi* thread=dynamic_cast<TVideoCaptureThreadVideoGrabberAvi*>(CaptureThread);
+  thread->SetFileName(AnsiString(filename).c_str());
+  thread->SetRepeatFlag(RepeatVideoFlag);
+  MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, thread->GetVideoGrabber());
+ }
+ else
+ {
+  if(!DestroyCaptureThread())
+   return;
+  if(!CaptureThread)
+  {
+   CaptureThread=new TVideoCaptureThreadVideoGrabberAvi(this,false);
+   CaptureThread->SetChannelIndex(FrameIndex);
+  }
   TVideoCaptureThreadVideoGrabberAvi* thread=dynamic_cast<TVideoCaptureThreadVideoGrabberAvi*>(CaptureThread);
   if(thread)
   {
    thread->SetFileName(AnsiString(filename).c_str());
+   thread->SetRepeatFlag(RepeatVideoFlag);
    MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, thread->GetVideoGrabber());
   }
  }
@@ -1569,13 +1604,17 @@ bool TVideoOutputFrame::InitByImageSequence(const String &pathname)
  {
   CaptureThread=new TVideoCaptureThreadBmpSequence(this,false);
   CaptureThread->SetChannelIndex(FrameIndex);
-  TVideoCaptureThreadBmpSequence* thread=dynamic_cast<TVideoCaptureThreadBmpSequence*>(CaptureThread);
-  if(thread)
-  {
-   thread->SetPathName(AnsiString(pathname).c_str());
-   MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, 0);
-  }
  }
+
+ TVideoCaptureThreadBmpSequence* thread=dynamic_cast<TVideoCaptureThreadBmpSequence*>(CaptureThread);
+ if(thread)
+ {
+  thread->SetPathName(AnsiString(pathname).c_str());
+  thread->SetRepeatFlag(RepeatSequenceFlag);
+  MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, 0);
+ }
+
+
 // CurrentBmpSequenceIndex=0;
  TrackBar->Position=0;
  UpdateInterface(true);
@@ -1960,6 +1999,32 @@ void TVideoOutputFrame::SetSampleGeometryGraphics(RDK::MGraphics<double,2>& samp
  MyVideoOutputToolsForm->PointsCheckListBox->ItemIndex=PointIndex;
  MyVideoOutputToolsForm->GeometryCheckListBox->ItemIndex=FigureIndex;
 }
+
+/// Флаг повтора воспроизведения сначала после завершения
+bool TVideoOutputFrame::SetRepeatVideoFlag(bool value)
+{
+ RepeatVideoFlag=value;
+ TVideoCaptureThreadVideoGrabberAvi* thread=dynamic_cast<TVideoCaptureThreadVideoGrabberAvi*>(CaptureThread);
+ if(thread)
+ {
+  thread->SetRepeatFlag(RepeatVideoFlag);
+ }
+
+ return true;
+}
+
+bool TVideoOutputFrame::SetRepeatSequenceFlag(bool value)
+{
+ RepeatSequenceFlag=value;
+ TVideoCaptureThreadBmpSequence* thread=dynamic_cast<TVideoCaptureThreadBmpSequence*>(CaptureThread);
+ if(thread)
+ {
+  thread->SetRepeatFlag(RepeatSequenceFlag);
+ }
+
+ return true;
+}
+
 
 // -------------------------
 // Методы ввода вывода точек геометрии из параметров и переменных состояния компонент

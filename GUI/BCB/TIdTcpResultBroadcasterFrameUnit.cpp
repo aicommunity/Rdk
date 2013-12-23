@@ -233,6 +233,17 @@ bool TIdTcpResultBroadcasterFrame::Init(void)
  return true;
 }
 
+bool TIdTcpResultBroadcasterFrame::UnInit(void)
+{
+ if(!Thread)
+  return true;
+
+ Thread->Disconnect();
+ return true;
+
+}
+
+
 /// Функция добавления метаданных в очередь на отправку в соответствии с настройками
 bool TIdTcpResultBroadcasterFrame::AddMetadata(int channel_index, long long time_stamp)
 {

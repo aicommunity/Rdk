@@ -10,7 +10,7 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
     Top = 0
     Width = 453
     Height = 297
-    ActivePage = VideoFileTabSheet
+    ActivePage = ImageSequenceTabSheet
     Align = alClient
     DoubleBuffered = True
     ParentDoubleBuffered = False
@@ -358,6 +358,14 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
           Caption = 'Truncate full path'
           TabOrder = 2
         end
+        object RepeatVideoCheckBox: TCheckBox
+          Left = 8
+          Top = 72
+          Width = 97
+          Height = 17
+          Caption = 'Repeat'
+          TabOrder = 3
+        end
       end
     end
     object PictureFileTabSheet: TTabSheet
@@ -444,6 +452,14 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
         Caption = 'Browse'
         TabOrder = 2
         OnClick = ImageSequencePathBrowseButtonClick
+      end
+      object RepeatSequenceCheckBox: TCheckBox
+        Left = 8
+        Top = 72
+        Width = 97
+        Height = 17
+        Caption = 'Repeat'
+        TabOrder = 3
       end
     end
     object HttpServerTabSheet: TTabSheet
