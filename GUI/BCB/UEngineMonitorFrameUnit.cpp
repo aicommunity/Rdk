@@ -239,6 +239,9 @@ long long TUEngineMonitorFrame::GetServerTimeStamp(int channel_index) const
 
 void TUEngineMonitorFrame::SetServerTimeStamp(int channel_index, long long stamp)
 {
+ if(ServerTimeStamp.size() <= channel_index)
+  return;
+
  if(ServerTimeStamp[channel_index] == stamp)
   return;
 

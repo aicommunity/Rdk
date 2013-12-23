@@ -167,7 +167,7 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
       Top = 12
       Width = 75
       Height = 25
-      Anchors = [akTop, akRight]
+      Anchors = [akRight, akBottom]
       Caption = 'Apply'
       Default = True
       TabOrder = 4
@@ -178,7 +178,7 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
       Top = 12
       Width = 75
       Height = 25
-      Anchors = [akTop, akRight]
+      Anchors = [akRight, akBottom]
       Caption = 'Restore'
       TabOrder = 5
       OnClick = RestoreButtonClick
