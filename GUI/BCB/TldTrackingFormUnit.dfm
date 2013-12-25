@@ -116,6 +116,10 @@ object TldTrackingForm: TTldTrackingForm
       TabOrder = 3
       object RectangleTabSheet: TTabSheet
         Caption = 'One Tracker By Rect'
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object Label2: TLabel
           Left = 7
           Top = 40
@@ -145,6 +149,10 @@ object TldTrackingForm: TTldTrackingForm
         Caption = 'All Trackers By Point'
         ImageIndex = 1
         OnShow = PointsTabSheetShow
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object SendPointsButton: TButton
           Left = 0
           Top = 156

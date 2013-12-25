@@ -295,6 +295,8 @@ void TTldTrackingForm::UpdateTrackersList(void)
   Trackers.push_back(pair<string,bool>(ComponentControlName,true));
   int num=0;
   const void* p=Model_GetComponentPropertyData(ComponentControlName.c_str(), "NumTrackers");
+  if(!p)
+   return;
   num=*((int*)p);
   TrackersSize.push_back(num);
  }
