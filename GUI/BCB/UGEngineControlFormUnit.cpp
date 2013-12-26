@@ -1610,6 +1610,7 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  font_path=AnsiString(ExtractFilePath(Application->ExeName)).c_str();
  SetSystemDir(font_path.c_str());
  GraphicalEngineInit(0,1,1,320,240,1,ExceptionHandler);
+ Engine_LoadFonts();
 }
 //---------------------------------------------------------------------------
 

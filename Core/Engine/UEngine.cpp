@@ -196,18 +196,6 @@ bool UEngine::Init(UEPtr<UStorage> storage, UEPtr<UEnvironment> env)
   Storage_LoadClassesDescription(FileIO.GetDataString().c_str());
  }
 
-  // Грузим шрифты
-  std::vector<std::string> font_names;
-  std::string font_path=Environment->GetSystemDir()+"Fonts/";
-  FindFilesList(font_path, "*.fnt", true, font_names);
-
-  RDK::ClearClobalFonts();
-  RDK::UBitmapFont font;
-  for(size_t i=0;i<font_names.size();i++)
-  {
-   RDK::AddGlobalFont(font_path+font_names[i]);
-  }
-
 
  return true;
 }

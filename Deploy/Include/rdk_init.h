@@ -81,6 +81,9 @@ RDK_LIB_TYPE const char* RDK_CALL GetSystemDir(void);
 // Устанавливает имя каталога бинарных файлов
 RDK_LIB_TYPE int RDK_CALL SetSystemDir(const char *dir);
 
+// Загружает глобальные шрифты
+RDK_LIB_TYPE int RDK_CALL Engine_LoadFonts(void);
+
 // Возвращает число дивжков
 RDK_LIB_TYPE int RDK_CALL GetNumEngines(void);
 

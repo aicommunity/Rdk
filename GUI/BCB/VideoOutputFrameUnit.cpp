@@ -319,6 +319,7 @@ bool TVideoCaptureThreadBmp::SetFileName(const std::string& value)
    TJPEGImage* JpegIm=new TJPEGImage;
    JpegIm->LoadFromFile(filename);
    TempBitmap->Assign(JpegIm);
+   TempBitmap->PixelFormat=pf24bit;
    TempSource<<TempBitmap;
    delete JpegIm;
   }
@@ -529,6 +530,7 @@ bool TVideoCaptureThreadBmpSequence::LoadImageFromSequence(int index, RDK::UBitm
   TJPEGImage* JpegIm=new TJPEGImage;
   JpegIm->LoadFromFile((PathName+BmpSequenceNames[index]).c_str());
   TempBitmap->Assign(JpegIm);
+  TempBitmap->PixelFormat=pf24bit;
   bmp<<TempBitmap;
   delete JpegIm;
  }

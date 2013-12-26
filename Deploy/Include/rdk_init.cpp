@@ -168,6 +168,39 @@ int RDK_CALL SetSystemDir(const char *dir)
 // return PEngine->Env_SetSystemDir(dir);
 }
 
+// Загружает глобальные шрифты
+int RDK_CALL Engine_LoadFonts(void)
+{
+ try
+ {
+  // Грузим шрифты
+  std::vector<std::string> font_names;
+  std::string font_path=RdkSystemDir+"Fonts/";
+  FindFilesList(font_path, "*.fnt", true, font_names);
+  if(PEnvironment)
+   PEnvironment->LogMessage(RDK_EX_DEBUG, std::string("Loading fonts form ")+font_path);
+
+  RDK::ClearClobalFonts();
+  RDK::UBitmapFont font;
+  for(size_t i=0;i<font_names.size();i++)
+  {
+   RDK::AddGlobalFont(font_path+font_names[i]);
+   if(PEnvironment)
+    PEnvironment->LogMessage(RDK_EX_DEBUG, std::string("Loaded font ")+font_names[i]);
+  }
+ }
+ catch (UException &exception)
+ {
+  if(PEngine)
+   PEngine->ProcessException(exception);
+  else
+   throw;
+  return 82721;
+ }
+
+ return 0;
+}
+
 // Возвращает число движков
 int RDK_CALL GetNumEngines(void)
 {
