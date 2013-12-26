@@ -73,6 +73,7 @@ int FindFilesList(const std::string &path, const std::string &mask, bool isfile,
  {
   do
   {      
+    samplefilename=finddata.cFileName;
  //  samplefilename=AnsiString(ExtractFileName(finddata.cFileName)).c_str();
    std::string::size_type i=samplefilename.find_last_of("\\/");
    if(i != std::string::npos)
