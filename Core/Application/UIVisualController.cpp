@@ -104,6 +104,14 @@ void UIVisualControllerStorage::UpdateInterface(void)
    InterfaceUpdaters[i]->UpdateInterface(false);
 }
 
+// Возврат интерфейса в исходное состояние
+void UIVisualControllerStorage::ClearInterface(void)
+{
+ for(size_t i=0;i<InterfaceUpdaters.size();i++)
+  if(InterfaceUpdaters[i])
+   InterfaceUpdaters[i]->ClearInterface();
+}
+
 // Сохраняет параметры интерфейса в xml
 void UIVisualControllerStorage::SaveParameters(RDK::USerStorageXML &xml)
 {

@@ -238,6 +238,9 @@ bool USerStorageXML::SelectNodeRoot(const std::string &name)
 const std::string USerStorageXML::GetNodeName(void) const
 {
  std::string str;
+ if(CurrentNode.isEmpty())
+  return str;
+
  if(CurrentNode.getName())
   str=narrow(CurrentNode.getName(),Locale);
 
@@ -247,6 +250,9 @@ const std::string USerStorageXML::GetNodeName(void) const
 // —оздает новый узел с заданным именем и позиционируетс€ на него
 bool USerStorageXML::AddNode(const std::string &name)
 {
+ if(CurrentNode.isEmpty())
+  return false;
+
  XMLNode node=CurrentNode.addChild(widen(name,Locale).c_str());
  if(node.isEmpty())
   return false;
@@ -257,12 +263,18 @@ bool USerStorageXML::AddNode(const std::string &name)
 // ѕереименовывает текущий узел и продолжает указывать на него
 void USerStorageXML::RenameNode(const std::string &newname)
 {
+ if(CurrentNode.isEmpty())
+  return;
+
  CurrentNode.updateName(widen(newname,Locale).c_str());
 }
 
 // ”дал€ет текущий узел и устанавливает указатель уровнем выше
 void USerStorageXML::DelNode(void)
 {
+ if(CurrentNode.isEmpty())
+  return;
+
  XMLNode tmp=CurrentNode.getParentNode();
  if(tmp.isEmpty())
   return;

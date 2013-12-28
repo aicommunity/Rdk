@@ -339,7 +339,8 @@ void TUGEngineControlForm::CloseProject(void)
    Model_Destroy();
   }
  }
- UpdateInterface();
+ RDK::UIVisualControllerStorage::ClearInterface();
+ RDK::UIVisualControllerStorage::UpdateInterface();
 }
 
 // Открывает проект
@@ -1259,6 +1260,9 @@ void TUGEngineControlForm::AddBroadcasterMenu(TMenuItem *item, TMenu *owner)
 
 void __fastcall TUGEngineControlForm::Start1Click(TObject *Sender)
 {
+ if(!ProjectOpenFlag)
+  return;
+
  UShowProgressBarForm->SetWinTitle("Starting...");
  UShowProgressBarForm->SetBarHeader(1,"");
  UShowProgressBarForm->SetBarHeader(2,"Total");
@@ -1279,6 +1283,9 @@ void __fastcall TUGEngineControlForm::Start1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::Pause1Click(TObject *Sender)
 {
+ if(!ProjectOpenFlag)
+  return;
+
  UShowProgressBarForm->SetWinTitle("Stopping...");
  UShowProgressBarForm->SetBarHeader(1,"");
  UShowProgressBarForm->SetBarHeader(2,"Total");
@@ -1305,6 +1312,9 @@ void __fastcall TUGEngineControlForm::EngineMonitor1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::Images1Click(TObject *Sender)
 {
+ if(!ProjectOpenFlag)
+  return;
+
  UImagesForm->Show();
 }
 //---------------------------------------------------------------------------
@@ -1321,30 +1331,45 @@ void __fastcall TUGEngineControlForm::VideoSource1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::Step1Click(TObject *Sender)
 {
+ if(!ProjectOpenFlag)
+  return;
+
  UEngineMonitorForm->EngineMonitorFrame->Step1Click(Sender);
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUGEngineControlForm::ComponentsControl1Click(TObject *Sender)
 {
+ if(!ProjectOpenFlag)
+  return;
+
  UComponentsControlForm->Show();
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUGEngineControlForm::ComponentsLinks1Click(TObject *Sender)
 {
+ if(!ProjectOpenFlag)
+  return;
+
  UComponentLinksForm->Show();
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUGEngineControlForm::LoadModel1Click(TObject *Sender)
 {
+ if(!ProjectOpenFlag)
+  return;
+
  UComponentsControlForm->ComponentsControlFrame->LoadModelFromFile("");
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUGEngineControlForm::SaveModel1Click(TObject *Sender)
 {
+ if(!ProjectOpenFlag)
+  return;
+
  UComponentsControlForm->ComponentsControlFrame->SaveModelToFile("");
 }
 //---------------------------------------------------------------------------
@@ -1385,6 +1410,9 @@ void __fastcall TUGEngineControlForm::CaptureVideo1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::Reset1Click(TObject *Sender)
 {
+ if(!ProjectOpenFlag)
+  return;
+
  UEngineMonitorForm->EngineMonitorFrame->Reset1Click(Sender);
 #ifdef RDK_VIDEO
  VideoOutputForm->StopOffline();
@@ -1452,6 +1480,9 @@ void __fastcall TUGEngineControlForm::CreateProjectItemClick(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::CreateModelClick(TObject *Sender)
 {
+ if(!ProjectOpenFlag)
+  return;
+
  if(UClassesListForm->ShowModal() != mrOk)
   return;
 
@@ -1468,6 +1499,9 @@ void __fastcall TUGEngineControlForm::FavoriteInformation1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::DrawEngine1Click(TObject *Sender)
 {
+ if(!ProjectOpenFlag)
+  return;
+
  UDrawEngineForm->Show();
 }
 //---------------------------------------------------------------------------
@@ -1475,6 +1509,9 @@ void __fastcall TUGEngineControlForm::DrawEngine1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::ReloadParameters1Click(TObject *Sender)
 {
+ if(!ProjectOpenFlag)
+  return;
+
  String paramsfilename=ProjectXml.ReadString("ParametersFileName","").c_str();
  if(paramsfilename.Length() == 0)
  {
@@ -1566,6 +1603,9 @@ void __fastcall TUGEngineControlForm::ProjectOptions1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::WatchWindow1Click(TObject *Sender)
 {
+ if(!ProjectOpenFlag)
+  return;
+
  UWatchForm->Show();
 }
 //---------------------------------------------------------------------------
@@ -1656,12 +1696,18 @@ void __fastcall TUGEngineControlForm::FormCloseQuery(TObject *Sender, bool &CanC
 
 void __fastcall TUGEngineControlForm::Images2Click(TObject *Sender)
 {
+ if(!ProjectOpenFlag)
+  return;
+
  AddSpecialFramePage("TUImagesFrame", "Images");
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUGEngineControlForm::Watches1Click(TObject *Sender)
 {
+ if(!ProjectOpenFlag)
+  return;
+
  AddSpecialFramePage("TUWatchFrame", "Watches");
 }
 //---------------------------------------------------------------------------
@@ -1727,6 +1773,9 @@ void __fastcall TUGEngineControlForm::DrawShow(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::Servercontrol1Click(TObject *Sender)
 {
+ if(!ProjectOpenFlag)
+  return;
+
  AddSpecialFormPage("TUServerControlForm");
 }
 //---------------------------------------------------------------------------
@@ -1758,6 +1807,9 @@ void __fastcall TUGEngineControlForm::ChannelsStringGridSelectCell(TObject *Send
 
 void __fastcall TUGEngineControlForm::AddNew1Click(TObject *Sender)
 {
+ if(!ProjectOpenFlag)
+  return;
+
  UEngineMonitorForm->EngineMonitorFrame->SetNumChannels(GetNumEngines()+1);
  RDK::UIVisualControllerStorage::UpdateInterface();
 }
@@ -1765,6 +1817,9 @@ void __fastcall TUGEngineControlForm::AddNew1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::DeleteLast1Click(TObject *Sender)
 {
+ if(!ProjectOpenFlag)
+  return;
+
  if(GetNumEngines() <= 0)
   return;
 
@@ -1775,6 +1830,9 @@ void __fastcall TUGEngineControlForm::DeleteLast1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::DeleteAll1Click(TObject *Sender)
 {
+ if(!ProjectOpenFlag)
+  return;
+
  UEngineMonitorForm->EngineMonitorFrame->SetNumChannels(1);
  RDK::UIVisualControllerStorage::UpdateInterface();
 }
@@ -1875,4 +1933,5 @@ void __fastcall TUGEngineControlForm::DelChannel1Click(TObject *Sender)
  RDK::UIVisualControllerStorage::UpdateInterface();
 }
 //---------------------------------------------------------------------------
+
 

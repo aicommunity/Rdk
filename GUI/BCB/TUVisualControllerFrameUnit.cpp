@@ -158,6 +158,24 @@ void TUVisualControllerFrame::AUpdateInterface(void)
 {
 }
 
+// Возврат интерфейса в исходное состояние
+void TUVisualControllerFrame::ClearInterface(void)
+{
+ try
+ {
+  AClearInterface();
+ }
+ catch (RDK::UException &exception)
+ {
+  GetEngine()->ProcessException(exception);
+ }
+}
+
+void TUVisualControllerFrame::AClearInterface(void)
+{
+
+}
+
 // Возвращает уникальное имя интерфейса
 std::string TUVisualControllerFrame::GetName(void)
 {

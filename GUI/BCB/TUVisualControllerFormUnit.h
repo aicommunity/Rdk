@@ -69,6 +69,10 @@ virtual void AAfterCalculate(void);
 virtual void UpdateInterface(bool force_update=false);
 virtual void AUpdateInterface(void);
 
+// Возврат интерфейса в исходное состояние
+virtual void ClearInterface(void);
+virtual void AClearInterface(void);
+
 // Возвращает уникальное имя интерфейса
 virtual std::string GetName(void);
 

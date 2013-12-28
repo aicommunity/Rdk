@@ -37,6 +37,9 @@ virtual void AfterCalculate(void)=0;
 // Обновление интерфейса
 virtual void UpdateInterface(bool force_update=true)=0;
 
+// Возврат интерфейса в исходное состояние
+virtual void ClearInterface(void)=0;
+
 // Возвращает уникальное имя интерфейса
 virtual std::string GetName(void)=0;
 
@@ -85,6 +88,9 @@ static void AfterCalculate(void);
 
 // Обновление интерфейса
 static void UpdateInterface(void);
+
+// Возврат интерфейса в исходное состояние
+static void ClearInterface(void);
 
 // Сохраняет параметры интерфейса в xml
 static void SaveParameters(RDK::USerStorageXML &xml);
