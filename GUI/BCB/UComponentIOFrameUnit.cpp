@@ -400,6 +400,13 @@ void TUComponentIOFrame::AUpdateInterface(void)
  FrameResize(this);
 }
 
+// Возврат интерфейса в исходное состояние
+void TUComponentIOFrame::AClearInterface(void)
+{
+ ViewComponentOwnerLongId="";
+ ViewComponentLongId="";
+}
+
 // Сохраняет параметры интерфейса в xml
 void TUComponentIOFrame::ASaveParameters(RDK::USerStorageXML &xml)
 {

@@ -30,6 +30,9 @@ public:		// User declarations
 // Обновляет интерфейс
 void AUpdateInterface(void);
 
+// Возврат интерфейса в исходное состояние
+virtual void AClearInterface(void);
+
 // Сохраняет параметры интерфейса в xml
 void ASaveParameters(RDK::USerStorageXML &xml);
 

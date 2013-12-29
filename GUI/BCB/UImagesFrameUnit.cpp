@@ -402,6 +402,13 @@ void TUImagesFrame::AUpdateInterface(void)
  Sleep(0);
 }
 
+// Возврат интерфейса в исходное состояние
+void TUImagesFrame::AClearInterface(void)
+{
+ SetNumCells(0,0);
+}
+
+
 
 // Сохраняет параметры интерфейса в xml
 void TUImagesFrame::ASaveParameters(RDK::USerStorageXML &xml)

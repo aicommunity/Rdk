@@ -125,6 +125,13 @@ void TUDrawEngineForm::AUpdateInterface(void)
  RectHeightLabeledEdit->Text=IntToStr(DrawEngine.GetRectHeight());
 }
 
+
+// Возврат интерфейса в исходное состояние
+void TUDrawEngineForm::AClearInterface(void)
+{
+ NetXml.Destroy();
+}
+
 // Сохраняет параметры интерфейса в xml
 void TUDrawEngineForm::ASaveParameters(RDK::USerStorageXML &xml)
 {

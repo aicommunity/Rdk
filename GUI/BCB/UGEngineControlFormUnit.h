@@ -283,6 +283,9 @@ bool AppWinState;
 // Обновление интерфейса
 void AUpdateInterface(void);
 
+// Возврат интерфейса в исходное состояние
+virtual void AClearInterface(void);
+
 // Метод, вызываемый перед шагом расчета
 void ABeforeCalculate(void);
 

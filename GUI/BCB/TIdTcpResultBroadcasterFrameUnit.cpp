@@ -359,6 +359,12 @@ void TIdTcpResultBroadcasterFrame::AUpdateInterface(void)
 
 }
 
+// Возврат интерфейса в исходное состояние
+void TIdTcpResultBroadcasterFrame::AClearInterface(void)
+{
+ UnInit();
+}
+
 // Сохраняет параметры интерфейса в xml
 void TIdTcpResultBroadcasterFrame::ASaveParameters(RDK::USerStorageXML &xml)
 {

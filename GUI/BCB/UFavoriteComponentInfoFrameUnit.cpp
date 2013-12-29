@@ -216,6 +216,13 @@ void TUFavoriteComponentInfoFrame::AUpdateInterface(void)
  }
 }
 
+
+// Возврат интерфейса в исходное состояние
+void TUFavoriteComponentInfoFrame::AClearInterface(void)
+{
+ Info.clear();
+}
+
 // Сохраняет параметры интерфейса в xml
 void TUFavoriteComponentInfoFrame::ASaveParameters(RDK::USerStorageXML &xml)
 {

@@ -224,6 +224,8 @@ void TUVisualControllerForm::ClearInterface(void)
  try
  {
   AClearInterface();
+  ComponentControlName.clear();
+  UpdateInterface(true);
  }
  catch (RDK::UException &exception)
  {

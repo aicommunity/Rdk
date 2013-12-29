@@ -60,6 +60,9 @@ void SetMode(int mode);
 // Обновление интерфейса
 void AUpdateInterface(void);
 
+// Возврат интерфейса в исходное состояние
+virtual void AClearInterface(void);
+
 // Создает выбранную связь
 void __fastcall CreateLink(void);
 

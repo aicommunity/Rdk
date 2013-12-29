@@ -97,6 +97,11 @@ void Connect(int index=-1);
 // Отключает вещатель, или все, если index == -1
 void Disconnect(int index=-1);
 
+// Возврат интерфейса в исходное состояние
+virtual void AClearInterface(void);
+
+
+
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TIdTcpResultBroadcasterForm *IdTcpResultBroadcasterForm;

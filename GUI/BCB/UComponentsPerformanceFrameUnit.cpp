@@ -145,6 +145,11 @@ void TUComponentsPerformanceFrame::AUpdateInterface(void)
   Chart->Series[0]->AddY(average[last_comps_index+3],"Full step");
 }
 
+// Возврат интерфейса в исходное состояние
+void TUComponentsPerformanceFrame::AClearInterface(void)
+{
+ ClearComponents();
+}
 
 // Сохраняет параметры интерфейса в xml
 void TUComponentsPerformanceFrame::ASaveParameters(RDK::USerStorageXML &xml)

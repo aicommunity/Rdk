@@ -25,6 +25,12 @@ void TIdHttpResultBroadcasterForm::AUpdateInterface(void)
 {
 }
 
+// Возврат интерфейса в исходное состояние
+void TIdHttpResultBroadcasterForm::AClearInterface(void)
+{
+ ClearBroadcasters();
+}
+
 // Сохраняет параметры интерфейса в xml
 void TIdHttpResultBroadcasterForm::ASaveParameters(RDK::USerStorageXML &xml)
 {

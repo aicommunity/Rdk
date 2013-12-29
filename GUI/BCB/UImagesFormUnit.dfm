@@ -36,15 +36,21 @@ object UImagesForm: TUImagesForm
       ExplicitWidth = 728
       ExplicitHeight = 487
     end
-    inherited ShowLegendCheckBox: TCheckBox
-      Top = 470
-      Width = 728
-      ExplicitTop = 470
-      ExplicitWidth = 728
-    end
     inherited ScrollBox1: TScrollBox
       Width = 728
       Height = 470
+      ExplicitWidth = 728
+      ExplicitHeight = 470
+    end
+    inherited Panel1: TPanel
+      Top = 470
+      Width = 728
+      inherited ShowLegendCheckBox: TCheckBox
+        Top = 470
+        Width = 728
+        ExplicitTop = 470
+        ExplicitWidth = 728
+      end
     end
   end
 end

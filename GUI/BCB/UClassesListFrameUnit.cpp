@@ -102,6 +102,17 @@ void TUClassesListFrame::AUpdateInterface(void)
  }
 }
 
+// Возврат интерфейса в исходное состояние
+void TUClassesListFrame::AClearInterface(void)
+{
+ LibrariesListNames.clear();
+ LibraryNames.clear();
+ NewLibraryNames.clear();
+ TempLibraryNames.clear();
+ LibraryClassNames.clear();
+ ClassNames.clear();
+}
+
 // Возвращает имя выбранного класса
 String TUClassesListFrame::GetSelectedName(void)
 {

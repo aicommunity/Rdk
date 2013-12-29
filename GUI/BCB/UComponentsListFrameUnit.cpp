@@ -130,6 +130,18 @@ void TUComponentsListFrame::AUpdateInterface(void)
   UpdateStatesList();
 }
 
+// Возврат интерфейса в исходное состояние
+void TUComponentsListFrame::AClearInterface(void)
+{
+ StringGrid->RowCount=0;
+ ParametersListStringGrid->RowCount=0;
+ StatesListStringGrid->RowCount=0;
+ OutputsStringGrid->RowCount=0;
+ InputsStringGrid->RowCount=0;
+ ParametersRichEdit->Lines->Clear();
+ StatesRichEdit->Lines->Clear();
+ ParametersValueRichEdit->Lines->Clear();
+}
 
 // Сохраняет параметры интерфейса в xml
 void TUComponentsListFrame::ASaveParameters(RDK::USerStorageXML &xml)

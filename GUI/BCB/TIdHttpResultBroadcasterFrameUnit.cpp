@@ -163,6 +163,13 @@ void TIdHttpResultBroadcasterFrame::AUpdateInterface(void)
 
 }
 
+// Возврат интерфейса в исходное состояние
+void TIdHttpResultBroadcasterFrame::AClearInterface(void)
+{
+
+}
+
+
 // Сохраняет параметры интерфейса в xml
 void TIdHttpResultBroadcasterFrame::ASaveParameters(RDK::USerStorageXML &xml)
 {

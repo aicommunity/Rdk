@@ -191,6 +191,13 @@ void TIdTcpResultBroadcasterForm::Disconnect(int index)
  }
 }
 
+// Возврат интерфейса в исходное состояние
+void TIdTcpResultBroadcasterForm::AClearInterface(void)
+{
+ ClearBroadcasters();
+}
+
+
 //---------------------------------------------------------------------------
 void __fastcall TIdTcpResultBroadcasterForm::Add1Click(TObject *Sender)
 {

@@ -28,6 +28,12 @@ void TUWatchForm::AUpdateInterface(void)
 
 }
 
+// Возврат интерфейса в исходное состояние
+void TUWatchForm::AClearInterface(void)
+{
+ ClearPages();
+}
+
 void TUWatchForm::ABeforeCalculate(void)
 {
 
@@ -35,7 +41,6 @@ void TUWatchForm::ABeforeCalculate(void)
 
 void TUWatchForm::AAfterCalculate(void)
 {
-
 }
 
 // Сохраняет параметры интерфейса в xml

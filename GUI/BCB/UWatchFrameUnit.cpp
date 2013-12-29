@@ -1164,6 +1164,12 @@ void TUWatchFrame::AUpdateInterface(void)
  Chart1->Repaint();
 }
 
+// Возврат интерфейса в исходное состояние
+void TUWatchFrame::AClearInterface(void)
+{
+ Clear();
+}
+
 // Сохраняет параметры интерфейса в xml
 void TUWatchFrame::ASaveParameters(RDK::USerStorageXML &xml)
 {

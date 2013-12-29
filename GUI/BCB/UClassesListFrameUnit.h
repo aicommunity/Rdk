@@ -41,6 +41,9 @@ public:
 // Отрисовка фрейма
 void AUpdateInterface(void);
 
+// Возврат интерфейса в исходное состояние
+virtual void AClearInterface(void);
+
 // Возвращает id выбранного класса
 //int GetSelectedId(void);
 

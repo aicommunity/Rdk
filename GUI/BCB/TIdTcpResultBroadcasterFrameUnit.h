@@ -115,6 +115,9 @@ void AAfterCalculate(void);
 
 void AUpdateInterface(void);
 
+// Возврат интерфейса в исходное состояние
+virtual void AClearInterface(void);
+
 // Сохраняет параметры интерфейса в xml
 virtual void ASaveParameters(RDK::USerStorageXML &xml);
 

@@ -57,15 +57,13 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
           end
         end
         inherited LibsTabSheet: TTabSheet
-          ExplicitWidth = 219
-          ExplicitHeight = 394
+          ExplicitLeft = 4
+          ExplicitTop = 24
+          ExplicitWidth = 499
+          ExplicitHeight = 419
           inherited TreeView: TTreeView
-            Width = 219
-            Height = 394
             OnMouseMove = UClassesListFrameTreeViewMouseMove
             OnMouseUp = UClassesListFrameTreeViewMouseUp
-            ExplicitWidth = 219
-            ExplicitHeight = 394
           end
         end
       end

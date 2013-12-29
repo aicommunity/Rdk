@@ -111,6 +111,13 @@ void TUGEngineControlForm::AUpdateInterface(void)
 
 }
 
+
+// Возврат интерфейса в исходное состояние
+void TUGEngineControlForm::AClearInterface(void)
+{
+
+}
+
 void __fastcall TUGEngineControlForm::FormShow(TObject *Sender)
 {
  if(MainFormName.Length()>0)
@@ -340,7 +347,6 @@ void TUGEngineControlForm::CloseProject(void)
   }
  }
  RDK::UIVisualControllerStorage::ClearInterface();
- RDK::UIVisualControllerStorage::UpdateInterface();
 }
 
 // Открывает проект

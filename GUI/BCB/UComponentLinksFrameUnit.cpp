@@ -119,6 +119,14 @@ void TUComponentLinksFrame::AUpdateInterface(void)
  NANetFrameLinks->UpdateInterface();
 }
 
+
+// Возврат интерфейса в исходное состояние
+void TUComponentLinksFrame::AClearInterface(void)
+{
+
+}
+
+
 void __fastcall TUComponentLinksFrame::CreateLink(void)
 {
  if(NANetFrameOutputs->StringGrid->Row <= 0 || NANetFrameInputs->StringGrid->Row <= 0)
