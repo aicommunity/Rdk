@@ -281,7 +281,7 @@ int RDK_CALL GetSelectedEngineIndex(void)
 int RDK_CALL SelectEngine(int index)
 {
  if(index<0 || index>=GetNumEngines())
-  return 1;
+  return 1000;
 
  if(SelectedEngineIndex == index)
   return 0;

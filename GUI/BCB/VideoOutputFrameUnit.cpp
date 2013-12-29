@@ -799,7 +799,8 @@ void __fastcall TVideoCaptureThreadVideoGrabber::Calculate(void)
   if(WaitForSingleObject(CaptureEnabled,10) != WAIT_TIMEOUT)
   {
    ++LastTimeStamp;
-   MEnv_CallSourceController(Frame->FrameIndex);
+   if(MIsEngineInit(Frame->FrameIndex))
+    MEnv_CallSourceController(Frame->FrameIndex);
    TVideoCaptureThread::AfterCalculate();
   }
 

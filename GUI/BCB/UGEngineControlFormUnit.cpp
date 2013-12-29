@@ -325,6 +325,8 @@ void TUGEngineControlForm::CreateProject(const String &FileName, const String &m
 // Закрывает существущий проект
 void TUGEngineControlForm::CloseProject(void)
 {
+ Pause1Click(this);
+
  if(ProjectAutoSaveFlag)
   SaveProject();
 

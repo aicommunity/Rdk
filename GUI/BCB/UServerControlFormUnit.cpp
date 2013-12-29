@@ -491,6 +491,13 @@ void TUServerControlForm::AUpdateInterface(void)
  MetadataComponentStateNameLabeledEdit->Text=MetaComponentStateName.c_str();
 }
 
+// Возврат интерфейса в исходное состояние
+void TUServerControlForm::AClearInterface(void)
+{
+ ServerStopButtonClick(this);
+}
+
+
 // Сохраняет параметры интерфейса в xml
 void TUServerControlForm::ASaveParameters(RDK::USerStorageXML &xml)
 {

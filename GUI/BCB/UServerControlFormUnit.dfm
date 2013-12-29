@@ -21,16 +21,12 @@ object UServerControlForm: TUServerControlForm
     Top = 0
     Width = 721
     Height = 490
-    ActivePage = OptionsTabSheet
+    ActivePage = ControlTabSheet
     Align = alClient
     TabOrder = 0
     OnChange = PageControlChange
     object ControlTabSheet: TTabSheet
       Caption = 'Control'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object GroupBox3: TGroupBox
         Left = 0
         Top = 0
@@ -334,9 +330,6 @@ object UServerControlForm: TUServerControlForm
           Align = alTop
           Caption = ' Metadata options '
           TabOrder = 1
-          ExplicitLeft = 72
-          ExplicitTop = 80
-          ExplicitWidth = 185
           DesignSize = (
             394
             105)

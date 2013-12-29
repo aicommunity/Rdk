@@ -139,8 +139,8 @@ void TUComponentsListFrame::AClearInterface(void)
  OutputsStringGrid->RowCount=0;
  InputsStringGrid->RowCount=0;
  ParametersRichEdit->Lines->Clear();
- StatesRichEdit->Lines->Clear();
- ParametersValueRichEdit->Lines->Clear();
+ StateRichEdit->Lines->Clear();
+ ParameterValueRichEdit->Lines->Clear();
 }
 
 // Сохраняет параметры интерфейса в xml

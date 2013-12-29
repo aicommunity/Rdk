@@ -59,6 +59,12 @@ void TVideoOutputForm::AUpdateInterface(void)
  }
 }
 
+// Возврат интерфейса в исходное состояние
+void TVideoOutputForm::AClearInterface(void)
+{
+ ClearSources();
+}
+
 // Сохраняет параметры интерфейса в xml
 void TVideoOutputForm::ASaveParameters(RDK::USerStorageXML &xml)
 {
