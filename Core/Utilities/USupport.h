@@ -274,14 +274,14 @@ std::string get_text_time(time_t time_data, char date_sep='.', char time_sep=':'
 //@brief Сужает широкую строку, используя локализацию loc
 //   @return Возвращает суженную строку или пустую суженную строку, в
 //   случае. если возникла ошибка
-std::string narrow(const std::wstring& wstr, const std::locale& loc);
+std::string& narrow(const std::wstring& wstr, const std::locale& loc, std::string &result);
 
 //std::string narrow2(const std::wstring& wstr);
 
 //@brief Расширяет строку, используя локализацию loc
 //   @return Возвращает расширенную строку или пустую расширенную строку, в
 //   случае, если возникла ошибка.
-std::wstring widen(const std::string& str, const std::locale& loc);
+std::wstring& widen(const std::string& str, const std::locale& loc, std::wstring &result);
 
 //std::wstring widen2(const std::string& str);
 

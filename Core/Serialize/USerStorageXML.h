@@ -45,6 +45,9 @@ XMLNode CurrentNode;
 protected: // Временные переменные
 std::locale Locale;
 
+mutable std::string SBuffer;
+mutable std::wstring WBuffer,WBuffer2;
+
 
 public: // Методы
 // --------------------------
