@@ -174,7 +174,7 @@ void __fastcall TVideoGetBitmapFrameThread::Execute(void)
  }
 }
 /// Возвращает копию изображения с блокировкой
-bool TVideoGetBitmapFrameThread::ReadSourceSafe(RDK::UBitmap& dest, long long &time_stamp, bool reflect)
+bool TVideoGetBitmapFrameThread::ReadSourceSafe(RDK::UBitmap& dest, bool reflect)
 {
  if(WaitForSingleObject(SourceUnlock,30) == WAIT_TIMEOUT)
   return false;
@@ -193,8 +193,23 @@ bool TVideoGetBitmapFrameThread::ReadSourceSafe(RDK::UBitmap& dest, long long &t
  return true;
 }
 
+bool TVideoGetBitmapFrameThread::ReadSourceSafe(Graphics::TBitmap *dest, bool reflect)
+{
+ if(WaitForSingleObject(SourceUnlock,30) == WAIT_TIMEOUT)
+  return false;
+
+ ResetEvent(SourceUnlock);
+ //time_stamp=LastTimeStamp;
+ RDK::UBitmap* source=ReadSource;
+ SetEvent(SourceUnlock);
+ UBitmapToTBitmap(*source, dest, reflect);
+
+// SetEvent(SourceUnlock);
+ return true;
+}
+
 /// Записывает изображение в тред с блокировкой
-bool TVideoGetBitmapFrameThread::WriteSourceSafe(const RDK::UBitmap& src, long long time_stamp, bool reflect)
+bool TVideoGetBitmapFrameThread::WriteSourceSafe(const RDK::UBitmap& src, bool reflect)
 {
  if(reflect)
   const_cast<RDK::UBitmap&>(src).ReflectionX(WriteSource);
@@ -213,7 +228,7 @@ bool TVideoGetBitmapFrameThread::WriteSourceSafe(const RDK::UBitmap& src, long l
  return true;
 }
 
-bool TVideoGetBitmapFrameThread::WriteSourceSafe(Graphics::TBitmap *src, long long time_stamp, bool reflect)
+bool TVideoGetBitmapFrameThread::WriteSourceSafe(Graphics::TBitmap *src, bool reflect)
 {
  TBitmapToUBitmap(*WriteSource, src, reflect);
 
@@ -359,13 +374,11 @@ void __fastcall TVideoGetBitmapFrameFromComponentThread::AfterCalculate(void)
 
 void __fastcall TVideoGetBitmapFrameFromComponentThread::Calculate(void)
 {
- const void *bitmap;
-
  if(ComponentName != "" && PropertyName != "")
-  bitmap=Model_GetComponentBitmapOutput(ComponentName.c_str(), PropertyName.c_str());
+  TempBitmap=(TBitmap*)Model_GetComponentBitmapOutput(ComponentName.c_str(), PropertyName.c_str());
 
- if(bitmap)
-  TempBitmap->Assign((TBitmap*)(bitmap));
+ if(TempBitmap)
+  WriteSourceSafe(TempBitmap, false);
 }
 //---------------------------------------------------------------------------
 __fastcall TTVideoRegistratorFrame::TTVideoRegistratorFrame(TComponent* Owner)
@@ -470,7 +483,7 @@ int TTVideoRegistratorFrame::InitRecordingSettings(void)
 //---------------------------------------------------------------------------
 int TTVideoRegistratorFrame::GetBitmapFrame(void)
 {
- //
+ BitmapFrameThread->ReadSourceSafe(InputFrameBitmap, false);
 }
 
 // Создание и подготовка TBitmap для хранения кадра с камеры
@@ -553,10 +566,13 @@ void __fastcall TTVideoRegistratorFrame::VideoGrabberVideoFromBitmapsNextFrameNe
 {
  HBITMAP BitmapHandle;
 
- //GetBitmapFrame();
+ GetBitmapFrame();
 
- BitmapHandle = InputFrameBitmap->Handle;
- VideoGrabber->SendImageToVideoFromBitmaps ("", BitmapHandle, false, false);
+ if(InputFrameBitmap)
+ {
+  BitmapHandle = InputFrameBitmap->Handle;
+  VideoGrabber->SendImageToVideoFromBitmaps ("", BitmapHandle, false, false);
+ }
 }
 //---------------------------------------------------------------------------
 
