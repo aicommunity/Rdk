@@ -296,7 +296,7 @@ EInvalidInputIndex(int index) : EInvalidIndex(index) {};
 // Такой вход не существует
 struct EInputIndexNotExist: public EInvalidIndex
 {
-EInputIndexNotExist(void) : EInvalidIndex(-1) {};
+EInputIndexNotExist(int index) : EInvalidIndex(index) {};
 };
 };
 

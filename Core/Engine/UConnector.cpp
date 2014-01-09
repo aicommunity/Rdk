@@ -349,6 +349,8 @@ void UConnector::Free(void)
 // Возвращает подключенный к этому коннектору объект по индексу
 const UCItem& UConnector::GetCItem(int c_index) const
 {
+ if(c_index>=CItemList.GetSize())
+  throw EInputIndexNotExist(c_index);
  return CItemList[c_index];
 }
 

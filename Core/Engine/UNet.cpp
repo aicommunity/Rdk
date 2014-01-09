@@ -433,7 +433,10 @@ void UNet::BreakConnectorLink(const NameT &connectorname, int connector_index)
  else
   connector=dynamic_pointer_cast<UConnector>(GetComponentL(connectorname));
 
- if(connector->GetNumInputs() >= connector_index)
+ if(!connector)
+  return;
+
+ if(connector->GetNumInputs() <= connector_index)
   return;
 
  const UCItem &item = connector->GetCItem(connector_index);

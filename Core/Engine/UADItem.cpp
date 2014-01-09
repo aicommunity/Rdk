@@ -75,11 +75,11 @@ const UEPtr<const UItemData>& UADItem::GetInputData(const UEPtr<UItem> &citem) c
  UItemData result;
 
  if(!citem)
-  throw new EInputIndexNotExist;
+  throw new EInputIndexNotExist(-1);
 
  UCLink indexes=GetCLink(citem);
  if(indexes.Input < 0)
-  throw new EInputIndexNotExist;
+  throw new EInputIndexNotExist(-1);
 
  return InputData[indexes.Input];
 }
