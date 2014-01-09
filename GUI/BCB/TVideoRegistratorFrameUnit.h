@@ -1,0 +1,358 @@
+//---------------------------------------------------------------------------
+
+#ifndef TVideoRegistratorFrameUnitH
+#define TVideoRegistratorFrameUnitH
+//---------------------------------------------------------------------------
+#include <System.Classes.hpp>
+#include <Vcl.Controls.hpp>
+#include <Vcl.StdCtrls.hpp>
+#include <Vcl.Forms.hpp>
+#include "VidGrab.hpp"
+#include <Vcl.ExtCtrls.hpp>
+#include <Vcl.Graphics.hpp>
+#include <IniFiles.hpp>
+#include <Vcl.Menus.hpp>
+
+#include "TUVisualController.h"
+#include "TUVisualControllerFrameUnit.h"
+#include "myrdk.h"
+
+#include <Vcl.ComCtrls.hpp>
+
+#include <string>
+#include <vector>
+#include <map>
+
+#define XOK 0
+#define XCAMSNOTFOUND 7
+#define XREINITSYSREM 8
+#define XCAMALREADYINIT -1
+#define XCAMALREADYSTART -2
+#define XNOIP 1
+#define XINITERROR 9
+#define XSTARTERROR 2
+#define XCAMNOTINIT 4
+#define XFRAMEREADERROR 3
+#define XCAMNOTSTARTED 5
+#define XCAMFRAMETYPEERROR 6
+#define XCAMCOULDNOTSTOP 10
+//---------------------------------------------------------------------------
+class TTVideoRegistratorFrame;
+
+class TVideoGetBitmapFrameThread : public TThread
+{
+protected: // Параметры
+/// Источник видео
+int SourceMode;
+
+/// Индекс канала в библиотеке аналитики, управляемый тредом
+int ChannelIndex;
+
+protected: // Данные
+/// Временная метка последнего кадра
+//long long LastTimeStamp;
+
+/// Данные изображения
+RDK::UBitmap Source[2];
+
+/// Указатель на текущее изображение для чтения
+RDK::UBitmap* ReadSource;
+
+/// Указатель на текущее изображение для записи
+RDK::UBitmap* WriteSource;
+
+/// Указатель на владельца
+TTVideoRegistratorFrame *Frame;
+
+protected: // События
+/// Снимается на время захвата кадра
+HANDLE FrameNotInProgress;
+
+/// Выставлено всегда. Сбрасывается на время доступа к изображению
+HANDLE SourceUnlock;
+
+/// Выставляется на время работы видеозахвата
+HANDLE CaptureEnabled;
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+__fastcall TVideoGetBitmapFrameThread(TTVideoRegistratorFrame *frame, bool CreateSuspended);
+virtual __fastcall ~TVideoGetBitmapFrameThread(void);
+// --------------------------
+
+// --------------------------
+// Управление параметрами
+// --------------------------
+/// Источник видео
+int GetSourceMode(void) const;
+
+/// Индекс канала в библиотеке аналитики, управляемый тредом
+int GetChannelIndex(void) const;
+bool SetChannelIndex(int value);
+// --------------------------
+
+// --------------------------
+// Управление данными
+// --------------------------
+/// Указатель на владельца
+TTVideoRegistratorFrame* GetFrame(void) const;
+bool SetFrame(TTVideoRegistratorFrame * frame);
+// --------------------------
+
+// --------------------------
+// Управление событиями
+// --------------------------
+/// Выставляется по завершении захвата нового кадра
+HANDLE GetFrameNotInProgress(void) const;
+
+/// Выставлено всегда. Сбрасывается на время доступа к изображению
+HANDLE GetSourceUnlock(void) const;
+
+/// Выставляется на время работы видеозахвата
+HANDLE GetCaptureEnabled(void) const;
+// --------------------------
+
+// --------------------------
+// Управление потоком
+// --------------------------
+virtual void __fastcall Start(void);
+
+virtual void __fastcall Stop(void);
+
+virtual void __fastcall BeforeCalculate(void);
+
+virtual void __fastcall AfterCalculate(void);
+
+virtual void __fastcall Calculate(void)=0;
+
+virtual void __fastcall Execute(void);
+
+/// Возвращает копию изображения с блокировкой
+bool ReadSourceSafe(RDK::UBitmap& dest, long long &time_stamp, bool reflect);
+
+/// Записывает изображение в тред с блокировкой
+bool WriteSourceSafe(const RDK::UBitmap& src, long long time_stamp, bool reflect);
+bool WriteSourceSafe(Graphics::TBitmap *src, long long time_stamp, bool reflect);
+};
+//---------------------------------------------------------------------------
+class TVideoGetBitmapFrameFromVideoThread : public TVideoGetBitmapFrameThread
+{
+protected:
+// Параметры
+
+protected: // Временные изображения
+//RDK::UBitmap TempSource;
+//Graphics::TBitmap* TempBitmap;
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+__fastcall TVideoGetBitmapFrameFromVideoThread(TTVideoRegistratorFrame *frame, bool CreateSuspended);
+virtual __fastcall ~TVideoGetBitmapFrameFromVideoThread(void);
+// --------------------------
+
+// --------------------------
+// Управление параметрами
+// --------------------------
+
+// --------------------------
+
+// --------------------------
+// Управление потоком
+// --------------------------
+virtual void __fastcall Start(void);
+
+virtual void __fastcall Stop(void);
+
+virtual void __fastcall BeforeCalculate(void);
+
+virtual void __fastcall AfterCalculate(void);
+
+virtual void __fastcall Calculate(void);
+// --------------------------
+};
+
+class TVideoGetBitmapFrameFromComponentThread : public TVideoGetBitmapFrameThread
+{
+protected: // Временные изображения
+RDK::UBitmap TempSource;
+Graphics::TBitmap* TempBitmap;
+
+// Данные о компоненте источнике
+std::string ComponentName;
+std::string PropertyName;
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+__fastcall TVideoGetBitmapFrameFromComponentThread(TTVideoRegistratorFrame *frame, bool CreateSuspended);
+virtual __fastcall ~TVideoGetBitmapFrameFromComponentThread(void);
+// --------------------------
+// Управление потоком
+// --------------------------
+virtual void __fastcall Start(void);
+
+virtual void __fastcall Stop(void);
+
+virtual void __fastcall BeforeCalculate(void);
+
+virtual void __fastcall AfterCalculate(void);
+
+virtual void __fastcall Calculate(void);
+// --------------------------
+// --------------------------
+// Управление параметрами
+// --------------------------
+bool SetComponentName(const std::string &comp_name);
+const std::string GetComponentName(void);
+
+bool SetPropertyName(const std::string &property_name);
+const std::string GetPropertyName(void);
+};
+//---------------------------------------------------------------------------
+class TTVideoRegistratorFrame : public TUVisualControllerFrame
+{
+__published:	// IDE-managed Components
+	TButton *StopNetworkStreamingButton;
+	TButton *NetworkStreamingButton;
+	TMemo *LogMemo;
+	TButton *SaveToIniButton;
+	TLabeledEdit *PortLabeledEdit;
+	TLabeledEdit *FrameRateLabeledEdit;
+	TButton *ClearMemoButton;
+	TVideoGrabber *VideoGrabber;
+	TLabeledEdit *BitRateLabeledEdit;
+	TLabeledEdit *VideoWidthLabeledEdit;
+	TLabeledEdit *VideoHeightLabeledEdit;
+	TLabeledEdit *BufferWindowLabeledEdit;
+	TLabeledEdit *MaxKeyFrameSpacingLabeledEdit;
+	TGroupBox *StreamingSettingsGroupBox;
+	TButton *GetStreamingHostButton;
+	TButton *InitButton;
+	TLabeledEdit *MaxUsersLabeledEdit;
+	TImage *PreviewImage;
+	TButton *StartRecordingButton;
+	TPageControl *PageControl;
+	TTabSheet *NetworkStreamingTabSheet;
+	TTabSheet *RecordTabSheet;
+	TPanel *BasicPanel;
+	TButton *StopRecordingButton;
+	TComboBox *RecordingMethodComboBox;
+	TLabel *RecordingMethodLabel;
+	TLabeledEdit *RecordingFileNameLabeledEdit;
+	TLabeledEdit *RecordingFrameRateLabeledEdit;
+	TLabeledEdit *ComponentNameLabeledEdit;
+	TLabeledEdit *ComponentPropertyNameLabeledEdit;
+	void __fastcall NetworkStreamingButtonClick(TObject *Sender);
+	void __fastcall StopNetworkStreamingButtonClick(TObject *Sender);
+	void __fastcall VideoGrabberVideoFromBitmapsNextFrameNeeded(TObject *Sender, bool FirstSample);
+	void __fastcall ClearMemoButtonClick(TObject *Sender);
+	void __fastcall SaveToIniButtonClick(TObject *Sender);
+	void __fastcall GetStreamingHostButtonClick(TObject *Sender);
+	void __fastcall InitButtonClick(TObject *Sender);
+	void __fastcall VideoGrabberFrameCaptureCompleted(TObject *Sender, Pointer FrameBitmap,
+          int BitmapWidth, int BitmapHeight, DWORD FrameNumber, __int64 FrameTime,
+          TFrameCaptureDest DestType, UnicodeString FileName, bool Success,
+          int FrameId);
+	void __fastcall StartRecordingButtonClick(TObject *Sender);
+	void __fastcall StopRecordingButtonClick(TObject *Sender);
+	void __fastcall VideoGrabberAVIDurationUpdated(TObject *Sender, UnicodeString FileName,
+          DWORD FrameCount, double &FrameRate, __int64 &Duration);
+
+
+private:	// User declarations
+public:		// User declarations
+// Источник
+// 0 - bmp handle from component
+// 1 - bmp handle from frame
+int Mode;
+
+// Поток получения кадра
+TVideoGetBitmapFrameThread *BitmapFrameThread;
+
+// Данные
+// Хранилище декодированного в TBitmap кадра с камеры
+TBitmap *InputFrameBitmap;
+
+// Недекодированный кадр с камеры
+unsigned char *frame;
+
+// Массив хранения кодов ошибок и сообщений
+std::map<int, std::string> Errors;
+
+// Флаг инициализации камеры
+// true если инициализированна
+bool InitCamFlag;
+
+// Флаг работы камеры
+// true если запущена
+bool StartCamFlag;
+
+// Флаг показа preview
+bool PreviewFlag;
+
+// Методы
+// Заполнение массива ошибок
+void FillErrorsArray(void);
+
+// Логгирование ошибок
+bool WriteLogMessage(const int &err);
+
+// Установка флага показа preview
+bool SetPreviewFlag(const bool &value);
+
+// Инициализирует
+int Init(void);
+
+// Деинициализирует
+int UnInit(void);
+
+// Инициализирует настройки direct network streaming TVideoGrabber
+int InitStreamingSettings(void);
+
+// Инициализирует настройки записи в файл TVideoGrabber
+int InitRecordingSettings(void);
+
+// Получает кадр с камеры через DLL и пишет его в InputFrameBitmap
+int GetBitmapFrame(void);
+
+// Создание и подготовка TBitmap InputFrameBitmap для хранения кадра с камеры
+int PrepareBitmapFrame(void);
+
+// -----------------------------
+// Методы управления визуальным интерфейсом
+// -----------------------------
+// Метод, вызываемый перед сбросом
+void ABeforeReset(void);
+
+// Метод, вызываемый перед шагом расчета
+virtual void ABeforeCalculate(void);
+
+// Метод, вызываемый после шага расчета
+virtual void AAfterCalculate(void);
+
+// Обновление интерфейса
+virtual void AUpdateInterface(void);
+
+// Сохраняет параметры интерфейса в xml
+virtual void ASaveParameters(RDK::USerStorageXML &xml);
+
+// Загружает параметры интерфейса из xml
+virtual void ALoadParameters(RDK::USerStorageXML &xml);
+// -----------------------------
+
+	__fastcall TTVideoRegistratorFrame(TComponent* Owner);
+};
+//int framewidth_;
+//int frameheight_;
+//double framerate_=-1;
+//unsigned long framecount_=-1;
+//-----------------------------------------------
+//---------------------------------------------------------------------------
+extern PACKAGE TTVideoRegistratorFrame *TVideoRegistratorFrame;
+//---------------------------------------------------------------------------
+#endif
