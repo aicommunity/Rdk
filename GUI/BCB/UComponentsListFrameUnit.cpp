@@ -306,6 +306,9 @@ void TUComponentsListFrame::UpdateParametersList(void)
  ParametersListStringGrid->RowCount=1+num;
  ParametersListStringGrid->ColCount=1+3;
 
+ if(ParametersListStringGrid->RowCount>1)
+  ParametersListStringGrid->FixedRows=1;
+
  ParametersListStringGrid->Cells[0][0]="#";
  ParametersListStringGrid->Cells[1][0]="Name";
  ParametersListStringGrid->Cells[2][0]="Value";
@@ -373,6 +376,9 @@ void TUComponentsListFrame::UpdateStatesList(void)
 
  StatesListStringGrid->RowCount=1+num;
  StatesListStringGrid->ColCount=1+3;
+
+ if(StatesListStringGrid->RowCount>1)
+  StatesListStringGrid->FixedRows=1;
 
  StatesListStringGrid->Cells[0][0]="#";
  StatesListStringGrid->Cells[1][0]="Name";
