@@ -130,11 +130,12 @@ virtual void __fastcall Calculate(void)=0;
 virtual void __fastcall Execute(void);
 
 /// ¬озвращает копию изображени€ с блокировкой
-bool ReadSourceSafe(RDK::UBitmap& dest, long long &time_stamp, bool reflect);
+bool ReadSourceSafe(RDK::UBitmap& dest, bool reflect);
+bool ReadSourceSafe(Graphics::TBitmap *dest, bool reflect);
 
 /// «аписывает изображение в тред с блокировкой
-bool WriteSourceSafe(const RDK::UBitmap& src, long long time_stamp, bool reflect);
-bool WriteSourceSafe(Graphics::TBitmap *src, long long time_stamp, bool reflect);
+bool WriteSourceSafe(const RDK::UBitmap& src, bool reflect);
+bool WriteSourceSafe(Graphics::TBitmap *src, bool reflect);
 };
 //---------------------------------------------------------------------------
 class TVideoGetBitmapFrameFromVideoThread : public TVideoGetBitmapFrameThread
