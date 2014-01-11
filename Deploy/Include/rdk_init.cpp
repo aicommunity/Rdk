@@ -20,6 +20,11 @@ std::vector<RDK::UEnvironment*> EnvironmentList;
 // Массив движков
 std::vector<RDK::UEngine*> EngineList;
 
+// Массив мьютексов
+std::vector<UGenericMutex*> MutexList;
+
+UGenericMutex* GlobalMutex;
+
 // ----------------------------------------------------------
 // Глобальные указатели на функции создания хранилища и среды
 // ----------------------------------------------------------
@@ -219,7 +224,6 @@ int RDK_CALL SetNumEngines(int num)
 
  if(!DllInit((void*)CreateNewStorage, (void*)CreateNewEnvironment, (void*)CreateNewEngine))
   return -2;
-
 
  int res=DllManager.SetNumEngines(num);
  if(res != 0)
@@ -2207,6 +2211,7 @@ RDKDllManager::RDKDllManager(void)
  FuncCreateNewStorage=0;//&RDK::NewUStorage;
  FuncCreateNewEnvironment=0;//&RDK::NewUAContainerEnvironment;
  FuncCreateNewEngine=0;//&RDK::NewUEngine;
+ GlobalMutex=UCreateMutex();
 }
 
 RDKDllManager::~RDKDllManager(void)
@@ -2230,6 +2235,18 @@ RDKDllManager::~RDKDllManager(void)
    delete EngineList[i];
 
  EngineList.resize(0);
+
+ for(size_t i=0;i<MutexList.size();i++)
+  if(MutexList[i])
+   UDestroyMutex(MutexList[i]);
+
+ MutexList.resize(0);
+
+ if(GlobalMutex)
+ {
+  UDestroyMutex(GlobalMutex);
+  GlobalMutex=0;
+ }
 }
 // --------------------------
 
@@ -2260,11 +2277,19 @@ int RDKDllManager::SetNumEngines(int num)
   return 1;
 
  for(int i=num;i<int(EngineList.size());i++)
+ {
   EngineDestroy(i);
+  UDestroyMutex(MutexList[i]);
+ }
 
- EngineList.resize(num);
- StorageList.resize(num);
- EnvironmentList.resize(num);
+ int old_num=EngineList.size();
+
+ EngineList.resize(num,0);
+ StorageList.resize(num,0);
+ EnvironmentList.resize(num,0);
+ MutexList.resize(num,0);
+ for(int i=old_num;i<num;i++)
+  MutexList[i]=UCreateMutex();
  return 0;
 }
 

@@ -4,6 +4,7 @@
 #include <ctime>
 #include "../rdk_system.h"     
 #include "USharedMemoryLoader.qt.cpp"
+#include "UGenericMutex.qt.cpp"
 
 namespace RDK {
 

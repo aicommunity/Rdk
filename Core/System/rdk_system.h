@@ -4,6 +4,8 @@
 #include <vector>
 #include <string>
 #include "USharedMemoryLoader.h"
+#include "UGenericMutex.h"
+
 
 namespace RDK {
 
