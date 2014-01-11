@@ -290,6 +290,9 @@ int RDK_CALL SelectEngine(int index)
  if(SelectedEngineIndex == index)
   return 0;
 
+ UGenericMutexLocker locker1(DllManager.MutexList[SelectedEngineIndex]);
+ UGenericMutexLocker locker2(DllManager.MutexList[index]);
+
  SelectedEngineIndex=index;
  PEngine=DllManager.EngineList[index];
  PEnvironment=DllManager.EnvironmentList[index];
@@ -778,6 +781,7 @@ void RDK_CALL MEnv_Destroy(int engine_index)
 // иначе вычисляет только указанный компонент модели
 int RDK_CALL Env_Calculate(const char* stringid)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Env_Calculate(stringid);
 }
 
@@ -785,6 +789,7 @@ int RDK_CALL MEnv_Calculate(int engine_index, const char* stringid)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 1000;
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Env_Calculate(stringid);
 }
 
@@ -792,11 +797,13 @@ int RDK_CALL MEnv_Calculate(int engine_index, const char* stringid)
 // Расчет всей модели в реальном времени
 void RDK_CALL Env_RTCalculate(void)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  PEngine->Env_RTCalculate();
 }
 
 void RDK_CALL MEnv_RTCalculate(int engine_index)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  DllManager.EngineList[engine_index]->Env_RTCalculate();
 }
 
@@ -805,6 +812,7 @@ void RDK_CALL MEnv_RTCalculate(int engine_index)
 // иначе - только указанный компонент модели
 int RDK_CALL Env_Reset(const char* stringid)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Env_Reset(stringid);
 }
 
@@ -812,6 +820,7 @@ int RDK_CALL MEnv_Reset(int engine_index, const char* stringid)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 1000;
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Env_Reset(stringid);
 }
 
@@ -955,6 +964,7 @@ const char* RDK_CALL Env_GetCurrentComponentId(void)
 /// Инициирует извещение о сбое в работе источника данных
 bool RDK_CALL Env_CallSourceController(void)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Env_CallSourceController();
 }
 
@@ -962,6 +972,7 @@ bool RDK_CALL MEnv_CallSourceController(int engine_index)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 1000;
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Env_CallSourceController();
 }
 // --------------------------
@@ -972,6 +983,7 @@ bool RDK_CALL MEnv_CallSourceController(int engine_index)
 // Удаляет модель
 int RDK_CALL Model_Destroy(void)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_Destroy();
 }
 
@@ -979,6 +991,7 @@ int RDK_CALL MModel_Destroy(int engine_index)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 1000;
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Model_Destroy();
 }
 
@@ -986,6 +999,7 @@ int RDK_CALL MModel_Destroy(int engine_index)
 // Предварительно удаляет существующую модель
 int RDK_CALL Model_Create(const char *classname)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_Create(classname);
 }
 
@@ -993,12 +1007,14 @@ int RDK_CALL MModel_Create(int engine_index, const char *classname)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 1000;
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Model_Create(classname);
 }
 
 // Очищает модель
 int RDK_CALL Model_Clear(void)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_Clear();
 }
 
@@ -1006,6 +1022,7 @@ int RDK_CALL MModel_Clear(int engine_index)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 1000;
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Model_Clear();
 }
 
@@ -1013,6 +1030,7 @@ int RDK_CALL MModel_Clear(int engine_index)
 // Проверяет, существует ли модель
 bool RDK_CALL Model_Check(void)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_Check();
 }
 
@@ -1020,13 +1038,14 @@ bool RDK_CALL MModel_Check(int engine_index)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return false;
-
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Model_Check();
 }
 
 // Проверяет, существует ли в модели компонент с именем stringid)
 bool RDK_CALL Model_CheckComponent(const char* stringid)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_CheckComponent(stringid);
 }
 
@@ -1034,6 +1053,7 @@ bool RDK_CALL MModel_CheckComponent(int engine_index, const char* stringid)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 1000;
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Model_CheckComponent(stringid);
 }
 
@@ -1072,6 +1092,7 @@ int RDK_CALL MModel_DelComponent(int engine_index, const char* stringid, const c
 // если stringid - пустая строка, то возвращает число всех компонент модели
 int RDK_CALL Model_GetNumComponents(const char* stringid)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetNumComponents(stringid);
 }
 
@@ -1079,6 +1100,7 @@ int RDK_CALL Model_GetNumComponents(const char* stringid)
 // если stringid - пустая строка, то возвращает массив всех id модели
 int RDK_CALL Model_GetComponentsList(const char* stringid, int *buffer)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetComponentsList(stringid, buffer);
 }
 
@@ -1086,6 +1108,7 @@ int RDK_CALL Model_GetComponentsList(const char* stringid, int *buffer)
 // имена разделяются сипволом ','
 const char* RDK_CALL Model_GetComponentsNameList(const char* stringid)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetComponentsNameList(stringid);
 }
 
@@ -1094,6 +1117,7 @@ const char* RDK_CALL Model_GetComponentsNameList(const char* stringid)
 // Если find_all == true то поиск ведется и во всех сабкомпонентах
 const char* RDK_CALL Model_FindComponentsByClassName(const char* stringid, const char* class_name, bool find_all)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_FindComponentsByClassName(stringid,class_name,find_all);
 }
 
@@ -1104,6 +1128,7 @@ const char* RDK_CALL Model_FindComponentsByClassName(const char* stringid, const
 // на эту границу
 int RDK_CALL Model_ChangeComponentPosition(const char* stringid, int step)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_ChangeComponentPosition(stringid, step);
 }
 
@@ -1119,6 +1144,7 @@ int RDK_CALL Model_ChangeComponentPosition(const char* stringid, int step)
 const char* RDK_CALL Model_GetConnectorsList(const char* stringid,
 						  int sublevel, const char* owner_level_stringid)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetConnectorsList(stringid, sublevel, owner_level_stringid);
 }
 
@@ -1134,6 +1160,7 @@ const char* RDK_CALL Model_GetConnectorsList(const char* stringid,
 const char* RDK_CALL Model_GetItemsList(const char* stringid,
 							int sublevel, const char* owner_level_stringid)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetItemsList(stringid, sublevel, owner_level_stringid);
 }
 
@@ -1149,6 +1176,7 @@ const char* RDK_CALL Model_GetItemsList(const char* stringid,
 const char* RDK_CALL Model_GetNetsList(const char* stringid,
 							int sublevel, const char* owner_level_stringid)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetNetsList(stringid, sublevel, owner_level_stringid);
 }
 
@@ -1157,6 +1185,7 @@ const char* RDK_CALL Model_GetNetsList(const char* stringid,
 // Память выделяется и освобождается внутри dll
 const char* RDK_CALL Model_GetComponentName(const char* stringid)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetComponentName(stringid);
 }
 
@@ -1167,6 +1196,7 @@ const char* RDK_CALL Model_GetComponentName(const char* stringid)
 // Если owner_level_stringid не задан, то имя формируется до уровня текущего компонента
 const char* RDK_CALL Model_GetComponentLongName(const char* stringid, const char* owner_level_stringid)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetComponentLongName(stringid,owner_level_stringid);
 }
 
@@ -1178,6 +1208,7 @@ const char* RDK_CALL Model_GetComponentLongName(const char* stringid, const char
 // Если owner_level_stringid не задан, то имя формируется до уровня текущего компонента
 const char* RDK_CALL Model_GetComponentLongId(const char* stringid, const char* owner_level_stringid)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetComponentLongId(stringid,owner_level_stringid);
 }
 
@@ -1185,6 +1216,7 @@ const char* RDK_CALL Model_GetComponentLongId(const char* stringid, const char* 
 // если stringid - пустая строка, то возвращает имя класса модели
 const char* RDK_CALL Model_GetComponentClassName(const char* stringid)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetComponentClassName(stringid);
 }
 
@@ -1192,7 +1224,7 @@ const char* RDK_CALL MModel_GetComponentClassName(int engine_index, const char* 
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 0;
-
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Model_GetComponentClassName(stringid);
 }
 
@@ -1200,6 +1232,7 @@ const char* RDK_CALL MModel_GetComponentClassName(int engine_index, const char* 
 // Возвращает список свойств компонента разделенный запятыми
 const char* RDK_CALL Model_GetComponentPropertiesList(const char* stringid, unsigned int type_mask)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetComponentPropertiesList(stringid,type_mask);
 }
 
@@ -1207,42 +1240,49 @@ const char* RDK_CALL Model_GetComponentPropertiesList(const char* stringid, unsi
 // каждый элемент имеет вид имя_свойства:индекс_входа(выхода)
 const char* RDK_CALL Model_GetComponentPropertiesLookupList(const char* stringid, unsigned int type_mask)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetComponentPropertiesLookupList(stringid,type_mask);
 }
 
 // Возвращает свойства компонента по идентификатору
 const char * RDK_CALL Model_GetComponentProperties(const char *stringid, unsigned int type_mask)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetComponentProperties(stringid,type_mask);
 }
 
 // Возвращает свойства компонента по идентификатору с описаниями
 const char * RDK_CALL Model_GetComponentPropertiesEx(const char *stringid, unsigned int type_mask)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetComponentPropertiesEx(stringid, type_mask);
 }
 
 // Возвращает выборочные свойства компонента по идентификатору
 const char * RDK_CALL Model_GetComponentSelectedProperties(const char *stringid, unsigned int type_mask)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetComponentSelectedProperties(stringid);
 }
 
 // Возвращает значение свойства компонента по идентификатору компонента и имени свойства
 const char * RDK_CALL Model_GetComponentPropertyValue(const char *stringid, const char *paramname)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetComponentPropertyValue(stringid,paramname);
 }
 
 // Устанавливает свойства компонента по идентификатору
 int RDK_CALL Model_SetComponentProperties(const char *stringid, const char* buffer)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_SetComponentProperties(stringid, buffer);
 }
 
 // Устанавливает значение свойства компонента по идентификатору компонента и имени свойства
 void RDK_CALL Model_SetComponentPropertyValue(const char *stringid, const char *paramname, const char *buffer)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  PEngine->Model_SetComponentPropertyValue(stringid,paramname,buffer);
 }
 
@@ -1250,6 +1290,7 @@ void RDK_CALL Model_SetComponentPropertyValue(const char *stringid, const char *
 // включая этот компонент
 void RDK_CALL Model_SetGlobalComponentPropertyValue(const char *stringid, const char* class_stringid, const char *paramname, const char *buffer)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  PEngine->Model_SetGlobalComponentPropertyValue(stringid,class_stringid, paramname,buffer);
 }
 
@@ -1257,12 +1298,14 @@ void RDK_CALL Model_SetGlobalComponentPropertyValue(const char *stringid, const 
 // и владельцем, производным от класса 'class_owner_stringid' включая этот компонент
 void RDK_CALL Model_SetGlobalOwnerComponentPropertyValue(const char *stringid, const char* class_stringid, const char* class_owner_stringid, const char *paramname, const char *buffer)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  PEngine->Model_SetGlobalOwnerComponentPropertyValue(stringid, class_stringid, class_owner_stringid, paramname,buffer);
 }
 
 // Возвращает указатель void* на данные свойства компонента
 const void* RDK_CALL Model_GetComponentPropertyData(const char *stringid, const char *property_name)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetComponentPropertyData(stringid, property_name);
 }
 
@@ -1270,13 +1313,14 @@ const void* RDK_CALL MModel_GetComponentPropertyData(int engine_index, const cha
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 0;
-
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Model_GetComponentPropertyData(stringid, property_name);
 }
 
 // Копирует данные 'data' в заданное свойство компонента
 int RDK_CALL Model_SetComponentPropertyData(const char *stringid, const char *property_name, const void *data)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_SetComponentPropertyData(stringid, property_name, data);
 }
 
@@ -1284,7 +1328,7 @@ int RDK_CALL MModel_SetComponentPropertyData(int engine_index, const char *strin
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 0;
-
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Model_SetComponentPropertyData(stringid, property_name, data);
 }
 
@@ -1292,6 +1336,7 @@ int RDK_CALL MModel_SetComponentPropertyData(int engine_index, const char *strin
 // Память для buffer должна быть выделена!
 const char * RDK_CALL Model_GetComponentParameters(const char *stringid, unsigned int type_mask)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetComponentProperties(stringid,type_mask & 0xFFFFFF01);
 }
 
@@ -1299,7 +1344,7 @@ const char * RDK_CALL MModel_GetComponentParameters(int engine_index, const char
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 0;
-
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Model_GetComponentProperties(stringid,type_mask & 0xFFFFFF01);
 }
 
@@ -1307,18 +1352,21 @@ const char * RDK_CALL MModel_GetComponentParameters(int engine_index, const char
 // Память для buffer должна быть выделена!
 const char * RDK_CALL Model_GetComponentSelectedParameters(const char *stringid)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetComponentSelectedProperties(stringid);
 }
 
 // Возвращает параметры компонента по идентификатору с описаниями
 const char * RDK_CALL Model_GetComponentParametersEx(const char *stringid, unsigned int type_mask)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetComponentPropertiesEx(stringid, type_mask & 0xFFFFFF01);
 }
 
 // Возвращает значение параметра компонента по идентификатору компонента и имени параметра
 const char * RDK_CALL Model_GetComponentParameterValue(const char *stringid, const char *paramname)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetComponentPropertyValue(stringid,paramname);
 }
 
@@ -1326,13 +1374,14 @@ const char * RDK_CALL MModel_GetComponentParameterValue(int engine_index, const 
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 0;
-
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Model_GetComponentPropertyValue(stringid,paramname);
 }
 
 // Устанавливает параметры компонента по идентификатору
 int RDK_CALL Model_SetComponentParameters(const char *stringid, const char* buffer)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_SetComponentProperties(stringid, buffer);
 }
 
@@ -1340,13 +1389,14 @@ int RDK_CALL MModel_SetComponentParameters(int engine_index, const char *stringi
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 1000;
-
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Model_SetComponentProperties(stringid, buffer);
 }
 
 // Устанавливает значение параметра компонента по идентификатору компонента и имени параметра
 int RDK_CALL Model_SetComponentParameterValue(const char *stringid, const char *paramname, const char *buffer)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  PEngine->Model_SetComponentPropertyValue(stringid,paramname,buffer);
  return 0;
 }
@@ -1355,7 +1405,7 @@ int RDK_CALL MModel_SetComponentParameterValue(int engine_index, const char *str
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 1000;
-
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  DllManager.EngineList[engine_index]->Model_SetComponentPropertyValue(stringid,paramname,buffer);
  return 0;
 }
@@ -1426,6 +1476,7 @@ bool RDK_CALL Model_CheckLink(const char* stringid1, int output_number, const ch
 // Если owner_level_stringid не задан, то имена формируются до уровня текущего компонента
 const char * RDK_CALL Model_GetComponentInternalLinks(const char* stringid, const char* owner_level_stringid)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetComponentInternalLinks(stringid, owner_level_stringid);
 }
 
@@ -1434,6 +1485,7 @@ const char * RDK_CALL Model_GetComponentInternalLinks(const char* stringid, cons
 // Если owner_level_stringid не задан, то применяется уровень текущего компонента
 int RDK_CALL Model_SetComponentInternalLinks(const char* stringid, const char* buffer, const char* owner_level_stringid)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_SetComponentInternalLinks(stringid,buffer, owner_level_stringid);
 }
 
@@ -1447,6 +1499,7 @@ int RDK_CALL Model_SetComponentInternalLinks(const char* stringid, const char* b
 // Если owner_level_stringid не задан, то имена формируются до уровня текущего компонента
 const char * RDK_CALL Model_GetComponentInputLinks(const char* stringid, const char* owner_level_stringid, int sublevel)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetComponentInputLinks(stringid,owner_level_stringid, sublevel);
 }
 
@@ -1460,6 +1513,7 @@ const char * RDK_CALL Model_GetComponentInputLinks(const char* stringid, const c
 // Если owner_level_stringid не задан, то имена формируются до уровня текущего компонента
 const char * RDK_CALL Model_GetComponentOutputLinks(const char* stringid, const char* owner_level_stringid, int sublevel)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetComponentOutputLinks(stringid,owner_level_stringid, sublevel);
 }
 
@@ -1472,6 +1526,7 @@ const char * RDK_CALL Model_GetComponentOutputLinks(const char* stringid, const 
 // Если owner_level_stringid не задан, то имена формируются до уровня текущего компонента
 const char* RDK_CALL Model_GetComponentPersonalLinks(const char* stringid, const char* owner_level_stringid)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetComponentPersonalLinks(stringid,owner_level_stringid);
 }
 
@@ -1479,6 +1534,7 @@ const char* RDK_CALL Model_GetComponentPersonalLinks(const char* stringid, const
 // Память для buffer должна быть выделена!
 const char * RDK_CALL Model_GetComponentState(const char *stringid, unsigned int type_mask)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetComponentProperties(stringid, type_mask & 0xFFFFFF02);
 }
 
@@ -1486,7 +1542,7 @@ const char * RDK_CALL MModel_GetComponentState(int engine_index, const char *str
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 0;
-
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Model_GetComponentProperties(stringid, type_mask & 0xFFFFFF02);
 }
 
@@ -1494,12 +1550,14 @@ const char * RDK_CALL MModel_GetComponentState(int engine_index, const char *str
 // Память для buffer должна быть выделена!
 const char * RDK_CALL Model_GetComponentSelectedState(const char *stringid)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetComponentSelectedProperties(stringid);
 }
 
 // Возвращает значение переменной состояния компонента по идентификатору компонента и имени переменной
 const char * RDK_CALL Model_GetComponentStateValue(const char *stringid, const char *statename)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetComponentPropertyValue(stringid,statename);
 }
 
@@ -1507,13 +1565,14 @@ const char * RDK_CALL MModel_GetComponentStateValue(int engine_index, const char
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 0;
-
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Model_GetComponentPropertyValue(stringid,statename);
 }
 
 // Устанавливает состояние компонента по идентификатору
 int RDK_CALL Model_SetComponentState(const char *stringid, const char* buffer)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_SetComponentProperties(stringid, buffer);
 }
 
@@ -1521,37 +1580,42 @@ int RDK_CALL MModel_SetComponentState(int engine_index, const char *stringid, co
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 1000;
-
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Model_SetComponentProperties(stringid, buffer);
 }
 
 // Устанавливает значение переменной состояния компонента по идентификатору компонента и имени переменной
 void RDK_CALL Model_SetComponentStateValue(const char *stringid, const char *statename, const char *buffer)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  PEngine->Model_SetComponentPropertyValue(stringid,statename,buffer);
 }
 
 // Возвращает число входов у компонента
 int RDK_CALL Model_GetComponentNumInputs(const char *stringid)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetComponentNumInputs(stringid);
 }
 
 // Возвращает размер входа компонента в числе элементов
 int RDK_CALL Model_GetComponentInputDataSize(const char *stringid, int index)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetComponentInputDataSize(stringid, index);
 }
 
 // Возвращает размер элемента входа в байтах
 int RDK_CALL Model_GetComponentInputElementSize(const char *stringid, int index)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetComponentInputElementSize(stringid, index);
 }
 
 // Возвращает размер входа компонента в байтах элементов
 int RDK_CALL Model_GetComponentInputByteSize(const char *stringid, int index)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetComponentInputByteSize(stringid, index);
 }
 
@@ -1559,30 +1623,35 @@ int RDK_CALL Model_GetComponentInputByteSize(const char *stringid, int index)
 // Только для чтения!
 unsigned char* RDK_CALL Model_GetComponentInputData(const char *stringid, int index)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetComponentInputData(stringid, index);
 }
 
 // Возвращает число выходов у компонента
 int RDK_CALL Model_GetComponentNumOutputs(const char *stringid)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetComponentNumOutputs(stringid);
 }
 
 // Возвращает размер выхода компонента в числе элементов
 int RDK_CALL Model_GetComponentOutputDataSize(const char *stringid, int index)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetComponentOutputDataSize(stringid, index);
 }
 
 // Возвращает размер элемента выхода в байтах
 int RDK_CALL Model_GetComponentOutputElementSize(const char *stringid, int index)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetComponentOutputElementSize(stringid, index);
 }
 
 // Возвращает размер выхода компонента в байтах элементов
 int RDK_CALL Model_GetComponentOutputByteSize(const char *stringid, int index)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetComponentOutputByteSize(stringid, index);
 }
 
@@ -1590,6 +1659,7 @@ int RDK_CALL Model_GetComponentOutputByteSize(const char *stringid, int index)
 // Только для чтения!
 unsigned char* RDK_CALL Model_GetComponentOutputData(const char *stringid, int index)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetComponentOutputData(stringid, index);
 }
 
@@ -1597,6 +1667,7 @@ unsigned char* RDK_CALL Model_GetComponentOutputData(const char *stringid, int i
 // переменные состояния в xml
 const char * RDK_CALL Model_SaveComponent(const char *stringid, unsigned int params_type_mask)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_SaveComponent(stringid, params_type_mask);
 }
 
@@ -1604,7 +1675,7 @@ const char * RDK_CALL MModel_SaveComponent(int engine_index, const char *stringi
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 0;
-
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Model_SaveComponent(stringid, params_type_mask);
 }
 
@@ -1612,6 +1683,7 @@ const char * RDK_CALL MModel_SaveComponent(int engine_index, const char *stringi
 // переменные состояния из xml
 int RDK_CALL Model_LoadComponent(const char *stringid, const char* buffer)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_LoadComponent(stringid, buffer);
 }
 
@@ -1619,31 +1691,35 @@ int RDK_CALL MModel_LoadComponent(int engine_index, const char *stringid, const 
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 1000;
-
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Model_LoadComponent(stringid, buffer);
 }
 
 // Сохраняет все свойства компонента и его дочерних компонент в xml
 const char * RDK_CALL Model_SaveComponentProperties(const char *stringid, unsigned int type_mask)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_SaveComponentProperties(stringid, type_mask);
 }
 
 // Загружает все свойства компонента и его дочерних компонент из xml
 int RDK_CALL Model_LoadComponentProperties(const char *stringid, char* buffer)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_LoadComponentProperties(stringid, buffer);
 }
 
 // Сохраняет все параметры компонента и его дочерних компонент в xml
 const char * RDK_CALL Model_SaveComponentParameters(const char *stringid, unsigned int type_mask)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_SaveComponentProperties(stringid, type_mask & 0xFFFFFF01);
 }
 
 // Загружает все параметры компонента и его дочерних компонент из xml
 int RDK_CALL Model_LoadComponentParameters(const char *stringid, const char* buffer)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_LoadComponentProperties(stringid, buffer);
 }
 
@@ -1651,19 +1727,21 @@ int RDK_CALL MModel_LoadComponentParameters(int engine_index, const char *string
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 1000;
-
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Model_LoadComponentProperties(stringid, buffer);
 }
 
 // Сохраняет состояние компонента и его дочерних компонент в xml
 const char * RDK_CALL Model_SaveComponentState(const char *stringid, unsigned int type_mask)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_SaveComponentProperties(stringid, type_mask & 0xFFFFFF02);
 }
 
 // Загружает состояние компонента и его дочерних компонент из xml
 int RDK_CALL Model_LoadComponentState(const char *stringid, char* buffer)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_LoadComponentProperties(stringid, buffer);
 }
 
@@ -1671,6 +1749,7 @@ int RDK_CALL Model_LoadComponentState(const char *stringid, char* buffer)
 // переменные состояния в xml
 const char* RDK_CALL Model_SaveComponentDrawInfo(const char *stringid)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_SaveComponentDrawInfo(stringid);
 }
 
@@ -1805,6 +1884,7 @@ bool RDK_CALL Model_SetSourceTimeAll(long long value)
 // Устанавливает время внешних источников данных
 bool RDK_CALL Model_SetDoubleSourceTime(double value)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_SetDoubleSourceTime(value);
 }
 
@@ -1812,7 +1892,7 @@ bool RDK_CALL MModel_SetDoubleSourceTime(int engine_index, double value)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 1000;
-
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Model_SetDoubleSourceTime(value);
 }
 
@@ -1820,7 +1900,10 @@ bool RDK_CALL Model_SetDoubleSourceTimeAll(double value)
 {
  bool res=true;
  for(int i=0;i<GetNumEngines();i++)
+ {
+  UGenericMutexLocker locker(DllManager.MutexList[i]);
   res&=DllManager.EngineList[i]->Model_SetDoubleSourceTime(value);
+ }
  return true;
 }
 /*
@@ -1868,11 +1951,15 @@ double RDK_CALL MModel_GetDoubleSourceTimeStep(int engine_index)
 // Возвращает время расчета компонента без времени расчета дочерних компонент (мс)
 long long RDK_CALL Model_GetStepDuration(const char *stringid)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetStepDuration(stringid);
 }
 
 long long RDK_CALL MModel_GetStepDuration(int engine_index, const char *stringid)
 {
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Model_GetStepDuration(stringid);
 }
 
@@ -1880,11 +1967,15 @@ long long RDK_CALL MModel_GetStepDuration(int engine_index, const char *stringid
 // (вместе со времени обсчета дочерних объектов) (мс)
 long long RDK_CALL Model_GetFullStepDuration(const char *stringid)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetFullStepDuration(stringid);
 }
 
 long long RDK_CALL MModel_GetFullStepDuration(int engine_index, const char *stringid)
 {
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Model_GetFullStepDuration(stringid);
 }
 
@@ -1892,22 +1983,30 @@ long long RDK_CALL MModel_GetFullStepDuration(int engine_index, const char *stri
 // полного затраченного времени к ожидаемому времени шага счета
 double RDK_CALL Model_GetInstantPerformance(const char *stringid)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetInstantPerformance(stringid);
 }
 
 double RDK_CALL MModel_GetInstantPerformance(int engine_index, const char *stringid)
 {
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Model_GetInstantPerformance(stringid);
 }
 
 // Время, прошедшее между двумя последними итерациями счета
 long long RDK_CALL Model_GetInterstepsInterval(const char *stringid)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetInterstepsInterval(stringid);
 }
 
 long long RDK_CALL MModel_GetInterstepsInterval(int engine_index, const char *stringid)
 {
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Model_GetInterstepsInterval(stringid);
 }
 // --------------------------
@@ -1918,6 +2017,7 @@ long long RDK_CALL MModel_GetInterstepsInterval(int engine_index, const char *st
 // Управление функцией-обработчиком исключений
 void* RDK_CALL Engine_GetExceptionHandler(void)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return reinterpret_cast<void*>(PEngine->GetExceptionHandler());
 }
 
@@ -1925,12 +2025,13 @@ void* RDK_CALL MEngine_GetExceptionHandler(int engine_index)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 0;
-
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return reinterpret_cast<void*>(DllManager.EngineList[engine_index]->GetExceptionHandler());
 }
 
 bool RDK_CALL Engine_SetExceptionHandler(void* value)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->SetExceptionHandler(reinterpret_cast<RDK::UEnvironment::PExceptionHandler>(value));
 }
 
@@ -1938,12 +2039,14 @@ bool RDK_CALL MEngine_SetExceptionHandler(int engine_index, void* value)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return false;
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->SetExceptionHandler(reinterpret_cast<RDK::UEnvironment::PExceptionHandler>(value));
 }
 
 // Возвращает массив строк лога
 const char* RDK_CALL Engine_GetLog(int &error_level)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->GetLog(error_level);
 }
 
@@ -1951,13 +2054,14 @@ const char* RDK_CALL MEngine_GetLog(int engine_index, int &error_level)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 0;
-
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->GetLog(error_level);
 }
 
 // Записывает в лог новое сообщение
 int RDK_CALL Engine_LogMessage(int log_level, const char *message)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Engine_LogMessage(log_level, message);
 }
 
@@ -1965,7 +2069,7 @@ int RDK_CALL MEngine_LogMessage(int engine_index, int log_level, const char *mes
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 0;
-
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Engine_LogMessage(log_level, message);
 }
 
@@ -1974,6 +2078,7 @@ int RDK_CALL MEngine_LogMessage(int engine_index, int log_level, const char *mes
 // этой функцией
 const char* RDK_CALL Engine_GetUnreadLog(int &error_level)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->GetUnreadLog(error_level);
 }
 
@@ -1981,7 +2086,7 @@ const char* RDK_CALL MEngine_GetUnreadLog(int engine_index, int &error_level)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 0;
-
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->GetUnreadLog(error_level);
 }
 // ----------------------------
@@ -2121,76 +2226,94 @@ unsigned char* RDK_CALL Env_GetOutputImageY8(int index)
 // если выход не содержит данных такого типа, то возвращает 0
 const /* RDK::MDMatrix* */void* RDK_CALL Model_GetComponentOutputAsMatrix(const char *stringid, const char *property_name)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return (PEngine)->Model_GetComponentOutputAsMatrix(stringid, property_name);
 }
 
 const /* RDK::MDMatrix* */void* RDK_CALL Model_GetComponentOutputAsMatrixByIndex(const char *stringid, int  index)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return (PEngine)->Model_GetComponentOutputAsMatrix(stringid, index);
 }
 
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
 const /* RDK::UBitmap* */ void* RDK_CALL Model_GetComponentOutput(const char *stringid, const char *property_name)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetComponentOutput(stringid, property_name);
 }
 
 const /* RDK::UBitmap* */ void* RDK_CALL Model_GetComponentOutputByIndex(const char *stringid, int index)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetComponentOutput(stringid, index);
 }
 
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
 const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapOutput(const char *stringid, const char *property_name)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetComponentBitmapOutput(stringid, property_name);
 }
 
 const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapOutputByIndex(const char *stringid, int index)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetComponentBitmapOutput(stringid, index);
 }
 
 // Возвращает указатель на вход с индексом 'index' компонента 'id'
 const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapInput(const char *stringid, const char *property_name)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetComponentBitmapInput(stringid, property_name);
 }
 
 const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapInputByIndex(const char *stringid, int index)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetComponentBitmapInput(stringid, index);
 }
 
 // Замещает изображение выхода с индексом 'index' компонента 'id'
 void RDK_CALL Model_SetComponentBitmapOutput(const char *stringid, const char *property_name, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  PEngine->Model_SetComponentBitmapOutput(stringid, property_name, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
 }
 
 void RDK_CALL MModel_SetComponentBitmapOutput(int engine_index, const char *stringid, const char *property_name, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
 {
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return;
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  DllManager.EngineList[engine_index]->Model_SetComponentBitmapOutput(stringid, property_name, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
 }
 
 void RDK_CALL Model_SetComponentBitmapOutputByIndex(const char *stringid, int index, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  PEngine->Model_SetComponentBitmapOutput(stringid, index, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
 }
 
 void RDK_CALL MModel_SetComponentBitmapOutputByIndex(int engine_index, const char *stringid, int index, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
 {
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return;
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  DllManager.EngineList[engine_index]->Model_SetComponentBitmapOutput(stringid, index, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
 }
 
 // Замещает изображение входа с индексом 'index' компонента 'id'
 void RDK_CALL Model_SetComponentBitmapInput(const char *stringid, const char *property_name, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  PEngine->Model_SetComponentBitmapInput(stringid, property_name, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
 }
 
 void RDK_CALL Model_SetComponentBitmapInputByIndex(const char *stringid, int index, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  PEngine->Model_SetComponentBitmapInput(stringid, index, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
 }
 // --------------------------

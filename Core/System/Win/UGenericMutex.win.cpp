@@ -16,9 +16,14 @@ public:
 UGenericMutexWin();
 virtual ~UGenericMutexWin();
 
-virtual bool lock();
+virtual bool lock(int lock_id=-1);
 virtual bool unlock();
 virtual bool wait(int timeout);
+
+private:
+UGenericMutexWin(const UGenericMutexWin &copy);
+UGenericMutexWin& operator = (const UGenericMutexWin &copy);
+
 };
 
 
@@ -32,30 +37,58 @@ UGenericMutexWin::~UGenericMutexWin()
  CloseHandle(m_UnlockEvent);
 }
 
-bool UGenericMutexWin::lock()
+bool UGenericMutexWin::lock(int lock_id)
 {
- if (WaitForSingleObject(m_UnlockEvent, INFINITE) == WAIT_TIMEOUT)
+ if(!m_UnlockEvent)
   return false;
- ResetEvent(m_UnlockEvent);
+ if (WaitForSingleObject(m_UnlockEvent, 0) == WAIT_TIMEOUT)
+ {
+  if(lock_id>=0 && lock_id == LockId)
+   return true;
+ }
+ else
+ {
+  if (WaitForSingleObject(m_UnlockEvent, INFINITE) == WAIT_TIMEOUT)
+   return false;
+  ResetEvent(m_UnlockEvent);
+  LockId=lock_id;
+ }
  return true;
 }
 
 bool UGenericMutexWin::unlock()
 {
- if (WaitForSingleObject(m_UnlockEvent, INFINITE) == WAIT_TIMEOUT)
-  return false;
+ if(!m_UnlockEvent)
+  return true;
+ if (WaitForSingleObject(m_UnlockEvent, 0) != WAIT_TIMEOUT)
+  return true;
  SetEvent(m_UnlockEvent);
+ LockId=-1;
  return true;
 }
 
 bool UGenericMutexWin::wait(int timeout)
 {
+ if(!m_UnlockEvent)
+  return false;
+
  if (WaitForSingleObject(m_UnlockEvent, timeout) != WAIT_TIMEOUT)
  {
   return true;
  }
  return false;
 }
+
+UGenericMutexWin::UGenericMutexWin(const UGenericMutexWin &copy)
+{
+
+}
+
+UGenericMutexWin& UGenericMutexWin::operator = (const UGenericMutexWin &copy)
+{
+ return *this;
+}
+
 // ---------------------------------------------------------------------------
 UGenericMutex* UCreateMutex(void)
 {
@@ -74,6 +107,17 @@ UGenericMutexLocker::UGenericMutexLocker(UGenericMutex *m)
  {
   m_mutex = m;
   m_mutex->lock();
+ }
+ else
+  m_mutex = 0;
+}
+
+UGenericMutexLocker::UGenericMutexLocker(UGenericMutex *m, int lock_id)
+{
+ if(m)
+ {
+  m_mutex = m;
+  m_mutex->lock(lock_id);
  }
  else
   m_mutex = 0;
