@@ -112,19 +112,6 @@ void __fastcall TEngineThread::AfterCalculate(void)
   UEngineMonitorForm->EngineMonitorFrame->GetServerTimeStamp(ChannelIndex);
 
  IdTcpResultBroadcasterForm->AddMetadata(ChannelIndex, UEngineMonitorForm->EngineMonitorFrame->LastCalculatedServerTimeStamp[ChannelIndex]);
- /*
- TIdTcpResultBroadcasterFrame *tcp_frame=IdTcpResultBroadcasterForm->GetBroadcasterFrame(ChannelIndex);
- if(tcp_frame)
-  tcp_frame->AfterCalculate();
- TIdHttpResultBroadcasterFrame *http_frame=IdHttpResultBroadcasterForm->GetBroadcasterFrame(ChannelIndex);
- if(http_frame)
-  http_frame->AfterCalculate();
-  */
- //RDK::UIVisualControllerStorage::AfterCalculate();
-// RDK::UIVisualControllerStorage::UpdateInterface();
-// if(ChannelIndex == GetNumEngines()-1)
-// {
-// }
 }
 
 

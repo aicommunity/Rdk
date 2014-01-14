@@ -2474,18 +2474,24 @@ int RDKDllManager::EngineDestroy(int index)
 
  if(EngineList[index])
  {
+  if(EngineList[index] == PEngine)
+   PEngine=0;
   delete EngineList[index];
   EngineList[index]=0;
  }
 
  if(EnvironmentList[index])
  {
+  if(EnvironmentList[index] == PEnvironment)
+   PEnvironment=0;
   delete EnvironmentList[index];
   EnvironmentList[index]=0;
  }
 
  if(StorageList[index])
  {
+  if(StorageList[index] == PStorage)
+   PStorage=0;
   delete StorageList[index];
   StorageList[index]=0;
  }
