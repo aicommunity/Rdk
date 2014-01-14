@@ -449,30 +449,35 @@ bool RDK_CALL MIsEngineInit(int engine_index)
 // Возвращает число классов в хранилище
 int RDK_CALL Storage_GetNumClasses(void)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Storage_GetNumClasses();
 }
 
 // Возвращает id классов в хранилище. Память должна быть выделена
 void RDK_CALL Storage_GetClassesList(int *buffer)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  PEngine->Storage_GetClassesList(buffer);
 }
 
 // Возвращает имена классов в хранилище в виде строки разделенной запятыми
 const char * RDK_CALL Storage_GetClassesNameList(void)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Storage_GetClassesNameList();
 }
 
 // Возвращает имя класса по его id.
 const char * RDK_CALL Storage_GetClassName(int id)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Storage_GetClassName(id);
 }
 
 // Возвращает Id класса по его имени
 int RDK_CALL Storage_GetClassId(const char *name)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Storage_GetClassId(name);
 }
 
@@ -481,88 +486,103 @@ int RDK_CALL Storage_GetClassId(const char *name)
 // или присутствуют объекты этого класса
 bool RDK_CALL Storage_DelClass(int classid)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Storage_DelClass(classid);
 }
 
 // Удалаяет все свободные объекты из хранилища
 void RDK_CALL Storage_FreeObjectsStorage(void)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  PEngine->Storage_FreeObjectsStorage();
 }
 
 // Удаляет все объекты из хранилища
 void RDK_CALL Storage_ClearObjectsStorage(void)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  PEngine->Storage_ClearObjectsStorage();
 }
 
 // Вычисляет суммарное число объектов в хранилище
 int RDK_CALL Storage_CalcNumObjects(void)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Storage_CalcNumObjects();
 }
 
 int RDK_CALL Storage_CalcNumObjectsById(int classid)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Storage_CalcNumObjectsById(classid);
 }
 
 int RDK_CALL Storage_CalcNumObjectsByName(const char* classname)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Storage_CalcNumObjectsByName(classname);
 }
 
 // Возвращает описание класса по его id в формате xml
 const char* RDK_CALL Storage_GetClassDescription(const char* classname)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Storage_GetClassDescription(classname);
 }
 
 // Устанавливает описание класса по его id, считывая его из формата xml
 bool RDK_CALL Storage_SetClassDescription(const char* classname, const char* description)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Storage_SetClassDescription(classname, description);
 }
 
 // Сохраняет описание всех классов в xml
 const char* RDK_CALL Storage_SaveClassesDescription(void)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Storage_SaveClassesDescription();
 }
 
 // Загружает описание всех классов из xml
 bool RDK_CALL Storage_LoadClassesDescription(const char* xmltext)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Storage_LoadClassesDescription(xmltext);
 }
 
 // Сохраняет общее описание всех классов в xml
 const char* RDK_CALL Storage_SaveCommonClassesDescription(void)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Storage_SaveCommonClassesDescription();
 }
 
 // Загружает общее описание всех классов из xml
 bool RDK_CALL Storage_LoadCommonClassesDescription(const char* xmltext)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Storage_LoadCommonClassesDescription(xmltext);
 }
 
 // Сохраняет описание всех классов в xml включая общее описание
 const char* RDK_CALL Storage_SaveAllClassesDescription(void)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Storage_SaveAllClassesDescription();
 }
 
 // Загружает описание всех классов из xml включая общее описание
 bool RDK_CALL Storage_LoadAllClassesDescription(const char* xmltext)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Storage_LoadAllClassesDescription(xmltext);
 }
 
 // Загружает библиотеку по имени dll-файла
 int RDK_CALL Storage_LoadStorageLibrary(const char *filename)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Storage_LoadStorageLibrary(filename);
 }
 
@@ -570,6 +590,7 @@ int RDK_CALL Storage_LoadStorageLibrary(const char *filename)
 // Ответственность за освобождение памяти лежит на вызывающей стороне.
 bool RDK_CALL Storage_DelClassLibraryByIndex(int index)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Storage_DelClassLibraryByIndex(index);
 }
 
@@ -577,6 +598,7 @@ bool RDK_CALL Storage_DelClassLibraryByIndex(int index)
 // Ответственность за освобождение памяти лежит на вызывающей стороне.
 bool RDK_CALL Storage_DelClassLibraryByName(const char *name)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Storage_DelClassLibraryByName(name);
 }
 
@@ -584,6 +606,7 @@ bool RDK_CALL Storage_DelClassLibraryByName(const char *name)
 // Ответственность за освобождение памяти лежит на вызывающей стороне.
 bool RDK_CALL Storage_DelAllClassLibraries(void)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Storage_DelAllClassLibraries();
 }
 
@@ -591,18 +614,21 @@ bool RDK_CALL Storage_DelAllClassLibraries(void)
 // Операция предварительно уничтожает модель и очищает хранилище
 bool RDK_CALL Storage_BuildStorage(void)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Storage_BuildStorage();
 }
 
 // Возвращает число библиотек
 int RDK_CALL Storage_GetNumClassLibraries(void)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Storage_GetNumClassLibraries();
 }
 
 // Возвращает список библиотек в виде строки, разделенной запятыми
 const char* RDK_CALL Storage_GetClassLibrariesList(void)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Storage_GetClassLibrariesList();
 }
 
@@ -610,6 +636,7 @@ const char* RDK_CALL Storage_GetClassLibrariesList(void)
 // library_name - имя библиотеки
 const char* RDK_CALL Storage_GetLibraryClassNames(const char *library_name)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Storage_GetLibraryClassNames(library_name);
 }
 
@@ -617,18 +644,21 @@ const char* RDK_CALL Storage_GetLibraryClassNames(const char *library_name)
 // index - индекс библиотеки
 const char* RDK_CALL Storage_GetLibraryClassNamesByIndex(int index)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Storage_GetLibraryClassNamesByIndex(index);
 }
 
 // Возвращает имя библиотеки по индексу
 const char * RDK_CALL Storage_GetClassLibraryNameByIndex(int index)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Storage_GetClassLibraryNameByIndex(index);
 }
 
 // Возвращает версию библиотеки по индексу
 const char * RDK_CALL Storage_GetClassLibraryVersionByIndex(int index)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Storage_GetClassLibraryVersionByIndex(index);
 }
 
@@ -636,6 +666,7 @@ const char * RDK_CALL Storage_GetClassLibraryVersionByIndex(int index)
 // Объект удаляется из модели
 int RDK_CALL Storage_CreateClass(const char* stringid, const char *classname)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Storage_CreateClass(stringid, classname);
 }
 // ----------------------------
@@ -646,6 +677,7 @@ int RDK_CALL Storage_CreateClass(const char* stringid, const char *classname)
 // Индекс предарительно заданной модели обработки
 int RDK_CALL Env_GetPredefinedStructure(void)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Env_GetPredefinedStructure();
 }
 
@@ -653,11 +685,13 @@ int RDK_CALL MEnv_GetPredefinedStructure(int engine_index)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 1000;
+  UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Env_GetPredefinedStructure();
 }
 
 bool RDK_CALL Env_SetPredefinedStructure(int value)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Env_SetPredefinedStructure(value);
 }
 
@@ -665,6 +699,7 @@ bool RDK_CALL MEnv_SetPredefinedStructure(int engine_index, int value)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return false;
+   UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Env_SetPredefinedStructure(value);
 }
 
@@ -673,6 +708,7 @@ bool RDK_CALL MEnv_SetPredefinedStructure(int engine_index, int value)
 // false - хранилище не готово
 bool RDK_CALL Env_IsStoragePresent(void)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Env_IsStoragePresent();
 }
 
@@ -680,12 +716,14 @@ bool RDK_CALL MEnv_IsStoragePresent(int engine_index)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return false;
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Env_IsStoragePresent();
 }
 
 // Возвращает состояние инициализации
 bool RDK_CALL Env_IsInit(void)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Env_IsInit();
 }
 
@@ -693,6 +731,7 @@ bool RDK_CALL MEnv_IsInit(int engine_index)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return false;
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Env_IsInit();
 }
 
@@ -700,6 +739,7 @@ bool RDK_CALL MEnv_IsInit(int engine_index)
 // Признак наличия сформированной структуры
 bool RDK_CALL Env_IsStructured(void)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Env_IsStructured();
 }
 
@@ -707,12 +747,14 @@ bool RDK_CALL MEnv_IsStructured(int engine_index)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return false;
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Env_IsStructured();
 }
 
 // Инициализация среды
 bool RDK_CALL Env_Init(void)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Env_Init();
 }
 
@@ -720,12 +762,14 @@ bool RDK_CALL MEnv_Init(int engine_index)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return false;
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Env_Init();
 }
 
 // Деинициализация среды
 bool RDK_CALL Env_UnInit(void)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Env_UnInit();
 }
 
@@ -733,12 +777,14 @@ bool RDK_CALL MEnv_UnInit(int engine_index)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return false;
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Env_UnInit();
 }
 
 // Формирует предварительно заданную модель обработки
 bool RDK_CALL Env_CreateStructure(void)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Env_CreateStructure();
 }
 
@@ -746,12 +792,14 @@ bool RDK_CALL MEnv_CreateStructure(int engine_index)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return false;
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Env_CreateStructure();
 }
 
 // Уничтожает текущую модель обработки
 bool RDK_CALL Env_DestroyStructure(void)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Env_DestroyStructure();
 }
 
@@ -759,12 +807,14 @@ bool RDK_CALL MEnv_DestroyStructure(int engine_index)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return false;
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Env_DestroyStructure();
 }
 
 // Удаляет модель и все библиотеки, очищает хранилище, приводя среду в исходное состояние
 void RDK_CALL Env_Destroy(void)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Env_Destroy();
 }
 
@@ -772,7 +822,7 @@ void RDK_CALL MEnv_Destroy(int engine_index)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return;
-
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Env_Destroy();
 }
 
@@ -830,6 +880,7 @@ int RDK_CALL MEnv_Reset(int engine_index, const char* stringid)
 /// Если subcomps == true то также сбрасывает параметры всех дочерних компонент
 int RDK_CALL Env_Default(const char* stringid, bool subcomps)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Env_Default(stringid,subcomps);
 }
 
@@ -837,12 +888,14 @@ int RDK_CALL MEnv_Default(int engine_index, const char* stringid, bool subcomps)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 1000;
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Env_Default(stringid,subcomps);
 }
 
 // Производит увеличение времени модели на требуемую величину
 void RDK_CALL Env_IncreaseModelTimeByStep(void)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Env_IncreaseModelTimeByStep();
 }
 
@@ -851,6 +904,7 @@ void RDK_CALL Env_IncreaseModelTimeByStep(void)
 /// последней итерации не станет больше чем эта величина
 int RDK_CALL Env_SetMinInterstepsInterval(long long value)
 {
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Env_SetMinInterstepsInterval(value);
 }
 
@@ -858,6 +912,7 @@ int RDK_CALL MEnv_SetMinInterstepsInterval(int engine_index, long long value)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 1000;
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Env_SetMinInterstepsInterval(value);
 }
 
@@ -866,6 +921,7 @@ int RDK_CALL MEnv_SetMinInterstepsInterval(int engine_index, long long value)
 /// последней итерации не станет больше чем эта величина
 long long RDK_CALL Env_GetMinInterstepsInterval(void)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Env_GetMinInterstepsInterval();
 }
 
@@ -873,24 +929,28 @@ long long RDK_CALL Env_GetMinInterstepsInterval(int engine_index)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 0;
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Env_GetMinInterstepsInterval();
 }
 
 // Возвращает имя текущего каталога для хранения данных
 const char* RDK_CALL Env_GetCurrentDataDir(void)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Env_GetCurrentDataDir();
 }
 
 // Устанавливает имя текущего каталога для хранения данных
 int RDK_CALL Env_SetCurrentDataDir(const char *dir)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Env_SetCurrentDataDir(dir);
 }
 
 /// Возвращает состояние флага отладочного режима среды
 bool RDK_CALL Env_GetDebugMode(void)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Env_GetDebugMode();
 }
 
@@ -898,13 +958,14 @@ bool RDK_CALL MEnv_GetDebugMode(int engine_index)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 0;
-
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Env_GetDebugMode();
 }
 
 /// Устанавливает состояние флага отладочного режима среды
 int RDK_CALL Env_SetDebugMode(bool value)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Env_SetDebugMode(value);
 }
 
@@ -912,7 +973,7 @@ int RDK_CALL MEnv_SetDebugMode(int engine_index, bool value)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 0;
-
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Env_SetDebugMode(value);
 }
 
@@ -925,12 +986,14 @@ int RDK_CALL MEnv_SetDebugMode(int engine_index, bool value)
 // Устанавливает текущий компонент (адресация относительно корня - модели)
 int RDK_CALL Env_SelectCurrentComponent(const char *stringid)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Env_SelectCurrentComponent(stringid);
 }
 
 // Сбрасывает текущий компонент в состояние по умолчению (модель)
 int RDK_CALL Env_ResetCurrentComponent(const char *stringid)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Env_ResetCurrentComponent(stringid);
 }
 
@@ -938,6 +1001,7 @@ int RDK_CALL Env_ResetCurrentComponent(const char *stringid)
 // Если уже на верхнем уровне, то не делает ничего
 int RDK_CALL Env_UpCurrentComponent(void)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Env_UpCurrentComponent();
 }
 
@@ -945,18 +1009,21 @@ int RDK_CALL Env_UpCurrentComponent(void)
 // (спуск на N уровней вниз относительно текущего компонента)
 int RDK_CALL Env_DownCurrentComponent(const char *stringid)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Env_DownCurrentComponent(stringid);
 }
 
 // Возвращает длинное имя текущего компонента
 const char* RDK_CALL Env_GetCurrentComponentName(void)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Env_GetCurrentComponentName();
 }
 
 // Возвращает длинный строковой id текущего компонента
 const char* RDK_CALL Env_GetCurrentComponentId(void)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Env_GetCurrentComponentId();
 }
 // ***********************************************
@@ -1063,6 +1130,7 @@ bool RDK_CALL MModel_CheckComponent(int engine_index, const char* stringid)
 // Возвращает имя компонента в случае успеха
 const char* RDK_CALL Model_AddComponent(const char* stringid, const char *classname)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_AddComponent(stringid, classname);
 }
 
@@ -1070,6 +1138,7 @@ const char* RDK_CALL MModel_AddComponent(int engine_index, const char* stringid,
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 0;
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Model_AddComponent(stringid, classname);
 }
 
@@ -1078,6 +1147,7 @@ const char* RDK_CALL MModel_AddComponent(int engine_index, const char* stringid,
 // если stringid - пустая строка, то удаляет из самой модели
 int RDK_CALL Model_DelComponent(const char* stringid, const char *name)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_DelComponent(stringid, name);
 }
 
@@ -1085,6 +1155,7 @@ int RDK_CALL MModel_DelComponent(int engine_index, const char* stringid, const c
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 1000;
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Model_DelComponent(stringid, name);
 }
 
@@ -1413,12 +1484,14 @@ int RDK_CALL MModel_SetComponentParameterValue(int engine_index, const char *str
 // Связывает выбранные контейнеры друг с другом
 int RDK_CALL Model_CreateLink(const char* stringid1, int output_number, const char* stringid2, int input_number)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_CreateLink(stringid1, output_number, stringid2, input_number);
 }
 
 // Связывает все компоненты выбранного компонента по возрастанию id в формате: 0 выход к 0 входу
 int RDK_CALL Model_ChainLinking(const char* stringid)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_ChainLinking(stringid);
 }
 
@@ -1426,48 +1499,56 @@ int RDK_CALL Model_ChainLinking(const char* stringid)
 // Используется для тестирования производительности
 int RDK_CALL Model_ParallelLinking(const char* stringid)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_ParallelLinking(stringid);
 }
 
 // Разрывает выбранную связь
 int RDK_CALL Model_BreakLink(const char* stringid1, int output_number, const char* stringid2, int input_number)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_BreakLink(stringid1, output_number, stringid2, input_number);
 }
 
 // Разрывает все связи
 int RDK_CALL Model_BreakAllLinks(void)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_BreakAllLinks();
 }
 
 // Разрывает связь ко входу connector_index коннектора 'connectorid'
 int RDK_CALL Model_BreakConnectorLink(const char* connectorname, int connector_index)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_BreakConnectorLink(connectorname, connector_index);
 }
 
 // Разрывает все входные и выходные связи выбранного контейнера
 int RDK_CALL Model_BreakAllComponentLinks(const char* stringid)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_BreakAllComponentLinks(stringid);
 }
 
 // Разрывает все входные связи выбранного контейнера
 int RDK_CALL Model_BreakAllComponentInputLinks(const char* stringid)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_BreakAllComponentInputLinks(stringid);
 }
 
 // Разрывает все выходные связи выбранного контейнера
 int RDK_CALL Model_BreakAllComponentOutputLinks(const char* stringid)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_BreakAllComponentOutputLinks(stringid);
 }
 
 // Проверяет, существует ли заданна связь
 bool RDK_CALL Model_CheckLink(const char* stringid1, int output_number, const char* stringid2, int input_number)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_CheckLink(stringid1, output_number, stringid2, input_number);
 }
 
@@ -1802,79 +1883,93 @@ const char* RDK_CALL Model_SaveComponentDrawInfo(const char *stringid)
 // Управляет шагом счета модели по умолчанию
 int RDK_CALL Model_GetDefaultTimeStep(void)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetDefaultTimeStep();
 }
 
 void RDK_CALL Model_SetDefaultTimeStep(int value)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  PEngine->Model_SetDefaultTimeStep(value);
 }
 
 // Управляет шагом счета компонента
 int RDK_CALL Model_GetTimeStep(const char *stringid)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetTimeStep(stringid);
 }
 
 void RDK_CALL Model_SetTimeStep(const char *stringid, int value)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  PEngine->Model_SetTimeStep(stringid, value);
 }
 
 // Устанавливает шаг счета компонента и всех его дочерних компонент
 void RDK_CALL Model_SetGlobalTimeStep(const char *stringid, int value)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  PEngine->Model_SetGlobalTimeStep(stringid, value);
 }
 
 // Возвращает текущее время модели
 long long RDK_CALL Model_GetTime(void)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetTime();
 }
 
 double RDK_CALL Model_GetDoubleTime(void)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetDoubleTime();
 }
 
 // Устанавливает текущее время модели
 bool RDK_CALL Model_SetTime(long long value)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_SetTime(value);
 }
 
 // Возвращает реальное время
 long long RDK_CALL Model_GetRealTime(void)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetRealTime();
 }
 
 double RDK_CALL Model_GetDoubleRealTime(void)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetDoubleRealTime();
 }
 
 // Устанавливает реальное время
 bool RDK_CALL Model_SetRealTime(long long value)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_SetRealTime(value);
 }
 
 // Увеличивает реальное время на заданную величину
 bool RDK_CALL Model_IncreaseRealTime(long long value)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_IncreaseRealTime(value);
 }
 
 // Возвращает мгновенный шаг в реальном времени
 long long RDK_CALL Model_GetRealTimeStep(void)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetRealTimeStep();
 }
 
 double RDK_CALL Model_GetDoubleRealTimeStep(void)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetDoubleRealTimeStep();
 }
 
@@ -1894,6 +1989,7 @@ long long RDK_CALL MModel_GetSourceTime(int engine_index)
 
 double RDK_CALL Model_GetDoubleSourceTime(void)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_GetDoubleSourceTime();
 }
 
@@ -1901,7 +1997,7 @@ double RDK_CALL MModel_GetDoubleSourceTime(int engine_index)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 1000;
-
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Model_GetDoubleSourceTime();
 }
 
@@ -2144,6 +2240,7 @@ const char* RDK_CALL MEngine_GetUnreadLog(int engine_index, int &error_level)
 // Задает число входов среды
 void RDK_CALL Env_SetNumInputImages(int number)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Env_SetNumInputImages(number);
 }
 
@@ -2151,13 +2248,14 @@ void RDK_CALL MEnv_SetNumInputImages(int engine_index, int number)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return;
-
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Env_SetNumInputImages(number);
 }
 
 // Задает число выходов среды
 void RDK_CALL Env_SetNumOutputImages(int number)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Env_SetNumOutputImages(number);
 }
 
@@ -2165,25 +2263,28 @@ void RDK_CALL MEnv_SetNumOutputImages(int engine_index, int number)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return;
-
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Env_SetNumOutputImages(number);
 }
 
 // Задает число входов среды
 int RDK_CALL Env_GetNumInputImages(void)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Env_GetNumInputImages();
 }
 
 // Задает число выходов среды
 int RDK_CALL Env_GetNumOutputImages(void)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Env_GetNumInputImages();
 }
 
 // Задает разрешение по умолчанию (рабочее разрешение)
 void RDK_CALL Env_SetInputRes(int number, int width, int height)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Env_SetInputRes(number, width, height);
 }
 
@@ -2191,19 +2292,21 @@ void RDK_CALL MEnv_SetInputRes(int engine_index, int number, int width, int heig
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return;
-
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Env_SetInputRes(number, width, height);
 }
 
 // Задает данные изображения
 void RDK_CALL Env_SetInputImage(int number, unsigned char* image, int width, int height,int cmodel)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Env_SetInputImage(number, image, width, height,cmodel);
 }
 
 // Задает флаг отражения входного изображения вокруг горизонтальной оси
 RDK_LIB_TYPE void Env_SetReflectionXFlag(bool value)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Env_SetReflectionXFlag(value);
 }
 
@@ -2211,7 +2314,7 @@ RDK_LIB_TYPE void MEnv_SetReflectionXFlag(int engine_index, bool value)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return;
-
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Env_SetReflectionXFlag(value);
 }
 
@@ -2219,47 +2322,56 @@ RDK_LIB_TYPE void MEnv_SetReflectionXFlag(int engine_index, bool value)
 // Возвращает разрешение по умолчанию (рабочее разрешение)
 int RDK_CALL Env_GetInputImageWidth(int number)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Env_GetInputImageWidth(number);
 }
 
 int RDK_CALL Env_GetInputImageHeight(int number)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Env_GetInputImageHeight(number);
 }
 
 int RDK_CALL Env_GetInputImageColorModel(int number)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Env_GetInputImageColorModel(number);
 }
 
 // Возвращает текущее выходное разрешение
 int RDK_CALL Env_GetOutputImageWidth(int number)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Env_GetOutputImageWidth(number);
 }
 
 int RDK_CALL Env_GetOutputImageHeight(int number)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Env_GetOutputImageHeight(number);
 }
 
 int RDK_CALL Env_GetOutputImageColorModel(int number)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Env_GetOutputImageColorModel(number);
 }
 
 unsigned char* RDK_CALL Env_GetInputImage(int index)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Env_GetInputImage(index);
 }
 
 unsigned char* RDK_CALL Env_GetOutputImage(int index)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Env_GetOutputImage(index);
 }
 
 unsigned char* RDK_CALL Env_GetOutputImageY8(int index)
 {
+UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Env_GetOutputImageY8(index);
 }
 // --------------------------
