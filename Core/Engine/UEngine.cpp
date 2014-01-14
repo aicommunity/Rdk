@@ -2926,6 +2926,33 @@ const char *  UEngine::Model_SaveComponent(const char *stringid, unsigned int pa
  return TempString.c_str();
 }
 
+// Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
+// переменные состояния в xml
+int UEngine::Model_SaveComponentToFile(const char *stringid, const char* file_name, unsigned int params_type_mask)
+{
+ const char* save_data=Model_SaveComponent(stringid,params_type_mask);
+
+ try
+ {
+  if(!save_data)
+   return 871121;
+
+  UFileIO file;
+  file.Default();
+  file.SetDirection(1);
+  file.SetFileName(file_name);
+  file.SetBinFlag(0);
+  file.SetDataString(save_data);
+  file.Calculate();
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
+
 // Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния из xml
 int UEngine::Model_LoadComponent(const char *stringid, const char* buffer)
@@ -2940,7 +2967,7 @@ int UEngine::Model_LoadComponent(const char *stringid, const char* buffer)
   if(!Environment->GetModel())
   {
    if(!Model_LoadComponent(0,&XmlStorage,true))
-    return -4;
+	return -4;
   }
   else
   {
@@ -2951,11 +2978,34 @@ int UEngine::Model_LoadComponent(const char *stringid, const char* buffer)
    UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
 
    if(!cont)
-    return -3;
+	return -3;
 
    if(!Model_LoadComponent(cont,&XmlStorage,true))
-    return -4;
+	return -4;
   }
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
+// Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
+// переменные состояния из xml
+int UEngine::Model_LoadComponentFromFile(const char *stringid, const char* file_name)
+{
+ try
+ {
+  UFileIO file;
+  file.Default();
+  file.SetDirection(0);
+  file.SetFileName(file_name);
+  file.SetBinFlag(0);
+  file.Calculate();
+  if(file.GetDataString().empty())
+   return 871122;
+  return Model_LoadComponent(stringid, file.GetDataString().c_str());
  }
  catch (UException &exception)
  {
@@ -2991,6 +3041,31 @@ const char * UEngine::Model_SaveComponentProperties(const char *stringid, unsign
  return TempString.c_str();
 }
 
+// Сохраняет все свойства компонента и его дочерних компонент в xml
+int UEngine::Model_SaveComponentPropertiesToFile(const char *stringid, const char* file_name, unsigned int type_mask)
+{
+ const char* save_data=Model_SaveComponentProperties(stringid,type_mask);
+
+ try
+ {
+  if(!save_data)
+   return 871121;
+
+  UFileIO file;
+  file.Default();
+  file.SetDirection(1);
+  file.SetFileName(file_name);
+  file.SetBinFlag(0);
+  file.SetDataString(save_data);
+  file.Calculate();
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
 // Загружает все свойства компонента и его дочерних компонент из xml
 int UEngine::Model_LoadComponentProperties(const char *stringid, const char* buffer)
 {
@@ -3010,6 +3085,29 @@ int UEngine::Model_LoadComponentProperties(const char *stringid, const char* buf
 
   if(!Model_LoadComponentProperties(cont,&XmlStorage))
    return -4;
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
+// Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
+// переменные состояния из xml
+int UEngine::Model_LoadComponentPropertiesFromFile(const char *stringid, const char* file_name)
+{
+ try
+ {
+  UFileIO file;
+  file.Default();
+  file.SetDirection(0);
+  file.SetFileName(file_name);
+  file.SetBinFlag(0);
+  file.Calculate();
+  if(file.GetDataString().empty())
+   return 871122;
+  return Model_LoadComponentProperties(stringid, file.GetDataString().c_str());
  }
  catch (UException &exception)
  {

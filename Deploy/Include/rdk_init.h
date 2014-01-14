@@ -719,16 +719,32 @@ RDK_LIB_TYPE unsigned char* RDK_CALL Model_GetComponentOutputData(const char *st
 RDK_LIB_TYPE const char * RDK_CALL Model_SaveComponent(const char *stringid, unsigned int params_type_mask=ptParameter | pgPublic);
 RDK_LIB_TYPE const char * RDK_CALL MModel_SaveComponent(int engine_index, const char *stringid, unsigned int params_type_mask=ptParameter | pgPublic);
 
+// Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
+// переменные состояния в xml
+RDK_LIB_TYPE int RDK_CALL Model_SaveComponentToFile(const char *stringid, const char* file_name, unsigned int params_type_mask=0xFFFFFFFF);
+RDK_LIB_TYPE int RDK_CALL MModel_SaveComponentToFile(int engine_index, const char *stringid, const char* file_name, unsigned int params_type_mask=0xFFFFFFFF);
+
 // Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния из xml
 RDK_LIB_TYPE int RDK_CALL Model_LoadComponent(const char *stringid, const char* buffer);
 RDK_LIB_TYPE int RDK_CALL MModel_LoadComponent(int engine_index, const char *stringid, const char* buffer);
 
+// Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
+// переменные состояния из xml
+RDK_LIB_TYPE int RDK_CALL Model_LoadComponentFromFile(const char *stringid, const char* file_name);
+RDK_LIB_TYPE int RDK_CALL MModel_LoadComponentFromFile(int engine_index, const char *stringid, const char* file_name);
+
 // Сохраняет все свойства компонента и его дочерних компонент в xml
 RDK_LIB_TYPE const char * RDK_CALL Model_SaveComponentProperties(const char *stringid, unsigned int type_mask);
 
+// Сохраняет все свойства компонента и его дочерних компонент в xml
+RDK_LIB_TYPE int RDK_CALL Model_SaveComponentPropertiesToFile(const char *stringid, const char* file_name, unsigned int type_mask=0xFFFFFFFF);
+
 // Загружает все свойства компонента и его дочерних компонент из xml
 RDK_LIB_TYPE int RDK_CALL Model_LoadComponentProperties(const char *stringid, char* buffer);
+
+// Загружает все свойства компонента и его дочерних компонент из xml
+RDK_LIB_TYPE int RDK_CALL Model_LoadComponentPropertiesFromFile(const char *stringid, const char* file_name);
 
 // Сохраняет все параметры компонента и его дочерних компонент в xml
 // Deprecated

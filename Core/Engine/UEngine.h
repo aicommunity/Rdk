@@ -694,15 +694,29 @@ virtual unsigned char* Model_GetComponentOutputData(const char *stringid, int in
 // переменные состояния в xml
 virtual const char* Model_SaveComponent(const char *stringid, unsigned int params_type_mask=0xFFFFFFFF);
 
+// Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
+// переменные состояния в xml
+virtual int Model_SaveComponentToFile(const char *stringid, const char* file_name, unsigned int params_type_mask=0xFFFFFFFF);
+
 // Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния из xml
 virtual int Model_LoadComponent(const char *stringid, const char* buffer);
 
+// Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
+// переменные состояния из xml
+virtual int Model_LoadComponentFromFile(const char *stringid, const char* file_name);
+
 // Сохраняет все свойства компонента и его дочерних компонент в xml
 virtual const char* Model_SaveComponentProperties(const char *stringid, unsigned int type_mask=0xFFFFFFFF);
 
+// Сохраняет все свойства компонента и его дочерних компонент в xml
+virtual int Model_SaveComponentPropertiesToFile(const char *stringid, const char* file_name, unsigned int type_mask=0xFFFFFFFF);
+
 // Загружает все свойства компонента и его дочерних компонент из xml
 virtual int Model_LoadComponentProperties(const char *stringid, const char* buffer);
+
+// Загружает все свойства компонента и его дочерних компонент из xml
+virtual int Model_LoadComponentPropertiesFromFile(const char *stringid, const char* file_name);
 
 // Сохраняет внутренние данные компонента, и его _непосредственных_ дочерних компонент, исключая
 // переменные состояния в xml

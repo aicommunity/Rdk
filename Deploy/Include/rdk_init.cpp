@@ -1679,6 +1679,22 @@ const char * RDK_CALL MModel_SaveComponent(int engine_index, const char *stringi
  return DllManager.EngineList[engine_index]->Model_SaveComponent(stringid, params_type_mask);
 }
 
+// Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
+// переменные состояния в xml
+int RDK_CALL Model_SaveComponentToFile(const char *stringid, const char* file_name, unsigned int params_type_mask)
+{
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
+ return PEngine->Model_SaveComponentToFile(stringid, file_name, params_type_mask);
+}
+
+int RDK_CALL MModel_SaveComponentToFile(int engine_index, const char *stringid, const char* file_name, unsigned int params_type_mask)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 0;
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
+ return DllManager.EngineList[engine_index]->Model_SaveComponentToFile(stringid, file_name, params_type_mask);
+}
+
 // Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния из xml
 int RDK_CALL Model_LoadComponent(const char *stringid, const char* buffer)
@@ -1695,6 +1711,22 @@ int RDK_CALL MModel_LoadComponent(int engine_index, const char *stringid, const 
  return DllManager.EngineList[engine_index]->Model_LoadComponent(stringid, buffer);
 }
 
+// Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
+// переменные состояния из xml
+int RDK_CALL Model_LoadComponentFromFile(const char *stringid, const char* file_name)
+{
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
+ return PEngine->Model_LoadComponentFromFile(stringid, file_name);
+}
+
+int RDK_CALL MModel_LoadComponentFromFile(int engine_index, const char *stringid, const char* file_name)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
+ return DllManager.EngineList[engine_index]->Model_LoadComponentFromFile(stringid, file_name);
+}
+
 // Сохраняет все свойства компонента и его дочерних компонент в xml
 const char * RDK_CALL Model_SaveComponentProperties(const char *stringid, unsigned int type_mask)
 {
@@ -1702,11 +1734,25 @@ const char * RDK_CALL Model_SaveComponentProperties(const char *stringid, unsign
  return PEngine->Model_SaveComponentProperties(stringid, type_mask);
 }
 
+// Сохраняет все свойства компонента и его дочерних компонент в xml
+int RDK_CALL Model_SaveComponentPropertiesToFile(const char *stringid, const char* file_name, unsigned int type_mask)
+{
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
+ return PEngine->Model_SaveComponentPropertiesToFile(stringid, file_name, type_mask);
+}
+
 // Загружает все свойства компонента и его дочерних компонент из xml
 int RDK_CALL Model_LoadComponentProperties(const char *stringid, char* buffer)
 {
  UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_LoadComponentProperties(stringid, buffer);
+}
+
+// Загружает все свойства компонента и его дочерних компонент из xml
+int RDK_CALL Model_LoadComponentPropertiesFromFile(const char *stringid, const char* file_name)
+{
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
+ return PEngine->Model_LoadComponentPropertiesFromFile(stringid, file_name);
 }
 
 // Сохраняет все параметры компонента и его дочерних компонент в xml
