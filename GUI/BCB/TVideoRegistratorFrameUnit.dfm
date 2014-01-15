@@ -1,11 +1,11 @@
 inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
-  Width = 450
-  Height = 723
-  ExplicitWidth = 450
-  ExplicitHeight = 723
+  Width = 348
+  Height = 762
+  ExplicitWidth = 348
+  ExplicitHeight = 762
   object PageControl: TPageControl
     Left = 3
-    Top = 447
+    Top = 495
     Width = 335
     Height = 253
     ActivePage = NetworkStreamingTabSheet
@@ -15,7 +15,7 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
       ExplicitLeft = 0
       ExplicitTop = 0
       ExplicitWidth = 0
-      ExplicitHeight = 221
+      ExplicitHeight = 0
       object StreamingSettingsGroupBox: TGroupBox
         Left = 3
         Top = 3
@@ -113,9 +113,9 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
         end
       end
       object GetStreamingHostButton: TButton
-        Left = 128
+        Left = 119
         Top = 188
-        Width = 114
+        Width = 106
         Height = 25
         Caption = 'Get Streaming Host'
         TabOrder = 1
@@ -124,18 +124,18 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
       object NetworkStreamingButton: TButton
         Left = 3
         Top = 188
-        Width = 119
+        Width = 110
         Height = 25
         Caption = 'Network Streaming'
         TabOrder = 2
         OnClick = NetworkStreamingButtonClick
       end
       object StopNetworkStreamingButton: TButton
-        Left = 248
+        Left = 231
         Top = 188
-        Width = 71
+        Width = 88
         Height = 25
-        Caption = 'Stop'
+        Caption = 'Stop Streaming'
         TabOrder = 3
         OnClick = StopNetworkStreamingButtonClick
       end
@@ -146,7 +146,7 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
       ExplicitLeft = 0
       ExplicitTop = 0
       ExplicitWidth = 0
-      ExplicitHeight = 221
+      ExplicitHeight = 0
       object RecordingMethodLabel: TLabel
         Left = 3
         Top = 5
@@ -205,7 +205,7 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
     Left = 1
     Top = 3
     Width = 337
-    Height = 438
+    Height = 486
     TabOrder = 1
     object PreviewImage: TImage
       Left = 8
@@ -230,7 +230,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
       Caption = 'VideoGrabber'
       Color = clBlack
       Visible = False
-      ASFVideoWidth = -1
       AspectRatioToUse = -1.000000000000000000
       AudioCompressor = 0
       AutoFileNameDateTimeFormat = 'yymmdd_hhmmss_zzz'
@@ -238,11 +237,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
       BurstCount = 0
       BurstMode = True
       Display_Active = False
-      DualDisplay_Active = False
-      DualDisplay_Embedded = False
-      DualDisplay_Left = 20
-      DualDisplay_Top = 400
-      DualDisplay_VideoPortEnabled = False
       Cropping_Zoom = 1.000000000000000000
       FrameGrabber = fg_PreviewStream
       LicenseString = 'N/A'
@@ -323,6 +317,34 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
       EditLabel.Height = 13
       EditLabel.Caption = 'Component Property'
       TabOrder = 6
+    end
+    object FrameIndexLabeledEdit: TLabeledEdit
+      Left = 9
+      Top = 456
+      Width = 154
+      Height = 21
+      EditLabel.Width = 61
+      EditLabel.Height = 13
+      EditLabel.Caption = 'Frame Index'
+      TabOrder = 7
+    end
+    object StartPreviewButton: TButton
+      Left = 169
+      Top = 435
+      Width = 75
+      Height = 25
+      Caption = 'Preview'
+      TabOrder = 8
+      OnClick = StartPreviewButtonClick
+    end
+    object StopButton: TButton
+      Left = 254
+      Top = 435
+      Width = 75
+      Height = 25
+      Caption = 'Stop'
+      TabOrder = 9
+      OnClick = StopButtonClick
     end
   end
 end

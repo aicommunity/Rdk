@@ -15,6 +15,8 @@
 
 #include "TUVisualController.h"
 #include "TUVisualControllerFrameUnit.h"
+#include "VideoOutputFormUnit.h"
+#include "VideoOutputFrameUnit.h"
 #include "myrdk.h"
 
 #include <Vcl.ComCtrls.hpp>
@@ -74,6 +76,9 @@ HANDLE SourceUnlock;
 /// Выставляется на время работы видеозахвата
 HANDLE CaptureEnabled;
 
+/// Сбрасывается на время ожидания расчета
+HANDLE CalcCompleteEvent;
+
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
@@ -112,6 +117,9 @@ HANDLE GetSourceUnlock(void) const;
 
 /// Выставляется на время работы видеозахвата
 HANDLE GetCaptureEnabled(void) const;
+
+/// Сбрасывается на время ожидания расчета
+HANDLE GetCalcCompleteEvent(void) const;
 // --------------------------
 
 // --------------------------
@@ -140,12 +148,15 @@ bool WriteSourceSafe(Graphics::TBitmap *src, bool reflect);
 //---------------------------------------------------------------------------
 class TVideoGetBitmapFrameFromVideoThread : public TVideoGetBitmapFrameThread
 {
-protected:
-// Параметры
+protected:// Параметры
+int FrameIndex;
 
 protected: // Временные изображения
-//RDK::UBitmap TempSource;
+RDK::UBitmap TempBitmap;
 //Graphics::TBitmap* TempBitmap;
+
+protected: // Данные
+TVideoOutputFrame* VideoOutputFrame;
 
 public: // Методы
 // --------------------------
@@ -158,7 +169,8 @@ virtual __fastcall ~TVideoGetBitmapFrameFromVideoThread(void);
 // --------------------------
 // Управление параметрами
 // --------------------------
-
+bool SetFrameIndex(const int &value);
+const int& GetFrameIndex(void) const;
 // --------------------------
 
 // --------------------------
@@ -248,6 +260,9 @@ __published:	// IDE-managed Components
 	TLabeledEdit *RecordingFrameRateLabeledEdit;
 	TLabeledEdit *ComponentNameLabeledEdit;
 	TLabeledEdit *ComponentPropertyNameLabeledEdit;
+	TLabeledEdit *FrameIndexLabeledEdit;
+	TButton *StartPreviewButton;
+	TButton *StopButton;
 	void __fastcall NetworkStreamingButtonClick(TObject *Sender);
 	void __fastcall StopNetworkStreamingButtonClick(TObject *Sender);
 	void __fastcall VideoGrabberVideoFromBitmapsNextFrameNeeded(TObject *Sender, bool FirstSample);
@@ -263,10 +278,15 @@ __published:	// IDE-managed Components
 	void __fastcall StopRecordingButtonClick(TObject *Sender);
 	void __fastcall VideoGrabberAVIDurationUpdated(TObject *Sender, UnicodeString FileName,
           DWORD FrameCount, double &FrameRate, __int64 &Duration);
+	void __fastcall StartPreviewButtonClick(TObject *Sender);
+	void __fastcall StopButtonClick(TObject *Sender);
 
 
 private:	// User declarations
 public:		// User declarations
+// Индекс этого источника на форме всех источников
+int FrameIndex;
+
 // Источник
 // 0 - bmp handle from component
 // 1 - bmp handle from frame
@@ -347,6 +367,7 @@ virtual void ALoadParameters(RDK::USerStorageXML &xml);
 // -----------------------------
 
 	__fastcall TTVideoRegistratorFrame(TComponent* Owner);
+	__fastcall ~TTVideoRegistratorFrame(void);
 };
 //int framewidth_;
 //int frameheight_;

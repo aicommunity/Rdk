@@ -23,6 +23,7 @@ __fastcall TVideoGetBitmapFrameThread::TVideoGetBitmapFrameThread(TTVideoRegistr
  CaptureEnabled=CreateEvent(0,TRUE,0,0);
  SourceUnlock=CreateEvent(0,TRUE,TRUE,0);
  FrameNotInProgress=CreateEvent(0,TRUE,TRUE,0);
+ CalcCompleteEvent=CreateEvent(0,TRUE,TRUE,0);
  ReadSource=&Source[0];
  WriteSource=&Source[1];
  FreeOnTerminate=false;
@@ -33,6 +34,7 @@ __fastcall TVideoGetBitmapFrameThread::~TVideoGetBitmapFrameThread(void)
  CloseHandle(CaptureEnabled);
  CloseHandle(SourceUnlock);
  CloseHandle(FrameNotInProgress);
+ CloseHandle(CalcCompleteEvent);
 }
 // --------------------------
 // Управление параметрами
@@ -98,6 +100,12 @@ HANDLE TVideoGetBitmapFrameThread::GetCaptureEnabled(void) const
 {
  return CaptureEnabled;
 }
+
+/// Сбрасывается на время ожидания расчета
+HANDLE TVideoGetBitmapFrameThread::GetCalcCompleteEvent(void) const
+{
+ return CalcCompleteEvent;
+}
 // --------------------------
 // Управление потоком
 // --------------------------
@@ -154,6 +162,7 @@ void __fastcall TVideoGetBitmapFrameThread::Execute(void)
   if(WaitForSingleObject(CaptureEnabled,30) == WAIT_TIMEOUT)
    continue;
 
+  ResetEvent(CalcCompleteEvent);
   /*
   if(SyncMode == 1)
   {
@@ -170,6 +179,7 @@ void __fastcall TVideoGetBitmapFrameThread::Execute(void)
   BeforeCalculate();
   Calculate();
   AfterCalculate();
+  SetEvent(CalcCompleteEvent);
   SetEvent(FrameNotInProgress);
  }
 }
@@ -234,6 +244,7 @@ bool TVideoGetBitmapFrameThread::WriteSourceSafe(Graphics::TBitmap *src, bool re
 
  if(WaitForSingleObject(SourceUnlock,30) == WAIT_TIMEOUT)
   return false;
+
  ResetEvent(SourceUnlock);
 
  //LastTimeStamp=time_stamp;
@@ -250,15 +261,15 @@ bool TVideoGetBitmapFrameThread::WriteSourceSafe(Graphics::TBitmap *src, bool re
 __fastcall TVideoGetBitmapFrameFromVideoThread::TVideoGetBitmapFrameFromVideoThread(TTVideoRegistratorFrame *frame, bool CreateSuspended)
 : TVideoGetBitmapFrameThread(frame, CreateSuspended)
 {
- //TempBitmap=new Graphics::TBitmap;
+ //TempBitmap=new RDK::UBitmap();
 }
 
 __fastcall TVideoGetBitmapFrameFromVideoThread::~TVideoGetBitmapFrameFromVideoThread(void)
 {
  //if(TempBitmap)
  //{
- // delete TempBitmap;
- // TempBitmap=0;
+  //delete TempBitmap;
+  //TempBitmap=0;
  //}
 }
 // --------------------------
@@ -266,7 +277,19 @@ __fastcall TVideoGetBitmapFrameFromVideoThread::~TVideoGetBitmapFrameFromVideoTh
 // --------------------------
 // Управление параметрами
 // --------------------------
+bool TVideoGetBitmapFrameFromVideoThread::SetFrameIndex(const int &value)
+{
+ if(FrameIndex == value)
+  return true;
 
+ FrameIndex=value;
+ return true;
+}
+
+const int& TVideoGetBitmapFrameFromVideoThread::GetFrameIndex(void) const
+{
+ return FrameIndex;
+}
 // --------------------------
 // Управление потоком
 // --------------------------
@@ -294,7 +317,16 @@ void __fastcall TVideoGetBitmapFrameFromVideoThread::AfterCalculate(void)
 
 void __fastcall TVideoGetBitmapFrameFromVideoThread::Calculate(void)
 {
+ VideoOutputFrame=VideoOutputForm->GetVideoOutputFrame(FrameIndex);
 
+ if(VideoOutputFrame)
+ {
+  //RDK::UBitmap temp;
+  long long time_stamp;
+  VideoOutputFrame->CaptureThread->ReadSourceSafe(TempBitmap, time_stamp, false);
+  if(TempBitmap.GetData())
+   WriteSourceSafe(TempBitmap, false);
+ }
 }
 //---------------------------------------------------------------------------
 // --------------------------
@@ -387,6 +419,18 @@ __fastcall TTVideoRegistratorFrame::TTVideoRegistratorFrame(TComponent* Owner)
  FillErrorsArray();
  RecordingMethodComboBox->Items->Add("rm_AVI");
  RecordingMethodComboBox->Items->Add("rm_ASF");
+}
+//---------------------------------------------------------------------------
+__fastcall TTVideoRegistratorFrame::~TTVideoRegistratorFrame(void)
+{
+ if(BitmapFrameThread)
+ {
+  BitmapFrameThread->Terminate();
+  WaitForSingleObject(BitmapFrameThread->GetFrameNotInProgress(),1000);
+  BitmapFrameThread->WaitFor();
+  delete BitmapFrameThread;
+  BitmapFrameThread=0;
+ }
 }
 //---------------------------------------------------------------------------
 // Методы
@@ -539,6 +583,7 @@ void __fastcall TTVideoRegistratorFrame::NetworkStreamingButtonClick(TObject *Se
   {
    BitmapFrameThread=new TVideoGetBitmapFrameFromVideoThread(this, true);
    TVideoGetBitmapFrameFromVideoThread* thread=dynamic_cast<TVideoGetBitmapFrameFromVideoThread*>(BitmapFrameThread);
+   thread->SetFrameIndex(StrToIntDef(FrameIndexLabeledEdit->Text, 0));
    thread->Resume();
    break;
   }
@@ -559,6 +604,12 @@ void __fastcall TTVideoRegistratorFrame::StopNetworkStreamingButtonClick(TObject
  VideoGrabber->NetworkStreaming=ns_Disabled;
  VideoGrabber->StopPreview();
  LogMemo->Lines->Add(Now().DateString()+" "+Now().TimeString()+ " Network streaming stopped");
+
+ if(BitmapFrameThread)
+ {
+  BitmapFrameThread->Stop();
+  WaitForSingleObject(BitmapFrameThread->GetFrameNotInProgress(),30);
+ }
 }
 //---------------------------------------------------------------------------
 void __fastcall TTVideoRegistratorFrame::VideoGrabberVideoFromBitmapsNextFrameNeeded(TObject *Sender,
@@ -657,6 +708,7 @@ void __fastcall TTVideoRegistratorFrame::StartRecordingButtonClick(TObject *Send
   {
    BitmapFrameThread=new TVideoGetBitmapFrameFromVideoThread(this, true);
    TVideoGetBitmapFrameFromVideoThread* thread=dynamic_cast<TVideoGetBitmapFrameFromVideoThread*>(BitmapFrameThread);
+   thread->SetFrameIndex(StrToIntDef(FrameIndexLabeledEdit->Text, 0));
    thread->Resume();
    break;
   }
@@ -671,6 +723,11 @@ void __fastcall TTVideoRegistratorFrame::StopRecordingButtonClick(TObject *Sende
 
 {
  VideoGrabber->Stop();
+ if(BitmapFrameThread)
+ {
+  BitmapFrameThread->Stop();
+  WaitForSingleObject(BitmapFrameThread->GetFrameNotInProgress(),30);
+ }
 }
 //---------------------------------------------------------------------------
 
@@ -682,3 +739,260 @@ void __fastcall TTVideoRegistratorFrame::VideoGrabberAVIDurationUpdated(TObject 
 }
 //---------------------------------------------------------------------------
 
+void __fastcall TTVideoRegistratorFrame::StartPreviewButtonClick(TObject *Sender)
+
+{
+ PrepareBitmapFrame();
+
+ VideoGrabber->VideoSource = vs_JPEGsOrBitmaps;
+ PreviewFlag = true;
+
+ switch(Mode)
+ {
+  case 0:
+  {
+   BitmapFrameThread=new TVideoGetBitmapFrameFromComponentThread(this, true);
+   TVideoGetBitmapFrameFromComponentThread* thread=dynamic_cast<TVideoGetBitmapFrameFromComponentThread*>(BitmapFrameThread);
+   thread->SetComponentName(AnsiString(ComponentNameLabeledEdit->Text).c_str());
+   thread->SetPropertyName(AnsiString(ComponentPropertyNameLabeledEdit->Text).c_str());
+   thread->Resume();
+   break;
+  }
+  case 1:
+  {
+   BitmapFrameThread=new TVideoGetBitmapFrameFromVideoThread(this, true);
+   TVideoGetBitmapFrameFromVideoThread* thread=dynamic_cast<TVideoGetBitmapFrameFromVideoThread*>(BitmapFrameThread);
+   thread->SetFrameIndex(StrToIntDef(FrameIndexLabeledEdit->Text, 0));
+   thread->Resume();
+   break;
+  }
+ }
+
+ VideoGrabber->StartPreview();
+ LogMemo->Lines->Add("Preview started");
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TTVideoRegistratorFrame::StopButtonClick(TObject *Sender)
+{
+ VideoGrabber->StopPreview();
+ LogMemo->Lines->Add(Now().DateString()+" "+Now().TimeString()+ " Preview stopped");
+
+ if(BitmapFrameThread)
+ {
+  BitmapFrameThread->Stop();
+  WaitForSingleObject(BitmapFrameThread->GetFrameNotInProgress(),30);
+ }
+}
+//---------------------------------------------------------------------------
+// -----------------------------
+// Методы управления визуальным интерфейсом
+// -----------------------------
+// Метод, вызываемый перед шагом расчета
+void TTVideoRegistratorFrame::ABeforeCalculate(void)
+{  /*
+// if(UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode() == 0)
+  if(CaptureThread)
+  {
+   long long time_stamp=0;
+   CaptureThread->ReadSourceSafe(BmpSource,time_stamp,false);
+
+	std::string sstamp;
+	RDK::UTimeStamp stamp(double(time_stamp/1000.0),25);
+	stamp>>sstamp;
+	TimeEdit->Text=sstamp.c_str();
+
+	TrackBar->Max=CaptureThread->GetNumBitmaps();
+	TrackBar->Position=CaptureThread->GetPosition();
+	TrackBar->UpdateControlState();
+	UpdateVideo();
+  }
+
+// if(UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode() == 0)
+ {
+  SendToComponentIO();
+  if(SendPointsByStepCheckBox->Checked)
+  {
+   SendAsMatrixButtonClick(this);
+   Button1Click(this);
+  }
+  if(DeletePointsAfterSendCheckBox->Checked)
+  {
+   MyVideoOutputToolsForm->DelAllPointsButtonClick(this);
+  }
+
+ if(Model_Check())
+ {
+  if(BmpSource.GetByteLength()>0)
+  {
+   if(GetNumEngines() == 1)
+	Model_SetComponentBitmapOutput("", "Output", &BmpSource,true); // Заглушка!!
+	//в модели должна быть возможность задания множества выходов
+   else
+   {
+	if(GetNumEngines()>FrameIndex)
+ 	 MModel_SetComponentBitmapOutput(FrameIndex, "", "Output", &BmpSource,true);
+   }
+  }
+ }
+ }   */
+}
+
+// Метод, вызываемый перед сбросом
+void TTVideoRegistratorFrame::ABeforeReset(void)
+{  /*
+ if(Model_Check())
+ {
+  if(BmpSource.GetByteLength()>0)
+  {
+   if(GetNumEngines() == 1)
+	Model_SetComponentBitmapOutput("", "Output", &BmpSource,true); // Заглушка!!
+	//в модели должна быть возможность задания множества выходов
+   else
+   {
+	if(GetNumEngines()>FrameIndex)
+ 	 MModel_SetComponentBitmapOutput(FrameIndex, "", "Output", &BmpSource,true);
+   }
+  }
+ } */
+}
+
+// Метод, вызываемый после шага расчета
+void TTVideoRegistratorFrame::AAfterCalculate(void)
+{  /*
+ if(UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode() == 0)
+ {
+  if(CaptureThread)
+   SetEvent(CaptureThread->GetCalcCompleteEvent());
+ }
+ else
+ {
+  if(Mode == 4)
+   if(CaptureThread)
+    SetEvent(CaptureThread->GetCalcCompleteEvent());
+ }    */
+}
+
+
+// Обновление интерфейса
+void TTVideoRegistratorFrame::AUpdateInterface(void)
+{
+// if(UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode() == 1)
+// if(UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode() != 0 /*&& !IsStarted*/)
+ /* if(CaptureThread)
+  {
+   long long time_stamp=0;
+	CaptureThread->ReadSourceSafe(BmpSource,time_stamp,false);
+
+   if(Mode == 4)
+   {
+//	std::string sstamp;
+//	RDK::UTimeStamp stamp(double(time_stamp),1);
+//	stamp>>sstamp;
+	TimeEdit->EditMask="";
+	TimeEdit->Text=IntToStr(time_stamp);
+   }
+   else
+   {
+	std::string sstamp;
+	RDK::UTimeStamp stamp(double(time_stamp/1000.0),25);
+	stamp>>sstamp;
+	TimeEdit->EditMask="000\:00\:00\:00;1;_";
+	TimeEdit->Text=sstamp.c_str();
+   }
+
+	TrackBar->Max=CaptureThread->GetNumBitmaps();
+	TrackBar->Position=CaptureThread->GetPosition();
+	TrackBar->UpdateControlState();
+	UpdateVideo();
+  }
+
+ if(LinkedComponentName.size() == 0)
+ {
+  SendImageToComponentInput1->Caption="Send Image To Component Input...";
+  SendImageToComponentOutput1->Caption="Send Image To Component Output...";
+  SendImageToComponentProperty1->Caption="Send Image To Component Property...";
+ }
+ else
+ {
+  switch(LinkedMode)
+  {
+  case 0:
+   SendImageToComponentInput1->Caption=String("Send Image To Input: ")+String(LinkedComponentName.c_str())+String("[")+String(LinkedIndex.c_str())+String("]");
+   SendImageToComponentOutput1->Caption="Send Image To Component Output...";
+   SendImageToComponentProperty1->Caption="Send Image To Component Property...";
+  break;
+
+  case 1:
+   SendImageToComponentInput1->Caption="Send Image To Component Input...";
+   SendImageToComponentProperty1->Caption="Send Image To Component Property...";
+   SendImageToComponentOutput1->Caption=String("Send Image To Output: ")+String(LinkedComponentName.c_str())+String("[")+String(LinkedIndex.c_str())+String("]");
+  break;
+
+  case 2:
+   SendImageToComponentInput1->Caption="Send Image To Component Input...";
+   SendImageToComponentProperty1->Caption="Send Image To Component Output...";
+   SendImageToComponentOutput1->Caption=String("Send Image To Property: ")+String(LinkedComponentName.c_str())+String("[")+String(LinkedComponentPropertyName.c_str())+String("]");
+  break;
+  }
+ }
+
+ if(!SelectedComponentSName.empty())
+ {
+  SendToEdit->Text=String("State ")+SelectedComponentSName.c_str()+String(":")+SelectedComponentStateName.c_str();
+ }
+ else
+ if(!SelectedComponentPName.empty())
+ {
+  SendToEdit->Text=String("Parameter ")+SelectedComponentPName.c_str()+String(":")+SelectedComponentParameterName.c_str();
+ }
+ else
+ if(!SelectedComponentMatrixName.empty())
+ {
+  SendToEdit->Text=String("Mat-Property ")+SelectedComponentMatrixName.c_str()+String(":")+SelectedComponentPropertyMatrixName.c_str();
+ }
+ else
+  SendToEdit->Text="";   */
+}
+
+// Сохраняет параметры интерфейса в xml
+void TTVideoRegistratorFrame::ASaveParameters(RDK::USerStorageXML &xml)
+{
+/*
+ xml.WriteString("LinkedComponentName",LinkedComponentName);
+ xml.WriteString("LinkedComponentPropertyName",LinkedComponentPropertyName);
+ xml.WriteInteger("LinkedMode",LinkedMode);
+ xml.WriteString("LinkedIndex",LinkedIndex);
+
+ xml.WriteString("SelectedComponentSName",SelectedComponentSName);
+ xml.WriteString("SelectedComponentStateName",SelectedComponentStateName);
+ xml.WriteString("SelectedComponentPName",SelectedComponentPName);
+ xml.WriteString("SelectedComponentParameterName",SelectedComponentParameterName);
+ xml.WriteString("SelectedComponentMatrixName",SelectedComponentMatrixName);
+ xml.WriteString("SelectedComponentPropertyMatrixName",SelectedComponentPropertyMatrixName);
+ xml.WriteInteger("SendPointsByStep",SendPointsByStepCheckBox->Checked);
+ xml.WriteInteger("DeletePointsAfterSendCheckBox",DeletePointsAfterSendCheckBox->Checked);
+ */
+}
+
+// Загружает параметры интерфейса из xml
+void TTVideoRegistratorFrame::ALoadParameters(RDK::USerStorageXML &xml)
+{
+/*
+ LinkedComponentName=xml.ReadString("LinkedComponentName","");
+ LinkedComponentPropertyName=xml.ReadString("LinkedComponentPropertyName","");
+ LinkedMode=xml.ReadInteger("LinkedMode",1);
+ LinkedIndex=xml.ReadString("LinkedIndex","");
+
+ SelectedComponentSName=xml.ReadString("SelectedComponentSName","");
+ SelectedComponentStateName=xml.ReadString("SelectedComponentStateName","");
+ SelectedComponentPName=xml.ReadString("SelectedComponentPName","");
+ SelectedComponentParameterName=xml.ReadString("SelectedComponentParameterName","");
+ SelectedComponentMatrixName=xml.ReadString("SelectedComponentMatrixName","");
+ SelectedComponentPropertyMatrixName=xml.ReadString("SelectedComponentPropertyMatrixName","");
+ SendPointsByStepCheckBox->Checked=xml.ReadInteger("SendPointsByStep",0);
+ DeletePointsAfterSendCheckBox->Checked=xml.ReadInteger("DeletePointsAfterSendCheckBox",0);
+
+ UpdateInterface();  */
+}
+//---------------------------------------------------------------------------
