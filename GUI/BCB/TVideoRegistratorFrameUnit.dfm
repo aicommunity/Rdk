@@ -12,10 +12,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
     TabOrder = 0
     object NetworkStreamingTabSheet: TTabSheet
       Caption = 'Network Streaming'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object StreamingSettingsGroupBox: TGroupBox
         Left = 3
         Top = 3
@@ -28,9 +24,9 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
           Top = 72
           Width = 140
           Height = 21
-          EditLabel.Width = 97
+          EditLabel.Width = 100
           EditLabel.Height = 13
-          EditLabel.Caption = 'BitRate, bits per sec'
+          EditLabel.Caption = 'Bit Rate, bits per sec'
           TabOrder = 0
           Text = '2000000'
         end
@@ -39,9 +35,9 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
           Top = 32
           Width = 140
           Height = 21
-          EditLabel.Width = 88
+          EditLabel.Width = 91
           EditLabel.Height = 13
-          EditLabel.Caption = 'BufferWindow, ms'
+          EditLabel.Caption = 'Buffer Window, ms'
           TabOrder = 1
           Text = '100'
         end
@@ -61,9 +57,9 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
           Top = 72
           Width = 140
           Height = 21
-          EditLabel.Width = 105
+          EditLabel.Width = 114
           EditLabel.Height = 13
-          EditLabel.Caption = 'MaxKeyFrameSpacing'
+          EditLabel.Caption = 'Max Key Frame Spacing'
           TabOrder = 3
           Text = '100'
         end
@@ -83,9 +79,9 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
           Top = 152
           Width = 140
           Height = 21
-          EditLabel.Width = 57
+          EditLabel.Width = 60
           EditLabel.Height = 13
-          EditLabel.Caption = 'VideoHeight'
+          EditLabel.Caption = 'Video Height'
           TabOrder = 5
           Text = '288'
         end
@@ -94,9 +90,9 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
           Top = 152
           Width = 140
           Height = 21
-          EditLabel.Width = 54
+          EditLabel.Width = 57
           EditLabel.Height = 13
-          EditLabel.Caption = 'VideoWidth'
+          EditLabel.Caption = 'Video Width'
           TabOrder = 6
           Text = '384'
         end
@@ -143,10 +139,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
     object RecordTabSheet: TTabSheet
       Caption = 'RecordTabSheet'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object RecordingMethodLabel: TLabel
         Left = 3
         Top = 5

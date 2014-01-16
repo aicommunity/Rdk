@@ -958,41 +958,44 @@ void TTVideoRegistratorFrame::AUpdateInterface(void)
 // Сохраняет параметры интерфейса в xml
 void TTVideoRegistratorFrame::ASaveParameters(RDK::USerStorageXML &xml)
 {
-/*
- xml.WriteString("LinkedComponentName",LinkedComponentName);
- xml.WriteString("LinkedComponentPropertyName",LinkedComponentPropertyName);
- xml.WriteInteger("LinkedMode",LinkedMode);
- xml.WriteString("LinkedIndex",LinkedIndex);
+ // Network Streaming
+ xml.WriteString("ComponentName", AnsiString(ComponentNameLabeledEdit->Text).c_str());
+ xml.WriteString("ComponentProperty", AnsiString(ComponentPropertyNameLabeledEdit->Text).c_str());
+ xml.WriteString("FrameIndex", AnsiString(FrameIndexLabeledEdit->Text).c_str());
+ xml.WriteString("Port", AnsiString(PortLabeledEdit->Text).c_str());
+ xml.WriteString("BufferWindow", AnsiString(BufferWindowLabeledEdit->Text).c_str());
+ xml.WriteString("BitRate", AnsiString(BitRateLabeledEdit->Text).c_str());
+ xml.WriteString("MaxKeyFrameSpacing", AnsiString(MaxKeyFrameSpacingLabeledEdit->Text).c_str());
+ xml.WriteString("FrameRate", AnsiString(FrameRateLabeledEdit->Text).c_str());
+ xml.WriteString("MaxUsers", AnsiString(MaxUsersLabeledEdit->Text).c_str());
+ xml.WriteString("VideoHeight", AnsiString(VideoHeightLabeledEdit->Text).c_str());
+ xml.WriteString("VideoWidth", AnsiString(VideoWidthLabeledEdit->Text).c_str());
 
- xml.WriteString("SelectedComponentSName",SelectedComponentSName);
- xml.WriteString("SelectedComponentStateName",SelectedComponentStateName);
- xml.WriteString("SelectedComponentPName",SelectedComponentPName);
- xml.WriteString("SelectedComponentParameterName",SelectedComponentParameterName);
- xml.WriteString("SelectedComponentMatrixName",SelectedComponentMatrixName);
- xml.WriteString("SelectedComponentPropertyMatrixName",SelectedComponentPropertyMatrixName);
- xml.WriteInteger("SendPointsByStep",SendPointsByStepCheckBox->Checked);
- xml.WriteInteger("DeletePointsAfterSendCheckBox",DeletePointsAfterSendCheckBox->Checked);
- */
+ // Recording
+ xml.WriteString("RecordingFileName", AnsiString(RecordingFileNameLabeledEdit->Text).c_str());
+ xml.WriteString("RecordingFrameRate", AnsiString(RecordingFrameRateLabeledEdit->Text).c_str());
 }
 
 // Загружает параметры интерфейса из xml
 void TTVideoRegistratorFrame::ALoadParameters(RDK::USerStorageXML &xml)
 {
-/*
- LinkedComponentName=xml.ReadString("LinkedComponentName","");
- LinkedComponentPropertyName=xml.ReadString("LinkedComponentPropertyName","");
- LinkedMode=xml.ReadInteger("LinkedMode",1);
- LinkedIndex=xml.ReadString("LinkedIndex","");
+  // Network Streaming
+ ComponentNameLabeledEdit->Text=(xml.ReadString("ComponentName", "")).c_str();
+ ComponentPropertyNameLabeledEdit->Text=(xml.ReadString("ComponentProperty", "")).c_str();
+ FrameIndexLabeledEdit->Text=(xml.ReadString("FrameIndex", "")).c_str();
+ PortLabeledEdit->Text=(xml.ReadString("Port", "")).c_str();
+ BufferWindowLabeledEdit->Text=(xml.ReadString("BufferWindow", "")).c_str();
+ BitRateLabeledEdit->Text=(xml.ReadString("BitRate", "").c_str());
+ MaxKeyFrameSpacingLabeledEdit->Text=(xml.ReadString("MaxKeyFrameSpacing", "")).c_str();
+ FrameRateLabeledEdit->Text=(xml.ReadString("FrameRate", "")).c_str();
+ MaxUsersLabeledEdit->Text=(xml.ReadString("MaxUsers", "")).c_str();
+ VideoHeightLabeledEdit->Text=(xml.ReadString("VideoHeight", "")).c_str();
+ VideoWidthLabeledEdit->Text=(xml.ReadString("VideoWidth", "")).c_str();
 
- SelectedComponentSName=xml.ReadString("SelectedComponentSName","");
- SelectedComponentStateName=xml.ReadString("SelectedComponentStateName","");
- SelectedComponentPName=xml.ReadString("SelectedComponentPName","");
- SelectedComponentParameterName=xml.ReadString("SelectedComponentParameterName","");
- SelectedComponentMatrixName=xml.ReadString("SelectedComponentMatrixName","");
- SelectedComponentPropertyMatrixName=xml.ReadString("SelectedComponentPropertyMatrixName","");
- SendPointsByStepCheckBox->Checked=xml.ReadInteger("SendPointsByStep",0);
- DeletePointsAfterSendCheckBox->Checked=xml.ReadInteger("DeletePointsAfterSendCheckBox",0);
+ // Recording
+ RecordingFileNameLabeledEdit->Text=(xml.ReadString("RecordingFileName", "")).c_str();
+ RecordingFrameRateLabeledEdit->Text=(xml.ReadString("RecordingFrameRate", "")).c_str();
 
- UpdateInterface();  */
+ UpdateInterface();
 }
 //---------------------------------------------------------------------------
