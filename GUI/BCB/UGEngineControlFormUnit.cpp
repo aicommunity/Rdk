@@ -16,6 +16,7 @@
 #include "UEngineMonitorFormUnit.h"
 #ifdef RDK_VIDEO
 #include "VideoOutputFormUnit.h"
+#include "TVideoRegistratorFormUnit.h"
 #endif
 #include "UClassesListFormUnit.h"
 #include "UComponentsPerformanceFormUnit.h"

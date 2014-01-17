@@ -588,7 +588,7 @@ void __fastcall TTVideoRegistratorFrame::NetworkStreamingButtonClick(TObject *Se
    break;
   }
  }
-
+ UGEngineControlForm->Start1Click(this);
 
  VideoGrabber->StartPreview();
  if(VideoGrabber->StreamingURL!="")
@@ -713,6 +713,7 @@ void __fastcall TTVideoRegistratorFrame::StartRecordingButtonClick(TObject *Send
    break;
   }
  }
+ UGEngineControlForm->Start1Click(this);
 
  VideoGrabber->StartRecording();
  LogMemo->Lines->Add("Recording started");
