@@ -128,6 +128,7 @@ __published:	// IDE-managed Components
 	TPopupMenu *ChannelsPopupMenu;
 	TMenuItem *AddChannel1;
 	TMenuItem *DelChannel1;
+	TMenuItem *VideoRegistration1;
 	void __fastcall FormShow(TObject *Sender);
 	void __fastcall Start1Click(TObject *Sender);
 	void __fastcall Pause1Click(TObject *Sender);
@@ -185,6 +186,7 @@ __published:	// IDE-managed Components
 	void __fastcall ApplicationEventsRestore(TObject *Sender);
 	void __fastcall AddChannel1Click(TObject *Sender);
 	void __fastcall DelChannel1Click(TObject *Sender);
+	void __fastcall VideoRegistration1Click(TObject *Sender);
 
 
 

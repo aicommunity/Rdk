@@ -14,21 +14,21 @@
 #pragma package(smart_init)
 #pragma link "TUVisualControllerFormUnit"
 #pragma resource "*.dfm"
-TTVideoRegistratorForm *TVideoRegistratorForm;
+TVideoRegistratorForm *VideoRegistratorForm;
 //---------------------------------------------------------------------------
-__fastcall TTVideoRegistratorForm::TTVideoRegistratorForm(TComponent* Owner)
+__fastcall TVideoRegistratorForm::TVideoRegistratorForm(TComponent* Owner)
 	: TUVisualControllerForm(Owner)
 {
 }
 
-__fastcall TTVideoRegistratorForm::~TTVideoRegistratorForm(void)
+__fastcall TVideoRegistratorForm::~TVideoRegistratorForm(void)
 {
 
 }
 
 
 // Метод, вызываемый перед шагом расчета
-void TTVideoRegistratorForm::ABeforeCalculate(void)
+void TVideoRegistratorForm::ABeforeCalculate(void)
 {
 /* if(!Model_Check())
   return;
@@ -51,7 +51,7 @@ void TTVideoRegistratorForm::ABeforeCalculate(void)
 }
 
 // Обновляет интерфейс
-void TTVideoRegistratorForm::AUpdateInterface(void)
+void TVideoRegistratorForm::AUpdateInterface(void)
 {
  for(int i=0;i<GetNumSources();i++)
  {
@@ -60,19 +60,19 @@ void TTVideoRegistratorForm::AUpdateInterface(void)
 }
 
 // Возврат интерфейса в исходное состояние
-void TTVideoRegistratorForm::AClearInterface(void)
+void TVideoRegistratorForm::AClearInterface(void)
 {
  ClearSources();
 }
 
 // Сохраняет параметры интерфейса в xml
-void TTVideoRegistratorForm::ASaveParameters(RDK::USerStorageXML &xml)
+void TVideoRegistratorForm::ASaveParameters(RDK::USerStorageXML &xml)
 {
  xml.WriteInteger("NumSources",GetNumSources());
 }
 
 // Загружает параметры интерфейса из xml
-void TTVideoRegistratorForm::ALoadParameters(RDK::USerStorageXML &xml)
+void TVideoRegistratorForm::ALoadParameters(RDK::USerStorageXML &xml)
 {
  int num=xml.ReadInteger("NumSources",1);
  ClearSources();
@@ -82,19 +82,19 @@ void TTVideoRegistratorForm::ALoadParameters(RDK::USerStorageXML &xml)
 }
 
 // Создание копии этого компонента
-TTVideoRegistratorForm* TTVideoRegistratorForm::New(TComponent *owner)
+TVideoRegistratorForm* TVideoRegistratorForm::New(TComponent *owner)
 {
- return new TTVideoRegistratorForm(owner);
+ return new TVideoRegistratorForm(owner);
 }
 
 // Число источников видео
-int TTVideoRegistratorForm::GetNumSources(void) const
+int TVideoRegistratorForm::GetNumSources(void) const
 {
  return PageControl->PageCount;
 }
 
 // Добавляет новый источник видео
-void TTVideoRegistratorForm::AddSource(void)
+void TVideoRegistratorForm::AddSource(void)
 {
  TTabSheet *sheet=new TTabSheet(PageControl);
  sheet->PageControl=PageControl;
@@ -121,7 +121,7 @@ void TTVideoRegistratorForm::AddSource(void)
 }
 
 // Удаляет источник видео
-void TTVideoRegistratorForm::DelSource(int index)
+void TVideoRegistratorForm::DelSource(int index)
 {
  if(index<0 || index >=int(Sources.size()))
   return;
@@ -134,7 +134,7 @@ void TTVideoRegistratorForm::DelSource(int index)
 }
 
 // Удаляет все источники видео
-void TTVideoRegistratorForm::ClearSources(void)
+void TVideoRegistratorForm::ClearSources(void)
 {
  for(size_t i=0;i<Sources.size();i++)
  {
@@ -146,7 +146,7 @@ void TTVideoRegistratorForm::ClearSources(void)
 }
 
 // Выбирает режим заданного источника
-void TTVideoRegistratorForm::SetSourceType(int index, int mode)
+void TVideoRegistratorForm::SetSourceType(int index, int mode)
 {
  if(index<0 || index >=int(Sources.size()))
   return;
@@ -155,13 +155,13 @@ void TTVideoRegistratorForm::SetSourceType(int index, int mode)
 }
 
 // Возвращает индекс текущего активного источника видео
-int TTVideoRegistratorForm::GetActiveSource(void) const
+int TVideoRegistratorForm::GetActiveSource(void) const
 {
  return PageControl->ActivePageIndex;
 }
 
 // Возвращает фрейм источника видео
-TTVideoRegistratorFrame* TTVideoRegistratorForm::GetVideoOutputFrame(int index)
+TTVideoRegistratorFrame* TVideoRegistratorForm::GetVideoOutputFrame(int index)
 {
  if(index<0 || index >=int(Sources.size()))
   return 0;
@@ -170,7 +170,7 @@ TTVideoRegistratorFrame* TTVideoRegistratorForm::GetVideoOutputFrame(int index)
 }
 
 // Возвращает фрейм активного (выбранного) источника видео
-TTVideoRegistratorFrame* TTVideoRegistratorForm::GetActiveVideoOutputFrame(void)
+TTVideoRegistratorFrame* TVideoRegistratorForm::GetActiveVideoOutputFrame(void)
 {
  if(GetActiveSource()>=0)
   return Sources[GetActiveSource()];
@@ -180,7 +180,7 @@ TTVideoRegistratorFrame* TTVideoRegistratorForm::GetActiveVideoOutputFrame(void)
 
 
 // Сохраняет информацию об источниках данных в заданный ini файл
-void TTVideoRegistratorForm::SaveToIni(TMemIniFile *ini, const String &section)
+void TVideoRegistratorForm::SaveToIni(TMemIniFile *ini, const String &section)
 {
 // ini->WriteInteger(section,"NumSources",GetNumSources());
  for(int i=0;i<GetNumSources();i++)
@@ -190,7 +190,7 @@ void TTVideoRegistratorForm::SaveToIni(TMemIniFile *ini, const String &section)
 }
 
 // Загружает информацию об источниках данных из заданного ini файла
-void TTVideoRegistratorForm::LoadFromIni(TMemIniFile *ini, const String &section)
+void TVideoRegistratorForm::LoadFromIni(TMemIniFile *ini, const String &section)
 {
 // int numsources=ini->ReadInteger(section,"NumSources",0);
 // ClearSources();
@@ -203,7 +203,7 @@ void TTVideoRegistratorForm::LoadFromIni(TMemIniFile *ini, const String &section
 }
 
 // Запускает выбранный источник видео, или все если index == -1
-void TTVideoRegistratorForm::Start(int index)
+void TVideoRegistratorForm::Start(int index)
 {
  UShowProgressBarForm->SetBarHeader(1,"Starting video sources...");
  UShowProgressBarForm->ResetBarStatus(1, 1, GetNumSources());
@@ -224,7 +224,7 @@ void TTVideoRegistratorForm::Start(int index)
 }
 
 // Останавливает выбранный источник видео, или все если index == -1
-void TTVideoRegistratorForm::Stop(int index)
+void TVideoRegistratorForm::Stop(int index)
 {
  UShowProgressBarForm->SetBarHeader(1,"Stopping video sources...");
  UShowProgressBarForm->ResetBarStatus(1, 1, GetNumSources());
@@ -242,7 +242,7 @@ void TTVideoRegistratorForm::Stop(int index)
 
 // Останавливает выбранный источник видео, или все если index == -1
 // Не изменяяет состояние онлайн-источников (камеры)
-void TTVideoRegistratorForm::StopOffline(int index)
+void TVideoRegistratorForm::StopOffline(int index)
 {
  UShowProgressBarForm->SetBarHeader(1,"Stopping video sources...");
  UShowProgressBarForm->ResetBarStatus(1, 1, GetNumSources());
@@ -265,7 +265,7 @@ void TTVideoRegistratorForm::StopOffline(int index)
 
 
 //---------------------------------------------------------------------------
-void __fastcall TTVideoRegistratorForm::PageControlChange(TObject *Sender)
+void __fastcall TVideoRegistratorForm::PageControlChange(TObject *Sender)
 {
  for(int i=0;i<PageControl->PageCount;i++)
   if(PageControl->Pages[i]->Visible == false)
@@ -277,13 +277,13 @@ void __fastcall TTVideoRegistratorForm::PageControlChange(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TTVideoRegistratorForm::AddSource1Click(TObject *Sender)
+void __fastcall TVideoRegistratorForm::AddSource1Click(TObject *Sender)
 {
  AddSource();
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TTVideoRegistratorForm::DelSource1Click(TObject *Sender)
+void __fastcall TVideoRegistratorForm::DelSource1Click(TObject *Sender)
 {
  if(GetNumSources()<=0)
   return;
@@ -292,39 +292,38 @@ void __fastcall TTVideoRegistratorForm::DelSource1Click(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TTVideoRegistratorForm::ClearSources1Click(TObject *Sender)
+void __fastcall TVideoRegistratorForm::ClearSources1Click(TObject *Sender)
 {
  ClearSources();
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TTVideoRegistratorForm::AddSource2Click(TObject *Sender)
+void __fastcall TVideoRegistratorForm::AddSource2Click(TObject *Sender)
 {
  AddSource1Click(Sender);
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TTVideoRegistratorForm::DelSource2Click(TObject *Sender)
+void __fastcall TVideoRegistratorForm::DelSource2Click(TObject *Sender)
 {
  DelSource1Click(Sender);
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TTVideoRegistratorForm::ClearSource1Click(TObject *Sender)
+void __fastcall TVideoRegistratorForm::ClearSource1Click(TObject *Sender)
 {
  ClearSources1Click(Sender);
 }
 //---------------------------------------------------------------------------
 
 
-void __fastcall TTVideoRegistratorForm::FormCreate(TObject *Sender)
+void __fastcall TVideoRegistratorForm::FormCreate(TObject *Sender)
 {
- UGEngineControlForm->SpecialForms["TVideoOutputForm"]=this;
- LoadUSharedMemoryLibrary("USharedMemory.dll");
+ UGEngineControlForm->SpecialForms["TVideoRegistratorForm"]=this;
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TTVideoRegistratorForm::FormDestroy(TObject *Sender)
+void __fastcall TVideoRegistratorForm::FormDestroy(TObject *Sender)
 {
  UnLoadUSharedMemoryLibrary();
 // UGEngineControlForm->SpecialForms.erase("TVideoOutputForm");

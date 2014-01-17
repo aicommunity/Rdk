@@ -1,4 +1,4 @@
-object TVideoRegistratorForm: TTVideoRegistratorForm
+object VideoRegistratorForm: TVideoRegistratorForm
   Left = 0
   Top = 257
   Caption = 'Video Registrator'
@@ -14,7 +14,6 @@ object TVideoRegistratorForm: TTVideoRegistratorForm
   Menu = MainMenu
   OldCreateOrder = False
   Position = poDesigned
-  Visible = True
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   PixelsPerInch = 96
@@ -89,7 +88,7 @@ object TVideoRegistratorForm: TTVideoRegistratorForm
     Left = 152
     Top = 40
     Bitmap = {
-      494C0101030060005C0010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010103006000600010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000001000000001002000000000000010
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

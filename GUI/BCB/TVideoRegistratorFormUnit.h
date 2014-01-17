@@ -3,8 +3,8 @@
 #endif
 //---------------------------------------------------------------------------
 
-#ifndef VideoOutputFormUnitH
-#define VideoOutputFormUnitH
+#ifndef VideoRegistratorFormUnitH
+#define VideoRegistratorFormUnitH
 //---------------------------------------------------------------------------
 #include <Classes.hpp>
 #include <Controls.hpp>
@@ -19,7 +19,7 @@
 #include <Vcl.ImgList.hpp>
 #include <Vcl.ToolWin.hpp>
 //---------------------------------------------------------------------------
-class TTVideoRegistratorForm : public TUVisualControllerForm
+class TVideoRegistratorForm : public TUVisualControllerForm
 {
 __published:	// IDE-managed Components
 	TPageControl *PageControl;
@@ -48,8 +48,8 @@ __published:	// IDE-managed Components
 	void __fastcall FormDestroy(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
-	__fastcall TTVideoRegistratorForm(TComponent* Owner);
-	virtual __fastcall ~TTVideoRegistratorForm(void);
+	__fastcall TVideoRegistratorForm(TComponent* Owner);
+	virtual __fastcall ~TVideoRegistratorForm(void);
 
 // Источники видео
 std::vector<TTVideoRegistratorFrame*> Sources;
@@ -70,7 +70,7 @@ void ASaveParameters(RDK::USerStorageXML &xml);
 void ALoadParameters(RDK::USerStorageXML &xml);
 
 // Создание копии этого компонента
-virtual TTVideoRegistratorForm* New(TComponent *owner=0);
+virtual TVideoRegistratorForm* New(TComponent *owner=0);
 
 // Число источников видео
 int GetNumSources(void) const;
@@ -114,6 +114,6 @@ void StopOffline(int index=-1);
 
 };
 //---------------------------------------------------------------------------
-extern PACKAGE TTVideoRegistratorForm *TVideoRegistratorForm;
+extern PACKAGE TVideoRegistratorForm *VideoRegistratorForm;
 //---------------------------------------------------------------------------
 #endif
