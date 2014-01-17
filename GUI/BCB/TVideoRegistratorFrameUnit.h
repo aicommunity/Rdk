@@ -252,7 +252,7 @@ __published:	// IDE-managed Components
 	TPageControl *PageControl;
 	TTabSheet *NetworkStreamingTabSheet;
 	TTabSheet *RecordTabSheet;
-	TPanel *BasicPanel;
+	TPanel *VideoPanel;
 	TButton *StopRecordingButton;
 	TComboBox *RecordingMethodComboBox;
 	TLabel *RecordingMethodLabel;
@@ -263,6 +263,15 @@ __published:	// IDE-managed Components
 	TLabeledEdit *FrameIndexLabeledEdit;
 	TButton *StartPreviewButton;
 	TButton *StopButton;
+	TGroupBox *SourceControlGroupBox;
+	TLabeledEdit *ChannelIndexLabeledEdit;
+	TComboBox *SorceModeComboBox;
+	TLabel *SourceModeLabel;
+	TPanel *ControlPanel;
+	TPanel *LogPanel;
+	TGroupBox *VideoControlGroupBox;
+	TSplitter *Splitter1;
+	TSplitter *Splitter2;
 	void __fastcall NetworkStreamingButtonClick(TObject *Sender);
 	void __fastcall StopNetworkStreamingButtonClick(TObject *Sender);
 	void __fastcall VideoGrabberVideoFromBitmapsNextFrameNeeded(TObject *Sender, bool FirstSample);

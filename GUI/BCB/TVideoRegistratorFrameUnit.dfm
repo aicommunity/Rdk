@@ -1,224 +1,53 @@
 inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
-  Width = 348
-  Height = 762
-  ExplicitWidth = 348
-  ExplicitHeight = 762
-  object PageControl: TPageControl
-    Left = 3
-    Top = 495
-    Width = 335
-    Height = 253
-    ActivePage = RecordTabSheet
-    TabOrder = 0
-    object NetworkStreamingTabSheet: TTabSheet
-      Caption = 'Network Streaming'
-      object StreamingSettingsGroupBox: TGroupBox
-        Left = 3
-        Top = 3
-        Width = 316
-        Height = 179
-        Caption = 'Network streaming settings'
-        TabOrder = 0
-        object BitRateLabeledEdit: TLabeledEdit
-          Left = 8
-          Top = 72
-          Width = 140
-          Height = 21
-          EditLabel.Width = 100
-          EditLabel.Height = 13
-          EditLabel.Caption = 'Bit Rate, bits per sec'
-          TabOrder = 0
-          Text = '2000000'
-        end
-        object BufferWindowLabeledEdit: TLabeledEdit
-          Left = 160
-          Top = 32
-          Width = 140
-          Height = 21
-          EditLabel.Width = 91
-          EditLabel.Height = 13
-          EditLabel.Caption = 'Buffer Window, ms'
-          TabOrder = 1
-          Text = '100'
-        end
-        object FrameRateLabeledEdit: TLabeledEdit
-          Left = 8
-          Top = 112
-          Width = 140
-          Height = 21
-          EditLabel.Width = 56
-          EditLabel.Height = 13
-          EditLabel.Caption = 'Frame Rate'
-          TabOrder = 2
-          Text = '24'
-        end
-        object MaxKeyFrameSpacingLabeledEdit: TLabeledEdit
-          Left = 160
-          Top = 72
-          Width = 140
-          Height = 21
-          EditLabel.Width = 114
-          EditLabel.Height = 13
-          EditLabel.Caption = 'Max Key Frame Spacing'
-          TabOrder = 3
-          Text = '100'
-        end
-        object PortLabeledEdit: TLabeledEdit
-          Left = 8
-          Top = 32
-          Width = 140
-          Height = 21
-          EditLabel.Width = 20
-          EditLabel.Height = 13
-          EditLabel.Caption = 'Port'
-          TabOrder = 4
-          Text = '45040'
-        end
-        object VideoHeightLabeledEdit: TLabeledEdit
-          Left = 8
-          Top = 152
-          Width = 140
-          Height = 21
-          EditLabel.Width = 60
-          EditLabel.Height = 13
-          EditLabel.Caption = 'Video Height'
-          TabOrder = 5
-          Text = '288'
-        end
-        object VideoWidthLabeledEdit: TLabeledEdit
-          Left = 160
-          Top = 152
-          Width = 140
-          Height = 21
-          EditLabel.Width = 57
-          EditLabel.Height = 13
-          EditLabel.Caption = 'Video Width'
-          TabOrder = 6
-          Text = '384'
-        end
-        object MaxUsersLabeledEdit: TLabeledEdit
-          Left = 160
-          Top = 112
-          Width = 140
-          Height = 21
-          EditLabel.Width = 50
-          EditLabel.Height = 13
-          EditLabel.Caption = 'Max Users'
-          TabOrder = 7
-          Text = '4'
-        end
-      end
-      object GetStreamingHostButton: TButton
-        Left = 119
-        Top = 188
-        Width = 106
-        Height = 25
-        Caption = 'Get Streaming Host'
-        TabOrder = 1
-        OnClick = GetStreamingHostButtonClick
-      end
-      object NetworkStreamingButton: TButton
-        Left = 3
-        Top = 188
-        Width = 110
-        Height = 25
-        Caption = 'Network Streaming'
-        TabOrder = 2
-        OnClick = NetworkStreamingButtonClick
-      end
-      object StopNetworkStreamingButton: TButton
-        Left = 231
-        Top = 188
-        Width = 88
-        Height = 25
-        Caption = 'Stop Streaming'
-        TabOrder = 3
-        OnClick = StopNetworkStreamingButtonClick
-      end
-    end
-    object RecordTabSheet: TTabSheet
-      Caption = 'RecordTabSheet'
-      ImageIndex = 1
-      object RecordingMethodLabel: TLabel
-        Left = 3
-        Top = 5
-        Width = 87
-        Height = 13
-        Caption = 'Recording Method'
-      end
-      object StartRecordingButton: TButton
-        Left = 3
-        Top = 139
-        Width = 95
-        Height = 25
-        Caption = 'Start Recording'
-        TabOrder = 0
-        OnClick = StartRecordingButtonClick
-      end
-      object StopRecordingButton: TButton
-        Left = 104
-        Top = 139
-        Width = 89
-        Height = 25
-        Caption = 'Stop Recording'
-        TabOrder = 1
-        OnClick = StopRecordingButtonClick
-      end
-      object RecordingMethodComboBox: TComboBox
-        Left = 3
-        Top = 24
-        Width = 190
-        Height = 21
-        TabOrder = 2
-      end
-      object RecordingFileNameLabeledEdit: TLabeledEdit
-        Left = 3
-        Top = 72
-        Width = 95
-        Height = 21
-        EditLabel.Width = 97
-        EditLabel.Height = 13
-        EditLabel.Caption = 'Recording File Name'
-        TabOrder = 3
-      end
-      object RecordingFrameRateLabeledEdit: TLabeledEdit
-        Left = 3
-        Top = 112
-        Width = 95
-        Height = 21
-        EditLabel.Width = 107
-        EditLabel.Height = 13
-        EditLabel.Caption = 'Recording Frame Rate'
-        TabOrder = 4
-      end
-    end
+  Width = 948
+  Height = 631
+  ExplicitWidth = 948
+  ExplicitHeight = 631
+  object Splitter1: TSplitter
+    Left = 565
+    Top = 0
+    Height = 425
+    Align = alRight
+    ExplicitLeft = 570
   end
-  object BasicPanel: TPanel
-    Left = 1
-    Top = 3
-    Width = 337
-    Height = 486
-    TabOrder = 1
+  object Splitter2: TSplitter
+    Left = 0
+    Top = 425
+    Width = 948
+    Height = 6
+    Cursor = crVSplit
+    Align = alBottom
+    ExplicitTop = 1392
+    ExplicitWidth = 1035
+  end
+  object VideoPanel: TPanel
+    Left = 0
+    Top = 0
+    Width = 565
+    Height = 425
+    Align = alClient
+    Constraints.MinWidth = 525
+    TabOrder = 0
+    ExplicitWidth = 664
+    ExplicitHeight = 443
     object PreviewImage: TImage
-      Left = 8
-      Top = 8
-      Width = 321
-      Height = 240
+      Left = 1
+      Top = 1
+      Width = 563
+      Height = 370
+      Align = alClient
       Stretch = True
-    end
-    object LogMemo: TMemo
-      Left = 8
-      Top = 248
-      Width = 321
-      Height = 113
-      ScrollBars = ssBoth
-      TabOrder = 0
+      ExplicitLeft = 8
+      ExplicitTop = 8
+      ExplicitWidth = 519
+      ExplicitHeight = 429
     end
     object VideoGrabber: TVideoGrabber
-      Left = 9
-      Top = 2
-      Width = 321
-      Height = 240
+      Left = 1
+      Top = 1
+      Width = 563
+      Height = 370
+      Align = alClient
       Caption = 'VideoGrabber'
       Color = clBlack
       Visible = False
@@ -262,81 +91,363 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
       OnAVIDurationUpdated = VideoGrabberAVIDurationUpdated
       OnFrameCaptureCompleted = VideoGrabberFrameCaptureCompleted
       OnVideoFromBitmapsNextFrameNeeded = VideoGrabberVideoFromBitmapsNextFrameNeeded
+      ExplicitWidth = 662
+      ExplicitHeight = 388
     end
-    object InitButton: TButton
-      Left = 5
-      Top = 367
-      Width = 102
-      Height = 25
-      Caption = 'Init'
-      TabOrder = 2
-      OnClick = InitButtonClick
+    object VideoControlGroupBox: TGroupBox
+      Left = 1
+      Top = 371
+      Width = 563
+      Height = 53
+      Align = alBottom
+      Caption = 'Video Control'
+      TabOrder = 1
+      ExplicitTop = 389
+      ExplicitWidth = 662
+      object ClearMemoButton: TButton
+        Left = 359
+        Top = 16
+        Width = 159
+        Height = 25
+        Caption = 'Clear Memo'
+        TabOrder = 0
+        OnClick = ClearMemoButtonClick
+      end
+      object InitButton: TButton
+        Left = 160
+        Top = 16
+        Width = 73
+        Height = 25
+        Caption = 'Init'
+        TabOrder = 1
+        Visible = False
+        OnClick = InitButtonClick
+      end
+      object SaveToIniButton: TButton
+        Left = 240
+        Top = 16
+        Width = 113
+        Height = 25
+        Caption = 'Save to ini'
+        TabOrder = 2
+        Visible = False
+        OnClick = SaveToIniButtonClick
+      end
+      object StartPreviewButton: TButton
+        Left = 0
+        Top = 16
+        Width = 75
+        Height = 25
+        Caption = 'Preview'
+        TabOrder = 3
+        OnClick = StartPreviewButtonClick
+      end
+      object StopButton: TButton
+        Left = 80
+        Top = 16
+        Width = 75
+        Height = 25
+        Caption = 'Stop Preview'
+        TabOrder = 4
+        OnClick = StopButtonClick
+      end
     end
-    object SaveToIniButton: TButton
-      Left = 113
-      Top = 367
-      Width = 96
-      Height = 25
-      Caption = 'Save to ini'
-      TabOrder = 3
-      OnClick = SaveToIniButtonClick
+  end
+  object ControlPanel: TPanel
+    Left = 568
+    Top = 0
+    Width = 380
+    Height = 425
+    Align = alRight
+    Constraints.MinHeight = 425
+    Constraints.MinWidth = 380
+    TabOrder = 1
+    ExplicitLeft = 667
+    ExplicitHeight = 443
+    object PageControl: TPageControl
+      Left = 1
+      Top = 154
+      Width = 378
+      Height = 270
+      ActivePage = NetworkStreamingTabSheet
+      Align = alClient
+      TabOrder = 0
+      ExplicitHeight = 288
+      object NetworkStreamingTabSheet: TTabSheet
+        Caption = 'Network Streaming'
+        ExplicitHeight = 260
+        object StreamingSettingsGroupBox: TGroupBox
+          Left = 3
+          Top = 3
+          Width = 358
+          Height = 205
+          Caption = 'Network streaming settings'
+          TabOrder = 0
+          object BitRateLabeledEdit: TLabeledEdit
+            Left = 8
+            Top = 72
+            Width = 140
+            Height = 21
+            EditLabel.Width = 100
+            EditLabel.Height = 13
+            EditLabel.Caption = 'Bit Rate, bits per sec'
+            TabOrder = 0
+            Text = '2000000'
+          end
+          object BufferWindowLabeledEdit: TLabeledEdit
+            Left = 160
+            Top = 32
+            Width = 140
+            Height = 21
+            EditLabel.Width = 91
+            EditLabel.Height = 13
+            EditLabel.Caption = 'Buffer Window, ms'
+            TabOrder = 1
+            Text = '100'
+          end
+          object FrameRateLabeledEdit: TLabeledEdit
+            Left = 8
+            Top = 112
+            Width = 140
+            Height = 21
+            EditLabel.Width = 56
+            EditLabel.Height = 13
+            EditLabel.Caption = 'Frame Rate'
+            TabOrder = 2
+            Text = '24'
+          end
+          object MaxKeyFrameSpacingLabeledEdit: TLabeledEdit
+            Left = 160
+            Top = 72
+            Width = 140
+            Height = 21
+            EditLabel.Width = 114
+            EditLabel.Height = 13
+            EditLabel.Caption = 'Max Key Frame Spacing'
+            TabOrder = 3
+            Text = '100'
+          end
+          object PortLabeledEdit: TLabeledEdit
+            Left = 8
+            Top = 32
+            Width = 140
+            Height = 21
+            EditLabel.Width = 20
+            EditLabel.Height = 13
+            EditLabel.Caption = 'Port'
+            TabOrder = 4
+            Text = '45040'
+          end
+          object VideoHeightLabeledEdit: TLabeledEdit
+            Left = 8
+            Top = 152
+            Width = 140
+            Height = 21
+            EditLabel.Width = 60
+            EditLabel.Height = 13
+            EditLabel.Caption = 'Video Height'
+            TabOrder = 5
+            Text = '288'
+          end
+          object VideoWidthLabeledEdit: TLabeledEdit
+            Left = 160
+            Top = 152
+            Width = 140
+            Height = 21
+            EditLabel.Width = 57
+            EditLabel.Height = 13
+            EditLabel.Caption = 'Video Width'
+            TabOrder = 6
+            Text = '384'
+          end
+          object MaxUsersLabeledEdit: TLabeledEdit
+            Left = 160
+            Top = 112
+            Width = 140
+            Height = 21
+            EditLabel.Width = 50
+            EditLabel.Height = 13
+            EditLabel.Caption = 'Max Users'
+            TabOrder = 7
+            Text = '4'
+          end
+        end
+        object GetStreamingHostButton: TButton
+          Left = 119
+          Top = 214
+          Width = 123
+          Height = 25
+          Caption = 'Get Streaming Host'
+          TabOrder = 1
+          OnClick = GetStreamingHostButtonClick
+        end
+        object NetworkStreamingButton: TButton
+          Left = 3
+          Top = 214
+          Width = 110
+          Height = 25
+          Caption = 'Network Streaming'
+          TabOrder = 2
+          OnClick = NetworkStreamingButtonClick
+        end
+        object StopNetworkStreamingButton: TButton
+          Left = 248
+          Top = 214
+          Width = 113
+          Height = 25
+          Caption = 'Stop Streaming'
+          TabOrder = 3
+          OnClick = StopNetworkStreamingButtonClick
+        end
+      end
+      object RecordTabSheet: TTabSheet
+        Caption = 'RecordTabSheet'
+        ImageIndex = 1
+        ExplicitHeight = 260
+        object RecordingMethodLabel: TLabel
+          Left = 3
+          Top = 5
+          Width = 87
+          Height = 13
+          Caption = 'Recording Method'
+        end
+        object StartRecordingButton: TButton
+          Left = 3
+          Top = 139
+          Width = 95
+          Height = 25
+          Caption = 'Start Recording'
+          TabOrder = 0
+          OnClick = StartRecordingButtonClick
+        end
+        object StopRecordingButton: TButton
+          Left = 104
+          Top = 139
+          Width = 89
+          Height = 25
+          Caption = 'Stop Recording'
+          TabOrder = 1
+          OnClick = StopRecordingButtonClick
+        end
+        object RecordingMethodComboBox: TComboBox
+          Left = 3
+          Top = 24
+          Width = 190
+          Height = 21
+          TabOrder = 2
+        end
+        object RecordingFileNameLabeledEdit: TLabeledEdit
+          Left = 3
+          Top = 72
+          Width = 190
+          Height = 21
+          EditLabel.Width = 97
+          EditLabel.Height = 13
+          EditLabel.Caption = 'Recording File Name'
+          TabOrder = 3
+        end
+        object RecordingFrameRateLabeledEdit: TLabeledEdit
+          Left = 3
+          Top = 112
+          Width = 190
+          Height = 21
+          EditLabel.Width = 107
+          EditLabel.Height = 13
+          EditLabel.Caption = 'Recording Frame Rate'
+          TabOrder = 4
+        end
+      end
     end
-    object ClearMemoButton: TButton
-      Left = 215
-      Top = 367
-      Width = 114
-      Height = 25
-      Caption = 'Clear Memo'
-      TabOrder = 4
-      OnClick = ClearMemoButtonClick
+    object SourceControlGroupBox: TGroupBox
+      Left = 1
+      Top = 1
+      Width = 378
+      Height = 153
+      Align = alTop
+      Caption = 'Source Control'
+      TabOrder = 1
+      object SourceModeLabel: TLabel
+        Left = 3
+        Top = 107
+        Width = 59
+        Height = 13
+        Caption = 'SourceMode'
+      end
+      object ComponentNameLabeledEdit: TLabeledEdit
+        Left = 3
+        Top = 32
+        Width = 158
+        Height = 21
+        EditLabel.Width = 85
+        EditLabel.Height = 13
+        EditLabel.Caption = 'Component Name'
+        TabOrder = 0
+      end
+      object ComponentPropertyNameLabeledEdit: TLabeledEdit
+        Left = 211
+        Top = 32
+        Width = 158
+        Height = 21
+        EditLabel.Width = 100
+        EditLabel.Height = 13
+        EditLabel.Caption = 'Component Property'
+        TabOrder = 1
+      end
+      object FrameIndexLabeledEdit: TLabeledEdit
+        Left = 3
+        Top = 75
+        Width = 158
+        Height = 21
+        EditLabel.Width = 61
+        EditLabel.Height = 13
+        EditLabel.Caption = 'Frame Index'
+        TabOrder = 2
+        Text = '0'
+      end
+      object ChannelIndexLabeledEdit: TLabeledEdit
+        Left = 211
+        Top = 75
+        Width = 158
+        Height = 21
+        EditLabel.Width = 70
+        EditLabel.Height = 13
+        EditLabel.Caption = 'Channel Index'
+        TabOrder = 3
+        Text = '-1'
+      end
+      object SorceModeComboBox: TComboBox
+        Left = 3
+        Top = 126
+        Width = 158
+        Height = 21
+        ItemIndex = 1
+        TabOrder = 4
+        Text = 'Frame'
+        Items.Strings = (
+          'Component'
+          'Frame')
+      end
     end
-    object ComponentNameLabeledEdit: TLabeledEdit
-      Left = 6
-      Top = 408
-      Width = 157
-      Height = 21
-      EditLabel.Width = 85
-      EditLabel.Height = 13
-      EditLabel.Caption = 'Component Name'
-      TabOrder = 5
-    end
-    object ComponentPropertyNameLabeledEdit: TLabeledEdit
-      Left = 169
-      Top = 408
-      Width = 160
-      Height = 21
-      EditLabel.Width = 100
-      EditLabel.Height = 13
-      EditLabel.Caption = 'Component Property'
-      TabOrder = 6
-    end
-    object FrameIndexLabeledEdit: TLabeledEdit
-      Left = 9
-      Top = 456
-      Width = 154
-      Height = 21
-      EditLabel.Width = 61
-      EditLabel.Height = 13
-      EditLabel.Caption = 'Frame Index'
-      TabOrder = 7
-    end
-    object StartPreviewButton: TButton
-      Left = 169
-      Top = 435
-      Width = 75
-      Height = 25
-      Caption = 'Preview'
-      TabOrder = 8
-      OnClick = StartPreviewButtonClick
-    end
-    object StopButton: TButton
-      Left = 254
-      Top = 435
-      Width = 75
-      Height = 25
-      Caption = 'Stop'
-      TabOrder = 9
-      OnClick = StopButtonClick
+  end
+  object LogPanel: TPanel
+    Left = 0
+    Top = 431
+    Width = 948
+    Height = 200
+    Align = alBottom
+    TabOrder = 2
+    ExplicitTop = 436
+    ExplicitWidth = 1047
+    object LogMemo: TMemo
+      Left = 1
+      Top = 1
+      Width = 946
+      Height = 198
+      Align = alClient
+      ScrollBars = ssBoth
+      TabOrder = 0
+      ExplicitWidth = 1045
+      ExplicitHeight = 191
     end
   end
 end

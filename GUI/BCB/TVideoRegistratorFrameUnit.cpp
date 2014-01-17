@@ -159,8 +159,8 @@ void __fastcall TVideoGetBitmapFrameThread::Execute(void)
 {
  while(!Terminated)
  {
-  if(WaitForSingleObject(CaptureEnabled,30) == WAIT_TIMEOUT)
-   continue;
+  //if(WaitForSingleObject(CaptureEnabled,30) == WAIT_TIMEOUT)
+  // continue;
 
   ResetEvent(CalcCompleteEvent);
   /*
@@ -567,6 +567,7 @@ void __fastcall TTVideoRegistratorFrame::NetworkStreamingButtonClick(TObject *Se
  InitStreamingSettings();
  PreviewFlag=true;
  VideoGrabber->VideoSource=vs_JPEGsOrBitmaps;
+ Mode=SorceModeComboBox->ItemIndex;
 
  switch(Mode)
  {
@@ -692,6 +693,7 @@ void __fastcall TTVideoRegistratorFrame::StartRecordingButtonClick(TObject *Send
  InitRecordingSettings();
  VideoGrabber->VideoSource = vs_JPEGsOrBitmaps;
  PreviewFlag = true;
+ Mode=SorceModeComboBox->ItemIndex;
 
  switch(Mode)
  {
@@ -747,6 +749,7 @@ void __fastcall TTVideoRegistratorFrame::StartPreviewButtonClick(TObject *Sender
 
  VideoGrabber->VideoSource = vs_JPEGsOrBitmaps;
  PreviewFlag = true;
+ Mode=SorceModeComboBox->ItemIndex;
 
  switch(Mode)
  {
@@ -768,6 +771,7 @@ void __fastcall TTVideoRegistratorFrame::StartPreviewButtonClick(TObject *Sender
    break;
   }
  }
+ UGEngineControlForm->Start1Click(this);
 
  VideoGrabber->StartPreview();
  LogMemo->Lines->Add("Preview started");
@@ -1000,3 +1004,5 @@ void TTVideoRegistratorFrame::ALoadParameters(RDK::USerStorageXML &xml)
  UpdateInterface();
 }
 //---------------------------------------------------------------------------
+
+
