@@ -32,6 +32,7 @@ __fastcall TVideoCaptureThread::TVideoCaptureThread(TVideoOutputFrame *frame, bo
  LastTimeStamp=0;
  CaptureEnabled=CreateEvent(0,TRUE,0,0);
  SourceUnlock=CreateEvent(0,TRUE,TRUE,0);
+ SourceWriteUnlock=CreateEvent(0,TRUE,TRUE,0);
  FrameNotInProgress=CreateEvent(0,TRUE,TRUE,0);
  CalcCompleteEvent=CreateEvent(0,TRUE,TRUE,0);
  ReadSource=&Source[0];
@@ -45,6 +46,7 @@ __fastcall TVideoCaptureThread::~TVideoCaptureThread(void)
 {
  CloseHandle(CaptureEnabled);
  CloseHandle(SourceUnlock);
+ CloseHandle(SourceWriteUnlock);
  CloseHandle(FrameNotInProgress);
  CloseHandle(CalcCompleteEvent);
 }
@@ -232,10 +234,15 @@ bool TVideoCaptureThread::ReadSourceSafe(RDK::UBitmap& dest, long long &time_sta
 /// «аписывает изображение в тред с блокировкой
 bool TVideoCaptureThread::WriteSourceSafe(const RDK::UBitmap& src, long long time_stamp, bool reflect)
 {
+ if(WaitForSingleObject(SourceWriteUnlock,100) == WAIT_TIMEOUT)
+  return false;
+
+ ResetEvent(SourceWriteUnlock);
  if(reflect)
   const_cast<RDK::UBitmap&>(src).ReflectionX(WriteSource);
  else
   *WriteSource=src;
+ SetEvent(SourceWriteUnlock);
 
  if(WaitForSingleObject(SourceUnlock,30) == WAIT_TIMEOUT)
   return false;
