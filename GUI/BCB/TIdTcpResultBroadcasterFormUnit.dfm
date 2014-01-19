@@ -18,25 +18,38 @@ object IdTcpResultBroadcasterForm: TIdTcpResultBroadcasterForm
   TextHeight = 13
   object PageControl: TPageControl
     Left = 0
-    Top = 29
+    Top = 19
     Width = 527
-    Height = 214
+    Height = 207
     Align = alClient
     TabOrder = 0
-    ExplicitTop = 0
-    ExplicitHeight = 243
+    ExplicitTop = 29
+    ExplicitHeight = 214
   end
   object ToolBar: TToolBar
     Left = 0
     Top = 0
     Width = 527
-    Height = 29
-    ButtonHeight = 0
-    ButtonWidth = 0
+    Height = 19
+    ButtonHeight = 21
+    ButtonWidth = 70
     Caption = 'ToolBar'
     Menu = MainMenu
     ShowCaptions = True
     TabOrder = 1
+  end
+  object BroadcastEnabledCheckBox: TCheckBox
+    Left = 0
+    Top = 226
+    Width = 527
+    Height = 17
+    Align = alBottom
+    Caption = 'Broadcast enabled'
+    TabOrder = 2
+    OnClick = BroadcastEnabledCheckBoxClick
+    ExplicitLeft = 160
+    ExplicitTop = 200
+    ExplicitWidth = 97
   end
   object MainMenu: TMainMenu
     Left = 144

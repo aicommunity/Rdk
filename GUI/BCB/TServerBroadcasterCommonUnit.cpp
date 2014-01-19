@@ -4,6 +4,7 @@
 
 #include "TServerBroadcasterCommonUnit.h"
 #include "UServerControlFormUnit.h"
+#include "UEngineMonitorFormUnit.h"
 #include "rdk_initdll.h"
 //---------------------------------------------------------------------------
 
@@ -176,6 +177,92 @@ bool TResultBroadcasterThread::SetSendEnableFlag(bool value)
  return true;
 }
 // --------------------------
+
+// --------------------------
+__fastcall TBroadcasterForm::TBroadcasterForm(TComponent* Owner)
+ : TUVisualControllerForm(Owner)
+{
+ BroadcastEnableFlag=false;
+}
+
+__fastcall TBroadcasterForm::~TBroadcasterForm(void)
+{
+ UnRegisterFromEngineMonitor();
+}
+// --------------------------
+
+// ---------------------------
+// Методы доступа к параметрам
+// ---------------------------
+bool TBroadcasterForm::GetBroadcastEnableFlag(void) const
+{
+ return BroadcastEnableFlag;
+}
+
+bool TBroadcasterForm::SetBroadcastEnableFlag(bool value)
+{
+ if(BroadcastEnableFlag == value)
+  return true;
+
+ BroadcastEnableFlag=value;
+ if(BroadcastEnableFlag)
+  return RegisterToEngineMonitor();
+ else
+  return UnRegisterFromEngineMonitor();
+
+ return true;
+}
+// ---------------------------
+
+// --------------------------
+
+// Сохраняет параметры интерфейса в xml
+void TBroadcasterForm::ASaveParameters(RDK::USerStorageXML &xml)
+{
+ AASaveParameters(xml);
+ xml.WriteData("BroadcastEnableFlag",GetBroadcastEnableFlag());
+}
+
+// Загружает параметры интерфейса из xml
+void TBroadcasterForm::ALoadParameters(RDK::USerStorageXML &xml)
+{
+ AALoadParameters(xml);
+ bool value=false;
+ xml.ReadData("BroadcastEnableFlag",value);
+ SetBroadcastEnableFlag(value);
+}
+// --------------------------
+
+
+
+// --------------------------
+bool TBroadcasterForm::RegisterToEngineMonitor(void)
+{
+ if(UEngineMonitorForm)
+ {
+  if(UEngineMonitorForm->EngineMonitorFrame)
+  {
+   UEngineMonitorForm->EngineMonitorFrame->RegisterMetadataBroadcaster(this);
+   return true;
+  }
+ }
+ return false;
+}
+
+bool TBroadcasterForm::UnRegisterFromEngineMonitor(void)
+{
+ if(UEngineMonitorForm)
+ {
+  if(UEngineMonitorForm->EngineMonitorFrame)
+  {
+   UEngineMonitorForm->EngineMonitorFrame->UnRegisterMetadataBroadcaster(this);
+   return true;
+  }
+ }
+ return false;
+}
+// --------------------------
+
 
 
 #pragma package(smart_init)

@@ -6,6 +6,7 @@
 #include <System.Classes.hpp>
 #include <string>
 #include <list>
+#include "TUVisualControllerFormUnit.h"
 #include "myrdk.h"
 
 struct TServerMetadata
@@ -73,6 +74,50 @@ virtual bool __fastcall AddMetadataSafe(int channel_index, long long time_stamp,
 bool GetSendEnableFlag(void) const;
 bool SetSendEnableFlag(bool value);
 // --------------------------
+};
+
+class TBroadcasterForm: public TUVisualControllerForm
+{
+protected: // Параметры
+/// Флаг, определяющий разрешение на использование этого вещателя
+bool BroadcastEnableFlag;
+
+public:
+// ---------------------------
+// ---------------------------
+__fastcall TBroadcasterForm(TComponent* Owner);
+virtual __fastcall ~TBroadcasterForm(void);
+// ---------------------------
+
+// ---------------------------
+// Методы доступа к параметрам
+// ---------------------------
+bool GetBroadcastEnableFlag(void) const;
+bool SetBroadcastEnableFlag(bool value);
+// ---------------------------
+
+// ---------------------------
+// ---------------------------
+/// Функция добавления метаданных в очередь на отправку в соответствии с настройками
+virtual bool AddMetadata(int channel_index, long long time_stamp)=0;
+
+/// Инициирует процедуру отправки метаданных
+virtual bool SendMetadata(void)=0;
+
+virtual bool RegisterToEngineMonitor(void);
+
+virtual bool UnRegisterFromEngineMonitor(void);
+// ---------------------------
+
+
+// Сохраняет параметры интерфейса в xml
+void ASaveParameters(RDK::USerStorageXML &xml);
+virtual void AASaveParameters(RDK::USerStorageXML &xml)=0;
+
+// Загружает параметры интерфейса из xml
+void ALoadParameters(RDK::USerStorageXML &xml);
+virtual void AALoadParameters(RDK::USerStorageXML &xml)=0;
+
 };
 
 

@@ -15,6 +15,7 @@
 #include <vector>
 #include "myrdk.h"
 #include "TUVisualController.h"
+#include "TServerBroadcasterCommonUnit.h"
 
 #pragma warn -8130
 
@@ -140,6 +141,8 @@ std::vector<TEngineThread*> ThreadChannels;
 /// Метка реального времени окончания последнего расчета в однопоточном режиме
 std::vector<unsigned long long> RealLastCalculationTime;
 
+std::vector<RDK::UEPtr<TBroadcasterForm> > BroadcastersList;
+
 public:
 /// Управление режимом работы
 /// 0 - однопоточный режим
@@ -168,6 +171,19 @@ virtual void ASaveParameters(RDK::USerStorageXML &xml);
 
 // Загружает параметры интерфейса из xml
 virtual void ALoadParameters(RDK::USerStorageXML &xml);
+
+/// Регистрирует вещатель метаданных
+void RegisterMetadataBroadcaster(TBroadcasterForm *broadcaster);
+
+/// Снимает регистрацию вещателя метаданных
+void UnRegisterMetadataBroadcaster(TBroadcasterForm *broadcaster);
+
+/// Отправляет метаданные во все зарегистрированные вещатели
+virtual bool AddMetadata(int channel_index, long long time_stamp);
+
+/// Инициирует процедуру отправки метаданных всеми зарегистрированными вещателями
+virtual bool SendMetadata(void);
+
 };
 #pragma warn .8130
 //---------------------------------------------------------------------------

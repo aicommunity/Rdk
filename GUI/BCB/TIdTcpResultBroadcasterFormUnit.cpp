@@ -11,7 +11,7 @@
 TIdTcpResultBroadcasterForm *IdTcpResultBroadcasterForm;
 //---------------------------------------------------------------------------
 __fastcall TIdTcpResultBroadcasterForm::TIdTcpResultBroadcasterForm(TComponent* Owner)
-	: TUVisualControllerForm(Owner)
+	: TBroadcasterForm(Owner)
 {
 }
 
@@ -44,16 +44,17 @@ void TIdTcpResultBroadcasterForm::ABeforeCalculate(void)
 // Обновляет интерфейс
 void TIdTcpResultBroadcasterForm::AUpdateInterface(void)
 {
+ BroadcastEnabledCheckBox->Checked=GetBroadcastEnableFlag();
 }
 
 // Сохраняет параметры интерфейса в xml
-void TIdTcpResultBroadcasterForm::ASaveParameters(RDK::USerStorageXML &xml)
+void TIdTcpResultBroadcasterForm::AASaveParameters(RDK::USerStorageXML &xml)
 {
  xml.WriteInteger("NumBroadcasters",GetNumBroadcasters());
 }
 
 // Загружает параметры интерфейса из xml
-void TIdTcpResultBroadcasterForm::ALoadParameters(RDK::USerStorageXML &xml)
+void TIdTcpResultBroadcasterForm::AALoadParameters(RDK::USerStorageXML &xml)
 {
  int num=xml.ReadInteger("NumBroadcasters",1);
  ClearBroadcasters();
@@ -241,6 +242,17 @@ void __fastcall TIdTcpResultBroadcasterForm::HttpBroadcaster1Click(TObject *Send
 {
  UGEngineControlForm->AddSpecialFormPage("TIdTcpResultBroadcasterForm");
  Show();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TIdTcpResultBroadcasterForm::BroadcastEnabledCheckBoxClick(TObject *Sender)
+
+{
+ if(UpdateInterfaceFlag)
+  return;
+
+ SetBroadcastEnableFlag(BroadcastEnabledCheckBox->Checked);
+ UpdateInterface();
 }
 //---------------------------------------------------------------------------
 

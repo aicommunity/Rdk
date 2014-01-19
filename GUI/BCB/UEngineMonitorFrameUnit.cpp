@@ -111,7 +111,8 @@ void __fastcall TEngineThread::AfterCalculate(void)
  UEngineMonitorForm->EngineMonitorFrame->LastCalculatedServerTimeStamp[ChannelIndex]=
   UEngineMonitorForm->EngineMonitorFrame->GetServerTimeStamp(ChannelIndex);
 
- IdTcpResultBroadcasterForm->AddMetadata(ChannelIndex, UEngineMonitorForm->EngineMonitorFrame->LastCalculatedServerTimeStamp[ChannelIndex]);
+ UEngineMonitorForm->EngineMonitorFrame->AddMetadata(ChannelIndex, UEngineMonitorForm->EngineMonitorFrame->LastCalculatedServerTimeStamp[ChannelIndex]);
+// IdTcpResultBroadcasterForm->AddMetadata(ChannelIndex, UEngineMonitorForm->EngineMonitorFrame->LastCalculatedServerTimeStamp[ChannelIndex]);
 }
 
 
@@ -327,6 +328,56 @@ void TUEngineMonitorFrame::ALoadParameters(RDK::USerStorageXML &xml)
 {
 // SetCalculateMode(xml.ReadInteger("CalculateMode",0));
 }
+
+/// Регистрирует вещатель метаданных
+void TUEngineMonitorFrame::RegisterMetadataBroadcaster(TBroadcasterForm *broadcaster)
+{
+ for(size_t i=0;i<BroadcastersList.size();i++)
+ {
+  if(BroadcastersList[i] == broadcaster)
+   return;
+ }
+ BroadcastersList.push_back(broadcaster);
+}
+
+/// Снимает регистрацию вещателя метаданных
+void TUEngineMonitorFrame::UnRegisterMetadataBroadcaster(TBroadcasterForm *broadcaster)
+{
+ for(size_t i=0;i<BroadcastersList.size();i++)
+ {
+  if(BroadcastersList[i] == broadcaster)
+  {
+   BroadcastersList.erase(BroadcastersList.begin()+i);
+   return;
+  }
+ }
+}
+
+/// Отправляет метаданные во все зарегистрированные вещатели
+bool TUEngineMonitorFrame::AddMetadata(int channel_index, long long time_stamp)
+{
+ bool res=true;
+ for(size_t i=0;i<BroadcastersList.size();i++)
+ {
+  if(BroadcastersList[i])
+   res&=BroadcastersList[i]->AddMetadata(channel_index,time_stamp);
+ }
+ return res;
+}
+
+/// Инициирует процедуру отправки метаданных всеми зарегистрированными вещателями
+bool TUEngineMonitorFrame::SendMetadata(void)
+{
+ bool res=true;
+ for(size_t i=0;i<BroadcastersList.size();i++)
+ {
+  if(BroadcastersList[i])
+   res&=BroadcastersList[i]->SendMetadata();
+ }
+ return res;
+}
+
+
 //---------------------------------------------------------------------------
 
 void __fastcall TUEngineMonitorFrame::Start1Click(TObject *Sender)
@@ -472,10 +523,12 @@ void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
    break;
    }
    LastCalculatedServerTimeStamp[i]=ServerTimeStamp[i];
-   IdTcpResultBroadcasterForm->AddMetadata(i, ServerTimeStamp[i]);
+//   IdTcpResultBroadcasterForm->AddMetadata(i, ServerTimeStamp[i]);
+   AddMetadata(i, ServerTimeStamp[i]);
    RealLastCalculationTime[i]=GetTickCount();
   }
-  IdTcpResultBroadcasterForm->SendMetadata();
+//  IdTcpResultBroadcasterForm->SendMetadata();
+  SendMetadata();
   RDK::UIVisualControllerStorage::AfterCalculate();
   RDK::UIVisualControllerStorage::UpdateInterface();
  }
@@ -483,7 +536,8 @@ void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
 
  case 1:
  {
-  IdTcpResultBroadcasterForm->SendMetadata();
+  SendMetadata();
+//  IdTcpResultBroadcasterForm->SendMetadata();
   RDK::UIVisualControllerStorage::AfterCalculate();
   RDK::UIVisualControllerStorage::ResetCalculationStepUpdatedFlag();
   RDK::UIVisualControllerStorage::UpdateInterface();

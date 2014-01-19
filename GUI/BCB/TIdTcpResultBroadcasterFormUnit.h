@@ -11,10 +11,11 @@
 #include <Vcl.Menus.hpp>
 #include "TUVisualControllerFormUnit.h"
 #include "TIdTcpResultBroadcasterFrameUnit.h"
+#include "TServerBroadcasterCommonUnit.h"
 #include <Vcl.ToolWin.hpp>
 #include <vector>
 //---------------------------------------------------------------------------
-class TIdTcpResultBroadcasterForm : public TUVisualControllerForm
+class TIdTcpResultBroadcasterForm : public TBroadcasterForm
 {
 __published:	// IDE-managed Components
 	TPageControl *PageControl;
@@ -28,6 +29,7 @@ __published:	// IDE-managed Components
 	TPopupMenu *PopupMenu1;
 	TMenuItem *HttpBroadcaster1;
 	TToolBar *ToolBar;
+	TCheckBox *BroadcastEnabledCheckBox;
 	void __fastcall Add1Click(TObject *Sender);
 	void __fastcall Del1Click(TObject *Sender);
 	void __fastcall ConnectAll1Click(TObject *Sender);
@@ -35,6 +37,7 @@ __published:	// IDE-managed Components
 	void __fastcall FormDestroy(TObject *Sender);
 	void __fastcall FormCreate(TObject *Sender);
 	void __fastcall HttpBroadcaster1Click(TObject *Sender);
+	void __fastcall BroadcastEnabledCheckBoxClick(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
 	__fastcall TIdTcpResultBroadcasterForm(TComponent* Owner);
@@ -56,10 +59,10 @@ void ABeforeCalculate(void);
 void AUpdateInterface(void);
 
 // Сохраняет параметры интерфейса в xml
-void ASaveParameters(RDK::USerStorageXML &xml);
+void AASaveParameters(RDK::USerStorageXML &xml);
 
 // Загружает параметры интерфейса из xml
-void ALoadParameters(RDK::USerStorageXML &xml);
+void AALoadParameters(RDK::USerStorageXML &xml);
 
 // Создание копии этого компонента
 TIdTcpResultBroadcasterForm* New(TComponent *owner);

@@ -11,9 +11,23 @@
 TIdHttpResultBroadcasterForm *IdHttpResultBroadcasterForm;
 //---------------------------------------------------------------------------
 __fastcall TIdHttpResultBroadcasterForm::TIdHttpResultBroadcasterForm(TComponent* Owner)
-	: TUVisualControllerForm(Owner)
+	: TBroadcasterForm(Owner)
 {
 }
+
+/// Функция добавления метаданных в очередь на отправку в соответствии с настройками
+bool TIdHttpResultBroadcasterForm::AddMetadata(int channel_index, long long time_stamp)
+{
+ return false;
+}
+
+/// Инициирует процедуру отправки метаданных
+bool TIdHttpResultBroadcasterForm::SendMetadata(void)
+{
+ return false;
+}
+
+
 
 // Метод, вызываемый перед шагом расчета
 void TIdHttpResultBroadcasterForm::ABeforeCalculate(void)
@@ -23,6 +37,7 @@ void TIdHttpResultBroadcasterForm::ABeforeCalculate(void)
 // Обновляет интерфейс
 void TIdHttpResultBroadcasterForm::AUpdateInterface(void)
 {
+ BroadcastEnabledCheckBox->Checked=GetBroadcastEnableFlag();
 }
 
 // Возврат интерфейса в исходное состояние
@@ -32,13 +47,13 @@ void TIdHttpResultBroadcasterForm::AClearInterface(void)
 }
 
 // Сохраняет параметры интерфейса в xml
-void TIdHttpResultBroadcasterForm::ASaveParameters(RDK::USerStorageXML &xml)
+void TIdHttpResultBroadcasterForm::AASaveParameters(RDK::USerStorageXML &xml)
 {
  xml.WriteInteger("NumBroadcasters",GetNumBroadcasters());
 }
 
 // Загружает параметры интерфейса из xml
-void TIdHttpResultBroadcasterForm::ALoadParameters(RDK::USerStorageXML &xml)
+void TIdHttpResultBroadcasterForm::AALoadParameters(RDK::USerStorageXML &xml)
 {
  int num=xml.ReadInteger("NumBroadcasters",1);
  ClearBroadcasters();
@@ -192,6 +207,17 @@ void __fastcall TIdHttpResultBroadcasterForm::HttpBroadcaster1Click(TObject *Sen
 {
  UGEngineControlForm->AddSpecialFormPage("TIdHttpResultBroadcasterForm");
  Show();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TIdHttpResultBroadcasterForm::BroadcastEnabledCheckBoxClick(TObject *Sender)
+
+{
+ if(UpdateInterfaceFlag)
+  return;
+
+ SetBroadcastEnableFlag(BroadcastEnabledCheckBox->Checked);
+ UpdateInterface();
 }
 //---------------------------------------------------------------------------
 
