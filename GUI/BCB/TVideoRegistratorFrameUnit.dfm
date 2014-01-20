@@ -175,6 +175,9 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
       ExplicitHeight = 288
       object NetworkStreamingTabSheet: TTabSheet
         Caption = 'Network Streaming'
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
         ExplicitHeight = 260
         object StreamingSettingsGroupBox: TGroupBox
           Left = 3
@@ -303,6 +306,9 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
       object RecordTabSheet: TTabSheet
         Caption = 'RecordTabSheet'
         ImageIndex = 1
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
         ExplicitHeight = 260
         object RecordingMethodLabel: TLabel
           Left = 3

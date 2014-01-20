@@ -22,6 +22,7 @@ __fastcall TVideoGetBitmapFrameThread::TVideoGetBitmapFrameThread(TTVideoRegistr
  SourceMode=-1;
  CaptureEnabled=CreateEvent(0,TRUE,0,0);
  SourceUnlock=CreateEvent(0,TRUE,TRUE,0);
+ SourceWriteUnlock=CreateEvent(0,TRUE,TRUE,0);
  FrameNotInProgress=CreateEvent(0,TRUE,TRUE,0);
  CalcCompleteEvent=CreateEvent(0,TRUE,TRUE,0);
  ReadSource=&Source[0];
@@ -33,6 +34,7 @@ __fastcall TVideoGetBitmapFrameThread::~TVideoGetBitmapFrameThread(void)
 {
  CloseHandle(CaptureEnabled);
  CloseHandle(SourceUnlock);
+ CloseHandle(SourceWriteUnlock);
  CloseHandle(FrameNotInProgress);
  CloseHandle(CalcCompleteEvent);
 }
@@ -199,7 +201,7 @@ bool TVideoGetBitmapFrameThread::ReadSourceSafe(RDK::UBitmap& dest, bool reflect
  else
   dest=*source;
 
-// SetEvent(SourceUnlock);
+ SetEvent(SourceUnlock);
  return true;
 }
 
@@ -214,13 +216,33 @@ bool TVideoGetBitmapFrameThread::ReadSourceSafe(Graphics::TBitmap *dest, bool re
  SetEvent(SourceUnlock);
  UBitmapToTBitmap(*source, dest, reflect);
 
-// SetEvent(SourceUnlock);
+ SetEvent(SourceUnlock);
  return true;
 }
 
 /// «аписывает изображение в тред с блокировкой
 bool TVideoGetBitmapFrameThread::WriteSourceSafe(const RDK::UBitmap& src, bool reflect)
 {
+ if(WaitForSingleObject(SourceWriteUnlock,100) == WAIT_TIMEOUT)
+  return false;
+
+ ResetEvent(SourceWriteUnlock);
+ if(reflect)
+  const_cast<RDK::UBitmap&>(src).ReflectionX(WriteSource);
+ else
+  *WriteSource=src;
+ SetEvent(SourceWriteUnlock);
+
+ if(WaitForSingleObject(SourceUnlock,30) == WAIT_TIMEOUT)
+  return false;
+ ResetEvent(SourceUnlock);
+
+ RDK::UBitmap* old_read_source=ReadSource;
+ ReadSource=WriteSource;
+ WriteSource=old_read_source;
+ SetEvent(SourceUnlock);
+ return true;
+ /*
  if(reflect)
   const_cast<RDK::UBitmap&>(src).ReflectionX(WriteSource);
  else
@@ -235,7 +257,7 @@ bool TVideoGetBitmapFrameThread::WriteSourceSafe(const RDK::UBitmap& src, bool r
  ReadSource=WriteSource;
  WriteSource=old_read_source;
  SetEvent(SourceUnlock);
- return true;
+ return true; */
 }
 
 bool TVideoGetBitmapFrameThread::WriteSourceSafe(Graphics::TBitmap *src, bool reflect)

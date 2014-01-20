@@ -72,6 +72,7 @@ HANDLE FrameNotInProgress;
 
 /// Выставлено всегда. Сбрасывается на время доступа к изображению
 HANDLE SourceUnlock;
+HANDLE SourceWriteUnlock;
 
 /// Выставляется на время работы видеозахвата
 HANDLE CaptureEnabled;
