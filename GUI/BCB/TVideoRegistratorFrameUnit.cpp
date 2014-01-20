@@ -429,7 +429,8 @@ void __fastcall TVideoGetBitmapFrameFromComponentThread::AfterCalculate(void)
 void __fastcall TVideoGetBitmapFrameFromComponentThread::Calculate(void)
 {
  if(ComponentName != "" && PropertyName != "")
-  TempBitmap=(TBitmap*)Model_GetComponentBitmapOutput(ComponentName.c_str(), PropertyName.c_str());
+  TempBitmap->Assign((TBitmap*)Model_GetComponentBitmapOutput(ComponentName.c_str(), PropertyName.c_str()));
+  //TempBitmap.AttachBuffer((unsigned char*)Model_GetComponentBitmapOutput(ComponentName.c_str(), PropertyName.c_str()));
 
  if(TempBitmap)
   WriteSourceSafe(TempBitmap, false);
@@ -633,6 +634,8 @@ void __fastcall TTVideoRegistratorFrame::StopNetworkStreamingButtonClick(TObject
   BitmapFrameThread->Stop();
   WaitForSingleObject(BitmapFrameThread->GetFrameNotInProgress(),30);
  }
+
+ UGEngineControlForm->Pause1Click(this);
 }
 //---------------------------------------------------------------------------
 void __fastcall TTVideoRegistratorFrame::VideoGrabberVideoFromBitmapsNextFrameNeeded(TObject *Sender,
@@ -753,6 +756,8 @@ void __fastcall TTVideoRegistratorFrame::StopRecordingButtonClick(TObject *Sende
   BitmapFrameThread->Stop();
   WaitForSingleObject(BitmapFrameThread->GetFrameNotInProgress(),30);
  }
+
+ UGEngineControlForm->Pause1Click(this);
 }
 //---------------------------------------------------------------------------
 
@@ -810,6 +815,8 @@ void __fastcall TTVideoRegistratorFrame::StopButtonClick(TObject *Sender)
   BitmapFrameThread->Stop();
   WaitForSingleObject(BitmapFrameThread->GetFrameNotInProgress(),30);
  }
+
+ UGEngineControlForm->Pause1Click(this);
 }
 //---------------------------------------------------------------------------
 // -----------------------------
