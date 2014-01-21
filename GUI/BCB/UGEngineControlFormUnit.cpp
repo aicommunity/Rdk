@@ -1268,13 +1268,41 @@ void TUGEngineControlForm::AddBroadcasterMenu(TMenuItem *item, TMenu *owner)
 /// Загружает историю проектов из файла
 void TUGEngineControlForm::LoadProjectsHistory(void)
 {
+ String opt_name=ExtractFileName(Application->ExeName);
+ if(opt_name.Length()>4)
+ opt_name=opt_name.SubString(0,opt_name.Length()-4);
+ opt_name=opt_name+".projecthist";
+ RDK::UIniFile<char> history_ini;
+ history_ini.LoadFromFile(AnsiString(opt_name).c_str());
+ std::vector<std::string> history;
+ history_ini.GetVariableList("General",history);
 
+ LastProjectsList.clear();
+ for(size_t i=0;i<history.size();i++)
+ {
+  LastProjectsList.push_back(history_ini("General",history[i],""));
+  if(i>=LastProjectsListMaxSize)
+   break;
+ }
 }
 
 /// Сохраняет историю проектов в файл
 void TUGEngineControlForm::SaveProjectsHistory(void)
 {
+ RDK::UIniFile<char> history_ini;
 
+ std::list<std::string>::iterator I=LastProjectsList.begin();
+ int i=0;
+ for(;I != LastProjectsList.end();I++)
+ {
+  history_ini("General",std::string("Hist")+sntoa(i++),*I);
+ }
+
+ String opt_name=ExtractFileName(Application->ExeName);
+ if(opt_name.Length()>4)
+ opt_name=opt_name.SubString(0,opt_name.Length()-4);
+ opt_name=opt_name+".projecthist";
+ history_ini.SaveToFile(AnsiString(opt_name).c_str());
 }
 
 
@@ -1464,20 +1492,7 @@ void __fastcall TUGEngineControlForm::LoadProjectItemClick(TObject *Sender)
  }
 
 
- RDK::UIniFile<char> history_ini;
-
- std::list<std::string>::iterator I=LastProjectsList.begin();
- int i=0;
- for(;I != LastProjectsList.end();I++)
- {
-  history_ini("General",std::string("Hist")+sntoa(i++),*I);
- }
-
- String opt_name=ExtractFileName(Application->ExeName);
- if(opt_name.Length()>4)
- opt_name=opt_name.SubString(0,opt_name.Length()-4);
- opt_name=opt_name+".projecthist";
- history_ini.SaveToFile(AnsiString(opt_name).c_str());
+ SaveProjectsHistory();
 }
 //---------------------------------------------------------------------------
 
@@ -1700,18 +1715,7 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  Engine_LoadFonts();
 
  // Грузим историю проектов
- RDK::UIniFile<char> history_ini;
- history_ini.LoadFromFile(AnsiString(opt_name+".projecthist").c_str());
- std::vector<std::string> history;
- history_ini.GetVariableList("General",history);
-
- LastProjectsList.clear();
- for(size_t i=0;i<history.size();i++)
- {
-  LastProjectsList.push_back(history_ini("General",history[i],""));
-  if(i>=LastProjectsListMaxSize)
-   break;
- }
+ LoadProjectsHistory();
 
 // TMemIniFile *history_ini=new TMemIniFile("History.ini");
 // TStrings *hist=new TStrings;
