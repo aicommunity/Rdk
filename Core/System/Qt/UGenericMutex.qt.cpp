@@ -14,7 +14,7 @@ public:
 UGenericMutexQt();
 virtual ~UGenericMutexQt();
 
-virtual bool lock();
+virtual bool lock(int lock_id=-1);
 virtual bool unlock();
 virtual bool wait(int timeout);
 };
@@ -30,7 +30,7 @@ UGenericMutexQt::~UGenericMutexQt()
  //CloseHandle(m_UnlockEvent);
 }
 
-bool UGenericMutexQt::lock()
+bool UGenericMutexQt::lock(int lock_id)
 {
  /*if (WaitForSingleObject(m_UnlockEvent, INFINITE) == WAIT_TIMEOUT)
   return false;
