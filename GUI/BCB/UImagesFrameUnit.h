@@ -47,6 +47,8 @@ __published:    // IDE-managed Components
 	TPanel *Panel1;
 	TCheckBox *ShowLegendCheckBox;
 	TCheckBox *ShowHistogramCheckBox;
+	TRadioButton *TiledSizeRadioButton;
+	TRadioButton *OriginalSizeRadioButton;
     void __fastcall DrawGridDrawCell(TObject *Sender, int ACol, int ARow, TRect &Rect,
           TGridDrawState State);
 	void __fastcall SaveToBmpClick(TObject *Sender);
@@ -63,6 +65,8 @@ __published:    // IDE-managed Components
 	void __fastcall FullImageMouseDown(TObject *Sender, TMouseButton Button, TShiftState Shift,
           int X, int Y);
 	void __fastcall DrawGridClick(TObject *Sender);
+	void __fastcall OriginalSizeRadioButtonClick(TObject *Sender);
+	void __fastcall TiledSizeRadioButtonClick(TObject *Sender);
 
 
 
@@ -95,6 +99,11 @@ bool ReflectionXFlag;
 
 // Указатель на форму выбора компоненты-источника
 TUComponentsListForm *MyComponentsListForm;
+
+/// Режим масштабирования
+/// 0 - оригинальный размер
+/// 1 - Масштабирование чтобы вся сетка влезала в экран
+int SizeMode;
 
 // --------------------------
 // Методы управления параметрами

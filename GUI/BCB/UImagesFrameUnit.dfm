@@ -75,6 +75,28 @@ inherited UImagesFrame: TUImagesFrame
       ParentDoubleBuffered = False
       TabOrder = 1
     end
+    object TiledSizeRadioButton: TRadioButton
+      Left = 656
+      Top = 1
+      Width = 72
+      Height = 15
+      Align = alRight
+      Caption = 'Tiled size'
+      Checked = True
+      TabOrder = 2
+      TabStop = True
+      OnClick = TiledSizeRadioButtonClick
+    end
+    object OriginalSizeRadioButton: TRadioButton
+      Left = 568
+      Top = 1
+      Width = 88
+      Height = 15
+      Align = alRight
+      Caption = 'Original size'
+      TabOrder = 3
+      OnClick = OriginalSizeRadioButtonClick
+    end
   end
   object PopupMenu: TPopupMenu
     Left = 192

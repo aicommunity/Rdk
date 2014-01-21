@@ -21,6 +21,7 @@ __fastcall TUImagesFrame::TUImagesFrame(TComponent* Owner)
  MyComponentsListForm=new TUComponentsListForm(this);
  UpdateInterval=100;
  SetNumCells(2, 2);
+ SizeMode=0;
 }
 
 __fastcall TUImagesFrame::~TUImagesFrame(void)
@@ -373,6 +374,34 @@ void TUImagesFrame::AUpdateInterface(void)
 	}
    }
   }
+
+  if(SizeMode == 0)
+  {
+   TiledSizeRadioButton->Checked=false;
+   OriginalSizeRadioButton->Checked=true;
+  }
+  else
+  if(SizeMode == 1)
+  {
+   TiledSizeRadioButton->Checked=true;
+   OriginalSizeRadioButton->Checked=false;
+  }
+
+  if(Images.size()>0 && Images[0].size()>0)
+  {
+   if(SizeMode == 0)
+   {
+	DrawGrid->DefaultColWidth=Images[0][0]->Picture->Bitmap->Width;
+	DrawGrid->DefaultRowHeight=Images[0][0]->Picture->Bitmap->Height;
+   }
+   else
+   if(SizeMode == 1)
+   {
+	DrawGrid->DefaultColWidth=DrawGrid->ClientWidth/Images.size()-1;
+	DrawGrid->DefaultRowHeight=DrawGrid->ClientHeight/Images[0].size()-1;
+   }
+  }
+
   DrawGrid->Repaint();
   DrawGrid->Update();
  }
@@ -433,7 +462,7 @@ void TUImagesFrame::ASaveParameters(RDK::USerStorageXML &xml)
 
  xml.WriteBool("ShowLegendCheckBox",ShowLegendCheckBox->Checked);
  xml.WriteBool("ShowHistogramCheckBox",ShowHistogramCheckBox->Checked);
-
+ xml.WriteInteger("SizeMode",SizeMode);
 }
 
 // Загружает параметры интерфейса из xml
@@ -463,6 +492,8 @@ void TUImagesFrame::ALoadParameters(RDK::USerStorageXML &xml)
 
  ShowLegendCheckBox->Checked=xml.ReadBool("ShowLegendCheckBox",true);
  ShowHistogramCheckBox->Checked=xml.ReadBool("ShowHistogramCheckBox",false);
+
+ SizeMode=xml.ReadInteger("SizeMode",0);
 
  UpdateInterface();
 }
@@ -650,6 +681,26 @@ void __fastcall TUImagesFrame::DrawGridClick(TObject *Sender)
   point.Y=double(tpoint.Y)*double(Images[DrawGrid->Col][DrawGrid->Row]->Picture->Bitmap->Height)/double(rect.Height());
   Model_SetComponentPropertyData(MouseClickComponents[DrawGrid->Col][DrawGrid->Row].first.c_str(), MouseClickComponents[DrawGrid->Col][DrawGrid->Row].second.c_str(), &point);
  }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUImagesFrame::OriginalSizeRadioButtonClick(TObject *Sender)
+{
+ if(UpdateInterfaceFlag)
+  return;
+ TiledSizeRadioButton->Checked=false;
+ SizeMode=0;
+ UpdateInterface();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUImagesFrame::TiledSizeRadioButtonClick(TObject *Sender)
+{
+ if(UpdateInterfaceFlag)
+  return;
+ OriginalSizeRadioButton->Checked=false;
+ SizeMode=1;
+ UpdateInterface();
 }
 //---------------------------------------------------------------------------
 
