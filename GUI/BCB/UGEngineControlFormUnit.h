@@ -278,6 +278,12 @@ std::map<std::string, TUVisualControllerForm*> SpecialForms;
 /// Лицензия TVideoGrabber
 String VideoGrabberLicenseString;
 
+/// Список последних открытых проектов
+std::list<std::string> LastProjectsList;
+
+/// Размер истории последних открытых проектов
+int LastProjectsListMaxSize;
+
 Word Saved8087CW;
 
 bool AppWinState;
@@ -350,6 +356,12 @@ void ClearPages(void);
 
 /// Добавляет новый пункт в подменю сетевого вещания событиями
 void AddBroadcasterMenu(TMenuItem *item, TMenu *owner);
+
+/// Загружает историю проектов из файла
+void LoadProjectsHistory(void);
+
+/// Сохраняет историю проектов в файл
+void SaveProjectsHistory(void);
 
 };
 #pragma warn .8130

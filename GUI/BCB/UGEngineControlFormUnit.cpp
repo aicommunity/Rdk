@@ -1265,6 +1265,18 @@ void TUGEngineControlForm::AddBroadcasterMenu(TMenuItem *item, TMenu *owner)
  Broadcasters1->Add(item);
 }
 
+/// Загружает историю проектов из файла
+void TUGEngineControlForm::LoadProjectsHistory(void)
+{
+
+}
+
+/// Сохраняет историю проектов в файл
+void TUGEngineControlForm::SaveProjectsHistory(void)
+{
+
+}
+
 
 //---------------------------------------------------------------------------
 
@@ -1438,10 +1450,34 @@ void __fastcall TUGEngineControlForm::Performance1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::LoadProjectItemClick(TObject *Sender)
 {
+ if(!LastProjectsList.empty())
+  OpenDialog->InitialDir=ExtractFilePath(LastProjectsList.front().c_str());
+
  if(!OpenDialog->Execute())
   return;
 
  OpenProject(OpenDialog->FileName);
+ LastProjectsList.push_front(AnsiString(OpenDialog->FileName).c_str());
+ while(LastProjectsList.size()>LastProjectsListMaxSize && !LastProjectsList.empty())
+ {
+  LastProjectsList.pop_back();
+ }
+
+
+ RDK::UIniFile<char> history_ini;
+
+ std::list<std::string>::iterator I=LastProjectsList.begin();
+ int i=0;
+ for(;I != LastProjectsList.end();I++)
+ {
+  history_ini("General",std::string("Hist")+sntoa(i++),*I);
+ }
+
+ String opt_name=ExtractFileName(Application->ExeName);
+ if(opt_name.Length()>4)
+ opt_name=opt_name.SubString(0,opt_name.Length()-4);
+ opt_name=opt_name+".projecthist";
+ history_ini.SaveToFile(AnsiString(opt_name).c_str());
 }
 //---------------------------------------------------------------------------
 
@@ -1622,6 +1658,7 @@ void __fastcall TUGEngineControlForm::WatchWindow1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
 {
+ LastProjectsListMaxSize=10;
  DecimalSeparator = '.';
  Saved8087CW = Default8087CW;
  System::Set8087CW(0x133f);
@@ -1632,8 +1669,7 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  String opt_name=ExtractFileName(Application->ExeName);
  if(opt_name.Length()>4)
  opt_name=opt_name.SubString(0,opt_name.Length()-4);
- opt_name=opt_name+".ini";
- TMemIniFile *app_ini=new TMemIniFile(opt_name);
+ TMemIniFile *app_ini=new TMemIniFile(opt_name+".ini");
  MainFormName=app_ini->ReadString("General", "MainFormName", "");
  HideAdminFormFlag=app_ini->ReadBool("General", "HideAdminForm", false);
  AutoexecProjectFileName=app_ini->ReadString("General", "AutoexecProjectFileName", "");
@@ -1642,6 +1678,7 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  MinimizeToTray=app_ini->ReadBool("General","MinimizeToTray",false);
  StartMinimized=app_ini->ReadBool("General","StartMinimized",false);
  ProgramName=app_ini->ReadString("General","ProgramName","Server");
+ LastProjectsListMaxSize=app_ini->ReadInteger("General","LastProjectsListMaxSize",10);
 
  TrayIcon->Hint=ProgramName;
 
@@ -1661,6 +1698,28 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  SetSystemDir(font_path.c_str());
  GraphicalEngineInit(0,1,1,320,240,1,ExceptionHandler);
  Engine_LoadFonts();
+
+ // Грузим историю проектов
+ RDK::UIniFile<char> history_ini;
+ history_ini.LoadFromFile(AnsiString(opt_name+".projecthist").c_str());
+ std::vector<std::string> history;
+ history_ini.GetVariableList("General",history);
+
+ LastProjectsList.clear();
+ for(size_t i=0;i<history.size();i++)
+ {
+  LastProjectsList.push_back(history_ini("General",history[i],""));
+  if(i>=LastProjectsListMaxSize)
+   break;
+ }
+
+// TMemIniFile *history_ini=new TMemIniFile("History.ini");
+// TStrings *hist=new TStrings;
+// int hist_size=history_ini->ReadSectionValues("General",hist);
+// MainFormName=app_ini->ReadString("General", "MainFormName", "");
+
+// delete hist;
+// delete history_ini;
 }
 //---------------------------------------------------------------------------
 
