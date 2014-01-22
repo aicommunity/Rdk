@@ -270,6 +270,9 @@ void TUComponentsListFrame::UpdateIO(void)
    OutputsStringGrid->ColWidths[0]=OutputsStringGrid->Width-OutputsStringGrid->ColWidths[0]-24;
   }
  }
+
+ if(OutputsStringGrid->RowCount>1)
+  OutputsStringGrid->FixedRows=1;
 // num=Model_GetComponentNumInputs(GetSelectedComponentLongName().c_str());
  InputsStringGrid->RowCount=1+inputs.size();
  InputsStringGrid->ColCount=2;
@@ -284,6 +287,9 @@ void TUComponentsListFrame::UpdateIO(void)
  }
 
  InputsStringGrid->ColWidths[0]=InputsStringGrid->Width-InputsStringGrid->ColWidths[0]-24;
+
+ if(InputsStringGrid->RowCount>1)
+  InputsStringGrid->FixedRows=1;
 
  UpdateInterfaceFlag=false;
 }

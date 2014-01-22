@@ -203,10 +203,6 @@ inherited UComponentsListFrame: TUComponentsListFrame
       object TabSheet3: TTabSheet
         Caption = 'I/O'
         ImageIndex = 2
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object Splitter2: TSplitter
           Left = 0
           Top = 239
@@ -231,6 +227,7 @@ inherited UComponentsListFrame: TUComponentsListFrame
             Height = 222
             Align = alClient
             DefaultRowHeight = 18
+            FixedCols = 0
             Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goColSizing, goRowSelect]
             TabOrder = 0
             OnClick = OutputsStringGridClick
@@ -254,6 +251,7 @@ inherited UComponentsListFrame: TUComponentsListFrame
             Height = 275
             Align = alClient
             DefaultRowHeight = 18
+            FixedCols = 0
             Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goColSizing, goRowSelect]
             TabOrder = 0
             OnClick = InputsStringGridClick

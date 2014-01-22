@@ -1276,6 +1276,7 @@ void TUGEngineControlForm::LoadProjectsHistory(void)
  history_ini.LoadFromFile(AnsiString(opt_name).c_str());
  std::vector<std::string> history;
  history_ini.GetVariableList("General",history);
+ sort(history.begin(),history.end());
 
  LastProjectsList.clear();
  for(size_t i=0;i<history.size();i++)

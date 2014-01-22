@@ -535,7 +535,7 @@ void __fastcall TUImagesFrame::SelectSourceClick(TObject *Sender)
   return;
 
  MyComponentsListForm->UpdateInterface(true);
- if(MyComponentsListForm->ShowComponentSelect() != mrOk)
+ if(MyComponentsListForm->ShowIOSelect() != mrOk)
   return;
 
  StringIds[DrawGrid->Col][DrawGrid->Row]=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName();
