@@ -29,7 +29,7 @@ bool RepeatFlag;
 
 protected: // Данные
 /// Временная метка последнего кадра
-long long LastTimeStamp;
+double LastTimeStamp;
 
 /// Данные изображения
 RDK::UBitmap Source[2];
@@ -132,14 +132,14 @@ virtual void __fastcall Calculate(void)=0;
 virtual void __fastcall Execute(void);
 
 /// Возвращает копию изображения с блокировкой
-bool ReadSourceSafe(RDK::UBitmap& dest, long long &time_stamp, bool reflect);
+bool ReadSourceSafe(RDK::UBitmap& dest, double &time_stamp, bool reflect);
 
 /// Записывает изображение в тред с блокировкой
-bool WriteSourceSafe(const RDK::UBitmap& src, long long time_stamp, bool reflect);
-bool WriteSourceSafe(Graphics::TBitmap *src, long long time_stamp, bool reflect);
+bool WriteSourceSafe(const RDK::UBitmap& src, double time_stamp, bool reflect);
+bool WriteSourceSafe(Graphics::TBitmap *src, double time_stamp, bool reflect);
 
 // Меняет временную метку с блокировкой
-virtual bool SetLastTimeStampSafe(long long time_stamp);
+virtual bool SetLastTimeStampSafe(double time_stamp);
 // --------------------------
 };
 
@@ -206,10 +206,14 @@ int CurrentBmpSequenceIndex;
 
 int LastReadSequenceIndex;
 
+double Fps;
+
 
 
 RDK::UBitmap TempSource;
 Graphics::TBitmap* TempBitmap;
+
+double CurrentTimeStamp;
 
 public: // Методы
 // --------------------------
@@ -232,11 +236,19 @@ long long GetNumBitmaps(void) const;
 /// Устанавливает текущую позицию в последовательности
 long long GetPosition(void) const;
 bool SetPosition(long long index);
+
+/// Устанавливает значение FPS
+double GetFps(void) const;
+bool SetFps(double fps);
 // --------------------------
 
 // --------------------------
 // Управление потоком
 // --------------------------
+virtual void __fastcall Start(void);
+
+virtual void __fastcall Stop(void);
+
 virtual void __fastcall AfterCalculate(void);
 
 virtual void __fastcall Calculate(void);
@@ -245,7 +257,7 @@ virtual void __fastcall Calculate(void);
 bool LoadImageFromSequence(int index, RDK::UBitmap &bmp);
 
 // Меняет временную метку с блокировкой
-virtual bool SetLastTimeStampSafe(long long time_stamp);
+virtual bool SetLastTimeStampSafe(double time_stamp);
 // --------------------------
 };
 
@@ -381,7 +393,7 @@ virtual void __fastcall Stop(void);
 
 
 // Меняет временную метку с блокировкой
-virtual bool SetLastTimeStampSafe(long long time_stamp);
+virtual bool SetLastTimeStampSafe(double time_stamp);
 
 void __fastcall AfterCalculate(void);
 // --------------------------

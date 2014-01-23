@@ -54,7 +54,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
     Top = 0
     Width = 527
     Height = 362
-    ActivePage = TabSheet1
+    ActivePage = TabSheet2
     Align = alClient
     TabOrder = 1
     OnChange = PageControlChange
@@ -157,9 +157,10 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
         Left = 0
         Top = 41
         Width = 519
-        Height = 66
+        Height = 40
         Align = alTop
         Caption = 'Project type '
+        Columns = 2
         ItemIndex = 1
         Items.Strings = (
           'Universal'
@@ -169,22 +170,23 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
       end
       object ProjectTimeStepGroupBox: TGroupBox
         Left = 0
-        Top = 173
+        Top = 161
         Width = 519
-        Height = 66
+        Height = 54
         Align = alTop
         Caption = ' Time step duration (or default frame processing duration) '
         TabOrder = 1
+        ExplicitTop = 121
         object Label2: TLabel
           Left = 10
-          Top = 32
+          Top = 23
           Width = 28
           Height = 13
           Caption = 'T=1./'
         end
         object ProjectTimeStepEdit: TEdit
           Left = 44
-          Top = 29
+          Top = 20
           Width = 45
           Height = 21
           TabOrder = 0
@@ -193,29 +195,34 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
       end
       object ProjectCalculationModeRadioGroup: TRadioGroup
         Left = 0
-        Top = 107
+        Top = 121
         Width = 519
-        Height = 66
+        Height = 40
         Align = alTop
         Caption = ' Calculation mode '
+        Columns = 3
         ItemIndex = 2
         Items.Strings = (
           'Sequential'
           'Real-time simulation'
           'By "Data Ready" signal')
         TabOrder = 3
+        ExplicitTop = 81
       end
       object VideoAnalysisGroupBox: TGroupBox
         Left = 0
-        Top = 239
+        Top = 215
         Width = 519
-        Height = 95
+        Height = 119
         Align = alClient
         Caption = ' Video Analysis Additional Parameters '
         TabOrder = 4
+        Visible = False
+        ExplicitTop = 239
+        ExplicitHeight = 95
         DesignSize = (
           519
-          95)
+          119)
         object ImageWidthLabeledEdit: TLabeledEdit
           Left = 3
           Top = 34
@@ -274,6 +281,23 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
           State = cbChecked
           TabOrder = 4
         end
+      end
+      object CalculationSourceTimeModeRadioGroup: TRadioGroup
+        Left = 0
+        Top = 81
+        Width = 519
+        Height = 40
+        Align = alTop
+        Caption = ' Calculation time source '
+        Columns = 2
+        ItemIndex = 1
+        Items.Strings = (
+          'System Time'
+          'External Data Time')
+        TabOrder = 5
+        OnClick = ProjectTypeRadioGroupClick
+        ExplicitLeft = -3
+        ExplicitTop = 73
       end
     end
     object TabSheet3: TTabSheet

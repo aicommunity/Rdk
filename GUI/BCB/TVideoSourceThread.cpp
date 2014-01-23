@@ -168,10 +168,10 @@ void __fastcall TVideoCaptureThread::AfterCalculate(void)
  if(!UEngineMonitorForm || !UEngineMonitorForm->EngineMonitorFrame)
   return;
  if(GetNumEngines() == 1)
-  UEngineMonitorForm->EngineMonitorFrame->SetServerTimeStamp(0,LastTimeStamp);
+  UEngineMonitorForm->EngineMonitorFrame->SetServerTimeStamp(0,LastTimeStamp*86400.0*1000.0);
  else
   if(GetNumEngines() > ChannelIndex)
-   UEngineMonitorForm->EngineMonitorFrame->SetServerTimeStamp(ChannelIndex,LastTimeStamp);
+   UEngineMonitorForm->EngineMonitorFrame->SetServerTimeStamp(ChannelIndex,LastTimeStamp*86400.0*1000.0);
 }
 
 
@@ -201,7 +201,7 @@ void __fastcall TVideoCaptureThread::Execute(void)
 }
 
 /// Возвращает копию изображения с блокировкой
-bool TVideoCaptureThread::ReadSourceSafe(RDK::UBitmap& dest, long long &time_stamp, bool reflect)
+bool TVideoCaptureThread::ReadSourceSafe(RDK::UBitmap& dest, double &time_stamp, bool reflect)
 {
  if(WaitForSingleObject(SourceUnlock,30) == WAIT_TIMEOUT)
   return false;
@@ -220,7 +220,7 @@ bool TVideoCaptureThread::ReadSourceSafe(RDK::UBitmap& dest, long long &time_sta
 }
 
 /// Записывает изображение в тред с блокировкой
-bool TVideoCaptureThread::WriteSourceSafe(const RDK::UBitmap& src, long long time_stamp, bool reflect)
+bool TVideoCaptureThread::WriteSourceSafe(const RDK::UBitmap& src, double time_stamp, bool reflect)
 {
  if(WaitForSingleObject(SourceWriteUnlock,100) == WAIT_TIMEOUT)
   return false;
@@ -244,7 +244,7 @@ bool TVideoCaptureThread::WriteSourceSafe(const RDK::UBitmap& src, long long tim
  return true;
 }
 
-bool TVideoCaptureThread::WriteSourceSafe(Graphics::TBitmap *src, long long time_stamp, bool reflect)
+bool TVideoCaptureThread::WriteSourceSafe(Graphics::TBitmap *src, double time_stamp, bool reflect)
 {
  TBitmapToUBitmap(*WriteSource, src, reflect);
 
@@ -261,7 +261,7 @@ bool TVideoCaptureThread::WriteSourceSafe(Graphics::TBitmap *src, long long time
 }
 
 // Меняет временную метку с блокировкой
-bool TVideoCaptureThread::SetLastTimeStampSafe(long long time_stamp)
+bool TVideoCaptureThread::SetLastTimeStampSafe(double time_stamp)
 {
  if(WaitForSingleObject(SourceUnlock,30) == WAIT_TIMEOUT)
   return false;
@@ -326,11 +326,12 @@ bool TVideoCaptureThreadBmp::SetFileName(const std::string& value)
   else
    TempSource.Fill(0);
  }
- catch (EFOpenError &exception) {
+ catch (EFOpenError &exception)
+ {
   TempSource.SetRes(0,0);
  }
  TempSource.SetColorModel(RDK::ubmRGB24);
- long long time_stamp=0;
+ double time_stamp=0;
  WriteSourceSafe(TempSource,time_stamp,false);
  return true;
 }
@@ -380,7 +381,7 @@ void __fastcall TVideoCaptureThreadBmp::AfterCalculate(void)
 
 void __fastcall TVideoCaptureThreadBmp::Calculate(void)
 {
- long long time_stamp=GetTickCount();
+ double time_stamp=TDateTime::CurrentDateTime().operator double();
  SetLastTimeStampSafe(time_stamp);
 }
 // --------------------------
@@ -440,8 +441,8 @@ bool TVideoCaptureThreadBmpSequence::SetPathName(const std::string& value)
   TempSource.Clear();
   LastReadSequenceIndex=-1;
  }
- long long time_stamp=0;
- WriteSourceSafe(TempSource,time_stamp,false);
+ CurrentTimeStamp=0;
+ WriteSourceSafe(TempSource,CurrentTimeStamp,false);
 
  CurrentBmpSequenceIndex=0;
 // Calculate();
@@ -462,18 +463,51 @@ long long TVideoCaptureThreadBmpSequence::GetPosition(void) const
 
 bool TVideoCaptureThreadBmpSequence::SetPosition(long long index)
 {
- return SetLastTimeStampSafe(index);
+ long long diff=index-CurrentBmpSequenceIndex;
+ CurrentBmpSequenceIndex=index;
+ CurrentTimeStamp+=(double(diff)/Fps)/86400.0;
+ SetLastTimeStampSafe(CurrentTimeStamp);
+ return true;
 }
 
+/// Устанавливает значение FPS
+double TVideoCaptureThreadBmpSequence::GetFps(void) const
+{
+ return Fps;
+}
+
+bool TVideoCaptureThreadBmpSequence::SetFps(double fps)
+{
+ if(Fps == fps)
+  return true;
+
+ Fps=fps;
+ return true;
+}
 // --------------------------
 
 // --------------------------
 // Управление потоком
 // --------------------------
+void __fastcall TVideoCaptureThreadBmpSequence::Start(void)
+{
+ CurrentTimeStamp=0;
+ TVideoCaptureThread::Start();
+}
+
+void __fastcall TVideoCaptureThreadBmpSequence::Stop(void)
+{
+ TVideoCaptureThread::Stop();
+}
+
 void __fastcall TVideoCaptureThreadBmpSequence::AfterCalculate(void)
 {
  TVideoCaptureThread::AfterCalculate();
  CurrentBmpSequenceIndex++;
+ if(Fps>0)
+  CurrentTimeStamp+=(1.0/Fps)/86400.0;
+ else
+  CurrentTimeStamp+=1.0/86400.0;
  if(CurrentBmpSequenceIndex>=int(BmpSequenceNames.size()))
  {
   if(RepeatFlag)
@@ -503,8 +537,8 @@ void __fastcall TVideoCaptureThreadBmpSequence::Calculate(void)
   TempSource.Clear();
   LastReadSequenceIndex=-1;
  }
- long long time_stamp=CurrentBmpSequenceIndex;
- WriteSourceSafe(TempSource,time_stamp,false);
+// long long time_stamp=CurrentBmpSequenceIndex;
+ WriteSourceSafe(TempSource,CurrentTimeStamp,false);
 }
 
 // Загружает выбранную картинку по индеку в массиве имен
@@ -537,12 +571,12 @@ bool TVideoCaptureThreadBmpSequence::LoadImageFromSequence(int index, RDK::UBitm
 
 
 // Меняет временную метку с блокировкой
-bool TVideoCaptureThreadBmpSequence::SetLastTimeStampSafe(long long time_stamp)
+bool TVideoCaptureThreadBmpSequence::SetLastTimeStampSafe(double time_stamp)
 {
  TVideoCaptureThread::SetLastTimeStampSafe(time_stamp);
  if(WaitForSingleObject(FrameNotInProgress,1000) == WAIT_TIMEOUT)
   return false;
- CurrentBmpSequenceIndex=time_stamp;
+// CurrentBmpSequenceIndex=time_stamp;
  return true;
 }
 
@@ -659,12 +693,12 @@ void __fastcall TVideoCaptureThreadHttpServer::IdHTTPServerCommandGet(TIdContext
 		  TIdHTTPResponseInfo *AResponseInfo)
 {
  std::vector<char> &time_stamp=UHttpServerFrame->ParsedRequestArgs["TimeStamp"];
- long long l_time_stamp=0;
+ double l_time_stamp=0;
  if(!time_stamp.empty())
  {
   std::string temp_stamp;
   temp_stamp.assign(&time_stamp[0],time_stamp.size());
-  l_time_stamp=RDK::atoi(temp_stamp);
+  l_time_stamp=RDK::atof(temp_stamp);
  }
 
  UHttpServerFrame->IdHTTPServerCommandGet(AContext, ARequestInfo, AResponseInfo);
@@ -751,7 +785,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::OnFrameCaptureCompleted(System:
   {
 //   LastTimeStamp=FrameTime/10000;
 //   *WriteSource<<Frame_Bitmap;
-   WriteSourceSafe(Frame_Bitmap, FrameTime/10000, false);
+   WriteSourceSafe(Frame_Bitmap, double(FrameTime)/(10000000.0*86400), false);
   }
   else
   {
@@ -759,7 +793,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::OnFrameCaptureCompleted(System:
    ConvertBitmap->Assign(Frame_Bitmap);
    ConvertBitmap->PixelFormat=pf24bit;
 //   *WriteSource<<ConvertBitmap;
-   WriteSourceSafe(ConvertBitmap, FrameTime/10000, false);
+   WriteSourceSafe(ConvertBitmap, double(FrameTime)/(10000000.0*86400), false);
   }
 
 //	 if(WaitForSingleObject(SourceUnlock,30) == WAIT_TIMEOUT)
@@ -783,17 +817,24 @@ void __fastcall TVideoCaptureThreadVideoGrabber::Calculate(void)
   return;
 
  int wait_time=30;
+ double fps=1;
  if(VideoGrabber->FrameRate>0)
+ {
   wait_time=1000.0/VideoGrabber->FrameRate;
+  fps=VideoGrabber->FrameRate;
+ }
  if(VideoGrabber->PlayerFrameRate>0)
+ {
   wait_time=1000.0/VideoGrabber->PlayerFrameRate;
+  fps=VideoGrabber->PlayerFrameRate;
+ }
 
  Frame->UpdateInterval=wait_time;
  if(WaitForSingleObject(VideoGrabberCompleted, wait_time) == WAIT_TIMEOUT)
  {
   if(WaitForSingleObject(CaptureEnabled,10) != WAIT_TIMEOUT)
   {
-   ++LastTimeStamp;
+   LastTimeStamp+=(1.0/fps)/86400.0;
    if(MIsEngineInit(Frame->FrameIndex))
     MEnv_CallSourceController(Frame->FrameIndex);
    TVideoCaptureThread::AfterCalculate();
@@ -892,12 +933,12 @@ bool TVideoCaptureThreadVideoGrabberAvi::SetFileName(const std::string& value)
 // Управление потоком
 // --------------------------
 // Меняет временную метку с блокировкой
-bool TVideoCaptureThreadVideoGrabberAvi::SetLastTimeStampSafe(long long time_stamp)
+bool TVideoCaptureThreadVideoGrabberAvi::SetLastTimeStampSafe(double time_stamp)
 {
  TVideoCaptureThread::SetLastTimeStampSafe(time_stamp);
  if(WaitForSingleObject(FrameNotInProgress,1000) == WAIT_TIMEOUT)
   return false;
- VideoGrabber->PlayerTimePosition=time_stamp*10000;
+ VideoGrabber->PlayerTimePosition=time_stamp*10000000.0*86400.0;
  return true;
 }
 
@@ -1218,7 +1259,7 @@ void __fastcall TVideoCaptureThreadSharedMemory::Calculate(void)
 	 memcpy(&time_stamp,&PipeBuffer[0],sizeof(time_stamp));
 	 memcpy(&mem_size,&PipeBuffer[8],sizeof(mem_size));
 
-	 if(LastTimeStamp == time_stamp)
+	 if(LastTimeStamp == time_stamp/(86400.0*1000.0))
 	 {
 	  Sleep(20);
 	  return;
@@ -1252,7 +1293,7 @@ void __fastcall TVideoCaptureThreadSharedMemory::Calculate(void)
 	 RDK::UBitmap* old_read_source=ReadSource;
 	 ReadSource=WriteSource;
 	 WriteSource=old_read_source;
-	 LastTimeStamp=time_stamp;
+	 LastTimeStamp=time_stamp/(86400.0*1000.0);
 	 SetEvent(SourceUnlock);
 	}
    }

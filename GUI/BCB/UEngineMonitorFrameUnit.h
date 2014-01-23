@@ -68,9 +68,9 @@ bool SetMinInterstepsInterval(int value);
 // --------------------------
 // Управление потоком
 // --------------------------
-void __fastcall BeforeCalculate(void);
+virtual void __fastcall BeforeCalculate(void);
 
-void __fastcall AfterCalculate(void);
+virtual void __fastcall AfterCalculate(void);
 
 virtual void __fastcall Execute(void);
 // --------------------------
@@ -114,6 +114,11 @@ public:		// User declarations
 /// 1 - многопоточный режим
 int ChannelsMode;
 
+/// Режим использования времени для расчета
+/// 0 - системное время
+/// 1 - время источника данных
+int CalculationTimeSourceMode;
+
 // Режим расчетов
 // 0 - простой расчет
 // 1 - расчет в реальном времени
@@ -153,6 +158,12 @@ void SetChannelsMode(int mode);
 // Управление режимом расчетов
 int GetCalculateMode(int channel_index) const;
 void SetCalculateMode(int channel_index, int value);
+
+/// Режим использования времени для расчета
+/// 0 - системное время
+/// 1 - время источника данных
+int GetCalculationTimeSourceMode(void) const;
+bool SetCalculationTimeSourceMode(int value);
 
 void SetMinInterstepsInterval(int channel_index, int value);
 

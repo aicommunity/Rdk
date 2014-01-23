@@ -282,7 +282,7 @@ void InitByCamera(int camera_index, int input_index, int size_index, int subtype
 void InitByIPCamera(const String camera_url, const String user_name, const String user_password);
 
 // Инициализация последовательностью изображений
-bool InitByImageSequence(const String &pathname);
+bool InitByImageSequence(const String &pathname, double fps);
 
 // Инициализация http-сервера
 bool InitByHttpServer(int listen_port);

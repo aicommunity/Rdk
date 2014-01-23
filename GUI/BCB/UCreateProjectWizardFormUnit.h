@@ -56,6 +56,7 @@ __published:	// IDE-managed Components
 	TLabeledEdit *NumInputsLabeledEdit;
 	TLabeledEdit *NumOutputsLabeledEdit;
 	TCheckBox *UpendInputImageCheckBox;
+	TRadioGroup *CalculationSourceTimeModeRadioGroup;
 	void __fastcall FinishButtonClick(TObject *Sender);
 	void __fastcall Button1Click(TObject *Sender);
 	void __fastcall ProjectTypeRadioGroupClick(TObject *Sender);

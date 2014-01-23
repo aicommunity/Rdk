@@ -317,37 +317,11 @@ void TVideoOutputFrame::InitByIPCamera(const String camera_url, const String use
 }
 
 // »нициализаци€ последовательностью изображений
-bool TVideoOutputFrame::InitByImageSequence(const String &pathname)
+bool TVideoOutputFrame::InitByImageSequence(const String &pathname, double fps)
 {
  StopButtonClick(this);
  Mode=4;
-// StartButtonClick(this);
-/*
- BmpSequencePathName=AnsiString(pathname+"\\").c_str();
 
- RDK::FindFilesList(BmpSequencePathName, "*.bmp", true, BmpSequenceNames);
- if(BmpSequenceNames.size() == 0)
-  RDK::FindFilesList(BmpSequencePathName, "*.jpg", true, BmpSequenceNames);
- if(BmpSequenceNames.size() == 0)
-  RDK::FindFilesList(BmpSequencePathName, "*.jpeg", true, BmpSequenceNames);
-
- CurrentBmpSequenceIndex=0;
-
- LastReadSequenceIndex=-1;
- if(BmpSequenceNames.size()>0)
- {
-  LoadImageFromSequence(0,BmpSource);
-  BmpSource.SetColorModel(RDK::ubmRGB24);
-  LastReadSequenceIndex=0;
- }
- else
- {
-  BmpSource.Clear();
-  LastReadSequenceIndex=-1;
- }
-
- UpdateInterfaceFlag=true;
- UpdateInterfaceFlag=false;*/
  if(!DestroyCaptureThread())
   return false;
  if(!CaptureThread)
@@ -361,6 +335,7 @@ bool TVideoOutputFrame::InitByImageSequence(const String &pathname)
  {
   thread->SetPathName(AnsiString(pathname).c_str());
   thread->SetRepeatFlag(RepeatSequenceFlag);
+  thread->SetFps(fps);
   MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, 0);
  }
 
@@ -872,7 +847,7 @@ void TVideoOutputFrame::ABeforeCalculate(void)
 // if(UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode() == 0)
   if(CaptureThread)
   {
-   long long time_stamp=0;
+   double time_stamp=0;
    CaptureThread->ReadSourceSafe(BmpSource,time_stamp,false);
  /*
 	std::string sstamp;
@@ -959,21 +934,21 @@ void TVideoOutputFrame::AUpdateInterface(void)
 // if(UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode() != 0 /*&& !IsStarted*/)
   if(CaptureThread)
   {
-   long long time_stamp=0;
+   double time_stamp=0;
 	CaptureThread->ReadSourceSafe(BmpSource,time_stamp,false);
 
-   if(Mode == 4)
+/*   if(Mode == 4)
    {
 //	std::string sstamp;
 //	RDK::UTimeStamp stamp(double(time_stamp),1);
 //	stamp>>sstamp;
 	TimeEdit->EditMask="";
-	TimeEdit->Text=IntToStr(time_stamp);
+	TimeEdit->Text=FloatToStr(int(time_stamp*86400.0));
    }
-   else
+   else*/
    {
 	std::string sstamp;
-	RDK::UTimeStamp stamp(double(time_stamp/1000.0),25);
+	RDK::UTimeStamp stamp(double((time_stamp*86400.0)),25);
 	stamp>>sstamp;
 	TimeEdit->EditMask="000\:00\:00\:00;1;_";
 	TimeEdit->Text=sstamp.c_str();

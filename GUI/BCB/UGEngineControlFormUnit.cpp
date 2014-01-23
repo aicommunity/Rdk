@@ -368,6 +368,9 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
  int engines_mode=ProjectXml.ReadInteger("EnginesMode",0);
  UEngineMonitorForm->EngineMonitorFrame->SetChannelsMode(engines_mode);
 
+ int calc_time_mode=ProjectXml.ReadInteger("CalculationTimeSourceMode",0);
+ UEngineMonitorForm->EngineMonitorFrame->SetCalculationTimeSourceMode(calc_time_mode);
+
  int num_engines=ProjectXml.ReadInteger("NumEngines",1);
  if(num_engines<=0)
   num_engines=1;
@@ -956,6 +959,7 @@ try{
 
  ProjectXml.SelectNodeRoot("Project/MultiGeneral");
  ProjectXml.WriteInteger("EnginesMode",UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode());
+ ProjectXml.WriteInteger("CalculationTimeSourceMode",UEngineMonitorForm->EngineMonitorFrame->GetCalculationTimeSourceMode());
 
  ProjectXml.WriteInteger("NumEngines",GetNumEngines());
  ProjectXml.WriteInteger("SelectedEngineIndex",GetSelectedEngineIndex());
@@ -1536,6 +1540,8 @@ void __fastcall TUGEngineControlForm::CreateProjectItemClick(TObject *Sender)
 
   ProjectName=UCreateProjectWizardForm->ProjectNameLabeledEdit->Text;
   ProjectDescription=UCreateProjectWizardForm->ProjectDescriptionRichEdit->Text;
+
+  UEngineMonitorForm->EngineMonitorFrame->SetCalculationTimeSourceMode(UCreateProjectWizardForm->CalculationSourceTimeModeRadioGroup->ItemIndex);
  }
 }
 //---------------------------------------------------------------------------
@@ -1621,6 +1627,7 @@ void __fastcall TUGEngineControlForm::ProjectOptions1Click(TObject *Sender)
  UCreateProjectWizardForm->ProjectAutoSaveFlagCheckBox->Checked=ProjectAutoSaveFlag;
  UCreateProjectWizardForm->ProjectTimeStepEdit->Text=IntToStr(DefaultTimeStep[GetSelectedEngineIndex()]);
  UCreateProjectWizardForm->ProjectCalculationModeRadioGroup->ItemIndex=CalculationMode[GetSelectedEngineIndex()];
+ UCreateProjectWizardForm->CalculationSourceTimeModeRadioGroup->ItemIndex=UEngineMonitorForm->EngineMonitorFrame->GetCalculationTimeSourceMode();
 
  UCreateProjectWizardForm->PredefinedStructure=PredefinedStructure[GetSelectedEngineIndex()];
  if(PredefinedStructure[GetSelectedEngineIndex()])
@@ -1658,6 +1665,7 @@ void __fastcall TUGEngineControlForm::ProjectOptions1Click(TObject *Sender)
 
   ProjectName=UCreateProjectWizardForm->ProjectNameLabeledEdit->Text;
   ProjectDescription=UCreateProjectWizardForm->ProjectDescriptionRichEdit->Text;
+  UEngineMonitorForm->EngineMonitorFrame->SetCalculationTimeSourceMode(UCreateProjectWizardForm->CalculationSourceTimeModeRadioGroup->ItemIndex);
   UpdateInterface(true);
  }
 }

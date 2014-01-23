@@ -461,6 +461,17 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
         Caption = 'Repeat'
         TabOrder = 3
       end
+      object ImageSequenceFpsLabeledEdit: TLabeledEdit
+        Left = 8
+        Top = 111
+        Width = 49
+        Height = 21
+        EditLabel.Width = 22
+        EditLabel.Height = 13
+        EditLabel.Caption = 'FPS:'
+        TabOrder = 4
+        Text = '25.0'
+      end
     end
     object HttpServerTabSheet: TTabSheet
       Caption = 'Http Server'

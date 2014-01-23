@@ -344,7 +344,7 @@ void __fastcall TVideoGetBitmapFrameFromVideoThread::Calculate(void)
  if(VideoOutputFrame)
  {
   //RDK::UBitmap temp;
-  long long time_stamp;
+  double time_stamp;
   VideoOutputFrame->CaptureThread->ReadSourceSafe(TempBitmap, time_stamp, false);
   if(TempBitmap.GetData())
    WriteSourceSafe(TempBitmap, false);

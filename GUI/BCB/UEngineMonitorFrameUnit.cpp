@@ -145,8 +145,14 @@ void __fastcall TEngineThread::Execute(void)
   BeforeCalculate();
   if(GetNumEngines()>ChannelIndex)
   {
-   TDateTime dt=TDateTime::CurrentDateTime();
-   MModel_SetDoubleSourceTime(ChannelIndex,dt.operator double());
+   if(UEngineMonitorForm->EngineMonitorFrame->GetCalculationTimeSourceMode() == 0)
+   {
+    TDateTime dt=TDateTime::CurrentDateTime();
+	MModel_SetDoubleSourceTime(ChannelIndex,dt.operator double());
+   }
+   else
+   if(UEngineMonitorForm->EngineMonitorFrame->GetCalculationTimeSourceMode() == 1)
+	MModel_SetDoubleSourceTime(ChannelIndex,UEngineMonitorForm->EngineMonitorFrame->GetServerTimeStamp(ChannelIndex)/(86400.0*1000.0)/*dt.operator double()*/);
    #ifdef RDK_VIDEO
    TVideoOutputFrame* video=VideoOutputForm->GetVideoOutputFrame(ChannelIndex);
    if(video)
@@ -173,6 +179,7 @@ __fastcall TUEngineMonitorFrame::TUEngineMonitorFrame(TComponent* Owner)
  AlwaysUpdateFlag=true;
  UpdateInterval=100;
  ChannelsMode=0;
+ CalculationTimeSourceMode=0;
 }
 
 __fastcall TUEngineMonitorFrame::~TUEngineMonitorFrame(void)
@@ -211,6 +218,24 @@ void TUEngineMonitorFrame::SetCalculateMode(int channel_index,int value)
  if(ThreadChannels.size()>channel_index)
   ThreadChannels[channel_index]->SetCalculateMode(value);
 }
+
+/// Режим использования времени для расчета
+/// 0 - системное время
+/// 1 - время источника данных
+int TUEngineMonitorFrame::GetCalculationTimeSourceMode(void) const
+{
+ return CalculationTimeSourceMode;
+}
+
+bool TUEngineMonitorFrame::SetCalculationTimeSourceMode(int value)
+{
+ if(CalculationTimeSourceMode == value)
+  return true;
+
+ CalculationTimeSourceMode=value;
+ return true;
+}
+
 
 void TUEngineMonitorFrame::SetMinInterstepsInterval(int channel_index, int value)
 {
@@ -506,8 +531,14 @@ void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
    }
    CalculateSignal[i]=false;
 
-   TDateTime dt=TDateTime::CurrentDateTime();
-   MModel_SetDoubleSourceTime(i,dt.operator double());
+   if(CalculationTimeSourceMode == 0)
+   {
+	TDateTime dt=TDateTime::CurrentDateTime();
+	MModel_SetDoubleSourceTime(i,dt.operator double());
+   }
+   else
+   if(CalculationTimeSourceMode == 1)
+	MModel_SetDoubleSourceTime(i,ServerTimeStamp[i]/(86400.0*1000.0));
    switch(CalculateMode[i])
    {
    case 0:

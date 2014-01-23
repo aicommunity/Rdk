@@ -194,6 +194,8 @@ void TVideoGrabberControlFrame::ASaveParameters(RDK::USerStorageXML &xml)
  }
 
  xml.WriteString("ImageSequencePath",AnsiString(ImageSequencePathEdit->Text).c_str());
+ xml.WriteString("ImageSequenceFps",AnsiString(ImageSequenceFpsLabeledEdit->Text).c_str());
+
 
  xml.WriteString("IPCameraUrl",AnsiString(IPCameraUrlEdit->Text).c_str());
  xml.WriteString("IPCameraUserName",AnsiString(IPCameraUserNameEdit->Text).c_str());
@@ -229,6 +231,7 @@ void TVideoGrabberControlFrame::ALoadParameters(RDK::USerStorageXML &xml)
   ImageFileNameEdit->Text=ExtractFileName(ImageFileNameEdit->Text);
 
  ImageSequencePathEdit->Text=xml.ReadString("ImageSequencePath","").c_str();
+ ImageSequenceFpsLabeledEdit->Text=xml.ReadString("ImageSequenceFps","25.0").c_str();
 
  RepeatSequenceCheckBox->Checked=xml.ReadBool("RepeatSequenceCheckBox",false);
  RepeatVideoCheckBox->Checked=xml.ReadBool("RepeatVideoCheckBox",false);
@@ -378,7 +381,13 @@ void __fastcall TVideoGrabberControlFrame::VCapturePageControlChange(TObject *Se
  else
  if(VCapturePageControl->ActivePage == ImageSequenceTabSheet)
  {
-  VideoOutputFrame->InitByImageSequence(ImageSequencePathEdit->Text);
+  std::string s_fps=AnsiString(ImageSequenceFpsLabeledEdit->Text).c_str();
+  std::string::size_type i=s_fps.find_first_of(",");
+  if(i != std::string::npos)
+   s_fps[i]='.';
+
+  double fps=RDK::atof(s_fps);
+  VideoOutputFrame->InitByImageSequence(ImageSequencePathEdit->Text,fps);
   VideoOutputFrame->SetRepeatSequenceFlag(RepeatSequenceCheckBox->Checked);
  }
  else
@@ -450,7 +459,7 @@ void __fastcall TVideoGrabberControlFrame::OpenImageFileButtonClick(TObject *Sen
 
 void __fastcall TVideoGrabberControlFrame::ImageSequencePathBrowseButtonClick(TObject *Sender)
 {
- String chosenDir=ExtractFilePath(Application->ExeName);
+ String chosenDir="";//ExtractFilePath(Application->ExeName);
 
  if(SelectDirectory("Select image sequence directory", ExtractFilePath(Application->ExeName), chosenDir,TSelectDirExtOpts() << sdNewFolder << sdNewUI))
  {
@@ -461,7 +470,15 @@ void __fastcall TVideoGrabberControlFrame::ImageSequencePathBrowseButtonClick(TO
   return;
 
  SelectMode(4);
- VideoOutputFrame->InitByImageSequence(ImageSequencePathEdit->Text);
+ double fps=25.0;
+ std::string s_fps=AnsiString(ImageSequenceFpsLabeledEdit->Text).c_str();
+ std::string::size_type i=s_fps.find_first_of(",");
+ if(i != std::string::npos)
+  s_fps[i]='.';
+
+ fps=RDK::atof(s_fps);
+
+ VideoOutputFrame->InitByImageSequence(ImageSequencePathEdit->Text,fps);
 
  UpdateInterface();
 }
