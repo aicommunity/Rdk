@@ -75,7 +75,7 @@ HANDLE SourceUnlock;
 HANDLE SourceWriteUnlock;
 
 /// Выставляется на время работы видеозахвата
-HANDLE CaptureEnabled;
+//HANDLE CaptureEnabled;
 
 /// Сбрасывается на время ожидания расчета
 HANDLE CalcCompleteEvent;
@@ -193,7 +193,7 @@ class TVideoGetBitmapFrameFromComponentThread : public TVideoGetBitmapFrameThrea
 {
 protected: // Временные изображения
 RDK::UBitmap TempSource;
-Graphics::TBitmap* TempBitmap;
+RDK::UBitmap TempBitmap;
 
 // Данные о компоненте источнике
 std::string ComponentName;
@@ -273,6 +273,7 @@ __published:	// IDE-managed Components
 	TGroupBox *VideoControlGroupBox;
 	TSplitter *Splitter1;
 	TSplitter *Splitter2;
+	TComboBox *ComboBox1;
 	void __fastcall NetworkStreamingButtonClick(TObject *Sender);
 	void __fastcall StopNetworkStreamingButtonClick(TObject *Sender);
 	void __fastcall VideoGrabberVideoFromBitmapsNextFrameNeeded(TObject *Sender, bool FirstSample);

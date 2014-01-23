@@ -49,7 +49,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
       Caption = 'VideoGrabber'
       Color = clBlack
       Visible = False
-      ASFVideoWidth = -1
       AspectRatioToUse = -1.000000000000000000
       AudioCompressor = 0
       AutoFileNameDateTimeFormat = 'yymmdd_hhmmss_zzz'
@@ -57,11 +56,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
       BurstCount = 0
       BurstMode = True
       Display_Active = False
-      DualDisplay_Active = False
-      DualDisplay_Embedded = False
-      DualDisplay_Left = 20
-      DualDisplay_Top = 400
-      DualDisplay_VideoPortEnabled = False
       Cropping_Zoom = 1.000000000000000000
       FrameGrabber = fg_PreviewStream
       LicenseString = 'N/A'
@@ -172,10 +166,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
       TabOrder = 0
       object NetworkStreamingTabSheet: TTabSheet
         Caption = 'Network Streaming'
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object StreamingSettingsGroupBox: TGroupBox
           Left = 3
           Top = 3
@@ -303,10 +293,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
       object RecordTabSheet: TTabSheet
         Caption = 'RecordTabSheet'
         ImageIndex = 1
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object RecordingMethodLabel: TLabel
           Left = 3
           Top = 5
@@ -430,6 +416,15 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
           'Component'
           'Frame')
       end
+    end
+    object ComboBox1: TComboBox
+      Left = 208
+      Top = 127
+      Width = 145
+      Height = 21
+      TabOrder = 2
+      Text = 'ComboBox1'
+      Visible = False
     end
   end
   object LogPanel: TPanel
