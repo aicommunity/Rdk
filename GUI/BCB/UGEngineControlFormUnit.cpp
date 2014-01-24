@@ -1120,7 +1120,10 @@ TTabSheet* TUGEngineControlForm::AddComponentControlFormPage(const string &compo
  int control_index=FindComponentControlPage(component_name);
 
  if(control_index>=0)
+ {
+  PageControl1->ActivePageIndex=control_index;
   return PageControl1->Pages[control_index];
+ }
 
  std::string name=Model_GetComponentClassName(component_name.c_str());
 
@@ -1144,6 +1147,7 @@ TTabSheet* TUGEngineControlForm::AddComponentControlFormPage(const string &compo
   form->Show();
   form->UpdateInterface(true);
   tab->Caption=form->Caption;
+  PageControl1->ActivePage=tab;
   return tab;
  }
  return 0;
