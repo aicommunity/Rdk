@@ -1062,22 +1062,52 @@ TTabSheet* TUGEngineControlForm::AddSpecialFramePage(const String &type, const S
 TTabSheet* TUGEngineControlForm::AddSpecialFormPage(const String &type)
 {
  TTabSheet* tab=0;
+ TUVisualControllerForm *form=0;
+
+ tab=FindSpecialFormPage(type, form);
+ if(tab)
+  return tab;
+
+ if(form && form->ClassNameIs(type))
+ {
+  tab=new TTabSheet(PageControl1);
+  tab->PageControl=PageControl1;
+
+  AddSpecialFormToPage(form, tab, form->Caption);
+ }
+ return tab;
+}
+
+// Ищет вкладку с заданным именем для заданной специальной форме
+TTabSheet* TUGEngineControlForm::FindSpecialFormPage(const String &type, TUVisualControllerForm* &form)
+{
+ TTabSheet* tab=0;
+
   std::map<std::string, TUVisualControllerForm*>::iterator I;
   I=SpecialForms.begin();
   for(;I != SpecialForms.end();++I)
   {
-   TUVisualControllerForm *form=dynamic_cast<TUVisualControllerForm*>(I->second);
+   form=dynamic_cast<TUVisualControllerForm*>(I->second);
    if(form && form->ClassNameIs(type))
    {
-	tab=new TTabSheet(PageControl1);
-	tab->PageControl=PageControl1;
+	for(int i=0;i<PageControl1->PageCount;i++)
+	{
+	 if(PageControl1->Pages[i]->ComponentCount>0)
+	 {
+	  TUVisualControllerForm* test_form=dynamic_cast<TUVisualControllerForm*>(PageControl1->Pages[i]->Components[0]);
+	  if(form == test_form)
+	  {
+	   return PageControl1->Pages[i];
+	  }
+	 }
+	}
 
-	AddSpecialFormToPage(form, tab, form->Caption);
 	break;
    }
   }
  return tab;
 }
+
 
 // Создает новую вкладку с заданным именем для формы управления компонентом
 // Если этим копонентом уже управляют, то возвращает указатель на такую вкладку

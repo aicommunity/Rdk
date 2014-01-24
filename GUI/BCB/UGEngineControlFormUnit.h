@@ -334,6 +334,9 @@ TTabSheet* AddSpecialFramePage(const String &type, const String &caption);
 // Создает новую вкладку с заданным именем для специальных форм
 TTabSheet* AddSpecialFormPage(const String &type);
 
+// Ищет вкладку с заданным именем для заданной специальной форме
+TTabSheet* FindSpecialFormPage(const String &type, TUVisualControllerForm* &form);
+
 // Создает новую вкладку с заданным именем для формы управления компонентом
 // Если этим копонентом уже управляют, то возвращает указатель на такую вкладку
 TTabSheet* AddComponentControlFormPage(const string &component_name);
