@@ -184,6 +184,9 @@ void TVideoGrabberControlFrame::ASaveParameters(RDK::USerStorageXML &xml)
   xml.WriteString("VideoFileName",AnsiString(VFNameEdit->Text).c_str());
  }
 
+ xml.WriteBool("ProcessAllFramesVideoCheckBox",ProcessAllFramesVideoCheckBox->Checked);
+
+
  if(ExtractFilePath(ImageFileNameEdit->Text).Length() == 0)
  {
   xml.WriteString("PictureFileName",AnsiString(UGEngineControlForm->ProjectPath+ImageFileNameEdit->Text).c_str());
@@ -195,7 +198,7 @@ void TVideoGrabberControlFrame::ASaveParameters(RDK::USerStorageXML &xml)
 
  xml.WriteString("ImageSequencePath",AnsiString(ImageSequencePathEdit->Text).c_str());
  xml.WriteString("ImageSequenceFps",AnsiString(ImageSequenceFpsLabeledEdit->Text).c_str());
-
+ xml.WriteString("PictureFileFps",AnsiString(PictureFileFpsLabeledEdit->Text).c_str());
 
  xml.WriteString("IPCameraUrl",AnsiString(IPCameraUrlEdit->Text).c_str());
  xml.WriteString("IPCameraUserName",AnsiString(IPCameraUserNameEdit->Text).c_str());
@@ -226,12 +229,15 @@ void TVideoGrabberControlFrame::ALoadParameters(RDK::USerStorageXML &xml)
  if(ExtractFilePath(VFNameEdit->Text) == UGEngineControlForm->ProjectPath)
   VFNameEdit->Text=ExtractFileName(VFNameEdit->Text);
 
+ ProcessAllFramesVideoCheckBox->Checked=xml.ReadBool("ProcessAllFramesVideoCheckBox",false);
+
  ImageFileNameEdit->Text=xml.ReadString("PictureFileName","").c_str();
  if(ExtractFilePath(ImageFileNameEdit->Text) == UGEngineControlForm->ProjectPath)
   ImageFileNameEdit->Text=ExtractFileName(ImageFileNameEdit->Text);
 
  ImageSequencePathEdit->Text=xml.ReadString("ImageSequencePath","").c_str();
  ImageSequenceFpsLabeledEdit->Text=xml.ReadString("ImageSequenceFps","25.0").c_str();
+ PictureFileFpsLabeledEdit->Text=xml.ReadString("PictureFileFps","25.0").c_str();
 
  RepeatSequenceCheckBox->Checked=xml.ReadBool("RepeatSequenceCheckBox",false);
  RepeatVideoCheckBox->Checked=xml.ReadBool("RepeatVideoCheckBox",false);
@@ -359,6 +365,7 @@ void __fastcall TVideoGrabberControlFrame::VCapturePageControlChange(TObject *Se
 	VideoOutputFrame->InitByAvi(VFNameEdit->Text);
 
    VideoOutputFrame->SetRepeatVideoFlag(RepeatVideoCheckBox->Checked);
+   VideoOutputFrame->SetProcessAllFramesFlag(ProcessAllFramesVideoCheckBox->Checked);
   }
  }
  else
@@ -366,10 +373,16 @@ void __fastcall TVideoGrabberControlFrame::VCapturePageControlChange(TObject *Se
  {
   if(ImageFileNameEdit->Text != "")
   {
+   std::string s_fps=AnsiString(PictureFileFpsLabeledEdit->Text).c_str();
+   std::string::size_type i=s_fps.find_first_of(",");
+   if(i != std::string::npos)
+	s_fps[i]='.';
+
+   double fps=RDK::atof(s_fps);
    if(ExtractFilePath(ImageFileNameEdit->Text).Length() == 0)
-	VideoOutputFrame->InitByBmp(UGEngineControlForm->ProjectPath+ImageFileNameEdit->Text);
+	VideoOutputFrame->InitByBmp(UGEngineControlForm->ProjectPath+ImageFileNameEdit->Text,fps);
    else
-	VideoOutputFrame->InitByBmp(ImageFileNameEdit->Text);
+	VideoOutputFrame->InitByBmp(ImageFileNameEdit->Text,fps);
   }
  }
  else
@@ -436,6 +449,14 @@ void __fastcall TVideoGrabberControlFrame::OpenImageFileButtonClick(TObject *Sen
  if(!VideoOutputFrame)
   return;
 
+ double fps=25.0;
+ std::string s_fps=AnsiString(PictureFileFpsLabeledEdit->Text).c_str();
+ std::string::size_type i=s_fps.find_first_of(",");
+ if(i != std::string::npos)
+  s_fps[i]='.';
+
+ fps=RDK::atof(s_fps);
+
  String FileName;
 // if(ExtractFilePath(Application->ExeName) == ExtractFilePath(PicturesOpenDialog->FileName))
  if(UGEngineControlForm->ProjectPath == ExtractFilePath(PicturesOpenDialog->FileName) || PictureTruncPathCheckBox->Checked == true)
@@ -443,14 +464,14 @@ void __fastcall TVideoGrabberControlFrame::OpenImageFileButtonClick(TObject *Sen
   FileName=ExtractFileName(PicturesOpenDialog->FileName);
   ImageFileNameEdit->Text=FileName;
   SelectMode(2);
-  VideoOutputFrame->InitByBmp(UGEngineControlForm->ProjectPath+FileName);
+  VideoOutputFrame->InitByBmp(UGEngineControlForm->ProjectPath+FileName,fps);
  }
  else
  {
   FileName=PicturesOpenDialog->FileName;
   ImageFileNameEdit->Text=FileName;
   SelectMode(2);
-  VideoOutputFrame->InitByBmp(FileName);
+  VideoOutputFrame->InitByBmp(FileName,fps);
  }
 
  UpdateInterface();

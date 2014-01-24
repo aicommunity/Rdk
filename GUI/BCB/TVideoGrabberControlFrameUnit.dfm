@@ -10,7 +10,7 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
     Top = 0
     Width = 453
     Height = 297
-    ActivePage = ImageSequenceTabSheet
+    ActivePage = PictureFileTabSheet
     Align = alClient
     DoubleBuffered = True
     ParentDoubleBuffered = False
@@ -366,6 +366,14 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
           Caption = 'Repeat'
           TabOrder = 3
         end
+        object ProcessAllFramesVideoCheckBox: TCheckBox
+          Left = 8
+          Top = 95
+          Width = 113
+          Height = 17
+          Caption = 'Process all frames'
+          TabOrder = 4
+        end
       end
     end
     object PictureFileTabSheet: TTabSheet
@@ -409,6 +417,17 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
         Height = 17
         Caption = 'Truncate full path'
         TabOrder = 2
+      end
+      object PictureFileFpsLabeledEdit: TLabeledEdit
+        Left = 8
+        Top = 87
+        Width = 49
+        Height = 21
+        EditLabel.Width = 22
+        EditLabel.Height = 13
+        EditLabel.Caption = 'FPS:'
+        TabOrder = 3
+        Text = '25.0'
       end
     end
     object ImageSequenceTabSheet: TTabSheet

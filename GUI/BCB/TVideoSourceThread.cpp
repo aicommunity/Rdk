@@ -282,6 +282,8 @@ __fastcall TVideoCaptureThreadBmp::TVideoCaptureThreadBmp(TVideoOutputFrame *fra
  : TVideoCaptureThread(frame, CreateSuspended)
 {
  TempBitmap=new Graphics::TBitmap;
+ Fps=25.0;
+ CurrentTimeStamp=0;
 }
 
 __fastcall TVideoCaptureThreadBmp::~TVideoCaptureThreadBmp(void)
@@ -352,6 +354,22 @@ bool TVideoCaptureThreadBmp::SetPosition(long long index)
 {
  return true;
 }
+
+
+/// Устанавливает значение FPS
+double TVideoCaptureThreadBmp::GetFps(void) const
+{
+ return Fps;
+}
+
+bool TVideoCaptureThreadBmp::SetFps(double fps)
+{
+ if(Fps == fps)
+  return true;
+
+ Fps=fps;
+ return true;
+}
 // --------------------------
 
 // --------------------------
@@ -359,6 +377,7 @@ bool TVideoCaptureThreadBmp::SetPosition(long long index)
 // --------------------------
 void __fastcall TVideoCaptureThreadBmp::Start(void)
 {
+ CurrentTimeStamp=0;
  TVideoCaptureThread::Start();
 }
 
@@ -375,13 +394,24 @@ void __fastcall TVideoCaptureThreadBmp::BeforeCalculate(void)
 
 void __fastcall TVideoCaptureThreadBmp::AfterCalculate(void)
 {
-  TVideoCaptureThread::AfterCalculate();
+ if(Fps>0)
+ {
+  CurrentTimeStamp+=(1.0/Fps)/86400.0;
+ }
+ else
+ {
+  CurrentTimeStamp+=1.0/86400.0;
+ }
+ TVideoCaptureThread::AfterCalculate();
+/* if(Fps>0)
+  Sleep(1000.0/Fps);
+ else*/
   Sleep(30);
 }
 
 void __fastcall TVideoCaptureThreadBmp::Calculate(void)
 {
- double time_stamp=TDateTime::CurrentDateTime().operator double();
+ double time_stamp=CurrentTimeStamp;//TDateTime::CurrentDateTime().operator double();
  SetLastTimeStampSafe(time_stamp);
 }
 // --------------------------
@@ -396,6 +426,7 @@ __fastcall TVideoCaptureThreadBmpSequence::TVideoCaptureThreadBmpSequence(TVideo
 {
  TempBitmap=new Graphics::TBitmap;
  SyncMode=1;
+ Fps=25.0;
 }
 
 __fastcall TVideoCaptureThreadBmpSequence::~TVideoCaptureThreadBmpSequence(void)
@@ -521,7 +552,7 @@ void __fastcall TVideoCaptureThreadBmpSequence::AfterCalculate(void)
   }
  }
 
- Sleep(30);
+// Sleep(30);
 }
 
 void __fastcall TVideoCaptureThreadBmpSequence::Calculate(void)
@@ -927,6 +958,17 @@ bool TVideoCaptureThreadVideoGrabberAvi::SetFileName(const std::string& value)
  VideoGrabber->OpenPlayer();
  return true;
 }
+
+bool TVideoCaptureThreadVideoGrabberAvi::GetProcessAllFramesFlag(void) const
+{
+ return ProcessAllFramesFlag;
+}
+
+bool TVideoCaptureThreadVideoGrabberAvi::SetProcessAllFramesFlag(bool value)
+{
+ ProcessAllFramesFlag=value;
+ return true;
+}
 // --------------------------
 
 // --------------------------
@@ -961,6 +1003,16 @@ void __fastcall TVideoCaptureThreadVideoGrabberAvi::Stop(void)
 
 void __fastcall TVideoCaptureThreadVideoGrabberAvi::AfterCalculate(void)
 {
+ if(GetProcessAllFramesFlag())
+ {
+  VideoGrabber->BurstCount=1;
+  if(WaitForSingleObject(CaptureEnabled,0) != WAIT_TIMEOUT)
+	 VideoGrabber->RunPlayer();
+ }
+ else
+ {
+  VideoGrabber->BurstCount=0;
+ }
  if(VideoGrabber->PlayerFramePosition>0 && VideoGrabber->PlayerFramePosition>=VideoGrabber->PlayerFrameCount-100)
  {
   if(RepeatFlag)

@@ -256,6 +256,7 @@ bool IsStarted;
 protected:
 bool RepeatSequenceFlag;
 bool RepeatVideoFlag;
+bool ProcessAllFramesFlag;
 public:
 // ============================================================
 
@@ -270,10 +271,10 @@ bool DestroyCaptureThread(void);
 void InitByAvi(const String &filename);
 
 // Инициализация фрейма bmp-файлом
-void InitByBmp(const String &filename);
+void InitByBmp(const String &filename, double fps);
 
 // Устанавливает отдельное изображение
-bool InitByBmp(const RDK::UBitmap &bmp);
+bool InitByBmp(const RDK::UBitmap &bmp, double fps);
 
 // Инициализация фрейма камерой
 void InitByCamera(int camera_index, int input_index, int size_index, int subtype_index, int analog_index);
@@ -322,6 +323,7 @@ void SetSampleGeometryGraphics(RDK::MGraphics<double,2>& samplegraphics);
 /// Флаг повтора воспроизведения сначала после завершения
 bool SetRepeatVideoFlag(bool value);
 bool SetRepeatSequenceFlag(bool value);
+bool SetProcessAllFramesFlag(bool value);
 
 // -------------------------
 // Методы ввода вывода точек геометрии из параметров и переменных состояния компонент

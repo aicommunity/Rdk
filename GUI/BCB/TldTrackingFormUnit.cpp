@@ -141,7 +141,7 @@ void TTldTrackingForm::AAfterCalculate(void)
 	const_cast<RDK::UBitmap*>(bmp)->ReflectionX(&ResultBmp);
 
 	VideoOutputFrame1->ZoneSelectEnable=true;
-	VideoOutputFrame1->InitByBmp(ResultBmp);
+	VideoOutputFrame1->InitByBmp(ResultBmp,1);
    }
    else
 	ResultBmp.Fill(0);
@@ -168,7 +168,7 @@ void TTldTrackingForm::AAfterCalculate(void)
 	const_cast<RDK::UBitmap*>(bmp)->ReflectionX(&ResultBmp);
 
 	VideoOutputFrame1->ZoneSelectEnable=true;
-	VideoOutputFrame1->InitByBmp(ResultBmp);
+	VideoOutputFrame1->InitByBmp(ResultBmp,1);
    }
    else
 	ResultBmp.Fill(0);
@@ -330,7 +330,7 @@ void __fastcall TTldTrackingForm::GetFrameButtonClick(TObject *Sender)
   if(VideoOutputForm && VideoOutputForm->GetActiveVideoOutputFrame())
   {
    VideoOutputFrame1->ZoneSelectEnable=true;
-   VideoOutputFrame1->InitByBmp(VideoOutputForm->GetActiveVideoOutputFrame()->BmpSource);
+   VideoOutputFrame1->InitByBmp(VideoOutputForm->GetActiveVideoOutputFrame()->BmpSource,1);
   }
 /*
   //  const RDK::UBitmap* bmp=(const RDK::UBitmap*)Model_GetComponentBitmapInput(ComponentControlName.c_str(), 0);

@@ -149,9 +149,14 @@ protected: // Параметры
 /// Имя файла изображения
 std::string FileName;
 
+double Fps;
+
 protected: // Временные изображения
 RDK::UBitmap TempSource;
 Graphics::TBitmap* TempBitmap;
+
+double CurrentTimeStamp;
+
 
 public: // Методы
 // --------------------------
@@ -174,6 +179,10 @@ virtual long long GetNumBitmaps(void) const;
 /// Устанавливает текущую позицию в последовательности
 virtual long long GetPosition(void) const;
 virtual bool SetPosition(long long index);
+
+/// Устанавливает значение FPS
+double GetFps(void) const;
+bool SetFps(double fps);
 // --------------------------
 
 // --------------------------
@@ -368,6 +377,8 @@ protected: // Параметры
 /// Имя файла
 std::string FileName;
 
+bool ProcessAllFramesFlag;
+
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
@@ -382,6 +393,9 @@ virtual __fastcall ~TVideoCaptureThreadVideoGrabberAvi(void);
 /// Имя канала общей памяти
 const std::string& GetFileName(void) const;
 bool SetFileName(const std::string& value);
+
+bool GetProcessAllFramesFlag(void) const;
+bool SetProcessAllFramesFlag(bool value);
 // --------------------------
 
 // --------------------------

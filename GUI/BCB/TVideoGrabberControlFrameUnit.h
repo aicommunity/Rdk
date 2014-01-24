@@ -86,6 +86,8 @@ __published:    // IDE-managed Components
 	TCheckBox *RepeatVideoCheckBox;
 	TCheckBox *RepeatSequenceCheckBox;
 	TLabeledEdit *ImageSequenceFpsLabeledEdit;
+	TCheckBox *ProcessAllFramesVideoCheckBox;
+	TLabeledEdit *PictureFileFpsLabeledEdit;
     void __fastcall DeviceComboBoxSelect(TObject *Sender);
     void __fastcall InputComboBoxSelect(TObject *Sender);
     void __fastcall VideoSizeComboBoxSelect(TObject *Sender);

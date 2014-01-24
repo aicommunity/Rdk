@@ -173,7 +173,7 @@ void TVideoOutputFrame::InitByAvi(const String &filename)
 }
 
 // Инициализация фрейма bmp-файлом
-void TVideoOutputFrame::InitByBmp(const String &filename)
+void TVideoOutputFrame::InitByBmp(const String &filename, double fps)
 {
  if(CaptureThread && dynamic_cast<TVideoCaptureThreadBmp*>(CaptureThread))
  {
@@ -195,6 +195,7 @@ void TVideoOutputFrame::InitByBmp(const String &filename)
    {
 	thread->SetFileName(AnsiString(filename).c_str());
 	MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, 0);
+    thread->SetFps(fps);
    }
   }
  }
@@ -203,7 +204,7 @@ void TVideoOutputFrame::InitByBmp(const String &filename)
 }
 
 // Устанавливает отдельное изображение
-bool TVideoOutputFrame::InitByBmp(const RDK::UBitmap &bmp)
+bool TVideoOutputFrame::InitByBmp(const RDK::UBitmap &bmp, double fps)
 {
 // BmpSource=bmp;
 // BmpSource.SetColorModel(RDK::ubmRGB24);
@@ -213,6 +214,7 @@ bool TVideoOutputFrame::InitByBmp(const RDK::UBitmap &bmp)
 	long long time_stamp=0;//GetTickCount();
 	CaptureThread->WriteSourceSafe(bmp,time_stamp,false);
 	MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, 0);
+   dynamic_cast<TVideoCaptureThreadBmp*>(CaptureThread)->SetFps(fps);
  }
  else
  {
@@ -230,6 +232,7 @@ bool TVideoOutputFrame::InitByBmp(const RDK::UBitmap &bmp)
 	long long time_stamp=0;
 	thread->WriteSourceSafe(bmp,time_stamp,false);
 	MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, 0);
+	thread->SetFps(fps);
    }
   }
  }
@@ -750,6 +753,17 @@ bool TVideoOutputFrame::SetRepeatSequenceFlag(bool value)
  return true;
 }
 
+bool TVideoOutputFrame::SetProcessAllFramesFlag(bool value)
+{
+ RepeatVideoFlag=value;
+ TVideoCaptureThreadVideoGrabberAvi* thread=dynamic_cast<TVideoCaptureThreadVideoGrabberAvi*>(CaptureThread);
+ if(thread)
+ {
+  thread->SetProcessAllFramesFlag(ProcessAllFramesFlag);
+ }
+
+ return true;
+}
 
 // -------------------------
 // Методы ввода вывода точек геометрии из параметров и переменных состояния компонент
