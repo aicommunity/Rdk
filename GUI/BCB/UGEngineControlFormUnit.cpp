@@ -1066,7 +1066,10 @@ TTabSheet* TUGEngineControlForm::AddSpecialFormPage(const String &type)
 
  tab=FindSpecialFormPage(type, form);
  if(tab)
+ {
+  PageControl1->ActivePage=tab;
   return tab;
+ }
 
  if(form && form->ClassNameIs(type))
  {
@@ -1075,6 +1078,7 @@ TTabSheet* TUGEngineControlForm::AddSpecialFormPage(const String &type)
 
   AddSpecialFormToPage(form, tab, form->Caption);
  }
+ PageControl1->ActivePage=tab;
  return tab;
 }
 
