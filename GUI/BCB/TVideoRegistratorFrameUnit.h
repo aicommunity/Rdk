@@ -15,6 +15,7 @@
 
 #include "TUVisualController.h"
 #include "TUVisualControllerFrameUnit.h"
+#include "UComponentsListFormUnit.h"
 #include "VideoOutputFormUnit.h"
 #include "VideoOutputFrameUnit.h"
 #include "myrdk.h"
@@ -273,7 +274,7 @@ __published:	// IDE-managed Components
 	TGroupBox *VideoControlGroupBox;
 	TSplitter *Splitter1;
 	TSplitter *Splitter2;
-	TComboBox *ComboBox1;
+	TButton *BrowseComponentButton;
 	void __fastcall NetworkStreamingButtonClick(TObject *Sender);
 	void __fastcall StopNetworkStreamingButtonClick(TObject *Sender);
 	void __fastcall VideoGrabberVideoFromBitmapsNextFrameNeeded(TObject *Sender, bool FirstSample);
@@ -291,6 +292,7 @@ __published:	// IDE-managed Components
           DWORD FrameCount, double &FrameRate, __int64 &Duration);
 	void __fastcall StartPreviewButtonClick(TObject *Sender);
 	void __fastcall StopButtonClick(TObject *Sender);
+	void __fastcall BrowseComponentButtonClick(TObject *Sender);
 
 
 private:	// User declarations
@@ -305,6 +307,9 @@ int Mode;
 
 // Поток получения кадра
 TVideoGetBitmapFrameThread *BitmapFrameThread;
+
+// Указатель на форму выбора компоненты-источника
+TUComponentsListForm *MyComponentsListForm;
 
 // Данные
 // Хранилище декодированного в TBitmap кадра с камеры

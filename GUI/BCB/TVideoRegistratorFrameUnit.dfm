@@ -156,6 +156,85 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
     Constraints.MinHeight = 425
     Constraints.MinWidth = 380
     TabOrder = 1
+    object SourceControlGroupBox: TGroupBox
+      Left = 1
+      Top = 1
+      Width = 378
+      Height = 153
+      Align = alTop
+      Caption = 'Source Control'
+      TabOrder = 0
+      object SourceModeLabel: TLabel
+        Left = 3
+        Top = 107
+        Width = 59
+        Height = 13
+        Caption = 'SourceMode'
+      end
+      object ComponentNameLabeledEdit: TLabeledEdit
+        Left = 3
+        Top = 32
+        Width = 158
+        Height = 21
+        EditLabel.Width = 85
+        EditLabel.Height = 13
+        EditLabel.Caption = 'Component Name'
+        TabOrder = 0
+      end
+      object ComponentPropertyNameLabeledEdit: TLabeledEdit
+        Left = 211
+        Top = 32
+        Width = 158
+        Height = 21
+        EditLabel.Width = 100
+        EditLabel.Height = 13
+        EditLabel.Caption = 'Component Property'
+        TabOrder = 1
+      end
+      object FrameIndexLabeledEdit: TLabeledEdit
+        Left = 3
+        Top = 75
+        Width = 158
+        Height = 21
+        EditLabel.Width = 61
+        EditLabel.Height = 13
+        EditLabel.Caption = 'Frame Index'
+        TabOrder = 2
+        Text = '0'
+      end
+      object ChannelIndexLabeledEdit: TLabeledEdit
+        Left = 211
+        Top = 75
+        Width = 158
+        Height = 21
+        EditLabel.Width = 70
+        EditLabel.Height = 13
+        EditLabel.Caption = 'Channel Index'
+        TabOrder = 3
+        Text = '-1'
+      end
+      object SorceModeComboBox: TComboBox
+        Left = 3
+        Top = 126
+        Width = 158
+        Height = 21
+        ItemIndex = 1
+        TabOrder = 4
+        Text = 'Frame'
+        Items.Strings = (
+          'Component'
+          'Frame')
+      end
+      object BrowseComponentButton: TButton
+        Left = 208
+        Top = 122
+        Width = 161
+        Height = 25
+        Caption = 'Browse Component'
+        TabOrder = 5
+        OnClick = BrowseComponentButtonClick
+      end
+    end
     object PageControl: TPageControl
       Left = 1
       Top = 154
@@ -163,7 +242,7 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
       Height = 270
       ActivePage = RecordTabSheet
       Align = alClient
-      TabOrder = 0
+      TabOrder = 1
       object NetworkStreamingTabSheet: TTabSheet
         Caption = 'Network Streaming'
         object StreamingSettingsGroupBox: TGroupBox
@@ -346,85 +425,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
           TabOrder = 4
         end
       end
-    end
-    object SourceControlGroupBox: TGroupBox
-      Left = 1
-      Top = 1
-      Width = 378
-      Height = 153
-      Align = alTop
-      Caption = 'Source Control'
-      TabOrder = 1
-      object SourceModeLabel: TLabel
-        Left = 3
-        Top = 107
-        Width = 59
-        Height = 13
-        Caption = 'SourceMode'
-      end
-      object ComponentNameLabeledEdit: TLabeledEdit
-        Left = 3
-        Top = 32
-        Width = 158
-        Height = 21
-        EditLabel.Width = 85
-        EditLabel.Height = 13
-        EditLabel.Caption = 'Component Name'
-        TabOrder = 0
-      end
-      object ComponentPropertyNameLabeledEdit: TLabeledEdit
-        Left = 211
-        Top = 32
-        Width = 158
-        Height = 21
-        EditLabel.Width = 100
-        EditLabel.Height = 13
-        EditLabel.Caption = 'Component Property'
-        TabOrder = 1
-      end
-      object FrameIndexLabeledEdit: TLabeledEdit
-        Left = 3
-        Top = 75
-        Width = 158
-        Height = 21
-        EditLabel.Width = 61
-        EditLabel.Height = 13
-        EditLabel.Caption = 'Frame Index'
-        TabOrder = 2
-        Text = '0'
-      end
-      object ChannelIndexLabeledEdit: TLabeledEdit
-        Left = 211
-        Top = 75
-        Width = 158
-        Height = 21
-        EditLabel.Width = 70
-        EditLabel.Height = 13
-        EditLabel.Caption = 'Channel Index'
-        TabOrder = 3
-        Text = '-1'
-      end
-      object SorceModeComboBox: TComboBox
-        Left = 3
-        Top = 126
-        Width = 158
-        Height = 21
-        ItemIndex = 1
-        TabOrder = 4
-        Text = 'Frame'
-        Items.Strings = (
-          'Component'
-          'Frame')
-      end
-    end
-    object ComboBox1: TComboBox
-      Left = 208
-      Top = 127
-      Width = 145
-      Height = 21
-      TabOrder = 2
-      Text = 'ComboBox1'
-      Visible = False
     end
   end
   object LogPanel: TPanel

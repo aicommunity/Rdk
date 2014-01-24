@@ -271,7 +271,7 @@ void __fastcall TVideoGetBitmapFrameFromVideoThread::BeforeCalculate(void)
 void __fastcall TVideoGetBitmapFrameFromVideoThread::AfterCalculate(void)
 {
   TVideoGetBitmapFrameThread::AfterCalculate();
-  Sleep(30);
+  //Sleep(30);
 }
 
 void __fastcall TVideoGetBitmapFrameFromVideoThread::Calculate(void)
@@ -366,7 +366,7 @@ void __fastcall TVideoGetBitmapFrameFromComponentThread::BeforeCalculate(void)
 void __fastcall TVideoGetBitmapFrameFromComponentThread::AfterCalculate(void)
 {
   TVideoGetBitmapFrameThread::AfterCalculate();
-  Sleep(30);
+  //Sleep(30);
 }
 
 void __fastcall TVideoGetBitmapFrameFromComponentThread::Calculate(void)
@@ -397,15 +397,11 @@ __fastcall TTVideoRegistratorFrame::TTVideoRegistratorFrame(TComponent* Owner)
  // Формат метода записи
  RecordingMethodComboBox->Items->Add("rm_AVI");
  RecordingMethodComboBox->Items->Add("rm_ASF");
+ RecordingMethodComboBox->ItemIndex=0;
+
 
  // Загрузка списка компонент
- /*
- std::string comp_names_string=Model_GetComponentsNameList("");
- std::vector<std::string> comp_names;
- RDK::separatestring(comp_names_string, comp_names, ',');
- for(int i=0; i<comp_names.size(); i++)
-  ComboBox1->Items->Add((comp_names[i]).c_str());
- */
+ MyComponentsListForm=new TUComponentsListForm(this);
 }
 //---------------------------------------------------------------------------
 __fastcall TTVideoRegistratorFrame::~TTVideoRegistratorFrame(void)
@@ -418,6 +414,9 @@ __fastcall TTVideoRegistratorFrame::~TTVideoRegistratorFrame(void)
   delete BitmapFrameThread;
   BitmapFrameThread=0;
  }
+
+ if(MyComponentsListForm)
+  delete MyComponentsListForm;
 }
 //---------------------------------------------------------------------------
 // Методы
@@ -595,8 +594,12 @@ void __fastcall TTVideoRegistratorFrame::StopNetworkStreamingButtonClick(TObject
 
  if(BitmapFrameThread)
  {
-  BitmapFrameThread->Stop();
-  WaitForSingleObject(BitmapFrameThread->GetFrameNotInProgress(),30);
+  //WaitForSingleObject(BitmapFrameThread->GetCalcCompleteEvent(),1000);
+  BitmapFrameThread->Terminate();
+  WaitForSingleObject(BitmapFrameThread->GetFrameNotInProgress(),1000);
+  BitmapFrameThread->WaitFor();
+  delete BitmapFrameThread;
+  BitmapFrameThread=0;
  }
 
  UGEngineControlForm->Pause1Click(this);
@@ -677,8 +680,8 @@ void __fastcall TTVideoRegistratorFrame::VideoGrabberFrameCaptureCompleted(TObje
 void __fastcall TTVideoRegistratorFrame::StartRecordingButtonClick(TObject *Sender)
 {
  PrepareBitmapFrame();
- // recording settings
 
+ // recording settings
  InitRecordingSettings();
  VideoGrabber->VideoSource = vs_JPEGsOrBitmaps;
  PreviewFlag = true;
@@ -712,13 +715,18 @@ void __fastcall TTVideoRegistratorFrame::StartRecordingButtonClick(TObject *Send
 //---------------------------------------------------------------------------
 
 void __fastcall TTVideoRegistratorFrame::StopRecordingButtonClick(TObject *Sender)
-
 {
- VideoGrabber->Stop();
+ VideoGrabber->StopRecording();
+ LogMemo->Lines->Add("Recording stopped");
+
  if(BitmapFrameThread)
  {
-  BitmapFrameThread->Stop();
-  WaitForSingleObject(BitmapFrameThread->GetFrameNotInProgress(),30);
+  //WaitForSingleObject(BitmapFrameThread->GetCalcCompleteEvent(),1000);
+  BitmapFrameThread->Terminate();
+  WaitForSingleObject(BitmapFrameThread->GetFrameNotInProgress(),1000);
+  BitmapFrameThread->WaitFor();
+  delete BitmapFrameThread;
+  BitmapFrameThread=0;
  }
 
  UGEngineControlForm->Pause1Click(this);
@@ -777,8 +785,12 @@ void __fastcall TTVideoRegistratorFrame::StopButtonClick(TObject *Sender)
 
  if(BitmapFrameThread)
  {
-  BitmapFrameThread->Stop();
-  WaitForSingleObject(BitmapFrameThread->GetFrameNotInProgress(),30);
+  //WaitForSingleObject(BitmapFrameThread->GetCalcCompleteEvent(),1000);
+  BitmapFrameThread->Terminate();
+  WaitForSingleObject(BitmapFrameThread->GetFrameNotInProgress(),1000);
+  BitmapFrameThread->WaitFor();
+  delete BitmapFrameThread;
+  BitmapFrameThread=0;
  }
 
  UGEngineControlForm->Pause1Click(this);
@@ -856,5 +868,14 @@ void TTVideoRegistratorFrame::ALoadParameters(RDK::USerStorageXML &xml)
  UpdateInterface();
 }
 //---------------------------------------------------------------------------
+void __fastcall TTVideoRegistratorFrame::BrowseComponentButtonClick(TObject *Sender)
+{
+ MyComponentsListForm->UpdateInterface(true);
+ if(MyComponentsListForm->ShowIOSelect() != mrOk)
+  return;
 
+ ComponentNameLabeledEdit->Text=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName().c_str();
+ ComponentPropertyNameLabeledEdit->Text=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput().c_str();
+}
+//---------------------------------------------------------------------------
 
