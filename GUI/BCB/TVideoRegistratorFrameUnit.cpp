@@ -506,6 +506,9 @@ int TTVideoRegistratorFrame::InitStreamingSettings(void)
 // Инициализирует настройки записи в файл TVideoGrabber
 int TTVideoRegistratorFrame::InitRecordingSettings(void)
 {
+ VideoGrabber->ASFVideoWidth = StrToIntDef(VideoWidthLabeledEdit->Text, 320);
+ VideoGrabber->ASFVideoHeight = StrToIntDef(VideoHeightLabeledEdit->Text, 240);
+ VideoGrabber->ASFVideoFrameRate = StrToIntDef(FrameRateLabeledEdit->Text, 30);
  VideoGrabber->FrameRate = StrToIntDef(RecordingFrameRateLabeledEdit->Text, 30);
  VideoGrabber->RecordingFileName = RecordingFileNameLabeledEdit->Text;
  VideoGrabber->RecordingMethod = RecordingMethodComboBox->ItemIndex;
@@ -553,7 +556,7 @@ void __fastcall TTVideoRegistratorFrame::NetworkStreamingButtonClick(TObject *Se
  InitStreamingSettings();
  PreviewFlag=true;
  VideoGrabber->VideoSource=vs_JPEGsOrBitmaps;
- Mode=SorceModeComboBox->ItemIndex;
+ Mode=SourcePageControl->TabIndex;
 
  switch(Mode)
  {
@@ -685,7 +688,7 @@ void __fastcall TTVideoRegistratorFrame::StartRecordingButtonClick(TObject *Send
  InitRecordingSettings();
  VideoGrabber->VideoSource = vs_JPEGsOrBitmaps;
  PreviewFlag = true;
- Mode=SorceModeComboBox->ItemIndex;
+ Mode=SourcePageControl->TabIndex;
 
  switch(Mode)
  {
@@ -748,7 +751,7 @@ void __fastcall TTVideoRegistratorFrame::StartPreviewButtonClick(TObject *Sender
 
  VideoGrabber->VideoSource = vs_JPEGsOrBitmaps;
  PreviewFlag = true;
- Mode=SorceModeComboBox->ItemIndex;
+ Mode=SourcePageControl->TabIndex;
 
  switch(Mode)
  {
@@ -878,4 +881,5 @@ void __fastcall TTVideoRegistratorFrame::BrowseComponentButtonClick(TObject *Sen
  ComponentPropertyNameLabeledEdit->Text=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput().c_str();
 }
 //---------------------------------------------------------------------------
+
 
