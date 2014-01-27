@@ -17,6 +17,7 @@
 #ifdef RDK_VIDEO
 #include "VideoOutputFormUnit.h"
 #include "TVideoRegistratorFormUnit.h"
+#include "TVideoRegistratorFormUnit.h"
 #endif
 #include "UClassesListFormUnit.h"
 #include "UComponentsPerformanceFormUnit.h"
@@ -27,7 +28,6 @@
 #include "TIdHttpResultBroadcasterFormUnit.h"
 #include "UServerControlFormUnit.h"
 #include "UShowProgressBarUnit.h"
-#include "TVideoRegistratorFormUnit.h"
 //#include "TUFileSystem.h"
 #include "rdk_cpp_initdll.h"
 #include "myrdk.h"
@@ -2057,7 +2057,9 @@ void __fastcall TUGEngineControlForm::DelChannel1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::VideoRegistration1Click(TObject *Sender)
 {
+#ifdef RDK_VIDEO
  VideoRegistratorForm->Show();
+#endif
 }
 //---------------------------------------------------------------------------
 
