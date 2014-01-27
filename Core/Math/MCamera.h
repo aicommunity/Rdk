@@ -44,6 +44,8 @@ virtual MVector<T,3> CalcUndistortPixelPosition(const MVector<T,3> &distort_pixe
 // Вычисляет положение точки на кадре по положению точки в пространстве
 virtual MVector<T,3> CalcScreenBySpacePoint(const MVector<T,4> &space_point)=0;
 
+virtual MVector<T,3> CalcScreenBySpacePoint(const MVector<T,4> &space_point, int image_width, int image_height, bool &res)=0;
+
 // Вычисляет положение точки в пространстве по положению точки на кадре и заданному расстоянию
 virtual MVector<T,4> CalcSpaceByScreenPoint(const MVector<T,3> &screen_point, T distance)=0;
 
@@ -120,6 +122,7 @@ virtual MVector<T,3> CalcUndistortPixelPosition(const MVector<T,3> &distort_pixe
 
 // Вычисляет положение точки на кадре по положению точки в пространстве
 virtual MVector<T,3> CalcScreenBySpacePoint(const MVector<T,4> &space_point);
+virtual MVector<T,3> CalcScreenBySpacePoint(const MVector<T,4> &space_point, int image_width, int image_height, bool &res);
 
 // Вычисляет положение точки в пространстве по положению точки на кадре и заданному расстоянию
 virtual MVector<T,4> CalcSpaceByScreenPoint(const MVector<T,3> &screen_point, T distance);
@@ -400,6 +403,38 @@ MVector<T,3> MCameraStandard<T>::CalcScreenBySpacePoint(const MVector<T,4> &spac
 
  distpoint=CalcPixelPositionFromNormalPosition(normalpoint);
  screenpoint=Icc*distpoint;
+
+ return screenpoint;
+}
+
+// Вычисляет положение точки на кадре по положению точки в пространстве
+template<class T>
+MVector<T,3> MCameraStandard<T>::CalcScreenBySpacePoint(const MVector<T,4> &space_point, int image_width, int image_height, bool &res)
+{
+ res=false;
+ MVector<T,3> normalpoint, distpoint, screenpoint;
+ MVector<T,4> temp4;
+ MVector<T,3> cameraspacepoint;
+ MMatrix<T,3,4> E=MMatrix<T,3,4>::Eye();
+
+ cameraspacepoint=E*(MCamera<T>::GetEcc()*space_point);
+ if(fabs(cameraspacepoint.z)>10e-7)
+ {
+  normalpoint.x=cameraspacepoint.x/cameraspacepoint.z;
+  normalpoint.y=cameraspacepoint.y/cameraspacepoint.z;
+  normalpoint.z=1;
+ }
+ else
+  return screenpoint;
+
+ screenpoint=Icc*normalpoint;
+ if(screenpoint.x<0 || screenpoint.x>=image_width || screenpoint.y<0 || screenpoint.y>=image_height)
+ {
+  return screenpoint;
+ }
+ distpoint=CalcPixelPositionFromNormalPosition(normalpoint);
+ screenpoint=Icc*distpoint;
+ res=true;
 
  return screenpoint;
 }
