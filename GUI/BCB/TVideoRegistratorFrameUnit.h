@@ -16,8 +16,7 @@
 #include "TUVisualController.h"
 #include "TUVisualControllerFrameUnit.h"
 #include "UComponentsListFormUnit.h"
-#include "VideoOutputFormUnit.h"
-#include "VideoOutputFrameUnit.h"
+
 #include "myrdk.h"
 
 #include <Vcl.ComCtrls.hpp>
@@ -158,7 +157,7 @@ RDK::UBitmap TempBitmap;
 //Graphics::TBitmap* TempBitmap;
 
 protected: // Данные
-TVideoOutputFrame* VideoOutputFrame;
+
 
 public: // Методы
 // --------------------------

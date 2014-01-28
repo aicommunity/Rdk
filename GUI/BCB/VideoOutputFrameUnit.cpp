@@ -17,6 +17,7 @@
 #pragma link "VidGrab"
 #pragma link "TUVisualControllerFrameUnit"
 #pragma link "TUHttpServerUnit"
+#pragma link "TVideoRegistratorFrameUnit"
 #pragma resource "*.dfm"
 TVideoOutputFrame *VideoOutputFrame;
 
@@ -1651,5 +1652,6 @@ void __fastcall TVideoOutputFrame::SaveImage1Click(TObject *Sender)
  Image->Picture->SaveToFile(SavePictureDialog->FileName);
 }
 //---------------------------------------------------------------------------
+
 
 

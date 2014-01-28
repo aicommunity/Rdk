@@ -7,6 +7,8 @@
 #include "rdk_initdll.h"
 #include "UGEngineControlFormUnit.h"
 #include "TUBitmap.h"
+#include "VideoOutputFormUnit.h"
+#include "VideoOutputFrameUnit.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "VidGrab"
@@ -276,7 +278,7 @@ void __fastcall TVideoGetBitmapFrameFromVideoThread::AfterCalculate(void)
 
 void __fastcall TVideoGetBitmapFrameFromVideoThread::Calculate(void)
 {
- VideoOutputFrame=VideoOutputForm->GetVideoOutputFrame(FrameIndex);
+ TVideoOutputFrame* VideoOutputFrame=VideoOutputForm->GetVideoOutputFrame(FrameIndex);
 
  if(VideoOutputFrame)
  {

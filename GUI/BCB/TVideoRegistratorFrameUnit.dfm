@@ -29,8 +29,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
     Align = alClient
     Constraints.MinWidth = 525
     TabOrder = 0
-    ExplicitWidth = 565
-    ExplicitHeight = 425
     object PreviewImage: TImage
       Left = 1
       Top = 1
@@ -92,8 +90,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
       OnAVIDurationUpdated = VideoGrabberAVIDurationUpdated
       OnFrameCaptureCompleted = VideoGrabberFrameCaptureCompleted
       OnVideoFromBitmapsNextFrameNeeded = VideoGrabberVideoFromBitmapsNextFrameNeeded
-      ExplicitWidth = 563
-      ExplicitHeight = 370
     end
     object VideoControlGroupBox: TGroupBox
       Left = 1
@@ -103,8 +99,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
       Align = alBottom
       Caption = 'Video Control'
       TabOrder = 1
-      ExplicitTop = 371
-      ExplicitWidth = 563
       object ClearMemoButton: TButton
         Left = 359
         Top = 16
@@ -163,20 +157,16 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
     Constraints.MinHeight = 480
     Constraints.MinWidth = 380
     TabOrder = 1
-    ExplicitLeft = 586
-    ExplicitHeight = 585
     object ModePageControl: TPageControl
       Left = 1
       Top = 194
       Width = 378
       Height = 285
-      ActivePage = NetworkStreamingTabSheet
+      ActivePage = Recording
       Align = alClient
       TabOrder = 0
-      ExplicitHeight = 230
       object NetworkStreamingTabSheet: TTabSheet
         Caption = 'Network Streaming'
-        ExplicitHeight = 242
         object StreamingSettingsGroupBox: TGroupBox
           Left = 3
           Top = 3
@@ -304,7 +294,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
       object Recording: TTabSheet
         Caption = 'Recording'
         ImageIndex = 1
-        ExplicitHeight = 242
         object RecordingMethodLabel: TLabel
           Left = 3
           Top = 5
@@ -369,7 +358,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
       TabOrder = 1
       object SourceComponentTabSheet: TTabSheet
         Caption = 'Source Component'
-        ExplicitWidth = 281
         object ComponentSourceControlGroupBox: TGroupBox
           Left = 0
           Top = 0
@@ -378,10 +366,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
           Align = alClient
           Caption = 'Component Source Control'
           TabOrder = 0
-          ExplicitLeft = 1
-          ExplicitTop = 1
-          ExplicitWidth = 378
-          ExplicitHeight = 153
           object ComponentNameLabeledEdit: TLabeledEdit
             Left = 3
             Top = 32
@@ -424,10 +408,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
           Align = alClient
           Caption = 'Frame Source Control'
           TabOrder = 0
-          ExplicitLeft = 112
-          ExplicitTop = 56
-          ExplicitWidth = 185
-          ExplicitHeight = 105
           object ChannelIndexLabeledEdit: TLabeledEdit
             Left = 3
             Top = 75
@@ -461,8 +441,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
     Height = 200
     Align = alBottom
     TabOrder = 2
-    ExplicitTop = 431
-    ExplicitWidth = 948
     object LogMemo: TMemo
       Left = 1
       Top = 1
@@ -471,8 +449,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
       Align = alClient
       ScrollBars = ssBoth
       TabOrder = 0
-      ExplicitWidth = 946
-      ExplicitHeight = 200
     end
   end
 end

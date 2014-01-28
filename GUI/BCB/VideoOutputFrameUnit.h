@@ -30,6 +30,7 @@
 #include "TVideoSourceThread.h"
 #include "TUHttpServerUnit.h"
 #include "myrdk.h"
+#include "TVideoRegistratorFrameUnit.h"
 
 //---------------------------------------------------------------------------
 class TVideoOutputFrame : public TUVisualControllerFrame
@@ -73,6 +74,10 @@ __published:    // IDE-managed Components
 	TMenuItem *N5;
 	TMenuItem *SaveImage1;
 	TSavePictureDialog *SavePictureDialog;
+	TPageControl *PageControl;
+	TTabSheet *VideoSourceTabSheet;
+	TTabSheet *VideoRegistratorTabSheet;
+	TTVideoRegistratorFrame *TVideoRegistratorFrame;
     void __fastcall TimerTimer(TObject *Sender);
 	void __fastcall StartButtonClick(TObject *Sender);
     void __fastcall StopButtonClick(TObject *Sender);
