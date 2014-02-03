@@ -322,6 +322,40 @@ void __fastcall TVideoOutputFrame::DrawFrameRect(TImage *image, int x1, int y1, 
 // Добавляет очередной элемент фигуры
 void AddFigureRect(double l,double t,double w,double h);
 
+/// Добавляет новую фигуру
+/// Функция возвращает индекс фигуры
+int AddFigure(TColor color);
+
+/// Удаляет фигуру
+void DelFigure(int figure_index);
+
+/// Удаляет все фигуры
+void DelAllFigures(void);
+
+/// Модифицирует имя фигуры
+void EditFigureName(int figure_index, const std::string &figure_name);
+
+/// Добавляет новую точку
+/// Функция возвращает индекс точки
+int AddPoint(int figure_index, const RDK::MVector<int,3> &point_data);
+
+/// Добавляет новую точку
+/// Имя точки задается вручную
+/// Функция возвращает индекс точки
+int AddPoint(int figure_index, const std::string &point_name, const RDK::MVector<int,3> &point_data);
+
+/// Удаляет точку
+void DelPoint(int figure_index, int point_index);
+
+/// Удаляет все точки
+void DelAllPoints(int figure_index);
+
+/// Модифицирует точку
+void EditPoint(int figure_index, int point_index, const RDK::MVector<int,3> &point_data);
+
+/// Модифицирует имя точки
+void EditPointName(int figure_index, int point_index, const std::string &point_name);
+
 // Устанавливает образец графики
 void SetSampleGeometryGraphics(RDK::MGraphics<double,2>& samplegraphics);
 

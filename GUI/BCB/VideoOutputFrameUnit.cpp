@@ -708,14 +708,125 @@ void TVideoOutputFrame::AddFigureRect(double l,double t,double w,double h)
  if(FigureIndex<0)
   return;
 
- GeometryGraphics.Geometry(FigureIndex).Vertex(PointIndex).x=l+w/2;
- GeometryGraphics.Geometry(FigureIndex).Vertex(PointIndex).y=/*BmpCanvas.GetHeight()-*/(t+h/2);
-
-// GeometryGraphics.Geometry(FigureIndex)=Figure;
+ RDK::MVector<int,3> point;
+ point.x=l+w/2;
+ point.y=(t+h/2);
+ EditPoint(FigureIndex,PointIndex,point);
 
  UpdateVideo();
 }
 
+/// Добавляет новую фигуру
+/// Функция возвращает индекс фигуры
+int TVideoOutputFrame::AddFigure(TColor color)
+{
+ GeometryGraphics.SetNumGeometries(GeometryGraphics.GetNumGeometries()+1);
+ int index=GeometryGraphics.GetNumGeometries()-1;
+ GeometryGraphics.Description(index).PenWidth=3;
+ GeometryGraphics.Description(index).Color.rgb.r=color & 0x000000FF;
+ GeometryGraphics.Description(index).Color.rgb.g=(color & 0x0000FF00) >> 8;
+ GeometryGraphics.Description(index).Color.rgb.b=(color & 0x00FF0000) >> 16;
+ GeometryGraphics.Description(index).Name=string("Figure")+RDK::sntoa(index+1,3);
+ GeometryGraphics.Description(index).Description=string("Геометрия №")+RDK::sntoa(index+1);
+ GeometryGraphics.Description(index).TargetPoints=true;
+ return index;
+}
+
+/// Удаляет фигуру
+void TVideoOutputFrame::DelFigure(int figure_index)
+{
+ if(figure_index < 0 || figure_index >= GeometryGraphics.GetNumGeometries())
+  return;
+
+ GeometryGraphics.DelGeometry(figure_index);
+}
+
+/// Удаляет все фигуры
+void TVideoOutputFrame::DelAllFigures(void)
+{
+ GeometryGraphics.Clear();
+}
+
+/// Модифицирует имя фигуры
+void TVideoOutputFrame::EditFigureName(int figure_index, const std::string &figure_name)
+{
+ if(figure_index < 0 || figure_index >= GeometryGraphics.GetNumGeometries())
+  return;
+
+ GeometryGraphics.Description(FigureIndex).Name=figure_name;
+}
+
+/// Добавляет новую точку
+/// Функция возвращает индекс точки
+int TVideoOutputFrame::AddPoint(int figure_index, const RDK::MVector<int,3> &point_data)
+{
+ if(figure_index < 0 || figure_index >= GeometryGraphics.GetNumGeometries())
+  return -1;
+
+ GeometryGraphics.Geometry(figure_index).SetNumVertices(GeometryGraphics.Geometry(figure_index).GetNumVertices()+1);
+ int index=GeometryGraphics.Geometry(figure_index).GetNumVertices()-1;
+ return index;
+}
+
+/// Добавляет новую точку
+/// Имя точки задается вручную
+/// Функция возвращает индекс точки
+int TVideoOutputFrame::AddPoint(int figure_index, const std::string &point_name, const RDK::MVector<int,3> &point_data)
+{
+ if(figure_index < 0 || figure_index >= GeometryGraphics.GetNumGeometries())
+  return -1;
+
+ GeometryGraphics.Geometry(figure_index).SetNumVertices(GeometryGraphics.Geometry(figure_index).GetNumVertices()+1);
+ int index=GeometryGraphics.Geometry(figure_index).GetNumVertices()-1;
+ GeometryGraphics.Geometry(figure_index).VertexName(index)=point_name;
+ return index;
+}
+
+/// Удаляет точку
+void TVideoOutputFrame::DelPoint(int figure_index, int point_index)
+{
+ if(figure_index < 0 || figure_index >= GeometryGraphics.GetNumGeometries())
+  return;
+
+ if(point_index < 0 || point_index >= GeometryGraphics.Geometry(figure_index).GetNumVertices())
+  return;
+
+ GeometryGraphics.Geometry(figure_index).DelVertex(point_index);
+}
+
+/// Удаляет все точки
+void TVideoOutputFrame::DelAllPoints(int figure_index)
+{
+ if(figure_index < 0 || figure_index >= GeometryGraphics.GetNumGeometries())
+  return;
+
+ GeometryGraphics.Geometry(figure_index).Clear();
+}
+
+/// Модифицирует точку
+void TVideoOutputFrame::EditPoint(int figure_index, int point_index, const RDK::MVector<int,3> &point_data)
+{
+ if(figure_index < 0 || figure_index >= GeometryGraphics.GetNumGeometries())
+  return;
+
+ if(point_index < 0 || point_index >= GeometryGraphics.Geometry(figure_index).GetNumVertices())
+  return;
+
+ GeometryGraphics.Geometry(figure_index).Vertex(point_index).x=point_data.x;
+ GeometryGraphics.Geometry(figure_index).Vertex(point_index).y=point_data.y;
+}
+
+/// Модифицирует имя точки
+void TVideoOutputFrame::EditPointName(int figure_index, int point_index, const std::string &point_name)
+{
+ if(figure_index < 0 || figure_index >= GeometryGraphics.GetNumGeometries())
+  return;
+
+ if(point_index < 0 || point_index >= GeometryGraphics.Geometry(figure_index).GetNumVertices())
+  return;
+
+ GeometryGraphics.Geometry(figure_index).VertexName(point_index)=point_name;
+}
 
 // Устанавливает образец графики
 void TVideoOutputFrame::SetSampleGeometryGraphics(RDK::MGraphics<double,2>& samplegraphics)
@@ -1166,9 +1277,9 @@ void __fastcall TVideoOutputFrame::ImageMouseDown(TObject *Sender,
  {
   if(FigureIndex<0)
    MyVideoOutputToolsForm->AddFigureButtonClick(Sender);
-  GeometryGraphics.Geometry(FigureIndex).SetNumVertices(GeometryGraphics.Geometry(FigureIndex).GetNumVertices()+1);
-  PointIndex=GeometryGraphics.Geometry(FigureIndex).GetNumVertices()-1;
-  GeometryGraphics.Geometry(FigureIndex).VertexName(PointIndex)=std::string(AnsiString(MyVideoOutputToolsForm->PointNameEdit->Text).c_str())+RDK::sntoa(PointIndex+1,3);
+  RDK::MVector<int,3> point_data;
+  PointIndex=AddPoint(FigureIndex, std::string(AnsiString(MyVideoOutputToolsForm->PointNameEdit->Text).c_str())+RDK::sntoa(PointIndex+1,3),
+   point_data);
  }
  else
  if(PointFlag == 2)

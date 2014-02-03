@@ -12,13 +12,11 @@ inherited VideoOutputFrame: TVideoOutputFrame
     Top = 0
     Width = 916
     Height = 714
-    ActivePage = VideoRegistratorTabSheet
+    ActivePage = VideoSourceTabSheet
     Align = alClient
     TabOrder = 0
     object VideoSourceTabSheet: TTabSheet
       Caption = 'Video Source'
-      ExplicitWidth = 281
-      ExplicitHeight = 165
       object GroupBox: TGroupBox
         Left = 0
         Top = 0
@@ -28,8 +26,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
         DoubleBuffered = True
         ParentDoubleBuffered = False
         TabOrder = 0
-        ExplicitWidth = 702
-        ExplicitHeight = 336
         object Image: TImage
           Left = 2
           Top = 15
@@ -54,8 +50,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
           Caption = 'GroupBox1'
           TabOrder = 0
           Visible = False
-          ExplicitWidth = 698
-          ExplicitHeight = 319
         end
       end
       object Panel1: TPanel
@@ -65,8 +59,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
         Height = 41
         Align = alBottom
         TabOrder = 1
-        ExplicitTop = 382
-        ExplicitWidth = 702
         DesignSize = (
           908
           41)
@@ -79,7 +71,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
           Caption = 'Stop'
           TabOrder = 0
           OnClick = StopButtonClick
-          ExplicitLeft = 665
         end
         object StartButton: TButton
           Left = 835
@@ -90,7 +81,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
           Caption = 'Start'
           TabOrder = 1
           OnClick = StartButtonClick
-          ExplicitLeft = 629
         end
         object TimeEdit: TMaskEdit
           Left = 750
@@ -103,7 +93,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
           TabOrder = 2
           Text = '000:00:00:00'
           OnChange = TimeEditChange
-          ExplicitLeft = 544
         end
         object TrackBar: TTrackBar
           Left = 2
@@ -117,7 +106,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
           Position = 1
           TabOrder = 3
           OnChange = TrackBarChange
-          ExplicitWidth = 536
         end
       end
       object Panel2: TPanel
@@ -127,8 +115,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
         Height = 46
         Align = alBottom
         TabOrder = 2
-        ExplicitTop = 377
-        ExplicitWidth = 702
         DesignSize = (
           908
           46)
@@ -141,7 +127,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
           Color = clBtnFace
           ReadOnly = True
           TabOrder = 0
-          ExplicitWidth = 437
         end
         object Button1: TButton
           Left = 750
@@ -152,7 +137,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
           Caption = 'Send points'
           TabOrder = 1
           OnClick = Button1Click
-          ExplicitLeft = 544
         end
         object SelectSendToButton: TButton
           Left = 835
@@ -164,7 +148,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
           DropDownMenu = SelectPopupMenu
           Style = bsSplitButton
           TabOrder = 2
-          ExplicitLeft = 629
         end
         object SendAsMatrixButton: TButton
           Left = 665
@@ -175,7 +158,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
           Caption = 'Send as Matrix'
           TabOrder = 3
           OnClick = SendAsMatrixButtonClick
-          ExplicitLeft = 459
         end
         object SendPointsByStepCheckBox: TCheckBox
           Left = 5
@@ -201,8 +183,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
         Height = 35
         Align = alBottom
         TabOrder = 3
-        ExplicitTop = 423
-        ExplicitWidth = 702
         object ShowCentralPointCheckBox: TCheckBox
           Left = 1
           Top = 1
@@ -246,8 +226,24 @@ inherited VideoOutputFrame: TVideoOutputFrame
         Font.Style = []
         ParentFont = False
         TabOrder = 0
-        ExplicitLeft = -214
-        ExplicitTop = -256
+        inherited ControlPanel: TPanel
+          inherited ModePageControl: TPageControl
+            inherited NetworkStreamingTabSheet: TTabSheet
+              ExplicitLeft = 4
+              ExplicitTop = 24
+              ExplicitWidth = 370
+              ExplicitHeight = 257
+            end
+          end
+          inherited SourcePageControl: TPageControl
+            inherited SourceFrameTabSheet: TTabSheet
+              ExplicitLeft = 4
+              ExplicitTop = 24
+              ExplicitWidth = 370
+              ExplicitHeight = 165
+            end
+          end
+        end
       end
     end
   end
