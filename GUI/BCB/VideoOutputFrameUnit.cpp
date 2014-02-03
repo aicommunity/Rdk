@@ -793,6 +793,8 @@ int TVideoOutputFrame::AddPoint(int figure_index, const RDK::MVector<double,2> &
 
  GeometryGraphics.Geometry(figure_index).SetNumVertices(GeometryGraphics.Geometry(figure_index).GetNumVertices()+1);
  int index=GeometryGraphics.Geometry(figure_index).GetNumVertices()-1;
+ GeometryGraphics.Geometry(figure_index).Vertex(index).x=point_data.x;
+ GeometryGraphics.Geometry(figure_index).Vertex(index).y=point_data.y;
  return index;
 }
 
@@ -807,6 +809,8 @@ int TVideoOutputFrame::AddPoint(int figure_index, const std::string &point_name,
  GeometryGraphics.Geometry(figure_index).SetNumVertices(GeometryGraphics.Geometry(figure_index).GetNumVertices()+1);
  int index=GeometryGraphics.Geometry(figure_index).GetNumVertices()-1;
  GeometryGraphics.Geometry(figure_index).VertexName(index)=point_name;
+ GeometryGraphics.Geometry(figure_index).Vertex(index).x=point_data.x;
+ GeometryGraphics.Geometry(figure_index).Vertex(index).y=point_data.y;
  return index;
 }
 
