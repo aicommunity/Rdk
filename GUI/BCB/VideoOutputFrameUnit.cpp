@@ -618,8 +618,8 @@ void TVideoOutputFrame::UpdateGeometryList(TCheckListBox *GeometryCheckListBox, 
 // PointsCheckListBox->Clear();
  if(GeometryCheckListBox->ItemIndex>=0 && int(CurrentGeometryGraphics.GetNumGeometries())>GeometryCheckListBox->ItemIndex)
  {
-  if(GeometryGraphics.Geometry(GeometryCheckListBox->ItemIndex) == CurrentGeometryGraphics.Geometry(GeometryCheckListBox->ItemIndex))
-   return;
+//  if(GeometryGraphics.Geometry(GeometryCheckListBox->ItemIndex) == CurrentGeometryGraphics.Geometry(GeometryCheckListBox->ItemIndex))
+//   return;
  }
  else
   CurrentGeometryGraphics=GeometryGraphics;
