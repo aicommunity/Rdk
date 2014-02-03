@@ -326,6 +326,9 @@ void AddFigureRect(double l,double t,double w,double h);
 /// Функция возвращает индекс фигуры
 int AddFigure(TColor color);
 
+/// Возвращает число фигур
+int GetNumFigures(void);
+
 /// Удаляет фигуру
 void DelFigure(int figure_index);
 
@@ -335,14 +338,20 @@ void DelAllFigures(void);
 /// Модифицирует имя фигуры
 void EditFigureName(int figure_index, const std::string &figure_name);
 
+/// Возвращает число точек в фигуре
+int GetNumPoints(int figure_index);
+
+/// Возвращает точку
+const RDK::MVector<double,2> GetPoint(int figure_index, int point_index);
+
 /// Добавляет новую точку
 /// Функция возвращает индекс точки
-int AddPoint(int figure_index, const RDK::MVector<int,3> &point_data);
+int AddPoint(int figure_index, const RDK::MVector<double,2> &point_data);
 
 /// Добавляет новую точку
 /// Имя точки задается вручную
 /// Функция возвращает индекс точки
-int AddPoint(int figure_index, const std::string &point_name, const RDK::MVector<int,3> &point_data);
+int AddPoint(int figure_index, const std::string &point_name, const RDK::MVector<double,2> &point_data);
 
 /// Удаляет точку
 void DelPoint(int figure_index, int point_index);
@@ -351,7 +360,7 @@ void DelPoint(int figure_index, int point_index);
 void DelAllPoints(int figure_index);
 
 /// Модифицирует точку
-void EditPoint(int figure_index, int point_index, const RDK::MVector<int,3> &point_data);
+void EditPoint(int figure_index, int point_index, const RDK::MVector<double,2> &point_data);
 
 /// Модифицирует имя точки
 void EditPointName(int figure_index, int point_index, const std::string &point_name);

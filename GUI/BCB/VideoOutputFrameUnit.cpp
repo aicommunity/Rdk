@@ -708,13 +708,20 @@ void TVideoOutputFrame::AddFigureRect(double l,double t,double w,double h)
  if(FigureIndex<0)
   return;
 
- RDK::MVector<int,3> point;
+ RDK::MVector<double,2> point;
  point.x=l+w/2;
  point.y=(t+h/2);
  EditPoint(FigureIndex,PointIndex,point);
 
  UpdateVideo();
 }
+
+/// Возвращает число фигур
+int TVideoOutputFrame::GetNumFigures(void)
+{
+ return GeometryGraphics.GetNumGeometries();
+}
+
 
 /// Добавляет новую фигуру
 /// Функция возвращает индекс фигуры
@@ -756,9 +763,30 @@ void TVideoOutputFrame::EditFigureName(int figure_index, const std::string &figu
  GeometryGraphics.Description(FigureIndex).Name=figure_name;
 }
 
+/// Возвращает число точек в фигуре
+int TVideoOutputFrame::GetNumPoints(int figure_index)
+{
+ if(figure_index < 0 || figure_index >= GeometryGraphics.GetNumGeometries())
+  return 0;
+
+ return GeometryGraphics.Geometry(figure_index).GetNumVertices();
+}
+
+/// Возвращает точку
+const RDK::MVector<double,2> TVideoOutputFrame::GetPoint(int figure_index, int point_index)
+{
+ if(figure_index < 0 || figure_index >= GeometryGraphics.GetNumGeometries())
+  return RDK::MVector<double,2>(0);
+
+ if(point_index < 0 || point_index >= GeometryGraphics.Geometry(figure_index).GetNumVertices())
+  return RDK::MVector<double,2>(0);
+
+ return GeometryGraphics.Geometry(figure_index).Vertex(point_index);
+}
+
 /// Добавляет новую точку
 /// Функция возвращает индекс точки
-int TVideoOutputFrame::AddPoint(int figure_index, const RDK::MVector<int,3> &point_data)
+int TVideoOutputFrame::AddPoint(int figure_index, const RDK::MVector<double,2> &point_data)
 {
  if(figure_index < 0 || figure_index >= GeometryGraphics.GetNumGeometries())
   return -1;
@@ -771,7 +799,7 @@ int TVideoOutputFrame::AddPoint(int figure_index, const RDK::MVector<int,3> &poi
 /// Добавляет новую точку
 /// Имя точки задается вручную
 /// Функция возвращает индекс точки
-int TVideoOutputFrame::AddPoint(int figure_index, const std::string &point_name, const RDK::MVector<int,3> &point_data)
+int TVideoOutputFrame::AddPoint(int figure_index, const std::string &point_name, const RDK::MVector<double,2> &point_data)
 {
  if(figure_index < 0 || figure_index >= GeometryGraphics.GetNumGeometries())
   return -1;
@@ -804,7 +832,7 @@ void TVideoOutputFrame::DelAllPoints(int figure_index)
 }
 
 /// Модифицирует точку
-void TVideoOutputFrame::EditPoint(int figure_index, int point_index, const RDK::MVector<int,3> &point_data)
+void TVideoOutputFrame::EditPoint(int figure_index, int point_index, const RDK::MVector<double,2> &point_data)
 {
  if(figure_index < 0 || figure_index >= GeometryGraphics.GetNumGeometries())
   return;
@@ -1277,7 +1305,7 @@ void __fastcall TVideoOutputFrame::ImageMouseDown(TObject *Sender,
  {
   if(FigureIndex<0)
    MyVideoOutputToolsForm->AddFigureButtonClick(Sender);
-  RDK::MVector<int,3> point_data;
+  RDK::MVector<double,2> point_data;
   PointIndex=AddPoint(FigureIndex, std::string(AnsiString(MyVideoOutputToolsForm->PointNameEdit->Text).c_str())+RDK::sntoa(PointIndex+1,3),
    point_data);
  }
