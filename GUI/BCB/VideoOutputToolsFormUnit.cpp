@@ -47,6 +47,7 @@ void __fastcall TVideoOutputToolsForm::AddFigureButtonClick(TObject *Sender)
 {
  FigureIndex=MyVideoOutputFrame->AddFigure(ColorBox->Selected);
 
+ MyVideoOutputFrame->UpdateVideo();
  GeometryCheckListBox->ItemIndex=FigureIndex;
  MyVideoOutputFrame->UpdateVideo();
  EditFigureButtonClick(Sender);
@@ -69,7 +70,11 @@ void __fastcall TVideoOutputToolsForm::DelFigureButtonClick(TObject *Sender)
 
  MyVideoOutputFrame->DelFigure(GeometryCheckListBox->ItemIndex);
  if(GeometryCheckListBox->ItemIndex>=GeometryCheckListBox->Count-1)
+ {
   --FigureIndex;
+  if(FigureIndex>=0)
+   GeometryCheckListBox->ItemIndex=FigureIndex;
+ }
  MyVideoOutputFrame->UpdateVideo();
 }
 //---------------------------------------------------------------------------
