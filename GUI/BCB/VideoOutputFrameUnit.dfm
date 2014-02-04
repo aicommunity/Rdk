@@ -236,6 +236,12 @@ inherited VideoOutputFrame: TVideoOutputFrame
             end
           end
           inherited SourcePageControl: TPageControl
+            inherited SourceComponentTabSheet: TTabSheet
+              ExplicitLeft = 4
+              ExplicitTop = 24
+              ExplicitWidth = 370
+              ExplicitHeight = 165
+            end
             inherited SourceFrameTabSheet: TTabSheet
               ExplicitLeft = 4
               ExplicitTop = 24

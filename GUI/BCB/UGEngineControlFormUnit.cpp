@@ -122,18 +122,6 @@ void TUGEngineControlForm::AClearInterface(void)
 
 void __fastcall TUGEngineControlForm::FormShow(TObject *Sender)
 {
- if(MainFormName.Length()>0)
- {
-  TComponent *component=Application->FindComponent(MainFormName);
-  TForm* form=dynamic_cast<TForm*>(component);
-  if(form)
-   form->Show();
-
-  MainFormName="";
- }
-
- UpdateInterface();
-
  HideTimer->Enabled=true;
 
  UDrawEngineFrame1->ComponentsListFrame=UComponentsListFrame1;
@@ -1776,6 +1764,7 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::HideTimerTimer(TObject *Sender)
 {
+ bool hide_flag=HideAdminFormFlag;
  HideTimer->Enabled=false;
  if(HideAdminFormFlag)
  {
@@ -1795,6 +1784,22 @@ void __fastcall TUGEngineControlForm::HideTimerTimer(TObject *Sender)
   OpenProject(AutoexecProjectFileName);
   AutoexecProjectFileName="";
  }
+
+ if(MainFormName.Length()>0)
+ {
+  TComponent *component=Application->FindComponent(MainFormName);
+  TForm* form=dynamic_cast<TForm*>(component);
+  if(form)
+  {
+   form->Show();
+   TForm* pmainform=Application->MainForm;
+   pmainform=form;
+  }
+
+  MainFormName="";
+ }
+
+ UpdateInterface();
 
  if(AutoStartProjectFlag)
  {
