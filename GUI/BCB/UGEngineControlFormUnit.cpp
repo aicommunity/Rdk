@@ -44,6 +44,9 @@
 #pragma link "UDrawEngineFrameUnit"
 #pragma resource "*.dfm"
 TUGEngineControlForm *UGEngineControlForm;
+
+/// Глобальная переменная сигнализирующая о завершении инициализации приложения
+bool ApplicationInitialized=false;
 //---------------------------------------------------------------------------
 __fastcall TUGEngineControlForm::TUGEngineControlForm(TComponent* Owner)
 	: TUVisualControllerForm(Owner)
@@ -122,7 +125,8 @@ void TUGEngineControlForm::AClearInterface(void)
 
 void __fastcall TUGEngineControlForm::FormShow(TObject *Sender)
 {
- HideTimer->Enabled=true;
+ ApplicationInitialized=true;
+// HideTimer->Enabled=true;
 
  UDrawEngineFrame1->ComponentsListFrame=UComponentsListFrame1;
  UComponentsListFrame1->DrawEngineFrame=UDrawEngineFrame1;
@@ -1764,6 +1768,8 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::HideTimerTimer(TObject *Sender)
 {
+ if(!ApplicationInitialized)
+  return;
  bool hide_flag=HideAdminFormFlag;
  HideTimer->Enabled=false;
  if(HideAdminFormFlag)
@@ -1971,7 +1977,7 @@ void __fastcall TUGEngineControlForm::ApplicationEventsMinimize(TObject *Sender)
  {
   //Убираем с панели задач
   TrayIcon->Visible=true;
-  ShowWindow(Handle,SW_HIDE);  // Скрываем программу
+  ShowWindow(Application->MainFormHandle,SW_HIDE);  // Скрываем программу
   ShowWindow(Application->Handle,SW_HIDE);  // Скрываем кнопку с TaskBar'а
   SetWindowLong(Application->Handle, GWL_EXSTYLE, GetWindowLong(Application->Handle, GWL_EXSTYLE) | !WS_EX_APPWINDOW);
  }
@@ -1983,8 +1989,8 @@ void __fastcall TUGEngineControlForm::TrayIconDblClick(TObject *Sender)
 {
  TrayIcon->ShowBalloonHint();
 // Application->Restore();
- ShowWindow(Handle,SW_RESTORE);
- SetForegroundWindow(Handle);
+ ShowWindow(Application->MainFormHandle,SW_RESTORE);
+ SetForegroundWindow(Application->MainFormHandle);
  AppWinState=true;
 }
 //---------------------------------------------------------------------------
@@ -2067,4 +2073,7 @@ void __fastcall TUGEngineControlForm::VideoRegistration1Click(TObject *Sender)
 #endif
 }
 //---------------------------------------------------------------------------
+
+
+
 
