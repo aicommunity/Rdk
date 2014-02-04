@@ -306,6 +306,10 @@ int FrameIndex;
 // 1 - bmp handle from frame
 int Mode;
 
+// Флаги работы трансляции и записи видео
+bool StreamingFlag;
+bool RecordingFlag;
+
 // Поток получения кадра
 TVideoGetBitmapFrameThread *BitmapFrameThread;
 

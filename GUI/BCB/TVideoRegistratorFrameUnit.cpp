@@ -404,6 +404,9 @@ __fastcall TTVideoRegistratorFrame::TTVideoRegistratorFrame(TComponent* Owner)
 
  // Загрузка списка компонент
  MyComponentsListForm=new TUComponentsListForm(this);
+
+ StreamingFlag=false;
+ RecordingFlag=false;
 }
 //---------------------------------------------------------------------------
 __fastcall TTVideoRegistratorFrame::~TTVideoRegistratorFrame(void)
@@ -524,7 +527,8 @@ int TTVideoRegistratorFrame::GetBitmapFrame(void)
 // Создание и подготовка TBitmap для хранения кадра с камеры
 int TTVideoRegistratorFrame::PrepareBitmapFrame(void)
 {
- InputFrameBitmap = new TBitmap;
+ if(!InputFrameBitmap)
+  InputFrameBitmap = new TBitmap;
  //frame = new unsigned char [frameheight_*framewidth_];
 
  struct
@@ -580,11 +584,14 @@ void __fastcall TTVideoRegistratorFrame::NetworkStreamingButtonClick(TObject *Se
    break;
   }
  }
- UGEngineControlForm->Start1Click(this);
+ //UGEngineControlForm->Start1Click(this);
 
  VideoGrabber->StartPreview();
  if(VideoGrabber->StreamingURL!="")
+ {
   LogMemo->Lines->Add(VideoGrabber->StreamingURL);
+  StreamingFlag=true;
+ }
 
  else
   LogMemo->Lines->Add("Network streaming not running");
@@ -607,7 +614,14 @@ void __fastcall TTVideoRegistratorFrame::StopNetworkStreamingButtonClick(TObject
   BitmapFrameThread=0;
  }
 
- UGEngineControlForm->Pause1Click(this);
+ StreamingFlag=false;
+ if(!RecordingFlag)
+ {
+  InputFrameBitmap->Free();
+  InputFrameBitmap=NULL;
+  delete InputFrameBitmap;
+ }
+ //UGEngineControlForm->Pause1Click(this);
 }
 //---------------------------------------------------------------------------
 void __fastcall TTVideoRegistratorFrame::VideoGrabberVideoFromBitmapsNextFrameNeeded(TObject *Sender,
@@ -712,10 +726,12 @@ void __fastcall TTVideoRegistratorFrame::StartRecordingButtonClick(TObject *Send
    break;
   }
  }
- UGEngineControlForm->Start1Click(this);
+ //UGEngineControlForm->Start1Click(this);
 
  VideoGrabber->StartRecording();
- LogMemo->Lines->Add("Recording started");
+  LogMemo->Lines->Add("Recording started");
+
+ RecordingFlag=true;
 }
 //---------------------------------------------------------------------------
 
@@ -734,7 +750,16 @@ void __fastcall TTVideoRegistratorFrame::StopRecordingButtonClick(TObject *Sende
   BitmapFrameThread=0;
  }
 
- UGEngineControlForm->Pause1Click(this);
+ RecordingFlag=false;
+
+ if(!StreamingFlag)
+ {
+  InputFrameBitmap->Free();
+  InputFrameBitmap=NULL;
+  delete InputFrameBitmap;
+ }
+
+ //UGEngineControlForm->Pause1Click(this);
 }
 //---------------------------------------------------------------------------
 
@@ -775,7 +800,7 @@ void __fastcall TTVideoRegistratorFrame::StartPreviewButtonClick(TObject *Sender
    break;
   }
  }
- UGEngineControlForm->Start1Click(this);
+ //UGEngineControlForm->Start1Click(this);
 
  VideoGrabber->FrameRate = StrToIntDef(FrameRateLabeledEdit->Text, 30);
  VideoGrabber->StartPreview();
@@ -798,7 +823,7 @@ void __fastcall TTVideoRegistratorFrame::StopButtonClick(TObject *Sender)
   BitmapFrameThread=0;
  }
 
- UGEngineControlForm->Pause1Click(this);
+ //UGEngineControlForm->Pause1Click(this);
 }
 //---------------------------------------------------------------------------
 // -----------------------------

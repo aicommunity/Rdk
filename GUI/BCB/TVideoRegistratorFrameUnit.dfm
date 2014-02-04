@@ -162,7 +162,7 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
       Top = 194
       Width = 378
       Height = 285
-      ActivePage = Recording
+      ActivePage = NetworkStreamingTabSheet
       Align = alClient
       TabOrder = 0
       object NetworkStreamingTabSheet: TTabSheet
