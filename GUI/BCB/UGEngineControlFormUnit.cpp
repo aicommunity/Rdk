@@ -1818,10 +1818,13 @@ void __fastcall TUGEngineControlForm::HideTimerTimer(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::FormCloseQuery(TObject *Sender, bool &CanClose)
 {
- Pause1Click(Sender);
- Sleep(1000);
- CloseProject();
- CanClose=true;
+ if(Application->MainForm == this)
+ {
+  Pause1Click(Sender);
+  Sleep(1000);
+  CloseProject();
+  CanClose=true;
+ }
 }
 //---------------------------------------------------------------------------
 
