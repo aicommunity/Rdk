@@ -17,7 +17,7 @@ See file license.txt for more information
 #include "UEPtr.h"
 #include "UContainer.h"
 #include "../Serialize/USerStorageXML.h"
-#include "UComponentDescription.h"
+#include "UContainerDescription.h"
 
 namespace RDK {
 
@@ -29,9 +29,9 @@ typedef std::map<UId, UClassStorageElement> UClassesStorage;
 typedef std::map<UId, UClassStorageElement>::iterator UClassesStorageIterator;
 typedef std::map<UId, UClassStorageElement>::const_iterator UClassesStorageCIterator;
 
-typedef std::map<std::string, UEPtr<UComponentDescription> > UClassesDescription;
-typedef std::map<std::string, UEPtr<UComponentDescription> >::iterator UClassesDescriptionIterator;
-typedef std::map<std::string, UEPtr<UComponentDescription> >::const_iterator UClassesDescriptionCIterator;
+typedef std::map<std::string, UEPtr<UContainerDescription> > UClassesDescription;
+typedef std::map<std::string, UEPtr<UContainerDescription> >::iterator UClassesDescriptionIterator;
+typedef std::map<std::string, UEPtr<UContainerDescription> >::const_iterator UClassesDescriptionCIterator;
 
 typedef std::vector<ULibrary*> UClassLibraryList;
 /* *********************************************************************** */
@@ -220,11 +220,11 @@ virtual void ClearObjectsStorage(void);
 // Методы управления описанием классов
 // --------------------------
 // Возвращает XML описание класса
-const UEPtr<UComponentDescription> GetClassDescription(const std::string &classname) const;
+const UEPtr<UContainerDescription> GetClassDescription(const std::string &classname) const;
 
 // Устанавливает XML описание класса
 // Класс в хранилище должен существовать
-void SetClassDescription(const std::string &classname, const UEPtr<UComponentDescription>& description);
+void SetClassDescription(const std::string &classname, const UEPtr<UContainerDescription>& description);
 
 // Сохраняет описание класса в xml
 virtual void SaveClassDescription(const std::string &classname,

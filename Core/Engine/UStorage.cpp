@@ -515,7 +515,7 @@ void UStorage::ClearObjectsStorage(void)
 // Методы управления описанием классов
 // --------------------------
 // Возвращает XML описание класса
-const UEPtr<UComponentDescription> UStorage::GetClassDescription(const std::string &classname) const
+const UEPtr<UContainerDescription> UStorage::GetClassDescription(const std::string &classname) const
 {
  UClassesDescriptionCIterator I=ClassesDescription.find(classname);
 
@@ -527,7 +527,7 @@ const UEPtr<UComponentDescription> UStorage::GetClassDescription(const std::stri
 
 // Устанавливает XML описание класса
 // Класс в хранилище должен существовать
-void UStorage::SetClassDescription(const std::string &classname, const UEPtr<UComponentDescription>& description)
+void UStorage::SetClassDescription(const std::string &classname, const UEPtr<UContainerDescription>& description)
 {
  UClassesStorageIterator I=ClassesStorage.find(FindClassId(classname));
 
