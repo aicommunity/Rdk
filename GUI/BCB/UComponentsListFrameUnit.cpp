@@ -342,7 +342,7 @@ void TUComponentsListFrame::UpdateParametersList(void)
 
 
  ParametersListStringGrid->RowCount=1+num;
- ParametersListStringGrid->ColCount=1+3;
+ ParametersListStringGrid->ColCount=1+2;
 
  if(ParametersListStringGrid->RowCount>1)
   ParametersListStringGrid->FixedRows=1;
@@ -350,7 +350,7 @@ void TUComponentsListFrame::UpdateParametersList(void)
  ParametersListStringGrid->Cells[0][0]="#";
  ParametersListStringGrid->Cells[1][0]="Name";
  ParametersListStringGrid->Cells[2][0]="Value";
- ParametersListStringGrid->Cells[3][0]="Description";
+// ParametersListStringGrid->Cells[3][0]="Description";
 
  for(int i=1;i<ParametersListStringGrid->ColCount;i++)
   ParametersListStringGrid->ColWidths[i]=10;
@@ -369,7 +369,7 @@ void TUComponentsListFrame::UpdateParametersList(void)
    ParametersListStringGrid->Cells[2][i+1]=value.c_str();
   }
   int global_width=ParametersListStringGrid->ColWidths[0];
-  ParametersListStringGrid->Cells[3][i+1]=xml.GetNodeAttribute("Header").c_str();
+//  ParametersListStringGrid->Cells[3][i+1]=xml.GetNodeAttribute("Header").c_str();
   int width=ParametersListStringGrid->Canvas->TextWidth(ParametersListStringGrid->Cells[1][i+1])+10;
   if(width>ParametersListStringGrid->Width/2)
    width=ParametersListStringGrid->Width/2;
@@ -388,8 +388,8 @@ void TUComponentsListFrame::UpdateParametersList(void)
   if(width < ParametersListStringGrid->Width-global_width)
    width=ParametersListStringGrid->Width-global_width;
 
-  if(ParametersListStringGrid->ColWidths[3]<width)
-   ParametersListStringGrid->ColWidths[3]=width;
+//  if(ParametersListStringGrid->ColWidths[3]<width)
+//   ParametersListStringGrid->ColWidths[3]=width;
   xml.SelectUp();
  }
 
@@ -418,7 +418,7 @@ void TUComponentsListFrame::UpdateNiceParamsList(TEnchancedSG *frame)
  else
 	frame->BasicStringGrid->RowCount=2;
 
- frame->BasicStringGrid->ColCount=1+3;
+ frame->BasicStringGrid->ColCount=1+2;
  for(int i=0;i<num;i++)
  {
 	frame->BasicStringGrid->Cells[2][i+1]="";
@@ -437,7 +437,7 @@ void TUComponentsListFrame::UpdateNiceParamsList(TEnchancedSG *frame)
  frame->BasicStringGrid->Cells[0][0]="#";
  frame->BasicStringGrid->Cells[1][0]="Name";
  frame->BasicStringGrid->Cells[2][0]="Value";
- frame->BasicStringGrid->Cells[3][0]="Description";
+// frame->BasicStringGrid->Cells[3][0]="Description";
 
  for(int i=1;i<frame->BasicStringGrid->ColCount;i++)
   frame->BasicStringGrid->ColWidths[i]=10;
@@ -519,8 +519,8 @@ void TUComponentsListFrame::UpdateNiceParamsList(TEnchancedSG *frame)
   if(width < frame->BasicStringGrid->Width-global_width)
    width=frame->BasicStringGrid->Width-global_width;
 
-  if(frame->BasicStringGrid->ColWidths[3]<width)
-   frame->BasicStringGrid->ColWidths[3]=width;
+//  if(frame->BasicStringGrid->ColWidths[3]<width)
+//   frame->BasicStringGrid->ColWidths[3]=width;
  }
 
  if(frame->BasicStringGrid->ColCount>2)
@@ -548,7 +548,7 @@ if(num>0)
  else
 	frame->BasicStringGrid->RowCount=2;
 
- frame->BasicStringGrid->ColCount=1+3;
+ frame->BasicStringGrid->ColCount=1+2;
  for(int i=0;i<num;i++)
  {
 	frame->BasicStringGrid->Cells[2][i+1]="";
@@ -567,7 +567,7 @@ if(num>0)
  frame->BasicStringGrid->Cells[0][0]="#";
  frame->BasicStringGrid->Cells[1][0]="Name";
  frame->BasicStringGrid->Cells[2][0]="Value";
- frame->BasicStringGrid->Cells[3][0]="Description";
+// frame->BasicStringGrid->Cells[3][0]="Description";
 
  for(int i=1;i<frame->BasicStringGrid->ColCount;i++)
   frame->BasicStringGrid->ColWidths[i]=10;
@@ -649,8 +649,8 @@ if(num>0)
   if(width < frame->BasicStringGrid->Width-global_width)
    width=frame->BasicStringGrid->Width-global_width;
 
-  if(frame->BasicStringGrid->ColWidths[3]<width)
-   frame->BasicStringGrid->ColWidths[3]=width;
+//  if(frame->BasicStringGrid->ColWidths[3]<width)
+//   frame->BasicStringGrid->ColWidths[3]=width;
  }
 
  if(frame->BasicStringGrid->ColCount>2)
