@@ -2080,3 +2080,32 @@ void __fastcall TUGEngineControlForm::VideoRegistration1Click(TObject *Sender)
 
 
 
+void __fastcall TUGEngineControlForm::SaveCommonDescriptions1Click(TObject *Sender)
+{
+ TRichEdit* RichEdit=new TRichEdit(this);
+ RichEdit->Visible=false;
+ RichEdit->Parent=this;
+
+ RichEdit->PlainText=true;
+ RichEdit->Text=Storage_SaveCommonClassesDescription();
+ RichEdit->Lines->SaveToFile("CommonClassesDescription.xml");
+
+ delete RichEdit;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::SaveClassesDescriptions1Click(TObject *Sender)
+
+{
+ TRichEdit* RichEdit=new TRichEdit(this);
+ RichEdit->Visible=false;
+ RichEdit->Parent=this;
+
+ RichEdit->PlainText=true;
+ RichEdit->Text=Storage_SaveClassesDescription();
+ RichEdit->Lines->SaveToFile("ClassesDescription.xml");
+
+ delete RichEdit;
+}
+//---------------------------------------------------------------------------
+

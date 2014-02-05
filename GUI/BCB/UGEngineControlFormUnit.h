@@ -129,6 +129,9 @@ __published:	// IDE-managed Components
 	TMenuItem *AddChannel1;
 	TMenuItem *DelChannel1;
 	TMenuItem *VideoRegistration1;
+	TMenuItem *N9;
+	TMenuItem *SaveCommonDescriptions1;
+	TMenuItem *SaveClassesDescriptions1;
 	void __fastcall FormShow(TObject *Sender);
 	void __fastcall Start1Click(TObject *Sender);
 	void __fastcall Pause1Click(TObject *Sender);
@@ -187,6 +190,8 @@ __published:	// IDE-managed Components
 	void __fastcall AddChannel1Click(TObject *Sender);
 	void __fastcall DelChannel1Click(TObject *Sender);
 	void __fastcall VideoRegistration1Click(TObject *Sender);
+	void __fastcall SaveCommonDescriptions1Click(TObject *Sender);
+	void __fastcall SaveClassesDescriptions1Click(TObject *Sender);
 
 
 

@@ -265,7 +265,7 @@ void* UADItem::GetInputDataAsPointer(int index)
 // Создает экземпляр описания класса
 UContainerDescription* UADItem::ANewDescription(UComponentDescription* description)
 {
- return 0; // Заглушка!!
+ return UComponent::ANewDescription(description);
 }
 // --------------------------
 

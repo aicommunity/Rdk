@@ -119,6 +119,12 @@ const string& ULibrary::GetVersion(void) const
 {
  return Version;
 }
+
+/// «ависимости библиотеки от других библиотек
+const std::vector<pair<string, string> > ULibrary::GetDependencies(void) const
+{
+ return Dependencies;
+}
 // --------------------------
 
 // --------------------------
@@ -171,6 +177,41 @@ int ULibrary::Upload(UStorage *storage)
 // --------------------------
 // ћетоды заполенени€ бибилиотеки
 // --------------------------
+/// ѕровер€ет зависимости библиотеки от других библиотек
+/// и возвращает список недостающих библиотек
+/// ¬озвращает true если все необходимые библиотеки уже загружены
+bool ULibrary::CheckDependencies(UStorage *storage, std::vector<pair<string, string> > &dependencies) const
+{
+ if(!storage)
+  return false;
+
+ if(Dependencies.empty())
+  return true;
+
+ dependencies.clear();
+ int num_libraries=storage->GetNumClassLibraries();
+ for(size_t i=0;i<Dependencies.size();i++)
+ {
+  bool dep_found=false;
+  for(int j=0;j<num_libraries;j++)
+  {
+   UEPtr<ULibrary> lib=storage->GetClassLibrary(j);
+   if(lib && lib->GetName() == Dependencies[i].first
+	&& (Dependencies[i].second.empty() || Dependencies[i].second == lib->GetVersion()))
+   {
+	dep_found=true;
+	break;
+   }
+  }
+  if(!dep_found)
+   dependencies.push_back(Dependencies[i]);
+ }
+ if(dependencies.empty())
+  return true;
+
+ return false;
+}
+
 // ƒобавл€ет в хранилище очередной класс
 bool ULibrary::UploadClass(const UId &classid, UEPtr<UComponent> cont)
 {

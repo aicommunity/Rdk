@@ -26,7 +26,6 @@ object UGEngineControlForm: TUGEngineControlForm
     Height = 477
     Align = alClient
     TabOrder = 0
-    ExplicitHeight = 469
     object Splitter2: TSplitter
       Left = 250
       Top = 1
@@ -52,7 +51,6 @@ object UGEngineControlForm: TUGEngineControlForm
       Height = 314
       Align = alLeft
       TabOrder = 0
-      ExplicitHeight = 306
       inline UComponentsListFrame1: TUComponentsListFrame
         Left = 1
         Top = 1
@@ -69,7 +67,7 @@ object UGEngineControlForm: TUGEngineControlForm
         ExplicitLeft = 1
         ExplicitTop = 1
         ExplicitWidth = 247
-        ExplicitHeight = 304
+        ExplicitHeight = 312
         inherited Splitter1: TSplitter
           Left = 0
           Top = 217
@@ -90,18 +88,20 @@ object UGEngineControlForm: TUGEngineControlForm
           ExplicitLeft = 0
           ExplicitTop = 225
           ExplicitWidth = 247
-          ExplicitHeight = 79
+          ExplicitHeight = 87
           inherited PageControl1: TPageControl
             Width = 245
             Height = 85
             ExplicitWidth = 245
-            ExplicitHeight = 77
+            ExplicitHeight = 85
             inherited TabSheet6: TTabSheet
               ExplicitWidth = 237
-              ExplicitHeight = 51
+              ExplicitHeight = 59
               inherited Splitter5: TSplitter
                 Top = 49
                 Width = 237
+                ExplicitTop = 49
+                ExplicitWidth = 237
               end
               inherited EnchancedSG1: TEnchancedSG
                 Width = 237
@@ -110,130 +110,55 @@ object UGEngineControlForm: TUGEngineControlForm
               inherited HeaderControl2: THeaderControl
                 Top = 15
                 Width = 237
-                ExplicitTop = 7
+                ExplicitTop = 15
                 ExplicitWidth = 237
               end
               inherited NiceParamValRichEdit: TRichEdit
                 Top = -18
                 Width = 237
-                ExplicitTop = -26
+                ExplicitTop = -18
                 ExplicitWidth = 237
               end
             end
             inherited TabSheet7: TTabSheet
-              ExplicitWidth = 237
-              ExplicitHeight = 51
               inherited Splitter6: TSplitter
-                Top = -26
-                Width = 237
-              end
-              inherited HeaderControl4: THeaderControl
-                Top = 17
-                Width = 237
-                ExplicitTop = 17
-                ExplicitWidth = 237
-              end
-              inherited NiceStateValRichEdit: TRichEdit
-                Top = -16
-                Width = 237
-                ExplicitTop = -16
-                ExplicitWidth = 237
-              end
-              inherited EnchancedSG2: TEnchancedSG
-                Width = 237
+                ExplicitTop = -26
                 ExplicitWidth = 237
               end
             end
             inherited TabSheet3: TTabSheet
-              ExplicitWidth = 237
-              ExplicitHeight = 51
+              ExplicitLeft = 4
+              ExplicitTop = 4
+              ExplicitWidth = 376
+              ExplicitHeight = 539
               inherited Splitter2: TSplitter
-                Width = 237
                 ExplicitTop = 239
                 ExplicitWidth = 237
               end
-              inherited GroupBox: TGroupBox
-                Width = 237
-                ExplicitWidth = 237
-                inherited OutputsStringGrid: TStringGrid
-                  Width = 233
-                  ExplicitWidth = 233
-                end
-              end
-              inherited GroupBox2: TGroupBox
-                Width = 237
-                ExplicitWidth = 237
-                inherited InputsStringGrid: TStringGrid
-                  Width = 233
-                  ExplicitWidth = 233
-                end
-              end
-            end
-            inherited TabSheet1: TTabSheet
-              ExplicitWidth = 237
-              ExplicitHeight = 51
-              inherited ParametersHeaderControl: THeaderControl
-                Width = 237
-                ExplicitWidth = 237
-              end
-              inherited ParametersRichEdit: TRichEdit
-                Width = 237
-                Height = 17
-                ExplicitWidth = 237
-                ExplicitHeight = 17
-              end
             end
             inherited TabSheet4: TTabSheet
-              ExplicitWidth = 237
-              ExplicitHeight = 51
               inherited Splitter3: TSplitter
-                Top = -26
-                Width = 237
                 ExplicitTop = 66
                 ExplicitWidth = 237
               end
               inherited ParametersListStringGrid: TStringGrid
-                Width = 237
                 ExplicitLeft = 0
                 ExplicitTop = 0
-                ExplicitWidth = 237
-              end
-              inherited ParameterValueRichEdit: TRichEdit
-                Top = -16
-                Width = 237
-                ExplicitTop = -16
-                ExplicitWidth = 237
-              end
-              inherited HeaderControl3: THeaderControl
-                Top = 17
-                Width = 237
-                ExplicitTop = 17
-                ExplicitWidth = 237
               end
             end
             inherited TabSheet5: TTabSheet
-              ExplicitWidth = 237
-              ExplicitHeight = 51
               inherited Splitter4: TSplitter
-                Top = 43
-                Width = 237
+                Top = 531
                 ExplicitTop = 43
-              end
-              inherited StatesListStringGrid: TStringGrid
-                Width = 237
                 ExplicitWidth = 237
               end
               inherited HeaderControl1: THeaderControl
-                Top = 9
-                Width = 237
-                ExplicitTop = 9
-                ExplicitWidth = 237
+                Top = 497
+                ExplicitTop = 497
               end
               inherited StateValueRichEdit: TRichEdit
-                Top = -24
-                Width = 237
-                ExplicitTop = -24
-                ExplicitWidth = 237
+                Top = 464
+                ExplicitTop = 464
               end
             end
           end
@@ -280,7 +205,6 @@ object UGEngineControlForm: TUGEngineControlForm
       Height = 153
       Align = alBottom
       TabOrder = 1
-      ExplicitTop = 315
       object PageControl2: TPageControl
         Left = 1
         Top = 1
@@ -367,11 +291,9 @@ object UGEngineControlForm: TUGEngineControlForm
       PopupMenu = PageControlPopupMenu
       TabOrder = 2
       OnChange = PageControl1Change
-      ExplicitHeight = 306
       object Draw: TTabSheet
         Caption = 'Draw'
         OnShow = DrawShow
-        ExplicitHeight = 278
         inline UDrawEngineFrame1: TUDrawEngineFrame
           Left = 0
           Top = 0
@@ -386,7 +308,7 @@ object UGEngineControlForm: TUGEngineControlForm
           ParentFont = False
           TabOrder = 0
           ExplicitWidth = 465
-          ExplicitHeight = 278
+          ExplicitHeight = 286
           inherited Splitter1: TSplitter
             Left = 225
             Height = 237
@@ -397,20 +319,20 @@ object UGEngineControlForm: TUGEngineControlForm
             Left = 236
             Height = 237
             ExplicitLeft = 236
-            ExplicitHeight = 229
+            ExplicitHeight = 237
             inherited UClassesListFrame: TUClassesListFrame
               Height = 235
-              ExplicitHeight = 227
+              ExplicitHeight = 235
               inherited PageControl: TPageControl
                 Height = 235
-                ExplicitHeight = 227
+                ExplicitHeight = 235
                 inherited NameTabSheet: TTabSheet
                   ExplicitLeft = 4
                   ExplicitTop = 24
-                  ExplicitHeight = 199
+                  ExplicitHeight = 207
                   inherited StringGrid: TStringGrid
                     Height = 207
-                    ExplicitHeight = 199
+                    ExplicitHeight = 207
                   end
                 end
               end
@@ -420,18 +342,18 @@ object UGEngineControlForm: TUGEngineControlForm
             Width = 225
             Height = 237
             ExplicitWidth = 225
-            ExplicitHeight = 229
+            ExplicitHeight = 237
             inherited ScrollBox: TScrollBox
               Width = 223
               Height = 235
               ExplicitWidth = 223
-              ExplicitHeight = 227
+              ExplicitHeight = 235
             end
           end
           inherited Panel3: TPanel
             Top = 237
             Width = 465
-            ExplicitTop = 229
+            ExplicitTop = 237
             ExplicitWidth = 465
             inherited ApplyButton: TButton
               Left = 299
@@ -458,7 +380,6 @@ object UGEngineControlForm: TUGEngineControlForm
     Height = 19
     Panels = <>
     SimplePanel = True
-    ExplicitTop = 513
   end
   object ChannelsStringGrid: TStringGrid
     Left = 0
@@ -477,7 +398,6 @@ object UGEngineControlForm: TUGEngineControlForm
     Visible = False
     OnClick = ChannelsStringGridClick
     OnSelectCell = ChannelsStringGridSelectCell
-    ExplicitHeight = 469
   end
   object ToolBar: TToolBar
     Left = 0
@@ -667,6 +587,17 @@ object UGEngineControlForm: TUGEngineControlForm
         ImageIndex = 6
         OnClick = OpenImage1Click
       end
+      object N9: TMenuItem
+        Caption = '-'
+      end
+      object SaveCommonDescriptions1: TMenuItem
+        Caption = 'Save Common Descriptions'
+        OnClick = SaveCommonDescriptions1Click
+      end
+      object SaveClassesDescriptions1: TMenuItem
+        Caption = 'Save Classes Descriptions'
+        OnClick = SaveClassesDescriptions1Click
+      end
     end
     object Channels1: TMenuItem
       Caption = 'Channels'
@@ -779,7 +710,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 360
     Top = 65528
     Bitmap = {
-      494C01011B006000F00110001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B006000F40110001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

@@ -31,6 +31,10 @@ string Name;
 // ¬ерси€ библиотеки
 string Version;
 
+/// «ависимости библиотеки от других библиотек
+/// вида <им€ библиотеки, верси€ библиотеки>
+std::vector<pair<string, string> > Dependencies;
+
 protected: // ƒанные загрузки
 // —одержит имена всех успешно загруженных образцов
 vector<string> Complete;
@@ -82,6 +86,9 @@ const string& GetName(void) const;
 
 // ¬озвращает версию библиотеки
 const string& GetVersion(void) const;
+
+/// «ависимости библиотеки от других библиотек
+const std::vector<pair<string, string> > GetDependencies(void) const;
 // --------------------------
 
 // --------------------------
@@ -107,6 +114,11 @@ virtual int Upload(UStorage *storage);
 // ћетоды заполенени€ бибилиотеки
 // --------------------------
 protected:
+/// ѕровер€ет зависимости библиотеки от других библиотек
+/// и возвращает список недостающих библиотек
+/// ¬озвращает true если все необходимые библиотеки уже загружены
+bool CheckDependencies(UStorage *storage, std::vector<pair<string, string> > &dependencies) const;
+
 // ƒобавл€ет в хранилище очередной класс
 virtual bool UploadClass(const UId &classid, UEPtr<UComponent> cont);
 virtual bool UploadClass(const string &name, UEPtr<UComponent> cont);
