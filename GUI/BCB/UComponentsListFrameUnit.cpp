@@ -61,10 +61,10 @@ void TUComponentsListFrame::AUpdateInterface(void)
 {
  if(ComponentControllers.empty())
  {
-  ComponentControllers["UCRPerseptron"]=UCRPerseptronForm;
-  ComponentControllers["UCRSample"]=UCRSampleForm;
-  ComponentControllers["UCRTeacherPerseptronDL"]=UCRTeacherPerseptronDLForm;
-  ComponentControllers["UCRTeacherPerseptronBP"]=UCRTeacherPerseptronBPForm;
+//  ComponentControllers["UCRPerseptron"]=UCRPerseptronForm;
+//  ComponentControllers["UCRSample"]=UCRSampleForm;
+//  ComponentControllers["UCRTeacherPerseptronDL"]=UCRTeacherPerseptronDLForm;
+//  ComponentControllers["UCRTeacherPerseptronBP"]=UCRTeacherPerseptronBPForm;
  }
 
 
