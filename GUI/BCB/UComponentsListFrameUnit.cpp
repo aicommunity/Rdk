@@ -18,6 +18,7 @@
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "TUVisualControllerFrameUnit"
+#pragma link "TEnchancedStringGrid"
 #pragma resource "*.dfm"
 TUComponentsListFrame *UComponentsListFrame;
 
@@ -60,10 +61,10 @@ void TUComponentsListFrame::AUpdateInterface(void)
 {
  if(ComponentControllers.empty())
  {
-//  ComponentControllers["UCRPerseptron"]=UCRPerseptronForm;
-//  ComponentControllers["UCRSample"]=UCRSampleForm;
-//  ComponentControllers["UCRTeacherPerseptronDL"]=UCRTeacherPerseptronDLForm;
-//  ComponentControllers["UCRTeacherPerseptronBP"]=UCRTeacherPerseptronBPForm;
+  ComponentControllers["UCRPerseptron"]=UCRPerseptronForm;
+  ComponentControllers["UCRSample"]=UCRSampleForm;
+  ComponentControllers["UCRTeacherPerseptronDL"]=UCRTeacherPerseptronDLForm;
+  ComponentControllers["UCRTeacherPerseptronBP"]=UCRTeacherPerseptronBPForm;
  }
 
 
@@ -71,6 +72,7 @@ void TUComponentsListFrame::AUpdateInterface(void)
 
  if(SelectedId == 0)
   row=1;
+
 
  int numcomponents=Model_GetNumComponents(CurrentComponentName.c_str());
  StringGrid->ColCount=2;
@@ -88,7 +90,10 @@ void TUComponentsListFrame::AUpdateInterface(void)
 
  std::vector<std::string> ids;
 // ids.resize(numcomponents);
- std::string names=Model_GetComponentsNameList(CurrentComponentName.c_str());
+ const char* p=Model_GetComponentsNameList(CurrentComponentName.c_str());
+ std::string names;
+ if(p)
+  names=p;
  RDK::separatestring(names,ids,',');
  for(int i=0;i<numcomponents;i++)
  {
@@ -128,6 +133,10 @@ void TUComponentsListFrame::AUpdateInterface(void)
   UpdateParametersList();
  if(PageControl1->ActivePage == TabSheet5)
   UpdateStatesList();
+ if(PageControl1->ActivePage == TabSheet6)
+  UpdateNiceParamsList(EnchancedSG1);
+ if(PageControl1->ActivePage == TabSheet7)
+  UpdateNiceStatesList(EnchancedSG2);
 }
 
 // Возврат интерфейса в исходное состояние
@@ -141,6 +150,8 @@ void TUComponentsListFrame::AClearInterface(void)
  ParametersRichEdit->Lines->Clear();
  StateRichEdit->Lines->Clear();
  ParameterValueRichEdit->Lines->Clear();
+ NiceParamValRichEdit->Lines->Clear();
+ NiceStateValRichEdit->Lines->Clear();
 }
 
 // Сохраняет параметры интерфейса в xml
@@ -198,25 +209,46 @@ void TUComponentsListFrame::UpdateParameters(void)
 // Обновляет состояние компонента
 void TUComponentsListFrame::UpdateState(void)
 {
- if(PageControl1->ActivePage != TabSheet2)
-  return;
- UpdateInterfaceFlag=true;
-
- if(ShowXMLComponentParameters)
+ if(PageControl1->ActivePage == TabSheet2)
  {
-  Panel1->Visible=true;
-  TempStates=Model_GetComponentState(GetSelectedComponentLongName().c_str());
-  if(TempStates.Length() != LastStates.Length() || TempStates != LastStates)
-   StateRichEdit->Text=LastStates=TempStates;
- }
- else
- {
-  Panel1->Visible=false;
- }
+	 UpdateInterfaceFlag=true;
 
- StateValueRichEdit->Text=StatesListStringGrid->Cells[2][StatesListStringGrid->Row];
- RegistryModified=false;
- UpdateInterfaceFlag=false;
+	 if(ShowXMLComponentParameters)
+	 {
+	  Panel1->Visible=true;
+	  TempStates=Model_GetComponentState(GetSelectedComponentLongName().c_str());
+	  if(TempStates.Length() != LastStates.Length() || TempStates != LastStates)
+	   StateRichEdit->Text=LastStates=TempStates;
+	 }
+	 else
+	 {
+	  Panel1->Visible=false;
+	 }
+
+	 StateValueRichEdit->Text=StatesListStringGrid->Cells[2][StatesListStringGrid->Row];
+	 RegistryModified=false;
+	 UpdateInterfaceFlag=false;
+ }
+ else if(PageControl1->ActivePage == TabSheet7)
+ {
+  UpdateInterfaceFlag=true;
+  if(ShowXMLComponentParameters)
+  {
+   Panel1->Visible=true;
+   TempStates=Model_GetComponentState(GetSelectedComponentLongName().c_str());
+   if(TempStates.Length() != LastStates.Length() || TempStates != LastStates)
+   NiceStateValRichEdit->Text=LastStates=TempStates;
+  }
+  else
+  {
+   Panel1->Visible=false;
+  }
+
+  NiceStateValRichEdit->Text=EnchancedSG2->BasicStringGrid->Cells[2][EnchancedSG2->BasicStringGrid->Row];
+
+  RegistryModified=false;
+  UpdateInterfaceFlag=false;
+ }
 }
 
 // Обновляет данные ввода-вывода
@@ -363,6 +395,267 @@ void TUComponentsListFrame::UpdateParametersList(void)
 
  SelectedComponentParameterName=AnsiString(ParametersListStringGrid->Cells[1][1]).c_str();
  ParameterValueRichEdit->Text=ParametersListStringGrid->Cells[2][ParametersListStringGrid->Row];
+ UpdateInterfaceFlag=false;
+}
+
+// Обновляет данные измененного списка параметров
+void TUComponentsListFrame::UpdateNiceParamsList(TEnchancedSG *frame)
+{
+ if(PageControl1->ActivePage != TabSheet6)
+  return;
+ UpdateInterfaceFlag=true;
+
+
+
+ std::string xml_data=Model_GetComponentParametersEx(GetSelectedComponentLongName().c_str());
+ RDK::USerStorageXML xml;
+ xml.Load(xml_data,"");
+ xml.SelectNode("Parameters");
+ int num=xml.GetNumNodes();
+
+ if(num>0)
+	frame->BasicStringGrid->RowCount=1+num;
+ else
+	frame->BasicStringGrid->RowCount=2;
+
+ frame->BasicStringGrid->ColCount=1+3;
+ for(int i=0;i<num;i++)
+ {
+	frame->BasicStringGrid->Cells[2][i+1]="";
+ }
+ frame->txtBorderedIntEdit->Visible = false;
+ frame->udBorderedInt->Visible = false;
+ frame->txtIntEdit->Visible = false;
+ frame->txtStringEdit->Visible = false;
+ frame->txtDoubleEdit->Visible = false;
+ frame->chbBoolEdit->Visible = false;
+ frame->udBorderedInt->Visible = false;
+
+ if(ParametersListStringGrid->RowCount>1)
+  ParametersListStringGrid->FixedRows=1;
+
+ frame->BasicStringGrid->Cells[0][0]="#";
+ frame->BasicStringGrid->Cells[1][0]="Name";
+ frame->BasicStringGrid->Cells[2][0]="Value";
+ frame->BasicStringGrid->Cells[3][0]="Description";
+
+ for(int i=1;i<frame->BasicStringGrid->ColCount;i++)
+  frame->BasicStringGrid->ColWidths[i]=10;
+
+ frame->m_storage.Clear();
+ for(int i=0;i<num;i++)
+ {
+
+  xml.SelectNode(i);
+  //------------------------------------
+  frame->BasicStringGrid->Cells[1][i+1]=xml.GetNodeName().c_str();
+  TProperty p;
+  p.SetName(xml.GetNodeName().c_str());
+  p.SetNumber(i);
+  if(xml.GetNumNodes() == 0)
+  {
+   //ParametersListStringGrid->Cells[2][i+1]=xml.GetNodeText().c_str();
+   String type = xml.GetNodeAttribute("Type").c_str();
+   PropertyType t;
+   if(type=="bool")
+   {
+	t = BoolP;
+   }
+   else if(type=="int")
+   {
+	t = IntP;
+   }
+   else if(type=="double")
+   {
+	t = DoubleP;
+   }
+   else if(type=="unsigned int")
+   {
+	t = IntP;
+   }
+   else
+   {
+	t = StrP;
+   }
+   p.SetValue(xml.GetNodeText().c_str(), t);
+  }
+  else
+  {
+   std::string value;
+   xml.SaveFromNode(value);
+   //ParametersListStringGrid->Cells[2][i+1]=value.c_str();
+
+   p.SetValue(value.c_str(), StrP);
+  }
+  p.SetListed(false);
+  p.SetDesc(xml.GetNodeAttribute("Header").c_str());
+  frame->m_storage.AddProperty(p);
+
+
+  xml.SelectUp();
+ }
+
+ frame->Refresh();
+ for(int i=0; i<num;i++)
+ {
+  frame->BasicStringGrid->ColWidths[0] = frame->BasicStringGrid->Canvas->TextWidth(frame->BasicStringGrid->Cells[0][0])+10;
+
+  int global_width=frame->BasicStringGrid->ColWidths[0];
+  int width=frame->BasicStringGrid->Canvas->TextWidth(frame->BasicStringGrid->Cells[1][i+1])+10;
+  if(width>frame->BasicStringGrid->Width/2)
+   width=frame->BasicStringGrid->Width/2;
+  if(frame->BasicStringGrid->ColWidths[1]<width)
+   frame->BasicStringGrid->ColWidths[1]=width;
+  global_width+=frame->BasicStringGrid->ColWidths[1];
+
+  width=80;//frame->BasicStringGrid->Canvas->TextWidth(frame->BasicStringGrid->Cells[2][i+1])+10;
+  /*if(width>frame->BasicStringGrid->Width/2)
+   width=frame->BasicStringGrid->Width/2;
+  if(frame->BasicStringGrid->ColWidths[2]<width)*/
+   frame->BasicStringGrid->ColWidths[2]=width;
+  global_width+=frame->BasicStringGrid->ColWidths[2];
+
+  width=frame->BasicStringGrid->Canvas->TextWidth(frame->BasicStringGrid->Cells[3][i+1])+10;
+  if(width < frame->BasicStringGrid->Width-global_width)
+   width=frame->BasicStringGrid->Width-global_width;
+
+  if(frame->BasicStringGrid->ColWidths[3]<width)
+   frame->BasicStringGrid->ColWidths[3]=width;
+ }
+
+ if(frame->BasicStringGrid->ColCount>2)
+  frame->BasicStringGrid->FixedCols=2;
+ SelectedComponentParameterName=AnsiString(ParametersListStringGrid->Cells[1][1]).c_str();
+ ParameterValueRichEdit->Text=ParametersListStringGrid->Cells[2][ParametersListStringGrid->Row];
+ UpdateInterfaceFlag=false;
+}
+
+// Обновляет данные переделанного списка переменных состояния
+void TUComponentsListFrame::UpdateNiceStatesList(TEnchancedSG *frame)
+{
+ if(PageControl1->ActivePage != TabSheet7)
+  return;
+ UpdateInterfaceFlag=true;
+
+ std::string xml_data=Model_GetComponentState(GetSelectedComponentLongName().c_str());
+ RDK::USerStorageXML xml;
+ xml.Load(xml_data,"");
+ xml.SelectNode("State");
+ int num=xml.GetNumNodes();
+
+if(num>0)
+	frame->BasicStringGrid->RowCount=1+num;
+ else
+	frame->BasicStringGrid->RowCount=2;
+
+ frame->BasicStringGrid->ColCount=1+3;
+ for(int i=0;i<num;i++)
+ {
+	frame->BasicStringGrid->Cells[2][i+1]="";
+ }
+ frame->txtBorderedIntEdit->Visible = false;
+ frame->udBorderedInt->Visible = false;
+ frame->txtIntEdit->Visible = false;
+ frame->txtStringEdit->Visible = false;
+ frame->txtDoubleEdit->Visible = false;
+ frame->chbBoolEdit->Visible = false;
+ frame->udBorderedInt->Visible = false;
+
+ if(ParametersListStringGrid->RowCount>1)
+  ParametersListStringGrid->FixedRows=1;
+
+ frame->BasicStringGrid->Cells[0][0]="#";
+ frame->BasicStringGrid->Cells[1][0]="Name";
+ frame->BasicStringGrid->Cells[2][0]="Value";
+ frame->BasicStringGrid->Cells[3][0]="Description";
+
+ for(int i=1;i<frame->BasicStringGrid->ColCount;i++)
+  frame->BasicStringGrid->ColWidths[i]=10;
+
+ frame->m_storage.Clear();
+
+  for(int i=0;i<num;i++)
+ {
+
+  xml.SelectNode(i);
+  //------------------------------------
+  frame->BasicStringGrid->Cells[1][i+1]=xml.GetNodeName().c_str();
+  TProperty p;
+  p.SetName(xml.GetNodeName().c_str());
+  p.SetNumber(i);
+  if(xml.GetNumNodes() == 0)
+  {
+   //ParametersListStringGrid->Cells[2][i+1]=xml.GetNodeText().c_str();
+   String type = xml.GetNodeAttribute("Type").c_str();
+   PropertyType t;
+   if(type=="bool")
+   {
+	t = BoolP;
+   }
+   else if(type=="int")
+   {
+	t = IntP;
+   }
+   else if(type=="double")
+   {
+	t = DoubleP;
+   }
+   else if(type=="unsigned int")
+   {
+	t = IntP;
+   }
+   else
+   {
+	t = StrP;
+   }
+   p.SetValue(xml.GetNodeText().c_str(), t);
+  }
+  else
+  {
+   std::string value;
+   xml.SaveFromNode(value);
+   //ParametersListStringGrid->Cells[2][i+1]=value.c_str();
+
+   p.SetValue(value.c_str(), StrP);
+  }
+  p.SetListed(false);
+  p.SetDesc(xml.GetNodeAttribute("Header").c_str());
+  frame->m_storage.AddProperty(p);
+
+  xml.SelectUp();
+ }
+
+ frame->Refresh();
+ for(int i=0; i<num;i++)
+ {
+  frame->BasicStringGrid->ColWidths[0] = frame->BasicStringGrid->Canvas->TextWidth(frame->BasicStringGrid->Cells[0][0])+10;
+
+  int global_width=frame->BasicStringGrid->ColWidths[0];
+  int width=frame->BasicStringGrid->Canvas->TextWidth(frame->BasicStringGrid->Cells[1][i+1])+10;
+  if(width>frame->BasicStringGrid->Width/2)
+   width=frame->BasicStringGrid->Width/2;
+  if(frame->BasicStringGrid->ColWidths[1]<width)
+   frame->BasicStringGrid->ColWidths[1]=width;
+  global_width+=frame->BasicStringGrid->ColWidths[1];
+
+  width=80;//frame->BasicStringGrid->Canvas->TextWidth(frame->BasicStringGrid->Cells[2][i+1])+10;
+  /*if(width>frame->BasicStringGrid->Width/2)
+   width=frame->BasicStringGrid->Width/2;
+  if(frame->BasicStringGrid->ColWidths[2]<width)*/
+   frame->BasicStringGrid->ColWidths[2]=width;
+  global_width+=frame->BasicStringGrid->ColWidths[2];
+
+  width=frame->BasicStringGrid->Canvas->TextWidth(frame->BasicStringGrid->Cells[3][i+1])+10;
+  if(width < frame->BasicStringGrid->Width-global_width)
+   width=frame->BasicStringGrid->Width-global_width;
+
+  if(frame->BasicStringGrid->ColWidths[3]<width)
+   frame->BasicStringGrid->ColWidths[3]=width;
+ }
+
+ if(frame->BasicStringGrid->ColCount>2)
+  frame->BasicStringGrid->FixedCols=2;
+ SelectedComponentStateName=AnsiString(frame->BasicStringGrid->Cells[1][1]).c_str();
  UpdateInterfaceFlag=false;
 }
 
@@ -783,6 +1076,10 @@ void __fastcall TUComponentsListFrame::StringGridClick(TObject *Sender)
   UpdateParametersList();
  if(PageControl1->ActivePage == TabSheet5)
   UpdateStatesList();
+ if(PageControl1->ActivePage == TabSheet6)
+  UpdateNiceParamsList(EnchancedSG1);
+ if(PageControl1->ActivePage == TabSheet7)
+  UpdateNiceStatesList(EnchancedSG2);
 
  if(DrawEngineFrame)
   DrawEngineFrame->SelectComponent(GetSelectedComponentName());
@@ -1021,7 +1318,7 @@ void __fastcall TUComponentsListFrame::HeaderControl3SectionClick(THeaderControl
 //---------------------------------------------------------------------------
 
 void __fastcall TUComponentsListFrame::HeaderControl1SectionClick(THeaderControl *HeaderControl,
-          THeaderSection *Section)
+		  THeaderSection *Section)
 {
  if(StatesListStringGrid->Row<0 || StatesListStringGrid->Row>=StatesListStringGrid->RowCount)
   return;
@@ -1223,6 +1520,216 @@ void __fastcall TUComponentsListFrame::StateValueRichEditMouseEnter(TObject *Sen
 
 {
  StateValueRichEdit->SetFocus();
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TUComponentsListFrame::EnchancedSG1BasicStringGridDrawCell(TObject *Sender,
+		  int ACol, int ARow, TRect &Rect, TGridDrawState State)
+{
+  EnchancedSG1->BasicStringGridDrawCell(Sender, ACol, ARow, Rect, State);
+  if(EnchancedSG1->m_cellChanged)
+  {
+	 String n = GetSelectedComponentLongName().c_str();
+	 String sn = EnchancedSG1->BasicStringGrid->Cells[1][ARow];
+	 String v = EnchancedSG1->BasicStringGrid->Cells[2][ARow];
+	 Model_SetComponentStateValue(AnsiString(n).c_str(),AnsiString(sn).c_str(), AnsiString(v).c_str());
+  }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::HeaderControl2SectionClick(THeaderControl *HeaderControl,
+          THeaderSection *Section)
+{
+ if(ParametersListStringGrid->Row<0 || ParametersListStringGrid->Row>=ParametersListStringGrid->RowCount)
+  return;
+ if(Section->Index == 0)
+ {
+
+  Model_SetComponentParameterValue(GetSelectedComponentLongName().c_str(),AnsiString(EnchancedSG1->BasicStringGrid->Cells[1][EnchancedSG1->BasicStringGrid->Row]).c_str(), AnsiString(NiceParamValRichEdit->Text).c_str());
+  UpdateInterface(true);
+ }
+ else
+ if(Section->Index == 1)
+ {
+//  if(Application->MessageBox(L"Are you sure you want to change this value in all components of the same class?",L"Warning",MB_YESNO) != ID_YES)
+//   return;
+  if(UComponentsListForm->ShowComponentSelect() == mrOk)
+  {
+   Model_SetGlobalComponentPropertyValue(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName().c_str(), Model_GetComponentClassName(GetSelectedComponentLongName().c_str()),AnsiString(EnchancedSG1->BasicStringGrid->Cells[1][EnchancedSG1->BasicStringGrid->Row]).c_str(), AnsiString(NiceParamValRichEdit->Text).c_str());
+   UpdateInterface(true);
+  }
+ }
+ else
+ if(Section->Index == 2)
+ {
+  if(UComponentsListForm->ShowComponentSelect() == mrOk)
+  {
+   std::string global_owner_stringid=Model_GetComponentClassName(CurrentComponentName.c_str());
+   Model_SetGlobalOwnerComponentPropertyValue(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName().c_str(), Model_GetComponentClassName(GetSelectedComponentLongName().c_str()),global_owner_stringid.c_str(),AnsiString(EnchancedSG1->BasicStringGrid->Cells[1][EnchancedSG1->BasicStringGrid->Row]).c_str(), AnsiString(NiceParamValRichEdit->Text).c_str());
+   UpdateInterface(true);
+  }
+ }
+ else
+ if(Section->Index == 3)
+ {
+  UpdateParameters();
+ }
+ else
+ if(Section->Index == 4)
+ {
+  if(Application->MessageBox(L"Значения всех параметров этого компонента будут заменены на значения по умолчанию", L"Предупреждение", MB_YESNO) == ID_YES)
+  {
+   Env_Default(GetSelectedComponentLongName().c_str(), false);
+   UpdateParameters();
+  }
+ }
+ else
+ if(Section->Index == 5)
+ {
+  if(Application->MessageBox(L"Значения всех параметров этого компонента и его дочерних компонент будут заменены на значения по умолчанию", L"Предупреждение", MB_YESNO) == ID_YES)
+  {
+   Env_Default(GetSelectedComponentLongName().c_str(), true);
+   Env_Reset(GetSelectedComponentLongName().c_str());
+   UpdateParameters();
+  }
+ }
+
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::NiceParamValRichEditMouseEnter(TObject *Sender)
+
+{
+	NiceParamValRichEdit->SetFocus();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::EnchancedSG1BasicStringGridSelectCell(TObject *Sender,
+		  int ACol, int ARow, bool &CanSelect)
+{
+  EnchancedSG1->BasicStringGridSelectCell(Sender, ACol, ARow, CanSelect);
+
+  if(ARow>0)
+  {
+	TProperty p;
+	EnchancedSG1->m_storage.GetPropertyByIndex(ARow-1, &p);
+	NiceParamValRichEdit->Text = p.GetString();
+	SelectedComponentParameterName=AnsiString(EnchancedSG1->BasicStringGrid->Cells[1][ARow]).c_str();
+  }
+
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::EnchancedSG2BasicStringGridSelectCell(TObject *Sender,
+          int ACol, int ARow, bool &CanSelect)
+{
+  EnchancedSG2->BasicStringGridSelectCell(Sender, ACol, ARow, CanSelect);
+  if(ARow>0)
+  {
+	TProperty p;
+	EnchancedSG2->m_storage.GetPropertyByIndex(ARow-1, &p);
+	NiceStateValRichEdit->Text = p.GetString();
+	SelectedComponentStateName=AnsiString(EnchancedSG2->BasicStringGrid->Cells[1][ARow]).c_str();
+  }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::NiceParamValRichEditChange(TObject *Sender)
+
+{
+ if(UpdateInterfaceFlag)
+  return;
+ RegistryModified=true;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::NiceStateValRichEditChange(TObject *Sender)
+
+{
+ if(UpdateInterfaceFlag)
+  return;
+ RegistryModified=true;
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TUComponentsListFrame::NiceStateValRichEditMouseEnter(TObject *Sender)
+
+{
+ NiceStateValRichEdit->SetFocus();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::HeaderControl4SectionClick(THeaderControl *HeaderControl,
+          THeaderSection *Section)
+{
+if(EnchancedSG2->BasicStringGrid->Row<0 || EnchancedSG2->BasicStringGrid->Row>=EnchancedSG2->BasicStringGrid->RowCount)
+  return;
+
+ if(Section->Index == 0)
+ {
+  Model_SetComponentStateValue(GetSelectedComponentLongName().c_str(),AnsiString(EnchancedSG2->BasicStringGrid->Cells[1][EnchancedSG2->BasicStringGrid->Row]).c_str(), AnsiString(NiceStateValRichEdit->Text).c_str());
+  UpdateInterface(true);
+ }
+ else
+ if(Section->Index == 1)
+ {
+//  if(Application->MessageBox(L"Are you sure you want to change this value in all components of the same class?",L"Warning",MB_YESNO) != ID_YES)
+//   return;
+  if(UComponentsListForm->Visible)
+   UComponentsListForm->Hide();
+  if(UComponentsListForm->ShowComponentSelect() == mrOk)
+  {
+   Model_SetGlobalComponentPropertyValue(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName().c_str(),Model_GetComponentClassName(GetSelectedComponentLongName().c_str()),AnsiString(EnchancedSG2->BasicStringGrid->Cells[1][EnchancedSG2->BasicStringGrid->Row]).c_str(), AnsiString(StateValueRichEdit->Text).c_str());
+   UpdateInterface(true);
+  }
+ }
+ else
+ if(Section->Index == 2)
+ {
+  if(UComponentsListForm->Visible)
+   UComponentsListForm->Hide();
+  if(UComponentsListForm->ShowComponentSelect() == mrOk)
+  {
+   std::string global_owner_stringid=Model_GetComponentClassName(CurrentComponentName.c_str());
+   Model_SetGlobalOwnerComponentPropertyValue(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName().c_str(),Model_GetComponentClassName(GetSelectedComponentLongName().c_str()),global_owner_stringid.c_str(),AnsiString(StatesListStringGrid->Cells[1][StatesListStringGrid->Row]).c_str(), AnsiString(NiceStateValRichEdit->Text).c_str());
+   UpdateInterface(true);
+  }
+ }
+ else
+ if(Section->Index == 3)
+ {
+  UpdateState();
+ }
+ else
+ if(Section->Index == 4)
+ {
+
+ }
+}
+//---------------------------------------------------------------------------
+
+
+
+
+void __fastcall TUComponentsListFrame::EnchancedSG2MouseEnter(TObject *Sender)
+{
+ EnchancedSG2->SetFocus();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::EnchancedSG1BasicStringGridMouseEnter(TObject *Sender)
+
+{
+ EnchancedSG1->BasicStringGrid->SetFocus();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::EnchancedSG2BasicStringGridMouseEnter(TObject *Sender)
+
+{
+ EnchancedSG2->BasicStringGrid->SetFocus();
 }
 //---------------------------------------------------------------------------
 

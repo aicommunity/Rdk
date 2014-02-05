@@ -14,6 +14,7 @@
 #include <Vcl.ValEdit.hpp>
 #include "TUVisualControllerFrameUnit.h"
 #include <Vcl.Menus.hpp>
+#include "TEnchancedStringGrid.h"
 #include <string>
 #include <vector>
 #include "TUVisualController.h"
@@ -62,6 +63,16 @@ __published:	// IDE-managed Components
 	TMenuItem *Delete1;
 	TMenuItem *N4;
 	TMenuItem *Reset1;
+	TTabSheet *TabSheet6;
+	TEnchancedSG *EnchancedSG1;
+	THeaderControl *HeaderControl2;
+	TRichEdit *NiceParamValRichEdit;
+	TSplitter *Splitter5;
+	TTabSheet *TabSheet7;
+	THeaderControl *HeaderControl4;
+	TRichEdit *NiceStateValRichEdit;
+	TEnchancedSG *EnchancedSG2;
+	TSplitter *Splitter6;
 	void __fastcall FrameResize(TObject *Sender);
 	void __fastcall StringGridDblClick(TObject *Sender);
 	void __fastcall StringGridSelectCell(TObject *Sender, int ACol, int ARow, bool &CanSelect);
@@ -104,6 +115,24 @@ __published:	// IDE-managed Components
 	void __fastcall InputsStringGridMouseEnter(TObject *Sender);
 	void __fastcall ParameterValueRichEditMouseEnter(TObject *Sender);
 	void __fastcall StateValueRichEditMouseEnter(TObject *Sender);
+	void __fastcall EnchancedSG1BasicStringGridDrawCell(TObject *Sender, int ACol, int ARow,
+          TRect &Rect, TGridDrawState State);
+	void __fastcall HeaderControl2SectionClick(THeaderControl *HeaderControl, THeaderSection *Section);
+	void __fastcall NiceParamValRichEditMouseEnter(TObject *Sender);
+	void __fastcall EnchancedSG1BasicStringGridSelectCell(TObject *Sender, int ACol,
+          int ARow, bool &CanSelect);
+	void __fastcall EnchancedSG2BasicStringGridSelectCell(TObject *Sender, int ACol,
+          int ARow, bool &CanSelect);
+	void __fastcall NiceParamValRichEditChange(TObject *Sender);
+	void __fastcall NiceStateValRichEditChange(TObject *Sender);
+	void __fastcall NiceStateValRichEditMouseEnter(TObject *Sender);
+	void __fastcall HeaderControl4SectionClick(THeaderControl *HeaderControl, THeaderSection *Section);
+	void __fastcall EnchancedSG2MouseEnter(TObject *Sender);
+	void __fastcall EnchancedSG1BasicStringGridMouseEnter(TObject *Sender);
+	void __fastcall EnchancedSG2BasicStringGridMouseEnter(TObject *Sender);
+
+
+
 
 
 
@@ -286,6 +315,13 @@ void UpdateParametersList(void);
 
 // ќбновл€ет данные списка переменных состо€ни€
 void UpdateStatesList(void);
+
+// ќбновл€ет данные измененного списка параметров
+void UpdateNiceParamsList(TEnchancedSG *frame);
+
+// ќбновл€ет данные измененного списка параметров
+void UpdateNiceStatesList(TEnchancedSG *frame);
+
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TUComponentsListFrame *UComponentsListFrame;
