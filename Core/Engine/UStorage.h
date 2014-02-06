@@ -163,6 +163,7 @@ virtual void DelClass(const UId &classid);
 
 // Проверяет наличие образца класса объекта в хранилище
 virtual bool CheckClass(const UId &classid) const;
+virtual bool CheckClass(const string &classname) const;
 
 // Возвращает образец класса
 virtual UEPtr<UComponent> GetClass(const UId &classid) const;
@@ -287,6 +288,13 @@ virtual bool DelAllClassLibraries(void);
 
 // Заполняет хранилище данными библиотек
 virtual bool BuildStorage(void);
+
+/// Возвращает указатель на библиотеку класса по имени класса
+virtual UEPtr<ULibrary> FindClassLibrary(const std::string class_name);
+
+/// Формирует список зависимостей класса компонента от библиотек
+/// Метод не очищает переданный список библиотек, а только пополняет его
+virtual void FindComponentDependencies(const std::string class_name, std::vector<std::pair<std::string,std::string> > &dependencies);
 // --------------------------
 
 // --------------------------

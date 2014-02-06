@@ -36,6 +36,9 @@ string Version;
 std::vector<pair<string, string> > Dependencies;
 
 protected: // Данные загрузки
+/// Имена классов библиотеки
+vector<string> ClassesList;
+
 // Содержит имена всех успешно загруженных образцов
 vector<string> Complete;
 
@@ -94,6 +97,12 @@ const std::vector<pair<string, string> > GetDependencies(void) const;
 // --------------------------
 // Методы доступа к данным загрузки
 // --------------------------
+/// Возвращает true если коллекция предоставляет класс с таким именем
+bool IsClassNamePresent(const std::string &class_name) const;
+
+/// Имена классов библиотеки
+const vector<string>& GetClassesList(void) const;
+
 // Содержит имена всех успешно загруженных образцов
 const vector<string>& GetComplete(void) const;
 

@@ -130,6 +130,21 @@ const std::vector<pair<string, string> > ULibrary::GetDependencies(void) const
 // --------------------------
 // Методы доступа к данным загрузки
 // --------------------------
+/// Возвращает true если коллекция предоставляет класс с таким именем
+bool ULibrary::IsClassNamePresent(const std::string &class_name) const
+{
+ for(size_t i=0;i<ClassesList.size();i++)
+  if(ClassesList[i] == class_name)
+   return true;
+ return false;
+}
+
+/// Имена классов библиотеки
+const vector<string>& ULibrary::GetClassesList(void) const
+{
+ return ClassesList;
+}
+
 // Содержит имена всех успешно загруженных образцов
 const vector<string>& ULibrary::GetComplete(void) const
 {
@@ -229,6 +244,9 @@ bool ULibrary::UploadClass(const string &name, UEPtr<UComponent> cont)
   return false;
  }
 
+ if(Storage->CheckClass(name))
+  return true;
+
  if(!Storage->AddClass(cont,name))
  {
   Incomplete.push_back(name);
@@ -236,6 +254,7 @@ bool ULibrary::UploadClass(const string &name, UEPtr<UComponent> cont)
   return false;
  }
 
+ ClassesList.push_back(name);
  Complete.push_back(name);
  return true;
 }

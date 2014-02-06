@@ -246,6 +246,15 @@ bool UStorage::CheckClass(const UId &classid) const
  return true;
 }
 
+bool UStorage::CheckClass(const string &classname) const
+{
+ map<NameT,UId>::const_iterator I=ClassesLookupTable.find(classname);
+ if(I == ClassesLookupTable.end())
+  return false;
+ return true;
+
+}
+
 // ¬озвращает образец класса
 UEPtr<UComponent> UStorage::GetClass(const UId &classid) const
 {
@@ -764,6 +773,36 @@ bool UStorage::BuildStorage(void)
   }
  }
  return true;
+}
+
+/// ¬озвращает указатель на библиотеку класса по имени класса
+UEPtr<ULibrary> UStorage::FindClassLibrary(const std::string class_name)
+{
+ for(size_t i=0;i<ClassLibraryList.size();i++)
+ {
+  UEPtr<ULibrary> lib=ClassLibraryList[i];
+  if(lib->IsClassNamePresent(class_name))
+   return lib;
+ }
+ return 0;
+}
+
+/// ‘ормирует список зависимостей класса компонента от библиотек
+/// ћетод не очищает переданный список библиотек, а только пополн€ет его
+void UStorage::FindComponentDependencies(const std::string class_name, std::vector<std::pair<std::string,std::string> > &dependencies)
+{
+ UEPtr<UContainer> class_data=dynamic_pointer_cast<UContainer>(GetClass(class_name));
+ if(!class_data)
+  return;
+
+ UEPtr<ULibrary> lib=FindClassLibrary(class_name);
+ if(!lib)
+  return;
+
+ std::pair<std::string,std::string> lib_dep(lib->GetName(),lib->GetVersion());
+ dependencies.push_back(lib_dep);
+ for(int i=0;i<class_data->GetNumComponents();i++)
+  FindComponentDependencies(FindClassName(class_data->GetComponentByIndex(i)->GetClass()),dependencies);
 }
 // --------------------------
 
