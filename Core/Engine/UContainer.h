@@ -382,6 +382,8 @@ int GetNumComponents(void) const;
 // (включая все компоненты дочерних компонент)
 int GetNumAllComponents(void) const;
 
+bool CheckComponent(const NameT &name);
+
 // Метод проверяет на допустимость объекта данного типа
 // в качестве компоненты данного объекта
 // Метод возвращает 'true' в случае допустимости

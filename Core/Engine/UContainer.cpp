@@ -337,6 +337,10 @@ bool UContainer::CheckId(const UId &id)
  return (id>LastId)?true:false;
 }
 
+bool UContainer::CheckComponent(const NameT &name)
+{
+  return !CheckName(name);
+}
 // Проверяет предлагаемое имя 'name' на уникальность в рамках
 // данного объекта.
 bool UContainer::CheckName(const NameT &name)
