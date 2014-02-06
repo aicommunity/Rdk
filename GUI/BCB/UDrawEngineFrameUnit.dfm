@@ -45,6 +45,8 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
         ExplicitWidth = 227
         ExplicitHeight = 422
         inherited NameTabSheet: TTabSheet
+          ExplicitLeft = 4
+          ExplicitTop = 24
           ExplicitWidth = 219
           ExplicitHeight = 394
           inherited StringGrid: TStringGrid
@@ -186,7 +188,7 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
     Left = 384
     Top = 176
     object Breakinputlink1: TMenuItem
-      Caption = 'Break link'
+      Caption = 'View/Break link'
       OnClick = Breakinputlink1Click
     end
     object N2: TMenuItem
