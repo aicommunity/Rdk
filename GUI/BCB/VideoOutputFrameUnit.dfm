@@ -12,7 +12,7 @@ inherited VideoOutputFrame: TVideoOutputFrame
     Top = 0
     Width = 916
     Height = 714
-    ActivePage = NetworkStreamingTabSheet
+    ActivePage = VideoSourceTabSheet
     Align = alClient
     TabOrder = 0
     object VideoSourceTabSheet: TTabSheet
@@ -228,12 +228,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
         TabOrder = 0
         inherited ControlPanel: TPanel
           inherited ModePageControl: TPageControl
-            inherited NetworkStreamingTabSheet: TTabSheet
-              ExplicitLeft = 4
-              ExplicitTop = 24
-              ExplicitWidth = 370
-              ExplicitHeight = 257
-            end
             inherited RecordingTabSheet: TTabSheet
               TabVisible = False
             end
@@ -242,12 +236,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
             ActivePage = NetworkStreamingFrame.SourceFrameTabSheet
             inherited SourceComponentTabSheet: TTabSheet
               TabVisible = False
-            end
-            inherited SourceFrameTabSheet: TTabSheet
-              ExplicitLeft = 4
-              ExplicitTop = 24
-              ExplicitWidth = 370
-              ExplicitHeight = 165
             end
           end
         end
@@ -279,12 +267,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
             ActivePage = RecordingFrame.SourceFrameTabSheet
             inherited SourceComponentTabSheet: TTabSheet
               TabVisible = False
-            end
-            inherited SourceFrameTabSheet: TTabSheet
-              ExplicitLeft = 4
-              ExplicitTop = 24
-              ExplicitWidth = 370
-              ExplicitHeight = 165
             end
           end
         end
