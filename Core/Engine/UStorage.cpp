@@ -725,7 +725,9 @@ bool UStorage::AddClass(UContainer *newclass)
 // ѕодключает динамическую библиотеку с набором образцов классов.
 // ≈сли бибилиотека с таким именем уже существует то возвращает false.
 // ќтветственность за освобождение пам€ти библиотекой лежит на вызывающей стороне.
-bool UStorage::AddClassLibrary(ULibrary *library)
+// ≈сли force_build == true то немедленно осущетсвл€ет развертывание бибилотеки
+// в хранилище
+bool UStorage::AddClassLibrary(ULibrary *library, bool force_build)
 {
  if(!library)
   return false;
@@ -740,7 +742,8 @@ bool UStorage::AddClassLibrary(ULibrary *library)
  }
 
  ClassLibraryList.push_back(library);
- BuildStorage();
+ if(force_build)
+  BuildStorage();
  return true;
 }
 
