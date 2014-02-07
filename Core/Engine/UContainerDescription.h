@@ -16,8 +16,28 @@ std::string Header;
 // Описание свойства
 std::string Description;
 
+// Тип данных свойства
+std::string Type;
+
+// Тип выбора вариантов данных свойства
+// 0 - произвольные данные
+// 1 - Checkbox
+// 2 - Диапазон
+// 3 - Список вариантов
+// 4 - Диапазон с заданным шагом
+int DataSelectionType;
+
+/// Список значений
+/// В режиме диапазона, список состоит из двух значений
+/// начала и конца диапазона
+std::vector<std::string> ValueList;
+
+/// Шаг по диапазону
+std::string Step;
+
 
 public: // Методы
+UPropertyDescription(void);
 
 };
 

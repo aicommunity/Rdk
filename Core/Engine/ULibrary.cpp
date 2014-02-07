@@ -119,11 +119,32 @@ const string& ULibrary::GetVersion(void) const
 {
  return Version;
 }
+
+/// «ависимости библиотеки от других библиотек
+const std::vector<pair<string, string> > ULibrary::GetDependencies(void) const
+{
+ return Dependencies;
+}
 // --------------------------
 
 // --------------------------
 // ћетоды доступа к данным загрузки
 // --------------------------
+/// ¬озвращает true если коллекци€ предоставл€ет класс с таким именем
+bool ULibrary::IsClassNamePresent(const std::string &class_name) const
+{
+ for(size_t i=0;i<ClassesList.size();i++)
+  if(ClassesList[i] == class_name)
+   return true;
+ return false;
+}
+
+/// »мена классов библиотеки
+const vector<string>& ULibrary::GetClassesList(void) const
+{
+ return ClassesList;
+}
+
 // —одержит имена всех успешно загруженных образцов
 const vector<string>& ULibrary::GetComplete(void) const
 {
@@ -157,11 +178,14 @@ int ULibrary::Upload(UStorage *storage)
  if(!Storage)
   return 0;
 
+// if(!Complete.empty())
+//  return int(Complete.size());
+
  // ClassSamples.clear();
- Complete.clear();
+// Complete.clear();
  Incomplete.clear();
  CreateClassSamples(Storage);
- count=Complete.size();
+ count=int(Complete.size());
 
  Storage=0;
  return count;
@@ -171,6 +195,41 @@ int ULibrary::Upload(UStorage *storage)
 // --------------------------
 // ћетоды заполенени€ бибилиотеки
 // --------------------------
+/// ѕровер€ет зависимости библиотеки от других библиотек
+/// и возвращает список недостающих библиотек
+/// ¬озвращает true если все необходимые библиотеки уже загружены
+bool ULibrary::CheckDependencies(UStorage *storage, std::vector<pair<string, string> > &dependencies) const
+{
+ if(!storage)
+  return false;
+
+ if(Dependencies.empty())
+  return true;
+
+ dependencies.clear();
+ int num_libraries=storage->GetNumClassLibraries();
+ for(size_t i=0;i<Dependencies.size();i++)
+ {
+  bool dep_found=false;
+  for(int j=0;j<num_libraries;j++)
+  {
+   UEPtr<ULibrary> lib=storage->GetClassLibrary(j);
+   if(lib && lib->GetName() == Dependencies[i].first
+	&& (Dependencies[i].second.empty() || Dependencies[i].second == lib->GetVersion()))
+   {
+	dep_found=true;
+	break;
+   }
+  }
+  if(!dep_found)
+   dependencies.push_back(Dependencies[i]);
+ }
+ if(dependencies.empty())
+  return true;
+
+ return false;
+}
+
 // ƒобавл€ет в хранилище очередной класс
 bool ULibrary::UploadClass(const UId &classid, UEPtr<UComponent> cont)
 {
@@ -188,6 +247,9 @@ bool ULibrary::UploadClass(const string &name, UEPtr<UComponent> cont)
   return false;
  }
 
+ if(Storage->CheckClass(name))
+  return true;
+
  if(!Storage->AddClass(cont,name))
  {
   Incomplete.push_back(name);
@@ -195,7 +257,10 @@ bool ULibrary::UploadClass(const string &name, UEPtr<UComponent> cont)
   return false;
  }
 
- Complete.push_back(name);
+ if(find(ClassesList.begin(),ClassesList.end(),name) == ClassesList.end())
+  ClassesList.push_back(name);
+ if(find(Complete.begin(),Complete.end(),name) == Complete.end())
+  Complete.push_back(name);
  return true;
 }
 

@@ -287,7 +287,7 @@ void TBitmapToUBitmap(UBitmap &target, Graphics::TBitmap *source, bool reflect)
    else
    {
     linebytelength=target.GetLineByteLength();
-    source=0;
+    target=0;
     for(int i=target.GetHeight()-1;i>=0;--i,target+=linebytelength)
      memcpy(&target(),source->ScanLine[i],
           linebytelength);

@@ -18,6 +18,7 @@ __fastcall TEnchancedSG::TEnchancedSG(TComponent* Owner) : TFrame(Owner) {
 	BasicStringGrid->Cells[1][0] = "Value";*/
 	BasicStringGrid->Align = alClient;
 	m_editing = false;
+	m_bCellChanged = false;
 }
 
 void TEnchancedSG::Refresh()
@@ -141,10 +142,10 @@ bool TProperty::StringToBool(String s, bool &err) {
 //---------------------------------------------------------------------------
 String TProperty::BoolToString(bool b) {
 	if (b) {
-		return "true";
+		return "1";
 	}
 	else {
-		return "false";
+		return "0";
 	}
 }
 //---------------------------------------------------------------------------
@@ -615,6 +616,7 @@ void __fastcall TEnchancedSG::BasicStringGridSelectCell(TObject *Sender, int ACo
 void __fastcall TEnchancedSG::BasicStringGridKeyPress(TObject *Sender, System::WideChar &Key)
 
 {
+	m_bCellChanged = false;
 	if(Key==VK_TAB)
 		return;
 	if(Key==VK_SPACE)
@@ -628,6 +630,7 @@ void __fastcall TEnchancedSG::BasicStringGridKeyPress(TObject *Sender, System::W
 				p.SetBool(!p.GetBool());
 				m_storage.SetPropertyByIndex(BasicStringGrid->Row-1, p);
 				Refresh();
+				m_bCellChanged = true;
 				return;
 			}
 		}
@@ -656,6 +659,7 @@ void __fastcall TEnchancedSG::BasicStringGridKeyPress(TObject *Sender, System::W
 void __fastcall TEnchancedSG::txtDoubleEditKeyPress(TObject *Sender, System::WideChar &Key)
 
 {
+	m_bCellChanged = false;
 	if(Key==VK_RETURN)
 	{
 		TProperty p;
@@ -667,6 +671,7 @@ void __fastcall TEnchancedSG::txtDoubleEditKeyPress(TObject *Sender, System::Wid
 		BasicStringGrid->SetFocus();
 		m_storage.SetPropertyByIndex(m_editingRow-1, p);
 		Refresh();
+		m_bCellChanged = true;
 		return;
 	}
 	if(Key==VK_ESCAPE)
@@ -711,6 +716,7 @@ void __fastcall TEnchancedSG::txtDoubleEditKeyPress(TObject *Sender, System::Wid
 void __fastcall TEnchancedSG::txtIntEditKeyPress(TObject *Sender, System::WideChar &Key)
 
 {
+	m_bCellChanged = false;
 	if(Key==VK_RETURN)
 	{
 		TProperty p;
@@ -722,6 +728,7 @@ void __fastcall TEnchancedSG::txtIntEditKeyPress(TObject *Sender, System::WideCh
 		BasicStringGrid->SetFocus();
 		m_storage.SetPropertyByIndex(m_editingRow-1, p);
 		Refresh();
+		m_bCellChanged = true;
 		return;
 	}
 	if(Key==VK_ESCAPE)
@@ -758,6 +765,7 @@ void __fastcall TEnchancedSG::txtIntEditKeyPress(TObject *Sender, System::WideCh
 void __fastcall TEnchancedSG::txtBorderedIntEditKeyPress(TObject *Sender, System::WideChar &Key)
 
 {
+	m_bCellChanged = false;
    if(Key==VK_RETURN)
 	{
 		TProperty p;
@@ -769,6 +777,7 @@ void __fastcall TEnchancedSG::txtBorderedIntEditKeyPress(TObject *Sender, System
 		BasicStringGrid->SetFocus();
 		m_storage.SetPropertyByIndex(m_editingRow-1, p);
 		Refresh();
+		m_bCellChanged = true;
 		return;
 	}
 	if(Key==VK_ESCAPE)
@@ -805,6 +814,7 @@ void __fastcall TEnchancedSG::txtBorderedIntEditKeyPress(TObject *Sender, System
 void __fastcall TEnchancedSG::cmbListEditKeyPress(TObject *Sender, System::WideChar &Key)
 
 {
+	m_bCellChanged = false;
 	if(Key==VK_ESCAPE)
 	{
 		cmbListEdit->Visible = false;
@@ -831,6 +841,7 @@ void __fastcall TEnchancedSG::cmbListEditKeyPress(TObject *Sender, System::WideC
 		BasicStringGrid->SetFocus();
 		m_storage.SetPropertyByIndex(m_editingRow-1, p);
 		Refresh();
+		m_bCellChanged = true;
 	}
 	Key=0;
 }
@@ -839,6 +850,7 @@ void __fastcall TEnchancedSG::cmbListEditKeyPress(TObject *Sender, System::WideC
 
 void __fastcall TEnchancedSG::txtStringEditKeyPress(TObject *Sender, System::WideChar &Key)
 {
+	m_bCellChanged = false;
 	if(Key==VK_RETURN)
 	{
 		TProperty p;
@@ -850,6 +862,7 @@ void __fastcall TEnchancedSG::txtStringEditKeyPress(TObject *Sender, System::Wid
 		BasicStringGrid->SetFocus();
 		m_storage.SetPropertyByIndex(m_editingRow-1, p);
 		Refresh();
+		m_bCellChanged = true;
 	}
 	if(Key==VK_ESCAPE)
 	{
@@ -895,6 +908,7 @@ void __fastcall TEnchancedSG::chbBoolEditKeyPress(TObject *Sender, System::WideC
 
 void __fastcall TEnchancedSG::BasicStringGridDblClick(TObject *Sender)
 {
+	m_bCellChanged = false;
 	if((BasicStringGrid->Col==(BasicStringGrid->ColCount-2))&&(!m_editing))
 	{
 		if(BasicStringGrid->Row>0)
@@ -906,6 +920,7 @@ void __fastcall TEnchancedSG::BasicStringGridDblClick(TObject *Sender)
 				p.SetBool(!p.GetBool());
 				m_storage.SetPropertyByIndex(BasicStringGrid->Row-1, p);
 				Refresh();
+				m_bCellChanged = true;
 				return;
 			}
 			m_editingCol = BasicStringGrid->Col;

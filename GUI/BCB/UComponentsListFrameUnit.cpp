@@ -342,7 +342,7 @@ void TUComponentsListFrame::UpdateParametersList(void)
 
 
  ParametersListStringGrid->RowCount=1+num;
- ParametersListStringGrid->ColCount=1+2;
+ ParametersListStringGrid->ColCount=1+3;
 
  if(ParametersListStringGrid->RowCount>1)
   ParametersListStringGrid->FixedRows=1;
@@ -350,7 +350,7 @@ void TUComponentsListFrame::UpdateParametersList(void)
  ParametersListStringGrid->Cells[0][0]="#";
  ParametersListStringGrid->Cells[1][0]="Name";
  ParametersListStringGrid->Cells[2][0]="Value";
-// ParametersListStringGrid->Cells[3][0]="Description";
+ ParametersListStringGrid->Cells[3][0]="Description";
 
  for(int i=1;i<ParametersListStringGrid->ColCount;i++)
   ParametersListStringGrid->ColWidths[i]=10;
@@ -369,7 +369,7 @@ void TUComponentsListFrame::UpdateParametersList(void)
    ParametersListStringGrid->Cells[2][i+1]=value.c_str();
   }
   int global_width=ParametersListStringGrid->ColWidths[0];
-//  ParametersListStringGrid->Cells[3][i+1]=xml.GetNodeAttribute("Header").c_str();
+  ParametersListStringGrid->Cells[3][i+1]=xml.GetNodeAttribute("Header").c_str();
   int width=ParametersListStringGrid->Canvas->TextWidth(ParametersListStringGrid->Cells[1][i+1])+10;
   if(width>ParametersListStringGrid->Width/2)
    width=ParametersListStringGrid->Width/2;
@@ -388,8 +388,8 @@ void TUComponentsListFrame::UpdateParametersList(void)
   if(width < ParametersListStringGrid->Width-global_width)
    width=ParametersListStringGrid->Width-global_width;
 
-//  if(ParametersListStringGrid->ColWidths[3]<width)
-//   ParametersListStringGrid->ColWidths[3]=width;
+  if(ParametersListStringGrid->ColWidths[3]<width)
+   ParametersListStringGrid->ColWidths[3]=width;
   xml.SelectUp();
  }
 
@@ -418,7 +418,7 @@ void TUComponentsListFrame::UpdateNiceParamsList(TEnchancedSG *frame)
  else
 	frame->BasicStringGrid->RowCount=2;
 
- frame->BasicStringGrid->ColCount=1+2;
+ frame->BasicStringGrid->ColCount=1+3;
  for(int i=0;i<num;i++)
  {
 	frame->BasicStringGrid->Cells[2][i+1]="";
@@ -437,7 +437,7 @@ void TUComponentsListFrame::UpdateNiceParamsList(TEnchancedSG *frame)
  frame->BasicStringGrid->Cells[0][0]="#";
  frame->BasicStringGrid->Cells[1][0]="Name";
  frame->BasicStringGrid->Cells[2][0]="Value";
-// frame->BasicStringGrid->Cells[3][0]="Description";
+ frame->BasicStringGrid->Cells[3][0]="Description";
 
  for(int i=1;i<frame->BasicStringGrid->ColCount;i++)
   frame->BasicStringGrid->ColWidths[i]=10;
@@ -519,8 +519,8 @@ void TUComponentsListFrame::UpdateNiceParamsList(TEnchancedSG *frame)
   if(width < frame->BasicStringGrid->Width-global_width)
    width=frame->BasicStringGrid->Width-global_width;
 
-//  if(frame->BasicStringGrid->ColWidths[3]<width)
-//   frame->BasicStringGrid->ColWidths[3]=width;
+  if(frame->BasicStringGrid->ColWidths[3]<width)
+   frame->BasicStringGrid->ColWidths[3]=width;
  }
 
  if(frame->BasicStringGrid->ColCount>2)
@@ -548,7 +548,7 @@ if(num>0)
  else
 	frame->BasicStringGrid->RowCount=2;
 
- frame->BasicStringGrid->ColCount=1+2;
+ frame->BasicStringGrid->ColCount=1+3;
  for(int i=0;i<num;i++)
  {
 	frame->BasicStringGrid->Cells[2][i+1]="";
@@ -567,7 +567,7 @@ if(num>0)
  frame->BasicStringGrid->Cells[0][0]="#";
  frame->BasicStringGrid->Cells[1][0]="Name";
  frame->BasicStringGrid->Cells[2][0]="Value";
-// frame->BasicStringGrid->Cells[3][0]="Description";
+ frame->BasicStringGrid->Cells[3][0]="Description";
 
  for(int i=1;i<frame->BasicStringGrid->ColCount;i++)
   frame->BasicStringGrid->ColWidths[i]=10;
@@ -649,8 +649,8 @@ if(num>0)
   if(width < frame->BasicStringGrid->Width-global_width)
    width=frame->BasicStringGrid->Width-global_width;
 
-//  if(frame->BasicStringGrid->ColWidths[3]<width)
-//   frame->BasicStringGrid->ColWidths[3]=width;
+  if(frame->BasicStringGrid->ColWidths[3]<width)
+   frame->BasicStringGrid->ColWidths[3]=width;
  }
 
  if(frame->BasicStringGrid->ColCount>2)
@@ -1545,7 +1545,6 @@ void __fastcall TUComponentsListFrame::HeaderControl2SectionClick(THeaderControl
   return;
  if(Section->Index == 0)
  {
-
   Model_SetComponentParameterValue(GetSelectedComponentLongName().c_str(),AnsiString(EnchancedSG1->BasicStringGrid->Cells[1][EnchancedSG1->BasicStringGrid->Row]).c_str(), AnsiString(NiceParamValRichEdit->Text).c_str());
   UpdateInterface(true);
  }
@@ -1636,7 +1635,6 @@ void __fastcall TUComponentsListFrame::EnchancedSG2BasicStringGridSelectCell(TOb
 //---------------------------------------------------------------------------
 
 void __fastcall TUComponentsListFrame::NiceParamValRichEditChange(TObject *Sender)
-
 {
  if(UpdateInterfaceFlag)
   return;
@@ -1730,6 +1728,213 @@ void __fastcall TUComponentsListFrame::EnchancedSG2BasicStringGridMouseEnter(TOb
 
 {
  EnchancedSG2->BasicStringGrid->SetFocus();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::EnchancedSG1BasicStringGridDblClick(TObject *Sender)
+
+{
+  EnchancedSG1->BasicStringGridDblClick(Sender);
+  if(EnchancedSG1->m_bCellChanged)
+  {
+	  TProperty p;
+	  EnchancedSG1->m_storage.GetPropertyByIndex(EnchancedSG1->BasicStringGrid->Row-1,&p);
+	  NiceParamValRichEdit->Text = p.GetString();
+  }
+
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::EnchancedSG1BasicStringGridKeyPress(TObject *Sender,
+          System::WideChar &Key)
+{
+  EnchancedSG1->BasicStringGridKeyPress(Sender, Key);
+
+  if(EnchancedSG1->m_bCellChanged)
+  {
+	  TProperty p;
+	  EnchancedSG1->m_storage.GetPropertyByIndex(EnchancedSG1->BasicStringGrid->Row-1,&p);
+	  NiceParamValRichEdit->Text = p.GetString();
+  }
+
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::EnchancedSG2BasicStringGridDblClick(TObject *Sender)
+
+{
+  EnchancedSG2->BasicStringGridDblClick(Sender);
+
+  if(EnchancedSG2->m_bCellChanged)
+  {
+	  TProperty p;
+	  EnchancedSG2->m_storage.GetPropertyByIndex(EnchancedSG2->BasicStringGrid->Row-1,&p);
+	  NiceStateValRichEdit->Text = p.GetString();
+  }
+
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::EnchancedSG2BasicStringGridKeyPress(TObject *Sender,
+          System::WideChar &Key)
+{
+  EnchancedSG2->BasicStringGridKeyPress(Sender, Key);
+
+  if(EnchancedSG2->m_bCellChanged)
+  {
+	  TProperty p;
+	  EnchancedSG2->m_storage.GetPropertyByIndex(EnchancedSG2->BasicStringGrid->Row-1,&p);
+	  NiceStateValRichEdit->Text = p.GetString();
+  }
+
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::EnchancedSG2txtDoubleEditKeyPress(TObject *Sender,
+          System::WideChar &Key)
+{
+  EnchancedSG2->txtDoubleEditKeyPress(Sender, Key);
+
+  if(EnchancedSG2->m_bCellChanged)
+  {
+	  TProperty p;
+	  EnchancedSG2->m_storage.GetPropertyByIndex(EnchancedSG2->BasicStringGrid->Row-1,&p);
+	  NiceStateValRichEdit->Text = p.GetString();
+  }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::EnchancedSG2txtStringEditKeyPress(TObject *Sender,
+          System::WideChar &Key)
+{
+  EnchancedSG2->txtStringEditKeyPress(Sender, Key);
+
+  if(EnchancedSG2->m_bCellChanged)
+  {
+	  TProperty p;
+	  EnchancedSG2->m_storage.GetPropertyByIndex(EnchancedSG2->BasicStringGrid->Row-1,&p);
+	  NiceStateValRichEdit->Text = p.GetString();
+  }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::EnchancedSG2cmbListEditKeyPress(TObject *Sender,
+          System::WideChar &Key)
+{
+  EnchancedSG2->cmbListEditKeyPress(Sender, Key);
+
+  if(EnchancedSG2->m_bCellChanged)
+  {
+	  TProperty p;
+	  EnchancedSG2->m_storage.GetPropertyByIndex(EnchancedSG2->BasicStringGrid->Row-1,&p);
+	  NiceStateValRichEdit->Text = p.GetString();
+  }
+
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::EnchancedSG2txtBorderedIntEditKeyPress(TObject *Sender,
+          System::WideChar &Key)
+{
+  EnchancedSG2->txtBorderedIntEditKeyPress(Sender, Key);
+
+  if(EnchancedSG2->m_bCellChanged)
+  {
+	  TProperty p;
+	  EnchancedSG2->m_storage.GetPropertyByIndex(EnchancedSG2->BasicStringGrid->Row-1,&p);
+	  NiceStateValRichEdit->Text = p.GetString();
+  }
+
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::EnchancedSG2txtIntEditKeyPress(TObject *Sender,
+          System::WideChar &Key)
+{
+  EnchancedSG2->txtIntEditKeyPress(Sender, Key);
+
+  if(EnchancedSG2->m_bCellChanged)
+  {
+	  TProperty p;
+	  EnchancedSG2->m_storage.GetPropertyByIndex(EnchancedSG2->BasicStringGrid->Row-1,&p);
+	  NiceStateValRichEdit->Text = p.GetString();
+  }
+
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::EnchancedSG1txtDoubleEditKeyPress(TObject *Sender,
+          System::WideChar &Key)
+{
+  EnchancedSG1->txtDoubleEditKeyPress(Sender, Key);
+
+  if(EnchancedSG1->m_bCellChanged)
+  {
+	  TProperty p;
+	  EnchancedSG1->m_storage.GetPropertyByIndex(EnchancedSG1->BasicStringGrid->Row-1,&p);
+	  NiceParamValRichEdit->Text = p.GetString();
+  }
+
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::EnchancedSG1txtStringEditKeyPress(TObject *Sender,
+          System::WideChar &Key)
+{
+  EnchancedSG1->txtStringEditKeyPress(Sender, Key);
+
+  if(EnchancedSG1->m_bCellChanged)
+  {
+	  TProperty p;
+	  EnchancedSG1->m_storage.GetPropertyByIndex(EnchancedSG1->BasicStringGrid->Row-1,&p);
+	  NiceParamValRichEdit->Text = p.GetString();
+  }
+
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::EnchancedSG1cmbListEditKeyPress(TObject *Sender,
+          System::WideChar &Key)
+{
+  EnchancedSG1->cmbListEditKeyPress(Sender, Key);
+
+  if(EnchancedSG1->m_bCellChanged)
+  {
+	  TProperty p;
+	  EnchancedSG1->m_storage.GetPropertyByIndex(EnchancedSG1->BasicStringGrid->Row-1,&p);
+	  NiceParamValRichEdit->Text = p.GetString();
+  }
+
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::EnchancedSG1txtBorderedIntEditKeyPress(TObject *Sender,
+          System::WideChar &Key)
+{
+  EnchancedSG1->txtBorderedIntEditKeyPress(Sender, Key);
+
+  if(EnchancedSG1->m_bCellChanged)
+  {
+	  TProperty p;
+	  EnchancedSG1->m_storage.GetPropertyByIndex(EnchancedSG1->BasicStringGrid->Row-1,&p);
+	  NiceParamValRichEdit->Text = p.GetString();
+  }
+
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::EnchancedSG1txtIntEditKeyPress(TObject *Sender,
+          System::WideChar &Key)
+{
+  EnchancedSG1->txtIntEditKeyPress(Sender, Key);
+
+  if(EnchancedSG1->m_bCellChanged)
+  {
+	  TProperty p;
+	  EnchancedSG1->m_storage.GetPropertyByIndex(EnchancedSG1->BasicStringGrid->Row-1,&p);
+	  NiceParamValRichEdit->Text = p.GetString();
+  }
+
 }
 //---------------------------------------------------------------------------
 

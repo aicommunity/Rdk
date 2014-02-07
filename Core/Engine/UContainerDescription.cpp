@@ -5,6 +5,12 @@
 
 namespace RDK {
 
+UPropertyDescription::UPropertyDescription(void)
+: DataSelectionType(0)
+{
+
+}
+
 // Описания общих свойств
 //std::map<std::string, UPropertyDescription> UContainerDescription::CommonProperties;
 
@@ -136,9 +142,12 @@ bool UContainerDescription::Save(USerStorageXML &xml)
  {
   xml.AddNode(I->first);
 
-  xml.AddNode("Header");
-  xml.SetNodeText(I->second.Header);
-  xml.SelectUp();
+  xml.WriteString("Header",I->second.Header);
+  xml.WriteString("Type",I->second.Type);
+  xml.WriteInteger("DataSelectionType",I->second.DataSelectionType);
+  xml.WriteData("ValueList",I->second.ValueList);
+  if(I->second.DataSelectionType == 4)
+   xml.WriteString("Step",I->second.Step);
 
   xml.SelectUp();
   ++I;
@@ -169,11 +178,12 @@ bool UContainerDescription::Load(USerStorageXML &xml)
   }
 
   std::string nodename=xml.GetNodeName();
-  if(xml.SelectNode("Header"))
-  {
-   Properties[nodename].Header=xml.GetNodeText();
-   xml.SelectUp();
-  }
+  Properties[nodename].Header=xml.ReadString("Header",Properties[nodename].Header);
+  Properties[nodename].Type=xml.ReadString("Type",Properties[nodename].Type);
+  Properties[nodename].DataSelectionType=xml.ReadInteger("DataSelectionType",Properties[nodename].DataSelectionType);
+  xml.ReadData("ValueList",Properties[nodename].ValueList);
+  if(Properties[nodename].DataSelectionType == 4)
+   Properties[nodename].Step=xml.ReadString("Step",Properties[nodename].Step);
 
   xml.SelectUp();
 //  ++I;

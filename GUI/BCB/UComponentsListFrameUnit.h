@@ -130,6 +130,32 @@ __published:	// IDE-managed Components
 	void __fastcall EnchancedSG2MouseEnter(TObject *Sender);
 	void __fastcall EnchancedSG1BasicStringGridMouseEnter(TObject *Sender);
 	void __fastcall EnchancedSG2BasicStringGridMouseEnter(TObject *Sender);
+	void __fastcall EnchancedSG1BasicStringGridDblClick(TObject *Sender);
+	void __fastcall EnchancedSG1BasicStringGridKeyPress(TObject *Sender, System::WideChar &Key);
+	void __fastcall EnchancedSG2BasicStringGridDblClick(TObject *Sender);
+	void __fastcall EnchancedSG2BasicStringGridKeyPress(TObject *Sender, System::WideChar &Key);
+	void __fastcall EnchancedSG2txtDoubleEditKeyPress(TObject *Sender, System::WideChar &Key);
+	void __fastcall EnchancedSG2txtStringEditKeyPress(TObject *Sender, System::WideChar &Key);
+	void __fastcall EnchancedSG2cmbListEditKeyPress(TObject *Sender, System::WideChar &Key);
+	void __fastcall EnchancedSG2txtBorderedIntEditKeyPress(TObject *Sender, System::WideChar &Key);
+	void __fastcall EnchancedSG2txtIntEditKeyPress(TObject *Sender, System::WideChar &Key);
+	void __fastcall EnchancedSG1txtDoubleEditKeyPress(TObject *Sender, System::WideChar &Key);
+	void __fastcall EnchancedSG1txtStringEditKeyPress(TObject *Sender, System::WideChar &Key);
+	void __fastcall EnchancedSG1cmbListEditKeyPress(TObject *Sender, System::WideChar &Key);
+	void __fastcall EnchancedSG1txtBorderedIntEditKeyPress(TObject *Sender, System::WideChar &Key);
+	void __fastcall EnchancedSG1txtIntEditKeyPress(TObject *Sender, System::WideChar &Key);
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

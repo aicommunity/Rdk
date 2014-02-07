@@ -53,13 +53,16 @@ inherited UComponentsListFrame: TUComponentsListFrame
             FixedCols = 1
             RowCount = 2
             FixedRows = 1
+            OnDblClick = EnchancedSG1BasicStringGridDblClick
             OnDrawCell = EnchancedSG1BasicStringGridDrawCell
+            OnKeyPress = EnchancedSG1BasicStringGridKeyPress
             OnMouseEnter = EnchancedSG1BasicStringGridMouseEnter
             OnSelectCell = EnchancedSG1BasicStringGridSelectCell
           end
           inherited txtStringEdit: TEdit
             Left = 32
             Top = 248
+            OnKeyPress = EnchancedSG1txtStringEditKeyPress
             ExplicitLeft = 32
             ExplicitTop = 248
           end
@@ -78,24 +81,28 @@ inherited UComponentsListFrame: TUComponentsListFrame
           inherited txtDoubleEdit: TEdit
             Left = 30
             Top = 208
+            OnKeyPress = EnchancedSG1txtDoubleEditKeyPress
             ExplicitLeft = 30
             ExplicitTop = 208
           end
           inherited txtIntEdit: TEdit
             Left = 32
             Top = 389
+            OnKeyPress = EnchancedSG1txtIntEditKeyPress
             ExplicitLeft = 32
             ExplicitTop = 389
           end
           inherited txtBorderedIntEdit: TEdit
             Left = 32
             Top = 324
+            OnKeyPress = EnchancedSG1txtBorderedIntEditKeyPress
             ExplicitLeft = 32
             ExplicitTop = 324
           end
           inherited cmbListEdit: TComboBox
             Left = 32
             Top = 287
+            OnKeyPress = EnchancedSG1cmbListEditKeyPress
             ExplicitLeft = 32
             ExplicitTop = 287
           end
@@ -250,12 +257,15 @@ inherited UComponentsListFrame: TUComponentsListFrame
             FixedCols = 1
             RowCount = 2
             FixedRows = 1
+            OnDblClick = EnchancedSG2BasicStringGridDblClick
+            OnKeyPress = EnchancedSG2BasicStringGridKeyPress
             OnMouseEnter = EnchancedSG2BasicStringGridMouseEnter
             OnSelectCell = EnchancedSG2BasicStringGridSelectCell
           end
           inherited txtStringEdit: TEdit
             Left = 32
             Top = 248
+            OnKeyPress = EnchancedSG2txtStringEditKeyPress
             ExplicitLeft = 32
             ExplicitTop = 248
           end
@@ -274,24 +284,28 @@ inherited UComponentsListFrame: TUComponentsListFrame
           inherited txtDoubleEdit: TEdit
             Left = 30
             Top = 208
+            OnKeyPress = EnchancedSG2txtDoubleEditKeyPress
             ExplicitLeft = 30
             ExplicitTop = 208
           end
           inherited txtIntEdit: TEdit
             Left = 32
             Top = 389
+            OnKeyPress = EnchancedSG2txtIntEditKeyPress
             ExplicitLeft = 32
             ExplicitTop = 389
           end
           inherited txtBorderedIntEdit: TEdit
             Left = 32
             Top = 324
+            OnKeyPress = EnchancedSG2txtBorderedIntEditKeyPress
             ExplicitLeft = 32
             ExplicitTop = 324
           end
           inherited cmbListEdit: TComboBox
             Left = 32
             Top = 287
+            OnKeyPress = EnchancedSG2cmbListEditKeyPress
             ExplicitLeft = 32
             ExplicitTop = 287
           end
@@ -300,10 +314,6 @@ inherited UComponentsListFrame: TUComponentsListFrame
       object TabSheet3: TTabSheet
         Caption = 'I/O'
         ImageIndex = 2
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object Splitter2: TSplitter
           Left = 0
           Top = 239
@@ -489,8 +499,6 @@ inherited UComponentsListFrame: TUComponentsListFrame
           OnDblClick = ParametersListStringGridDblClick
           OnMouseEnter = ParametersListStringGridMouseEnter
           OnSelectCell = ParametersListStringGridSelectCell
-          ExplicitLeft = 1
-          ExplicitTop = 4
         end
         object ParameterValueRichEdit: TRichEdit
           Left = 0

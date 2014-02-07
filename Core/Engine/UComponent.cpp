@@ -238,7 +238,7 @@ UContainerDescription* UComponent::NewDescription(void)
 {
  UContainerDescription* result=new UContainerDescription;
 
- return result;
+ return ANewDescription(result);
 }
 
 UContainerDescription* UComponent::ANewDescription(UComponentDescription* description)
@@ -251,6 +251,8 @@ UContainerDescription* UComponent::ANewDescription(UComponentDescription* descri
  UPropertyDescription dummydescr;
  while(I != PropertiesLookupTable.end())
  {
+  UEPtr<UIProperty> prop(I->second.Property);
+  dummydescr.Type=prop->GetLanguageType().name();
   result->SetDescription(I->first,dummydescr);
   ++I;
  }
