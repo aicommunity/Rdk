@@ -404,9 +404,6 @@ __fastcall TTVideoRegistratorFrame::TTVideoRegistratorFrame(TComponent* Owner)
 
  // Загрузка списка компонент
  MyComponentsListForm=new TUComponentsListForm(this);
-
- StreamingFlag=false;
- RecordingFlag=false;
 }
 //---------------------------------------------------------------------------
 __fastcall TTVideoRegistratorFrame::~TTVideoRegistratorFrame(void)
@@ -558,6 +555,8 @@ int TTVideoRegistratorFrame::PrepareBitmapFrame(void)
 //---------------------------------------------------------------------------
 void __fastcall TTVideoRegistratorFrame::NetworkStreamingButtonClick(TObject *Sender)
 {
+ StopNetworkStreamingButtonClick(this);
+
  PrepareBitmapFrame();
  InitStreamingSettings();
  PreviewFlag=true;
@@ -589,8 +588,10 @@ void __fastcall TTVideoRegistratorFrame::NetworkStreamingButtonClick(TObject *Se
  VideoGrabber->StartPreview();
  if(VideoGrabber->StreamingURL!="")
  {
+  RecordingTabSheet->TabVisible=false;
   LogMemo->Lines->Add(VideoGrabber->StreamingURL);
-  StreamingFlag=true;
+  LogMemo->Lines->Add(Now().DateString()+" "+Now().TimeString()+ " Network streaming started");
+  //StreamingFlag=true;
  }
 
  else
@@ -600,13 +601,15 @@ void __fastcall TTVideoRegistratorFrame::NetworkStreamingButtonClick(TObject *Se
 
 void __fastcall TTVideoRegistratorFrame::StopNetworkStreamingButtonClick(TObject *Sender)
 {
+ if(VideoGrabber->NetworkStreaming == ns_Disabled)
+  return;
+
  VideoGrabber->NetworkStreaming=ns_Disabled;
  VideoGrabber->StopPreview();
- LogMemo->Lines->Add(Now().DateString()+" "+Now().TimeString()+ " Network streaming stopped");
+  LogMemo->Lines->Add(Now().DateString()+" "+Now().TimeString()+ " Network streaming stopped");
 
  if(BitmapFrameThread)
  {
-  //WaitForSingleObject(BitmapFrameThread->GetCalcCompleteEvent(),1000);
   BitmapFrameThread->Terminate();
   WaitForSingleObject(BitmapFrameThread->GetFrameNotInProgress(),1000);
   BitmapFrameThread->WaitFor();
@@ -614,14 +617,11 @@ void __fastcall TTVideoRegistratorFrame::StopNetworkStreamingButtonClick(TObject
   BitmapFrameThread=0;
  }
 
- StreamingFlag=false;
- if(!RecordingFlag)
- {
   InputFrameBitmap->Free();
   InputFrameBitmap=NULL;
   delete InputFrameBitmap;
- }
- //UGEngineControlForm->Pause1Click(this);
+
+  RecordingTabSheet->TabVisible=true;
 }
 //---------------------------------------------------------------------------
 void __fastcall TTVideoRegistratorFrame::VideoGrabberVideoFromBitmapsNextFrameNeeded(TObject *Sender,
@@ -698,6 +698,8 @@ void __fastcall TTVideoRegistratorFrame::VideoGrabberFrameCaptureCompleted(TObje
 
 void __fastcall TTVideoRegistratorFrame::StartRecordingButtonClick(TObject *Sender)
 {
+ StopRecordingButtonClick(this);
+
  PrepareBitmapFrame();
 
  // recording settings
@@ -728,10 +730,13 @@ void __fastcall TTVideoRegistratorFrame::StartRecordingButtonClick(TObject *Send
  }
  //UGEngineControlForm->Start1Click(this);
 
- VideoGrabber->StartRecording();
+ if(VideoGrabber->StartRecording())
+ {
   LogMemo->Lines->Add("Recording started");
+  NetworkStreamingTabSheet->TabVisible=false;
+ }
 
- RecordingFlag=true;
+ //RecordingFlag=true;
 }
 //---------------------------------------------------------------------------
 
@@ -750,16 +755,11 @@ void __fastcall TTVideoRegistratorFrame::StopRecordingButtonClick(TObject *Sende
   BitmapFrameThread=0;
  }
 
- RecordingFlag=false;
+ InputFrameBitmap->Free();
+ InputFrameBitmap=NULL;
+ delete InputFrameBitmap;
 
- if(!StreamingFlag)
- {
-  InputFrameBitmap->Free();
-  InputFrameBitmap=NULL;
-  delete InputFrameBitmap;
- }
-
- //UGEngineControlForm->Pause1Click(this);
+ NetworkStreamingTabSheet->TabVisible=true;
 }
 //---------------------------------------------------------------------------
 
@@ -803,8 +803,8 @@ void __fastcall TTVideoRegistratorFrame::StartPreviewButtonClick(TObject *Sender
  //UGEngineControlForm->Start1Click(this);
 
  VideoGrabber->FrameRate = StrToIntDef(FrameRateLabeledEdit->Text, 30);
- VideoGrabber->StartPreview();
- LogMemo->Lines->Add("Preview started");
+ if(VideoGrabber->StartPreview());
+  LogMemo->Lines->Add("Preview started");
 }
 //---------------------------------------------------------------------------
 

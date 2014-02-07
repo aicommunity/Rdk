@@ -291,8 +291,8 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
           OnClick = StopNetworkStreamingButtonClick
         end
       end
-      object Recording: TTabSheet
-        Caption = 'Recording'
+      object RecordingTabSheet: TTabSheet
+        Caption = 'RecordingTabSheet'
         ImageIndex = 1
         object RecordingMethodLabel: TLabel
           Left = 3

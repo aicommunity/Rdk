@@ -252,7 +252,7 @@ __published:	// IDE-managed Components
 	TButton *StartRecordingButton;
 	TPageControl *ModePageControl;
 	TTabSheet *NetworkStreamingTabSheet;
-	TTabSheet *Recording;
+	TTabSheet *RecordingTabSheet;
 	TPanel *VideoPanel;
 	TButton *StopRecordingButton;
 	TComboBox *RecordingMethodComboBox;
@@ -307,8 +307,8 @@ int FrameIndex;
 int Mode;
 
 // Флаги работы трансляции и записи видео
-bool StreamingFlag;
-bool RecordingFlag;
+//bool StreamingFlag;
+//bool RecordingFlag;
 
 // Поток получения кадра
 TVideoGetBitmapFrameThread *BitmapFrameThread;

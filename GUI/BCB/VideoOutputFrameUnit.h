@@ -76,8 +76,10 @@ __published:    // IDE-managed Components
 	TSavePictureDialog *SavePictureDialog;
 	TPageControl *PageControl;
 	TTabSheet *VideoSourceTabSheet;
-	TTabSheet *VideoRegistratorTabSheet;
-	TTVideoRegistratorFrame *TVideoRegistratorFrame;
+	TTabSheet *NetworkStreamingTabSheet;
+	TTVideoRegistratorFrame *NetworkStreamingFrame;
+	TTabSheet *RecordingTabSheet;
+	TTVideoRegistratorFrame *RecordingFrame;
     void __fastcall TimerTimer(TObject *Sender);
 	void __fastcall StartButtonClick(TObject *Sender);
     void __fastcall StopButtonClick(TObject *Sender);

@@ -12,7 +12,7 @@ inherited VideoOutputFrame: TVideoOutputFrame
     Top = 0
     Width = 916
     Height = 714
-    ActivePage = VideoSourceTabSheet
+    ActivePage = NetworkStreamingTabSheet
     Align = alClient
     TabOrder = 0
     object VideoSourceTabSheet: TTabSheet
@@ -210,10 +210,10 @@ inherited VideoOutputFrame: TVideoOutputFrame
         end
       end
     end
-    object VideoRegistratorTabSheet: TTabSheet
-      Caption = 'Video Registrator'
+    object NetworkStreamingTabSheet: TTabSheet
+      Caption = 'Network Streaming'
       ImageIndex = 1
-      inline TVideoRegistratorFrame: TTVideoRegistratorFrame
+      inline NetworkStreamingFrame: TTVideoRegistratorFrame
         Left = 0
         Top = 0
         Width = 908
@@ -234,13 +234,51 @@ inherited VideoOutputFrame: TVideoOutputFrame
               ExplicitWidth = 370
               ExplicitHeight = 257
             end
+            inherited RecordingTabSheet: TTabSheet
+              TabVisible = False
+            end
           end
           inherited SourcePageControl: TPageControl
+            ActivePage = NetworkStreamingFrame.SourceFrameTabSheet
             inherited SourceComponentTabSheet: TTabSheet
+              TabVisible = False
+            end
+            inherited SourceFrameTabSheet: TTabSheet
               ExplicitLeft = 4
               ExplicitTop = 24
               ExplicitWidth = 370
               ExplicitHeight = 165
+            end
+          end
+        end
+      end
+    end
+    object RecordingTabSheet: TTabSheet
+      Caption = 'Recording'
+      ImageIndex = 2
+      inline RecordingFrame: TTVideoRegistratorFrame
+        Left = 0
+        Top = 0
+        Width = 908
+        Height = 686
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ParentFont = False
+        TabOrder = 0
+        inherited ControlPanel: TPanel
+          inherited ModePageControl: TPageControl
+            ActivePage = RecordingFrame.RecordingTabSheet
+            inherited NetworkStreamingTabSheet: TTabSheet
+              TabVisible = False
+            end
+          end
+          inherited SourcePageControl: TPageControl
+            ActivePage = RecordingFrame.SourceFrameTabSheet
+            inherited SourceComponentTabSheet: TTabSheet
+              TabVisible = False
             end
             inherited SourceFrameTabSheet: TTabSheet
               ExplicitLeft = 4

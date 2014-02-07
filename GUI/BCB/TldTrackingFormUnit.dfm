@@ -1,6 +1,7 @@
 object TldTrackingForm: TTldTrackingForm
   Left = 0
   Top = 0
+  Align = alClient
   Caption = 'TldTrackingForm'
   ClientHeight = 494
   ClientWidth = 759
@@ -14,6 +15,8 @@ object TldTrackingForm: TTldTrackingForm
   OnCreate = FormCreate
   OnHide = FormHide
   OnShow = FormShow
+  ExplicitWidth = 320
+  ExplicitHeight = 240
   PixelsPerInch = 96
   TextHeight = 13
   object Panel1: TPanel
@@ -116,10 +119,6 @@ object TldTrackingForm: TTldTrackingForm
       TabOrder = 3
       object RectangleTabSheet: TTabSheet
         Caption = 'One Tracker By Rect'
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object Label2: TLabel
           Left = 7
           Top = 40
@@ -301,72 +300,120 @@ object TldTrackingForm: TTldTrackingForm
       ExplicitTop = 1
       ExplicitWidth = 572
       ExplicitHeight = 451
-      inherited GroupBox: TGroupBox
+      inherited PageControl: TPageControl
         Width = 572
-        Height = 329
+        Height = 451
         ExplicitWidth = 572
-        ExplicitHeight = 329
-        inherited Image: TImage
-          Width = 568
-          Height = 312
-          ExplicitWidth = 527
-          ExplicitHeight = 268
+        ExplicitHeight = 451
+        inherited VideoSourceTabSheet: TTabSheet
+          ExplicitLeft = 0
+          ExplicitTop = 0
+          ExplicitWidth = 0
+          ExplicitHeight = 0
+          inherited GroupBox: TGroupBox
+            Width = 572
+            Height = 329
+            ExplicitWidth = 572
+            ExplicitHeight = 329
+            inherited Image: TImage
+              Width = 568
+              Height = 312
+              ExplicitWidth = 527
+              ExplicitHeight = 268
+            end
+            inherited GroupBox1: TGroupBox
+              Width = 568
+              Height = 312
+              ExplicitWidth = 568
+              ExplicitHeight = 312
+            end
+          end
+          inherited Panel1: TPanel
+            Top = 375
+            Width = 572
+            Visible = False
+            ExplicitTop = 375
+            ExplicitWidth = 572
+            inherited StopButton: TButton
+              Left = 535
+              ExplicitLeft = 535
+            end
+            inherited StartButton: TButton
+              Left = 499
+              ExplicitLeft = 499
+            end
+            inherited TimeEdit: TMaskEdit
+              Left = 414
+              ExplicitLeft = 414
+            end
+            inherited TrackBar: TTrackBar
+              Width = 406
+              ExplicitWidth = 406
+            end
+          end
+          inherited Panel2: TPanel
+            Top = 329
+            Width = 572
+            Visible = False
+            ExplicitTop = 329
+            ExplicitWidth = 572
+            inherited SendToEdit: TEdit
+              Width = 391
+              ExplicitWidth = 391
+            end
+            inherited Button1: TButton
+              Left = 414
+              ExplicitLeft = 414
+            end
+            inherited SelectSendToButton: TButton
+              Left = 499
+              ExplicitLeft = 499
+            end
+          end
+          inherited Panel3: TPanel
+            Top = 416
+            Width = 572
+            Visible = False
+            ExplicitTop = 416
+            ExplicitWidth = 572
+          end
         end
-        inherited GroupBox1: TGroupBox
-          Width = 568
-          Height = 312
-          ExplicitWidth = 568
-          ExplicitHeight = 312
+        inherited NetworkStreamingTabSheet: TTabSheet
+          ExplicitWidth = 564
+          ExplicitHeight = 423
+          inherited NetworkStreamingFrame: TTVideoRegistratorFrame
+            Width = 564
+            Height = 423
+            ExplicitWidth = 564
+            ExplicitHeight = 423
+            inherited Splitter1: TSplitter
+              Left = 181
+              Height = 217
+            end
+            inherited Splitter2: TSplitter
+              Top = 217
+              Width = 564
+            end
+            inherited VideoPanel: TPanel
+              Width = 181
+              Height = 217
+            end
+            inherited ControlPanel: TPanel
+              Left = 184
+              Height = 217
+              ExplicitLeft = 184
+              ExplicitHeight = 217
+              inherited ModePageControl: TPageControl
+                Height = 22
+                ExplicitHeight = 22
+              end
+            end
+            inherited LogPanel: TPanel
+              Top = 223
+              Width = 564
+            end
+          end
         end
-      end
-      inherited Panel1: TPanel
-        Top = 375
-        Width = 572
-        Visible = False
-        ExplicitTop = 375
-        ExplicitWidth = 572
-        inherited StopButton: TButton
-          Left = 535
-          ExplicitLeft = 535
-        end
-        inherited StartButton: TButton
-          Left = 499
-          ExplicitLeft = 499
-        end
-        inherited TimeEdit: TMaskEdit
-          Left = 414
-          ExplicitLeft = 414
-        end
-        inherited TrackBar: TTrackBar
-          Width = 406
-          ExplicitWidth = 406
-        end
-      end
-      inherited Panel2: TPanel
-        Top = 329
-        Width = 572
-        Visible = False
-        ExplicitTop = 329
-        ExplicitWidth = 572
-        inherited SendToEdit: TEdit
-          Width = 391
-          ExplicitWidth = 391
-        end
-        inherited Button1: TButton
-          Left = 414
-          ExplicitLeft = 414
-        end
-        inherited SelectSendToButton: TButton
-          Left = 499
-          ExplicitLeft = 499
-        end
-      end
-      inherited Panel3: TPanel
-        Top = 416
-        Width = 572
-        Visible = False
-        ExplicitTop = 416
-        ExplicitWidth = 572
       end
     end
   end
