@@ -178,11 +178,14 @@ int ULibrary::Upload(UStorage *storage)
  if(!Storage)
   return 0;
 
+// if(!Complete.empty())
+//  return int(Complete.size());
+
  // ClassSamples.clear();
- Complete.clear();
+// Complete.clear();
  Incomplete.clear();
  CreateClassSamples(Storage);
- count=Complete.size();
+ count=int(Complete.size());
 
  Storage=0;
  return count;
@@ -254,8 +257,10 @@ bool ULibrary::UploadClass(const string &name, UEPtr<UComponent> cont)
   return false;
  }
 
- ClassesList.push_back(name);
- Complete.push_back(name);
+ if(find(ClassesList.begin(),ClassesList.end(),name) == ClassesList.end())
+  ClassesList.push_back(name);
+ if(find(Complete.begin(),Complete.end(),name) == Complete.end())
+  Complete.push_back(name);
  return true;
 }
 

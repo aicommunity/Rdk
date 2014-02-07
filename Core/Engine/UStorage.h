@@ -159,7 +159,9 @@ virtual UId AddClass(UEPtr<UComponent> classtemplate, const UId &classid=Forbidd
 virtual UId AddClass(UEPtr<UComponent> classtemplate, const std::string &classname, const UId &classid=ForbiddenId);
 
 // Удаляет образец класса объекта из хранилища
-virtual void DelClass(const UId &classid);
+// Если 'force' == true то принудительно удаляет из хранилища
+// все объекты этого класса
+virtual void DelClass(const UId &classid, bool force=false);
 
 // Проверяет наличие образца класса объекта в хранилище
 virtual bool CheckClass(const UId &classid) const;
@@ -215,6 +217,9 @@ virtual void FreeObjectsStorage(void);
 
 // Удаляет все объекты из хранилища
 virtual void ClearObjectsStorage(void);
+
+// Удалаяет все объекты заданного класса из хранилища
+virtual void ClearObjectsStorageByClass(const UId &classid);
 // --------------------------
 
 // --------------------------
@@ -289,8 +294,13 @@ virtual bool DelAllClassLibraries(void);
 // Заполняет хранилище данными библиотек
 virtual bool BuildStorage(void);
 
+/// Удаляет все образцы классов, для которых нет библиотек
+/// а также все связанные образцы
+virtual void DelAbandonedClasses(void);
+
 /// Возвращает указатель на библиотеку класса по имени класса
 virtual UEPtr<ULibrary> FindClassLibrary(const std::string class_name);
+virtual UEPtr<ULibrary> FindClassLibrary(const UId &classid);
 
 /// Формирует список зависимостей класса компонента от библиотек
 /// Метод не очищает переданный список библиотек, а только пополняет его

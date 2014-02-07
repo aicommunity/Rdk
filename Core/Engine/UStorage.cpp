@@ -196,12 +196,21 @@ UId UStorage::AddClass(UEPtr<UComponent> classtemplate, const string &classname,
 }
 
 // Удаляет образец класса объекта из хранилища
-void UStorage::DelClass(const UId &classid)
+// Если 'force' == true то принудительно удаляет из хранилища
+// все объекты этого класса
+void UStorage::DelClass(const UId &classid, bool force)
 {
  UObjectsStorageCIterator temp=ObjectsStorage.find(classid);
 
- if(temp != ObjectsStorage.end() && temp->second.size() > 0)
-  throw new EObjectStorageNotEmpty(classid);
+ if(!force)
+ {
+  if(temp != ObjectsStorage.end() && temp->second.size() > 0)
+   throw new EObjectStorageNotEmpty(classid);
+ }
+ else
+ {
+  ClearObjectsStorageByClass(classid);
+ }
 
  UClassesStorageIterator I=ClassesStorage.find(classid);
  std::string name=FindClassName(classid);
@@ -509,7 +518,7 @@ void UStorage::FreeObjectsStorage(void)
 void UStorage::ClearObjectsStorage(void)
 {
  for(UObjectsStorageIterator instances=ObjectsStorage.begin(),iend=ObjectsStorage.end();
-				 								instances != iend; ++instances)
+												instances != iend; ++instances)
  {
   for(list<UInstancesStorageElement>::iterator I=instances->second.begin(), J=instances->second.end(); I!=J; ++I)
    I->Object->Free();
@@ -518,6 +527,18 @@ void UStorage::ClearObjectsStorage(void)
  FreeObjectsStorage();
 }
 
+// Удалаяет все объекты заданного класса из хранилища
+void UStorage::ClearObjectsStorageByClass(const UId &classid)
+{
+ UObjectsStorageIterator instances=ObjectsStorage.find(classid);
+ if(instances ==ObjectsStorage.end())
+  return;
+
+ for(list<UInstancesStorageElement>::iterator I=instances->second.begin(), J=instances->second.end(); I!=J; ++I)
+  I->Object->Free();
+
+ ObjectsStorage.erase(instances);
+}
 // --------------------------
 
 // --------------------------
@@ -719,6 +740,7 @@ bool UStorage::AddClassLibrary(ULibrary *library)
  }
 
  ClassLibraryList.push_back(library);
+ BuildStorage();
  return true;
 }
 
@@ -730,6 +752,7 @@ bool UStorage::DelClassLibrary(int index)
   return false;
 
  ClassLibraryList.erase(ClassLibraryList.begin()+index);
+ BuildStorage();
  return true;
 }
 
@@ -751,6 +774,7 @@ bool UStorage::DelClassLibrary(const string &name)
 bool UStorage::DelAllClassLibraries(void)
 {
  ClassLibraryList.clear();
+ BuildStorage();
  return true;
 }
 
@@ -765,14 +789,29 @@ bool UStorage::BuildStorage(void)
   if(lib)
   {
    CompletedClassNames.insert(CompletedClassNames.end(),
-                             lib->GetComplete().begin(),
-                             lib->GetComplete().end());
+							 lib->GetComplete().begin(),
+							 lib->GetComplete().end());
    IncompletedClassNames.insert(IncompletedClassNames.end(),
-                             lib->GetIncomplete().begin(),
-                             lib->GetIncomplete().end());
+							 lib->GetIncomplete().begin(),
+							 lib->GetIncomplete().end());
   }
  }
+ DelAbandonedClasses();
  return true;
+}
+
+/// Удаляет все образцы классов, для которых нет библиотек
+/// а также все связанные образцы
+void UStorage::DelAbandonedClasses(void)
+{
+ UClassesStorageIterator I=ClassesStorage.begin(),J;
+ while(I != ClassesStorage.end())
+ {
+  J=I; ++J;
+  if(!FindClassLibrary(I->first))
+   DelClass(I->first,true);
+  I=J;
+ }
 }
 
 /// Возвращает указатель на библиотеку класса по имени класса
@@ -786,6 +825,12 @@ UEPtr<ULibrary> UStorage::FindClassLibrary(const std::string class_name)
  }
  return 0;
 }
+
+UEPtr<ULibrary> UStorage::FindClassLibrary(const UId &classid)
+{
+ return FindClassLibrary(FindClassName(classid));
+}
+
 
 /// Формирует список зависимостей класса компонента от библиотек
 /// Метод не очищает переданный список библиотек, а только пополняет его
