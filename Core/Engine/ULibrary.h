@@ -31,6 +31,12 @@ string Name;
 // Версия библиотеки
 string Version;
 
+/// Тип библиотеки
+/// 0 - Внутренняя библиотека (собрана вместе с ядром)
+/// 1 - Внешняя библиотека (загружена из внешней dll)
+/// 2 - Библиотека, созданная во время выполнения
+int Type;
+
 /// Зависимости библиотеки от других библиотек
 /// вида <имя библиотеки, версия библиотеки>
 std::vector<pair<string, string> > Dependencies;
@@ -55,7 +61,7 @@ public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-ULibrary(const string &name, const string &version);
+ULibrary(const string &name, const string &version, int type=0);
 virtual ~ULibrary(void);
 // --------------------------
 
@@ -89,6 +95,12 @@ const string& GetName(void) const;
 
 // Возвращает версию библиотеки
 const string& GetVersion(void) const;
+
+/// Тип библиотеки
+/// 0 - Внутренняя библиотека (собрана вместе с ядром)
+/// 1 - Внешняя библиотека (загружена из внешней dll)
+/// 2 - Библиотека, созданная во время выполнения
+int GetType(void) const;
 
 /// Зависимости библиотеки от других библиотек
 const std::vector<pair<string, string> > GetDependencies(void) const;
@@ -137,6 +149,26 @@ virtual bool UploadClass(const string &name, UEPtr<UComponent> cont);
 virtual void CreateClassSamples(UStorage *storage)=0;
 // --------------------------
 };
+
+class URuntimeLibrary: public ULibrary
+{
+protected: // Данные единой коллекции библиотек
+
+protected: // Параметры
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+URuntimeLibrary(const string &name, const string &version);
+virtual ~URuntimeLibrary(void);
+// --------------------------
+
+// Заполняет массив ClassSamples готовыми экземплярами образцов и их именами.
+// Не требуется предварительная очистка массива и уборка памяти.
+virtual void CreateClassSamples(UStorage *storage);
+// --------------------------
+};
+
 
 typedef ULibrary* PUALibrary;
 

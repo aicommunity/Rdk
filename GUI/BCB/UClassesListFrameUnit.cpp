@@ -73,6 +73,7 @@ void TUClassesListFrame::AUpdateInterface(void)
   TreeView->Update();
  }
  else
+ if(PageControl->ActivePage == NameTabSheet)
  {
   int numclasses=Storage_GetNumClasses();
 
@@ -100,6 +101,63 @@ void TUClassesListFrame::AUpdateInterface(void)
   if(row<StringGrid->RowCount)
    StringGrid->Row=row;
  }
+ else
+ if(PageControl->ActivePage == LibsControlTabSheet)
+ {
+  std::vector<std::string> library_names;
+  library_names.resize(Storage_GetNumClassLibraries());
+  LibsListStringGrid->RowCount=library_names.size()+1;
+  LibsListStringGrid->ColCount=3;
+  if(LibsListStringGrid->RowCount>0)
+   LibsListStringGrid->FixedRows=1;
+  for(size_t i=0;i<library_names.size();i++)
+  {
+   library_names[i]=Storage_GetClassLibraryNameByIndex(i);
+   LibsListStringGrid->Cells[0][i+1]=i+1;
+   LibsListStringGrid->Cells[1][i+1]=library_names[i].c_str();
+//   LibsListStringGrid->Cells[2][i+1]=library_names[i].c_str();
+  }
+  LibsListStringGrid->ColWidths[0]=20;
+  LibsListStringGrid->ColWidths[1]=LibsListStringGrid->ClientWidth-LibsListStringGrid->ColWidths[0];
+  LibsListStringGrid->Cells[0][0]="#";
+  LibsListStringGrid->Cells[1][0]="Library Name";
+
+  DrawClassesList(LibsListStringGrid->Row-1, LibComponentListStringGrid);
+ }
+}
+
+
+/// Отрисовывает список классов в выбранной библиотеке
+void TUClassesListFrame::DrawClassesList(int library_index, TStringGrid *classes_string_grid)
+{
+  if(library_index>=0)
+  {
+   const char* class_names=Storage_GetLibraryClassNamesByIndex(library_index);
+   std::vector<std::string> classes_list;
+   int num_classes;
+   num_classes=RDK::separatestring(std::string(class_names),classes_list, ',');
+   sort(classes_list.begin(),classes_list.end());
+//   LibraryClassNames[NewLibraryNames[i]]=TempLibraryNames;
+
+   classes_string_grid->RowCount=num_classes+1;
+   classes_string_grid->ColCount=2;
+   if(classes_string_grid->RowCount>1)
+	classes_string_grid->FixedRows=1;
+
+   for(size_t i=0;i<classes_list.size();i++)
+   {
+	classes_string_grid->Cells[0][i+1]=i+1;
+	classes_string_grid->Cells[1][i+1]=classes_list[i].c_str();
+   }
+  }
+  else
+  {
+   classes_string_grid->RowCount=0;
+  }
+  classes_string_grid->Cells[0][0]="#";
+  classes_string_grid->Cells[1][0]="Class Name";
+  classes_string_grid->ColWidths[0]=20;
+  classes_string_grid->ColWidths[1]=classes_string_grid->ClientWidth-classes_string_grid->ColWidths[0];
 }
 
 // Возврат интерфейса в исходное состояние
@@ -123,7 +181,11 @@ String TUClassesListFrame::GetSelectedName(void)
    return sel->Text;
  }
  else
+ if(PageControl->ActivePage == NameTabSheet)
   return StringGrid->Cells[0][StringGrid->Row];
+ else
+ if(PageControl->ActivePage == LibsControlTabSheet)
+  return LibComponentListStringGrid->Cells[1][LibComponentListStringGrid->Row];
 
  return String("");
 }
@@ -143,6 +205,30 @@ void __fastcall TUClassesListFrame::StringGridMouseEnter(TObject *Sender)
 void __fastcall TUClassesListFrame::TreeViewMouseEnter(TObject *Sender)
 {
  TreeView->SetFocus();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUClassesListFrame::LibsListStringGridSelectCell(TObject *Sender,
+          int ACol, int ARow, bool &CanSelect)
+{
+ if(UpdateInterfaceFlag)
+  return;
+
+ DrawClassesList(LibsListStringGrid->Row-1, LibComponentListStringGrid);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUClassesListFrame::LibsListStringGridMouseEnter(TObject *Sender)
+
+{
+ LibsListStringGrid->SetFocus();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUClassesListFrame::LibComponentListStringGridMouseEnter(TObject *Sender)
+
+{
+ LibComponentListStringGrid->SetFocus();
 }
 //---------------------------------------------------------------------------
 

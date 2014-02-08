@@ -75,6 +75,10 @@ __published:    // IDE-managed Components
           int X, int Y);
 	void __fastcall UClassesListFrameTreeViewMouseUp(TObject *Sender, TMouseButton Button,
           TShiftState Shift, int X, int Y);
+	void __fastcall UClassesListFrameLibComponentListStringGridMouseMove(TObject *Sender,
+          TShiftState Shift, int X, int Y);
+	void __fastcall UClassesListFrameLibComponentListStringGridMouseUp(TObject *Sender,
+          TMouseButton Button, TShiftState Shift, int X, int Y);
 
 
 private:    // User declarations

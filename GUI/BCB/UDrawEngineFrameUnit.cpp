@@ -125,6 +125,7 @@ void TUDrawEngineFrame::AUpdateInterface(void)
 
  RectWidthLabeledEdit->Text=IntToStr(DrawEngine.GetRectWidth());
  RectHeightLabeledEdit->Text=IntToStr(DrawEngine.GetRectHeight());
+ UClassesListFrame->UpdateInterface();
 }
 
 // ¬озврат интерфейса в исходное состо€ние
@@ -405,14 +406,9 @@ void __fastcall TUDrawEngineFrame::ImageDragDrop(TObject *Sender, TObject *Sourc
 void __fastcall TUDrawEngineFrame::ImageDragOver(TObject *Sender, TObject *Source,
           int X, int Y, TDragState State, bool &Accept)
 {
- if(Source == UClassesListFrame->StringGrid)
+ if(Source == UClassesListFrame->StringGrid || Source == UClassesListFrame->LibComponentListStringGrid)
  {
-     Accept = true;
-    // установка изображени€ курсора
-//    if(State == dsDragLeave)
-//      Source->DragCursor = crDrag;
-//    if((State == dsDragEnter)  && UClassesListFrame->StringGrid->Row >= 1))
-//      Source->DragCursor = crMultiDrag;
+	 Accept = true;
  }
 
 }
@@ -615,4 +611,23 @@ void __fastcall TUDrawEngineFrame::UClassesListFrameTreeViewMouseUp(TObject *Sen
 }
 //---------------------------------------------------------------------------
 
+
+void __fastcall TUDrawEngineFrame::UClassesListFrameLibComponentListStringGridMouseMove(TObject *Sender,
+          TShiftState Shift, int X, int Y)
+{
+ if(Shift.Contains(ssLeft))
+ {
+  UClassesListFrame->LibComponentListStringGrid->BeginDrag(true);
+  DragDropFlag=true;
+ }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUDrawEngineFrame::UClassesListFrameLibComponentListStringGridMouseUp(TObject *Sender,
+          TMouseButton Button, TShiftState Shift, int X, int Y)
+{
+ UClassesListFrame->LibComponentListStringGrid->DragMode=dmManual;
+ DragDropFlag=false;
+}
+//---------------------------------------------------------------------------
 

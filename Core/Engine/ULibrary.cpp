@@ -24,8 +24,8 @@ namespace RDK {
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-ULibrary::ULibrary(const string &name, const string &version)
-: Name(name), Version(version), Storage(0)
+ULibrary::ULibrary(const string &name, const string &version, int type)
+: Name(name), Version(version), Type(type), Storage(0)
 {
 // if(!LibraryList)
 //  LibraryList=new std::list<ULibrary*>;
@@ -118,6 +118,15 @@ const string& ULibrary::GetName(void) const
 const string& ULibrary::GetVersion(void) const
 {
  return Version;
+}
+
+/// Тип библиотеки
+/// 0 - Внутренняя библиотека (собрана вместе с ядром)
+/// 1 - Внешняя библиотека (загружена из внешней dll)
+/// 2 - Библиотека, созданная во время выполнения
+int ULibrary::GetType(void) const
+{
+ return Type;
 }
 
 /// Зависимости библиотеки от других библиотек
@@ -264,6 +273,29 @@ bool ULibrary::UploadClass(const string &name, UEPtr<UComponent> cont)
  return true;
 }
 
+
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+URuntimeLibrary::URuntimeLibrary(const string &name, const string &version)
+ : ULibrary(name,version,2)
+{
+
+}
+
+URuntimeLibrary::~URuntimeLibrary(void)
+{
+
+}
+// --------------------------
+
+// Заполняет массив ClassSamples готовыми экземплярами образцов и их именами.
+// Не требуется предварительная очистка массива и уборка памяти.
+void URuntimeLibrary::CreateClassSamples(UStorage *storage)
+{
+
+}
+// --------------------------
 
 
 }

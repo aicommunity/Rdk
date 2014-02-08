@@ -274,6 +274,9 @@ const string& GetClassLibraryVersion(int index);
 // Ќепосредственно добав€лет новый образец класса в хранилище
 virtual bool AddClass(UContainer *newclass);
 
+/// —оздает новую библиотеку с заданным именем
+virtual bool CreateRuntimeClassLibrary(const std::string &lib_name);
+
 // ѕодключает динамическую библиотеку с набором образцов классов.
 // ≈сли бибилиотека с таким именем уже существует то возвращает false.
 // ќтветственность за освобождение пам€ти библиотекой лежит на вызывающей стороне.

@@ -722,6 +722,13 @@ bool UStorage::AddClass(UContainer *newclass)
  return true;
 }
 
+/// —оздает новую библиотеку с заданным именем
+bool UStorage::CreateRuntimeClassLibrary(const std::string &lib_name)
+{
+ URuntimeLibrary* lib=new URuntimeLibrary(lib_name,"");
+ return AddClassLibrary(lib);
+}
+
 // ѕодключает динамическую библиотеку с набором образцов классов.
 // ≈сли бибилиотека с таким именем уже существует то возвращает false.
 // ќтветственность за освобождение пам€ти библиотекой лежит на вызывающей стороне.
@@ -753,9 +760,11 @@ bool UStorage::DelClassLibrary(int index)
 {
  if(index < 0 || index >= int(ClassLibraryList.size()))
   return false;
-
- ClassLibraryList.erase(ClassLibraryList.begin()+index);
- BuildStorage();
+ std::vector<ULibrary*>::iterator I=ClassLibraryList.begin()+index;
+ if((*I)->GetType() == 2)
+  delete *I;
+ ClassLibraryList.erase(I);
+ DelAbandonedClasses();
  return true;
 }
 
@@ -769,6 +778,7 @@ bool UStorage::DelClassLibrary(const string &name)
   if(lib && lib->GetName() == name)
    return DelClassLibrary(i);
  }
+
  return true;
 }
 
@@ -777,7 +787,7 @@ bool UStorage::DelClassLibrary(const string &name)
 bool UStorage::DelAllClassLibraries(void)
 {
  ClassLibraryList.clear();
- BuildStorage();
+ DelAbandonedClasses();
  return true;
 }
 
@@ -799,7 +809,7 @@ bool UStorage::BuildStorage(void)
 							 lib->GetIncomplete().end());
   }
  }
- DelAbandonedClasses();
+
  return true;
 }
 

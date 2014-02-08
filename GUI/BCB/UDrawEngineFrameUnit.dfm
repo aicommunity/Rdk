@@ -45,8 +45,6 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
         ExplicitWidth = 227
         ExplicitHeight = 422
         inherited NameTabSheet: TTabSheet
-          ExplicitLeft = 4
-          ExplicitTop = 24
           ExplicitWidth = 219
           ExplicitHeight = 394
           inherited StringGrid: TStringGrid
@@ -59,13 +57,39 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
           end
         end
         inherited LibsTabSheet: TTabSheet
-          ExplicitLeft = 4
-          ExplicitTop = 24
-          ExplicitWidth = 499
-          ExplicitHeight = 419
           inherited TreeView: TTreeView
             OnMouseMove = UClassesListFrameTreeViewMouseMove
             OnMouseUp = UClassesListFrameTreeViewMouseUp
+          end
+        end
+        inherited LibsControlTabSheet: TTabSheet
+          inherited Splitter1: TSplitter
+            Top = 288
+            Width = 219
+          end
+          inherited Panel1: TPanel
+            Top = 295
+            Width = 219
+          end
+          inherited GroupBox1: TGroupBox
+            Width = 219
+            Height = 183
+            inherited LibsListStringGrid: TStringGrid
+              Width = 215
+              Height = 166
+              ExplicitLeft = 1
+              ExplicitTop = 11
+              ExplicitWidth = 215
+              ExplicitHeight = 166
+            end
+          end
+          inherited GroupBox2: TGroupBox
+            Top = 183
+            Width = 219
+            inherited LibComponentListStringGrid: TStringGrid
+              OnMouseMove = UClassesListFrameLibComponentListStringGridMouseMove
+              OnMouseUp = UClassesListFrameLibComponentListStringGridMouseUp
+            end
           end
         end
       end
