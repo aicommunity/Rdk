@@ -100,6 +100,7 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
  if(cmd == "SetNumChannels")
  {
   int num_engines=xml.ReadInteger("NumChannels",GetNumEngines());
+  UEngineMonitorForm->EngineMonitorFrame->SetNumChannels(num_engines);
   return_value=SetNumChannels(num_engines);
  }
  else
