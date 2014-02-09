@@ -173,6 +173,18 @@ const char* RemoteCallInternal(const char *request, int &return_value)
    return_value=2002;
  }
  else
+ if(cmd == "Model_GetComponentsNameList")
+ {
+  const char * data=MModel_GetComponentsNameList(engine_index, component_name.c_str());
+  if(data)
+  {
+   RpcReturnString[engine_index]=data;
+   return_value=0;
+  }
+  else
+   return_value=2002;
+ }
+ else
  if(cmd == "Model_GetComponentStates")
  {
   const char * data=MModel_GetComponentState(engine_index, component_name.c_str());

@@ -72,14 +72,21 @@ bool USerStorageXML::Load(const std::string &str, const std::string &root)
 
 bool USerStorageXML::LoadToNode(const std::string &str, const std::string &root)
 {
- CurrentNode.deleteNodeContent();
- CurrentNode=XMLNode::parseString(widen(str,Locale,WBuffer).c_str(),widen(root,Locale,WBuffer2).c_str());
+ DelNodeInternalContent();
+ CurrentNode.addChild(XMLNode::parseString(widen(str,Locale,WBuffer).c_str(),widen(root,Locale,WBuffer2).c_str()));
  if(CurrentNode.isEmpty())
   return false;
 
  return true;
 }
 
+bool USerStorageXML::LoadToNode(USerStorageXML &node)
+{
+ DelNodeInternalContent();
+// CurrentNode.deleteNodeContent();
+ CurrentNode.addChild(node.RootNode);
+ return true;
+}
 
 // Сохраняет xml в строку
 bool USerStorageXML::Save(std::string &str)

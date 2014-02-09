@@ -70,6 +70,7 @@ bool Destroy(void);
 // Загружает xml из строки
 bool Load(const std::string &str, const std::string &root);
 bool LoadToNode(const std::string &str, const std::string &root);
+bool LoadToNode(USerStorageXML &node);
 
 // Сохраняет xml в строку
 bool Save(std::string &str);

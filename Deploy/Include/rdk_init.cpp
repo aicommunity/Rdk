@@ -1183,6 +1183,14 @@ const char* RDK_CALL Model_GetComponentsNameList(const char* stringid)
  return PEngine->Model_GetComponentsNameList(stringid);
 }
 
+const char* RDK_CALL MModel_GetComponentsNameList(int engine_index, const char* stringid)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 0;
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
+ return DllManager.EngineList[engine_index]->Model_GetComponentsNameList(stringid);
+}
+
 // Возвращает строку, содержащую список имен всех компонент заданного компонента 'stringid'
 // имена разделяются сипволом ',' и имеющих имя класса 'class_name'
 // Если find_all == true то поиск ведется и во всех сабкомпонентах

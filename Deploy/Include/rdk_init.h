@@ -450,6 +450,7 @@ RDK_LIB_TYPE int RDK_CALL Model_GetComponentsList(const char* stringid, int *buf
 // Возвращает строку, содержащую список имен всех компонент заданного компонента 'stringid'
 // имена разделяются сипволом ','
 RDK_LIB_TYPE const char* RDK_CALL Model_GetComponentsNameList(const char* stringid);
+RDK_LIB_TYPE const char* RDK_CALL MModel_GetComponentsNameList(int engine_index, const char* stringid);
 
 // Возвращает строку, содержащую список имен всех компонент заданного компонента 'stringid'
 // имена разделяются сипволом ',' и имеющих имя класса 'class_name'
