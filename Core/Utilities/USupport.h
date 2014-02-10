@@ -269,6 +269,9 @@ int separatestring(const basic_string<CharT> &str, vector<basic_string<CharT> > 
 // Возвращает время в виде понятной строки вида YYYY.MM.DD HH:MM:SS
 std::string get_text_time(time_t time_data, char date_sep='.', char time_sep=':');
 
+// Возвращает время в виде понятной строки вида YYYY/MM/DD HH:MM:SS,MS + добавочная строка additional_line
+std::string get_text_current_time(char date_sep='/', char time_sep=':', char m_sec_sep=',', std::string additional_line="GMT+04:00");
+
 // Конвертация string<->wstring
 // Копипаста с http://habrahabr.ru/blogs/cpp/112997/
 //@brief Сужает широкую строку, используя локализацию loc

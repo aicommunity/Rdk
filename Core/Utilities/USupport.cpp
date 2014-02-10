@@ -61,6 +61,37 @@ std::string get_text_time(time_t time_data, char date_sep, char time_sep)
  return result;
 }
 
+// Возвращает время в виде понятной строки вида YYYY/MM/DD HH:MM:SS,MS
+std::string get_text_current_time(char date_sep, char time_sep, char m_sec_sep, std::string additional_line)
+{
+ std::string result;
+ unsigned short year, month, day;
+ unsigned short hour, min, sec, msec;
+
+ TDateTime  time_data=TDateTime::CurrentDateTime();
+ time_data.DecodeDate(&year, &month, &day);
+ time_data.DecodeTime(&hour, &min, &sec, &msec);
+
+ result+=sntoa(year, 4);
+ result+=date_sep;
+ result+=sntoa(month,2);
+ result+=date_sep;
+ result+=sntoa(day,2);
+ result+=" ";
+
+ result+=sntoa(hour, 2);
+ result+=time_sep;
+ result+=sntoa(min,2);
+ result+=time_sep;
+ result+=sntoa(sec,2);
+ result+=m_sec_sep;
+ result+=sntoa(msec,2);
+ result+=" ";
+ result+=additional_line;
+
+ return result;
+}
+
 // Конвертация string<->wstring
 // Копипаста с http://habrahabr.ru/blogs/cpp/112997/
 //@brief Сужает широкую строку, используя локализацию loc
