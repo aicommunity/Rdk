@@ -289,11 +289,63 @@ URuntimeLibrary::~URuntimeLibrary(void)
 }
 // --------------------------
 
+// --------------------------
+// Методы управления данными
+// --------------------------
+/// Описание компонент библиотеки
+const USerStorageXML& URuntimeLibrary::GetClassesStructure(void) const
+{
+ return ClassesStructure;
+}
+
+bool URuntimeLibrary::SetClassesStructure(const USerStorageXML& xml)
+{
+ ClassesStructure=xml;
+ return true;
+}
+
+bool URuntimeLibrary::SetClassesStructure(const std::string &buffer)
+{
+ ClassesStructure.Load(buffer,"Library");
+ return true;
+}
+
+/// Обновляет структуру классов в соответствии с хранилищем
+bool URuntimeLibrary::UpdateClassesStructure(void)
+{
+ return true;
+}
+// --------------------------
+
+// --------------------------
+/// Создает компонент из из описания xml
+UEPtr<UContainer> URuntimeLibrary::CreateClassSample(USerStorage &xml)
+{
+ UEPtr<UContainer> cont;
+
+ return cont;
+}
+
 // Заполняет массив ClassSamples готовыми экземплярами образцов и их именами.
 // Не требуется предварительная очистка массива и уборка памяти.
 void URuntimeLibrary::CreateClassSamples(UStorage *storage)
 {
-
+ ClassesStructure.SelectRoot();
+ int num_classes=ClassesStructure.GetNumNodes();
+ for(int i=0;i<num_classes;i++)
+ {
+  try
+  {
+   ClassesStructure.SelectNode(i);
+   UEPtr<UContainer> cont=CreateClassSample(ClassesStructure);
+   UploadClass(std::string("T")+cont->GetName(),cont);
+  }
+  catch(UException &exception)
+  {
+   ClassesStructure.SelectUp();
+  }
+  ClassesStructure.SelectUp();
+ }
 }
 // --------------------------
 

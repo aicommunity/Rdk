@@ -876,8 +876,8 @@ int LoadLibraries(void);
 protected:
 /// Метод сброса параметров на значения по умолчанию
 /// Если subcomps == true то также сбрасывает параметры всех дочерних компонент
-virtual bool Env_Default(RDK::UContainer* cont, bool subcomps);
-
+//virtual bool Env_Default(RDK::UContainer* cont, bool subcomps);
+     /*
 // Возвращает свойства компонента по идентификатору
 virtual bool Model_GetComponentProperties(RDK::UContainer* cont, RDK::USerStorageXML *serstorage, unsigned int type_mask);
 
@@ -889,15 +889,15 @@ virtual bool Model_GetComponentPropertiesEx(RDK::UContainer* cont, RDK::USerStor
 
 // Устанавливает свойства компонента по идентификатору
 virtual int Model_SetComponentProperties(RDK::UContainer* cont, RDK::USerStorageXML *serstorage);
-
+   */
 // Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
 // включая этот компонент
-virtual void Model_SetGlobalComponentPropertyValue(RDK::UContainer* cont, UId classid, const char *paramname, const char *buffer);
+//virtual void Model_SetGlobalComponentPropertyValue(RDK::UContainer* cont, UId classid, const char *paramname, const char *buffer);
 
 // Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
 // и владельцем, производным от класса 'class_owner_stringid' включая этот компонент
-virtual void Model_SetGlobalOwnerComponentPropertyValue(RDK::UContainer* cont, UId classid, UId owner_classid, const char *paramname, const char *buffer);
-
+//virtual void Model_SetGlobalOwnerComponentPropertyValue(RDK::UContainer* cont, UId classid, UId owner_classid, const char *paramname, const char *buffer);
+/*
 // Возращает все связи внутри компонента cont в виде xml в буфер buffer
 // Имена формируются до уровня компонента owner_level
 // Если owner_level не задан, то имена формируются до уровня текущего компонента
@@ -947,10 +947,10 @@ virtual bool Model_SaveComponentProperties(RDK::UNet* cont, RDK::USerStorageXML 
 
 // Загружает все свойства компонента и его дочерних компонент из xml
 virtual bool Model_LoadComponentProperties(RDK::UNet* cont, RDK::USerStorageXML *serstorage);
-
+*/
 // Сохраняет внутренние данные компонента, и его _непосредственных_ дочерних компонент, исключая
 // переменные состояния в xml
-virtual bool Model_SaveComponentDrawInfo(RDK::UNet* cont, RDK::USerStorageXML *serstorage);
+//virtual bool Model_SaveComponentDrawInfo(RDK::UNet* cont, RDK::USerStorageXML *serstorage);
 // --------------------------
 
 // --------------------------

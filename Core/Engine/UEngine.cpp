@@ -1044,7 +1044,7 @@ int UEngine::Env_Default(const char* stringid, bool subcomps)
    destcont=FindComponent(stringid);
   }
 
-  if(!Env_Default(destcont,subcomps))
+  if(!destcont->Default(destcont,subcomps))
    throw EFunctionReturnFalse(__FILE__,__FUNCTION__,__LINE__);
  }
  catch (RDK::UException &exception)
@@ -2052,7 +2052,7 @@ const char* UEngine::Model_GetComponentProperties(const char *stringid, unsigned
  try
  {
   TempString="";
-  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
+  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
 
   if(!cont)
    return TempString.c_str();
@@ -2060,7 +2060,7 @@ const char* UEngine::Model_GetComponentProperties(const char *stringid, unsigned
   XmlStorage.Create(cont->GetLongName(Environment->GetCurrentComponent(),CompName));
   XmlStorage.AddNode(UVariable::GetPropertyTypeNameByType(type_mask));
 
-  if(!Model_GetComponentProperties(cont,&XmlStorage, type_mask))
+  if(!cont->GetComponentProperties(cont,&XmlStorage, type_mask))
    return 0;
 
   XmlStorage.SelectUp();
@@ -2094,14 +2094,14 @@ const char* UEngine::Model_GetComponentPropertiesEx(const char *stringid, unsign
  try
  {
   TempString="";
-  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
+  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
   if(!cont)
    return TempString.c_str();
 
   XmlStorage.Create(cont->GetLongName(Environment->GetCurrentComponent(),CompName));
   XmlStorage.AddNode(UVariable::GetPropertyTypeNameByType(type_mask));
 
-  if(!Model_GetComponentPropertiesEx(cont,&XmlStorage, type_mask))
+  if(!cont->GetComponentPropertiesEx(cont,&XmlStorage, type_mask))
    return 0;
 
   XmlStorage.SelectUp();
@@ -2140,7 +2140,7 @@ int UEngine::Model_SetComponentProperties(const char *stringid, const char* buff
 {
  try
  {
-  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
+  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
   if(!cont)
    return 1;
 
@@ -2149,7 +2149,7 @@ int UEngine::Model_SetComponentProperties(const char *stringid, const char* buff
   {
    if(XmlStorage.SelectNode(UVariable::GetPropertyTypeNameByType(mask)))
    {
-    if(Model_SetComponentProperties(cont,&XmlStorage))
+    if(cont->SetComponentProperties(cont,&XmlStorage))
      return 2;
 
     XmlStorage.SelectUp();
@@ -2188,7 +2188,7 @@ void UEngine::Model_SetGlobalComponentPropertyValue(const char *stringid, const 
 {
  try
  {
-  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
+  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<UNet>(FindComponent(stringid));
   if(!cont)
    return;
 
@@ -2196,7 +2196,7 @@ void UEngine::Model_SetGlobalComponentPropertyValue(const char *stringid, const 
   if(classid == ForbiddenId)
    return;
 
-  Model_SetGlobalComponentPropertyValue(cont, classid, paramname, buffer);
+  cont->SetGlobalComponentPropertyValue(cont, classid, paramname, buffer);
  }
  catch (UException &exception)
  {
@@ -2210,7 +2210,7 @@ void UEngine::Model_SetGlobalOwnerComponentPropertyValue(const char *stringid, c
 {
  try
  {
-  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
+  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<UNet>(FindComponent(stringid));
   if(!cont)
    return;
 
@@ -2219,7 +2219,7 @@ void UEngine::Model_SetGlobalOwnerComponentPropertyValue(const char *stringid, c
   if(classid == ForbiddenId || owner_classid == ForbiddenId)
    return;
 
-  Model_SetGlobalOwnerComponentPropertyValue(cont, classid, owner_classid, paramname, buffer);
+  cont->SetGlobalOwnerComponentPropertyValue(cont, classid, owner_classid, paramname, buffer);
  }
  catch (UException &exception)
  {
@@ -2582,7 +2582,7 @@ const char* UEngine::Model_GetComponentInternalLinks(const char* stringid, const
 
   XmlStorage.Create("Links");
 
-  if(Model_GetComponentInternalLinks(cont,&XmlStorage,owner))
+  if(cont->GetComponentInternalLinks(cont,&XmlStorage,owner))
    return TempString.c_str();
 
   XmlStorage.Save(TempString);
@@ -2611,7 +2611,7 @@ int UEngine::Model_SetComponentInternalLinks(const char* stringid, const char* b
 
   XmlStorage.Load(buffer,"Links");
 
-  if(!Model_SetComponentInternalLinks(cont,&XmlStorage,owner))
+  if(!cont->SetComponentInternalLinks(cont,&XmlStorage,owner))
    return -4;
  }
  catch (UException &exception)
@@ -2645,7 +2645,7 @@ const char * UEngine::Model_GetComponentInputLinks(const char* stringid, const c
 
   XmlStorage.Create("Links");
 
-  if(!Model_GetComponentInputLinks(cont,&XmlStorage,owner,sublevel))
+  if(!cont->GetComponentInputLinks(cont,&XmlStorage,owner,sublevel))
    return 0;
 
   TempString="";
@@ -2681,7 +2681,7 @@ const char * UEngine::Model_GetComponentOutputLinks(const char* stringid, const 
 
   XmlStorage.Create("Links");
 
-  if(!Model_GetComponentOutputLinks(cont,&XmlStorage,owner, sublevel))
+  if(!cont->GetComponentOutputLinks(cont,&XmlStorage,owner, sublevel))
    return 0;
 
   TempString="";
@@ -2713,7 +2713,7 @@ const char* UEngine::Model_GetComponentPersonalLinks(const char* stringid, const
 
   XmlStorage.Create("Links");
 
-  if(Model_GetComponentPersonalLinks(cont,&XmlStorage,owner))
+  if(cont->GetComponentPersonalLinks(cont,&XmlStorage,owner))
    return TempString.c_str();
 
   TempString="";
@@ -2913,7 +2913,7 @@ const char *  UEngine::Model_SaveComponent(const char *stringid, unsigned int pa
   XmlStorage.Create("Save");
   XmlStorage.SetNodeAttribute("ModelName",Environment->GetModel()->GetName());
 
-  if(!Model_SaveComponent(cont,&XmlStorage, true, params_type_mask))
+  if(!cont->SaveComponent(cont,&XmlStorage, true, params_type_mask))
    return 0;
 
   XmlStorage.Save(TempString);
@@ -2966,7 +2966,17 @@ int UEngine::Model_LoadComponent(const char *stringid, const char* buffer)
 
   if(!Environment->GetModel())
   {
-   if(!Model_LoadComponent(0,&XmlStorage,true))
+   std::string name=XmlStorage.GetNodeAttribute("Class");
+   UId id=Storage->FindClassId(name);
+   UEPtr<UNet> cont=dynamic_pointer_cast<RDK::UNet>(Environment->GetModel()).Get();
+   if(!cont || cont->GetClass() != id)
+   {
+	Model_Destroy();
+	Model_Create(name.c_str());
+	cont=dynamic_pointer_cast<RDK::UNet>(Environment->GetModel()).Get();
+   }
+
+   if(!cont->LoadComponent(cont,&XmlStorage,true))
 	return -4;
   }
   else
@@ -2980,7 +2990,7 @@ int UEngine::Model_LoadComponent(const char *stringid, const char* buffer)
    if(!cont)
 	return -3;
 
-   if(!Model_LoadComponent(cont,&XmlStorage,true))
+   if(!cont->LoadComponent(cont,&XmlStorage,true))
 	return -4;
   }
  }
@@ -3028,7 +3038,7 @@ const char * UEngine::Model_SaveComponentProperties(const char *stringid, unsign
   XmlStorage.Create("SaveProperties");
   XmlStorage.SetNodeAttribute("ModelName",Environment->GetModel()->GetName());
 
-  if(!Model_SaveComponentProperties(cont,&XmlStorage, type_mask))
+  if(!cont->SaveComponentProperties(cont,&XmlStorage, type_mask))
    return 0;
 
   TempString="";
@@ -3083,7 +3093,7 @@ int UEngine::Model_LoadComponentProperties(const char *stringid, const char* buf
 
   XmlStorage.SelectNode(0);
 
-  if(!Model_LoadComponentProperties(cont,&XmlStorage))
+  if(!cont->LoadComponentProperties(cont,&XmlStorage))
    return -4;
  }
  catch (UException &exception)
@@ -3131,7 +3141,7 @@ const char* UEngine::Model_SaveComponentDrawInfo(const char *stringid)
   XmlStorage.Create("Save");
   XmlStorage.SetNodeAttribute("ModelName",Environment->GetModel()->GetName());
 
-  if(!Model_SaveComponentDrawInfo(cont,&XmlStorage))
+  if(!cont->SaveComponentDrawInfo(cont,&XmlStorage))
    return 0;
 
   XmlStorage.Save(TempString);
@@ -3367,6 +3377,7 @@ long long UEngine::Model_GetInterstepsInterval(const char *stringid) const
 // --------------------------
 /// Метод сброса параметров на значения по умолчанию
 /// Если subcomps == true то также сбрасывает параметры всех дочерних компонент
+/*
 bool UEngine::Env_Default(RDK::UContainer* cont, bool subcomps)
 {
  if(!cont)
@@ -3382,8 +3393,8 @@ bool UEngine::Env_Default(RDK::UContainer* cont, bool subcomps)
    res &= Env_Default(cont->GetComponentByIndex(i),subcomps);
  }
  return res;
-}
-
+} */
+         /*
 // Возвращает свойства компонента по идентификатору
 bool UEngine::Model_GetComponentProperties(RDK::UContainer* cont, RDK::USerStorageXML *serstorage, unsigned int type_mask)
 {
@@ -3534,7 +3545,8 @@ int UEngine::Model_SetComponentProperties(RDK::UContainer* cont, RDK::USerStorag
  }
  return 0;
 }
-
+		*/
+		/*
 // Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
 // включая этот компонент
 void UEngine::Model_SetGlobalComponentPropertyValue(RDK::UContainer* cont, UId classid, const char *paramname, const char *buffer)
@@ -3600,7 +3612,7 @@ void UEngine::Model_SetGlobalOwnerComponentPropertyValue(RDK::UContainer* cont, 
   ProcessException(exception);
  }
 }
-
+	   /*
 // Возращает все связи внутри компонента stringid в виде xml в буфер buffer
 // Имена формируются до уровня компонента owner_level
 // Если owner_level не задан, то имена формируются до уровня текущего компонента
@@ -3741,7 +3753,7 @@ bool UEngine::Model_SaveComponent(RDK::UNet* cont, RDK::USerStorageXML *serstora
    return false;
 
   serstorage->AddNode(cont->GetName());
-  serstorage->SetNodeAttribute("Class",/*RDK::sntoa(cont->GetClass())*/Storage->FindClassName(cont->GetClass()));
+  serstorage->SetNodeAttribute("Class",Storage->FindClassName(cont->GetClass()));
   serstorage->AddNode(UVariable::GetPropertyTypeNameByType(ptParameter));
   if(!Model_GetComponentProperties(cont, serstorage,params_type_mask))
    return false;
@@ -3956,7 +3968,7 @@ bool UEngine::Model_LoadComponentProperties(RDK::UNet* cont, RDK::USerStorageXML
 
  return true;
 }
-
+   */    /*
 // Сохраняет внутренние данные компонента, и его _непосредственных_ дочерних компонент, исключая
 // переменные состояния в xml
 bool UEngine::Model_SaveComponentDrawInfo(RDK::UNet* cont, RDK::USerStorageXML *serstorage)
@@ -3967,7 +3979,7 @@ bool UEngine::Model_SaveComponentDrawInfo(RDK::UNet* cont, RDK::USerStorageXML *
    return false;
 
   serstorage->AddNode(cont->GetName());
-  serstorage->SetNodeAttribute("Class",/*RDK::sntoa(cont->GetClass())*/Storage->FindClassName(cont->GetClass()));
+  serstorage->SetNodeAttribute("Class",Storage->FindClassName(cont->GetClass()));
 
   serstorage->AddNode("Links");
 
@@ -3987,7 +3999,7 @@ bool UEngine::Model_SaveComponentDrawInfo(RDK::UNet* cont, RDK::USerStorageXML *
    XmlStorage.AddNode("Parameters");
    try
    {
-	if(!Model_GetComponentProperties(dynamic_pointer_cast<RDK::UNet>(cont->GetComponentByIndex(i)),serstorage,ptParameter|pgAny))
+	if(!cont->GetComponentProperties(cont->GetComponentByIndex(i),serstorage,ptParameter|pgAny))
 	 return false;
    }
    catch (UException &exception)
@@ -4007,7 +4019,7 @@ bool UEngine::Model_SaveComponentDrawInfo(RDK::UNet* cont, RDK::USerStorageXML *
  }
 
  return true;
-}
+} */
 // --------------------------
 
 // Возвращает указатель на выход с индексом 'index' компонента 'id'

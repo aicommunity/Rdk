@@ -497,6 +497,517 @@ bool UNet::CheckLink(const NameT &itemname, int item_index,
 }
 // ----------------------
 
+
+// --------------------------
+// Методы сериализации компонент
+// --------------------------
+// Возвращает свойства компонента по идентификатору
+bool UNet::GetComponentProperties(UEPtr<RDK::UContainer> cont, RDK::USerStorageXML *serstorage, unsigned int type_mask)
+{
+  if(!cont || !serstorage)
+   return false;
+
+  RDK::UContainer::VariableMapT props=cont->GetPropertiesList();
+
+  RDK::UContainer::VariableMapCIteratorT I,J;
+
+  I=props.begin();
+  J=props.end();
+  while(I != J)
+  {
+   if(I->second.CheckMask(type_mask))
+   {
+	try
+	{
+	 cont->GetProperty(I->first,serstorage);
+	}
+	catch(UIProperty::EPropertyError &exception)
+	{
+	 cont->ProcessException(exception);
+	}
+
+	std::string paramname=I->first;//I->second.Property->GetName();
+    if(serstorage->SelectNode(paramname))
+    {
+     serstorage->SetNodeAttribute("PType",sntoa(I->second.Type));
+     serstorage->SelectUp();
+	}
+   }
+   ++I;
+  }
+
+ return true;
+}
+
+// Возвращает выборочные свойства компонента по идентификатору
+// Память для buffer должна быть выделена!
+bool UNet::GetComponentSelectedProperties(UEPtr<RDK::UContainer> cont, RDK::USerStorageXML *serstorage)
+{
+  if(!cont || !serstorage)
+   return false;
+
+ return true;
+}
+
+// Возвращает свойства компонента по идентификатору с описаниями
+// Память для buffer должна быть выделена!
+bool UNet::GetComponentPropertiesEx(UEPtr<RDK::UContainer> cont, RDK::USerStorageXML *serstorage, unsigned int type_mask)
+{
+  if(!cont || !serstorage)
+   return false;
+
+  RDK::UContainer::VariableMapT props=cont->GetPropertiesList();
+
+  RDK::UContainer::VariableMapCIteratorT I,J;
+
+  UEPtr<UContainerDescription> descr=dynamic_pointer_cast<UContainerDescription>(Storage->GetClassDescription(Storage->FindClassName(cont->GetClass())));
+
+  I=props.begin();
+  J=props.end();
+  while(I != J)
+  {
+   if(I->second.CheckMask(type_mask))
+   {
+	try
+	{
+	 cont->GetProperty(I->first,serstorage);
+	}
+	catch(UIProperty::EPropertyError &exception)
+	{
+	 cont->ProcessException(exception);
+	}
+
+	std::string paramname=I->first;//I->second.Property->GetName();
+	if(serstorage->SelectNode(paramname))
+	{
+	 serstorage->SetNodeAttribute("PType",sntoa(I->second.Type));
+	 if(descr)
+	 {
+	  serstorage->SetNodeAttribute("Header",descr->GetDescription(paramname).Header);
+	 }
+	 serstorage->SelectUp();
+	}
+   }
+   ++I;
+  }
+
+ return true;
+}
+
+
+// устанавливает свойства компонента по идентификатору
+int UNet::SetComponentProperties(UEPtr<RDK::UContainer> cont, RDK::USerStorageXML *serstorage)
+{
+  if(!cont || !serstorage)
+   return 1;
+
+  std::string name;
+
+  RDK::UContainer::VariableMapT props=cont->GetPropertiesList();
+
+  RDK::UContainer::VariableMapCIteratorT I,J;
+
+  I=props.begin();
+  J=props.end();
+  while(I != J)
+  {
+   try
+   {
+	cont->SetProperty(I->first,serstorage);
+   }
+   catch(UIProperty::EPropertyError &exception)
+   {
+	cont->ProcessException(exception);
+   }
+   ++I;
+  }
+ return 0;
+}
+
+
+// Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
+// переменные состояния в xml
+bool UNet::SaveComponent(UEPtr<RDK::UNet> cont, RDK::USerStorageXML *serstorage, bool links, unsigned int params_type_mask)
+{
+  if(!cont || !serstorage)
+   return false;
+
+  serstorage->AddNode(cont->GetName());
+  serstorage->SetNodeAttribute("Class",/*RDK::sntoa(cont->GetClass())*/Storage->FindClassName(cont->GetClass()));
+  serstorage->AddNode(UVariable::GetPropertyTypeNameByType(ptParameter));
+  if(!GetComponentProperties(cont, serstorage,params_type_mask))
+   return false;
+  serstorage->SelectUp();
+
+  if(links)
+  {
+   serstorage->AddNode("Links");
+   if(GetComponentInternalLinks(cont,serstorage,0))
+    return false;
+   serstorage->SelectUp();
+  }
+
+  serstorage->AddNode("Components");
+  for(int i=0;i<cont->GetNumComponents();i++)
+  {
+   if(!SaveComponent(dynamic_pointer_cast<RDK::UNet>(cont->GetComponentByIndex(i)),serstorage,false,params_type_mask))
+    return false;
+  }
+  serstorage->SelectUp();
+
+  serstorage->SelectUp();
+
+ return true;
+}
+
+// Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
+// переменные состояния из xml
+bool UNet::LoadComponent(UEPtr<RDK::UNet> cont, RDK::USerStorageXML *serstorage, bool links)
+{
+  if(!serstorage || !cont)
+   return false;
+
+  std::string name=serstorage->GetNodeAttribute("Class");
+  UId id=Storage->FindClassId(name);
+
+  if(cont->GetClass() != id)
+   return false;
+
+  cont->SetName(serstorage->GetNodeName());
+
+  for(unsigned int i=0, mask=1;i<7;i++, mask<<=1)
+  {
+   if(serstorage->SelectNode(UVariable::GetPropertyTypeNameByType(mask)))
+   {
+	try
+	{
+	 if(SetComponentProperties(cont, serstorage))
+	  return false;
+	}
+	catch(UException &exception)
+	{
+	 cont->ProcessException(exception);
+    }
+	serstorage->SelectUp();
+   }
+  }
+
+  cont->DelAllComponents();
+
+  if(!serstorage->SelectNode("Components"))
+   return false;
+  UStorage* storage=cont->GetStorage();
+  for(int i=0;i<serstorage->GetNumNodes();i++)
+  {
+   serstorage->SelectNode(i);
+   std::string nodename=serstorage->GetNodeName();
+   name=serstorage->GetNodeAttribute("Class");
+   try
+   {
+    id=Storage->FindClassId(name);
+	UEPtr<UNet> newcont=dynamic_pointer_cast<UNet>(storage->TakeObject(id));
+	if(!newcont)
+	 continue;
+	if(cont->AddComponent(static_pointer_cast<UContainer>(newcont)) == ForbiddenId)
+	 continue;
+
+	if(!LoadComponent(newcont,serstorage,false))
+	 return false;
+   }
+   catch(UException &exception)
+   {
+	cont->ProcessException(exception);
+   }
+   serstorage->SelectUp();
+  }
+  serstorage->SelectUp();
+
+  if(links)
+  {
+   serstorage->SelectNode("Links");
+   if(!SetComponentInternalLinks(cont,serstorage,0))
+	return false;
+   serstorage->SelectUp();
+  }
+
+ return true;
+}
+
+
+// Сохраняет все свойства компонента и его дочерних компонент в xml
+bool UNet::SaveComponentProperties(UEPtr<RDK::UNet> cont, RDK::USerStorageXML *serstorage, unsigned int type_mask)
+{
+  if(!cont || !serstorage)
+   return false;
+
+  serstorage->AddNode(cont->GetName());
+  serstorage->SetNodeAttribute("Class",Storage->FindClassName(cont->GetClass()));
+  serstorage->AddNode(UVariable::GetPropertyTypeNameByType(type_mask));
+  if(!GetComponentProperties(cont, serstorage,type_mask))
+   return false;
+  serstorage->SelectUp();
+
+  serstorage->AddNode("Components");
+  for(int i=0;i<cont->GetNumComponents();i++)
+  {
+   try
+   {
+	if(!SaveComponentProperties(dynamic_pointer_cast<RDK::UNet>(cont->GetComponentByIndex(i)),serstorage,type_mask))
+	 return false;
+   }
+   catch (UException &exception)
+   {
+	cont->ProcessException(exception);
+   }
+  }
+  serstorage->SelectUp();
+
+  serstorage->SelectUp();
+
+ return true;
+}
+
+// Загружает все свойства компонента и его дочерних компонент из xml
+bool UNet::LoadComponentProperties(UEPtr<RDK::UNet> cont, RDK::USerStorageXML *serstorage)
+{
+  if(!cont || !serstorage)
+   return false;
+
+  std::string name=serstorage->GetNodeAttribute("Class");
+  UId id=Storage->FindClassId(name);
+  if(cont->GetClass() != id)
+   return false;
+
+  for(unsigned int i=0, mask=1;i<7;i++, mask<<=1)
+  {
+   if(serstorage->SelectNode(UVariable::GetPropertyTypeNameByType(mask)))
+   {
+	try
+	{
+	 if(SetComponentProperties(cont, serstorage))
+	  return false;
+	}
+	catch (UException &exception)
+	{
+	 cont->ProcessException(exception);
+    }
+    serstorage->SelectUp();
+   }
+  }
+
+  serstorage->SelectNode("Components");
+  for(int i=0;i<cont->GetNumComponents();i++)
+  {
+   if(!serstorage->SelectNode(cont->GetComponentByIndex(i)->GetName()))
+	continue;
+   std::string nodename=serstorage->GetNodeName();
+   try
+   {
+	if(!LoadComponentProperties(dynamic_pointer_cast<RDK::UNet>(cont->GetComponentByIndex(i)),serstorage))
+	 return false;
+   }
+   catch (UException &exception)
+   {
+	cont->ProcessException(exception);
+   }
+   serstorage->SelectUp();
+  }
+  serstorage->SelectUp();
+
+ return true;
+}
+
+// Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
+// включая этот компонент
+void UNet::SetGlobalComponentPropertyValue(RDK::UContainer* cont, UId classid, const char *paramname, const char *buffer)
+{
+  if(!cont || classid == ForbiddenId)
+   return;
+
+  if(cont->GetClass() == classid)
+  {
+   try
+   {
+	cont->SetPropertyValue(paramname,buffer);
+   }
+   catch(UIProperty::EPropertyError &exception)
+   {
+	cont->ProcessException(exception);
+   }
+  }
+
+  for(int i=0;i<cont->GetNumComponents();i++)
+  {
+   SetGlobalComponentPropertyValue(cont->GetComponentByIndex(i), classid, paramname, buffer);
+  }
+}
+
+// Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
+// и владельцем, производным от класса 'class_owner_stringid' включая этот компонент
+void UNet::SetGlobalOwnerComponentPropertyValue(RDK::UContainer* cont, UId classid, UId owner_classid, const char *paramname, const char *buffer)
+{
+  if(!cont || classid == ForbiddenId)
+   return;
+
+  if(cont->GetClass() == classid && cont->GetOwner() && cont->GetOwner()->GetClass() == owner_classid)
+  {
+   try
+   {
+	cont->SetPropertyValue(paramname,buffer);
+   }
+   catch(UIProperty::EPropertyError &exception)
+   {
+	cont->ProcessException(exception);
+   }
+  }
+
+  for(int i=0;i<cont->GetNumComponents();i++)
+  {
+   SetGlobalOwnerComponentPropertyValue(cont->GetComponentByIndex(i), classid, owner_classid, paramname, buffer);
+  }
+}
+
+// Возращает все связи внутри компонента stringid в виде xml в буфер buffer
+// Имена формируются до уровня компонента owner_level
+// Если owner_level не задан, то имена формируются до уровня текущего компонента
+int UNet::GetComponentInternalLinks(RDK::UNet* cont, RDK::USerStorageXML *serstorage, RDK::UNet* owner_level)
+{
+  if(!cont || !serstorage)
+   return 1;
+
+  UStringLinksList linkslist;
+  if(owner_level)
+   cont->GetLinks(linkslist, owner_level);
+  else
+   cont->GetLinks(linkslist, cont);
+
+
+  *serstorage<<linkslist;
+ return 0;
+}
+
+// Устанавливает все связи внутри компонента stringid из строки xml в буфере buffer
+// Имена применяются до уровня компонента owner_level
+// Если owner_level не задан, то имена применяются до уровня текущего компонента
+int UNet::SetComponentInternalLinks(RDK::UNet* cont, RDK::USerStorageXML *serstorage, RDK::UNet* owner_level)
+{
+  if(!cont || !serstorage)
+   return 1;
+
+  UStringLinksList linkslist;
+  *serstorage>>linkslist;
+
+  cont->BreakLinks();
+  cont->CreateLinks(linkslist, owner_level);
+
+ return true;
+}
+
+// Возращает все входные связи к компоненту stringid в виде xml в буфер buffer
+// если 'sublevel' == -2, то возвращает связи всех элементов включая
+// все вложенные сети и сам опрашиваемый компонент.
+// если 'sublevel' == -1, то возвращает связи всех подсетей включая
+// все вложенные сети.
+// если 'sublevel' == 0, то возвращает связи подсетей только этой сети
+// Имена формируются до уровня компонента owner_level
+// Если owner_level не задан, то имена формируются до уровня текущего компонента
+int UNet::GetComponentInputLinks(RDK::UNet* cont, RDK::USerStorageXML *serstorage, RDK::UNet* owner_level, int sublevel)
+{
+  if(!cont || !serstorage)
+   return 1;
+
+  UStringLinksList linkslist;
+//  cont->GetInputLinks(linkslist, cont);
+
+  *serstorage<<linkslist;
+ return 0;
+}
+
+// Возращает все выходные связи из компонента stringid в виде xml в буфер buffer
+// если 'sublevel' == -2, то возвращает связи всех элементов включая
+// все вложенные сети и сам опрашиваемый компонент.
+// если 'sublevel' == -1, то возвращает связи всех подсетей включая
+// все вложенные сети.
+// если 'sublevel' == 0, то возвращает связи подсетей только этой сети
+// Имена формируются до уровня компонента owner_level
+// Если owner_level не задан, то имена формируются до уровня текущего компонента
+int UNet::GetComponentOutputLinks(RDK::UNet* cont, RDK::USerStorageXML *serstorage, RDK::UNet* owner_level, int sublevel)
+{
+  if(!cont || !serstorage)
+   return 1;
+
+  UStringLinksList linkslist;
+//  cont->GetOutputLinks(linkslist, cont);
+
+  *serstorage<<linkslist;
+ return 0;
+}
+
+// Возращает все внешние связи c компонентом cont и его дочерними компонентами в виде xml в буфер buffer
+// Информация о связях формируется относительно владельца компонента cont!
+// Имена формируются до уровня компонента owner_level
+// Если owner_level не задан, то имена формируются до уровня текущего компонента
+int UNet::GetComponentPersonalLinks(RDK::UNet* cont, RDK::USerStorageXML *serstorage, RDK::UNet* owner_level)
+{
+  if(!cont || !serstorage)
+   return 1;
+
+  UStringLinksList linkslist;
+  if(owner_level)
+   cont->GetLinks(linkslist, owner_level, true, cont);
+  else
+   cont->GetLinks(linkslist, cont->GetOwner(), true, cont);
+
+  *serstorage<<linkslist;
+ return 0;
+}
+
+// Сохраняет внутренние данные компонента, и его _непосредственных_ дочерних компонент, исключая
+// переменные состояния в xml
+bool UNet::SaveComponentDrawInfo(RDK::UNet* cont, RDK::USerStorageXML *serstorage)
+{
+  if(!cont || !serstorage)
+   return false;
+
+  serstorage->AddNode(cont->GetName());
+  serstorage->SetNodeAttribute("Class",Storage->FindClassName(cont->GetClass()));
+
+  serstorage->AddNode("Links");
+
+  UStringLinksList linkslist;
+//  cont->GetLinks(linkslist, cont);
+
+  for(int i=0;i<cont->GetNumComponents();i++)
+   static_pointer_cast<UNet>(cont->GetComponentByIndex(i))->GetLinks(linkslist, cont,true,cont->GetComponentByIndex(i));
+  *serstorage<<linkslist;
+  serstorage->SelectUp();
+
+  serstorage->AddNode("Components");
+  for(int i=0;i<cont->GetNumComponents();i++)
+  {
+   serstorage->AddNode(cont->GetComponentByIndex(i)->GetName());
+   serstorage->SetNodeAttribute("Class",Storage->FindClassName(cont->GetComponentByIndex(i)->GetClass()));
+   serstorage->AddNode("Parameters");
+   try
+   {
+	if(!cont->GetComponentProperties(cont->GetComponentByIndex(i),serstorage,ptParameter|pgAny))
+	 return false;
+   }
+   catch (UException &exception)
+   {
+	cont->ProcessException(exception);
+   }
+   serstorage->SelectUp();
+   serstorage->SelectUp();
+  }
+  serstorage->SelectUp();
+
+  serstorage->SelectUp();
+
+ return true;
+}
+// --------------------------
+
 // --------------------------
 // Скрытые методы доступа к свойствам
 // --------------------------

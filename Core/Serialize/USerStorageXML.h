@@ -73,7 +73,7 @@ bool LoadToNode(const std::string &str, const std::string &root);
 bool LoadToNode(USerStorageXML &node);
 
 // Сохраняет xml в строку
-bool Save(std::string &str);
+bool Save(std::string &str) const;
 bool SaveFromNode(std::string &str);
 
 // Прочесть файл с диска

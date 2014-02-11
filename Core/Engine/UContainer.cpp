@@ -1479,6 +1479,25 @@ bool UContainer::Default(void)
  return true;
 }
 
+/// Метод сброса параметров на значения по умолчанию
+/// Если subcomps == true то также сбрасывает параметры всех дочерних компонент
+bool UContainer::Default(RDK::UContainer* cont, bool subcomps)
+{
+ if(!cont)
+  return false;
+
+ if(!cont->Default())
+  return false;
+
+ bool res=true;
+ if(subcomps)
+ {
+  for(int i=0;i<cont->GetNumComponents();i++)
+   res &= Default(cont->GetComponentByIndex(i),subcomps);
+ }
+ return res;
+}
+
 // Обеспечивает сборку внутренней структуры объекта
 // после настройки параметров
 // Автоматически вызывает метод Reset() и выставляет Ready в true

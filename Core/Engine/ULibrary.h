@@ -134,7 +134,6 @@ virtual int Upload(UStorage *storage);
 // --------------------------
 // Методы заполенения бибилиотеки
 // --------------------------
-protected:
 /// Проверяет зависимости библиотеки от других библиотек
 /// и возвращает список недостающих библиотек
 /// Возвращает true если все необходимые библиотеки уже загружены
@@ -155,6 +154,11 @@ class URuntimeLibrary: public ULibrary
 protected: // Данные единой коллекции библиотек
 
 protected: // Параметры
+
+protected: // Данные
+/// Описание компонент библиотеки
+USerStorageXML ClassesStructure;
+
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
@@ -163,10 +167,27 @@ URuntimeLibrary(const string &name, const string &version);
 virtual ~URuntimeLibrary(void);
 // --------------------------
 
+// --------------------------
+// Методы управления данными
+// --------------------------
+/// Описание компонент библиотеки
+const USerStorageXML& GetClassesStructure(void) const;
+bool SetClassesStructure(const USerStorageXML& xml);
+bool SetClassesStructure(const std::string &buffer);
+
+/// Обновляет структуру классов в соответствии с хранилищем
+bool UpdateClassesStructure(void);
+// --------------------------
+
+// --------------------------
+/// Создает компонент из описания xml
+UEPtr<UContainer> CreateClassSample(USerStorage &xml);
+
 // Заполняет массив ClassSamples готовыми экземплярами образцов и их именами.
 // Не требуется предварительная очистка массива и уборка памяти.
 virtual void CreateClassSamples(UStorage *storage);
 // --------------------------
+
 };
 
 

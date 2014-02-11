@@ -89,7 +89,7 @@ bool USerStorageXML::LoadToNode(USerStorageXML &node)
 }
 
 // Сохраняет xml в строку
-bool USerStorageXML::Save(std::string &str)
+bool USerStorageXML::Save(std::string &str) const
 {
  wchar_t* pch=RootNode.createXMLString(true);
  if(pch)

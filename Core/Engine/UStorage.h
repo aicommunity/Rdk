@@ -23,6 +23,7 @@ namespace RDK {
 
 /* *********************************************************************** */
 class ULibrary;
+class URuntimeLibrary;
 
 typedef UEPtr<UComponent> UClassStorageElement;
 typedef std::map<UId, UClassStorageElement> UClassesStorage;
@@ -274,8 +275,18 @@ const string& GetClassLibraryVersion(int index);
 // Ќепосредственно добав€лет новый образец класса в хранилище
 virtual bool AddClass(UContainer *newclass);
 
+/// Ќепосредственно добав€лет новый образец класса в хранилище
+virtual bool AddClassToLibrary(UContainer *newclass, URuntimeLibrary *library);
+
 /// —оздает новую библиотеку с заданным именем
 virtual bool CreateRuntimeClassLibrary(const std::string &lib_name);
+
+/// «агружает runtime-библиотеку из строки
+virtual bool LoadRuntimeClassLibrary(const std::string &buffer, bool force_build=false);
+
+/// —охран€ет runtime-библиотеку в строку
+virtual bool SaveRuntimeClassLibrary(const std::string &lib_name, std::string &buffer);
+virtual bool SaveRuntimeClassLibrary(URuntimeLibrary *library, std::string &buffer);
 
 // ѕодключает динамическую библиотеку с набором образцов классов.
 // ≈сли бибилиотека с таким именем уже существует то возвращает false.

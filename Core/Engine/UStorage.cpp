@@ -722,12 +722,53 @@ bool UStorage::AddClass(UContainer *newclass)
  return true;
 }
 
+/// Ќепосредственно добав€лет новый образец класса в хранилище
+bool UStorage::AddClassToLibrary(UContainer *newclass, URuntimeLibrary *library)
+{
+ library->UploadClass(std::string("T")+newclass->GetName(),newclass);
+ return true;
+}
+
 /// —оздает новую библиотеку с заданным именем
 bool UStorage::CreateRuntimeClassLibrary(const std::string &lib_name)
 {
  URuntimeLibrary* lib=new URuntimeLibrary(lib_name,"");
  return AddClassLibrary(lib);
 }
+
+/// «агружает runtime-библиотеку из строки
+bool UStorage::LoadRuntimeClassLibrary(const std::string &buffer, bool force_build)
+{
+ USerStorageXML xml;
+ xml.Load(buffer,"Library");
+ std::string lib_name=xml.GetNodeAttribute("Name");
+ if(lib_name.empty())
+  return false;
+
+ if(GetClassLibrary(lib_name) != 0)
+  return false;
+
+ URuntimeLibrary* lib=new URuntimeLibrary(lib_name,"");
+ lib->SetClassesStructure(xml);
+ AddClassLibrary(lib,force_build);
+
+ return true;
+}
+
+/// —охран€ет runtime-библиотеку в строку
+bool UStorage::SaveRuntimeClassLibrary(const std::string &lib_name, std::string &buffer)
+{
+ UEPtr<URuntimeLibrary> lib=dynamic_pointer_cast<URuntimeLibrary>(GetClassLibrary(lib_name));
+ return SaveRuntimeClassLibrary(lib,buffer);
+}
+
+bool UStorage::SaveRuntimeClassLibrary(URuntimeLibrary *library, std::string &buffer)
+{
+ library->UpdateClassesStructure();
+ library->GetClassesStructure().Save(buffer);
+ return true;
+}
+
 
 // ѕодключает динамическую библиотеку с набором образцов классов.
 // ≈сли бибилиотека с таким именем уже существует то возвращает false.
