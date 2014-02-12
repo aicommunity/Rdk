@@ -60,7 +60,7 @@ std::string get_text_time(time_t time_data, char date_sep, char time_sep)
  result+=sntoa(time_stuct->tm_sec,2);
  return result;
 }
-
+/*
 // Возвращает время в виде понятной строки вида YYYY/MM/DD HH:MM:SS,MS
 std::string get_text_current_time(char date_sep, char time_sep, char m_sec_sep, std::string additional_line)
 {
@@ -90,7 +90,7 @@ std::string get_text_current_time(char date_sep, char time_sep, char m_sec_sep, 
  result+=additional_line;
 
  return result;
-}
+}*/
 
 // Конвертация string<->wstring
 // Копипаста с http://habrahabr.ru/blogs/cpp/112997/
