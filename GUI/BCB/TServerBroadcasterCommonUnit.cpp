@@ -220,7 +220,7 @@ bool TBroadcasterForm::SetBroadcastEnableFlag(bool value)
 void TBroadcasterForm::ASaveParameters(RDK::USerStorageXML &xml)
 {
  AASaveParameters(xml);
- xml.WriteData("BroadcastEnableFlag",GetBroadcastEnableFlag());
+ xml.WriteBool("BroadcastEnableFlag",GetBroadcastEnableFlag());
 }
 
 // Загружает параметры интерфейса из xml
@@ -228,7 +228,7 @@ void TBroadcasterForm::ALoadParameters(RDK::USerStorageXML &xml)
 {
  AALoadParameters(xml);
  bool value=false;
- xml.ReadData("BroadcastEnableFlag",value);
+ value=xml.ReadBool("BroadcastEnableFlag",false);
  SetBroadcastEnableFlag(value);
 }
 // --------------------------
