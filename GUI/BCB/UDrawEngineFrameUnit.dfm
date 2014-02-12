@@ -63,32 +63,66 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
           end
         end
         inherited LibsControlTabSheet: TTabSheet
+          ExplicitWidth = 219
+          ExplicitHeight = 394
           inherited Splitter1: TSplitter
-            Top = 288
+            Top = 104
             Width = 219
+            ExplicitTop = 288
+            ExplicitWidth = 219
           end
           inherited Panel1: TPanel
-            Top = 295
+            Top = 271
             Width = 219
+            ExplicitTop = 271
+            ExplicitWidth = 219
+            inherited LoadLibraryButton: TButton
+              Width = 217
+              ExplicitWidth = 217
+            end
+            inherited CreateRuntimeLibraryButton: TButton
+              Width = 217
+              ExplicitWidth = 217
+            end
+            inherited DeleteLibraryButton: TButton
+              Width = 217
+              ExplicitWidth = 217
+            end
+            inherited RenameRuntimeLibraryButton: TButton
+              Width = 217
+              ExplicitWidth = 217
+            end
+            inherited AddClassButton: TButton
+              Width = 217
+              OnClick = UClassesListFrameAddClassButtonClick
+              ExplicitLeft = 1
+              ExplicitTop = 101
+              ExplicitWidth = 217
+            end
           end
           inherited GroupBox1: TGroupBox
             Width = 219
-            Height = 183
+            Height = 104
+            ExplicitWidth = 219
+            ExplicitHeight = 104
             inherited LibsListStringGrid: TStringGrid
               Width = 215
-              Height = 166
-              ExplicitLeft = 1
-              ExplicitTop = 11
+              Height = 87
               ExplicitWidth = 215
-              ExplicitHeight = 166
+              ExplicitHeight = 87
             end
           end
           inherited GroupBox2: TGroupBox
-            Top = 183
+            Top = 111
             Width = 219
+            ExplicitTop = 111
+            ExplicitWidth = 219
             inherited LibComponentListStringGrid: TStringGrid
+              Width = 215
               OnMouseMove = UClassesListFrameLibComponentListStringGridMouseMove
               OnMouseUp = UClassesListFrameLibComponentListStringGridMouseUp
+              ExplicitWidth = 215
+              ExplicitHeight = 143
             end
           end
         end

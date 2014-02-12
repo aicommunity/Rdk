@@ -139,12 +139,16 @@ virtual int Upload(UStorage *storage);
 /// Возвращает true если все необходимые библиотеки уже загружены
 bool CheckDependencies(UStorage *storage, std::vector<pair<string, string> > &dependencies) const;
 
-// Добавляет в хранилище очередной класс
+/// Добавляет в хранилище очередной класс
 virtual bool UploadClass(const UId &classid, UEPtr<UComponent> cont);
 virtual bool UploadClass(const string &name, UEPtr<UComponent> cont);
 
-// Заполняет массив ClassSamples готовыми экземплярами образцов и их именами.
-// Не требуется предварительная очистка массива и уборка памяти.
+/// Удаление заданного класса из списка успешно загруженных
+/// Класс переносится в незагруженные (Incomplete)
+virtual void RemoveClassFromCompletedList(const string &name);
+
+/// Заполняет массив ClassSamples готовыми экземплярами образцов и их именами.
+/// Не требуется предварительная очистка массива и уборка памяти.
 virtual void CreateClassSamples(UStorage *storage)=0;
 // --------------------------
 };
@@ -181,7 +185,7 @@ bool UpdateClassesStructure(void);
 
 // --------------------------
 /// Создает компонент из описания xml
-UEPtr<UContainer> CreateClassSample(USerStorage &xml);
+UEPtr<UContainer> CreateClassSample(UStorage *storage, USerStorageXML &xml);
 
 // Заполняет массив ClassSamples готовыми экземплярами образцов и их именами.
 // Не требуется предварительная очистка массива и уборка памяти.

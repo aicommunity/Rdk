@@ -240,26 +240,11 @@ virtual const char* Storage_SaveAllClassesDescription(void);
 
 // Загружает описание всех классов из xml включая общее описание
 virtual bool Storage_LoadAllClassesDescription(const char* xmltext);
+// ----------------------------
 
-// Загружает библиотеку по имени dll-файла
-virtual int Storage_LoadStorageLibrary(const char *filename);
-
-// Удаляет подключенную библиотеку из списка по индексу
-// Ответственность за освобождение памяти лежит на вызывающей стороне.
-virtual bool Storage_DelClassLibraryByIndex(int index);
-
-// Удаляет подключенную библиотеку из списка по имени
-// Ответственность за освобождение памяти лежит на вызывающей стороне.
-virtual bool Storage_DelClassLibraryByName(const char *name);
-
-// Удаляет из списка все библиотеки
-// Ответственность за освобождение памяти лежит на вызывающей стороне.
-virtual bool Storage_DelAllClassLibraries(void);
-
-// Заполняет хранилище данными библиотек
-// Операция предварительно уничтожает модель и очищает хранилище
-virtual bool Storage_BuildStorage(void);
-
+// ----------------------------
+// Методы управления коллекциями компонент
+// ----------------------------
 // Возвращает число библиотек
 virtual int Storage_GetNumClassLibraries(void) const;
 
@@ -280,9 +265,41 @@ virtual const char * Storage_GetClassLibraryNameByIndex(int index);
 // Возвращает версию библиотеки по индексу
 virtual const char * Storage_GetClassLibraryVersionByIndex(int index);
 
+// Загружает коллекцию по имени dll-файла
+virtual int Storage_LoadBinaryCollectionFromFile(const char *filename);
+
+// Загружает runtime-коллекцию
+virtual int Storage_LoadRuntimeCollectionFromFile(const char *filename);
+virtual int Storage_LoadRuntimeCollectionFromString(const char *buffer);
+
+// Сохраняет runtime-коллекцию
+virtual int Storage_SaveRuntimeCollectionToFile(const char *filename);
+virtual int Storage_SaveRuntimeCollectionToString(const char *buffer);
+
+/// Создает новую runtime-библиотеку
+virtual int Storage_CreateRuntimeCollection(const char *collection_name);
+
 // Перемещает объект в Storage как образец классов.
 // Объект удаляется из модели
-virtual int Storage_CreateClass(const char* stringid, const char *classname);
+virtual int Storage_CreateClass(const char* stringid, const char *class_name, const char *collection_name);
+
+// Удаляет подключенную библиотеку из списка по индексу
+// Ответственность за освобождение памяти лежит на вызывающей стороне.
+virtual bool Storage_DelClassLibraryByIndex(int index);
+
+// Удаляет подключенную библиотеку из списка по имени
+// Ответственность за освобождение памяти лежит на вызывающей стороне.
+virtual bool Storage_DelClassLibraryByName(const char *name);
+
+// Удаляет из списка все библиотеки
+// Ответственность за освобождение памяти лежит на вызывающей стороне.
+virtual bool Storage_DelAllClassLibraries(void);
+
+
+// Заполняет хранилище данными библиотек
+// Операция предварительно уничтожает модель и очищает хранилище
+virtual bool Storage_BuildStorage(void);
+// ----------------------------
 
 // Методы управления средой
 // ----------------------------

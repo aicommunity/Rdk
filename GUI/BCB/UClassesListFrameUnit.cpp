@@ -190,6 +190,41 @@ String TUClassesListFrame::GetSelectedName(void)
  return String("");
 }
 
+// Возвращает имя выбранного класса
+String TUClassesListFrame::GetSelectedLibraryName(void)
+{
+ if(PageControl->ActivePage == LibsTabSheet)
+ {
+/*  TTreeNode* sel=TreeView->Selected;
+  if(sel && sel->Parent)
+   return sel->Text;
+   */
+  return String("");
+ }
+ else
+ if(PageControl->ActivePage == NameTabSheet)
+  return String("");
+ // return StringGrid->Cells[0][StringGrid->Row];
+ else
+ if(PageControl->ActivePage == LibsControlTabSheet)
+  return LibsListStringGrid->Cells[1][LibsListStringGrid->Row];
+
+ return String("");
+}
+
+
+
+
+/// Создает новый класс в выбранной Runtime library
+bool TUClassesListFrame::AddClassToRuntimeLibrary(const std::string &object_prototype_name, const std::string &class_name, const std::string &library_name)
+{
+ Storage_CreateClass(object_prototype_name.c_str(),class_name.c_str(),library_name.c_str());
+
+ return true;
+}
+
+
+
 void __fastcall TUClassesListFrame::PageControlChange(TObject *Sender)
 {
  UpdateInterface();
@@ -229,6 +264,28 @@ void __fastcall TUClassesListFrame::LibComponentListStringGridMouseEnter(TObject
 
 {
  LibComponentListStringGrid->SetFocus();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUClassesListFrame::CreateRuntimeLibraryButtonClick(TObject *Sender)
+
+{
+ Storage_CreateRuntimeCollection("RuntimeLibrary1");
+ UpdateInterface();
+ LibsListStringGrid->Row=LibsListStringGrid->RowCount-1;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUClassesListFrame::AddClassButtonClick(TObject *Sender)
+{
+ if(NewClassName.empty() || NewComponentName.empty())
+  return;
+
+ AddClassToRuntimeLibrary(NewComponentName.c_str(),NewClassName.c_str(),AnsiString(GetSelectedLibraryName()).c_str());
+
+ NewClassName.clear();
+ NewComponentName.clear();
+ UpdateInterface();
 }
 //---------------------------------------------------------------------------
 

@@ -206,7 +206,6 @@ void TUDrawEngineFrame::ReloadNet(void)
   UpdateInterface(false);
 }
 
-
 void TUDrawEngineFrame::SelectComponent(const std::string &comp_name)
 {
  DrawEngine.SelectSingleComponent(comp_name);
@@ -628,6 +627,15 @@ void __fastcall TUDrawEngineFrame::UClassesListFrameLibComponentListStringGridMo
 {
  UClassesListFrame->LibComponentListStringGrid->DragMode=dmManual;
  DragDropFlag=false;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUDrawEngineFrame::UClassesListFrameAddClassButtonClick(TObject *Sender)
+
+{
+ UClassesListFrame->NewClassName="NewClass1";
+ UClassesListFrame->NewComponentName=ComponentsListFrame->GetSelectedComponentName();
+ UClassesListFrame->AddClassButtonClick(Sender);
 }
 //---------------------------------------------------------------------------
 

@@ -588,88 +588,17 @@ bool UEngine::Storage_LoadAllClassesDescription(const char* xmltext)
  }
  return false;
 }
+// ----------------------------
 
-
-// Загружает библиотеку по имени dll-файла
-int UEngine::Storage_LoadStorageLibrary(const char *filename)
-{
- try
- {
-  return 0;
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
- return 0;
-}
-
-// Удаляет подключенную библиотеку из списка по индексу
-// Ответственность за освобождение памяти лежит на вызывающей стороне.
-bool UEngine::Storage_DelClassLibraryByIndex(int index)
-{
- try
- {
-  return Storage->DelClassLibrary(index);
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
- return false;
-}
-
-// Удаляет подключенную библиотеку из списка по имени
-// Ответственность за освобождение памяти лежит на вызывающей стороне.
-bool UEngine::Storage_DelClassLibraryByName(const char *name)
-{
- try
- {
-  return Storage->DelClassLibrary(name);
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
- return false;
-}
-
-// Удаляет из списка все библиотеки
-// Ответственность за освобождение памяти лежит на вызывающей стороне.
-bool UEngine::Storage_DelAllClassLibraries(void)
-{
- try
- {
-  return Storage->DelAllClassLibraries();
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
- return false;
-}
-
-// Заполняет хранилище данными библиотек
-// Операция предварительно уничтожает модель и очищает хранилище
-bool UEngine::Storage_BuildStorage(void)
-{
- try
- {
-  return Storage->BuildStorage();
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
- return false;
-}
-
+// ----------------------------
+// Методы управления коллекциями компонент
+// ----------------------------
 // Возвращает число библиотек
 int UEngine::Storage_GetNumClassLibraries(void) const
 {
  try
  {
-  return Storage->GetNumClassLibraries();
+  return Storage->GetNumCollections();
  }
  catch (UException &exception)
  {
@@ -685,10 +614,10 @@ const char * UEngine::Storage_GetClassLibrariesList(void) const
  try
  {
   TempString.clear();
-  for(int i=0;i<Storage->GetNumClassLibraries();i++)
+  for(int i=0;i<Storage->GetNumCollections();i++)
   {
-   TempString+=Storage->GetClassLibraryName(i);
-   if(i<Storage->GetNumClassLibraries()-1)
+   TempString+=Storage->GetCollectionName(i);
+   if(i<Storage->GetNumCollections()-1)
     TempString+=",";
   }
  }
@@ -706,13 +635,13 @@ const char * UEngine::Storage_GetLibraryClassNames(const char *library_name) con
  try
  {
   TempString.clear();
-  UEPtr<ULibrary> lib=Storage->GetClassLibrary(library_name);
+  UEPtr<ULibrary> lib=Storage->GetCollection(library_name);
   if(lib)
   {
    const vector<string> &classes=lib->GetComplete();
    for(int i=0;i<int(classes.size());i++)
    {
-    TempString+=classes[i];
+	TempString+=classes[i];
     if(i<int(classes.size())-1)
      TempString+=",";
    }
@@ -732,7 +661,7 @@ const char * UEngine::Storage_GetLibraryClassNamesByIndex(int index) const
  try
  {
   TempString.clear();
-  UEPtr<ULibrary> lib=Storage->GetClassLibrary(index);
+  UEPtr<ULibrary> lib=Storage->GetCollection(index);
   if(lib)
   {
    const vector<string> &classes=lib->GetComplete();
@@ -757,7 +686,7 @@ const char * UEngine::Storage_GetClassLibraryNameByIndex(int index)
 {
  try
  {
-  TempString=Storage->GetClassLibraryName(index);
+  TempString=Storage->GetCollectionName(index);
  }
  catch (UException &exception)
  {
@@ -771,7 +700,7 @@ const char * UEngine::Storage_GetClassLibraryVersionByIndex(int index)
 {
  try
  {
-  TempString=Storage->GetClassLibraryVersion(index);
+  TempString=Storage->GetCollectionVersion(index);
  }
  catch (UException &exception)
  {
@@ -780,10 +709,53 @@ const char * UEngine::Storage_GetClassLibraryVersionByIndex(int index)
  return TempString.c_str();
 }
 
+// Удаляет подключенную библиотеку из списка по индексу
+// Ответственность за освобождение памяти лежит на вызывающей стороне.
+bool UEngine::Storage_DelClassLibraryByIndex(int index)
+{
+ try
+ {
+  return Storage->DelCollection(index);
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return false;
+}
 
-// Перемещает объект в Storage как образец классов.
-// Объект удаляется из модели
-int UEngine::Storage_CreateClass(const char* stringid, const char *classname)
+// Удаляет подключенную библиотеку из списка по имени
+// Ответственность за освобождение памяти лежит на вызывающей стороне.
+bool UEngine::Storage_DelClassLibraryByName(const char *name)
+{
+ try
+ {
+  return Storage->DelCollection(name);
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return false;
+}
+
+// Удаляет из списка все библиотеки
+// Ответственность за освобождение памяти лежит на вызывающей стороне.
+bool UEngine::Storage_DelAllClassLibraries(void)
+{
+ try
+ {
+  return Storage->DelAllCollections();
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return false;
+}
+
+// Загружает коллекцию по имени dll-файла
+int UEngine::Storage_LoadBinaryCollectionFromFile(const char *filename)
 {
  try
  {
@@ -796,8 +768,121 @@ int UEngine::Storage_CreateClass(const char* stringid, const char *classname)
  return 0;
 }
 
+// Загружает runtime-коллекцию
+int UEngine::Storage_LoadRuntimeCollectionFromFile(const char *filename)
+{
+ try
+ {
+  return 0;
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
+int UEngine::Storage_LoadRuntimeCollectionFromString(const char *buffer)
+{
+ try
+ {
+  return 0;
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
+// Сохраняет runtime-коллекцию
+int UEngine::Storage_SaveRuntimeCollectionToFile(const char *filename)
+{
+ try
+ {
+  return 0;
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
+int UEngine::Storage_SaveRuntimeCollectionToString(const char *buffer)
+{
+ try
+ {
+  return 0;
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
+/// Создает новую runtime-библиотеку
+int UEngine::Storage_CreateRuntimeCollection(const char *collection_name)
+{
+ try
+ {
+  if(Storage->CreateRuntimeCollection(collection_name))
+   return 0;
+  return 74615;
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
+// Перемещает объект в Storage как образец классов.
+// Объект удаляется из модели
+int UEngine::Storage_CreateClass(const char* stringid, const char *class_name, const char *collection_name)
+{
+ try
+ {
+  UEPtr<UContainer> sample=FindComponent(stringid);
+  UEPtr<URuntimeLibrary> library=dynamic_pointer_cast<URuntimeLibrary>(Storage->FindCollection(collection_name));
+
+  if(!sample)
+   return 74616;
+
+  if(!library)
+   return 74617;
+
+  if(!Storage->AddClassToCollection(class_name, sample,library))
+   return 74618;
+
+  return 0;
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
+// Заполняет хранилище данными библиотек
+// Операция предварительно уничтожает модель и очищает хранилище
+bool UEngine::Storage_BuildStorage(void)
+{
+ try
+ {
+  return Storage->BuildStorage();
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return false;
+}
+// ----------------------------
 
 
+// ----------------------------
 // Методы управления средой
 // ----------------------------
 // Индекс предарительно заданной модели обработки
@@ -937,7 +1022,7 @@ void UEngine::Env_Destroy(void)
   Environment->DestroyModel();
   Storage->ClearObjectsStorage();
   Storage->ClearClassesStorage();
-  Storage->DelAllClassLibraries();
+  Storage->DelAllCollections();
  }
  catch (UException &exception)
  {
@@ -4604,7 +4689,7 @@ void UEngine::CreateEnvironment(bool isinit, list<UContainer*>* external_classes
   J=external_libs->end();
   while(I != J)
   {
-   Storage->AddClassLibrary(*I);
+   Storage->AddCollection(*I);
    ++I;
   }
  }

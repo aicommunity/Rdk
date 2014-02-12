@@ -181,26 +181,11 @@ RDK_LIB_TYPE const char* RDK_CALL Storage_SaveAllClassesDescription(void);
 
 // Загружает описание всех классов из xml включая общее описание
 RDK_LIB_TYPE bool RDK_CALL Storage_LoadAllClassesDescription(const char* xmltext);
+// --------------------------
 
-// Загружает библиотеку по имени dll-файла
-RDK_LIB_TYPE int RDK_CALL Storage_LoadStorageLibrary(const char *filename);
-
-// Удаляет подключенную библиотеку из списка по индексу
-// Ответственность за освобождение памяти лежит на вызывающей стороне.
-RDK_LIB_TYPE bool RDK_CALL Storage_DelClassLibraryByIndex(int index);
-
-// Удаляет подключенную библиотеку из списка по имени
-// Ответственность за освобождение памяти лежит на вызывающей стороне.
-RDK_LIB_TYPE bool RDK_CALL Storage_DelClassLibraryByName(const char *name);
-
-// Удаляет из списка все библиотеки
-// Ответственность за освобождение памяти лежит на вызывающей стороне.
-RDK_LIB_TYPE bool RDK_CALL Storage_DelAllClassLibraries(void);
-
-// Заполняет хранилище данными библиотек
-// Операция предварительно уничтожает модель и очищает хранилище
-RDK_LIB_TYPE bool RDK_CALL Storage_BuildStorage(void);
-
+// ----------------------------
+// Методы управления коллекциями компонент
+// ----------------------------
 // Возвращает число библиотек
 RDK_LIB_TYPE int RDK_CALL Storage_GetNumClassLibraries(void);
 
@@ -221,11 +206,41 @@ RDK_LIB_TYPE const char* RDK_CALL Storage_GetClassLibraryNameByIndex(int index);
 // Возвращает версию библиотеки по индексу
 RDK_LIB_TYPE const char* RDK_CALL Storage_GetClassLibraryVersionByIndex(int index);
 
+/// Создает новую runtime-библиотеку
+RDK_LIB_TYPE int RDK_CALL Storage_CreateRuntimeCollection(const char *collection_name);
+
+// Загружает коллекцию по имени dll-файла
+RDK_LIB_TYPE int RDK_CALL Storage_LoadBinaryCollectionFromFile(const char *filename);
+
+// Загружает runtime-коллекцию
+RDK_LIB_TYPE int RDK_CALL Storage_LoadRuntimeCollectionFromFile(const char *filename);
+RDK_LIB_TYPE int RDK_CALL Storage_LoadRuntimeCollectionFromString(const char *buffer);
+
+// Сохраняет runtime-коллекцию
+RDK_LIB_TYPE int RDK_CALL Storage_SaveRuntimeCollectionToFile(const char *filename);
+RDK_LIB_TYPE int RDK_CALL Storage_SaveRuntimeCollectionToString(const char *buffer);
+
+// Удаляет подключенную библиотеку из списка по индексу
+// Ответственность за освобождение памяти лежит на вызывающей стороне.
+RDK_LIB_TYPE int RDK_CALL Storage_DelClassLibraryByIndex(int index);
+
+// Удаляет подключенную библиотеку из списка по имени
+// Ответственность за освобождение памяти лежит на вызывающей стороне.
+RDK_LIB_TYPE int RDK_CALL Storage_DelClassLibraryByName(const char *name);
+
+// Удаляет из списка все библиотеки
+// Ответственность за освобождение памяти лежит на вызывающей стороне.
+RDK_LIB_TYPE int RDK_CALL Storage_DelAllClassLibraries(void);
+
 // Перемещает объект в Storage как образец классов.
 // Объект удаляется из модели
-// Возвращает id нового класса в хранилище
-RDK_LIB_TYPE int RDK_CALL Storage_CreateClass(const char* stringid, const char *classname);
-// --------------------------
+RDK_LIB_TYPE int RDK_CALL Storage_CreateClass(const char* stringid, const char *class_name, const char *collection_name);
+
+// Заполняет хранилище данными библиотек
+// Операция предварительно уничтожает модель и очищает хранилище
+RDK_LIB_TYPE int RDK_CALL Storage_BuildStorage(void);
+// ----------------------------
+
 
 // --------------------------
 // Функции управления средой

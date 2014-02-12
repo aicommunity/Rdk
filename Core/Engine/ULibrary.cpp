@@ -216,13 +216,13 @@ bool ULibrary::CheckDependencies(UStorage *storage, std::vector<pair<string, str
   return true;
 
  dependencies.clear();
- int num_libraries=storage->GetNumClassLibraries();
+ int num_libraries=storage->GetNumCollections();
  for(size_t i=0;i<Dependencies.size();i++)
  {
   bool dep_found=false;
   for(int j=0;j<num_libraries;j++)
   {
-   UEPtr<ULibrary> lib=storage->GetClassLibrary(j);
+   UEPtr<ULibrary> lib=storage->GetCollection(j);
    if(lib && lib->GetName() == Dependencies[i].first
 	&& (Dependencies[i].second.empty() || Dependencies[i].second == lib->GetVersion()))
    {
@@ -259,9 +259,18 @@ bool ULibrary::UploadClass(const string &name, UEPtr<UComponent> cont)
  if(Storage->CheckClass(name))
   return true;
 
+ std::vector<std::string>::iterator I;
  if(!Storage->AddClass(cont,name))
  {
-  Incomplete.push_back(name);
+  if(find(Incomplete.begin(),Incomplete.end(),name) == Incomplete.end())
+   Incomplete.push_back(name);
+  I=find(ClassesList.begin(),ClassesList.end(),name);
+  if(I != ClassesList.end())
+   ClassesList.erase(I);
+  I=find(Complete.begin(),Complete.end(),name);
+  if(I != Complete.end())
+   Complete.erase(I);
+
   delete cont;
   return false;
  }
@@ -270,8 +279,34 @@ bool ULibrary::UploadClass(const string &name, UEPtr<UComponent> cont)
   ClassesList.push_back(name);
  if(find(Complete.begin(),Complete.end(),name) == Complete.end())
   Complete.push_back(name);
+ I=find(Incomplete.begin(),Incomplete.end(),name);
+ if(I != Incomplete.end())
+  Incomplete.erase(I);
+
  return true;
 }
+
+/// Удаление заданного класса из списка успешно загруженных
+/// Класс переносится в незагруженные (Incomplete)
+void ULibrary::RemoveClassFromCompletedList(const string &name)
+{
+ std::vector<std::string>::iterator I;
+
+ I=find(ClassesList.begin(),ClassesList.end(),name);
+ if(I != ClassesList.end())
+  ClassesList.erase(I);
+
+ I=find(Complete.begin(),Complete.end(),name);
+ if(I != Complete.end())
+  Complete.erase(I);
+
+ I=find(Incomplete.begin(),Incomplete.end(),name);
+ if(I == Incomplete.end())
+  Incomplete.push_back(name);
+}
+// --------------------------
+
+
 
 
 // --------------------------
@@ -318,10 +353,24 @@ bool URuntimeLibrary::UpdateClassesStructure(void)
 // --------------------------
 
 // --------------------------
-/// Создает компонент из из описания xml
-UEPtr<UContainer> URuntimeLibrary::CreateClassSample(USerStorage &xml)
+/// Создает компонент из описания xml
+UEPtr<UContainer> URuntimeLibrary::CreateClassSample(UStorage *storage, USerStorageXML &xml)
 {
- UEPtr<UContainer> cont;
+ UEPtr<UNet> cont;
+
+ if(!storage)
+  return 0;
+
+ std::string class_name=xml.GetNodeAttribute("Class");
+ cont=dynamic_pointer_cast<UNet>(storage->TakeObject(class_name));
+ if(!cont)
+  return 0;
+
+ if(!cont->LoadComponent(cont,&xml,true))
+ {
+  storage->ReturnObject(cont);
+  return 0;
+ }
 
  return cont;
 }
@@ -337,7 +386,7 @@ void URuntimeLibrary::CreateClassSamples(UStorage *storage)
   try
   {
    ClassesStructure.SelectNode(i);
-   UEPtr<UContainer> cont=CreateClassSample(ClassesStructure);
+   UEPtr<UContainer> cont=CreateClassSample(storage, ClassesStructure);
    UploadClass(std::string("T")+cont->GetName(),cont);
   }
   catch(UException &exception)

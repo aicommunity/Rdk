@@ -103,7 +103,7 @@ std::map<std::string, UPropertyDescription> CommonDescriptions;
 
 protected: // Описания библиотек
 // Массив доступных библиотек
-UClassLibraryList ClassLibraryList;
+UClassLibraryList CollectionList;
 
 /// Таблица соответствий между именами классов и библиотек
 /// имеет вид <имя класса, имя его библиотеки>
@@ -258,54 +258,54 @@ virtual bool LoadCommonClassesDescription(USerStorageXML &xml);
 // Методы управления библиотеками
 // --------------------------
 // Возвращает библиотеку по индексу
-UEPtr<ULibrary> GetClassLibrary(int index);
+UEPtr<ULibrary> GetCollection(int index);
 
 // Возвращает число библиотек
-int GetNumClassLibraries(void) const;
+int GetNumCollections(void) const;
 
 // Возвращает библиотеку по имени
-UEPtr<ULibrary> GetClassLibrary(const string &name);
+UEPtr<ULibrary> GetCollection(const string &name);
 
 // Возвращает имя библиотеки по индексу
-const string& GetClassLibraryName(int index);
+const string& GetCollectionName(int index);
 
 // Возвращает версию библиотеки по индексу
-const string& GetClassLibraryVersion(int index);
+const string& GetCollectionVersion(int index);
 
 // Непосредственно добавялет новый образец класса в хранилище
-virtual bool AddClass(UContainer *newclass);
+//virtual bool AddClass(UContainer *newclass);
 
-/// Непосредственно добавялет новый образец класса в хранилище
-virtual bool AddClassToLibrary(UContainer *newclass, URuntimeLibrary *library);
+/// Добавялет новый образец класса в коллекцию
+virtual bool AddClassToCollection(const std::string &new_class_name, UContainer *newclass, URuntimeLibrary *library);
 
 /// Создает новую библиотеку с заданным именем
-virtual bool CreateRuntimeClassLibrary(const std::string &lib_name);
+virtual bool CreateRuntimeCollection(const std::string &lib_name);
 
 /// Загружает runtime-библиотеку из строки
-virtual bool LoadRuntimeClassLibrary(const std::string &buffer, bool force_build=false);
+virtual bool LoadRuntimeCollection(const std::string &buffer, bool force_build=false);
 
 /// Сохраняет runtime-библиотеку в строку
-virtual bool SaveRuntimeClassLibrary(const std::string &lib_name, std::string &buffer);
-virtual bool SaveRuntimeClassLibrary(URuntimeLibrary *library, std::string &buffer);
+virtual bool SaveRuntimeCollection(const std::string &lib_name, std::string &buffer);
+virtual bool SaveRuntimeCollection(URuntimeLibrary *library, std::string &buffer);
 
 // Подключает динамическую библиотеку с набором образцов классов.
 // Если бибилиотека с таким именем уже существует то возвращает false.
 // Ответственность за освобождение памяти библиотекой лежит на вызывающей стороне.
 // Если force_build == true то немедленно осущетсвляет развертывание бибилотеки
 // в хранилище
-virtual bool AddClassLibrary(ULibrary *library, bool force_build=false);
+virtual bool AddCollection(ULibrary *library, bool force_build=false);
 
 // Удаляет подключенную библиотеку из списка по индексу
 // Ответственность за освобождение памяти лежит на вызывающей стороне.
-virtual bool DelClassLibrary(int index);
+virtual bool DelCollection(int index);
 
 // Удаляет подключенную библиотеку из списка по имени
 // Ответственность за освобождение памяти лежит на вызывающей стороне.
-bool DelClassLibrary(const string &name);
+bool DelCollection(const string &name);
 
 // Удаляет из списка все библиотеки
 // Ответственность за освобождение памяти лежит на вызывающей стороне.
-virtual bool DelAllClassLibraries(void);
+virtual bool DelAllCollections(void);
 
 // Заполняет хранилище данными библиотек
 virtual bool BuildStorage(void);
@@ -315,8 +315,8 @@ virtual bool BuildStorage(void);
 virtual void DelAbandonedClasses(void);
 
 /// Возвращает указатель на библиотеку класса по имени класса
-virtual UEPtr<ULibrary> FindClassLibrary(const std::string class_name);
-virtual UEPtr<ULibrary> FindClassLibrary(const UId &classid);
+virtual UEPtr<ULibrary> FindCollection(const std::string class_name);
+virtual UEPtr<ULibrary> FindCollection(const UId &classid);
 
 /// Формирует список зависимостей класса компонента от библиотек
 /// Метод не очищает переданный список библиотек, а только пополняет его
@@ -341,11 +341,13 @@ virtual UId PopObject(UEPtr<UContainer> object);
 // Перемещает объект в другое хранилище
 virtual void MoveObject(UEPtr<UContainer> object, UEPtr<UStorage> newstorage);
 
+public:
 // Возвращает объект в хранилище
 // Выбранный объект помечается как свободный в хранилище
 // Флаг 'Activity' объекта выставляется в false
 virtual void ReturnObject(UEPtr<UComponent> object);
 
+protected:
 // В случае ошибки возвращает ForbiddenId
 virtual UId PopObject(UObjectsStorageIterator instance_iterator, list<UInstancesStorageElement>::iterator object_iterator);
 // --------------------------

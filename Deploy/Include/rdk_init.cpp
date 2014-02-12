@@ -578,46 +578,11 @@ bool RDK_CALL Storage_LoadAllClassesDescription(const char* xmltext)
  UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Storage_LoadAllClassesDescription(xmltext);
 }
+// ----------------------------
 
-// Загружает библиотеку по имени dll-файла
-int RDK_CALL Storage_LoadStorageLibrary(const char *filename)
-{
- UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
- return PEngine->Storage_LoadStorageLibrary(filename);
-}
-
-// Удаляет подключенную библиотеку из списка по индексу
-// Ответственность за освобождение памяти лежит на вызывающей стороне.
-bool RDK_CALL Storage_DelClassLibraryByIndex(int index)
-{
- UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
- return PEngine->Storage_DelClassLibraryByIndex(index);
-}
-
-// Удаляет подключенную библиотеку из списка по имени
-// Ответственность за освобождение памяти лежит на вызывающей стороне.
-bool RDK_CALL Storage_DelClassLibraryByName(const char *name)
-{
- UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
- return PEngine->Storage_DelClassLibraryByName(name);
-}
-
-// Удаляет из списка все библиотеки
-// Ответственность за освобождение памяти лежит на вызывающей стороне.
-bool RDK_CALL Storage_DelAllClassLibraries(void)
-{
- UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
- return PEngine->Storage_DelAllClassLibraries();
-}
-
-// Заполняет хранилище данными библиотек
-// Операция предварительно уничтожает модель и очищает хранилище
-bool RDK_CALL Storage_BuildStorage(void)
-{
- UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
- return PEngine->Storage_BuildStorage();
-}
-
+// ----------------------------
+// Методы управления коллекциями компонент
+// ----------------------------
 // Возвращает число библиотек
 int RDK_CALL Storage_GetNumClassLibraries(void)
 {
@@ -662,14 +627,87 @@ const char * RDK_CALL Storage_GetClassLibraryVersionByIndex(int index)
  return PEngine->Storage_GetClassLibraryVersionByIndex(index);
 }
 
-// Перемещает объект в Storage как образец классов.
-// Объект удаляется из модели
-int RDK_CALL Storage_CreateClass(const char* stringid, const char *classname)
+/// Создает новую runtime-библиотеку
+int RDK_CALL Storage_CreateRuntimeCollection(const char *collection_name)
 {
  UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
- return PEngine->Storage_CreateClass(stringid, classname);
+ return PEngine->Storage_CreateRuntimeCollection(collection_name);
+}
+
+// Загружает коллекцию по имени dll-файла
+int RDK_CALL Storage_LoadBinaryCollectionFromFile(const char *filename)
+{
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
+ return PEngine->Storage_LoadBinaryCollectionFromFile(filename);
+}
+
+// Загружает runtime-коллекцию
+int RDK_CALL Storage_LoadRuntimeCollectionFromFile(const char *filename)
+{
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
+ return PEngine->Storage_LoadRuntimeCollectionFromFile(filename);
+}
+
+int RDK_CALL Storage_LoadRuntimeCollectionFromString(const char *buffer)
+{
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
+ return PEngine->Storage_LoadRuntimeCollectionFromString(buffer);
+}
+
+// Сохраняет runtime-коллекцию
+int RDK_CALL Storage_SaveRuntimeCollectionToFile(const char *filename)
+{
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
+ return PEngine->Storage_SaveRuntimeCollectionToFile(filename);
+}
+
+int RDK_CALL Storage_SaveRuntimeCollectionToString(const char *buffer)
+{
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
+ return PEngine->Storage_SaveRuntimeCollectionToString(buffer);
+}
+
+// Удаляет подключенную библиотеку из списка по индексу
+// Ответственность за освобождение памяти лежит на вызывающей стороне.
+int RDK_CALL Storage_DelClassLibraryByIndex(int index)
+{
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
+ return PEngine->Storage_DelClassLibraryByIndex(index);
+}
+
+// Удаляет подключенную библиотеку из списка по имени
+// Ответственность за освобождение памяти лежит на вызывающей стороне.
+int RDK_CALL Storage_DelClassLibraryByName(const char *name)
+{
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
+ return PEngine->Storage_DelClassLibraryByName(name);
+}
+
+// Удаляет из списка все библиотеки
+// Ответственность за освобождение памяти лежит на вызывающей стороне.
+int RDK_CALL Storage_DelAllClassLibraries(void)
+{
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
+ return PEngine->Storage_DelAllClassLibraries();
+}
+
+// Перемещает объект в Storage как образец классов.
+// Объект удаляется из модели
+int RDK_CALL Storage_CreateClass(const char* stringid, const char *classname, const char *collection_name)
+{
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
+ return PEngine->Storage_CreateClass(stringid, classname, collection_name);
+}
+
+// Заполняет хранилище данными библиотек
+// Операция предварительно уничтожает модель и очищает хранилище
+int RDK_CALL Storage_BuildStorage(void)
+{
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
+ return PEngine->Storage_BuildStorage();
 }
 // ----------------------------
+
 
 // ----------------------------
 // Методы управления средой

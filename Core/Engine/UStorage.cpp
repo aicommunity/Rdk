@@ -244,6 +244,10 @@ void UStorage::DelClass(const UId &classid, bool force)
    break;
   }
  }
+
+ UEPtr<ULibrary> lib=FindCollection(name);
+ if(lib)
+  lib->RemoveClassFromCompletedList(name);
 }
 
 // ѕровер€ет наличие образца класса объекта в хранилище
@@ -676,23 +680,23 @@ bool UStorage::LoadCommonClassesDescription(USerStorageXML &xml)
 // ћетоды управлени€ библиотеками
 // --------------------------
 // ¬озвращает библиотеку по индексу
-UEPtr<ULibrary> UStorage::GetClassLibrary(int index)
+UEPtr<ULibrary> UStorage::GetCollection(int index)
 {
- return ClassLibraryList[index];
+ return CollectionList[index];
 }
 
 // ¬озвращает число библиотек
-int UStorage::GetNumClassLibraries(void) const
+int UStorage::GetNumCollections(void) const
 {
- return int(ClassLibraryList.size());
+ return int(CollectionList.size());
 }
 
 // ¬озвращает библиотеку по имени
-UEPtr<ULibrary> UStorage::GetClassLibrary(const string &name)
+UEPtr<ULibrary> UStorage::GetCollection(const string &name)
 {
- for(size_t i=0;i<ClassLibraryList.size();i++)
+ for(size_t i=0;i<CollectionList.size();i++)
  {
-  UEPtr<ULibrary> lib=ClassLibraryList[i];
+  UEPtr<ULibrary> lib=CollectionList[i];
   if(lib && lib->GetName() == name)
    return lib;
  }
@@ -701,17 +705,17 @@ UEPtr<ULibrary> UStorage::GetClassLibrary(const string &name)
 }
 
 // ¬озвращает им€ библиотеки по индексу
-const string& UStorage::GetClassLibraryName(int index)
+const string& UStorage::GetCollectionName(int index)
 {
- return ClassLibraryList[index]->GetName();
+ return CollectionList[index]->GetName();
 }
 
 // ¬озвращает версию библиотеки по индексу
-const string& UStorage::GetClassLibraryVersion(int index)
+const string& UStorage::GetCollectionVersion(int index)
 {
- return ClassLibraryList[index]->GetVersion();
+ return CollectionList[index]->GetVersion();
 }
-
+		   /*
 // Ќепосредственно добав€лет новый образец класса в хранилище
 bool UStorage::AddClass(UContainer *newclass)
 {
@@ -720,24 +724,24 @@ bool UStorage::AddClass(UContainer *newclass)
   return false;
 
  return true;
-}
+}            */
 
 /// Ќепосредственно добав€лет новый образец класса в хранилище
-bool UStorage::AddClassToLibrary(UContainer *newclass, URuntimeLibrary *library)
+bool UStorage::AddClassToCollection(const std::string &new_class_name, UContainer *newclass, URuntimeLibrary *library)
 {
  library->UploadClass(std::string("T")+newclass->GetName(),newclass);
  return true;
 }
 
 /// —оздает новую библиотеку с заданным именем
-bool UStorage::CreateRuntimeClassLibrary(const std::string &lib_name)
+bool UStorage::CreateRuntimeCollection(const std::string &lib_name)
 {
  URuntimeLibrary* lib=new URuntimeLibrary(lib_name,"");
- return AddClassLibrary(lib);
+ return AddCollection(lib);
 }
 
 /// «агружает runtime-библиотеку из строки
-bool UStorage::LoadRuntimeClassLibrary(const std::string &buffer, bool force_build)
+bool UStorage::LoadRuntimeCollection(const std::string &buffer, bool force_build)
 {
  USerStorageXML xml;
  xml.Load(buffer,"Library");
@@ -745,24 +749,24 @@ bool UStorage::LoadRuntimeClassLibrary(const std::string &buffer, bool force_bui
  if(lib_name.empty())
   return false;
 
- if(GetClassLibrary(lib_name) != 0)
+ if(GetCollection(lib_name) != 0)
   return false;
 
  URuntimeLibrary* lib=new URuntimeLibrary(lib_name,"");
  lib->SetClassesStructure(xml);
- AddClassLibrary(lib,force_build);
+ AddCollection(lib,force_build);
 
  return true;
 }
 
 /// —охран€ет runtime-библиотеку в строку
-bool UStorage::SaveRuntimeClassLibrary(const std::string &lib_name, std::string &buffer)
+bool UStorage::SaveRuntimeCollection(const std::string &lib_name, std::string &buffer)
 {
- UEPtr<URuntimeLibrary> lib=dynamic_pointer_cast<URuntimeLibrary>(GetClassLibrary(lib_name));
- return SaveRuntimeClassLibrary(lib,buffer);
+ UEPtr<URuntimeLibrary> lib=dynamic_pointer_cast<URuntimeLibrary>(GetCollection(lib_name));
+ return SaveRuntimeCollection(lib,buffer);
 }
 
-bool UStorage::SaveRuntimeClassLibrary(URuntimeLibrary *library, std::string &buffer)
+bool UStorage::SaveRuntimeCollection(URuntimeLibrary *library, std::string &buffer)
 {
  library->UpdateClassesStructure();
  library->GetClassesStructure().Save(buffer);
@@ -775,21 +779,21 @@ bool UStorage::SaveRuntimeClassLibrary(URuntimeLibrary *library, std::string &bu
 // ќтветственность за освобождение пам€ти библиотекой лежит на вызывающей стороне.
 // ≈сли force_build == true то немедленно осущетсвл€ет развертывание бибилотеки
 // в хранилище
-bool UStorage::AddClassLibrary(ULibrary *library, bool force_build)
+bool UStorage::AddCollection(ULibrary *library, bool force_build)
 {
  if(!library)
   return false;
 
  UEPtr<ULibrary> newlib=dynamic_cast<ULibrary*>(library);
 
- for(size_t i=0;i<ClassLibraryList.size();i++)
+ for(size_t i=0;i<CollectionList.size();i++)
  {
-  UEPtr<ULibrary> lib=ClassLibraryList[i];
+  UEPtr<ULibrary> lib=CollectionList[i];
   if(lib && lib->GetName() == newlib->GetName())
    return false;
  }
 
- ClassLibraryList.push_back(library);
+ CollectionList.push_back(library);
  if(force_build)
   BuildStorage();
  return true;
@@ -797,27 +801,27 @@ bool UStorage::AddClassLibrary(ULibrary *library, bool force_build)
 
 // ”дал€ет подключенную библиотеку из списка по индексу
 // ќтветственность за освобождение пам€ти библиотекой лежит на вызывающей стороне.
-bool UStorage::DelClassLibrary(int index)
+bool UStorage::DelCollection(int index)
 {
- if(index < 0 || index >= int(ClassLibraryList.size()))
+ if(index < 0 || index >= int(CollectionList.size()))
   return false;
- std::vector<ULibrary*>::iterator I=ClassLibraryList.begin()+index;
+ std::vector<ULibrary*>::iterator I=CollectionList.begin()+index;
  if((*I)->GetType() == 2)
   delete *I;
- ClassLibraryList.erase(I);
+ CollectionList.erase(I);
  DelAbandonedClasses();
  return true;
 }
 
 // ”дал€ет подключенную библиотеку из списка по имени
 // ќтветственность за освобождение пам€ти лежит на вызывающей стороне.
-bool UStorage::DelClassLibrary(const string &name)
+bool UStorage::DelCollection(const string &name)
 {
- for(size_t i=0;i<ClassLibraryList.size();i++)
+ for(size_t i=0;i<CollectionList.size();i++)
  {
-  UEPtr<ULibrary> lib=ClassLibraryList[i];
+  UEPtr<ULibrary> lib=CollectionList[i];
   if(lib && lib->GetName() == name)
-   return DelClassLibrary(i);
+   return DelCollection(i);
  }
 
  return true;
@@ -825,9 +829,9 @@ bool UStorage::DelClassLibrary(const string &name)
 
 // ”дал€ет из списка все библиотеки
 // ќтветственность за освобождение пам€ти лежит на вызывающей стороне.
-bool UStorage::DelAllClassLibraries(void)
+bool UStorage::DelAllCollections(void)
 {
- ClassLibraryList.clear();
+ CollectionList.clear();
  DelAbandonedClasses();
  return true;
 }
@@ -836,10 +840,10 @@ bool UStorage::DelAllClassLibraries(void)
 // ќпераци€ предварительно уничтожает модель и очищает хранилище
 bool UStorage::BuildStorage(void)
 {
- for(size_t i=0;i<ClassLibraryList.size();i++)
+ for(size_t i=0;i<CollectionList.size();i++)
  {
-  ClassLibraryList[i]->Upload(this);
-  UEPtr<ULibrary> lib=ClassLibraryList[i];
+  CollectionList[i]->Upload(this);
+  UEPtr<ULibrary> lib=CollectionList[i];
   if(lib)
   {
    CompletedClassNames.insert(CompletedClassNames.end(),
@@ -862,27 +866,27 @@ void UStorage::DelAbandonedClasses(void)
  while(I != ClassesStorage.end())
  {
   J=I; ++J;
-  if(!FindClassLibrary(I->first))
+  if(!FindCollection(I->first))
    DelClass(I->first,true);
   I=J;
  }
 }
 
 /// ¬озвращает указатель на библиотеку класса по имени класса
-UEPtr<ULibrary> UStorage::FindClassLibrary(const std::string class_name)
+UEPtr<ULibrary> UStorage::FindCollection(const std::string class_name)
 {
- for(size_t i=0;i<ClassLibraryList.size();i++)
+ for(size_t i=0;i<CollectionList.size();i++)
  {
-  UEPtr<ULibrary> lib=ClassLibraryList[i];
+  UEPtr<ULibrary> lib=CollectionList[i];
   if(lib->IsClassNamePresent(class_name))
    return lib;
  }
  return 0;
 }
 
-UEPtr<ULibrary> UStorage::FindClassLibrary(const UId &classid)
+UEPtr<ULibrary> UStorage::FindCollection(const UId &classid)
 {
- return FindClassLibrary(FindClassName(classid));
+ return FindCollection(FindClassName(classid));
 }
 
 
@@ -894,7 +898,7 @@ void UStorage::FindComponentDependencies(const std::string class_name, std::vect
  if(!class_data)
   return;
 
- UEPtr<ULibrary> lib=FindClassLibrary(class_name);
+ UEPtr<ULibrary> lib=FindCollection(class_name);
  if(!lib)
   return;
 

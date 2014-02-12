@@ -33,6 +33,7 @@ __published:	// IDE-managed Components
 	TStringGrid *LibsListStringGrid;
 	TGroupBox *GroupBox2;
 	TStringGrid *LibComponentListStringGrid;
+	TButton *AddClassButton;
 	void __fastcall PageControlChange(TObject *Sender);
 	void __fastcall StringGridMouseEnter(TObject *Sender);
 	void __fastcall TreeViewMouseEnter(TObject *Sender);
@@ -40,6 +41,8 @@ __published:	// IDE-managed Components
           bool &CanSelect);
 	void __fastcall LibsListStringGridMouseEnter(TObject *Sender);
 	void __fastcall LibComponentListStringGridMouseEnter(TObject *Sender);
+	void __fastcall CreateRuntimeLibraryButtonClick(TObject *Sender);
+	void __fastcall AddClassButtonClick(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
 	__fastcall TUClassesListFrame(TComponent* Owner);
@@ -54,6 +57,14 @@ std::vector<std::string> ClassNames;
 bool RepaintNeeded;
 
 public:
+/// Имя класса для добавления в выбранную библиотеку
+std::string NewClassName;
+
+/// Имя компонента для добавления в выбранную библиотеку
+std::string NewComponentName;
+
+public:
+
 // Отрисовка фрейма
 void AUpdateInterface(void);
 
@@ -66,8 +77,14 @@ virtual void AClearInterface(void);
 // Возвращает имя выбранного класса
 String GetSelectedName(void);
 
+// Возвращает имя выбранного класса
+String GetSelectedLibraryName(void);
+
 /// Отрисовывает список классов в выбранной библиотеке
 void DrawClassesList(int library_index, TStringGrid *classes_string_grid);
+
+/// Создает новый класс в выбранной Runtime library
+bool AddClassToRuntimeLibrary(const std::string &object_prototype_name, const std::string &class_name, const std::string &library_name);
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TUClassesListFrame *UClassesListFrame;
