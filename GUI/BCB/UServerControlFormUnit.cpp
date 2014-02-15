@@ -72,7 +72,7 @@ __fastcall TUServerControlForm::~TUServerControlForm(void)
 }
 
 
-const char* TUServerControlForm::ControlRemoteCall(const char *request, int &return_value)
+const char* TUServerControlForm::ControlRemoteCall(const char *request, int &return_value, std::vector<RDK::UParamT> &binary_data)
 {
  return_value=2001;
 
@@ -263,6 +263,7 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
 	 frame->XmlComponentNameLabeledEdit->Text=xml.ReadString("XmlComponentName","").c_str();
 	 frame->XmlComponentStateNameLabeledEdit->Text=xml.ReadString("XmlComponentStateName","").c_str();
 	 frame->EnableXmlTranslationCheckBox->Checked=xml.ReadBool("EnableXmlTranslationFlag",true);
+	 frame->EnableXmlTranslationCheckBoxClick(this);
 	 frame->ConnectButtonClick(this);
 	}
   }
@@ -319,6 +320,17 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
   if(!frame)
    return_value=2;
 
+  double time_stamp;
+  frame->CaptureThread->ReadSourceSafe(TempUBitmap,time_stamp,false);
+  TempUBitmap>>Bitmap;
+  MemStream->Clear();
+  Bitmap->SaveToStream(MemStream);
+  MemStream->Position=0;
+  binary_data.resize(1);
+  binary_data[0].resize(MemStream->Size);
+  if(binary_data[0].size()>0)
+   MemStream->ReadBuffer(&binary_data[0][0],binary_data[0].size());
+
   return_value=0;
 #else
    return_value=1;
@@ -335,7 +347,7 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
 }
 
 // Функция, обрабатывающая команды управления сервером
-bool TUServerControlForm::ProcessControlCommand(const UServerCommand &args, std::string &response_type, UParamT &response_data)
+bool TUServerControlForm::ProcessControlCommand(const UServerCommand &args, std::string &response_type, UParamT &response_data, std::vector<RDK::UParamT> &binary_data)
 {
 // UServerCommand::const_iterator I;
  std::string request;
@@ -351,7 +363,7 @@ bool TUServerControlForm::ProcessControlCommand(const UServerCommand &args, std:
   */
  ConvertVectorToString(args.second, request);
  int response_status=0;
- const char* response=ControlRemoteCall(request.c_str(), response_status);
+ const char* response=ControlRemoteCall(request.c_str(), response_status, binary_data);
 
  if(response_status == 2001)
   return false;
@@ -452,13 +464,18 @@ void TUServerControlForm::ConvertVectorToString(const UParamT &source, std::stri
 
 
 /// Отправляет ответ на команду
-void TUServerControlForm::SendCommandResponse(const std::string &client_binding, UParamT &dest)
+void TUServerControlForm::SendCommandResponse(const std::string &client_binding, UParamT &dest, std::vector<RDK::UParamT> &binary_data)
 {
  UTransferPacket packet;
 
- packet.SetNumParams(1);
+ packet.SetNumParams(1+binary_data.size());
  packet.SetParamSize(0,dest.size());
  packet.SetParam(0,dest);
+ for(size_t i=0;i<binary_data.size();i++)
+ {
+  packet.SetParamSize(i+1,binary_data[i].size());
+  packet.SetParam(i+1,binary_data[i]);
+ }
  RDK::UParamT buffer;
  packet.Save(buffer);
 
@@ -508,7 +525,7 @@ void TUServerControlForm::SendCommandError(const std::string &client_binding, in
  result.Save(ControlResponseString);
  UParamT error_response;
  ConvertStringToVector(ControlResponseString, error_response);
- SendCommandResponse(client_binding, error_response);
+ SendCommandResponse(client_binding, error_response, BinaryResponse);
 }
 
 
@@ -742,6 +759,7 @@ int TUServerControlForm::SetNumChannels(int value)
 	 frame->XmlComponentNameLabeledEdit->Text=IdTcpResultBroadcasterForm->GetBroadcasterFrame(0)->XmlComponentNameLabeledEdit->Text;
 	 frame->XmlComponentStateNameLabeledEdit->Text=IdTcpResultBroadcasterForm->GetBroadcasterFrame(0)->XmlComponentStateNameLabeledEdit->Text;
 	 frame->EnableXmlTranslationCheckBox->Checked=IdTcpResultBroadcasterForm->GetBroadcasterFrame(0)->EnableXmlTranslationCheckBox->Checked;
+	 frame->EnableXmlTranslationCheckBoxClick(this);
 	}
    }
    IdTcpResultBroadcasterForm->UpdateInterface();
@@ -774,6 +792,7 @@ int TUServerControlForm::SetNumChannels(int value)
 	 frame->XmlComponentNameLabeledEdit->Text=GeViScopeResultBroadcasterForm->GetBroadcasterFrame(0)->XmlComponentNameLabeledEdit->Text;
 	 frame->XmlComponentStateNameLabeledEdit->Text=GeViScopeResultBroadcasterForm->GetBroadcasterFrame(0)->XmlComponentStateNameLabeledEdit->Text;
 	 frame->EnableXmlTranslationCheckBox->Checked=GeViScopeResultBroadcasterForm->GetBroadcasterFrame(0)->EnableXmlTranslationCheckBox->Checked;
+	 frame->EnableXmlTranslationCheckBoxClick(this);
 	}
    }
    GeViScopeResultBroadcasterForm->UpdateInterface();
@@ -1160,7 +1179,8 @@ try {
   CommandQueue.pop_back();
   SetEvent(CommandQueueUnlockEvent);
 
-  bool is_processed=ProcessControlCommand(CurrentProcessedCommand, ResponseType, Response);
+  BinaryResponse.resize(0);
+  bool is_processed=ProcessControlCommand(CurrentProcessedCommand, ResponseType, Response, BinaryResponse);
 
   if(!is_processed)
    is_processed=ProcessRPCCommand(CurrentProcessedCommand, ResponseType, Response);
@@ -1175,7 +1195,7 @@ try {
   if(CommandResponseEncoder)
   {
    CommandResponseEncoder(ResponseType, Response, EncodedResponse);
-   SendCommandResponse(CurrentProcessedCommand.first, EncodedResponse);
+   SendCommandResponse(CurrentProcessedCommand.first, EncodedResponse, BinaryResponse);
   }
   else
   {

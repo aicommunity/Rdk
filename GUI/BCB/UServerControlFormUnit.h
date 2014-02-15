@@ -153,6 +153,10 @@ UServerCommand DecodedRequest;
 /// Ответ
 RDK::UParamT Response;
 
+/// Дополнительные бинарные данные ответа
+std::vector<RDK::UParamT> BinaryResponse;
+
+
 /// Упакованный для отправки ответ
 RDK::UParamT EncodedResponse;
 
@@ -194,14 +198,14 @@ TThreadList *Clients;
 TCriticalSection* CriticalSection;
 
 
-const char* ControlRemoteCall(const char *request, int &return_value);
+const char* ControlRemoteCall(const char *request, int &return_value, std::vector<RDK::UParamT> &binary_data);
 
 //const char* PtzRemoteCall(const char *request, int &return_value);
 
 // Функция, обрабатывающая команды управления сервером
 // Возвращает true если команда была найдена и обработана
 //bool ProcessControlCommand(const std::string &cmd_name, UServerCommand &args, std::string &response_type, UParamT &response_data);
-bool ProcessControlCommand(const UServerCommand &args, std::string &response_type, RDK::UParamT &response_data);
+bool ProcessControlCommand(const UServerCommand &args, std::string &response_type, RDK::UParamT &response_data, std::vector<RDK::UParamT> &binary_data);
 
 // Функция, обрабатывающая команды удаленного вызова процедур
 // Возвращает true если команда была найдена и обработана
@@ -223,7 +227,7 @@ void ConvertVectorToString(const RDK::UParamT &source, std::string &dest);
 //int DecodeParamAsInteger(const std::string &param_name, const UServerCommand &args, int &value);
 
 /// Отправляет ответ на команду
-void SendCommandResponse(const std::string &client_binding, RDK::UParamT &dest);
+void SendCommandResponse(const std::string &client_binding, RDK::UParamT &dest, std::vector<RDK::UParamT> &binary_data);
 
 /// Отправляет сообщение об ошибке в ответ на команду
 /// 0 - неизвестная ошибка
