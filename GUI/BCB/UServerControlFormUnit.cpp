@@ -21,6 +21,9 @@
 #include "rdk_rpc.cpp"
 #include "TUBitmap.h"
 //#include "../../Core/Graphics/Libraries/Hardware/PtzRpc.cpp"
+#ifdef DVA
+#include "TGeViScopeResultBroadcasterFormUnit.h"
+#endif
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "TUHttpServerUnit"
@@ -146,12 +149,33 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
   return_value=1;
 
   result.WriteString("Mode",RDK::sntoa(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GetMode()));
+  result.SelectNodeForce("Data");
+  result.WriteString("Mode",RDK::sntoa(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GetMode()));
   if(GetChannelVideoSource(engine_index) == 3)
   {
    result.WriteString("IPCameraUrl",AnsiString(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->IPCameraUrlEdit->Text).c_str());
    result.WriteString("IPCameraUsername",AnsiString(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->IPCameraUserNameEdit->Text).c_str());
    result.WriteString("IPCameraPassword",AnsiString(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->IPCameraUserPasswordEdit->Text).c_str());
   }
+#ifdef DVA
+  else
+  if(GetChannelVideoSource(engine_index) == 7)
+  {
+   result.WriteString("ServerUrl",AnsiString(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GeViCameraUrlEdit->Text).c_str());
+   result.WriteString("Username",AnsiString(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GeViCameraUserNameEdit->Text).c_str());
+   result.WriteString("Password",AnsiString(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GeViCameraUserPasswordEdit->Text).c_str());
+   result.WriteString("MediaChannel",AnsiString(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GeViCameraMediaChannelEdit->Text).c_str());
+   result.WriteString("Fps",AnsiString(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GeViFPSLabeledEdit->Text).c_str());
+   result.SelectNodeForce("GeViAvaliableMediaChannels");
+   std::vector<int> media_channels;
+   media_channels.resize(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GeViComboBox->Items->Count);
+   for(int i=0;i<frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GeViComboBox->Items->Count;i++)
+	media_channels[i]=StrToInt(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GeViComboBox->Items->Strings[i]);
+   result<<media_channels;
+   result.SelectUp();
+  }
+#endif
+  result.SelectUp();
   return_value=0;
 #else
   return_value=1;
@@ -160,8 +184,92 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
  else
  if(cmd == "SetChannelVideoSource")
  {
+#ifdef RDK_VIDEO
+  TVideoOutputFrame *frame=VideoOutputForm->GetVideoOutputFrame(engine_index);
+  if(!frame)
+   return_value=1;
   int mode=xml.ReadInteger("Mode",5);
-  return_value=SetChannelVideoSource(engine_index,mode);
+  if(!xml.SelectNode("Data"))
+  {
+   return_value=1;
+  }
+  else
+  {
+   mode=xml.ReadInteger("Mode",mode);
+#ifdef DVA
+   if(mode == 7)
+   {
+	frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GeViCameraUrlEdit->Text=xml.ReadString("ServerUrl","").c_str();
+	frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GeViCameraUserNameEdit->Text=xml.ReadString("Username","").c_str();
+	frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GeViCameraUserPasswordEdit->Text=xml.ReadString("Password","").c_str();
+	frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GeViCameraMediaChannelEdit->Text=xml.ReadString("MediaChannel","").c_str();
+	frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GeViFPSLabeledEdit->Text=xml.ReadString("Fps","").c_str();
+   }
+#endif
+
+   xml.SelectUp();
+   return_value=SetChannelVideoSource(engine_index,mode);
+  }
+#endif
+ }
+ else
+ if(cmd == "GetChannelBroacaster")
+ {
+  int type=xml.ReadInteger("BroadcasterType",0);
+  result.SelectNodeForce("Data");
+#ifdef DVA
+  if(type == 1000)
+  {
+	TGeViScopeResultBroadcasterFrame *frame=GeViScopeResultBroadcasterForm->GetBroadcasterFrame(engine_index);
+	if(frame)
+	{
+	 result.WriteString("ChannelIndex",AnsiString(frame->ChannelIndexLabeledEdit->Text).c_str());
+	 result.WriteString("ServerUrl",AnsiString(frame->ServerAddressLabeledEdit->Text).c_str());
+	 result.WriteString("Username",AnsiString(frame->UsernameLabeledEdit->Text).c_str());
+	 result.WriteString("Password",AnsiString(frame->PasswordLabeledEdit->Text).c_str());
+	 result.WriteString("MediaChannel",AnsiString(frame->MediaChannelLabeledEdit->Text).c_str());
+	 result.WriteString("XmlComponentName",AnsiString(frame->XmlComponentNameLabeledEdit->Text).c_str());
+	 result.WriteString("XmlComponentStateName",AnsiString(frame->XmlComponentStateNameLabeledEdit->Text).c_str());
+	 result.WriteBool("EnableXmlTranslationFlag",frame->EnableXmlTranslationCheckBox->Checked);
+	}
+  }
+#endif
+  result.SelectUp();
+  return_value=0;
+ }
+ else
+ if(cmd == "SetChannelBroadcaster")
+ {
+  int type=xml.ReadInteger("BroadcasterType",0);
+  result.WriteInteger("BroadcasterType",type);
+  if(!xml.SelectNode("Data"))
+  {
+   return_value=1;
+  }
+  else
+  {
+#ifdef DVA
+  if(type == 1000)
+  {
+	TGeViScopeResultBroadcasterFrame *frame=GeViScopeResultBroadcasterForm->GetBroadcasterFrame(engine_index);
+	if(frame)
+	{
+	 frame->DisconnectButtonClick(this);
+	 frame->ChannelIndexLabeledEdit->Text=xml.ReadString("ChannelIndex","0").c_str();
+	 frame->ServerAddressLabeledEdit->Text=xml.ReadString("ServerUrl","").c_str();
+	 frame->UsernameLabeledEdit->Text=xml.ReadString("Username","").c_str();
+	 frame->PasswordLabeledEdit->Text=xml.ReadString("Password","").c_str();
+	 frame->MediaChannelLabeledEdit->Text=xml.ReadString("MediaChannel","0").c_str();
+	 frame->XmlComponentNameLabeledEdit->Text=xml.ReadString("XmlComponentName","").c_str();
+	 frame->XmlComponentStateNameLabeledEdit->Text=xml.ReadString("XmlComponentStateName","").c_str();
+	 frame->EnableXmlTranslationCheckBox->Checked=xml.ReadBool("EnableXmlTranslationFlag",true);
+	 frame->ConnectButtonClick(this);
+	}
+  }
+#endif
+   result.SelectUp();
+  }
+  return_value=0;
  }
  else
  if(cmd == "ResetChannel")
@@ -201,6 +309,20 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
   {
    return_value=LoadProject(engine_index,file_name);
   }
+ }
+ else
+ if(cmd == "ReadImageFromVideoSource")
+ {
+#ifdef RDK_VIDEO
+  int video_source_index=engine_index;
+  TVideoOutputFrame *frame=VideoOutputForm->GetVideoOutputFrame(engine_index);
+  if(!frame)
+   return_value=2;
+
+  return_value=0;
+#else
+   return_value=1;
+#endif
  }
  else
   return_value=2001;
@@ -632,6 +754,37 @@ int TUServerControlForm::SetNumChannels(int value)
    }
   }
  }
+#endif
+
+#ifdef DVA
+  if(GeViScopeResultBroadcasterForm->GetNumBroadcasters()<value)
+  {
+   for(int i=GeViScopeResultBroadcasterForm->GetNumBroadcasters();i<value;i++)
+   {
+	GeViScopeResultBroadcasterForm->AddBroadcaster();
+
+	TGeViScopeResultBroadcasterFrame *frame=GeViScopeResultBroadcasterForm->GetBroadcasterFrame(i);
+	if(frame)
+	{
+	 frame->ChannelIndexLabeledEdit->Text=IntToStr(i);
+	 frame->ServerAddressLabeledEdit->Text=GeViScopeResultBroadcasterForm->GetBroadcasterFrame(0)->ServerAddressLabeledEdit->Text;
+	 frame->UsernameLabeledEdit->Text=GeViScopeResultBroadcasterForm->GetBroadcasterFrame(0)->UsernameLabeledEdit->Text;
+	 frame->PasswordLabeledEdit->Text=GeViScopeResultBroadcasterForm->GetBroadcasterFrame(0)->PasswordLabeledEdit->Text;
+	 frame->MediaChannelLabeledEdit->Text=GeViScopeResultBroadcasterForm->GetBroadcasterFrame(0)->MediaChannelLabeledEdit->Text;
+	 frame->XmlComponentNameLabeledEdit->Text=GeViScopeResultBroadcasterForm->GetBroadcasterFrame(0)->XmlComponentNameLabeledEdit->Text;
+	 frame->XmlComponentStateNameLabeledEdit->Text=GeViScopeResultBroadcasterForm->GetBroadcasterFrame(0)->XmlComponentStateNameLabeledEdit->Text;
+	 frame->EnableXmlTranslationCheckBox->Checked=GeViScopeResultBroadcasterForm->GetBroadcasterFrame(0)->EnableXmlTranslationCheckBox->Checked;
+	}
+   }
+   GeViScopeResultBroadcasterForm->UpdateInterface();
+  }
+  else
+  {
+   while(GeViScopeResultBroadcasterForm->GetNumBroadcasters()>value)
+   {
+	GeViScopeResultBroadcasterForm->DelBroadcaster(GeViScopeResultBroadcasterForm->GetNumBroadcasters()-1);
+   }
+  }
 #endif
 
  ChannelNames.resize(value);

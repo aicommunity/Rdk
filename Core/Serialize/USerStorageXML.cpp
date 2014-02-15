@@ -70,9 +70,10 @@ bool USerStorageXML::Load(const std::string &str, const std::string &root)
  return true;
 }
 
-bool USerStorageXML::LoadToNode(const std::string &str, const std::string &root)
+bool USerStorageXML::LoadToNode(const std::string &str, const std::string &root, bool node_clear)
 {
- DelNodeInternalContent();
+ if(node_clear)
+  DelNodeInternalContent();
  CurrentNode.addChild(XMLNode::parseString(widen(str,Locale,WBuffer).c_str(),widen(root,Locale,WBuffer2).c_str()));
  if(CurrentNode.isEmpty())
   return false;
@@ -80,9 +81,10 @@ bool USerStorageXML::LoadToNode(const std::string &str, const std::string &root)
  return true;
 }
 
-bool USerStorageXML::LoadToNode(USerStorageXML &node)
+bool USerStorageXML::LoadToNode(USerStorageXML &node, bool node_clear)
 {
- DelNodeInternalContent();
+ if(node_clear)
+  DelNodeInternalContent();
 // CurrentNode.deleteNodeContent();
  CurrentNode.addChild(node.RootNode);
  return true;
