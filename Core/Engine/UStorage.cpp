@@ -418,6 +418,7 @@ UEPtr<UComponent> UStorage::TakeObject(const UId &classid, const UEPtr<UComponen
 
  // Если свободного объекта не нашли
  UEPtr<UContainer> obj=classtemplate->New();
+ PushObject(classid,obj);
  obj->Default();
 
  // В случае, если объект создается непосредственно как копия из хранилища...
@@ -428,7 +429,6 @@ UEPtr<UComponent> UStorage::TakeObject(const UId &classid, const UEPtr<UComponen
   // объекта
   dynamic_pointer_cast<const UContainer>(prototype)->Copy(obj,this);
 
- PushObject(classid,obj);
  obj->SetActivity(true);
 
  return static_pointer_cast<UComponent>(obj);

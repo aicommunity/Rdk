@@ -179,6 +179,10 @@ const USerStorageXML& GetClassesStructure(void) const;
 bool SetClassesStructure(const USerStorageXML& xml);
 bool SetClassesStructure(const std::string &buffer);
 
+/// Добавляет в описание компонент новый компонент
+bool AddClassStructure(const std::string &buffer);
+bool AddClassStructure(const USerStorageXML& xml);
+
 /// Обновляет структуру классов в соответствии с хранилищем
 bool UpdateClassesStructure(void);
 // --------------------------

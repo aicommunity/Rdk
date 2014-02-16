@@ -345,6 +345,18 @@ bool URuntimeLibrary::SetClassesStructure(const std::string &buffer)
  return true;
 }
 
+/// Добавляет в описание компонент новый компонент
+bool URuntimeLibrary::AddClassStructure(const std::string &buffer)
+{
+ return true;
+}
+
+bool URuntimeLibrary::AddClassStructure(const USerStorageXML& xml)
+{
+ return true;
+}
+
+
 /// Обновляет структуру классов в соответствии с хранилищем
 bool URuntimeLibrary::UpdateClassesStructure(void)
 {

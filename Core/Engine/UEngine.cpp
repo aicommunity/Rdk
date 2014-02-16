@@ -845,7 +845,7 @@ int UEngine::Storage_CreateClass(const char* stringid, const char *class_name, c
  try
  {
   UEPtr<UContainer> sample=FindComponent(stringid);
-  UEPtr<URuntimeLibrary> library=dynamic_pointer_cast<URuntimeLibrary>(Storage->FindCollection(collection_name));
+  UEPtr<URuntimeLibrary> library=dynamic_pointer_cast<URuntimeLibrary>(Storage->GetCollection(collection_name));
 
   if(!sample)
    return 74616;
