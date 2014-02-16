@@ -3,9 +3,9 @@
 
 #include <vector>
 
-#define MAX_PACKET_SIZE 1524000
+#define MAX_PACKET_SIZE 152400000
 #define MAX_NUM_PARAMS 20
-#define MAX_PARAM_SIZE 1024000
+#define MAX_PARAM_SIZE 102400000
 
 namespace RDK {
 
@@ -195,7 +195,7 @@ const UTransferPacket& GetLastPacket(void) const;
 void DelLastPacket(void);
 
 /// ¬озвращает ссылку на список пакетов
-const std::list<UTransferPacket>& GetPacketList(void) const;
+std::list<UTransferPacket>& GetPacketList(void);
 
 /// ¬озвращает число пакетов в очереди
 int GetNumPackets(void) const;

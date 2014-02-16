@@ -322,6 +322,7 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
 
   double time_stamp;
   frame->CaptureThread->ReadSourceSafe(TempUBitmap,time_stamp,false);
+
   TempUBitmap>>Bitmap;
   MemStream->Clear();
   Bitmap->SaveToStream(MemStream);
@@ -331,6 +332,14 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
   if(binary_data[0].size()>0)
    MemStream->ReadBuffer(&binary_data[0][0],binary_data[0].size());
 
+/*
+  stringstream sstream;
+  sstream<<TempUBitmap;
+  binary_data.resize(1);
+  binary_data[0].resize(sstream.str().size());
+  if(binary_data[0].size()>0)
+   memcpy(&binary_data[0][0],&sstream.str()[0],binary_data[0].size());
+   */
   return_value=0;
 #else
    return_value=1;

@@ -432,7 +432,7 @@ void UTransferReader::DelLastPacket(void)
 }
 
 /// ¬озвращает ссылку на список пакетов
-const std::list<UTransferPacket>& UTransferReader::GetPacketList(void) const
+std::list<UTransferPacket>& UTransferReader::GetPacketList(void)
 {
  return PacketList;
 }
