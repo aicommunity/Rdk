@@ -403,18 +403,19 @@ bool TUEngineMonitorFrame::SendMetadata(void)
 }
 
 
-//---------------------------------------------------------------------------
-
-void __fastcall TUEngineMonitorFrame::Start1Click(TObject *Sender)
+/// Запускает аналитику выбранного канала, или всех, если channel_index == -1
+void TUEngineMonitorFrame::StartChannel(int channel_index)
 {
+ if(channel_index>=GetNumChannels())
+  return;
  UShowProgressBarForm->SetBarHeader(1,"Starting Channel Calculation...");
- UShowProgressBarForm->ResetBarStatus(1, 1, int(ThreadChannels.size()));
+ UShowProgressBarForm->ResetBarStatus(1, 1, (channel_index<0)?int(ThreadChannels.size()):1);
 
  switch(ChannelsMode)
  {
  case 0:
   if(CalculateMode[GetSelectedEngineIndex()] == 1)
-   Reset1Click(Sender);
+   Reset1Click(this);
   TUVisualControllerFrame::CalculationModeFlag=true;
   TUVisualControllerForm::CalculationModeFlag=true;
   Timer->Interval=1;
@@ -428,28 +429,43 @@ void __fastcall TUEngineMonitorFrame::Start1Click(TObject *Sender)
   TUVisualControllerForm::CalculationModeFlag=true;
   Timer->Interval=30;
   Timer->Enabled=true;
-  for(size_t i=0;i<ThreadChannels.size();i++)
+  if(channel_index<0)
   {
-   if(ThreadChannels[i])
+   for(size_t i=0;i<ThreadChannels.size();i++)
    {
-    SetEvent(ThreadChannels[i]->CalcStarted);
-	WaitForSingleObject(ThreadChannels[i]->CalculationNotInProgress,1000);
+	if(ThreadChannels[i])
+	{
+		SetEvent(ThreadChannels[i]->CalcStarted);
+		WaitForSingleObject(ThreadChannels[i]->CalculationNotInProgress,1000);
+	}
+	UShowProgressBarForm->IncBarStatus(1);
    }
-   UShowProgressBarForm->IncBarStatus(1);
+  }
+  else
+  {
+	if(ThreadChannels[channel_index])
+	{
+		SetEvent(ThreadChannels[channel_index]->CalcStarted);
+		WaitForSingleObject(ThreadChannels[channel_index]->CalculationNotInProgress,1000);
+	}
+	UShowProgressBarForm->IncBarStatus(1);
   }
  break;
  }
 
 }
-//---------------------------------------------------------------------------
 
-void __fastcall TUEngineMonitorFrame::Pause1Click(TObject *Sender)
+/// Останавливает аналитику выбранного канала, или всех, если channel_index == -1
+void TUEngineMonitorFrame::PauseChannel(int channel_index)
 {
+ if(channel_index>=GetNumChannels())
+  return;
+
  if(Timer->Enabled == false)
   return;
 
  UShowProgressBarForm->SetBarHeader(1,"Stopping Channel Calculation...");
- UShowProgressBarForm->ResetBarStatus(1, 1, int(ThreadChannels.size()));
+ UShowProgressBarForm->ResetBarStatus(1, 1, (channel_index<0)?int(ThreadChannels.size()):1);
 
  switch(ChannelsMode)
  {
@@ -463,43 +479,91 @@ void __fastcall TUEngineMonitorFrame::Pause1Click(TObject *Sender)
   Timer->Enabled=false;
   TUVisualControllerFrame::CalculationModeFlag=false;
   TUVisualControllerForm::CalculationModeFlag=false;
-  for(int i=0;i<GetNumChannels();i++)
+  if(channel_index == -1)
   {
-//   ThreadChannels[i]->Terminate();//Suspend();
-//   ThreadChannels[i]->WaitFor();
-  }
-   //Suspend();
-  for(size_t i=0;i<ThreadChannels.size();i++)
-  {
-   if(ThreadChannels[i])
+   for(size_t i=0;i<ThreadChannels.size();i++)
    {
-    ResetEvent(ThreadChannels[i]->CalcStarted);
-	WaitForSingleObject(ThreadChannels[i]->CalculationNotInProgress,1000);
+	if(ThreadChannels[i])
+	{
+	 ResetEvent(ThreadChannels[i]->CalcStarted);
+	 WaitForSingleObject(ThreadChannels[i]->CalculationNotInProgress,1000);
+	}
+	UShowProgressBarForm->IncBarStatus(1);
    }
-   UShowProgressBarForm->IncBarStatus(1);
+  }
+  else
+  {
+	if(ThreadChannels[channel_index])
+	{
+	 ResetEvent(ThreadChannels[channel_index]->CalcStarted);
+	 WaitForSingleObject(ThreadChannels[channel_index]->CalculationNotInProgress,1000);
+	}
+	UShowProgressBarForm->IncBarStatus(1);
   }
  break;
  }
 
+
+}
+
+/// Сбрасывает аналитику выбранного канала, или всех, если channel_index == -1
+void TUEngineMonitorFrame::ResetChannel(int channel_index)
+{
+ if(channel_index>=GetNumChannels())
+  return;
+
+ if(channel_index == -1)
+ {
+  if(!Model_Check())
+  {
+   RDK::UIVisualControllerStorage::UpdateInterface();
+   return;
+  }
+
+  RDK::UIVisualControllerStorage::BeforeReset();
+  for(int i=0;i<GetNumEngines();i++)
+  {
+   MEnv_Reset(i,0);
+   RealLastCalculationTime[i]=0;
+  }
+  RDK::UIVisualControllerStorage::AfterReset();
+  RDK::UIVisualControllerStorage::UpdateInterface();
+ }
+ else
+ {
+  if(!MModel_Check(channel_index))
+  {
+   RDK::UIVisualControllerStorage::UpdateInterface();
+   return;
+  }
+
+  RDK::UIVisualControllerStorage::BeforeReset();
+  MEnv_Reset(channel_index,0);
+  RealLastCalculationTime[channel_index]=0;
+  RDK::UIVisualControllerStorage::AfterReset();
+  RDK::UIVisualControllerStorage::UpdateInterface();
+ }
+}
+
+
+
+//---------------------------------------------------------------------------
+
+void __fastcall TUEngineMonitorFrame::Start1Click(TObject *Sender)
+{
+ StartChannel(-1);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUEngineMonitorFrame::Pause1Click(TObject *Sender)
+{
+ PauseChannel(-1);
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUEngineMonitorFrame::Reset1Click(TObject *Sender)
 {
- if(!Model_Check())
- {
-  RDK::UIVisualControllerStorage::UpdateInterface();
-  return;
- }
-
- RDK::UIVisualControllerStorage::BeforeReset();
- for(int i=0;i<GetNumEngines();i++)
- {
-  MEnv_Reset(i,0);
-  RealLastCalculationTime[i]=0;
- }
- RDK::UIVisualControllerStorage::AfterReset();
- RDK::UIVisualControllerStorage::UpdateInterface();
+ ResetChannel(-1);
 }
 //---------------------------------------------------------------------------
 

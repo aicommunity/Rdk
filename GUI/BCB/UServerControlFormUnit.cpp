@@ -730,6 +730,7 @@ int TUServerControlForm::SetNumChannels(int value)
   if(!MIsEngineInit(i) || !MModel_Check(i))
   {
    UGEngineControlForm->CloneProject(0, i);
+   MEnv_Reset(i,0);
   }
  }
 
@@ -907,7 +908,7 @@ bool TUServerControlForm::SetChannelName(int channel, const std::string& name)
 /// или всех каналов, если channel_id<0
 int TUServerControlForm::ResetChannel(int channel_id)
 {
- UGEngineControlForm->Reset1Click(this);
+ UGEngineControlForm->ResetChannel(channel_id);
  return 0;
 }
 
@@ -915,7 +916,7 @@ int TUServerControlForm::ResetChannel(int channel_id)
 /// или все каналы, если channel_id<0
 int TUServerControlForm::StartChannel(int channel_id)
 {
- UGEngineControlForm->Start1Click(this);
+ UGEngineControlForm->StartChannel(channel_id);
  return 0;
 }
 
@@ -923,7 +924,7 @@ int TUServerControlForm::StartChannel(int channel_id)
 /// или все каналы, если channel_id<0
 int TUServerControlForm::StopChannel(int channel_id)
 {
- UGEngineControlForm->Pause1Click(this);
+ UGEngineControlForm->PauseChannel(channel_id);
  return 0;
 }
 

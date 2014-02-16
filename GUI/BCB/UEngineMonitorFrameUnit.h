@@ -195,6 +195,14 @@ virtual bool AddMetadata(int channel_index, long long time_stamp);
 /// »нициирует процедуру отправки метаданных всеми зарегистрированными вещател€ми
 virtual bool SendMetadata(void);
 
+/// «апускает аналитику выбранного канала, или всех, если channel_index == -1
+virtual void StartChannel(int channel_index);
+
+/// ќстанавливает аналитику выбранного канала, или всех, если channel_index == -1
+virtual void PauseChannel(int channel_index);
+
+/// —брасывает аналитику выбранного канала, или всех, если channel_index == -1
+virtual void ResetChannel(int channel_index);
 };
 #pragma warn .8130
 //---------------------------------------------------------------------------

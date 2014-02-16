@@ -372,6 +372,18 @@ void LoadProjectsHistory(void);
 /// Сохраняет историю проектов в файл
 void SaveProjectsHistory(void);
 
+/// Запуск отдельного канала
+/// если channel_index == -1 то запускает все каналы
+virtual void StartChannel(int channel_index);
+
+/// Останов отдельного канала
+/// если channel_index == -1 то останавливает все каналы
+virtual void PauseChannel(int channel_index);
+
+/// Сброс отдельного канала
+/// если channel_index == -1 то сбрасывает все каналы
+virtual void ResetChannel(int channel_index);
+
 };
 #pragma warn .8130
 //---------------------------------------------------------------------------

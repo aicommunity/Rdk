@@ -1340,10 +1340,9 @@ void TUGEngineControlForm::SaveProjectsHistory(void)
  history_ini.SaveToFile(AnsiString(opt_name).c_str());
 }
 
-
-//---------------------------------------------------------------------------
-
-void __fastcall TUGEngineControlForm::Start1Click(TObject *Sender)
+/// Запуск отдельного канала
+/// если channel_index == -1 то запускает все каналы
+void TUGEngineControlForm::StartChannel(int channel_index)
 {
  if(!ProjectOpenFlag)
   return;
@@ -1357,16 +1356,17 @@ void __fastcall TUGEngineControlForm::Start1Click(TObject *Sender)
   UShowProgressBarForm->Show();
 
 #ifdef RDK_VIDEO
- VideoOutputForm->Start();
+ VideoOutputForm->Start(channel_index);
 #endif
  UShowProgressBarForm->IncBarStatus(2);
- UEngineMonitorForm->EngineMonitorFrame->Start1Click(Sender);
+ UEngineMonitorForm->EngineMonitorFrame->StartChannel(channel_index);
 
  UShowProgressBarForm->Hide();
 }
-//---------------------------------------------------------------------------
 
-void __fastcall TUGEngineControlForm::Pause1Click(TObject *Sender)
+/// Останов отдельного канала
+/// если channel_index == -1 то останавливает все каналы
+void TUGEngineControlForm::PauseChannel(int channel_index)
 {
  if(!ProjectOpenFlag)
   return;
@@ -1379,12 +1379,39 @@ void __fastcall TUGEngineControlForm::Pause1Click(TObject *Sender)
  if(AppWinState)
   UShowProgressBarForm->Show();
 
- UEngineMonitorForm->EngineMonitorFrame->Pause1Click(Sender);
+ UEngineMonitorForm->EngineMonitorFrame->PauseChannel(channel_index);
  UShowProgressBarForm->IncBarStatus(2);
 #ifdef RDK_VIDEO
- VideoOutputForm->StopOffline();
+ VideoOutputForm->StopOffline(channel_index);
 #endif
  UShowProgressBarForm->Hide();
+}
+
+/// Сброс отдельного канала
+/// если channel_index == -1 то сбрасывает все каналы
+void TUGEngineControlForm::ResetChannel(int channel_index)
+{
+ if(!ProjectOpenFlag)
+  return;
+
+ UEngineMonitorForm->EngineMonitorFrame->ResetChannel(channel_index);
+#ifdef RDK_VIDEO
+ VideoOutputForm->StopOffline(channel_index);
+#endif
+}
+
+
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::Start1Click(TObject *Sender)
+{
+ StartChannel(-1);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::Pause1Click(TObject *Sender)
+{
+ PauseChannel(-1);
 }
 //---------------------------------------------------------------------------
 
@@ -1495,13 +1522,7 @@ void __fastcall TUGEngineControlForm::CaptureVideo1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::Reset1Click(TObject *Sender)
 {
- if(!ProjectOpenFlag)
-  return;
-
- UEngineMonitorForm->EngineMonitorFrame->Reset1Click(Sender);
-#ifdef RDK_VIDEO
- VideoOutputForm->StopOffline();
-#endif
+ ResetChannel(-1);
 }
 //---------------------------------------------------------------------------
 
