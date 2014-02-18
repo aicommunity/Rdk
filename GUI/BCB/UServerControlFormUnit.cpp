@@ -213,6 +213,14 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
 #endif
  }
  else
+ if(cmd == "CheckChannelVideoSourceConnection")
+ {
+   if(CheckChannelVideoSourceConnection(engine_index))
+	result.WriteInteger("State",1);
+   else
+	result.WriteInteger("State",2);
+ }
+ else
  if(cmd == "GetChannelBroacaster")
  {
   int type=xml.ReadInteger("BroadcasterType",0);
@@ -874,6 +882,23 @@ int TUServerControlForm::SetChannelVideoSource(int channel_id, int source_mode)
  return 0;
 #else
  return 1000;
+#endif
+}
+
+
+/// Проверяет подключен ли видеоисточник
+bool TUServerControlForm::CheckChannelVideoSourceConnection(int channel_id)
+{
+#ifdef RDK_VIDEO
+ int num=GetNumChannels();
+
+  TVideoOutputFrame *frame=VideoOutputForm->GetVideoOutputFrame(channel_id);
+  if(!frame)
+   return false;
+
+ return frame->CaptureThread->CheckConnection();
+#else
+ return false;
 #endif
 }
 

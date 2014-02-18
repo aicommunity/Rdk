@@ -275,6 +275,9 @@ int GetChannelVideoSource(int channel_id);
 /// в соответствии с режимами VideoOutputFrame
 int SetChannelVideoSource(int channel_id, int source_mode);
 
+/// Проверяет подключен ли видеоисточник
+bool CheckChannelVideoSourceConnection(int channel_id);
+
 /// Возвращает имя канала
 const std::string GetChannelName(int channel);
 
