@@ -261,14 +261,14 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
 	if(frame)
 	{
 	 frame->DisconnectButtonClick(this);
-	 frame->ChannelIndexLabeledEdit->Text=xml.ReadString("ChannelIndex","0").c_str();
-	 frame->ServerAddressLabeledEdit->Text=xml.ReadString("ServerUrl","").c_str();
-	 frame->UsernameLabeledEdit->Text=xml.ReadString("Username","").c_str();
-	 frame->PasswordLabeledEdit->Text=xml.ReadString("Password","").c_str();
-	 frame->MediaChannelLabeledEdit->Text=xml.ReadString("MediaChannel","0").c_str();
-	 frame->XmlComponentNameLabeledEdit->Text=xml.ReadString("XmlComponentName","").c_str();
-	 frame->XmlComponentStateNameLabeledEdit->Text=xml.ReadString("XmlComponentStateName","").c_str();
-	 frame->EnableXmlTranslationCheckBox->Checked=xml.ReadBool("EnableXmlTranslationFlag",true);
+	 frame->ChannelIndexLabeledEdit->Text=xml.ReadString("ChannelIndex",AnsiString(frame->ChannelIndexLabeledEdit->Text).c_str()).c_str();
+	 frame->ServerAddressLabeledEdit->Text=xml.ReadString("ServerUrl",AnsiString(frame->ServerAddressLabeledEdit->Text).c_str()).c_str();
+	 frame->UsernameLabeledEdit->Text=xml.ReadString("Username",AnsiString(frame->UsernameLabeledEdit->Text).c_str()).c_str();
+	 frame->PasswordLabeledEdit->Text=xml.ReadString("Password",AnsiString(frame->PasswordLabeledEdit->Text).c_str()).c_str();
+	 frame->MediaChannelLabeledEdit->Text=xml.ReadString("MediaChannel",AnsiString(frame->MediaChannelLabeledEdit->Text).c_str()).c_str();
+	 frame->XmlComponentNameLabeledEdit->Text=xml.ReadString("XmlComponentName",AnsiString(frame->XmlComponentNameLabeledEdit->Text).c_str()).c_str();
+	 frame->XmlComponentStateNameLabeledEdit->Text=xml.ReadString("XmlComponentStateName",AnsiString(frame->XmlComponentStateNameLabeledEdit->Text).c_str()).c_str();
+	 frame->EnableXmlTranslationCheckBox->Checked=xml.ReadBool("EnableXmlTranslationFlag",frame->EnableXmlTranslationCheckBox->Checked);
 	 frame->EnableXmlTranslationCheckBoxClick(this);
 	 frame->ConnectButtonClick(this);
 	}
@@ -772,6 +772,7 @@ int TUServerControlForm::SetNumChannels(int value)
 	VideoOutputForm->AddSource();
 	VideoOutputForm->GetVideoOutputFrame(i)->MyVideoGrabberControlForm->VideoGrabberControlFrame->PipeUidEdit->Text=(std::string("USharedMemory")+RDK::sntoa(i)).c_str();
 	VideoOutputForm->GetVideoOutputFrame(i)->MyVideoGrabberControlForm->VideoGrabberControlFrame->PipeIndexEdit->Text=IntToStr(i);
+    VideoOutputForm->GetVideoOutputFrame(i)->MyVideoGrabberControlForm->CloseButtonClick(this);
    }
    VideoOutputForm->UpdateInterface();
   }
