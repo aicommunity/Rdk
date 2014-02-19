@@ -128,6 +128,8 @@ void __fastcall TUGEngineControlForm::FormShow(TObject *Sender)
  ApplicationInitialized=true;
 // HideTimer->Enabled=true;
 
+ UServerControlForm->SetServerBinding(ServerInterfaceAddress, ServerInterfacePort);
+
  UDrawEngineFrame1->ComponentsListFrame=UComponentsListFrame1;
  UComponentsListFrame1->DrawEngineFrame=UDrawEngineFrame1;
  UEngineMonitorForm->Parent=LogsTabSheet;
@@ -1755,6 +1757,9 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  ProgramName=app_ini->ReadString("General","ProgramName","Server");
  LastProjectsListMaxSize=app_ini->ReadInteger("General","LastProjectsListMaxSize",10);
 
+ ServerInterfaceAddress=AnsiString(app_ini->ReadString("Server","BindAddress","127.0.0.1")).c_str();
+ ServerInterfacePort=app_ini->ReadInteger("Server","BindPort",45045);
+
  TrayIcon->Hint=ProgramName;
 
  // Грузим шрифты
@@ -2058,6 +2063,18 @@ void __fastcall TUGEngineControlForm::Reset2Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::FormDestroy(TObject *Sender)
 {
+ // Грузим настройки приложения
+ String opt_name=ExtractFileName(Application->ExeName);
+ if(opt_name.Length()>4)
+ opt_name=opt_name.SubString(0,opt_name.Length()-4);
+ TMemIniFile *app_ini=new TMemIniFile(opt_name+".ini");
+
+ app_ini->WriteString("Server","BindAddress",ServerInterfaceAddress.c_str());
+ app_ini->WriteInteger("Server","BindPort",ServerInterfacePort);
+
+ app_ini->UpdateFile();
+ delete app_ini;
+
  System::Set8087CW(Saved8087CW);
 }
 //---------------------------------------------------------------------------

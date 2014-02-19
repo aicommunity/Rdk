@@ -213,6 +213,12 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
 #endif
  }
  else
+ if(cmd == "CheckChannelVideoSourceConnection")
+ {
+	result.WriteInteger("State",CheckChannelVideoSourceConnection(engine_index));
+	return_value=0;
+ }
+ else
  if(cmd == "GetChannelBroacaster")
  {
   int type=xml.ReadInteger("BroadcasterType",0);
@@ -537,6 +543,33 @@ void TUServerControlForm::SendCommandError(const std::string &client_binding, in
  SendCommandResponse(client_binding, error_response, BinaryResponse);
 }
 
+/// Устанавливает параметры сервера
+bool TUServerControlForm::SetServerBinding(const std::string &interface_address, int port)
+{
+ if(interface_address == GetServerBindingInterfaceAddress() &&
+	port == GetServerBindingPort())
+  return true;
+
+ IdTCPServer->Active=false;
+ IdTCPServer->Bindings->Items[0]->Port=port;
+ IdTCPServer->Bindings->Items[0]->IP=interface_address.c_str();
+ if(AutoStartFlag)
+  ServerStartButtonClick(this);
+ return true;
+}
+
+/// Возвращает параметры сервера
+std::string TUServerControlForm::GetServerBindingInterfaceAddress(void) const
+{
+ return AnsiString(IdTCPServer->Bindings->Items[0]->IP).c_str();
+}
+
+int TUServerControlForm::GetServerBindingPort(void) const
+{
+ return IdTCPServer->Bindings->Items[0]->Port;
+}
+
+
 
 // -----------------------------
 // Методы управления визуальным интерфейсом
@@ -651,10 +684,8 @@ void TUServerControlForm::AClearInterface(void)
 void TUServerControlForm::ASaveParameters(RDK::USerStorageXML &xml)
 {
  xml.WriteInteger("AverageIterations",AverageIterations);
-// xml.WriteInteger("ServerControlPort", UHttpServerFrame->GetListenPort());
-// xml.WriteInteger("ServerControlPort", StrToInt(TcpServer->LocalPort));
- xml.WriteInteger("ServerControlPort", StrToInt(IdTCPServer->Bindings->Items[0]->Port));
- xml.WriteString("ServerControlAddress", AnsiString(IdTCPServer->Bindings->Items[0]->IP).c_str());
+// xml.WriteInteger("ServerControlPort", GetServerBindingPort());
+// xml.WriteString("ServerControlAddress", GetServerBindingInterfaceAddress());
 
  xml.WriteInteger("NumberOfChannels",GetNumChannels());
  xml.WriteInteger("AutoStartFlag",AutoStartFlag);
@@ -674,10 +705,7 @@ void TUServerControlForm::ASaveParameters(RDK::USerStorageXML &xml)
 void TUServerControlForm::ALoadParameters(RDK::USerStorageXML &xml)
 {
  AverageIterations=xml.ReadInteger("AverageIterations",AverageIterations);
-// UHttpServerFrame->SetListenPort(xml.ReadInteger("ServerControlPort",80));
-// TcpServer->LocalPort=xml.ReadInteger("ServerControlPort",80);
- IdTCPServer->Bindings->Items[0]->Port=xml.ReadInteger("ServerControlPort",80);
- IdTCPServer->Bindings->Items[0]->IP=xml.ReadString("ServerControlAddress", "127.0.0.1").c_str();
+// SetServerBinding(xml.ReadString("ServerControlAddress", "127.0.0.1"),xml.ReadInteger("ServerControlPort",80));
 
  MetaComponentName=xml.ReadString("MetadataComponentName","");
  MetaComponentStateName=xml.ReadString("MetadataComponentStateName","");
@@ -874,6 +902,23 @@ int TUServerControlForm::SetChannelVideoSource(int channel_id, int source_mode)
  return 0;
 #else
  return 1000;
+#endif
+}
+
+
+/// Проверяет подключен ли видеоисточник
+int TUServerControlForm::CheckChannelVideoSourceConnection(int channel_id)
+{
+#ifdef RDK_VIDEO
+ int num=GetNumChannels();
+
+  TVideoOutputFrame *frame=VideoOutputForm->GetVideoOutputFrame(channel_id);
+  if(!frame)
+   return 0;
+
+ return frame->CaptureThread->CheckConnection();
+#else
+ return 0;
 #endif
 }
 
@@ -1127,14 +1172,9 @@ void __fastcall TUServerControlForm::ApplyOptionsButtonClick(TObject *Sender)
 
  int new_port=StrToInt(ServerControlPortLabeledEdit->Text);
  String new_address=BindingAddressLabeledEdit->Text;
- if(StrToInt(IdTCPServer->Bindings->Items[0]->Port) != new_port || IdTCPServer->Bindings->Items[0]->IP != new_address)
- {
-  IdTCPServer->Active=false;
-  IdTCPServer->Bindings->Items[0]->Port=new_port;
-  IdTCPServer->Bindings->Items[0]->IP=new_address;
-  if(AutoStartFlag)
-   ServerStartButtonClick(Sender);
- }
+ UGEngineControlForm->ServerInterfaceAddress=AnsiString(new_address).c_str();
+ UGEngineControlForm->ServerInterfacePort=new_port;
+ SetServerBinding(UGEngineControlForm->ServerInterfaceAddress,UGEngineControlForm->ServerInterfacePort);
 
  ServerName=AnsiString(ServerNameLabeledEdit->Text).c_str();
  ServerId=AnsiString(ServerIdLabeledEdit->Text).c_str();
