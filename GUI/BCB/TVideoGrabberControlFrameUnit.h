@@ -76,7 +76,6 @@ __published:    // IDE-managed Components
 	TEdit *IPCameraControlPostfixEdit;
 	TTabSheet *HttpServerTabSheet;
 	TEdit *ListerPortEdit;
-	TLabel *Label9;
 	TLabel *Label10;
 	TTabSheet *SharedMemoryTabSheet;
 	TEdit *PipeIndexEdit;

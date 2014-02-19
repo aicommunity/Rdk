@@ -110,6 +110,22 @@ bool TVideoCaptureThread::SetFrame(TVideoOutputFrame * frame)
  Frame=frame;
  return true;
 }
+
+/// Сохранение настроек в xml
+bool TVideoCaptureThread::SaveParameters(RDK::USerStorageXML &xml)
+{
+ if(!ASaveParameters(xml))
+  return false;
+ return true;
+}
+
+/// Загрузка и применение настроек из xml
+bool TVideoCaptureThread::LoadParameters(RDK::USerStorageXML &xml)
+{
+ if(!ALoadParameters(xml))
+  return false;
+ return true;
+}
 // --------------------------
 
 // --------------------------
@@ -415,6 +431,29 @@ void __fastcall TVideoCaptureThreadBmp::Calculate(void)
  SetLastTimeStampSafe(time_stamp);
 }
 // --------------------------
+
+// --------------------------
+// Управление данными
+// --------------------------
+/// Создает копию этого потока
+RDK::UEPtr<TVideoCaptureThread> TVideoCaptureThreadBmp::New(TVideoOutputFrame *frame, bool create_suspended)
+{
+ return new TVideoCaptureThreadBmp(frame,create_suspended);
+}
+
+/// Сохранение настроек в xml
+bool TVideoCaptureThreadBmp::ASaveParameters(RDK::USerStorageXML &xml)
+{
+ return true;
+}
+
+/// Загрузка и применение настроек из xml
+bool TVideoCaptureThreadBmp::ALoadParameters(RDK::USerStorageXML &xml)
+{
+ return true;
+}
+// --------------------------
+
 //---------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------
@@ -523,6 +562,7 @@ bool TVideoCaptureThreadBmpSequence::SetFps(double fps)
 void __fastcall TVideoCaptureThreadBmpSequence::Start(void)
 {
  CurrentTimeStamp=0;
+ SetSyncMode(true);
  TVideoCaptureThread::Start();
 }
 
@@ -612,6 +652,30 @@ bool TVideoCaptureThreadBmpSequence::SetLastTimeStampSafe(double time_stamp)
 }
 
 // --------------------------
+
+// --------------------------
+// Управление данными
+// --------------------------
+/// Создает копию этого потока
+RDK::UEPtr<TVideoCaptureThread> TVideoCaptureThreadBmpSequence::New(TVideoOutputFrame *frame, bool create_suspended)
+{
+ return new TVideoCaptureThreadBmpSequence(frame,create_suspended);
+}
+
+/// Сохранение настроек в xml
+bool TVideoCaptureThreadBmpSequence::ASaveParameters(RDK::USerStorageXML &xml)
+{
+ return true;
+}
+
+/// Загрузка и применение настроек из xml
+bool TVideoCaptureThreadBmpSequence::ALoadParameters(RDK::USerStorageXML &xml)
+{
+ return true;
+}
+// --------------------------
+
+
 //---------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------
@@ -751,6 +815,30 @@ void __fastcall TVideoCaptureThreadHttpServer::IdHTTPServerCommandGet(TIdContext
 }
 
 // --------------------------
+
+// --------------------------
+// Управление данными
+// --------------------------
+/// Создает копию этого потока
+RDK::UEPtr<TVideoCaptureThread> TVideoCaptureThreadHttpServer::New(TVideoOutputFrame *frame, bool create_suspended)
+{
+ return new TVideoCaptureThreadHttpServer(frame,create_suspended);
+}
+
+/// Сохранение настроек в xml
+bool TVideoCaptureThreadHttpServer::ASaveParameters(RDK::USerStorageXML &xml)
+{
+ return true;
+}
+
+/// Загрузка и применение настроек из xml
+bool TVideoCaptureThreadHttpServer::ALoadParameters(RDK::USerStorageXML &xml)
+{
+ return true;
+}
+// --------------------------
+
+
 //---------------------------------------------------------------------------
 
 // --------------------------
@@ -921,6 +1009,22 @@ bool TVideoCaptureThreadVideoGrabber::SetPosition(long long index)
 }
 // --------------------------
 
+// --------------------------
+// Управление данными
+// --------------------------
+/// Сохранение настроек в xml
+bool TVideoCaptureThreadVideoGrabber::ASaveParameters(RDK::USerStorageXML &xml)
+{
+ return true;
+}
+
+/// Загрузка и применение настроек из xml
+bool TVideoCaptureThreadVideoGrabber::ALoadParameters(RDK::USerStorageXML &xml)
+{
+ return true;
+}
+// --------------------------
+
 //---------------------------------------------------------------------------
 // --------------------------
 // Конструкторы и деструкторы
@@ -1025,6 +1129,34 @@ void __fastcall TVideoCaptureThreadVideoGrabberAvi::AfterCalculate(void)
  }
 }
 // --------------------------
+
+// --------------------------
+// Управление данными
+// --------------------------
+/// Создает копию этого потока
+RDK::UEPtr<TVideoCaptureThread> TVideoCaptureThreadVideoGrabberAvi::New(TVideoOutputFrame *frame, bool create_suspended)
+{
+ return new TVideoCaptureThreadVideoGrabberAvi(frame,create_suspended);
+}
+
+/// Сохранение настроек в xml
+bool TVideoCaptureThreadVideoGrabberAvi::ASaveParameters(RDK::USerStorageXML &xml)
+{
+ if(!ASaveParameters(xml))
+  return false;
+
+ return true;
+}
+
+/// Загрузка и применение настроек из xml
+bool TVideoCaptureThreadVideoGrabberAvi::ALoadParameters(RDK::USerStorageXML &xml)
+{
+ if(!ALoadParameters(xml))
+  return false;
+
+ return true;
+}
+// --------------------------
 //---------------------------------------------------------------------------
 
 // --------------------------
@@ -1111,6 +1243,34 @@ void __fastcall TVideoCaptureThreadVideoGrabberCamera::Stop(void)
 }
 // --------------------------
 
+// --------------------------
+// Управление данными
+// --------------------------
+/// Создает копию этого потока
+RDK::UEPtr<TVideoCaptureThread> TVideoCaptureThreadVideoGrabberCamera::New(TVideoOutputFrame *frame, bool create_suspended)
+{
+ return new TVideoCaptureThreadVideoGrabberCamera(frame,create_suspended);
+}
+
+/// Сохранение настроек в xml
+bool TVideoCaptureThreadVideoGrabberCamera::ASaveParameters(RDK::USerStorageXML &xml)
+{
+ if(!ASaveParameters(xml))
+  return false;
+
+ return true;
+}
+
+/// Загрузка и применение настроек из xml
+bool TVideoCaptureThreadVideoGrabberCamera::ALoadParameters(RDK::USerStorageXML &xml)
+{
+ if(!ALoadParameters(xml))
+  return false;
+
+ return true;
+}
+// --------------------------
+
 //---------------------------------------------------------------------------
 // --------------------------
 // Конструкторы и деструкторы
@@ -1189,6 +1349,34 @@ void __fastcall TVideoCaptureThreadVideoGrabberIpCamera::Stop(void)
  TVideoCaptureThreadVideoGrabber::Stop();
  if(VideoGrabber)
   VideoGrabber->PausePreview();
+}
+// --------------------------
+
+// --------------------------
+// Управление данными
+// --------------------------
+/// Создает копию этого потока
+RDK::UEPtr<TVideoCaptureThread> TVideoCaptureThreadVideoGrabberIpCamera::New(TVideoOutputFrame *frame, bool create_suspended)
+{
+ return new TVideoCaptureThreadVideoGrabberIpCamera(frame,create_suspended);
+}
+
+/// Сохранение настроек в xml
+bool TVideoCaptureThreadVideoGrabberIpCamera::ASaveParameters(RDK::USerStorageXML &xml)
+{
+ if(!ASaveParameters(xml))
+  return false;
+
+ return true;
+}
+
+/// Загрузка и применение настроек из xml
+bool TVideoCaptureThreadVideoGrabberIpCamera::ALoadParameters(RDK::USerStorageXML &xml)
+{
+ if(!ALoadParameters(xml))
+  return false;
+
+ return true;
 }
 // --------------------------
 
@@ -1363,3 +1551,24 @@ void __fastcall TVideoCaptureThreadSharedMemory::UnsafeInit(void)
 
 // --------------------------
 
+// --------------------------
+// Управление данными
+// --------------------------
+/// Создает копию этого потока
+RDK::UEPtr<TVideoCaptureThread> TVideoCaptureThreadSharedMemory::New(TVideoOutputFrame *frame, bool create_suspended)
+{
+ return new TVideoCaptureThreadSharedMemory(frame,create_suspended);
+}
+
+/// Сохранение настроек в xml
+bool TVideoCaptureThreadSharedMemory::ASaveParameters(RDK::USerStorageXML &xml)
+{
+ return true;
+}
+
+/// Загрузка и применение настроек из xml
+bool TVideoCaptureThreadSharedMemory::ALoadParameters(RDK::USerStorageXML &xml)
+{
+ return true;
+}
+// --------------------------
