@@ -278,6 +278,12 @@ std::vector<int> CalculationMode;
 /// Минимальный интервал между итерациями счета, мс
 std::vector<long long> MinInterstepsInterval;
 
+/// Адрес интерфейса управления сервером
+std::string ServerInterfaceAddress;
+
+/// Порт интерфейса управления сервером
+int ServerInterfacePort;
+
 // Список специальных форм (не имеющих компонента управления в модели)
 std::map<std::string, TUVisualControllerForm*> SpecialForms;
 

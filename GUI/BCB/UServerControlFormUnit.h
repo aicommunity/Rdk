@@ -234,6 +234,12 @@ void SendCommandResponse(const std::string &client_binding, RDK::UParamT &dest, 
 /// 1 - Команда не опознана
 void SendCommandError(const std::string &client_binding, int request_id, int error_code);
 
+/// Устанавливает параметры сервера
+bool SetServerBinding(const std::string &interface_address, int port);
+
+/// Возвращает параметры сервера
+std::string GetServerBindingInterfaceAddress(void) const;
+int GetServerBindingPort(void) const;
 
 // -----------------------------
 // Методы управления визуальным интерфейсом
@@ -276,7 +282,7 @@ int GetChannelVideoSource(int channel_id);
 int SetChannelVideoSource(int channel_id, int source_mode);
 
 /// Проверяет подключен ли видеоисточник
-bool CheckChannelVideoSourceConnection(int channel_id);
+int CheckChannelVideoSourceConnection(int channel_id);
 
 /// Возвращает имя канала
 const std::string GetChannelName(int channel);
