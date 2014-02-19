@@ -10,6 +10,7 @@
 #include "myrdk.h"
 #include "rdk_initdll.h"
 #include "UGEngineControlFormUnit.h"
+#include "TVideoCaptureOptionsFormUnit.h"
 //#include "USharedMemoryLoader.h"
 //#include "TUFileSystem.h"
 //---------------------------------------------------------------------------
@@ -22,6 +23,9 @@
 TVideoOutputFrame *VideoOutputFrame;
 
 extern String TVGrabberLicenseString;
+
+/// Список поддерживаемых источников видео
+std::map<int, RDK::UEPtr<TVideoCaptureThread> > TVideoOutputFrame::VideoSourcePrototypes;
 
 //---------------------------------------------------------------------------
 __fastcall TVideoOutputFrame::TVideoOutputFrame(TComponent* Owner)
@@ -70,12 +74,19 @@ __fastcall TVideoOutputFrame::TVideoOutputFrame(TComponent* Owner)
 
  IsStarted=false;
  CaptureThread=0;//new TVideoCaptureThreadSharedMemory(this,false);
+
+ VideoCaptureOptionsForm=new TVideoCaptureOptionsForm(this);
+ VideoCaptureOptionsForm->VideoOutputFrame=this;
 }
 
 __fastcall TVideoOutputFrame::~TVideoOutputFrame(void)
 {
  IsStarted=false;
  CloseHandle(ZoneSelectEvent);
+
+ delete VideoCaptureOptionsForm;
+ VideoCaptureOptionsForm=0;
+
  delete MyVideoOutputToolsForm;
  MyVideoOutputToolsForm=0;
 
@@ -96,6 +107,129 @@ __fastcall TVideoOutputFrame::~TVideoOutputFrame(void)
   CaptureThread=0;
  }
 }
+
+// ---------------------------
+// Методы управления поддерживаемыми источниками видео
+// ---------------------------
+/// Возвращает список поддерживаемых источников видео
+const std::map<int, RDK::UEPtr<TVideoCaptureThread> >& TVideoOutputFrame::GetVideoSourcePrototypes(void)
+{
+ return VideoSourcePrototypes;
+}
+
+/// Возвращает список поддерживаемых источников видео
+bool TVideoOutputFrame::AddVideoSourcePrototypes(int mode, RDK::UEPtr<TVideoCaptureThread> thread)
+{
+ const std::map<int, RDK::UEPtr<TVideoCaptureThread> >::iterator I=VideoSourcePrototypes.find(mode);
+ if(I != VideoSourcePrototypes.end())
+  return false;
+ VideoSourcePrototypes[mode]=thread;
+ return true;
+}
+
+/// Проверяет, существует ли такой видеоисточник
+bool TVideoOutputFrame::CheckVideoSourcePrototypes(int mode)
+{
+ const std::map<int, RDK::UEPtr<TVideoCaptureThread> >::iterator I=VideoSourcePrototypes.find(mode);
+ if(I != VideoSourcePrototypes.end())
+  return false;
+ return true;
+}
+
+/// Очищает список поддерживаемых источников видео
+void TVideoOutputFrame::ClearAllVideoSourcePrototypes(void)
+{
+ std::map<int, RDK::UEPtr<TVideoCaptureThread> >::iterator I=VideoSourcePrototypes.begin();
+ while(I != VideoSourcePrototypes.end())
+ {
+  delete I->second.operator ->();
+ }
+ VideoSourcePrototypes.clear();
+}
+
+/// Создает копию требуемого треда по индексу видеорежима
+RDK::UEPtr<TVideoCaptureThread> TVideoOutputFrame::TakeVideoCapureThread(int mode, TVideoOutputFrame *frame, bool create_suspended)
+{
+ const std::map<int, RDK::UEPtr<TVideoCaptureThread> >::iterator I=VideoSourcePrototypes.find(mode);
+ if(I != VideoSourcePrototypes.end())
+  return 0;
+ return I->second->New(frame, create_suspended);
+}
+
+/// Уничтожает заданный тред
+void TVideoOutputFrame::ReturnVideoCapureThread(RDK::UEPtr<TVideoCaptureThread> thread)
+{
+ delete thread;
+}
+// ---------------------------
+
+// -----------------------------
+// Методы управления видеозахватом
+// -----------------------------
+/// Инициализация захвата в заданном режиме
+/// Если mode == -1 то осуществляет переиницализацию в текущем режиме
+void TVideoOutputFrame::Init(int mode)
+{
+ Pause();
+ if(mode == -1)
+ {
+  if(CaptureThread)
+   CaptureThread->LoadParameters(VideoSourceOptions[mode]);
+ }
+ else
+ {
+  if(mode < 0 || !CheckVideoSourcePrototypes(mode))
+   return;
+
+  UnInit();
+  CaptureThread=TakeVideoCapureThread(mode,this,false);
+  if(!CaptureThread)
+   return;
+  CaptureThread->LoadParameters(VideoSourceOptions[mode]);
+ }
+}
+
+/// Деинициализация захвата
+void TVideoOutputFrame::UnInit(void)
+{
+ Pause();
+ DestroyCaptureThread();
+}
+
+/// Запуск захвата
+void TVideoOutputFrame::Start(void)
+{
+ if(CaptureThread)
+ {
+  CaptureThread->Start();
+  WaitForSingleObject(CaptureThread->GetFrameNotInProgress(),30);
+ }
+ Timer->Enabled=true;
+
+ IsStarted=true;
+}
+
+/// Останов захвата
+void TVideoOutputFrame::Pause(void)
+{
+ IsStarted=false;
+ Timer->Enabled=false;
+
+ if(CaptureThread)
+ {
+  CaptureThread->Stop();
+  WaitForSingleObject(CaptureThread->GetFrameNotInProgress(),30);
+ }
+}
+
+/// Чтение текущего изображения в bmp
+void TVideoOutputFrame::ReadSourceSafe(RDK::UBitmap &bmp, double &time_stamp, bool reflect)
+{
+ if(CaptureThread)
+  CaptureThread->ReadSourceSafe(bmp,time_stamp,reflect);
+}
+// -----------------------------
+
 
 //---------------------------------------------------------------------------
 // Возвращает форму управления инициализацией видео
@@ -1088,6 +1222,7 @@ void TVideoOutputFrame::AAfterCalculate(void)
 // Обновление интерфейса
 void TVideoOutputFrame::AUpdateInterface(void)
 {
+//VideoCaptureOptionsForm->Show();
 // if(UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode() == 1)
 // if(UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode() != 0 /*&& !IsStarted*/)
   if(CaptureThread)
@@ -1231,38 +1366,12 @@ void __fastcall TVideoOutputFrame::TimerTimer(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TVideoOutputFrame::StartButtonClick(TObject *Sender)
 {
- if(Mode == 4)
- {
-  TVideoCaptureThreadBmpSequence* thread=dynamic_cast<TVideoCaptureThreadBmpSequence*>(CaptureThread);
-  if(thread)
-  {
-   thread->SetSyncMode(1);
-  }
-
- }
-
-  if(CaptureThread)
-  {
-   CaptureThread->Start();
-   WaitForSingleObject(CaptureThread->GetFrameNotInProgress(),30);
-  }
- Timer->Enabled=true;
-
-
- IsStarted=true;
+ Start();
 }
 //---------------------------------------------------------------------------
 void __fastcall TVideoOutputFrame::StopButtonClick(TObject *Sender)
 {
- IsStarted=false;
- Timer->Enabled=false;
-
-
- if(CaptureThread)
- {
-  CaptureThread->Stop();
-  WaitForSingleObject(CaptureThread->GetFrameNotInProgress(),30);
- }
+ Pause();
 }
 //---------------------------------------------------------------------------
 void __fastcall TVideoOutputFrame::ImageMouseDown(TObject *Sender,

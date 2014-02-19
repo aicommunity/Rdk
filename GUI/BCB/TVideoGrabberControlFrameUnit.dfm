@@ -10,7 +10,7 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
     Top = 0
     Width = 453
     Height = 297
-    ActivePage = PictureFileTabSheet
+    ActivePage = SharedMemoryTabSheet
     Align = alClient
     DoubleBuffered = True
     ParentDoubleBuffered = False
@@ -19,18 +19,6 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
     OnChange = VCapturePageControlChange
     object DeviceTabSheet: TTabSheet
       Caption = 'Device'
-      DesignSize = (
-        445
-        266)
-      object Label9: TLabel
-        Left = 8
-        Top = 3
-        Width = 177
-        Height = 13
-        Anchors = [akLeft, akTop, akRight]
-        AutoSize = False
-        Caption = 'IP Camera URL:'
-      end
       object VDCapturePanel: TPanel
         Left = 0
         Top = 0

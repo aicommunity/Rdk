@@ -32,6 +32,8 @@
 #include "myrdk.h"
 #include "TVideoRegistratorFrameUnit.h"
 
+class TVideoCaptureOptionsForm;
+
 //---------------------------------------------------------------------------
 class TVideoOutputFrame : public TUVisualControllerFrame
 {
@@ -117,6 +119,12 @@ public:        // User declarations
     __fastcall TVideoOutputFrame(TComponent* Owner);
     __fastcall ~TVideoOutputFrame(void);
 
+/// Список поддерживаемых источников видео
+static std::map<int, RDK::UEPtr<TVideoCaptureThread> > VideoSourcePrototypes;
+
+/// Список настроек поддерживаемых режимов
+std::map<int, RDK::USerStorageXML> VideoSourceOptions;
+
 // Индекс этого источника на форме всех источников
 int FrameIndex;
 
@@ -140,6 +148,8 @@ TVideoGrabberControlForm* MyVideoGrabberControlForm;
 
 // Указатель на форму выбора компоненты-источника
 TUComponentsListForm *MyComponentsListForm;
+
+TVideoCaptureOptionsForm *VideoCaptureOptionsForm;
 
 // Поток видеозахвата
 TVideoCaptureThread* CaptureThread;
@@ -267,6 +277,47 @@ bool ProcessAllFramesFlag;
 public:
 // ============================================================
 
+// ---------------------------
+// Методы управления поддерживаемыми источниками видео
+// ---------------------------
+/// Возвращает список поддерживаемых источников видео
+static const std::map<int, RDK::UEPtr<TVideoCaptureThread> >& GetVideoSourcePrototypes(void);
+
+/// Добавляет новый прототип источника видео
+static bool AddVideoSourcePrototypes(int mode, RDK::UEPtr<TVideoCaptureThread> thread);
+
+/// Проверяет, существует ли такой видеоисточник
+static bool CheckVideoSourcePrototypes(int mode);
+
+/// Очищает список поддерживаемых источников видео
+static void ClearAllVideoSourcePrototypes(void);
+
+/// Создает копию требуемого треда по индексу видеорежима
+RDK::UEPtr<TVideoCaptureThread> TakeVideoCapureThread(int mode, TVideoOutputFrame *frame, bool create_suspended);
+
+/// Уничтожает заданный тред
+void ReturnVideoCapureThread(RDK::UEPtr<TVideoCaptureThread> thread);
+// ---------------------------
+
+// -----------------------------
+// Методы управления видеозахватом
+// -----------------------------
+/// Инициализация захвата в заданном режиме
+/// Если mode == -1 то осуществляет переиницализацию в текущем режиме
+void Init(int mode=-1);
+
+/// Деинициализация захвата
+void UnInit(void);
+
+/// Запуск захвата
+void Start(void);
+
+/// Останов захвата
+void Pause(void);
+
+/// Чтение текущего изображения в bmp
+void ReadSourceSafe(RDK::UBitmap &bmp, double &time_stamp, bool reflect);
+// -----------------------------
 
 // Возвращает форму управления инициализацией видео
 TVideoGrabberControlForm* GetMyVideoGrabberControlForm(void);

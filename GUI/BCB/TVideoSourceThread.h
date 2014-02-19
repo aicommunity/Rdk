@@ -98,6 +98,17 @@ bool SetRepeatFlag(bool value);
 /// Указатель на владельца
 TVideoOutputFrame *GetFrame(void) const;
 bool SetFrame(TVideoOutputFrame * frame);
+
+/// Создает копию этого потока
+virtual RDK::UEPtr<TVideoCaptureThread> New(TVideoOutputFrame *frame, bool create_suspended)=0;
+
+/// Сохранение настроек в xml
+virtual bool SaveParameters(RDK::USerStorageXML &xml);
+virtual bool ASaveParameters(RDK::USerStorageXML &xml)=0;
+
+/// Загрузка и применение настроек из xml
+virtual bool LoadParameters(RDK::USerStorageXML &xml);
+virtual bool ALoadParameters(RDK::USerStorageXML &xml)=0;
 // --------------------------
 
 // --------------------------
@@ -186,6 +197,19 @@ bool SetFps(double fps);
 // --------------------------
 
 // --------------------------
+// Управление данными
+// --------------------------
+/// Создает копию этого потока
+RDK::UEPtr<TVideoCaptureThread> New(TVideoOutputFrame *frame, bool create_suspended);
+
+/// Сохранение настроек в xml
+virtual bool ASaveParameters(RDK::USerStorageXML &xml);
+
+/// Загрузка и применение настроек из xml
+virtual bool ALoadParameters(RDK::USerStorageXML &xml);
+// --------------------------
+
+// --------------------------
 // Управление потоком
 // --------------------------
 virtual void __fastcall Start(void);
@@ -252,6 +276,19 @@ bool SetFps(double fps);
 // --------------------------
 
 // --------------------------
+// Управление данными
+// --------------------------
+/// Создает копию этого потока
+RDK::UEPtr<TVideoCaptureThread> New(TVideoOutputFrame *frame, bool create_suspended);
+
+/// Сохранение настроек в xml
+virtual bool ASaveParameters(RDK::USerStorageXML &xml);
+
+/// Загрузка и применение настроек из xml
+virtual bool ALoadParameters(RDK::USerStorageXML &xml);
+// --------------------------
+
+// --------------------------
 // Управление потоком
 // --------------------------
 virtual void __fastcall Start(void);
@@ -310,6 +347,19 @@ virtual bool SetPosition(long long index);
 // --------------------------
 
 // --------------------------
+// Управление данными
+// --------------------------
+/// Создает копию этого потока
+RDK::UEPtr<TVideoCaptureThread> New(TVideoOutputFrame *frame, bool create_suspended);
+
+/// Сохранение настроек в xml
+virtual bool ASaveParameters(RDK::USerStorageXML &xml);
+
+/// Загрузка и применение настроек из xml
+virtual bool ALoadParameters(RDK::USerStorageXML &xml);
+// --------------------------
+
+// --------------------------
 // Управление потоком
 // --------------------------
 virtual void __fastcall Start(void);
@@ -347,6 +397,16 @@ public: // Методы
 // --------------------------
 __fastcall TVideoCaptureThreadVideoGrabber(TVideoOutputFrame *frame, bool CreateSuspended);
 virtual __fastcall ~TVideoCaptureThreadVideoGrabber(void);
+// --------------------------
+
+// --------------------------
+// Управление данными
+// --------------------------
+/// Сохранение настроек в xml
+virtual bool ASaveParameters(RDK::USerStorageXML &xml);
+
+/// Загрузка и применение настроек из xml
+virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 
 // --------------------------
@@ -399,6 +459,19 @@ bool SetProcessAllFramesFlag(bool value);
 // --------------------------
 
 // --------------------------
+// Управление данными
+// --------------------------
+/// Создает копию этого потока
+RDK::UEPtr<TVideoCaptureThread> New(TVideoOutputFrame *frame, bool create_suspended);
+
+/// Сохранение настроек в xml
+virtual bool ASaveParameters(RDK::USerStorageXML &xml);
+
+/// Загрузка и применение настроек из xml
+virtual bool ALoadParameters(RDK::USerStorageXML &xml);
+// --------------------------
+
+// --------------------------
 // Управление потоком
 // --------------------------
 virtual void __fastcall Start(void);
@@ -444,6 +517,19 @@ bool Init(int camera_index, int input_index, int size_index, int subtype_index, 
 // --------------------------
 
 // --------------------------
+// Управление данными
+// --------------------------
+/// Создает копию этого потока
+RDK::UEPtr<TVideoCaptureThread> New(TVideoOutputFrame *frame, bool create_suspended);
+
+/// Сохранение настроек в xml
+virtual bool ASaveParameters(RDK::USerStorageXML &xml);
+
+/// Загрузка и применение настроек из xml
+virtual bool ALoadParameters(RDK::USerStorageXML &xml);
+// --------------------------
+
+// --------------------------
 // Управление потоком
 // --------------------------
 virtual void __fastcall Start(void);
@@ -485,6 +571,19 @@ const String& GetUserName(void) const;
 const String& GetPassword(void) const;
 
 bool Init(const String camera_url, const String user_name, const String user_password);
+// --------------------------
+
+// --------------------------
+// Управление данными
+// --------------------------
+/// Создает копию этого потока
+RDK::UEPtr<TVideoCaptureThread> New(TVideoOutputFrame *frame, bool create_suspended);
+
+/// Сохранение настроек в xml
+virtual bool ASaveParameters(RDK::USerStorageXML &xml);
+
+/// Загрузка и применение настроек из xml
+virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 
 // --------------------------
@@ -541,6 +640,19 @@ virtual long long GetNumBitmaps(void) const;
 /// Устанавливает текущую позицию в последовательности
 virtual long long GetPosition(void) const;
 virtual bool SetPosition(long long index);
+// --------------------------
+
+// --------------------------
+// Управление данными
+// --------------------------
+/// Создает копию этого потока
+RDK::UEPtr<TVideoCaptureThread> New(TVideoOutputFrame *frame, bool create_suspended);
+
+/// Сохранение настроек в xml
+virtual bool ASaveParameters(RDK::USerStorageXML &xml);
+
+/// Загрузка и применение настроек из xml
+virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 
 // --------------------------
