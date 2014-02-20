@@ -166,11 +166,13 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
    result.WriteString("Password",AnsiString(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GeViCameraUserPasswordEdit->Text).c_str());
    result.WriteString("MediaChannel",AnsiString(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GeViCameraMediaChannelEdit->Text).c_str());
    result.WriteString("Fps",AnsiString(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GeViFPSLabeledEdit->Text).c_str());
+   result.WriteInteger("ImageWidth",((CLiveStreamThread*)(frame->CaptureThread))->GetWidth());
+   result.WriteInteger("ImageHeight",((CLiveStreamThread*)(frame->CaptureThread))->GetHeight());
    result.SelectNodeForce("GeViAvaliableMediaChannels");
-   std::vector<int> media_channels;
-   media_channels.resize(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GeViComboBox->Items->Count);
-   for(int i=0;i<frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GeViComboBox->Items->Count;i++)
-	media_channels[i]=StrToInt(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GeViComboBox->Items->Strings[i]);
+   std::vector<TGeviMediaChannelDescription> media_channels=((CLiveStreamThread*)(frame->CaptureThread))->GetMediaChannelList();
+//   media_channels.resize(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GeViComboBox->Items->Count);
+//   for(int i=0;i<frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GeViComboBox->Items->Count;i++)
+//	media_channels[i]=StrToInt(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GeViComboBox->Items->Strings[i]);
    result<<media_channels;
    result.SelectUp();
   }
