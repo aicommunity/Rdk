@@ -1,26 +1,32 @@
-object VideoCaptureOptionsVideoFileFrame: TVideoCaptureOptionsVideoFileFrame
+object VideoCaptureOptionsVideoFileForm: TVideoCaptureOptionsVideoFileForm
   Left = 0
   Top = 0
-  Width = 555
-  Height = 241
-  TabOrder = 0
+  ClientHeight = 203
+  ClientWidth = 539
+  Color = clBtnFace
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -11
+  Font.Name = 'Tahoma'
+  Font.Style = []
+  OldCreateOrder = True
+  OnCreate = FormCreate
+  PixelsPerInch = 96
+  TextHeight = 13
   object VFCapturePanel: TPanel
     Left = 0
     Top = 0
-    Width = 555
-    Height = 241
+    Width = 539
+    Height = 203
     Align = alClient
     TabOrder = 0
-    ExplicitTop = -25
-    ExplicitWidth = 445
-    ExplicitHeight = 266
     DesignSize = (
-      555
-      241)
+      539
+      203)
     object VideoFileNameLabel: TLabel
       Left = 8
       Top = 3
-      Width = 539
+      Width = 523
       Height = 13
       Anchors = [akLeft, akTop, akRight]
       AutoSize = False
@@ -30,21 +36,20 @@ object VideoCaptureOptionsVideoFileFrame: TVideoCaptureOptionsVideoFileFrame
     object VFNameEdit: TEdit
       Left = 8
       Top = 22
-      Width = 454
+      Width = 438
       Height = 21
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 0
-      ExplicitWidth = 344
     end
     object VFBrowseButton: TButton
-      Left = 468
+      Left = 452
       Top = 20
       Width = 79
       Height = 25
       Anchors = [akTop, akRight]
       Caption = 'Browse'
       TabOrder = 1
-      ExplicitLeft = 358
+      OnClick = VFBrowseButtonClick
     end
     object VideoTruncPathCheckBox: TCheckBox
       Left = 8
@@ -70,5 +75,12 @@ object VideoCaptureOptionsVideoFileFrame: TVideoCaptureOptionsVideoFileFrame
       Caption = 'Process all frames'
       TabOrder = 4
     end
+  end
+  object VideoOpenDialog: TOpenDialog
+    DefaultExt = 'avi'
+    Filter = #1042#1080#1076#1077#1086'|*.avi|'#1042#1089#1077' '#1092#1072#1081#1083#1099'|*.*'
+    FilterIndex = 0
+    Left = 200
+    Top = 112
   end
 end

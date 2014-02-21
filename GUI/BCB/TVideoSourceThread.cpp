@@ -114,6 +114,10 @@ bool TVideoCaptureThread::SetFrame(TVideoOutputFrame * frame)
 /// Сохранение настроек в xml
 bool TVideoCaptureThread::SaveParameters(RDK::USerStorageXML &xml)
 {
+ xml.SelectNodeRoot("VideoSourceThread");
+
+ xml.WriteInteger("SyncMode",SyncMode);
+ xml.WriteBool("RepeatFlag",RepeatFlag);
  if(!ASaveParameters(xml))
   return false;
  return true;
@@ -122,6 +126,11 @@ bool TVideoCaptureThread::SaveParameters(RDK::USerStorageXML &xml)
 /// Загрузка и применение настроек из xml
 bool TVideoCaptureThread::LoadParameters(RDK::USerStorageXML &xml)
 {
+ xml.SelectNodeRoot("VideoSourceThread");
+
+ SyncMode=xml.ReadInteger("SyncMode",SyncMode);
+ RepeatFlag=xml.ReadBool("RepeatFlag",RepeatFlag);
+
  if(!ALoadParameters(xml))
   return false;
  return true;
@@ -300,6 +309,7 @@ __fastcall TVideoCaptureThreadBmp::TVideoCaptureThreadBmp(TVideoOutputFrame *fra
  TempBitmap=new Graphics::TBitmap;
  Fps=25.0;
  CurrentTimeStamp=0;
+ SourceMode=0;
 }
 
 __fastcall TVideoCaptureThreadBmp::~TVideoCaptureThreadBmp(void)
@@ -444,12 +454,18 @@ RDK::UEPtr<TVideoCaptureThread> TVideoCaptureThreadBmp::New(TVideoOutputFrame *f
 /// Сохранение настроек в xml
 bool TVideoCaptureThreadBmp::ASaveParameters(RDK::USerStorageXML &xml)
 {
+ xml.WriteString("FileName",FileName);
+ xml.WriteFloat("Fps",Fps);
+
  return true;
 }
 
 /// Загрузка и применение настроек из xml
 bool TVideoCaptureThreadBmp::ALoadParameters(RDK::USerStorageXML &xml)
 {
+ SetFileName(xml.ReadString("FileName",FileName));
+ SetFps(xml.ReadFloat("Fps",Fps));
+
  return true;
 }
 // --------------------------
@@ -466,6 +482,7 @@ __fastcall TVideoCaptureThreadBmpSequence::TVideoCaptureThreadBmpSequence(TVideo
  TempBitmap=new Graphics::TBitmap;
  SyncMode=1;
  Fps=25.0;
+ SourceMode=4;
 }
 
 __fastcall TVideoCaptureThreadBmpSequence::~TVideoCaptureThreadBmpSequence(void)
@@ -651,6 +668,13 @@ bool TVideoCaptureThreadBmpSequence::SetLastTimeStampSafe(double time_stamp)
  return true;
 }
 
+/// Возвращает 0 если если состояние не определено
+/// Возвращает 1 если если нет подключения к источнику
+/// Возвращает 2 если если есть подключение к источнику
+int TVideoCaptureThread::CheckConnection(void) const
+{
+ return 2;
+}
 // --------------------------
 
 // --------------------------
@@ -665,12 +689,18 @@ RDK::UEPtr<TVideoCaptureThread> TVideoCaptureThreadBmpSequence::New(TVideoOutput
 /// Сохранение настроек в xml
 bool TVideoCaptureThreadBmpSequence::ASaveParameters(RDK::USerStorageXML &xml)
 {
+ xml.WriteString("PathName",PathName);
+ xml.WriteFloat("Fps",Fps);
+
  return true;
 }
 
 /// Загрузка и применение настроек из xml
 bool TVideoCaptureThreadBmpSequence::ALoadParameters(RDK::USerStorageXML &xml)
 {
+ SetPathName(xml.ReadString("PathName",PathName));
+ SetFps(xml.ReadFloat("Fps",Fps));
+
  return true;
 }
 // --------------------------
@@ -689,6 +719,7 @@ __fastcall TVideoCaptureThreadHttpServer::TVideoCaptureThreadHttpServer(TVideoOu
  TempBitmap=new Graphics::TBitmap;
  UHttpServerFrame=new TUHttpServerFrame(frame);
  UHttpServerFrame->IdHTTPServer->OnCommandGet=IdHTTPServerCommandGet;
+ SourceMode=5;
 }
 
 __fastcall TVideoCaptureThreadHttpServer::~TVideoCaptureThreadHttpServer(void)
@@ -828,12 +859,15 @@ RDK::UEPtr<TVideoCaptureThread> TVideoCaptureThreadHttpServer::New(TVideoOutputF
 /// Сохранение настроек в xml
 bool TVideoCaptureThreadHttpServer::ASaveParameters(RDK::USerStorageXML &xml)
 {
+ xml.WriteInteger("ListenPort",ListenPort);
+
  return true;
 }
 
 /// Загрузка и применение настроек из xml
 bool TVideoCaptureThreadHttpServer::ALoadParameters(RDK::USerStorageXML &xml)
 {
+ SetListenPort(xml.ReadInteger("ListenPort",ListenPort));
  return true;
 }
 // --------------------------
@@ -1032,6 +1066,7 @@ bool TVideoCaptureThreadVideoGrabber::ALoadParameters(RDK::USerStorageXML &xml)
 __fastcall TVideoCaptureThreadVideoGrabberAvi::TVideoCaptureThreadVideoGrabberAvi(TVideoOutputFrame *frame, bool CreateSuspended)
  : TVideoCaptureThreadVideoGrabber(frame, CreateSuspended)
 {
+ SourceMode=1;
  if(VideoGrabber)
   VideoGrabber->VideoSource=vs_VideoFileOrURL;
 }
@@ -1142,8 +1177,11 @@ RDK::UEPtr<TVideoCaptureThread> TVideoCaptureThreadVideoGrabberAvi::New(TVideoOu
 /// Сохранение настроек в xml
 bool TVideoCaptureThreadVideoGrabberAvi::ASaveParameters(RDK::USerStorageXML &xml)
 {
- if(!ASaveParameters(xml))
+ if(!TVideoCaptureThreadVideoGrabber::ASaveParameters(xml))
   return false;
+
+ xml.WriteString("FileName", FileName);
+ xml.WriteBool("ProcessAllFramesFlag",ProcessAllFramesFlag);
 
  return true;
 }
@@ -1151,8 +1189,11 @@ bool TVideoCaptureThreadVideoGrabberAvi::ASaveParameters(RDK::USerStorageXML &xm
 /// Загрузка и применение настроек из xml
 bool TVideoCaptureThreadVideoGrabberAvi::ALoadParameters(RDK::USerStorageXML &xml)
 {
- if(!ALoadParameters(xml))
+ if(!TVideoCaptureThreadVideoGrabber::ALoadParameters(xml))
   return false;
+
+ SetFileName(xml.ReadString("FileName", FileName));
+ SetProcessAllFramesFlag(xml.ReadBool("ProcessAllFramesFlag",ProcessAllFramesFlag));
 
  return true;
 }
@@ -1165,6 +1206,7 @@ bool TVideoCaptureThreadVideoGrabberAvi::ALoadParameters(RDK::USerStorageXML &xm
 __fastcall TVideoCaptureThreadVideoGrabberCamera::TVideoCaptureThreadVideoGrabberCamera(TVideoOutputFrame *frame, bool CreateSuspended)
  : TVideoCaptureThreadVideoGrabber(frame, CreateSuspended)
 {
+ SourceMode=2;
  if(VideoGrabber)
   VideoGrabber->VideoSource=vs_VideoCaptureDevice;
 }
@@ -1255,8 +1297,14 @@ RDK::UEPtr<TVideoCaptureThread> TVideoCaptureThreadVideoGrabberCamera::New(TVide
 /// Сохранение настроек в xml
 bool TVideoCaptureThreadVideoGrabberCamera::ASaveParameters(RDK::USerStorageXML &xml)
 {
- if(!ASaveParameters(xml))
+ if(!TVideoCaptureThreadVideoGrabber::ASaveParameters(xml))
   return false;
+
+ xml.WriteInteger("CameraIndex",CameraIndex);
+ xml.WriteInteger("InputIndex",InputIndex);
+ xml.WriteInteger("SizeIndex",SizeIndex);
+ xml.WriteInteger("SubtypeIndex",SubtypeIndex);
+ xml.WriteInteger("AnalogIndex",AnalogIndex);
 
  return true;
 }
@@ -1264,8 +1312,16 @@ bool TVideoCaptureThreadVideoGrabberCamera::ASaveParameters(RDK::USerStorageXML 
 /// Загрузка и применение настроек из xml
 bool TVideoCaptureThreadVideoGrabberCamera::ALoadParameters(RDK::USerStorageXML &xml)
 {
- if(!ALoadParameters(xml))
+ if(!TVideoCaptureThreadVideoGrabber::ALoadParameters(xml))
   return false;
+
+ CameraIndex=xml.ReadInteger("CameraIndex",CameraIndex);
+ InputIndex=xml.ReadInteger("InputIndex",InputIndex);
+ SizeIndex=xml.ReadInteger("SizeIndex",SizeIndex);
+ SubtypeIndex=xml.ReadInteger("SubtypeIndex",SubtypeIndex);
+ AnalogIndex=xml.ReadInteger("AnalogIndex",AnalogIndex);
+
+ Init(CameraIndex, InputIndex, SizeIndex, SubtypeIndex, AnalogIndex);
 
  return true;
 }
@@ -1278,6 +1334,7 @@ bool TVideoCaptureThreadVideoGrabberCamera::ALoadParameters(RDK::USerStorageXML 
 __fastcall TVideoCaptureThreadVideoGrabberIpCamera::TVideoCaptureThreadVideoGrabberIpCamera(TVideoOutputFrame *frame, bool CreateSuspended)
  : TVideoCaptureThreadVideoGrabber(frame, CreateSuspended)
 {
+ SourceMode=3;
  if(VideoGrabber)
   VideoGrabber->VideoSource=vs_IPCamera;
 }
@@ -1364,8 +1421,12 @@ RDK::UEPtr<TVideoCaptureThread> TVideoCaptureThreadVideoGrabberIpCamera::New(TVi
 /// Сохранение настроек в xml
 bool TVideoCaptureThreadVideoGrabberIpCamera::ASaveParameters(RDK::USerStorageXML &xml)
 {
- if(!ASaveParameters(xml))
+ if(!TVideoCaptureThreadVideoGrabber::ASaveParameters(xml))
   return false;
+
+ xml.WriteString("Url",AnsiString(Url).c_str());
+ xml.WriteString("UserName", AnsiString(UserName).c_str());
+ xml.WriteString("Password", AnsiString(Password).c_str());
 
  return true;
 }
@@ -1373,8 +1434,12 @@ bool TVideoCaptureThreadVideoGrabberIpCamera::ASaveParameters(RDK::USerStorageXM
 /// Загрузка и применение настроек из xml
 bool TVideoCaptureThreadVideoGrabberIpCamera::ALoadParameters(RDK::USerStorageXML &xml)
 {
- if(!ALoadParameters(xml))
+ if(!TVideoCaptureThreadVideoGrabber::ALoadParameters(xml))
   return false;
+
+ Init(xml.ReadString("Url",AnsiString(Url).c_str()).c_str(),
+	  xml.ReadString("UserName", AnsiString(UserName).c_str()).c_str(),
+	  xml.ReadString("Password", AnsiString(Password).c_str()).c_str());
 
  return true;
 }
@@ -1410,7 +1475,14 @@ bool TVideoCaptureThreadSharedMemory::SetPipeIndex(int value)
  if(WaitForSingleObject(FrameNotInProgress,1000) == WAIT_TIMEOUT)
   return false;
 
+ if(!Usm_GetNumPipes || !Usm_SetNumPipes)
+  return false;
+
+ if(Usm_GetNumPipes() <= value)
+  Usm_SetNumPipes(value+1);
+
  PipeIndex=value;
+
  return true;
 }
 
@@ -1426,6 +1498,7 @@ bool TVideoCaptureThreadSharedMemory::SetPipeName(const std::string& value)
   return false;
 
  PipeName=value;
+
  return true;
 }
 
@@ -1563,12 +1636,20 @@ RDK::UEPtr<TVideoCaptureThread> TVideoCaptureThreadSharedMemory::New(TVideoOutpu
 /// Сохранение настроек в xml
 bool TVideoCaptureThreadSharedMemory::ASaveParameters(RDK::USerStorageXML &xml)
 {
+ xml.WriteInteger("PipeIndex",PipeIndex);
+ xml.WriteString("PipeName",PipeName);
+ xml.WriteInteger("SharedMemoryPipeSize",SharedMemoryPipeSize);
+
  return true;
 }
 
 /// Загрузка и применение настроек из xml
 bool TVideoCaptureThreadSharedMemory::ALoadParameters(RDK::USerStorageXML &xml)
 {
+ PipeIndex=xml.ReadInteger("PipeIndex",PipeIndex);
+ PipeName=xml.ReadString("PipeName",PipeName);
+ SharedMemoryPipeSize=xml.ReadInteger("SharedMemoryPipeSize",SharedMemoryPipeSize);
+
  return true;
 }
 // --------------------------

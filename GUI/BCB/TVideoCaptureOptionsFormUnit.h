@@ -12,8 +12,19 @@
 #include "TUVisualControllerFormUnit.h"
 #include "TVideoCaptureOptionsInterface.h"
 //#include "TVideoOutputFrameUnit.h"
+#include "TVideoSourceThread.h"
 
 class TVideoOutputFrame;
+
+struct TVideoCaptureOptionsDesciption
+{
+ TVideoCaptureOptionsInterface* Form;
+
+ std::string Name;
+
+ int Position;
+};
+
 //---------------------------------------------------------------------------
 class TVideoCaptureOptionsForm : public TUVisualControllerForm
 {
@@ -23,15 +34,25 @@ __published:	// IDE-managed Components
 	TButton *Cancel;
 	TButton *RestoreButton;
 	TPageControl *PageControl;
+	void __fastcall ApplyButtonClick(TObject *Sender);
+	void __fastcall FormShow(TObject *Sender);
+	void __fastcall RestoreButtonClick(TObject *Sender);
+	void __fastcall CancelClick(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
 	__fastcall TVideoCaptureOptionsForm(TComponent* Owner);
 
+/// Список поддерживаемых источников видео
+static std::map<int, RDK::UEPtr<TVideoCaptureThread> > VideoSourcePrototypes;
+
 /// Список настройщиков источников видео
-static std::map<int, TFrame* > VideoSourceOptionsFrames;
+static std::map<int, TVideoCaptureOptionsDesciption> VideoSourceOptionsFrames;
+
+/// Список настройщиков источников видео этой формы
+std::map<int, TVideoCaptureOptionsDesciption> CurrentVideoSourceOptionsFrames;
 
 /// Указатель на текущий интерфейс видео
-TVideoCaptureOptionsInterface *VideoCaptureOptionsInterface;
+//TVideoCaptureOptionsDesciption* VideoCaptureOptionsInterface;
 
 /// Указатель на текущий фрейм отображения источника видео
 TVideoOutputFrame* VideoOutputFrame;
@@ -39,11 +60,23 @@ TVideoOutputFrame* VideoOutputFrame;
 // ---------------------------
 // Методы управления поддерживаемыми источниками видео
 // ---------------------------
+/// Возвращает список поддерживаемых источников видео
+static const std::map<int, RDK::UEPtr<TVideoCaptureThread> >& GetVideoSourcePrototypes(void);
+
+/// Добавляет новый прототип источника видео
+static bool AddVideoSourcePrototypes(int mode, RDK::UEPtr<TVideoCaptureThread> thread);
+
+/// Проверяет, существует ли такой видеоисточник
+static bool CheckVideoSourcePrototypes(int mode);
+
+/// Очищает список поддерживаемых источников видео
+static void ClearAllVideoSourcePrototypes(void);
+
 /// Возвращает список настройщиков источников видео
-static std::map<int, TFrame* > GetVideoSourceOptionsFrames(void);
+static std::map<int, TVideoCaptureOptionsDesciption> GetVideoSourceOptionsFrames(void);
 
 /// Добавляет новый настройщик источников видео
-static bool AddVideoSourceOptionsFrame(int mode, TFrame *frame);
+static bool AddVideoSourceOptionsFrame(int mode, TVideoCaptureOptionsDesciption &frame);
 
 /// Проверяет, существует ли такой настройщик
 static bool CheckVideoSourceOptionsFrame(int mode);
@@ -51,6 +84,14 @@ static bool CheckVideoSourceOptionsFrame(int mode);
 /// Очищает список поддерживаемых настройщиков видео
 static void ClearAllVideoSourceOptionsFrames(void);
 
+/// Возвращает активный (выбранный) источник видео
+int GetActiveVideoSourceId(void);
+
+/// Возвращает настройщик видеоисточника, соответствующий режиму
+TVideoCaptureOptionsDesciption* GetCurrentVideoSourceOptionsFrame(int mode);
+
+/// Устанавливает активной вкладку видеоисточника по индексу
+bool SelectVideoSourcePage(int mode);
 // ---------------------------
 
 // -----------------------------

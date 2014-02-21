@@ -151,6 +151,11 @@ bool WriteSourceSafe(Graphics::TBitmap *src, double time_stamp, bool reflect);
 
 // Меняет временную метку с блокировкой
 virtual bool SetLastTimeStampSafe(double time_stamp);
+
+/// Возвращает 0 если если состояние не определено
+/// Возвращает 1 если если нет подключения к источнику
+/// Возвращает 2 если если есть подключение к источнику
+virtual int CheckConnection(void) const;
 // --------------------------
 };
 

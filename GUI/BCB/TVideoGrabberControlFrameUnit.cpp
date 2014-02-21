@@ -225,6 +225,7 @@ void TVideoGrabberControlFrame::ASaveParameters(RDK::USerStorageXML &xml)
 // Загружает параметры интерфейса из xml
 void TVideoGrabberControlFrame::ALoadParameters(RDK::USerStorageXML &xml)
 {
+/*
  VFNameEdit->Text=xml.ReadString("VideoFileName","").c_str();
  if(ExtractFilePath(VFNameEdit->Text) == UGEngineControlForm->ProjectPath)
   VFNameEdit->Text=ExtractFileName(VFNameEdit->Text);
@@ -275,6 +276,7 @@ void TVideoGrabberControlFrame::ALoadParameters(RDK::USerStorageXML &xml)
  index=xml.ReadInteger("AnalogVideoStandardId",-1);
  if(index<AnalogVideoStandardComboBox->Items->Count)
   AnalogVideoStandardComboBox->ItemIndex=index;
+  */
 }
 // -----------------------------
 
@@ -561,5 +563,6 @@ void __fastcall TVideoGrabberControlFrame::ResetButtonClick(TObject *Sender)
  SendIpPtzCommand();
 }
 //---------------------------------------------------------------------------
+
 
 

@@ -9,8 +9,9 @@
 #include <Vcl.Forms.hpp>
 #include <Vcl.ExtCtrls.hpp>
 #include "TVideoCaptureOptionsInterface.h"
+#include "TUVisualControllerFormUnit.h"
 //---------------------------------------------------------------------------
-class TVideoCaptureOptionsDeviceFrame : public TFrame, public TVideoCaptureOptionsInterface
+class TVideoCaptureOptionsDeviceForm : public TVideoCaptureOptionsInterface
 {
 __published:	// IDE-managed Components
 	TPanel *VDCapturePanel;
@@ -25,23 +26,27 @@ __published:	// IDE-managed Components
 	TComboBox *VideoSubTypeComboBox;
 	TComboBox *AnalogVideoStandardComboBox;
 	TButton *StreamButton;
+	void __fastcall FormCreate(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
-	__fastcall TVideoCaptureOptionsDeviceFrame(TComponent* Owner);
+	__fastcall TVideoCaptureOptionsDeviceForm(TComponent* Owner);
 
 
 /// -------------------------------------
 /// Методы загрузки/сохранения параметров
 /// -------------------------------------
+/// Создает копию объекта этого класса
+virtual TVideoCaptureOptionsDeviceForm* New(TComponent *owner);
+
 /// Считывает параметры в поля интерфейса
-virtual bool LoadParamters(RDK::USerStorageXML &xml);
+virtual bool ReadParametersToGui(RDK::USerStorageXML &xml);
 
 /// Записывает параметры из полей интерфейса в xml
-virtual bool SaveParamters(RDK::USerStorageXML &xml);
+virtual bool WriteParametersToXml(RDK::USerStorageXML &xml);
 /// -------------------------------------
 
 };
 //---------------------------------------------------------------------------
-extern PACKAGE TVideoCaptureOptionsDeviceFrame *VideoCaptureOptionsDeviceFrame;
+extern PACKAGE TVideoCaptureOptionsDeviceForm *VideoCaptureOptionsDeviceForm;
 //---------------------------------------------------------------------------
 #endif

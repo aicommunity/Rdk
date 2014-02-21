@@ -8,29 +8,35 @@
 #include <Vcl.StdCtrls.hpp>
 #include <Vcl.Forms.hpp>
 #include "TVideoCaptureOptionsInterface.h"
+#include "TUVisualControllerFormUnit.h"
+
 //---------------------------------------------------------------------------
-class TVideoCaptureOptionsHttpServerFrame : public TFrame, public TVideoCaptureOptionsInterface
+class TVideoCaptureOptionsHttpServerForm : public TVideoCaptureOptionsInterface
 {
 __published:	// IDE-managed Components
 	TEdit *ListerPortEdit;
 	TLabel *Label10;
+	void __fastcall FormCreate(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
-	__fastcall TVideoCaptureOptionsHttpServerFrame(TComponent* Owner);
+	__fastcall TVideoCaptureOptionsHttpServerForm(TComponent* Owner);
 
 
 /// -------------------------------------
 /// Методы загрузки/сохранения параметров
 /// -------------------------------------
+/// Создает копию объекта этого класса
+virtual TVideoCaptureOptionsHttpServerForm* New(TComponent *owner);
+
 /// Считывает параметры в поля интерфейса
-virtual bool LoadParamters(RDK::USerStorageXML &xml);
+virtual bool ReadParametersToGui(RDK::USerStorageXML &xml);
 
 /// Записывает параметры из полей интерфейса в xml
-virtual bool SaveParamters(RDK::USerStorageXML &xml);
+virtual bool WriteParametersToXml(RDK::USerStorageXML &xml);
 /// -------------------------------------
 
 };
 //---------------------------------------------------------------------------
-extern PACKAGE TVideoCaptureOptionsHttpServerFrame *VideoCaptureOptionsHttpServerFrame;
+extern PACKAGE TVideoCaptureOptionsHttpServerForm *VideoCaptureOptionsHttpServerForm;
 //---------------------------------------------------------------------------
 #endif

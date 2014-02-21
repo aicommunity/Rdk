@@ -4,13 +4,16 @@
 #pragma hdrstop
 
 #include "TVideoCaptureOptionsBmpFrameUnit.h"
+#include "TVideoCaptureOptionsFormUnit.h"
+#include "TVideoSourceThread.h"
+#include "VideoOutputFrameUnit.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
-TVideoCaptureOptionsBmpFrame *VideoCaptureOptionsBmpFrame;
+TVideoCaptureOptionsBmpForm *VideoCaptureOptionsBmpForm;
 //---------------------------------------------------------------------------
-__fastcall TVideoCaptureOptionsBmpFrame::TVideoCaptureOptionsBmpFrame(TComponent* Owner)
-	: TFrame(Owner)
+__fastcall TVideoCaptureOptionsBmpForm::TVideoCaptureOptionsBmpForm(TComponent* Owner)
+	: TVideoCaptureOptionsInterface(Owner)
 {
 }
 //---------------------------------------------------------------------------
@@ -18,15 +21,86 @@ __fastcall TVideoCaptureOptionsBmpFrame::TVideoCaptureOptionsBmpFrame(TComponent
 /// -------------------------------------
 /// Методы загрузки/сохранения параметров
 /// -------------------------------------
-/// Считывает параметры в поля интерфейса
-bool TVideoCaptureOptionsBmpFrame::LoadParamters(RDK::USerStorageXML &xml)
+/// Создает копию объекта этого класса
+TVideoCaptureOptionsBmpForm* TVideoCaptureOptionsBmpForm::New(TComponent *owner)
 {
+ return new TVideoCaptureOptionsBmpForm(owner);
+}
 
+/// Считывает параметры в поля интерфейса
+bool TVideoCaptureOptionsBmpForm::ReadParametersToGui(RDK::USerStorageXML &xml)
+{
+ ImageFileNameEdit->Text=xml.ReadString("FileName",AnsiString(ImageFileNameEdit->Text).c_str()).c_str();
+ try
+ {
+  PictureFileFpsLabeledEdit->Text=xml.ReadFloat("Fps",StrToFloat(PictureFileFpsLabeledEdit->Text));
+ }
+ catch(EConvertError &exception)
+ {
+  return false;
+ }
+
+ return true;
 }
 
 /// Записывает параметры из полей интерфейса в xml
-bool TVideoCaptureOptionsBmpFrame::SaveParamters(RDK::USerStorageXML &xml)
+bool TVideoCaptureOptionsBmpForm::WriteParametersToXml(RDK::USerStorageXML &xml)
 {
+ xml.SelectNodeRoot("VideoSourceThread");
+ xml.WriteString("FileName",AnsiString(ImageFileNameEdit->Text).c_str());
+ try
+ {
+  xml.WriteFloat("Fps",StrToFloat(PictureFileFpsLabeledEdit->Text));
+ }
+ catch(EConvertError &exception)
+ {
+  return false;
+ }
 
+ return true;
 }
 /// -------------------------------------
+void __fastcall TVideoCaptureOptionsBmpForm::FormCreate(TObject *Sender)
+{
+ VideoSourceType=0;
+ TVideoCaptureOptionsDesciption descr;
+
+ descr.Form=this;
+ descr.Name="Picture File";
+ descr.Position=3;
+ VideoCaptureOptionsForm->AddVideoSourceOptionsFrame(VideoSourceType,descr);
+ VideoCaptureOptionsForm->AddVideoSourcePrototypes(VideoSourceType,new TVideoCaptureThreadBmp(0,true));
+}
+//---------------------------------------------------------------------------
+void __fastcall TVideoCaptureOptionsBmpForm::OpenImageFileButtonClick(TObject *Sender)
+
+{
+ if(!PicturesOpenDialog->Execute())
+  return;
+
+/* double fps=25.0;
+ std::string s_fps=AnsiString(PictureFileFpsLabeledEdit->Text).c_str();
+ std::string::size_type i=s_fps.find_first_of(",");
+ if(i != std::string::npos)
+  s_fps[i]='.';
+
+ fps=RDK::atof(s_fps);*/
+/*
+ String FileName;
+ if(UGEngineControlForm->ProjectPath == ExtractFilePath(PicturesOpenDialog->FileName) || PictureTruncPathCheckBox->Checked == true)
+ {
+  FileName=ExtractFileName(PicturesOpenDialog->FileName);
+  ImageFileNameEdit->Text=FileName;
+  SelectMode(2);
+  VideoOutputFrame->InitByBmp(UGEngineControlForm->ProjectPath+FileName,fps);
+ }
+ else*/
+ {
+  ImageFileNameEdit->Text=PicturesOpenDialog->FileName;
+//  SelectMode(2);
+//  VideoOutputFrame->InitByBmp(FileName,fps);
+ }
+
+// UpdateInterface();
+}
+//---------------------------------------------------------------------------

@@ -8,30 +8,36 @@
 #include <Vcl.StdCtrls.hpp>
 #include <Vcl.Forms.hpp>
 #include "TVideoCaptureOptionsInterface.h"
+#include "TUVisualControllerFormUnit.h"
+
 //---------------------------------------------------------------------------
-class TVideoCaptureOptionsSharedMemoryFrame : public TFrame, public TVideoCaptureOptionsInterface
+class TVideoCaptureOptionsSharedMemoryForm : public TVideoCaptureOptionsInterface
 {
 __published:	// IDE-managed Components
 	TLabel *Label11;
 	TLabel *Label12;
 	TEdit *PipeIndexEdit;
 	TEdit *PipeUidEdit;
+	void __fastcall FormCreate(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
-	__fastcall TVideoCaptureOptionsSharedMemoryFrame(TComponent* Owner);
+	__fastcall TVideoCaptureOptionsSharedMemoryForm(TComponent* Owner);
 
 /// -------------------------------------
 /// Методы загрузки/сохранения параметров
 /// -------------------------------------
+/// Создает копию объекта этого класса
+virtual TVideoCaptureOptionsSharedMemoryForm* New(TComponent *owner);
+
 /// Считывает параметры в поля интерфейса
-virtual bool LoadParamters(RDK::USerStorageXML &xml);
+virtual bool ReadParametersToGui(RDK::USerStorageXML &xml);
 
 /// Записывает параметры из полей интерфейса в xml
-virtual bool SaveParamters(RDK::USerStorageXML &xml);
+virtual bool WriteParametersToXml(RDK::USerStorageXML &xml);
 /// -------------------------------------
 
 };
 //---------------------------------------------------------------------------
-extern PACKAGE TVideoCaptureOptionsSharedMemoryFrame *VideoCaptureOptionsSharedMemoryFrame;
+extern PACKAGE TVideoCaptureOptionsSharedMemoryForm *VideoCaptureOptionsSharedMemoryForm;
 //---------------------------------------------------------------------------
 #endif

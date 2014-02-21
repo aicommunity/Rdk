@@ -1,16 +1,25 @@
-object VideoCaptureOptionsBmpSequenceFrame: TVideoCaptureOptionsBmpSequenceFrame
+object VideoCaptureOptionsBmpSequenceForm: TVideoCaptureOptionsBmpSequenceForm
   Left = 0
   Top = 0
-  Width = 526
-  Height = 242
-  TabOrder = 0
+  ClientHeight = 204
+  ClientWidth = 510
+  Color = clBtnFace
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -11
+  Font.Name = 'Tahoma'
+  Font.Style = []
+  OldCreateOrder = True
+  OnCreate = FormCreate
   DesignSize = (
-    526
-    242)
+    510
+    204)
+  PixelsPerInch = 96
+  TextHeight = 13
   object Label7: TLabel
     Left = 8
     Top = 3
-    Width = 429
+    Width = 413
     Height = 13
     Anchors = [akLeft, akTop, akRight]
     AutoSize = False
@@ -20,7 +29,7 @@ object VideoCaptureOptionsBmpSequenceFrame: TVideoCaptureOptionsBmpSequenceFrame
   object ImageSequencePathEdit: TEdit
     Left = 8
     Top = 22
-    Width = 344
+    Width = 413
     Height = 21
     Anchors = [akLeft, akTop, akRight]
     TabOrder = 0
@@ -34,13 +43,14 @@ object VideoCaptureOptionsBmpSequenceFrame: TVideoCaptureOptionsBmpSequenceFrame
     TabOrder = 1
   end
   object ImageSequencePathBrowseButton: TButton
-    Left = 358
+    Left = 427
     Top = 20
     Width = 79
     Height = 25
     Anchors = [akTop, akRight]
     Caption = 'Browse'
     TabOrder = 2
+    OnClick = ImageSequencePathBrowseButtonClick
   end
   object RepeatSequenceCheckBox: TCheckBox
     Left = 8

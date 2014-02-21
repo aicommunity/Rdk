@@ -9,9 +9,10 @@
 #include <Vcl.Forms.hpp>
 #include <Vcl.ExtCtrls.hpp>
 #include "TVideoCaptureOptionsInterface.h"
+#include "TUVisualControllerFormUnit.h"
 
 //---------------------------------------------------------------------------
-class TVideoCaptureOptionsIPCameraFrame : public TFrame, public TVideoCaptureOptionsInterface
+class TVideoCaptureOptionsIPCameraForm : public TVideoCaptureOptionsInterface
 {
 __published:	// IDE-managed Components
 	TPanel *Panel1;
@@ -30,23 +31,27 @@ __published:	// IDE-managed Components
 	TButton *ZoomOutButton;
 	TButton *ResetButton;
 	TEdit *IPCameraControlPostfixEdit;
+	void __fastcall FormCreate(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
-	__fastcall TVideoCaptureOptionsIPCameraFrame(TComponent* Owner);
+	__fastcall TVideoCaptureOptionsIPCameraForm(TComponent* Owner);
 
 
 /// -------------------------------------
 /// Методы загрузки/сохранения параметров
 /// -------------------------------------
+/// Создает копию объекта этого класса
+virtual TVideoCaptureOptionsIPCameraForm* New(TComponent *owner);
+
 /// Считывает параметры в поля интерфейса
-virtual bool LoadParamters(RDK::USerStorageXML &xml);
+virtual bool ReadParametersToGui(RDK::USerStorageXML &xml);
 
 /// Записывает параметры из полей интерфейса в xml
-virtual bool SaveParamters(RDK::USerStorageXML &xml);
+virtual bool WriteParametersToXml(RDK::USerStorageXML &xml);
 /// -------------------------------------
 
 };
 //---------------------------------------------------------------------------
-extern PACKAGE TVideoCaptureOptionsIPCameraFrame *VideoCaptureOptionsIPCameraFrame;
+extern PACKAGE TVideoCaptureOptionsIPCameraForm *VideoCaptureOptionsIPCameraForm;
 //---------------------------------------------------------------------------
 #endif

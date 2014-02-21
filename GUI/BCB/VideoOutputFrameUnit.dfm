@@ -228,6 +228,12 @@ inherited VideoOutputFrame: TVideoOutputFrame
         TabOrder = 0
         inherited ControlPanel: TPanel
           inherited ModePageControl: TPageControl
+            inherited NetworkStreamingTabSheet: TTabSheet
+              ExplicitLeft = 4
+              ExplicitTop = 24
+              ExplicitWidth = 370
+              ExplicitHeight = 257
+            end
             inherited RecordingTabSheet: TTabSheet
               TabVisible = False
             end
@@ -236,6 +242,16 @@ inherited VideoOutputFrame: TVideoOutputFrame
             ActivePage = NetworkStreamingFrame.SourceFrameTabSheet
             inherited SourceComponentTabSheet: TTabSheet
               TabVisible = False
+              ExplicitLeft = 4
+              ExplicitTop = 24
+              ExplicitWidth = 370
+              ExplicitHeight = 165
+            end
+            inherited SourceFrameTabSheet: TTabSheet
+              ExplicitLeft = 4
+              ExplicitTop = 24
+              ExplicitWidth = 370
+              ExplicitHeight = 165
             end
           end
         end
@@ -261,12 +277,26 @@ inherited VideoOutputFrame: TVideoOutputFrame
             ActivePage = RecordingFrame.RecordingTabSheet
             inherited NetworkStreamingTabSheet: TTabSheet
               TabVisible = False
+              ExplicitLeft = 4
+              ExplicitTop = 24
+              ExplicitWidth = 370
+              ExplicitHeight = 257
             end
           end
           inherited SourcePageControl: TPageControl
             ActivePage = RecordingFrame.SourceFrameTabSheet
             inherited SourceComponentTabSheet: TTabSheet
               TabVisible = False
+              ExplicitLeft = 4
+              ExplicitTop = 24
+              ExplicitWidth = 370
+              ExplicitHeight = 165
+            end
+            inherited SourceFrameTabSheet: TTabSheet
+              ExplicitLeft = 4
+              ExplicitTop = 24
+              ExplicitWidth = 370
+              ExplicitHeight = 165
             end
           end
         end
@@ -324,7 +354,12 @@ inherited VideoOutputFrame: TVideoOutputFrame
     end
     object SourceControl1: TMenuItem
       Caption = 'Source Control'
+      Visible = False
       OnClick = SourceControl1Click
+    end
+    object SourceControl21: TMenuItem
+      Caption = 'Source Control'
+      OnClick = SourceControl21Click
     end
   end
   object SelectPopupMenu: TPopupMenu

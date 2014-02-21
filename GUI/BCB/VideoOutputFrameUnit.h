@@ -82,6 +82,7 @@ __published:    // IDE-managed Components
 	TTVideoRegistratorFrame *NetworkStreamingFrame;
 	TTabSheet *RecordingTabSheet;
 	TTVideoRegistratorFrame *RecordingFrame;
+	TMenuItem *SourceControl21;
     void __fastcall TimerTimer(TObject *Sender);
 	void __fastcall StartButtonClick(TObject *Sender);
     void __fastcall StopButtonClick(TObject *Sender);
@@ -110,6 +111,7 @@ __published:    // IDE-managed Components
 	void __fastcall SendAsMatrixButtonClick(TObject *Sender);
 	void __fastcall PropertyMatrix1Click(TObject *Sender);
 	void __fastcall SaveImage1Click(TObject *Sender);
+	void __fastcall SourceControl21Click(TObject *Sender);
 //	void __fastcall UHttpServerFrameIdHTTPServerCommandGet(TIdContext *AContext, TIdHTTPRequestInfo *ARequestInfo,
 //          TIdHTTPResponseInfo *AResponseInfo);
 
@@ -118,9 +120,6 @@ private:    // User declarations
 public:        // User declarations
     __fastcall TVideoOutputFrame(TComponent* Owner);
     __fastcall ~TVideoOutputFrame(void);
-
-/// Список поддерживаемых источников видео
-static std::map<int, RDK::UEPtr<TVideoCaptureThread> > VideoSourcePrototypes;
 
 /// Список настроек поддерживаемых режимов
 std::map<int, RDK::USerStorageXML> VideoSourceOptions;
@@ -280,18 +279,6 @@ public:
 // ---------------------------
 // Методы управления поддерживаемыми источниками видео
 // ---------------------------
-/// Возвращает список поддерживаемых источников видео
-static const std::map<int, RDK::UEPtr<TVideoCaptureThread> >& GetVideoSourcePrototypes(void);
-
-/// Добавляет новый прототип источника видео
-static bool AddVideoSourcePrototypes(int mode, RDK::UEPtr<TVideoCaptureThread> thread);
-
-/// Проверяет, существует ли такой видеоисточник
-static bool CheckVideoSourcePrototypes(int mode);
-
-/// Очищает список поддерживаемых источников видео
-static void ClearAllVideoSourcePrototypes(void);
-
 /// Создает копию требуемого треда по индексу видеорежима
 RDK::UEPtr<TVideoCaptureThread> TakeVideoCapureThread(int mode, TVideoOutputFrame *frame, bool create_suspended);
 

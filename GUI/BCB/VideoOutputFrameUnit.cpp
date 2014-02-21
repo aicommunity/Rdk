@@ -24,9 +24,6 @@ TVideoOutputFrame *VideoOutputFrame;
 
 extern String TVGrabberLicenseString;
 
-/// Список поддерживаемых источников видео
-std::map<int, RDK::UEPtr<TVideoCaptureThread> > TVideoOutputFrame::VideoSourcePrototypes;
-
 //---------------------------------------------------------------------------
 __fastcall TVideoOutputFrame::TVideoOutputFrame(TComponent* Owner)
 	: TUVisualControllerFrame(Owner)
@@ -77,6 +74,14 @@ __fastcall TVideoOutputFrame::TVideoOutputFrame(TComponent* Owner)
 
  VideoCaptureOptionsForm=new TVideoCaptureOptionsForm(this);
  VideoCaptureOptionsForm->VideoOutputFrame=this;
+
+ std::map<int, RDK::UEPtr<TVideoCaptureThread> >::const_iterator I=TVideoCaptureOptionsForm::GetVideoSourcePrototypes().begin(),
+													J=TVideoCaptureOptionsForm::GetVideoSourcePrototypes().end();
+ for(;I != J;++I)
+ {
+  VideoSourceOptions[I->first].Create("VideoSourceThread");
+ }
+
 }
 
 __fastcall TVideoOutputFrame::~TVideoOutputFrame(void)
@@ -111,47 +116,11 @@ __fastcall TVideoOutputFrame::~TVideoOutputFrame(void)
 // ---------------------------
 // Методы управления поддерживаемыми источниками видео
 // ---------------------------
-/// Возвращает список поддерживаемых источников видео
-const std::map<int, RDK::UEPtr<TVideoCaptureThread> >& TVideoOutputFrame::GetVideoSourcePrototypes(void)
-{
- return VideoSourcePrototypes;
-}
-
-/// Возвращает список поддерживаемых источников видео
-bool TVideoOutputFrame::AddVideoSourcePrototypes(int mode, RDK::UEPtr<TVideoCaptureThread> thread)
-{
- const std::map<int, RDK::UEPtr<TVideoCaptureThread> >::iterator I=VideoSourcePrototypes.find(mode);
- if(I != VideoSourcePrototypes.end())
-  return false;
- VideoSourcePrototypes[mode]=thread;
- return true;
-}
-
-/// Проверяет, существует ли такой видеоисточник
-bool TVideoOutputFrame::CheckVideoSourcePrototypes(int mode)
-{
- const std::map<int, RDK::UEPtr<TVideoCaptureThread> >::iterator I=VideoSourcePrototypes.find(mode);
- if(I != VideoSourcePrototypes.end())
-  return false;
- return true;
-}
-
-/// Очищает список поддерживаемых источников видео
-void TVideoOutputFrame::ClearAllVideoSourcePrototypes(void)
-{
- std::map<int, RDK::UEPtr<TVideoCaptureThread> >::iterator I=VideoSourcePrototypes.begin();
- while(I != VideoSourcePrototypes.end())
- {
-  delete I->second.operator ->();
- }
- VideoSourcePrototypes.clear();
-}
-
 /// Создает копию требуемого треда по индексу видеорежима
 RDK::UEPtr<TVideoCaptureThread> TVideoOutputFrame::TakeVideoCapureThread(int mode, TVideoOutputFrame *frame, bool create_suspended)
 {
- const std::map<int, RDK::UEPtr<TVideoCaptureThread> >::iterator I=VideoSourcePrototypes.find(mode);
- if(I != VideoSourcePrototypes.end())
+ const std::map<int, RDK::UEPtr<TVideoCaptureThread> >::iterator I=VideoCaptureOptionsForm->VideoSourcePrototypes.find(mode);
+ if(I == VideoCaptureOptionsForm->VideoSourcePrototypes.end())
   return 0;
  return I->second->New(frame, create_suspended);
 }
@@ -178,15 +147,22 @@ void TVideoOutputFrame::Init(int mode)
  }
  else
  {
-  if(mode < 0 || !CheckVideoSourcePrototypes(mode))
+  if(mode < 0 || !TVideoCaptureOptionsForm::CheckVideoSourcePrototypes(mode))
    return;
 
   UnInit();
   CaptureThread=TakeVideoCapureThread(mode,this,false);
   if(!CaptureThread)
    return;
+  CaptureThread->SetChannelIndex(FrameIndex);
+
+  TVideoCaptureThreadVideoGrabber *thread=dynamic_cast<TVideoCaptureThreadVideoGrabber*>(CaptureThread);
+  if(thread)
+   thread->GetVideoGrabber()->LicenseString=TVGrabberLicenseString;
+
   CaptureThread->LoadParameters(VideoSourceOptions[mode]);
  }
+ UpdateInterface();
 }
 
 /// Деинициализация захвата
@@ -1222,7 +1198,6 @@ void TVideoOutputFrame::AAfterCalculate(void)
 // Обновление интерфейса
 void TVideoOutputFrame::AUpdateInterface(void)
 {
-//VideoCaptureOptionsForm->Show();
 // if(UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode() == 1)
 // if(UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode() != 0 /*&& !IsStarted*/)
   if(CaptureThread)
@@ -1317,6 +1292,28 @@ void TVideoOutputFrame::ASaveParameters(RDK::USerStorageXML &xml)
  xml.WriteString("SelectedComponentPropertyMatrixName",SelectedComponentPropertyMatrixName);
  xml.WriteInteger("SendPointsByStep",SendPointsByStepCheckBox->Checked);
  xml.WriteInteger("DeletePointsAfterSendCheckBox",DeletePointsAfterSendCheckBox->Checked);
+ if(CaptureThread)
+  xml.WriteInteger("ActiveSource",CaptureThread->GetSourceMode());
+
+ xml.SelectNodeForce("VideoSourceOptions");
+  std::map<int, RDK::USerStorageXML>::iterator I=VideoSourceOptions.begin();
+  for(;I != VideoSourceOptions.end();++I)
+  {
+   xml.SelectNodeForce(RDK::sntoa(I->first));
+   try
+   {
+    xml.LoadToNode(I->second,"VideoSourceThread");
+   }
+   catch(RDK::UException &exception)
+   {
+	xml.SelectUp();
+	xml.SelectUp();
+	throw;
+   }
+   xml.SelectUp();
+  }
+
+ xml.SelectUp();
 }
 
 // Загружает параметры интерфейса из xml
@@ -1335,6 +1332,33 @@ void TVideoOutputFrame::ALoadParameters(RDK::USerStorageXML &xml)
  SelectedComponentPropertyMatrixName=xml.ReadString("SelectedComponentPropertyMatrixName","");
  SendPointsByStepCheckBox->Checked=xml.ReadInteger("SendPointsByStep",0);
  DeletePointsAfterSendCheckBox->Checked=xml.ReadInteger("DeletePointsAfterSendCheckBox",0);
+
+ xml.SelectNodeForce("VideoSourceOptions");
+ int num_nodes=xml.GetNumNodes();
+ std::string str;
+//  std::map<int, RDK::USerStorageXML>::iterator I=VideoSourceOptions.begin();
+//  for(;I != VideoSourceOptions.end();++I)
+  for(int i=0;i<num_nodes;i++)
+  {
+   xml.SelectNode(i);
+   try
+   {
+	xml.SaveFromNode(str);
+	VideoSourceOptions[RDK::atoi(xml.GetNodeName())].Load(str,"VideoSourceThread");
+   }
+   catch(RDK::UException &exception)
+   {
+	xml.SelectUp();
+	xml.SelectUp();
+	throw;
+   }
+   xml.SelectUp();
+  }
+
+ xml.SelectUp();
+
+ int mode=xml.ReadInteger("ActiveSource",0);
+ Init(mode);
 
  UpdateInterface();
 }
@@ -1906,4 +1930,15 @@ void __fastcall TVideoOutputFrame::SaveImage1Click(TObject *Sender)
 //---------------------------------------------------------------------------
 
 
+
+void __fastcall TVideoOutputFrame::SourceControl21Click(TObject *Sender)
+{
+ if(CaptureThread)
+ {
+  CaptureThread->SaveParameters(VideoSourceOptions[CaptureThread->GetSourceMode()]);
+  VideoCaptureOptionsForm->SelectVideoSourcePage(CaptureThread->GetSourceMode());
+ }
+ VideoCaptureOptionsForm->Show();
+}
+//---------------------------------------------------------------------------
 

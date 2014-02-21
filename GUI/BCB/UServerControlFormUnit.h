@@ -312,6 +312,9 @@ int UnRegisterMetadataReceiver(const std::string &address, int port);
 /// «агружает проект аналитики дл€ канала
 /// или загружает проект дл€ всех каналов, если channel_id<0
 int LoadProject(int channel_id, const std::string &project_file_name);
+
+/// —охран€ет проект
+int SaveProject(void);
 // -----------------------------
 };
 //---------------------------------------------------------------------------

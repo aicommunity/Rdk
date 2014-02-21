@@ -1,26 +1,32 @@
-object VideoCaptureOptionsIPCameraFrame: TVideoCaptureOptionsIPCameraFrame
+object VideoCaptureOptionsIPCameraForm: TVideoCaptureOptionsIPCameraForm
   Left = 0
   Top = 0
-  Width = 574
-  Height = 256
-  TabOrder = 0
+  ClientHeight = 218
+  ClientWidth = 558
+  Color = clBtnFace
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -11
+  Font.Name = 'Tahoma'
+  Font.Style = []
+  OldCreateOrder = True
+  OnCreate = FormCreate
+  PixelsPerInch = 96
+  TextHeight = 13
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 574
-    Height = 256
+    Width = 558
+    Height = 218
     Align = alClient
     TabOrder = 0
-    ExplicitTop = -10
-    ExplicitWidth = 445
-    ExplicitHeight = 266
     DesignSize = (
-      574
-      256)
+      558
+      218)
     object Label4: TLabel
       Left = 8
       Top = 3
-      Width = 306
+      Width = 290
       Height = 13
       Anchors = [akLeft, akTop, akRight]
       AutoSize = False
@@ -30,7 +36,7 @@ object VideoCaptureOptionsIPCameraFrame: TVideoCaptureOptionsIPCameraFrame
     object Label5: TLabel
       Left = 8
       Top = 47
-      Width = 558
+      Width = 542
       Height = 13
       Anchors = [akLeft, akTop, akRight]
       AutoSize = False
@@ -40,7 +46,7 @@ object VideoCaptureOptionsIPCameraFrame: TVideoCaptureOptionsIPCameraFrame
     object Label6: TLabel
       Left = 8
       Top = 89
-      Width = 558
+      Width = 542
       Height = 13
       Anchors = [akLeft, akTop, akRight]
       AutoSize = False
@@ -50,7 +56,7 @@ object VideoCaptureOptionsIPCameraFrame: TVideoCaptureOptionsIPCameraFrame
     object Label8: TLabel
       Left = 216
       Top = 1
-      Width = 281
+      Width = 265
       Height = 13
       Anchors = [akLeft, akTop, akRight]
       AutoSize = False
@@ -61,31 +67,28 @@ object VideoCaptureOptionsIPCameraFrame: TVideoCaptureOptionsIPCameraFrame
     object IPCameraUrlEdit: TEdit
       Left = 8
       Top = 20
-      Width = 558
+      Width = 542
       Height = 21
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 0
       Text = 'http://127.0.0.1/video/mjpg.cgi'
-      ExplicitWidth = 429
     end
     object IPCameraUserNameEdit: TEdit
       Left = 8
       Top = 62
-      Width = 558
+      Width = 542
       Height = 21
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 1
       Text = 'Admin'
-      ExplicitWidth = 429
     end
     object IPCameraUserPasswordEdit: TEdit
       Left = 8
       Top = 108
-      Width = 558
+      Width = 542
       Height = 21
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 2
-      ExplicitWidth = 429
     end
     object IpMoveUpButton: TButton
       Left = 96
@@ -153,13 +156,12 @@ object VideoCaptureOptionsIPCameraFrame: TVideoCaptureOptionsIPCameraFrame
     object IPCameraControlPostfixEdit: TEdit
       Left = 216
       Top = 20
-      Width = 350
+      Width = 334
       Height = 21
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 10
       Text = 'http://127.0.0.1/video/mjpg.cgi'
       Visible = False
-      ExplicitWidth = 221
     end
   end
 end

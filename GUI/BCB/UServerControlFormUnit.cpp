@@ -320,6 +320,11 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
   }
  }
  else
+ if(cmd == "SaveProject")
+ {
+  return_value=SaveProject();
+ }
+ else
  if(cmd == "ReadImageFromVideoSource")
  {
 #ifdef RDK_VIDEO
@@ -352,6 +357,30 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
 #else
    return_value=1;
 #endif
+ }
+ else
+ if(cmd == "StartVideoSource")
+ {
+  TVideoOutputFrame* frame=VideoOutputForm->GetVideoOutputFrame(engine_index);
+  if(frame)
+  {
+   frame->StartButtonClick(this);
+   return_value=0;
+  }
+  else
+   return_value=1;
+ }
+ else
+ if(cmd == "StopVideoSource")
+ {
+  TVideoOutputFrame* frame=VideoOutputForm->GetVideoOutputFrame(engine_index);
+  if(frame)
+  {
+   frame->StopButtonClick(this);
+   return_value=0;
+  }
+  else
+   return_value=1;
  }
  else
   return_value=2001;
@@ -1033,6 +1062,13 @@ int TUServerControlForm::UnRegisterMetadataReceiver(const std::string &address, 
 int TUServerControlForm::LoadProject(int channel_id, const std::string &project_file_name)
 {
  UGEngineControlForm->OpenProject(project_file_name.c_str());
+ return 0;
+}
+
+/// Сохраняет проект
+int TUServerControlForm::SaveProject(void)
+{
+ UGEngineControlForm->SaveProject();
  return 0;
 }
 // -----------------------------

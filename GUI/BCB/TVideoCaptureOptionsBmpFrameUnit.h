@@ -9,9 +9,11 @@
 #include <Vcl.Forms.hpp>
 #include <Vcl.ExtCtrls.hpp>
 #include "TVideoCaptureOptionsInterface.h"
+#include "TUVisualControllerFormUnit.h"
+#include <Vcl.Dialogs.hpp>
 
 //---------------------------------------------------------------------------
-class TVideoCaptureOptionsBmpFrame : public TFrame, public TVideoCaptureOptionsInterface
+class TVideoCaptureOptionsBmpForm : public TVideoCaptureOptionsInterface
 {
 __published:	// IDE-managed Components
 	TCheckBox *PictureTruncPathCheckBox;
@@ -19,23 +21,29 @@ __published:	// IDE-managed Components
 	TButton *OpenImageFileButton;
 	TLabel *Label3;
 	TEdit *ImageFileNameEdit;
+	TOpenDialog *PicturesOpenDialog;
+	void __fastcall FormCreate(TObject *Sender);
+	void __fastcall OpenImageFileButtonClick(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
-	__fastcall TVideoCaptureOptionsBmpFrame(TComponent* Owner);
+	__fastcall TVideoCaptureOptionsBmpForm(TComponent* Owner);
 
 
 /// -------------------------------------
 /// Методы загрузки/сохранения параметров
 /// -------------------------------------
+/// Создает копию объекта этого класса
+virtual TVideoCaptureOptionsBmpForm* New(TComponent *owner);
+
 /// Считывает параметры в поля интерфейса
-virtual bool LoadParamters(RDK::USerStorageXML &xml);
+virtual bool ReadParametersToGui(RDK::USerStorageXML &xml);
 
 /// Записывает параметры из полей интерфейса в xml
-virtual bool SaveParamters(RDK::USerStorageXML &xml);
+virtual bool WriteParametersToXml(RDK::USerStorageXML &xml);
 /// -------------------------------------
 
 };
 //---------------------------------------------------------------------------
-extern PACKAGE TVideoCaptureOptionsBmpFrame *VideoCaptureOptionsBmpFrame;
+extern PACKAGE TVideoCaptureOptionsBmpForm *VideoCaptureOptionsBmpForm;
 //---------------------------------------------------------------------------
 #endif

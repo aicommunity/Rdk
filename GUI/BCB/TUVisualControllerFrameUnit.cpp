@@ -189,6 +189,8 @@ void TUVisualControllerFrame::SaveParameters(RDK::USerStorageXML &xml)
 {
  try
  {
+  if(!Owner)
+   return;
  xml.SelectNodeForce(AnsiString(Owner->Name).c_str());
  xml.SelectNodeForce(GetName());
 // xml.WriteString("FrameTypeName",AnsiString(ClassName()).c_str());
@@ -216,6 +218,8 @@ void TUVisualControllerFrame::LoadParameters(RDK::USerStorageXML &xml)
 {
  try
  {
+  if(!Owner)
+   return;
  xml.SelectNodeForce(AnsiString(Owner->Name).c_str());
  xml.SelectNodeForce(GetName());
  ComponentControlName=xml.ReadString("ComponentControlName","");
