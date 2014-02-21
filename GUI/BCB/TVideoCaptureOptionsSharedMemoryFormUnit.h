@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 
-#ifndef TVideoCaptureOptionsSharedMemoryFrameUnitH
-#define TVideoCaptureOptionsSharedMemoryFrameUnitH
+#ifndef TVideoCaptureOptionsSharedMemoryFormUnitH
+#define TVideoCaptureOptionsSharedMemoryFormUnitH
 //---------------------------------------------------------------------------
 #include <System.Classes.hpp>
 #include <Vcl.Controls.hpp>

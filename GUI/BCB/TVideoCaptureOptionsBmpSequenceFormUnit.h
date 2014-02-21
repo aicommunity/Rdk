@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 
-#ifndef TVideoCaptureOptionsVideoFileFrameUnitH
-#define TVideoCaptureOptionsVideoFileFrameUnitH
+#ifndef TVideoCaptureOptionsBmpSequenceFormUnitH
+#define TVideoCaptureOptionsBmpSequenceFormUnitH
 //---------------------------------------------------------------------------
 #include <System.Classes.hpp>
 #include <Vcl.Controls.hpp>
@@ -10,32 +10,29 @@
 #include <Vcl.ExtCtrls.hpp>
 #include "TVideoCaptureOptionsInterface.h"
 #include "TUVisualControllerFormUnit.h"
-#include <Vcl.Dialogs.hpp>
 
 //---------------------------------------------------------------------------
-class TVideoCaptureOptionsVideoFileForm : public TVideoCaptureOptionsInterface
+class TVideoCaptureOptionsBmpSequenceForm : public TVideoCaptureOptionsInterface
 {
 __published:	// IDE-managed Components
-	TPanel *VFCapturePanel;
-	TLabel *VideoFileNameLabel;
-	TEdit *VFNameEdit;
-	TButton *VFBrowseButton;
-	TCheckBox *VideoTruncPathCheckBox;
-	TCheckBox *RepeatVideoCheckBox;
-	TCheckBox *ProcessAllFramesVideoCheckBox;
-	TOpenDialog *VideoOpenDialog;
+	TLabel *Label7;
+	TEdit *ImageSequencePathEdit;
+	TCheckBox *ImageSequencePathCheckBox;
+	TButton *ImageSequencePathBrowseButton;
+	TCheckBox *RepeatSequenceCheckBox;
+	TLabeledEdit *ImageSequenceFpsLabeledEdit;
 	void __fastcall FormCreate(TObject *Sender);
-	void __fastcall VFBrowseButtonClick(TObject *Sender);
+	void __fastcall ImageSequencePathBrowseButtonClick(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
-	__fastcall TVideoCaptureOptionsVideoFileForm(TComponent* Owner);
+	__fastcall TVideoCaptureOptionsBmpSequenceForm(TComponent* Owner);
 
 
 /// -------------------------------------
 /// Методы загрузки/сохранения параметров
 /// -------------------------------------
 /// Создает копию объекта этого класса
-virtual TVideoCaptureOptionsVideoFileForm* New(TComponent *owner);
+virtual TVideoCaptureOptionsBmpSequenceForm* New(TComponent *owner);
 
 /// Считывает параметры в поля интерфейса
 virtual bool ReadParametersToGui(RDK::USerStorageXML &xml);
@@ -46,6 +43,6 @@ virtual bool WriteParametersToXml(RDK::USerStorageXML &xml);
 
 };
 //---------------------------------------------------------------------------
-extern PACKAGE TVideoCaptureOptionsVideoFileForm *VideoCaptureOptionsVideoFileForm;
+extern PACKAGE TVideoCaptureOptionsBmpSequenceForm *VideoCaptureOptionsBmpSequenceForm;
 //---------------------------------------------------------------------------
 #endif

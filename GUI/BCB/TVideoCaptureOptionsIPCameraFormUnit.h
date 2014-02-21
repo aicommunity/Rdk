@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 
-#ifndef TVideoCaptureOptionsIPCameraFrameUnitH
-#define TVideoCaptureOptionsIPCameraFrameUnitH
+#ifndef TVideoCaptureOptionsIPCameraFormUnitH
+#define TVideoCaptureOptionsIPCameraFormUnitH
 //---------------------------------------------------------------------------
 #include <System.Classes.hpp>
 #include <Vcl.Controls.hpp>

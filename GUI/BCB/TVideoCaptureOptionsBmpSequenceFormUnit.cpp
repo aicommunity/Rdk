@@ -3,7 +3,7 @@
 #include <vcl.h>
 #pragma hdrstop
 
-#include "TVideoCaptureOptionsBmpSequenceFrameUnit.h"
+#include "TVideoCaptureOptionsBmpSequenceFormUnit.h"
 #include "TVideoCaptureOptionsFormUnit.h"
 #include "TVideoSourceThread.h"
 #include "VideoOutputFrameUnit.h"
