@@ -361,6 +361,7 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
  else
  if(cmd == "StartVideoSource")
  {
+#ifdef RDK_VIDEO
   TVideoOutputFrame* frame=VideoOutputForm->GetVideoOutputFrame(engine_index);
   if(frame)
   {
@@ -369,10 +370,14 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
   }
   else
    return_value=1;
+#else
+   return_value=1;
+#endif
  }
  else
  if(cmd == "StopVideoSource")
  {
+#ifdef RDK_VIDEO
   TVideoOutputFrame* frame=VideoOutputForm->GetVideoOutputFrame(engine_index);
   if(frame)
   {
@@ -381,6 +386,9 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
   }
   else
    return_value=1;
+#else
+   return_value=1;
+#endif
  }
  else
   return_value=2001;
