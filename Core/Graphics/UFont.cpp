@@ -15,6 +15,7 @@ See file license.txt for more information
 #include "UFont.h"
 #include "UAGraphics.h"
 #include "UGraphicsIO.h"
+#include "../Utilities/USupport.h"
 //#include "Libraries/Basic/UBAResize.h"
 
 namespace RDK {
