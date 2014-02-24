@@ -151,6 +151,8 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
   result.WriteString("Mode",RDK::sntoa(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GetMode()));
   result.SelectNodeForce("Data");
   result.WriteString("Mode",RDK::sntoa(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GetMode()));
+  frame->CaptureThread->SaveParametersEx(result);
+/*
   if(GetChannelVideoSource(engine_index) == 3)
   {
    result.WriteString("IPCameraUrl",AnsiString(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->IPCameraUrlEdit->Text).c_str());
@@ -161,6 +163,8 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
   else
   if(GetChannelVideoSource(engine_index) == 7)
   {
+   frame->CaptureThread->SaveParameters(result);
+
    result.WriteString("ServerUrl",AnsiString(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GeViCameraUrlEdit->Text).c_str());
    result.WriteString("Username",AnsiString(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GeViCameraUserNameEdit->Text).c_str());
    result.WriteString("Password",AnsiString(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GeViCameraUserPasswordEdit->Text).c_str());
@@ -170,13 +174,11 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
    result.WriteInteger("ImageHeight",((CLiveStreamThread*)(frame->CaptureThread))->GetHeight());
    result.SelectNodeForce("GeViAvaliableMediaChannels");
    std::vector<TGeviMediaChannelDescription> media_channels=((CLiveStreamThread*)(frame->CaptureThread))->GetMediaChannelList();
-//   media_channels.resize(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GeViComboBox->Items->Count);
-//   for(int i=0;i<frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GeViComboBox->Items->Count;i++)
-//	media_channels[i]=StrToInt(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GeViComboBox->Items->Strings[i]);
    result<<media_channels;
    result.SelectUp();
+
   }
-#endif
+#endif*/
   result.SelectUp();
   return_value=0;
 #else
@@ -198,7 +200,8 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
   else
   {
    mode=xml.ReadInteger("Mode",mode);
-#ifdef DVA
+   frame->CaptureThread->LoadParametersEx(xml);
+/*#ifdef DVA
    if(mode == 7)
    {
 	frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GeViCameraUrlEdit->Text=xml.ReadString("ServerUrl","").c_str();
@@ -207,10 +210,10 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
 	frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GeViCameraMediaChannelEdit->Text=xml.ReadString("MediaChannel","").c_str();
 	frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GeViFPSLabeledEdit->Text=xml.ReadString("Fps","").c_str();
    }
-#endif
+#endif   */
 
    xml.SelectUp();
-   return_value=SetChannelVideoSource(engine_index,mode);
+   return_value=0;//SetChannelVideoSource(engine_index,mode);
   }
 #endif
  }

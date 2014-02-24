@@ -197,7 +197,7 @@ template<typename CharT>
 double atof(const std::basic_string<CharT> &str)
 {
  basic_stringstream<CharT> stream(str);
- double res;
+ double res(0.0);
  stream>>res;
  return res;
 }
@@ -207,7 +207,7 @@ template<typename CharT>
 int atoi(const std::basic_string<CharT> &str)
 {
  basic_stringstream<CharT> stream(str);
- int res;
+ int res(0);
  stream>>res;
  return res;
 }
@@ -217,7 +217,7 @@ template<typename CharT>
 int hextoi(const std::basic_string<CharT> &str)
 {
  basic_stringstream<CharT> stream(str);
- int res;
+ int res(0);
  stream>>hex>>res;
  return res;
 }

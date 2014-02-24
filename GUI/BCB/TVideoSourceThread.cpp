@@ -115,7 +115,11 @@ bool TVideoCaptureThread::SetFrame(TVideoOutputFrame * frame)
 bool TVideoCaptureThread::SaveParameters(RDK::USerStorageXML &xml)
 {
  xml.SelectNodeRoot("VideoSourceThread");
+ return SaveParametersEx(xml);
+}
 
+bool TVideoCaptureThread::SaveParametersEx(RDK::USerStorageXML &xml)
+{
  xml.WriteInteger("SyncMode",SyncMode);
  xml.WriteBool("RepeatFlag",RepeatFlag);
  if(!ASaveParameters(xml))
@@ -128,6 +132,11 @@ bool TVideoCaptureThread::LoadParameters(RDK::USerStorageXML &xml)
 {
  xml.SelectNodeRoot("VideoSourceThread");
 
+ return LoadParametersEx(xml);
+}
+
+bool TVideoCaptureThread::LoadParametersEx(RDK::USerStorageXML &xml)
+{
  SyncMode=xml.ReadInteger("SyncMode",SyncMode);
  RepeatFlag=xml.ReadBool("RepeatFlag",RepeatFlag);
 

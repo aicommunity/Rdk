@@ -40,7 +40,10 @@ bool TVideoCaptureOptionsForm::AddVideoSourcePrototypes(int mode, RDK::UEPtr<TVi
 {
  const std::map<int, RDK::UEPtr<TVideoCaptureThread> >::iterator I=VideoSourcePrototypes.find(mode);
  if(I != VideoSourcePrototypes.end())
+ {
+  delete thread;
   return false;
+ }
  VideoSourcePrototypes[mode]=thread;
  return true;
 }
