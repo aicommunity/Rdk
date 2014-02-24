@@ -329,10 +329,30 @@ object UGEngineControlForm: TUGEngineControlForm
                 inherited NameTabSheet: TTabSheet
                   ExplicitLeft = 4
                   ExplicitTop = 24
-                  ExplicitHeight = 207
+                  ExplicitWidth = 499
+                  ExplicitHeight = 515
                   inherited StringGrid: TStringGrid
-                    Height = 207
-                    ExplicitHeight = 207
+                    Width = 499
+                    Height = 515
+                    ExplicitWidth = 499
+                    ExplicitHeight = 515
+                  end
+                end
+                inherited LibsControlTabSheet: TTabSheet
+                  ExplicitLeft = 4
+                  ExplicitTop = 24
+                  ExplicitHeight = 207
+                  inherited Splitter1: TSplitter
+                    Top = -83
+                    ExplicitTop = -83
+                  end
+                  inherited Panel1: TPanel
+                    Top = 84
+                    ExplicitTop = 84
+                  end
+                  inherited GroupBox2: TGroupBox
+                    Top = -76
+                    ExplicitTop = -76
                   end
                 end
               end
@@ -710,7 +730,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 360
     Top = 65528
     Bitmap = {
-      494C01011B006000F80110001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B006000040210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

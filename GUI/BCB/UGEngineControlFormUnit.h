@@ -300,6 +300,9 @@ Word Saved8087CW;
 
 bool AppWinState;
 
+// Загружает данные положения формы из xml
+void LoadFormPosition(RDK::USerStorageXML &xml);
+
 // Обновление интерфейса
 void AUpdateInterface(void);
 

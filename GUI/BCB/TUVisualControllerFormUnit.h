@@ -102,17 +102,17 @@ virtual void SetCalculationStepUpdatedFlag(void);
 /// Возвращает состояние флага прошедшей перерисовки в этой итерации счета
 virtual bool GetCalculationStepUpdatedFlag(void);
 // -----------------------------
-};
 
 // --------------------------
 // Вспомогательные функции сериализации
 // --------------------------
 // Сохраняет данные положения формы в xml
-void SaveFormPosition(RDK::USerStorageXML &xml, TForm *form);
+virtual void SaveFormPosition(RDK::USerStorageXML &xml);
 
 // Загружает данные положения формы из xml
-void LoadFormPosition(RDK::USerStorageXML &xml, TForm *form);
+virtual void LoadFormPosition(RDK::USerStorageXML &xml);
 // --------------------------
+};
 
 //---------------------------------------------------------------------------
 extern PACKAGE TUVisualControllerForm *UVisualControllerForm;

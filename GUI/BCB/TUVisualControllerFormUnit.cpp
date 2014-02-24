@@ -11,53 +11,6 @@
 TUVisualControllerForm *UVisualControllerForm;
 
 // --------------------------
-// Вспомогательные функции сериализации
-// --------------------------
-// Сохраняет данные положения формы в xml
-void SaveFormPosition(RDK::USerStorageXML &xml, TForm *form)
-{
- if(!form)
-  return;
-
- xml.SelectNodeForce("FormPosition");
- xml.WriteInteger("Left",form->Left);
- xml.WriteInteger("Top",form->Top);
- xml.WriteInteger("Width",form->Width);
- xml.WriteInteger("Height",form->Height);
- xml.WriteBool("Visible",form->Visible);
- xml.WriteInteger("WindowState",form->WindowState);
- xml.SelectUp();
-}
-
-// Загружает данные положения формы из xml
-void LoadFormPosition(RDK::USerStorageXML &xml, TForm *form)
-{
- if(!form)
-  return;
-
- xml.SelectNodeForce("FormPosition");
- int value=0;
- value=xml.ReadInteger("Left",form->Left);
- if(value<Screen->DesktopLeft || value>= Screen->DesktopLeft+Screen->DesktopWidth)
-  value=Screen->DesktopLeft;
- form->Left=value;
-
- value=xml.ReadInteger("Top",form->Top);
- if(value<Screen->DesktopTop || value>= Screen->DesktopTop+Screen->DesktopHeight)
-  value=Screen->DesktopTop;
- form->Top=value;
-
- form->Width=xml.ReadInteger("Width",form->Width);
- form->Height=xml.ReadInteger("Height",form->Height);
- form->Visible=xml.ReadBool("Visible",form->Visible);
- form->WindowState=xml.ReadInteger("WindowState",(int)form->WindowState);
-// form->Repaint();
- xml.SelectUp();
-}
-// --------------------------
-
-
-// --------------------------
 // Конструкторы и деструкторы
 // --------------------------
 // Флаг, сообщающий что идет расчет
@@ -254,7 +207,7 @@ void TUVisualControllerForm::SaveParameters(RDK::USerStorageXML &xml)
   xml.SelectNodeForce(AnsiString(tab->PageControl->Owner->Name).c_str());
  xml.SelectNodeForce(GetName());
  ASaveParameters(xml);
- SaveFormPosition(xml, this);
+ SaveFormPosition(xml);
  xml.WriteString("ComponentControlName",ComponentControlName);
  xml.WriteInteger("UpdateInterval",UpdateInterval);
  xml.WriteBool("AlwaysUpdateFlag",AlwaysUpdateFlag);
@@ -288,7 +241,7 @@ void TUVisualControllerForm::LoadParameters(RDK::USerStorageXML &xml)
  ComponentControlName=xml.ReadString("ComponentControlName","");
  UpdateInterval=xml.ReadInteger("UpdateInterval",UpdateInterval);
  AlwaysUpdateFlag=xml.ReadBool("AlwaysUpdateFlag",false);
- LoadFormPosition(xml, this);
+ LoadFormPosition(xml);
  ALoadParameters(xml);
 
  if(tab)
@@ -342,4 +295,44 @@ bool TUVisualControllerForm::GetCalculationStepUpdatedFlag(void)
  return CalculationStepUpdatedFlag;
 }
 // -----------------------------
+
+// --------------------------
+// Вспомогательные функции сериализации
+// --------------------------
+// Сохраняет данные положения формы в xml
+void TUVisualControllerForm::SaveFormPosition(RDK::USerStorageXML &xml)
+{
+ xml.SelectNodeForce("FormPosition");
+ xml.WriteInteger("Left",Left);
+ xml.WriteInteger("Top",Top);
+ xml.WriteInteger("Width",Width);
+ xml.WriteInteger("Height",Height);
+ xml.WriteBool("Visible",Visible);
+ xml.WriteInteger("WindowState",WindowState);
+ xml.SelectUp();
+}
+
+// Загружает данные положения формы из xml
+void TUVisualControllerForm::LoadFormPosition(RDK::USerStorageXML &xml)
+{
+ xml.SelectNodeForce("FormPosition");
+ int value=0;
+ value=xml.ReadInteger("Left",Left);
+ if(value<Screen->DesktopLeft || value>= Screen->DesktopLeft+Screen->DesktopWidth)
+  value=Screen->DesktopLeft;
+ Left=value;
+
+ value=xml.ReadInteger("Top",Top);
+ if(value<Screen->DesktopTop || value>= Screen->DesktopTop+Screen->DesktopHeight)
+  value=Screen->DesktopTop;
+ Top=value;
+
+ Width=xml.ReadInteger("Width",Width);
+ Height=xml.ReadInteger("Height",Height);
+ Visible=xml.ReadBool("Visible",Visible);
+ WindowState=xml.ReadInteger("WindowState",(int)WindowState);
+
+ xml.SelectUp();
+}
+// --------------------------
 

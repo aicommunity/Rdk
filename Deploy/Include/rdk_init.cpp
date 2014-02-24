@@ -183,7 +183,7 @@ int RDK_CALL Engine_LoadFonts(void)
   std::string font_path=RdkSystemDir+"Fonts/";
   FindFilesList(font_path, "*.fnt", true, font_names);
   if(PEnvironment)
-   PEnvironment->LogMessage(RDK_EX_DEBUG, std::string("Loading fonts form ")+font_path);
+   PEnvironment->LogMessage(RDK_EX_DEBUG, std::string("Loading fonts form ")+font_path+"\n");
 
   RDK::ClearClobalFonts();
   RDK::UBitmapFont font;
@@ -191,7 +191,7 @@ int RDK_CALL Engine_LoadFonts(void)
   {
    RDK::AddGlobalFont(font_path+font_names[i]);
    if(PEnvironment)
-    PEnvironment->LogMessage(RDK_EX_DEBUG, std::string("Loaded font ")+font_names[i]);
+    PEnvironment->LogMessage(RDK_EX_DEBUG, std::string("Loaded font ")+font_names[i]+"\n");
   }
  }
  catch (UException &exception)

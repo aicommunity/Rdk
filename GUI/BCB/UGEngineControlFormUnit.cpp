@@ -51,13 +51,37 @@ bool ApplicationInitialized=false;
 __fastcall TUGEngineControlForm::TUGEngineControlForm(TComponent* Owner)
 	: TUVisualControllerForm(Owner)
 {
-	 ProjectAutoSaveFlag=true;
+ ProjectAutoSaveFlag=true;
 
  // Признак наличия открытого проекта
  ProjectOpenFlag=false;
 
  AppWinState=true;
 }
+
+// Загружает данные положения формы из xml
+void TUGEngineControlForm::LoadFormPosition(RDK::USerStorageXML &xml)
+{
+ xml.SelectNodeForce("FormPosition");
+ int value=0;
+ value=xml.ReadInteger("Left",Left);
+ if(value<Screen->DesktopLeft || value>= Screen->DesktopLeft+Screen->DesktopWidth)
+  value=Screen->DesktopLeft;
+ Left=value;
+
+ value=xml.ReadInteger("Top",Top);
+ if(value<Screen->DesktopTop || value>= Screen->DesktopTop+Screen->DesktopHeight)
+  value=Screen->DesktopTop;
+ Top=value;
+
+ Width=xml.ReadInteger("Width",Width);
+ Height=xml.ReadInteger("Height",Height);
+// Visible=xml.ReadBool("Visible",Visible);
+// WindowState=xml.ReadInteger("WindowState",(int)WindowState);
+
+ xml.SelectUp();
+}
+
 //---------------------------------------------------------------------------
 // Метод, вызываемый перед шагом расчета
 void TUGEngineControlForm::ABeforeCalculate(void)
