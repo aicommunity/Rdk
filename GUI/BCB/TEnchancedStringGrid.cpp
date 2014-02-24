@@ -3,6 +3,8 @@
 #include <vcl.h>
 #pragma hdrstop
 
+#define EDIT_COL 2
+
 #include "TEnchancedStringGrid.h"
 // ---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -621,7 +623,7 @@ void __fastcall TEnchancedSG::BasicStringGridKeyPress(TObject *Sender, System::W
 		return;
 	if(Key==VK_SPACE)
 	{
-		if((BasicStringGrid->Col==(BasicStringGrid->ColCount-2))&&(BasicStringGrid->Row>0))
+		if((BasicStringGrid->Col==(EDIT_COL))&&(BasicStringGrid->Row>0))
 		{
 			TProperty p;
 			m_storage.GetPropertyByIndex(BasicStringGrid->Row-1, &p);
@@ -638,7 +640,7 @@ void __fastcall TEnchancedSG::BasicStringGridKeyPress(TObject *Sender, System::W
 
 	if(Key==VK_RETURN)
 	{
-		 if(BasicStringGrid->Col==(BasicStringGrid->ColCount-2))
+		 if(BasicStringGrid->Col==(EDIT_COL))
 		 {
 			m_editing=true;
 			m_editingCol = BasicStringGrid->Col;
@@ -909,7 +911,7 @@ void __fastcall TEnchancedSG::chbBoolEditKeyPress(TObject *Sender, System::WideC
 void __fastcall TEnchancedSG::BasicStringGridDblClick(TObject *Sender)
 {
 	m_bCellChanged = false;
-	if((BasicStringGrid->Col==(BasicStringGrid->ColCount-2))&&(!m_editing))
+	if((BasicStringGrid->Col==2)&&(!m_editing))
 	{
 		if(BasicStringGrid->Row>0)
 		{
