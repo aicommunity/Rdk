@@ -1946,6 +1946,7 @@ void __fastcall TVideoOutputFrame::StreamingButtonClick(TObject *Sender)
 {
  if(StreamingButton->Caption == "Start Streaming")
  {
+  NetworkStreamingFrame->FrameIndexLabeledEdit->Text=IntToStr(FrameIndex);
   NetworkStreamingFrame->NetworkStreamingButtonClick(this);
   StreamingButton->Caption="Stop Streaming";
   return;
@@ -1962,6 +1963,7 @@ void __fastcall TVideoOutputFrame::StreamingButtonClick(TObject *Sender)
 
 void __fastcall TVideoOutputFrame::StartRecordingToolButtonClick(TObject *Sender)
 {
+ RecordingFrame->FrameIndexLabeledEdit->Text=IntToStr(FrameIndex);
  RecordingFrame->StartRecordingButtonClick(Sender);
 }
 //---------------------------------------------------------------------------
@@ -1991,6 +1993,7 @@ void __fastcall TVideoOutputFrame::RecordingFrameStartRecordingButtonClick(TObje
  if(!IsStarted)
   Start();
 
+ RecordingFrame->FrameIndexLabeledEdit->Text=IntToStr(FrameIndex);
  RecordingFrame->StartRecordingButtonClick(Sender);
 }
 //---------------------------------------------------------------------------
@@ -2006,6 +2009,7 @@ void __fastcall TVideoOutputFrame::NetworkStreamingFrameNetworkStreamingButtonCl
  if(!IsStarted)
   Start();
 
+ NetworkStreamingFrame->FrameIndexLabeledEdit->Text=IntToStr(FrameIndex);
  NetworkStreamingFrame->NetworkStreamingButtonClick(Sender);
 }
 //---------------------------------------------------------------------------

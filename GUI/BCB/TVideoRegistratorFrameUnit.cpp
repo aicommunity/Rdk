@@ -456,6 +456,8 @@ void TTVideoRegistratorFrame::FillErrorsArray(void)
  Errors[XCAMNOTSTARTED]="Camera not started";
  Errors[XCAMFRAMETYPEERROR]="Frame type error";
  Errors[XCAMCOULDNOTSTOP]="Camera could not stopped";
+
+ FrameIndex=0;
 }
 //---------------------------------------------------------------------------
 // Логгирование ошибок
@@ -864,6 +866,10 @@ void TTVideoRegistratorFrame::ASaveParameters(RDK::USerStorageXML &xml)
  // Recording
  xml.WriteString("RecordingFileName", AnsiString(RecordingFileNameLabeledEdit->Text).c_str());
  xml.WriteString("RecordingFrameRate", AnsiString(RecordingFrameRateLabeledEdit->Text).c_str());
+ xml.WriteString("RecordWidth", AnsiString(RecordWidthLabeledEdit->Text).c_str());
+ xml.WriteString("RecordHeight", AnsiString(RecordHeightLabeledEdit->Text).c_str());
+ xml.WriteInteger("RecordingMethod", StrToInt(RecordingMethodComboBox->ItemIndex));
+ xml.WriteInteger("VideoCompressor", StrToInt(VideoCompressorComboBox->ItemIndex));
 }
 
 // Загружает параметры интерфейса из xml
@@ -885,6 +891,10 @@ void TTVideoRegistratorFrame::ALoadParameters(RDK::USerStorageXML &xml)
  // Recording
  RecordingFileNameLabeledEdit->Text=(xml.ReadString("RecordingFileName", "")).c_str();
  RecordingFrameRateLabeledEdit->Text=(xml.ReadString("RecordingFrameRate", "")).c_str();
+ RecordWidthLabeledEdit->Text=(xml.ReadString("RecordWidth", "")).c_str();
+ RecordHeightLabeledEdit->Text=(xml.ReadString("RecordHeight", "")).c_str();
+ RecordingMethodComboBox->ItemIndex=(xml.ReadInteger("RecordingMethod", 0));
+ VideoCompressorComboBox->ItemIndex=(xml.ReadInteger("VideoCompressor", 0));
 
  UpdateInterface();
 }
