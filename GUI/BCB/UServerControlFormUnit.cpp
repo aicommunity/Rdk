@@ -146,41 +146,18 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
 #ifdef RDK_VIDEO
  TVideoOutputFrame *frame=VideoOutputForm->GetVideoOutputFrame(engine_index);
  if(!frame)
+ {
   return_value=1;
-
-  result.WriteString("Mode",RDK::sntoa(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GetMode()));
+ }
+ else
+ {
+  result.WriteString("Mode",RDK::sntoa(frame->CaptureThread->GetSourceMode()));
   result.SelectNodeForce("Data");
-  result.WriteString("Mode",RDK::sntoa(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GetMode()));
+  result.WriteString("Mode",RDK::sntoa(frame->CaptureThread->GetSourceMode()));
   frame->CaptureThread->SaveParametersEx(result);
-/*
-  if(GetChannelVideoSource(engine_index) == 3)
-  {
-   result.WriteString("IPCameraUrl",AnsiString(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->IPCameraUrlEdit->Text).c_str());
-   result.WriteString("IPCameraUsername",AnsiString(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->IPCameraUserNameEdit->Text).c_str());
-   result.WriteString("IPCameraPassword",AnsiString(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->IPCameraUserPasswordEdit->Text).c_str());
-  }
-#ifdef DVA
-  else
-  if(GetChannelVideoSource(engine_index) == 7)
-  {
-   frame->CaptureThread->SaveParameters(result);
-
-   result.WriteString("ServerUrl",AnsiString(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GeViCameraUrlEdit->Text).c_str());
-   result.WriteString("Username",AnsiString(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GeViCameraUserNameEdit->Text).c_str());
-   result.WriteString("Password",AnsiString(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GeViCameraUserPasswordEdit->Text).c_str());
-   result.WriteString("MediaChannel",AnsiString(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GeViCameraMediaChannelEdit->Text).c_str());
-   result.WriteString("Fps",AnsiString(frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GeViFPSLabeledEdit->Text).c_str());
-   result.WriteInteger("ImageWidth",((CLiveStreamThread*)(frame->CaptureThread))->GetWidth());
-   result.WriteInteger("ImageHeight",((CLiveStreamThread*)(frame->CaptureThread))->GetHeight());
-   result.SelectNodeForce("GeViAvaliableMediaChannels");
-   std::vector<TGeviMediaChannelDescription> media_channels=((CLiveStreamThread*)(frame->CaptureThread))->GetMediaChannelList();
-   result<<media_channels;
-   result.SelectUp();
-
-  }
-#endif*/
   result.SelectUp();
   return_value=0;
+ }
 #else
   return_value=1;
 #endif
@@ -192,7 +169,7 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
   TVideoOutputFrame *frame=VideoOutputForm->GetVideoOutputFrame(engine_index);
   if(!frame)
    return_value=1;
-  int mode=xml.ReadInteger("Mode",5);
+  int mode=xml.ReadInteger("Mode",0);
   if(!xml.SelectNode("Data"))
   {
    return_value=1;
@@ -200,18 +177,8 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
   else
   {
    mode=xml.ReadInteger("Mode",mode);
+   frame->Init(mode);
    frame->CaptureThread->LoadParametersEx(xml);
-/*#ifdef DVA
-   if(mode == 7)
-   {
-	frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GeViCameraUrlEdit->Text=xml.ReadString("ServerUrl","").c_str();
-	frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GeViCameraUserNameEdit->Text=xml.ReadString("Username","").c_str();
-	frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GeViCameraUserPasswordEdit->Text=xml.ReadString("Password","").c_str();
-	frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GeViCameraMediaChannelEdit->Text=xml.ReadString("MediaChannel","").c_str();
-	frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GeViFPSLabeledEdit->Text=xml.ReadString("Fps","").c_str();
-   }
-#endif   */
-
    xml.SelectUp();
    return_value=0;//SetChannelVideoSource(engine_index,mode);
   }
@@ -812,9 +779,10 @@ int TUServerControlForm::SetNumChannels(int value)
    for(int i=VideoOutputForm->GetNumSources();i<value;i++)
    {
 	VideoOutputForm->AddSource();
-	VideoOutputForm->GetVideoOutputFrame(i)->MyVideoGrabberControlForm->VideoGrabberControlFrame->PipeUidEdit->Text=(std::string("USharedMemory")+RDK::sntoa(i)).c_str();
-	VideoOutputForm->GetVideoOutputFrame(i)->MyVideoGrabberControlForm->VideoGrabberControlFrame->PipeIndexEdit->Text=IntToStr(i);
-    VideoOutputForm->GetVideoOutputFrame(i)->MyVideoGrabberControlForm->CloseButtonClick(this);
+	VideoOutputForm->GetVideoOutputFrame(i)->Init(0);
+//	VideoOutputForm->GetVideoOutputFrame(i)->MyVideoGrabberControlForm->VideoGrabberControlFrame->PipeUidEdit->Text=(std::string("USharedMemory")+RDK::sntoa(i)).c_str();
+//	VideoOutputForm->GetVideoOutputFrame(i)->MyVideoGrabberControlForm->VideoGrabberControlFrame->PipeIndexEdit->Text=IntToStr(i);
+//    VideoOutputForm->GetVideoOutputFrame(i)->MyVideoGrabberControlForm->CloseButtonClick(this);
    }
    VideoOutputForm->UpdateInterface();
   }
