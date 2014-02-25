@@ -1942,3 +1942,21 @@ void __fastcall TVideoOutputFrame::SourceControl21Click(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+void __fastcall TVideoOutputFrame::StreamingButtonClick(TObject *Sender)
+{
+ if(StreamingButton->Caption == "Start Streaming")
+ {
+  NetworkStreamingFrame->NetworkStreamingButtonClick(this);
+  StreamingButton->Caption="Stop Streaming";
+  return;
+ }
+
+ if(StreamingButton->Caption == "Stop Streaming")
+ {
+  NetworkStreamingFrame->StopNetworkStreamingButtonClick(this);
+  StreamingButton->Caption="Start Streaming";
+  return;
+ }
+}
+//---------------------------------------------------------------------------
+

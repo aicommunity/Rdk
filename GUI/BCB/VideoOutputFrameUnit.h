@@ -83,6 +83,7 @@ __published:    // IDE-managed Components
 	TTabSheet *RecordingTabSheet;
 	TTVideoRegistratorFrame *RecordingFrame;
 	TMenuItem *SourceControl21;
+	TButton *StreamingButton;
     void __fastcall TimerTimer(TObject *Sender);
 	void __fastcall StartButtonClick(TObject *Sender);
     void __fastcall StopButtonClick(TObject *Sender);
@@ -112,6 +113,7 @@ __published:    // IDE-managed Components
 	void __fastcall PropertyMatrix1Click(TObject *Sender);
 	void __fastcall SaveImage1Click(TObject *Sender);
 	void __fastcall SourceControl21Click(TObject *Sender);
+	void __fastcall StreamingButtonClick(TObject *Sender);
 //	void __fastcall UHttpServerFrameIdHTTPServerCommandGet(TIdContext *AContext, TIdHTTPRequestInfo *ARequestInfo,
 //          TIdHTTPResponseInfo *AResponseInfo);
 

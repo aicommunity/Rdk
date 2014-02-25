@@ -20,6 +20,7 @@
 #include "myrdk.h"
 
 #include <Vcl.ComCtrls.hpp>
+#include <Vcl.Dialogs.hpp>
 
 #include <string>
 #include <vector>
@@ -233,11 +234,8 @@ class TTVideoRegistratorFrame : public TUVisualControllerFrame
 __published:	// IDE-managed Components
 	TButton *StopNetworkStreamingButton;
 	TButton *NetworkStreamingButton;
-	TMemo *LogMemo;
-	TButton *SaveToIniButton;
 	TLabeledEdit *PortLabeledEdit;
 	TLabeledEdit *FrameRateLabeledEdit;
-	TButton *ClearMemoButton;
 	TVideoGrabber *VideoGrabber;
 	TLabeledEdit *BitRateLabeledEdit;
 	TLabeledEdit *VideoWidthLabeledEdit;
@@ -267,20 +265,25 @@ __published:	// IDE-managed Components
 	TGroupBox *ComponentSourceControlGroupBox;
 	TLabeledEdit *ChannelIndexLabeledEdit;
 	TPanel *ControlPanel;
-	TPanel *LogPanel;
 	TGroupBox *VideoControlGroupBox;
 	TSplitter *Splitter1;
-	TSplitter *Splitter2;
 	TButton *BrowseComponentButton;
 	TPageControl *SourcePageControl;
 	TTabSheet *SourceComponentTabSheet;
 	TTabSheet *SourceFrameTabSheet;
 	TGroupBox *FrameSourceControlGroupBox;
+	TComboBox *VideoCompressorComboBox;
+	TLabel *VideoCompressorLabel;
+	TLabeledEdit *RecordWidthLabeledEdit;
+	TLabeledEdit *RecordHeightLabeledEdit;
+	TGroupBox *RecordingSettingsGroupBox;
+	TGroupBox *NetworkStreamingControlGroupBox;
+	TGroupBox *RecordingControlGroupBox;
+	TButton *BrowseFileNameButton;
+	TFileOpenDialog *RecordingFileOpen;
 	void __fastcall NetworkStreamingButtonClick(TObject *Sender);
 	void __fastcall StopNetworkStreamingButtonClick(TObject *Sender);
 	void __fastcall VideoGrabberVideoFromBitmapsNextFrameNeeded(TObject *Sender, bool FirstSample);
-	void __fastcall ClearMemoButtonClick(TObject *Sender);
-	void __fastcall SaveToIniButtonClick(TObject *Sender);
 	void __fastcall GetStreamingHostButtonClick(TObject *Sender);
 	void __fastcall InitButtonClick(TObject *Sender);
 	void __fastcall VideoGrabberFrameCaptureCompleted(TObject *Sender, Pointer FrameBitmap,
@@ -294,6 +297,7 @@ __published:	// IDE-managed Components
 	void __fastcall StartPreviewButtonClick(TObject *Sender);
 	void __fastcall StopButtonClick(TObject *Sender);
 	void __fastcall BrowseComponentButtonClick(TObject *Sender);
+	void __fastcall BrowseFileNameButtonClick(TObject *Sender);
 
 
 private:	// User declarations
