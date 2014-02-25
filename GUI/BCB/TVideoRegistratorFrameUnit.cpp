@@ -504,7 +504,7 @@ int TTVideoRegistratorFrame::InitStreamingSettings(void)
  VideoGrabber->ASFVideoBitRate = StrToIntDef(BitRateLabeledEdit->Text, 2000000);
  VideoGrabber->NetworkStreaming = ns_ASFDirectNetworkStreaming;
  VideoGrabber->NetworkStreamingType = nst_VideoStreaming;
- VideoGrabber->ASFNetworkPort = StrToInt(PortLabeledEdit->Text);
+ VideoGrabber->ASFNetworkPort = StrToIntDef(PortLabeledEdit->Text, 45050);
  VideoGrabber->FrameRate = StrToIntDef(FrameRateLabeledEdit->Text, 30);
  VideoGrabber->ASFVideoFrameRate = StrToIntDef(FrameRateLabeledEdit->Text, 30);
  VideoGrabber->ASFNetworkMaxUsers = StrToIntDef(MaxUsersLabeledEdit->Text, 4);

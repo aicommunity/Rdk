@@ -31,6 +31,8 @@
 #include "TUHttpServerUnit.h"
 #include "myrdk.h"
 #include "TVideoRegistratorFrameUnit.h"
+#include <Vcl.ImgList.hpp>
+#include <Vcl.ToolWin.hpp>
 
 class TVideoCaptureOptionsForm;
 
@@ -84,6 +86,18 @@ __published:    // IDE-managed Components
 	TTVideoRegistratorFrame *RecordingFrame;
 	TMenuItem *SourceControl21;
 	TButton *StreamingButton;
+	TToolBar *ToolBar;
+	TToolButton *CaptureStartToolButton;
+	TToolButton *CaptureStopToolButton;
+	TToolButton *StartStreamingToolButton;
+	TToolButton *StopStreamingToolButton;
+	TToolButton *StartRecordingToolButton;
+	TToolButton *StopRecordingToolButton;
+	TImageList *ImageList;
+	TPopupMenu *RecordingPopupMenu;
+	TMenuItem *SelectFile1;
+	TToolButton *ToolButton1;
+	TToolButton *ToolButton3;
     void __fastcall TimerTimer(TObject *Sender);
 	void __fastcall StartButtonClick(TObject *Sender);
     void __fastcall StopButtonClick(TObject *Sender);
@@ -114,6 +128,15 @@ __published:    // IDE-managed Components
 	void __fastcall SaveImage1Click(TObject *Sender);
 	void __fastcall SourceControl21Click(TObject *Sender);
 	void __fastcall StreamingButtonClick(TObject *Sender);
+	void __fastcall StartRecordingToolButtonClick(TObject *Sender);
+	void __fastcall SelectFile1Click(TObject *Sender);
+	void __fastcall CaptureStartToolButtonClick(TObject *Sender);
+	void __fastcall CaptureStopToolButtonClick(TObject *Sender);
+	void __fastcall RecordingFrameStartRecordingButtonClick(TObject *Sender);
+	void __fastcall StopRecordingToolButtonClick(TObject *Sender);
+	void __fastcall NetworkStreamingFrameNetworkStreamingButtonClick(TObject *Sender);
+	void __fastcall StopStreamingToolButtonClick(TObject *Sender);
+
 //	void __fastcall UHttpServerFrameIdHTTPServerCommandGet(TIdContext *AContext, TIdHTTPRequestInfo *ARequestInfo,
 //          TIdHTTPResponseInfo *AResponseInfo);
 

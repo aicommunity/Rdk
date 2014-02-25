@@ -1960,3 +1960,59 @@ void __fastcall TVideoOutputFrame::StreamingButtonClick(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+void __fastcall TVideoOutputFrame::StartRecordingToolButtonClick(TObject *Sender)
+{
+ RecordingFrame->StartRecordingButtonClick(Sender);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoOutputFrame::SelectFile1Click(TObject *Sender)
+{
+ RecordingFrame->BrowseFileNameButtonClick(Sender);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoOutputFrame::CaptureStartToolButtonClick(TObject *Sender)
+{
+ Start();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoOutputFrame::CaptureStopToolButtonClick(TObject *Sender)
+{
+ Pause();
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TVideoOutputFrame::RecordingFrameStartRecordingButtonClick(TObject *Sender)
+
+{
+ if(!IsStarted)
+  Start();
+
+ RecordingFrame->StartRecordingButtonClick(Sender);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoOutputFrame::StopRecordingToolButtonClick(TObject *Sender)
+{
+ RecordingFrame->StopRecordingButtonClick(Sender);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoOutputFrame::NetworkStreamingFrameNetworkStreamingButtonClick(TObject *Sender)
+{
+ if(!IsStarted)
+  Start();
+
+ NetworkStreamingFrame->NetworkStreamingButtonClick(Sender);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoOutputFrame::StopStreamingToolButtonClick(TObject *Sender)
+{
+ NetworkStreamingFrame->StopNetworkStreamingButtonClick(Sender);
+}
+//---------------------------------------------------------------------------
+
