@@ -119,6 +119,10 @@ object TldTrackingForm: TTldTrackingForm
       TabOrder = 3
       object RectangleTabSheet: TTabSheet
         Caption = 'One Tracker By Rect'
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object Label2: TLabel
           Left = 7
           Top = 40
@@ -379,40 +383,26 @@ object TldTrackingForm: TTldTrackingForm
           end
         end
         inherited NetworkStreamingTabSheet: TTabSheet
-          ExplicitWidth = 564
-          ExplicitHeight = 423
+          ExplicitLeft = 4
+          ExplicitTop = 24
+          ExplicitWidth = 908
+          ExplicitHeight = 686
           inherited NetworkStreamingFrame: TTVideoRegistratorFrame
-            Width = 564
-            Height = 423
-            ExplicitWidth = 564
-            ExplicitHeight = 423
             inherited Splitter1: TSplitter
-              Left = 181
-              Height = 217
-            end
-            inherited Splitter2: TSplitter
-              Top = 217
-              Width = 564
+              ExplicitLeft = 181
+              ExplicitHeight = 217
             end
             inherited VideoPanel: TPanel
-              Width = 181
-              Height = 217
-            end
-            inherited ControlPanel: TPanel
-              Left = 184
-              Height = 217
-              ExplicitLeft = 184
+              ExplicitWidth = 181
               ExplicitHeight = 217
-              inherited ModePageControl: TPageControl
-                Height = 22
-                ExplicitHeight = 22
-              end
-            end
-            inherited LogPanel: TPanel
-              Top = 223
-              Width = 564
             end
           end
+        end
+        inherited RecordingTabSheet: TTabSheet
+          ExplicitLeft = 4
+          ExplicitTop = 24
+          ExplicitWidth = 908
+          ExplicitHeight = 686
         end
       end
     end
