@@ -516,7 +516,9 @@ int UTransferReader::ProcessDataPart(const UParamT &buffer)
    ResetProcessing();
    return 1;
   }
-  if(LastSize<=ClientBuffer.size()+24)
+
+//  if(LastSize<=ClientBuffer.size()+24)
+  if(Packet.CheckBuffer(ClientBuffer,ClientBuffer.size(),0)<=0)
   {
    PacketInProgress=false;
    int start_search=0;
