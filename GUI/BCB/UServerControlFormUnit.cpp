@@ -307,22 +307,36 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
   frame->CaptureThread->ReadSourceSafe(TempUBitmap,time_stamp,false);
 
   TempUBitmap>>Bitmap;
-  MemStream->Clear();
-  Bitmap->SaveToStream(MemStream);
-  MemStream->Position=0;
-  binary_data.resize(1);
-  binary_data[0].resize(MemStream->Size);
-  if(binary_data[0].size()>0)
-   MemStream->ReadBuffer(&binary_data[0][0],binary_data[0].size());
 
-/*
-  stringstream sstream;
-  sstream<<TempUBitmap;
-  binary_data.resize(1);
-  binary_data[0].resize(sstream.str().size());
-  if(binary_data[0].size()>0)
-   memcpy(&binary_data[0][0],&sstream.str()[0],binary_data[0].size());
-   */
+  int type=xml.ReadInteger("Type",0);
+  if(type == 0)
+  {
+   MemStream->Clear();
+   Bitmap->SaveToStream(MemStream);
+   MemStream->Position=0;
+   binary_data.resize(1);
+   binary_data[0].resize(MemStream->Size);
+   if(binary_data[0].size()>0)
+	MemStream->ReadBuffer(&binary_data[0][0],binary_data[0].size());
+  }
+  else
+  if(type == 1)
+  {
+   int quality=xml.ReadInteger("Quality",75);
+   TJPEGImage *jpeg=new TJPEGImage;
+   jpeg->Assign(Bitmap);
+   jpeg->CompressionQuality=quality;
+   jpeg->Compress();
+   MemStream->Clear();
+   jpeg->SaveToStream(MemStream);
+   MemStream->Position=0;
+   binary_data.resize(1);
+   binary_data[0].resize(MemStream->Size);
+   if(binary_data[0].size()>0)
+	MemStream->ReadBuffer(&binary_data[0][0],binary_data[0].size());
+   delete jpeg;
+  }
+
   return_value=0;
 #else
    return_value=1;
