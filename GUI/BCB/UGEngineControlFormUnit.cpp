@@ -7,9 +7,9 @@
 #include <Vcl.FileCtrl.hpp>
 #include <System.IOUtils.hpp>
 #include "UGEngineControlFormUnit.h"
-#ifdef RDK_VIDEO
-#include "TVideoGrabberControlFormUnit.h"
-#endif
+//#ifdef RDK_VIDEO
+//#include "TVideoGrabberControlFormUnit.h"
+//#endif
 #include "UImagesFormUnit.h"
 #include "UComponentsControlFormUnit.h"
 #include "UComponentLinksFormUnit.h"
@@ -1518,7 +1518,7 @@ void __fastcall TUGEngineControlForm::OpenImage1Click(TObject *Sender)
  if(!VideoOutputForm->GetActiveVideoOutputFrame())
   return;
 
- VideoOutputForm->GetActiveVideoOutputFrame()->MyVideoGrabberControlForm->VideoGrabberControlFrame->OpenImageFileButtonClick(Sender);
+// VideoOutputForm->GetActiveVideoOutputFrame()->VideoCaptureOptionsForm->VideoGrabberControlFrame->OpenImageFileButtonClick(Sender);
 #endif
 }
 //---------------------------------------------------------------------------
@@ -1529,7 +1529,7 @@ void __fastcall TUGEngineControlForm::OpenVideo1Click(TObject *Sender)
  if(!VideoOutputForm->GetActiveVideoOutputFrame())
   return;
 
- VideoOutputForm->GetActiveVideoOutputFrame()->MyVideoGrabberControlForm->VideoGrabberControlFrame->VFBrowseButtonClick(Sender);
+// VideoOutputForm->GetActiveVideoOutputFrame()->VideoCaptureOptionsForm->VideoGrabberControlFrame->VFBrowseButtonClick(Sender);
 #endif
 }
 //---------------------------------------------------------------------------
@@ -1540,8 +1540,8 @@ void __fastcall TUGEngineControlForm::CaptureVideo1Click(TObject *Sender)
  if(!VideoOutputForm->GetActiveVideoOutputFrame())
   return;
 
- VideoOutputForm->GetActiveVideoOutputFrame()->MyVideoGrabberControlForm->VideoGrabberControlFrame->SelectMode(0);
- VideoOutputForm->GetActiveVideoOutputFrame()->MyVideoGrabberControlForm->Show();
+// VideoOutputForm->GetActiveVideoOutputFrame()->VideoCaptureOptionsForm->VideoGrabberControlFrame->SelectMode(0);
+// VideoOutputForm->GetActiveVideoOutputFrame()->MyVideoGrabberControlForm->Show();
 #endif
 }
 //---------------------------------------------------------------------------

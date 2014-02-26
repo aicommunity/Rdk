@@ -5,7 +5,7 @@
 
 #include "VideoOutputFrameUnit.h"
 #include "TUBitmap.h"
-#include "TVideoGrabberControlFormUnit.h"
+//#include "TVideoGrabberControlFormUnit.h"
 #include "UEngineMonitorFormUnit.h"
 #include "myrdk.h"
 #include "rdk_initdll.h"
@@ -62,8 +62,8 @@ __fastcall TVideoOutputFrame::TVideoOutputFrame(TComponent* Owner)
 	PointIndex,
 	PointFlag);
 
- MyVideoGrabberControlForm=new TVideoGrabberControlForm(this);
- MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this,0);//VideoGrabber);
+// MyVideoGrabberControlForm=new TVideoGrabberControlForm(this);
+// MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this,0);//VideoGrabber);
 
 // ConvertBitmap=new Graphics::TBitmap;
 
@@ -97,8 +97,8 @@ __fastcall TVideoOutputFrame::~TVideoOutputFrame(void)
  delete MyVideoOutputToolsForm;
  MyVideoOutputToolsForm=0;
 
- delete MyVideoGrabberControlForm;
- MyVideoGrabberControlForm=0;
+// delete MyVideoGrabberControlForm;
+// MyVideoGrabberControlForm=0;
 
 // delete ConvertBitmap;
 
@@ -211,11 +211,11 @@ void TVideoOutputFrame::ReadSourceSafe(RDK::UBitmap &bmp, double &time_stamp, bo
 
 //---------------------------------------------------------------------------
 // ¬озвращает форму управлени€ инициализацией видео
-TVideoGrabberControlForm* TVideoOutputFrame::GetMyVideoGrabberControlForm(void)
+/*TVideoGrabberControlForm* TVideoOutputFrame::GetMyVideoGrabberControlForm(void)
 {
  return MyVideoGrabberControlForm;
 }
-
+  */
 // ”ничтожает созданный поток
 bool TVideoOutputFrame::DestroyCaptureThread(void)
 {
@@ -262,7 +262,7 @@ void TVideoOutputFrame::InitByAvi(const String &filename)
   TVideoCaptureThreadVideoGrabberAvi* thread=dynamic_cast<TVideoCaptureThreadVideoGrabberAvi*>(CaptureThread);
   thread->SetFileName(AnsiString(filename).c_str());
   thread->SetRepeatFlag(RepeatVideoFlag);
-  MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, thread->GetVideoGrabber());
+//  MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, thread->GetVideoGrabber());
  }
  else
  {
@@ -278,7 +278,7 @@ void TVideoOutputFrame::InitByAvi(const String &filename)
   {
    thread->SetFileName(AnsiString(filename).c_str());
    thread->SetRepeatFlag(RepeatVideoFlag);
-   MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, thread->GetVideoGrabber());
+//   MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, thread->GetVideoGrabber());
   }
  }
 
@@ -291,7 +291,7 @@ void TVideoOutputFrame::InitByBmp(const String &filename, double fps)
  if(CaptureThread && dynamic_cast<TVideoCaptureThreadBmp*>(CaptureThread))
  {
   dynamic_cast<TVideoCaptureThreadBmp*>(CaptureThread)->SetFileName(AnsiString(filename).c_str());
-  MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, 0);
+//  MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, 0);
  }
  else
  {
@@ -307,7 +307,7 @@ void TVideoOutputFrame::InitByBmp(const String &filename, double fps)
    if(thread)
    {
 	thread->SetFileName(AnsiString(filename).c_str());
-	MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, 0);
+//	MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, 0);
     thread->SetFps(fps);
    }
   }
@@ -326,7 +326,7 @@ bool TVideoOutputFrame::InitByBmp(const RDK::UBitmap &bmp, double fps)
  {
 	long long time_stamp=0;//GetTickCount();
 	CaptureThread->WriteSourceSafe(bmp,time_stamp,false);
-	MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, 0);
+//	MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, 0);
    dynamic_cast<TVideoCaptureThreadBmp*>(CaptureThread)->SetFps(fps);
  }
  else
@@ -344,7 +344,7 @@ bool TVideoOutputFrame::InitByBmp(const RDK::UBitmap &bmp, double fps)
    {
 	long long time_stamp=0;
 	thread->WriteSourceSafe(bmp,time_stamp,false);
-	MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, 0);
+//	MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, 0);
 	thread->SetFps(fps);
    }
   }
@@ -376,7 +376,7 @@ void TVideoOutputFrame::InitByCamera(int camera_index, int input_index, int size
  {
   TVideoCaptureThreadVideoGrabberCamera* thread=dynamic_cast<TVideoCaptureThreadVideoGrabberCamera*>(CaptureThread);
   thread->Init(camera_index, input_index, size_index, subtype_index, analog_index);
-  MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, thread->GetVideoGrabber());
+//  MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, thread->GetVideoGrabber());
  }
  else
  {
@@ -390,7 +390,7 @@ void TVideoOutputFrame::InitByCamera(int camera_index, int input_index, int size
    if(thread)
    {
 	thread->Init(camera_index, input_index, size_index, subtype_index, analog_index);
-	MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, thread->GetVideoGrabber());
+//	MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, thread->GetVideoGrabber());
    }
   }
  }
@@ -406,7 +406,7 @@ void TVideoOutputFrame::InitByIPCamera(const String camera_url, const String use
   TVideoCaptureThreadVideoGrabberIpCamera* thread=dynamic_cast<TVideoCaptureThreadVideoGrabberIpCamera*>(CaptureThread);
   thread->Init(camera_url, user_name, user_password);
   thread->GetVideoGrabber()->LicenseString=TVGrabberLicenseString;//UGEngineControlForm->VideoGrabberLicenseString;
-  MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, thread->GetVideoGrabber());
+//  MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, thread->GetVideoGrabber());
  }
  else
  {
@@ -421,7 +421,7 @@ void TVideoOutputFrame::InitByIPCamera(const String camera_url, const String use
    {
 	thread->Init(camera_url, user_name, user_password);
 	thread->GetVideoGrabber()->LicenseString=TVGrabberLicenseString;//UGEngineControlForm->VideoGrabberLicenseString;
-	MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, thread->GetVideoGrabber());
+//	MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, thread->GetVideoGrabber());
    }
   }
  }
@@ -452,7 +452,7 @@ bool TVideoOutputFrame::InitByImageSequence(const String &pathname, double fps)
   thread->SetPathName(AnsiString(pathname).c_str());
   thread->SetRepeatFlag(RepeatSequenceFlag);
   thread->SetFps(fps);
-  MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, 0);
+//  MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, 0);
  }
 
 
@@ -503,7 +503,7 @@ bool TVideoOutputFrame::InitByHttpServer(int listen_port)
   if(thread)
   {
    thread->SetListenPort(listen_port);
-   MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, 0);
+//   MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, 0);
   }
  }
 /* UHttpServerFrame->IdHTTPServer->Bindings->DefaultPort=listen_port;
@@ -1754,7 +1754,7 @@ void __fastcall TVideoOutputFrame::TrackBarChange(TObject *Sender)
 
 void __fastcall TVideoOutputFrame::SourceControl1Click(TObject *Sender)
 {
- MyVideoGrabberControlForm->Show();
+// MyVideoGrabberControlForm->Show();
 }
 //---------------------------------------------------------------------------
 
@@ -1944,24 +1944,6 @@ void __fastcall TVideoOutputFrame::SourceControl21Click(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TVideoOutputFrame::StreamingButtonClick(TObject *Sender)
-{
- if(StreamingButton->Caption == "Start Streaming")
- {
-  NetworkStreamingFrame->FrameIndexLabeledEdit->Text=IntToStr(FrameIndex);
-  NetworkStreamingFrame->NetworkStreamingButtonClick(this);
-  StreamingButton->Caption="Stop Streaming";
-  return;
- }
-
- if(StreamingButton->Caption == "Stop Streaming")
- {
-  NetworkStreamingFrame->StopNetworkStreamingButtonClick(this);
-  StreamingButton->Caption="Start Streaming";
-  return;
- }
-}
-//---------------------------------------------------------------------------
 
 void __fastcall TVideoOutputFrame::StartRecordingToolButtonClick(TObject *Sender)
 {

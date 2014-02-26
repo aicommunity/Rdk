@@ -5,7 +5,7 @@
 
 #include "TVideoRegistratorFormUnit.h"
 #include "VideoOutputToolsFormUnit.h"
-#include "TVideoGrabberControlFormUnit.h"
+//#include "TVideoGrabberControlFormUnit.h"
 #include "rdk_initdll.h"
 #include "UGEngineControlFormUnit.h"
 #include "UShowProgressBarUnit.h"

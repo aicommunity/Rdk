@@ -63,7 +63,7 @@ inherited VideoOutputFrame: TVideoOutputFrame
           771
           35)
         object StopButton: TButton
-          Left = 649
+          Left = 734
           Top = 6
           Width = 30
           Height = 25
@@ -73,7 +73,7 @@ inherited VideoOutputFrame: TVideoOutputFrame
           OnClick = StopButtonClick
         end
         object StartButton: TButton
-          Left = 613
+          Left = 698
           Top = 6
           Width = 30
           Height = 25
@@ -83,7 +83,7 @@ inherited VideoOutputFrame: TVideoOutputFrame
           OnClick = StartButtonClick
         end
         object TimeEdit: TMaskEdit
-          Left = 528
+          Left = 613
           Top = 8
           Width = 79
           Height = 21
@@ -97,7 +97,7 @@ inherited VideoOutputFrame: TVideoOutputFrame
         object TrackBar: TTrackBar
           Left = 2
           Top = 9
-          Width = 520
+          Width = 605
           Height = 22
           Anchors = [akLeft, akTop, akRight]
           Max = 1
@@ -106,16 +106,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
           Position = 1
           TabOrder = 3
           OnChange = TrackBarChange
-        end
-        object StreamingButton: TButton
-          Left = 685
-          Top = 6
-          Width = 79
-          Height = 25
-          Anchors = [akTop, akRight]
-          Caption = 'Start Streaming'
-          TabOrder = 4
-          OnClick = StreamingButtonClick
         end
       end
       object Panel2: TPanel
@@ -549,7 +539,7 @@ inherited VideoOutputFrame: TVideoOutputFrame
     Left = 688
     Top = 456
     Bitmap = {
-      494C010120006000300010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010120006000340010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000009000000001002000000000000090
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

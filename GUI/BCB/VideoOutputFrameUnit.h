@@ -86,7 +86,6 @@ __published:    // IDE-managed Components
 	TTabSheet *RecordingTabSheet;
 	TTVideoRegistratorFrame *RecordingFrame;
 	TMenuItem *SourceControl21;
-	TButton *StreamingButton;
 	TToolBar *ToolBar;
 	TToolButton *CaptureStartToolButton;
 	TToolButton *CaptureStopToolButton;
@@ -132,7 +131,6 @@ __published:    // IDE-managed Components
 	void __fastcall PropertyMatrix1Click(TObject *Sender);
 	void __fastcall SaveImage1Click(TObject *Sender);
 	void __fastcall SourceControl21Click(TObject *Sender);
-	void __fastcall StreamingButtonClick(TObject *Sender);
 	void __fastcall StartRecordingToolButtonClick(TObject *Sender);
 	void __fastcall SelectFile1Click(TObject *Sender);
 	void __fastcall CaptureStartToolButtonClick(TObject *Sender);
@@ -175,7 +173,7 @@ int Mode;
 TVideoOutputToolsForm* MyVideoOutputToolsForm;
 
 // Форма управления инициализацией видео
-TVideoGrabberControlForm* MyVideoGrabberControlForm;
+//TVideoGrabberControlForm* MyVideoGrabberControlForm;
 
 // Указатель на форму выбора компоненты-источника
 TUComponentsListForm *MyComponentsListForm;
@@ -342,7 +340,7 @@ void ReadSourceSafe(RDK::UBitmap &bmp, double &time_stamp, bool reflect);
 // -----------------------------
 
 // Возвращает форму управления инициализацией видео
-TVideoGrabberControlForm* GetMyVideoGrabberControlForm(void);
+//TVideoGrabberControlForm* GetMyVideoGrabberControlForm(void);
 
 // Уничтожает созданный поток
 bool DestroyCaptureThread(void);

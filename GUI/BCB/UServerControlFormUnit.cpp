@@ -6,9 +6,9 @@
 #include "../../Deploy/PtzLib/ptzlib_initdll.h"
 #include "UServerControlFormUnit.h"
 #include "UGEngineControlFormUnit.h"
-#ifdef RDK_VIDEO
-#include "TVideoGrabberControlFormUnit.h"
-#endif
+//#ifdef RDK_VIDEO
+//#include "TVideoGrabberControlFormUnit.h"
+//#endif
 #include "UImagesFormUnit.h"
 #include "UComponentsControlFormUnit.h"
 #include "UComponentLinksFormUnit.h"
@@ -878,7 +878,7 @@ int TUServerControlForm::GetChannelVideoSource(int channel_id)
  if(!frame)
   return -1;
 
- return frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GetMode();
+ return frame->CaptureThread->GetSourceMode();// MyVideoGrabberControlForm->VideoGrabberControlFrame->GetMode();
 #else
  return -1;
 #endif
@@ -898,7 +898,8 @@ int TUServerControlForm::SetChannelVideoSource(int channel_id, int source_mode)
    if(!frame)
 	return 1;
 
-   frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->SelectMode(source_mode);
+   frame->Init(source_mode);
+//   frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->SelectMode(source_mode);
   }
  }
  else
@@ -907,7 +908,8 @@ int TUServerControlForm::SetChannelVideoSource(int channel_id, int source_mode)
   if(!frame)
    return 1;
 
-  frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->SelectMode(source_mode);
+  frame->Init(source_mode);
+//  frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->SelectMode(source_mode);
  }
 
  return 0;

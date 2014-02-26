@@ -5,10 +5,11 @@
 
 #include "VideoOutputFormUnit.h"
 #include "VideoOutputToolsFormUnit.h"
-#include "TVideoGrabberControlFormUnit.h"
+//#include "TVideoGrabberControlFormUnit.h"
 #include "rdk_initdll.h"
 #include "UGEngineControlFormUnit.h"
 #include "UShowProgressBarUnit.h"
+#include "TVideoCaptureOptionsFormUnit.h"
 //#include "USharedMemoryLoader.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -107,7 +108,7 @@ void TVideoOutputForm::AddSource(void)
  Sources[index]->LicenseString=UGEngineControlForm->VideoGrabberLicenseString;
  Sources[index]->FrameIndex=index;
  Sources[index]->Name=Sources[index]->Name+String("_")+PageControl->PageCount;
- Sources[index]->MyVideoGrabberControlForm->Name=Sources[index]->Name+"_VideoGrabberControlForm";
+// Sources[index]->MyVideoGrabberControlForm->Name=Sources[index]->Name+"_VideoGrabberControlForm";
 
  InsertComponent(Sources[index]);
  Sources[index]->Parent=sheet;
@@ -151,7 +152,7 @@ void TVideoOutputForm::SetSourceType(int index, int mode)
  if(index<0 || index >=int(Sources.size()))
   return;
 
- Sources[index]->MyVideoGrabberControlForm->VideoGrabberControlFrame->SelectMode(mode);
+ Sources[index]->Init(mode);
 }
 
 // Возвращает индекс текущего активного источника видео
@@ -270,7 +271,8 @@ void __fastcall TVideoOutputForm::PageControlChange(TObject *Sender)
  for(int i=0;i<PageControl->PageCount;i++)
   if(PageControl->Pages[i]->Visible == false)
   {
-   Sources[i]->MyVideoGrabberControlForm->Hide();
+//   Sources[i]->MyVideoGrabberControlForm->Hide();
+   Sources[i]->VideoCaptureOptionsForm->Hide();
    Sources[i]->MyVideoOutputToolsForm->Hide();
   }
 
