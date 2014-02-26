@@ -495,6 +495,19 @@ bool UNet::CheckLink(const NameT &itemname, int item_index,
 
  return true;
 }
+
+bool UNet::CheckLink(const NameT &itemname,const NameT &connectorname)
+{
+ UEPtr<UItem> item=dynamic_pointer_cast<UItem>(GetComponentL(itemname));
+ UEPtr<UConnector> connector=dynamic_pointer_cast<UConnector>(GetComponentL(connectorname));
+ if(!item || !connector)
+  return false;
+
+ if(item->CheckLink(connector))
+  return true;
+
+ return true;
+}
 // ----------------------
 
 

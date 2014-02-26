@@ -150,6 +150,8 @@ bool CheckLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector);
 virtual bool CheckLink(const ULongId &item_id, int item_index, const ULongId &conn_id, int conn_index);
 virtual bool CheckLink(const NameT &itemname, int item_index,
 						const NameT &connectorname, int connector_index);
+virtual bool CheckLink(const NameT &itemname,
+						const NameT &connectorname);
 // ----------------------
 
 // --------------------------
