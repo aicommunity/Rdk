@@ -476,11 +476,12 @@ void TUEngineMonitorFrame::PauseChannel(int channel_index)
  break;
 
  case 1:
-  Timer->Enabled=false;
-  TUVisualControllerFrame::CalculationModeFlag=false;
-  TUVisualControllerForm::CalculationModeFlag=false;
   if(channel_index == -1)
   {
+   Timer->Enabled=false;
+   TUVisualControllerFrame::CalculationModeFlag=false;
+   TUVisualControllerForm::CalculationModeFlag=false;
+
    for(size_t i=0;i<ThreadChannels.size();i++)
    {
 	if(ThreadChannels[i])
@@ -499,6 +500,25 @@ void TUEngineMonitorFrame::PauseChannel(int channel_index)
 	 WaitForSingleObject(ThreadChannels[channel_index]->CalculationNotInProgress,1000);
 	}
 	UShowProgressBarForm->IncBarStatus(1);
+
+   bool all_stopped=true;
+   for(size_t i=0;i<ThreadChannels.size();i++)
+   {
+	if(ThreadChannels[i])
+	{
+	 if(WaitForSingleObject(ThreadChannels[i]->CalcStarted,0) == WAIT_TIMEOUT)
+	  all_stopped&=true;
+	 else
+	  all_stopped&=false;
+	}
+   }
+
+   if(all_stopped)
+   {
+	Timer->Enabled=false;
+	TUVisualControllerFrame::CalculationModeFlag=false;
+	TUVisualControllerForm::CalculationModeFlag=false;
+   }
   }
  break;
  }
