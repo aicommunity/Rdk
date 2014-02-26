@@ -69,7 +69,7 @@ void __fastcall TVideoCaptureOptionsBmpSequenceForm::FormCreate(TObject *Sender)
  descr.Position=4;
  VideoCaptureOptionsForm->AddVideoSourceOptionsFrame(VideoSourceType,descr);
 // VideoCaptureOptionsForm->AddVideoSourceOptionsFrame(VideoSourceType,this);
- VideoCaptureOptionsForm->AddVideoSourcePrototypes(VideoSourceType,new TVideoCaptureThreadBmp(0,true));
+ VideoCaptureOptionsForm->AddVideoSourcePrototypes(VideoSourceType,new TVideoCaptureThreadBmpSequence(0,true));
 }
 //---------------------------------------------------------------------------
 void __fastcall TVideoCaptureOptionsBmpSequenceForm::ImageSequencePathBrowseButtonClick(TObject *Sender)

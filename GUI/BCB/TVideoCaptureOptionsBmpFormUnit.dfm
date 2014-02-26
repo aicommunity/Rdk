@@ -10,6 +10,7 @@ object VideoCaptureOptionsBmpForm: TVideoCaptureOptionsBmpForm
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = True
+  Position = poOwnerFormCenter
   OnCreate = FormCreate
   DesignSize = (
     464

@@ -33,6 +33,7 @@
 #include "TVideoRegistratorFrameUnit.h"
 #include <Vcl.ImgList.hpp>
 #include <Vcl.ToolWin.hpp>
+#include <Vcl.ActnList.hpp>
 
 class TVideoCaptureOptionsForm;
 
@@ -98,6 +99,10 @@ __published:    // IDE-managed Components
 	TMenuItem *SelectFile1;
 	TToolButton *ToolButton1;
 	TToolButton *ToolButton3;
+	TToolButton *SavePictureToolButton;
+	TToolButton *SelectSourceToolButton;
+	TActionList *ActionList;
+	TAction *SavePictureAction;
     void __fastcall TimerTimer(TObject *Sender);
 	void __fastcall StartButtonClick(TObject *Sender);
     void __fastcall StopButtonClick(TObject *Sender);
@@ -136,6 +141,8 @@ __published:    // IDE-managed Components
 	void __fastcall StopRecordingToolButtonClick(TObject *Sender);
 	void __fastcall NetworkStreamingFrameNetworkStreamingButtonClick(TObject *Sender);
 	void __fastcall StopStreamingToolButtonClick(TObject *Sender);
+	void __fastcall SelectSourceToolButtonClick(TObject *Sender);
+	void __fastcall SavePictureActionExecute(TObject *Sender);
 
 //	void __fastcall UHttpServerFrameIdHTTPServerCommandGet(TIdContext *AContext, TIdHTTPRequestInfo *ARequestInfo,
 //          TIdHTTPResponseInfo *AResponseInfo);
@@ -298,6 +305,9 @@ protected:
 bool RepeatSequenceFlag;
 bool RepeatVideoFlag;
 bool ProcessAllFramesFlag;
+
+int SavePictureIndex;
+
 public:
 // ============================================================
 

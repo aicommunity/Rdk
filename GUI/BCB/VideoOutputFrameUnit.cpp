@@ -59,8 +59,8 @@ __fastcall TVideoOutputFrame::TVideoOutputFrame(TComponent* Owner)
 //    Figure,
     FigureIndex,
 //    FigureFlag,
-    PointIndex,
-    PointFlag);
+	PointIndex,
+	PointFlag);
 
  MyVideoGrabberControlForm=new TVideoGrabberControlForm(this);
  MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this,0);//VideoGrabber);
@@ -82,6 +82,8 @@ __fastcall TVideoOutputFrame::TVideoOutputFrame(TComponent* Owner)
   VideoSourceOptions[I->first].Create("VideoSourceThread");
  }
 
+ NetworkStreamingFrame->FrameIndexLabeledEdit->Text=IntToStr(FrameIndex);
+ RecordingFrame->FrameIndexLabeledEdit->Text=IntToStr(FrameIndex);
 }
 
 __fastcall TVideoOutputFrame::~TVideoOutputFrame(void)
@@ -2017,6 +2019,48 @@ void __fastcall TVideoOutputFrame::NetworkStreamingFrameNetworkStreamingButtonCl
 void __fastcall TVideoOutputFrame::StopStreamingToolButtonClick(TObject *Sender)
 {
  NetworkStreamingFrame->StopNetworkStreamingButtonClick(Sender);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoOutputFrame::SelectSourceToolButtonClick(TObject *Sender)
+{
+ SourceControl21Click(Sender);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoOutputFrame::SavePictureActionExecute(TObject *Sender)
+{
+ String dir;
+ if(UGEngineControlForm->ProjectOpenFlag)
+  dir=UGEngineControlForm->ProjectPath;
+ else
+  dir=ExtractFilePath(Application->ExeName);
+
+ dir+="SavedPictures\\";
+ if(Owner)
+ {
+  dir+=Owner->Name;
+  dir+="\\";
+ }
+ dir+=IntToStr(FrameIndex);
+ if(!DirectoryExists(dir))
+  ForceDirectories(dir);
+ dir+="\\";
+
+ string file_name=RDK::sntoa(SavePictureIndex++,3)+" ";
+
+ time_t time_data;
+ time(&time_data);
+ file_name+=RDK::get_text_time(time_data,'.','-')+".jpg";
+
+ UpdateInterface(true);
+
+ TJPEGImage* jpg=new TJPEGImage;
+ jpg->Assign(Image->Picture->Graphic);
+ jpg->CompressionQuality=100;
+ jpg->Compress();
+ jpg->SaveToFile(dir+file_name.c_str());
+ delete jpg;
 }
 //---------------------------------------------------------------------------
 
