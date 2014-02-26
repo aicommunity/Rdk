@@ -18,6 +18,15 @@ __fastcall TVideoCaptureOptionsDeviceForm::TVideoCaptureOptionsDeviceForm(TCompo
 }
 //---------------------------------------------------------------------------
 
+void __fastcall TVideoCaptureOptionsDeviceForm::AssignListToComboBox (TComboBox* ComboBox, String List, int Index)
+{
+   ComboBox->Items->Text = List;
+   if (ComboBox->Items->Count > 0) {
+	  ComboBox->ItemIndex = Index;
+   }
+}
+
+
 /// -------------------------------------
 /// Методы загрузки/сохранения параметров
 /// -------------------------------------
@@ -30,11 +39,29 @@ TVideoCaptureOptionsDeviceForm* TVideoCaptureOptionsDeviceForm::New(TComponent *
 /// Считывает параметры в поля интерфейса
 bool TVideoCaptureOptionsDeviceForm::ReadParametersToGui(RDK::USerStorageXML &xml)
 {
- xml.WriteInteger("CameraIndex",DeviceComboBox->ItemIndex);
- xml.WriteInteger("InputIndex",InputComboBox->ItemIndex);
- xml.WriteInteger("SizeIndex",VideoSizeComboBox->ItemIndex);
- xml.WriteInteger("SubtypeIndex",VideoSubTypeComboBox->ItemIndex);
- xml.WriteInteger("AnalogIndex",AnalogVideoStandardComboBox->ItemIndex);
+ if(&Xml != &xml)
+  Xml=xml;
+ RDK::UEPtr<TVideoCaptureThreadVideoGrabberCamera> thread=RDK::dynamic_pointer_cast<TVideoCaptureThreadVideoGrabberCamera>(TVideoCaptureOptionsForm::VideoSourcePrototypes[VideoSourceType]);
+ if(thread)
+ {
+  TVideoGrabber* VideoGrabber=thread->GetVideoGrabber();
+  AssignListToComboBox (DeviceComboBox, VideoGrabber->VideoDevices, VideoGrabber->VideoDevice);
+
+  DeviceComboBox->ItemIndex=xml.ReadInteger("CameraIndex",DeviceComboBox->ItemIndex);
+  InputComboBox->ItemIndex=xml.ReadInteger("InputIndex",InputComboBox->ItemIndex);
+  VideoSizeComboBox->ItemIndex=xml.ReadInteger("SizeIndex",VideoSizeComboBox->ItemIndex);
+  VideoSubTypeComboBox->ItemIndex=xml.ReadInteger("SubtypeIndex",VideoSubTypeComboBox->ItemIndex);
+  AnalogVideoStandardComboBox->ItemIndex=xml.ReadInteger("AnalogIndex",AnalogVideoStandardComboBox->ItemIndex);
+
+  VideoGrabber->VideoDevice=DeviceComboBox->ItemIndex;
+//  thread->Init(DeviceComboBox->ItemIndex, InputComboBox->ItemIndex, VideoSizeComboBox->ItemIndex, VideoSubTypeComboBox->ItemIndex, AnalogVideoStandardComboBox->ItemIndex);
+  VideoGrabber->Update();
+
+  AssignListToComboBox (VideoSizeComboBox, VideoGrabber->VideoSizes, VideoGrabber->VideoSize);
+  AssignListToComboBox (VideoSubTypeComboBox, VideoGrabber->VideoSubtypes, VideoGrabber->VideoSubtype);
+  AssignListToComboBox (AnalogVideoStandardComboBox, VideoGrabber->AnalogVideoStandards, VideoGrabber->AnalogVideoStandard);
+  AssignListToComboBox (InputComboBox, VideoGrabber->VideoInputs, VideoGrabber->VideoInput);
+ }
 
  return true;
 }
@@ -43,11 +70,12 @@ bool TVideoCaptureOptionsDeviceForm::ReadParametersToGui(RDK::USerStorageXML &xm
 bool TVideoCaptureOptionsDeviceForm::WriteParametersToXml(RDK::USerStorageXML &xml)
 {
  xml.SelectNodeRoot("VideoSourceThread");
- DeviceComboBox->ItemIndex=xml.ReadInteger("CameraIndex",DeviceComboBox->ItemIndex);
- InputComboBox->ItemIndex=xml.ReadInteger("InputIndex",InputComboBox->ItemIndex);
- VideoSizeComboBox->ItemIndex=xml.ReadInteger("SizeIndex",VideoSizeComboBox->ItemIndex);
- VideoSubTypeComboBox->ItemIndex=xml.ReadInteger("SubtypeIndex",VideoSubTypeComboBox->ItemIndex);
- AnalogVideoStandardComboBox->ItemIndex=xml.ReadInteger("AnalogIndex",AnalogVideoStandardComboBox->ItemIndex);
+
+ xml.WriteInteger("CameraIndex",DeviceComboBox->ItemIndex);
+ xml.WriteInteger("InputIndex",InputComboBox->ItemIndex);
+ xml.WriteInteger("SizeIndex",VideoSizeComboBox->ItemIndex);
+ xml.WriteInteger("SubtypeIndex",VideoSubTypeComboBox->ItemIndex);
+ xml.WriteInteger("AnalogIndex",AnalogVideoStandardComboBox->ItemIndex);
 
  return true;
 }
@@ -63,4 +91,12 @@ void __fastcall TVideoCaptureOptionsDeviceForm::FormCreate(TObject *Sender)
  VideoCaptureOptionsForm->AddVideoSourcePrototypes(VideoSourceType,new TVideoCaptureThreadVideoGrabberCamera(0,true));
 }
 //---------------------------------------------------------------------------
+
+void __fastcall TVideoCaptureOptionsDeviceForm::DeviceComboBoxSelect(TObject *Sender)
+{
+ Xml.WriteInteger("CameraIndex",DeviceComboBox->ItemIndex);
+ ReadParametersToGui(Xml);
+}
+//---------------------------------------------------------------------------
+
 

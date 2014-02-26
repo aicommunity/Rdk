@@ -27,10 +27,14 @@ __published:	// IDE-managed Components
 	TComboBox *AnalogVideoStandardComboBox;
 	TButton *StreamButton;
 	void __fastcall FormCreate(TObject *Sender);
+	void __fastcall DeviceComboBoxSelect(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
 	__fastcall TVideoCaptureOptionsDeviceForm(TComponent* Owner);
 
+void __fastcall AssignListToComboBox (TComboBox* ComboBox, String List, int Index);
+
+RDK::USerStorageXML Xml;
 
 /// -------------------------------------
 /// Методы загрузки/сохранения параметров

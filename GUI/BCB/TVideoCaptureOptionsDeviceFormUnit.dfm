@@ -10,6 +10,7 @@ object VideoCaptureOptionsDeviceForm: TVideoCaptureOptionsDeviceForm
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = True
+  Position = poOwnerFormCenter
   OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
@@ -96,6 +97,7 @@ object VideoCaptureOptionsDeviceForm: TVideoCaptureOptionsDeviceForm
       Style = csDropDownList
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 0
+      OnSelect = DeviceComboBoxSelect
     end
     object VideoSubTypeComboBox: TComboBox
       Left = 8
