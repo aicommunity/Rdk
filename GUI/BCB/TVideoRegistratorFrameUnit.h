@@ -41,6 +41,7 @@
 #define XCAMCOULDNOTSTOP 10
 //---------------------------------------------------------------------------
 class TTVideoRegistratorFrame;
+class TVideoOutputFrame;
 
 class TVideoGetBitmapFrameThread : public TThread
 {
@@ -158,7 +159,8 @@ RDK::UBitmap TempBitmap;
 //Graphics::TBitmap* TempBitmap;
 
 protected: // Данные
-
+// Источник данных
+TVideoOutputFrame* VideoOutputFrame;
 
 public: // Методы
 // --------------------------
@@ -174,7 +176,8 @@ virtual __fastcall ~TVideoGetBitmapFrameFromVideoThread(void);
 bool SetFrameIndex(const int &value);
 const int& GetFrameIndex(void) const;
 // --------------------------
-
+bool SetVideoFrame(TVideoOutputFrame* videoFrame);
+TVideoOutputFrame* GetVideoFrame(void) const;
 // --------------------------
 // Управление потоком
 // --------------------------
@@ -369,6 +372,9 @@ int GetBitmapFrame(void);
 // Создание и подготовка TBitmap InputFrameBitmap для хранения кадра с камеры
 int PrepareBitmapFrame(void);
 
+// Установка фрейма источника при работе от фрейма
+bool SetVideoFrameSource(TVideoOutputFrame* sourceFrame);
+TVideoOutputFrame* GetVideoFrameSourc(void);
 // -----------------------------
 // Методы управления визуальным интерфейсом
 // -----------------------------

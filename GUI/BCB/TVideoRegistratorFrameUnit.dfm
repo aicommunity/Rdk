@@ -438,7 +438,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
       Caption = 'VideoGrabber'
       Color = clBlack
       Visible = False
-      ASFVideoWidth = -1
       AspectRatioToUse = -1.000000000000000000
       AudioCompressor = 0
       AutoFileNameDateTimeFormat = 'yymmdd_hhmmss_zzz'
@@ -446,11 +445,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
       BurstCount = 0
       BurstMode = True
       Display_Active = False
-      DualDisplay_Active = False
-      DualDisplay_Embedded = False
-      DualDisplay_Left = 20
-      DualDisplay_Top = 400
-      DualDisplay_VideoPortEnabled = False
       Cropping_Zoom = 1.000000000000000000
       FrameGrabber = fg_PreviewStream
       LicenseString = 'N/A'

@@ -251,6 +251,20 @@ const int& TVideoGetBitmapFrameFromVideoThread::GetFrameIndex(void) const
 {
  return FrameIndex;
 }
+
+bool TVideoGetBitmapFrameFromVideoThread::SetVideoFrame(TVideoOutputFrame* videoFrame)
+{
+ if(VideoOutputFrame == videoFrame)
+  return true;
+
+ VideoOutputFrame=videoFrame;
+ return true;
+}
+
+TVideoOutputFrame* TVideoGetBitmapFrameFromVideoThread::GetVideoFrame(void) const
+{
+ return VideoOutputFrame;
+}
 // --------------------------
 // Управление потоком
 // --------------------------
@@ -278,7 +292,7 @@ void __fastcall TVideoGetBitmapFrameFromVideoThread::AfterCalculate(void)
 
 void __fastcall TVideoGetBitmapFrameFromVideoThread::Calculate(void)
 {
- TVideoOutputFrame* VideoOutputFrame=VideoOutputForm->GetVideoOutputFrame(FrameIndex);
+ //VideoOutputFrame=VideoOutputForm->GetVideoOutputFrame(FrameIndex);
 
  if(VideoOutputFrame)
  {
@@ -564,6 +578,29 @@ int TTVideoRegistratorFrame::PrepareBitmapFrame(void)
  return 0;
 }
 //---------------------------------------------------------------------------
+// Установка фрейма источника при работе от фрейма
+bool TTVideoRegistratorFrame::SetVideoFrameSource(TVideoOutputFrame* sourceFrame)
+{
+ if(BitmapFrameThread && Mode==1)
+ {
+  TVideoGetBitmapFrameFromVideoThread* thread=dynamic_cast<TVideoGetBitmapFrameFromVideoThread*>(BitmapFrameThread);
+  return thread->SetVideoFrame(sourceFrame);
+ }
+
+ return false;
+}
+//---------------------------------------------------------------------------
+TVideoOutputFrame* TTVideoRegistratorFrame::GetVideoFrameSourc(void)
+{
+ if(BitmapFrameThread && Mode==1)
+ {
+  TVideoGetBitmapFrameFromVideoThread* thread=dynamic_cast<TVideoGetBitmapFrameFromVideoThread*>(BitmapFrameThread);
+  return thread->GetVideoFrame();
+ }
+
+ return 0;
+}
+//---------------------------------------------------------------------------
 void __fastcall TTVideoRegistratorFrame::NetworkStreamingButtonClick(TObject *Sender)
 {
  StopNetworkStreamingButtonClick(this);
@@ -589,7 +626,8 @@ void __fastcall TTVideoRegistratorFrame::NetworkStreamingButtonClick(TObject *Se
   {
    BitmapFrameThread=new TVideoGetBitmapFrameFromVideoThread(this, true);
    TVideoGetBitmapFrameFromVideoThread* thread=dynamic_cast<TVideoGetBitmapFrameFromVideoThread*>(BitmapFrameThread);
-   thread->SetFrameIndex(StrToIntDef(FrameIndexLabeledEdit->Text, 0));
+   thread->SetVideoFrame(VideoOutputForm->GetVideoOutputFrame(StrToIntDef(FrameIndexLabeledEdit->Text, 0)));
+   //>SetFrameIndex(StrToIntDef(FrameIndexLabeledEdit->Text, 0));
    thread->Resume();
    break;
   }
@@ -712,7 +750,8 @@ void __fastcall TTVideoRegistratorFrame::StartRecordingButtonClick(TObject *Send
   {
    BitmapFrameThread=new TVideoGetBitmapFrameFromVideoThread(this, true);
    TVideoGetBitmapFrameFromVideoThread* thread=dynamic_cast<TVideoGetBitmapFrameFromVideoThread*>(BitmapFrameThread);
-   thread->SetFrameIndex(StrToIntDef(FrameIndexLabeledEdit->Text, 0));
+   thread->SetVideoFrame(VideoOutputForm->GetVideoOutputFrame(StrToIntDef(FrameIndexLabeledEdit->Text, 0)));
+   //thread->SetFrameIndex(StrToIntDef(FrameIndexLabeledEdit->Text, 0));
    thread->Resume();
    break;
   }
@@ -786,7 +825,8 @@ void __fastcall TTVideoRegistratorFrame::StartPreviewButtonClick(TObject *Sender
   {
    BitmapFrameThread=new TVideoGetBitmapFrameFromVideoThread(this, true);
    TVideoGetBitmapFrameFromVideoThread* thread=dynamic_cast<TVideoGetBitmapFrameFromVideoThread*>(BitmapFrameThread);
-   thread->SetFrameIndex(StrToIntDef(FrameIndexLabeledEdit->Text, 0));
+   thread->SetVideoFrame(VideoOutputForm->GetVideoOutputFrame(StrToIntDef(FrameIndexLabeledEdit->Text, 0)));
+   //thread->SetFrameIndex(StrToIntDef(FrameIndexLabeledEdit->Text, 0));
    thread->Resume();
    break;
   }
