@@ -770,15 +770,6 @@ void TVideoOutputFrame::UpdateGeometryList(TCheckListBox *GeometryCheckListBox, 
   PointsCheckListBox->ItemIndex=ix;
  else
   PointsCheckListBox->ItemIndex=0;
- /*
- if(PointFlag > 0)
- {
-  PointsCheckListBox->Enabled=false;
- }
- else
- {
-  PointsCheckListBox->Enabled=true;
- } */
 }
 
 // Метод отрисовки прямоугольной зоны
