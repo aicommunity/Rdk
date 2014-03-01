@@ -206,6 +206,7 @@ int GetNumPackets(void) const;
 // --------------------------
 // Обрабатывает очередную порцию данных
 int ProcessDataPart(const UParamT &buffer);
+int ProcessDataPart2(const UParamT &buffer);
 
 /// Прерывает текущю обработку если она была
 void ResetProcessing(void);

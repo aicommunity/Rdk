@@ -456,12 +456,6 @@ int UTransferReader::ProcessDataPart(const UParamT &buffer)
   int start_search=0;
   do
   {
-
-/*   if(start_search>int(buffer.size()))
-   {
-	ResetProcessing();
-	return 1;
-   } */
    start_search=Packet.FindPacketInBuffer(ClientBuffer, start_search);
    if(start_search<0)
    {
@@ -493,12 +487,6 @@ int UTransferReader::ProcessDataPart(const UParamT &buffer)
 	  ClientBuffer.erase(ClientBuffer.begin(),ClientBuffer.begin()+start_search);
 	 PacketInProgress=false;
 	}
-//	int j=Packet.FindPacketInBuffer(buffer, start_search);
-//	if(j<0)
-//	 return 1;
-
-//   ClientBuffer.assign(buffer.begin()+j, buffer.end());
-//    LastSize=Packet.CheckBuffer(ClientBuffer,ClientBuffer.size());
    }
    else
    {
@@ -582,6 +570,67 @@ int UTransferReader::ProcessDataPart(const UParamT &buffer)
  }
  return 0;
 }
+
+int UTransferReader::ProcessDataPart2(const UParamT &buffer)
+{
+ ClientBuffer.insert(ClientBuffer.end(),buffer.begin(), buffer.end());
+ int start_search=0;
+   start_search=Packet.FindPacketInBuffer(ClientBuffer, start_search);
+   if(start_search<0)
+   {
+	return 1;
+   }
+
+   if(start_search>0)
+   {
+	ClientBuffer.erase(ClientBuffer.begin(),ClientBuffer.begin()+start_search);
+	start_search=0;
+   }
+
+// while(!PacketInProgress)
+ while(Packet.CheckBuffer(ClientBuffer,ClientBuffer.size(),0)<=0)
+ {
+  if(!PacketInProgress)
+  {
+   PacketInProgress=true;
+  }
+  if(Packet.CheckBuffer(ClientBuffer,ClientBuffer.size(),0)<=0)
+  {
+   PacketInProgress=false;
+	if(!Packet.Load(ClientBuffer))
+	{
+	 ResetProcessing();
+	 ClientBuffer.erase(ClientBuffer.begin(),ClientBuffer.begin()+24);
+	 continue;
+	}
+	else
+	{
+	 int readid=0;
+
+	 USerStorageXML xml;
+	 std::string PacketXml;
+	 PacketXml.resize(Packet.GetParamSize(0));
+	 memcpy(&PacketXml[0],&(Packet.operator ()((0),0)), Packet.GetParamSize(0));
+     xml.Load(PacketXml, "RpcResponse");
+
+     readid=xml.ReadInteger("Id", 0);
+
+
+	 PacketList.push_back(Packet);
+	 LastSize=0;
+	 PacketInProgress=false;
+	 int packet_size=Packet.GetPacketSize();
+	 if(packet_size>0)
+	  ClientBuffer.erase(ClientBuffer.begin(),ClientBuffer.begin()+packet_size);
+	}
+  }
+  else
+   return 1;
+
+ }
+ return 0;
+}
+
 
 /// Прерывает текущю обработку если она была
 void UTransferReader::ResetProcessing(void)

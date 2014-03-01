@@ -1394,7 +1394,7 @@ void __fastcall TUServerControlForm::IdTCPServerExecute(TIdContext *AContext)
      SetEvent(CommandQueueUnlockEvent);
 	 return;
 	}
-	I->second.ProcessDataPart(client_buffer);
+	I->second.ProcessDataPart2(client_buffer);
 	Engine_LogMessage(RDK_EX_DEBUG, (std::string("Number of decoded packets: ")+sntoa(I->second.GetNumPackets())).c_str());
 	while(I->second.GetNumPackets()>0)
 	{
@@ -1419,6 +1419,7 @@ void __fastcall TUServerControlForm::IdTCPServerExecute(TIdContext *AContext)
 	 }
 	}
    }
+  Sleep(1);
  }
  else
   Sleep(10);
