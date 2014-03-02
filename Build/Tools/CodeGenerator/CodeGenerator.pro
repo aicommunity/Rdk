@@ -20,3 +20,12 @@ HEADERS  += CodeGenerator.h \
     settingsdialog.h
 
 FORMS    += CodeGenerator.ui
+
+unix {
+    INSTALLS += target
+    DESTDIR = $$PWD/../../../Bin/Platform/Linux/CodeGenerator
+}
+
+windows {
+    DESTDIR = $$PWD/../../../Bin/Platform/Win/CodeGenerator
+}
