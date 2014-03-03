@@ -1300,7 +1300,10 @@ void TVideoOutputFrame::ASaveParameters(RDK::USerStorageXML &xml)
    xml.SelectNodeForce(RDK::sntoa(I->first));
    try
    {
-    xml.LoadToNode(I->second,"VideoSourceThread");
+	std::string str;
+	I->second.Save(str);
+//	xml.LoadToNode(I->second,"VideoSourceThread");
+	xml.LoadToNode(str,"VideoSourceThread",true);
    }
    catch(RDK::UException &exception)
    {
@@ -1342,7 +1345,10 @@ void TVideoOutputFrame::ALoadParameters(RDK::USerStorageXML &xml)
    try
    {
 	xml.SaveFromNode(str);
-	VideoSourceOptions[RDK::atoi(xml.GetNodeName())].Load(str,"VideoSourceThread");
+	if(!VideoSourceOptions[RDK::atoi(xml.GetNodeName())].Load(str,"VideoSourceThread"))
+	{
+	 VideoSourceOptions[RDK::atoi(xml.GetNodeName())].Create("VideoSourceThread");
+    }
    }
    catch(RDK::UException &exception)
    {
