@@ -1289,6 +1289,11 @@ void TVideoOutputFrame::ASaveParameters(RDK::USerStorageXML &xml)
   xml.WriteInteger("ActiveSource",CaptureThread->GetSourceMode());
 
  xml.SelectNodeForce("VideoSourceOptions");
+
+  if(CaptureThread)
+  {
+   CaptureThread->SaveParameters(VideoSourceOptions[CaptureThread->GetSourceMode()]);
+  }
   std::map<int, RDK::USerStorageXML>::iterator I=VideoSourceOptions.begin();
   for(;I != VideoSourceOptions.end();++I)
   {
