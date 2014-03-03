@@ -626,6 +626,7 @@ try{
 
   InterfaceXml.SelectNodeRoot(std::string("Interfaces"));
  }
+ UServerControlForm->SetNumChannels(num_engines);
  RDK::UIVisualControllerStorage::LoadParameters(InterfaceXml);
 
  for(size_t i=0;i<CalculationMode.size();i++)

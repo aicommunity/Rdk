@@ -123,9 +123,48 @@ void UIVisualControllerStorage::SaveParameters(RDK::USerStorageXML &xml)
 // Загружает параметры интерфейса из xml
 void UIVisualControllerStorage::LoadParameters(RDK::USerStorageXML &xml)
 {
+/*
+ for(size_t i=0;i<InterfaceUpdaters.size();i++)
+  if(InterfaceUpdaters[i] && InterfaceUpdaters[i]->GetName() == "UGEngineControlForm")
+  {
+   InterfaceUpdaters[i]->LoadParameters(xml);
+   break;
+  }
+
+ for(size_t i=0;i<InterfaceUpdaters.size();i++)
+  if(InterfaceUpdaters[i] && InterfaceUpdaters[i]->GetName() == "UEngineMonitorForm")
+  {
+   InterfaceUpdaters[i]->LoadParameters(xml);
+   break;
+  }
+
+ for(size_t i=0;i<InterfaceUpdaters.size();i++)
+  if(InterfaceUpdaters[i] && InterfaceUpdaters[i]->GetName() == "UEngineMonitorFrame")
+  {
+   InterfaceUpdaters[i]->LoadParameters(xml);
+   break;
+  }
+
+ for(size_t i=0;i<InterfaceUpdaters.size();i++)
+  if(InterfaceUpdaters[i] && InterfaceUpdaters[i]->GetName() == "UServerControlForm")
+  {
+   InterfaceUpdaters[i]->LoadParameters(xml);
+   break;
+  }
+
+ std::string name;
+*/
  for(size_t i=0;i<InterfaceUpdaters.size();i++)
   if(InterfaceUpdaters[i])
+  {
+/*   name=InterfaceUpdaters[i]->GetName();
+   if(name == "UGEngineControlForm" ||
+	  name == "UEngineMonitorForm" ||
+	  name == "UEngineMonitorFrame" ||
+	  name == "UServerControlForm")
+	continue;*/
    InterfaceUpdaters[i]->LoadParameters(xml);
+  }
 }
 
 // Служебные методы управления интерфейсом
