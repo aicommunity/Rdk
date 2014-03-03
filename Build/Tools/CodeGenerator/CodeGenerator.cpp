@@ -17,6 +17,7 @@ MainWindow::MainWindow(QWidget *parent) :
     libModel = new QStringListModel;
 
     readXMLSettings();
+
     ui->templateCBox->addItems(templates);
     ui->dstPathCBox->addItems(paths);
     ui->dstPathCBox->setEditable(true);
@@ -34,6 +35,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->baseNameCBox->setMaxVisibleItems(5);
     ui->namespaceCBox->addItems(namespaces);
     namespaceLineEdit = new QLineEdit(ui->namespaceCBox->currentText());
+
+    slotBaseChanged();
 
     libModel->setStringList(libList);
     ui->libListView->setModel(libModel);
@@ -213,11 +216,11 @@ void MainWindow::writeHistoryToXML()
     while(baseNameHistory.size()>maxHistorySize) baseNameHistory.removeLast();
 
     QFile xmlHistoryFile("CodeGenerator.history.xml");
-    if (!xmlHistoryFile.open(QIODevice::WriteOnly | QIODevice::Text)){
-        QMessageBox::warning(0, QObject::tr("Wizard"),
-                             QObject::tr("Cannot open file %1:\n%2")
-                             .arg(xmlHistoryFile.fileName())
-                             .arg(xmlHistoryFile.errorString()));
+      if (!xmlHistoryFile.open(QIODevice::WriteOnly | QIODevice::Text)){
+//        QMessageBox::warning(0, QObject::tr("Wizard"),
+//                             QObject::tr("Cannot open file %1:\n%2")
+//                             .arg(xmlHistoryFile.fileName())
+//                             .arg(xmlHistoryFile.errorString()));
         return;
     }
     QXmlStreamWriter stream(&xmlHistoryFile);
@@ -263,22 +266,22 @@ void MainWindow::writeHistoryToXML()
 
 void MainWindow::readXMLSettings()
 {
-    QFile xmlSettingsFile("CodeGenerator.xml");
-    if (!xmlSettingsFile.open(QIODevice::ReadOnly | QIODevice::Text)){
-        QMessageBox::warning(0, QObject::tr("Wizard"),
-                             QObject::tr("Cannot open file %1:\n%2")
-                             .arg(xmlSettingsFile.fileName())
-                             .arg(xmlSettingsFile.errorString()));
+      QFile xmlSettingsFile("CodeGenerator.xml");
+      if (!xmlSettingsFile.open(QIODevice::ReadOnly | QIODevice::Text)){
+//        QMessageBox::warning(0, QObject::tr("Wizard"),
+//                             QObject::tr("Cannot open file %1:\n%2")
+//                             .arg(xmlSettingsFile.fileName())
+//                             .arg(xmlSettingsFile.errorString()));
+          return;
+      }
+     QFile xmlHistoryFile("CodeGenerator.history.xml");
+      if (!xmlHistoryFile.open(QIODevice::ReadOnly | QIODevice::Text)){
+//        QMessageBox::warning(0, QObject::tr("Wizard"),
+//                             QObject::tr("Cannot open file %1:\n%2")
+//                             .arg(xmlHistoryFile.fileName())
+//                             .arg(xmlHistoryFile.errorString()));
         return;
-    }
-    QFile xmlHistoryFile("CodeGenerator.history.xml");
-    if (!xmlHistoryFile.open(QIODevice::ReadOnly | QIODevice::Text)){
-        QMessageBox::warning(0, QObject::tr("Wizard"),
-                             QObject::tr("Cannot open file %1:\n%2")
-                             .arg(xmlHistoryFile.fileName())
-                             .arg(xmlHistoryFile.errorString()));
-        return;
-    }
+       }
     QXmlStreamReader setReader(&xmlSettingsFile);
     QXmlStreamReader histReader(&xmlHistoryFile);
     while(!setReader.atEnd())
@@ -595,7 +598,9 @@ void MainWindow::viewFiles()
                              .arg(srcHfile.errorString()));
         return;
     }
-    ui->headerEdit->setPlainText(QLatin1String (srcHfile.readAll()));
+    QTextStream inH(&srcHfile);
+    inH.setCodec("CP1251");
+    ui->headerEdit->setPlainText(QString (inH.readAll()));
 
     QFile srcCPPfile(dstPathLineEdit->text()+"/"+ui->fileNameLineEdit->text()+".cpp");
     if (!srcCPPfile.open(QIODevice::ReadOnly | QIODevice::Text)){
@@ -605,7 +610,9 @@ void MainWindow::viewFiles()
                              .arg(srcCPPfile.errorString()));
         return;
     }
-    ui->sourceEdit->setPlainText(QLatin1String (srcCPPfile.readAll()));
+    QTextStream inCPP(&srcCPPfile);
+    inCPP.setCodec("CP1251");
+    ui->sourceEdit->setPlainText(QString (inCPP.readAll()));
 
     srcCPPfile.close();
     srcHfile.close();
@@ -613,6 +620,7 @@ void MainWindow::viewFiles()
 
 void MainWindow::AddToULib()
 {
+    bool exists = false;
     QString uLibFileName;
     QModelIndex parentIndex = dstModel->index(dstPathLineEdit->text());
     int numOfChilds = dstModel->rowCount(parentIndex);
@@ -632,14 +640,33 @@ void MainWindow::AddToULib()
             QTextStream childFileStream(&childFile);
             while (!childFileStream.atEnd())
             {
-                if(childFileStream.readAll().contains("public ULibrary"))
+                if(childFileStream.readLine().contains("public ULibrary"))
                 {
                     uLibFileName = childFileName;
                     uLibFileName.chop(2);
                     break;
                 }
             }
+            childFile.close();
 
+        }
+    }
+    QFile childFile(dstPathLineEdit->text()+"/"+uLibFileName+".h");
+    if (!childFile.open(QIODevice::ReadOnly | QIODevice::Text)){
+        QMessageBox::warning(0, QObject::tr("Wizard"),
+                             QObject::tr("Cannot open file %1:\n%2")
+                             .arg(childFile.fileName())
+                             .arg(childFile.errorString()));
+        return;
+    }
+    QTextStream uLibFileStream(&childFile);
+    QString name = ui->fileNameLineEdit->text();
+    while (!uLibFileStream.atEnd())
+    {
+        if(uLibFileStream.readLine().contains(name))
+        {
+            exists = true;
+            return;
         }
     }
 
@@ -715,7 +742,7 @@ void MainWindow::AddToULib()
         QString uLibStreamLine = uLibInCppStream.readLine();
         //QString temp2;
         //temp2.append(uLibStreamLine);
-        if(uLibStreamLine.contains("namespace"))
+        if(uLibStreamLine.contains("namespace")&&!exists)
         {
             uLibStreamLine.prepend("#include \""+ui->fileNameLineEdit->text()+".cpp\"\n\n");
             tempCppArray.chop(1);
@@ -724,7 +751,7 @@ void MainWindow::AddToULib()
         if(uLibStreamLine.contains("}"))
         {
             braceCount--;
-            if (braceCount == 1)
+            if ((braceCount == 1))
             {
                 QString uploadClassString("\n{\n UEPtr<UContainer> generated_cont=new "+
                                           ui->fileNameLineEdit->text()+";"+
