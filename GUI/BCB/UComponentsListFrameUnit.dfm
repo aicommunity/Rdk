@@ -258,6 +258,7 @@ inherited UComponentsListFrame: TUComponentsListFrame
             RowCount = 2
             FixedRows = 1
             OnDblClick = EnchancedSG2BasicStringGridDblClick
+            OnDrawCell = EnchancedSG2BasicStringGridDrawCell
             OnKeyPress = EnchancedSG2BasicStringGridKeyPress
             OnMouseEnter = EnchancedSG2BasicStringGridMouseEnter
             OnSelectCell = EnchancedSG2BasicStringGridSelectCell

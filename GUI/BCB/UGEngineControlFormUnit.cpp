@@ -434,7 +434,7 @@ try{
  ProjectAutoSaveFlag=ProjectXml.ReadInteger("ProjectAutoSaveFlag",1);
 
  // Флаг автоматического сохранения проекта
- ProjectAutoSaveStateFlag=ProjectXml.ReadInteger("ProjectAutoSaveStateFlag",1);
+ ProjectAutoSaveStateFlag=ProjectXml.ReadInteger("ProjectAutoSaveStateFlag",0);
 
  // Шаг счета по умолчанию
  DefaultTimeStep.resize(GetNumEngines());
@@ -688,6 +688,10 @@ void TUGEngineControlForm::CloneProject(int source_id, int cloned_id)
  MinInterstepsInterval[cloned_id]=MinInterstepsInterval[source_id];
 
 
+ ProjectXml.WriteInteger("ProjectAutoSaveFlag",ProjectAutoSaveFlag);
+ // Флаг автоматического сохранения проекта
+ ProjectXml.WriteInteger("ProjectAutoSaveStateFlag",ProjectAutoSaveStateFlag);
+
  int selected_engine=GetSelectedEngineIndex();
  SelectEngine(cloned_id);
  String modelfilename;
@@ -823,6 +827,10 @@ try{
    RichEdit->Lines->SaveToFile(descriptionfilename);
   delete RichEdit;
  }
+
+ ProjectXml.WriteInteger("ProjectAutoSaveFlag",ProjectAutoSaveFlag);
+ // Флаг автоматического сохранения проекта
+ ProjectXml.WriteInteger("ProjectAutoSaveStateFlag",ProjectAutoSaveStateFlag);
 
  UShowProgressBarForm->IncBarStatus(2);
  UShowProgressBarForm->SetBarHeader(1,"Saving data...");

@@ -119,6 +119,7 @@ public:		// User declarations
 	TPropertyStorage m_storage;
 	bool m_cellChanged;
 	bool m_bCellChanged;
+	bool m_FlagChanged;
 	void Refresh();
 	__fastcall TEnchancedSG(TComponent* Owner);
 };

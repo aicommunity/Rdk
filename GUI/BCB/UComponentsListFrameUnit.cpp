@@ -1533,13 +1533,13 @@ void __fastcall TUComponentsListFrame::EnchancedSG1BasicStringGridDrawCell(TObje
 	 String n = GetSelectedComponentLongName().c_str();
 	 String sn = EnchancedSG1->BasicStringGrid->Cells[1][ARow];
 	 String v = EnchancedSG1->BasicStringGrid->Cells[2][ARow];
-	 Model_SetComponentStateValue(AnsiString(n).c_str(),AnsiString(sn).c_str(), AnsiString(v).c_str());
+	 Model_SetComponentParameterValue(AnsiString(n).c_str(),AnsiString(sn).c_str(), AnsiString(v).c_str());
   }
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUComponentsListFrame::HeaderControl2SectionClick(THeaderControl *HeaderControl,
-          THeaderSection *Section)
+		  THeaderSection *Section)
 {
  if(ParametersListStringGrid->Row<0 || ParametersListStringGrid->Row>=ParametersListStringGrid->RowCount)
   return;
@@ -1740,7 +1740,13 @@ void __fastcall TUComponentsListFrame::EnchancedSG1BasicStringGridDblClick(TObje
 	  TProperty p;
 	  EnchancedSG1->m_storage.GetPropertyByIndex(EnchancedSG1->BasicStringGrid->Row-1,&p);
 	  NiceParamValRichEdit->Text = p.GetString();
+	  String n = GetSelectedComponentLongName().c_str();
+	  String sn = EnchancedSG1->BasicStringGrid->Cells[1][EnchancedSG1->BasicStringGrid->Row];
+	  String v = p.GetString();
+	  Model_SetComponentParameterValue(AnsiString(n).c_str(),AnsiString(sn).c_str(), AnsiString(v).c_str());
   }
+
+
 
 }
 //---------------------------------------------------------------------------
@@ -1755,8 +1761,11 @@ void __fastcall TUComponentsListFrame::EnchancedSG1BasicStringGridKeyPress(TObje
 	  TProperty p;
 	  EnchancedSG1->m_storage.GetPropertyByIndex(EnchancedSG1->BasicStringGrid->Row-1,&p);
 	  NiceParamValRichEdit->Text = p.GetString();
+	  String n = GetSelectedComponentLongName().c_str();
+	  String sn = EnchancedSG1->BasicStringGrid->Cells[1][EnchancedSG1->BasicStringGrid->Row];
+	  String v = p.GetString();
+	  Model_SetComponentParameterValue(AnsiString(n).c_str(),AnsiString(sn).c_str(), AnsiString(v).c_str());
   }
-
 }
 //---------------------------------------------------------------------------
 
@@ -1770,6 +1779,11 @@ void __fastcall TUComponentsListFrame::EnchancedSG2BasicStringGridDblClick(TObje
 	  TProperty p;
 	  EnchancedSG2->m_storage.GetPropertyByIndex(EnchancedSG2->BasicStringGrid->Row-1,&p);
 	  NiceStateValRichEdit->Text = p.GetString();
+
+	  String n = GetSelectedComponentLongName().c_str();
+	  String sn = EnchancedSG2->BasicStringGrid->Cells[1][EnchancedSG2->BasicStringGrid->Row];
+	  String v = p.GetString();
+	  Model_SetComponentStateValue(AnsiString(n).c_str(),AnsiString(sn).c_str(), AnsiString(v).c_str());
   }
 
 }
@@ -1785,6 +1799,11 @@ void __fastcall TUComponentsListFrame::EnchancedSG2BasicStringGridKeyPress(TObje
 	  TProperty p;
 	  EnchancedSG2->m_storage.GetPropertyByIndex(EnchancedSG2->BasicStringGrid->Row-1,&p);
 	  NiceStateValRichEdit->Text = p.GetString();
+
+	  String n = GetSelectedComponentLongName().c_str();
+	  String sn = EnchancedSG2->BasicStringGrid->Cells[1][EnchancedSG2->BasicStringGrid->Row];
+	  String v = p.GetString();
+	  Model_SetComponentStateValue(AnsiString(n).c_str(),AnsiString(sn).c_str(), AnsiString(v).c_str());
   }
 
 }
@@ -1935,6 +1954,20 @@ void __fastcall TUComponentsListFrame::EnchancedSG1txtIntEditKeyPress(TObject *S
 	  NiceParamValRichEdit->Text = p.GetString();
   }
 
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::EnchancedSG2BasicStringGridDrawCell(TObject *Sender,
+          int ACol, int ARow, TRect &Rect, TGridDrawState State)
+{
+  EnchancedSG2->BasicStringGridDrawCell(Sender, ACol, ARow, Rect, State);
+  if(EnchancedSG2->m_cellChanged)
+  {
+	 String n = GetSelectedComponentLongName().c_str();
+	 String sn = EnchancedSG2->BasicStringGrid->Cells[1][ARow];
+	 String v = EnchancedSG2->BasicStringGrid->Cells[2][ARow];
+	 Model_SetComponentStateValue(AnsiString(n).c_str(),AnsiString(sn).c_str(), AnsiString(v).c_str());
+  }
 }
 //---------------------------------------------------------------------------
 

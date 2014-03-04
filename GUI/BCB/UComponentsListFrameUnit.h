@@ -144,6 +144,8 @@ __published:	// IDE-managed Components
 	void __fastcall EnchancedSG1cmbListEditKeyPress(TObject *Sender, System::WideChar &Key);
 	void __fastcall EnchancedSG1txtBorderedIntEditKeyPress(TObject *Sender, System::WideChar &Key);
 	void __fastcall EnchancedSG1txtIntEditKeyPress(TObject *Sender, System::WideChar &Key);
+	void __fastcall EnchancedSG2BasicStringGridDrawCell(TObject *Sender, int ACol, int ARow,
+          TRect &Rect, TGridDrawState State);
 
 
 

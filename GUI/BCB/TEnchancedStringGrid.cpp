@@ -21,6 +21,7 @@ __fastcall TEnchancedSG::TEnchancedSG(TComponent* Owner) : TFrame(Owner) {
 	BasicStringGrid->Align = alClient;
 	m_editing = false;
 	m_bCellChanged = false;
+	m_FlagChanged = false;
 }
 
 void TEnchancedSG::Refresh()
@@ -923,6 +924,7 @@ void __fastcall TEnchancedSG::BasicStringGridDblClick(TObject *Sender)
 				m_storage.SetPropertyByIndex(BasicStringGrid->Row-1, p);
 				Refresh();
 				m_bCellChanged = true;
+				m_FlagChanged = true;
 				return;
 			}
 			m_editingCol = BasicStringGrid->Col;
