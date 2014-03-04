@@ -57,6 +57,8 @@ __fastcall TUGEngineControlForm::TUGEngineControlForm(TComponent* Owner)
  ProjectOpenFlag=false;
 
  AppWinState=true;
+
+ ProjectAutoSaveStateFlag=false;
 }
 
 // Загружает данные положения формы из xml
