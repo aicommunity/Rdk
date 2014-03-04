@@ -167,6 +167,39 @@ void TVideoOutputFrame::Init(int mode)
  UpdateInterface();
 }
 
+void TVideoOutputFrame::Init(int mode, RDK::USerStorageXML &raw_xml_data)
+{
+ Pause();
+ if(mode == -1)
+ {
+  if(CaptureThread)
+  {
+   CaptureThread->LoadParametersEx(raw_xml_data);
+   CaptureThread->SaveParameters(VideoSourceOptions[mode]);
+  }
+ }
+ else
+ {
+  if(mode < 0 || !TVideoCaptureOptionsForm::CheckVideoSourcePrototypes(mode))
+   return;
+
+  UnInit();
+  CaptureThread=TakeVideoCapureThread(mode,this,false);
+  if(!CaptureThread)
+   return;
+  CaptureThread->SetChannelIndex(FrameIndex);
+
+  TVideoCaptureThreadVideoGrabber *thread=dynamic_cast<TVideoCaptureThreadVideoGrabber*>(CaptureThread);
+  if(thread)
+   thread->GetVideoGrabber()->LicenseString=TVGrabberLicenseString;
+
+  CaptureThread->LoadParametersEx(raw_xml_data);
+  CaptureThread->SaveParameters(VideoSourceOptions[mode]);
+ }
+ UpdateInterface();
+}
+
+
 /// Деинициализация захвата
 void TVideoOutputFrame::UnInit(void)
 {

@@ -177,8 +177,9 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
   else
   {
    mode=xml.ReadInteger("Mode",mode);
-   frame->Init(mode);
-   frame->CaptureThread->LoadParametersEx(xml);
+   frame->Init(mode,xml);
+//   frame->Init(mode);
+//   frame->CaptureThread->LoadParametersEx(xml);
    xml.SelectUp();
    return_value=0;//SetChannelVideoSource(engine_index,mode);
   }

@@ -326,6 +326,9 @@ void ReturnVideoCapureThread(RDK::UEPtr<TVideoCaptureThread> thread);
 /// Если mode == -1 то осуществляет переиницализацию в текущем режиме
 void Init(int mode=-1);
 
+void Init(int mode, RDK::USerStorageXML &raw_xml_data);
+
+
 /// Деинициализация захвата
 void UnInit(void);
 
