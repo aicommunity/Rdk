@@ -284,6 +284,7 @@ __published:	// IDE-managed Components
 	TGroupBox *RecordingControlGroupBox;
 	TButton *BrowseFileNameButton;
 	TFileOpenDialog *RecordingFileOpen;
+	TButton *VideoCompressorSettingsButton;
 	void __fastcall NetworkStreamingButtonClick(TObject *Sender);
 	void __fastcall StopNetworkStreamingButtonClick(TObject *Sender);
 	void __fastcall VideoGrabberVideoFromBitmapsNextFrameNeeded(TObject *Sender, bool FirstSample);
@@ -301,6 +302,8 @@ __published:	// IDE-managed Components
 	void __fastcall StopButtonClick(TObject *Sender);
 	void __fastcall BrowseComponentButtonClick(TObject *Sender);
 	void __fastcall BrowseFileNameButtonClick(TObject *Sender);
+	void __fastcall VideoCompressorComboBoxChange(TObject *Sender);
+	void __fastcall VideoCompressorSettingsButtonClick(TObject *Sender);
 
 
 private:	// User declarations

@@ -240,7 +240,44 @@ void TVideoOutputFrame::ReadSourceSafe(RDK::UBitmap &bmp, double &time_stamp, bo
   CaptureThread->ReadSourceSafe(bmp,time_stamp,reflect);
 }
 // -----------------------------
+/// Инициализация первичных настроек
+void TVideoOutputFrame::InitPrimarySettings(void)
+{
+ TMenuItem *parentItem=0;
+ for(int i=0; i<RecordingPopupMenu->Items->Count; i++)
+ {
+  if(RecordingPopupMenu->Items->Items[i]->Name == "VideoCodec")
+  {
+   parentItem=RecordingPopupMenu->Items->Items[i];
+   break;
+  }
+ }
 
+ if(!parentItem)
+  return;
+
+ parentItem->Clear();
+ //parentItem->Free();
+
+ std::string itemName;
+ int size=RecordingFrame->VideoCompressorComboBox->Items->Capacity;
+ String currentItem=RecordingFrame->VideoCompressorComboBox->Items->Strings[RecordingFrame->VideoCompressorComboBox->ItemIndex];
+
+ for(int i=0; i<size; i++)
+ {
+  TMenuItem *newItem=new TMenuItem(parentItem);
+  newItem->Caption=RecordingFrame->VideoCompressorComboBox->Items->Strings[i];
+  itemName="Codec";
+  itemName+=AnsiString(IntToStr(i)).c_str();
+  newItem->Name=String(itemName.c_str());
+  parentItem->Add(newItem);
+  newItem->OnClick=OnClickVideoCodec;
+  //delete newItem;
+ }
+
+ TMenuItem *currentCodec=parentItem->Find(currentItem);
+ currentCodec->Checked=true;
+}
 
 //---------------------------------------------------------------------------
 // Возвращает форму управления инициализацией видео
@@ -2078,6 +2115,56 @@ void __fastcall TVideoOutputFrame::SavePictureActionExecute(TObject *Sender)
  jpg->Compress();
  jpg->SaveToFile(dir+file_name.c_str());
  delete jpg;
+}
+//---------------------------------------------------------------------------
+// Реакция на клик для динамического меню выбора кодека записи
+void __fastcall TVideoOutputFrame::OnClickVideoCodec(TObject *Sender)
+{
+ TMenuItem *currItem=dynamic_cast<TMenuItem*>(Sender);
+ TMenuItem *parentMenu=currItem->Parent;
+
+ for(int i=0; i<parentMenu->Count; i++)
+ {
+  if(parentMenu->Items[i]->Checked);
+   parentMenu->Items[i]->Checked=false;
+ }
+
+ RecordingFrame->VideoCompressorComboBox->ItemIndex=currItem->MenuIndex;
+ currItem->Checked=true;
+ return;
+}
+void __fastcall TVideoOutputFrame::RecordingFrameVideoCompressorComboBoxChange(TObject *Sender)
+{
+ RecordingFrame->VideoCompressorComboBoxChange(Sender);
+
+ int indexCodec=RecordingFrame->VideoCompressorComboBox->ItemIndex;
+ TMenuItem *videoCodec=0;
+ for(int i=0; i<RecordingPopupMenu->Items->Count; i++)
+ {
+  if(RecordingPopupMenu->Items->Items[i]->Name == "VideoCodec")
+  {
+   videoCodec=RecordingPopupMenu->Items->Items[i];
+   break;
+  }
+ }
+
+ if(!videoCodec)
+  return;
+
+ for(int i=0; i<videoCodec->Count; i++)
+ {
+  if(videoCodec->Items[i]->Checked);
+   videoCodec->Items[i]->Checked=false;
+ }
+
+ videoCodec->Items[indexCodec]->Checked=true;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoOutputFrame::StartStreamingToolButtonClick(TObject *Sender)
+{
+ NetworkStreamingFrame->FrameIndexLabeledEdit->Text=IntToStr(FrameIndex);
+ NetworkStreamingFrame->NetworkStreamingButtonClick(Sender);
 }
 //---------------------------------------------------------------------------
 

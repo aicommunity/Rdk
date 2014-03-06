@@ -541,6 +541,9 @@ int TTVideoRegistratorFrame::InitRecordingSettings(void)
 //---------------------------------------------------------------------------
 int TTVideoRegistratorFrame::GetBitmapFrame(void)
 {
+ if(!BitmapFrameThread)
+  return 0;
+
  BitmapFrameThread->ReadSourceSafe(InputFrameBitmap, false);
 }
 
@@ -955,6 +958,24 @@ void __fastcall TTVideoRegistratorFrame::BrowseFileNameButtonClick(TObject *Send
 {
  RecordingFileOpen->Execute();
  RecordingFileNameLabeledEdit->Text=RecordingFileOpen->FileName;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TTVideoRegistratorFrame::VideoCompressorComboBoxChange(TObject *Sender)
+{
+ //VideoOutputFrame->InitPrimarySettings();
+ //TMenuItem *videoCodecItem=VideoOutputFrame->RecordingPopupMenu->Items->Find("Video Codec");
+ //String currentItem=VideoCompressorComboBox->Items->operator [](VideoCompressorComboBox->ItemIndex);
+ //TMenuItem *currentCodec=videoCodecItem->Find(currentItem);
+ //currentCodec->Checked=true;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TTVideoRegistratorFrame::VideoCompressorSettingsButtonClick(TObject *Sender)
+
+{
+ VideoGrabber->VideoCompressor = VideoCompressorComboBox->ItemIndex;
+ VideoGrabber->ShowDialog(dlg_VideoCompressor);
 }
 //---------------------------------------------------------------------------
 

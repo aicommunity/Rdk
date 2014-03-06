@@ -239,15 +239,16 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
             Top = 89
             Width = 364
             Height = 21
-            Anchors = [akLeft, akRight]
+            Anchors = [akLeft, akTop, akRight]
             TabOrder = 2
+            OnChange = VideoCompressorComboBoxChange
           end
           object RecordHeightLabeledEdit: TLabeledEdit
             Left = 3
             Top = 176
             Width = 364
             Height = 21
-            Anchors = [akLeft, akRight]
+            Anchors = [akLeft, akTop, akRight]
             EditLabel.Width = 68
             EditLabel.Height = 13
             EditLabel.Caption = 'Record Height'
@@ -259,7 +260,7 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
             Top = 131
             Width = 364
             Height = 21
-            Anchors = [akLeft, akRight]
+            Anchors = [akLeft, akTop, akRight]
             EditLabel.Width = 65
             EditLabel.Height = 13
             EditLabel.Caption = 'Record Width'
@@ -271,7 +272,7 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
             Top = 40
             Width = 364
             Height = 21
-            Anchors = [akLeft, akRight]
+            Anchors = [akLeft, akTop, akRight]
             TabOrder = 5
           end
           object BrowseFileNameButton: TButton
@@ -282,6 +283,15 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
             Caption = 'Browse'
             TabOrder = 6
             OnClick = BrowseFileNameButtonClick
+          end
+          object VideoCompressorSettingsButton: TButton
+            Left = 84
+            Top = 286
+            Width = 157
+            Height = 25
+            Caption = 'Video Compressor Settings'
+            TabOrder = 7
+            OnClick = VideoCompressorSettingsButtonClick
           end
         end
         object RecordingControlGroupBox: TGroupBox
@@ -523,7 +533,7 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
     FavoriteLinks = <>
     FileTypes = <>
     Options = []
-    Left = 720
-    Top = 504
+    Left = 640
+    Top = 536
   end
 end

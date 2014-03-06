@@ -102,6 +102,7 @@ __published:    // IDE-managed Components
 	TToolButton *SelectSourceToolButton;
 	TActionList *ActionList;
 	TAction *SavePictureAction;
+	TMenuItem *VideoCodec;
     void __fastcall TimerTimer(TObject *Sender);
 	void __fastcall StartButtonClick(TObject *Sender);
     void __fastcall StopButtonClick(TObject *Sender);
@@ -144,7 +145,10 @@ __published:    // IDE-managed Components
 
 //	void __fastcall UHttpServerFrameIdHTTPServerCommandGet(TIdContext *AContext, TIdHTTPRequestInfo *ARequestInfo,
 //          TIdHTTPResponseInfo *AResponseInfo);
-
+	// Реакция на клик динамического меню выбора видео кодека записи
+	void __fastcall OnClickVideoCodec(TObject *Sender);
+	void __fastcall RecordingFrameVideoCompressorComboBoxChange(TObject *Sender);
+	void __fastcall StartStreamingToolButtonClick(TObject *Sender);
 
 private:    // User declarations
 public:        // User declarations
@@ -342,6 +346,8 @@ void Pause(void);
 void ReadSourceSafe(RDK::UBitmap &bmp, double &time_stamp, bool reflect);
 // -----------------------------
 
+/// Инициализация первичных настроек
+void InitPrimarySettings(void);
 // Возвращает форму управления инициализацией видео
 //TVideoGrabberControlForm* GetMyVideoGrabberControlForm(void);
 
