@@ -400,7 +400,7 @@ virtual const char* Env_GetSystemDir(void) const;
 virtual int Env_SetSystemDir(const char *dir);
 
 /// Возвращает состояние флага отладочного режима среды
-virtual bool Env_GetDebugMode(void) const;
+virtual int Env_GetDebugMode(void) const;
 
 /// Устанавливает состояние флага отладочного режима среды
 virtual int Env_SetDebugMode(bool value);
