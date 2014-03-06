@@ -4716,11 +4716,11 @@ int UEngine::LoadPredefinedLibraries(void)
  LibrariesList.push_back(&GUILibrary);
  LibrariesList.push_back(&HardwareLibrary);
  LibrariesList.push_back(&UPtzCameraLibrary);
- LibrariesList.push_back(&ObjectSearchLibrary);
+// LibrariesList.push_back(&ObjectSearchLibrary);
  LibrariesList.push_back(&ObjectTrackingLibrary);
  LibrariesList.push_back(&QualifierLibrary);
  LibrariesList.push_back(&SimulatorLibrary);
- LibrariesList.push_back(&SpatialGeometryLibrary);
+// LibrariesList.push_back(&SpatialGeometryLibrary);
  LibrariesList.push_back(&BStatisticLibrary);
 
  return 0;

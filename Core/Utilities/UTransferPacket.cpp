@@ -310,7 +310,7 @@ bool UTransferPacket::Save(UParamT &buffer)
  PacketSize=GetPacketSize();
  IntDivide(PacketSize,buffer,pbuf); pbuf+=sizeof(PacketSize);
  IntDivide(NumParams,buffer,pbuf); pbuf+=sizeof(NumParams);
- for(int i=0;i<Params.size();i++)
+ for(size_t i=0;i<Params.size();i++)
   {
    (*this)(i,buffer,pbuf);
    pbuf+=Params[i].size()+sizeof(int);
@@ -331,7 +331,7 @@ int UTransferPacket::GetPacketSize(void) const
  
  psize=Params.size();
 
- for(int i=0;i<Params.size();i++)
+ for(size_t i=0;i<Params.size();i++)
   size+=Params[i].size();
 
  return size+sizeof(UPacketPrefix)+NumParams*sizeof(int)+sizeof(int)*4;

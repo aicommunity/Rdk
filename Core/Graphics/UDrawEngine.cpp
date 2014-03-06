@@ -548,7 +548,7 @@ void UDrawEngine::Paint(UGEDescription &ndescr)
  rect.Height=ndescr.Height;
  UAFont *font=GEngine->GetFont();
  GEngine->TextRect(ndescr.Header,rect,alCenter);
- rect.Y+=ndescr.Height*1.2;
+ rect.Y+=int(ndescr.Height*1.2);
  UAFont *class_font=RDK::GlobalFonts.GetFont(font->GetName(),font->GetSize()-4);
  if(class_font)
  {
