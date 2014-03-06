@@ -1358,17 +1358,19 @@ int UEngine::Env_SetSystemDir(const char *dir)
 }
 
 /// Возвращает состояние флага отладочного режима среды
-bool UEngine::Env_GetDebugMode(void) const
+int UEngine::Env_GetDebugMode(void) const
 {
  try
  {
-  return Environment->GetDebugMode();
+  if(Environment->GetDebugMode())
+   return 0;
+
  }
  catch (RDK::UException &exception)
  {
   ProcessException(exception);
  }
- return false;
+ return 574342;
 }
 
 /// Устанавливает состояние флага отладочного режима среды

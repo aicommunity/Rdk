@@ -20,7 +20,6 @@ See file license.txt for more information
 namespace RDK {
 
 struct UBVSObject;
-struct UBVSObject3D;
 
 // UBMColorModel
 USerStorageXML& operator << (USerStorageXML& storage, const UBMColorModel &data);
