@@ -47,6 +47,24 @@ TUGEngineControlForm *UGEngineControlForm;
 
 /// Глобальная переменная сигнализирующая о завершении инициализации приложения
 bool ApplicationInitialized=false;
+
+HANDLE RdkLockStartapMutex;
+
+bool RdkIsApplicationRunning(void)
+{
+ std::string mutex_name="Global\\";
+ std::string mutex_subname=AnsiString(Application->ExeName).c_str();
+ for(size_t i=0;i<mutex_subname.size();i++)
+ if(mutex_subname[i] == '\\')
+  mutex_subname[i]='/';
+ mutex_name+=mutex_subname;
+ RdkLockStartapMutex=CreateMutex(0, false, mutex_name.c_str());
+ int last_err=GetLastError();
+ if(last_err == ERROR_ALREADY_EXISTS || last_err == ERROR_ACCESS_DENIED)
+  return true;
+ return false;
+}
+
 //---------------------------------------------------------------------------
 __fastcall TUGEngineControlForm::TUGEngineControlForm(TComponent* Owner)
 	: TUVisualControllerForm(Owner)

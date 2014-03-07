@@ -22,7 +22,7 @@
 #pragma resource "*.dfm"
 TVideoOutputFrame *VideoOutputFrame;
 
-extern String TVGrabberLicenseString;
+String TVGrabberLicenseString;
 
 //---------------------------------------------------------------------------
 __fastcall TVideoOutputFrame::TVideoOutputFrame(TComponent* Owner)
