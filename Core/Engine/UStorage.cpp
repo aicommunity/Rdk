@@ -373,7 +373,7 @@ void UStorage::ClearClassesStorage(void)
 // Флаг 'Activity' объекта выставляется в true
 // Если свободного объекта не существует он создается и добавляется
 // в хранилище
-UEPtr<UComponent> UStorage::TakeObject(const UId &classid, const UEPtr<UComponent> prototype)
+UEPtr<UComponent> UStorage::TakeObject(const UId &classid, const UEPtr<UComponent> &prototype)
 {
  UClassesStorageIterator tmplI=ClassesStorage.find(classid);
  if(tmplI == ClassesStorage.end())
@@ -434,7 +434,7 @@ UEPtr<UComponent> UStorage::TakeObject(const UId &classid, const UEPtr<UComponen
  return static_pointer_cast<UComponent>(obj);
 }
 
-UEPtr<UComponent> UStorage::TakeObject(const NameT &classname, const UEPtr<UComponent> prototype)
+UEPtr<UComponent> UStorage::TakeObject(const NameT &classname, const UEPtr<UComponent> &prototype)
 {
  return TakeObject(FindClassId(classname),prototype);
 }

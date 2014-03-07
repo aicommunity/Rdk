@@ -156,7 +156,7 @@ void UCItemList::Resize(int newsize)
 
 // Ищет в контейнере первый заданный элемент начиная с индекса index
 // и возвращает его описание
-UCItem UCItemList::Find(const UEPtr<UItem> item, int index) const
+UCItem UCItemList::Find(const UEPtr<UItem> &item, int index) const
 {
  return Find(item.Get(),index);
 }
@@ -356,7 +356,7 @@ const UCItem& UConnector::GetCItem(int c_index) const
 
 // Возвращает информацию об индексах связей с этим item или -1, -1
 // если такая связь отсутствует
-UCLink UConnector::GetCLink(const UEPtr<UItem> item) const
+UCLink UConnector::GetCLink(const UEPtr<UItem> &item) const
 {
  UCLink indexes;
 

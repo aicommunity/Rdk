@@ -49,10 +49,10 @@ namespace RDK{
 // Конструкторы и деструкторы
 // --------------------------
 UEngine::UEngine(void)
+ : Storage(0), Environment(0)
 {
  Runned=-1;
- Storage=0;
- Environment=0;
+ ChannelIndex=0;
 // CurrentExceptionsLogSize=0;
 // ExceptionHandler=0;
 

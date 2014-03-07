@@ -31,7 +31,7 @@ using namespace std;
 // --------------------------
 UAGraphics::UAGraphics(void)
 {
-// Font=0;
+ Font=0;
  CData=0;
  PenColor.c=0;
  PenWidth=1;

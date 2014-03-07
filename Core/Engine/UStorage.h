@@ -199,8 +199,8 @@ virtual void ClearClassesStorage(void);
 // Флаг 'Activity' объекта выставляется в true
 // Если свободного объекта не существует он создается и добавляется
 // в хранилище
-virtual UEPtr<UComponent> TakeObject(const UId &classid, const UEPtr<UComponent> prototype=0);
-virtual UEPtr<UComponent> TakeObject(const string &classname, const UEPtr<UComponent> prototype=0);
+virtual UEPtr<UComponent> TakeObject(const UId &classid, const UEPtr<UComponent> &prototype=0);
+virtual UEPtr<UComponent> TakeObject(const string &classname, const UEPtr<UComponent> &prototype=0);
 
 // Возвращает Id класса, отвечающий объекту 'object'
 virtual UId FindClass(UEPtr<UComponent> object) const;

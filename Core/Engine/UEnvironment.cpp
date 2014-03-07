@@ -55,6 +55,11 @@ UEnvironment::UEnvironment(void)
 
  LastReadExceptionLogIndex=-1;
  MaxExceptionsLogSize=1000;
+
+ LastErrorLevel=INT_MAX;
+ DebugMode=false;
+ ChannelIndex=0;
+ LastStepStartTime=0;
 }
 
 UEnvironment::~UEnvironment(void)

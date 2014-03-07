@@ -2148,7 +2148,12 @@ void UBitmap::InsertHorLine(int y, int thickness, UColorT color, UBitmap *target
   {
    if(MemoryLength<LineByteLength*(Height+thickness))
    {
-    Data=(UBColor*)realloc(Data,LineByteLength*(Height+thickness));
+	UBColor *temp_data=(UBColor*)realloc(Data,LineByteLength*(Height+thickness));
+
+	if(!temp_data)
+	 return;
+	else
+	 Data=temp_data;
     MemoryLength=LineByteLength*(Height+thickness);
    }
 

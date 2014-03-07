@@ -1010,7 +1010,7 @@ int EngineIndex;
 
 public:
 EErrorEngine(void)//int engine_index)
-: EError() /*EngineIndex(engine_index) */{};
+: EError(), EngineIndex(0) /*EngineIndex(engine_index) */{};
 /*
 // Формирует строку лога об исключении
 virtual std::string CreateLogMessage(void) const

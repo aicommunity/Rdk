@@ -303,7 +303,7 @@ NameT& GetFullName(NameT &buffer) const;
 // (исключая имя владельца 'mainowner').
 // Метод возвращает пустую строку, если 'mainowner' - не является
 // владельцем объекта ни на каком уровне иерархии
-NameT& GetLongName(const UEPtr<UContainer> mainowner, NameT &buffer) const;
+NameT& GetLongName(const UEPtr<UContainer> &mainowner, NameT &buffer) const;
 
 /// Максимально допустимое время расчета компонента вместе с дочерними компонентами
 /// в миллисекундах.

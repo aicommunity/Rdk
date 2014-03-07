@@ -301,6 +301,9 @@ void UAConnector2DVector::Del(UAConnectorVector *item)
 UAConnector2DVector& UAConnector2DVector::operator = (const UAConnector2DVector &copy)
 {
  Resize(copy.Size);
+
+ for(int i=0;i<Size;i++)
+  Data[i]=copy.Data[i];
  memcpy(Data,copy.Data,Size*sizeof(UAConnectorVector));
 
  return *this;

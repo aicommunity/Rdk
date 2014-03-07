@@ -108,7 +108,7 @@ void Resize(int newsize);
 
 // Ищет в контейнере первый заданный элемент начиная с индекса index
 // и возвращает его описание
-UCItem Find(const UEPtr<UItem> item, int index=0) const;
+UCItem Find(const UEPtr<UItem> &item, int index=0) const;
 UCItem Find(const UItem *const item, int index=0) const;
 
 // Ищет в контейнере первый заданный элемент начиная с индекса index
@@ -203,7 +203,7 @@ const UCItem& GetCItem(int c_index) const;
 
 // Возвращает информацию об индексах связей с этим item или -1, -1
 // если такая связь отсутствует
-UCLink GetCLink(const UEPtr<UItem> item) const;
+UCLink GetCLink(const UEPtr<UItem> &item) const;
 UCLink GetCLink(const UItem* const item) const;
 // --------------------------
 

@@ -52,6 +52,11 @@ Position=0;
 
 // Тип элемента
 Type = 0;
+
+ NumInputs=0;
+ NumOutputs=0;
+ Highlight=false;
+
 }
 
 UGEDescription::UGEDescription(const UGEDescription &copy)
@@ -120,6 +125,9 @@ UDrawEngine::UDrawEngine(void)
  // Размеры элемента в пикселях по умолчанию
  RectWidth=80;
  RectHeight=25;
+
+ ElementsXRes=1;
+ ElementsYRes=1;
 }
 
 UDrawEngine::~UDrawEngine(void)
@@ -254,7 +262,7 @@ std::string UDrawEngine::FindComponent(int x, int y)
  {
 //  double dist=sqrt(double((x-I->second.Position.x)*(x-I->second.Position.x)+(y-I->second.Position.y)*(y-I->second.Position.y)));
 
-  name=I->first;
+//  name=I->first;
   if(abs(int(x-I->second.Position.x))<=I->second.Width && abs(int(y-I->second.Position.y))<=I->second.Height)
 //  if(dist<=I->second.Height)// Заглушка!!
    return I->first;
@@ -355,7 +363,7 @@ void UDrawEngine::UpdateDestinations(void)
 	 RDK::operator >> (NetXml,coord);
 	 NetXml.SelectUp();
 
-	 if(!coord>0)
+	 if((!coord)>0)
 	  descr.Position=coord*ZoomCoeff+Origin;
 	 else
 	  descr.Position=i*30.0;

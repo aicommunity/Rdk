@@ -444,7 +444,7 @@ NameT& UContainer::GetFullName(NameT &buffer) const
 // (исключая имя владельца 'mainowner').
 // Метод возвращает пустую строку, если 'mainowner' - не является
 // владельцем объекта ни на каком уровне иерархии.
-NameT& UContainer::GetLongName(const UEPtr<UContainer> mainowner, NameT &buffer) const
+NameT& UContainer::GetLongName(const UEPtr<UContainer> &mainowner, NameT &buffer) const
 {
  if(!GetOwner() && GetOwner() != mainowner)
   {
