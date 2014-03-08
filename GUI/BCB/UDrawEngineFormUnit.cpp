@@ -25,6 +25,13 @@ __fastcall TUDrawEngineForm::TUDrawEngineForm(TComponent* Owner)
  UpdateInterval=-1;
  DragDropFlag=false;
  LongLinkFlag=false;
+ FontSize=12;
+ StartX=0;
+ StartY=0;
+ StopX=0;
+ StopY=0;
+ PopupX=0;
+ PopupY=0;
 }
 
 // -----------------------------

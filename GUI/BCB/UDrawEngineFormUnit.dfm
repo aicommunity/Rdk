@@ -66,7 +66,7 @@ object UDrawEngineForm: TUDrawEngineForm
           ExplicitLeft = 4
           ExplicitTop = 24
           ExplicitWidth = 499
-          ExplicitHeight = 419
+          ExplicitHeight = 515
         end
       end
     end

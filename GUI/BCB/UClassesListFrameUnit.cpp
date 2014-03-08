@@ -281,7 +281,7 @@ void __fastcall TUClassesListFrame::AddClassButtonClick(TObject *Sender)
  if(NewClassName.empty() || NewComponentName.empty())
   return;
 
- AddClassToRuntimeLibrary(NewComponentName.c_str(),NewClassName.c_str(),AnsiString(GetSelectedLibraryName()).c_str());
+ AddClassToRuntimeLibrary(NewComponentName,NewClassName,AnsiString(GetSelectedLibraryName()).c_str());
 
  NewClassName.clear();
  NewComponentName.clear();

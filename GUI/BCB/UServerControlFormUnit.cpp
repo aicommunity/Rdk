@@ -59,6 +59,12 @@ __fastcall TUServerControlForm::TUServerControlForm(TComponent* Owner)
 // Clients=new TThreadList;
 
  CriticalSection=new TCriticalSection;
+
+ AutoStartFlag=false;
+ Mode=0;
+ Bitmap=0;
+ PerformancePushIndex=0;
+ CommandQueueUnlockEvent=0;
 }
 
 __fastcall TUServerControlForm::~TUServerControlForm(void)

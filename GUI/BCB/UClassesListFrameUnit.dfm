@@ -16,6 +16,10 @@ inherited UClassesListFrame: TUClassesListFrame
     OnChange = PageControlChange
     object NameTabSheet: TTabSheet
       Caption = 'By Name'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object StringGrid: TStringGrid
         Left = 0
         Top = 0
@@ -33,6 +37,10 @@ inherited UClassesListFrame: TUClassesListFrame
     object LibsTabSheet: TTabSheet
       Caption = 'By Libs'
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object TreeView: TTreeView
         Left = 0
         Top = 0
@@ -51,6 +59,10 @@ inherited UClassesListFrame: TUClassesListFrame
     object LibsControlTabSheet: TTabSheet
       Caption = 'Libs Control'
       ImageIndex = 2
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Splitter1: TSplitter
         Left = 0
         Top = 225
