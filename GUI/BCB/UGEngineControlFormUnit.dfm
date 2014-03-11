@@ -213,10 +213,6 @@ object UGEngineControlForm: TUGEngineControlForm
         TabPosition = tpRight
         object LogsTabSheet: TTabSheet
           Caption = 'Logs'
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
         end
         object TabSheet2: TTabSheet
           Caption = 'Performance'
@@ -730,7 +726,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 360
     Top = 65528
     Bitmap = {
-      494C01011B006000140210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B006000240210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -1707,12 +1703,6 @@ object UGEngineControlForm: TUGEngineControlForm
     Visible = True
     OnDblClick = TrayIconDblClick
     Left = 112
-    Top = 88
-  end
-  object ApplicationEvents: TApplicationEvents
-    OnMinimize = ApplicationEventsMinimize
-    OnRestore = ApplicationEventsRestore
-    Left = 184
     Top = 88
   end
   object TrayPopupMenu: TPopupMenu

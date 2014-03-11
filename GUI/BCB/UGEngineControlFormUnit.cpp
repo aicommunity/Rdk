@@ -28,7 +28,7 @@
 #include "TIdHttpResultBroadcasterFormUnit.h"
 #include "UServerControlFormUnit.h"
 #include "UShowProgressBarUnit.h"
-//#include "TUFileSystem.h"
+#include "TLoaderFormUnit.h"
 #include "rdk_cpp_initdll.h"
 #include "myrdk.h"
 
@@ -49,6 +49,8 @@ TUGEngineControlForm *UGEngineControlForm;
 bool ApplicationInitialized=false;
 
 HANDLE RdkLockStartapMutex;
+
+TUVisualControllerForm *RdkMainForm=0;
 
 bool RdkIsApplicationRunning(void)
 {
@@ -77,6 +79,57 @@ __fastcall TUGEngineControlForm::TUGEngineControlForm(TComponent* Owner)
  AppWinState=true;
 
  ProjectAutoSaveStateFlag=false;
+}
+
+void __fastcall TUGEngineControlForm::WMSysCommand(TMessage &Msg)
+{
+unsigned int sys_code = Msg.WParam & 0xFFF0;
+switch (sys_code)
+{
+ case SC_MINIMIZE:
+ {
+  AppMinimize(this);
+  Application->Minimize();
+  Msg.Result = 0;
+  return;
+ break;
+ }
+			  /*
+ case SC_MAXIMIZE:
+ {
+  // maximize command requested
+  // TO TRAP: comment out the following two lines,
+  // and remove the break line.
+  // Application->Maximize();
+  Msg.Result = 0;
+  return;
+  break;
+ }              */
+
+ case SC_RESTORE:
+ {
+  if(WindowState != wsMinimized)
+  {
+   Application->Restore();
+   WindowState=wsNormal;
+  }
+  else
+   Application->Restore();
+  AppRestore(this);
+  Msg.Result = 0;
+  return;
+  break;
+ }
+
+ case SC_CLOSE:
+ {
+  Close1Click(this);
+  Msg.Result = 0;
+  return;
+  break;
+ }
+}
+ TForm::Dispatch(&Msg);
 }
 
 // Загружает данные положения формы из xml
@@ -169,18 +222,8 @@ void TUGEngineControlForm::AClearInterface(void)
 
 void __fastcall TUGEngineControlForm::FormShow(TObject *Sender)
 {
- ApplicationInitialized=true;
 // HideTimer->Enabled=true;
 
- UServerControlForm->SetServerBinding(ServerInterfaceAddress, ServerInterfacePort);
-
- UDrawEngineFrame1->ComponentsListFrame=UComponentsListFrame1;
- UComponentsListFrame1->DrawEngineFrame=UDrawEngineFrame1;
- UEngineMonitorForm->Parent=LogsTabSheet;
- UEngineMonitorForm->BorderStyle=bsNone;
- UEngineMonitorForm->EngineMonitorFrame->StatusBar->Visible=false;
- UEngineMonitorForm->Align=alClient;
- UEngineMonitorForm->Show();
 }
 
 // Сохраняет параметры интерфейса в xml
@@ -1785,6 +1828,24 @@ void __fastcall TUGEngineControlForm::WatchWindow1Click(TObject *Sender)
  UWatchForm->Show();
 }
 //---------------------------------------------------------------------------
+void __fastcall TUGEngineControlForm::AppMinimize(TObject *Sender)
+{
+ if(MinimizeToTray)
+ {
+  //Убираем с панели задач
+  TrayIcon->Visible=true;
+  ShowWindow(RdkMainForm->Handle,SW_HIDE);  // Скрываем программу
+  ShowWindow(Application->Handle,SW_HIDE);  // Скрываем кнопку с TaskBar'а
+  SetWindowLong(Application->Handle, GWL_EXSTYLE, GetWindowLong(Application->Handle, GWL_EXSTYLE) | !WS_EX_APPWINDOW);
+ }
+ AppWinState=false;
+}
+
+void __fastcall TUGEngineControlForm::AppRestore(TObject *Sender)
+{
+ AppWinState=true;
+ RdkMainForm->UpdateInterface();
+}
 
 void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
 {
@@ -1834,14 +1895,6 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
 
  // Грузим историю проектов
  LoadProjectsHistory();
-
-// TMemIniFile *history_ini=new TMemIniFile("History.ini");
-// TStrings *hist=new TStrings;
-// int hist_size=history_ini->ReadSectionValues("General",hist);
-// MainFormName=app_ini->ReadString("General", "MainFormName", "");
-
-// delete hist;
-// delete history_ini;
 }
 //---------------------------------------------------------------------------
 
@@ -1849,6 +1902,53 @@ void __fastcall TUGEngineControlForm::HideTimerTimer(TObject *Sender)
 {
  if(!ApplicationInitialized)
   return;
+ HideTimer->Enabled=false;
+
+ UServerControlForm->SetServerBinding(ServerInterfaceAddress, ServerInterfacePort);
+
+ UDrawEngineFrame1->ComponentsListFrame=UComponentsListFrame1;
+ UComponentsListFrame1->DrawEngineFrame=UDrawEngineFrame1;
+ UEngineMonitorForm->Parent=LogsTabSheet;
+ UEngineMonitorForm->BorderStyle=bsNone;
+ UEngineMonitorForm->EngineMonitorFrame->StatusBar->Visible=false;
+ UEngineMonitorForm->Align=alClient;
+ UEngineMonitorForm->Show();
+
+ if(MainFormName.Length()>0)
+ {
+  TComponent *component=Application->FindComponent(MainFormName);
+  RdkMainForm=dynamic_cast<TUVisualControllerForm*>(component);
+ }
+
+ if(!RdkMainForm)
+  RdkMainForm=this;
+
+ if(RdkMainForm)
+ {
+  SetWindowLong(RdkMainForm->Handle, GWL_EXSTYLE, GetWindowLong(RdkMainForm->Handle, GWL_EXSTYLE) | WS_EX_APPWINDOW);
+  SetWindowLong(RdkMainForm->Handle, GWL_HWNDPARENT, 0);
+  Application->OnMinimize = AppMinimize;
+  Application->OnRestore = AppRestore;
+ }
+
+ if(StartMinimized)
+ {
+//  RdkMainForm->Show();
+  AppMinimize(this);
+  Application->Minimize();
+ }
+ else
+ {
+  RdkMainForm->Show();
+  RdkMainForm->UpdateInterface();
+ }
+
+ if(FileExists(AutoexecProjectFileName))
+ {
+  OpenProject(AutoexecProjectFileName);
+  AutoexecProjectFileName="";
+ }
+/*
  bool hide_flag=HideAdminFormFlag;
  HideTimer->Enabled=false;
  if(HideAdminFormFlag)
@@ -1857,35 +1957,8 @@ void __fastcall TUGEngineControlForm::HideTimerTimer(TObject *Sender)
   Hide();
  }
 
- if(StartMinimized)
- {
-  AppWinState=false;
-//  Application->Minimize();
-  ShowWindow(Handle,SW_HIDE);  // Скрываем программу
- }
-
- if(FileExists(AutoexecProjectFileName))
- {
-  OpenProject(AutoexecProjectFileName);
-  AutoexecProjectFileName="";
- }
-
- if(MainFormName.Length()>0)
- {
-  TComponent *component=Application->FindComponent(MainFormName);
-  TForm* form=dynamic_cast<TForm*>(component);
-  if(form)
-  {
-   form->Show();
-   TForm* pmainform=Application->MainForm;
-   pmainform=form;
-  }
-
-  MainFormName="";
- }
-
  UpdateInterface();
-
+  */
  if(AutoStartProjectFlag)
  {
   AutoStartProjectFlag=false;
@@ -1897,7 +1970,7 @@ void __fastcall TUGEngineControlForm::HideTimerTimer(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::FormCloseQuery(TObject *Sender, bool &CanClose)
 {
- if(Application->MainForm == this)
+ if(RdkMainForm == this)
  {
   Pause1Click(Sender);
   Sleep(1000);
@@ -2053,26 +2126,17 @@ void __fastcall TUGEngineControlForm::DeleteAll1Click(TObject *Sender)
 
 
 
-void __fastcall TUGEngineControlForm::ApplicationEventsMinimize(TObject *Sender)
-{
- if(MinimizeToTray)
- {
-  //Убираем с панели задач
-  TrayIcon->Visible=true;
-  ShowWindow(Application->MainFormHandle,SW_HIDE);  // Скрываем программу
-  ShowWindow(Application->Handle,SW_HIDE);  // Скрываем кнопку с TaskBar'а
-  SetWindowLong(Application->Handle, GWL_EXSTYLE, GetWindowLong(Application->Handle, GWL_EXSTYLE) | !WS_EX_APPWINDOW);
- }
- AppWinState=false;
-}
-//---------------------------------------------------------------------------
 
 void __fastcall TUGEngineControlForm::TrayIconDblClick(TObject *Sender)
 {
  TrayIcon->ShowBalloonHint();
-// Application->Restore();
- ShowWindow(Application->MainFormHandle,SW_RESTORE);
- SetForegroundWindow(Application->MainFormHandle);
+ if(RdkMainForm->Visible == false)
+ {
+  RdkMainForm->Show();
+  RDK::UIVisualControllerStorage::UpdateInterface();
+ }
+ ShowWindow(RdkMainForm->Handle,SW_RESTORE);
+ SetForegroundWindow(RdkMainForm->Handle);
  AppWinState=true;
 }
 //---------------------------------------------------------------------------
@@ -2092,7 +2156,10 @@ void __fastcall TUGEngineControlForm::Hide1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::Close1Click(TObject *Sender)
 {
- Close();
+ Pause1Click(Sender);
+ Sleep(1000);
+ CloseProject();
+ Application->Terminate();
 }
 //---------------------------------------------------------------------------
 
@@ -2134,11 +2201,6 @@ void __fastcall TUGEngineControlForm::FormDestroy(TObject *Sender)
 
 
 
-void __fastcall TUGEngineControlForm::ApplicationEventsRestore(TObject *Sender)
-{
- AppWinState=true;
-}
-//---------------------------------------------------------------------------
 
 void __fastcall TUGEngineControlForm::AddChannel1Click(TObject *Sender)
 {
@@ -2199,4 +2261,8 @@ void __fastcall TUGEngineControlForm::SaveClassesDescriptions1Click(TObject *Sen
  delete RichEdit;
 }
 //---------------------------------------------------------------------------
+
+
+
+
 

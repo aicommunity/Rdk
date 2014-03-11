@@ -115,7 +115,6 @@ __published:	// IDE-managed Components
 	TToolButton *ToolButton21;
 	TToolButton *ToolButton15;
 	TTrayIcon *TrayIcon;
-	TApplicationEvents *ApplicationEvents;
 	TPopupMenu *TrayPopupMenu;
 	TMenuItem *Open1;
 	TMenuItem *Hide1;
@@ -177,7 +176,6 @@ __published:	// IDE-managed Components
 	void __fastcall AddNew1Click(TObject *Sender);
 	void __fastcall DeleteLast1Click(TObject *Sender);
 	void __fastcall DeleteAll1Click(TObject *Sender);
-	void __fastcall ApplicationEventsMinimize(TObject *Sender);
 	void __fastcall TrayIconDblClick(TObject *Sender);
 	void __fastcall Open1Click(TObject *Sender);
 	void __fastcall Hide1Click(TObject *Sender);
@@ -186,7 +184,6 @@ __published:	// IDE-managed Components
 	void __fastcall Pause2Click(TObject *Sender);
 	void __fastcall Reset2Click(TObject *Sender);
 	void __fastcall FormDestroy(TObject *Sender);
-	void __fastcall ApplicationEventsRestore(TObject *Sender);
 	void __fastcall AddChannel1Click(TObject *Sender);
 	void __fastcall DelChannel1Click(TObject *Sender);
 	void __fastcall VideoRegistration1Click(TObject *Sender);
@@ -198,9 +195,15 @@ __published:	// IDE-managed Components
 
 
 
+
 private:	// User declarations
 public:		// User declarations
 	__fastcall TUGEngineControlForm(TComponent* Owner);
+
+void __fastcall WMSysCommand(TMessage &Msg);
+BEGIN_MESSAGE_MAP
+MESSAGE_HANDLER(WM_SYSCOMMAND, TMessage, WMSysCommand)
+END_MESSAGE_MAP(TForm)
 
 String MainFormName;
 bool HideAdminFormFlag;
@@ -299,6 +302,9 @@ int LastProjectsListMaxSize;
 Word Saved8087CW;
 
 bool AppWinState;
+
+void __fastcall AppMinimize(TObject *Sender);
+void __fastcall AppRestore(TObject *Sender);
 
 // Загружает данные положения формы из xml
 void LoadFormPosition(RDK::USerStorageXML &xml);
