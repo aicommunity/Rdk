@@ -21,7 +21,7 @@
 #include "rdk_rpc.cpp"
 #include "TUBitmap.h"
 //#include "../../Core/Graphics/Libraries/Hardware/PtzRpc.cpp"
-#ifdef DVA
+#ifdef DVA_GEVISCOPE
 #include "TGeViScopeResultBroadcasterFormUnit.h"
 #endif
 //---------------------------------------------------------------------------
@@ -202,7 +202,7 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
  {
   int type=xml.ReadInteger("BroadcasterType",0);
   result.SelectNodeForce("Data");
-#ifdef DVA
+#ifdef DVA_GEVISCOPE
   if(type == 1000)
   {
 	TGeViScopeResultBroadcasterFrame *frame=GeViScopeResultBroadcasterForm->GetBroadcasterFrame(engine_index);
@@ -233,7 +233,7 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
   }
   else
   {
-#ifdef DVA
+#ifdef DVA_GEVISCOPE
   if(type == 1000)
   {
 	TGeViScopeResultBroadcasterFrame *frame=GeViScopeResultBroadcasterForm->GetBroadcasterFrame(engine_index);
@@ -844,7 +844,7 @@ int TUServerControlForm::SetNumChannels(int value)
  }
 #endif
 
-#ifdef DVA
+#ifdef DVA_GEVISCOPE
   if(GeViScopeResultBroadcasterForm->GetNumBroadcasters()<value)
   {
    for(int i=GeViScopeResultBroadcasterForm->GetNumBroadcasters();i<value;i++)
