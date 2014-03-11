@@ -1838,6 +1838,11 @@ void __fastcall TUGEngineControlForm::AppMinimize(TObject *Sender)
   ShowWindow(Application->Handle,SW_HIDE);  // Скрываем кнопку с TaskBar'а
   SetWindowLong(Application->Handle, GWL_EXSTYLE, GetWindowLong(Application->Handle, GWL_EXSTYLE) | !WS_EX_APPWINDOW);
  }
+ else
+ {
+  RdkMainForm->WindowState=wsMinimized;
+//  ShowWindow(RdkMainForm->Handle,SW_HIDE);  // Скрываем программу
+ }
  AppWinState=false;
 }
 
@@ -1927,8 +1932,8 @@ void __fastcall TUGEngineControlForm::HideTimerTimer(TObject *Sender)
  {
   SetWindowLong(RdkMainForm->Handle, GWL_EXSTYLE, GetWindowLong(RdkMainForm->Handle, GWL_EXSTYLE) | WS_EX_APPWINDOW);
   SetWindowLong(RdkMainForm->Handle, GWL_HWNDPARENT, 0);
-  Application->OnMinimize = AppMinimize;
-  Application->OnRestore = AppRestore;
+//  Application->OnMinimize = AppMinimize;
+//  Application->OnRestore = AppRestore;
  }
 
  if(StartMinimized)
@@ -2150,6 +2155,7 @@ void __fastcall TUGEngineControlForm::Open1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::Hide1Click(TObject *Sender)
 {
+ AppMinimize(this);
  Application->Minimize();
 }
 //---------------------------------------------------------------------------
