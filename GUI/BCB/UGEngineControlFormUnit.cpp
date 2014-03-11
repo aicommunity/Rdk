@@ -1830,6 +1830,9 @@ void __fastcall TUGEngineControlForm::WatchWindow1Click(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TUGEngineControlForm::AppMinimize(TObject *Sender)
 {
+ if(!RdkMainForm)
+  return;
+
  if(MinimizeToTray)
  {
   //Убираем с панели задач
@@ -1848,6 +1851,9 @@ void __fastcall TUGEngineControlForm::AppMinimize(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::AppRestore(TObject *Sender)
 {
+ if(!RdkMainForm)
+  return;
+
  AppWinState=true;
  RdkMainForm->UpdateInterface();
 }
@@ -1975,6 +1981,9 @@ void __fastcall TUGEngineControlForm::HideTimerTimer(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::FormCloseQuery(TObject *Sender, bool &CanClose)
 {
+ if(!RdkMainForm)
+  return;
+
  if(RdkMainForm == this)
  {
   Pause1Click(Sender);
@@ -2134,6 +2143,9 @@ void __fastcall TUGEngineControlForm::DeleteAll1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::TrayIconDblClick(TObject *Sender)
 {
+ if(!RdkMainForm)
+  return;
+
  TrayIcon->ShowBalloonHint();
  if(RdkMainForm->Visible == false)
  {
