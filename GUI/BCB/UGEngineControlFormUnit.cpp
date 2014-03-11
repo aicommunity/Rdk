@@ -108,13 +108,13 @@ switch (sys_code)
 
  case SC_RESTORE:
  {
-  if(WindowState != wsMinimized)
+//  if(WindowState != wsMinimized)
   {
    Application->Restore();
    WindowState=wsNormal;
   }
-  else
-   Application->Restore();
+//  else
+//   Application->Restore();
   AppRestore(this);
   Msg.Result = 0;
   return;
