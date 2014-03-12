@@ -285,6 +285,11 @@ __published:	// IDE-managed Components
 	TButton *BrowseFileNameButton;
 	TFileOpenDialog *RecordingFileOpen;
 	TButton *VideoCompressorSettingsButton;
+	TComboBox *VideoCompressionModeComboBox;
+	TLabel *VideoCompressionModeLabel;
+	TGroupBox *GroupBox1;
+	TComboBox *RecordingModeComboBox;
+	TLabeledEdit *RecordingTimerLabeledEdit;
 	void __fastcall NetworkStreamingButtonClick(TObject *Sender);
 	void __fastcall StopNetworkStreamingButtonClick(TObject *Sender);
 	void __fastcall VideoGrabberVideoFromBitmapsNextFrameNeeded(TObject *Sender, bool FirstSample);

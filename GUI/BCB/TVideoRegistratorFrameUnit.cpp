@@ -423,6 +423,19 @@ __fastcall TTVideoRegistratorFrame::TTVideoRegistratorFrame(TComponent* Owner)
  RecordingMethodComboBox->Items->Add("rm_WebM");
  RecordingMethodComboBox->ItemIndex=0;
 
+ // Режим компрессии
+ VideoCompressionModeComboBox->Items->Add("no");
+ VideoCompressionModeComboBox->Items->Add("on the fly");
+ VideoCompressionModeComboBox->Items->Add("after capture");
+ VideoCompressionModeComboBox->ItemIndex=0;
+
+ // Запись по таймеру
+ RecordingModeComboBox->Items->Add("disabled");
+ RecordingModeComboBox->Items->Add("stop after ...");
+ RecordingModeComboBox->Items->Add("new file every ...");
+ RecordingModeComboBox->Items->Add("start after ...");
+ RecordingModeComboBox->ItemIndex=0;
+
  // Формат сжатия
  VideoCompressorComboBox->Items->Clear();
 
@@ -537,6 +550,14 @@ int TTVideoRegistratorFrame::InitRecordingSettings(void)
  //VideoGrabber->HoldRecording = true;
  VideoGrabber->RecordingMethod = RecordingMethodComboBox->ItemIndex;
  VideoGrabber->VideoCompressor = VideoCompressorComboBox->ItemIndex;
+ VideoGrabber->CompressionMode = VideoCompressionModeComboBox->ItemIndex;
+ VideoGrabber->RecordingTimerInterval = StrToIntDef(RecordingTimerLabeledEdit->Text, 10);
+
+ // Запись по таймеру
+ if(RecordingModeComboBox->ItemIndex == 0)
+  VideoGrabber->RecordingTimer=RecordingModeComboBox->ItemIndex;
+
+
 }
 //---------------------------------------------------------------------------
 int TTVideoRegistratorFrame::GetBitmapFrame(void)
@@ -911,8 +932,11 @@ void TTVideoRegistratorFrame::ASaveParameters(RDK::USerStorageXML &xml)
  xml.WriteString("RecordingFrameRate", AnsiString(RecordingFrameRateLabeledEdit->Text).c_str());
  xml.WriteString("RecordWidth", AnsiString(RecordWidthLabeledEdit->Text).c_str());
  xml.WriteString("RecordHeight", AnsiString(RecordHeightLabeledEdit->Text).c_str());
- xml.WriteInteger("RecordingMethod", StrToInt(RecordingMethodComboBox->ItemIndex));
- xml.WriteInteger("VideoCompressor", StrToInt(VideoCompressorComboBox->ItemIndex));
+ xml.WriteInteger("RecordingMethod", RecordingMethodComboBox->ItemIndex);
+ xml.WriteInteger("VideoCompressor", VideoCompressorComboBox->ItemIndex);
+ xml.WriteInteger("VideoCompressionMode", VideoCompressionModeComboBox->ItemIndex);
+ xml.WriteInteger("RecordingMode", RecordingModeComboBox->ItemIndex);
+ xml.WriteInteger("RecordingTimer", StrToInt(RecordingTimerLabeledEdit->Text));
 }
 
 // Загружает параметры интерфейса из xml
@@ -938,6 +962,9 @@ void TTVideoRegistratorFrame::ALoadParameters(RDK::USerStorageXML &xml)
  RecordHeightLabeledEdit->Text=(xml.ReadString("RecordHeight", "")).c_str();
  RecordingMethodComboBox->ItemIndex=(xml.ReadInteger("RecordingMethod", 0));
  VideoCompressorComboBox->ItemIndex=(xml.ReadInteger("VideoCompressor", 0));
+ VideoCompressionModeComboBox->ItemIndex=(xml.ReadInteger("VideoCompressionMode", 0));
+ RecordingModeComboBox->ItemIndex=(xml.ReadInteger("RecordingMode", 0));
+ RecordingTimerLabeledEdit->Text=(xml.ReadInteger("RecordingTimer", 0));
 
  UpdateInterface();
 }
