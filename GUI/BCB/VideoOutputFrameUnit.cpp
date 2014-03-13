@@ -243,6 +243,8 @@ void TVideoOutputFrame::ReadSourceSafe(RDK::UBitmap &bmp, double &time_stamp, bo
 /// Инициализация первичных настроек
 void TVideoOutputFrame::InitPrimarySettings(void)
 {
+ RecordingFrame->Init();
+
  TMenuItem *parentItem=0;
  for(int i=0; i<RecordingPopupMenu->Items->Count; i++)
  {
@@ -2167,4 +2169,5 @@ void __fastcall TVideoOutputFrame::StartStreamingToolButtonClick(TObject *Sender
  NetworkStreamingFrame->NetworkStreamingButtonClick(Sender);
 }
 //---------------------------------------------------------------------------
+
 

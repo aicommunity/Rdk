@@ -12,15 +12,11 @@ inherited VideoOutputFrame: TVideoOutputFrame
     Top = 0
     Width = 779
     Height = 714
-    ActivePage = VideoSourceTabSheet
+    ActivePage = RecordingTabSheet
     Align = alClient
     TabOrder = 0
     object VideoSourceTabSheet: TTabSheet
       Caption = 'Video Source'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object GroupBox: TGroupBox
         Left = 0
         Top = 0
@@ -217,10 +213,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
     object NetworkStreamingTabSheet: TTabSheet
       Caption = 'Network Streaming'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       inline NetworkStreamingFrame: TTVideoRegistratorFrame
         Left = 0
         Top = 0
@@ -245,10 +237,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
           ExplicitLeft = 391
           inherited ModePageControl: TPageControl
             inherited NetworkStreamingTabSheet: TTabSheet
-              ExplicitLeft = 0
-              ExplicitTop = 0
-              ExplicitWidth = 0
-              ExplicitHeight = 0
               inherited NetworkStreamingControlGroupBox: TGroupBox
                 inherited NetworkStreamingButton: TButton
                   OnClick = NetworkStreamingFrameNetworkStreamingButtonClick
@@ -263,16 +251,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
             ActivePage = NetworkStreamingFrame.SourceFrameTabSheet
             inherited SourceComponentTabSheet: TTabSheet
               TabVisible = False
-              ExplicitLeft = 0
-              ExplicitTop = 0
-              ExplicitWidth = 0
-              ExplicitHeight = 0
-            end
-            inherited SourceFrameTabSheet: TTabSheet
-              ExplicitLeft = 0
-              ExplicitTop = 0
-              ExplicitWidth = 0
-              ExplicitHeight = 0
             end
           end
         end
@@ -299,10 +277,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
     object RecordingTabSheet: TTabSheet
       Caption = 'Recording'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       inline RecordingFrame: TTVideoRegistratorFrame
         Left = 0
         Top = 0
@@ -329,17 +303,13 @@ inherited VideoOutputFrame: TVideoOutputFrame
             ActivePage = RecordingFrame.RecordingTabSheet
             inherited NetworkStreamingTabSheet: TTabSheet
               TabVisible = False
-              ExplicitLeft = 0
-              ExplicitTop = 0
-              ExplicitWidth = 0
-              ExplicitHeight = 0
             end
             inherited RecordingTabSheet: TTabSheet
               inherited RecordingSettingsGroupBox: TGroupBox
                 inherited RecordingFileNameLabeledEdit: TLabeledEdit
-                  Left = 1
-                  EditLabel.ExplicitLeft = 1
-                  ExplicitLeft = 1
+                  EditLabel.ExplicitLeft = 183
+                  EditLabel.ExplicitTop = 202
+                  EditLabel.ExplicitWidth = 97
                 end
                 inherited VideoCompressorComboBox: TComboBox
                   OnChange = RecordingFrameVideoCompressorComboBoxChange
@@ -366,16 +336,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
             ActivePage = RecordingFrame.SourceFrameTabSheet
             inherited SourceComponentTabSheet: TTabSheet
               TabVisible = False
-              ExplicitLeft = 0
-              ExplicitTop = 0
-              ExplicitWidth = 0
-              ExplicitHeight = 0
-            end
-            inherited SourceFrameTabSheet: TTabSheet
-              ExplicitLeft = 0
-              ExplicitTop = 0
-              ExplicitWidth = 0
-              ExplicitHeight = 0
             end
           end
         end
@@ -583,7 +543,7 @@ inherited VideoOutputFrame: TVideoOutputFrame
     Left = 688
     Top = 456
     Bitmap = {
-      494C010120006000480010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C0101200060004C0010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000009000000001002000000000000090
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

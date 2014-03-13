@@ -410,44 +410,6 @@ __fastcall TTVideoRegistratorFrame::TTVideoRegistratorFrame(TComponent* Owner)
  // Заполнение массива ошибок
  FillErrorsArray();
 
- // Формат метода записи
- RecordingMethodComboBox->Items->Add("rm_AVI");
- RecordingMethodComboBox->Items->Add("rm_ASF");
- RecordingMethodComboBox->Items->Add("rm_FLV");
- RecordingMethodComboBox->Items->Add("rm_MKV");
- RecordingMethodComboBox->Items->Add("rm_MOV");
- RecordingMethodComboBox->Items->Add("rm_MP4");
- RecordingMethodComboBox->Items->Add("rm_MPG");
- RecordingMethodComboBox->Items->Add("rm_Multiplexer");
- RecordingMethodComboBox->Items->Add("rm_SendToDV");
- RecordingMethodComboBox->Items->Add("rm_WebM");
- RecordingMethodComboBox->ItemIndex=0;
-
- // Режим компрессии
- VideoCompressionModeComboBox->Items->Add("no");
- VideoCompressionModeComboBox->Items->Add("on the fly");
- VideoCompressionModeComboBox->Items->Add("after capture");
- VideoCompressionModeComboBox->ItemIndex=0;
-
- // Запись по таймеру
- RecordingModeComboBox->Items->Add("disabled");
- RecordingModeComboBox->Items->Add("stop after ...");
- RecordingModeComboBox->Items->Add("new file every ...");
- RecordingModeComboBox->Items->Add("start after ...");
- RecordingModeComboBox->ItemIndex=0;
-
- // Формат сжатия
- VideoCompressorComboBox->Items->Clear();
-
- std::string strings=AnsiString(VideoGrabber->VideoCompressors).c_str();
- std::vector<std::string> temp;
- RDK::separatestring(strings, temp, '\n');
- for(int i=0; i<temp.size(); i++)
- {
-  VideoCompressorComboBox->Items->Add(temp[i].c_str());
- }
- VideoCompressorComboBox->ItemIndex=0;
-
  // Загрузка списка компонент
  MyComponentsListForm=new TUComponentsListForm(this);
 }
@@ -513,6 +475,18 @@ bool TTVideoRegistratorFrame::SetPreviewFlag(const bool &value)
 // Инициализирует DLL
 int TTVideoRegistratorFrame::Init(void)
 {
+ // Формат сжатия
+ VideoCompressorComboBox->Items->Clear();
+
+ std::string strings=AnsiString(VideoGrabber->VideoCompressors).c_str();
+ std::vector<std::string> temp;
+ RDK::separatestring(strings, temp, '\n');
+ for(int i=0; i<temp.size(); i++)
+ {
+  VideoCompressorComboBox->Items->Add(temp[i].c_str());
+ }
+ VideoCompressorComboBox->ItemIndex=0;
+
  return 0;
 }
 //---------------------------------------------------------------------------

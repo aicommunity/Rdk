@@ -224,6 +224,7 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
             Top = 218
             Width = 174
             Height = 21
+            Anchors = [akLeft, akTop, akRight]
             EditLabel.Width = 107
             EditLabel.Height = 13
             EditLabel.Caption = 'Recording Frame Rate'
@@ -254,7 +255,7 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
             Top = 179
             Width = 184
             Height = 21
-            Anchors = [akLeft, akTop, akRight]
+            Anchors = [akTop, akRight]
             EditLabel.Width = 68
             EditLabel.Height = 13
             EditLabel.Caption = 'Record Height'
@@ -279,7 +280,20 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
             Width = 364
             Height = 21
             Anchors = [akLeft, akTop, akRight]
+            ItemIndex = 0
             TabOrder = 5
+            Text = 'rm_AVI'
+            Items.Strings = (
+              'rm_AVI'
+              'rm_ASF'
+              'rm_FLV'
+              'rm_MKV'
+              'rm_MOV'
+              'rm_MP4'
+              'rm_MPG'
+              'rm_Multiplexer'
+              'rm_SendToDV'
+              'rm_WebM')
           end
           object BrowseFileNameButton: TButton
             Left = 183
@@ -305,7 +319,13 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
             Width = 364
             Height = 21
             Anchors = [akLeft, akTop, akRight]
+            ItemIndex = 0
             TabOrder = 8
+            Text = 'no'
+            Items.Strings = (
+              'no'
+              'on the fly'
+              'after capture')
           end
           object GroupBox1: TGroupBox
             Left = 3
@@ -320,7 +340,14 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
               Top = 24
               Width = 358
               Height = 21
+              ItemIndex = 0
               TabOrder = 0
+              Text = 'disabled'
+              Items.Strings = (
+                'disabled'
+                'new file every...'
+                'stop after ...'
+                'start after ...')
             end
             object RecordingTimerLabeledEdit: TLabeledEdit
               Left = 3
