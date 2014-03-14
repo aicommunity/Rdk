@@ -29,6 +29,8 @@
 #include "UServerControlFormUnit.h"
 #include "UShowProgressBarUnit.h"
 #include "TLoaderFormUnit.h"
+#include "TGrassyEditorFormUnit.h"
+
 #include "rdk_cpp_initdll.h"
 #include "myrdk.h"
 
@@ -1397,6 +1399,13 @@ void TUGEngineControlForm::AddBroadcasterMenu(TMenuItem *item, TMenu *owner)
  Broadcasters1->Add(item);
 }
 
+/// Добавляет новый (глобальный) пункт в меню Window после пункта с именем after
+void TUGEngineControlForm::AddGlobalWindowMenu(TMenuItem *item, TMenu *owner)
+{
+ owner->Items->Remove(item);
+ Window1->Insert(10, item);
+}
+
 /// Загружает историю проектов из файла
 void TUGEngineControlForm::LoadProjectsHistory(void)
 {
@@ -2279,8 +2288,4 @@ void __fastcall TUGEngineControlForm::SaveClassesDescriptions1Click(TObject *Sen
  delete RichEdit;
 }
 //---------------------------------------------------------------------------
-
-
-
-
 

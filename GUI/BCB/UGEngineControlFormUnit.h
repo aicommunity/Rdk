@@ -190,12 +190,6 @@ __published:	// IDE-managed Components
 	void __fastcall SaveCommonDescriptions1Click(TObject *Sender);
 	void __fastcall SaveClassesDescriptions1Click(TObject *Sender);
 
-
-
-
-
-
-
 private:	// User declarations
 public:		// User declarations
 	__fastcall TUGEngineControlForm(TComponent* Owner);
@@ -380,6 +374,9 @@ void ClearPages(void);
 
 /// Добавляет новый пункт в подменю сетевого вещания событиями
 void AddBroadcasterMenu(TMenuItem *item, TMenu *owner);
+
+/// Добавляет новый (глобальный) пункт в меню Window
+void AddGlobalWindowMenu(TMenuItem *item, TMenu *owner);
 
 /// Загружает историю проектов из файла
 void LoadProjectsHistory(void);
