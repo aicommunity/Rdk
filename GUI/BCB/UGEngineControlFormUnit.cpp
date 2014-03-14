@@ -29,7 +29,6 @@
 #include "UServerControlFormUnit.h"
 #include "UShowProgressBarUnit.h"
 #include "TLoaderFormUnit.h"
-#include "TGrassyEditorFormUnit.h"
 
 #include "rdk_cpp_initdll.h"
 #include "myrdk.h"
