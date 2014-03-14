@@ -91,6 +91,17 @@ bool TVideoCaptureThread::SetRepeatFlag(bool value)
  RepeatFlag=value;
  return true;
 }
+
+/// Устанавливает значение FPS
+double TVideoCaptureThread::GetFps(void) const
+{
+ return 0;
+}
+
+bool TVideoCaptureThread::SetFps(double fps)
+{
+ return false;
+}
 // --------------------------
 
 // --------------------------
@@ -109,6 +120,29 @@ bool TVideoCaptureThread::SetFrame(TVideoOutputFrame * frame)
 
  Frame=frame;
  return true;
+}
+
+/// Возвращает разрешение потока
+int TVideoCaptureThread::GetWidth(void)
+{
+ if(WaitForSingleObject(SourceUnlock,30) == WAIT_TIMEOUT)
+  return -1;
+ ResetEvent(SourceUnlock);
+ int res=ReadSource->GetWidth();
+ SetEvent(SourceUnlock);
+
+ return res;
+}
+
+int TVideoCaptureThread::GetHeight(void)
+{
+ if(WaitForSingleObject(SourceUnlock,30) == WAIT_TIMEOUT)
+  return -1;
+ ResetEvent(SourceUnlock);
+ int res=ReadSource->GetHeight();
+ SetEvent(SourceUnlock);
+
+ return res;
 }
 
 /// Сохранение настроек в xml

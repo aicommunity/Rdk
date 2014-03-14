@@ -88,8 +88,12 @@ virtual long long GetPosition(void) const=0;
 virtual bool SetPosition(long long index)=0;
 
 /// Флаг повтора воспроизведения сначала после завершения
-bool GetRepeatFlag(void) const;
-bool SetRepeatFlag(bool value);
+virtual bool GetRepeatFlag(void) const;
+virtual bool SetRepeatFlag(bool value);
+
+/// Устанавливает значение FPS
+virtual double GetFps(void) const;
+virtual bool SetFps(double fps);
 // --------------------------
 
 // --------------------------
@@ -98,6 +102,10 @@ bool SetRepeatFlag(bool value);
 /// Указатель на владельца
 TVideoOutputFrame *GetFrame(void) const;
 bool SetFrame(TVideoOutputFrame * frame);
+
+/// Возвращает разрешение потока
+int GetWidth(void);
+int GetHeight(void);
 
 /// Создает копию этого потока
 virtual RDK::UEPtr<TVideoCaptureThread> New(TVideoOutputFrame *frame, bool create_suspended)=0;
