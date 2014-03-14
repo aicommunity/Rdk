@@ -27,7 +27,8 @@ __fastcall TEnchancedSG::TEnchancedSG(TComponent* Owner) : TFrame(Owner) {
 void TEnchancedSG::Refresh()
 {
 	/*this->BasicStringGrid->RowCount = m_storage.Size()+1; */
-	this->BasicStringGrid->Refresh();
+	BasicStringGrid->Refresh();
+	ResizeFrame();
 	//this->BasicStringGrid->Repaint();
 	//this->BasicStringGrid->Update();
 	m_editing = false;
@@ -945,6 +946,43 @@ void __fastcall TEnchancedSG::chbBoolEditClick(TObject *Sender)
 
 	if(!m_editing)
 		return;
+}
+//---------------------------------------------------------------------------
+void TEnchancedSG::ResizeFrame()
+{
+	if(BasicStringGrid->ColCount<3)
+		return;
+
+	BasicStringGrid->ColWidths[0] = BasicStringGrid->Canvas->TextWidth(BasicStringGrid->Cells[0][0])+10;
+	int NumWidth = BasicStringGrid->Canvas->TextWidth(BasicStringGrid->Cells[0][0])+10;
+	int DataMaxWidth = BasicStringGrid->Width/2;
+	int NameMaxWidth = DataMaxWidth-BasicStringGrid->ColWidths[0];
+
+	int NameNeededWidth = 0;
+
+
+  for(int i=1; i<BasicStringGrid->RowCount;i++)
+  {
+	if((BasicStringGrid->Canvas->TextWidth(BasicStringGrid->Cells[1][i])+10)>NameNeededWidth)
+	{
+		NameNeededWidth = BasicStringGrid->Canvas->TextWidth(BasicStringGrid->Cells[1][i])+10;
+	}
+ }
+ int NameWidth = 0;
+ if(NameNeededWidth>NameMaxWidth)
+	NameWidth = NameMaxWidth;
+ else
+	NameWidth = NameNeededWidth;
+
+ int DataWidth = BasicStringGrid->Width - NameWidth - NumWidth - 10;
+
+ BasicStringGrid->ColWidths[1] = NameWidth;
+ BasicStringGrid->ColWidths[2] = DataWidth;
+}
+
+void __fastcall TEnchancedSG::FrameResize(TObject *Sender)
+{
+	ResizeFrame();
 }
 //---------------------------------------------------------------------------
 

@@ -5,6 +5,7 @@ object EnchancedSG: TEnchancedSG
   Height = 383
   TabOrder = 0
   TabStop = True
+  OnResize = FrameResize
   object BasicStringGrid: TStringGrid
     Left = 16
     Top = 56

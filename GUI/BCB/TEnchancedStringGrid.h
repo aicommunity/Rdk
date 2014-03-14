@@ -67,6 +67,7 @@ public:
 	String GetDesc();
 
 	PropertyType GetType();
+
 };
 //---------------------------------------------------------------------------
 class TPropertyStorage
@@ -107,6 +108,7 @@ __published:	// IDE-managed Components
 	void __fastcall chbBoolEditKeyPress(TObject *Sender, System::WideChar &Key);
 	void __fastcall BasicStringGridDblClick(TObject *Sender);
 	void __fastcall chbBoolEditClick(TObject *Sender);
+	void __fastcall FrameResize(TObject *Sender);
 
 
 
@@ -116,12 +118,14 @@ private:	// User declarations
 	int m_editingCol;
 	int m_editingRow;
 public:		// User declarations
+	__fastcall TEnchancedSG(TComponent* Owner);
 	TPropertyStorage m_storage;
 	bool m_cellChanged;
 	bool m_bCellChanged;
 	bool m_FlagChanged;
 	void Refresh();
-	__fastcall TEnchancedSG(TComponent* Owner);
+
+	void ResizeFrame();
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TEnchancedSG *EnchancedSG;

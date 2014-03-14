@@ -496,6 +496,7 @@ void TUComponentsListFrame::UpdateNiceParamsList(TEnchancedSG *frame)
  }
 
  frame->Refresh();
+ /*
  for(int i=0; i<num;i++)
  {
   frame->BasicStringGrid->ColWidths[0] = frame->BasicStringGrid->Canvas->TextWidth(frame->BasicStringGrid->Cells[0][0])+10;
@@ -509,24 +510,24 @@ void TUComponentsListFrame::UpdateNiceParamsList(TEnchancedSG *frame)
   global_width+=frame->BasicStringGrid->ColWidths[1];
 
   width=80;//frame->BasicStringGrid->Canvas->TextWidth(frame->BasicStringGrid->Cells[2][i+1])+10;
-  /*if(width>frame->BasicStringGrid->Width/2)
+  if(width>frame->BasicStringGrid->Width/2)
    width=frame->BasicStringGrid->Width/2;
-  if(frame->BasicStringGrid->ColWidths[2]<width)*/
+  if(frame->BasicStringGrid->ColWidths[2]<width)
    frame->BasicStringGrid->ColWidths[2]=width;
   global_width+=frame->BasicStringGrid->ColWidths[2];
 
   width=frame->BasicStringGrid->Canvas->TextWidth(frame->BasicStringGrid->Cells[3][i+1])+10;
   if(width < frame->BasicStringGrid->Width-global_width)
-   width=frame->BasicStringGrid->Width-global_width;
+   width=frame->BasicStringGrid->Width-global_width; */
 
-//  if(frame->BasicStringGrid->ColWidths[3]<width)
+//if(frame->BasicStringGrid->ColWidths[3]<width)
 //   frame->BasicStringGrid->ColWidths[3]=width;
- }
+// }
 
- if(frame->BasicStringGrid->ColCount>2)
+ /*if(frame->BasicStringGrid->ColCount>2)
   frame->BasicStringGrid->FixedCols=2;
  SelectedComponentParameterName=AnsiString(ParametersListStringGrid->Cells[1][1]).c_str();
- ParameterValueRichEdit->Text=ParametersListStringGrid->Cells[2][ParametersListStringGrid->Row];
+ ParameterValueRichEdit->Text=ParametersListStringGrid->Cells[2][ParametersListStringGrid->Row];   */
  UpdateInterfaceFlag=false;
 }
 
@@ -624,38 +625,7 @@ if(num>0)
 
   xml.SelectUp();
  }
-
  frame->Refresh();
- for(int i=0; i<num;i++)
- {
-  frame->BasicStringGrid->ColWidths[0] = frame->BasicStringGrid->Canvas->TextWidth(frame->BasicStringGrid->Cells[0][0])+10;
-
-  int global_width=frame->BasicStringGrid->ColWidths[0];
-  int width=frame->BasicStringGrid->Canvas->TextWidth(frame->BasicStringGrid->Cells[1][i+1])+10;
-  if(width>frame->BasicStringGrid->Width/2)
-   width=frame->BasicStringGrid->Width/2;
-  if(frame->BasicStringGrid->ColWidths[1]<width)
-   frame->BasicStringGrid->ColWidths[1]=width;
-  global_width+=frame->BasicStringGrid->ColWidths[1];
-
-  width=80;//frame->BasicStringGrid->Canvas->TextWidth(frame->BasicStringGrid->Cells[2][i+1])+10;
-  /*if(width>frame->BasicStringGrid->Width/2)
-   width=frame->BasicStringGrid->Width/2;
-  if(frame->BasicStringGrid->ColWidths[2]<width)*/
-   frame->BasicStringGrid->ColWidths[2]=width;
-  global_width+=frame->BasicStringGrid->ColWidths[2];
-
-  width=frame->BasicStringGrid->Canvas->TextWidth(frame->BasicStringGrid->Cells[3][i+1])+10;
-  if(width < frame->BasicStringGrid->Width-global_width)
-   width=frame->BasicStringGrid->Width-global_width;
-
-//  if(frame->BasicStringGrid->ColWidths[3]<width)
-//   frame->BasicStringGrid->ColWidths[3]=width;
- }
-
- if(frame->BasicStringGrid->ColCount>2)
-  frame->BasicStringGrid->FixedCols=2;
- SelectedComponentStateName=AnsiString(frame->BasicStringGrid->Cells[1][1]).c_str();
  UpdateInterfaceFlag=false;
 }
 
@@ -727,46 +697,6 @@ void TUComponentsListFrame::UpdateStatesList(void)
 
  SelectedComponentStateName=AnsiString(StatesListStringGrid->Cells[1][1]).c_str();
  UpdateInterfaceFlag=false;
-/*
- if(PageControl1->ActivePage != TabSheet5)
-  return;
- UpdateInterfaceFlag=true;
-
- std::string xml_data=Model_GetComponentState(GetSelectedComponentLongName().c_str());
- RDK::USerStorageXML xml;
- xml.Load(xml_data,"");
- xml.SelectNode("Parameters");
- int num=xml.GetNumNodes();
-
-
- StatesListStringGrid->RowCount=1+num;
- StatesListStringGrid->ColCount=1+3;
-
- StatesListStringGrid->Cells[0][0]="#";
- StatesListStringGrid->Cells[1][0]="Name";
- StatesListStringGrid->Cells[2][0]="Value";
- StatesListStringGrid->Cells[3][0]="Description";
-
- for(int i=0;i<num;i++)
- {
-  StatesListStringGrid->Cells[0][i+1]=IntToStr(i);
-  xml.SelectNode(i);
-  StatesListStringGrid->Cells[1][i+1]=xml.GetNodeName().c_str();
-  if(xml.GetNumNodes() == 0)
-   StatesListStringGrid->Cells[2][i+1]=xml.GetNodeText().c_str();
-  else
-  {
-   std::string value;
-   xml.SaveFromNode(value);
-   StatesListStringGrid->Cells[2][i+1]=value.c_str();
-  }
-  StatesListStringGrid->Cells[3][i+1]=xml.GetNodeAttribute("Header").c_str();
-  xml.SelectUp();
- }
-
- SelectedComponentStateName=AnsiString(StatesListStringGrid->Cells[1][1]).c_str();
- UpdateInterfaceFlag=false;
- */
 }
 
 // Обновляет длинные имена выбранных компонент
