@@ -97,11 +97,11 @@ void UIVisualControllerStorage::AfterCalculate(void)
 }
 
 // Обновление интерфейса
-void UIVisualControllerStorage::UpdateInterface(void)
+void UIVisualControllerStorage::UpdateInterface(bool force_update)
 {
  for(size_t i=0;i<InterfaceUpdaters.size();i++)
   if(InterfaceUpdaters[i])
-   InterfaceUpdaters[i]->UpdateInterface(false);
+   InterfaceUpdaters[i]->UpdateInterface(force_update);
 }
 
 // Возврат интерфейса в исходное состояние

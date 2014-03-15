@@ -87,7 +87,7 @@ static void BeforeCalculate(void);
 static void AfterCalculate(void);
 
 // Обновление интерфейса
-static void UpdateInterface(void);
+static void UpdateInterface(bool force_update=false);
 
 // Возврат интерфейса в исходное состояние
 static void ClearInterface(void);
