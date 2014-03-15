@@ -41,6 +41,17 @@ bool UGenericMutexWin::lock(int lock_id)
 {
  if(!m_UnlockEvent)
   return false;
+ if (WaitForSingleObject(m_UnlockEvent, INFINITE) != WAIT_TIMEOUT)
+ {
+  ResetEvent(m_UnlockEvent);
+  LockId=lock_id;
+  return true;
+ }
+ return false;
+
+/*
+ if(!m_UnlockEvent)
+  return false;
  if (WaitForSingleObject(m_UnlockEvent, 0) == WAIT_TIMEOUT)
  {
   if(lock_id>=0 && lock_id == LockId)
@@ -54,6 +65,7 @@ bool UGenericMutexWin::lock(int lock_id)
   LockId=lock_id;
  }
  return true;
+*/
 }
 
 bool UGenericMutexWin::unlock()

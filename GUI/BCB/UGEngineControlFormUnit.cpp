@@ -425,21 +425,11 @@ void TUGEngineControlForm::CloseProject(void)
  for(int i=GetNumEngines();i>=0;i--)
  {
   SelectEngine(i);
-  try
+  if(GetEngine())
   {
-   LockEngine();
-   if(GetEngine())
-   {
-	Env_UnInit();
+   Env_UnInit();
 //  EngineUnInit();
-	Model_Destroy();
-   }
-   UnLockEngine();
-  }
-  catch(...)
-  {
-   UnLockEngine();
-   throw;
+   Model_Destroy();
   }
  }
  RDK::UIVisualControllerStorage::ClearInterface();
@@ -667,9 +657,9 @@ try{
   }
   catch(RDK::UException &exception)
   {
-   LockEngine();
+//   LockEngine();
    GetEngine()->ProcessException(exception);
-   UnLockEngine();
+//   UnLockEngine();
   }
  }
  UShowProgressBarForm->IncBarStatus(1);
@@ -714,9 +704,9 @@ try{
 catch(RDK::UException &exception)
 {
  UShowProgressBarForm->Hide();
- LockEngine();
+// LockEngine();
  GetEngine()->ProcessException(exception);
- UnLockEngine();
+// UnLockEngine();
 }
 catch(...)
 {
@@ -1928,6 +1918,12 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
 
  // Грузим историю проектов
  LoadProjectsHistory();
+
+// Отладка!
+// LockEngine();
+// UnLockEngine();
+// bool res=Model_Check();
+// Конец отладки
 }
 //---------------------------------------------------------------------------
 
