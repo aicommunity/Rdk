@@ -17,7 +17,7 @@
 #include "VideoOutputFormUnit.h"
 #endif
 #include "TIdTcpResultBroadcasterFormUnit.h"
-#include "rdk_cpp_initdll.h"
+#include "rdk_initdll.h"
 #include "rdk_rpc.cpp"
 #include "TUBitmap.h"
 //#include "../../Core/Graphics/Libraries/Hardware/PtzRpc.cpp"

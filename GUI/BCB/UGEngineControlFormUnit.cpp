@@ -1436,7 +1436,7 @@ void TUGEngineControlForm::SaveProjectsHistory(void)
  int i=0;
  for(;I != LastProjectsList.end();I++)
  {
-  history_ini("General",std::string("Hist")+sntoa(i++),*I);
+  history_ini("General",std::string("Hist")+RDK::sntoa(i++),*I);
  }
 
  String opt_name=ExtractFileName(Application->ExeName);
