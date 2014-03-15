@@ -974,7 +974,7 @@ void TEnchancedSG::ResizeFrame()
  else
 	NameWidth = NameNeededWidth;
 
- int DataWidth = BasicStringGrid->Width - NameWidth - NumWidth - 10;
+ int DataWidth = BasicStringGrid->Width - NameWidth - NumWidth - 25;
 
  BasicStringGrid->ColWidths[1] = NameWidth;
  BasicStringGrid->ColWidths[2] = DataWidth;
