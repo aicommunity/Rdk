@@ -2108,6 +2108,7 @@ void __fastcall TUGEngineControlForm::ChannelsStringGridClick(TObject *Sender)
   return;
 
  SelectEngine(ChannelsStringGrid->Row);
+ UDrawEngineFrame1->ReloadNet();
  RDK::UIVisualControllerStorage::UpdateInterface(true);
 }
 //---------------------------------------------------------------------------
@@ -2119,6 +2120,7 @@ void __fastcall TUGEngineControlForm::ChannelsStringGridSelectCell(TObject *Send
   return;
 
  SelectEngine(ChannelsStringGrid->Row);
+ UDrawEngineFrame1->ReloadNet();
  RDK::UIVisualControllerStorage::UpdateInterface(true);
 }
 //---------------------------------------------------------------------------
@@ -2129,6 +2131,7 @@ void __fastcall TUGEngineControlForm::AddNew1Click(TObject *Sender)
   return;
 
  UEngineMonitorForm->EngineMonitorFrame->SetNumChannels(GetNumEngines()+1);
+ UDrawEngineFrame1->ReloadNet();
  RDK::UIVisualControllerStorage::UpdateInterface(true);
 }
 //---------------------------------------------------------------------------
@@ -2142,6 +2145,7 @@ void __fastcall TUGEngineControlForm::DeleteLast1Click(TObject *Sender)
   return;
 
  UEngineMonitorForm->EngineMonitorFrame->SetNumChannels(GetNumEngines()-1);
+ UDrawEngineFrame1->ReloadNet();
  RDK::UIVisualControllerStorage::UpdateInterface(true);
 }
 //---------------------------------------------------------------------------
@@ -2152,6 +2156,7 @@ void __fastcall TUGEngineControlForm::DeleteAll1Click(TObject *Sender)
   return;
 
  UEngineMonitorForm->EngineMonitorFrame->SetNumChannels(1);
+ UDrawEngineFrame1->ReloadNet();
  RDK::UIVisualControllerStorage::UpdateInterface(true);
 }
 //---------------------------------------------------------------------------

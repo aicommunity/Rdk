@@ -32,7 +32,7 @@ void ExceptionHandler(int channel_index)
  try
  {
  int error_level=-1;
- const char * data=MEngine_GetUnreadLog(channel_index, error_level);
+ const char * data=MEngine_GetUnreadLogUnsafe(channel_index, error_level);
  if(!data)
   return;
 
