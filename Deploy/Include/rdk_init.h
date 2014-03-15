@@ -101,6 +101,14 @@ RDK_LIB_TYPE int RDK_CALL GetSelectedEngineIndex(void);
 // В случае удаления движка, интерфейс автоматически перенастраивается на 0 движок
 RDK_LIB_TYPE int RDK_CALL SelectEngine(int index);
 
+/// Блокирует канал до вызова функции UnlockEngine
+RDK_LIB_TYPE int RDK_CALL LockEngine(void);
+RDK_LIB_TYPE int RDK_CALL MLockEngine(int index);
+
+/// Разблокирует канал
+RDK_LIB_TYPE int RDK_CALL UnLockEngine(void);
+RDK_LIB_TYPE int RDK_CALL MUnLockEngine(int index);
+
 // Инициализирует движок (функция должна быть вызвана первой!)
 // Upd: Функция может быть вызвана после SetNumEngines и SelectEngine
 RDK_LIB_TYPE int RDK_CALL EngineInit(int predefined_structure, void* exception_handler=0);

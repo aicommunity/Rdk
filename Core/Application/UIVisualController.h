@@ -35,7 +35,7 @@ virtual void BeforeCalculate(void)=0;
 virtual void AfterCalculate(void)=0;
 
 // Обновление интерфейса
-virtual void UpdateInterface(bool force_update=true)=0;
+virtual void UpdateInterface(bool force_update=false)=0;
 
 // Возврат интерфейса в исходное состояние
 virtual void ClearInterface(void)=0;

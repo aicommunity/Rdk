@@ -23,6 +23,9 @@ std::vector<RDK::UEngine*> EngineList;
 // Массив мьютексов
 std::vector<UGenericMutex*> MutexList;
 
+// Массив локеров
+std::vector<UGenericMutexLocker*> LockerList;
+
 UGenericMutex* GlobalMutex;
 
 // ----------------------------------------------------------
@@ -300,6 +303,44 @@ int RDK_CALL SelectEngine(int index)
 
  return 0;
 }
+
+/// Блокирует канал до вызова функции UnlockEngine
+int RDK_CALL LockEngine(void)
+{
+ return MLockEngine(SelectedEngineIndex);
+}
+
+int RDK_CALL MLockEngine(int index)
+{
+ if(index<0 || index>=GetNumEngines())
+  return 1000;
+
+ if(DllManager.LockerList[index])
+  return 0;
+
+ DllManager.LockerList[index]=new UGenericMutexLocker(DllManager.MutexList[index]);
+ return 0;
+}
+
+/// Разблокирует канал
+int RDK_CALL UnLockEngine(void)
+{
+ return MUnLockEngine(SelectedEngineIndex);
+}
+
+int RDK_CALL MUnLockEngine(int index)
+{
+ if(index<0 || index>=GetNumEngines())
+  return 1000;
+
+ if(!DllManager.LockerList[index])
+  return 0;
+
+ delete DllManager.LockerList[index];
+ DllManager.LockerList[index]=0;
+ return 0;
+}
+
 
 int RDK_CALL EngineInit(int predefined_structure, void* exception_handler)
 {
@@ -2569,6 +2610,8 @@ RDKDllManager::~RDKDllManager(void)
 
  MutexList.resize(0);
 
+ LockerList.resize(0);
+
  if(GlobalMutex)
  {
   UDestroyMutex(GlobalMutex);
@@ -2615,6 +2658,7 @@ int RDKDllManager::SetNumEngines(int num)
  StorageList.resize(num,0);
  EnvironmentList.resize(num,0);
  MutexList.resize(num,0);
+ LockerList.resize(num,0);
  for(int i=old_num;i<num;i++)
   MutexList[i]=UCreateMutex();
  return 0;

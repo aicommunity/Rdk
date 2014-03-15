@@ -360,18 +360,32 @@ void TUImagesFrame::AUpdateInterface(void)
   {
    for(size_t j=0;j<Images[i].size();j++)
    {
-	if(ComponentIndexes[i][j].empty())
-	{
-	 const RDK::UBitmap* bmp=(const RDK::UBitmap*)Model_GetComponentOutputByIndex(StringIds[i][j].c_str(), ComponentIndexesOld[i][j]);
-	 if(bmp)
-	  SetBitmap(i, j, *bmp);
-	}
-	else
-	{
-	 const RDK::UBitmap* bmp=(const RDK::UBitmap*)Model_GetComponentOutput(StringIds[i][j].c_str(), ComponentIndexes[i][j].c_str());
-	 if(bmp)
-	  SetBitmap(i, j, *bmp);
-	}
+	 if(ComponentIndexes[i][j].empty())
+	 {
+	  const RDK::UBitmap* bmp=(const RDK::UBitmap*)Model_GetComponentOutputByIndex(StringIds[i][j].c_str(), ComponentIndexesOld[i][j]);
+	  if(bmp)
+	   SetBitmap(i, j, *bmp);
+	  else
+	  {
+	   StringIds[i][j].clear();
+	   ComponentIndexesOld[i][j]=0;
+	   ComponentIndexes[i][j].clear();
+	  }
+	 }
+	 else
+	 {
+	  const RDK::UBitmap* bmp=(const RDK::UBitmap*)Model_GetComponentOutput(StringIds[i][j].c_str(), ComponentIndexes[i][j].c_str());
+	  if(bmp)
+	  {
+	   SetBitmap(i, j, *bmp);
+	  }
+	  else
+	  {
+	   StringIds[i][j].clear();
+	   ComponentIndexesOld[i][j]=0;
+	   ComponentIndexes[i][j].clear();
+	  }
+	 }
    }
   }
 

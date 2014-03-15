@@ -425,11 +425,21 @@ void TUGEngineControlForm::CloseProject(void)
  for(int i=GetNumEngines();i>=0;i--)
  {
   SelectEngine(i);
-  if(GetEngine())
+  try
   {
-   Env_UnInit();
-// EngineUnInit();
-   Model_Destroy();
+   LockEngine();
+   if(GetEngine())
+   {
+	Env_UnInit();
+//  EngineUnInit();
+	Model_Destroy();
+   }
+   UnLockEngine();
+  }
+  catch(...)
+  {
+   UnLockEngine();
+   throw;
   }
  }
  RDK::UIVisualControllerStorage::ClearInterface();
@@ -657,7 +667,9 @@ try{
   }
   catch(RDK::UException &exception)
   {
+   LockEngine();
    GetEngine()->ProcessException(exception);
+   UnLockEngine();
   }
  }
  UShowProgressBarForm->IncBarStatus(1);
@@ -702,7 +714,9 @@ try{
 catch(RDK::UException &exception)
 {
  UShowProgressBarForm->Hide();
+ LockEngine();
  GetEngine()->ProcessException(exception);
+ UnLockEngine();
 }
 catch(...)
 {

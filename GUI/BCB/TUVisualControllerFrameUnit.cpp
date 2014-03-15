@@ -44,7 +44,9 @@ void TUVisualControllerFrame::BeforeReset(void)
  }
  catch (RDK::UException &exception)
  {
+  LockEngine();
   GetEngine()->ProcessException(exception);
+  UnLockEngine();
  }
 }
 
@@ -63,7 +65,9 @@ void TUVisualControllerFrame::AfterReset(void)
  }
  catch (RDK::UException &exception)
  {
+  LockEngine();
   GetEngine()->ProcessException(exception);
+  UnLockEngine();
  }
 }
 
@@ -82,7 +86,9 @@ void TUVisualControllerFrame::BeforeCalculate(void)
  }
  catch (RDK::UException &exception)
  {
+  LockEngine();
   GetEngine()->ProcessException(exception);
+  UnLockEngine();
  }
 }
 
@@ -99,7 +105,9 @@ void TUVisualControllerFrame::AfterCalculate(void)
  }
  catch (RDK::UException &exception)
  {
+  LockEngine();
   GetEngine()->ProcessException(exception);
+  UnLockEngine();
  }
 }
 
@@ -143,7 +151,9 @@ void TUVisualControllerFrame::UpdateInterface(bool force_update)
  }
  catch (RDK::UException &exception)
  {
+  LockEngine();
   GetEngine()->ProcessException(exception);
+  UnLockEngine();
   UpdateInterfaceFlag=false;
  }
  catch(...)
@@ -169,7 +179,9 @@ void TUVisualControllerFrame::ClearInterface(void)
  }
  catch (RDK::UException &exception)
  {
+  LockEngine();
   GetEngine()->ProcessException(exception);
+  UnLockEngine();
  }
 }
 
@@ -204,7 +216,9 @@ void TUVisualControllerFrame::SaveParameters(RDK::USerStorageXML &xml)
  }
  catch (RDK::UException &exception)
  {
+  LockEngine();
   GetEngine()->ProcessException(exception);
+  UnLockEngine();
  }
 }
 
@@ -231,7 +245,9 @@ void TUVisualControllerFrame::LoadParameters(RDK::USerStorageXML &xml)
  }
  catch (RDK::UException &exception)
  {
+  LockEngine();
   GetEngine()->ProcessException(exception);
+  UnLockEngine();
  }
 }
 

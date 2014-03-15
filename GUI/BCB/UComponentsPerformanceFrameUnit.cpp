@@ -5,7 +5,7 @@
 
 #include <algorithm>
 #include "UComponentsPerformanceFrameUnit.h"
-#include "rdk_initdll.h"
+#include "rdk_cpp_initdll.h"
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -59,7 +59,17 @@ void TUComponentsPerformanceFrame::AUpdateInterface(void)
 
  comp_time.resize(ComponentNames.size()+4);
  for(size_t i=0;i<ComponentNames.size();i++)
-  sum+=comp_time[i]=Model_GetFullStepDuration(ComponentNames[i].c_str());
+ {
+  try
+  {
+   sum+=comp_time[i]=Model_GetFullStepDuration(ComponentNames[i].c_str());
+  }
+  catch(RDK::UContainer::EComponentNameNotExist &exception)
+  {
+   ComponentNames.erase(ComponentNames.begin()+i);
+   return;
+  }
+ }
 
 
  if(ComponentNames.size()>0)
