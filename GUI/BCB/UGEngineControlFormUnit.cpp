@@ -2346,11 +2346,5 @@ void __fastcall TUGEngineControlForm::UComponentsListFrame1NiceStateValRichEditM
 
 
 
-void __fastcall TUGEngineControlForm::LogsTabSheetMouseEnter(TObject *Sender)
-{
- if(Active)
-  UEngineMonitorForm->EngineMonitorFrame->RichEdit->SetFocus();
-}
-//---------------------------------------------------------------------------
 
 

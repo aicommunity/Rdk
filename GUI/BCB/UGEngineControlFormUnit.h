@@ -194,7 +194,6 @@ __published:	// IDE-managed Components
 	void __fastcall EnchancedSG1BasicStringGridMouseEnter(TObject *Sender);
 	void __fastcall EnchancedSG2BasicStringGridMouseEnter(TObject *Sender);
 	void __fastcall UComponentsListFrame1NiceStateValRichEditMouseEnter(TObject *Sender);
-	void __fastcall LogsTabSheetMouseEnter(TObject *Sender);
 
 
 
