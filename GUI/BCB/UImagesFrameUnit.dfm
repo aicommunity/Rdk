@@ -38,6 +38,7 @@ inherited UImagesFrame: TUImagesFrame
       Width = 105
       Height = 105
       IncrementalDisplay = True
+      Proportional = True
       OnDblClick = FullImageDblClick
       OnMouseDown = FullImageMouseDown
       OnMouseMove = FullImageMouseMove

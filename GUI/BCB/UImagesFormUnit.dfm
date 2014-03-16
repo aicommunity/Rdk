@@ -34,7 +34,7 @@ object UImagesForm: TUImagesForm
       Height = 470
       Options = [goVertLine, goHorzLine, goDrawFocusSelected, goRowSizing, goColSizing]
       ExplicitWidth = 728
-      ExplicitHeight = 487
+      ExplicitHeight = 470
     end
     inherited ScrollBox1: TScrollBox
       Width = 728
@@ -45,11 +45,18 @@ object UImagesForm: TUImagesForm
     inherited Panel1: TPanel
       Top = 470
       Width = 728
-      inherited ShowLegendCheckBox: TCheckBox
-        Top = 470
-        Width = 728
-        ExplicitTop = 470
-        ExplicitWidth = 728
+      ExplicitTop = 470
+      ExplicitWidth = 728
+      inherited ShowHistogramCheckBox: TCheckBox
+        ExplicitLeft = 729
+      end
+      inherited TiledSizeRadioButton: TRadioButton
+        Left = 655
+        ExplicitLeft = 655
+      end
+      inherited OriginalSizeRadioButton: TRadioButton
+        Left = 567
+        ExplicitLeft = 567
       end
     end
   end

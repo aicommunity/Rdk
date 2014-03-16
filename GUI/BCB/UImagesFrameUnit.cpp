@@ -434,8 +434,23 @@ void TUImagesFrame::AUpdateInterface(void)
    SetBitmap(DrawGrid->Col, DrawGrid->Row, *bmp);
 
   Graphics::TBitmap * tbmp=Images[DrawGrid->Col][DrawGrid->Row]->Picture->Bitmap;
-  FullImage->Width=tbmp->Width;
-  FullImage->Height=tbmp->Height;
+
+   if(SizeMode == 0)
+   {
+	FullImage->Width=tbmp->Width;
+	FullImage->Height=tbmp->Height;
+	FullImage->Stretch=false;
+	FullImage->AutoSize=false;
+   }
+   else
+   if(SizeMode == 1)
+   {
+	FullImage->Width=ScrollBox1->ClientWidth;
+	FullImage->Height=ScrollBox1->ClientHeight;
+	FullImage->Stretch=true;
+//	FullImage->AutoSize=true;
+   }
+
   FullImage->Picture->Bitmap->Assign(tbmp);
   FullImage->Top=0;
   FullImage->Left=0;
