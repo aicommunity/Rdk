@@ -135,6 +135,7 @@ void __fastcall TUEngineMonitorForm::LogTimerTimer(TObject *Sender)
    UEngineMonitorForm->EngineMonitorFrame->RichEdit->SelStart =
 	UEngineMonitorForm->EngineMonitorFrame->RichEdit->Perform(EM_LINEINDEX, UEngineMonitorForm->EngineMonitorFrame->RichEdit->Lines->Count-1, 0);
    UEngineMonitorForm->EngineMonitorFrame->RichEdit->Update();
+   UEngineMonitorForm->EngineMonitorFrame->RichEdit->Repaint();
    UnsentLog.pop_front();
   }
  }
@@ -145,6 +146,14 @@ void __fastcall TUEngineMonitorForm::LogTimerTimer(TObject *Sender)
  }
 
  SetEvent(RdkExceptionHandlerEvent);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUEngineMonitorForm::EngineMonitorFrameRichEditMouseEnter(TObject *Sender)
+
+{
+ if(Active)
+  EngineMonitorFrame->RichEditMouseEnter(Sender);
 }
 //---------------------------------------------------------------------------
 

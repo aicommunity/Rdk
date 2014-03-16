@@ -35,6 +35,7 @@ object UEngineMonitorForm: TUEngineMonitorForm
     inherited RichEdit: TRichEdit
       Width = 527
       Height = 204
+      OnMouseEnter = EngineMonitorFrameRichEditMouseEnter
       ExplicitWidth = 527
       ExplicitHeight = 204
     end

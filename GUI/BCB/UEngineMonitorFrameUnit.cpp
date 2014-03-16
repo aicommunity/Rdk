@@ -701,6 +701,7 @@ void __fastcall TUEngineMonitorFrame::LoadAllClassesDescriptions1Click(TObject *
 //---------------------------------------------------------------------------
 
 
+
 void __fastcall TUEngineMonitorFrame::RichEditMouseEnter(TObject *Sender)
 {
  RichEdit->SetFocus();

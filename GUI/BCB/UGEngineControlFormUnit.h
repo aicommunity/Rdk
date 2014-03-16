@@ -189,6 +189,14 @@ __published:	// IDE-managed Components
 	void __fastcall VideoRegistration1Click(TObject *Sender);
 	void __fastcall SaveCommonDescriptions1Click(TObject *Sender);
 	void __fastcall SaveClassesDescriptions1Click(TObject *Sender);
+	void __fastcall UComponentsListFrame1StringGridMouseEnter(TObject *Sender);
+	void __fastcall UComponentsListFrame1NiceParamValRichEditMouseEnter(TObject *Sender);
+	void __fastcall EnchancedSG1BasicStringGridMouseEnter(TObject *Sender);
+	void __fastcall EnchancedSG2BasicStringGridMouseEnter(TObject *Sender);
+	void __fastcall UComponentsListFrame1NiceStateValRichEditMouseEnter(TObject *Sender);
+	void __fastcall LogsTabSheetMouseEnter(TObject *Sender);
+
+
 
 private:	// User declarations
 public:		// User declarations

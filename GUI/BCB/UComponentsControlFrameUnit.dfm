@@ -124,59 +124,35 @@ inherited UComponentsControlFrame: TUComponentsControlFrame
             Height = 467
             ExplicitWidth = 235
             ExplicitHeight = 467
-            inherited TabSheet4: TTabSheet
+            inherited TabSheet6: TTabSheet
               ExplicitWidth = 227
               ExplicitHeight = 441
-              inherited Splitter3: TSplitter
+              inherited Splitter5: TSplitter
                 Top = 364
                 Width = 227
-                ExplicitTop = 364
-                ExplicitWidth = 227
               end
-              inherited ParametersListStringGrid: TStringGrid
+              inherited EnchancedSG1: TEnchancedSG
                 Width = 227
                 Height = 364
                 ExplicitWidth = 227
                 ExplicitHeight = 364
               end
-              inherited ParameterValueRichEdit: TRichEdit
-                Top = 374
-                Width = 227
-                ExplicitTop = 374
-                ExplicitWidth = 227
-              end
-              inherited HeaderControl3: THeaderControl
+              inherited HeaderControl2: THeaderControl
                 Top = 407
                 Width = 227
                 ExplicitTop = 407
                 ExplicitWidth = 227
               end
-            end
-            inherited TabSheet5: TTabSheet
-              inherited Splitter4: TSplitter
-                Top = 430
+              inherited NiceParamValRichEdit: TRichEdit
+                Top = 374
                 Width = 227
-              end
-              inherited StatesListStringGrid: TStringGrid
-                Width = 227
-                Height = 363
-              end
-              inherited HeaderControl1: THeaderControl
-                Top = 396
-                Width = 227
-              end
-              inherited StateValueRichEdit: TRichEdit
-                Top = 363
-                Width = 227
+                ExplicitTop = 374
+                ExplicitWidth = 227
               end
             end
             inherited TabSheet1: TTabSheet
               inherited ParametersHeaderControl: THeaderControl
-                Width = 227
-              end
-              inherited ParametersRichEdit: TRichEdit
-                Width = 227
-                Height = 407
+                ExplicitWidth = 227
               end
             end
           end
@@ -185,8 +161,12 @@ inherited UComponentsControlFrame: TUComponentsControlFrame
           Height = 469
           ExplicitHeight = 469
           inherited StringGrid: TStringGrid
-            Height = 433
-            ExplicitHeight = 433
+            Height = 411
+            ExplicitHeight = 411
+          end
+          inherited ClassNamePanel: TPanel
+            Top = 446
+            ExplicitTop = 446
           end
         end
       end
@@ -237,7 +217,68 @@ inherited UComponentsControlFrame: TUComponentsControlFrame
             ExplicitLeft = 4
             ExplicitTop = 24
             ExplicitWidth = 499
-            ExplicitHeight = 419
+            ExplicitHeight = 515
+          end
+          inherited LibsControlTabSheet: TTabSheet
+            ExplicitLeft = 4
+            ExplicitTop = 24
+            ExplicitWidth = 292
+            ExplicitHeight = 441
+            inherited Splitter1: TSplitter
+              Top = 151
+              Width = 292
+            end
+            inherited Panel1: TPanel
+              Top = 318
+              Width = 292
+              ExplicitTop = 318
+              ExplicitWidth = 292
+              inherited LoadLibraryButton: TButton
+                Width = 290
+                ExplicitWidth = 290
+              end
+              inherited CreateRuntimeLibraryButton: TButton
+                Width = 290
+                ExplicitWidth = 290
+              end
+              inherited DeleteLibraryButton: TButton
+                Width = 290
+                ExplicitWidth = 290
+              end
+              inherited RenameRuntimeLibraryButton: TButton
+                Width = 290
+                ExplicitWidth = 290
+              end
+              inherited AddClassButton: TButton
+                Width = 290
+                ExplicitLeft = 1
+                ExplicitTop = 101
+                ExplicitWidth = 290
+              end
+            end
+            inherited GroupBox1: TGroupBox
+              Width = 292
+              Height = 151
+              ExplicitWidth = 292
+              ExplicitHeight = 151
+              inherited LibsListStringGrid: TStringGrid
+                Width = 288
+                Height = 134
+                ExplicitWidth = 288
+                ExplicitHeight = 134
+              end
+            end
+            inherited GroupBox2: TGroupBox
+              Top = 158
+              Width = 292
+              ExplicitTop = 158
+              ExplicitWidth = 292
+              inherited LibComponentListStringGrid: TStringGrid
+                Width = 288
+                ExplicitWidth = 288
+                ExplicitHeight = 143
+              end
+            end
           end
         end
       end

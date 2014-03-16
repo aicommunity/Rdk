@@ -129,10 +129,10 @@ void TUComponentsListFrame::AUpdateInterface(void)
   UpdateState();
  if(PageControl1->ActivePage == TabSheet3)
  UpdateIO();
- if(PageControl1->ActivePage == TabSheet4)
-  UpdateParametersList();
- if(PageControl1->ActivePage == TabSheet5)
-  UpdateStatesList();
+// if(PageControl1->ActivePage == TabSheet4)
+//  UpdateParametersList();
+// if(PageControl1->ActivePage == TabSheet5)
+//  UpdateStatesList();
  if(PageControl1->ActivePage == TabSheet6)
   UpdateNiceParamsList(EnchancedSG1);
  if(PageControl1->ActivePage == TabSheet7)
@@ -143,13 +143,13 @@ void TUComponentsListFrame::AUpdateInterface(void)
 void TUComponentsListFrame::AClearInterface(void)
 {
  StringGrid->RowCount=0;
- ParametersListStringGrid->RowCount=0;
- StatesListStringGrid->RowCount=0;
+// ParametersListStringGrid->RowCount=0;
+// StatesListStringGrid->RowCount=0;
  OutputsStringGrid->RowCount=0;
  InputsStringGrid->RowCount=0;
  ParametersRichEdit->Lines->Clear();
  StateRichEdit->Lines->Clear();
- ParameterValueRichEdit->Lines->Clear();
+// ParameterValueRichEdit->Lines->Clear();
  NiceParamValRichEdit->Lines->Clear();
  NiceStateValRichEdit->Lines->Clear();
 }
@@ -199,7 +199,7 @@ void TUComponentsListFrame::UpdateParameters(void)
  else
   GUI1->Enabled=false;
 
- ParameterValueRichEdit->Text=ParametersListStringGrid->Cells[2][ParametersListStringGrid->Row];
+// ParameterValueRichEdit->Text=ParametersListStringGrid->Cells[2][ParametersListStringGrid->Row];
 
  RegistryModified=false;
  UpdateInterfaceFlag=false;
@@ -225,7 +225,7 @@ void TUComponentsListFrame::UpdateState(void)
 	  Panel1->Visible=false;
 	 }
 
-	 StateValueRichEdit->Text=StatesListStringGrid->Cells[2][StatesListStringGrid->Row];
+//	 StateValueRichEdit->Text=StatesListStringGrid->Cells[2][StatesListStringGrid->Row];
 	 RegistryModified=false;
 	 UpdateInterfaceFlag=false;
  }
@@ -330,7 +330,7 @@ void TUComponentsListFrame::UpdateIO(void)
 // Обновляет данные списка параметров
 void TUComponentsListFrame::UpdateParametersList(void)
 {
- if(PageControl1->ActivePage != TabSheet4)
+/* if(PageControl1->ActivePage != TabSheet4)
   return;
  UpdateInterfaceFlag=true;
 
@@ -395,7 +395,7 @@ void TUComponentsListFrame::UpdateParametersList(void)
 
  SelectedComponentParameterName=AnsiString(ParametersListStringGrid->Cells[1][1]).c_str();
  ParameterValueRichEdit->Text=ParametersListStringGrid->Cells[2][ParametersListStringGrid->Row];
- UpdateInterfaceFlag=false;
+ UpdateInterfaceFlag=false;  */
 }
 
 // Обновляет данные измененного списка параметров
@@ -431,8 +431,8 @@ void TUComponentsListFrame::UpdateNiceParamsList(TEnchancedSG *frame)
  frame->chbBoolEdit->Visible = false;
  frame->udBorderedInt->Visible = false;
 
- if(ParametersListStringGrid->RowCount>1)
-  ParametersListStringGrid->FixedRows=1;
+// if(ParametersListStringGrid->RowCount>1)
+//  ParametersListStringGrid->FixedRows=1;
 
  frame->BasicStringGrid->Cells[0][0]="#";
  frame->BasicStringGrid->Cells[1][0]="Name";
@@ -562,8 +562,8 @@ if(num>0)
  frame->chbBoolEdit->Visible = false;
  frame->udBorderedInt->Visible = false;
 
- if(ParametersListStringGrid->RowCount>1)
-  ParametersListStringGrid->FixedRows=1;
+// if(ParametersListStringGrid->RowCount>1)
+//  ParametersListStringGrid->FixedRows=1;
 
  frame->BasicStringGrid->Cells[0][0]="#";
  frame->BasicStringGrid->Cells[1][0]="Name";
@@ -632,7 +632,7 @@ if(num>0)
 // Обновляет данные списка переменных состояния
 void TUComponentsListFrame::UpdateStatesList(void)
 {
- if(PageControl1->ActivePage != TabSheet5)
+/* if(PageControl1->ActivePage != TabSheet5)
   return;
  UpdateInterfaceFlag=true;
 
@@ -696,7 +696,7 @@ void TUComponentsListFrame::UpdateStatesList(void)
  }
 
  SelectedComponentStateName=AnsiString(StatesListStringGrid->Cells[1][1]).c_str();
- UpdateInterfaceFlag=false;
+ UpdateInterfaceFlag=false;    */
 }
 
 // Обновляет длинные имена выбранных компонент
@@ -934,7 +934,10 @@ void __fastcall TUComponentsListFrame::StringGridDblClick(TObject *Sender)
 
   UpdateInterface(true);
   if(DrawEngineFrame)
+  {
    DrawEngineFrame->SetNet(GetCurrentComponentName());
+   DrawEngineFrame->UpdateInterface(true);
+  }
 //   DrawEngineFrame->SelectComponent(GetCurrentComponentName());
   return;
  }
@@ -950,8 +953,10 @@ void __fastcall TUComponentsListFrame::StringGridDblClick(TObject *Sender)
  UpdateInterface(true);
 
  if(DrawEngineFrame)
-//  DrawEngineFrame->SelectComponent(GetCurrentComponentName());
+ {
   DrawEngineFrame->SetNet(GetCurrentComponentName());
+  DrawEngineFrame->UpdateInterface(true);
+ }
 }
 //---------------------------------------------------------------------------
 
@@ -1002,10 +1007,10 @@ void __fastcall TUComponentsListFrame::StringGridClick(TObject *Sender)
   UpdateState();
  if(PageControl1->ActivePage == TabSheet3)
  UpdateIO();
- if(PageControl1->ActivePage == TabSheet4)
-  UpdateParametersList();
- if(PageControl1->ActivePage == TabSheet5)
-  UpdateStatesList();
+// if(PageControl1->ActivePage == TabSheet4)
+//  UpdateParametersList();
+// if(PageControl1->ActivePage == TabSheet5)
+//  UpdateStatesList();
  if(PageControl1->ActivePage == TabSheet6)
   UpdateNiceParamsList(EnchancedSG1);
  if(PageControl1->ActivePage == TabSheet7)
@@ -1101,42 +1106,42 @@ void __fastcall TUComponentsListFrame::PageControl1Change(TObject *Sender)
 void __fastcall TUComponentsListFrame::ParametersListStringGridClick(TObject *Sender)
 
 {
- SelectedComponentParameterName=AnsiString(ParametersListStringGrid->Cells[1][ParametersListStringGrid->Row]).c_str();
+// SelectedComponentParameterName=AnsiString(EnchancedSG1->BasicStringGrid->Cells[1][EnchancedSG1->BasicStringGrid->Row]).c_str();
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUComponentsListFrame::ParametersListStringGridDblClick(TObject *Sender)
 
 {
- SelectedComponentParameterName=AnsiString(ParametersListStringGrid->Cells[1][ParametersListStringGrid->Row]).c_str();
+// SelectedComponentParameterName=AnsiString(EnchancedSG1->BasicStringGrid->Cells[1][EnchancedSG1->BasicStringGrid->Row]).c_str();
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUComponentsListFrame::ParametersListStringGridSelectCell(TObject *Sender,
 		  int ACol, int ARow, bool &CanSelect)
 {
- SelectedComponentParameterName=AnsiString(ParametersListStringGrid->Cells[1][ARow]).c_str();
- ParameterValueRichEdit->Text=ParametersListStringGrid->Cells[2][ARow];
+// SelectedComponentParameterName=AnsiString(ParametersListStringGrid->Cells[1][ARow]).c_str();
+// ParameterValueRichEdit->Text=ParametersListStringGrid->Cells[2][ARow];
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUComponentsListFrame::StatesListStringGridClick(TObject *Sender)
 {
- SelectedComponentStateName=AnsiString(StatesListStringGrid->Cells[1][ParametersListStringGrid->Row]).c_str();
+//// SelectedComponentStateName=AnsiString(StatesListStringGrid->Cells[1][ParametersListStringGrid->Row]).c_str();
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUComponentsListFrame::StatesListStringGridDblClick(TObject *Sender)
 {
- SelectedComponentStateName=AnsiString(StatesListStringGrid->Cells[1][ParametersListStringGrid->Row]).c_str();
+// SelectedComponentStateName=AnsiString(StatesListStringGrid->Cells[1][ParametersListStringGrid->Row]).c_str();
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUComponentsListFrame::StatesListStringGridSelectCell(TObject *Sender, int ACol,
 		  int ARow, bool &CanSelect)
 {
- SelectedComponentStateName=AnsiString(StatesListStringGrid->Cells[1][ARow]).c_str();
- StateValueRichEdit->Text=StatesListStringGrid->Cells[2][ARow];
+// SelectedComponentStateName=AnsiString(StatesListStringGrid->Cells[1][ARow]).c_str();
+// StateValueRichEdit->Text=StatesListStringGrid->Cells[2][ARow];
 }
 //---------------------------------------------------------------------------
 
@@ -1192,6 +1197,7 @@ void __fastcall TUComponentsListFrame::ParametersHeaderControlSectionClick(THead
 void __fastcall TUComponentsListFrame::HeaderControl3SectionClick(THeaderControl *HeaderControl,
           THeaderSection *Section)
 {
+/*
  if(ParametersListStringGrid->Row<0 || ParametersListStringGrid->Row>=ParametersListStringGrid->RowCount)
   return;
  if(Section->Index == 0)
@@ -1243,14 +1249,14 @@ void __fastcall TUComponentsListFrame::HeaderControl3SectionClick(THeaderControl
    Env_Reset(GetSelectedComponentLongName().c_str());
    UpdateParameters();
   }
- }
+ }     */
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUComponentsListFrame::HeaderControl1SectionClick(THeaderControl *HeaderControl,
 		  THeaderSection *Section)
 {
- if(StatesListStringGrid->Row<0 || StatesListStringGrid->Row>=StatesListStringGrid->RowCount)
+/* if(StatesListStringGrid->Row<0 || StatesListStringGrid->Row>=StatesListStringGrid->RowCount)
   return;
  if(Section->Index == 0)
  {
@@ -1291,7 +1297,7 @@ void __fastcall TUComponentsListFrame::HeaderControl1SectionClick(THeaderControl
  if(Section->Index == 4)
  {
 
- }
+ }   */
 }
 //---------------------------------------------------------------------------
 
@@ -1408,7 +1414,7 @@ void __fastcall TUComponentsListFrame::Reset1Click(TObject *Sender)
 void __fastcall TUComponentsListFrame::ParametersListStringGridMouseEnter(TObject *Sender)
 
 {
- ParametersListStringGrid->SetFocus();
+// ParametersListStringGrid->SetFocus();
 }
 //---------------------------------------------------------------------------
 
@@ -1421,7 +1427,7 @@ void __fastcall TUComponentsListFrame::StringGridMouseEnter(TObject *Sender)
 void __fastcall TUComponentsListFrame::StatesListStringGridMouseEnter(TObject *Sender)
 
 {
- StatesListStringGrid->SetFocus();
+// StatesListStringGrid->SetFocus();
 }
 //---------------------------------------------------------------------------
 
@@ -1442,14 +1448,14 @@ void __fastcall TUComponentsListFrame::InputsStringGridMouseEnter(TObject *Sende
 void __fastcall TUComponentsListFrame::ParameterValueRichEditMouseEnter(TObject *Sender)
 
 {
- ParameterValueRichEdit->SetFocus();
+// ParameterValueRichEdit->SetFocus();
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUComponentsListFrame::StateValueRichEditMouseEnter(TObject *Sender)
 
 {
- StateValueRichEdit->SetFocus();
+// StateValueRichEdit->SetFocus();
 }
 //---------------------------------------------------------------------------
 
@@ -1471,7 +1477,7 @@ void __fastcall TUComponentsListFrame::EnchancedSG1BasicStringGridDrawCell(TObje
 void __fastcall TUComponentsListFrame::HeaderControl2SectionClick(THeaderControl *HeaderControl,
 		  THeaderSection *Section)
 {
- if(ParametersListStringGrid->Row<0 || ParametersListStringGrid->Row>=ParametersListStringGrid->RowCount)
+ if(EnchancedSG1->BasicStringGrid->Row<0 || EnchancedSG1->BasicStringGrid->Row>=EnchancedSG1->BasicStringGrid->RowCount)
   return;
  if(Section->Index == 0)
  {
@@ -1530,7 +1536,7 @@ void __fastcall TUComponentsListFrame::HeaderControl2SectionClick(THeaderControl
 void __fastcall TUComponentsListFrame::NiceParamValRichEditMouseEnter(TObject *Sender)
 
 {
-	NiceParamValRichEdit->SetFocus();
+ NiceParamValRichEdit->SetFocus();
 }
 //---------------------------------------------------------------------------
 
@@ -1609,7 +1615,7 @@ if(EnchancedSG2->BasicStringGrid->Row<0 || EnchancedSG2->BasicStringGrid->Row>=E
    UComponentsListForm->Hide();
   if(UComponentsListForm->ShowComponentSelect() == mrOk)
   {
-   Model_SetGlobalComponentPropertyValue(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName().c_str(),Model_GetComponentClassName(GetSelectedComponentLongName().c_str()),AnsiString(EnchancedSG2->BasicStringGrid->Cells[1][EnchancedSG2->BasicStringGrid->Row]).c_str(), AnsiString(StateValueRichEdit->Text).c_str());
+   Model_SetGlobalComponentPropertyValue(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName().c_str(),Model_GetComponentClassName(GetSelectedComponentLongName().c_str()),AnsiString(EnchancedSG2->BasicStringGrid->Cells[1][EnchancedSG2->BasicStringGrid->Row]).c_str(), AnsiString(NiceStateValRichEdit->Text).c_str());
    UpdateInterface(true);
   }
  }
@@ -1621,7 +1627,7 @@ if(EnchancedSG2->BasicStringGrid->Row<0 || EnchancedSG2->BasicStringGrid->Row>=E
   if(UComponentsListForm->ShowComponentSelect() == mrOk)
   {
    std::string global_owner_stringid=Model_GetComponentClassName(CurrentComponentName.c_str());
-   Model_SetGlobalOwnerComponentPropertyValue(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName().c_str(),Model_GetComponentClassName(GetSelectedComponentLongName().c_str()),global_owner_stringid.c_str(),AnsiString(StatesListStringGrid->Cells[1][StatesListStringGrid->Row]).c_str(), AnsiString(NiceStateValRichEdit->Text).c_str());
+   Model_SetGlobalOwnerComponentPropertyValue(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName().c_str(),Model_GetComponentClassName(GetSelectedComponentLongName().c_str()),global_owner_stringid.c_str(),AnsiString(EnchancedSG2->BasicStringGrid->Cells[1][EnchancedSG2->BasicStringGrid->Row]).c_str(), AnsiString(NiceStateValRichEdit->Text).c_str());
    UpdateInterface(true);
   }
  }

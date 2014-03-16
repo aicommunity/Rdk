@@ -1032,7 +1032,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::Calculate(void)
   {
    LastTimeStamp+=(1.0/fps)/86400.0;
    if(MIsEngineInit(Frame->FrameIndex))
-    MEnv_CallSourceController(Frame->FrameIndex);
+	MEnv_CallSourceController(Frame->FrameIndex);
    TVideoCaptureThread::AfterCalculate();
   }
 

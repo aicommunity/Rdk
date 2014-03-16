@@ -72,31 +72,31 @@ object UComponentsControlForm: TUComponentsControlForm
               Height = 377
               ExplicitWidth = 257
               ExplicitHeight = 377
-              inherited TabSheet4: TTabSheet
+              inherited TabSheet6: TTabSheet
                 ExplicitWidth = 249
                 ExplicitHeight = 351
-                inherited Splitter3: TSplitter
+                inherited Splitter5: TSplitter
                   Top = 274
                   Width = 249
-                  ExplicitTop = 274
-                  ExplicitWidth = 249
+                  ExplicitTop = 364
+                  ExplicitWidth = 227
                 end
-                inherited ParametersListStringGrid: TStringGrid
+                inherited EnchancedSG1: TEnchancedSG
                   Width = 249
                   Height = 274
                   ExplicitWidth = 249
                   ExplicitHeight = 274
                 end
-                inherited ParameterValueRichEdit: TRichEdit
-                  Top = 284
-                  Width = 249
-                  ExplicitTop = 284
-                  ExplicitWidth = 249
-                end
-                inherited HeaderControl3: THeaderControl
+                inherited HeaderControl2: THeaderControl
                   Top = 317
                   Width = 249
                   ExplicitTop = 317
+                  ExplicitWidth = 249
+                end
+                inherited NiceParamValRichEdit: TRichEdit
+                  Top = 284
+                  Width = 249
+                  ExplicitTop = 284
                   ExplicitWidth = 249
                 end
               end
@@ -131,10 +131,40 @@ object UComponentsControlForm: TUComponentsControlForm
         inherited ClassesListFrame: TUClassesListFrame
           Height = 379
           ExplicitHeight = 379
-          inherited StringGrid: TStringGrid
+          inherited PageControl: TPageControl
             Height = 379
-            OnDblClick = ClassesListFrameStringGridDblClick
             ExplicitHeight = 379
+            inherited NameTabSheet: TTabSheet
+              inherited StringGrid: TStringGrid
+                Height = 379
+                OnDblClick = ClassesListFrameStringGridDblClick
+                ExplicitHeight = 379
+              end
+            end
+            inherited LibsControlTabSheet: TTabSheet
+              ExplicitHeight = 351
+              inherited Splitter1: TSplitter
+                Top = 61
+                ExplicitTop = 151
+                ExplicitWidth = 292
+              end
+              inherited Panel1: TPanel
+                Top = 228
+                ExplicitTop = 228
+              end
+              inherited GroupBox1: TGroupBox
+                Height = 61
+                ExplicitHeight = 61
+                inherited LibsListStringGrid: TStringGrid
+                  Height = 44
+                  ExplicitHeight = 44
+                end
+              end
+              inherited GroupBox2: TGroupBox
+                Top = 68
+                ExplicitTop = 68
+              end
+            end
           end
         end
       end

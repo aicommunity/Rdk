@@ -991,20 +991,26 @@ bool UNet::SaveComponentDrawInfo(RDK::UNet* cont, RDK::USerStorageXML *serstorag
 //  cont->GetLinks(linkslist, cont);
 
   for(int i=0;i<cont->GetNumComponents();i++)
-   static_pointer_cast<UNet>(cont->GetComponentByIndex(i))->GetLinks(linkslist, cont,true,cont->GetComponentByIndex(i));
+  {
+   UEPtr<UNet> sub_cont=static_pointer_cast<UNet>(cont->GetComponentByIndex(i));
+   sub_cont->GetLinks(linkslist, cont,true,sub_cont);
+  }
   *serstorage<<linkslist;
   serstorage->SelectUp();
 
   serstorage->AddNode("Components");
   for(int i=0;i<cont->GetNumComponents();i++)
   {
-   serstorage->AddNode(cont->GetComponentByIndex(i)->GetName());
-   serstorage->SetNodeAttribute("Class",Storage->FindClassName(cont->GetComponentByIndex(i)->GetClass()));
+   UEPtr<UNet> sub_cont=static_pointer_cast<UNet>(cont->GetComponentByIndex(i));
+   serstorage->AddNode(sub_cont->GetName());
+   serstorage->SetNodeAttribute("Class",Storage->FindClassName(sub_cont->GetClass()));
    serstorage->AddNode("Parameters");
    try
    {
-	if(!cont->GetComponentProperties(cont->GetComponentByIndex(i),serstorage,ptParameter|pgAny))
+	if(!cont->GetComponentProperties(sub_cont,serstorage,ptPubParameter))
 	 return false;
+//	if(!cont->GetComponentProperties(sub_cont,serstorage,ptParameter|pgAny))
+//	 return false;
    }
    catch (UException &exception)
    {

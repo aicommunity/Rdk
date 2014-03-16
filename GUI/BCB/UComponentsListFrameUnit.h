@@ -41,18 +41,8 @@ __published:	// IDE-managed Components
 	TSplitter *Splitter2;
 	TStringGrid *OutputsStringGrid;
 	TStringGrid *InputsStringGrid;
-	TTabSheet *TabSheet4;
-	TTabSheet *TabSheet5;
-	TStringGrid *ParametersListStringGrid;
-	TStringGrid *StatesListStringGrid;
 	TPopupMenu *PopupMenu;
 	TMenuItem *GUI1;
-	TSplitter *Splitter3;
-	TRichEdit *ParameterValueRichEdit;
-	THeaderControl *HeaderControl3;
-	THeaderControl *HeaderControl1;
-	TSplitter *Splitter4;
-	TRichEdit *StateValueRichEdit;
 	TPanel *ClassNamePanel;
 	TMenuItem *Moveup1;
 	TMenuItem *Movedown1;

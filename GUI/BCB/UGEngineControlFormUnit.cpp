@@ -2303,3 +2303,54 @@ void __fastcall TUGEngineControlForm::SaveClassesDescriptions1Click(TObject *Sen
 }
 //---------------------------------------------------------------------------
 
+void __fastcall TUGEngineControlForm::UComponentsListFrame1StringGridMouseEnter(TObject *Sender)
+
+{
+ if(Active)
+  UComponentsListFrame1->StringGridMouseEnter(Sender);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::UComponentsListFrame1NiceParamValRichEditMouseEnter(TObject *Sender)
+
+{
+ if(Active)
+  UComponentsListFrame1->NiceParamValRichEditMouseEnter(Sender);
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TUGEngineControlForm::EnchancedSG1BasicStringGridMouseEnter(TObject *Sender)
+
+{
+ if(Active)
+  UComponentsListFrame1->EnchancedSG1BasicStringGridMouseEnter(Sender);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::EnchancedSG2BasicStringGridMouseEnter(TObject *Sender)
+
+{
+ if(Active)
+  UComponentsListFrame1->EnchancedSG2BasicStringGridMouseEnter(Sender);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::UComponentsListFrame1NiceStateValRichEditMouseEnter(TObject *Sender)
+
+{
+ if(Active)
+  UComponentsListFrame1->NiceStateValRichEditMouseEnter(Sender);
+}
+//---------------------------------------------------------------------------
+
+
+
+void __fastcall TUGEngineControlForm::LogsTabSheetMouseEnter(TObject *Sender)
+{
+ if(Active)
+  UEngineMonitorForm->EngineMonitorFrame->RichEdit->SetFocus();
+}
+//---------------------------------------------------------------------------
+
+
