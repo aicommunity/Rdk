@@ -2071,20 +2071,22 @@ void __fastcall TUGEngineControlForm::UDrawEngineFrame1GUI1Click(TObject *Sender
 
 void __fastcall TUGEngineControlForm::PageControl1Change(TObject *Sender)
 {
- TUVisualControllerFrame* frame;
+/* TUVisualControllerFrame* frame;
  TUVisualControllerForm* form;
  FindVisualController(PageControl1->ActivePageIndex, frame, form);
  if(frame)
   frame->UpdateInterface(true);
  if(form)
   form->UpdateInterface(true);
+  */
+ RDK::UIVisualControllerStorage::UpdateInterface();
 }
 //---------------------------------------------------------------------------
 
 
 void __fastcall TUGEngineControlForm::DrawShow(TObject *Sender)
 {
- UDrawEngineFrame1->ReloadNet();
+// UDrawEngineFrame1->ReloadNet();
 }
 //---------------------------------------------------------------------------
 
