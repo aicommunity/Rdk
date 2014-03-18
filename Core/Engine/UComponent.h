@@ -122,6 +122,10 @@ public: // Классы описания исключений
 class IException: public UException {};
 
 protected: // Основные свойства
+// Флаг, определяющий компонент является статическим
+// или динамическим
+bool StaticFlag;
+
 // Указатель на владельца этим объектом
 UEPtr<UComponent> Owner;
 
@@ -163,6 +167,11 @@ virtual ~UComponent(void);
 // --------------------------
 // Методы доступа к свойствам
 // --------------------------
+// Возвращает флаг, определяющий компонент является статическим
+// или динамическим
+bool GetStaticFlag(void) const;
+virtual bool SetStaticFlag(bool value);
+
 // Возвращает владелца этого объекта
 UEPtr<UComponent> const GetOwner(void) const;
 virtual bool SetOwner(UEPtr<UComponent> owner);
@@ -204,11 +213,17 @@ virtual UContainerDescription* ANewDescription(UComponentDescription* descriptio
 
 // Уничтожение этого объекта
 void Free(void);
+
+protected:
+/// Осуществляет обновление внутренних данных компонента, обеспечивающих его целостность
+virtual void UpdateInternalData(void);
+virtual void AUpdateInternalData(void);
 // --------------------------
 
 // --------------------------
 // Методы доступа к параметрам
 // --------------------------
+public:
 // Возвращает указатель на данные свойства
 UEPtr<UIProperty> FindProperty(const NameT &name);
 

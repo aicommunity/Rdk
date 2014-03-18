@@ -961,7 +961,8 @@ void UStorage::MoveObject(UEPtr<UContainer> object, UEPtr<UStorage> newstorage)
 void UStorage::ReturnObject(UEPtr<UComponent> object)
 {
  UEPtr<UContainer> obj=dynamic_pointer_cast<UContainer>(object);
- obj->ObjectIterator->UseFlag=false;
+ if(obj->ObjectIterator)
+  obj->ObjectIterator->UseFlag=false;
  obj->Activity=false;
  obj->BreakOwner();
 }

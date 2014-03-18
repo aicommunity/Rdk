@@ -77,6 +77,9 @@ typedef UContainer* PUAContainer;
 // Массив указателей на контейнеры
 typedef std::vector<UEPtr<UContainer> > UAContainerVector;
 
+// Массив статических компонент
+typedef std::map<UEPtr<UContainer>, NameT> UAStaticContainerMap;
+
 class UContainer: public UComponent
 {
 public: // Типы данных
@@ -97,6 +100,9 @@ PointerMapT PointerLookupTable;
 private: // Системные свойства
 // Таблица компонент
 UAContainerVector Components;
+
+/// Таблица статических компонент
+UAStaticContainerMap StaticComponents;
 
 // Таблица контроллеров интерфейса
 std::vector<UEPtr<UController> > Controllers;
@@ -370,11 +376,16 @@ virtual bool Copy(UEPtr<UContainer> target, UEPtr<UStorage> stor=0, bool copysta
 // Осуществляет освобождение этого объекта в его хранилище
 // или вызов деструктора, если Storage == 0
 virtual void Free(void);
+
+protected:
+/// Осуществляет обновление внутренних данных компонента, обеспечивающих его целостность
+virtual void AUpdateInternalData(void);
 // --------------------------
 
 // --------------------------
 // Методы доступа к компонентам
 // --------------------------
+public:
 // Возвращает число дочерних компонент
 int GetNumComponents(void) const;
 
@@ -441,6 +452,10 @@ void DelComponent(const NameT &name, bool canfree=true);
 
 // Принудительно удаляет все дочерние компоненты
 void DelAllComponents(void);
+
+/// Добавляет компонент как статическую переменную задавая ему имя класса 'classname'
+/// и имя 'name'
+virtual void AddStaticComponent(const NameT &classname, const NameT &name, UEPtr<UContainer> comp);
 
 // Возвращает список имен и Id компонент, содержащихся непосредственно
 // в этом объекте
@@ -685,6 +700,9 @@ void DelLookupComponent(const NameT &name);
 // Скрытые методы управления компонентами
 // --------------------------
 protected:
+/// Производит необходимые операции по добавлению статического компонента
+UId UpdateStaticComponent(const NameT &classname, UEPtr<UContainer> comp);
+
 // Удаляет компонент comp
 // Метод предполагает, что компонент принадлежит объекту
 virtual void BeforeDelComponent(UEPtr<UContainer> comp, bool canfree=true);

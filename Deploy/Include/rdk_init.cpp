@@ -1057,7 +1057,7 @@ int RDK_CALL MModel_Clear(int engine_index)
 // Проверяет, существует ли модель
 bool RDK_CALL Model_Check(void)
 {
- UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
+// UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
  return PEngine->Model_Check();
 }
 
@@ -1065,7 +1065,7 @@ bool RDK_CALL MModel_Check(int engine_index)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return false;
- UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
+// UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  return DllManager.EngineList[engine_index]->Model_Check();
 }
 

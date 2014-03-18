@@ -753,7 +753,17 @@ void UContainer::Free(void)
   GetStorage()->ReturnObject(this);
  }
  else
-  delete this;
+  UComponent::Free();
+}
+
+/// Осуществляет обновление внутренних данных компонента, обеспечивающих его целостность
+void UContainer::AUpdateInternalData(void)
+{
+ std::map<UEPtr<UContainer>, NameT>::iterator I=StaticComponents.begin();
+ for(;I!=StaticComponents.end();++I)
+ {
+  UpdateStaticComponent(I->second,I->first);
+ }
 }
 // --------------------------
 
@@ -982,6 +992,15 @@ void UContainer::DelAllComponents(void)
   DelComponent(PComponents[NumComponents-1],true);
 }
 
+/// Добавляет компонент как статическую переменную задавая ему имя класса 'classname'
+/// и имя 'name'
+void UContainer::AddStaticComponent(const NameT &classname, const NameT &name, UEPtr<UContainer> comp)
+{
+ comp->SetStaticFlag(true);
+ comp->SetName(name);
+ StaticComponents[comp]=classname;
+}
+
 // Возвращает список имен и Id компонент, содержащихся непосредственно
 // в этом объекте
 // Память должна быть выделена
@@ -1019,6 +1038,8 @@ void UContainer::CopyComponents(UEPtr<UContainer> comp, UEPtr<UStorage> stor) co
 
  for(int i=0;i<NumComponents;i++,pcomponents++)
   {
+   if((*pcomponents)->GetStaticFlag())
+    continue;
    bufcomp=(*pcomponents)->Alloc(stor);
    UEPtr<UIPointer> pointer=0;
    I=FindLookupPointer(*pcomponents);
@@ -1570,6 +1591,11 @@ RDK_SYS_TRY {
   UEPtr<UContainer> *comps=PComponents;
   while((i<NumComponents) && !SkipComponentCalculation)
   {
+   if((*comps)->GetStaticFlag())
+   {
+	++i,++comps;
+	continue;
+   }
    (*comps)->Calculate();
    if(ComponentReCalculation)
    {
@@ -2006,6 +2032,20 @@ void UContainer::DelComponentTable(UEPtr<UContainer> comp)
 // --------------------------
 // Скрытые методы управления компонентами
 // --------------------------
+/// Производит необходимые операции по добавлению статического компонента
+UId UContainer::UpdateStaticComponent(const NameT &classname, UEPtr<UContainer> comp)
+{
+ comp->SetStorage(GetStorage());
+ comp->SetEnvironment(GetEnvironment());
+ if(GetStorage())
+  comp->SetClass(GetStorage()->FindClassId(classname));
+
+ for(int i=0;i<NumComponents;i++)
+  if(PComponents[i] == comp)
+   return PComponents[i]->GetId();
+ return AddComponent(comp);
+}
+
 // Удаляет компонент comp
 // Метод предполагает, что компонент принадлежит объекту
 void UContainer::BeforeDelComponent(UEPtr<UContainer> comp, bool canfree)

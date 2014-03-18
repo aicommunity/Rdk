@@ -123,13 +123,8 @@ bool UVariable::CheckMask(unsigned int mask) const
 // Конструкторы и деструкторы
 // --------------------------
 UComponent::UComponent(void)
+: StaticFlag(false)
 {
-// Owner=0;
-
-// MainOwner=0;
-
-// Storage=0;
-
  Class=ForbiddenId;
 }
 
@@ -143,6 +138,23 @@ UComponent::~UComponent(void)
 // --------------------------
 // Методы доступа к свойствам
 // --------------------------
+// Возвращает флаг, определяющий компонент является статическим
+// или динамическим
+bool UComponent::GetStaticFlag(void) const
+{
+ return StaticFlag;
+}
+
+bool UComponent::SetStaticFlag(bool value)
+{
+ if(StaticFlag == value)
+  return true;
+
+ StaticFlag=value;
+ return true;
+}
+
+
 // Возвращает владелца этого объекта.
 UEPtr<UComponent> const UComponent::GetOwner(void) const
 {
@@ -168,7 +180,10 @@ UEPtr<UComponent> const UComponent::GetMainOwner(void) const
 void UComponent::SetMainOwner(UEPtr<UComponent> mainowner)
 {
  if(mainowner != MainOwner)
+ {
   MainOwner=mainowner;
+  UpdateInternalData();
+ }
 }
 
 // Возвращает хранилище компонент этого объекта
@@ -183,6 +198,7 @@ bool UComponent::SetStorage(UEPtr<UStorage> storage)
   return true;
 
  Storage=storage;
+ UpdateInternalData();
  return true;
 }
 
@@ -198,6 +214,7 @@ bool UComponent::SetEnvironment(UEPtr<UEnvironment> environment)
   return true;
 
  Environment=environment;
+ UpdateInternalData();
  return true;
 }
 // --------------------------
@@ -263,7 +280,19 @@ UContainerDescription* UComponent::ANewDescription(UComponentDescription* descri
 // Уничтожение этого объекта
 void UComponent::Free(void)
 {
- delete this;
+ if(!StaticFlag)
+  delete this;
+}
+
+/// Осуществляет обновление внутренних данных компонента, обеспечивающих его целостность
+void UComponent::UpdateInternalData(void)
+{
+ AUpdateInternalData();
+}
+
+void UComponent::AUpdateInternalData(void)
+{
+
 }
 // --------------------------
 
