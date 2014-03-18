@@ -124,7 +124,12 @@ switch (sys_code)
 
  case SC_CLOSE:
  {
-  Close1Click(this);
+  if(RdkMainForm == this)
+  {
+   Close1Click(this);
+  }
+  else
+   Hide();
   Msg.Result = 0;
   return;
   break;
