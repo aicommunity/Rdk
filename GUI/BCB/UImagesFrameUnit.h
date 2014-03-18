@@ -94,6 +94,9 @@ std::vector<std::vector<int> > ComponentIndexesOld;
 // Массив имен компонент и их свойств, связанных с кликом мыши
 std::vector<std::vector<std::pair<std::string,std::string> > > MouseClickComponents;
 
+// Массив легенд
+std::vector<std::vector<std::string> > Legends;
+
 // Флаг отражения вокруг оси X изображений при выводе
 bool ReflectionXFlag;
 

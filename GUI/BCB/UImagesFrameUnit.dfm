@@ -30,6 +30,8 @@ inherited UImagesFrame: TUImagesFrame
     Width = 729
     Height = 488
     Align = alClient
+    DoubleBuffered = True
+    ParentDoubleBuffered = False
     TabOrder = 1
     Visible = False
     object FullImage: TImage

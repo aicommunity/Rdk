@@ -56,6 +56,7 @@ void TUImagesFrame::SetNumCells(int width, int height)
  ComponentIndexes.resize(width);
  ComponentIndexesOld.resize(width);
  MouseClickComponents.resize(width);
+ Legends.resize(width);
  for(size_t i=0;i<Images.size();i++)
  {
   Images[i].resize(height);
@@ -63,6 +64,7 @@ void TUImagesFrame::SetNumCells(int width, int height)
   ComponentIndexes[i].resize(height);
   ComponentIndexesOld[i].resize(height,-1);
   MouseClickComponents[i].resize(height);
+  Legends[i].resize(height);
   for(size_t j=0;j<Images[i].size();j++)
    Images[i][j]=new TImage(this);
  }
@@ -102,6 +104,11 @@ void TUImagesFrame::LinkToComponent(int i, int j, const std::string &stringid, i
 
  StringIds[i][j]=stringid;
  ComponentIndexes[i][j]=index;
+ if(ComponentIndexes[i][j].empty())
+  Legends[i][j]=std::string(Model_GetComponentLongName(StringIds[i][j].c_str()))+std::string("[")+RDK::sntoa(ComponentIndexesOld[i][j])+"]";
+ else
+  Legends[i][j]=std::string(Model_GetComponentLongName(StringIds[i][j].c_str()))+std::string("[")+ComponentIndexes[i][j]+"]";
+
 }
 
 
@@ -483,6 +490,7 @@ void TUImagesFrame::ASaveParameters(RDK::USerStorageXML &xml)
    xml.WriteString(std::string("CellName")+name,StringIds[i][j].c_str());
    xml.WriteInteger(std::string("CellIndex")+name,ComponentIndexesOld[i][j]);
    xml.WriteString(std::string("CellIndexNew")+name,ComponentIndexes[i][j]);
+   xml.WriteString(std::string("CellLegend")+name,Legends[i][j]);
 
    xml.WriteString(std::string("CellMouseClickComponent")+name,MouseClickComponents[i][j].first.c_str());
    xml.WriteString(std::string("CellMouseClickProperty")+name,MouseClickComponents[i][j].second.c_str());
@@ -513,6 +521,15 @@ void TUImagesFrame::ALoadParameters(RDK::USerStorageXML &xml)
    StringIds[i][j]=xml.ReadString(std::string("CellName")+name,"");
    ComponentIndexes[i][j]=xml.ReadString(std::string("CellIndexNew")+name,"");
    ComponentIndexesOld[i][j]=xml.ReadInteger(std::string("CellIndex")+name,-1);
+   Legends[i][j]=xml.ReadString(std::string("CellLegend")+name,Legends[i][j].c_str());
+   if(Legends[i][j].empty())
+   {
+	if(ComponentIndexes[i][j].empty())
+	 Legends[i][j]=std::string(Model_GetComponentLongName(StringIds[i][j].c_str()))+std::string("[")+RDK::sntoa(ComponentIndexesOld[i][j])+"]";
+	else
+     Legends[i][j]=std::string(Model_GetComponentLongName(StringIds[i][j].c_str()))+std::string("[")+ComponentIndexes[i][j]+"]";
+   }
+
 
    MouseClickComponents[i][j].first=xml.ReadString(std::string("CellMouseClickComponent")+name,"");
    MouseClickComponents[i][j].second=xml.ReadString(std::string("CellMouseClickProperty")+name,"");
@@ -537,10 +554,7 @@ void __fastcall TUImagesFrame::DrawGridDrawCell(TObject *Sender, int ACol, int A
 		StretchDraw(Rect, Images[ACol][ARow]->Picture->Graphic);
  if(ShowLegendCheckBox->Checked)
  {
-  if(ComponentIndexes[ACol][ARow].empty())
-   dynamic_cast<TDrawGrid *>(Sender)->Canvas->TextOut(Rect.Left,Rect.Top,(std::string(Model_GetComponentLongName(StringIds[ACol][ARow].c_str()))+std::string("[")+RDK::sntoa(ComponentIndexesOld[ACol][ARow])+"]").c_str());
-  else
-   dynamic_cast<TDrawGrid *>(Sender)->Canvas->TextOut(Rect.Left,Rect.Top,(std::string(Model_GetComponentLongName(StringIds[ACol][ARow].c_str()))+std::string("[")+ComponentIndexes[ACol][ARow]+"]").c_str());
+  dynamic_cast<TDrawGrid *>(Sender)->Canvas->TextOut(Rect.Left,Rect.Top,Legends[ACol][ARow].c_str());
  }
 }
 //---------------------------------------------------------------------------
