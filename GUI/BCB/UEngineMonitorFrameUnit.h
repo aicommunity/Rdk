@@ -148,6 +148,8 @@ std::vector<unsigned long long> RealLastCalculationTime;
 
 std::vector<RDK::UEPtr<TBroadcasterForm> > BroadcastersList;
 
+HANDLE ThreadCalcCompleteEvent;
+
 public:
 /// ”правление режимом работы
 /// 0 - однопоточный режим

@@ -180,11 +180,13 @@ __fastcall TUEngineMonitorFrame::TUEngineMonitorFrame(TComponent* Owner)
  UpdateInterval=100;
  ChannelsMode=0;
  CalculationTimeSourceMode=0;
+ ThreadCalcCompleteEvent=CreateEvent(0,TRUE,FALSE,0);
 }
 
 __fastcall TUEngineMonitorFrame::~TUEngineMonitorFrame(void)
 {
 // SetNumChannels(0);
+ CloseHandle(ThreadCalcCompleteEvent);
 }
 
 
@@ -652,7 +654,6 @@ void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
  case 1:
  {
   SendMetadata();
-//  IdTcpResultBroadcasterForm->SendMetadata();
   RDK::UIVisualControllerStorage::AfterCalculate();
   RDK::UIVisualControllerStorage::ResetCalculationStepUpdatedFlag();
   RDK::UIVisualControllerStorage::UpdateInterface();

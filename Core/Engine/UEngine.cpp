@@ -4779,7 +4779,13 @@ int UEngine::LoadLibraries(void)
 // Если строковое id не задано, то возвращает указатель на модель
 UEPtr<UContainer> UEngine::FindComponent(const char *stringid) const
 {
-// UEPtr<RDK::UNet> model=dynamic_pointer_cast<RDK::UNet>(Environment->GetModel());
+/* if(stringid && !AccessCache.empty())
+ {
+  std::map<std::string, UEPtr<UContainer> >::iterator I=AccessCache.find(stringid);
+  if(I != AccessCache.end())
+   return I->second;
+ }
+  */
  UEPtr<RDK::UNet> model=dynamic_pointer_cast<RDK::UNet>(Environment->GetCurrentComponent());
 
  if(!model)
@@ -4811,6 +4817,8 @@ UEPtr<UContainer> UEngine::FindComponent(const char *stringid) const
 
  }
 
+// if(stringid)
+//  AccessCache[stringid]=cont;
  return cont;
 }
 

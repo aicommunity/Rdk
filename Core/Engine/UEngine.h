@@ -112,6 +112,9 @@ public:
 // Временное хранилище строк
 mutable string PubTempString;
 
+/// Кеш быстрого доступа к компонентам
+mutable std::map<std::string, UEPtr<UContainer> > AccessCache;
+
 
 
 public: // Методы
