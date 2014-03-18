@@ -124,7 +124,12 @@ switch (sys_code)
 
  case SC_CLOSE:
  {
-  Close1Click(this);
+  if(RdkMainForm == this)
+  {
+   Close1Click(this);
+  }
+  else
+   Hide();
   Msg.Result = 0;
   return;
   break;
@@ -2208,19 +2213,19 @@ void __fastcall TUGEngineControlForm::Close1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::Start2Click(TObject *Sender)
 {
-// Start1Click(Sender);
+ Start1Click(Sender);
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUGEngineControlForm::Pause2Click(TObject *Sender)
 {
-// Pause1Click(Sender);
+ Pause1Click(Sender);
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUGEngineControlForm::Reset2Click(TObject *Sender)
 {
-// Reset1Click(Sender);
+ Reset1Click(Sender);
 }
 //---------------------------------------------------------------------------
 
