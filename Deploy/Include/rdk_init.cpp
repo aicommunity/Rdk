@@ -791,7 +791,9 @@ void RDK_CALL MEnv_Destroy(int engine_index)
 // иначе вычисляет только указанный компонент модели
 int RDK_CALL Env_Calculate(const char* stringid)
 {
+#ifndef RDK_UNSAFE_CALCULATE
  UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
+#endif
  return PEngine->Env_Calculate(stringid);
 }
 
@@ -799,7 +801,9 @@ int RDK_CALL MEnv_Calculate(int engine_index, const char* stringid)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 1000;
+#ifndef RDK_UNSAFE_CALCULATE
  UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
+#endif
  return DllManager.EngineList[engine_index]->Env_Calculate(stringid);
 }
 
