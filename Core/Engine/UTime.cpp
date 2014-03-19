@@ -35,6 +35,11 @@ UTimeControl::UTimeControl(void)
 
  // ћгновенный шаг во времени внешних источников данных в секундах
  DoubleSourceTimeStep=1.0e-6;
+
+ SourceStartGlobalTime=0;
+ SourceCurrentGlobalTime=0;
+ SourceStartLocalTime=0;
+ SourceCurrentLocalTime=0;
 }
 
 UTimeControl::~UTimeControl(void)
@@ -59,14 +64,14 @@ bool UTimeControl::SetSourceStartGlobalTime(double value)
 }
 
 /// ¬рем€ начала расчета в дн€х
-double UTimeControl::GetSourceStepGlobalTime(void) const
+double UTimeControl::GetSourceCurrentGlobalTime(void) const
 {
- return SourceStepGlobalTime;
+ return SourceCurrentGlobalTime;
 }
 
-bool UTimeControl::SetSourceStepGlobalTime(double value)
+bool UTimeControl::SetSourceCurrentGlobalTime(double value)
 {
- SourceStepGlobalTime=value;
+ SourceCurrentGlobalTime=value;
  return true;
 }
 
@@ -83,46 +88,16 @@ double UTimeControl::SetSourceStartLocalTime(double value)
 }
 
 /// “екущее врем€ в дн€х
-double UTimeControl::GetSourceStepLocalTime(void) const
+double UTimeControl::GetSourceCurrentLocalTime(void) const
 {
- return SourceStepLocalTime;
+ return SourceCurrentLocalTime;
 }
 
-double UTimeControl::SetSourceStepLocalTime(double value)
+double UTimeControl::SetSourceCurrentLocalTime(double value)
 {
- SourceStepLocalTime=value;
- return SetRealTime((SourceStepLocalTime-SourceStartLocalTime)*1000000.0);
+ SourceCurrentLocalTime=value;
+ return SetRealTime((SourceCurrentLocalTime-SourceStartLocalTime)*1000000.0);
 }
-// --------------------------
-
-// --------------------------
-// ¬ременные метки в процессе работы в секундах от начала дн€ или др.
-// системного событи€
-// --------------------------
-/*
-/// ¬рем€ начала расчета в секундах
-double UTimeControl::GetModelStartSecondTime(void) const
-{
- return ModelStartSecondTime;
-}
-
-bool UTimeControl::SetModelStartSecondTime(double value)
-{
- ModelStartSecondTime=value;
- return true;
-}
-
-/// ¬рем€ начала расчета текущего шага в секундах
-double UTimeControl::GetStepStartSecondTime(void) const
-{
- return StepStartSecondTime;
-}
-
-bool UTimeControl::SetStepStartSecondTime(double value)
-{
- StepStartSecondTime=value;
- return SetRealTime((StepStartSecondTime-ModelStartSecondTime)*1000);
-}                            */
 // --------------------------
 
 // --------------------------
@@ -211,14 +186,14 @@ const double& UTimeControl::GetDoubleRealTimeStep(void) const
 // --------------------------
 /// ¬озвращает текущее врем€ от начала времен в дн€х
 /// ѕринимает аргументом текущее локальное врем€ в секундах или миллисекундах
-double UTimeControl::CalcCurrentGlobalTime(double current_local_time)
+double UTimeControl::CalcCurrentGlobalTime(double current_local_time) const
 {
- return SourceStepGlobalTime+(current_local_time-SourceStepLocalTime)/86400.0;
+ return SourceCurrentGlobalTime+(current_local_time-SourceCurrentLocalTime)/86400.0;
 }
 
-double UTimeControl::CalcCurrentGlobalTime(ULongTime current_local_time)
+double UTimeControl::CalcCurrentGlobalTime(ULongTime current_local_time) const
 {
- return SourceStepGlobalTime+(double(current_local_time)/1000.0-SourceStepLocalTime)/86400.0;
+ return SourceCurrentGlobalTime+(double(current_local_time)/1000.0-SourceCurrentLocalTime)/86400.0;
 }
 // --------------------------
 

@@ -19,6 +19,9 @@ See file license.txt for more information
 
 namespace RDK {
 
+/// «аглушка, возвращаема€ в случае остутстви€ доступа к Environment::Time
+UTimeControl UComponent::DummyTime;
+
 // --------------------------
 //  онструкторы и деструкторы
 // --------------------------
@@ -216,6 +219,17 @@ bool UComponent::SetEnvironment(UEPtr<UEnvironment> environment)
  Environment=environment;
  UpdateInternalData();
  return true;
+}
+
+/// ¬озвращает ссылку на класс управлени€ времени из Environment.
+/// ≈сли Environment отсутствует то возвращает указатель на заглушку
+/// DummyTime
+const UTimeControl& UComponent::GetTime(void) const
+{
+ if(Environment)
+  return Environment->GetTime();
+ else
+  return DummyTime;
 }
 // --------------------------
 

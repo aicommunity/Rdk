@@ -15,13 +15,13 @@ private: // ¬ременные метки в процссе работы в дн€х от начала времен
 double SourceStartGlobalTime;
 
 /// ¬рем€ начала расчета текущего шага в дн€х
-double SourceStepGlobalTime;
+double SourceCurrentGlobalTime;
 
 /// ¬рем€ начала расчета в секундах от начала дн€ или другого событи€ системы
 double SourceStartLocalTime;
 
 /// ¬рем€ начала расчета текущего шага в секундах от начала дн€ или другого событи€ системы
-double SourceStepLocalTime;
+double SourceCurrentLocalTime;
 
 private: // ¬ременные метки в процессе работы в секундах от начала дн€ или др.
 		 // системного событи€
@@ -79,16 +79,16 @@ double GetSourceStartGlobalTime(void) const;
 bool SetSourceStartGlobalTime(double value);
 
 /// ¬рем€ начала расчета в дн€х
-double GetSourceStepGlobalTime(void) const;
-bool SetSourceStepGlobalTime(double value);
+double GetSourceCurrentGlobalTime(void) const;
+bool SetSourceCurrentGlobalTime(double value);
 
 /// “екущее врем€ в дн€х
 double GetSourceStartLocalTime(void) const;
 double SetSourceStartLocalTime(double value);
 
 /// “екущее врем€ в дн€х
-double GetSourceStepLocalTime(void) const;
-double SetSourceStepLocalTime(double value);
+double GetSourceCurrentLocalTime(void) const;
+double SetSourceCurrentLocalTime(double value);
 // --------------------------
 
 // --------------------------
@@ -128,8 +128,8 @@ const double& GetDoubleRealTimeStep(void) const;
 // --------------------------
 /// ¬озвращает текущее врем€ от начала времен в дн€х
 /// ѕринимает аргументом текущее локальное врем€ в секундах или миллисекундах
-double CalcCurrentGlobalTime(double current_local_time);
-double CalcCurrentGlobalTime(ULongTime current_local_time);
+double CalcCurrentGlobalTime(double current_local_time) const;
+double CalcCurrentGlobalTime(ULongTime current_local_time) const;
 // --------------------------
 
 };

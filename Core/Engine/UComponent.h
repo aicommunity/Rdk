@@ -18,6 +18,7 @@ See file license.txt for more information
 #include "UEnvSupport.h"
 #include "UEPtr.h"
 #include "UContainerDescription.h"
+#include "UTime.h"
 #include "../Serialize/Serialize.h"
 
 #ifndef RDK_PROPERTY_TYPES
@@ -156,6 +157,10 @@ protected:
 ShareMapT ShareLookupTable;
 
 
+protected: // Временные переменные
+/// Заглушка, возвращаемая в случае остутствия доступа к Environment::Time
+static UTimeControl DummyTime;
+
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
@@ -187,6 +192,11 @@ virtual bool SetStorage(UEPtr<UStorage> storage);
 // Возвращает среду выполнения этого объекта
 UEPtr<UEnvironment> const GetEnvironment(void) const;
 virtual bool SetEnvironment(UEPtr<UEnvironment> environment);
+
+/// Возвращает ссылку на класс управления времени из Environment.
+/// Если Environment отсутствует то возвращает указатель на заглушку
+/// DummyTime
+const UTimeControl& GetTime(void) const;
 // --------------------------
 
 // --------------------------

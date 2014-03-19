@@ -490,14 +490,13 @@ void UEnvironment::RTCalculate(void)
 // StartProcTime=GetCurrentStartupTime();
 
  CurrentTime=GetCurrentStartupTime();
-// Time.SetRealTime(CalcDiffTime(GetCurrentStartupTime(),StartupTime)*1000);
- Time.SetSourceStepLocalTime(double(GetCurrentStartupTime())/1000.0);
+ Time.SetSourceCurrentLocalTime(double(GetCurrentStartupTime())/1000.0);
 
  // Если первый шаг расчета после Reset
  if(Time.GetTime() == 0)
  {
-  Time.SetSourceStartLocalTime(Time.GetSourceStepLocalTime());
-  Time.SetSourceStartGlobalTime(Time.GetSourceStepGlobalTime());
+  Time.SetSourceStartLocalTime(Time.GetSourceCurrentLocalTime());
+  Time.SetSourceStartGlobalTime(Time.GetSourceCurrentGlobalTime());
   StartupTime=CurrentTime;
   ProcEndTime=StartupTime;
  }
@@ -542,7 +541,7 @@ void UEnvironment::RTCalculate(void)
  if(Time.GetRealTime()/1e6<Time.GetDoubleTime())
  {
   Sleep(int(Time.GetDoubleTime()*1000-Time.GetRealTime()/1000));
-  Time.SetSourceStepLocalTime(double(GetCurrentStartupTime())/1000.0);
+  Time.SetSourceCurrentLocalTime(double(GetCurrentStartupTime())/1000.0);
 //  Time.SetRealTime(CalcDiffTime(GetCurrentStartupTime(),StartupTime)*1000);
  }
 
@@ -841,13 +840,13 @@ bool UEnvironment::AReset(void)
 bool UEnvironment::ACalculate(void)
 {
  long long cur_time=GetCurrentStartupTime();
- Time.SetSourceStepLocalTime(cur_time/1000.0);
+ Time.SetSourceCurrentLocalTime(cur_time/1000.0);
 
  // Если первый шаг расчета после Reset
  if(Time.GetTime() == 0)
  {
-  Time.SetSourceStartLocalTime(Time.GetSourceStepLocalTime());
-  Time.SetSourceStartGlobalTime(Time.GetSourceStepGlobalTime());
+  Time.SetSourceStartLocalTime(Time.GetSourceCurrentLocalTime());
+  Time.SetSourceStartGlobalTime(Time.GetSourceCurrentGlobalTime());
   StartupTime=cur_time;
   ProcEndTime=StartupTime;
  }

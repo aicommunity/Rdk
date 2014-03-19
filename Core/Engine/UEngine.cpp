@@ -3380,7 +3380,7 @@ double UEngine::Model_GetDoubleRealTimeStep(void)
   */
 double UEngine::Model_GetDoubleSourceTime(void) const
 {
- return Environment->GetTime().GetSourceStepGlobalTime();
+ return Environment->GetTime().GetSourceCurrentGlobalTime();
 }
 
 // Устанавливает время внешних источников данных
@@ -3392,7 +3392,7 @@ double UEngine::Model_GetDoubleSourceTime(void) const
 // Устанавливает время внешних источников данных в днях
 bool UEngine::Model_SetDoubleSourceTime(double value)
 {
- return Environment->GetTime().SetSourceStepGlobalTime(value);
+ return Environment->GetTime().SetSourceCurrentGlobalTime(value);
 }
 
 // Увеличивает время внешних источников данных на заданную величину
