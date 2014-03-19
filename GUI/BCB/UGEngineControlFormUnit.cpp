@@ -743,6 +743,9 @@ void TUGEngineControlForm::CloneProject(int source_id, int cloned_id)
  GlobalTimeStep.resize(GetNumEngines());
  GlobalTimeStep[cloned_id]=GlobalTimeStep[source_id];
 
+ if(!ProjectXml.SelectNodeRoot("Project/General"))
+  return;
+
  ReflectionFlag=ProjectXml.ReadBool("ReflectionFlag",true);
 
  CalculationMode.resize(GetNumEngines());
