@@ -552,11 +552,11 @@ try{
  }
 
  MinInterstepsInterval.resize(GetNumEngines());
- MinInterstepsInterval[0]=ProjectXml.ReadInteger("MinInterstepsInterval",0);
+ MinInterstepsInterval[0]=ProjectXml.ReadInteger("MinInterstepsInterval",20);
  UEngineMonitorForm->EngineMonitorFrame->SetMinInterstepsInterval(0,MinInterstepsInterval[0]);
  for(int i=1;i<GetNumEngines();i++)
  {
-  MinInterstepsInterval[i]=ProjectXml.ReadInteger(std::string("MinInterstepsInterval_")+RDK::sntoa(i),0);
+  MinInterstepsInterval[i]=ProjectXml.ReadInteger(std::string("MinInterstepsInterval_")+RDK::sntoa(i),20);
   UEngineMonitorForm->EngineMonitorFrame->SetMinInterstepsInterval(i,MinInterstepsInterval[i]);
  }
 
@@ -1700,7 +1700,7 @@ void __fastcall TUGEngineControlForm::CreateProjectItemClick(TObject *Sender)
   CalculationMode[0]=UCreateProjectWizardForm->ProjectCalculationModeRadioGroup->ItemIndex;
 
   MinInterstepsInterval.resize(1);
-  MinInterstepsInterval[0]=0;
+  MinInterstepsInterval[0]=20;
 
   CreateProject(UCreateProjectWizardForm->ProjectDirectoryLabeledEdit->Text+String("\\Project.ini"),UCreateProjectWizardForm->UClassesListFrame1->GetSelectedName(),UCreateProjectWizardForm->ProjectModelFileNameLabeledEdit->Text);
 

@@ -146,6 +146,8 @@ bool UEngine::Init(UEPtr<UStorage> storage, UEPtr<UEnvironment> env)
    return false;
 // }
 
+ AccessCache.clear();
+
 // StorageIndex=atoi(Options("General","StorageIndex",sntoa(StorageIndex).c_str()));
 // EnvironmentIndex=atoi(Options("General","EnvironmentIndex",sntoa(EnvironmentIndex).c_str()));
 
@@ -204,6 +206,7 @@ bool UEngine::Init(UEPtr<UStorage> storage, UEPtr<UEnvironment> env)
 // и сохран€ет текущие настройки
 void UEngine::UnInit(void)
 {
+ AccessCache.clear();
  if(!Stop())
   return;
 
@@ -360,6 +363,7 @@ bool UEngine::Storage_DelClass(int classid)
 {
  try
  {
+  AccessCache.clear();
   Storage->DelClass(classid);
  }
  catch (UException &exception)
@@ -374,6 +378,7 @@ void UEngine::Storage_FreeObjectsStorage(void)
 {
  try
  {
+  AccessCache.clear();
   Storage->FreeObjectsStorage();
  }
  catch (UException &exception)
@@ -387,6 +392,7 @@ void UEngine::Storage_ClearObjectsStorage(void)
 {
  try
  {
+  AccessCache.clear();
   Storage->ClearObjectsStorage();
  }
  catch (UException &exception)
@@ -715,6 +721,7 @@ bool UEngine::Storage_DelClassLibraryByIndex(int index)
 {
  try
  {
+  AccessCache.clear();
   return Storage->DelCollection(index);
  }
  catch (UException &exception)
@@ -730,6 +737,7 @@ bool UEngine::Storage_DelClassLibraryByName(const char *name)
 {
  try
  {
+  AccessCache.clear();
   return Storage->DelCollection(name);
  }
  catch (UException &exception)
@@ -745,6 +753,7 @@ bool UEngine::Storage_DelAllClassLibraries(void)
 {
  try
  {
+  AccessCache.clear();
   return Storage->DelAllCollections();
  }
  catch (UException &exception)
@@ -856,6 +865,7 @@ int UEngine::Storage_CreateClass(const char* stringid, const char *class_name, c
   if(!Storage->AddClassToCollection(class_name, sample,library))
    return 74618;
 
+  AccessCache.clear();
   return 0;
  }
  catch (UException &exception)
@@ -871,6 +881,7 @@ bool UEngine::Storage_BuildStorage(void)
 {
  try
  {
+  AccessCache.clear();
   return Storage->BuildStorage();
  }
  catch (UException &exception)
@@ -903,6 +914,7 @@ bool UEngine::Env_SetPredefinedStructure(int value)
 {
  try
  {
+  AccessCache.clear();
   return Environment->SetPredefinedStructure(value);
  }
  catch (UException &exception)
@@ -961,6 +973,7 @@ bool UEngine::Env_Init(void)
 {
  try
  {
+  AccessCache.clear();
   Environment->Init();
    return true;
  }
@@ -976,6 +989,7 @@ bool UEngine::Env_UnInit(void)
 {
  try
  {
+  AccessCache.clear();
   Environment->UnInit();
   return true;
  }
@@ -991,6 +1005,7 @@ bool UEngine::Env_CreateStructure(void)
 {
  try
  {
+  AccessCache.clear();
   return Environment->CreateStructure();
  }
  catch (UException &exception)
@@ -1005,6 +1020,7 @@ bool UEngine::Env_DestroyStructure(void)
 {
  try
  {
+  AccessCache.clear();
   return Environment->DestroyStructure();
  }
  catch (UException &exception)
@@ -1019,6 +1035,7 @@ void UEngine::Env_Destroy(void)
 {
  try
  {
+  AccessCache.clear();
   Environment->DestroyModel();
   Storage->ClearObjectsStorage();
   Storage->ClearClassesStorage();
@@ -1506,6 +1523,7 @@ int UEngine::Model_Destroy(void)
 {
  try
  {
+  AccessCache.clear();
   if(!Environment->DestroyModel())
    throw EFunctionReturnFalse(__FILE__,__FUNCTION__,__LINE__);
 //   return -1;
@@ -1524,6 +1542,7 @@ int UEngine::Model_Create(const char *classname)
 {
  try
  {
+  AccessCache.clear();
   if(!Environment->CreateModel(classname))
    throw EFunctionReturnFalse(__FILE__,__FUNCTION__,__LINE__);
 //   return -1;
@@ -1541,6 +1560,7 @@ int UEngine::Model_Clear(void)
 {
  try
  {
+  AccessCache.clear();
   UEPtr<RDK::UContainer> model=dynamic_pointer_cast<RDK::UContainer>(Environment->GetModel());
 
   if(!model)
@@ -1639,6 +1659,7 @@ int UEngine::Model_DelComponent(const char* stringid, const char *name)
    return -4;
 
   destcont->DelComponent(name);
+  AccessCache.clear();
  }
  catch (UException &exception)
  {
@@ -3046,6 +3067,7 @@ int UEngine::Model_LoadComponent(const char *stringid, const char* buffer)
 {
  try
  {
+  AccessCache.clear();
   XmlStorage.Load(buffer,"Save");
   XmlStorage.SelectNode(0);
 
@@ -4779,13 +4801,13 @@ int UEngine::LoadLibraries(void)
 // ≈сли строковое id не задано, то возвращает указатель на модель
 UEPtr<UContainer> UEngine::FindComponent(const char *stringid) const
 {
-/* if(stringid && !AccessCache.empty())
+ if(stringid && !AccessCache.empty())
  {
   std::map<std::string, UEPtr<UContainer> >::iterator I=AccessCache.find(stringid);
   if(I != AccessCache.end())
    return I->second;
  }
-  */
+
  UEPtr<RDK::UNet> model=dynamic_pointer_cast<RDK::UNet>(Environment->GetCurrentComponent());
 
  if(!model)
@@ -4817,8 +4839,8 @@ UEPtr<UContainer> UEngine::FindComponent(const char *stringid) const
 
  }
 
-// if(stringid)
-//  AccessCache[stringid]=cont;
+ if(stringid)
+  AccessCache[stringid]=cont;
  return cont;
 }
 

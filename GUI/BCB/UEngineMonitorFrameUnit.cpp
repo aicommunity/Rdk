@@ -130,16 +130,14 @@ void __fastcall TEngineThread::Execute(void)
    if(WaitForSingleObject(CalcEnable,30) == WAIT_TIMEOUT)
 	continue;
   }
-  else
-  if(CalculateMode == 0)
+
+  unsigned long long diff=GetTickCount()-RealLastCalculationTime;
+  if(diff<MinInterstepsInterval)
   {
-   unsigned long long diff=GetTickCount()-RealLastCalculationTime;
-   if(diff<MinInterstepsInterval)
-   {
-	Sleep(MinInterstepsInterval-diff);
-	continue;
-   }
+   Sleep(MinInterstepsInterval-diff);
+   continue;
   }
+
   ResetEvent(CalcEnable);
   ResetEvent(CalculationNotInProgress);
   BeforeCalculate();
@@ -175,7 +173,7 @@ __fastcall TUEngineMonitorFrame::TUEngineMonitorFrame(TComponent* Owner)
 {
  CalculateMode.assign(GetNumEngines(),0);
  CalculateSignal.assign(GetNumEngines(),false);
- MinInterstepsInterval.assign(GetNumEngines(),0);
+ MinInterstepsInterval.assign(GetNumEngines(),20);
  AlwaysUpdateFlag=true;
  UpdateInterval=100;
  ChannelsMode=0;

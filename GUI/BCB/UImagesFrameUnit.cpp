@@ -473,8 +473,6 @@ void TUImagesFrame::AClearInterface(void)
  SetNumCells(0,0);
 }
 
-
-
 // Сохраняет параметры интерфейса в xml
 void TUImagesFrame::ASaveParameters(RDK::USerStorageXML &xml)
 {
