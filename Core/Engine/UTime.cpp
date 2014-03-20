@@ -98,6 +98,12 @@ double UTimeControl::SetSourceCurrentLocalTime(double value)
  SourceCurrentLocalTime=value;
  return SetRealTime((SourceCurrentLocalTime-SourceStartLocalTime)*1000000.0);
 }
+
+/// Текущее время в миллисекундах
+long long UTimeControl::GetSourceCurrentLocalTimeMs(void) const
+{
+ return SourceCurrentLocalTime*1000;
+}
 // --------------------------
 
 // --------------------------

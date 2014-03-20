@@ -487,8 +487,6 @@ void UEnvironment::RTCalculate(void)
 {
  Build();
 
-// StartProcTime=GetCurrentStartupTime();
-
  CurrentTime=GetCurrentStartupTime();
  Time.SetSourceCurrentLocalTime(double(GetCurrentStartupTime())/1000.0);
 
@@ -525,7 +523,7 @@ void UEnvironment::RTCalculate(void)
  }
  else
  {
-  elapsed_counter=0;//(/*LastDuration*/model_duration*Model->GetTimeStep())/1000;
+  elapsed_counter=0;
  }
 
  curtime=GetCurrentStartupTime();
@@ -537,12 +535,10 @@ void UEnvironment::RTCalculate(void)
   curtime=GetCurrentStartupTime();
  }
 
-// LastSentTime=GetCurrentStartupTime();
  if(Time.GetRealTime()/1e6<Time.GetDoubleTime())
  {
   Sleep(int(Time.GetDoubleTime()*1000-Time.GetRealTime()/1000));
   Time.SetSourceCurrentLocalTime(double(GetCurrentStartupTime())/1000.0);
-//  Time.SetRealTime(CalcDiffTime(GetCurrentStartupTime(),StartupTime)*1000);
  }
 
  LastDuration=GetCurrentStartupTime()-CurrentTime;
@@ -801,8 +797,6 @@ bool UEnvironment::ABuild(void)
 // Сброс процесса счета.
 bool UEnvironment::AReset(void)
 {
-// Time.SetModelStartSecondTime(double(GetCurrentStartupTime())/1000.0);
-// StartupTime=GetCurrentStartupTime();
  StartupTime=0;
  ProcEndTime=StartupTime;
  LastDuration=1;
@@ -811,9 +805,6 @@ bool UEnvironment::AReset(void)
 
  if(!Model)
   return true;
-
-// RDK::DefaultTimeStep=30;
-// Model->SetTimeStep(DefaultTimeStep);
 
  if(ModelCalculationComponent.GetSize() == 0)
  {
@@ -839,19 +830,18 @@ bool UEnvironment::AReset(void)
 // Выполняет расчет этого объекта
 bool UEnvironment::ACalculate(void)
 {
- long long cur_time=GetCurrentStartupTime();
- Time.SetSourceCurrentLocalTime(cur_time/1000.0);
-
  // Если первый шаг расчета после Reset
  if(Time.GetTime() == 0)
  {
-  Time.SetSourceStartLocalTime(Time.GetSourceCurrentLocalTime());
+  Time.SetSourceStartLocalTime(0);
   Time.SetSourceStartGlobalTime(Time.GetSourceCurrentGlobalTime());
-  StartupTime=cur_time;
+  StartupTime=GetCurrentStartupTime();
   ProcEndTime=StartupTime;
  }
 
- // Time.SetRealTime(CalcDiffTime(cur_time,StartupTime)*1000);
+ long long cur_time=(Time.GetSourceCurrentGlobalTime()-Time.GetSourceStartGlobalTime())*(86400.0*1000.0);
+ Time.SetSourceCurrentLocalTime(cur_time/1000.0);
+
  if(!Model)
   return true;
 
