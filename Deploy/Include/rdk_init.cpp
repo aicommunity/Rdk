@@ -1315,6 +1315,15 @@ const char * RDK_CALL Model_GetComponentPropertyValue(const char *stringid, cons
  return PEngine->Model_GetComponentPropertyValue(stringid,paramname);
 }
 
+const char * RDK_CALL MModel_GetComponentPropertyValue(int engine_index, const char *stringid, const char *paramname)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 0;
+
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
+ return DllManager.EngineList[engine_index]->Model_GetComponentPropertyValue(stringid,paramname);
+}
+
 // Устанавливает свойства компонента по идентификатору
 int RDK_CALL Model_SetComponentProperties(const char *stringid, const char* buffer)
 {
