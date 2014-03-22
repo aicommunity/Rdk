@@ -538,8 +538,8 @@ RDK_XML_DEBUG_STATIC const char *XML_ByteTable=(const char *)XML_utf8ByteTable; 
 
 
 XMLNode XMLNode::emptyXMLNode;
-XMLClear XMLNode::emptyXMLClear={ NULL, NULL, NULL};
-XMLAttribute XMLNode::emptyXMLAttribute={ NULL, NULL};
+//XMLClear XMLNode::emptyXMLClear={ NULL, NULL, NULL};
+//XMLAttribute XMLNode::emptyXMLAttribute={ NULL, NULL};
 
 // Enumeration used to decipher what type a token is
 typedef enum XMLTokenTypeTag
@@ -1080,12 +1080,22 @@ XMLCSTR XMLNode::updateName_WOSD(XMLSTR lpszName)
 XMLNode::XMLNode(struct XMLNodeDataTag *p)
 {
  characterEncoding=XMLNode::char_encoding_UTF8;
+ emptyXMLClear.lpszValue=0;
+ emptyXMLClear.lpszOpenTag=0;
+ emptyXMLClear.lpszCloseTag=0;
+ emptyXMLAttribute.lpszName=0;
+ emptyXMLAttribute.lpszValue=0;
 
  d=p; (p->ref_count)++;
 }
 XMLNode::XMLNode(XMLNodeData *pParent, XMLSTR lpszName, char isDeclaration)
 {
  characterEncoding=XMLNode::char_encoding_UTF8;
+ emptyXMLClear.lpszValue=0;
+ emptyXMLClear.lpszOpenTag=0;
+ emptyXMLClear.lpszCloseTag=0;
+ emptyXMLAttribute.lpszName=0;
+ emptyXMLAttribute.lpszValue=0;
 	d=(XMLNodeData*)malloc(sizeof(XMLNodeData));
     d->ref_count=1;
 
@@ -2234,6 +2244,11 @@ XMLNode& XMLNode::operator=( const XMLNode& A )
 XMLNode::XMLNode(const XMLNode &A)
 {
  characterEncoding=A.characterEncoding;
+ emptyXMLClear.lpszValue=0;
+ emptyXMLClear.lpszOpenTag=0;
+ emptyXMLClear.lpszCloseTag=0;
+ emptyXMLAttribute.lpszName=0;
+ emptyXMLAttribute.lpszValue=0;
 	// shallow copy
     d=A.d;
     if (d) (d->ref_count)++ ;

@@ -385,8 +385,8 @@ struct XMLDLLENTRY XMLNode
 
     XMLNode(): d(NULL){};
 	static XMLNode emptyXMLNode;
-	static XMLClear emptyXMLClear;
-	static XMLAttribute emptyXMLAttribute;
+//	static XMLClear emptyXMLClear;
+//	static XMLAttribute emptyXMLAttribute;
 
     /** @defgroup xmlModify Create or Update the XMLNode structure
      * @ingroup XMLParserGeneral
@@ -630,6 +630,8 @@ struct XMLDLLENTRY XMLNode
       RDK_XML_DEBUG_STATIC int detachFromParent(XMLNodeData *d);
 
 	XMLCharEncoding characterEncoding;
+	XMLClear emptyXMLClear;
+	XMLAttribute emptyXMLAttribute;
 };
 
 /// This structure is given by the function XMLNode::enumContents.
