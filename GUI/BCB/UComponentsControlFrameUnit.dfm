@@ -130,6 +130,8 @@ inherited UComponentsControlFrame: TUComponentsControlFrame
               inherited Splitter5: TSplitter
                 Top = 364
                 Width = 227
+                ExplicitTop = 364
+                ExplicitWidth = 227
               end
               inherited EnchancedSG1: TEnchancedSG
                 Width = 227
@@ -227,6 +229,8 @@ inherited UComponentsControlFrame: TUComponentsControlFrame
             inherited Splitter1: TSplitter
               Top = 151
               Width = 292
+              ExplicitTop = 151
+              ExplicitWidth = 292
             end
             inherited Panel1: TPanel
               Top = 318

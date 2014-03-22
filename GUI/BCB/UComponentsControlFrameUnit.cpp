@@ -31,23 +31,31 @@ void TUComponentsControlFrame::SaveModelToFile(const String &filename)
 {
  if(!IsEngineInit())
   return;
- String FileName=filename;
- if(filename == "")
+ try
  {
-  if(!SaveTextFileDialog->Execute())
-   return;
-  FileName=SaveTextFileDialog->FileName;
+  String FileName=filename;
+  if(filename == "")
+  {
+   if(!SaveTextFileDialog->Execute())
+	return;
+   FileName=SaveTextFileDialog->FileName;
+  }
+
+  TRichEdit* RichEdit=new TRichEdit(this);
+  RichEdit->Visible=false;
+  RichEdit->Parent=this;
+
+  RichEdit->PlainText=true;
+  RichEdit->Text=Model_SaveComponent("");
+  RichEdit->Lines->SaveToFile(FileName);
+
+  delete RichEdit;
+ }
+ catch(Exception &exception)
+ {
+  MEngine_LogMessage(GetSelectedEngineIndex(), RDK_EX_ERROR, (std::string("Save model Fail: ")+AnsiString(exception.Message).c_str()).c_str());
  }
 
- TRichEdit* RichEdit=new TRichEdit(this);
- RichEdit->Visible=false;
- RichEdit->Parent=this;
-
- RichEdit->PlainText=true;
- RichEdit->Text=Model_SaveComponent("");
- RichEdit->Lines->SaveToFile(FileName);
-
- delete RichEdit;
 }
 
 // Загружает выбранную модель
@@ -57,28 +65,35 @@ void TUComponentsControlFrame::LoadModelFromFile(const String &filename)
  if(!IsEngineInit())
   return;
 
- String FileName=filename;
- if(filename == "")
+ try
  {
-  if(!OpenTextFileDialog->Execute())
-   return;
-  FileName=OpenTextFileDialog->FileName;
+  String FileName=filename;
+  if(filename == "")
+  {
+   if(!OpenTextFileDialog->Execute())
+	return;
+   FileName=OpenTextFileDialog->FileName;
+  }
+
+  TRichEdit* RichEdit=new TRichEdit(this);
+  RichEdit->Parent=this;
+  RichEdit->PlainText=true;
+  RichEdit->Visible=false;
+  RichEdit->Lines->LoadFromFile(FileName);
+
+  if(RichEdit->Text.Length() >0)
+  {
+   Model_Destroy();
+   Model_LoadComponent("",AnsiString(RichEdit->Text).c_str());
+  }
+
+  delete RichEdit;
+  ComponentsListFrame->UpdateInterface();
  }
-
- TRichEdit* RichEdit=new TRichEdit(this);
- RichEdit->Parent=this;
- RichEdit->PlainText=true;
- RichEdit->Visible=false;
- RichEdit->Lines->LoadFromFile(FileName);
-
- if(RichEdit->Text.Length() >0)
+ catch(Exception &exception)
  {
-  Model_Destroy();
-  Model_LoadComponent("",AnsiString(RichEdit->Text).c_str());
+  MEngine_LogMessage(GetSelectedEngineIndex(), RDK_EX_ERROR, (std::string("Load model Fail: ")+AnsiString(exception.Message).c_str()).c_str());
  }
-
- delete RichEdit;
- ComponentsListFrame->UpdateInterface();
 }
 
 // Сохраняет параметры выбранной модели

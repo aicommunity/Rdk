@@ -89,8 +89,13 @@ switch (sys_code)
 {
  case SC_MINIMIZE:
  {
-  AppMinimize(this);
-  Application->Minimize();
+  if(RdkMainForm == this)
+  {
+   AppMinimize(this);
+   Application->Minimize();
+  }
+  else
+   WindowState=wsMinimized;
   Msg.Result = 0;
   return;
  break;
@@ -713,6 +718,11 @@ catch(RDK::UException &exception)
  GetEngine()->ProcessException(exception);
 // UnLockEngine();
 }
+catch(Exception &exception)
+{
+ UShowProgressBarForm->Hide();
+ MEngine_LogMessage(GetSelectedEngineIndex(), RDK_EX_ERROR, (std::string("Open project Fail: ")+AnsiString(exception.Message).c_str()).c_str());
+}
 catch(...)
 {
  UShowProgressBarForm->Hide();
@@ -732,6 +742,7 @@ void TUGEngineControlForm::CloneProject(int source_id, int cloned_id)
  if(source_id>=GetNumEngines() || cloned_id >= GetNumEngines())
   return;
 
+ try {
  PredefinedStructure.resize(GetNumEngines());
  PredefinedStructure[cloned_id]=PredefinedStructure[source_id];
 
@@ -837,8 +848,24 @@ void TUGEngineControlForm::CloneProject(int source_id, int cloned_id)
   if(ResetAfterLoadFlag[cloned_id])
    MEnv_Reset(cloned_id,0);
  }
-
  SelectEngine(selected_engine);
+}
+catch(RDK::UException &exception)
+{
+ UShowProgressBarForm->Hide();
+ GetEngine()->ProcessException(exception);
+}
+catch(Exception &exception)
+{
+ UShowProgressBarForm->Hide();
+ MEngine_LogMessage(GetSelectedEngineIndex(), RDK_EX_ERROR, (std::string("Clone project Fail: ")+AnsiString(exception.Message).c_str()).c_str());
+}
+catch(...)
+{
+ UShowProgressBarForm->Hide();
+ throw;
+}
+
 }
 
 
@@ -1068,6 +1095,16 @@ try{
  ProjectXml.WriteInteger("SelectedEngineIndex",GetSelectedEngineIndex());
 
  ProjectXml.SaveToFile(AnsiString(ProjectPath+ProjectFileName).c_str());
+}
+catch(RDK::UException &exception)
+{
+ UShowProgressBarForm->Hide();
+ GetEngine()->ProcessException(exception);
+}
+catch(Exception &exception)
+{
+ UShowProgressBarForm->Hide();
+ MEngine_LogMessage(GetSelectedEngineIndex(), RDK_EX_ERROR, (std::string("Save project Fail: ")+AnsiString(exception.Message).c_str()).c_str());
 }
 catch(...)
 {
