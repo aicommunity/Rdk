@@ -112,6 +112,7 @@
  * work.has been done.
  *
  ****************************************************************************/
+#define RDK_XML_DEBUG_STATIC
 
 #ifndef __INCLUDE_XML_NODE__
 #define __INCLUDE_XML_NODE__
@@ -255,11 +256,13 @@ struct XMLNodeContents;
  *    <li> XMLNode::openFileHelper </li>
  *    <li> XMLNode::createXMLTopNode (or XMLNode::createXMLTopNode_WOSD)</li>
  * </ul> */
-typedef struct XMLDLLENTRY XMLNode
+
+struct XMLNode;
+
+struct XMLDLLENTRY XMLNode
 {
   private:
-
-    struct XMLNodeDataTag;
+	struct XMLNodeDataTag;
 
     /// Constructors are protected, so use instead one of: XMLNode::parseString, XMLNode::parseFile, XMLNode::openFileHelper, XMLNode::createXMLTopNode
     XMLNode(struct XMLNodeDataTag *pParent, XMLSTR lpszName, char isDeclaration);
@@ -267,7 +270,7 @@ typedef struct XMLDLLENTRY XMLNode
     XMLNode(struct XMLNodeDataTag *p);
 
   public:
-    static XMLCSTR getVersion();///< Return the XMLParser library version number
+    RDK_XML_DEBUG_STATIC XMLCSTR getVersion();///< Return the XMLParser library version number
 
     /** @defgroup conversions Parsing XML files/strings to an XMLNode structure and Rendering XMLNode's to files/string.
      * @ingroup XMLParserGeneral
@@ -287,7 +290,7 @@ typedef struct XMLDLLENTRY XMLNode
      */
 
     /// Parse an XML file and return the root of a XMLNode tree representing the file.
-    static XMLNode parseFile     (XMLCSTR     filename, XMLCSTR tag=NULL, XMLResults *pResults=NULL);
+    RDK_XML_DEBUG_STATIC XMLNode parseFile     (XMLCSTR     filename, XMLCSTR tag=NULL, XMLResults *pResults=NULL);
     /**< The "parseFile" function parse an XML file and return the root of a XMLNode tree. The "opposite" of this function is
      * the function "writeToFile" that re-creates an XML file from an XMLNode tree. If the XML document is corrupted, the
      * "parseFile" method will initialize the "pResults" variable with some information that can be used to trace the error.
@@ -300,7 +303,7 @@ typedef struct XMLDLLENTRY XMLNode
      */
 
     /// Parse an XML file and return the root of a XMLNode tree representing the file. A very crude error checking is made. An attempt to guess the Char Encoding used in the file is made.
-    static XMLNode openFileHelper(XMLCSTR     filename, XMLCSTR tag=NULL);
+    RDK_XML_DEBUG_STATIC XMLNode openFileHelper(XMLCSTR     filename, XMLCSTR tag=NULL);
     /**< The "openFileHelper" function reports to the screen all the warnings and errors that occurred during parsing of the XML file.
      * This function also tries to guess char Encoding (UTF-8, ASCII or SHIT-JIS) based on the first 200 bytes of the file. Since each
      * application has its own way to report and deal with errors, you should rather use the "parseFile" function to parse XML files
@@ -318,7 +321,7 @@ typedef struct XMLDLLENTRY XMLNode
      * @param tag the name of the first tag inside the XML file. If the tag parameter is omitted, this function returns a node that represents the head of the xml document including the declaration term (<? ... ?>).
      */
 
-    static XMLCSTR getError(XMLError error); ///< this gives you a user-friendly explanation of the parsing error
+    RDK_XML_DEBUG_STATIC XMLCSTR getError(XMLError error); ///< this gives you a user-friendly explanation of the parsing error
 
     /// Create an XML string starting from the current XMLNode.
     XMLSTR createXMLString(int nFormat=1, int *pnSize=NULL) const;
@@ -373,7 +376,7 @@ typedef struct XMLDLLENTRY XMLNode
     char isEmpty() const;                                          ///< is this node Empty?
     char isDeclaration() const;                                    ///< is this node a declaration <? .... ?>
     XMLNode deepCopy() const;                                      ///< deep copy (duplicate/clone) a XMLNode
-    static XMLNode emptyNode();                                    ///< return XMLNode::emptyXMLNode;
+    RDK_XML_DEBUG_STATIC XMLNode emptyNode();                                    ///< return XMLNode::emptyXMLNode;
     /** @} */
 
     ~XMLNode();
@@ -381,9 +384,9 @@ typedef struct XMLDLLENTRY XMLNode
     XMLNode& operator=( const XMLNode& A );                        ///< to allow shallow/fast copy:
 
     XMLNode(): d(NULL){};
-    static XMLNode emptyXMLNode;
-    static XMLClear emptyXMLClear;
-    static XMLAttribute emptyXMLAttribute;
+	static XMLNode emptyXMLNode;
+	static XMLClear emptyXMLClear;
+	static XMLAttribute emptyXMLAttribute;
 
     /** @defgroup xmlModify Create or Update the XMLNode structure
      * @ingroup XMLParserGeneral
@@ -473,7 +476,7 @@ typedef struct XMLDLLENTRY XMLNode
      *  \endcode
      *  ('free(b)' is performed by the XMLNode class)
      * @{ */
-    static XMLNode createXMLTopNode_WOSD(XMLSTR lpszName, char isDeclaration=FALSE);                     ///< Create the top node of an XMLNode structure
+    RDK_XML_DEBUG_STATIC XMLNode createXMLTopNode_WOSD(XMLSTR lpszName, char isDeclaration=FALSE);                     ///< Create the top node of an XMLNode structure
     XMLNode        addChild_WOSD(XMLSTR lpszName, char isDeclaration=FALSE, XMLElementPosition pos=-1);  ///< Add a new child node
     XMLAttribute  *addAttribute_WOSD(XMLSTR lpszName, XMLSTR lpszValue);                                 ///< Add a new attribute
     XMLCSTR        addText_WOSD(XMLSTR lpszValue, XMLElementPosition pos=-1);                            ///< Add a new text content
@@ -522,7 +525,7 @@ typedef struct XMLDLLENTRY XMLNode
      * @{ */
 
     /// Sets the global options for the conversions
-    static char setGlobalOptions(XMLCharEncoding characterEncoding=XMLNode::char_encoding_UTF8, char guessWideCharChars=1,
+    RDK_XML_DEBUG_STATIC char setGlobalOptions(XMLCharEncoding characterEncoding=XMLNode::char_encoding_UTF8, char guessWideCharChars=1,
                                  char dropWhiteSpace=1, char removeCommentsInMiddleOfText=1);
     /**< The "setGlobalOptions" function allows you to change four global parameters that affect string & file
      * parsing. First of all, you most-probably will never have to change these 3 global parameters.
@@ -575,7 +578,7 @@ typedef struct XMLDLLENTRY XMLNode
      * because the test to detect the file-type (ASCII/UTF8/char* or WideChar) may fail (rarely). */
 
     /// Guess the character encoding of the string (ascii, utf8 or shift-JIS)
-    static XMLCharEncoding guessCharEncoding(void *buffer, int bufLen, char useXMLEncodingAttribute=1);
+    RDK_XML_DEBUG_STATIC XMLCharEncoding guessCharEncoding(void *buffer, int bufLen, char useXMLEncodingAttribute=1);
     /**< The "guessCharEncoding" function try to guess the character encoding. You most-probably will never
      * have to use this function. It then returns the appropriate value of the global parameter
      * "characterEncoding" described in the XMLNode::setGlobalOptions. The guess is based on the content of a buffer of length
@@ -620,12 +623,14 @@ typedef struct XMLDLLENTRY XMLNode
       XMLCSTR addText_priv(int,XMLSTR,int);
       XMLClear *addClear_priv(int,XMLSTR,XMLCSTR,XMLCSTR,int);
       void emptyTheNode(char force);
-      static inline XMLElementPosition findPosition(XMLNodeData *d, int index, XMLElementType xtype);
-      static int CreateXMLStringR(XMLNodeData *pEntry, XMLSTR lpszMarker, int nFormat);
-      static int removeOrderElement(XMLNodeData *d, XMLElementType t, int index);
-      static void exactMemory(XMLNodeData *d);
-      static int detachFromParent(XMLNodeData *d);
-} XMLNode;
+      RDK_XML_DEBUG_STATIC inline XMLElementPosition findPosition(XMLNodeData *d, int index, XMLElementType xtype) const;
+      RDK_XML_DEBUG_STATIC int CreateXMLStringR(XMLNodeData *pEntry, XMLSTR lpszMarker, int nFormat) const;
+      RDK_XML_DEBUG_STATIC int removeOrderElement(XMLNodeData *d, XMLElementType t, int index);
+      RDK_XML_DEBUG_STATIC void exactMemory(XMLNodeData *d);
+      RDK_XML_DEBUG_STATIC int detachFromParent(XMLNodeData *d);
+
+	XMLCharEncoding characterEncoding;
+};
 
 /// This structure is given by the function XMLNode::enumContents.
 typedef struct XMLNodeContents
@@ -726,7 +731,7 @@ public:
 
     /**
      * @param formatted If "formatted"=true, some space will be reserved for a carriage-return every 72 chars. */
-    static int encodeLength(int inBufLen, char formatted=0); ///< return the length of the base64 string that encodes a data buffer of size inBufLen bytes.
+    RDK_XML_DEBUG_STATIC int encodeLength(int inBufLen, char formatted=0); ///< return the length of the base64 string that encodes a data buffer of size inBufLen bytes.
 
     /**
      * The "base64Encode" function returns a string containing the base64 encoding of "inByteLen" bytes
@@ -736,7 +741,7 @@ public:
     XMLSTR encode(unsigned char *inByteBuf, unsigned int inByteLen, char formatted=0); ///< returns a pointer to an internal buffer containing the base64 string containing the binary data encoded from "inByteBuf"
 
     /// returns the number of bytes which will be decoded from "inString".
-    static unsigned int decodeSize(XMLCSTR inString, XMLError *xe=NULL);
+    RDK_XML_DEBUG_STATIC unsigned int decodeSize(XMLCSTR inString, XMLError *xe=NULL);
 
     /**
      * The "decode" function returns a pointer to a buffer containing the binary data decoded from "inString"
@@ -749,7 +754,7 @@ public:
      * decodes data from "inString" to "outByteBuf". You need to provide the size (in byte) of "outByteBuf"
      * in "inMaxByteOutBuflen". If "outByteBuf" is not large enough or if data is malformed, then "FALSE"
      * will be returned; otherwise "TRUE". */
-    static unsigned char decode(XMLCSTR inString, unsigned char *outByteBuf, int inMaxByteOutBuflen, XMLError *xe=NULL); ///< deprecated.
+	RDK_XML_DEBUG_STATIC unsigned char decode(XMLCSTR inString, unsigned char *outByteBuf, int inMaxByteOutBuflen, XMLError *xe=NULL); ///< deprecated.
 
 private:
     void *buf;

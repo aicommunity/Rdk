@@ -73,8 +73,7 @@
 XMLCSTR XMLNode::getVersion() { return _CXML("v2.43"); }
 void freeXMLString(XMLSTR t){if(t)free(t);}
 
-static XMLNode::XMLCharEncoding characterEncoding=XMLNode::char_encoding_UTF8;
-static char guessWideCharChars=1, dropWhiteSpace=1, removeCommentsInMiddleOfText=1;
+RDK_XML_DEBUG_STATIC char guessWideCharChars=1, dropWhiteSpace=1, removeCommentsInMiddleOfText=1;
 
 inline int mmin( const int t1, const int t2 ) { return t1 < t2 ? t1 : t2; }
 
@@ -86,7 +85,7 @@ inline int mmin( const int t1, const int t2 ) { return t1 < t2 ? t1 : t2; }
 // The "<!--" declaration must be the third in the list.
 // All ClearTag Strings must start with the '<' character.
 typedef struct { XMLCSTR lpszOpen; int openTagLen; XMLCSTR lpszClose;} ALLXMLClearTag;
-static ALLXMLClearTag XMLClearTags[] =
+RDK_XML_DEBUG_STATIC ALLXMLClearTag XMLClearTags[] =
 {
     {    _CXML("<![CDATA["),9,  _CXML("]]>")      },
     {    _CXML("<!DOCTYPE"),9,  _CXML(">")        },
@@ -101,7 +100,7 @@ static ALLXMLClearTag XMLClearTags[] =
 // The number on the second columns is the length of the string inside the
 // first column. Additionally, the syntaxes "&#xA0;" and "&#160;" are recognized.
 typedef struct { XMLCSTR s; int l; XMLCHAR c;} XMLCharacterEntity;
-static XMLCharacterEntity XMLEntities[] =
+const RDK_XML_DEBUG_STATIC XMLCharacterEntity XMLEntities[] =
 {
     { _CXML("&amp;" ), 5, _CXML('&' )},
     { _CXML("&lt;"  ), 4, _CXML('<' )},
@@ -212,15 +211,15 @@ char myIsTextWideChar(const void *b, int len) { return FALSE; }
             d[i]=0;
             return d;
         }
-        static inline FILE *xfopen(XMLCSTR filename,XMLCSTR mode) { return _wfopen(filename,mode); }
-        static inline int xstrlen(XMLCSTR c)   { return (int)wcslen(c); }
-        static inline int xstrnicmp(XMLCSTR c1, XMLCSTR c2, int l) { return _wcsnicmp(c1,c2,l);}
-        static inline int xstrncmp(XMLCSTR c1, XMLCSTR c2, int l) { return wcsncmp(c1,c2,l);}
-        static inline int xstricmp(XMLCSTR c1, XMLCSTR c2) { return _wcsicmp(c1,c2); }
-        static inline XMLSTR xstrstr(XMLCSTR c1, XMLCSTR c2) { return (XMLSTR)wcsstr(c1,c2); }
-        static inline XMLSTR xstrcpy(XMLSTR c1, XMLCSTR c2) { return (XMLSTR)wcscpy(c1,c2); }
+        RDK_XML_DEBUG_STATIC inline FILE *xfopen(XMLCSTR filename,XMLCSTR mode) { return _wfopen(filename,mode); }
+        RDK_XML_DEBUG_STATIC inline int xstrlen(XMLCSTR c)   { return (int)wcslen(c); }
+        RDK_XML_DEBUG_STATIC inline int xstrnicmp(XMLCSTR c1, XMLCSTR c2, int l) { return _wcsnicmp(c1,c2,l);}
+        RDK_XML_DEBUG_STATIC inline int xstrncmp(XMLCSTR c1, XMLCSTR c2, int l) { return wcsncmp(c1,c2,l);}
+        RDK_XML_DEBUG_STATIC inline int xstricmp(XMLCSTR c1, XMLCSTR c2) { return _wcsicmp(c1,c2); }
+        RDK_XML_DEBUG_STATIC inline XMLSTR xstrstr(XMLCSTR c1, XMLCSTR c2) { return (XMLSTR)wcsstr(c1,c2); }
+        RDK_XML_DEBUG_STATIC inline XMLSTR xstrcpy(XMLSTR c1, XMLCSTR c2) { return (XMLSTR)wcscpy(c1,c2); }
     #else
-        char *myWideCharToMultiByte(const wchar_t *s)
+        char *myWideCharToMultiByte(const wchar_t *s, XMLNode::XMLCharEncoding &characterEncoding)
         {
             UINT codePage=CP_ACP; if (characterEncoding==XMLNode::char_encoding_UTF8) codePage=CP_UTF8;
             int i=(int)WideCharToMultiByte(codePage,  // code page
@@ -246,18 +245,18 @@ char myIsTextWideChar(const void *b, int len) { return FALSE; }
             d[i]=0;
             return d;
         }
-        static inline FILE *xfopen(XMLCSTR filename,XMLCSTR mode) { return fopen(filename,mode); }
-        static inline int xstrlen(XMLCSTR c)   { return (int)strlen(c); }
+        RDK_XML_DEBUG_STATIC inline FILE *xfopen(XMLCSTR filename,XMLCSTR mode) { return fopen(filename,mode); }
+        RDK_XML_DEBUG_STATIC inline int xstrlen(XMLCSTR c)   { return (int)strlen(c); }
         #ifdef __BORLANDC__
-            static inline int xstrnicmp(XMLCSTR c1, XMLCSTR c2, int l) { return strnicmp(c1,c2,l);}
-			static inline int xstricmp(XMLCSTR c1, XMLCSTR c2) { return stricmp(c1,c2); }
+            RDK_XML_DEBUG_STATIC inline int xstrnicmp(XMLCSTR c1, XMLCSTR c2, int l) { return strnicmp(c1,c2,l);}
+			RDK_XML_DEBUG_STATIC inline int xstricmp(XMLCSTR c1, XMLCSTR c2) { return stricmp(c1,c2); }
         #else
-            static inline int xstrnicmp(XMLCSTR c1, XMLCSTR c2, int l) { return _strnicmp(c1,c2,l);}
-            static inline int xstricmp(XMLCSTR c1, XMLCSTR c2) { return _stricmp(c1,c2); }
+            RDK_XML_DEBUG_STATIC inline int xstrnicmp(XMLCSTR c1, XMLCSTR c2, int l) { return _strnicmp(c1,c2,l);}
+            RDK_XML_DEBUG_STATIC inline int xstricmp(XMLCSTR c1, XMLCSTR c2) { return _stricmp(c1,c2); }
         #endif
-        static inline int xstrncmp(XMLCSTR c1, XMLCSTR c2, int l) { return strncmp(c1,c2,l);}
-        static inline XMLSTR xstrstr(XMLCSTR c1, XMLCSTR c2) { return (XMLSTR)strstr(c1,c2); }
-        static inline XMLSTR xstrcpy(XMLSTR c1, XMLCSTR c2) { return (XMLSTR)strcpy(c1,c2); }
+        RDK_XML_DEBUG_STATIC inline int xstrncmp(XMLCSTR c1, XMLCSTR c2, int l) { return strncmp(c1,c2,l);}
+        RDK_XML_DEBUG_STATIC inline XMLSTR xstrstr(XMLCSTR c1, XMLCSTR c2) { return (XMLSTR)strstr(c1,c2); }
+        RDK_XML_DEBUG_STATIC inline XMLSTR xstrcpy(XMLSTR c1, XMLCSTR c2) { return (XMLSTR)strcpy(c1,c2); }
     #endif
 #else
 // for gcc and CC
@@ -290,19 +289,19 @@ char myIsTextWideChar(const void *b, int len) { return FALSE; }
         #ifdef sun
         // for CC
            #include <widec.h>
-           static inline int xstrnicmp(XMLCSTR c1, XMLCSTR c2, int l) { return wsncasecmp(c1,c2,l);}
-           static inline int xstrncmp(XMLCSTR c1, XMLCSTR c2, int l) { return wsncmp(c1,c2,l);}
-           static inline int xstricmp(XMLCSTR c1, XMLCSTR c2) { return wscasecmp(c1,c2); }
+           RDK_XML_DEBUG_STATIC inline int xstrnicmp(XMLCSTR c1, XMLCSTR c2, int l) { return wsncasecmp(c1,c2,l);}
+           RDK_XML_DEBUG_STATIC inline int xstrncmp(XMLCSTR c1, XMLCSTR c2, int l) { return wsncmp(c1,c2,l);}
+           RDK_XML_DEBUG_STATIC inline int xstricmp(XMLCSTR c1, XMLCSTR c2) { return wscasecmp(c1,c2); }
         #else
-        static inline int xstrncmp(XMLCSTR c1, XMLCSTR c2, int l) { return wcsncmp(c1,c2,l);}
+        RDK_XML_DEBUG_STATIC inline int xstrncmp(XMLCSTR c1, XMLCSTR c2, int l) { return wcsncmp(c1,c2,l);}
             #ifdef __linux__
             // for gcc/linux
-            static inline int xstrnicmp(XMLCSTR c1, XMLCSTR c2, int l) { return wcsncasecmp(c1,c2,l);}
-            static inline int xstricmp(XMLCSTR c1, XMLCSTR c2) { return wcscasecmp(c1,c2); }
+            RDK_XML_DEBUG_STATIC inline int xstrnicmp(XMLCSTR c1, XMLCSTR c2, int l) { return wcsncasecmp(c1,c2,l);}
+            RDK_XML_DEBUG_STATIC inline int xstricmp(XMLCSTR c1, XMLCSTR c2) { return wcscasecmp(c1,c2); }
             #else
             #include <wctype.h>
             // for gcc/non-linux (MacOS X 10.3, FreeBSD 6.0, NetBSD 3.0, OpenBSD 3.8, AIX 4.3.2, HP-UX 11, IRIX 6.5, OSF/1 5.1, Cygwin, mingw)
-            static inline int xstricmp(XMLCSTR c1, XMLCSTR c2)
+            RDK_XML_DEBUG_STATIC inline int xstricmp(XMLCSTR c1, XMLCSTR c2)
             {
                 wchar_t left,right;
                 do
@@ -311,7 +310,7 @@ char myIsTextWideChar(const void *b, int len) { return FALSE; }
                 } while (left&&(left==right));
                 return (int)left-(int)right;
             }
-            static inline int xstrnicmp(XMLCSTR c1, XMLCSTR c2, int l)
+            RDK_XML_DEBUG_STATIC inline int xstrnicmp(XMLCSTR c1, XMLCSTR c2, int l)
             {
                 wchar_t left,right;
                 while(l--)
@@ -323,9 +322,9 @@ char myIsTextWideChar(const void *b, int len) { return FALSE; }
             }
             #endif
         #endif
-        static inline XMLSTR xstrstr(XMLCSTR c1, XMLCSTR c2) { return (XMLSTR)wcsstr(c1,c2); }
-        static inline XMLSTR xstrcpy(XMLSTR c1, XMLCSTR c2) { return (XMLSTR)wcscpy(c1,c2); }
-        static inline FILE *xfopen(XMLCSTR filename,XMLCSTR mode)
+        RDK_XML_DEBUG_STATIC inline XMLSTR xstrstr(XMLCSTR c1, XMLCSTR c2) { return (XMLSTR)wcsstr(c1,c2); }
+        RDK_XML_DEBUG_STATIC inline XMLSTR xstrcpy(XMLSTR c1, XMLCSTR c2) { return (XMLSTR)wcscpy(c1,c2); }
+        RDK_XML_DEBUG_STATIC inline FILE *xfopen(XMLCSTR filename,XMLCSTR mode)
         {
             char *filenameAscii=myWideCharToMultiByte(filename);
             FILE *f;
@@ -335,15 +334,15 @@ char myIsTextWideChar(const void *b, int len) { return FALSE; }
             return f;
         }
     #else
-        static inline FILE *xfopen(XMLCSTR filename,XMLCSTR mode) { return fopen(filename,mode); }
-        static inline int xstrlen(XMLCSTR c)   { return strlen(c); }
-		static inline int xstrnicmp(XMLCSTR c1, XMLCSTR c2, int l) { return strncmp(c1,c2,l);}//{ return strncasecmp(c1,c2,l);}
-		static inline int xstrncmp(XMLCSTR c1, XMLCSTR c2, int l) { return strncmp(c1,c2,l);}
-		static inline int xstricmp(XMLCSTR c1, XMLCSTR c2) { return strcmp(c1,c2); }//{ return strcasecmp(c1,c2); }
-        static inline XMLSTR xstrstr(XMLCSTR c1, XMLCSTR c2) { return (XMLSTR)strstr(c1,c2); }
-        static inline XMLSTR xstrcpy(XMLSTR c1, XMLCSTR c2) { return (XMLSTR)strcpy(c1,c2); }
+        RDK_XML_DEBUG_STATIC inline FILE *xfopen(XMLCSTR filename,XMLCSTR mode) { return fopen(filename,mode); }
+        RDK_XML_DEBUG_STATIC inline int xstrlen(XMLCSTR c)   { return strlen(c); }
+		RDK_XML_DEBUG_STATIC inline int xstrnicmp(XMLCSTR c1, XMLCSTR c2, int l) { return strncmp(c1,c2,l);}//{ return strncasecmp(c1,c2,l);}
+		RDK_XML_DEBUG_STATIC inline int xstrncmp(XMLCSTR c1, XMLCSTR c2, int l) { return strncmp(c1,c2,l);}
+		RDK_XML_DEBUG_STATIC inline int xstricmp(XMLCSTR c1, XMLCSTR c2) { return strcmp(c1,c2); }//{ return strcasecmp(c1,c2); }
+        RDK_XML_DEBUG_STATIC inline XMLSTR xstrstr(XMLCSTR c1, XMLCSTR c2) { return (XMLSTR)strstr(c1,c2); }
+        RDK_XML_DEBUG_STATIC inline XMLSTR xstrcpy(XMLSTR c1, XMLCSTR c2) { return (XMLSTR)strcpy(c1,c2); }
 	#endif
-    static inline int _strnicmp(const char *c1,const char *c2, int l) { return strncmp(c1,c2,l);}//{ return strncasecmp(c1,c2,l);}
+    RDK_XML_DEBUG_STATIC inline int _strnicmp(const char *c1,const char *c2, int l) { return strncmp(c1,c2,l);}//{ return strncasecmp(c1,c2,l);}
 #endif
 
 
@@ -445,7 +444,7 @@ XMLNode XMLNode::openFileHelper(XMLCSTR filename, XMLCSTR tag)
 // This table is used as lookup-table to know the length of a character (in byte) based on the
 // content of the first byte of the character.
 // (note: if you modify this, you must always have XML_utf8ByteTable[0]=0 ).
-static const char XML_utf8ByteTable[256] =
+RDK_XML_DEBUG_STATIC const char XML_utf8ByteTable[256] =
 {
     //  0 1 2 3 4 5 6 7 8 9 a b c d e f
     0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,// 0x00
@@ -465,7 +464,7 @@ static const char XML_utf8ByteTable[256] =
     3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,// 0xe0 0xe0 to 0xef 3 byte
     4,4,4,4,4,1,1,1,1,1,1,1,1,1,1,1 // 0xf0 0xf0 to 0xf4 4 byte, 0xf5 and higher invalid
 };
-static const char XML_legacyByteTable[256] =
+RDK_XML_DEBUG_STATIC const char XML_legacyByteTable[256] =
 {
     0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
@@ -474,7 +473,7 @@ static const char XML_legacyByteTable[256] =
     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
 };
-static const char XML_sjisByteTable[256] =
+RDK_XML_DEBUG_STATIC const char XML_sjisByteTable[256] =
 {
     //  0 1 2 3 4 5 6 7 8 9 a b c d e f
     0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,// 0x00
@@ -494,7 +493,7 @@ static const char XML_sjisByteTable[256] =
     2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,// 0xe0 0xe0 to 0xef 2 bytes
     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 // 0xf0
 };
-static const char XML_gb2312ByteTable[256] =
+RDK_XML_DEBUG_STATIC const char XML_gb2312ByteTable[256] =
 {
 //  0 1 2 3 4 5 6 7 8 9 a b c d e f
     0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,// 0x00
@@ -514,7 +513,7 @@ static const char XML_gb2312ByteTable[256] =
     2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,// 0xe0
     2,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1 // 0xf0
 };
-static const char XML_gbk_big5_ByteTable[256] =
+RDK_XML_DEBUG_STATIC const char XML_gbk_big5_ByteTable[256] =
 {
     //  0 1 2 3 4 5 6 7 8 9 a b c d e f
     0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,// 0x00
@@ -534,7 +533,7 @@ static const char XML_gbk_big5_ByteTable[256] =
     2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,// 0xe0
     2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1 // 0xf0
 };
-static const char *XML_ByteTable=(const char *)XML_utf8ByteTable; // the default is "characterEncoding=XMLNode::encoding_UTF8"
+RDK_XML_DEBUG_STATIC const char *XML_ByteTable=(const char *)XML_utf8ByteTable; // the default is "characterEncoding=XMLNode::encoding_UTF8"
 #endif
 
 
@@ -684,7 +683,7 @@ XMLSTR ToXMLStringTool::toXMLUnSafe(XMLSTR dest,XMLCSTR source)
 {
     XMLSTR dd=dest;
     XMLCHAR ch;
-    XMLCharacterEntity *entity;
+    const XMLCharacterEntity *entity;
     while ((ch=*source))
     {
         entity=XMLEntities;
@@ -715,7 +714,7 @@ out_of_loop1:
 int ToXMLStringTool::lengthXMLString(XMLCSTR source)
 {
     int r=0;
-    XMLCharacterEntity *entity;
+    const XMLCharacterEntity *entity;
     XMLCHAR ch;
     while ((ch=*source))
     {
@@ -766,7 +765,7 @@ XMLSTR fromXMLString(XMLCSTR s, int lo, XML *pXML)
     int ll=0,j;
     XMLSTR d;
     XMLCSTR ss=s;
-    XMLCharacterEntity *entity;
+    const XMLCharacterEntity *entity;
     while ((lo>0)&&(*s))
     {
         if (*s==_CXML('&'))
@@ -889,7 +888,7 @@ char myTagCompare(XMLCSTR cclose, XMLCSTR copen)
 }
 
 // Obtain the next character from the string.
-static inline XMLCHAR getNextChar(XML *pXML)
+RDK_XML_DEBUG_STATIC inline XMLCHAR getNextChar(XML *pXML)
 {
     XMLCHAR ch = pXML->lpXML[pXML->nIndex];
 #ifdef _XMLWIDECHAR
@@ -902,7 +901,7 @@ static inline XMLCHAR getNextChar(XML *pXML)
 
 // Find the next token in a string.
 // pcbToken contains the number of characters that have been read.
-static NextToken GetNextToken(XML *pXML, int *pcbToken, enum XMLTokenTypeTag *pType)
+RDK_XML_DEBUG_STATIC NextToken GetNextToken(XML *pXML, int *pcbToken, enum XMLTokenTypeTag *pType)
 {
     NextToken        result;
     XMLCHAR            ch;
@@ -1078,10 +1077,16 @@ XMLCSTR XMLNode::updateName_WOSD(XMLSTR lpszName)
 }
 
 // private:
-XMLNode::XMLNode(struct XMLNodeDataTag *p){ d=p; (p->ref_count)++; }
+XMLNode::XMLNode(struct XMLNodeDataTag *p)
+{
+ characterEncoding=XMLNode::char_encoding_UTF8;
+
+ d=p; (p->ref_count)++;
+}
 XMLNode::XMLNode(XMLNodeData *pParent, XMLSTR lpszName, char isDeclaration)
 {
-    d=(XMLNodeData*)malloc(sizeof(XMLNodeData));
+ characterEncoding=XMLNode::char_encoding_UTF8;
+	d=(XMLNodeData*)malloc(sizeof(XMLNodeData));
     d->ref_count=1;
 
     d->lpszName=NULL;
@@ -1107,8 +1112,8 @@ XMLNode XMLNode::createXMLTopNode(XMLCSTR lpszName, char isDeclaration) { return
 
 #define MEMORYINCREASE 50
 
-static inline void myFree(void *p) { if (p) free(p); }
-static inline void *myRealloc(void *p, int newsize, int memInc, int sizeofElem)
+RDK_XML_DEBUG_STATIC inline void myFree(void *p) { if (p) free(p); }
+RDK_XML_DEBUG_STATIC inline void *myRealloc(void *p, int newsize, int memInc, int sizeofElem)
 {
     if (p==NULL) { if (memInc) return malloc(memInc*sizeofElem); return malloc(sizeofElem); }
     if ((memInc==0)||((newsize%memInc)==0)) p=realloc(p,(newsize+memInc)*sizeofElem);
@@ -1120,7 +1125,7 @@ static inline void *myRealloc(void *p, int newsize, int memInc, int sizeofElem)
 }
 
 // private:
-XMLElementPosition XMLNode::findPosition(XMLNodeData *d, int index, XMLElementType xxtype)
+XMLElementPosition XMLNode::findPosition(XMLNodeData *d, int index, XMLElementType xxtype) const
 {
     if (index<0) return -1;
     int i=0,j=(int)((index<<2)+xxtype),*o=d->pOrder; while (o[i]!=j) i++; return i;
@@ -1228,7 +1233,7 @@ char XMLNode::parseClearTag(void *px, void *_pClear)
     int cbTemp=0;
     XMLCSTR lpszTemp=NULL;
     XMLCSTR lpXML=&pXML->lpXML[pXML->nIndex];
-    static XMLCSTR docTypeEnd=_CXML("]>");
+    RDK_XML_DEBUG_STATIC XMLCSTR docTypeEnd=_CXML("]>");
 
     // Find the closing tag
     // Seems the <!DOCTYPE need a better treatment so lets handle it
@@ -1724,7 +1729,7 @@ int XMLNode::ParseXMLElement(void *pa)
 }
 
 // Count the number of lines and columns in an XML string.
-static void CountLinesAndColumns(XMLCSTR lpXML, int nUpto, XMLResults *pResults)
+RDK_XML_DEBUG_STATIC void CountLinesAndColumns(XMLCSTR lpXML, int nUpto, XMLResults *pResults)
 {
     XMLCHAR ch;
     assert(lpXML);
@@ -1854,7 +1859,7 @@ XMLNode XMLNode::parseFile(XMLCSTR filename, XMLCSTR tag, XMLResults *pResults)
         {
             if ((buf[0]==0xef)&&(buf[1]==0xff)) headerSz=2;
             if ((buf[0]==0xff)&&(buf[1]==0xfe)) headerSz=2;
-            char *b2=myWideCharToMultiByte((const wchar_t*)(buf+headerSz));
+            char *b2=myWideCharToMultiByte((const wchar_t*)(buf+headerSz),characterEncoding);
             free(buf); buf=(unsigned char*)b2; headerSz=0;
         } else
         {
@@ -1874,14 +1879,14 @@ XMLNode XMLNode::parseFile(XMLCSTR filename, XMLCSTR tag, XMLResults *pResults)
     return x;
 }
 
-static inline void charmemset(XMLSTR dest,XMLCHAR c,int l) { while (l--) *(dest++)=c; }
+RDK_XML_DEBUG_STATIC inline void charmemset(XMLSTR dest,XMLCHAR c,int l) { while (l--) *(dest++)=c; }
 // private:
 // Creates an user friendly XML string from a given element with
 // appropriate white space and carriage returns.
 //
 // This recurses through all subnodes then adds contents of the nodes to the
 // string.
-int XMLNode::CreateXMLStringR(XMLNodeData *pEntry, XMLSTR lpszMarker, int nFormat)
+int XMLNode::CreateXMLStringR(XMLNodeData *pEntry, XMLSTR lpszMarker, int nFormat) const
 {
     int nResult = 0;
     int cb=nFormat<0?0:nFormat;
@@ -1930,12 +1935,12 @@ int XMLNode::CreateXMLStringR(XMLNodeData *pEntry, XMLSTR lpszMarker, int nForma
                 // "Attrib=Value "
                 if (pAttr->lpszValue)
                 {
-                    cb=(int)ToXMLStringTool::lengthXMLString(pAttr->lpszValue);
+					cb=(int)ToXMLStringTool::lengthXMLString(pAttr->lpszValue);
                     if (lpszMarker)
                     {
-                        lpszMarker[nResult]=_CXML('=');
+						lpszMarker[nResult]=_CXML('=');
                         lpszMarker[nResult+1]=_CXML('"');
-                        if (cb) ToXMLStringTool::toXMLUnSafe(&lpszMarker[nResult+2],pAttr->lpszValue);
+						if (cb) ToXMLStringTool::toXMLUnSafe(&lpszMarker[nResult+2],pAttr->lpszValue);
                         lpszMarker[nResult+cb+2]=_CXML('"');
                     }
                     nResult+=cb+3;
@@ -1972,15 +1977,15 @@ int XMLNode::CreateXMLStringR(XMLNodeData *pEntry, XMLSTR lpszMarker, int nForma
             } else nResult--;
     }
 
-    // Calculate the child format for when we recurse.  This is used to
+	// Calculate the child format for when we recurse.  This is used to
     // determine the number of spaces used for prefixes.
     if (nFormat!=-1)
     {
-        if (cbElement&&(!pEntry->isDeclaration)) nChildFormat=nFormat+1;
-        else nChildFormat=nFormat;
+		if (cbElement&&(!pEntry->isDeclaration)) nChildFormat=nFormat+1;
+		else nChildFormat=nFormat;
     }
 
-    // Enumerate through remaining children
+	// Enumerate through remaining children
     for (i=0; i<nElementI; i++)
     {
         j=pEntry->pOrder[i];
@@ -2142,10 +2147,10 @@ XMLSTR XMLNode::createXMLString(int nFormat, int *pnSize) const
     // Recursively Calculate the size of the XML string
     if (!dropWhiteSpace) nFormat=0;
     nFormat = nFormat ? 0 : -1;
-    cbStr = CreateXMLStringR(d, 0, nFormat);
+	cbStr = CreateXMLStringR(d, 0, nFormat);
     // Alllocate memory for the XML string + the NULL terminator and
     // create the recursively XML string.
-    lpszResult=(XMLSTR)malloc((cbStr+1)*sizeof(XMLCHAR));
+	lpszResult=(XMLSTR)malloc((cbStr+1)*sizeof(XMLCHAR));
     CreateXMLStringR(d, lpszResult, nFormat);
     lpszResult[cbStr]=_CXML('\0');
     if (pnSize) *pnSize = cbStr;
@@ -2228,7 +2233,8 @@ XMLNode& XMLNode::operator=( const XMLNode& A )
 
 XMLNode::XMLNode(const XMLNode &A)
 {
-    // shallow copy
+ characterEncoding=A.characterEncoding;
+	// shallow copy
     d=A.d;
     if (d) (d->ref_count)++ ;
 }
@@ -2772,7 +2778,7 @@ XMLNode::XMLCharEncoding XMLNode::guessCharEncoding(void *buf,int l, char useXML
 //      Here starts the base64 conversion functions.    //
 //////////////////////////////////////////////////////////
 
-static const char base64Fillchar = _CXML('='); // used to mark partial words at the end
+RDK_XML_DEBUG_STATIC const char base64Fillchar = _CXML('='); // used to mark partial words at the end
 
 // this lookup table defines the base64 encoding
 XMLCSTR base64EncodeTable=_CXML("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/");
