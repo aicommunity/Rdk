@@ -43,7 +43,11 @@ USerStorageXML::~USerStorageXML(void)
 bool USerStorageXML::Create(const std::string &rootname)
 {
  RootNode.deleteNodeContent();
+#ifdef RDK_UNICODE_RUN
  RootNode=XMLNode::createXMLTopNode(widen(rootname,Locale,WBuffer).c_str());
+#else
+ RootNode=XMLNode::createXMLTopNode(rootname.c_str());
+#endif
  if(RootNode.isEmpty())
   return false;
  CurrentNode=RootNode;
@@ -62,7 +66,11 @@ bool USerStorageXML::Destroy(void)
 bool USerStorageXML::Load(const std::string &str, const std::string &root)
 {
  RootNode.deleteNodeContent();
+#ifdef RDK_UNICODE_RUN
  RootNode=XMLNode::parseString(widen(str,Locale,WBuffer).c_str(),widen(root,Locale,WBuffer2).c_str());
+#else
+ RootNode=XMLNode::parseString(str.c_str(),root.c_str());
+#endif
  if(RootNode.isEmpty())
   return false;
 
@@ -74,7 +82,11 @@ bool USerStorageXML::LoadToNode(const std::string &str, const std::string &root,
 {
  if(node_clear)
   DelNodeInternalContent();
+#ifdef RDK_UNICODE_RUN
  CurrentNode.addChild(XMLNode::parseString(widen(str,Locale,WBuffer).c_str(),widen(root,Locale,WBuffer2).c_str()));
+#else
+ CurrentNode.addChild(XMLNode::parseString(str.c_str(),root.c_str()));
+#endif
  if(CurrentNode.isEmpty())
   return false;
 
@@ -85,7 +97,6 @@ bool USerStorageXML::LoadToNode(USerStorageXML &node, bool node_clear)
 {
  if(node_clear)
   DelNodeInternalContent();
-// CurrentNode.deleteNodeContent();
  CurrentNode.addChild(node.RootNode);
  return true;
 }
@@ -93,6 +104,7 @@ bool USerStorageXML::LoadToNode(USerStorageXML &node, bool node_clear)
 // —охран€ет xml в строку
 bool USerStorageXML::Save(std::string &str) const
 {
+#ifdef RDK_UNICODE_RUN
  wchar_t* pch=RootNode.createXMLString(true);
  if(pch)
  {
@@ -101,11 +113,22 @@ bool USerStorageXML::Save(std::string &str) const
  }
  else
   str="";
+#else
+ char* pch=RootNode.createXMLString(true);
+ if(pch)
+ {
+  str=pch;
+  freeXMLString(pch);
+ }
+ else
+  str="";
+#endif
  return true;
 }
 
 bool USerStorageXML::SaveFromNode(std::string &str)
 {
+#ifdef RDK_UNICODE_RUN
  wchar_t* pch=CurrentNode.createXMLString(true);
  if(pch)
  {
@@ -114,6 +137,16 @@ bool USerStorageXML::SaveFromNode(std::string &str)
  }
  else
   str="";
+#else
+ char* pch=CurrentNode.createXMLString(true);
+ if(pch)
+ {
+  str=pch;
+  freeXMLString(pch);
+ }
+ else
+  str="";
+#endif
  return true;
 }
 
@@ -179,7 +212,11 @@ void USerStorageXML::SelectUp(void)
 // ¬озвращает число узлов с заданным именем
 int USerStorageXML::GetNumNodes(const std::string &name)
 {
+#ifdef RDK_UNICODE_RUN
  return CurrentNode.nChildNode(widen(name,Locale,WBuffer).c_str());
+#else
+ return CurrentNode.nChildNode(name.c_str());
+#endif
 }
 
 // ¬озвращает число узлов
@@ -194,7 +231,11 @@ int USerStorageXML::GetNumNodes(void)
 // именем и индексом меньшим на 1 - то создаем узел
 bool USerStorageXML::SelectNode(const std::string &name, int index)
 {
+#ifdef RDK_UNICODE_RUN
  XMLNode node=CurrentNode.getChildNode(widen(name,Locale,WBuffer).c_str(),index);
+#else
+ XMLNode node=CurrentNode.getChildNode(name.c_str(),index);
+#endif
  if(node.isEmpty())
   return false;
  CurrentNode=node;
@@ -251,7 +292,11 @@ const std::string USerStorageXML::GetNodeName(void) const
   return str;
 
  if(CurrentNode.getName())
+#ifdef RDK_UNICODE_RUN
   narrow(CurrentNode.getName(),Locale,str);
+#else
+  str=CurrentNode.getName();
+#endif
 
  return str;
 }
@@ -262,7 +307,12 @@ bool USerStorageXML::AddNode(const std::string &name)
  if(CurrentNode.isEmpty())
   return false;
 
+#ifdef RDK_UNICODE_RUN
  XMLNode node=CurrentNode.addChild(widen(name,Locale,WBuffer).c_str());
+#else
+ XMLNode node=CurrentNode.addChild(name.c_str());
+#endif
+
  if(node.isEmpty())
   return false;
  CurrentNode=node;
@@ -275,7 +325,11 @@ void USerStorageXML::RenameNode(const std::string &newname)
  if(CurrentNode.isEmpty())
   return;
 
+#ifdef RDK_UNICODE_RUN
  CurrentNode.updateName(widen(newname,Locale,WBuffer).c_str());
+#else
+ CurrentNode.updateName(newname.c_str());
+#endif
 }
 
 // ”дал€ет текущий узел и устанавливает указатель уровнем выше
@@ -315,6 +369,7 @@ void USerStorageXML::DelNodeInternalContent(void)
 // ”станавливает значение атрибута узла
 bool USerStorageXML::SetNodeAttribute(const std::string &name, const std::string &value)
 {
+#ifdef RDK_UNICODE_RUN
  if(!CurrentNode.isAttributeSet(widen(name,Locale,WBuffer).c_str()))
  {
   CurrentNode.addAttribute(widen(name,Locale,WBuffer).c_str(),widen(value,Locale,WBuffer2).c_str());
@@ -323,6 +378,16 @@ bool USerStorageXML::SetNodeAttribute(const std::string &name, const std::string
  {
   CurrentNode.updateAttribute(widen(value,Locale,WBuffer).c_str(),0,widen(name,Locale,WBuffer2).c_str());
  }
+#else
+ if(!CurrentNode.isAttributeSet(name.c_str()))
+ {
+  CurrentNode.addAttribute(name.c_str(),value.c_str());
+ }
+ else
+ {
+  CurrentNode.updateAttribute(value.c_str(),0,name.c_str());
+ }
+#endif
  return true;
 }
 
@@ -330,25 +395,38 @@ bool USerStorageXML::SetNodeAttribute(const std::string &name, const std::string
 const std::string USerStorageXML::GetNodeAttribute(const std::string &name) const
 {
  std::string str;
+#ifdef RDK_UNICODE_RUN
  const wchar_t *p=CurrentNode.getAttribute(widen(name,Locale,WBuffer).c_str(),0);
 
  if(p)
- {
   narrow(p,Locale,str);
- }
+#else
+ const char *p=CurrentNode.getAttribute(name.c_str(),0);
+
+ if(p)
+  str=p;
+#endif
  return str;
 }
 
 // ”дал€ет заданный атрибут
 void USerStorageXML::DelNodeAttribute(const std::string &name)
 {
+#ifdef RDK_UNICODE_RUN
  CurrentNode.deleteAttribute(widen(name,Locale,WBuffer).c_str());
+#else
+ CurrentNode.deleteAttribute(name.c_str());
+#endif
 }
 
 // ”станавливает текст узла
 bool USerStorageXML::SetNodeText(const std::string &text)
 {
+#ifdef RDK_UNICODE_RUN
  CurrentNode.updateText(widen(text,Locale,WBuffer).c_str());
+#else
+ CurrentNode.updateText(text.c_str());
+#endif
  return true;
 }
 
@@ -358,7 +436,11 @@ const std::string USerStorageXML::GetNodeText(void) const
  if(!CurrentNode.getText())
   return string();
 
+#ifdef RDK_UNICODE_RUN
  return narrow(CurrentNode.getText(),Locale,SBuffer);
+#else
+ return CurrentNode.getText();
+#endif
 }
 // --------------------------
 
