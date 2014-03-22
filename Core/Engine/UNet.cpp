@@ -988,13 +988,13 @@ bool UNet::SaveComponentDrawInfo(RDK::UNet* cont, RDK::USerStorageXML *serstorag
   serstorage->AddNode("Links");
 
   UStringLinksList linkslist;
-//  cont->GetLinks(linkslist, cont);
-
+  cont->GetLinks(linkslist, cont);
+/*
   for(int i=0;i<cont->GetNumComponents();i++)
   {
    UEPtr<UNet> sub_cont=static_pointer_cast<UNet>(cont->GetComponentByIndex(i));
    sub_cont->GetLinks(linkslist, cont,true,sub_cont);
-  }
+  }*/
   *serstorage<<linkslist;
   serstorage->SelectUp();
 
