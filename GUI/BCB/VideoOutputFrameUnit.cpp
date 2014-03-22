@@ -28,6 +28,7 @@ String TVGrabberLicenseString;
 __fastcall TVideoOutputFrame::TVideoOutputFrame(TComponent* Owner)
 	: TUVisualControllerFrame(Owner)
 {
+ CaptureThread=0;
  FrameIndex=0;
 // Capture=0;
 
@@ -70,7 +71,6 @@ __fastcall TVideoOutputFrame::TVideoOutputFrame(TComponent* Owner)
  MyComponentsListForm=new TUComponentsListForm(this);
 
  IsStarted=false;
- CaptureThread=0;//new TVideoCaptureThreadSharedMemory(this,false);
 
  VideoCaptureOptionsForm=new TVideoCaptureOptionsForm(this);
  VideoCaptureOptionsForm->VideoOutputFrame=this;

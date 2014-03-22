@@ -104,8 +104,8 @@ TVideoOutputFrame *GetFrame(void) const;
 bool SetFrame(TVideoOutputFrame * frame);
 
 /// Возвращает разрешение потока
-int GetWidth(void);
-int GetHeight(void);
+virtual int GetWidth(void);
+virtual int GetHeight(void);
 
 /// Создает копию этого потока
 virtual RDK::UEPtr<TVideoCaptureThread> New(TVideoOutputFrame *frame, bool create_suspended)=0;
