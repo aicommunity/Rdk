@@ -304,7 +304,7 @@ UAConnector2DVector& UAConnector2DVector::operator = (const UAConnector2DVector 
 
  for(int i=0;i<Size;i++)
   Data[i]=copy.Data[i];
- memcpy(Data,copy.Data,Size*sizeof(UAConnectorVector));
+// memcpy(Data,copy.Data,Size*sizeof(UAConnectorVector));
 
  return *this;
 }
