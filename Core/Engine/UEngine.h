@@ -95,7 +95,7 @@ std::list<UContainer*> ClassesList;
 RDK::USerStorageXML XmlStorage;
 
 // Временное хранилище строк
-mutable std::list<string> TempStrings;
+mutable std::list<UEPtr<string> > TempStrings;
 mutable string DummyTempString;
 
 // Временное хранилище буфера для лога

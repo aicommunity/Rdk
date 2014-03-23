@@ -92,21 +92,22 @@ bool UEngine::SetOptionsFileName(const string& value)
 /// и возвращает ссылку на нее
 std::string& UEngine::CreateTempString(void) const
 {
- TempStrings.push_back(std::string(""));
- return TempStrings.back();
+ UEPtr<string> pstr=new std::string;
+ TempStrings.push_back(pstr);
+ return *TempStrings.back();
 }
 
 /// Возвращает временную строку
 /// по указателю на ее данные
 std::string& UEngine::FindTempString(const char *str_data) const
 {
- std::list<std::string>::iterator I,J;
+ std::list<UEPtr<std::string> >::iterator I,J;
  I=TempStrings.begin();
  J=TempStrings.end();
  for(;I!=J;++I)
  {
-  if(I->c_str() == str_data)
-   return *I;
+  if((*I)->c_str() == str_data)
+   return **I;
 
  }
  return DummyTempString;
@@ -118,13 +119,14 @@ void UEngine::DestroyTempString(const char *str_data) const
 {
  if(!str_data)
   return;
- std::list<std::string>::iterator I,J;
+ std::list<UEPtr<std::string> >::iterator I,J;
  I=TempStrings.begin();
  J=TempStrings.end();
  for(;I!=J;++I)
  {
-  if(I->c_str() == str_data)
+  if((*I)->c_str() == str_data)
   {
+   delete *I;
    TempStrings.erase(I);
    break;
   }
@@ -135,13 +137,14 @@ void UEngine::DestroyTempString(const char *str_data) const
 /// по ссылке на нее
 void UEngine::DestroyTempString(const std::string &ref) const
 {
- std::list<std::string>::iterator I,J;
+ std::list<UEPtr<std::string> >::iterator I,J;
  I=TempStrings.begin();
  J=TempStrings.end();
  for(;I!=J;++I)
  {
-  if(*I == ref)
+  if(**I == ref)
   {
+   delete *I;
    TempStrings.erase(I);
    break;
   }
@@ -151,6 +154,13 @@ void UEngine::DestroyTempString(const std::string &ref) const
 /// Удаляет все временные строк
 void UEngine::ClearAllTempStrings(void) const
 {
+ std::list<UEPtr<std::string> >::iterator I,J;
+ I=TempStrings.begin();
+ J=TempStrings.end();
+ for(;I!=J;++I)
+ {
+  delete *I;
+ }
  TempStrings.clear();
 }
 
