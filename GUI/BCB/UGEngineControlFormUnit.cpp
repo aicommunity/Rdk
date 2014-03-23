@@ -1265,7 +1265,11 @@ TTabSheet* TUGEngineControlForm::AddComponentControlFormPage(const string &compo
   return PageControl1->Pages[control_index];
  }
 
- std::string name=Model_GetComponentClassName(component_name.c_str());
+ const char *pname=Model_GetComponentClassName(component_name.c_str());
+ std::string name;
+ if(pname)
+  name=pname;
+ Engine_FreeBufString(pname);
 
  std::map<std::string, TUVisualControllerForm*>::iterator I=UComponentsListFrame1->ComponentControllers.find(name);
  if(I != UComponentsListFrame1->ComponentControllers.end() && I->second)
@@ -2328,7 +2332,10 @@ void __fastcall TUGEngineControlForm::SaveCommonDescriptions1Click(TObject *Send
  RichEdit->Parent=this;
 
  RichEdit->PlainText=true;
- RichEdit->Text=Storage_SaveCommonClassesDescription();
+ const char *p=Storage_SaveCommonClassesDescription();
+ if(p)
+  RichEdit->Text=p;
+ Engine_FreeBufString(p);
  RichEdit->Lines->SaveToFile("CommonClassesDescription.xml");
 
  delete RichEdit;
@@ -2343,7 +2350,10 @@ void __fastcall TUGEngineControlForm::SaveClassesDescriptions1Click(TObject *Sen
  RichEdit->Parent=this;
 
  RichEdit->PlainText=true;
- RichEdit->Text=Storage_SaveClassesDescription();
+ const char *p=Storage_SaveClassesDescription();
+ if(p)
+  RichEdit->Text=p;
+ Engine_FreeBufString(p);
  RichEdit->Lines->SaveToFile("ClassesDescription.xml");
 
  delete RichEdit;

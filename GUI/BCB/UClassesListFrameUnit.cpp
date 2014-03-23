@@ -34,9 +34,14 @@ void TUClassesListFrame::AUpdateInterface(void)
   NewLibraryNames.resize(Storage_GetNumClassLibraries());
   for(size_t i=0;i<NewLibraryNames.size();i++)
   {
-   NewLibraryNames[i]=Storage_GetClassLibraryNameByIndex(i);
+   const char *p=Storage_GetClassLibraryNameByIndex(i);
+   if(p)
+	NewLibraryNames[i]=p;
+   Engine_FreeBufString(p);
    const char* class_names=Storage_GetLibraryClassNamesByIndex(i);
-   num_classes+=RDK::separatestring(std::string(class_names),TempLibraryNames, ',');
+   if(class_names)
+    num_classes+=RDK::separatestring(std::string(class_names),TempLibraryNames, ',');
+   Engine_FreeBufString(class_names);
    sort(TempLibraryNames.begin(),TempLibraryNames.end());
    LibraryClassNames[NewLibraryNames[i]]=TempLibraryNames;
   }
@@ -86,7 +91,12 @@ void TUClassesListFrame::AUpdateInterface(void)
   Storage_GetClassesList(&ids[0]);
   ClassNames.resize(numclasses);
   for(int i=0;i<numclasses;i++)
-   ClassNames[i]=Storage_GetClassName(ids[i]);
+  {
+   const char* pclass_name=Storage_GetClassName(ids[i]);
+   if(pclass_name)
+    ClassNames[i]=pclass_name;
+   Engine_FreeBufString(pclass_name);
+  }
 
   sort(ClassNames.begin(),ClassNames.end());
   for(int i=0;i<numclasses;i++)
@@ -112,7 +122,11 @@ void TUClassesListFrame::AUpdateInterface(void)
    LibsListStringGrid->FixedRows=1;
   for(size_t i=0;i<library_names.size();i++)
   {
-   library_names[i]=Storage_GetClassLibraryNameByIndex(i);
+   const char *p=Storage_GetClassLibraryNameByIndex(i);
+   if(p)
+    library_names[i]=p;
+   Engine_FreeBufString(p);
+
    LibsListStringGrid->Cells[0][i+1]=i+1;
    LibsListStringGrid->Cells[1][i+1]=library_names[i].c_str();
 //   LibsListStringGrid->Cells[2][i+1]=library_names[i].c_str();
@@ -134,8 +148,10 @@ void TUClassesListFrame::DrawClassesList(int library_index, TStringGrid *classes
   {
    const char* class_names=Storage_GetLibraryClassNamesByIndex(library_index);
    std::vector<std::string> classes_list;
-   int num_classes;
-   num_classes=RDK::separatestring(std::string(class_names),classes_list, ',');
+   int num_classes=0;
+   if(class_names)
+    num_classes=RDK::separatestring(std::string(class_names),classes_list, ',');
+   Engine_FreeBufString(class_names);
    sort(classes_list.begin(),classes_list.end());
 //   LibraryClassNames[NewLibraryNames[i]]=TempLibraryNames;
 

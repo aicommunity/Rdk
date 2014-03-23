@@ -104,7 +104,11 @@ void TUComponentsListFrame::AUpdateInterface(void)
   if(longid.size()>0)
    longid+=".";
 
-  std::string sid=Model_GetComponentLongId((longid+ids[i]).c_str(),CurrentComponentName.c_str());//IntToStr(ids[i]);
+  const char *psid=Model_GetComponentLongId((longid+ids[i]).c_str(),CurrentComponentName.c_str());
+  std::string sid;
+  if(psid)
+   sid=psid;
+  Engine_FreeBufString(psid);
   int id=RDK::atoi(sid);
   StringGrid->Cells[0][i+2]=IntToStr(id);
   if(id == SelectedId)

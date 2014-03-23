@@ -331,15 +331,15 @@ void TUEngineMonitorFrame::AUpdateInterface(void)
 
  StatusBar->SimpleText=String("Model Time=")+FloatToStrF(Model_GetDoubleTime(),ffFixed,3,3)
 				+String("; Real Time=")+FloatToStrF(Model_GetDoubleRealTime(),ffFixed,3,3)
-				+String("; Model Duration Time=")+FloatToStrF(Model_GetFullStepDuration("")/1000.0,ffFixed,3,3)
-				+String(" NumBfs=")+IntToStr(Engine_GetNumBufStrings());
+				+String("; Model Duration Time=")+FloatToStrF(Model_GetFullStepDuration("")/1000.0,ffFixed,3,3);
  if(instperf)
   StatusBar->SimpleText=StatusBar->SimpleText+
 				String("; Model Performance=")+FloatToStrF(instperf,ffFixed,3,3)+
 				StatusBar->SimpleText=StatusBar->SimpleText+String(" (")+
-				FloatToStrF(fps,ffFixed,3,3)+String(" FPS)")
-				+String(" NumBfs=")+IntToStr(Engine_GetNumBufStrings());
+				FloatToStrF(fps,ffFixed,3,3)+String(" FPS)");
 
+ StatusBar->SimpleText=StatusBar->SimpleText
+				+String(" NumBfs=")+IntToStr(Engine_GetNumBufStrings());
  StatusBar->Repaint();
  StatusBar->Update();
 }
@@ -679,7 +679,10 @@ void __fastcall TUEngineMonitorFrame::SaveClassesDescriptions1Click(TObject *Sen
  RichEdit->Parent=this;
 
  RichEdit->PlainText=true;
- RichEdit->Text=Storage_SaveAllClassesDescription();
+ const char *p=Storage_SaveAllClassesDescription();
+ if(p)
+  RichEdit->Text=p;
+ Engine_FreeBufString(p);
  RichEdit->Lines->SaveToFile("ClassesDescription.xml");
 }
 //---------------------------------------------------------------------------
