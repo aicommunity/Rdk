@@ -128,7 +128,9 @@ int TVideoCaptureThread::GetWidth(void)
  if(WaitForSingleObject(SourceUnlock,30) == WAIT_TIMEOUT)
   return -1;
  ResetEvent(SourceUnlock);
- int res=ReadSource->GetWidth();
+ int res=0;
+ if(ReadSource)
+  res=ReadSource->GetWidth();
  SetEvent(SourceUnlock);
 
  return res;
@@ -139,7 +141,9 @@ int TVideoCaptureThread::GetHeight(void)
  if(WaitForSingleObject(SourceUnlock,30) == WAIT_TIMEOUT)
   return -1;
  ResetEvent(SourceUnlock);
- int res=ReadSource->GetHeight();
+ int res=0;
+ if(ReadSource)
+  res=ReadSource->GetHeight();
  SetEvent(SourceUnlock);
 
  return res;

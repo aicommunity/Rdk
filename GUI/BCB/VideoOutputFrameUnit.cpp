@@ -81,9 +81,6 @@ __fastcall TVideoOutputFrame::TVideoOutputFrame(TComponent* Owner)
  {
   VideoSourceOptions[I->first].Create("VideoSourceThread");
  }
-
- NetworkStreamingFrame->FrameIndexLabeledEdit->Text=IntToStr(FrameIndex);
- RecordingFrame->FrameIndexLabeledEdit->Text=IntToStr(FrameIndex);
 }
 
 __fastcall TVideoOutputFrame::~TVideoOutputFrame(void)
@@ -243,6 +240,9 @@ void TVideoOutputFrame::ReadSourceSafe(RDK::UBitmap &bmp, double &time_stamp, bo
 /// Инициализация первичных настроек
 void TVideoOutputFrame::InitPrimarySettings(void)
 {
+ NetworkStreamingFrame->FrameIndexLabeledEdit->Text=IntToStr(FrameIndex);
+ RecordingFrame->FrameIndexLabeledEdit->Text=IntToStr(FrameIndex);
+
  RecordingFrame->Init();
 
  TMenuItem *parentItem=0;
