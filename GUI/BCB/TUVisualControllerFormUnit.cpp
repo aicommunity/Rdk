@@ -53,6 +53,10 @@ void TUVisualControllerForm::BeforeReset(void)
   GetEngine()->ProcessException(exception);
 //  UnLockEngine();
  }
+ catch(Exception &exception)
+ {
+  Engine_LogMessage(RDK_EX_ERROR, (std::string("Before Reset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
+ }
 }
 
 void TUVisualControllerForm::ABeforeReset(void)
@@ -75,6 +79,10 @@ void TUVisualControllerForm::AfterReset(void)
   GetEngine()->ProcessException(exception);
 //  UnLockEngine();
  }
+ catch(Exception &exception)
+ {
+  Engine_LogMessage(RDK_EX_ERROR, (std::string("After Reset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
+ }
 }
 
 void TUVisualControllerForm::AAfterReset(void)
@@ -95,6 +103,10 @@ void TUVisualControllerForm::BeforeCalculate(void)
   GetEngine()->ProcessException(exception);
 //  UnLockEngine();
  }
+ catch(Exception &exception)
+ {
+  Engine_LogMessage(RDK_EX_ERROR, (std::string("Before Calculate Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
+ }
 }
 
 void TUVisualControllerForm::ABeforeCalculate(void)
@@ -113,6 +125,10 @@ void TUVisualControllerForm::AfterCalculate(void)
 //  LockEngine();
   GetEngine()->ProcessException(exception);
 //  UnLockEngine();
+ }
+ catch(Exception &exception)
+ {
+  Engine_LogMessage(RDK_EX_ERROR, (std::string("After Reset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
  }
 }
 
@@ -168,6 +184,11 @@ void TUVisualControllerForm::UpdateInterface(bool force_update)
 //  UnLockEngine();
   UpdateInterfaceFlag=false;
  }
+ catch(Exception &exception)
+ {
+  UpdateInterfaceFlag=false;
+  Engine_LogMessage(RDK_EX_ERROR, (std::string("Update Interface Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
+ }
  catch(...)
  {
   UpdateInterfaceFlag=false;
@@ -195,6 +216,10 @@ void TUVisualControllerForm::ClearInterface(void)
 //  LockEngine();
   GetEngine()->ProcessException(exception);
 //  UnLockEngine();
+ }
+ catch(Exception &exception)
+ {
+  Engine_LogMessage(RDK_EX_ERROR, (std::string("Clear Interface Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
  }
 }
 
@@ -234,6 +259,10 @@ void TUVisualControllerForm::SaveParameters(RDK::USerStorageXML &xml)
   GetEngine()->ProcessException(exception);
 //  UnLockEngine();
  }
+ catch(Exception &exception)
+ {
+  Engine_LogMessage(RDK_EX_ERROR, (std::string("SaveParameters Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
+ }
 
 }
 
@@ -268,6 +297,10 @@ void TUVisualControllerForm::LoadParameters(RDK::USerStorageXML &xml)
 //  LockEngine();
   GetEngine()->ProcessException(exception);
 //  UnLockEngine();
+ }
+ catch(Exception &exception)
+ {
+  Engine_LogMessage(RDK_EX_ERROR, (std::string("LoadParameters Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
  }
 }
 

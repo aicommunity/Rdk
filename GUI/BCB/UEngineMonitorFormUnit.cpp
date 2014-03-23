@@ -37,7 +37,7 @@ void ExceptionHandler(int channel_index)
   return;
 
  std::string new_log_data=data;
- MEngine_FreeBufString(channel_index,data);
+ MEngine_FreeBufStringUnsafe(channel_index,data);
  UnsentLog.push_back(new_log_data);
 
  if(!new_log_data.empty())

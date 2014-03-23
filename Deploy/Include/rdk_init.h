@@ -134,6 +134,8 @@ RDK_LIB_TYPE bool RDK_CALL MIsEngineInit(int engine_index);
 /// Высвобождает буферную строку движка, по заданному указателю
 RDK_LIB_TYPE void RDK_CALL Engine_FreeBufString(const char *pointer);
 RDK_LIB_TYPE void RDK_CALL MEngine_FreeBufString(int engine_index,const char *pointer);
+RDK_LIB_TYPE void RDK_CALL Engine_FreeBufStringUnsafe(const char *pointer);
+RDK_LIB_TYPE void RDK_CALL MEngine_FreeBufStringUnsafe(int engine_index,const char *pointer);
 
 /// Возвращает число буферных строк движка
 RDK_LIB_TYPE int RDK_CALL Engine_GetNumBufStrings(void);

@@ -379,6 +379,18 @@ void RDK_CALL MEngine_FreeBufString(int engine_index,const char *pointer)
  return DllManager.EngineList[engine_index]->DestroyTempString(pointer);
 }
 
+void RDK_CALL Engine_FreeBufStringUnsafe(const char *pointer)
+{
+ PEngine->DestroyTempString(pointer);
+}
+
+void RDK_CALL MEngine_FreeBufStringUnsafe(int engine_index,const char *pointer)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return;
+ return DllManager.EngineList[engine_index]->DestroyTempString(pointer);
+}
+
 /// Возвращает число буферных строк движка
 int RDK_CALL Engine_GetNumBufStrings(void)
 {
