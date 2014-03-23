@@ -17,6 +17,8 @@ TUEngineMonitorForm *UEngineMonitorForm;
 
 HANDLE RdkExceptionHandlerEvent=0;
 
+std::list<int> UnsentLogChannelIndexes;
+
 std::list<std::string> UnsentLog;
 
 //---------------------------------------------------------------------------
@@ -29,41 +31,8 @@ void ExceptionHandler(int channel_index)
   return;
  ResetEvent(RdkExceptionHandlerEvent);
 
- try
- {
- int error_level=-1;
- const char * data=MEngine_GetUnreadLogUnsafe(channel_index, error_level);
- if(!data)
-  return;
+ UnsentLogChannelIndexes.push_back(channel_index);
 
- std::string new_log_data=data;
- MEngine_FreeBufStringUnsafe(channel_index,data);
- UnsentLog.push_back(new_log_data);
-
- if(!new_log_data.empty())
- {
-  if(error_level<3)
-  {
-   UEngineMonitorForm->EngineMonitorFrame->Pause1Click(UEngineMonitorForm);
-   TTabSheet *tab=dynamic_cast<TTabSheet*>(UEngineMonitorForm->Parent);
-   if(tab)
-   {
-	tab->PageControl->ActivePage=tab;
-   }
-   else
-   {
-	UEngineMonitorForm->Show();
-	UEngineMonitorForm->WindowState=wsNormal;
-   }
-  }
- }
-
- }
- catch(...)
- {
-  SetEvent(RdkExceptionHandlerEvent);
-  throw;
- }
  SetEvent(RdkExceptionHandlerEvent);
 }
 //---------------------------------------------------------------------------
@@ -119,19 +88,54 @@ void __fastcall TUEngineMonitorForm::LogTimerTimer(TObject *Sender)
   return;
  ResetEvent(RdkExceptionHandlerEvent);
 
+ int global_error_level=-1;
  try
  {
+  std::list<int>::iterator I=UnsentLogChannelIndexes.begin();
+  for(;I!=UnsentLogChannelIndexes.end();++I)
+  {
+   int error_level=-1;
+   const char * data=MEngine_GetUnreadLog(*I, error_level);
+   if(!data)
+	continue;
+   if(global_error_level>error_level)
+	global_error_level=error_level;
+
+
+   std::string new_log_data=data;
+   MEngine_FreeBufString(*I,data);
+   UnsentLog.push_back(new_log_data);
+  }
+ }
+ catch(...)
+ {
+  UnsentLogChannelIndexes.clear();
+  SetEvent(RdkExceptionHandlerEvent);
+  throw;
+ }
+ UnsentLogChannelIndexes.clear();
+ SetEvent(RdkExceptionHandlerEvent);
+
+ try
+ {
+  if(global_error_level>=0 && global_error_level<3)
+  {
+   UEngineMonitorForm->EngineMonitorFrame->Pause1Click(UEngineMonitorForm);
+   TTabSheet *tab=dynamic_cast<TTabSheet*>(UEngineMonitorForm->Parent);
+   if(tab)
+   {
+	tab->PageControl->ActivePage=tab;
+   }
+   else
+   {
+	UEngineMonitorForm->Show();
+	UEngineMonitorForm->WindowState=wsNormal;
+   }
+  }
+
   while(!UnsentLog.empty())
   {
-  /*
-   try
-   {
-	UEngineMonitorForm->EngineMonitorFrame->RichEdit->SetFocus();
-   }
-   catch(...)
-   {
 
-   }*/
    UEngineMonitorForm->EngineMonitorFrame->RichEdit->Lines->Add(UnsentLog.front().c_str());
    UEngineMonitorForm->EngineMonitorFrame->RichEdit->SelStart =
 	UEngineMonitorForm->EngineMonitorFrame->RichEdit->Perform(EM_LINEINDEX, UEngineMonitorForm->EngineMonitorFrame->RichEdit->Lines->Count-1, 0);
@@ -142,11 +146,9 @@ void __fastcall TUEngineMonitorForm::LogTimerTimer(TObject *Sender)
  }
  catch(...)
  {
-  SetEvent(RdkExceptionHandlerEvent);
   throw;
  }
 
- SetEvent(RdkExceptionHandlerEvent);
 }
 //---------------------------------------------------------------------------
 

@@ -667,9 +667,11 @@ try{
   }
   catch(RDK::UException &exception)
   {
-//   LockEngine();
-   GetEngine()->ProcessException(exception);
-//   UnLockEngine();
+   Engine_LogMessage(exception.GetType(), (std::string("Core-OpenProject(Load Channel) Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.CreateLogMessage()).c_str());
+  }
+  catch(Exception &exception)
+  {
+   MEngine_LogMessage(GetSelectedEngineIndex(), RDK_EX_ERROR, (std::string("GUI-OpenProject(Load Channel) Exception: ")+AnsiString(exception.Message).c_str()).c_str());
   }
  }
  UShowProgressBarForm->IncBarStatus(1);
@@ -714,9 +716,7 @@ try{
 catch(RDK::UException &exception)
 {
  UShowProgressBarForm->Hide();
-// LockEngine();
- GetEngine()->ProcessException(exception);
-// UnLockEngine();
+ Engine_LogMessage(exception.GetType(), (std::string("Core-OpenProject Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.CreateLogMessage()).c_str());
 }
 catch(Exception &exception)
 {
@@ -853,12 +853,12 @@ void TUGEngineControlForm::CloneProject(int source_id, int cloned_id)
 catch(RDK::UException &exception)
 {
  UShowProgressBarForm->Hide();
- GetEngine()->ProcessException(exception);
+ Engine_LogMessage(exception.GetType(), (std::string("Core-CloneProject Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.CreateLogMessage()).c_str());
 }
 catch(Exception &exception)
 {
  UShowProgressBarForm->Hide();
- MEngine_LogMessage(GetSelectedEngineIndex(), RDK_EX_ERROR, (std::string("Clone project Fail: ")+AnsiString(exception.Message).c_str()).c_str());
+ MEngine_LogMessage(GetSelectedEngineIndex(), RDK_EX_ERROR, (std::string("GUI-CloneProject Exception: ")+AnsiString(exception.Message).c_str()).c_str());
 }
 catch(...)
 {
@@ -1099,12 +1099,12 @@ try{
 catch(RDK::UException &exception)
 {
  UShowProgressBarForm->Hide();
- GetEngine()->ProcessException(exception);
+ Engine_LogMessage(exception.GetType(), (std::string("Core-SaveProject Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.CreateLogMessage()).c_str());
 }
 catch(Exception &exception)
 {
  UShowProgressBarForm->Hide();
- MEngine_LogMessage(GetSelectedEngineIndex(), RDK_EX_ERROR, (std::string("Save project Fail: ")+AnsiString(exception.Message).c_str()).c_str());
+ MEngine_LogMessage(GetSelectedEngineIndex(), RDK_EX_ERROR, (std::string("GUI-SaveProject Exception: ")+AnsiString(exception.Message).c_str()).c_str());
 }
 catch(...)
 {
