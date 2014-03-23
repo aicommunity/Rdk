@@ -105,9 +105,19 @@ void TUImagesFrame::LinkToComponent(int i, int j, const std::string &stringid, i
  StringIds[i][j]=stringid;
  ComponentIndexes[i][j]=index;
  if(ComponentIndexes[i][j].empty())
-  Legends[i][j]=std::string(Model_GetComponentLongName(StringIds[i][j].c_str()))+std::string("[")+RDK::sntoa(ComponentIndexesOld[i][j])+"]";
+ {
+  const char *p=Model_GetComponentLongName(StringIds[i][j].c_str());
+  if(p)
+   Legends[i][j]=std::string(p)+std::string("[")+RDK::sntoa(ComponentIndexesOld[i][j])+"]";
+  Engine_FreeBufString(p);
+ }
  else
-  Legends[i][j]=std::string(Model_GetComponentLongName(StringIds[i][j].c_str()))+std::string("[")+ComponentIndexes[i][j]+"]";
+ {
+  const char *p=Model_GetComponentLongName(StringIds[i][j].c_str());
+  if(p)
+   Legends[i][j]=std::string(p)+std::string("[")+ComponentIndexes[i][j]+"]";
+  Engine_FreeBufString(p);
+ }
 
 }
 
@@ -523,9 +533,19 @@ void TUImagesFrame::ALoadParameters(RDK::USerStorageXML &xml)
    if(Legends[i][j].empty())
    {
 	if(ComponentIndexes[i][j].empty())
-	 Legends[i][j]=std::string(Model_GetComponentLongName(StringIds[i][j].c_str()))+std::string("[")+RDK::sntoa(ComponentIndexesOld[i][j])+"]";
+	{
+	 const char *p=Model_GetComponentLongName(StringIds[i][j].c_str());
+	 if(p)
+	  Legends[i][j]=std::string(p)+std::string("[")+RDK::sntoa(ComponentIndexesOld[i][j])+"]";
+	 Engine_FreeBufString(p);
+	}
 	else
-     Legends[i][j]=std::string(Model_GetComponentLongName(StringIds[i][j].c_str()))+std::string("[")+ComponentIndexes[i][j]+"]";
+	{
+	 const char *p=Model_GetComponentLongName(StringIds[i][j].c_str());
+	 if(p)
+	  Legends[i][j]=std::string(p)+std::string("[")+ComponentIndexes[i][j]+"]";
+	 Engine_FreeBufString(p);
+	}
    }
 
 
@@ -654,9 +674,19 @@ void __fastcall TUImagesFrame::DrawGridDblClick(TObject *Sender)
   {
    FullImage->Canvas->Font->Size=12;
    if(ComponentIndexes[DrawGrid->Col][DrawGrid->Row].empty())
-	FullImage->Canvas->TextOut(0,0,(std::string(Model_GetComponentLongName(StringIds[DrawGrid->Col][DrawGrid->Row].c_str()))+std::string("[")+RDK::sntoa(ComponentIndexesOld[DrawGrid->Col][DrawGrid->Row])+"]").c_str());
+   {
+	const char *p=Model_GetComponentLongName(StringIds[DrawGrid->Col][DrawGrid->Row].c_str());
+	if(p)
+	 FullImage->Canvas->TextOut(0,0,(std::string(p)+std::string("[")+RDK::sntoa(ComponentIndexesOld[DrawGrid->Col][DrawGrid->Row])+"]").c_str());
+	Engine_FreeBufString(p);
+   }
    else
-    FullImage->Canvas->TextOut(0,0,(std::string(Model_GetComponentLongName(StringIds[DrawGrid->Col][DrawGrid->Row].c_str()))+std::string("[")+ComponentIndexes[DrawGrid->Col][DrawGrid->Row]+"]").c_str());
+   {
+	const char *p=Model_GetComponentLongName(StringIds[DrawGrid->Col][DrawGrid->Row].c_str());
+	if(p)
+	 FullImage->Canvas->TextOut(0,0,(std::string(p)+std::string("[")+ComponentIndexes[DrawGrid->Col][DrawGrid->Row]+"]").c_str());
+	Engine_FreeBufString(p);
+   }
   }
 }
 //---------------------------------------------------------------------------
@@ -708,9 +738,11 @@ void __fastcall TUImagesFrame::DrawGridClick(TObject *Sender)
  MouseClickComponents[0][0].first="Tracker";
  MouseClickComponents[0][0].second="MouseClickPoint";
 
- if(Model_CheckComponent(MouseClickComponents[DrawGrid->Col][DrawGrid->Row].first.c_str()) &&
-	!strcmp(Model_GetComponentClassName(MouseClickComponents[DrawGrid->Col][DrawGrid->Row].first.c_str()),"TTrackerSample"))
+ if(Model_CheckComponent(MouseClickComponents[DrawGrid->Col][DrawGrid->Row].first.c_str()))
  {
+  const char *p=Model_GetComponentClassName(MouseClickComponents[DrawGrid->Col][DrawGrid->Row].first.c_str());
+  if(p && !strcmp(p,"TTrackerSample"))
+  {
   RDK::UBPoint point;
   TRect rect=DrawGrid->CellRect(DrawGrid->Col, DrawGrid->Row);
   TPoint tpoint=::Mouse->CursorPos;
@@ -721,6 +753,8 @@ void __fastcall TUImagesFrame::DrawGridClick(TObject *Sender)
   point.X=double(tpoint.X)*double(Images[DrawGrid->Col][DrawGrid->Row]->Picture->Bitmap->Width)/double(rect.Width());
   point.Y=double(tpoint.Y)*double(Images[DrawGrid->Col][DrawGrid->Row]->Picture->Bitmap->Height)/double(rect.Height());
   Model_SetComponentPropertyData(MouseClickComponents[DrawGrid->Col][DrawGrid->Row].first.c_str(), MouseClickComponents[DrawGrid->Col][DrawGrid->Row].second.c_str(), &point);
+ }
+  Engine_FreeBufString(p);
  }
 }
 //---------------------------------------------------------------------------

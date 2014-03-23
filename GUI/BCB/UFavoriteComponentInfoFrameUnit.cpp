@@ -57,12 +57,14 @@ void TUFavoriteData::ReadData(void)
   value=Model_GetComponentParameterValue(ComponentName.c_str(), DataName.c_str());
   if(value)
    Data=value;
+  Engine_FreeBufString(value);
  break;
 
  case 2:
   value=Model_GetComponentStateValue(ComponentName.c_str(), DataName.c_str());
   if(value)
    Data=value;
+  Engine_FreeBufString(value);
  break;
 
  case 3:

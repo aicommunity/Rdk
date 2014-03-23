@@ -71,6 +71,7 @@ void TUDrawEngineFrame::AUpdateInterface(void)
   const char *xml=Model_SaveComponentDrawInfo(ComponentName.c_str());
   if(xml)
    NetXml.Load(xml,"");
+  Engine_FreeBufString(xml);
 
    // RichEdit1->Text=xml;
   DrawEngine.SetNetXml(NetXml);
@@ -396,6 +397,7 @@ void __fastcall TUDrawEngineFrame::ImageDragDrop(TObject *Sender, TObject *Sourc
  if(pname)
  {
   std::string name=pname;
+  Engine_FreeBufString(pname);
   UpdateInterfaceFlag=true;
   ReloadNet();
   UpdateInterfaceFlag=false;

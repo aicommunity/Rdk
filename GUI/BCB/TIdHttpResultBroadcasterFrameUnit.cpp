@@ -108,6 +108,7 @@ void TIdHttpResultBroadcasterFrame::AAfterCalculate(void)
 
    ASource->AddFormField("Response",Metadata.c_str(),"","text/plain");
   }
+  MEngine_FreeBufString(channel_index,xml_data);
  }
 
  if(EnableImagesTranslationCheckBox->Checked)

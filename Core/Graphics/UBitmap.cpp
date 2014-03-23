@@ -1622,7 +1622,7 @@ void UBitmap::Reduce(int n, int m, UBitmap *target)
 	s+=LineByteLength*(m-1);
    else
    {
-	s+=LineByteLength*(Height-i);
+//	s+=LineByteLength*(Height-i);
    }
   }
  }
@@ -1653,7 +1653,7 @@ void UBitmap::Reduce(int n, int m, UBitmap *target)
 	s+=LineByteLength*(m-1);
    else
    {
-	s+=LineByteLength*(Height-i);
+//	s+=LineByteLength*(Height-i);
    }
   }
 

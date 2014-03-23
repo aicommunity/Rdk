@@ -1076,7 +1076,6 @@ XMLCSTR XMLNode::updateName_WOSD(XMLSTR lpszName)
     return lpszName;
 }
 
-// private:
 XMLNode::XMLNode(struct XMLNodeDataTag *p)
 {
  characterEncoding=XMLNode::char_encoding_UTF8;
@@ -1097,24 +1096,24 @@ XMLNode::XMLNode(XMLNodeData *pParent, XMLSTR lpszName, char isDeclaration)
  emptyXMLAttribute.lpszName=0;
  emptyXMLAttribute.lpszValue=0;
 	d=(XMLNodeData*)malloc(sizeof(XMLNodeData));
-    d->ref_count=1;
+	d->ref_count=1;
 
-    d->lpszName=NULL;
-    d->nChild= 0;
-    d->nText = 0;
-    d->nClear = 0;
-    d->nAttribute = 0;
+	d->lpszName=NULL;
+	d->nChild= 0;
+	d->nText = 0;
+	d->nClear = 0;
+	d->nAttribute = 0;
 
-    d->isDeclaration = isDeclaration;
+	d->isDeclaration = isDeclaration;
 
-    d->pParent = pParent;
-    d->pChild= NULL;
-    d->pText= NULL;
-    d->pClear= NULL;
-    d->pAttribute= NULL;
-    d->pOrder= NULL;
+	d->pParent = pParent;
+	d->pChild= NULL;
+	d->pText= NULL;
+	d->pClear= NULL;
+	d->pAttribute= NULL;
+	d->pOrder= NULL;
 
-    updateName_WOSD(lpszName);
+	updateName_WOSD(lpszName);
 }
 
 XMLNode XMLNode::createXMLTopNode_WOSD(XMLSTR lpszName, char isDeclaration) { return XMLNode(NULL,lpszName,isDeclaration); }
@@ -2197,15 +2196,18 @@ void XMLNode::emptyTheNode(char force)
     {
         if (d->pParent) detachFromParent(d);
         int i;
-        XMLNode *pc;
-        for(i=0; i<dd->nChild; i++)
-        {
-            pc=dd->pChild+i;
-            pc->d->pParent=NULL;
-            pc->d->ref_count--;
-            pc->emptyTheNode(force);
-        }
-        myFree(dd->pChild);
+		XMLNode *pc;
+	   if(dd->pChild)
+	   {
+		for(i=0; i<dd->nChild; i++)
+		{
+			pc=dd->pChild+i;
+			pc->d->pParent=NULL;
+			pc->d->ref_count--;
+			pc->emptyTheNode(force);
+		}
+		myFree(dd->pChild);
+	   }
         for(i=0; i<dd->nText; i++) free((void*)dd->pText[i]);
         myFree(dd->pText);
         for(i=0; i<dd->nClear; i++) free((void*)dd->pClear[i].lpszValue);

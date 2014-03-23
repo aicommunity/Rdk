@@ -363,6 +363,36 @@ bool RDK_CALL MIsEngineInit(int engine_index)
 
  return (DllManager.EngineList[engine_index])?true:false;
 }
+
+/// Высвобождает буферную строку движка, по заданному указателю
+void RDK_CALL Engine_FreeBufString(const char *pointer)
+{
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
+ PEngine->DestroyTempString(pointer);
+}
+
+void RDK_CALL MEngine_FreeBufString(int engine_index,const char *pointer)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return;
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
+ return DllManager.EngineList[engine_index]->DestroyTempString(pointer);
+}
+
+/// Возвращает число буферных строк движка
+int RDK_CALL Engine_GetNumBufStrings(void)
+{
+ UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
+ return PEngine->GetNumTempStrings();
+}
+
+int RDK_CALL MEngine_GetNumBufStrings(int engine_index)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return -1;
+ UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
+ return DllManager.EngineList[engine_index]->GetNumTempStrings();
+}
 // ----------------------------
 
 // --------------------------

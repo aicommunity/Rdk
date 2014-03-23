@@ -331,12 +331,14 @@ void TUEngineMonitorFrame::AUpdateInterface(void)
 
  StatusBar->SimpleText=String("Model Time=")+FloatToStrF(Model_GetDoubleTime(),ffFixed,3,3)
 				+String("; Real Time=")+FloatToStrF(Model_GetDoubleRealTime(),ffFixed,3,3)
-				+String("; Model Duration Time=")+FloatToStrF(Model_GetFullStepDuration("")/1000.0,ffFixed,3,3);
+				+String("; Model Duration Time=")+FloatToStrF(Model_GetFullStepDuration("")/1000.0,ffFixed,3,3)
+				+String(" NumBfs=")+IntToStr(Engine_GetNumBufStrings());
  if(instperf)
   StatusBar->SimpleText=StatusBar->SimpleText+
 				String("; Model Performance=")+FloatToStrF(instperf,ffFixed,3,3)+
 				StatusBar->SimpleText=StatusBar->SimpleText+String(" (")+
-				FloatToStrF(fps,ffFixed,3,3)+String(" FPS)");
+				FloatToStrF(fps,ffFixed,3,3)+String(" FPS)")
+				+String(" NumBfs=")+IntToStr(Engine_GetNumBufStrings());
 
  StatusBar->Repaint();
  StatusBar->Update();

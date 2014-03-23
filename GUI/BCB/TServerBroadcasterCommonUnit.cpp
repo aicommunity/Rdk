@@ -153,6 +153,7 @@ bool __fastcall TResultBroadcasterThread::AddMetadataSafe(int channel_index, lon
 
  meta.ChannelIndex=channel_index;
  meta.Metadata=xml_data;
+ MEngine_FreeBufString(channel_index,xml_data);
 
 
  if(WaitForSingleObject(MetaUnlockEvent,30) == WAIT_TIMEOUT)

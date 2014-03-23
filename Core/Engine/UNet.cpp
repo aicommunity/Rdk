@@ -520,7 +520,7 @@ bool UNet::GetComponentProperties(UEPtr<RDK::UContainer> cont, RDK::USerStorageX
   if(!cont || !serstorage)
    return false;
 
-  RDK::UContainer::VariableMapT props=cont->GetPropertiesList();
+  const RDK::UContainer::VariableMapT &props=cont->GetPropertiesList();
 
   RDK::UContainer::VariableMapCIteratorT I,J;
 
@@ -569,7 +569,7 @@ bool UNet::GetComponentPropertiesEx(UEPtr<RDK::UContainer> cont, RDK::USerStorag
   if(!cont || !serstorage)
    return false;
 
-  RDK::UContainer::VariableMapT props=cont->GetPropertiesList();
+  const RDK::UContainer::VariableMapT &props=cont->GetPropertiesList();
 
   RDK::UContainer::VariableMapCIteratorT I,J;
 
@@ -616,7 +616,7 @@ int UNet::SetComponentProperties(UEPtr<RDK::UContainer> cont, RDK::USerStorageXM
 
   std::string name;
 
-  RDK::UContainer::VariableMapT props=cont->GetPropertiesList();
+  const RDK::UContainer::VariableMapT &props=cont->GetPropertiesList();
 
   RDK::UContainer::VariableMapCIteratorT I,J;
 

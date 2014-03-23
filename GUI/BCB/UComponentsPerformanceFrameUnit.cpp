@@ -239,10 +239,19 @@ void TUComponentsPerformanceFrame::AddAllComponents(const std::string &component
  std::vector<std::string> names;
  names.resize(ids.size());
 
- std::string componentid=Model_GetComponentLongId(componentname.c_str());
+ const char* pcomponentid=Model_GetComponentLongId(componentname.c_str());
+ std::string componentid;
+ if(pcomponentid)
+  componentid=pcomponentid;
+ Engine_FreeBufString(pcomponentid);
 
  for(size_t i=0;i<ids.size();i++)
-  names[i]=Model_GetComponentLongName((componentid+std::string(".")+AnsiString(ids[i]).c_str()).c_str());
+ {
+  const char *pname=Model_GetComponentLongName((componentid+std::string(".")+AnsiString(ids[i]).c_str()).c_str());
+  if(pname)
+   names[i]=pname;
+  Engine_FreeBufString(pname);
+ }
 
  AnsiString str;
  for(size_t i=0;i<names.size();i++)

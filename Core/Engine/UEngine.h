@@ -95,7 +95,8 @@ std::list<UContainer*> ClassesList;
 RDK::USerStorageXML XmlStorage;
 
 // ¬ременное хранилище строк
-mutable string TempString;
+mutable std::list<string> TempStrings;
+mutable string DummyTempString;
 
 // ¬ременное хранилище буфера дл€ лога
 //mutable string TempLogString;
@@ -140,6 +141,31 @@ const string& GetOptionsFileName(void) const;
 bool SetOptionsFileName(const string& value);
 // --------------------------
 
+// --------------------------
+// ћетоды управлени€ временными переменными
+// --------------------------
+/// —оздает в списке временных строку новую строку
+/// и возвращает ссылку на нее
+std::string& CreateTempString(void) const;
+
+/// ¬озвращает временную строку
+/// по указателю на ее данные
+std::string& FindTempString(const char *str_data) const;
+
+/// ”дал€ет временную строку
+/// по указателю на ее данные
+void DestroyTempString(const char *str_data) const;
+
+/// ”дал€ет временную строку
+/// по ссылке на нее
+void DestroyTempString(const std::string &ref) const;
+
+/// ”дал€ет все временные строк
+void ClearAllTempStrings(void) const;
+
+/// ¬озвращает число временных строк
+int GetNumTempStrings(void) const;
+// --------------------------
 
 // --------------------------
 // ћетоды доступа к переменным состо€ни€

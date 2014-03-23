@@ -46,7 +46,10 @@ void TUComponentsControlFrame::SaveModelToFile(const String &filename)
   RichEdit->Parent=this;
 
   RichEdit->PlainText=true;
-  RichEdit->Text=Model_SaveComponent("");
+  const char *p_buf=Model_SaveComponent("");
+  if(p_buf)
+   RichEdit->Text=p_buf;
+  Engine_FreeBufString(p_buf);
   RichEdit->Lines->SaveToFile(FileName);
 
   delete RichEdit;
@@ -116,7 +119,10 @@ void TUComponentsControlFrame::SaveParametersToFile(const String &filename)
  RichEdit->Parent=this;
 
  RichEdit->PlainText=true;
- RichEdit->Text=Model_SaveComponentParameters("");
+ const char *p_buf=Model_SaveComponentParameters("");
+ if(p_buf)
+  RichEdit->Text=p_buf;
+ Engine_FreeBufString(p_buf);
  RichEdit->Lines->SaveToFile(FileName);
 
  delete RichEdit;
@@ -172,7 +178,11 @@ void TUComponentsControlFrame::SaveStatesToFile(const String &filename)
  RichEdit->Parent=this;
 
  RichEdit->PlainText=true;
- RichEdit->Text=Model_SaveComponentState("");
+ const char *p_buf=Model_SaveComponentState("");
+ if(p_buf)
+  RichEdit->Text=p_buf;
+ Engine_FreeBufString(p_buf);
+
  RichEdit->Lines->SaveToFile(FileName);
 
  delete RichEdit;

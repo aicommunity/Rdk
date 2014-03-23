@@ -42,6 +42,7 @@ USerStorageXML::~USerStorageXML(void)
 // —оздает новый xml в корневом узле уничтожа€ старые данные
 bool USerStorageXML::Create(const std::string &rootname)
 {
+ CurrentNode.deleteNodeContent();
  RootNode.deleteNodeContent();
 #ifdef RDK_UNICODE_RUN
  RootNode=XMLNode::createXMLTopNode(widen(rootname,Locale,WBuffer).c_str());
@@ -58,13 +59,15 @@ bool USerStorageXML::Create(const std::string &rootname)
 bool USerStorageXML::Destroy(void)
 {
  RootNode.deleteNodeContent();
- CurrentNode=RootNode;
+ CurrentNode.deleteNodeContent();
+// CurrentNode=RootNode;
  return true;
 }
 
 // «агружает xml из строки
 bool USerStorageXML::Load(const std::string &str, const std::string &root)
 {
+ CurrentNode.deleteNodeContent();
  RootNode.deleteNodeContent();
 #ifdef RDK_UNICODE_RUN
  RootNode=XMLNode::parseString(widen(str,Locale,WBuffer).c_str(),widen(root,Locale,WBuffer2).c_str());
