@@ -231,7 +231,8 @@ void UBitmap::AttachBuffer(UBColor* data)
  if(Data == data)
   return;
 
- delete[] Data;
+ if(Data)
+  delete[] Data;
  Data=data;
  PData=Data;
  MemoryLength=ByteLength;
@@ -253,7 +254,8 @@ void UBitmap::AttachBuffer(int width, int height, UBColor* data, UBMColorModel c
  Length=Width*Height;
  ColorModel=cmodel;
  ByteLength=MemoryLength=CalcByteLength(Width,Height,ColorModel);
- delete[] Data;
+ if(Data)
+  delete[] Data;
  Data=data;
  PData=Data;
  CalcChannelOffset(Width, Height, ColorModel, ChannelOffset);

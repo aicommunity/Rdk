@@ -318,7 +318,12 @@ bool TVideoCaptureThread::WriteSourceSafe(const RDK::UBitmap& src, double time_s
 
 bool TVideoCaptureThread::WriteSourceSafe(Graphics::TBitmap *src, double time_stamp, bool reflect)
 {
+ if(WaitForSingleObject(SourceWriteUnlock,100) == WAIT_TIMEOUT)
+  return false;
+
+ ResetEvent(SourceWriteUnlock);
  TBitmapToUBitmap(*WriteSource, src, reflect);
+ SetEvent(SourceWriteUnlock);
 
  if(WaitForSingleObject(SourceUnlock,30) == WAIT_TIMEOUT)
   return false;
