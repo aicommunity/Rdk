@@ -42,6 +42,12 @@ string ComponentLibrariesSectionName;
 // Имя секции выбора классов компонент
 string ComponentClassesSectionName;
 
+/// Режим создания внутренних временных переменных для
+/// возвращаемых значений
+/// 0 - одна переменная для всех методов, возвращающих такой тип
+/// 1 - уникальные переменные с необходимостью вызвова функции очистки
+int BufObjectsMode;
+
 // Индекс используемого хранилища в библиотеке
 // Если < 0, то новое хранилище будет создано
 //int StorageIndex;
@@ -111,7 +117,7 @@ UBitmap TempBmp;
 
 public:
 // Временное хранилище строк
-mutable string PubTempString;
+//mutable string PubTempString;
 
 /// Кеш быстрого доступа к компонентам
 mutable std::map<std::string, UEPtr<UContainer> > AccessCache;
@@ -129,6 +135,13 @@ virtual ~UEngine(void);
 // --------------------------
 // Методы управления параметрами инициализации
 // --------------------------
+/// Режим создания внутренних временных переменных для
+/// возвращаемых значений
+/// 0 - одна переменная для всех методов, возвращающих такой тип
+/// 1 - уникальные переменные с необходимостью вызвова функции очистки
+int GetBufObjectsMode(void) const;
+bool SetBufObjectsMode(int mode);
+
 // Указатели на функции создания экземпляров хранилища и среды
 /*UEngine::PCreateNewStorage GetFuncCreateNewStorage(void) const;
 bool SetFuncCreateNewStorage(UEngine::PCreateNewStorage value);

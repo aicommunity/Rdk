@@ -69,7 +69,7 @@ enum { ipDataSingle=ipData|ipSingle, ipDataRange=ipData|ipRange,
 ///     <Data>xml-описание данных функции, например xml с параметрами компонента</Data>
 ///     <Res>идентификатор возвращаемой ошибки или 0 если вызов успешен</Res>
 /// </RpcResponse>
-RDK_LIB_TYPE const char* RDK_CALL RemoteCall(const char *request, int &return_value);
+RDK_LIB_TYPE const char* RDK_CALL RemoteCall(const char *request, int &return_value, int &channel_index);
 // ----------------------------
 
 // ----------------------------
@@ -136,6 +136,13 @@ RDK_LIB_TYPE void RDK_CALL Engine_FreeBufString(const char *pointer);
 RDK_LIB_TYPE void RDK_CALL MEngine_FreeBufString(int engine_index,const char *pointer);
 RDK_LIB_TYPE void RDK_CALL Engine_FreeBufStringUnsafe(const char *pointer);
 RDK_LIB_TYPE void RDK_CALL MEngine_FreeBufStringUnsafe(int engine_index,const char *pointer);
+
+/// Режим создания внутренних временных переменных для
+/// возвращаемых значений
+/// 0 - одна переменная для всех методов, возвращающих такой тип
+/// 1 - уникальные переменные с необходимостью вызвова функции очистки
+RDK_LIB_TYPE int RDK_CALL Engine_GetBufObjectsMode(void);
+RDK_LIB_TYPE bool RDK_CALL Engine_SetBufObjectsMode(int mode);
 
 /// Возвращает число буферных строк движка
 RDK_LIB_TYPE int RDK_CALL Engine_GetNumBufStrings(void);

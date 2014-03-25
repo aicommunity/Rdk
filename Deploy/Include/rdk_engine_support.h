@@ -85,4 +85,6 @@ extern std::string RdkSystemDir;
 // Экземпляр менеджера
 extern RDKDllManager DllManager;
 
+extern int BufObjectsMode;
+
 #endif

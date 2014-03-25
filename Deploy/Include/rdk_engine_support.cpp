@@ -15,6 +15,9 @@ int SelectedEngineIndex=0;
 
 std::string RdkSystemDir;
 
+int BufObjectsMode=0;
+
+
 // Менеджер DLL
 // --------------------------
 // Конструкторы и деструкторы
@@ -105,7 +108,9 @@ int RDKDllManager::SetNumEngines(int num)
  MutexList.resize(num,0);
  LockerList.resize(num,0);
  for(int i=old_num;i<num;i++)
+ {
   MutexList[i]=UCreateMutex();
+ }
  return 0;
 }
 

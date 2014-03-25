@@ -32,9 +32,9 @@ extern RDK::UEngine* CreateNewEngine(void);
 /// request - xml описание запроса
 /// return_value - возвращаемое значение для тех функций, которые его имеют
 /// для остальных возвращает 0
-const char* RDK_CALL RemoteCall(const char *request, int &return_value)
+const char* RDK_CALL RemoteCall(const char *request, int &return_value, int &channel_index)
 {
- return RDK::RemoteCallInternal(request, return_value);
+ return RDK::RemoteCallInternal(request, return_value, channel_index);
 }
 // ----------------------------
 
@@ -123,7 +123,6 @@ int RDK_CALL SetNumEngines(int num)
   PStorage=DllManager.StorageList[SelectedEngineIndex];
  }
 
- RpcReturnString.resize(num);
  return 0;
 }
 
@@ -303,11 +302,12 @@ int RDK_CALL MGraphicalEngineInit(int engine_index, int predefined_structure, in
 
  int res=0;
 
- res=DllManager.EngineCreate(SelectedEngineIndex);
+ res=DllManager.EngineCreate(engine_index);
  if(res != 0)
   return res;
 
  DllManager.EngineList[engine_index]->SetChannelIndex(engine_index);
+ DllManager.EngineList[engine_index]->SetBufObjectsMode(BufObjectsMode);
  MEngine_SetExceptionHandler(engine_index, exception_handler);
 
  // Задает число входов среды
@@ -362,6 +362,31 @@ bool RDK_CALL MIsEngineInit(int engine_index)
   return false;
 
  return (DllManager.EngineList[engine_index])?true:false;
+}
+
+
+/// Режим создания внутренних временных переменных для
+/// возвращаемых значений
+/// 0 - одна переменная для всех методов, возвращающих такой тип
+/// 1 - уникальные переменные с необходимостью вызвова функции очистки
+int RDK_CALL Engine_GetBufObjectsMode(void)
+{
+ return BufObjectsMode;
+}
+
+bool RDK_CALL Engine_SetBufObjectsMode(int mode)
+{
+ if(BufObjectsMode == mode)
+  return true;
+
+ for(size_t i=0;i<DllManager.EngineList.size();i++)
+ {
+  UGenericMutexLocker locker(DllManager.MutexList[i]);
+  DllManager.EngineList[i]->SetBufObjectsMode(mode);
+ }
+ BufObjectsMode=mode;
+
+ return true;
 }
 
 /// Высвобождает буферную строку движка, по заданному указателю

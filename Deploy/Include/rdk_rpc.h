@@ -7,11 +7,11 @@
 
 namespace RDK{
 
-extern std::vector<std::string> RpcReturnString;
+//extern std::vector<std::string> RpcReturnString;
 
-const char* RemoteCallInternal(const char *request, int &return_value);
+const char* RemoteCallInternal(const char *request, int &return_value, int &channel_index);
 
-const char* PtzRemoteCall(const char *request, int &return_value);
+const char* PtzRemoteCall(const char *request, int &return_value, int &channel_index);
 
 
 /// Возвращает набор из имени компонента и индекса канала

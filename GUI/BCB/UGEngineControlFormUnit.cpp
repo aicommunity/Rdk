@@ -1948,6 +1948,8 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
 
  TrayIcon->Hint=ProgramName;
 
+ Engine_SetBufObjectsMode(1);
+
  // Грузим шрифты
  std::vector<std::string> font_names;
  std::string font_path=AnsiString(ExtractFilePath(Application->ExeName)+"Fonts\\").c_str();

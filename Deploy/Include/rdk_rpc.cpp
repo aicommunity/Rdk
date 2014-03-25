@@ -3,11 +3,12 @@
 
 #include "rdk_rpc.h"
 #include "rdk.h"
+#include "rdk_cpp_init.h"
 
 
 namespace RDK{
 
-std::vector<std::string> RpcReturnString;
+//std::vector<std::string> RpcReturnString;
 
 /// Возвращает набор из имени компонента и индекса канала
 /// Если определен параметр "CC"
@@ -68,8 +69,9 @@ bool ExtractCmd(USerStorageXML &xml, std::string &cmd_name)
 ///     <Class>имя класса</Class>
 ///     <Data>xml-описание данных функции, например xml с параметрами компонента</Data>
 /// </RPC_Request>
-const char* RemoteCallInternal(const char *request, int &return_value)
+const char* RemoteCallInternal(const char *request, int &return_value, int &channel_index)
 {
+ const char* ReturnString=0;
  return_value=INT_MAX;
 
  RDK::USerStorageXML xml,xml_data;
@@ -79,6 +81,7 @@ const char* RemoteCallInternal(const char *request, int &return_value)
  int engine_index=-1;
  std::string cmd;
  std::string component_name;
+ channel_index=0;
 
 
  if(!ExtractCmd(xml,cmd) || cmd.empty())
@@ -99,11 +102,8 @@ const char* RemoteCallInternal(const char *request, int &return_value)
   return_value=2001;
   return 0;
  }
- else
-  RpcReturnString[engine_index].clear();
 
-// std::map<std::string,std::vector<char> >::const_iterator I;
-// int res=0;
+ channel_index=engine_index;
  std::string response,temp;
  std::string name;
 
@@ -163,10 +163,9 @@ const char* RemoteCallInternal(const char *request, int &return_value)
  else
  if(cmd == "Model_GetComponentParameters")
  {
-  const char * data=MModel_GetComponentParameters(engine_index, component_name.c_str());
-  if(data)
+  ReturnString=MModel_GetComponentParameters(engine_index, component_name.c_str());
+  if(ReturnString)
   {
-   RpcReturnString[engine_index]=data;
    return_value=0;
   }
   else
@@ -175,10 +174,9 @@ const char* RemoteCallInternal(const char *request, int &return_value)
  else
  if(cmd == "Model_GetComponentsNameList")
  {
-  const char * data=MModel_GetComponentsNameList(engine_index, component_name.c_str());
-  if(data)
+  ReturnString=MModel_GetComponentsNameList(engine_index, component_name.c_str());
+  if(ReturnString)
   {
-   RpcReturnString[engine_index]=data;
    return_value=0;
   }
   else
@@ -187,10 +185,9 @@ const char* RemoteCallInternal(const char *request, int &return_value)
  else
  if(cmd == "Model_GetComponentStates")
  {
-  const char * data=MModel_GetComponentState(engine_index, component_name.c_str());
-  if(data)
+  ReturnString=MModel_GetComponentState(engine_index, component_name.c_str());
+  if(ReturnString)
   {
-   RpcReturnString[engine_index]=data;
    return_value=0;
   }
   else
@@ -218,16 +215,28 @@ const char* RemoteCallInternal(const char *request, int &return_value)
   return_value=2001;
 
  result.SelectRoot();
- result.WriteString("Data",RpcReturnString[engine_index]);
+ if(ReturnString)
+ {
+  result.WriteString("Data",ReturnString);
+  MEngine_FreeBufString(engine_index,ReturnString);
+ }
+ else
+  result.WriteString("Data","");
  result.WriteInteger("Res",return_value);
- result.Save(RpcReturnString[engine_index]);
+ MLockEngine(engine_index);
+ std::string &buffer=GetEngine(engine_index)->CreateTempString();
+ result.Save(buffer);
+ MUnLockEngine(engine_index);
 
- return RpcReturnString[engine_index].c_str();
+ return buffer.c_str();
 }
 
-const char* PtzRemoteCall(const char *request, int &return_value)
+const char* PtzRemoteCall(const char *request, int &return_value, int &channel_index)
 {
+ const char* ReturnString=0;
  return_value=2001;
+
+ channel_index=0;
 
  RDK::USerStorageXML xml,xml_data;
  USerStorageXML response;
@@ -244,7 +253,6 @@ const char* PtzRemoteCall(const char *request, int &return_value)
   return 0;
  }
 
-
  if(!ExtractCC(xml,engine_index, camera))
  {
   if(!ExtractChannel(xml,engine_index))
@@ -257,32 +265,26 @@ const char* PtzRemoteCall(const char *request, int &return_value)
   return_value=2001;
   return 0;
  }
- else
- {
-  if(RpcReturnString.size()<=engine_index)
-   RpcReturnString.resize(engine_index+1);
-  RpcReturnString[engine_index].clear();
- }
+ channel_index=engine_index;
 
- RpcReturnString[engine_index].clear();
  response.Create("RpcResponse");
  response.WriteString("Id", xml.ReadString("Id",""));
 
  if(cmd == "Ptz_GetCameraNames")
  {
-  RpcReturnString[engine_index]=Ptz_GetCameraNames(engine_index);
+  ReturnString=Ptz_GetCameraNames(engine_index);
   return_value=0;
  }
  else
  if(cmd == "Ptz_GetCameraType")
  {
-  RpcReturnString[engine_index]=Ptz_GetCameraType(engine_index,camera.c_str());
+  ReturnString=Ptz_GetCameraType(engine_index,camera.c_str());
   return_value=0;
  }
  else
  if(cmd == "Ptz_GetCameraTypes")
  {
-  RpcReturnString[engine_index]=Ptz_GetCameraTypes(engine_index);
+  ReturnString=Ptz_GetCameraTypes(engine_index);
   return_value=0;
  }
  else
@@ -305,7 +307,7 @@ const char* PtzRemoteCall(const char *request, int &return_value)
  if(cmd == "Ptz_GetCameraParameter")
  {
   std::string param_name=xml.ReadString("Parameter","");
-  RpcReturnString[engine_index]=Ptz_GetCameraParameter(engine_index,camera.c_str(),param_name.c_str());
+  ReturnString=Ptz_GetCameraParameter(engine_index,camera.c_str(),param_name.c_str());
   return_value=0;
  }
  else
@@ -318,7 +320,7 @@ const char* PtzRemoteCall(const char *request, int &return_value)
  else
  if(cmd == "Ptz_GetImplementedCommands")
  {
-  RpcReturnString[engine_index]=Ptz_GetImplementedCommands(engine_index,camera.c_str());
+  ReturnString=Ptz_GetImplementedCommands(engine_index,camera.c_str());
   return_value=0;
  }
  else
@@ -335,20 +337,20 @@ const char* PtzRemoteCall(const char *request, int &return_value)
  if(cmd == "Ptz_IsCmdImplemented")
  {
   std::string cmd_name=xml.ReadString("CommandName","");
-  RpcReturnString[engine_index]=sntoa(Ptz_IsCmdImplemented(engine_index,camera.c_str(),cmd_name.c_str()));
+  response.WriteString("Data",sntoa(Ptz_IsCmdImplemented(engine_index,camera.c_str(),cmd_name.c_str())));
   return_value=0;
  }
  else
  if(cmd == "Ptz_GetImplementedMoveParamsList")
  {
-  RpcReturnString[engine_index]=Ptz_GetImplementedMoveParamsList(engine_index,camera.c_str());
+  ReturnString=Ptz_GetImplementedMoveParamsList(engine_index,camera.c_str());
   return_value=0;
  }
  else
  if(cmd == "Ptz_IsMoveParamImplemented")
  {
   std::string param_name=xml.ReadString("ParamName","");
-  RpcReturnString[engine_index]=sntoa(Ptz_IsMoveParamImplemented(engine_index,camera.c_str(),param_name.c_str()));
+  response.WriteString("Data",sntoa(Ptz_IsMoveParamImplemented(engine_index,camera.c_str(),param_name.c_str())));
   return_value=0;
  }
  else
@@ -365,7 +367,7 @@ const char* PtzRemoteCall(const char *request, int &return_value)
  if(cmd == "Ptz_GetMoveParamMinNativeValue")
  {
   std::string param_name=xml.ReadString("ParamName","");
-  RpcReturnString[engine_index]=sntoa(Ptz_GetMoveParamMinNativeValue(engine_index,camera.c_str(),param_name.c_str()));
+  response.WriteString("Data",sntoa(Ptz_GetMoveParamMinNativeValue(engine_index,camera.c_str(),param_name.c_str())));
   return_value=0;
  }
  else
@@ -382,7 +384,7 @@ const char* PtzRemoteCall(const char *request, int &return_value)
  if(cmd == "Ptz_GetMoveParamMaxNativeValue")
  {
   std::string param_name=xml.ReadString("ParamName","");
-  RpcReturnString[engine_index]=sntoa(Ptz_GetMoveParamMaxNativeValue(engine_index,camera.c_str(),param_name.c_str()));
+  response.WriteString("Data",sntoa(Ptz_GetMoveParamMaxNativeValue(engine_index,camera.c_str(),param_name.c_str())));
   return_value=0;
  }
  else
@@ -399,7 +401,7 @@ const char* PtzRemoteCall(const char *request, int &return_value)
  if(cmd == "Ptz_GetMoveParamMinValue")
  {
   std::string param_name=xml.ReadString("ParamName","");
-  RpcReturnString[engine_index]=sntoa(Ptz_GetMoveParamMinValue(engine_index,camera.c_str(),param_name.c_str()));
+  response.WriteString("Data",sntoa(Ptz_GetMoveParamMinValue(engine_index,camera.c_str(),param_name.c_str())));
   return_value=0;
  }
  else
@@ -416,7 +418,7 @@ const char* PtzRemoteCall(const char *request, int &return_value)
  if(cmd == "Ptz_GetMoveParamMaxValue")
  {
   std::string param_name=xml.ReadString("ParamName","");
-  RpcReturnString[engine_index]=sntoa(Ptz_GetMoveParamMaxValue(engine_index,camera.c_str(),param_name.c_str()));
+  response.WriteString("Data",sntoa(Ptz_GetMoveParamMaxValue(engine_index,camera.c_str(),param_name.c_str())));
   return_value=0;
  }
  else
@@ -784,13 +786,18 @@ const char* PtzRemoteCall(const char *request, int &return_value)
 
  response.SelectRoot();
  response.WriteInteger("Res",return_value);
- if(!RpcReturnString[engine_index].empty())
+ if(ReturnString)
  {
-  response.WriteString("Data",RpcReturnString[engine_index]);
+  response.WriteString("Data",ReturnString);
+  MEngine_FreeBufString(engine_index, ReturnString);
  }
- response.Save(RpcReturnString[engine_index]);
 
- return RpcReturnString[engine_index].c_str();
+ MLockEngine(engine_index);
+ std::string &buffer=GetEngine(engine_index)->CreateTempString();
+ response.Save(buffer);
+ MUnLockEngine(engine_index);
+
+ return buffer.c_str();
 }
 
 

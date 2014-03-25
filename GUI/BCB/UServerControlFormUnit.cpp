@@ -429,7 +429,8 @@ bool TUServerControlForm::ProcessRPCCommand(const UServerCommand &args, std::str
 
  ConvertVectorToString(args.second, request);
  int response_status=0;
- const char* response=RemoteCall(request.c_str(), response_status);
+ int channel_index=0;
+ const char* response=RemoteCall(request.c_str(), response_status,channel_index);
 
  if(response_status == 2001)
   return false;
@@ -438,7 +439,7 @@ bool TUServerControlForm::ProcessRPCCommand(const UServerCommand &args, std::str
   ConvertStringToVector(response, response_data);
  else
   ConvertStringToVector(RDK::sntoa(response_status), response_data);
-
+ MEngine_FreeBufString(channel_index, response);
  return true;
 }
 
@@ -459,7 +460,8 @@ bool TUServerControlForm::ProcessPtzCommand(const UServerCommand &args, std::str
  ConvertVectorToString(I->second, request);*/
  ConvertVectorToString(args.second, request);
  int response_status=0;
- const char* response=PtzRemoteCall(request.c_str(), response_status);
+ int channel_index=0;
+ const char* response=PtzRemoteCall(request.c_str(), response_status, channel_index);
 
  if(response_status == 2001)
   return false;
@@ -468,6 +470,7 @@ bool TUServerControlForm::ProcessPtzCommand(const UServerCommand &args, std::str
   ConvertStringToVector(response, response_data);
  else
   ConvertStringToVector(RDK::sntoa(response_status), response_data);
+ MEngine_FreeBufString(channel_index, response);
 
  return true;
 }

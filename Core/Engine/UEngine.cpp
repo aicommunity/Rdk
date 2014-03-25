@@ -53,6 +53,7 @@ UEngine::UEngine(void)
 {
  Runned=-1;
  ChannelIndex=0;
+ BufObjectsMode=0;
 // CurrentExceptionsLogSize=0;
 // ExceptionHandler=0;
 
@@ -69,6 +70,24 @@ UEngine::~UEngine(void)
 // --------------------------
 // ћетоды управлени€ параметрами инициализации
 // --------------------------
+/// –ежим создани€ внутренних временных переменных дл€
+/// возвращаемых значений
+/// 0 - одна переменна€ дл€ всех методов, возвращающих такой тип
+/// 1 - уникальные переменные с необходимостью вызвова функции очистки
+int UEngine::GetBufObjectsMode(void) const
+{
+ return BufObjectsMode;
+}
+
+bool UEngine::SetBufObjectsMode(int mode)
+{
+ if(BufObjectsMode == mode)
+  return true;
+ BufObjectsMode=mode;
+ TempStrings.clear();
+ return true;
+}
+
 // »м€ файла инициализации
 const string& UEngine::GetOptionsFileName(void) const
 {
@@ -92,9 +111,27 @@ bool UEngine::SetOptionsFileName(const string& value)
 /// и возвращает ссылку на нее
 std::string& UEngine::CreateTempString(void) const
 {
- UEPtr<string> pstr=new std::string;
- TempStrings.push_back(pstr);
- return *TempStrings.back();
+ switch (BufObjectsMode)
+ {
+ case 0:
+ {
+  if(TempStrings.empty())
+  {
+   UEPtr<string> pstr=new std::string;
+   TempStrings.push_back(pstr);
+  }
+  return *TempStrings.front();
+ }
+ break;
+
+ case 1:
+ {
+  UEPtr<string> pstr=new std::string;
+  TempStrings.push_back(pstr);
+  return *TempStrings.back();
+ }
+ break;
+ }
 }
 
 /// ¬озвращает временную строку
@@ -119,6 +156,10 @@ void UEngine::DestroyTempString(const char *str_data) const
 {
  if(!str_data)
   return;
+
+ if(BufObjectsMode == 0)
+  return;
+
  std::list<UEPtr<std::string> >::iterator I,J;
  I=TempStrings.begin();
  J=TempStrings.end();
@@ -137,6 +178,9 @@ void UEngine::DestroyTempString(const char *str_data) const
 /// по ссылке на нее
 void UEngine::DestroyTempString(const std::string &ref) const
 {
+ if(BufObjectsMode == 0)
+  return;
+
  std::list<UEPtr<std::string> >::iterator I,J;
  I=TempStrings.begin();
  J=TempStrings.end();
@@ -154,6 +198,9 @@ void UEngine::DestroyTempString(const std::string &ref) const
 /// ”дал€ет все временные строк
 void UEngine::ClearAllTempStrings(void) const
 {
+ if(BufObjectsMode == 0)
+  return;
+
  std::list<UEPtr<std::string> >::iterator I,J;
  I=TempStrings.begin();
  J=TempStrings.end();
@@ -167,6 +214,9 @@ void UEngine::ClearAllTempStrings(void) const
 /// ¬озвращает число временных строк
 int UEngine::GetNumTempStrings(void) const
 {
+ if(BufObjectsMode == 0)
+  return 0;
+
  return int(TempStrings.size());
 }
 // --------------------------
