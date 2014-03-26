@@ -82,6 +82,9 @@ TUWatchInfo::TUWatchInfo(const TUWatchInfo &wd)
  YOutputElementIndex=wd.YOutputElementIndex;
  MRow=wd.MRow;
  MCol=wd.MCol;
+ MVectorName=wd.MVectorName;
+ MVectorIndexX=wd.MVectorIndexX;
+ MVectorIndexY=wd.MVectorIndexY;
 }
 
 TUWatchInfo& TUWatchInfo::operator = (const TUWatchInfo& wd)
@@ -110,6 +113,10 @@ TUWatchInfo& TUWatchInfo::operator = (const TUWatchInfo& wd)
  YOutputElementIndex=wd.YOutputElementIndex;
  MRow=wd.MRow;
  MCol=wd.MCol;
+
+ MVectorName=wd.MVectorName;
+ MVectorIndexX=wd.MVectorIndexX;
+ MVectorIndexY=wd.MVectorIndexY;
 
  return *this;
 }
@@ -452,12 +459,15 @@ int __fastcall TUWatchFrame::Add(TUWatchInfo& wd)
  int i=0;
  while(I != NameList.end())
   {
-   if((wd.Type != 0x200 && ((wd.Y && (wd.Y == I->Y)) ||
+   if((wd.Type != 0x200 && wd.Type !=0x400 && ((wd.Y && (wd.Y == I->Y)) ||
    (I->XDataSourceName == wd.XDataSourceName && I->XOutputIndexOld == wd.XOutputIndexOld &&
 	I->XOutputElementIndex == wd.XOutputElementIndex &&
 	I->YDataSourceName == wd.YDataSourceName && I->YOutputIndexOld == wd.YOutputIndexOld &&
 	I->YOutputElementIndex == wd.YOutputElementIndex))) ||
 	(wd.Type == 0x200 && I->YDataSourceName == wd.YDataSourceName && wd.MRow == I->MRow && wd.MCol == I->MCol && wd.Y == I->Y))
+	return i;
+
+   if(wd.Type == 0x400 && I->YDataSourceName == wd.YDataSourceName && wd.MVectorName == I->MVectorName && wd.MVectorIndexX == I->MVectorIndexX && wd.MVectorIndexY == I->MVectorIndexY)
 	return i;
    ++I; ++i;
   }
@@ -498,12 +508,15 @@ int __fastcall TUWatchFrame::Add(TUWatchInfo& wd)
  int i=0;
  while(I != NameList.end())
   {
-   if((wd.Type != 0x200 && ((wd.Y && (wd.Y == I->Y)) ||
+   if((wd.Type != 0x200 && wd.Type !=0x400 && ((wd.Y && (wd.Y == I->Y)) ||
    (I->XDataSourceName == wd.XDataSourceName && I->XOutputIndex == wd.XOutputIndex &&
 	I->XOutputElementIndex == wd.XOutputElementIndex &&
 	I->YDataSourceName == wd.YDataSourceName && I->YOutputIndex == wd.YOutputIndex &&
 	I->YOutputElementIndex == wd.YOutputElementIndex))) ||
 	(wd.Type == 0x200 && I->YDataSourceName == wd.YDataSourceName && wd.MRow == I->MRow && wd.MCol == I->MCol && wd.Y == I->Y))
+	return i;
+
+   if(wd.Type == 0x400 && I->YDataSourceName == wd.YDataSourceName && wd.MVectorName == I->MVectorName && wd.MVectorIndexX == I->MVectorIndexX && wd.MVectorIndexY == I->MVectorIndexY)
 	return i;
    ++I; ++i;
   }
@@ -651,6 +664,63 @@ int __fastcall TUWatchFrame::Add(int type, const string &xname, const string &yn
  return Add(wd);
 }
 
+int __fastcall TUWatchFrame::Add(int type, const string &xname, const string &yname, const string &xoutput, int xoutindex, const string &youtput, int youtindex, const string &mvectorname, int mvectorindexx, int mvectorindexy, double yshift, TPenStyle style, TColor color)
+{
+ TUWatchInfo wd;
+ wd.FullUpdate=true;
+
+ wd.YShift=yshift;
+ wd.XOutputIndex=xoutput;
+ wd.XOutputElementIndex=xoutindex;
+
+ wd.YOutputIndex=youtput;
+ wd.YOutputElementIndex=youtindex;
+ wd.MVectorName = mvectorname;
+ wd.MVectorIndexX = mvectorindexx;
+ wd.MVectorIndexY = mvectorindexy;
+ wd.Type=type;
+
+ if(wd.Type == 0x400)
+ {
+  if(!yname.empty())
+  {
+   wd.Legend=yname;
+   wd.Legend+=string("(")+mvectorname+string(",");
+   wd.Legend+=RDK::sntoa(mvectorindexx)+string(",");
+   wd.Legend+=RDK::sntoa(mvectorindexy)+string(")");
+  }
+ }
+ else
+ {
+  if(!yname.empty())
+  {
+   wd.Legend=yname;
+   wd.Legend+=string("[")+RDK::sntoa(youtput)+string(":");
+   wd.Legend+=RDK::sntoa(youtindex)+string("]");
+  }
+  else
+  if(!xname.empty())
+  {
+   wd.Legend=xname;
+   wd.Legend+=string("[")+RDK::sntoa(xoutput)+string(":");
+   wd.Legend+=RDK::sntoa(xoutindex)+string("]");
+  }
+ }
+
+ if(color == 0) // Подбор подходящего цвета
+  wd.Color=Chart1->GetFreeSeriesColor(true);
+ else
+  wd.Color=color;
+
+ wd.XDataSourceName=xname;
+ wd.YDataSourceName=yname;
+
+ if(xname.empty())
+  wd.XYSize=1;
+ wd.Style=style;
+ return Add(wd);
+}
+
 
 // Удаление наблюдения
 void __fastcall TUWatchFrame::Del(int seriesindex)
@@ -755,6 +825,63 @@ void __fastcall TUWatchFrame::StepUpdate(void)
    const RDK::MDMatrix<double> *ym=0;
    double xdata;
    std::vector<double> vxdata, vydata;
+
+   if(wd->Type == 0x400)
+   {
+     std::string componentName = UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName();
+	 ym=(const RDK::MDMatrix<double>*)(Model_GetComponentOutputAsMatrix(wd->YDataSourceName.c_str(), wd->YOutputIndex.c_str()));
+	 int data_size=0;                                                                                                 
+	 if(wd->MVectorName == "Row")
+	 {
+	  data_size=ym->GetCols();
+	  if(componentName=="PulseReceiver")
+	  {	
+	   vxdata.assign(2*data_size,0);
+	   vydata.assign(2*data_size,0);
+	  }
+	  else
+	  {	
+	   vxdata.assign(data_size,0);
+	   vydata.assign(data_size,0);
+	  }
+	  if(componentName!="PulseReceiver")
+	  {
+	  for(int i=0; i<data_size; i++)
+	   {
+		vxdata[i]=(*ym)(wd->MVectorIndexX, i);
+		vydata[i]=(*ym)(wd->MVectorIndexY, i);
+	   }
+	  }
+	  else
+	  {
+	   for(int i=0; i<data_size; i++)
+	   {
+		vxdata[2*i]=(*ym)(wd->MVectorIndexX, i);
+		vxdata[2*i+1]=(*ym)(wd->MVectorIndexX, i);
+		vydata[2*i+1]=(*ym)(wd->MVectorIndexY, i);
+		if(vydata[2*i+1]==1)
+		 vydata[2*i]=0;
+		else if (vydata[2*i+1]==0)
+		 vydata[2*i]=1;
+	   }
+	  }
+	 }
+	 else if(wd->MVectorName == "Col")
+	 {
+	  data_size=ym->GetRows();
+	  vxdata.assign(data_size,0);
+	  vydata.assign(data_size,0);
+	  for(int i=0; i<data_size; i++)
+	  {
+	   vxdata[i]=(*ym)(i, wd->MVectorIndexX);
+	   vydata[i]=(*ym)(i, wd->MVectorIndexY);
+	  }
+	 }
+	 y=&vydata[0];
+	 x=&vxdata[0];
+	 wd->XYSize=data_size;
+   }
+   else
    if(wd->YDataSourceName.size() && wd->XDataSourceName.size()==0)
    {
 	 xdata=Model_GetDoubleTime();
@@ -1417,7 +1544,9 @@ void __fastcall TUWatchFrame::AddTimeMatrixWatch1Click(TObject *Sender)
    return;
   int col=StrToInt(UListInputForm->Edit->Text);
 
- Add(0x200, "",UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName(),0,0,UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput(),0,row,col);
+  std::string componentName = UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName();
+  std::string componentOutput = UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput();
+ Add(0x200, "",componentName,"",0,componentOutput,0,row,col);
 }
 //---------------------------------------------------------------------------
 
@@ -1431,6 +1560,55 @@ void __fastcall TUWatchFrame::AddTimeYWatchold1Click(TObject *Sender)
  if(index>=0)
   Add(0, "", UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName(), 0, 0, index, 0, 0, 0);
 // Add(0, "",UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName(),0,0,UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput(),0,0,0);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUWatchFrame::AddTimeVectorWatch1Click(TObject *Sender)
+{
+  UComponentsListForm->ComponentsListFrame1->PageControl1->ActivePageIndex=2;
+  if(UComponentsListForm->ShowIOSelect() != mrOk)
+   return;
+
+  const RDK::MDMatrix<double> *ym=0;
+  ym=(const RDK::MDMatrix<double>*)(Model_GetComponentOutputAsMatrix(UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName().c_str(), UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput().c_str()));
+  if(!ym)
+   return;
+
+  UListInputForm->PresentSelect=true;
+  UListInputForm->MustInput=true;
+  vector<string> listvals;
+  listvals.resize(2);
+  listvals[0]="Row";
+  listvals[1]="Col";
+
+  
+  UListInputForm->Init("Rows or Cols?",listvals,"0");
+  if(UListInputForm->ShowModal() != mrOk)
+   return;
+  std::string vectorName=AnsiString(UListInputForm->Edit->Text).c_str();
+
+  if(vectorName == "Row")
+   listvals.resize(ym->GetRows());
+  else if(vectorName == "Col")
+   listvals.resize(ym->GetCols());
+
+  for(size_t i=0;i<listvals.size();i++)
+   listvals[i]=RDK::sntoa(i,2);
+  UListInputForm->Init("Input X"+vectorName+" Number",listvals,"0");
+  if(UListInputForm->ShowModal() != mrOk)
+   return;
+  int vectorIndexX=StrToInt(UListInputForm->Edit->Text);
+
+  for(size_t i=0;i<listvals.size();i++)
+  listvals[i]=RDK::sntoa(i,2);
+  UListInputForm->Init("Input Y"+vectorName+" Number",listvals,"0");
+  if(UListInputForm->ShowModal() != mrOk)
+   return;
+  int vectorIndexY=StrToInt(UListInputForm->Edit->Text);
+
+  std::string componentName = UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName();
+  std::string componentOutput = UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput();
+  Add(0x400, "",componentName,"",0,componentOutput,0,vectorName,vectorIndexX, vectorIndexY);
 }
 //---------------------------------------------------------------------------
 

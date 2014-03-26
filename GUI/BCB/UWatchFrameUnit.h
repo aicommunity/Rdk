@@ -47,6 +47,7 @@ public: // Связи
 // 0 - Обычная (выход по времени)
 // 0x100 - Зависимость X(Y)
 // 0x200 - MDMatrix
+// 0x400 - вектор из MDMatrix
 int Type;
 
 // Индекс графика в массиве серий
@@ -74,6 +75,13 @@ int YOutputElementIndex;
 
 // Координаты выхода, хранящего данные по оси Y для случая MDMatrix
 int MRow, MCol;
+
+// Название выбранного вектора, хранящего столбец или строку для случая MDMatrix
+string MVectorName;
+// Индекс первой строки или столбца для случая MDMatrix
+int MVectorIndexX;
+// Индекс второй строки или столбца для случая MDMatrix
+int MVectorIndexY;
 
 public: // Данные графика
 const double *X;
@@ -139,6 +147,7 @@ __published:	// IDE-managed Components
 	TMenuItem *N3;
 	TMenuItem *AddTimeMatrixWatch1;
 	TMenuItem *AddTimeYWatchold1;
+	TMenuItem *AddTimeVectorWatch1;
 	void __fastcall N1Click(TObject *Sender);
 	void __fastcall bmp1Click(TObject *Sender);
 	void __fastcall AddWatch1Click(TObject *Sender);
@@ -146,6 +155,7 @@ __published:	// IDE-managed Components
 	void __fastcall DeleteAll1Click(TObject *Sender);
 	void __fastcall AddTimeMatrixWatch1Click(TObject *Sender);
 	void __fastcall AddTimeYWatchold1Click(TObject *Sender);
+	void __fastcall AddTimeVectorWatch1Click(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
         __fastcall TUWatchFrame(TComponent* Owner);
@@ -284,6 +294,7 @@ public:	// Методы
 		// Возвращает индекс серии
 		int __fastcall Add(int type, const string &xname, const string &yname, const string &xoutput, int xoutindex, const string &youtput, int youtindex, int mrow, int mcol, double yshift=0, TPenStyle style=psSolid, TColor color=TColor(0));
 		int __fastcall Add(int type, const string &xname, const string &yname, int xoutput, int xoutindex, int youtput, int youtindex, int mrow, int mcol, double yshift=0, TPenStyle style=psSolid, TColor color=TColor(0));
+		int __fastcall Add(int type, const string &xname, const string &yname, const string &xoutput, int xoutindex, const string &youtput, int youtindex, const string &mvectorname, int mvectorindexx, int mvectorindexy, double yshift=0, TPenStyle style=psSolid, TColor color=TColor(0));
 
         // Удаление наблюдения
         void __fastcall Del(int seriesindex);
