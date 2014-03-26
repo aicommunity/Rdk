@@ -1,7 +1,7 @@
 #ifndef RDK_ENGINE_SUPPORT_H
 #define RDK_ENGINE_SUPPORT_H
 
-
+#include "../../Engine/UELockPtr.h"
 
 // Менеджер DLL
 class RDKDllManager
@@ -23,6 +23,15 @@ std::vector<UGenericMutex*> MutexList;
 std::vector<UGenericMutexLocker*> LockerList;
 
 UGenericMutex* GlobalMutex;
+
+/// Текущий выбраный канал
+int SelectedChannelIndex;
+
+/// Данные текущего выбранного канала
+RDK::UEPtr<RDK::UEngine> Engine;
+RDK::UEPtr<RDK::UEnvironment> Environment;
+RDK::UEPtr<RDK::UStorage> Storage;
+
 
 // ----------------------------------------------------------
 // Глобальные указатели на функции создания хранилища и среды
@@ -52,7 +61,7 @@ RDKDllManager(void);
 // --------------------------
 
 // --------------------------
-// Методы управления
+// Методы управления созданием каналов
 // --------------------------
 bool Init(PCreateNewStorage fCreateNewStorage,
             PCreateNewEnvironment fCreateNewEnvironment,
@@ -72,11 +81,56 @@ int EngineCreate(int index);
 /// (если движок уже уничтожен, то не делает ничего
 int EngineDestroy(int index);
 // --------------------------
+
+// --------------------------
+// Методы доступа к каналам
+// --------------------------
+/// Текущий выбраный канал
+int GetSelectedChannelIndex(void) const;
+bool SetSelectedChannelIndex(int channel_index);
+
+// Возвращает ссылку на указатель управляющего ядра
+RDK::UEPtr<RDK::UEngine>& GetEngine(void);
+RDK::UEPtr<RDK::UEngine> GetEngine(int engine_index);
+
+// Возвращает ссылку на указатель среды выполнения
+RDK::UEPtr<RDK::UEnvironment>& GetEnvironment(void);
+RDK::UEPtr<RDK::UEnvironment> GetEnvironment(int engine_index);
+
+// Возвращает ссылку на указатель хранилища
+RDK::UEPtr<RDK::UStorage>& GetStorage(void);
+RDK::UEPtr<RDK::UStorage> GetStorage(int engine_index);
+
+// Возвращает указатель на текущую модель
+RDK::UEPtr<RDK::UContainer> GetModel(void);
+RDK::UEPtr<RDK::UContainer> GetModel(int engine_index);
+// --------------------------
+
+// --------------------------
+// Методы доступа к каналам с блокировкой
+// --------------------------
+// Возвращает ссылку на указатель управляющего ядра
+RDK::UELockPtr<RDK::UEngine> GetEngineLock(void);
+RDK::UELockPtr<RDK::UEngine> GetEngineLock(int engine_index);
+
+// Возвращает ссылку на указатель среды выполнения
+RDK::UELockPtr<RDK::UEnvironment> GetEnvironmentLock(void);
+RDK::UELockPtr<RDK::UEnvironment> GetEnvironmentLock(int engine_index);
+
+// Возвращает ссылку на указатель хранилища
+RDK::UELockPtr<RDK::UStorage> GetStorageLock(void);
+RDK::UELockPtr<RDK::UStorage> GetStorageLock(int engine_index);
+
+// Возвращает указатель на текущую модель
+RDK::UELockPtr<RDK::UContainer> GetModelLock(void);
+RDK::UELockPtr<RDK::UContainer> GetModelLock(int engine_index);
+// --------------------------
+
 };
 
-extern RDK::UEPtr<RDK::UEngine> PEngine;
-extern RDK::UEPtr<RDK::UEnvironment> PEnvironment;
-extern RDK::UEPtr<RDK::UStorage> PStorage;
+//extern RDK::UEPtr<RDK::UEngine> PEngine;
+//extern RDK::UEPtr<RDK::UEnvironment> PEnvironment;
+//extern RDK::UEPtr<RDK::UStorage> PStorage;
 
 extern int SelectedEngineIndex;
 

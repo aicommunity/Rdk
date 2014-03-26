@@ -35,7 +35,7 @@ template<typename Y> UESharedPtr(UESharedPtr<Y> &p)
  if(Counter)
   ++(*Counter);
 };
-~UESharedPtr(void);
+virtual ~UESharedPtr(void);
 // --------------------------
 
 // --------------------------
@@ -118,7 +118,7 @@ T* Get(void) const;
 // --------------------------
 // Операторы
 // --------------------------
-UEPtr<T>& operator = (UEPtr<T> &p);
+UEPtr<T>& operator = (const UEPtr<T> &p);
 
 UEPtr<T>& operator = (T *p);
 
@@ -178,7 +178,7 @@ T* UEPtr<T>::Get(void) const
 // Операторы
 // --------------------------
 template<typename T>
-UEPtr<T>& UEPtr<T>::operator = (UEPtr<T> &p)
+UEPtr<T>& UEPtr<T>::operator = (const UEPtr<T> &p)
 {
  PData=p.PData;
  return *this;
