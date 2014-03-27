@@ -113,9 +113,6 @@ int RDK_CALL SetNumEngines(int num)
  if(res != 0)
   return res;
 
- if(SelectedEngineIndex>=num)
-  SelectedEngineIndex=0;
-
  return 0;
 }
 
@@ -169,7 +166,7 @@ int RDK_CALL SelectEngine(int index)
  RDK::UELockPtr<RDK::UEngine> ptr1(DllManager.GetEngineLock(SelectedEngineIndex));
  RDK::UELockPtr<RDK::UEngine> ptr2(DllManager.GetEngineLock(index));
 
- SelectedEngineIndex=index;
+ DllManager.SetSelectedChannelIndex(index);
 
  return 0;
 }

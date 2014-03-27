@@ -116,8 +116,8 @@ int RDKDllManager::SetNumEngines(int num)
   MutexList[i]=UCreateMutex();
  }
 
- if(SelectedChannelIndex<=int(EngineList.size()))
-  SetSelectedChannelIndex(int(EngineList.size()-1));
+ if(SelectedChannelIndex>=num)
+  SetSelectedChannelIndex(0);
 
  return 0;
 }
@@ -164,7 +164,7 @@ int RDKDllManager::EngineCreate(int index)
    return 5;
   }
 
-  if(index == SelectedChannelIndex)
+//  if(index == SelectedChannelIndex)
   {
    /// Данные текущего выбранного канала
    Engine=EngineList[SelectedChannelIndex];
@@ -228,6 +228,7 @@ bool RDKDllManager::SetSelectedChannelIndex(int channel_index)
   return false;
 
  SelectedChannelIndex=channel_index;
+ ::SelectedEngineIndex=SelectedChannelIndex;
  /// Данные текущего выбранного канала
  Engine=EngineList[SelectedChannelIndex];
  Environment=EnvironmentList[SelectedChannelIndex];

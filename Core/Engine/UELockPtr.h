@@ -66,7 +66,7 @@ UELockPtr<T>::UELockPtr(UGenericMutex* mutex, T* pdata)
 
 template<typename T>
 UELockPtr<T>::UELockPtr(UGenericMutex* mutex, const UEPtr<T> &pdata)
- : UEPtr<T>(pdata.operator ->()), Mutex(mutex), Locker(new UGenericMutexLocker(mutex)), Counter(new long(1))
+ : UEPtr<T>(pdata.Get()), Mutex(mutex), Locker(new UGenericMutexLocker(mutex)), Counter(new long(1))
 {
 
 }
