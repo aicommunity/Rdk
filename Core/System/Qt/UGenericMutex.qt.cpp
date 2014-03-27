@@ -3,12 +3,12 @@
 // ---------------------------------------------------------------------------
 
 #include "../UGenericMutex.h"
-//#include <windows.h>
+#include <QMutex>
 
 class UGenericMutexQt: public UGenericMutex
 {
 private:
-void* m_UnlockEvent;
+QMutex m_mutex;
 
 public:
 UGenericMutexQt();
@@ -22,27 +22,23 @@ virtual bool wait(int timeout);
 
 UGenericMutexQt::UGenericMutexQt()
 {
- //m_UnlockEvent = CreateEvent(0, TRUE, TRUE, 0);
+    //mutex.lock();
 }
 
 UGenericMutexQt::~UGenericMutexQt()
 {
- //CloseHandle(m_UnlockEvent);
+    //mutex.unlock();
 }
 
 bool UGenericMutexQt::lock(int lock_id)
 {
- /*if (WaitForSingleObject(m_UnlockEvent, INFINITE) == WAIT_TIMEOUT)
-  return false;
- ResetEvent(m_UnlockEvent);*/
+ m_mutex.lock();
  return true;
 }
 
 bool UGenericMutexQt::unlock()
 {
- /*if (WaitForSingleObject(m_UnlockEvent, INFINITE) == WAIT_TIMEOUT)
-  return false;
- SetEvent(m_UnlockEvent);*/
+ m_mutex.unlock();
  return true;
 }
 
@@ -52,7 +48,7 @@ bool UGenericMutexQt::wait(int timeout)
  {
   return true;
  } */
- return false;
+ return m_mutex.tryLock(timeout);
 }
 // ---------------------------------------------------------------------------
 UGenericMutex* UCreateMutex(void)
