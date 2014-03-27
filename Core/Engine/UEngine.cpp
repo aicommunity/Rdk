@@ -132,6 +132,7 @@ std::string& UEngine::CreateTempString(void) const
  }
  break;
  }
+ return DummyTempString;
 }
 
 /// Возвращает временную строку

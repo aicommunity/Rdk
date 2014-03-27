@@ -1,7 +1,7 @@
 #ifndef RDK_ENGINE_SUPPORT_H
 #define RDK_ENGINE_SUPPORT_H
 
-#include "../../Engine/UELockPtr.h"
+#include "../../Core/Engine/UELockPtr.h"
 
 // Менеджер DLL
 class RDKDllManager

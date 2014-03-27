@@ -973,7 +973,7 @@ bool RDK_CALL Env_CallSourceController(void)
 bool RDK_CALL MEnv_CallSourceController(int engine_index)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
-  return 1000;
+  return false;
  return DllManager.GetEngineLock(engine_index)->Env_CallSourceController();
 }
 // --------------------------
@@ -1046,7 +1046,7 @@ bool RDK_CALL Model_CheckComponent(const char* stringid)
 bool RDK_CALL MModel_CheckComponent(int engine_index, const char* stringid)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
-  return 1000;
+  return false;
  return DllManager.GetEngineLock(engine_index)->Model_CheckComponent(stringid);
 }
 
@@ -1963,7 +1963,7 @@ bool RDK_CALL Model_SetDoubleSourceTime(double value)
 bool RDK_CALL MModel_SetDoubleSourceTime(int engine_index, double value)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
-  return 1000;
+  return false;
 
  return DllManager.GetEngineLock(engine_index)->Model_SetDoubleSourceTime(value);
 }
