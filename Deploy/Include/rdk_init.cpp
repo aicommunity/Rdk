@@ -1853,6 +1853,14 @@ double RDK_CALL Model_GetDoubleTime(void)
  return DllManager.GetEngineLock()->Model_GetDoubleTime();
 }
 
+double RDK_CALL MModel_GetDoubleTime(int engine_index)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 0.0;
+
+ return DllManager.GetEngineLock(engine_index)->Model_GetDoubleTime();
+}
+
 // Устанавливает текущее время модели
 bool RDK_CALL Model_SetTime(long long value)
 {
@@ -1871,6 +1879,14 @@ double RDK_CALL Model_GetDoubleRealTime(void)
 {
 
  return DllManager.GetEngineLock()->Model_GetDoubleRealTime();
+}
+
+double RDK_CALL MModel_GetDoubleRealTime(int engine_index)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 0.0;
+
+ return DllManager.GetEngineLock(engine_index)->Model_GetDoubleRealTime();
 }
 
 // Устанавливает реальное время

@@ -1565,12 +1565,14 @@ void TUGEngineControlForm::ResetChannel(int channel_index)
 void __fastcall TUGEngineControlForm::Start1Click(TObject *Sender)
 {
  StartChannel(-1);
+ RDK::UIVisualControllerStorage::UpdateInterface();
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUGEngineControlForm::Pause1Click(TObject *Sender)
 {
  PauseChannel(-1);
+ RDK::UIVisualControllerStorage::UpdateInterface();
 }
 //---------------------------------------------------------------------------
 
@@ -1606,6 +1608,7 @@ void __fastcall TUGEngineControlForm::Step1Click(TObject *Sender)
   return;
 
  UEngineMonitorForm->EngineMonitorFrame->Step1Click(Sender);
+ RDK::UIVisualControllerStorage::UpdateInterface();
 }
 //---------------------------------------------------------------------------
 
@@ -1682,6 +1685,7 @@ void __fastcall TUGEngineControlForm::CaptureVideo1Click(TObject *Sender)
 void __fastcall TUGEngineControlForm::Reset1Click(TObject *Sender)
 {
  ResetChannel(-1);
+ RDK::UIVisualControllerStorage::UpdateInterface();
 }
 //---------------------------------------------------------------------------
 
