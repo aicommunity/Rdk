@@ -822,6 +822,7 @@ RDK_LIB_TYPE void RDK_CALL Model_SetGlobalTimeStep(const char *stringid, int val
 
 // Возвращает текущее время модели
 RDK_LIB_TYPE long long RDK_CALL Model_GetTime(void);
+RDK_LIB_TYPE long long RDK_CALL MModel_GetTime(int engine_index);
 RDK_LIB_TYPE double RDK_CALL Model_GetDoubleTime(void);
 RDK_LIB_TYPE double RDK_CALL MModel_GetDoubleTime(int engine_index);
 

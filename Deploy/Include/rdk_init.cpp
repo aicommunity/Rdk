@@ -1847,6 +1847,14 @@ long long RDK_CALL Model_GetTime(void)
  return DllManager.GetEngineLock()->Model_GetTime();
 }
 
+long long RDK_CALL MModel_GetTime(int engine_index)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 0.0;
+
+ return DllManager.GetEngineLock(engine_index)->Model_GetTime();
+}
+
 double RDK_CALL Model_GetDoubleTime(void)
 {
 
