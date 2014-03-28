@@ -288,6 +288,9 @@ std::string ServerInterfaceAddress;
 /// Порт интерфейса управления сервером
 int ServerInterfacePort;
 
+/// Флаг запрета на запуск главной формы по Ctrl+F1
+bool DisableAdminForm;
+
 // Список специальных форм (не имеющих компонента управления в модели)
 std::map<std::string, TUVisualControllerForm*> SpecialForms;
 

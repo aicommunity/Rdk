@@ -80,6 +80,8 @@ __fastcall TUGEngineControlForm::TUGEngineControlForm(TComponent* Owner)
  AppWinState=true;
 
  ProjectAutoSaveStateFlag=false;
+
+ DisableAdminForm=false;
 }
 
 void __fastcall TUGEngineControlForm::WMSysCommand(TMessage &Msg)
@@ -1949,6 +1951,8 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
 
  ServerInterfaceAddress=AnsiString(app_ini->ReadString("Server","BindAddress","127.0.0.1")).c_str();
  ServerInterfacePort=app_ini->ReadInteger("Server","BindPort",45045);
+
+ DisableAdminForm=app_ini->ReadBool("General","DisableAdminForm",false);
 
  TrayIcon->Hint=ProgramName;
 
