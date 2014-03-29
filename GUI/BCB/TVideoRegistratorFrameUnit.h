@@ -284,6 +284,8 @@ __published:	// IDE-managed Components
 	TCheckBox *UsePreallocatedFileCheckBox;
 	TLabeledEdit *PreallocatedFileSizeLabeledEdit;
 	TButton *PreallocatedFileCreateButton;
+	TScrollBox *RecordingSettingsScrollBox;
+	TGroupBox *GroupBox1;
 	void __fastcall NetworkStreamingButtonClick(TObject *Sender);
 	void __fastcall StopNetworkStreamingButtonClick(TObject *Sender);
 	void __fastcall VideoGrabberVideoFromBitmapsNextFrameNeeded(TObject *Sender, bool FirstSample);

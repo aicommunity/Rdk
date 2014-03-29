@@ -241,7 +241,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
           ExplicitHeight = 686
           inherited ModePageControl: TPageControl
             Height = 519
-            ActivePage = NetworkStreamingFrame.RecordingTabSheet
             ExplicitHeight = 519
             inherited NetworkStreamingTabSheet: TTabSheet
               ExplicitHeight = 491
@@ -261,16 +260,28 @@ inherited VideoOutputFrame: TVideoOutputFrame
               end
             end
             inherited RecordingTabSheet: TTabSheet
-              inherited RecordingSettingsGroupBox: TGroupBox
-                Height = 436
-                inherited PreAllocatedRecordingGroupBox: TGroupBox
-                  Height = 95
-                  ExplicitHeight = 95
+              inherited RecordingSettingsScrollBox: TScrollBox
+                Height = 491
+                inherited GroupBox1: TGroupBox
+                  Width = 349
+                  inherited RecordingControlGroupBox: TGroupBox
+                    Width = 345
+                  end
+                  inherited RecordingSettingsGroupBox: TGroupBox
+                    Width = 345
+                    inherited RecordingMethodLabel: TLabel
+                      Width = 251
+                      ExplicitWidth = 87
+                    end
+                    inherited VideoCompressorLabel: TLabel
+                      Width = 250
+                      ExplicitWidth = 267
+                    end
+                    inherited VideoCompressorComboBox: TComboBox
+                      ExplicitWidth = 356
+                    end
+                  end
                 end
-              end
-              inherited RecordingControlGroupBox: TGroupBox
-                Top = 436
-                ExplicitTop = 436
               end
             end
           end
@@ -343,12 +354,16 @@ inherited VideoOutputFrame: TVideoOutputFrame
           ExplicitHeight = 686
           inherited ModePageControl: TPageControl
             Height = 519
+            ActivePage = RecordingFrame.NetworkStreamingTabSheet
             ExplicitHeight = 519
             inherited NetworkStreamingTabSheet: TTabSheet
               ExplicitHeight = 491
               inherited StreamingSettingsGroupBox: TGroupBox
                 Height = 436
                 ExplicitHeight = 436
+                DesignSize = (
+                  370
+                  436)
               end
               inherited NetworkStreamingControlGroupBox: TGroupBox
                 Top = 436
@@ -357,39 +372,30 @@ inherited VideoOutputFrame: TVideoOutputFrame
             end
             inherited RecordingTabSheet: TTabSheet
               ExplicitHeight = 491
-              inherited RecordingSettingsGroupBox: TGroupBox
-                Height = 436
-                ExplicitHeight = 436
-                DesignSize = (
-                  370
-                  436)
-                inherited RecordingFileNameLabeledEdit: TLabeledEdit
-                  EditLabel.ExplicitLeft = 183
-                  EditLabel.ExplicitTop = 202
-                  EditLabel.ExplicitWidth = 97
-                end
-                inherited VideoCompressorComboBox: TComboBox
-                  OnChange = RecordingFrameVideoCompressorComboBoxChange
-                end
-                inherited RecordHeightLabeledEdit: TLabeledEdit
-                  EditLabel.ExplicitLeft = 3
-                  EditLabel.ExplicitTop = 160
-                  EditLabel.ExplicitWidth = 68
-                end
-                inherited RecordWidthLabeledEdit: TLabeledEdit
-                  EditLabel.ExplicitLeft = 3
-                  EditLabel.ExplicitTop = 115
-                  EditLabel.ExplicitWidth = 65
-                end
-                inherited RecordingMethodComboBox: TComboBox
-                  OnChange = RecordingFrameRecordingMethodComboBoxChange
-                end
-              end
-              inherited RecordingControlGroupBox: TGroupBox
-                Top = 436
-                ExplicitTop = 436
-                inherited StartRecordingButton: TButton
-                  OnClick = RecordingFrameStartRecordingButtonClick
+              inherited RecordingSettingsScrollBox: TScrollBox
+                Height = 491
+                inherited GroupBox1: TGroupBox
+                  Width = 349
+                  Height = 550
+                  ExplicitHeight = 550
+                  inherited RecordingControlGroupBox: TGroupBox
+                    Width = 345
+                    Height = 93
+                  end
+                  inherited RecordingSettingsGroupBox: TGroupBox
+                    Width = 345
+                    inherited RecordingMethodLabel: TLabel
+                      Width = 251
+                      ExplicitWidth = 87
+                    end
+                    inherited VideoCompressorLabel: TLabel
+                      Width = 250
+                      ExplicitWidth = 267
+                    end
+                    inherited VideoCompressorComboBox: TComboBox
+                      ExplicitWidth = 356
+                    end
+                  end
                 end
               end
             end
