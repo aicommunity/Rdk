@@ -946,6 +946,8 @@ UId UContainer::AddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer)
  catch(UException &exception)
  {
   // Откат
+  BeforeDelComponent(comp);
+  comp->SharesUnInit();
   // Удаляем компонент из таблицы соответствий владельца
   DelLookupComponent(comp->Name);
 

@@ -252,6 +252,9 @@ int NumEnvInputs;
 // Число выходов среды
 int NumEnvOutputs;
 
+/// Флаг разрешения логгирования событий сервера
+bool EventsLogEnabled;
+
 // Разрешение изображений
 int InputEnvImageWidth, InputEnvImageHeight;
 

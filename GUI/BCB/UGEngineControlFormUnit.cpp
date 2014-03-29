@@ -82,6 +82,8 @@ __fastcall TUGEngineControlForm::TUGEngineControlForm(TComponent* Owner)
  ProjectAutoSaveStateFlag=false;
 
  DisableAdminForm=false;
+
+ EventsLogEnabled=true;
 }
 
 void __fastcall TUGEngineControlForm::WMSysCommand(TMessage &Msg)
@@ -465,6 +467,8 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
  int calc_time_mode=ProjectXml.ReadInteger("CalculationTimeSourceMode",0);
  UEngineMonitorForm->EngineMonitorFrame->SetCalculationTimeSourceMode(calc_time_mode);
 
+ EventsLogEnabled=ProjectXml.ReadBool("EventsLogEnabled",true);
+
  int num_engines=ProjectXml.ReadInteger("NumEngines",1);
  if(num_engines<=0)
   num_engines=1;
@@ -616,7 +620,7 @@ try{
 
   Env_SetDebugMode(DebugModeFlag[i]);
 
-  if(/*PredefinedStructure[i] == 0 &&*/ modelfilename.Length() != 0)
+  if(PredefinedStructure[i] == 0 && modelfilename.Length() != 0)
   {
    if(ExtractFilePath(modelfilename).Length() == 0)
 	UComponentsControlForm->ComponentsControlFrame->LoadModelFromFile(ProjectPath+modelfilename);
@@ -1566,6 +1570,7 @@ void TUGEngineControlForm::ResetChannel(int channel_index)
 
 void __fastcall TUGEngineControlForm::Start1Click(TObject *Sender)
 {
+ UEngineMonitorForm->RecreateEventsLogFile();
  StartChannel(-1);
  RDK::UIVisualControllerStorage::UpdateInterface();
 }
@@ -1575,6 +1580,7 @@ void __fastcall TUGEngineControlForm::Pause1Click(TObject *Sender)
 {
  PauseChannel(-1);
  RDK::UIVisualControllerStorage::UpdateInterface();
+ UEngineMonitorForm->RecreateEventsLogFile();
 }
 //---------------------------------------------------------------------------
 

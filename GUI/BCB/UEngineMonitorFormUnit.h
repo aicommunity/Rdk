@@ -39,6 +39,15 @@ virtual void ALoadParameters(RDK::USerStorageXML &xml);
 
 // Создание копии этого компонента
 virtual TUEngineMonitorForm* New(TComponent *owner=0);
+
+/// Файл для сохранения логов
+RDK::UEPtr<std::ofstream> EventsLogFile;
+
+/// Путь до файла логов
+std::string EventsLogFilePath;
+
+/// Функция обеспечивает закрытие текущего файла логов и создание нового
+void RecreateEventsLogFile(void);
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TUEngineMonitorForm *UEngineMonitorForm;

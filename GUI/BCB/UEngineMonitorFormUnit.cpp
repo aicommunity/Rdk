@@ -6,6 +6,7 @@
 #include "UEngineMonitorFormUnit.h"
 #include "rdk_initdll.h"
 #include "TUVisualController.h"
+#include "UGEngineControlFormUnit.h"
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -56,6 +57,17 @@ TUEngineMonitorForm* TUEngineMonitorForm::New(TComponent *owner)
 {
  return new TUEngineMonitorForm(owner);
 }
+
+/// Функция обеспечивает закрытие текущего файла логов и создание нового
+void TUEngineMonitorForm::RecreateEventsLogFile(void)
+{
+ if(EventsLogFile)
+ {
+  delete EventsLogFile;
+  EventsLogFile=0;
+ }
+}
+
 
 //---------------------------------------------------------------------------
 void __fastcall TUEngineMonitorForm::FormDestroy(TObject *Sender)
@@ -133,8 +145,33 @@ void __fastcall TUEngineMonitorForm::LogTimerTimer(TObject *Sender)
    }
   }
 
+
+  /// Сохраняем лог в файл если это необходимо
+  if(UGEngineControlForm->EventsLogEnabled && UGEngineControlForm->ProjectPath.Length()>0)
+  {
+   ForceDirectories(UGEngineControlForm->ProjectPath+"EventsLog");
+   EventsLogFilePath=AnsiString(UGEngineControlForm->ProjectPath+"EventsLog/").c_str();
+  }
+
   while(!UnsentLog.empty())
   {
+   if(UGEngineControlForm->EventsLogEnabled)
+   {
+	if(!EventsLogFile)
+	{
+	 std::string file_name;
+	 time_t time_data;
+	 time(&time_data);
+	 file_name=RDK::get_text_time(time_data, '.', '_');
+	 EventsLogFile= new std::ofstream((EventsLogFilePath+file_name+".txt").c_str(),std::ios_base::out | std::ios_base::app);
+	}
+
+	if(*EventsLogFile)
+	{
+	 *EventsLogFile<<UnsentLog.front()<<std::endl;
+	 EventsLogFile->flush();
+	}
+   }
 
    UEngineMonitorForm->EngineMonitorFrame->RichEdit->Lines->Add(UnsentLog.front().c_str());
    UEngineMonitorForm->EngineMonitorFrame->RichEdit->SelStart =
