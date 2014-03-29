@@ -616,7 +616,7 @@ try{
 
   Env_SetDebugMode(DebugModeFlag[i]);
 
-  if(PredefinedStructure[i] == 0 && modelfilename.Length() != 0)
+  if(/*PredefinedStructure[i] == 0 &&*/ modelfilename.Length() != 0)
   {
    if(ExtractFilePath(modelfilename).Length() == 0)
 	UComponentsControlForm->ComponentsControlFrame->LoadModelFromFile(ProjectPath+modelfilename);
