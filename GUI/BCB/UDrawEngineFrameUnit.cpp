@@ -256,7 +256,8 @@ void __fastcall TUDrawEngineFrame::ImageMouseDown(TObject *Sender, TMouseButton 
   std::string name=DrawEngine.FindComponent(X,Y);
   TPoint pos=Mouse->CursorPos;
   PopupX=X; PopupY=Y;
-  if(!name.empty())
+//  if(!name.empty())
+  if((X<20 || Y<20 || X>Image->Width-20 || Y>Image->Height-20) || !name.empty())
    PopupMenu->Popup(pos.X,pos.Y);
   return;
  }
@@ -507,10 +508,13 @@ void __fastcall TUDrawEngineFrame::Createlonglink1Click(TObject *Sender)
  }
  else
  {
-  StartName=ComponentName+std::string(".")+DrawEngine.FindComponent(PopupX,PopupY);
+  std::string found=DrawEngine.FindComponent(PopupX,PopupY);
+  if(!found.empty())
+   StartName=ComponentName+std::string(".")+found;
+  else
+   StartName=ComponentName;
  }
 
- //StartX=PopupX; StartY=PopupY;
  PopupX=-1;
  PopupY=-1;
 }
@@ -524,37 +528,24 @@ void __fastcall TUDrawEngineFrame::Finishlonglink1Click(TObject *Sender)
  }
  else
  {
-  StopName=ComponentName+std::string(".")+DrawEngine.FindComponent(PopupX,PopupY);
+  std::string found=DrawEngine.FindComponent(PopupX,PopupY);
+  if(!found.empty())
+   StopName=ComponentName+std::string(".")+found;
+  else
+   StopName=ComponentName;
  }
  PopupX=-1;
  PopupY=-1;
 
- if(StartName.empty() || StopName.empty())
-  return;
+// if(StartName.empty() || StopName.empty())
+//  return;
 
- // Отображаем окно установки связи
-/* std::string full_start_name;
- std::string full_stop_name;
- if(ComponentName.empty())
- {
-  full_start_name=StartName;
-  full_stop_name=StopName;
- }
- else
- {
-  full_start_name=ComponentName+std::string(".")+StartName;
-  full_stop_name=ComponentName+std::string(".")+StopName;
- }
-
- UComponentLinksForm->UComponentLinksFrame->Init(1, full_start_name,ComponentName,full_stop_name);
-  */
  UComponentLinksForm->UComponentLinksFrame->Init(1, StartName,"",StopName);
  if(UComponentLinksForm->Visible)
   UComponentLinksForm->Hide();
  if(UComponentLinksForm->ShowModal() == mrOk)
  {
   UComponentLinksForm->UComponentLinksFrame->UpdateInterface();
-//   SetNet(UComponentsControlForm->ComponentsControlFrame->ComponentsListFrame->GetCurrentComponentName());
   ReloadNet();
   UpdateInterface();
  }

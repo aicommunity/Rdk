@@ -515,6 +515,12 @@ bool UDrawEngine::DrawBackground(void)
 
  for(int i=0;i<CanvasHeight;i+=BackgroundLineStep)
   GEngine->Line(0,i,CanvasWidth-1,i);
+
+ GEngine->SetPenColor(BackgroundLineColor);
+ GEngine->Rect(0, 0, BackgroundLineStep*2, CanvasHeight, true);
+ GEngine->Rect(0, 0, CanvasWidth, BackgroundLineStep*2, true);
+ GEngine->Rect(CanvasWidth-BackgroundLineStep*2, 0, CanvasWidth, CanvasHeight, true);
+ GEngine->Rect(0, CanvasHeight-BackgroundLineStep*2, CanvasWidth, CanvasHeight, true);
  return true;
 }
 // ---------------------------

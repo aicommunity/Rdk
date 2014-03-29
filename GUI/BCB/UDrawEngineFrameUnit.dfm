@@ -45,15 +45,11 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
         ExplicitWidth = 227
         ExplicitHeight = 422
         inherited NameTabSheet: TTabSheet
-          ExplicitWidth = 219
-          ExplicitHeight = 394
+          ExplicitWidth = 499
+          ExplicitHeight = 515
           inherited StringGrid: TStringGrid
-            Width = 219
-            Height = 394
             OnMouseMove = UClassesListFrameStringGridMouseMove
             OnMouseUp = UClassesListFrameStringGridMouseUp
-            ExplicitWidth = 219
-            ExplicitHeight = 394
           end
         end
         inherited LibsTabSheet: TTabSheet
