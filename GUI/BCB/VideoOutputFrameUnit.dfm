@@ -17,10 +17,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
     TabOrder = 0
     object VideoSourceTabSheet: TTabSheet
       Caption = 'Video Source'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object GroupBox: TGroupBox
         Left = 0
         Top = 0
@@ -217,10 +213,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
     object NetworkStreamingTabSheet: TTabSheet
       Caption = 'Network Streaming'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       inline NetworkStreamingFrame: TTVideoRegistratorFrame
         Left = 0
         Top = 0
@@ -235,32 +227,51 @@ inherited VideoOutputFrame: TVideoOutputFrame
         ParentFont = False
         TabOrder = 0
         ExplicitWidth = 771
+        ExplicitHeight = 686
         inherited Splitter1: TSplitter
           Left = 388
+          Height = 686
           ExplicitLeft = 525
           ExplicitHeight = 659
         end
         inherited ControlPanel: TPanel
           Left = 391
+          Height = 686
           ExplicitLeft = 391
+          ExplicitHeight = 686
           inherited ModePageControl: TPageControl
+            Height = 519
+            ActivePage = NetworkStreamingFrame.RecordingTabSheet
+            ExplicitHeight = 519
             inherited NetworkStreamingTabSheet: TTabSheet
-              ExplicitLeft = 0
-              ExplicitTop = 0
-              ExplicitWidth = 0
-              ExplicitHeight = 0
+              ExplicitHeight = 491
+              inherited StreamingSettingsGroupBox: TGroupBox
+                Height = 436
+                ExplicitHeight = 436
+                DesignSize = (
+                  370
+                  436)
+              end
               inherited NetworkStreamingControlGroupBox: TGroupBox
+                Top = 436
+                ExplicitTop = 436
                 inherited NetworkStreamingButton: TButton
                   OnClick = NetworkStreamingFrameNetworkStreamingButtonClick
                 end
               end
             end
             inherited RecordingTabSheet: TTabSheet
-              TabVisible = False
-              ExplicitLeft = 4
-              ExplicitTop = 24
-              ExplicitWidth = 370
-              ExplicitHeight = 491
+              inherited RecordingSettingsGroupBox: TGroupBox
+                Height = 436
+                inherited PreAllocatedRecordingGroupBox: TGroupBox
+                  Height = 95
+                  ExplicitHeight = 95
+                end
+              end
+              inherited RecordingControlGroupBox: TGroupBox
+                Top = 436
+                ExplicitTop = 436
+              end
             end
           end
           inherited SourcePageControl: TPageControl
@@ -272,29 +283,30 @@ inherited VideoOutputFrame: TVideoOutputFrame
               ExplicitWidth = 0
               ExplicitHeight = 0
             end
-            inherited SourceFrameTabSheet: TTabSheet
-              ExplicitLeft = 0
-              ExplicitTop = 0
-              ExplicitWidth = 0
-              ExplicitHeight = 0
-            end
           end
         end
         inherited VideoPanel: TPanel
           Width = 388
+          Height = 686
           Constraints.MinWidth = 388
           ExplicitWidth = 388
+          ExplicitHeight = 686
           inherited PreviewImage: TImage
             Width = 386
-            ExplicitWidth = 523
-            ExplicitHeight = 604
+            Height = 631
+            ExplicitWidth = 386
+            ExplicitHeight = 666
           end
           inherited VideoGrabber: TVideoGrabber
             Width = 386
+            Height = 631
             ExplicitWidth = 386
+            ExplicitHeight = 631
           end
           inherited VideoControlGroupBox: TGroupBox
+            Top = 632
             Width = 386
+            ExplicitTop = 632
             ExplicitWidth = 386
           end
         end
@@ -303,10 +315,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
     object RecordingTabSheet: TTabSheet
       Caption = 'Recording'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       inline RecordingFrame: TTVideoRegistratorFrame
         Left = 0
         Top = 0
@@ -321,29 +329,40 @@ inherited VideoOutputFrame: TVideoOutputFrame
         ParentFont = False
         TabOrder = 0
         ExplicitWidth = 771
+        ExplicitHeight = 686
         inherited Splitter1: TSplitter
           Left = 388
+          Height = 686
           ExplicitLeft = 525
           ExplicitHeight = 659
         end
         inherited ControlPanel: TPanel
           Left = 391
+          Height = 686
           ExplicitLeft = 391
+          ExplicitHeight = 686
           inherited ModePageControl: TPageControl
-            ActivePage = RecordingFrame.RecordingTabSheet
+            Height = 519
+            ExplicitHeight = 519
             inherited NetworkStreamingTabSheet: TTabSheet
-              TabVisible = False
-              ExplicitLeft = 0
-              ExplicitTop = 0
-              ExplicitWidth = 0
-              ExplicitHeight = 0
+              ExplicitHeight = 491
+              inherited StreamingSettingsGroupBox: TGroupBox
+                Height = 436
+                ExplicitHeight = 436
+              end
+              inherited NetworkStreamingControlGroupBox: TGroupBox
+                Top = 436
+                ExplicitTop = 436
+              end
             end
             inherited RecordingTabSheet: TTabSheet
-              ExplicitLeft = 4
-              ExplicitTop = 24
-              ExplicitWidth = 370
               ExplicitHeight = 491
               inherited RecordingSettingsGroupBox: TGroupBox
+                Height = 436
+                ExplicitHeight = 436
+                DesignSize = (
+                  370
+                  436)
                 inherited RecordingFileNameLabeledEdit: TLabeledEdit
                   EditLabel.ExplicitLeft = 183
                   EditLabel.ExplicitTop = 202
@@ -362,8 +381,13 @@ inherited VideoOutputFrame: TVideoOutputFrame
                   EditLabel.ExplicitTop = 115
                   EditLabel.ExplicitWidth = 65
                 end
+                inherited RecordingMethodComboBox: TComboBox
+                  OnChange = RecordingFrameRecordingMethodComboBoxChange
+                end
               end
               inherited RecordingControlGroupBox: TGroupBox
+                Top = 436
+                ExplicitTop = 436
                 inherited StartRecordingButton: TButton
                   OnClick = RecordingFrameStartRecordingButtonClick
                 end
@@ -379,29 +403,30 @@ inherited VideoOutputFrame: TVideoOutputFrame
               ExplicitWidth = 0
               ExplicitHeight = 0
             end
-            inherited SourceFrameTabSheet: TTabSheet
-              ExplicitLeft = 0
-              ExplicitTop = 0
-              ExplicitWidth = 0
-              ExplicitHeight = 0
-            end
           end
         end
         inherited VideoPanel: TPanel
           Width = 388
+          Height = 686
           Constraints.MinWidth = 388
           ExplicitWidth = 388
+          ExplicitHeight = 686
           inherited PreviewImage: TImage
             Width = 386
+            Height = 631
             ExplicitWidth = 523
             ExplicitHeight = 604
           end
           inherited VideoGrabber: TVideoGrabber
             Width = 386
+            Height = 631
             ExplicitWidth = 386
+            ExplicitHeight = 631
           end
           inherited VideoControlGroupBox: TGroupBox
+            Top = 632
             Width = 386
+            ExplicitTop = 632
             ExplicitWidth = 386
           end
         end
@@ -591,7 +616,7 @@ inherited VideoOutputFrame: TVideoOutputFrame
     Left = 688
     Top = 456
     Bitmap = {
-      494C010120005400540010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C0101200060007C0010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000009000000001002000000000000090
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -1792,6 +1817,9 @@ inherited VideoOutputFrame: TVideoOutputFrame
     object SelectFile1: TMenuItem
       Caption = 'Select File'
       OnClick = SelectFile1Click
+    end
+    object RecordingMethod: TMenuItem
+      Caption = 'Recording Method'
     end
     object VideoCodec: TMenuItem
       Caption = 'Video Codec'

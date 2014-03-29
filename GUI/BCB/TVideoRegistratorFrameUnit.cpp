@@ -22,7 +22,6 @@ __fastcall TVideoGetBitmapFrameThread::TVideoGetBitmapFrameThread(TTVideoRegistr
 : Frame(frame), TThread(CreateSuspended)
 {
  SourceMode=-1;
- //CaptureEnabled=CreateEvent(0,TRUE,0,0);
  SourceUnlock=CreateEvent(0,TRUE,TRUE,0);
  SourceWriteUnlock=CreateEvent(0,TRUE,TRUE,0);
  FrameNotInProgress=CreateEvent(0,TRUE,TRUE,0);
@@ -34,7 +33,6 @@ __fastcall TVideoGetBitmapFrameThread::TVideoGetBitmapFrameThread(TTVideoRegistr
 
 __fastcall TVideoGetBitmapFrameThread::~TVideoGetBitmapFrameThread(void)
 {
- //CloseHandle(CaptureEnabled);
  CloseHandle(SourceUnlock);
  CloseHandle(SourceWriteUnlock);
  CloseHandle(FrameNotInProgress);
@@ -97,12 +95,6 @@ HANDLE TVideoGetBitmapFrameThread::GetSourceUnlock(void) const
  return SourceUnlock;
 }
 
-/// Выставляется на время работы видеозахвата
-HANDLE TVideoGetBitmapFrameThread::GetCaptureEnabled(void) const
-{
- //return CaptureEnabled;
-}
-
 /// Сбрасывается на время ожидания расчета
 HANDLE TVideoGetBitmapFrameThread::GetCalcCompleteEvent(void) const
 {
@@ -113,12 +105,12 @@ HANDLE TVideoGetBitmapFrameThread::GetCalcCompleteEvent(void) const
 // --------------------------
 void __fastcall TVideoGetBitmapFrameThread::Start(void)
 {
- //SetEvent(CaptureEnabled);
+
 }
 
 void __fastcall TVideoGetBitmapFrameThread::Stop(void)
 {
- //ResetEvent(CaptureEnabled);
+
 }
 
 void __fastcall TVideoGetBitmapFrameThread::BeforeCalculate(void)
@@ -222,16 +214,12 @@ bool TVideoGetBitmapFrameThread::WriteSourceSafe(Graphics::TBitmap *src, bool re
 __fastcall TVideoGetBitmapFrameFromVideoThread::TVideoGetBitmapFrameFromVideoThread(TTVideoRegistratorFrame *frame, bool CreateSuspended)
 : TVideoGetBitmapFrameThread(frame, CreateSuspended)
 {
- //TempBitmap=new RDK::UBitmap();
+
 }
 
 __fastcall TVideoGetBitmapFrameFromVideoThread::~TVideoGetBitmapFrameFromVideoThread(void)
 {
- //if(TempBitmap)
- //{
-  //delete TempBitmap;
-  //TempBitmap=0;
- //}
+
 }
 // --------------------------
 
@@ -287,13 +275,10 @@ void __fastcall TVideoGetBitmapFrameFromVideoThread::BeforeCalculate(void)
 void __fastcall TVideoGetBitmapFrameFromVideoThread::AfterCalculate(void)
 {
   TVideoGetBitmapFrameThread::AfterCalculate();
-  //Sleep(30);
 }
 
 void __fastcall TVideoGetBitmapFrameFromVideoThread::Calculate(void)
 {
- //VideoOutputFrame=VideoOutputForm->GetVideoOutputFrame(FrameIndex);
-
  if(VideoOutputFrame)
  {
   double time_stamp;
@@ -309,23 +294,18 @@ void __fastcall TVideoGetBitmapFrameFromVideoThread::Calculate(void)
   }
  }
 }
-//---------------------------------------------------------------------------
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
 __fastcall TVideoGetBitmapFrameFromComponentThread::TVideoGetBitmapFrameFromComponentThread(TTVideoRegistratorFrame *frame, bool CreateSuspended)
 : TVideoGetBitmapFrameThread(frame, CreateSuspended)
 {
- //TempBitmap=new Graphics::TBitmap;
+
 }
 
 __fastcall TVideoGetBitmapFrameFromComponentThread::~TVideoGetBitmapFrameFromComponentThread(void)
 {
- //if(TempBitmap)
- //{
- // delete TempBitmap;
- // TempBitmap=0;
- //}
+
 }
 // --------------------------
 
@@ -382,7 +362,6 @@ void __fastcall TVideoGetBitmapFrameFromComponentThread::BeforeCalculate(void)
 void __fastcall TVideoGetBitmapFrameFromComponentThread::AfterCalculate(void)
 {
   TVideoGetBitmapFrameThread::AfterCalculate();
-  //Sleep(30);
 }
 
 void __fastcall TVideoGetBitmapFrameFromComponentThread::Calculate(void)
@@ -430,6 +409,14 @@ __fastcall TTVideoRegistratorFrame::~TTVideoRegistratorFrame(void)
 }
 //---------------------------------------------------------------------------
 // Методы
+void __fastcall TTVideoRegistratorFrame::AssignListToComboBox (TComboBox* ComboBox, String List, int Index)
+{
+ ComboBox->Items->Text = List;
+ if (ComboBox->Items->Count > 0)
+ {
+  ComboBox->ItemIndex = Index;
+ }
+}
 // Заполнение массива ошибок
 void TTVideoRegistratorFrame::FillErrorsArray(void)
 {
@@ -449,12 +436,30 @@ void TTVideoRegistratorFrame::FillErrorsArray(void)
  FrameIndex=0;
 }
 //---------------------------------------------------------------------------
+// Обновление доступного интерфеса
+void __fastcall TTVideoRegistratorFrame::RefreshDeviceControls(void)
+{
+ //bool CanUseCompressors = (VideoGrabber->RecordingMethod != rm_AVI) && (VideoGrabber->RecordingMethod != rm_SendToDV);
+ bool CanUseCompressors = (RecordingMethodComboBox->ItemIndex != 0) && (RecordingMethodComboBox->ItemIndex != 8);
+ //bool CanUseMultiplexer = CanUseCompressors && (VideoGrabber->RecordingMethod != rm_AVI);
+ //if(!CanUseCompressors)
+ //{
+ // VideoCompressionModeComboBox->ItemIndex=0;
+ //}
+
+ RecordingModeComboBox->Enabled = CanUseCompressors;
+ VideoCompressorComboBox->Enabled = CanUseCompressors;
+ UsePreallocatedFileCheckBox->Enabled = CanUseCompressors;
+ VideoCompressorSettingsButton->Enabled = CanUseCompressors;
+ VideoCompressionModeComboBox->Enabled = CanUseCompressors;
+
+}
+//---------------------------------------------------------------------------
 // Логгирование ошибок
 bool TTVideoRegistratorFrame::WriteLogMessage(const int &err)
 {
  if(Errors[err] != "")
  {
-  //LogMemo->Lines->Add(Now().DateString()+" "+Now().TimeString()+" "+Errors[err].c_str());
   Engine_LogMessage(RDK_EX_DEBUG, Errors[err].c_str());
   return false;
  }
@@ -477,16 +482,11 @@ int TTVideoRegistratorFrame::Init(void)
 {
  // Формат сжатия
  VideoCompressorComboBox->Items->Clear();
+ AssignListToComboBox(VideoCompressorComboBox, VideoGrabber->VideoCompressors, VideoGrabber->VideoCompressor);
 
- std::string strings=AnsiString(VideoGrabber->VideoCompressors).c_str();
- std::vector<std::string> temp;
- RDK::separatestring(strings, temp, '\n');
- for(int i=0; i<temp.size(); i++)
- {
-  VideoCompressorComboBox->Items->Add(temp[i].c_str());
- }
- VideoCompressorComboBox->ItemIndex=0;
-
+ InitStreamingSettings();
+ InitRecordingSettings();
+ RefreshDeviceControls();
  return 0;
 }
 //---------------------------------------------------------------------------
@@ -521,17 +521,32 @@ int TTVideoRegistratorFrame::InitRecordingSettings(void)
  VideoGrabber->ASFVideoFrameRate = StrToIntDef(RecordingFrameRateLabeledEdit->Text, 30);
  VideoGrabber->FrameRate = StrToIntDef(RecordingFrameRateLabeledEdit->Text, 30);
  VideoGrabber->RecordingFileName = RecordingFileNameLabeledEdit->Text;
- //VideoGrabber->HoldRecording = true;
  VideoGrabber->RecordingMethod = RecordingMethodComboBox->ItemIndex;
- VideoGrabber->VideoCompressor = VideoCompressorComboBox->ItemIndex;
- VideoGrabber->CompressionMode = VideoCompressionModeComboBox->ItemIndex;
- VideoGrabber->RecordingTimerInterval = StrToIntDef(RecordingTimerLabeledEdit->Text, 10);
+
+ if((RecordingMethodComboBox->ItemIndex != 0) && (RecordingMethodComboBox->ItemIndex != 8))
+ {
+  VideoGrabber->VideoCompressor = VideoCompressorComboBox->ItemIndex;
+  VideoGrabber->CompressionMode = VideoCompressionModeComboBox->ItemIndex;
+ }
+ else
+ {
+  VideoGrabber->CompressionMode = 0;
+ }
 
  // Запись по таймеру
- if(RecordingModeComboBox->ItemIndex == 0)
+ if(RecordingModeComboBox->ItemIndex != 0)
+ {
   VideoGrabber->RecordingTimer=RecordingModeComboBox->ItemIndex;
+  VideoGrabber->RecordingTimerInterval = StrToIntDef(RecordingTimerLabeledEdit->Text, 10);
+ }
 
-
+ // Preallocated file
+ if(UsePreallocatedFileCheckBox->Checked)
+ {
+  VideoGrabber->PreallocCapFileEnabled=UsePreallocatedFileCheckBox->Checked;
+  VideoGrabber->PreallocCapFileSizeInMB=StrToIntDef(PreallocatedFileSizeLabeledEdit->Text, 100);
+  VideoGrabber->PreallocCapFileName=RecordingFileNameLabeledEdit->Text;
+ }
 }
 //---------------------------------------------------------------------------
 int TTVideoRegistratorFrame::GetBitmapFrame(void)
@@ -549,8 +564,8 @@ int TTVideoRegistratorFrame::PrepareBitmapFrame(void)
   return 0;
 
  InputFrameBitmap = new TBitmap;
- //frame = new unsigned char [frameheight_*framewidth_];
 
+ /*
  struct
  {
   TLogPalette lpal;
@@ -573,6 +588,7 @@ int TTVideoRegistratorFrame::PrepareBitmapFrame(void)
   DeleteObject(InputFrameBitmap->Palette);
 
  InputFrameBitmap->Palette=CreatePalette((const tagLOGPALETTE *)&SysPal.lpal);
+ */
  return 0;
 }
 //---------------------------------------------------------------------------
@@ -625,25 +641,18 @@ void __fastcall TTVideoRegistratorFrame::NetworkStreamingButtonClick(TObject *Se
    BitmapFrameThread=new TVideoGetBitmapFrameFromVideoThread(this, true);
    TVideoGetBitmapFrameFromVideoThread* thread=dynamic_cast<TVideoGetBitmapFrameFromVideoThread*>(BitmapFrameThread);
    thread->SetVideoFrame(VideoOutputForm->GetVideoOutputFrame(StrToIntDef(FrameIndexLabeledEdit->Text, 0)));
-   //>SetFrameIndex(StrToIntDef(FrameIndexLabeledEdit->Text, 0));
    thread->Resume();
    break;
   }
  }
- //UGEngineControlForm->Start1Click(this);
 
  VideoGrabber->StartPreview();
  if(VideoGrabber->StreamingURL!="")
  {
-  //RecordingTabSheet->TabVisible=false;
   Engine_LogMessage(RDK_EX_INFO, (std::string("Network streaming started: ")+AnsiString(VideoGrabber->StreamingURL).c_str()).c_str());
-  //LogMemo->Lines->Add(VideoGrabber->StreamingURL);
-  //LogMemo->Lines->Add(Now().DateString()+" "+Now().TimeString()+ " Network streaming started");
-  //StreamingFlag=true;
  }
 
  else
-  //LogMemo->Lines->Add("Network streaming not running");
   Engine_LogMessage(RDK_EX_INFO, (std::string("Network streaming not running")).c_str());
 }
 //---------------------------------------------------------------------------
@@ -655,7 +664,6 @@ void __fastcall TTVideoRegistratorFrame::StopNetworkStreamingButtonClick(TObject
 
  VideoGrabber->NetworkStreaming=ns_Disabled;
  VideoGrabber->StopPreview();
-  //LogMemo->Lines->Add(Now().DateString()+" "+Now().TimeString()+ " Network streaming stopped");
   Engine_LogMessage(RDK_EX_INFO, (std::string("Network streaming stopped")).c_str());
 
  if(BitmapFrameThread)
@@ -666,12 +674,6 @@ void __fastcall TTVideoRegistratorFrame::StopNetworkStreamingButtonClick(TObject
   delete BitmapFrameThread;
   BitmapFrameThread=0;
  }
-
-  //InputFrameBitmap->Free();
-  //InputFrameBitmap=NULL;
-  //delete InputFrameBitmap;
-
-  //RecordingTabSheet->TabVisible=true;
 }
 //---------------------------------------------------------------------------
 void __fastcall TTVideoRegistratorFrame::VideoGrabberVideoFromBitmapsNextFrameNeeded(TObject *Sender,
@@ -691,11 +693,9 @@ void __fastcall TTVideoRegistratorFrame::VideoGrabberVideoFromBitmapsNextFrameNe
 void __fastcall TTVideoRegistratorFrame::GetStreamingHostButtonClick(TObject *Sender)
 {
  if(VideoGrabber->StreamingURL != "")
-  //LogMemo->Lines->Add(VideoGrabber->StreamingURL);
   Engine_LogMessage(RDK_EX_INFO, (AnsiString(VideoGrabber->StreamingURL)).c_str());
 
  else
-  //LogMemo->Lines->Add(Now().DateString()+" "+Now().TimeString()+ " Network streaming not running");
   Engine_LogMessage(RDK_EX_INFO, (std::string("Network streaming not running").c_str()));
 }
 //---------------------------------------------------------------------------
@@ -717,10 +717,6 @@ void __fastcall TTVideoRegistratorFrame::VideoGrabberFrameCaptureCompleted(TObje
  }
 }
 //---------------------------------------------------------------------------
-
-
-
-
 void __fastcall TTVideoRegistratorFrame::StartRecordingButtonClick(TObject *Sender)
 {
  StopRecordingButtonClick(this);
@@ -749,45 +745,32 @@ void __fastcall TTVideoRegistratorFrame::StartRecordingButtonClick(TObject *Send
    BitmapFrameThread=new TVideoGetBitmapFrameFromVideoThread(this, true);
    TVideoGetBitmapFrameFromVideoThread* thread=dynamic_cast<TVideoGetBitmapFrameFromVideoThread*>(BitmapFrameThread);
    thread->SetVideoFrame(VideoOutputForm->GetVideoOutputFrame(StrToIntDef(FrameIndexLabeledEdit->Text, 0)));
-   //thread->SetFrameIndex(StrToIntDef(FrameIndexLabeledEdit->Text, 0));
    thread->Resume();
    break;
   }
  }
- //UGEngineControlForm->Start1Click(this);
 
  if(VideoGrabber->StartRecording())
  {
-  //LogMemo->Lines->Add("Recording started");
   Engine_LogMessage(RDK_EX_INFO, (std::string("Recording started").c_str()));
-  //NetworkStreamingTabSheet->TabVisible=false;
- }
 
- //RecordingFlag=true;
+ }
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TTVideoRegistratorFrame::StopRecordingButtonClick(TObject *Sender)
 {
  VideoGrabber->StopRecording();
- //LogMemo->Lines->Add("Recording stopped");
  Engine_LogMessage(RDK_EX_INFO, (std::string("Recording stopped").c_str()));
 
  if(BitmapFrameThread)
  {
-  //WaitForSingleObject(BitmapFrameThread->GetCalcCompleteEvent(),1000);
   BitmapFrameThread->Terminate();
   WaitForSingleObject(BitmapFrameThread->GetFrameNotInProgress(),1000);
   BitmapFrameThread->WaitFor();
   delete BitmapFrameThread;
   BitmapFrameThread=0;
  }
-
- //InputFrameBitmap->Free();
- //InputFrameBitmap=NULL;
- //delete InputFrameBitmap;
-
- //NetworkStreamingTabSheet->TabVisible=true;
 }
 //---------------------------------------------------------------------------
 
@@ -824,16 +807,13 @@ void __fastcall TTVideoRegistratorFrame::StartPreviewButtonClick(TObject *Sender
    BitmapFrameThread=new TVideoGetBitmapFrameFromVideoThread(this, true);
    TVideoGetBitmapFrameFromVideoThread* thread=dynamic_cast<TVideoGetBitmapFrameFromVideoThread*>(BitmapFrameThread);
    thread->SetVideoFrame(VideoOutputForm->GetVideoOutputFrame(StrToIntDef(FrameIndexLabeledEdit->Text, 0)));
-   //thread->SetFrameIndex(StrToIntDef(FrameIndexLabeledEdit->Text, 0));
    thread->Resume();
    break;
   }
  }
- //UGEngineControlForm->Start1Click(this);
 
  VideoGrabber->FrameRate = StrToIntDef(FrameRateLabeledEdit->Text, 30);
  if(VideoGrabber->StartPreview());
-  //LogMemo->Lines->Add("Preview started");
   Engine_LogMessage(RDK_EX_INFO, (std::string("Preview started").c_str()));
 }
 //---------------------------------------------------------------------------
@@ -841,22 +821,17 @@ void __fastcall TTVideoRegistratorFrame::StartPreviewButtonClick(TObject *Sender
 void __fastcall TTVideoRegistratorFrame::StopButtonClick(TObject *Sender)
 {
  VideoGrabber->StopPreview();
- //LogMemo->Lines->Add(Now().DateString()+" "+Now().TimeString()+ " Preview stopped");
  Engine_LogMessage(RDK_EX_INFO, (std::string("Preview stopped").c_str()));
 
  if(BitmapFrameThread)
  {
-  //WaitForSingleObject(BitmapFrameThread->GetCalcCompleteEvent(),1000);
   BitmapFrameThread->Terminate();
   WaitForSingleObject(BitmapFrameThread->GetFrameNotInProgress(),1000);
   BitmapFrameThread->WaitFor();
   delete BitmapFrameThread;
   BitmapFrameThread=0;
  }
-
- //UGEngineControlForm->Pause1Click(this);
 }
-//---------------------------------------------------------------------------
 // -----------------------------
 // Методы управления визуальным интерфейсом
 // -----------------------------
@@ -911,6 +886,9 @@ void TTVideoRegistratorFrame::ASaveParameters(RDK::USerStorageXML &xml)
  xml.WriteInteger("VideoCompressionMode", VideoCompressionModeComboBox->ItemIndex);
  xml.WriteInteger("RecordingMode", RecordingModeComboBox->ItemIndex);
  xml.WriteInteger("RecordingTimer", StrToInt(RecordingTimerLabeledEdit->Text));
+ xml.WriteInteger("PreallocatedFileSize", StrToInt(PreallocatedFileSizeLabeledEdit->Text));
+ xml.WriteBool("UsePreallocatedFile", UsePreallocatedFileCheckBox->Checked);
+
 }
 
 // Загружает параметры интерфейса из xml
@@ -934,12 +912,15 @@ void TTVideoRegistratorFrame::ALoadParameters(RDK::USerStorageXML &xml)
  RecordingFrameRateLabeledEdit->Text=(xml.ReadString("RecordingFrameRate", "")).c_str();
  RecordWidthLabeledEdit->Text=(xml.ReadString("RecordWidth", "")).c_str();
  RecordHeightLabeledEdit->Text=(xml.ReadString("RecordHeight", "")).c_str();
- RecordingMethodComboBox->ItemIndex=(xml.ReadInteger("RecordingMethod", 0));
+ RecordingMethodComboBox->ItemIndex=(xml.ReadInteger("RecordingMethod", 3));
  VideoCompressorComboBox->ItemIndex=(xml.ReadInteger("VideoCompressor", 0));
  VideoCompressionModeComboBox->ItemIndex=(xml.ReadInteger("VideoCompressionMode", 0));
  RecordingModeComboBox->ItemIndex=(xml.ReadInteger("RecordingMode", 0));
  RecordingTimerLabeledEdit->Text=(xml.ReadInteger("RecordingTimer", 0));
+ PreallocatedFileSizeLabeledEdit->Text=(xml.ReadInteger("PreallocatedFileSize", 0));
+ UsePreallocatedFileCheckBox->Checked=(xml.ReadBool("UsePreallocatedFile", false));
 
+ RefreshDeviceControls();
  UpdateInterface();
 }
 //---------------------------------------------------------------------------
@@ -977,6 +958,21 @@ void __fastcall TTVideoRegistratorFrame::VideoCompressorSettingsButtonClick(TObj
 {
  VideoGrabber->VideoCompressor = VideoCompressorComboBox->ItemIndex;
  VideoGrabber->ShowDialog(dlg_VideoCompressor);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TTVideoRegistratorFrame::PreallocatedFileCreateButtonClick(TObject *Sender)
+{
+ InitRecordingSettings();
+ VideoGrabber->CreatePreallocCapFile();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TTVideoRegistratorFrame::RecordingMethodComboBoxChange(TObject *Sender)
+{
+ InitStreamingSettings();
+ InitRecordingSettings();
+ RefreshDeviceControls();
 }
 //---------------------------------------------------------------------------
 

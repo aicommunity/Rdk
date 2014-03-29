@@ -103,6 +103,7 @@ __published:    // IDE-managed Components
 	TActionList *ActionList;
 	TAction *SavePictureAction;
 	TMenuItem *VideoCodec;
+	TMenuItem *RecordingMethod;
     void __fastcall TimerTimer(TObject *Sender);
 	void __fastcall StartButtonClick(TObject *Sender);
     void __fastcall StopButtonClick(TObject *Sender);
@@ -147,8 +148,13 @@ __published:    // IDE-managed Components
 //          TIdHTTPResponseInfo *AResponseInfo);
 	// Реакция на клик динамического меню выбора видео кодека записи
 	void __fastcall OnClickVideoCodec(TObject *Sender);
+
+	// Реакция на клик динамического меню выбора видео кодека записи
+	void __fastcall OnClickRecordingMethod(TObject *Sender);
+
 	void __fastcall RecordingFrameVideoCompressorComboBoxChange(TObject *Sender);
 	void __fastcall StartStreamingToolButtonClick(TObject *Sender);
+	void __fastcall RecordingFrameRecordingMethodComboBoxChange(TObject *Sender);
 
 private:    // User declarations
 public:        // User declarations
@@ -480,7 +486,8 @@ void ReceiveFromComponentState(const std::string &stringid, const std::string &s
 // Отправляет изображение в выбранный компонент
 void SendToComponentIO(void);
 // -------------------------
-
+// Динамически наполняет меню
+void DynamicMenuFilling(TMenuItem* target, std::vector<std::string> &itemsList);
 // -----------------------------
 // Методы управления визуальным интерфейсом
 // -----------------------------

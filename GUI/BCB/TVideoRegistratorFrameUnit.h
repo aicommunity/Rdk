@@ -53,9 +53,6 @@ int SourceMode;
 int ChannelIndex;
 
 protected: // Данные
-/// Временная метка последнего кадра
-//long long LastTimeStamp;
-
 /// Данные изображения
 RDK::UBitmap Source[2];
 
@@ -75,9 +72,6 @@ HANDLE FrameNotInProgress;
 /// Выставлено всегда. Сбрасывается на время доступа к изображению
 HANDLE SourceUnlock;
 HANDLE SourceWriteUnlock;
-
-/// Выставляется на время работы видеозахвата
-//HANDLE CaptureEnabled;
 
 /// Сбрасывается на время ожидания расчета
 HANDLE CalcCompleteEvent;
@@ -118,9 +112,6 @@ HANDLE GetFrameNotInProgress(void) const;
 /// Выставлено всегда. Сбрасывается на время доступа к изображению
 HANDLE GetSourceUnlock(void) const;
 
-/// Выставляется на время работы видеозахвата
-HANDLE GetCaptureEnabled(void) const;
-
 /// Сбрасывается на время ожидания расчета
 HANDLE GetCalcCompleteEvent(void) const;
 // --------------------------
@@ -156,7 +147,6 @@ int FrameIndex;
 
 protected: // Временные изображения
 RDK::UBitmap TempBitmap;
-//Graphics::TBitmap* TempBitmap;
 
 protected: // Данные
 // Источник данных
@@ -287,9 +277,13 @@ __published:	// IDE-managed Components
 	TButton *VideoCompressorSettingsButton;
 	TComboBox *VideoCompressionModeComboBox;
 	TLabel *VideoCompressionModeLabel;
-	TGroupBox *GroupBox1;
+	TGroupBox *RecordingTimerGroupBox;
 	TComboBox *RecordingModeComboBox;
 	TLabeledEdit *RecordingTimerLabeledEdit;
+	TGroupBox *PreAllocatedRecordingGroupBox;
+	TCheckBox *UsePreallocatedFileCheckBox;
+	TLabeledEdit *PreallocatedFileSizeLabeledEdit;
+	TButton *PreallocatedFileCreateButton;
 	void __fastcall NetworkStreamingButtonClick(TObject *Sender);
 	void __fastcall StopNetworkStreamingButtonClick(TObject *Sender);
 	void __fastcall VideoGrabberVideoFromBitmapsNextFrameNeeded(TObject *Sender, bool FirstSample);
@@ -309,6 +303,8 @@ __published:	// IDE-managed Components
 	void __fastcall BrowseFileNameButtonClick(TObject *Sender);
 	void __fastcall VideoCompressorComboBoxChange(TObject *Sender);
 	void __fastcall VideoCompressorSettingsButtonClick(TObject *Sender);
+	void __fastcall PreallocatedFileCreateButtonClick(TObject *Sender);
+	void __fastcall RecordingMethodComboBoxChange(TObject *Sender);
 
 
 private:	// User declarations
@@ -320,10 +316,6 @@ int FrameIndex;
 // 0 - bmp handle from component
 // 1 - bmp handle from frame
 int Mode;
-
-// Флаги работы трансляции и записи видео
-//bool StreamingFlag;
-//bool RecordingFlag;
 
 // Поток получения кадра
 TVideoGetBitmapFrameThread *BitmapFrameThread;
@@ -353,6 +345,8 @@ bool StartCamFlag;
 bool PreviewFlag;
 
 // Методы
+void __fastcall AssignListToComboBox (TComboBox* ComboBox, String List, int Index);
+
 // Заполнение массива ошибок
 void FillErrorsArray(void);
 
@@ -383,6 +377,9 @@ int PrepareBitmapFrame(void);
 // Установка фрейма источника при работе от фрейма
 bool SetVideoFrameSource(TVideoOutputFrame* sourceFrame);
 TVideoOutputFrame* GetVideoFrameSourc(void);
+
+
+void __fastcall RefreshDeviceControls (void);
 // -----------------------------
 // Методы управления визуальным интерфейсом
 // -----------------------------
@@ -408,11 +405,6 @@ virtual void ALoadParameters(RDK::USerStorageXML &xml);
 	__fastcall TTVideoRegistratorFrame(TComponent* Owner);
 	__fastcall ~TTVideoRegistratorFrame(void);
 };
-//int framewidth_;
-//int frameheight_;
-//double framerate_=-1;
-//unsigned long framecount_=-1;
-//-----------------------------------------------
 //---------------------------------------------------------------------------
 extern PACKAGE TTVideoRegistratorFrame *TVideoRegistratorFrame;
 //---------------------------------------------------------------------------

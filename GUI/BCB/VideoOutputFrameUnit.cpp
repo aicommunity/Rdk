@@ -240,45 +240,75 @@ void TVideoOutputFrame::ReadSourceSafe(RDK::UBitmap &bmp, double &time_stamp, bo
 /// Инициализация первичных настроек
 void TVideoOutputFrame::InitPrimarySettings(void)
 {
+ NetworkStreamingFrame->RecordingTabSheet->TabVisible=false;
+ RecordingFrame->NetworkStreamingTabSheet->TabVisible=false;
+
  NetworkStreamingFrame->FrameIndexLabeledEdit->Text=IntToStr(FrameIndex);
  RecordingFrame->FrameIndexLabeledEdit->Text=IntToStr(FrameIndex);
 
  RecordingFrame->Init();
 
- TMenuItem *parentItem=0;
+ // Получаем указатели на два динамических пункта меню
+ TMenuItem *parentItem1=0;
+ TMenuItem *parentItem2=0;
  for(int i=0; i<RecordingPopupMenu->Items->Count; i++)
  {
   if(RecordingPopupMenu->Items->Items[i]->Name == "VideoCodec")
   {
-   parentItem=RecordingPopupMenu->Items->Items[i];
-   break;
+   parentItem1=RecordingPopupMenu->Items->Items[i];
+  }
+
+  if(RecordingPopupMenu->Items->Items[i]->Name == "RecordingMethod")
+  {
+   parentItem2=RecordingPopupMenu->Items->Items[i];
   }
  }
 
- if(!parentItem)
-  return;
+ // Наполняем веткор имен для динамического меню
+ std::vector<std::string> itemList1;
+ std::vector<std::string> itemList2;
+ itemList1.clear();
+ itemList2.clear();
 
- parentItem->Clear();
- //parentItem->Free();
-
- std::string itemName;
  int size=RecordingFrame->VideoCompressorComboBox->Items->Capacity;
- String currentItem=RecordingFrame->VideoCompressorComboBox->Items->Strings[RecordingFrame->VideoCompressorComboBox->ItemIndex];
-
  for(int i=0; i<size; i++)
  {
-  TMenuItem *newItem=new TMenuItem(parentItem);
-  newItem->Caption=RecordingFrame->VideoCompressorComboBox->Items->Strings[i];
-  itemName="Codec";
-  itemName+=AnsiString(IntToStr(i)).c_str();
-  newItem->Name=String(itemName.c_str());
-  parentItem->Add(newItem);
-  newItem->OnClick=OnClickVideoCodec;
-  //delete newItem;
+  itemList1.push_back(AnsiString(RecordingFrame->VideoCompressorComboBox->Items->Strings[i]).c_str());
  }
 
- TMenuItem *currentCodec=parentItem->Find(currentItem);
- currentCodec->Checked=true;
+ size=RecordingFrame->RecordingMethodComboBox->Items->Capacity;
+ for(int i=0; i<size; i++)
+ {
+  itemList2.push_back(AnsiString(RecordingFrame->RecordingMethodComboBox->Items->Strings[i]).c_str());
+ }
+
+ // Наполняем меню из полученного вектора имен
+ DynamicMenuFilling(parentItem1, itemList1);
+ DynamicMenuFilling(parentItem2, itemList2);
+
+ // Назначаем событие onClick для динамических пунктов меню
+ for(int i=0; i<parentItem1->Count; i++)
+ {
+  parentItem1->Items[i]->OnClick=OnClickVideoCodec;
+ }
+
+ for(int i=0; i<parentItem2->Count; i++)
+ {
+  parentItem2->Items[i]->OnClick=OnClickRecordingMethod;
+ }
+
+ String currentItem=RecordingFrame->VideoCompressorComboBox->Items->Strings[RecordingFrame->VideoCompressorComboBox->ItemIndex];
+ TMenuItem *currentCodec=parentItem1->Find(currentItem);
+ if(currentCodec)
+  currentCodec->Checked=true;
+
+ currentItem=RecordingFrame->RecordingMethodComboBox->Items->Strings[RecordingFrame->RecordingMethodComboBox->ItemIndex];
+ TMenuItem *currentRMethod=parentItem2->Find(currentItem);
+ if(currentRMethod)
+  currentRMethod->Checked=true;
+
+ if( currentRMethod->MenuIndex==0 || currentRMethod->MenuIndex==8)
+  parentItem1->Enabled=false;
 }
 
 //---------------------------------------------------------------------------
@@ -1170,6 +1200,27 @@ void TVideoOutputFrame::SendToComponentIO(void)
 }
 // -------------------------
 
+// Динамически наполняет меню
+void TVideoOutputFrame::DynamicMenuFilling(TMenuItem* target, std::vector<std::string> &itemsList)
+{
+ if(!target)
+  return;
+
+ target->Clear();
+
+ std::string itemName;
+
+ for(int i=0; i<itemsList.size(); i++)
+ {
+  TMenuItem *newItem=new TMenuItem(target);
+  newItem->Caption=itemsList[i].c_str();
+  itemName=AnsiString(target->Name).c_str();
+  itemName+=AnsiString(IntToStr(i)).c_str();
+  newItem->Name=String(itemName.c_str());
+  target->Add(newItem);
+  //newItem->OnClick=OnClickVideoCodec;
+ }
+}
 
 // -----------------------------
 // Методы управления визуальным интерфейсом
@@ -2135,6 +2186,25 @@ void __fastcall TVideoOutputFrame::OnClickVideoCodec(TObject *Sender)
  currItem->Checked=true;
  return;
 }
+//---------------------------------------------------------------------------
+// Реакция на клик динамического меню выбора видео кодека записи
+void __fastcall TVideoOutputFrame::OnClickRecordingMethod(TObject *Sender)
+{
+ TMenuItem *currItem=dynamic_cast<TMenuItem*>(Sender);
+ TMenuItem *parentMenu=currItem->Parent;
+
+ for(int i=0; i<parentMenu->Count; i++)
+ {
+  if(parentMenu->Items[i]->Checked);
+   parentMenu->Items[i]->Checked=false;
+ }
+
+ RecordingFrame->RecordingMethodComboBox->ItemIndex=currItem->MenuIndex;
+ RecordingFrameRecordingMethodComboBoxChange(Sender);
+ currItem->Checked=true;
+ return;
+}
+//---------------------------------------------------------------------------
 void __fastcall TVideoOutputFrame::RecordingFrameVideoCompressorComboBoxChange(TObject *Sender)
 {
  RecordingFrame->VideoCompressorComboBoxChange(Sender);
@@ -2170,4 +2240,49 @@ void __fastcall TVideoOutputFrame::StartStreamingToolButtonClick(TObject *Sender
 }
 //---------------------------------------------------------------------------
 
+
+void __fastcall TVideoOutputFrame::RecordingFrameRecordingMethodComboBoxChange(TObject *Sender)
+
+{
+ RecordingFrame->RecordingMethodComboBoxChange(Sender);
+
+ TMenuItem *recMethod=0, *vidCodec=0;
+ int indexRecMethod=RecordingFrame->RecordingMethodComboBox->ItemIndex;
+ for(int i=0; i<RecordingPopupMenu->Items->Count; i++)
+ {
+  if(RecordingPopupMenu->Items->Items[i]->Name == "RecordingMethod")
+  {
+   recMethod=RecordingPopupMenu->Items->Items[i];
+  }
+
+  if(RecordingPopupMenu->Items->Items[i]->Name == "VideoCodec")
+  {
+   vidCodec=RecordingPopupMenu->Items->Items[i];
+  }
+ }
+
+ if(!recMethod)
+  return;
+
+ if(!vidCodec)
+  return;
+
+ for(int i=0; i<recMethod->Count; i++)
+ {
+  if(recMethod->Items[i]->Checked);
+   recMethod->Items[i]->Checked=false;
+ }
+
+ recMethod->Items[indexRecMethod]->Checked=true;
+
+ if( indexRecMethod==0 || indexRecMethod==8)
+ {
+  vidCodec->Enabled=false;
+ }
+ else
+ {
+  vidCodec->Enabled=true;
+ }
+}
+//---------------------------------------------------------------------------
 
