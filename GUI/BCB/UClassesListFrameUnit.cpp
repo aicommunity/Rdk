@@ -16,6 +16,7 @@ __fastcall TUClassesListFrame::TUClassesListFrame(TComponent* Owner)
 	: TUVisualControllerFrame(Owner)
 {
  UpdateInterfaceFlag=false;
+ CheckModelFlag=false;
 }
 //---------------------------------------------------------------------------
 

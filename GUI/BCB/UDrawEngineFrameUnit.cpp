@@ -257,7 +257,7 @@ void __fastcall TUDrawEngineFrame::ImageMouseDown(TObject *Sender, TMouseButton 
   TPoint pos=Mouse->CursorPos;
   PopupX=X; PopupY=Y;
 //  if(!name.empty())
-  if((X<20 || Y<20 || X>Image->Width-20 || Y>Image->Height-20) || !name.empty())
+  if((X<10 || Y<10 || X>Image->Width-10 || Y>Image->Height-10) || !name.empty())
    PopupMenu->Popup(pos.X,pos.Y);
   return;
  }

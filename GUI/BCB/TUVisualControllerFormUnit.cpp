@@ -27,6 +27,8 @@ __fastcall TUVisualControllerForm::TUVisualControllerForm(TComponent* Owner)
 
  CalculationStepUpdatedFlag=0;
 
+ CheckModelFlag=true;
+
  RDK::UIVisualControllerStorage::AddInterface(this);
 }
 
@@ -164,7 +166,7 @@ void TUVisualControllerForm::UpdateInterface(bool force_update)
 
  if(!IsEngineInit())
   return;
- if(!Model_Check())
+ if(CheckModelFlag && !Model_Check())
   return;
  UpdateInterfaceFlag=true;
   AUpdateInterface();

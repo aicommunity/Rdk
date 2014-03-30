@@ -36,6 +36,9 @@ DWORD LastUpdateTime;
 
 bool CalculationStepUpdatedFlag;
 
+/// Флаг, разрешающий проверку на существование модели перед обновлением интерфейса
+bool CheckModelFlag;
+
 public:
 // Флаг, сообщающий что идет расчет
 static bool CalculationModeFlag;

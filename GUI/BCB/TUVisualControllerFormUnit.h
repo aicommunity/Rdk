@@ -44,6 +44,9 @@ static bool CalculationModeFlag;
 
 bool CalculationStepUpdatedFlag;
 
+/// Флаг, разрешающий проверку на существование модели перед обновлением интерфейса
+bool CheckModelFlag;
+
 public:
 // -----------------------------
 // Методы управления визуальным интерфейсом

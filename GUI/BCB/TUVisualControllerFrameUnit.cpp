@@ -22,6 +22,7 @@ __fastcall TUVisualControllerFrame::TUVisualControllerFrame(TComponent* Owner)
  AlwaysUpdateFlag=false;
  UpdateInterval=1000;
  CalculationStepUpdatedFlag=false;
+ CheckModelFlag=true;
 
  RDK::UIVisualControllerStorage::AddInterface(this);
 }
@@ -152,7 +153,7 @@ void TUVisualControllerFrame::UpdateInterface(bool force_update)
 
  if(!IsEngineInit())
   return;
- if(!Model_Check())
+ if(CheckModelFlag && !Model_Check())
   return;
  UpdateInterfaceFlag=true;
   AUpdateInterface();

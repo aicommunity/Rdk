@@ -238,3 +238,9 @@ void __fastcall TUCreateProjectWizardForm::ModelFileNameRadioButtonClick(TObject
  UClassesListFrame1->Enabled=false;
 }
 //---------------------------------------------------------------------------
+void __fastcall TUCreateProjectWizardForm::FormShow(TObject *Sender)
+{
+ UClassesListFrame1->UpdateInterface(true);
+}
+//---------------------------------------------------------------------------
+
