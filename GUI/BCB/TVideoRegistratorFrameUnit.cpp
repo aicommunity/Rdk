@@ -9,6 +9,7 @@
 #include "TUBitmap.h"
 #include "VideoOutputFormUnit.h"
 #include "VideoOutputFrameUnit.h"
+#include "UGEngineControlFormUnit.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "VidGrab"
@@ -446,6 +447,10 @@ void __fastcall TTVideoRegistratorFrame::RefreshDeviceControls(void)
  //{
  // VideoCompressionModeComboBox->ItemIndex=0;
  //}
+ bool CanUseStoragePath=(StoragePathRadioGroup->ItemIndex == 1);
+
+ BrowseStoragePathButton->Enabled = CanUseStoragePath;
+ StoragePathLabeledEdit->Enabled = CanUseStoragePath;
 
  RecordingModeComboBox->Enabled = CanUseCompressors;
  VideoCompressorComboBox->Enabled = CanUseCompressors;
@@ -522,6 +527,15 @@ int TTVideoRegistratorFrame::InitRecordingSettings(void)
  VideoGrabber->FrameRate = StrToIntDef(RecordingFrameRateLabeledEdit->Text, 30);
  VideoGrabber->RecordingFileName = RecordingFileNameLabeledEdit->Text;
  VideoGrabber->RecordingMethod = RecordingMethodComboBox->ItemIndex;
+ if(StoragePathRadioGroup->ItemIndex == 0 || StoragePathLabeledEdit->Text=="")
+ {
+  VideoGrabber->StoragePath=UGEngineControlForm->ProjectPath;
+ }
+ else
+ {
+  VideoGrabber->StoragePath=StoragePathLabeledEdit->Text;
+ }
+
 
  if((RecordingMethodComboBox->ItemIndex != 0) && (RecordingMethodComboBox->ItemIndex != 8))
  {
@@ -888,6 +902,8 @@ void TTVideoRegistratorFrame::ASaveParameters(RDK::USerStorageXML &xml)
  xml.WriteInteger("RecordingTimer", StrToInt(RecordingTimerLabeledEdit->Text));
  xml.WriteInteger("PreallocatedFileSize", StrToInt(PreallocatedFileSizeLabeledEdit->Text));
  xml.WriteBool("UsePreallocatedFile", UsePreallocatedFileCheckBox->Checked);
+ xml.WriteInteger("StoragePathMode", StoragePathRadioGroup->ItemIndex);
+ xml.WriteString("StoragePath", AnsiString(StoragePathLabeledEdit->Text).c_str());
 
 }
 
@@ -919,6 +935,8 @@ void TTVideoRegistratorFrame::ALoadParameters(RDK::USerStorageXML &xml)
  RecordingTimerLabeledEdit->Text=(xml.ReadInteger("RecordingTimer", 0));
  PreallocatedFileSizeLabeledEdit->Text=(xml.ReadInteger("PreallocatedFileSize", 0));
  UsePreallocatedFileCheckBox->Checked=(xml.ReadBool("UsePreallocatedFile", false));
+ StoragePathRadioGroup->ItemIndex=(xml.ReadInteger("StoragePathMode", 0));
+ StoragePathLabeledEdit->Text=(xml.ReadString("StoragePath", "")).c_str();
 
  RefreshDeviceControls();
  UpdateInterface();
@@ -973,6 +991,20 @@ void __fastcall TTVideoRegistratorFrame::RecordingMethodComboBoxChange(TObject *
  InitStreamingSettings();
  InitRecordingSettings();
  RefreshDeviceControls();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TTVideoRegistratorFrame::StoragePathRadioGroupClick(TObject *Sender)
+{
+ RefreshDeviceControls();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TTVideoRegistratorFrame::BrowseStoragePathButtonClick(TObject *Sender)
+
+{
+ StoragePathOpenDialog->Execute();
+ StoragePathLabeledEdit->Text=StoragePathOpenDialog->InitialDir;
 }
 //---------------------------------------------------------------------------
 
