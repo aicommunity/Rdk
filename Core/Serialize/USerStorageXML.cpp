@@ -100,7 +100,7 @@ bool USerStorageXML::LoadToNode(USerStorageXML &node, bool node_clear)
 {
  if(node_clear)
   DelNodeInternalContent();
- CurrentNode.addChild(node.RootNode);
+ CurrentNode.addChild(node.RootNode.deepCopy());
  return true;
 }
 
@@ -111,7 +111,7 @@ bool USerStorageXML::LoadFieldsToNode(USerStorageXML &node, bool node_clear)
  for(int i=0;i<node.GetNumNodes();i++)
  {
   node.SelectNode(i);
-  CurrentNode.addChild(node.CurrentNode);
+  CurrentNode.addChild(node.CurrentNode.deepCopy());
   node.SelectUp();
  }
  return true;
