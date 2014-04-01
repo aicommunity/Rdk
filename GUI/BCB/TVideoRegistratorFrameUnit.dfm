@@ -1,51 +1,51 @@
 inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
-  Width = 1003
-  Height = 789
-  ExplicitWidth = 1003
-  ExplicitHeight = 789
+  Width = 1034
+  Height = 695
+  ExplicitWidth = 1034
+  ExplicitHeight = 695
   object Splitter1: TSplitter
-    Left = 620
+    Left = 651
     Top = 0
-    Height = 789
+    Height = 695
     Align = alRight
     ExplicitLeft = 570
     ExplicitHeight = 425
   end
   object ControlPanel: TPanel
-    Left = 623
+    Left = 654
     Top = 0
     Width = 380
-    Height = 789
+    Height = 695
     Align = alRight
     Constraints.MinHeight = 480
     Constraints.MinWidth = 380
     TabOrder = 0
-    ExplicitLeft = 636
-    ExplicitHeight = 723
+    ExplicitLeft = 623
+    ExplicitHeight = 789
     object ModePageControl: TPageControl
       Left = 1
       Top = 166
       Width = 378
-      Height = 622
+      Height = 528
       ActivePage = RecordingTabSheet
       Align = alClient
       TabOrder = 0
-      ExplicitHeight = 556
+      ExplicitHeight = 622
       object NetworkStreamingTabSheet: TTabSheet
         Caption = 'Network Streaming'
-        ExplicitHeight = 640
+        ExplicitHeight = 594
         object StreamingSettingsGroupBox: TGroupBox
           Left = 0
           Top = 0
           Width = 370
-          Height = 539
+          Height = 445
           Align = alClient
           Caption = 'Network streaming settings'
           TabOrder = 0
-          ExplicitHeight = 585
+          ExplicitHeight = 539
           DesignSize = (
             370
-            539)
+            445)
           object BitRateLabeledEdit: TLabeledEdit
             Left = 3
             Top = 72
@@ -145,13 +145,13 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
         end
         object NetworkStreamingControlGroupBox: TGroupBox
           Left = 0
-          Top = 539
+          Top = 445
           Width = 370
           Height = 55
           Align = alBottom
           Caption = 'Network Streaming Control'
           TabOrder = 1
-          ExplicitTop = 585
+          ExplicitTop = 539
           DesignSize = (
             370
             55)
@@ -189,31 +189,33 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
       object RecordingTabSheet: TTabSheet
         Caption = 'RecordingTabSheet'
         ImageIndex = 1
-        ExplicitHeight = 528
+        ExplicitHeight = 594
         object RecordingSettingsScrollBox: TScrollBox
           Left = 0
           Top = 0
           Width = 370
-          Height = 594
+          Height = 500
+          VertScrollBar.Position = 69
           Align = alClient
           TabOrder = 0
-          ExplicitHeight = 528
+          ExplicitHeight = 594
           object GroupBox1: TGroupBox
             Left = 0
-            Top = 0
-            Width = 366
-            Height = 561
+            Top = -69
+            Width = 349
+            Height = 565
             Align = alTop
             TabOrder = 0
             object RecordingControlGroupBox: TGroupBox
               Left = 2
               Top = 505
-              Width = 362
-              Height = 54
+              Width = 345
+              Height = 58
               Align = alClient
               Caption = 'Recording Control'
               TabOrder = 0
-              ExplicitHeight = 72
+              ExplicitWidth = 362
+              ExplicitHeight = 54
               object StartRecordingButton: TButton
                 Left = 3
                 Top = 20
@@ -236,18 +238,19 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
             object RecordingSettingsGroupBox: TGroupBox
               Left = 2
               Top = 15
-              Width = 362
+              Width = 345
               Height = 490
               Align = alTop
               Caption = 'Recording Settings'
               TabOrder = 1
+              ExplicitWidth = 362
               DesignSize = (
-                362
+                345
                 490)
               object RecordingMethodLabel: TLabel
                 Left = 3
                 Top = 21
-                Width = 87
+                Width = 339
                 Height = 13
                 Anchors = [akLeft, akTop, akRight]
                 Caption = 'Recording Method'
@@ -255,7 +258,7 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
               object VideoCompressorLabel: TLabel
                 Left = 3
                 Top = 71
-                Width = 86
+                Width = 339
                 Height = 13
                 Anchors = [akLeft, akTop, akRight]
                 Caption = 'Video Compressor'
@@ -263,23 +266,24 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
               object VideoCompressionModeLabel: TLabel
                 Left = 3
                 Top = 117
-                Width = 119
+                Width = 339
                 Height = 13
                 Caption = 'Video Compression Mode'
               end
               object RecordingFrameRateLabeledEdit: TLabeledEdit
                 Left = 3
                 Top = 218
-                Width = 166
+                Width = 149
                 Height = 21
                 Anchors = [akLeft, akTop, akRight]
                 EditLabel.Width = 107
                 EditLabel.Height = 13
                 EditLabel.Caption = 'Recording Frame Rate'
                 TabOrder = 0
+                ExplicitWidth = 166
               end
               object RecordingFileNameLabeledEdit: TLabeledEdit
-                Left = 175
+                Left = 158
                 Top = 218
                 Width = 184
                 Height = 21
@@ -288,19 +292,21 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
                 EditLabel.Height = 13
                 EditLabel.Caption = 'Recording File Name'
                 TabOrder = 1
+                ExplicitLeft = 175
               end
               object VideoCompressorComboBox: TComboBox
                 Left = 3
                 Top = 90
-                Width = 356
+                Width = 339
                 Height = 21
                 Style = csDropDownList
                 Anchors = [akLeft, akTop, akRight]
                 TabOrder = 2
                 OnChange = VideoCompressorComboBoxChange
+                ExplicitWidth = 356
               end
               object RecordHeightLabeledEdit: TLabeledEdit
-                Left = 175
+                Left = 158
                 Top = 179
                 Width = 184
                 Height = 21
@@ -310,11 +316,12 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
                 EditLabel.Caption = 'Record Height'
                 TabOrder = 3
                 Text = '480'
+                ExplicitLeft = 175
               end
               object RecordWidthLabeledEdit: TLabeledEdit
                 Left = 3
                 Top = 179
-                Width = 166
+                Width = 149
                 Height = 21
                 Anchors = [akLeft, akTop, akRight]
                 EditLabel.Width = 65
@@ -322,11 +329,12 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
                 EditLabel.Caption = 'Record Width'
                 TabOrder = 4
                 Text = '640'
+                ExplicitWidth = 166
               end
               object RecordingMethodComboBox: TComboBox
                 Left = 3
                 Top = 40
-                Width = 356
+                Width = 339
                 Height = 21
                 Style = csDropDownList
                 Anchors = [akLeft, akTop, akRight]
@@ -345,9 +353,10 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
                   'rm_Multiplexer'
                   'rm_SendToDV'
                   'rm_WebM')
+                ExplicitWidth = 356
               end
               object BrowseFileNameButton: TButton
-                Left = 175
+                Left = 158
                 Top = 245
                 Width = 184
                 Height = 25
@@ -355,63 +364,69 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
                 Caption = 'Browse File Name'
                 TabOrder = 6
                 OnClick = BrowseFileNameButtonClick
+                ExplicitLeft = 175
               end
               object VideoCompressorSettingsButton: TButton
                 Left = 3
                 Top = 245
-                Width = 166
+                Width = 149
                 Height = 25
                 Anchors = [akLeft, akTop, akRight]
                 Caption = 'Video Compressor Settings'
                 TabOrder = 7
                 OnClick = VideoCompressorSettingsButtonClick
+                ExplicitWidth = 166
               end
               object VideoCompressionModeComboBox: TComboBox
                 Left = 3
                 Top = 136
-                Width = 356
+                Width = 339
                 Height = 21
                 Style = csDropDownList
                 Anchors = [akLeft, akTop, akRight]
-                ItemIndex = 0
+                ItemIndex = 2
                 TabOrder = 8
-                Text = 'no'
+                Text = 'after capture'
                 Items.Strings = (
                   'no'
                   'on the fly'
                   'after capture')
+                ExplicitWidth = 356
               end
               object RecordingTimerGroupBox: TGroupBox
                 Left = 3
                 Top = 342
-                Width = 356
+                Width = 339
                 Height = 53
                 Anchors = [akLeft, akTop, akRight]
                 Caption = 'Recording Timer'
                 TabOrder = 9
+                ExplicitWidth = 356
                 DesignSize = (
-                  356
+                  339
                   53)
                 object RecordingModeComboBox: TComboBox
                   Left = 3
                   Top = 24
-                  Width = 166
+                  Width = 146
                   Height = 21
                   Style = csDropDownList
                   Anchors = [akLeft, akTop, akRight]
                   ItemIndex = 0
                   TabOrder = 0
                   Text = 'disabled'
+                  OnChange = RecordingModeComboBoxChange
                   Items.Strings = (
                     'disabled'
                     'new file every...'
                     'stop after ...'
                     'start after ...')
+                  ExplicitWidth = 163
                 end
                 object RecordingTimerLabeledEdit: TLabeledEdit
-                  Left = 175
+                  Left = 155
                   Top = 24
-                  Width = 178
+                  Width = 118
                   Height = 21
                   Anchors = [akTop, akRight]
                   EditLabel.Width = 77
@@ -419,54 +434,74 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
                   EditLabel.Caption = 'Recording Timer'
                   TabOrder = 1
                   Text = '10'
+                  ExplicitLeft = 172
+                end
+                object RecordingTimerComboBox: TComboBox
+                  Left = 279
+                  Top = 24
+                  Width = 57
+                  Height = 21
+                  Style = csDropDownList
+                  Anchors = [akTop, akRight]
+                  ItemIndex = 0
+                  TabOrder = 2
+                  Text = 'sec'
+                  Items.Strings = (
+                    'sec'
+                    'min'
+                    'hours')
+                  ExplicitLeft = 296
                 end
               end
               object PreAllocatedRecordingGroupBox: TGroupBox
                 Left = 3
                 Top = 401
-                Width = 373
+                Width = 356
                 Height = 83
                 Anchors = [akLeft, akTop, akRight, akBottom]
                 Caption = 'Preallocated Recording'
                 TabOrder = 10
-                ExplicitHeight = 131
+                ExplicitWidth = 373
                 DesignSize = (
-                  373
+                  356
                   83)
                 object UsePreallocatedFileCheckBox: TCheckBox
                   Left = 3
                   Top = 19
-                  Width = 186
+                  Width = 334
                   Height = 17
-                  Caption = 'Use PreallocatedFileCheckBox'
+                  Caption = 'Use Preallocated File'
                   TabOrder = 0
+                  OnClick = UsePreallocatedFileCheckBoxClick
                 end
                 object PreallocatedFileSizeLabeledEdit: TLabeledEdit
                   Left = 3
                   Top = 57
-                  Width = 166
+                  Width = 146
                   Height = 21
                   Anchors = [akLeft, akTop, akRight]
                   EditLabel.Width = 100
                   EditLabel.Height = 13
                   EditLabel.Caption = 'Preallocated File Size'
                   TabOrder = 1
+                  ExplicitWidth = 163
                 end
                 object PreallocatedFileCreateButton: TButton
-                  Left = 175
+                  Left = 155
                   Top = 54
-                  Width = 182
+                  Width = 185
                   Height = 25
                   Anchors = [akTop, akRight]
                   Caption = 'Create Preallocated File Now'
                   TabOrder = 2
                   OnClick = PreallocatedFileCreateButtonClick
+                  ExplicitLeft = 172
                 end
               end
               object StoragePathRadioGroup: TRadioGroup
                 Left = 3
                 Top = 270
-                Width = 166
+                Width = 149
                 Height = 66
                 Anchors = [akLeft, akTop, akRight]
                 Caption = 'Storage path'
@@ -476,9 +511,10 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
                   'to custom folder')
                 TabOrder = 11
                 OnClick = StoragePathRadioGroupClick
+                ExplicitWidth = 166
               end
               object StoragePathLabeledEdit: TLabeledEdit
-                Left = 175
+                Left = 158
                 Top = 284
                 Width = 184
                 Height = 21
@@ -487,9 +523,10 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
                 EditLabel.Height = 13
                 EditLabel.Caption = 'Storage path'
                 TabOrder = 12
+                ExplicitLeft = 175
               end
               object BrowseStoragePathButton: TButton
-                Left = 175
+                Left = 158
                 Top = 311
                 Width = 184
                 Height = 25
@@ -497,6 +534,7 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
                 Caption = 'Browse Storage Path'
                 TabOrder = 13
                 OnClick = BrowseStoragePathButtonClick
+                ExplicitLeft = 175
               end
             end
           end
@@ -603,18 +641,18 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
   object VideoPanel: TPanel
     Left = 0
     Top = 0
-    Width = 620
-    Height = 789
+    Width = 651
+    Height = 695
     Align = alClient
     Constraints.MinWidth = 525
     TabOrder = 1
-    ExplicitWidth = 633
-    ExplicitHeight = 723
+    ExplicitWidth = 620
+    ExplicitHeight = 789
     object PreviewImage: TImage
       Left = 1
       Top = 1
-      Width = 618
-      Height = 734
+      Width = 649
+      Height = 640
       Align = alClient
       Stretch = True
       ExplicitLeft = 8
@@ -625,8 +663,8 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
     object VideoGrabber: TVideoGrabber
       Left = 1
       Top = 1
-      Width = 618
-      Height = 734
+      Width = 649
+      Height = 640
       Align = alClient
       Caption = 'VideoGrabber'
       Color = clBlack
@@ -673,20 +711,20 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
       OnAVIDurationUpdated = VideoGrabberAVIDurationUpdated
       OnFrameCaptureCompleted = VideoGrabberFrameCaptureCompleted
       OnVideoFromBitmapsNextFrameNeeded = VideoGrabberVideoFromBitmapsNextFrameNeeded
-      ExplicitWidth = 631
-      ExplicitHeight = 668
+      ExplicitWidth = 618
+      ExplicitHeight = 734
     end
     object VideoControlGroupBox: TGroupBox
       Left = 1
-      Top = 735
-      Width = 618
+      Top = 641
+      Width = 649
       Height = 53
       Align = alBottom
       Caption = 'Video Control'
       TabOrder = 1
       Visible = False
-      ExplicitTop = 669
-      ExplicitWidth = 631
+      ExplicitTop = 735
+      ExplicitWidth = 618
       object InitButton: TButton
         Left = 160
         Top = 16
@@ -723,9 +761,5 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
     Options = []
     Left = 424
     Top = 640
-  end
-  object StoragePathOpenDialog: TOpenDialog
-    Left = 496
-    Top = 600
   end
 end

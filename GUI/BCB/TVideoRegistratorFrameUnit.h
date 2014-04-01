@@ -289,7 +289,7 @@ __published:	// IDE-managed Components
 	TRadioGroup *StoragePathRadioGroup;
 	TLabeledEdit *StoragePathLabeledEdit;
 	TButton *BrowseStoragePathButton;
-	TOpenDialog *StoragePathOpenDialog;
+	TComboBox *RecordingTimerComboBox;
 	void __fastcall NetworkStreamingButtonClick(TObject *Sender);
 	void __fastcall StopNetworkStreamingButtonClick(TObject *Sender);
 	void __fastcall VideoGrabberVideoFromBitmapsNextFrameNeeded(TObject *Sender, bool FirstSample);
@@ -313,6 +313,8 @@ __published:	// IDE-managed Components
 	void __fastcall RecordingMethodComboBoxChange(TObject *Sender);
 	void __fastcall StoragePathRadioGroupClick(TObject *Sender);
 	void __fastcall BrowseStoragePathButtonClick(TObject *Sender);
+	void __fastcall RecordingModeComboBoxChange(TObject *Sender);
+	void __fastcall UsePreallocatedFileCheckBoxClick(TObject *Sender);
 
 
 private:	// User declarations

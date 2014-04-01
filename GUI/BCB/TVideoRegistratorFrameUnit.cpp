@@ -10,6 +10,8 @@
 #include "VideoOutputFormUnit.h"
 #include "VideoOutputFrameUnit.h"
 #include "UGEngineControlFormUnit.h"
+
+#include <Vcl.FileCtrl.hpp>
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "VidGrab"
@@ -440,14 +442,13 @@ void TTVideoRegistratorFrame::FillErrorsArray(void)
 // Обновление доступного интерфеса
 void __fastcall TTVideoRegistratorFrame::RefreshDeviceControls(void)
 {
- //bool CanUseCompressors = (VideoGrabber->RecordingMethod != rm_AVI) && (VideoGrabber->RecordingMethod != rm_SendToDV);
- bool CanUseCompressors = (RecordingMethodComboBox->ItemIndex != 0) && (RecordingMethodComboBox->ItemIndex != 8);
- //bool CanUseMultiplexer = CanUseCompressors && (VideoGrabber->RecordingMethod != rm_AVI);
- //if(!CanUseCompressors)
- //{
- // VideoCompressionModeComboBox->ItemIndex=0;
- //}
+ bool CanUseCompressors=(RecordingMethodComboBox->ItemIndex != 0) && (RecordingMethodComboBox->ItemIndex != 8);
  bool CanUseStoragePath=(StoragePathRadioGroup->ItemIndex == 1);
+ bool CanUseRecTimer=(RecordingModeComboBox->ItemIndex!=0 || !CanUseCompressors);
+ bool CanUsePreAllocate=(UsePreallocatedFileCheckBox->Checked==true);
+
+ PreallocatedFileSizeLabeledEdit->Enabled=CanUsePreAllocate;
+ PreallocatedFileCreateButton->Enabled=CanUsePreAllocate;
 
  BrowseStoragePathButton->Enabled = CanUseStoragePath;
  StoragePathLabeledEdit->Enabled = CanUseStoragePath;
@@ -457,6 +458,9 @@ void __fastcall TTVideoRegistratorFrame::RefreshDeviceControls(void)
  UsePreallocatedFileCheckBox->Enabled = CanUseCompressors;
  VideoCompressorSettingsButton->Enabled = CanUseCompressors;
  VideoCompressionModeComboBox->Enabled = CanUseCompressors;
+
+ RecordingTimerLabeledEdit->Enabled=CanUseRecTimer;
+ RecordingTimerComboBox->Enabled=CanUseRecTimer;
 
 }
 //---------------------------------------------------------------------------
@@ -544,14 +548,32 @@ int TTVideoRegistratorFrame::InitRecordingSettings(void)
  }
  else
  {
+  VideoCompressionModeComboBox->ItemIndex=0;
   VideoGrabber->CompressionMode = 0;
  }
 
  // Запись по таймеру
  if(RecordingModeComboBox->ItemIndex != 0)
  {
-  VideoGrabber->RecordingTimer=RecordingModeComboBox->ItemIndex;
-  VideoGrabber->RecordingTimerInterval = StrToIntDef(RecordingTimerLabeledEdit->Text, 10);
+  int recTimerMode=RecordingModeComboBox->ItemIndex;
+  VideoGrabber->RecordingTimer=recTimerMode;
+
+  switch(recTimerMode)
+  {
+   case 0:
+   {
+	VideoGrabber->RecordingTimerInterval = StrToIntDef(RecordingTimerLabeledEdit->Text, 10);
+   }
+   case 1:
+   {
+	VideoGrabber->RecordingTimerInterval = StrToIntDef(RecordingTimerLabeledEdit->Text, 10)*60;
+   }
+   case 2:
+   {
+	VideoGrabber->RecordingTimerInterval = StrToIntDef(RecordingTimerLabeledEdit->Text, 10)*3600;
+   }
+  }
+
  }
 
  // Preallocated file
@@ -904,6 +926,7 @@ void TTVideoRegistratorFrame::ASaveParameters(RDK::USerStorageXML &xml)
  xml.WriteBool("UsePreallocatedFile", UsePreallocatedFileCheckBox->Checked);
  xml.WriteInteger("StoragePathMode", StoragePathRadioGroup->ItemIndex);
  xml.WriteString("StoragePath", AnsiString(StoragePathLabeledEdit->Text).c_str());
+ xml.WriteInteger("RecTimerMode", RecordingTimerComboBox->ItemIndex);
 
 }
 
@@ -937,6 +960,7 @@ void TTVideoRegistratorFrame::ALoadParameters(RDK::USerStorageXML &xml)
  UsePreallocatedFileCheckBox->Checked=(xml.ReadBool("UsePreallocatedFile", false));
  StoragePathRadioGroup->ItemIndex=(xml.ReadInteger("StoragePathMode", 0));
  StoragePathLabeledEdit->Text=(xml.ReadString("StoragePath", "")).c_str();
+ RecordingTimerComboBox->ItemIndex=(xml.ReadInteger("RecTimerMode", 0));
 
  RefreshDeviceControls();
  UpdateInterface();
@@ -1003,8 +1027,24 @@ void __fastcall TTVideoRegistratorFrame::StoragePathRadioGroupClick(TObject *Sen
 void __fastcall TTVideoRegistratorFrame::BrowseStoragePathButtonClick(TObject *Sender)
 
 {
- StoragePathOpenDialog->Execute();
- StoragePathLabeledEdit->Text=StoragePathOpenDialog->InitialDir;
+ String chosenDir=""; //ExtractFilePath(Application->ExeName);
+
+ if(SelectDirectory("Select image sequence directory", ExtractFilePath(Application->ExeName), chosenDir,TSelectDirExtOpts() << sdNewFolder << sdNewUI))
+ {
+  StoragePathLabeledEdit->Text=chosenDir;
+ }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TTVideoRegistratorFrame::RecordingModeComboBoxChange(TObject *Sender)
+{
+ RefreshDeviceControls();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TTVideoRegistratorFrame::UsePreallocatedFileCheckBoxClick(TObject *Sender)
+{
+ RefreshDeviceControls();
 }
 //---------------------------------------------------------------------------
 
