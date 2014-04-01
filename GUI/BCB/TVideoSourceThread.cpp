@@ -26,6 +26,7 @@ __fastcall TVideoCaptureThread::TVideoCaptureThread(TVideoOutputFrame *frame, bo
  ReadSource=&Source[0];
  WriteSource=&Source[1];
  RepeatFlag=false;
+ RestartMode=0;
 
  FreeOnTerminate=false;
 }
@@ -254,6 +255,32 @@ void __fastcall TVideoCaptureThread::Execute(void)
  {
   if(WaitForSingleObject(CaptureEnabled,30) == WAIT_TIMEOUT)
    continue;
+
+  if(CheckConnection() != 2)
+  {
+   switch(RestartMode)
+   {
+	case 0:
+	{
+	 break;
+	}
+
+	case 1:
+	{
+	 Start();
+	 break;
+	}
+
+	case 2:
+	{
+	 Stop();
+	 break;
+	}
+   };
+
+   Sleep(30);
+   continue;
+  }
 
   if(SyncMode == 1)
   {
