@@ -20,8 +20,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
     Constraints.MinHeight = 480
     Constraints.MinWidth = 380
     TabOrder = 0
-    ExplicitLeft = 636
-    ExplicitHeight = 723
     object ModePageControl: TPageControl
       Left = 1
       Top = 166
@@ -30,10 +28,8 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
       ActivePage = RecordingTabSheet
       Align = alClient
       TabOrder = 0
-      ExplicitHeight = 556
       object NetworkStreamingTabSheet: TTabSheet
         Caption = 'Network Streaming'
-        ExplicitHeight = 640
         object StreamingSettingsGroupBox: TGroupBox
           Left = 0
           Top = 0
@@ -42,7 +38,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
           Align = alClient
           Caption = 'Network streaming settings'
           TabOrder = 0
-          ExplicitHeight = 585
           DesignSize = (
             370
             539)
@@ -151,7 +146,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
           Align = alBottom
           Caption = 'Network Streaming Control'
           TabOrder = 1
-          ExplicitTop = 585
           DesignSize = (
             370
             55)
@@ -189,7 +183,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
       object RecordingTabSheet: TTabSheet
         Caption = 'RecordingTabSheet'
         ImageIndex = 1
-        ExplicitHeight = 528
         object RecordingSettingsScrollBox: TScrollBox
           Left = 0
           Top = 0
@@ -197,7 +190,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
           Height = 594
           Align = alClient
           TabOrder = 0
-          ExplicitHeight = 528
           object GroupBox1: TGroupBox
             Left = 0
             Top = 0
@@ -213,7 +205,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
               Align = alClient
               Caption = 'Recording Control'
               TabOrder = 0
-              ExplicitHeight = 72
               object StartRecordingButton: TButton
                 Left = 3
                 Top = 20
@@ -429,7 +420,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
                 Anchors = [akLeft, akTop, akRight, akBottom]
                 Caption = 'Preallocated Recording'
                 TabOrder = 10
-                ExplicitHeight = 131
                 DesignSize = (
                   373
                   83)
@@ -608,8 +598,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
     Align = alClient
     Constraints.MinWidth = 525
     TabOrder = 1
-    ExplicitWidth = 633
-    ExplicitHeight = 723
     object PreviewImage: TImage
       Left = 1
       Top = 1
@@ -673,8 +661,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
       OnAVIDurationUpdated = VideoGrabberAVIDurationUpdated
       OnFrameCaptureCompleted = VideoGrabberFrameCaptureCompleted
       OnVideoFromBitmapsNextFrameNeeded = VideoGrabberVideoFromBitmapsNextFrameNeeded
-      ExplicitWidth = 631
-      ExplicitHeight = 668
     end
     object VideoControlGroupBox: TGroupBox
       Left = 1
@@ -685,8 +671,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
       Caption = 'Video Control'
       TabOrder = 1
       Visible = False
-      ExplicitTop = 669
-      ExplicitWidth = 631
       object InitButton: TButton
         Left = 160
         Top = 16
