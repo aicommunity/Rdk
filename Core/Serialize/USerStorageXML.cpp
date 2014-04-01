@@ -104,6 +104,19 @@ bool USerStorageXML::LoadToNode(USerStorageXML &node, bool node_clear)
  return true;
 }
 
+bool USerStorageXML::LoadFieldsToNode(USerStorageXML &node, bool node_clear)
+{
+ if(node_clear)
+  DelNodeInternalContent();
+ for(int i=0;i<node.GetNumNodes();i++)
+ {
+  node.SelectNode(i);
+  CurrentNode.addChild(node.CurrentNode);
+  node.SelectUp();
+ }
+ return true;
+}
+
 // Сохраняет xml в строку
 bool USerStorageXML::Save(std::string &str) const
 {
