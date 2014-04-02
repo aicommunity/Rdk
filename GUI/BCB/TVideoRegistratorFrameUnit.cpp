@@ -767,7 +767,10 @@ void __fastcall TTVideoRegistratorFrame::StartRecordingButtonClick(TObject *Send
  if(VideoGrabber->StartRecording())
  {
   Engine_LogMessage(RDK_EX_INFO, (std::string("Recording started").c_str()));
-
+ }
+ else
+ {
+  Engine_LogMessage(RDK_EX_INFO, (std::string("Recording not started").c_str()));
  }
 }
 //---------------------------------------------------------------------------
@@ -899,24 +902,8 @@ void TTVideoRegistratorFrame::ASaveParameters(RDK::USerStorageXML &xml)
  xml.WriteInteger("VideoCompressor", VideoCompressorComboBox->ItemIndex);
  xml.WriteInteger("VideoCompressionMode", VideoCompressionModeComboBox->ItemIndex);
  xml.WriteInteger("RecordingMode", RecordingModeComboBox->ItemIndex);
-
- try
- {
-  //xml.WriteInteger("RecordingTimer", StrToInt(RecordingTimerLabeledEdit->Text));
- }
- catch(EConvertError &exception)
- {
-  xml.WriteInteger("RecordingTimer", 10);
- }
-
- try
- {
-  //xml.WriteInteger("PreallocatedFileSize", StrToInt(PreallocatedFileSizeLabeledEdit->Text));
- }
- catch(EConvertError &exception)
- {
-  xml.WriteInteger("PreallocatedFileSize", 100);
- }
+ xml.WriteInteger("RecordingTimer", StrToIntDef(RecordingTimerLabeledEdit->Text, 10));
+ xml.WriteInteger("PreallocatedFileSize", StrToIntDef(PreallocatedFileSizeLabeledEdit->Text, 100));
  xml.WriteBool("UsePreallocatedFile", UsePreallocatedFileCheckBox->Checked);
  xml.WriteInteger("StoragePathMode", StoragePathRadioGroup->ItemIndex);
  xml.WriteString("StoragePath", AnsiString(StoragePathLabeledEdit->Text).c_str());
