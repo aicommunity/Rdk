@@ -112,7 +112,6 @@ void __fastcall TEngineThread::AfterCalculate(void)
   UEngineMonitorForm->EngineMonitorFrame->GetServerTimeStamp(ChannelIndex);
 
  UEngineMonitorForm->EngineMonitorFrame->AddMetadata(ChannelIndex, UEngineMonitorForm->EngineMonitorFrame->LastCalculatedServerTimeStamp[ChannelIndex]);
-// IdTcpResultBroadcasterForm->AddMetadata(ChannelIndex, UEngineMonitorForm->EngineMonitorFrame->LastCalculatedServerTimeStamp[ChannelIndex]);
 }
 
 

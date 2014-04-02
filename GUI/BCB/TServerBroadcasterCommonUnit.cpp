@@ -90,10 +90,11 @@ void __fastcall TResultBroadcasterThread::Execute(void)
   if(WaitForSingleObject(SendEnable,30) == WAIT_TIMEOUT)
    continue;
   ResetEvent(SendEnable);
-//  ResetEvent(MetaUnlockEvent);
+  ResetEvent(MetaUnlockEvent);
   ResetEvent(SendNotInProgressEvent);
   if(!MetaList.empty())
   {
+   SetEvent(MetaUnlockEvent);
    if(!GenerateSendString())
    {
 //	SetEvent(MetaUnlockEvent);
@@ -115,9 +116,10 @@ void __fastcall TResultBroadcasterThread::Execute(void)
   }
   else
   {
-//   SetEvent(MetaUnlockEvent);
+   SetEvent(MetaUnlockEvent);
    Sleep(30);
   }
+//  SetEvent(MetaUnlockEvent);
   SetEvent(SendNotInProgressEvent);
  }
 }
