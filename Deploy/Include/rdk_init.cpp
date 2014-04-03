@@ -799,6 +799,12 @@ int RDK_CALL MEnv_Calculate(int engine_index, const char* stringid)
  return DllManager.GetEngineLock(engine_index)->Env_Calculate(stringid);
 }
 
+int RDK_CALL MEnv_CalculateUnsafe(int engine_index, const char* stringid)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+ return DllManager.GetEngine(engine_index)->Env_Calculate(stringid);
+}
 
 // Расчет всей модели в реальном времени
 void RDK_CALL Env_RTCalculate(void)
@@ -2408,6 +2414,14 @@ void RDK_CALL MModel_SetComponentBitmapOutput(int engine_index, const char *stri
   return;
 
  DllManager.GetEngineLock(engine_index)->Model_SetComponentBitmapOutput(stringid, property_name, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
+}
+
+void RDK_CALL MModel_SetComponentBitmapOutputUnsafe(int engine_index, const char *stringid, const char *property_name, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return;
+
+ DllManager.GetEngine(engine_index)->Model_SetComponentBitmapOutput(stringid, property_name, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
 }
 
 void RDK_CALL Model_SetComponentBitmapOutputByIndex(const char *stringid, int index, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
