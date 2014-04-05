@@ -83,6 +83,12 @@ bool __fastcall TResultBroadcasterThread::Send(void)
  return false;
 }
 
+bool __fastcall TResultBroadcasterThread::PeriodicallyActions(void)
+{
+ return true;
+}
+
+
 void __fastcall TResultBroadcasterThread::Execute(void)
 {
  while(!Terminated)
@@ -90,6 +96,8 @@ void __fastcall TResultBroadcasterThread::Execute(void)
   if(WaitForSingleObject(SendEnable,30) == WAIT_TIMEOUT)
    continue;
   ResetEvent(SendEnable);
+  PeriodicallyActions();
+
   ResetEvent(MetaUnlockEvent);
   ResetEvent(SendNotInProgressEvent);
   if(!MetaList.empty())
