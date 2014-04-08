@@ -90,17 +90,18 @@ void __fastcall TEngineThread::BeforeCalculate(void)
 {
 #ifdef RDK_VIDEO
 #ifdef RDK_VIDEO
- TVideoOutputFrame* video=VideoOutputForm->GetVideoOutputFrame(ChannelIndex);
+/* TVideoOutputFrame* video=VideoOutputForm->GetVideoOutputFrame(ChannelIndex);
  if(video)
  {
-/*  if(video->CaptureThread)
+  if(video->CaptureThread)
   {
-   long long time_stamp=0;
+   double time_stamp=0;
    video->CaptureThread->ReadSourceSafe(Source,time_stamp,true);
-  }*/
+  }
  }
  else
   Source.Clear();
+   */
 #endif
 
 #endif
@@ -112,7 +113,6 @@ void __fastcall TEngineThread::AfterCalculate(void)
   UEngineMonitorForm->EngineMonitorFrame->GetServerTimeStamp(ChannelIndex);
 
  UEngineMonitorForm->EngineMonitorFrame->AddMetadata(ChannelIndex, UEngineMonitorForm->EngineMonitorFrame->LastCalculatedServerTimeStamp[ChannelIndex]);
-// IdTcpResultBroadcasterForm->AddMetadata(ChannelIndex, UEngineMonitorForm->EngineMonitorFrame->LastCalculatedServerTimeStamp[ChannelIndex]);
 }
 
 
@@ -129,6 +129,11 @@ void __fastcall TEngineThread::Execute(void)
   {
    if(WaitForSingleObject(CalcEnable,30) == WAIT_TIMEOUT)
 	continue;
+  }
+
+  if(WaitForSingleObject(CalculationNotInProgress,30) == WAIT_TIMEOUT)
+  {
+   continue;
   }
 
   unsigned long long diff=GetTickCount()-RealLastCalculationTime;
@@ -155,7 +160,7 @@ void __fastcall TEngineThread::Execute(void)
    TVideoOutputFrame* video=VideoOutputForm->GetVideoOutputFrame(ChannelIndex);
    if(video)
 	video->BeforeCalculate();
-   //   MModel_SetComponentBitmapOutput(ChannelIndex, "", "Output", &Source,false);
+//	  MModel_SetComponentBitmapOutput(ChannelIndex, "", "Output", &Source,false);
    #endif
    MEnv_Calculate(ChannelIndex,0);
   }

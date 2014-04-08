@@ -1496,23 +1496,7 @@ void TVideoOutputFrame::ALoadParameters(RDK::USerStorageXML &xml)
 //---------------------------------------------------------------------------
 void __fastcall TVideoOutputFrame::TimerTimer(TObject *Sender)
 {
-// if(UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode() != 1)
- {
-//  ABeforeCalculate();
-//  if(CaptureThread)
-  {
-   UpdateInterface();
-/*   long long time_stamp=0;
-   CaptureThread->ReadSourceSafe(BmpSource,time_stamp,false);
-
-	std::string sstamp;
-	RDK::UTimeStamp stamp(double(time_stamp/1000.0),25);
-	stamp>>sstamp;
-	TimeEdit->Text=sstamp.c_str();
-
-	UpdateVideo();*/
-  }
- }
+ UpdateInterface();
 }
 //---------------------------------------------------------------------------
 void __fastcall TVideoOutputFrame::StartButtonClick(TObject *Sender)

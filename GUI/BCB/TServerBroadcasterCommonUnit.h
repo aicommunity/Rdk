@@ -65,6 +65,8 @@ virtual bool __fastcall GenerateSendString(void);
 virtual bool __fastcall Send(void);
 virtual bool __fastcall ASend(void)=0;
 
+virtual bool __fastcall PeriodicallyActions(void);
+
 virtual void __fastcall Execute(void);
 
 /// Добавляет метаданные в очередь

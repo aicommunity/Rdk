@@ -83,6 +83,12 @@ bool __fastcall TResultBroadcasterThread::Send(void)
  return false;
 }
 
+bool __fastcall TResultBroadcasterThread::PeriodicallyActions(void)
+{
+ return true;
+}
+
+
 void __fastcall TResultBroadcasterThread::Execute(void)
 {
  while(!Terminated)
@@ -90,10 +96,13 @@ void __fastcall TResultBroadcasterThread::Execute(void)
   if(WaitForSingleObject(SendEnable,30) == WAIT_TIMEOUT)
    continue;
   ResetEvent(SendEnable);
-//  ResetEvent(MetaUnlockEvent);
+  PeriodicallyActions();
+
+  ResetEvent(MetaUnlockEvent);
   ResetEvent(SendNotInProgressEvent);
   if(!MetaList.empty())
   {
+   SetEvent(MetaUnlockEvent);
    if(!GenerateSendString())
    {
 //	SetEvent(MetaUnlockEvent);
@@ -115,9 +124,10 @@ void __fastcall TResultBroadcasterThread::Execute(void)
   }
   else
   {
-//   SetEvent(MetaUnlockEvent);
+   SetEvent(MetaUnlockEvent);
    Sleep(30);
   }
+//  SetEvent(MetaUnlockEvent);
   SetEvent(SendNotInProgressEvent);
  }
 }

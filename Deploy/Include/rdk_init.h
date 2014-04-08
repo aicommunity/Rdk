@@ -275,6 +275,7 @@ RDK_LIB_TYPE int RDK_CALL Storage_BuildStorage(void);
 // иначе вычисляет только указанный компонент модели
 RDK_LIB_TYPE int RDK_CALL Env_Calculate(const char* stringid);
 RDK_LIB_TYPE int RDK_CALL MEnv_Calculate(int engine_index, const char* stringid);
+RDK_LIB_TYPE int RDK_CALL MEnv_CalculateUnsafe(int engine_index, const char* stringid);
 
 // Расчет всей модели в реальном времени
 RDK_LIB_TYPE void RDK_CALL Env_RTCalculate(void);
@@ -914,6 +915,8 @@ RDK_LIB_TYPE const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapInp
 // Замещает изображение выхода с индексом 'index' компонента 'id'
 RDK_LIB_TYPE void RDK_CALL Model_SetComponentBitmapOutput(const char *stringid, const char *property_name, const /*RDK::UBitmap* */ void* const bmp, bool reflect=false);
 RDK_LIB_TYPE void RDK_CALL MModel_SetComponentBitmapOutput(int engine_index, const char *stringid, const char *property_name, const /*RDK::UBitmap* */ void* const bmp, bool reflect=false);
+RDK_LIB_TYPE void RDK_CALL MModel_SetComponentBitmapOutputUnsafe(int engine_index, const char *stringid, const char *property_name, const /*RDK::UBitmap* */ void* const bmp, bool reflect=false);
+
 RDK_LIB_TYPE void RDK_CALL Model_SetComponentBitmapOutputByIndex(const char *stringid, int index, const /*RDK::UBitmap* */ void* const bmp, bool reflect=false);
 RDK_LIB_TYPE void RDK_CALL MModel_SetComponentBitmapOutputByIndex(int engine_index, const char *stringid, int index, const /*RDK::UBitmap* */ void* const bmp, bool reflect=false);
 

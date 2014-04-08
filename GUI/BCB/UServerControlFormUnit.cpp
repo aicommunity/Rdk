@@ -978,8 +978,8 @@ bool TUServerControlForm::SetChannelName(int channel, const std::string& name)
  if(ChannelNames[channel] == name)
   return true;
 
- if(find(ChannelNames.begin(),ChannelNames.end(),name) != ChannelNames.end())
-  return false;
+// if(find(ChannelNames.begin(),ChannelNames.end(),name) != ChannelNames.end())
+//  return false;
 
  ChannelNames[channel]=name;
  return true;

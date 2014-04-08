@@ -958,8 +958,8 @@ void TTVideoRegistratorFrame::ALoadParameters(RDK::USerStorageXML &xml)
  VideoCompressorComboBox->ItemIndex=(xml.ReadInteger("VideoCompressor", 0));
  VideoCompressionModeComboBox->ItemIndex=(xml.ReadInteger("VideoCompressionMode", 0));
  RecordingModeComboBox->ItemIndex=(xml.ReadInteger("RecordingMode", 0));
- RecordingTimerLabeledEdit->Text=(xml.ReadInteger("RecordingTimer", 0));
- PreallocatedFileSizeLabeledEdit->Text=(xml.ReadInteger("PreallocatedFileSize", 0));
+ RecordingTimerLabeledEdit->Text=(xml.ReadInteger("RecordingTimer", 10));
+ PreallocatedFileSizeLabeledEdit->Text=(xml.ReadInteger("PreallocatedFileSize", 100));
  UsePreallocatedFileCheckBox->Checked=(xml.ReadBool("UsePreallocatedFile", false));
  StoragePathRadioGroup->ItemIndex=(xml.ReadInteger("StoragePathMode", 0));
  StoragePathLabeledEdit->Text=(xml.ReadString("StoragePath", "")).c_str();
