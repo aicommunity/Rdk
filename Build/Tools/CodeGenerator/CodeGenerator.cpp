@@ -13,6 +13,8 @@ MainWindow::MainWindow(QWidget *parent) :
     classNameLineEdit = new QLineEdit;
     baseNameLineEdit = new QLineEdit;
     namespaceLineEdit = new QLineEdit;
+    headerHighlighter = new MyHighlighter(ui->headerEdit->document());
+    sourceHighlighter = new MyHighlighter(ui->sourceEdit->document());
 
     libModel = new QStringListModel;
 

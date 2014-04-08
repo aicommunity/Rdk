@@ -12,7 +12,7 @@
 #include "settingsdialog.h"
 #include <QTextStream>
 #include <QTextEdit>
-#include <QSyntaxHighlighter>
+#include "myhighlighter.h"
 
 namespace Ui {
 class MainWindow;
@@ -48,6 +48,8 @@ private:
     QStringList templates;
 
     QList<QTextEdit::ExtraSelection> selectionsList;
+    MyHighlighter *headerHighlighter;
+    MyHighlighter *sourceHighlighter;
 
     const int maxHistorySize;
 

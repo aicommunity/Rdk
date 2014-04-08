@@ -14,10 +14,12 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         CodeGenerator.cpp \
-    settingsdialog.cpp
+    settingsdialog.cpp \
+    myhighlighter.cpp
 
 HEADERS  += CodeGenerator.h \
-    settingsdialog.h
+    settingsdialog.h \
+    myhighlighter.h
 
 FORMS    += CodeGenerator.ui
 
