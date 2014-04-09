@@ -73,6 +73,13 @@ int GetNumEngines(void) const;
 /// Создает требуемое число пустых движков
 int SetNumEngines(int num);
 
+/// Добавляет новый движок в позицию index
+/// Если index <0 или >= NumEngines то добавляет в конец
+int Add(int index);
+
+/// Удаляет движок из позиции index
+int Del(int index);
+
 /// Создаает требуемый движок
 /// (если движок уже инициализирован, то не делает ничего
 int EngineCreate(int index);

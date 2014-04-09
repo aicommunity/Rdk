@@ -122,6 +122,72 @@ int RDKDllManager::SetNumEngines(int num)
  return 0;
 }
 
+
+/// Добавляет новый движок в позицию index
+/// Если index <0 или >= NumEngines то добавляет в конец
+int RDKDllManager::Add(int index)
+{
+ if(index<0 || index >= GetNumEngines())
+  return SetNumEngines(GetNumEngines()+1);
+
+ int old_num=EngineList.size();
+ int num=GetNumEngines()+1;
+
+ EngineList.resize(num,0);
+ StorageList.resize(num,0);
+ EnvironmentList.resize(num,0);
+ MutexList.resize(num,0);
+ LockerList.resize(num,0);
+ for(int i=int(EngineList.size())-2;i>=index;i--)
+ {
+  UGenericMutexLocker lock1(MutexList[i]);
+  EngineList[i]=EngineList[i+1];
+  StorageList[i]=StorageList[i+1];
+  EnvironmentList[i]=EnvironmentList[i+1];
+  MutexList[i]=MutexList[i+1];
+  LockerList[i]=LockerList[i+1];
+ }
+
+ EngineList[index]=0;
+ StorageList[index]=0;
+ EnvironmentList[index]=0;
+ MutexList[index]=0;
+ LockerList[index]=0;
+ MutexList[index]=UCreateMutex();
+
+ return 0;
+}
+
+/// Удаляет движок из позиции index
+int RDKDllManager::Del(int index)
+{
+ if(index<0 || index >= GetNumEngines())
+  return 748361;
+
+ {
+  UGenericMutexLocker lock(MutexList[index]);
+  EngineDestroy(index);
+ }
+ UDestroyMutex(MutexList[index]);
+ for(int i=index+1;i<int(EngineList.size());i++)
+ {
+  UGenericMutexLocker lock1(MutexList[i-1]);
+  UGenericMutexLocker lock2(MutexList[i]);
+  EngineList[i-1]=EngineList[i];
+  StorageList[i-1]=StorageList[i];
+  EnvironmentList[i-1]=EnvironmentList[i];
+  MutexList[i-1]=MutexList[i];
+  LockerList[i-1]=LockerList[i];
+ }
+ EngineList.resize(EngineList.size()-1);
+ StorageList.resize(StorageList.size()-1);
+ EnvironmentList.resize(EnvironmentList.size()-1);
+ MutexList.resize(MutexList.size()-1);
+ LockerList.resize(LockerList.size()-1);
+
+ return 0;
+}
+
 /// Создаает требуемый движок
 /// (если движок уже инициализирован, то не делает ничего
 int RDKDllManager::EngineCreate(int index)

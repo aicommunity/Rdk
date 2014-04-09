@@ -116,33 +116,21 @@ int RDK_CALL SetNumEngines(int num)
  return 0;
 }
 
-// Удаляет движок по индексу
-int RDK_CALL DelEngine(int index)
+// Добавляет движок в позицию заданного индекса
+// Если позиция лежит вне пределов диапазона то
+// добавляет в конец
+int RDK_CALL Engine_Add(int index)
 {
- if(index<0)
-  return 1;
+ if(!DllInit((void*)CreateNewStorage, (void*)CreateNewEnvironment, (void*)CreateNewEngine))
+  return -2;
 
- if(index >= GetNumEngines())
-  return 2;
-/*
- int res=DllManager.SetNumEngines(num);
- if(res != 0)
-  return res;
+ return DllManager.Add(index);
+}
 
- if(SelectedEngineIndex>=num)
-  SelectedEngineIndex=0;
-
- if(num>0)
- {
-  PEngine=DllManager.EngineList[SelectedEngineIndex];
-  PEnvironment=DllManager.EnvironmentList[SelectedEngineIndex];
-  PStorage=DllManager.StorageList[SelectedEngineIndex];
- }
-
- RpcReturnString.resize(num);
-
- return 0;*/
- return 3;
+// Удаляет движок по индексу
+int RDK_CALL Engine_Del(int index)
+{
+ return DllManager.Del(index);
 }
 
 

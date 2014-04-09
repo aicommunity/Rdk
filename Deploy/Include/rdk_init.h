@@ -91,8 +91,13 @@ RDK_LIB_TYPE int RDK_CALL GetNumEngines(void);
 // num > 0
 RDK_LIB_TYPE int RDK_CALL SetNumEngines(int num);
 
+// Добавляет движок в позицию заданного индекса
+// Если позиция лежит вне пределов диапазона то
+// добавляет в конец
+RDK_LIB_TYPE int RDK_CALL Engine_Add(int index);
+
 // Удаляет движок по индексу
-RDK_LIB_TYPE int RDK_CALL DelEngine(int index);
+RDK_LIB_TYPE int RDK_CALL Engine_Del(int index);
 
 // Возвращает индекс текущего выбранного движка
 RDK_LIB_TYPE int RDK_CALL GetSelectedEngineIndex(void);
