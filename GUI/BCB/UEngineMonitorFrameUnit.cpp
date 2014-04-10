@@ -27,6 +27,7 @@ TUEngineMonitorFrame *UEngineMonitorFrame;
 __fastcall TEngineThread::TEngineThread(int channel_index, int calculate_mode, int min_inerval, bool CreateSuspended)
 : ChannelIndex(channel_index), CalculateMode(calculate_mode), MinInterstepsInterval(min_inerval), TThread(CreateSuspended)
 {
+ CalcState=CreateEvent(0,TRUE,0,0);
  CalcEnable=CreateEvent(0,TRUE,0,0);
  CalcStarted=CreateEvent(0,TRUE,0,0);
  CalculationNotInProgress=CreateEvent(0,TRUE,TRUE,0);
@@ -35,6 +36,7 @@ __fastcall TEngineThread::TEngineThread(int channel_index, int calculate_mode, i
 
 __fastcall TEngineThread::~TEngineThread(void)
 {
+ CloseHandle(CalcState);
  CloseHandle(CalcStarted);
  CloseHandle(CalcEnable);
  CloseHandle(CalculationNotInProgress);
@@ -178,6 +180,7 @@ __fastcall TUEngineMonitorFrame::TUEngineMonitorFrame(TComponent* Owner)
 {
  CalculateMode.assign(GetNumEngines(),0);
  CalculateSignal.assign(GetNumEngines(),false);
+ CalculateState.assign(GetNumEngines(),false);
  MinInterstepsInterval.assign(GetNumEngines(),20);
  AlwaysUpdateFlag=true;
  UpdateInterval=100;
@@ -295,6 +298,7 @@ bool TUEngineMonitorFrame::SetNumChannels(int num)
  }
 
  CalculateSignal.resize(num,false);
+ CalculateState.resize(num,false);
  ServerTimeStamp.resize(num,0);
  LastCalculatedServerTimeStamp.resize(num,0);
  RealLastCalculationTime.resize(num,0);
@@ -427,6 +431,8 @@ void TUEngineMonitorFrame::StartChannel(int channel_index)
   TUVisualControllerForm::CalculationModeFlag=true;
   Timer->Interval=1;
   Timer->Enabled=true;
+  for(size_t i=0; i<ThreadChannels.size(); i++)
+   CalculateState[i]=true;
  break;
 
  case 1:
@@ -443,6 +449,7 @@ void TUEngineMonitorFrame::StartChannel(int channel_index)
 	if(ThreadChannels[i])
 	{
 		SetEvent(ThreadChannels[i]->CalcStarted);
+		SetEvent(ThreadChannels[i]->CalcState);
 		WaitForSingleObject(ThreadChannels[i]->CalculationNotInProgress,1000);
 	}
 	UShowProgressBarForm->IncBarStatus(1);
@@ -453,6 +460,7 @@ void TUEngineMonitorFrame::StartChannel(int channel_index)
 	if(ThreadChannels[channel_index])
 	{
 		SetEvent(ThreadChannels[channel_index]->CalcStarted);
+		SetEvent(ThreadChannels[channel_index]->CalcState);
 		WaitForSingleObject(ThreadChannels[channel_index]->CalculationNotInProgress,1000);
 	}
 	UShowProgressBarForm->IncBarStatus(1);
@@ -480,6 +488,8 @@ void TUEngineMonitorFrame::PauseChannel(int channel_index)
   Timer->Enabled=false;
   TUVisualControllerFrame::CalculationModeFlag=false;
   TUVisualControllerForm::CalculationModeFlag=false;
+  for(size_t i=0; i<ThreadChannels.size(); i++)
+   CalculateState[i]=false;
  break;
 
  case 1:
@@ -494,6 +504,7 @@ void TUEngineMonitorFrame::PauseChannel(int channel_index)
 	if(ThreadChannels[i])
 	{
 	 ResetEvent(ThreadChannels[i]->CalcStarted);
+	 ResetEvent(ThreadChannels[i]->CalcState);
 	 WaitForSingleObject(ThreadChannels[i]->CalculationNotInProgress,1000);
 	}
 	UShowProgressBarForm->IncBarStatus(1);
@@ -504,6 +515,7 @@ void TUEngineMonitorFrame::PauseChannel(int channel_index)
 	if(ThreadChannels[channel_index])
 	{
 	 ResetEvent(ThreadChannels[channel_index]->CalcStarted);
+	 ResetEvent(ThreadChannels[channel_index]->CalcState);
 	 WaitForSingleObject(ThreadChannels[channel_index]->CalculationNotInProgress,1000);
 	}
 	UShowProgressBarForm->IncBarStatus(1);
@@ -572,8 +584,33 @@ void TUEngineMonitorFrame::ResetChannel(int channel_index)
  }
 }
 
+//---------------------------------------------------------------------------
+/// Проверяет состояние расчета
+/// 0 - Не считает
+/// 1 - Идет расчет
+int TUEngineMonitorFrame::CheckCalcState(int channel_id) const
+{
+ if(channel_id<0 || channel_id>GetNumEngines())
+  return 0;
 
+ switch(ChannelsMode)
+ {
+  case 0:
+  {
+   if(CalculateState[channel_id])
+	return 1;
 
+   return 0;
+  }
+  case 1:
+  {
+   if(WaitForSingleObject(ThreadChannels[channel_id]->CalcState, 0) != WAIT_TIMEOUT)
+	return 1;
+
+   return 0;
+  }
+ }
+}
 //---------------------------------------------------------------------------
 
 void __fastcall TUEngineMonitorFrame::Start1Click(TObject *Sender)

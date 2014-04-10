@@ -35,6 +35,9 @@ int MinInterstepsInterval;
 unsigned long long RealLastCalculationTime;
 
 public:
+// Событие состояния расчета. Выставлено на время активности расчета. Сбрасывается по стопу
+HANDLE CalcState;
+
 HANDLE CalcEnable;
 
 HANDLE CalcStarted;
@@ -137,6 +140,10 @@ protected:
 // сбрасывается при итерации счета
 std::vector<bool> CalculateSignal;
 
+// Сигнал активности расчета
+// сбрасывается по стопу
+std::vector<bool> CalculateState;
+
 // Временная метка сервера
 std::vector<long long> ServerTimeStamp;
 
@@ -205,6 +212,11 @@ virtual void PauseChannel(int channel_index);
 
 /// Сбрасывает аналитику выбранного канала, или всех, если channel_index == -1
 virtual void ResetChannel(int channel_index);
+
+/// Проверяет состояние расчета по id канала
+/// 0 - Не считает
+/// 1 - Идет расчет
+virtual int CheckCalcState(int channel_id) const;
 };
 #pragma warn .8130
 //---------------------------------------------------------------------------
