@@ -754,6 +754,15 @@ int TVideoCaptureThread::CheckConnection(void) const
 {
  return 2;
 }
+
+/// ¬озвращает 0 если захват не работает и 1 если активен
+int TVideoCaptureThread::CheckCaptureThreadState(void) const
+{
+ if(WaitForSingleObject(CaptureEnabled, 0) != WAIT_TIMEOUT)
+  return 1;
+
+ return 0;
+}
 // --------------------------
 
 // --------------------------

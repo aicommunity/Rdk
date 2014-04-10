@@ -172,6 +172,9 @@ virtual bool SetLastTimeStampSafe(double time_stamp);
 /// Возвращает 1 если если нет подключения к источнику
 /// Возвращает 2 если если есть подключение к источнику
 virtual int CheckConnection(void) const;
+
+/// Возвращает 0 если захват не работает и 1 если активен
+virtual int CheckCaptureThreadState(void) const;
 // --------------------------
 };
 

@@ -236,6 +236,17 @@ void TVideoOutputFrame::ReadSourceSafe(RDK::UBitmap &bmp, double &time_stamp, bo
  if(CaptureThread)
   CaptureThread->ReadSourceSafe(bmp,time_stamp,reflect);
 }
+//---------------------------------------------------------------------------
+/// Проверяет состояние завхата по id канала
+/// 0 - не активен
+/// 1 - активен
+int TVideoOutputFrame::CheckCaptureState(void) const
+{
+ if(!CaptureThread)
+  return 0;
+
+ return CaptureThread->CheckCaptureThreadState();
+}
 // -----------------------------
 /// Инициализация первичных настроек
 void TVideoOutputFrame::InitPrimarySettings(void)
@@ -2269,4 +2280,5 @@ void __fastcall TVideoOutputFrame::RecordingFrameRecordingMethodComboBoxChange(T
  }
 }
 //---------------------------------------------------------------------------
+
 
