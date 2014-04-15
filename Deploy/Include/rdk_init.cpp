@@ -2164,28 +2164,26 @@ int RDK_CALL MEngine_LogMessage(int engine_index, int log_level, const char *mes
 // этой функцией
 const char* RDK_CALL Engine_GetUnreadLog(int &error_level)
 {
-
- return Engine_GetUnreadLogUnsafe(error_level);
+ return DllManager.GetEngineLock()->GetUnreadLog(error_level);
 }
 
 const char* RDK_CALL MEngine_GetUnreadLog(int engine_index, int &error_level)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 0;
-
- return MEngine_GetUnreadLogUnsafe(engine_index, error_level);
+ return DllManager.GetEngineLock(engine_index)->GetUnreadLog(error_level);
 }
 
 const char* RDK_CALL Engine_GetUnreadLogUnsafe(int &error_level)
 {
- return DllManager.GetEngineLock()->GetUnreadLog(error_level);
+ return DllManager.GetEngine()->GetUnreadLog(error_level);
 }
 
 const char* RDK_CALL MEngine_GetUnreadLogUnsafe(int engine_index, int &error_level)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 0;
- return DllManager.GetEngineLock(engine_index)->GetUnreadLog(error_level);
+ return DllManager.GetEngine(engine_index)->GetUnreadLog(error_level);
 }
 // ----------------------------
 

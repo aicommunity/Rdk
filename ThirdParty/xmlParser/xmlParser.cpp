@@ -1868,7 +1868,7 @@ XMLNode XMLNode::parseFile(XMLCSTR filename, XMLCSTR tag, XMLResults *pResults)
         {
             if ((buf[0]==0xef)&&(buf[1]==0xff)) headerSz=2;
             if ((buf[0]==0xff)&&(buf[1]==0xfe)) headerSz=2;
-            char *b2=myWideCharToMultiByte((const wchar_t*)(buf+headerSz));
+            char *b2=myWideCharToMultiByte((const wchar_t*)(buf+headerSz),characterEncoding);
             free(buf); buf=(unsigned char*)b2; headerSz=0;
         } else
         {
