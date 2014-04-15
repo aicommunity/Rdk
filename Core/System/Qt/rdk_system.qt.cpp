@@ -35,7 +35,7 @@ void Sleep(int value)
 {
  QWaitCondition sleep;
  QMutex mutex;
- sleep.wait(&mutex, ms);
+ sleep.wait(&mutex, value);
 }
 
 // Создает каталог

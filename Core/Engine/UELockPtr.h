@@ -115,7 +115,7 @@ UELockPtr<T>& UELockPtr<T>::operator = (const UELockPtr<T> &p)
    }
   }
  }
- PData=p.PData;
+ UEPtr<T>::PData=p.PData;
 
  {
   Counter=p.Counter;
