@@ -1401,7 +1401,7 @@ void __fastcall TUServerControlForm::IdTCPServerExecute(TIdContext *AContext)
 	std::map<std::string, RDK::UTransferReader>::iterator I=PacketReaders.find(bind);
 	if(I == PacketReaders.end())
 	{
-     SetEvent(CommandQueueUnlockEvent);
+//	 SetEvent(CommandQueueUnlockEvent);
 	 return;
 	}
 	I->second.ProcessDataPart2(client_buffer);
@@ -1420,12 +1420,19 @@ void __fastcall TUServerControlForm::IdTCPServerExecute(TIdContext *AContext)
 	  UServerCommand cmd;
 	  cmd.first=bind;
 	  cmd.second=packet(0);
-	  ResetEvent(CommandQueueUnlockEvent);
-	  CommandQueue.push_back(cmd);
-	  SetEvent(CommandQueueUnlockEvent);
-	  std::string str;
-	  ConvertVectorToString(cmd.second,str);
-	  Engine_LogMessage(RDK_EX_DEBUG, (std::string("Command pushed to queue: \n")+str).c_str());
+	  if(WaitForSingleObject(CommandQueueUnlockEvent,3500) == WAIT_TIMEOUT)
+	  {
+	   Engine_LogMessage(RDK_EX_DEBUG, (std::string("Command unlock event timeout: ")+bind).c_str());
+	  }
+	  else
+	  {
+	   ResetEvent(CommandQueueUnlockEvent);
+	   CommandQueue.push_back(cmd);
+	   SetEvent(CommandQueueUnlockEvent);
+	   std::string str;
+	   ConvertVectorToString(cmd.second,str);
+	   Engine_LogMessage(RDK_EX_DEBUG, (std::string("Command pushed to queue: \n")+str).c_str());
+	  }
 	 }
 	}
    }
