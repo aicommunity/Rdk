@@ -2165,6 +2165,45 @@ void __fastcall TVideoOutputFrame::SavePictureActionExecute(TObject *Sender)
  delete jpg;
 }
 //---------------------------------------------------------------------------
+
+void __fastcall TVideoOutputFrame::SavePicture(String directory, String filename)
+{
+ /*String dir;
+ if(UGEngineControlForm->ProjectOpenFlag)
+  dir=UGEngineControlForm->ProjectPath;
+ else
+  dir=ExtractFilePath(Application->ExeName);
+
+ dir+="SavedPictures\\";
+ if(Owner)
+ {
+  dir+=Owner->Name;
+  dir+="\\";
+ }
+ dir+=IntToStr(FrameIndex);
+ if(!DirectoryExists(dir))
+  ForceDirectories(dir);
+ dir+="\\";
+
+ string file_name=RDK::sntoa(SavePictureIndex++,3)+" ";
+
+ time_t time_data;
+ time(&time_data);
+ file_name+=RDK::get_text_time(time_data,'.','-')+".jpg"; */
+
+ if(!DirectoryExists(directory))
+  ForceDirectories(directory);
+
+ UpdateInterface(true);
+
+ TJPEGImage* jpg=new TJPEGImage;
+ jpg->Assign(Image->Picture->Graphic);
+ jpg->CompressionQuality=100;
+ jpg->Compress();
+ jpg->SaveToFile(directory+"\\"+filename);
+ delete jpg;
+}
+//---------------------------------------------------------------------------
 // Реакция на клик для динамического меню выбора кодека записи
 void __fastcall TVideoOutputFrame::OnClickVideoCodec(TObject *Sender)
 {

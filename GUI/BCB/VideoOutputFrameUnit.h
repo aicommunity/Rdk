@@ -515,6 +515,9 @@ virtual void ASaveParameters(RDK::USerStorageXML &xml);
 virtual void ALoadParameters(RDK::USerStorageXML &xml);
 // -----------------------------
 
+public:
+void __fastcall SavePicture(String directory, String filename);
+
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TVideoOutputFrame *VideoOutputFrame;
