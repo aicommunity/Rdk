@@ -575,7 +575,12 @@ int UTransferReader::ProcessDataPart2(const UParamT &buffer)
 {
  ClientBuffer.insert(ClientBuffer.end(),buffer.begin(), buffer.end());
  int start_search=0;
-   start_search=Packet.FindPacketInBuffer(ClientBuffer, start_search);
+
+// while(!PacketInProgress)
+ while(Packet.CheckBuffer(ClientBuffer,ClientBuffer.size(),0)<=0)
+ {
+ //--------------
+ start_search=Packet.FindPacketInBuffer(ClientBuffer, start_search);
    if(start_search<0)
    {
 	return 1;
@@ -586,16 +591,15 @@ int UTransferReader::ProcessDataPart2(const UParamT &buffer)
 	ClientBuffer.erase(ClientBuffer.begin(),ClientBuffer.begin()+start_search);
 	start_search=0;
    }
+ //--------------
 
-// while(!PacketInProgress)
- while(Packet.CheckBuffer(ClientBuffer,ClientBuffer.size(),0)<=0)
- {
   if(!PacketInProgress)
   {
    PacketInProgress=true;
   }
   if(Packet.CheckBuffer(ClientBuffer,ClientBuffer.size(),0)<=0)
   {
+
    PacketInProgress=false;
 	if(!Packet.Load(ClientBuffer))
 	{
@@ -621,7 +625,7 @@ int UTransferReader::ProcessDataPart2(const UParamT &buffer)
 	 PacketInProgress=false;
 	 int packet_size=Packet.GetPacketSize();
 	 if(packet_size>0)
-	  ClientBuffer.erase(ClientBuffer.begin(),ClientBuffer.begin()+packet_size);
+	  ClientBuffer.erase(ClientBuffer.begin(),ClientBuffer.begin()+packet_size-1);
 	}
   }
   else
