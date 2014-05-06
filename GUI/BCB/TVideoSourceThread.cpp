@@ -970,6 +970,7 @@ __fastcall TVideoCaptureThreadVideoGrabber::TVideoCaptureThreadVideoGrabber(TVid
  : VideoGrabber(new TVideoGrabber(frame)), TVideoCaptureThread(frame,CreateSuspended)
 {
  VideoGrabber->OnFrameCaptureCompleted=OnFrameCaptureCompleted;//VideoGrabberFrameCaptureCompleted;
+ VideoGrabber->OnLog=VideoGrabberLog;
 
  VideoGrabber->Display_AutoSize = false;
  VideoGrabber->PlayerRefreshPausedDisplay = false;
@@ -1051,6 +1052,14 @@ void __fastcall TVideoCaptureThreadVideoGrabber::OnFrameCaptureCompleted(System:
  break;
  }
 }
+
+void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberLog(TObject *Sender,
+	  TLogType LogType, String Severity, String InfoMsg)
+{
+ MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, (std::string("VideoGrabber [")+std::string(AnsiString(Severity).c_str())+std::string("] ")+AnsiString(InfoMsg).c_str() ).c_str());
+}
+
+
 
 void __fastcall TVideoCaptureThreadVideoGrabber::Calculate(void)
 {

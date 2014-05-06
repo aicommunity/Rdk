@@ -440,6 +440,9 @@ TVideoGrabber* GetVideoGrabber(void);
 
 void __fastcall OnFrameCaptureCompleted(System::TObject* Sender, void * FrameBitmap, int BitmapWidth, int BitmapHeight, unsigned FrameNumber, __int64 FrameTime, TFrameCaptureDest DestType, System::UnicodeString FileName, bool Success, int FrameId);
 
+void __fastcall VideoGrabberLog(TObject *Sender,
+	  TLogType LogType, String Severity, String InfoMsg);
+
 virtual void __fastcall Calculate(void);
 
 virtual void __fastcall BeforeCalculate(void);
