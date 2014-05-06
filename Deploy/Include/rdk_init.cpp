@@ -1764,6 +1764,15 @@ const char * RDK_CALL Model_SaveComponentParameters(const char *stringid, unsign
  return DllManager.GetEngineLock()->Model_SaveComponentProperties(stringid, type_mask & 0xFFFFFF01);
 }
 
+// Сохраняет все параметры компонента и его дочерних компонент в xml
+const char * RDK_CALL MModel_SaveComponentParameters(int engine_index, const char *stringid, unsigned int type_mask)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 0;
+
+ return DllManager.GetEngineLock(engine_index)->Model_SaveComponentProperties(stringid, type_mask & 0xFFFFFF01);
+}
+
 // Загружает все параметры компонента и его дочерних компонент из xml
 int RDK_CALL Model_LoadComponentParameters(const char *stringid, const char* buffer)
 {

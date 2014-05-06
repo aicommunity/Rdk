@@ -798,6 +798,8 @@ RDK_LIB_TYPE int RDK_CALL Model_LoadComponentPropertiesFromFile(const char *stri
 // Deprecated
 RDK_LIB_TYPE const char * RDK_CALL Model_SaveComponentParameters(const char *stringid, unsigned int type_mask=ptParameter | pgPublic);
 
+// Сохраняет все параметры компонента и его дочерних компонент в xml
+RDK_LIB_TYPE const char * RDK_CALL MModel_SaveComponentParameters(int engine_index, const char *stringid, unsigned int type_mask=ptParameter | pgPublic);
 // Загружает все параметры компонента и его дочерних компонент из xml
 // Deprecated
 RDK_LIB_TYPE int RDK_CALL Model_LoadComponentParameters(const char *stringid, const char* buffer);

@@ -23,8 +23,6 @@ object IdTcpResultBroadcasterForm: TIdTcpResultBroadcasterForm
     Height = 207
     Align = alClient
     TabOrder = 0
-    ExplicitTop = 29
-    ExplicitHeight = 214
   end
   object ToolBar: TToolBar
     Left = 0
@@ -47,9 +45,6 @@ object IdTcpResultBroadcasterForm: TIdTcpResultBroadcasterForm
     Caption = 'Broadcast enabled'
     TabOrder = 2
     OnClick = BroadcastEnabledCheckBoxClick
-    ExplicitLeft = 160
-    ExplicitTop = 200
-    ExplicitWidth = 97
   end
   object MainMenu: TMainMenu
     Left = 144

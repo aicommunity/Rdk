@@ -1,19 +1,20 @@
 inherited IdTcpResultBroadcasterFrame: TIdTcpResultBroadcasterFrame
   Width = 536
-  Height = 258
+  Height = 279
   ExplicitWidth = 536
-  ExplicitHeight = 258
+  ExplicitHeight = 279
   object GroupBox2: TGroupBox
     Left = 0
     Top = 0
     Width = 536
-    Height = 258
+    Height = 279
     Align = alClient
     Caption = ' Client data '
     TabOrder = 0
+    ExplicitHeight = 258
     DesignSize = (
       536
-      258)
+      279)
     object ServerAddressLabeledEdit: TLabeledEdit
       Left = 8
       Top = 32
@@ -58,11 +59,12 @@ inherited IdTcpResultBroadcasterFrame: TIdTcpResultBroadcasterFrame
     end
     object Panel1: TPanel
       Left = 2
-      Top = 215
+      Top = 236
       Width = 532
       Height = 41
       Align = alBottom
       TabOrder = 4
+      ExplicitTop = 215
       object ConnectButton: TButton
         Left = 6
         Top = 8
