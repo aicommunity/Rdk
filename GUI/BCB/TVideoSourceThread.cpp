@@ -1047,6 +1047,8 @@ void __fastcall TVideoCaptureThreadVideoGrabber::OnFrameCaptureCompleted(System:
 //   *WriteSource<<ConvertBitmap;
    WriteSourceSafe(ConvertBitmap, double(FrameTime)/(10000000.0*86400), false);
   }
+  if(GetNumEngines() > ChannelIndex)
+   UEngineMonitorForm->EngineMonitorFrame->SetServerTimeStamp(ChannelIndex,LastTimeStamp*86400.0*1000.0);
 
 //	 if(WaitForSingleObject(SourceUnlock,30) == WAIT_TIMEOUT)
 //	  return;
@@ -1119,10 +1121,10 @@ void __fastcall TVideoCaptureThreadVideoGrabber::Calculate(void)
   ResetEvent(VideoGrabberCompleted);
   return;
  } */
- if(WaitForSingleObject(VideoGrabberCompleted, wait_time) != WAIT_TIMEOUT)
+/* if(WaitForSingleObject(VideoGrabberCompleted, wait_time) != WAIT_TIMEOUT)
  {
   UEngineMonitorForm->EngineMonitorFrame->SetServerTimeStamp(ChannelIndex,LastTimeStamp*86400.0*1000.0);
- }
+ }*/
 
  ResetEvent(VideoGrabberCompleted);
 }
