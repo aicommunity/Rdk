@@ -37,6 +37,8 @@ protected: // Данные
 /// Временная метка последнего кадра
 double LastTimeStamp;
 
+int ConnectionState;
+
 /// Данные изображения
 RDK::UBitmap Source[2];
 
@@ -415,7 +417,6 @@ protected: // События
 HANDLE VideoGrabberCompleted;
 
 protected: // Временные переменные
-int ConnectionState;
 
 
 public: // Методы

@@ -29,6 +29,7 @@ __fastcall TVideoCaptureThread::TVideoCaptureThread(TVideoOutputFrame *frame, bo
  RestartMode=0;
 
  FreeOnTerminate=false;
+ ConnectionState=0;
 }
 
 __fastcall TVideoCaptureThread::~TVideoCaptureThread(void)
@@ -220,6 +221,7 @@ HANDLE TVideoCaptureThread::GetCalcCompleteEvent(void) const
 // --------------------------
 void __fastcall TVideoCaptureThread::Start(void)
 {
+// ConnectionState=2;
  SetEvent(CalcCompleteEvent);
  SetEvent(CaptureEnabled);
 }
@@ -227,6 +229,7 @@ void __fastcall TVideoCaptureThread::Start(void)
 void __fastcall TVideoCaptureThread::Stop(void)
 {
  ResetEvent(CaptureEnabled);
+ ConnectionState=1;
 }
 
 void __fastcall TVideoCaptureThread::BeforeCalculate(void)
@@ -1064,6 +1067,8 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberLog(TObject *Sender
 	  TLogType LogType, String Severity, String InfoMsg)
 {
  MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, (std::string("VideoGrabber [")+std::string(AnsiString(Severity).c_str())+std::string("] ")+AnsiString(InfoMsg).c_str() ).c_str());
+ if(Severity == "ERROR")
+  ConnectionState=1;
 }
 
 void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberDeviceLost(TObject *Sender)
@@ -1101,7 +1106,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::Calculate(void)
  }
 
  Frame->UpdateInterval=wait_time;
- if(WaitForSingleObject(VideoGrabberCompleted, wait_time) == WAIT_TIMEOUT)
+/* if(WaitForSingleObject(VideoGrabberCompleted, wait_time) == WAIT_TIMEOUT)
  {
   if(WaitForSingleObject(CaptureEnabled,10) != WAIT_TIMEOUT)
   {
@@ -1113,7 +1118,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::Calculate(void)
 
   ResetEvent(VideoGrabberCompleted);
   return;
- }
+ } */
  ResetEvent(VideoGrabberCompleted);
 }
 
