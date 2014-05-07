@@ -57,7 +57,7 @@ public:
 // Конструкторы и деструкторы
 // --------------------------
 RDKDllManager(void);
-~RDKDllManager(void);
+virtual ~RDKDllManager(void);
 // --------------------------
 
 // --------------------------

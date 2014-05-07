@@ -9,6 +9,7 @@
 #include <QtCore/QDir>
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
+#include <QtCore/QTime>
 
 namespace RDK {
 
@@ -16,9 +17,8 @@ namespace RDK {
 // (зависит от реализации)
 unsigned long long GetCurrentStartupTime(void)
 {
- time_t timedata;
- time(&timedata);
- return timedata*1000;
+ QTime timedata = QTime::currentTime();
+ return static_cast<unsigned long long>(timedata.msecsSinceStartOfDay());
 }
 
 // Вычисляет разницу во времени в миллисекундах
