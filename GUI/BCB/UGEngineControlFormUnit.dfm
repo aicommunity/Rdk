@@ -53,7 +53,6 @@ object UGEngineControlForm: TUGEngineControlForm
       Height = 290
       Align = alLeft
       TabOrder = 0
-      ExplicitHeight = 278
       inline UComponentsListFrame1: TUComponentsListFrame
         Left = 1
         Top = 1
@@ -70,7 +69,7 @@ object UGEngineControlForm: TUGEngineControlForm
         ExplicitLeft = 1
         ExplicitTop = 1
         ExplicitWidth = 247
-        ExplicitHeight = 276
+        ExplicitHeight = 288
         inherited Splitter1: TSplitter
           Left = 0
           Top = 217
@@ -91,15 +90,15 @@ object UGEngineControlForm: TUGEngineControlForm
           ExplicitLeft = 0
           ExplicitTop = 225
           ExplicitWidth = 247
-          ExplicitHeight = 51
+          ExplicitHeight = 63
           inherited PageControl1: TPageControl
             Width = 245
             Height = 61
             ExplicitWidth = 245
-            ExplicitHeight = 49
+            ExplicitHeight = 61
             inherited TabSheet6: TTabSheet
               ExplicitWidth = 237
-              ExplicitHeight = 23
+              ExplicitHeight = 35
               inherited Splitter5: TSplitter
                 Top = -42
                 Width = 237
@@ -111,7 +110,7 @@ object UGEngineControlForm: TUGEngineControlForm
                 Width = 237
                 Height = 30
                 ExplicitWidth = 237
-                ExplicitHeight = 8
+                ExplicitHeight = 30
                 inherited BasicStringGrid: TStringGrid
                   OnMouseEnter = EnchancedSG1BasicStringGridMouseEnter
                 end
@@ -126,7 +125,7 @@ object UGEngineControlForm: TUGEngineControlForm
                 Top = -32
                 Width = 237
                 OnMouseEnter = UComponentsListFrame1NiceParamValRichEditMouseEnter
-                ExplicitTop = -44
+                ExplicitTop = -32
                 ExplicitWidth = 237
               end
             end
@@ -214,12 +213,14 @@ object UGEngineControlForm: TUGEngineControlForm
         ExplicitWidth = 727
         object LogsTabSheet: TTabSheet
           Caption = 'Logs'
+          ExplicitLeft = 0
+          ExplicitTop = 0
           ExplicitWidth = 699
+          ExplicitHeight = 0
         end
         object TabSheet2: TTabSheet
           Caption = 'Performance'
           ImageIndex = 1
-          ExplicitWidth = 699
           inline UComponentsPerformanceFrame1: TUComponentsPerformanceFrame
             Left = 0
             Top = 0
@@ -233,7 +234,7 @@ object UGEngineControlForm: TUGEngineControlForm
             Font.Style = []
             ParentFont = False
             TabOrder = 0
-            ExplicitWidth = 699
+            ExplicitWidth = 717
             ExplicitHeight = 143
             inherited Chart: TChart
               Width = 578
@@ -295,8 +296,6 @@ object UGEngineControlForm: TUGEngineControlForm
       object Draw: TTabSheet
         Caption = 'Draw'
         OnShow = DrawShow
-        ExplicitWidth = 465
-        ExplicitHeight = 250
         inline UDrawEngineFrame1: TUDrawEngineFrame
           Left = 0
           Top = 0
@@ -310,8 +309,8 @@ object UGEngineControlForm: TUGEngineControlForm
           Font.Style = []
           ParentFont = False
           TabOrder = 0
-          ExplicitWidth = 465
-          ExplicitHeight = 250
+          ExplicitWidth = 483
+          ExplicitHeight = 262
           inherited Splitter1: TSplitter
             Left = 243
             Height = 213
@@ -321,27 +320,27 @@ object UGEngineControlForm: TUGEngineControlForm
           inherited Panel1: TPanel
             Left = 254
             Height = 213
-            ExplicitLeft = 236
-            ExplicitHeight = 201
+            ExplicitLeft = 254
+            ExplicitHeight = 213
             inherited UClassesListFrame: TUClassesListFrame
               Height = 211
-              ExplicitHeight = 199
+              ExplicitHeight = 211
               inherited PageControl: TPageControl
                 Height = 211
                 ActivePage = UDrawEngineFrame1.UClassesListFrame.LibsTabSheet
-                ExplicitHeight = 199
+                ExplicitHeight = 211
                 inherited NameTabSheet: TTabSheet
                   ExplicitLeft = 4
                   ExplicitTop = 24
                 end
                 inherited LibsTabSheet: TTabSheet
                   ExplicitWidth = 219
-                  ExplicitHeight = 171
+                  ExplicitHeight = 183
                   inherited TreeView: TTreeView
                     Width = 219
                     Height = 183
                     ExplicitWidth = 219
-                    ExplicitHeight = 171
+                    ExplicitHeight = 183
                   end
                 end
                 inherited LibsControlTabSheet: TTabSheet
@@ -369,8 +368,8 @@ object UGEngineControlForm: TUGEngineControlForm
           inherited Panel3: TPanel
             Top = 213
             Width = 483
-            ExplicitTop = 201
-            ExplicitWidth = 465
+            ExplicitTop = 213
+            ExplicitWidth = 483
             inherited ApplyButton: TButton
               Left = 317
               ExplicitLeft = 299
@@ -730,7 +729,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 360
     Top = 65528
     Bitmap = {
-      494C01011B006000840210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B006000880210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

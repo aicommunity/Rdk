@@ -1520,11 +1520,11 @@ void TUGEngineControlForm::StartChannel(int channel_index)
  if(AppWinState)
   UShowProgressBarForm->Show();
 
+ UEngineMonitorForm->EngineMonitorFrame->StartChannel(channel_index);
 #ifdef RDK_VIDEO
  VideoOutputForm->Start(channel_index);
 #endif
  UShowProgressBarForm->IncBarStatus(2);
- UEngineMonitorForm->EngineMonitorFrame->StartChannel(channel_index);
 
  UShowProgressBarForm->Hide();
 }
