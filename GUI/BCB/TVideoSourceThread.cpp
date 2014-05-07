@@ -1108,9 +1108,9 @@ void __fastcall TVideoCaptureThreadVideoGrabber::Calculate(void)
  }
 
  Frame->UpdateInterval=wait_time;
-/* if(WaitForSingleObject(VideoGrabberCompleted, wait_time) == WAIT_TIMEOUT)
+ if(WaitForSingleObject(VideoGrabberCompleted, wait_time) == WAIT_TIMEOUT)
  {
-  if(WaitForSingleObject(CaptureEnabled,10) != WAIT_TIMEOUT)
+/*  if(WaitForSingleObject(CaptureEnabled,10) != WAIT_TIMEOUT)
   {
    LastTimeStamp+=(1.0/fps)/86400.0;
    if(MIsEngineInit(Frame->FrameIndex))
@@ -1118,9 +1118,9 @@ void __fastcall TVideoCaptureThreadVideoGrabber::Calculate(void)
    TVideoCaptureThread::AfterCalculate();
   }
 
-  ResetEvent(VideoGrabberCompleted);
+  ResetEvent(VideoGrabberCompleted);*/
   return;
- } */
+ }
 /* if(WaitForSingleObject(VideoGrabberCompleted, wait_time) != WAIT_TIMEOUT)
  {
   UEngineMonitorForm->EngineMonitorFrame->SetServerTimeStamp(ChannelIndex,LastTimeStamp*86400.0*1000.0);
