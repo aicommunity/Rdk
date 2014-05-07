@@ -414,6 +414,9 @@ protected: // События
 /// Выставляется при получении очередного кадра
 HANDLE VideoGrabberCompleted;
 
+protected: // Временные переменные
+int ConnectionState;
+
 
 public: // Методы
 // --------------------------
@@ -442,6 +445,7 @@ void __fastcall OnFrameCaptureCompleted(System::TObject* Sender, void * FrameBit
 
 void __fastcall VideoGrabberLog(TObject *Sender,
 	  TLogType LogType, String Severity, String InfoMsg);
+void __fastcall VideoGrabberDeviceLost(TObject *Sender);
 
 virtual void __fastcall Calculate(void);
 
@@ -455,6 +459,11 @@ virtual long long GetNumBitmaps(void) const;
 /// Устанавливает текущую позицию в последовательности
 virtual long long GetPosition(void) const;
 virtual bool SetPosition(long long index);
+
+/// Возвращает 0 если если состояние не определено
+/// Возвращает 1 если если нет подключения к источнику
+/// Возвращает 2 если если есть подключение к источнику
+virtual int CheckConnection(void) const;
 // --------------------------
 };
 

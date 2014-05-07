@@ -971,6 +971,7 @@ __fastcall TVideoCaptureThreadVideoGrabber::TVideoCaptureThreadVideoGrabber(TVid
 {
  VideoGrabber->OnFrameCaptureCompleted=OnFrameCaptureCompleted;//VideoGrabberFrameCaptureCompleted;
  VideoGrabber->OnLog=VideoGrabberLog;
+ VideoGrabber->OnDeviceLost=VideoGrabberDeviceLost;
 
  VideoGrabber->Display_AutoSize = false;
  VideoGrabber->PlayerRefreshPausedDisplay = false;
@@ -979,11 +980,16 @@ __fastcall TVideoCaptureThreadVideoGrabber::TVideoCaptureThreadVideoGrabber(TVid
  VideoGrabber->BurstInterval = 0;
  VideoGrabber->BurstMode = true;
  VideoGrabber->BurstType = fc_TBitmap;
- VideoGrabber->Synchronized=true;
+ VideoGrabber->Synchronized=false;
+ VideoGrabber->SetIPCameraSetting(ips_ConnectionTimeout, 1000);
+ VideoGrabber->SetIPCameraSetting(ips_ReceiveTimeout, 2000);
 
  ConvertBitmap=new Graphics::TBitmap;
 
  VideoGrabberCompleted=CreateEvent(0,TRUE,0,0);
+
+ RestartMode=1;
+ ConnectionState=0;
 }
 
 __fastcall TVideoCaptureThreadVideoGrabber::~TVideoCaptureThreadVideoGrabber(void)
@@ -1016,6 +1022,7 @@ TVideoGrabber* TVideoCaptureThreadVideoGrabber::GetVideoGrabber(void)
 
 void __fastcall TVideoCaptureThreadVideoGrabber::OnFrameCaptureCompleted(System::TObject* Sender, void * FrameBitmap, int BitmapWidth, int BitmapHeight, unsigned FrameNumber, __int64 FrameTime, TFrameCaptureDest DestType, System::UnicodeString FileName, bool Success, int FrameId)
 {
+ ConnectionState=2;
  Graphics::TBitmap *Frame_Bitmap;
 
  Frame_Bitmap = (Graphics::TBitmap*) FrameBitmap;
@@ -1059,6 +1066,20 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberLog(TObject *Sender
  MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, (std::string("VideoGrabber [")+std::string(AnsiString(Severity).c_str())+std::string("] ")+AnsiString(InfoMsg).c_str() ).c_str());
 }
 
+void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberDeviceLost(TObject *Sender)
+{
+ MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, "VideoGrabber Device lost");
+ ConnectionState=1;
+/* if(RestartMode == 1)
+ {
+  Start();
+ }
+ else
+ if(RestartMode == 2)
+ {
+  Stop();
+ }*/
+}
 
 
 void __fastcall TVideoCaptureThreadVideoGrabber::Calculate(void)
@@ -1137,6 +1158,14 @@ bool TVideoCaptureThreadVideoGrabber::SetPosition(long long index)
   return true;
  }
  return false;
+}
+
+/// Возвращает 0 если если состояние не определено
+/// Возвращает 1 если если нет подключения к источнику
+/// Возвращает 2 если если есть подключение к источнику
+int TVideoCaptureThreadVideoGrabber::CheckConnection(void) const
+{
+ return ConnectionState;
 }
 // --------------------------
 
