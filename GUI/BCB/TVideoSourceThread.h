@@ -13,6 +13,8 @@ class TVideoOutputFrame;
 class TVideoCaptureThread: public TThread
 {
 protected: // Параметры
+double Fps;
+
 /// Источник видео
 int SourceMode;
 
@@ -186,7 +188,7 @@ protected: // Параметры
 /// Имя файла изображения
 std::string FileName;
 
-double Fps;
+//double Fps;
 
 protected: // Временные изображения
 RDK::UBitmap TempSource;
@@ -265,7 +267,7 @@ int CurrentBmpSequenceIndex;
 
 int LastReadSequenceIndex;
 
-double Fps;
+//double Fps;
 
 
 
@@ -406,6 +408,7 @@ void __fastcall IdHTTPServerCommandGet(TIdContext *AContext, TIdHTTPRequestInfo 
 class TVideoCaptureThreadVideoGrabber: public TVideoCaptureThread
 {
 protected: // Параметры
+//double Fps;
 
 protected: // Данные
 TVideoGrabber* VideoGrabber;
@@ -426,7 +429,12 @@ public: // Методы
 __fastcall TVideoCaptureThreadVideoGrabber(TVideoOutputFrame *frame, bool CreateSuspended);
 virtual __fastcall ~TVideoCaptureThreadVideoGrabber(void);
 // --------------------------
-
+// --------------------------
+// Управление параметрами
+// --------------------------
+/// Устанавливает значение FPS
+double GetFps(void) const;
+bool SetFps(double fps);
 // --------------------------
 // Управление данными
 // --------------------------

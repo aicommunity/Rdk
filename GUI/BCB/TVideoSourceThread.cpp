@@ -1014,7 +1014,19 @@ __fastcall TVideoCaptureThreadVideoGrabber::~TVideoCaptureThreadVideoGrabber(voi
  CloseHandle(VideoGrabberCompleted);
 }
 // --------------------------
+// Управление параметрами
+// --------------------------
+/// Устанавливает значение FPS
+double TVideoCaptureThreadVideoGrabber::GetFps(void) const
+{
+ return Fps;
+}
 
+bool TVideoCaptureThreadVideoGrabber::SetFps(double fps)
+{
+ Fps=fps;
+ return true;
+}
 // --------------------------
 // Управление потоком
 // --------------------------
@@ -1026,6 +1038,16 @@ TVideoGrabber* TVideoCaptureThreadVideoGrabber::GetVideoGrabber(void)
 void __fastcall TVideoCaptureThreadVideoGrabber::OnFrameCaptureCompleted(System::TObject* Sender, void * FrameBitmap, int BitmapWidth, int BitmapHeight, unsigned FrameNumber, __int64 FrameTime, TFrameCaptureDest DestType, System::UnicodeString FileName, bool Success, int FrameId)
 {
  ConnectionState=2;
+
+ if(Fps > 0)
+ {
+  double diffTime=double(FrameTime)/(10000000.0*86400)-LastTimeStamp;
+  if(diffTime<(1.0/Fps)/86400.0)
+  {
+	return;
+  }
+ }
+
  Graphics::TBitmap *Frame_Bitmap;
 
  Frame_Bitmap = (Graphics::TBitmap*) FrameBitmap;
@@ -1187,12 +1209,24 @@ int TVideoCaptureThreadVideoGrabber::CheckConnection(void) const
 /// Сохранение настроек в xml
 bool TVideoCaptureThreadVideoGrabber::ASaveParameters(RDK::USerStorageXML &xml)
 {
+ //if(!TVideoCaptureThread::ASaveParameters(xml))
+ // return false;
+
+ //xml.WriteString("Fps", AnsiString(FloatToStr(Fps)).c_str());
+
  return true;
 }
 
 /// Загрузка и применение настроек из xml
 bool TVideoCaptureThreadVideoGrabber::ALoadParameters(RDK::USerStorageXML &xml)
 {
+ //if(!TVideoCaptureThread::ALoadParameters(xml))
+ // return false;
+
+ //String temp=AnsiString(xml.ReadString("Fps", "")).c_str();
+
+ //Fps=StrToFloatDef(temp, 0.0);
+
  return true;
 }
 // --------------------------

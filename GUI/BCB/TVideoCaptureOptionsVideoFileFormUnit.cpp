@@ -32,6 +32,7 @@ bool TVideoCaptureOptionsVideoFileForm::ReadParametersToGui(RDK::USerStorageXML 
 {
  VFNameEdit->Text=xml.ReadString("FileName", AnsiString(VFNameEdit->Text).c_str()).c_str();
  ProcessAllFramesVideoCheckBox->Checked=xml.ReadBool("ProcessAllFramesFlag",ProcessAllFramesVideoCheckBox->Checked);
+ FpsLabeledEdit->Text=xml.ReadString("Fps", "0").c_str();
 
  return true;
 }
@@ -42,6 +43,7 @@ bool TVideoCaptureOptionsVideoFileForm::WriteParametersToXml(RDK::USerStorageXML
  xml.SelectNodeRoot("VideoSourceThread");
  xml.WriteString("FileName", AnsiString(VFNameEdit->Text).c_str());
  xml.WriteBool("ProcessAllFramesFlag",ProcessAllFramesVideoCheckBox->Checked);
+ xml.WriteString("Fps", AnsiString(FpsLabeledEdit->Text).c_str());
 
  return true;
 }

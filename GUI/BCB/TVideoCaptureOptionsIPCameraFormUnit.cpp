@@ -33,6 +33,7 @@ bool TVideoCaptureOptionsIPCameraForm::ReadParametersToGui(RDK::USerStorageXML &
  IPCameraUrlEdit->Text=xml.ReadString("Url",AnsiString(IPCameraUrlEdit->Text).c_str()).c_str();
  IPCameraUserNameEdit->Text=xml.ReadString("UserName", AnsiString(IPCameraUserNameEdit->Text).c_str()).c_str();
  IPCameraUserPasswordEdit->Text=xml.ReadString("Password", AnsiString(IPCameraUserPasswordEdit->Text).c_str()).c_str();
+ FpsLabeledEdit->Text=xml.ReadString("Fps", "0").c_str();
  return true;
 }
 
@@ -43,6 +44,7 @@ bool TVideoCaptureOptionsIPCameraForm::WriteParametersToXml(RDK::USerStorageXML 
  xml.WriteString("Url",AnsiString(IPCameraUrlEdit->Text).c_str());
  xml.WriteString("UserName", AnsiString(IPCameraUserNameEdit->Text).c_str());
  xml.WriteString("Password", AnsiString(IPCameraUserPasswordEdit->Text).c_str());
+ xml.WriteString("Fps", AnsiString(FpsLabeledEdit->Text).c_str());
  return true;
 }
 /// -------------------------------------

@@ -52,6 +52,7 @@ bool TVideoCaptureOptionsDeviceForm::ReadParametersToGui(RDK::USerStorageXML &xm
   VideoSizeComboBox->ItemIndex=xml.ReadInteger("SizeIndex",VideoSizeComboBox->ItemIndex);
   VideoSubTypeComboBox->ItemIndex=xml.ReadInteger("SubtypeIndex",VideoSubTypeComboBox->ItemIndex);
   AnalogVideoStandardComboBox->ItemIndex=xml.ReadInteger("AnalogIndex",AnalogVideoStandardComboBox->ItemIndex);
+  FpsLabeledEdit->Text=xml.ReadString("Fps", "0").c_str();
 
   VideoGrabber->VideoDevice=DeviceComboBox->ItemIndex;
 //  thread->Init(DeviceComboBox->ItemIndex, InputComboBox->ItemIndex, VideoSizeComboBox->ItemIndex, VideoSubTypeComboBox->ItemIndex, AnalogVideoStandardComboBox->ItemIndex);
@@ -76,6 +77,7 @@ bool TVideoCaptureOptionsDeviceForm::WriteParametersToXml(RDK::USerStorageXML &x
  xml.WriteInteger("SizeIndex",VideoSizeComboBox->ItemIndex);
  xml.WriteInteger("SubtypeIndex",VideoSubTypeComboBox->ItemIndex);
  xml.WriteInteger("AnalogIndex",AnalogVideoStandardComboBox->ItemIndex);
+ xml.WriteString("Fps", AnsiString(FpsLabeledEdit->Text).c_str());
 
  return true;
 }

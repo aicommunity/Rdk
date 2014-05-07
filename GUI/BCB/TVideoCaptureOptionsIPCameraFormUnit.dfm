@@ -1,8 +1,8 @@
 object VideoCaptureOptionsIPCameraForm: TVideoCaptureOptionsIPCameraForm
   Left = 0
   Top = 0
-  ClientHeight = 218
-  ClientWidth = 558
+  ClientHeight = 310
+  ClientWidth = 592
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -16,17 +16,19 @@ object VideoCaptureOptionsIPCameraForm: TVideoCaptureOptionsIPCameraForm
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 558
-    Height = 218
+    Width = 592
+    Height = 310
     Align = alClient
     TabOrder = 0
+    ExplicitWidth = 558
+    ExplicitHeight = 218
     DesignSize = (
-      558
-      218)
+      592
+      310)
     object Label4: TLabel
       Left = 8
       Top = 3
-      Width = 290
+      Width = 324
       Height = 13
       Anchors = [akLeft, akTop, akRight]
       AutoSize = False
@@ -36,7 +38,7 @@ object VideoCaptureOptionsIPCameraForm: TVideoCaptureOptionsIPCameraForm
     object Label5: TLabel
       Left = 8
       Top = 47
-      Width = 542
+      Width = 576
       Height = 13
       Anchors = [akLeft, akTop, akRight]
       AutoSize = False
@@ -46,7 +48,7 @@ object VideoCaptureOptionsIPCameraForm: TVideoCaptureOptionsIPCameraForm
     object Label6: TLabel
       Left = 8
       Top = 89
-      Width = 542
+      Width = 576
       Height = 13
       Anchors = [akLeft, akTop, akRight]
       AutoSize = False
@@ -56,7 +58,7 @@ object VideoCaptureOptionsIPCameraForm: TVideoCaptureOptionsIPCameraForm
     object Label8: TLabel
       Left = 216
       Top = 1
-      Width = 265
+      Width = 299
       Height = 13
       Anchors = [akLeft, akTop, akRight]
       AutoSize = False
@@ -67,32 +69,35 @@ object VideoCaptureOptionsIPCameraForm: TVideoCaptureOptionsIPCameraForm
     object IPCameraUrlEdit: TEdit
       Left = 8
       Top = 20
-      Width = 542
+      Width = 576
       Height = 21
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 0
       Text = 'http://127.0.0.1/video/mjpg.cgi'
+      ExplicitWidth = 542
     end
     object IPCameraUserNameEdit: TEdit
       Left = 8
       Top = 62
-      Width = 542
+      Width = 576
       Height = 21
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 1
       Text = 'Admin'
+      ExplicitWidth = 542
     end
     object IPCameraUserPasswordEdit: TEdit
       Left = 8
       Top = 108
-      Width = 542
+      Width = 576
       Height = 21
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 2
+      ExplicitWidth = 542
     end
     object IpMoveUpButton: TButton
       Left = 96
-      Top = 144
+      Top = 188
       Width = 75
       Height = 25
       Caption = 'Up'
@@ -101,7 +106,7 @@ object VideoCaptureOptionsIPCameraForm: TVideoCaptureOptionsIPCameraForm
     end
     object IpMoveLeftButton: TButton
       Left = 24
-      Top = 175
+      Top = 219
       Width = 75
       Height = 25
       Caption = 'Left'
@@ -110,7 +115,7 @@ object VideoCaptureOptionsIPCameraForm: TVideoCaptureOptionsIPCameraForm
     end
     object IpMoveRightButton: TButton
       Left = 168
-      Top = 175
+      Top = 219
       Width = 75
       Height = 25
       Caption = 'Right'
@@ -119,7 +124,7 @@ object VideoCaptureOptionsIPCameraForm: TVideoCaptureOptionsIPCameraForm
     end
     object IpMoveDownButton: TButton
       Left = 96
-      Top = 206
+      Top = 250
       Width = 75
       Height = 25
       Caption = 'Down'
@@ -128,7 +133,7 @@ object VideoCaptureOptionsIPCameraForm: TVideoCaptureOptionsIPCameraForm
     end
     object ZoomInButton: TButton
       Left = 249
-      Top = 144
+      Top = 188
       Width = 75
       Height = 25
       Caption = 'Zoom Im'
@@ -137,7 +142,7 @@ object VideoCaptureOptionsIPCameraForm: TVideoCaptureOptionsIPCameraForm
     end
     object ZoomOutButton: TButton
       Left = 249
-      Top = 206
+      Top = 250
       Width = 75
       Height = 25
       Caption = 'Zoom Out'
@@ -146,7 +151,7 @@ object VideoCaptureOptionsIPCameraForm: TVideoCaptureOptionsIPCameraForm
     end
     object ResetButton: TButton
       Left = 344
-      Top = 175
+      Top = 219
       Width = 75
       Height = 25
       Caption = 'Reset'
@@ -156,12 +161,25 @@ object VideoCaptureOptionsIPCameraForm: TVideoCaptureOptionsIPCameraForm
     object IPCameraControlPostfixEdit: TEdit
       Left = 216
       Top = 20
-      Width = 334
+      Width = 368
       Height = 21
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 10
       Text = 'http://127.0.0.1/video/mjpg.cgi'
       Visible = False
+      ExplicitWidth = 334
+    end
+    object FpsLabeledEdit: TLabeledEdit
+      Left = 8
+      Top = 151
+      Width = 576
+      Height = 21
+      Anchors = [akLeft, akTop, akRight]
+      EditLabel.Width = 17
+      EditLabel.Height = 13
+      EditLabel.Caption = 'Fps'
+      TabOrder = 11
+      ExplicitWidth = 550
     end
   end
 end

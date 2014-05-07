@@ -31,6 +31,7 @@ __published:	// IDE-managed Components
 	TButton *ZoomOutButton;
 	TButton *ResetButton;
 	TEdit *IPCameraControlPostfixEdit;
+	TLabeledEdit *FpsLabeledEdit;
 	void __fastcall FormCreate(TObject *Sender);
 private:	// User declarations
 public:		// User declarations

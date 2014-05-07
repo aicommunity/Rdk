@@ -1,8 +1,8 @@
 object VideoCaptureOptionsDeviceForm: TVideoCaptureOptionsDeviceForm
   Left = 0
   Top = 0
-  ClientHeight = 229
-  ClientWidth = 445
+  ClientHeight = 307
+  ClientWidth = 433
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -17,17 +17,17 @@ object VideoCaptureOptionsDeviceForm: TVideoCaptureOptionsDeviceForm
   object VDCapturePanel: TPanel
     Left = 0
     Top = 0
-    Width = 445
-    Height = 229
+    Width = 433
+    Height = 307
     Align = alClient
     TabOrder = 0
     DesignSize = (
-      445
-      229)
+      433
+      307)
     object ModeLabel: TLabel
       Left = 8
       Top = 89
-      Width = 429
+      Width = 417
       Height = 13
       Anchors = [akLeft, akTop, akRight]
       AutoSize = False
@@ -37,7 +37,7 @@ object VideoCaptureOptionsDeviceForm: TVideoCaptureOptionsDeviceForm
     object InputLabel: TLabel
       Left = 8
       Top = 47
-      Width = 429
+      Width = 417
       Height = 13
       Anchors = [akLeft, akTop, akRight]
       AutoSize = False
@@ -47,34 +47,37 @@ object VideoCaptureOptionsDeviceForm: TVideoCaptureOptionsDeviceForm
     object DeviceLabel: TLabel
       Left = 8
       Top = 3
-      Width = 429
+      Width = 417
       Height = 13
       Anchors = [akLeft, akTop, akRight]
       AutoSize = False
       Caption = 'Video device:'
+      ExplicitWidth = 429
     end
     object Label1: TLabel
       Left = 8
       Top = 137
-      Width = 429
+      Width = 417
       Height = 13
       Anchors = [akLeft, akTop, akRight]
       AutoSize = False
       Caption = 'Subtype:'
+      ExplicitWidth = 429
     end
     object Label2: TLabel
       Left = 8
-      Top = 185
-      Width = 429
+      Top = 218
+      Width = 417
       Height = 13
       Anchors = [akLeft, akTop, akRight]
       AutoSize = False
       Caption = 'Analog video standard:'
+      ExplicitWidth = 428
     end
     object VideoSizeComboBox: TComboBox
       Left = 8
       Top = 104
-      Width = 429
+      Width = 417
       Height = 21
       Style = csDropDownList
       Anchors = [akLeft, akTop, akRight]
@@ -83,7 +86,7 @@ object VideoCaptureOptionsDeviceForm: TVideoCaptureOptionsDeviceForm
     object InputComboBox: TComboBox
       Left = 8
       Top = 62
-      Width = 429
+      Width = 417
       Height = 21
       Style = csDropDownList
       Anchors = [akLeft, akTop, akRight]
@@ -92,7 +95,7 @@ object VideoCaptureOptionsDeviceForm: TVideoCaptureOptionsDeviceForm
     object DeviceComboBox: TComboBox
       Left = 8
       Top = 19
-      Width = 429
+      Width = 417
       Height = 21
       Style = csDropDownList
       Anchors = [akLeft, akTop, akRight]
@@ -102,7 +105,7 @@ object VideoCaptureOptionsDeviceForm: TVideoCaptureOptionsDeviceForm
     object VideoSubTypeComboBox: TComboBox
       Left = 8
       Top = 152
-      Width = 429
+      Width = 417
       Height = 21
       Style = csDropDownList
       Anchors = [akLeft, akTop, akRight]
@@ -110,8 +113,8 @@ object VideoCaptureOptionsDeviceForm: TVideoCaptureOptionsDeviceForm
     end
     object AnalogVideoStandardComboBox: TComboBox
       Left = 8
-      Top = 200
-      Width = 429
+      Top = 237
+      Width = 417
       Height = 21
       Style = csDropDownList
       Anchors = [akLeft, akTop, akRight]
@@ -119,11 +122,22 @@ object VideoCaptureOptionsDeviceForm: TVideoCaptureOptionsDeviceForm
     end
     object StreamButton: TButton
       Left = 8
-      Top = 231
+      Top = 268
       Width = 75
       Height = 25
       Caption = 'Stream'
       TabOrder = 5
+    end
+    object FpsLabeledEdit: TLabeledEdit
+      Left = 8
+      Top = 191
+      Width = 417
+      Height = 21
+      Anchors = [akLeft, akTop, akRight]
+      EditLabel.Width = 17
+      EditLabel.Height = 13
+      EditLabel.Caption = 'Fps'
+      TabOrder = 6
     end
   end
 end
