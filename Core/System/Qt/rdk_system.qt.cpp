@@ -18,7 +18,10 @@ namespace RDK {
 unsigned long long GetCurrentStartupTime(void)
 {
  QTime timedata = QTime::currentTime();
- return static_cast<unsigned long long>(timedata.msecsSinceStartOfDay());
+ return timedata.hour()*60*60*1000 +
+        timedata.minute()*60*1000 +
+        timedata.second()*1000 +
+        timedata.msec();
 }
 
 // ¬ычисл€ет разницу во времени в миллисекундах
