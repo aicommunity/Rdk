@@ -123,12 +123,12 @@ virtual RDK::UEPtr<TVideoCaptureThread> New(TVideoOutputFrame *frame, bool creat
 /// Сохранение настроек в xml
 virtual bool SaveParameters(RDK::USerStorageXML &xml);
 virtual bool SaveParametersEx(RDK::USerStorageXML &xml);
-virtual bool ASaveParameters(RDK::USerStorageXML &xml)=0;
+virtual bool ASaveParameters(RDK::USerStorageXML &xml);
 
 /// Загрузка и применение настроек из xml
 virtual bool LoadParameters(RDK::USerStorageXML &xml);
 virtual bool LoadParametersEx(RDK::USerStorageXML &xml);
-virtual bool ALoadParameters(RDK::USerStorageXML &xml)=0;
+virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 
 // --------------------------

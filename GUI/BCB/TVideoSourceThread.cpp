@@ -185,7 +185,20 @@ bool TVideoCaptureThread::LoadParametersEx(RDK::USerStorageXML &xml)
  return true;
 }
 // --------------------------
+// --------------------------
+// Управление данными
+// --------------------------
+/// Сохранение настроек в xml
+bool TVideoCaptureThread::ASaveParameters(RDK::USerStorageXML &xml)
+{
+ return true;
+}
 
+/// Загрузка и применение настроек из xml
+bool TVideoCaptureThread::ALoadParameters(RDK::USerStorageXML &xml)
+{
+ return true;
+}
 // --------------------------
 // Управление событиями
 // --------------------------
@@ -1209,10 +1222,10 @@ int TVideoCaptureThreadVideoGrabber::CheckConnection(void) const
 /// Сохранение настроек в xml
 bool TVideoCaptureThreadVideoGrabber::ASaveParameters(RDK::USerStorageXML &xml)
 {
- //if(!TVideoCaptureThread::ASaveParameters(xml))
- // return false;
+ if(!TVideoCaptureThread::ASaveParameters(xml))
+  return false;
 
- //xml.WriteString("Fps", AnsiString(FloatToStr(Fps)).c_str());
+ xml.WriteString("Fps", AnsiString(FloatToStr(Fps)).c_str());
 
  return true;
 }
@@ -1220,12 +1233,10 @@ bool TVideoCaptureThreadVideoGrabber::ASaveParameters(RDK::USerStorageXML &xml)
 /// Загрузка и применение настроек из xml
 bool TVideoCaptureThreadVideoGrabber::ALoadParameters(RDK::USerStorageXML &xml)
 {
- //if(!TVideoCaptureThread::ALoadParameters(xml))
- // return false;
+ if(!TVideoCaptureThread::ALoadParameters(xml))
+  return false;
 
- //String temp=AnsiString(xml.ReadString("Fps", "")).c_str();
-
- //Fps=StrToFloatDef(temp, 0.0);
+ Fps=StrToFloatDef(xml.ReadString("Fps", "").c_str(), 0.0);
 
  return true;
 }
