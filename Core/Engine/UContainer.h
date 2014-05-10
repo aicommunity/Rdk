@@ -173,10 +173,10 @@ bool SkipComponentCalculation;
 bool ComponentReCalculation;
 
 // Время начала счета компонента на текущем шаге
-long long StartCalcTime;
+unsigned long long StartCalcTime;
 
 // Время окончания счета компонента на предыдущем шаге
-long long LastCalcTime;
+unsigned long long LastCalcTime;
 
 // --------------------------
 // Конструкторы и деструкторы

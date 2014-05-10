@@ -1586,7 +1586,7 @@ RDK_SYS_TRY {
   Build();
   BeforeCalculate();
 
-  long long tempstepduration=StartCalcTime=GetCurrentStartupTime();
+  unsigned long long tempstepduration=StartCalcTime=GetCurrentStartupTime();
   InterstepsInterval=(LastCalcTime>=0)?CalcDiffTime(tempstepduration,LastCalcTime):0;
   LastCalcTime=tempstepduration;
 
