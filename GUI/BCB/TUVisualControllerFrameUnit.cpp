@@ -129,32 +129,52 @@ void TUVisualControllerFrame::UpdateInterface(bool force_update)
 {
  try
  {
+  UpdateTime=RDK::GetCurrentStartupTime();
  if(!force_update)
  {
   UpdateControlState();
   if(!Showing && !AlwaysUpdateFlag)
+  {
+   UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),UpdateTime);
    return;
+  }
   if(!Parent || (!AlwaysUpdateFlag && !Parent->Visible) || (UpdateInterval<0 && CalculationModeFlag))
+  {
+   UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),UpdateTime);
    return;
+  }
   if(UpdateInterval>0 && CalculationModeFlag)
   {
    DWORD curr_time=GetTickCount();
    if(curr_time-LastUpdateTime<DWORD(UpdateInterval))
+   {
+	UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),UpdateTime);
 	return;
+   }
 
    if(GetCalculationStepUpdatedFlag() == true)
+   {
+	UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),UpdateTime);
 	return;
+   }
    else
-    SetCalculationStepUpdatedFlag();
+	SetCalculationStepUpdatedFlag();
 
    LastUpdateTime=curr_time;
   }
  }
 
  if(!IsEngineInit())
-  return;
+ {
+   UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),UpdateTime);
+   return;
+ }
+
  if(CheckModelFlag && !Model_Check())
-  return;
+ {
+   UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),UpdateTime);
+   return;
+ }
  UpdateInterfaceFlag=true;
   AUpdateInterface();
  }
@@ -170,9 +190,11 @@ void TUVisualControllerFrame::UpdateInterface(bool force_update)
  }
  catch(...)
  {
+  UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),UpdateTime);
   UpdateInterfaceFlag=false;
   throw;
  }
+ UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),UpdateTime);
  UpdateInterfaceFlag=false;
 }
 
@@ -307,6 +329,12 @@ void TUVisualControllerFrame::SetCalculationStepUpdatedFlag(void)
 bool TUVisualControllerFrame::GetCalculationStepUpdatedFlag(void)
 {
  return CalculationStepUpdatedFlag;
+}
+
+/// Возвращает время обновления интерфейса (мс)
+unsigned long long TUVisualControllerFrame::GetUpdateTime(void)
+{
+ return UpdateTime;
 }
 // -----------------------------
 

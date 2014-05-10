@@ -47,6 +47,10 @@ bool CalculationStepUpdatedFlag;
 /// Флаг, разрешающий проверку на существование модели перед обновлением интерфейса
 bool CheckModelFlag;
 
+/// Время, потраченное на обновление интерфейса
+unsigned long long UpdateTime;
+
+
 public:
 // -----------------------------
 // Методы управления визуальным интерфейсом
@@ -104,6 +108,9 @@ virtual void SetCalculationStepUpdatedFlag(void);
 
 /// Возвращает состояние флага прошедшей перерисовки в этой итерации счета
 virtual bool GetCalculationStepUpdatedFlag(void);
+
+/// Возвращает время обновления интерфейса (мс)
+virtual unsigned long long GetUpdateTime(void);
 // -----------------------------
 
 // --------------------------

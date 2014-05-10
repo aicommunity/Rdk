@@ -135,25 +135,38 @@ void TUVisualControllerForm::UpdateInterface(bool force_update)
 {
  try
  {
+  UpdateTime=RDK::GetCurrentStartupTime();
  if(!force_update)
  {
   if((!AlwaysUpdateFlag && (!Visible || (Parent && !Parent->Visible))) || (UpdateInterval<0 && CalculationModeFlag))
+  {
+   UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),UpdateTime);
    return;
+  }
 
   UpdateControlState();
   if(!Showing && !AlwaysUpdateFlag)
+  {
+   UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),UpdateTime);
    return;
+  }
 
   if(UpdateInterval>0 && CalculationModeFlag)
   {
    DWORD curr_time=GetTickCount();
    if(curr_time-LastUpdateTime<DWORD(UpdateInterval))
+   {
+	UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),UpdateTime);
 	return;
+   }
 
    if(GetCalculationStepUpdatedFlag() == true)
+   {
+	UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),UpdateTime);
 	return;
+   }
    else
-    SetCalculationStepUpdatedFlag();
+	SetCalculationStepUpdatedFlag();
 
    LastUpdateTime=curr_time;
   }
@@ -165,9 +178,16 @@ void TUVisualControllerForm::UpdateInterface(bool force_update)
   Caption=PureFormCaption.c_str();
 
  if(!IsEngineInit())
-  return;
+ {
+   UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),UpdateTime);
+   return;
+ }
+
  if(CheckModelFlag && !Model_Check())
-  return;
+ {
+   UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),UpdateTime);
+   return;
+ }
  UpdateInterfaceFlag=true;
   AUpdateInterface();
  }
@@ -183,9 +203,11 @@ void TUVisualControllerForm::UpdateInterface(bool force_update)
  }
  catch(...)
  {
+  UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),UpdateTime);
   UpdateInterfaceFlag=false;
   throw;
  }
+ UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),UpdateTime);
  UpdateInterfaceFlag=false;
 }
 
@@ -329,6 +351,13 @@ bool TUVisualControllerForm::GetCalculationStepUpdatedFlag(void)
 {
  return CalculationStepUpdatedFlag;
 }
+
+/// Возвращает время обновления интерфейса (мс)
+unsigned long long TUVisualControllerForm::GetUpdateTime(void)
+{
+ return UpdateTime;
+}
+
 // -----------------------------
 
 // --------------------------

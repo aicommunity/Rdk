@@ -58,6 +58,9 @@ virtual void SetCalculationStepUpdatedFlag(void)=0;
 
 /// Возвращает состояние флага прошедшей перерисовки в этой итерации счета
 virtual bool GetCalculationStepUpdatedFlag(void)=0;
+
+/// Возвращает время обновления интерфейса (мс)
+virtual unsigned long long GetUpdateTime(void)=0;
 };
 
 // Класс хранилище-визуальных интерфейсов
@@ -66,6 +69,9 @@ class UIVisualControllerStorage
 public:
 // Список обработчиков, которые должны быть вызваны после расчета
 static std::vector<RDK::UIVisualController*> InterfaceUpdaters;
+
+/// Общее время обновления интерфейса
+static unsigned long long UpdateTime;
 
 public:
 // Добавляет обработчик в список
@@ -104,6 +110,10 @@ static void ResetCalculationStepUpdatedFlag(void);
 
 /// Выставляет флаг прошедшей перерисовки в этой итерации счета
 static void SetCalculationStepUpdatedFlag(void);
+
+/// Возвращает время обновления интерфейса (мс)
+static unsigned long long GetUpdateTime(void);
+
 };
 
 }

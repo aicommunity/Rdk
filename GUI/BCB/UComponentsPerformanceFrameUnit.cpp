@@ -50,14 +50,15 @@ void TUComponentsPerformanceFrame::AUpdateInterface(void)
  if(int(ComponentData.size())>=AverageIterations && AverageIterations>0)
   ComponentData.erase(ComponentData.begin());
 
- long long model_time=Model_GetFullStepDuration("");
- long long sum=0;
- long long ext_gui=Model_GetInterstepsInterval("");
+ unsigned long long model_time=Model_GetFullStepDuration("");
+ unsigned long long sum=0;
+ unsigned long long ext_gui=Model_GetInterstepsInterval("");
+ unsigned long long gui_update=UIVisualControllerStorage::GetUpdateTime();
 
  std::vector<long long> comp_time;
  size_t last_comps_index=ComponentNames.size();
 
- comp_time.resize(ComponentNames.size()+4);
+ comp_time.resize(ComponentNames.size()+5);
  for(size_t i=0;i<ComponentNames.size();i++)
  {
   try
@@ -77,15 +78,18 @@ void TUComponentsPerformanceFrame::AUpdateInterface(void)
  else
   comp_time[last_comps_index]=0;
 
+
+
  comp_time[last_comps_index+1]=model_time;
- comp_time[last_comps_index+2]=ext_gui;
- comp_time[last_comps_index+3]=ext_gui+model_time;
+ comp_time[last_comps_index+2]=gui_update;
+ comp_time[last_comps_index+3]=ext_gui;
+ comp_time[last_comps_index+4]=ext_gui+model_time;
 
  ComponentData.push_back(comp_time);
 
  std::vector<long long> average;
 
- average.assign(ComponentNames.size()+4,0);
+ average.assign(ComponentNames.size()+5,0);
  for(size_t i=0;i<average.size();i++)
  {
   for(size_t j=0;j<ComponentData.size();j++)
@@ -151,8 +155,9 @@ void TUComponentsPerformanceFrame::AUpdateInterface(void)
   Chart->Series[0]->AddY(average[last_comps_index+1],"Model");
   Chart->Series[1]->AddY(100,"Model");
 
-  Chart->Series[0]->AddY(average[last_comps_index+2],"Ext. GUI");
-  Chart->Series[0]->AddY(average[last_comps_index+3],"Full step");
+  Chart->Series[0]->AddY(average[last_comps_index+2],"GUI Upd");
+  Chart->Series[0]->AddY(average[last_comps_index+3],"Ext. GUI");
+  Chart->Series[0]->AddY(average[last_comps_index+4],"Full step");
 }
 
 // Возврат интерфейса в исходное состояние

@@ -43,6 +43,9 @@ bool AddGlobalFont(const std::string &font_file_name)
 // Список обработчиков, которые должны быть вызваны после расчета
 std::vector<RDK::UIVisualController*> UIVisualControllerStorage::InterfaceUpdaters;
 
+/// Общее время обновления интерфейса
+unsigned long long UIVisualControllerStorage::UpdateTime=0;
+
 // Добавляет обработчик в список
 void UIVisualControllerStorage::AddInterface(RDK::UIVisualController *value)
 {
@@ -99,9 +102,11 @@ void UIVisualControllerStorage::AfterCalculate(void)
 // Обновление интерфейса
 void UIVisualControllerStorage::UpdateInterface(bool force_update)
 {
+ unsigned long long begin_time=RDK::GetCurrentStartupTime();
  for(size_t i=0;i<InterfaceUpdaters.size();i++)
   if(InterfaceUpdaters[i])
    InterfaceUpdaters[i]->UpdateInterface(force_update);
+ UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),begin_time);
 }
 
 // Возврат интерфейса в исходное состояние
@@ -182,6 +187,12 @@ void UIVisualControllerStorage::SetCalculationStepUpdatedFlag(void)
  for(size_t i=0;i<InterfaceUpdaters.size();i++)
   if(InterfaceUpdaters[i])
    InterfaceUpdaters[i]->SetCalculationStepUpdatedFlag();
+}
+
+/// Возвращает время обновления интерфейса (мс)
+unsigned long long UIVisualControllerStorage::GetUpdateTime(void)
+{
+ return UpdateTime;
 }
 
 
