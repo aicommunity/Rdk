@@ -13,7 +13,7 @@ See file license.txt for more information
 #define ENGINE_CPP
 
 #include "Engine_lite.cpp"
-#include "UTime.cpp"
+//#include "UTime.cpp"
 #include "UStorage.cpp"
 #include "UEnvironment.cpp"
 #include "UEngine.cpp"
