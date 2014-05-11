@@ -1322,7 +1322,7 @@ void UEngine::Env_IncreaseModelTimeByStep(void)
 /// Устанавливает минимальный интервал времени между шагами расчета (мс)
 /// Итерации расчета будут пропускаться до тех пор, пока время прошедшее с начала
 /// последней итерации не станет больше чем эта величина
-int UEngine::Env_SetMinInterstepsInterval(long long value)
+int UEngine::Env_SetMinInterstepsInterval(unsigned long long value)
 {
  try
  {
@@ -1340,7 +1340,7 @@ int UEngine::Env_SetMinInterstepsInterval(long long value)
 /// Возвращает минимальный интервал времени между шагами расчета (мс)
 /// Итерации расчета будут пропускаться до тех пор, пока время прошедшее с начала
 /// последней итерации не станет больше чем эта величина
-long long UEngine::Env_GetMinInterstepsInterval(void) const
+unsigned long long UEngine::Env_GetMinInterstepsInterval(void) const
 {
  try
  {
@@ -3475,18 +3475,18 @@ const char* UEngine::Model_SaveComponentDrawInfo(const char *stringid)
 
 
 // Управляет шагом счета модели по умолчанию
-int UEngine::Model_GetDefaultTimeStep(void) const
+unsigned int UEngine::Model_GetDefaultTimeStep(void) const
 {
  return DefaultTimeStep;
 }
 
-void UEngine::Model_SetDefaultTimeStep(int value)
+void UEngine::Model_SetDefaultTimeStep(unsigned int value)
 {
  DefaultTimeStep=value;
 }
 
 // Управляет шагом счета компонента
-int UEngine::Model_GetTimeStep(const char *stringid) const
+unsigned int UEngine::Model_GetTimeStep(const char *stringid) const
 {
  try
  {
@@ -3501,7 +3501,7 @@ int UEngine::Model_GetTimeStep(const char *stringid) const
  return 0;
 }
 
-void UEngine::Model_SetTimeStep(const char *stringid, int value)
+void UEngine::Model_SetTimeStep(const char *stringid, unsigned int value)
 {
  try
  {
@@ -3516,7 +3516,7 @@ void UEngine::Model_SetTimeStep(const char *stringid, int value)
 }
 
 // Устанавливает шаг счета компонента и всех его дочерних компонент
-void UEngine::Model_SetGlobalTimeStep(const char *stringid, int value)
+void UEngine::Model_SetGlobalTimeStep(const char *stringid, unsigned int value)
 {
  try
  {
@@ -3531,7 +3531,7 @@ void UEngine::Model_SetGlobalTimeStep(const char *stringid, int value)
 }
 
 // Возвращает текущее время модели
-long long UEngine::Model_GetTime(void)
+unsigned long long UEngine::Model_GetTime(void)
 {
  return Environment->GetTime().GetTime();
 }
@@ -3542,13 +3542,13 @@ double UEngine::Model_GetDoubleTime(void)
 }
 
 // Устанавливает текущее время модели
-bool UEngine::Model_SetTime(long long value)
+bool UEngine::Model_SetTime(unsigned long long value)
 {
  return Environment->GetTime().SetTime(value);
 }
 
 // Возвращает реальное время
-long long UEngine::Model_GetRealTime(void)
+unsigned long long UEngine::Model_GetRealTime(void)
 {
  return Environment->GetTime().GetRealTime();
 }
@@ -3559,19 +3559,19 @@ double UEngine::Model_GetDoubleRealTime(void)
 }
 
 // Устанавливает реальное время
-bool UEngine::Model_SetRealTime(long long value)
+bool UEngine::Model_SetRealTime(unsigned long long value)
 {
  return Environment->GetTime().SetRealTime(value);
 }
 
 // Увеличивает реальное время на заданную величину
-bool UEngine::Model_IncreaseRealTime(long long value)
+bool UEngine::Model_IncreaseRealTime(unsigned long long value)
 {
  return Environment->GetTime().IncreaseRealTime(value);
 }
 
 // Возвращает мгновенный шаг в реальном времени
-long long UEngine::Model_GetRealTimeStep(void)
+unsigned long long UEngine::Model_GetRealTimeStep(void)
 {
  return Environment->GetTime().GetRealTimeStep();
 }
@@ -3581,49 +3581,19 @@ double UEngine::Model_GetDoubleRealTimeStep(void)
  return Environment->GetTime().GetDoubleRealTimeStep();
 }
 
-// Текущее время внешних источников данных в микросекундах
-/*long long UEngine::Model_GetSourceTime(void) const
-{
- return Environment->GetTime().GetSourceTime();
-}
-  */
 double UEngine::Model_GetDoubleSourceTime(void) const
 {
  return Environment->GetTime().GetSourceCurrentGlobalTime();
 }
 
-// Устанавливает время внешних источников данных
-/*bool UEngine::Model_SetSourceTime(long long value)
-{
- return Environment->GetTime().SetSourceTime(value);
-}
-  */
 // Устанавливает время внешних источников данных в днях
 bool UEngine::Model_SetDoubleSourceTime(double value)
 {
  return Environment->GetTime().SetSourceCurrentGlobalTime(value);
 }
 
-// Увеличивает время внешних источников данных на заданную величину
-/*bool UEngine::Model_IncreaseSourceTime(long long value)
-{
- return Environment->GetTime().IncreaseSourceTime(value);
-} */
-
-// Мгновенный шаг во времени внешних источников данных в микросекундах
-/*long long UEngine::Model_GetSourceTimeStep(void) const
-{
- return Environment->GetTime().GetSourceTimeStep();
-}
-
-double UEngine::Model_GetDoubleSourceTimeStep(void) const
-{
- return Environment->GetTime().GetDoubleSourceTimeStep();
-}  */
-
-
 // Возвращает время расчета компонента без времени расчета дочерних компонент (мс)
-long long UEngine::Model_GetStepDuration(const char *stringid) const
+unsigned long long UEngine::Model_GetStepDuration(const char *stringid) const
 {
  try
  {
@@ -3640,7 +3610,7 @@ long long UEngine::Model_GetStepDuration(const char *stringid) const
 
 // Возвращает время, затраченное на обработку объекта
 // (вместе со времени обсчета дочерних объектов) (мс)
-long long UEngine::Model_GetFullStepDuration(const char *stringid) const
+unsigned long long UEngine::Model_GetFullStepDuration(const char *stringid) const
 {
  try
  {
@@ -3674,7 +3644,7 @@ double UEngine::Model_GetInstantPerformance(const char *stringid) const
 }
 
 // Время, прошедшее между двумя последними итерациями счета
-long long UEngine::Model_GetInterstepsInterval(const char *stringid) const
+unsigned long long UEngine::Model_GetInterstepsInterval(const char *stringid) const
 {
  try
  {

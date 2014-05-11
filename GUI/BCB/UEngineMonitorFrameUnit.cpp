@@ -24,7 +24,7 @@ TUEngineMonitorFrame *UEngineMonitorFrame;
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-__fastcall TEngineThread::TEngineThread(int channel_index, int calculate_mode, int min_inerval, bool CreateSuspended)
+__fastcall TEngineThread::TEngineThread(int channel_index, int calculate_mode, RDK::UTime min_inerval, bool CreateSuspended)
 : ChannelIndex(channel_index), CalculateMode(calculate_mode), MinInterstepsInterval(min_inerval), TThread(CreateSuspended)
 {
  CalcState=CreateEvent(0,TRUE,0,0);
@@ -72,7 +72,7 @@ int TEngineThread::GetMinInterstepsInterval(void) const
  return MinInterstepsInterval;
 }
 
-bool TEngineThread::SetMinInterstepsInterval(int value)
+bool TEngineThread::SetMinInterstepsInterval(RDK::UTime value)
 {
  if(MinInterstepsInterval == value)
   return true;
@@ -138,7 +138,7 @@ void __fastcall TEngineThread::Execute(void)
    continue;
   }
 
-  unsigned long long diff=GetTickCount()-RealLastCalculationTime;
+  RDK::ULongTime diff=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),RealLastCalculationTime);
   if(diff<MinInterstepsInterval)
   {
    Sleep(MinInterstepsInterval-diff);
@@ -167,7 +167,7 @@ void __fastcall TEngineThread::Execute(void)
    MEnv_Calculate(ChannelIndex,0);
   }
   AfterCalculate();
-  RealLastCalculationTime=GetTickCount();
+  RealLastCalculationTime=RDK::GetCurrentStartupTime();
   SetEvent(CalculationNotInProgress);
  }
 }
@@ -223,7 +223,7 @@ int TUEngineMonitorFrame::GetCalculateMode(int channel_index) const
 void TUEngineMonitorFrame::SetCalculateMode(int channel_index,int value)
 {
  CalculateMode[channel_index]=value;
- if(ThreadChannels.size()>channel_index)
+ if(int(ThreadChannels.size())>channel_index)
   ThreadChannels[channel_index]->SetCalculateMode(value);
 }
 
@@ -245,22 +245,22 @@ bool TUEngineMonitorFrame::SetCalculationTimeSourceMode(int value)
 }
 
 
-void TUEngineMonitorFrame::SetMinInterstepsInterval(int channel_index, int value)
+void TUEngineMonitorFrame::SetMinInterstepsInterval(int channel_index, RDK::UTime value)
 {
  MinInterstepsInterval[channel_index]=value;
- if(ThreadChannels.size()>channel_index)
+ if(int(ThreadChannels.size())>channel_index)
   ThreadChannels[channel_index]->SetMinInterstepsInterval(value);
 }
 
 // Управление временной меткой сервера
-long long TUEngineMonitorFrame::GetServerTimeStamp(int channel_index) const
+RDK::ULongTime TUEngineMonitorFrame::GetServerTimeStamp(int channel_index) const
 {
  return ServerTimeStamp[channel_index];
 }
 
-void TUEngineMonitorFrame::SetServerTimeStamp(int channel_index, long long stamp)
+void TUEngineMonitorFrame::SetServerTimeStamp(int channel_index, RDK::ULongTime stamp)
 {
- if(ServerTimeStamp.size() <= channel_index)
+ if(int(ServerTimeStamp.size()) <= channel_index)
   return;
 
  if(ServerTimeStamp[channel_index] == stamp)
@@ -390,7 +390,7 @@ void TUEngineMonitorFrame::UnRegisterMetadataBroadcaster(TBroadcasterForm *broad
 }
 
 /// Отправляет метаданные во все зарегистрированные вещатели
-bool TUEngineMonitorFrame::AddMetadata(int channel_index, long long time_stamp)
+bool TUEngineMonitorFrame::AddMetadata(int channel_index, RDK::ULongTime time_stamp)
 {
  bool res=true;
  for(size_t i=0;i<BroadcastersList.size();i++)
@@ -610,6 +610,7 @@ int TUEngineMonitorFrame::CheckCalcState(int channel_id) const
    return 0;
   }
  }
+ return 0;
 }
 //---------------------------------------------------------------------------
 
@@ -654,7 +655,7 @@ void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
    else
    if(CalculateMode[i] == 0)
    {
-	if(GetTickCount()-RealLastCalculationTime[i]<MinInterstepsInterval[i])
+	if(RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),RealLastCalculationTime[i])<MinInterstepsInterval[i])
 	 continue;
    }
    CalculateSignal[i]=false;
@@ -684,7 +685,7 @@ void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
    LastCalculatedServerTimeStamp[i]=ServerTimeStamp[i];
 //   IdTcpResultBroadcasterForm->AddMetadata(i, ServerTimeStamp[i]);
    AddMetadata(i, ServerTimeStamp[i]);
-   RealLastCalculationTime[i]=GetTickCount();
+   RealLastCalculationTime[i]=RDK::GetCurrentStartupTime();
   }
 //  IdTcpResultBroadcasterForm->SendMetadata();
   SendMetadata();
@@ -707,8 +708,8 @@ void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
 
 void __fastcall TUEngineMonitorFrame::Step1Click(TObject *Sender)
 {
- for(size_t i=0;i<GetNumChannels();i++)
-  SetServerTimeStamp(i,GetTickCount());
+ for(int i=0;i<GetNumChannels();i++)
+  SetServerTimeStamp(i,RDK::GetCurrentStartupTime());
  TimerTimer(Sender);
 }
 //---------------------------------------------------------------------------

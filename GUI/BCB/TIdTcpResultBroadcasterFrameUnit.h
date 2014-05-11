@@ -35,7 +35,7 @@ TIdTcpResultBroadcasterFrame *Frame;
 
 bool ConnectionEstablishedFlag;
 
-long long LastSentTimeStamp;
+RDK::ULongTime LastSentTimeStamp;
 
 TIdTCPClient *IdTCPClient;
 
@@ -98,7 +98,7 @@ std::string Metadata;
 
 bool ConnectionEstablishedFlag;
 
-long long LastSentTimeStamp;
+RDK::ULongTime LastSentTimeStamp;
 
 // --------------------------
 // Методы управления фреймом
@@ -108,7 +108,7 @@ bool Init(void);
 bool UnInit(void);
 
 /// Функция добавления метаданных в очередь на отправку в соответствии с настройками
-bool AddMetadata(int channel_index, long long time_stamp);
+bool AddMetadata(int channel_index, RDK::ULongTime time_stamp);
 
 void ABeforeCalculate(void);
 void AAfterCalculate(void);

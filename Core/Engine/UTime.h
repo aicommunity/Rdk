@@ -3,8 +3,8 @@
 
 namespace RDK {
 
-typedef int UTime;
-typedef long long ULongTime;
+typedef unsigned int UTime;
+typedef unsigned long long ULongTime;
 
 extern UTime DefaultTimeStep;
 
@@ -91,7 +91,7 @@ double GetSourceCurrentLocalTime(void) const;
 double SetSourceCurrentLocalTime(double value);
 
 /// Текущее время в миллисекундах
-long long GetSourceCurrentLocalTimeMs(void) const;
+ULongTime GetSourceCurrentLocalTimeMs(void) const;
 // --------------------------
 
 // --------------------------

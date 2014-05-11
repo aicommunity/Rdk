@@ -261,9 +261,9 @@ bool UContainer::SetCoord(const RDK::MVector<double,3> &value)
 
 // Время, затраченное на обработку объекта
 // (без учета времени обсчета дочерних объектов) (мс)
-long long UContainer::GetStepDuration(void) const
+unsigned long long UContainer::GetStepDuration(void) const
 {
- long long res=0;
+ unsigned long long res=0;
  for(int i=0;i<NumComponents;i++)
   res+=PComponents[i]->GetFullStepDuration();
 
@@ -272,13 +272,13 @@ long long UContainer::GetStepDuration(void) const
 
 // Время, затраченное на обработку объекта
 // (вместе со времени обсчета дочерних объектов) (мс)
-long long UContainer::GetFullStepDuration(void) const
+unsigned long long UContainer::GetFullStepDuration(void) const
 {
  return StepDuration;
 }
 
 // Время, прошедшее между двумя последними итерациями счета
-long long UContainer::GetInterstepsInterval(void) const
+unsigned long long UContainer::GetInterstepsInterval(void) const
 {
  return InterstepsInterval;
 }
@@ -1562,7 +1562,7 @@ bool UContainer::Reset(void)
  CalcCounter=0;
  SkipComponentCalculation=false;
  ComponentReCalculation=false;
- LastCalcTime=-1;
+ LastCalcTime=0;
  InterstepsInterval=0;
  StepDuration=0;
  AfterReset();
@@ -1587,7 +1587,7 @@ RDK_SYS_TRY {
   BeforeCalculate();
 
   unsigned long long tempstepduration=StartCalcTime=GetCurrentStartupTime();
-  InterstepsInterval=(LastCalcTime>=0)?CalcDiffTime(tempstepduration,LastCalcTime):0;
+  InterstepsInterval=(LastCalcTime>0)?CalcDiffTime(tempstepduration,LastCalcTime):0;
   LastCalcTime=tempstepduration;
 
   UEPtr<UContainer> *comps=PComponents;
@@ -1643,7 +1643,7 @@ RDK_SYS_TRY {
   UpdateMainOwner();
   InterstepsInterval-=StepDuration;
 
-  if((MaxCalculationDuration >= 0) && ((GetCurrentStartupTime()-tempstepduration) > MaxCalculationDuration))
+  if((MaxCalculationDuration >= 0) && (CalcDiffTime(GetCurrentStartupTime(),tempstepduration) > ULongTime(MaxCalculationDuration)))
   {
    if(Owner)
    {
@@ -1742,7 +1742,7 @@ void UContainer::ForceComponentReCalculation(void)
 /// то прерывает обсчет остальной цепочки дочерних компонент
 bool UContainer::CheckDurationAndSkipComponentCalculation(void)
 {
- if((MaxCalculationDuration >= 0) && ((GetCurrentStartupTime()-StartCalcTime) > MaxCalculationDuration))
+ if((MaxCalculationDuration >= 0) && (CalcDiffTime(GetCurrentStartupTime(),StartCalcTime) > ULongTime(MaxCalculationDuration)))
  {
   ForceSkipComponentCalculation();
   return true;

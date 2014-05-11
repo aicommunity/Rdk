@@ -400,12 +400,12 @@ virtual void Env_IncreaseModelTimeByStep(void);
 /// Устанавливает минимальный интервал времени между шагами расчета (мс)
 /// Итерации расчета будут пропускаться до тех пор, пока время прошедшее с начала
 /// последней итерации не станет больше чем эта величина
-virtual int Env_SetMinInterstepsInterval(long long value);
+virtual int Env_SetMinInterstepsInterval(unsigned long long value);
 
 /// Возвращает минимальный интервал времени между шагами расчета (мс)
 /// Итерации расчета будут пропускаться до тех пор, пока время прошедшее с начала
 /// последней итерации не станет больше чем эта величина
-virtual long long Env_GetMinInterstepsInterval(void) const;
+virtual unsigned long long Env_GetMinInterstepsInterval(void) const;
 
 // !!! Следующие методы управления текущим компонентом влияют на все
 // методы, обращающиеся к компонентам по строковому id !!!
@@ -782,67 +782,56 @@ virtual int Model_LoadComponentPropertiesFromFile(const char *stringid, const ch
 virtual const char* Model_SaveComponentDrawInfo(const char *stringid);
 
 // Управляет шагом счета модели по умолчанию
-virtual int Model_GetDefaultTimeStep(void) const;
-virtual void Model_SetDefaultTimeStep(int value);
+virtual unsigned int Model_GetDefaultTimeStep(void) const;
+virtual void Model_SetDefaultTimeStep(unsigned int value);
 
 // Управляет шагом счета компонента
-virtual int Model_GetTimeStep(const char *stringid) const;
-virtual void Model_SetTimeStep(const char *stringid, int value);
+virtual unsigned int Model_GetTimeStep(const char *stringid) const;
+virtual void Model_SetTimeStep(const char *stringid, unsigned int value);
 
 // Устанавливает шаг счета компонента и всех его дочерних компонент
-virtual void Model_SetGlobalTimeStep(const char *stringid, int value);
+virtual void Model_SetGlobalTimeStep(const char *stringid, unsigned int value);
 
 // Возвращает текущее время модели
-virtual long long Model_GetTime(void);
+virtual unsigned long long Model_GetTime(void);
 virtual double Model_GetDoubleTime(void);
 
 // Устанавливает текущее время модели
-virtual bool Model_SetTime(long long value);
+virtual bool Model_SetTime(unsigned long long value);
 
 // Возвращает реальное время
-virtual long long Model_GetRealTime(void);
+virtual unsigned long long Model_GetRealTime(void);
 virtual double Model_GetDoubleRealTime(void);
 
 // Устанавливает реальное время
-virtual bool Model_SetRealTime(long long value);
+virtual bool Model_SetRealTime(unsigned long long value);
 
 // Увеличивает реальное время на заданную величину
-virtual bool Model_IncreaseRealTime(long long value);
+virtual bool Model_IncreaseRealTime(unsigned long long value);
 
 // Возвращает мгновенный шаг в реальном времени
-virtual long long Model_GetRealTimeStep(void);
+virtual unsigned long long Model_GetRealTimeStep(void);
 virtual double Model_GetDoubleRealTimeStep(void);
 
 // Текущее время внешних источников данных в микросекундах
-//virtual long long Model_GetSourceTime(void) const;
 virtual double Model_GetDoubleSourceTime(void) const;
-
-// Устанавливает время внешних источников данных
-//virtual bool Model_SetSourceTime(long long value);
 
 // Устанавливает время внешних источников данных в днях
 virtual bool Model_SetDoubleSourceTime(double value);
 
-// Увеличивает время внешних источников данных на заданную величину
-//virtual bool Model_IncreaseSourceTime(long long value);
-
-// Мгновенный шаг во времени внешних источников данных в микросекундах
-//virtual long long Model_GetSourceTimeStep(void) const;
-//virtual double Model_GetDoubleSourceTimeStep(void) const;
-
 // Возвращает время расчета компонента без времени расчета дочерних компонент (мс)
-long long Model_GetStepDuration(const char *stringid) const;
+unsigned long long Model_GetStepDuration(const char *stringid) const;
 
 // Возвращает время, затраченное на обработку объекта
 // (вместе со времени обсчета дочерних объектов) (мс)
-long long Model_GetFullStepDuration(const char *stringid) const;
+unsigned long long Model_GetFullStepDuration(const char *stringid) const;
 
 // Возвращает мгновенное быстродействие, равное отношению
 // полного затраченного времени к ожидаемому времени шага счета
 double Model_GetInstantPerformance(const char *stringid) const;
 
 // Время, прошедшее между двумя последними итерациями счета
-long long Model_GetInterstepsInterval(const char *stringid) const;
+unsigned long long Model_GetInterstepsInterval(const char *stringid) const;
 // --------------------------
 
 // Возвращает указатель на выход с индексом 'index' компонента 'id'

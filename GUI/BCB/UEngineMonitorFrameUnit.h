@@ -29,10 +29,10 @@ int ChannelIndex;
 int CalculateMode;
 
 /// Минимальный интервал времени между итерациями расчета в режиме 0 и 2, мс
-int MinInterstepsInterval;
+RDK::UTime MinInterstepsInterval;
 
 /// Метка реального времени окончания последнего расчета
-unsigned long long RealLastCalculationTime;
+RDK::ULongTime RealLastCalculationTime;
 
 public:
 // Событие состояния расчета. Выставлено на время активности расчета. Сбрасывается по стопу
@@ -51,7 +51,7 @@ public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-__fastcall TEngineThread(int channel_index, int calculate_mode, int min_inerval, bool CreateSuspended);
+__fastcall TEngineThread(int channel_index, int calculate_mode, RDK::UTime min_inerval, bool CreateSuspended);
 virtual __fastcall ~TEngineThread(void);
 // --------------------------
 
@@ -64,7 +64,7 @@ bool SetCalculateMode(int value);
 
 /// Минимальный интервал времени между итерациями расчета в режиме 0 и 2, мс
 int GetMinInterstepsInterval(void) const;
-bool SetMinInterstepsInterval(int value);
+bool SetMinInterstepsInterval(RDK::UTime value);
 // --------------------------
 
 
@@ -129,7 +129,7 @@ int CalculationTimeSourceMode;
 std::vector<int> CalculateMode;
 
 // Временная метка последнего расчета
-std::vector<long long> LastCalculatedServerTimeStamp;
+std::vector<RDK::ULongTime> LastCalculatedServerTimeStamp;
 
 /// Минимальный интервал времени между итерациями расчета в режиме 0 и 2, мс
 std::vector<int> MinInterstepsInterval;
@@ -145,13 +145,13 @@ std::vector<bool> CalculateSignal;
 std::vector<bool> CalculateState;
 
 // Временная метка сервера
-std::vector<long long> ServerTimeStamp;
+std::vector<RDK::ULongTime> ServerTimeStamp;
 
 /// Потоки запуска многоканальной аналитики
 std::vector<TEngineThread*> ThreadChannels;
 
 /// Метка реального времени окончания последнего расчета в однопоточном режиме
-std::vector<unsigned long long> RealLastCalculationTime;
+std::vector<RDK::ULongTime> RealLastCalculationTime;
 
 std::vector<RDK::UEPtr<TBroadcasterForm> > BroadcastersList;
 
@@ -174,11 +174,11 @@ void SetCalculateMode(int channel_index, int value);
 int GetCalculationTimeSourceMode(void) const;
 bool SetCalculationTimeSourceMode(int value);
 
-void SetMinInterstepsInterval(int channel_index, int value);
+void SetMinInterstepsInterval(int channel_index, RDK::UTime value);
 
 // Управление временной меткой сервера
-long long GetServerTimeStamp(int channel_index) const;
-void SetServerTimeStamp(int channel_index, long long stamp);
+RDK::ULongTime GetServerTimeStamp(int channel_index) const;
+void SetServerTimeStamp(int channel_index, RDK::ULongTime stamp);
 
 /// Управление числом каналов
 int GetNumChannels(void) const;
@@ -199,7 +199,7 @@ void RegisterMetadataBroadcaster(TBroadcasterForm *broadcaster);
 void UnRegisterMetadataBroadcaster(TBroadcasterForm *broadcaster);
 
 /// Отправляет метаданные во все зарегистрированные вещатели
-virtual bool AddMetadata(int channel_index, long long time_stamp);
+virtual bool AddMetadata(int channel_index, RDK::ULongTime time_stamp);
 
 /// Инициирует процедуру отправки метаданных всеми зарегистрированными вещателями
 virtual bool SendMetadata(void);

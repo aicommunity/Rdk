@@ -305,14 +305,14 @@ RDK_LIB_TYPE void RDK_CALL Env_IncreaseModelTimeByStep(void);
 /// Устанавливает минимальный интервал времени между шагами расчета (мс)
 /// Итерации расчета будут пропускаться до тех пор, пока время прошедшее с начала
 /// последней итерации не станет больше чем эта величина
-RDK_LIB_TYPE int RDK_CALL Env_SetMinInterstepsInterval(long long value);
-RDK_LIB_TYPE int RDK_CALL MEnv_SetMinInterstepsInterval(int engine_index, long long value);
+RDK_LIB_TYPE int RDK_CALL Env_SetMinInterstepsInterval(unsigned long long value);
+RDK_LIB_TYPE int RDK_CALL MEnv_SetMinInterstepsInterval(int engine_index, unsigned long long value);
 
 /// Возвращает минимальный интервал времени между шагами расчета (мс)
 /// Итерации расчета будут пропускаться до тех пор, пока время прошедшее с начала
 /// последней итерации не станет больше чем эта величина
-RDK_LIB_TYPE long long RDK_CALL Env_GetMinInterstepsInterval(void);
-RDK_LIB_TYPE long long RDK_CALL MEnv_GetMinInterstepsInterval(int engine_index);
+RDK_LIB_TYPE unsigned long long RDK_CALL Env_GetMinInterstepsInterval(void);
+RDK_LIB_TYPE unsigned long long RDK_CALL MEnv_GetMinInterstepsInterval(int engine_index);
 
 // Возвращает имя текущего каталога для хранения данных
 RDK_LIB_TYPE const char* RDK_CALL Env_GetCurrentDataDir(void);
@@ -818,50 +818,50 @@ RDK_LIB_TYPE int RDK_CALL Model_LoadComponentState(const char *stringid, char* b
 RDK_LIB_TYPE const char* RDK_CALL Model_SaveComponentDrawInfo(const char *stringid);
 
 // Управляет шагом счета модели по умолчанию
-RDK_LIB_TYPE int RDK_CALL Model_GetDefaultTimeStep(void);
-RDK_LIB_TYPE void RDK_CALL Model_SetDefaultTimeStep(int value);
+RDK_LIB_TYPE unsigned int RDK_CALL Model_GetDefaultTimeStep(void);
+RDK_LIB_TYPE void RDK_CALL Model_SetDefaultTimeStep(unsigned int value);
 
 // Управляет шагом счета компонента
-RDK_LIB_TYPE int RDK_CALL Model_GetTimeStep(const char *stringid);
-RDK_LIB_TYPE void RDK_CALL Model_SetTimeStep(const char *stringid, int value);
+RDK_LIB_TYPE unsigned int RDK_CALL Model_GetTimeStep(const char *stringid);
+RDK_LIB_TYPE void RDK_CALL Model_SetTimeStep(const char *stringid, unsigned int value);
 
 // Устанавливает шаг счета компонента и всех его дочерних компонент
-RDK_LIB_TYPE void RDK_CALL Model_SetGlobalTimeStep(const char *stringid, int value);
+RDK_LIB_TYPE void RDK_CALL Model_SetGlobalTimeStep(const char *stringid, unsigned int value);
 
 // Возвращает текущее время модели
-RDK_LIB_TYPE long long RDK_CALL Model_GetTime(void);
-RDK_LIB_TYPE long long RDK_CALL MModel_GetTime(int engine_index);
+RDK_LIB_TYPE unsigned long long RDK_CALL Model_GetTime(void);
+RDK_LIB_TYPE unsigned long long RDK_CALL MModel_GetTime(int engine_index);
 RDK_LIB_TYPE double RDK_CALL Model_GetDoubleTime(void);
 RDK_LIB_TYPE double RDK_CALL MModel_GetDoubleTime(int engine_index);
 
 // Устанавливает текущее время модели
-RDK_LIB_TYPE bool RDK_CALL Model_SetTime(long long value);
+RDK_LIB_TYPE bool RDK_CALL Model_SetTime(unsigned long long value);
 
 // Возвращает реальное время
-RDK_LIB_TYPE long long RDK_CALL Model_GetRealTime(void);
+RDK_LIB_TYPE unsigned long long RDK_CALL Model_GetRealTime(void);
 RDK_LIB_TYPE double RDK_CALL Model_GetDoubleRealTime(void);
 RDK_LIB_TYPE double RDK_CALL MModel_GetDoubleRealTime(int engine_index);
 
 // Устанавливает реальное время
-RDK_LIB_TYPE bool RDK_CALL Model_SetRealTime(long long value);
+RDK_LIB_TYPE bool RDK_CALL Model_SetRealTime(unsigned long long value);
 
 // Увеличивает реальное время на заданную величину
-RDK_LIB_TYPE bool RDK_CALL Model_IncreaseRealTime(long long value);
+RDK_LIB_TYPE bool RDK_CALL Model_IncreaseRealTime(unsigned long long value);
 
 // Возвращает мгновенный шаг в реальном времени
-RDK_LIB_TYPE long long RDK_CALL Model_GetRealTimeStep(void);
+RDK_LIB_TYPE unsigned long long RDK_CALL Model_GetRealTimeStep(void);
 RDK_LIB_TYPE double RDK_CALL Model_GetDoubleRealTimeStep(void);
 
 // Текущее время внешних источников данных в микросекундах
-RDK_LIB_TYPE long long RDK_CALL Model_GetSourceTime(void);
-RDK_LIB_TYPE long long RDK_CALL MModel_GetSourceTime(int engine_index);
+RDK_LIB_TYPE unsigned long long RDK_CALL Model_GetSourceTime(void);
+RDK_LIB_TYPE unsigned long long RDK_CALL MModel_GetSourceTime(int engine_index);
 RDK_LIB_TYPE double RDK_CALL Model_GetDoubleSourceTime(void);
 RDK_LIB_TYPE double RDK_CALL MModel_GetDoubleSourceTime(int engine_index);
 
 // Устанавливает время внешних источников данных
-RDK_LIB_TYPE bool RDK_CALL Model_SetSourceTime(long long value);
-RDK_LIB_TYPE bool RDK_CALL MModel_SetSourceTime(int engine_index, long long value);
-RDK_LIB_TYPE bool RDK_CALL Model_SetSourceTimeAll(long long value);
+RDK_LIB_TYPE bool RDK_CALL Model_SetSourceTime(unsigned long long value);
+RDK_LIB_TYPE bool RDK_CALL MModel_SetSourceTime(int engine_index, unsigned long long value);
+RDK_LIB_TYPE bool RDK_CALL Model_SetSourceTimeAll(unsigned long long value);
 
 // Устанавливает время внешних источников данных в днях
 RDK_LIB_TYPE bool RDK_CALL Model_SetDoubleSourceTime(double value);
@@ -869,23 +869,23 @@ RDK_LIB_TYPE bool RDK_CALL MModel_SetDoubleSourceTime(int engine_index, double v
 RDK_LIB_TYPE bool RDK_CALL Model_SetDoubleSourceTimeAll(double value);
 
 // Увеличивает время внешних источников данных на заданную величину
-RDK_LIB_TYPE bool RDK_CALL Model_IncreaseSourceTime(long long value);
-RDK_LIB_TYPE bool RDK_CALL MModel_IncreaseSourceTime(int engine_index, long long value);
+RDK_LIB_TYPE bool RDK_CALL Model_IncreaseSourceTime(unsigned long long value);
+RDK_LIB_TYPE bool RDK_CALL MModel_IncreaseSourceTime(int engine_index, unsigned long long value);
 
 // Мгновенный шаг во времени внешних источников данных в микросекундах
-RDK_LIB_TYPE long long RDK_CALL Model_GetSourceTimeStep(void);
-RDK_LIB_TYPE long long RDK_CALL MModel_GetSourceTimeStep(int engine_index);
+RDK_LIB_TYPE unsigned long long RDK_CALL Model_GetSourceTimeStep(void);
+RDK_LIB_TYPE unsigned long long RDK_CALL MModel_GetSourceTimeStep(int engine_index);
 RDK_LIB_TYPE double RDK_CALL Model_GetDoubleSourceTimeStep(void);
 RDK_LIB_TYPE double RDK_CALL MModel_GetDoubleSourceTimeStep(int engine_index);
 
 // Возвращает время расчета компонента без времени расчета дочерних компонент (мс)
-RDK_LIB_TYPE long long RDK_CALL Model_GetStepDuration(const char *stringid);
-RDK_LIB_TYPE long long RDK_CALL MModel_GetStepDuration(int engine_index, const char *stringid);
+RDK_LIB_TYPE unsigned long long RDK_CALL Model_GetStepDuration(const char *stringid);
+RDK_LIB_TYPE unsigned long long RDK_CALL MModel_GetStepDuration(int engine_index, const char *stringid);
 
 // Возвращает время, затраченное на обработку объекта
 // (вместе со времени расчета дочерних компонент) (мс)
-RDK_LIB_TYPE long long RDK_CALL Model_GetFullStepDuration(const char *stringid);
-RDK_LIB_TYPE long long RDK_CALL MModel_GetFullStepDuration(int engine_index, const char *stringid);
+RDK_LIB_TYPE unsigned long long RDK_CALL Model_GetFullStepDuration(const char *stringid);
+RDK_LIB_TYPE unsigned long long RDK_CALL MModel_GetFullStepDuration(int engine_index, const char *stringid);
 
 // Возвращает мгновенное быстродействие, равное отношению
 // полного затраченного времени к ожидаемому времени шага счета
@@ -893,8 +893,8 @@ RDK_LIB_TYPE double RDK_CALL Model_GetInstantPerformance(const char *stringid);
 RDK_LIB_TYPE double RDK_CALL MModel_GetInstantPerformance(int engine_index, const char *stringid);
 
 // Время, прошедшее между двумя последними итерациями счета
-RDK_LIB_TYPE long long RDK_CALL Model_GetInterstepsInterval(const char *stringid);
-RDK_LIB_TYPE long long RDK_CALL MModel_GetInterstepsInterval(int engine_index, const char *stringid);
+RDK_LIB_TYPE unsigned long long RDK_CALL Model_GetInterstepsInterval(const char *stringid);
+RDK_LIB_TYPE unsigned long long RDK_CALL MModel_GetInterstepsInterval(int engine_index, const char *stringid);
 // --------------------------
 
 // --------------------------

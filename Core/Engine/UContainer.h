@@ -138,10 +138,10 @@ RDK::MVector<double,3> Coord;
 
 // Время, затраченное на обработку объекта
 // (без учета времени обсчета дочерних объектов) (мс)
-long long StepDuration;
+unsigned long long StepDuration;
 
 // Время, прошедшее между двумя последними итерациями счета
-long long InterstepsInterval;
+unsigned long long InterstepsInterval;
 
 protected: // Временные переменные
 // Если 'TimeStep' > 'Owner->TimeStep' то 'CalcCounter' является
@@ -262,14 +262,14 @@ bool SetCoord(const RDK::MVector<double,3> &value);
 
 // Время, затраченное на обработку объекта
 // (без учета времени обсчета дочерних объектов) (мс)
-long long GetStepDuration(void) const;
+unsigned long long GetStepDuration(void) const;
 
 // Время, затраченное на обработку объекта
 // (вместе со времени обсчета дочерних объектов) (мс)
-long long GetFullStepDuration(void) const;
+unsigned long long GetFullStepDuration(void) const;
 
 // Время, прошедшее между двумя последними итерациями счета
-long long GetInterstepsInterval(void) const;
+unsigned long long GetInterstepsInterval(void) const;
 
 // Возвращает мгновенное быстродействие, равное отношению
 // полного затраченного времени к ожидаемому времени шага счета

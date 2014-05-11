@@ -12,7 +12,7 @@
 struct TServerMetadata
 {
 /// Временная метка результата
-long long TimeStamp;
+RDK::ULongTime TimeStamp;
 
 /// Идентификатор сервера
 std::string ServerId;
@@ -70,7 +70,7 @@ virtual bool __fastcall PeriodicallyActions(void);
 virtual void __fastcall Execute(void);
 
 /// Добавляет метаданные в очередь
-virtual bool __fastcall AddMetadataSafe(int channel_index, long long time_stamp, const std::string &component_name, const std::string &property_name);
+virtual bool __fastcall AddMetadataSafe(int channel_index, RDK::ULongTime time_stamp, const std::string &component_name, const std::string &property_name);
 
 /// Флаг разрешения отправки
 bool GetSendEnableFlag(void) const;
@@ -101,7 +101,7 @@ bool SetBroadcastEnableFlag(bool value);
 // ---------------------------
 // ---------------------------
 /// Функция добавления метаданных в очередь на отправку в соответствии с настройками
-virtual bool AddMetadata(int channel_index, long long time_stamp)=0;
+virtual bool AddMetadata(int channel_index, RDK::ULongTime time_stamp)=0;
 
 /// Инициирует процедуру отправки метаданных
 virtual bool SendMetadata(void)=0;

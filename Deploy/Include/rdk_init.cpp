@@ -845,12 +845,12 @@ void RDK_CALL Env_IncreaseModelTimeByStep(void)
 /// Устанавливает минимальный интервал времени между шагами расчета (мс)
 /// Итерации расчета будут пропускаться до тех пор, пока время прошедшее с начала
 /// последней итерации не станет больше чем эта величина
-int RDK_CALL Env_SetMinInterstepsInterval(long long value)
+int RDK_CALL Env_SetMinInterstepsInterval(unsigned long long value)
 {
  return DllManager.GetEngineLock()->Env_SetMinInterstepsInterval(value);
 }
 
-int RDK_CALL MEnv_SetMinInterstepsInterval(int engine_index, long long value)
+int RDK_CALL MEnv_SetMinInterstepsInterval(int engine_index, unsigned long long value)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 1000;
@@ -860,12 +860,12 @@ int RDK_CALL MEnv_SetMinInterstepsInterval(int engine_index, long long value)
 /// Возвращает минимальный интервал времени между шагами расчета (мс)
 /// Итерации расчета будут пропускаться до тех пор, пока время прошедшее с начала
 /// последней итерации не станет больше чем эта величина
-long long RDK_CALL Env_GetMinInterstepsInterval(void)
+unsigned long long RDK_CALL Env_GetMinInterstepsInterval(void)
 {
  return DllManager.GetEngineLock()->Env_GetMinInterstepsInterval();
 }
 
-long long RDK_CALL Env_GetMinInterstepsInterval(int engine_index)
+unsigned long long RDK_CALL Env_GetMinInterstepsInterval(int engine_index)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 0;
@@ -1811,46 +1811,46 @@ const char* RDK_CALL Model_SaveComponentDrawInfo(const char *stringid)
 }
 
 // Управляет шагом счета модели по умолчанию
-int RDK_CALL Model_GetDefaultTimeStep(void)
+unsigned int RDK_CALL Model_GetDefaultTimeStep(void)
 {
 
  return DllManager.GetEngineLock()->Model_GetDefaultTimeStep();
 }
 
-void RDK_CALL Model_SetDefaultTimeStep(int value)
+void RDK_CALL Model_SetDefaultTimeStep(unsigned int value)
 {
 
  DllManager.GetEngineLock()->Model_SetDefaultTimeStep(value);
 }
 
 // Управляет шагом счета компонента
-int RDK_CALL Model_GetTimeStep(const char *stringid)
+unsigned int RDK_CALL Model_GetTimeStep(const char *stringid)
 {
 
  return DllManager.GetEngineLock()->Model_GetTimeStep(stringid);
 }
 
-void RDK_CALL Model_SetTimeStep(const char *stringid, int value)
+void RDK_CALL Model_SetTimeStep(const char *stringid, unsigned int value)
 {
 
  DllManager.GetEngineLock()->Model_SetTimeStep(stringid, value);
 }
 
 // Устанавливает шаг счета компонента и всех его дочерних компонент
-void RDK_CALL Model_SetGlobalTimeStep(const char *stringid, int value)
+void RDK_CALL Model_SetGlobalTimeStep(const char *stringid, unsigned int value)
 {
 
  DllManager.GetEngineLock()->Model_SetGlobalTimeStep(stringid, value);
 }
 
 // Возвращает текущее время модели
-long long RDK_CALL Model_GetTime(void)
+unsigned long long RDK_CALL Model_GetTime(void)
 {
 
  return DllManager.GetEngineLock()->Model_GetTime();
 }
 
-long long RDK_CALL MModel_GetTime(int engine_index)
+unsigned long long RDK_CALL MModel_GetTime(int engine_index)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 0.0;
@@ -1873,14 +1873,14 @@ double RDK_CALL MModel_GetDoubleTime(int engine_index)
 }
 
 // Устанавливает текущее время модели
-bool RDK_CALL Model_SetTime(long long value)
+bool RDK_CALL Model_SetTime(unsigned long long value)
 {
 
  return DllManager.GetEngineLock()->Model_SetTime(value);
 }
 
 // Возвращает реальное время
-long long RDK_CALL Model_GetRealTime(void)
+unsigned long long RDK_CALL Model_GetRealTime(void)
 {
 
  return DllManager.GetEngineLock()->Model_GetRealTime();
@@ -1901,21 +1901,21 @@ double RDK_CALL MModel_GetDoubleRealTime(int engine_index)
 }
 
 // Устанавливает реальное время
-bool RDK_CALL Model_SetRealTime(long long value)
+bool RDK_CALL Model_SetRealTime(unsigned long long value)
 {
 
  return DllManager.GetEngineLock()->Model_SetRealTime(value);
 }
 
 // Увеличивает реальное время на заданную величину
-bool RDK_CALL Model_IncreaseRealTime(long long value)
+bool RDK_CALL Model_IncreaseRealTime(unsigned long long value)
 {
 
  return DllManager.GetEngineLock()->Model_IncreaseRealTime(value);
 }
 
 // Возвращает мгновенный шаг в реальном времени
-long long RDK_CALL Model_GetRealTimeStep(void)
+unsigned long long RDK_CALL Model_GetRealTimeStep(void)
 {
 
  return DllManager.GetEngineLock()->Model_GetRealTimeStep();
@@ -1956,28 +1956,6 @@ double RDK_CALL MModel_GetDoubleSourceTime(int engine_index)
 }
 
 // Устанавливает время внешних источников данных
-/*bool RDK_CALL Model_SetSourceTime(long long value)
-{
- return DllManager.GetEngineLock()->Model_SetSourceTime(value);
-}
-
-bool RDK_CALL MModel_SetSourceTime(int engine_index, long long value)
-{
- if(engine_index<0 || engine_index>=GetNumEngines())
-  return 1000;
-
- return DllManager.GetEngineLock(engine_index)->Model_SetSourceTime(value);
-}
-
-bool RDK_CALL Model_SetSourceTimeAll(long long value)
-{
- bool res=true;
- for(int i=0;i<GetNumEngines();i++)
-  res&=DllManager.EngineList[i]->Model_SetSourceTime(value);
- return true;
-}              */
-
-// Устанавливает время внешних источников данных
 bool RDK_CALL Model_SetDoubleSourceTime(double value)
 {
 
@@ -2001,56 +1979,14 @@ bool RDK_CALL Model_SetDoubleSourceTimeAll(double value)
  }
  return true;
 }
-/*
-// Увеличивает время внешних источников данных на заданную величину
-bool RDK_CALL Model_IncreaseSourceTime(long long value)
-{
- return DllManager.GetEngineLock()->Model_IncreaseSourceTime(value);
-}
-
-bool RDK_CALL MModel_IncreaseSourceTime(int engine_index, long long value)
-{
- if(engine_index<0 || engine_index>=GetNumEngines())
-  return 1000;
-
- return DllManager.GetEngineLock(engine_index)->Model_IncreaseSourceTime(value);
-}
-
-// Мгновенный шаг во времени внешних источников данных в микросекундах
-long long RDK_CALL Model_GetSourceTimeStep(void)
-{
- return DllManager.GetEngineLock()->Model_GetSourceTimeStep();
-}
-
-long long RDK_CALL MModel_GetSourceTimeStep(int engine_index)
-{
- if(engine_index<0 || engine_index>=GetNumEngines())
-  return 1000;
-
- return DllManager.GetEngineLock(engine_index)->Model_GetSourceTimeStep();
-}
-
-double RDK_CALL Model_GetDoubleSourceTimeStep(void)
-{
- return DllManager.GetEngineLock()->Model_GetDoubleSourceTimeStep();
-}
-
-double RDK_CALL MModel_GetDoubleSourceTimeStep(int engine_index)
-{
- if(engine_index<0 || engine_index>=GetNumEngines())
-  return 1000;
-
- return DllManager.GetEngineLock(engine_index)->Model_GetDoubleSourceTimeStep();
-}       */
 
 // Возвращает время расчета компонента без времени расчета дочерних компонент (мс)
-long long RDK_CALL Model_GetStepDuration(const char *stringid)
+unsigned long long RDK_CALL Model_GetStepDuration(const char *stringid)
 {
-
  return DllManager.GetEngineLock()->Model_GetStepDuration(stringid);
 }
 
-long long RDK_CALL MModel_GetStepDuration(int engine_index, const char *stringid)
+unsigned long long RDK_CALL MModel_GetStepDuration(int engine_index, const char *stringid)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 1000;
@@ -2060,13 +1996,13 @@ long long RDK_CALL MModel_GetStepDuration(int engine_index, const char *stringid
 
 // Возвращает время, затраченное на обработку объекта
 // (вместе со времени обсчета дочерних объектов) (мс)
-long long RDK_CALL Model_GetFullStepDuration(const char *stringid)
+unsigned long long RDK_CALL Model_GetFullStepDuration(const char *stringid)
 {
 
  return DllManager.GetEngineLock()->Model_GetFullStepDuration(stringid);
 }
 
-long long RDK_CALL MModel_GetFullStepDuration(int engine_index, const char *stringid)
+unsigned long long RDK_CALL MModel_GetFullStepDuration(int engine_index, const char *stringid)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 1000;
@@ -2078,7 +2014,6 @@ long long RDK_CALL MModel_GetFullStepDuration(int engine_index, const char *stri
 // полного затраченного времени к ожидаемому времени шага счета
 double RDK_CALL Model_GetInstantPerformance(const char *stringid)
 {
-
  return DllManager.GetEngineLock()->Model_GetInstantPerformance(stringid);
 }
 
@@ -2091,13 +2026,12 @@ double RDK_CALL MModel_GetInstantPerformance(int engine_index, const char *strin
 }
 
 // Время, прошедшее между двумя последними итерациями счета
-long long RDK_CALL Model_GetInterstepsInterval(const char *stringid)
+unsigned long long RDK_CALL Model_GetInterstepsInterval(const char *stringid)
 {
-
  return DllManager.GetEngineLock()->Model_GetInterstepsInterval(stringid);
 }
 
-long long RDK_CALL MModel_GetInterstepsInterval(int engine_index, const char *stringid)
+unsigned long long RDK_CALL MModel_GetInterstepsInterval(int engine_index, const char *stringid)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 1000;

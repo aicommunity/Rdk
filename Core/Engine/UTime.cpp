@@ -100,7 +100,7 @@ double UTimeControl::SetSourceCurrentLocalTime(double value)
 }
 
 /// Текущее время в миллисекундах
-long long UTimeControl::GetSourceCurrentLocalTimeMs(void) const
+ULongTime UTimeControl::GetSourceCurrentLocalTimeMs(void) const
 {
  return SourceCurrentLocalTime*1000;
 }

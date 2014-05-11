@@ -636,8 +636,8 @@ void TUServerControlForm::AAfterCalculate(void)
  {
   if(!MIsEngineInit(i) || !MModel_Check(i))
    continue;
-  long long model_time=MModel_GetFullStepDuration(i,"");
-  long long ext_gui=MModel_GetInterstepsInterval(i,"");
+  RDK::ULongTime model_time=MModel_GetFullStepDuration(i,"");
+  RDK::ULongTime ext_gui=MModel_GetInterstepsInterval(i,"");
   ModelPerformanceResults[PerformancePushIndex][i]=model_time;
   TransportPerformanceResults[PerformancePushIndex][i]=ext_gui;
  }
@@ -649,7 +649,7 @@ void TUServerControlForm::AAfterCalculate(void)
 // Обновление интерфейса
 void TUServerControlForm::AUpdateInterface(void)
 {
- std::vector<long long> model_avg,transport_avg;
+ std::vector<RDK::ULongTime> model_avg,transport_avg;
  model_avg.assign(GetNumChannels(),0);
  transport_avg.assign(GetNumChannels(),0);
  int sum_number=0;

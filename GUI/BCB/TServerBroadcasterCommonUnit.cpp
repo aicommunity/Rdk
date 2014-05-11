@@ -133,7 +133,7 @@ void __fastcall TResultBroadcasterThread::Execute(void)
 }
 
 /// Добавляет метаданные в очередь
-bool __fastcall TResultBroadcasterThread::AddMetadataSafe(int channel_index, long long time_stamp, const std::string &component_name, const std::string &property_name)
+bool __fastcall TResultBroadcasterThread::AddMetadataSafe(int channel_index, RDK::ULongTime time_stamp, const std::string &component_name, const std::string &property_name)
 {
  if(!SendEnableFlag)
   return true;

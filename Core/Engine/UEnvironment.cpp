@@ -500,17 +500,17 @@ void UEnvironment::RTCalculate(void)
  }
 
 
- long long curtime;
- long long TimerInterval=0;
+ unsigned long long curtime;
+ unsigned long long timer_interval=0;
  //double devicemodeltime=0;
 
- TimerInterval=GetCurrentStartupTime()-ProcEndTime;
- if(TimerInterval<=0)
-  TimerInterval=1;
+ timer_interval=CalcDiffTime(GetCurrentStartupTime(),ProcEndTime);
+ if(timer_interval<=0)
+  timer_interval=1;
 
  int i=0;
- if(LastDuration < TimerInterval)
-  LastDuration=TimerInterval;
+ if(LastDuration < timer_interval)
+  LastDuration=timer_interval;
  double model_duration=(Time.GetRealTime()-Time.GetDoubleTime()*1e6)/1000.0;
 
  if(model_duration>MaxModelDuration)
@@ -527,7 +527,7 @@ void UEnvironment::RTCalculate(void)
  }
 
  curtime=GetCurrentStartupTime();
- while(curtime-CurrentTime<TimerInterval && i<elapsed_counter)
+ while(curtime-CurrentTime<timer_interval && i<elapsed_counter)
  {
   Calculate();
 
@@ -541,7 +541,7 @@ void UEnvironment::RTCalculate(void)
   Time.SetSourceCurrentLocalTime(double(GetCurrentStartupTime())/1000.0);
  }
 
- LastDuration=GetCurrentStartupTime()-CurrentTime;
+ LastDuration=CalcDiffTime(GetCurrentStartupTime(),CurrentTime);
  ProcEndTime=GetCurrentStartupTime();
 
  return;
@@ -839,14 +839,14 @@ bool UEnvironment::ACalculate(void)
   ProcEndTime=StartupTime;
  }
 
- long long cur_time=(Time.GetSourceCurrentGlobalTime()-Time.GetSourceStartGlobalTime())*(86400.0*1000.0);
+ unsigned long long cur_time=(Time.GetSourceCurrentGlobalTime()-Time.GetSourceStartGlobalTime())*(86400.0*1000.0);
  Time.SetSourceCurrentLocalTime(cur_time/1000.0);
 
  if(!Model)
   return true;
 
  // Проверяем, достаточно ли велик интервал времени между итерациями счета
- if(MinInterstepsInterval>0 && cur_time-LastStepStartTime<MinInterstepsInterval)
+ if(MinInterstepsInterval>0 && CalcDiffTime(cur_time,LastStepStartTime)<MinInterstepsInterval)
   return true;
 
  LastStepStartTime=cur_time;

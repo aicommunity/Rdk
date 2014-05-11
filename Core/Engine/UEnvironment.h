@@ -107,9 +107,9 @@ protected: // Переменные быстрого доступа
 UEPtr<UComponent> CurrentComponent;
 
 protected: // Временные переменные
-long long StartupTime;
+unsigned long long StartupTime;
 
-long long /*StartProcTime,*/CurrentTime,LastDuration/*,LastSentTime*/, ProcEndTime, LastStepStartTime;
+unsigned long long /*StartProcTime,*/CurrentTime,LastDuration/*,LastSentTime*/, ProcEndTime, LastStepStartTime;
 
 // Временное хранилище буфера для лога
 mutable string TempLogString;

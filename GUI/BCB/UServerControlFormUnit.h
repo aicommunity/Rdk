@@ -116,8 +116,8 @@ bool AutoStartFlag;
 std::vector<std::string> ChannelNames;
 
 /// Результаты измерений производительности, мс
-std::vector<std::vector<long long> > ModelPerformanceResults;
-std::vector<std::vector<long long> > TransportPerformanceResults;
+std::vector<std::vector<RDK::ULongTime> > ModelPerformanceResults;
+std::vector<std::vector<RDK::ULongTime> > TransportPerformanceResults;
 
 std::string ServerName;
 

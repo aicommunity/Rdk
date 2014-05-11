@@ -19,6 +19,7 @@
 #include "../../Core/Utilities/Utilities.h"
 #include "../../Core/Serialize/Serialize.h"
 
+#include "../../Core/Engine/UTime.h"
 #include "../../Core/Engine/UEnvSupport.h"
 #include "../../Core/Engine/UXMLEnvSerialize.h"
 #include "../../Core/Engine/UBinaryEnvSerialize.h"

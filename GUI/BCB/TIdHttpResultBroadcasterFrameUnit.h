@@ -51,7 +51,7 @@ std::string Metadata;
 
 bool ConnectionEstablishedFlag;
 
-long long LastSentTimeStamp;
+RDK::ULongTime LastSentTimeStamp;
 
 // --------------------------
 // Методы управления фреймом

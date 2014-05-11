@@ -29,8 +29,8 @@ object IdTcpResultBroadcasterForm: TIdTcpResultBroadcasterForm
     Top = 0
     Width = 527
     Height = 19
-    ButtonHeight = 21
-    ButtonWidth = 70
+    ButtonHeight = 0
+    ButtonWidth = 0
     Caption = 'ToolBar'
     Menu = MainMenu
     ShowCaptions = True
