@@ -685,6 +685,13 @@ void UEnvironment::LogMessage(int msg_level, const std::string &line)
  }
  break;
 
+ case RDK_EX_WARNING:
+ {
+  EStringWarning exception(line);
+  ProcessException(exception);
+ }
+ break;
+
  case RDK_EX_INFO:
  {
   EStringInfo exception(line);
