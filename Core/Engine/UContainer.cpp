@@ -2040,12 +2040,15 @@ UId UContainer::UpdateStaticComponent(const NameT &classname, UEPtr<UContainer> 
  comp->SetStorage(GetStorage());
  comp->SetEnvironment(GetEnvironment());
  if(GetStorage())
+ {
   comp->SetClass(GetStorage()->FindClassId(classname));
 
- for(int i=0;i<NumComponents;i++)
-  if(PComponents[i] == comp)
-   return PComponents[i]->GetId();
- return AddComponent(comp);
+  for(int i=0;i<NumComponents;i++)
+   if(PComponents[i] == comp)
+	return PComponents[i]->GetId();
+  return AddComponent(comp);
+ }
+ return ForbiddenId;
 }
 
 // Удаляет компонент comp

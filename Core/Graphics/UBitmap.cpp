@@ -5358,7 +5358,7 @@ void UBHistogram::Calc(const UBitmap &bmp, const UBitmap &mask, int x, int y, in
  case ubmRGB24:
  case ubmRGB32:
   p=bmp.GetData()+y*bmp.GetLineByteLength()+x*bmp.GetPixelByteLength()+channel;
-  mp=mask.GetData()+y*mask.GetLineByteLength()+x*mask.GetPixelByteLength()+channel;
+  mp=mask.GetData()+y*mask.GetLineByteLength()+x*mask.GetPixelByteLength();
 
   for(int j=y,k=0;j<=y2;j++,k++)
   {
@@ -5366,11 +5366,17 @@ void UBHistogram::Calc(const UBitmap &bmp, const UBitmap &mask, int x, int y, in
    {
 	if(*p<Size && *mp)
 	 ++Data[*p].Number.Int;
-	p+=bmp.GetPixelByteLength();
-	mp+=bmp.GetPixelByteLength();
+	 if(i<x2)
+	 {
+	  p+=bmp.GetPixelByteLength();
+	  mp+=mask.GetPixelByteLength();
+	 }
    }
-   p+=bmp.GetLineByteLength()-(x2-x+1)*bmp.GetPixelByteLength();
-   mp+=mask.GetLineByteLength()-(x2-x+1)*mask.GetPixelByteLength();
+   if(j<y2)
+   {
+	p+=bmp.GetLineByteLength()-(x2-x+1)*bmp.GetPixelByteLength();
+	mp+=mask.GetLineByteLength()-(x2-x+1)*mask.GetPixelByteLength();
+   }
   }
  break;
  }
