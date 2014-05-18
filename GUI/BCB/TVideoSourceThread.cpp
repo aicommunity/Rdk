@@ -30,10 +30,14 @@ __fastcall TVideoCaptureThread::TVideoCaptureThread(TVideoOutputFrame *frame, bo
 
  FreeOnTerminate=false;
  ConnectionState=0;
+ CommandMutex=new TMutex(false);
+ ThreadState=0;
 }
 
 __fastcall TVideoCaptureThread::~TVideoCaptureThread(void)
 {
+ delete CommandMutex;
+ CommandMutex=0;
  CloseHandle(CaptureEnabled);
  CloseHandle(SourceUnlock);
  CloseHandle(SourceWriteUnlock);
@@ -42,6 +46,66 @@ __fastcall TVideoCaptureThread::~TVideoCaptureThread(void)
 }
 // --------------------------
 
+// --------------------------
+// Управление командами
+// --------------------------
+/// Добавляет команду в очередь
+void TVideoCaptureThread::AddCommand(TVideoCaptureThreadCommands value)
+{
+ CommandMutex->Acquire();
+ CommandQueue[TDateTime::CurrentDateTime().operator double()]=value;
+ CommandMutex->Release();
+}
+
+/// Очищает очередь
+void TVideoCaptureThread::ClearCommandQueue(void)
+{
+ CommandMutex->Acquire();
+ CommandQueue.clear();
+ CommandMutex->Release();
+}
+
+/// Осуществляет обработку очередной команды из очереди
+void TVideoCaptureThread::ProcessCommandQueue(void)
+{
+ double cmd_time=0;
+ TVideoCaptureThreadCommands cmd=tvcNone;
+ CommandMutex->Acquire();
+ std::map<double,TVideoCaptureThreadCommands>::iterator I=CommandQueue.begin();
+ if(I != CommandQueue.end())
+ {
+  cmd_time=I->first;
+  cmd=I->second;
+  CommandQueue.erase(I);
+ }
+ CommandMutex->Release();
+
+ switch(cmd)
+ {
+ case tvcNone:
+ break;
+
+ case tvcStart:
+  RunCapture();
+  SetThreadState(1);
+  SetEvent(CaptureEnabled);
+ break;
+
+ case tvcStop:
+  ResetEvent(CaptureEnabled);
+  SetThreadState(0);
+  ConnectionState=1;
+  PauseCapture();
+ break;
+
+ case tvcTerminate:
+ break;
+
+ default:
+  ;
+ }
+}
+// --------------------------
 
 // --------------------------
 // Управление параметрами
@@ -109,6 +173,17 @@ bool TVideoCaptureThread::SetFps(double fps)
 // --------------------------
 // Управление данными
 // --------------------------
+/// Флаг состояния треда
+/// 0 - остановлен
+/// 1 - Запущен
+int TVideoCaptureThread::GetThreadState(void) const
+{
+// ThreadStateMutex->Acquire();
+// int res=ThreadState;
+// ThreadStateMutex->Release();
+ return ThreadState;
+}
+
 /// Указатель на владельца
 TVideoOutputFrame* TVideoCaptureThread::GetFrame(void) const
 {
@@ -185,6 +260,7 @@ bool TVideoCaptureThread::LoadParametersEx(RDK::USerStorageXML &xml)
  return true;
 }
 // --------------------------
+
 // --------------------------
 // Управление данными
 // --------------------------
@@ -234,26 +310,22 @@ HANDLE TVideoCaptureThread::GetCalcCompleteEvent(void) const
 // --------------------------
 void __fastcall TVideoCaptureThread::Start(void)
 {
-// ConnectionState=2;
- SetEvent(CalcCompleteEvent);
- SetEvent(CaptureEnabled);
+ AddCommand(tvcStart);
+ AStart();
 }
 
 void __fastcall TVideoCaptureThread::Stop(void)
 {
- ResetEvent(CaptureEnabled);
- ConnectionState=1;
+ AStop();
+ AddCommand(tvcStop);
 }
 
 void __fastcall TVideoCaptureThread::BeforeCalculate(void)
 {
-// if(Frame)
-//  Frame->BeforeCalculate();
 }
 
 void __fastcall TVideoCaptureThread::AfterCalculate(void)
 {
-// Frame->UpdateInterface();
  if(!UEngineMonitorForm || !UEngineMonitorForm->EngineMonitorFrame)
   return;
  if(GetNumEngines() == 1)
@@ -270,9 +342,13 @@ void __fastcall TVideoCaptureThread::Execute(void)
  while(!Terminated)
  {
   if(WaitForSingleObject(CaptureEnabled,30) == WAIT_TIMEOUT)
+  {
+   ProcessCommandQueue();
    continue;
+  }
+  ProcessCommandQueue();
 
-  if(CheckConnection() != 2)
+  if(CheckConnection() != 2 && GetThreadState() == 1)
   {
    switch(RestartMode)
    {
@@ -283,13 +359,13 @@ void __fastcall TVideoCaptureThread::Execute(void)
 
 	case 1:
 	{
-	 Start();
+	 RunCapture();
 	 break;
 	}
 
 	case 2:
 	{
-	 Stop();
+	 PauseCapture();
 	 break;
 	}
    };
@@ -391,8 +467,42 @@ bool TVideoCaptureThread::SetLastTimeStampSafe(double time_stamp)
  SetEvent(SourceUnlock);
  return true;
 }
+
+// Считывает временную метку с блокировкой
+double TVideoCaptureThread::GetLastTimeStampSafe(void) const
+{
+ if(WaitForSingleObject(SourceUnlock,30) == WAIT_TIMEOUT)
+  return 0.0;
+ ResetEvent(SourceUnlock);
+
+ double res=LastTimeStamp;
+ SetEvent(SourceUnlock);
+ return res;
+}
 // --------------------------
 
+// --------------------------
+// Скрытые методы управления потоком
+// --------------------------
+bool __fastcall TVideoCaptureThread::RunCapture(void)
+{
+ return ARunCapture();
+}
+
+bool __fastcall TVideoCaptureThread::PauseCapture(void)
+{
+ bool res=APauseCapture();
+// ResetEvent(CaptureEnabled);
+// ConnectionState=1;
+ return res;
+}
+
+bool TVideoCaptureThread::SetThreadState(int value)
+{
+ ThreadState=value;
+ return true;
+}
+// --------------------------
 
 //---------------------------------------------------------------------------
 // --------------------------
@@ -421,7 +531,7 @@ __fastcall TVideoCaptureThreadBmp::~TVideoCaptureThreadBmp(void)
 // Управление параметрами
 // --------------------------
 /// Имя файла изображения
-const std::string& TVideoCaptureThreadBmp::GetFileName(void) const
+std::string TVideoCaptureThreadBmp::GetFileName(void) const
 {
  return FileName;
 }
@@ -496,15 +606,13 @@ bool TVideoCaptureThreadBmp::SetFps(double fps)
 // --------------------------
 // Управление потоком
 // --------------------------
-void __fastcall TVideoCaptureThreadBmp::Start(void)
+void __fastcall TVideoCaptureThreadBmp::AStart(void)
 {
  CurrentTimeStamp=0;
- TVideoCaptureThread::Start();
 }
 
-void __fastcall TVideoCaptureThreadBmp::Stop(void)
+void __fastcall TVideoCaptureThreadBmp::AStop(void)
 {
- TVideoCaptureThread::Stop();
 }
 
 
@@ -565,6 +673,22 @@ bool TVideoCaptureThreadBmp::ALoadParameters(RDK::USerStorageXML &xml)
 }
 // --------------------------
 
+// --------------------------
+// Скрытые методы управления потоком
+// --------------------------
+bool __fastcall TVideoCaptureThreadBmp::ARunCapture(void)
+{
+ return true;
+}
+
+bool __fastcall TVideoCaptureThreadBmp::APauseCapture(void)
+{
+ return true;
+}
+// --------------------------
+
+
+
 //---------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------
@@ -594,7 +718,7 @@ __fastcall TVideoCaptureThreadBmpSequence::~TVideoCaptureThreadBmpSequence(void)
 // Управление параметрами
 // --------------------------
 /// Имя файла изображения
-const std::string& TVideoCaptureThreadBmpSequence::GetPathName(void) const
+std::string TVideoCaptureThreadBmpSequence::GetPathName(void) const
 {
  return PathName;
 }
@@ -671,16 +795,16 @@ bool TVideoCaptureThreadBmpSequence::SetFps(double fps)
 // --------------------------
 // Управление потоком
 // --------------------------
-void __fastcall TVideoCaptureThreadBmpSequence::Start(void)
+void __fastcall TVideoCaptureThreadBmpSequence::AStart(void)
 {
  CurrentTimeStamp=0;
  SetSyncMode(true);
- TVideoCaptureThread::Start();
+// TVideoCaptureThread::Start();
 }
 
-void __fastcall TVideoCaptureThreadBmpSequence::Stop(void)
+void __fastcall TVideoCaptureThreadBmpSequence::AStop(void)
 {
- TVideoCaptureThread::Stop();
+// TVideoCaptureThread::Stop();
 }
 
 void __fastcall TVideoCaptureThreadBmpSequence::AfterCalculate(void)
@@ -732,7 +856,7 @@ bool TVideoCaptureThreadBmpSequence::LoadImageFromSequence(int index, RDK::UBitm
 
  if(BmpSequenceNames[index].find(".bmp") != std::string::npos)
  {
-  TempBitmap->LoadFromFile((PathName+BmpSequenceNames[index]).c_str());
+  TempBitmap->LoadFromFile((PathName.Get()+BmpSequenceNames[index]).c_str());
   bmp<<TempBitmap;
 //  RDK::LoadBitmapFromFile((PathName+BmpSequenceNames[index]).c_str(),bmp);
  }
@@ -740,7 +864,7 @@ bool TVideoCaptureThreadBmpSequence::LoadImageFromSequence(int index, RDK::UBitm
  if(BmpSequenceNames[index].find(".jpg") != std::string::npos || BmpSequenceNames[index].find(".jpeg") != std::string::npos)
  {
   TJPEGImage* JpegIm=new TJPEGImage;
-  JpegIm->LoadFromFile((PathName+BmpSequenceNames[index]).c_str());
+  JpegIm->LoadFromFile((PathName.Get()+BmpSequenceNames[index]).c_str());
   TempBitmap->Assign(JpegIm);
   TempBitmap->PixelFormat=pf24bit;
   bmp<<TempBitmap;
@@ -808,6 +932,21 @@ bool TVideoCaptureThreadBmpSequence::ALoadParameters(RDK::USerStorageXML &xml)
  return true;
 }
 // --------------------------
+
+// --------------------------
+// Скрытые методы управления потоком
+// --------------------------
+bool __fastcall TVideoCaptureThreadBmpSequence::ARunCapture(void)
+{
+ return true;
+}
+
+bool __fastcall TVideoCaptureThreadBmpSequence::APauseCapture(void)
+{
+ return true;
+}
+// --------------------------
+
 
 
 //---------------------------------------------------------------------------
@@ -890,16 +1029,14 @@ bool TVideoCaptureThreadHttpServer::SetPosition(long long index)
 // --------------------------
 // Управление потоком
 // --------------------------
-void __fastcall TVideoCaptureThreadHttpServer::Start(void)
+void __fastcall TVideoCaptureThreadHttpServer::AStart(void)
 {
- UHttpServerFrame->IdHTTPServer->Active=true;
- TVideoCaptureThread::Start();
+// TVideoCaptureThread::Start();
 }
 
-void __fastcall TVideoCaptureThreadHttpServer::Stop(void)
+void __fastcall TVideoCaptureThreadHttpServer::AStop(void)
 {
- TVideoCaptureThread::Stop();
- UHttpServerFrame->IdHTTPServer->Active=false;
+// TVideoCaptureThread::Stop();
 }
 
 void __fastcall TVideoCaptureThreadHttpServer::BeforeCalculate(void)
@@ -977,6 +1114,22 @@ bool TVideoCaptureThreadHttpServer::ALoadParameters(RDK::USerStorageXML &xml)
 // --------------------------
 
 
+// --------------------------
+// Скрытые методы управления потоком
+// --------------------------
+bool __fastcall TVideoCaptureThreadHttpServer::ARunCapture(void)
+{
+ UHttpServerFrame->IdHTTPServer->Active=true;
+ return true;
+}
+
+bool __fastcall TVideoCaptureThreadHttpServer::APauseCapture(void)
+{
+ UHttpServerFrame->IdHTTPServer->Active=false;
+ return true;
+}
+// --------------------------
+
 //---------------------------------------------------------------------------
 
 // --------------------------
@@ -1050,11 +1203,12 @@ TVideoGrabber* TVideoCaptureThreadVideoGrabber::GetVideoGrabber(void)
 
 void __fastcall TVideoCaptureThreadVideoGrabber::OnFrameCaptureCompleted(System::TObject* Sender, void * FrameBitmap, int BitmapWidth, int BitmapHeight, unsigned FrameNumber, __int64 FrameTime, TFrameCaptureDest DestType, System::UnicodeString FileName, bool Success, int FrameId)
 {
- ConnectionState=2;
+ if(GetThreadState())
+  ConnectionState=2;
 
  if(Fps > 0)
  {
-  double diffTime=double(FrameTime)/(10000000.0*86400)-LastTimeStamp;
+  double diffTime=double(FrameTime)/(10000000.0*86400)-GetLastTimeStampSafe();
   if(diffTime<(1.0/Fps)/86400.0)
   {
 	return;
@@ -1083,7 +1237,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::OnFrameCaptureCompleted(System:
    WriteSourceSafe(ConvertBitmap, double(FrameTime)/(10000000.0*86400), false);
   }
   if(GetNumEngines() > ChannelIndex)
-   UEngineMonitorForm->EngineMonitorFrame->SetServerTimeStamp(ChannelIndex,LastTimeStamp*86400.0*1000.0);
+   UEngineMonitorForm->EngineMonitorFrame->SetServerTimeStamp(ChannelIndex,GetLastTimeStampSafe()*86400.0*1000.0);
 
 //	 if(WaitForSingleObject(SourceUnlock,30) == WAIT_TIMEOUT)
 //	  return;
@@ -1142,7 +1296,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::Calculate(void)
   fps=VideoGrabber->PlayerFrameRate;
  }
 
- Frame->UpdateInterval=wait_time;
+ GetFrame()->UpdateInterval=wait_time;
  if(WaitForSingleObject(VideoGrabberCompleted, wait_time) == WAIT_TIMEOUT)
  {
 /*  if(WaitForSingleObject(CaptureEnabled,10) != WAIT_TIMEOUT)
@@ -1264,7 +1418,7 @@ __fastcall TVideoCaptureThreadVideoGrabberAvi::~TVideoCaptureThreadVideoGrabberA
 // Управление параметрами
 // --------------------------
 /// Имя канала общей памяти
-const std::string& TVideoCaptureThreadVideoGrabberAvi::GetFileName(void) const
+std::string TVideoCaptureThreadVideoGrabberAvi::GetFileName(void) const
 {
  return FileName;
 }
@@ -1276,7 +1430,7 @@ bool TVideoCaptureThreadVideoGrabberAvi::SetFileName(const std::string& value)
   return false;
 
  FileName=value;
- VideoGrabber->PlayerFileName=FileName.c_str();
+ VideoGrabber->PlayerFileName=FileName.Get().c_str();
  VideoGrabber->OpenPlayer();
  return true;
 }
@@ -1306,21 +1460,14 @@ bool TVideoCaptureThreadVideoGrabberAvi::SetLastTimeStampSafe(double time_stamp)
  return true;
 }
 
-void __fastcall TVideoCaptureThreadVideoGrabberAvi::Start(void)
+void __fastcall TVideoCaptureThreadVideoGrabberAvi::AStart(void)
 {
- if(VideoGrabber)
- {
-  VideoGrabber->StartSynchronized();
-  VideoGrabber->RunPlayer();
- }
- TVideoCaptureThreadVideoGrabber::Start();
+// TVideoCaptureThreadVideoGrabber::Start();
 }
 
-void __fastcall TVideoCaptureThreadVideoGrabberAvi::Stop(void)
+void __fastcall TVideoCaptureThreadVideoGrabberAvi::AStop(void)
 {
- TVideoCaptureThreadVideoGrabber::Stop();
- if(VideoGrabber)
-  VideoGrabber->PausePlayer();
+// TVideoCaptureThreadVideoGrabber::Stop();
 }
 
 void __fastcall TVideoCaptureThreadVideoGrabberAvi::AfterCalculate(void)
@@ -1381,6 +1528,28 @@ bool TVideoCaptureThreadVideoGrabberAvi::ALoadParameters(RDK::USerStorageXML &xm
  return true;
 }
 // --------------------------
+
+// --------------------------
+// Скрытые методы управления потоком
+// --------------------------
+bool __fastcall TVideoCaptureThreadVideoGrabberAvi::ARunCapture(void)
+{
+ if(VideoGrabber)
+ {
+  VideoGrabber->StartSynchronized();
+  VideoGrabber->RunPlayer();
+ }
+ return true;
+}
+
+bool __fastcall TVideoCaptureThreadVideoGrabberAvi::APauseCapture(void)
+{
+ if(VideoGrabber)
+  VideoGrabber->PausePlayer();
+ return true;
+}
+// --------------------------
+
 //---------------------------------------------------------------------------
 
 // --------------------------
@@ -1450,21 +1619,14 @@ bool TVideoCaptureThreadVideoGrabberCamera::Init(int camera_index, int input_ind
 // --------------------------
 // Управление потоком
 // --------------------------
-void __fastcall TVideoCaptureThreadVideoGrabberCamera::Start(void)
+void __fastcall TVideoCaptureThreadVideoGrabberCamera::AStart(void)
 {
- if(VideoGrabber)
- {
-  VideoGrabber->StartPreview();
-  VideoGrabber->StartSynchronized();
- }
- TVideoCaptureThreadVideoGrabber::Start();
+// TVideoCaptureThreadVideoGrabber::Start();
 }
 
-void __fastcall TVideoCaptureThreadVideoGrabberCamera::Stop(void)
+void __fastcall TVideoCaptureThreadVideoGrabberCamera::AStop(void)
 {
- TVideoCaptureThreadVideoGrabber::Stop();
- if(VideoGrabber)
-  VideoGrabber->PausePreview();
+// TVideoCaptureThreadVideoGrabber::Stop();
 }
 // --------------------------
 
@@ -1510,6 +1672,28 @@ bool TVideoCaptureThreadVideoGrabberCamera::ALoadParameters(RDK::USerStorageXML 
 }
 // --------------------------
 
+
+// --------------------------
+// Скрытые методы управления потоком
+// --------------------------
+bool __fastcall TVideoCaptureThreadVideoGrabberCamera::ARunCapture(void)
+{
+ if(VideoGrabber)
+ {
+  VideoGrabber->StartPreview();
+  VideoGrabber->StartSynchronized();
+ }
+ return true;
+}
+
+bool __fastcall TVideoCaptureThreadVideoGrabberCamera::APauseCapture(void)
+{
+ if(VideoGrabber)
+  VideoGrabber->PausePreview();
+ return true;
+}
+// --------------------------
+
 //---------------------------------------------------------------------------
 // --------------------------
 // Конструкторы и деструкторы
@@ -1532,19 +1716,19 @@ __fastcall TVideoCaptureThreadVideoGrabberIpCamera::~TVideoCaptureThreadVideoGra
 // Управление параметрами
 // --------------------------
 /// Имя камеры
-const String& TVideoCaptureThreadVideoGrabberIpCamera::GetUrl(void) const
+String TVideoCaptureThreadVideoGrabberIpCamera::GetUrl(void) const
 {
  return Url;
 }
 
 /// Имя пользователя
-const String& TVideoCaptureThreadVideoGrabberIpCamera::GetUserName(void) const
+String TVideoCaptureThreadVideoGrabberIpCamera::GetUserName(void) const
 {
  return UserName;
 }
 
 /// Пароль
-const String& TVideoCaptureThreadVideoGrabberIpCamera::GetPassword(void) const
+String TVideoCaptureThreadVideoGrabberIpCamera::GetPassword(void) const
 {
  return Password;
 }
@@ -1574,21 +1758,14 @@ bool TVideoCaptureThreadVideoGrabberIpCamera::Init(const String camera_url, cons
 // --------------------------
 // Управление потоком
 // --------------------------
-void __fastcall TVideoCaptureThreadVideoGrabberIpCamera::Start(void)
+void __fastcall TVideoCaptureThreadVideoGrabberIpCamera::AStart(void)
 {
- if(VideoGrabber)
- {
-   VideoGrabber->StartPreview();
-   VideoGrabber->StartSynchronized();
- }
- TVideoCaptureThreadVideoGrabber::Start();
+// TVideoCaptureThreadVideoGrabber::Start();
 }
 
-void __fastcall TVideoCaptureThreadVideoGrabberIpCamera::Stop(void)
+void __fastcall TVideoCaptureThreadVideoGrabberIpCamera::AStop(void)
 {
- TVideoCaptureThreadVideoGrabber::Stop();
- if(VideoGrabber)
-  VideoGrabber->PausePreview();
+// TVideoCaptureThreadVideoGrabber::Stop();
 }
 // --------------------------
 
@@ -1624,6 +1801,28 @@ bool TVideoCaptureThreadVideoGrabberIpCamera::ALoadParameters(RDK::USerStorageXM
 	  xml.ReadString("UserName", AnsiString(UserName).c_str()).c_str(),
 	  xml.ReadString("Password", AnsiString(Password).c_str()).c_str());
 
+ return true;
+}
+// --------------------------
+
+
+// --------------------------
+// Скрытые методы управления потоком
+// --------------------------
+bool __fastcall TVideoCaptureThreadVideoGrabberIpCamera::ARunCapture(void)
+{
+ if(VideoGrabber)
+ {
+  VideoGrabber->StartPreview();
+  VideoGrabber->StartSynchronized();
+ }
+ return true;
+}
+
+bool __fastcall TVideoCaptureThreadVideoGrabberIpCamera::APauseCapture(void)
+{
+ if(VideoGrabber)
+  VideoGrabber->PausePreview();
  return true;
 }
 // --------------------------
@@ -1670,7 +1869,7 @@ bool TVideoCaptureThreadSharedMemory::SetPipeIndex(int value)
 }
 
 /// Имя канала общей памяти
-const std::string& TVideoCaptureThreadSharedMemory::GetPipeName(void) const
+std::string TVideoCaptureThreadSharedMemory::GetPipeName(void) const
 {
  return PipeName;
 }
@@ -1700,7 +1899,7 @@ long long TVideoCaptureThreadSharedMemory::GetNumBitmaps(void) const
 /// Устанавливает текущую позицию в последовательности
 long long TVideoCaptureThreadSharedMemory::GetPosition(void) const
 {
- return LastTimeStamp;
+ return GetLastTimeStampSafe()*86400.0*1000.0;
 }
 
 bool TVideoCaptureThreadSharedMemory::SetPosition(long long index)
@@ -1712,6 +1911,16 @@ bool TVideoCaptureThreadSharedMemory::SetPosition(long long index)
 // --------------------------
 // Управление потоком
 // --------------------------
+void __fastcall TVideoCaptureThreadSharedMemory::AStart(void)
+{
+
+}
+
+void __fastcall TVideoCaptureThreadSharedMemory::AStop(void)
+{
+
+}
+
 void __fastcall TVideoCaptureThreadSharedMemory::BeforeCalculate(void)
 {
  TVideoCaptureThread::BeforeCalculate();
@@ -1755,7 +1964,7 @@ void __fastcall TVideoCaptureThreadSharedMemory::Calculate(void)
 	 memcpy(&time_stamp,&PipeBuffer[0],sizeof(time_stamp));
 	 memcpy(&mem_size,&PipeBuffer[8],sizeof(mem_size));
 
-	 if(LastTimeStamp == time_stamp/(86400.0*1000.0))
+	 if(GetLastTimeStampSafe() == time_stamp/(86400.0*1000.0))
 	 {
 	  Sleep(20);
 	  return;
@@ -1774,23 +1983,19 @@ void __fastcall TVideoCaptureThreadSharedMemory::Calculate(void)
 	 memcpy(&color_model,&PipeBuffer[shift],sizeof(color_model));
 	 shift+=sizeof(color_model);
 
-	 WriteSource->SetRes(width,height,(RDK::UBMColorModel)color_model);
+	 RDK::UBitmap temp_bmp;
+
+//	 WriteSource->SetRes(width,height,(RDK::UBMColorModel)color_model);
 	 if(shift<SharedMemoryPipeSize)
 	 {
-	  int image_size=WriteSource->GetByteLength();
-	  if(image_size>SharedMemoryPipeSize-20)
-	   image_size=SharedMemoryPipeSize-20;
-	  memcpy(WriteSource->GetData(),&PipeBuffer[shift],image_size);
+//	  int image_size=WriteSource->GetByteLength();
+//	  if(image_size>SharedMemoryPipeSize-20)
+//	   image_size=SharedMemoryPipeSize-20;
+	  temp_bmp.AttachBuffer(width,height,(unsigned char*)&PipeBuffer[shift],(RDK::UBMColorModel)color_model);
+	  WriteSourceSafe(temp_bmp,time_stamp/(86400.0*1000.0),false);
+	  temp_bmp.DetachBuffer();
 	 }
 
-	 if(WaitForSingleObject(SourceUnlock,30) == WAIT_TIMEOUT)
-	  return;
-	 ResetEvent(SourceUnlock);
-	 RDK::UBitmap* old_read_source=ReadSource;
-	 ReadSource=WriteSource;
-	 WriteSource=old_read_source;
-	 LastTimeStamp=time_stamp/(86400.0*1000.0);
-	 SetEvent(SourceUnlock);
 	}
    }
   }
@@ -1802,7 +2007,9 @@ void __fastcall TVideoCaptureThreadSharedMemory::UnsafeInit(void)
  if(!Usm_GetNumPipes || Usm_GetNumPipes() <= PipeIndex)
   return;
 
- Usm_InitPipe(PipeIndex,SharedMemoryPipeSize,0,PipeName.c_str());
+ int pipe_byte_size=0;
+ Usm_InitPipe(PipeIndex.Get(),pipe_byte_size,0,PipeName.Get().c_str());
+ SharedMemoryPipeSize=pipe_byte_size;
 }
 
 // --------------------------
@@ -1833,6 +2040,20 @@ bool TVideoCaptureThreadSharedMemory::ALoadParameters(RDK::USerStorageXML &xml)
  PipeName=xml.ReadString("PipeName",PipeName);
  SharedMemoryPipeSize=xml.ReadInteger("SharedMemoryPipeSize",SharedMemoryPipeSize);
 
+ return true;
+}
+// --------------------------
+
+// --------------------------
+// Скрытые методы управления потоком
+// --------------------------
+bool __fastcall TVideoCaptureThreadSharedMemory::ARunCapture(void)
+{
+ return true;
+}
+
+bool __fastcall TVideoCaptureThreadSharedMemory::APauseCapture(void)
+{
  return true;
 }
 // --------------------------

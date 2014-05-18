@@ -29,7 +29,7 @@ std::string ComponentControlName;
 
 // Интервал обновления интерфейса в миллисекундах при счете
 // (если =0) то интерфейс не обновляется при счете
-long UpdateInterval;
+RDK::UELockVar<long> UpdateInterval;
 
 // Время последнего обновления
 DWORD LastUpdateTime;

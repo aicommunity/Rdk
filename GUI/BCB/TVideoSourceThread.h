@@ -6,40 +6,57 @@
 #include "TUHttpServerUnit.h"
 #include "myrdk.h"
 
+enum TVideoCaptureThreadCommands { tvcNone=0, tvcStart=1, tvcStop=2, tvcTerminate=3 };
+
 //---------------------------------------------------------------------------
 class TVideoGrabberControlForm;
 class TVideoOutputFrame;
 
 class TVideoCaptureThread: public TThread
 {
+private:
+/// Очередь команд управления тредом
+/// <временная метка команды, ID команды>
+std::map<double,TVideoCaptureThreadCommands> CommandQueue;
+
+/// Мьютекс для разделения доступа к командам
+TMutex* CommandMutex;
+
 protected: // Параметры
-double Fps;
+RDK::UELockVar<double> Fps;
 
 /// Источник видео
-int SourceMode;
+RDK::UELockVar<int> SourceMode;
 
 /// Индекс канала в библиотеке аналитики, управляемый тредом
-int ChannelIndex;
+RDK::UELockVar<int> ChannelIndex;
 
 /// Режим синхронизации с расчетом
 /// 0 - Нет сихнронизации с расчетом
 /// 1 - Синхронизация с расчетом включена
-int SyncMode;
+RDK::UELockVar<int> SyncMode;
 
 /// Флаг повтора воспроизведения сначала после завершения
-bool RepeatFlag;
+RDK::UELockVar<bool> RepeatFlag;
 
 /// Режим восстановления после сбоя захвата
 /// 0 - не делать ничего
 /// 1 - попытаться восстановить захват
 /// 2 - вызвать метод останова захвата
-int RestartMode;
+RDK::UELockVar<int> RestartMode;
 
 protected: // Данные
+/// Флаг состояния треда
+/// 0 - остановлен
+/// 1 - Запущен
+RDK::UELockVar<int> ThreadState;
+
+/// Реальное состояние соединения с источником видео
+RDK::UELockVar<int> ConnectionState;
+
+private:
 /// Временная метка последнего кадра
 double LastTimeStamp;
-
-int ConnectionState;
 
 /// Данные изображения
 RDK::UBitmap Source[2];
@@ -77,8 +94,23 @@ virtual __fastcall ~TVideoCaptureThread(void);
 // --------------------------
 
 // --------------------------
+// Управление командами
+// --------------------------
+protected:
+/// Добавляет команду в очередь
+void AddCommand(TVideoCaptureThreadCommands value);
+
+/// Очищает очередь
+void ClearCommandQueue(void);
+
+/// Осуществляет обработку очередной команды из очереди
+void ProcessCommandQueue(void);
+// --------------------------
+
+// --------------------------
 // Управление параметрами
 // --------------------------
+public:
 /// Источник видео
 int GetSourceMode(void) const;
 
@@ -109,6 +141,11 @@ virtual bool SetFps(double fps);
 // --------------------------
 // Управление данными
 // --------------------------
+/// Флаг состояния треда
+/// 0 - остановлен
+/// 1 - Запущен
+int GetThreadState(void) const;
+
 /// Указатель на владельца
 TVideoOutputFrame *GetFrame(void) const;
 bool SetFrame(TVideoOutputFrame * frame);
@@ -151,8 +188,10 @@ HANDLE GetCalcCompleteEvent(void) const;
 // Управление потоком
 // --------------------------
 virtual void __fastcall Start(void);
+virtual void __fastcall AStart(void)=0;
 
 virtual void __fastcall Stop(void);
+virtual void __fastcall AStop(void)=0;
 
 virtual void __fastcall BeforeCalculate(void);
 
@@ -172,6 +211,9 @@ bool WriteSourceSafe(Graphics::TBitmap *src, double time_stamp, bool reflect);
 // Меняет временную метку с блокировкой
 virtual bool SetLastTimeStampSafe(double time_stamp);
 
+// Считывает временную метку с блокировкой
+virtual double GetLastTimeStampSafe(void) const;
+
 /// Возвращает 0 если если состояние не определено
 /// Возвращает 1 если если нет подключения к источнику
 /// Возвращает 2 если если есть подключение к источнику
@@ -180,13 +222,28 @@ virtual int CheckConnection(void) const;
 /// Возвращает 0 если захват не работает и 1 если активен
 virtual int CheckCaptureThreadState(void) const;
 // --------------------------
+
+// --------------------------
+// Скрытые методы управления потоком
+// --------------------------
+protected:
+virtual bool __fastcall RunCapture(void);
+virtual bool __fastcall ARunCapture(void)=0;
+
+virtual bool __fastcall PauseCapture(void);
+virtual bool __fastcall APauseCapture(void)=0;
+
+bool SetThreadState(int value);
+// --------------------------
+
+
 };
 
 class TVideoCaptureThreadBmp: public TVideoCaptureThread
 {
 protected: // Параметры
 /// Имя файла изображения
-std::string FileName;
+RDK::UELockVar<std::string> FileName;
 
 //double Fps;
 
@@ -194,7 +251,7 @@ protected: // Временные изображения
 RDK::UBitmap TempSource;
 Graphics::TBitmap* TempBitmap;
 
-double CurrentTimeStamp;
+RDK::UELockVar<double> CurrentTimeStamp;
 
 
 public: // Методы
@@ -209,7 +266,7 @@ virtual __fastcall ~TVideoCaptureThreadBmp(void);
 // Управление параметрами
 // --------------------------
 /// Имя файла изображения
-const std::string& GetFileName(void) const;
+std::string GetFileName(void) const;
 bool SetFileName(const std::string& value);
 
 /// Возвращает число изображений в последовательности
@@ -240,9 +297,9 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 // Управление потоком
 // --------------------------
-virtual void __fastcall Start(void);
+virtual void __fastcall AStart(void);
 
-virtual void __fastcall Stop(void);
+virtual void __fastcall AStop(void);
 
 virtual void __fastcall BeforeCalculate(void);
 
@@ -250,22 +307,31 @@ virtual void __fastcall AfterCalculate(void);
 
 virtual void __fastcall Calculate(void);
 // --------------------------
+
+// --------------------------
+// Скрытые методы управления потоком
+// --------------------------
+protected:
+virtual bool __fastcall ARunCapture(void);
+
+virtual bool __fastcall APauseCapture(void);
+// --------------------------
 };
 
 class TVideoCaptureThreadBmpSequence: public TVideoCaptureThread
 {
 protected: // Параметры
 /// Имя пути до файлов изображения
-std::string PathName;
+RDK::UELockVar<std::string> PathName;
 
 protected: // Временные изображения
 // Массив изображений для режима последовательности картинок
 std::vector<std::string> BmpSequenceNames;
 
 // Текущий кадр в последовательности картинок
-int CurrentBmpSequenceIndex;
+RDK::UELockVar<int> CurrentBmpSequenceIndex;
 
-int LastReadSequenceIndex;
+RDK::UELockVar<int> LastReadSequenceIndex;
 
 //double Fps;
 
@@ -274,7 +340,7 @@ int LastReadSequenceIndex;
 RDK::UBitmap TempSource;
 Graphics::TBitmap* TempBitmap;
 
-double CurrentTimeStamp;
+RDK::UELockVar<double> CurrentTimeStamp;
 
 public: // Методы
 // --------------------------
@@ -288,7 +354,7 @@ virtual __fastcall ~TVideoCaptureThreadBmpSequence(void);
 // Управление параметрами
 // --------------------------
 /// Имя пути до файлов изображения
-const std::string& GetPathName(void) const;
+std::string GetPathName(void) const;
 bool SetPathName(const std::string& value);
 
 /// Возвращает число изображений в последовательности
@@ -319,9 +385,9 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 // Управление потоком
 // --------------------------
-virtual void __fastcall Start(void);
+virtual void __fastcall AStart(void);
 
-virtual void __fastcall Stop(void);
+virtual void __fastcall AStop(void);
 
 virtual void __fastcall AfterCalculate(void);
 
@@ -333,13 +399,22 @@ bool LoadImageFromSequence(int index, RDK::UBitmap &bmp);
 // Меняет временную метку с блокировкой
 virtual bool SetLastTimeStampSafe(double time_stamp);
 // --------------------------
+
+// --------------------------
+// Скрытые методы управления потоком
+// --------------------------
+protected:
+virtual bool __fastcall ARunCapture(void);
+
+virtual bool __fastcall APauseCapture(void);
+// --------------------------
 };
 
 class TVideoCaptureThreadHttpServer: public TVideoCaptureThread
 {
 protected: // Параметры
 /// Порт сервера
-int ListenPort;
+RDK::UELockVar<int> ListenPort;
 
 protected: // Временные переменные
 TUHttpServerFrame *UHttpServerFrame;
@@ -390,9 +465,9 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 // Управление потоком
 // --------------------------
-virtual void __fastcall Start(void);
+virtual void __fastcall AStart(void);
 
-virtual void __fastcall Stop(void);
+virtual void __fastcall AStop(void);
 
 virtual void __fastcall BeforeCalculate(void);
 
@@ -403,6 +478,16 @@ virtual void __fastcall Calculate(void);
 void __fastcall IdHTTPServerCommandGet(TIdContext *AContext, TIdHTTPRequestInfo *ARequestInfo,
 		  TIdHTTPResponseInfo *AResponseInfo);
 // --------------------------
+
+// --------------------------
+// Скрытые методы управления потоком
+// --------------------------
+protected:
+virtual bool __fastcall ARunCapture(void);
+
+virtual bool __fastcall APauseCapture(void);
+// --------------------------
+
 };
 
 class TVideoCaptureThreadVideoGrabber: public TVideoCaptureThread
@@ -480,9 +565,9 @@ class TVideoCaptureThreadVideoGrabberAvi: public TVideoCaptureThreadVideoGrabber
 {
 protected: // Параметры
 /// Имя файла
-std::string FileName;
+RDK::UELockVar<std::string> FileName;
 
-bool ProcessAllFramesFlag;
+RDK::UELockVar<bool> ProcessAllFramesFlag;
 
 public: // Методы
 // --------------------------
@@ -496,7 +581,7 @@ virtual __fastcall ~TVideoCaptureThreadVideoGrabberAvi(void);
 // Управление параметрами
 // --------------------------
 /// Имя канала общей памяти
-const std::string& GetFileName(void) const;
+std::string GetFileName(void) const;
 bool SetFileName(const std::string& value);
 
 bool GetProcessAllFramesFlag(void) const;
@@ -519,9 +604,9 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 // Управление потоком
 // --------------------------
-virtual void __fastcall Start(void);
+virtual void __fastcall AStart(void);
 
-virtual void __fastcall Stop(void);
+virtual void __fastcall AStop(void);
 
 
 // Меняет временную метку с блокировкой
@@ -529,17 +614,27 @@ virtual bool SetLastTimeStampSafe(double time_stamp);
 
 void __fastcall AfterCalculate(void);
 // --------------------------
+
+// --------------------------
+// Скрытые методы управления потоком
+// --------------------------
+protected:
+virtual bool __fastcall ARunCapture(void);
+
+virtual bool __fastcall APauseCapture(void);
+// --------------------------
+
 };
 
 
 class TVideoCaptureThreadVideoGrabberCamera: public TVideoCaptureThreadVideoGrabber
 {
 protected: // Параметры
-int CameraIndex;
-int InputIndex;
-int SizeIndex;
-int SubtypeIndex;
-int AnalogIndex;
+RDK::UELockVar<int> CameraIndex;
+RDK::UELockVar<int> InputIndex;
+RDK::UELockVar<int> SizeIndex;
+RDK::UELockVar<int> SubtypeIndex;
+RDK::UELockVar<int> AnalogIndex;
 
 public: // Методы
 // --------------------------
@@ -577,23 +672,34 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 // Управление потоком
 // --------------------------
-virtual void __fastcall Start(void);
+virtual void __fastcall AStart(void);
 
-virtual void __fastcall Stop(void);
+virtual void __fastcall AStop(void);
 // --------------------------
+
+
+// --------------------------
+// Скрытые методы управления потоком
+// --------------------------
+protected:
+virtual bool __fastcall ARunCapture(void);
+
+virtual bool __fastcall APauseCapture(void);
+// --------------------------
+
 };
 
 class TVideoCaptureThreadVideoGrabberIpCamera: public TVideoCaptureThreadVideoGrabber
 {
 protected: // Параметры
 /// Имя камеры
-String Url;
+RDK::UELockVar<String> Url;
 
 /// Имя пользователя
-String UserName;
+RDK::UELockVar<String> UserName;
 
 /// Пароль
-String Password;
+RDK::UELockVar<String> Password;
 
 public: // Методы
 // --------------------------
@@ -607,13 +713,13 @@ virtual __fastcall ~TVideoCaptureThreadVideoGrabberIpCamera(void);
 // Управление параметрами
 // --------------------------
 /// Имя камеры
-const String& GetUrl(void) const;
+String GetUrl(void) const;
 
 /// Имя пользователя
-const String& GetUserName(void) const;
+String GetUserName(void) const;
 
 /// Пароль
-const String& GetPassword(void) const;
+String GetPassword(void) const;
 
 bool Init(const String camera_url, const String user_name, const String user_password);
 // --------------------------
@@ -634,10 +740,21 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 // Управление потоком
 // --------------------------
-virtual void __fastcall Start(void);
+virtual void __fastcall AStart(void);
 
-virtual void __fastcall Stop(void);
+virtual void __fastcall AStop(void);
 // --------------------------
+
+
+// --------------------------
+// Скрытые методы управления потоком
+// --------------------------
+protected:
+virtual bool __fastcall ARunCapture(void);
+
+virtual bool __fastcall APauseCapture(void);
+// --------------------------
+
 };
 
 
@@ -645,13 +762,13 @@ class TVideoCaptureThreadSharedMemory: public TVideoCaptureThread
 {
 protected: // Параметры
 /// Индекс канала общей памяти
-int PipeIndex;
+RDK::UELockVar<int> PipeIndex;
 
 /// Имя канала общей памяти
-std::string PipeName;
+RDK::UELockVar<std::string> PipeName;
 
 /// Размер канала общей памяти
-int SharedMemoryPipeSize;
+RDK::UELockVar<int> SharedMemoryPipeSize;
 
 protected: // Данные
 /// Буфер приема данных из канала
@@ -673,7 +790,7 @@ int GetPipeIndex(void) const;
 bool SetPipeIndex(int value);
 
 /// Имя канала общей памяти
-const std::string& GetPipeName(void) const;
+std::string GetPipeName(void) const;
 bool SetPipeName(const std::string& value);
 
 /// Размер канала общей памяти
@@ -703,6 +820,10 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 // Управление потоком
 // --------------------------
+virtual void __fastcall AStart(void);
+
+virtual void __fastcall AStop(void);
+
 virtual void __fastcall BeforeCalculate(void);
 
 virtual void __fastcall AfterCalculate(void);
@@ -711,6 +832,16 @@ virtual void __fastcall Calculate(void);
 
 virtual void __fastcall UnsafeInit(void);
 // --------------------------
+
+// --------------------------
+// Скрытые методы управления потоком
+// --------------------------
+protected:
+virtual bool __fastcall ARunCapture(void);
+
+virtual bool __fastcall APauseCapture(void);
+// --------------------------
+
 };
 
 #endif

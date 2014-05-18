@@ -450,7 +450,7 @@ void TUEngineMonitorFrame::StartChannel(int channel_index)
 	{
 		SetEvent(ThreadChannels[i]->CalcStarted);
 		SetEvent(ThreadChannels[i]->CalcState);
-		WaitForSingleObject(ThreadChannels[i]->CalculationNotInProgress,1000);
+//		WaitForSingleObject(ThreadChannels[i]->CalculationNotInProgress,1000);
 	}
 	UShowProgressBarForm->IncBarStatus(1);
    }
@@ -461,7 +461,7 @@ void TUEngineMonitorFrame::StartChannel(int channel_index)
 	{
 		SetEvent(ThreadChannels[channel_index]->CalcStarted);
 		SetEvent(ThreadChannels[channel_index]->CalcState);
-		WaitForSingleObject(ThreadChannels[channel_index]->CalculationNotInProgress,1000);
+//		WaitForSingleObject(ThreadChannels[channel_index]->CalculationNotInProgress,1000);
 	}
 	UShowProgressBarForm->IncBarStatus(1);
   }
@@ -505,7 +505,7 @@ void TUEngineMonitorFrame::PauseChannel(int channel_index)
 	{
 	 ResetEvent(ThreadChannels[i]->CalcStarted);
 	 ResetEvent(ThreadChannels[i]->CalcState);
-	 WaitForSingleObject(ThreadChannels[i]->CalculationNotInProgress,1000);
+//	 WaitForSingleObject(ThreadChannels[i]->CalculationNotInProgress,1000);
 	}
 	UShowProgressBarForm->IncBarStatus(1);
    }
@@ -516,7 +516,7 @@ void TUEngineMonitorFrame::PauseChannel(int channel_index)
 	{
 	 ResetEvent(ThreadChannels[channel_index]->CalcStarted);
 	 ResetEvent(ThreadChannels[channel_index]->CalcState);
-	 WaitForSingleObject(ThreadChannels[channel_index]->CalculationNotInProgress,1000);
+//	 WaitForSingleObject(ThreadChannels[channel_index]->CalculationNotInProgress,1000);
 	}
 	UShowProgressBarForm->IncBarStatus(1);
 
