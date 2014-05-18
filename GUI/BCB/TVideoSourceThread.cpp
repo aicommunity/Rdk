@@ -486,15 +486,14 @@ double TVideoCaptureThread::GetLastTimeStampSafe(void) const
 // --------------------------
 bool __fastcall TVideoCaptureThread::RunCapture(void)
 {
- return ARunCapture();
+ Synchronize(ARunCapture);
+ return true;
 }
 
 bool __fastcall TVideoCaptureThread::PauseCapture(void)
 {
- bool res=APauseCapture();
-// ResetEvent(CaptureEnabled);
-// ConnectionState=1;
- return res;
+ Synchronize(APauseCapture);
+ return true;
 }
 
 bool TVideoCaptureThread::SetThreadState(int value)
@@ -676,14 +675,12 @@ bool TVideoCaptureThreadBmp::ALoadParameters(RDK::USerStorageXML &xml)
 // --------------------------
 // Скрытые методы управления потоком
 // --------------------------
-bool __fastcall TVideoCaptureThreadBmp::ARunCapture(void)
+void __fastcall TVideoCaptureThreadBmp::ARunCapture(void)
 {
- return true;
 }
 
-bool __fastcall TVideoCaptureThreadBmp::APauseCapture(void)
+void __fastcall TVideoCaptureThreadBmp::APauseCapture(void)
 {
- return true;
 }
 // --------------------------
 
@@ -936,14 +933,12 @@ bool TVideoCaptureThreadBmpSequence::ALoadParameters(RDK::USerStorageXML &xml)
 // --------------------------
 // Скрытые методы управления потоком
 // --------------------------
-bool __fastcall TVideoCaptureThreadBmpSequence::ARunCapture(void)
+void __fastcall TVideoCaptureThreadBmpSequence::ARunCapture(void)
 {
- return true;
 }
 
-bool __fastcall TVideoCaptureThreadBmpSequence::APauseCapture(void)
+void __fastcall TVideoCaptureThreadBmpSequence::APauseCapture(void)
 {
- return true;
 }
 // --------------------------
 
@@ -1117,16 +1112,14 @@ bool TVideoCaptureThreadHttpServer::ALoadParameters(RDK::USerStorageXML &xml)
 // --------------------------
 // Скрытые методы управления потоком
 // --------------------------
-bool __fastcall TVideoCaptureThreadHttpServer::ARunCapture(void)
+void __fastcall TVideoCaptureThreadHttpServer::ARunCapture(void)
 {
  UHttpServerFrame->IdHTTPServer->Active=true;
- return true;
 }
 
-bool __fastcall TVideoCaptureThreadHttpServer::APauseCapture(void)
+void __fastcall TVideoCaptureThreadHttpServer::APauseCapture(void)
 {
  UHttpServerFrame->IdHTTPServer->Active=false;
- return true;
 }
 // --------------------------
 
@@ -1532,21 +1525,19 @@ bool TVideoCaptureThreadVideoGrabberAvi::ALoadParameters(RDK::USerStorageXML &xm
 // --------------------------
 // Скрытые методы управления потоком
 // --------------------------
-bool __fastcall TVideoCaptureThreadVideoGrabberAvi::ARunCapture(void)
+void __fastcall TVideoCaptureThreadVideoGrabberAvi::ARunCapture(void)
 {
  if(VideoGrabber)
  {
   VideoGrabber->StartSynchronized();
   VideoGrabber->RunPlayer();
  }
- return true;
 }
 
-bool __fastcall TVideoCaptureThreadVideoGrabberAvi::APauseCapture(void)
+void __fastcall TVideoCaptureThreadVideoGrabberAvi::APauseCapture(void)
 {
  if(VideoGrabber)
   VideoGrabber->PausePlayer();
- return true;
 }
 // --------------------------
 
@@ -1676,21 +1667,19 @@ bool TVideoCaptureThreadVideoGrabberCamera::ALoadParameters(RDK::USerStorageXML 
 // --------------------------
 // Скрытые методы управления потоком
 // --------------------------
-bool __fastcall TVideoCaptureThreadVideoGrabberCamera::ARunCapture(void)
+void __fastcall TVideoCaptureThreadVideoGrabberCamera::ARunCapture(void)
 {
  if(VideoGrabber)
  {
   VideoGrabber->StartPreview();
   VideoGrabber->StartSynchronized();
  }
- return true;
 }
 
-bool __fastcall TVideoCaptureThreadVideoGrabberCamera::APauseCapture(void)
+void __fastcall TVideoCaptureThreadVideoGrabberCamera::APauseCapture(void)
 {
  if(VideoGrabber)
   VideoGrabber->PausePreview();
- return true;
 }
 // --------------------------
 
@@ -1809,21 +1798,19 @@ bool TVideoCaptureThreadVideoGrabberIpCamera::ALoadParameters(RDK::USerStorageXM
 // --------------------------
 // Скрытые методы управления потоком
 // --------------------------
-bool __fastcall TVideoCaptureThreadVideoGrabberIpCamera::ARunCapture(void)
+void __fastcall TVideoCaptureThreadVideoGrabberIpCamera::ARunCapture(void)
 {
  if(VideoGrabber)
  {
   VideoGrabber->StartPreview();
   VideoGrabber->StartSynchronized();
  }
- return true;
 }
 
-bool __fastcall TVideoCaptureThreadVideoGrabberIpCamera::APauseCapture(void)
+void __fastcall TVideoCaptureThreadVideoGrabberIpCamera::APauseCapture(void)
 {
  if(VideoGrabber)
   VideoGrabber->PausePreview();
- return true;
 }
 // --------------------------
 
@@ -2047,13 +2034,11 @@ bool TVideoCaptureThreadSharedMemory::ALoadParameters(RDK::USerStorageXML &xml)
 // --------------------------
 // Скрытые методы управления потоком
 // --------------------------
-bool __fastcall TVideoCaptureThreadSharedMemory::ARunCapture(void)
+void __fastcall TVideoCaptureThreadSharedMemory::ARunCapture(void)
 {
- return true;
 }
 
-bool __fastcall TVideoCaptureThreadSharedMemory::APauseCapture(void)
+void __fastcall TVideoCaptureThreadSharedMemory::APauseCapture(void)
 {
- return true;
 }
 // --------------------------

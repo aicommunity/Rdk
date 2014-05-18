@@ -228,10 +228,10 @@ virtual int CheckCaptureThreadState(void) const;
 // --------------------------
 protected:
 virtual bool __fastcall RunCapture(void);
-virtual bool __fastcall ARunCapture(void)=0;
+virtual void __fastcall ARunCapture(void)=0;
 
 virtual bool __fastcall PauseCapture(void);
-virtual bool __fastcall APauseCapture(void)=0;
+virtual void __fastcall APauseCapture(void)=0;
 
 bool SetThreadState(int value);
 // --------------------------
@@ -312,9 +312,9 @@ virtual void __fastcall Calculate(void);
 // Скрытые методы управления потоком
 // --------------------------
 protected:
-virtual bool __fastcall ARunCapture(void);
+virtual void __fastcall ARunCapture(void);
 
-virtual bool __fastcall APauseCapture(void);
+virtual void __fastcall APauseCapture(void);
 // --------------------------
 };
 
@@ -404,9 +404,9 @@ virtual bool SetLastTimeStampSafe(double time_stamp);
 // Скрытые методы управления потоком
 // --------------------------
 protected:
-virtual bool __fastcall ARunCapture(void);
+virtual void __fastcall ARunCapture(void);
 
-virtual bool __fastcall APauseCapture(void);
+virtual void __fastcall APauseCapture(void);
 // --------------------------
 };
 
@@ -483,9 +483,9 @@ void __fastcall IdHTTPServerCommandGet(TIdContext *AContext, TIdHTTPRequestInfo 
 // Скрытые методы управления потоком
 // --------------------------
 protected:
-virtual bool __fastcall ARunCapture(void);
+virtual void __fastcall ARunCapture(void);
 
-virtual bool __fastcall APauseCapture(void);
+virtual void __fastcall APauseCapture(void);
 // --------------------------
 
 };
@@ -619,9 +619,9 @@ void __fastcall AfterCalculate(void);
 // Скрытые методы управления потоком
 // --------------------------
 protected:
-virtual bool __fastcall ARunCapture(void);
+virtual void __fastcall ARunCapture(void);
 
-virtual bool __fastcall APauseCapture(void);
+virtual void __fastcall APauseCapture(void);
 // --------------------------
 
 };
@@ -682,9 +682,9 @@ virtual void __fastcall AStop(void);
 // Скрытые методы управления потоком
 // --------------------------
 protected:
-virtual bool __fastcall ARunCapture(void);
+virtual void __fastcall ARunCapture(void);
 
-virtual bool __fastcall APauseCapture(void);
+virtual void __fastcall APauseCapture(void);
 // --------------------------
 
 };
@@ -750,9 +750,9 @@ virtual void __fastcall AStop(void);
 // Скрытые методы управления потоком
 // --------------------------
 protected:
-virtual bool __fastcall ARunCapture(void);
+virtual void __fastcall ARunCapture(void);
 
-virtual bool __fastcall APauseCapture(void);
+virtual void __fastcall APauseCapture(void);
 // --------------------------
 
 };
@@ -837,9 +837,9 @@ virtual void __fastcall UnsafeInit(void);
 // Скрытые методы управления потоком
 // --------------------------
 protected:
-virtual bool __fastcall ARunCapture(void);
+virtual void __fastcall ARunCapture(void);
 
-virtual bool __fastcall APauseCapture(void);
+virtual void __fastcall APauseCapture(void);
 // --------------------------
 
 };
