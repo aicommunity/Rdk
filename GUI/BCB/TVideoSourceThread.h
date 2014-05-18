@@ -23,6 +23,8 @@ std::map<double,TVideoCaptureThreadCommands> CommandQueue;
 TMutex* CommandMutex;
 
 protected: // Параметры
+/// Желаемый FPS
+/// Если 0, то FPS источника
 RDK::UELockVar<double> Fps;
 
 /// Источник видео
@@ -45,6 +47,10 @@ RDK::UELockVar<bool> RepeatFlag;
 /// 2 - вызвать метод останова захвата
 RDK::UELockVar<int> RestartMode;
 
+/// Интервал между последним стартом и рестартом, мс
+RDK::UELockVar<int> RestartInterval;
+
+
 protected: // Данные
 /// Флаг состояния треда
 /// 0 - остановлен
@@ -53,6 +59,10 @@ RDK::UELockVar<int> ThreadState;
 
 /// Реальное состояние соединения с источником видео
 RDK::UELockVar<int> ConnectionState;
+
+/// Последняя попытка запуска захвата
+RDK::UELockVar<double> LastStartTime;
+
 
 private:
 /// Временная метка последнего кадра
@@ -136,6 +146,10 @@ virtual bool SetRepeatFlag(bool value);
 /// Устанавливает значение FPS
 virtual double GetFps(void) const;
 virtual bool SetFps(double fps);
+
+/// Интервал между последним стартом и рестартом, мс
+virtual int GetRestartInterval(void) const;
+virtual bool SetRestartInterval(int value);
 // --------------------------
 
 // --------------------------

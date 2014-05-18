@@ -32,6 +32,8 @@ __fastcall TVideoCaptureThread::TVideoCaptureThread(TVideoOutputFrame *frame, bo
  ConnectionState=0;
  CommandMutex=new TMutex(false);
  ThreadState=0;
+ RestartInterval=10000;
+ LastStartTime=0;
 }
 
 __fastcall TVideoCaptureThread::~TVideoCaptureThread(void)
@@ -167,6 +169,18 @@ double TVideoCaptureThread::GetFps(void) const
 bool TVideoCaptureThread::SetFps(double fps)
 {
  return false;
+}
+
+/// »нтервал между последним стартом и рестартом, мс
+int TVideoCaptureThread::GetRestartInterval(void) const
+{
+ return RestartInterval;
+}
+
+bool TVideoCaptureThread::SetRestartInterval(int value)
+{
+ RestartInterval=value;
+ return true;
 }
 // --------------------------
 
@@ -350,6 +364,7 @@ void __fastcall TVideoCaptureThread::Execute(void)
 
   if(CheckConnection() != 2 && GetThreadState() == 1)
   {
+   double curr_time=TDateTime::CurrentDateTime().operator double();
    switch(RestartMode)
    {
 	case 0:
@@ -359,6 +374,11 @@ void __fastcall TVideoCaptureThread::Execute(void)
 
 	case 1:
 	{
+	 if(curr_time-LastStartTime<double(RestartInterval)/(86400.0*1000.0))
+	 {
+	  Sleep(30);
+	  continue;
+	 }
 	 RunCapture();
 	 break;
 	}
@@ -486,12 +506,15 @@ double TVideoCaptureThread::GetLastTimeStampSafe(void) const
 // --------------------------
 bool __fastcall TVideoCaptureThread::RunCapture(void)
 {
+ double curr_time=TDateTime::CurrentDateTime().operator double();
+ LastStartTime=curr_time;
  Synchronize(ARunCapture);
  return true;
 }
 
 bool __fastcall TVideoCaptureThread::PauseCapture(void)
 {
+ LastStartTime=0;
  Synchronize(APauseCapture);
  return true;
 }
