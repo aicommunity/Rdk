@@ -62,14 +62,14 @@ UELockVar<T>::UELockVar(void)
 
 template<typename T>
 UELockVar<T>::UELockVar(const T pdata)
- : Mutex(UCreateMutex())
+ : Mutex(UCreateMutex()), Data(pdata)
 {
 // new UGenericMutexLocker(mutex)
 }
 
 template<typename T>
 UELockVar<T>::UELockVar(const UELockVar<T> &pdata)
- : Mutex(UCreateMutex())
+ : Mutex(UCreateMutex()),Data(pdata.Get())
 {
 
 }
