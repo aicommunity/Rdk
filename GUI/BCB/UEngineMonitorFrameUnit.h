@@ -26,13 +26,13 @@ protected: // Параметры
 int ChannelIndex;
 
 /// Режим счета
-int CalculateMode;
+RDK::UELockVar<int> CalculateMode;
 
 /// Минимальный интервал времени между итерациями расчета в режиме 0 и 2, мс
-RDK::UTime MinInterstepsInterval;
+RDK::UELockVar<RDK::UTime> MinInterstepsInterval;
 
 /// Метка реального времени окончания последнего расчета
-RDK::ULongTime RealLastCalculationTime;
+RDK::UELockVar<RDK::ULongTime> RealLastCalculationTime;
 
 public:
 // Событие состояния расчета. Выставлено на время активности расчета. Сбрасывается по стопу

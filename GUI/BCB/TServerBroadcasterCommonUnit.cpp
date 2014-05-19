@@ -23,6 +23,10 @@ __fastcall TResultBroadcasterThread::TResultBroadcasterThread(bool CreateSuspend
 
 __fastcall TResultBroadcasterThread::~TResultBroadcasterThread(void)
 {
+ Terminate();
+ WaitForSingleObject(SendNotInProgressEvent,INFINITE);
+ WaitFor();
+
  CloseHandle(SendEnable);
  CloseHandle(MetaUnlockEvent);
  CloseHandle(SendNotInProgressEvent);

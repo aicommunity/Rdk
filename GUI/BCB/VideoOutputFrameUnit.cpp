@@ -105,7 +105,7 @@ __fastcall TVideoOutputFrame::~TVideoOutputFrame(void)
  if(CaptureThread)
  {
   CaptureThread->Terminate();
-  WaitForSingleObject(CaptureThread->GetFrameNotInProgress(),1000);
+  WaitForSingleObject(CaptureThread->GetFrameNotInProgress(),INFINITE);
   CaptureThread->WaitFor();
   delete CaptureThread;
   CaptureThread=0;

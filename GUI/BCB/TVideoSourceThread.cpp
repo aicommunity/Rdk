@@ -38,6 +38,12 @@ __fastcall TVideoCaptureThread::TVideoCaptureThread(TVideoOutputFrame *frame, bo
 
 __fastcall TVideoCaptureThread::~TVideoCaptureThread(void)
 {
+/* Stop();
+ while(WaitForSingleObject(CaptureEnabled,INFINITE) != WAIT_TIMEOUT)
+ {
+  Sleep(1);
+ }
+  */
  delete CommandMutex;
  CommandMutex=0;
  CloseHandle(CaptureEnabled);

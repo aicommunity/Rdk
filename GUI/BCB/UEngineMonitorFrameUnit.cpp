@@ -36,6 +36,11 @@ __fastcall TEngineThread::TEngineThread(int channel_index, int calculate_mode, R
 
 __fastcall TEngineThread::~TEngineThread(void)
 {
+ ResetEvent(CalcStarted);
+ ResetEvent(CalcState);
+ Terminate();
+ WaitForSingleObject(CalculationNotInProgress,INFINITE);
+ WaitFor();
  CloseHandle(CalcState);
  CloseHandle(CalcStarted);
  CloseHandle(CalcEnable);
