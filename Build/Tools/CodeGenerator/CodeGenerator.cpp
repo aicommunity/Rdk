@@ -15,6 +15,7 @@ MainWindow::MainWindow(QWidget *parent) :
     namespaceLineEdit = new QLineEdit;
     headerHighlighter = new MyHighlighter(ui->headerEdit->document());
     sourceHighlighter = new MyHighlighter(ui->sourceEdit->document());
+    currentClassName = new QString;
 
     libModel = new QStringListModel;
 
@@ -58,6 +59,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->classNameCBox, SIGNAL(currentTextChanged(QString)), SLOT(slotClassNameChanged()));
     connect(ui->baseNameCBox, SIGNAL(currentTextChanged(QString)), SLOT(slotBaseChanged()));
     connect(ui->dstPathCBox, SIGNAL(currentTextChanged(QString)), SLOT(slotDstChanged()));
+    connect(ui->namespaceCBox, SIGNAL(currentTextChanged(QString)), SLOT(slotNamespaceChanged()));
 
     connect(ui->tree, SIGNAL(clicked(QModelIndex)),ui->tree, SLOT(expand(QModelIndex)));
     connect(ui->libListView, SIGNAL(clicked(QModelIndex)), SLOT(slotLibChanged()));
@@ -78,6 +80,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->sUndoButton, SIGNAL(clicked()), ui->sourceEdit, SLOT(undo()));
     connect(ui->hSaveButton, SIGNAL(clicked()), SLOT(slotSaveHChanges()));
     connect(ui->sSaveButton, SIGNAL(clicked()), SLOT(slotSaveCPPChanges()));
+    connect(ui->addPropButton, SIGNAL(clicked()), SLOT(slotAddProperty()));
+    connect(ui->propertyCBox, SIGNAL(currentIndexChanged(int)), SLOT(slotPropertyTypeChanged()));
 }
 
 MainWindow::~MainWindow()
@@ -335,7 +339,7 @@ void MainWindow::slotaccept()
     writeSettingsToXML();
     writeHistoryToXML();
     AddToULib();
-
+    currentClassName->append(classNameLineEdit->text());
 
     //Creating H file
     QFile srcHfile(templatePaths.value(ui->templateCBox->currentIndex()) + "h");
@@ -809,4 +813,209 @@ void MainWindow::slotSaveCPPChanges()
         }
     QTextStream out(&dstfile);
     out<<ui->sourceEdit->toPlainText();
+}
+
+void MainWindow::slotAddProperty()
+{
+    QFile file(dstPathLineEdit->text()+"/"+ui->fileNameLineEdit->text()+".h");
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)){
+        QMessageBox::warning(0, QObject::tr("Wizard"),
+                             QObject::tr("Cannot open file %1:\n%2")
+                             .arg(file.fileName())
+                             .arg(file.errorString()));
+        return;
+    }
+
+    QTextStream inStream(&file);
+    QTextStream outStream(&file);
+    QByteArray tempArray;
+    QString propType,propState,propExtra,propDescrip,propLine;
+    bool checkParam=false, checkSet=false;
+    while(!inStream.atEnd())
+    {
+        QString line = inStream.readLine();
+        //tempArray.append(line);
+        if(line.contains("public:")&&line.contains("Parameters"))
+            checkParam = true;
+        if(checkParam&&line.contains("}"))
+        {
+            checkParam = false;
+            switch(ui->propertyCBox->currentIndex())
+            {
+            case 0: //Parameter
+                propType = "ULProperty"; break;
+            case 1: //Input
+                propType = "UPropertyInputData"; break;
+            case 2: //Output
+                propType = "UPropertyOutputData"; break;
+            case 3: //State parameter
+                propType = "ULProperty"; break;
+            default:
+                break;
+            }
+            if(ui->hasExtraCheckBox->isChecked())
+            {
+                switch(ui->propertyCBox->currentIndex())
+                {
+                case 0: //Parameter
+                    propExtra = ", ptPubParameter"; break;
+                case 1: //Input
+                    propExtra = ", ptPubInput"; break;
+                case 2: //Output
+                    propExtra = ", ptPubOutput"; break;
+                case 3: //State parameter
+                    propExtra = ", ptPubState"; break;
+                default:
+                    break;
+                }
+            }
+            if(ui->isStateCheckBox->isChecked())
+                propState = " | ptState";
+            if(!ui->descripLineEdit->text().isEmpty())
+                propDescrip = "/// "+ui->descripLineEdit->text();
+
+            propLine.append(propDescrip);
+            propLine.append("\n");
+            propLine.append(propType);
+            propLine.append("<");
+            propLine.append(ui->paramCBox->currentText());
+            propLine.append(", ");
+            propLine.append(currentClassName);
+            propLine.append(propExtra+propState);
+            propLine.append("> ");
+            propLine.append(ui->propNameCBox->currentText());
+            propLine.append(";");
+            tempArray.append('\n');
+            tempArray.append(propLine);
+        }
+
+        if(line.contains("public:")&&line.contains("Setters")&&ui->settersCheckBox->isChecked())
+            checkSet=true;
+        if(checkSet&&line.contains("}"))
+        {
+            checkSet=false;
+            propLine.clear();
+            propLine.append("bool Set");
+            propLine.append(ui->propNameCBox->currentText());
+            propLine.append("(const ");
+            propLine.append(propType);
+            propLine.append(" &value);");
+            tempArray.append('\n');
+            tempArray.append(propLine);
+        }
+        tempArray.append('\n');
+        tempArray.append(line);
+    }
+    file.close();
+
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)){
+        QMessageBox::warning(0, QObject::tr("Wizard"),
+                             QObject::tr("Cannot open file %1:\n%2")
+                             .arg(file.fileName())
+                             .arg(file.errorString()));
+        return;
+    }
+    outStream<<tempArray;
+    file.close();
+
+    QFile file2(dstPathLineEdit->text()+"/"+ui->fileNameLineEdit->text()+".cpp");
+    if (!file2.open(QIODevice::ReadOnly | QIODevice::Text)){
+        QMessageBox::warning(0, QObject::tr("Wizard"),
+                             QObject::tr("Cannot open file %1:\n%2")
+                             .arg(file2.fileName())
+                             .arg(file2.errorString()));
+        return;
+    }
+
+    QTextStream inStream2(&file2);
+    QTextStream outStream2(&file2);
+    QByteArray tempArray2;
+    bool checkConstr=false, checkCPPSet=false, hasColon=false;
+    QString prevLine;
+    while(!inStream2.atEnd())
+    {
+        bool needNext = true;
+        QString line2 = inStream2.readLine();
+        QString constrName;
+        constrName.append(currentClassName);
+        constrName.append("::");
+        constrName.append(currentClassName);
+        if(line2.contains(constrName))
+        {
+            checkConstr=true;
+        }
+        if(prevLine.contains(constrName)&&line2.contains(":"))
+            hasColon=true;
+        if(checkConstr&&line2.contains("{"))
+        {
+            checkConstr=false;
+            QString tempLine;
+            if(hasColon)
+            {
+                tempLine.append(",\n ");
+                needNext = false;
+            }
+            else
+            {
+                tempLine.append(": ");
+                hasColon=true;
+            }
+            tempLine.append(ui->propNameCBox->currentText());
+            tempLine.append("(\""+ui->propNameCBox->currentText()+"\",this");
+            if(ui->settersCheckBox->isChecked())
+            {
+                tempLine.append(",&");
+                tempLine.append(currentClassName);
+                tempLine.append("::Set"+ui->propNameCBox->currentText());
+            }
+            tempLine.append(")\n");
+            line2.prepend(tempLine);
+        }
+        if(line2.contains("//Setters"))
+            checkCPPSet=true;
+        if(checkCPPSet&&line2.contains("end"))
+        {
+            checkCPPSet=false;
+            QString tempLine;
+            tempLine.append("bool ");
+            tempLine.append(currentClassName);
+            tempLine.append("::Set"+ui->propNameCBox->currentText()+"(const ");
+            tempLine.append(propType+" &value)\n{\nreturn true;\n}\n");
+            line2.prepend(tempLine);
+        }
+        if(needNext)
+            tempArray2.append('\n');
+        tempArray2.append(line2);
+        prevLine = line2;
+    }
+    file2.close();
+
+    if (!file2.open(QIODevice::WriteOnly | QIODevice::Text)){
+        QMessageBox::warning(0, QObject::tr("Wizard"),
+                             QObject::tr("Cannot open file %1:\n%2")
+                             .arg(file2.fileName())
+                             .arg(file2.errorString()));
+        return;
+    }
+    outStream2<<tempArray2;
+    file2.close();
+
+    viewFiles();
+}
+
+void MainWindow::slotPropertyTypeChanged()
+{
+    switch(ui->propertyCBox->currentIndex())
+    {
+    case 0: //Parameter
+        ui->isStateCheckBox->setEnabled(false); break;
+    case 1: //Input
+        ui->isStateCheckBox->setEnabled(true); break;
+    case 2: //Output
+        ui->isStateCheckBox->setEnabled(true); break;
+    case 3: //State parameter
+        ui->isStateCheckBox->setEnabled(false); break;
+    default:
+        break;
+    }
 }

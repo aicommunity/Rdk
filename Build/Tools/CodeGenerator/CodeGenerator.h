@@ -37,6 +37,7 @@ private:
     QFileSystemModel *dstModel;
     QStringList libList;
     QString corePath;
+    QString *currentClassName;
 
     SettingsDialog *Settings;
 
@@ -58,6 +59,7 @@ private:
     void writeSettingsToXML();//test
     void writeHistoryToXML();
     void viewFiles();
+//    void addProperty();
 
 signals:
     void expand();
@@ -78,6 +80,8 @@ public slots:
     void slotSettingsChanged();
     void slotSaveHChanges();
     void slotSaveCPPChanges();
+    void slotAddProperty();
+    void slotPropertyTypeChanged();
 };
 
 #endif // CODEGENERATOR_H

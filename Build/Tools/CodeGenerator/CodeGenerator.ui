@@ -88,7 +88,7 @@
       </widget>
       <widget class="QTabWidget" name="tabWidget">
        <property name="currentIndex">
-        <number>0</number>
+        <number>2</number>
        </property>
        <property name="documentMode">
         <bool>false</bool>
@@ -160,6 +160,158 @@
             </widget>
            </item>
           </layout>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="tab_5">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="autoFillBackground">
+         <bool>false</bool>
+        </property>
+        <attribute name="title">
+         <string>Properties</string>
+        </attribute>
+        <layout class="QFormLayout" name="formLayout">
+         <property name="fieldGrowthPolicy">
+          <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+         </property>
+         <item row="1" column="0">
+          <widget class="QLabel" name="propertyLabel">
+           <property name="text">
+            <string>Property type:</string>
+           </property>
+           <property name="buddy">
+            <cstring>propertyCBox</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QComboBox" name="propertyCBox">
+           <item>
+            <property name="text">
+             <string>Parameter (ULProperty)</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Input (UPropertyInputData)</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Output (UPropertyOutputData)</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>State (ULProperty)</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="paramLabel">
+           <property name="text">
+            <string>Parameter type:</string>
+           </property>
+           <property name="buddy">
+            <cstring>paramCBox</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QComboBox" name="paramCBox">
+           <property name="editable">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="propNameLabel">
+           <property name="text">
+            <string>Property name:</string>
+           </property>
+           <property name="buddy">
+            <cstring>propNameCBox</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QComboBox" name="propNameCBox">
+           <property name="editable">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <widget class="QLabel" name="decripLabel">
+           <property name="text">
+            <string>Description:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="0" colspan="2">
+          <widget class="QCheckBox" name="hasExtraCheckBox">
+           <property name="text">
+            <string>Public property</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="0" colspan="2">
+          <widget class="QCheckBox" name="isStateCheckBox">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="text">
+            <string>Is state</string>
+           </property>
+          </widget>
+         </item>
+         <item row="8" column="0">
+          <widget class="QCheckBox" name="settersCheckBox">
+           <property name="text">
+            <string>Setters</string>
+           </property>
+          </widget>
+         </item>
+         <item row="9" column="0">
+          <widget class="QPushButton" name="addPropButton">
+           <property name="text">
+            <string>Add property</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1">
+          <widget class="QLineEdit" name="descripLineEdit"/>
+         </item>
+         <item row="0" column="0" colspan="2">
+          <widget class="QTableWidget" name="tableWidget">
+           <column>
+            <property name="text">
+             <string>Type</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Parameter</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Name</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Setter</string>
+            </property>
+           </column>
+          </widget>
          </item>
         </layout>
        </widget>
@@ -342,6 +494,46 @@
   <widget class="QStatusBar" name="statusBar"/>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <tabstops>
+  <tabstop>libListView</tabstop>
+  <tabstop>tree</tabstop>
+  <tabstop>expandButton</tabstop>
+  <tabstop>selectButton</tabstop>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>headerEdit</tabstop>
+  <tabstop>hUndoButton</tabstop>
+  <tabstop>hRedoButton</tabstop>
+  <tabstop>hSaveButton</tabstop>
+  <tabstop>sourceEdit</tabstop>
+  <tabstop>sUndoButton</tabstop>
+  <tabstop>sRedoButton</tabstop>
+  <tabstop>sSaveButton</tabstop>
+  <tabstop>propertyCBox</tabstop>
+  <tabstop>paramCBox</tabstop>
+  <tabstop>propNameCBox</tabstop>
+  <tabstop>descripLineEdit</tabstop>
+  <tabstop>hasExtraCheckBox</tabstop>
+  <tabstop>isStateCheckBox</tabstop>
+  <tabstop>settersCheckBox</tabstop>
+  <tabstop>addPropButton</tabstop>
+  <tabstop>templateCBox</tabstop>
+  <tabstop>classNameCBox</tabstop>
+  <tabstop>fileNameLineEdit</tabstop>
+  <tabstop>componentNameLineEdit</tabstop>
+  <tabstop>dstPathCBox</tabstop>
+  <tabstop>browseButton</tabstop>
+  <tabstop>baseNameCBox</tabstop>
+  <tabstop>baseFileNameLineEdit</tabstop>
+  <tabstop>namespaceCBox</tabstop>
+  <tabstop>copyrightNameLineEdit</tabstop>
+  <tabstop>copyrightYearLineEdit</tabstop>
+  <tabstop>copyrightEmailLineEdit</tabstop>
+  <tabstop>copyrightUrlLineEdit</tabstop>
+  <tabstop>copyrightProjectNameLineEdit</tabstop>
+  <tabstop>settingsButton</tabstop>
+  <tabstop>createButton</tabstop>
+  <tabstop>cancelButton</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
