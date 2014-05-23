@@ -479,7 +479,7 @@ bool UNet::CheckLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
  if(pitem->CheckLink(pconnector,item.Index, connector.Index))
   return true;
 
- return true;
+ return false;
 }
 
 bool UNet::CheckLink(const NameT &itemname, int item_index,
@@ -493,7 +493,7 @@ bool UNet::CheckLink(const NameT &itemname, int item_index,
  if(item->CheckLink(connector,item_index, connector_index))
   return true;
 
- return true;
+ return false;
 }
 
 bool UNet::CheckLink(const NameT &itemname,const NameT &connectorname)
@@ -506,7 +506,7 @@ bool UNet::CheckLink(const NameT &itemname,const NameT &connectorname)
  if(item->CheckLink(connector))
   return true;
 
- return true;
+ return false;
 }
 // ----------------------
 
