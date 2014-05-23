@@ -129,6 +129,10 @@ virtual bool BreakLink(const ULongId &item_id, int item_index, const ULongId &co
 virtual bool BreakLink(const NameT &itemname, int item_index,
 						const NameT &connectorname, int connector_index);
 
+// Разрывает все связи между выходом элемента сети, 'itemid'
+// и коннектором 'connectorid'
+virtual bool BreakLink(const NameT &itemname, const NameT &connectorname);
+
 // Разрывает все связи сети
 // исключая ее внутренние связи и обратные связи
 // brklevel - объект, относительно которого связи считаются внутренними

@@ -378,6 +378,28 @@ bool UNet::BreakLink(const NameT &itemname, int item_index,
  return true;
 }
 
+// Разрывает все связи между выходом элемента сети, 'itemid'
+// и коннектором 'connectorid'
+bool UNet::BreakLink(const NameT &itemname, const NameT &connectorname)
+{
+ UEPtr<UItem> item;
+ UEPtr<UConnector> connector;
+ if(itemname.size() == 0)
+  item=this;
+ else
+  item=dynamic_pointer_cast<UItem>(GetComponentL(itemname));
+
+ if(connectorname.size() == 0)
+  connector=this;
+ else
+  connector=dynamic_pointer_cast<UConnector>(GetComponentL(connectorname));
+
+ item->Disconnect(connector);
+
+ return true;
+}
+
+
 // Разрывает все связи сети
 // исключая ее внутренние связи и обратные связи
 // brklevel - объект, относительно которого связи считаются внутренними
