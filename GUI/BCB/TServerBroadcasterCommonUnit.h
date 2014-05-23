@@ -34,7 +34,7 @@ protected: // Параметры
 std::list<TServerMetadata> MetaList;
 
 /// Флаг разрешения отправки
-bool SendEnableFlag;
+RDK::UELockVar<bool> SendEnableFlag;
 
 public:
 HANDLE SendEnable;

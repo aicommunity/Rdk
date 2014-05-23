@@ -44,7 +44,7 @@ __fastcall TTcpResultBroadcasterThread::~TTcpResultBroadcasterThread(void)
 // --------------------------
 // ”правление потоком
 // --------------------------
-const std::string& TTcpResultBroadcasterThread::GetAddress(void) const
+std::string TTcpResultBroadcasterThread::GetAddress(void) const
 {
  return Address;
 }
@@ -77,7 +77,7 @@ void TTcpResultBroadcasterThread::Connect(void)
   return;
   try
   {
-   IdTCPClient->Host=Address.c_str();
+   IdTCPClient->Host=Address.Get().c_str();
    IdTCPClient->Port=Port;
    IdTCPClient->Connect();
   }
@@ -133,7 +133,7 @@ bool __fastcall TTcpResultBroadcasterThread::ASend(void)
    if(IdTCPClient->IOHandler)
    {
 	IdTCPClient->IOHandler->WriteDirect(Buf,Buf.Length,0);
-	Engine_LogMessage(RDK_EX_DEBUG, (std::string("Metadata sent to ")+Address+std::string(":")+RDK::sntoa(Port)+std::string(": ")+RDK::sntoa(Buf.Length)+std::string(" bytes")).c_str());
+	Engine_LogMessage(RDK_EX_DEBUG, (std::string("Metadata sent to ")+Address.Get()+std::string(":")+RDK::sntoa(Port)+std::string(": ")+RDK::sntoa(Buf.Length)+std::string(" bytes")).c_str());
    }
   }
   catch (EIdConnectTimeout &ex)

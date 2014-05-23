@@ -24,18 +24,18 @@ class TTcpResultBroadcasterThread: public TResultBroadcasterThread
 {
 protected: // Параметры
 /// Адрес принимающей стороны
-std::string Address;
+RDK::UELockVar<std::string> Address;
 
 /// Порт принимающей стороны
-int Port;
+RDK::UELockVar<int> Port;
 
 protected: // Данные
 // Управляющий фрейм
 TIdTcpResultBroadcasterFrame *Frame;
 
-bool ConnectionEstablishedFlag;
+RDK::UELockVar<bool> ConnectionEstablishedFlag;
 
-RDK::ULongTime LastSentTimeStamp;
+RDK::UELockVar<RDK::ULongTime> LastSentTimeStamp;
 
 TIdTCPClient *IdTCPClient;
 
@@ -53,7 +53,7 @@ virtual __fastcall ~TTcpResultBroadcasterThread(void);
 // Управление потоком
 // --------------------------
 virtual bool Init(const std::string &address, int port);
-virtual const std::string& GetAddress(void) const;
+virtual std::string GetAddress(void) const;
 virtual int GetPort(void) const;
 
 virtual void Connect(void);

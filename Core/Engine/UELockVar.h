@@ -46,6 +46,9 @@ UELockVar<T>& operator -- (int i);
 UELockVar<T>& operator ++ (void);
 UELockVar<T>& operator -- (void);
 
+bool operator == (const T &p) const;
+bool operator != (const T &p) const;
+
 //friend T operator + (const UELockVar<T> &p1, const T &p2);
 // --------------------------
 };
@@ -165,6 +168,26 @@ UELockVar<T>& UELockVar<T>::operator -- (void)
  Data--;
  return *this;
 }
+
+template<typename T>
+bool UELockVar<T>::operator == (const T &p) const
+{
+ UGenericMutexLocker Locker(Mutex);
+ if(Data == p)
+  return true;
+ return false;
+}
+
+template<typename T>
+bool UELockVar<T>::operator != (const T &p) const
+{
+ UGenericMutexLocker Locker(Mutex);
+ if(Data != p)
+  return true;
+ return false;
+}
+
+
 /*
 template<typename T>
 T operator + (const UELockVar<T> &p1, const T &p2)
