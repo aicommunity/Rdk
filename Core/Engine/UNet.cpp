@@ -487,13 +487,13 @@ bool UNet::CheckLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
  if(!CheckLongId(item.Id))
   pitem=this;
  else
-  pitem=dynamic_pointer_cast<UItem>(GetComponentL(item.Id));
+  pitem=dynamic_pointer_cast<UItem>(GetComponentL(item.Id,true));
 
  UEPtr<UConnector> pconnector=0;
  if(!CheckLongId(connector.Id))
   pconnector=this;
  else
-  pconnector=dynamic_pointer_cast<UConnector>(GetComponentL(connector.Id));
+  pconnector=dynamic_pointer_cast<UConnector>(GetComponentL(connector.Id,true));
 
  if(!pitem || !pconnector)
   return false;
@@ -507,8 +507,8 @@ bool UNet::CheckLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
 bool UNet::CheckLink(const NameT &itemname, int item_index,
 						const NameT &connectorname, int connector_index)
 {
- UEPtr<UItem> item=dynamic_pointer_cast<UItem>(GetComponentL(itemname));
- UEPtr<UConnector> connector=dynamic_pointer_cast<UConnector>(GetComponentL(connectorname));
+ UEPtr<UItem> item=dynamic_pointer_cast<UItem>(GetComponentL(itemname,true));
+ UEPtr<UConnector> connector=dynamic_pointer_cast<UConnector>(GetComponentL(connectorname,true));
  if(!item || !connector)
   return false;
 
@@ -520,8 +520,8 @@ bool UNet::CheckLink(const NameT &itemname, int item_index,
 
 bool UNet::CheckLink(const NameT &itemname,const NameT &connectorname)
 {
- UEPtr<UItem> item=dynamic_pointer_cast<UItem>(GetComponentL(itemname));
- UEPtr<UConnector> connector=dynamic_pointer_cast<UConnector>(GetComponentL(connectorname));
+ UEPtr<UItem> item=dynamic_pointer_cast<UItem>(GetComponentL(itemname,true));
+ UEPtr<UConnector> connector=dynamic_pointer_cast<UConnector>(GetComponentL(connectorname,true));
  if(!item || !connector)
   return false;
 

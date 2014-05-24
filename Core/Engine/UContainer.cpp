@@ -478,7 +478,7 @@ NameT& UContainer::GetLongName(const UEPtr<UContainer> &mainowner, NameT &buffer
 const NameT& UContainer::GetComponentName(const UId &id) const
 {
  for(std::map<NameT,UId>::const_iterator I=CompsLookupTable.begin(),
-                                 J=CompsLookupTable.end(); I!=J; ++I)
+								 J=CompsLookupTable.end(); I!=J; ++I)
  {
   if(I->second == id)
    return I->first;
@@ -487,11 +487,15 @@ const NameT& UContainer::GetComponentName(const UId &id) const
 }
 
 // Возвращает Id дочернего компонента по его имени
-const UId& UContainer::GetComponentId(const NameT &name) const
+const UId& UContainer::GetComponentId(const NameT &name, bool nothrow) const
 {
  std::map<NameT,UId>::const_iterator I=CompsLookupTable.find(name);
  if(I == CompsLookupTable.end())
+ {
+  if(nothrow)
+   return ForbiddenId;
   throw EComponentNameNotExist(name);
+ }
 
  return I->second;
 }
@@ -803,43 +807,49 @@ bool UContainer::CheckComponentType(UEPtr<UContainer> comp) const
 // Возвращает указатель на дочерний компонент, хранимый в этом
 // объекте по короткому Id 'id'
 // Если id == ForbiddenId то возвращает указатель на этот компонент
-UEPtr<UContainer> UContainer::GetComponent(const UId &id) const
+UEPtr<UContainer> UContainer::GetComponent(const UId &id, bool nothrow) const
 {
  if(id == ForbiddenId)
+ {
+  if(nothrow)
+   return 0;
   throw EComponentIdNotExist(id);
+ }
 
  UEPtr<UContainer>* comps=PComponents;
  for(int i=0;i<NumComponents;i++,comps++)
   if(id == (*comps)->Id)
    return *comps;
 
+ if(nothrow)
+  return 0;
  throw EComponentIdNotExist(id);
 }
 
 // Возвращает указатель на дочерний компонент, хранимый в этом
 // объекте по короткому имени 'name'
-UEPtr<UContainer> UContainer::GetComponent(const NameT &name) const
+UEPtr<UContainer> UContainer::GetComponent(const NameT &name, bool nothrow) const
 {
- return GetComponent(GetComponentId(name));
+ return GetComponent(GetComponentId(name,nothrow),nothrow);
 }
 
 // Возвращает указатель на дочерний компонент, хранимый в этом
 // объекте по ДЛИННОМУ Id 'id'.
 // Если id[0] == ForbiddenId или Id имеет нулевой размер,
 // то возвращает указатель на этот компонент
-UEPtr<UContainer> UContainer::GetComponentL(const ULongId &id) const
+UEPtr<UContainer> UContainer::GetComponentL(const ULongId &id, bool nothrow) const
 {
  UEPtr<UContainer> comp;
 
  if(id.GetSize() == 0)
   return 0;
 
- comp=GetComponent(id[0]);
+ comp=GetComponent(id[0],nothrow);
  for(int i=1;i<id.GetSize();i++)
   {
    if(!comp)
-    return 0;
-   comp=comp->GetComponent(id[i]);
+	return 0;
+   comp=comp->GetComponent(id[i],nothrow);
   }
  return comp;
 }
@@ -847,25 +857,25 @@ UEPtr<UContainer> UContainer::GetComponentL(const ULongId &id) const
 
 // Возвращает указатель на дочерний компонент, хранимый в этом
 // объекте по ДЛИННОМУ имени 'name'
-UEPtr<UContainer> UContainer::GetComponentL(const NameT &name) const
+UEPtr<UContainer> UContainer::GetComponentL(const NameT &name, bool nothrow) const
 {
  UEPtr<UContainer> comp;
  NameT::size_type pi,pj;
 
  pi=name.find_first_of('.');
  if(pi == NameT::npos)
-  return GetComponent(name);
+  return GetComponent(name,nothrow);
 
- comp=GetComponent(name.substr(0,pi));
+ comp=GetComponent(name.substr(0,pi),nothrow);
  while(pi != name.size())
   {
    if(!comp)
-    return 0;
+	return 0;
    pj=pi+1;
    pi=name.find_first_of('.',pj);
    if(pi == NameT::npos)
-    pi=name.size();
-   comp=comp->GetComponent(name.substr(pj,pi-pj));
+	pi=name.size();
+   comp=comp->GetComponent(name.substr(pj,pi-pj),nothrow);
   }
  return comp;
 }

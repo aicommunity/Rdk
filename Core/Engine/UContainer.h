@@ -328,7 +328,7 @@ public:
 const NameT& GetComponentName(const UId &id) const;
 
 // Возвращает Id дочернего компонента по его имени
-const UId& GetComponentId(const NameT &name) const;
+const UId& GetComponentId(const NameT &name, bool nothrow=false) const;
 
 // Возвращает имя локального указателя по его Id
 const NameT& GetPointerName(const UId &id) const;
@@ -404,21 +404,22 @@ virtual bool CheckComponentType(UEPtr<UContainer> comp) const;
 // Возвращает указатель на дочерний компонент, хранимый в этом
 // объекте по короткому Id 'id'
 // Если id == ForbiddenId то возвращает указатель на этот компонент
-virtual UEPtr<UContainer> GetComponent(const UId &id) const;
+// Если nothrow == true то возвращает 0 и не кидает исключение
+virtual UEPtr<UContainer> GetComponent(const UId &id, bool nothrow=false) const;
 
 // Возвращает указатель на дочерний компонент, хранимый в этом
 // объекте по короткому имени 'name'
-virtual UEPtr<UContainer> GetComponent(const NameT &name) const;
+virtual UEPtr<UContainer> GetComponent(const NameT &name, bool nothrow=false) const;
 
 // Возвращает указатель на дочерний компонент, хранимый в этом
 // объекте по ДЛИННОМУ Id 'id'
 // Если id[0] == ForbiddenId или Id имеет нулевой размер,
 // то возвращает указатель на этот компонент
-UEPtr<UContainer> GetComponentL(const ULongId &id) const;
+UEPtr<UContainer> GetComponentL(const ULongId &id, bool nothrow=false) const;
 
 // Возвращает указатель на дочерний компонент, хранимый в этом
 // объекте по ДЛИННОМУ имени 'name'
-virtual UEPtr<UContainer> GetComponentL(const NameT &name) const;
+virtual UEPtr<UContainer> GetComponentL(const NameT &name, bool nothrow=false) const;
 
 // Возвращает указатель на дочерний компонент, хранимый в этом
 // объекте по порядковому индеку в списке компонент

@@ -1493,7 +1493,10 @@ void __fastcall TUWatchFrame::AddWatch1Click(TObject *Sender)
  if(UComponentsListForm->ShowIOSelect() != mrOk)
   return;
 
- Add(0, "",UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName(),0,0,UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput(),0,0,0);
+ std::string comp_name=UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName();
+ std::string comp_output=UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput();
+
+ Add(0, "",comp_name,0,0,RDK::atoi(comp_output),0,0,0);
 }
 //---------------------------------------------------------------------------
 
@@ -1503,7 +1506,10 @@ void __fastcall TUWatchFrame::AddXPulseWatch1Click(TObject *Sender)
  if(UComponentsListForm->ShowIOSelect() != mrOk)
   return;
 
- Add(0x100, UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName(),"",UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput(),0,0,0,0,0);
+ std::string comp_name=UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName();
+ std::string comp_output=UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput();
+
+ Add(0x100, comp_name,"",RDK::atoi(comp_output),0,0,0,0,0);
 }
 //---------------------------------------------------------------------------
 
