@@ -494,7 +494,7 @@ bool UConnector::ConnectToItem(UEPtr<UItem> na, int i_index, int &c_index)
  return AConnectToItem(na, i_index, c_index);
 }
 
-// Разрывает связь с элементом сети 'na'
+/// Разрывает все связи с элементом сети 'na'
 void UConnector::DisconnectFromItem(UEPtr<UItem> na)
 {
  if(!na)
@@ -507,6 +507,42 @@ void UConnector::DisconnectFromItem(UEPtr<UItem> na)
    DisconnectFromIndex(i);
   }
  }
+}
+
+/// Разрывает связь с элементом сети 'na', подключенную от i_index
+void UConnector::DisconnectFromItem(UEPtr<UItem> na, int i_index)
+{
+ if(!na)
+  return;
+
+ if(i_index<0 || i_index>=na->GetNumOutputs())
+  return;
+
+ for(int i=0;i<CItemList.GetSize();i++)
+ {
+  if(CItemList[i].Item == na && CItemList[i].Index == i_index)
+  {
+   DisconnectFromIndex(i);
+  }
+ }
+}
+
+/// Разрывает связь с элементом сети 'na', подключенную от i_index к c_index
+void UConnector::DisconnectFromItem(UEPtr<UItem> na, int i_index, int c_index)
+{
+ if(!na)
+  return;
+
+ if(i_index<0 || i_index>=na->GetNumOutputs())
+  return;
+
+ if(c_index<0 || c_index>=CItemList.GetSize())
+  return;
+
+  if(CItemList[c_index].Item == na && CItemList[c_index].Index == i_index)
+  {
+   DisconnectFromIndex(c_index);
+  }
 }
 
 // Разрывает связь с элементом сети подключенным ко входу 'index'

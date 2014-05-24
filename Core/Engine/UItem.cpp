@@ -490,7 +490,7 @@ bool UItem::Connect(UEPtr<UConnector> c, int i_index, int c_index)
  return true;
 }
 
-// Разрывает связь выхода этого объекта с коннектором 'c'.
+/// Разрывает все связи выхода этого объекта с коннектором 'c'.
 void UItem::Disconnect(UEPtr<UConnector> c)
 {
  Build();
@@ -504,12 +504,6 @@ void UItem::Disconnect(UEPtr<UConnector> c)
   while(index>=0)
   {
    AssociatedConnectors[i].Del(index);
-//   NumAConnectors[i]=AssociatedConnectors[i].GetSize();
-/*   if(NumAConnectors[i]>0)
-	PAssociatedConnectors[i]=&AssociatedConnectors[i][0];
-   else
-	PAssociatedConnectors[i]=0;
-  */
    index=AssociatedConnectors[i].Find(c,index);
   }
  }
@@ -520,42 +514,26 @@ void UItem::Disconnect(UEPtr<UConnector> c, int i_index, int c_index)
 {
  Build();
 
- if(c)
-  c->DisconnectFromItem(this);
-
-// for(int i=0;i<AssociatedConnectors.GetSize();i++)
- int i=i_index;
- if(i<AssociatedConnectors.GetSize())
+ if(i_index<AssociatedConnectors.GetSize())
  {
-  int index=AssociatedConnectors[i].Find(c);
-  while(index>=0)
+  for(int j=0;j<AssociatedConnectors[i_index].GetSize();j++)
   {
-   AssociatedConnectors[i].Del(index);
-//   NumAConnectors[i]=AssociatedConnectors[i].GetSize();
-/*   if(NumAConnectors[i]>0)
-	PAssociatedConnectors[i]=&AssociatedConnectors[i][0];
-   else
-	PAssociatedConnectors[i]=0;
-  */
-   index=AssociatedConnectors[i].Find(c,index);
+   if(AssociatedConnectors[i_index][j] == c)
+   {
+	if(c)
+	{
+	 UCItem citem=c->GetCItem(c_index);
+	 if(citem.Index == i_index && citem.Item == this)
+	 {
+	  AssociatedConnectors[i_index].Del(j);
+	  c->DisconnectFromItem(this, i_index, j);
+	  break;
+	 }
+	}
+   }
   }
  }
 
-/*
- Build();
-
-// for(int i=0;i<AssociatedConnectors.GetSize();i++)
-// {
-  if(i_index<AssociatedConnectors.GetSize() && c_index < AssociatedConnectors[i_index].GetSize())
-  {
-   if(c)
-    c->DisconnectFromIndex(c_index);
-
-   AssociatedConnectors[i_index].Del(c_index);
-  }
-// }
-
-*/
 }
 // ----------------------
 
@@ -671,12 +649,7 @@ bool UItem::CheckLink(const UEPtr<UConnector> &connector) const
  UCLink link=connector->GetCLink(this);
  if(link.Output>=0 && link.Input >=0)
   return true;
-/*
- for(int i=0;i<AssociatedConnectors.GetSize();i++)
-  for(int j=0;j<AssociatedConnectors[i].GetSize();j++)
-   if(AssociatedConnectors[i][j] == connector)
-	return true;
-  */
+
  return false;
 }
 
@@ -689,22 +662,6 @@ bool UItem::CheckLink(const UEPtr<UConnector> &connector, int item_index) const
   if(link.Output == item_index || item_index <0)
    return true;
  }
-
-/*
- if(item_index>= AssociatedConnectors.GetSize())
-  return false;
-
- if(item_index >=0)
- {
-  for(int j=0;j<AssociatedConnectors[item_index].GetSize();j++)
-   if(AssociatedConnectors[item_index][i] == connector)
-	 return true;
- }
- else
- {
-  return CheckLink(connector);
- }
-  */
  return false;
 }
 
@@ -717,39 +674,6 @@ bool UItem::CheckLink(const UEPtr<UConnector> &connector, int item_index, int co
   if(link.Input == conn_index || conn_index<0)
    return true;
  }
-/*
- if(item_index>= AssociatedConnectors.GetSize())
-  return false;
-
- if(item_index >=0)
- {
-  for(int j=0;j<AssociatedConnectors[item_index].GetSize();j++)
-   if(AssociatedConnectors[item_index][i] == connector)
-   {
-	if(conn_index <0)
-	 return true;
-
-	UCLink link=connector->GetCLink(this);
-	if(conn_index == link.Input)
-	 return true;
-   }
- }
- else
- {
-  for(int i=0;i<AssociatedConnectors.GetSize();i++)
-   for(int j=0;j<AssociatedConnectors[i].GetSize();j++)
-	if(AssociatedConnectors[i][j] == connector)
-	{
-	 if(conn_index <0)
-	  return true;
-
-	 UCLink link=connector->GetCLink(this);
-	 if(conn_index == link.Input)
-	  return true;
-	}
-
- }
-	*/
  return false;
 }
 

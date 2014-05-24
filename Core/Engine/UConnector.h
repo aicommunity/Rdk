@@ -223,8 +223,14 @@ protected:
 // При успешном подключении c_index содержит реальный индекс подключенного входа
 virtual bool ConnectToItem(UEPtr<UItem> na, int i_index, int &c_index);
 
-// Разрывает связь с элементом сети 'na'
+// Разрывает все связи с элементом сети 'na'
 virtual void DisconnectFromItem(UEPtr<UItem> na);
+
+/// Разрывает связь с элементом сети 'na', подключенную от i_index
+virtual void DisconnectFromItem(UEPtr<UItem> na, int i_index);
+
+/// Разрывает связь с элементом сети 'na', подключенную от i_index к c_index
+virtual void DisconnectFromItem(UEPtr<UItem> na, int i_index, int c_index);
 
 // Выполняет действия после физически установленой связи
 virtual bool AConnectToItem(UEPtr<UItem> na, int i_index, int c_index);

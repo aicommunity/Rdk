@@ -230,7 +230,7 @@ public:
 // Устанавливает связь с коннектором 'c'
 virtual bool Connect(UEPtr<UConnector> c, int i_index, int c_index=-1);
 
-// Разрывает связь выхода этого объекта с коннектором 'c'
+/// Разрывает все связи выхода этого объекта с коннектором 'c'.
 virtual void Disconnect(UEPtr<UConnector> c);
 
 // Разрывает связь выхода этого объекта с коннектором 'c' по индексу
