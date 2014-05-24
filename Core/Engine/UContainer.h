@@ -568,7 +568,7 @@ virtual bool Default(void);
 
 /// Метод сброса параметров на значения по умолчанию
 /// Если subcomps == true то также сбрасывает параметры всех дочерних компонент
-virtual bool Default(RDK::UContainer* cont, bool subcomps);
+virtual bool DefaultAll(UContainer* cont, bool subcomps);
 
 // Обеспечивает сборку внутренней структуры объекта
 // после настройки параметров

@@ -1509,7 +1509,10 @@ void __fastcall TUWatchFrame::AddXPulseWatch1Click(TObject *Sender)
  std::string comp_name=UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName();
  std::string comp_output=UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput();
 
- Add(0x100, comp_name,"",RDK::atoi(comp_output),0,0,0,0,0);
+ int num_watches=GetNumWatches();
+ int yshift=num_watches+1;
+
+ Add(0x100, comp_name,"",RDK::atoi(comp_output),0,0,0,0,0,yshift);
 }
 //---------------------------------------------------------------------------
 

@@ -1293,7 +1293,7 @@ int UEngine::Env_Default(const char* stringid, bool subcomps)
    destcont=FindComponent(stringid);
   }
 
-  if(!destcont->Default(destcont,subcomps))
+  if(!destcont->DefaultAll(destcont,subcomps))
    throw EFunctionReturnFalse(__FILE__,__FUNCTION__,__LINE__);
  }
  catch (RDK::UException &exception)

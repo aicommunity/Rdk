@@ -62,42 +62,70 @@ object UComponentsListForm: TUComponentsListForm
     TabOrder = 1
     ExplicitLeft = -73
     ExplicitTop = -147
+    ExplicitWidth = 682
+    ExplicitHeight = 379
     inherited Splitter1: TSplitter
       Height = 379
+      ExplicitHeight = 379
     end
     inherited Panel1: TPanel
       Width = 313
       Height = 379
+      ExplicitWidth = 313
+      ExplicitHeight = 379
       inherited PageControl1: TPageControl
         Width = 311
         Height = 377
-        inherited TabSheet7: TTabSheet
-          inherited Splitter6: TSplitter
+        ExplicitWidth = 311
+        ExplicitHeight = 377
+        inherited TabSheet6: TTabSheet
+          inherited Splitter5: TSplitter
             Top = 274
             Width = 303
           end
-          inherited HeaderControl4: THeaderControl
+          inherited EnchancedSG1: TEnchancedSG
+            Width = 303
+            Height = 274
+          end
+          inherited HeaderControl2: THeaderControl
             Top = 317
             Width = 303
           end
-          inherited NiceStateValRichEdit: TRichEdit
+          inherited NiceParamValRichEdit: TRichEdit
             Top = 284
             Width = 303
           end
+        end
+        inherited TabSheet7: TTabSheet
+          inherited Splitter6: TSplitter
+            ExplicitTop = 274
+            ExplicitWidth = 303
+          end
+          inherited HeaderControl4: THeaderControl
+            ExplicitTop = 317
+            ExplicitWidth = 303
+          end
+          inherited NiceStateValRichEdit: TRichEdit
+            ExplicitTop = 284
+            ExplicitWidth = 303
+          end
           inherited EnchancedSG2: TEnchancedSG
-            Width = 303
-            Height = 274
+            ExplicitWidth = 303
+            ExplicitHeight = 274
           end
         end
       end
     end
     inherited Panel2: TPanel
       Height = 379
+      ExplicitHeight = 379
       inherited StringGrid: TStringGrid
         Height = 321
+        ExplicitHeight = 321
       end
       inherited ClassNamePanel: TPanel
         Top = 356
+        ExplicitTop = 356
       end
     end
   end

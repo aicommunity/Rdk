@@ -1514,7 +1514,7 @@ bool UContainer::Default(void)
 
 /// Метод сброса параметров на значения по умолчанию
 /// Если subcomps == true то также сбрасывает параметры всех дочерних компонент
-bool UContainer::Default(RDK::UContainer* cont, bool subcomps)
+bool UContainer::DefaultAll(UContainer* cont, bool subcomps)
 {
  if(!cont)
   return false;
@@ -1526,7 +1526,7 @@ bool UContainer::Default(RDK::UContainer* cont, bool subcomps)
  if(subcomps)
  {
   for(int i=0;i<cont->GetNumComponents();i++)
-   res &= Default(cont->GetComponentByIndex(i),subcomps);
+   res &= DefaultAll(cont->GetComponentByIndex(i),subcomps);
  }
  return res;
 }
