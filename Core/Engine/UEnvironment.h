@@ -36,7 +36,7 @@ std::string CurrentDataDir;
 std::string SystemDir;
 
 /// Минимальный интервал времени между итерациями счета (мс)
-long long MinInterstepsInterval;
+ULongTime MinInterstepsInterval;
 
 /// Флаг включения режима отладки
 bool DebugMode;

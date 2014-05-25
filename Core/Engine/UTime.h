@@ -84,11 +84,11 @@ bool SetSourceCurrentGlobalTime(double value);
 
 /// Текущее время в днях
 double GetSourceStartLocalTime(void) const;
-double SetSourceStartLocalTime(double value);
+bool SetSourceStartLocalTime(double value);
 
 /// Текущее время в секундах
 double GetSourceCurrentLocalTime(void) const;
-double SetSourceCurrentLocalTime(double value);
+bool SetSourceCurrentLocalTime(double value);
 
 /// Текущее время в миллисекундах
 ULongTime GetSourceCurrentLocalTimeMs(void) const;

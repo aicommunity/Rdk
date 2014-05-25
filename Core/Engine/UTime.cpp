@@ -81,7 +81,7 @@ double UTimeControl::GetSourceStartLocalTime(void) const
  return SourceStartLocalTime;
 }
 
-double UTimeControl::SetSourceStartLocalTime(double value)
+bool UTimeControl::SetSourceStartLocalTime(double value)
 {
  SourceStartLocalTime=value;
  return true;
@@ -93,16 +93,16 @@ double UTimeControl::GetSourceCurrentLocalTime(void) const
  return SourceCurrentLocalTime;
 }
 
-double UTimeControl::SetSourceCurrentLocalTime(double value)
+bool UTimeControl::SetSourceCurrentLocalTime(double value)
 {
  SourceCurrentLocalTime=value;
- return SetRealTime((SourceCurrentLocalTime-SourceStartLocalTime)*1000000.0);
+ return SetRealTime(ULongTime((SourceCurrentLocalTime-SourceStartLocalTime)*1000000.0));
 }
 
 /// Текущее время в миллисекундах
 ULongTime UTimeControl::GetSourceCurrentLocalTimeMs(void) const
 {
- return SourceCurrentLocalTime*1000;
+ return ULongTime(SourceCurrentLocalTime*1000);
 }
 // --------------------------
 
