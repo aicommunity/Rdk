@@ -199,7 +199,7 @@ const UParamT& UTransferPacket::IntDivide(unsigned int value, UParamT &buffer, i
 // 0 - если декодирование возможно
 int UTransferPacket::CheckBuffer(const UParamT &buffer, int buffersize)
 {
- if(buffersize < sizeof(UPacketPrefix)+sizeof(int)*2)
+ if(buffersize < int(sizeof(UPacketPrefix)+sizeof(int)*2))
   return sizeof(UPacketPrefix)+sizeof(int)*2-buffersize;
 
  if(memcmp(UPacketPrefix,&buffer[0],sizeof(UPacketPrefix)))
@@ -213,7 +213,7 @@ int UTransferPacket::CheckBuffer(const UParamT &buffer, int buffersize)
 
 int UTransferPacket::CheckBuffer(const UParamT &buffer, int buffersize, int start_index)
 {
- if((buffersize-start_index) < sizeof(UPacketPrefix)+sizeof(int)*2)
+ if((buffersize-start_index) < int(sizeof(UPacketPrefix)+sizeof(int)*2))
   return sizeof(UPacketPrefix)+sizeof(int)*2-(buffersize-start_index);
 
  if(memcmp(UPacketPrefix,&buffer[start_index],sizeof(UPacketPrefix)))
@@ -232,7 +232,7 @@ int UTransferPacket::FindPacketInBuffer(const UParamT &buffer, int start_index)
  if(start_index<0 || start_index>=int(buffer.size()))
   return -1;
 
- if(int(buffer.size())-start_index<sizeof(UPacketPrefix))
+ if(int(buffer.size())-start_index<int(sizeof(UPacketPrefix)))
   return -1;
 
  for(size_t i=start_index;i<buffer.size()-sizeof(UPacketPrefix);i++)
@@ -251,7 +251,7 @@ bool UTransferPacket::Load(const UParamT &buffer, int start_index)
 
 // if(buffer.size() < sizeof(UPacketPrefix)+sizeof(int)*4)
 //  return false;
- if(int(buffer.size())-start_index < sizeof(UPacketPrefix)+sizeof(int)*2)
+ if(int(buffer.size())-start_index < int(sizeof(UPacketPrefix)+sizeof(int)*2))
   return false;
 
 
@@ -327,10 +327,6 @@ int UTransferPacket::GetPacketSize(void) const
 {
  int size=0;
  
- int psize=0;
- 
- psize=Params.size();
-
  for(size_t i=0;i<Params.size();i++)
   size+=Params[i].size();
 
@@ -609,16 +605,11 @@ int UTransferReader::ProcessDataPart2(const UParamT &buffer)
 	}
 	else
 	{
-	 int readid=0;
-
 	 USerStorageXML xml;
 	 std::string PacketXml;
 	 PacketXml.resize(Packet.GetParamSize(0));
 	 memcpy(&PacketXml[0],&(Packet.operator ()((0),0)), Packet.GetParamSize(0));
      xml.Load(PacketXml, "RpcResponse");
-
-     readid=xml.ReadInteger("Id", 0);
-
 
 	 PacketList.push_back(Packet);
 	 LastSize=0;
