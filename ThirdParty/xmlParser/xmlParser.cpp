@@ -599,7 +599,7 @@ XMLError XMLNode::writeToFile(XMLCSTR filename, const char *encoding, char nForm
     if (!f) return eXMLErrorCannotOpenWriteFile;
 #ifdef _XMLWIDECHAR
     unsigned char h[2]={ 0xFF, 0xFE };
-    if (!fwrite(h,2,1,f)) 
+    if (!fwrite(h,2,1,f))
     {
     	fclose(f);
     	return eXMLErrorCannotWriteFile;
@@ -618,8 +618,8 @@ XMLError XMLNode::writeToFile(XMLCSTR filename, const char *encoding, char nForm
         if (characterEncoding==char_encoding_UTF8)
         {
             // header so that windows recognize the file as UTF-8:
-            unsigned char h[3]={0xEF,0xBB,0xBF}; 
-            if (!fwrite(h,3,1,f)) 
+            unsigned char h[3]={0xEF,0xBB,0xBF};
+            if (!fwrite(h,3,1,f))
             {
             	fclose(f);
                 return eXMLErrorCannotWriteFile;
@@ -628,7 +628,7 @@ XMLError XMLNode::writeToFile(XMLCSTR filename, const char *encoding, char nForm
         } else if (characterEncoding==char_encoding_ShiftJIS) encoding="SHIFT-JIS";
 
         if (!encoding) encoding="ISO-8859-1";
-        if (fprintf(f,"<?xml version=\"1.0\" encoding=\"%s\"?>\n",encoding)<0) 
+        if (fprintf(f,"<?xml version=\"1.0\" encoding=\"%s\"?>\n",encoding)<0)
         {
         	fclose(f);
             return eXMLErrorCannotWriteFile;
@@ -637,8 +637,8 @@ XMLError XMLNode::writeToFile(XMLCSTR filename, const char *encoding, char nForm
     {
         if (characterEncoding==char_encoding_UTF8)
         {
-            unsigned char h[3]={0xEF,0xBB,0xBF}; 
-            if (!fwrite(h,3,1,f)) 
+            unsigned char h[3]={0xEF,0xBB,0xBF};
+            if (!fwrite(h,3,1,f))
             {
             	fclose(f);
                 return eXMLErrorCannotWriteFile;
@@ -648,13 +648,13 @@ XMLError XMLNode::writeToFile(XMLCSTR filename, const char *encoding, char nForm
 #endif
     int i;
     XMLSTR t=createXMLString(nFormat,&i);
-    if (!fwrite(t,sizeof(XMLCHAR)*i,1,f)) 
+    if (!fwrite(t,sizeof(XMLCHAR)*i,1,f))
     {
        free(t);
        fclose(f);
        return eXMLErrorCannotWriteFile;
     }
-    if (fclose(f)!=0) 
+    if (fclose(f)!=0)
     {
    	    free(t);
         return eXMLErrorCannotWriteFile;
@@ -1837,7 +1837,10 @@ XMLNode XMLNode::parseFile(XMLCSTR filename, XMLCSTR tag, XMLResults *pResults)
     l=(int)fread(buf,1,l,f);
     fclose(f);
     buf[l]=0;buf[l+1]=0;buf[l+2]=0;buf[l+3]=0;
-#ifdef _XMLWIDECHAR
+
+#ifdef _XMLWINDOWS
+
+  #ifdef _XMLWIDECHAR
     if (guessWideCharChars)
     {
         if (!myIsTextWideChar(buf,l))
@@ -1880,6 +1883,55 @@ XMLNode XMLNode::parseFile(XMLCSTR filename, XMLCSTR tag, XMLResults *pResults)
         if ((buf[0]==0xff)&&(buf[1]==0xfe)) headerSz=2;
         if ((buf[0]==0xef)&&(buf[1]==0xbb)&&(buf[2]==0xbf)) headerSz=3;
     }
+#endif
+
+#else // gcc
+
+  #ifdef _XMLWIDECHAR
+    if (guessWideCharChars)
+    {
+        if (!myIsTextWideChar(buf,l))
+        {
+            XMLNode::XMLCharEncoding ce=XMLNode::char_encoding_legacy;
+            if ((buf[0]==0xef)&&(buf[1]==0xbb)&&(buf[2]==0xbf)) { headerSz=3; ce=XMLNode::char_encoding_UTF8; }
+            XMLSTR b2=myMultiByteToWideChar((const char*)(buf+headerSz),ce);
+            if (!b2)
+            {
+            	// todo: unable to convert
+            }
+            free(buf); buf=(unsigned char*)b2; headerSz=0;
+        } else
+        {
+            if ((buf[0]==0xef)&&(buf[1]==0xff)) headerSz=2;
+            if ((buf[0]==0xff)&&(buf[1]==0xfe)) headerSz=2;
+        }
+    } else
+    {
+        if ((buf[0]==0xef)&&(buf[1]==0xff)) headerSz=2;
+        if ((buf[0]==0xff)&&(buf[1]==0xfe)) headerSz=2;
+        if ((buf[0]==0xef)&&(buf[1]==0xbb)&&(buf[2]==0xbf)) headerSz=3;
+    }
+#else
+    if (guessWideCharChars)
+    {
+        if (myIsTextWideChar(buf,l))
+        {
+            if ((buf[0]==0xef)&&(buf[1]==0xff)) headerSz=2;
+            if ((buf[0]==0xff)&&(buf[1]==0xfe)) headerSz=2;
+            char *b2=myWideCharToMultiByte((const wchar_t*)(buf+headerSz));
+            free(buf); buf=(unsigned char*)b2; headerSz=0;
+        } else
+        {
+            if ((buf[0]==0xef)&&(buf[1]==0xbb)&&(buf[2]==0xbf)) headerSz=3;
+        }
+    } else
+    {
+        if ((buf[0]==0xef)&&(buf[1]==0xff)) headerSz=2;
+        if ((buf[0]==0xff)&&(buf[1]==0xfe)) headerSz=2;
+        if ((buf[0]==0xef)&&(buf[1]==0xbb)&&(buf[2]==0xbf)) headerSz=3;
+    }
+#endif
+
 #endif
 
     if (!buf) { if (pResults) pResults->error=eXMLErrorCharConversionError; return emptyXMLNode; }

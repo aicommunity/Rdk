@@ -14,7 +14,7 @@ public:
 UGenericMutexGcc();
 virtual ~UGenericMutexGcc();
 
-virtual bool lock();
+virtual bool lock(int lock_id=-1);
 virtual bool unlock();
 virtual bool wait(int timeout);
 };
@@ -30,7 +30,7 @@ UGenericMutexGcc::~UGenericMutexGcc()
  //CloseHandle(m_UnlockEvent);
 }
 
-bool UGenericMutexGcc::lock()
+bool UGenericMutexGcc::lock(int lock_id)
 {
  /*if (WaitForSingleObject(m_UnlockEvent, INFINITE) == WAIT_TIMEOUT)
   return false;
