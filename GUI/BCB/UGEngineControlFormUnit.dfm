@@ -26,8 +26,6 @@ object UGEngineControlForm: TUGEngineControlForm
     Height = 453
     Align = alClient
     TabOrder = 0
-    ExplicitWidth = 731
-    ExplicitHeight = 441
     object Splitter2: TSplitter
       Left = 250
       Top = 1
@@ -118,7 +116,7 @@ object UGEngineControlForm: TUGEngineControlForm
               inherited HeaderControl2: THeaderControl
                 Top = 1
                 Width = 237
-                ExplicitTop = -11
+                ExplicitTop = 1
                 ExplicitWidth = 237
               end
               inherited NiceParamValRichEdit: TRichEdit
@@ -198,8 +196,6 @@ object UGEngineControlForm: TUGEngineControlForm
       Height = 153
       Align = alBottom
       TabOrder = 1
-      ExplicitTop = 287
-      ExplicitWidth = 729
       object PageControl2: TPageControl
         Left = 1
         Top = 1
@@ -210,13 +206,8 @@ object UGEngineControlForm: TUGEngineControlForm
         MultiLine = True
         TabOrder = 0
         TabPosition = tpRight
-        ExplicitWidth = 727
         object LogsTabSheet: TTabSheet
           Caption = 'Logs'
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 699
-          ExplicitHeight = 0
         end
         object TabSheet2: TTabSheet
           Caption = 'Performance'
@@ -239,7 +230,7 @@ object UGEngineControlForm: TUGEngineControlForm
             inherited Chart: TChart
               Width = 578
               Height = 143
-              ExplicitWidth = 560
+              ExplicitWidth = 578
               ExplicitHeight = 143
               inherited Series1: TBarSeries
                 Data = {
@@ -253,7 +244,7 @@ object UGEngineControlForm: TUGEngineControlForm
               Width = 139
               Height = 143
               Align = alRight
-              ExplicitLeft = 560
+              ExplicitLeft = 578
               ExplicitTop = 0
               ExplicitWidth = 139
               ExplicitHeight = 143
@@ -291,8 +282,6 @@ object UGEngineControlForm: TUGEngineControlForm
       PopupMenu = PageControlPopupMenu
       TabOrder = 2
       OnChange = PageControl1Change
-      ExplicitWidth = 473
-      ExplicitHeight = 278
       object Draw: TTabSheet
         Caption = 'Draw'
         OnShow = DrawShow
@@ -356,13 +345,13 @@ object UGEngineControlForm: TUGEngineControlForm
           inherited Panel2: TPanel
             Width = 243
             Height = 213
-            ExplicitWidth = 225
-            ExplicitHeight = 201
+            ExplicitWidth = 243
+            ExplicitHeight = 213
             inherited ScrollBox: TScrollBox
               Width = 241
               Height = 211
-              ExplicitWidth = 223
-              ExplicitHeight = 199
+              ExplicitWidth = 241
+              ExplicitHeight = 211
             end
           end
           inherited Panel3: TPanel
@@ -372,11 +361,11 @@ object UGEngineControlForm: TUGEngineControlForm
             ExplicitWidth = 483
             inherited ApplyButton: TButton
               Left = 317
-              ExplicitLeft = 299
+              ExplicitLeft = 317
             end
             inherited RestoreButton: TButton
               Left = 398
-              ExplicitLeft = 380
+              ExplicitLeft = 398
             end
           end
           inherited PopupMenu: TPopupMenu
@@ -395,8 +384,6 @@ object UGEngineControlForm: TUGEngineControlForm
     Height = 19
     Panels = <>
     SimplePanel = True
-    ExplicitTop = 485
-    ExplicitWidth = 775
   end
   object ChannelsStringGrid: TStringGrid
     Left = 0
@@ -415,7 +402,6 @@ object UGEngineControlForm: TUGEngineControlForm
     Visible = False
     OnClick = ChannelsStringGridClick
     OnSelectCell = ChannelsStringGridSelectCell
-    ExplicitHeight = 441
   end
   object ToolBar: TToolBar
     Left = 0
@@ -431,7 +417,6 @@ object UGEngineControlForm: TUGEngineControlForm
     ParentColor = False
     ShowCaptions = True
     TabOrder = 3
-    ExplicitWidth = 775
     object ToolButton17: TToolButton
       Left = 0
       Top = 0
@@ -729,7 +714,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 360
     Top = 65528
     Bitmap = {
-      494C01011B006000880210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B0060008C0210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

@@ -1898,6 +1898,7 @@ void __fastcall TUGEngineControlForm::WatchWindow1Click(TObject *Sender)
  if(!ProjectOpenFlag)
   return;
 
+ UWatchForm->WindowState=wsNormal;
  UWatchForm->Show();
 }
 //---------------------------------------------------------------------------
