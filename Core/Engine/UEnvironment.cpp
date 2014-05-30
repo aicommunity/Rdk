@@ -846,7 +846,7 @@ bool UEnvironment::ACalculate(void)
   ProcEndTime=StartupTime;
  }
 
- ULongTime cur_time=(ULongTime)(Time.GetSourceCurrentGlobalTime()-Time.GetSourceStartGlobalTime())*(86400.0*1000.0);
+ ULongTime cur_time=(ULongTime)((Time.GetSourceCurrentGlobalTime()-Time.GetSourceStartGlobalTime())*(86400.0*1000.0));
  Time.SetSourceCurrentLocalTime(cur_time/1000.0);
 
  if(!Model)
