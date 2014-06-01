@@ -385,13 +385,19 @@ void __fastcall TVideoCaptureThread::Execute(void)
 	  Sleep(30);
 	  continue;
 	 }
-	 RunCapture();
+	 AddCommand(tvcStop);
+	 AddCommand(tvcStart);
+	 continue;
+ //	 PauseCapture();
+//	 RunCapture();
 	 break;
 	}
 
 	case 2:
 	{
-	 PauseCapture();
+	 AddCommand(tvcStop);
+	 continue;
+//	 PauseCapture();
 	 break;
 	}
    };
