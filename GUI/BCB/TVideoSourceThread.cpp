@@ -38,6 +38,7 @@ __fastcall TVideoCaptureThread::TVideoCaptureThread(TVideoOutputFrame *frame, bo
 
 __fastcall TVideoCaptureThread::~TVideoCaptureThread(void)
 {
+ ClearCommandQueue();
 /* Stop();
  while(WaitForSingleObject(CaptureEnabled,INFINITE) != WAIT_TIMEOUT)
  {
@@ -1194,7 +1195,7 @@ __fastcall TVideoCaptureThreadVideoGrabber::~TVideoCaptureThreadVideoGrabber(voi
  if(VideoGrabber)
  {
   Terminate();
-  WaitForSingleObject(GetFrameNotInProgress(),1000);
+  WaitForSingleObject(GetFrameNotInProgress(),INFINITE);
   delete VideoGrabber;
   VideoGrabber=0;
  }
