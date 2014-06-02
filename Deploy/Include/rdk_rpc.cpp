@@ -782,6 +782,18 @@ const char* PtzRemoteCall(const char *request, int &return_value, int &channel_i
   return_value=Ptz_AutoBrightness(engine_index,camera.c_str(),state);
  }
  else
+ if(cmd == "Ptz_SetZoomSpeed")
+ {
+  double speed=xml.ReadFloat("Speed",0.0);
+  return_value=Ptz_SetZoomSpeed(engine_index,camera.c_str(),speed);
+ }
+ else
+ if(cmd == "Ptz_SetFocusSpeed")
+ {
+  double speed=xml.ReadFloat("Speed",0.0);
+  return_value=Ptz_SetFocusSpeed(engine_index,camera.c_str(),speed);
+ }
+ else
   return_value=2001;
 
  response.SelectRoot();
