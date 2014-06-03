@@ -2237,7 +2237,14 @@ void __fastcall TUGEngineControlForm::TrayIconDblClick(TObject *Sender)
  if(!RdkMainForm)
   return;
 
+ if(DisableAdminForm)
+ {
+  if(RdkMainForm == this)
+   return;
+ }
+
  TrayIcon->ShowBalloonHint();
+
  if(RdkMainForm->Visible == false)
  {
   RdkMainForm->Show();
