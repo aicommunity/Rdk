@@ -1193,19 +1193,20 @@ void TVideoOutputFrame::SendToComponentIO(void)
 {
  if(LinkedComponentName.empty())
   return;
- BmpSource.ReflectionX(&ReflectedBmpSource);
+
+ SendBmpSource.ReflectionX(&SendReflectedBmpSource);
  switch(LinkedMode)
  {
  case 0:
-  Model_SetComponentBitmapInput(LinkedComponentName.c_str(), LinkedIndex.c_str(), &ReflectedBmpSource);
+  Model_SetComponentBitmapInput(LinkedComponentName.c_str(), LinkedIndex.c_str(), &SendReflectedBmpSource);
  break;
 
  case 1:
-  Model_SetComponentBitmapOutput(LinkedComponentName.c_str(), LinkedIndex.c_str(), &ReflectedBmpSource);
+  Model_SetComponentBitmapOutput(LinkedComponentName.c_str(), LinkedIndex.c_str(), &SendReflectedBmpSource);
  break;
 
  case 2:
-  Model_SetComponentPropertyData(LinkedComponentName.c_str(), LinkedComponentPropertyName.c_str(), &ReflectedBmpSource);
+  Model_SetComponentPropertyData(LinkedComponentName.c_str(), LinkedComponentPropertyName.c_str(), &SendReflectedBmpSource);
  break;
  }
 }
@@ -1239,24 +1240,12 @@ void TVideoOutputFrame::DynamicMenuFilling(TMenuItem* target, std::vector<std::s
 // Метод, вызываемый перед шагом расчета
 void TVideoOutputFrame::ABeforeCalculate(void)
 {
-// if(UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode() == 0)
-  if(CaptureThread)
-  {
-   double time_stamp=0;
-   CaptureThread->ReadSourceSafe(BmpSource,time_stamp,false);
- /*
-	std::string sstamp;
-	RDK::UTimeStamp stamp(double(time_stamp/1000.0),25);
-	stamp>>sstamp;
-	TimeEdit->Text=sstamp.c_str();
+ if(CaptureThread)
+ {
+  double time_stamp=0;
+  CaptureThread->ReadSourceSafe(SendBmpSource,time_stamp,false);
+ }
 
-	TrackBar->Max=CaptureThread->GetNumBitmaps();
-	TrackBar->Position=CaptureThread->GetPosition();
-	TrackBar->UpdateControlState();
-	UpdateVideo();*/
-  }
-
-// if(UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode() == 0)
  {
   SendToComponentIO();
   if(SendPointsByStepCheckBox->Checked)
@@ -1274,12 +1263,12 @@ void TVideoOutputFrame::ABeforeCalculate(void)
   if(BmpSource.GetByteLength()>0)
   {
    if(GetNumEngines() == 1)
-	Model_SetComponentBitmapOutput("", "Output", &BmpSource,true); // Заглушка!!
+	Model_SetComponentBitmapOutput("", "Output", &SendBmpSource,true); // Заглушка!!
 	//в модели должна быть возможность задания множества выходов
    else
    {
 	if(GetNumEngines()>FrameIndex)
- 	 MModel_SetComponentBitmapOutput(FrameIndex, "", "Output", &BmpSource,true);
+ 	 MModel_SetComponentBitmapOutput(FrameIndex, "", "Output", &SendBmpSource,true);
    }
   }
  }

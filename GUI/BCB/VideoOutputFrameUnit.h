@@ -194,7 +194,10 @@ TVideoCaptureOptionsForm *VideoCaptureOptionsForm;
 TVideoCaptureThread* CaptureThread;
 
 // Источник изображения
-RDK::UBitmap BmpSource,ReflectedBmpSource;
+RDK::UBitmap BmpSource;
+
+/// Источник изображения для отправки компонентам
+RDK::UBitmap SendBmpSource,SendReflectedBmpSource;
 
 // Канва рисования
 RDK::UBitmap BmpCanvas;
