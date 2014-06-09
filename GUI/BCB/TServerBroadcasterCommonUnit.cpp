@@ -117,6 +117,7 @@ void __fastcall TResultBroadcasterThread::Execute(void)
 	if(SendEnableFlag)
 	{
 	 Send();
+	 Sleep(5);
 //	 SetEvent(MetaUnlockEvent);
 	}
 	else

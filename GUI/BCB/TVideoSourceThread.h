@@ -50,6 +50,9 @@ RDK::UELockVar<int> RestartMode;
 /// »нтервал между последним стартом и рестартом, мс
 RDK::UELockVar<int> RestartInterval;
 
+/// ћаксимально допустимый интервал между захватами кадра,
+/// после которого мы считаем, что произошла потер€ соединени€, мс
+RDK::UELockVar<int> MaxInterstepInterval;
 
 protected: // ƒанные
 /// ‘лаг состо€ни€ треда
@@ -63,10 +66,14 @@ RDK::UELockVar<int> ConnectionState;
 /// ѕоследн€€ попытка запуска захвата
 RDK::UELockVar<double> LastStartTime;
 
+/// ¬ременна€ метка последнего кадра в данных реального времени
+RDK::UELockVar<double> RealLastTimeStamp;
+
 
 private:
 /// ¬ременна€ метка последнего кадра
 double LastTimeStamp;
+
 
 /// ƒанные изображени€
 RDK::UBitmap Source[2];

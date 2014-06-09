@@ -18,6 +18,7 @@ __fastcall TVideoCaptureThread::TVideoCaptureThread(TVideoOutputFrame *frame, bo
 {
  SourceMode=-1;
  LastTimeStamp=0;
+ RealLastTimeStamp=0;
  CaptureEnabled=CreateEvent(0,TRUE,0,0);
  SourceUnlock=CreateEvent(0,TRUE,TRUE,0);
  SourceWriteUnlock=CreateEvent(0,TRUE,TRUE,0);
@@ -34,6 +35,7 @@ __fastcall TVideoCaptureThread::TVideoCaptureThread(TVideoOutputFrame *frame, bo
  ThreadState=0;
  RestartInterval=10000;
  LastStartTime=0;
+ MaxInterstepInterval=20000;
 }
 
 __fastcall TVideoCaptureThread::~TVideoCaptureThread(void)
@@ -369,10 +371,15 @@ void __fastcall TVideoCaptureThread::Execute(void)
   }
   ProcessCommandQueue();
 
+  double curr_time=TDateTime::CurrentDateTime().operator double();
+  if(curr_time-RealLastTimeStamp>double(MaxInterstepInterval)/(86400.0*1000.0))
+  {
+   ConnectionState=1;
+  }
+
   if(CheckConnection() != 2 && GetThreadState() == 1)
   {
-   double curr_time=TDateTime::CurrentDateTime().operator double();
-   switch(RestartMode)
+  switch(RestartMode)
    {
 	case 0:
 	{
@@ -461,6 +468,7 @@ bool TVideoCaptureThread::WriteSourceSafe(const RDK::UBitmap& src, double time_s
  ResetEvent(SourceUnlock);
 
  LastTimeStamp=time_stamp;
+ RealLastTimeStamp=TDateTime::CurrentDateTime().operator double();
  RDK::UBitmap* old_read_source=ReadSource;
  ReadSource=WriteSource;
  WriteSource=old_read_source;
@@ -482,6 +490,7 @@ bool TVideoCaptureThread::WriteSourceSafe(Graphics::TBitmap *src, double time_st
  ResetEvent(SourceUnlock);
 
  LastTimeStamp=time_stamp;
+ RealLastTimeStamp=TDateTime::CurrentDateTime().operator double();
  RDK::UBitmap* old_read_source=ReadSource;
  ReadSource=WriteSource;
  WriteSource=old_read_source;
@@ -497,6 +506,8 @@ bool TVideoCaptureThread::SetLastTimeStampSafe(double time_stamp)
  ResetEvent(SourceUnlock);
 
  LastTimeStamp=time_stamp;
+ RealLastTimeStamp=TDateTime::CurrentDateTime().operator double();
+
  SetEvent(SourceUnlock);
  return true;
 }
@@ -521,6 +532,7 @@ bool __fastcall TVideoCaptureThread::RunCapture(void)
 {
  double curr_time=TDateTime::CurrentDateTime().operator double();
  LastStartTime=curr_time;
+ RealLastTimeStamp=TDateTime::CurrentDateTime().operator double();
  Synchronize(ARunCapture);
  return true;
 }
@@ -1180,7 +1192,7 @@ __fastcall TVideoCaptureThreadVideoGrabber::TVideoCaptureThreadVideoGrabber(TVid
  VideoGrabber->BurstType = fc_TBitmap;
  VideoGrabber->Synchronized=false;
  VideoGrabber->SetIPCameraSetting(ips_ConnectionTimeout, 1000);
- VideoGrabber->SetIPCameraSetting(ips_ReceiveTimeout, 2000);
+ VideoGrabber->SetIPCameraSetting(ips_ReceiveTimeout, 20000);
 
  ConvertBitmap=new Graphics::TBitmap;
 
