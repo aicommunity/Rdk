@@ -27,7 +27,7 @@ __fastcall TVideoCaptureThread::TVideoCaptureThread(TVideoOutputFrame *frame, bo
  ReadSource=&Source[0];
  WriteSource=&Source[1];
  RepeatFlag=false;
- RestartMode=1;
+ RestartMode=0;
 
  FreeOnTerminate=false;
  ConnectionState=0;
