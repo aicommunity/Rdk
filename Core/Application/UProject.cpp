@@ -3,5 +3,11 @@
 
 #include "UProject.h"
 
+
+namespace RDK
+{
+
+}
+
 #endif
 

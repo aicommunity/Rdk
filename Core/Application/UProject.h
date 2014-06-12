@@ -3,5 +3,15 @@
 
 #include "UIVisualController.h"
 
+namespace RDK
+{
+
+class UProject
+{
+
+};
+
+}
+
 #endif
 

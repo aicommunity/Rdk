@@ -31,6 +31,10 @@
 #pragma resource "*.dfm"
 TUServerControlForm *UServerControlForm;
 
+/// Ёкзепл€р класса приложени€
+extern RDK::UApplication RdkApplication;
+
+
 /// —тандартна€ функци€, осуществл€ющую декодирование параметров запроса
 int StandardCommandRequestDecoder(UServerCommand &source, UServerCommand &dest)
 {

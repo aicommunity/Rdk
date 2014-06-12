@@ -46,6 +46,12 @@
 #pragma resource "*.dfm"
 TUGEngineControlForm *UGEngineControlForm;
 
+/// Ёкзепл€р класса диспетчера команд
+RDK::URpcDispatcher RdkRpcDispatcher;
+
+/// Ёкзепл€р класса приложени€
+RDK::UApplication RdkApplication;
+
 /// √лобальна€ переменна€ сигнализирующа€ о завершении инициализации приложени€
 bool ApplicationInitialized=false;
 
@@ -1985,11 +1991,9 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  // √рузим историю проектов
  LoadProjectsHistory();
 
-// ќтладка!
-// LockEngine();
-// UnLockEngine();
-// bool res=Model_Check();
-//  онец отладки
+ RdkApplication.SetRpcDispatcher(&RdkRpcDispatcher);
+ RdkApplication.SetWorkDirectory(font_path);
+ RdkApplication.Init();
 }
 //---------------------------------------------------------------------------
 
