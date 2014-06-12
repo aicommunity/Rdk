@@ -1,7 +1,7 @@
 #ifndef UAppCore_H
 #define UAppCore_H
 
-#include "UAppProject.h"
+#include "UProject.h"
 
 namespace RDK {
 
