@@ -59,6 +59,7 @@ void URpcCommand::PrepareProcess(void)
  ComponentName.clear();
  ChannelIndex=-1;
  CmdId=0;
+ IsProcessed=false;
 }
 // --------------------------
 

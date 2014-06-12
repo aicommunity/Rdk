@@ -28,7 +28,7 @@ URpcDecoderInternal::~URpcDecoderInternal(void)
 // Методы управления командами
 // --------------------------
 /// Создает копию этого декодера
-URpcDecoderInternal* New(void)
+URpcDecoderInternal* URpcDecoderInternal::New(void)
 {
  return new URpcDecoderInternal;
 }
@@ -54,18 +54,22 @@ bool URpcDecoderInternal::ProcessCommand(UEPtr<URpcCommand> &command)
 
  if(cmd->ResponseStatus == 2001)
  {
+  cmd->ResponseStatus=0;
   MEngine_FreeBufString(cmd->ChannelIndex, response);
   response=PtzRemoteCall(cmd->Request.c_str(), cmd->ResponseStatus, cmd->ChannelIndex);
  }
 
  if(response)
   cmd->Response=response;
+ else
+  cmd->Response=RDK::sntoa(cmd->ResponseStatus);
 
  MEngine_FreeBufString(cmd->ChannelIndex, response);
 
  if(cmd->ResponseStatus == 2001)
   return false;
 
+ cmd->IsProcessed=true;
  return true;
 }
 // --------------------------

@@ -1279,7 +1279,7 @@ try {
 
   BinaryResponse.resize(0);
   bool is_processed=ProcessControlCommand(CurrentProcessedCommand, ResponseType, Response, BinaryResponse);
-
+ /*
   if(!is_processed)
    is_processed=ProcessRPCCommand(CurrentProcessedCommand, ResponseType, Response);
 
@@ -1289,7 +1289,28 @@ try {
   if(!is_processed)
   {
   }
+			   */
+  if(!is_processed)
+  {
+   std::string request;
+   ConvertVectorToString(CurrentProcessedCommand.second, request);
 
+   RDK::URpcCommandInternal cmd;
+   RDK::UEPtr<RDK::URpcCommand> pcmd(&cmd);
+
+   cmd.SetRequest(request);
+
+   unsigned cmd_id=0;
+   RdkApplication.GetRpcDispatcher()->PushCommand(pcmd,cmd_id);
+   RdkApplication.GetRpcDispatcher()->Dispatch();
+   RdkApplication.GetRpcDispatcher()->PopCommand(cmd_id);
+   ConvertStringToVector(cmd.Response, Response);
+
+   if(!cmd.IsProcessed)
+   {
+
+   }
+  }
   if(CommandResponseEncoder)
   {
    CommandResponseEncoder(ResponseType, Response, EncodedResponse);

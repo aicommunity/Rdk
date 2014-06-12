@@ -8,6 +8,8 @@
 #include "URpcDecoder.cpp"
 #include "URpcDecoderInternal.cpp"
 #include "URpcCommand.cpp"
+#include "URpcCommandInternal.cpp"
+
               
 #ifdef __BORLANDC__
 #include "Bcb/Application.bcb.cpp"
@@ -48,6 +50,12 @@ bool UApplication::SetWorkDirectory(const std::string& value)
 // --------------------------
 // Методы инициализации
 // --------------------------
+/// Предоставляет доступ к диспетчеру команд
+UEPtr<URpcDispatcher> UApplication::GetRpcDispatcher(void)
+{
+ return RpcDispatcher;
+}
+
 /// Устанавливает новый диспетчер команд
 /// Ответственность за освобождение памяти диспетчера лежит на вызывающей стороне
 bool UApplication::SetRpcDispatcher(const UEPtr<URpcDispatcher> &value)

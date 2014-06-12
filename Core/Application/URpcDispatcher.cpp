@@ -2,6 +2,9 @@
 #define URpcDispatcher_CPP
 
 #include "URpcDispatcher.h"
+#include "../../Deploy/Include/rdk_cpp_initdll.h"
+#include "../../Deploy/PtzLib/ptzlib_initdll.h"
+#include "../../Deploy/Include/rdk_rpc.h"
 
 namespace RDK {
 
@@ -95,27 +98,35 @@ void URpcDispatcher::Dispatch(void)
 
  for(;I != CommandQueue.end();++I)
  {
+  int num_channels=GetNumEngines();
+  if(num_channels != Decoders.size())
+   UpdateDecoders(num_channels);
+
   if(!*I)
   {
    // Предупреждение - была создана пустая команда
    ProcessedCommandQueue.push_back(*I);
    continue;
   }
-
+/*
   if(!(*I)->DecodeBasicData())
   {
    // Ошибка декодирования
    ProcessedCommandQueue.push_back(*I);
    continue;
   }
-
+  */
   int channel_index=(*I)->GetChannelIndex();
-  if(channel_index<0 || channel_index>=int(Decoders.size()))
+  if(channel_index<-1 || channel_index>=int(Decoders.size()))
   {
    // Ошибка - некорректный индекс канала
    ProcessedCommandQueue.push_back(*I);
    continue;
   }
+
+  // Заглушка
+  if(channel_index<0)
+   channel_index=0;
 
   // Следующий вызов должен быть произведен в своем потоке
   if(!Decoders[channel_index]->ProcessCommand(*I))
@@ -125,8 +136,6 @@ void URpcDispatcher::Dispatch(void)
    continue;
   }
   ProcessedCommandQueue.push_back(*I);
-
-  ++I;
  }
  CommandQueue.clear();
 }
@@ -142,6 +151,21 @@ void URpcDispatcher::ClearProcessedQueue(void)
 {
  ProcessedCommandQueue.clear();
 }
+
+/// Приводит в соответствие список декодеров и число каналов
+void URpcDispatcher::UpdateDecoders(int num_channels)
+{
+ size_t old_size=Decoders.size();
+ for(size_t i=num_channels;i<old_size;i++)
+ {
+  delete Decoders[i];
+ }
+
+ Decoders.resize(num_channels);
+ for(size_t i=old_size;i<Decoders.size();i++)
+  Decoders[i]=DecoderPrototype->New();
+}
+
 // --------------------------
 
 }

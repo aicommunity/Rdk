@@ -61,6 +61,9 @@ virtual void ClearQueue(void);
 
 /// Очищает очередь ожидающих отправки ответов
 virtual void ClearProcessedQueue(void);
+
+/// Приводит в соответствие список декодеров и число каналов
+virtual void UpdateDecoders(int num_channels);
 // --------------------------
 
 };

@@ -46,6 +46,9 @@
 #pragma resource "*.dfm"
 TUGEngineControlForm *UGEngineControlForm;
 
+/// Ёкзепл€р прототипа декодера команд
+RDK::URpcDecoderInternal RdkRpcDecoder;
+
 /// Ёкзепл€р класса диспетчера команд
 RDK::URpcDispatcher RdkRpcDispatcher;
 
@@ -1991,6 +1994,7 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  // √рузим историю проектов
  LoadProjectsHistory();
 
+ RdkRpcDispatcher.SetDecoderPrototype(&RdkRpcDecoder);
  RdkApplication.SetRpcDispatcher(&RdkRpcDispatcher);
  RdkApplication.SetWorkDirectory(font_path);
  RdkApplication.Init();

@@ -58,6 +58,25 @@ void URpcCommandInternal::PrepareProcess(void)
 /// Осуществляет декодирование основных данных и заполняет соответствующие поля
 bool URpcCommandInternal::DecodeBasicData(void)
 {
+ const char* ReturnString=0;
+
+ RDK::USerStorageXML xml;
+
+ xml.Load(Request,"RpcRequest");
+
+ if(!ExtractCmd(xml,FunctionName) || FunctionName.empty())
+ {
+  return false;
+ }
+
+ if(!ExtractCC(xml,ChannelIndex,ComponentName))
+ {
+  ExtractChannel(xml,ChannelIndex);
+  ExtractComponent(xml,ComponentName);
+ }
+
+ xml.ReadData("Id",CmdId);
+
  return true;
 }
 // --------------------------

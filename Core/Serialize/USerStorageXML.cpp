@@ -26,7 +26,9 @@ namespace RDK {
 // --------------------------
 // Создает пустую очередь
 USerStorageXML::USerStorageXML(void)
+#ifdef RDK_UNICODE_RUN
 : Locale("")
+#endif
 {
 }
 
