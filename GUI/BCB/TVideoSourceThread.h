@@ -521,6 +521,8 @@ TVideoGrabber* VideoGrabber;
 
 Graphics::TBitmap* ConvertBitmap;
 
+RDK::UBitmap ConvertUBitmap;
+
 protected: // События
 /// Выставляется при получении очередного кадра
 HANDLE VideoGrabberCompleted;
@@ -561,6 +563,9 @@ void __fastcall OnFrameCaptureCompleted(System::TObject* Sender, void * FrameBit
 void __fastcall VideoGrabberLog(TObject *Sender,
 	  TLogType LogType, String Severity, String InfoMsg);
 void __fastcall VideoGrabberDeviceLost(TObject *Sender);
+
+void __fastcall VideoGrabberFrameBitmap(TObject *Sender,
+	  pFrameInfo FrameInfo, pFrameBitmapInfo BitmapInfo);
 
 virtual void __fastcall Calculate(void);
 

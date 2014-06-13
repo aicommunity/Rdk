@@ -18,7 +18,7 @@ See file license.txt for more information
 
 namespace RDK {
 
-UBitmap BmpIOBuffer;
+//UBitmap BmpIOBuffer;
 
 }
 #endif

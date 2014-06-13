@@ -1179,7 +1179,8 @@ void __fastcall TVideoCaptureThreadHttpServer::APauseCapture(void)
 __fastcall TVideoCaptureThreadVideoGrabber::TVideoCaptureThreadVideoGrabber(TVideoOutputFrame *frame, bool CreateSuspended)
  : VideoGrabber(new TVideoGrabber(frame)), TVideoCaptureThread(frame,CreateSuspended)
 {
- VideoGrabber->OnFrameCaptureCompleted=OnFrameCaptureCompleted;//VideoGrabberFrameCaptureCompleted;
+// VideoGrabber->OnFrameCaptureCompleted=OnFrameCaptureCompleted;
+ VideoGrabber->OnFrameBitmap=VideoGrabberFrameBitmap;
  VideoGrabber->OnLog=VideoGrabberLog;
  VideoGrabber->OnDeviceLost=VideoGrabberDeviceLost;
 
@@ -1193,6 +1194,7 @@ __fastcall TVideoCaptureThreadVideoGrabber::TVideoCaptureThreadVideoGrabber(TVid
  VideoGrabber->Synchronized=false;
  VideoGrabber->SetIPCameraSetting(ips_ConnectionTimeout, 1000);
  VideoGrabber->SetIPCameraSetting(ips_ReceiveTimeout, 20000);
+ VideoGrabber->FrameGrabberRGBFormat=fgf_RGB24;
 
  ConvertBitmap=new Graphics::TBitmap;
 
@@ -1265,34 +1267,74 @@ void __fastcall TVideoCaptureThreadVideoGrabber::OnFrameCaptureCompleted(System:
  case fc_TBitmap:
   if(Frame_Bitmap->PixelFormat == pf24bit)
   {
-//   LastTimeStamp=FrameTime/10000;
-//   *WriteSource<<Frame_Bitmap;
    WriteSourceSafe(Frame_Bitmap, double(FrameTime)/(10000000.0*86400), false);
   }
   else
   {
-//   LastTimeStamp=FrameTime/10000;
    ConvertBitmap->Assign(Frame_Bitmap);
    ConvertBitmap->PixelFormat=pf24bit;
-//   *WriteSource<<ConvertBitmap;
    WriteSourceSafe(ConvertBitmap, double(FrameTime)/(10000000.0*86400), false);
   }
   if(GetNumEngines() > ChannelIndex)
    UEngineMonitorForm->EngineMonitorFrame->SetServerTimeStamp(ChannelIndex,GetLastTimeStampSafe()*86400.0*1000.0);
 
-//	 if(WaitForSingleObject(SourceUnlock,30) == WAIT_TIMEOUT)
-//	  return;
-//	 ResetEvent(SourceUnlock);
-//	 RDK::UBitmap* old_read_source=ReadSource;
-//	 ReadSource=WriteSource;
-//	 WriteSource=old_read_source;
-//	 LastTimeStamp=time_stamp;
-//	 SetEvent(SourceUnlock);
-
   SetEvent(VideoGrabberCompleted);
-//  TVideoCaptureThread::AfterCalculate();
  break;
  }
+}
+
+void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberFrameBitmap(TObject *Sender,
+	  pFrameInfo FrameInfo, pFrameBitmapInfo BitmapInfo)
+{
+ if(GetThreadState())
+  ConnectionState=2;
+
+ if(Fps > 0)
+ {
+  double diffTime=double(FrameInfo->FrameTime)/(10000000.0*86400)-GetLastTimeStampSafe();
+  if(diffTime<(1.0/Fps)/86400.0)
+  {
+	return;
+  }
+ }
+
+ unsigned int BitmapLinePtr = (unsigned int) BitmapInfo->BitmapDataPtr;
+ ConvertUBitmap.SetRes(BitmapInfo->BitmapWidth, BitmapInfo->BitmapHeight, RDK::ubmRGB24);
+
+ if (BitmapInfo->BitmapBitsPerPixel == 24)
+ {   // case where FrameGrabberRGBFormat is set to fgf_RGB24 (you can select it in the "frame grabber" tab)
+  unsigned char *p=ConvertUBitmap.GetData();
+  for (int i = 0 ; i < BitmapInfo->BitmapHeight ; i++)
+  {
+//   TRGBTriple *RGB24Line = (TRGBTriple*) BitmapLinePtr;
+   memcpy(p,(void*)BitmapLinePtr,ConvertUBitmap.GetLineByteLength());
+   p+=ConvertUBitmap.GetLineByteLength();
+   BitmapLinePtr += BitmapInfo->BitmapLineSize;
+  }
+ }
+ else
+ if (BitmapInfo->BitmapBitsPerPixel == 32)
+ {   // case where FrameGrabberRGBFormat is set to fgf_RGB32 (default setting) (you can select it in the "frame grabber" tab)
+  unsigned char *p=ConvertUBitmap.GetData();
+  for (int i = 0 ; i < BitmapInfo->BitmapHeight ; i++)
+  {
+   TRGBQuad *RGB32Line = (TRGBQuad*) BitmapLinePtr;
+   for (int iCol = 0 ; iCol < BitmapInfo->BitmapWidth ; iCol ++, RGB32Line++)
+   {
+	*p++=RGB32Line->rgbBlue;
+	*p++=RGB32Line->rgbGreen;
+	*p++=RGB32Line->rgbRed;
+   }
+   BitmapLinePtr += BitmapInfo->BitmapLineSize;
+  }
+ }
+
+ WriteSourceSafe(ConvertUBitmap, double(FrameInfo->FrameTime)/(10000000.0*86400), false);
+
+  if(GetNumEngines() > ChannelIndex)
+   UEngineMonitorForm->EngineMonitorFrame->SetServerTimeStamp(ChannelIndex,GetLastTimeStampSafe()*86400.0*1000.0);
+
+  SetEvent(VideoGrabberCompleted);
 }
 
 void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberLog(TObject *Sender,
@@ -1577,8 +1619,10 @@ void __fastcall TVideoCaptureThreadVideoGrabberAvi::ARunCapture(void)
 {
  if(VideoGrabber)
  {
-  VideoGrabber->StartSynchronized();
+//  VideoGrabber->StartSynchronized();
+  VideoGrabber->FrameGrabberRGBFormat=fgf_RGB24;
   VideoGrabber->RunPlayer();
+  VideoGrabber->FrameGrabberRGBFormat=fgf_RGB24;
  }
 }
 
