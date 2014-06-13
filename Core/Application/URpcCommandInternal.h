@@ -24,6 +24,7 @@ public:
 //  онструкторы и деструкторы
 // --------------------------
 URpcCommandInternal(void);
+URpcCommandInternal(const std::string &request);
 virtual ~URpcCommandInternal(void);
 // --------------------------
 
@@ -45,10 +46,10 @@ const std::string& GetResponse(void) const;
 int GetResponseStatus(void) const;
 
 /// »нициализирует процесс обработки новой команды
-void PrepareProcess(void);
+void APrepareProcess(void);
 
 /// ќсуществл€ет декодирование основных данных и заполн€ет соответствующие пол€
-virtual bool DecodeBasicData(void);
+virtual bool ADecodeBasicData(void);
 // --------------------------
 };
 

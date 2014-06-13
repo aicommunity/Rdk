@@ -9,7 +9,7 @@ namespace RDK {
 //  онструкторы и деструкторы
 // --------------------------
 URpcCommand::URpcCommand(void)
- : ChannelIndex(-1)
+ : ChannelIndex(-1), IsPrepared(false), IsDecoded(false), IsProcessed(false)
 {
 
 }
@@ -55,11 +55,31 @@ const std::string& URpcCommand::GetComponentName(void) const
 /// »нициализирует процесс обработки новой команды
 void URpcCommand::PrepareProcess(void)
 {
+ if(IsPrepared)
+  return;
  FunctionName.clear();
  ComponentName.clear();
  ChannelIndex=-1;
  CmdId=0;
  IsProcessed=false;
+ IsDecoded=false;
+ APrepareProcess();
+ IsPrepared=true;
+}
+
+/// ќсуществл€ет декодирование основных данных и заполн€ет соответствующие пол€
+bool URpcCommand::DecodeBasicData(void)
+{
+ if(IsDecoded)
+  return true;
+
+ PrepareProcess();
+
+ if(!ADecodeBasicData())
+  return false;
+
+ IsDecoded=true;
+ return true;
 }
 // --------------------------
 

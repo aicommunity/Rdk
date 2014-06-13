@@ -20,6 +20,12 @@ int ChannelIndex;
 /// Имя компонента
 std::string ComponentName;
 
+/// Флаг, сообщающий, что команда была подготовлена к обработке
+bool IsPrepared;
+
+/// Флаг, сообщающий, что команда была декодирована
+bool IsDecoded;
+
 /// Флаг, сообщающий, что команда была обработана
 bool IsProcessed;
 
@@ -52,9 +58,11 @@ const std::string& GetComponentName(void) const;
 // --------------------------
 /// Инициализирует процесс обработки новой команды
 virtual void PrepareProcess(void);
+virtual void APrepareProcess(void)=0;
 
 /// Осуществляет декодирование основных данных и заполняет соответствующие поля
-virtual bool DecodeBasicData(void)=0;
+virtual bool DecodeBasicData(void);
+virtual bool ADecodeBasicData(void)=0;
 // --------------------------
 
 };

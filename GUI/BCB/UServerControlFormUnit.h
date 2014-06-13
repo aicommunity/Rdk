@@ -186,6 +186,9 @@ HANDLE CommandQueueUnlockEvent;
 // Очередь команд
 std::list<UServerCommand > CommandQueue;
 
+// Очередь обработанных команд
+std::list<std::pair<std::string,RDK::UEPtr<RDK::URpcCommand> > > ProcessedCommandQueue;
+
 std::map<std::string, RDK::UTransferReader> PacketReaders;
 
 //RDK::UTransferPacket Packet;

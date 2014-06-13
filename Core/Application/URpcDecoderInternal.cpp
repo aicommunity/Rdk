@@ -35,7 +35,7 @@ URpcDecoderInternal* URpcDecoderInternal::New(void)
 
 /// Осуществляет декодирование и вызов команды по текущим данным
 /// Возвращает false если команда не поддерживается
-bool URpcDecoderInternal::ProcessCommand(UEPtr<URpcCommand> &command)
+bool URpcDecoderInternal::AProcessCommand(const UEPtr<URpcCommand> &command)
 {
  if(!command)
  {

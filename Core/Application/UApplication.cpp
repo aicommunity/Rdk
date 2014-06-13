@@ -4,6 +4,7 @@
 #include "UAppCore.cpp"
 #include "UProject.cpp"
 #include "UIVisualController.cpp"
+#include "URpcDispatcherQueues.cpp"
 #include "URpcDispatcher.cpp"
 #include "URpcDecoder.cpp"
 #include "URpcDecoderInternal.cpp"

@@ -13,6 +13,11 @@ URpcCommandInternal::URpcCommandInternal(void)
 
 }
 
+URpcCommandInternal::URpcCommandInternal(const std::string &request)
+ : Request(request)
+{
+}
+
 URpcCommandInternal::~URpcCommandInternal(void)
 {
 
@@ -31,6 +36,7 @@ URpcCommandInternal::~URpcCommandInternal(void)
 void URpcCommandInternal::SetRequest(const std::string &request)
 {
  Request=request;
+ IsPrepared=false;
  PrepareProcess();
 }
 
@@ -47,16 +53,15 @@ int URpcCommandInternal::GetResponseStatus(void) const
 }
 
 /// »нициализирует процесс обработки новой команды
-void URpcCommandInternal::PrepareProcess(void)
+void URpcCommandInternal::APrepareProcess(void)
 {
- URpcCommand::PrepareProcess();
  ResponseStatus == 2001;
  Response.clear();
 }
 
 
 /// ќсуществл€ет декодирование основных данных и заполн€ет соответствующие пол€
-bool URpcCommandInternal::DecodeBasicData(void)
+bool URpcCommandInternal::ADecodeBasicData(void)
 {
  const char* ReturnString=0;
 

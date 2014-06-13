@@ -43,118 +43,74 @@ void URpcDispatcher::SetDecoderPrototype(const UEPtr<URpcDecoder> &decoder)
   }
 }
 
-/// Добавление команды в очередь на обработку
-/// Записывает Id команды в cmd_id
-/// в случае неудачи возвращает false
-bool URpcDispatcher::PushCommand(const UEPtr<URpcCommand> &command, unsigned &cmd_id)
-{
- if(!command)
-  return false;
- if(!command->DecodeBasicData())
-  return false;
-
- CommandQueue.push_back(command);
- cmd_id=command->CmdId;
- return true;
-}
-
-/// Возвращает указатель на команду по ее Id в очереди ответов
-/// Возвращаемый указатель равен нулю, если команды нет в очереди
-UEPtr<URpcCommand> URpcDispatcher::FindProcessedCommand(unsigned cmd_id)
-{
- std::list<UEPtr<URpcCommand> >::iterator I=ProcessedCommandQueue.begin();
-
- for(;I != ProcessedCommandQueue.end();++I)
- {
-  if((*I)->CmdId == cmd_id)
-   return *I;
- }
- return 0;
-}
-
-/// Удаляет команду из очереди ответов по ее идентификатору
-/// Возвращает true если команда была в очереди
-bool URpcDispatcher::PopCommand(unsigned cmd_id)
-{
- std::list<UEPtr<URpcCommand> >::iterator I=ProcessedCommandQueue.begin();
-
- for(;I != ProcessedCommandQueue.end();++I)
- {
-  if((*I)->CmdId == cmd_id)
-  {
-   ProcessedCommandQueue.erase(I);
-   return true;
-  }
- }
- return false;
-}
-
-
-
 /// Осуществляет диспетчеризацию текущей очереди команд
 void URpcDispatcher::Dispatch(void)
 {
- std::list<UEPtr<URpcCommand> >::iterator I=CommandQueue.begin();
-
- for(;I != CommandQueue.end();++I)
+//    boost::mutex::scoped_lock lock(SendMutex);
+ UEPtr<URpcCommand> command;
+ while(command=PopFromCommandQueue())
  {
-  int num_channels=GetNumEngines();
-  if(num_channels != Decoders.size())
-   UpdateDecoders(num_channels);
-
-  if(!*I)
-  {
-   // Предупреждение - была создана пустая команда
-   ProcessedCommandQueue.push_back(*I);
-   continue;
-  }
-/*
-  if(!(*I)->DecodeBasicData())
+  if(!command->DecodeBasicData())
   {
    // Ошибка декодирования
-   ProcessedCommandQueue.push_back(*I);
+   PushToProcessedQueue(command);
    continue;
   }
-  */
-  int channel_index=(*I)->GetChannelIndex();
+
+  UpdateDecoders();
+  // Следующий вызов должен быть произведен в своем потоке
+  DispatchCommand(command);
+
+//  PushToProcessedQueue(command);
+ }
+}
+
+/// Передает команду диспетчеру, дожидается окончания выполнения и удаляет из очереди
+bool URpcDispatcher::SyncDispatchCommand(const UEPtr<URpcCommand> &command)
+{
+ unsigned cmd_id=0;
+ if(!PushCommand(command,cmd_id))
+  return false;
+ Dispatch();
+
+ if(!PopProcessedCommand(cmd_id))
+  return false;
+ return true;
+}
+// --------------------------
+
+
+// --------------------------
+// Вспомогательные методы управления
+// --------------------------
+/// Осуществляет вызов соответствующего декодера
+/// Метод должен вызываться в своем потоке
+void URpcDispatcher::DispatchCommand(const UEPtr<URpcCommand> &command)
+{
+  int channel_index=command->GetChannelIndex();
   if(channel_index<-1 || channel_index>=int(Decoders.size()))
   {
    // Ошибка - некорректный индекс канала
-   ProcessedCommandQueue.push_back(*I);
-   continue;
   }
 
   // Заглушка
   if(channel_index<0)
    channel_index=0;
 
-  // Следующий вызов должен быть произведен в своем потоке
-  if(!Decoders[channel_index]->ProcessCommand(*I))
+  unsigned cmd_id=0;
+  if(!Decoders[channel_index]->PushCommand(command,cmd_id))
   {
    // Ошибка - команда не была обработана
-   ProcessedCommandQueue.push_back(*I);
-   continue;
   }
-  ProcessedCommandQueue.push_back(*I);
- }
- CommandQueue.clear();
-}
-
-/// Очищает очередь
-void URpcDispatcher::ClearQueue(void)
-{
- CommandQueue.clear();
-}
-
-/// Очищает очередь ожидающих отправки ответов
-void URpcDispatcher::ClearProcessedQueue(void)
-{
- ProcessedCommandQueue.clear();
 }
 
 /// Приводит в соответствие список декодеров и число каналов
-void URpcDispatcher::UpdateDecoders(int num_channels)
+void URpcDispatcher::UpdateDecoders(void)
 {
+ int num_channels=GetNumEngines();
+ if(num_channels == Decoders.size())
+  return;
+
  size_t old_size=Decoders.size();
  for(size_t i=num_channels;i<old_size;i++)
  {
@@ -163,9 +119,11 @@ void URpcDispatcher::UpdateDecoders(int num_channels)
 
  Decoders.resize(num_channels);
  for(size_t i=old_size;i<Decoders.size();i++)
+ {
   Decoders[i]=DecoderPrototype->New();
+  Decoders[i]->SetDispatcher(this);
+ }
 }
-
 // --------------------------
 
 }

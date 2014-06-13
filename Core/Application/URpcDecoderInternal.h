@@ -25,7 +25,7 @@ virtual URpcDecoderInternal* New(void);
 
 /// Осуществляет декодирование и вызов команды по текущим данным
 /// Возвращает false если команда не поддерживается
-virtual bool ProcessCommand(UEPtr<URpcCommand> &command);
+virtual bool AProcessCommand(const UEPtr<URpcCommand> &command);
 // --------------------------
 };
 

@@ -1279,6 +1279,33 @@ try {
 
   BinaryResponse.resize(0);
   bool is_processed=ProcessControlCommand(CurrentProcessedCommand, ResponseType, Response, BinaryResponse);
+
+  if(is_processed)
+  {
+   if(CommandResponseEncoder)
+   {
+	CommandResponseEncoder(ResponseType, Response, EncodedResponse);
+	SendCommandResponse(CurrentProcessedCommand.first, EncodedResponse, BinaryResponse);
+   }
+  }
+  else
+  {
+   std::string request;
+   ConvertVectorToString(CurrentProcessedCommand.second, request);
+
+   RDK::UEPtr<RDK::URpcCommand> pcmd= new RDK::URpcCommandInternal(request);
+   std::pair<std::string,RDK::UEPtr<RDK::URpcCommand> > cmd_pair;
+   cmd_pair.first=CurrentProcessedCommand.first;
+   cmd_pair.second=pcmd;
+   ProcessedCommandQueue.push_back(cmd_pair);
+
+   RdkApplication.GetRpcDispatcher()->SyncDispatchCommand(pcmd);
+
+   while(!RdkApplication.GetRpcDispatcher()->CheckProcessedCommand())
+    Sleep(10);
+
+  }
+
  /*
   if(!is_processed)
    is_processed=ProcessRPCCommand(CurrentProcessedCommand, ResponseType, Response);
@@ -1289,28 +1316,6 @@ try {
   if(!is_processed)
   {
   }
-			   */
-  if(!is_processed)
-  {
-   std::string request;
-   ConvertVectorToString(CurrentProcessedCommand.second, request);
-
-   RDK::URpcCommandInternal cmd;
-   RDK::UEPtr<RDK::URpcCommand> pcmd(&cmd);
-
-   cmd.SetRequest(request);
-
-   unsigned cmd_id=0;
-   RdkApplication.GetRpcDispatcher()->PushCommand(pcmd,cmd_id);
-   RdkApplication.GetRpcDispatcher()->Dispatch();
-   RdkApplication.GetRpcDispatcher()->PopCommand(cmd_id);
-   ConvertStringToVector(cmd.Response, Response);
-
-   if(!cmd.IsProcessed)
-   {
-
-   }
-  }
   if(CommandResponseEncoder)
   {
    CommandResponseEncoder(ResponseType, Response, EncodedResponse);
@@ -1320,9 +1325,36 @@ try {
   {
 //   SendCommandErrorResponse(CurrentProcessedCommand,0);
   }
+			   */
   ResetEvent(CommandQueueUnlockEvent);
  }
  SetEvent(CommandQueueUnlockEvent);
+
+  // Обработка очереди выполненных команд диспетчера
+  RDK::UEPtr<RDK::URpcCommand> pcmd;
+
+  while(pcmd=RdkApplication.GetRpcDispatcher()->PopProcessedCommand())
+  {
+   std::list<pair<std::string,RDK::UEPtr<RDK::URpcCommand> > >::iterator I=ProcessedCommandQueue.begin();
+   RDK::UEPtr<RDK::URpcCommandInternal> pcmd_int=RDK::dynamic_pointer_cast<RDK::URpcCommandInternal>(pcmd);
+   for(; I != ProcessedCommandQueue.end();++I)
+   {
+	if(I->second == pcmd)
+	{
+
+	 if(CommandResponseEncoder)
+	 {
+	  ConvertStringToVector(pcmd_int->Response, Response);
+	  CommandResponseEncoder(ResponseType, Response, EncodedResponse);
+	  SendCommandResponse(I->first, EncodedResponse, BinaryResponse);
+	 }
+	 ProcessedCommandQueue.erase(I);
+     break;
+	}
+   }
+   delete pcmd;
+  }
+
 }
 catch (...)
 {
