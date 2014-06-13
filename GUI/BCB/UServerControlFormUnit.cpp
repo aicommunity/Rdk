@@ -1299,12 +1299,39 @@ try {
    cmd_pair.second=pcmd;
    ProcessedCommandQueue.push_back(cmd_pair);
 
-   RdkApplication.GetRpcDispatcher()->SyncDispatchCommand(pcmd);
+   RdkApplication.GetRpcDispatcher()->PushCommand(pcmd);
 
-   while(!RdkApplication.GetRpcDispatcher()->CheckProcessedCommand())
-    Sleep(10);
+ //  while(!RdkApplication.GetRpcDispatcher()->CheckProcessedCommand())
+ //   Sleep(10);
 
   }
+
+/// Тест
+  // Обработка очереди выполненных команд диспетчера
+  RDK::UEPtr<RDK::URpcCommand> pcmd;
+
+  if(pcmd=RdkApplication.GetRpcDispatcher()->PopProcessedCommand())
+  {
+   std::list<pair<std::string,RDK::UEPtr<RDK::URpcCommand> > >::iterator I=ProcessedCommandQueue.begin();
+   RDK::UEPtr<RDK::URpcCommandInternal> pcmd_int=RDK::dynamic_pointer_cast<RDK::URpcCommandInternal>(pcmd);
+   for(; I != ProcessedCommandQueue.end();++I)
+   {
+	if(I->second == pcmd)
+	{
+
+	 if(CommandResponseEncoder)
+	 {
+	  ConvertStringToVector(pcmd_int->Response, Response);
+	  CommandResponseEncoder(ResponseType, Response, EncodedResponse);
+	  SendCommandResponse(I->first, EncodedResponse, BinaryResponse);
+	 }
+	 ProcessedCommandQueue.erase(I);
+     break;
+	}
+   }
+   delete pcmd;
+  }
+
 
  /*
   if(!is_processed)

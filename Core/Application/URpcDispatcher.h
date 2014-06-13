@@ -29,6 +29,10 @@ protected: // Потоки
 /// Мьютекс дня блокировки данных класса
 boost::mutex DispatchMutex;
 
+boost::thread DispatcherThread;
+
+bool ThreadTerminated;
+
 public:
 // --------------------------
 // Конструкторы и деструкторы
@@ -48,7 +52,7 @@ virtual void SetDecoderPrototype(const UEPtr<URpcDecoder> &decoder);
 virtual void Dispatch(void);
 
 /// Передает команду диспетчеру, дожидается окончания выполнения и удаляет из очереди
-virtual bool SyncDispatchCommand(const UEPtr<URpcCommand> &command);
+virtual bool SyncDispatchCommand(const UEPtr<URpcCommand> &command, unsigned timeout);
 // --------------------------
 
 // --------------------------

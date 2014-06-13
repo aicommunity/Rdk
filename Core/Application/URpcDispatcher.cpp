@@ -13,12 +13,13 @@ namespace RDK {
 // --------------------------
 URpcDispatcher::URpcDispatcher(void)
 {
-
+ DispatcherThread=boost::thread(boost::bind(&URpcDispatcher::Dispatch, boost::ref(*this)));
 }
 
 URpcDispatcher::~URpcDispatcher(void)
 {
-
+ ThreadTerminated=true;
+ DispatcherThread.join();
 }
 // --------------------------
 
@@ -46,36 +47,42 @@ void URpcDispatcher::SetDecoderPrototype(const UEPtr<URpcDecoder> &decoder)
 /// Осуществляет диспетчеризацию текущей очереди команд
 void URpcDispatcher::Dispatch(void)
 {
-//    boost::mutex::scoped_lock lock(SendMutex);
- UEPtr<URpcCommand> command;
- while(command=PopFromCommandQueue())
+ while (!ThreadTerminated)
  {
-  if(!command->DecodeBasicData())
+  UEPtr<URpcCommand> command=PopFromCommandQueue();
+
+  if(!command)
   {
-   // Ошибка декодирования
-   PushToProcessedQueue(command);
+   boost::this_thread::sleep(boost::posix_time::milliseconds(10));
    continue;
   }
 
-  UpdateDecoders();
-  // Следующий вызов должен быть произведен в своем потоке
-  DispatchCommand(command);
+  boost::mutex::scoped_lock lock(DispatchMutex);
 
-//  PushToProcessedQueue(command);
+  UpdateDecoders();
+  DispatchCommand(command);
  }
 }
 
 /// Передает команду диспетчеру, дожидается окончания выполнения и удаляет из очереди
-bool URpcDispatcher::SyncDispatchCommand(const UEPtr<URpcCommand> &command)
+bool URpcDispatcher::SyncDispatchCommand(const UEPtr<URpcCommand> &command, unsigned timeout)
 {
  unsigned cmd_id=0;
  if(!PushCommand(command,cmd_id))
   return false;
- Dispatch();
 
- if(!PopProcessedCommand(cmd_id))
-  return false;
- return true;
+ unsigned long long start_waiting_time=GetCurrentStartupTime();
+ while(CalcDiffTime(GetCurrentStartupTime(),start_waiting_time)<timeout)
+ {
+  if(!PopProcessedCommand(cmd_id))
+  {
+   boost::this_thread::sleep(boost::posix_time::milliseconds(10));
+   continue;
+  }
+  else
+   return true;
+ }
+ return false;
 }
 // --------------------------
 
@@ -87,10 +94,21 @@ bool URpcDispatcher::SyncDispatchCommand(const UEPtr<URpcCommand> &command)
 /// Метод должен вызываться в своем потоке
 void URpcDispatcher::DispatchCommand(const UEPtr<URpcCommand> &command)
 {
+  if(!command->DecodeBasicData())
+  {
+   // Ошибка декодирования
+   MEngine_LogMessage(0, RDK_EX_WARNING, "RPC Dispatcher: DecodeBasicData Fail.");
+   PushToProcessedQueue(command);
+   return;
+  }
+
   int channel_index=command->GetChannelIndex();
   if(channel_index<-1 || channel_index>=int(Decoders.size()))
   {
    // Ошибка - некорректный индекс канала
+   MEngine_LogMessage(0, RDK_EX_WARNING, (std::string("RPC Dispatcher: DispatchCommand - Incorrect channel index.")+sntoa(channel_index)).c_str());
+   PushToProcessedQueue(command);
+   return;
   }
 
   // Заглушка
@@ -100,7 +118,7 @@ void URpcDispatcher::DispatchCommand(const UEPtr<URpcCommand> &command)
   unsigned cmd_id=0;
   if(!Decoders[channel_index]->PushCommand(command,cmd_id))
   {
-   // Ошибка - команда не была обработана
+   // Ошибка постановки команды в очередь на обработку
   }
 }
 

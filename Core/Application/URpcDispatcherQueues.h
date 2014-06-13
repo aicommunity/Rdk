@@ -45,6 +45,10 @@ virtual ~URpcDispatcherQueues(void);
 /// в случае неудачи возвращает false
 virtual bool PushCommand(const UEPtr<URpcCommand> &command, unsigned &cmd_id);
 
+/// ƒобавление команды в очередь на обработку
+/// в случае неудачи возвращает false
+virtual bool PushCommand(const UEPtr<URpcCommand> &command);
+
 /// ¬озвращает указатель на команду по ее Id в очереди ответов
 /// ¬озвращаемый указатель равен нулю, если команды нет в очереди
 virtual UEPtr<URpcCommand> FindProcessedCommand(unsigned cmd_id);

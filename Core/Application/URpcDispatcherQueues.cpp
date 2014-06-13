@@ -44,6 +44,16 @@ bool URpcDispatcherQueues::PushCommand(const UEPtr<URpcCommand> &command, unsign
  return true;
 }
 
+/// ƒобавление команды в очередь на обработку
+/// в случае неудачи возвращает false
+bool URpcDispatcherQueues::PushCommand(const UEPtr<URpcCommand> &command)
+{
+ unsigned cmd_id(0);
+ return PushCommand(command,cmd_id);
+}
+
+
+
 /// ¬озвращает указатель на команду по ее Id в очереди ответов
 /// ¬озвращаемый указатель равен нулю, если команды нет в очереди
 UEPtr<URpcCommand> URpcDispatcherQueues::FindProcessedCommand(unsigned cmd_id)
