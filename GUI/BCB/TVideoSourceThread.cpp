@@ -367,6 +367,7 @@ void __fastcall TVideoCaptureThread::Execute(void)
   if(WaitForSingleObject(CaptureEnabled,30) == WAIT_TIMEOUT)
   {
    ProcessCommandQueue();
+   SetEvent(FrameNotInProgress);
    continue;
   }
   ProcessCommandQueue();
@@ -379,6 +380,13 @@ void __fastcall TVideoCaptureThread::Execute(void)
 
   if(CheckConnection() != 2 && GetThreadState() == 1)
   {
+   if(CheckConnection() == 10)
+   {
+	LastStartTime=TDateTime::CurrentDateTime().operator double();
+	SetEvent(FrameNotInProgress);
+	Sleep(30);
+	continue;
+   }
   switch(RestartMode)
    {
 	case 0:
@@ -391,10 +399,12 @@ void __fastcall TVideoCaptureThread::Execute(void)
 	 if(curr_time-LastStartTime<double(RestartInterval)/(86400.0*1000.0))
 	 {
 	  Sleep(30);
+	  SetEvent(FrameNotInProgress);
 	  continue;
 	 }
 	 AddCommand(tvcStop);
 	 AddCommand(tvcStart);
+	 SetEvent(FrameNotInProgress);
 	 continue;
  //	 PauseCapture();
 //	 RunCapture();
@@ -404,6 +414,7 @@ void __fastcall TVideoCaptureThread::Execute(void)
 	case 2:
 	{
 	 AddCommand(tvcStop);
+	 SetEvent(FrameNotInProgress);
 	 continue;
 //	 PauseCapture();
 	 break;
@@ -411,6 +422,7 @@ void __fastcall TVideoCaptureThread::Execute(void)
    };
 
    Sleep(30);
+   SetEvent(FrameNotInProgress);
    continue;
   }
 
@@ -533,6 +545,7 @@ bool __fastcall TVideoCaptureThread::RunCapture(void)
  double curr_time=TDateTime::CurrentDateTime().operator double();
  LastStartTime=curr_time;
  RealLastTimeStamp=TDateTime::CurrentDateTime().operator double();
+ ConnectionState=10;
  Synchronize(ARunCapture);
  return true;
 }
@@ -541,6 +554,7 @@ bool __fastcall TVideoCaptureThread::PauseCapture(void)
 {
  LastStartTime=0;
  Synchronize(APauseCapture);
+ ConnectionState=1;
  return true;
 }
 
