@@ -375,11 +375,6 @@ void __fastcall TVideoCaptureThread::Execute(void)
   double curr_time=TDateTime::CurrentDateTime().operator double();
   if(curr_time-RealLastTimeStamp>double(MaxInterstepInterval)/(86400.0*1000.0))
   {
-   ConnectionState=1;
-  }
-
-  if(CheckConnection() != 2 && GetThreadState() == 1)
-  {
    if(CheckConnection() == 10)
    {
 	LastStartTime=TDateTime::CurrentDateTime().operator double();
@@ -387,6 +382,11 @@ void __fastcall TVideoCaptureThread::Execute(void)
 	Sleep(30);
 	continue;
    }
+   ConnectionState=1;
+  }
+
+  if(CheckConnection() != 2 && GetThreadState() == 1)
+  {
   switch(RestartMode)
    {
 	case 0:
