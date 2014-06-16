@@ -1244,6 +1244,13 @@ void TVideoOutputFrame::ABeforeCalculate(void)
  {
   double time_stamp=0;
   CaptureThread->ReadSourceSafe(SendBmpSource,time_stamp,false);
+  if(SendBmpSource.GetLength() == 0)
+  {
+   if(FrameIndex<GetNumEngines())
+	MEngine_LogMessage(FrameIndex, RDK_EX_INFO, std::string("TVideoOutputFrame::ABeforeCalculate: Frame have zero size!").c_str());
+   else
+	Engine_LogMessage(RDK_EX_INFO, std::string("TVideoOutputFrame::ABeforeCalculate: Frame have zero size!").c_str());
+  }
  }
 
  {
@@ -1260,7 +1267,7 @@ void TVideoOutputFrame::ABeforeCalculate(void)
 
  if(Model_Check())
  {
-  if(BmpSource.GetByteLength()>0)
+  if(SendBmpSource.GetByteLength()>0)
   {
    if(GetNumEngines() == 1)
 	Model_SetComponentBitmapOutput("", "Output", &SendBmpSource,true); // Заглушка!!

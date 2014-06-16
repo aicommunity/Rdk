@@ -447,7 +447,10 @@ void __fastcall TVideoCaptureThread::Execute(void)
 bool TVideoCaptureThread::ReadSourceSafe(RDK::UBitmap& dest, double &time_stamp, bool reflect)
 {
  if(WaitForSingleObject(SourceUnlock,30) == WAIT_TIMEOUT)
+ {
+  MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, std::string("TVideoCaptureThread::ReadSourceSafe: SourceUnlock timeout!").c_str());
   return false;
+ }
  ResetEvent(SourceUnlock);
  time_stamp=LastTimeStamp;
  RDK::UBitmap* source=ReadSource;
@@ -466,7 +469,10 @@ bool TVideoCaptureThread::ReadSourceSafe(RDK::UBitmap& dest, double &time_stamp,
 bool TVideoCaptureThread::WriteSourceSafe(const RDK::UBitmap& src, double time_stamp, bool reflect)
 {
  if(WaitForSingleObject(SourceWriteUnlock,100) == WAIT_TIMEOUT)
+ {
+  MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, std::string("TVideoCaptureThread::WriteSourceSafe: SourceWriteUnlock timeout!").c_str());
   return false;
+ }
 
  ResetEvent(SourceWriteUnlock);
  if(reflect)
@@ -476,7 +482,10 @@ bool TVideoCaptureThread::WriteSourceSafe(const RDK::UBitmap& src, double time_s
  SetEvent(SourceWriteUnlock);
 
  if(WaitForSingleObject(SourceUnlock,30) == WAIT_TIMEOUT)
+ {
+  MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, std::string("TVideoCaptureThread::WriteSourceSafe: SourceUnlock timeout!").c_str());
   return false;
+ }
  ResetEvent(SourceUnlock);
 
  LastTimeStamp=time_stamp;
@@ -491,14 +500,20 @@ bool TVideoCaptureThread::WriteSourceSafe(const RDK::UBitmap& src, double time_s
 bool TVideoCaptureThread::WriteSourceSafe(Graphics::TBitmap *src, double time_stamp, bool reflect)
 {
  if(WaitForSingleObject(SourceWriteUnlock,100) == WAIT_TIMEOUT)
+ {
+  MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, std::string("TVideoCaptureThread::WriteSourceSafe: SourceWriteUnlock timeout!").c_str());
   return false;
+ }
 
  ResetEvent(SourceWriteUnlock);
  TBitmapToUBitmap(*WriteSource, src, reflect);
  SetEvent(SourceWriteUnlock);
 
  if(WaitForSingleObject(SourceUnlock,30) == WAIT_TIMEOUT)
+ {
+  MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, std::string("TVideoCaptureThread::WriteSourceSafe: SourceUnlock timeout!").c_str());
   return false;
+ }
  ResetEvent(SourceUnlock);
 
  LastTimeStamp=time_stamp;
@@ -514,7 +529,10 @@ bool TVideoCaptureThread::WriteSourceSafe(Graphics::TBitmap *src, double time_st
 bool TVideoCaptureThread::SetLastTimeStampSafe(double time_stamp)
 {
  if(WaitForSingleObject(SourceUnlock,30) == WAIT_TIMEOUT)
+ {
+  MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, std::string("TVideoCaptureThread::SetLastTimeStampSafe: SourceUnlock timeout!").c_str());
   return false;
+ }
  ResetEvent(SourceUnlock);
 
  LastTimeStamp=time_stamp;
@@ -528,7 +546,10 @@ bool TVideoCaptureThread::SetLastTimeStampSafe(double time_stamp)
 double TVideoCaptureThread::GetLastTimeStampSafe(void) const
 {
  if(WaitForSingleObject(SourceUnlock,30) == WAIT_TIMEOUT)
+ {
+  MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, std::string("TVideoCaptureThread::GetLastTimeStampSafe: SourceUnlock timeout!").c_str());
   return 0.0;
+ }
  ResetEvent(SourceUnlock);
 
  double res=LastTimeStamp;
