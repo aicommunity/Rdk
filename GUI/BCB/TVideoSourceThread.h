@@ -6,7 +6,7 @@
 #include "TUHttpServerUnit.h"
 #include "myrdk.h"
 
-enum TVideoCaptureThreadCommands { tvcNone=0, tvcStart=1, tvcStop=2, tvcTerminate=3 };
+enum TVideoCaptureThreadCommands { tvcNone=0, tvcStart=1, tvcStop=2, tvcTerminate=3, tvcRecreate=4 };
 
 //---------------------------------------------------------------------------
 class TVideoGrabberControlForm;
@@ -258,6 +258,9 @@ virtual void __fastcall ARunCapture(void)=0;
 virtual bool __fastcall PauseCapture(void);
 virtual void __fastcall APauseCapture(void)=0;
 
+virtual bool __fastcall RecreateCapture(void);
+virtual void __fastcall ARecreateCapture(void);
+
 bool SetThreadState(int value);
 // --------------------------
 
@@ -340,6 +343,8 @@ protected:
 virtual void __fastcall ARunCapture(void);
 
 virtual void __fastcall APauseCapture(void);
+
+virtual void __fastcall ARecreateCapture(void);
 // --------------------------
 };
 
@@ -432,6 +437,8 @@ protected:
 virtual void __fastcall ARunCapture(void);
 
 virtual void __fastcall APauseCapture(void);
+
+virtual void __fastcall ARecreateCapture(void);
 // --------------------------
 };
 
@@ -511,6 +518,8 @@ protected:
 virtual void __fastcall ARunCapture(void);
 
 virtual void __fastcall APauseCapture(void);
+
+virtual void __fastcall ARecreateCapture(void);
 // --------------------------
 
 };
@@ -588,6 +597,8 @@ virtual bool SetPosition(long long index);
 /// Возвращает 1 если если нет подключения к источнику
 /// Возвращает 2 если если есть подключение к источнику
 virtual int CheckConnection(void) const;
+
+virtual void __fastcall ARecreateCapture(void);
 // --------------------------
 };
 

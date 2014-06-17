@@ -112,6 +112,13 @@ void TVideoCaptureThread::ProcessCommandQueue(void)
  case tvcTerminate:
  break;
 
+ case tvcRecreate:
+  ResetEvent(CaptureEnabled);
+  SetThreadState(0);
+  ConnectionState=0;
+  RecreateCapture();
+ break;
+
  default:
   ;
  }
@@ -403,6 +410,7 @@ void __fastcall TVideoCaptureThread::Execute(void)
 	  continue;
 	 }
 	 AddCommand(tvcStop);
+	 AddCommand(tvcRecreate);
 	 AddCommand(tvcStart);
 	 SetEvent(FrameNotInProgress);
 	 continue;
@@ -578,6 +586,24 @@ bool __fastcall TVideoCaptureThread::PauseCapture(void)
  ConnectionState=1;
  return true;
 }
+
+bool __fastcall TVideoCaptureThread::RecreateCapture(void)
+{
+// PauseCapture();
+
+ RDK::USerStorageXML xml;
+ SaveParameters(xml);
+ Synchronize(ARecreateCapture);
+ LoadParameters(xml);
+ ConnectionState=1;
+ return true;
+}
+
+void __fastcall TVideoCaptureThread::ARecreateCapture(void)
+{
+
+}
+
 
 bool TVideoCaptureThread::SetThreadState(int value)
 {
@@ -764,6 +790,11 @@ void __fastcall TVideoCaptureThreadBmp::ARunCapture(void)
 
 void __fastcall TVideoCaptureThreadBmp::APauseCapture(void)
 {
+}
+
+void __fastcall TVideoCaptureThreadBmp::ARecreateCapture(void)
+{
+
 }
 // --------------------------
 
@@ -1023,6 +1054,11 @@ void __fastcall TVideoCaptureThreadBmpSequence::ARunCapture(void)
 void __fastcall TVideoCaptureThreadBmpSequence::APauseCapture(void)
 {
 }
+
+void __fastcall TVideoCaptureThreadBmpSequence::ARecreateCapture(void)
+{
+
+}
 // --------------------------
 
 
@@ -1203,6 +1239,11 @@ void __fastcall TVideoCaptureThreadHttpServer::ARunCapture(void)
 void __fastcall TVideoCaptureThreadHttpServer::APauseCapture(void)
 {
  UHttpServerFrame->IdHTTPServer->Active=false;
+}
+
+void __fastcall TVideoCaptureThreadHttpServer::ARecreateCapture(void)
+{
+
 }
 // --------------------------
 
@@ -1485,6 +1526,29 @@ bool TVideoCaptureThreadVideoGrabber::SetPosition(long long index)
 int TVideoCaptureThreadVideoGrabber::CheckConnection(void) const
 {
  return ConnectionState;
+}
+
+void __fastcall TVideoCaptureThreadVideoGrabber::ARecreateCapture(void)
+{
+ delete VideoGrabber;
+ VideoGrabber=new TVideoGrabber(GetFrame());
+ VideoGrabber->OnFrameBitmap=VideoGrabberFrameBitmap;
+ VideoGrabber->OnLog=VideoGrabberLog;
+ VideoGrabber->OnDeviceLost=VideoGrabberDeviceLost;
+
+ VideoGrabber->Display_AutoSize = false;
+ VideoGrabber->PlayerRefreshPausedDisplay = false;
+ VideoGrabber->AutoStartPlayer = false;
+ VideoGrabber->BurstCount = 0;
+ VideoGrabber->BurstInterval = 0;
+ VideoGrabber->BurstMode = true;
+ VideoGrabber->BurstType = fc_TBitmap;
+ VideoGrabber->Synchronized=false;
+ VideoGrabber->SetIPCameraSetting(ips_ConnectionTimeout, 1000);
+ VideoGrabber->SetIPCameraSetting(ips_ReceiveTimeout, 20000);
+ VideoGrabber->FrameGrabberRGBFormat=fgf_RGB24;
+
+ ConnectionState=0;
 }
 // --------------------------
 
