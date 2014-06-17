@@ -576,6 +576,7 @@ bool __fastcall TVideoCaptureThread::RunCapture(void)
  RealLastTimeStamp=TDateTime::CurrentDateTime().operator double();
  ConnectionState=10;
  Synchronize(ARunCapture);
+ Sleep(100);
  return true;
 }
 
@@ -584,6 +585,7 @@ bool __fastcall TVideoCaptureThread::PauseCapture(void)
  LastStartTime=0;
  Synchronize(APauseCapture);
  ConnectionState=1;
+ Sleep(100);
  return true;
 }
 
@@ -596,6 +598,7 @@ bool __fastcall TVideoCaptureThread::RecreateCapture(void)
  Synchronize(ARecreateCapture);
  LoadParameters(xml);
  ConnectionState=1;
+ Sleep(100);
  return true;
 }
 
