@@ -5,6 +5,7 @@
 #include "TServerBroadcasterCommonUnit.h"
 #include "UServerControlFormUnit.h"
 #include "UEngineMonitorFormUnit.h"
+#include "TBcbSupport.h"
 #include "rdk_initdll.h"
 //---------------------------------------------------------------------------
 
@@ -16,6 +17,7 @@ __fastcall TResultBroadcasterThread::TResultBroadcasterThread(bool CreateSuspend
 : TThread(CreateSuspended)
 {
  SendEnableFlag=false;
+ Priority=RDK_DEFAULT_THREAD_PRIORITY;
  SendEnable=CreateEvent(0,TRUE,0,0);
  MetaUnlockEvent=CreateEvent(0,TRUE,TRUE,0);
  SendNotInProgressEvent=CreateEvent(0,TRUE,TRUE,0);

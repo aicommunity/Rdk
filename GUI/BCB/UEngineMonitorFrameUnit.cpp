@@ -14,6 +14,7 @@
 #include "VideoOutputFormUnit.h"
 #endif
 #include "UShowProgressBarUnit.h"
+#include "TBcbSupport.h"
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -321,6 +322,8 @@ bool TUEngineMonitorFrame::SetNumChannels(int num)
  for(int i=old_size;i<num;i++)
  {
   ThreadChannels[i]=new TEngineThread(i,CalculateMode[i],MinInterstepsInterval[i],false);
+  ThreadChannels[i]->Priority=RDK_DEFAULT_THREAD_PRIORITY;
+
   ThreadChannels[i]->FreeOnTerminate=false;
  }
 

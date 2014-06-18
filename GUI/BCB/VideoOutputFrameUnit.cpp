@@ -11,6 +11,7 @@
 #include "rdk_initdll.h"
 #include "UGEngineControlFormUnit.h"
 #include "TVideoCaptureOptionsFormUnit.h"
+#include "TBcbSupport.h"
 //#include "USharedMemoryLoader.h"
 //#include "TUFileSystem.h"
 //---------------------------------------------------------------------------
@@ -151,6 +152,7 @@ void TVideoOutputFrame::Init(int mode)
 
   UnInit();
   CaptureThread=TakeVideoCapureThread(mode,this,false);
+  CaptureThread->Priority=RDK_DEFAULT_THREAD_PRIORITY;
   if(!CaptureThread)
    return;
   CaptureThread->SetChannelIndex(FrameIndex);
@@ -182,6 +184,7 @@ void TVideoOutputFrame::Init(int mode, RDK::USerStorageXML &raw_xml_data)
 
   UnInit();
   CaptureThread=TakeVideoCapureThread(mode,this,false);
+  CaptureThread->Priority=RDK_DEFAULT_THREAD_PRIORITY;
   if(!CaptureThread)
    return;
   CaptureThread->SetChannelIndex(FrameIndex);
@@ -384,6 +387,7 @@ void TVideoOutputFrame::InitByAvi(const String &filename)
   if(!CaptureThread)
   {
    CaptureThread=new TVideoCaptureThreadVideoGrabberAvi(this,false);
+   CaptureThread->Priority=RDK_DEFAULT_THREAD_PRIORITY;
    CaptureThread->SetChannelIndex(FrameIndex);
   }
   TVideoCaptureThreadVideoGrabberAvi* thread=dynamic_cast<TVideoCaptureThreadVideoGrabberAvi*>(CaptureThread);
@@ -415,6 +419,7 @@ void TVideoOutputFrame::InitByBmp(const String &filename, double fps)
   if(!CaptureThread)
   {
    CaptureThread=new TVideoCaptureThreadBmp(this,false);
+   CaptureThread->Priority=RDK_DEFAULT_THREAD_PRIORITY;
    CaptureThread->SetChannelIndex(FrameIndex);
    TVideoCaptureThreadBmp* thread=dynamic_cast<TVideoCaptureThreadBmp*>(CaptureThread);
    if(thread)
@@ -451,6 +456,7 @@ bool TVideoOutputFrame::InitByBmp(const RDK::UBitmap &bmp, double fps)
   if(!CaptureThread)
   {
    CaptureThread=new TVideoCaptureThreadBmp(this,false);
+   CaptureThread->Priority=RDK_DEFAULT_THREAD_PRIORITY;
    CaptureThread->SetChannelIndex(FrameIndex);
    TVideoCaptureThreadBmp* thread=dynamic_cast<TVideoCaptureThreadBmp*>(CaptureThread);
    if(thread)
@@ -498,6 +504,7 @@ void TVideoOutputFrame::InitByCamera(int camera_index, int input_index, int size
   if(!CaptureThread)
   {
    CaptureThread=new TVideoCaptureThreadVideoGrabberCamera(this,false);
+   CaptureThread->Priority=RDK_DEFAULT_THREAD_PRIORITY;
    CaptureThread->SetChannelIndex(FrameIndex);
    TVideoCaptureThreadVideoGrabberCamera* thread=dynamic_cast<TVideoCaptureThreadVideoGrabberCamera*>(CaptureThread);
    if(thread)
@@ -528,6 +535,7 @@ void TVideoOutputFrame::InitByIPCamera(const String camera_url, const String use
   if(!CaptureThread)
   {
    CaptureThread=new TVideoCaptureThreadVideoGrabberIpCamera(this,false);
+   CaptureThread->Priority=RDK_DEFAULT_THREAD_PRIORITY;
    CaptureThread->SetChannelIndex(FrameIndex);
    TVideoCaptureThreadVideoGrabberIpCamera* thread=dynamic_cast<TVideoCaptureThreadVideoGrabberIpCamera*>(CaptureThread);
    if(thread)
@@ -556,6 +564,7 @@ bool TVideoOutputFrame::InitByImageSequence(const String &pathname, double fps)
  if(!CaptureThread)
  {
   CaptureThread=new TVideoCaptureThreadBmpSequence(this,false);
+  CaptureThread->Priority=RDK_DEFAULT_THREAD_PRIORITY;
   CaptureThread->SetChannelIndex(FrameIndex);
  }
 
@@ -611,6 +620,7 @@ bool TVideoOutputFrame::InitByHttpServer(int listen_port)
  if(!CaptureThread)
  {
   CaptureThread=new TVideoCaptureThreadHttpServer(this,false);
+  CaptureThread->Priority=RDK_DEFAULT_THREAD_PRIORITY;
   CaptureThread->SetChannelIndex(FrameIndex);
   TVideoCaptureThreadHttpServer* thread=dynamic_cast<TVideoCaptureThreadHttpServer*>(CaptureThread);
   if(thread)
@@ -661,6 +671,7 @@ bool TVideoOutputFrame::InitBySharedMemory(int pipe_index, const std::string &pi
  if(!CaptureThread)
  {
   CaptureThread=new TVideoCaptureThreadSharedMemory(this,false);
+  CaptureThread->Priority=RDK_DEFAULT_THREAD_PRIORITY;
   CaptureThread->SetChannelIndex(FrameIndex);
   TVideoCaptureThreadSharedMemory* thread=dynamic_cast<TVideoCaptureThreadSharedMemory*>(CaptureThread);
   if(thread)
