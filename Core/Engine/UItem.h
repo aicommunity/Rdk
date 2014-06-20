@@ -209,6 +209,9 @@ bool SetAutoNumOutputs(const bool &value);
 /// Ищет свойство-выход по заданному индексу
 void FindOutputProperty(int index, UIProperty* &property);
 
+/// Возвращает индекс входа с заданным именем
+int FindOutputIndex(const NameT &output_name) const;
+
 /// Ищет свойство-вход по заданному индексу
 //void FindInputProperty(int index, UIProperty* &property);
 // --------------------------

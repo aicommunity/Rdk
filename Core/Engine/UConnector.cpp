@@ -429,6 +429,27 @@ void UConnector::FindInputProperty(int index, UIProperty* &property) const
   }
  }
 }
+
+/// Возвращает индекс входа с заданным именем
+int UConnector::FindInputIndex(const NameT &input_name) const
+{
+ // Ищем указатель на входные данные
+ UIProperty* property=0;
+
+ VariableMapCIteratorT I=PropertiesLookupTable.find(input_name);
+ if(I == PropertiesLookupTable.end())
+  return ForbiddenId;
+
+ if(!(I->second.Type & ptInput))
+  return ForbiddenId;
+
+ property=I->second.Property.Get();
+ if(!property)
+  return ForbiddenId;
+
+ return property->GetMinRange();
+}
+
 // --------------------------
 
 // ----------------------

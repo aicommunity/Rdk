@@ -212,6 +212,9 @@ UCLink GetCLink(const UItem* const item) const;
 // --------------------------
 /// Ищет свойство-вход по заданному индексу
 void FindInputProperty(int index, UIProperty* &property) const;
+
+/// Возвращает индекс входа с заданным именем
+int FindInputIndex(const NameT &input_name) const;
 // --------------------------
 
 // ----------------------

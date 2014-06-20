@@ -475,8 +475,13 @@ virtual void CopyComponents(UEPtr<UContainer> comp, UEPtr<UStorage> stor=0) cons
 // на эту границу
 virtual bool ChangeComponentPosition(int index, int step);
 virtual bool ChangeComponentPosition(const NameT &name, int step);
-// --------------------------
 
+// Устанавливает компонент с текущим индексом index или именем 'name' на
+// заданную позицию
+// Применяется для изменения порядка расчета компонент
+virtual bool SetComponentPosition(int index, int new_position);
+virtual bool SetComponentPosition(const NameT &name, int new_position);
+// --------------------------
 
 // ----------------------
 // Методы управления коммуникационными компонентами

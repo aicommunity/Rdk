@@ -1131,14 +1131,11 @@ bool UContainer::ChangeComponentPosition(int index, int step)
  }
  else
  {
-  for(int i=result;i<index;i++)
-   PComponents[i+1]=PComponents[i];
+  for(int i=index;i>=result;i--)
+   PComponents[i]=PComponents[i-1];
   PComponents[result]=comp;
  }
 
-// Components.insert(Components.begin()+result+1,Components[index]);
-// Components.erase(Components.begin()+index);
-// PComponents=&Components[0];
  return true;
 }
 
@@ -1150,6 +1147,25 @@ bool UContainer::ChangeComponentPosition(const NameT &name, int step)
 
  return false;
 }
+
+// Устанавливает компонент с текущим индексом index или именем 'name' на
+// заданную позицию
+// Применяется для изменения порядка расчета компонент
+bool UContainer::SetComponentPosition(int index, int new_position)
+{
+ int step=new_position-index;
+ return ChangeComponentPosition(index, step);
+}
+
+bool UContainer::SetComponentPosition(const NameT &name, int new_position)
+{
+ for(int i=0;i<NumComponents;i++)
+  if(PComponents[i]->GetName() == name)
+   return SetComponentPosition(i,new_position);
+
+ return false;
+}
+
 // --------------------------
 
 

@@ -425,6 +425,27 @@ void UItem::FindOutputProperty(int index, UIProperty* &property)
   }
  }
 }
+
+
+/// Возвращает индекс входа с заданным именем
+int UItem::FindOutputIndex(const NameT &output_name) const
+{
+ // Ищем указатель на выходные данные
+ UIProperty* property=0;
+ VariableMapCIteratorT I=PropertiesLookupTable.find(output_name);
+ if(I == PropertiesLookupTable.end())
+  return ForbiddenId;
+
+ if(!(I->second.Type & ptOutput))
+  return ForbiddenId;
+
+ property=I->second.Property.Get();
+ if(!property)
+  return ForbiddenId;
+
+ return property->GetMinRange();
+}
+
    /*
 /// Ищет свойство-вход по заданному индексу
 void UItem::FindInputProperty(int index, UIProperty* &property)

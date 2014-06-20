@@ -246,6 +246,40 @@ bool UNet::CreateLink(const NameT &item, int item_index,
  return true;
 }
 
+bool UNet::CreateLink(const NameT &item, const NameT &item_index,
+						const NameT &connector, const NameT &connector_index)
+{
+ UEPtr<UItem> pitem=0;
+ UEPtr<UConnector> pconnector=0;
+ if(!item.size())
+  pitem=this;
+ else
+  pitem=dynamic_pointer_cast<UItem>(GetComponentL(item));
+
+ if(!connector.size())
+  pconnector=this;
+ else
+  pconnector=dynamic_pointer_cast<UConnector>(GetComponentL(connector));
+
+ if(!pitem)
+  return false;
+
+ if(!pconnector)
+  return false;
+
+ int i_item_index=pitem->FindOutputIndex(item_index);
+ int i_connector_index=pconnector->FindInputIndex(connector_index);
+
+ if(i_item_index < 0)
+  return false;
+
+ if(!(pitem->Connect(pconnector,i_item_index,i_connector_index)))
+  return false;
+
+ return true;
+}
+
+
 // Устанавливает все связи из массива 'linkslist'.
 template<typename T>
 bool UNet::CreateLinks(const ULinksListT<T> &linkslist, UEPtr<UNet> owner_level)

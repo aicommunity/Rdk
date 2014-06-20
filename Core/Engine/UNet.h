@@ -102,6 +102,8 @@ virtual bool CreateLink(const ULongId &item_id, int item_index, const ULongId &c
 // 'item' и коннектором 'connector'
 virtual bool CreateLink(const NameT &item, int item_index,
 						const NameT &connector, int connector_index=-1);
+virtual bool CreateLink(const NameT &item, const NameT &item_index,
+						const NameT &connector, const NameT &connector_index);
 
 // Устанавливает все связи из массива 'linkslist'
 template<typename T>
@@ -238,6 +240,17 @@ virtual int GetComponentPersonalLinks(RDK::UNet* cont, RDK::USerStorageXML *sers
 virtual bool SaveComponentDrawInfo(RDK::UNet* cont, RDK::USerStorageXML *serstorage);
 // --------------------------
 
+// ----------------------
+// Методы управления компонентами верхнего уровня
+// ----------------------
+/// Проверяет существование компонента с заданным именем и создает его
+/// при необходимости.
+/// Возвращает указатель на созданный экземпляр, если он был добавлен
+/// или 0
+template<typename T>
+UEPtr<T> AddMissingComponent(const NameT &component_name, const NameT &class_name);
+// ----------------------
+
 // --------------------------
 // Скрытые методы доступа к свойствам
 // --------------------------
@@ -248,9 +261,48 @@ ULinksListT<T>& GetLinks(UEPtr<UContainer> cont, ULinksListT<T> &linkslist, UEPt
 template<typename T>
 ULinksListT<T>& GetPersonalLinks(UEPtr<UContainer> cont, UEPtr<UContainer> cont2, ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel) const;
 // --------------------------
-
-
 };
+
+// ----------------------
+// Методы управления компонентами верхнего уровня
+// ----------------------
+/// Проверяет существование компонента с заданным именем и создает его
+/// при необходимости.
+/// Возвращает указатель на созданный экземпляр, если он был добавлен
+/// или 0
+template<typename T>
+UEPtr<T> UNet::AddMissingComponent(const NameT &component_name, const NameT &class_name)
+{
+ UEPtr<T> comp=dynamic_pointer_cast<T>(GetComponent(component_name,true));
+ if(comp)
+  return comp;
+
+ if(!Storage)
+ {
+  LogMessage(RDK_EX_WARNING, std::string("AddMissingComponent - Storage not found"));
+  return comp;
+ }
+
+ UEPtr<UComponent> proto=Storage->TakeObject(class_name);
+ if(!proto)
+ {
+  LogMessage(RDK_EX_WARNING, std::string("AddMissingComponent - Component not found in storage. ClassName=")+class_name);
+  return comp;
+ }
+ comp=dynamic_pointer_cast<T>(proto);
+ comp->SetName(component_name);
+ if(!AddComponent(comp))
+ {
+  LogMessage(RDK_EX_WARNING, std::string("AddMissingComponent - AddComponent failed. ClassName=")+class_name);
+  Storage->ReturnObject(comp);
+  comp=0;
+  return comp;
+ }
+ return comp;
+}
+// ----------------------
+
+
 
 }
 
