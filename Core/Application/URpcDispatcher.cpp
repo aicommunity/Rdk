@@ -49,18 +49,29 @@ void URpcDispatcher::Dispatch(void)
 {
  while (!ThreadTerminated)
  {
-  UEPtr<URpcCommand> command=PopFromCommandQueue();
-
-  if(!command)
+  try
   {
-   boost::this_thread::sleep(boost::posix_time::milliseconds(10));
-   continue;
+   UEPtr<URpcCommand> command=PopFromCommandQueue();
+
+   if(!command)
+   {
+	boost::this_thread::sleep(boost::posix_time::milliseconds(10));
+	continue;
+   }
+
+   boost::mutex::scoped_lock lock(DispatchMutex);
+
+   UpdateDecoders();
+   DispatchCommand(command);
   }
-
-  boost::mutex::scoped_lock lock(DispatchMutex);
-
-  UpdateDecoders();
-  DispatchCommand(command);
+  catch(std::exception &std_ex)
+  {
+   MEngine_LogMessage(0, RDK_EX_WARNING, (std::string("RPC Dispatcher: DispatchCommand - std::exception - ")+std_ex.what()).c_str());
+  }
+  catch(UException &rdk_ex)
+  {
+   MEngine_LogMessage(0, RDK_EX_WARNING, (std::string("RPC Dispatcher: DispatchCommand - RDK::UException - ")+rdk_ex.CreateLogMessage()).c_str());
+  }
  }
 }
 

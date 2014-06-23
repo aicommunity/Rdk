@@ -40,23 +40,34 @@ void URpcDecoder::Process(void)
 {
  while (!ThreadTerminated)
  {
-  UEPtr<URpcCommand> command=PopFromCommandQueue();
-  if(!command)
+  try
   {
-   boost::this_thread::sleep(boost::posix_time::milliseconds(10));
-   continue;
-  }
+   UEPtr<URpcCommand> command=PopFromCommandQueue();
+   if(!command)
+   {
+	boost::this_thread::sleep(boost::posix_time::milliseconds(10));
+	continue;
+   }
 
-  boost::mutex::scoped_lock lock(DispatchMutex);
-  if(!ProcessCommand(command))
+   boost::mutex::scoped_lock lock(DispatchMutex);
+   if(!ProcessCommand(command))
+   {
+	// ошибка выполения команды
+	MEngine_LogMessage(command->ChannelIndex, RDK_EX_WARNING, (std::string("RPC Decoder: Process - ProcessCommand Fail. CmdId=")+sntoa(command->GetCmdId())+std::string(" Command= ")+command->FunctionName).c_str());
+   }
+
+   if(Dispatcher)
+	Dispatcher->PushToProcessedQueue(command);
+   boost::this_thread::sleep(boost::posix_time::milliseconds(3));
+  }
+  catch(std::exception &std_ex)
   {
-   // ошибка выполения команды
-   MEngine_LogMessage(command->ChannelIndex, RDK_EX_WARNING, (std::string("RPC Decoder: Process - ProcessCommand Fail. CmdId=")+sntoa(command->GetCmdId())+std::string(" Command= ")+command->FunctionName).c_str());
+   MEngine_LogMessage(0, RDK_EX_WARNING, (std::string("RPC Decoder: Process - std::exception - ")+std_ex.what()).c_str());
   }
-
-  if(Dispatcher)
-   Dispatcher->PushToProcessedQueue(command);
-  boost::this_thread::sleep(boost::posix_time::milliseconds(3));
+  catch(UException &rdk_ex)
+  {
+   MEngine_LogMessage(0, RDK_EX_WARNING, (std::string("RPC Decoder: Process - RDK::UException - ")+rdk_ex.CreateLogMessage()).c_str());
+  }
  }
 }
 
