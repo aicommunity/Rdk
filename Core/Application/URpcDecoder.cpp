@@ -38,6 +38,8 @@ void URpcDecoder::SetDispatcher(URpcDispatcher* dispatcher)
 /// Метод треда
 void URpcDecoder::Process(void)
 {
+ int ex_flag=0;
+ std::string ex_info;
  while (!ThreadTerminated)
  {
   try
@@ -62,12 +64,27 @@ void URpcDecoder::Process(void)
   }
   catch(std::exception &std_ex)
   {
-   MEngine_LogMessage(0, RDK_EX_WARNING, (std::string("RPC Decoder: Process - std::exception - ")+std_ex.what()).c_str());
+   ex_info=std_ex.what();
+   ex_flag=1;
   }
   catch(UException &rdk_ex)
   {
-   MEngine_LogMessage(0, RDK_EX_WARNING, (std::string("RPC Decoder: Process - RDK::UException - ")+rdk_ex.CreateLogMessage()).c_str());
+   ex_info=rdk_ex.CreateLogMessage();
+   ex_flag=1;
   }
+
+  switch(ex_flag)
+  {
+  case 1:
+   MEngine_LogMessage(0, RDK_EX_WARNING, (std::string("RPC Decoder: Process - std::exception - ")+ex_info).c_str());
+  break;
+
+  case 2:
+   MEngine_LogMessage(0, RDK_EX_WARNING, (std::string("RPC Decoder: Process - RDK::UException - ")+ex_info).c_str());
+  break;
+  }
+  ex_flag=0;
+
  }
 }
 
