@@ -33,7 +33,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
       ExplicitHeight = 622
       object NetworkStreamingTabSheet: TTabSheet
         Caption = 'Network Streaming'
-        ExplicitHeight = 594
         object StreamingSettingsGroupBox: TGroupBox
           Left = 0
           Top = 0
@@ -42,7 +41,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
           Align = alClient
           Caption = 'Network streaming settings'
           TabOrder = 0
-          ExplicitHeight = 539
           DesignSize = (
             370
             445)
@@ -151,7 +149,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
           Align = alBottom
           Caption = 'Network Streaming Control'
           TabOrder = 1
-          ExplicitTop = 539
           DesignSize = (
             370
             55)
@@ -189,6 +186,9 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
       object RecordingTabSheet: TTabSheet
         Caption = 'RecordingTabSheet'
         ImageIndex = 1
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
         ExplicitHeight = 594
         object RecordingSettingsScrollBox: TScrollBox
           Left = 0
@@ -250,7 +250,7 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
               object RecordingMethodLabel: TLabel
                 Left = 3
                 Top = 21
-                Width = 339
+                Width = 87
                 Height = 13
                 Anchors = [akLeft, akTop, akRight]
                 Caption = 'Recording Method'
@@ -258,7 +258,7 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
               object VideoCompressorLabel: TLabel
                 Left = 3
                 Top = 71
-                Width = 339
+                Width = 86
                 Height = 13
                 Anchors = [akLeft, akTop, akRight]
                 Caption = 'Video Compressor'
@@ -266,7 +266,7 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
               object VideoCompressionModeLabel: TLabel
                 Left = 3
                 Top = 117
-                Width = 339
+                Width = 119
                 Height = 13
                 Caption = 'Video Compression Mode'
               end
@@ -303,7 +303,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
                 Anchors = [akLeft, akTop, akRight]
                 TabOrder = 2
                 OnChange = VideoCompressorComboBoxChange
-                ExplicitWidth = 356
               end
               object RecordHeightLabeledEdit: TLabeledEdit
                 Left = 158
@@ -353,7 +352,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
                   'rm_Multiplexer'
                   'rm_SendToDV'
                   'rm_WebM')
-                ExplicitWidth = 356
               end
               object BrowseFileNameButton: TButton
                 Left = 158
@@ -391,7 +389,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
                   'no'
                   'on the fly'
                   'after capture')
-                ExplicitWidth = 356
               end
               object RecordingTimerGroupBox: TGroupBox
                 Left = 3
@@ -421,7 +418,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
                     'new file every...'
                     'stop after ...'
                     'start after ...')
-                  ExplicitWidth = 163
                 end
                 object RecordingTimerLabeledEdit: TLabeledEdit
                   Left = 155
@@ -450,7 +446,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
                     'sec'
                     'min'
                     'hours')
-                  ExplicitLeft = 296
                 end
               end
               object PreAllocatedRecordingGroupBox: TGroupBox
@@ -461,7 +456,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
                 Anchors = [akLeft, akTop, akRight, akBottom]
                 Caption = 'Preallocated Recording'
                 TabOrder = 10
-                ExplicitWidth = 373
                 DesignSize = (
                   356
                   83)
@@ -669,6 +663,7 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
       Caption = 'VideoGrabber'
       Color = clBlack
       Visible = False
+      ASFVideoWidth = -1
       AspectRatioToUse = -1.000000000000000000
       AudioCompressor = 0
       AutoFileNameDateTimeFormat = 'yymmdd_hhmmss_zzz'
@@ -676,6 +671,11 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
       BurstCount = 0
       BurstMode = True
       Display_Active = False
+      DualDisplay_Active = False
+      DualDisplay_Embedded = False
+      DualDisplay_Left = 20
+      DualDisplay_Top = 400
+      DualDisplay_VideoPortEnabled = False
       Cropping_Zoom = 1.000000000000000000
       FrameGrabber = fg_PreviewStream
       LicenseString = 'N/A'

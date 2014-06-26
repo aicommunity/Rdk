@@ -595,6 +595,7 @@ RDK_LIB_TYPE int RDK_CALL Model_SetComponentProperties(const char *stringid, con
 
 // Устанавливает значение свойства компонента по идентификатору компонента и имени свойства
 RDK_LIB_TYPE void RDK_CALL Model_SetComponentPropertyValue(const char *stringid, const char *paramname, const char *buffer);
+RDK_LIB_TYPE int RDK_CALL MModel_SetComponentPropertyValue(int engine_index, const char *stringid, const char *paramname, const char *buffer);
 
 // Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
 // включая этот компонент

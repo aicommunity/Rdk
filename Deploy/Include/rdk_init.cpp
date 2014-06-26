@@ -1286,6 +1286,15 @@ void RDK_CALL Model_SetComponentPropertyValue(const char *stringid, const char *
  DllManager.GetEngineLock()->Model_SetComponentPropertyValue(stringid,paramname,buffer);
 }
 
+int RDK_CALL MModel_SetComponentPropertyValue(int engine_index, const char *stringid, const char *paramname, const char *buffer)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+
+ DllManager.GetEngineLock(engine_index)->Model_SetComponentPropertyValue(stringid,paramname,buffer);
+ return 0;
+}
+
 // Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
 // включая этот компонент
 void RDK_CALL Model_SetGlobalComponentPropertyValue(const char *stringid, const char* class_stringid, const char *paramname, const char *buffer)
@@ -1327,7 +1336,7 @@ int RDK_CALL Model_SetComponentPropertyData(const char *stringid, const char *pr
 int RDK_CALL MModel_SetComponentPropertyData(int engine_index, const char *stringid, const char *property_name, const void *data)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
-  return 0;
+  return 1000;
 
  return DllManager.GetEngineLock(engine_index)->Model_SetComponentPropertyData(stringid, property_name, data);
 }
