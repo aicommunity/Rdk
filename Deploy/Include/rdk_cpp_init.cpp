@@ -98,4 +98,29 @@ RDK::UELockPtr<RDK::UContainer> RDK_CALL GetModelLock(int engine_index)
 }
 // --------------------------
 
+namespace RDK {
+
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EEnginePropertyNotFound::EEnginePropertyNotFound(const std::string &component_name, const std::string &property_name)
+: ComponentName(component_name), PropertyName(property_name)
+{
+
+}
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+std::string EEnginePropertyNotFound::CreateLogMessage(void) const
+{
+ return EError::CreateLogMessage()+std::string(" ComponentName=")+ComponentName+
+			std::string(" PropertyName=")+PropertyName;
+}
+// --------------------------
+}
+
+
 #endif

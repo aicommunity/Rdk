@@ -5,28 +5,7 @@
 #include "rdk.h"
 
 extern "C++"  {
-/*
-template<typename T>
-class UELockEnginePtr: public UELockPtr<T>
-{
-public:
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-UELockEnginePtr(int channel_index=0)
- : UELockPtr<T>(MutexList)
-{
 
-}
-
-UELockEnginePtr(UGenericMutex* mutex, T* pdata);
-UELockEnginePtr(UGenericMutex* mutex, const UEPtr<T> &pdata);
-UELockEnginePtr(const UELockPtr<T> &p);
-virtual ~UELockEnginePtr(void);
-// --------------------------
-
-};
-  */
 // Возвращает ссылку на указатель управляющего ядра
 RDK_LIB_TYPE RDK::UEPtr<RDK::UEngine>& RDK_CALL GetEngine(void);
 RDK_LIB_TYPE RDK::UEPtr<RDK::UEngine> RDK_CALL GetEngine(int engine_index);
@@ -65,9 +44,10 @@ RDK_LIB_TYPE RDK::UELockPtr<RDK::UContainer> RDK_CALL GetModelLock(int engine_in
 }
 
 namespace RDK {
+
 // Декодирует содержимое свойства/переменной состояния компонента
 template<typename T>
-T& DecodeParameterValue(const std::string &param_value, T &res)
+T& DecodePropertyValue(const std::string &param_value, T &res)
 {
  using namespace RDK;
 
@@ -88,16 +68,16 @@ T& DecodeParameterValue(const std::string &param_value, T &res)
 }
 
 template<typename T>
-T DecodeParameterValue(const std::string &param_value)
+T DecodePropertyValue(const std::string &param_value)
 {
  T res;
 
- return DecodeParameterValue(param_value,res);
+ return DecodePropertyValue(param_value,res);
 }
 
 // Кодирует содержимое свойства/переменной состояния компонента
 template<typename T>
-std::string& EncodeParameterValue(const T &param_data, std::string& res)
+std::string& EncodePropertyValue(const T &param_data, std::string& res)
 {
  using namespace RDK;
 
@@ -114,60 +94,96 @@ std::string& EncodeParameterValue(const T &param_data, std::string& res)
 
 // Считывает и декодирует содержимое свойства компонента
 template<typename T>
+T& ReadPropertyValue(const std::string &comp_name, const std::string &property_name, T &res)
+{
+ const char *param_value=Model_GetComponentPropertyValue(comp_name.c_str(),property_name.c_str());
+ if(!param_value)
+  throw EEnginePropertyNotFound(comp_name, property_name);
+
+ return RDK::DecodePropertyValue(param_value,res);
+}
+
+template<typename T>
+T ReadPropertyValue(const std::string &comp_name, const std::string &property_name)
+{
+ T res;
+ return ReadPropertyValue(comp_name, property_name,res);
+}
+
+// Считывает и декодирует содержимое параметра компонента
+template<typename T>
 T& ReadParameterValue(const std::string &comp_name, const std::string &param_name, T &res)
 {
- const char *param_value=Model_GetComponentParameterValue(comp_name.c_str(),param_name.c_str());
- if(!param_value)
-  throw int(1); // TODO здесь исключение
-
- return RDK::DecodeParameterValue(param_value,res);
+ return ReadPropertyValue(comp_name,param_name,res);
 }
 
 template<typename T>
 T ReadParameterValue(const std::string &comp_name, const std::string &param_name)
 {
- T res;
- return ReadParameterValue(comp_name, param_name,res);
+ return ReadPropertyValue(comp_name,param_name);
 }
 
 // Считывает и декодирует содержимое переменной состояния компонента
 template<typename T>
 T& ReadStateValue(const std::string &comp_name, const std::string &state_name, T &res)
 {
- T v;
- const char* state_value=Model_GetComponentStateValue(comp_name.c_str(),state_name.c_str());
-
- if(!state_value)
-  throw int(1); // TODO здесь исключение
-
- return RDK::DecodeParameterValue(state_value,res);
+ return ReadPropertyValue(comp_name,state_name,res);
 }
 
 template<typename T>
 T ReadStateValue(const std::string &comp_name, const std::string &state_name)
 {
- T res;
- return ReadStateValue(comp_name, state_name,res);
+ return ReadPropertyValue(comp_name,state_name,res);
+}
+
+// Кодирует и записывает содержимое свойства компонента
+template<typename T>
+void WritePropertyValue(const std::string &comp_name, const std::string &property_name, const T &res)
+{
+ std::string property_value;
+
+ RDK::EncodePropertyValue(res,property_value);
+ Model_SetComponentPropertyValue(comp_name.c_str(),property_name.c_str(),property_value.c_str());
 }
 
 // Кодирует и записывает содержимое свойства компонента
 template<typename T>
 void WriteParameterValue(const std::string &comp_name, const std::string &param_name, const T &res)
 {
- std::string param_value;
-
- RDK::EncodeParameterValue(res,param_value);
- Model_SetComponentParameterValue(comp_name.c_str(),param_name.c_str(),param_value.c_str());
+ WritePropertyValue(comp_name.c_str(),param_name.c_str(),res);
 }
 
 // Кодирует и записывает содержимое переменной состояния компонента
 template<typename T>
 void WriteStateValue(const std::string &comp_name, const std::string &param_name, const T &res)
 {
- std::string param_value;
- RDK::EncodeParameterValue(res,param_value);
- Model_SetComponentStateValue(comp_name.c_str(),param_name.c_str(),param_value.c_str());
+ WritePropertyValue(comp_name.c_str(),param_name.c_str(),res);
 }
+
+// Исключения
+/// Исключение - свойство не найдено
+struct EEnginePropertyNotFound: public EError
+{
+/// Имя компонента
+std::string ComponentName;
+
+/// Имя свойства
+std::string PropertyName;
+
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EEnginePropertyNotFound(const std::string &component_name, const std::string &property_name);
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+virtual std::string CreateLogMessage(void) const;
+// --------------------------
+};
+
 
 }
 
