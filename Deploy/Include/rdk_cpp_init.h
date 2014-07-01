@@ -5,7 +5,28 @@
 #include "rdk.h"
 
 extern "C++"  {
+/*
+template<typename T>
+class UELockEnginePtr: public UELockPtr<T>
+{
+public:
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+UELockEnginePtr(int channel_index=0)
+ : UELockPtr<T>(MutexList)
+{
 
+}
+
+UELockEnginePtr(UGenericMutex* mutex, T* pdata);
+UELockEnginePtr(UGenericMutex* mutex, const UEPtr<T> &pdata);
+UELockEnginePtr(const UELockPtr<T> &p);
+virtual ~UELockEnginePtr(void);
+// --------------------------
+
+};
+  */
 // Возвращает ссылку на указатель управляющего ядра
 RDK_LIB_TYPE RDK::UEPtr<RDK::UEngine>& RDK_CALL GetEngine(void);
 RDK_LIB_TYPE RDK::UEPtr<RDK::UEngine> RDK_CALL GetEngine(int engine_index);
@@ -21,6 +42,26 @@ RDK_LIB_TYPE RDK::UEPtr<RDK::UStorage> RDK_CALL GetStorage(int engine_index);
 // Возвращает указатель на текущую модель
 RDK_LIB_TYPE RDK::UEPtr<RDK::UContainer> RDK_CALL GetModel(void);
 RDK_LIB_TYPE RDK::UEPtr<RDK::UContainer> RDK_CALL GetModel(int engine_index);
+
+// --------------------------
+// Методы доступа к каналам с блокировкой
+// --------------------------
+// Возвращает ссылку на указатель управляющего ядра
+RDK_LIB_TYPE RDK::UELockPtr<RDK::UEngine> RDK_CALL GetEngineLock(void);
+RDK_LIB_TYPE RDK::UELockPtr<RDK::UEngine> RDK_CALL GetEngineLock(int engine_index);
+
+// Возвращает ссылку на указатель среды выполнения
+RDK_LIB_TYPE RDK::UELockPtr<RDK::UEnvironment> RDK_CALL GetEnvironmentLock(void);
+RDK_LIB_TYPE RDK::UELockPtr<RDK::UEnvironment> RDK_CALL GetEnvironmentLock(int engine_index);
+
+// Возвращает ссылку на указатель хранилища
+RDK_LIB_TYPE RDK::UELockPtr<RDK::UStorage> RDK_CALL GetStorageLock(void);
+RDK_LIB_TYPE RDK::UELockPtr<RDK::UStorage> RDK_CALL GetStorageLock(int engine_index);
+
+// Возвращает указатель на текущую модель
+RDK_LIB_TYPE RDK::UELockPtr<RDK::UContainer> RDK_CALL GetModelLock(void);
+RDK_LIB_TYPE RDK::UELockPtr<RDK::UContainer> RDK_CALL GetModelLock(int engine_index);
+// --------------------------
 }
 
 namespace RDK {

@@ -49,4 +49,53 @@ RDK::UEPtr<RDK::UContainer> RDK_CALL GetModel(int engine_index)
  return DllManager.GetModel(engine_index);
 }
 
+
+// --------------------------
+// ћетоды доступа к каналам с блокировкой
+// --------------------------
+// ¬озвращает ссылку на указатель управл€ющего €дра
+RDK::UELockPtr<RDK::UEngine> RDK_CALL GetEngineLock(void)
+{
+ return DllManager.GetEngineLock(0);
+}
+
+RDK::UELockPtr<RDK::UEngine> RDK_CALL GetEngineLock(int engine_index)
+{
+ return DllManager.GetEngineLock(engine_index);
+}
+
+// ¬озвращает ссылку на указатель среды выполнени€
+RDK::UELockPtr<RDK::UEnvironment> RDK_CALL GetEnvironmentLock(void)
+{
+ return DllManager.GetEnvironmentLock(0);
+}
+
+RDK::UELockPtr<RDK::UEnvironment> RDK_CALL GetEnvironmentLock(int engine_index)
+{
+ return DllManager.GetEnvironmentLock(engine_index);
+}
+
+// ¬озвращает ссылку на указатель хранилища
+RDK::UELockPtr<RDK::UStorage> RDK_CALL GetStorageLock(void)
+{
+ return DllManager.GetStorageLock(0);
+}
+
+RDK::UELockPtr<RDK::UStorage> RDK_CALL GetStorageLock(int engine_index)
+{
+ return DllManager.GetStorageLock(engine_index);
+}
+
+// ¬озвращает указатель на текущую модель
+RDK::UELockPtr<RDK::UContainer> RDK_CALL GetModelLock(void)
+{
+ return DllManager.GetModelLock(0);
+}
+
+RDK::UELockPtr<RDK::UContainer> RDK_CALL GetModelLock(int engine_index)
+{
+ return DllManager.GetModelLock(engine_index);
+}
+// --------------------------
+
 #endif
