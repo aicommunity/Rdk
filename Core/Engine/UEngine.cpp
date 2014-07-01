@@ -4464,7 +4464,6 @@ const RDK::UBitmap* UEngine::Model_GetComponentBitmapOutput(const char *stringid
 
 const RDK::UBitmap* UEngine::Model_GetComponentBitmapOutput(const char *stringid, int index)
 {
-
  try {
   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
 
@@ -4487,6 +4486,44 @@ const RDK::UBitmap* UEngine::Model_GetComponentBitmapOutput(const char *stringid
  }
  return 0;
 }
+
+/// Копирует изображение выхода с индексом 'index' компонента 'id'
+/// метод предполагает, что bmp уже имеет выделенную память под изобржение требуемого размера
+int UEngine::Model_CopyComponentBitmapOutput(const char *stringid, const char *property_name, RDK::UBitmap* bmp)
+{
+ if(!bmp)
+  return 12011;
+
+ const RDK::UBitmap *temp_bmp=Model_GetComponentBitmapOutput(stringid, property_name);
+ if(!temp_bmp)
+  return 12012;
+
+ if(temp_bmp->GetWidth() != bmp->GetWidth() || temp_bmp->GetHeight() != bmp->GetHeight() ||
+	temp_bmp->GetColorModel() != bmp->GetColorModel())
+  return 12013;
+
+ memcpy(bmp->GetData(),temp_bmp->GetData(),bmp->GetByteLength());
+ return 0;
+}
+
+int UEngine::Model_CopyComponentBitmapOutput(const char *stringid, int index, RDK::UBitmap* bmp)
+{
+ if(!bmp)
+  return 12011;
+
+ const RDK::UBitmap *temp_bmp=Model_GetComponentBitmapOutput(stringid, index);
+ if(!temp_bmp)
+  return 12012;
+
+ if(temp_bmp->GetWidth() != bmp->GetWidth() || temp_bmp->GetHeight() != bmp->GetHeight() ||
+	temp_bmp->GetColorModel() != bmp->GetColorModel())
+  return 12013;
+
+ memcpy(bmp->GetData(),temp_bmp->GetData(),bmp->GetByteLength());
+ return 0;
+}
+
+
 
 // Возвращает указатель на вход с индексом 'index' компонента 'id'
 const RDK::UBitmap* UEngine::Model_GetComponentBitmapInput(const char *stringid, const char *property_name)

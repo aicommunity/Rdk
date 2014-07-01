@@ -79,6 +79,8 @@ public:        // User declarations
 bool presIm;
 int x2, y2;
 
+RDK::UBitmap TempBmp;
+
 // Массив изображений
 std::vector<std::vector<TImage*> > Images;
 

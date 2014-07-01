@@ -379,22 +379,33 @@ void TUImagesFrame::AUpdateInterface(void)
    {
 	 if(ComponentIndexes[i][j].empty())
 	 {
+//	  LockEngine();
 	  const RDK::UBitmap* bmp=(const RDK::UBitmap*)Model_GetComponentOutputByIndex(StringIds[i][j].c_str(), ComponentIndexesOld[i][j]);
 	  if(bmp)
-	   SetBitmap(i, j, *bmp);
+	  {
+	   TempBmp.SetRes(bmp->GetWidth(),bmp->GetHeight(),bmp->GetColorModel());
+	   Model_CopyComponentBitmapOutputByIndex(StringIds[i][j].c_str(), ComponentIndexesOld[i][j], &TempBmp);
+//	   TempBmp=*bmp;
+	   SetBitmap(i, j, TempBmp);
+	  }
 	  else
 	  {
 	   StringIds[i][j].clear();
 	   ComponentIndexesOld[i][j]=0;
 	   ComponentIndexes[i][j].clear();
 	  }
+//	  UnLockEngine();
 	 }
 	 else
 	 {
+//	  LockEngine();
 	  const RDK::UBitmap* bmp=(const RDK::UBitmap*)Model_GetComponentOutput(StringIds[i][j].c_str(), ComponentIndexes[i][j].c_str());
 	  if(bmp)
 	  {
-	   SetBitmap(i, j, *bmp);
+	   TempBmp.SetRes(bmp->GetWidth(),bmp->GetHeight(),bmp->GetColorModel());
+	   Model_CopyComponentBitmapOutput(StringIds[i][j].c_str(), ComponentIndexes[i][j].c_str(), &TempBmp);
+//	   TempBmp=*bmp;
+	   SetBitmap(i, j, TempBmp);
 	  }
 	  else
 	  {
@@ -402,6 +413,7 @@ void TUImagesFrame::AUpdateInterface(void)
 	   ComponentIndexesOld[i][j]=0;
 	   ComponentIndexes[i][j].clear();
 	  }
+//	  UnLockEngine();
 	 }
    }
   }
@@ -442,13 +454,23 @@ void TUImagesFrame::AUpdateInterface(void)
   if(DrawGrid->Col < 0 || DrawGrid->Row <0)
    return;
 
+//  LockEngine();
   const RDK::UBitmap* bmp=0;
   if(ComponentIndexes[DrawGrid->Col][DrawGrid->Row].empty())
    bmp=(const RDK::UBitmap*)Model_GetComponentOutputByIndex(StringIds[DrawGrid->Col][DrawGrid->Row].c_str(), ComponentIndexesOld[DrawGrid->Col][DrawGrid->Row]);
   else
    bmp=(const RDK::UBitmap*)Model_GetComponentOutput(StringIds[DrawGrid->Col][DrawGrid->Row].c_str(), ComponentIndexes[DrawGrid->Col][DrawGrid->Row].c_str());
   if(bmp)
-   SetBitmap(DrawGrid->Col, DrawGrid->Row, *bmp);
+  {
+   TempBmp.SetRes(bmp->GetWidth(),bmp->GetHeight(),bmp->GetColorModel());
+   if(ComponentIndexes[DrawGrid->Col][DrawGrid->Row].empty())
+	Model_CopyComponentBitmapOutputByIndex(StringIds[DrawGrid->Col][DrawGrid->Row].c_str(), ComponentIndexesOld[DrawGrid->Col][DrawGrid->Row], &TempBmp);
+   else
+	Model_CopyComponentBitmapOutput(StringIds[DrawGrid->Col][DrawGrid->Row].c_str(), ComponentIndexes[DrawGrid->Col][DrawGrid->Row].c_str(), &TempBmp);
+//   TempBmp=*bmp;
+   SetBitmap(DrawGrid->Col, DrawGrid->Row, TempBmp);
+  }
+  UnLockEngine();
 
   Graphics::TBitmap * tbmp=Images[DrawGrid->Col][DrawGrid->Row]->Picture->Bitmap;
 
