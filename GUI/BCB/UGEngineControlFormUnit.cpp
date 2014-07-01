@@ -309,6 +309,8 @@ void TUGEngineControlForm::ASaveParameters(RDK::USerStorageXML &xml)
 	 xml.WriteString(string("ComponentControlName_")+RDK::sntoa(i+1),I->second->GetComponentControlName());
 
 	 ++count;
+	 is_saved=true;
+	 break;
 	}
    }
   }
@@ -324,6 +326,8 @@ void TUGEngineControlForm::ASaveParameters(RDK::USerStorageXML &xml)
 	 xml.WriteString(string("Class_")+RDK::sntoa(i+1),I->first);
 
 	 ++count;
+	 is_saved=true;
+	 break;
 	}
    }
   }
