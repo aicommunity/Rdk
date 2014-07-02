@@ -120,6 +120,28 @@ std::string EEnginePropertyNotFound::CreateLogMessage(void) const
 			std::string(" PropertyName=")+PropertyName;
 }
 // --------------------------
+
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EEnginePropertyDecodeLoadFail::EEnginePropertyDecodeLoadFail(const std::string &xml_data, const std::string &variable_type)
+: XmlData(xml_data), VariableType(variable_type)
+{
+
+}
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+std::string EEnginePropertyDecodeLoadFail::CreateLogMessage(void) const
+{
+ return EError::CreateLogMessage()+std::string(" XmlData=")+XmlData+
+			std::string(" VariableType=")+VariableType;
+}
+// --------------------------
+
 }
 
 

@@ -54,13 +54,15 @@ T& DecodePropertyValue(const std::string &param_value, T &res)
  USerStorageXML xml;
  if(param_value.size()>0 && param_value[0]=='<')
  {
-  xml.Load(param_value,"");
+  if(!xml.Load(param_value,""))
+   throw EEnginePropertyDecodeLoadFail(param_value, typeid(res).name());
  }
  else
  {
   xml.Create("1");
   xml.SelectRoot();
-  xml.SetNodeText(param_value);
+  if(!xml.SetNodeText(param_value))
+   throw EEnginePropertyDecodeLoadFail(param_value, typeid(res).name());
  }
 
  xml>>res;
@@ -162,7 +164,7 @@ void WriteStateValue(const std::string &comp_name, const std::string &param_name
 
 // Исключения
 /// Исключение - свойство не найдено
-struct EEnginePropertyNotFound: public EError
+struct RDK_LIB_TYPE EEnginePropertyNotFound: public EError
 {
 /// Имя компонента
 std::string ComponentName;
@@ -174,6 +176,28 @@ std::string PropertyName;
 // Конструкторы и деструкторы
 // --------------------------
 EEnginePropertyNotFound(const std::string &component_name, const std::string &property_name);
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+virtual std::string CreateLogMessage(void) const;
+// --------------------------
+};
+
+struct RDK_LIB_TYPE EEnginePropertyDecodeLoadFail: public EError
+{
+/// Имя компонента
+std::string XmlData;
+
+/// Имя свойства
+std::string VariableType;
+
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EEnginePropertyDecodeLoadFail(const std::string &xml_data, const std::string &variable_type);
 // --------------------------
 
 // --------------------------
