@@ -74,7 +74,7 @@ T DecodePropertyValue(const std::string &param_value)
 {
  T res;
 
- return DecodePropertyValue(param_value,res);
+ return DecodePropertyValue<T>(param_value,res);
 }
 
 // Кодирует содержимое свойства/переменной состояния компонента
@@ -122,7 +122,7 @@ T& ReadParameterValue(const std::string &comp_name, const std::string &param_nam
 template<typename T>
 T ReadParameterValue(const std::string &comp_name, const std::string &param_name)
 {
- return ReadPropertyValue(comp_name,param_name);
+ return ReadPropertyValue<T>(comp_name,param_name);
 }
 
 // Считывает и декодирует содержимое переменной состояния компонента
