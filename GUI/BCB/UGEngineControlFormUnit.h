@@ -27,6 +27,7 @@
 #include "UWatchFrameUnit.h"
 #include "UDrawEngineFrameUnit.h"
 #include <Vcl.AppEvnts.hpp>
+#include <Web.Win.Sockets.hpp>
 //---------------------------------------------------------------------------
 #pragma warn -8130
 class TUGEngineControlForm : public TUVisualControllerForm
