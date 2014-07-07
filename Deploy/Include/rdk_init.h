@@ -962,6 +962,24 @@ RDK_LIB_TYPE const char* RDK_CALL MEngine_GetUnreadLogUnsafe(int engine_index, i
 // Записывает в лог новое сообщение
 RDK_LIB_TYPE int RDK_CALL Engine_LogMessage(int log_level, const char *message);
 RDK_LIB_TYPE int RDK_CALL MEngine_LogMessage(int engine_index, int log_level, const char *message);
+
+/// Возвращает число непрочитанных строк лога
+RDK_LIB_TYPE int RDK_CALL Engine_GetNumUnreadLogLines(void);
+RDK_LIB_TYPE int RDK_CALL MEngine_GetNumUnreadLogLines(int engine_index);
+
+// Возвращает строку лога с индексом i из частичного массива строк лога с
+// момента последнего считывания лога этой функцией
+RDK_LIB_TYPE const char* RDK_CALL Engine_GetUnreadLogLine(int &error_level);
+RDK_LIB_TYPE const char* RDK_CALL MEngine_GetUnreadLogLine(int engine_index, int &error_level);
+
+// Помечает строку лога с индексом i из частичного массива строк лога с
+// момента последнего считывания как прочитанную
+//RDK_LIB_TYPE void RDK_CALL Engine_MarkUnreadLogLineAsRead(int i);
+//RDK_LIB_TYPE void RDK_CALL MEngine_MarkUnreadLogLineAsRead(int engine_index, int i);
+
+/// Очищает лог прочитанных сообщений
+RDK_LIB_TYPE void RDK_CALL Engine_ClearReadLog(void);
+RDK_LIB_TYPE void RDK_CALL MEngine_ClearReadLog(int engine_index);
 // ----------------------------
 
 #ifdef __cplusplus

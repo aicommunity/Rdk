@@ -49,6 +49,7 @@ UException::UException(void)
 }
 
 UException::UException(const UException &copy)
+: Type(copy.Type)
 {
 // Number=copy.Number;
  Time=copy.Time;

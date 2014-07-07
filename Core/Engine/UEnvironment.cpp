@@ -554,27 +554,22 @@ void UEnvironment::RTCalculate(void)
 // Обрабатывает возникшее исключение
 void UEnvironment::ProcessException(UException &exception) const
 {
-// if(!exception)
-//  throw exception;
-
-// USharedPtr<UException> ptr=exception;
-// ExceptionsLog.push_back(ptr);
-
  if(LastErrorLevel>exception.GetType())
   LastErrorLevel=exception.GetType();
  ++CurrentExceptionsLogSize;
- if(CurrentExceptionsLogSize/*ExceptionsLog.size()*/ > MaxExceptionsLogSize)
+// LogList.push_back(exception);
+ if(CurrentExceptionsLogSize > MaxExceptionsLogSize)
  {
-//  ExceptionsLog.erase(ExceptionsLog.begin());
   size_t i=TempLogString.find_first_of("\n");
   if(i != string::npos)
   {
    TempLogString.erase(0,i);
   }
+  LogList.erase(LogList.begin(),LogList.begin()+(CurrentExceptionsLogSize - MaxExceptionsLogSize-1));
  }
-// if(!TempLogString.empty())
-//  TempLogString+="\r\n";
 
+ LogList.push_back(sntoa(ChannelIndex)+std::string("> ")+exception.CreateLogMessage());
+// LogList.push_back(exception);
  TempLogString+=sntoa(ChannelIndex);
  TempLogString+="> ";
  TempLogString+=exception.CreateLogMessage();
@@ -583,14 +578,6 @@ void UEnvironment::ProcessException(UException &exception) const
   ExceptionHandler(ChannelIndex);
 }
 
-
-// Возвращает массив зарегистрированных исключений
-/*const vector<USharedPtr<UException> > UEnvironment::GetExceptionsLog(void) const
-{
- return ExceptionsLog;
-}*/
-
-
 // Возвращает массив строк лога
 const char* UEnvironment::GetLog(int &error_level) const
 {
@@ -598,6 +585,84 @@ const char* UEnvironment::GetLog(int &error_level) const
  LastErrorLevel=INT_MAX;
  return TempLogString.c_str();
 }
+
+/// Возвращает число строк лога
+int UEnvironment::GetNumLogLines(void) const
+{
+ return int(LogList.size());
+}
+
+/// Возвращает строку лога с индексом i
+const char* UEnvironment::GetLogLine(int i) const
+{
+ if(i<0 || i >= int(LogList.size()))
+ {
+  TempString.clear();
+  return TempString.c_str();
+ }
+
+// TempString=sntoa(ChannelIndex)+std::string("> ")+LogList[i].CreateLogMessage();
+ TempString=LogList[i];
+ return TempString.c_str();
+}
+
+/// Возвращает число непрочитанных строк лога
+int UEnvironment::GetNumUnreadLogLines(void) const
+{
+ if(LastReadExceptionLogIndex<=0)
+  return int(LogList.size());
+
+ int size=int(LogList.size())-LastReadExceptionLogIndex-1;
+ return (size>0)?size:0;
+}
+
+// Возвращает строку лога с индексом i из частичного массива строк лога с
+// момента последнего считывания лога этой функцией
+const char* UEnvironment::GetUnreadLogLine(int &error_level)
+{
+ int line_index=-1;
+ TempString.clear();
+ error_level=INT_MAX;
+
+ if(LogList.empty())
+  return TempString.c_str();
+
+ if(LastReadExceptionLogIndex<0)
+ {
+  line_index=0;
+  LastReadExceptionLogIndex=0;
+ }
+ else
+ {
+  line_index=++LastReadExceptionLogIndex;
+
+ }
+// TempString=sntoa(ChannelIndex)+std::string("> ")+LogList[line_index].CreateLogMessage();
+ TempString=LogList[line_index];
+// error_level=LogList[line_index].GetType();
+ return TempString.c_str();
+}
+	 /*
+// Помечает строку лога с индексом i из частичного массива строк лога с
+// момента последнего считывания как прочитанную
+void UEnvironment::MarkUnreadLogLineAsRead(int i)
+{
+ int line_index=-1;
+ TempString.clear();
+
+ if(LogList.empty())
+  return;
+
+ if(LastReadExceptionLogIndex>=0 && LastReadExceptionLogIndex+i>=int(LogList.size()))
+  return;
+
+ if(LastReadExceptionLogIndex<0 && i>=int(LogList.size()))
+ {
+  return;
+ }
+
+ LastReadExceptionLogIndex+=i;
+}      */
 
 // Возвращает частичный массив строк лога с момента последнего считывания лога
 // этой функцией
@@ -664,6 +729,20 @@ void UEnvironment::ClearLog(void)
  CurrentExceptionsLogSize=0;
  LastErrorLevel=INT_MAX;
  TempLogString.clear();
+ LogList.clear();
+}
+
+/// Очищает лог прочитанных сообщений
+void UEnvironment::ClearReadLog(void)
+{
+ if(LastReadExceptionLogIndex >=0 && LastReadExceptionLogIndex<int(LogList.size()))
+ {
+  LogList.erase(LogList.begin(),LogList.begin()+LastReadExceptionLogIndex);
+ }
+ LastReadExceptionLogIndex=-1;
+ CurrentExceptionsLogSize=0;
+ LastErrorLevel=INT_MAX;
+// TempLogString.clear();
 }
 
 // Вызов обработчика исключений среды для простой записи данных в лог

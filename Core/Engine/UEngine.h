@@ -898,6 +898,20 @@ bool SetExceptionHandler(UEnvironment::PExceptionHandler value);
 
 /// ќчищает лог
 void ClearLog(void);
+
+/// ¬озвращает число непрочитанных строк лога
+int GetNumUnreadLogLines(void) const;
+
+// ¬озвращает строку лога с индексом i из частичного массива строк лога с
+// момента последнего считывани€ лога этой функцией
+const char* GetUnreadLogLine(int &error_level);
+
+// ѕомечает строку лога с индексом i из частичного массива строк лога с
+// момента последнего считывани€ как прочитанную
+//void MarkUnreadLogLineAsRead(int i);
+
+/// ќчищает лог прочитанных сообщений
+void ClearReadLog(void);
 // --------------------------
 
 // --------------------------

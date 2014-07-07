@@ -117,6 +117,8 @@ mutable string TempLogString;
 // Временное хранилище строк
 mutable string TempString;
 
+mutable std::vector<std::string> LogList;
+
 public: // Public methods
 // --------------------------
 // Constructors & destructors
@@ -285,6 +287,23 @@ void SetMaxExceptionsLogSize(int value);
 // Возвращает массив строк лога
 const char* GetLog(int &error_level) const;
 
+/// Возвращает число строк лога
+int GetNumLogLines(void) const;
+
+/// Возвращает строку лога с индексом i
+const char* GetLogLine(int i) const;
+
+/// Возвращает число непрочитанных строк лога
+int GetNumUnreadLogLines(void) const;
+
+// Возвращает строку лога с индексом i из частичного массива строк лога с
+// момента последнего считывания лога этой функцией
+const char* GetUnreadLogLine(int &error_level);
+
+// Помечает строку лога с индексом i из частичного массива строк лога с
+// момента последнего считывания как прочитанную
+//void MarkUnreadLogLineAsRead(int i);
+
 // Возвращает частичный массив строк лога с момента последнего считывания лога
 // этой функцией
 const char* GetUnreadLog(int &error_level);
@@ -295,6 +314,9 @@ bool SetExceptionHandler(PExceptionHandler value);
 
 /// Очищает лог
 void ClearLog(void);
+
+/// Очищает лог прочитанных сообщений
+void ClearReadLog(void);
 
 // Вызов обработчика исключений среды для простой записи данных в лог
 void LogMessage(int msg_level, const std::string &line);

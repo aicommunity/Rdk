@@ -107,17 +107,20 @@ void __fastcall TUEngineMonitorForm::LogTimerTimer(TObject *Sender)
   for(;I!=UnsentLogChannelIndexes.end();++I)
   {
    int error_level=-1;
-   const char * data=MEngine_GetUnreadLog(*I, error_level);
-   if(!data)
-	continue;
-   if(global_error_level>error_level)
-	global_error_level=error_level;
+   int num_log_lines=MEngine_GetNumUnreadLogLines(*I);
+   for(int k=0;k<num_log_lines;k++)
+   {
+	const char * data=MEngine_GetUnreadLogLine(*I, error_level);
+	if(!data)
+	 continue;
+	if(global_error_level>error_level)
+	 global_error_level=error_level;
 
-
-   std::string new_log_data=data;
-   MEngine_FreeBufString(*I,data);
-   UnsentLog.push_back(new_log_data);
+	std::string new_log_data=data;
+	MEngine_FreeBufString(*I,data);
+	UnsentLog.push_back(new_log_data);   }
   }
+  MEngine_ClearReadLog(*I);
  }
  catch(...)
  {
