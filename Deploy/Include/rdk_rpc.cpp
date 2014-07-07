@@ -489,7 +489,8 @@ const char* PtzRemoteCall(const char *request, int &return_value, int &channel_i
  if(cmd == "Ptz_ReadPTZPosition")
  {
   double pan,tilt,zoom;
-  return_value=Ptz_ReadPTZPosition(engine_index,camera.c_str(),pan, tilt, zoom);
+  unsigned long long time_stamp=0;
+  return_value=Ptz_ReadPTZPosition(engine_index,camera.c_str(),pan, tilt, zoom, time_stamp);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Pan",pan);
   response.WriteFloat("Tilt",tilt);
@@ -500,7 +501,8 @@ const char* PtzRemoteCall(const char *request, int &return_value, int &channel_i
  if(cmd == "Ptz_ReadPTPosition")
  {
   double pan,tilt;
-  return_value=Ptz_ReadPTPosition(engine_index,camera.c_str(),pan, tilt);
+  unsigned long long time_stamp=0;
+  return_value=Ptz_ReadPTPosition(engine_index,camera.c_str(),pan, tilt, time_stamp);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Pan",pan);
   response.WriteFloat("Tilt",tilt);
@@ -510,7 +512,8 @@ const char* PtzRemoteCall(const char *request, int &return_value, int &channel_i
  if(cmd == "Ptz_ReadPanPosition")
  {
   double value;
-  return_value=Ptz_ReadPanPosition(engine_index,camera.c_str(),value);
+  unsigned long long time_stamp=0;
+  return_value=Ptz_ReadPanPosition(engine_index,camera.c_str(),value, time_stamp);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Pan",value);
 //  response.Save(RpcReturnString[engine_index]);
@@ -519,7 +522,8 @@ const char* PtzRemoteCall(const char *request, int &return_value, int &channel_i
  if(cmd == "Ptz_ReadTiltPosition")
  {
   double value;
-  return_value=Ptz_ReadTiltPosition(engine_index,camera.c_str(),value);
+  unsigned long long time_stamp=0;
+  return_value=Ptz_ReadTiltPosition(engine_index,camera.c_str(),value,time_stamp);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Tilt",value);
 //  response.Save(RpcReturnString[engine_index]);
@@ -528,7 +532,8 @@ const char* PtzRemoteCall(const char *request, int &return_value, int &channel_i
  if(cmd == "Ptz_ReadZoomPosition")
  {
   double value;
-  return_value=Ptz_ReadZoomPosition(engine_index,camera.c_str(),value);
+  unsigned long long time_stamp=0;
+  return_value=Ptz_ReadZoomPosition(engine_index,camera.c_str(),value, time_stamp);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Zoom",value);
 //  response.Save(RpcReturnString[engine_index]);
@@ -537,7 +542,8 @@ const char* PtzRemoteCall(const char *request, int &return_value, int &channel_i
  if(cmd == "Ptz_ReadFocusPosition")
  {
   double value;
-  return_value=Ptz_ReadFocusPosition(engine_index,camera.c_str(),value);
+  unsigned long long time_stamp=0;
+  return_value=Ptz_ReadFocusPosition(engine_index,camera.c_str(),value, time_stamp);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Focus",value);
 //  response.Save(RpcReturnString[engine_index]);
@@ -546,7 +552,8 @@ const char* PtzRemoteCall(const char *request, int &return_value, int &channel_i
  if(cmd == "Ptz_ReadIrisPosition")
  {
   double value;
-  return_value=Ptz_ReadIrisPosition(engine_index,camera.c_str(),value);
+  unsigned long long time_stamp=0;
+  return_value=Ptz_ReadIrisPosition(engine_index,camera.c_str(),value, time_stamp);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Iris",value);
 //  response.Save(RpcReturnString[engine_index]);
@@ -555,7 +562,8 @@ const char* PtzRemoteCall(const char *request, int &return_value, int &channel_i
  if(cmd == "Ptz_ReadBrightnessPosition")
  {
   double value;
-  return_value=Ptz_ReadBrightnessPosition(engine_index,camera.c_str(),value);
+  unsigned long long time_stamp=0;
+  return_value=Ptz_ReadBrightnessPosition(engine_index,camera.c_str(),value, time_stamp);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Brightness",value);
 //  response.Save(RpcReturnString[engine_index]);
@@ -564,7 +572,8 @@ const char* PtzRemoteCall(const char *request, int &return_value, int &channel_i
  if(cmd == "Ptz_ReadPTZPositionNative")
  {
   double pan,tilt,zoom;
-  return_value=Ptz_ReadPTZPositionNative(engine_index,camera.c_str(),pan, tilt, zoom);
+  unsigned long long time_stamp=0;
+  return_value=Ptz_ReadPTZPositionNative(engine_index,camera.c_str(),pan, tilt, zoom, time_stamp);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Pan",pan);
   response.WriteFloat("Tilt",tilt);
@@ -575,7 +584,8 @@ const char* PtzRemoteCall(const char *request, int &return_value, int &channel_i
  if(cmd == "Ptz_ReadPTPositionNative")
  {
   double pan,tilt;
-  return_value=Ptz_ReadPTPositionNative(engine_index,camera.c_str(),pan, tilt);
+  unsigned long long time_stamp=0;
+  return_value=Ptz_ReadPTPositionNative(engine_index,camera.c_str(),pan, tilt, time_stamp);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Pan",pan);
   response.WriteFloat("Tilt",tilt);
@@ -585,7 +595,8 @@ const char* PtzRemoteCall(const char *request, int &return_value, int &channel_i
  if(cmd == "Ptz_ReadPanPositionNative")
  {
   double value;
-  return_value=Ptz_ReadPanPositionNative(engine_index,camera.c_str(),value);
+  unsigned long long time_stamp=0;
+  return_value=Ptz_ReadPanPositionNative(engine_index,camera.c_str(),value, time_stamp);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Pan",value);
 //  response.Save(RpcReturnString[engine_index]);
@@ -594,7 +605,8 @@ const char* PtzRemoteCall(const char *request, int &return_value, int &channel_i
  if(cmd == "Ptz_ReadTiltPositionNative")
  {
   double value;
-  return_value=Ptz_ReadTiltPositionNative(engine_index,camera.c_str(),value);
+  unsigned long long time_stamp=0;
+  return_value=Ptz_ReadTiltPositionNative(engine_index,camera.c_str(),value, time_stamp);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Tilt",value);
 //  response.Save(RpcReturnString[engine_index]);
@@ -603,7 +615,8 @@ const char* PtzRemoteCall(const char *request, int &return_value, int &channel_i
  if(cmd == "Ptz_ReadZoomPositionNative")
  {
   double value;
-  return_value=Ptz_ReadZoomPositionNative(engine_index,camera.c_str(),value);
+  unsigned long long time_stamp=0;
+  return_value=Ptz_ReadZoomPositionNative(engine_index,camera.c_str(),value, time_stamp);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Zoom",value);
 //  response.Save(RpcReturnString[engine_index]);
@@ -612,7 +625,8 @@ const char* PtzRemoteCall(const char *request, int &return_value, int &channel_i
  if(cmd == "Ptz_ReadFocusPositionNative")
  {
   double value;
-  return_value=Ptz_ReadFocusPositionNative(engine_index,camera.c_str(),value);
+  unsigned long long time_stamp=0;
+  return_value=Ptz_ReadFocusPositionNative(engine_index,camera.c_str(),value, time_stamp);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Focus",value);
 //  response.Save(RpcReturnString[engine_index]);
@@ -621,7 +635,8 @@ const char* PtzRemoteCall(const char *request, int &return_value, int &channel_i
  if(cmd == "Ptz_ReadIrisPositionNative")
  {
   double value;
-  return_value=Ptz_ReadIrisPositionNative(engine_index,camera.c_str(),value);
+  unsigned long long time_stamp=0;
+  return_value=Ptz_ReadIrisPositionNative(engine_index,camera.c_str(),value, time_stamp);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Iris",value);
 //  response.Save(RpcReturnString[engine_index]);
@@ -630,7 +645,8 @@ const char* PtzRemoteCall(const char *request, int &return_value, int &channel_i
  if(cmd == "Ptz_ReadBrightnessPositionNative")
  {
   double value;
-  return_value=Ptz_ReadBrightnessPositionNative(engine_index,camera.c_str(),value);
+  unsigned long long time_stamp=0;
+  return_value=Ptz_ReadBrightnessPositionNative(engine_index,camera.c_str(),value, time_stamp);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Brightness",value);
 //  response.Save(RpcReturnString[engine_index]);
