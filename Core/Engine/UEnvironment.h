@@ -112,12 +112,12 @@ unsigned long long StartupTime;
 unsigned long long /*StartProcTime,*/CurrentTime,LastDuration/*,LastSentTime*/, ProcEndTime, LastStepStartTime;
 
 // ¬ременное хранилище буфера дл€ лога
-mutable string TempLogString;
+//mutable string TempLogString;
 
 // ¬ременное хранилище строк
 mutable string TempString;
 
-mutable std::vector<std::string> LogList;
+mutable std::vector<pair<std::string, int> > LogList;
 
 public: // Public methods
 // --------------------------
@@ -295,14 +295,6 @@ const char* GetLogLine(int i) const;
 
 /// ¬озвращает число непрочитанных строк лога
 int GetNumUnreadLogLines(void) const;
-
-// ¬озвращает строку лога с индексом i из частичного массива строк лога с
-// момента последнего считывани€ лога этой функцией
-const char* GetUnreadLogLine(int &error_level);
-
-// ѕомечает строку лога с индексом i из частичного массива строк лога с
-// момента последнего считывани€ как прочитанную
-//void MarkUnreadLogLineAsRead(int i);
 
 // ¬озвращает частичный массив строк лога с момента последнего считывани€ лога
 // этой функцией

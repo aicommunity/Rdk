@@ -2151,34 +2151,6 @@ int RDK_CALL MEngine_GetNumUnreadLogLines(int engine_index)
  return DllManager.GetEngineLock(engine_index)->GetNumUnreadLogLines();
 }
 
-// Возвращает строку лога с индексом i из частичного массива строк лога с
-// момента последнего считывания лога этой функцией
-const char* RDK_CALL Engine_GetUnreadLogLine(int &error_level)
-{
- return DllManager.GetEngineLock()->GetUnreadLogLine(error_level);
-}
-
-const char* RDK_CALL MEngine_GetUnreadLogLine(int engine_index, int &error_level)
-{
- if(engine_index<0 || engine_index>=GetNumEngines())
-  return 0;
- return DllManager.GetEngineLock(engine_index)->GetUnreadLogLine(error_level);
-}
-/*
-// Помечает строку лога с индексом i из частичного массива строк лога с
-// момента последнего считывания как прочитанную
-void RDK_CALL Engine_MarkUnreadLogLineAsRead(int i)
-{
- return DllManager.GetEngineLock()->MarkUnreadLogLineAsRead(i);
-}
-
-void RDK_CALL MEngine_MarkUnreadLogLineAsRead(int engine_index, int i)
-{
- if(engine_index<0 || engine_index>=GetNumEngines())
-  return;
- return DllManager.GetEngineLock(engine_index)->MarkUnreadLogLineAsRead(i);
-} */
-
 /// Очищает лог прочитанных сообщений
 void RDK_CALL Engine_ClearReadLog(void)
 {

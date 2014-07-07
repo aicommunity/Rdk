@@ -4888,20 +4888,6 @@ int UEngine::GetNumUnreadLogLines(void) const
  return Environment->GetNumUnreadLogLines();
 }
 
-// Возвращает строку лога с индексом i из частичного массива строк лога с
-// момента последнего считывания лога этой функцией
-const char* UEngine::GetUnreadLogLine(int &error_level)
-{
- return Environment->GetUnreadLogLine(error_level);
-}
-
-// Помечает строку лога с индексом i из частичного массива строк лога с
-// момента последнего считывания как прочитанную
-/*void UEngine::MarkUnreadLogLineAsRead(int i)
-{
- return Environment->MarkUnreadLogLineAsRead(i);
-}
-  */
 /// Очищает лог прочитанных сообщений
 void UEngine::ClearReadLog(void)
 {

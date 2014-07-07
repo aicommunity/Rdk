@@ -110,7 +110,7 @@ void __fastcall TUEngineMonitorForm::LogTimerTimer(TObject *Sender)
    int num_log_lines=MEngine_GetNumUnreadLogLines(*I);
    for(int k=0;k<num_log_lines;k++)
    {
-	const char * data=MEngine_GetUnreadLogLine(*I, error_level);
+	const char * data=MEngine_GetUnreadLog(*I, error_level);
 	if(!data)
 	 continue;
 	if(global_error_level>error_level)

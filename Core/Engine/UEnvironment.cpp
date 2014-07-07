@@ -557,22 +557,15 @@ void UEnvironment::ProcessException(UException &exception) const
  if(LastErrorLevel>exception.GetType())
   LastErrorLevel=exception.GetType();
  ++CurrentExceptionsLogSize;
-// LogList.push_back(exception);
  if(CurrentExceptionsLogSize > MaxExceptionsLogSize)
  {
-  size_t i=TempLogString.find_first_of("\n");
-  if(i != string::npos)
-  {
-   TempLogString.erase(0,i);
-  }
   LogList.erase(LogList.begin(),LogList.begin()+(CurrentExceptionsLogSize - MaxExceptionsLogSize-1));
  }
 
- LogList.push_back(sntoa(ChannelIndex)+std::string("> ")+exception.CreateLogMessage());
-// LogList.push_back(exception);
- TempLogString+=sntoa(ChannelIndex);
- TempLogString+="> ";
- TempLogString+=exception.CreateLogMessage();
+ pair<std::string, int> log;
+ log.first=sntoa(ChannelIndex)+std::string("> ")+exception.CreateLogMessage();
+ log.second=exception.GetType();
+ LogList.push_back(log);
 
  if(ExceptionHandler)
   ExceptionHandler(ChannelIndex);
@@ -581,9 +574,15 @@ void UEnvironment::ProcessException(UException &exception) const
 // ¬озвращает массив строк лога
 const char* UEnvironment::GetLog(int &error_level) const
 {
+ TempString.clear();
+ for(size_t i=0;i<LogList.size();i++)
+ {
+  TempString+=LogList[i].first;
+  TempString+="/r/n";
+ }
  error_level=LastErrorLevel;
  LastErrorLevel=INT_MAX;
- return TempLogString.c_str();
+ return TempString.c_str();
 }
 
 /// ¬озвращает число строк лога
@@ -601,8 +600,7 @@ const char* UEnvironment::GetLogLine(int i) const
   return TempString.c_str();
  }
 
-// TempString=sntoa(ChannelIndex)+std::string("> ")+LogList[i].CreateLogMessage();
- TempString=LogList[i];
+ TempString=LogList[i].first;
  return TempString.c_str();
 }
 
@@ -616,9 +614,9 @@ int UEnvironment::GetNumUnreadLogLines(void) const
  return (size>0)?size:0;
 }
 
-// ¬озвращает строку лога с индексом i из частичного массива строк лога с
-// момента последнего считывани€ лога этой функцией
-const char* UEnvironment::GetUnreadLogLine(int &error_level)
+// ¬озвращает частичный массив строк лога с момента последнего считывани€ лога
+// этой функцией
+const char* UEnvironment::GetUnreadLog(int &error_level)
 {
  int line_index=-1;
  TempString.clear();
@@ -638,52 +636,9 @@ const char* UEnvironment::GetUnreadLogLine(int &error_level)
 
  }
 // TempString=sntoa(ChannelIndex)+std::string("> ")+LogList[line_index].CreateLogMessage();
- TempString=LogList[line_index];
+ TempString=LogList[line_index].first;
+ error_level=LogList[line_index].second;
 // error_level=LogList[line_index].GetType();
- return TempString.c_str();
-}
-	 /*
-// ѕомечает строку лога с индексом i из частичного массива строк лога с
-// момента последнего считывани€ как прочитанную
-void UEnvironment::MarkUnreadLogLineAsRead(int i)
-{
- int line_index=-1;
- TempString.clear();
-
- if(LogList.empty())
-  return;
-
- if(LastReadExceptionLogIndex>=0 && LastReadExceptionLogIndex+i>=int(LogList.size()))
-  return;
-
- if(LastReadExceptionLogIndex<0 && i>=int(LogList.size()))
- {
-  return;
- }
-
- LastReadExceptionLogIndex+=i;
-}      */
-
-// ¬озвращает частичный массив строк лога с момента последнего считывани€ лога
-// этой функцией
-const char* UEnvironment::GetUnreadLog(int &error_level)
-{
- error_level=LastErrorLevel;
- LastErrorLevel=INT_MAX;
- if(LastReadExceptionLogIndex<=0)
- {
-  LastReadExceptionLogIndex=TempLogString.size();
-  return TempLogString.c_str();
- }
-
- if(LastReadExceptionLogIndex<int(TempLogString.size()))
- {
-  TempString=TempLogString.substr(LastReadExceptionLogIndex);
-  LastReadExceptionLogIndex=TempLogString.size();
-  return TempString.c_str();
- }
-
- TempString="";
  return TempString.c_str();
 }
 
@@ -728,7 +683,6 @@ void UEnvironment::ClearLog(void)
  LastReadExceptionLogIndex=-1;
  CurrentExceptionsLogSize=0;
  LastErrorLevel=INT_MAX;
- TempLogString.clear();
  LogList.clear();
 }
 
