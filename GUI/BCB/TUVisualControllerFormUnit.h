@@ -94,7 +94,7 @@ virtual void ALoadParameters(RDK::USerStorageXML &xml);
 // Управление длинным именем управляемого компонента
 // Длинное имя управляемого компонента модели (опционально)
 const std::string& GetComponentControlName(void) const;
-bool SetComponentControlName(const std::string& name);
+virtual bool SetComponentControlName(const std::string& name);
 
 // Создание копии этого компонента
 virtual TUVisualControllerForm* New(TComponent *owner=0)=0;
