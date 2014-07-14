@@ -2352,6 +2352,20 @@ const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapOutputByIndex(co
  return DllManager.GetEngineLock()->Model_GetComponentBitmapOutput(stringid, index);
 }
 
+const /*RDK::UBitmap* */ void* RDK_CALL MModel_GetComponentBitmapOutput(int engine_index,const char *stringid, const char *property_name)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 0;
+ return DllManager.GetEngineLock()->Model_GetComponentBitmapOutput(stringid, property_name);
+
+}
+const /*RDK::UBitmap* */ void* RDK_CALL MModel_GetComponentBitmapOutputByIndex(int engine_index,const char *stringid, int index)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 0;
+ return DllManager.GetEngineLock()->Model_GetComponentBitmapOutput(stringid, index);
+}
+
 // Возвращает указатель на вход с индексом 'index' компонента 'id'
 const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapInput(const char *stringid, const char *property_name)
 {
