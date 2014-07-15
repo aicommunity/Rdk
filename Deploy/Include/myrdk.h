@@ -13,6 +13,7 @@
 #pragma GCC diagnostic ignored "-Wswitch"
 #endif
 
+#include "../../Deploy/Include/initdll_defs.h"
 #include "../../Core/System/rdk_system.h"
 #include "../../ThirdParty/ThirdParty.h"
 #include "../../Core/Math/UMath.h"

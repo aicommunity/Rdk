@@ -2379,6 +2379,34 @@ const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapInputByIndex(con
  return DllManager.GetEngineLock()->Model_GetComponentBitmapInput(stringid, index);
 }
 
+///  опирует данные о разрешении изображени€ выхода с индексом 'index' компонента 'id'
+/// в стрктуру bmp_param
+int RDK_CALL Model_CopyComponentBitmapOutputHeader(const char *stringid, const char *property_name, /*RDK::UBitmapParam* */ void* bmp_param)
+{
+ return DllManager.GetEngineLock()->Model_CopyComponentBitmapOutputHeader(stringid, property_name, (RDK::UBitmapParam*)bmp_param);
+}
+
+int RDK_CALL MModel_CopyComponentBitmapOutputHeader(int engine_index, const char *stringid, const char *property_name, /*RDK::UBitmapParam* */ void* bmp_param)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1;
+
+ return DllManager.GetEngineLock(engine_index)->Model_CopyComponentBitmapOutputHeader(stringid, property_name, (RDK::UBitmapParam*)bmp_param);
+}
+
+int RDK_CALL Model_CopyComponentBitmapOutputHeaderByIndex(const char *stringid, int index, /*RDK::UBitmapParam* */ void* bmp_param)
+{
+ return DllManager.GetEngineLock()->Model_CopyComponentBitmapOutputHeaderByIndex(stringid, index, (RDK::UBitmapParam*)bmp_param);
+}
+
+int RDK_CALL MModel_CopyComponentBitmapOutputHeaderByIndex(int engine_index, const char *stringid, int index, /*RDK::UBitmapParam* */ void* bmp_param)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1;
+
+ return DllManager.GetEngineLock(engine_index)->Model_CopyComponentBitmapOutputHeaderByIndex(stringid, index, (RDK::UBitmapParam*)bmp_param);
+}
+
 ///  опирует изображение выхода с индексом 'index' компонента 'id'
 /// метод предполагает, что bmp уже имеет выделенную пам€ть под изобржение требуемого размера
 int RDK_CALL Model_CopyComponentBitmapOutput(const char *stringid, const char *property_name, /*RDK::UBitmap* */ void* bmp)

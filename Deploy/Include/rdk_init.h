@@ -919,6 +919,13 @@ RDK_LIB_TYPE const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapOut
 RDK_LIB_TYPE const /*RDK::UBitmap* */ void* RDK_CALL MModel_GetComponentBitmapOutput(int engine_index, const char *stringid, const char *property_name);
 RDK_LIB_TYPE const /*RDK::UBitmap* */ void* RDK_CALL MModel_GetComponentBitmapOutputByIndex(int engine_index, const char *stringid, int index);
 
+///  опирует данные о разрешении изображени€ выхода с индексом 'index' компонента 'id'
+/// в стрктуру bmp_param
+RDK_LIB_TYPE int RDK_CALL Model_CopyComponentBitmapOutputHeader(const char *stringid, const char *property_name, /*RDK::UBitmapParam* */ void* bmp_param);
+RDK_LIB_TYPE int RDK_CALL MModel_CopyComponentBitmapOutputHeader(int engine_index, const char *stringid, const char *property_name, /*RDK::UBitmapParam* */ void* bmp_param);
+RDK_LIB_TYPE int RDK_CALL Model_CopyComponentBitmapOutputHeaderByIndex(const char *stringid, int index, /*RDK::UBitmapParam* */ void* bmp_param);
+RDK_LIB_TYPE int RDK_CALL MModel_CopyComponentBitmapOutputHeaderByIndex(int engine_index, const char *stringid, int index, /*RDK::UBitmapParam* */ void* bmp_param);
+
 ///  опирует изображение выхода с индексом 'index' компонента 'id'
 /// метод предполагает, что bmp уже имеет выделенную пам€ть под изобржение требуемого размера
 RDK_LIB_TYPE int RDK_CALL Model_CopyComponentBitmapOutput(const char *stringid, const char *property_name, /*RDK::UBitmap**/void* bmp);
