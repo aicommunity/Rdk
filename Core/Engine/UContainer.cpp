@@ -1013,6 +1013,31 @@ void UContainer::AddStaticComponent(const NameT &classname, const NameT &name, U
  StaticComponents[comp]=classname;
 }
 
+/// Перемещает компоненту в другой компонент
+/// Если comp не принадлежит этому компоненту, или target имеет отличный от
+/// этого компонента storage, или target не может принять в себя компонент
+/// то возвращает false и не делает ничего
+bool UContainer::MoveComponent(UEPtr<UContainer> comp, UEPtr<UContainer> target)
+{
+ if(!comp || !target)
+  return false;
+
+ if(comp->GetOwner() != this)
+  return false;
+
+ if(target->GetStorage() != GetStorage())
+  return false;
+
+ if(!target->CheckComponentType(comp))
+  return false;
+
+ DelComponent(comp,false);
+ if(target->AddComponent(comp) == ForbiddenId)
+  return false;
+
+ return true;
+}
+
 // Возвращает список имен и Id компонент, содержащихся непосредственно
 // в этом объекте
 // Память должна быть выделена

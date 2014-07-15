@@ -1825,6 +1825,41 @@ int UEngine::Model_DelComponent(const char* stringid, const char *name)
  return 0;
 }
 
+
+/// Перемещает компоненту в другой компонент
+/// Если comp не принадлежит этому компоненту, или target имеет отличный от
+/// этого компонента storage, или target не может принять в себя компонент
+/// то возвращает false и не делает ничего
+int UEngine::Model_MoveComponent(const char* component, const char* target)
+{
+ try
+ {
+  RDK::UContainer* comp=FindComponent(component);
+  RDK::UContainer* target_comp=FindComponent(target);
+
+  if(!comp)
+   return -4;
+
+  if(!target_comp)
+   return -5;
+
+  if(!comp->GetOwner())
+   return -6;
+
+  if(!comp->GetOwner()->MoveComponent(comp,target_comp))
+   return -7;
+
+  AccessCache.clear();
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+
+ return 0;
+}
+
+
 // Возвращает число всех компонент в заданного компоненте 'stringid'
 // если stringid - пустая строка, то возвращает число всех компонент модели
 int UEngine::Model_GetNumComponents(const char* stringid)

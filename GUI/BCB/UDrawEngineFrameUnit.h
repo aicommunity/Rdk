@@ -48,6 +48,10 @@ __published:    // IDE-managed Components
 	TMenuItem *Rename1;
 	TMenuItem *N4;
 	TMenuItem *Delete1;
+	TMenuItem *N5;
+	TMenuItem *StartMoving1;
+	TMenuItem *Finishmoving1;
+	TMenuItem *Cancelmoving1;
     void __fastcall ImageMouseDown(TObject *Sender, TMouseButton Button, TShiftState Shift,
           int X, int Y);
     void __fastcall ImageMouseMove(TObject *Sender, TShiftState Shift, int X, int Y);
@@ -80,6 +84,9 @@ __published:    // IDE-managed Components
 	void __fastcall UClassesListFrameLibComponentListStringGridMouseUp(TObject *Sender,
           TMouseButton Button, TShiftState Shift, int X, int Y);
 	void __fastcall UClassesListFrameAddClassButtonClick(TObject *Sender);
+	void __fastcall StartMoving1Click(TObject *Sender);
+	void __fastcall Finishmoving1Click(TObject *Sender);
+	void __fastcall Cancelmoving1Click(TObject *Sender);
 
 
 private:    // User declarations
@@ -130,6 +137,10 @@ bool DragDropFlag;
 
 // Флаг, выставляемый в процессе создания "длинной" связи
 bool LongLinkFlag;
+
+// Флаг, выставляемый в процессе перемещения объекта
+bool MoveFlag;
+
 
 // -----------------------------
 // Методы управления визуальным интерфейсом

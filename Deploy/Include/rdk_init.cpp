@@ -1072,6 +1072,22 @@ int RDK_CALL MModel_DelComponent(int engine_index, const char* stringid, const c
  return DllManager.GetEngineLock(engine_index)->Model_DelComponent(stringid, name);
 }
 
+/// Перемещает компоненту в другой компонент
+/// Если comp не принадлежит этому компоненту, или target имеет отличный от
+/// этого компонента storage, или target не может принять в себя компонент
+/// то возвращает false и не делает ничего
+int RDK_CALL Model_MoveComponent(const char* component, const char* target)
+{
+ return DllManager.GetEngineLock()->Model_MoveComponent(component, target);
+}
+
+int RDK_CALL MModel_MoveComponent(int engine_index, const char* component, const char* target)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+ return DllManager.GetEngineLock(engine_index)->Model_MoveComponent(component, target);
+}
+
 // Возвращает число всех компонент в заданного компоненте 'stringid'
 // если stringid - пустая строка, то возвращает число всех компонент модели
 int RDK_CALL Model_GetNumComponents(const char* stringid)

@@ -516,6 +516,12 @@ virtual const char*  Model_AddComponent(const char* stringid, const char *classn
 // если stringid - пустая строка, то удаляет из самой модели
 virtual int Model_DelComponent(const char* stringid, const char *name);
 
+/// Перемещает компоненту в другой компонент
+/// Если comp не принадлежит этому компоненту, или target имеет отличный от
+/// этого компонента storage, или target не может принять в себя компонент
+/// то возвращает false и не делает ничего
+virtual int Model_MoveComponent(const char* component, const char* target);
+
 // Возвращает число всех компонент в заданного компоненте 'stringid'
 // если stringid - пустая строка, то возвращает число всех компонент модели
 virtual int Model_GetNumComponents(const char* stringid);

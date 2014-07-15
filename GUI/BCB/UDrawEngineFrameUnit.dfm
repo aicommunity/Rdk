@@ -45,6 +45,8 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
         ExplicitWidth = 227
         ExplicitHeight = 422
         inherited NameTabSheet: TTabSheet
+          ExplicitLeft = 4
+          ExplicitTop = 24
           ExplicitWidth = 499
           ExplicitHeight = 515
           inherited StringGrid: TStringGrid
@@ -63,6 +65,8 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
           end
         end
         inherited LibsControlTabSheet: TTabSheet
+          ExplicitLeft = 4
+          ExplicitTop = 24
           ExplicitWidth = 219
           ExplicitHeight = 394
           inherited Splitter1: TSplitter
@@ -272,6 +276,23 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
     object Rename1: TMenuItem
       Caption = 'Rename'
       OnClick = Rename1Click
+    end
+    object N5: TMenuItem
+      Caption = '-'
+    end
+    object StartMoving1: TMenuItem
+      Caption = 'Start moving'
+      OnClick = StartMoving1Click
+    end
+    object Finishmoving1: TMenuItem
+      Caption = 'Finish moving'
+      Enabled = False
+      OnClick = Finishmoving1Click
+    end
+    object Cancelmoving1: TMenuItem
+      Caption = 'Cancel moving'
+      Enabled = False
+      OnClick = Cancelmoving1Click
     end
     object N4: TMenuItem
       Caption = '-'

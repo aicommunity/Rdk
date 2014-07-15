@@ -485,6 +485,13 @@ RDK_LIB_TYPE const char* RDK_CALL MModel_AddComponent(int engine_index, const ch
 RDK_LIB_TYPE int RDK_CALL Model_DelComponent(const char* stringid, const char *name);
 RDK_LIB_TYPE int RDK_CALL MModel_DelComponent(int engine_index, const char* stringid, const char *name);
 
+/// Перемещает компоненту в другой компонент
+/// Если comp не принадлежит этому компоненту, или target имеет отличный от
+/// этого компонента storage, или target не может принять в себя компонент
+/// то возвращает false и не делает ничего
+RDK_LIB_TYPE int RDK_CALL Model_MoveComponent(const char* component, const char* target);
+RDK_LIB_TYPE int RDK_CALL MModel_MoveComponent(int engine_index, const char* component, const char* target);
+
 // Возвращает число всех компонент в заданном компоненте 'stringid'
 // если stringid - пустая строка, то возвращает число всех компонент модели
 RDK_LIB_TYPE int RDK_CALL Model_GetNumComponents(const char* stringid);
