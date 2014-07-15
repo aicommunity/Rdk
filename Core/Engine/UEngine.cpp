@@ -4487,6 +4487,40 @@ const RDK::UBitmap* UEngine::Model_GetComponentBitmapOutput(const char *stringid
  return 0;
 }
 
+///  опирует данные о разрешении изображени€ выхода с индексом 'index' компонента 'id'
+/// в стрктуру bmp_param
+int UEngine::Model_CopyComponentBitmapOutputHeader(const char *stringid, const char *property_name, RDK::UBitmapParam* bmp_param)
+{
+ if(!bmp_param)
+  return 12011;
+
+ const RDK::UBitmap *temp_bmp=Model_GetComponentBitmapOutput(stringid, property_name);
+ if(!temp_bmp)
+  return 12012;
+
+ bmp_param->Width=temp_bmp->GetWidth();
+ bmp_param->Height=temp_bmp->GetHeight();
+ bmp_param->ColorModel=temp_bmp->GetColorModel();
+
+ return 0;
+}
+
+int UEngine::Model_CopyComponentBitmapOutputHeaderByIndex(const char *stringid, int index, RDK::UBitmapParam* bmp_param)
+{
+ if(!bmp_param)
+  return 12011;
+
+ const RDK::UBitmap *temp_bmp=Model_GetComponentBitmapOutput(stringid, index);
+ if(!temp_bmp)
+  return 12012;
+
+ bmp_param->Width=temp_bmp->GetWidth();
+ bmp_param->Height=temp_bmp->GetHeight();
+ bmp_param->ColorModel=temp_bmp->GetColorModel();
+
+ return 0;
+}
+
 ///  опирует изображение выхода с индексом 'index' компонента 'id'
 /// метод предполагает, что bmp уже имеет выделенную пам€ть под изобржение требуемого размера
 int UEngine::Model_CopyComponentBitmapOutput(const char *stringid, const char *property_name, RDK::UBitmap* bmp)

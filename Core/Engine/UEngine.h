@@ -848,6 +848,11 @@ virtual const RDK::UBitmap* Model_GetComponentOutput(const char *stringid, int i
 virtual const RDK::UBitmap* Model_GetComponentBitmapOutput(const char *stringid, const char *property_name);
 virtual const RDK::UBitmap* Model_GetComponentBitmapOutput(const char *stringid, int index);
 
+///  опирует данные о разрешении изображени€ выхода с индексом 'index' компонента 'id'
+/// в стрктуру bmp_param
+virtual int Model_CopyComponentBitmapOutputHeader(const char *stringid, const char *property_name, RDK::UBitmapParam* bmp_param);
+virtual int Model_CopyComponentBitmapOutputHeaderByIndex(const char *stringid, int index, RDK::UBitmapParam* bmp_param);
+
 ///  опирует изображение выхода с индексом 'index' компонента 'id'
 /// метод предполагает, что bmp уже имеет выделенную пам€ть под изобржение требуемого размера
 virtual int Model_CopyComponentBitmapOutput(const char *stringid, const char *property_name, RDK::UBitmap* bmp);
