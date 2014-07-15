@@ -28,6 +28,9 @@
 #include "UDrawEngineFrameUnit.h"
 #include <Vcl.AppEvnts.hpp>
 #include <Web.Win.Sockets.hpp>
+
+#define WM_SERVER_PING (WM_USER + 261)
+#define WM_SERVER_PONG (WM_USER + 262)
 //---------------------------------------------------------------------------
 #pragma warn -8130
 class TUGEngineControlForm : public TUVisualControllerForm
@@ -203,8 +206,10 @@ public:		// User declarations
 	__fastcall TUGEngineControlForm(TComponent* Owner);
 
 void __fastcall WMSysCommand(TMessage &Msg);
+void __fastcall WMServerPing(TMessage &Msg);
 BEGIN_MESSAGE_MAP
 MESSAGE_HANDLER(WM_SYSCOMMAND, TMessage, WMSysCommand)
+MESSAGE_HANDLER(WM_SERVER_PING, TMessage, WMServerPing)
 END_MESSAGE_MAP(TForm)
 
 String MainFormName;

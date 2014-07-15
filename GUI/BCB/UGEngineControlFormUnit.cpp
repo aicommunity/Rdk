@@ -156,6 +156,12 @@ switch (sys_code)
  TForm::Dispatch(&Msg);
 }
 
+void __fastcall TUGEngineControlForm::WMServerPing(TMessage &Msg)
+{
+ PostMessage((HWND)Msg.WParam, WM_SERVER_PONG, 0, 0);
+}
+
+
 // Загружает данные положения формы из xml
 void TUGEngineControlForm::LoadFormPosition(RDK::USerStorageXML &xml)
 {
