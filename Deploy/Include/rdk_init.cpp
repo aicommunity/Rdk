@@ -1072,6 +1072,22 @@ int RDK_CALL MModel_DelComponent(int engine_index, const char* stringid, const c
  return DllManager.GetEngineLock(engine_index)->Model_DelComponent(stringid, name);
 }
 
+/// Перемещает компоненту в другой компонент
+/// Если comp не принадлежит этому компоненту, или target имеет отличный от
+/// этого компонента storage, или target не может принять в себя компонент
+/// то возвращает false и не делает ничего
+int RDK_CALL Model_MoveComponent(const char* component, const char* target)
+{
+ return DllManager.GetEngineLock()->Model_MoveComponent(component, target);
+}
+
+int RDK_CALL MModel_MoveComponent(int engine_index, const char* component, const char* target)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+ return DllManager.GetEngineLock(engine_index)->Model_MoveComponent(component, target);
+}
+
 // Возвращает число всех компонент в заданного компоненте 'stringid'
 // если stringid - пустая строка, то возвращает число всех компонент модели
 int RDK_CALL Model_GetNumComponents(const char* stringid)
@@ -2377,6 +2393,34 @@ const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapInputByIndex(con
 {
 
  return DllManager.GetEngineLock()->Model_GetComponentBitmapInput(stringid, index);
+}
+
+/// Копирует данные о разрешении изображения выхода с индексом 'index' компонента 'id'
+/// в стрктуру bmp_param
+int RDK_CALL Model_CopyComponentBitmapOutputHeader(const char *stringid, const char *property_name, /*RDK::UBitmapParam* */ void* bmp_param)
+{
+ return DllManager.GetEngineLock()->Model_CopyComponentBitmapOutputHeader(stringid, property_name, (RDK::UBitmapParam*)bmp_param);
+}
+
+int RDK_CALL MModel_CopyComponentBitmapOutputHeader(int engine_index, const char *stringid, const char *property_name, /*RDK::UBitmapParam* */ void* bmp_param)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1;
+
+ return DllManager.GetEngineLock(engine_index)->Model_CopyComponentBitmapOutputHeader(stringid, property_name, (RDK::UBitmapParam*)bmp_param);
+}
+
+int RDK_CALL Model_CopyComponentBitmapOutputHeaderByIndex(const char *stringid, int index, /*RDK::UBitmapParam* */ void* bmp_param)
+{
+ return DllManager.GetEngineLock()->Model_CopyComponentBitmapOutputHeaderByIndex(stringid, index, (RDK::UBitmapParam*)bmp_param);
+}
+
+int RDK_CALL MModel_CopyComponentBitmapOutputHeaderByIndex(int engine_index, const char *stringid, int index, /*RDK::UBitmapParam* */ void* bmp_param)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1;
+
+ return DllManager.GetEngineLock(engine_index)->Model_CopyComponentBitmapOutputHeaderByIndex(stringid, index, (RDK::UBitmapParam*)bmp_param);
 }
 
 /// Копирует изображение выхода с индексом 'index' компонента 'id'

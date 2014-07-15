@@ -458,6 +458,12 @@ void DelAllComponents(void);
 /// и имя 'name'
 virtual void AddStaticComponent(const NameT &classname, const NameT &name, UEPtr<UContainer> comp);
 
+/// Перемещает компоненту в другой компонент
+/// Если comp не принадлежит этому компоненту, или target имеет отличный от
+/// этого компонента storage, или target не может принять в себя компонент
+/// то возвращает false и не делает ничего
+virtual bool MoveComponent(UEPtr<UContainer> comp, UEPtr<UContainer> target);
+
 // Возвращает список имен и Id компонент, содержащихся непосредственно
 // в этом объекте
 // Память должна быть выделена

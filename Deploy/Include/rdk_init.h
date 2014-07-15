@@ -485,6 +485,13 @@ RDK_LIB_TYPE const char* RDK_CALL MModel_AddComponent(int engine_index, const ch
 RDK_LIB_TYPE int RDK_CALL Model_DelComponent(const char* stringid, const char *name);
 RDK_LIB_TYPE int RDK_CALL MModel_DelComponent(int engine_index, const char* stringid, const char *name);
 
+/// Перемещает компоненту в другой компонент
+/// Если comp не принадлежит этому компоненту, или target имеет отличный от
+/// этого компонента storage, или target не может принять в себя компонент
+/// то возвращает false и не делает ничего
+RDK_LIB_TYPE int RDK_CALL Model_MoveComponent(const char* component, const char* target);
+RDK_LIB_TYPE int RDK_CALL MModel_MoveComponent(int engine_index, const char* component, const char* target);
+
 // Возвращает число всех компонент в заданном компоненте 'stringid'
 // если stringid - пустая строка, то возвращает число всех компонент модели
 RDK_LIB_TYPE int RDK_CALL Model_GetNumComponents(const char* stringid);
@@ -918,6 +925,13 @@ RDK_LIB_TYPE const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapOut
 
 RDK_LIB_TYPE const /*RDK::UBitmap* */ void* RDK_CALL MModel_GetComponentBitmapOutput(int engine_index, const char *stringid, const char *property_name);
 RDK_LIB_TYPE const /*RDK::UBitmap* */ void* RDK_CALL MModel_GetComponentBitmapOutputByIndex(int engine_index, const char *stringid, int index);
+
+/// Копирует данные о разрешении изображения выхода с индексом 'index' компонента 'id'
+/// в стрктуру bmp_param
+RDK_LIB_TYPE int RDK_CALL Model_CopyComponentBitmapOutputHeader(const char *stringid, const char *property_name, /*RDK::UBitmapParam* */ void* bmp_param);
+RDK_LIB_TYPE int RDK_CALL MModel_CopyComponentBitmapOutputHeader(int engine_index, const char *stringid, const char *property_name, /*RDK::UBitmapParam* */ void* bmp_param);
+RDK_LIB_TYPE int RDK_CALL Model_CopyComponentBitmapOutputHeaderByIndex(const char *stringid, int index, /*RDK::UBitmapParam* */ void* bmp_param);
+RDK_LIB_TYPE int RDK_CALL MModel_CopyComponentBitmapOutputHeaderByIndex(int engine_index, const char *stringid, int index, /*RDK::UBitmapParam* */ void* bmp_param);
 
 /// Копирует изображение выхода с индексом 'index' компонента 'id'
 /// метод предполагает, что bmp уже имеет выделенную память под изобржение требуемого размера

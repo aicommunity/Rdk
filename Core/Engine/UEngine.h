@@ -516,6 +516,12 @@ virtual const char*  Model_AddComponent(const char* stringid, const char *classn
 // если stringid - пустая строка, то удаляет из самой модели
 virtual int Model_DelComponent(const char* stringid, const char *name);
 
+/// Перемещает компоненту в другой компонент
+/// Если comp не принадлежит этому компоненту, или target имеет отличный от
+/// этого компонента storage, или target не может принять в себя компонент
+/// то возвращает false и не делает ничего
+virtual int Model_MoveComponent(const char* component, const char* target);
+
 // Возвращает число всех компонент в заданного компоненте 'stringid'
 // если stringid - пустая строка, то возвращает число всех компонент модели
 virtual int Model_GetNumComponents(const char* stringid);
@@ -847,6 +853,11 @@ virtual const RDK::UBitmap* Model_GetComponentOutput(const char *stringid, int i
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
 virtual const RDK::UBitmap* Model_GetComponentBitmapOutput(const char *stringid, const char *property_name);
 virtual const RDK::UBitmap* Model_GetComponentBitmapOutput(const char *stringid, int index);
+
+/// Копирует данные о разрешении изображения выхода с индексом 'index' компонента 'id'
+/// в стрктуру bmp_param
+virtual int Model_CopyComponentBitmapOutputHeader(const char *stringid, const char *property_name, RDK::UBitmapParam* bmp_param);
+virtual int Model_CopyComponentBitmapOutputHeaderByIndex(const char *stringid, int index, RDK::UBitmapParam* bmp_param);
 
 /// Копирует изображение выхода с индексом 'index' компонента 'id'
 /// метод предполагает, что bmp уже имеет выделенную память под изобржение требуемого размера
