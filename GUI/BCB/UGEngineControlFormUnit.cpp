@@ -158,6 +158,14 @@ switch (sys_code)
 
 void __fastcall TUGEngineControlForm::WMServerPing(TMessage &Msg)
 {
+/* static int ping_msg_index=0;
+ std::string ping_msg="Ping Received from HWND=";
+ ping_msg+=AnsiString(IntToHex(int(Msg.WParam),8)).c_str();
+ ping_msg+=" Send message id=";
+ ping_msg+=RDK::sntoa(WM_SERVER_PONG);
+ ping_msg+=" Count=";
+ ping_msg+=RDK::sntoa(++ping_msg_index);
+ Engine_LogMessage(RDK_EX_INFO,ping_msg.c_str());*/
  PostMessage((HWND)Msg.WParam, WM_SERVER_PONG, 0, 0);
 }
 

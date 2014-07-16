@@ -322,10 +322,6 @@ object UGEngineControlForm: TUGEngineControlForm
                 Height = 211
                 ActivePage = UDrawEngineFrame1.UClassesListFrame.LibsTabSheet
                 ExplicitHeight = 211
-                inherited NameTabSheet: TTabSheet
-                  ExplicitLeft = 4
-                  ExplicitTop = 24
-                end
                 inherited LibsTabSheet: TTabSheet
                   ExplicitWidth = 219
                   ExplicitHeight = 183
@@ -337,8 +333,6 @@ object UGEngineControlForm: TUGEngineControlForm
                   end
                 end
                 inherited LibsControlTabSheet: TTabSheet
-                  ExplicitLeft = 4
-                  ExplicitTop = 24
                   inherited Splitter1: TSplitter
                     ExplicitTop = -83
                   end
@@ -718,7 +712,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 360
     Top = 65528
     Bitmap = {
-      494C01011B006000A80210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B006000B00210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
