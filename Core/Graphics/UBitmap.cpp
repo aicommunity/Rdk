@@ -1775,7 +1775,11 @@ void UBitmap::Move(int pixels, int direction, UBMFillType filltype, UColorT colo
  int bytepixellength=0;
 
  if(direction < 1 || direction > 4 || pixels <= 0)
+ {
+  if(target)
+   *target=*this;
   return;
+ }
 
  if(!Length)
   return;
@@ -1977,15 +1981,30 @@ void UBitmap::Move(int pixels, int direction, UBMFillType filltype, UColorT colo
 // Если 'target' != 0 то результат операции сохраняется в него
 void UBitmap::MoveXY(int x, int y, UBMFillType filltype, UColorT color, UBitmap *target)
 {
- if(x > 0)
-  Move(x,ubmRight,filltype,color,target);
- else
-  Move(-x,ubmLeft,filltype,color,target);
+ if(target)
+ {
+	 if(x > 0)
+	  Move(x,ubmRight,filltype,color,target);
+	 else
+	  Move(-x,ubmLeft,filltype,color,target);
 
- if(y > 0)
-  Move(y,ubmDown,filltype,color,target);
+	 if(y > 0)
+	  target->Move(y,ubmDown,filltype,color);
+	 else
+	  target->Move(-y,ubmUp,filltype,color);
+ }
  else
-  Move(-y,ubmUp,filltype,color,target);
+ {
+	 if(x > 0)
+	  Move(x,ubmRight,filltype,color);
+	 else
+	  Move(-x,ubmLeft,filltype,color);
+
+	 if(y > 0)
+	  Move(y,ubmDown,filltype,color);
+	 else
+	  Move(-y,ubmUp,filltype,color);
+ }
 }
 
 // Изменяет размер канвы, сохраняя нетронутым изображение
