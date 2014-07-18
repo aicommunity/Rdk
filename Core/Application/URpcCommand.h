@@ -5,7 +5,7 @@
 
 namespace RDK {
 
-class URpcCommand
+class RDK_LIB_TYPE URpcCommand
 {
 public: // Данные
 /// Идентификатор команды

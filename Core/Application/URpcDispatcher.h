@@ -15,7 +15,7 @@
 namespace RDK {
 
 /// Реализует многопоточный вызов каналов для выполения команд
-class URpcDispatcher: public URpcDispatcherQueues
+class RDK_LIB_TYPE URpcDispatcher: public URpcDispatcherQueues
 {
 protected:
 /// Массив декодеров, соответствующих каналам

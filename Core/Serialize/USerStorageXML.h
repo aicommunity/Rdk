@@ -32,7 +32,7 @@ See file license.txt for more information
 
 namespace RDK {
 
-class USerStorageXML: public USerStorage
+class RDK_LIB_TYPE USerStorageXML: public USerStorage
 {
 protected: // Данные
 // Корень сериализации

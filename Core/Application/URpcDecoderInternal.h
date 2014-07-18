@@ -6,7 +6,7 @@
 namespace RDK {
 
 /// 
-class URpcDecoderInternal: public URpcDecoder
+class RDK_LIB_TYPE URpcDecoderInternal: public URpcDecoder
 {
 
 public:

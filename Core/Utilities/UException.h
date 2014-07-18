@@ -14,7 +14,7 @@
 namespace RDK {
 
 /* Базовый класс исключений */
-class UException
+class RDK_LIB_TYPE UException
 {
 protected: // Общие данные
 // Последний порядковый номер исключения
@@ -77,7 +77,7 @@ virtual std::string CreateLogMessage(void) const;
 
 
 /* Фатальные ошибки (обращение по 0 указателям и т.п.) */
-struct EFatal: public UException
+struct RDK_LIB_TYPE EFatal: public UException
 {
 // --------------------------
 // Конструкторы и деструкторы
@@ -90,7 +90,7 @@ virtual ~EFatal(void);
 };
 
 /* Ошибки, корректируемые пользователем */
-struct EError: public UException
+struct RDK_LIB_TYPE EError: public UException
 {
 // --------------------------
 // Конструкторы и деструкторы
@@ -103,7 +103,7 @@ virtual ~EError(void);
 };
 
 /* Предупреждения (например об неэффективном использовании ресурсов) */
-struct EWarning: public UException
+struct RDK_LIB_TYPE EWarning: public UException
 {
 // --------------------------
 // Конструкторы и деструкторы
@@ -116,7 +116,7 @@ virtual ~EWarning(void);
 };
 
 /* Информационные сообщения, выдача которых инициируется пользователем */
-struct EInfo: public UException
+struct RDK_LIB_TYPE EInfo: public UException
 {
 // --------------------------
 // Конструкторы и деструкторы
@@ -128,7 +128,7 @@ virtual ~EInfo(void);
 };
 
 /* Отладочные сообщения, выдача которых инициируется пользователем */
-struct EDebug: public UException
+struct RDK_LIB_TYPE EDebug: public UException
 {
 // --------------------------
 // Конструкторы и деструкторы
@@ -140,7 +140,7 @@ virtual ~EDebug(void);
 };
 
 /* Ошибка преобразования строки в число */
-struct EStrToNumber: public EError
+struct RDK_LIB_TYPE EStrToNumber: public EError
 {
 std::string Str; // Строка
 
@@ -159,7 +159,7 @@ virtual std::string CreateLogMessage(void) const;
 };
 
 // Исключения, связанные с идентификаторами
-struct EIdError: public EError
+struct RDK_LIB_TYPE EIdError: public EError
 {
 // Идентификатор, вызвавший исключение
 int Id;
@@ -179,7 +179,7 @@ virtual std::string CreateLogMessage(void) const;
 };
 
 // Исключения, связанные с именами
-struct ENameError: public EError
+struct RDK_LIB_TYPE ENameError: public EError
 {
 // Идентификатор, вызвавший исключение
 std::string Name;
@@ -200,43 +200,43 @@ virtual std::string CreateLogMessage(void) const;
 
 
 // Id не найден
-struct EIdNotExist: public EIdError
+struct RDK_LIB_TYPE EIdNotExist: public EIdError
 {
 EIdNotExist(int id) : EIdError(id) {};
 };
 
 // Имя не найдено
-struct ENameNotExist: public ENameError
+struct RDK_LIB_TYPE ENameNotExist: public ENameError
 {
 ENameNotExist(const std::string &name) : ENameError(name) {};
 };
 
 // Id уже существует
-struct EIdAlreadyExist: public EIdError
+struct RDK_LIB_TYPE EIdAlreadyExist: public EIdError
 {
 EIdAlreadyExist(int id) : EIdError(id) {};
 };
 
 // Имя уже существует
-struct ENameAlreadyExist: public ENameError
+struct RDK_LIB_TYPE ENameAlreadyExist: public ENameError
 {
 ENameAlreadyExist(const std::string &name) : ENameError(name) {};
 };
 
 // Id не определен (forbidden id)
-struct EForbiddenId: public EIdError
+struct RDK_LIB_TYPE EForbiddenId: public EIdError
 {
 EForbiddenId(int id) : EIdError(id) {};
 };
 
 // Id не корректен
-struct EInvalidId: public EIdError
+struct RDK_LIB_TYPE EInvalidId: public EIdError
 {
 EInvalidId(int id) : EIdError(id) {};
 };
 
 // Исключения, связанные с индексами
-struct EIndexError: public EError
+struct RDK_LIB_TYPE EIndexError: public EError
 {
 // Индекс, вызвавший исключение
 int Index;
@@ -256,7 +256,7 @@ virtual std::string CreateLogMessage(void) const;
 };
 
 // Id не корректен
-struct EInvalidIndex: public EIndexError
+struct RDK_LIB_TYPE EInvalidIndex: public EIndexError
 {
 EInvalidIndex(int index) : EIndexError(index) {};
 };
@@ -287,7 +287,7 @@ virtual std::string CreateLogMessage(void) const;
 };
 
 // Исключения, связанные с обработкой возвращаемых значений методов
-struct EFunctionReturnFalse: public EError
+struct RDK_LIB_TYPE EFunctionReturnFalse: public EError
 {
 // Имя файла
 std::string FileName;
@@ -313,7 +313,7 @@ virtual std::string CreateLogMessage(void) const;
 };
 
 // Исключения, связанные с обработкой возвращаемых значений методов
-struct EFunctionReturnError: public EError
+struct RDK_LIB_TYPE EFunctionReturnError: public EError
 {
 // Имя файла
 std::string FileName;
@@ -342,7 +342,7 @@ virtual std::string CreateLogMessage(void) const;
 };
 
 // Исключение с простой строкой текста как фатальная ошибка
-struct EStringFatal: public EFatal
+struct RDK_LIB_TYPE EStringFatal: public EFatal
 {
 std::string Str;
 
@@ -361,7 +361,7 @@ virtual std::string CreateLogMessage(void) const;
 };
 
 // Исключение с простой строкой текста как ошибка
-struct EStringError: public EError
+struct RDK_LIB_TYPE EStringError: public EError
 {
 std::string Str;
 
@@ -380,7 +380,7 @@ virtual std::string CreateLogMessage(void) const;
 };
 
 // Исключение с простой строкой текста как предупреждение
-struct EStringWarning: public EWarning
+struct RDK_LIB_TYPE EStringWarning: public EWarning
 {
 std::string Str;
 
@@ -399,7 +399,7 @@ virtual std::string CreateLogMessage(void) const;
 };
 
 // Исключение с простой строкой текста как информационное сообщение
-struct EStringInfo: public EInfo
+struct RDK_LIB_TYPE EStringInfo: public EInfo
 {
 std::string Str;
 
@@ -418,7 +418,7 @@ virtual std::string CreateLogMessage(void) const;
 };
 
 // Исключение с простой строкой текста как информационное сообщение
-struct EStringDebug: public EDebug
+struct RDK_LIB_TYPE EStringDebug: public EDebug
 {
 std::string Str;
 

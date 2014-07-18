@@ -14,6 +14,7 @@ See file license.txt for more information
 #define UASTORAGE_H
 
 #include <map>
+#include "../../Deploy/Include/initdll_defs.h"
 #include "UEPtr.h"
 #include "UContainer.h"
 #include "../Serialize/USerStorageXML.h"
@@ -37,7 +38,7 @@ typedef std::map<std::string, UEPtr<UContainerDescription> >::const_iterator UCl
 typedef std::vector<ULibrary*> UClassLibraryList;
 /* *********************************************************************** */
 // Элемент списка существующих объектов определенного класса
-class UInstancesStorageElement
+class RDK_LIB_TYPE UInstancesStorageElement
 {
 public: // Данные
 // Указатель на объект
@@ -84,7 +85,7 @@ typedef map<UId, UInstancesStorage>::iterator UObjectsStorageIterator;
 typedef map<UId, UInstancesStorage>::const_iterator UObjectsStorageCIterator;
 /* *********************************************************************** */
 
-class UStorage
+class RDK_LIB_TYPE UStorage
 {
 friend class UContainer;
 protected: // Системные свойства

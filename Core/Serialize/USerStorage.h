@@ -14,7 +14,7 @@ See file license.txt for more information
 
 namespace RDK {
 
-class USerStorage
+class RDK_LIB_TYPE USerStorage
 {
 public: // Ìועמהû
 // --------------------------

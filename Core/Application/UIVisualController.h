@@ -19,7 +19,7 @@ void ClearClobalFonts(void);
 bool AddGlobalFont(const std::string &font_file_name);
 
 // Класс прототип-визуальных интерфейсов
-class UIVisualController
+class RDK_LIB_TYPE UIVisualController
 {
 public:
 // Метод, вызываемый перед сбросом модели
@@ -64,7 +64,7 @@ virtual unsigned long long GetUpdateTime(void)=0;
 };
 
 // Класс хранилище-визуальных интерфейсов
-class UIVisualControllerStorage
+class RDK_LIB_TYPE UIVisualControllerStorage
 {
 public:
 // Список обработчиков, которые должны быть вызваны после расчета

@@ -17,7 +17,7 @@
 
 namespace RDK {
 
-class UApplication
+class RDK_LIB_TYPE UApplication
 {
 protected: // Данные приложения
 /// Рабочий каталог

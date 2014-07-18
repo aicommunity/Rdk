@@ -13,7 +13,7 @@
 namespace RDK {
 
 /// Реализует управление очередями команд
-class URpcDispatcherQueues
+class RDK_LIB_TYPE URpcDispatcherQueues
 {
 protected:
 /// Очередь команд, ожидающих обработки

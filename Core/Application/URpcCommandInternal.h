@@ -5,7 +5,7 @@
 
 namespace RDK {
 
-class URpcCommandInternal: public URpcCommand
+class RDK_LIB_TYPE URpcCommandInternal: public URpcCommand
 {
 public: // Входные данные
 /// Строка с xml-данными запроса

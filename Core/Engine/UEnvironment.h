@@ -18,7 +18,7 @@ See file license.txt for more information
 
 namespace RDK {
 
-class UEnvironment: virtual public UModule
+class RDK_LIB_TYPE UEnvironment: virtual public UModule
 {
 public:
 // Прототип функции обратного вызова обработчика исключений

@@ -23,7 +23,7 @@ namespace RDK{
 //using namespace RDK;
 
 
-class UEngine: public UModule
+class RDK_LIB_TYPE UEngine: public UModule
 {
 public:
 // Прототип функции обратного вызова обработчика исключений

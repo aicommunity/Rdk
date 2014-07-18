@@ -6,7 +6,7 @@
 namespace RDK
 {
 
-class UProject
+class RDK_LIB_TYPE UProject
 {
 
 };

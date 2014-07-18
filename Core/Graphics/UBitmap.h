@@ -81,7 +81,7 @@ UBColor& operator [] (int i)
 
 // Координаты пикселя изображения
 // (Описание в конце файла)
-struct UBPoint;
+struct RDK_LIB_TYPE UBPoint;
 
 // Координаты и цвет пикселя изображения
 // (Описание в конце файла)
@@ -100,7 +100,7 @@ struct UBHistogramElement;
 class UBHistogram;
 
 
-class UBitmapParam
+class RDK_LIB_TYPE UBitmapParam
 {
 public:
 // размеры изображения по осям
@@ -120,7 +120,7 @@ UBitmapParam(UBMColorModel cmodel);
 };
 
 // Класс, описывающий изображение
-class UBitmap: protected UBitmapParam
+class RDK_LIB_TYPE UBitmap: protected UBitmapParam
 {
 protected: // Данные
 UBColor *Data;
@@ -889,7 +889,7 @@ int UBHistogramElementCompare(const void *e1, const void *e2);
 }
 
 // Гистограмма
-class UBHistogram
+class RDK_LIB_TYPE UBHistogram
 {
 friend class UBitmap;
 protected: // Параметры

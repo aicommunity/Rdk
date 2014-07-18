@@ -988,6 +988,9 @@ RDK_LIB_TYPE void RDK_CALL Engine_ClearReadLog(void);
 RDK_LIB_TYPE void RDK_CALL MEngine_ClearReadLog(int engine_index);
 // ----------------------------
 
+// «десь RDK_CALL не нужен!
+RDK_LIB_TYPE void tss_cleanup_implemented(void);
+
 #ifdef __cplusplus
 }
 #endif

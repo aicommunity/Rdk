@@ -13,7 +13,7 @@ class URpcDispatcher;
 /// реализует соответствующе вызов
 /// На каждый канал аналитики и канал управления приложением должен использоваться
 /// отдельный декодер
-class URpcDecoder: public URpcDispatcherQueues
+class RDK_LIB_TYPE URpcDecoder: public URpcDispatcherQueues
 {
 protected: // Владелец этого декодера
 URpcDispatcher* Dispatcher;
