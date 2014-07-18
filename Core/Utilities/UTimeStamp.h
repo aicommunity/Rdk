@@ -21,7 +21,7 @@ namespace RDK {
 
 using namespace std;
 
-struct UTimeStamp
+struct RDK_LIB_TYPE UTimeStamp
 {
 public: // Данные
 int Hours;

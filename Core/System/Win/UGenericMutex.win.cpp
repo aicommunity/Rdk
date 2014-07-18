@@ -7,7 +7,7 @@
 #include "../UGenericMutex.h"
 #include <windows.h>
 
-class UGenericMutexWin: public UGenericMutex
+class RDK_LIB_TYPE UGenericMutexWin: public UGenericMutex
 {
 private:
 void* m_UnlockEvent;
@@ -102,12 +102,12 @@ UGenericMutexWin& UGenericMutexWin::operator = (const UGenericMutexWin &copy)
 }
 
 // ---------------------------------------------------------------------------
-UGenericMutex* UCreateMutex(void)
+RDK_LIB_TYPE UGenericMutex* UCreateMutex(void)
 {
  return new UGenericMutexWin;
 }
 
-void UDestroyMutex(UGenericMutex* mutex)
+RDK_LIB_TYPE void UDestroyMutex(UGenericMutex* mutex)
 {
  if(mutex)
   delete mutex;

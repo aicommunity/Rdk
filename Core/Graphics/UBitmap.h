@@ -787,7 +787,7 @@ void ColorConvertRGB96_F32(UBColor *source, UBColor *dest) const;
 typedef UBitmap* PUBitmap;
 
 // Координаты пикселя изображения
-struct UBPoint
+struct RDK_LIB_TYPE UBPoint
 {
 int X,Y;
 
@@ -810,7 +810,7 @@ bool operator != (const UBPoint &value) const;
 
 // Координаты и цвет пикселя изображения
 // (Описание в конце файла)
-struct UBColorPoint: public UBPoint
+struct RDK_LIB_TYPE UBColorPoint: public UBPoint
 {
 // Цвет точки
 UColorT Color;
@@ -824,7 +824,7 @@ UBColorPoint(void);
 };
 
 // Прямоугольный элемент изображения
-struct UBRect: public UBPoint
+struct RDK_LIB_TYPE UBRect: public UBPoint
 {
 // Координаты правого нижнего угла прямоугольника
 //int X2,Y2;
@@ -865,7 +865,7 @@ bool operator != (const UBRect &value) const;
 };
 
 // Элемент гистограммы
-struct UBHistogramElement
+struct RDK_LIB_TYPE UBHistogramElement
 {
 // Цвет изображения
 UColorT Color;

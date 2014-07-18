@@ -16,7 +16,7 @@ typedef std::vector<unsigned char> UParamT;
 typedef std::vector<unsigned char>::iterator ParamIterator;
 typedef std::vector<unsigned char>::const_iterator ParamCIterator;
 
-class UTransferPacket
+class RDK_LIB_TYPE UTransferPacket
        {
        protected: // Данные
         // Длина пакета
@@ -149,7 +149,7 @@ class UTransferPacket
 	   };
 
 /// Класс, обеспечивающий считывание последовательности пакетов из потока
-class UTransferReader
+class RDK_LIB_TYPE UTransferReader
 {
 protected: // Данные
 /// Список команд

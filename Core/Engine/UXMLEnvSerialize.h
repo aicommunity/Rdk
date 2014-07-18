@@ -24,12 +24,12 @@ See file license.txt for more information
 namespace RDK {
 
 // UIdVector
-USerStorageXML& operator << (USerStorageXML& storage, const UIdVector &data);
-USerStorageXML& operator >> (USerStorageXML& storage, UIdVector &data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, const UIdVector &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, UIdVector &data);
 
 // ULongIdVector
-USerStorageXML& operator << (USerStorageXML& storage, const ULongIdVector &data);
-USerStorageXML& operator >> (USerStorageXML& storage, ULongIdVector &data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, const ULongIdVector &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, ULongIdVector &data);
 
 // ULinkSide
 template<typename T>

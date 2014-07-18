@@ -85,61 +85,61 @@ USerStorageXML& USimpleFromStorageF(USerStorageXML& storage, T &data)
  return storage;
 }
 
-USerStorageXML& operator << (USerStorageXML& storage, bool data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, bool data);
 
-USerStorageXML& operator >> (USerStorageXML& storage, bool &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, bool &data);
 
-USerStorageXML& operator << (USerStorageXML& storage, char data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, char data);
 
-USerStorageXML& operator >> (USerStorageXML& storage, char &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, char &data);
 
-USerStorageXML& operator << (USerStorageXML& storage, unsigned char data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, unsigned char data);
 
-USerStorageXML& operator >> (USerStorageXML& storage, unsigned char &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, unsigned char &data);
 
-USerStorageXML& operator << (USerStorageXML& storage, short data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, short data);
 
-USerStorageXML& operator >> (USerStorageXML& storage, short &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, short &data);
 
-USerStorageXML& operator << (USerStorageXML& storage, unsigned short data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, unsigned short data);
 
-USerStorageXML& operator >> (USerStorageXML& storage, unsigned short &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, unsigned short &data);
 
-USerStorageXML& operator << (USerStorageXML& storage, int data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, int data);
 
-USerStorageXML& operator >> (USerStorageXML& storage, int &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, int &data);
 
-USerStorageXML& operator << (USerStorageXML& storage, unsigned int data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, unsigned int data);
 
-USerStorageXML& operator >> (USerStorageXML& storage, unsigned int &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, unsigned int &data);
 
-USerStorageXML& operator << (USerStorageXML& storage, long data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, long data);
 
-USerStorageXML& operator >> (USerStorageXML& storage, long &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, long &data);
 
-USerStorageXML& operator << (USerStorageXML& storage, unsigned long data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, unsigned long data);
 
-USerStorageXML& operator >> (USerStorageXML& storage, unsigned long &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, unsigned long &data);
 
-USerStorageXML& operator << (USerStorageXML& storage, long long data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, long long data);
 
-USerStorageXML& operator >> (USerStorageXML& storage, long long &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, long long &data);
 
-USerStorageXML& operator << (USerStorageXML& storage, unsigned long long data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, unsigned long long data);
 
-USerStorageXML& operator >> (USerStorageXML& storage, unsigned long long &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, unsigned long long &data);
 
-USerStorageXML& operator << (USerStorageXML& storage, float data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, float data);
 
-USerStorageXML& operator >> (USerStorageXML& storage, float &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, float &data);
 
-USerStorageXML& operator << (USerStorageXML& storage, double data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, double data);
 
-USerStorageXML& operator >> (USerStorageXML& storage, double &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, double &data);
 
-USerStorageXML& operator << (USerStorageXML& storage, long double data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, long double data);
 
-USerStorageXML& operator >> (USerStorageXML& storage, long double &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, long double &data);
 
 // Указатели
 template<typename T>
@@ -316,11 +316,11 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::list<T> &data)
 }
 
 // Вектора
-USerStorageXML& operator << (USerStorageXML& storage, const std::vector<bool> &data);
-USerStorageXML& operator >> (USerStorageXML& storage, std::vector<bool> &data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, const std::vector<bool> &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, std::vector<bool> &data);
 
-USerStorageXML& operator << (USerStorageXML& storage, const std::vector<double> &data);
-USerStorageXML& operator >> (USerStorageXML& storage, std::vector<double> &data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, const std::vector<double> &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, std::vector<double> &data);
 
 template<typename T>
 USerStorageXML& operator << (USerStorageXML& storage, const std::vector<T> &data)
@@ -372,11 +372,11 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::vector<T> &data)
 }
 
 // Строки
-USerStorageXML& operator << (USerStorageXML& storage, const std::string &data);
-USerStorageXML& operator >> (USerStorageXML& storage, std::string &data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, const std::string &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, std::string &data);
 
-USerStorageXML& operator << (USerStorageXML& storage, const std::wstring &data);
-USerStorageXML& operator >> (USerStorageXML& storage, std::wstring &data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, const std::wstring &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, std::wstring &data);
 
 // Деревья
 template<typename T>

@@ -6,7 +6,7 @@
 namespace RDK {
 
 /// Описание базовых свойств приложения, использующего библиотеку
-class UAppCore
+class  RDK_LIB_TYPE UAppCore
 {
 protected:
 

@@ -138,9 +138,9 @@
 #endif
 #ifdef _USE_XMLPARSER_DLL
 #ifdef _DLL_EXPORTS_
-#define XMLDLLENTRY __declspec(dllexport)
+#define XMLDLLENTRY RDK_LIB_TYPE
 #else
-#define XMLDLLENTRY __declspec(dllimport)
+#define XMLDLLENTRY RDK_LIB_TYPE
 #endif
 #else
 #define XMLDLLENTRY

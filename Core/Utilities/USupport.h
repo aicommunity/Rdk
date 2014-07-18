@@ -223,7 +223,7 @@ int hextoi(const std::basic_string<CharT> &str)
 }
 
 // Выделяет дробную часть числа с точностью digs знаков после запятой
-int fraction(double d, int digs);
+RDK_LIB_TYPE int fraction(double d, int digs);
 
 // Разделяет строку на составлящие через сепаратор 'sep'
 // Возвращает число полученных строк
@@ -267,7 +267,7 @@ int separatestring(const basic_string<CharT> &str, vector<basic_string<CharT> > 
 }
 
 // Возвращает время в виде понятной строки вида YYYY.MM.DD HH:MM:SS
-std::string get_text_time(time_t time_data, char date_sep='.', char time_sep=':');
+RDK_LIB_TYPE std::string get_text_time(time_t time_data, char date_sep='.', char time_sep=':');
 
 // Возвращает время в виде понятной строки вида YYYY/MM/DD HH:MM:SS,MS + добавочная строка additional_line
 //std::string get_text_current_time(char date_sep='/', char time_sep=':', char m_sec_sep=',', std::string additional_line="GMT+04:00");
@@ -277,14 +277,14 @@ std::string get_text_time(time_t time_data, char date_sep='.', char time_sep=':'
 //@brief Сужает широкую строку, используя локализацию loc
 //   @return Возвращает суженную строку или пустую суженную строку, в
 //   случае. если возникла ошибка
-std::string& narrow(const std::wstring& wstr, const std::locale& loc, std::string &result);
+RDK_LIB_TYPE std::string& narrow(const std::wstring& wstr, const std::locale& loc, std::string &result);
 
 //std::string narrow2(const std::wstring& wstr);
 
 //@brief Расширяет строку, используя локализацию loc
 //   @return Возвращает расширенную строку или пустую расширенную строку, в
 //   случае, если возникла ошибка.
-std::wstring& widen(const std::string& str, const std::locale& loc, std::wstring &result);
+RDK_LIB_TYPE std::wstring& widen(const std::string& str, const std::locale& loc, std::wstring &result);
 
 //std::wstring widen2(const std::string& str);
 

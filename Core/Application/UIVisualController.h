@@ -10,13 +10,13 @@
 namespace RDK {
 
 // Глобальная коллекция шрифтов
-extern RDK::UBitmapFontCollection GlobalFonts;
+extern RDK_LIB_TYPE RDK::UBitmapFontCollection GlobalFonts;
 
 // Очищает коллекцию глобальных шрифтов
-void ClearClobalFonts(void);
+RDK_LIB_TYPE void ClearClobalFonts(void);
 
 // Загружает новый глобальный шрифт
-bool AddGlobalFont(const std::string &font_file_name);
+RDK_LIB_TYPE bool AddGlobalFont(const std::string &font_file_name);
 
 // Класс прототип-визуальных интерфейсов
 class RDK_LIB_TYPE UIVisualController

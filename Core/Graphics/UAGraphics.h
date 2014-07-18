@@ -24,7 +24,7 @@ using namespace std;
 
 enum {alLeft=1, alRight=2, alCenter=3, alJustify=4};
 
-class UAGraphics
+class RDK_LIB_TYPE UAGraphics
 {
 protected: // Данные
 // Шрифт

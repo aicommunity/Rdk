@@ -23,7 +23,7 @@ namespace RDK {
 class UAGraphics;
 
 // Описание линии
-class UFontLine
+class RDK_LIB_TYPE UFontLine
 {
 public:
 int x1,y1,x2,y2;
@@ -31,7 +31,7 @@ int x1,y1,x2,y2;
 
 
 // Описание растрового символа
-class UBitmapFontSymbol
+class RDK_LIB_TYPE UBitmapFontSymbol
 {
 public:
 // Изображение символа
@@ -39,7 +39,7 @@ UBitmap Data;
 };
 
 // Описание векторного символа
-class UVectorFontSymbol
+class RDK_LIB_TYPE UVectorFontSymbol
 {
 public:
 // Набор линий, описывающий символ
@@ -47,7 +47,7 @@ public:
 std::vector<UFontLine> Lines;
 };
 
-class UAFont
+class RDK_LIB_TYPE UAFont
 {
 protected:
 
@@ -153,7 +153,7 @@ virtual void DrawSymbol(char ch, UAGraphics *graphics)=0;
 };
 
 
-class UBitmapFont: public UAFont
+class RDK_LIB_TYPE UBitmapFont: public UAFont
 {
 protected: // Параметры
 
@@ -223,7 +223,7 @@ void DrawSymbol(char ch, UAGraphics *graphics);
 // --------------------------
 };
 
-class UVectorFont: public UAFont
+class RDK_LIB_TYPE UVectorFont: public UAFont
 {
 protected: // Параметры
 // Толщина линий шрифта
@@ -275,7 +275,7 @@ void DrawSymbol(char ch, UAGraphics *graphics);
 // --------------------------
 };
 
-class UFontCollection
+class RDK_LIB_TYPE UFontCollection
 {
 public:
 // --------------------------
@@ -303,7 +303,7 @@ virtual UAFont* GetFont(const string &name, int size)=0;
 
 };
 
-class UBitmapFontCollection
+class RDK_LIB_TYPE UBitmapFontCollection
 {
 public:
 typedef map<int,UBitmapFont> FontSizeContainerT;

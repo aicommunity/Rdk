@@ -3,7 +3,9 @@
 #ifndef GenericMutexH
 #define GenericMutexH
 
-class UGenericMutex
+#include "../../Deploy/Include/initdll_defs.h"
+
+class RDK_LIB_TYPE UGenericMutex
 {
 protected:
 int LockId;
@@ -22,7 +24,7 @@ UGenericMutex* UCreateMutex(void);
 void UDestroyMutex(UGenericMutex* mutex);
 
 // ---------------------------------------------------------------------------
-class UGenericMutexLocker
+class RDK_LIB_TYPE UGenericMutexLocker
 {
 private:
 UGenericMutex *m_mutex;

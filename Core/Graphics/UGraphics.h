@@ -20,7 +20,7 @@ namespace RDK {
 
 class UAFont;
 
-class UGraphics: public UAGraphics
+class RDK_LIB_TYPE UGraphics: public UAGraphics
 {
 protected: // Данные
 // Список шрифтов

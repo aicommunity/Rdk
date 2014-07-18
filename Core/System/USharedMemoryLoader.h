@@ -1,6 +1,8 @@
 #ifndef USHAREDMEMORYLOADER_H
 #define USHAREDMEMORYLOADER_H
 
+#include "../../Deploy/Include/initdll_defs.h"
+
 #ifdef RDK_CALL
 #define CALLING_CONVERSION RDK_CALL
 #else
@@ -55,19 +57,19 @@ typedef int (CALLING_CONVERSION *PUsm_WriteData)(int pipe_index, const char* buf
 /// Возвращает число прочитанных байт или отрицательное число в случае ошибки
 typedef int (CALLING_CONVERSION *PUsm_ReadData)(int pipe_index, char* buffer, int buffer_byte_size);
 
-extern PUsm_GetNumPipes Usm_GetNumPipes;
-extern PUsm_SetNumPipes Usm_SetNumPipes;
-extern PUsm_InitPipe Usm_InitPipe;
-extern PUsm_UnInitPipe Usm_UnInitPipe;
-extern PUsm_IsPipeInit Usm_IsPipeInit;
-extern PUsm_GetPipeSize Usm_GetPipeSize;
-extern PUsm_WriteData Usm_WriteData;
-extern PUsm_ReadData Usm_ReadData;
+extern RDK_LIB_TYPE PUsm_GetNumPipes Usm_GetNumPipes;
+extern RDK_LIB_TYPE PUsm_SetNumPipes Usm_SetNumPipes;
+extern RDK_LIB_TYPE PUsm_InitPipe Usm_InitPipe;
+extern RDK_LIB_TYPE PUsm_UnInitPipe Usm_UnInitPipe;
+extern RDK_LIB_TYPE PUsm_IsPipeInit Usm_IsPipeInit;
+extern RDK_LIB_TYPE PUsm_GetPipeSize Usm_GetPipeSize;
+extern RDK_LIB_TYPE PUsm_WriteData Usm_WriteData;
+extern RDK_LIB_TYPE PUsm_ReadData Usm_ReadData;
 
 /// Загружает библиотеку
-int LoadUSharedMemoryLibrary(const char *library_file_name);
+RDK_LIB_TYPE int LoadUSharedMemoryLibrary(const char *library_file_name);
 
 /// Выгружает библиотеку
-int UnLoadUSharedMemoryLibrary(void);
+RDK_LIB_TYPE int UnLoadUSharedMemoryLibrary(void);
 
 #endif // USHAREDMEMORYLOADER_H
