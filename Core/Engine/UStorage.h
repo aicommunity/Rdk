@@ -14,7 +14,6 @@ See file license.txt for more information
 #define UASTORAGE_H
 
 #include <map>
-#include "../../Deploy/Include/initdll_defs.h"
 #include "UEPtr.h"
 #include "UContainer.h"
 #include "../Serialize/USerStorageXML.h"

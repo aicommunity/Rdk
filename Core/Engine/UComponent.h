@@ -60,7 +60,7 @@ class UIProperty;
 class UIShare;
 
 // Хранилище свойств параметра
-struct UVariable
+struct RDK_LIB_TYPE UVariable
 {
 // Указатель на свойство
 UEPtr<UIProperty> Property;
@@ -107,7 +107,7 @@ bool CheckMask(unsigned int mask) const;
 };
 
 
-class UComponent: public UModule
+class RDK_LIB_TYPE UComponent: public UModule
 {
 friend class UStorage;
 public: // Типы данных
@@ -346,7 +346,7 @@ EStateNameAlreadyExist(const std::string &name) : ENameAlreadyExist(name) {};
 };
 
 // Класс сериализации свойств
-class UIProperty
+class RDK_LIB_TYPE UIProperty
 {
 public:
 // Метод устанавливает значение указателя на итератор-хранилище данных об этом
@@ -459,7 +459,7 @@ EPropertySetterFail(const std::string &owner_name, const std::string &property_n
 };
 
 // Класс управления общими свойствами
-class UIShare
+class RDK_LIB_TYPE UIShare
 {
 public:
  // Метод возвращает Id общего свойства

@@ -3,6 +3,7 @@
 
 #include <ctime>
 #include <string>
+#include "../../Deploy/Include/initdll_defs.h"
 
 #define RDK_EX_UNKNOWN 0
 #define RDK_EX_FATAL 1

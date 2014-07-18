@@ -19,7 +19,7 @@ namespace RDK {
 
 typedef UEPtr<UConnector> PUAConnector;
 
-class UAConnectorVector
+class RDK_LIB_TYPE UAConnectorVector
 {
 protected: // Параметры
 // Размер контейнера
@@ -87,7 +87,7 @@ int GetSize(void) const;
 // --------------------------
 };
 
-class UAConnector2DVector
+class RDK_LIB_TYPE UAConnector2DVector
 {
 protected: // Параметры
 // Размер контейнера
@@ -155,7 +155,7 @@ int GetSize(void) const;
 // --------------------------
 };
 
-class UItem: public UConnector
+class RDK_LIB_TYPE UItem: public UConnector
 {
 protected: // Основные свойства
 // Список коннекторов подключенных к выходам этого объекта

@@ -24,7 +24,7 @@ namespace RDK {
 class UItem;
 
 // Описание подключаемого элемента "UConnectedITEM"
-struct UCItem
+struct RDK_LIB_TYPE UCItem
 {
 // Подключаемый элемент
 UItem* Item;
@@ -51,7 +51,7 @@ bool operator != (const UCItem &value);
 };
 
 // Описание входящей связи с заданным item "UConnectedLINK"
-struct UCLink
+struct RDK_LIB_TYPE UCLink
 {
 // Индекс выхода
 int Output;
@@ -74,7 +74,7 @@ UCLink(const UCLink &copy);
 };
 
 // Контейнер - список указателей на подключенные элементы
-class UCItemList
+class RDK_LIB_TYPE UCItemList
 {
 protected: // Параметры
 // Размер контейнера
@@ -148,7 +148,7 @@ int GetSize(void) const;
 // --------------------------
 };
 
-class UConnector: public UContainer
+class RDK_LIB_TYPE UConnector: public UContainer
 {
 friend class UItem;
 protected: // Хранилище связей

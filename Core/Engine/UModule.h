@@ -14,9 +14,11 @@ See file license.txt for more information
 #ifndef UMODULE_H
 #define UMODULE_H
 
+#include "../../Deploy/Include/initdll_defs.h"
+
 namespace RDK {
 
-class UModule
+class RDK_LIB_TYPE UModule
 {
 protected: // Флаги основных состояний
 /// Флаг готовности объекта к счету

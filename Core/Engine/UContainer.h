@@ -22,7 +22,7 @@ namespace RDK {
 class UContainer;
 
 // Класс описания локальных указателей
-class UIPointer
+class RDK_LIB_TYPE UIPointer
 {
 protected: // Данные
 
@@ -50,7 +50,7 @@ UIPointer& operator = (UEPtr<UContainer> source)
 
 
 // Хранилище свойств указателя
-struct UPVariable
+struct RDK_LIB_TYPE UPVariable
 {
  // Id указателя
  UId Id;
@@ -80,7 +80,7 @@ typedef std::vector<UEPtr<UContainer> > UAContainerVector;
 // Массив статических компонент
 typedef std::map<UEPtr<UContainer>, NameT> UAStaticContainerMap;
 
-class UContainer: public UComponent
+class RDK_LIB_TYPE UContainer: public UComponent
 {
 public: // Типы данных
 typedef std::map<NameT,UPVariable> PointerMapT;

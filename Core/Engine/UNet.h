@@ -16,7 +16,7 @@ See file license.txt for more information
 
 namespace RDK {
 
-class UNet: public UADItem
+class RDK_LIB_TYPE UNet: public UADItem
 {
 protected: // Основные свойства
 
