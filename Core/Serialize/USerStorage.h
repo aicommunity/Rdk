@@ -12,6 +12,8 @@ See file license.txt for more information
 #ifndef USerStorageH
 #define USerStorageH
 
+#include "../../Deploy/Include/initdll_defs.h"
+
 namespace RDK {
 
 class RDK_LIB_TYPE USerStorage

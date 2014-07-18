@@ -2,10 +2,9 @@
 #define UGENERIC_MUTEX_WIN_CPP
 // ---------------------------------------------------------------------------
 
-#pragma hdrstop
-
 #include "../UGenericMutex.h"
 #include <windows.h>
+#include "../../Deploy/Include/initdll_defs.h"
 
 class RDK_LIB_TYPE UGenericMutexWin: public UGenericMutex
 {
