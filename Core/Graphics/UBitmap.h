@@ -13,6 +13,8 @@ See file license.txt for more information
 #ifndef UBITMAP_H
 #define UBITMAP_H
 
+#include "../../Deploy/Include/initdll_defs.h"
+
 namespace RDK {
 
 // Режим изображения
