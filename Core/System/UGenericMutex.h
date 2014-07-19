@@ -20,8 +20,8 @@ virtual bool unlock()=0;
 virtual bool wait(int timeout)=0;
 };
 
-UGenericMutex* UCreateMutex(void);
-void UDestroyMutex(UGenericMutex* mutex);
+RDK_LIB_TYPE UGenericMutex* UCreateMutex(void);
+RDK_LIB_TYPE void UDestroyMutex(UGenericMutex* mutex);
 
 // ---------------------------------------------------------------------------
 class RDK_LIB_TYPE UGenericMutexLocker

@@ -2,8 +2,8 @@
 #define UGENERIC_MUTEX_WIN_CPP
 // ---------------------------------------------------------------------------
 
-#include "../UGenericMutex.h"
 #include <windows.h>
+#include "../UGenericMutex.h"
 #include "../../Deploy/Include/initdll_defs.h"
 
 class RDK_LIB_TYPE UGenericMutexWin: public UGenericMutex
@@ -101,12 +101,12 @@ UGenericMutexWin& UGenericMutexWin::operator = (const UGenericMutexWin &copy)
 }
 
 // ---------------------------------------------------------------------------
-RDK_LIB_TYPE UGenericMutex* UCreateMutex(void)
+UGenericMutex* UCreateMutex(void)
 {
  return new UGenericMutexWin;
 }
 
-RDK_LIB_TYPE void UDestroyMutex(UGenericMutex* mutex)
+void UDestroyMutex(UGenericMutex* mutex)
 {
  if(mutex)
   delete mutex;

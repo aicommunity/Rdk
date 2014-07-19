@@ -3,6 +3,7 @@
 
 #include <windows.h>
 #include "../rdk_system.h"
+#include "../UGenericMutex.h"
 #include "../win/USharedMemoryLoader.win.cpp"
 #include "UGenericMutex.bcb.cpp"
 #include <System.SysUtils.hpp>  

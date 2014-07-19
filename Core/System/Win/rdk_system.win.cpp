@@ -1,6 +1,7 @@
 #ifndef RDK_SYSTEM_WIN_CPP
 #define RDK_SYSTEM_WIN_CPP
 
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include "../rdk_system.h"
 #include "USharedMemoryLoader.win.cpp"
