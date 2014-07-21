@@ -18,15 +18,11 @@
 #include "../../Core/Graphics/UGraphicsIO.cpp"
 #include "../../Core/Graphics/UGraphics.cpp"
 #include "../../Core/Graphics/UFont.cpp"
-#include "../../Core/Graphics/UDrawEngine.cpp"
 #include "../../Core/Graphics/UGraphicsXMLSerialize.cpp"
 #include "../../Core/Graphics/UGraphicsBinarySerialize.cpp"
 //#include "../../Core/Graphics/UBPtzCamera.cpp"
 #include "../../Core/Engine/UModule.cpp"
 #include "../../Core/Engine/UItemData.cpp"
-
-
-#include "../../Core/Application/UApplication.cpp"
 
 #endif
 
