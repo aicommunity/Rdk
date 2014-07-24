@@ -367,16 +367,16 @@ void InitPrimarySettings(void);
 
 // Уничтожает созданный поток
 bool DestroyCaptureThread(void);
-
+		   /*
 // Инициализация фрейма avi-файлом
 void InitByAvi(const String &filename);
 
 // Инициализация фрейма bmp-файлом
 void InitByBmp(const String &filename, double fps);
-
+				 */
 // Устанавливает отдельное изображение
 bool InitByBmp(const RDK::UBitmap &bmp, double fps);
-
+/*
 // Инициализация фрейма камерой
 void InitByCamera(int camera_index, int input_index, int size_index, int subtype_index, int analog_index);
 
@@ -391,7 +391,7 @@ bool InitByHttpServer(int listen_port);
 
 // Инициализация общей памяти
 bool InitBySharedMemory(int pipe_index, const std::string &pipe_name);
-
+              */
 // Загружает выбранную картинку по индеку в массиве имен
 //bool LoadImageFromSequence(int index, RDK::UBitmap &bmp);
 

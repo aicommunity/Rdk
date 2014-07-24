@@ -350,24 +350,12 @@ bool TVideoOutputFrame::DestroyCaptureThread(void)
  return true;
 }
 
-
+	 /*
 // Инициализация фрейма avi-файлом
 void TVideoOutputFrame::InitByAvi(const String &filename)
 {
  StopButtonClick(this);
-/*
- VideoGrabber->PlayerFileName=filename;
 
-   VideoGrabber->Display_AutoSize = false;
-   VideoGrabber->PlayerRefreshPausedDisplay = false;
-   VideoGrabber->AutoStartPlayer = false;
-   VideoGrabber->BurstCount = 0;
-   VideoGrabber->BurstInterval = 0;
-   VideoGrabber->BurstMode = true;
-   VideoGrabber->BurstType = fc_TBitmap;
-   VideoGrabber->Synchronized=true;
-
-   VideoGrabber->OpenPlayer();  */
    Mode=1;
 //   UpdateInterfaceFlag=true;
 //   TrackBar->Position=0;
@@ -432,7 +420,7 @@ void TVideoOutputFrame::InitByBmp(const String &filename, double fps)
  }
  Mode=0;
  UpdateInterface(true);
-}
+}          */
 
 // Устанавливает отдельное изображение
 bool TVideoOutputFrame::InitByBmp(const RDK::UBitmap &bmp, double fps)
@@ -442,7 +430,7 @@ bool TVideoOutputFrame::InitByBmp(const RDK::UBitmap &bmp, double fps)
 
  if(CaptureThread && dynamic_cast<TVideoCaptureThreadBmp*>(CaptureThread))
  {
-	RDK::ULongTime time_stamp=0;//GetTickCount();
+	RDK::ULongTime time_stamp=TDateTime::CurrentDateTime().operator double();//GetTickCount();
 	CaptureThread->WriteSourceSafe(bmp,time_stamp,false);
 //	MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, 0);
    dynamic_cast<TVideoCaptureThreadBmp*>(CaptureThread)->SetFps(fps);
@@ -461,7 +449,7 @@ bool TVideoOutputFrame::InitByBmp(const RDK::UBitmap &bmp, double fps)
    TVideoCaptureThreadBmp* thread=dynamic_cast<TVideoCaptureThreadBmp*>(CaptureThread);
    if(thread)
    {
-	unsigned long long time_stamp=0;
+	RDK::ULongTime time_stamp=TDateTime::CurrentDateTime().operator double();//GetTickCount();
 	thread->WriteSourceSafe(bmp,time_stamp,false);
 //	MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, 0);
 	thread->SetFps(fps);
@@ -474,20 +462,12 @@ bool TVideoOutputFrame::InitByBmp(const RDK::UBitmap &bmp, double fps)
  return true;//UpdateVideo();
 }
 
-
+        /*
 // Инициализация фрейма камерой
 void TVideoOutputFrame::InitByCamera(int camera_index, int input_index, int size_index, int subtype_index, int analog_index)
 {
  StopButtonClick(this);
-/* VideoGrabber->BurstType = fc_TBitmap;
- VideoGrabber->BurstMode = True;
- VideoGrabber->BurstCount = 0;
- VideoGrabber->VideoDevice=camera_index;
- VideoGrabber->VideoInput=input_index;
- VideoGrabber->VideoSize=size_index;
- VideoGrabber->VideoSubtype=subtype_index;
- VideoGrabber->AnalogVideoStandard=analog_index;
- Mode=2; */
+
 // StartButtonClick(this);
 // UpdateVideo();
 
@@ -584,32 +564,7 @@ bool TVideoOutputFrame::InitByImageSequence(const String &pathname, double fps)
 
  return true;
 }
-/*
-// Загружает выбранную картинку по индеку в массиве имен
-bool TVideoOutputFrame::LoadImageFromSequence(int index, RDK::UBitmap &bmp)
-{
- if(LastReadSequenceIndex == index)
-  return true;
 
- if(BmpSequenceNames[index].find(".bmp") != std::string::npos)
- {
-  RDK::LoadBitmapFromFile((BmpSequencePathName+BmpSequenceNames[index]).c_str(),bmp);
- }
- else
- if(BmpSequenceNames[index].find(".jpg") != std::string::npos || BmpSequenceNames[index].find(".jpeg") != std::string::npos)
- {
-  TJPEGImage* JpegIm=new TJPEGImage;
-  JpegIm->LoadFromFile((BmpSequencePathName+BmpSequenceNames[index]).c_str());
-  Image->Picture->Bitmap->Assign(JpegIm);
-  bmp<<Image->Picture->Bitmap;
-  delete JpegIm;
- }
- else
-  bmp.Fill(0);
- LastReadSequenceIndex = index;
- return true;
-}
-             */
 // Инициализация http-сервера
 bool TVideoOutputFrame::InitByHttpServer(int listen_port)
 {
@@ -629,14 +584,7 @@ bool TVideoOutputFrame::InitByHttpServer(int listen_port)
 //   MyVideoGrabberControlForm->VideoGrabberControlFrame->Init(this, 0);
   }
  }
-/* UHttpServerFrame->IdHTTPServer->Bindings->DefaultPort=listen_port;
- TIdSocketHandle* bind=0;
- if(UHttpServerFrame->IdHTTPServer->Bindings->Count == 0)
-  bind=UHttpServerFrame->IdHTTPServer->Bindings->Add();
- else
-  bind=UHttpServerFrame->IdHTTPServer->Bindings->Items[0];
 
- bind->Port=listen_port;*/
  return true;
 }
 
@@ -644,9 +592,7 @@ bool TVideoOutputFrame::InitByHttpServer(int listen_port)
 bool TVideoOutputFrame::InitBySharedMemory(int pipe_index, const std::string &pipe_name)
 {
  StopButtonClick(this);
-/* PipeIndex=pipe_index;
- PipeName=pipe_name;
- SharedMemoryPipeSize=0;*/
+
  Mode=6;
 
  if(!Usm_GetNumPipes)
@@ -683,7 +629,7 @@ bool TVideoOutputFrame::InitBySharedMemory(int pipe_index, const std::string &pi
 
  UpdateInterface(true);
  return true;
-}
+}        */
 
 // Устанавливает название окна
 bool TVideoOutputFrame::SetTitle(String title)
@@ -1254,8 +1200,8 @@ void TVideoOutputFrame::ABeforeCalculate(void)
  if(CaptureThread)
  {
   double time_stamp=0;
-  CaptureThread->ReadSourceSafe(SendBmpSource,time_stamp,false);
-  if(SendBmpSource.GetLength() == 0)
+  bool res=CaptureThread->ReadSourceSafe(SendBmpSource,time_stamp,false);
+  if(SendBmpSource.GetLength() == 0 && CaptureThread->GetThreadState() == 1)
   {
    if(FrameIndex<GetNumEngines())
 	MEngine_LogMessage(FrameIndex, RDK_EX_INFO, std::string("TVideoOutputFrame::ABeforeCalculate: Frame have zero size!").c_str());

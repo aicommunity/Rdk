@@ -274,6 +274,12 @@ inherited VideoOutputFrame: TVideoOutputFrame
               ExplicitWidth = 0
               ExplicitHeight = 0
             end
+            inherited SourceFrameTabSheet: TTabSheet
+              ExplicitLeft = 0
+              ExplicitTop = 0
+              ExplicitWidth = 0
+              ExplicitHeight = 0
+            end
           end
         end
         inherited VideoPanel: TPanel
@@ -362,48 +368,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
                     Height = 43
                     ExplicitHeight = 93
                   end
-                  inherited RecordingSettingsGroupBox: TGroupBox
-                    inherited RecordingFrameRateLabeledEdit: TLabeledEdit
-                      ExplicitWidth = 166
-                    end
-                    inherited RecordingFileNameLabeledEdit: TLabeledEdit
-                      ExplicitLeft = 175
-                    end
-                    inherited RecordHeightLabeledEdit: TLabeledEdit
-                      ExplicitLeft = 175
-                    end
-                    inherited RecordWidthLabeledEdit: TLabeledEdit
-                      ExplicitWidth = 166
-                    end
-                    inherited BrowseFileNameButton: TButton
-                      ExplicitLeft = 175
-                    end
-                    inherited VideoCompressorSettingsButton: TButton
-                      ExplicitWidth = 166
-                    end
-                    inherited RecordingTimerGroupBox: TGroupBox
-                      inherited RecordingTimerLabeledEdit: TLabeledEdit
-                        ExplicitLeft = 172
-                      end
-                    end
-                    inherited PreAllocatedRecordingGroupBox: TGroupBox
-                      inherited PreallocatedFileSizeLabeledEdit: TLabeledEdit
-                        ExplicitWidth = 163
-                      end
-                      inherited PreallocatedFileCreateButton: TButton
-                        ExplicitLeft = 172
-                      end
-                    end
-                    inherited StoragePathRadioGroup: TRadioGroup
-                      ExplicitWidth = 166
-                    end
-                    inherited StoragePathLabeledEdit: TLabeledEdit
-                      ExplicitLeft = 175
-                    end
-                    inherited BrowseStoragePathButton: TButton
-                      ExplicitLeft = 175
-                    end
-                  end
                 end
               end
             end
@@ -412,6 +376,12 @@ inherited VideoOutputFrame: TVideoOutputFrame
             ActivePage = RecordingFrame.SourceFrameTabSheet
             inherited SourceComponentTabSheet: TTabSheet
               TabVisible = False
+              ExplicitLeft = 0
+              ExplicitTop = 0
+              ExplicitWidth = 0
+              ExplicitHeight = 0
+            end
+            inherited SourceFrameTabSheet: TTabSheet
               ExplicitLeft = 0
               ExplicitTop = 0
               ExplicitWidth = 0
@@ -630,7 +600,7 @@ inherited VideoOutputFrame: TVideoOutputFrame
     Left = 688
     Top = 456
     Bitmap = {
-      494C010120006000940010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010120006000980010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000009000000001002000000000000090
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
