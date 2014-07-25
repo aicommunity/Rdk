@@ -100,6 +100,19 @@ inherited UImagesFrame: TUImagesFrame
       TabOrder = 3
       OnClick = OriginalSizeRadioButtonClick
     end
+    object ShowInfoCheckBox: TCheckBox
+      Left = 193
+      Top = 1
+      Width = 104
+      Height = 15
+      Align = alLeft
+      Caption = 'Show info'
+      DoubleBuffered = True
+      ParentDoubleBuffered = False
+      TabOrder = 4
+      ExplicitLeft = 257
+      ExplicitTop = -7
+    end
   end
   object PopupMenu: TPopupMenu
     Left = 192

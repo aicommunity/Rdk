@@ -49,6 +49,7 @@ __published:    // IDE-managed Components
 	TCheckBox *ShowHistogramCheckBox;
 	TRadioButton *TiledSizeRadioButton;
 	TRadioButton *OriginalSizeRadioButton;
+	TCheckBox *ShowInfoCheckBox;
     void __fastcall DrawGridDrawCell(TObject *Sender, int ACol, int ARow, TRect &Rect,
           TGridDrawState State);
 	void __fastcall SaveToBmpClick(TObject *Sender);

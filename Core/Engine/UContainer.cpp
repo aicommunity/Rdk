@@ -1687,7 +1687,7 @@ RDK_SYS_TRY {
   else
   if(TimeStep > OwnerTimeStep)
   {
-   for(UTime i=TimeStep/OwnerTimeStep;i>=0;--i)
+   for(int i=int(TimeStep/OwnerTimeStep);i>=0;--i)
 	ACalculate();
   }
 

@@ -529,6 +529,8 @@ void TUImagesFrame::ASaveParameters(RDK::USerStorageXML &xml)
 
  xml.WriteBool("ShowLegendCheckBox",ShowLegendCheckBox->Checked);
  xml.WriteBool("ShowHistogramCheckBox",ShowHistogramCheckBox->Checked);
+ xml.WriteBool("ShowInfoCheckBox",ShowInfoCheckBox->Checked);
+
  xml.WriteInteger("SizeMode",SizeMode);
 }
 
@@ -578,6 +580,7 @@ void TUImagesFrame::ALoadParameters(RDK::USerStorageXML &xml)
 
  ShowLegendCheckBox->Checked=xml.ReadBool("ShowLegendCheckBox",true);
  ShowHistogramCheckBox->Checked=xml.ReadBool("ShowHistogramCheckBox",false);
+ ShowInfoCheckBox->Checked=xml.ReadBool("ShowInfoCheckBox",false);
 
  SizeMode=xml.ReadInteger("SizeMode",0);
 
@@ -595,6 +598,12 @@ void __fastcall TUImagesFrame::DrawGridDrawCell(TObject *Sender, int ACol, int A
  if(ShowLegendCheckBox->Checked)
  {
   dynamic_cast<TDrawGrid *>(Sender)->Canvas->TextOut(Rect.Left,Rect.Top,Legends[ACol][ARow].c_str());
+ }
+
+ if(ShowInfoCheckBox->Checked)
+ {
+  String info=IntToStr(Images[ACol][ARow]->Picture->Bitmap->Width)+"x"+IntToStr(Images[ACol][ARow]->Picture->Bitmap->Height);
+  dynamic_cast<TDrawGrid *>(Sender)->Canvas->TextOut(Rect.Right-50,Rect.Top,info);
  }
 }
 //---------------------------------------------------------------------------
@@ -623,6 +632,21 @@ void __fastcall TUImagesFrame::SelectSourceClick(TObject *Sender)
 
  StringIds[DrawGrid->Col][DrawGrid->Row]=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName();
  ComponentIndexes[DrawGrid->Col][DrawGrid->Row]=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput();
+
+ if(ComponentIndexes[DrawGrid->Col][DrawGrid->Row].empty())
+ {
+  const char *p=Model_GetComponentLongName(StringIds[DrawGrid->Col][DrawGrid->Row].c_str());
+  if(p)
+   Legends[DrawGrid->Col][DrawGrid->Row]=std::string(p)+std::string("[")+RDK::sntoa(ComponentIndexesOld[DrawGrid->Col][DrawGrid->Row])+"]";
+  Engine_FreeBufString(p);
+ }
+ else
+ {
+  const char *p=Model_GetComponentLongName(StringIds[DrawGrid->Col][DrawGrid->Row].c_str());
+  if(p)
+   Legends[DrawGrid->Col][DrawGrid->Row]=std::string(p)+std::string("[")+ComponentIndexes[DrawGrid->Col][DrawGrid->Row]+"]";
+  Engine_FreeBufString(p);
+ }
 }
 //---------------------------------------------------------------------------
 
@@ -683,6 +707,9 @@ void __fastcall TUImagesFrame::DrawGridDblClick(TObject *Sender)
 
   if(bmp && (bmp->Width == 0 || bmp->Height == 0))
    return;
+
+  if(!bmp)
+   return;
   DrawGrid->Visible=false;
   ScrollBox1->Visible=true;
  // FullImage->Align=alClient;
@@ -695,21 +722,15 @@ void __fastcall TUImagesFrame::DrawGridDblClick(TObject *Sender)
   if(ShowLegendCheckBox->Checked)
   {
    FullImage->Canvas->Font->Size=12;
-   if(ComponentIndexes[DrawGrid->Col][DrawGrid->Row].empty())
-   {
-	const char *p=Model_GetComponentLongName(StringIds[DrawGrid->Col][DrawGrid->Row].c_str());
-	if(p)
-	 FullImage->Canvas->TextOut(0,0,(std::string(p)+std::string("[")+RDK::sntoa(ComponentIndexesOld[DrawGrid->Col][DrawGrid->Row])+"]").c_str());
-	Engine_FreeBufString(p);
-   }
-   else
-   {
-	const char *p=Model_GetComponentLongName(StringIds[DrawGrid->Col][DrawGrid->Row].c_str());
-	if(p)
-	 FullImage->Canvas->TextOut(0,0,(std::string(p)+std::string("[")+ComponentIndexes[DrawGrid->Col][DrawGrid->Row]+"]").c_str());
-	Engine_FreeBufString(p);
-   }
+   FullImage->Canvas->TextOut(0,0,Legends[DrawGrid->Col][DrawGrid->Row].c_str());
   }
+
+ if(ShowInfoCheckBox->Checked)
+ {
+  String info=IntToStr(FullImage->Picture->Bitmap->Width)+"x"+IntToStr(FullImage->Picture->Bitmap->Height);
+  FullImage->Canvas->TextOut(FullImage->Width-80,0,info);
+ }
+
 }
 //---------------------------------------------------------------------------
 
