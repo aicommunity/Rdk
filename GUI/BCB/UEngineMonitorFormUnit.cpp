@@ -118,7 +118,9 @@ void __fastcall TUEngineMonitorForm::LogTimerTimer(TObject *Sender)
 
 	std::string new_log_data=data;
 	MEngine_FreeBufString(*I,data);
-	UnsentLog.push_back(new_log_data);   }
+	if(!new_log_data.empty())
+	 UnsentLog.push_back(new_log_data);
+   }
   }
   MEngine_ClearReadLog(*I);
  }

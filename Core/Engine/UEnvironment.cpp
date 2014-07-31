@@ -636,8 +636,16 @@ const char* UEnvironment::GetUnreadLog(int &error_level)
 
  }
 // TempString=sntoa(ChannelIndex)+std::string("> ")+LogList[line_index].CreateLogMessage();
- TempString=LogList[line_index].first;
- error_level=LogList[line_index].second;
+ size_t log_size=LogList.size();
+ if(LogList.size()>line_index)
+ {
+  TempString=LogList[line_index].first;
+  error_level=LogList[line_index].second;
+ }
+ else
+ {
+  error_level=RDK_EX_UNKNOWN;
+ }
 // error_level=LogList[line_index].GetType();
  return TempString.c_str();
 }
