@@ -810,6 +810,34 @@ const char* PtzRemoteCall(const char *request, int &return_value, int &channel_i
   return_value=Ptz_SetFocusSpeed(engine_index,camera.c_str(),speed);
  }
  else
+ if(cmd == "Ptz_SetPan")
+ {
+  double speed=xml.ReadFloat("Speed",0.0);
+  double value=xml.ReadFloat("Value",0.0);
+  return_value=Ptz_SetPan(engine_index,camera.c_str(),value,speed);
+ }
+ else
+ if(cmd == "Ptz_SetTilt")
+ {
+  double speed=xml.ReadFloat("Speed",0.0);
+  double value=xml.ReadFloat("Value",0.0);
+  return_value=Ptz_SetTilt(engine_index,camera.c_str(),value,speed);
+ }
+ else
+ if(cmd == "Ptz_SetPanNative")
+ {
+  double speed=xml.ReadFloat("Speed",0.0);
+  double value=xml.ReadFloat("Value",0.0);
+  return_value=Ptz_SetPanNative(engine_index,camera.c_str(),value,speed);
+ }
+ else
+ if(cmd == "Ptz_SetTiltNative")
+ {
+  double speed=xml.ReadFloat("Speed",0.0);
+  double value=xml.ReadFloat("Value",0.0);
+  return_value=Ptz_SetTiltNative(engine_index,camera.c_str(),value,speed);
+ }
+ else
   return_value=2001;
 
  response.SelectRoot();
