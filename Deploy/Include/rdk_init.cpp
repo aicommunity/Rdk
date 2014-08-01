@@ -2430,9 +2430,24 @@ int RDK_CALL Model_CopyComponentBitmapOutput(const char *stringid, const char *p
  return DllManager.GetEngineLock()->Model_CopyComponentBitmapOutput(stringid, property_name, (RDK::UBitmap*)bmp);
 }
 
+RDK_LIB_TYPE int RDK_CALL MModel_CopyComponentBitmapOutput(int engine_index, const char *stringid, const char *property_name, /*RDK::UBitmap**/void* bmp)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1;
+
+  return DllManager.GetEngineLock(engine_index)->Model_CopyComponentBitmapOutput(stringid, property_name, (RDK::UBitmap*)bmp);
+}
+
 int RDK_CALL Model_CopyComponentBitmapOutputByIndex(const char *stringid, int index, /*RDK::UBitmap* */ void* bmp)
 {
  return DllManager.GetEngineLock()->Model_CopyComponentBitmapOutput(stringid, index, (RDK::UBitmap*)bmp);
+}
+
+int RDK_CALL MModel_CopyComponentBitmapOutputByIndex(int engine_index, const char *stringid, int index, /*RDK::UBitmap* */ void* bmp)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1;
+ return DllManager.GetEngineLock(engine_index)->Model_CopyComponentBitmapOutput(stringid, index, (RDK::UBitmap*)bmp);
 }
 
 // Замещает изображение выхода с индексом 'index' компонента 'id'

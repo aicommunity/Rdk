@@ -580,6 +580,8 @@ void __fastcall VideoGrabberDeviceLost(TObject *Sender);
 void __fastcall VideoGrabberFrameBitmap(TObject *Sender,
 	  pFrameInfo FrameInfo, pFrameBitmapInfo BitmapInfo);
 
+void __fastcall VideoGrabberPlayerEndOfStream(TObject *Sender);
+
 virtual void __fastcall Calculate(void);
 
 virtual void __fastcall BeforeCalculate(void);

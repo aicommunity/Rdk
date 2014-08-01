@@ -7,6 +7,7 @@
 #include "UEngineMonitorFormUnit.h"
 #include "TUBitmap.h"
 #include "rdk_initdll.h"
+#include "TMultiStartFormUnit.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 
@@ -265,6 +266,7 @@ bool TVideoCaptureThread::SaveParameters(RDK::USerStorageXML &xml)
 
 bool TVideoCaptureThread::SaveParametersEx(RDK::USerStorageXML &xml)
 {
+ xml.WriteInteger("SourceMode",SourceMode);
  xml.WriteInteger("SyncMode",SyncMode);
  xml.WriteBool("RepeatFlag",RepeatFlag);
  if(!ASaveParameters(xml))
@@ -931,6 +933,7 @@ void __fastcall TVideoCaptureThreadBmpSequence::AfterCalculate(void)
   CurrentTimeStamp+=1.0/86400.0;
  if(CurrentBmpSequenceIndex>=int(BmpSequenceNames.size()))
  {
+  MultiStartForm->MultiStartFrame1->NextSource();
   if(RepeatFlag)
   {
    CurrentBmpSequenceIndex=0;
@@ -1262,6 +1265,7 @@ __fastcall TVideoCaptureThreadVideoGrabber::TVideoCaptureThreadVideoGrabber(TVid
  VideoGrabber->OnFrameBitmap=VideoGrabberFrameBitmap;
  VideoGrabber->OnLog=VideoGrabberLog;
  VideoGrabber->OnDeviceLost=VideoGrabberDeviceLost;
+  VideoGrabber->OnPlayerEndOfStream = VideoGrabberPlayerEndOfStream;
 
  VideoGrabber->Display_AutoSize = false;
  VideoGrabber->PlayerRefreshPausedDisplay = false;
@@ -1360,6 +1364,16 @@ void __fastcall TVideoCaptureThreadVideoGrabber::OnFrameCaptureCompleted(System:
   SetEvent(VideoGrabberCompleted);
  break;
  }
+}
+
+void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberPlayerEndOfStream(TObject *Sender)
+{
+	//ShowMessage("Stream ended");
+	MultiStartForm->MultiStartFrame1->NextSource();
+	if(RepeatFlag)
+		VideoGrabber->PlayerFramePosition=0;
+	else
+		Stop();
 }
 
 void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberFrameBitmap(TObject *Sender,
@@ -1667,16 +1681,13 @@ void __fastcall TVideoCaptureThreadVideoGrabberAvi::AfterCalculate(void)
  {
   VideoGrabber->BurstCount=0;
  }
- if(VideoGrabber->PlayerFramePosition>0 && VideoGrabber->PlayerFramePosition>=VideoGrabber->PlayerFrameCount-100)
+ /*if(VideoGrabber->PlayerFramePosition>0 && VideoGrabber->PlayerFramePosition>=VideoGrabber->PlayerFrameCount-100)
  {
   if(RepeatFlag)
    VideoGrabber->PlayerFramePosition=0;
   else
    Stop();
-//  Sleep(1);
-//  Start();
-//  Sleep(1);
- }
+ } */
 }
 // --------------------------
 

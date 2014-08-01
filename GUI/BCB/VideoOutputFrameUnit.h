@@ -341,6 +341,9 @@ void Init(int mode=-1);
 
 void Init(int mode, RDK::USerStorageXML &raw_xml_data);
 
+void Init(RDK::USerStorageXML &raw_xml_data);
+
+void Init(std::string raw_xml_data);
 
 /// Деинициализация захвата
 void UnInit(void);

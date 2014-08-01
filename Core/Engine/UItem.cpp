@@ -547,7 +547,7 @@ void UItem::Disconnect(UEPtr<UConnector> c, int i_index, int c_index)
 	 if(citem.Index == i_index && citem.Item == this)
 	 {
 	  AssociatedConnectors[i_index].Del(j);
-	  c->DisconnectFromItem(this, i_index, j);
+	  c->DisconnectFromItem(this, i_index, c_index);
 	  break;
 	 }
 	}

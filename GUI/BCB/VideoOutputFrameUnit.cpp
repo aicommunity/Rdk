@@ -199,6 +199,21 @@ void TVideoOutputFrame::Init(int mode, RDK::USerStorageXML &raw_xml_data)
  UpdateInterface();
 }
 
+void TVideoOutputFrame::Init(RDK::USerStorageXML &raw_xml_data)
+{
+ int mode=raw_xml_data.ReadInteger("SourceMode",-1);
+ if(mode == -1)
+  return; // TODO тут запись в лог
+
+ Init(mode, raw_xml_data);
+}
+
+void TVideoOutputFrame::Init(std::string raw_xml_data)
+{
+	RDK::USerStorageXML xml;
+	xml.Load(raw_xml_data, "VideoSourceTest");
+	Init(xml);
+}
 
 /// Деинициализация захвата
 void TVideoOutputFrame::UnInit(void)
