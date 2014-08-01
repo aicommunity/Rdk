@@ -68,6 +68,9 @@ __published:    // IDE-managed Components
 	void __fastcall DrawGridClick(TObject *Sender);
 	void __fastcall OriginalSizeRadioButtonClick(TObject *Sender);
 	void __fastcall TiledSizeRadioButtonClick(TObject *Sender);
+	void __fastcall ShowLegendCheckBoxClick(TObject *Sender);
+	void __fastcall ShowHistogramCheckBoxClick(TObject *Sender);
+	void __fastcall ShowInfoCheckBoxClick(TObject *Sender);
 
 
 

@@ -66,6 +66,7 @@ inherited UImagesFrame: TUImagesFrame
       ParentDoubleBuffered = False
       State = cbChecked
       TabOrder = 0
+      OnClick = ShowLegendCheckBoxClick
     end
     object ShowHistogramCheckBox: TCheckBox
       Left = 89
@@ -77,6 +78,7 @@ inherited UImagesFrame: TUImagesFrame
       DoubleBuffered = True
       ParentDoubleBuffered = False
       TabOrder = 1
+      OnClick = ShowHistogramCheckBoxClick
     end
     object TiledSizeRadioButton: TRadioButton
       Left = 656
@@ -110,8 +112,7 @@ inherited UImagesFrame: TUImagesFrame
       DoubleBuffered = True
       ParentDoubleBuffered = False
       TabOrder = 4
-      ExplicitLeft = 257
-      ExplicitTop = -7
+      OnClick = ShowInfoCheckBoxClick
     end
   end
   object PopupMenu: TPopupMenu
