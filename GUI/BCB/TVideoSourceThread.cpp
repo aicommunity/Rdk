@@ -7,7 +7,7 @@
 #include "UEngineMonitorFormUnit.h"
 #include "TUBitmap.h"
 #include "rdk_initdll.h"
-#include "TMultiStartFormUnit.h"
+//#include "TMultiStartFormUnit.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 
@@ -933,7 +933,7 @@ void __fastcall TVideoCaptureThreadBmpSequence::AfterCalculate(void)
   CurrentTimeStamp+=1.0/86400.0;
  if(CurrentBmpSequenceIndex>=int(BmpSequenceNames.size()))
  {
-  MultiStartForm->MultiStartFrame1->NextSource();
+//  MultiStartForm->MultiStartFrame1->NextSource();
   if(RepeatFlag)
   {
    CurrentBmpSequenceIndex=0;
@@ -1369,7 +1369,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::OnFrameCaptureCompleted(System:
 void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberPlayerEndOfStream(TObject *Sender)
 {
 	//ShowMessage("Stream ended");
-	MultiStartForm->MultiStartFrame1->NextSource();
+//	MultiStartForm->MultiStartFrame1->NextSource();
 	if(RepeatFlag)
 		VideoGrabber->PlayerFramePosition=0;
 	else
