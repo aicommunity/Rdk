@@ -99,6 +99,7 @@ __published:	// IDE-managed Components
 	TMenuItem *ools1;
 	TMenuItem *SaveClassesDescriptions1;
 	TMenuItem *LoadAllClassesDescriptions1;
+	TCheckBox *ShowDebugMessagesCheckBox;
 	void __fastcall Start1Click(TObject *Sender);
 	void __fastcall Pause1Click(TObject *Sender);
 	void __fastcall Reset1Click(TObject *Sender);
@@ -107,6 +108,7 @@ __published:	// IDE-managed Components
 	void __fastcall SaveClassesDescriptions1Click(TObject *Sender);
 	void __fastcall LoadAllClassesDescriptions1Click(TObject *Sender);
 	void __fastcall RichEditMouseEnter(TObject *Sender);
+	void __fastcall ShowDebugMessagesCheckBoxClick(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
 	__fastcall TUEngineMonitorFrame(TComponent* Owner);

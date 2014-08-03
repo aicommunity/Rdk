@@ -1528,15 +1528,13 @@ int UEngine::Env_GetDebugMode(void) const
 {
  try
  {
-  if(Environment->GetDebugMode())
-   return 0;
-
+  return Environment->GetDebugMode();
  }
  catch (RDK::UException &exception)
  {
   ProcessException(exception);
  }
- return 574342;
+ return 0;
 }
 
 /// Устанавливает состояние флага отладочного режима среды

@@ -15,6 +15,7 @@
 #endif
 #include "UShowProgressBarUnit.h"
 #include "TBcbSupport.h"
+#include "UGEngineControlFormUnit.h"
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -359,6 +360,8 @@ void TUEngineMonitorFrame::AUpdateInterface(void)
 				+String(" NumBfs=")+IntToStr(Engine_GetNumBufStrings());
  StatusBar->Repaint();
  StatusBar->Update();
+
+ ShowDebugMessagesCheckBox->Checked=MEnv_GetDebugMode(0);
 }
 
 // Сохраняет параметры интерфейса в xml
@@ -760,6 +763,20 @@ void __fastcall TUEngineMonitorFrame::LoadAllClassesDescriptions1Click(TObject *
 void __fastcall TUEngineMonitorFrame::RichEditMouseEnter(TObject *Sender)
 {
  RichEdit->SetFocus();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUEngineMonitorFrame::ShowDebugMessagesCheckBoxClick(TObject *Sender)
+
+{
+ if(UpdateInterfaceFlag)
+  return;
+ int size=GetNumEngines();
+ for(int i=0;i<size;i++)
+ {
+  UGEngineControlForm->DebugModeFlag[i]=ShowDebugMessagesCheckBox->Checked;
+  MEnv_SetDebugMode(i,UGEngineControlForm->DebugModeFlag[i]);
+ }
 }
 //---------------------------------------------------------------------------
 
