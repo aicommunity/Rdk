@@ -822,3 +822,21 @@ void __fastcall TUImagesFrame::TiledSizeRadioButtonClick(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+void __fastcall TUImagesFrame::ShowLegendCheckBoxClick(TObject *Sender)
+{
+ UpdateInterface();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUImagesFrame::ShowHistogramCheckBoxClick(TObject *Sender)
+{
+ UpdateInterface();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUImagesFrame::ShowInfoCheckBoxClick(TObject *Sender)
+{
+ UpdateInterface();
+}
+//---------------------------------------------------------------------------
+
