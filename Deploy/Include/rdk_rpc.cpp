@@ -838,6 +838,190 @@ const char* PtzRemoteCall(const char *request, int &return_value, int &channel_i
   return_value=Ptz_SetTiltNative(engine_index,camera.c_str(),value,speed);
  }
  else
+ if(cmd == "Ptz_SyncPanAbsolutePosition")
+ {
+  return_value=Ptz_SyncPanAbsolutePosition(engine_index,camera.c_str());
+ }
+ else
+ if(cmd == "Ptz_SyncTiltAbsolutePosition")
+ {
+  return_value=Ptz_SyncTiltAbsolutePosition(engine_index,camera.c_str());
+ }
+ else
+ if(cmd == "Ptz_SyncPTAbsolutePosition")
+ {
+  return_value=Ptz_SyncPTAbsolutePosition(engine_index,camera.c_str());
+ }
+ else
+ if(cmd == "Ptz_ReadSyncPanState")
+ {
+  double value;
+  unsigned long long time_stamp=0;
+  return_value=Ptz_ReadSyncPanState(engine_index,camera.c_str(),value, time_stamp);
+  response.SelectNodeRoot("RpcResponse/Data/Position");
+  response.WriteFloat("Value",value);
+ }
+ else
+ if(cmd == "Ptz_ReadSyncTiltState")
+ {
+  double value;
+  unsigned long long time_stamp=0;
+  return_value=Ptz_ReadSyncTiltState(engine_index,camera.c_str(),value, time_stamp);
+  response.SelectNodeRoot("RpcResponse/Data/Position");
+  response.WriteFloat("Value",value);
+ }
+ else
+ if(cmd == "Ptz_ReadSyncPTState")
+ {
+  double sync_pan_state, sync_tilt_state;
+  unsigned long long time_stamp=0;
+  return_value=Ptz_ReadSyncPTState(engine_index,camera.c_str(),sync_pan_state, sync_tilt_state, time_stamp);
+  response.SelectNodeRoot("RpcResponse/Data/Position");
+  response.WriteFloat("SyncPanState",sync_pan_state);
+  response.WriteFloat("SyncPanState",sync_tilt_state);
+ }
+ else
+ if(cmd == "Ptz_SetStabiliationState")
+ {
+  double value=xml.ReadFloat("Value",0.0);
+  return_value=Ptz_SetStabiliationState(engine_index,camera.c_str(),value);
+ }
+ else
+ if(cmd == "Ptz_ReadStabiliationState")
+ {
+  double value;
+  unsigned long long time_stamp=0;
+  return_value=Ptz_ReadStabiliationState(engine_index,camera.c_str(), value, time_stamp);
+  response.SelectNodeRoot("RpcResponse/Data/Position");
+  response.WriteFloat("Value",value);
+ }
+ else
+ if(cmd == "Ptz_ResetServo")
+ {
+  return_value=Ptz_ResetServo(engine_index,camera.c_str());
+ }
+ else
+ if(cmd == "Ptz_SetAbsoluteLatitudePosition")
+ {
+  double value=xml.ReadFloat("Value",0.0);
+  return_value=Ptz_SetAbsoluteLatitudePosition(engine_index,camera.c_str(),value);
+ }
+ else
+ if(cmd == "Ptz_ReadAbsoluteLatitudePosition")
+ {
+  double value;
+  unsigned long long time_stamp=0;
+  return_value=Ptz_ReadAbsoluteLatitudePosition(engine_index,camera.c_str(), value, time_stamp);
+  response.SelectNodeRoot("RpcResponse/Data/Position");
+  response.WriteFloat("Value",value);
+ }
+ else
+ if(cmd == "Ptz_SetAbsoluteNorthPosition")
+ {
+  double value=xml.ReadFloat("Value",0.0);
+  return_value=Ptz_SetAbsoluteNorthPosition(engine_index,camera.c_str(),value);
+ }
+ else
+ if(cmd == "Ptz_ReadAbsoluteNorthPosition")
+ {
+  double value;
+  unsigned long long time_stamp=0;
+  return_value=Ptz_ReadAbsoluteNorthPosition(engine_index,camera.c_str(), value, time_stamp);
+  response.SelectNodeRoot("RpcResponse/Data/Position");
+  response.WriteFloat("Value",value);
+ }
+ else
+ if(cmd == "Ptz_ReadPanGyroDriftState")
+ {
+  double value;
+  unsigned long long time_stamp=0;
+  return_value=Ptz_ReadPanGyroDriftState(engine_index,camera.c_str(), value, time_stamp);
+  response.SelectNodeRoot("RpcResponse/Data/Position");
+  response.WriteFloat("Value",value);
+ }
+ else
+ if(cmd == "Ptz_ReadTiltGyroDriftState")
+ {
+  double value;
+  unsigned long long time_stamp=0;
+  return_value=Ptz_ReadTiltGyroDriftState(engine_index,camera.c_str(), value, time_stamp);
+  response.SelectNodeRoot("RpcResponse/Data/Position");
+  response.WriteFloat("Value",value);
+ }
+ else
+ if(cmd == "Ptz_SetPanGyroDriftCorrection")
+ {
+  double value=xml.ReadFloat("Value",0.0);
+  return_value=Ptz_SetPanGyroDriftCorrection(engine_index,camera.c_str(),value);
+ }
+ else
+ if(cmd == "Ptz_SetTiltGyroDriftCorrection")
+ {
+  double value=xml.ReadFloat("Value",0.0);
+  return_value=Ptz_SetTiltGyroDriftCorrection(engine_index,camera.c_str(),value);
+ }
+ else
+ if(cmd == "Ptz_SetSerialLineMode")
+ {
+  int line_number, rate, data_bits, stop_bits;
+  bool parity;
+  line_number=xml.ReadInteger("LineNumber",0);
+  rate=xml.ReadInteger("Rate",0);
+  data_bits=xml.ReadInteger("DataBits",0);
+  stop_bits=xml.ReadInteger("StopBits",0);
+  parity=xml.ReadInteger("Parity",0);
+  return_value=Ptz_SetSerialLineMode(engine_index,camera.c_str(), line_number, rate, data_bits, stop_bits, parity);
+ }
+ else
+ if(cmd == "Ptz_SendDataToSerialLine")
+ {
+  int line_number, size;
+  char * data=0;
+  line_number=xml.ReadInteger("LineNumber",0);
+  size=xml.ReadInteger("DataSize",0);
+  //data_bits=xml.ReadInteger("DataBits",0);
+  return_value=Ptz_SendDataToSerialLine(engine_index,camera.c_str(), line_number, size, data);
+ }
+ else
+ if(cmd == "Ptz_ReadDataFromSerialLine")
+ {
+  int line_number=xml.ReadInteger("LineNumber",0);
+  double value;
+  char* data=0;
+  int data_size=0;
+  unsigned long long time_stamp=0;
+  return_value=Ptz_ReadDataFromSerialLine(engine_index,camera.c_str(), line_number, data_size, data, time_stamp);
+  response.SelectNodeRoot("RpcResponse/Data/Position");
+  response.WriteFloat("DataSize",data_size);
+ }
+ else
+ if(cmd == "Ptz_ReadPanGyroDriftState")
+ {
+  double value;
+  unsigned long long time_stamp=0;
+  return_value=Ptz_ReadPanGyroDriftState(engine_index,camera.c_str(), value, time_stamp);
+  response.SelectNodeRoot("RpcResponse/Data/Position");
+  response.WriteFloat("Value",value);
+ }
+ else
+ if(cmd == "Ptz_ReadPanErrorState")
+ {
+  double value;
+  unsigned long long time_stamp=0;
+  return_value=Ptz_ReadPanErrorState(engine_index,camera.c_str(), value, time_stamp);
+  response.SelectNodeRoot("RpcResponse/Data/Position");
+  response.WriteFloat("Value",value);
+ }
+ else
+ if(cmd == "Ptz_ReadTiltErrorState")
+ {
+  double value;
+  unsigned long long time_stamp=0;
+  return_value=Ptz_ReadTiltErrorState(engine_index,camera.c_str(), value, time_stamp);
+  response.SelectNodeRoot("RpcResponse/Data/Position");
+  response.WriteFloat("Value",value);
+ }
+ else
   return_value=2001;
 
  response.SelectRoot();
