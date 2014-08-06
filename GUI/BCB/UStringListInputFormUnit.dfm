@@ -23,10 +23,6 @@ object UStringListInputForm: TUStringListInputForm
     Height = 212
     Align = alClient
     TabOrder = 0
-    ExplicitLeft = 312
-    ExplicitTop = 112
-    ExplicitWidth = 185
-    ExplicitHeight = 41
     object GroupBox1: TGroupBox
       Left = 1
       Top = 1
@@ -35,10 +31,6 @@ object UStringListInputForm: TUStringListInputForm
       Align = alClient
       Caption = ' Parameters list '
       TabOrder = 0
-      ExplicitLeft = 120
-      ExplicitTop = 48
-      ExplicitWidth = 185
-      ExplicitHeight = 105
       object StringGrid: TStringGrid
         Left = 2
         Top = 15
@@ -53,9 +45,6 @@ object UStringListInputForm: TUStringListInputForm
         OnClick = StringGridClick
         OnDblClick = StringGridDblClick
         OnSelectCell = StringGridSelectCell
-        ExplicitTop = 9
-        ExplicitWidth = 521
-        ExplicitHeight = 162
       end
       object Edit: TEdit
         Left = 2
@@ -65,9 +54,8 @@ object UStringListInputForm: TUStringListInputForm
         Align = alBottom
         TabOrder = 1
         OnKeyPress = EditKeyPress
-        ExplicitLeft = 56
-        ExplicitTop = 176
-        ExplicitWidth = 121
+        ExplicitLeft = 3
+        ExplicitTop = 184
       end
     end
   end
@@ -78,9 +66,6 @@ object UStringListInputForm: TUStringListInputForm
     Height = 41
     Align = alBottom
     TabOrder = 1
-    ExplicitLeft = 184
-    ExplicitTop = 48
-    ExplicitWidth = 185
     DesignSize = (
       537
       41)
@@ -93,7 +78,6 @@ object UStringListInputForm: TUStringListInputForm
       Caption = 'OK'
       TabOrder = 0
       OnClick = OkButtonClick
-      ExplicitLeft = 281
     end
     object CancelButton: TButton
       Left = 372
@@ -104,7 +88,6 @@ object UStringListInputForm: TUStringListInputForm
       Caption = 'Cancel'
       TabOrder = 1
       OnClick = CancelButtonClick
-      ExplicitLeft = 362
     end
     object RestoreButton: TButton
       Left = 453
@@ -115,7 +98,6 @@ object UStringListInputForm: TUStringListInputForm
       Caption = 'Restore'
       TabOrder = 2
       OnClick = RestoreButtonClick
-      ExplicitLeft = 443
     end
   end
 end

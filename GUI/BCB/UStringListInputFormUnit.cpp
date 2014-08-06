@@ -132,6 +132,12 @@ void TUStringListInputForm::AUpdateInterface(void)
 //---------------------------------------------------------------------------
 void __fastcall TUStringListInputForm::OkButtonClick(TObject *Sender)
 {
+ if(StringGrid->Row>0 && Edit->Text.Length()>0)
+ {
+  Edit->Text="";
+  ResultParametersList[StringGrid->Row-1].Value=AnsiString(Edit->Text).c_str();
+ }
+
  ModalResult=mrOk;
 }
 //---------------------------------------------------------------------------
@@ -155,8 +161,25 @@ void __fastcall TUStringListInputForm::EditKeyPress(TObject *Sender, System::Wid
  if(Key == VK_RETURN)
  {
   if(StringGrid->Row>0)
+  {
    ResultParametersList[StringGrid->Row-1].Value=AnsiString(Edit->Text).c_str();
+  }
   UpdateInterface(true);
+
+  if(StringGrid->RowCount<=2)
+   ModalResult=mrOk;
+ }
+ else
+ if(Key == VK_UP)
+ {
+  if(StringGrid->Row<StringGrid->RowCount-1)
+   StringGrid->Row=StringGrid->Row+1;
+ }
+ else
+ if(Key == VK_DOWN)
+ {
+  if(StringGrid->Row>1)
+   StringGrid->Row=StringGrid->Row-1;
  }
 }
 //---------------------------------------------------------------------------
@@ -179,11 +202,17 @@ void __fastcall TUStringListInputForm::StringGridSelectCell(TObject *Sender, int
 {
  if(UpdateInterfaceFlag)
   return;
- UpdateInterface(true);
+
+ if(StringGrid->Row>0 && Edit->Text.Length()>0)
+ {
+  ResultParametersList[StringGrid->Row-1].Value=AnsiString(Edit->Text).c_str();
+  Edit->Text="";
+ }
 }
 //---------------------------------------------------------------------------
 void __fastcall TUStringListInputForm::FormShow(TObject *Sender)
 {
  UpdateInterface(true);
+ Edit->SetFocus();
 }
 //---------------------------------------------------------------------------
