@@ -18,7 +18,7 @@ See file license.txt for more information
 namespace RDK {
 
 // Класс конвеера обработки  изображений
-class UBPipeline: public UNet
+class RDK_LIB_TYPE UBPipeline: public UNet
 {
 protected: // Типы данных
 

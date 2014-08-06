@@ -17,7 +17,7 @@ See file license.txt for more information
 
 namespace RDK {
 
-class UBAModel: public UNet
+class RDK_LIB_TYPE UBAModel: public UNet
 {
 protected: // ¬ходы и выходы
 UPropertyOutputData<UBitmap,UBAModel> Output;
