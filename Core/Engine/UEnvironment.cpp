@@ -637,7 +637,7 @@ const char* UEnvironment::GetUnreadLog(int &error_level)
  }
 // TempString=sntoa(ChannelIndex)+std::string("> ")+LogList[line_index].CreateLogMessage();
  size_t log_size=LogList.size();
- if(LogList.size()>line_index)
+ if(int(LogList.size())>line_index)
  {
   TempString=LogList[line_index].first;
   error_level=LogList[line_index].second;

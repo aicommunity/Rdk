@@ -817,7 +817,7 @@ T MDMatrix<T>::Det(void) const
 {
  MDMatrix<T> Temp(*this);
 
- int numcombos=Temp.TriangleGauss();
+ Temp.TriangleGauss();
 
  T det=*Temp.Data;
  for(int i=1;i<((Rows<Cols)?Rows-1:Cols-1);i++)

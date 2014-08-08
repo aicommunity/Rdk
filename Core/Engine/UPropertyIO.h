@@ -341,7 +341,7 @@ virtual bool Load(UEPtr<USerStorage>  storage, bool simplemode=false)
 };
 
 
-virtual void SetData(const T &value)
+virtual void SetData(const std::vector<T*> &value)
 {
  return;
 };

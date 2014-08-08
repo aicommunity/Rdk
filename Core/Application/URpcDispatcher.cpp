@@ -153,7 +153,7 @@ void URpcDispatcher::DispatchCommand(const UEPtr<URpcCommand> &command)
 void URpcDispatcher::UpdateDecoders(void)
 {
  int num_channels=GetNumEngines();
- if(num_channels == Decoders.size())
+ if(num_channels == int(Decoders.size()))
   return;
 
  size_t old_size=Decoders.size();
