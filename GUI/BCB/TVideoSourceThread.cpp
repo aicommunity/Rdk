@@ -25,6 +25,7 @@ __fastcall TVideoCaptureThread::TVideoCaptureThread(TVideoOutputFrame *frame, bo
  SourceWriteUnlock=CreateEvent(0,TRUE,TRUE,0);
  FrameNotInProgress=CreateEvent(0,TRUE,TRUE,0);
  CalcCompleteEvent=CreateEvent(0,TRUE,TRUE,0);
+ SourceStoppedEvent=CreateEvent(0,FALSE,FALSE,0);
  ReadSource=&Source[0];
  WriteSource=&Source[1];
  RepeatFlag=false;
@@ -55,6 +56,7 @@ __fastcall TVideoCaptureThread::~TVideoCaptureThread(void)
  CloseHandle(SourceWriteUnlock);
  CloseHandle(FrameNotInProgress);
  CloseHandle(CalcCompleteEvent);
+ CloseHandle(SourceStoppedEvent);
 }
 // --------------------------
 
@@ -1369,7 +1371,11 @@ void __fastcall TVideoCaptureThreadVideoGrabber::OnFrameCaptureCompleted(System:
 void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberPlayerEndOfStream(TObject *Sender)
 {
 	//ShowMessage("Stream ended");
-//	MultiStartForm->MultiStartFrame1->NextSource();
+	/*if(restarter)
+	{
+        restarter->RestartSource();
+	} */
+	PulseEvent(SourceStoppedEvent);
 	if(RepeatFlag)
 		VideoGrabber->PlayerFramePosition=0;
 	else

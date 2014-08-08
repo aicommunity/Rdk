@@ -8,6 +8,11 @@
 
 enum TVideoCaptureThreadCommands { tvcNone=0, tvcStart=1, tvcStop=2, tvcTerminate=3, tvcRecreate=4 };
 
+class TSourceStarterBase
+{
+	virtual void NextSource()=0;
+};
+
 //---------------------------------------------------------------------------
 class TVideoGrabberControlForm;
 class TVideoOutputFrame;
@@ -106,7 +111,12 @@ HANDLE CaptureEnabled;
 HANDLE CalcCompleteEvent;
 
 
-public: // Методы
+public:
+
+/// Выставляется как PulseEvent по завершении источника
+HANDLE SourceStoppedEvent;
+
+// Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
