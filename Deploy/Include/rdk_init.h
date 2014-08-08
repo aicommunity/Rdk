@@ -954,6 +954,7 @@ RDK_LIB_TYPE void RDK_CALL MModel_SetComponentBitmapOutputByIndex(int engine_ind
 
 // Замещает изображение входа с индексом 'index' компонента 'id'
 RDK_LIB_TYPE void RDK_CALL Model_SetComponentBitmapInput(const char *stringid, const char *property_name, const /*RDK::UBitmap* */ void* const bmp, bool reflect=false);
+RDK_LIB_TYPE void RDK_CALL MModel_SetComponentBitmapInput(int engine_index, const char *stringid, const char *property_name, const /*RDK::UBitmap* */ void* const bmp, bool reflect=false);
 RDK_LIB_TYPE void RDK_CALL Model_SetComponentBitmapInputByIndex(const char *stringid, int index, const /*RDK::UBitmap* */ void* const bmp, bool reflect=false);
 // --------------------------
 

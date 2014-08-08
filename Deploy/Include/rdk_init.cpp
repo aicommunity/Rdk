@@ -2490,8 +2490,15 @@ void RDK_CALL MModel_SetComponentBitmapOutputByIndex(int engine_index, const cha
 // Замещает изображение входа с индексом 'index' компонента 'id'
 void RDK_CALL Model_SetComponentBitmapInput(const char *stringid, const char *property_name, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
 {
-
  DllManager.GetEngineLock()->Model_SetComponentBitmapInput(stringid, property_name, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
+}
+
+void RDK_CALL MModel_SetComponentBitmapInput(int engine_index, const char *stringid, const char *property_name, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return;
+
+ DllManager.GetEngineLock(engine_index)->Model_SetComponentBitmapInput(stringid, property_name, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
 }
 
 void RDK_CALL Model_SetComponentBitmapInputByIndex(const char *stringid, int index, const /*RDK::UBitmap* */ void* const bmp, bool reflect)

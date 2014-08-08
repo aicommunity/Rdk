@@ -1167,18 +1167,28 @@ void TVideoOutputFrame::SendToComponentIO(void)
   return;
 
  SendBmpSource.ReflectionX(&SendReflectedBmpSource);
+ int num_channels=GetNumEngines();
  switch(LinkedMode)
  {
  case 0:
-  Model_SetComponentBitmapInput(LinkedComponentName.c_str(), LinkedIndex.c_str(), &SendReflectedBmpSource);
+  if(num_channels>FrameIndex)
+   MModel_SetComponentBitmapInput(FrameIndex,LinkedComponentName.c_str(), LinkedIndex.c_str(), &SendReflectedBmpSource);
+  else
+   Model_SetComponentBitmapInput(LinkedComponentName.c_str(), LinkedIndex.c_str(), &SendReflectedBmpSource);
  break;
 
  case 1:
-  Model_SetComponentBitmapOutput(LinkedComponentName.c_str(), LinkedIndex.c_str(), &SendReflectedBmpSource);
+  if(num_channels>FrameIndex)
+   MModel_SetComponentBitmapOutput(FrameIndex,LinkedComponentName.c_str(), LinkedIndex.c_str(), &SendReflectedBmpSource);
+  else
+   Model_SetComponentBitmapOutput(LinkedComponentName.c_str(), LinkedIndex.c_str(), &SendReflectedBmpSource);
  break;
 
  case 2:
-  Model_SetComponentPropertyData(LinkedComponentName.c_str(), LinkedComponentPropertyName.c_str(), &SendReflectedBmpSource);
+  if(num_channels>FrameIndex)
+   MModel_SetComponentPropertyData(FrameIndex,LinkedComponentName.c_str(), LinkedComponentPropertyName.c_str(), &SendReflectedBmpSource);
+  else
+   Model_SetComponentPropertyData(LinkedComponentName.c_str(), LinkedComponentPropertyName.c_str(), &SendReflectedBmpSource);
  break;
  }
 }
@@ -1212,13 +1222,14 @@ void TVideoOutputFrame::DynamicMenuFilling(TMenuItem* target, std::vector<std::s
 // Метод, вызываемый перед шагом расчета
 void TVideoOutputFrame::ABeforeCalculate(void)
 {
+ int num_channels=GetNumEngines();
  if(CaptureThread)
  {
   double time_stamp=0;
   bool res=CaptureThread->ReadSourceSafe(SendBmpSource,time_stamp,false);
   if(SendBmpSource.GetLength() == 0 && CaptureThread->GetThreadState() == 1)
   {
-   if(FrameIndex<GetNumEngines())
+   if(FrameIndex<num_channels)
 	MEngine_LogMessage(FrameIndex, RDK_EX_INFO, std::string("TVideoOutputFrame::ABeforeCalculate: Frame have zero size!").c_str());
    else
 	Engine_LogMessage(RDK_EX_INFO, std::string("TVideoOutputFrame::ABeforeCalculate: Frame have zero size!").c_str());
@@ -1237,37 +1248,40 @@ void TVideoOutputFrame::ABeforeCalculate(void)
    MyVideoOutputToolsForm->DelAllPointsButtonClick(this);
   }
 
- if(Model_Check())
- {
-  if(SendBmpSource.GetByteLength()>0)
+  if(num_channels == 1)
   {
-   if(GetNumEngines() == 1)
-	Model_SetComponentBitmapOutput("", "Output", &SendBmpSource,true); // Заглушка!!
-	//в модели должна быть возможность задания множества выходов
-   else
+   if(Model_Check() && SendBmpSource.GetByteLength()>0)
+	 Model_SetComponentBitmapOutput("", "Output", &SendBmpSource,true); // Заглушка!!
+  }
+  else
+  if(FrameIndex<num_channels && MModel_Check(FrameIndex))
+  {
+   if(SendBmpSource.GetByteLength()>0)
    {
-	if(GetNumEngines()>FrameIndex)
- 	 MModel_SetComponentBitmapOutput(FrameIndex, "", "Output", &SendBmpSource,true);
+	if(num_channels>FrameIndex)
+	 MModel_SetComponentBitmapOutput(FrameIndex, "", "Output", &SendBmpSource,true);
    }
   }
- }
  }
 }
 
 // Метод, вызываемый перед сбросом
 void TVideoOutputFrame::ABeforeReset(void)
 {
- if(Model_Check())
+ int num_channels=GetNumEngines();
+ if(num_channels == 1)
  {
-  if(BmpSource.GetByteLength()>0)
+  if(Model_Check() && SendBmpSource.GetByteLength()>0)
+	 Model_SetComponentBitmapOutput("", "Output", &SendBmpSource,true); // Заглушка!!
+ }
+ else
+ {
+  if(FrameIndex<num_channels && MModel_Check(FrameIndex))
   {
-   if(GetNumEngines() == 1)
-	Model_SetComponentBitmapOutput("", "Output", &BmpSource,true); // Заглушка!!
-	//в модели должна быть возможность задания множества выходов
-   else
+   if(BmpSource.GetByteLength()>0)
    {
-	if(GetNumEngines()>FrameIndex)
- 	 MModel_SetComponentBitmapOutput(FrameIndex, "", "Output", &BmpSource,true);
+	if(num_channels>FrameIndex)
+	 MModel_SetComponentBitmapOutput(FrameIndex, "", "Output", &BmpSource,true);
    }
   }
  }
