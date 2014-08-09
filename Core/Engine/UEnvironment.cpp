@@ -23,6 +23,7 @@ namespace RDK {
 // --------------------------
 UEnvironment::UEnvironment(void)
 {
+ LogMutex=UCreateMutex();
  // Параметры
  // Индекс предарительно заданной модели обработки
  // 0 - Структура определяется извне
@@ -65,6 +66,8 @@ UEnvironment::UEnvironment(void)
 UEnvironment::~UEnvironment(void)
 {
  DestroyModel();
+ if(LogMutex)
+  UDestroyMutex(LogMutex);
 }
 // --------------------------
 
@@ -554,12 +557,18 @@ void UEnvironment::RTCalculate(void)
 // Обрабатывает возникшее исключение
 void UEnvironment::ProcessException(UException &exception) const
 {
+ UGenericMutexLocker lock(LogMutex);
+
  if(LastErrorLevel>exception.GetType())
   LastErrorLevel=exception.GetType();
  ++CurrentExceptionsLogSize;
  if(CurrentExceptionsLogSize > MaxExceptionsLogSize)
  {
-  LogList.erase(LogList.begin(),LogList.begin()+(CurrentExceptionsLogSize - MaxExceptionsLogSize-1));
+  int erase_size=CurrentExceptionsLogSize - MaxExceptionsLogSize-1;
+  if(LogList.size()>erase_size)
+   LogList.erase(LogList.begin(),LogList.begin()+erase_size);
+  else
+   LogList.clear();
  }
 
  pair<std::string, int> log;
@@ -574,6 +583,7 @@ void UEnvironment::ProcessException(UException &exception) const
 // Возвращает массив строк лога
 const char* UEnvironment::GetLog(int &error_level) const
 {
+ UGenericMutexLocker lock(LogMutex);
  TempString.clear();
  for(size_t i=0;i<LogList.size();i++)
  {
@@ -588,12 +598,14 @@ const char* UEnvironment::GetLog(int &error_level) const
 /// Возвращает число строк лога
 int UEnvironment::GetNumLogLines(void) const
 {
+ UGenericMutexLocker lock(LogMutex);
  return int(LogList.size());
 }
 
 /// Возвращает строку лога с индексом i
 const char* UEnvironment::GetLogLine(int i) const
 {
+ UGenericMutexLocker lock(LogMutex);
  if(i<0 || i >= int(LogList.size()))
  {
   TempString.clear();
@@ -607,6 +619,7 @@ const char* UEnvironment::GetLogLine(int i) const
 /// Возвращает число непрочитанных строк лога
 int UEnvironment::GetNumUnreadLogLines(void) const
 {
+ UGenericMutexLocker lock(LogMutex);
  if(LastReadExceptionLogIndex<=0)
   return int(LogList.size());
 
@@ -618,6 +631,7 @@ int UEnvironment::GetNumUnreadLogLines(void) const
 // этой функцией
 const char* UEnvironment::GetUnreadLog(int &error_level)
 {
+ UGenericMutexLocker lock(LogMutex);
  int line_index=-1;
  TempString.clear();
  error_level=INT_MAX;
@@ -669,11 +683,13 @@ bool UEnvironment::SetExceptionHandler(PExceptionHandler value)
 // Если 0, то неограниченно
 int UEnvironment::GetMaxExceptionsLogSize(void) const
 {
+ UGenericMutexLocker lock(LogMutex);
  return MaxExceptionsLogSize;
 }
 
 void UEnvironment::SetMaxExceptionsLogSize(int value)
 {
+ UGenericMutexLocker lock(LogMutex);
  if(MaxExceptionsLogSize == value)
   return;
 
@@ -688,6 +704,7 @@ void UEnvironment::SetMaxExceptionsLogSize(int value)
 /// Очищает лог
 void UEnvironment::ClearLog(void)
 {
+ UGenericMutexLocker lock(LogMutex);
  LastReadExceptionLogIndex=-1;
  CurrentExceptionsLogSize=0;
  LastErrorLevel=INT_MAX;
@@ -697,6 +714,7 @@ void UEnvironment::ClearLog(void)
 /// Очищает лог прочитанных сообщений
 void UEnvironment::ClearReadLog(void)
 {
+ UGenericMutexLocker lock(LogMutex);
  if(LastReadExceptionLogIndex >=0 && LastReadExceptionLogIndex<int(LogList.size()))
  {
   LogList.erase(LogList.begin(),LogList.begin()+LastReadExceptionLogIndex);

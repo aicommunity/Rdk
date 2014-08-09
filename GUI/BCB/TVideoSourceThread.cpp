@@ -1379,7 +1379,10 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberPlayerEndOfStream(T
 	if(RepeatFlag)
 		VideoGrabber->PlayerFramePosition=0;
 	else
-		Stop();
+	{
+     MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, std::string("VideoGrabber stopped by end of frame").c_str());
+	 Stop();
+	}
 }
 
 void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberFrameBitmap(TObject *Sender,

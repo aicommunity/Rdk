@@ -119,6 +119,9 @@ mutable string TempString;
 
 mutable std::vector<pair<std::string, int> > LogList;
 
+UGenericMutex* LogMutex;
+
+
 public: // Public methods
 // --------------------------
 // Constructors & destructors
