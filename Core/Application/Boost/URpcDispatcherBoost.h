@@ -6,7 +6,7 @@
 namespace RDK {
 
 /// 
-class URpcDispatcherBoost: public URpcDispatcher
+class RDK_LIB_TYPE URpcDispatcherBoost: public URpcDispatcher
 {
 protected:
 
