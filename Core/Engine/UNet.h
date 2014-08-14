@@ -243,6 +243,10 @@ virtual bool SaveComponentDrawInfo(RDK::UNet* cont, RDK::USerStorageXML *serstor
 // ----------------------
 // Методы управления компонентами верхнего уровня
 // ----------------------
+/// Проверяет существование компонента с заданным именем
+template<typename T>
+UEPtr<T> FindComponentByNameAndType(const NameT &component_name);
+
 /// Проверяет существование компонента с заданным именем и создает его
 /// при необходимости.
 /// Возвращает указатель на созданный экземпляр, если он был добавлен
@@ -266,6 +270,18 @@ ULinksListT<T>& GetPersonalLinks(UEPtr<UContainer> cont, UEPtr<UContainer> cont2
 // ----------------------
 // Методы управления компонентами верхнего уровня
 // ----------------------
+/// Проверяет существование компонента с заданным именем
+template<typename T>
+UEPtr<T> UNet::FindComponentByNameAndType(const NameT &component_name)
+{
+ UEPtr<T> comp=dynamic_pointer_cast<T>(GetComponent(component_name,true));
+ if(comp)
+  return comp;
+
+ return 0;
+}
+
+
 /// Проверяет существование компонента с заданным именем и создает его
 /// при необходимости.
 /// Возвращает указатель на созданный экземпляр, если он был добавлен
