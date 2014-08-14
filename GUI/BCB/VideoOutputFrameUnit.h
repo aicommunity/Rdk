@@ -415,7 +415,7 @@ void DrawCapture(Graphics::TBitmap *bmp);
 void UpdateGeometryList(TCheckListBox *GeometryCheckListBox, TCheckListBox *PointsCheckListBox);
 
 // Метод отрисовки прямоугольной зоны
-void __fastcall TVideoOutputFrame::DrawFrameRect(TImage *image, int x1, int y1, int x2,
+void __fastcall DrawFrameRect(TImage *image, int x1, int y1, int x2,
 												int y2, int framewidth, TColor color);
 
 // Добавляет очередной элемент фигуры
