@@ -229,6 +229,9 @@ virtual void ProcessException(UException &exception);
 
 // Вызов обработчика исключений среды для простой записи данных в лог
 virtual void LogMessage(int msg_level, const std::string &line);
+virtual void LogMessage(int msg_level, const std::string &method_name, const std::string &line);
+virtual void LogMessageEx(int msg_level, const std::string &line);
+virtual void LogMessageEx(int msg_level, const std::string &method_name, const std::string &line);
 
 /// Возвращает состояние флага режима отладки
 virtual bool CheckDebugMode(void) const;

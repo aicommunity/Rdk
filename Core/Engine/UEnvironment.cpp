@@ -769,6 +769,12 @@ void UEnvironment::LogMessage(int msg_level, const std::string &line)
  break;
  }
 }
+
+void UEnvironment::LogMessage(int msg_level, const std::string &method_name, const std::string &line)
+{
+ LogMessage(msg_level, method_name+std::string(" - ")+line);
+}
+
 // --------------------------
 
 

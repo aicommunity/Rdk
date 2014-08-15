@@ -230,6 +230,32 @@ void UContainer::LogMessage(int msg_level, const std::string &line)
  }
 }
 
+void UContainer::LogMessage(int msg_level, const std::string &method_name, const std::string &line)
+{
+ if(Environment)
+ {
+  Environment->LogMessage(msg_level, method_name, line);
+ }
+}
+
+void UContainer::LogMessageEx(int msg_level, const std::string &line)
+{
+ if(Environment)
+ {
+  std::string full_name;
+  Environment->LogMessage(msg_level, GetFullName(full_name)+std::string(" - ")+line);
+ }
+}
+
+void UContainer::LogMessageEx(int msg_level, const std::string &method_name, const std::string &line)
+{
+ if(Environment)
+ {
+  std::string full_name;
+  Environment->LogMessage(msg_level, method_name, GetFullName(full_name)+std::string(" - ")+line);
+ }
+}
+
 /// Возвращает состояние флага режима отладки
 bool UContainer::CheckDebugMode(void) const
 {
