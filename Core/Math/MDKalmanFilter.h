@@ -248,19 +248,26 @@ MDMatrix<T> CovariationError(const MDMatrix<T> &F, const MDMatrix<T> &Pk1,
 MDMatrix<T> KalmanGain(const MDMatrix<T> &PkL, const MDMatrix<T> &H,
 					 const MDMatrix<T> &R)
 {
- MDMatrix<T> M1(PkL*H.Transpose());
- MDMatrix<T> M2(H*PkL);
- MDMatrix<T> M3(M2*H.Transpose());
- MDMatrix<T> M4(M3+R);
+ try
+ {
+  MDMatrix<T> M1(PkL*H.Transpose());
+  MDMatrix<T> M2(H*PkL);
+  MDMatrix<T> M3(M2*H.Transpose());
+  MDMatrix<T> M4(M3+R);
 
- for(int i=0;i<M4.GetCols()*M4.GetRows();i++)
-  if(fabs(M4.Data[i])>1e20)
+  for(int i=0;i<M4.GetCols()*M4.GetRows();i++)
+   if(fabs(M4.Data[i])>1e20)
+	throw EKalmanGainOverflow();
+  MDMatrix<T> M5(M4.Inverse());
+  MDMatrix<T> M6(M1*M5);
+  return M6;
+ }
+ catch(EMatrixZeroDet &exception)
+ {
    throw EKalmanGainOverflow();
- MDMatrix<T> M5(M4.Inverse());
- MDMatrix<T> M6(M1*M5);
-
- return M6;
-// return PkL*H.Transpose()*(H*PkL*H.Transpose()+R).Inverse(); // Kk Ошибка на итерации 211
+ }
+ MDMatrix<T> Dummy;
+ return Dummy;
 }
 
 MDMatrix<T> EstimationUpdate(const MDMatrix<T> &xkL, const MDMatrix<T> &Kk,
