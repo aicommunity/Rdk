@@ -307,6 +307,7 @@ UEPtr<T> UNet::AddMissingComponent(const NameT &component_name, const NameT &cla
  }
  comp=dynamic_pointer_cast<T>(proto);
  comp->SetName(component_name);
+ comp->SetTimeStep(TimeStep);
  if(!AddComponent(comp))
  {
   LogMessage(RDK_EX_WARNING, std::string("AddMissingComponent - AddComponent failed. ClassName=")+class_name);
