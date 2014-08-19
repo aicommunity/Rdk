@@ -22,7 +22,7 @@
 #include "UClassesListFormUnit.h"
 #include "UComponentsPerformanceFormUnit.h"
 #include "UFavoriteComponentInfoFormUnit.h"
-#include "UDrawEngineFormUnit.h"
+//#include "UDrawEngineFormUnit.h"
 #include "UCreateProjectWizardFormUnit.h"
 #include "UWatchFormUnit.h"
 #include "TIdHttpResultBroadcasterFormUnit.h"
@@ -1819,7 +1819,7 @@ void __fastcall TUGEngineControlForm::DrawEngine1Click(TObject *Sender)
  if(!ProjectOpenFlag)
   return;
 
- UDrawEngineForm->Show();
+// UDrawEngineForm->Show();
 }
 //---------------------------------------------------------------------------
 

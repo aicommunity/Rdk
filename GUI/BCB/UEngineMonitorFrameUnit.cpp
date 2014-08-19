@@ -364,6 +364,13 @@ void TUEngineMonitorFrame::AUpdateInterface(void)
  ShowDebugMessagesCheckBox->Checked=MEnv_GetDebugMode(0);
 }
 
+// Возврат интерфейса в исходное состояние
+void TUEngineMonitorFrame::AClearInterface(void)
+{
+
+
+}
+
 // Сохраняет параметры интерфейса в xml
 void TUEngineMonitorFrame::ASaveParameters(RDK::USerStorageXML &xml)
 {

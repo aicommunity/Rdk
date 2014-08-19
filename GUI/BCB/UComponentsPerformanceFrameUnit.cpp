@@ -287,6 +287,7 @@ void TUComponentsPerformanceFrame::DelComponent(std::size_t index)
 void TUComponentsPerformanceFrame::ClearComponents(void)
 {
  ComponentNames.clear();
+ ComponentData.clear();
  UpdateInterface();
 }
 
