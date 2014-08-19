@@ -385,14 +385,29 @@ bool UADItem::ConnectToItem(UEPtr<UItem> na, int i_index, int &c_index)
   }
  }
 /*
- USharedPtr<UIDataInfo> iteminfo, conninfo;
+// USharedPtr<UIDataInfo> iteminfo, conninfo;
+ UIDataInfo *iteminfo=0, *conninfo=0;
  iteminfo=nad->OutputDataInfo[i_index];
  conninfo=InputDataInfo[c_index];
  if(conninfo && !iteminfo)
+ {
+  std::string name;
+  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Conninfo found, item info not found: "));
+  delete iteminfo;
+  delete conninfo;
   return false;
+ }
 
  if(iteminfo && conninfo && !iteminfo->Compare(conninfo))
+ {
+  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("IO types incompatible: I=")+conninfo->type_name());
+  delete iteminfo;
+  delete conninfo;
   return false;
+ }
+
+ delete iteminfo;
+ delete conninfo;
  */
  InputData[c_index]=&nad->POutputData[i_index];
 
