@@ -25,6 +25,12 @@ void TUComponentsControlFrame::AUpdateInterface(void)
  ComponentsListFrame->UpdateInterface();
 }
 
+// Возврат интерфейса в исходное состояние
+void TUComponentsControlFrame::AClearInterface(void)
+{
+
+}
+
 // Сохраняет выбранную модель
 // Если filename == "", то открывает окно запроса диалога
 void TUComponentsControlFrame::SaveModelToFile(const String &filename)

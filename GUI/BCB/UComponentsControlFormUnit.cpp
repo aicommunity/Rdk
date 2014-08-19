@@ -5,7 +5,7 @@
 
 #include "UComponentsControlFormUnit.h"
 #include "UComponentLinksFormUnit.h"
-#include "UDrawEngineFormUnit.h"
+//#include "UDrawEngineFormUnit.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "UComponentsControlFrameUnit"
@@ -33,12 +33,7 @@ void __fastcall TUComponentsControlForm::FormShow(TObject *Sender)
 void __fastcall TUComponentsControlForm::ComponentsListFrameStringGridClick(TObject *Sender)
 {
  ComponentsControlFrame->ComponentsListFrame->StringGridClick(Sender);
- UDrawEngineForm->SelectComponent(ComponentsControlFrame->ComponentsListFrame->GetSelectedComponentName());
-/* if(ComponentsControlFrame->ComponentsListFrame->UpdateInterfaceFlag)
-  return;
- //UComponentLinksForm->UComponentLinksFrame->UpdateInterface();
- UDrawEngineForm->SelectComponent(ComponentsControlFrame->ComponentsListFrame->GetSelectedComponentName());
-*/
+// UDrawEngineForm->SelectComponent(ComponentsControlFrame->ComponentsListFrame->GetSelectedComponentName());
 }
 //---------------------------------------------------------------------------
 
@@ -48,7 +43,7 @@ void __fastcall TUComponentsControlForm::ComponentsListFrameStringGridDblClick(T
  if(ComponentsControlFrame->ComponentsListFrame->UpdateInterfaceFlag)
   return;
  UComponentLinksForm->UComponentLinksFrame->UpdateInterface();
- UDrawEngineForm->SetNet(ComponentsControlFrame->ComponentsListFrame->GetCurrentComponentName());
+// UDrawEngineForm->SetNet(ComponentsControlFrame->ComponentsListFrame->GetCurrentComponentName());
 }
 //---------------------------------------------------------------------------
 
@@ -59,8 +54,7 @@ void __fastcall TUComponentsControlForm::ComponentsListFrameStringGridSelectCell
 		  ACol, ARow, CanSelect);
  if(ComponentsControlFrame->ComponentsListFrame->UpdateInterfaceFlag)
   return;
-// UComponentLinksForm->UComponentLinksFrame->UpdateInterface();
- UDrawEngineForm->SelectComponent(ComponentsControlFrame->ComponentsListFrame->GetSelectedComponentName());
+// UDrawEngineForm->SelectComponent(ComponentsControlFrame->ComponentsListFrame->GetSelectedComponentName());
 }
 //---------------------------------------------------------------------------
 
@@ -79,7 +73,7 @@ void __fastcall TUComponentsControlForm::ComponentsControlFrameTakeObjectButtonC
 
 {
   ComponentsControlFrame->TakeObjectButtonClick(Sender);
-  UDrawEngineForm->SetNet(ComponentsControlFrame->ComponentsListFrame->GetCurrentComponentName());
+//  UDrawEngineForm->SetNet(ComponentsControlFrame->ComponentsListFrame->GetCurrentComponentName());
 }
 //---------------------------------------------------------------------------
 
@@ -87,7 +81,7 @@ void __fastcall TUComponentsControlForm::ComponentsControlFrameReturnObjectButto
 
 {
   ComponentsControlFrame->ReturnObjectButtonClick(Sender);
-  UDrawEngineForm->SetNet(ComponentsControlFrame->ComponentsListFrame->GetCurrentComponentName());
+//  UDrawEngineForm->SetNet(ComponentsControlFrame->ComponentsListFrame->GetCurrentComponentName());
 }
 //---------------------------------------------------------------------------
 
@@ -98,8 +92,8 @@ void __fastcall TUComponentsControlForm::ComponentsListFrameStringGridKeyDown(TO
 {
  ComponentsControlFrame->ComponentsListFrame->StringGridKeyDown(Sender, Key,Shift);
  UComponentLinksForm->UComponentLinksFrame->UpdateInterface();
- if(Key == VK_RETURN)
-  UDrawEngineForm->SetNet(ComponentsControlFrame->ComponentsListFrame->GetCurrentComponentName());
+// if(Key == VK_RETURN)
+//  UDrawEngineForm->SetNet(ComponentsControlFrame->ComponentsListFrame->GetCurrentComponentName());
 }
 //---------------------------------------------------------------------------
 

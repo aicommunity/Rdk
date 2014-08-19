@@ -148,6 +148,27 @@ void TUComponentsListFrame::AUpdateInterface(void)
 // Возврат интерфейса в исходное состояние
 void TUComponentsListFrame::AClearInterface(void)
 {
+ SelectedComponentName.clear();
+ SelectedComponentId.clear();
+ CurrentComponentName.clear();
+ CurrentComponentId.clear();
+ SelectedComponentParameterName.clear();
+ SelectedComponentStateName.clear();
+ CurrentPath.clear();
+ SelectedComponentOutput.clear();
+ SelectedComponentInput.clear();
+
+ SelectedId=-1;
+
+ LastParams="";
+
+ TempParams="";
+
+ LastStates="";
+
+ TempStates="";
+
+
  StringGrid->RowCount=0;
 // ParametersListStringGrid->RowCount=0;
 // StatesListStringGrid->RowCount=0;

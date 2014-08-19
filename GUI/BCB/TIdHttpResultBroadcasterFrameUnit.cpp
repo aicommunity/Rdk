@@ -167,7 +167,6 @@ void TIdHttpResultBroadcasterFrame::AUpdateInterface(void)
 // Возврат интерфейса в исходное состояние
 void TIdHttpResultBroadcasterFrame::AClearInterface(void)
 {
-
 }
 
 

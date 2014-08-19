@@ -78,8 +78,6 @@ object UComponentsControlForm: TUComponentsControlForm
                 inherited Splitter5: TSplitter
                   Top = 274
                   Width = 249
-                  ExplicitTop = 364
-                  ExplicitWidth = 227
                 end
                 inherited EnchancedSG1: TEnchancedSG
                   Width = 249
@@ -145,8 +143,6 @@ object UComponentsControlForm: TUComponentsControlForm
               ExplicitHeight = 351
               inherited Splitter1: TSplitter
                 Top = 61
-                ExplicitTop = 151
-                ExplicitWidth = 292
               end
               inherited Panel1: TPanel
                 Top = 228
