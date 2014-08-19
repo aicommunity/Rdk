@@ -52,7 +52,7 @@ RDK::URpcDecoderInternal RdkRpcDecoder;
 /// Ёкзепл€р класса диспетчера команд
 RDK::URpcDispatcher RdkRpcDispatcher;
 
-/// Ёкзепл€р класса приложени€
+/// Ёкзепл€р класса пр	иложени€
 RDK::UApplication RdkApplication;
 
 /// √лобальна€ переменна€ сигнализирующа€ о завершении инициализации приложени€

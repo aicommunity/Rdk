@@ -1377,7 +1377,11 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberPlayerEndOfStream(T
 	} */
 	PulseEvent(SourceStoppedEvent);
 	if(RepeatFlag)
-		VideoGrabber->PlayerFramePosition=0;
+	{
+	   /*	VideoGrabber->PlayerFramePosition=1;
+		VideoGrabber->StartPreview() */
+        VideoGrabber->RunPlayer();
+	}
 	else
 	{
      MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, std::string("VideoGrabber stopped by end of frame").c_str());
