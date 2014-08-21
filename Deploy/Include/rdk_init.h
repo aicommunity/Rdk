@@ -919,6 +919,9 @@ RDK_LIB_TYPE const /* RDK::MDMatrix* */void* RDK_CALL Model_GetComponentOutputAs
 RDK_LIB_TYPE const /* RDK::UBitmap* */void* RDK_CALL Model_GetComponentOutput(const char *stringid, const char *property_name);
 RDK_LIB_TYPE const /* RDK::UBitmap* */void* RDK_CALL Model_GetComponentOutputByIndex(const char *stringid, int index);
 
+RDK_LIB_TYPE const /* RDK::UBitmap* */void* RDK_CALL MModel_GetComponentOutput(int engine_index, const char *stringid, const char *property_name);
+RDK_LIB_TYPE const /* RDK::UBitmap* */void* RDK_CALL MModel_GetComponentOutputByIndex(int engine_index, const char *stringid, int index);
+
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
 RDK_LIB_TYPE const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapOutput(const char *stringid, const char *property_name);
 RDK_LIB_TYPE const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapOutputByIndex(const char *stringid, int index);

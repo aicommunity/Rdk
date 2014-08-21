@@ -2351,7 +2351,19 @@ const /* RDK::UBitmap* */ void* RDK_CALL Model_GetComponentOutput(const char *st
 
 const /* RDK::UBitmap* */ void* RDK_CALL Model_GetComponentOutputByIndex(const char *stringid, int index)
 {
+ return DllManager.GetEngineLock()->Model_GetComponentOutput(stringid, index);
+}
+const /* RDK::UBitmap* */ void* RDK_CALL MModel_GetComponentOutput(int engine_index, const char *stringid, const char *property_name)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 0;
+ return DllManager.GetEngineLock()->Model_GetComponentOutput(stringid, property_name);
+}
 
+const /* RDK::UBitmap* */ void* RDK_CALL MModel_GetComponentOutputByIndex(int engine_index,const char *stringid, int index)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 0;
  return DllManager.GetEngineLock()->Model_GetComponentOutput(stringid, index);
 }
 
