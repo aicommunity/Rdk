@@ -1592,6 +1592,43 @@ void TUGEngineControlForm::ResetChannel(int channel_index)
 #endif
 }
 
+/// --------------------------
+/// Методы управления каналами
+/// --------------------------
+/// Возвращает число каналов
+int TUGEngineControlForm::GetNumChannels(void) const
+{
+ return GetNumEngines();
+}
+
+/// Устанавливает число каналов
+/// также выставляет число источников видео
+int TUGEngineControlForm::SetNumChannels(int value)
+{
+ UEngineMonitorForm->EngineMonitorFrame->SetNumChannels(value);
+ UServerControlForm->SetNumChannels(value);
+ return 0;
+}
+
+
+/// Добавляет канал в позицию index
+/// Если позиция не существует, то добавляет в конец
+int TUGEngineControlForm::AddChannel(int index)
+{
+ UEngineMonitorForm->EngineMonitorFrame->InsertChannel(index);
+ UServerControlForm->SetNumChannels(GetNumChannels());
+}
+
+/// Удаляет канал из позиции index
+int TUGEngineControlForm::DelChannel(int index)
+{
+ UEngineMonitorForm->EngineMonitorFrame->DeleteChannel(index);
+ UServerControlForm->SetNumChannels(GetNumChannels());
+}
+
+/// --------------------------
+
+
 
 //---------------------------------------------------------------------------
 
@@ -2451,10 +2488,28 @@ void __fastcall TUGEngineControlForm::UComponentsListFrame1NiceStateValRichEditM
 }
 //---------------------------------------------------------------------------
 
+void __fastcall TUGEngineControlForm::Insert1Click(TObject *Sender)
+{
+ AddChannel(ChannelsStringGrid->Row);
+}
+//---------------------------------------------------------------------------
 
+void __fastcall TUGEngineControlForm::DeleteSelected1Click(TObject *Sender)
+{
+ DelChannel(ChannelsStringGrid->Row);
+}
+//---------------------------------------------------------------------------
 
+void __fastcall TUGEngineControlForm::InsertChannel1Click(TObject *Sender)
+{
+ Insert1Click(Sender);
+}
+//---------------------------------------------------------------------------
 
+void __fastcall TUGEngineControlForm::DeleteSelectedChannel1Click(TObject *Sender)
 
-
-
+{
+ DeleteSelected1Click(Sender);
+}
+//---------------------------------------------------------------------------
 

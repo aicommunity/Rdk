@@ -185,6 +185,8 @@ void SetServerTimeStamp(int channel_index, RDK::ULongTime stamp);
 /// Управление числом каналов
 int GetNumChannels(void) const;
 bool SetNumChannels(int num);
+bool InsertChannel(int index);
+bool DeleteChannel(int index);
 
 void AUpdateInterface(void);
 

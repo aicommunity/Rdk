@@ -611,6 +611,14 @@ object UGEngineControlForm: TUGEngineControlForm
         Caption = 'Delete All'
         OnClick = DeleteAll1Click
       end
+      object Insert1: TMenuItem
+        Caption = 'Insert'
+        OnClick = Insert1Click
+      end
+      object DeleteSelected1: TMenuItem
+        Caption = 'Delete Selected'
+        OnClick = DeleteSelected1Click
+      end
     end
     object Calculate1: TMenuItem
       Caption = 'Calculate'
@@ -705,10 +713,10 @@ object UGEngineControlForm: TUGEngineControlForm
     end
   end
   object ImageList: TImageList
-    Left = 416
-    Top = 65520
+    Left = 360
+    Top = 65528
     Bitmap = {
-      494C01011B006000B80210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B006000C00210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -1729,9 +1737,17 @@ object UGEngineControlForm: TUGEngineControlForm
       Caption = 'Add Channel'
       OnClick = AddChannel1Click
     end
+    object InsertChannel1: TMenuItem
+      Caption = 'Insert Channel'
+      OnClick = InsertChannel1Click
+    end
     object DelChannel1: TMenuItem
-      Caption = 'Del Channel'
+      Caption = 'Del Last Channel'
       OnClick = DelChannel1Click
+    end
+    object DeleteSelectedChannel1: TMenuItem
+      Caption = 'Delete Selected Channel'
+      OnClick = DeleteSelectedChannel1Click
     end
   end
 end

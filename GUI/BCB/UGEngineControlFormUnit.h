@@ -135,6 +135,10 @@ __published:	// IDE-managed Components
 	TMenuItem *N9;
 	TMenuItem *SaveCommonDescriptions1;
 	TMenuItem *SaveClassesDescriptions1;
+	TMenuItem *Insert1;
+	TMenuItem *DeleteSelected1;
+	TMenuItem *InsertChannel1;
+	TMenuItem *DeleteSelectedChannel1;
 	void __fastcall FormShow(TObject *Sender);
 	void __fastcall Start1Click(TObject *Sender);
 	void __fastcall Pause1Click(TObject *Sender);
@@ -198,6 +202,10 @@ __published:	// IDE-managed Components
 	void __fastcall EnchancedSG1BasicStringGridMouseEnter(TObject *Sender);
 	void __fastcall EnchancedSG2BasicStringGridMouseEnter(TObject *Sender);
 	void __fastcall UComponentsListFrame1NiceStateValRichEditMouseEnter(TObject *Sender);
+	void __fastcall Insert1Click(TObject *Sender);
+	void __fastcall DeleteSelected1Click(TObject *Sender);
+	void __fastcall InsertChannel1Click(TObject *Sender);
+	void __fastcall DeleteSelectedChannel1Click(TObject *Sender);
 
 
 
@@ -354,6 +362,24 @@ void CloneProject(int source_id, int cloned_id);
 
 // Сохраняет проект
 void SaveProject(void);
+
+/// --------------------------
+/// Методы управления каналами
+/// --------------------------
+/// Возвращает число каналов
+int GetNumChannels(void) const;
+
+/// Устанавливает число каналов
+/// также выставляет число источников видео
+int SetNumChannels(int value);
+
+/// Добавляет канал в позицию index
+/// Если позиция не существует, то добавляет в конец
+int AddChannel(int index);
+
+/// Удаляет канал из позиции index
+int DelChannel(int index);
+/// --------------------------
 
 // Добавляет заданный фрейм типа TUImagesFrame, TUWatchFrame и т.п. на заданную вкладку
 bool AddSpecialFrameToPage(TUVisualControllerFrame *frame, TTabSheet* tab, const String &caption);

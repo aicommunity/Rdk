@@ -89,12 +89,15 @@ bool RDKDllManager::Init(PCreateNewStorage fCreateNewStorage,
 /// Возвращает число движков
 int RDKDllManager::GetNumEngines(void) const
 {
+ UGenericMutexLocker lock(GlobalMutex);
  return int(EngineList.size());
 }
 
 /// Создает требуемое число пустых движков
 int RDKDllManager::SetNumEngines(int num)
 {
+ UGenericMutexLocker lock(GlobalMutex);
+
  if(num<0)
   return 1;
 
@@ -133,19 +136,23 @@ int RDKDllManager::Add(int index)
  int old_num=EngineList.size();
  int num=GetNumEngines()+1;
 
- EngineList.resize(num,0);
- StorageList.resize(num,0);
- EnvironmentList.resize(num,0);
- MutexList.resize(num,0);
- LockerList.resize(num,0);
- for(int i=int(EngineList.size())-2;i>=index;i--)
  {
-  UGenericMutexLocker lock1(MutexList[i]);
-  EngineList[i]=EngineList[i+1];
-  StorageList[i]=StorageList[i+1];
-  EnvironmentList[i]=EnvironmentList[i+1];
-  MutexList[i]=MutexList[i+1];
-  LockerList[i]=LockerList[i+1];
+  UGenericMutexLocker lock(GlobalMutex);
+  EngineList.resize(num,0);
+  StorageList.resize(num,0);
+  EnvironmentList.resize(num,0);
+  MutexList.resize(num,0);
+  LockerList.resize(num,0);
+ }
+
+ for(int i=int(EngineList.size())-1;i>index;i--)
+ {
+  UGenericMutexLocker lock1(MutexList[i-1]);
+  EngineList[i]=EngineList[i-1];
+  StorageList[i]=StorageList[i-1];
+  EnvironmentList[i]=EnvironmentList[i-1];
+  MutexList[i]=MutexList[i-1];
+  LockerList[i]=LockerList[i-1];
  }
 
  EngineList[index]=0;
@@ -155,6 +162,7 @@ int RDKDllManager::Add(int index)
  LockerList[index]=0;
  MutexList[index]=UCreateMutex();
 
+ SetSelectedChannelIndex(SelectedChannelIndex);
  return 0;
 }
 
@@ -171,7 +179,7 @@ int RDKDllManager::Del(int index)
  UDestroyMutex(MutexList[index]);
  for(int i=index+1;i<int(EngineList.size());i++)
  {
-  UGenericMutexLocker lock1(MutexList[i-1]);
+//  UGenericMutexLocker lock1(MutexList[i-1]);
   UGenericMutexLocker lock2(MutexList[i]);
   EngineList[i-1]=EngineList[i];
   StorageList[i-1]=StorageList[i];
@@ -179,12 +187,14 @@ int RDKDllManager::Del(int index)
   MutexList[i-1]=MutexList[i];
   LockerList[i-1]=LockerList[i];
  }
+ UGenericMutexLocker lock(GlobalMutex);
  EngineList.resize(EngineList.size()-1);
  StorageList.resize(StorageList.size()-1);
  EnvironmentList.resize(EnvironmentList.size()-1);
  MutexList.resize(MutexList.size()-1);
  LockerList.resize(LockerList.size()-1);
 
+ SetSelectedChannelIndex(SelectedChannelIndex);
  return 0;
 }
 

@@ -331,6 +331,93 @@ bool TUEngineMonitorFrame::SetNumChannels(int num)
  return true;
 }
 
+bool TUEngineMonitorFrame::InsertChannel(int index)
+{
+ int old_num=GetNumEngines();
+ Engine_Add(index);
+ int new_num=GetNumEngines();
+
+ if(old_num>0)
+ {
+  CalculateMode.resize(new_num,CalculateMode[old_num-1]);
+  MinInterstepsInterval.resize(new_num,MinInterstepsInterval[old_num-1]);
+ }
+ else
+ {
+  CalculateMode.resize(new_num,0);
+  MinInterstepsInterval.resize(new_num,0);
+ }
+
+ CalculateSignal.resize(new_num,false);
+ CalculateState.resize(new_num,false);
+ ServerTimeStamp.resize(new_num,0);
+ LastCalculatedServerTimeStamp.resize(new_num,0);
+ RealLastCalculationTime.resize(new_num,0);
+
+ ThreadChannels.resize(new_num);
+ for(int i=new_num-1;i>index;i--)
+ {
+  ThreadChannels[i]=ThreadChannels[i-1];
+  CalculateSignal[i]=CalculateSignal[i-1];
+  CalculateState[i]=CalculateState[i-1];
+  ServerTimeStamp[i]=ServerTimeStamp[i-1];
+  LastCalculatedServerTimeStamp[i]=LastCalculatedServerTimeStamp[i-1];
+  RealLastCalculationTime[i]=RealLastCalculationTime[i-1];
+  CalculateMode[i]=CalculateMode[i-1];
+  MinInterstepsInterval[i]=MinInterstepsInterval[i-1];
+ }
+
+ ThreadChannels[index]=new TEngineThread(index,CalculateMode[index],MinInterstepsInterval[index],false);
+ ThreadChannels[index]->Priority=RDK_DEFAULT_THREAD_PRIORITY;
+ ThreadChannels[index]->FreeOnTerminate=false;
+ return true;
+}
+
+bool TUEngineMonitorFrame::DeleteChannel(int index)
+{
+ int old_num=GetNumEngines();
+
+// if(index<0 || index>=int(ThreadChannels.size()))
+//  return true;
+
+ if(ThreadChannels[index])
+ {
+  ThreadChannels[index]->Terminate();
+  delete ThreadChannels[index];
+  ThreadChannels[index]=0;
+ }
+
+ int del_res=Engine_Del(index);
+ int new_num=GetNumEngines();
+
+ if(new_num == old_num)
+  return true;
+
+ for(int i=index;i<new_num;i++)
+ {
+  ThreadChannels[i]=ThreadChannels[i+1];
+  CalculateSignal[i]=CalculateSignal[i+1];
+  CalculateState[i]=CalculateState[i+1];
+  ServerTimeStamp[i]=ServerTimeStamp[i+1];
+  LastCalculatedServerTimeStamp[i]=LastCalculatedServerTimeStamp[i+1];
+  RealLastCalculationTime[i]=RealLastCalculationTime[i+1];
+  CalculateMode[i]=CalculateMode[i+1];
+  MinInterstepsInterval[i]=MinInterstepsInterval[i+1];
+ }
+
+
+ CalculateMode.resize(new_num);
+ MinInterstepsInterval.resize(new_num);
+
+ CalculateSignal.resize(new_num);
+ CalculateState.resize(new_num);
+ ServerTimeStamp.resize(new_num);
+ LastCalculatedServerTimeStamp.resize(new_num);
+ RealLastCalculationTime.resize(new_num);
+
+ return true;
+}
+
 
 void TUEngineMonitorFrame::AUpdateInterface(void)
 {
