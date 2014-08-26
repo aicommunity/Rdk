@@ -60,32 +60,64 @@ std::string get_text_time(time_t time_data, char date_sep, char time_sep)
  result+=sntoa(time_stuct->tm_sec,2);
  return result;
 }
+/*
+// Возвращает время в виде понятной строки вида YYYY/MM/DD HH:MM:SS,MS
+std::string get_text_current_time(char date_sep, char time_sep, char m_sec_sep, std::string additional_line)
+{
+ std::string result;
+ unsigned short year, month, day;
+ unsigned short hour, min, sec, msec;
+
+ TDateTime  time_data=TDateTime::CurrentDateTime();
+ time_data.DecodeDate(&year, &month, &day);
+ time_data.DecodeTime(&hour, &min, &sec, &msec);
+
+ result+=sntoa(year, 4);
+ result+=date_sep;
+ result+=sntoa(month,2);
+ result+=date_sep;
+ result+=sntoa(day,2);
+ result+=" ";
+
+ result+=sntoa(hour, 2);
+ result+=time_sep;
+ result+=sntoa(min,2);
+ result+=time_sep;
+ result+=sntoa(sec,2);
+ result+=m_sec_sep;
+ result+=sntoa(msec,2);
+ result+=" ";
+ result+=additional_line;
+
+ return result;
+}*/
 
 // Конвертация string<->wstring
 // Копипаста с http://habrahabr.ru/blogs/cpp/112997/
 //@brief Сужает широкую строку, используя локализацию loc
 //   @return Возвращает суженную строку или пустую суженную строку, в
 //   случае. если возникла ошибка
-std::string narrow(const std::wstring& wstr, const std::locale& loc)
+std::string& narrow(const std::wstring& wstr, const std::locale& loc, std::string &result)
 {
   const size_t sz = wstr.length();
   if(sz == 0)
-	return std::string();
+  {
+   result.resize(0);
+   return result;
+  }
   mbstate_t state;
   memset(&state,0,sizeof(state));
   char *cnext;
   const wchar_t *wnext;
   const wchar_t *wcstr = wstr.c_str();
-  char *buffer = new char[sz + 1];
-  std::uninitialized_fill(buffer, buffer + sz + 1, 0);
+  result.resize(sz);
+  std::uninitialized_fill(&result[0], &result[0] + sz + 1, 0);
   typedef std::codecvt<wchar_t, char, mbstate_t> cvt;
   cvt::result res;
   res = std::use_facet<cvt>(loc).out(state, wcstr, wcstr + sz, wnext,
-	  buffer, buffer + sz, cnext);
-  std::string result(buffer);
-  delete [] buffer;
+	  &result[0], &result[0] + sz, cnext);
   if(res == cvt::error)
-	return std::string();
+   result.resize(0);
   return result;
 }
 
@@ -101,26 +133,29 @@ std::string narrow2(const std::wstring& wstr)
 //@brief Расширяет строку, используя локализацию loc
 //   @return Возвращает расширенную строку или пустую расширенную строку, в
 //   случае, если возникла ошибка.
-std::wstring widen(const std::string& str, const std::locale& loc)
+std::wstring& widen(const std::string& str, const std::locale& loc, std::wstring &result)
 {
   const size_t sz = str.length();
   if(sz == 0)
-    return std::wstring();
+  {
+   result.resize(0);
+   return result;
+  }
   mbstate_t state;
   memset(&state,0,sizeof(state));
   const char *cnext;
   wchar_t *wnext;
   const char *cstr = str.c_str();
-  wchar_t *buffer = new wchar_t[sz + 1];
-  std::uninitialized_fill(buffer, buffer + sz + 1, 0);
+  result.resize(sz);// = new wchar_t[sz + 1];
+  std::uninitialized_fill(&result[0], &result[0] + sz + 1, 0);
   typedef std::codecvt<wchar_t, char, mbstate_t> cvt;
   cvt::result res;
   res = std::use_facet<cvt>(loc).in(state, cstr, cstr + sz, cnext,
-      buffer, buffer + sz, wnext);
-  std::wstring result(buffer);
-  delete [] buffer;
+      &result[0], &result[0] + sz, wnext);
+  //std::wstring result(buffer);
+//  delete [] buffer;
   if(res == cvt::error)
-    return std::wstring();
+   result.resize(0); //return std::wstring();
   return result;
 }
 				/*

@@ -4,34 +4,36 @@
 #include <vector>
 #include <string>
 #include "USharedMemoryLoader.h"
+#include "UGenericMutex.h"
+
 
 namespace RDK {
 
 /// Возвращает текущее время в миллисекундах от некоторого фиксированного момента
 /// (зависит от реализации)
-unsigned long long GetCurrentStartupTime(void);
+RDK_LIB_TYPE unsigned long long GetCurrentStartupTime(void);
 
 /// Вычисляет разницу во времени в миллисекундах
-unsigned long long CalcDiffTime(unsigned long long time1, unsigned long long time2);
+RDK_LIB_TYPE unsigned long long CalcDiffTime(unsigned long long time1, unsigned long long time2);
 
 /// Усыпляет процесс на заданное число миллисекунд
-void Sleep(int value);
+RDK_LIB_TYPE void Sleep(int value);
 
 /// Создает каталог
 /// Возвращает 0 в случае успеха или если каталог уже существует
 /// 1 - если уже существует файл с таким именем
 /// 2 - если такой путь не существует
 /// 3 - если произошла другая ошибка
-int CreateNewDirectory(const char* path);    
+RDK_LIB_TYPE int CreateNewDirectory(const char* path);
 
 /// Получает список файлов или каталогов по заданному пути
-int FindFilesList(const std::string &path, const std::string &mask, bool isfile, std::vector<std::string> &results);
-          
+RDK_LIB_TYPE int FindFilesList(const std::string &path, const std::string &mask, bool isfile, std::vector<std::string> &results);
+
 /// Копирует файл
-int CopyFile(const std::string &source_file, const std::string &dest_file);
-                
+RDK_LIB_TYPE int CopyFile(const std::string &source_file, const std::string &dest_file);
+
 /// Копирует каталог с содержимым
-int CopyDir(const std::string &source_dir, const std::string &dest_dir, const std::string &mask);
+RDK_LIB_TYPE int CopyDir(const std::string &source_dir, const std::string &dest_dir, const std::string &mask);
 
 
 

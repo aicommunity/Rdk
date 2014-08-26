@@ -1,7 +1,34 @@
 #ifndef MDMatrixH
 #define MDMatrixH
 
+#include <limits>
+#include "../Utilities/UException.h"
+
 namespace RDK{
+
+
+// Исключения
+/// Общее исключение матричных операций
+class EMatrixError: public EError
+{
+public:
+EMatrixError(void) : EError() {};
+};
+
+/// Нулевой определитель. Исключение генерируется при обращении матриц и т.п.
+class EMatrixZeroDet: public EMatrixError
+{
+public:
+EMatrixZeroDet(void) : EMatrixError() {};
+};
+
+/// Попытка деления на ноль
+class EMatrixZeroDiv: public EMatrixError
+{
+public:
+EMatrixZeroDiv(void) : EMatrixError() {};
+};
+
 
 template<class T>
 class MDMatrix
@@ -159,7 +186,6 @@ MDMatrix<T> Eye(void);
 bool operator == (const MDMatrix<T> &M) const;
 bool operator != (const MDMatrix<T> &M) const;
 // --------------------------
-
 };
 // ---------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------
@@ -689,6 +715,8 @@ int MDMatrix<T>::TriangleBareis(void)
 
 	for(int l1=0; l1<Rows-1; ++l1)
 	{ //Перебираю все строки матрицы, кроме последней
+	 if(fabs(denom)<std::numeric_limits<T>::epsilon())
+	  throw EMatrixZeroDiv();
 		int maxN=l1;
 		T maxValue=fabs((*this)(l1,l1));
 		for(int l2=l1+1; l2<Rows; ++l2)
@@ -725,7 +753,7 @@ int MDMatrix<T>::TriangleBareis(void)
 				(*this)(l2,c)=((*this)(l2,c)*value1-(*this)(l1,c)*value2)/denom;
         }
 
-        denom = value1; //!
+		denom = value1; //!
 	}
 	//!
    // if(exchanges%2) return -M[N-1][N-1]; else return M[N-1][N-1];
@@ -737,10 +765,23 @@ int MDMatrix<T>::TriangleBareis(void)
 template<class T>
 MDMatrix<T>& MDMatrix<T>::Inverse(MDMatrix<T> &res) const
 {
+ if(Rows == 2 && Cols == 2)
+ {
+  T det=(*this)(0,0)*(*this)(1,1)-(*this)(0,1)*(*this)(1,0);
+  if(fabs(det)<std::numeric_limits<T>::epsilon())
+   throw EMatrixZeroDet();
+
+  res(0,0)=(*this)(1,1)/det;
+  res(0,1)=-(*this)(0,1)/det;
+  res(1,0)=-(*this)(1,0)/det;
+  res(1,1)=(*this)(0,0)/det;
+  return res;
+ }
+
  T det=Det();
 
- if(!det)
-  return res;
+ if(fabs(det)<std::numeric_limits<T>::epsilon())
+  throw EMatrixZeroDet();
 
  // get the determinant of a
  det = 1.0/det;
@@ -776,11 +817,15 @@ T MDMatrix<T>::Det(void) const
 {
  MDMatrix<T> Temp(*this);
 
- int numcombos=Temp.TriangleBareis();
+ Temp.TriangleGauss();
 
- T det = Temp(Rows-1,Cols-1);
+ T det=*Temp.Data;
+ for(int i=1;i<((Rows<Cols)?Rows-1:Cols-1);i++)
+  det*=(*this)(i,i);
+ return det;
+// T det = Temp(Rows-1,Cols-1);
 
- return (numcombos%2)?-det:det;
+// return (numcombos%2)?-det:det;
 }
 
 // Вычисление минорной матрицы

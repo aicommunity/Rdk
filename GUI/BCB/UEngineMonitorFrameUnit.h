@@ -15,6 +15,7 @@
 #include <vector>
 #include "myrdk.h"
 #include "TUVisualController.h"
+#include "TServerBroadcasterCommonUnit.h"
 
 #pragma warn -8130
 
@@ -24,8 +25,24 @@ protected: // Параметры
 /// Индекс канала в библиотеке аналитики, управляемый тредом
 int ChannelIndex;
 
+/// Режим счета
+RDK::UELockVar<int> CalculateMode;
+
+/// Минимальный интервал времени между итерациями расчета в режиме 0 и 2, мс
+RDK::UELockVar<RDK::UTime> MinInterstepsInterval;
+
+/// Метка реального времени окончания последнего расчета
+RDK::UELockVar<RDK::ULongTime> RealLastCalculationTime;
+
 public:
+// Событие состояния расчета. Выставлено на время активности расчета. Сбрасывается по стопу
+HANDLE CalcState;
+
 HANDLE CalcEnable;
+
+HANDLE CalcStarted;
+
+HANDLE CalculationNotInProgress;
 
 RDK::UBitmap Source;
 
@@ -34,16 +51,29 @@ public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-__fastcall TEngineThread(int channel_index, bool CreateSuspended);
+__fastcall TEngineThread(int channel_index, int calculate_mode, RDK::UTime min_inerval, bool CreateSuspended);
 virtual __fastcall ~TEngineThread(void);
 // --------------------------
 
 // --------------------------
+// Управление параметрами
+// --------------------------
+/// Режим счета
+int GetCalculateMode(void) const;
+bool SetCalculateMode(int value);
+
+/// Минимальный интервал времени между итерациями расчета в режиме 0 и 2, мс
+int GetMinInterstepsInterval(void) const;
+bool SetMinInterstepsInterval(RDK::UTime value);
+// --------------------------
+
+
+// --------------------------
 // Управление потоком
 // --------------------------
-void __fastcall BeforeCalculate(void);
+virtual void __fastcall BeforeCalculate(void);
 
-void __fastcall AfterCalculate(void);
+virtual void __fastcall AfterCalculate(void);
 
 virtual void __fastcall Execute(void);
 // --------------------------
@@ -69,6 +99,7 @@ __published:	// IDE-managed Components
 	TMenuItem *ools1;
 	TMenuItem *SaveClassesDescriptions1;
 	TMenuItem *LoadAllClassesDescriptions1;
+	TCheckBox *ShowDebugMessagesCheckBox;
 	void __fastcall Start1Click(TObject *Sender);
 	void __fastcall Pause1Click(TObject *Sender);
 	void __fastcall Reset1Click(TObject *Sender);
@@ -76,6 +107,8 @@ __published:	// IDE-managed Components
 	void __fastcall Step1Click(TObject *Sender);
 	void __fastcall SaveClassesDescriptions1Click(TObject *Sender);
 	void __fastcall LoadAllClassesDescriptions1Click(TObject *Sender);
+	void __fastcall RichEditMouseEnter(TObject *Sender);
+	void __fastcall ShowDebugMessagesCheckBoxClick(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
 	__fastcall TUEngineMonitorFrame(TComponent* Owner);
@@ -86,6 +119,11 @@ public:		// User declarations
 /// 1 - многопоточный режим
 int ChannelsMode;
 
+/// Режим использования времени для расчета
+/// 0 - системное время
+/// 1 - время источника данных
+int CalculationTimeSourceMode;
+
 // Режим расчетов
 // 0 - простой расчет
 // 1 - расчет в реальном времени
@@ -93,7 +131,10 @@ int ChannelsMode;
 std::vector<int> CalculateMode;
 
 // Временная метка последнего расчета
-std::vector<long long> LastCalculatedServerTimeStamp;
+std::vector<RDK::ULongTime> LastCalculatedServerTimeStamp;
+
+/// Минимальный интервал времени между итерациями расчета в режиме 0 и 2, мс
+std::vector<int> MinInterstepsInterval;
 
 protected:
 
@@ -101,12 +142,22 @@ protected:
 // сбрасывается при итерации счета
 std::vector<bool> CalculateSignal;
 
+// Сигнал активности расчета
+// сбрасывается по стопу
+std::vector<bool> CalculateState;
+
 // Временная метка сервера
-std::vector<long long> ServerTimeStamp;
+std::vector<RDK::ULongTime> ServerTimeStamp;
 
 /// Потоки запуска многоканальной аналитики
 std::vector<TEngineThread*> ThreadChannels;
 
+/// Метка реального времени окончания последнего расчета в однопоточном режиме
+std::vector<RDK::ULongTime> RealLastCalculationTime;
+
+std::vector<RDK::UEPtr<TBroadcasterForm> > BroadcastersList;
+
+HANDLE ThreadCalcCompleteEvent;
 
 public:
 /// Управление режимом работы
@@ -119,21 +170,60 @@ void SetChannelsMode(int mode);
 int GetCalculateMode(int channel_index) const;
 void SetCalculateMode(int channel_index, int value);
 
+/// Режим использования времени для расчета
+/// 0 - системное время
+/// 1 - время источника данных
+int GetCalculationTimeSourceMode(void) const;
+bool SetCalculationTimeSourceMode(int value);
+
+void SetMinInterstepsInterval(int channel_index, RDK::UTime value);
+
 // Управление временной меткой сервера
-long long GetServerTimeStamp(int channel_index) const;
-void SetServerTimeStamp(int channel_index, long long stamp);
+RDK::ULongTime GetServerTimeStamp(int channel_index) const;
+void SetServerTimeStamp(int channel_index, RDK::ULongTime stamp);
 
 /// Управление числом каналов
 int GetNumChannels(void) const;
 bool SetNumChannels(int num);
+bool InsertChannel(int index);
+bool DeleteChannel(int index);
 
 void AUpdateInterface(void);
+
+// Возврат интерфейса в исходное состояние
+virtual void AClearInterface(void);
 
 // Сохраняет параметры интерфейса в xml
 virtual void ASaveParameters(RDK::USerStorageXML &xml);
 
 // Загружает параметры интерфейса из xml
 virtual void ALoadParameters(RDK::USerStorageXML &xml);
+
+/// Регистрирует вещатель метаданных
+void RegisterMetadataBroadcaster(TBroadcasterForm *broadcaster);
+
+/// Снимает регистрацию вещателя метаданных
+void UnRegisterMetadataBroadcaster(TBroadcasterForm *broadcaster);
+
+/// Отправляет метаданные во все зарегистрированные вещатели
+virtual bool AddMetadata(int channel_index, RDK::ULongTime time_stamp);
+
+/// Инициирует процедуру отправки метаданных всеми зарегистрированными вещателями
+virtual bool SendMetadata(void);
+
+/// Запускает аналитику выбранного канала, или всех, если channel_index == -1
+virtual void StartChannel(int channel_index);
+
+/// Останавливает аналитику выбранного канала, или всех, если channel_index == -1
+virtual void PauseChannel(int channel_index);
+
+/// Сбрасывает аналитику выбранного канала, или всех, если channel_index == -1
+virtual void ResetChannel(int channel_index);
+
+/// Проверяет состояние расчета по id канала
+/// 0 - Не считает
+/// 1 - Идет расчет
+virtual int CheckCalcState(int channel_id) const;
 };
 #pragma warn .8130
 //---------------------------------------------------------------------------

@@ -23,6 +23,7 @@ namespace RDK {
 // --------------------------
 UEnvironment::UEnvironment(void)
 {
+ LogMutex=UCreateMutex();
  // Параметры
  // Индекс предарительно заданной модели обработки
  // 0 - Структура определяется извне
@@ -43,11 +44,30 @@ UEnvironment::UEnvironment(void)
 
  // Текущий компонент модели
 // CurrentComponent=0;
+
+ StartupTime=0;
+ CurrentTime=0;
+ LastDuration=1;
+ ProcEndTime=0;
+ MinInterstepsInterval=0;
+
+ CurrentExceptionsLogSize=0;
+ ExceptionHandler=0;
+
+ LastReadExceptionLogIndex=-1;
+ MaxExceptionsLogSize=1000;
+
+ LastErrorLevel=INT_MAX;
+ DebugMode=false;
+ ChannelIndex=0;
+ LastStepStartTime=0;
 }
 
 UEnvironment::~UEnvironment(void)
 {
  DestroyModel();
+ if(LogMutex)
+  UDestroyMutex(LogMutex);
 }
 // --------------------------
 
@@ -104,6 +124,52 @@ void UEnvironment::SetCurrentDataDir(const std::string& dir)
   CurrentDataDir+='/';
 }
 
+// Имя каталога бинарных файлов
+const std::string& UEnvironment::GetSystemDir(void) const
+{
+ return SystemDir;
+}
+
+void UEnvironment::SetSystemDir(const std::string& dir)
+{
+ SystemDir=dir;
+ for(std::string::size_type i=0; i<SystemDir.size();i++)
+  if(SystemDir[i] == '\\')
+   SystemDir[i]='/';
+
+ if(SystemDir.size()>0 && SystemDir[SystemDir.size()-1] != '/')
+  SystemDir+='/';
+}
+
+/// Минимальный интервал времени между итерациями счета (мс)
+long long UEnvironment::GetMinInterstepsInterval(void) const
+{
+ return MinInterstepsInterval;
+}
+
+bool UEnvironment::SetMinInterstepsInterval(long long value)
+{
+ if(MinInterstepsInterval == value)
+  return true;
+
+ MinInterstepsInterval = value;
+ return true;
+}
+
+/// Флаг включения режима отладки
+bool UEnvironment::GetDebugMode(void) const
+{
+ return DebugMode;
+}
+
+bool UEnvironment::SetDebugMode(bool value)
+{
+ if(DebugMode == value)
+  return true;
+
+ DebugMode=value;
+ return true;
+}
 // --------------------------
 
 
@@ -268,7 +334,62 @@ UTimeControl& UEnvironment::GetTime(void)
 {
  return Time;
 }
+
+/// Индекс текущего канала в многоканальной библиотеке
+int UEnvironment::GetChannelIndex(void) const
+{
+ return ChannelIndex;
+}
+
+bool UEnvironment::SetChannelIndex(int value)
+{
+ if(ChannelIndex == value)
+  return true;
+
+ ChannelIndex=value;
+ return true;
+}
 // --------------------------
+
+
+// --------------------------
+// Методы управления контроллерами
+// --------------------------
+/// Инициализация компонента и переменной состояния модели которому может
+/// передаваться сигнал о сбое в работе
+/// источника данных
+bool UEnvironment::RegisterSourceController(const std::string &component_name, const std::string &property_name)
+{
+ SourceControllerName=component_name;
+ SourceControllerProperty=property_name;
+ return true;
+}
+
+
+/// Активация извещения о сбое в работе источника данных
+bool UEnvironment::CallSourceController(void)
+{
+ if(SourceControllerName.empty() || SourceControllerProperty.empty())
+  return false;
+ try
+ {
+  if(!GetModel())
+   return false;
+  UEPtr<UContainer> cont=GetModel()->GetComponentL(SourceControllerName);
+
+  UEPtr<UIProperty> iproperty=cont->FindProperty(SourceControllerProperty);
+  bool value=true;
+  if(!iproperty->ReadFromMemory(&value))
+   return false;
+ }
+ catch(UContainer::EComponentNameNotExist &exception)
+ {
+  return false;
+ }
+ return true;
+}
+// --------------------------
+
 
 // --------------------------
 // Методы управления счетом
@@ -369,22 +490,30 @@ void UEnvironment::RTCalculate(void)
 {
  Build();
 
-// StartProcTime=GetCurrentStartupTime();
-
  CurrentTime=GetCurrentStartupTime();
- Time.SetRealTime(CalcDiffTime(GetCurrentStartupTime(),StartupTime)*1000);
+ Time.SetSourceCurrentLocalTime(double(GetCurrentStartupTime())/1000.0);
 
- long long curtime;
- long long TimerInterval=0;
+ // Если первый шаг расчета после Reset
+ if(Time.GetTime() == 0)
+ {
+  Time.SetSourceStartLocalTime(Time.GetSourceCurrentLocalTime());
+  Time.SetSourceStartGlobalTime(Time.GetSourceCurrentGlobalTime());
+  StartupTime=CurrentTime;
+  ProcEndTime=StartupTime;
+ }
+
+
+ unsigned long long curtime;
+ unsigned long long timer_interval=0;
  //double devicemodeltime=0;
 
- TimerInterval=GetCurrentStartupTime()-ProcEndTime;
- if(TimerInterval<=0)
-  TimerInterval=1;
+ timer_interval=CalcDiffTime(GetCurrentStartupTime(),ProcEndTime);
+ if(timer_interval<=0)
+  timer_interval=1;
 
  int i=0;
- if(LastDuration < TimerInterval)
-  LastDuration=TimerInterval;
+ if(LastDuration < timer_interval)
+  LastDuration=timer_interval;
  double model_duration=(Time.GetRealTime()-Time.GetDoubleTime()*1e6)/1000.0;
 
  if(model_duration>MaxModelDuration)
@@ -397,11 +526,11 @@ void UEnvironment::RTCalculate(void)
  }
  else
  {
-  elapsed_counter=0;//(/*LastDuration*/model_duration*Model->GetTimeStep())/1000;
+  elapsed_counter=0;
  }
 
  curtime=GetCurrentStartupTime();
- while(curtime-CurrentTime<TimerInterval && i<elapsed_counter)
+ while(curtime-CurrentTime<timer_interval && i<elapsed_counter)
  {
   Calculate();
 
@@ -409,18 +538,243 @@ void UEnvironment::RTCalculate(void)
   curtime=GetCurrentStartupTime();
  }
 
-// LastSentTime=GetCurrentStartupTime();
  if(Time.GetRealTime()/1e6<Time.GetDoubleTime())
  {
   Sleep(int(Time.GetDoubleTime()*1000-Time.GetRealTime()/1000));
-  Time.SetRealTime(CalcDiffTime(GetCurrentStartupTime(),StartupTime)*1000);
+  Time.SetSourceCurrentLocalTime(double(GetCurrentStartupTime())/1000.0);
  }
 
- LastDuration=GetCurrentStartupTime()-CurrentTime;
+ LastDuration=CalcDiffTime(GetCurrentStartupTime(),CurrentTime);
  ProcEndTime=GetCurrentStartupTime();
 
  return;
 }
+// --------------------------
+
+// --------------------------
+// Методы управления исключениями
+// --------------------------
+// Обрабатывает возникшее исключение
+void UEnvironment::ProcessException(UException &exception) const
+{
+ UGenericMutexLocker lock(LogMutex);
+
+ if(LastErrorLevel>exception.GetType())
+  LastErrorLevel=exception.GetType();
+ ++CurrentExceptionsLogSize;
+ if(CurrentExceptionsLogSize > MaxExceptionsLogSize)
+ {
+  int erase_size=CurrentExceptionsLogSize - MaxExceptionsLogSize-1;
+  if(LogList.size()>erase_size)
+   LogList.erase(LogList.begin(),LogList.begin()+erase_size);
+  else
+   LogList.clear();
+ }
+
+ pair<std::string, int> log;
+ log.first=sntoa(ChannelIndex)+std::string("> ")+exception.CreateLogMessage();
+ log.second=exception.GetType();
+ LogList.push_back(log);
+
+ if(ExceptionHandler)
+  ExceptionHandler(ChannelIndex);
+}
+
+// Возвращает массив строк лога
+const char* UEnvironment::GetLog(int &error_level) const
+{
+ UGenericMutexLocker lock(LogMutex);
+ TempString.clear();
+ for(size_t i=0;i<LogList.size();i++)
+ {
+  TempString+=LogList[i].first;
+  TempString+="/r/n";
+ }
+ error_level=LastErrorLevel;
+ LastErrorLevel=INT_MAX;
+ return TempString.c_str();
+}
+
+/// Возвращает число строк лога
+int UEnvironment::GetNumLogLines(void) const
+{
+ UGenericMutexLocker lock(LogMutex);
+ return int(LogList.size());
+}
+
+/// Возвращает строку лога с индексом i
+const char* UEnvironment::GetLogLine(int i) const
+{
+ UGenericMutexLocker lock(LogMutex);
+ if(i<0 || i >= int(LogList.size()))
+ {
+  TempString.clear();
+  return TempString.c_str();
+ }
+
+ TempString=LogList[i].first;
+ return TempString.c_str();
+}
+
+/// Возвращает число непрочитанных строк лога
+int UEnvironment::GetNumUnreadLogLines(void) const
+{
+ UGenericMutexLocker lock(LogMutex);
+ if(LastReadExceptionLogIndex<=0)
+  return int(LogList.size());
+
+ int size=int(LogList.size())-LastReadExceptionLogIndex-1;
+ return (size>0)?size:0;
+}
+
+// Возвращает частичный массив строк лога с момента последнего считывания лога
+// этой функцией
+const char* UEnvironment::GetUnreadLog(int &error_level)
+{
+ UGenericMutexLocker lock(LogMutex);
+ int line_index=-1;
+ TempString.clear();
+ error_level=INT_MAX;
+
+ if(LogList.empty())
+  return TempString.c_str();
+
+ if(LastReadExceptionLogIndex<0)
+ {
+  line_index=0;
+  LastReadExceptionLogIndex=0;
+ }
+ else
+ {
+  line_index=++LastReadExceptionLogIndex;
+
+ }
+// TempString=sntoa(ChannelIndex)+std::string("> ")+LogList[line_index].CreateLogMessage();
+ size_t log_size=LogList.size();
+ if(int(LogList.size())>line_index)
+ {
+  TempString=LogList[line_index].first;
+  error_level=LogList[line_index].second;
+ }
+ else
+ {
+  error_level=RDK_EX_UNKNOWN;
+ }
+// error_level=LogList[line_index].GetType();
+ return TempString.c_str();
+}
+
+// Управление функцией-обработчиком исключений
+UEnvironment::PExceptionHandler UEnvironment::GetExceptionHandler(void) const
+{
+ return ExceptionHandler;
+}
+
+bool UEnvironment::SetExceptionHandler(PExceptionHandler value)
+{
+ if(ExceptionHandler == value)
+  return true;
+
+ ExceptionHandler=value;
+ return true;
+}
+
+// Максимальное число хранимых исключений
+// Если 0, то неограниченно
+int UEnvironment::GetMaxExceptionsLogSize(void) const
+{
+ UGenericMutexLocker lock(LogMutex);
+ return MaxExceptionsLogSize;
+}
+
+void UEnvironment::SetMaxExceptionsLogSize(int value)
+{
+ UGenericMutexLocker lock(LogMutex);
+ if(MaxExceptionsLogSize == value)
+  return;
+
+ MaxExceptionsLogSize=value;
+ if(MaxExceptionsLogSize>0 && /*ExceptionsLog.size()*/CurrentExceptionsLogSize>MaxExceptionsLogSize)
+ {
+  //ExceptionsLog.erase(ExceptionsLog.begin(), ExceptionsLog.begin()+int(ExceptionsLog.size())-MaxExceptionsLogSize);
+  CurrentExceptionsLogSize=MaxExceptionsLogSize;
+ }
+}
+
+/// Очищает лог
+void UEnvironment::ClearLog(void)
+{
+ UGenericMutexLocker lock(LogMutex);
+ LastReadExceptionLogIndex=-1;
+ CurrentExceptionsLogSize=0;
+ LastErrorLevel=INT_MAX;
+ LogList.clear();
+}
+
+/// Очищает лог прочитанных сообщений
+void UEnvironment::ClearReadLog(void)
+{
+ UGenericMutexLocker lock(LogMutex);
+ if(LastReadExceptionLogIndex >=0 && LastReadExceptionLogIndex<int(LogList.size()))
+ {
+  LogList.erase(LogList.begin(),LogList.begin()+LastReadExceptionLogIndex);
+ }
+ LastReadExceptionLogIndex=-1;
+ CurrentExceptionsLogSize=0;
+ LastErrorLevel=INT_MAX;
+// TempLogString.clear();
+}
+
+// Вызов обработчика исключений среды для простой записи данных в лог
+void UEnvironment::LogMessage(int msg_level, const std::string &line)
+{
+ switch (msg_level)
+ {
+ case RDK_EX_FATAL:
+ {
+  EStringFatal exception(line);
+  ProcessException(exception);
+ }
+ break;
+
+ case RDK_EX_ERROR:
+ {
+  EStringError exception(line);
+  ProcessException(exception);
+ }
+ break;
+
+ case RDK_EX_WARNING:
+ {
+  EStringWarning exception(line);
+  ProcessException(exception);
+ }
+ break;
+
+ case RDK_EX_INFO:
+ {
+  EStringInfo exception(line);
+  ProcessException(exception);
+ }
+ break;
+
+ case RDK_EX_DEBUG:
+ {
+  if(DebugMode)
+  {
+   EStringDebug exception(line);
+   ProcessException(exception);
+  }
+ }
+ break;
+ }
+}
+
+void UEnvironment::LogMessage(int msg_level, const std::string &method_name, const std::string &line)
+{
+ LogMessage(msg_level, method_name+std::string(" - ")+line);
+}
+
 // --------------------------
 
 
@@ -458,6 +812,9 @@ bool UEnvironment::ADefault(void)
  if(!Model)
   return true;
 
+ MinInterstepsInterval=0;
+ DebugMode=false;
+
 // UComponent::SetTime(0);
  if(ModelCalculationComponent.GetSize() == 0)
  {
@@ -476,6 +833,7 @@ bool UEnvironment::ADefault(void)
    return false;
  }
 
+ ChannelIndex=0;
  return true;
 }
 
@@ -511,15 +869,14 @@ bool UEnvironment::ABuild(void)
 // Сброс процесса счета.
 bool UEnvironment::AReset(void)
 {
- StartupTime=GetCurrentStartupTime();
- LastDuration=1;
+ StartupTime=0;
  ProcEndTime=StartupTime;
+ LastDuration=1;
+ LastStepStartTime=0;
+ LastErrorLevel=INT_MAX;
 
  if(!Model)
   return true;
-
-// RDK::DefaultTimeStep=30;
-// Model->SetTimeStep(DefaultTimeStep);
 
  if(ModelCalculationComponent.GetSize() == 0)
  {
@@ -545,10 +902,26 @@ bool UEnvironment::AReset(void)
 // Выполняет расчет этого объекта
 bool UEnvironment::ACalculate(void)
 {
- Time.SetRealTime(CalcDiffTime(GetCurrentStartupTime(),StartupTime)*1000);
+ // Если первый шаг расчета после Reset
+ if(Time.GetTime() == 0)
+ {
+  Time.SetSourceStartLocalTime(0);
+  Time.SetSourceStartGlobalTime(Time.GetSourceCurrentGlobalTime());
+  StartupTime=GetCurrentStartupTime();
+  ProcEndTime=StartupTime;
+ }
+
+ ULongTime cur_time=(ULongTime)((Time.GetSourceCurrentGlobalTime()-Time.GetSourceStartGlobalTime())*(86400.0*1000.0));
+ Time.SetSourceCurrentLocalTime(cur_time/1000.0);
+
  if(!Model)
   return true;
 
+ // Проверяем, достаточно ли велик интервал времени между итерациями счета
+ if(MinInterstepsInterval>0 && CalcDiffTime(cur_time,LastStepStartTime)<MinInterstepsInterval)
+  return true;
+
+ LastStepStartTime=cur_time;
  if(ModelCalculationComponent.GetSize() == 0)
  {
   if(!Model->Calculate())

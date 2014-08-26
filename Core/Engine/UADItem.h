@@ -18,7 +18,7 @@ See file license.txt for more information
 
 namespace RDK {
 
-class UADItem: public UItem
+class RDK_LIB_TYPE UADItem: public UItem
 {
 friend class UItemData;
 private: // Хранилище выходных данных

@@ -94,7 +94,13 @@ UBitmap::UBitmap(int width, int height, UColorT color,
    Fill(color);
   }
  else
-  UBitmap(cmodel);
+ {
+  Width=Height=0;
+  ColorModel=cmodel;
+  Data=PData=0;
+  Shift=0;
+  Clear();
+ }
 }
 
 UBitmap::UBitmap(int width, int height, const UBColor* data,
@@ -108,7 +114,13 @@ UBitmap::UBitmap(int width, int height, const UBColor* data,
  if(width >= 0 && height >=0)
   SetImage(width, height, data, cmodel);
  else
-  UBitmap(cmodel);
+ {
+  Width=Height=0;
+  ColorModel=cmodel;
+  Data=PData=0;
+  Shift=0;
+  Clear();
+ }
 }
 
 UBitmap::~UBitmap(void)
@@ -219,7 +231,8 @@ void UBitmap::AttachBuffer(UBColor* data)
  if(Data == data)
   return;
 
- delete[] Data;
+ if(Data)
+  delete[] Data;
  Data=data;
  PData=Data;
  MemoryLength=ByteLength;
@@ -241,7 +254,8 @@ void UBitmap::AttachBuffer(int width, int height, UBColor* data, UBMColorModel c
  Length=Width*Height;
  ColorModel=cmodel;
  ByteLength=MemoryLength=CalcByteLength(Width,Height,ColorModel);
- delete[] Data;
+ if(Data)
+  delete[] Data;
  Data=data;
  PData=Data;
  CalcChannelOffset(Width, Height, ColorModel, ChannelOffset);
@@ -355,7 +369,7 @@ void UBitmap::Fill(UColorT color, const UBRect &rect)
  case ubmY8:
   pdata=Data+realrect.Y*LineByteLength+realrect.X*PixelByteLength;
   for(int i=0;i<realrect.Height;i++,pdata+=LineByteLength)
-   memset(pdata,color.ycrcb.y,LineByteLength);
+   memset(pdata,color.ycrcb.y,realrect.Width*PixelByteLength);
  break;
 
  case ubmRGB24:
@@ -391,7 +405,7 @@ void UBitmap::ConvertTo(UBitmap &target) const
 
  if(!Width && !Height)
  {
-  target=*this;
+  target.Clear();
   return;
  }
 
@@ -646,9 +660,9 @@ void UBitmap::Separate(UBitmap* channels)
 
   for(int i=0;i<Length;++i)
   {
-   *(pdata[0]++)=*Data++;
-   *(pdata[1]++)=*Data++;
-   *(pdata[2]++)=*Data++;
+   *(pdata[0]++)=*sdata++;
+   *(pdata[1]++)=*sdata++;
+   *(pdata[2]++)=*sdata++;
   }
   delete []pdata;
  }
@@ -1139,7 +1153,7 @@ void UBitmap::CalcBrightness(unsigned *x_result, unsigned *y_result,
 
  memset(x_result,0,(x2-x1+1)*sizeof(unsigned));
  memset(y_result,0,(y2-y1+1)*sizeof(unsigned));
- UBColor *p;
+ UBColor *p=0;
 
  switch(ColorModel)
  {
@@ -1551,6 +1565,111 @@ int UBitmap::CalcNumPixels(UColorT threshold) const
 // -------------------------
 // Методы обработки изображения
 // -------------------------
+// Прорежение изображения
+// Сохраняет каждый n-ый столбец изображения по горизонтали
+// и каждую m-ю строку по вертикали
+// Если 'target' != 0 то результат операции сохраняется в него
+void UBitmap::Reduce(int n, int m, UBitmap *target)
+{
+ if(n==0 || m==0)
+  return;
+
+ UBColor *p, *s;
+ int num_rows=Height/m;
+ if(Height%m > 0)
+  num_rows++;
+
+ int num_cols=Width/n;
+ if(Width%n > 0)
+  num_cols++;
+
+ if(num_rows==0 && num_cols==0)
+  return;
+
+ if(n == 1 && m == 1)
+ {
+  if((target && target == this) || !target)
+   return;
+
+  if(target && target != this)
+  {
+   *target=*this;
+   return;
+  }
+ }
+
+ if(target && target != this)
+ {
+  target->SetRes(num_cols, num_rows, ColorModel);
+  p=target->Data;
+  s=Data;
+
+  for(int i=0; i<Height; i+=m)
+  {
+   for(int j=0; j<Width; j+=n)
+   {
+	memcpy(p, s, PixelByteLength);
+	p+=PixelByteLength;
+
+	if(Width-j > n )
+	{
+	 s+=PixelByteLength*n;
+	}
+	else
+	{
+	 s+=PixelByteLength*(Width-j);
+	}
+   }
+   if(Height-i > m )
+	s+=LineByteLength*(m-1);
+   else
+   {
+//	s+=LineByteLength*(Height-i);
+   }
+  }
+ }
+ else
+ if(!target || target==this)
+ {
+  UBColor *temp=new UBColor[num_cols*num_rows*PixelByteLength];
+  p=temp;
+  s=Data;
+
+  for(int i=0; i<Height; i+=m)
+  {
+   for(int j=0; j<Width; j+=n)
+   {
+	memcpy(p, s, PixelByteLength);
+	p+=PixelByteLength;
+
+	if(Width-j > n )
+	{
+	 s+=PixelByteLength*n;
+	}
+	else
+	{
+	 s+=PixelByteLength*(Width-j);
+	}
+   }
+   if(Height-i > m )
+	s+=LineByteLength*(m-1);
+   else
+   {
+//	s+=LineByteLength*(Height-i);
+   }
+  }
+
+  delete []Data;
+  Data=temp;
+  ByteLength=MemoryLength=num_cols*num_rows*PixelByteLength;
+  Length=num_cols*num_rows;
+  Height=num_rows;
+  Width=num_cols;
+  CalcChannelOffset(Width, Height, ColorModel, ChannelOffset);
+  LineByteLength=CalcLineByteLength(Width,ColorModel);
+ }
+}
+
 // Отражение по вертикали
 // Если 'target' != 0 то результат операции сохраняется в него
 // и цветовая модель 'target' замещается моделью источника
@@ -1567,12 +1686,14 @@ void UBitmap::ReflectionX(UBitmap *target)
   target->SetRes(Width,Height,ColorModel);
   beg=Data;
   fin=target->GetData()+ByteLength-LineWidth;
-  for(i=0; i<Height; i++)
+  for(i=0; i<Height-1; i++)
   {
    memcpy(fin,beg,LineWidth);
    beg+=LineWidth;
    fin-=LineWidth;
   }
+  if(Height>0)
+   memcpy(fin,beg,LineWidth);
  }
  else
  {
@@ -1654,7 +1775,11 @@ void UBitmap::Move(int pixels, int direction, UBMFillType filltype, UColorT colo
  int bytepixellength=0;
 
  if(direction < 1 || direction > 4 || pixels <= 0)
+ {
+  if(target)
+   *target=*this;
   return;
+ }
 
  if(!Length)
   return;
@@ -1856,15 +1981,30 @@ void UBitmap::Move(int pixels, int direction, UBMFillType filltype, UColorT colo
 // Если 'target' != 0 то результат операции сохраняется в него
 void UBitmap::MoveXY(int x, int y, UBMFillType filltype, UColorT color, UBitmap *target)
 {
- if(x > 0)
-  Move(x,ubmRight,filltype,color,target);
- else
-  Move(-x,ubmLeft,filltype,color,target);
+ if(target)
+ {
+	 if(x > 0)
+	  Move(x,ubmRight,filltype,color,target);
+	 else
+	  Move(-x,ubmLeft,filltype,color,target);
 
- if(y > 0)
-  Move(y,ubmDown,filltype,color,target);
+	 if(y > 0)
+	  target->Move(y,ubmDown,filltype,color);
+	 else
+	  target->Move(-y,ubmUp,filltype,color);
+ }
  else
-  Move(-y,ubmUp,filltype,color,target);
+ {
+	 if(x > 0)
+	  Move(x,ubmRight,filltype,color);
+	 else
+	  Move(-x,ubmLeft,filltype,color);
+
+	 if(y > 0)
+	  Move(y,ubmDown,filltype,color);
+	 else
+	  Move(-y,ubmUp,filltype,color);
+ }
 }
 
 // Изменяет размер канвы, сохраняя нетронутым изображение
@@ -2029,7 +2169,12 @@ void UBitmap::InsertHorLine(int y, int thickness, UColorT color, UBitmap *target
   {
    if(MemoryLength<LineByteLength*(Height+thickness))
    {
-    Data=(UBColor*)realloc(Data,LineByteLength*(Height+thickness));
+	UBColor *temp_data=(UBColor*)realloc(Data,LineByteLength*(Height+thickness));
+
+	if(!temp_data)
+	 return;
+	else
+	 Data=temp_data;
     MemoryLength=LineByteLength*(Height+thickness);
    }
 
@@ -2091,26 +2236,26 @@ void UBitmap::RemoveHorLine(int y, int thickness, UBitmap *target)
  if(target)
   {
    if(Height-thickness == 0)
-    {
-     target->SetRes(Width,0);
-     return;
+	{
+	 target->SetRes(Width,0);
+	 return;
     }
 
    target->SetRes(Width,Height-thickness,ColorModel);
    memcpy(target->Data,Data,y*LineByteLength);
    memcpy(target->Data+y*LineByteLength,Data+(y+thickness)*LineByteLength,
-                                           (Height-y-thickness)*LineByteLength);
+										   (Height-y-thickness)*LineByteLength);
   }
  else
   {
    if(Height-thickness == 0)
     {
-     SetRes(Width,0);
-     return;
-    }
+	 SetRes(Width,0);
+	 return;
+	}
 
    memmove(Data+y*LineByteLength, Data+(y+thickness)*LineByteLength,
-                                   (Height-y-thickness)*LineByteLength);
+								   (Height-y-thickness)*LineByteLength);
    Height-=thickness;
    ByteLength=Height*LineByteLength;
    Length=Width*Height;
@@ -2563,6 +2708,9 @@ void UBitmap::Inverse(UBitmap *target)
 // Цветовая модель приемника всегда замещается моделью источника
 UBitmap& UBitmap::operator = (const UBitmap &bitmap)
 {
+ if(this == &bitmap)
+  return *this;
+
  if(Width != bitmap.Width || Height != bitmap.Height || ColorModel != bitmap.ColorModel)
   {
    Width=bitmap.Width;
@@ -3828,8 +3976,9 @@ void UBitmap::ColorConvertY32_Y8(UBColor *source, UBColor *dest) const
 {
  unsigned int* psource=reinterpret_cast<unsigned int*>(source);
 
+ int shift=GetShift(); // Заглушка!! Возможно это не всегда так
  for(int i=0;i<ByteLength;i+=4)
-  *(dest++)=*(psource++);
+  *(dest++)=*(psource++)>>shift;
 }
 
 void UBitmap::ColorConvertY32_YUYV(UBColor *source, UBColor *dest) const
@@ -4933,6 +5082,8 @@ UBHistogram::UBHistogram(void)
  NumPixels=1;
 
  NormalizeFlag=false;
+ Min.Number.Int=0;
+ Max.Number.Int=0;
 }
 
 UBHistogram::~UBHistogram(void)
@@ -5160,9 +5311,8 @@ void UBHistogram::Calc(const UBitmap &bmp, int x, int y, int width, int height, 
    for(int i=x,l=0;i<=x2;i++,l++)
    {
     if(*p<Size)
-     ++Data[*p++].Number.Int;
-    else
-     ++p;
+	 ++Data[*p].Number.Int;
+    p+=bmp.GetPixelByteLength();
    }
    p+=bmp.GetLineByteLength()-(x2-x+1)*bmp.GetPixelByteLength();
   }
@@ -5227,20 +5377,25 @@ void UBHistogram::Calc(const UBitmap &bmp, const UBitmap &mask, int x, int y, in
  case ubmRGB24:
  case ubmRGB32:
   p=bmp.GetData()+y*bmp.GetLineByteLength()+x*bmp.GetPixelByteLength()+channel;
-  mp=mask.GetData()+y*mask.GetLineByteLength()+x*mask.GetPixelByteLength()+channel;
+  mp=mask.GetData()+y*mask.GetLineByteLength()+x*mask.GetPixelByteLength();
 
   for(int j=y,k=0;j<=y2;j++,k++)
   {
    for(int i=x,l=0;i<=x2;i++,l++)
    {
 	if(*p<Size && *mp)
-	 ++Data[*p++].Number.Int;
-	else
-	 ++p;
-	++mp;
+	 ++Data[*p].Number.Int;
+	 if(i<x2)
+	 {
+	  p+=bmp.GetPixelByteLength();
+	  mp+=mask.GetPixelByteLength();
+	 }
    }
-   p+=bmp.GetLineByteLength()-(x2-x+1)*bmp.GetPixelByteLength();
-   mp+=mask.GetLineByteLength()-(x2-x+1)*mask.GetPixelByteLength();
+   if(j<y2)
+   {
+	p+=bmp.GetLineByteLength()-(x2-x+1)*bmp.GetPixelByteLength();
+	mp+=mask.GetLineByteLength()-(x2-x+1)*mask.GetPixelByteLength();
+   }
   }
  break;
  }

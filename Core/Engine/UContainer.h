@@ -22,7 +22,7 @@ namespace RDK {
 class UContainer;
 
 // Класс описания локальных указателей
-class UIPointer
+class RDK_LIB_TYPE UIPointer
 {
 protected: // Данные
 
@@ -50,7 +50,7 @@ UIPointer& operator = (UEPtr<UContainer> source)
 
 
 // Хранилище свойств указателя
-struct UPVariable
+struct RDK_LIB_TYPE UPVariable
 {
  // Id указателя
  UId Id;
@@ -77,7 +77,10 @@ typedef UContainer* PUAContainer;
 // Массив указателей на контейнеры
 typedef std::vector<UEPtr<UContainer> > UAContainerVector;
 
-class UContainer: public UComponent
+// Массив статических компонент
+typedef std::map<UEPtr<UContainer>, NameT> UAStaticContainerMap;
+
+class RDK_LIB_TYPE UContainer: public UComponent
 {
 public: // Типы данных
 typedef std::map<NameT,UPVariable> PointerMapT;
@@ -97,6 +100,9 @@ PointerMapT PointerLookupTable;
 private: // Системные свойства
 // Таблица компонент
 UAContainerVector Components;
+
+/// Таблица статических компонент
+UAStaticContainerMap StaticComponents;
 
 // Таблица контроллеров интерфейса
 std::vector<UEPtr<UController> > Controllers;
@@ -119,16 +125,23 @@ bool Activity;
 // Реальный шаг = 1./TimeStep
 UTime TimeStep;
 
+/// Максимально допустимое время расчета компонента вместе с дочерними компонентами
+/// в миллисекундах.
+/// Если время расчета превышено, то расчет последующих дочерних компонент
+/// не выполняется
+/// Если значение параметра <0, то нет ограничений
+long long MaxCalculationDuration;
+
 public: // Физические свойства
 // Координата компонента в пространстве сети
 RDK::MVector<double,3> Coord;
 
 // Время, затраченное на обработку объекта
 // (без учета времени обсчета дочерних объектов) (мс)
-long long StepDuration;
+unsigned long long StepDuration;
 
 // Время, прошедшее между двумя последними итерациями счета
-long long InterstepsInterval;
+unsigned long long InterstepsInterval;
 
 protected: // Временные переменные
 // Если 'TimeStep' > 'Owner->TimeStep' то 'CalcCounter' является
@@ -159,8 +172,11 @@ bool SkipComponentCalculation;
 // Флаг запроса на повторный обсчет компонент в текущей итерации расчетов сначала
 bool ComponentReCalculation;
 
+// Время начала счета компонента на текущем шаге
+unsigned long long StartCalcTime;
+
 // Время окончания счета компонента на предыдущем шаге
-long long LastCalcTime;
+unsigned long long LastCalcTime;
 
 // --------------------------
 // Конструкторы и деструкторы
@@ -207,7 +223,18 @@ bool CheckLongId(const std::string &id) const;
 
 // Управление средой выполнения этого объекта
 virtual bool SetEnvironment(UEPtr<UEnvironment> environment);
-// --------------------------
+
+// Вызов обработчика исключений среды
+virtual void ProcessException(UException &exception);
+
+// Вызов обработчика исключений среды для простой записи данных в лог
+virtual void LogMessage(int msg_level, const std::string &line);
+virtual void LogMessage(int msg_level, const std::string &method_name, const std::string &line);
+virtual void LogMessageEx(int msg_level, const std::string &line);
+virtual void LogMessageEx(int msg_level, const std::string &method_name, const std::string &line);
+
+/// Возвращает состояние флага режима отладки
+virtual bool CheckDebugMode(void) const;
 // --------------------------
 
 // --------------------------
@@ -238,14 +265,14 @@ bool SetCoord(const RDK::MVector<double,3> &value);
 
 // Время, затраченное на обработку объекта
 // (без учета времени обсчета дочерних объектов) (мс)
-long long GetStepDuration(void) const;
+unsigned long long GetStepDuration(void) const;
 
 // Время, затраченное на обработку объекта
 // (вместе со времени обсчета дочерних объектов) (мс)
-long long GetFullStepDuration(void) const;
+unsigned long long GetFullStepDuration(void) const;
 
 // Время, прошедшее между двумя последними итерациями счета
-long long GetInterstepsInterval(void) const;
+unsigned long long GetInterstepsInterval(void) const;
 
 // Возвращает мгновенное быстродействие, равное отношению
 // полного затраченного времени к ожидаемому времени шага счета
@@ -285,7 +312,15 @@ NameT& GetFullName(NameT &buffer) const;
 // (исключая имя владельца 'mainowner').
 // Метод возвращает пустую строку, если 'mainowner' - не является
 // владельцем объекта ни на каком уровне иерархии
-NameT& GetLongName(const UEPtr<UContainer> mainowner, NameT &buffer) const;
+NameT& GetLongName(const UEPtr<UContainer> &mainowner, NameT &buffer) const;
+
+/// Максимально допустимое время расчета компонента вместе с дочерними компонентами
+/// в миллисекундах.
+/// Если время расчета превышено, то расчет последующих дочерних компонент
+/// не выполняется
+/// Если значение параметра <0, то нет ограничений
+const long long& GetMaxCalculationDuration(void) const;
+bool SetMaxCalculationDuration(const long long &value);
 // --------------------------
 
 // --------------------------
@@ -296,13 +331,27 @@ public:
 const NameT& GetComponentName(const UId &id) const;
 
 // Возвращает Id дочернего компонента по его имени
-const UId& GetComponentId(const NameT &name) const;
+const UId& GetComponentId(const NameT &name, bool nothrow=false) const;
 
 // Возвращает имя локального указателя по его Id
 const NameT& GetPointerName(const UId &id) const;
 
 // Возвращает Id локального указателя по его имени
 const UId& GetPointerId(const NameT &name) const;
+
+// Осуществляет поиск всех компонент по заданному имени класса
+// и возвращает вектор компонент либо пустой вектор
+// find_all
+// false - искать в текущей компоненте
+// true -  искать в текущей компоненте и глубже
+const vector<UEPtr<UContainer> >& GetComponentsByClassName(const NameT &name, vector<UEPtr<UContainer> > &buffer, bool find_all=false);
+
+// Осуществляет поиск всех компонент по заданному имени класса
+// и возвращает вектор длинных имен компонент либо пустой вектор
+// find_all
+// false - искать в текущей компоненте
+// true -  искать в текущей компоненте и глубже
+const vector<NameT>& GetComponentsNameByClassName(const NameT &name, vector<NameT> &buffer, bool find_all=false);
 // --------------------------
 
 public:
@@ -330,17 +379,24 @@ virtual bool Copy(UEPtr<UContainer> target, UEPtr<UStorage> stor=0, bool copysta
 // Осуществляет освобождение этого объекта в его хранилище
 // или вызов деструктора, если Storage == 0
 virtual void Free(void);
+
+protected:
+/// Осуществляет обновление внутренних данных компонента, обеспечивающих его целостность
+virtual void AUpdateInternalData(void);
 // --------------------------
 
 // --------------------------
 // Методы доступа к компонентам
 // --------------------------
+public:
 // Возвращает число дочерних компонент
 int GetNumComponents(void) const;
 
 // Возвращает полное число дочерних компонент
 // (включая все компоненты дочерних компонент)
 int GetNumAllComponents(void) const;
+
+bool CheckComponent(const NameT &name);
 
 // Метод проверяет на допустимость объекта данного типа
 // в качестве компоненты данного объекта
@@ -351,21 +407,22 @@ virtual bool CheckComponentType(UEPtr<UContainer> comp) const;
 // Возвращает указатель на дочерний компонент, хранимый в этом
 // объекте по короткому Id 'id'
 // Если id == ForbiddenId то возвращает указатель на этот компонент
-virtual UEPtr<UContainer> GetComponent(const UId &id) const;
+// Если nothrow == true то возвращает 0 и не кидает исключение
+virtual UEPtr<UContainer> GetComponent(const UId &id, bool nothrow=false) const;
 
 // Возвращает указатель на дочерний компонент, хранимый в этом
 // объекте по короткому имени 'name'
-virtual UEPtr<UContainer> GetComponent(const NameT &name) const;
+virtual UEPtr<UContainer> GetComponent(const NameT &name, bool nothrow=false) const;
 
 // Возвращает указатель на дочерний компонент, хранимый в этом
 // объекте по ДЛИННОМУ Id 'id'
 // Если id[0] == ForbiddenId или Id имеет нулевой размер,
 // то возвращает указатель на этот компонент
-UEPtr<UContainer> GetComponentL(const ULongId &id) const;
+UEPtr<UContainer> GetComponentL(const ULongId &id, bool nothrow=false) const;
 
 // Возвращает указатель на дочерний компонент, хранимый в этом
 // объекте по ДЛИННОМУ имени 'name'
-virtual UEPtr<UContainer> GetComponentL(const NameT &name) const;
+virtual UEPtr<UContainer> GetComponentL(const NameT &name, bool nothrow=false) const;
 
 // Возвращает указатель на дочерний компонент, хранимый в этом
 // объекте по порядковому индеку в списке компонент
@@ -400,6 +457,16 @@ void DelComponent(const NameT &name, bool canfree=true);
 // Принудительно удаляет все дочерние компоненты
 void DelAllComponents(void);
 
+/// Добавляет компонент как статическую переменную задавая ему имя класса 'classname'
+/// и имя 'name'
+virtual void AddStaticComponent(const NameT &classname, const NameT &name, UEPtr<UContainer> comp);
+
+/// Перемещает компоненту в другой компонент
+/// Если comp не принадлежит этому компоненту, или target имеет отличный от
+/// этого компонента storage, или target не может принять в себя компонент
+/// то возвращает false и не делает ничего
+virtual bool MoveComponent(UEPtr<UContainer> comp, UEPtr<UContainer> target);
+
 // Возвращает список имен и Id компонент, содержащихся непосредственно
 // в этом объекте
 // Память должна быть выделена
@@ -417,8 +484,13 @@ virtual void CopyComponents(UEPtr<UContainer> comp, UEPtr<UStorage> stor=0) cons
 // на эту границу
 virtual bool ChangeComponentPosition(int index, int step);
 virtual bool ChangeComponentPosition(const NameT &name, int step);
-// --------------------------
 
+// Устанавливает компонент с текущим индексом index или именем 'name' на
+// заданную позицию
+// Применяется для изменения порядка расчета компонент
+virtual bool SetComponentPosition(int index, int new_position);
+virtual bool SetComponentPosition(const NameT &name, int new_position);
+// --------------------------
 
 // ----------------------
 // Методы управления коммуникационными компонентами
@@ -508,6 +580,10 @@ virtual void SharesUnInit(void);
 // Восстановление настроек по умолчанию и сброс процесса счета
 virtual bool Default(void);
 
+/// Метод сброса параметров на значения по умолчанию
+/// Если subcomps == true то также сбрасывает параметры всех дочерних компонент
+virtual bool DefaultAll(UContainer* cont, bool subcomps);
+
 // Обеспечивает сборку внутренней структуры объекта
 // после настройки параметров
 // Автоматически вызывает метод Reset() и выставляет Ready в true
@@ -536,6 +612,11 @@ virtual void ForceSkipComponentCalculation(void);
 // Обычно вызывается дочерним компонентом и требует перерасчет цепочки дочерних
 // компонент на этом шаге счета сначала
 virtual void ForceComponentReCalculation(void);
+
+/// Проверяет текущую длительность расчета этого компонента
+/// и если она превышает MaxCalculationDuration и MaxCalculationDuration>=0
+/// то прерывает обсчет остальной цепочки дочерних компонент
+virtual bool CheckDurationAndSkipComponentCalculation(void);
 // --------------------------
 
 // --------------------------
@@ -619,7 +700,7 @@ protected:
 // --------------------------
 // Обновляет таблицу соответствий компонент заменяя 'oldname'
 // имя компонента на 'newname'
-void ModifyLookupComponent(const NameT &oldname, const NameT newname);
+void ModifyLookupComponent(const NameT &oldname, const NameT &newname);
 
 // Обновляет таблицу соответствий компонент устанавливая Id 'id'
 // для компонента с именем 'name'
@@ -634,6 +715,9 @@ void DelLookupComponent(const NameT &name);
 // Скрытые методы управления компонентами
 // --------------------------
 protected:
+/// Производит необходимые операции по добавлению статического компонента
+UId UpdateStaticComponent(const NameT &classname, UEPtr<UContainer> comp);
+
 // Удаляет компонент comp
 // Метод предполагает, что компонент принадлежит объекту
 virtual void BeforeDelComponent(UEPtr<UContainer> comp, bool canfree=true);

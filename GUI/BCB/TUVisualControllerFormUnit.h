@@ -42,6 +42,15 @@ public:
 // Флаг, сообщающий что идет расчет
 static bool CalculationModeFlag;
 
+bool CalculationStepUpdatedFlag;
+
+/// Флаг, разрешающий проверку на существование модели перед обновлением интерфейса
+bool CheckModelFlag;
+
+/// Время, потраченное на обновление интерфейса
+unsigned long long UpdateTime;
+
+
 public:
 // -----------------------------
 // Методы управления визуальным интерфейсом
@@ -64,8 +73,12 @@ virtual void AAfterCalculate(void);
 
 // Если force_update == true, то интерфейс обновляется
 // вне зависимости от UpdateInterval
-virtual void UpdateInterface(bool force_update=true);
+virtual void UpdateInterface(bool force_update=false);
 virtual void AUpdateInterface(void);
+
+// Возврат интерфейса в исходное состояние
+virtual void ClearInterface(void);
+virtual void AClearInterface(void);
 
 // Возвращает уникальное имя интерфейса
 virtual std::string GetName(void);
@@ -81,22 +94,35 @@ virtual void ALoadParameters(RDK::USerStorageXML &xml);
 // Управление длинным именем управляемого компонента
 // Длинное имя управляемого компонента модели (опционально)
 const std::string& GetComponentControlName(void) const;
-bool SetComponentControlName(const std::string& name);
+virtual bool SetComponentControlName(const std::string& name);
 
 // Создание копии этого компонента
 virtual TUVisualControllerForm* New(TComponent *owner=0)=0;
+
+// Служебные методы управления интерфейсом
+/// Сбрасывает флаг прошедшей перерисовки в этой итерации счета
+virtual void ResetCalculationStepUpdatedFlag(void);
+
+/// Выставляет флаг прошедшей перерисовки в этой итерации счета
+virtual void SetCalculationStepUpdatedFlag(void);
+
+/// Возвращает состояние флага прошедшей перерисовки в этой итерации счета
+virtual bool GetCalculationStepUpdatedFlag(void);
+
+/// Возвращает время обновления интерфейса (мс)
+virtual unsigned long long GetUpdateTime(void);
 // -----------------------------
-};
 
 // --------------------------
 // Вспомогательные функции сериализации
 // --------------------------
 // Сохраняет данные положения формы в xml
-void SaveFormPosition(RDK::USerStorageXML &xml, TForm *form);
+virtual void SaveFormPosition(RDK::USerStorageXML &xml);
 
 // Загружает данные положения формы из xml
-void LoadFormPosition(RDK::USerStorageXML &xml, TForm *form);
+virtual void LoadFormPosition(RDK::USerStorageXML &xml);
 // --------------------------
+};
 
 //---------------------------------------------------------------------------
 extern PACKAGE TUVisualControllerForm *UVisualControllerForm;

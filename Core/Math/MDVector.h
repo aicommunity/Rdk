@@ -43,6 +43,7 @@ int GetSize(void) const;
 void Resize(int size);
 
 void Assign(int size, const T *data);
+void Assign(int size, T data);
 
 
 // Оператор присваивания
@@ -131,6 +132,12 @@ void MDVector<T>::Resize(int size)
 
 template<class T>
 void MDVector<T>::Assign(int size, const T *data)
+{
+ MDMatrix<T>::Assign(size,1,data);
+}
+
+template<class T>
+void MDVector<T>::Assign(int size, T data)
 {
  MDMatrix<T>::Assign(size,1,data);
 }

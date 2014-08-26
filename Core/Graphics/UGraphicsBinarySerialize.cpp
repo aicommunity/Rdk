@@ -14,7 +14,7 @@ See file license.txt for more information
 
 #include "UGraphicsBinarySerialize.h"
 #include "Libraries/Simulator/UBAVideoSimulator.h"
-#include "Libraries/Simulator/UBAVideo3DSimulator.h"
+//#include "Libraries/Simulator/UBAVideo3DSimulator.h"
 
 namespace RDK {
 
@@ -166,30 +166,7 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, UBVSObject &data)
  return storage;
 }
 
-
-// struct UBVSObject3D
-USerStorageBinary& operator << (USerStorageBinary& storage, const UBVSObject3D &data)
-{
- operator << (storage,data.Speed);
- operator << (storage,data.ObjectColor);
- operator << (storage,data.ObjectColor2);
- operator << (storage,data.Visible);
- operator << (storage,data.MovingDirection);
-
- return storage;
-}
-
-USerStorageBinary& operator >> (USerStorageBinary& storage, UBVSObject3D &data)
-{
- operator >> (storage,data.Speed);
- operator >> (storage,data.ObjectColor);
- operator >> (storage,data.ObjectColor2);
- operator >> (storage,data.Visible);
- operator >> (storage,data.MovingDirection);
-
- return storage;
-}
-
+               /*
 //class UBPtzCameraInfo
 USerStorageBinary& operator << (USerStorageBinary& storage, const UBPtzCameraInfo &data)
 {
@@ -215,7 +192,7 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, UBPtzCameraData &dat
 
  return storage;
 }
-
+	  */
 }
 
 #endif

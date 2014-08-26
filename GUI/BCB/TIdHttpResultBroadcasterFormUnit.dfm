@@ -20,9 +20,23 @@ object IdHttpResultBroadcasterForm: TIdHttpResultBroadcasterForm
     Left = 0
     Top = 0
     Width = 527
-    Height = 243
+    Height = 226
     Align = alClient
     TabOrder = 0
+    ExplicitHeight = 243
+  end
+  object BroadcastEnabledCheckBox: TCheckBox
+    Left = 0
+    Top = 226
+    Width = 527
+    Height = 17
+    Align = alBottom
+    Caption = 'Broadcast enabled'
+    TabOrder = 1
+    OnClick = BroadcastEnabledCheckBoxClick
+    ExplicitLeft = 160
+    ExplicitTop = 200
+    ExplicitWidth = 97
   end
   object MainMenu: TMainMenu
     Left = 144

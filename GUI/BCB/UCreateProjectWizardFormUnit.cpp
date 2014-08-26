@@ -63,9 +63,9 @@ void TUCreateProjectWizardForm::ClearWizard(void)
  ProjectNameLabeledEdit->Text="";
  ProjectDescriptionRichEdit->Text="";
  ProjectTypeRadioGroup->ItemIndex=0;
- ProjectTimeStepEdit->Text="2000";
+ ProjectTimeStepEdit->Text="30";
  ProjectTypeRadioGroupClick(this);
- ProjectCalculationModeRadioGroup->ItemIndex=0;
+ ProjectCalculationModeRadioGroup->ItemIndex=2;
  PredefinedModelRadioButton->Checked=true;
  PredefinedModelRadioButtonClick(this);
  PredefinedModelComboBox->ItemIndex=0;
@@ -86,6 +86,28 @@ void TUCreateProjectWizardForm::AddPredefinedModel(const std::string &name, int 
  PredefinedModels[name]=index;
 }
 
+
+// Отображает визард для создания проекта
+int TUCreateProjectWizardForm::ShowCreateProject(void)
+{
+ ProjectDirectoryLabeledEdit->Enabled=true;
+ PredefinedModelRadioButton->Enabled=true;
+ PredefinedModelComboBox->Enabled=true;
+ TabSheet3->Enabled=true;
+
+ return ShowModal();
+}
+
+// Отображает визард для модификации проекта
+int TUCreateProjectWizardForm::ShowProjectOptions(void)
+{
+ ProjectDirectoryLabeledEdit->Enabled=false;
+ PredefinedModelRadioButton->Enabled=false;
+ PredefinedModelComboBox->Enabled=false;
+ TabSheet3->Enabled=false;
+
+ return ShowModal();
+}
 //---------------------------------------------------------------------------
 void __fastcall TUCreateProjectWizardForm::FinishButtonClick(TObject *Sender)
 {
@@ -216,3 +238,9 @@ void __fastcall TUCreateProjectWizardForm::ModelFileNameRadioButtonClick(TObject
  UClassesListFrame1->Enabled=false;
 }
 //---------------------------------------------------------------------------
+void __fastcall TUCreateProjectWizardForm::FormShow(TObject *Sender)
+{
+ UClassesListFrame1->UpdateInterface(true);
+}
+//---------------------------------------------------------------------------
+

@@ -30,8 +30,8 @@ __fastcall TUShowProgressBarForm::TUShowProgressBarForm(TComponent* Owner)
 // ¬озвращает заголовок окна
 String __fastcall TUShowProgressBarForm::GetWinTitle(void)
 {
- if(!Visible)
-  return "";
+// if(!Visible)
+//  return "";
 
  return Caption;
 }
@@ -40,8 +40,8 @@ String __fastcall TUShowProgressBarForm::GetWinTitle(void)
 // ”станавливает заголовок окна
 void __fastcall TUShowProgressBarForm::SetWinTitle(String title)
 {
- if(!Visible)
-  return;
+// if(!Visible)
+//  return;
 
  Caption=title;
  Repaint();
@@ -50,8 +50,8 @@ void __fastcall TUShowProgressBarForm::SetWinTitle(String title)
 // ¬озвращает заголовки полос состо€ни€
 String __fastcall TUShowProgressBarForm::GetBarHeader(unsigned int num)
 {
- if(!Visible)
-  return "";
+// if(!Visible)
+//  return "";
 
  switch(num)
   {
@@ -67,8 +67,8 @@ String __fastcall TUShowProgressBarForm::GetBarHeader(unsigned int num)
 // ”станавливает заголовки полос состо€ни€
 void __fastcall TUShowProgressBarForm::SetBarHeader(unsigned int num, String title)
 {
- if(!Visible)
-  return;
+// if(!Visible)
+//  return;
 
  switch(num)
   {
@@ -86,8 +86,8 @@ void __fastcall TUShowProgressBarForm::SetBarHeader(unsigned int num, String tit
 // ¬озвращает состо€ние конкретной полосы
 int __fastcall TUShowProgressBarForm::GetBarStatus(unsigned int num)
 {
- if(!Visible)
-  return 0;
+// if(!Visible)
+//  return 0;
 
  switch(num)
   {
@@ -104,48 +104,52 @@ int __fastcall TUShowProgressBarForm::GetBarStatus(unsigned int num)
 // ”величивает состо€ние конкретной полосы
 void __fastcall TUShowProgressBarForm::IncBarStatus(unsigned int num, int val)
 {
- if(!Visible)
-  return;
+// if(!Visible)
+//  return;
 
  switch(num)
   {
   case 1:
-   ProgressBar1->Position+=val;
+   ProgressBar1->Position=ProgressBar1->Position+val;
   break;
 
   case 2:
-   ProgressBar2->Position+=val;
+   ProgressBar2->Position=ProgressBar2->Position+val;
   break;
   }
  ProgressBar1->Repaint();
  ProgressBar2->Repaint();
+ ProgressBar1->Update();
+ ProgressBar2->Update();
 }
 
 // ”меньшает состо€ние конкретной полосы
 void __fastcall TUShowProgressBarForm::DecBarStatus(unsigned int num, int val)
 {
- if(!Visible)
-  return;
+// if(!Visible)
+//  return;
 
  switch(num)
   {
   case 1:
-   ProgressBar1->Position-=val;
+   ProgressBar1->Position=ProgressBar1->Position-val;
   break;
 
   case 2:
-   ProgressBar2->Position-=val;
+   ProgressBar2->Position=ProgressBar2->Position-val;
   break;
   }
  ProgressBar1->Repaint();
  ProgressBar2->Repaint();
+ ProgressBar1->Update();
+ ProgressBar2->Update();
 }
 
 // —брасывает состо€ние конкретной полосы
 void __fastcall TUShowProgressBarForm::ResetBarStatus(unsigned int num, int currvalue, int total)
 {
- if(!Visible)
-  return;
+// if(!Visible)
+//  return;
 
  switch(num)
   {
@@ -161,13 +165,15 @@ void __fastcall TUShowProgressBarForm::ResetBarStatus(unsigned int num, int curr
   }
  ProgressBar1->Repaint();
  ProgressBar2->Repaint();
+ ProgressBar1->Update();
+ ProgressBar2->Update();
 }
 // ------------------------------------------
 //---------------------------------------------------------------------------
 void __fastcall TUShowProgressBarForm::FormShow(TObject *Sender)
 {
- ProgressBar1->Position=0;
- ProgressBar2->Position=0;
+// ProgressBar1->Position=0;
+// ProgressBar2->Position=0;
  ProgressBar1->Repaint();
  ProgressBar2->Repaint();
 }

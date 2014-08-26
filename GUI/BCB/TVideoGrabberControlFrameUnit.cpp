@@ -17,7 +17,7 @@ __fastcall TVideoGrabberControlFrame::TVideoGrabberControlFrame(TComponent* Owne
 {
  VideoGrabber=0;
  VideoOutputFrame=0;
- IpPtzInfo.InitCanonVBM40();
+// IpPtzInfo.InitCanonVBM40();
 }
 
 
@@ -40,7 +40,7 @@ void TVideoGrabberControlFrame::Init(TVideoOutputFrame* video_output_frame, TVid
 {
  VideoGrabber=grabber;
  VideoOutputFrame=video_output_frame;
- UpdateInterface();
+// UpdateInterface();
 }
 
 // Выбор активного режима видеоввода
@@ -113,7 +113,7 @@ void TVideoGrabberControlFrame::SendIpPtzCommand(void)
 {
  std::string prefix, result;
  prefix=AnsiString(IPCameraControlPostfixEdit->Text).c_str();// "http://194.85.99.186/-wvhttp-01-/control.cgi?";
- IpPtzInfo.GenerateCanonVBM40Command(prefix,result);
+// IpPtzInfo.GenerateCanonVBM40Command(prefix,result);
 
  VideoGrabber->SendIPCameraCommand(result.c_str());
 }
@@ -184,6 +184,9 @@ void TVideoGrabberControlFrame::ASaveParameters(RDK::USerStorageXML &xml)
   xml.WriteString("VideoFileName",AnsiString(VFNameEdit->Text).c_str());
  }
 
+ xml.WriteBool("ProcessAllFramesVideoCheckBox",ProcessAllFramesVideoCheckBox->Checked);
+
+
  if(ExtractFilePath(ImageFileNameEdit->Text).Length() == 0)
  {
   xml.WriteString("PictureFileName",AnsiString(UGEngineControlForm->ProjectPath+ImageFileNameEdit->Text).c_str());
@@ -194,6 +197,8 @@ void TVideoGrabberControlFrame::ASaveParameters(RDK::USerStorageXML &xml)
  }
 
  xml.WriteString("ImageSequencePath",AnsiString(ImageSequencePathEdit->Text).c_str());
+ xml.WriteString("ImageSequenceFps",AnsiString(ImageSequenceFpsLabeledEdit->Text).c_str());
+ xml.WriteString("PictureFileFps",AnsiString(PictureFileFpsLabeledEdit->Text).c_str());
 
  xml.WriteString("IPCameraUrl",AnsiString(IPCameraUrlEdit->Text).c_str());
  xml.WriteString("IPCameraUserName",AnsiString(IPCameraUserNameEdit->Text).c_str());
@@ -211,20 +216,32 @@ void TVideoGrabberControlFrame::ASaveParameters(RDK::USerStorageXML &xml)
  xml.WriteString("ListenPort",AnsiString(ListerPortEdit->Text).c_str());
  xml.WriteString("PipeIndex",AnsiString(PipeIndexEdit->Text).c_str());
  xml.WriteString("PipeUid",AnsiString(PipeUidEdit->Text).c_str());
+
+ xml.WriteBool("RepeatSequenceCheckBox",RepeatSequenceCheckBox->Checked);
+ xml.WriteBool("RepeatVideoCheckBox",RepeatVideoCheckBox->Checked);
+
 }
 
 // Загружает параметры интерфейса из xml
 void TVideoGrabberControlFrame::ALoadParameters(RDK::USerStorageXML &xml)
 {
+/*
  VFNameEdit->Text=xml.ReadString("VideoFileName","").c_str();
  if(ExtractFilePath(VFNameEdit->Text) == UGEngineControlForm->ProjectPath)
   VFNameEdit->Text=ExtractFileName(VFNameEdit->Text);
+
+ ProcessAllFramesVideoCheckBox->Checked=xml.ReadBool("ProcessAllFramesVideoCheckBox",false);
 
  ImageFileNameEdit->Text=xml.ReadString("PictureFileName","").c_str();
  if(ExtractFilePath(ImageFileNameEdit->Text) == UGEngineControlForm->ProjectPath)
   ImageFileNameEdit->Text=ExtractFileName(ImageFileNameEdit->Text);
 
  ImageSequencePathEdit->Text=xml.ReadString("ImageSequencePath","").c_str();
+ ImageSequenceFpsLabeledEdit->Text=xml.ReadString("ImageSequenceFps","25.0").c_str();
+ PictureFileFpsLabeledEdit->Text=xml.ReadString("PictureFileFps","25.0").c_str();
+
+ RepeatSequenceCheckBox->Checked=xml.ReadBool("RepeatSequenceCheckBox",false);
+ RepeatVideoCheckBox->Checked=xml.ReadBool("RepeatVideoCheckBox",false);
 
  IPCameraUrlEdit->Text=xml.ReadString("IPCameraUrl","").c_str();
  IPCameraUserNameEdit->Text=xml.ReadString("IPCameraUserName","").c_str();
@@ -259,6 +276,7 @@ void TVideoGrabberControlFrame::ALoadParameters(RDK::USerStorageXML &xml)
  index=xml.ReadInteger("AnalogVideoStandardId",-1);
  if(index<AnalogVideoStandardComboBox->Items->Count)
   AnalogVideoStandardComboBox->ItemIndex=index;
+  */
 }
 // -----------------------------
 
@@ -326,26 +344,30 @@ void __fastcall TVideoGrabberControlFrame::VCapturePageControlChange(TObject *Se
  if(UpdateInterfaceFlag)
   return;
 
- if(!VideoOutputFrame || !VideoGrabber)
+ if(!VideoOutputFrame)
   return;
 
  VideoOutputFrame->StopButtonClick(Sender);
 
  if(VCapturePageControl->ActivePage == DeviceTabSheet)
  {
-  VideoGrabber->VideoSource=vs_VideoCaptureDevice;
-  VideoOutputFrame->InitByCamera(VideoGrabber->VideoDevice, VideoGrabber->VideoInput, VideoGrabber->VideoSize, VideoGrabber->VideoSubtype, VideoGrabber->AnalogVideoStandard);
+//  VideoGrabber->VideoSource=vs_VideoCaptureDevice;
+  VideoOutputFrame->InitByCamera(DeviceComboBox->ItemIndex, InputComboBox->ItemIndex, VideoSizeComboBox->ItemIndex, VideoSubTypeComboBox->ItemIndex, AnalogVideoStandardComboBox->ItemIndex);
+  VideoOutputFrame->StartButtonClick(this);
  }
  else
  if(VCapturePageControl->ActivePage == VideoFileTabSheet)
  {
-  VideoGrabber->VideoSource=vs_VideoFileOrURL;
-  if(VFNameEdit->Text != "")
+//  VideoGrabber->VideoSource=vs_VideoFileOrURL;
+//  if(VFNameEdit->Text != "")
   {
    if(ExtractFilePath(VFNameEdit->Text).Length() == 0)
 	VideoOutputFrame->InitByAvi(UGEngineControlForm->ProjectPath+VFNameEdit->Text);
    else
 	VideoOutputFrame->InitByAvi(VFNameEdit->Text);
+
+   VideoOutputFrame->SetRepeatVideoFlag(RepeatVideoCheckBox->Checked);
+   VideoOutputFrame->SetProcessAllFramesFlag(ProcessAllFramesVideoCheckBox->Checked);
   }
  }
  else
@@ -353,22 +375,35 @@ void __fastcall TVideoGrabberControlFrame::VCapturePageControlChange(TObject *Se
  {
   if(ImageFileNameEdit->Text != "")
   {
+   std::string s_fps=AnsiString(PictureFileFpsLabeledEdit->Text).c_str();
+   std::string::size_type i=s_fps.find_first_of(",");
+   if(i != std::string::npos)
+	s_fps[i]='.';
+
+   double fps=RDK::atof(s_fps);
    if(ExtractFilePath(ImageFileNameEdit->Text).Length() == 0)
-	VideoOutputFrame->InitByBmp(UGEngineControlForm->ProjectPath+ImageFileNameEdit->Text);
+	VideoOutputFrame->InitByBmp(UGEngineControlForm->ProjectPath+ImageFileNameEdit->Text,fps);
    else
-	VideoOutputFrame->InitByBmp(ImageFileNameEdit->Text);
+	VideoOutputFrame->InitByBmp(ImageFileNameEdit->Text,fps);
   }
  }
  else
  if(VCapturePageControl->ActivePage == IPCameraTabSheet)
  {
-  VideoGrabber->VideoSource=vs_IPCamera;
+ // VideoGrabber->VideoSource=vs_IPCamera;
   VideoOutputFrame->InitByIPCamera(IPCameraUrlEdit->Text, IPCameraUserNameEdit->Text, IPCameraUserPasswordEdit->Text);
  }
  else
  if(VCapturePageControl->ActivePage == ImageSequenceTabSheet)
  {
-  VideoOutputFrame->InitByImageSequence(ImageSequencePathEdit->Text);
+  std::string s_fps=AnsiString(ImageSequenceFpsLabeledEdit->Text).c_str();
+  std::string::size_type i=s_fps.find_first_of(",");
+  if(i != std::string::npos)
+   s_fps[i]='.';
+
+  double fps=RDK::atof(s_fps);
+  VideoOutputFrame->InitByImageSequence(ImageSequencePathEdit->Text,fps);
+  VideoOutputFrame->SetRepeatSequenceFlag(RepeatSequenceCheckBox->Checked);
  }
  else
  if(VCapturePageControl->ActivePage == HttpServerTabSheet)
@@ -382,6 +417,7 @@ void __fastcall TVideoGrabberControlFrame::VCapturePageControlChange(TObject *Se
  }
 
  UpdateInterface();
+ VideoOutputFrame->UpdateInterface();
 }
 //---------------------------------------------------------------------------
 
@@ -412,8 +448,16 @@ void __fastcall TVideoGrabberControlFrame::OpenImageFileButtonClick(TObject *Sen
  if(!PicturesOpenDialog->Execute())
   return;
 
- if(!VideoOutputFrame || !VideoGrabber)
+ if(!VideoOutputFrame)
   return;
+
+ double fps=25.0;
+ std::string s_fps=AnsiString(PictureFileFpsLabeledEdit->Text).c_str();
+ std::string::size_type i=s_fps.find_first_of(",");
+ if(i != std::string::npos)
+  s_fps[i]='.';
+
+ fps=RDK::atof(s_fps);
 
  String FileName;
 // if(ExtractFilePath(Application->ExeName) == ExtractFilePath(PicturesOpenDialog->FileName))
@@ -422,14 +466,14 @@ void __fastcall TVideoGrabberControlFrame::OpenImageFileButtonClick(TObject *Sen
   FileName=ExtractFileName(PicturesOpenDialog->FileName);
   ImageFileNameEdit->Text=FileName;
   SelectMode(2);
-  VideoOutputFrame->InitByBmp(UGEngineControlForm->ProjectPath+FileName);
+  VideoOutputFrame->InitByBmp(UGEngineControlForm->ProjectPath+FileName,fps);
  }
  else
  {
   FileName=PicturesOpenDialog->FileName;
   ImageFileNameEdit->Text=FileName;
   SelectMode(2);
-  VideoOutputFrame->InitByBmp(FileName);
+  VideoOutputFrame->InitByBmp(FileName,fps);
  }
 
  UpdateInterface();
@@ -438,7 +482,7 @@ void __fastcall TVideoGrabberControlFrame::OpenImageFileButtonClick(TObject *Sen
 
 void __fastcall TVideoGrabberControlFrame::ImageSequencePathBrowseButtonClick(TObject *Sender)
 {
- String chosenDir=ExtractFilePath(Application->ExeName);
+ String chosenDir="";//ExtractFilePath(Application->ExeName);
 
  if(SelectDirectory("Select image sequence directory", ExtractFilePath(Application->ExeName), chosenDir,TSelectDirExtOpts() << sdNewFolder << sdNewUI))
  {
@@ -449,7 +493,15 @@ void __fastcall TVideoGrabberControlFrame::ImageSequencePathBrowseButtonClick(TO
   return;
 
  SelectMode(4);
- VideoOutputFrame->InitByImageSequence(ImageSequencePathEdit->Text);
+ double fps=25.0;
+ std::string s_fps=AnsiString(ImageSequenceFpsLabeledEdit->Text).c_str();
+ std::string::size_type i=s_fps.find_first_of(",");
+ if(i != std::string::npos)
+  s_fps[i]='.';
+
+ fps=RDK::atof(s_fps);
+
+ VideoOutputFrame->InitByImageSequence(ImageSequencePathEdit->Text,fps);
 
  UpdateInterface();
 }
@@ -507,8 +559,10 @@ void __fastcall TVideoGrabberControlFrame::ZoomOutButtonClick(TObject *Sender)
 
 void __fastcall TVideoGrabberControlFrame::ResetButtonClick(TObject *Sender)
 {
- IpPtzInfo.ZeroPosition();
+// IpPtzInfo.ZeroPosition();
  SendIpPtzCommand();
 }
 //---------------------------------------------------------------------------
+
+
 

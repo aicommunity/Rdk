@@ -25,21 +25,84 @@ UTimeControl::UTimeControl(void)
  DoubleRealTimeStep=1.0e-6;
 
  // “екущее врем€ внешних источников данных в микросекундах
- SourceTime=0;
+// SourceTime=0;
 
  // “екущее врем€ внешних источников данных в секундах
  DoubleSourceTime=0;
 
  // ћгновенный шаг во времени внешних источников данных в микросекундах
- SourceTimeStep=1;
+// SourceTimeStep=1;
 
  // ћгновенный шаг во времени внешних источников данных в секундах
  DoubleSourceTimeStep=1.0e-6;
+
+ SourceStartGlobalTime=0;
+ SourceCurrentGlobalTime=0;
+ SourceStartLocalTime=0;
+ SourceCurrentLocalTime=0;
 }
 
 UTimeControl::~UTimeControl(void)
 {
 
+}
+// --------------------------
+
+// --------------------------
+// ћетоды управлени€ глобальными свойствами
+// --------------------------
+/// ¬рем€ начала расчета в дн€х
+double UTimeControl::GetSourceStartGlobalTime(void) const
+{
+ return SourceStartGlobalTime;
+}
+
+bool UTimeControl::SetSourceStartGlobalTime(double value)
+{
+ SourceStartGlobalTime=value;
+ return true;
+}
+
+/// ¬рем€ начала расчета в дн€х
+double UTimeControl::GetSourceCurrentGlobalTime(void) const
+{
+ return SourceCurrentGlobalTime;
+}
+
+bool UTimeControl::SetSourceCurrentGlobalTime(double value)
+{
+ SourceCurrentGlobalTime=value;
+ return true;
+}
+
+/// “екущее врем€ в дн€х
+double UTimeControl::GetSourceStartLocalTime(void) const
+{
+ return SourceStartLocalTime;
+}
+
+bool UTimeControl::SetSourceStartLocalTime(double value)
+{
+ SourceStartLocalTime=value;
+ return true;
+}
+
+/// “екущее врем€ в дн€х
+double UTimeControl::GetSourceCurrentLocalTime(void) const
+{
+ return SourceCurrentLocalTime;
+}
+
+bool UTimeControl::SetSourceCurrentLocalTime(double value)
+{
+ SourceCurrentLocalTime=value;
+ return SetRealTime(ULongTime((SourceCurrentLocalTime-SourceStartLocalTime)*1000000.0));
+}
+
+/// “екущее врем€ в миллисекундах
+ULongTime UTimeControl::GetSourceCurrentLocalTimeMs(void) const
+{
+ return ULongTime(SourceCurrentLocalTime*1000);
 }
 // --------------------------
 
@@ -122,47 +185,21 @@ const double& UTimeControl::GetDoubleRealTimeStep(void) const
 {
  return DoubleRealTimeStep;
 }
+// --------------------------
 
-// “екущее врем€ внешних источников данных в микросекундах
-const ULongTime& UTimeControl::GetSourceTime(void) const
+// --------------------------
+/// ћетоды доступа к текущему времени расчета от начала времен в дн€х
+// --------------------------
+/// ¬озвращает текущее врем€ от начала времен в дн€х
+/// ѕринимает аргументом текущее локальное врем€ в секундах или миллисекундах
+double UTimeControl::CalcCurrentGlobalTime(double current_local_time) const
 {
- return SourceTime;
+ return SourceCurrentGlobalTime+(current_local_time-SourceCurrentLocalTime)/86400.0;
 }
 
-const double& UTimeControl::GetDoubleSourceTime(void) const
+double UTimeControl::CalcCurrentGlobalTime(ULongTime current_local_time) const
 {
- return DoubleSourceTime;
-}
-
-// ”станавливает врем€ внешних источников данных
-bool UTimeControl::SetSourceTime(ULongTime value)
-{
- SourceTimeStep=value-SourceTime;
- if(SourceTimeStep == 0)
-  SourceTimeStep=1;
-
- DoubleSourceTimeStep=SourceTimeStep/1.0e6;
-
- SourceTime=value;
- DoubleSourceTime=SourceTime/1000000.0;
- return true;
-}
-
-// ”величивает врем€ внешних источников данных на заданную величину
-bool UTimeControl::IncreaseSourceTime(ULongTime value)
-{
- return SetSourceTime(SourceTime+value);
-}
-
-// ћгновенный шаг во времени внешних источников данных в микросекундах
-const ULongTime& UTimeControl::GetSourceTimeStep(void) const
-{
- return SourceTimeStep;
-}
-
-const double& UTimeControl::GetDoubleSourceTimeStep(void) const
-{
- return DoubleSourceTimeStep;
+ return SourceCurrentGlobalTime+(double(current_local_time)/1000.0-SourceCurrentLocalTime)/86400.0;
 }
 // --------------------------
 

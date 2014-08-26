@@ -11,9 +11,11 @@
 #include <Vcl.Menus.hpp>
 #include "TUVisualControllerFormUnit.h"
 #include "TIdTcpResultBroadcasterFrameUnit.h"
+#include "TServerBroadcasterCommonUnit.h"
+#include <Vcl.ToolWin.hpp>
 #include <vector>
 //---------------------------------------------------------------------------
-class TIdTcpResultBroadcasterForm : public TUVisualControllerForm
+class TIdTcpResultBroadcasterForm : public TBroadcasterForm
 {
 __published:	// IDE-managed Components
 	TPageControl *PageControl;
@@ -26,6 +28,8 @@ __published:	// IDE-managed Components
 	TMenuItem *Del1;
 	TPopupMenu *PopupMenu1;
 	TMenuItem *HttpBroadcaster1;
+	TToolBar *ToolBar;
+	TCheckBox *BroadcastEnabledCheckBox;
 	void __fastcall Add1Click(TObject *Sender);
 	void __fastcall Del1Click(TObject *Sender);
 	void __fastcall ConnectAll1Click(TObject *Sender);
@@ -33,6 +37,7 @@ __published:	// IDE-managed Components
 	void __fastcall FormDestroy(TObject *Sender);
 	void __fastcall FormCreate(TObject *Sender);
 	void __fastcall HttpBroadcaster1Click(TObject *Sender);
+	void __fastcall BroadcastEnabledCheckBoxClick(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
 	__fastcall TIdTcpResultBroadcasterForm(TComponent* Owner);
@@ -41,6 +46,12 @@ public:		// User declarations
 // Вещатели
 std::vector<TIdTcpResultBroadcasterFrame*> Broadcasters;
 
+/// Функция добавления метаданных в очередь на отправку в соответствии с настройками
+bool AddMetadata(int channel_index, RDK::ULongTime time_stamp);
+
+/// Инициирует процедуру отправки метаданных
+bool SendMetadata(void);
+
 // Метод, вызываемый перед шагом расчета
 void ABeforeCalculate(void);
 
@@ -48,10 +59,10 @@ void ABeforeCalculate(void);
 void AUpdateInterface(void);
 
 // Сохраняет параметры интерфейса в xml
-void ASaveParameters(RDK::USerStorageXML &xml);
+void AASaveParameters(RDK::USerStorageXML &xml);
 
 // Загружает параметры интерфейса из xml
-void ALoadParameters(RDK::USerStorageXML &xml);
+void AALoadParameters(RDK::USerStorageXML &xml);
 
 // Создание копии этого компонента
 TIdTcpResultBroadcasterForm* New(TComponent *owner);
@@ -74,14 +85,25 @@ int GetActiveBroadcaster(void) const;
 // Возвращает фрейм вещателя
 TIdTcpResultBroadcasterFrame* GetBroadcasterFrame(int index);
 
+// Возвращает индекс фрейма вещателя
+int GetBroadcasterFrameIndex(TIdTcpResultBroadcasterFrame* frame);
+
 // Возвращает фрейм активного (выбранного) вещателя
 TIdTcpResultBroadcasterFrame* GetActiveBroadcasterFrame(void);
+
+/// Возвращает фрейм вещателя по заданному IP и порту
+TIdTcpResultBroadcasterFrame* FindBroadcasterFrame(const std::string &address, int port);
 
 // Подключает вещатель, или все, если index == -1
 void Connect(int index=-1);
 
 // Отключает вещатель, или все, если index == -1
 void Disconnect(int index=-1);
+
+// Возврат интерфейса в исходное состояние
+virtual void AClearInterface(void);
+
+
 
 };
 //---------------------------------------------------------------------------

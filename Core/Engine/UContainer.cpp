@@ -63,6 +63,8 @@ UContainer::UContainer(void)
  AddLookupProperty("TimeStep",ptParameter | pgSystem,new UVProperty<UTime,UContainer>(this,&UContainer::SetTimeStep,&UContainer::GetTimeStep));
  AddLookupProperty("Activity",ptParameter | pgPublic,new UVProperty<bool,UContainer>(this,&UContainer::SetActivity,&UContainer::GetActivity));
  AddLookupProperty("Coord",ptParameter | pgPublic,new UVProperty<RDK::MVector<double,3>,UContainer>(this,&UContainer::SetCoord,&UContainer::GetCoord));
+ AddLookupProperty("MaxCalculationDuration",ptParameter | pgPublic,new UVProperty<long long,UContainer>(this,&UContainer::SetMaxCalculationDuration,&UContainer::GetMaxCalculationDuration));
+
  InitFlag=false;
 }
 
@@ -208,6 +210,61 @@ bool UContainer::SetEnvironment(UEPtr<UEnvironment> environment)
 
  return res;
 }
+
+// Вызов обработчика исключений среды
+void UContainer::ProcessException(UException &exception)
+{
+ if(Environment)
+  Environment->ProcessException(exception);
+ else
+  throw exception;
+}
+
+
+// Вызов обработчика исключений среды для простой записи данных в лог
+void UContainer::LogMessage(int msg_level, const std::string &line)
+{
+ if(Environment)
+ {
+  Environment->LogMessage(msg_level, line);
+ }
+}
+
+void UContainer::LogMessage(int msg_level, const std::string &method_name, const std::string &line)
+{
+ if(Environment)
+ {
+  Environment->LogMessage(msg_level, method_name, line);
+ }
+}
+
+void UContainer::LogMessageEx(int msg_level, const std::string &line)
+{
+ if(Environment)
+ {
+  std::string full_name;
+  Environment->LogMessage(msg_level, GetFullName(full_name)+std::string(" - ")+line);
+ }
+}
+
+void UContainer::LogMessageEx(int msg_level, const std::string &method_name, const std::string &line)
+{
+ if(Environment)
+ {
+  std::string full_name;
+  Environment->LogMessage(msg_level, method_name, GetFullName(full_name)+std::string(" - ")+line);
+ }
+}
+
+/// Возвращает состояние флага режима отладки
+bool UContainer::CheckDebugMode(void) const
+{
+ if(Environment)
+ {
+  return Environment->GetDebugMode();
+ }
+ return false;
+}
 // --------------------------
 
 // --------------------------
@@ -230,9 +287,9 @@ bool UContainer::SetCoord(const RDK::MVector<double,3> &value)
 
 // Время, затраченное на обработку объекта
 // (без учета времени обсчета дочерних объектов) (мс)
-long long UContainer::GetStepDuration(void) const
+unsigned long long UContainer::GetStepDuration(void) const
 {
- long long res=0;
+ unsigned long long res=0;
  for(int i=0;i<NumComponents;i++)
   res+=PComponents[i]->GetFullStepDuration();
 
@@ -241,13 +298,13 @@ long long UContainer::GetStepDuration(void) const
 
 // Время, затраченное на обработку объекта
 // (вместе со времени обсчета дочерних объектов) (мс)
-long long UContainer::GetFullStepDuration(void) const
+unsigned long long UContainer::GetFullStepDuration(void) const
 {
  return StepDuration;
 }
 
 // Время, прошедшее между двумя последними итерациями счета
-long long UContainer::GetInterstepsInterval(void) const
+unsigned long long UContainer::GetInterstepsInterval(void) const
 {
  return InterstepsInterval;
 }
@@ -306,6 +363,10 @@ bool UContainer::CheckId(const UId &id)
  return (id>LastId)?true:false;
 }
 
+bool UContainer::CheckComponent(const NameT &name)
+{
+  return !CheckName(name);
+}
 // Проверяет предлагаемое имя 'name' на уникальность в рамках
 // данного объекта.
 bool UContainer::CheckName(const NameT &name)
@@ -409,7 +470,7 @@ NameT& UContainer::GetFullName(NameT &buffer) const
 // (исключая имя владельца 'mainowner').
 // Метод возвращает пустую строку, если 'mainowner' - не является
 // владельцем объекта ни на каком уровне иерархии.
-NameT& UContainer::GetLongName(const UEPtr<UContainer> mainowner, NameT &buffer) const
+NameT& UContainer::GetLongName(const UEPtr<UContainer> &mainowner, NameT &buffer) const
 {
  if(!GetOwner() && GetOwner() != mainowner)
   {
@@ -443,7 +504,7 @@ NameT& UContainer::GetLongName(const UEPtr<UContainer> mainowner, NameT &buffer)
 const NameT& UContainer::GetComponentName(const UId &id) const
 {
  for(std::map<NameT,UId>::const_iterator I=CompsLookupTable.begin(),
-                                 J=CompsLookupTable.end(); I!=J; ++I)
+								 J=CompsLookupTable.end(); I!=J; ++I)
  {
   if(I->second == id)
    return I->first;
@@ -452,11 +513,15 @@ const NameT& UContainer::GetComponentName(const UId &id) const
 }
 
 // Возвращает Id дочернего компонента по его имени
-const UId& UContainer::GetComponentId(const NameT &name) const
+const UId& UContainer::GetComponentId(const NameT &name, bool nothrow) const
 {
  std::map<NameT,UId>::const_iterator I=CompsLookupTable.find(name);
  if(I == CompsLookupTable.end())
+ {
+  if(nothrow)
+   return ForbiddenId;
   throw EComponentNameNotExist(name);
+ }
 
  return I->second;
 }
@@ -481,6 +546,64 @@ const UId& UContainer::GetPointerId(const NameT &name) const
   throw EPointerNameNotExist(name);
 
  return I->second.Id;
+}
+
+// Осуществляет поиск всех компонент по заданному имени класса
+// и возвращает вектор длинных имен компонент либо пустой вектор
+// false - искать в текущей компоненте
+// true -  искать в текущей компоненте и глубже
+const vector<UEPtr<UContainer> >& UContainer::GetComponentsByClassName(const NameT &name, vector<UEPtr<UContainer> > &buffer, bool find_all)
+{
+ size_t numComp=GetNumComponents();
+ UEPtr<UContainer> comp;
+
+ switch(find_all)
+ {
+  case false:
+   for(size_t i=0; i<numComp; i++)
+   {
+	comp=GetComponentByIndex(i);
+	if( comp->GetCompClassName() == name )
+	{
+	 buffer.push_back(comp);
+	}
+   }
+   break;
+
+  case true:
+   for(size_t i=0; i<numComp; i++)
+   {
+	comp=GetComponentByIndex(i);
+	comp->GetComponentsByClassName(name, buffer, true);
+	if( comp->GetCompClassName() == name )
+	{
+	 buffer.push_back(comp);
+	}
+   }
+   break;
+ }
+
+ return buffer;
+}
+
+// Осуществляет поиск всех компонент по заданному имени класса
+// и возвращает вектор длинных имен компонент либо пустой вектор
+// false - искать в текущей компоненте
+// true -  искать в текущей компоненте и глубже
+const vector<NameT>& UContainer::GetComponentsNameByClassName(const NameT &name, vector<NameT> &buffer, bool find_all)
+{
+ vector<UEPtr<UContainer> > components;
+ string compName;
+ GetComponentsByClassName(name, components, find_all);
+ size_t numComp=components.size();
+
+ for(size_t i=0; i<numComp; i++)
+ {
+  compName=components[i]->GetLongName(this, compName);
+  buffer.push_back(compName);
+ }
+
+ return buffer;
 }
 // --------------------------
 
@@ -587,6 +710,25 @@ bool UContainer::SetId(const UId &id)
  Id=id;
  return true;
 }
+
+/// Максимально допустимое время расчета компонента вместе с дочерними компонентами
+/// в миллисекундах.
+/// Если время расчета превышено, то расчет последующих дочерних компонент
+/// не выполняется
+/// Если значение параметра <0, то нет ограничений
+const long long& UContainer::GetMaxCalculationDuration(void) const
+{
+ return MaxCalculationDuration;
+}
+
+bool UContainer::SetMaxCalculationDuration(const long long &value)
+{
+ if(MaxCalculationDuration == value)
+  return true;
+
+ MaxCalculationDuration=value;
+ return true;
+}
 // --------------------------
 
 // --------------------------
@@ -641,7 +783,17 @@ void UContainer::Free(void)
   GetStorage()->ReturnObject(this);
  }
  else
-  delete this;
+  UComponent::Free();
+}
+
+/// Осуществляет обновление внутренних данных компонента, обеспечивающих его целостность
+void UContainer::AUpdateInternalData(void)
+{
+ std::map<UEPtr<UContainer>, NameT>::iterator I=StaticComponents.begin();
+ for(;I!=StaticComponents.end();++I)
+ {
+  UpdateStaticComponent(I->second,I->first);
+ }
 }
 // --------------------------
 
@@ -681,43 +833,49 @@ bool UContainer::CheckComponentType(UEPtr<UContainer> comp) const
 // Возвращает указатель на дочерний компонент, хранимый в этом
 // объекте по короткому Id 'id'
 // Если id == ForbiddenId то возвращает указатель на этот компонент
-UEPtr<UContainer> UContainer::GetComponent(const UId &id) const
+UEPtr<UContainer> UContainer::GetComponent(const UId &id, bool nothrow) const
 {
  if(id == ForbiddenId)
+ {
+  if(nothrow)
+   return 0;
   throw EComponentIdNotExist(id);
+ }
 
  UEPtr<UContainer>* comps=PComponents;
  for(int i=0;i<NumComponents;i++,comps++)
   if(id == (*comps)->Id)
    return *comps;
 
+ if(nothrow)
+  return 0;
  throw EComponentIdNotExist(id);
 }
 
 // Возвращает указатель на дочерний компонент, хранимый в этом
 // объекте по короткому имени 'name'
-UEPtr<UContainer> UContainer::GetComponent(const NameT &name) const
+UEPtr<UContainer> UContainer::GetComponent(const NameT &name, bool nothrow) const
 {
- return GetComponent(GetComponentId(name));
+ return GetComponent(GetComponentId(name,nothrow),nothrow);
 }
 
 // Возвращает указатель на дочерний компонент, хранимый в этом
 // объекте по ДЛИННОМУ Id 'id'.
 // Если id[0] == ForbiddenId или Id имеет нулевой размер,
 // то возвращает указатель на этот компонент
-UEPtr<UContainer> UContainer::GetComponentL(const ULongId &id) const
+UEPtr<UContainer> UContainer::GetComponentL(const ULongId &id, bool nothrow) const
 {
  UEPtr<UContainer> comp;
 
  if(id.GetSize() == 0)
   return 0;
 
- comp=GetComponent(id[0]);
+ comp=GetComponent(id[0],nothrow);
  for(int i=1;i<id.GetSize();i++)
   {
    if(!comp)
-    return 0;
-   comp=comp->GetComponent(id[i]);
+	return 0;
+   comp=comp->GetComponent(id[i],nothrow);
   }
  return comp;
 }
@@ -725,25 +883,25 @@ UEPtr<UContainer> UContainer::GetComponentL(const ULongId &id) const
 
 // Возвращает указатель на дочерний компонент, хранимый в этом
 // объекте по ДЛИННОМУ имени 'name'
-UEPtr<UContainer> UContainer::GetComponentL(const NameT &name) const
+UEPtr<UContainer> UContainer::GetComponentL(const NameT &name, bool nothrow) const
 {
  UEPtr<UContainer> comp;
  NameT::size_type pi,pj;
 
  pi=name.find_first_of('.');
  if(pi == NameT::npos)
-  return GetComponent(name);
+  return GetComponent(name,nothrow);
 
- comp=GetComponent(name.substr(0,pi));
+ comp=GetComponent(name.substr(0,pi),nothrow);
  while(pi != name.size())
   {
    if(!comp)
-    return 0;
+	return 0;
    pj=pi+1;
    pi=name.find_first_of('.',pj);
    if(pi == NameT::npos)
-    pi=name.size();
-   comp=comp->GetComponent(name.substr(pj,pi-pj));
+	pi=name.size();
+   comp=comp->GetComponent(name.substr(pj,pi-pj),nothrow);
   }
  return comp;
 }
@@ -824,6 +982,8 @@ UId UContainer::AddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer)
  catch(UException &exception)
  {
   // Откат
+  BeforeDelComponent(comp);
+  comp->SharesUnInit();
   // Удаляем компонент из таблицы соответствий владельца
   DelLookupComponent(comp->Name);
 
@@ -870,6 +1030,40 @@ void UContainer::DelAllComponents(void)
   DelComponent(PComponents[NumComponents-1],true);
 }
 
+/// Добавляет компонент как статическую переменную задавая ему имя класса 'classname'
+/// и имя 'name'
+void UContainer::AddStaticComponent(const NameT &classname, const NameT &name, UEPtr<UContainer> comp)
+{
+ comp->SetStaticFlag(true);
+ comp->SetName(name);
+ StaticComponents[comp]=classname;
+}
+
+/// Перемещает компоненту в другой компонент
+/// Если comp не принадлежит этому компоненту, или target имеет отличный от
+/// этого компонента storage, или target не может принять в себя компонент
+/// то возвращает false и не делает ничего
+bool UContainer::MoveComponent(UEPtr<UContainer> comp, UEPtr<UContainer> target)
+{
+ if(!comp || !target)
+  return false;
+
+ if(comp->GetOwner() != this)
+  return false;
+
+ if(target->GetStorage() != GetStorage())
+  return false;
+
+ if(!target->CheckComponentType(comp))
+  return false;
+
+ DelComponent(comp,false);
+ if(target->AddComponent(comp) == ForbiddenId)
+  return false;
+
+ return true;
+}
+
 // Возвращает список имен и Id компонент, содержащихся непосредственно
 // в этом объекте
 // Память должна быть выделена
@@ -907,6 +1101,8 @@ void UContainer::CopyComponents(UEPtr<UContainer> comp, UEPtr<UStorage> stor) co
 
  for(int i=0;i<NumComponents;i++,pcomponents++)
   {
+   if((*pcomponents)->GetStaticFlag())
+    continue;
    bufcomp=(*pcomponents)->Alloc(stor);
    UEPtr<UIPointer> pointer=0;
    I=FindLookupPointer(*pcomponents);
@@ -986,14 +1182,11 @@ bool UContainer::ChangeComponentPosition(int index, int step)
  }
  else
  {
-  for(int i=result;i<index;i++)
-   PComponents[i+1]=PComponents[i];
+  for(int i=index;i>=result;i--)
+   PComponents[i]=PComponents[i-1];
   PComponents[result]=comp;
  }
 
-// Components.insert(Components.begin()+result+1,Components[index]);
-// Components.erase(Components.begin()+index);
-// PComponents=&Components[0];
  return true;
 }
 
@@ -1005,6 +1198,25 @@ bool UContainer::ChangeComponentPosition(const NameT &name, int step)
 
  return false;
 }
+
+// Устанавливает компонент с текущим индексом index или именем 'name' на
+// заданную позицию
+// Применяется для изменения порядка расчета компонент
+bool UContainer::SetComponentPosition(int index, int new_position)
+{
+ int step=new_position-index;
+ return ChangeComponentPosition(index, step);
+}
+
+bool UContainer::SetComponentPosition(const NameT &name, int new_position)
+{
+ for(int i=0;i<NumComponents;i++)
+  if(PComponents[i]->GetName() == name)
+   return SetComponentPosition(i,new_position);
+
+ return false;
+}
+
 // --------------------------
 
 
@@ -1338,6 +1550,7 @@ void UContainer::SharesUnInit(void)
 // Восстановление настроек по умолчанию и сброс процесса счета
 bool UContainer::Default(void)
 {
+ BeforeDefault();
  Ready=false;
  for(int i=0;i<NumComponents;i++)
   PComponents[i]->Default();
@@ -1349,6 +1562,7 @@ bool UContainer::Default(void)
   original=dynamic_pointer_cast<UContainer>(GetStorage()->GetClass(Class));
 
  SetTimeStep(2000);
+ SetMaxCalculationDuration(-1);
 
  if(original && original != this)
  {
@@ -1359,7 +1573,29 @@ bool UContainer::Default(void)
   SetActivity(activity);
  }
 
- return ADefault();
+ if(!ADefault())
+  return false;
+ AfterDefault();
+ return true;
+}
+
+/// Метод сброса параметров на значения по умолчанию
+/// Если subcomps == true то также сбрасывает параметры всех дочерних компонент
+bool UContainer::DefaultAll(UContainer* cont, bool subcomps)
+{
+ if(!cont)
+  return false;
+
+ if(!cont->Default())
+  return false;
+
+ bool res=true;
+ if(subcomps)
+ {
+  for(int i=0;i<cont->GetNumComponents();i++)
+   res &= DefaultAll(cont->GetComponentByIndex(i),subcomps);
+ }
+ return res;
 }
 
 // Обеспечивает сборку внутренней структуры объекта
@@ -1371,6 +1607,8 @@ bool UContainer::Build(void)
  if(Ready)
   return true;
 
+ BeforeBuild();
+
  for(int i=0;i<NumComponents;i++)
   PComponents[i]->Build();
 
@@ -1378,6 +1616,7 @@ bool UContainer::Build(void)
  Ready=true;
  Reset();
 
+ AfterBuild();
  return true;
 }
 
@@ -1387,6 +1626,7 @@ bool UContainer::Reset(void)
  Build();
 
 // Init(); // Заглушка
+ BeforeReset();
 
  if(!IsInit())
   return true; // TODO //false;
@@ -1399,9 +1639,10 @@ bool UContainer::Reset(void)
  CalcCounter=0;
  SkipComponentCalculation=false;
  ComponentReCalculation=false;
- LastCalcTime=-1;
+ LastCalcTime=0;
  InterstepsInterval=0;
  StepDuration=0;
+ AfterReset();
  return true;
 }
 
@@ -1410,6 +1651,7 @@ bool UContainer::Calculate(void)
 {
  if(!Activity)
   return true;
+  int i=0;
 RDK_SYS_TRY {
  try
  {
@@ -1419,15 +1661,20 @@ RDK_SYS_TRY {
    return false;
 
   Build();
+  BeforeCalculate();
 
-  int i=0;
-  long long tempstepduration=GetCurrentStartupTime();
-  InterstepsInterval=(LastCalcTime>=0)?CalcDiffTime(tempstepduration,LastCalcTime):0;
+  unsigned long long tempstepduration=StartCalcTime=GetCurrentStartupTime();
+  InterstepsInterval=(LastCalcTime>0)?CalcDiffTime(tempstepduration,LastCalcTime):0;
   LastCalcTime=tempstepduration;
 
   UEPtr<UContainer> *comps=PComponents;
   while((i<NumComponents) && !SkipComponentCalculation)
   {
+   if((*comps)->GetStaticFlag())
+   {
+	++i,++comps;
+	continue;
+   }
    (*comps)->Calculate();
    if(ComponentReCalculation)
    {
@@ -1436,6 +1683,7 @@ RDK_SYS_TRY {
    }
    else
    {
+	CheckDurationAndSkipComponentCalculation();
 	++i,++comps;
    }
   }
@@ -1465,12 +1713,23 @@ RDK_SYS_TRY {
   else
   if(TimeStep > OwnerTimeStep)
   {
-   for(UTime i=TimeStep/OwnerTimeStep;i>=0;--i)
+   for(int i=int(TimeStep/OwnerTimeStep);i>=0;--i)
 	ACalculate();
   }
 
   UpdateMainOwner();
   InterstepsInterval-=StepDuration;
+
+  if((MaxCalculationDuration >= 0) && (CalcDiffTime(GetCurrentStartupTime(),tempstepduration) > ULongTime(MaxCalculationDuration)))
+  {
+   if(Owner)
+   {
+	GetOwner()->ForceSkipComponentCalculation();
+	std::string temp;
+    LogMessage(RDK_EX_DEBUG, string("CalcTime>MaxCalculationDuration after ")+GetFullName(temp));
+   }
+  }
+
   StepDuration=CalcDiffTime(GetCurrentStartupTime(),tempstepduration);
   // Обрабатываем контроллеры
   int numcontrollers=Controllers.size();
@@ -1483,14 +1742,19 @@ RDK_SYS_TRY {
 	(*controllers)->Update();
    }
   }
+  AfterCalculate();
  }
  catch(UException &exception)
  {
   throw;
  }
-} RDK_SYS_CATCH
+}
+RDK_SYS_CATCH
 {
- throw EComponentSystemException(this,0,GET_SYSTEM_EXCEPTION_DATA);
+ if(PComponents && i<NumComponents)
+  throw EComponentSystemException(this,PComponents[i],GET_SYSTEM_EXCEPTION_DATA);
+ else
+  throw EComponentSystemException(this,0,GET_SYSTEM_EXCEPTION_DATA);
 }
 
  return true;
@@ -1549,6 +1813,19 @@ void UContainer::ForceComponentReCalculation(void)
 {
  ComponentReCalculation=true;
 }
+
+/// Проверяет текущую длительность расчета этого компонента
+/// и если она превышает MaxCalculationDuration и MaxCalculationDuration>=0
+/// то прерывает обсчет остальной цепочки дочерних компонент
+bool UContainer::CheckDurationAndSkipComponentCalculation(void)
+{
+ if((MaxCalculationDuration >= 0) && (CalcDiffTime(GetCurrentStartupTime(),StartCalcTime) > ULongTime(MaxCalculationDuration)))
+ {
+  ForceSkipComponentCalculation();
+  return true;
+ }
+ return false;
+}
 // --------------------------
 
 // --------------------------
@@ -1569,7 +1846,7 @@ void UContainer::AUnInit(void)
 // Обновляет таблицу соответствий компонент заменяя 'oldname'
 // имя компонента на 'newname'
 void UContainer::ModifyLookupComponent(const NameT &oldname,
-                                        const NameT newname)
+                                        const NameT &newname)
 {
  UId id;
 
@@ -1834,6 +2111,23 @@ void UContainer::DelComponentTable(UEPtr<UContainer> comp)
 // --------------------------
 // Скрытые методы управления компонентами
 // --------------------------
+/// Производит необходимые операции по добавлению статического компонента
+UId UContainer::UpdateStaticComponent(const NameT &classname, UEPtr<UContainer> comp)
+{
+ comp->SetStorage(GetStorage());
+ comp->SetEnvironment(GetEnvironment());
+ if(GetStorage())
+ {
+  comp->SetClass(GetStorage()->FindClassId(classname));
+
+  for(int i=0;i<NumComponents;i++)
+   if(PComponents[i] == comp)
+	return PComponents[i]->GetId();
+  return AddComponent(comp);
+ }
+ return ForbiddenId;
+}
+
 // Удаляет компонент comp
 // Метод предполагает, что компонент принадлежит объекту
 void UContainer::BeforeDelComponent(UEPtr<UContainer> comp, bool canfree)
@@ -1932,7 +2226,6 @@ void UContainer::AUpdateMainOwner(void)
 // --------------------------
 UContainer::EIContainer::EIContainer(void)
 {
-
 }
 
 UContainer::EIContainer::EIContainer(const UContainer *cont)
@@ -2000,39 +2293,31 @@ UContainer::EIContainer::~EIContainer(void)
 // Формирует строку лога об исключении
 std::string UContainer::EIContainer::CreateLogMessage(void) const
 {
- string result;//=UException::CreateLogMessage();
-
-// EIContainer *iexception=dynamic_cast<EIContainer*>(exception);
-
-// if(iexception)
- if(Name.size()>0)
- {
-  // Короткое имя компонента в котором сгенерировано исключение
-  result+=" Name=";
-  result+=Name;
- }
-  // Короткий идентификатор компонента в котором сгенерировано исключение
-//  result+=" Id=";
-//  result+=iexception->Id;
+ string result;
 
  if(OwnerName.size()>0)
  {
-  // Полное имя владельца компонента в котором сгенерировано исключение
-  result+=" OwnerName=";
+  // Полное имя компонента в котором сгенерировано исключение
+  result+=" Component=";
   result+=OwnerName;
+  result+=".";
+  result+=Name;
  }
-
-  // Полный идентификатор владельца компонента в котором сгенерировано исключение
-//  result+=" OwnerId=";
-//  result+=iexception->OwnerId;
-
+ else
+ if(Name.size()>0)
+ {
+  // Короткое имя компонента в котором сгенерировано исключение
+  result+=" Component=";
+  result+=Name;
+ }
+/*
  if(MainOwnerName != OwnerName && MainOwnerName.size()>0)
  {
   // Полное имя главного владельца компонента в котором сгенерировано исключение
   result+=" MainOwnerName=";
   result+=MainOwnerName;
  }
-
+  */
   // Полный идентификатор главного владельца компонента в котором сгенерировано исключение
 //  result+=" MainOwnerId=";
 //  result+=iexception->MainOwnerId;

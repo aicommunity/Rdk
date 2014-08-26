@@ -20,12 +20,21 @@
 #include "TUVisualControllerFrameUnit.h"
 
 #include "myrdk.h"
+#include <Web.Win.Sockets.hpp>
+#include <IdBaseComponent.hpp>
+#include <IdComponent.hpp>
+#include <IdContext.hpp>
+#include <IdCustomTCPServer.hpp>
+#include <IdTCPServer.hpp>
+
+//typedef std::map<std::string,std::vector<char> > UServerCommand;
+typedef std::pair<std::string, RDK::UParamT> UServerCommand;
 
 /// Стандартная функция, осуществляющую декодирование параметров запроса
-int StandardCommandRequestDecoder(std::map<std::string,std::vector<char> > &source, std::map<std::string,std::vector<char> > &dest);
+int StandardCommandRequestDecoder(UServerCommand &source, UServerCommand &dest);
 
 /// Стандартная функция, осуществляющую кодирование параметров ответа
-int StandardCommandResponseEncoder(const std::string &response_type, std::vector<char> &source, std::vector<char> &dest);
+int StandardCommandResponseEncoder(const std::string &response_type, RDK::UParamT &source, RDK::UParamT &dest);
 
 //---------------------------------------------------------------------------
 class TUServerControlForm : public TUVisualControllerForm
@@ -56,6 +65,16 @@ __published:	// IDE-managed Components
 	TStringGrid *ChannelNamesStringGrid;
 	TBarSeries *Series2;
 	TBarSeries *Series3;
+	TTimer *CommandTimer;
+	TTcpServer *TcpServer;
+	TIdTCPServer *IdTCPServer;
+	TTimer *ServerRestartTimer;
+	TLabeledEdit *ServerNameLabeledEdit;
+	TLabeledEdit *ServerIdLabeledEdit;
+	TLabeledEdit *BindingAddressLabeledEdit;
+	TGroupBox *GroupBox4;
+	TLabeledEdit *MetadataComponentNameLabeledEdit;
+	TLabeledEdit *MetadataComponentStateNameLabeledEdit;
 	void __fastcall UHttpServerFrameIdHTTPServerCommandGet(TIdContext *AContext, TIdHTTPRequestInfo *ARequestInfo,
           TIdHTTPResponseInfo *AResponseInfo);
 	void __fastcall FormCreate(TObject *Sender);
@@ -65,6 +84,19 @@ __published:	// IDE-managed Components
 	void __fastcall ReturnOptionsButtonClick(TObject *Sender);
 	void __fastcall ApplyOptionsButtonClick(TObject *Sender);
 	void __fastcall ChannelNamesStringGridKeyDown(TObject *Sender, WORD &Key, TShiftState Shift);
+	void __fastcall PageControlChange(TObject *Sender);
+	void __fastcall CommandTimerTimer(TObject *Sender);
+	void __fastcall TcpServerAccept(TObject *Sender, TCustomIpClient *ClientSocket);
+	void __fastcall TcpServerListening(TObject *Sender);
+	void __fastcall TcpServerGetThread(TObject *Sender, TClientSocketThread *&ClientSocketThread);
+	void __fastcall IdTCPServerDisconnect(TIdContext *AContext);
+	void __fastcall IdTCPServerExecute(TIdContext *AContext);
+	void __fastcall IdTCPServerConnect(TIdContext *AContext);
+	void __fastcall ServerRestartTimerTimer(TObject *Sender);
+	void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
+
+
+
 
 
 
@@ -72,6 +104,7 @@ __published:	// IDE-managed Components
 private:	// User declarations
 public:		// User declarations
 	__fastcall TUServerControlForm(TComponent* Owner);
+	virtual __fastcall ~TUServerControlForm(void);
 
 // -----------------
 // Параметры сервера
@@ -83,18 +116,26 @@ bool AutoStartFlag;
 std::vector<std::string> ChannelNames;
 
 /// Результаты измерений производительности, мс
-std::vector<std::vector<long long> > ModelPerformanceResults;
-std::vector<std::vector<long long> > TransportPerformanceResults;
+std::vector<std::vector<RDK::ULongTime> > ModelPerformanceResults;
+std::vector<std::vector<RDK::ULongTime> > TransportPerformanceResults;
+
+std::string ServerName;
+
+std::string ServerId;
+
+std::string MetaComponentName;
+
+std::string MetaComponentStateName;
 
 /// Число шагов усреднения оценки производительности
 int AverageIterations;
 // -----------------
 
 /// Указатель на функцию, осуществляющую декодирование параметров запроса
-int (*CommandRequestDecoder)(std::map<std::string,std::vector<char> > &source, std::map<std::string,std::vector<char> > &dest);
+int (*CommandRequestDecoder)(UServerCommand &source, UServerCommand &dest);
 
 /// Указатель на функцию, осуществляющую кодирование параметров ответа
-int (*CommandResponseEncoder)(const std::string &response_type, std::vector<char> &source, std::vector<char> &dest);
+int (*CommandResponseEncoder)(const std::string &response_type, RDK::UParamT &source, RDK::UParamT &dest);
 
 /// Режим (тип) запроса
 /// 0 - обращение к системе управления свервером (Control)
@@ -107,13 +148,17 @@ int (*CommandResponseEncoder)(const std::string &response_type, std::vector<char
 int Mode;
 
 /// Обработанный список команды запроса
-std::map<std::string,std::vector<char> > DecodedRequest;
+UServerCommand DecodedRequest;
 
 /// Ответ
-std::vector<char> Response;
+RDK::UParamT Response;
+
+/// Дополнительные бинарные данные ответа
+std::vector<RDK::UParamT> BinaryResponse;
+
 
 /// Упакованный для отправки ответ
-std::vector<char> EncodedResponse;
+RDK::UParamT EncodedResponse;
 
 /// Тип ответа
 std::string ResponseType;
@@ -134,28 +179,70 @@ RDK::UBitmap TempUBitmap;
 // Индекс складывания данных в массив оценки производительности
 int PerformancePushIndex;
 
-const char* ControlRemoteCall(const char *request, int &return_value);
+//RDK::ExternalPtzControl PtzControl;
+
+HANDLE CommandQueueUnlockEvent;
+
+// Очередь команд
+std::list<UServerCommand > CommandQueue;
+
+// Очередь обработанных команд
+std::list<std::pair<std::string,RDK::UEPtr<RDK::URpcCommand> > > ProcessedCommandQueue;
+
+std::map<std::string, RDK::UTransferReader> PacketReaders;
+
+//RDK::UTransferPacket Packet;
+std::string PacketXml;
+
+UServerCommand CurrentProcessedCommand;
+
+TThreadList *Clients;
+
+TCriticalSection* CriticalSection;
+
+
+const char* ControlRemoteCall(const char *request, int &return_value, std::vector<RDK::UParamT> &binary_data);
+
+//const char* PtzRemoteCall(const char *request, int &return_value);
 
 // Функция, обрабатывающая команды управления сервером
 // Возвращает true если команда была найдена и обработана
-bool ProcessControlCommand(const std::string &cmd_name, std::map<std::string,std::vector<char> > &args, std::string &response_type, std::vector<char> &response_data);
-bool ProcessControlCommand(const std::map<std::string,std::vector<char> > &args, std::string &response_type, std::vector<char> &response_data);
+//bool ProcessControlCommand(const std::string &cmd_name, UServerCommand &args, std::string &response_type, UParamT &response_data);
+bool ProcessControlCommand(const UServerCommand &args, std::string &response_type, RDK::UParamT &response_data, std::vector<RDK::UParamT> &binary_data);
 
 // Функция, обрабатывающая команды удаленного вызова процедур
 // Возвращает true если команда была найдена и обработана
-bool ProcessRPCCommand(int channel, const std::string &cmd_name, std::map<std::string,std::vector<char> > &args, std::string &response_type, std::vector<char> &response_data);
-bool ProcessRPCCommand(const std::map<std::string,std::vector<char> > &args, std::string &response_type, std::vector<char> &response_data);
+//bool ProcessRPCCommand(int channel, const std::string &cmd_name, UServerCommand &args, std::string &response_type, UParamT &response_data);
+bool ProcessRPCCommand(const UServerCommand &args, std::string &response_type, RDK::UParamT &response_data);
+
+// Метод, обрабатывающий команды управления PTZ камерами
+bool ProcessPtzCommand(const UServerCommand &args, std::string &response_type, RDK::UParamT &response_data);
 
 /// Кодирует строку в вектор
-void ConvertStringToVector(const std::string &source, std::vector<char> &dest);
+void ConvertStringToVector(const std::string &source, RDK::UParamT &dest);
 
 /// Кодирует вектор в строку
-void ConvertVectorToString(const std::vector<char> &source, std::string &dest);
+void ConvertVectorToString(const RDK::UParamT &source, std::string &dest);
 
 /// Декодирует параметр массива команды с именем 'param_name' в целое число
 /// и записывает его в value
 /// Возвращает 0 в случае успеха
-int DecodeParamAsInteger(const std::string &param_name, const std::map<std::string,std::vector<char> > &args, int &value);
+//int DecodeParamAsInteger(const std::string &param_name, const UServerCommand &args, int &value);
+
+/// Отправляет ответ на команду
+void SendCommandResponse(const std::string &client_binding, RDK::UParamT &dest, std::vector<RDK::UParamT> &binary_data);
+
+/// Отправляет сообщение об ошибке в ответ на команду
+/// 0 - неизвестная ошибка
+/// 1 - Команда не опознана
+void SendCommandError(const std::string &client_binding, int request_id, int error_code);
+
+/// Устанавливает параметры сервера
+bool SetServerBinding(const std::string &interface_address, int port);
+
+/// Возвращает параметры сервера
+std::string GetServerBindingInterfaceAddress(void) const;
+int GetServerBindingPort(void) const;
 
 // -----------------------------
 // Методы управления визуальным интерфейсом
@@ -168,6 +255,9 @@ virtual void AAfterCalculate(void);
 
 // Обновление интерфейса
 virtual void AUpdateInterface(void);
+
+// Возврат интерфейса в исходное состояние
+virtual void AClearInterface(void);
 
 // Сохраняет параметры интерфейса в xml
 virtual void ASaveParameters(RDK::USerStorageXML &xml);
@@ -194,6 +284,9 @@ int GetChannelVideoSource(int channel_id);
 /// в соответствии с режимами VideoOutputFrame
 int SetChannelVideoSource(int channel_id, int source_mode);
 
+/// Проверяет подключен ли видеоисточник
+int CheckChannelVideoSourceConnection(int channel_id);
+
 /// Возвращает имя канала
 const std::string GetChannelName(int channel);
 
@@ -212,9 +305,19 @@ int StartChannel(int channel_id);
 /// или все каналы, если channel_id<0
 int StopChannel(int channel_id);
 
+/// Регистрирует удаленный приемник метаданных
+int RegisterMetadataReceiver(const std::string &address, int port,
+		const std::string &component_name, const std::string &component_state);
+
+/// Удаляет удаленный приемник метаданных
+int UnRegisterMetadataReceiver(const std::string &address, int port);
+
 /// Загружает проект аналитики для канала
 /// или загружает проект для всех каналов, если channel_id<0
 int LoadProject(int channel_id, const std::string &project_file_name);
+
+/// Сохраняет проект
+int SaveProject(void);
 // -----------------------------
 };
 //---------------------------------------------------------------------------

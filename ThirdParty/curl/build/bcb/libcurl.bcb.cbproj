@@ -40,6 +40,7 @@
 			<Base>true</Base>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base)'!=''">
+			<DynamicRTL>true</DynamicRTL>
 			<BCC_wdup>false</BCC_wdup>
 			<BCC_wccc>false</BCC_wccc>
 			<BCC_wpch>false</BCC_wpch>

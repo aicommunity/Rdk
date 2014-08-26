@@ -19,7 +19,7 @@ namespace RDK {
 
 typedef UEPtr<UConnector> PUAConnector;
 
-class UAConnectorVector
+class RDK_LIB_TYPE UAConnectorVector
 {
 protected: // Параметры
 // Размер контейнера
@@ -87,7 +87,7 @@ int GetSize(void) const;
 // --------------------------
 };
 
-class UAConnector2DVector
+class RDK_LIB_TYPE UAConnector2DVector
 {
 protected: // Параметры
 // Размер контейнера
@@ -155,7 +155,7 @@ int GetSize(void) const;
 // --------------------------
 };
 
-class UItem: public UConnector
+class RDK_LIB_TYPE UItem: public UConnector
 {
 protected: // Основные свойства
 // Список коннекторов подключенных к выходам этого объекта
@@ -216,6 +216,9 @@ int GetNumActiveOutputs(const NameT &item_property_name) const;
 /// Ищет свойство-выход по заданному индексу
 void FindOutputProperty(int index, UIProperty* &property) const;
 
+/// Возвращает индекс входа с заданным именем
+int FindOutputIndex(const NameT &output_name) const;
+
 /// Ищет свойство-вход по заданному индексу
 //void FindInputProperty(int index, UIProperty* &property);
 // --------------------------
@@ -244,8 +247,11 @@ virtual bool ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, con
 virtual bool Connect(UEPtr<UConnector> c, int i_index, int c_index=-1);
 virtual bool Connect(UEPtr<UConnector> c, const NameT &item_property_name, const NameT &connector_property_name, int &c_index);
 
-// Разрывает связь выхода этого объекта с коннектором 'c'
+/// Разрывает все связи выхода этого объекта с коннектором 'c'.
 virtual void Disconnect(UEPtr<UConnector> c);
+
+// Разрывает связь выхода этого объекта с коннектором 'c' по индексу
+virtual void Disconnect(UEPtr<UConnector> c, int i_index, int c_index);
 
 // Возвращает текущее число соединений для заданного выхода.
 int GetNumAConnectors(int index) const;

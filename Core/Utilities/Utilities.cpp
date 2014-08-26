@@ -19,5 +19,6 @@ See file license.txt for more information
 #include "UTree.cpp"
 #include "UException.cpp"
 #include "UTimeStamp.cpp"
+#include "UTransferPacket.cpp"
 
 #endif

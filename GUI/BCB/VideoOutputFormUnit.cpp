@@ -5,9 +5,11 @@
 
 #include "VideoOutputFormUnit.h"
 #include "VideoOutputToolsFormUnit.h"
-#include "TVideoGrabberControlFormUnit.h"
+//#include "TVideoGrabberControlFormUnit.h"
 #include "rdk_initdll.h"
 #include "UGEngineControlFormUnit.h"
+#include "UShowProgressBarUnit.h"
+#include "TVideoCaptureOptionsFormUnit.h"
 //#include "USharedMemoryLoader.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -52,6 +54,16 @@ void TVideoOutputForm::ABeforeCalculate(void)
 // Обновляет интерфейс
 void TVideoOutputForm::AUpdateInterface(void)
 {
+ for(int i=0;i<GetNumSources();i++)
+ {
+  Sources[i]->UpdateInterface();
+ }
+}
+
+// Возврат интерфейса в исходное состояние
+void TVideoOutputForm::AClearInterface(void)
+{
+ ClearSources();
 }
 
 // Сохраняет параметры интерфейса в xml
@@ -93,18 +105,22 @@ void TVideoOutputForm::AddSource(void)
  size_t index=Sources.size()-1;
 
  Sources[index]=new TVideoOutputFrame(0);
+ Sources[index]->LicenseString=UGEngineControlForm->VideoGrabberLicenseString;
  Sources[index]->FrameIndex=index;
  Sources[index]->Name=Sources[index]->Name+String("_")+PageControl->PageCount;
- Sources[index]->MyVideoGrabberControlForm->Name=Sources[index]->Name+"_VideoGrabberControlForm";
+// Sources[index]->MyVideoGrabberControlForm->Name=Sources[index]->Name+"_VideoGrabberControlForm";
 
  InsertComponent(Sources[index]);
  Sources[index]->Parent=sheet;
  Sources[index]->Align=alClient;
  PageControl->Pages[index]->Caption=IntToStr(int(index));
- if(index == 0)
+
+ Sources[index]->InitPrimarySettings();
+/* if(index == 0)
   Sources[index]->VideoGrabber->SynchronizationRole=sr_Master;
  else
   Sources[index]->VideoGrabber->SynchronizationRole=sr_Slave;
+  */
 }
 
 // Удаляет источник видео
@@ -138,7 +154,7 @@ void TVideoOutputForm::SetSourceType(int index, int mode)
  if(index<0 || index >=int(Sources.size()))
   return;
 
- Sources[index]->MyVideoGrabberControlForm->VideoGrabberControlFrame->SelectMode(mode);
+ Sources[index]->Init(mode);
 }
 
 // Возвращает индекс текущего активного источника видео
@@ -192,6 +208,9 @@ void TVideoOutputForm::LoadFromIni(TMemIniFile *ini, const String &section)
 // Запускает выбранный источник видео, или все если index == -1
 void TVideoOutputForm::Start(int index)
 {
+ UShowProgressBarForm->SetBarHeader(1,"Starting video sources...");
+ UShowProgressBarForm->ResetBarStatus(1, 1, GetNumSources());
+
  if(index>=0 && index<GetNumSources())
   Sources[index]->StartButtonClick(this);
  else
@@ -199,24 +218,38 @@ void TVideoOutputForm::Start(int index)
 //  if(GetNumSources()>0)
 //   Sources[i]->
   for(int i=0;i<GetNumSources();i++)
+  {
    Sources[i]->StartButtonClick(this);
+   UShowProgressBarForm->IncBarStatus(1);
+   UShowProgressBarForm->Update();
+  }
  }
 }
 
 // Останавливает выбранный источник видео, или все если index == -1
 void TVideoOutputForm::Stop(int index)
 {
+ UShowProgressBarForm->SetBarHeader(1,"Stopping video sources...");
+ UShowProgressBarForm->ResetBarStatus(1, 1, GetNumSources());
+
  if(index>=0 && index<GetNumSources())
   Sources[index]->StopButtonClick(this);
  else
   for(int i=0;i<GetNumSources();i++)
+  {
    Sources[i]->StopButtonClick(this);
+   UShowProgressBarForm->IncBarStatus(1);
+   UShowProgressBarForm->Update();
+  }
 }
 
 // Останавливает выбранный источник видео, или все если index == -1
 // Не изменяяет состояние онлайн-источников (камеры)
 void TVideoOutputForm::StopOffline(int index)
 {
+ UShowProgressBarForm->SetBarHeader(1,"Stopping video sources...");
+ UShowProgressBarForm->ResetBarStatus(1, 1, GetNumSources());
+
  if(index>=0 && index<GetNumSources())
  {
   if(Sources[index]->Mode != 2 && Sources[index]->Mode != 3)
@@ -224,8 +257,13 @@ void TVideoOutputForm::StopOffline(int index)
  }
  else
   for(int i=0;i<GetNumSources();i++)
+  {
    if(Sources[i]->Mode != 2 && Sources[i]->Mode != 3)
-    Sources[i]->StopButtonClick(this);
+	Sources[i]->StopButtonClick(this);
+
+   UShowProgressBarForm->IncBarStatus(1);
+   UShowProgressBarForm->Update();
+  }
 }
 
 
@@ -235,7 +273,8 @@ void __fastcall TVideoOutputForm::PageControlChange(TObject *Sender)
  for(int i=0;i<PageControl->PageCount;i++)
   if(PageControl->Pages[i]->Visible == false)
   {
-   Sources[i]->MyVideoGrabberControlForm->Hide();
+//   Sources[i]->MyVideoGrabberControlForm->Hide();
+   Sources[i]->VideoCaptureOptionsForm->Hide();
    Sources[i]->MyVideoOutputToolsForm->Hide();
   }
 
@@ -285,7 +324,7 @@ void __fastcall TVideoOutputForm::ClearSource1Click(TObject *Sender)
 void __fastcall TVideoOutputForm::FormCreate(TObject *Sender)
 {
  UGEngineControlForm->SpecialForms["TVideoOutputForm"]=this;
- int res=LoadUSharedMemoryLibrary("USharedMemory.dll");
+ LoadUSharedMemoryLibrary("USharedMemory.dll");
 }
 //---------------------------------------------------------------------------
 

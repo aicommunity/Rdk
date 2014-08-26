@@ -24,7 +24,7 @@ See file license.txt for more information
 namespace RDK {
 
 // Данные
-class UItemData
+class RDK_LIB_TYPE UItemData
 {
 friend class UADItem;
 public: // Размер единичного элемента данных по умолчанию

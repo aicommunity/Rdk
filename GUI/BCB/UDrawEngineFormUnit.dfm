@@ -47,13 +47,27 @@ object UDrawEngineForm: TUDrawEngineForm
       ExplicitTop = 1
       ExplicitWidth = 227
       ExplicitHeight = 318
-      inherited StringGrid: TStringGrid
+      inherited PageControl: TPageControl
         Width = 227
         Height = 318
-        OnMouseMove = UClassesListFrameStringGridMouseMove
-        OnMouseUp = UClassesListFrameStringGridMouseUp
         ExplicitWidth = 227
         ExplicitHeight = 318
+        inherited NameTabSheet: TTabSheet
+          inherited StringGrid: TStringGrid
+            Width = 227
+            Height = 318
+            OnMouseMove = UClassesListFrameStringGridMouseMove
+            OnMouseUp = UClassesListFrameStringGridMouseUp
+            ExplicitWidth = 227
+            ExplicitHeight = 318
+          end
+        end
+        inherited LibsTabSheet: TTabSheet
+          ExplicitLeft = 4
+          ExplicitTop = 24
+          ExplicitWidth = 499
+          ExplicitHeight = 515
+        end
       end
     end
   end

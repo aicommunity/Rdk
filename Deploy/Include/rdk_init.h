@@ -7,6 +7,16 @@ extern "C"  {
 typedef int bool;
 #endif
 
+#ifndef RDK_EX_UNKNOWN
+#define RDK_EX_UNKNOWN 0
+#define RDK_EX_FATAL 1
+#define RDK_EX_ERROR 2
+#define RDK_EX_WARNING 3
+#define RDK_EX_INFO 4
+#define RDK_EX_DEBUG 5
+#endif
+
+
 #ifndef RDK_PROPERTY_TYPES
 #define RDK_PROPERTY_TYPES
 // Варианты типа свойства (битовая маска) pt - Property Type
@@ -49,7 +59,7 @@ enum { ipDataSingle=ipData|ipSingle, ipDataRange=ipData|ipRange,
 ///	    <Id>уникальный идентификатор запроса</Id>
 ///     <Channel>индекс движка</Channel>
 ///     <Cmd>имя вызываемой функции</Cmd>
-///     <Name>имя компонента</Name>
+///     <Component>имя компонента</Component>
 ///     <Class>имя класса</Class>
 ///     <Data>xml-описание данных функции, например xml с параметрами компонента</Data>
 /// </RpcRequest>
@@ -59,12 +69,21 @@ enum { ipDataSingle=ipData|ipSingle, ipDataRange=ipData|ipRange,
 ///     <Data>xml-описание данных функции, например xml с параметрами компонента</Data>
 ///     <Res>идентификатор возвращаемой ошибки или 0 если вызов успешен</Res>
 /// </RpcResponse>
-RDK_LIB_TYPE const char* RDK_CALL RemoteCall(const char *request, int &return_value);
+RDK_LIB_TYPE const char* RDK_CALL RemoteCall(const char *request, int &return_value, int &channel_index);
 // ----------------------------
 
 // ----------------------------
 // Функции инициализации
 // ----------------------------
+// Возвращает имя каталога бинарных файлов
+RDK_LIB_TYPE const char* RDK_CALL GetSystemDir(void);
+
+// Устанавливает имя каталога бинарных файлов
+RDK_LIB_TYPE int RDK_CALL SetSystemDir(const char *dir);
+
+// Загружает глобальные шрифты
+RDK_LIB_TYPE int RDK_CALL Engine_LoadFonts(void);
+
 // Возвращает число дивжков
 RDK_LIB_TYPE int RDK_CALL GetNumEngines(void);
 
@@ -72,12 +91,28 @@ RDK_LIB_TYPE int RDK_CALL GetNumEngines(void);
 // num > 0
 RDK_LIB_TYPE int RDK_CALL SetNumEngines(int num);
 
+// Добавляет движок в позицию заданного индекса
+// Если позиция лежит вне пределов диапазона то
+// добавляет в конец
+RDK_LIB_TYPE int RDK_CALL Engine_Add(int index);
+
+// Удаляет движок по индексу
+RDK_LIB_TYPE int RDK_CALL Engine_Del(int index);
+
 // Возвращает индекс текущего выбранного движка
 RDK_LIB_TYPE int RDK_CALL GetSelectedEngineIndex(void);
 
 // Настраивает обычный интерфейс на работу с заданным движком
 // В случае удаления движка, интерфейс автоматически перенастраивается на 0 движок
 RDK_LIB_TYPE int RDK_CALL SelectEngine(int index);
+
+/// Блокирует канал до вызова функции UnlockEngine
+RDK_LIB_TYPE int RDK_CALL LockEngine(void);
+RDK_LIB_TYPE int RDK_CALL MLockEngine(int index);
+
+/// Разблокирует канал
+RDK_LIB_TYPE int RDK_CALL UnLockEngine(void);
+RDK_LIB_TYPE int RDK_CALL MUnLockEngine(int index);
 
 // Инициализирует движок (функция должна быть вызвана первой!)
 // Upd: Функция может быть вызвана после SetNumEngines и SelectEngine
@@ -100,6 +135,23 @@ RDK_LIB_TYPE int RDK_CALL MEngineUnInit(int engine_index);
 /// Проверяет инициализирован ли движок
 RDK_LIB_TYPE bool RDK_CALL IsEngineInit(void);
 RDK_LIB_TYPE bool RDK_CALL MIsEngineInit(int engine_index);
+
+/// Высвобождает буферную строку движка, по заданному указателю
+RDK_LIB_TYPE void RDK_CALL Engine_FreeBufString(const char *pointer);
+RDK_LIB_TYPE void RDK_CALL MEngine_FreeBufString(int engine_index,const char *pointer);
+RDK_LIB_TYPE void RDK_CALL Engine_FreeBufStringUnsafe(const char *pointer);
+RDK_LIB_TYPE void RDK_CALL MEngine_FreeBufStringUnsafe(int engine_index,const char *pointer);
+
+/// Режим создания внутренних временных переменных для
+/// возвращаемых значений
+/// 0 - одна переменная для всех методов, возвращающих такой тип
+/// 1 - уникальные переменные с необходимостью вызвова функции очистки
+RDK_LIB_TYPE int RDK_CALL Engine_GetBufObjectsMode(void);
+RDK_LIB_TYPE bool RDK_CALL Engine_SetBufObjectsMode(int mode);
+
+/// Возвращает число буферных строк движка
+RDK_LIB_TYPE int RDK_CALL Engine_GetNumBufStrings(void);
+RDK_LIB_TYPE int RDK_CALL MEngine_GetNumBufStrings(int engine_index);
 // ----------------------------
 
 // --------------------------
@@ -159,26 +211,11 @@ RDK_LIB_TYPE const char* RDK_CALL Storage_SaveAllClassesDescription(void);
 
 // Загружает описание всех классов из xml включая общее описание
 RDK_LIB_TYPE bool RDK_CALL Storage_LoadAllClassesDescription(const char* xmltext);
+// --------------------------
 
-// Загружает библиотеку по имени dll-файла
-RDK_LIB_TYPE int RDK_CALL Storage_LoadStorageLibrary(const char *filename);
-
-// Удаляет подключенную библиотеку из списка по индексу
-// Ответственность за освобождение памяти лежит на вызывающей стороне.
-RDK_LIB_TYPE bool RDK_CALL Storage_DelClassLibraryByIndex(int index);
-
-// Удаляет подключенную библиотеку из списка по имени
-// Ответственность за освобождение памяти лежит на вызывающей стороне.
-RDK_LIB_TYPE bool RDK_CALL Storage_DelClassLibraryByName(const char *name);
-
-// Удаляет из списка все библиотеки
-// Ответственность за освобождение памяти лежит на вызывающей стороне.
-RDK_LIB_TYPE bool RDK_CALL Storage_DelAllClassLibraries(void);
-
-// Заполняет хранилище данными библиотек
-// Операция предварительно уничтожает модель и очищает хранилище
-RDK_LIB_TYPE bool RDK_CALL Storage_BuildStorage(void);
-
+// ----------------------------
+// Методы управления коллекциями компонент
+// ----------------------------
 // Возвращает число библиотек
 RDK_LIB_TYPE int RDK_CALL Storage_GetNumClassLibraries(void);
 
@@ -199,11 +236,41 @@ RDK_LIB_TYPE const char* RDK_CALL Storage_GetClassLibraryNameByIndex(int index);
 // Возвращает версию библиотеки по индексу
 RDK_LIB_TYPE const char* RDK_CALL Storage_GetClassLibraryVersionByIndex(int index);
 
+/// Создает новую runtime-библиотеку
+RDK_LIB_TYPE int RDK_CALL Storage_CreateRuntimeCollection(const char *collection_name);
+
+// Загружает коллекцию по имени dll-файла
+RDK_LIB_TYPE int RDK_CALL Storage_LoadBinaryCollectionFromFile(const char *filename);
+
+// Загружает runtime-коллекцию
+RDK_LIB_TYPE int RDK_CALL Storage_LoadRuntimeCollectionFromFile(const char *filename);
+RDK_LIB_TYPE int RDK_CALL Storage_LoadRuntimeCollectionFromString(const char *buffer);
+
+// Сохраняет runtime-коллекцию
+RDK_LIB_TYPE int RDK_CALL Storage_SaveRuntimeCollectionToFile(const char *filename);
+RDK_LIB_TYPE int RDK_CALL Storage_SaveRuntimeCollectionToString(const char *buffer);
+
+// Удаляет подключенную библиотеку из списка по индексу
+// Ответственность за освобождение памяти лежит на вызывающей стороне.
+RDK_LIB_TYPE int RDK_CALL Storage_DelClassLibraryByIndex(int index);
+
+// Удаляет подключенную библиотеку из списка по имени
+// Ответственность за освобождение памяти лежит на вызывающей стороне.
+RDK_LIB_TYPE int RDK_CALL Storage_DelClassLibraryByName(const char *name);
+
+// Удаляет из списка все библиотеки
+// Ответственность за освобождение памяти лежит на вызывающей стороне.
+RDK_LIB_TYPE int RDK_CALL Storage_DelAllClassLibraries(void);
+
 // Перемещает объект в Storage как образец классов.
 // Объект удаляется из модели
-// Возвращает id нового класса в хранилище
-RDK_LIB_TYPE int RDK_CALL Storage_CreateClass(const char* stringid, const char *classname);
-// --------------------------
+RDK_LIB_TYPE int RDK_CALL Storage_CreateClass(const char* stringid, const char *class_name, const char *collection_name);
+
+// Заполняет хранилище данными библиотек
+// Операция предварительно уничтожает модель и очищает хранилище
+RDK_LIB_TYPE int RDK_CALL Storage_BuildStorage(void);
+// ----------------------------
+
 
 // --------------------------
 // Функции управления средой
@@ -213,6 +280,7 @@ RDK_LIB_TYPE int RDK_CALL Storage_CreateClass(const char* stringid, const char *
 // иначе вычисляет только указанный компонент модели
 RDK_LIB_TYPE int RDK_CALL Env_Calculate(const char* stringid);
 RDK_LIB_TYPE int RDK_CALL MEnv_Calculate(int engine_index, const char* stringid);
+RDK_LIB_TYPE int RDK_CALL MEnv_CalculateUnsafe(int engine_index, const char* stringid);
 
 // Расчет всей модели в реальном времени
 RDK_LIB_TYPE void RDK_CALL Env_RTCalculate(void);
@@ -224,14 +292,41 @@ RDK_LIB_TYPE void RDK_CALL MEnv_RTCalculate(int engine_index);
 RDK_LIB_TYPE int RDK_CALL Env_Reset(const char* stringid);
 RDK_LIB_TYPE int RDK_CALL MEnv_Reset(int engine_index, const char* stringid);
 
+/// Метод сброса параметров на значения по умолчанию
+/// Если stringid == 0 то сбрасывает всю модель целиком,
+/// иначе - только указанный компонент модели
+/// Если subcomps == true то также сбрасывает параметры всех дочерних компонент
+RDK_LIB_TYPE int RDK_CALL Env_Default(const char* stringid, bool subcomps=false);
+RDK_LIB_TYPE int RDK_CALL MEnv_Default(int engine_index, const char* stringid, bool subcomps=false);
+
 // Производит увеличение времени модели на требуемую величину
 RDK_LIB_TYPE void RDK_CALL Env_IncreaseModelTimeByStep(void);
+
+/// Устанавливает минимальный интервал времени между шагами расчета (мс)
+/// Итерации расчета будут пропускаться до тех пор, пока время прошедшее с начала
+/// последней итерации не станет больше чем эта величина
+RDK_LIB_TYPE int RDK_CALL Env_SetMinInterstepsInterval(unsigned long long value);
+RDK_LIB_TYPE int RDK_CALL MEnv_SetMinInterstepsInterval(int engine_index, unsigned long long value);
+
+/// Возвращает минимальный интервал времени между шагами расчета (мс)
+/// Итерации расчета будут пропускаться до тех пор, пока время прошедшее с начала
+/// последней итерации не станет больше чем эта величина
+RDK_LIB_TYPE unsigned long long RDK_CALL Env_GetMinInterstepsInterval(void);
+RDK_LIB_TYPE unsigned long long RDK_CALL MEnv_GetMinInterstepsInterval(int engine_index);
 
 // Возвращает имя текущего каталога для хранения данных
 RDK_LIB_TYPE const char* RDK_CALL Env_GetCurrentDataDir(void);
 
 // Устанавливает имя текущего каталога для хранения данных
 RDK_LIB_TYPE int RDK_CALL Env_SetCurrentDataDir(const char *dir);
+
+/// Возвращает состояние флага отладочного режима среды
+RDK_LIB_TYPE bool RDK_CALL Env_GetDebugMode(void);
+RDK_LIB_TYPE bool RDK_CALL MEnv_GetDebugMode(int engine_index);
+
+/// Устанавливает состояние флага отладочного режима среды
+RDK_LIB_TYPE int RDK_CALL Env_SetDebugMode(bool value);
+RDK_LIB_TYPE int RDK_CALL MEnv_SetDebugMode(int engine_index, bool value);
 
 // ***********************************************
 // Методы управления текущим компонентом
@@ -347,6 +442,10 @@ RDK_LIB_TYPE int RDK_CALL Env_GetOutputImageColorModel(int number);
 RDK_LIB_TYPE unsigned char* RDK_CALL Env_GetInputImage(int index);
 RDK_LIB_TYPE unsigned char* RDK_CALL Env_GetOutputImage(int index);
 RDK_LIB_TYPE unsigned char* RDK_CALL Env_GetOutputImageY8(int index);
+
+/// Инициирует извещение о сбое в работе источника данных
+RDK_LIB_TYPE bool RDK_CALL Env_CallSourceController(void);
+RDK_LIB_TYPE bool RDK_CALL MEnv_CallSourceController(int engine_index);
 // --------------------------
 
 // ----------------------------
@@ -354,6 +453,7 @@ RDK_LIB_TYPE unsigned char* RDK_CALL Env_GetOutputImageY8(int index);
 // ----------------------------
 // Удаляет модель
 RDK_LIB_TYPE int RDK_CALL Model_Destroy(void);
+RDK_LIB_TYPE int RDK_CALL MModel_Destroy(int engine_index);
 
 // Создает новую модель по имени класса в хранилище
 // Предварительно удаляет существующую модель
@@ -362,6 +462,7 @@ RDK_LIB_TYPE int RDK_CALL MModel_Create(int engine_index, const char *classname)
 
 // Очищает модель
 RDK_LIB_TYPE int RDK_CALL Model_Clear(void);
+RDK_LIB_TYPE int RDK_CALL MModel_Clear(int engine_index);
 
 // Проверяет, существует ли модель
 RDK_LIB_TYPE bool RDK_CALL Model_Check(void);
@@ -369,17 +470,27 @@ RDK_LIB_TYPE bool RDK_CALL MModel_Check(int engine_index);
 
 // Проверяет, существует ли в модели компонент с именем stringid)
 RDK_LIB_TYPE bool RDK_CALL Model_CheckComponent(const char* stringid);
+RDK_LIB_TYPE bool RDK_CALL MModel_CheckComponent(int engine_index, const char* stringid);
 
 // Добавляет в выбранный компонент модели с идентификатором 'stringid' экземпляр
 // компонента с заданным 'classname'
 // если stringid - пустая строка, то добавляет в саму модель
 // Возвращает имя компонента в случае успеха
 RDK_LIB_TYPE const char* RDK_CALL Model_AddComponent(const char* stringid, const char *classname);
+RDK_LIB_TYPE const char* RDK_CALL MModel_AddComponent(int engine_index, const char* stringid, const char *classname);
 
 // Удаляет из выбранного компонента модели с идентификатором 'stringid' экземпляр
 // компонента с заданным 'name'
 // если stringid - пустая строка, то удаляет из самой модели
 RDK_LIB_TYPE int RDK_CALL Model_DelComponent(const char* stringid, const char *name);
+RDK_LIB_TYPE int RDK_CALL MModel_DelComponent(int engine_index, const char* stringid, const char *name);
+
+/// Перемещает компоненту в другой компонент
+/// Если comp не принадлежит этому компоненту, или target имеет отличный от
+/// этого компонента storage, или target не может принять в себя компонент
+/// то возвращает false и не делает ничего
+RDK_LIB_TYPE int RDK_CALL Model_MoveComponent(const char* component, const char* target);
+RDK_LIB_TYPE int RDK_CALL MModel_MoveComponent(int engine_index, const char* component, const char* target);
 
 // Возвращает число всех компонент в заданном компоненте 'stringid'
 // если stringid - пустая строка, то возвращает число всех компонент модели
@@ -392,6 +503,12 @@ RDK_LIB_TYPE int RDK_CALL Model_GetComponentsList(const char* stringid, int *buf
 // Возвращает строку, содержащую список имен всех компонент заданного компонента 'stringid'
 // имена разделяются сипволом ','
 RDK_LIB_TYPE const char* RDK_CALL Model_GetComponentsNameList(const char* stringid);
+RDK_LIB_TYPE const char* RDK_CALL MModel_GetComponentsNameList(int engine_index, const char* stringid);
+
+// Возвращает строку, содержащую список имен всех компонент заданного компонента 'stringid'
+// имена разделяются сипволом ',' и имеющих имя класса 'class_name'
+// Если find_all == true то поиск ведется и во всех сабкомпонентах
+RDK_LIB_TYPE const char* RDK_CALL Model_FindComponentsByClassName(const char* stringid, const char* class_name, bool find_all);
 
 // Перемещает компонент с текущим индексом index или именем 'name' вверх или
 // вниз по списку на заданное число элементов
@@ -458,9 +575,14 @@ RDK_LIB_TYPE const char* RDK_CALL Model_GetComponentLongId(const char* stringid,
 // Возвращает имя класса компонента в хранилище по длинному 'stringid'
 // если stringid - пустая строка, то возвращает имя класса модели
 RDK_LIB_TYPE const char* RDK_CALL Model_GetComponentClassName(const char* stringid);
+RDK_LIB_TYPE const char* RDK_CALL MModel_GetComponentClassName(int engine_index, const char* stringid);
 
 // Возвращает список свойств компонента разделенный запятыми
 RDK_LIB_TYPE const char* RDK_CALL Model_GetComponentPropertiesList(const char* stringid, unsigned int type_mask);
+
+// Возвращает список имен и индексов свойств компонента разделенный запятыми
+// каждый элемент имеет вид имя_свойства:индекс_входа(выхода)
+RDK_LIB_TYPE const char* RDK_CALL Model_GetComponentPropertiesLookupList(const char* stringid, unsigned int type_mask);
 
 // Возвращает свойства компонента по идентификатору
 RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentProperties(const char *stringid, unsigned int type_mask);
@@ -473,12 +595,14 @@ RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentSelectedProperties(const ch
 
 // Возвращает значение свойства компонента по идентификатору компонента и имени свойства
 RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentPropertyValue(const char *stringid, const char *paramname);
+RDK_LIB_TYPE const char * RDK_CALL MModel_GetComponentPropertyValue(int engine_index, const char *stringid, const char *paramname);
 
 // Устанавливает свойства компонента по идентификатору
 RDK_LIB_TYPE int RDK_CALL Model_SetComponentProperties(const char *stringid, const char* buffer);
 
 // Устанавливает значение свойства компонента по идентификатору компонента и имени свойства
 RDK_LIB_TYPE void RDK_CALL Model_SetComponentPropertyValue(const char *stringid, const char *paramname, const char *buffer);
+RDK_LIB_TYPE int RDK_CALL MModel_SetComponentPropertyValue(int engine_index, const char *stringid, const char *paramname, const char *buffer);
 
 // Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
 // включая этот компонент
@@ -490,9 +614,11 @@ RDK_LIB_TYPE void RDK_CALL Model_SetGlobalOwnerComponentPropertyValue(const char
 
 // Возвращает указатель void* на данные свойства компонента
 RDK_LIB_TYPE const void* RDK_CALL Model_GetComponentPropertyData(const char *stringid, const char *property_name);
+RDK_LIB_TYPE const void* RDK_CALL MModel_GetComponentPropertyData(int engine_index, const char *stringid, const char *property_name);
 
 // Копирует данные 'data' в заданное свойство компонента
 RDK_LIB_TYPE int RDK_CALL Model_SetComponentPropertyData(const char *stringid, const char *property_name, const void *data);
+RDK_LIB_TYPE int RDK_CALL MModel_SetComponentPropertyData(int engine_index, const char *stringid, const char *property_name, const void *data);
 
 // Возвращает параметры компонента по идентификатору
 // Deprecated
@@ -510,6 +636,7 @@ RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentSelectedParameters(const ch
 // Возвращает значение параметра компонента по идентификатору компонента и имени параметра
 // Deprecated
 RDK_LIB_TYPE const char * RDK_CALL Model_GetComponentParameterValue(const char *stringid, const char *paramname);
+RDK_LIB_TYPE const char * RDK_CALL MModel_GetComponentParameterValue(int engine_index, const char *stringid, const char *paramname);
 
 // Устанавливает параметры компонента по идентификатору
 // Deprecated
@@ -518,8 +645,8 @@ RDK_LIB_TYPE int RDK_CALL MModel_SetComponentParameters(int engine_index, const 
 
 // Устанавливает значение параметра компонента по идентификатору компонента и имени параметра
 // Deprecated
-RDK_LIB_TYPE void RDK_CALL Model_SetComponentParameterValue(const char *stringid, const char *paramname, const char *buffer);
-RDK_LIB_TYPE void RDK_CALL MModel_SetComponentParameterValue(int engine_index, const char *stringid, const char *paramname, const char *buffer);
+RDK_LIB_TYPE int RDK_CALL Model_SetComponentParameterValue(const char *stringid, const char *paramname, const char *buffer);
+RDK_LIB_TYPE int RDK_CALL MModel_SetComponentParameterValue(int engine_index, const char *stringid, const char *paramname, const char *buffer);
 
 // Возвращает состояние компонента по идентификатору
 // Deprecated
@@ -561,6 +688,9 @@ RDK_LIB_TYPE int RDK_CALL Model_BreakLinkByName(const char* stringid1, const cha
 
 // Разрывает все связи
 RDK_LIB_TYPE int RDK_CALL Model_BreakAllLinks(void);
+
+// Разрывает связь ко входу connector_index коннектора 'connectorid'
+RDK_LIB_TYPE int RDK_CALL Model_BreakConnectorLink(const char* connectorname, int connector_index);
 
 // Разрывает все входные и выходные связи выбранного контейнера
 RDK_LIB_TYPE int RDK_CALL Model_BreakAllComponentLinks(const char* stringid);
@@ -648,21 +778,39 @@ RDK_LIB_TYPE unsigned char* RDK_CALL Model_GetComponentOutputData(const char *st
 RDK_LIB_TYPE const char * RDK_CALL Model_SaveComponent(const char *stringid, unsigned int params_type_mask=ptParameter | pgPublic);
 RDK_LIB_TYPE const char * RDK_CALL MModel_SaveComponent(int engine_index, const char *stringid, unsigned int params_type_mask=ptParameter | pgPublic);
 
+// Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
+// переменные состояния в xml
+RDK_LIB_TYPE int RDK_CALL Model_SaveComponentToFile(const char *stringid, const char* file_name, unsigned int params_type_mask=0xFFFFFFFF);
+RDK_LIB_TYPE int RDK_CALL MModel_SaveComponentToFile(int engine_index, const char *stringid, const char* file_name, unsigned int params_type_mask=0xFFFFFFFF);
+
 // Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния из xml
 RDK_LIB_TYPE int RDK_CALL Model_LoadComponent(const char *stringid, const char* buffer);
 RDK_LIB_TYPE int RDK_CALL MModel_LoadComponent(int engine_index, const char *stringid, const char* buffer);
 
+// Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
+// переменные состояния из xml
+RDK_LIB_TYPE int RDK_CALL Model_LoadComponentFromFile(const char *stringid, const char* file_name);
+RDK_LIB_TYPE int RDK_CALL MModel_LoadComponentFromFile(int engine_index, const char *stringid, const char* file_name);
+
 // Сохраняет все свойства компонента и его дочерних компонент в xml
 RDK_LIB_TYPE const char * RDK_CALL Model_SaveComponentProperties(const char *stringid, unsigned int type_mask);
 
+// Сохраняет все свойства компонента и его дочерних компонент в xml
+RDK_LIB_TYPE int RDK_CALL Model_SaveComponentPropertiesToFile(const char *stringid, const char* file_name, unsigned int type_mask=0xFFFFFFFF);
+
 // Загружает все свойства компонента и его дочерних компонент из xml
 RDK_LIB_TYPE int RDK_CALL Model_LoadComponentProperties(const char *stringid, char* buffer);
+
+// Загружает все свойства компонента и его дочерних компонент из xml
+RDK_LIB_TYPE int RDK_CALL Model_LoadComponentPropertiesFromFile(const char *stringid, const char* file_name);
 
 // Сохраняет все параметры компонента и его дочерних компонент в xml
 // Deprecated
 RDK_LIB_TYPE const char * RDK_CALL Model_SaveComponentParameters(const char *stringid, unsigned int type_mask=ptParameter | pgPublic);
 
+// Сохраняет все параметры компонента и его дочерних компонент в xml
+RDK_LIB_TYPE const char * RDK_CALL MModel_SaveComponentParameters(int engine_index, const char *stringid, unsigned int type_mask=ptParameter | pgPublic);
 // Загружает все параметры компонента и его дочерних компонент из xml
 // Deprecated
 RDK_LIB_TYPE int RDK_CALL Model_LoadComponentParameters(const char *stringid, const char* buffer);
@@ -681,45 +829,74 @@ RDK_LIB_TYPE int RDK_CALL Model_LoadComponentState(const char *stringid, char* b
 RDK_LIB_TYPE const char* RDK_CALL Model_SaveComponentDrawInfo(const char *stringid);
 
 // Управляет шагом счета модели по умолчанию
-RDK_LIB_TYPE int RDK_CALL Model_GetDefaultTimeStep(void);
-RDK_LIB_TYPE void RDK_CALL Model_SetDefaultTimeStep(int value);
+RDK_LIB_TYPE unsigned int RDK_CALL Model_GetDefaultTimeStep(void);
+RDK_LIB_TYPE void RDK_CALL Model_SetDefaultTimeStep(unsigned int value);
 
 // Управляет шагом счета компонента
-RDK_LIB_TYPE int RDK_CALL Model_GetTimeStep(const char *stringid);
-RDK_LIB_TYPE void RDK_CALL Model_SetTimeStep(const char *stringid, int value);
+RDK_LIB_TYPE unsigned int RDK_CALL Model_GetTimeStep(const char *stringid);
+RDK_LIB_TYPE void RDK_CALL Model_SetTimeStep(const char *stringid, unsigned int value);
 
 // Устанавливает шаг счета компонента и всех его дочерних компонент
-RDK_LIB_TYPE void RDK_CALL Model_SetGlobalTimeStep(const char *stringid, int value);
+RDK_LIB_TYPE void RDK_CALL Model_SetGlobalTimeStep(const char *stringid, unsigned int value);
 
 // Возвращает текущее время модели
-RDK_LIB_TYPE long long RDK_CALL Model_GetTime(void);
+RDK_LIB_TYPE unsigned long long RDK_CALL Model_GetTime(void);
+RDK_LIB_TYPE unsigned long long RDK_CALL MModel_GetTime(int engine_index);
 RDK_LIB_TYPE double RDK_CALL Model_GetDoubleTime(void);
+RDK_LIB_TYPE double RDK_CALL MModel_GetDoubleTime(int engine_index);
 
 // Устанавливает текущее время модели
-RDK_LIB_TYPE bool RDK_CALL Model_SetTime(long long value);
+RDK_LIB_TYPE bool RDK_CALL Model_SetTime(unsigned long long value);
 
 // Возвращает реальное время
-RDK_LIB_TYPE long long RDK_CALL Model_GetRealTime(void);
+RDK_LIB_TYPE unsigned long long RDK_CALL Model_GetRealTime(void);
 RDK_LIB_TYPE double RDK_CALL Model_GetDoubleRealTime(void);
+RDK_LIB_TYPE double RDK_CALL MModel_GetDoubleRealTime(int engine_index);
 
 // Устанавливает реальное время
-RDK_LIB_TYPE bool RDK_CALL Model_SetRealTime(long long value);
+RDK_LIB_TYPE bool RDK_CALL Model_SetRealTime(unsigned long long value);
 
 // Увеличивает реальное время на заданную величину
-RDK_LIB_TYPE bool RDK_CALL Model_IncreaseRealTime(long long value);
+RDK_LIB_TYPE bool RDK_CALL Model_IncreaseRealTime(unsigned long long value);
 
 // Возвращает мгновенный шаг в реальном времени
-RDK_LIB_TYPE long long RDK_CALL Model_GetRealTimeStep(void);
+RDK_LIB_TYPE unsigned long long RDK_CALL Model_GetRealTimeStep(void);
 RDK_LIB_TYPE double RDK_CALL Model_GetDoubleRealTimeStep(void);
 
+// Текущее время внешних источников данных в микросекундах
+RDK_LIB_TYPE unsigned long long RDK_CALL Model_GetSourceTime(void);
+RDK_LIB_TYPE unsigned long long RDK_CALL MModel_GetSourceTime(int engine_index);
+RDK_LIB_TYPE double RDK_CALL Model_GetDoubleSourceTime(void);
+RDK_LIB_TYPE double RDK_CALL MModel_GetDoubleSourceTime(int engine_index);
+
+// Устанавливает время внешних источников данных
+RDK_LIB_TYPE bool RDK_CALL Model_SetSourceTime(unsigned long long value);
+RDK_LIB_TYPE bool RDK_CALL MModel_SetSourceTime(int engine_index, unsigned long long value);
+RDK_LIB_TYPE bool RDK_CALL Model_SetSourceTimeAll(unsigned long long value);
+
+// Устанавливает время внешних источников данных в днях
+RDK_LIB_TYPE bool RDK_CALL Model_SetDoubleSourceTime(double value);
+RDK_LIB_TYPE bool RDK_CALL MModel_SetDoubleSourceTime(int engine_index, double value);
+RDK_LIB_TYPE bool RDK_CALL Model_SetDoubleSourceTimeAll(double value);
+
+// Увеличивает время внешних источников данных на заданную величину
+RDK_LIB_TYPE bool RDK_CALL Model_IncreaseSourceTime(unsigned long long value);
+RDK_LIB_TYPE bool RDK_CALL MModel_IncreaseSourceTime(int engine_index, unsigned long long value);
+
+// Мгновенный шаг во времени внешних источников данных в микросекундах
+RDK_LIB_TYPE unsigned long long RDK_CALL Model_GetSourceTimeStep(void);
+RDK_LIB_TYPE unsigned long long RDK_CALL MModel_GetSourceTimeStep(int engine_index);
+RDK_LIB_TYPE double RDK_CALL Model_GetDoubleSourceTimeStep(void);
+RDK_LIB_TYPE double RDK_CALL MModel_GetDoubleSourceTimeStep(int engine_index);
+
 // Возвращает время расчета компонента без времени расчета дочерних компонент (мс)
-RDK_LIB_TYPE long long RDK_CALL Model_GetStepDuration(const char *stringid);
-RDK_LIB_TYPE long long RDK_CALL MModel_GetStepDuration(int engine_index, const char *stringid);
+RDK_LIB_TYPE unsigned long long RDK_CALL Model_GetStepDuration(const char *stringid);
+RDK_LIB_TYPE unsigned long long RDK_CALL MModel_GetStepDuration(int engine_index, const char *stringid);
 
 // Возвращает время, затраченное на обработку объекта
 // (вместе со времени расчета дочерних компонент) (мс)
-RDK_LIB_TYPE long long RDK_CALL Model_GetFullStepDuration(const char *stringid);
-RDK_LIB_TYPE long long RDK_CALL MModel_GetFullStepDuration(int engine_index, const char *stringid);
+RDK_LIB_TYPE unsigned long long RDK_CALL Model_GetFullStepDuration(const char *stringid);
+RDK_LIB_TYPE unsigned long long RDK_CALL MModel_GetFullStepDuration(int engine_index, const char *stringid);
 
 // Возвращает мгновенное быстродействие, равное отношению
 // полного затраченного времени к ожидаемому времени шага счета
@@ -727,8 +904,8 @@ RDK_LIB_TYPE double RDK_CALL Model_GetInstantPerformance(const char *stringid);
 RDK_LIB_TYPE double RDK_CALL MModel_GetInstantPerformance(int engine_index, const char *stringid);
 
 // Время, прошедшее между двумя последними итерациями счета
-RDK_LIB_TYPE long long RDK_CALL Model_GetInterstepsInterval(const char *stringid);
-RDK_LIB_TYPE long long RDK_CALL MModel_GetInterstepsInterval(int engine_index, const char *stringid);
+RDK_LIB_TYPE unsigned long long RDK_CALL Model_GetInterstepsInterval(const char *stringid);
+RDK_LIB_TYPE unsigned long long RDK_CALL MModel_GetInterstepsInterval(int engine_index, const char *stringid);
 // --------------------------
 
 // --------------------------
@@ -745,9 +922,29 @@ RDK_LIB_TYPE const /* RDK::MDMatrix* */void* RDK_CALL Model_GetComponentOutputAs
 RDK_LIB_TYPE const /* RDK::UBitmap* */void* RDK_CALL Model_GetComponentOutput(const char *stringid, const char *property_name);
 RDK_LIB_TYPE const /* RDK::UBitmap* */void* RDK_CALL Model_GetComponentOutputByIndex(const char *stringid, int index);
 
+RDK_LIB_TYPE const /* RDK::UBitmap* */void* RDK_CALL MModel_GetComponentOutput(int engine_index, const char *stringid, const char *property_name);
+RDK_LIB_TYPE const /* RDK::UBitmap* */void* RDK_CALL MModel_GetComponentOutputByIndex(int engine_index, const char *stringid, int index);
+
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
 RDK_LIB_TYPE const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapOutput(const char *stringid, const char *property_name);
 RDK_LIB_TYPE const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapOutputByIndex(const char *stringid, int index);
+
+RDK_LIB_TYPE const /*RDK::UBitmap* */ void* RDK_CALL MModel_GetComponentBitmapOutput(int engine_index, const char *stringid, const char *property_name);
+RDK_LIB_TYPE const /*RDK::UBitmap* */ void* RDK_CALL MModel_GetComponentBitmapOutputByIndex(int engine_index, const char *stringid, int index);
+
+/// Копирует данные о разрешении изображения выхода с индексом 'index' компонента 'id'
+/// в стрктуру bmp_param
+RDK_LIB_TYPE int RDK_CALL Model_CopyComponentBitmapOutputHeader(const char *stringid, const char *property_name, /*RDK::UBitmapParam* */ void* bmp_param);
+RDK_LIB_TYPE int RDK_CALL MModel_CopyComponentBitmapOutputHeader(int engine_index, const char *stringid, const char *property_name, /*RDK::UBitmapParam* */ void* bmp_param);
+RDK_LIB_TYPE int RDK_CALL Model_CopyComponentBitmapOutputHeaderByIndex(const char *stringid, int index, /*RDK::UBitmapParam* */ void* bmp_param);
+RDK_LIB_TYPE int RDK_CALL MModel_CopyComponentBitmapOutputHeaderByIndex(int engine_index, const char *stringid, int index, /*RDK::UBitmapParam* */ void* bmp_param);
+
+/// Копирует изображение выхода с индексом 'index' компонента 'id'
+/// метод предполагает, что bmp уже имеет выделенную память под изобржение требуемого размера
+RDK_LIB_TYPE int RDK_CALL Model_CopyComponentBitmapOutput(const char *stringid, const char *property_name, /*RDK::UBitmap**/void* bmp);
+RDK_LIB_TYPE int RDK_CALL MModel_CopyComponentBitmapOutput(int engine_index, const char *stringid, const char *property_name, /*RDK::UBitmap**/void* bmp);
+RDK_LIB_TYPE int RDK_CALL Model_CopyComponentBitmapOutputByIndex(const char *stringid, int index, /*RDK::UBitmap**/void* bmp);
+RDK_LIB_TYPE int RDK_CALL MModel_CopyComponentBitmapOutputByIndex(int engine_index, const char *stringid, int index, /*RDK::UBitmap**/void* bmp);
 
 // Возвращает указатель на вход с индексом 'index' компонента 'id'
 RDK_LIB_TYPE const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapInput(const char *stringid, const char *property_name);
@@ -756,11 +953,14 @@ RDK_LIB_TYPE const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapInp
 // Замещает изображение выхода с индексом 'index' компонента 'id'
 RDK_LIB_TYPE void RDK_CALL Model_SetComponentBitmapOutput(const char *stringid, const char *property_name, const /*RDK::UBitmap* */ void* const bmp, bool reflect=false);
 RDK_LIB_TYPE void RDK_CALL MModel_SetComponentBitmapOutput(int engine_index, const char *stringid, const char *property_name, const /*RDK::UBitmap* */ void* const bmp, bool reflect=false);
+RDK_LIB_TYPE void RDK_CALL MModel_SetComponentBitmapOutputUnsafe(int engine_index, const char *stringid, const char *property_name, const /*RDK::UBitmap* */ void* const bmp, bool reflect=false);
+
 RDK_LIB_TYPE void RDK_CALL Model_SetComponentBitmapOutputByIndex(const char *stringid, int index, const /*RDK::UBitmap* */ void* const bmp, bool reflect=false);
 RDK_LIB_TYPE void RDK_CALL MModel_SetComponentBitmapOutputByIndex(int engine_index, const char *stringid, int index, const /*RDK::UBitmap* */ void* const bmp, bool reflect=false);
 
 // Замещает изображение входа с индексом 'index' компонента 'id'
 RDK_LIB_TYPE void RDK_CALL Model_SetComponentBitmapInput(const char *stringid, const char *property_name, const /*RDK::UBitmap* */ void* const bmp, bool reflect=false);
+RDK_LIB_TYPE void RDK_CALL MModel_SetComponentBitmapInput(int engine_index, const char *stringid, const char *property_name, const /*RDK::UBitmap* */ void* const bmp, bool reflect=false);
 RDK_LIB_TYPE void RDK_CALL Model_SetComponentBitmapInputByIndex(const char *stringid, int index, const /*RDK::UBitmap* */ void* const bmp, bool reflect=false);
 // --------------------------
 
@@ -774,14 +974,31 @@ RDK_LIB_TYPE bool RDK_CALL Engine_SetExceptionHandler(void* value);
 RDK_LIB_TYPE bool RDK_CALL MEngine_SetExceptionHandler(int engine_index, void* value);
 
 // Возвращает массив строк лога
-RDK_LIB_TYPE const char* RDK_CALL Engine_GetLog(void);
-RDK_LIB_TYPE const char* RDK_CALL MEngine_GetLog(int engine_index);
+RDK_LIB_TYPE const char* RDK_CALL Engine_GetLog(int &error_level);
+RDK_LIB_TYPE const char* RDK_CALL MEngine_GetLog(int engine_index, int &error_level);
 
 // Возвращает частичный массив строк лога с момента последнего считывания лога
 // этой функцией
-RDK_LIB_TYPE const char* RDK_CALL Engine_GetUnreadLog(void);
-RDK_LIB_TYPE const char* RDK_CALL MEngine_GetUnreadLog(int engine_index);
+RDK_LIB_TYPE const char* RDK_CALL Engine_GetUnreadLog(int &error_level);
+RDK_LIB_TYPE const char* RDK_CALL MEngine_GetUnreadLog(int engine_index, int &error_level);
+RDK_LIB_TYPE const char* RDK_CALL Engine_GetUnreadLogUnsafe(int &error_level);
+RDK_LIB_TYPE const char* RDK_CALL MEngine_GetUnreadLogUnsafe(int engine_index, int &error_level);
+
+// Записывает в лог новое сообщение
+RDK_LIB_TYPE int RDK_CALL Engine_LogMessage(int log_level, const char *message);
+RDK_LIB_TYPE int RDK_CALL MEngine_LogMessage(int engine_index, int log_level, const char *message);
+
+/// Возвращает число непрочитанных строк лога
+RDK_LIB_TYPE int RDK_CALL Engine_GetNumUnreadLogLines(void);
+RDK_LIB_TYPE int RDK_CALL MEngine_GetNumUnreadLogLines(int engine_index);
+
+/// Очищает лог прочитанных сообщений
+RDK_LIB_TYPE void RDK_CALL Engine_ClearReadLog(void);
+RDK_LIB_TYPE void RDK_CALL MEngine_ClearReadLog(int engine_index);
 // ----------------------------
+
+// Здесь RDK_CALL не нужен!
+RDK_LIB_TYPE void tss_cleanup_implemented(void);
 
 #ifdef __cplusplus
 }

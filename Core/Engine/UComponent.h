@@ -18,6 +18,7 @@ See file license.txt for more information
 #include "UEnvSupport.h"
 #include "UEPtr.h"
 #include "UContainerDescription.h"
+#include "UTime.h"
 #include "../Serialize/Serialize.h"
 
 #ifndef RDK_PROPERTY_TYPES
@@ -59,7 +60,7 @@ class UIProperty;
 class UIShare;
 
 // Хранилище свойств параметра
-struct UVariable
+struct RDK_LIB_TYPE UVariable
 {
 // Указатель на свойство
 UEPtr<UIProperty> Property;
@@ -106,7 +107,7 @@ bool CheckMask(unsigned int mask) const;
 };
 
 
-class UComponent: public UModule
+class RDK_LIB_TYPE UComponent: public UModule
 {
 friend class UStorage;
 public: // Типы данных
@@ -122,6 +123,10 @@ public: // Классы описания исключений
 class IException: public UException {};
 
 protected: // Основные свойства
+// Флаг, определяющий компонент является статическим
+// или динамическим
+bool StaticFlag;
+
 // Указатель на владельца этим объектом
 UEPtr<UComponent> Owner;
 
@@ -152,6 +157,10 @@ protected:
 ShareMapT ShareLookupTable;
 
 
+protected: // Временные переменные
+/// Заглушка, возвращаемая в случае остутствия доступа к Environment::Time
+static UTimeControl DummyTime;
+
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
@@ -163,6 +172,11 @@ virtual ~UComponent(void);
 // --------------------------
 // Методы доступа к свойствам
 // --------------------------
+// Возвращает флаг, определяющий компонент является статическим
+// или динамическим
+bool GetStaticFlag(void) const;
+virtual bool SetStaticFlag(bool value);
+
 // Возвращает владелца этого объекта
 UEPtr<UComponent> const GetOwner(void) const;
 virtual bool SetOwner(UEPtr<UComponent> owner);
@@ -178,6 +192,11 @@ virtual bool SetStorage(UEPtr<UStorage> storage);
 // Возвращает среду выполнения этого объекта
 UEPtr<UEnvironment> const GetEnvironment(void) const;
 virtual bool SetEnvironment(UEPtr<UEnvironment> environment);
+
+/// Возвращает ссылку на класс управления времени из Environment.
+/// Если Environment отсутствует то возвращает указатель на заглушку
+/// DummyTime
+const UTimeControl& GetTime(void) const;
 // --------------------------
 
 // --------------------------
@@ -186,6 +205,10 @@ virtual bool SetEnvironment(UEPtr<UEnvironment> environment);
 // Идентификатор класса
 UId GetClass(void) const;
 bool SetClass(UId value);
+
+
+// Возвращает имя класса компоненты
+const NameT GetCompClassName(void) const;
 // --------------------------
 
 // --------------------------
@@ -200,11 +223,17 @@ virtual UContainerDescription* ANewDescription(UComponentDescription* descriptio
 
 // Уничтожение этого объекта
 void Free(void);
+
+protected:
+/// Осуществляет обновление внутренних данных компонента, обеспечивающих его целостность
+virtual void UpdateInternalData(void);
+virtual void AUpdateInternalData(void);
 // --------------------------
 
 // --------------------------
 // Методы доступа к параметрам
 // --------------------------
+public:
 // Возвращает указатель на данные свойства
 UEPtr<UIProperty> FindProperty(const NameT &name);
 
@@ -317,7 +346,7 @@ EStateNameAlreadyExist(const std::string &name) : ENameAlreadyExist(name) {};
 };
 
 // Класс сериализации свойств
-class UIProperty
+class RDK_LIB_TYPE UIProperty
 {
 public:
 // Метод устанавливает значение указателя на итератор-хранилище данных об этом
@@ -430,7 +459,7 @@ EPropertySetterFail(const std::string &owner_name, const std::string &property_n
 };
 
 // Класс управления общими свойствами
-class UIShare
+class RDK_LIB_TYPE UIShare
 {
 public:
  // Метод возвращает Id общего свойства

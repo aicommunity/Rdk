@@ -25,6 +25,13 @@ __fastcall TUDrawEngineForm::TUDrawEngineForm(TComponent* Owner)
  UpdateInterval=-1;
  DragDropFlag=false;
  LongLinkFlag=false;
+ FontSize=12;
+ StartX=0;
+ StartY=0;
+ StopX=0;
+ StopY=0;
+ PopupX=0;
+ PopupY=0;
 }
 
 // -----------------------------
@@ -62,6 +69,7 @@ void TUDrawEngineForm::AUpdateInterface(void)
   const char *xml=Model_SaveComponentDrawInfo(ComponentName.c_str());
   if(xml)
    NetXml.Load(xml,"");
+  Engine_FreeBufString(xml);
 
    // RichEdit1->Text=xml;
   DrawEngine.SetNetXml(NetXml);
@@ -123,6 +131,13 @@ void TUDrawEngineForm::AUpdateInterface(void)
 
  RectWidthLabeledEdit->Text=IntToStr(DrawEngine.GetRectWidth());
  RectHeightLabeledEdit->Text=IntToStr(DrawEngine.GetRectHeight());
+}
+
+
+// Возврат интерфейса в исходное состояние
+void TUDrawEngineForm::AClearInterface(void)
+{
+ NetXml.Destroy();
 }
 
 // Сохраняет параметры интерфейса в xml
@@ -377,6 +392,7 @@ void __fastcall TUDrawEngineForm::ImageDragDrop(TObject *Sender, TObject *Source
  if(pname)
  {
   std::string name=pname;
+  Engine_FreeBufString(pname);
   UpdateInterfaceFlag=true;
   ReloadNet();
   UpdateInterfaceFlag=false;

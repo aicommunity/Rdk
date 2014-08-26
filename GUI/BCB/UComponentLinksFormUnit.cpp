@@ -17,6 +17,11 @@ __fastcall TUComponentLinksForm::TUComponentLinksForm(TComponent* Owner)
 {
 }
 
+void TUComponentLinksForm::AUpdateInterface(void)
+{
+
+}
+
 // Создание копии этого компонента
 TUComponentLinksForm* TUComponentLinksForm::New(TComponent *owner)
 {

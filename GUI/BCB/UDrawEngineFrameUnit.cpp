@@ -27,6 +27,14 @@ __fastcall TUDrawEngineFrame::TUDrawEngineFrame(TComponent* Owner)
  UpdateInterval=-1;
  DragDropFlag=false;
  LongLinkFlag=false;
+ MoveFlag=false;
+ FontSize=12;
+ StartX=0;
+ StartY=0;
+ StopX=0;
+ StopY=0;
+ PopupX=0;
+ PopupY=0;
 }
 
 // -----------------------------
@@ -64,6 +72,7 @@ void TUDrawEngineFrame::AUpdateInterface(void)
   const char *xml=Model_SaveComponentDrawInfo(ComponentName.c_str());
   if(xml)
    NetXml.Load(xml,"");
+  Engine_FreeBufString(xml);
 
    // RichEdit1->Text=xml;
   DrawEngine.SetNetXml(NetXml);
@@ -125,6 +134,13 @@ void TUDrawEngineFrame::AUpdateInterface(void)
 
  RectWidthLabeledEdit->Text=IntToStr(DrawEngine.GetRectWidth());
  RectHeightLabeledEdit->Text=IntToStr(DrawEngine.GetRectHeight());
+ UClassesListFrame->UpdateInterface();
+}
+
+// Возврат интерфейса в исходное состояние
+void TUDrawEngineFrame::AClearInterface(void)
+{
+ NetXml.Destroy();
 }
 
 // Сохраняет параметры интерфейса в xml
@@ -156,9 +172,9 @@ void TUDrawEngineFrame::ALoadParameters(RDK::USerStorageXML &xml)
  BreakLinkComponentName.clear();
  FontFileName.clear();
 
- FontType=xml.ReadString("FontType","Times New Roman");
- FontSize=xml.ReadInteger("FontSize",15);
- DrawEngine.SetRectWidth(xml.ReadInteger("RectWidth",80));
+ FontType=xml.ReadString("FontType","Tahoma");
+ FontSize=xml.ReadInteger("FontSize",16);
+ DrawEngine.SetRectWidth(xml.ReadInteger("RectWidth",100));
  DrawEngine.SetRectHeight(xml.ReadInteger("RectHeight",25));
 
  RDK::UBitmapFont* font=dynamic_cast<RDK::UBitmapFont*>(RDK::GlobalFonts.GetFont(FontType,FontSize));
@@ -198,7 +214,6 @@ void TUDrawEngineFrame::ReloadNet(void)
  if(Visible)
   UpdateInterface(false);
 }
-
 
 void TUDrawEngineFrame::SelectComponent(const std::string &comp_name)
 {
@@ -242,7 +257,8 @@ void __fastcall TUDrawEngineFrame::ImageMouseDown(TObject *Sender, TMouseButton 
   std::string name=DrawEngine.FindComponent(X,Y);
   TPoint pos=Mouse->CursorPos;
   PopupX=X; PopupY=Y;
-  if(!name.empty())
+//  if(!name.empty())
+  if((X<10 || Y<10 || X>Image->Width-10 || Y>Image->Height-10) || !name.empty())
    PopupMenu->Popup(pos.X,pos.Y);
   return;
  }
@@ -383,6 +399,7 @@ void __fastcall TUDrawEngineFrame::ImageDragDrop(TObject *Sender, TObject *Sourc
  if(pname)
  {
   std::string name=pname;
+  Engine_FreeBufString(pname);
   UpdateInterfaceFlag=true;
   ReloadNet();
   UpdateInterfaceFlag=false;
@@ -399,14 +416,9 @@ void __fastcall TUDrawEngineFrame::ImageDragDrop(TObject *Sender, TObject *Sourc
 void __fastcall TUDrawEngineFrame::ImageDragOver(TObject *Sender, TObject *Source,
           int X, int Y, TDragState State, bool &Accept)
 {
- if(Source == UClassesListFrame->StringGrid)
+ if(Source == UClassesListFrame->StringGrid || Source == UClassesListFrame->LibComponentListStringGrid)
  {
-     Accept = true;
-    // установка изображения курсора
-//    if(State == dsDragLeave)
-//      Source->DragCursor = crDrag;
-//    if((State == dsDragEnter)  && UClassesListFrame->StringGrid->Row >= 1))
-//      Source->DragCursor = crMultiDrag;
+	 Accept = true;
  }
 
 }
@@ -484,6 +496,7 @@ void __fastcall TUDrawEngineFrame::FontTypeComboBoxSelect(TObject *Sender)
 
 void __fastcall TUDrawEngineFrame::Createlonglink1Click(TObject *Sender)
 {
+ StartMoving1->Enabled=false;
  LongLinkFlag=true;
  Image->Cursor=crCross;
  Createlonglink1->Enabled=false;
@@ -497,10 +510,13 @@ void __fastcall TUDrawEngineFrame::Createlonglink1Click(TObject *Sender)
  }
  else
  {
-  StartName=ComponentName+std::string(".")+DrawEngine.FindComponent(PopupX,PopupY);
+  std::string found=DrawEngine.FindComponent(PopupX,PopupY);
+  if(!found.empty())
+   StartName=ComponentName+std::string(".")+found;
+  else
+   StartName=ComponentName;
  }
 
- //StartX=PopupX; StartY=PopupY;
  PopupX=-1;
  PopupY=-1;
 }
@@ -514,37 +530,24 @@ void __fastcall TUDrawEngineFrame::Finishlonglink1Click(TObject *Sender)
  }
  else
  {
-  StopName=ComponentName+std::string(".")+DrawEngine.FindComponent(PopupX,PopupY);
+  std::string found=DrawEngine.FindComponent(PopupX,PopupY);
+  if(!found.empty())
+   StopName=ComponentName+std::string(".")+found;
+  else
+   StopName=ComponentName;
  }
  PopupX=-1;
  PopupY=-1;
 
- if(StartName.empty() || StopName.empty())
-  return;
+// if(StartName.empty() || StopName.empty())
+//  return;
 
- // Отображаем окно установки связи
-/* std::string full_start_name;
- std::string full_stop_name;
- if(ComponentName.empty())
- {
-  full_start_name=StartName;
-  full_stop_name=StopName;
- }
- else
- {
-  full_start_name=ComponentName+std::string(".")+StartName;
-  full_stop_name=ComponentName+std::string(".")+StopName;
- }
-
- UComponentLinksForm->UComponentLinksFrame->Init(1, full_start_name,ComponentName,full_stop_name);
-  */
  UComponentLinksForm->UComponentLinksFrame->Init(1, StartName,"",StopName);
  if(UComponentLinksForm->Visible)
   UComponentLinksForm->Hide();
  if(UComponentLinksForm->ShowModal() == mrOk)
  {
   UComponentLinksForm->UComponentLinksFrame->UpdateInterface();
-//   SetNet(UComponentsControlForm->ComponentsControlFrame->ComponentsListFrame->GetCurrentComponentName());
   ReloadNet();
   UpdateInterface();
  }
@@ -563,6 +566,7 @@ void __fastcall TUDrawEngineFrame::Cancellonglink1Click(TObject *Sender)
  Finishlonglink1->Enabled=false;
  Cancellonglink1->Enabled=false;
  Breakinputlink1->Enabled=true;
+ StartMoving1->Enabled=true;
  Image->Cursor=crDefault;
  LongLinkFlag=false;
 }
@@ -606,6 +610,119 @@ void __fastcall TUDrawEngineFrame::UClassesListFrameTreeViewMouseUp(TObject *Sen
 {
  UClassesListFrame->StringGrid->DragMode=dmManual;
  DragDropFlag=false;
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TUDrawEngineFrame::UClassesListFrameLibComponentListStringGridMouseMove(TObject *Sender,
+          TShiftState Shift, int X, int Y)
+{
+ if(Shift.Contains(ssLeft))
+ {
+  UClassesListFrame->LibComponentListStringGrid->BeginDrag(true);
+  DragDropFlag=true;
+ }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUDrawEngineFrame::UClassesListFrameLibComponentListStringGridMouseUp(TObject *Sender,
+          TMouseButton Button, TShiftState Shift, int X, int Y)
+{
+ UClassesListFrame->LibComponentListStringGrid->DragMode=dmManual;
+ DragDropFlag=false;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUDrawEngineFrame::UClassesListFrameAddClassButtonClick(TObject *Sender)
+
+{
+ UClassesListFrame->NewClassName="NewClass1";
+ UClassesListFrame->NewComponentName=ComponentsListFrame->GetSelectedComponentName();
+ UClassesListFrame->AddClassButtonClick(Sender);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUDrawEngineFrame::StartMoving1Click(TObject *Sender)
+{
+ LongLinkFlag=true;
+ Image->Cursor=crCross;
+ Createlonglink1->Enabled=false;
+ StartMoving1->Enabled=false;
+ Finishmoving1->Enabled=true;
+ Cancelmoving1->Enabled=true;
+
+ if(ComponentName.empty())
+ {
+  StartName=DrawEngine.FindComponent(PopupX,PopupY);
+ }
+ else
+ {
+  std::string found=DrawEngine.FindComponent(PopupX,PopupY);
+  if(!found.empty())
+   StartName=ComponentName+std::string(".")+found;
+  else
+   StartName=ComponentName;
+ }
+
+ PopupX=-1;
+ PopupY=-1;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUDrawEngineFrame::Finishmoving1Click(TObject *Sender)
+{
+ if(ComponentName.empty())
+ {
+  StopName=DrawEngine.FindComponent(PopupX,PopupY);
+ }
+ else
+ {
+  std::string found=DrawEngine.FindComponent(PopupX,PopupY);
+  if(!found.empty())
+   StopName=ComponentName+std::string(".")+found;
+  else
+   StopName=ComponentName;
+ }
+ PopupX=-1;
+ PopupY=-1;
+
+// if(StartName.empty() || StopName.empty())
+//  return;
+
+ if(StartName.empty())
+ {
+  // TODO тут собощение об ошибке -нельзя двигать модель
+  Cancelmoving1Click(Sender);
+  return;
+ }
+
+ if(Model_MoveComponent(StartName.c_str(),StopName.c_str()) != 0)
+ {
+  // TODO тут собощение об ошибке перемещения
+  Cancelmoving1Click(Sender);
+  return;
+ }
+
+ UComponentLinksForm->UComponentLinksFrame->UpdateInterface();
+ ReloadNet();
+ UpdateInterface();
+
+ Cancelmoving1Click(Sender);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUDrawEngineFrame::Cancelmoving1Click(TObject *Sender)
+{
+ StartX=StartY=StopX=StopY=-1;
+ StartName.clear();
+ StopName.clear();
+
+ StartMoving1->Enabled=true;
+ Finishmoving1->Enabled=false;
+ Cancelmoving1->Enabled=false;
+ Createlonglink1->Enabled=true;
+ Image->Cursor=crDefault;
+ LongLinkFlag=false;
 }
 //---------------------------------------------------------------------------
 

@@ -20,7 +20,7 @@ namespace RDK {
 
 class UAFont;
 
-class UGraphics: public UAGraphics
+class RDK_LIB_TYPE UGraphics: public UAGraphics
 {
 protected: // Данные
 // Список шрифтов
@@ -28,9 +28,6 @@ map<string,UBitmapFont> Fonts;
 
 // Канва рисования
 UBitmap* Canvas;
-
-// Шрифт
-UAFont *Font;
 
 public: // Методы
 // --------------------------
@@ -49,12 +46,6 @@ UBitmap* GetCanvas(void);
 
 // Задает канву рисования
 bool SetCanvas(UBitmap *canvas);
-
-// Устанавливает шрифт
-bool SetFont(UAFont* font);
-
-// Возвращает текущий шрифт
-UAFont* GetFont(void);
 // --------------------------
 
 // --------------------------

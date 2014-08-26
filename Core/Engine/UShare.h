@@ -194,6 +194,9 @@ virtual bool Init(UEPtr<UComponent> main_owner)
 {
  UEPtr<MainOwnerT> main_owner_cast=dynamic_pointer_cast<MainOwnerT>(main_owner);
 
+ if(!main_owner_cast)
+  return true;
+
  UComponent::VariableMapCIteratorT I=main_owner_cast->GetPropertiesList().find(PropertyName);
  if(I != main_owner_cast->GetPropertiesList().end())
  {

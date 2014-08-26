@@ -8,7 +8,7 @@ PUsm_SetNumPipes Usm_SetNumPipes=0;
 PUsm_InitPipe Usm_InitPipe=0;
 PUsm_WriteData Usm_WriteData=0;
 PUsm_ReadData Usm_ReadData=0;
-PUsm_InitPipe Usm_UnInitPipe=0;
+PUsm_UnInitPipe Usm_UnInitPipe=0;
 PUsm_IsPipeInit Usm_IsPipeInit=0;
 PUsm_GetPipeSize Usm_GetPipeSize=0;
 

@@ -1,9 +1,11 @@
-п»ї#ifndef RDK_SYSTEM_WIN_CPP
+#ifndef RDK_SYSTEM_WIN_CPP
 #define RDK_SYSTEM_WIN_CPP
 
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include "../rdk_system.h"
 #include "USharedMemoryLoader.win.cpp"
+#include "UGenericMutex.win.cpp"
 
 namespace RDK {
 
@@ -27,7 +29,7 @@ unsigned long long CalcDiffTime(unsigned long long time1, unsigned long long tim
 void Sleep(int value)
 {
  ::Sleep(value);
-}
+}                                  
 
 // Создает каталог
 // Возвращает 0 в случае успеха или если каталог уже существует
@@ -36,10 +38,10 @@ void Sleep(int value)
 // 3 - если произошла другая ошибка
 int CreateNewDirectory(const char* path)
 {
- DWORD dwFileAttributes = GetFileAttributes(path);
+ DWORD dwFileAttributes = GetFileAttributesA(path);
  if(dwFileAttributes == INVALID_FILE_ATTRIBUTES || (dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
  {
-  if(!::CreateDirectory(path, 0))
+  if(!::CreateDirectoryA(path, 0))
   {
    if(GetLastError() == ERROR_PATH_NOT_FOUND)
     return 2;
@@ -55,16 +57,17 @@ int CreateNewDirectory(const char* path)
 
 //---------------------------------------------------------------------------
 
+
 // Получает список файлов или каталогов по заданному пути
 int FindFilesList(const std::string &path, const std::string &mask, bool isfile, std::vector<std::string> &results)
 {
    results.clear();
    HANDLE findhandle;
  std::string filemask=path+mask;
- WIN32_FIND_DATA finddata;
+ WIN32_FIND_DATAA finddata;
  std::string samplefilename;
 
- findhandle=FindFirstFile(
+ findhandle=FindFirstFileA(
     filemask.c_str(),    // pointer to name of file to search for
     &finddata     // pointer to returned information
     );
@@ -73,6 +76,7 @@ int FindFilesList(const std::string &path, const std::string &mask, bool isfile,
  {
   do
   {      
+    samplefilename=finddata.cFileName;
  //  samplefilename=AnsiString(ExtractFileName(finddata.cFileName)).c_str();
    std::string::size_type i=samplefilename.find_last_of("\\/");
    if(i != std::string::npos)
@@ -83,7 +87,7 @@ int FindFilesList(const std::string &path, const std::string &mask, bool isfile,
     results.push_back(samplefilename);
    }
 
-  } while(FindNextFile(findhandle,&finddata));
+  } while(FindNextFileA(findhandle,&finddata));
  }
  FindClose(findhandle);
  return 0;
@@ -91,7 +95,7 @@ int FindFilesList(const std::string &path, const std::string &mask, bool isfile,
 
 int CopyFile(const std::string &source_file, const std::string &dest_file)
 {
- if(CopyFileEx(source_file.c_str(), dest_file.c_str(),0,0,
+ if(CopyFileExA(source_file.c_str(), dest_file.c_str(),0,0,
   false, COPY_FILE_OPEN_SOURCE_FOR_WRITE))
   return 0;
 

@@ -57,12 +57,14 @@ void TUFavoriteData::ReadData(void)
   value=Model_GetComponentParameterValue(ComponentName.c_str(), DataName.c_str());
   if(value)
    Data=value;
+  Engine_FreeBufString(value);
  break;
 
  case 2:
   value=Model_GetComponentStateValue(ComponentName.c_str(), DataName.c_str());
   if(value)
    Data=value;
+  Engine_FreeBufString(value);
  break;
 
  case 3:
@@ -214,6 +216,13 @@ void TUFavoriteComponentInfoFrame::AUpdateInterface(void)
   StringGrid->Cells[0][i+1]=Info[i].Header.c_str();
   StringGrid->Cells[1][i+1]=Info[i].Data.c_str();
  }
+}
+
+
+// Возврат интерфейса в исходное состояние
+void TUFavoriteComponentInfoFrame::AClearInterface(void)
+{
+ Info.clear();
 }
 
 // Сохраняет параметры интерфейса в xml

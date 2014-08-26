@@ -23,40 +23,30 @@ namespace RDK{
 //using namespace RDK;
 
 
-class UEngine: public UModule
+class RDK_LIB_TYPE UEngine: public UModule
 {
 public:
-// Создает новое хранилище
-//typedef RDK::UAContainerStorage* (*PCreateNewStorage)(void);
-
-// Создает новую среду
-//typedef RDK::UAContainerEnvironment* (*PCreateNewEnvironment)(void);
-
 // Прототип функции обратного вызова обработчика исключений
-typedef void (*PExceptionHandler)(void);
+//typedef void (*PExceptionHandler)(void);
 
 protected: // Параметры инициализации
-// Указатели на функции создания экземпляров хранилища и среды
-//PCreateNewStorage FuncCreateNewStorage;
-//PCreateNewEnvironment FuncCreateNewEnvironment;
-
 // Имя файла инициализации
 string OptionsFileName;
 
 // Имя файла описаний параметров классов
 string ClassesDescriptionFileName;
 
-// Имя секции выбора основной библиотеки
-//string MainLibrarySectionName;
-
-// Имя переменной основной библиотеки
-//string MainLibraryName;
-
 // Имя секции выбора библиотек компонент
 string ComponentLibrariesSectionName;
 
 // Имя секции выбора классов компонент
 string ComponentClassesSectionName;
+
+/// Режим создания внутренних временных переменных для
+/// возвращаемых значений
+/// 0 - одна переменная для всех методов, возвращающих такой тип
+/// 1 - уникальные переменные с необходимостью вызвова функции очистки
+int BufObjectsMode;
 
 // Индекс используемого хранилища в библиотеке
 // Если < 0, то новое хранилище будет создано
@@ -74,6 +64,9 @@ protected: // Переменные состояния
 // -1 - система отключена
 int Runned;
 
+/// Индекс текущего канала в многоканальной библиотеке
+int ChannelIndex;
+
 protected: // Данные
 // Данные инициализации
 UIniFile<char> Options;
@@ -89,14 +82,14 @@ protected: // Обработка исключений
 //mutable vector<USharedPtr<UException> > ExceptionsLog;
 
 // Текущее число исключений системы
-mutable int CurrentExceptionsLogSize;
+//mutable int CurrentExceptionsLogSize;
 
 // Максимальное число хранимых исключений
 // Если 0, то неограниченно
-int MaxExceptionsLogSize;
+//int MaxExceptionsLogSize;
 
 // Внешний обработчик исключений
-PExceptionHandler ExceptionHandler;
+//PExceptionHandler ExceptionHandler;
 
 protected: // Временные переменные
 // Список загруженных библиотек
@@ -108,18 +101,28 @@ std::list<UContainer*> ClassesList;
 RDK::USerStorageXML XmlStorage;
 
 // Временное хранилище строк
-mutable string TempString;
+mutable std::list<UEPtr<string> > TempStrings;
+mutable string DummyTempString;
 
 // Временное хранилище буфера для лога
-mutable string TempLogString;
+//mutable string TempLogString;
 
 // Временное хранилище имени компонента
 mutable string CompName;
 
 // Индекс последнего считанного символа лога исключений
-int LastReadExceptionLogIndex;
+//int LastReadExceptionLogIndex;
 
 UBitmap TempBmp;
+
+public:
+// Временное хранилище строк
+//mutable string PubTempString;
+
+/// Кеш быстрого доступа к компонентам
+mutable std::map<std::string, UEPtr<UContainer> > AccessCache;
+
+
 
 public: // Методы
 // --------------------------
@@ -132,6 +135,13 @@ virtual ~UEngine(void);
 // --------------------------
 // Методы управления параметрами инициализации
 // --------------------------
+/// Режим создания внутренних временных переменных для
+/// возвращаемых значений
+/// 0 - одна переменная для всех методов, возвращающих такой тип
+/// 1 - уникальные переменные с необходимостью вызвова функции очистки
+int GetBufObjectsMode(void) const;
+bool SetBufObjectsMode(int mode);
+
 // Указатели на функции создания экземпляров хранилища и среды
 /*UEngine::PCreateNewStorage GetFuncCreateNewStorage(void) const;
 bool SetFuncCreateNewStorage(UEngine::PCreateNewStorage value);
@@ -144,12 +154,41 @@ const string& GetOptionsFileName(void) const;
 bool SetOptionsFileName(const string& value);
 // --------------------------
 
+// --------------------------
+// Методы управления временными переменными
+// --------------------------
+/// Создает в списке временных строку новую строку
+/// и возвращает ссылку на нее
+std::string& CreateTempString(void) const;
+
+/// Возвращает временную строку
+/// по указателю на ее данные
+std::string& FindTempString(const char *str_data) const;
+
+/// Удаляет временную строку
+/// по указателю на ее данные
+void DestroyTempString(const char *str_data) const;
+
+/// Удаляет временную строку
+/// по ссылке на нее
+void DestroyTempString(const std::string &ref) const;
+
+/// Удаляет все временные строк
+void ClearAllTempStrings(void) const;
+
+/// Возвращает число временных строк
+int GetNumTempStrings(void) const;
+// --------------------------
 
 // --------------------------
 // Методы доступа к переменным состояния
 // --------------------------
 // Флаг работы системы
 int IsRunned(void);
+
+/// Индекс текущего канала в многоканальной библиотеке
+int GetChannelIndex(void) const;
+bool SetChannelIndex(int value);
 // --------------------------
 
 // --------------------------
@@ -243,26 +282,11 @@ virtual const char* Storage_SaveAllClassesDescription(void);
 
 // Загружает описание всех классов из xml включая общее описание
 virtual bool Storage_LoadAllClassesDescription(const char* xmltext);
+// ----------------------------
 
-// Загружает библиотеку по имени dll-файла
-virtual int Storage_LoadStorageLibrary(const char *filename);
-
-// Удаляет подключенную библиотеку из списка по индексу
-// Ответственность за освобождение памяти лежит на вызывающей стороне.
-virtual bool Storage_DelClassLibraryByIndex(int index);
-
-// Удаляет подключенную библиотеку из списка по имени
-// Ответственность за освобождение памяти лежит на вызывающей стороне.
-virtual bool Storage_DelClassLibraryByName(const char *name);
-
-// Удаляет из списка все библиотеки
-// Ответственность за освобождение памяти лежит на вызывающей стороне.
-virtual bool Storage_DelAllClassLibraries(void);
-
-// Заполняет хранилище данными библиотек
-// Операция предварительно уничтожает модель и очищает хранилище
-virtual bool Storage_BuildStorage(void);
-
+// ----------------------------
+// Методы управления коллекциями компонент
+// ----------------------------
 // Возвращает число библиотек
 virtual int Storage_GetNumClassLibraries(void) const;
 
@@ -283,9 +307,41 @@ virtual const char * Storage_GetClassLibraryNameByIndex(int index);
 // Возвращает версию библиотеки по индексу
 virtual const char * Storage_GetClassLibraryVersionByIndex(int index);
 
+// Загружает коллекцию по имени dll-файла
+virtual int Storage_LoadBinaryCollectionFromFile(const char *filename);
+
+// Загружает runtime-коллекцию
+virtual int Storage_LoadRuntimeCollectionFromFile(const char *filename);
+virtual int Storage_LoadRuntimeCollectionFromString(const char *buffer);
+
+// Сохраняет runtime-коллекцию
+virtual int Storage_SaveRuntimeCollectionToFile(const char *filename);
+virtual int Storage_SaveRuntimeCollectionToString(const char *buffer);
+
+/// Создает новую runtime-библиотеку
+virtual int Storage_CreateRuntimeCollection(const char *collection_name);
+
 // Перемещает объект в Storage как образец классов.
 // Объект удаляется из модели
-virtual int Storage_CreateClass(const char* stringid, const char *classname);
+virtual int Storage_CreateClass(const char* stringid, const char *class_name, const char *collection_name);
+
+// Удаляет подключенную библиотеку из списка по индексу
+// Ответственность за освобождение памяти лежит на вызывающей стороне.
+virtual bool Storage_DelClassLibraryByIndex(int index);
+
+// Удаляет подключенную библиотеку из списка по имени
+// Ответственность за освобождение памяти лежит на вызывающей стороне.
+virtual bool Storage_DelClassLibraryByName(const char *name);
+
+// Удаляет из списка все библиотеки
+// Ответственность за освобождение памяти лежит на вызывающей стороне.
+virtual bool Storage_DelAllClassLibraries(void);
+
+
+// Заполняет хранилище данными библиотек
+// Операция предварительно уничтожает модель и очищает хранилище
+virtual bool Storage_BuildStorage(void);
+// ----------------------------
 
 // Методы управления средой
 // ----------------------------
@@ -332,8 +388,24 @@ virtual void Env_RTCalculate(void);
 // иначе - только указанный компонент модели
 virtual int Env_Reset(const char* stringid=0);
 
+/// Метод сброса параметров на значения по умолчанию
+/// Если stringid == 0 то сбрасывает всю модель целиком,
+/// иначе - только указанный компонент модели
+/// Если subcomps == true то также сбрасывает параметры всех дочерних компонент
+virtual int Env_Default(const char* stringid, bool subcomps=false);
+
 // Производит увеличение времени модели на требуемую величину
 virtual void Env_IncreaseModelTimeByStep(void);
+
+/// Устанавливает минимальный интервал времени между шагами расчета (мс)
+/// Итерации расчета будут пропускаться до тех пор, пока время прошедшее с начала
+/// последней итерации не станет больше чем эта величина
+virtual int Env_SetMinInterstepsInterval(unsigned long long value);
+
+/// Возвращает минимальный интервал времени между шагами расчета (мс)
+/// Итерации расчета будут пропускаться до тех пор, пока время прошедшее с начала
+/// последней итерации не станет больше чем эта величина
+virtual unsigned long long Env_GetMinInterstepsInterval(void) const;
 
 // !!! Следующие методы управления текущим компонентом влияют на все
 // методы, обращающиеся к компонентам по строковому id !!!
@@ -362,6 +434,18 @@ virtual const char* Env_GetCurrentDataDir(void) const;
 
 // Устанавливает имя текущего каталога для хранения данных
 virtual int Env_SetCurrentDataDir(const char *dir);
+
+// Возвращает имя каталога бинарных файлов
+virtual const char* Env_GetSystemDir(void) const;
+
+// Устанавливает имя каталога бинарных файлов
+virtual int Env_SetSystemDir(const char *dir);
+
+/// Возвращает состояние флага отладочного режима среды
+virtual int Env_GetDebugMode(void) const;
+
+/// Устанавливает состояние флага отладочного режима среды
+virtual int Env_SetDebugMode(bool value);
 
 // Перенесено из UBEngine
 // Задает число входов среды
@@ -400,6 +484,9 @@ virtual unsigned char* Env_GetOutputImage(int index);
 
 virtual unsigned char* Env_GetOutputImageY8(int index);
 
+/// Инициирует извещение о сбое в работе источника данных
+virtual bool Env_CallSourceController(void);
+
 // Методы управления моделью
 // ----------------------------
 // Удаляет модель
@@ -429,6 +516,12 @@ virtual const char*  Model_AddComponent(const char* stringid, const char *classn
 // если stringid - пустая строка, то удаляет из самой модели
 virtual int Model_DelComponent(const char* stringid, const char *name);
 
+/// Перемещает компоненту в другой компонент
+/// Если comp не принадлежит этому компоненту, или target имеет отличный от
+/// этого компонента storage, или target не может принять в себя компонент
+/// то возвращает false и не делает ничего
+virtual int Model_MoveComponent(const char* component, const char* target);
+
 // Возвращает число всех компонент в заданного компоненте 'stringid'
 // если stringid - пустая строка, то возвращает число всех компонент модели
 virtual int Model_GetNumComponents(const char* stringid);
@@ -440,6 +533,12 @@ virtual int Model_GetComponentsList(const char* stringid, int *buffer);
 // Возвращает строку, содержащую список имен всех компонент заданного компонента 'stringid'
 // имена разделяются сипволом ','
 virtual const char* Model_GetComponentsNameList(const char* stringid);
+
+// Возвращает строку, содержащую список имен всех компонент заданного компонента 'stringid'
+// имена разделяются сипволом ',' и имеющих имя класса 'class_name'
+// Если find_all == true то поиск ведется и во всех сабкомпонентах
+//virtual const char* Model_FindComponentsByClassName(const char* stringid, const char* class_name, bool find_all=false);
+virtual const char* Model_FindComponentsByClassName(const char* stringid, const char* class_name, bool find_all=false);
 
 // Перемещает компонент с текущим индексом index или именем 'name' вверх или
 // вниз по списку на заданное число элементов
@@ -510,6 +609,10 @@ virtual const char* Model_GetComponentClassName(const char* stringid);
 // Возвращает список свойств компонента разделенный запятыми
 virtual const char* Model_GetComponentPropertiesList(const char* stringid, unsigned int type_mask);
 
+// Возвращает список имен и индексов свойств компонента разделенный запятыми
+// каждый элемент имеет вид имя_свойства:индекс_входа(выхода)
+virtual const char* Model_GetComponentPropertiesLookupList(const char* stringid, unsigned int type_mask);
+
 // Возвращает свойства компонента по идентификатору
 // Память для buffer должна быть выделена!
 virtual const char* Model_GetComponentProperties(const char *stringid, unsigned int type_mask=0xFFFFFFFF);
@@ -570,6 +673,9 @@ virtual int Model_BreakLink(const char* stringid1, const char* item_property_nam
 
 // Разрывает все связи
 virtual int Model_BreakAllLinks(void);
+
+// Разрывает связь ко входу connector_index коннектора 'connectorid'
+virtual int Model_BreakConnectorLink(const char* connectorname, int connector_index);
 
 // Разрывает все входные и выходные связи выбранного контейнера
 virtual int Model_BreakAllComponentLinks(const char* stringid);
@@ -656,65 +762,85 @@ virtual unsigned char* Model_GetComponentOutputData(const char *stringid, int in
 // переменные состояния в xml
 virtual const char* Model_SaveComponent(const char *stringid, unsigned int params_type_mask=0xFFFFFFFF);
 
+// Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
+// переменные состояния в xml
+virtual int Model_SaveComponentToFile(const char *stringid, const char* file_name, unsigned int params_type_mask=0xFFFFFFFF);
+
 // Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния из xml
 virtual int Model_LoadComponent(const char *stringid, const char* buffer);
 
+// Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
+// переменные состояния из xml
+virtual int Model_LoadComponentFromFile(const char *stringid, const char* file_name);
+
 // Сохраняет все свойства компонента и его дочерних компонент в xml
 virtual const char* Model_SaveComponentProperties(const char *stringid, unsigned int type_mask=0xFFFFFFFF);
 
+// Сохраняет все свойства компонента и его дочерних компонент в xml
+virtual int Model_SaveComponentPropertiesToFile(const char *stringid, const char* file_name, unsigned int type_mask=0xFFFFFFFF);
+
 // Загружает все свойства компонента и его дочерних компонент из xml
 virtual int Model_LoadComponentProperties(const char *stringid, const char* buffer);
+
+// Загружает все свойства компонента и его дочерних компонент из xml
+virtual int Model_LoadComponentPropertiesFromFile(const char *stringid, const char* file_name);
 
 // Сохраняет внутренние данные компонента, и его _непосредственных_ дочерних компонент, исключая
 // переменные состояния в xml
 virtual const char* Model_SaveComponentDrawInfo(const char *stringid);
 
 // Управляет шагом счета модели по умолчанию
-virtual int Model_GetDefaultTimeStep(void) const;
-virtual void Model_SetDefaultTimeStep(int value);
+virtual unsigned int Model_GetDefaultTimeStep(void) const;
+virtual void Model_SetDefaultTimeStep(unsigned int value);
 
 // Управляет шагом счета компонента
-virtual int Model_GetTimeStep(const char *stringid) const;
-virtual void Model_SetTimeStep(const char *stringid, int value);
+virtual unsigned int Model_GetTimeStep(const char *stringid) const;
+virtual void Model_SetTimeStep(const char *stringid, unsigned int value);
 
 // Устанавливает шаг счета компонента и всех его дочерних компонент
-virtual void Model_SetGlobalTimeStep(const char *stringid, int value);
+virtual void Model_SetGlobalTimeStep(const char *stringid, unsigned int value);
 
 // Возвращает текущее время модели
-virtual long long Model_GetTime(void);
+virtual unsigned long long Model_GetTime(void);
 virtual double Model_GetDoubleTime(void);
 
 // Устанавливает текущее время модели
-virtual bool Model_SetTime(long long value);
+virtual bool Model_SetTime(unsigned long long value);
 
 // Возвращает реальное время
-virtual long long Model_GetRealTime(void);
+virtual unsigned long long Model_GetRealTime(void);
 virtual double Model_GetDoubleRealTime(void);
 
 // Устанавливает реальное время
-virtual bool Model_SetRealTime(long long value);
+virtual bool Model_SetRealTime(unsigned long long value);
 
 // Увеличивает реальное время на заданную величину
-virtual bool Model_IncreaseRealTime(long long value);
+virtual bool Model_IncreaseRealTime(unsigned long long value);
 
 // Возвращает мгновенный шаг в реальном времени
-virtual long long Model_GetRealTimeStep(void);
+virtual unsigned long long Model_GetRealTimeStep(void);
 virtual double Model_GetDoubleRealTimeStep(void);
 
+// Текущее время внешних источников данных в микросекундах
+virtual double Model_GetDoubleSourceTime(void) const;
+
+// Устанавливает время внешних источников данных в днях
+virtual bool Model_SetDoubleSourceTime(double value);
+
 // Возвращает время расчета компонента без времени расчета дочерних компонент (мс)
-long long Model_GetStepDuration(const char *stringid) const;
+unsigned long long Model_GetStepDuration(const char *stringid) const;
 
 // Возвращает время, затраченное на обработку объекта
 // (вместе со времени обсчета дочерних объектов) (мс)
-long long Model_GetFullStepDuration(const char *stringid) const;
+unsigned long long Model_GetFullStepDuration(const char *stringid) const;
 
 // Возвращает мгновенное быстродействие, равное отношению
 // полного затраченного времени к ожидаемому времени шага счета
 double Model_GetInstantPerformance(const char *stringid) const;
 
 // Время, прошедшее между двумя последними итерациями счета
-long long Model_GetInterstepsInterval(const char *stringid) const;
+unsigned long long Model_GetInterstepsInterval(const char *stringid) const;
 // --------------------------
 
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
@@ -730,6 +856,16 @@ virtual const RDK::UBitmap* Model_GetComponentOutput(const char *stringid, int i
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
 virtual const RDK::UBitmap* Model_GetComponentBitmapOutput(const char *stringid, const char *property_name);
 virtual const RDK::UBitmap* Model_GetComponentBitmapOutput(const char *stringid, int index);
+
+/// Копирует данные о разрешении изображения выхода с индексом 'index' компонента 'id'
+/// в стрктуру bmp_param
+virtual int Model_CopyComponentBitmapOutputHeader(const char *stringid, const char *property_name, RDK::UBitmapParam* bmp_param);
+virtual int Model_CopyComponentBitmapOutputHeaderByIndex(const char *stringid, int index, RDK::UBitmapParam* bmp_param);
+
+/// Копирует изображение выхода с индексом 'index' компонента 'id'
+/// метод предполагает, что bmp уже имеет выделенную память под изобржение требуемого размера
+virtual int Model_CopyComponentBitmapOutput(const char *stringid, const char *property_name, RDK::UBitmap* bmp);
+virtual int Model_CopyComponentBitmapOutput(const char *stringid, int index, RDK::UBitmap* bmp);
 
 // Возвращает указатель на вход с индексом 'index' компонента 'id'
 virtual const RDK::UBitmap* Model_GetComponentBitmapInput(const char *stringid, const char *property_name);
@@ -761,15 +897,35 @@ int GetMaxExceptionsLogSize(void) const;
 void SetMaxExceptionsLogSize(int value);
 
 // Возвращает массив строк лога
-const char* GetLog(void) const;
+const char* GetLog(int &error_level) const;
 
 // Возвращает частичный массив строк лога с момента последнего считывания лога
 // этой функцией
-const char* GetUnreadLog(void);
+const char* GetUnreadLog(int &error_level);
+
+/// Записывает в лог новое сообщение
+int Engine_LogMessage(int log_level, const char *message);
 
 // Управление функцией-обработчиком исключений
-PExceptionHandler GetExceptionHandler(void) const;
-bool SetExceptionHandler(PExceptionHandler value);
+UEnvironment::PExceptionHandler GetExceptionHandler(void) const;
+bool SetExceptionHandler(UEnvironment::PExceptionHandler value);
+
+/// Очищает лог
+void ClearLog(void);
+
+/// Возвращает число непрочитанных строк лога
+int GetNumUnreadLogLines(void) const;
+
+// Возвращает строку лога с индексом i из частичного массива строк лога с
+// момента последнего считывания лога этой функцией
+const char* GetUnreadLogLine(int &error_level);
+
+// Помечает строку лога с индексом i из частичного массива строк лога с
+// момента последнего считывания как прочитанную
+//void MarkUnreadLogLineAsRead(int i);
+
+/// Очищает лог прочитанных сообщений
+void ClearReadLog(void);
 // --------------------------
 
 // --------------------------
@@ -799,6 +955,10 @@ int LoadLibraries(void);
 // Скрытые методы управления средой
 // --------------------------
 protected:
+/// Метод сброса параметров на значения по умолчанию
+/// Если subcomps == true то также сбрасывает параметры всех дочерних компонент
+//virtual bool Env_Default(RDK::UContainer* cont, bool subcomps);
+     /*
 // Возвращает свойства компонента по идентификатору
 virtual bool Model_GetComponentProperties(RDK::UContainer* cont, RDK::USerStorageXML *serstorage, unsigned int type_mask);
 
@@ -810,15 +970,15 @@ virtual bool Model_GetComponentPropertiesEx(RDK::UContainer* cont, RDK::USerStor
 
 // Устанавливает свойства компонента по идентификатору
 virtual int Model_SetComponentProperties(RDK::UContainer* cont, RDK::USerStorageXML *serstorage);
-
+   */
 // Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
 // включая этот компонент
-virtual void Model_SetGlobalComponentPropertyValue(RDK::UContainer* cont, UId classid, const char *paramname, const char *buffer);
+//virtual void Model_SetGlobalComponentPropertyValue(RDK::UContainer* cont, UId classid, const char *paramname, const char *buffer);
 
 // Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
 // и владельцем, производным от класса 'class_owner_stringid' включая этот компонент
-virtual void Model_SetGlobalOwnerComponentPropertyValue(RDK::UContainer* cont, UId classid, UId owner_classid, const char *paramname, const char *buffer);
-
+//virtual void Model_SetGlobalOwnerComponentPropertyValue(RDK::UContainer* cont, UId classid, UId owner_classid, const char *paramname, const char *buffer);
+/*
 // Возращает все связи внутри компонента cont в виде xml в буфер buffer
 // Имена формируются до уровня компонента owner_level
 // Если owner_level не задан, то имена формируются до уровня текущего компонента
@@ -857,21 +1017,21 @@ virtual int Model_GetComponentPersonalLinks(RDK::UNet* cont, RDK::USerStorageXML
 
 // Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния в xml
-virtual int Model_SaveComponent(RDK::UNet* cont, RDK::USerStorageXML *serstorage, bool links, unsigned int params_type_mask);
+virtual bool Model_SaveComponent(RDK::UNet* cont, RDK::USerStorageXML *serstorage, bool links, unsigned int params_type_mask);
 
 // Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния из xml
-virtual int Model_LoadComponent(RDK::UNet* cont, RDK::USerStorageXML *serstorage, bool links);
+virtual bool Model_LoadComponent(RDK::UNet* cont, RDK::USerStorageXML *serstorage, bool links);
 
 // Сохраняет все свойства компонента и его дочерних компонент в xml
-virtual int Model_SaveComponentProperties(RDK::UNet* cont, RDK::USerStorageXML *serstorage, unsigned int type_mask);
+virtual bool Model_SaveComponentProperties(RDK::UNet* cont, RDK::USerStorageXML *serstorage, unsigned int type_mask);
 
 // Загружает все свойства компонента и его дочерних компонент из xml
-virtual int Model_LoadComponentProperties(RDK::UNet* cont, RDK::USerStorageXML *serstorage);
-
+virtual bool Model_LoadComponentProperties(RDK::UNet* cont, RDK::USerStorageXML *serstorage);
+*/
 // Сохраняет внутренние данные компонента, и его _непосредственных_ дочерних компонент, исключая
 // переменные состояния в xml
-virtual int Model_SaveComponentDrawInfo(RDK::UNet* cont, RDK::USerStorageXML *serstorage);
+//virtual bool Model_SaveComponentDrawInfo(RDK::UNet* cont, RDK::USerStorageXML *serstorage);
 // --------------------------
 
 // --------------------------
@@ -886,7 +1046,7 @@ protected:
 public:
 // Осуществляет поиск компонента по длинному строковому id
 // Если строковое id не задано, то возвращает указатель на модель
-UEPtr<UContainer> FindComponent(const char *stringid) const;
+virtual UEPtr<UContainer> FindComponent(const char *stringid) const;
 
 // Восстановление настроек по умолчанию и сброс процесса счета
 virtual bool ADefault(void);
@@ -904,6 +1064,91 @@ virtual bool AReset(void);
 // Выполняет расчет этого объекта
 virtual bool ACalculate(void);
 // --------------------------
+
+public: // Исключения
+// Общая ошибка движка
+struct EErrorEngine: public EError
+{
+protected: // Данные исключения
+int EngineIndex;
+
+public:
+EErrorEngine(void)//int engine_index)
+: EError(), EngineIndex(0) /*EngineIndex(engine_index) */{};
+/*
+// Формирует строку лога об исключении
+virtual std::string CreateLogMessage(void) const
+{
+ return EError::CreateLogMessage()+std::string(" EngineIndex=")+sntoa(EngineIndex);
+} */
+};
+
+// Имя модели не совпадает с ожидаемым
+struct EErrorEngineModelNameDontMatch: public EErrorEngine
+{
+protected: // Данные исключения
+/// Полученное имя
+std::string GotModelName;
+
+/// Ожидаемое имя
+std::string ExpectedModelName;
+
+public:
+EErrorEngineModelNameDontMatch(const std::string &got_name, const std::string &expected_name)
+: EErrorEngine(), GotModelName(got_name), ExpectedModelName(expected_name) {};
+
+// Формирует строку лога об исключении
+virtual std::string CreateLogMessage(void) const
+{
+ return EErrorEngine::CreateLogMessage()+std::string(" GotModelName=")+GotModelName+
+ 				std::string(" ExpectedModelName=")+ExpectedModelName;
+}
+};
+/*
+// Тип класса компонента не может быть приведен к требуемому
+struct EErrorEngineIncompatibleCast: public EErrorEngine
+{
+protected: // Данные исключения
+/// Полученное имя
+std::string GotModelName;
+
+/// Ожидаемое имя
+std::string ExpectedModelName;
+
+public:
+EErrorEngineModelNameDontMatch(const std::string &got_name, const std::string &expected_name)
+: EErrorEngine(), GotModelName(got_name), ExpectedModelName(expected_name) {};
+
+// Формирует строку лога об исключении
+virtual std::string CreateLogMessage(void) const
+{
+ return EErrorEngine::CreateLogMessage()+std::string(" GotModelName=")+GotModelName+
+				std::string(" ExpectedModelName=")+ExpectedModelName;
+}
+};  */
+/*
+// Имя модели не совпадает с ожидаемым
+struct EErrorEngineModelNameDontMatch: public EErrorEngine
+{
+protected: // Данные исключения
+/// Полученное имя
+std::string GotModelName;
+
+/// Ожидаемое имя
+std::string ExpectedModelName;
+
+public:
+EErrorEngineModelNameDontMatch(const std::string &got_name, const std::string &expected_name)
+: EErrorEngine(), GotModelName(got_name), ExpectedModelName(expected_name) {};
+
+// Формирует строку лога об исключении
+virtual std::string CreateLogMessage(void) const
+{
+ return EErrorEngine::CreateLogMessage()+std::string(" GotModelName=")+GotModelName+
+ 				std::string(" ExpectedModelName=")+ExpectedModelName;
+}
+};
+    */
 };
 
 // Возвращает ссылку на данные свойства компонента

@@ -24,7 +24,7 @@ namespace RDK {
 class UItem;
 
 // Описание подключаемого элемента "UConnectedITEM"
-struct UCItem
+struct RDK_LIB_TYPE UCItem
 {
 // Подключаемый элемент
 UItem* Item;
@@ -51,7 +51,7 @@ bool operator != (const UCItem &value);
 };
 
 // Описание входящей связи с заданным item "UConnectedLINK"
-struct UCLink
+struct RDK_LIB_TYPE UCLink
 {
 // Индекс выхода
 int Output;
@@ -74,7 +74,7 @@ UCLink(const UCLink &copy);
 };
 
 // Контейнер - список указателей на подключенные элементы
-class UCItemList
+class RDK_LIB_TYPE UCItemList
 {
 protected: // Параметры
 // Размер контейнера
@@ -108,7 +108,7 @@ void Resize(int newsize);
 
 // Ищет в контейнере первый заданный элемент начиная с индекса index
 // и возвращает его описание
-UCItem Find(const UEPtr<UItem> item, int index=0) const;
+UCItem Find(const UEPtr<UItem> &item, int index=0) const;
 UCItem Find(const UItem *const item, int index=0) const;
 
 // Ищет в контейнере первый заданный элемент начиная с индекса index
@@ -148,7 +148,7 @@ int GetSize(void) const;
 // --------------------------
 };
 
-class UConnector: public UContainer
+class RDK_LIB_TYPE UConnector: public UContainer
 {
 friend class UItem;
 protected: // Хранилище связей
@@ -217,7 +217,7 @@ const UCItem& GetCItem(const NameT &connector_property_name, int index=0) const;
 
 // Возвращает информацию об индексах связей с этим item или -1, -1
 // если такая связь отсутствует
-UCLink GetCLink(const UEPtr<UItem> item) const;
+UCLink GetCLink(const UEPtr<UItem> &item) const;
 UCLink GetCLink(const UItem* const item) const;
 // --------------------------
 
@@ -226,6 +226,9 @@ UCLink GetCLink(const UItem* const item) const;
 // --------------------------
 /// Ищет свойство-вход по заданному индексу
 void FindInputProperty(int index, UIProperty* &property) const;
+
+/// Возвращает индекс входа с заданным именем
+int FindInputIndex(const NameT &input_name) const;
 // --------------------------
 
 // ----------------------
@@ -238,8 +241,14 @@ protected:
 virtual bool ConnectToItem(UEPtr<UItem> na, int i_index, int &c_index);
 virtual bool ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int &c_index);
 
-// Разрывает связь с элементом сети 'na'
+// Разрывает все связи с элементом сети 'na'
 virtual void DisconnectFromItem(UEPtr<UItem> na);
+
+/// Разрывает связь с элементом сети 'na', подключенную от i_index
+virtual void DisconnectFromItem(UEPtr<UItem> na, int i_index);
+
+/// Разрывает связь с элементом сети 'na', подключенную от i_index к c_index
+virtual void DisconnectFromItem(UEPtr<UItem> na, int i_index, int c_index);
 
 // Выполняет действия после физически установленой связи
 virtual bool AConnectToItem(UEPtr<UItem> na, int i_index, int c_index);
@@ -317,7 +326,7 @@ EInvalidInputIndex(int index) : EInvalidIndex(index) {};
 // Такой вход не существует
 struct EInputIndexNotExist: public EInvalidIndex
 {
-EInputIndexNotExist(void) : EInvalidIndex(-1) {};
+EInputIndexNotExist(int index) : EInvalidIndex(index) {};
 };
 };
 

@@ -18,7 +18,7 @@ See file license.txt for more information
 #include "UGraphicsXMLSerialize.h"
 #include "../Serialize/UXMLStdSerialize.h"
 #include "Libraries/Simulator/UBAVideoSimulator.h"
-#include "Libraries/Simulator/UBAVideo3DSimulator.h"
+//#include "Libraries/Simulator/UBAVideo3DSimulator.h"
 
 namespace RDK {
 
@@ -513,82 +513,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, UBVSObject &data)
 
  return storage;
 }
-
-// struct UBVSObject3D
-USerStorageXML& operator << (USerStorageXML& storage, const UBVSObject3D &data)
-{
- storage.AddNode("Speed");
- operator << (storage,data.Speed);
- storage.SelectUp();
-
- storage.AddNode("ObjectColor");
- operator << (storage,data.ObjectColor);
- storage.SelectUp();
-
- storage.AddNode("ObjectColor2");
- operator << (storage,data.ObjectColor2);
- storage.SelectUp();
-
- storage.AddNode("Mode");
- operator << (storage,data.Mode);
- storage.SelectUp();
-
- storage.AddNode("Visible");
- operator << (storage,data.Visible);
- storage.SelectUp();
-
- storage.AddNode("MovingDirection");
- operator << (storage,data.MovingDirection);
- storage.SelectUp();
-
- storage.AddNode("Geometry");
- operator << (storage,data.Geometry);
- storage.SelectUp();
-
- return storage;
-}
-
-USerStorageXML& operator >> (USerStorageXML& storage, UBVSObject3D &data)
-{
- if(!storage.SelectNode("Speed"))
-  return storage;
- operator >> (storage,data.Speed);
- storage.SelectUp();
-
- if(!storage.SelectNode("ObjectColor"))
-  return storage;
- operator >> (storage,data.ObjectColor);
- storage.SelectUp();
-
- if(!storage.SelectNode("ObjectColor2"))
-  return storage;
- operator >> (storage,data.ObjectColor2);
- storage.SelectUp();
-
- if(!storage.SelectNode("Mode"))
-  return storage;
- operator >> (storage,data.Mode);
- storage.SelectUp();
-
- if(!storage.SelectNode("Visible"))
-  return storage;
- operator >> (storage,data.Visible);
- storage.SelectUp();
-
- if(!storage.SelectNode("MovingDirection"))
-  return storage;
- operator >> (storage,data.MovingDirection);
- storage.SelectUp();
-
- if(!storage.SelectNode("Geometry"))
-  return storage;
- operator >> (storage,data.Geometry);
- storage.SelectUp();
-
- return storage;
-}
-
-
+   /*
 //class UBPtzCameraInfo
 USerStorageXML& operator << (USerStorageXML& storage, const UBPtzCameraInfo &data)
 {
@@ -960,7 +885,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, UBPtzCameraData &data)
  data.SetBrightnessSpeedNative(value);
 
  return storage;
-}
+}       */
 
 }
 

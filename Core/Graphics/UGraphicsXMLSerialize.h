@@ -14,13 +14,13 @@ See file license.txt for more information
 
 #include "UBitmap.h"
 #include "UBitmapVector.h"
-#include "UBPtzCamera.h"
+//#include "UBPtzCamera.h"
 #include "../Serialize/USerStorageXML.h"
 
 namespace RDK {
 
 struct UBVSObject;
-struct UBVSObject3D;
+//struct UBVSObject3D;
 
 // UBMColorModel
 USerStorageXML& operator << (USerStorageXML& storage, const UBMColorModel &data);
@@ -66,17 +66,13 @@ USerStorageXML& operator >> (USerStorageXML& storage, UBitmapVector &data);
 USerStorageXML& operator << (USerStorageXML& storage, const UBVSObject &data);
 USerStorageXML& operator >> (USerStorageXML& storage, UBVSObject &data);
 
-// struct UBVSObject
-USerStorageXML& operator << (USerStorageXML& storage, const UBVSObject3D &data);
-USerStorageXML& operator >> (USerStorageXML& storage, UBVSObject3D &data);
-
 //class UBPtzCameraInfo
-USerStorageXML& operator << (USerStorageXML& storage, const UBPtzCameraInfo &data);
-USerStorageXML& operator >> (USerStorageXML& storage, UBPtzCameraInfo &data);
+//USerStorageXML& operator << (USerStorageXML& storage, const UBPtzCameraInfo &data);
+//USerStorageXML& operator >> (USerStorageXML& storage, UBPtzCameraInfo &data);
 
 //class UBPtzCameraData
-USerStorageXML& operator << (USerStorageXML& storage, const UBPtzCameraData &data);
-USerStorageXML& operator >> (USerStorageXML& storage, UBPtzCameraData &data);
+//USerStorageXML& operator << (USerStorageXML& storage, const UBPtzCameraData &data);
+//USerStorageXML& operator >> (USerStorageXML& storage, UBPtzCameraData &data);
 
 }
 #endif

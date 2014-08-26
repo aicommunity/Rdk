@@ -21,6 +21,13 @@ void TUFavoriteComponentInfoForm::AUpdateInterface(void)
 
 }
 
+
+// Возврат интерфейса в исходное состояние
+void TUFavoriteComponentInfoForm::AClearInterface(void)
+{
+ ClearPages();
+}
+
 // Сохраняет параметры интерфейса в xml
 void TUFavoriteComponentInfoForm::ASaveParameters(RDK::USerStorageXML &xml)
 {

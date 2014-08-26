@@ -15,6 +15,7 @@ See file license.txt for more information
 #include "UFont.h"
 #include "UAGraphics.h"
 #include "UGraphicsIO.h"
+#include "../Utilities/USupport.h"
 //#include "Libraries/Basic/UBAResize.h"
 
 namespace RDK {
@@ -38,6 +39,8 @@ UAFont::UAFont(void)
  Interval=0;
 
  Scale=1;
+
+ Size=0;
 }
 
 UAFont::UAFont(const UAFont &font)
@@ -101,6 +104,21 @@ bool UAFont::SetScale(float value)
   return true;
 
  Scale=value;
+ return true;
+}
+
+// Метрический размер шрифта
+int UAFont::GetSize(void) const
+{
+ return Size;
+}
+
+bool UAFont::SetSize(int size)
+{
+ if(Size == size)
+  return true;
+
+ Size=size;
  return true;
 }
 // --------------------------
@@ -256,7 +274,8 @@ bool UAFont::DrawRect(const wstring &str, const UBRect &rect, int align, UAGraph
   graphics->SetPenPos(curr_x,curr_y);
   Draw(str.substr(curr_index,num_symbols_in_line),graphics);
   curr_index+=num_symbols_in_line;
-  curr_y+=Height+Height/2;
+//  curr_y+=Height+Height/2;
+  curr_y+=Height;
  } while(curr_index<int(str.size()));
 
  return true;
@@ -299,7 +318,8 @@ bool UAFont::DrawRect(const string &str, const UBRect &rect, int align, UAGraphi
   graphics->SetPenPos(curr_x,curr_y);
   Draw(str.substr(curr_index,num_symbols_in_line),graphics);
   curr_index+=num_symbols_in_line;
-  curr_y+=Height+Height/2;
+//  curr_y+=Height+Height/2;
+  curr_y+=Height;
  } while(curr_index<int(str.size()));
 
  return true;
@@ -322,6 +342,8 @@ UAFont& UAFont::operator = (const UAFont &font)
  Interval=font.Interval;
 
  Scale=font.Scale;
+
+ Size=font.Size;
 
  return *this;
 }
@@ -538,6 +560,7 @@ bool UBitmapFont::LoadFromFile(const string &font_name, const string &font_file_
 
  Height=size;
  Name=font_name;
+ Size=size;
  return true;
 }
 // --------------------------

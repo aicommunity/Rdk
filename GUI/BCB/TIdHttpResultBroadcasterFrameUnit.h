@@ -51,7 +51,7 @@ std::string Metadata;
 
 bool ConnectionEstablishedFlag;
 
-long long LastSentTimeStamp;
+RDK::ULongTime LastSentTimeStamp;
 
 // --------------------------
 // Методы управления фреймом
@@ -60,6 +60,9 @@ void ABeforeCalculate(void);
 void AAfterCalculate(void);
 
 void AUpdateInterface(void);
+
+// Возврат интерфейса в исходное состояние
+virtual void AClearInterface(void);
 
 // Сохраняет параметры интерфейса в xml
 virtual void ASaveParameters(RDK::USerStorageXML &xml);

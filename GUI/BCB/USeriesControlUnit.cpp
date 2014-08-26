@@ -27,6 +27,13 @@ __fastcall TUSeriesControlForm::TUSeriesControlForm(TComponent* Owner)
  StringGrid2->Cells[1][0]="Легенда";
 
  GrSender=0;
+
+ GraphChanged=false;
+ ColorsChanged=false;
+ LegendsChanged=false;
+ SeriesChanged=false;
+ LineStyleChanged=false;
+ LineWidthChanged=false;
 }
 //---------------------------------------------------------------------------
 // Вспомогательные методы
@@ -37,8 +44,8 @@ __fastcall TUSeriesControlForm::TUSeriesControlForm(TComponent* Owner)
 // Обновление списков данных
 void __fastcall TUSeriesControlForm::UpdateDataLists(void)
 {
- map<int,TUWatchInfo>::iterator I,listI;
- TUWatchInfo* og;
+// map<int,TUWatchInfo>::iterator I,listI;
+// TUWatchInfo* og;
 
  // Обновление списков...
  GrSender->GetVisibleList(WatchList);
@@ -91,7 +98,7 @@ void __fastcall TUSeriesControlForm::UpdateDataLists(void)
 void __fastcall TUSeriesControlForm::UpdateInfo(void)
 {
  map<int,TUWatchInfo>::iterator I;
- map<int,TUWatchInfo>::iterator listI;
+// map<int,TUWatchInfo>::iterator listI;
 
  StringGrid1->RowCount=2;
  StringGrid1->Cells[0][StringGrid1->RowCount-1]="";
@@ -110,7 +117,7 @@ void __fastcall TUSeriesControlForm::UpdateInfo(void)
 	StringGrid2->ColWidths[1]=width;
 
    StringGrid2->RowCount++;
-   I++;
+   ++I;
   }
  if(StringGrid2->RowCount > 2)
   StringGrid2->RowCount--;
@@ -125,12 +132,12 @@ void __fastcall TUSeriesControlForm::UpdateInfo(void)
 	StringGrid1->ColWidths[1]=width;
 
    StringGrid1->RowCount++;
-   I++;
+   ++I;
   }
  if(StringGrid1->RowCount > 2)
   StringGrid1->RowCount--;
 
- if(PossibleWatchList.size() == 0)
+ if(PossibleWatchList.empty())
   {
    Button1->Enabled=false;
    Button2->Enabled=false;
@@ -141,7 +148,7 @@ void __fastcall TUSeriesControlForm::UpdateInfo(void)
    Button2->Enabled=true;
   }
 
- if(WatchList.size() == 0)
+ if(WatchList.empty())
   {
    Button3->Enabled=false;
    Button4->Enabled=false;
@@ -297,7 +304,7 @@ void __fastcall TUSeriesControlForm::Button1Click(TObject *Sender)
  while(I != PossibleWatchList.end())
   {
    WatchList[I->first]=I->second;
-   I++;
+   ++I;
   }
  PossibleWatchList.clear();
  UpdateInfo();
@@ -313,7 +320,7 @@ void __fastcall TUSeriesControlForm::Button4Click(TObject *Sender)
  while(I != WatchList.end())
   {
    PossibleWatchList[I->first]=I->second;
-   I++;
+   ++I;
   }
  WatchList.clear();
  UpdateInfo();
@@ -374,13 +381,13 @@ void __fastcall TUSeriesControlForm::Edit3DblClick(TObject *Sender)
  while(I != WatchList.end())
   {
    listvals.push_back(I->second.Legend);
-   I++;
+   ++I;
   }
  I=PossibleWatchList.begin();
  while(I != PossibleWatchList.end())
   {
    listvals.push_back(I->second.Legend);
-   I++;
+   ++I;
   }
 
  s="Подпись для ";
@@ -439,17 +446,17 @@ void __fastcall TUSeriesControlForm::BitBtn1Click(TObject *Sender)
      while(I != WatchList.end())
       {
 	   GrSender->ChangeColor(I->first,I->second.Color);
-       I++;
-      }
-    }
+	   ++I;
+	  }
+	}
    if(LegendsChanged)
-    {
-     I=WatchList.begin();
-     while(I != WatchList.end())
-      {
+	{
+	 I=WatchList.begin();
+	 while(I != WatchList.end())
+	  {
 	   GrSender->ChangeLegend(I->first,I->second.Legend);
-       I++;
-      }
+	   ++I;
+	  }
 	}
    if(LineStyleChanged)
    {
@@ -457,7 +464,7 @@ void __fastcall TUSeriesControlForm::BitBtn1Click(TObject *Sender)
 	 while(I != WatchList.end())
 	  {
 	   GrSender->ChangeLineStyle(I->first,I->second.Style);
-	   I++;
+	   ++I;
 	  }
    }
    if(LineWidthChanged)
@@ -466,10 +473,10 @@ void __fastcall TUSeriesControlForm::BitBtn1Click(TObject *Sender)
 	 while(I != WatchList.end())
 	  {
 	   GrSender->ChangeLineWidth(I->first,I->second.LineWidth);
-	   I++;
+	   ++I;
 	  }
    }
-  }  
+  }
 
  if(GraphChanged)
   {

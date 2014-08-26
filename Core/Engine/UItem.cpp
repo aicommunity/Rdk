@@ -280,7 +280,9 @@ void UAConnector2DVector::Del(int index)
  if(index<0 || index >= Size)
   return;
 
- memcpy(Data+index,Data+index+1,(Size-1)*sizeof(UAConnectorVector));
+ for(int i=index;i<Size-1;i++)
+  Data[i]=Data[i+1];
+// memcpy(Data+index,Data+index+1,(Size-1)*sizeof(UAConnectorVector));
  Resize(Size-1);
 }
 /*
@@ -299,7 +301,10 @@ void UAConnector2DVector::Del(UAConnectorVector *item)
 UAConnector2DVector& UAConnector2DVector::operator = (const UAConnector2DVector &copy)
 {
  Resize(copy.Size);
- memcpy(Data,copy.Data,Size*sizeof(UAConnectorVector));
+
+ for(int i=0;i<Size;i++)
+  Data[i]=copy.Data[i];
+// memcpy(Data,copy.Data,Size*sizeof(UAConnectorVector));
 
  return *this;
 }
@@ -433,6 +438,27 @@ void UItem::FindOutputProperty(int index, UIProperty* &property) const
   }
  }
 }
+
+
+/// Возвращает индекс входа с заданным именем
+int UItem::FindOutputIndex(const NameT &output_name) const
+{
+ // Ищем указатель на выходные данные
+ UIProperty* property=0;
+ VariableMapCIteratorT I=PropertiesLookupTable.find(output_name);
+ if(I == PropertiesLookupTable.end())
+  return ForbiddenId;
+
+ if(!(I->second.Type & ptOutput))
+  return ForbiddenId;
+
+ property=I->second.Property.Get();
+ if(!property)
+  return ForbiddenId;
+
+ return property->GetMinRange();
+}
+
 // --------------------------
 
 
@@ -576,7 +602,7 @@ bool UItem::Connect(UEPtr<UConnector> c, const NameT &item_property_name, const 
  return true;
 }
 
-// Разрывает связь выхода этого объекта с коннектором 'c'.
+/// Разрывает все связи выхода этого объекта с коннектором 'c'.
 void UItem::Disconnect(UEPtr<UConnector> c)
 {
 /*
@@ -595,6 +621,47 @@ void UItem::Disconnect(UEPtr<UConnector> c)
   }
  }*/
 
+ Build();
+
+ if(c)
+  c->DisconnectFromItem(this);
+
+ std::map<std::string, std::vector<PUAConnector> >::iterator I=RelatedConnectors.begin();
+
+ for(;I!= RelatedConnectors.end();++I)
+  for(size_t i=0;i<I->second.size();i++)
+  {
+   if(I->second[i] == c)
+	I->second.erase(I->second.begin()+i);
+  }
+}
+
+// Разрывает связь выхода этого объекта с коннектором 'c' по индексу
+void UItem::Disconnect(UEPtr<UConnector> c, int i_index, int c_index)
+{
+/*
+ Build();
+
+ if(i_index<AssociatedConnectors.GetSize())
+ {
+  for(int j=0;j<AssociatedConnectors[i_index].GetSize();j++)
+  {
+   if(AssociatedConnectors[i_index][j] == c)
+   {
+	if(c)
+	{
+	 UCItem citem=c->GetCItem(c_index);
+	 if(citem.Index == i_index && citem.Item == this)
+	 {
+	  AssociatedConnectors[i_index].Del(j);
+	  c->DisconnectFromItem(this, i_index, c_index);
+	  break;
+	 }
+	}
+   }
+  }
+ }
+   */
  Build();
 
  if(c)
@@ -816,7 +883,6 @@ bool UItem::CheckLink(const UEPtr<UConnector> &connector, int item_index) const
   if(link.Output == item_index || item_index <0)
    return true;
  }
-
  return false;
 }
 
@@ -854,7 +920,6 @@ bool UItem::CheckLink(const UEPtr<UConnector> &connector, const NameT &item_prop
   if(link.InputName == connector_property_name)
    return true;
  }
-
  return false;
 }
 

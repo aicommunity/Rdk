@@ -13,13 +13,17 @@
 #pragma GCC diagnostic ignored "-Wswitch"
 #endif
 
+#include "../../Deploy/Include/initdll_defs.h"
 #include "../../Core/System/rdk_system.h"
 #include "../../ThirdParty/ThirdParty.h"
 #include "../../Core/Math/UMath.h"
 #include "../../Core/Utilities/Utilities.h"
 #include "../../Core/Serialize/Serialize.h"
 
+#include "../../Core/Engine/UTime.h"
 #include "../../Core/Engine/UEnvSupport.h"
+#include "../../Core/Engine/UELockPtr.h"
+#include "../../Core/Engine/UELockVar.h"
 #include "../../Core/Engine/UXMLEnvSerialize.h"
 #include "../../Core/Engine/UBinaryEnvSerialize.h"
 #include "../../Core/Graphics/UBitmap.h"
@@ -30,7 +34,7 @@
 #include "../../Core/Graphics/UDrawEngine.h"
 #include "../../Core/Graphics/UGraphicsXMLSerialize.h"
 #include "../../Core/Graphics/UGraphicsBinarySerialize.h"
-#include "../../Core/Graphics/UBPtzCamera.h"
+//#include "../../Core/Graphics/UBPtzCamera.h"
 
 #include "../../Core/Application/UApplication.h"
 

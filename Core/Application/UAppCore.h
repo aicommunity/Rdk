@@ -1,12 +1,12 @@
 #ifndef UAppCore_H
 #define UAppCore_H
 
-#include "UAppProject.h"
+#include "UProject.h"
 
 namespace RDK {
 
 /// Описание базовых свойств приложения, использующего библиотеку
-class UAppCore
+class  RDK_LIB_TYPE UAppCore
 {
 protected:
 

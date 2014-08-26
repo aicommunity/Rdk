@@ -13,6 +13,8 @@ See file license.txt for more information
 #ifndef UBITMAP_H
 #define UBITMAP_H
 
+#include "../../Deploy/Include/initdll_defs.h"
+
 namespace RDK {
 
 // Режим изображения
@@ -81,7 +83,7 @@ UBColor& operator [] (int i)
 
 // Координаты пикселя изображения
 // (Описание в конце файла)
-struct UBPoint;
+struct RDK_LIB_TYPE UBPoint;
 
 // Координаты и цвет пикселя изображения
 // (Описание в конце файла)
@@ -100,7 +102,7 @@ struct UBHistogramElement;
 class UBHistogram;
 
 
-class UBitmapParam
+class RDK_LIB_TYPE UBitmapParam
 {
 public:
 // размеры изображения по осям
@@ -120,7 +122,7 @@ UBitmapParam(UBMColorModel cmodel);
 };
 
 // Класс, описывающий изображение
-class UBitmap: protected UBitmapParam
+class RDK_LIB_TYPE UBitmap: protected UBitmapParam
 {
 protected: // Данные
 UBColor *Data;
@@ -362,7 +364,13 @@ int CalcNumPixels(UColorT threshold) const;
 
 // -------------------------
 // Методы обработки изображения
-// -------------------------      
+// -------------------------
+// Прорежение изображения
+// Прорежает каждую n-ый столбец изображения по горизонтали
+// и каждую m-ю строку по вертикали
+// Если 'target' != 0 то результат операции сохраняется в него
+void Reduce(int n, int m, UBitmap *target=0);
+
 // Отражение по вертикали
 // Если 'target' != 0 то результат операции сохраняется в него
 // и цветовая модель 'target' замещается моделью источника
@@ -779,7 +787,7 @@ void ColorConvertRGB96_F32(UBColor *source, UBColor *dest) const;
 typedef UBitmap* PUBitmap;
 
 // Координаты пикселя изображения
-struct UBPoint
+struct RDK_LIB_TYPE UBPoint
 {
 int X,Y;
 
@@ -802,7 +810,7 @@ bool operator != (const UBPoint &value) const;
 
 // Координаты и цвет пикселя изображения
 // (Описание в конце файла)
-struct UBColorPoint: public UBPoint
+struct RDK_LIB_TYPE UBColorPoint: public UBPoint
 {
 // Цвет точки
 UColorT Color;
@@ -816,7 +824,7 @@ UBColorPoint(void);
 };
 
 // Прямоугольный элемент изображения
-struct UBRect: public UBPoint
+struct RDK_LIB_TYPE UBRect: public UBPoint
 {
 // Координаты правого нижнего угла прямоугольника
 //int X2,Y2;
@@ -857,7 +865,7 @@ bool operator != (const UBRect &value) const;
 };
 
 // Элемент гистограммы
-struct UBHistogramElement
+struct RDK_LIB_TYPE UBHistogramElement
 {
 // Цвет изображения
 UColorT Color;
@@ -883,7 +891,7 @@ int UBHistogramElementCompare(const void *e1, const void *e2);
 }
 
 // Гистограмма
-class UBHistogram
+class RDK_LIB_TYPE UBHistogram
 {
 friend class UBitmap;
 protected: // Параметры

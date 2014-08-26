@@ -185,10 +185,16 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
 			trX      =  ExtMat(0,0) / C;        // Если нет, то получаем угол вращения вокруг оси Y
 			trY      = ExtMat(0,2) / C;
 
+		 if(fabs(trX)<std::numeric_limits<T>::epsilon() &&
+			fabs(trY)<std::numeric_limits<T>::epsilon())
+		  throw EMatrixZeroDiv();
 		anglesANDshifts(4)  = atan2( trY, trX );
 
 		trX      =  ExtMat(1,1) / C;            // Получаем угол вращения вокруг оси  X
 		trY      =  ExtMat(2,1) / C;
+		 if(fabs(trX)<std::numeric_limits<T>::epsilon() &&
+			fabs(trY)<std::numeric_limits<T>::epsilon())
+		  throw EMatrixZeroDiv();
 
 		anglesANDshifts(3)  = atan2( trY, trX );
 		}
@@ -199,8 +205,11 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
       trX      = ExtMat(2,2);                 // И вычисляем угол вращения вокруг оси Y
       trY      = -ExtMat(2,0);
 
-      anglesANDshifts(4)  = atan2( trY, trX );
-    }
+	  if(fabs(trX)<std::numeric_limits<T>::epsilon() &&
+			fabs(trY)<std::numeric_limits<T>::epsilon())
+		  throw EMatrixZeroDiv();
+	  anglesANDshifts(4)  = atan2( trY, trX );
+	}
 	break;
 	}
 	case 3:
@@ -213,22 +222,31 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
 			trX      =  ExtMat(1,1) / C;
 			trY      = ExtMat(1,0) / C;
 
+		 if(fabs(trX)<std::numeric_limits<T>::epsilon() &&
+			fabs(trY)<std::numeric_limits<T>::epsilon())
+		  throw EMatrixZeroDiv();
 		anglesANDshifts(5)  = atan2( trY, trX );
 
 		trX      =  ExtMat(2,2) / C;
 		trY      =  ExtMat(0,2) / C;
 
+		 if(fabs(trX)<std::numeric_limits<T>::epsilon() &&
+			fabs(trY)<std::numeric_limits<T>::epsilon())
+		  throw EMatrixZeroDiv();
 		anglesANDshifts(4)  = atan2( trY, trX );
 		}
-    else
-      {
-      anglesANDshifts(4)  = 0;
+	else
+	  {
+	  anglesANDshifts(4)  = 0;
 
-      trX      = ExtMat(0,0);
-      trY      = -ExtMat(0,1);
+	  trX      = ExtMat(0,0);
+	  trY      = -ExtMat(0,1);
 
-      anglesANDshifts(5)  = atan2( trY, trX );
-      }
+		 if(fabs(trX)<std::numeric_limits<T>::epsilon() &&
+			fabs(trY)<std::numeric_limits<T>::epsilon())
+		  throw EMatrixZeroDiv();
+	  anglesANDshifts(5)  = atan2( trY, trX );
+	  }
 	break;
 	}
 	case 4:
@@ -241,22 +259,31 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
 			trX      =  ExtMat(1,1) / C;
 			trY      = -ExtMat(1,2) / C;
 
+		 if(fabs(trX)<std::numeric_limits<T>::epsilon() &&
+			fabs(trY)<std::numeric_limits<T>::epsilon())
+		  throw EMatrixZeroDiv();
 		anglesANDshifts(3)  = atan2( trY, trX );
 
 		trX      =  ExtMat(0,0) / C;
 		trY      =  -ExtMat(2,0) / C;
 
+		 if(fabs(trX)<std::numeric_limits<T>::epsilon() &&
+			fabs(trY)<std::numeric_limits<T>::epsilon())
+		  throw EMatrixZeroDiv();
 		anglesANDshifts(4)  = atan2( trY, trX );
 		}
-    else
-      {
-      anglesANDshifts(4)  = 0;
+	else
+	  {
+	  anglesANDshifts(4)  = 0;
 
-      trX      = ExtMat(2,2);
-      trY      = ExtMat(2,1);
+	  trX      = ExtMat(2,2);
+	  trY      = ExtMat(2,1);
 
-      anglesANDshifts(3)  = atan2( trY, trX );
-      }
+		 if(fabs(trX)<std::numeric_limits<T>::epsilon() &&
+			fabs(trY)<std::numeric_limits<T>::epsilon())
+		  throw EMatrixZeroDiv();
+	  anglesANDshifts(3)  = atan2( trY, trX );
+	  }
 	break;
 	}
 	case 5:
@@ -269,22 +296,31 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
 			trX      =  ExtMat(2,2) / C;
 			trY      = -ExtMat(2,0) / C;
 
+		 if(fabs(trX)<std::numeric_limits<T>::epsilon() &&
+			fabs(trY)<std::numeric_limits<T>::epsilon())
+		  throw EMatrixZeroDiv();
 		anglesANDshifts(4)  = atan2( trY, trX );
 
 		trX      =  ExtMat(1,1) / C;
 		trY      =  -ExtMat(0,1) / C;
 
+		 if(fabs(trX)<std::numeric_limits<T>::epsilon() &&
+			fabs(trY)<std::numeric_limits<T>::epsilon())
+		  throw EMatrixZeroDiv();
 		anglesANDshifts(5)  = atan2( trY, trX );
 		}
-    else
-      {
-      anglesANDshifts(5)  = 0;
+	else
+	  {
+	  anglesANDshifts(5)  = 0;
 
-      trX      = ExtMat(0,0);
-      trY      = ExtMat(0,2);
+	  trX      = ExtMat(0,0);
+	  trY      = ExtMat(0,2);
 
-      anglesANDshifts(4)  = atan2( trY, trX );
-      }
+		 if(fabs(trX)<std::numeric_limits<T>::epsilon() &&
+			fabs(trY)<std::numeric_limits<T>::epsilon())
+		  throw EMatrixZeroDiv();
+	  anglesANDshifts(4)  = atan2( trY, trX );
+	  }
 	break;
 	}
 	case 6:
@@ -297,22 +333,31 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
 			trX      =  ExtMat(2,2) / C;
 			trY      = ExtMat(2,1) / C;
 
+		 if(fabs(trX)<std::numeric_limits<T>::epsilon() &&
+			fabs(trY)<std::numeric_limits<T>::epsilon())
+		  throw EMatrixZeroDiv();
 		anglesANDshifts(3)  = atan2( trY, trX );
 
 		trX      =  ExtMat(0,0) / C;
 		trY      =  ExtMat(1,0) / C;
 
+		 if(fabs(trX)<std::numeric_limits<T>::epsilon() &&
+			fabs(trY)<std::numeric_limits<T>::epsilon())
+		  throw EMatrixZeroDiv();
 		anglesANDshifts(5)  = atan2( trY, trX );
 		}
-    else
-      {
-      anglesANDshifts(5)  = 0;
+	else
+	  {
+	  anglesANDshifts(5)  = 0;
 
-      trX      = ExtMat(1,1);
-      trY      = -ExtMat(1,2);
+	  trX      = ExtMat(1,1);
+	  trY      = -ExtMat(1,2);
 
-      anglesANDshifts(3)  = atan2( trY, trX );
-      }
+		 if(fabs(trX)<std::numeric_limits<T>::epsilon() &&
+			fabs(trY)<std::numeric_limits<T>::epsilon())
+		  throw EMatrixZeroDiv();
+	  anglesANDshifts(3)  = atan2( trY, trX );
+	  }
 	break;
 	}
 	default:
@@ -325,22 +370,31 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
 			trX      =  ExtMat(2,2) / C;        // Если нет, то получаем угол вращения вокруг оси X
 			trY      = -ExtMat(1,2) / C;
 
+		 if(fabs(trX)<std::numeric_limits<T>::epsilon() &&
+			fabs(trY)<std::numeric_limits<T>::epsilon())
+		  throw EMatrixZeroDiv();
 		anglesANDshifts(3)  = atan2( trY, trX );
 
 		trX      =  ExtMat(0,0) / C;            // Получаем угол вращения вокруг оси  Z
 		trY      =  -ExtMat(0,1) / C;
 
+		 if(fabs(trX)<std::numeric_limits<T>::epsilon() &&
+			fabs(trY)<std::numeric_limits<T>::epsilon())
+		  throw EMatrixZeroDiv();
 		anglesANDshifts(5)  = atan2( trY, trX );
 		}
-    else                                 // Имеет место "Шарнирный замок" (Gimball lock)
-      {
-      anglesANDshifts(3)  = 0;                      // Угол вращения вокруг оси X приравниваем к нулю
+	else                                 // Имеет место "Шарнирный замок" (Gimball lock)
+	  {
+	  anglesANDshifts(3)  = 0;                      // Угол вращения вокруг оси X приравниваем к нулю
 
-      trX      = ExtMat(1,1);                 // И вычисляем угол вращения вокруг оси Z
-      trY      = ExtMat(1,0);
+	  trX      = ExtMat(1,1);                 // И вычисляем угол вращения вокруг оси Z
+	  trY      = ExtMat(1,0);
 
-      anglesANDshifts(5)  = atan2( trY, trX );
-      }
+		 if(fabs(trX)<std::numeric_limits<T>::epsilon() &&
+			fabs(trY)<std::numeric_limits<T>::epsilon())
+		  throw EMatrixZeroDiv();
+	  anglesANDshifts(5)  = atan2( trY, trX );
+	  }
 	}
 	}
 	//!!!!!!
@@ -533,7 +587,6 @@ template<class T>
 void MatrixToQuaternion(Quaternion<T> *quat, const T m[4][4])
 {
   T  tr, s, q[4];
-  int    i, j, k;
 
   int nxt[3] = {1, 2, 0};
 
@@ -550,6 +603,7 @@ void MatrixToQuaternion(Quaternion<T> *quat, const T m[4][4])
   }
   else
   {
+   int    i, j, k;
     i = 0;
     if (m[1][1] > m[0][0]) i = 1;
     if (m[2][2] > m[i][i]) i = 2;
@@ -600,21 +654,21 @@ MMatrix<T,4,4> CalcObjectPositionMatrixFromQuatern(const MVector<T,7> &anglesAND
 {
  MMatrix<T,4,4> res;
 
- Quaternion<T> *quatent;
- quatent->x=anglesANDshifts(3);
- quatent->y=anglesANDshifts(4);
- quatent->z=anglesANDshifts(5);
- quatent->w=anglesANDshifts(6);
+ Quaternion<T> quatent;
+ quatent.x=anglesANDshifts(3);
+ quatent.y=anglesANDshifts(4);
+ quatent.z=anglesANDshifts(5);
+ quatent.w=anglesANDshifts(6);
 
  if(vect)
  {
-  QuaternionNormalise<T>(quatent,true);
+  QuaternionNormalise<T>(&quatent,true);
   QuaternionToMatrix<T>(res.Data, quatent);
  }
  else
  {
-  QuaternionNormalise<T>(quatent,false);
-  QuaternionToMatrix<T>(res.Data, quatent);
+  QuaternionNormalise<T>(&quatent,false);
+  QuaternionToMatrix<T>(res.Data, &quatent);
  }
 
 	res(0,3)=anglesANDshifts(0);
@@ -723,7 +777,8 @@ MRay(void)
 MRay(const MRay &copy)
 { *this=copy; };
 MRay(MVector<T,Rows> &o, MVector<T,Rows> &d)
-{ Origin=o; Direction=d; };
+: Origin(o), Direction(d)
+{ };
 // --------------------------
 
 // --------------------------
@@ -802,11 +857,13 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 MPlane(void)
-{ Normal=0; Distance=0; };
+ : Normal(0), Distance(0)
+{ };
 MPlane(const MPlane &copy)
 { *this=copy; };
 MPlane(MVector<T,Rows> n, T dist)
-{ Normal=n; Distance=dist; };
+ : Normal(n), Distance(dist)
+{ };
 virtual ~MPlane(void){};
 // --------------------------
 
@@ -1094,7 +1151,7 @@ bool MGeometry<T,Rows>::SetBorders(const std::vector<MBorder>& value)
 template<class T, int Rows>
 void MGeometry<T,Rows>::DelVertex(int index)
 {
- if(index<0 || index>=Vertices.size())
+ if(index<0 || index>=int(Vertices.size()))
   return;
 
  Vertices.erase(Vertices.begin()+index);

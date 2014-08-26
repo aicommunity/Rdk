@@ -3,11 +3,12 @@
 #include <vcl.h>
 #pragma hdrstop
 
+#include "../../Deploy/PtzLib/ptzlib_initdll.h"
 #include "UServerControlFormUnit.h"
 #include "UGEngineControlFormUnit.h"
-#ifdef RDK_VIDEO
-#include "TVideoGrabberControlFormUnit.h"
-#endif
+//#ifdef RDK_VIDEO
+//#include "TVideoGrabberControlFormUnit.h"
+//#endif
 #include "UImagesFormUnit.h"
 #include "UComponentsControlFormUnit.h"
 #include "UComponentLinksFormUnit.h"
@@ -16,8 +17,13 @@
 #include "VideoOutputFormUnit.h"
 #endif
 #include "TIdTcpResultBroadcasterFormUnit.h"
-#include "rdk_cpp_initdll.h"
+#include "rdk_initdll.h"
+#include "rdk_rpc.cpp"
 #include "TUBitmap.h"
+//#include "../../Core/Graphics/Libraries/Hardware/PtzRpc.cpp"
+#ifdef DVA_GEVISCOPE
+#include "TGeViScopeResultBroadcasterFormUnit.h"
+#endif
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "TUHttpServerUnit"
@@ -25,15 +31,19 @@
 #pragma resource "*.dfm"
 TUServerControlForm *UServerControlForm;
 
+/// Экзепляр класса приложения
+extern RDK::UApplication RdkApplication;
+
+
 /// Стандартная функция, осуществляющую декодирование параметров запроса
-int StandardCommandRequestDecoder(std::map<std::string,std::vector<char> > &source, std::map<std::string,std::vector<char> > &dest)
+int StandardCommandRequestDecoder(UServerCommand &source, UServerCommand &dest)
 {
  dest=source;
  return 0;
 }
 
 /// Стандартная функция, осуществляющую кодирование параметров ответа
-int StandardCommandResponseEncoder(const std::string &response_type, std::vector<char> &source, std::vector<char> &dest)
+int StandardCommandResponseEncoder(const std::string &response_type, UParamT &source, UParamT &dest)
 {
  dest=source;
  return 0;
@@ -48,33 +58,87 @@ __fastcall TUServerControlForm::TUServerControlForm(TComponent* Owner)
  CommandRequestDecoder=StandardCommandRequestDecoder;
  CommandResponseEncoder=StandardCommandResponseEncoder;
  AverageIterations=4;
+
+ Clients=0;
+// Clients=new TThreadList;
+
+ CriticalSection=new TCriticalSection;
+
+ AutoStartFlag=false;
+ Mode=0;
+ Bitmap=0;
+ PerformancePushIndex=0;
+ CommandQueueUnlockEvent=0;
 }
 
-const char* TUServerControlForm::ControlRemoteCall(const char *request, int &return_value)
+__fastcall TUServerControlForm::~TUServerControlForm(void)
 {
- return_value=0;
+ delete CriticalSection;
+/* if(Clients)
+ {
+
+  delete Clients;
+ }*/
+}
+
+
+const char* TUServerControlForm::ControlRemoteCall(const char *request, int &return_value, std::vector<RDK::UParamT> &binary_data)
+{
+ return_value=2001;
 
  RDK::USerStorageXML xml,xml_data;
 
  xml.Load(request,"RpcRequest");
 
- int engine_index=xml.ReadInteger("Channel",0);
- std::string cmd=xml.ReadString("Cmd","");
+ int engine_index=-1;
+ std::string cmd;
+
+ ExtractChannel(xml,engine_index);
+ if(!ExtractCmd(xml,cmd) || cmd.empty())
+ {
+  return_value=2000;
+  return 0;
+ }
 
  ControlResponseString.clear();
+ RDK::USerStorageXML result;
+
+ result.Create("RpcResponse");
+ result.WriteString("Id", xml.ReadString("Id",""));
+ if(cmd == "RpcPing")
+ {
+  return_value=0;
+ }
+ else
  if(cmd == "SetNumChannels")
  {
   int num_engines=xml.ReadInteger("NumChannels",GetNumEngines());
+  UEngineMonitorForm->EngineMonitorFrame->SetNumChannels(num_engines);
   return_value=SetNumChannels(num_engines);
  }
  else
  if(cmd == "GetNumChannels")
  {
   ControlResponseString=RDK::sntoa(GetNumChannels());
+  return_value=0;
  }
+ else
+ if(cmd == "GetServerName")
+ {
+  ControlResponseString=ServerName;
+  return_value=0;
+ }
+ else
+ if(cmd == "GetServerId")
+ {
+  ControlResponseString=ServerId;
+  return_value=0;
+ }
+ else
  if(cmd == "GetChannelName")
  {
   ControlResponseString=GetChannelName(engine_index);
+  return_value=0;
  }
  else
  if(cmd == "SetChannelName")
@@ -87,15 +151,115 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
 	return_value=5005;
  }
  else
- if(cmd == "GetChannelVideoSourceType")
+ if(cmd == "GetChannelVideoSource")
  {
-  ControlResponseString=RDK::sntoa(GetChannelVideoSource(engine_index));
+#ifdef RDK_VIDEO
+ TVideoOutputFrame *frame=VideoOutputForm->GetVideoOutputFrame(engine_index);
+ if(!frame)
+ {
+  return_value=1;
  }
  else
- if(cmd == "SetChannelVideoSourceType")
  {
-  int mode=xml.ReadInteger("Mode",5);
-  return_value=SetChannelVideoSource(engine_index,mode);
+  result.WriteString("Mode",RDK::sntoa(frame->CaptureThread->GetSourceMode()));
+  result.SelectNodeForce("Data");
+  result.WriteString("Mode",RDK::sntoa(frame->CaptureThread->GetSourceMode()));
+  frame->CaptureThread->SaveParametersEx(result);
+  result.SelectUp();
+  return_value=0;
+ }
+#else
+  return_value=1;
+#endif
+ }
+ else
+ if(cmd == "SetChannelVideoSource")
+ {
+#ifdef RDK_VIDEO
+  TVideoOutputFrame *frame=VideoOutputForm->GetVideoOutputFrame(engine_index);
+  if(!frame)
+   return_value=1;
+  int mode=xml.ReadInteger("Mode",0);
+  if(!xml.SelectNode("Data"))
+  {
+   return_value=1;
+  }
+  else
+  {
+   mode=xml.ReadInteger("Mode",mode);
+   frame->Init(mode,xml);
+//   frame->Init(mode);
+//   frame->CaptureThread->LoadParametersEx(xml);
+   xml.SelectUp();
+   return_value=0;//SetChannelVideoSource(engine_index,mode);
+  }
+#endif
+ }
+ else
+ if(cmd == "CheckChannelVideoSourceConnection")
+ {
+	result.WriteInteger("State",CheckChannelVideoSourceConnection(engine_index));
+	return_value=0;
+ }
+ else
+ if(cmd == "GetChannelBroacaster")
+ {
+  int type=xml.ReadInteger("BroadcasterType",0);
+  result.SelectNodeForce("Data");
+#ifdef DVA_GEVISCOPE
+  if(type == 1000)
+  {
+	TGeViScopeResultBroadcasterFrame *frame=GeViScopeResultBroadcasterForm->GetBroadcasterFrame(engine_index);
+	if(frame)
+	{
+	 result.WriteString("ChannelIndex",AnsiString(frame->ChannelIndexLabeledEdit->Text).c_str());
+	 result.WriteString("ServerUrl",AnsiString(frame->ServerAddressLabeledEdit->Text).c_str());
+	 result.WriteString("Username",AnsiString(frame->UsernameLabeledEdit->Text).c_str());
+	 result.WriteString("Password",AnsiString(frame->PasswordLabeledEdit->Text).c_str());
+	 result.WriteString("MediaChannel",AnsiString(frame->MediaChannelLabeledEdit->Text).c_str());
+	 result.WriteString("XmlComponentName",AnsiString(frame->XmlComponentNameLabeledEdit->Text).c_str());
+	 result.WriteString("XmlComponentStateName",AnsiString(frame->XmlComponentStateNameLabeledEdit->Text).c_str());
+	 result.WriteBool("EnableXmlTranslationFlag",frame->EnableXmlTranslationCheckBox->Checked);
+	}
+  }
+#endif
+  result.SelectUp();
+  return_value=0;
+ }
+ else
+ if(cmd == "SetChannelBroadcaster")
+ {
+  int type=xml.ReadInteger("BroadcasterType",0);
+  result.WriteInteger("BroadcasterType",type);
+  if(!xml.SelectNode("Data"))
+  {
+   return_value=1;
+  }
+  else
+  {
+#ifdef DVA_GEVISCOPE
+  if(type == 1000)
+  {
+	TGeViScopeResultBroadcasterFrame *frame=GeViScopeResultBroadcasterForm->GetBroadcasterFrame(engine_index);
+	if(frame)
+	{
+	 frame->DisconnectButtonClick(this);
+	 frame->ChannelIndexLabeledEdit->Text=xml.ReadString("ChannelIndex",AnsiString(frame->ChannelIndexLabeledEdit->Text).c_str()).c_str();
+	 frame->ServerAddressLabeledEdit->Text=xml.ReadString("ServerUrl",AnsiString(frame->ServerAddressLabeledEdit->Text).c_str()).c_str();
+	 frame->UsernameLabeledEdit->Text=xml.ReadString("Username",AnsiString(frame->UsernameLabeledEdit->Text).c_str()).c_str();
+	 frame->PasswordLabeledEdit->Text=xml.ReadString("Password",AnsiString(frame->PasswordLabeledEdit->Text).c_str()).c_str();
+	 frame->MediaChannelLabeledEdit->Text=xml.ReadString("MediaChannel",AnsiString(frame->MediaChannelLabeledEdit->Text).c_str()).c_str();
+	 frame->XmlComponentNameLabeledEdit->Text=xml.ReadString("XmlComponentName",AnsiString(frame->XmlComponentNameLabeledEdit->Text).c_str()).c_str();
+	 frame->XmlComponentStateNameLabeledEdit->Text=xml.ReadString("XmlComponentStateName",AnsiString(frame->XmlComponentStateNameLabeledEdit->Text).c_str()).c_str();
+	 frame->EnableXmlTranslationCheckBox->Checked=xml.ReadBool("EnableXmlTranslationFlag",frame->EnableXmlTranslationCheckBox->Checked);
+	 frame->EnableXmlTranslationCheckBoxClick(this);
+	 frame->ConnectButtonClick(this);
+	}
+  }
+#endif
+   result.SelectUp();
+  }
+  return_value=0;
  }
  else
  if(cmd == "ResetChannel")
@@ -113,6 +277,21 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
   return_value=StopChannel(engine_index);
  }
  else
+ if(cmd == "RegisterMetadataReceiver")
+ {
+  string address=xml.ReadString("Address","");
+  int port=xml.ReadInteger("Port",8888);
+  return_value=RegisterMetadataReceiver(address, port,
+		MetaComponentName, MetaComponentStateName);
+ }
+ else
+ if(cmd == "UnRegisterMetadataReceiver")
+ {
+  string address=xml.ReadString("Address","");
+  int port=xml.ReadInteger("Port",port);
+  return_value=UnRegisterMetadataReceiver(address, port);
+ }
+ else
  if(cmd == "LoadProject")
  {
   std::string file_name=xml.ReadString("FileName","");
@@ -121,11 +300,94 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
    return_value=LoadProject(engine_index,file_name);
   }
  }
+ else
+ if(cmd == "SaveProject")
+ {
+  return_value=SaveProject();
+ }
+ else
+ if(cmd == "ReadImageFromVideoSource")
+ {
+#ifdef RDK_VIDEO
+  int video_source_index=engine_index;
+  TVideoOutputFrame *frame=VideoOutputForm->GetVideoOutputFrame(engine_index);
+  if(!frame)
+   return_value=2;
 
- RDK::USerStorageXML result;
+  double time_stamp;
+  frame->CaptureThread->ReadSourceSafe(TempUBitmap,time_stamp,false);
 
- result.Create("RpcResponse");
- result.WriteString("Id", xml.ReadString("Id",""));
+  TempUBitmap>>Bitmap;
+
+  int type=xml.ReadInteger("Type",0);
+  if(type == 0)
+  {
+   MemStream->Clear();
+   Bitmap->SaveToStream(MemStream);
+   MemStream->Position=0;
+   binary_data.resize(1);
+   binary_data[0].resize(MemStream->Size);
+   if(binary_data[0].size()>0)
+	MemStream->ReadBuffer(&binary_data[0][0],binary_data[0].size());
+  }
+  else
+  if(type == 1)
+  {
+   int quality=xml.ReadInteger("Quality",75);
+   TJPEGImage *jpeg=new TJPEGImage;
+   jpeg->Assign(Bitmap);
+   jpeg->CompressionQuality=quality;
+   jpeg->Compress();
+   MemStream->Clear();
+   jpeg->SaveToStream(MemStream);
+   MemStream->Position=0;
+   binary_data.resize(1);
+   binary_data[0].resize(MemStream->Size);
+   if(binary_data[0].size()>0)
+	MemStream->ReadBuffer(&binary_data[0][0],binary_data[0].size());
+   delete jpeg;
+  }
+
+  return_value=0;
+#else
+   return_value=1;
+#endif
+ }
+ else
+ if(cmd == "StartVideoSource")
+ {
+#ifdef RDK_VIDEO
+  TVideoOutputFrame* frame=VideoOutputForm->GetVideoOutputFrame(engine_index);
+  if(frame)
+  {
+   frame->StartButtonClick(this);
+   return_value=0;
+  }
+  else
+   return_value=1;
+#else
+   return_value=1;
+#endif
+ }
+ else
+ if(cmd == "StopVideoSource")
+ {
+#ifdef RDK_VIDEO
+  TVideoOutputFrame* frame=VideoOutputForm->GetVideoOutputFrame(engine_index);
+  if(frame)
+  {
+   frame->StopButtonClick(this);
+   return_value=0;
+  }
+  else
+   return_value=1;
+#else
+   return_value=1;
+#endif
+ }
+ else
+  return_value=2001;
+
  result.WriteString("Data",ControlResponseString);
  result.WriteInteger("Res",return_value);
  result.Save(ControlResponseString);
@@ -133,153 +395,27 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
  return ControlResponseString.c_str();
 }
 
-
 // Функция, обрабатывающая команды управления сервером
-bool TUServerControlForm::ProcessControlCommand(const std::string &cmd_name, std::map<std::string,std::vector<char> > &args, std::string &response_type, std::vector<char> &response_data)
+bool TUServerControlForm::ProcessControlCommand(const UServerCommand &args, std::string &response_type, UParamT &response_data, std::vector<RDK::UParamT> &binary_data)
 {
- std::map<std::string,std::vector<char> >::const_iterator I;
- int res=0;
- std::string response,temp;
- std::string name;
-
- response_type="text/plain";
- if(cmd_name == "SetNumChannels")
- {
-  int num_engines=0;
-  res=DecodeParamAsInteger("Num",args,num_engines);
-  if(res == 0)
-  {
-   res=SetNumChannels(num_engines);
-  }
-
-  ntoa(res,response);
-  ConvertStringToVector(response, response_data);
-  return true;
- }
- else
- if(cmd_name == "GetNumChannels")
- {
-  res=GetNumChannels();
-  ntoa(res,response);
-  ConvertStringToVector(response, response_data);
-  return true;
- }
- else
- if(cmd_name == "GetChannelVideoSource")
- {
-  int channel_id=0;
-  res=DecodeParamAsInteger("Channel",args,channel_id);
-  if(res == 0)
-  {
-   res=GetChannelVideoSource(channel_id);
-  }
-  else
-   res=-1;
-
-  ntoa(res,response);
-  ConvertStringToVector(response, response_data);
-  return true;
- }
- else
- if(cmd_name == "SetChannelVideoSource")
- {
-  int channel_id=0, mode=-1;
-  res=0;
-  res|=DecodeParamAsInteger("Channel",args,channel_id);
-  res|=DecodeParamAsInteger("Mode",args,mode);
-  if(res == 0)
-  {
-   res=SetChannelVideoSource(channel_id,mode);
-  }
-
-  ntoa(res,response);
-  ConvertStringToVector(response, response_data);
-  return true;
- }
- else
- if(cmd_name == "ResetChannel")
- {
-  int channel_id=0;
-  res=0;
-  res|=DecodeParamAsInteger("Channel",args,channel_id);
-  if(res == 0)
-  {
-   res=ResetChannel(channel_id);
-  }
-
-  ntoa(res,response);
-  ConvertStringToVector(response, response_data);
-  return true;
- }
- else
- if(cmd_name == "StartChannel")
- {
-  int channel_id=0;
-  res=0;
-  res|=DecodeParamAsInteger("Channel",args,channel_id);
-  if(res == 0)
-  {
-   res=StartChannel(channel_id);
-  }
-
-  ntoa(res,response);
-  ConvertStringToVector(response, response_data);
-  return true;
- }
- else
- if(cmd_name == "StopChannel")
- {
-  int channel_id=0;
-  res=0;
-  res|=DecodeParamAsInteger("Channel",args,channel_id);
-  if(res == 0)
-  {
-   res=StopChannel(channel_id);
-  }
-
-  ntoa(res,response);
-  ConvertStringToVector(response, response_data);
-  return true;
- }
- else
- if(cmd_name == "LoadProject")
- {
-  int channel_id=0;
-  std::string file_name;
-  res=0;
-  res|=DecodeParamAsInteger("Channel",args,channel_id);
-  ConvertVectorToString(args["FileName"],file_name);
-  if(res == 0 && !file_name.empty())
-  {
-   res=LoadProject(channel_id,file_name);
-  }
-
-  ntoa(res,response);
-  ConvertStringToVector(response, response_data);
-  return true;
- }
-
- return false;
-}
-
-// Функция, обрабатывающая команды управления сервером
-bool TUServerControlForm::ProcessControlCommand(const std::map<std::string,std::vector<char> > &args, std::string &response_type, std::vector<char> &response_data)
-{
- std::map<std::string,std::vector<char> >::const_iterator I;
+// UServerCommand::const_iterator I;
  std::string request;
 
  response_type="text/plain";
-
+/*
  I=args.find("Request");
  if(I == args.end())
  {
   ConvertStringToVector("RPC: Request not found", response_data);
   return true;
  }
-
- ConvertVectorToString(I->second, request);
+  */
+ ConvertVectorToString(args.second, request);
  int response_status=0;
- const char* response=ControlRemoteCall(request.c_str(), response_status);
+ const char* response=ControlRemoteCall(request.c_str(), response_status, binary_data);
+
+ if(response_status == 2001)
+  return false;
 
  if(response)
   ConvertStringToVector(response, response_data);
@@ -289,219 +425,35 @@ bool TUServerControlForm::ProcessControlCommand(const std::map<std::string,std::
  return true;
 }
 
-// Функция, обрабатывающая команды удаленного вызова процедур
-bool TUServerControlForm::ProcessRPCCommand(int channel, const std::string &cmd_name, std::map<std::string,std::vector<char> > &args, std::string &response_type, std::vector<char> &response_data)
+bool TUServerControlForm::ProcessRPCCommand(const UServerCommand &args, std::string &response_type, UParamT &response_data)
 {
- std::map<std::string,std::vector<char> >::const_iterator I;
- int res=0;
- std::string response,temp;
- std::string name;
-
- response_type="text/plain";
- if(cmd_name == "EngineInit")
- {
-  int predefined_structure=0;
-  res=DecodeParamAsInteger("PredefinedStructure",args,predefined_structure);
-
-  res=EngineInit(predefined_structure);
-  ntoa(res,response);
-  ConvertStringToVector(response, response_data);
-  return true;
- }
- else
- if(cmd_name == "EngineUnInit")
- {
-  res=EngineUnInit();
-  ntoa(res,response);
-  ConvertStringToVector(response, response_data);
-  return true;
- }
- else
- if(cmd_name == "Env_Reset")
- {
-  ConvertVectorToString(args["Name"], name);
-  res=Env_Reset(name.c_str());
-  ntoa(res,response);
-  ConvertStringToVector(response, response_data);
-  return true;
- }
- else
- if(cmd_name == "Env_Calculate")
- {
-  ConvertVectorToString(args["Name"], name);
-  res=Env_Calculate(name.c_str());
-  ntoa(res,response);
-  ConvertStringToVector(response, response_data);
-  return true;
- }
- else
- if(cmd_name == "Model_Create")
- {
-  I=args.find("Class");
-  if(I != args.end())
-  {
-   ConvertVectorToString(I->second, temp);
-   res=Model_Create(temp.c_str());
-  }
-  else
-   res=100;
-  ntoa(res,response);
-  ConvertStringToVector(response, response_data);
-  return true;
- }
- else
- if(cmd_name == "Model_LoadComponent")
- {
-  ConvertVectorToString(args["Name"], name);
-  ConvertVectorToString(args["Xml"], temp);
-
-  res=Model_LoadComponent(name.c_str(),temp.c_str());
-  ntoa(res,response);
-  ConvertStringToVector(response, response_data);
-  return true;
- }
- else
- if(cmd_name == "Model_LoadComponentParameters")
- {
-  ConvertVectorToString(args["Name"], name);
-  ConvertVectorToString(args["Xml"], temp);
-
-  res=Model_LoadComponentParameters(name.c_str(),temp.c_str());
-  ntoa(res,response);
-  ConvertStringToVector(response, response_data);
-  return true;
- }
- else
- if(cmd_name == "Model_GetComponentParameters")
- {
-  ConvertVectorToString(args["Name"], name);
-  const char* value=Model_GetComponentParameters(name.c_str());
-  if(value)
-  {
-   ConvertStringToVector(value, response_data);
-   res=0;
-  }
-  else
-  {
-   res=1;
-   response_data.clear();
-  }
-  return true;
- }
- else
- if(cmd_name == "Model_GetComponentStates")
- {
-  ConvertVectorToString(args["Name"], name);
-  const char* value=Model_GetComponentState(name.c_str());
-  if(value)
-  {
-   ConvertStringToVector(value, response_data);
-   res=0;
-  }
-  else
-  {
-   res=1;
-   response_data.clear();
-  }
-  return true;
- }
- else
- if(cmd_name == "Model_GetComponentBitmapOutput")
- {
-  ConvertVectorToString(args["Name"], name);
-  string output_name=0;
-  ConvertVectorToString(args["Index"],output_name);
-
-  const RDK::UBitmap* value=(const RDK::UBitmap*)Model_GetComponentBitmapOutput(name.c_str(),output_name.c_str());
-  if(value)
-  {
-   *value>>Bitmap;
-   MemStream->Clear();
-   Bitmap->SaveToStream(MemStream);
-   MemStream->Position=0;
-   response_data.resize(MemStream->Size);
-   if(response_data.size()>0)
-    MemStream->ReadBuffer(&response_data[0],MemStream->Size);
-
-   response_type="image/bmp";
-   res=0;
-  }
-  else
-  {
-   res=1;
-   response_data.clear();
-  }
-  return true;
- }
- else
- if(cmd_name == "Model_GetComponentBitmapInput")
- {
-  ConvertVectorToString(args["Name"], name);
-  string output_name;
-  ConvertVectorToString(args["Index"],output_name);
-
-  const RDK::UBitmap* value=(const RDK::UBitmap*)Model_GetComponentBitmapInput(name.c_str(),output_name.c_str());
-  if(value)
-  {
-   *value>>Bitmap;
-   MemStream->Clear();
-   Bitmap->SaveToStream(MemStream);
-   MemStream->Position=0;
-   response_data.resize(MemStream->Size);
-   if(response_data.size()>0)
-	MemStream->ReadBuffer(&response_data[0],MemStream->Size);
-
-   res=0;
-  }
-  else
-  {
-   response_data.clear();
-   res=1;
-  }
-  return true;
- }
- else
- if(cmd_name == "Model_SetComponentBitmapOutput")
- {
-  ConvertVectorToString(args["Name"], name);
-  string output_name;
-  ConvertVectorToString(args["Index"],output_name);
-
-  vector<char> &image_data=args["Image"];
-
-  if(image_data.empty())
-  {
-   res=1;
-   response_data.clear();
-  }
-  else
-  {
-   MemStream->Clear();
-   if(image_data.size()>0)
-	MemStream->Write(&image_data[0],image_data.size());
-   MemStream->Position=0;
-
-   Bitmap->LoadFromStream(MemStream);
-   TempUBitmap<<Bitmap;
- //  TempUBitmap>>Image1->Picture->Bitmap;
- //  Image1->Repaint();
-
-   Model_SetComponentBitmapOutput(name.c_str(),output_name.c_str(),&TempUBitmap);
-   ConvertStringToVector("0", response_data);
-  }
-  return true;
- }
-
- return false;
-}
-
-bool TUServerControlForm::ProcessRPCCommand(const std::map<std::string,std::vector<char> > &args, std::string &response_type, std::vector<char> &response_data)
-{
- std::map<std::string,std::vector<char> >::const_iterator I;
  std::string request;
 
  response_type="text/plain";
 
+ ConvertVectorToString(args.second, request);
+ int response_status=0;
+ int channel_index=0;
+ const char* response=RemoteCall(request.c_str(), response_status,channel_index);
+
+ if(response_status == 2001)
+  return false;
+
+ if(response)
+  ConvertStringToVector(response, response_data);
+ else
+  ConvertStringToVector(RDK::sntoa(response_status), response_data);
+ MEngine_FreeBufString(channel_index, response);
+ return true;
+}
+
+bool TUServerControlForm::ProcessPtzCommand(const UServerCommand &args, std::string &response_type, UParamT &response_data)
+{
+// UServerCommand::const_iterator I;
+ std::string request;
+
+ response_type="text/plain";
+				/*
  I=args.find("Request");
  if(I == args.end())
  {
@@ -509,21 +461,27 @@ bool TUServerControlForm::ProcessRPCCommand(const std::map<std::string,std::vect
   return true;
  }
 
- ConvertVectorToString(I->second, request);
+ ConvertVectorToString(I->second, request);*/
+ ConvertVectorToString(args.second, request);
  int response_status=0;
- const char* response=RemoteCall(request.c_str(), response_status);
+ int channel_index=0;
+ const char* response=PtzRemoteCall(request.c_str(), response_status, channel_index);
+
+ if(response_status == 2001)
+  return false;
 
  if(response)
   ConvertStringToVector(response, response_data);
  else
   ConvertStringToVector(RDK::sntoa(response_status), response_data);
+ MEngine_FreeBufString(channel_index, response);
 
  return true;
 }
 
 
 /// Кодирует строку в вектор
-void TUServerControlForm::ConvertStringToVector(const std::string &source, std::vector<char> &dest)
+void TUServerControlForm::ConvertStringToVector(const std::string &source, UParamT &dest)
 {
  dest.resize(source.size());
  if(source.size()>0)
@@ -531,7 +489,7 @@ void TUServerControlForm::ConvertStringToVector(const std::string &source, std::
 }
 
 /// Кодирует вектор в строку
-void TUServerControlForm::ConvertVectorToString(const std::vector<char> &source, std::string &dest)
+void TUServerControlForm::ConvertVectorToString(const UParamT &source, std::string &dest)
 {
  dest.resize(source.size());
  if(source.size()>0)
@@ -542,9 +500,9 @@ void TUServerControlForm::ConvertVectorToString(const std::vector<char> &source,
 /// Декодирует параметр массива команды с именем 'param_name' в целое число
 /// и записывает его в value
 /// Возвращает 0 в случае успеха
-int TUServerControlForm::DecodeParamAsInteger(const std::string &param_name, const std::map<std::string,std::vector<char> > &args, int &value)
+/*int TUServerControlForm::DecodeParamAsInteger(const std::string &param_name, const UServerCommand &args, int &value)
 {
- std::map<std::string,std::vector<char> >::const_iterator I;
+ UServerCommand::const_iterator I;
  I=args.find(param_name);
  if(I != args.end() && I->second.size()>0)
  {
@@ -554,6 +512,98 @@ int TUServerControlForm::DecodeParamAsInteger(const std::string &param_name, con
   return 0;
  }
  return 1;
+} */
+
+
+/// Отправляет ответ на команду
+void TUServerControlForm::SendCommandResponse(const std::string &client_binding, UParamT &dest, std::vector<RDK::UParamT> &binary_data)
+{
+ UTransferPacket packet;
+
+ packet.SetNumParams(1+binary_data.size());
+ packet.SetParamSize(0,dest.size());
+ packet.SetParam(0,dest);
+ for(size_t i=0;i<binary_data.size();i++)
+ {
+  packet.SetParamSize(i+1,binary_data[i].size());
+  packet.SetParam(i+1,binary_data[i]);
+ }
+ RDK::UParamT buffer;
+ packet.Save(buffer);
+
+ if(IdTCPServer->Active && !dest.empty())
+ {
+  TByteDynArray arr;
+  arr.set_length(buffer.size());
+  memcpy(&arr[0],&buffer[0],buffer.size());
+  try
+  {
+   TList *list=IdTCPServer->Contexts->LockList();
+   std::string current_bind;
+   for(int i=0;i<list->Count;i++)
+   {
+	TIdContext *context=static_cast<TIdContext*>(list->Items[i]);
+	current_bind=AnsiString(context->Binding->PeerIP).c_str();
+	current_bind+=":";
+	current_bind+=RDK::sntoa(context->Binding->PeerPort);
+
+	if(current_bind == client_binding)
+	{
+	 context->Connection->IOHandler->Write(arr, arr.get_length());
+	 break;
+	}
+   }
+
+   IdTCPServer->Contexts->UnlockList();
+  }
+  catch (...)
+  {
+   IdTCPServer->Contexts->UnlockList();
+   throw;
+  }
+ }
+}
+
+/// Отправляет сообщение об ошибке в ответ на команду
+/// 0 - неизвестная ошибка
+/// 1 - Команда не опознана
+void TUServerControlForm::SendCommandError(const std::string &client_binding, int request_id, int error_code)
+{
+ RDK::USerStorageXML result;
+
+ result.Create("RpcResponse");
+ result.WriteString("Id", sntoa(request_id));
+ result.WriteString("Error",sntoa(error_code));
+ result.Save(ControlResponseString);
+ UParamT error_response;
+ ConvertStringToVector(ControlResponseString, error_response);
+ SendCommandResponse(client_binding, error_response, BinaryResponse);
+}
+
+/// Устанавливает параметры сервера
+bool TUServerControlForm::SetServerBinding(const std::string &interface_address, int port)
+{
+ if(interface_address == GetServerBindingInterfaceAddress() &&
+	port == GetServerBindingPort())
+  return true;
+
+ IdTCPServer->Active=false;
+ IdTCPServer->Bindings->Items[0]->Port=port;
+ IdTCPServer->Bindings->Items[0]->IP=interface_address.c_str();
+ if(AutoStartFlag)
+  ServerStartButtonClick(this);
+ return true;
+}
+
+/// Возвращает параметры сервера
+std::string TUServerControlForm::GetServerBindingInterfaceAddress(void) const
+{
+ return AnsiString(IdTCPServer->Bindings->Items[0]->IP).c_str();
+}
+
+int TUServerControlForm::GetServerBindingPort(void) const
+{
+ return IdTCPServer->Bindings->Items[0]->Port;
 }
 
 
@@ -579,7 +629,7 @@ void TUServerControlForm::AAfterReset(void)
 // Метод, вызываемый после шага расчета
 void TUServerControlForm::AAfterCalculate(void)
 {
- if(PerformancePushIndex>=ModelPerformanceResults.size())
+ if(PerformancePushIndex>=int(ModelPerformanceResults.size()))
   PerformancePushIndex=0;
 
  if(ModelPerformanceResults.size() == 0)
@@ -590,34 +640,20 @@ void TUServerControlForm::AAfterCalculate(void)
  {
   if(!MIsEngineInit(i) || !MModel_Check(i))
    continue;
-  long long model_time=MModel_GetFullStepDuration(i,"");
-  long long ext_gui=MModel_GetInterstepsInterval(i,"");
+  RDK::ULongTime model_time=MModel_GetFullStepDuration(i,"");
+  RDK::ULongTime ext_gui=MModel_GetInterstepsInterval(i,"");
   ModelPerformanceResults[PerformancePushIndex][i]=model_time;
   TransportPerformanceResults[PerformancePushIndex][i]=ext_gui;
  }
  ++PerformancePushIndex;
- if(PerformancePushIndex>=ModelPerformanceResults.size())
+ if(PerformancePushIndex>=int(ModelPerformanceResults.size()))
   PerformancePushIndex=0;
 }
 
 // Обновление интерфейса
 void TUServerControlForm::AUpdateInterface(void)
 {
- ServerControlPortLabeledEdit->Text=IntToStr(UHttpServerFrame->GetListenPort());
- NumberOfChannelsLabeledEdit->Text=IntToStr(GetNumChannels());
-
- ChannelNamesStringGrid->RowCount=ChannelNames.size()+1;
- ChannelNamesStringGrid->ColWidths[0]=20;
- ChannelNamesStringGrid->ColWidths[1]=ChannelNamesStringGrid->Width-ChannelNamesStringGrid->ColWidths[0]-20;
- ChannelNamesStringGrid->Cells[0][0]="Channel #";
- ChannelNamesStringGrid->Cells[1][0]="Channel Name";
- for(int i=0;i<ChannelNames.size();i++)
- {
-  ChannelNamesStringGrid->Cells[0][i+1]=IntToStr(i);
-  ChannelNamesStringGrid->Cells[1][i+1]=ChannelNames[i].c_str();
- }
-
- std::vector<long long> model_avg,transport_avg;
+ std::vector<RDK::ULongTime> model_avg,transport_avg;
  model_avg.assign(GetNumChannels(),0);
  transport_avg.assign(GetNumChannels(),0);
  int sum_number=0;
@@ -648,15 +684,54 @@ void TUServerControlForm::AUpdateInterface(void)
   PerformanceChart->Series[1]->AddY(transport_avg[i]);
   PerformanceChart->Series[2]->AddY(model_avg[i]+transport_avg[i]);
  }
+
+
+ ChannelNamesStringGrid->RowCount=ChannelNames.size()+1;
+ if(ChannelNamesStringGrid->RowCount>1)
+  ChannelNamesStringGrid->FixedRows=1;
+
+ ChannelNamesStringGrid->Cells[0][0]="#";
+ ChannelNamesStringGrid->Cells[1][0]="Channel Name";
+ ChannelNamesStringGrid->ColWidths[0]=25;
+ ChannelNamesStringGrid->ColWidths[1]=ChannelNamesStringGrid->Width-ChannelNamesStringGrid->ColWidths[0]-25;
+ for(int i=0;i<ChannelNames.size();i++)
+ {
+  ChannelNamesStringGrid->Cells[0][i+1]=StrToInt(i);
+  ChannelNamesStringGrid->Cells[1][i+1]=ChannelNames[i].c_str();
+ }
+
+ NumberOfChannelsLabeledEdit->Text=IntToStr(GetNumEngines());
+ ServerNameLabeledEdit->Text=ServerName.c_str();
+ ServerIdLabeledEdit->Text=ServerId.c_str();
+ ServerControlPortLabeledEdit->Text=IdTCPServer->Bindings->Items[0]->Port;
+ BindingAddressLabeledEdit->Text=IdTCPServer->Bindings->Items[0]->IP;
+
+ MetadataComponentNameLabeledEdit->Text=MetaComponentName.c_str();
+ MetadataComponentStateNameLabeledEdit->Text=MetaComponentStateName.c_str();
 }
+
+// Возврат интерфейса в исходное состояние
+void TUServerControlForm::AClearInterface(void)
+{
+ ServerStopButtonClick(this);
+}
+
 
 // Сохраняет параметры интерфейса в xml
 void TUServerControlForm::ASaveParameters(RDK::USerStorageXML &xml)
 {
  xml.WriteInteger("AverageIterations",AverageIterations);
- xml.WriteInteger("ServerControlPort", UHttpServerFrame->GetListenPort());
+// xml.WriteInteger("ServerControlPort", GetServerBindingPort());
+// xml.WriteString("ServerControlAddress", GetServerBindingInterfaceAddress());
+
  xml.WriteInteger("NumberOfChannels",GetNumChannels());
  xml.WriteInteger("AutoStartFlag",AutoStartFlag);
+ xml.WriteString("ServerName",ServerName);
+ xml.WriteString("ServerId",ServerId);
+
+ xml.WriteString("MetadataComponentName",MetaComponentName);
+ xml.WriteString("MetadataComponentStateName",MetaComponentStateName);
+
  for(size_t i=0;i<ChannelNames.size();i++)
  {
   xml.WriteString(std::string("ChannelName_")+RDK::sntoa(i),ChannelNames[i]);
@@ -667,7 +742,11 @@ void TUServerControlForm::ASaveParameters(RDK::USerStorageXML &xml)
 void TUServerControlForm::ALoadParameters(RDK::USerStorageXML &xml)
 {
  AverageIterations=xml.ReadInteger("AverageIterations",AverageIterations);
- UHttpServerFrame->SetListenPort(xml.ReadInteger("ServerControlPort",80));
+// SetServerBinding(xml.ReadString("ServerControlAddress", "127.0.0.1"),xml.ReadInteger("ServerControlPort",80));
+
+ MetaComponentName=xml.ReadString("MetadataComponentName","");
+ MetaComponentStateName=xml.ReadString("MetadataComponentStateName","");
+
  SetNumChannels(GetNumEngines());
  for(size_t i=0;i<ChannelNames.size();i++)
  {
@@ -675,6 +754,10 @@ void TUServerControlForm::ALoadParameters(RDK::USerStorageXML &xml)
  }
 
  AutoStartFlag=xml.ReadInteger("AutoStartFlag",true);
+ ServerName=xml.ReadString("ServerName","Server");
+ ServerId=xml.ReadString("ServerId","Server");
+
+ UpdateInterface(true);
 
  if(AutoStartFlag)
   ServerStartButtonClick(this);
@@ -703,50 +786,102 @@ int TUServerControlForm::SetNumChannels(int value)
  if(value<=0)
   return 1;
 
- if(VideoOutputForm->GetNumSources()<value)
+// int selected=GetSelectedEngineIndex();
+ for(int i=0;i<value;i++)
  {
-  for(int i=VideoOutputForm->GetNumSources();i<value;i++)
+  if(GetNumEngines()<=i)
+   break;
+
+  if(!MIsEngineInit(i) || !MModel_Check(i))
   {
-   VideoOutputForm->AddSource();
-   VideoOutputForm->GetVideoOutputFrame(i)->MyVideoGrabberControlForm->VideoGrabberControlFrame->PipeUidEdit->Text=(std::string("USharedMemory")+RDK::sntoa(i)).c_str();
-   VideoOutputForm->GetVideoOutputFrame(i)->MyVideoGrabberControlForm->VideoGrabberControlFrame->PipeIndexEdit->Text=IntToStr(i);
-   VideoOutputForm->GetVideoOutputFrame(i)->PipeIndex=i;
-  }
-  VideoOutputForm->UpdateInterface();
- }
- else
- {
-  while(VideoOutputForm->GetNumSources()>value)
-  {
-   VideoOutputForm->DelSource(VideoOutputForm->GetNumSources()-1);
+   UGEngineControlForm->CloneProject(0, i);
+   MEnv_Reset(i,0);
   }
  }
 
- if(IdTcpResultBroadcasterForm->GetNumBroadcasters()<value)
+#ifdef RDK_VIDEO
+ if(UGEngineControlForm->ProjectMode == 1)
  {
-  for(int i=IdTcpResultBroadcasterForm->GetNumBroadcasters();i<value;i++)
+  if(VideoOutputForm->GetNumSources()<value)
   {
-   IdTcpResultBroadcasterForm->AddBroadcaster();
-
-   TIdTcpResultBroadcasterFrame *frame=IdTcpResultBroadcasterForm->GetBroadcasterFrame(i);
-   if(frame)
+   for(int i=VideoOutputForm->GetNumSources();i<value;i++)
    {
-	frame->ChannelIndexLabeledEdit->Text=IntToStr(i);
-	frame->ServerAddressLabeledEdit->Text=IdTcpResultBroadcasterForm->GetBroadcasterFrame(0)->ServerAddressLabeledEdit->Text;
-	frame->XmlComponentNameLabeledEdit->Text=IdTcpResultBroadcasterForm->GetBroadcasterFrame(0)->XmlComponentNameLabeledEdit->Text;
-    frame->XmlComponentStateNameLabeledEdit->Text=IdTcpResultBroadcasterForm->GetBroadcasterFrame(0)->XmlComponentStateNameLabeledEdit->Text;
-    frame->EnableXmlTranslationCheckBox->Checked=IdTcpResultBroadcasterForm->GetBroadcasterFrame(0)->EnableXmlTranslationCheckBox->Checked;
+	VideoOutputForm->AddSource();
+	VideoOutputForm->GetVideoOutputFrame(i)->Init(0);
+//	VideoOutputForm->GetVideoOutputFrame(i)->MyVideoGrabberControlForm->VideoGrabberControlFrame->PipeUidEdit->Text=(std::string("USharedMemory")+RDK::sntoa(i)).c_str();
+//	VideoOutputForm->GetVideoOutputFrame(i)->MyVideoGrabberControlForm->VideoGrabberControlFrame->PipeIndexEdit->Text=IntToStr(i);
+//    VideoOutputForm->GetVideoOutputFrame(i)->MyVideoGrabberControlForm->CloseButtonClick(this);
+   }
+   VideoOutputForm->UpdateInterface();
+  }
+  else
+  {
+   while(VideoOutputForm->GetNumSources()>value)
+   {
+	VideoOutputForm->DelSource(VideoOutputForm->GetNumSources()-1);
    }
   }
-  IdTcpResultBroadcasterForm->UpdateInterface();
- }
- else
- {
-  while(IdTcpResultBroadcasterForm->GetNumBroadcasters()>value)
+
+  if(IdTcpResultBroadcasterForm->GetNumBroadcasters()<value)
   {
-   IdTcpResultBroadcasterForm->DelBroadcaster(IdTcpResultBroadcasterForm->GetNumBroadcasters()-1);
+   for(int i=IdTcpResultBroadcasterForm->GetNumBroadcasters();i<value;i++)
+   {
+	IdTcpResultBroadcasterForm->AddBroadcaster();
+
+	TIdTcpResultBroadcasterFrame *frame=IdTcpResultBroadcasterForm->GetBroadcasterFrame(i);
+	if(frame)
+	{
+	 frame->ChannelIndexLabeledEdit->Text=IntToStr(i);
+	 frame->ServerAddressLabeledEdit->Text=IdTcpResultBroadcasterForm->GetBroadcasterFrame(0)->ServerAddressLabeledEdit->Text;
+	 frame->XmlComponentNameLabeledEdit->Text=IdTcpResultBroadcasterForm->GetBroadcasterFrame(0)->XmlComponentNameLabeledEdit->Text;
+	 frame->XmlComponentStateNameLabeledEdit->Text=IdTcpResultBroadcasterForm->GetBroadcasterFrame(0)->XmlComponentStateNameLabeledEdit->Text;
+	 frame->EnableXmlTranslationCheckBox->Checked=IdTcpResultBroadcasterForm->GetBroadcasterFrame(0)->EnableXmlTranslationCheckBox->Checked;
+	 frame->EnableXmlTranslationCheckBoxClick(this);
+	}
+   }
+   IdTcpResultBroadcasterForm->UpdateInterface();
+  }
+  else
+  {
+   while(IdTcpResultBroadcasterForm->GetNumBroadcasters()>value)
+   {
+	IdTcpResultBroadcasterForm->DelBroadcaster(IdTcpResultBroadcasterForm->GetNumBroadcasters()-1);
+   }
   }
  }
+#endif
+
+#ifdef DVA_GEVISCOPE
+  if(GeViScopeResultBroadcasterForm->GetNumBroadcasters()<value)
+  {
+   for(int i=GeViScopeResultBroadcasterForm->GetNumBroadcasters();i<value;i++)
+   {
+	GeViScopeResultBroadcasterForm->AddBroadcaster();
+
+	TGeViScopeResultBroadcasterFrame *frame=GeViScopeResultBroadcasterForm->GetBroadcasterFrame(i);
+	if(frame)
+	{
+	 frame->ChannelIndexLabeledEdit->Text=IntToStr(i);
+	 frame->ServerAddressLabeledEdit->Text=GeViScopeResultBroadcasterForm->GetBroadcasterFrame(0)->ServerAddressLabeledEdit->Text;
+	 frame->UsernameLabeledEdit->Text=GeViScopeResultBroadcasterForm->GetBroadcasterFrame(0)->UsernameLabeledEdit->Text;
+	 frame->PasswordLabeledEdit->Text=GeViScopeResultBroadcasterForm->GetBroadcasterFrame(0)->PasswordLabeledEdit->Text;
+	 frame->MediaChannelLabeledEdit->Text=GeViScopeResultBroadcasterForm->GetBroadcasterFrame(0)->MediaChannelLabeledEdit->Text;
+	 frame->XmlComponentNameLabeledEdit->Text=GeViScopeResultBroadcasterForm->GetBroadcasterFrame(0)->XmlComponentNameLabeledEdit->Text;
+	 frame->XmlComponentStateNameLabeledEdit->Text=GeViScopeResultBroadcasterForm->GetBroadcasterFrame(0)->XmlComponentStateNameLabeledEdit->Text;
+	 frame->EnableXmlTranslationCheckBox->Checked=GeViScopeResultBroadcasterForm->GetBroadcasterFrame(0)->EnableXmlTranslationCheckBox->Checked;
+	 frame->EnableXmlTranslationCheckBoxClick(this);
+	}
+   }
+   GeViScopeResultBroadcasterForm->UpdateInterface();
+  }
+  else
+  {
+   while(GeViScopeResultBroadcasterForm->GetNumBroadcasters()>value)
+   {
+	GeViScopeResultBroadcasterForm->DelBroadcaster(GeViScopeResultBroadcasterForm->GetNumBroadcasters()-1);
+   }
+  }
+#endif
 
  ChannelNames.resize(value);
  for(size_t i=0;i<ChannelNames.size();i++)
@@ -766,17 +901,22 @@ int TUServerControlForm::SetNumChannels(int value)
 /// в соответствии с режимами VideoOutputFrame
 int TUServerControlForm::GetChannelVideoSource(int channel_id)
 {
+#ifdef RDK_VIDEO
  TVideoOutputFrame *frame=VideoOutputForm->GetVideoOutputFrame(channel_id);
  if(!frame)
   return -1;
 
- return frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->GetMode();
+ return frame->CaptureThread->GetSourceMode();// MyVideoGrabberControlForm->VideoGrabberControlFrame->GetMode();
+#else
+ return -1;
+#endif
 }
 
 /// Задает источник видео для канала
 /// в соответствии с режимами VideoOutputFrame
 int TUServerControlForm::SetChannelVideoSource(int channel_id, int source_mode)
 {
+#ifdef RDK_VIDEO
  int num=GetNumChannels();
  if(channel_id<0)
  {
@@ -786,7 +926,8 @@ int TUServerControlForm::SetChannelVideoSource(int channel_id, int source_mode)
    if(!frame)
 	return 1;
 
-   frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->SelectMode(source_mode);
+   frame->Init(source_mode);
+//   frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->SelectMode(source_mode);
   }
  }
  else
@@ -795,9 +936,31 @@ int TUServerControlForm::SetChannelVideoSource(int channel_id, int source_mode)
   if(!frame)
    return 1;
 
-  frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->SelectMode(source_mode);
+  frame->Init(source_mode);
+//  frame->MyVideoGrabberControlForm->VideoGrabberControlFrame->SelectMode(source_mode);
  }
+
  return 0;
+#else
+ return 1000;
+#endif
+}
+
+
+/// Проверяет подключен ли видеоисточник
+int TUServerControlForm::CheckChannelVideoSourceConnection(int channel_id)
+{
+#ifdef RDK_VIDEO
+ int num=GetNumChannels();
+
+  TVideoOutputFrame *frame=VideoOutputForm->GetVideoOutputFrame(channel_id);
+  if(!frame)
+   return 0;
+
+ return frame->CaptureThread->CheckConnection();
+#else
+ return 0;
+#endif
 }
 
 
@@ -819,8 +982,8 @@ bool TUServerControlForm::SetChannelName(int channel, const std::string& name)
  if(ChannelNames[channel] == name)
   return true;
 
- if(find(ChannelNames.begin(),ChannelNames.end(),name) != ChannelNames.end())
-  return false;
+// if(find(ChannelNames.begin(),ChannelNames.end(),name) != ChannelNames.end())
+//  return false;
 
  ChannelNames[channel]=name;
  return true;
@@ -831,7 +994,7 @@ bool TUServerControlForm::SetChannelName(int channel, const std::string& name)
 /// или всех каналов, если channel_id<0
 int TUServerControlForm::ResetChannel(int channel_id)
 {
- UGEngineControlForm->Reset1Click(this);
+ UGEngineControlForm->ResetChannel(channel_id);
  return 0;
 }
 
@@ -839,7 +1002,7 @@ int TUServerControlForm::ResetChannel(int channel_id)
 /// или все каналы, если channel_id<0
 int TUServerControlForm::StartChannel(int channel_id)
 {
- UGEngineControlForm->Start1Click(this);
+ UGEngineControlForm->StartChannel(channel_id);
  return 0;
 }
 
@@ -847,7 +1010,59 @@ int TUServerControlForm::StartChannel(int channel_id)
 /// или все каналы, если channel_id<0
 int TUServerControlForm::StopChannel(int channel_id)
 {
- UGEngineControlForm->Pause1Click(this);
+ UGEngineControlForm->PauseChannel(channel_id);
+ return 0;
+}
+
+
+/// Регистрирует удаленный приемник метаданных
+int TUServerControlForm::RegisterMetadataReceiver(const std::string &address, int port,
+		const std::string &component_name, const std::string &component_state)
+{
+ UnRegisterMetadataReceiver(address, port);
+ TIdTcpResultBroadcasterFrame *broadcaster=IdTcpResultBroadcasterForm->FindBroadcasterFrame(address,port);
+ if(broadcaster)
+ {
+
+ }
+ else
+ {
+  IdTcpResultBroadcasterForm->AddBroadcaster();
+  broadcaster=IdTcpResultBroadcasterForm->GetBroadcasterFrame(IdTcpResultBroadcasterForm->GetNumBroadcasters()-1);
+
+  if(broadcaster)
+  {
+   string bind2=address;
+   bind2+=":";
+   bind2+=sntoa(port);
+   broadcaster->ServerAddressLabeledEdit->Text=bind2.c_str();
+   broadcaster->XmlComponentNameLabeledEdit->Text=component_name.c_str();//"Pipeline1.AggrPureOutput";
+   broadcaster->XmlComponentStateNameLabeledEdit->Text=component_state.c_str();
+   broadcaster->EnableXmlTranslationCheckBox->Checked=true;
+   broadcaster->ConnectButtonClick(this);
+   Engine_LogMessage(RDK_EX_INFO, (std::string("Metadata receiver registered: ")+bind2).c_str());
+  }
+ }
+
+ return 0;
+}
+
+/// Удаляет удаленный приемник метаданных
+int TUServerControlForm::UnRegisterMetadataReceiver(const std::string &address, int port)
+{
+ TIdTcpResultBroadcasterFrame *broadcaster=IdTcpResultBroadcasterForm->FindBroadcasterFrame(address,port);
+ if(broadcaster)
+ {
+  broadcaster->EnableXmlTranslationCheckBox->Checked=false;
+ // broadcaster->ConnectButtonClick(this);
+  int index=IdTcpResultBroadcasterForm->GetBroadcasterFrameIndex(broadcaster);
+  if(index >= 0)
+  {
+   IdTcpResultBroadcasterForm->DelBroadcaster(index);
+  }
+  Engine_LogMessage(RDK_EX_INFO, (std::string("Metadata receiver unregistered: ")+address+string(":")+sntoa(port)).c_str());
+ }
+
  return 0;
 }
 
@@ -858,6 +1073,13 @@ int TUServerControlForm::LoadProject(int channel_id, const std::string &project_
  UGEngineControlForm->OpenProject(project_file_name.c_str());
  return 0;
 }
+
+/// Сохраняет проект
+int TUServerControlForm::SaveProject(void)
+{
+ UGEngineControlForm->SaveProject();
+ return 0;
+}
 // -----------------------------
 
 //---------------------------------------------------------------------------
@@ -865,7 +1087,7 @@ void __fastcall TUServerControlForm::UHttpServerFrameIdHTTPServerCommandGet(TIdC
 		  TIdHTTPRequestInfo *ARequestInfo, TIdHTTPResponseInfo *AResponseInfo)
 
 {
- Mode=-1;
+/* Mode=-1;
 
  if(ARequestInfo->Document != "/control.cgi")
  {
@@ -877,10 +1099,10 @@ void __fastcall TUServerControlForm::UHttpServerFrameIdHTTPServerCommandGet(TIdC
 
  UHttpServerFrame->IdHTTPServerCommandGet(AContext, ARequestInfo, AResponseInfo);
 
- int decode_res=0;
+ //int decode_res=0;
  if(CommandRequestDecoder)
  {
-  decode_res=CommandRequestDecoder(UHttpServerFrame->ParsedRequestArgs, DecodedRequest);
+  CommandRequestDecoder(UHttpServerFrame->ParsedRequestArgs, DecodedRequest);
  }
  else
  {
@@ -889,38 +1111,19 @@ void __fastcall TUServerControlForm::UHttpServerFrameIdHTTPServerCommandGet(TIdC
   AResponseInfo->ContentText="Request decode fail";
   return;
  }
-   /*
- std::map<std::string,std::vector<char> >::iterator I;
 
- int engine_index=0;
- I=DecodedRequest.find("Cmd");
- if(I != DecodedRequest.end())
- {
-  TStream* file=0;
-  if(I->second.size()>0)
-   Command.assign(&I->second[0],I->second.size());
- }
- else
-  Command.clear();
-     */
- bool is_processed=ProcessControlCommand(DecodedRequest, ResponseType, Response);
-
- if(!is_processed)
-  is_processed=ProcessRPCCommand(DecodedRequest, ResponseType, Response);
-
- int encode_res=0;
- if(CommandResponseEncoder)
- {
-  encode_res=CommandResponseEncoder(ResponseType, Response, EncodedResponse);
- }
- else
+ if(WaitForSingleObject(CommandQueueUnlockEvent,1000) == WAIT_TIMEOUT)
  {
   AResponseInfo->ResponseNo=404;
-  AResponseInfo->ResponseText="Response encode fail";
-  AResponseInfo->ContentText="Response encode fail";
+  AResponseInfo->ResponseText="Request decode fail";
+  AResponseInfo->ContentText="Request decode fail";
   return;
  }
+ ResetEvent(CommandQueueUnlockEvent);
+ CommandQueue.push_back(DecodedRequest);
+ SetEvent(CommandQueueUnlockEvent);
 
+ AResponseInfo->ContentText="Command added to queue";
  TMemoryStream *DataStream=new TMemoryStream;
 
  if(EncodedResponse.size()>0)
@@ -928,11 +1131,12 @@ void __fastcall TUServerControlForm::UHttpServerFrameIdHTTPServerCommandGet(TIdC
  DataStream->Position=0;
 
  AResponseInfo->ContentType=ResponseType.c_str();
- AResponseInfo->ContentStream=DataStream;
+ AResponseInfo->ContentStream=DataStream;*/
 }
 //---------------------------------------------------------------------------
 void __fastcall TUServerControlForm::FormCreate(TObject *Sender)
 {
+ CommandQueueUnlockEvent=CreateEvent(0,TRUE,TRUE,0);
  MemStream=new TMemoryStream;
  Bitmap=new Graphics::TBitmap;
  UGEngineControlForm->SpecialForms["TUServerControlForm"]=this;
@@ -940,6 +1144,7 @@ void __fastcall TUServerControlForm::FormCreate(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TUServerControlForm::FormDestroy(TObject *Sender)
 {
+ ServerStopButtonClick(Sender);
 // UGEngineControlForm->SpecialForms.erase("TUServerControlForm");
 
  if(MemStream)
@@ -947,21 +1152,50 @@ void __fastcall TUServerControlForm::FormDestroy(TObject *Sender)
 
  if(Bitmap)
   delete Bitmap;
+
+ CloseHandle(CommandQueueUnlockEvent);
 }
 //---------------------------------------------------------------------------
 void __fastcall TUServerControlForm::ServerStartButtonClick(TObject *Sender)
 {
- UHttpServerFrame->ServerListenOn();
+ ServerRestartTimer->Enabled=true;
+ try
+ {
+  //UHttpServerFrame->ServerListenOn();
+  IdTCPServer->Active=true;
+ }
+ catch(EIdSocketError &ex)
+ {
+  Engine_LogMessage(RDK_EX_ERROR, AnsiString(ex.ToString()).c_str());
+ }
+ catch(EIdCouldNotBindSocket &ex)
+ {
+  Engine_LogMessage(RDK_EX_ERROR, AnsiString(ex.ToString()).c_str());
+ }
+
+// TcpServer->Active=true;
 }
 //---------------------------------------------------------------------------
 void __fastcall TUServerControlForm::ServerStopButtonClick(TObject *Sender)
 {
- UHttpServerFrame->ServerListenOff();
+ ServerRestartTimer->Enabled=false;
+
+ TList *list=IdTCPServer->Contexts->LockList();
+ for(int i=0;i<list->Count;i++)
+ {
+	TIdContext *context=static_cast<TIdContext*>(list->Items[i]);
+	context->Connection->Disconnect();
+ }
+
+   IdTCPServer->Contexts->UnlockList();
+
+ IdTCPServer->Active=false;
 }
 //---------------------------------------------------------------------------
 void __fastcall TUServerControlForm::ReturnOptionsButtonClick(TObject *Sender)
 {
  UpdateInterface(true);
+ PageControlChange(Sender);
 }
 //---------------------------------------------------------------------------
 
@@ -970,10 +1204,30 @@ void __fastcall TUServerControlForm::ApplyOptionsButtonClick(TObject *Sender)
  if(UpdateInterfaceFlag)
   return;
 
- UHttpServerFrame->SetListenPort(StrToInt(ServerControlPortLabeledEdit->Text));
+ int new_num_channels=StrToInt(NumberOfChannelsLabeledEdit->Text);
+ if(new_num_channels < 1)
+  return;
 
- UEngineMonitorForm->EngineMonitorFrame->SetNumChannels(StrToInt(NumberOfChannelsLabeledEdit->Text));
- SetNumChannels(GetNumEngines());
+ if(new_num_channels != GetNumEngines())
+ {
+  UGEngineControlForm->Pause1Click(Sender);
+
+  UEngineMonitorForm->EngineMonitorFrame->SetNumChannels(new_num_channels);
+  SetNumChannels(GetNumEngines());
+ }
+
+// UHttpServerFrame->SetListenPort(StrToInt(ServerControlPortLabeledEdit->Text));
+
+ int new_port=StrToInt(ServerControlPortLabeledEdit->Text);
+ String new_address=BindingAddressLabeledEdit->Text;
+ UGEngineControlForm->ServerInterfaceAddress=AnsiString(new_address).c_str();
+ UGEngineControlForm->ServerInterfacePort=new_port;
+ SetServerBinding(UGEngineControlForm->ServerInterfaceAddress,UGEngineControlForm->ServerInterfacePort);
+
+ ServerName=AnsiString(ServerNameLabeledEdit->Text).c_str();
+ ServerId=AnsiString(ServerIdLabeledEdit->Text).c_str();
+ MetaComponentName=AnsiString(MetadataComponentNameLabeledEdit->Text).c_str();
+ MetaComponentStateName=AnsiString(MetadataComponentStateNameLabeledEdit->Text).c_str();
 
  UpdateInterface();
 }
@@ -991,3 +1245,346 @@ void __fastcall TUServerControlForm::ChannelNamesStringGridKeyDown(TObject *Send
  }
 }
 //---------------------------------------------------------------------------
+void __fastcall TUServerControlForm::PageControlChange(TObject *Sender)
+{
+// ServerControlPortLabeledEdit->Text=IntToStr(UHttpServerFrame->GetListenPort());
+ ServerControlPortLabeledEdit->Text=IdTCPServer->Bindings->Items[0]->Port;//TcpServer->LocalPort;
+ NumberOfChannelsLabeledEdit->Text=IntToStr(GetNumChannels());
+
+ ChannelNamesStringGrid->RowCount=ChannelNames.size()+1;
+ ChannelNamesStringGrid->ColWidths[0]=20;
+ ChannelNamesStringGrid->ColWidths[1]=ChannelNamesStringGrid->Width-ChannelNamesStringGrid->ColWidths[0]-20;
+ ChannelNamesStringGrid->Cells[0][0]="Channel #";
+ ChannelNamesStringGrid->Cells[1][0]="Channel Name";
+ for(int i=0;i<int(ChannelNames.size());i++)
+ {
+  ChannelNamesStringGrid->Cells[0][i+1]=IntToStr(i);
+  ChannelNamesStringGrid->Cells[1][i+1]=ChannelNames[i].c_str();
+ }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUServerControlForm::CommandTimerTimer(TObject *Sender)
+{
+ if(WaitForSingleObject(CommandQueueUnlockEvent,10) == WAIT_TIMEOUT)
+  return;
+
+try {
+ ResetEvent(CommandQueueUnlockEvent);
+ bool is_breaked=false;
+ while(!CommandQueue.empty())
+ {
+  CurrentProcessedCommand=CommandQueue.back();
+  CommandQueue.pop_back();
+  SetEvent(CommandQueueUnlockEvent);
+
+  BinaryResponse.resize(0);
+  bool is_processed=ProcessControlCommand(CurrentProcessedCommand, ResponseType, Response, BinaryResponse);
+
+  if(is_processed)
+  {
+   if(CommandResponseEncoder)
+   {
+	CommandResponseEncoder(ResponseType, Response, EncodedResponse);
+	SendCommandResponse(CurrentProcessedCommand.first, EncodedResponse, BinaryResponse);
+   }
+  }
+  else
+  {
+   std::string request;
+   ConvertVectorToString(CurrentProcessedCommand.second, request);
+
+   RDK::UEPtr<RDK::URpcCommand> pcmd= new RDK::URpcCommandInternal(request);
+   std::pair<std::string,RDK::UEPtr<RDK::URpcCommand> > cmd_pair;
+   cmd_pair.first=CurrentProcessedCommand.first;
+   cmd_pair.second=pcmd;
+   ProcessedCommandQueue.push_back(cmd_pair);
+
+   RdkApplication.GetRpcDispatcher()->PushCommand(pcmd);
+
+ //  while(!RdkApplication.GetRpcDispatcher()->CheckProcessedCommand())
+ //   Sleep(10);
+
+  }
+
+/// Тест
+  // Обработка очереди выполненных команд диспетчера
+  RDK::UEPtr<RDK::URpcCommand> pcmd;
+
+  if(WaitForSingleObject(CommandQueueUnlockEvent,10) != WAIT_TIMEOUT)
+  {
+   ResetEvent(CommandQueueUnlockEvent);
+
+   if(pcmd=RdkApplication.GetRpcDispatcher()->PopProcessedCommand())
+   {
+	std::list<pair<std::string,RDK::UEPtr<RDK::URpcCommand> > >::iterator I=ProcessedCommandQueue.begin();
+	RDK::UEPtr<RDK::URpcCommandInternal> pcmd_int=RDK::dynamic_pointer_cast<RDK::URpcCommandInternal>(pcmd);
+	for(; I != ProcessedCommandQueue.end();++I)
+	{
+	 if(I->second == pcmd)
+	 {
+
+	  if(CommandResponseEncoder)
+	  {
+	   ConvertStringToVector(pcmd_int->Response, Response);
+	   CommandResponseEncoder(ResponseType, Response, EncodedResponse);
+	   SendCommandResponse(I->first, EncodedResponse, BinaryResponse);
+	  }
+	  ProcessedCommandQueue.erase(I);
+	  break;
+	 }
+	}
+	delete pcmd;
+   }
+   SetEvent(CommandQueueUnlockEvent);
+  }
+
+
+ /*
+  if(!is_processed)
+   is_processed=ProcessRPCCommand(CurrentProcessedCommand, ResponseType, Response);
+
+  if(!is_processed)
+   is_processed=ProcessPtzCommand(CurrentProcessedCommand, ResponseType, Response);
+
+  if(!is_processed)
+  {
+  }
+  if(CommandResponseEncoder)
+  {
+   CommandResponseEncoder(ResponseType, Response, EncodedResponse);
+   SendCommandResponse(CurrentProcessedCommand.first, EncodedResponse, BinaryResponse);
+  }
+  else
+  {
+//   SendCommandErrorResponse(CurrentProcessedCommand,0);
+  }
+			   */
+  if(WaitForSingleObject(CommandQueueUnlockEvent,10) == WAIT_TIMEOUT)
+  {
+   is_breaked=true;
+   break;
+  }
+  ResetEvent(CommandQueueUnlockEvent);
+ }
+ if(!is_breaked)
+  SetEvent(CommandQueueUnlockEvent);
+
+  // Обработка очереди выполненных команд диспетчера
+  RDK::UEPtr<RDK::URpcCommand> pcmd;
+
+  while(pcmd=RdkApplication.GetRpcDispatcher()->PopProcessedCommand())
+  {
+   if(WaitForSingleObject(CommandQueueUnlockEvent,1000) == WAIT_TIMEOUT)
+   {
+	Engine_LogMessage(RDK_EX_DEBUG, "CommandQueueUnlockEvent timeout");
+	delete pcmd;
+    break;
+   }
+   ResetEvent(CommandQueueUnlockEvent);
+
+   std::list<pair<std::string,RDK::UEPtr<RDK::URpcCommand> > >::iterator I=ProcessedCommandQueue.begin();
+   RDK::UEPtr<RDK::URpcCommandInternal> pcmd_int=RDK::dynamic_pointer_cast<RDK::URpcCommandInternal>(pcmd);
+   for(; I != ProcessedCommandQueue.end();++I)
+   {
+	if(I->second == pcmd)
+	{
+
+	 if(CommandResponseEncoder)
+	 {
+	  ConvertStringToVector(pcmd_int->Response, Response);
+	  CommandResponseEncoder(ResponseType, Response, EncodedResponse);
+	  SendCommandResponse(I->first, EncodedResponse, BinaryResponse);
+	 }
+	 ProcessedCommandQueue.erase(I);
+	 break;
+	}
+   }
+   SetEvent(CommandQueueUnlockEvent);
+
+   delete pcmd;
+  }
+
+}
+catch (...)
+{
+ SetEvent(CommandQueueUnlockEvent);
+ throw;
+}
+// SetEvent(CommandQueueUnlockEvent);
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TUServerControlForm::TcpServerAccept(TObject *Sender, TCustomIpClient *ClientSocket)
+{
+/* vector<unsigned char> client_buffer;
+ while(ClientSocket->Connected)
+ {
+  bool ReadReady = false;
+  if(ClientSocket->Select(&ReadReady, NULL, NULL, 1000) )
+  {
+   client_buffer.resize(200000);
+   int length=client_buffer.size();
+   length=ClientSocket->ReceiveBuf(&client_buffer[0], length);
+   if(length>0)
+   {
+	client_buffer.resize(length);
+	PacketReader.ProcessDataPart(client_buffer);
+	if(PacketReader.GetNumPackets()>0)
+	{
+	 Packet=PacketReader.GetLastPacket();
+	 PacketReader.DelLastPacket();
+	 if(Packet.GetNumParams()>0)
+	 {
+//	  PacketXml.resize(Packet.GetParamSize(0));
+	  UServerCommand args;
+	  args["Request"].resize(Packet.GetParamSize(0));
+	  if(Packet.GetParamSize(0)>0)
+	   memcpy(&args["Request"][0],&Packet(0)[0],Packet.GetParamSize(0));
+	  ResetEvent(CommandQueueUnlockEvent);
+	  CommandQueue.push_back(args);
+	  SetEvent(CommandQueueUnlockEvent);
+	 }
+	}
+   }
+  }
+ } */
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUServerControlForm::TcpServerListening(TObject *Sender)
+{
+ //
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUServerControlForm::TcpServerGetThread(TObject *Sender, TClientSocketThread *&ClientSocketThread)
+
+{
+ //
+}
+//---------------------------------------------------------------------------
+
+
+
+
+void __fastcall TUServerControlForm::IdTCPServerDisconnect(TIdContext *AContext)
+{
+ std::string bind=AnsiString(AContext->Binding->PeerIP).c_str();
+ bind+=":";
+ bind+=RDK::sntoa(AContext->Binding->PeerPort);
+
+ std::map<std::string, RDK::UTransferReader>::iterator I=PacketReaders.find(bind);
+ if(I != PacketReaders.end())
+ {
+  PacketReaders.erase(I);
+ }
+
+ Engine_LogMessage(RDK_EX_INFO, (std::string("Client Disconnected: ")+bind).c_str());
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUServerControlForm::IdTCPServerExecute(TIdContext *AContext)
+{
+ vector<unsigned char> client_buffer;
+ TIdBytes VBuffer;
+ int length=AContext->Connection->IOHandler->InputBuffer->Size;
+ if(length>0)
+ {
+  std::string bind=AnsiString(AContext->Binding->PeerIP).c_str();
+  bind+=":";
+  bind+=RDK::sntoa(AContext->Binding->PeerPort);
+
+   AContext->Connection->IOHandler->ReadBytes(VBuffer, length);
+   length=VBuffer.Length;
+   client_buffer.resize(length);
+   Engine_LogMessage(RDK_EX_DEBUG, (std::string("Data received from: ")+bind+std::string(" size (bytes)=")+sntoa(length)).c_str());
+
+   if(length>0)
+   {
+	memcpy(&client_buffer[0],&VBuffer[0],length);
+	client_buffer.resize(length);
+	std::map<std::string, RDK::UTransferReader>::iterator I=PacketReaders.find(bind);
+	if(I == PacketReaders.end())
+	{
+//	 SetEvent(CommandQueueUnlockEvent);
+	 return;
+	}
+	I->second.ProcessDataPart2(client_buffer);
+	Engine_LogMessage(RDK_EX_DEBUG, (std::string("Number of decoded packets: ")+sntoa(I->second.GetNumPackets())).c_str());
+	while(I->second.GetNumPackets()>0)
+	{
+	 UTransferPacket packet=I->second.GetFirstPacket();
+	 I->second.DelFirstPacket();
+	 if(packet.GetNumParams()>0)
+	 {
+//	  PacketXml.resize(Packet.GetParamSize(0));
+	  UServerCommand args;
+//	  args.resize(Packet.GetParamSize(0));
+//	  if(Packet.GetParamSize(0)>0)
+//	   memcpy(&args[0],&Packet(0)[0],Packet.GetParamSize(0));
+	  UServerCommand cmd;
+	  cmd.first=bind;
+	  cmd.second=packet(0);
+	  if(WaitForSingleObject(CommandQueueUnlockEvent,3500) == WAIT_TIMEOUT)
+	  {
+	   Engine_LogMessage(RDK_EX_DEBUG, (std::string("Command unlock event timeout: ")+bind).c_str());
+	  }
+	  else
+	  {
+	   ResetEvent(CommandQueueUnlockEvent);
+	   CommandQueue.push_back(cmd);
+	   SetEvent(CommandQueueUnlockEvent);
+	   std::string str;
+	   ConvertVectorToString(cmd.second,str);
+	   Engine_LogMessage(RDK_EX_DEBUG, (std::string("Command pushed to queue: \n")+str).c_str());
+	  }
+	 }
+	}
+   }
+  Sleep(1);
+ }
+ else
+  Sleep(10);
+//  Memo1.Lines.Add(LLine);
+//  AContext.Connection.IOHandler.WriteLn('OK');
+//  TIdNotify.NotifyMethod( StopStartServerdMessage );
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUServerControlForm::IdTCPServerConnect(TIdContext *AContext)
+{
+ std::string bind=AnsiString(AContext->Binding->PeerIP).c_str();
+ bind+=":";
+ bind+=RDK::sntoa(AContext->Binding->PeerPort);
+ PacketReaders[bind].ResetProcessing();
+ PacketReaders[bind].ClearPacketList();
+ Engine_LogMessage(RDK_EX_INFO, (std::string("Client connected: ")+bind).c_str());
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUServerControlForm::ServerRestartTimerTimer(TObject *Sender)
+{
+ if(IdTCPServer->Active)
+  return;
+
+ if(AutoStartFlag)
+ {
+  ServerStartButtonClick(Sender);
+ }
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TUServerControlForm::FormClose(TObject *Sender, TCloseAction &Action)
+
+{
+ ServerStopButtonClick(Sender);
+// Sleep(100);
+}
+//---------------------------------------------------------------------------
+
+
+
+

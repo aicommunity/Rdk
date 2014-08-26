@@ -22,6 +22,8 @@
 #include <QStringListModel>
 #include <QListView>
 #include <QSplitter>
+#include <QXmlStreamWriter>
+#include <QXmlStreamReader>
 
 class InitialPage;
 class SettingsDialog;
@@ -50,8 +52,10 @@ class InitialPage : public QWizardPage
 public:
     InitialPage(QWidget *parent = 0);
     virtual ~InitialPage();
-    void saveSettings();
-    void loadSettings();
+    void readXMLSettings();
+    void AddToULib();
+    void writeSettingsToXML();//test
+    void writeHistoryToXML();
     friend class SettingsDialog;
 signals:
     void expand();
@@ -80,18 +84,28 @@ public://
     QLabel *copyrightEmailLabel;
     QLabel *copyrightUrlLabel;
     QLabel *copyrightProjectNameLabel;
+
     QComboBox *templateCBox;
     QStringList templates;
+
     QLineEdit *fileNameLineEdit;
+
     QLineEdit *classNameLineEdit;
     QComboBox *classNameCBox;
+
     QLineEdit *componentNameLineEdit;
+
     QLineEdit *dstPathLineEdit;
     QComboBox *dstPathCBox;//
+
     QLineEdit *baseNameLineEdit;
+    QComboBox *baseNameCBox;
+
     QLineEdit *baseFileNameLineEdit;
+
     QComboBox *namespaceCBox;
     QLineEdit *namespaceLineEdit;
+
     QLineEdit *copyrightNameLineEdit;
     QLineEdit *copyrightYearLineEdit;
     QLineEdit *copyrightEmailLineEdit;
@@ -103,6 +117,7 @@ public://
     QStringList paths;
     QString srcPath;
     QStringList classNameHistory;
+    QStringList baseNameHistory;
     QStringList namespaces;
 
     QStringList templatePaths;
@@ -119,6 +134,7 @@ public://
     QSplitter *splitter;
 
     const int maxHistorySize;
+
 };
 
 class SettingsDialog : public QDialog
@@ -126,8 +142,7 @@ class SettingsDialog : public QDialog
     Q_OBJECT
 public:
     SettingsDialog(QWidget *parent = 0);
-    void saveSettingsDialog();
-    void loadSettingsDialog();
+    void readSettings();
 public slots:
     //void slotAccepted();
     void slotRootBrowse();

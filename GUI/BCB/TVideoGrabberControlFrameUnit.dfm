@@ -10,7 +10,7 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
     Top = 0
     Width = 453
     Height = 297
-    ActivePage = SharedMemoryTabSheet
+    ActivePage = DeviceTabSheet
     Align = alClient
     DoubleBuffered = True
     ParentDoubleBuffered = False
@@ -19,18 +19,6 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
     OnChange = VCapturePageControlChange
     object DeviceTabSheet: TTabSheet
       Caption = 'Device'
-      DesignSize = (
-        445
-        266)
-      object Label9: TLabel
-        Left = 8
-        Top = 3
-        Width = 177
-        Height = 13
-        Anchors = [akLeft, akTop, akRight]
-        AutoSize = False
-        Caption = 'IP Camera URL:'
-      end
       object VDCapturePanel: TPanel
         Left = 0
         Top = 0
@@ -358,6 +346,22 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
           Caption = 'Truncate full path'
           TabOrder = 2
         end
+        object RepeatVideoCheckBox: TCheckBox
+          Left = 8
+          Top = 72
+          Width = 97
+          Height = 17
+          Caption = 'Repeat'
+          TabOrder = 3
+        end
+        object ProcessAllFramesVideoCheckBox: TCheckBox
+          Left = 8
+          Top = 95
+          Width = 113
+          Height = 17
+          Caption = 'Process all frames'
+          TabOrder = 4
+        end
       end
     end
     object PictureFileTabSheet: TTabSheet
@@ -402,6 +406,17 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
         Caption = 'Truncate full path'
         TabOrder = 2
       end
+      object PictureFileFpsLabeledEdit: TLabeledEdit
+        Left = 8
+        Top = 87
+        Width = 49
+        Height = 21
+        EditLabel.Width = 22
+        EditLabel.Height = 13
+        EditLabel.Caption = 'FPS:'
+        TabOrder = 3
+        Text = '25.0'
+      end
     end
     object ImageSequenceTabSheet: TTabSheet
       Caption = 'Image Sequence'
@@ -444,6 +459,25 @@ inherited VideoGrabberControlFrame: TVideoGrabberControlFrame
         Caption = 'Browse'
         TabOrder = 2
         OnClick = ImageSequencePathBrowseButtonClick
+      end
+      object RepeatSequenceCheckBox: TCheckBox
+        Left = 8
+        Top = 72
+        Width = 97
+        Height = 17
+        Caption = 'Repeat'
+        TabOrder = 3
+      end
+      object ImageSequenceFpsLabeledEdit: TLabeledEdit
+        Left = 8
+        Top = 111
+        Width = 49
+        Height = 21
+        EditLabel.Width = 22
+        EditLabel.Height = 13
+        EditLabel.Caption = 'FPS:'
+        TabOrder = 4
+        Text = '25.0'
       end
     end
     object HttpServerTabSheet: TTabSheet

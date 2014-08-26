@@ -49,6 +49,7 @@ UException::UException(void)
 }
 
 UException::UException(const UException &copy)
+: Type(copy.Type)
 {
 // Number=copy.Number;
  Time=copy.Time;
@@ -223,6 +224,28 @@ EInfo::~EInfo(void)
 }
 // --------------------------
 
+/* Отладочные сообщения, выдача которых инициируется пользователем */
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EDebug::EDebug(void)
+{
+ Type=5;
+}
+
+EDebug::EDebug(const EDebug &copy)
+ : UException(copy)
+{
+
+}
+
+EDebug::~EDebug(void)
+{
+
+}
+// --------------------------
+
+
 /* Ошибка преобразования строки в число */
 // --------------------------
 // Конструкторы и деструкторы
@@ -340,6 +363,147 @@ std::string ESystemException::CreateLogMessage(void) const
 }
 // --------------------------
 
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EFunctionReturnFalse::EFunctionReturnFalse(const std::string &file_name, const std::string &function_name, int line)
+ : FileName(file_name), FunctionName(function_name), Line(line)
+{
+
+}
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+std::string EFunctionReturnFalse::CreateLogMessage(void) const
+{
+ return EError::CreateLogMessage()+std::string(" File=")+FileName+
+			std::string(" Function=")+FunctionName+
+			std::string(" Line=")+sntoa(Line);
+}
+// --------------------------
+
+
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EFunctionReturnError::EFunctionReturnError(const std::string &file_name, const std::string &function_name, int line, int code)
+ : FileName(file_name), FunctionName(function_name), Line(line), Code(code)
+{
+
+}
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+std::string EFunctionReturnError::CreateLogMessage(void) const
+{
+ return EError::CreateLogMessage()+std::string(" File=")+FileName+
+			std::string(" Function=")+FunctionName+
+			std::string(" Line=")+sntoa(Line)+
+			std::string(" Code=")+sntoa(Code);
+}
+// --------------------------
+
+// Исключение с простой строкой текста как фатальная ошибка
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EStringFatal::EStringFatal(const std::string &str) : Str(str)
+{
+}
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+std::string EStringFatal::CreateLogMessage(void) const
+{
+ return EFatal::CreateLogMessage()+std::string(" ")+Str;
+}
+
+
+// Исключение с простой строкой текста как фатальная ошибка
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EStringError::EStringError(const std::string &str) : Str(str)
+{
+}
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+std::string EStringError::CreateLogMessage(void) const
+{
+ return EError::CreateLogMessage()+std::string(" ")+Str;
+}
+
+// --------------------------
+// Исключение с простой строкой текста как предупреждение
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EStringWarning::EStringWarning(const std::string &str) : Str(str)
+{
+}
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+std::string EStringWarning::CreateLogMessage(void) const
+{
+ return EWarning::CreateLogMessage()+std::string(" ")+Str;
+}
+// --------------------------
+
+
+// Исключение с простой строкой текста как информационное сообщение
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EStringInfo::EStringInfo(const std::string &str) : Str(str)
+{
+}
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+std::string EStringInfo::CreateLogMessage(void) const
+{
+ return EInfo::CreateLogMessage()+std::string(" ")+Str;
+}
+// --------------------------
+
+// Исключение с простой строкой текста как информационное сообщение
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EStringDebug::EStringDebug(const std::string &str) : Str(str)
+{
+}
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+std::string EStringDebug::CreateLogMessage(void) const
+{
+ return EDebug::CreateLogMessage()+std::string(" ")+Str;
+}
+// --------------------------
 }
 #endif
 

@@ -31,7 +31,20 @@ string Name;
 // Версия библиотеки
 string Version;
 
+/// Тип библиотеки
+/// 0 - Внутренняя библиотека (собрана вместе с ядром)
+/// 1 - Внешняя библиотека (загружена из внешней dll)
+/// 2 - Библиотека, созданная во время выполнения
+int Type;
+
+/// Зависимости библиотеки от других библиотек
+/// вида <имя библиотеки, версия библиотеки>
+std::vector<pair<string, string> > Dependencies;
+
 protected: // Данные загрузки
+/// Имена классов библиотеки
+vector<string> ClassesList;
+
 // Содержит имена всех успешно загруженных образцов
 vector<string> Complete;
 
@@ -48,7 +61,7 @@ public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-ULibrary(const string &name, const string &version);
+ULibrary(const string &name, const string &version, int type=0);
 virtual ~ULibrary(void);
 // --------------------------
 
@@ -82,11 +95,26 @@ const string& GetName(void) const;
 
 // Возвращает версию библиотеки
 const string& GetVersion(void) const;
+
+/// Тип библиотеки
+/// 0 - Внутренняя библиотека (собрана вместе с ядром)
+/// 1 - Внешняя библиотека (загружена из внешней dll)
+/// 2 - Библиотека, созданная во время выполнения
+int GetType(void) const;
+
+/// Зависимости библиотеки от других библиотек
+const std::vector<pair<string, string> > GetDependencies(void) const;
 // --------------------------
 
 // --------------------------
 // Методы доступа к данным загрузки
 // --------------------------
+/// Возвращает true если коллекция предоставляет класс с таким именем
+bool IsClassNamePresent(const std::string &class_name) const;
+
+/// Имена классов библиотеки
+const vector<string>& GetClassesList(void) const;
+
 // Содержит имена всех успешно загруженных образцов
 const vector<string>& GetComplete(void) const;
 
@@ -106,16 +134,70 @@ virtual int Upload(UStorage *storage);
 // --------------------------
 // Методы заполенения бибилиотеки
 // --------------------------
-protected:
-// Добавляет в хранилище очередной класс
+/// Проверяет зависимости библиотеки от других библиотек
+/// и возвращает список недостающих библиотек
+/// Возвращает true если все необходимые библиотеки уже загружены
+bool CheckDependencies(UStorage *storage, std::vector<pair<string, string> > &dependencies) const;
+
+/// Добавляет в хранилище очередной класс
 virtual bool UploadClass(const UId &classid, UEPtr<UComponent> cont);
 virtual bool UploadClass(const string &name, UEPtr<UComponent> cont);
 
-// Заполняет массив ClassSamples готовыми экземплярами образцов и их именами.
-// Не требуется предварительная очистка массива и уборка памяти.
+/// Удаление заданного класса из списка успешно загруженных
+/// Класс переносится в незагруженные (Incomplete)
+virtual void RemoveClassFromCompletedList(const string &name);
+
+/// Заполняет массив ClassSamples готовыми экземплярами образцов и их именами.
+/// Не требуется предварительная очистка массива и уборка памяти.
 virtual void CreateClassSamples(UStorage *storage)=0;
 // --------------------------
 };
+
+class URuntimeLibrary: public ULibrary
+{
+protected: // Данные единой коллекции библиотек
+
+protected: // Параметры
+
+protected: // Данные
+/// Описание компонент библиотеки
+USerStorageXML ClassesStructure;
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+URuntimeLibrary(const string &name, const string &version);
+virtual ~URuntimeLibrary(void);
+// --------------------------
+
+// --------------------------
+// Методы управления данными
+// --------------------------
+/// Описание компонент библиотеки
+const USerStorageXML& GetClassesStructure(void) const;
+bool SetClassesStructure(const USerStorageXML& xml);
+bool SetClassesStructure(const std::string &buffer);
+
+/// Добавляет в описание компонент новый компонент
+bool AddClassStructure(const std::string &buffer);
+bool AddClassStructure(const USerStorageXML& xml);
+
+/// Обновляет структуру классов в соответствии с хранилищем
+bool UpdateClassesStructure(void);
+// --------------------------
+
+// --------------------------
+/// Создает компонент из описания xml
+UEPtr<UContainer> CreateClassSample(UStorage *storage, USerStorageXML &xml);
+
+// Заполняет массив ClassSamples готовыми экземплярами образцов и их именами.
+// Не требуется предварительная очистка массива и уборка памяти.
+virtual void CreateClassSamples(UStorage *storage);
+// --------------------------
+
+};
+
 
 typedef ULibrary* PUALibrary;
 

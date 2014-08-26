@@ -51,6 +51,9 @@ protected: // Данные
 public: // Методы
 void AUpdateInterface(void);
 
+// Возврат интерфейса в исходное состояние
+virtual void AClearInterface(void);
+
 // Сохраняет выбранную модель
 // Если filename == "", то открывает окно запроса диалога
 void SaveModelToFile(const String &filename);

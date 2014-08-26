@@ -16,6 +16,57 @@
 #include "TUVisualControllerFrameUnit.h"
 #include <Web.HTTPApp.hpp>
 #include <Web.HTTPProd.hpp>
+#include "TServerBroadcasterCommonUnit.h"
+
+class TIdTcpResultBroadcasterFrame;
+
+class TTcpResultBroadcasterThread: public TResultBroadcasterThread
+{
+protected: // Параметры
+/// Адрес принимающей стороны
+RDK::UELockVar<std::string> Address;
+
+/// Порт принимающей стороны
+RDK::UELockVar<int> Port;
+
+protected: // Данные
+// Управляющий фрейм
+TIdTcpResultBroadcasterFrame *Frame;
+
+RDK::UELockVar<bool> ConnectionEstablishedFlag;
+
+RDK::UELockVar<RDK::ULongTime> LastSentTimeStamp;
+
+TIdTCPClient *IdTCPClient;
+
+
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+__fastcall TTcpResultBroadcasterThread(TIdTcpResultBroadcasterFrame * frame, bool CreateSuspended);
+virtual __fastcall ~TTcpResultBroadcasterThread(void);
+// --------------------------
+
+// --------------------------
+// Управление потоком
+// --------------------------
+virtual bool Init(const std::string &address, int port);
+virtual std::string GetAddress(void) const;
+virtual int GetPort(void) const;
+
+virtual void Connect(void);
+virtual void Disconnect(void);
+
+bool __fastcall ASend(void);
+
+void __fastcall IdTCPConnected(TObject *Sender);
+void __fastcall IdTCPDisconnected(TObject *Sender);
+// --------------------------
+};
+
+
 //---------------------------------------------------------------------------
 class TIdTcpResultBroadcasterFrame : public TUVisualControllerFrame
 {
@@ -32,13 +83,13 @@ __published:	// IDE-managed Components
 	TIdTCPClient *IdTCPClient;
 	void __fastcall ConnectButtonClick(TObject *Sender);
 	void __fastcall DisconnectButtonClick(TObject *Sender);
-	void __fastcall IdHTTPConnected(TObject *Sender);
-	void __fastcall IdHTTPDisconnected(TObject *Sender);
+	void __fastcall EnableXmlTranslationCheckBoxClick(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
 	__fastcall TIdTcpResultBroadcasterFrame(TComponent* Owner);
 	__fastcall ~TIdTcpResultBroadcasterFrame(void);
 
+TTcpResultBroadcasterThread* Thread;
 
 TMemoryStream *MemStream;
 TBitmap *Bitmap;
@@ -47,15 +98,25 @@ std::string Metadata;
 
 bool ConnectionEstablishedFlag;
 
-long long LastSentTimeStamp;
+RDK::ULongTime LastSentTimeStamp;
 
 // --------------------------
 // Методы управления фреймом
 // --------------------------
+/// Инициализация канала связи в соответствии с настройками
+bool Init(void);
+bool UnInit(void);
+
+/// Функция добавления метаданных в очередь на отправку в соответствии с настройками
+bool AddMetadata(int channel_index, RDK::ULongTime time_stamp);
+
 void ABeforeCalculate(void);
 void AAfterCalculate(void);
 
 void AUpdateInterface(void);
+
+// Возврат интерфейса в исходное состояние
+virtual void AClearInterface(void);
 
 // Сохраняет параметры интерфейса в xml
 virtual void ASaveParameters(RDK::USerStorageXML &xml);

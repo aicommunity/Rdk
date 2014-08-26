@@ -4,58 +4,11 @@
 #pragma hdrstop
 
 #include "TUVisualControllerFormUnit.h"
-#include "rdk_initdll.h"
+#include "rdk_cpp_initdll.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
 TUVisualControllerForm *UVisualControllerForm;
-
-// --------------------------
-// Вспомогательные функции сериализации
-// --------------------------
-// Сохраняет данные положения формы в xml
-void SaveFormPosition(RDK::USerStorageXML &xml, TForm *form)
-{
- if(!form)
-  return;
-
- xml.SelectNodeForce("FormPosition");
- xml.WriteInteger("Left",form->Left);
- xml.WriteInteger("Top",form->Top);
- xml.WriteInteger("Width",form->Width);
- xml.WriteInteger("Height",form->Height);
- xml.WriteBool("Visible",form->Visible);
- xml.WriteInteger("WindowState",form->WindowState);
- xml.SelectUp();
-}
-
-// Загружает данные положения формы из xml
-void LoadFormPosition(RDK::USerStorageXML &xml, TForm *form)
-{
- if(!form)
-  return;
-
- xml.SelectNodeForce("FormPosition");
- int value=0;
- value=xml.ReadInteger("Left",form->Left);
- if(value<Screen->DesktopLeft || value>= Screen->DesktopLeft+Screen->DesktopWidth)
-  value=Screen->DesktopLeft;
- form->Left=value;
-
- value=xml.ReadInteger("Top",form->Top);
- if(value<Screen->DesktopTop || value>= Screen->DesktopTop+Screen->DesktopHeight)
-  value=Screen->DesktopTop;
- form->Top=value;
-
- form->Width=xml.ReadInteger("Width",form->Width);
- form->Height=xml.ReadInteger("Height",form->Height);
- form->Visible=xml.ReadBool("Visible",form->Visible);
- form->WindowState=xml.ReadInteger("WindowState",form->WindowState);
- form->Repaint();
- xml.SelectUp();
-}
-// --------------------------
-
 
 // --------------------------
 // Конструкторы и деструкторы
@@ -72,6 +25,10 @@ __fastcall TUVisualControllerForm::TUVisualControllerForm(TComponent* Owner)
  UpdateInterval=1000;
  PureFormCaption=AnsiString(Caption).c_str();
 
+ CalculationStepUpdatedFlag=0;
+
+ CheckModelFlag=true;
+
  RDK::UIVisualControllerStorage::AddInterface(this);
 }
 
@@ -87,7 +44,19 @@ __fastcall TUVisualControllerForm::~TUVisualControllerForm(void)
 // Метод, вызываемый перед сбросом модели
 void TUVisualControllerForm::BeforeReset(void)
 {
- ABeforeReset();
+ try
+ {
+  ResetCalculationStepUpdatedFlag();
+  ABeforeReset();
+ }
+ catch (RDK::UException &exception)
+ {
+  Engine_LogMessage(exception.GetType(), (std::string("Core-BeforeReset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.CreateLogMessage()).c_str());
+ }
+ catch(Exception &exception)
+ {
+  Engine_LogMessage(RDK_EX_ERROR, (std::string("GUI-BeforeReset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
+ }
 }
 
 void TUVisualControllerForm::ABeforeReset(void)
@@ -98,9 +67,20 @@ void TUVisualControllerForm::ABeforeReset(void)
 // Метод, вызываемый после сброса модели
 void TUVisualControllerForm::AfterReset(void)
 {
- LastUpdateTime=0;
+ try
+ {
+  LastUpdateTime=0;
 
- AAfterReset();
+  AAfterReset();
+ }
+ catch (RDK::UException &exception)
+ {
+  Engine_LogMessage(exception.GetType(), (std::string("Core-BeforeReset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.CreateLogMessage()).c_str());
+ }
+ catch(Exception &exception)
+ {
+  Engine_LogMessage(RDK_EX_ERROR, (std::string("GUI-AfterReset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
+ }
 }
 
 void TUVisualControllerForm::AAfterReset(void)
@@ -111,7 +91,18 @@ void TUVisualControllerForm::AAfterReset(void)
 // Метод, вызываемый перед шагом расчета
 void TUVisualControllerForm::BeforeCalculate(void)
 {
- ABeforeCalculate();
+ try
+ {
+  ABeforeCalculate();
+ }
+ catch (RDK::UException &exception)
+ {
+  Engine_LogMessage(exception.GetType(), (std::string("Core-BeforeReset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.CreateLogMessage()).c_str());
+ }
+ catch(Exception &exception)
+ {
+  Engine_LogMessage(RDK_EX_ERROR, (std::string("GUI-BeforeCalculate Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
+ }
 }
 
 void TUVisualControllerForm::ABeforeCalculate(void)
@@ -121,7 +112,18 @@ void TUVisualControllerForm::ABeforeCalculate(void)
 // Метод, вызываемый после шага расчета
 void TUVisualControllerForm::AfterCalculate(void)
 {
- AAfterCalculate();
+ try
+ {
+  AAfterCalculate();
+ }
+ catch (RDK::UException &exception)
+ {
+  Engine_LogMessage(exception.GetType(), (std::string("Core-BeforeReset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.CreateLogMessage()).c_str());
+ }
+ catch(Exception &exception)
+ {
+  Engine_LogMessage(RDK_EX_ERROR, (std::string("GUI-BeforeReset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
+ }
 }
 
 void TUVisualControllerForm::AAfterCalculate(void)
@@ -131,15 +133,40 @@ void TUVisualControllerForm::AAfterCalculate(void)
 // Обновление интерфейса
 void TUVisualControllerForm::UpdateInterface(bool force_update)
 {
+ try
+ {
+  UpdateTime=RDK::GetCurrentStartupTime();
  if(!force_update)
  {
-  if((!AlwaysUpdateFlag && !Visible) || (UpdateInterval<0 && CalculationModeFlag))
+  if((!AlwaysUpdateFlag && (!Visible || (Parent && !Parent->Visible))) || (UpdateInterval<0 && CalculationModeFlag))
+  {
+   UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),UpdateTime);
    return;
+  }
+
+  UpdateControlState();
+  if(!Showing && !AlwaysUpdateFlag)
+  {
+   UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),UpdateTime);
+   return;
+  }
+
   if(UpdateInterval>0 && CalculationModeFlag)
   {
    DWORD curr_time=GetTickCount();
-   if(curr_time-LastUpdateTime<UpdateInterval)
+   if(curr_time-LastUpdateTime<DWORD(UpdateInterval))
+   {
+	UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),UpdateTime);
 	return;
+   }
+
+   if(GetCalculationStepUpdatedFlag() == true)
+   {
+	UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),UpdateTime);
+	return;
+   }
+   else
+	SetCalculationStepUpdatedFlag();
 
    LastUpdateTime=curr_time;
   }
@@ -151,16 +178,66 @@ void TUVisualControllerForm::UpdateInterface(bool force_update)
   Caption=PureFormCaption.c_str();
 
  if(!IsEngineInit())
-  return;
- if(!Model_Check())
-  return;
+ {
+   UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),UpdateTime);
+   return;
+ }
+
+ if(CheckModelFlag && !Model_Check())
+ {
+   UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),UpdateTime);
+   return;
+ }
  UpdateInterfaceFlag=true;
- AUpdateInterface();
+  AUpdateInterface();
+ }
+ catch (RDK::UException &exception)
+ {
+  UpdateInterfaceFlag=false;
+  Engine_LogMessage(exception.GetType(), (std::string("Core-UpdateInterface Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.CreateLogMessage()).c_str());
+ }
+ catch(Exception &exception)
+ {
+  UpdateInterfaceFlag=false;
+  Engine_LogMessage(RDK_EX_ERROR, (std::string("GUI-UpdateInterface Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
+ }
+ catch(...)
+ {
+  UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),UpdateTime);
+  UpdateInterfaceFlag=false;
+  throw;
+ }
+ UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),UpdateTime);
  UpdateInterfaceFlag=false;
 }
 
 void TUVisualControllerForm::AUpdateInterface(void)
 {
+}
+
+
+// Возврат интерфейса в исходное состояние
+void TUVisualControllerForm::ClearInterface(void)
+{
+ try
+ {
+  AClearInterface();
+  ComponentControlName.clear();
+  UpdateInterface(true);
+ }
+ catch (RDK::UException &exception)
+ {
+  Engine_LogMessage(exception.GetType(), (std::string("Core-ClearInterface Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.CreateLogMessage()).c_str());
+ }
+ catch(Exception &exception)
+ {
+  Engine_LogMessage(RDK_EX_ERROR, (std::string("GUI-ClearInterface Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
+ }
+}
+
+void TUVisualControllerForm::AClearInterface(void)
+{
+
 }
 
 // Возвращает уникальное имя интерфейса
@@ -172,18 +249,31 @@ std::string TUVisualControllerForm::GetName(void)
 // Сохраняет параметры интерфейса в xml
 void TUVisualControllerForm::SaveParameters(RDK::USerStorageXML &xml)
 {
+ try
+ {
  TTabSheet *tab=dynamic_cast<TTabSheet*>(Parent);
  if(tab)
   xml.SelectNodeForce(AnsiString(tab->PageControl->Owner->Name).c_str());
  xml.SelectNodeForce(GetName());
  ASaveParameters(xml);
- SaveFormPosition(xml, this);
+ SaveFormPosition(xml);
  xml.WriteString("ComponentControlName",ComponentControlName);
  xml.WriteInteger("UpdateInterval",UpdateInterval);
+ xml.WriteBool("AlwaysUpdateFlag",AlwaysUpdateFlag);
  if(tab)
   xml.SelectUp();
 
  xml.SelectUp();
+ }
+ catch (RDK::UException &exception)
+ {
+  Engine_LogMessage(exception.GetType(), (std::string("Core-SaveParameters Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.CreateLogMessage()).c_str());
+ }
+ catch(Exception &exception)
+ {
+  Engine_LogMessage(RDK_EX_ERROR, (std::string("GUI-SaveParameters Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
+ }
+
 }
 
 void TUVisualControllerForm::ASaveParameters(RDK::USerStorageXML &xml)
@@ -195,19 +285,31 @@ void TUVisualControllerForm::ASaveParameters(RDK::USerStorageXML &xml)
 // Загружает параметры интерфейса из xml
 void TUVisualControllerForm::LoadParameters(RDK::USerStorageXML &xml)
 {
+ try
+ {
  TTabSheet *tab=dynamic_cast<TTabSheet*>(Parent);
  if(tab)
   xml.SelectNodeForce(AnsiString(tab->PageControl->Owner->Name).c_str());
  xml.SelectNodeForce(GetName());
  ComponentControlName=xml.ReadString("ComponentControlName","");
  UpdateInterval=xml.ReadInteger("UpdateInterval",UpdateInterval);
- LoadFormPosition(xml, this);
+ AlwaysUpdateFlag=xml.ReadBool("AlwaysUpdateFlag",false);
+ LoadFormPosition(xml);
  ALoadParameters(xml);
 
  if(tab)
   xml.SelectUp();
  xml.SelectUp();
  UpdateInterface();
+ }
+ catch (RDK::UException &exception)
+ {
+  Engine_LogMessage(exception.GetType(), (std::string("Core-LoadParameters Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.CreateLogMessage()).c_str());
+ }
+ catch(Exception &exception)
+ {
+  Engine_LogMessage(RDK_EX_ERROR, (std::string("GUI-LoadParameters Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
+ }
 }
 
 void TUVisualControllerForm::ALoadParameters(RDK::USerStorageXML &xml)
@@ -230,5 +332,71 @@ bool TUVisualControllerForm::SetComponentControlName(const std::string& name)
  UpdateInterface();
  return true;
 }
+
+// Служебные методы управления интерфейсом
+/// Сбрасывает флаг прошедшей перерисовки в этой итерации счета
+void TUVisualControllerForm::ResetCalculationStepUpdatedFlag(void)
+{
+ CalculationStepUpdatedFlag=false;
+}
+
+/// Выставляет флаг прошедшей перерисовки в этой итерации счета
+void TUVisualControllerForm::SetCalculationStepUpdatedFlag(void)
+{
+ CalculationStepUpdatedFlag=true;
+}
+
+/// Возвращает состояние флага прошедшей перерисовки в этой итерации счета
+bool TUVisualControllerForm::GetCalculationStepUpdatedFlag(void)
+{
+ return CalculationStepUpdatedFlag;
+}
+
+/// Возвращает время обновления интерфейса (мс)
+unsigned long long TUVisualControllerForm::GetUpdateTime(void)
+{
+ return UpdateTime;
+}
+
 // -----------------------------
+
+// --------------------------
+// Вспомогательные функции сериализации
+// --------------------------
+// Сохраняет данные положения формы в xml
+void TUVisualControllerForm::SaveFormPosition(RDK::USerStorageXML &xml)
+{
+ xml.SelectNodeForce("FormPosition");
+ xml.WriteInteger("Left",Left);
+ xml.WriteInteger("Top",Top);
+ xml.WriteInteger("Width",Width);
+ xml.WriteInteger("Height",Height);
+ xml.WriteBool("Visible",Visible);
+ xml.WriteInteger("WindowState",WindowState);
+ xml.SelectUp();
+}
+
+// Загружает данные положения формы из xml
+void TUVisualControllerForm::LoadFormPosition(RDK::USerStorageXML &xml)
+{
+ xml.SelectNodeForce("FormPosition");
+ int value=0;
+ value=xml.ReadInteger("Left",Left);
+ if(value<Screen->DesktopLeft || value>= Screen->DesktopLeft+Screen->DesktopWidth)
+  value=Screen->DesktopLeft;
+ Left=value;
+
+ value=xml.ReadInteger("Top",Top);
+ if(value<Screen->DesktopTop || value>= Screen->DesktopTop+Screen->DesktopHeight)
+  value=Screen->DesktopTop;
+ Top=value;
+
+ Width=xml.ReadInteger("Width",Width);
+ Height=xml.ReadInteger("Height",Height);
+ Visible=xml.ReadBool("Visible",Visible);
+ WindowState=xml.ReadInteger("WindowState",(int)WindowState);
+
+ xml.SelectUp();
+}
+// --------------------------
 

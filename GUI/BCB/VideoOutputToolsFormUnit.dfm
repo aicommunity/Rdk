@@ -33,8 +33,6 @@ object VideoOutputToolsForm: TVideoOutputToolsForm
       Align = alClient
       Caption = ' '#1057#1087#1080#1089#1086#1082' '#1092#1080#1075#1091#1088' '
       TabOrder = 0
-      ExplicitTop = 174
-      ExplicitHeight = 212
       object GeometryCheckListBox: TCheckListBox
         Left = 2
         Top = 15
@@ -45,7 +43,6 @@ object VideoOutputToolsForm: TVideoOutputToolsForm
         ItemHeight = 13
         TabOrder = 0
         OnClick = GeometryCheckListBoxClick
-        ExplicitHeight = 195
       end
     end
     object GroupBox4: TGroupBox
@@ -65,9 +62,6 @@ object VideoOutputToolsForm: TVideoOutputToolsForm
         Selected = clRed
         Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbCustomColor, cbPrettyNames, cbCustomColors]
         TabOrder = 0
-        ExplicitLeft = 6
-        ExplicitTop = 19
-        ExplicitWidth = 99
       end
       object AddFigureButton: TButton
         Left = 2
@@ -78,9 +72,6 @@ object VideoOutputToolsForm: TVideoOutputToolsForm
         Caption = #1044#1086#1073#1072#1074#1080#1090#1100' '#1092#1080#1075#1091#1088#1091
         TabOrder = 1
         OnClick = AddFigureButtonClick
-        ExplicitLeft = 6
-        ExplicitTop = 47
-        ExplicitWidth = 99
       end
       object DelFigureButton: TButton
         Left = 2
@@ -91,9 +82,6 @@ object VideoOutputToolsForm: TVideoOutputToolsForm
         Caption = #1059#1076#1072#1083#1080#1090#1100' '#1092#1080#1075#1091#1088#1091
         TabOrder = 2
         OnClick = DelFigureButtonClick
-        ExplicitLeft = 6
-        ExplicitTop = 109
-        ExplicitWidth = 99
       end
       object DelAllFiguresButton: TButton
         Left = 2
@@ -104,9 +92,6 @@ object VideoOutputToolsForm: TVideoOutputToolsForm
         Caption = #1059#1076#1072#1083#1080#1090#1100' '#1074#1089#1077
         TabOrder = 3
         OnClick = DelAllFiguresButtonClick
-        ExplicitLeft = 6
-        ExplicitTop = 141
-        ExplicitWidth = 99
       end
       object EditFigureButton: TButton
         Left = 2
@@ -117,9 +102,6 @@ object VideoOutputToolsForm: TVideoOutputToolsForm
         Caption = #1055#1088#1072#1074#1080#1090#1100' '#1092#1080#1075#1091#1088#1091
         TabOrder = 4
         OnClick = EditFigureButtonClick
-        ExplicitLeft = 6
-        ExplicitTop = 78
-        ExplicitWidth = 99
       end
     end
   end
@@ -147,8 +129,6 @@ object VideoOutputToolsForm: TVideoOutputToolsForm
         Caption = #1044#1086#1073#1072#1074#1080#1090#1100' '#1090#1086#1095#1082#1091
         TabOrder = 0
         OnClick = AddPointButtonClick
-        ExplicitLeft = 5
-        ExplicitTop = 45
       end
       object DelPointButton: TButton
         Left = 2
@@ -159,8 +139,6 @@ object VideoOutputToolsForm: TVideoOutputToolsForm
         Caption = #1059#1076#1072#1083#1080#1090#1100' '#1090#1086#1095#1082#1091
         TabOrder = 1
         OnClick = DelPointButtonClick
-        ExplicitLeft = 5
-        ExplicitTop = 108
       end
       object DelAllPointsButton: TButton
         Left = 2
@@ -171,8 +149,6 @@ object VideoOutputToolsForm: TVideoOutputToolsForm
         Caption = #1059#1076#1072#1083#1080#1090#1100' '#1074#1089#1077
         TabOrder = 2
         OnClick = DelAllPointsButtonClick
-        ExplicitLeft = 6
-        ExplicitTop = 140
       end
       object EditPointButton: TButton
         Left = 2
@@ -183,8 +159,6 @@ object VideoOutputToolsForm: TVideoOutputToolsForm
         Caption = #1055#1088#1072#1074#1080#1090#1100' '#1090#1086#1095#1082#1091
         TabOrder = 3
         OnClick = EditPointButtonClick
-        ExplicitLeft = 6
-        ExplicitTop = 77
       end
       object PointNameEdit: TEdit
         Left = 2
@@ -194,8 +168,6 @@ object VideoOutputToolsForm: TVideoOutputToolsForm
         Align = alTop
         TabOrder = 4
         Text = 'v'
-        ExplicitLeft = 6
-        ExplicitTop = 18
       end
     end
     object GroupBox3: TGroupBox
@@ -206,8 +178,6 @@ object VideoOutputToolsForm: TVideoOutputToolsForm
       Align = alClient
       Caption = ' '#1057#1087#1080#1089#1086#1082' '#1090#1086#1095#1077#1082' '
       TabOrder = 1
-      ExplicitTop = 175
-      ExplicitHeight = 210
       object PointsCheckListBox: TCheckListBox
         Left = 2
         Top = 15
@@ -217,7 +187,6 @@ object VideoOutputToolsForm: TVideoOutputToolsForm
         ItemHeight = 13
         TabOrder = 0
         OnClick = PointsCheckListBoxClick
-        ExplicitHeight = 193
       end
     end
   end

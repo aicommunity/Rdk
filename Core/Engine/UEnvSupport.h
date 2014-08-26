@@ -27,7 +27,7 @@ extern const NameT ForbiddenName;
 /* *********************************************************************** */
 /* *********************************************************************** */
 // Массив id компонент
-class UIdVector
+class RDK_LIB_TYPE UIdVector
 {
 protected: // Параметры
 // Размер массива
@@ -114,12 +114,12 @@ typedef UIdVector ULongId;
 // Исключения
 // --------------------------
 // Интерфейс описания исключение
-class UIdVector::EILongId
+class RDK_LIB_TYPE UIdVector::EILongId
 {
 };
 
 // Ошибка декодирования строкового id
-class UIdVector::EDecodeFail: public EError, public UIdVector::EILongId
+class RDK_LIB_TYPE UIdVector::EDecodeFail: public EError, public UIdVector::EILongId
 {
 public:
 // Строка с ошибкой
@@ -150,7 +150,7 @@ virtual std::string CreateLogMessage(void) const;
 /* *********************************************************************** */
 /* *********************************************************************** */
 // Массив id компонент
-class ULongIdVector
+class RDK_LIB_TYPE ULongIdVector
 {
 protected: // Параметры
 // Размер массива

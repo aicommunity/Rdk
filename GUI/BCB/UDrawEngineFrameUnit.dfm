@@ -45,29 +45,89 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
         ExplicitWidth = 227
         ExplicitHeight = 422
         inherited NameTabSheet: TTabSheet
-          ExplicitWidth = 219
-          ExplicitHeight = 394
+          ExplicitLeft = 4
+          ExplicitTop = 24
+          ExplicitWidth = 499
+          ExplicitHeight = 515
           inherited StringGrid: TStringGrid
-            Width = 219
-            Height = 394
             OnMouseMove = UClassesListFrameStringGridMouseMove
             OnMouseUp = UClassesListFrameStringGridMouseUp
-            ExplicitWidth = 219
-            ExplicitHeight = 394
           end
         end
         inherited LibsTabSheet: TTabSheet
-          ExplicitWidth = 219
-          ExplicitHeight = 394
+          ExplicitLeft = 4
+          ExplicitTop = 24
+          ExplicitWidth = 499
+          ExplicitHeight = 515
           inherited TreeView: TTreeView
-            Width = 219
-            Height = 394
             OnMouseMove = UClassesListFrameTreeViewMouseMove
             OnMouseUp = UClassesListFrameTreeViewMouseUp
-            ExplicitLeft = 1
-            ExplicitTop = -1
+          end
+        end
+        inherited LibsControlTabSheet: TTabSheet
+          ExplicitLeft = 4
+          ExplicitTop = 24
+          ExplicitWidth = 219
+          ExplicitHeight = 394
+          inherited Splitter1: TSplitter
+            Top = 104
+            Width = 219
+            ExplicitTop = 288
             ExplicitWidth = 219
-            ExplicitHeight = 394
+          end
+          inherited Panel1: TPanel
+            Top = 271
+            Width = 219
+            ExplicitTop = 271
+            ExplicitWidth = 219
+            inherited LoadLibraryButton: TButton
+              Width = 217
+              ExplicitWidth = 217
+            end
+            inherited CreateRuntimeLibraryButton: TButton
+              Width = 217
+              ExplicitWidth = 217
+            end
+            inherited DeleteLibraryButton: TButton
+              Width = 217
+              ExplicitWidth = 217
+            end
+            inherited RenameRuntimeLibraryButton: TButton
+              Width = 217
+              ExplicitWidth = 217
+            end
+            inherited AddClassButton: TButton
+              Width = 217
+              OnClick = UClassesListFrameAddClassButtonClick
+              ExplicitLeft = 1
+              ExplicitTop = 101
+              ExplicitWidth = 217
+            end
+          end
+          inherited GroupBox1: TGroupBox
+            Width = 219
+            Height = 104
+            ExplicitWidth = 219
+            ExplicitHeight = 104
+            inherited LibsListStringGrid: TStringGrid
+              Width = 215
+              Height = 87
+              ExplicitWidth = 215
+              ExplicitHeight = 87
+            end
+          end
+          inherited GroupBox2: TGroupBox
+            Top = 111
+            Width = 219
+            ExplicitTop = 111
+            ExplicitWidth = 219
+            inherited LibComponentListStringGrid: TStringGrid
+              Width = 215
+              OnMouseMove = UClassesListFrameLibComponentListStringGridMouseMove
+              OnMouseUp = UClassesListFrameLibComponentListStringGridMouseUp
+              ExplicitWidth = 215
+              ExplicitHeight = 143
+            end
           end
         end
       end
@@ -134,7 +194,7 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
       EditLabel.Height = 13
       EditLabel.Caption = 'Width'
       TabOrder = 2
-      Text = '80'
+      Text = '100'
     end
     object FontTypeComboBox: TComboBox
       Left = 3
@@ -169,7 +229,7 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
       Top = 12
       Width = 75
       Height = 25
-      Anchors = [akTop, akRight]
+      Anchors = [akRight, akBottom]
       Caption = 'Apply'
       Default = True
       TabOrder = 4
@@ -180,7 +240,7 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
       Top = 12
       Width = 75
       Height = 25
-      Anchors = [akTop, akRight]
+      Anchors = [akRight, akBottom]
       Caption = 'Restore'
       TabOrder = 5
       OnClick = RestoreButtonClick
@@ -190,7 +250,7 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
     Left = 384
     Top = 176
     object Breakinputlink1: TMenuItem
-      Caption = 'Break link'
+      Caption = 'View/Break link'
       OnClick = Breakinputlink1Click
     end
     object N2: TMenuItem
@@ -216,6 +276,23 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
     object Rename1: TMenuItem
       Caption = 'Rename'
       OnClick = Rename1Click
+    end
+    object N5: TMenuItem
+      Caption = '-'
+    end
+    object StartMoving1: TMenuItem
+      Caption = 'Start moving'
+      OnClick = StartMoving1Click
+    end
+    object Finishmoving1: TMenuItem
+      Caption = 'Finish moving'
+      Enabled = False
+      OnClick = Finishmoving1Click
+    end
+    object Cancelmoving1: TMenuItem
+      Caption = 'Cancel moving'
+      Enabled = False
+      OnClick = Cancelmoving1Click
     end
     object N4: TMenuItem
       Caption = '-'

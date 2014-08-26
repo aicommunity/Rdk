@@ -22,10 +22,10 @@
 class TUComponentsListForm : public TUVisualControllerForm
 {
 __published:	// IDE-managed Components
-	TUComponentsListFrame *ComponentsListFrame1;
 	TPanel *Panel1;
 	TButton *OkButton;
 	TButton *CancelButton;
+	TUComponentsListFrame *ComponentsListFrame1;
 	void __fastcall FormShow(TObject *Sender);
 	void __fastcall ComponentsListFrame1StringGridDblClick(TObject *Sender);
 	void __fastcall ComponentsListFrame1ParametersListStringGridDblClick(TObject *Sender);

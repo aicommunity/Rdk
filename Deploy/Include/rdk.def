@@ -41,7 +41,11 @@ EXPORTS
     Env_Calculate = _Env_Calculate
     Env_RTCalculate = _Env_RTCalculate
     Env_Reset = _Env_Reset
-    Env_IncreaseModelTimeByStep = _Env_IncreaseModelTimeByStep
+    Env_IncreaseModelTimeByStep = _Env_IncreaseModelTimeByStep   
+    Env_GetMinInterstepsInterval = _Env_GetMinInterstepsInterval
+    MEnv_GetMinInterstepsInterval = _MEnv_GetMinInterstepsInterval
+    Env_SetMinInterstepsInterval = _Env_SetMinInterstepsInterval
+    MEnv_SetMinInterstepsInterval = _MEnv_SetMinInterstepsInterval
     Env_SelectCurrentComponent = _Env_SelectCurrentComponent
     Env_ResetCurrentComponent = _Env_ResetCurrentComponent
     Env_UpCurrentComponent = _Env_UpCurrentComponent
@@ -76,16 +80,25 @@ EXPORTS
     Env_GetOutputImageY8 = _Env_GetOutputImageY8  
     Env_GetCurrentDataDir = _Env_GetCurrentDataDir
     Env_SetCurrentDataDir = _Env_SetCurrentDataDir
+    Env_GetDebugMode = _Env_GetDebugMode
+    MEnv_GetDebugMode = _MEnv_GetDebugMode
+    Env_SetDebugMode = _Env_SetDebugMode
+    MEnv_SetDebugMode = _MEnv_SetDebugMode
     Model_Destroy = _Model_Destroy
+    MModel_Destroy = _MModel_Destroy
     Model_Create = _Model_Create
-    Model_Clear = _Model_Clear
+    MModel_Create = _MModel_Create
+    Model_Clear = _Model_Clear  
+    MModel_Clear = _MModel_Clear
     Model_Check = _Model_Check
+    MModel_Check = _MModel_Check
     Model_CheckComponent = _Model_CheckComponent
     Model_AddComponent = _Model_AddComponent
     Model_DelComponent = _Model_DelComponent
     Model_GetNumComponents = _Model_GetNumComponents
     Model_GetComponentsList = _Model_GetComponentsList
-    Model_GetComponentsNameList = _Model_GetComponentsNameList
+    Model_GetComponentsNameList = _Model_GetComponentsNameList 
+    Model_FindComponentsByClassName = _Model_FindComponentsByClassName
     Model_ChangeComponentPosition= _Model_ChangeComponentPosition
     Model_GetConnectorsList = _Model_GetConnectorsList
     Model_GetItemsList = _Model_GetItemsList
@@ -94,6 +107,7 @@ EXPORTS
     Model_GetComponentLongName = _Model_GetComponentLongName
     Model_GetComponentLongId = _Model_GetComponentLongId
     Model_GetComponentPropertiesList = _Model_GetComponentPropertiesList
+    Model_GetComponentPropertiesLookupList = _Model_GetComponentPropertiesLookupList
     Model_GetComponentProperties = _Model_GetComponentProperties
     Model_GetComponentPropertiesEx = _Model_GetComponentPropertiesEx
     Model_GetComponentSelectedProperties = _Model_GetComponentSelectedProperties
@@ -114,6 +128,7 @@ EXPORTS
     Model_ChainLinking = _Model_ChainLinking
     Model_ParallelLinking = _Model_ParallelLinking
     Model_BreakLink = _Model_BreakLink
+    Model_BreakConnectorLink = _Model_BreakConnectorLink
     Model_BreakAllLinks = _Model_BreakAllLinks
     Model_BreakAllComponentLinks = _Model_BreakAllComponentLinks
     Model_BreakAllComponentInputLinks = _Model_BreakAllComponentInputLinks
@@ -169,7 +184,8 @@ EXPORTS
     Model_GetComponentOutput = _Model_GetComponentOutput
     Model_GetComponentOutputByIndex = _Model_GetComponentOutputByIndex
     Model_GetComponentBitmapOutput = _Model_GetComponentBitmapOutput
-    Model_GetComponentBitmapOutputByIndex = _Model_GetComponentBitmapOutputByIndex
+    Model_GetComponentBitmapOutputByIndex = _Model_GetComponentBitmapOutputByIndex  
+    MModel_SetComponentBitmapOutputByIndex = _MModel_SetComponentBitmapOutputByIndex
     Model_GetComponentBitmapInput = _Model_GetComponentBitmapInput
     Model_GetComponentBitmapInputByIndex = _Model_GetComponentBitmapInputByIndex
     Model_SetComponentBitmapOutput = _Model_SetComponentBitmapOutput
@@ -179,7 +195,9 @@ EXPORTS
     Engine_GetExceptionHandler = _Engine_GetExceptionHandler
     Engine_SetExceptionHandler = _Engine_SetExceptionHandler
     Engine_GetLog = _Engine_GetLog
-    Engine_GetUnreadLog = _Engine_GetUnreadLog
+    Engine_GetUnreadLog = _Engine_GetUnreadLog  
+    Engine_LogMessage = _Engine_LogMessage
+    MEngine_LogMessage = _MEngine_LogMessage
         
     Model_GetComponentOutputAsMatrix = _Model_GetComponentOutputAsMatrix
     Model_GetComponentOutputAsMatrixByIndex = _Model_GetComponentOutputAsMatrixByIndex

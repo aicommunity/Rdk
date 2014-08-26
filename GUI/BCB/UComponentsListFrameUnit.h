@@ -14,6 +14,7 @@
 #include <Vcl.ValEdit.hpp>
 #include "TUVisualControllerFrameUnit.h"
 #include <Vcl.Menus.hpp>
+#include "TEnchancedStringGrid.h"
 #include <string>
 #include <vector>
 #include "TUVisualController.h"
@@ -40,18 +41,8 @@ __published:	// IDE-managed Components
 	TSplitter *Splitter2;
 	TStringGrid *OutputsStringGrid;
 	TStringGrid *InputsStringGrid;
-	TTabSheet *TabSheet4;
-	TTabSheet *TabSheet5;
-	TStringGrid *ParametersListStringGrid;
-	TStringGrid *StatesListStringGrid;
 	TPopupMenu *PopupMenu;
 	TMenuItem *GUI1;
-	TSplitter *Splitter3;
-	TRichEdit *ParameterValueRichEdit;
-	THeaderControl *HeaderControl3;
-	THeaderControl *HeaderControl1;
-	TSplitter *Splitter4;
-	TRichEdit *StateValueRichEdit;
 	TPanel *ClassNamePanel;
 	TMenuItem *Moveup1;
 	TMenuItem *Movedown1;
@@ -62,6 +53,16 @@ __published:	// IDE-managed Components
 	TMenuItem *Delete1;
 	TMenuItem *N4;
 	TMenuItem *Reset1;
+	TTabSheet *TabSheet6;
+	TEnchancedSG *EnchancedSG1;
+	THeaderControl *HeaderControl2;
+	TRichEdit *NiceParamValRichEdit;
+	TSplitter *Splitter5;
+	TTabSheet *TabSheet7;
+	THeaderControl *HeaderControl4;
+	TRichEdit *NiceStateValRichEdit;
+	TEnchancedSG *EnchancedSG2;
+	TSplitter *Splitter6;
 	void __fastcall FrameResize(TObject *Sender);
 	void __fastcall StringGridDblClick(TObject *Sender);
 	void __fastcall StringGridSelectCell(TObject *Sender, int ACol, int ARow, bool &CanSelect);
@@ -97,6 +98,59 @@ __published:	// IDE-managed Components
 	void __fastcall StringGridKeyPress(TObject *Sender, System::WideChar &Key);
 	void __fastcall StringGridKeyDown(TObject *Sender, WORD &Key, TShiftState Shift);
 	void __fastcall Reset1Click(TObject *Sender);
+	void __fastcall ParametersListStringGridMouseEnter(TObject *Sender);
+	void __fastcall StringGridMouseEnter(TObject *Sender);
+	void __fastcall StatesListStringGridMouseEnter(TObject *Sender);
+	void __fastcall OutputsStringGridMouseEnter(TObject *Sender);
+	void __fastcall InputsStringGridMouseEnter(TObject *Sender);
+	void __fastcall ParameterValueRichEditMouseEnter(TObject *Sender);
+	void __fastcall StateValueRichEditMouseEnter(TObject *Sender);
+	void __fastcall EnchancedSG1BasicStringGridDrawCell(TObject *Sender, int ACol, int ARow,
+          TRect &Rect, TGridDrawState State);
+	void __fastcall HeaderControl2SectionClick(THeaderControl *HeaderControl, THeaderSection *Section);
+	void __fastcall NiceParamValRichEditMouseEnter(TObject *Sender);
+	void __fastcall EnchancedSG1BasicStringGridSelectCell(TObject *Sender, int ACol,
+          int ARow, bool &CanSelect);
+	void __fastcall EnchancedSG2BasicStringGridSelectCell(TObject *Sender, int ACol,
+          int ARow, bool &CanSelect);
+	void __fastcall NiceParamValRichEditChange(TObject *Sender);
+	void __fastcall NiceStateValRichEditChange(TObject *Sender);
+	void __fastcall NiceStateValRichEditMouseEnter(TObject *Sender);
+	void __fastcall HeaderControl4SectionClick(THeaderControl *HeaderControl, THeaderSection *Section);
+	void __fastcall EnchancedSG2MouseEnter(TObject *Sender);
+	void __fastcall EnchancedSG1BasicStringGridMouseEnter(TObject *Sender);
+	void __fastcall EnchancedSG2BasicStringGridMouseEnter(TObject *Sender);
+	void __fastcall EnchancedSG1BasicStringGridDblClick(TObject *Sender);
+	void __fastcall EnchancedSG1BasicStringGridKeyPress(TObject *Sender, System::WideChar &Key);
+	void __fastcall EnchancedSG2BasicStringGridDblClick(TObject *Sender);
+	void __fastcall EnchancedSG2BasicStringGridKeyPress(TObject *Sender, System::WideChar &Key);
+	void __fastcall EnchancedSG2txtDoubleEditKeyPress(TObject *Sender, System::WideChar &Key);
+	void __fastcall EnchancedSG2txtStringEditKeyPress(TObject *Sender, System::WideChar &Key);
+	void __fastcall EnchancedSG2cmbListEditKeyPress(TObject *Sender, System::WideChar &Key);
+	void __fastcall EnchancedSG2txtBorderedIntEditKeyPress(TObject *Sender, System::WideChar &Key);
+	void __fastcall EnchancedSG2txtIntEditKeyPress(TObject *Sender, System::WideChar &Key);
+	void __fastcall EnchancedSG1txtDoubleEditKeyPress(TObject *Sender, System::WideChar &Key);
+	void __fastcall EnchancedSG1txtStringEditKeyPress(TObject *Sender, System::WideChar &Key);
+	void __fastcall EnchancedSG1cmbListEditKeyPress(TObject *Sender, System::WideChar &Key);
+	void __fastcall EnchancedSG1txtBorderedIntEditKeyPress(TObject *Sender, System::WideChar &Key);
+	void __fastcall EnchancedSG1txtIntEditKeyPress(TObject *Sender, System::WideChar &Key);
+	void __fastcall EnchancedSG2BasicStringGridDrawCell(TObject *Sender, int ACol, int ARow,
+          TRect &Rect, TGridDrawState State);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -253,6 +307,9 @@ void __fastcall UpdatePath(void);
 // Отрисовка фрейма
 void AUpdateInterface(void);
 
+// Возврат интерфейса в исходное состояние
+virtual void AClearInterface(void);
+
 // Сохраняет параметры интерфейса в xml
 void ASaveParameters(RDK::USerStorageXML &xml);
 
@@ -276,6 +333,13 @@ void UpdateParametersList(void);
 
 // Обновляет данные списка переменных состояния
 void UpdateStatesList(void);
+
+// Обновляет данные измененного списка параметров
+void UpdateNiceParamsList(TEnchancedSG *frame);
+
+// Обновляет данные измененного списка параметров
+void UpdateNiceStatesList(TEnchancedSG *frame);
+
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TUComponentsListFrame *UComponentsListFrame;

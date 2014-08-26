@@ -20,7 +20,7 @@ See file license.txt for more information
 
 namespace RDK {
 
-extern UBitmap BmpIOBuffer;
+//extern UBitmap BmpIOBuffer;
 
 using namespace std;
 
@@ -66,10 +66,13 @@ basic_ostream<CharT>& operator << (basic_ostream<CharT> &stream, const UBitmap &
  break;
 
  default:
+ {
+  UBitmap BmpIOBuffer;
   BmpIOBuffer.SetRes(bmp.GetWidth(),bmp.GetHeight(),ubmRGB24);
   bmp.ConvertTo(BmpIOBuffer);
   pbmp=&BmpIOBuffer;
   header.BitCount=24;
+ }
  }
 
  header.filesize=2+sizeof(header)+pbmp->GetByteLength();

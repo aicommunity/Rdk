@@ -7,7 +7,7 @@ inherited UEngineMonitorFrame: TUEngineMonitorFrame
     Left = 0
     Top = 0
     Width = 568
-    Height = 388
+    Height = 371
     Align = alClient
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
@@ -18,6 +18,7 @@ inherited UEngineMonitorFrame: TUEngineMonitorFrame
     ReadOnly = True
     ScrollBars = ssBoth
     TabOrder = 0
+    OnMouseEnter = RichEditMouseEnter
   end
   object StatusBar: TStatusBar
     Left = 0
@@ -26,6 +27,19 @@ inherited UEngineMonitorFrame: TUEngineMonitorFrame
     Height = 19
     Panels = <>
     SimplePanel = True
+  end
+  object ShowDebugMessagesCheckBox: TCheckBox
+    Left = 0
+    Top = 371
+    Width = 568
+    Height = 17
+    Align = alBottom
+    Caption = 'Show debug messages'
+    TabOrder = 2
+    OnClick = ShowDebugMessagesCheckBoxClick
+    ExplicitLeft = 232
+    ExplicitTop = 296
+    ExplicitWidth = 97
   end
   object MainMenu: TMainMenu
     Left = 16

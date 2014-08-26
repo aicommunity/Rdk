@@ -11,9 +11,30 @@
 TIdTcpResultBroadcasterForm *IdTcpResultBroadcasterForm;
 //---------------------------------------------------------------------------
 __fastcall TIdTcpResultBroadcasterForm::TIdTcpResultBroadcasterForm(TComponent* Owner)
-	: TUVisualControllerForm(Owner)
+	: TBroadcasterForm(Owner)
 {
 }
+
+/// Функция добавления метаданных в очередь на отправку в соответствии с настройками
+bool TIdTcpResultBroadcasterForm::AddMetadata(int channel_index, RDK::ULongTime time_stamp)
+{
+ bool res=true;
+ for(size_t i=0;i<Broadcasters.size();i++)
+ {
+  res&=Broadcasters[i]->AddMetadata(channel_index, time_stamp);
+ }
+ return res;
+}
+
+/// Инициирует процедуру отправки метаданных
+bool TIdTcpResultBroadcasterForm::SendMetadata(void)
+{
+ for(size_t i=0;i<Broadcasters.size();i++)
+  SetEvent(Broadcasters[i]->Thread->SendEnable);
+
+ return true;
+}
+
 
 // Метод, вызываемый перед шагом расчета
 void TIdTcpResultBroadcasterForm::ABeforeCalculate(void)
@@ -23,16 +44,17 @@ void TIdTcpResultBroadcasterForm::ABeforeCalculate(void)
 // Обновляет интерфейс
 void TIdTcpResultBroadcasterForm::AUpdateInterface(void)
 {
+ BroadcastEnabledCheckBox->Checked=GetBroadcastEnableFlag();
 }
 
 // Сохраняет параметры интерфейса в xml
-void TIdTcpResultBroadcasterForm::ASaveParameters(RDK::USerStorageXML &xml)
+void TIdTcpResultBroadcasterForm::AASaveParameters(RDK::USerStorageXML &xml)
 {
  xml.WriteInteger("NumBroadcasters",GetNumBroadcasters());
 }
 
 // Загружает параметры интерфейса из xml
-void TIdTcpResultBroadcasterForm::ALoadParameters(RDK::USerStorageXML &xml)
+void TIdTcpResultBroadcasterForm::AALoadParameters(RDK::USerStorageXML &xml)
 {
  int num=xml.ReadInteger("NumBroadcasters",1);
  ClearBroadcasters();
@@ -78,6 +100,7 @@ void TIdTcpResultBroadcasterForm::DelBroadcaster(int index)
  if(index<0 || index >=int(Broadcasters.size()))
   return;
 
+ Broadcasters[index]->UnInit();
  delete Broadcasters[index];
  Broadcasters.erase(Broadcasters.begin()+index);
  delete PageControl->Pages[index];
@@ -88,6 +111,7 @@ void TIdTcpResultBroadcasterForm::ClearBroadcasters(void)
 {
  for(size_t i=0;i<Broadcasters.size();i++)
  {
+  Broadcasters[i]->UnInit();
   delete Broadcasters[i];
   delete PageControl->Pages[0];
  }
@@ -110,6 +134,16 @@ TIdTcpResultBroadcasterFrame* TIdTcpResultBroadcasterForm::GetBroadcasterFrame(i
  return Broadcasters[index];
 }
 
+// Возвращает индекс фрейма вещателя
+int TIdTcpResultBroadcasterForm::GetBroadcasterFrameIndex(TIdTcpResultBroadcasterFrame* frame)
+{
+ for(int i=0;i<GetNumBroadcasters();i++)
+  if(Broadcasters[i] == frame)
+   return i;
+
+ return -1;
+}
+
 // Возвращает фрейм активного (выбранного) вещателя
 TIdTcpResultBroadcasterFrame* TIdTcpResultBroadcasterForm::GetActiveBroadcasterFrame(void)
 {
@@ -118,6 +152,21 @@ TIdTcpResultBroadcasterFrame* TIdTcpResultBroadcasterForm::GetActiveBroadcasterF
 
  return 0;
 }
+
+/// Возвращает фрейм вещателя по заданному IP и порту
+TIdTcpResultBroadcasterFrame* TIdTcpResultBroadcasterForm::FindBroadcasterFrame(const std::string &address, int port)
+{
+ for(int i=0;i<GetNumBroadcasters();i++)
+ {
+  if(Broadcasters[i]->Thread)
+   if(Broadcasters[i]->Thread->GetAddress() == address && Broadcasters[i]->Thread->GetPort() == port)
+	return Broadcasters[i];
+ }
+
+ return 0;
+}
+
+
 
 // Подключает вещатель, или все, если index == -1
 void TIdTcpResultBroadcasterForm::Connect(int index)
@@ -142,6 +191,13 @@ void TIdTcpResultBroadcasterForm::Disconnect(int index)
    Broadcasters[i]->DisconnectButtonClick(this);
  }
 }
+
+// Возврат интерфейса в исходное состояние
+void TIdTcpResultBroadcasterForm::AClearInterface(void)
+{
+ ClearBroadcasters();
+}
+
 
 //---------------------------------------------------------------------------
 void __fastcall TIdTcpResultBroadcasterForm::Add1Click(TObject *Sender)
@@ -186,6 +242,17 @@ void __fastcall TIdTcpResultBroadcasterForm::HttpBroadcaster1Click(TObject *Send
 {
  UGEngineControlForm->AddSpecialFormPage("TIdTcpResultBroadcasterForm");
  Show();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TIdTcpResultBroadcasterForm::BroadcastEnabledCheckBoxClick(TObject *Sender)
+
+{
+ if(UpdateInterfaceFlag)
+  return;
+
+ SetBroadcastEnableFlag(BroadcastEnabledCheckBox->Checked);
+ UpdateInterface();
 }
 //---------------------------------------------------------------------------
 

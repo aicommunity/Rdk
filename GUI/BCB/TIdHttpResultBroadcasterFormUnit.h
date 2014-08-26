@@ -11,9 +11,10 @@
 #include <Vcl.Menus.hpp>
 #include "TUVisualControllerFormUnit.h"
 #include "TIdHttpResultBroadcasterFrameUnit.h"
+#include "TServerBroadcasterCommonUnit.h"
 #include <vector>
 //---------------------------------------------------------------------------
-class TIdHttpResultBroadcasterForm : public TUVisualControllerForm
+class TIdHttpResultBroadcasterForm : public TBroadcasterForm
 {
 __published:	// IDE-managed Components
 	TPageControl *PageControl;
@@ -26,6 +27,7 @@ __published:	// IDE-managed Components
 	TMenuItem *Del1;
 	TPopupMenu *PopupMenu1;
 	TMenuItem *HttpBroadcaster1;
+	TCheckBox *BroadcastEnabledCheckBox;
 	void __fastcall Add1Click(TObject *Sender);
 	void __fastcall Del1Click(TObject *Sender);
 	void __fastcall ConnectAll1Click(TObject *Sender);
@@ -33,10 +35,17 @@ __published:	// IDE-managed Components
 	void __fastcall FormDestroy(TObject *Sender);
 	void __fastcall FormCreate(TObject *Sender);
 	void __fastcall HttpBroadcaster1Click(TObject *Sender);
+	void __fastcall BroadcastEnabledCheckBoxClick(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
 	__fastcall TIdHttpResultBroadcasterForm(TComponent* Owner);
 
+
+/// Функция добавления метаданных в очередь на отправку в соответствии с настройками
+bool AddMetadata(int channel_index, RDK::ULongTime time_stamp);
+
+/// Инициирует процедуру отправки метаданных
+bool SendMetadata(void);
 
 // Вещатели
 std::vector<TIdHttpResultBroadcasterFrame*> Broadcasters;
@@ -47,11 +56,14 @@ void ABeforeCalculate(void);
 // Обновляет интерфейс
 void AUpdateInterface(void);
 
+// Возврат интерфейса в исходное состояние
+virtual void AClearInterface(void);
+
 // Сохраняет параметры интерфейса в xml
-void ASaveParameters(RDK::USerStorageXML &xml);
+void AASaveParameters(RDK::USerStorageXML &xml);
 
 // Загружает параметры интерфейса из xml
-void ALoadParameters(RDK::USerStorageXML &xml);
+void AALoadParameters(RDK::USerStorageXML &xml);
 
 // Создание копии этого компонента
 TIdHttpResultBroadcasterForm* New(TComponent *owner);

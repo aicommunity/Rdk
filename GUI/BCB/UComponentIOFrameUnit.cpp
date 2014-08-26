@@ -64,7 +64,11 @@ void __fastcall TUComponentIOFrame::ShowInputs(void)
  if(ShowModifier == 2)
   sublevel=-2;
 
- std::string xmlbuffer=Model_GetItemsList(ViewComponentLongId.c_str(),sublevel);
+ const char *p_buf=Model_GetItemsList(ViewComponentLongId.c_str(),sublevel);
+ std::string xmlbuffer;
+ if(p_buf)
+  xmlbuffer=p_buf;
+ Engine_FreeBufString(p_buf);
 
  RDK::USerStorageXML storage;
  storage.Load(xmlbuffer,"Items");
@@ -101,7 +105,11 @@ void __fastcall TUComponentIOFrame::ShowOutputs(void)
  if(ShowModifier == 2)
   sublevel=-2;
 
- std::string xmlbuffer=Model_GetItemsList(ViewComponentLongId.c_str(),sublevel);
+ const char *p_buf=Model_GetItemsList(ViewComponentLongId.c_str(),sublevel);
+ std::string xmlbuffer;
+ if(p_buf)
+  xmlbuffer=p_buf;
+ Engine_FreeBufString(p_buf);
 
  RDK::USerStorageXML storage;
  storage.Load(xmlbuffer,"Items");
@@ -139,7 +147,12 @@ void __fastcall TUComponentIOFrame::ShowInputsOutputs(void)
  else
  if(ShowModifier == 2)
   sublevel=-2;
- std::string xmlbuffer=Model_GetItemsList(ViewComponentLongId.c_str(),sublevel,ViewComponentOwnerLongId.c_str());
+
+ const char *p_buf=Model_GetItemsList(ViewComponentLongId.c_str(),sublevel,ViewComponentOwnerLongId.c_str());
+ std::string xmlbuffer;
+ if(p_buf)
+  xmlbuffer=p_buf;
+ Engine_FreeBufString(p_buf);
 
  RDK::USerStorageXML storage;
  storage.Load(xmlbuffer,"Items");
@@ -148,7 +161,14 @@ void __fastcall TUComponentIOFrame::ShowInputsOutputs(void)
  for(int i=0;i<itemsbuffer.GetSize();i++)
  {
   itemsbuffer[i].EncodeToString(stringid);
-  name=Model_GetComponentLongName(stringid.c_str());
+
+  const char *p_buf=Model_GetComponentLongName(stringid.c_str());
+  if(p_buf)
+   name=p_buf;
+  else
+   name.clear();
+  Engine_FreeBufString(p_buf);
+
   int comp_outputs=Model_GetComponentNumInputs(stringid.c_str());
   int comp_inputs=Model_GetComponentNumOutputs(stringid.c_str());
   int max_ios=(comp_inputs>comp_outputs)?comp_inputs:comp_outputs;
@@ -202,8 +222,11 @@ void __fastcall TUComponentIOFrame::ShowLinks(void)
  std::string conn_properties_names,item_properties_names;
  std::map<int,std::string> conn_propertries_names_list,item_propertries_names_list;
 
-// std::string xmlbuffer=Model_GetComponentInternalLinks(ViewComponentLongId.c_str());
- std::string xmlbuffer=Model_GetComponentPersonalLinks(ViewComponentLongId.c_str(),ViewComponentOwnerLongId.c_str());
+ const char *p_buf=Model_GetComponentPersonalLinks(ViewComponentLongId.c_str(),ViewComponentOwnerLongId.c_str());
+ std::string xmlbuffer;
+ if(p_buf)
+  xmlbuffer=p_buf;
+ Engine_FreeBufString(p_buf);
 
  RDK::USerStorageXML storage;
  storage.Load(xmlbuffer,"Links");
@@ -227,13 +250,26 @@ void __fastcall TUComponentIOFrame::ShowLinks(void)
    itemname=linkslist[i].Item.Id;//Model_GetComponentLongName(linkslist[i].Item.Id.EncodeToString(stringid).c_str());
    StringGrid->RowCount=StringGrid->RowCount+linkslist[i].Connector.size();
 
-   item_properties_names=Model_GetComponentPropertiesList(itemname.c_str(),ptPubOutput);
+   const char *p_buf=Model_GetComponentPropertiesLookupList(itemname.c_str(),ptPubOutput);
+   if(p_buf)
+	item_properties_names=p_buf;
+   else
+    item_properties_names.clear();
+   Engine_FreeBufString(p_buf);
+
    DecodePropertiesIOList(item_properties_names,item_propertries_names_list);
 
    for(size_t j=0;j<linkslist[i].Connector.size();j++)
 	{
-	 connname=linkslist[i].Connector[j].Id;//Model_GetComponentLongName(linkslist[i].Connector[j].Id.EncodeToString(stringid).c_str());
-	 conn_properties_names=Model_GetComponentPropertiesList(connname.c_str(),ptPubInput);
+	 connname=linkslist[i].Connector[j].Id;
+
+	 const char *p_buf=Model_GetComponentPropertiesLookupList(connname.c_str(),ptPubInput);
+	 if(p_buf)
+	  conn_properties_names=p_buf;
+	 else
+	  conn_properties_names.clear();
+	 Engine_FreeBufString(p_buf);
+
 	 DecodePropertiesIOList(conn_properties_names,conn_propertries_names_list);
 
 	 StringGrid->Cells[0][k]=IntToStr(int(i));
@@ -241,12 +277,12 @@ void __fastcall TUComponentIOFrame::ShowLinks(void)
 	 StringGrid->Cells[2][k]=StrToInt(linkslist[i].Connector[j].Index);
 	 StringGrid->Cells[3][k]=itemname.c_str();
 
-	 if(item_propertries_names_list.size()>linkslist[i].Item.Index)
+	 if(int(item_propertries_names_list.size())>linkslist[i].Item.Index)
 	  StringGrid->Cells[4][k]=item_propertries_names_list[linkslist[i].Item.Index].c_str();
 	 else
       StringGrid->Cells[4][k]="";
 	 StringGrid->Cells[5][k]=connname.c_str();
-	 if(conn_propertries_names_list.size()>linkslist[i].Connector[j].Index)
+	 if(int(conn_propertries_names_list.size())>linkslist[i].Connector[j].Index)
 	  StringGrid->Cells[6][k]=conn_propertries_names_list[linkslist[i].Connector[j].Index].c_str();
 	 else
 	  StringGrid->Cells[6][k]="";
@@ -289,11 +325,18 @@ void __fastcall TUComponentIOFrame::ShowOutputs(TStringGrid *string_grid, RDK::U
 {
  std::string stringid;
 
+ std::string properties_names;
  for(int i=0;i<linkslist.GetSize();i++)
  {
-  std::string properties_names;
   std::map<int, std::string> propertries_names_list;
-  properties_names=Model_GetComponentPropertiesList(linkslist[i].EncodeToString(stringid).c_str(),ptPubOutput);
+
+  const char *p_buf=Model_GetComponentPropertiesLookupList(linkslist[i].EncodeToString(stringid).c_str(),ptPubOutput);
+  if(p_buf)
+   properties_names=p_buf;
+  else
+   properties_names.clear();
+  Engine_FreeBufString(p_buf);
+
   DecodePropertiesIOList(properties_names, propertries_names_list);
   for(int j=0;j<Model_GetComponentNumOutputs(linkslist[i].EncodeToString(stringid).c_str());j++)
   {
@@ -301,8 +344,15 @@ void __fastcall TUComponentIOFrame::ShowOutputs(TStringGrid *string_grid, RDK::U
    if(j == 0)
    {
 	string_grid->Cells[0][string_grid->RowCount-1]=IntToStr(i);
-	string_grid->Cells[2][string_grid->RowCount-1]=Model_GetComponentLongName(stringid.c_str(),ViewComponentOwnerLongId.c_str());
-	if(propertries_names_list.size()>j)
+	const char *p_buf=Model_GetComponentLongName(stringid.c_str(),ViewComponentOwnerLongId.c_str());
+
+	if(p_buf)
+	 string_grid->Cells[2][string_grid->RowCount-1]=p_buf;
+	else
+	 string_grid->Cells[2][string_grid->RowCount-1]="";
+	Engine_FreeBufString(p_buf);
+
+	if(int(propertries_names_list.size())>j)
 	 string_grid->Cells[3][string_grid->RowCount-1]=propertries_names_list[j].c_str();
 	else
 	 string_grid->Cells[3][string_grid->RowCount-1]="";
@@ -311,7 +361,7 @@ void __fastcall TUComponentIOFrame::ShowOutputs(TStringGrid *string_grid, RDK::U
    {
 	string_grid->Cells[0][string_grid->RowCount-1]="";
 	string_grid->Cells[2][string_grid->RowCount-1]="";
-	if(propertries_names_list.size()>j)
+	if(int(propertries_names_list.size())>j)
 	 string_grid->Cells[3][string_grid->RowCount-1]=propertries_names_list[j].c_str();
 	else
 	 string_grid->Cells[3][string_grid->RowCount-1]="";
@@ -330,7 +380,14 @@ void __fastcall TUComponentIOFrame::ShowInputs(TStringGrid *string_grid, RDK::UL
  {
   std::string properties_names;
   std::map<int, std::string> propertries_names_list;
-  properties_names=Model_GetComponentPropertiesList(linkslist[i].EncodeToString(stringid).c_str(),ptPubInput);
+
+  const char *p_buf=Model_GetComponentPropertiesLookupList(linkslist[i].EncodeToString(stringid).c_str(),ptPubInput);
+  if(p_buf)
+   properties_names=p_buf;
+  else
+   properties_names.clear();
+  Engine_FreeBufString(p_buf);
+
   DecodePropertiesIOList(properties_names, propertries_names_list);
   for(int j=-1;j<Model_GetComponentNumInputs(linkslist[i].EncodeToString(stringid).c_str());j++)
   {
@@ -338,14 +395,21 @@ void __fastcall TUComponentIOFrame::ShowInputs(TStringGrid *string_grid, RDK::UL
    if(j==-1)
    {
 	string_grid->Cells[0][string_grid->RowCount-1]=IntToStr(i);
-	string_grid->Cells[2][string_grid->RowCount-1]=Model_GetComponentLongName(stringid.c_str(),ViewComponentOwnerLongId.c_str());
+
+	const char *p_buf2=Model_GetComponentLongName(stringid.c_str(),ViewComponentOwnerLongId.c_str());
+	if(p_buf2)
+	 string_grid->Cells[2][string_grid->RowCount-1]=p_buf2;
+	else
+	 string_grid->Cells[2][string_grid->RowCount-1]="";
+    Engine_FreeBufString(p_buf2);
+
 	string_grid->Cells[3][string_grid->RowCount-1]="";
    }
    else
    {
 	string_grid->Cells[0][string_grid->RowCount-1]="";
 	string_grid->Cells[2][string_grid->RowCount-1]="";
-	if(propertries_names_list.size()>j)
+	if(int(propertries_names_list.size())>j)
 	 string_grid->Cells[3][string_grid->RowCount-1]=propertries_names_list[j].c_str();
 	else
 	 string_grid->Cells[3][string_grid->RowCount-1]="";
@@ -398,6 +462,13 @@ void TUComponentIOFrame::AUpdateInterface(void)
  }
 
  FrameResize(this);
+}
+
+// Возврат интерфейса в исходное состояние
+void TUComponentIOFrame::AClearInterface(void)
+{
+ ViewComponentOwnerLongId="";
+ ViewComponentLongId="";
 }
 
 // Сохраняет параметры интерфейса в xml

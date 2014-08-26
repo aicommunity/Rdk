@@ -24,26 +24,15 @@ inherited UImagesFrame: TUImagesFrame
     OnDblClick = DrawGridDblClick
     OnDrawCell = DrawGridDrawCell
   end
-  object ShowLegendCheckBox: TCheckBox
-    Left = 0
-    Top = 488
-    Width = 729
-    Height = 17
-    Align = alBottom
-    Caption = 'Show legend'
-    Checked = True
-    DoubleBuffered = True
-    ParentDoubleBuffered = False
-    State = cbChecked
-    TabOrder = 1
-  end
   object ScrollBox1: TScrollBox
     Left = 0
     Top = 0
     Width = 729
     Height = 488
     Align = alClient
-    TabOrder = 2
+    DoubleBuffered = True
+    ParentDoubleBuffered = False
+    TabOrder = 1
     Visible = False
     object FullImage: TImage
       Left = 237
@@ -51,10 +40,79 @@ inherited UImagesFrame: TUImagesFrame
       Width = 105
       Height = 105
       IncrementalDisplay = True
+      Proportional = True
       OnDblClick = FullImageDblClick
       OnMouseDown = FullImageMouseDown
       OnMouseMove = FullImageMouseMove
       OnMouseUp = FullImageMouseUp
+    end
+  end
+  object Panel1: TPanel
+    Left = 0
+    Top = 488
+    Width = 729
+    Height = 17
+    Align = alBottom
+    TabOrder = 2
+    object ShowLegendCheckBox: TCheckBox
+      Left = 1
+      Top = 1
+      Width = 88
+      Height = 15
+      Align = alLeft
+      Caption = 'Show legend'
+      Checked = True
+      DoubleBuffered = True
+      ParentDoubleBuffered = False
+      State = cbChecked
+      TabOrder = 0
+      OnClick = ShowLegendCheckBoxClick
+    end
+    object ShowHistogramCheckBox: TCheckBox
+      Left = 89
+      Top = 1
+      Width = 104
+      Height = 15
+      Align = alLeft
+      Caption = 'Show histogram'
+      DoubleBuffered = True
+      ParentDoubleBuffered = False
+      TabOrder = 1
+      OnClick = ShowHistogramCheckBoxClick
+    end
+    object TiledSizeRadioButton: TRadioButton
+      Left = 656
+      Top = 1
+      Width = 72
+      Height = 15
+      Align = alRight
+      Caption = 'Tiled size'
+      Checked = True
+      TabOrder = 2
+      TabStop = True
+      OnClick = TiledSizeRadioButtonClick
+    end
+    object OriginalSizeRadioButton: TRadioButton
+      Left = 568
+      Top = 1
+      Width = 88
+      Height = 15
+      Align = alRight
+      Caption = 'Original size'
+      TabOrder = 3
+      OnClick = OriginalSizeRadioButtonClick
+    end
+    object ShowInfoCheckBox: TCheckBox
+      Left = 193
+      Top = 1
+      Width = 104
+      Height = 15
+      Align = alLeft
+      Caption = 'Show info'
+      DoubleBuffered = True
+      ParentDoubleBuffered = False
+      TabOrder = 4
+      OnClick = ShowInfoCheckBoxClick
     end
   end
   object PopupMenu: TPopupMenu
@@ -107,14 +165,8 @@ inherited UImagesFrame: TUImagesFrame
     end
   end
   object SavePictureDialog: TSavePictureDialog
-    Filter = 
-      'All (*.gif;*.png;*.jpg;*.jpeg;*.bmp;*.tif;*.tiff;*.ico;*.emf;*.w' +
-      'mf)|*.gif;*.png;*.jpg;*.jpeg;*.bmp;*.tif;*.tiff;*.ico;*.emf;*.wm' +
-      'f|GIF Image (*.gif)|*.gif|Portable Network Graphics (*.png)|*.pn' +
-      'g|JPEG Image File (*.jpg)|*.jpg|JPEG Image File (*.jpeg)|*.jpeg|' +
-      'Bitmaps (*.bmp)|*.bmp|TIFF Images (*.tif)|*.tif|TIFF Images (*.t' +
-      'iff)|*.tiff|Icons (*.ico)|*.ico|Enhanced Metafiles (*.emf)|*.emf' +
-      '|Metafiles (*.wmf)|*.wmf'
+    DefaultExt = 'bmp'
+    Filter = 'JPEG Image File (*.jpg)|*.jpg|Bitmaps (*.bmp)|*.bmp'
     Left = 240
     Top = 296
   end

@@ -22,53 +22,92 @@ inherited UComponentsListFrame: TUComponentsListFrame
       Top = 1
       Width = 384
       Height = 565
-      ActivePage = TabSheet3
+      ActivePage = TabSheet6
       Align = alClient
       TabOrder = 0
       TabPosition = tpBottom
       OnChange = PageControl1Change
-      object TabSheet4: TTabSheet
+      object TabSheet6: TTabSheet
         Caption = 'Parameters List'
-        ImageIndex = 3
-        object Splitter3: TSplitter
+        ImageIndex = 5
+        object Splitter5: TSplitter
           Left = 0
           Top = 462
           Width = 376
           Height = 10
           Cursor = crVSplit
           Align = alBottom
-          ExplicitTop = 440
         end
-        object ParametersListStringGrid: TStringGrid
+        inline EnchancedSG1: TEnchancedSG
           Left = 0
           Top = 0
           Width = 376
           Height = 462
           Align = alClient
-          DefaultRowHeight = 18
-          Options = [goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goEditing, goRowSelect]
           TabOrder = 0
-          OnClick = ParametersListStringGridClick
-          OnDblClick = ParametersListStringGridDblClick
-          OnSelectCell = ParametersListStringGridSelectCell
+          TabStop = True
+          ExplicitWidth = 376
+          ExplicitHeight = 462
+          inherited BasicStringGrid: TStringGrid
+            ColCount = 2
+            FixedCols = 1
+            RowCount = 2
+            FixedRows = 1
+            OnDblClick = EnchancedSG1BasicStringGridDblClick
+            OnDrawCell = EnchancedSG1BasicStringGridDrawCell
+            OnKeyPress = EnchancedSG1BasicStringGridKeyPress
+            OnMouseEnter = EnchancedSG1BasicStringGridMouseEnter
+            OnSelectCell = EnchancedSG1BasicStringGridSelectCell
+          end
+          inherited txtStringEdit: TEdit
+            Left = 32
+            Top = 248
+            OnKeyPress = EnchancedSG1txtStringEditKeyPress
+            ExplicitLeft = 32
+            ExplicitTop = 248
+          end
+          inherited chbBoolEdit: TCheckBox
+            Left = 35
+            Top = 366
+            ExplicitLeft = 35
+            ExplicitTop = 366
+          end
+          inherited udBorderedInt: TUpDown
+            Left = 152
+            Top = 324
+            ExplicitLeft = 152
+            ExplicitTop = 324
+          end
+          inherited txtDoubleEdit: TEdit
+            Left = 30
+            Top = 208
+            OnKeyPress = EnchancedSG1txtDoubleEditKeyPress
+            ExplicitLeft = 30
+            ExplicitTop = 208
+          end
+          inherited txtIntEdit: TEdit
+            Left = 32
+            Top = 389
+            OnKeyPress = EnchancedSG1txtIntEditKeyPress
+            ExplicitLeft = 32
+            ExplicitTop = 389
+          end
+          inherited txtBorderedIntEdit: TEdit
+            Left = 32
+            Top = 324
+            OnKeyPress = EnchancedSG1txtBorderedIntEditKeyPress
+            ExplicitLeft = 32
+            ExplicitTop = 324
+          end
+          inherited cmbListEdit: TComboBox
+            Left = 32
+            Top = 287
+            OnKeyPress = EnchancedSG1cmbListEditKeyPress
+            ExplicitLeft = 32
+            ExplicitTop = 287
+          end
         end
-        object ParameterValueRichEdit: TRichEdit
-          Left = 0
-          Top = 472
-          Width = 376
-          Height = 33
-          Align = alBottom
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -11
-          Font.Name = 'Tahoma'
-          Font.Style = []
-          ParentFont = False
-          PlainText = True
-          ScrollBars = ssBoth
-          TabOrder = 1
-        end
-        object HeaderControl3: THeaderControl
+        object HeaderControl2: THeaderControl
           Left = 0
           Top = 505
           Width = 376
@@ -103,78 +142,17 @@ inherited UComponentsListFrame: TUComponentsListFrame
               ImageIndex = -1
               Text = 'Default'
               Width = 50
+            end
+            item
+              ImageIndex = -1
+              Text = 'Default All'
+              Width = 65
             end>
-          OnSectionClick = HeaderControl3SectionClick
+          OnSectionClick = HeaderControl2SectionClick
           ShowHint = False
           ParentShowHint = False
         end
-      end
-      object TabSheet5: TTabSheet
-        Caption = 'States List'
-        ImageIndex = 4
-        object Splitter4: TSplitter
-          Left = 0
-          Top = 461
-          Width = 376
-          Height = 11
-          Cursor = crVSplit
-          Align = alBottom
-          ExplicitTop = 457
-        end
-        object StatesListStringGrid: TStringGrid
-          Left = 0
-          Top = 0
-          Width = 376
-          Height = 461
-          Align = alClient
-          DefaultRowHeight = 18
-          Options = [goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goRowSelect]
-          TabOrder = 0
-          OnClick = StatesListStringGridClick
-          OnDblClick = StatesListStringGridDblClick
-          OnSelectCell = StatesListStringGridSelectCell
-        end
-        object HeaderControl1: THeaderControl
-          Left = 0
-          Top = 505
-          Width = 376
-          Height = 34
-          Align = alBottom
-          HotTrack = True
-          Sections = <
-            item
-              Alignment = taCenter
-              ImageIndex = -1
-              Text = 'Set'
-              Width = 50
-            end
-            item
-              ImageIndex = -1
-              Text = 'Set Global'
-              Width = 60
-            end
-            item
-              ImageIndex = -1
-              Text = 'Set Global Owner'
-              Width = 100
-            end
-            item
-              Alignment = taCenter
-              ImageIndex = -1
-              Text = 'Reload'
-              Width = 50
-            end
-            item
-              Alignment = taCenter
-              ImageIndex = -1
-              Text = 'Default'
-              Width = 50
-            end>
-          OnSectionClick = HeaderControl1SectionClick
-          ShowHint = False
-          ParentShowHint = False
-        end
-        object StateValueRichEdit: TRichEdit
+        object NiceParamValRichEdit: TRichEdit
           Left = 0
           Top = 472
           Width = 376
@@ -189,11 +167,158 @@ inherited UComponentsListFrame: TUComponentsListFrame
           PlainText = True
           ScrollBars = ssBoth
           TabOrder = 2
+          OnChange = NiceParamValRichEditChange
+          OnMouseEnter = NiceParamValRichEditMouseEnter
+        end
+      end
+      object TabSheet7: TTabSheet
+        Caption = 'States List'
+        ImageIndex = 6
+        object Splitter6: TSplitter
+          Left = 0
+          Top = 462
+          Width = 376
+          Height = 10
+          Cursor = crVSplit
+          Align = alBottom
+          ExplicitTop = 456
+        end
+        object HeaderControl4: THeaderControl
+          Left = 0
+          Top = 505
+          Width = 376
+          Height = 34
+          Align = alBottom
+          HotTrack = True
+          Sections = <
+            item
+              Alignment = taCenter
+              ImageIndex = -1
+              Text = 'Set'
+              Width = 50
+            end
+            item
+              ImageIndex = -1
+              Text = 'Set Global'
+              Width = 60
+            end
+            item
+              ImageIndex = -1
+              Text = 'Set Global Owner'
+              Width = 100
+            end
+            item
+              Alignment = taCenter
+              ImageIndex = -1
+              Text = 'Reload'
+              Width = 50
+            end
+            item
+              Alignment = taCenter
+              ImageIndex = -1
+              Text = 'Default'
+              Width = 50
+            end>
+          OnSectionClick = HeaderControl4SectionClick
+          ShowHint = False
+          ParentShowHint = False
+        end
+        object NiceStateValRichEdit: TRichEdit
+          Left = 0
+          Top = 472
+          Width = 376
+          Height = 33
+          Align = alBottom
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ParentFont = False
+          PlainText = True
+          ScrollBars = ssBoth
+          TabOrder = 1
+          OnChange = NiceStateValRichEditChange
+          OnMouseEnter = NiceStateValRichEditMouseEnter
+        end
+        inline EnchancedSG2: TEnchancedSG
+          Left = 0
+          Top = 0
+          Width = 376
+          Height = 462
+          Align = alClient
+          TabOrder = 2
+          TabStop = True
+          OnMouseEnter = EnchancedSG2MouseEnter
+          ExplicitWidth = 376
+          ExplicitHeight = 462
+          inherited BasicStringGrid: TStringGrid
+            ColCount = 2
+            FixedCols = 1
+            RowCount = 2
+            FixedRows = 1
+            OnDblClick = EnchancedSG2BasicStringGridDblClick
+            OnDrawCell = EnchancedSG2BasicStringGridDrawCell
+            OnKeyPress = EnchancedSG2BasicStringGridKeyPress
+            OnMouseEnter = EnchancedSG2BasicStringGridMouseEnter
+            OnSelectCell = EnchancedSG2BasicStringGridSelectCell
+          end
+          inherited txtStringEdit: TEdit
+            Left = 32
+            Top = 248
+            OnKeyPress = EnchancedSG2txtStringEditKeyPress
+            ExplicitLeft = 32
+            ExplicitTop = 248
+          end
+          inherited chbBoolEdit: TCheckBox
+            Left = 35
+            Top = 366
+            ExplicitLeft = 35
+            ExplicitTop = 366
+          end
+          inherited udBorderedInt: TUpDown
+            Left = 152
+            Top = 324
+            ExplicitLeft = 152
+            ExplicitTop = 324
+          end
+          inherited txtDoubleEdit: TEdit
+            Left = 30
+            Top = 208
+            OnKeyPress = EnchancedSG2txtDoubleEditKeyPress
+            ExplicitLeft = 30
+            ExplicitTop = 208
+          end
+          inherited txtIntEdit: TEdit
+            Left = 32
+            Top = 389
+            OnKeyPress = EnchancedSG2txtIntEditKeyPress
+            ExplicitLeft = 32
+            ExplicitTop = 389
+          end
+          inherited txtBorderedIntEdit: TEdit
+            Left = 32
+            Top = 324
+            OnKeyPress = EnchancedSG2txtBorderedIntEditKeyPress
+            ExplicitLeft = 32
+            ExplicitTop = 324
+          end
+          inherited cmbListEdit: TComboBox
+            Left = 32
+            Top = 287
+            OnKeyPress = EnchancedSG2cmbListEditKeyPress
+            ExplicitLeft = 32
+            ExplicitTop = 287
+          end
         end
       end
       object TabSheet3: TTabSheet
         Caption = 'I/O'
         ImageIndex = 2
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object Splitter2: TSplitter
           Left = 0
           Top = 239
@@ -218,13 +343,13 @@ inherited UComponentsListFrame: TUComponentsListFrame
             Height = 222
             Align = alClient
             DefaultRowHeight = 18
-            Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goRowSelect]
+            FixedCols = 0
+            Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goColSizing, goRowSelect]
             TabOrder = 0
             OnClick = OutputsStringGridClick
             OnDblClick = OutputsStringGridDblClick
+            OnMouseEnter = OutputsStringGridMouseEnter
             OnSelectCell = OutputsStringGridSelectCell
-            ExplicitLeft = 3
-            ExplicitTop = 19
           end
         end
         object GroupBox2: TGroupBox
@@ -242,10 +367,12 @@ inherited UComponentsListFrame: TUComponentsListFrame
             Height = 275
             Align = alClient
             DefaultRowHeight = 18
-            Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goRowSelect]
+            FixedCols = 0
+            Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goColSizing, goRowSelect]
             TabOrder = 0
             OnClick = InputsStringGridClick
             OnDblClick = InputsStringGridDblClick
+            OnMouseEnter = InputsStringGridMouseEnter
             OnSelectCell = InputsStringGridSelectCell
           end
         end
@@ -276,6 +403,11 @@ inherited UComponentsListFrame: TUComponentsListFrame
               ImageIndex = -1
               Text = 'Default'
               Width = 50
+            end
+            item
+              ImageIndex = -1
+              Text = 'Default All'
+              Width = 65
             end>
           OnSectionClick = ParametersHeaderControlSectionClick
           ShowHint = False
@@ -370,6 +502,7 @@ inherited UComponentsListFrame: TUComponentsListFrame
       OnDblClick = StringGridDblClick
       OnKeyDown = StringGridKeyDown
       OnKeyPress = StringGridKeyPress
+      OnMouseEnter = StringGridMouseEnter
       OnSelectCell = StringGridSelectCell
     end
     object HeaderControl: THeaderControl

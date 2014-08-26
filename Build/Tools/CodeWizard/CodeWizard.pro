@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui xml
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -16,12 +16,3 @@ SOURCES += main.cpp\
         codewizard.cpp
 
 HEADERS  += codewizard.h
-
-unix:!symbian {
-    DESTDIR = $$PWD/../../../Bin/Platform/Linux
-}
-
-windows {
-    DESTDIR = $$PWD/../../../Bin/Platform/Win
-}
-

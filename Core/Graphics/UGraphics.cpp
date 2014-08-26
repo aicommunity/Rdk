@@ -78,19 +78,6 @@ bool UGraphics::SetCanvas(UBitmap *canvas)
  CHeight=Canvas->GetHeight();
  return true;
 }
-
-// Устанавливает шрифт
-bool UGraphics::SetFont(UAFont* font)
-{
- Font=font;
- return true;
-}
-
-// Возвращает текущий шрифт
-UAFont* UGraphics::GetFont(void)
-{
- return Font;
-}
 // --------------------------
 
 // --------------------------
@@ -445,6 +432,9 @@ void UGraphics::Fill(int x, int y, UColorT BorderColor)
  CWidth=Canvas->GetWidth();
  CHeight=Canvas->GetHeight();
 
+ if(!CWidth || !CHeight)
+  return;
+
  list<int> points;
  int pos=y*CWidth+x;
 
@@ -509,7 +499,7 @@ void UGraphics::Fill(int x, int y, UColorT BorderColor)
   }
 
   points.pop_front();
- }while(points.size()>0);
+ }while(!points.empty());
 }
 
 // Выводит изображение с началом в заданной позиции

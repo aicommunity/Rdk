@@ -11,6 +11,7 @@ object UServerControlForm: TUServerControlForm
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   PixelsPerInch = 96
@@ -20,9 +21,10 @@ object UServerControlForm: TUServerControlForm
     Top = 0
     Width = 721
     Height = 490
-    ActivePage = ControlTabSheet
+    ActivePage = OptionsTabSheet
     Align = alClient
     TabOrder = 0
+    OnChange = PageControlChange
     object ControlTabSheet: TTabSheet
       Caption = 'Control'
       object GroupBox3: TGroupBox
@@ -163,9 +165,9 @@ object UServerControlForm: TUServerControlForm
         TabOrder = 1
         object ServerStartButton: TButton
           Left = 10
-          Top = 8
+          Top = 6
           Width = 75
-          Height = 25
+          Height = 27
           Caption = 'Start'
           TabOrder = 0
           OnClick = ServerStartButtonClick
@@ -195,28 +197,28 @@ object UServerControlForm: TUServerControlForm
           Left = 1
           Top = 1
           Width = 315
-          Height = 110
+          Height = 192
           Align = alTop
           Caption = ' Main options '
           TabOrder = 0
           DesignSize = (
             315
-            110)
+            192)
           object ServerControlPortLabeledEdit: TLabeledEdit
-            Left = 6
-            Top = 31
-            Width = 299
+            Left = 200
+            Top = 116
+            Width = 105
             Height = 21
             Anchors = [akLeft, akTop, akRight]
-            EditLabel.Width = 91
+            EditLabel.Width = 57
             EditLabel.Height = 13
-            EditLabel.Caption = 'Server control port'
+            EditLabel.Caption = 'Binding port'
             TabOrder = 0
             Text = '45045'
           end
           object NumberOfChannelsLabeledEdit: TLabeledEdit
             Left = 6
-            Top = 79
+            Top = 164
             Width = 299
             Height = 21
             Anchors = [akLeft, akTop, akRight]
@@ -226,12 +228,48 @@ object UServerControlForm: TUServerControlForm
             TabOrder = 1
             Text = '1'
           end
+          object ServerNameLabeledEdit: TLabeledEdit
+            Left = 6
+            Top = 34
+            Width = 299
+            Height = 21
+            Anchors = [akLeft, akTop, akRight]
+            EditLabel.Width = 62
+            EditLabel.Height = 13
+            EditLabel.Caption = 'Server Name'
+            TabOrder = 2
+            Text = 'Server'
+          end
+          object ServerIdLabeledEdit: TLabeledEdit
+            Left = 6
+            Top = 73
+            Width = 299
+            Height = 21
+            Anchors = [akLeft, akTop, akRight]
+            EditLabel.Width = 45
+            EditLabel.Height = 13
+            EditLabel.Caption = 'Server Id'
+            TabOrder = 3
+            Text = 'Server'
+          end
+          object BindingAddressLabeledEdit: TLabeledEdit
+            Left = 6
+            Top = 116
+            Width = 188
+            Height = 21
+            Anchors = [akLeft, akTop, akRight]
+            EditLabel.Width = 75
+            EditLabel.Height = 13
+            EditLabel.Caption = 'Binging address'
+            TabOrder = 4
+            Text = '127.0.0.1'
+          end
         end
         object GroupBox2: TGroupBox
           Left = 1
-          Top = 111
+          Top = 193
           Width = 315
-          Height = 309
+          Height = 227
           Align = alClient
           Caption = ' Channel names '
           TabOrder = 1
@@ -239,7 +277,7 @@ object UServerControlForm: TUServerControlForm
             Left = 2
             Top = 15
             Width = 311
-            Height = 292
+            Height = 210
             Align = alClient
             ColCount = 2
             DefaultRowHeight = 20
@@ -259,10 +297,10 @@ object UServerControlForm: TUServerControlForm
         TabOrder = 1
         inline UHttpServerFrame: TUHttpServerFrame
           Left = 1
-          Top = 1
+          Top = 368
           Width = 394
           Height = 52
-          Align = alTop
+          Align = alBottom
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
           Font.Height = -11
@@ -271,7 +309,7 @@ object UServerControlForm: TUServerControlForm
           ParentFont = False
           TabOrder = 0
           ExplicitLeft = 1
-          ExplicitTop = 1
+          ExplicitTop = 368
           ExplicitWidth = 394
           ExplicitHeight = 52
           inherited Image1: TImage
@@ -284,6 +322,40 @@ object UServerControlForm: TUServerControlForm
             OnCommandGet = UHttpServerFrameIdHTTPServerCommandGet
           end
         end
+        object GroupBox4: TGroupBox
+          Left = 1
+          Top = 1
+          Width = 394
+          Height = 105
+          Align = alTop
+          Caption = ' Metadata options '
+          TabOrder = 1
+          DesignSize = (
+            394
+            105)
+          object MetadataComponentNameLabeledEdit: TLabeledEdit
+            Left = 4
+            Top = 34
+            Width = 386
+            Height = 21
+            Anchors = [akLeft, akTop, akRight]
+            EditLabel.Width = 85
+            EditLabel.Height = 13
+            EditLabel.Caption = 'Component Name'
+            TabOrder = 0
+          end
+          object MetadataComponentStateNameLabeledEdit: TLabeledEdit
+            Left = 5
+            Top = 73
+            Width = 386
+            Height = 21
+            Anchors = [akLeft, akTop, akRight]
+            EditLabel.Width = 114
+            EditLabel.Height = 13
+            EditLabel.Caption = 'Component State Name'
+            TabOrder = 1
+          end
+        end
       end
       object Panel3: TPanel
         Left = 0
@@ -294,7 +366,7 @@ object UServerControlForm: TUServerControlForm
         TabOrder = 2
         object ApplyOptionsButton: TButton
           Left = 7
-          Top = 5
+          Top = 6
           Width = 75
           Height = 27
           Caption = 'Apply'
@@ -312,5 +384,39 @@ object UServerControlForm: TUServerControlForm
         end
       end
     end
+  end
+  object CommandTimer: TTimer
+    Interval = 10
+    OnTimer = CommandTimerTimer
+    Left = 80
+    Top = 40
+  end
+  object TcpServer: TTcpServer
+    LocalHost = '127.0.0.1'
+    LocalPort = '45050'
+    OnAccept = TcpServerAccept
+    OnGetThread = TcpServerGetThread
+    OnListening = TcpServerListening
+    Left = 144
+    Top = 40
+  end
+  object IdTCPServer: TIdTCPServer
+    Bindings = <
+      item
+        IP = '127.0.0.1'
+        Port = 45045
+      end>
+    DefaultPort = 0
+    OnConnect = IdTCPServerConnect
+    OnDisconnect = IdTCPServerDisconnect
+    OnExecute = IdTCPServerExecute
+    Left = 208
+    Top = 40
+  end
+  object ServerRestartTimer: TTimer
+    Enabled = False
+    OnTimer = ServerRestartTimerTimer
+    Left = 256
+    Top = 40
   end
 end

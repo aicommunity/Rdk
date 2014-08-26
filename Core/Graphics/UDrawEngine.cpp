@@ -52,6 +52,11 @@ Position=0;
 
 // Тип элемента
 Type = 0;
+
+ NumInputs=0;
+ NumOutputs=0;
+ Highlight=false;
+
 }
 
 UGEDescription::UGEDescription(const UGEDescription &copy)
@@ -70,6 +75,7 @@ UGEDescription& UGEDescription::operator = (const UGEDescription &copy)
 Index=copy.Index;
 Position=copy.Position;
 Header=copy.Header;
+ClassName=copy.ClassName;
 Type=copy.Type;
 NumInputs=copy.NumInputs;
 NumOutputs=copy.NumOutputs;
@@ -119,6 +125,9 @@ UDrawEngine::UDrawEngine(void)
  // Размеры элемента в пикселях по умолчанию
  RectWidth=80;
  RectHeight=25;
+
+ ElementsXRes=1;
+ ElementsYRes=1;
 }
 
 UDrawEngine::~UDrawEngine(void)
@@ -253,7 +262,7 @@ std::string UDrawEngine::FindComponent(int x, int y)
  {
 //  double dist=sqrt(double((x-I->second.Position.x)*(x-I->second.Position.x)+(y-I->second.Position.y)*(y-I->second.Position.y)));
 
-  name=I->first;
+//  name=I->first;
   if(abs(int(x-I->second.Position.x))<=I->second.Width && abs(int(y-I->second.Position.y))<=I->second.Height)
 //  if(dist<=I->second.Height)// Заглушка!!
    return I->first;
@@ -336,7 +345,7 @@ void UDrawEngine::UpdateDestinations(void)
 	descr.Type=1;
    else
    {
-    if(NetXml.GetNumNodes())
+	if(NetXml.GetNumNodes())
 	 descr.Type=2;
 	else
 	 descr.Type=1;
@@ -354,7 +363,7 @@ void UDrawEngine::UpdateDestinations(void)
 	 RDK::operator >> (NetXml,coord);
 	 NetXml.SelectUp();
 
-	 if(!coord>0)
+	 if((!coord)>0)
 	  descr.Position=coord*ZoomCoeff+Origin;
 	 else
 	  descr.Position=i*30.0;
@@ -363,6 +372,7 @@ void UDrawEngine::UpdateDestinations(void)
 	NetXml.SelectUp();
    }
 
+   descr.ClassName=NetXml.GetNodeAttribute("Class");
    descr.Header=dI->first;
    descr.Width=RectWidth;
    descr.Height=RectHeight;
@@ -505,6 +515,12 @@ bool UDrawEngine::DrawBackground(void)
 
  for(int i=0;i<CanvasHeight;i+=BackgroundLineStep)
   GEngine->Line(0,i,CanvasWidth-1,i);
+
+ GEngine->SetPenColor(BackgroundLineColor);
+ GEngine->Rect(0, 0, BackgroundLineStep, CanvasHeight, true);
+ GEngine->Rect(0, 0, CanvasWidth, BackgroundLineStep, true);
+ GEngine->Rect(CanvasWidth-BackgroundLineStep, 0, CanvasWidth, CanvasHeight, true);
+ GEngine->Rect(0, CanvasHeight-BackgroundLineStep, CanvasWidth, CanvasHeight, true);
  return true;
 }
 // ---------------------------
@@ -543,8 +559,17 @@ void UDrawEngine::Paint(UGEDescription &ndescr)
  rect.X=int(ndescr.Position.x)-(ndescr.Width-2);
  rect.Y=int(ndescr.Position.y)-ndescr.Height;
  rect.Width=(ndescr.Width-2)*2;
- rect.Height=ndescr.Height*2;
+ rect.Height=ndescr.Height;
+ UAFont *font=GEngine->GetFont();
  GEngine->TextRect(ndescr.Header,rect,alCenter);
+ rect.Y+=int(ndescr.Height*1.2);
+ UAFont *class_font=RDK::GlobalFonts.GetFont(font->GetName(),font->GetSize()-4);
+ if(class_font)
+ {
+  GEngine->SetFont(class_font);
+  GEngine->TextRect(ndescr.ClassName,rect,alRight);
+  GEngine->SetFont(font);
+ }
 }
 
 // Отрисовывает конечный элемент (NAItem*) с центром в заданной позиции

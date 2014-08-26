@@ -1,0 +1,539 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1212</width>
+    <height>826</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QGridLayout" name="gridLayout_2">
+    <item row="1" column="0">
+     <layout class="QHBoxLayout" name="horizontalLayout_10">
+      <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="settingsButton">
+        <property name="text">
+         <string>Settings</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="createButton">
+        <property name="text">
+         <string>Create</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="cancelButton">
+        <property name="text">
+         <string>Cancel</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="0" column="0">
+     <widget class="QSplitter" name="splitter">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <widget class="QWidget" name="verticalLayoutWidget_2">
+       <layout class="QVBoxLayout" name="verticalLayout_5">
+        <item>
+         <widget class="QListView" name="libListView"/>
+        </item>
+        <item>
+         <widget class="QTreeView" name="tree"/>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <item>
+           <widget class="QPushButton" name="expandButton">
+            <property name="text">
+             <string>Expand all</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="selectButton">
+            <property name="text">
+             <string>Select</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QTabWidget" name="tabWidget">
+       <property name="currentIndex">
+        <number>2</number>
+       </property>
+       <property name="documentMode">
+        <bool>false</bool>
+       </property>
+       <widget class="QWidget" name="tab_3">
+        <attribute name="title">
+         <string>Header file</string>
+        </attribute>
+        <layout class="QGridLayout" name="gridLayout_3">
+         <item row="0" column="0">
+          <widget class="QTextEdit" name="headerEdit"/>
+         </item>
+         <item row="1" column="0">
+          <layout class="QHBoxLayout" name="horizontalLayout_4">
+           <item>
+            <widget class="QPushButton" name="hUndoButton">
+             <property name="text">
+              <string>Undo</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="hRedoButton">
+             <property name="text">
+              <string>Redo</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="hSaveButton">
+             <property name="text">
+              <string>Save</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="tab_4">
+        <attribute name="title">
+         <string>Source file</string>
+        </attribute>
+        <layout class="QGridLayout" name="gridLayout_4">
+         <item row="0" column="0">
+          <widget class="QTextEdit" name="sourceEdit"/>
+         </item>
+         <item row="1" column="0">
+          <layout class="QHBoxLayout" name="horizontalLayout">
+           <item>
+            <widget class="QPushButton" name="sUndoButton">
+             <property name="text">
+              <string>Undo</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="sRedoButton">
+             <property name="text">
+              <string>Redo</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="sSaveButton">
+             <property name="text">
+              <string>Save</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="tab_5">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="autoFillBackground">
+         <bool>false</bool>
+        </property>
+        <attribute name="title">
+         <string>Properties</string>
+        </attribute>
+        <layout class="QFormLayout" name="formLayout">
+         <property name="fieldGrowthPolicy">
+          <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+         </property>
+         <item row="1" column="0">
+          <widget class="QLabel" name="propertyLabel">
+           <property name="text">
+            <string>Property type:</string>
+           </property>
+           <property name="buddy">
+            <cstring>propertyCBox</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QComboBox" name="propertyCBox">
+           <item>
+            <property name="text">
+             <string>Parameter (ULProperty)</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Input (UPropertyInputData)</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Output (UPropertyOutputData)</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>State (ULProperty)</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="paramLabel">
+           <property name="text">
+            <string>Parameter type:</string>
+           </property>
+           <property name="buddy">
+            <cstring>paramCBox</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QComboBox" name="paramCBox">
+           <property name="editable">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="propNameLabel">
+           <property name="text">
+            <string>Property name:</string>
+           </property>
+           <property name="buddy">
+            <cstring>propNameCBox</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QComboBox" name="propNameCBox">
+           <property name="editable">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <widget class="QLabel" name="decripLabel">
+           <property name="text">
+            <string>Description:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="0" colspan="2">
+          <widget class="QCheckBox" name="hasExtraCheckBox">
+           <property name="text">
+            <string>Public property</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="0" colspan="2">
+          <widget class="QCheckBox" name="isStateCheckBox">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="text">
+            <string>Is state</string>
+           </property>
+          </widget>
+         </item>
+         <item row="8" column="0">
+          <widget class="QCheckBox" name="settersCheckBox">
+           <property name="text">
+            <string>Setters</string>
+           </property>
+          </widget>
+         </item>
+         <item row="9" column="0">
+          <widget class="QPushButton" name="addPropButton">
+           <property name="text">
+            <string>Add property</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1">
+          <widget class="QLineEdit" name="descripLineEdit"/>
+         </item>
+         <item row="0" column="0" colspan="2">
+          <widget class="QTableWidget" name="tableWidget">
+           <column>
+            <property name="text">
+             <string>Type</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Parameter</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Name</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Setter</string>
+            </property>
+           </column>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="verticalLayoutWidget">
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <widget class="QLabel" name="templateLabel">
+          <property name="text">
+           <string>Template:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="templateCBox"/>
+        </item>
+        <item>
+         <widget class="QLabel" name="classNameLabel">
+          <property name="text">
+           <string>Class Name:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="classNameCBox">
+          <property name="editable">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="fileNameLabel">
+          <property name="text">
+           <string>File Name:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="fileNameLineEdit"/>
+        </item>
+        <item>
+         <widget class="QLabel" name="componentNameLabel">
+          <property name="text">
+           <string>Component Name:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="componentNameLineEdit"/>
+        </item>
+        <item>
+         <widget class="QLabel" name="dstPathLabel">
+          <property name="text">
+           <string>Path:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="dstPathCBox">
+          <property name="editable">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="browseButton">
+          <property name="text">
+           <string>Browse</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="baseNameLabel">
+          <property name="text">
+           <string>Base Class:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="baseNameCBox">
+          <property name="editable">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="baseFileNameLabel">
+          <property name="text">
+           <string>Include file:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="baseFileNameLineEdit"/>
+        </item>
+        <item>
+         <widget class="QLabel" name="namespaceLabel">
+          <property name="text">
+           <string>Namespace:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="namespaceCBox"/>
+        </item>
+        <item>
+         <widget class="QLabel" name="copyrightNameLabel">
+          <property name="text">
+           <string>Copyright name:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="copyrightNameLineEdit"/>
+        </item>
+        <item>
+         <widget class="QLabel" name="copyrightYearLabel">
+          <property name="text">
+           <string>Copyright year:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="copyrightYearLineEdit"/>
+        </item>
+        <item>
+         <widget class="QLabel" name="copyrightEmailLabel">
+          <property name="text">
+           <string>Copyright e-mail:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="copyrightEmailLineEdit"/>
+        </item>
+        <item>
+         <widget class="QLabel" name="copyrightUrlLabel">
+          <property name="text">
+           <string>Copyright URL:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="copyrightUrlLineEdit"/>
+        </item>
+        <item>
+         <widget class="QLabel" name="copyrightProjectNameLabel">
+          <property name="text">
+           <string>Copyright project:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="copyrightProjectNameLineEdit"/>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1212</width>
+     <height>26</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QToolBar" name="mainToolBar">
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <tabstops>
+  <tabstop>libListView</tabstop>
+  <tabstop>tree</tabstop>
+  <tabstop>expandButton</tabstop>
+  <tabstop>selectButton</tabstop>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>headerEdit</tabstop>
+  <tabstop>hUndoButton</tabstop>
+  <tabstop>hRedoButton</tabstop>
+  <tabstop>hSaveButton</tabstop>
+  <tabstop>sourceEdit</tabstop>
+  <tabstop>sUndoButton</tabstop>
+  <tabstop>sRedoButton</tabstop>
+  <tabstop>sSaveButton</tabstop>
+  <tabstop>propertyCBox</tabstop>
+  <tabstop>paramCBox</tabstop>
+  <tabstop>propNameCBox</tabstop>
+  <tabstop>descripLineEdit</tabstop>
+  <tabstop>hasExtraCheckBox</tabstop>
+  <tabstop>isStateCheckBox</tabstop>
+  <tabstop>settersCheckBox</tabstop>
+  <tabstop>addPropButton</tabstop>
+  <tabstop>templateCBox</tabstop>
+  <tabstop>classNameCBox</tabstop>
+  <tabstop>fileNameLineEdit</tabstop>
+  <tabstop>componentNameLineEdit</tabstop>
+  <tabstop>dstPathCBox</tabstop>
+  <tabstop>browseButton</tabstop>
+  <tabstop>baseNameCBox</tabstop>
+  <tabstop>baseFileNameLineEdit</tabstop>
+  <tabstop>namespaceCBox</tabstop>
+  <tabstop>copyrightNameLineEdit</tabstop>
+  <tabstop>copyrightYearLineEdit</tabstop>
+  <tabstop>copyrightEmailLineEdit</tabstop>
+  <tabstop>copyrightUrlLineEdit</tabstop>
+  <tabstop>copyrightProjectNameLineEdit</tabstop>
+  <tabstop>settingsButton</tabstop>
+  <tabstop>createButton</tabstop>
+  <tabstop>cancelButton</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+</ui>

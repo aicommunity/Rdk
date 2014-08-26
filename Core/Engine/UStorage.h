@@ -17,26 +17,27 @@ See file license.txt for more information
 #include "UEPtr.h"
 #include "UContainer.h"
 #include "../Serialize/USerStorageXML.h"
-#include "UComponentDescription.h"
+#include "UContainerDescription.h"
 
 namespace RDK {
 
 /* *********************************************************************** */
 class ULibrary;
+class URuntimeLibrary;
 
 typedef UEPtr<UComponent> UClassStorageElement;
 typedef std::map<UId, UClassStorageElement> UClassesStorage;
 typedef std::map<UId, UClassStorageElement>::iterator UClassesStorageIterator;
 typedef std::map<UId, UClassStorageElement>::const_iterator UClassesStorageCIterator;
 
-typedef std::map<std::string, UEPtr<UComponentDescription> > UClassesDescription;
-typedef std::map<std::string, UEPtr<UComponentDescription> >::iterator UClassesDescriptionIterator;
-typedef std::map<std::string, UEPtr<UComponentDescription> >::const_iterator UClassesDescriptionCIterator;
+typedef std::map<std::string, UEPtr<UContainerDescription> > UClassesDescription;
+typedef std::map<std::string, UEPtr<UContainerDescription> >::iterator UClassesDescriptionIterator;
+typedef std::map<std::string, UEPtr<UContainerDescription> >::const_iterator UClassesDescriptionCIterator;
 
 typedef std::vector<ULibrary*> UClassLibraryList;
 /* *********************************************************************** */
 // Элемент списка существующих объектов определенного класса
-class UInstancesStorageElement
+class RDK_LIB_TYPE UInstancesStorageElement
 {
 public: // Данные
 // Указатель на объект
@@ -83,7 +84,7 @@ typedef map<UId, UInstancesStorage>::iterator UObjectsStorageIterator;
 typedef map<UId, UInstancesStorage>::const_iterator UObjectsStorageCIterator;
 /* *********************************************************************** */
 
-class UStorage
+class RDK_LIB_TYPE UStorage
 {
 friend class UContainer;
 protected: // Системные свойства
@@ -102,7 +103,7 @@ std::map<std::string, UPropertyDescription> CommonDescriptions;
 
 protected: // Описания библиотек
 // Массив доступных библиотек
-UClassLibraryList ClassLibraryList;
+UClassLibraryList CollectionList;
 
 /// Таблица соответствий между именами классов и библиотек
 /// имеет вид <имя класса, имя его библиотеки>
@@ -159,13 +160,17 @@ virtual UId AddClass(UEPtr<UComponent> classtemplate, const UId &classid=Forbidd
 virtual UId AddClass(UEPtr<UComponent> classtemplate, const std::string &classname, const UId &classid=ForbiddenId);
 
 // Удаляет образец класса объекта из хранилища
-virtual void DelClass(const UId &classid);
+// Если 'force' == true то принудительно удаляет из хранилища
+// все объекты этого класса
+virtual void DelClass(const UId &classid, bool force=false);
 
 // Проверяет наличие образца класса объекта в хранилище
 virtual bool CheckClass(const UId &classid) const;
+virtual bool CheckClass(const string &classname) const;
 
 // Возвращает образец класса
 virtual UEPtr<UComponent> GetClass(const UId &classid) const;
+virtual UEPtr<UComponent> GetClass(const std::string &class_name) const;
 
 // Возвращает число классов
 int GetNumClasses(void) const;
@@ -194,8 +199,8 @@ virtual void ClearClassesStorage(void);
 // Флаг 'Activity' объекта выставляется в true
 // Если свободного объекта не существует он создается и добавляется
 // в хранилище
-virtual UEPtr<UComponent> TakeObject(const UId &classid, const UEPtr<UComponent> prototype=0);
-virtual UEPtr<UComponent> TakeObject(const string &classname, const UEPtr<UComponent> prototype=0);
+virtual UEPtr<UComponent> TakeObject(const UId &classid, const UEPtr<UComponent> &prototype=0);
+virtual UEPtr<UComponent> TakeObject(const string &classname, const UEPtr<UComponent> &prototype=0);
 
 // Возвращает Id класса, отвечающий объекту 'object'
 virtual UId FindClass(UEPtr<UComponent> object) const;
@@ -213,17 +218,20 @@ virtual void FreeObjectsStorage(void);
 
 // Удаляет все объекты из хранилища
 virtual void ClearObjectsStorage(void);
+
+// Удалаяет все объекты заданного класса из хранилища
+virtual void ClearObjectsStorageByClass(const UId &classid);
 // --------------------------
 
 // --------------------------
 // Методы управления описанием классов
 // --------------------------
 // Возвращает XML описание класса
-const UEPtr<UComponentDescription> GetClassDescription(const std::string &classname) const;
+const UEPtr<UContainerDescription> GetClassDescription(const std::string &classname) const;
 
 // Устанавливает XML описание класса
 // Класс в хранилище должен существовать
-void SetClassDescription(const std::string &classname, const UEPtr<UComponentDescription>& description);
+void SetClassDescription(const std::string &classname, const UEPtr<UContainerDescription>& description);
 
 // Сохраняет описание класса в xml
 virtual void SaveClassDescription(const std::string &classname,
@@ -250,42 +258,69 @@ virtual bool LoadCommonClassesDescription(USerStorageXML &xml);
 // Методы управления библиотеками
 // --------------------------
 // Возвращает библиотеку по индексу
-UEPtr<ULibrary> GetClassLibrary(int index);
+UEPtr<ULibrary> GetCollection(int index);
 
 // Возвращает число библиотек
-int GetNumClassLibraries(void) const;
+int GetNumCollections(void) const;
 
 // Возвращает библиотеку по имени
-UEPtr<ULibrary> GetClassLibrary(const string &name);
+UEPtr<ULibrary> GetCollection(const string &name);
 
 // Возвращает имя библиотеки по индексу
-const string& GetClassLibraryName(int index);
+const string& GetCollectionName(int index);
 
 // Возвращает версию библиотеки по индексу
-const string& GetClassLibraryVersion(int index);
+const string& GetCollectionVersion(int index);
 
 // Непосредственно добавялет новый образец класса в хранилище
-virtual bool AddClass(UContainer *newclass);
+//virtual bool AddClass(UContainer *newclass);
+
+/// Добавялет новый образец класса в коллекцию
+virtual bool AddClassToCollection(const std::string &new_class_name, UContainer *newclass, URuntimeLibrary *library);
+
+/// Создает новую библиотеку с заданным именем
+virtual bool CreateRuntimeCollection(const std::string &lib_name);
+
+/// Загружает runtime-библиотеку из строки
+virtual bool LoadRuntimeCollection(const std::string &buffer, bool force_build=false);
+
+/// Сохраняет runtime-библиотеку в строку
+virtual bool SaveRuntimeCollection(const std::string &lib_name, std::string &buffer);
+virtual bool SaveRuntimeCollection(URuntimeLibrary *library, std::string &buffer);
 
 // Подключает динамическую библиотеку с набором образцов классов.
 // Если бибилиотека с таким именем уже существует то возвращает false.
 // Ответственность за освобождение памяти библиотекой лежит на вызывающей стороне.
-virtual bool AddClassLibrary(ULibrary *library);
+// Если force_build == true то немедленно осущетсвляет развертывание бибилотеки
+// в хранилище
+virtual bool AddCollection(ULibrary *library, bool force_build=false);
 
 // Удаляет подключенную библиотеку из списка по индексу
 // Ответственность за освобождение памяти лежит на вызывающей стороне.
-virtual bool DelClassLibrary(int index);
+virtual bool DelCollection(int index);
 
 // Удаляет подключенную библиотеку из списка по имени
 // Ответственность за освобождение памяти лежит на вызывающей стороне.
-bool DelClassLibrary(const string &name);
+bool DelCollection(const string &name);
 
 // Удаляет из списка все библиотеки
 // Ответственность за освобождение памяти лежит на вызывающей стороне.
-virtual bool DelAllClassLibraries(void);
+virtual bool DelAllCollections(void);
 
 // Заполняет хранилище данными библиотек
 virtual bool BuildStorage(void);
+
+/// Удаляет все образцы классов, для которых нет библиотек
+/// а также все связанные образцы
+virtual void DelAbandonedClasses(void);
+
+/// Возвращает указатель на библиотеку класса по имени класса
+virtual UEPtr<ULibrary> FindCollection(const std::string class_name);
+virtual UEPtr<ULibrary> FindCollection(const UId &classid);
+
+/// Формирует список зависимостей класса компонента от библиотек
+/// Метод не очищает переданный список библиотек, а только пополняет его
+virtual void FindComponentDependencies(const std::string class_name, std::vector<std::pair<std::string,std::string> > &dependencies);
 // --------------------------
 
 // --------------------------
@@ -306,11 +341,13 @@ virtual UId PopObject(UEPtr<UContainer> object);
 // Перемещает объект в другое хранилище
 virtual void MoveObject(UEPtr<UContainer> object, UEPtr<UStorage> newstorage);
 
+public:
 // Возвращает объект в хранилище
 // Выбранный объект помечается как свободный в хранилище
 // Флаг 'Activity' объекта выставляется в false
 virtual void ReturnObject(UEPtr<UComponent> object);
 
+protected:
 // В случае ошибки возвращает ForbiddenId
 virtual UId PopObject(UObjectsStorageIterator instance_iterator, list<UInstancesStorageElement>::iterator object_iterator);
 // --------------------------

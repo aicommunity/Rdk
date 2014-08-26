@@ -15,13 +15,12 @@ See file license.txt for more information
 
 #include "UBitmap.h"
 #include "UBitmapVector.h"
-#include "UBPtzCamera.h"
+//#include "UBPtzCamera.h"
 #include "../Serialize/USerStorageBinary.h"
 
 namespace RDK {
 
 struct UBVSObject;
-struct UBVSObject3D;
 
 // UBMColorModel
 USerStorageBinary& operator << (USerStorageBinary& storage, UBMColorModel data);
@@ -68,9 +67,9 @@ USerStorageBinary& operator << (USerStorageBinary& storage, const UBVSObject &da
 USerStorageBinary& operator >> (USerStorageBinary& storage, UBVSObject &data);
 
 // struct UBVSObject3D
-USerStorageBinary& operator << (USerStorageBinary& storage, const UBVSObject3D &data);
-USerStorageBinary& operator >> (USerStorageBinary& storage, UBVSObject3D &data);
-
+//USerStorageBinary& operator << (USerStorageBinary& storage, const UBVSObject3D &data);
+//USerStorageBinary& operator >> (USerStorageBinary& storage, UBVSObject3D &data);
+	  /*
 //class UBPtzCameraInfo
 USerStorageBinary& operator << (USerStorageBinary& storage, const UBPtzCameraInfo &data);
 USerStorageBinary& operator >> (USerStorageBinary& storage, UBPtzCameraInfo &data);
@@ -78,6 +77,6 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, UBPtzCameraInfo &dat
 //class UBPtzCameraData
 USerStorageBinary& operator << (USerStorageBinary& storage, const UBPtzCameraData &data);
 USerStorageBinary& operator >> (USerStorageBinary& storage, UBPtzCameraData &data);
-
+        */
 }
 #endif

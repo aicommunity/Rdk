@@ -16,7 +16,7 @@ See file license.txt for more information
 
 namespace RDK {
 
-class UNet: public UADItem
+class RDK_LIB_TYPE UNet: public UADItem
 {
 protected: // Основные свойства
 
@@ -102,8 +102,10 @@ virtual bool CreateLink(const ULongId &item_id, int item_index, const ULongId &c
 // 'item' и коннектором 'connector'
 virtual bool CreateLink(const NameT &item, int item_index,
 						const NameT &connector, int connector_index=-1);
-virtual bool CreateLink(const NameT &item, const NameT &item_property_name,
-						const NameT &connector, const NameT &connector_property_name);
+virtual bool CreateLink(const NameT &item, const NameT &item_index,
+						const NameT &connector, const NameT &connector_index);
+//virtual bool CreateLink(const NameT &item, const NameT &item_property_name,
+//						const NameT &connector, const NameT &connector_property_name);
 
 // Устанавливает все связи из массива 'linkslist'
 template<typename T>
@@ -133,6 +135,10 @@ virtual bool BreakLink(const NameT &itemname, int item_index,
 virtual bool BreakLink(const NameT &item, const NameT &item_property_name,
 						const NameT &connector, const NameT &connector_property_name);
 
+// Разрывает все связи между выходом элемента сети, 'itemid'
+// и коннектором 'connectorid'
+virtual bool BreakLink(const NameT &itemname, const NameT &connectorname);
+
 // Разрывает все связи сети
 // исключая ее внутренние связи и обратные связи
 // brklevel - объект, относительно которого связи считаются внутренними
@@ -144,6 +150,9 @@ virtual bool BreakLinks(const ULinksList &linkslist);
 // Разрывает все внутренние связи сети.
 virtual void BreakLinks(void);
 
+// Разрывает связь ко входу connector_index коннектора 'connectorid'
+virtual void BreakConnectorLink(const NameT &connectorname, int connector_index);
+
 // Проверяет, существует ли заданная связь
 template<typename T>
 bool CheckLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector);
@@ -153,6 +162,103 @@ virtual bool CheckLink(const NameT &itemname, int item_index,
 						const NameT &connectorname, int connector_index);
 virtual bool CheckLink(const NameT &itemname, const NameT &item_property_name,
 						const NameT &connectorname, const NameT &connector_property_name);
+virtual bool CheckLink(const NameT &itemname,
+						const NameT &connectorname);
+// ----------------------
+
+// --------------------------
+// Методы сериализации компонент
+// --------------------------
+// Возвращает свойства компонента по идентификатору
+virtual bool GetComponentProperties(UEPtr<RDK::UContainer> cont, RDK::USerStorageXML *serstorage, unsigned int type_mask);
+
+// Возвращает выборочные свойства компонента по идентификатору
+// Память для buffer должна быть выделена!
+virtual bool GetComponentSelectedProperties(UEPtr<RDK::UContainer> cont, RDK::USerStorageXML *serstorage);
+
+// Возвращает свойства компонента по идентификатору с описаниями
+// Память для buffer должна быть выделена!
+virtual bool GetComponentPropertiesEx(UEPtr<RDK::UContainer> cont, RDK::USerStorageXML *serstorage, unsigned int type_mask);
+
+// устанавливает свойства компонента по идентификатору
+virtual int SetComponentProperties(UEPtr<RDK::UContainer> cont, RDK::USerStorageXML *serstorage);
+
+// Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
+// переменные состояния в xml
+virtual bool SaveComponent(UEPtr<RDK::UNet> cont, RDK::USerStorageXML *serstorage, bool links, unsigned int params_type_mask);
+
+// Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
+// переменные состояния из xml
+virtual bool LoadComponent(UEPtr<RDK::UNet> cont, RDK::USerStorageXML *serstorage, bool links);
+
+// Сохраняет все свойства компонента и его дочерних компонент в xml
+virtual bool SaveComponentProperties(UEPtr<RDK::UNet> cont, RDK::USerStorageXML *serstorage, unsigned int type_mask);
+
+// Загружает все свойства компонента и его дочерних компонент из xml
+virtual bool LoadComponentProperties(UEPtr<RDK::UNet> cont, RDK::USerStorageXML *serstorage);
+
+// Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
+// включая этот компонент
+virtual void SetGlobalComponentPropertyValue(RDK::UContainer* cont, UId classid, const char *paramname, const char *buffer);
+
+// Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
+// и владельцем, производным от класса 'class_owner_stringid' включая этот компонент
+virtual void SetGlobalOwnerComponentPropertyValue(RDK::UContainer* cont, UId classid, UId owner_classid, const char *paramname, const char *buffer);
+
+// Возращает все связи внутри компонента stringid в виде xml в буфер buffer
+// Имена формируются до уровня компонента owner_level
+// Если owner_level не задан, то имена формируются до уровня текущего компонента
+virtual int GetComponentInternalLinks(RDK::UNet* cont, RDK::USerStorageXML *serstorage, RDK::UNet* owner_level);
+
+// Устанавливает все связи внутри компонента stringid из строки xml в буфере buffer
+// Имена применяются до уровня компонента owner_level
+// Если owner_level не задан, то имена применяются до уровня текущего компонента
+virtual int SetComponentInternalLinks(RDK::UNet* cont, RDK::USerStorageXML *serstorage, RDK::UNet* owner_level);
+
+// Возращает все входные связи к компоненту stringid в виде xml в буфер buffer
+// если 'sublevel' == -2, то возвращает связи всех элементов включая
+// все вложенные сети и сам опрашиваемый компонент.
+// если 'sublevel' == -1, то возвращает связи всех подсетей включая
+// все вложенные сети.
+// если 'sublevel' == 0, то возвращает связи подсетей только этой сети
+// Имена формируются до уровня компонента owner_level
+// Если owner_level не задан, то имена формируются до уровня текущего компонента
+virtual int GetComponentInputLinks(RDK::UNet* cont, RDK::USerStorageXML *serstorage, RDK::UNet* owner_level, int sublevel=-1);
+
+// Возращает все выходные связи из компонента stringid в виде xml в буфер buffer
+// если 'sublevel' == -2, то возвращает связи всех элементов включая
+// все вложенные сети и сам опрашиваемый компонент.
+// если 'sublevel' == -1, то возвращает связи всех подсетей включая
+// все вложенные сети.
+// если 'sublevel' == 0, то возвращает связи подсетей только этой сети
+// Имена формируются до уровня компонента owner_level
+// Если owner_level не задан, то имена формируются до уровня текущего компонента
+virtual int GetComponentOutputLinks(RDK::UNet* cont, RDK::USerStorageXML *serstorage, RDK::UNet* owner_level, int sublevel=-1);
+
+// Возращает все внешние связи c компонентом cont и его дочерними компонентами в виде xml в буфер buffer
+// Информация о связях формируется относительно владельца компонента cont!
+// Имена формируются до уровня компонента owner_level
+// Если owner_level не задан, то имена формируются до уровня текущего компонента
+virtual int GetComponentPersonalLinks(RDK::UNet* cont, RDK::USerStorageXML *serstorage, RDK::UNet* owner_level);
+
+// Сохраняет внутренние данные компонента, и его _непосредственных_ дочерних компонент, исключая
+// переменные состояния в xml
+virtual bool SaveComponentDrawInfo(RDK::UNet* cont, RDK::USerStorageXML *serstorage);
+// --------------------------
+
+// ----------------------
+// Методы управления компонентами верхнего уровня
+// ----------------------
+/// Проверяет существование компонента с заданным именем
+template<typename T>
+UEPtr<T> FindComponentByNameAndType(const NameT &component_name);
+
+/// Проверяет существование компонента с заданным именем и создает его
+/// при необходимости.
+/// Возвращает указатель на созданный экземпляр, если он был добавлен
+/// или 0
+template<typename T>
+UEPtr<T> AddMissingComponent(const NameT &component_name, const NameT &class_name);
 // ----------------------
 
 // --------------------------
@@ -165,9 +271,61 @@ ULinksListT<T>& GetLinks(UEPtr<UContainer> cont, ULinksListT<T> &linkslist, UEPt
 template<typename T>
 ULinksListT<T>& GetPersonalLinks(UEPtr<UContainer> cont, UEPtr<UContainer> cont2, ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel) const;
 // --------------------------
-
-
 };
+
+// ----------------------
+// Методы управления компонентами верхнего уровня
+// ----------------------
+/// Проверяет существование компонента с заданным именем
+template<typename T>
+UEPtr<T> UNet::FindComponentByNameAndType(const NameT &component_name)
+{
+ UEPtr<T> comp=dynamic_pointer_cast<T>(GetComponent(component_name,true));
+ if(comp)
+  return comp;
+
+ return 0;
+}
+
+
+/// Проверяет существование компонента с заданным именем и создает его
+/// при необходимости.
+/// Возвращает указатель на созданный экземпляр, если он был добавлен
+/// или 0
+template<typename T>
+UEPtr<T> UNet::AddMissingComponent(const NameT &component_name, const NameT &class_name)
+{
+ UEPtr<T> comp=dynamic_pointer_cast<T>(GetComponent(component_name,true));
+ if(comp)
+  return comp;
+
+ if(!Storage)
+ {
+  LogMessage(RDK_EX_WARNING, std::string("AddMissingComponent - Storage not found"));
+  return comp;
+ }
+
+ UEPtr<UComponent> proto=Storage->TakeObject(class_name);
+ if(!proto)
+ {
+  LogMessage(RDK_EX_WARNING, std::string("AddMissingComponent - Component not found in storage. ClassName=")+class_name);
+  return comp;
+ }
+ comp=dynamic_pointer_cast<T>(proto);
+ comp->SetName(component_name);
+ comp->SetTimeStep(TimeStep);
+ if(!AddComponent(comp))
+ {
+  LogMessage(RDK_EX_WARNING, std::string("AddMissingComponent - AddComponent failed. ClassName=")+class_name);
+  Storage->ReturnObject(comp);
+  comp=0;
+  return comp;
+ }
+ return comp;
+}
+// ----------------------
+
+
 
 }
 

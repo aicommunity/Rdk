@@ -6,6 +6,7 @@
 #define _UNICODE
 #endif
 
+#define _USE_XMLPARSER_DLL
 #define _CRT_SECURE_NO_WARNINGS
 #include "xmlParser/xmlParser.cpp"
 #undef _CRT_SECURE_NO_WARNINGS
@@ -20,7 +21,7 @@
 #define RDK_CURL
 
 #ifdef __BORLANDC__
-#pragma link "libcurl.bcb.lib"
+//#pragma link "libcurl.bcb.lib"
 #pragma link "Ws2_32.lib"
 #endif
 

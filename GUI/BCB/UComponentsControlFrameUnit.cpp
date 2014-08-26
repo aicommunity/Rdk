@@ -25,29 +25,46 @@ void TUComponentsControlFrame::AUpdateInterface(void)
  ComponentsListFrame->UpdateInterface();
 }
 
+// Возврат интерфейса в исходное состояние
+void TUComponentsControlFrame::AClearInterface(void)
+{
+
+}
+
 // Сохраняет выбранную модель
 // Если filename == "", то открывает окно запроса диалога
 void TUComponentsControlFrame::SaveModelToFile(const String &filename)
 {
  if(!IsEngineInit())
   return;
- String FileName=filename;
- if(filename == "")
+ try
  {
-  if(!SaveTextFileDialog->Execute())
-   return;
-  FileName=SaveTextFileDialog->FileName;
+  String FileName=filename;
+  if(filename == "")
+  {
+   if(!SaveTextFileDialog->Execute())
+	return;
+   FileName=SaveTextFileDialog->FileName;
+  }
+
+  TRichEdit* RichEdit=new TRichEdit(this);
+  RichEdit->Visible=false;
+  RichEdit->Parent=this;
+
+  RichEdit->PlainText=true;
+  const char *p_buf=Model_SaveComponent("");
+  if(p_buf)
+   RichEdit->Text=p_buf;
+  Engine_FreeBufString(p_buf);
+  RichEdit->Lines->SaveToFile(FileName);
+
+  delete RichEdit;
+ }
+ catch(Exception &exception)
+ {
+  MEngine_LogMessage(GetSelectedEngineIndex(), RDK_EX_ERROR, (std::string("Save model Fail: ")+AnsiString(exception.Message).c_str()).c_str());
  }
 
- TRichEdit* RichEdit=new TRichEdit(this);
- RichEdit->Visible=false;
- RichEdit->Parent=this;
-
- RichEdit->PlainText=true;
- RichEdit->Text=Model_SaveComponent("");
- RichEdit->Lines->SaveToFile(FileName);
-
- delete RichEdit;
 }
 
 // Загружает выбранную модель
@@ -57,28 +74,35 @@ void TUComponentsControlFrame::LoadModelFromFile(const String &filename)
  if(!IsEngineInit())
   return;
 
- String FileName=filename;
- if(filename == "")
+ try
  {
-  if(!OpenTextFileDialog->Execute())
-   return;
-  FileName=OpenTextFileDialog->FileName;
+  String FileName=filename;
+  if(filename == "")
+  {
+   if(!OpenTextFileDialog->Execute())
+	return;
+   FileName=OpenTextFileDialog->FileName;
+  }
+
+  TRichEdit* RichEdit=new TRichEdit(this);
+  RichEdit->Parent=this;
+  RichEdit->PlainText=true;
+  RichEdit->Visible=false;
+  RichEdit->Lines->LoadFromFile(FileName);
+
+  if(RichEdit->Text.Length() >0)
+  {
+   Model_Destroy();
+   Model_LoadComponent("",AnsiString(RichEdit->Text).c_str());
+  }
+
+  delete RichEdit;
+  ComponentsListFrame->UpdateInterface();
  }
-
- TRichEdit* RichEdit=new TRichEdit(this);
- RichEdit->Parent=this;
- RichEdit->PlainText=true;
- RichEdit->Visible=false;
- RichEdit->Lines->LoadFromFile(FileName);
-
- if(RichEdit->Text.Length() >0)
+ catch(Exception &exception)
  {
-  Model_Destroy();
-  Model_LoadComponent("",AnsiString(RichEdit->Text).c_str());
+  MEngine_LogMessage(GetSelectedEngineIndex(), RDK_EX_ERROR, (std::string("Load model Fail: ")+AnsiString(exception.Message).c_str()).c_str());
  }
-
- delete RichEdit;
- ComponentsListFrame->UpdateInterface();
 }
 
 // Сохраняет параметры выбранной модели
@@ -101,7 +125,10 @@ void TUComponentsControlFrame::SaveParametersToFile(const String &filename)
  RichEdit->Parent=this;
 
  RichEdit->PlainText=true;
- RichEdit->Text=Model_SaveComponentParameters("");
+ const char *p_buf=Model_SaveComponentParameters("");
+ if(p_buf)
+  RichEdit->Text=p_buf;
+ Engine_FreeBufString(p_buf);
  RichEdit->Lines->SaveToFile(FileName);
 
  delete RichEdit;
@@ -157,7 +184,11 @@ void TUComponentsControlFrame::SaveStatesToFile(const String &filename)
  RichEdit->Parent=this;
 
  RichEdit->PlainText=true;
- RichEdit->Text=Model_SaveComponentState("");
+ const char *p_buf=Model_SaveComponentState("");
+ if(p_buf)
+  RichEdit->Text=p_buf;
+ Engine_FreeBufString(p_buf);
+
  RichEdit->Lines->SaveToFile(FileName);
 
  delete RichEdit;
@@ -198,7 +229,9 @@ void __fastcall TUComponentsControlFrame::TakeObjectButtonClick(TObject *Sender)
 {
  std::string classid=AnsiString(ClassesListFrame->GetSelectedName()).c_str();
  std::string stringid=ComponentsListFrame->GetCurrentComponentId();
- Model_AddComponent(stringid.c_str(), classid.c_str());
+ const char* pname=Model_AddComponent(stringid.c_str(), classid.c_str());
+ if(pname)
+  Engine_FreeBufString(pname);
 
  ComponentsListFrame->UpdateInterface();
 }

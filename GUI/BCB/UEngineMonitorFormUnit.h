@@ -12,16 +12,21 @@
 #include "TUVisualController.h"
 #include "TUVisualControllerFormUnit.h"
 #include "TUVisualControllerFrameUnit.h"
+#include <Vcl.ExtCtrls.hpp>
 //---------------------------------------------------------------------------
 
-void ExceptionHandler(void);
+void ExceptionHandler(int channel_index);
 
 //---------------------------------------------------------------------------
 class TUEngineMonitorForm : public TUVisualControllerForm
 {
 __published:	// IDE-managed Components
 	TUEngineMonitorFrame *EngineMonitorFrame;
+	TTimer *LogTimer;
 	void __fastcall FormDestroy(TObject *Sender);
+	void __fastcall FormCreate(TObject *Sender);
+	void __fastcall LogTimerTimer(TObject *Sender);
+	void __fastcall EngineMonitorFrameRichEditMouseEnter(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
 	__fastcall TUEngineMonitorForm(TComponent* Owner);
@@ -34,6 +39,15 @@ virtual void ALoadParameters(RDK::USerStorageXML &xml);
 
 // Создание копии этого компонента
 virtual TUEngineMonitorForm* New(TComponent *owner=0);
+
+/// Файл для сохранения логов
+RDK::UEPtr<std::ofstream> EventsLogFile;
+
+/// Путь до файла логов
+std::string EventsLogFilePath;
+
+/// Функция обеспечивает закрытие текущего файла логов и создание нового
+void RecreateEventsLogFile(void);
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TUEngineMonitorForm *UEngineMonitorForm;

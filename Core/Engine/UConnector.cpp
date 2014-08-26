@@ -137,7 +137,9 @@ void UCItemList::Resize(int newsize)
   if(newsize)
   {
    newbuffer=new UCItem[newsize];
-   memcpy(newbuffer,Data,sizeof(UCItem)*Size);
+   for(int i=0;i<Size;i++)
+	newbuffer[i]=Data[i];
+//   memcpy(newbuffer,Data,sizeof(UCItem)*Size);
   }
 
   if(Data)
@@ -154,7 +156,7 @@ void UCItemList::Resize(int newsize)
 
 // Ищет в контейнере первый заданный элемент начиная с индекса index
 // и возвращает его описание
-UCItem UCItemList::Find(const UEPtr<UItem> item, int index) const
+UCItem UCItemList::Find(const UEPtr<UItem> &item, int index) const
 {
  return Find(item.Get(),index);
 }
@@ -226,7 +228,9 @@ void UCItemList::Del(UCItem *item)
 UCItemList& UCItemList::operator = (const UCItemList &copy)
 {
  Resize(copy.Size);
- memcpy(Data,copy.Data,Size*sizeof(UCItem));
+ for(int i=0;i<Size;i++)
+  Data[i]=copy.Data[i];
+ //memcpy(Data,copy.Data,Size*sizeof(UCItem));
 
  return *this;
 }
@@ -366,6 +370,8 @@ void UConnector::Free(void)
 // Возвращает подключенный к этому коннектору объект по индексу
 const UCItem& UConnector::GetCItem(int c_index) const
 {
+// if(c_index>=CItemList.GetSize())
+//  throw EInputIndexNotExist(c_index);
 // return CItemList[c_index];
 
  UIProperty* i_conn_property=0;
@@ -398,7 +404,7 @@ const UCItem& UConnector::GetCItem(const NameT &connector_property_name, int ind
 
 // Возвращает информацию об индексах связей с этим item или -1, -1
 // если такая связь отсутствует
-UCLink UConnector::GetCLink(const UEPtr<UItem> item) const
+UCLink UConnector::GetCLink(const UEPtr<UItem> &item) const
 {
 /* UCLink indexes;
 
@@ -512,6 +518,27 @@ void UConnector::FindInputProperty(int index, UIProperty* &property) const
   }
  }
 }
+
+/// Возвращает индекс входа с заданным именем
+int UConnector::FindInputIndex(const NameT &input_name) const
+{
+ // Ищем указатель на входные данные
+ UIProperty* property=0;
+
+ VariableMapCIteratorT I=PropertiesLookupTable.find(input_name);
+ if(I == PropertiesLookupTable.end())
+  return ForbiddenId;
+
+ if(!(I->second.Type & ptInput))
+  return ForbiddenId;
+
+ property=I->second.Property.Get();
+ if(!property)
+  return ForbiddenId;
+
+ return property->GetMinRange();
+}
+
 // --------------------------
 
 // ----------------------
@@ -640,7 +667,7 @@ bool UConnector::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name,
  return AConnectToItem(na, item_property_name, connector_property_name);
 }
 
-// Разрывает связь с элементом сети 'na'
+/// Разрывает все связи с элементом сети 'na'
 void UConnector::DisconnectFromItem(UEPtr<UItem> na)
 {
  if(!na)
@@ -653,20 +680,53 @@ void UConnector::DisconnectFromItem(UEPtr<UItem> na)
    if(I->second[i].Item == na)
 	DisconnectFromIndex(I->first, i);
  }
-
- /*
+}
+/// Разрывает связь с элементом сети 'na', подключенную от i_index
+void UConnector::DisconnectFromItem(UEPtr<UItem> na, int i_index)
+{
  if(!na)
   return;
 
- for(int i=0;i<CItemList.GetSize();i++)
+ std::map<std::string, std::vector<UCItem> >::iterator I=ConnectedItemList.begin();
+ for(;I != ConnectedItemList.end();++I)
  {
-  if(CItemList[i].Item == na)
+  for(size_t i=0;i<I->second.size();i++)
+   if(I->second[i].Item == na && I->second[i].Index == i_index)
+	DisconnectFromIndex(I->first, i);
+ }
+}
+
+/// Разрывает связь с элементом сети 'na', подключенную от i_index к c_index
+void UConnector::DisconnectFromItem(UEPtr<UItem> na, int i_index, int c_index)
+{
+/*
+ if(!na)
+  return;
+ if(i_index<0 || i_index>=na->GetNumOutputs())
+  return;
+
+ if(c_index<0 || c_index>=CItemList.GetSize())
+  return;
+
+  if(CItemList[c_index].Item == na && CItemList[c_index].Index == i_index)
   {
-   DisconnectFromIndex(i);
-  }
+   DisconnectFromIndex(c_index);
  }
 
  */
+
+ // TODO тут не применен c_index
+ if(!na)
+  return;
+
+ std::map<std::string, std::vector<UCItem> >::iterator I=ConnectedItemList.begin();
+ for(;I != ConnectedItemList.end();++I)
+ {
+  for(size_t i=0;i<I->second.size();i++)
+   if(I->second[i].Item == na && I->second[i].Index == i_index)
+	DisconnectFromIndex(I->first, i);
+ }
+
 }
 
 // Разрывает связь с элементом сети подключенным ко входу 'index'

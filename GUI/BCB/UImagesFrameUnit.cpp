@@ -21,6 +21,7 @@ __fastcall TUImagesFrame::TUImagesFrame(TComponent* Owner)
  MyComponentsListForm=new TUComponentsListForm(this);
  UpdateInterval=100;
  SetNumCells(2, 2);
+ SizeMode=0;
 }
 
 __fastcall TUImagesFrame::~TUImagesFrame(void)
@@ -55,6 +56,7 @@ void TUImagesFrame::SetNumCells(int width, int height)
  ComponentIndexes.resize(width);
  ComponentIndexesOld.resize(width);
  MouseClickComponents.resize(width);
+ Legends.resize(width);
  for(size_t i=0;i<Images.size();i++)
  {
   Images[i].resize(height);
@@ -62,6 +64,7 @@ void TUImagesFrame::SetNumCells(int width, int height)
   ComponentIndexes[i].resize(height);
   ComponentIndexesOld[i].resize(height,-1);
   MouseClickComponents[i].resize(height);
+  Legends[i].resize(height);
   for(size_t j=0;j<Images[i].size();j++)
    Images[i][j]=new TImage(this);
  }
@@ -101,6 +104,21 @@ void TUImagesFrame::LinkToComponent(int i, int j, const std::string &stringid, i
 
  StringIds[i][j]=stringid;
  ComponentIndexes[i][j]=index;
+ if(ComponentIndexes[i][j].empty())
+ {
+  const char *p=Model_GetComponentLongName(StringIds[i][j].c_str());
+  if(p)
+   Legends[i][j]=std::string(p)+std::string("[")+RDK::sntoa(ComponentIndexesOld[i][j])+"]";
+  Engine_FreeBufString(p);
+ }
+ else
+ {
+  const char *p=Model_GetComponentLongName(StringIds[i][j].c_str());
+  if(p)
+   Legends[i][j]=std::string(p)+std::string("[")+ComponentIndexes[i][j]+"]";
+  Engine_FreeBufString(p);
+ }
+
 }
 
 
@@ -111,6 +129,76 @@ bool TUImagesFrame::SetBitmap(int i, int j, const RDK::UBitmap &bitmap)
   return false;
 
  UBitmapToTBitmap(bitmap,Images[i][j]->Picture->Bitmap,true);
+ if(ShowHistogramCheckBox->Checked)
+ {
+  RDK::UBitmap HistBmp;
+  TBitmap *bmp=Images[i][j]->Picture->Bitmap;
+
+  if(bitmap.GetColorModel() == RDK::ubmY8)
+  {
+   RDK::UBHistogram Hist;
+   Hist.Prepare(HistBmp.GetColorModel());
+   Hist.Calc(bitmap,0);
+
+   int y=bmp->Height-1;
+ //  bmp->Canvas->Rectangle(1,y,256,y-101);
+
+   bmp->Canvas->Pen->Color=clBlack;
+   bmp->Canvas->Pen->Style=psSolid;
+   bmp->Canvas->Pen->Width=1;
+   float divisor=Hist.GetMax().Number.Int;
+   if(Hist.GetMax().Number.Int>0)
+   for(int i=0;i<Hist.GetSize();i++)
+   {
+	int item=(float(Hist[i].Number.Int)/divisor)*100.0;
+	bmp->Canvas->MoveTo(i+1,y);
+	bmp->Canvas->LineTo(i+1,y-item);
+   }
+  }
+  else
+  if(bitmap.GetColorModel() == RDK::ubmRGB24)
+  {
+   RDK::UBHistogram HistR,HistG,HistB;
+   HistB.Calc(bitmap,0);
+   HistG.Calc(bitmap,1);
+   HistR.Calc(bitmap,2);
+
+   int y=bmp->Height-1;
+ //  bmp->Canvas->Rectangle(1,y,256,y-101);
+
+   bmp->Canvas->Pen->Style=psSolid;
+   bmp->Canvas->Pen->Width=1;
+   for(int i=0;i<HistR.GetSize();i++)
+   {
+	float divisor=HistR.GetMax().Number.Int;
+	if(HistR.GetMax().Number.Int>0)
+	{
+	 bmp->Canvas->Pen->Color=clRed;
+	 int item=(float(HistR[i].Number.Int)/divisor)*33.0;
+	 bmp->Canvas->MoveTo(i+1,y);
+	 bmp->Canvas->LineTo(i+1,y-item);
+	}
+
+	divisor=HistG.GetMax().Number.Int;
+	if(HistG.GetMax().Number.Int>0)
+	{
+	 bmp->Canvas->Pen->Color=clGreen;
+	 int item=(float(HistG[i].Number.Int)/divisor)*33.0;
+	 bmp->Canvas->MoveTo(i+1,y-33);
+	 bmp->Canvas->LineTo(i+1,y-item-33);
+	}
+
+	divisor=HistB.GetMax().Number.Int;
+	if(HistB.GetMax().Number.Int>0)
+	{
+	 bmp->Canvas->Pen->Color=clBlue;
+	 int item=(float(HistB[i].Number.Int)/divisor)*33.0;
+	 bmp->Canvas->MoveTo(i+1,y-66);
+	 bmp->Canvas->LineTo(i+1,y-item-66);
+	}
+   }
+  }
+ }
 
 // SetImage(i, j, bitmap.GetWidth(), bitmap.GetHeight(), bitmap.GetColorModel(), bitmap.GetData());
  return true;
@@ -289,20 +377,74 @@ void TUImagesFrame::AUpdateInterface(void)
   {
    for(size_t j=0;j<Images[i].size();j++)
    {
-	if(ComponentIndexes[i][j].empty())
-	{
-	 const RDK::UBitmap* bmp=(const RDK::UBitmap*)Model_GetComponentOutputByIndex(StringIds[i][j].c_str(), ComponentIndexesOld[i][j]);
-	 if(bmp)
-	  SetBitmap(i, j, *bmp);
-	}
-	else
-	{
-	 const RDK::UBitmap* bmp=(const RDK::UBitmap*)Model_GetComponentOutput(StringIds[i][j].c_str(), ComponentIndexes[i][j].c_str());
-	 if(bmp)
-	  SetBitmap(i, j, *bmp);
-	}
+	 if(ComponentIndexes[i][j].empty())
+	 {
+//	  LockEngine();
+	  const RDK::UBitmap* bmp=(const RDK::UBitmap*)Model_GetComponentOutputByIndex(StringIds[i][j].c_str(), ComponentIndexesOld[i][j]);
+	  if(bmp)
+	  {
+	   TempBmp.SetRes(bmp->GetWidth(),bmp->GetHeight(),bmp->GetColorModel());
+	   Model_CopyComponentBitmapOutputByIndex(StringIds[i][j].c_str(), ComponentIndexesOld[i][j], &TempBmp);
+//	   TempBmp=*bmp;
+	   SetBitmap(i, j, TempBmp);
+	  }
+	  else
+	  {
+	   StringIds[i][j].clear();
+	   ComponentIndexesOld[i][j]=0;
+	   ComponentIndexes[i][j].clear();
+	  }
+//	  UnLockEngine();
+	 }
+	 else
+	 {
+//	  LockEngine();
+	  const RDK::UBitmap* bmp=(const RDK::UBitmap*)Model_GetComponentOutput(StringIds[i][j].c_str(), ComponentIndexes[i][j].c_str());
+	  if(bmp)
+	  {
+	   TempBmp.SetRes(bmp->GetWidth(),bmp->GetHeight(),bmp->GetColorModel());
+	   Model_CopyComponentBitmapOutput(StringIds[i][j].c_str(), ComponentIndexes[i][j].c_str(), &TempBmp);
+//	   TempBmp=*bmp;
+	   SetBitmap(i, j, TempBmp);
+	  }
+	  else
+	  {
+	   StringIds[i][j].clear();
+	   ComponentIndexesOld[i][j]=0;
+	   ComponentIndexes[i][j].clear();
+	  }
+//	  UnLockEngine();
+	 }
    }
   }
+
+  if(SizeMode == 0)
+  {
+   TiledSizeRadioButton->Checked=false;
+   OriginalSizeRadioButton->Checked=true;
+  }
+  else
+  if(SizeMode == 1)
+  {
+   TiledSizeRadioButton->Checked=true;
+   OriginalSizeRadioButton->Checked=false;
+  }
+
+  if(Images.size()>0 && Images[0].size()>0)
+  {
+   if(SizeMode == 0)
+   {
+	DrawGrid->DefaultColWidth=Images[0][0]->Picture->Bitmap->Width;
+	DrawGrid->DefaultRowHeight=Images[0][0]->Picture->Bitmap->Height;
+   }
+   else
+   if(SizeMode == 1)
+   {
+	DrawGrid->DefaultColWidth=DrawGrid->ClientWidth/Images.size()-1;
+	DrawGrid->DefaultRowHeight=DrawGrid->ClientHeight/Images[0].size()-1;
+   }
+  }
+
   DrawGrid->Repaint();
   DrawGrid->Update();
  }
@@ -312,17 +454,42 @@ void TUImagesFrame::AUpdateInterface(void)
   if(DrawGrid->Col < 0 || DrawGrid->Row <0)
    return;
 
+//  LockEngine();
   const RDK::UBitmap* bmp=0;
   if(ComponentIndexes[DrawGrid->Col][DrawGrid->Row].empty())
    bmp=(const RDK::UBitmap*)Model_GetComponentOutputByIndex(StringIds[DrawGrid->Col][DrawGrid->Row].c_str(), ComponentIndexesOld[DrawGrid->Col][DrawGrid->Row]);
   else
    bmp=(const RDK::UBitmap*)Model_GetComponentOutput(StringIds[DrawGrid->Col][DrawGrid->Row].c_str(), ComponentIndexes[DrawGrid->Col][DrawGrid->Row].c_str());
   if(bmp)
-   SetBitmap(DrawGrid->Col, DrawGrid->Row, *bmp);
+  {
+   TempBmp.SetRes(bmp->GetWidth(),bmp->GetHeight(),bmp->GetColorModel());
+   if(ComponentIndexes[DrawGrid->Col][DrawGrid->Row].empty())
+	Model_CopyComponentBitmapOutputByIndex(StringIds[DrawGrid->Col][DrawGrid->Row].c_str(), ComponentIndexesOld[DrawGrid->Col][DrawGrid->Row], &TempBmp);
+   else
+	Model_CopyComponentBitmapOutput(StringIds[DrawGrid->Col][DrawGrid->Row].c_str(), ComponentIndexes[DrawGrid->Col][DrawGrid->Row].c_str(), &TempBmp);
+//   TempBmp=*bmp;
+   SetBitmap(DrawGrid->Col, DrawGrid->Row, TempBmp);
+  }
+  UnLockEngine();
 
   Graphics::TBitmap * tbmp=Images[DrawGrid->Col][DrawGrid->Row]->Picture->Bitmap;
-  FullImage->Width=tbmp->Width;
-  FullImage->Height=tbmp->Height;
+
+   if(SizeMode == 0)
+   {
+	FullImage->Width=tbmp->Width;
+	FullImage->Height=tbmp->Height;
+	FullImage->Stretch=false;
+	FullImage->AutoSize=false;
+   }
+   else
+   if(SizeMode == 1)
+   {
+	FullImage->Width=ScrollBox1->ClientWidth;
+	FullImage->Height=ScrollBox1->ClientHeight;
+	FullImage->Stretch=true;
+//	FullImage->AutoSize=true;
+   }
+
   FullImage->Picture->Bitmap->Assign(tbmp);
   FullImage->Top=0;
   FullImage->Left=0;
@@ -332,6 +499,11 @@ void TUImagesFrame::AUpdateInterface(void)
  Sleep(0);
 }
 
+// Возврат интерфейса в исходное состояние
+void TUImagesFrame::AClearInterface(void)
+{
+ SetNumCells(0,0);
+}
 
 // Сохраняет параметры интерфейса в xml
 void TUImagesFrame::ASaveParameters(RDK::USerStorageXML &xml)
@@ -348,6 +520,7 @@ void TUImagesFrame::ASaveParameters(RDK::USerStorageXML &xml)
    xml.WriteString(std::string("CellName")+name,StringIds[i][j].c_str());
    xml.WriteInteger(std::string("CellIndex")+name,ComponentIndexesOld[i][j]);
    xml.WriteString(std::string("CellIndexNew")+name,ComponentIndexes[i][j]);
+   xml.WriteString(std::string("CellLegend")+name,Legends[i][j]);
 
    xml.WriteString(std::string("CellMouseClickComponent")+name,MouseClickComponents[i][j].first.c_str());
    xml.WriteString(std::string("CellMouseClickProperty")+name,MouseClickComponents[i][j].second.c_str());
@@ -355,6 +528,10 @@ void TUImagesFrame::ASaveParameters(RDK::USerStorageXML &xml)
  }
 
  xml.WriteBool("ShowLegendCheckBox",ShowLegendCheckBox->Checked);
+ xml.WriteBool("ShowHistogramCheckBox",ShowHistogramCheckBox->Checked);
+ xml.WriteBool("ShowInfoCheckBox",ShowInfoCheckBox->Checked);
+
+ xml.WriteInteger("SizeMode",SizeMode);
 }
 
 // Загружает параметры интерфейса из xml
@@ -376,6 +553,25 @@ void TUImagesFrame::ALoadParameters(RDK::USerStorageXML &xml)
    StringIds[i][j]=xml.ReadString(std::string("CellName")+name,"");
    ComponentIndexes[i][j]=xml.ReadString(std::string("CellIndexNew")+name,"");
    ComponentIndexesOld[i][j]=xml.ReadInteger(std::string("CellIndex")+name,-1);
+   Legends[i][j]=xml.ReadString(std::string("CellLegend")+name,Legends[i][j].c_str());
+   if(Legends[i][j].empty())
+   {
+	if(ComponentIndexes[i][j].empty())
+	{
+	 const char *p=Model_GetComponentLongName(StringIds[i][j].c_str());
+	 if(p)
+	  Legends[i][j]=std::string(p)+std::string("[")+RDK::sntoa(ComponentIndexesOld[i][j])+"]";
+	 Engine_FreeBufString(p);
+	}
+	else
+	{
+	 const char *p=Model_GetComponentLongName(StringIds[i][j].c_str());
+	 if(p)
+	  Legends[i][j]=std::string(p)+std::string("[")+ComponentIndexes[i][j]+"]";
+	 Engine_FreeBufString(p);
+	}
+   }
+
 
    MouseClickComponents[i][j].first=xml.ReadString(std::string("CellMouseClickComponent")+name,"");
    MouseClickComponents[i][j].second=xml.ReadString(std::string("CellMouseClickProperty")+name,"");
@@ -383,6 +579,10 @@ void TUImagesFrame::ALoadParameters(RDK::USerStorageXML &xml)
  }
 
  ShowLegendCheckBox->Checked=xml.ReadBool("ShowLegendCheckBox",true);
+ ShowHistogramCheckBox->Checked=xml.ReadBool("ShowHistogramCheckBox",false);
+ ShowInfoCheckBox->Checked=xml.ReadBool("ShowInfoCheckBox",false);
+
+ SizeMode=xml.ReadInteger("SizeMode",0);
 
  UpdateInterface();
 }
@@ -397,10 +597,13 @@ void __fastcall TUImagesFrame::DrawGridDrawCell(TObject *Sender, int ACol, int A
 		StretchDraw(Rect, Images[ACol][ARow]->Picture->Graphic);
  if(ShowLegendCheckBox->Checked)
  {
-  if(ComponentIndexes[ACol][ARow].empty())
-   dynamic_cast<TDrawGrid *>(Sender)->Canvas->TextOut(Rect.Left,Rect.Top,(std::string(Model_GetComponentLongName(StringIds[ACol][ARow].c_str()))+std::string("[")+RDK::sntoa(ComponentIndexesOld[ACol][ARow])+"]").c_str());
-  else
-   dynamic_cast<TDrawGrid *>(Sender)->Canvas->TextOut(Rect.Left,Rect.Top,(std::string(Model_GetComponentLongName(StringIds[ACol][ARow].c_str()))+std::string("[")+ComponentIndexes[ACol][ARow]+"]").c_str());
+  dynamic_cast<TDrawGrid *>(Sender)->Canvas->TextOut(Rect.Left,Rect.Top,Legends[ACol][ARow].c_str());
+ }
+
+ if(ShowInfoCheckBox->Checked)
+ {
+  String info=IntToStr(Images[ACol][ARow]->Picture->Bitmap->Width)+"x"+IntToStr(Images[ACol][ARow]->Picture->Bitmap->Height);
+  dynamic_cast<TDrawGrid *>(Sender)->Canvas->TextOut(Rect.Right-50,Rect.Top,info);
  }
 }
 //---------------------------------------------------------------------------
@@ -423,11 +626,27 @@ void __fastcall TUImagesFrame::SelectSourceClick(TObject *Sender)
  if(DrawGrid->Col < 0 || DrawGrid->Row <0)
   return;
 
- if(MyComponentsListForm->ShowComponentSelect() != mrOk)
+ MyComponentsListForm->UpdateInterface(true);
+ if(MyComponentsListForm->ShowIOSelect() != mrOk)
   return;
 
  StringIds[DrawGrid->Col][DrawGrid->Row]=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName();
  ComponentIndexes[DrawGrid->Col][DrawGrid->Row]=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput();
+
+ if(ComponentIndexes[DrawGrid->Col][DrawGrid->Row].empty())
+ {
+  const char *p=Model_GetComponentLongName(StringIds[DrawGrid->Col][DrawGrid->Row].c_str());
+  if(p)
+   Legends[DrawGrid->Col][DrawGrid->Row]=std::string(p)+std::string("[")+RDK::sntoa(ComponentIndexesOld[DrawGrid->Col][DrawGrid->Row])+"]";
+  Engine_FreeBufString(p);
+ }
+ else
+ {
+  const char *p=Model_GetComponentLongName(StringIds[DrawGrid->Col][DrawGrid->Row].c_str());
+  if(p)
+   Legends[DrawGrid->Col][DrawGrid->Row]=std::string(p)+std::string("[")+ComponentIndexes[DrawGrid->Col][DrawGrid->Row]+"]";
+  Engine_FreeBufString(p);
+ }
 }
 //---------------------------------------------------------------------------
 
@@ -488,6 +707,9 @@ void __fastcall TUImagesFrame::DrawGridDblClick(TObject *Sender)
 
   if(bmp && (bmp->Width == 0 || bmp->Height == 0))
    return;
+
+  if(!bmp)
+   return;
   DrawGrid->Visible=false;
   ScrollBox1->Visible=true;
  // FullImage->Align=alClient;
@@ -500,11 +722,15 @@ void __fastcall TUImagesFrame::DrawGridDblClick(TObject *Sender)
   if(ShowLegendCheckBox->Checked)
   {
    FullImage->Canvas->Font->Size=12;
-   if(ComponentIndexes[DrawGrid->Col][DrawGrid->Row].empty())
-	FullImage->Canvas->TextOut(0,0,(std::string(Model_GetComponentLongName(StringIds[DrawGrid->Col][DrawGrid->Row].c_str()))+std::string("[")+RDK::sntoa(ComponentIndexesOld[DrawGrid->Col][DrawGrid->Row])+"]").c_str());
-   else
-    FullImage->Canvas->TextOut(0,0,(std::string(Model_GetComponentLongName(StringIds[DrawGrid->Col][DrawGrid->Row].c_str()))+std::string("[")+ComponentIndexes[DrawGrid->Col][DrawGrid->Row]+"]").c_str());
+   FullImage->Canvas->TextOut(0,0,Legends[DrawGrid->Col][DrawGrid->Row].c_str());
   }
+
+ if(ShowInfoCheckBox->Checked)
+ {
+  String info=IntToStr(FullImage->Picture->Bitmap->Width)+"x"+IntToStr(FullImage->Picture->Bitmap->Height);
+  FullImage->Canvas->TextOut(FullImage->Width-80,0,info);
+ }
+
 }
 //---------------------------------------------------------------------------
 
@@ -555,9 +781,11 @@ void __fastcall TUImagesFrame::DrawGridClick(TObject *Sender)
  MouseClickComponents[0][0].first="Tracker";
  MouseClickComponents[0][0].second="MouseClickPoint";
 
- if(Model_CheckComponent(MouseClickComponents[DrawGrid->Col][DrawGrid->Row].first.c_str()) &&
-	!strcmp(Model_GetComponentClassName(MouseClickComponents[DrawGrid->Col][DrawGrid->Row].first.c_str()),"TTrackerSample"))
+ if(Model_CheckComponent(MouseClickComponents[DrawGrid->Col][DrawGrid->Row].first.c_str()))
  {
+  const char *p=Model_GetComponentClassName(MouseClickComponents[DrawGrid->Col][DrawGrid->Row].first.c_str());
+  if(p && !strcmp(p,"TTrackerSample"))
+  {
   RDK::UBPoint point;
   TRect rect=DrawGrid->CellRect(DrawGrid->Col, DrawGrid->Row);
   TPoint tpoint=::Mouse->CursorPos;
@@ -569,6 +797,46 @@ void __fastcall TUImagesFrame::DrawGridClick(TObject *Sender)
   point.Y=double(tpoint.Y)*double(Images[DrawGrid->Col][DrawGrid->Row]->Picture->Bitmap->Height)/double(rect.Height());
   Model_SetComponentPropertyData(MouseClickComponents[DrawGrid->Col][DrawGrid->Row].first.c_str(), MouseClickComponents[DrawGrid->Col][DrawGrid->Row].second.c_str(), &point);
  }
+  Engine_FreeBufString(p);
+ }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUImagesFrame::OriginalSizeRadioButtonClick(TObject *Sender)
+{
+ if(UpdateInterfaceFlag)
+  return;
+ TiledSizeRadioButton->Checked=false;
+ SizeMode=0;
+ UpdateInterface();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUImagesFrame::TiledSizeRadioButtonClick(TObject *Sender)
+{
+ if(UpdateInterfaceFlag)
+  return;
+ OriginalSizeRadioButton->Checked=false;
+ SizeMode=1;
+ UpdateInterface();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUImagesFrame::ShowLegendCheckBoxClick(TObject *Sender)
+{
+ UpdateInterface();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUImagesFrame::ShowHistogramCheckBoxClick(TObject *Sender)
+{
+ UpdateInterface();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUImagesFrame::ShowInfoCheckBoxClick(TObject *Sender)
+{
+ UpdateInterface();
 }
 //---------------------------------------------------------------------------
 

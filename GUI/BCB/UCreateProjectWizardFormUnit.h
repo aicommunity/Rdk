@@ -56,6 +56,7 @@ __published:	// IDE-managed Components
 	TLabeledEdit *NumInputsLabeledEdit;
 	TLabeledEdit *NumOutputsLabeledEdit;
 	TCheckBox *UpendInputImageCheckBox;
+	TRadioGroup *CalculationSourceTimeModeRadioGroup;
 	void __fastcall FinishButtonClick(TObject *Sender);
 	void __fastcall Button1Click(TObject *Sender);
 	void __fastcall ProjectTypeRadioGroupClick(TObject *Sender);
@@ -66,6 +67,7 @@ __published:	// IDE-managed Components
 	void __fastcall NextButtonClick(TObject *Sender);
 	void __fastcall OpenModelButtonClick(TObject *Sender);
 	void __fastcall ModelFileNameRadioButtonClick(TObject *Sender);
+	void __fastcall FormShow(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
 	__fastcall TUCreateProjectWizardForm(TComponent* Owner);
@@ -101,6 +103,12 @@ void ClearPredefinedModels(void);
 
 // Добавить вариант в список предустановленных моделей
 void AddPredefinedModel(const std::string &name, int index);
+
+// Отображает визард для создания проекта
+int ShowCreateProject(void);
+
+// Отображает визард для модификации проекта
+int ShowProjectOptions(void);
 // ----------------------
 
 };

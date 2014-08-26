@@ -48,6 +48,9 @@ void TIdHttpResultBroadcasterFrame::ABeforeCalculate(void)
 
 void TIdHttpResultBroadcasterFrame::AAfterCalculate(void)
 {
+ if(!EnableXmlTranslationCheckBox->Checked && !EnableImagesTranslationCheckBox->Checked)
+  return;
+
  int channel_index=StrToInt(ChannelIndexLabeledEdit->Text);
  if(channel_index>GetNumEngines())
   return;
@@ -105,6 +108,7 @@ void TIdHttpResultBroadcasterFrame::AAfterCalculate(void)
 
    ASource->AddFormField("Response",Metadata.c_str(),"","text/plain");
   }
+  MEngine_FreeBufString(channel_index,xml_data);
  }
 
  if(EnableImagesTranslationCheckBox->Checked)
@@ -159,6 +163,12 @@ void TIdHttpResultBroadcasterFrame::AUpdateInterface(void)
 {
 
 }
+
+// Возврат интерфейса в исходное состояние
+void TIdHttpResultBroadcasterFrame::AClearInterface(void)
+{
+}
+
 
 // Сохраняет параметры интерфейса в xml
 void TIdHttpResultBroadcasterFrame::ASaveParameters(RDK::USerStorageXML &xml)

@@ -26,6 +26,11 @@
 #include "UImagesFrameUnit.h"
 #include "UWatchFrameUnit.h"
 #include "UDrawEngineFrameUnit.h"
+#include <Vcl.AppEvnts.hpp>
+#include <Web.Win.Sockets.hpp>
+
+#define WM_SERVER_PING (WM_USER + 261)
+#define WM_SERVER_PONG (WM_USER + 262)
 //---------------------------------------------------------------------------
 #pragma warn -8130
 class TUGEngineControlForm : public TUVisualControllerForm
@@ -113,6 +118,27 @@ __published:	// IDE-managed Components
 	TToolButton *ToolButton16;
 	TToolButton *ToolButton21;
 	TToolButton *ToolButton15;
+	TTrayIcon *TrayIcon;
+	TPopupMenu *TrayPopupMenu;
+	TMenuItem *Open1;
+	TMenuItem *Hide1;
+	TMenuItem *N7;
+	TMenuItem *Start2;
+	TMenuItem *Pause2;
+	TMenuItem *Reset2;
+	TMenuItem *N8;
+	TMenuItem *Close1;
+	TPopupMenu *ChannelsPopupMenu;
+	TMenuItem *AddChannel1;
+	TMenuItem *DelChannel1;
+	TMenuItem *VideoRegistration1;
+	TMenuItem *N9;
+	TMenuItem *SaveCommonDescriptions1;
+	TMenuItem *SaveClassesDescriptions1;
+	TMenuItem *Insert1;
+	TMenuItem *DeleteSelected1;
+	TMenuItem *InsertChannel1;
+	TMenuItem *DeleteSelectedChannel1;
 	void __fastcall FormShow(TObject *Sender);
 	void __fastcall Start1Click(TObject *Sender);
 	void __fastcall Pause1Click(TObject *Sender);
@@ -158,7 +184,28 @@ __published:	// IDE-managed Components
 	void __fastcall AddNew1Click(TObject *Sender);
 	void __fastcall DeleteLast1Click(TObject *Sender);
 	void __fastcall DeleteAll1Click(TObject *Sender);
-
+	void __fastcall TrayIconDblClick(TObject *Sender);
+	void __fastcall Open1Click(TObject *Sender);
+	void __fastcall Hide1Click(TObject *Sender);
+	void __fastcall Close1Click(TObject *Sender);
+	void __fastcall Start2Click(TObject *Sender);
+	void __fastcall Pause2Click(TObject *Sender);
+	void __fastcall Reset2Click(TObject *Sender);
+	void __fastcall FormDestroy(TObject *Sender);
+	void __fastcall AddChannel1Click(TObject *Sender);
+	void __fastcall DelChannel1Click(TObject *Sender);
+	void __fastcall VideoRegistration1Click(TObject *Sender);
+	void __fastcall SaveCommonDescriptions1Click(TObject *Sender);
+	void __fastcall SaveClassesDescriptions1Click(TObject *Sender);
+	void __fastcall UComponentsListFrame1StringGridMouseEnter(TObject *Sender);
+	void __fastcall UComponentsListFrame1NiceParamValRichEditMouseEnter(TObject *Sender);
+	void __fastcall EnchancedSG1BasicStringGridMouseEnter(TObject *Sender);
+	void __fastcall EnchancedSG2BasicStringGridMouseEnter(TObject *Sender);
+	void __fastcall UComponentsListFrame1NiceStateValRichEditMouseEnter(TObject *Sender);
+	void __fastcall Insert1Click(TObject *Sender);
+	void __fastcall DeleteSelected1Click(TObject *Sender);
+	void __fastcall InsertChannel1Click(TObject *Sender);
+	void __fastcall DeleteSelectedChannel1Click(TObject *Sender);
 
 
 
@@ -166,10 +213,20 @@ private:	// User declarations
 public:		// User declarations
 	__fastcall TUGEngineControlForm(TComponent* Owner);
 
+void __fastcall WMSysCommand(TMessage &Msg);
+void __fastcall WMServerPing(TMessage &Msg);
+BEGIN_MESSAGE_MAP
+MESSAGE_HANDLER(WM_SYSCOMMAND, TMessage, WMSysCommand)
+MESSAGE_HANDLER(WM_SERVER_PING, TMessage, WMServerPing)
+END_MESSAGE_MAP(TForm)
+
 String MainFormName;
 bool HideAdminFormFlag;
 String AutoexecProjectFileName;
 bool AutoStartProjectFlag;
+bool MinimizeToTray;
+bool StartMinimized;
+String ProgramName;
 
 // Файл настроек проекта
 RDK::USerStorageXML ProjectXml;
@@ -192,6 +249,11 @@ String ProjectName;
 // Описание проекта
 String ProjectDescription;
 
+// Тип проекта
+// 0 - Обычный проект
+// 1 - Серверный проект
+int ProjectMode;
+
 // Флаг автоматического сохранения проекта
 bool ProjectAutoSaveFlag;
 
@@ -203,6 +265,9 @@ int NumEnvInputs;
 
 // Число выходов среды
 int NumEnvOutputs;
+
+/// Флаг разрешения логгирования событий сервера
+bool EventsLogEnabled;
 
 // Разрешение изображений
 int InputEnvImageWidth, InputEnvImageHeight;
@@ -216,17 +281,60 @@ std::vector<int> DefaultTimeStep;
 // Глобальный шаг счета модели
 std::vector<int> GlobalTimeStep;
 
+// Флаг необходимости вызова инициализации после загрузки
+std::vector<int> InitAfterLoadFlag;
+
+// Флаг необходимости вызова сброса после загрузки
+std::vector<int> ResetAfterLoadFlag;
+
+// Флаг включения отладочного режима
+std::vector<bool> DebugModeFlag;
+
 // Флаг необходимости переворачивать входные изображения
 bool ReflectionFlag;
 
 // Режим счета
 std::vector<int> CalculationMode;
 
+/// Минимальный интервал между итерациями счета, мс
+std::vector<long long> MinInterstepsInterval;
+
+/// Адрес интерфейса управления сервером
+std::string ServerInterfaceAddress;
+
+/// Порт интерфейса управления сервером
+int ServerInterfacePort;
+
+/// Флаг запрета на запуск главной формы по Ctrl+F1
+bool DisableAdminForm;
+
 // Список специальных форм (не имеющих компонента управления в модели)
 std::map<std::string, TUVisualControllerForm*> SpecialForms;
 
+/// Лицензия TVideoGrabber
+String VideoGrabberLicenseString;
+
+/// Список последних открытых проектов
+std::list<std::string> LastProjectsList;
+
+/// Размер истории последних открытых проектов
+int LastProjectsListMaxSize;
+
+Word Saved8087CW;
+
+bool AppWinState;
+
+void __fastcall AppMinimize(TObject *Sender);
+void __fastcall AppRestore(TObject *Sender);
+
+// Загружает данные положения формы из xml
+void LoadFormPosition(RDK::USerStorageXML &xml);
+
 // Обновление интерфейса
 void AUpdateInterface(void);
+
+// Возврат интерфейса в исходное состояние
+virtual void AClearInterface(void);
 
 // Метод, вызываемый перед шагом расчета
 void ABeforeCalculate(void);
@@ -249,8 +357,29 @@ void CloseProject(void);
 // Открывает проект
 void OpenProject(const String &FileName);
 
+// Загружает проект с индексом source_id, в движок с индексом cloned_id
+void CloneProject(int source_id, int cloned_id);
+
 // Сохраняет проект
 void SaveProject(void);
+
+/// --------------------------
+/// Методы управления каналами
+/// --------------------------
+/// Возвращает число каналов
+int GetNumChannels(void) const;
+
+/// Устанавливает число каналов
+/// также выставляет число источников видео
+int SetNumChannels(int value);
+
+/// Добавляет канал в позицию index
+/// Если позиция не существует, то добавляет в конец
+int AddChannel(int index);
+
+/// Удаляет канал из позиции index
+int DelChannel(int index);
+/// --------------------------
 
 // Добавляет заданный фрейм типа TUImagesFrame, TUWatchFrame и т.п. на заданную вкладку
 bool AddSpecialFrameToPage(TUVisualControllerFrame *frame, TTabSheet* tab, const String &caption);
@@ -264,6 +393,9 @@ TTabSheet* AddSpecialFramePage(const String &type, const String &caption);
 
 // Создает новую вкладку с заданным именем для специальных форм
 TTabSheet* AddSpecialFormPage(const String &type);
+
+// Ищет вкладку с заданным именем для заданной специальной форме
+TTabSheet* FindSpecialFormPage(const String &type, TUVisualControllerForm* &form);
 
 // Создает новую вкладку с заданным именем для формы управления компонентом
 // Если этим копонентом уже управляют, то возвращает указатель на такую вкладку
@@ -287,6 +419,27 @@ void ClearPages(void);
 
 /// Добавляет новый пункт в подменю сетевого вещания событиями
 void AddBroadcasterMenu(TMenuItem *item, TMenu *owner);
+
+/// Добавляет новый (глобальный) пункт в меню Window
+void AddGlobalWindowMenu(TMenuItem *item, TMenu *owner);
+
+/// Загружает историю проектов из файла
+void LoadProjectsHistory(void);
+
+/// Сохраняет историю проектов в файл
+void SaveProjectsHistory(void);
+
+/// Запуск отдельного канала
+/// если channel_index == -1 то запускает все каналы
+virtual void StartChannel(int channel_index);
+
+/// Останов отдельного канала
+/// если channel_index == -1 то останавливает все каналы
+virtual void PauseChannel(int channel_index);
+
+/// Сброс отдельного канала
+/// если channel_index == -1 то сбрасывает все каналы
+virtual void ResetChannel(int channel_index);
 
 };
 #pragma warn .8130

@@ -42,9 +42,14 @@ __published:    // IDE-managed Components
 	TMenuItem *AddRow;
 	TMenuItem *DeleteColumn;
 	TMenuItem *DeleteRow;
-	TCheckBox *ShowLegendCheckBox;
 	TImage *FullImage;
 	TScrollBox *ScrollBox1;
+	TPanel *Panel1;
+	TCheckBox *ShowLegendCheckBox;
+	TCheckBox *ShowHistogramCheckBox;
+	TRadioButton *TiledSizeRadioButton;
+	TRadioButton *OriginalSizeRadioButton;
+	TCheckBox *ShowInfoCheckBox;
     void __fastcall DrawGridDrawCell(TObject *Sender, int ACol, int ARow, TRect &Rect,
           TGridDrawState State);
 	void __fastcall SaveToBmpClick(TObject *Sender);
@@ -61,6 +66,11 @@ __published:    // IDE-managed Components
 	void __fastcall FullImageMouseDown(TObject *Sender, TMouseButton Button, TShiftState Shift,
           int X, int Y);
 	void __fastcall DrawGridClick(TObject *Sender);
+	void __fastcall OriginalSizeRadioButtonClick(TObject *Sender);
+	void __fastcall TiledSizeRadioButtonClick(TObject *Sender);
+	void __fastcall ShowLegendCheckBoxClick(TObject *Sender);
+	void __fastcall ShowHistogramCheckBoxClick(TObject *Sender);
+	void __fastcall ShowInfoCheckBoxClick(TObject *Sender);
 
 
 
@@ -72,6 +82,8 @@ public:        // User declarations
 
 bool presIm;
 int x2, y2;
+
+RDK::UBitmap TempBmp;
 
 // Массив изображений
 std::vector<std::vector<TImage*> > Images;
@@ -88,11 +100,19 @@ std::vector<std::vector<int> > ComponentIndexesOld;
 // Массив имен компонент и их свойств, связанных с кликом мыши
 std::vector<std::vector<std::pair<std::string,std::string> > > MouseClickComponents;
 
+// Массив легенд
+std::vector<std::vector<std::string> > Legends;
+
 // Флаг отражения вокруг оси X изображений при выводе
 bool ReflectionXFlag;
 
 // Указатель на форму выбора компоненты-источника
 TUComponentsListForm *MyComponentsListForm;
+
+/// Режим масштабирования
+/// 0 - оригинальный размер
+/// 1 - Масштабирование чтобы вся сетка влезала в экран
+int SizeMode;
 
 // --------------------------
 // Методы управления параметрами
@@ -146,6 +166,9 @@ void ABeforeCalculate(void);
 void AAfterCalculate(void);
 
 void AUpdateInterface(void);
+
+// Возврат интерфейса в исходное состояние
+virtual void AClearInterface(void);
 
 // Сохраняет параметры интерфейса в xml
 virtual void ASaveParameters(RDK::USerStorageXML &xml);

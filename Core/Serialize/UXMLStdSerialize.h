@@ -30,7 +30,8 @@ USerStorageXML& USimpleToStorage (USerStorageXML& storage, const T data)
 {
  storage.SetNodeAttribute("Type",typeid(T).name());
  std::stringstream stream;
- stream<<data;
+
+ stream<<std::setprecision(40)<<data;
 
  std::string str;
  str=stream.str();
@@ -43,12 +44,12 @@ USerStorageXML& USimpleToStorage (USerStorageXML& storage, const T data)
 template<typename T>
 USerStorageXML& USimpleFromStorage (USerStorageXML& storage, T &data)
 {
- std::string type=typeid(T).name();
- std::string rtype=storage.GetNodeAttribute("Type");
+// std::string type=typeid(T).name();
+// std::string rtype=storage.GetNodeAttribute("Type");
 // if(storage.GetNodeAttribute("Type") != typeid(T).name())
 //  return storage;
 
- std::string rvalue=storage.GetNodeText();
+// std::string rvalue=storage.GetNodeText();
 
  std::stringstream stream(storage.GetNodeText().c_str());
 
@@ -57,61 +58,88 @@ USerStorageXML& USimpleFromStorage (USerStorageXML& storage, T &data)
  return storage;
 }
 
-USerStorageXML& operator << (USerStorageXML& storage, bool data);
+// Простые вещественные типы
+template<typename T>
+USerStorageXML& USimpleToStorageF(USerStorageXML& storage, const T data, int prec)
+{
+ storage.SetNodeAttribute("Type",typeid(T).name());
+ std::stringstream stream;
 
-USerStorageXML& operator >> (USerStorageXML& storage, bool &data);
+ stream<<std::setprecision(prec)<<data;
 
-USerStorageXML& operator << (USerStorageXML& storage, char data);
+ std::string str;
+ str=stream.str();
 
-USerStorageXML& operator >> (USerStorageXML& storage, char &data);
+ storage.SetNodeText(str);
 
-USerStorageXML& operator << (USerStorageXML& storage, unsigned char data);
+ return storage;
+}
 
-USerStorageXML& operator >> (USerStorageXML& storage, unsigned char &data);
+template<typename T>
+USerStorageXML& USimpleFromStorageF(USerStorageXML& storage, T &data)
+{
+ std::stringstream stream(storage.GetNodeText().c_str());
 
-USerStorageXML& operator << (USerStorageXML& storage, short data);
+ stream>>data;
 
-USerStorageXML& operator >> (USerStorageXML& storage, short &data);
+ return storage;
+}
 
-USerStorageXML& operator << (USerStorageXML& storage, unsigned short data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, bool data);
 
-USerStorageXML& operator >> (USerStorageXML& storage, unsigned short &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, bool &data);
 
-USerStorageXML& operator << (USerStorageXML& storage, int data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, char data);
 
-USerStorageXML& operator >> (USerStorageXML& storage, int &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, char &data);
 
-USerStorageXML& operator << (USerStorageXML& storage, unsigned int data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, unsigned char data);
 
-USerStorageXML& operator >> (USerStorageXML& storage, unsigned int &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, unsigned char &data);
 
-USerStorageXML& operator << (USerStorageXML& storage, long data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, short data);
 
-USerStorageXML& operator >> (USerStorageXML& storage, long &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, short &data);
 
-USerStorageXML& operator << (USerStorageXML& storage, unsigned long data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, unsigned short data);
 
-USerStorageXML& operator >> (USerStorageXML& storage, unsigned long &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, unsigned short &data);
 
-USerStorageXML& operator << (USerStorageXML& storage, long long data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, int data);
 
-USerStorageXML& operator >> (USerStorageXML& storage, long long &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, int &data);
 
-USerStorageXML& operator << (USerStorageXML& storage, unsigned long long data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, unsigned int data);
 
-USerStorageXML& operator >> (USerStorageXML& storage, unsigned long long &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, unsigned int &data);
 
-USerStorageXML& operator << (USerStorageXML& storage, float data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, long data);
 
-USerStorageXML& operator >> (USerStorageXML& storage, float &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, long &data);
 
-USerStorageXML& operator << (USerStorageXML& storage, double data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, unsigned long data);
 
-USerStorageXML& operator >> (USerStorageXML& storage, double &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, unsigned long &data);
 
-USerStorageXML& operator << (USerStorageXML& storage, long double data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, long long data);
 
-USerStorageXML& operator >> (USerStorageXML& storage, long double &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, long long &data);
+
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, unsigned long long data);
+
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, unsigned long long &data);
+
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, float data);
+
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, float &data);
+
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, double data);
+
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, double &data);
+
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, long double data);
+
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, long double &data);
 
 // Указатели
 template<typename T>
@@ -132,9 +160,9 @@ USerStorageXML& operator << (USerStorageXML& storage, const T *data)
 template<typename T>
 USerStorageXML& operator >> (USerStorageXML& storage, T* &data)
 {
- std::string rvalue=storage.GetNodeText();
+// std::string rvalue=storage.GetNodeText();
 
- std::stringstream stream(storage.GetNodeText().c_str());
+// std::stringstream stream(storage.GetNodeText().c_str());
 
 // stream>>data; // Заглушка!
 
@@ -181,7 +209,7 @@ USerStorageXML& operator << (USerStorageXML& storage, const std::map<T1,T2> &dat
  storage.SetNodeAttribute("Type","std::map");
  storage.SetNodeAttribute("Size",sntoa(data.size()));
 
- if(data.size() <= 0)
+ if(data.empty())
   return storage;
 
  typename std::map<T1,T2>::const_iterator I,J;
@@ -208,7 +236,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::map<T1,T2> &data)
  size=atoi(storage.GetNodeAttribute("Size"));
  data.clear();
 
- if(size <= 0)
+ if(size == 0)
   return storage;
 
  std::pair<T1,T2> p;
@@ -238,7 +266,7 @@ USerStorageXML& operator << (USerStorageXML& storage, const std::list<T> &data)
  unsigned int size=data.size();
  storage.SetNodeAttribute("Size",sntoa(size));
 
- if(size <= 0)
+ if(size == 0)
   return storage;
 
  typename std::list<T>::const_iterator I,J;
@@ -265,7 +293,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::list<T> &data)
  size=RDK::atoi(storage.GetNodeAttribute("Size"));
  data.clear();
 
- if(size <= 0)
+ if(size == 0)
   return storage;
 
  T p;
@@ -288,11 +316,11 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::list<T> &data)
 }
 
 // Вектора
-USerStorageXML& operator << (USerStorageXML& storage, const std::vector<bool> &data);
-USerStorageXML& operator >> (USerStorageXML& storage, std::vector<bool> &data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, const std::vector<bool> &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, std::vector<bool> &data);
 
-USerStorageXML& operator << (USerStorageXML& storage, const std::vector<double> &data);
-USerStorageXML& operator >> (USerStorageXML& storage, std::vector<double> &data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, const std::vector<double> &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, std::vector<double> &data);
 
 template<typename T>
 USerStorageXML& operator << (USerStorageXML& storage, const std::vector<T> &data)
@@ -301,7 +329,7 @@ USerStorageXML& operator << (USerStorageXML& storage, const std::vector<T> &data
  unsigned int size=data.size();
  storage.SetNodeAttribute("Size",sntoa(size));
 
- if(size <= 0)
+ if(size == 0)
   return storage;
 
  for(size_t i=0;i<size;i++)
@@ -323,7 +351,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::vector<T> &data)
  unsigned int size=0;
  size=RDK::atoi(storage.GetNodeAttribute("Size"));
 
- if(size <= 0)
+ if(size == 0)
  {
   data.resize(0);
   return storage;
@@ -344,10 +372,11 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::vector<T> &data)
 }
 
 // Строки
-USerStorageXML& operator << (USerStorageXML& storage, const std::string &data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, const std::string &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, std::string &data);
 
-USerStorageXML& operator >> (USerStorageXML& storage, std::string &data);
-
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, const std::wstring &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, std::wstring &data);
 
 // Деревья
 template<typename T>

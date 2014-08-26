@@ -13,13 +13,13 @@ See file license.txt for more information
 #define ENGINE_CPP
 
 #include "Engine_lite.cpp"
-#include "UTime.cpp"
+//#include "UTime.cpp"
 #include "UStorage.cpp"
 #include "UEnvironment.cpp"
 #include "UEngine.cpp"
 //#include "UProperty.cpp"
 //#include "UEnvSupport.cpp"
-#include "UItemData.cpp"
+//#include "UItemData.cpp"
 //#include "UXMLEnvSerialize.cpp"
 //#include "UThreadEnvironment.cpp"
 //#include "UContException.cpp"

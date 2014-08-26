@@ -49,13 +49,16 @@ namespace RDK{
 // Конструкторы и деструкторы
 // --------------------------
 UEngine::UEngine(void)
+ : Storage(0), Environment(0)
 {
  Runned=-1;
- Storage=0;
- Environment=0;
+ ChannelIndex=0;
+ BufObjectsMode=0;
+// CurrentExceptionsLogSize=0;
+// ExceptionHandler=0;
 
- LastReadExceptionLogIndex=-1;
- MaxExceptionsLogSize=1000;
+// LastReadExceptionLogIndex=-1;
+// MaxExceptionsLogSize=1000;
 }
 
 UEngine::~UEngine(void)
@@ -67,6 +70,24 @@ UEngine::~UEngine(void)
 // --------------------------
 // Методы управления параметрами инициализации
 // --------------------------
+/// Режим создания внутренних временных переменных для
+/// возвращаемых значений
+/// 0 - одна переменная для всех методов, возвращающих такой тип
+/// 1 - уникальные переменные с необходимостью вызвова функции очистки
+int UEngine::GetBufObjectsMode(void) const
+{
+ return BufObjectsMode;
+}
+
+bool UEngine::SetBufObjectsMode(int mode)
+{
+ if(BufObjectsMode == mode)
+  return true;
+ BufObjectsMode=mode;
+ TempStrings.clear();
+ return true;
+}
+
 // Имя файла инициализации
 const string& UEngine::GetOptionsFileName(void) const
 {
@@ -84,12 +105,147 @@ bool UEngine::SetOptionsFileName(const string& value)
 // --------------------------
 
 // --------------------------
+// Методы управления временными переменными
+// --------------------------
+/// Создает в списке временных строку новую строку
+/// и возвращает ссылку на нее
+std::string& UEngine::CreateTempString(void) const
+{
+ switch (BufObjectsMode)
+ {
+ case 0:
+ {
+  if(TempStrings.empty())
+  {
+   UEPtr<string> pstr=new std::string;
+   TempStrings.push_back(pstr);
+  }
+  return *TempStrings.front();
+ }
+ break;
+
+ case 1:
+ {
+  UEPtr<string> pstr=new std::string;
+  TempStrings.push_back(pstr);
+  return *TempStrings.back();
+ }
+ break;
+ }
+ return DummyTempString;
+}
+
+/// Возвращает временную строку
+/// по указателю на ее данные
+std::string& UEngine::FindTempString(const char *str_data) const
+{
+ std::list<UEPtr<std::string> >::iterator I,J;
+ I=TempStrings.begin();
+ J=TempStrings.end();
+ for(;I!=J;++I)
+ {
+  if((*I)->c_str() == str_data)
+   return **I;
+
+ }
+ return DummyTempString;
+}
+
+/// Удаляет временную строку
+/// по указателю на ее данные
+void UEngine::DestroyTempString(const char *str_data) const
+{
+ if(!str_data)
+  return;
+
+ if(BufObjectsMode == 0)
+  return;
+
+ std::list<UEPtr<std::string> >::iterator I,J;
+ I=TempStrings.begin();
+ J=TempStrings.end();
+ for(;I!=J;++I)
+ {
+  if((*I)->c_str() == str_data)
+  {
+   delete *I;
+   TempStrings.erase(I);
+   break;
+  }
+ }
+}
+
+/// Удаляет временную строку
+/// по ссылке на нее
+void UEngine::DestroyTempString(const std::string &ref) const
+{
+ if(BufObjectsMode == 0)
+  return;
+
+ std::list<UEPtr<std::string> >::iterator I,J;
+ I=TempStrings.begin();
+ J=TempStrings.end();
+ for(;I!=J;++I)
+ {
+  if(**I == ref)
+  {
+   delete *I;
+   TempStrings.erase(I);
+   break;
+  }
+ }
+}
+
+/// Удаляет все временные строк
+void UEngine::ClearAllTempStrings(void) const
+{
+ if(BufObjectsMode == 0)
+  return;
+
+ std::list<UEPtr<std::string> >::iterator I,J;
+ I=TempStrings.begin();
+ J=TempStrings.end();
+ for(;I!=J;++I)
+ {
+  delete *I;
+ }
+ TempStrings.clear();
+}
+
+/// Возвращает число временных строк
+int UEngine::GetNumTempStrings(void) const
+{
+ if(BufObjectsMode == 0)
+  return 0;
+
+ return int(TempStrings.size());
+}
+// --------------------------
+
+// --------------------------
 // Методы доступа к переменным состояния
 // --------------------------
 // Флаг работы системы
 int UEngine::IsRunned(void)
 {
  return Runned;
+}
+
+/// Индекс текущего канала в многоканальной библиотеке
+int UEngine::GetChannelIndex(void) const
+{
+ return ChannelIndex;
+}
+
+bool UEngine::SetChannelIndex(int value)
+{
+ if(ChannelIndex == value)
+  return true;
+
+ ChannelIndex=value;
+ if(Environment)
+  Environment->SetChannelIndex(ChannelIndex);
+ return true;
 }
 // --------------------------
 
@@ -121,15 +277,13 @@ void UEngine::Init(void)
 
 bool UEngine::Init(UEPtr<UStorage> storage, UEPtr<UEnvironment> env)
 {
- LastReadExceptionLogIndex=-1;
- //ExceptionsLog.clear();
- CurrentExceptionsLogSize=0;
- TempLogString.clear();
 // if(!Options.LoadFromFile(OptionsFileName))
 // {
   if(!Default())
    return false;
 // }
+
+ AccessCache.clear();
 
 // StorageIndex=atoi(Options("General","StorageIndex",sntoa(StorageIndex).c_str()));
 // EnvironmentIndex=atoi(Options("General","EnvironmentIndex",sntoa(EnvironmentIndex).c_str()));
@@ -142,6 +296,8 @@ bool UEngine::Init(UEPtr<UStorage> storage, UEPtr<UEnvironment> env)
  Storage=storage;
  Environment=env;
 
+ Environment->ClearLog();
+ Environment->SetChannelIndex(ChannelIndex);
  CreateStorage();
 
  if(!Storage)
@@ -179,17 +335,6 @@ bool UEngine::Init(UEPtr<UStorage> storage, UEPtr<UEnvironment> env)
   Storage_LoadClassesDescription(FileIO.GetDataString().c_str());
  }
 
-  // Грузим шрифты
-  std::vector<std::string> font_names;
-  std::string font_path="Fonts\\";
-  FindFilesList(font_path, "*.fnt", true, font_names);
-
-  RDK::ClearClobalFonts();
-  RDK::UBitmapFont font;
-  for(size_t i=0;i<font_names.size();i++)
-  {
-   RDK::AddGlobalFont(font_path+font_names[i]);
-  }
 
  return true;
 }
@@ -198,6 +343,7 @@ bool UEngine::Init(UEPtr<UStorage> storage, UEPtr<UEnvironment> env)
 // и сохраняет текущие настройки
 void UEngine::UnInit(void)
 {
+ AccessCache.clear();
  if(!Stop())
   return;
 
@@ -269,7 +415,7 @@ int UEngine::Storage_GetNumClasses(void)
 {
  try
  {
-     return Storage->GetNumClasses();
+  return Storage->GetNumClasses();
  }
  catch (UException &exception)
  {
@@ -298,9 +444,9 @@ void UEngine::Storage_GetClassesList(int *buffer) const
 // Возвращает имена классов в хранилище в виде строки, разделенной запятыми
 const char* UEngine::Storage_GetClassesNameList(void) const
 {
+ std::string& TempString=CreateTempString();
  try
  {
-  TempString="";
   std::vector<std::string> temp;
   Storage->GetClassNameList(temp);
   for(size_t i=0;i<temp.size();i++)
@@ -322,6 +468,7 @@ const char* UEngine::Storage_GetClassesNameList(void) const
  // Возвращает имя класса по его id.
 const char * UEngine::Storage_GetClassName(int id) const
 {
+ std::string& TempString=CreateTempString();
  try
  {
   TempString=Storage->FindClassName(id);
@@ -354,6 +501,7 @@ bool UEngine::Storage_DelClass(int classid)
 {
  try
  {
+  AccessCache.clear();
   Storage->DelClass(classid);
  }
  catch (UException &exception)
@@ -368,6 +516,7 @@ void UEngine::Storage_FreeObjectsStorage(void)
 {
  try
  {
+  AccessCache.clear();
   Storage->FreeObjectsStorage();
  }
  catch (UException &exception)
@@ -381,6 +530,7 @@ void UEngine::Storage_ClearObjectsStorage(void)
 {
  try
  {
+  AccessCache.clear();
   Storage->ClearObjectsStorage();
  }
  catch (UException &exception)
@@ -432,6 +582,7 @@ int UEngine::Storage_CalcNumObjectsByName(const char* classname) const
 // Возвращает описание класса по его id в формате xml
 const char* UEngine::Storage_GetClassDescription(const char* classname)
 {
+ std::string& TempString=CreateTempString();
  try
  {
   USerStorageXML xml;
@@ -466,6 +617,7 @@ bool UEngine::Storage_SetClassDescription(const char* classname, const char* des
 // Сохраняет описание всех классов в xml
 const char* UEngine::Storage_SaveClassesDescription(void)
 {
+ std::string& TempString=CreateTempString();
  try
  {
   USerStorageXML xml;
@@ -503,6 +655,7 @@ bool UEngine::Storage_LoadClassesDescription(const char* xmltext)
 // Сохраняет общее описание всех классов в xml
 const char* UEngine::Storage_SaveCommonClassesDescription(void)
 {
+ std::string& TempString=CreateTempString();
  try
  {
   USerStorageXML xml;
@@ -540,6 +693,7 @@ bool UEngine::Storage_LoadCommonClassesDescription(const char* xmltext)
 // Сохраняет описание всех классов в xml включая общее описание
 const char* UEngine::Storage_SaveAllClassesDescription(void)
 {
+ std::string& TempString=CreateTempString();
  try
  {
   USerStorageXML xml;
@@ -582,88 +736,17 @@ bool UEngine::Storage_LoadAllClassesDescription(const char* xmltext)
  }
  return false;
 }
+// ----------------------------
 
-
-// Загружает библиотеку по имени dll-файла
-int UEngine::Storage_LoadStorageLibrary(const char *filename)
-{
- try
- {
-  return 0;
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
- return 0;
-}
-
-// Удаляет подключенную библиотеку из списка по индексу
-// Ответственность за освобождение памяти лежит на вызывающей стороне.
-bool UEngine::Storage_DelClassLibraryByIndex(int index)
-{
- try
- {
-  return Storage->DelClassLibrary(index);
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
- return false;
-}
-
-// Удаляет подключенную библиотеку из списка по имени
-// Ответственность за освобождение памяти лежит на вызывающей стороне.
-bool UEngine::Storage_DelClassLibraryByName(const char *name)
-{
- try
- {
-  return Storage->DelClassLibrary(name);
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
- return false;
-}
-
-// Удаляет из списка все библиотеки
-// Ответственность за освобождение памяти лежит на вызывающей стороне.
-bool UEngine::Storage_DelAllClassLibraries(void)
-{
- try
- {
-  return Storage->DelAllClassLibraries();
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
- return false;
-}
-
-// Заполняет хранилище данными библиотек
-// Операция предварительно уничтожает модель и очищает хранилище
-bool UEngine::Storage_BuildStorage(void)
-{
- try
- {
-  return Storage->BuildStorage();
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
- return false;
-}
-
+// ----------------------------
+// Методы управления коллекциями компонент
+// ----------------------------
 // Возвращает число библиотек
 int UEngine::Storage_GetNumClassLibraries(void) const
 {
  try
  {
-  return Storage->GetNumClassLibraries();
+  return Storage->GetNumCollections();
  }
  catch (UException &exception)
  {
@@ -676,13 +759,14 @@ int UEngine::Storage_GetNumClassLibraries(void) const
 // Возвращает список библиотек в виде строки, разделенной запятыми
 const char * UEngine::Storage_GetClassLibrariesList(void) const
 {
+ std::string& TempString=CreateTempString();
  try
  {
   TempString.clear();
-  for(int i=0;i<Storage->GetNumClassLibraries();i++)
+  for(int i=0;i<Storage->GetNumCollections();i++)
   {
-   TempString+=Storage->GetClassLibraryName(i);
-   if(i<Storage->GetNumClassLibraries()-1)
+   TempString+=Storage->GetCollectionName(i);
+   if(i<Storage->GetNumCollections()-1)
     TempString+=",";
   }
  }
@@ -697,18 +781,19 @@ const char * UEngine::Storage_GetClassLibrariesList(void) const
 // library_name - имя библиотеки
 const char * UEngine::Storage_GetLibraryClassNames(const char *library_name) const
 {
+ std::string& TempString=CreateTempString();
  try
  {
   TempString.clear();
-  UEPtr<ULibrary> lib=Storage->GetClassLibrary(library_name);
+  UEPtr<ULibrary> lib=Storage->GetCollection(library_name);
   if(lib)
   {
    const vector<string> &classes=lib->GetComplete();
    for(int i=0;i<int(classes.size());i++)
    {
 	TempString+=classes[i];
-	if(i<int(classes.size())-1)
-	 TempString+=",";
+    if(i<int(classes.size())-1)
+     TempString+=",";
    }
   }
  }
@@ -723,18 +808,19 @@ const char * UEngine::Storage_GetLibraryClassNames(const char *library_name) con
 // index - индекс библиотеки
 const char * UEngine::Storage_GetLibraryClassNamesByIndex(int index) const
 {
+ std::string& TempString=CreateTempString();
  try
  {
   TempString.clear();
-  UEPtr<ULibrary> lib=Storage->GetClassLibrary(index);
+  UEPtr<ULibrary> lib=Storage->GetCollection(index);
   if(lib)
   {
    const vector<string> &classes=lib->GetComplete();
    for(int i=0;i<int(classes.size());i++)
    {
-	TempString+=classes[i];
-	if(i<int(classes.size())-1)
-	 TempString+=",";
+    TempString+=classes[i];
+    if(i<int(classes.size())-1)
+     TempString+=",";
    }
   }
  }
@@ -749,9 +835,10 @@ const char * UEngine::Storage_GetLibraryClassNamesByIndex(int index) const
 // Возвращает имя библиотеки по индексу
 const char * UEngine::Storage_GetClassLibraryNameByIndex(int index)
 {
+ std::string& TempString=CreateTempString();
  try
  {
-  TempString=Storage->GetClassLibraryName(index);
+  TempString=Storage->GetCollectionName(index);
  }
  catch (UException &exception)
  {
@@ -763,9 +850,10 @@ const char * UEngine::Storage_GetClassLibraryNameByIndex(int index)
 // Возвращает версию библиотеки по индексу
 const char * UEngine::Storage_GetClassLibraryVersionByIndex(int index)
 {
+ std::string& TempString=CreateTempString();
  try
  {
-  TempString=Storage->GetClassLibraryVersion(index);
+  TempString=Storage->GetCollectionVersion(index);
  }
  catch (UException &exception)
  {
@@ -774,10 +862,56 @@ const char * UEngine::Storage_GetClassLibraryVersionByIndex(int index)
  return TempString.c_str();
 }
 
+// Удаляет подключенную библиотеку из списка по индексу
+// Ответственность за освобождение памяти лежит на вызывающей стороне.
+bool UEngine::Storage_DelClassLibraryByIndex(int index)
+{
+ try
+ {
+  AccessCache.clear();
+  return Storage->DelCollection(index);
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return false;
+}
 
-// Перемещает объект в Storage как образец классов.
-// Объект удаляется из модели
-int UEngine::Storage_CreateClass(const char* stringid, const char *classname)
+// Удаляет подключенную библиотеку из списка по имени
+// Ответственность за освобождение памяти лежит на вызывающей стороне.
+bool UEngine::Storage_DelClassLibraryByName(const char *name)
+{
+ try
+ {
+  AccessCache.clear();
+  return Storage->DelCollection(name);
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return false;
+}
+
+// Удаляет из списка все библиотеки
+// Ответственность за освобождение памяти лежит на вызывающей стороне.
+bool UEngine::Storage_DelAllClassLibraries(void)
+{
+ try
+ {
+  AccessCache.clear();
+  return Storage->DelAllCollections();
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return false;
+}
+
+// Загружает коллекцию по имени dll-файла
+int UEngine::Storage_LoadBinaryCollectionFromFile(const char *filename)
 {
  try
  {
@@ -790,8 +924,123 @@ int UEngine::Storage_CreateClass(const char* stringid, const char *classname)
  return 0;
 }
 
+// Загружает runtime-коллекцию
+int UEngine::Storage_LoadRuntimeCollectionFromFile(const char *filename)
+{
+ try
+ {
+  return 0;
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
+int UEngine::Storage_LoadRuntimeCollectionFromString(const char *buffer)
+{
+ try
+ {
+  return 0;
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
+// Сохраняет runtime-коллекцию
+int UEngine::Storage_SaveRuntimeCollectionToFile(const char *filename)
+{
+ try
+ {
+  return 0;
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
+int UEngine::Storage_SaveRuntimeCollectionToString(const char *buffer)
+{
+ try
+ {
+  return 0;
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
+/// Создает новую runtime-библиотеку
+int UEngine::Storage_CreateRuntimeCollection(const char *collection_name)
+{
+ try
+ {
+  if(Storage->CreateRuntimeCollection(collection_name))
+   return 0;
+  return 74615;
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
+// Перемещает объект в Storage как образец классов.
+// Объект удаляется из модели
+int UEngine::Storage_CreateClass(const char* stringid, const char *class_name, const char *collection_name)
+{
+ try
+ {
+  UEPtr<UContainer> sample=FindComponent(stringid);
+  UEPtr<URuntimeLibrary> library=dynamic_pointer_cast<URuntimeLibrary>(Storage->GetCollection(collection_name));
+
+  if(!sample)
+   return 74616;
+
+  if(!library)
+   return 74617;
+
+  if(!Storage->AddClassToCollection(class_name, sample,library))
+   return 74618;
+
+  AccessCache.clear();
+  return 0;
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
+// Заполняет хранилище данными библиотек
+// Операция предварительно уничтожает модель и очищает хранилище
+bool UEngine::Storage_BuildStorage(void)
+{
+ try
+ {
+  AccessCache.clear();
+  return Storage->BuildStorage();
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return false;
+}
+// ----------------------------
 
 
+// ----------------------------
 // Методы управления средой
 // ----------------------------
 // Индекс предарительно заданной модели обработки
@@ -812,6 +1061,7 @@ bool UEngine::Env_SetPredefinedStructure(int value)
 {
  try
  {
+  AccessCache.clear();
   return Environment->SetPredefinedStructure(value);
  }
  catch (UException &exception)
@@ -870,6 +1120,7 @@ bool UEngine::Env_Init(void)
 {
  try
  {
+  AccessCache.clear();
   Environment->Init();
    return true;
  }
@@ -885,6 +1136,7 @@ bool UEngine::Env_UnInit(void)
 {
  try
  {
+  AccessCache.clear();
   Environment->UnInit();
   return true;
  }
@@ -900,6 +1152,7 @@ bool UEngine::Env_CreateStructure(void)
 {
  try
  {
+  AccessCache.clear();
   return Environment->CreateStructure();
  }
  catch (UException &exception)
@@ -914,6 +1167,7 @@ bool UEngine::Env_DestroyStructure(void)
 {
  try
  {
+  AccessCache.clear();
   return Environment->DestroyStructure();
  }
  catch (UException &exception)
@@ -928,10 +1182,11 @@ void UEngine::Env_Destroy(void)
 {
  try
  {
+  AccessCache.clear();
   Environment->DestroyModel();
   Storage->ClearObjectsStorage();
   Storage->ClearClassesStorage();
-  Storage->DelAllClassLibraries();
+  Storage->DelAllCollections();
  }
  catch (UException &exception)
  {
@@ -955,19 +1210,19 @@ int UEngine::Env_Calculate(const char* stringid)
   {
    RDK::UContainer* destcont=FindComponent(stringid);
    if(destcont)
-	destcont->GetLongId(Environment->GetModel(),id);
+    destcont->GetLongId(Environment->GetModel(),id);
 //   id.DecodeFromString(stringid);
-	Environment->SetModelCalculationComponent(id);
+    Environment->SetModelCalculationComponent(id);
   }
 
   if(!Environment->Calculate())
-   return 1;
+   throw EFunctionReturnFalse(__FILE__,__FUNCTION__,__LINE__);
+   // return 1;
  }
  catch (RDK::UException &exception)
  {
   ProcessException(exception);
  }
-
 
  return 0;
 }
@@ -997,27 +1252,59 @@ int UEngine::Env_Reset(const char* stringid)
   if(!stringid)
   {
    Environment->SetModelCalculationComponent(id);
+   if(!Environment->Reset())
+	throw EFunctionReturnFalse(__FILE__,__FUNCTION__,__LINE__);
   }
   else
   {
    RDK::UContainer* destcont=FindComponent(stringid);
    if(destcont)
-	destcont->GetLongId(Environment->GetModel(),id);
-//   id.DecodeFromString(stringid);
-	Environment->SetModelCalculationComponent(id);
+   {
+	if(!destcont->Reset())
+	 throw EFunctionReturnFalse(__FILE__,__FUNCTION__,__LINE__);
+   }
+   else
+	return 100000;
   }
-
-  if(!Environment->Reset())
-   return 1;
  }
  catch (RDK::UException &exception)
  {
   ProcessException(exception);
  }
 
+ return 0;
+}
+
+/// Метод сброса параметров на значения по умолчанию
+/// Если stringid == 0 то сбрасывает всю модель целиком,
+/// иначе - только указанный компонент модели
+/// Если subcomps == true то также сбрасывает параметры всех дочерних компонент
+int UEngine::Env_Default(const char* stringid, bool subcomps)
+{
+ try
+ {
+  RDK::UContainer* destcont;
+  if(!stringid)
+  {
+   destcont=GetModel();
+  }
+  else
+  {
+   destcont=FindComponent(stringid);
+  }
+
+  if(!destcont->DefaultAll(destcont,subcomps))
+   throw EFunctionReturnFalse(__FILE__,__FUNCTION__,__LINE__);
+ }
+ catch (RDK::UException &exception)
+ {
+  ProcessException(exception);
+ }
 
  return 0;
 }
+
+
 
 // Производит увеличение времени модели на требуемую величину
 void UEngine::Env_IncreaseModelTimeByStep(void)
@@ -1030,6 +1317,40 @@ void UEngine::Env_IncreaseModelTimeByStep(void)
  {
   ProcessException(exception);
  }
+}
+
+/// Устанавливает минимальный интервал времени между шагами расчета (мс)
+/// Итерации расчета будут пропускаться до тех пор, пока время прошедшее с начала
+/// последней итерации не станет больше чем эта величина
+int UEngine::Env_SetMinInterstepsInterval(unsigned long long value)
+{
+ try
+ {
+  if(!Environment->SetMinInterstepsInterval(value))
+   throw EFunctionReturnFalse(__FILE__,__FUNCTION__,__LINE__);
+//   return -2000;
+ }
+ catch (RDK::UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
+/// Возвращает минимальный интервал времени между шагами расчета (мс)
+/// Итерации расчета будут пропускаться до тех пор, пока время прошедшее с начала
+/// последней итерации не станет больше чем эта величина
+unsigned long long UEngine::Env_GetMinInterstepsInterval(void) const
+{
+ try
+ {
+  return Environment->GetMinInterstepsInterval();
+ }
+ catch (RDK::UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
 }
 
 // !!! Следующие методы управления текущим компонентом влияют на все
@@ -1117,6 +1438,7 @@ int UEngine::Env_DownCurrentComponent(const char *stringid)
 // Возвращает длинное имя текущего компонента
 const char* UEngine::Env_GetCurrentComponentName(void) const
 {
+ std::string& TempString=CreateTempString();
  try
  {
   Environment->GetCurrentComponent()->GetLongName(Environment->GetModel(),TempString);
@@ -1131,6 +1453,7 @@ const char* UEngine::Env_GetCurrentComponentName(void) const
 // Возвращает длинный строковой id текущего компонента
 const char* UEngine::Env_GetCurrentComponentId(void) const
 {
+ std::string& TempString=CreateTempString();
  try
  {
   ULongId longid;
@@ -1170,6 +1493,62 @@ int UEngine::Env_SetCurrentDataDir(const char *dir)
   ProcessException(exception);
  }
  return 0;
+}
+
+// Возвращает имя каталога бинарных файлов
+const char* UEngine::Env_GetSystemDir(void) const
+{
+ try
+ {
+  return Environment->GetSystemDir().c_str();
+ }
+ catch (RDK::UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
+// Устанавливает имя каталога бинарных файлов
+int UEngine::Env_SetSystemDir(const char *dir)
+{
+ try
+ {
+  Environment->SetSystemDir(dir);
+ }
+ catch (RDK::UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
+/// Возвращает состояние флага отладочного режима среды
+int UEngine::Env_GetDebugMode(void) const
+{
+ try
+ {
+  return Environment->GetDebugMode();
+ }
+ catch (RDK::UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
+/// Устанавливает состояние флага отладочного режима среды
+int UEngine::Env_SetDebugMode(bool value)
+{
+ try
+ {
+  return Environment->SetDebugMode(value);
+ }
+ catch (RDK::UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return -1;
 }
 
 // Задает число входов среды
@@ -1266,6 +1645,23 @@ unsigned char* UEngine::Env_GetOutputImageY8(int index)
 }
 
 
+/// Инициирует извещение о сбое в работе источника данных
+bool UEngine::Env_CallSourceController(void)
+{
+ try
+ {
+  if(!Environment)
+   return false;
+  return Environment->CallSourceController();
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+
+ return 0;
+}
+
 
 // Методы управления моделью
 // ----------------------------
@@ -1274,15 +1670,17 @@ int UEngine::Model_Destroy(void)
 {
  try
  {
-  if(Environment->DestroyModel())
-   return 0;
+  AccessCache.clear();
+  if(!Environment->DestroyModel())
+   throw EFunctionReturnFalse(__FILE__,__FUNCTION__,__LINE__);
+//   return -1;
  }
  catch (UException &exception)
  {
   ProcessException(exception);
  }
 
- return -1;
+ return 0;
 }
 
 // Создает новую модель по имени класса в хранилище
@@ -1291,15 +1689,17 @@ int UEngine::Model_Create(const char *classname)
 {
  try
  {
-  if(Environment->CreateModel(classname))
-   return 0;
+  AccessCache.clear();
+  if(!Environment->CreateModel(classname))
+   throw EFunctionReturnFalse(__FILE__,__FUNCTION__,__LINE__);
+//   return -1;
  }
  catch (UException &exception)
  {
   ProcessException(exception);
  }
 
- return -1;
+ return 0;
 }
 
 // Очищает модель
@@ -1307,6 +1707,7 @@ int UEngine::Model_Clear(void)
 {
  try
  {
+  AccessCache.clear();
   UEPtr<RDK::UContainer> model=dynamic_pointer_cast<RDK::UContainer>(Environment->GetModel());
 
   if(!model)
@@ -1366,6 +1767,7 @@ bool UEngine::Model_CheckComponent(const char* stringid) const
 // Возвращает имя компонента в случае успеха
 const char* UEngine::Model_AddComponent(const char* stringid, const char *classname)
 {
+ std::string& TempString=CreateTempString();
  try
  {
   UEPtr<RDK::UContainer> destcont=FindComponent(stringid);
@@ -1373,10 +1775,16 @@ const char* UEngine::Model_AddComponent(const char* stringid, const char *classn
   UEPtr<RDK::UContainer> cont=dynamic_pointer_cast<RDK::UContainer>(Storage->TakeObject(classname));
 
   if(!cont)
+  {
+   DestroyTempString(TempString);
    return 0;
+  }
 
   if(!destcont)
+  {
+   DestroyTempString(TempString);
    return 0;
+  }
 
   if(destcont->AddComponent(cont))
   {
@@ -1405,6 +1813,7 @@ int UEngine::Model_DelComponent(const char* stringid, const char *name)
    return -4;
 
   destcont->DelComponent(name);
+  AccessCache.clear();
  }
  catch (UException &exception)
  {
@@ -1413,6 +1822,41 @@ int UEngine::Model_DelComponent(const char* stringid, const char *name)
 
  return 0;
 }
+
+
+/// Перемещает компоненту в другой компонент
+/// Если comp не принадлежит этому компоненту, или target имеет отличный от
+/// этого компонента storage, или target не может принять в себя компонент
+/// то возвращает false и не делает ничего
+int UEngine::Model_MoveComponent(const char* component, const char* target)
+{
+ try
+ {
+  RDK::UContainer* comp=FindComponent(component);
+  RDK::UContainer* target_comp=FindComponent(target);
+
+  if(!comp)
+   return -4;
+
+  if(!target_comp)
+   return -5;
+
+  if(!comp->GetOwner())
+   return -6;
+
+  if(!comp->GetOwner()->MoveComponent(comp,target_comp))
+   return -7;
+
+  AccessCache.clear();
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+
+ return 0;
+}
+
 
 // Возвращает число всех компонент в заданного компоненте 'stringid'
 // если stringid - пустая строка, то возвращает число всех компонент модели
@@ -1463,6 +1907,7 @@ int UEngine::Model_GetComponentsList(const char* stringid, int *buffer)
 // имена разделяются сипволом ','
 const char* UEngine::Model_GetComponentsNameList(const char* stringid)
 {
+ std::string& TempString=CreateTempString();
  try
  {
   TempString.clear();
@@ -1478,7 +1923,7 @@ const char* UEngine::Model_GetComponentsNameList(const char* stringid)
   {
    TempString+=tempbuffer[i];
    if(i<int(tempbuffer.size())-1)
-	TempString+=",";
+    TempString+=",";
   }
   return TempString.c_str();
  }
@@ -1489,6 +1934,94 @@ const char* UEngine::Model_GetComponentsNameList(const char* stringid)
 
  return 0;
 }
+
+// Возвращает строку, содержащую список имен всех компонент заданного компонента 'stringid'
+// имена разделяются сипволом ',' и имеющих имя класса 'class_name'
+// Если find_all == true то поиск ведется и во всех сабкомпонентах
+const char* UEngine::Model_FindComponentsByClassName(const char* stringid, const char* class_name, bool find_all)
+{
+ std::string& TempString=CreateTempString();
+ try
+ {
+  TempString.clear();
+
+  if(!class_name || !strlen(class_name))
+   return TempString.c_str();
+
+  RDK::UContainer* destcont=FindComponent(stringid);
+
+  if(!destcont)
+   return TempString.c_str();
+
+  int class_id=Storage->FindClassId(class_name);
+
+  if(class_id == ForbiddenId)
+   return TempString.c_str();
+
+  std::vector<std::string> tempbuffer;
+  destcont->GetComponentsNameByClassName(class_name, tempbuffer, find_all);
+  size_t numComp=tempbuffer.size();
+
+  for(size_t i=0; i<numComp; i++)
+  {
+   TempString+=tempbuffer[i];
+   if( int(i) < int(tempbuffer.size())-1 )
+	 TempString+=",";
+  }
+
+  return TempString.c_str();
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ DestroyTempString(TempString);
+ return 0;
+}
+
+/* Старый вариант, не работает поиск в субкомпанентах
+const char* UEngine::Model_FindComponentsByClassName(const char* stringid, const char* class_name, bool find_all)
+{
+ try
+ {
+  TempString.clear();
+
+  if(!class_name || !strlen(class_name))
+   return TempString.c_str();
+
+  RDK::UContainer* destcont=FindComponent(stringid);
+
+  std::vector<std::string> tempbuffer;
+
+  if(!destcont)
+   return TempString.c_str();
+
+  destcont->GetComponentsList(tempbuffer);
+  std::string name;
+  int class_id=Storage->FindClassId(class_name);
+
+  if(class_id == ForbiddenId)
+   return TempString.c_str();
+
+  for(int i=0;i<destcont->GetNumComponents();i++)
+  {
+   if(destcont->GetComponentByIndex(i)->GetClass() == class_id)
+   {
+	TempString+=destcont->GetComponentByIndex(i)->GetLongName(destcont,name);
+	if(i<int(tempbuffer.size())-1)
+	 TempString+=",";
+   }
+  }
+  return TempString.c_str();
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+
+ return 0;
+}
+*/
 
 // Перемещает компонент с текущим индексом index или именем 'name' вверх или
 // вниз по списку на заданное число элементов
@@ -1532,8 +2065,9 @@ int UEngine::Model_ChangeComponentPosition(const char* stringid, int step)
 // если 'sublevel' == 0, то возвращает идентификаторы коннекторов только этой сети
 // Предварительная очистка буфера не производится.
 const char* UEngine::Model_GetConnectorsList(const char* stringid,
-						  int sublevel, const char* owner_level_stringid)
+                          int sublevel, const char* owner_level_stringid)
 {
+ std::string& TempString=CreateTempString();
  try
  {
   UEPtr<RDK::UContainer> cont=FindComponent(stringid);
@@ -1570,8 +2104,9 @@ const char* UEngine::Model_GetConnectorsList(const char* stringid,
 // если 'sublevel' == 0, то возвращает идентификаторы элементов только этой сети
 // Предварительная очистка буфера не производится.
 const char* UEngine::Model_GetItemsList(const char* stringid,
-							int sublevel, const char* owner_level_stringid)
+                            int sublevel, const char* owner_level_stringid)
 {
+ std::string& TempString=CreateTempString();
  try
  {
   UEPtr<RDK::UContainer> cont=FindComponent(stringid);
@@ -1607,8 +2142,9 @@ const char* UEngine::Model_GetItemsList(const char* stringid,
 // если 'sublevel' == 0, то возвращает идентификаторы подсетей только этой сети
 // Предварительная очистка буфера не производится.
 const char* UEngine::Model_GetNetsList(const char* stringid,
-							int sublevel, const char* owner_level_stringid)
+                            int sublevel, const char* owner_level_stringid)
 {
+ std::string& TempString=CreateTempString();
  try
  {
   UEPtr<RDK::UContainer> cont=FindComponent(stringid);
@@ -1640,6 +2176,7 @@ const char* UEngine::Model_GetNetsList(const char* stringid,
 // Память выделяется и освобождается внутри dll
 const char* UEngine::Model_GetComponentName(const char* stringid)
 {
+ std::string& TempString=CreateTempString();
  try
  {
   TempString="";
@@ -1648,7 +2185,7 @@ const char* UEngine::Model_GetComponentName(const char* stringid)
   if(!destcont)
    return TempString.c_str();
 
-  return destcont->GetName().c_str();
+  TempString=destcont->GetName();
  }
  catch (UException &exception)
  {
@@ -1665,6 +2202,7 @@ const char* UEngine::Model_GetComponentName(const char* stringid)
 // Если owner_level_stringid не задан, то имя формируется до уровня текущего компонента
 const char* UEngine::Model_GetComponentLongName(const char* stringid, const char* owner_level_stringid)
 {
+ std::string& TempString=CreateTempString();
  try
  {
   TempString="";
@@ -1690,6 +2228,7 @@ const char* UEngine::Model_GetComponentLongName(const char* stringid, const char
 // Если owner_level_stringid не задан, то имя формируется до уровня текущего компонента
 const char* UEngine::Model_GetComponentLongId(const char* stringid, const char* owner_level_stringid)
 {
+ std::string& TempString=CreateTempString();
  try
  {
   TempString="";
@@ -1716,6 +2255,7 @@ const char* UEngine::Model_GetComponentLongId(const char* stringid, const char* 
 // если stringid - пустая строка, то возвращает имя класса модели
 const char* UEngine::Model_GetComponentClassName(const char* stringid)
 {
+ std::string& TempString=CreateTempString();
  try
  {
   TempString="";
@@ -1737,6 +2277,7 @@ const char* UEngine::Model_GetComponentClassName(const char* stringid)
 // Возвращает список свойств компонента разделенный запятыми
 const char* UEngine::Model_GetComponentPropertiesList(const char* stringid, unsigned int type_mask)
 {
+ std::string& TempString=CreateTempString();
  try
  {
   TempString="";
@@ -1755,11 +2296,11 @@ const char* UEngine::Model_GetComponentPropertiesList(const char* stringid, unsi
   {
    if(I->second.CheckMask(type_mask))
    {
-	if(TempString.size()>0)
-	 TempString+=",";
+    if(TempString.size()>0)
+     TempString+=",";
 	TempString+=I->first;
-//	TempString+=":";
-//	TempString+=sntoa(I->second.Property->GetMinRange());
+//    TempString+=":";
+//    TempString+=sntoa(I->second.Property->GetMinRange());
    }
    ++I;
   }
@@ -1770,12 +2311,13 @@ const char* UEngine::Model_GetComponentPropertiesList(const char* stringid, unsi
  {
   ProcessException(exception);
  }
+ DestroyTempString(TempString);
  return 0;
 }
 
-// Возвращает свойства компонента по идентификатору
-const char* UEngine::Model_GetComponentProperties(const char *stringid, unsigned int type_mask)
+const char* UEngine::Model_GetComponentPropertiesLookupList(const char* stringid, unsigned int type_mask)
 {
+ std::string& TempString=CreateTempString();
  try
  {
   TempString="";
@@ -1784,11 +2326,56 @@ const char* UEngine::Model_GetComponentProperties(const char *stringid, unsigned
   if(!cont)
    return TempString.c_str();
 
+  RDK::UContainer::VariableMapT props=cont->GetPropertiesList();
+
+  RDK::UContainer::VariableMapCIteratorT I,J;
+
+  I=props.begin();
+  J=props.end();
+  while(I != J)
+  {
+   if(I->second.CheckMask(type_mask))
+   {
+    if(TempString.size()>0)
+     TempString+=",";
+    TempString+=I->first;
+    TempString+=":";
+    TempString+=sntoa(I->second.Property->GetMinRange());
+   }
+   ++I;
+  }
+
+  return TempString.c_str();
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ DestroyTempString(TempString);
+ return 0;
+}
+
+
+// Возвращает свойства компонента по идентификатору
+const char* UEngine::Model_GetComponentProperties(const char *stringid, unsigned int type_mask)
+{
+ std::string& TempString=CreateTempString();
+ try
+ {
+  TempString="";
+  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+
+  if(!cont)
+   return TempString.c_str();
+
   XmlStorage.Create(cont->GetLongName(Environment->GetCurrentComponent(),CompName));
   XmlStorage.AddNode(UVariable::GetPropertyTypeNameByType(type_mask));
 
-  if(!Model_GetComponentProperties(cont,&XmlStorage, type_mask))
+  if(!cont->GetComponentProperties(cont,&XmlStorage, type_mask))
+  {
+   DestroyTempString(TempString);
    return 0;
+  }
 
   XmlStorage.SelectUp();
   XmlStorage.Save(TempString);
@@ -1798,38 +2385,46 @@ const char* UEngine::Model_GetComponentProperties(const char *stringid, unsigned
  {
   ProcessException(exception);
  }
+ DestroyTempString(TempString);
  return 0;
 }
 
 // Возвращает выборочные свойства компонента по идентификатору
 const char* UEngine::Model_GetComponentSelectedProperties(const char *stringid)
 {
+ std::string& TempString=CreateTempString();
  try
  {
+  DestroyTempString(TempString);
   return 0;
  }
  catch (UException &exception)
  {
   ProcessException(exception);
  }
+ DestroyTempString(TempString);
  return 0;
 }
 
 // Возвращает свойства компонента по идентификатору с описаниями
 const char* UEngine::Model_GetComponentPropertiesEx(const char *stringid, unsigned int type_mask)
 {
+ std::string& TempString=CreateTempString();
  try
  {
   TempString="";
-  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
+  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
   if(!cont)
    return TempString.c_str();
 
   XmlStorage.Create(cont->GetLongName(Environment->GetCurrentComponent(),CompName));
   XmlStorage.AddNode(UVariable::GetPropertyTypeNameByType(type_mask));
 
-  if(!Model_GetComponentPropertiesEx(cont,&XmlStorage, type_mask))
+  if(!cont->GetComponentPropertiesEx(cont,&XmlStorage, type_mask))
+  {
+   DestroyTempString(TempString);
    return 0;
+  }
 
   XmlStorage.SelectUp();
   XmlStorage.Save(TempString);
@@ -1839,12 +2434,14 @@ const char* UEngine::Model_GetComponentPropertiesEx(const char *stringid, unsign
  {
   ProcessException(exception);
  }
+ DestroyTempString(TempString);
  return 0;
 }
 
 // Возвращает значение свойства компонента по идентификатору компонента и имени свойства
 const char * UEngine::Model_GetComponentPropertyValue(const char *stringid, const char *paramname)
 {
+ std::string& TempString=CreateTempString();
  try
  {
   TempString="";
@@ -1859,6 +2456,7 @@ const char * UEngine::Model_GetComponentPropertyValue(const char *stringid, cons
  {
   ProcessException(exception);
  }
+ DestroyTempString(TempString);
  return 0;
 }
 
@@ -1867,7 +2465,7 @@ int UEngine::Model_SetComponentProperties(const char *stringid, const char* buff
 {
  try
  {
-  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
+  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
   if(!cont)
    return 1;
 
@@ -1876,10 +2474,10 @@ int UEngine::Model_SetComponentProperties(const char *stringid, const char* buff
   {
    if(XmlStorage.SelectNode(UVariable::GetPropertyTypeNameByType(mask)))
    {
-	if(Model_SetComponentProperties(cont,&XmlStorage))
-	 return 2;
+    if(cont->SetComponentProperties(cont,&XmlStorage))
+     return 2;
 
-	XmlStorage.SelectUp();
+    XmlStorage.SelectUp();
    }
   }
  }
@@ -1915,7 +2513,7 @@ void UEngine::Model_SetGlobalComponentPropertyValue(const char *stringid, const 
 {
  try
  {
-  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
+  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<UNet>(FindComponent(stringid));
   if(!cont)
    return;
 
@@ -1923,7 +2521,7 @@ void UEngine::Model_SetGlobalComponentPropertyValue(const char *stringid, const 
   if(classid == ForbiddenId)
    return;
 
-  Model_SetGlobalComponentPropertyValue(cont, classid, paramname, buffer);
+  cont->SetGlobalComponentPropertyValue(cont, classid, paramname, buffer);
  }
  catch (UException &exception)
  {
@@ -1937,7 +2535,7 @@ void UEngine::Model_SetGlobalOwnerComponentPropertyValue(const char *stringid, c
 {
  try
  {
-  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
+  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<UNet>(FindComponent(stringid));
   if(!cont)
    return;
 
@@ -1946,7 +2544,7 @@ void UEngine::Model_SetGlobalOwnerComponentPropertyValue(const char *stringid, c
   if(classid == ForbiddenId || owner_classid == ForbiddenId)
    return;
 
-  Model_SetGlobalOwnerComponentPropertyValue(cont, classid, owner_classid, paramname, buffer);
+  cont->SetGlobalOwnerComponentPropertyValue(cont, classid, owner_classid, paramname, buffer);
  }
  catch (UException &exception)
  {
@@ -2106,9 +2704,9 @@ int UEngine::Model_ChainLinking(const char* stringid)
    connector->GetLongId(cont,id2);
    minsize=item->GetNumOutputs();
    if(minsize>connector->GetNumInputs())
-	minsize=connector->GetNumInputs();
+    minsize=connector->GetNumInputs();
    for(int j=0;j<minsize;j++)
-	cont->CreateLink(id1,j,id2,j);
+    cont->CreateLink(id1,j,id2,j);
    id1=id2;
    item=connector;
   }
@@ -2153,9 +2751,9 @@ int UEngine::Model_ParallelLinking(const char* stringid)
    connector->GetLongId(cont,id2);
    int minsize=item->GetNumOutputs();
    if(minsize>connector->GetNumInputs())
-	minsize=connector->GetNumInputs();
+    minsize=connector->GetNumInputs();
    for(int j=0;j<minsize;j++)
-	cont->CreateLink(id1,j,id2,j);
+    cont->CreateLink(id1,j,id2,j);
   }
  }
  catch (UException &exception)
@@ -2265,6 +2863,26 @@ int UEngine::Model_BreakAllLinks(void)
    return -2;
 
   model->BreakLinks();
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+
+ return 0;
+}
+
+// Разрывает связь ко входу connector_index коннектора 'connectorid'
+int UEngine::Model_BreakConnectorLink(const char* connectorname, int connector_index)
+{
+ try
+ {
+  UEPtr<RDK::UNet> model=dynamic_pointer_cast<RDK::UNet>(Environment->GetCurrentComponent());
+
+  if(!model)
+   return -2;
+
+  model->BreakConnectorLink(connectorname, connector_index);
  }
  catch (UException &exception)
  {
@@ -2388,6 +3006,7 @@ bool UEngine::Model_CheckLink(const char* stringid1, const char* item_property_n
 // Если owner_level_stringid не задан, то имена формируются до уровня текущего компонента
 const char* UEngine::Model_GetComponentInternalLinks(const char* stringid, const char* owner_level_stringid)
 {
+ std::string& TempString=CreateTempString();
  try
  {
   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
@@ -2401,7 +3020,7 @@ const char* UEngine::Model_GetComponentInternalLinks(const char* stringid, const
 
   XmlStorage.Create("Links");
 
-  if(Model_GetComponentInternalLinks(cont,&XmlStorage,owner))
+  if(cont->GetComponentInternalLinks(cont,&XmlStorage,owner))
    return TempString.c_str();
 
   XmlStorage.Save(TempString);
@@ -2430,7 +3049,7 @@ int UEngine::Model_SetComponentInternalLinks(const char* stringid, const char* b
 
   XmlStorage.Load(buffer,"Links");
 
-  if(!Model_SetComponentInternalLinks(cont,&XmlStorage,owner))
+  if(!cont->SetComponentInternalLinks(cont,&XmlStorage,owner))
    return -4;
  }
  catch (UException &exception)
@@ -2451,6 +3070,7 @@ int UEngine::Model_SetComponentInternalLinks(const char* stringid, const char* b
 // Если owner_level_stringid не задан, то имена формируются до уровня текущего компонента
 const char * UEngine::Model_GetComponentInputLinks(const char* stringid, const char* owner_level_stringid, int sublevel)
 {
+ std::string& TempString=CreateTempString();
  try
  {
   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
@@ -2464,8 +3084,11 @@ const char * UEngine::Model_GetComponentInputLinks(const char* stringid, const c
 
   XmlStorage.Create("Links");
 
-  if(!Model_GetComponentInputLinks(cont,&XmlStorage,owner,sublevel))
+  if(!cont->GetComponentInputLinks(cont,&XmlStorage,owner,sublevel))
+  {
+   DestroyTempString(TempString);
    return 0;
+  }
 
   TempString="";
   XmlStorage.Save(TempString);
@@ -2487,6 +3110,7 @@ const char * UEngine::Model_GetComponentInputLinks(const char* stringid, const c
 // Если owner_level_stringid не задан, то имена формируются до уровня текущего компонента
 const char * UEngine::Model_GetComponentOutputLinks(const char* stringid, const char* owner_level_stringid, int sublevel)
 {
+ std::string& TempString=CreateTempString();
  try
  {
   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
@@ -2500,8 +3124,11 @@ const char * UEngine::Model_GetComponentOutputLinks(const char* stringid, const 
 
   XmlStorage.Create("Links");
 
-  if(!Model_GetComponentOutputLinks(cont,&XmlStorage,owner, sublevel))
+  if(!cont->GetComponentOutputLinks(cont,&XmlStorage,owner, sublevel))
+  {
+   DestroyTempString(TempString);
    return 0;
+  }
 
   TempString="";
   XmlStorage.Save(TempString);
@@ -2519,6 +3146,7 @@ const char * UEngine::Model_GetComponentOutputLinks(const char* stringid, const 
 // Если owner_level_stringid не задан, то имена формируются до уровня текущего компонента
 const char* UEngine::Model_GetComponentPersonalLinks(const char* stringid, const char* owner_level_stringid)
 {
+ std::string& TempString=CreateTempString();
  try
  {
   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
@@ -2532,7 +3160,7 @@ const char* UEngine::Model_GetComponentPersonalLinks(const char* stringid, const
 
   XmlStorage.Create("Links");
 
-  if(Model_GetComponentPersonalLinks(cont,&XmlStorage,owner))
+  if(cont->GetComponentPersonalLinks(cont,&XmlStorage,owner))
    return TempString.c_str();
 
   TempString="";
@@ -2721,6 +3349,7 @@ unsigned char* UEngine::Model_GetComponentOutputData(const char *stringid, int i
 // переменные состояния в xml
 const char *  UEngine::Model_SaveComponent(const char *stringid, unsigned int params_type_mask)
 {
+ std::string& TempString=CreateTempString();
  try
  {
   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
@@ -2732,8 +3361,11 @@ const char *  UEngine::Model_SaveComponent(const char *stringid, unsigned int pa
   XmlStorage.Create("Save");
   XmlStorage.SetNodeAttribute("ModelName",Environment->GetModel()->GetName());
 
-  if(!Model_SaveComponent(cont,&XmlStorage, true, params_type_mask))
+  if(!cont->SaveComponent(cont,&XmlStorage, true, params_type_mask))
+  {
+   DestroyTempString(TempString);
    return 0;
+  }
 
   XmlStorage.Save(TempString);
  // strcpy(buffer,str.c_str());
@@ -2745,12 +3377,40 @@ const char *  UEngine::Model_SaveComponent(const char *stringid, unsigned int pa
  return TempString.c_str();
 }
 
+// Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
+// переменные состояния в xml
+int UEngine::Model_SaveComponentToFile(const char *stringid, const char* file_name, unsigned int params_type_mask)
+{
+ const char* save_data=Model_SaveComponent(stringid,params_type_mask);
+
+ try
+ {
+  if(!save_data)
+   return 871121;
+
+  UFileIO file;
+  file.Default();
+  file.SetDirection(1);
+  file.SetFileName(file_name);
+  file.SetBinFlag(0);
+  file.SetDataString(save_data);
+  file.Calculate();
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
+
 // Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния из xml
 int UEngine::Model_LoadComponent(const char *stringid, const char* buffer)
 {
  try
  {
+  AccessCache.clear();
   XmlStorage.Load(buffer,"Save");
   XmlStorage.SelectNode(0);
 
@@ -2758,22 +3418,56 @@ int UEngine::Model_LoadComponent(const char *stringid, const char* buffer)
 
   if(!Environment->GetModel())
   {
-   if(!Model_LoadComponent(0,&XmlStorage,true))
+   std::string name=XmlStorage.GetNodeAttribute("Class");
+   UId id=Storage->FindClassId(name);
+   UEPtr<UNet> cont=dynamic_pointer_cast<RDK::UNet>(Environment->GetModel()).Get();
+   if(!cont || cont->GetClass() != id)
+   {
+	Model_Destroy();
+	Model_Create(name.c_str());
+	cont=dynamic_pointer_cast<RDK::UNet>(Environment->GetModel()).Get();
+   }
+
+   if(!cont->LoadComponent(cont,&XmlStorage,true))
 	return -4;
   }
   else
   {
    if(XmlStorage.GetNodeAttribute("ModelName") != Environment->GetModel()->GetName())
-    return -10;
+	throw EErrorEngineModelNameDontMatch(XmlStorage.GetNodeAttribute("ModelName"), Environment->GetModel()->GetName());
+	//return -10;
 
    UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
 
    if(!cont)
 	return -3;
 
-   if(!Model_LoadComponent(cont,&XmlStorage,true))
-    return -4;
+   if(!cont->LoadComponent(cont,&XmlStorage,true))
+	return -4;
   }
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
+// Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
+// переменные состояния из xml
+int UEngine::Model_LoadComponentFromFile(const char *stringid, const char* file_name)
+{
+ try
+ {
+  UFileIO file;
+  file.Default();
+  file.SetDirection(0);
+  file.SetFileName(file_name);
+  file.SetBinFlag(0);
+  file.Calculate();
+  if(file.GetDataString().empty())
+   return 871122;
+  return Model_LoadComponent(stringid, file.GetDataString().c_str());
  }
  catch (UException &exception)
  {
@@ -2785,6 +3479,7 @@ int UEngine::Model_LoadComponent(const char *stringid, const char* buffer)
 // Сохраняет все свойства компонента и его дочерних компонент в xml
 const char * UEngine::Model_SaveComponentProperties(const char *stringid, unsigned int type_mask)
 {
+ std::string& TempString=CreateTempString();
  try
  {
   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
@@ -2796,8 +3491,11 @@ const char * UEngine::Model_SaveComponentProperties(const char *stringid, unsign
   XmlStorage.Create("SaveProperties");
   XmlStorage.SetNodeAttribute("ModelName",Environment->GetModel()->GetName());
 
-  if(!Model_SaveComponentProperties(cont,&XmlStorage, type_mask))
+  if(!cont->SaveComponentProperties(cont,&XmlStorage, type_mask))
+  {
+   DestroyTempString(TempString);
    return 0;
+  }
 
   TempString="";
   XmlStorage.Save(TempString);
@@ -2807,6 +3505,31 @@ const char * UEngine::Model_SaveComponentProperties(const char *stringid, unsign
   ProcessException(exception);
  }
  return TempString.c_str();
+}
+
+// Сохраняет все свойства компонента и его дочерних компонент в xml
+int UEngine::Model_SaveComponentPropertiesToFile(const char *stringid, const char* file_name, unsigned int type_mask)
+{
+ const char* save_data=Model_SaveComponentProperties(stringid,type_mask);
+
+ try
+ {
+  if(!save_data)
+   return 871121;
+
+  UFileIO file;
+  file.Default();
+  file.SetDirection(1);
+  file.SetFileName(file_name);
+  file.SetBinFlag(0);
+  file.SetDataString(save_data);
+  file.Calculate();
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
 }
 
 // Загружает все свойства компонента и его дочерних компонент из xml
@@ -2821,12 +3544,36 @@ int UEngine::Model_LoadComponentProperties(const char *stringid, const char* buf
 
   XmlStorage.Load(buffer,"SaveProperties");
   if(XmlStorage.GetNodeAttribute("ModelName") != Environment->GetModel()->GetName())
-   return -10;
+	throw EErrorEngineModelNameDontMatch(XmlStorage.GetNodeAttribute("ModelName"), Environment->GetModel()->GetName());
+//   return -10;
 
   XmlStorage.SelectNode(0);
 
-  if(!Model_LoadComponentProperties(cont,&XmlStorage))
+  if(!cont->LoadComponentProperties(cont,&XmlStorage))
    return -4;
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
+// Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
+// переменные состояния из xml
+int UEngine::Model_LoadComponentPropertiesFromFile(const char *stringid, const char* file_name)
+{
+ try
+ {
+  UFileIO file;
+  file.Default();
+  file.SetDirection(0);
+  file.SetFileName(file_name);
+  file.SetBinFlag(0);
+  file.Calculate();
+  if(file.GetDataString().empty())
+   return 871122;
+  return Model_LoadComponentProperties(stringid, file.GetDataString().c_str());
  }
  catch (UException &exception)
  {
@@ -2839,19 +3586,26 @@ int UEngine::Model_LoadComponentProperties(const char *stringid, const char* buf
 // переменные состояния в xml
 const char* UEngine::Model_SaveComponentDrawInfo(const char *stringid)
 {
+ std::string& TempString=CreateTempString();
  try
  {
   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
 
   if(!cont)
+  {
+   DestroyTempString(TempString);
    return 0;
+  }
 
   XmlStorage.DelNode();
   XmlStorage.Create("Save");
   XmlStorage.SetNodeAttribute("ModelName",Environment->GetModel()->GetName());
 
-  if(!Model_SaveComponentDrawInfo(cont,&XmlStorage))
+  if(!cont->SaveComponentDrawInfo(cont,&XmlStorage))
+  {
+   DestroyTempString(TempString);
    return 0;
+  }
 
   XmlStorage.Save(TempString);
  // strcpy(buffer,str.c_str());
@@ -2866,18 +3620,18 @@ const char* UEngine::Model_SaveComponentDrawInfo(const char *stringid)
 
 
 // Управляет шагом счета модели по умолчанию
-int UEngine::Model_GetDefaultTimeStep(void) const
+unsigned int UEngine::Model_GetDefaultTimeStep(void) const
 {
  return DefaultTimeStep;
 }
 
-void UEngine::Model_SetDefaultTimeStep(int value)
+void UEngine::Model_SetDefaultTimeStep(unsigned int value)
 {
  DefaultTimeStep=value;
 }
 
 // Управляет шагом счета компонента
-int UEngine::Model_GetTimeStep(const char *stringid) const
+unsigned int UEngine::Model_GetTimeStep(const char *stringid) const
 {
  try
  {
@@ -2892,7 +3646,7 @@ int UEngine::Model_GetTimeStep(const char *stringid) const
  return 0;
 }
 
-void UEngine::Model_SetTimeStep(const char *stringid, int value)
+void UEngine::Model_SetTimeStep(const char *stringid, unsigned int value)
 {
  try
  {
@@ -2907,7 +3661,7 @@ void UEngine::Model_SetTimeStep(const char *stringid, int value)
 }
 
 // Устанавливает шаг счета компонента и всех его дочерних компонент
-void UEngine::Model_SetGlobalTimeStep(const char *stringid, int value)
+void UEngine::Model_SetGlobalTimeStep(const char *stringid, unsigned int value)
 {
  try
  {
@@ -2922,7 +3676,7 @@ void UEngine::Model_SetGlobalTimeStep(const char *stringid, int value)
 }
 
 // Возвращает текущее время модели
-long long UEngine::Model_GetTime(void)
+unsigned long long UEngine::Model_GetTime(void)
 {
  return Environment->GetTime().GetTime();
 }
@@ -2933,13 +3687,13 @@ double UEngine::Model_GetDoubleTime(void)
 }
 
 // Устанавливает текущее время модели
-bool UEngine::Model_SetTime(long long value)
+bool UEngine::Model_SetTime(unsigned long long value)
 {
  return Environment->GetTime().SetTime(value);
 }
 
 // Возвращает реальное время
-long long UEngine::Model_GetRealTime(void)
+unsigned long long UEngine::Model_GetRealTime(void)
 {
  return Environment->GetTime().GetRealTime();
 }
@@ -2950,19 +3704,19 @@ double UEngine::Model_GetDoubleRealTime(void)
 }
 
 // Устанавливает реальное время
-bool UEngine::Model_SetRealTime(long long value)
+bool UEngine::Model_SetRealTime(unsigned long long value)
 {
  return Environment->GetTime().SetRealTime(value);
 }
 
 // Увеличивает реальное время на заданную величину
-bool UEngine::Model_IncreaseRealTime(long long value)
+bool UEngine::Model_IncreaseRealTime(unsigned long long value)
 {
  return Environment->GetTime().IncreaseRealTime(value);
 }
 
 // Возвращает мгновенный шаг в реальном времени
-long long UEngine::Model_GetRealTimeStep(void)
+unsigned long long UEngine::Model_GetRealTimeStep(void)
 {
  return Environment->GetTime().GetRealTimeStep();
 }
@@ -2972,8 +3726,19 @@ double UEngine::Model_GetDoubleRealTimeStep(void)
  return Environment->GetTime().GetDoubleRealTimeStep();
 }
 
+double UEngine::Model_GetDoubleSourceTime(void) const
+{
+ return Environment->GetTime().GetSourceCurrentGlobalTime();
+}
+
+// Устанавливает время внешних источников данных в днях
+bool UEngine::Model_SetDoubleSourceTime(double value)
+{
+ return Environment->GetTime().SetSourceCurrentGlobalTime(value);
+}
+
 // Возвращает время расчета компонента без времени расчета дочерних компонент (мс)
-long long UEngine::Model_GetStepDuration(const char *stringid) const
+unsigned long long UEngine::Model_GetStepDuration(const char *stringid) const
 {
  try
  {
@@ -2990,7 +3755,7 @@ long long UEngine::Model_GetStepDuration(const char *stringid) const
 
 // Возвращает время, затраченное на обработку объекта
 // (вместе со времени обсчета дочерних объектов) (мс)
-long long UEngine::Model_GetFullStepDuration(const char *stringid) const
+unsigned long long UEngine::Model_GetFullStepDuration(const char *stringid) const
 {
  try
  {
@@ -3024,7 +3789,7 @@ double UEngine::Model_GetInstantPerformance(const char *stringid) const
 }
 
 // Время, прошедшее между двумя последними итерациями счета
-long long UEngine::Model_GetInterstepsInterval(const char *stringid) const
+unsigned long long UEngine::Model_GetInterstepsInterval(const char *stringid) const
 {
  try
  {
@@ -3043,8 +3808,27 @@ long long UEngine::Model_GetInterstepsInterval(const char *stringid) const
 // --------------------------
 // Скрытые методы управления средой
 // --------------------------
+/// Метод сброса параметров на значения по умолчанию
+/// Если subcomps == true то также сбрасывает параметры всех дочерних компонент
+/*
+bool UEngine::Env_Default(RDK::UContainer* cont, bool subcomps)
+{
+ if(!cont)
+  return false;
+
+ if(!cont->Default())
+  return false;
+
+ bool res=true;
+ if(subcomps)
+ {
+  for(int i=0;i<cont->GetNumComponents();i++)
+   res &= Env_Default(cont->GetComponentByIndex(i),subcomps);
+ }
+ return res;
+} */
+         /*
 // Возвращает свойства компонента по идентификатору
-// Память для buffer должна быть выделена!
 bool UEngine::Model_GetComponentProperties(RDK::UContainer* cont, RDK::USerStorageXML *serstorage, unsigned int type_mask)
 {
  try
@@ -3062,12 +3846,20 @@ bool UEngine::Model_GetComponentProperties(RDK::UContainer* cont, RDK::USerStora
   {
    if(I->second.CheckMask(type_mask))
    {
-	cont->GetProperty(I->first,serstorage);
-	std::string paramname=I->first;//I->second.Property->GetName();
-	if(serstorage->SelectNode(paramname))
+	try
 	{
-	 serstorage->SetNodeAttribute("PType",sntoa(I->second.Type));
-	 serstorage->SelectUp();
+	 cont->GetProperty(I->first,serstorage);
+	}
+	catch(UIProperty::EPropertyError &exception)
+	{
+	 ProcessException(exception);
+	}
+
+    std::string paramname=I->first;//I->second.Property->GetName();
+    if(serstorage->SelectNode(paramname))
+    {
+     serstorage->SetNodeAttribute("PType",sntoa(I->second.Type));
+     serstorage->SelectUp();
     }
    }
    ++I;
@@ -3119,18 +3911,25 @@ bool UEngine::Model_GetComponentPropertiesEx(RDK::UContainer* cont, RDK::USerSto
   {
    if(I->second.CheckMask(type_mask))
    {
-	cont->GetProperty(I->first,serstorage);
+	try
+	{
+	 cont->GetProperty(I->first,serstorage);
+	}
+	catch(UIProperty::EPropertyError &exception)
+	{
+	 ProcessException(exception);
+	}
 
 	std::string paramname=I->first;//I->second.Property->GetName();
-	if(serstorage->SelectNode(paramname))
-	{
-	 serstorage->SetNodeAttribute("PType",sntoa(I->second.Type));
-	 if(descr)
+    if(serstorage->SelectNode(paramname))
+    {
+     serstorage->SetNodeAttribute("PType",sntoa(I->second.Type));
+     if(descr)
 	 {
 	  serstorage->SetNodeAttribute("Header",descr->GetDescription(paramname).Header);
-	 }
+     }
 	 serstorage->SelectUp();
-	}
+    }
    }
    ++I;
   }
@@ -3162,7 +3961,14 @@ int UEngine::Model_SetComponentProperties(RDK::UContainer* cont, RDK::USerStorag
   J=props.end();
   while(I != J)
   {
-   cont->SetProperty(I->first,serstorage);
+   try
+   {
+	cont->SetProperty(I->first,serstorage);
+   }
+   catch(UIProperty::EPropertyError &exception)
+   {
+	ProcessException(exception);
+   }
    ++I;
   }
  }
@@ -3172,7 +3978,8 @@ int UEngine::Model_SetComponentProperties(RDK::UContainer* cont, RDK::USerStorag
  }
  return 0;
 }
-
+		*/
+		/*
 // Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
 // включая этот компонент
 void UEngine::Model_SetGlobalComponentPropertyValue(RDK::UContainer* cont, UId classid, const char *paramname, const char *buffer)
@@ -3183,7 +3990,16 @@ void UEngine::Model_SetGlobalComponentPropertyValue(RDK::UContainer* cont, UId c
    return;
 
   if(cont->GetClass() == classid)
-   cont->SetPropertyValue(paramname,buffer);
+  {
+   try
+   {
+	cont->SetPropertyValue(paramname,buffer);
+   }
+   catch(UIProperty::EPropertyError &exception)
+   {
+	ProcessException(exception);
+   }
+  }
 
   for(int i=0;i<cont->GetNumComponents();i++)
   {
@@ -3206,7 +4022,18 @@ void UEngine::Model_SetGlobalOwnerComponentPropertyValue(RDK::UContainer* cont, 
    return;
 
   if(cont->GetClass() == classid && cont->GetOwner() && cont->GetOwner()->GetClass() == owner_classid)
-   cont->SetPropertyValue(paramname,buffer);
+  {
+  {
+   try
+   {
+    cont->SetPropertyValue(paramname,buffer);
+   }
+   catch(UIProperty::EPropertyError &exception)
+   {
+	ProcessException(exception);
+   }
+  }
+  }
 
   for(int i=0;i<cont->GetNumComponents();i++)
   {
@@ -3218,7 +4045,7 @@ void UEngine::Model_SetGlobalOwnerComponentPropertyValue(RDK::UContainer* cont, 
   ProcessException(exception);
  }
 }
-
+	   /*
 // Возращает все связи внутри компонента stringid в виде xml в буфер buffer
 // Имена формируются до уровня компонента owner_level
 // Если owner_level не задан, то имена формируются до уровня текущего компонента
@@ -3351,7 +4178,7 @@ int UEngine::Model_GetComponentPersonalLinks(RDK::UNet* cont, RDK::USerStorageXM
 
 // Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния в xml
-int UEngine::Model_SaveComponent(RDK::UNet* cont, RDK::USerStorageXML *serstorage, bool links, unsigned int params_type_mask)
+bool UEngine::Model_SaveComponent(RDK::UNet* cont, RDK::USerStorageXML *serstorage, bool links, unsigned int params_type_mask)
 {
  try
  {
@@ -3359,7 +4186,7 @@ int UEngine::Model_SaveComponent(RDK::UNet* cont, RDK::USerStorageXML *serstorag
    return false;
 
   serstorage->AddNode(cont->GetName());
-  serstorage->SetNodeAttribute("Class",/*RDK::sntoa(cont->GetClass())*/Storage->FindClassName(cont->GetClass()));
+  serstorage->SetNodeAttribute("Class",Storage->FindClassName(cont->GetClass()));
   serstorage->AddNode(UVariable::GetPropertyTypeNameByType(ptParameter));
   if(!Model_GetComponentProperties(cont, serstorage,params_type_mask))
    return false;
@@ -3369,7 +4196,7 @@ int UEngine::Model_SaveComponent(RDK::UNet* cont, RDK::USerStorageXML *serstorag
   {
    serstorage->AddNode("Links");
    if(Model_GetComponentInternalLinks(cont,serstorage,0))
-	return false;
+    return false;
    serstorage->SelectUp();
   }
 
@@ -3393,7 +4220,7 @@ int UEngine::Model_SaveComponent(RDK::UNet* cont, RDK::USerStorageXML *serstorag
 
 // Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния из xml
-int UEngine::Model_LoadComponent(RDK::UNet* cont, RDK::USerStorageXML *serstorage, bool links)
+bool UEngine::Model_LoadComponent(RDK::UNet* cont, RDK::USerStorageXML *serstorage, bool links)
 {
  try
  {
@@ -3418,8 +4245,15 @@ int UEngine::Model_LoadComponent(RDK::UNet* cont, RDK::USerStorageXML *serstorag
   {
    if(serstorage->SelectNode(UVariable::GetPropertyTypeNameByType(mask)))
    {
-	if(Model_SetComponentProperties(cont, serstorage))
-	 return false;
+	try
+	{
+	 if(Model_SetComponentProperties(cont, serstorage))
+	  return false;
+	}
+	catch(UException &exception)
+	{
+	 ProcessException(exception);
+    }
     serstorage->SelectUp();
    }
   }
@@ -3434,17 +4268,23 @@ int UEngine::Model_LoadComponent(RDK::UNet* cont, RDK::USerStorageXML *serstorag
    serstorage->SelectNode(i);
    std::string nodename=serstorage->GetNodeName();
    name=serstorage->GetNodeAttribute("Class");
-   id=Storage->FindClassId(name);
-   //id=RDK::atoi(serstorage->GetNodeAttribute("Class"));
-   UEPtr<UNet> newcont=dynamic_pointer_cast<UNet>(storage->TakeObject(id));
-   if(!newcont)
-    return false;
-   if(cont->AddComponent(static_pointer_cast<UContainer>(newcont)) == ForbiddenId)
-    return false;
+   try
+   {
+    id=Storage->FindClassId(name);
+	UEPtr<UNet> newcont=dynamic_pointer_cast<UNet>(storage->TakeObject(id));
+	if(!newcont)
+	 continue;
+	if(cont->AddComponent(static_pointer_cast<UContainer>(newcont)) == ForbiddenId)
+	 continue;
 
 //   if(!Model_LoadComponent(newcont,serstorage))
-   if(!Model_LoadComponent(newcont,serstorage,false))
-	return false;
+	if(!Model_LoadComponent(newcont,serstorage,false))
+	 return false;
+   }
+   catch(UException &exception)
+   {
+	ProcessException(exception);
+   }
    serstorage->SelectUp();
   }
   serstorage->SelectUp();
@@ -3466,7 +4306,7 @@ int UEngine::Model_LoadComponent(RDK::UNet* cont, RDK::USerStorageXML *serstorag
 }
 
 // Сохраняет все свойства компонента и его дочерних компонент в xml
-int UEngine::Model_SaveComponentProperties(RDK::UNet* cont, RDK::USerStorageXML *serstorage, unsigned int type_mask)
+bool UEngine::Model_SaveComponentProperties(RDK::UNet* cont, RDK::USerStorageXML *serstorage, unsigned int type_mask)
 {
  try
  {
@@ -3483,8 +4323,15 @@ int UEngine::Model_SaveComponentProperties(RDK::UNet* cont, RDK::USerStorageXML 
   serstorage->AddNode("Components");
   for(int i=0;i<cont->GetNumComponents();i++)
   {
-   if(!Model_SaveComponentProperties(dynamic_pointer_cast<RDK::UNet>(cont->GetComponentByIndex(i)),serstorage,type_mask))
-    return false;
+   try
+   {
+	if(!Model_SaveComponentProperties(dynamic_pointer_cast<RDK::UNet>(cont->GetComponentByIndex(i)),serstorage,type_mask))
+	 return false;
+   }
+   catch (UException &exception)
+   {
+	ProcessException(exception);
+   }
   }
   serstorage->SelectUp();
 
@@ -3499,7 +4346,7 @@ int UEngine::Model_SaveComponentProperties(RDK::UNet* cont, RDK::USerStorageXML 
 }
 
 // Загружает все свойства компонента и его дочерних компонент из xml
-int UEngine::Model_LoadComponentProperties(RDK::UNet* cont, RDK::USerStorageXML *serstorage)
+bool UEngine::Model_LoadComponentProperties(RDK::UNet* cont, RDK::USerStorageXML *serstorage)
 {
  try
  {
@@ -3515,8 +4362,15 @@ int UEngine::Model_LoadComponentProperties(RDK::UNet* cont, RDK::USerStorageXML 
   {
    if(serstorage->SelectNode(UVariable::GetPropertyTypeNameByType(mask)))
    {
-	if(Model_SetComponentProperties(cont, serstorage))
-	 return false;
+	try
+	{
+	 if(Model_SetComponentProperties(cont, serstorage))
+	  return false;
+	}
+	catch (UException &exception)
+	{
+	 ProcessException(exception);
+    }
     serstorage->SelectUp();
    }
   }
@@ -3525,11 +4379,17 @@ int UEngine::Model_LoadComponentProperties(RDK::UNet* cont, RDK::USerStorageXML 
   for(int i=0;i<cont->GetNumComponents();i++)
   {
    if(!serstorage->SelectNode(cont->GetComponentByIndex(i)->GetName()))
-    continue;
+	continue;
    std::string nodename=serstorage->GetNodeName();
-
-   if(!Model_LoadComponentProperties(dynamic_pointer_cast<RDK::UNet>(cont->GetComponentByIndex(i)),serstorage))
-    return false;
+   try
+   {
+	if(!Model_LoadComponentProperties(dynamic_pointer_cast<RDK::UNet>(cont->GetComponentByIndex(i)),serstorage))
+	 return false;
+   }
+   catch (UException &exception)
+   {
+	ProcessException(exception);
+   }
    serstorage->SelectUp();
   }
   serstorage->SelectUp();
@@ -3541,10 +4401,10 @@ int UEngine::Model_LoadComponentProperties(RDK::UNet* cont, RDK::USerStorageXML 
 
  return true;
 }
-
+   */    /*
 // Сохраняет внутренние данные компонента, и его _непосредственных_ дочерних компонент, исключая
 // переменные состояния в xml
-int UEngine::Model_SaveComponentDrawInfo(RDK::UNet* cont, RDK::USerStorageXML *serstorage)
+bool UEngine::Model_SaveComponentDrawInfo(RDK::UNet* cont, RDK::USerStorageXML *serstorage)
 {
  try
  {
@@ -3552,7 +4412,7 @@ int UEngine::Model_SaveComponentDrawInfo(RDK::UNet* cont, RDK::USerStorageXML *s
    return false;
 
   serstorage->AddNode(cont->GetName());
-  serstorage->SetNodeAttribute("Class",/*RDK::sntoa(cont->GetClass())*/Storage->FindClassName(cont->GetClass()));
+  serstorage->SetNodeAttribute("Class",Storage->FindClassName(cont->GetClass()));
 
   serstorage->AddNode("Links");
 
@@ -3568,9 +4428,17 @@ int UEngine::Model_SaveComponentDrawInfo(RDK::UNet* cont, RDK::USerStorageXML *s
   for(int i=0;i<cont->GetNumComponents();i++)
   {
    XmlStorage.AddNode(cont->GetComponentByIndex(i)->GetName());
+   serstorage->SetNodeAttribute("Class",Storage->FindClassName(cont->GetComponentByIndex(i)->GetClass()));
    XmlStorage.AddNode("Parameters");
-   if(!Model_GetComponentProperties(dynamic_pointer_cast<RDK::UNet>(cont->GetComponentByIndex(i)),serstorage,ptParameter|pgAny))
-	return false;
+   try
+   {
+	if(!cont->GetComponentProperties(cont->GetComponentByIndex(i),serstorage,ptParameter|pgAny))
+	 return false;
+   }
+   catch (UException &exception)
+   {
+	ProcessException(exception);
+   }
    XmlStorage.SelectUp();
    XmlStorage.SelectUp();
   }
@@ -3584,7 +4452,7 @@ int UEngine::Model_SaveComponentDrawInfo(RDK::UNet* cont, RDK::USerStorageXML *s
  }
 
  return true;
-}
+} */
 // --------------------------
 
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
@@ -3607,7 +4475,7 @@ const /* RDK::MDMatrix* */void* UEngine::Model_GetComponentOutputAsMatrix(const 
    return 0;
 
   if(output_property->GetLanguageType() == typeid(MDMatrix<double>) ||
-	 output_property->GetLanguageType() == typeid(MDVector<double>))
+     output_property->GetLanguageType() == typeid(MDVector<double>))
   {
    return output_property->GetPointer(0);
   }
@@ -3637,7 +4505,7 @@ const /* RDK::MDMatrix* */void* UEngine::Model_GetComponentOutputAsMatrix(const 
    return 0;
 
   if(output_property->GetLanguageType() == typeid(MDMatrix<double>) ||
-	 output_property->GetLanguageType() == typeid(MDVector<double>))
+     output_property->GetLanguageType() == typeid(MDVector<double>))
   {
    return output_property->GetPointer(0);
   }
@@ -3741,7 +4609,6 @@ const RDK::UBitmap* UEngine::Model_GetComponentBitmapOutput(const char *stringid
 
 const RDK::UBitmap* UEngine::Model_GetComponentBitmapOutput(const char *stringid, int index)
 {
-
  try {
   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
 
@@ -3764,6 +4631,78 @@ const RDK::UBitmap* UEngine::Model_GetComponentBitmapOutput(const char *stringid
  }
  return 0;
 }
+
+/// Копирует данные о разрешении изображения выхода с индексом 'index' компонента 'id'
+/// в стрктуру bmp_param
+int UEngine::Model_CopyComponentBitmapOutputHeader(const char *stringid, const char *property_name, RDK::UBitmapParam* bmp_param)
+{
+ if(!bmp_param)
+  return 12011;
+
+ const RDK::UBitmap *temp_bmp=Model_GetComponentBitmapOutput(stringid, property_name);
+ if(!temp_bmp)
+  return 12012;
+
+ bmp_param->Width=temp_bmp->GetWidth();
+ bmp_param->Height=temp_bmp->GetHeight();
+ bmp_param->ColorModel=temp_bmp->GetColorModel();
+
+ return 0;
+}
+
+int UEngine::Model_CopyComponentBitmapOutputHeaderByIndex(const char *stringid, int index, RDK::UBitmapParam* bmp_param)
+{
+ if(!bmp_param)
+  return 12011;
+
+ const RDK::UBitmap *temp_bmp=Model_GetComponentBitmapOutput(stringid, index);
+ if(!temp_bmp)
+  return 12012;
+
+ bmp_param->Width=temp_bmp->GetWidth();
+ bmp_param->Height=temp_bmp->GetHeight();
+ bmp_param->ColorModel=temp_bmp->GetColorModel();
+
+ return 0;
+}
+
+/// Копирует изображение выхода с индексом 'index' компонента 'id'
+/// метод предполагает, что bmp уже имеет выделенную память под изобржение требуемого размера
+int UEngine::Model_CopyComponentBitmapOutput(const char *stringid, const char *property_name, RDK::UBitmap* bmp)
+{
+ if(!bmp)
+  return 12011;
+
+ const RDK::UBitmap *temp_bmp=Model_GetComponentBitmapOutput(stringid, property_name);
+ if(!temp_bmp)
+  return 12012;
+
+ if(temp_bmp->GetWidth() != bmp->GetWidth() || temp_bmp->GetHeight() != bmp->GetHeight() ||
+	temp_bmp->GetColorModel() != bmp->GetColorModel())
+  return 12013;
+
+ memcpy(bmp->GetData(),temp_bmp->GetData(),bmp->GetByteLength());
+ return 0;
+}
+
+int UEngine::Model_CopyComponentBitmapOutput(const char *stringid, int index, RDK::UBitmap* bmp)
+{
+ if(!bmp)
+  return 12011;
+
+ const RDK::UBitmap *temp_bmp=Model_GetComponentBitmapOutput(stringid, index);
+ if(!temp_bmp)
+  return 12012;
+
+ if(temp_bmp->GetWidth() != bmp->GetWidth() || temp_bmp->GetHeight() != bmp->GetHeight() ||
+	temp_bmp->GetColorModel() != bmp->GetColorModel())
+  return 12013;
+
+ memcpy(bmp->GetData(),temp_bmp->GetData(),bmp->GetByteLength());
+ return 0;
+}
+
+
 
 // Возвращает указатель на вход с индексом 'index' компонента 'id'
 const RDK::UBitmap* UEngine::Model_GetComponentBitmapInput(const char *stringid, const char *property_name)
@@ -4002,6 +4941,7 @@ void UEngine::Model_SetComponentBitmapInput(const char *stringid, int index, con
 // Обрабатывает возникшее исключение
 void UEngine::ProcessException(UException &exception) const
 {
+/*
 // if(!exception)
 //  throw exception;
 
@@ -4009,7 +4949,7 @@ void UEngine::ProcessException(UException &exception) const
 // ExceptionsLog.push_back(ptr);
 
  ++CurrentExceptionsLogSize;
- if(CurrentExceptionsLogSize/*ExceptionsLog.size()*/ > MaxExceptionsLogSize)
+ if(CurrentExceptionsLogSize > MaxExceptionsLogSize)
  {
 //  ExceptionsLog.erase(ExceptionsLog.begin());
   size_t i=TempLogString.find_first_of("\n");
@@ -4023,6 +4963,9 @@ void UEngine::ProcessException(UException &exception) const
 
  if(ExceptionHandler)
   ExceptionHandler();
+  */
+ if(Environment)
+  Environment->ProcessException(exception);
 }
 
 
@@ -4034,16 +4977,18 @@ void UEngine::ProcessException(UException &exception) const
 
 
 // Возвращает массив строк лога
-const char* UEngine::GetLog(void) const
+const char* UEngine::GetLog(int &error_level) const
 {
- return TempLogString.c_str();
+ return Environment->GetLog(error_level);
+// return TempLogString.c_str();
 }
 
 // Возвращает частичный массив строк лога с момента последнего считывания лога
 // этой функцией
-const char* UEngine::GetUnreadLog(void)
+const char* UEngine::GetUnreadLog(int &error_level)
 {
- if(LastReadExceptionLogIndex<=0/* && TempLogString.size()*/)
+/*
+ if(LastReadExceptionLogIndex<=0)
  {
   LastReadExceptionLogIndex=TempLogString.size();
   return TempLogString.c_str();
@@ -4057,42 +5002,75 @@ const char* UEngine::GetUnreadLog(void)
  }
 
  TempString="";
- return TempString.c_str();
+ return TempString.c_str();  */
+ return Environment->GetUnreadLog(error_level);
 }
+
+/// Записывает в лог новое сообщение
+int UEngine::Engine_LogMessage(int log_level, const char *message)
+{
+ if(!Environment)
+  return 100001;
+
+ Environment->LogMessage(log_level,message);
+ return 0;
+}
+
 
 // Управление функцией-обработчиком исключений
-UEngine::PExceptionHandler UEngine::GetExceptionHandler(void) const
+UEnvironment::PExceptionHandler UEngine::GetExceptionHandler(void) const
 {
- return ExceptionHandler;
+ return Environment->GetExceptionHandler();
+// return ExceptionHandler;
 }
 
-bool UEngine::SetExceptionHandler(PExceptionHandler value)
+bool UEngine::SetExceptionHandler(UEnvironment::PExceptionHandler value)
 {
+/*
  if(ExceptionHandler == value)
   return true;
 
  ExceptionHandler=value;
  return true;
+ */
+ return Environment->SetExceptionHandler(value);
 }
 
 // Максимальное число хранимых исключений
 // Если 0, то неограниченно
 int UEngine::GetMaxExceptionsLogSize(void) const
 {
- return MaxExceptionsLogSize;
+ return Environment->GetMaxExceptionsLogSize();
+// return MaxExceptionsLogSize;
 }
 
 void UEngine::SetMaxExceptionsLogSize(int value)
 {
+/*
  if(MaxExceptionsLogSize == value)
   return;
 
  MaxExceptionsLogSize=value;
- if(MaxExceptionsLogSize>0 && /*ExceptionsLog.size()*/CurrentExceptionsLogSize>MaxExceptionsLogSize)
+ if(MaxExceptionsLogSize>0 && CurrentExceptionsLogSize>MaxExceptionsLogSize)
  {
   //ExceptionsLog.erase(ExceptionsLog.begin(), ExceptionsLog.begin()+int(ExceptionsLog.size())-MaxExceptionsLogSize);
   CurrentExceptionsLogSize=MaxExceptionsLogSize;
  }
+ */
+ Environment->SetMaxExceptionsLogSize(value);
+}
+
+
+/// Возвращает число непрочитанных строк лога
+int UEngine::GetNumUnreadLogLines(void) const
+{
+ return Environment->GetNumUnreadLogLines();
+}
+
+/// Очищает лог прочитанных сообщений
+void UEngine::ClearReadLog(void)
+{
+ return Environment->ClearReadLog();
 }
 // --------------------------
 
@@ -4143,7 +5121,7 @@ void UEngine::CreateEnvironment(bool isinit, list<UContainer*>* external_classes
   J=external_libs->end();
   while(I != J)
   {
-   Storage->AddClassLibrary(*I);
+   Storage->AddCollection(*I);
    ++I;
   }
  }
@@ -4167,11 +5145,12 @@ int UEngine::LoadPredefinedLibraries(void)
  LibrariesList.push_back(&FilteringLibrary);
  LibrariesList.push_back(&GUILibrary);
  LibrariesList.push_back(&HardwareLibrary);
- LibrariesList.push_back(&ObjectSearchLibrary);
+ LibrariesList.push_back(&UPtzCameraLibrary);
+// LibrariesList.push_back(&ObjectSearchLibrary);
  LibrariesList.push_back(&ObjectTrackingLibrary);
  LibrariesList.push_back(&QualifierLibrary);
  LibrariesList.push_back(&SimulatorLibrary);
- LibrariesList.push_back(&SpatialGeometryLibrary);
+// LibrariesList.push_back(&SpatialGeometryLibrary);
  LibrariesList.push_back(&BStatisticLibrary);
 
  return 0;
@@ -4230,7 +5209,13 @@ int UEngine::LoadLibraries(void)
 // Если строковое id не задано, то возвращает указатель на модель
 UEPtr<UContainer> UEngine::FindComponent(const char *stringid) const
 {
-// UEPtr<RDK::UNet> model=dynamic_pointer_cast<RDK::UNet>(Environment->GetModel());
+/* if(stringid && !AccessCache.empty())
+ {
+  std::map<std::string, UEPtr<UContainer> >::iterator I=AccessCache.find(stringid);
+  if(I != AccessCache.end())
+   return I->second;
+ }
+   */
  UEPtr<RDK::UNet> model=dynamic_pointer_cast<RDK::UNet>(Environment->GetCurrentComponent());
 
  if(!model)
@@ -4248,20 +5233,22 @@ UEPtr<UContainer> UEngine::FindComponent(const char *stringid) const
   {
    longid.DecodeFromString(stringid);
    if(!longid.GetSize() || longid[0] == ForbiddenId)
-	cont=model;
+    cont=model;
    else
-	cont=dynamic_pointer_cast<RDK::UContainer>(model->GetComponentL(longid));
+    cont=dynamic_pointer_cast<RDK::UContainer>(model->GetComponentL(longid));
   }
   else // ...иначе декодируем как имя
   {
    if(strlen(stringid) == 0)
-	cont=model;
+    cont=model;
    else
     cont=dynamic_pointer_cast<RDK::UContainer>(model->GetComponentL(stringid));
   }
 
  }
 
+// if(stringid)
+//  AccessCache[stringid]=cont;
  return cont;
 }
 

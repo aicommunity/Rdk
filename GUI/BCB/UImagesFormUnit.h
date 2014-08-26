@@ -27,6 +27,7 @@ public:		// User declarations
 // Создание копии этого компонента
 virtual TUImagesForm* New(TComponent *owner=0);
 
+
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TUImagesForm *UImagesForm;

@@ -8,13 +8,13 @@ PUsm_SetNumPipes Usm_SetNumPipes=0;
 PUsm_InitPipe Usm_InitPipe=0;
 PUsm_WriteData Usm_WriteData=0;
 PUsm_ReadData Usm_ReadData=0;
-PUsm_InitPipe Usm_UnInitPipe=0;
+PUsm_UnInitPipe Usm_UnInitPipe=0;
 PUsm_IsPipeInit Usm_IsPipeInit=0;
 PUsm_GetPipeSize Usm_GetPipeSize=0;
 
 /// Загружает библиотеку
 int LoadUSharedMemoryLibrary(const char *library_file_name)
-{        
+{
 /*
  USharedMemoryLibrary=LoadLibrary(library_file_name);
  if(!USharedMemoryLibrary)
@@ -30,12 +30,12 @@ int LoadUSharedMemoryLibrary(const char *library_file_name)
 
  Usm_InitPipe=(PUsm_InitPipe)GetProcAddress(USharedMemoryLibrary,"InitPipe");
  if(!Usm_InitPipe)
-  return 4;          
-  
+  return 4;
+
  Usm_UnInitPipe=(PUsm_UnInitPipe)GetProcAddress(USharedMemoryLibrary,"UnInitPipe");
  if(!Usm_UnInitPipe)
-  return 5;          
-  
+  return 5;
+
  Usm_WriteData=(PUsm_WriteData)GetProcAddress(USharedMemoryLibrary,"WriteData");
  if(!Usm_WriteData)
   return 6;
@@ -50,7 +50,7 @@ int LoadUSharedMemoryLibrary(const char *library_file_name)
 
 /// Выгружает библиотеку
 int UnLoadUSharedMemoryLibrary(void)
-{                    
+{
 /*
  if(USharedMemoryLibrary)
  {

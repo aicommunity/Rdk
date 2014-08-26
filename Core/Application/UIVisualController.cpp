@@ -43,6 +43,9 @@ bool AddGlobalFont(const std::string &font_file_name)
 // Список обработчиков, которые должны быть вызваны после расчета
 std::vector<RDK::UIVisualController*> UIVisualControllerStorage::InterfaceUpdaters;
 
+/// Общее время обновления интерфейса
+unsigned long long UIVisualControllerStorage::UpdateTime=0;
+
 // Добавляет обработчик в список
 void UIVisualControllerStorage::AddInterface(RDK::UIVisualController *value)
 {
@@ -79,8 +82,13 @@ void UIVisualControllerStorage::AfterReset(void)
 void UIVisualControllerStorage::BeforeCalculate(void)
 {
  for(size_t i=0;i<InterfaceUpdaters.size();i++)
+ {
   if(InterfaceUpdaters[i])
+  {
+   InterfaceUpdaters[i]->ResetCalculationStepUpdatedFlag();
    InterfaceUpdaters[i]->BeforeCalculate();
+  }
+ }
 }
 
 // Метод, вызываемый после шага расчета
@@ -92,11 +100,21 @@ void UIVisualControllerStorage::AfterCalculate(void)
 }
 
 // Обновление интерфейса
-void UIVisualControllerStorage::UpdateInterface(void)
+void UIVisualControllerStorage::UpdateInterface(bool force_update)
+{
+ unsigned long long begin_time=RDK::GetCurrentStartupTime();
+ for(size_t i=0;i<InterfaceUpdaters.size();i++)
+  if(InterfaceUpdaters[i])
+   InterfaceUpdaters[i]->UpdateInterface(force_update);
+ UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),begin_time);
+}
+
+// Возврат интерфейса в исходное состояние
+void UIVisualControllerStorage::ClearInterface(void)
 {
  for(size_t i=0;i<InterfaceUpdaters.size();i++)
   if(InterfaceUpdaters[i])
-   InterfaceUpdaters[i]->UpdateInterface(false);
+   InterfaceUpdaters[i]->ClearInterface();
 }
 
 // Сохраняет параметры интерфейса в xml
@@ -110,9 +128,71 @@ void UIVisualControllerStorage::SaveParameters(RDK::USerStorageXML &xml)
 // Загружает параметры интерфейса из xml
 void UIVisualControllerStorage::LoadParameters(RDK::USerStorageXML &xml)
 {
+/*
+ for(size_t i=0;i<InterfaceUpdaters.size();i++)
+  if(InterfaceUpdaters[i] && InterfaceUpdaters[i]->GetName() == "UGEngineControlForm")
+  {
+   InterfaceUpdaters[i]->LoadParameters(xml);
+   break;
+  }
+
+ for(size_t i=0;i<InterfaceUpdaters.size();i++)
+  if(InterfaceUpdaters[i] && InterfaceUpdaters[i]->GetName() == "UEngineMonitorForm")
+  {
+   InterfaceUpdaters[i]->LoadParameters(xml);
+   break;
+  }
+
+ for(size_t i=0;i<InterfaceUpdaters.size();i++)
+  if(InterfaceUpdaters[i] && InterfaceUpdaters[i]->GetName() == "UEngineMonitorFrame")
+  {
+   InterfaceUpdaters[i]->LoadParameters(xml);
+   break;
+  }
+
+ for(size_t i=0;i<InterfaceUpdaters.size();i++)
+  if(InterfaceUpdaters[i] && InterfaceUpdaters[i]->GetName() == "UServerControlForm")
+  {
+   InterfaceUpdaters[i]->LoadParameters(xml);
+   break;
+  }
+
+ std::string name;
+*/
  for(size_t i=0;i<InterfaceUpdaters.size();i++)
   if(InterfaceUpdaters[i])
+  {
+/*   name=InterfaceUpdaters[i]->GetName();
+   if(name == "UGEngineControlForm" ||
+	  name == "UEngineMonitorForm" ||
+	  name == "UEngineMonitorFrame" ||
+	  name == "UServerControlForm")
+	continue;*/
    InterfaceUpdaters[i]->LoadParameters(xml);
+  }
+}
+
+// Служебные методы управления интерфейсом
+/// Сбрасывает флаг прошедшей перерисовки в этой итерации счета
+void UIVisualControllerStorage::ResetCalculationStepUpdatedFlag(void)
+{
+ for(size_t i=0;i<InterfaceUpdaters.size();i++)
+  if(InterfaceUpdaters[i])
+   InterfaceUpdaters[i]->ResetCalculationStepUpdatedFlag();
+}
+
+/// Выставляет флаг прошедшей перерисовки в этой итерации счета
+void UIVisualControllerStorage::SetCalculationStepUpdatedFlag(void)
+{
+ for(size_t i=0;i<InterfaceUpdaters.size();i++)
+  if(InterfaceUpdaters[i])
+   InterfaceUpdaters[i]->SetCalculationStepUpdatedFlag();
+}
+
+/// Возвращает время обновления интерфейса (мс)
+unsigned long long UIVisualControllerStorage::GetUpdateTime(void)
+{
+ return UpdateTime;
 }
 
 

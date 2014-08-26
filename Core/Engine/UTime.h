@@ -3,14 +3,35 @@
 
 namespace RDK {
 
-typedef int UTime;
-typedef long long ULongTime;
+typedef unsigned int UTime;
+typedef unsigned long long ULongTime;
 
 extern UTime DefaultTimeStep;
 
 class UTimeControl
 {
-private: // Глобальные свойства
+private: // Временные метки в процссе работы в днях от начала времен
+/// Время начала расчета в днях
+double SourceStartGlobalTime;
+
+/// Время начала расчета текущего шага в днях
+double SourceCurrentGlobalTime;
+
+/// Время начала расчета в секундах от начала дня или другого события системы
+double SourceStartLocalTime;
+
+/// Время начала расчета текущего шага в секундах от начала дня или другого события системы
+double SourceCurrentLocalTime;
+
+private: // Временные метки в процессе работы в секундах от начала дня или др.
+		 // системного события
+/// Время начала расчета в секундах
+double ModelStartSecondTime;
+
+/// Время начала расчета текущего шага в секундах
+double StepStartSecondTime;
+
+private: // Свойства времени в процессе работы в микросекундах и секундах от начала расчета
 // Текущее время модели в микросекундах
 ULongTime Time;
 
@@ -30,13 +51,13 @@ ULongTime RealTimeStep;
 double DoubleRealTimeStep;
 
 // Текущее время внешних источников данных в микросекундах
-ULongTime SourceTime;
+//ULongTime SourceTime;
 
 // Текущее время внешних источников данных в секундах
 double DoubleSourceTime;
 
 // Мгновенный шаг во времени внешних источников данных в микросекундах
-ULongTime SourceTimeStep;
+//ULongTime SourceTimeStep;
 
 // Мгновенный шаг во времени внешних источников данных в секундах
 double DoubleSourceTimeStep;
@@ -48,6 +69,29 @@ public: // Открытые методы
 // --------------------------
 UTimeControl(void);
 virtual ~UTimeControl(void);
+// --------------------------
+
+// --------------------------
+// Методы управления глобальными свойствами
+// --------------------------
+/// Время начала расчета в днях
+double GetSourceStartGlobalTime(void) const;
+bool SetSourceStartGlobalTime(double value);
+
+/// Время начала расчета в днях
+double GetSourceCurrentGlobalTime(void) const;
+bool SetSourceCurrentGlobalTime(double value);
+
+/// Текущее время в днях
+double GetSourceStartLocalTime(void) const;
+bool SetSourceStartLocalTime(double value);
+
+/// Текущее время в секундах
+double GetSourceCurrentLocalTime(void) const;
+bool SetSourceCurrentLocalTime(double value);
+
+/// Текущее время в миллисекундах
+ULongTime GetSourceCurrentLocalTimeMs(void) const;
 // --------------------------
 
 // --------------------------
@@ -80,23 +124,16 @@ bool IncreaseRealTime(ULongTime value);
 // Возвращает мгновенный шаг в реальном времени
 const ULongTime& GetRealTimeStep(void) const;
 const double& GetDoubleRealTimeStep(void) const;
-
-
-// Текущее время внешних источников данных в микросекундах
-const ULongTime& GetSourceTime(void) const;
-const double& GetDoubleSourceTime(void) const;
-
-// Устанавливает время внешних источников данных
-bool SetSourceTime(ULongTime value);
-
-// Увеличивает время внешних источников данных на заданную величину
-bool IncreaseSourceTime(ULongTime value);
-
-// Мгновенный шаг во времени внешних источников данных в микросекундах
-const ULongTime& GetSourceTimeStep(void) const;
-const double& GetDoubleSourceTimeStep(void) const;
 // --------------------------
 
+// --------------------------
+/// Методы доступа к текущему времени расчета от начала времен в днях
+// --------------------------
+/// Возвращает текущее время от начала времен в днях
+/// Принимает аргументом текущее локальное время в секундах или миллисекундах
+double CalcCurrentGlobalTime(double current_local_time) const;
+double CalcCurrentGlobalTime(ULongTime current_local_time) const;
+// --------------------------
 
 };
 

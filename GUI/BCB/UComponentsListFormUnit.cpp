@@ -66,7 +66,7 @@ TUComponentsListForm* TUComponentsListForm::New(TComponent *owner)
 
 void __fastcall TUComponentsListForm::FormShow(TObject *Sender)
 {
- ComponentsListFrame1->UpdateInterface();
+ ComponentsListFrame1->UpdateInterface(true);
 }
 //---------------------------------------------------------------------------
 

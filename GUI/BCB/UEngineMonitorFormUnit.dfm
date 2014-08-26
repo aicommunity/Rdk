@@ -13,6 +13,7 @@ object UEngineMonitorForm: TUEngineMonitorForm
   Menu = EngineMonitorFrame.MainMenu
   OldCreateOrder = False
   Position = poDesigned
+  OnCreate = FormCreate
   OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
@@ -34,6 +35,7 @@ object UEngineMonitorForm: TUEngineMonitorForm
     inherited RichEdit: TRichEdit
       Width = 527
       Height = 204
+      OnMouseEnter = EngineMonitorFrameRichEditMouseEnter
       ExplicitWidth = 527
       ExplicitHeight = 204
     end
@@ -43,5 +45,11 @@ object UEngineMonitorForm: TUEngineMonitorForm
       ExplicitTop = 204
       ExplicitWidth = 527
     end
+  end
+  object LogTimer: TTimer
+    Interval = 100
+    OnTimer = LogTimerTimer
+    Left = 128
+    Top = 16
   end
 end

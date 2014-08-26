@@ -51,6 +51,8 @@ public: // Методы
 // Создает пустую очередь
 UQueue(void)
 {
+ Front=0;
+ Back=0;
  Size = 0;
  MaxSize = 0;
 };
@@ -61,6 +63,8 @@ UQueue(size_t size)
  MaxSize = size;
  Size = 0;
  m_pData.resize(size);
+ Front=0;
+ Back=Size-1;
 };
 
 // Создает очередь заполненную данными из вектора vec

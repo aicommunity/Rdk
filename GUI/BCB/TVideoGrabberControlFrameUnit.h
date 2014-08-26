@@ -76,13 +76,17 @@ __published:    // IDE-managed Components
 	TEdit *IPCameraControlPostfixEdit;
 	TTabSheet *HttpServerTabSheet;
 	TEdit *ListerPortEdit;
-	TLabel *Label9;
 	TLabel *Label10;
 	TTabSheet *SharedMemoryTabSheet;
 	TEdit *PipeIndexEdit;
 	TLabel *Label11;
 	TEdit *PipeUidEdit;
 	TLabel *Label12;
+	TCheckBox *RepeatVideoCheckBox;
+	TCheckBox *RepeatSequenceCheckBox;
+	TLabeledEdit *ImageSequenceFpsLabeledEdit;
+	TCheckBox *ProcessAllFramesVideoCheckBox;
+	TLabeledEdit *PictureFileFpsLabeledEdit;
     void __fastcall DeviceComboBoxSelect(TObject *Sender);
     void __fastcall InputComboBoxSelect(TObject *Sender);
     void __fastcall VideoSizeComboBoxSelect(TObject *Sender);
@@ -109,7 +113,7 @@ protected:
 TVideoGrabber* VideoGrabber;
 TVideoOutputFrame *VideoOutputFrame;
 
-RDK::UBPtzCameraData IpPtzInfo;
+//RDK::TPtzCameraData IpPtzInfo;
 
 // -----------------------------
 // Методы управления устройством ввода видео

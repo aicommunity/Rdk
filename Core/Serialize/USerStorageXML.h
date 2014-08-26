@@ -13,12 +13,12 @@ See file license.txt for more information
 #define USerStorage_XMLH
 
 #include <string>
+#include <locale>
 #include "USerStorage.h"
-//#undef _XMLWINDOWS
-//#define XML_NO_WIDE_CHAR
+
 #ifndef _UNICODE
-#define RDK_UNICODE_RUN
-#define _UNICODE
+//#define RDK_UNICODE_RUN
+//#define _UNICODE
 #endif
 
 #define _CRT_SECURE_NO_WARNINGS
@@ -26,13 +26,13 @@ See file license.txt for more information
 #undef _CRT_SECURE_NO_WARNINGS
 
 #ifdef RDK_UNICODE_RUN
-#undef _UNICODE
+//#undef _UNICODE
 #undef RDK_UNICODE_RUN
 #endif
 
 namespace RDK {
 
-class USerStorageXML: public USerStorage
+class RDK_LIB_TYPE USerStorageXML: public USerStorage
 {
 protected: // Данные
 // Корень сериализации
@@ -42,7 +42,12 @@ XMLNode RootNode;
 XMLNode CurrentNode;
 
 protected: // Временные переменные
+#ifdef RDK_UNICODE_RUN
 std::locale Locale;
+
+mutable std::string SBuffer;
+mutable std::wstring WBuffer,WBuffer2;
+#endif
 
 
 public: // Методы
@@ -65,10 +70,12 @@ bool Destroy(void);
 
 // Загружает xml из строки
 bool Load(const std::string &str, const std::string &root);
-bool LoadToNode(const std::string &str, const std::string &root);
+bool LoadToNode(const std::string &str, const std::string &root, bool node_clear);
+bool LoadToNode(USerStorageXML &node, bool node_clear);
+bool LoadFieldsToNode(USerStorageXML &node, bool node_clear);
 
 // Сохраняет xml в строку
-bool Save(std::string &str);
+bool Save(std::string &str) const;
 bool SaveFromNode(std::string &str);
 
 // Прочесть файл с диска
@@ -153,6 +160,26 @@ const std::string GetNodeText(void) const;
 // --------------------------
 // Дополнительные методы управления данными текущего элемента как ini-файлом
 // --------------------------
+template<typename T>
+bool ReadData(const std::string &name, T &data)
+{
+ if(!SelectNode(name))
+  return false;
+ (*this)>>data;
+ SelectUp();
+ return true;
+}
+
+template<typename T>
+bool WriteData(const std::string &name, const T &data)
+{
+ if(!AddNode(name))
+  return false;
+ (*this)<<data;
+ SelectUp();
+ return true;
+}
+
 // Считывает данные как соответствующий тип, если данное не найдено или не приводимо в
 // ожидаемый тип - оно инициализируется значением по умолчанию
 const std::string ReadString(const std::string &name, const std::string &default_value);
