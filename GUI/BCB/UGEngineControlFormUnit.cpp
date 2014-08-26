@@ -1508,7 +1508,7 @@ void TUGEngineControlForm::LoadProjectsHistory(void)
  for(size_t i=0;i<history.size();i++)
  {
   LastProjectsList.push_back(history_ini("General",history[i],""));
-  if(i>=LastProjectsListMaxSize)
+  if(int(i)>=LastProjectsListMaxSize)
    break;
  }
 }
@@ -1617,6 +1617,7 @@ int TUGEngineControlForm::AddChannel(int index)
 {
  UEngineMonitorForm->EngineMonitorFrame->InsertChannel(index);
  UServerControlForm->SetNumChannels(GetNumChannels());
+ return 0;
 }
 
 /// Удаляет канал из позиции index
@@ -1624,6 +1625,7 @@ int TUGEngineControlForm::DelChannel(int index)
 {
  UEngineMonitorForm->EngineMonitorFrame->DeleteChannel(index);
  UServerControlForm->SetNumChannels(GetNumChannels());
+ return 0;
 }
 
 /// --------------------------
@@ -1777,7 +1779,7 @@ void __fastcall TUGEngineControlForm::LoadProjectItemClick(TObject *Sender)
 
  OpenProject(OpenDialog->FileName);
  LastProjectsList.push_front(AnsiString(OpenDialog->FileName).c_str());
- while(LastProjectsList.size()>LastProjectsListMaxSize && !LastProjectsList.empty())
+ while(int(LastProjectsList.size())>LastProjectsListMaxSize && !LastProjectsList.empty())
  {
   LastProjectsList.pop_back();
  }

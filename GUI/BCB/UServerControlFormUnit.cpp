@@ -694,7 +694,7 @@ void TUServerControlForm::AUpdateInterface(void)
  ChannelNamesStringGrid->Cells[1][0]="Channel Name";
  ChannelNamesStringGrid->ColWidths[0]=25;
  ChannelNamesStringGrid->ColWidths[1]=ChannelNamesStringGrid->Width-ChannelNamesStringGrid->ColWidths[0]-25;
- for(int i=0;i<ChannelNames.size();i++)
+ for(int i=0;i<int(ChannelNames.size());i++)
  {
   ChannelNamesStringGrid->Cells[0][i+1]=StrToInt(i);
   ChannelNamesStringGrid->Cells[1][i+1]=ChannelNames[i].c_str();
