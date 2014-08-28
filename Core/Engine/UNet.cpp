@@ -148,6 +148,14 @@ void UNet::Free(void)
 template<typename T>
 bool UNet::CreateLink(const ULinkT<T> &link)
 {
+ bool res=true;
+ for(size_t i=0;i<link.Connector.size();i++)
+ {
+  res &=CreateLink(link.Item, link.Connector[i]);
+ }
+
+ return res;
+/*
  UEPtr<UItem> pitem;
  bool res=true;
  if(!CheckLongId(link.Item.Id))
@@ -158,12 +166,6 @@ bool UNet::CreateLink(const ULinkT<T> &link)
  if(!pitem)
  {
   LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Item not found: ")+link.Item.Name);
-  return false;
- }
-
- if(link.Item.Index < 0)
- {
-  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, "Item index < 0");
   return false;
  }
 
@@ -190,11 +192,17 @@ bool UNet::CreateLink(const ULinkT<T> &link)
   }
   else
   {
+   if(link.Item.Index < 0)
+   {
+	LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, "Item index < 0");
+	return false;
+   }
+
    if(!(pitem->Connect(pconnector,link.Item.Index,connector.Index)))
 	res=false;
   }
  }
- return res;
+ return res;  */
 }
 
 // Устанавливает новую связь между выходом элемента сети
@@ -207,12 +215,6 @@ bool UNet::CreateLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
   pitem=this;
  else
   pitem=dynamic_pointer_cast<UItem>(GetComponentL(item.Id));
-
- if(item.Index < 0)
- {
-  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, "Item index < 0");
-  return false;
- }
 
  UEPtr<UConnector> pconnector=0;
  if(!CheckLongId(connector.Id))
@@ -232,17 +234,23 @@ bool UNet::CreateLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
   return false;
  }
 
-  if(!item.Name.empty() && !connector.Name.empty())
+ if(!item.Name.empty()/* && !connector.Name.empty()*/)
+ {
+  int c_index=-1;
+  if(!(pitem->Connect(pconnector,item.Name,connector.Name,c_index)))
+   return false;
+ }
+ else
+ {
+  if(item.Index < 0)
   {
-   int c_index;
-   if(!(pitem->Connect(pconnector,item.Name,connector.Name,c_index)))
-	return false;
+   LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, "Item index < 0");
+   return false;
   }
-  else
-  {
-   if(!(pitem->Connect(pconnector,item.Index,connector.Index)))
-    return false;
-  }
+
+  if(!(pitem->Connect(pconnector,item.Index,connector.Index)))
+   return false;
+ }
 
  return true;
 }
@@ -257,6 +265,9 @@ bool UNet::CreateLink(const ULongId &item_id, int item_index, const ULongId &con
 bool UNet::CreateLink(const NameT &item, int item_index,
 						const NameT &connector, int connector_index)
 {
+ return CreateLink(UStringLinkSide(item,item_index),UStringLinkSide(connector,connector_index));
+
+/*
  UEPtr<UItem> pitem=0;
  UEPtr<UConnector> pconnector=0;
  if(!item.size())
@@ -290,13 +301,15 @@ bool UNet::CreateLink(const NameT &item, int item_index,
  if(!(pitem->Connect(pconnector,item_index,connector_index)))
   return false;
 
- return true;
+ return true;    */
 }
 
 bool UNet::CreateLink(const NameT &item, const NameT &item_index,
 						const NameT &connector, const NameT &connector_index)
 {
- UEPtr<UItem> pitem=0;
+ return CreateLink(UStringLinkSide(item,item_index),UStringLinkSide(connector,connector_index));
+
+/* UEPtr<UItem> pitem=0;
  UEPtr<UConnector> pconnector=0;
  if(!item.size())
   pitem=this;
@@ -333,7 +346,7 @@ bool UNet::CreateLink(const NameT &item, const NameT &item_index,
  if(!(pitem->Connect(pconnector,i_item_index,i_connector_index)))
   return false;
 
- return true;
+ return true;   */
 }
 /*
 bool UNet::CreateLink(const NameT &item, const NameT &item_property_name,
@@ -416,6 +429,12 @@ bool UNet::BreakLink(const ULinkSideT<T> &id)
 template<typename T>
 bool UNet::BreakLink(const ULinkT<T> &link)
 {
+ bool res=true;
+ for(size_t i=0;i<link.Connector.size();i++)
+  res&=BreakLink(link.Item,link.Connector[i]);
+
+ return res;
+/*
  UEPtr<UItem> pitem=0;
  if(!CheckLongId(Id))
   pitem=this;
@@ -450,7 +469,7 @@ bool UNet::BreakLink(const ULinkT<T> &link)
   pitem->Disconnect(pconnector, link.Item.Index,connector.Index);
  }
 
- return true;
+ return true;  */
 }
 
 // Разрывает связь между выходом элемента сети, 'itemid'
@@ -482,7 +501,14 @@ bool UNet::BreakLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
   return false;
  }
 
- pitem->Disconnect(pconnector, item.Index, connector.Index);
+ if(!item.Name.empty()/* && !connector.Name.empty()*/)
+ {
+  pitem->Disconnect(pconnector, item.Name, connector.Name);
+ }
+ else
+ {
+  pitem->Disconnect(pconnector, item.Index, connector.Index);
+ }
 
  return true;
 }
@@ -498,6 +524,8 @@ bool UNet::BreakLink(const ULongId &item_id, int item_index, const ULongId &conn
 bool UNet::BreakLink(const NameT &itemname, int item_index,
 						const NameT &connectorname, int connector_index)
 {
+ return BreakLink(UStringLinkSide(itemname,item_index),UStringLinkSide(connectorname,connector_index));
+/*
  UEPtr<UItem> item;
  UEPtr<UConnector> connector;
  if(itemname.size() == 0)
@@ -512,7 +540,7 @@ bool UNet::BreakLink(const NameT &itemname, int item_index,
 
  item->Disconnect(connector, item_index, connector_index);
 
- return true;
+ return true;  */
 }
 
 // Разрывает все связи между выходом элемента сети, 'itemid'
@@ -540,7 +568,9 @@ bool UNet::BreakLink(const NameT &itemname, const NameT &connectorname)
 bool UNet::BreakLink(const NameT &itemname, const NameT &item_property_name,
 						const NameT &connectorname, const NameT &connector_property_name)
 {
- UEPtr<UItem> item;
+ return BreakLink(UStringLinkSide(itemname,item_property_name), UStringLinkSide(connectorname,connector_property_name));
+
+/* UEPtr<UItem> item;
  UEPtr<UConnector> connector;
  if(itemname.size() == 0)
   item=this;
@@ -554,7 +584,7 @@ bool UNet::BreakLink(const NameT &itemname, const NameT &item_property_name,
 
  item->Disconnect(connector);
 
- return true;
+ return true;      */
 }
 
 // Разрывает все связи сети
@@ -612,12 +642,11 @@ void UNet::BreakConnectorLink(const NameT &connectorname, int connector_index)
  else
   connector=dynamic_pointer_cast<UConnector>(GetComponentL(connectorname));
 
-  if(!connector)
-  {
-   LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Connector not found: ")+connectorname);
-   return;
-  }
-
+ if(!connector)
+ {
+  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Connector not found: ")+connectorname);
+  return;
+ }
 
  if(connector->GetNumInputs() <= connector_index)
   return;
@@ -637,6 +666,36 @@ void UNet::BreakConnectorLink(const NameT &connectorname, int connector_index)
 // connector->DisconnectFromIndex(connector_index);
 }
 
+void UNet::BreakConnectorLink(const NameT &connectorname, const NameT &connector_index)
+{
+ UEPtr<UConnector> connector;
+ if(connectorname.size() == 0)
+  connector=this;
+ else
+  connector=dynamic_pointer_cast<UConnector>(GetComponentL(connectorname));
+
+ if(!connector)
+ {
+  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Connector not found: ")+connectorname);
+  return;
+ }
+
+// if(connector->GetNumInputs() <= connector_index)
+//  return;
+
+ const UCItem &item = connector->GetCItem(connector_index);
+// item.Item->Disconnect(connector);
+// std::string item_name;
+// item.Item->GetLongName(this,item_name);
+// BreakLink(
+  if(!item.Item)
+  {
+   LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Item not found: ")+item.Name);
+   return;
+  }
+
+  item.Item->Disconnect(connector,item.Name, connector_index);
+}
 
 // Проверяет, существует ли заданная связь
 bool UNet::CheckLink(const ULongId &item_id, int item_index, const ULongId &conn_id, int conn_index)
@@ -687,6 +746,8 @@ bool UNet::CheckLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
 bool UNet::CheckLink(const NameT &itemname, int item_index,
 						const NameT &connectorname, int connector_index)
 {
+ return CheckLink(UStringLinkSide(itemname,item_index),UStringLinkSide(connectorname,connector_index));
+/*
  UEPtr<UItem> item=dynamic_pointer_cast<UItem>(GetComponentL(itemname,true));
  UEPtr<UConnector> connector=dynamic_pointer_cast<UConnector>(GetComponentL(connectorname,true));
  if(!item || !connector)
@@ -695,12 +756,15 @@ bool UNet::CheckLink(const NameT &itemname, int item_index,
  if(item->CheckLink(connector,item_index, connector_index))
   return true;
 
- return true;
+ return true;*/
 }
 
 bool UNet::CheckLink(const NameT &itemname, const NameT &item_property_name,
 						const NameT &connectorname, const NameT &connector_property_name)
 {
+ return CheckLink(UStringLinkSide(itemname,item_property_name),UStringLinkSide(connectorname,connector_property_name));
+
+/*
  UEPtr<UItem> item=dynamic_pointer_cast<UItem>(GetComponentL(itemname));
  UEPtr<UConnector> connector=dynamic_pointer_cast<UConnector>(GetComponentL(connectorname));
  if(!item || !connector)
@@ -709,7 +773,7 @@ bool UNet::CheckLink(const NameT &itemname, const NameT &item_property_name,
  if(item->CheckLink(connector,item_property_name, connector_property_name))
   return true;
 
- return false;
+ return false;*/
 }
 
 bool UNet::CheckLink(const NameT &itemname,const NameT &connectorname)

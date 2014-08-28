@@ -226,6 +226,7 @@ UCLink GetCLink(const UItem* const item) const;
 // --------------------------
 /// Ищет свойство-вход по заданному индексу
 void FindInputProperty(int index, UIProperty* &property) const;
+void FindInputProperty(const NameT &connector_property_name, UIProperty* &property) const;
 
 /// Возвращает индекс входа с заданным именем
 int FindInputIndex(const NameT &input_name) const;
@@ -246,9 +247,11 @@ virtual void DisconnectFromItem(UEPtr<UItem> na);
 
 /// Разрывает связь с элементом сети 'na', подключенную от i_index
 virtual void DisconnectFromItem(UEPtr<UItem> na, int i_index);
+virtual void DisconnectFromItem(UEPtr<UItem> na, const NameT &item_property_name);
 
 /// Разрывает связь с элементом сети 'na', подключенную от i_index к c_index
 virtual void DisconnectFromItem(UEPtr<UItem> na, int i_index, int c_index);
+virtual void DisconnectFromItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name);
 
 // Выполняет действия после физически установленой связи
 virtual bool AConnectToItem(UEPtr<UItem> na, int i_index, int c_index);
@@ -261,7 +264,7 @@ virtual void ADisconnectFromItem(UEPtr<UItem> na, const NameT &item_property_nam
 public:
 // Разрывает связь с элементом сети подключенным ко входу 'index'
 virtual void DisconnectFromIndex(int c_index);
-virtual void DisconnectFromIndex(const NameT &connector_property_name, int index=0);
+virtual void DisconnectFromIndex(const NameT &connector_property_name, const NameT &item_property_name);
 
 // Разрывает все текущие связи
 virtual void DisconnectAllItems(void);

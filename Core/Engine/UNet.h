@@ -152,6 +152,7 @@ virtual void BreakLinks(void);
 
 // Разрывает связь ко входу connector_index коннектора 'connectorid'
 virtual void BreakConnectorLink(const NameT &connectorname, int connector_index);
+virtual void BreakConnectorLink(const NameT &connectorname, const NameT &connector_index);
 
 // Проверяет, существует ли заданная связь
 template<typename T>

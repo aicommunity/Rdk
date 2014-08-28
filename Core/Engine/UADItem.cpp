@@ -415,38 +415,6 @@ bool UADItem::ConnectToItem(UEPtr<UItem> na, int i_index, int &c_index)
 
  if(!UItem::ConnectToItem(static_pointer_cast<UItem>(nad), i_index, c_index))
   return false;
-   /*
- // Ищем указатель на выходные данные
- UIProperty* output_property=0;
- nad->FindOutputProperty(i_index, output_property);
-
- if(output_property)
-  CItemList[c_index].Name=output_property->GetName();
-
- // Ищем указатель на входные данные
- UIProperty* input_property=0;
- FindInputProperty(c_index, input_property);
- if(input_property)
- {
-  if(input_property->GetIoType() & ipData)
-  {
-   if(input_property->GetIoType() & ipSingle)
-   {
-	if(output_property && output_property->CompareLanguageType(*input_property))
-	 input_property->SetPointer(c_index,const_cast<void*>(output_property->GetPointer(i_index)));
-   }
-   else
-   if(input_property->GetIoType() & ipRange)
-   {
-	if(output_property)
-	 input_property->SetPointer(c_index,const_cast<void*>(output_property->GetPointer(i_index)));
-   }
-  }
-  else
-  if(input_property->GetIoType() & ipComp)
-   input_property->SetPointer(c_index,nad);
- }
-     */
  return true;
 }
 
@@ -454,7 +422,6 @@ bool UADItem::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, co
 {
  if(!UItem::ConnectToItem(na, item_property_name, connector_property_name, c_index))
   return false;
-
  return true;
 }
 
@@ -463,21 +430,6 @@ void UADItem::DisconnectFromIndex(int c_index)
 {
  if(c_index<0 || c_index >= int(InputData.size()))
   return;
-
- // Выполняем действия по деинициализации указателей
- VariableMapIteratorT I=PropertiesLookupTable.begin(),
-					  J=PropertiesLookupTable.end();
- for(;I != J;++I)
- {
-  if(I->second.Type & ptInput)
-  {
-   UIProperty* input_property=dynamic_cast<UIProperty*>(I->second.Property.Get());
-   if(!input_property || !input_property->CheckRange(c_index))
-	continue;
-
-   input_property->SetPointer(c_index,0);
-  }
- }
 
  UConnector::DisconnectFromIndex(c_index);
 
@@ -488,9 +440,15 @@ void UADItem::DisconnectFromIndex(int c_index)
  CalcMinMaxInputDataSize();
 }
 
-void UADItem::DisconnectFromIndex(const NameT &connector_property_name, int index)
+void UADItem::DisconnectFromIndex(const NameT &connector_property_name, const NameT &item_property_name)
 {
+ UItem::DisconnectFromIndex(connector_property_name, item_property_name);
 
+ // TODO тут чтото другое вместо этого:
+// InputData[c_index]=0;
+
+ UpdatePointers();
+ CalcMinMaxInputDataSize();
 }
 // --------------------------
 

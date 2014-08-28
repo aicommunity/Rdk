@@ -215,6 +215,7 @@ int GetNumActiveOutputs(const NameT &item_property_name) const;
 // --------------------------
 /// Ищет свойство-выход по заданному индексу
 void FindOutputProperty(int index, UIProperty* &property) const;
+void FindOutputProperty(const NameT &item_property_name, UIProperty* &property) const;
 
 /// Возвращает индекс входа с заданным именем
 int FindOutputIndex(const NameT &output_name) const;
@@ -252,6 +253,7 @@ virtual void Disconnect(UEPtr<UConnector> c);
 
 // Разрывает связь выхода этого объекта с коннектором 'c' по индексу
 virtual void Disconnect(UEPtr<UConnector> c, int i_index, int c_index);
+virtual void Disconnect(UEPtr<UConnector> c, const NameT &item_property_name, const NameT &connector_property_name);
 
 // Возвращает текущее число соединений для заданного выхода.
 int GetNumAConnectors(int index) const;

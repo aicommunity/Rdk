@@ -249,20 +249,20 @@ void __fastcall TUComponentIOFrame::ShowLinks(void)
   {
    itemname=linkslist[i].Item.Id;//Model_GetComponentLongName(linkslist[i].Item.Id.EncodeToString(stringid).c_str());
    StringGrid->RowCount=StringGrid->RowCount+linkslist[i].Connector.size();
-
+/*
    const char *p_buf=Model_GetComponentPropertiesLookupList(itemname.c_str(),ptPubOutput);
    if(p_buf)
 	item_properties_names=p_buf;
    else
-    item_properties_names.clear();
+	item_properties_names.clear();
    Engine_FreeBufString(p_buf);
 
    DecodePropertiesIOList(item_properties_names,item_propertries_names_list);
-
+  */
    for(size_t j=0;j<linkslist[i].Connector.size();j++)
 	{
 	 connname=linkslist[i].Connector[j].Id;
-
+/*
 	 const char *p_buf=Model_GetComponentPropertiesLookupList(connname.c_str(),ptPubInput);
 	 if(p_buf)
 	  conn_properties_names=p_buf;
@@ -271,21 +271,21 @@ void __fastcall TUComponentIOFrame::ShowLinks(void)
 	 Engine_FreeBufString(p_buf);
 
 	 DecodePropertiesIOList(conn_properties_names,conn_propertries_names_list);
-
+*/
 	 StringGrid->Cells[0][k]=IntToStr(int(i));
 	 StringGrid->Cells[1][k]=StrToInt(linkslist[i].Item.Index);
 	 StringGrid->Cells[2][k]=StrToInt(linkslist[i].Connector[j].Index);
 	 StringGrid->Cells[3][k]=itemname.c_str();
 
-	 if(int(item_propertries_names_list.size())>linkslist[i].Item.Index)
-	  StringGrid->Cells[4][k]=item_propertries_names_list[linkslist[i].Item.Index].c_str();
-	 else
-      StringGrid->Cells[4][k]="";
+//	 if(int(item_propertries_names_list.size())>linkslist[i].Item.Index)
+//	  StringGrid->Cells[4][k]=item_propertries_names_list[linkslist[i].Item.Index].c_str();
+//	 else
+	 StringGrid->Cells[4][k]=linkslist[i].Item.Name.c_str();
 	 StringGrid->Cells[5][k]=connname.c_str();
-	 if(int(conn_propertries_names_list.size())>linkslist[i].Connector[j].Index)
-	  StringGrid->Cells[6][k]=conn_propertries_names_list[linkslist[i].Connector[j].Index].c_str();
-	 else
-	  StringGrid->Cells[6][k]="";
+//	 if(int(conn_propertries_names_list.size())>linkslist[i].Connector[j].Index)
+//	  StringGrid->Cells[6][k]=conn_propertries_names_list[linkslist[i].Connector[j].Index].c_str();
+//	 else
+	  StringGrid->Cells[6][k]=linkslist[i].Connector[j].Name.c_str();
 	 ++k;
 	}
   }

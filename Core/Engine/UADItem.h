@@ -152,7 +152,8 @@ virtual bool ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, con
 
 // Разрывает связь с элементом сети подключенным ко входу 'index'
 virtual void DisconnectFromIndex(int c_index);
-virtual void DisconnectFromIndex(const NameT &connector_property_name, int index=0);
+virtual void DisconnectFromIndex(const NameT &connector_property_name, const NameT &item_property_name);
+//virtual void DisconnectFromIndex(const NameT &connector_property_name, int index=0);
 // ----------------------
 
 // --------------------------

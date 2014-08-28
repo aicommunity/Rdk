@@ -5,56 +5,7 @@
 #include "UADItem.h"
 
 namespace RDK {
-	  /*
-class UPropertyIOBase: public UIProperty
-{
-protected:
-// Тип входа
-int IoType;
 
-// Диапазон индексов входов
-int MinRange, MaxRange;
-
-public:
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-//Конструктор инициализации.
-UPropertyIOBase(int min_range=0, int io_type=ipDataSingle, int max_range=-1)
- : IoType(io_type), MinRange(min_range), MaxRange(max_range)
-{ };
-// -----------------------------
-
-// -----------------------------
-// Методы управления параметрами
-// -----------------------------
-// Тип
-virtual int GetIoType(void) const
-{
- return IoType;
-}
-
-virtual bool CheckRange(int index)
-{
- if(IoType & ipSingle)
-  return (MinRange == index && MaxRange<0) | (index>=MinRange && index<=MaxRange);
- else
- if(IoType & ipRange)
-  return (MinRange <= index && MaxRange<0) | (index>=MinRange && index<=MaxRange);
-
- return false;
-}
-
-// Диапазон индексов входов
-int GetMinRange(void)
-{ return MinRange; };
-
-int GetMaxRange(void)
-{ return MaxRange; };
-// -----------------------------
-
-};
-      */
 template<typename T, typename OwnerT, unsigned int type=ptPubInput>
 class UPropertyInputBase: protected ULProperty<T,OwnerT,type>, /*public UPropertyIOBase, */public UIPropertyInput
 {
@@ -79,11 +30,11 @@ UPropertyInputBase(const string &name, OwnerT * const owner, int min_range, int 
 // --------------------------
 // Методы управления указателем
 // --------------------------
-// Возвращает языковой тип хранимого свойства
+/*// Возвращает языковой тип хранимого свойства
 virtual const type_info& GetLanguageType(void) const
 {
  return typeid(T);
-}
+}    */
 // --------------------------
 };
 
@@ -624,81 +575,6 @@ UVPropertyOutputData(OwnerT * const owner, T* data, int min_range, int input_typ
 };
 // -----------------------------
 };
-		  /*
-template<typename T, typename OwnerT>
-class UVPropertyOutputCBase: protected UVProperty<std::vector<T>,OwnerT>, public UPropertyIOBase
-{
-protected:
-
-public: // Методы
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-//Конструктор инициализации.
-UPropertyOutputCBase(const string &name, OwnerT * const owner, int min_range, int input_type, int max_range=-1)
- : UVProperty<std::vector<T>,OwnerT,type>(name, owner), UPropertyIOBase(min_range, input_type, max_range)
-{ };
-// -----------------------------
-
-// --------------------------
-// Методы управления указателем
-// --------------------------
-T& Value(int i)
-{
- return this->v[i];
-}
-
-const T& Value(int i) const
-{
- return this->v[i];
-}
-
-T& operator [] (int i)
-{
- return this->v[i];
-}
-
-const T& operator [] (int i) const
-{
- return this->v[i];
-}
-// --------------------------
-};
-
-template<typename T, typename OwnerT, unsigned int type=ptPubOutput>
-class UPropertyOutputCData: public UPropertyOutputCBase<T,OwnerT,type>
-{
-protected:
-
-public: // Методы
-
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-//Конструктор инициализации.
-UPropertyOutputCData(const string &name, OwnerT * const owner, int min_range, int input_type=ipSingle, int max_range=-1)
- : UPropertyOutputCBase<T,OwnerT,type>(name, owner, min_range, input_type | ipData, max_range)
-{
-
-};
-// -----------------------------
-
-virtual void Init(void)
-{
- if(Owner) //&& MinRange>=0)
- {
-  int max_range=(MaxRange<0)?MinRange:MaxRange;
-  this->v.resize(max_range-MinRange+1);
-  for(int i=MinRange;i<=max_range;i++)
-  {
-   Owner->SetOutputDataAsPointer(i,&(this->v[i-MinRange]));
-   Owner->SetOutputDataInfo(i,new UDataInfo<T>);
-  }
- }
-};
-
-};
-         */
 
 }
 #endif

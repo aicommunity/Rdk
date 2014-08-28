@@ -229,6 +229,7 @@ std::string Name;
 // --------------------------
 ULinkSideT(void);
 ULinkSideT(const T &id, int index);
+ULinkSideT(const T &id, const std::string &property_name);
 ULinkSideT(const ULinkSideT &link);
 virtual ~ULinkSideT(void);
 // --------------------------
@@ -397,6 +398,12 @@ ULinkSideT<T>::ULinkSideT(void)
 template<typename T>
 ULinkSideT<T>::ULinkSideT(const T &id, int index)
  : Id(id), Index(index)
+{
+}
+
+template<typename T>
+ULinkSideT<T>::ULinkSideT(const T &id, const std::string &property_name)
+ :Id(id), Index(-1), Name(property_name)
 {
 }
 
