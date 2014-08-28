@@ -744,7 +744,7 @@ void UItem::DisconnectAll(void)
  for(;I!= RelatedConnectors.end();++I)
  {
   int i=int(I->second.size())-1;
-  while(i>0)
+  while(i>=0)
   {
    Disconnect(I->second[i]);
    i=int(I->second.size())-1;
