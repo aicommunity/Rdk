@@ -402,6 +402,32 @@ const UCItem& UConnector::GetCItem(const NameT &connector_property_name, int ind
  return I->second[index];
 }
 
+const UCItem& UConnector::GetCItem(const NameT &connector_property_name, const UEPtr<UItem> &item, int &index) const
+{
+ index=-1;
+ std::map<std::string, std::vector<UCItem> >::const_iterator I=ConnectedItemList.find(connector_property_name);
+ if(I == ConnectedItemList.end())
+  return DummyItem;
+
+ for(size_t i=0;i<I->second.size();i++)
+  if(I->second[i].Item == item)
+  {
+   index = i;
+   return I->second[i];
+  }
+
+ return DummyItem;
+}
+
+void UConnector::GetCItem(const NameT &connector_property_name, std::vector<UCItem> &buffer) const
+{
+ buffer.clear();
+ std::map<std::string, std::vector<UCItem> >::const_iterator I=ConnectedItemList.find(connector_property_name);
+ if(I != ConnectedItemList.end())
+  buffer=I->second;
+}
+
+
 // Возвращает информацию об индексах связей с этим item или -1, -1
 // если такая связь отсутствует
 UCLink UConnector::GetCLink(const UEPtr<UItem> &item) const
@@ -720,7 +746,7 @@ void UConnector::DisconnectFromItem(UEPtr<UItem> na)
   while(i<int(I->second.size()))
   {
    if(I->second[i].Item == na)
-	DisconnectFromIndex(I->first, I->second[i].Name);
+	DisconnectFromIndex(I->first, I->second[i].Name,i);
    else
     ++i;
   }
@@ -739,7 +765,7 @@ void UConnector::DisconnectFromItem(UEPtr<UItem> na, int i_index)
   while(i<int(I->second.size()))
   {
    if(I->second[i].Item == na && I->second[i].Index == i_index)
-	DisconnectFromIndex(I->first, I->second[i].Name);
+	DisconnectFromIndex(I->first, I->second[i].Name,i);
    else
     ++i;
   }
@@ -758,7 +784,7 @@ void UConnector::DisconnectFromItem(UEPtr<UItem> na, const NameT &item_property_
   while(i<int(I->second.size()))
   {
    if(I->second[i].Item == na && I->second[i].Name == item_property_name)
-	DisconnectFromIndex(I->first,I->second[i].Name); // TODO индекс не определен
+	DisconnectFromIndex(I->first,I->second[i].Name,i); // TODO индекс не определен
    else
     ++i;
   }
@@ -796,7 +822,7 @@ void UConnector::DisconnectFromItem(UEPtr<UItem> na, int i_index, int c_index)
   while(i<int(I->second.size()))
   {
    if(I->second[i].Item == na && I->second[i].Name == i_item_property->GetName())
-	DisconnectFromIndex(I->first, I->second[i].Name);
+	DisconnectFromIndex(I->first, I->second[i].Name,i);
    else
     ++i;
   }
@@ -818,7 +844,7 @@ void UConnector::DisconnectFromItem(UEPtr<UItem> na, const NameT &item_property_
  {
 // for(size_t i=0;i<I->second.size();i++)
   if(I->second[i].Item == na && I->second[i].Name == item_property_name)
-   DisconnectFromIndex(connector_property_name,I->second[i].Name); // TODO индекс не определен
+   DisconnectFromIndex(connector_property_name,I->second[i].Name,i); // TODO индекс не определен
   else
    ++i;
  }
@@ -846,15 +872,14 @@ void UConnector::DisconnectFromIndex(int c_index)
   return;
  }
 
- DisconnectFromIndex(i_conn_property->GetName(), "");
+ DisconnectFromIndex(i_conn_property->GetName(), "", -1);
 }
 
-void UConnector::DisconnectFromIndex(const NameT &connector_property_name, const NameT &item_property_name)
+void UConnector::DisconnectFromIndex(const NameT &connector_property_name, const NameT &item_property_name, int index)
 {
  std::map<std::string, std::vector<UCItem> >::iterator I=ConnectedItemList.find(connector_property_name);
  if(I == ConnectedItemList.end())
   return;
-
 
  if(item_property_name.empty())
  {
@@ -877,23 +902,19 @@ void UConnector::DisconnectFromIndex(const NameT &connector_property_name, const
  }
  else
  {
-  int i=0;
-  while(i<int(I->second.size()))
-  {
-   if(I->second[i].Name == item_property_name)
+  if(index<0 || index >=int(I->second.size()))
+   return;
+
+   if(I->second[index].Name == item_property_name)
    {
 	UIProperty* i_conn_property=0;
 	FindInputProperty(connector_property_name,i_conn_property);
-	if(i_conn_property->CheckRange(i)) // TODO тут возможно что-то другое
-	 i_conn_property->SetPointer(i,0);
+	if(i_conn_property->CheckRange(index)) // TODO тут возможно что-то другое
+	 i_conn_property->SetPointer(index,0);
 
-	ADisconnectFromItem(I->second[i].Item,I->second[i].Name,connector_property_name);
-	I->second.erase(I->second.begin()+i);
-	break;
+	ADisconnectFromItem(I->second[index].Item,I->second[index].Name,connector_property_name);
+	I->second.erase(I->second.begin()+index);
    }
-   else
-	++i;
-  }
  }
 }
 

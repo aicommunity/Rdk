@@ -440,9 +440,9 @@ void UADItem::DisconnectFromIndex(int c_index)
  CalcMinMaxInputDataSize();
 }
 
-void UADItem::DisconnectFromIndex(const NameT &connector_property_name, const NameT &item_property_name)
+void UADItem::DisconnectFromIndex(const NameT &connector_property_name, const NameT &item_property_name, int index)
 {
- UItem::DisconnectFromIndex(connector_property_name, item_property_name);
+ UItem::DisconnectFromIndex(connector_property_name, item_property_name, index);
 
  // TODO тут чтото другое вместо этого:
 // InputData[c_index]=0;

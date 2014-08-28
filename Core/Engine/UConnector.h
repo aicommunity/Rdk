@@ -213,7 +213,9 @@ virtual void Free(void);
 // --------------------------
 // Возвращает подключенный к этому коннектору объект по индексу
 const UCItem& GetCItem(int c_index) const;
-const UCItem& GetCItem(const NameT &connector_property_name, int index=0) const;
+const UCItem& GetCItem(const NameT &connector_property_name, const UEPtr<UItem> &item, int &index) const;
+const UCItem& GetCItem(const NameT &connector_property_name, int index) const;
+void GetCItem(const NameT &connector_property_name, std::vector<UCItem> &buffer) const;
 
 // Возвращает информацию об индексах связей с этим item или -1, -1
 // если такая связь отсутствует
@@ -264,7 +266,7 @@ virtual void ADisconnectFromItem(UEPtr<UItem> na, const NameT &item_property_nam
 public:
 // Разрывает связь с элементом сети подключенным ко входу 'index'
 virtual void DisconnectFromIndex(int c_index);
-virtual void DisconnectFromIndex(const NameT &connector_property_name, const NameT &item_property_name);
+virtual void DisconnectFromIndex(const NameT &connector_property_name, const NameT &item_property_name, int index);
 
 // Разрывает все текущие связи
 virtual void DisconnectAllItems(void);

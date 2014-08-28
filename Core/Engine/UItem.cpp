@@ -664,12 +664,13 @@ void UItem::Disconnect(UEPtr<UConnector> c, const NameT &item_property_name, con
  if(I == RelatedConnectors.end())
   return;
 
+ int index=-1;
+ UCItem citem=c->GetCItem(connector_property_name,this,index);
  int i=0;
  while(i<I->second.size())
  {
   if(I->second[i] == c)
   {
-   UCItem citem=c->GetCItem(connector_property_name);
    if(citem.Name == item_property_name && citem.Item == this)
    {
 	I->second.erase(I->second.begin()+i);

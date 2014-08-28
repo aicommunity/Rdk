@@ -683,18 +683,19 @@ void UNet::BreakConnectorLink(const NameT &connectorname, const NameT &connector
 // if(connector->GetNumInputs() <= connector_index)
 //  return;
 
- const UCItem &item = connector->GetCItem(connector_index);
-// item.Item->Disconnect(connector);
-// std::string item_name;
-// item.Item->GetLongName(this,item_name);
-// BreakLink(
-  if(!item.Item)
+ std::vector<UCItem> buffer;
+ connector->GetCItem(connector_index, buffer);
+
+ for(size_t i=0;i<buffer.size();i++)
+ {
+  if(!buffer[i].Item)
   {
-   LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Item not found: ")+item.Name);
+   LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Item not found: ")+buffer[i].Name);
    return;
   }
 
-  item.Item->Disconnect(connector,item.Name, connector_index);
+  buffer[i].Item->Disconnect(connector,buffer[i].Name, connector_index);
+ }
 }
 
 // Проверяет, существует ли заданная связь
