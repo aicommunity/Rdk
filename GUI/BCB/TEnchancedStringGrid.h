@@ -36,7 +36,7 @@ public:
 	TProperty();
 	~TProperty();
 	TProperty(const TProperty &p);
-	operator =(const TProperty &p);
+	TProperty& operator =(const TProperty &p);
 
 	TProperty(String PropertyName, PropertyType PType, String value);
 	void SetName(String PropertyName);

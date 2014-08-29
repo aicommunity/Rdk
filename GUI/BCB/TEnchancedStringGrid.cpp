@@ -41,7 +41,7 @@ TProperty::TProperty() {
 
 }
 
-TProperty::operator =(const TProperty &p)
+TProperty& TProperty::operator =(const TProperty &p)
 {
 	this->m_description = p.m_description;
 	this->m_listed = p.m_listed;
