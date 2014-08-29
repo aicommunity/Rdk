@@ -27,7 +27,8 @@ vector<UItemData> OutputData;
 
 private: // Хранилище входных связей
 // Массив указателей на вектора входов
-vector<UEPtr<const UItemData> > InputData;
+//vector<UEPtr<const UItemData> > InputData;
+vector<UItemData*> InputData;
 
 protected: // Переменные быстрого доступа к даннным входов. Read only!
 // Суммарное число всех входов

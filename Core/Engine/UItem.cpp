@@ -667,7 +667,7 @@ void UItem::Disconnect(UEPtr<UConnector> c, const NameT &item_property_name, con
  int index=-1;
  UCItem citem=c->GetCItem(connector_property_name,this,index);
  int i=0;
- while(i<I->second.size())
+ while(i<int(I->second.size()))
  {
   if(I->second[i] == c)
   {

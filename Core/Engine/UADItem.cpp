@@ -548,6 +548,22 @@ bool UADItem::Build(void)
   }
  }       */
 
+ for(int i=0;i<GetNumOutputs();i++)
+ {
+  std::string name=std::string("DataOutput")+sntoa(i);
+  UEPtr<UIProperty> property=FindProperty(name);
+  if(!property)
+   AddLookupProperty(name,ptPubOutput,new UVPropertyOutputData<UItemData,UADItem>(this,&OutputData[i],i));
+ }
+
+ for(int i=0;i<GetNumInputs();i++)
+ {
+  std::string name=std::string("DataInput")+sntoa(i);
+  UEPtr<UIProperty> property=FindProperty(name);
+  if(!property)
+   AddLookupProperty(name,ptPubInput,new UVPropertyInputData<UItemData*,UADItem>(this,&InputData[i],i));
+ }
+
  if(!UItem::Build())
   return false;
 

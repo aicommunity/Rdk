@@ -38,6 +38,28 @@ virtual const type_info& GetLanguageType(void) const
 // --------------------------
 };
 
+template<typename T, typename OwnerT>
+class UVPropertyInputBase: public UVProperty<T,OwnerT>, /*public UPropertyIOBase, */public UIPropertyInput
+{
+protected:
+/// Временная переменная, использующаяся, если нет реального подключения
+//mutable T Local;
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+//Конструктор инициализации.
+UVPropertyInputBase(OwnerT * const owner, T* data, int min_range, int input_type, int max_range=-1)
+ : UVProperty<T,OwnerT>(owner, data)
+{
+ UVBaseDataProperty<T>::IoType=input_type;
+ UVBaseDataProperty<T>::MinRange=min_range;
+ UVBaseDataProperty<T>::MaxRange=max_range;
+};
+// -----------------------------
+};
+
 template<typename T, typename OwnerT, unsigned int type=ptPubInput>
 class UPropertyInput: public UPropertyInputBase<T*,OwnerT,type>
 {
@@ -178,6 +200,93 @@ T& operator * (void)
 operator T* (void) const
 {
  return (this->PData)?this->PData:&this->v;
+}
+// --------------------------
+};
+
+
+template<typename T, typename OwnerT>
+class UVPropertyInputData: public UVPropertyInputBase<T,OwnerT>
+{
+protected:
+
+public: // Методы
+
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+//Конструктор инициализации.
+UVPropertyInputData(OwnerT * const owner, T *data, int min_range, int input_type=ipSingle, int max_range=-1)
+ : UVPropertyInputBase<T,OwnerT>(owner, data, min_range, input_type | ipData, max_range)
+{ };
+// -----------------------------
+
+// --------------------------
+// Методы управления указателем
+// --------------------------
+// Возвращает true если вход имеет подключение
+bool IsConnected(void) const
+{
+ return (this->PData)?true:false;
+}
+
+// Возвращает указатель на данные входа
+void const * GetPointer(int index) const
+{
+ return this->PData;
+}
+
+// Возврат значения
+virtual const T& GetData(void) const
+{
+ return (this->PData)?*this->PData:throw(1); // TODO
+};
+
+virtual void SetData(const T &value)
+{
+ if(this->PData)
+ {
+  if(*this->PData == value)
+   return;
+
+  if(this->Owner)
+  {
+   if(this->SetterR && !(this->Owner->*(this->SetterR))(value))
+	throw UIProperty::EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
+
+   *this->PData=value;
+   return;
+  }
+
+  *this->PData=value;
+ }
+ else
+  UVProperty<T,OwnerT>::SetData(value);
+};
+
+// Устанавливает указатель на данные входа
+bool SetPointer(int index, void* value)
+{
+ this->PData=reinterpret_cast<T*>(value);
+ return true;
+}
+
+bool operator ! (void) const
+{ return (this->PData)?false:true; };
+
+T* operator -> (void) const
+{
+ return (this->PData)?this->PData:throw(1); // TODO
+};
+
+T& operator * (void)
+{
+ return (this->PData)?*this->PData:throw(1); // TODO
+};
+
+operator T* (void) const
+{
+ return (this->PData)?this->PData:throw(1); // TODO
 }
 // --------------------------
 };
