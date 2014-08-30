@@ -211,6 +211,9 @@ virtual void Free(void);
 // --------------------------
 // Методы доступа к данным
 // --------------------------
+/// Ищет первый свободный вход
+virtual NameT FindFreeInputName(void)=0;
+
 // Возвращает подключенный к этому коннектору объект по индексу
 const UCItem& GetCItem(int c_index) const;
 const UCItem& GetCItem(const NameT &connector_property_name, const UEPtr<UItem> &item, int &index) const;

@@ -580,29 +580,6 @@ bool UItem::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, cons
 }
 
 // Устанавливает связь с коннектором 'c'.
-bool UItem::Connect(UEPtr<UConnector> c, int i_index, int c_index)
-{
- if(c == 0)
-  return false;
-
- if(i_index>=NumOutputs)
-  SetNumOutputs(i_index+1);
-
- if(!Build())
-  return false;
-
- UIProperty *i_item_property=0;
- UIProperty *i_conn_property=0;
- FindOutputProperty(i_index,i_item_property);
- c->FindInputProperty(c_index,i_conn_property);
-
- if(!i_item_property || !i_conn_property)
-  return true;
-
- int cc_index;
- return Connect(c, i_item_property->GetName(), i_conn_property->GetName(), cc_index);
-}
-
 bool UItem::Connect(UEPtr<UConnector> c, const NameT &item_property_name, const NameT &connector_property_name, int &c_index)
 {
  if(!c)

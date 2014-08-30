@@ -245,7 +245,7 @@ virtual bool ConnectToItem(UEPtr<UItem> na, int i_index, int &c_index);
 virtual bool ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int &c_index);
 
 // Устанавливает связь с коннектором 'c'
-virtual bool Connect(UEPtr<UConnector> c, int i_index, int c_index=-1);
+virtual bool Connect(UEPtr<UConnector> c, int i_index, int c_index=-1)=0;
 virtual bool Connect(UEPtr<UConnector> c, const NameT &item_property_name, const NameT &connector_property_name, int &c_index);
 
 /// Разрывает все связи выхода этого объекта с коннектором 'c'.
