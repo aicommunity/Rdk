@@ -552,8 +552,17 @@ bool UItem::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, cons
   {
    if(input_property->GetIoType() & ipSingle)
    {
-	if(output_property && output_property->CompareLanguageType(*input_property))
-	 input_property->SetPointer(input_property->GetMinRange(),const_cast<void*>(output_property->GetPointer(output_property->GetMinRange())));
+	if(output_property)
+	{
+	 if(output_property->CompareLanguageType(*input_property))
+	  input_property->SetPointer(input_property->GetMinRange(),const_cast<void*>(output_property->GetPointer(output_property->GetMinRange())));
+	 else
+	 {
+	  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Item & connector type incompatible: ")+output_property->GetLanguageType().name()+std::string(" != ")+input_property->GetLanguageType().name());
+//	  return DisconnectFromItem(na, item_property_name, connector_property_name);
+	  return true;
+	 }
+	}
    }
    else
    if(input_property->GetIoType() & ipRange)

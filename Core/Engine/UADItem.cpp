@@ -561,7 +561,7 @@ bool UADItem::Build(void)
   std::string name=std::string("DataInput")+sntoa(i);
   UEPtr<UIProperty> property=FindProperty(name);
   if(!property)
-   AddLookupProperty(name,ptPubInput,new UVPropertyInputData<UItemData*,UADItem>(this,&InputData[i],i));
+   AddLookupProperty(name,ptPubInput,new UVPropertyInputData<UItemData,UADItem>(this,InputData[i],i));
  }
 
  if(!UItem::Build())

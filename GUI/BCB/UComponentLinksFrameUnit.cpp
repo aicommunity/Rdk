@@ -142,8 +142,10 @@ void __fastcall TUComponentLinksFrame::CreateLink(void)
   itemname.insert(0,NANetFrameLinks->ViewComponentOwnerLongId+std::string("."));
   connname.insert(0,NANetFrameLinks->ViewComponentOwnerLongId+std::string("."));
  }
+ std::string conn_property_name=AnsiString(NANetFrameInputs->StringGrid->Cells[3][NANetFrameInputs->StringGrid->Row]).c_str();
+ std::string item_property_name=AnsiString(NANetFrameOutputs->StringGrid->Cells[3][NANetFrameOutputs->StringGrid->Row]).c_str();
 
- Model_CreateLink(itemname.c_str(), itemindex, connname.c_str(), connindex);
+ Model_CreateLinkByName(itemname.c_str(), item_property_name.c_str(), connname.c_str(), conn_property_name.c_str());
  //Network->CreateLink(itemname,itemindex,connname,connindex);
  NANetFrameLinks->UpdateInterface();
  NANetFrameInputs->UpdateInterface();

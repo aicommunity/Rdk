@@ -7,63 +7,10 @@
 namespace RDK {
 
 template<typename T, typename OwnerT, unsigned int type=ptPubInput>
-class UPropertyInputBase: protected ULProperty<T,OwnerT,type>, /*public UPropertyIOBase, */public UIPropertyInput
+class UPropertyInputBase: protected ULProperty<T*,OwnerT,type>, /*public UPropertyIOBase, */public UIPropertyInput
 {
 protected:
 /// Временная переменная, использующаяся, если нет реального подключения
-//mutable T Local;
-
-public: // Методы
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-//Конструктор инициализации.
-UPropertyInputBase(const string &name, OwnerT * const owner, int min_range, int input_type, int max_range=-1)
- : ULProperty<T,OwnerT,type>(name, owner)
-{
- UVBaseDataProperty<T>::IoType=input_type;
- UVBaseDataProperty<T>::MinRange=min_range;
- UVBaseDataProperty<T>::MaxRange=max_range;
-};
-// -----------------------------
-
-// --------------------------
-// Методы управления указателем
-// --------------------------
-/*// Возвращает языковой тип хранимого свойства
-virtual const type_info& GetLanguageType(void) const
-{
- return typeid(T);
-}    */
-// --------------------------
-};
-
-template<typename T, typename OwnerT>
-class UVPropertyInputBase: public UVProperty<T,OwnerT>, /*public UPropertyIOBase, */public UIPropertyInput
-{
-protected:
-/// Временная переменная, использующаяся, если нет реального подключения
-//mutable T Local;
-
-public: // Методы
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-//Конструктор инициализации.
-UVPropertyInputBase(OwnerT * const owner, T* data, int min_range, int input_type, int max_range=-1)
- : UVProperty<T,OwnerT>(owner, data)
-{
- UVBaseDataProperty<T>::IoType=input_type;
- UVBaseDataProperty<T>::MinRange=min_range;
- UVBaseDataProperty<T>::MaxRange=max_range;
-};
-// -----------------------------
-};
-
-template<typename T, typename OwnerT, unsigned int type=ptPubInput>
-class UPropertyInput: public UPropertyInputBase<T*,OwnerT,type>
-{
-protected:
 mutable T Local;
 
 public: // Методы
@@ -71,8 +18,70 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
+UPropertyInputBase(const string &name, OwnerT * const owner, int min_range, int input_type, int max_range=-1)
+ : ULProperty<T*,OwnerT,type>(name, owner)
+{
+ UVBaseDataProperty<T*>::IoType=input_type;
+ UVBaseDataProperty<T*>::MinRange=min_range;
+ UVBaseDataProperty<T*>::MaxRange=max_range;
+};
+// -----------------------------
+
+// --------------------------
+// Методы управления указателем
+// --------------------------
+// Возвращает языковой тип хранимого свойства
+virtual const type_info& GetLanguageType(void) const
+{
+ return typeid(T);
+}// --------------------------
+};
+
+template<typename T, typename OwnerT>
+class UVPropertyInputBase: public UVProperty<T*,OwnerT>, /*public UPropertyIOBase, */public UIPropertyInput
+{
+protected:
+/// Временная переменная, использующаяся, если нет реального подключения
+mutable T Local;
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+//Конструктор инициализации.
+UVPropertyInputBase(OwnerT * const owner, T* data, int min_range, int input_type, int max_range=-1)
+ : UVProperty<T*,OwnerT>(owner, &data)
+{
+ UVBaseDataProperty<T*>::IoType=input_type;
+ UVBaseDataProperty<T*>::MinRange=min_range;
+ UVBaseDataProperty<T*>::MaxRange=max_range;
+};
+// -----------------------------
+
+
+// --------------------------
+// Методы управления указателем
+// --------------------------
+// Возвращает языковой тип хранимого свойства
+virtual const type_info& GetLanguageType(void) const
+{
+ return typeid(T);
+}// --------------------------
+};
+
+template<typename T, typename OwnerT, unsigned int type=ptPubInput>
+class UPropertyInput: public UPropertyInputBase<T,OwnerT,type>
+{
+protected:
+//mutable T Local;
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+//Конструктор инициализации.
 UPropertyInput(const string &name, OwnerT * const owner, int min_range, int input_type=ipSingle | ipComp, int max_range=-1)
- : UPropertyInputBase<T*,OwnerT,type>(name, owner, min_range, input_type | ipComp, max_range)
+ : UPropertyInputBase<T,OwnerT,type>(name, owner, min_range, input_type | ipComp, max_range)
 { };
 // -----------------------------
 
@@ -121,6 +130,60 @@ operator T* (void) const
 template<typename T, typename OwnerT, unsigned int type=ptPubInput>
 class UPropertyInputData: public UPropertyInputBase<T,OwnerT,type>
 {
+protected:
+//mutable T Local;
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+//Конструктор инициализации.
+UPropertyInputData(const string &name, OwnerT * const owner, int min_range, int input_type=ipSingle | ipComp, int max_range=-1)
+ : UPropertyInputBase<T,OwnerT,type>(name, owner, min_range, input_type | ipData, max_range)
+{ };
+// -----------------------------
+
+// --------------------------
+// Методы управления указателем
+// --------------------------
+// Возвращает true если вход имеет подключение
+bool IsConnected(void) const
+{
+ return (this->v)?true:false;
+}
+
+// Возвращает указатель на данные входа
+void const * GetPointer(int index) const
+{
+ return this->v;
+}
+
+// Устанавливает указатель на данные входа
+bool SetPointer(int index, void* value)
+{
+ this->v=reinterpret_cast<T*>(value);
+ return true;
+}
+
+bool operator ! (void) const
+{ return (this->v)?false:true; };
+
+T* operator -> (void) const
+{
+ return (this->v)?this->v:&Local;
+};
+
+T& operator * (void)
+{
+ return (this->v)?*this->v:Local;
+};
+
+operator T* (void) const
+{
+ return (this->v)?this->v:&Local;
+}
+// --------------------------
+/*
 protected:
 
 public: // Методы
@@ -202,6 +265,7 @@ operator T* (void) const
  return (this->PData)?this->PData:&this->v;
 }
 // --------------------------
+*/
 };
 
 
@@ -221,6 +285,48 @@ UVPropertyInputData(OwnerT * const owner, T *data, int min_range, int input_type
 { };
 // -----------------------------
 
+
+// --------------------------
+// Методы управления указателем
+// --------------------------
+// Возвращает true если вход имеет подключение
+bool IsConnected(void) const
+{
+ return (*this->PData)?true:false;
+}
+
+// Возвращает указатель на данные входа
+void const * GetPointer(int index) const
+{
+ return *this->PData;
+}
+
+// Устанавливает указатель на данные входа
+bool SetPointer(int index, void* value)
+{
+ *this->PData=reinterpret_cast<T*>(value);
+ return true;
+}
+
+bool operator ! (void) const
+{ return (*this->PData)?false:true; };
+
+T* operator -> (void) const
+{
+ return (*this->PData)?*this->PData:&Local;
+};
+
+T& operator * (void)
+{
+ return (*this->PData)?**this->PData:Local;
+};
+
+operator T* (void) const
+{
+ return (*this->PData)?*this->PData:&Local;
+}
+// --------------------------
+/*
 // --------------------------
 // Методы управления указателем
 // --------------------------
@@ -289,6 +395,7 @@ operator T* (void) const
  return (this->PData)?this->PData:throw(1); // TODO
 }
 // --------------------------
+*/
 };
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
