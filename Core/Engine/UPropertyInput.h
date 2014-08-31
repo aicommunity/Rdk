@@ -49,8 +49,8 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UVPropertyInputBase(OwnerT * const owner, T* data, int min_range, int input_type, int max_range=-1)
- : UVProperty<T*,OwnerT>(owner, &data)
+UVPropertyInputBase(OwnerT * const owner, T** data, int min_range, int input_type, int max_range=-1)
+ : UVProperty<T*,OwnerT>(owner, data)
 {
  UVBaseDataProperty<T*>::IoType=input_type;
  UVBaseDataProperty<T*>::MinRange=min_range;
@@ -280,7 +280,7 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UVPropertyInputData(OwnerT * const owner, T *data, int min_range, int input_type=ipSingle, int max_range=-1)
+UVPropertyInputData(OwnerT * const owner, T **data, int min_range, int input_type=ipSingle, int max_range=-1)
  : UVPropertyInputBase<T,OwnerT>(owner, data, min_range, input_type | ipData, max_range)
 { };
 // -----------------------------

@@ -158,12 +158,12 @@ virtual void BreakConnectorLink(const NameT &connectorname, const NameT &connect
 template<typename T>
 bool CheckLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector);
 
-virtual bool CheckLink(const ULongId &item_id, int item_index, const ULongId &conn_id, int conn_index);
-virtual bool CheckLink(const NameT &itemname, int item_index,
+bool CheckLink(const ULongId &item_id, int item_index, const ULongId &conn_id, int conn_index);
+bool CheckLink(const NameT &itemname, int item_index,
 						const NameT &connectorname, int connector_index);
-virtual bool CheckLink(const NameT &itemname, const NameT &item_property_name,
+bool CheckLink(const NameT &itemname, const NameT &item_property_name,
 						const NameT &connectorname, const NameT &connector_property_name);
-virtual bool CheckLink(const NameT &itemname,
+bool CheckLink(const NameT &itemname,
 						const NameT &connectorname);
 // ----------------------
 

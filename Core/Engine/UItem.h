@@ -162,14 +162,6 @@ protected: // Основные свойства
 //UAConnector2DVector AssociatedConnectors;
 std::map<std::string, std::vector<PUAConnector> > RelatedConnectors;
 
-protected: // Общедоступные свойства
-// Число выходов
-int NumOutputs;
-
-// Признак включения/выключения режима автоматического увеличения числа выходов
-// при подключении нового connector.
-bool AutoNumOutputs;
-
 protected: // Временные переменные. Read Only!
 // Указатель на первый элемент списка подключенных коннекторов
 //vector<UConnector**> PAssociatedConnectors;
@@ -193,32 +185,21 @@ virtual ~UItem(void);
 // Методы управления общедоступными свойствами
 // --------------------------
 public:
-// Возвращает число подключенных элементов item
-const int& GetNumOutputs(void) const;
-
-// Устанавливает число подключенных элементов item
-bool SetNumOutputs(const int &value);
-
-// Признак включения/выключения режима автоматического увеличения числа выходов
-const bool& GetAutoNumOutputs(void) const;
-bool SetAutoNumOutputs(const bool &value);
-
 /// Возвращает число выходов к которым кто-то подключен
-int GetNumActiveOutputs(void) const;
+virtual int GetNumActiveOutputs(void) const;
 
 /// Возвращает число коннекторов к которым подключено заданное свойство
-int GetNumActiveOutputs(const NameT &item_property_name) const;
+virtual int GetNumActiveOutputs(const NameT &item_property_name) const;
 // --------------------------
 
 // --------------------------
 // Методы доступа к описанию входов и выходов
 // --------------------------
 /// Ищет свойство-выход по заданному индексу
-void FindOutputProperty(int index, UIProperty* &property) const;
-void FindOutputProperty(const NameT &item_property_name, UIProperty* &property) const;
+virtual void FindOutputProperty(const NameT &item_property_name, UIProperty* &property) const;
 
 /// Возвращает индекс входа с заданным именем
-int FindOutputIndex(const NameT &output_name) const;
+virtual int FindOutputIndex(const NameT &output_name) const;
 
 /// Ищет свойство-вход по заданному индексу
 //void FindInputProperty(int index, UIProperty* &property);
@@ -241,30 +222,27 @@ public:
 // Устанавливает связь с элементом сети 'na' со входом по индексу index.
 // Возвращает false если na уже подключен к этому входу.
 // При успешном подключении c_index содержит реальный индекс подключенного входа
-virtual bool ConnectToItem(UEPtr<UItem> na, int i_index, int &c_index);
 virtual bool ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int &c_index);
 
 // Устанавливает связь с коннектором 'c'
-virtual bool Connect(UEPtr<UConnector> c, int i_index, int c_index=-1)=0;
 virtual bool Connect(UEPtr<UConnector> c, const NameT &item_property_name, const NameT &connector_property_name, int &c_index);
 
 /// Разрывает все связи выхода этого объекта с коннектором 'c'.
 virtual void Disconnect(UEPtr<UConnector> c);
 
 // Разрывает связь выхода этого объекта с коннектором 'c' по индексу
-virtual void Disconnect(UEPtr<UConnector> c, int i_index, int c_index);
 virtual void Disconnect(UEPtr<UConnector> c, const NameT &item_property_name, const NameT &connector_property_name);
 
 // Возвращает текущее число соединений для заданного выхода.
-int GetNumAConnectors(int index) const;
-int GetNumAConnectors(const NameT &item_property_name) const;
+virtual int GetNumAConnectors(const NameT &item_property_name) const;
 
 // Разрывает связь выхода этого объекта с коннектором по Id 'id'.
 virtual bool Disconnect(const UId &id);
 
 // Разрывает связь выхода этого объекта со всеми
 // подключенными коннекторами.
-void DisconnectAll(void);
+virtual void DisconnectAll(void);
+virtual void DisconnectAll(const NameT &item_property_name);
 
 // Разрывает все связи объекта
 // исключая его внутренние связи и обратные связи
@@ -277,21 +255,20 @@ virtual void BuildLinks(void);
 
 // Возвращает указатель на коннектор из списка подключений
 // по Id 'id'.
-UEPtr<UConnector> GetAConnector(const UId &id, int index) const;
+virtual UEPtr<UConnector> GetAConnector(const UId &id, int index) const;
 
 // Возвращает  коннектор из списка подключений.
-UEPtr<UConnector> GetAConnectorByIndex(int output, int index) const;
-UEPtr<UConnector> GetAConnectorByIndex(const NameT &item_property_name, int index) const;
+virtual UEPtr<UConnector> GetAConnectorByIndex(const NameT &item_property_name, int index) const;
 
 // Проверяет, существует ли связь с заданным коннектором
 bool CheckLink(const UEPtr<UConnector> &connector) const;
 
 // Проверяет, существует ли связь с заданным коннектором и конкретным входом
-bool CheckLink(const UEPtr<UConnector> &connector, int item_index) const;
+//bool CheckLink(const UEPtr<UConnector> &connector, int item_index) const;
 bool CheckLink(const UEPtr<UConnector> &connector, const NameT &item_property_name) const;
 
 // Проверяет, существует ли связь с заданным коннектором и конкретным входом
-bool CheckLink(const UEPtr<UConnector> &connector, int item_index, int conn_index) const;
+//bool CheckLink(const UEPtr<UConnector> &connector, int item_index, int conn_index) const;
 bool CheckLink(const UEPtr<UConnector> &connector, const NameT &item_property_name, const NameT &connector_property_name) const;
 
 // Возвращает список подключений

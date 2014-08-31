@@ -2951,11 +2951,11 @@ bool UEngine::Model_CheckLink(const char* stringid1, int output_number, const ch
 {
  try
  {
-  UEPtr<RDK::UItem> cont1;
+  UEPtr<RDK::UADItem> cont1;
   UEPtr<RDK::UConnector> cont2;
   try
   {
-   cont1=dynamic_pointer_cast<RDK::UItem>(FindComponent(stringid1));
+   cont1=dynamic_pointer_cast<RDK::UADItem>(FindComponent(stringid1));
    cont2=dynamic_pointer_cast<RDK::UConnector>(FindComponent(stringid2));
   }
   catch (UException &exception)// Заглушка!! здесь другое исключение
@@ -3178,7 +3178,7 @@ int UEngine::Model_GetComponentNumInputs(const char *stringid)
 {
  try
  {
-  UEPtr<RDK::UItem> cont=dynamic_pointer_cast<RDK::UItem>(FindComponent(stringid));
+  UEPtr<RDK::UADItem> cont=dynamic_pointer_cast<RDK::UADItem>(FindComponent(stringid));
 
   if(!cont)
    return 0;
@@ -3259,7 +3259,7 @@ int UEngine::Model_GetComponentNumOutputs(const char *stringid)
 {
  try
  {
-  UEPtr<RDK::UItem> cont=dynamic_pointer_cast<RDK::UItem>(FindComponent(stringid));
+  UEPtr<RDK::UADItem> cont=dynamic_pointer_cast<RDK::UADItem>(FindComponent(stringid));
 
   if(!cont)
    return 0;

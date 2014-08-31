@@ -210,11 +210,11 @@ bool UNet::CreateLink(const ULinkT<T> &link)
 template<typename T>
 bool UNet::CreateLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
 {
- UEPtr<UItem> pitem;
+ UEPtr<UADItem> pitem;
  if(!CheckLongId(item.Id))
   pitem=this;
  else
-  pitem=dynamic_pointer_cast<UItem>(GetComponentL(item.Id));
+  pitem=dynamic_pointer_cast<UADItem>(GetComponentL(item.Id));
 
  UEPtr<UConnector> pconnector=0;
  if(!CheckLongId(connector.Id))
@@ -477,11 +477,11 @@ bool UNet::BreakLink(const ULinkT<T> &link)
 template<typename T>
 bool UNet::BreakLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
 {
- UEPtr<UItem> pitem=0;
+ UEPtr<UADItem> pitem=0;
  if(!CheckLongId(item.Id))
   pitem=this;
  else
-  pitem=dynamic_pointer_cast<UItem>(GetComponentL(item.Id));
+  pitem=dynamic_pointer_cast<UADItem>(GetComponentL(item.Id));
 
  UEPtr<UConnector> pconnector=0;
  if(!CheckLongId(connector.Id))
@@ -636,11 +636,11 @@ void UNet::BreakLinks(void)
 // Разрывает связь ко входу connector_index коннектора 'connectorid'
 void UNet::BreakConnectorLink(const NameT &connectorname, int connector_index)
 {
- UEPtr<UConnector> connector;
+ UEPtr<UADItem> connector;
  if(connectorname.size() == 0)
   connector=this;
  else
-  connector=dynamic_pointer_cast<UConnector>(GetComponentL(connectorname));
+  connector=dynamic_pointer_cast<UADItem>(GetComponentL(connectorname));
 
  if(!connector)
  {
@@ -662,7 +662,15 @@ void UNet::BreakConnectorLink(const NameT &connectorname, int connector_index)
    return;
   }
 
-  item.Item->Disconnect(connector,item.Index, connector_index);
+  UEPtr<UADItem> ad_item=dynamic_cast<UADItem*>(item.Item);
+
+  if(!ad_item)
+  {
+   LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Dynamic cast failed"));
+   return;
+  }
+
+  ad_item->Disconnect(connector,item.Index, connector_index);
 // connector->DisconnectFromIndex(connector_index);
 }
 
@@ -707,11 +715,11 @@ bool UNet::CheckLink(const ULongId &item_id, int item_index, const ULongId &conn
 template<typename T>
 bool UNet::CheckLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
 {
- UEPtr<UItem> pitem;
+ UEPtr<UADItem> pitem;
  if(!CheckLongId(item.Id))
   pitem=this;
  else
-  pitem=dynamic_pointer_cast<UItem>(GetComponentL(item.Id,true));
+  pitem=dynamic_pointer_cast<UADItem>(GetComponentL(item.Id,true));
 
  UEPtr<UConnector> pconnector=0;
  if(!CheckLongId(connector.Id))
