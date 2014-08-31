@@ -97,6 +97,9 @@ std::vector<std::vector<std::string> > ComponentIndexes;
 // Массив индексов выходов компонент, связанных с изображениями
 std::vector<std::vector<int> > ComponentIndexesOld;
 
+// Массив индексов каналов, откуда извлекаются изображения кмпонент
+std::vector<std::vector<int> > ComponentChannelIndexes;
+
 // Массив имен компонент и их свойств, связанных с кликом мыши
 std::vector<std::vector<std::pair<std::string,std::string> > > MouseClickComponents;
 
@@ -136,7 +139,7 @@ void SetReflectionXFlag(bool value);
 // Методы управления изображениями
 // --------------------------
 // Связывает ячейку с идентификатором компонента
-void LinkToComponent(int i, int j, const std::string &stringid, int index);
+void LinkToComponent(int i, int j, const std::string &stringid, std::string index, int channel_id);
 
 // Устанавливает заданное изображение в ячейку с координатами i,j
 bool SetBitmap(int i, int j, const RDK::UBitmap &bitmap);
