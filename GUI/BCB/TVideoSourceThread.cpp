@@ -1694,6 +1694,8 @@ void __fastcall TVideoCaptureThreadVideoGrabberAvi::AfterCalculate(void)
  {
   VideoGrabber->BurstCount=0;
  }
+
+
  /*if(VideoGrabber->PlayerFramePosition>0 && VideoGrabber->PlayerFramePosition>=VideoGrabber->PlayerFrameCount-100)
  {
   if(RepeatFlag)

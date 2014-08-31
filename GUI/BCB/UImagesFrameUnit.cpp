@@ -7,6 +7,7 @@
 #include "UComponentsListFormUnit.h"
 #include "rdk_initdll.h"
 #include "TUBitmap.h"
+#include "myrdk.h"
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -56,6 +57,7 @@ void TUImagesFrame::SetNumCells(int width, int height)
  ComponentIndexes.resize(width);
  ComponentIndexesOld.resize(width);
  MouseClickComponents.resize(width);
+ ComponentChannelIndexes.resize(width);
  Legends.resize(width);
  for(size_t i=0;i<Images.size();i++)
  {
@@ -65,6 +67,10 @@ void TUImagesFrame::SetNumCells(int width, int height)
   ComponentIndexesOld[i].resize(height,-1);
   MouseClickComponents[i].resize(height);
   Legends[i].resize(height);
+  ComponentChannelIndexes[i].resize(height,-1);
+//  for(int k=0;k<ComponentChannelIndexes[i].size(); k++)
+//  	ComponentChannelIndexes[i][k]=-1;
+
   for(size_t j=0;j<Images[i].size();j++)
    Images[i][j]=new TImage(this);
  }
@@ -97,7 +103,7 @@ void TUImagesFrame::SetReflectionXFlag(bool value)
 // Методы управления изображениями
 // --------------------------
 // Связывает ячейку с идентификатором компонента
-void TUImagesFrame::LinkToComponent(int i, int j, const std::string &stringid, int index)
+void TUImagesFrame::LinkToComponent(int i, int j, const std::string &stringid, std::string index, int channel_id)
 {
  if(i <0 || j<0 || i>= DrawGrid->ColCount || j>= DrawGrid->RowCount)
   return;
@@ -118,6 +124,7 @@ void TUImagesFrame::LinkToComponent(int i, int j, const std::string &stringid, i
    Legends[i][j]=std::string(p)+std::string("[")+ComponentIndexes[i][j]+"]";
   Engine_FreeBufString(p);
  }
+ ComponentChannelIndexes[i][j]=channel_id;
 
 }
 
@@ -377,7 +384,9 @@ void TUImagesFrame::AUpdateInterface(void)
   {
    for(size_t j=0;j<Images[i].size();j++)
    {
-	 if(ComponentIndexes[i][j].empty())
+	if(ComponentChannelIndexes[i][j]==-1)
+	{
+	 /*if(ComponentIndexes[i][j].empty())
 	 {
 //	  LockEngine();
 	  const RDK::UBitmap* bmp=(const RDK::UBitmap*)Model_GetComponentOutputByIndex(StringIds[i][j].c_str(), ComponentIndexesOld[i][j]);
@@ -413,8 +422,53 @@ void TUImagesFrame::AUpdateInterface(void)
 	   ComponentIndexesOld[i][j]=0;
 	   ComponentIndexes[i][j].clear();
 	  }
+	 } */
+	}
+	else
+	{
+	 int eng_index = ComponentChannelIndexes[i][j];
+	 if(ComponentIndexes[i][j].empty())
+	 {
+//	  LockEngine();
+	  RDK::UBitmapParam bmp_param;
+	  int copy_res=MModel_CopyComponentBitmapOutputHeaderByIndex(eng_index, StringIds[i][j].c_str(), ComponentIndexesOld[i][j], &bmp_param);
+	  if(copy_res == 0)
+	  {
+	   TempBmp.SetRes(bmp_param.Width,bmp_param.Height,bmp_param.ColorModel);
+	   MModel_CopyComponentBitmapOutputByIndex(eng_index, StringIds[i][j].c_str(), ComponentIndexesOld[i][j], &TempBmp);
+//	   TempBmp=*bmp;
+	   SetBitmap(i, j, TempBmp);
+	  }
+	  else
+	  {
+	   StringIds[i][j].clear();
+	   ComponentIndexesOld[i][j]=0;
+	   ComponentIndexes[i][j].clear();
+	  }
 //	  UnLockEngine();
 	 }
+	 else
+	 {
+//	  LockEngine();
+	  String s1 = String(StringIds[i][j].c_str());
+	  String s2 = String(ComponentIndexes[i][j].c_str());
+	  RDK::UBitmapParam bmp_param;
+	  int copy_res=MModel_CopyComponentBitmapOutputHeader(eng_index, StringIds[i][j].c_str(), ComponentIndexes[i][j].c_str(), &bmp_param);
+	  if(copy_res == 0)
+	  {
+	   TempBmp.SetRes(bmp_param.Width,bmp_param.Height,bmp_param.ColorModel);
+	   MModel_CopyComponentBitmapOutput(eng_index, StringIds[i][j].c_str(), ComponentIndexes[i][j].c_str(), &TempBmp);
+//	   TempBmp=*bmp;
+	   SetBitmap(i, j, TempBmp);
+	  }
+	  else
+	  {
+	   StringIds[i][j].clear();
+	   ComponentIndexesOld[i][j]=0;
+	   ComponentIndexes[i][j].clear();
+	  }
+	 }
+    }
    }
   }
 
@@ -455,22 +509,25 @@ void TUImagesFrame::AUpdateInterface(void)
    return;
 
 //  LockEngine();
-  const RDK::UBitmap* bmp=0;
+  RDK::UBitmapParam bmp_param;
+  int copy_res=1;
+
+  int eng_index = ComponentChannelIndexes[DrawGrid->Col][DrawGrid->Row];
   if(ComponentIndexes[DrawGrid->Col][DrawGrid->Row].empty())
-   bmp=(const RDK::UBitmap*)Model_GetComponentOutputByIndex(StringIds[DrawGrid->Col][DrawGrid->Row].c_str(), ComponentIndexesOld[DrawGrid->Col][DrawGrid->Row]);
+   copy_res=MModel_CopyComponentBitmapOutputHeaderByIndex(eng_index, StringIds[DrawGrid->Col][DrawGrid->Row].c_str(), ComponentIndexesOld[DrawGrid->Col][DrawGrid->Row], &bmp_param);
   else
-   bmp=(const RDK::UBitmap*)Model_GetComponentOutput(StringIds[DrawGrid->Col][DrawGrid->Row].c_str(), ComponentIndexes[DrawGrid->Col][DrawGrid->Row].c_str());
-  if(bmp)
+   copy_res=MModel_CopyComponentBitmapOutputHeader(eng_index, StringIds[DrawGrid->Col][DrawGrid->Row].c_str(), ComponentIndexes[DrawGrid->Col][DrawGrid->Row].c_str(), &bmp_param);
+  if(copy_res == 0)
   {
-   TempBmp.SetRes(bmp->GetWidth(),bmp->GetHeight(),bmp->GetColorModel());
+   TempBmp.SetRes(bmp_param.Width,bmp_param.Height,bmp_param.ColorModel);
    if(ComponentIndexes[DrawGrid->Col][DrawGrid->Row].empty())
-	Model_CopyComponentBitmapOutputByIndex(StringIds[DrawGrid->Col][DrawGrid->Row].c_str(), ComponentIndexesOld[DrawGrid->Col][DrawGrid->Row], &TempBmp);
+	MModel_CopyComponentBitmapOutputByIndex(eng_index, StringIds[DrawGrid->Col][DrawGrid->Row].c_str(), ComponentIndexesOld[DrawGrid->Col][DrawGrid->Row], &TempBmp);
    else
-	Model_CopyComponentBitmapOutput(StringIds[DrawGrid->Col][DrawGrid->Row].c_str(), ComponentIndexes[DrawGrid->Col][DrawGrid->Row].c_str(), &TempBmp);
+	MModel_CopyComponentBitmapOutput(eng_index, StringIds[DrawGrid->Col][DrawGrid->Row].c_str(), ComponentIndexes[DrawGrid->Col][DrawGrid->Row].c_str(), &TempBmp);
 //   TempBmp=*bmp;
    SetBitmap(DrawGrid->Col, DrawGrid->Row, TempBmp);
   }
-  UnLockEngine();
+//  UnLockEngine();
 
   Graphics::TBitmap * tbmp=Images[DrawGrid->Col][DrawGrid->Row]->Picture->Bitmap;
 

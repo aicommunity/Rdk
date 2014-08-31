@@ -41,7 +41,7 @@ TProperty::TProperty() {
 
 }
 
-TProperty::operator =(const TProperty &p)
+TProperty& TProperty::operator =(const TProperty &p)
 {
 	this->m_description = p.m_description;
 	this->m_listed = p.m_listed;
@@ -54,6 +54,7 @@ TProperty::operator =(const TProperty &p)
 	this->m_step = p.m_step;
 	this->m_upBorder = p.m_upBorder;
 	this->m_value = p.m_value;
+	return *this;
 }
 
 TProperty::~TProperty() {
@@ -177,7 +178,7 @@ void TProperty::AddListItem(String text, int index)
 {
 	if(m_listed)
 	{
-		if((index==-1)||(index>= m_listItems.size()))
+		if((index==-1)||(index>= int(m_listItems.size())))
 		{
 			m_listItems.push_back(text);
 		}
@@ -348,7 +349,7 @@ void __fastcall TEnchancedSG::BasicStringGridDrawCell(TObject *Sender, int ACol,
 					std::vector<String> * vec;
 					p.GetListPointer(&vec);
 					cmbListEdit->Items->Clear();
-					for(int i = 0; i<vec->size();i++)
+					for(size_t i = 0; i<vec->size();i++)
 					{
 						cmbListEdit->Items->Add(vec->at(i));
 					}
