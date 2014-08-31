@@ -949,7 +949,34 @@ bool UADItem::Connect(UEPtr<UConnector> c, int i_index, int c_index)
 
 bool UADItem::Connect(UEPtr<UConnector> c, const NameT &item_property_name, const NameT &connector_property_name, int &c_index)
 {
- return UItem::Connect(c, item_property_name, connector_property_name, c_index);
+ std::string conn_property_name;
+ UEPtr<UADItem> ad_c=dynamic_pointer_cast<UADItem>(c);
+  if(!connector_property_name.empty())
+  {
+   std::string::size_type i=connector_property_name.find("DataInput");
+   if(i != std::string::npos)
+   {
+	c_index=RDK::atoi(connector_property_name.substr(9));
+	if(ad_c->GetNumInputs()<=c_index)
+	{
+	 if(ad_c->GetAutoNumInputs())
+	  ad_c->SetNumInputs(c_index+1);
+	 else
+	  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("DataInput index out of range and AutoNumInputs == false: ")+sntoa(c_index));
+	}
+    conn_property_name=std::string("DataInput")+sntoa(c_index);
+   }
+  }
+  else
+  {
+   conn_property_name=c->FindFreeInputName();
+   c_index=ad_c->GetNumInputs();
+   ad_c->SetNumInputs(ad_c->GetNumInputs()+1);
+   conn_property_name=std::string("DataInput")+sntoa(c_index);
+  }
+
+
+ return UItem::Connect(c, item_property_name, conn_property_name, c_index);
 }
 
 // Разрывает связь выхода этого объекта с коннектором 'c' по индексу
