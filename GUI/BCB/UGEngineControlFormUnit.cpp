@@ -528,7 +528,7 @@ try{
  InputEnvImageWidth=ProjectXml.ReadInteger("InputEnvImageWidth",360);
  InputEnvImageHeight=ProjectXml.ReadInteger("InputEnvImageHeight",240);
 
- ProjectMode=ProjectXml.ReadInteger("ProjectMode",0);
+ ProjectMode=ProjectXml.ReadInteger("ProjectMode",1);
 
  PredefinedStructure.resize(GetNumEngines());
  PredefinedStructure[0]=ProjectXml.ReadInteger("PredefinedStructure",0);
@@ -1605,6 +1605,7 @@ int TUGEngineControlForm::GetNumChannels(void) const
 /// также выставл€ет число источников видео
 int TUGEngineControlForm::SetNumChannels(int value)
 {
+ Pause1Click(this);
  UEngineMonitorForm->EngineMonitorFrame->SetNumChannels(value);
  UServerControlForm->SetNumChannels(value);
  return 0;
@@ -1615,6 +1616,7 @@ int TUGEngineControlForm::SetNumChannels(int value)
 /// ≈сли позици€ не существует, то добавл€ет в конец
 int TUGEngineControlForm::AddChannel(int index)
 {
+ Pause1Click(this);
  UEngineMonitorForm->EngineMonitorFrame->InsertChannel(index);
  UServerControlForm->SetNumChannels(GetNumChannels());
  return 0;
@@ -1623,6 +1625,7 @@ int TUGEngineControlForm::AddChannel(int index)
 /// ”дал€ет канал из позиции index
 int TUGEngineControlForm::DelChannel(int index)
 {
+ Pause1Click(this);
  UEngineMonitorForm->EngineMonitorFrame->DeleteChannel(index);
  UServerControlForm->SetNumChannels(GetNumChannels());
  return 0;
@@ -2263,8 +2266,7 @@ void __fastcall TUGEngineControlForm::AddNew1Click(TObject *Sender)
  if(!ProjectOpenFlag)
   return;
 
- UEngineMonitorForm->EngineMonitorFrame->SetNumChannels(GetNumEngines()+1);
- UDrawEngineFrame1->ReloadNet();
+ SetNumChannels(GetNumEngines()+1);
  RDK::UIVisualControllerStorage::UpdateInterface(true);
 }
 //---------------------------------------------------------------------------
@@ -2274,11 +2276,7 @@ void __fastcall TUGEngineControlForm::DeleteLast1Click(TObject *Sender)
  if(!ProjectOpenFlag)
   return;
 
- if(GetNumEngines() <= 0)
-  return;
-
- UEngineMonitorForm->EngineMonitorFrame->SetNumChannels(GetNumEngines()-1);
- UDrawEngineFrame1->ReloadNet();
+ SetNumChannels(GetNumEngines()-1);
  RDK::UIVisualControllerStorage::UpdateInterface(true);
 }
 //---------------------------------------------------------------------------
@@ -2288,8 +2286,7 @@ void __fastcall TUGEngineControlForm::DeleteAll1Click(TObject *Sender)
  if(!ProjectOpenFlag)
   return;
 
- UEngineMonitorForm->EngineMonitorFrame->SetNumChannels(1);
- UDrawEngineFrame1->ReloadNet();
+ SetNumChannels(1);
  RDK::UIVisualControllerStorage::UpdateInterface(true);
 }
 //---------------------------------------------------------------------------
@@ -2391,14 +2388,7 @@ void __fastcall TUGEngineControlForm::AddChannel1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::DelChannel1Click(TObject *Sender)
 {
- if(ChannelsStringGrid->RowCount<=0 || ChannelsStringGrid->Row<0)
-  return;
-
- Pause1Click(Sender);
-// DelChannel(
-
-
- RDK::UIVisualControllerStorage::UpdateInterface();
+ DeleteLast1Click(Sender);
 }
 //---------------------------------------------------------------------------
 
@@ -2492,13 +2482,21 @@ void __fastcall TUGEngineControlForm::UComponentsListFrame1NiceStateValRichEditM
 
 void __fastcall TUGEngineControlForm::Insert1Click(TObject *Sender)
 {
+ if(!ProjectOpenFlag)
+  return;
+
  AddChannel(ChannelsStringGrid->Row);
+ RDK::UIVisualControllerStorage::UpdateInterface(true);
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUGEngineControlForm::DeleteSelected1Click(TObject *Sender)
 {
+ if(!ProjectOpenFlag)
+  return;
+
  DelChannel(ChannelsStringGrid->Row);
+ RDK::UIVisualControllerStorage::UpdateInterface(true);
 }
 //---------------------------------------------------------------------------
 
@@ -2514,4 +2512,5 @@ void __fastcall TUGEngineControlForm::DeleteSelectedChannel1Click(TObject *Sende
  DeleteSelected1Click(Sender);
 }
 //---------------------------------------------------------------------------
+
 

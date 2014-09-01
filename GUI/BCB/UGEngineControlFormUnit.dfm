@@ -208,10 +208,6 @@ object UGEngineControlForm: TUGEngineControlForm
         TabPosition = tpRight
         object LogsTabSheet: TTabSheet
           Caption = 'Logs'
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
         end
         object TabSheet2: TTabSheet
           Caption = 'Performance'
@@ -350,6 +346,12 @@ object UGEngineControlForm: TUGEngineControlForm
               Height = 211
               ExplicitWidth = 241
               ExplicitHeight = 211
+              inherited Image: TImage
+                Left = -1
+                Top = -2
+                ExplicitLeft = -1
+                ExplicitTop = -2
+              end
             end
           end
           inherited Panel3: TPanel
@@ -607,6 +609,10 @@ object UGEngineControlForm: TUGEngineControlForm
         Caption = 'Add New'
         OnClick = AddNew1Click
       end
+      object Insert1: TMenuItem
+        Caption = 'Insert'
+        OnClick = Insert1Click
+      end
       object DeleteLast1: TMenuItem
         Caption = 'Delete Last'
         OnClick = DeleteLast1Click
@@ -614,10 +620,6 @@ object UGEngineControlForm: TUGEngineControlForm
       object DeleteAll1: TMenuItem
         Caption = 'Delete All'
         OnClick = DeleteAll1Click
-      end
-      object Insert1: TMenuItem
-        Caption = 'Insert'
-        OnClick = Insert1Click
       end
       object DeleteSelected1: TMenuItem
         Caption = 'Delete Selected'
@@ -720,7 +722,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 360
     Top = 65528
     Bitmap = {
-      494C01011B006000C40210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B006000C80210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

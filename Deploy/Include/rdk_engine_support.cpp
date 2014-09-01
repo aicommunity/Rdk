@@ -120,7 +120,7 @@ int RDKDllManager::SetNumEngines(int num)
  }
 
  if(SelectedChannelIndex>=num)
-  SetSelectedChannelIndex(0);
+  SetSelectedChannelIndex(num-1);
 
  return 0;
 }
@@ -172,6 +172,9 @@ int RDKDllManager::Del(int index)
  if(index<0 || index >= GetNumEngines())
   return 748361;
 
+ if(GetNumEngines() == 1)
+  return 748366;
+
  {
   UGenericMutexLocker lock(MutexList[index]);
   EngineDestroy(index);
@@ -194,7 +197,10 @@ int RDKDllManager::Del(int index)
  MutexList.resize(MutexList.size()-1);
  LockerList.resize(LockerList.size()-1);
 
- SetSelectedChannelIndex(SelectedChannelIndex);
+ if(SelectedChannelIndex>=int(EngineList.size()))
+  SetSelectedChannelIndex(SelectedChannelIndex-1);
+ else
+  SetSelectedChannelIndex(SelectedChannelIndex);
  return 0;
 }
 
@@ -259,7 +265,7 @@ int RDKDllManager::EngineCreate(int index)
 /// (если движок уже уничтожен, то не делает ничего
 int RDKDllManager::EngineDestroy(int index)
 {
- if(index<0 || index>=GetNumEngines())
+ if(index<0 || index>=int(EngineList.size()))
   return 1;
 
  if(EngineList[index])
