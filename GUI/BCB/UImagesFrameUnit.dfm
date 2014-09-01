@@ -105,7 +105,7 @@ inherited UImagesFrame: TUImagesFrame
     object ShowInfoCheckBox: TCheckBox
       Left = 193
       Top = 1
-      Width = 104
+      Width = 80
       Height = 15
       Align = alLeft
       Caption = 'Show info'
@@ -113,6 +113,18 @@ inherited UImagesFrame: TUImagesFrame
       ParentDoubleBuffered = False
       TabOrder = 4
       OnClick = ShowInfoCheckBoxClick
+    end
+    object IndChannelsCheckBox: TCheckBox
+      Left = 273
+      Top = 1
+      Width = 97
+      Height = 15
+      Align = alLeft
+      Caption = 'Ind. channels'
+      TabOrder = 5
+      ExplicitLeft = 360
+      ExplicitTop = 8
+      ExplicitHeight = 17
     end
   end
   object PopupMenu: TPopupMenu

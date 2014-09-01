@@ -67,7 +67,7 @@ void TUImagesFrame::SetNumCells(int width, int height)
   ComponentIndexesOld[i].resize(height,-1);
   MouseClickComponents[i].resize(height);
   Legends[i].resize(height);
-  ComponentChannelIndexes[i].resize(height,-1);
+  ComponentChannelIndexes[i].resize(height,GetSelectedEngineIndex());
 //  for(int k=0;k<ComponentChannelIndexes[i].size(); k++)
 //  	ComponentChannelIndexes[i][k]=-1;
 
@@ -384,49 +384,10 @@ void TUImagesFrame::AUpdateInterface(void)
   {
    for(size_t j=0;j<Images[i].size();j++)
    {
-	if(ComponentChannelIndexes[i][j]==-1)
-	{
-	 /*if(ComponentIndexes[i][j].empty())
-	 {
-//	  LockEngine();
-	  const RDK::UBitmap* bmp=(const RDK::UBitmap*)Model_GetComponentOutputByIndex(StringIds[i][j].c_str(), ComponentIndexesOld[i][j]);
-	  if(bmp)
-	  {
-	   TempBmp.SetRes(bmp->GetWidth(),bmp->GetHeight(),bmp->GetColorModel());
-	   Model_CopyComponentBitmapOutputByIndex(StringIds[i][j].c_str(), ComponentIndexesOld[i][j], &TempBmp);
-//	   TempBmp=*bmp;
-	   SetBitmap(i, j, TempBmp);
-	  }
-	  else
-	  {
-	   StringIds[i][j].clear();
-	   ComponentIndexesOld[i][j]=0;
-	   ComponentIndexes[i][j].clear();
-	  }
-//	  UnLockEngine();
-	 }
-	 else
-	 {
-//	  LockEngine();
-	  const RDK::UBitmap* bmp=(const RDK::UBitmap*)Model_GetComponentOutput(StringIds[i][j].c_str(), ComponentIndexes[i][j].c_str());
-	  if(bmp)
-	  {
-	   TempBmp.SetRes(bmp->GetWidth(),bmp->GetHeight(),bmp->GetColorModel());
-	   Model_CopyComponentBitmapOutput(StringIds[i][j].c_str(), ComponentIndexes[i][j].c_str(), &TempBmp);
-//	   TempBmp=*bmp;
-	   SetBitmap(i, j, TempBmp);
-	  }
-	  else
-	  {
-	   StringIds[i][j].clear();
-	   ComponentIndexesOld[i][j]=0;
-	   ComponentIndexes[i][j].clear();
-	  }
-	 } */
-	}
-	else
-	{
 	 int eng_index = ComponentChannelIndexes[i][j];
+	 if(eng_index<0 || IndChannelsCheckBox->Checked == false)
+	  eng_index=GetSelectedEngineIndex();
+
 	 if(ComponentIndexes[i][j].empty())
 	 {
 //	  LockEngine();
@@ -468,7 +429,6 @@ void TUImagesFrame::AUpdateInterface(void)
 	   ComponentIndexes[i][j].clear();
 	  }
 	 }
-    }
    }
   }
 
@@ -513,6 +473,8 @@ void TUImagesFrame::AUpdateInterface(void)
   int copy_res=1;
 
   int eng_index = ComponentChannelIndexes[DrawGrid->Col][DrawGrid->Row];
+  if(eng_index<0 || IndChannelsCheckBox->Checked == false)
+   eng_index=GetSelectedEngineIndex();
   if(ComponentIndexes[DrawGrid->Col][DrawGrid->Row].empty())
    copy_res=MModel_CopyComponentBitmapOutputHeaderByIndex(eng_index, StringIds[DrawGrid->Col][DrawGrid->Row].c_str(), ComponentIndexesOld[DrawGrid->Col][DrawGrid->Row], &bmp_param);
   else
@@ -587,6 +549,7 @@ void TUImagesFrame::ASaveParameters(RDK::USerStorageXML &xml)
  xml.WriteBool("ShowLegendCheckBox",ShowLegendCheckBox->Checked);
  xml.WriteBool("ShowHistogramCheckBox",ShowHistogramCheckBox->Checked);
  xml.WriteBool("ShowInfoCheckBox",ShowInfoCheckBox->Checked);
+ xml.WriteBool("IndChannelsCheckBox",IndChannelsCheckBox->Checked);
 
  xml.WriteInteger("SizeMode",SizeMode);
 }
@@ -638,6 +601,7 @@ void TUImagesFrame::ALoadParameters(RDK::USerStorageXML &xml)
  ShowLegendCheckBox->Checked=xml.ReadBool("ShowLegendCheckBox",true);
  ShowHistogramCheckBox->Checked=xml.ReadBool("ShowHistogramCheckBox",false);
  ShowInfoCheckBox->Checked=xml.ReadBool("ShowInfoCheckBox",false);
+ IndChannelsCheckBox->Checked=xml.ReadBool("IndChannelsCheckBox",false);
 
  SizeMode=xml.ReadInteger("SizeMode",0);
 
@@ -689,6 +653,7 @@ void __fastcall TUImagesFrame::SelectSourceClick(TObject *Sender)
 
  StringIds[DrawGrid->Col][DrawGrid->Row]=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName();
  ComponentIndexes[DrawGrid->Col][DrawGrid->Row]=MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput();
+ ComponentChannelIndexes[DrawGrid->Col][DrawGrid->Row]=GetSelectedEngineIndex();
 
  if(ComponentIndexes[DrawGrid->Col][DrawGrid->Row].empty())
  {
