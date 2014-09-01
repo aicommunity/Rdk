@@ -122,9 +122,6 @@ inherited UImagesFrame: TUImagesFrame
       Align = alLeft
       Caption = 'Ind. channels'
       TabOrder = 5
-      ExplicitLeft = 360
-      ExplicitTop = 8
-      ExplicitHeight = 17
     end
   end
   object PopupMenu: TPopupMenu
