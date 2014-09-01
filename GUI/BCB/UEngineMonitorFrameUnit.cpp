@@ -414,6 +414,7 @@ bool TUEngineMonitorFrame::DeleteChannel(int index)
  ServerTimeStamp.resize(new_num);
  LastCalculatedServerTimeStamp.resize(new_num);
  RealLastCalculationTime.resize(new_num);
+ ThreadChannels.resize(new_num);
 
  return true;
 }

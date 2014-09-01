@@ -609,6 +609,10 @@ object UGEngineControlForm: TUGEngineControlForm
         Caption = 'Add New'
         OnClick = AddNew1Click
       end
+      object Insert1: TMenuItem
+        Caption = 'Insert'
+        OnClick = Insert1Click
+      end
       object DeleteLast1: TMenuItem
         Caption = 'Delete Last'
         OnClick = DeleteLast1Click
@@ -616,10 +620,6 @@ object UGEngineControlForm: TUGEngineControlForm
       object DeleteAll1: TMenuItem
         Caption = 'Delete All'
         OnClick = DeleteAll1Click
-      end
-      object Insert1: TMenuItem
-        Caption = 'Insert'
-        OnClick = Insert1Click
       end
       object DeleteSelected1: TMenuItem
         Caption = 'Delete Selected'
