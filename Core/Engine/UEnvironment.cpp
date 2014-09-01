@@ -565,7 +565,7 @@ void UEnvironment::ProcessException(UException &exception) const
  if(CurrentExceptionsLogSize > MaxExceptionsLogSize)
  {
   int erase_size=CurrentExceptionsLogSize - MaxExceptionsLogSize-1;
-  if(LogList.size()>erase_size)
+  if(int(LogList.size())>erase_size)
    LogList.erase(LogList.begin(),LogList.begin()+erase_size);
   else
    LogList.clear();

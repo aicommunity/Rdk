@@ -385,6 +385,9 @@ virtual const type_info& GetLanguageType(void) const=0;
 // Метод сравнивает тип этого свойства с другим свойством
 virtual bool CompareLanguageType(const UIProperty &dt) const=0;
 
+/// Обновляет указатель PData
+virtual void UpdatePData(void* data)=0;
+
 // --------------------------
 // Методы управления данными
 // --------------------------

@@ -184,6 +184,12 @@ bool ReadFromMemory(const void *buffer)
  SetData(*temp);
  return true;
 }
+
+/// Обновляет указатель PData
+virtual void UpdatePData(void* data)
+{
+ PData=(T*)data;
+}
 // -----------------------------
 
 // --------------------------
