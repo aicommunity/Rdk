@@ -964,8 +964,10 @@ bool UADItem::Connect(UEPtr<UConnector> c, const NameT &item_property_name, cons
 	 else
 	  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("DataInput index out of range and AutoNumInputs == false: ")+sntoa(c_index));
 	}
-    conn_property_name=std::string("DataInput")+sntoa(c_index);
+	conn_property_name=std::string("DataInput")+sntoa(c_index);
    }
+   else
+	conn_property_name=connector_property_name;
   }
   else
   {
