@@ -10,7 +10,7 @@ namespace RDK {
 // Output properties
 // -----------------------------------------------------------------------------
 template<typename T, typename OwnerT, unsigned int type=ptPubOutput>
-class UPropertyOutputBase: protected ULProperty<T,OwnerT,type>, /*public UPropertyIOBase, */public UIPropertyOutput
+class UPropertyOutputBase: public ULProperty<T,OwnerT,type>, /*public UPropertyIOBase, */public UIPropertyOutput
 {
 protected:
 
@@ -31,6 +31,16 @@ UPropertyOutputBase(const string &name, OwnerT * const owner, int min_range, int
 // --------------------------
 // Методы управления указателем
 // --------------------------
+operator T* (void)
+{
+ return this->PData;
+}
+
+/*bool operator ! (void) const
+{
+ return (GetPointer(0))?true:false;
+};
+
 T* operator -> (void)
 {
  return &this->v;
@@ -65,7 +75,7 @@ const T& operator [] (int i) const
 {
  return this->v;
 }
-
+       */
 // --------------------------
 // Методы управления указателем
 // --------------------------

@@ -374,6 +374,52 @@ virtual void SetData(const T &value)
  }
 };
 // -----------------------------
+
+// -----------------------------
+// Методы управления
+// -----------------------------
+operator T (void) const
+{
+ return this->GetData();
+};
+
+const T& operator () (void) const
+{
+ return this->GetData();
+};
+
+T* operator -> (void)
+{ return const_cast<T*>(&this->GetData()); };
+
+const T* operator -> (void) const
+{ return &this->GetData(); };
+
+T& operator * (void)
+{ return const_cast<T&>(this->GetData()); };
+
+const T& operator * (void) const
+{ return this->GetData(); };
+
+bool operator ! (void) const
+{
+ return (GetPointer(0))?true:false;
+};
+
+
+
+// Оператор присваивания
+UVProperty<T,OwnerT>& operator = (const T &value)
+{
+ this->SetData(value);
+ return *this;
+};
+
+UVProperty<T,OwnerT>& operator = (const UVProperty<T,OwnerT> &v)
+{
+ this->SetData(v.GetData());
+ return *this;
+};
+// -----------------------------
 };
 
 
