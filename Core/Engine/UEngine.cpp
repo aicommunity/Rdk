@@ -2340,7 +2340,7 @@ const char* UEngine::Model_GetComponentPropertiesLookupList(const char* stringid
      TempString+=",";
     TempString+=I->first;
     TempString+=":";
-    TempString+=sntoa(I->second.Property->GetMinRange());
+    TempString+=sntoa(0);
    }
    ++I;
   }

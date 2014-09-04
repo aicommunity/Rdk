@@ -395,12 +395,12 @@ virtual void UpdatePData(void* data)=0;
 virtual int GetIoType(void) const=0;
 
 /// Возвращает диапазон индексов входа/выхода
-virtual bool CheckRange(int index)=0;
+//virtual bool CheckRange(int index)=0;
 
 // Диапазон индексов входов
-virtual int GetMinRange(void)=0;
+//virtual int GetMinRange(void)=0;
 
-virtual int GetMaxRange(void)=0;
+//virtual int GetMaxRange(void)=0;
 // --------------------------
 
 // --------------------------

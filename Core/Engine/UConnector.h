@@ -210,7 +210,7 @@ virtual UCLink GetCLink(const UItem* const item) const;
 virtual void FindInputProperty(const NameT &connector_property_name, UIProperty* &property) const;
 
 /// Возвращает индекс входа с заданным именем
-virtual int FindInputIndex(const NameT &input_name) const;
+//virtual int FindInputIndex(const NameT &input_name) const;
 // --------------------------
 
 // ----------------------

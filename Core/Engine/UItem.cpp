@@ -371,7 +371,7 @@ void UItem::FindOutputProperty(const NameT &item_property_name, UIProperty* &pro
   property=I->second.Property.Get();
  }
 }
-
+   /*
 /// Возвращает индекс входа с заданным именем
 int UItem::FindOutputIndex(const NameT &output_name) const
 {
@@ -389,7 +389,7 @@ int UItem::FindOutputIndex(const NameT &output_name) const
   return ForbiddenId;
 
  return property->GetMinRange();
-}
+}    */
 
 // --------------------------
 
@@ -441,7 +441,7 @@ bool UItem::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, cons
 	{
 	 if(output_property->CompareLanguageType(*input_property))
 	 {
-	  input_property->SetPointer(input_property->GetMinRange(),const_cast<void*>(output_property->GetPointer(output_property->GetMinRange())));
+	  input_property->SetPointer(/*input_property->GetMinRange()*/0,const_cast<void*>(output_property->GetPointer(0)));
      }
 	 else
 	 {
@@ -455,12 +455,12 @@ bool UItem::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, cons
    if(input_property->GetIoType() & ipRange)
    {
 	if(output_property)
-	 input_property->SetPointer(input_property->GetMinRange(),const_cast<void*>(output_property->GetPointer(output_property->GetMinRange())));
+	 input_property->SetPointer(/*input_property->GetMinRange()*/0,const_cast<void*>(output_property->GetPointer(0)));
    }
   }
   else
   if(input_property->GetIoType() & ipComp)
-   input_property->SetPointer(input_property->GetMinRange(),na);
+   input_property->SetPointer(/*input_property->GetMinRange()*/0,na);
  }
 
  return true;

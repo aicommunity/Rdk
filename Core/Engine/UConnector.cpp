@@ -410,7 +410,7 @@ UCLink UConnector::GetCLink(const UEPtr<UItem> &item) const
  if(property)
  {
   indexes.InputName=property->GetName();
-  indexes.Input=property->GetMinRange();
+//  indexes.Input=property->GetMinRange();
  }
  indexes.Output=citem.Index;
  indexes.OutputName=citem.Name;
@@ -465,7 +465,7 @@ void UConnector::FindInputProperty(const NameT &connector_property_name, UIPrope
   property=I->second.Property.Get();
  }
 }
-
+	 /*
 /// Возвращает индекс входа с заданным именем
 int UConnector::FindInputIndex(const NameT &input_name) const
 {
@@ -485,7 +485,7 @@ int UConnector::FindInputIndex(const NameT &input_name) const
 
  return property->GetMinRange();
 }
-
+			   */
 // --------------------------
 
 // ----------------------
@@ -636,7 +636,7 @@ void UConnector::DisconnectFromIndex(const NameT &connector_property_name, const
    {
 	UIProperty* i_conn_property=0;
 	FindInputProperty(connector_property_name,i_conn_property);
-	if(i_conn_property->CheckRange(index)) // TODO тут возможно что-то другое
+//	if(i_conn_property->CheckRange(index)) // TODO тут возможно что-то другое
 	 i_conn_property->SetPointer(index,0);
 
 	ADisconnectFromItem(I->second[index].Item,I->second[index].Name,connector_property_name);
@@ -656,7 +656,7 @@ void UConnector::DisconnectFromIndex(const NameT &connector_property_name)
   {
 	UIProperty* i_conn_property=0;
 	FindInputProperty(connector_property_name,i_conn_property);
-	if(i_conn_property->CheckRange(i)) // TODO воозможно тут что то другое
+//	if(i_conn_property->CheckRange(i)) // TODO воозможно тут что то другое
 	 i_conn_property->SetPointer(i,0);
 
 	ADisconnectFromItem(I->second[i].Item,I->second[i].Name,connector_property_name);
@@ -860,7 +860,7 @@ ULinksListT<T>& UConnector::GetLinks(ULinksListT<T> &linkslist, UEPtr<UContainer
    UIProperty* property=0;
    FindInputProperty(I->first, property);
    if(property)
-	connector.Index=property->GetMinRange();
+	connector.Index=-1;//property->GetMinRange();
    else
     connector.Index=-1;//i;
    connector.Name=I->first;

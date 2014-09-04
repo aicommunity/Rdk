@@ -515,7 +515,7 @@ void UADItem::FindInputProperty(int index, UIProperty* &property) const
   if(I->second.Type & ptInput)
   {
    property=I->second.Property.Get();
-   if(!property || !property->CheckRange(index))
+   if(!property/* || !property->CheckRange(index)*/)
    {
 	property=0;
 	continue;
@@ -543,7 +543,7 @@ void UADItem::FindOutputProperty(int index, UIProperty* &property) const
   if(I->second.Type & ptOutput)
   {
    property=I->second.Property.Get();
-   if(!property || !property->CheckRange(index))
+   if(!property /*|| !property->CheckRange(index)*/)
    {
     property=0;
 	continue;
@@ -1113,11 +1113,7 @@ bool UADItem::Build(void)
    if(!property)
 	continue;
 
-   if(property->GetMinRange()+1>min_num_inputs)
-	min_num_inputs=property->GetMinRange()+1;
-
-   if(property->GetMaxRange()+1>min_num_inputs)
-	min_num_inputs=property->GetMaxRange()+1;
+   min_num_inputs++;
   }
 
   if(I->second.Type & ptOutput)
@@ -1126,11 +1122,7 @@ bool UADItem::Build(void)
    if(!property)
 	continue;
 
-   if(property->GetMinRange()+1>min_num_outputs)
-	min_num_outputs=property->GetMinRange()+1;
-
-   if(property->GetMaxRange()+1>min_num_outputs)
-	min_num_outputs=property->GetMaxRange()+1;
+   min_num_outputs++;
   }
  }
 
