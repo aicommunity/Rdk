@@ -143,6 +143,7 @@ UCLProperty(const string &name, OwnerT * const owner, typename UCProperty<T,Owne
 // -----------------------------
 
 public: // Исключения
+
 // Выход за границы массива C (container) property
 struct EPropertyRangeError: public UIProperty::EPropertyError
 {

@@ -102,7 +102,7 @@ bool UADItem::SetNumInputs(const int &value)
   std::string name=std::string("DataInput")+sntoa(i);
   UEPtr<UIProperty> property=FindProperty(name);
   if(!property)
-   AddLookupProperty(name,ptPubInput,new UVPropertyInputData<UItemData,UADItem>(this,&InputData[i],i));
+   AddLookupProperty(name,ptPubInput,new UVPropertyInputData<UItemData,UADItem>(this,&InputData[i]));
   else
    property->UpdatePData(&InputData[i]);
  }
@@ -159,7 +159,7 @@ bool UADItem::SetNumOutputs(const int &value)
   std::string name=std::string("DataOutput")+sntoa(i);
   UEPtr<UIProperty> property=FindProperty(name);
   if(!property)
-   AddLookupProperty(name,ptPubOutput,new UVPropertyOutputData<UItemData,UADItem>(this,&OutputData[i],i));
+   AddLookupProperty(name,ptPubOutput,new UVPropertyOutputData<UItemData,UADItem>(this,&OutputData[i]));
   else
    property->UpdatePData(&OutputData[i]);
  }
@@ -521,7 +521,7 @@ void UADItem::FindInputProperty(int index, UIProperty* &property) const
 	if(i != std::string::npos)
 	{
 	 int found_index=RDK::atoi(property->GetName().substr(9));
-	 if(i == index)
+	 if(int(i) == index)
 	  break;
 	}
    }
@@ -552,7 +552,7 @@ void UADItem::FindOutputProperty(int index, UIProperty* &property) const
 	if(i != std::string::npos)
 	{
 	 int found_index=RDK::atoi(property->GetName().substr(10));
-	 if(i == index)
+	 if(int(i) == index)
 	  break;
 	}
    }

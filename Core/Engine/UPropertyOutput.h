@@ -19,12 +19,10 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UPropertyOutputBase(const string &name, OwnerT * const owner, int min_range, int input_type, int max_range=-1)
+UPropertyOutputBase(const string &name, OwnerT * const owner, int input_type)
  : ULProperty<T,OwnerT,type>(name, owner)
 {
  this->IoType=input_type;
- this->MinRange=min_range;
- this->MaxRange=max_range;
 };
 // -----------------------------
 
@@ -104,8 +102,8 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UPropertyOutputData(const string &name, OwnerT * const owner, int min_range, int input_type=ipSingle, int max_range=-1)
- : UPropertyOutputBase<T,OwnerT,type>(name, owner, min_range, input_type | ipData, max_range)
+UPropertyOutputData(const string &name, OwnerT * const owner)
+ : UPropertyOutputBase<T,OwnerT,type>(name, owner, ipSingle | ipData)
 {
 
 };
@@ -122,12 +120,10 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UPropertyOutputCBase(const string &name, OwnerT * const owner, int min_range, int input_type, int max_range=-1)
+UPropertyOutputCBase(const string &name, OwnerT * const owner, int input_type)
  : UCLProperty<std::vector<T>,OwnerT,type>(name, owner)
 {
  this->IoType=input_type;
- this->MinRange=min_range;
- this->MaxRange=max_range;
 };
 // -----------------------------
 
@@ -203,8 +199,8 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UPropertyOutputCData(const string &name, OwnerT * const owner, int min_range, int input_type=ipRange, int max_range=-1)
- : UPropertyOutputCBase<T,OwnerT,type>(name, owner, min_range, input_type | ipData, max_range)
+UPropertyOutputCData(const string &name, OwnerT * const owner)
+ : UPropertyOutputCBase<T,OwnerT,type>(name, owner, ipRange | ipData)
 {
 
 };
@@ -224,12 +220,10 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UVPropertyOutputBase(OwnerT * const owner, T* data, int min_range, int input_type, int max_range=-1)
+UVPropertyOutputBase(OwnerT * const owner, T* data, int input_type)
  : UVProperty<T,OwnerT>(owner,data)
 {
  this->IoType=input_type;
- this->MinRange=min_range;
- this->MaxRange=max_range;
 };
 // -----------------------------
 
@@ -265,8 +259,8 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UVPropertyOutputData(OwnerT * const owner, T* data, int min_range, int input_type=ipSingle, int max_range=-1)
- : UVPropertyOutputBase<T,OwnerT>(owner, data, min_range, input_type | ipData, max_range)
+UVPropertyOutputData(OwnerT * const owner, T* data)
+ : UVPropertyOutputBase<T,OwnerT>(owner, data, ipSingle | ipData)
 {
 
 };

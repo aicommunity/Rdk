@@ -21,7 +21,7 @@ namespace RDK {
 // Конструкторы и деструкторы
 // --------------------------
 UBASource::UBASource(void)
-: Output("Output",this,0)
+: Output("Output",this)
 {
 }
 

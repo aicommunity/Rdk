@@ -421,7 +421,7 @@ bool UItem::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, cons
 
  if(output_property)
  {
-  size_t size=ConnectedItemList[connector_property_name].size();
+  int size=int(ConnectedItemList[connector_property_name].size());
   if(size>c_index)
    ConnectedItemList[connector_property_name][c_index].Name=item_property_name;
   else

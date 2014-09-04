@@ -47,7 +47,7 @@ mutable T* PData;
 int IoType;
 
 // Диапазон индексов входов
-int MinRange, MaxRange;
+//int MinRange, MaxRange;
 
 public: // Методы
 // --------------------------
@@ -55,12 +55,12 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 UVBaseDataProperty(void)
- : PData(0),IoType(0),MinRange(0), MaxRange(-1)
+ : PData(0),IoType(0)//,MinRange(0), MaxRange(-1)
 {
 }
 
 UVBaseDataProperty(T * const pdata)
- : PData(pdata),IoType(0),MinRange(0), MaxRange(-1)
+ : PData(pdata),IoType(0)//,MinRange(0), MaxRange(-1)
 {
 }
 // -----------------------------
@@ -200,7 +200,7 @@ virtual int GetIoType(void) const
 {
  return IoType;
 }
-
+/*
 virtual bool CheckRange(int index)
 {
  if(IoType & ipSingle)
@@ -218,6 +218,7 @@ virtual int GetMinRange(void)
 
 virtual int GetMaxRange(void)
 { return UVBaseDataProperty<T>::MaxRange; };
+*/
 // --------------------------
 
 // --------------------------

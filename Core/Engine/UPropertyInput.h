@@ -18,12 +18,12 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UPropertyInputBase(const string &name, OwnerT * const owner, int min_range, int input_type, int max_range=-1)
+UPropertyInputBase(const string &name, OwnerT * const owner, int input_type)
  : ULProperty<T*,OwnerT,type>(name, owner)
 {
  UVBaseDataProperty<T*>::IoType=input_type;
- UVBaseDataProperty<T*>::MinRange=min_range;
- UVBaseDataProperty<T*>::MaxRange=max_range;
+// UVBaseDataProperty<T*>::MinRange=min_range;
+// UVBaseDataProperty<T*>::MaxRange=max_range;
 };
 // -----------------------------
 
@@ -49,12 +49,10 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UVPropertyInputBase(OwnerT * const owner, T** data, int min_range, int input_type, int max_range=-1)
+UVPropertyInputBase(OwnerT * const owner, T** data, int input_type)
  : UVProperty<T*,OwnerT>(owner, data)
 {
  UVBaseDataProperty<T*>::IoType=input_type;
- UVBaseDataProperty<T*>::MinRange=min_range;
- UVBaseDataProperty<T*>::MaxRange=max_range;
 };
 // -----------------------------
 
@@ -80,8 +78,8 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UPropertyInput(const string &name, OwnerT * const owner, int min_range, int input_type=ipSingle | ipComp, int max_range=-1)
- : UPropertyInputBase<T,OwnerT,type>(name, owner, min_range, input_type | ipComp, max_range)
+UPropertyInput(const string &name, OwnerT * const owner)
+ : UPropertyInputBase<T,OwnerT,type>(name, owner, ipSingle | ipComp)
 { };
 // -----------------------------
 
@@ -138,8 +136,8 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UPropertyInputData(const string &name, OwnerT * const owner, int min_range, int input_type=ipSingle | ipComp, int max_range=-1)
- : UPropertyInputBase<T,OwnerT,type>(name, owner, min_range, input_type | ipData, max_range)
+UPropertyInputData(const string &name, OwnerT * const owner)
+ : UPropertyInputBase<T,OwnerT,type>(name, owner, ipSingle | ipData)
 { };
 // -----------------------------
 
@@ -280,8 +278,8 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UVPropertyInputData(OwnerT * const owner, T **data, int min_range, int input_type=ipSingle, int max_range=-1)
- : UVPropertyInputBase<T,OwnerT>(owner, data, min_range, input_type | ipData, max_range)
+UVPropertyInputData(OwnerT * const owner, T **data)
+ : UVPropertyInputBase<T,OwnerT>(owner, data, ipSingle | ipData)
 { };
 // -----------------------------
 
@@ -411,12 +409,10 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UPropertyInputCBase(const string &name, OwnerT * const owner, int min_range, int input_type, int max_range=-1)
+UPropertyInputCBase(const string &name, OwnerT * const owner, int input_type)
  : UCLProperty<std::vector<T*>,OwnerT,type>(name, owner)
 {
  this->IoType=input_type;
- this->MinRange=min_range;
- this->MaxRange=max_range;
 };
 // -----------------------------
 
@@ -426,36 +422,36 @@ UPropertyInputCBase(const string &name, OwnerT * const owner, int min_range, int
 // Возвращает указатель на данные входа
 void const * GetPointer(int index) const
 {
- if(int(this->v.size())<=index-this->MinRange)
+ if(int(this->v.size())<=index)
  #ifdef __BORLANDC__
 //  return 0;
   throw UCLProperty<std::vector<T*>,OwnerT>::EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
-	this->MinRange,int(this->v.size()+this->MinRange),index);
+	0,int(this->v.size()),index);
  #else
   throw typename UCLProperty<std::vector<T*>,OwnerT>::EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
-	this->MinRange,int(this->v.size()+this->MinRange),index);
+	0,int(this->v.size()),index);
  #endif
- return this->v[index-this->MinRange];
+ return this->v[index];
 }
 
 // Устанавливает указатель на данные входа
 bool SetPointer(int index, void* value)
 {
- if(int(this->v.size())<=index-this->MinRange)
-  this->v.resize(index-this->MinRange+1);
- this->v[index-this->MinRange]=reinterpret_cast<T*>(value);
+ if(int(this->v.size())<=index)
+  this->v.resize(index+1);
+ this->v[index]=reinterpret_cast<T*>(value);
  return true;
 }
 
 T* operator [] (int i)
 {
- if(int(this->v.size())<=i-this->MinRange)
+ if(int(this->v.size())<=i)
  #ifdef __BORLANDC__
   throw UCLProperty<std::vector<T*>,OwnerT>::EPropertyRangeError(this->GetOwnerName(),this->GetName(),
-	this->MinRange,int(this->v.size()+this->MinRange),i);
+	0,int(this->v.size()),i);
  #else
   throw typename UCLProperty<std::vector<T*>,OwnerT>::EPropertyRangeError(this->GetOwnerName(),this->GetName(),
-	this->MinRange,int(this->v.size()+this->MinRange),i);
+	0,int(this->v.size()),i);
  #endif
 // throw EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
 //	this->MinRange,int(this->v.size()+this->MinRange),i);
@@ -465,13 +461,13 @@ T* operator [] (int i)
 
 const T* operator [] (int i) const
 {
- if(int(this->v.size())<=i-this->MinRange)
+ if(int(this->v.size())<=i)
  #ifdef __BORLANDC__
   throw UCLProperty<std::vector<T*>,OwnerT>::EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
-	this->MinRange,int(this->v.size()+this->MinRange),i);
+	0,int(this->v.size()),i);
  #else
   throw typename UCLProperty<std::vector<T*>,OwnerT>::EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
-	this->MinRange,int(this->v.size()+this->MinRange),i);
+	0,int(this->v.size()),i);
  #endif
 
 
@@ -490,8 +486,8 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UPropertyInputC(const string &name, OwnerT * const owner, int min_range, int input_type=ipRange | ipComp, int max_range=-1)
- : UPropertyInputCBase<T,OwnerT,type>(name, owner, min_range, input_type | ipComp, max_range)
+UPropertyInputC(const string &name, OwnerT * const owner)
+ : UPropertyInputCBase<T,OwnerT,type>(name, owner, ipRange | ipComp)
 { };
 // -----------------------------
 
@@ -527,8 +523,8 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UPropertyInputCData(const string &name, OwnerT * const owner, int min_range, int input_type=ipRange, int max_range=-1)
- : UPropertyInputCBase<T,OwnerT,type>(name, owner, min_range, input_type | ipData, max_range)
+UPropertyInputCData(const string &name, OwnerT * const owner)
+ : UPropertyInputCBase<T,OwnerT,type>(name, owner, ipRange | ipData)
 { };
 // -----------------------------
 };
