@@ -55,12 +55,12 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 UVBaseDataProperty(void)
- : PData(0),IoType(0)//,MinRange(0), MaxRange(-1)
+ : PData(0),IoType(ipSingle | ipData)//,MinRange(0), MaxRange(-1)
 {
 }
 
 UVBaseDataProperty(T * const pdata)
- : PData(pdata),IoType(0)//,MinRange(0), MaxRange(-1)
+ : PData(pdata),IoType(ipSingle | ipData)//,MinRange(0), MaxRange(-1)
 {
 }
 // -----------------------------
