@@ -515,13 +515,16 @@ void UADItem::FindInputProperty(int index, UIProperty* &property) const
   if(I->second.Type & ptInput)
   {
    property=I->second.Property.Get();
-   if(!property/* || !property->CheckRange(index)*/)
+   if(property/* || !property->CheckRange(index)*/)
    {
-	property=0;
-	continue;
+	std::string::size_type i=property->GetName().find_first_of("DataInput");
+	if(i != std::string::npos)
+	{
+	 int found_index=RDK::atoi(property->GetName().substr(9));
+	 if(i == index)
+	  break;
+	}
    }
-
-   break;
   }
  }
 }
@@ -543,13 +546,16 @@ void UADItem::FindOutputProperty(int index, UIProperty* &property) const
   if(I->second.Type & ptOutput)
   {
    property=I->second.Property.Get();
-   if(!property /*|| !property->CheckRange(index)*/)
+   if(property)
    {
-    property=0;
-	continue;
+	std::string::size_type i=property->GetName().find_first_of("DataOutput");
+	if(i != std::string::npos)
+	{
+	 int found_index=RDK::atoi(property->GetName().substr(10));
+	 if(i == index)
+	  break;
+	}
    }
-
-   break;
   }
  }
 }
@@ -561,8 +567,8 @@ void UADItem::FindOutputProperty(const NameT &item_property_name, UIProperty* &p
 }
 
 
+	  /*
 
-   /*
 // Устанавливает связь с элементом сети 'na' со входом по индексу index.
 // Переназначает связь если na уже подключен.
 bool UItem::ConnectToItem(UEPtr<UItem> na, int i_index, int &c_index)
@@ -603,7 +609,7 @@ bool UItem::ConnectToItem(UEPtr<UItem> na, int i_index, int &c_index)
 
  return true;
 }
-*/
+        */
 // Устанавливает связь с элементом сети 'na' со входом по индексу index.
 // Переназначает связь если na уже подключен.
 bool UADItem::ConnectToItem(UEPtr<UItem> na, int i_index, int &c_index)
@@ -1113,6 +1119,12 @@ bool UADItem::Build(void)
    if(!property)
 	continue;
 
+/*   if(property->GetMinRange()+1>min_num_inputs)
+	min_num_inputs=property->GetMinRange()+1;
+
+   if(property->GetMaxRange()+1>min_num_inputs)
+	min_num_inputs=property->GetMaxRange()+1;
+  */
    min_num_inputs++;
   }
 
@@ -1121,8 +1133,13 @@ bool UADItem::Build(void)
    UIProperty* property=dynamic_cast<UIProperty*>(I->second.Property.Get());
    if(!property)
 	continue;
+					/*
+   if(property->GetMinRange()+1>min_num_outputs)
+	min_num_outputs=property->GetMinRange()+1;
 
-   min_num_outputs++;
+   if(property->GetMaxRange()+1>min_num_outputs)
+	min_num_outputs=property->GetMaxRange()+1;*/
+	min_num_outputs++;
   }
  }
 
