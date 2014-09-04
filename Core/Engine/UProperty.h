@@ -402,7 +402,7 @@ const T& operator * (void) const
 
 bool operator ! (void) const
 {
- return (GetPointer(0))?true:false;
+ return (&this->GetData())?true:false;
 };
 
 
