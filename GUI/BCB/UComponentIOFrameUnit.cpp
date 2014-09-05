@@ -312,7 +312,8 @@ void TUComponentIOFrame::DecodePropertiesIOList(const std::string &source, std::
  {
   RDK::separatestring(propertries_names_list[i],name_list,':');
   if(name_list.size() == 2)
-   result[RDK::atoi(name_list[1])]=name_list[0];
+//   result[RDK::atoi(name_list[1])]=name_list[0];
+   result[i]=name_list[0];
  }
 }
 // -----------------
@@ -338,7 +339,7 @@ void __fastcall TUComponentIOFrame::ShowOutputs(TStringGrid *string_grid, RDK::U
   Engine_FreeBufString(p_buf);
 
   DecodePropertiesIOList(properties_names, propertries_names_list);
-  for(int j=0;j<Model_GetComponentNumOutputs(linkslist[i].EncodeToString(stringid).c_str());j++)
+  for(int j=0;j<propertries_names_list.size();j++)
   {
    string_grid->RowCount=string_grid->RowCount+1;
    if(j == 0)
@@ -389,10 +390,10 @@ void __fastcall TUComponentIOFrame::ShowInputs(TStringGrid *string_grid, RDK::UL
   Engine_FreeBufString(p_buf);
 
   DecodePropertiesIOList(properties_names, propertries_names_list);
-  for(int j=-1;j<Model_GetComponentNumInputs(linkslist[i].EncodeToString(stringid).c_str());j++)
+  for(int j=0;j<propertries_names_list.size();j++)
   {
    string_grid->RowCount=string_grid->RowCount+1;
-   if(j==-1)
+   if(j==0)
    {
 	string_grid->Cells[0][string_grid->RowCount-1]=IntToStr(i);
 
@@ -402,18 +403,13 @@ void __fastcall TUComponentIOFrame::ShowInputs(TStringGrid *string_grid, RDK::UL
 	else
 	 string_grid->Cells[2][string_grid->RowCount-1]="";
     Engine_FreeBufString(p_buf2);
-
-	string_grid->Cells[3][string_grid->RowCount-1]="";
    }
+   string_grid->Cells[0][string_grid->RowCount-1]="";
+   string_grid->Cells[2][string_grid->RowCount-1]="";
+   if(int(propertries_names_list.size())>j)
+	string_grid->Cells[3][string_grid->RowCount-1]=propertries_names_list[j].c_str();
    else
-   {
-	string_grid->Cells[0][string_grid->RowCount-1]="";
-	string_grid->Cells[2][string_grid->RowCount-1]="";
-	if(int(propertries_names_list.size())>j)
-	 string_grid->Cells[3][string_grid->RowCount-1]=propertries_names_list[j].c_str();
-	else
-	 string_grid->Cells[3][string_grid->RowCount-1]="";
-   }
+	string_grid->Cells[3][string_grid->RowCount-1]="";
    string_grid->Cells[1][string_grid->RowCount-1]=IntToStr(j);
   }
  }

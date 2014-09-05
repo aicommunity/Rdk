@@ -39,11 +39,11 @@ public: // Методы
 //Конструктор инициализации.
 UVBaseLProperty(const string &name, OwnerT * const owner)
  : UVBaseProperty<T,OwnerT>(owner)
-{ reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type | ptOutput,this,false); };
+{ reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); };
 
 UVBaseLProperty(const string &name, OwnerT * const owner, T * const pdata)
  : UVBaseProperty<T,OwnerT>(owner, pdata)
-{ reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type | ptOutput,this,false); };
+{ reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); };
 // -----------------------------
 };
 
@@ -67,11 +67,11 @@ public: // Методы
 UVLProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod ,
 								typename UVProperty<T,OwnerT>::GetterRT getmethod)
  : UVProperty<T,OwnerT>(owner, setmethod, getmethod)
-{ reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type | ptOutput,this,false); };
+{ reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); };
 
 UVLProperty(const string &name, OwnerT * const owner, T * const pdata, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
  : UVProperty<T,OwnerT>(owner, pdata,setmethod)
-{ reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type | ptOutput,this,false); };
+{ reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); };
 // -----------------------------
 
 // Оператор присваивания
@@ -102,7 +102,7 @@ public:
 //Конструктор инициализации
 ULProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
  : UProperty<T,OwnerT>(owner, setmethod)
-{ reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type | ptOutput,this,false); };
+{ reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); };
 // -----------------------------
 
 // Оператор присваивания
@@ -134,12 +134,12 @@ public:
 //Конструктор инициализации
 UCLProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
  : UCProperty<T,OwnerT>(owner, setmethod)
-{ reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type | ptOutput,this,false); };
+{ reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); };
 
 //Конструктор инициализации для отдельных значений
 UCLProperty(const string &name, OwnerT * const owner, typename UCProperty<T,OwnerT>::VSetterRT setmethod)
  : UCProperty<T,OwnerT>(owner,setmethod)
-{ reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type | ptOutput,this,false); };
+{ reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false); };
 // -----------------------------
 
 public: // Исключения
