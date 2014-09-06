@@ -404,8 +404,11 @@ void __fastcall TUComponentIOFrame::ShowInputs(TStringGrid *string_grid, RDK::UL
 	 string_grid->Cells[2][string_grid->RowCount-1]="";
     Engine_FreeBufString(p_buf2);
    }
-   string_grid->Cells[0][string_grid->RowCount-1]="";
-   string_grid->Cells[2][string_grid->RowCount-1]="";
+   else
+   {
+	string_grid->Cells[0][string_grid->RowCount-1]="";
+	string_grid->Cells[2][string_grid->RowCount-1]="";
+   }
    if(int(propertries_names_list.size())>j)
 	string_grid->Cells[3][string_grid->RowCount-1]=propertries_names_list[j].c_str();
    else

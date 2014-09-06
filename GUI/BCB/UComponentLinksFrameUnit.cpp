@@ -133,9 +133,9 @@ void __fastcall TUComponentLinksFrame::CreateLink(void)
   return;
 
  int itemindex=StrToInt(NANetFrameOutputs->StringGrid->Cells[1][NANetFrameOutputs->StringGrid->Row]);
- std::string itemname=AnsiString(NANetFrameOutputs->StringGrid->Cells[2][NANetFrameOutputs->StringGrid->Row-itemindex]).c_str();
+ std::string itemname=AnsiString(NANetFrameOutputs->StringGrid->Cells[2][1]).c_str();
  int connindex=StrToInt(NANetFrameInputs->StringGrid->Cells[1][NANetFrameInputs->StringGrid->Row]);
- std::string connname=AnsiString(NANetFrameInputs->StringGrid->Cells[2][NANetFrameInputs->StringGrid->Row-connindex]).c_str();
+ std::string connname=AnsiString(NANetFrameInputs->StringGrid->Cells[2][1]).c_str();
 
  if(!NANetFrameLinks->ViewComponentOwnerLongId.empty())
  {
