@@ -104,8 +104,8 @@ void __fastcall TResultBroadcasterThread::Execute(void)
   ResetEvent(SendEnable);
   PeriodicallyActions();
 
-  ResetEvent(MetaUnlockEvent);
-  ResetEvent(SendNotInProgressEvent);
+  ResetEvent(MetaUnlockEvent);  //TODO
+  ResetEvent(SendNotInProgressEvent); //TODO
   if(!MetaList.empty())
   {
    SetEvent(MetaUnlockEvent);
