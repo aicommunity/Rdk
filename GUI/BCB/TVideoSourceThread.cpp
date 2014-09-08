@@ -1495,6 +1495,8 @@ void __fastcall TVideoCaptureThreadVideoGrabber::Calculate(void)
  {
   return;
  }
+ else
+  Sleep(0);
 
  ResetEvent(VideoGrabberCompleted);
 }
