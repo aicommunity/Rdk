@@ -1983,6 +1983,7 @@ void __fastcall TUGEngineControlForm::AppMinimize(TObject *Sender)
   ShowWindow(RdkMainForm->Handle,SW_HIDE);  // Скрываем программу
   ShowWindow(Application->Handle,SW_HIDE);  // Скрываем кнопку с TaskBar'а
   SetWindowLong(Application->Handle, GWL_EXSTYLE, GetWindowLong(Application->Handle, GWL_EXSTYLE) | !WS_EX_APPWINDOW);
+  SetWindowLong(RdkMainForm->Handle, GWL_EXSTYLE, GetWindowLong(RdkMainForm->Handle, GWL_EXSTYLE) | !WS_EX_APPWINDOW);
  }
  else
  {
@@ -2090,13 +2091,14 @@ void __fastcall TUGEngineControlForm::HideTimerTimer(TObject *Sender)
  {
   SetWindowLong(RdkMainForm->Handle, GWL_EXSTYLE, GetWindowLong(RdkMainForm->Handle, GWL_EXSTYLE) | WS_EX_APPWINDOW);
   SetWindowLong(RdkMainForm->Handle, GWL_HWNDPARENT, 0);
-//  Application->OnMinimize = AppMinimize;
-//  Application->OnRestore = AppRestore;
  }
 
  if(StartMinimized)
  {
-//  RdkMainForm->Show();
+  if(!MinimizeToTray)
+  {
+   RdkMainForm->Show();
+  }
   AppMinimize(this);
   Application->Minimize();
  }
@@ -2313,6 +2315,7 @@ void __fastcall TUGEngineControlForm::TrayIconDblClick(TObject *Sender)
   RDK::UIVisualControllerStorage::UpdateInterface(true);
  }
  ShowWindow(RdkMainForm->Handle,SW_RESTORE);
+ SetWindowLong(RdkMainForm->Handle, GWL_EXSTYLE, GetWindowLong(RdkMainForm->Handle, GWL_EXSTYLE) | WS_EX_APPWINDOW);
  SetForegroundWindow(RdkMainForm->Handle);
  AppWinState=true;
 }

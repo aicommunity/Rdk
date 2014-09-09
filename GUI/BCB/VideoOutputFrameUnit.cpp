@@ -249,10 +249,11 @@ void TVideoOutputFrame::Pause(void)
 }
 
 /// Чтение текущего изображения в bmp
-void TVideoOutputFrame::ReadSourceSafe(RDK::UBitmap &bmp, double &time_stamp, bool reflect)
+bool TVideoOutputFrame::ReadSourceSafe(RDK::UBitmap &bmp, double &time_stamp, bool reflect)
 {
  if(CaptureThread)
-  CaptureThread->ReadSourceSafe(bmp,time_stamp,reflect);
+  return CaptureThread->ReadSourceSafe(bmp,time_stamp,reflect);
+ return false;
 }
 //---------------------------------------------------------------------------
 /// Проверяет состояние завхата по id канала
@@ -1227,6 +1228,9 @@ void TVideoOutputFrame::ABeforeCalculate(void)
  {
   double time_stamp=0;
   bool res=CaptureThread->ReadSourceSafe(SendBmpSource,time_stamp,false);
+
+  if(!res)
+   return;
   if(SendBmpSource.GetLength() == 0 && CaptureThread->GetThreadState() == 1)
   {
    if(FrameIndex<num_channels)

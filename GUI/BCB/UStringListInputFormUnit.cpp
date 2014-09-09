@@ -134,7 +134,7 @@ void __fastcall TUStringListInputForm::OkButtonClick(TObject *Sender)
 {
  if(StringGrid->Row>0 && Edit->Text.Length()>0)
  {
-  Edit->Text="";
+//  Edit->Text="";
   ResultParametersList[StringGrid->Row-1].Value=AnsiString(Edit->Text).c_str();
  }
 

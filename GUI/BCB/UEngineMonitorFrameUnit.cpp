@@ -139,7 +139,7 @@ void __fastcall TEngineThread::Execute(void)
    if(WaitForSingleObject(CalcEnable,30) == WAIT_TIMEOUT)
 	continue;
   }
-
+  ResetEvent(CalcEnable);
   if(WaitForSingleObject(CalculationNotInProgress,30) == WAIT_TIMEOUT)
   {
    continue;
@@ -152,7 +152,6 @@ void __fastcall TEngineThread::Execute(void)
    continue;
   }
 
-  ResetEvent(CalcEnable);
   ResetEvent(CalculationNotInProgress);
   BeforeCalculate();
   if(GetNumEngines()>ChannelIndex)

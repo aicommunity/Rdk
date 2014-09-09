@@ -355,7 +355,7 @@ void Start(void);
 void Pause(void);
 
 /// Чтение текущего изображения в bmp
-void ReadSourceSafe(RDK::UBitmap &bmp, double &time_stamp, bool reflect);
+bool ReadSourceSafe(RDK::UBitmap &bmp, double &time_stamp, bool reflect);
 
 /// Проверяет состояние завхата по id канала
 /// 0 - не активен

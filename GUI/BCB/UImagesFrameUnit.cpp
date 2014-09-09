@@ -313,8 +313,7 @@ bool TUImagesFrame::SetImage(int i, int j, int width, int height, int colormodel
 		  linebytelength);
 	else
 	 for(int i=height-1;i>=0;--i,buffer+=linebytelength)
-	  memcpy(target->ScanLine[i],buffer,
-		  linebytelength);
+	  memcpy(target->ScanLine[i],buffer, linebytelength);
    }
  break;
  }
