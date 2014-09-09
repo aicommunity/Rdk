@@ -2091,12 +2091,14 @@ void __fastcall TUGEngineControlForm::HideTimerTimer(TObject *Sender)
  {
   SetWindowLong(RdkMainForm->Handle, GWL_EXSTYLE, GetWindowLong(RdkMainForm->Handle, GWL_EXSTYLE) | WS_EX_APPWINDOW);
   SetWindowLong(RdkMainForm->Handle, GWL_HWNDPARENT, 0);
-//  Application->OnMinimize = AppMinimize;
-//  Application->OnRestore = AppRestore;
  }
 
  if(StartMinimized)
  {
+  if(!MinimizeToTray)
+  {
+   RdkMainForm->Show();
+  }
   AppMinimize(this);
   Application->Minimize();
  }
