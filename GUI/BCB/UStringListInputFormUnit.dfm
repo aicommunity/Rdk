@@ -54,8 +54,6 @@ object UStringListInputForm: TUStringListInputForm
         Align = alBottom
         TabOrder = 1
         OnKeyPress = EditKeyPress
-        ExplicitLeft = 3
-        ExplicitTop = 184
       end
     end
   end
