@@ -107,6 +107,7 @@ bool UADItem::SetNumInputs(const int &value)
    property->UpdatePData(&InputData[i]);
  }
 
+ CalcMinMaxInputDataSize();
 
  return true;
 }
@@ -165,6 +166,7 @@ bool UADItem::SetNumOutputs(const int &value)
  }
 
 
+ CalcMinMaxInputDataSize();
  return true;
 }
 
@@ -992,7 +994,10 @@ bool UADItem::Connect(UEPtr<UConnector> c, const NameT &item_property_name, cons
   }
 
 
- return UItem::Connect(c, item_property_name, conn_property_name, c_index);
+ if(!UItem::Connect(c, item_property_name, conn_property_name, c_index))
+  return false;
+ CalcMinMaxInputDataSize();
+ return true;
 }
 
 // Разрывает связь выхода этого объекта с коннектором 'c' по индексу
@@ -1158,6 +1163,7 @@ bool UADItem::Build(void)
   SetNumOutputs(min_num_outputs);
 
  UpdatePointers();
+ CalcMinMaxInputDataSize();
 
  if(!UItem::Build())
   return false;
