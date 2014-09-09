@@ -16,6 +16,7 @@ TUVisualControllerForm *UVisualControllerForm;
 // Флаг, сообщающий что идет расчет
 bool TUVisualControllerForm::CalculationModeFlag=false;
 
+extern TUVisualControllerForm *RdkMainForm;
 
 __fastcall TUVisualControllerForm::TUVisualControllerForm(TComponent* Owner)
  : TForm(Owner)
@@ -393,8 +394,12 @@ void TUVisualControllerForm::LoadFormPosition(RDK::USerStorageXML &xml)
 
  Width=xml.ReadInteger("Width",Width);
  Height=xml.ReadInteger("Height",Height);
- Visible=xml.ReadBool("Visible",Visible);
- WindowState=xml.ReadInteger("WindowState",(int)WindowState);
+
+ if(!RdkMainForm || RdkMainForm != this)
+ {
+  Visible=xml.ReadBool("Visible",Visible);
+  WindowState=xml.ReadInteger("WindowState",(int)WindowState);
+ }
 
  xml.SelectUp();
 }
