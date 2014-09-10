@@ -240,8 +240,31 @@ void TUGEngineControlForm::AUpdateInterface(void)
  else
  {
   ChannelsStringGrid->RowCount=GetNumEngines();
+  const TEngineMonitorThread * monitor=UEngineMonitorForm->EngineMonitorFrame->GetEngineMonitorThread();
+  std::vector<int> CalcThreadStates;
+  std::vector<int> VideoCaptureStates;
+
+  if(monitor)
+  {
+   CalcThreadStates=monitor->ReadCalcThreadStates();
+   VideoCaptureStates=monitor->ReadVideoCaptureStates();
+  }
+
+  ChannelsStringGrid->ColWidths[1]=20;
+  ChannelsStringGrid->ColWidths[2]=20;
   for(int i=0;i<ChannelsStringGrid->RowCount;i++)
+  {
    ChannelsStringGrid->Cells[0][i]=IntToStr(i);
+   if(CalcThreadStates.size()>i)
+	ChannelsStringGrid->Cells[1][i]=CalcThreadStates[i];
+   else
+	ChannelsStringGrid->Cells[1][i]="n/a";
+
+   if(VideoCaptureStates.size()>i)
+	ChannelsStringGrid->Cells[2][i]=VideoCaptureStates[i];
+   else
+	ChannelsStringGrid->Cells[2][i]="n/a";
+  }
 
   ChannelsStringGrid->Row=GetSelectedEngineIndex();
 
@@ -474,6 +497,7 @@ void TUGEngineControlForm::CloseProject(void)
   }
  }
  RDK::UIVisualControllerStorage::ClearInterface();
+ UEngineMonitorForm->EngineMonitorFrame->StopEngineMonitorThread();
 }
 
 // Открывает проект
@@ -743,6 +767,7 @@ try{
  for(size_t i=0;i<CalculationMode.size();i++)
   UEngineMonitorForm->EngineMonitorFrame->SetCalculateMode(i, CalculationMode[i]);
  ProjectOpenFlag=true;
+ UEngineMonitorForm->EngineMonitorFrame->StartEngineMonitorThread();
  RDK::UIVisualControllerStorage::UpdateInterface();
  UServerControlForm->ServerRestartTimer->Enabled=true;
 }
