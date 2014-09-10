@@ -318,6 +318,9 @@ const TEngineMonitorThread* GetEngineMonitorThread(void) const;
 /// Вклчает мониторинг сервера
 void StartEngineMonitorThread(void);
 
+/// Останавливает мониторинг сервера
+void StopEngineMonitorThread(void);
+
 TEngineThread* GetThreadChannel(int i);
 };
 #pragma warn .8130

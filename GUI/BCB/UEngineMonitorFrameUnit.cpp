@@ -927,6 +927,16 @@ void TUEngineMonitorFrame::StartEngineMonitorThread(void)
   SetEvent(EngineMonitorThread->CalcStarted);
 }
 
+/// Останавливает мониторинг сервера
+void TUEngineMonitorFrame::StopEngineMonitorThread(void)
+{
+ if(EngineMonitorThread)
+ {
+  ResetEvent(EngineMonitorThread->CalcStarted);
+  WaitForSingleObject(EngineMonitorThread->CalculationNotInProgress,INFINITE);
+ }
+}
+
 TEngineThread* TUEngineMonitorFrame::GetThreadChannel(int i)
 {
  if(i<0 || i>= int(ThreadChannels.size()))

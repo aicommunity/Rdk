@@ -497,6 +497,7 @@ void TUGEngineControlForm::CloseProject(void)
   }
  }
  RDK::UIVisualControllerStorage::ClearInterface();
+ UEngineMonitorForm->EngineMonitorFrame->StopEngineMonitorThread();
 }
 
 // Открывает проект
@@ -766,6 +767,7 @@ try{
  for(size_t i=0;i<CalculationMode.size();i++)
   UEngineMonitorForm->EngineMonitorFrame->SetCalculateMode(i, CalculationMode[i]);
  ProjectOpenFlag=true;
+ UEngineMonitorForm->EngineMonitorFrame->StartEngineMonitorThread();
  RDK::UIVisualControllerStorage::UpdateInterface();
  UServerControlForm->ServerRestartTimer->Enabled=true;
 }
@@ -2090,8 +2092,6 @@ void __fastcall TUGEngineControlForm::HideTimerTimer(TObject *Sender)
  if(!ApplicationInitialized)
   return;
  HideTimer->Enabled=false;
-
- UEngineMonitorForm->EngineMonitorFrame->StartEngineMonitorThread();
 
  UServerControlForm->SetServerBinding(ServerInterfaceAddress, ServerInterfacePort);
 

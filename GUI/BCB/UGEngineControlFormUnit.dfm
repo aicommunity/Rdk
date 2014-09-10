@@ -212,12 +212,14 @@ object UGEngineControlForm: TUGEngineControlForm
         ExplicitWidth = 745
         object LogsTabSheet: TTabSheet
           Caption = 'Logs'
+          ExplicitLeft = 0
+          ExplicitTop = 0
           ExplicitWidth = 717
+          ExplicitHeight = 0
         end
         object TabSheet2: TTabSheet
           Caption = 'Performance'
           ImageIndex = 1
-          ExplicitWidth = 717
           inline UComponentsPerformanceFrame1: TUComponentsPerformanceFrame
             Left = 0
             Top = 0
@@ -231,7 +233,7 @@ object UGEngineControlForm: TUGEngineControlForm
             Font.Style = []
             ParentFont = False
             TabOrder = 0
-            ExplicitWidth = 717
+            ExplicitWidth = 670
             ExplicitHeight = 143
             inherited Chart: TChart
               Width = 531
@@ -292,7 +294,6 @@ object UGEngineControlForm: TUGEngineControlForm
       object Draw: TTabSheet
         Caption = 'Draw'
         OnShow = DrawShow
-        ExplicitWidth = 483
         inline UDrawEngineFrame1: TUDrawEngineFrame
           Left = 0
           Top = 0
@@ -306,7 +307,7 @@ object UGEngineControlForm: TUGEngineControlForm
           Font.Style = []
           ParentFont = False
           TabOrder = 0
-          ExplicitWidth = 483
+          ExplicitWidth = 436
           ExplicitHeight = 262
           inherited Splitter1: TSplitter
             Left = 196
@@ -317,7 +318,7 @@ object UGEngineControlForm: TUGEngineControlForm
           inherited Panel1: TPanel
             Left = 207
             Height = 213
-            ExplicitLeft = 254
+            ExplicitLeft = 207
             ExplicitHeight = 213
             inherited UClassesListFrame: TUClassesListFrame
               Height = 211
@@ -366,7 +367,7 @@ object UGEngineControlForm: TUGEngineControlForm
             Top = 213
             Width = 436
             ExplicitTop = 213
-            ExplicitWidth = 483
+            ExplicitWidth = 436
             inherited ApplyButton: TButton
               Left = 270
               ExplicitLeft = 317
@@ -730,7 +731,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 360
     Top = 65528
     Bitmap = {
-      494C01011B006000E00210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B006000E40210001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
