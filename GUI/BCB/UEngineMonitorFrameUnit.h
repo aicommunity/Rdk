@@ -315,6 +315,9 @@ virtual int CheckCalcState(int channel_id) const;
 /// ƒоступ к треду мониторинга состо€ни€ модулей сервера
 const TEngineMonitorThread* GetEngineMonitorThread(void) const;
 
+/// ¬клчает мониторинг сервера
+void StartEngineMonitorThread(void);
+
 TEngineThread* GetThreadChannel(int i);
 };
 #pragma warn .8130

@@ -111,22 +111,29 @@ void __fastcall TEngineMonitorThread::Execute(void)
    TEngineThread *thread=EngineMonitorFrame->GetThreadChannel(i);
    if(thread)
    {
-	if(WaitForSingleObject(thread->CalcStarted,0) != WAIT_TIMEOUT)
+	if(WaitForSingleObject(thread->CalcStarted,0) == WAIT_TIMEOUT)
 	{
-	 TDateTime dt=TDateTime::CurrentDateTime();
-	 CalcThreadStateTime[i]=dt.operator double();
-	}
-	else
 	 calc_thread_states[i]=1;
+	 continue;
+	}
 
 	RDK::ULongTime last_calc_time=thread->GetRealLastCalculationTime();
 	if(CalcThreadSuccessTime[i] != last_calc_time)
 	{
 	 CalcThreadSuccessTime[i]=last_calc_time;
+
+	 TDateTime dt=TDateTime::CurrentDateTime();
+	 CalcThreadStateTime[i]=dt.operator double();
 	 calc_thread_states[i]=0;
 	}
 	else
-	 calc_thread_states[i]=2;
+	{
+	 TDateTime dt=TDateTime::CurrentDateTime();
+	 if((dt.operator double()-CalcThreadStateTime[i])*86400.0>2.0)
+	  calc_thread_states[i]=2;
+	 else
+	  calc_thread_states[i]=0;
+	}
    }
    else
    {
@@ -148,27 +155,34 @@ void __fastcall TEngineMonitorThread::Execute(void)
   {
    TVideoCaptureThread *thread=0;
 
-   if(VideoOutputForm->GetVideoOutputFrame(i)->CaptureThread)
+   if(VideoOutputForm && VideoOutputForm->GetVideoOutputFrame(i) && VideoOutputForm->GetVideoOutputFrame(i)->CaptureThread)
 	thread=VideoOutputForm->GetVideoOutputFrame(i)->CaptureThread;
 
    if(thread)
    {
-	if(WaitForSingleObject(thread->GetCaptureEnabled(),0) != WAIT_TIMEOUT)
+	if(WaitForSingleObject(thread->GetCaptureEnabled(),0) == WAIT_TIMEOUT)
 	{
-	 TDateTime dt=TDateTime::CurrentDateTime();
-	 VideoCaptureStateTime[i]=dt.operator double();
-	}
-	else
 	 video_capture_states[i]=1;
+	 continue;
+	}
 
 	double last_calc_time=thread->GetLastTimeStampSafe();
 	if(VideoCaptureSuccessTime[i] != last_calc_time)
 	{
 	 VideoCaptureSuccessTime[i]=last_calc_time;
+
+	 TDateTime dt=TDateTime::CurrentDateTime();
+	 VideoCaptureStateTime[i]=dt.operator double();
 	 video_capture_states[i]=0;
 	}
 	else
-	 video_capture_states[i]=2;
+	{
+	 TDateTime dt=TDateTime::CurrentDateTime();
+	 if((dt.operator double()-VideoCaptureStateTime[i])*86400.0>2.0)
+	  video_capture_states[i]=2;
+	 else
+	  video_capture_states[i]=0;
+	}
    }
    else
    {
@@ -374,6 +388,10 @@ __fastcall TUEngineMonitorFrame::~TUEngineMonitorFrame(void)
 
  if(EngineMonitorThread)
  {
+  ResetEvent(EngineMonitorThread->CalcStarted);
+  WaitForSingleObject(EngineMonitorThread->CalculationNotInProgress,INFINITE);
+  EngineMonitorThread->Terminate();
+  EngineMonitorThread->WaitFor();
   delete EngineMonitorThread;
   EngineMonitorThread=0;
  }
@@ -902,9 +920,16 @@ const TEngineMonitorThread* TUEngineMonitorFrame::GetEngineMonitorThread(void) c
  return EngineMonitorThread;
 }
 
+/// ¬клчает мониторинг сервера
+void TUEngineMonitorFrame::StartEngineMonitorThread(void)
+{
+ if(EngineMonitorThread)
+  SetEvent(EngineMonitorThread->CalcStarted);
+}
+
 TEngineThread* TUEngineMonitorFrame::GetThreadChannel(int i)
 {
- if(i<0 || i> int(ThreadChannels.size()))
+ if(i<0 || i>= int(ThreadChannels.size()))
   return 0;
 
  return ThreadChannels[i];

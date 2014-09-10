@@ -37,9 +37,6 @@ inherited UEngineMonitorFrame: TUEngineMonitorFrame
     Caption = 'Show debug messages'
     TabOrder = 2
     OnClick = ShowDebugMessagesCheckBoxClick
-    ExplicitLeft = 232
-    ExplicitTop = 296
-    ExplicitWidth = 97
   end
   object MainMenu: TMainMenu
     Left = 16
