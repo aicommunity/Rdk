@@ -144,6 +144,7 @@ void __fastcall TEngineMonitorThread::Execute(void)
   CalcThreadStates=calc_thread_states;
 
   // Определяем состояние тредов захвата видео
+#ifdef RDK_VIDEO
   std::vector<int> video_capture_states;
 
   int num_captures=VideoOutputForm->GetNumSources();
@@ -192,6 +193,7 @@ void __fastcall TEngineMonitorThread::Execute(void)
 
 
   VideoCaptureStates=video_capture_states;
+#endif
 
   Sleep(1);
 
