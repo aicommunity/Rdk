@@ -26,6 +26,170 @@ TUEngineMonitorFrame *UEngineMonitorFrame;
 // --------------------------
 //  онструкторы и деструкторы
 // --------------------------
+__fastcall TEngineMonitorThread::TEngineMonitorThread(TUEngineMonitorFrame *engine_monitor_frame, bool CreateSuspended)
+: EngineMonitorFrame(engine_monitor_frame), TThread(CreateSuspended)
+{
+ CalcState=CreateEvent(0,TRUE,0,0);
+ CalcEnable=CreateEvent(0,TRUE,0,0);
+ CalcStarted=CreateEvent(0,TRUE,0,0);
+ CalculationNotInProgress=CreateEvent(0,TRUE,TRUE,0);
+}
+
+__fastcall TEngineMonitorThread::~TEngineMonitorThread(void)
+{
+ ResetEvent(CalcStarted);
+ ResetEvent(CalcState);
+ Terminate();
+ WaitForSingleObject(CalculationNotInProgress,INFINITE);
+ WaitFor();
+ CloseHandle(CalcState);
+ CloseHandle(CalcStarted);
+ CloseHandle(CalcEnable);
+ CloseHandle(CalculationNotInProgress);
+}
+// --------------------------
+
+
+// --------------------------
+// ”правление параметрами
+// --------------------------
+// --------------------------
+
+// --------------------------
+// ћетоды доступа к данным состо€ни€ модулей
+// --------------------------
+/// ¬озвращает вектор состо€ний тредов
+std::vector<int> TEngineMonitorThread::ReadCalcThreadStates(void) const
+{
+ return CalcThreadStates;
+}
+
+/// ¬озвращает вектор состо€ний источников видеозахвата
+std::vector<int> TEngineMonitorThread::ReadVideoCaptureStates(void) const
+{
+ return VideoCaptureStates;
+}
+// --------------------------
+
+
+// --------------------------
+// ”правление потоком
+// --------------------------
+void __fastcall TEngineMonitorThread::BeforeCalculate(void)
+{
+}
+
+void __fastcall TEngineMonitorThread::AfterCalculate(void)
+{
+}
+
+
+
+void __fastcall TEngineMonitorThread::Execute(void)
+{
+ while(!Terminated)
+ {
+  if(WaitForSingleObject(CalcStarted,30) == WAIT_TIMEOUT)
+   continue;
+
+  if(WaitForSingleObject(CalculationNotInProgress,30) == WAIT_TIMEOUT)
+  {
+   continue;
+  }
+  ResetEvent(CalculationNotInProgress);
+
+  // ќпредел€ем состо€ние тредов расчета
+  std::vector<int> calc_thread_states;
+
+  int num_channels=EngineMonitorFrame->GetNumChannels();
+  calc_thread_states.assign(num_channels,1);
+  CalcThreadStateTime.resize(num_channels,0);
+  CalcThreadSuccessTime.resize(num_channels,0);
+
+  for(int i=0;i<num_channels;i++)
+  {
+   TEngineThread *thread=EngineMonitorFrame->GetThreadChannel(i);
+   if(thread)
+   {
+	if(WaitForSingleObject(thread->CalcStarted,0) != WAIT_TIMEOUT)
+	{
+	 TDateTime dt=TDateTime::CurrentDateTime();
+	 CalcThreadStateTime[i]=dt.operator double();
+	}
+	else
+	 calc_thread_states[i]=1;
+
+	RDK::ULongTime last_calc_time=thread->GetRealLastCalculationTime();
+	if(CalcThreadSuccessTime[i] != last_calc_time)
+	{
+	 CalcThreadSuccessTime[i]=last_calc_time;
+	 calc_thread_states[i]=0;
+	}
+	else
+	 calc_thread_states[i]=2;
+   }
+   else
+   {
+	calc_thread_states[i]=1;
+   }
+  }
+
+  CalcThreadStates=calc_thread_states;
+
+  // ќпредел€ем состо€ние тредов захвата видео
+  std::vector<int> video_capture_states;
+
+  int num_captures=VideoOutputForm->GetNumSources();
+  video_capture_states.assign(num_captures,1);
+  VideoCaptureStateTime.resize(num_captures,0);
+  VideoCaptureSuccessTime.resize(num_captures,0);
+
+  for(int i=0;i<num_captures;i++)
+  {
+   TVideoCaptureThread *thread=0;
+
+   if(VideoOutputForm->GetVideoOutputFrame(i)->CaptureThread)
+	thread=VideoOutputForm->GetVideoOutputFrame(i)->CaptureThread;
+
+   if(thread)
+   {
+	if(WaitForSingleObject(thread->GetCaptureEnabled(),0) != WAIT_TIMEOUT)
+	{
+	 TDateTime dt=TDateTime::CurrentDateTime();
+	 VideoCaptureStateTime[i]=dt.operator double();
+	}
+	else
+	 video_capture_states[i]=1;
+
+	double last_calc_time=thread->GetLastTimeStampSafe();
+	if(VideoCaptureSuccessTime[i] != last_calc_time)
+	{
+	 VideoCaptureSuccessTime[i]=last_calc_time;
+	 video_capture_states[i]=0;
+	}
+	else
+	 video_capture_states[i]=2;
+   }
+   else
+   {
+	video_capture_states[i]=1;
+   }
+  }
+
+
+  VideoCaptureStates=video_capture_states;
+
+  Sleep(1);
+
+  SetEvent(CalculationNotInProgress);
+ }
+}
+// --------------------------
+
+
+// --------------------------
+//  онструкторы и деструкторы
+// --------------------------
 __fastcall TEngineThread::TEngineThread(int channel_index, int calculate_mode, RDK::UTime min_inerval, bool CreateSuspended)
 : ChannelIndex(channel_index), CalculateMode(calculate_mode), MinInterstepsInterval(min_inerval), TThread(CreateSuspended)
 {
@@ -177,6 +341,12 @@ void __fastcall TEngineThread::Execute(void)
   SetEvent(CalculationNotInProgress);
  }
 }
+
+RDK::ULongTime TEngineThread::GetRealLastCalculationTime(void) const
+{
+ return RealLastCalculationTime;
+}
+
 // --------------------------
 
 
@@ -193,12 +363,20 @@ __fastcall TUEngineMonitorFrame::TUEngineMonitorFrame(TComponent* Owner)
  ChannelsMode=0;
  CalculationTimeSourceMode=0;
  ThreadCalcCompleteEvent=CreateEvent(0,TRUE,FALSE,0);
+
+ EngineMonitorThread=new TEngineMonitorThread(this,false);
 }
 
 __fastcall TUEngineMonitorFrame::~TUEngineMonitorFrame(void)
 {
 // SetNumChannels(0);
  CloseHandle(ThreadCalcCompleteEvent);
+
+ if(EngineMonitorThread)
+ {
+  delete EngineMonitorThread;
+  EngineMonitorThread=0;
+ }
 }
 
 
@@ -717,6 +895,21 @@ int TUEngineMonitorFrame::CheckCalcState(int channel_id) const
  }
  return 0;
 }
+
+/// ƒоступ к треду мониторинга состо€ни€ модулей сервера
+const TEngineMonitorThread* TUEngineMonitorFrame::GetEngineMonitorThread(void) const
+{
+ return EngineMonitorThread;
+}
+
+TEngineThread* TUEngineMonitorFrame::GetThreadChannel(int i)
+{
+ if(i<0 || i> int(ThreadChannels.size()))
+  return 0;
+
+ return ThreadChannels[i];
+}
+
 //---------------------------------------------------------------------------
 
 void __fastcall TUEngineMonitorFrame::Start1Click(TObject *Sender)

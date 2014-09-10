@@ -19,6 +19,88 @@
 
 #pragma warn -8130
 
+class TUEngineMonitorFrame;
+
+///  ласс мониторинга за состо€нием модулей приложени€
+class TEngineMonitorThread: public TThread
+{
+protected: // ѕараметры
+
+protected: // ƒанные состо€ни€ модулей
+/// —осто€ние тредов расчета
+/// 0 - запущен
+/// 1 - расчет остановлен
+/// 2 - расчет запущен, но не выполн€етс€
+RDK::UELockVar<std::vector<int> > CalcThreadStates;
+
+/// —осто€ние источников видеозахвата
+/// 0 - остановлен
+/// 1 - захват остановлен
+/// 2 - захват запущен но не выполн€етс€
+RDK::UELockVar<std::vector<int> > VideoCaptureStates;
+
+protected: // ¬нутренние данные
+TUEngineMonitorFrame *EngineMonitorFrame;
+
+/// ѕоследние моменты времени опроса состо€ни€ тредов расчета
+std::vector<double> CalcThreadStateTime;
+
+/// ѕоследние моменты времени успешного расчета
+std::vector<RDK::ULongTime> CalcThreadSuccessTime;
+
+/// ѕоследние моменты времени опроса состо€ни€ тредов расчета
+std::vector<double> VideoCaptureStateTime;
+
+/// ѕоследние моменты времени успешного расчета
+std::vector<double> VideoCaptureSuccessTime;
+
+public:
+// —обытие состо€ни€ расчета. ¬ыставлено на врем€ активности расчета. —брасываетс€ по стопу
+HANDLE CalcState;
+
+HANDLE CalcEnable;
+
+HANDLE CalcStarted;
+
+HANDLE CalculationNotInProgress;
+
+
+public: // ћетоды
+// --------------------------
+//  онструкторы и деструкторы
+// --------------------------
+__fastcall TEngineMonitorThread(TUEngineMonitorFrame *engine_monitor_frame, bool CreateSuspended);
+virtual __fastcall ~TEngineMonitorThread(void);
+// --------------------------
+
+// --------------------------
+// ”правление параметрами
+// --------------------------
+// --------------------------
+
+// --------------------------
+// ћетоды доступа к данным состо€ни€ модулей
+// --------------------------
+/// ¬озвращает вектор состо€ний тредов
+std::vector<int> ReadCalcThreadStates(void) const;
+
+/// ¬озвращает вектор состо€ний источников видеозахвата
+std::vector<int> ReadVideoCaptureStates(void) const;
+// --------------------------
+
+// --------------------------
+// ”правление потоком
+// --------------------------
+virtual void __fastcall BeforeCalculate(void);
+
+virtual void __fastcall AfterCalculate(void);
+
+virtual void __fastcall Execute(void);
+// --------------------------
+};
+
+
+
 class TEngineThread: public TThread
 {
 protected: // ѕараметры
@@ -76,6 +158,8 @@ virtual void __fastcall BeforeCalculate(void);
 virtual void __fastcall AfterCalculate(void);
 
 virtual void __fastcall Execute(void);
+
+RDK::ULongTime GetRealLastCalculationTime(void) const;
 // --------------------------
 
 
@@ -159,6 +243,9 @@ std::vector<RDK::UEPtr<TBroadcasterForm> > BroadcastersList;
 
 HANDLE ThreadCalcCompleteEvent;
 
+/// ѕоток мониторинга состо€ни€ сервера
+TEngineMonitorThread *EngineMonitorThread;
+
 public:
 /// ”правление режимом работы
 /// 0 - однопоточный режим
@@ -224,6 +311,11 @@ virtual void ResetChannel(int channel_index);
 /// 0 - Ќе считает
 /// 1 - »дет расчет
 virtual int CheckCalcState(int channel_id) const;
+
+/// ƒоступ к треду мониторинга состо€ни€ модулей сервера
+const TEngineMonitorThread* GetEngineMonitorThread(void) const;
+
+TEngineThread* GetThreadChannel(int i);
 };
 #pragma warn .8130
 //---------------------------------------------------------------------------
