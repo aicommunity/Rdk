@@ -104,6 +104,10 @@ void __fastcall TResultBroadcasterThread::Execute(void)
   ResetEvent(SendEnable);
   PeriodicallyActions();
 
+  if(WaitForSingleObject(MetaUnlockEvent,30) == WAIT_TIMEOUT)
+  {
+   continue;
+  }
   ResetEvent(MetaUnlockEvent);  //TODO
   ResetEvent(SendNotInProgressEvent); //TODO
   if(!MetaList.empty())
