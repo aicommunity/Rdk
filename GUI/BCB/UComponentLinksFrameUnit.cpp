@@ -133,17 +133,19 @@ void __fastcall TUComponentLinksFrame::CreateLink(void)
   return;
 
  int itemindex=StrToInt(NANetFrameOutputs->StringGrid->Cells[1][NANetFrameOutputs->StringGrid->Row]);
- std::string itemname=AnsiString(NANetFrameOutputs->StringGrid->Cells[2][NANetFrameOutputs->StringGrid->Row-itemindex]).c_str();
+ std::string itemname=AnsiString(NANetFrameOutputs->StringGrid->Cells[2][1]).c_str();
  int connindex=StrToInt(NANetFrameInputs->StringGrid->Cells[1][NANetFrameInputs->StringGrid->Row]);
- std::string connname=AnsiString(NANetFrameInputs->StringGrid->Cells[2][NANetFrameInputs->StringGrid->Row-(connindex+1)]).c_str();
+ std::string connname=AnsiString(NANetFrameInputs->StringGrid->Cells[2][1]).c_str();
 
  if(!NANetFrameLinks->ViewComponentOwnerLongId.empty())
  {
   itemname.insert(0,NANetFrameLinks->ViewComponentOwnerLongId+std::string("."));
   connname.insert(0,NANetFrameLinks->ViewComponentOwnerLongId+std::string("."));
  }
+ std::string conn_property_name=AnsiString(NANetFrameInputs->StringGrid->Cells[3][NANetFrameInputs->StringGrid->Row]).c_str();
+ std::string item_property_name=AnsiString(NANetFrameOutputs->StringGrid->Cells[3][NANetFrameOutputs->StringGrid->Row]).c_str();
 
- Model_CreateLink(itemname.c_str(), itemindex, connname.c_str(), connindex);
+ Model_CreateLinkByName(itemname.c_str(), item_property_name.c_str(), connname.c_str(), conn_property_name.c_str());
  //Network->CreateLink(itemname,itemindex,connname,connindex);
  NANetFrameLinks->UpdateInterface();
  NANetFrameInputs->UpdateInterface();
@@ -157,13 +159,16 @@ void __fastcall TUComponentLinksFrame::BreakLink(void)
  std::string itemname=AnsiString(NANetFrameLinks->StringGrid->Cells[3][NANetFrameLinks->StringGrid->Row]).c_str();
  int connindex=StrToInt(NANetFrameLinks->StringGrid->Cells[2][NANetFrameLinks->StringGrid->Row]);
  std::string connname=AnsiString(NANetFrameLinks->StringGrid->Cells[5][NANetFrameLinks->StringGrid->Row]).c_str();
+ std::string conn_property_name=AnsiString(NANetFrameLinks->StringGrid->Cells[6][NANetFrameLinks->StringGrid->Row]).c_str();
+ std::string item_property_name=AnsiString(NANetFrameLinks->StringGrid->Cells[4][NANetFrameLinks->StringGrid->Row]).c_str();
  if(!NANetFrameLinks->ViewComponentOwnerLongId.empty())
  {
   itemname.insert(0,NANetFrameLinks->ViewComponentOwnerLongId+std::string("."));
   connname.insert(0,NANetFrameLinks->ViewComponentOwnerLongId+std::string("."));
  }
 
- Model_BreakLink(itemname.c_str(), itemindex, connname.c_str(), connindex);
+// Model_BreakLink(itemname.c_str(), itemindex, connname.c_str(), connindex);
+ Model_BreakLinkByName(itemname.c_str(), item_property_name.c_str(), connname.c_str(), conn_property_name.c_str());
  NANetFrameLinks->UpdateInterface();
 }
 

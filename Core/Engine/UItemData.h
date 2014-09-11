@@ -125,6 +125,11 @@ UItemData& operator += (const UItemData &data);
 };
 
 
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, const UItemData &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, UItemData &data);
+//RDK_LIB_TYPE USerStorageBinary& operator << (USerStorageBinary& storage, const UItemData &data);
+//RDK_LIB_TYPE USerStorageBinary& operator >> (USerStorageBinary& storage, UItemData &data);
+
 
 }
 

@@ -1,7 +1,8 @@
-#ifndef UINPUT_PROPERTY_CPP
-#define UINPUT_PROPERTY_CPP
+#ifndef UPROPERTY_IO_CPP
+#define UPROPERTY_IO_CPP
 
-#include "UInputProperty.h"
+#include "UPropertyOutput.cpp"
+#include "UPropertyInput.cpp"
 
 namespace RDK {
 

@@ -1495,6 +1495,12 @@ void __fastcall TUWatchFrame::AddWatch1Click(TObject *Sender)
 
  std::string comp_name=UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName();
  std::string comp_output=UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput();
+ std::string::size_type i=comp_output.find("DataOutput");
+ if(i == std::string::npos)
+ {
+  return;
+ }
+ comp_output=comp_output.substr(10);
 
  Add(0, "",comp_name,0,0,RDK::atoi(comp_output),0,0,0);
 }
@@ -1508,6 +1514,13 @@ void __fastcall TUWatchFrame::AddXPulseWatch1Click(TObject *Sender)
 
  std::string comp_name=UComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName();
  std::string comp_output=UComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput();
+ std::string::size_type i=comp_output.find("DataOutput");
+ if(i == std::string::npos)
+ {
+  return;
+ }
+ comp_output=comp_output.substr(10);
+
 
  int num_watches=GetNumWatches();
  int yshift=num_watches+1;

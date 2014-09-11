@@ -658,6 +658,7 @@ int Model_SetComponentPropertyData(const char *stringid, const char *property_na
 
 // Связывает выбранные контейнеры друг с другом
 virtual int Model_CreateLink(const char* stringid1, int output_number, const char* stringid2, int input_number);
+virtual int Model_CreateLink(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name);
 
 // Связывает все компоненты выбранного компонента по возрастанию id в формате: 0 выход к 0 входу
 virtual int Model_ChainLinking(const char* stringid);
@@ -668,6 +669,7 @@ virtual int Model_ParallelLinking(const char* stringid);
 
 // Разрывает выбранную связь
 virtual int Model_BreakLink(const char* stringid1, int output_number, const char* stringid2, int input_number);
+virtual int Model_BreakLink(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name);
 
 // Разрывает все связи
 virtual int Model_BreakAllLinks(void);
@@ -686,6 +688,7 @@ virtual int Model_BreakAllComponentOutputLinks(const char* stringid);
 
 // Проверяет, существует ли заданна связь
 virtual bool Model_CheckLink(const char* stringid1, int output_number, const char* stringid2, int input_number);
+virtual bool Model_CheckLink(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name);
 
 // Возращает все связи внутри компонента stringid в виде xml в буфер buffer
 // Имена формируются до уровня компонента owner_level_stringid

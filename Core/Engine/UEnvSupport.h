@@ -229,6 +229,7 @@ std::string Name;
 // --------------------------
 ULinkSideT(void);
 ULinkSideT(const T &id, int index);
+ULinkSideT(const T &id, const std::string &property_name);
 ULinkSideT(const ULinkSideT &link);
 virtual ~ULinkSideT(void);
 // --------------------------
@@ -401,6 +402,12 @@ ULinkSideT<T>::ULinkSideT(const T &id, int index)
 }
 
 template<typename T>
+ULinkSideT<T>::ULinkSideT(const T &id, const std::string &property_name)
+ :Id(id), Index(-1), Name(property_name)
+{
+}
+
+template<typename T>
 ULinkSideT<T>::ULinkSideT(const ULinkSideT<T> &link)
 {
  Id=link.Id;
@@ -440,13 +447,13 @@ template<typename T>
 bool ULinkSideT<T>::operator < (const ULinkSideT<T> &linkside2) const
 {
  return (Id<linkside2.Id)
-	|| (Id == linkside2.Id && Index < linkside2.Index);
+	|| (Id == linkside2.Id && Name < linkside2.Name);
 }
 
 template<typename T>
 bool ULinkSideT<T>::operator == (const ULinkSideT<T> &linkside2) const
 {
- return (Id == linkside2.Id) & (Index == linkside2.Index);
+ return (Id == linkside2.Id) & (Name == linkside2.Name);
 }
 
 template<typename T>
