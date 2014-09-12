@@ -310,8 +310,6 @@ void __fastcall TEngineThread::Execute(void)
 {
  while(!Terminated)
  {
-//  Synchronize(BeforeCalculate);
-//  BeforeCalculate();
   if(WaitForSingleObject(CalcStarted,30) == WAIT_TIMEOUT)
    continue;
   if(CalculateMode == 2)
@@ -348,7 +346,6 @@ void __fastcall TEngineThread::Execute(void)
    TVideoOutputFrame* video=VideoOutputForm->GetVideoOutputFrame(ChannelIndex);
    if(video)
 	video->BeforeCalculate();
-//	  MModel_SetComponentBitmapOutput(ChannelIndex, "", "Output", &Source,false);
    #endif
    MEnv_Calculate(ChannelIndex,0);
   }

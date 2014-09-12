@@ -139,6 +139,7 @@ __published:	// IDE-managed Components
 	TMenuItem *DeleteSelected1;
 	TMenuItem *InsertChannel1;
 	TMenuItem *DeleteSelectedChannel1;
+	TMenuItem *ApplicationOptions1;
 	void __fastcall FormShow(TObject *Sender);
 	void __fastcall Start1Click(TObject *Sender);
 	void __fastcall Pause1Click(TObject *Sender);
@@ -206,6 +207,7 @@ __published:	// IDE-managed Components
 	void __fastcall DeleteSelected1Click(TObject *Sender);
 	void __fastcall InsertChannel1Click(TObject *Sender);
 	void __fastcall DeleteSelectedChannel1Click(TObject *Sender);
+	void __fastcall ApplicationOptions1Click(TObject *Sender);
 
 
 
