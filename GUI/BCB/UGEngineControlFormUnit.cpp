@@ -29,6 +29,7 @@
 #include "UServerControlFormUnit.h"
 #include "UShowProgressBarUnit.h"
 #include "TLoaderFormUnit.h"
+#include "TApplicationOptionsFormUnit.h"
 
 #include "rdk_cpp_initdll.h"
 #include "myrdk.h"
@@ -2541,4 +2542,10 @@ void __fastcall TUGEngineControlForm::DeleteSelectedChannel1Click(TObject *Sende
 }
 //---------------------------------------------------------------------------
 
+
+void __fastcall TUGEngineControlForm::ApplicationOptions1Click(TObject *Sender)
+{
+ ApplicationOptionsForm->ShowModal();
+}
+//---------------------------------------------------------------------------
 
