@@ -17,7 +17,6 @@ TApplicationOptionsForm *ApplicationOptionsForm;
 __fastcall TApplicationOptionsForm::TApplicationOptionsForm(TComponent* Owner)
 	: TForm(Owner)
 {
- UpdateInterval=-1;
 }
 //---------------------------------------------------------------------------
 void __fastcall TApplicationOptionsForm::RestoreButtonClick(TObject *Sender)
