@@ -61,6 +61,16 @@ bool ApplicationInitialized=false;
 
 HANDLE RdkLockStartapMutex;
 
+String Lang_SaveProjectTitle="Saving Project...";
+String Lang_LoadProjectTitle="Loading Project...";
+String Lang_LoadingData="Loading data...";
+String Lang_SavingData="Saving data...";
+String Lang_Total="Total";
+String Lang_SaveInterface="Saving Interface...";
+String Lang_UpdateInterface="Update Interface...";
+String Lang_Starting="Starting...";
+String Lang_Stopping="Stopping...";
+
 TUVisualControllerForm *RdkMainForm=0;
 
 bool RdkIsApplicationRunning(void)
@@ -506,7 +516,7 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
 {
  CloseProject();
 
- UShowProgressBarForm->SetWinTitle("Loading Project...");
+ UShowProgressBarForm->SetWinTitle(Lang_LoadProjectTitle);
 
  ProjectXml.LoadFromFile(AnsiString(FileName).c_str(),"");
  ProjectPath=ExtractFilePath(FileName);
@@ -525,8 +535,8 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
  if(num_engines<=0)
   num_engines=1;
 
- UShowProgressBarForm->SetBarHeader(1,"Loading data...");
- UShowProgressBarForm->SetBarHeader(2,"Total");
+ UShowProgressBarForm->SetBarHeader(1,Lang_LoadingData);
+ UShowProgressBarForm->SetBarHeader(2,Lang_Total);
  UShowProgressBarForm->ResetBarStatus(1, 1, num_engines-1);
  UShowProgressBarForm->ResetBarStatus(2, 1, 2);
 
@@ -736,7 +746,7 @@ try{
  UShowProgressBarForm->Update();
  Sleep(0);
  UShowProgressBarForm->IncBarStatus(2);
- UShowProgressBarForm->SetBarHeader(1,"Update Interface...");
+ UShowProgressBarForm->SetBarHeader(1,Lang_UpdateInterface);
  UShowProgressBarForm->ResetBarStatus(1, 1, 1);
  UShowProgressBarForm->Update();
  Sleep(0);
@@ -934,9 +944,9 @@ void TUGEngineControlForm::SaveProject(void)
  if(!ProjectOpenFlag)
   return;
 
- UShowProgressBarForm->SetWinTitle("Saving Project...");
- UShowProgressBarForm->SetBarHeader(1,"Saving interface...");
- UShowProgressBarForm->SetBarHeader(2,"Total");
+ UShowProgressBarForm->SetWinTitle(Lang_SaveProjectTitle);
+ UShowProgressBarForm->SetBarHeader(1,Lang_SaveInterface);
+ UShowProgressBarForm->SetBarHeader(2,Lang_Total);
  UShowProgressBarForm->ResetBarStatus(1, 1, 1);
  UShowProgressBarForm->ResetBarStatus(2, 1, 2);
  if(AppWinState)
@@ -995,7 +1005,7 @@ try{
  ProjectXml.WriteInteger("ProjectAutoSaveStateFlag",ProjectAutoSaveStateFlag);
 
  UShowProgressBarForm->IncBarStatus(2);
- UShowProgressBarForm->SetBarHeader(1,"Saving data...");
+ UShowProgressBarForm->SetBarHeader(1,Lang_SavingData);
  UShowProgressBarForm->ResetBarStatus(1, 1, GetNumEngines()-1);
  UShowProgressBarForm->Update();
  Sleep(0);
@@ -1565,9 +1575,9 @@ void TUGEngineControlForm::StartChannel(int channel_index)
  if(!ProjectOpenFlag)
   return;
 
- UShowProgressBarForm->SetWinTitle("Starting...");
+ UShowProgressBarForm->SetWinTitle(Lang_Starting);
  UShowProgressBarForm->SetBarHeader(1,"");
- UShowProgressBarForm->SetBarHeader(2,"Total");
+ UShowProgressBarForm->SetBarHeader(2,Lang_Total);
  UShowProgressBarForm->ResetBarStatus(1, 1, 1);
  UShowProgressBarForm->ResetBarStatus(2, 1, 2);
  if(AppWinState)
@@ -1589,9 +1599,9 @@ void TUGEngineControlForm::PauseChannel(int channel_index)
  if(!ProjectOpenFlag)
   return;
 
- UShowProgressBarForm->SetWinTitle("Stopping...");
+ UShowProgressBarForm->SetWinTitle(Lang_Stopping);
  UShowProgressBarForm->SetBarHeader(1,"");
- UShowProgressBarForm->SetBarHeader(2,"Total");
+ UShowProgressBarForm->SetBarHeader(2,Lang_Total);
  UShowProgressBarForm->ResetBarStatus(1, 1, 1);
  UShowProgressBarForm->ResetBarStatus(2, 1, 2);
  if(AppWinState)
