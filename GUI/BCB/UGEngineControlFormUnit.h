@@ -31,6 +31,16 @@
 
 #define WM_SERVER_PING (WM_USER + 261)
 #define WM_SERVER_PONG (WM_USER + 262)
+
+extern String Lang_SaveProjectTitle;
+extern String Lang_LoadProjectTitle;
+extern String Lang_LoadingData;
+extern String Lang_SavingData;
+extern String Lang_Total;
+extern String Lang_SaveInterface;
+extern String Lang_UpdateInterface;
+extern String Lang_Starting;
+extern String Lang_Starting;
 //---------------------------------------------------------------------------
 #pragma warn -8130
 class TUGEngineControlForm : public TUVisualControllerForm

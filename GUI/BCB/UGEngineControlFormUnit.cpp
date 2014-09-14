@@ -61,15 +61,15 @@ bool ApplicationInitialized=false;
 
 HANDLE RdkLockStartapMutex;
 
-String Lang_SaveProjectTitle="Saving Project...";
-String Lang_LoadProjectTitle="Loading Project...";
-String Lang_LoadingData="Loading data...";
-String Lang_SavingData="Saving data...";
-String Lang_Total="Total";
-String Lang_SaveInterface="Saving Interface...";
-String Lang_UpdateInterface="Update Interface...";
-String Lang_Starting="Starting...";
-String Lang_Stopping="Stopping...";
+String Lang_SaveProjectTitle("Saving Project...");
+String Lang_LoadProjectTitle("Loading Project...");
+String Lang_LoadingData("Loading data...");
+String Lang_SavingData("Saving data...");
+String Lang_Total("Total");
+String Lang_SaveInterface("Saving Interface...");
+String Lang_UpdateInterface("Update Interface...");
+String Lang_Starting("Starting...");
+String Lang_Stopping("Stopping...");
 
 TUVisualControllerForm *RdkMainForm=0;
 
