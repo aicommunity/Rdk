@@ -2,7 +2,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
   Left = 0
   Top = 0
   Caption = 'Create Project Wizard'
-  ClientHeight = 403
+  ClientHeight = 491
   ClientWidth = 527
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -16,7 +16,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
   TextHeight = 13
   object Panel1: TPanel
     Left = 0
-    Top = 362
+    Top = 450
     Width = 527
     Height = 41
     Align = alBottom
@@ -54,8 +54,8 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
     Left = 0
     Top = 0
     Width = 527
-    Height = 362
-    ActivePage = TabSheet3
+    Height = 450
+    ActivePage = TabSheet1
     Align = alClient
     TabOrder = 1
     OnChange = PageControlChange
@@ -63,7 +63,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
       Caption = 'Name'
       DesignSize = (
         519
-        334)
+        422)
       object Label1: TLabel
         Left = 3
         Top = 139
@@ -118,7 +118,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
         Left = 3
         Top = 158
         Width = 513
-        Height = 155
+        Height = 240
         Anchors = [akLeft, akTop, akRight, akBottom]
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clWindowText
@@ -131,7 +131,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
       end
       object ProjectAutoSaveFlagCheckBox: TCheckBox
         Left = 3
-        Top = 316
+        Top = 404
         Width = 70
         Height = 17
         Anchors = [akLeft, akBottom]
@@ -139,6 +139,28 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
         Checked = True
         State = cbChecked
         TabOrder = 5
+      end
+      object ProjectAutoSaveStatesFlagCheckBox: TCheckBox
+        Left = 75
+        Top = 404
+        Width = 102
+        Height = 17
+        Anchors = [akLeft, akBottom]
+        Caption = 'Autosave States'
+        Checked = True
+        State = cbChecked
+        TabOrder = 6
+      end
+      object EventsLogFlagCheckBox: TCheckBox
+        Left = 179
+        Top = 404
+        Width = 102
+        Height = 17
+        Anchors = [akLeft, akBottom]
+        Caption = 'Log Events'
+        Checked = True
+        State = cbChecked
+        TabOrder = 7
       end
     end
     object TabSheet2: TTabSheet
@@ -156,7 +178,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
       end
       object ProjectTypeRadioGroup: TRadioGroup
         Left = 0
-        Top = 41
+        Top = 83
         Width = 519
         Height = 40
         Align = alTop
@@ -166,36 +188,12 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
         Items.Strings = (
           'Universal'
           'Video analysis')
-        TabOrder = 2
-        OnClick = ProjectTypeRadioGroupClick
-      end
-      object ProjectTimeStepGroupBox: TGroupBox
-        Left = 0
-        Top = 161
-        Width = 519
-        Height = 54
-        Align = alTop
-        Caption = ' Time step duration (or default frame processing duration) '
         TabOrder = 1
-        object Label2: TLabel
-          Left = 10
-          Top = 23
-          Width = 28
-          Height = 13
-          Caption = 'T=1./'
-        end
-        object ProjectTimeStepEdit: TEdit
-          Left = 44
-          Top = 20
-          Width = 45
-          Height = 21
-          TabOrder = 0
-          Text = '30'
-        end
+        OnClick = ProjectTypeRadioGroupClick
       end
       object ProjectCalculationModeRadioGroup: TRadioGroup
         Left = 0
-        Top = 121
+        Top = 203
         Width = 519
         Height = 40
         Align = alTop
@@ -206,20 +204,20 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
           'Sequential'
           'Real-time simulation'
           'By "Data Ready" signal')
-        TabOrder = 3
+        TabOrder = 2
       end
       object VideoAnalysisGroupBox: TGroupBox
         Left = 0
-        Top = 215
+        Top = 243
         Width = 519
-        Height = 119
-        Align = alClient
+        Height = 94
+        Align = alTop
         Caption = ' Video Analysis Additional Parameters '
-        TabOrder = 4
+        TabOrder = 3
         Visible = False
         DesignSize = (
           519
-          119)
+          94)
         object ImageWidthLabeledEdit: TLabeledEdit
           Left = 3
           Top = 34
@@ -281,7 +279,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
       end
       object CalculationSourceTimeModeRadioGroup: TRadioGroup
         Left = 0
-        Top = 81
+        Top = 163
         Width = 519
         Height = 40
         Align = alTop
@@ -291,13 +289,45 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
         Items.Strings = (
           'System Time'
           'External Data Time')
+        TabOrder = 4
+        OnClick = ProjectTypeRadioGroupClick
+      end
+      object ProjectModeRadioGroup: TRadioGroup
+        Left = 0
+        Top = 41
+        Width = 519
+        Height = 42
+        Align = alTop
+        Caption = ' Project Mode '
+        Columns = 2
+        ItemIndex = 1
+        Items.Strings = (
+          'Simple'
+          'Server')
         TabOrder = 5
+      end
+      object MultiThreadingModeRadioGroup: TRadioGroup
+        Left = 0
+        Top = 123
+        Width = 519
+        Height = 40
+        Align = alTop
+        Caption = ' Multi-Threading Mode '
+        Columns = 2
+        ItemIndex = 1
+        Items.Strings = (
+          'Single Thread'
+          'Multi Threads')
+        TabOrder = 6
         OnClick = ProjectTypeRadioGroupClick
       end
     end
     object TabSheet3: TTabSheet
       Caption = 'Model'
       ImageIndex = 2
+      DesignSize = (
+        519
+        422)
       object TitlePanel3: TPanel
         Left = 0
         Top = 0
@@ -305,201 +335,391 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
         Height = 41
         Align = alTop
         Alignment = taLeftJustify
-        Caption = 'Select predefined model or root component name'
+        Caption = 'Channels configuration'
         TabOrder = 0
-      end
-      object GroupBox2: TGroupBox
-        Left = 0
-        Top = 185
-        Width = 519
-        Height = 149
-        Align = alClient
-        TabOrder = 1
-        inline UClassesListFrame1: TUClassesListFrame
-          Left = 2
-          Top = 32
-          Width = 515
-          Height = 115
-          Align = alClient
-          DoubleBuffered = True
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -11
-          Font.Name = 'Tahoma'
-          Font.Style = []
-          ParentDoubleBuffered = False
-          ParentFont = False
+        DesignSize = (
+          519
+          41)
+        object ChannelsNumberLabeledEdit: TLabeledEdit
+          Left = 413
+          Top = 14
+          Width = 86
+          Height = 21
+          Anchors = [akTop, akRight]
+          EditLabel.Width = 84
+          EditLabel.Height = 13
+          EditLabel.Caption = 'Channels Number'
           TabOrder = 0
-          ExplicitLeft = 2
-          ExplicitTop = 32
-          ExplicitWidth = 515
-          ExplicitHeight = 115
-          inherited PageControl: TPageControl
-            Width = 515
-            Height = 115
-            ActivePage = UClassesListFrame1.NameTabSheet
-            ExplicitWidth = 515
-            ExplicitHeight = 115
-            inherited NameTabSheet: TTabSheet
-              ExplicitLeft = 4
-              ExplicitTop = 24
-              ExplicitWidth = 499
-              ExplicitHeight = 515
-              inherited StringGrid: TStringGrid
-                Width = 507
-                Height = 87
+          Text = '1'
+        end
+        object UpDown1: TUpDown
+          Left = 499
+          Top = 14
+          Width = 16
+          Height = 21
+          Anchors = [akTop, akRight]
+          Associate = ChannelsNumberLabeledEdit
+          Min = 1
+          Max = 1000
+          Position = 1
+          TabOrder = 1
+        end
+      end
+      object GroupBox4: TGroupBox
+        Left = 0
+        Top = 41
+        Width = 519
+        Height = 359
+        Align = alTop
+        Anchors = [akLeft, akTop, akRight, akBottom]
+        Caption = ' Channel Properties'
+        TabOrder = 1
+        object StringGrid1: TStringGrid
+          Left = 2
+          Top = 15
+          Width = 47
+          Height = 342
+          Align = alLeft
+          ColCount = 1
+          DefaultColWidth = 24
+          FixedCols = 0
+          FixedRows = 0
+          TabOrder = 0
+          ExplicitLeft = -4
+          ExplicitTop = 17
+        end
+        object Panel4: TPanel
+          Left = 49
+          Top = 15
+          Width = 468
+          Height = 342
+          Align = alClient
+          TabOrder = 1
+          ExplicitLeft = 216
+          ExplicitTop = 48
+          ExplicitWidth = 185
+          ExplicitHeight = 41
+          object Panel2: TPanel
+            Left = 1
+            Top = 168
+            Width = 466
+            Height = 173
+            Align = alBottom
+            TabOrder = 0
+            DesignSize = (
+              466
+              173)
+            object ProjectTimeStepGroupBox: TGroupBox
+              Left = 1
+              Top = 1
+              Width = 464
+              Height = 54
+              Align = alTop
+              Caption = ' Time step duration  '
+              TabOrder = 0
+              ExplicitWidth = 171
+              object Label2: TLabel
+                Left = 10
+                Top = 23
+                Width = 74
+                Height = 13
+                Caption = 'T (Default)=1./'
+              end
+              object Label3: TLabel
+                Left = 139
+                Top = 23
+                Width = 68
+                Height = 13
+                Caption = 'T (Global)=1./'
+              end
+              object ProjectTimeStepEdit: TEdit
+                Left = 89
+                Top = 20
+                Width = 39
+                Height = 21
+                TabOrder = 0
+                Text = '30'
+              end
+              object Edit1: TEdit
+                Left = 216
+                Top = 20
+                Width = 42
+                Height = 21
+                TabOrder = 1
+                Text = '30'
               end
             end
-            inherited LibsTabSheet: TTabSheet
-              ExplicitLeft = 4
-              ExplicitTop = 24
-              ExplicitWidth = 499
-              ExplicitHeight = 515
+            object CalculationModeRadioGroup: TRadioGroup
+              Left = 1
+              Top = 55
+              Width = 464
+              Height = 41
+              Align = alTop
+              Caption = ' Calculation Mode '
+              Columns = 3
+              ItemIndex = 0
+              Items.Strings = (
+                'Simple'
+                'Real-Time'
+                'By Signal')
+              TabOrder = 1
+              ExplicitWidth = 171
             end
-            inherited LibsControlTabSheet: TTabSheet
-              ExplicitLeft = 4
-              ExplicitTop = 24
-              ExplicitWidth = 507
-              ExplicitHeight = 87
-              inherited Splitter1: TSplitter
-                Top = -203
-                Width = 507
+            object InitAfterLoadCheckBox: TCheckBox
+              Left = 6
+              Top = 151
+              Width = 97
+              Height = 17
+              Anchors = [akLeft, akBottom]
+              Caption = 'Init After Load'
+              TabOrder = 2
+              ExplicitTop = 320
+            end
+            object ResetAfterLoadCheckBox: TCheckBox
+              Left = 98
+              Top = 151
+              Width = 97
+              Height = 17
+              Anchors = [akLeft, akBottom]
+              Caption = 'Reset After Load'
+              TabOrder = 3
+              ExplicitTop = 320
+            end
+            object DebugModeCheckBox: TCheckBox
+              Left = 206
+              Top = 151
+              Width = 50
+              Height = 17
+              Anchors = [akLeft, akBottom]
+              Caption = 'Debug'
+              TabOrder = 4
+              ExplicitTop = 320
+            end
+            object GroupBox5: TGroupBox
+              Left = 1
+              Top = 96
+              Width = 464
+              Height = 54
+              Align = alTop
+              Caption = ' Min Intersteps Interval (ms)  '
+              TabOrder = 5
+              ExplicitWidth = 171
+              object MinInterstepsIntervalEdit: TEdit
+                Left = 10
+                Top = 20
+                Width = 69
+                Height = 21
+                TabOrder = 0
+                Text = '30'
               end
-              inherited Panel1: TPanel
-                Top = -36
-                Width = 507
-                ExplicitTop = -36
-                ExplicitWidth = 507
-                inherited LoadLibraryButton: TButton
-                  Width = 505
-                  ExplicitWidth = 505
-                end
-                inherited CreateRuntimeLibraryButton: TButton
-                  Width = 505
-                  ExplicitWidth = 505
-                end
-                inherited DeleteLibraryButton: TButton
-                  Width = 505
-                  ExplicitWidth = 505
-                end
-                inherited RenameRuntimeLibraryButton: TButton
-                  Width = 505
-                  ExplicitWidth = 505
-                end
-                inherited AddClassButton: TButton
-                  Width = 505
-                  ExplicitLeft = 1
-                  ExplicitTop = 101
-                  ExplicitWidth = 505
+            end
+          end
+          object Panel3: TPanel
+            Left = 1
+            Top = 1
+            Width = 466
+            Height = 167
+            Align = alClient
+            TabOrder = 1
+            ExplicitLeft = 264
+            ExplicitTop = 0
+            ExplicitWidth = 204
+            ExplicitHeight = 342
+            object ModelPageControl: TPageControl
+              Left = 1
+              Top = 1
+              Width = 464
+              Height = 165
+              ActivePage = PredefinedModelTabSheet
+              Align = alClient
+              MultiLine = True
+              TabOrder = 0
+              TabPosition = tpRight
+              object DontChangeTabSheet: TTabSheet
+                Caption = 'Don'#39't Change'
+                ImageIndex = 3
+                ExplicitWidth = 416
+              end
+              object PredefinedModelTabSheet: TTabSheet
+                Caption = 'Predefined Model'
+                ExplicitWidth = 416
+                DesignSize = (
+                  396
+                  157)
+                object PredefinedModelComboBox: TComboBox
+                  Left = 6
+                  Top = 15
+                  Width = 387
+                  Height = 21
+                  Anchors = [akLeft, akTop, akRight]
+                  TabOrder = 0
+                  Text = '0'
                 end
               end
-              inherited GroupBox1: TGroupBox
-                Width = 507
-                ExplicitWidth = 507
-                ExplicitHeight = 225
-                inherited LibsListStringGrid: TStringGrid
-                  Width = 503
-                  ExplicitWidth = 503
-                  ExplicitHeight = 208
+              object ModelFromFileTabSheet: TTabSheet
+                Caption = 'From File'
+                ImageIndex = 1
+                ExplicitWidth = 416
+                DesignSize = (
+                  396
+                  157)
+                object ProjectModelFileNameLabeledEdit: TLabeledEdit
+                  Left = 3
+                  Top = 18
+                  Width = 377
+                  Height = 21
+                  Anchors = [akLeft, akTop, akRight]
+                  EditLabel.Width = 74
+                  EditLabel.Height = 13
+                  EditLabel.Caption = 'Model file name'
+                  TabOrder = 0
+                end
+                object OpenModelButton: TButton
+                  Left = 321
+                  Top = 16
+                  Width = 75
+                  Height = 25
+                  Anchors = [akTop, akRight]
+                  Caption = 'Browse'
+                  TabOrder = 1
+                  OnClick = OpenModelButtonClick
                 end
               end
-              inherited GroupBox2: TGroupBox
-                Top = -196
-                Width = 507
-                ExplicitTop = -196
-                ExplicitWidth = 507
-                inherited LibComponentListStringGrid: TStringGrid
-                  Width = 503
-                  ExplicitWidth = 503
-                  ExplicitHeight = 143
+              object ModelFromComponentTabSheet: TTabSheet
+                Caption = 'From Component'
+                ImageIndex = 2
+                ExplicitWidth = 416
+                object GroupBox2: TGroupBox
+                  Left = 0
+                  Top = 0
+                  Width = 396
+                  Height = 157
+                  Align = alClient
+                  Caption = ' Root Model Component Name '
+                  TabOrder = 0
+                  ExplicitWidth = 416
+                  inline UClassesListFrame1: TUClassesListFrame
+                    Left = 2
+                    Top = 15
+                    Width = 392
+                    Height = 140
+                    Align = alClient
+                    DoubleBuffered = True
+                    Font.Charset = DEFAULT_CHARSET
+                    Font.Color = clWindowText
+                    Font.Height = -11
+                    Font.Name = 'Tahoma'
+                    Font.Style = []
+                    ParentDoubleBuffered = False
+                    ParentFont = False
+                    TabOrder = 0
+                    ExplicitLeft = 2
+                    ExplicitTop = 32
+                    ExplicitWidth = 412
+                    ExplicitHeight = 123
+                    inherited PageControl: TPageControl
+                      Width = 392
+                      Height = 140
+                      ActivePage = UClassesListFrame1.NameTabSheet
+                      ExplicitWidth = 412
+                      ExplicitHeight = 123
+                      inherited NameTabSheet: TTabSheet
+                        ExplicitLeft = 4
+                        ExplicitTop = 24
+                        ExplicitWidth = 404
+                        ExplicitHeight = 95
+                        inherited StringGrid: TStringGrid
+                          Width = 384
+                          Height = 112
+                          ExplicitWidth = 404
+                          ExplicitHeight = 95
+                        end
+                      end
+                      inherited LibsTabSheet: TTabSheet
+                        ExplicitLeft = 4
+                        ExplicitTop = 24
+                        ExplicitWidth = 499
+                        ExplicitHeight = 515
+                      end
+                      inherited LibsControlTabSheet: TTabSheet
+                        ExplicitLeft = 4
+                        ExplicitTop = 24
+                        ExplicitWidth = 182
+                        ExplicitHeight = 250
+                        inherited Splitter1: TSplitter
+                          Top = -40
+                          Width = 182
+                          ExplicitTop = -203
+                          ExplicitWidth = 507
+                        end
+                        inherited Panel1: TPanel
+                          Top = 127
+                          Width = 182
+                          ExplicitTop = 127
+                          ExplicitWidth = 182
+                          inherited LoadLibraryButton: TButton
+                            Width = 180
+                            ExplicitWidth = 180
+                          end
+                          inherited CreateRuntimeLibraryButton: TButton
+                            Width = 180
+                            ExplicitWidth = 180
+                          end
+                          inherited DeleteLibraryButton: TButton
+                            Width = 180
+                            ExplicitWidth = 180
+                          end
+                          inherited RenameRuntimeLibraryButton: TButton
+                            Width = 180
+                            ExplicitWidth = 180
+                          end
+                          inherited AddClassButton: TButton
+                            Width = 180
+                            ExplicitLeft = 1
+                            ExplicitTop = 101
+                            ExplicitWidth = 180
+                          end
+                        end
+                        inherited GroupBox1: TGroupBox
+                          Width = 182
+                          ExplicitWidth = 182
+                          ExplicitHeight = 225
+                          inherited LibsListStringGrid: TStringGrid
+                            Width = 178
+                            ExplicitWidth = 178
+                            ExplicitHeight = 208
+                          end
+                        end
+                        inherited GroupBox2: TGroupBox
+                          Top = -33
+                          Width = 182
+                          ExplicitTop = -33
+                          ExplicitWidth = 182
+                          inherited LibComponentListStringGrid: TStringGrid
+                            Width = 178
+                            ExplicitWidth = 178
+                            ExplicitHeight = 143
+                          end
+                        end
+                      end
+                    end
+                  end
                 end
               end
             end
           end
         end
-        object RootModelComponentNameRadioButton: TRadioButton
-          Left = 2
-          Top = 15
-          Width = 515
-          Height = 17
-          Align = alTop
-          Caption = 'Root model component name'
-          TabOrder = 1
-          OnClick = RootModelComponentNameRadioButtonClick
-        end
       end
-      object GroupBox3: TGroupBox
-        Left = 0
-        Top = 41
-        Width = 519
-        Height = 72
-        Align = alTop
+      object ShowChannelsStateCheckBox: TCheckBox
+        Left = 3
+        Top = 406
+        Width = 126
+        Height = 17
+        Anchors = [akLeft, akBottom]
+        Caption = 'Show Channels State'
+        Checked = True
+        State = cbChecked
         TabOrder = 2
-        DesignSize = (
-          519
-          72)
-        object PredefinedModelRadioButton: TRadioButton
-          Left = 2
-          Top = 15
-          Width = 515
-          Height = 17
-          Align = alTop
-          Caption = 'Predefined model'
-          Checked = True
-          TabOrder = 1
-          TabStop = True
-          OnClick = PredefinedModelRadioButtonClick
-        end
-        object PredefinedModelComboBox: TComboBox
-          Left = 4
-          Top = 38
-          Width = 508
-          Height = 21
-          Anchors = [akLeft, akTop, akRight]
-          TabOrder = 0
-          Text = '0'
-        end
-      end
-      object GroupBox1: TGroupBox
-        Left = 0
-        Top = 113
-        Width = 519
-        Height = 72
-        Align = alTop
-        TabOrder = 3
-        DesignSize = (
-          519
-          72)
-        object ModelFileNameRadioButton: TRadioButton
-          Left = 2
-          Top = 15
-          Width = 515
-          Height = 17
-          Align = alTop
-          Caption = 'Load model from file'
-          TabOrder = 0
-          OnClick = ModelFileNameRadioButtonClick
-        end
-        object ProjectModelFileNameLabeledEdit: TLabeledEdit
-          Left = 3
-          Top = 51
-          Width = 432
-          Height = 21
-          Anchors = [akLeft, akTop, akRight]
-          EditLabel.Width = 74
-          EditLabel.Height = 13
-          EditLabel.Caption = 'Model file name'
-          TabOrder = 1
-        end
-        object OpenModelButton: TButton
-          Left = 441
-          Top = 47
-          Width = 75
-          Height = 25
-          Caption = 'Browse'
-          TabOrder = 2
-          OnClick = OpenModelButtonClick
-        end
       end
     end
   end
@@ -507,7 +727,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
     DefaultExt = 'xml'
     Options = [ofHideReadOnly, ofPathMustExist, ofFileMustExist, ofEnableSizing]
     Title = 'Select model file name'
-    Left = 176
-    Top = 72
+    Left = 448
+    Top = 32
   end
 end

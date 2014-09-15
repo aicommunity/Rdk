@@ -272,6 +272,9 @@ bool ProjectAutoSaveFlag;
 // Флаг автоматического сохранения состояния модели
 bool ProjectAutoSaveStateFlag;
 
+// Флаг отображения состояний каналов справа от их индексов
+bool ProjectShowChannelsStates;
+
 // Число входов среды
 int NumEnvInputs;
 

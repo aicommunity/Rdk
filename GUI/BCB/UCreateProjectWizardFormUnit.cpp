@@ -66,7 +66,7 @@ void TUCreateProjectWizardForm::ClearWizard(void)
  ProjectTimeStepEdit->Text="30";
  ProjectTypeRadioGroupClick(this);
  ProjectCalculationModeRadioGroup->ItemIndex=2;
- PredefinedModelRadioButton->Checked=true;
+// PredefinedModelRadioButton->Checked=true;
  PredefinedModelRadioButtonClick(this);
  PredefinedModelComboBox->ItemIndex=0;
  PageControl->ActivePage = TabSheet1;
@@ -91,7 +91,7 @@ void TUCreateProjectWizardForm::AddPredefinedModel(const std::string &name, int 
 int TUCreateProjectWizardForm::ShowCreateProject(void)
 {
  ProjectDirectoryLabeledEdit->Enabled=true;
- PredefinedModelRadioButton->Enabled=true;
+// PredefinedModelRadioButton->Enabled=true;
  PredefinedModelComboBox->Enabled=true;
  TabSheet3->Enabled=true;
 
@@ -102,7 +102,7 @@ int TUCreateProjectWizardForm::ShowCreateProject(void)
 int TUCreateProjectWizardForm::ShowProjectOptions(void)
 {
  ProjectDirectoryLabeledEdit->Enabled=false;
- PredefinedModelRadioButton->Enabled=false;
+// PredefinedModelRadioButton->Enabled=false;
  PredefinedModelComboBox->Enabled=false;
  TabSheet3->Enabled=false;
 
@@ -174,23 +174,23 @@ void __fastcall TUCreateProjectWizardForm::ProjectTypeRadioGroupClick(TObject *S
 //---------------------------------------------------------------------------
 void __fastcall TUCreateProjectWizardForm::PredefinedModelRadioButtonClick(TObject *Sender)
 {
- PredefinedModelRadioButton->Checked=true;
+// PredefinedModelRadioButton->Checked=true;
  PredefinedModelComboBox->Enabled=true;
- ModelFileNameRadioButton->Checked=false;
+// ModelFileNameRadioButton->Checked=false;
  ProjectModelFileNameLabeledEdit->Enabled=false;
  OpenModelButton->Enabled=false;
- RootModelComponentNameRadioButton->Checked=false;
+// RootModelComponentNameRadioButton->Checked=false;
  UClassesListFrame1->Enabled=false;
 }
 //---------------------------------------------------------------------------
 void __fastcall TUCreateProjectWizardForm::RootModelComponentNameRadioButtonClick(TObject *Sender)
 {
- PredefinedModelRadioButton->Checked=false;
+// PredefinedModelRadioButton->Checked=false;
  PredefinedModelComboBox->Enabled=false;
- ModelFileNameRadioButton->Checked=false;
+// ModelFileNameRadioButton->Checked=false;
  ProjectModelFileNameLabeledEdit->Enabled=false;
  OpenModelButton->Enabled=false;
- RootModelComponentNameRadioButton->Checked=true;
+// RootModelComponentNameRadioButton->Checked=true;
  UClassesListFrame1->Enabled=true;
 }
 //---------------------------------------------------------------------------
@@ -229,12 +229,12 @@ void __fastcall TUCreateProjectWizardForm::OpenModelButtonClick(TObject *Sender)
 void __fastcall TUCreateProjectWizardForm::ModelFileNameRadioButtonClick(TObject *Sender)
 
 {
- PredefinedModelRadioButton->Checked=false;
+// PredefinedModelRadioButton->Checked=false;
  PredefinedModelComboBox->Enabled=false;
- ModelFileNameRadioButton->Checked=true;
+// ModelFileNameRadioButton->Checked=true;
  ProjectModelFileNameLabeledEdit->Enabled=true;
  OpenModelButton->Enabled=true;
- RootModelComponentNameRadioButton->Checked=false;
+// RootModelComponentNameRadioButton->Checked=false;
  UClassesListFrame1->Enabled=false;
 }
 //---------------------------------------------------------------------------

@@ -13,6 +13,7 @@
 #include "UClassesListFrameUnit.h"
 #include <Vcl.Dialogs.hpp>
 #include <Vcl.ExtDlgs.hpp>
+#include <Vcl.Grids.hpp>
 //---------------------------------------------------------------------------
 class TUCreateProjectWizardForm : public TForm
 {
@@ -34,21 +35,8 @@ __published:	// IDE-managed Components
 	TLabel *Label1;
 	TRichEdit *ProjectDescriptionRichEdit;
 	TRadioGroup *ProjectTypeRadioGroup;
-	TGroupBox *ProjectTimeStepGroupBox;
 	TRadioGroup *ProjectCalculationModeRadioGroup;
-	TLabel *Label2;
-	TEdit *ProjectTimeStepEdit;
-	TGroupBox *GroupBox2;
-	TGroupBox *GroupBox3;
-	TUClassesListFrame *UClassesListFrame1;
-	TRadioButton *RootModelComponentNameRadioButton;
-	TRadioButton *PredefinedModelRadioButton;
 	TCheckBox *ProjectAutoSaveFlagCheckBox;
-	TComboBox *PredefinedModelComboBox;
-	TGroupBox *GroupBox1;
-	TRadioButton *ModelFileNameRadioButton;
-	TLabeledEdit *ProjectModelFileNameLabeledEdit;
-	TButton *OpenModelButton;
 	TOpenTextFileDialog *OpenTextFileDialog;
 	TGroupBox *VideoAnalysisGroupBox;
 	TLabeledEdit *ImageWidthLabeledEdit;
@@ -57,6 +45,39 @@ __published:	// IDE-managed Components
 	TLabeledEdit *NumOutputsLabeledEdit;
 	TCheckBox *UpendInputImageCheckBox;
 	TRadioGroup *CalculationSourceTimeModeRadioGroup;
+	TCheckBox *ProjectAutoSaveStatesFlagCheckBox;
+	TRadioGroup *ProjectModeRadioGroup;
+	TLabeledEdit *ChannelsNumberLabeledEdit;
+	TUpDown *UpDown1;
+	TGroupBox *GroupBox4;
+	TStringGrid *StringGrid1;
+	TPanel *Panel2;
+	TPanel *Panel3;
+	TCheckBox *ShowChannelsStateCheckBox;
+	TGroupBox *ProjectTimeStepGroupBox;
+	TLabel *Label2;
+	TEdit *ProjectTimeStepEdit;
+	TEdit *Edit1;
+	TLabel *Label3;
+	TCheckBox *EventsLogFlagCheckBox;
+	TRadioGroup *CalculationModeRadioGroup;
+	TCheckBox *InitAfterLoadCheckBox;
+	TCheckBox *ResetAfterLoadCheckBox;
+	TCheckBox *DebugModeCheckBox;
+	TRadioGroup *MultiThreadingModeRadioGroup;
+	TGroupBox *GroupBox5;
+	TEdit *MinInterstepsIntervalEdit;
+	TPageControl *ModelPageControl;
+	TTabSheet *PredefinedModelTabSheet;
+	TTabSheet *ModelFromFileTabSheet;
+	TTabSheet *ModelFromComponentTabSheet;
+	TComboBox *PredefinedModelComboBox;
+	TLabeledEdit *ProjectModelFileNameLabeledEdit;
+	TButton *OpenModelButton;
+	TGroupBox *GroupBox2;
+	TUClassesListFrame *UClassesListFrame1;
+	TPanel *Panel4;
+	TTabSheet *DontChangeTabSheet;
 	void __fastcall FinishButtonClick(TObject *Sender);
 	void __fastcall Button1Click(TObject *Sender);
 	void __fastcall ProjectTypeRadioGroupClick(TObject *Sender);

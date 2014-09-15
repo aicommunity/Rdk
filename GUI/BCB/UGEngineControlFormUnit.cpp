@@ -261,20 +261,36 @@ void TUGEngineControlForm::AUpdateInterface(void)
    VideoCaptureStates=monitor->ReadVideoCaptureStates();
   }
 
-  ChannelsStringGrid->ColWidths[1]=20;
-  ChannelsStringGrid->ColWidths[2]=20;
-  for(int i=0;i<ChannelsStringGrid->RowCount;i++)
+  if(ProjectShowChannelsStates)
   {
-   ChannelsStringGrid->Cells[0][i]=IntToStr(i);
-   if(CalcThreadStates.size()>i)
-	ChannelsStringGrid->Cells[1][i]=CalcThreadStates[i];
-   else
-	ChannelsStringGrid->Cells[1][i]="n/a";
+   ChannelsStringGrid->ColCount=3;
+   ChannelsStringGrid->ColWidths[1]=20;
+   ChannelsStringGrid->ColWidths[2]=20;
+   ChannelsStringGrid->Width=ChannelsStringGrid->ColWidths[0]+
+						ChannelsStringGrid->ColWidths[1]+
+						ChannelsStringGrid->ColWidths[2]+20;
+   for(int i=0;i<ChannelsStringGrid->RowCount;i++)
+   {
+	ChannelsStringGrid->Cells[0][i]=IntToStr(i);
+	if(CalcThreadStates.size()>i)
+	 ChannelsStringGrid->Cells[1][i]=CalcThreadStates[i];
+	else
+	 ChannelsStringGrid->Cells[1][i]="n/a";
 
-   if(VideoCaptureStates.size()>i)
-	ChannelsStringGrid->Cells[2][i]=VideoCaptureStates[i];
-   else
-	ChannelsStringGrid->Cells[2][i]="n/a";
+	if(VideoCaptureStates.size()>i)
+	 ChannelsStringGrid->Cells[2][i]=VideoCaptureStates[i];
+	else
+	 ChannelsStringGrid->Cells[2][i]="n/a";
+   }
+  }
+  else
+  {
+   ChannelsStringGrid->ColCount=1;
+   ChannelsStringGrid->Width=ChannelsStringGrid->ColWidths[0]+20;
+   for(int i=0;i<ChannelsStringGrid->RowCount;i++)
+   {
+	ChannelsStringGrid->Cells[0][i]=IntToStr(i);
+   }
   }
 
   ChannelsStringGrid->Row=GetSelectedEngineIndex();
@@ -530,6 +546,7 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
  UEngineMonitorForm->EngineMonitorFrame->SetCalculationTimeSourceMode(calc_time_mode);
 
  EventsLogEnabled=ProjectXml.ReadBool("EventsLogEnabled",true);
+ ProjectShowChannelsStates=ProjectXml.ReadBool("ProjectShowChannelsStates",true);
 
  int num_engines=ProjectXml.ReadInteger("NumEngines",1);
  if(num_engines<=0)
@@ -1162,6 +1179,9 @@ try{
 
  ProjectXml.WriteInteger("NumEngines",GetNumEngines());
  ProjectXml.WriteInteger("SelectedEngineIndex",GetSelectedEngineIndex());
+
+ ProjectXml.WriteBool("ProjectShowChannelsStates",ProjectShowChannelsStates);
+
 
  ProjectXml.SaveToFile(AnsiString(ProjectPath+ProjectFileName).c_str());
 }
@@ -1959,13 +1979,13 @@ void __fastcall TUGEngineControlForm::ProjectOptions1Click(TObject *Sender)
  UCreateProjectWizardForm->PredefinedStructure=PredefinedStructure[GetSelectedEngineIndex()];
  if(PredefinedStructure[GetSelectedEngineIndex()])
  {
-  UCreateProjectWizardForm->PredefinedModelRadioButton->Checked=true;
-  UCreateProjectWizardForm->ModelFileNameRadioButton->Checked=false;
+//  UCreateProjectWizardForm->PredefinedModelRadioButton->Checked=true;
+//  UCreateProjectWizardForm->ModelFileNameRadioButton->Checked=false;
  }
  else
  {
-  UCreateProjectWizardForm->PredefinedModelRadioButton->Checked=false;
-  UCreateProjectWizardForm->ModelFileNameRadioButton->Checked=true;
+//  UCreateProjectWizardForm->PredefinedModelRadioButton->Checked=false;
+//  UCreateProjectWizardForm->ModelFileNameRadioButton->Checked=true;
   if(GetSelectedEngineIndex() == 0)
    UCreateProjectWizardForm->ProjectModelFileNameLabeledEdit->Text=ProjectXml.ReadString("ModelFileName","").c_str();
   else
