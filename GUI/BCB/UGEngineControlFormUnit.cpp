@@ -1870,15 +1870,15 @@ void __fastcall TUGEngineControlForm::CreateProjectItemClick(TObject *Sender)
 
   GlobalTimeStep=DefaultTimeStep;
 
-  NumEnvInputs=StrToInt(UCreateProjectWizardForm->NumInputsLabeledEdit->Text);
-  NumEnvOutputs=StrToInt(UCreateProjectWizardForm->NumOutputsLabeledEdit->Text);
-  InputEnvImageWidth=StrToInt(UCreateProjectWizardForm->ImageWidthLabeledEdit->Text);
-  InputEnvImageHeight=StrToInt(UCreateProjectWizardForm->ImageHeightLabeledEdit->Text);
-  ReflectionFlag=UCreateProjectWizardForm->UpendInputImageCheckBox->Checked;
+//  NumEnvInputs=StrToInt(UCreateProjectWizardForm->NumInputsLabeledEdit->Text);
+//  NumEnvOutputs=StrToInt(UCreateProjectWizardForm->NumOutputsLabeledEdit->Text);
+//  InputEnvImageWidth=StrToInt(UCreateProjectWizardForm->ImageWidthLabeledEdit->Text);
+//  InputEnvImageHeight=StrToInt(UCreateProjectWizardForm->ImageHeightLabeledEdit->Text);
+//  ReflectionFlag=UCreateProjectWizardForm->UpendInputImageCheckBox->Checked;
 
 
   CalculationMode.resize(1);
-  CalculationMode[0]=UCreateProjectWizardForm->ProjectCalculationModeRadioGroup->ItemIndex;
+//  CalculationMode[0]=UCreateProjectWizardForm->ProjectCalculationModeRadioGroup->ItemIndex;
 
   MinInterstepsInterval.resize(1);
   MinInterstepsInterval[0]=20;
@@ -1973,7 +1973,7 @@ void __fastcall TUGEngineControlForm::ProjectOptions1Click(TObject *Sender)
  UCreateProjectWizardForm->ProjectTypeRadioGroup->ItemIndex=1;
  UCreateProjectWizardForm->ProjectAutoSaveFlagCheckBox->Checked=ProjectAutoSaveFlag;
  UCreateProjectWizardForm->ProjectTimeStepEdit->Text=IntToStr(DefaultTimeStep[GetSelectedEngineIndex()]);
- UCreateProjectWizardForm->ProjectCalculationModeRadioGroup->ItemIndex=CalculationMode[GetSelectedEngineIndex()];
+// UCreateProjectWizardForm->ProjectCalculationModeRadioGroup->ItemIndex=CalculationMode[GetSelectedEngineIndex()];
  UCreateProjectWizardForm->CalculationSourceTimeModeRadioGroup->ItemIndex=UEngineMonitorForm->EngineMonitorFrame->GetCalculationTimeSourceMode();
 
  UCreateProjectWizardForm->PredefinedStructure=PredefinedStructure[GetSelectedEngineIndex()];
@@ -1992,11 +1992,11 @@ void __fastcall TUGEngineControlForm::ProjectOptions1Click(TObject *Sender)
    UCreateProjectWizardForm->ProjectModelFileNameLabeledEdit->Text=ProjectXml.ReadString(std::string("ModelFileName_")+RDK::sntoa(GetSelectedEngineIndex()),"").c_str();
  }
 
-  UCreateProjectWizardForm->NumInputsLabeledEdit->Text=IntToStr(NumEnvInputs);
-  UCreateProjectWizardForm->NumOutputsLabeledEdit->Text=IntToStr(NumEnvOutputs);
-  UCreateProjectWizardForm->ImageWidthLabeledEdit->Text=IntToStr(InputEnvImageWidth);
-  UCreateProjectWizardForm->ImageHeightLabeledEdit->Text=IntToStr(InputEnvImageHeight);
-  UCreateProjectWizardForm->UpendInputImageCheckBox->Checked=ReflectionFlag;
+//  UCreateProjectWizardForm->NumInputsLabeledEdit->Text=IntToStr(NumEnvInputs);
+//  UCreateProjectWizardForm->NumOutputsLabeledEdit->Text=IntToStr(NumEnvOutputs);
+//  UCreateProjectWizardForm->ImageWidthLabeledEdit->Text=IntToStr(InputEnvImageWidth);
+//  UCreateProjectWizardForm->ImageHeightLabeledEdit->Text=IntToStr(InputEnvImageHeight);
+//  UCreateProjectWizardForm->UpendInputImageCheckBox->Checked=ReflectionFlag;
 
  UCreateProjectWizardForm->Caption="Update Project Wizard";
  if(UCreateProjectWizardForm->ShowProjectOptions() == mrOk)
@@ -2006,7 +2006,7 @@ void __fastcall TUGEngineControlForm::ProjectOptions1Click(TObject *Sender)
   ProjectAutoSaveFlag=UCreateProjectWizardForm->ProjectAutoSaveFlagCheckBox->Checked;
   DefaultTimeStep[GetSelectedEngineIndex()]=StrToInt(UCreateProjectWizardForm->ProjectTimeStepEdit->Text);
   GlobalTimeStep[GetSelectedEngineIndex()]=DefaultTimeStep[GetSelectedEngineIndex()];
-  CalculationMode[GetSelectedEngineIndex()]=UCreateProjectWizardForm->ProjectCalculationModeRadioGroup->ItemIndex;
+//  CalculationMode[GetSelectedEngineIndex()]=UCreateProjectWizardForm->ProjectCalculationModeRadioGroup->ItemIndex;
 
 //  CreateProject(UCreateProjectWizardForm->ProjectDirectoryLabeledEdit->Text+String("\\Project.ini"),UCreateProjectWizardForm->UClassesListFrame1->GetSelectedName(),UCreateProjectWizardForm->ProjectModelFileNameLabeledEdit->Text);
 

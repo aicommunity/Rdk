@@ -35,15 +35,8 @@ __published:	// IDE-managed Components
 	TLabel *Label1;
 	TRichEdit *ProjectDescriptionRichEdit;
 	TRadioGroup *ProjectTypeRadioGroup;
-	TRadioGroup *ProjectCalculationModeRadioGroup;
 	TCheckBox *ProjectAutoSaveFlagCheckBox;
 	TOpenTextFileDialog *OpenTextFileDialog;
-	TGroupBox *VideoAnalysisGroupBox;
-	TLabeledEdit *ImageWidthLabeledEdit;
-	TLabeledEdit *ImageHeightLabeledEdit;
-	TLabeledEdit *NumInputsLabeledEdit;
-	TLabeledEdit *NumOutputsLabeledEdit;
-	TCheckBox *UpendInputImageCheckBox;
 	TRadioGroup *CalculationSourceTimeModeRadioGroup;
 	TCheckBox *ProjectAutoSaveStatesFlagCheckBox;
 	TRadioGroup *ProjectModeRadioGroup;
@@ -78,6 +71,7 @@ __published:	// IDE-managed Components
 	TUClassesListFrame *UClassesListFrame1;
 	TPanel *Panel4;
 	TTabSheet *DontChangeTabSheet;
+	TRichEdit *RichEdit1;
 	void __fastcall FinishButtonClick(TObject *Sender);
 	void __fastcall Button1Click(TObject *Sender);
 	void __fastcall ProjectTypeRadioGroupClick(TObject *Sender);

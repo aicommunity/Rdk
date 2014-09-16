@@ -2,8 +2,8 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
   Left = 0
   Top = 0
   Caption = 'Create Project Wizard'
-  ClientHeight = 491
-  ClientWidth = 527
+  ClientHeight = 689
+  ClientWidth = 583
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -16,34 +16,42 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
   TextHeight = 13
   object Panel1: TPanel
     Left = 0
-    Top = 450
-    Width = 527
+    Top = 648
+    Width = 583
     Height = 41
     Align = alBottom
     TabOrder = 0
+    ExplicitTop = 450
+    ExplicitWidth = 527
+    DesignSize = (
+      583
+      41)
     object PrevButton: TButton
-      Left = 278
-      Top = 6
+      Left = 339
+      Top = 7
       Width = 75
       Height = 25
+      Anchors = [akTop, akRight]
       Caption = '<< Prev'
       TabOrder = 0
       OnClick = PrevButtonClick
     end
     object NextButton: TButton
-      Left = 359
-      Top = 6
+      Left = 420
+      Top = 7
       Width = 75
       Height = 25
+      Anchors = [akTop, akRight]
       Caption = 'Next >>'
       TabOrder = 1
       OnClick = NextButtonClick
     end
     object FinishButton: TButton
-      Left = 440
-      Top = 6
+      Left = 501
+      Top = 7
       Width = 75
       Height = 25
+      Anchors = [akTop, akRight]
       Caption = 'Finish'
       Default = True
       TabOrder = 2
@@ -53,17 +61,21 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
   object PageControl: TPageControl
     Left = 0
     Top = 0
-    Width = 527
-    Height = 450
+    Width = 583
+    Height = 648
     ActivePage = TabSheet1
     Align = alClient
     TabOrder = 1
     OnChange = PageControlChange
+    ExplicitWidth = 527
+    ExplicitHeight = 450
     object TabSheet1: TTabSheet
       Caption = 'Name'
+      ExplicitWidth = 519
+      ExplicitHeight = 422
       DesignSize = (
-        519
-        422)
+        575
+        620)
       object Label1: TLabel
         Left = 3
         Top = 139
@@ -74,7 +86,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
       object TitlePanel1: TPanel
         Left = 0
         Top = 0
-        Width = 519
+        Width = 575
         Height = 41
         Align = alTop
         Alignment = taLeftJustify
@@ -82,28 +94,31 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
           'Please select project directory and set optional information suc' +
           'h as project name and description'
         TabOrder = 4
+        ExplicitWidth = 519
       end
       object ProjectNameLabeledEdit: TLabeledEdit
         Left = 3
         Top = 106
-        Width = 513
+        Width = 569
         Height = 21
         Anchors = [akLeft, akTop, akRight]
         EditLabel.Width = 64
         EditLabel.Height = 13
         EditLabel.Caption = 'Project Name'
         TabOrder = 2
+        ExplicitWidth = 513
       end
       object ProjectDirectoryLabeledEdit: TLabeledEdit
         Left = 3
         Top = 59
-        Width = 432
+        Width = 488
         Height = 21
         Anchors = [akLeft, akTop, akRight]
         EditLabel.Width = 81
         EditLabel.Height = 13
         EditLabel.Caption = 'Project Directory'
         TabOrder = 0
+        ExplicitWidth = 432
       end
       object Button1: TButton
         Left = 441
@@ -117,8 +132,8 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
       object ProjectDescriptionRichEdit: TRichEdit
         Left = 3
         Top = 158
-        Width = 513
-        Height = 240
+        Width = 569
+        Height = 438
         Anchors = [akLeft, akTop, akRight, akBottom]
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clWindowText
@@ -128,10 +143,12 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
         ParentFont = False
         PlainText = True
         TabOrder = 3
+        ExplicitWidth = 513
+        ExplicitHeight = 240
       end
       object ProjectAutoSaveFlagCheckBox: TCheckBox
         Left = 3
-        Top = 404
+        Top = 602
         Width = 70
         Height = 17
         Anchors = [akLeft, akBottom]
@@ -139,10 +156,11 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
         Checked = True
         State = cbChecked
         TabOrder = 5
+        ExplicitTop = 404
       end
       object ProjectAutoSaveStatesFlagCheckBox: TCheckBox
         Left = 75
-        Top = 404
+        Top = 602
         Width = 102
         Height = 17
         Anchors = [akLeft, akBottom]
@@ -150,10 +168,11 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
         Checked = True
         State = cbChecked
         TabOrder = 6
+        ExplicitTop = 404
       end
       object EventsLogFlagCheckBox: TCheckBox
         Left = 179
-        Top = 404
+        Top = 602
         Width = 102
         Height = 17
         Anchors = [akLeft, akBottom]
@@ -161,25 +180,29 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
         Checked = True
         State = cbChecked
         TabOrder = 7
+        ExplicitTop = 404
       end
     end
     object TabSheet2: TTabSheet
       Caption = 'Type'
       ImageIndex = 1
+      ExplicitWidth = 519
+      ExplicitHeight = 422
       object TitlePanel2: TPanel
         Left = 0
         Top = 0
-        Width = 519
+        Width = 575
         Height = 41
         Align = alTop
         Alignment = taLeftJustify
         Caption = 'Select calculation options'
         TabOrder = 0
+        ExplicitWidth = 519
       end
       object ProjectTypeRadioGroup: TRadioGroup
         Left = 0
         Top = 83
-        Width = 519
+        Width = 575
         Height = 40
         Align = alTop
         Caption = 'Project type '
@@ -190,112 +213,28 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
           'Video analysis')
         TabOrder = 1
         OnClick = ProjectTypeRadioGroupClick
-      end
-      object ProjectCalculationModeRadioGroup: TRadioGroup
-        Left = 0
-        Top = 203
-        Width = 519
-        Height = 40
-        Align = alTop
-        Caption = ' Calculation mode '
-        Columns = 3
-        ItemIndex = 2
-        Items.Strings = (
-          'Sequential'
-          'Real-time simulation'
-          'By "Data Ready" signal')
-        TabOrder = 2
-      end
-      object VideoAnalysisGroupBox: TGroupBox
-        Left = 0
-        Top = 243
-        Width = 519
-        Height = 94
-        Align = alTop
-        Caption = ' Video Analysis Additional Parameters '
-        TabOrder = 3
-        Visible = False
-        DesignSize = (
-          519
-          94)
-        object ImageWidthLabeledEdit: TLabeledEdit
-          Left = 3
-          Top = 34
-          Width = 70
-          Height = 21
-          Anchors = [akLeft, akTop, akRight]
-          EditLabel.Width = 61
-          EditLabel.Height = 13
-          EditLabel.Caption = 'Image Width'
-          TabOrder = 0
-          Text = '640'
-        end
-        object ImageHeightLabeledEdit: TLabeledEdit
-          Left = 82
-          Top = 34
-          Width = 70
-          Height = 21
-          Anchors = [akLeft, akTop, akRight]
-          EditLabel.Width = 64
-          EditLabel.Height = 13
-          EditLabel.Caption = 'Image Height'
-          TabOrder = 1
-          Text = '480'
-        end
-        object NumInputsLabeledEdit: TLabeledEdit
-          Left = 164
-          Top = 34
-          Width = 70
-          Height = 21
-          Anchors = [akLeft, akTop, akRight]
-          EditLabel.Width = 55
-          EditLabel.Height = 13
-          EditLabel.Caption = 'Num Inputs'
-          TabOrder = 2
-          Text = '1'
-        end
-        object NumOutputsLabeledEdit: TLabeledEdit
-          Left = 242
-          Top = 34
-          Width = 70
-          Height = 21
-          Anchors = [akLeft, akTop, akRight]
-          EditLabel.Width = 63
-          EditLabel.Height = 13
-          EditLabel.Caption = 'Num Outputs'
-          TabOrder = 3
-          Text = '1'
-        end
-        object UpendInputImageCheckBox: TCheckBox
-          Left = 5
-          Top = 63
-          Width = 316
-          Height = 17
-          Caption = 'Reflect Input Image'
-          Checked = True
-          State = cbChecked
-          TabOrder = 4
-        end
+        ExplicitWidth = 519
       end
       object CalculationSourceTimeModeRadioGroup: TRadioGroup
         Left = 0
         Top = 163
-        Width = 519
+        Width = 575
         Height = 40
         Align = alTop
-        Caption = ' Calculation time source '
+        Caption = ' Calculation Time Source '
         Columns = 2
         ItemIndex = 1
         Items.Strings = (
           'System Time'
           'External Data Time')
-        TabOrder = 4
+        TabOrder = 2
         OnClick = ProjectTypeRadioGroupClick
+        ExplicitWidth = 519
       end
       object ProjectModeRadioGroup: TRadioGroup
         Left = 0
         Top = 41
-        Width = 519
+        Width = 575
         Height = 42
         Align = alTop
         Caption = ' Project Mode '
@@ -304,12 +243,13 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
         Items.Strings = (
           'Simple'
           'Server')
-        TabOrder = 5
+        TabOrder = 3
+        ExplicitWidth = 519
       end
       object MultiThreadingModeRadioGroup: TRadioGroup
         Left = 0
         Top = 123
-        Width = 519
+        Width = 575
         Height = 40
         Align = alTop
         Caption = ' Multi-Threading Mode '
@@ -318,30 +258,34 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
         Items.Strings = (
           'Single Thread'
           'Multi Threads')
-        TabOrder = 6
+        TabOrder = 4
         OnClick = ProjectTypeRadioGroupClick
+        ExplicitWidth = 519
       end
     end
     object TabSheet3: TTabSheet
       Caption = 'Model'
       ImageIndex = 2
+      ExplicitWidth = 519
+      ExplicitHeight = 422
       DesignSize = (
-        519
-        422)
+        575
+        620)
       object TitlePanel3: TPanel
         Left = 0
         Top = 0
-        Width = 519
+        Width = 575
         Height = 41
         Align = alTop
         Alignment = taLeftJustify
         Caption = 'Channels configuration'
         TabOrder = 0
+        ExplicitWidth = 519
         DesignSize = (
-          519
+          575
           41)
         object ChannelsNumberLabeledEdit: TLabeledEdit
-          Left = 413
+          Left = 469
           Top = 14
           Width = 86
           Height = 21
@@ -351,9 +295,10 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
           EditLabel.Caption = 'Channels Number'
           TabOrder = 0
           Text = '1'
+          ExplicitLeft = 413
         end
         object UpDown1: TUpDown
-          Left = 499
+          Left = 555
           Top = 14
           Width = 16
           Height = 21
@@ -363,61 +308,63 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
           Max = 1000
           Position = 1
           TabOrder = 1
+          ExplicitLeft = 499
         end
       end
       object GroupBox4: TGroupBox
         Left = 0
         Top = 41
-        Width = 519
-        Height = 359
+        Width = 575
+        Height = 557
         Align = alTop
         Anchors = [akLeft, akTop, akRight, akBottom]
         Caption = ' Channel Properties'
         TabOrder = 1
+        ExplicitWidth = 519
+        ExplicitHeight = 359
         object StringGrid1: TStringGrid
           Left = 2
           Top = 15
           Width = 47
-          Height = 342
+          Height = 540
           Align = alLeft
           ColCount = 1
           DefaultColWidth = 24
           FixedCols = 0
           FixedRows = 0
           TabOrder = 0
-          ExplicitLeft = -4
-          ExplicitTop = 17
+          ExplicitHeight = 342
         end
         object Panel4: TPanel
           Left = 49
           Top = 15
-          Width = 468
-          Height = 342
+          Width = 524
+          Height = 540
           Align = alClient
           TabOrder = 1
-          ExplicitLeft = 216
-          ExplicitTop = 48
-          ExplicitWidth = 185
-          ExplicitHeight = 41
+          ExplicitWidth = 468
+          ExplicitHeight = 342
           object Panel2: TPanel
             Left = 1
-            Top = 168
-            Width = 466
+            Top = 366
+            Width = 522
             Height = 173
             Align = alBottom
             TabOrder = 0
+            ExplicitTop = 168
+            ExplicitWidth = 466
             DesignSize = (
-              466
+              522
               173)
             object ProjectTimeStepGroupBox: TGroupBox
               Left = 1
               Top = 1
-              Width = 464
+              Width = 520
               Height = 54
               Align = alTop
               Caption = ' Time step duration  '
               TabOrder = 0
-              ExplicitWidth = 171
+              ExplicitWidth = 464
               object Label2: TLabel
                 Left = 10
                 Top = 23
@@ -452,7 +399,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
             object CalculationModeRadioGroup: TRadioGroup
               Left = 1
               Top = 55
-              Width = 464
+              Width = 520
               Height = 41
               Align = alTop
               Caption = ' Calculation Mode '
@@ -463,7 +410,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                 'Real-Time'
                 'By Signal')
               TabOrder = 1
-              ExplicitWidth = 171
+              ExplicitWidth = 464
             end
             object InitAfterLoadCheckBox: TCheckBox
               Left = 6
@@ -473,7 +420,6 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
               Anchors = [akLeft, akBottom]
               Caption = 'Init After Load'
               TabOrder = 2
-              ExplicitTop = 320
             end
             object ResetAfterLoadCheckBox: TCheckBox
               Left = 98
@@ -483,7 +429,6 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
               Anchors = [akLeft, akBottom]
               Caption = 'Reset After Load'
               TabOrder = 3
-              ExplicitTop = 320
             end
             object DebugModeCheckBox: TCheckBox
               Left = 206
@@ -493,17 +438,16 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
               Anchors = [akLeft, akBottom]
               Caption = 'Debug'
               TabOrder = 4
-              ExplicitTop = 320
             end
             object GroupBox5: TGroupBox
               Left = 1
               Top = 96
-              Width = 464
+              Width = 520
               Height = 54
               Align = alTop
               Caption = ' Min Intersteps Interval (ms)  '
               TabOrder = 5
-              ExplicitWidth = 171
+              ExplicitWidth = 464
               object MinInterstepsIntervalEdit: TEdit
                 Left = 10
                 Top = 20
@@ -517,56 +461,75 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
           object Panel3: TPanel
             Left = 1
             Top = 1
-            Width = 466
-            Height = 167
+            Width = 522
+            Height = 365
             Align = alClient
             TabOrder = 1
-            ExplicitLeft = 264
-            ExplicitTop = 0
-            ExplicitWidth = 204
-            ExplicitHeight = 342
+            ExplicitWidth = 466
+            ExplicitHeight = 167
             object ModelPageControl: TPageControl
               Left = 1
               Top = 1
-              Width = 464
-              Height = 165
-              ActivePage = PredefinedModelTabSheet
+              Width = 520
+              Height = 363
+              ActivePage = ModelFromComponentTabSheet
               Align = alClient
               MultiLine = True
               TabOrder = 0
-              TabPosition = tpRight
+              ExplicitWidth = 641
               object DontChangeTabSheet: TTabSheet
                 Caption = 'Don'#39't Change'
                 ImageIndex = 3
-                ExplicitWidth = 416
+                ExplicitWidth = 633
+                object RichEdit1: TRichEdit
+                  Left = 0
+                  Top = 0
+                  Width = 512
+                  Height = 335
+                  Align = alClient
+                  Color = clBtnFace
+                  Font.Charset = RUSSIAN_CHARSET
+                  Font.Color = clWindowText
+                  Font.Height = -11
+                  Font.Name = 'Tahoma'
+                  Font.Style = []
+                  ParentFont = False
+                  ReadOnly = True
+                  TabOrder = 0
+                  ExplicitLeft = 152
+                  ExplicitTop = 112
+                  ExplicitWidth = 185
+                  ExplicitHeight = 89
+                end
               end
               object PredefinedModelTabSheet: TTabSheet
                 Caption = 'Predefined Model'
-                ExplicitWidth = 416
+                ExplicitWidth = 633
                 DesignSize = (
-                  396
-                  157)
+                  512
+                  335)
                 object PredefinedModelComboBox: TComboBox
                   Left = 6
                   Top = 15
-                  Width = 387
+                  Width = 503
                   Height = 21
                   Anchors = [akLeft, akTop, akRight]
                   TabOrder = 0
                   Text = '0'
+                  ExplicitWidth = 624
                 end
               end
               object ModelFromFileTabSheet: TTabSheet
                 Caption = 'From File'
                 ImageIndex = 1
-                ExplicitWidth = 416
+                ExplicitWidth = 633
                 DesignSize = (
-                  396
-                  157)
+                  512
+                  335)
                 object ProjectModelFileNameLabeledEdit: TLabeledEdit
                   Left = 3
                   Top = 18
-                  Width = 377
+                  Width = 428
                   Height = 21
                   Anchors = [akLeft, akTop, akRight]
                   EditLabel.Width = 74
@@ -575,7 +538,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                   TabOrder = 0
                 end
                 object OpenModelButton: TButton
-                  Left = 321
+                  Left = 437
                   Top = 16
                   Width = 75
                   Height = 25
@@ -583,26 +546,27 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                   Caption = 'Browse'
                   TabOrder = 1
                   OnClick = OpenModelButtonClick
+                  ExplicitLeft = 558
                 end
               end
               object ModelFromComponentTabSheet: TTabSheet
                 Caption = 'From Component'
                 ImageIndex = 2
-                ExplicitWidth = 416
+                ExplicitWidth = 633
                 object GroupBox2: TGroupBox
                   Left = 0
                   Top = 0
-                  Width = 396
-                  Height = 157
+                  Width = 512
+                  Height = 335
                   Align = alClient
                   Caption = ' Root Model Component Name '
                   TabOrder = 0
-                  ExplicitWidth = 416
+                  ExplicitWidth = 633
                   inline UClassesListFrame1: TUClassesListFrame
                     Left = 2
                     Top = 15
-                    Width = 392
-                    Height = 140
+                    Width = 508
+                    Height = 318
                     Align = alClient
                     DoubleBuffered = True
                     Font.Charset = DEFAULT_CHARSET
@@ -614,25 +578,25 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                     ParentFont = False
                     TabOrder = 0
                     ExplicitLeft = 2
-                    ExplicitTop = 32
-                    ExplicitWidth = 412
-                    ExplicitHeight = 123
+                    ExplicitTop = 15
+                    ExplicitWidth = 629
+                    ExplicitHeight = 318
                     inherited PageControl: TPageControl
-                      Width = 392
-                      Height = 140
+                      Width = 508
+                      Height = 318
                       ActivePage = UClassesListFrame1.NameTabSheet
-                      ExplicitWidth = 412
-                      ExplicitHeight = 123
+                      ExplicitWidth = 629
+                      ExplicitHeight = 318
                       inherited NameTabSheet: TTabSheet
                         ExplicitLeft = 4
                         ExplicitTop = 24
-                        ExplicitWidth = 404
-                        ExplicitHeight = 95
+                        ExplicitWidth = 621
+                        ExplicitHeight = 290
                         inherited StringGrid: TStringGrid
-                          Width = 384
-                          Height = 112
-                          ExplicitWidth = 404
-                          ExplicitHeight = 95
+                          Width = 500
+                          Height = 290
+                          ExplicitWidth = 621
+                          ExplicitHeight = 290
                         end
                       end
                       inherited LibsTabSheet: TTabSheet
@@ -640,64 +604,58 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                         ExplicitTop = 24
                         ExplicitWidth = 499
                         ExplicitHeight = 515
+                        inherited TreeView: TTreeView
+                          Width = 500
+                          Height = 290
+                        end
                       end
                       inherited LibsControlTabSheet: TTabSheet
                         ExplicitLeft = 4
                         ExplicitTop = 24
-                        ExplicitWidth = 182
-                        ExplicitHeight = 250
+                        ExplicitWidth = 499
+                        ExplicitHeight = 515
                         inherited Splitter1: TSplitter
-                          Top = -40
-                          Width = 182
+                          Top = 0
+                          Width = 500
                           ExplicitTop = -203
                           ExplicitWidth = 507
                         end
                         inherited Panel1: TPanel
-                          Top = 127
-                          Width = 182
-                          ExplicitTop = 127
-                          ExplicitWidth = 182
+                          Top = 167
+                          Width = 500
                           inherited LoadLibraryButton: TButton
-                            Width = 180
-                            ExplicitWidth = 180
+                            Width = 498
                           end
                           inherited CreateRuntimeLibraryButton: TButton
-                            Width = 180
-                            ExplicitWidth = 180
+                            Width = 498
                           end
                           inherited DeleteLibraryButton: TButton
-                            Width = 180
-                            ExplicitWidth = 180
+                            Width = 498
                           end
                           inherited RenameRuntimeLibraryButton: TButton
-                            Width = 180
-                            ExplicitWidth = 180
+                            Width = 498
                           end
                           inherited AddClassButton: TButton
-                            Width = 180
+                            Width = 498
                             ExplicitLeft = 1
                             ExplicitTop = 101
-                            ExplicitWidth = 180
                           end
                         end
                         inherited GroupBox1: TGroupBox
-                          Width = 182
-                          ExplicitWidth = 182
+                          Width = 500
+                          Height = 0
                           ExplicitHeight = 225
                           inherited LibsListStringGrid: TStringGrid
-                            Width = 178
-                            ExplicitWidth = 178
+                            Width = 496
                             ExplicitHeight = 208
                           end
                         end
                         inherited GroupBox2: TGroupBox
-                          Top = -33
-                          Width = 182
-                          ExplicitTop = -33
-                          ExplicitWidth = 182
+                          Top = 7
+                          Width = 500
+                          ExplicitTop = 232
                           inherited LibComponentListStringGrid: TStringGrid
-                            Width = 178
-                            ExplicitWidth = 178
+                            Width = 496
                             ExplicitHeight = 143
                           end
                         end
@@ -712,7 +670,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
       end
       object ShowChannelsStateCheckBox: TCheckBox
         Left = 3
-        Top = 406
+        Top = 604
         Width = 126
         Height = 17
         Anchors = [akLeft, akBottom]
@@ -720,6 +678,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
         Checked = True
         State = cbChecked
         TabOrder = 2
+        ExplicitTop = 406
       end
     end
   end

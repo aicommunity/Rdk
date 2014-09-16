@@ -65,7 +65,7 @@ void TUCreateProjectWizardForm::ClearWizard(void)
  ProjectTypeRadioGroup->ItemIndex=0;
  ProjectTimeStepEdit->Text="30";
  ProjectTypeRadioGroupClick(this);
- ProjectCalculationModeRadioGroup->ItemIndex=2;
+// ProjectCalculationModeRadioGroup->ItemIndex=2;
 // PredefinedModelRadioButton->Checked=true;
  PredefinedModelRadioButtonClick(this);
  PredefinedModelComboBox->ItemIndex=0;
@@ -155,20 +155,20 @@ void __fastcall TUCreateProjectWizardForm::ProjectTypeRadioGroupClick(TObject *S
 {
  if(ProjectTypeRadioGroup->ItemIndex == 0)
  {
-  ProjectCalculationModeRadioGroup->ItemIndex=1;
+//  ProjectCalculationModeRadioGroup->ItemIndex=1;
   if(ProjectTimeStepEdit->Text == "2000" || ProjectTimeStepEdit->Text == "30")
    ProjectTimeStepEdit->Text="2000";
 
-  VideoAnalysisGroupBox->Enabled=false;
+//  VideoAnalysisGroupBox->Enabled=false;
  }
  else
  if(ProjectTypeRadioGroup->ItemIndex == 1)
  {
-  ProjectCalculationModeRadioGroup->ItemIndex=0;
+//  ProjectCalculationModeRadioGroup->ItemIndex=0;
   if(ProjectTimeStepEdit->Text == "2000" || ProjectTimeStepEdit->Text == "30")
    ProjectTimeStepEdit->Text="30";
 
-  VideoAnalysisGroupBox->Enabled=true;
+//  VideoAnalysisGroupBox->Enabled=true;
  }
 }
 //---------------------------------------------------------------------------
