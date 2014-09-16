@@ -353,6 +353,59 @@ bool ShowHistogram(const UBHistogram& Histogram, TChart *chart, int series_index
  return true;
 }
 
+/// ¬ычисл€ет положение в TBitmap по координатам в TImage
+TPoint CalcBitmapCoords(TImage *image, const TPoint &point)
+{
+ TPoint res(0,0);
+ if(!image)
+  return res;
+
+ double xscale(0.0);
+ double yscale(0.0);
+
+ if(image->Proportional == false && image->Stretch == false)
+ {
+  res=point;
+ }
+ else
+ if(image->Proportional == true)
+ {
+  if(image->Width>0)
+   xscale=double(image->Picture->Bitmap->Width)/double(image->Width);
+
+  if(image->Height>0)
+   yscale=double(image->Picture->Bitmap->Height)/double(image->Height);
+
+  double scale=(xscale>yscale)?xscale:yscale;
+  if(scale<1e-3)
+   return res;
+
+  int real_width=image->Picture->Bitmap->Width/scale;
+  int real_height=image->Picture->Bitmap->Height/scale;
+
+  if(real_width>0)
+   res.X=point.X*image->Picture->Bitmap->Width/real_width;
+
+  if(real_height>0)
+   res.Y=point.Y*image->Picture->Bitmap->Height/real_height;
+ }
+ else
+ if(image->Proportional == false && image->Stretch == true)
+ {
+  if(image->Width>0)
+   res.X=point.X*image->Picture->Bitmap->Width/image->Width;
+  if(image->Height>0)
+   res.Y=point.Y*image->Picture->Bitmap->Height/image->Height;
+ }
+ return res;
+}
+
+
+TPoint CalcBitmapCoords(TImage *image, int x, int y)
+{
+ return CalcBitmapCoords(image, TPoint(x,y));
+}
+
 
 }
 #endif
