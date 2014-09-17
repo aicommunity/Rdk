@@ -109,6 +109,7 @@ bool URpcDispatcher::SyncDispatchCommand(const UEPtr<URpcCommand> &command, unsi
   else
    return true;
  }
+ MEngine_LogMessage(0, RDK_EX_WARNING, (std::string("RPC Dispatcher: SyncDispatchCommand - Processing Wait Timeout")+RDK::sntoa(cmd_id)).c_str());
  return false;
 }
 // --------------------------
@@ -146,6 +147,7 @@ void URpcDispatcher::DispatchCommand(const UEPtr<URpcCommand> &command)
   if(!Decoders[channel_index]->PushCommand(command,cmd_id))
   {
    // Ошибка постановки команды в очередь на обработку
+   MEngine_LogMessage(0, RDK_EX_WARNING, (std::string("RPC Dispatcher: DispatchCommand - PushCommand Failed")+RDK::sntoa(cmd_id)).c_str());
   }
 }
 

@@ -1274,8 +1274,8 @@ try {
  bool is_breaked=false;
  while(!CommandQueue.empty())
  {
-  CurrentProcessedCommand=CommandQueue.back();
-  CommandQueue.pop_back();
+  CurrentProcessedCommand=CommandQueue.front();
+  CommandQueue.pop_front();
   SetEvent(CommandQueueUnlockEvent);
 
   BinaryResponse.resize(0);

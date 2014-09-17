@@ -57,6 +57,8 @@ void URpcDecoder::Process(void)
 	// ошибка выполения команды
 	MEngine_LogMessage(command->ChannelIndex, RDK_EX_WARNING, (std::string("RPC Decoder: Process - ProcessCommand Fail. CmdId=")+sntoa(command->GetCmdId())+std::string(" Command= ")+command->FunctionName).c_str());
    }
+   else
+	MEngine_LogMessage(command->ChannelIndex, RDK_EX_DEBUG, (std::string("RPC Decoder: Process - Processed Command. CmdId=")+sntoa(command->GetCmdId())+std::string(" Command= ")+command->FunctionName).c_str());
 
    if(Dispatcher)
 	Dispatcher->PushToProcessedQueue(command);
