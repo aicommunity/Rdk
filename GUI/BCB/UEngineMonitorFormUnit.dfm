@@ -37,17 +37,19 @@ object UEngineMonitorForm: TUEngineMonitorForm
       Height = 187
       OnMouseEnter = EngineMonitorFrameRichEditMouseEnter
       ExplicitWidth = 527
-      ExplicitHeight = 204
+      ExplicitHeight = 187
     end
     inherited StatusBar: TStatusBar
       Top = 187
       Width = 527
-      ExplicitTop = 204
+      ExplicitTop = 187
       ExplicitWidth = 527
     end
     inherited ShowDebugMessagesCheckBox: TCheckBox
       Top = 206
       Width = 527
+      ExplicitTop = 206
+      ExplicitWidth = 527
     end
   end
   object LogTimer: TTimer

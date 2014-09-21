@@ -69,11 +69,15 @@ __fastcall TUServerControlForm::TUServerControlForm(TComponent* Owner)
  Bitmap=0;
  PerformancePushIndex=0;
  CommandQueueUnlockEvent=0;
+
+ ServerReceivingNotInProgress=CreateEvent(0,TRUE,TRUE,0);
 }
 
 __fastcall TUServerControlForm::~TUServerControlForm(void)
 {
  delete CriticalSection;
+
+ CloseHandle(ServerReceivingNotInProgress);
 /* if(Clients)
  {
 
@@ -1289,7 +1293,7 @@ try {
 	SendCommandResponse(CurrentProcessedCommand.first, EncodedResponse, BinaryResponse);
    }
   }
-  else
+ /* else
   {
    std::string request;
    ConvertVectorToString(CurrentProcessedCommand.second, request);
@@ -1305,8 +1309,8 @@ try {
  //  while(!RdkApplication.GetRpcDispatcher()->CheckProcessedCommand())
  //   Sleep(10);
 
-  }
-
+  }   */
+       /*
 /// Тест
   // Обработка очереди выполненных команд диспетчера
   RDK::UEPtr<RDK::URpcCommand> pcmd;
@@ -1338,9 +1342,9 @@ try {
    }
    SetEvent(CommandQueueUnlockEvent);
   }
+		 */
 
 
- /*
   if(!is_processed)
    is_processed=ProcessRPCCommand(CurrentProcessedCommand, ResponseType, Response);
 
@@ -1359,17 +1363,19 @@ try {
   {
 //   SendCommandErrorResponse(CurrentProcessedCommand,0);
   }
-			   */
-  if(WaitForSingleObject(CommandQueueUnlockEvent,10) == WAIT_TIMEOUT)
+
+
+  if(WaitForSingleObject(CommandQueueUnlockEvent,10) != WAIT_TIMEOUT)
   {
    is_breaked=true;
    break;
   }
   ResetEvent(CommandQueueUnlockEvent);
  }
+
  if(!is_breaked)
   SetEvent(CommandQueueUnlockEvent);
-
+  /*
   // Обработка очереди выполненных команд диспетчера
   RDK::UEPtr<RDK::URpcCommand> pcmd;
 
@@ -1404,7 +1410,7 @@ try {
 
    delete pcmd;
   }
-
+  */
 }
 catch (...)
 {
@@ -1487,6 +1493,10 @@ void __fastcall TUServerControlForm::IdTCPServerDisconnect(TIdContext *AContext)
 
 void __fastcall TUServerControlForm::IdTCPServerExecute(TIdContext *AContext)
 {
+ if(WaitForSingleObject(ServerReceivingNotInProgress, 10000) == WAIT_TIMEOUT)
+  return;
+ ResetEvent(ServerReceivingNotInProgress);
+
  vector<unsigned char> client_buffer;
  TIdBytes VBuffer;
  int length=AContext->Connection->IOHandler->InputBuffer->Size;
@@ -1509,6 +1519,7 @@ void __fastcall TUServerControlForm::IdTCPServerExecute(TIdContext *AContext)
 	if(I == PacketReaders.end())
 	{
 //	 SetEvent(CommandQueueUnlockEvent);
+	 SetEvent(ServerReceivingNotInProgress);
 	 return;
 	}
 	I->second.ProcessDataPart2(client_buffer);
@@ -1550,6 +1561,7 @@ void __fastcall TUServerControlForm::IdTCPServerExecute(TIdContext *AContext)
 //  Memo1.Lines.Add(LLine);
 //  AContext.Connection.IOHandler.WriteLn('OK');
 //  TIdNotify.NotifyMethod( StopStartServerdMessage );
+ SetEvent(ServerReceivingNotInProgress);
 }
 //---------------------------------------------------------------------------
 

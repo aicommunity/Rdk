@@ -200,6 +200,8 @@ TThreadList *Clients;
 
 TCriticalSection* CriticalSection;
 
+HANDLE ServerReceivingNotInProgress;
+
 
 const char* ControlRemoteCall(const char *request, int &return_value, std::vector<RDK::UParamT> &binary_data);
 
