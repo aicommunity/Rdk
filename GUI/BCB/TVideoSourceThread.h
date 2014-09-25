@@ -33,6 +33,13 @@ protected: // Параметры
 RDK::UELockVar<double> Fps;
 
 /// Источник видео
+/// 0 - bmp
+/// 1 - avi
+/// 2 - camera
+/// 3 - ip camera
+/// 4 - bmp sequence
+/// 5 - http server
+/// 6 - shared memory
 RDK::UELockVar<int> SourceMode;
 
 /// Индекс канала в библиотеке аналитики, управляемый тредом
