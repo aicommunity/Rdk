@@ -17,10 +17,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
     TabOrder = 0
     object VideoSourceTabSheet: TTabSheet
       Caption = 'Video Source'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object GroupBox: TGroupBox
         Left = 0
         Top = 0
@@ -366,9 +362,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
             ActivePage = RecordingFrame.NetworkStreamingTabSheet
             ExplicitHeight = 519
             inherited NetworkStreamingTabSheet: TTabSheet
-              ExplicitLeft = 0
-              ExplicitTop = 0
-              ExplicitWidth = 0
               ExplicitHeight = 491
               inherited StreamingSettingsGroupBox: TGroupBox
                 Height = 436
@@ -637,7 +630,7 @@ inherited VideoOutputFrame: TVideoOutputFrame
     Left = 688
     Top = 456
     Bitmap = {
-      494C010120006000A80010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010120006000AC0010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000009000000001002000000000000090
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
