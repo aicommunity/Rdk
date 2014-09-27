@@ -554,6 +554,11 @@ void TUServerControlForm::SendCommandResponse(const std::string &client_binding,
 	if(current_bind == client_binding)
 	{
 	 context->Connection->IOHandler->Write(arr, arr.get_length());
+	 context->Connection->IOHandler->WriteBufferFlush();
+	 std::string str;
+	str.resize(packet.GetParamSize(0));
+	memcpy(&str[0],&(packet.operator ()((0),0)), packet.GetParamSize(0));
+	Engine_LogMessage(RDK_EX_DEBUG,(string("Response Sent: ")+str).c_str());
 	 break;
 	}
    }
@@ -789,6 +794,8 @@ int TUServerControlForm::SetNumChannels(int value)
 
  if(value<=0)
   return 1;
+
+ RdkApplication.GetRpcDispatcher()->UpdateDecoders();
 
 // int selected=GetSelectedEngineIndex();
  for(int i=0;i<value;i++)
@@ -1284,7 +1291,7 @@ try {
 
   BinaryResponse.resize(0);
   bool is_processed=ProcessControlCommand(CurrentProcessedCommand, ResponseType, Response, BinaryResponse);
-
+ /*
   if(is_processed)
   {
    if(CommandResponseEncoder)
@@ -1293,7 +1300,7 @@ try {
 	SendCommandResponse(CurrentProcessedCommand.first, EncodedResponse, BinaryResponse);
    }
   }
- /* else
+  else
   {
    std::string request;
    ConvertVectorToString(CurrentProcessedCommand.second, request);
@@ -1305,12 +1312,10 @@ try {
    ProcessedCommandQueue.push_back(cmd_pair);
 
    RdkApplication.GetRpcDispatcher()->PushCommand(pcmd);
+  }
+	  */
 
- //  while(!RdkApplication.GetRpcDispatcher()->CheckProcessedCommand())
- //   Sleep(10);
-
-  }   */
-       /*
+	  /*
 /// Тест
   // Обработка очереди выполненных команд диспетчера
   RDK::UEPtr<RDK::URpcCommand> pcmd;
@@ -1341,8 +1346,8 @@ try {
 	delete pcmd;
    }
    SetEvent(CommandQueueUnlockEvent);
-  }
-		 */
+  }   */
+
 
 
   if(!is_processed)
@@ -1375,7 +1380,7 @@ try {
 
  if(!is_breaked)
   SetEvent(CommandQueueUnlockEvent);
-  /*
+		  /*
   // Обработка очереди выполненных команд диспетчера
   RDK::UEPtr<RDK::URpcCommand> pcmd;
 
@@ -1409,8 +1414,8 @@ try {
    SetEvent(CommandQueueUnlockEvent);
 
    delete pcmd;
-  }
-  */
+  }     */
+
 }
 catch (...)
 {

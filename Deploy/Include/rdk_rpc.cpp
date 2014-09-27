@@ -489,167 +489,192 @@ const char* PtzRemoteCall(const char *request, int &return_value, int &channel_i
  if(cmd == "Ptz_ReadPTZPosition")
  {
   double pan,tilt,zoom;
-  unsigned long long time_stamp=0;
-  return_value=Ptz_ReadPTZPosition(engine_index,camera.c_str(),pan, tilt, zoom, time_stamp);
+  unsigned long long pan_time_stamp=0, tilt_time_stamp=0, zoom_time_stamp=0;
+  int async_mode=xml.ReadInteger("AsyncMode",0);
+  return_value=Ptz_ReadPTZPosition(engine_index,camera.c_str(),pan, tilt, zoom,
+		pan_time_stamp, tilt_time_stamp, zoom_time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Pan",pan);
   response.WriteFloat("Tilt",tilt);
   response.WriteFloat("Zoom",zoom);
-//  response.Save(RpcReturnString[engine_index]);
+  response.WriteFloat("PanTimeStamp",pan_time_stamp);
+  response.WriteFloat("TiltTimeStamp",tilt_time_stamp);
+  response.WriteFloat("ZoomTimeStamp",zoom_time_stamp);
  }
  else
  if(cmd == "Ptz_ReadPTPosition")
  {
   double pan,tilt;
-  unsigned long long time_stamp=0;
-  return_value=Ptz_ReadPTPosition(engine_index,camera.c_str(),pan, tilt, time_stamp);
+  unsigned long long pan_time_stamp=0, tilt_time_stamp=0;
+  int async_mode=xml.ReadInteger("AsyncMode",0);
+  return_value=Ptz_ReadPTPosition(engine_index,camera.c_str(),pan, tilt, pan_time_stamp, tilt_time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Pan",pan);
   response.WriteFloat("Tilt",tilt);
-//  response.Save(RpcReturnString[engine_index]);
+  response.WriteFloat("PanTimeStamp",pan_time_stamp);
+  response.WriteFloat("TiltTimeStamp",tilt_time_stamp);
  }
  else
  if(cmd == "Ptz_ReadPanPosition")
  {
   double value;
   unsigned long long time_stamp=0;
-  return_value=Ptz_ReadPanPosition(engine_index,camera.c_str(),value, time_stamp);
+  int async_mode=xml.ReadInteger("AsyncMode",0);
+  return_value=Ptz_ReadPanPosition(engine_index,camera.c_str(),value, time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Pan",value);
-//  response.Save(RpcReturnString[engine_index]);
+  response.WriteFloat("PanTimeStamp",time_stamp);
  }
  else
  if(cmd == "Ptz_ReadTiltPosition")
  {
   double value;
   unsigned long long time_stamp=0;
-  return_value=Ptz_ReadTiltPosition(engine_index,camera.c_str(),value,time_stamp);
+  int async_mode=xml.ReadInteger("AsyncMode",0);
+  return_value=Ptz_ReadTiltPosition(engine_index,camera.c_str(),value,time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Tilt",value);
-//  response.Save(RpcReturnString[engine_index]);
+  response.WriteFloat("TiltTimeStamp",time_stamp);
  }
  else
  if(cmd == "Ptz_ReadZoomPosition")
  {
   double value;
   unsigned long long time_stamp=0;
-  return_value=Ptz_ReadZoomPosition(engine_index,camera.c_str(),value, time_stamp);
+  int async_mode=xml.ReadInteger("AsyncMode",0);
+  return_value=Ptz_ReadZoomPosition(engine_index,camera.c_str(),value, time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Zoom",value);
-//  response.Save(RpcReturnString[engine_index]);
+  response.WriteFloat("ZoomTimeStamp",time_stamp);
  }
  else
  if(cmd == "Ptz_ReadFocusPosition")
  {
   double value;
   unsigned long long time_stamp=0;
-  return_value=Ptz_ReadFocusPosition(engine_index,camera.c_str(),value, time_stamp);
+  int async_mode=xml.ReadInteger("AsyncMode",0);
+  return_value=Ptz_ReadFocusPosition(engine_index,camera.c_str(),value, time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Focus",value);
-//  response.Save(RpcReturnString[engine_index]);
+  response.WriteFloat("FocusTimeStamp",time_stamp);
  }
  else
  if(cmd == "Ptz_ReadIrisPosition")
  {
   double value;
   unsigned long long time_stamp=0;
-  return_value=Ptz_ReadIrisPosition(engine_index,camera.c_str(),value, time_stamp);
+  int async_mode=xml.ReadInteger("AsyncMode",0);
+  return_value=Ptz_ReadIrisPosition(engine_index,camera.c_str(),value, time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Iris",value);
-//  response.Save(RpcReturnString[engine_index]);
+  response.WriteFloat("IrisTimeStamp",time_stamp);
  }
  else
  if(cmd == "Ptz_ReadBrightnessPosition")
  {
   double value;
   unsigned long long time_stamp=0;
-  return_value=Ptz_ReadBrightnessPosition(engine_index,camera.c_str(),value, time_stamp);
+  int async_mode=xml.ReadInteger("AsyncMode",0);
+  return_value=Ptz_ReadBrightnessPosition(engine_index,camera.c_str(),value, time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Brightness",value);
-//  response.Save(RpcReturnString[engine_index]);
+  response.WriteFloat("BrightnessTimeStamp",time_stamp);
  }
  else
  if(cmd == "Ptz_ReadPTZPositionNative")
  {
   double pan,tilt,zoom;
-  unsigned long long time_stamp=0;
-  return_value=Ptz_ReadPTZPositionNative(engine_index,camera.c_str(),pan, tilt, zoom, time_stamp);
+  unsigned long long pan_time_stamp=0, tilt_time_stamp=0, zoom_time_stamp=0;
+  int async_mode=xml.ReadInteger("AsyncMode",0);
+  return_value=Ptz_ReadPTZPositionNative(engine_index,camera.c_str(),pan, tilt, zoom,
+			pan_time_stamp, tilt_time_stamp, zoom_time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Pan",pan);
   response.WriteFloat("Tilt",tilt);
   response.WriteFloat("Zoom",zoom);
-//  response.Save(RpcReturnString[engine_index]);
+  response.WriteFloat("PanTimeStamp",pan_time_stamp);
+  response.WriteFloat("TiltTimeStamp",tilt_time_stamp);
+  response.WriteFloat("ZoomTimeStamp",zoom_time_stamp);
  }
  else
  if(cmd == "Ptz_ReadPTPositionNative")
  {
   double pan,tilt;
   unsigned long long time_stamp=0;
-  return_value=Ptz_ReadPTPositionNative(engine_index,camera.c_str(),pan, tilt, time_stamp);
+  unsigned long long pan_time_stamp=0, tilt_time_stamp=0;
+  int async_mode=xml.ReadInteger("AsyncMode",0);
+  return_value=Ptz_ReadPTPositionNative(engine_index,camera.c_str(),pan, tilt, pan_time_stamp, tilt_time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Pan",pan);
   response.WriteFloat("Tilt",tilt);
-//  response.Save(RpcReturnString[engine_index]);
+  response.WriteFloat("PanTimeStamp",pan_time_stamp);
+  response.WriteFloat("TiltTimeStamp",tilt_time_stamp);
  }
  else
  if(cmd == "Ptz_ReadPanPositionNative")
  {
   double value;
   unsigned long long time_stamp=0;
-  return_value=Ptz_ReadPanPositionNative(engine_index,camera.c_str(),value, time_stamp);
+  int async_mode=xml.ReadInteger("AsyncMode",0);
+  return_value=Ptz_ReadPanPositionNative(engine_index,camera.c_str(),value, time_stamp,async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Pan",value);
-//  response.Save(RpcReturnString[engine_index]);
+  response.WriteFloat("PanTimeStamp",time_stamp);
  }
  else
  if(cmd == "Ptz_ReadTiltPositionNative")
  {
   double value;
   unsigned long long time_stamp=0;
-  return_value=Ptz_ReadTiltPositionNative(engine_index,camera.c_str(),value, time_stamp);
+  int async_mode=xml.ReadInteger("AsyncMode",0);
+  return_value=Ptz_ReadTiltPositionNative(engine_index,camera.c_str(),value, time_stamp,async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Tilt",value);
-//  response.Save(RpcReturnString[engine_index]);
+  response.WriteFloat("TiltTimeStamp",time_stamp);
  }
  else
  if(cmd == "Ptz_ReadZoomPositionNative")
  {
   double value;
   unsigned long long time_stamp=0;
-  return_value=Ptz_ReadZoomPositionNative(engine_index,camera.c_str(),value, time_stamp);
+  int async_mode=xml.ReadInteger("AsyncMode",0);
+  return_value=Ptz_ReadZoomPositionNative(engine_index,camera.c_str(),value, time_stamp,async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Zoom",value);
-//  response.Save(RpcReturnString[engine_index]);
+  response.WriteFloat("ZoomTimeStamp",time_stamp);
  }
  else
  if(cmd == "Ptz_ReadFocusPositionNative")
  {
   double value;
   unsigned long long time_stamp=0;
-  return_value=Ptz_ReadFocusPositionNative(engine_index,camera.c_str(),value, time_stamp);
+  int async_mode=xml.ReadInteger("AsyncMode",0);
+  return_value=Ptz_ReadFocusPositionNative(engine_index,camera.c_str(),value, time_stamp,async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Focus",value);
-//  response.Save(RpcReturnString[engine_index]);
+  response.WriteFloat("FocusTimeStamp",time_stamp);
  }
  else
  if(cmd == "Ptz_ReadIrisPositionNative")
  {
   double value;
   unsigned long long time_stamp=0;
-  return_value=Ptz_ReadIrisPositionNative(engine_index,camera.c_str(),value, time_stamp);
+  int async_mode=xml.ReadInteger("AsyncMode",0);
+  return_value=Ptz_ReadIrisPositionNative(engine_index,camera.c_str(),value, time_stamp,async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Iris",value);
-//  response.Save(RpcReturnString[engine_index]);
+  response.WriteFloat("IrisTimeStamp",time_stamp);
  }
  else
  if(cmd == "Ptz_ReadBrightnessPositionNative")
  {
   double value;
   unsigned long long time_stamp=0;
-  return_value=Ptz_ReadBrightnessPositionNative(engine_index,camera.c_str(),value, time_stamp);
+  int async_mode=xml.ReadInteger("AsyncMode",0);
+  return_value=Ptz_ReadBrightnessPositionNative(engine_index,camera.c_str(),value, time_stamp,async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Brightness",value);
-//  response.Save(RpcReturnString[engine_index]);
+  response.WriteFloat("BrightnessTimeStamp",time_stamp);
  }
  else
  if(cmd == "Ptz_MovePTZ")
@@ -857,28 +882,36 @@ const char* PtzRemoteCall(const char *request, int &return_value, int &channel_i
  {
   double value;
   unsigned long long time_stamp=0;
-  return_value=Ptz_ReadSyncPanState(engine_index,camera.c_str(),value, time_stamp);
+
+  int async_mode=xml.ReadInteger("AsyncMode",0);
+  return_value=Ptz_ReadSyncPanState(engine_index,camera.c_str(),value, time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Value",value);
+  response.WriteFloat("TimeStamp",time_stamp);
  }
  else
  if(cmd == "Ptz_ReadSyncTiltState")
  {
   double value;
   unsigned long long time_stamp=0;
-  return_value=Ptz_ReadSyncTiltState(engine_index,camera.c_str(),value, time_stamp);
+  int async_mode=xml.ReadInteger("AsyncMode",0);
+  return_value=Ptz_ReadSyncTiltState(engine_index,camera.c_str(),value, time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Value",value);
+  response.WriteFloat("TimeStamp",time_stamp);
  }
  else
  if(cmd == "Ptz_ReadSyncPTState")
  {
   double sync_pan_state, sync_tilt_state;
-  unsigned long long time_stamp=0;
-  return_value=Ptz_ReadSyncPTState(engine_index,camera.c_str(),sync_pan_state, sync_tilt_state, time_stamp);
+  unsigned long long pan_time_stamp=0, tilt_time_stamp=0;
+  int async_mode=xml.ReadInteger("AsyncMode",0);
+  return_value=Ptz_ReadSyncPTState(engine_index,camera.c_str(),sync_pan_state, sync_tilt_state, pan_time_stamp, tilt_time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("SyncPanState",sync_pan_state);
-  response.WriteFloat("SyncPanState",sync_tilt_state);
+  response.WriteFloat("SyncTiltState",sync_tilt_state);
+  response.WriteFloat("PanTimeStamp",pan_time_stamp);
+  response.WriteFloat("TiltTimeStamp",tilt_time_stamp);
  }
  else
  if(cmd == "Ptz_SetStabiliationState")
@@ -891,9 +924,11 @@ const char* PtzRemoteCall(const char *request, int &return_value, int &channel_i
  {
   double value;
   unsigned long long time_stamp=0;
-  return_value=Ptz_ReadStabiliationState(engine_index,camera.c_str(), value, time_stamp);
+  int async_mode=xml.ReadInteger("AsyncMode",0);
+  return_value=Ptz_ReadStabiliationState(engine_index,camera.c_str(), value, time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Value",value);
+  response.WriteFloat("TimeStamp",time_stamp);
  }
  else
  if(cmd == "Ptz_ResetServo")
@@ -911,9 +946,11 @@ const char* PtzRemoteCall(const char *request, int &return_value, int &channel_i
  {
   double value;
   unsigned long long time_stamp=0;
-  return_value=Ptz_ReadAbsoluteLatitudePosition(engine_index,camera.c_str(), value, time_stamp);
+  int async_mode=xml.ReadInteger("AsyncMode",0);
+  return_value=Ptz_ReadAbsoluteLatitudePosition(engine_index,camera.c_str(), value, time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Value",value);
+  response.WriteFloat("TimeStamp",time_stamp);
  }
  else
  if(cmd == "Ptz_SetAbsoluteNorthPosition")
@@ -926,27 +963,33 @@ const char* PtzRemoteCall(const char *request, int &return_value, int &channel_i
  {
   double value;
   unsigned long long time_stamp=0;
-  return_value=Ptz_ReadAbsoluteNorthPosition(engine_index,camera.c_str(), value, time_stamp);
+  int async_mode=xml.ReadInteger("AsyncMode",0);
+  return_value=Ptz_ReadAbsoluteNorthPosition(engine_index,camera.c_str(), value, time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Value",value);
+  response.WriteFloat("TimeStamp",time_stamp);
  }
  else
  if(cmd == "Ptz_ReadPanGyroDriftState")
  {
   double value;
   unsigned long long time_stamp=0;
-  return_value=Ptz_ReadPanGyroDriftState(engine_index,camera.c_str(), value, time_stamp);
+  int async_mode=xml.ReadInteger("AsyncMode",0);
+  return_value=Ptz_ReadPanGyroDriftState(engine_index,camera.c_str(), value, time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Value",value);
+  response.WriteFloat("TimeStamp",time_stamp);
  }
  else
  if(cmd == "Ptz_ReadTiltGyroDriftState")
  {
   double value;
   unsigned long long time_stamp=0;
-  return_value=Ptz_ReadTiltGyroDriftState(engine_index,camera.c_str(), value, time_stamp);
+  int async_mode=xml.ReadInteger("AsyncMode",0);
+  return_value=Ptz_ReadTiltGyroDriftState(engine_index,camera.c_str(), value, time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Value",value);
+  response.WriteFloat("TimeStamp",time_stamp);
  }
  else
  if(cmd == "Ptz_SetPanGyroDriftCorrection")
@@ -990,36 +1033,44 @@ const char* PtzRemoteCall(const char *request, int &return_value, int &channel_i
   char* data=0;
   int data_size=0;
   unsigned long long time_stamp=0;
-  return_value=Ptz_ReadDataFromSerialLine(engine_index,camera.c_str(), line_number, data_size, data, time_stamp);
+  int async_mode=xml.ReadInteger("AsyncMode",0);
+  return_value=Ptz_ReadDataFromSerialLine(engine_index,camera.c_str(), line_number, data_size, data, time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("DataSize",data_size);
+  response.WriteFloat("TimeStamp",time_stamp);
  }
  else
  if(cmd == "Ptz_ReadPanGyroDriftState")
  {
   double value;
   unsigned long long time_stamp=0;
-  return_value=Ptz_ReadPanGyroDriftState(engine_index,camera.c_str(), value, time_stamp);
+  int async_mode=xml.ReadInteger("AsyncMode",0);
+  return_value=Ptz_ReadPanGyroDriftState(engine_index,camera.c_str(), value, time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Value",value);
+  response.WriteFloat("TimeStamp",time_stamp);
  }
  else
  if(cmd == "Ptz_ReadPanErrorState")
  {
   double value;
   unsigned long long time_stamp=0;
-  return_value=Ptz_ReadPanErrorState(engine_index,camera.c_str(), value, time_stamp);
+  int async_mode=xml.ReadInteger("AsyncMode",0);
+  return_value=Ptz_ReadPanErrorState(engine_index,camera.c_str(), value, time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Value",value);
+  response.WriteFloat("TimeStamp",time_stamp);
  }
  else
  if(cmd == "Ptz_ReadTiltErrorState")
  {
   double value;
   unsigned long long time_stamp=0;
-  return_value=Ptz_ReadTiltErrorState(engine_index,camera.c_str(), value, time_stamp);
+  int async_mode=xml.ReadInteger("AsyncMode",0);
+  return_value=Ptz_ReadTiltErrorState(engine_index,camera.c_str(), value, time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Value",value);
+  response.WriteFloat("TimeStamp",time_stamp);
  }
  else
   return_value=2001;

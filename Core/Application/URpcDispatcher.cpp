@@ -63,7 +63,7 @@ void URpcDispatcher::Dispatch(void)
 
    boost::mutex::scoped_lock lock(DispatchMutex);
 
-   UpdateDecoders();
+//   UpdateDecoders();
    DispatchCommand(command);
   }
   catch(std::exception &std_ex)
@@ -154,7 +154,7 @@ void URpcDispatcher::DispatchCommand(const UEPtr<URpcCommand> &command)
 /// ѕриводит в соответствие список декодеров и число каналов
 void URpcDispatcher::UpdateDecoders(void)
 {
- int num_channels=GetNumEngines();
+ int num_channels=GetNumEngines(); //TODO необходимо убрать!
  if(num_channels == int(Decoders.size()))
   return;
 
