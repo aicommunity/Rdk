@@ -555,10 +555,10 @@ void TUServerControlForm::SendCommandResponse(const std::string &client_binding,
 	{
 	 context->Connection->IOHandler->Write(arr, arr.get_length());
 	 context->Connection->IOHandler->WriteBufferFlush();
-	 std::string str;
+/*	 std::string str;
 	str.resize(packet.GetParamSize(0));
 	memcpy(&str[0],&(packet.operator ()((0),0)), packet.GetParamSize(0));
-	Engine_LogMessage(RDK_EX_DEBUG,(string("Response Sent: ")+str).c_str());
+	Engine_LogMessage(RDK_EX_DEBUG,(string("Response Sent: ")+str).c_str());*/
 	 break;
 	}
    }
