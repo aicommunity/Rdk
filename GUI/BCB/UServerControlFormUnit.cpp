@@ -421,6 +421,9 @@ bool TUServerControlForm::ProcessControlCommand(const UServerCommand &args, std:
  if(response_status == 2001)
   return false;
 
+ if(response_status == 2000)
+  return false;
+
  if(response)
   ConvertStringToVector(response, response_data);
  else
@@ -1287,8 +1290,16 @@ try {
  {
   CurrentProcessedCommand=CommandQueue.front();
   CommandQueue.pop_front();
-  SetEvent(CommandQueueUnlockEvent);
 
+  if(CurrentProcessedCommand.second.empty())
+  {
+   Sleep(1);
+   CommandQueue.clear();
+   SetEvent(CommandQueueUnlockEvent);
+   return;
+  }
+
+  SetEvent(CommandQueueUnlockEvent);
   BinaryResponse.resize(0);
   bool is_processed=ProcessControlCommand(CurrentProcessedCommand, ResponseType, Response, BinaryResponse);
 
@@ -1320,6 +1331,8 @@ try {
   if(WaitForSingleObject(CommandQueueUnlockEvent,10) != WAIT_TIMEOUT)
   {
    ResetEvent(CommandQueueUnlockEvent);
+   try
+   {
 
    if(pcmd=RdkApplication.GetRpcDispatcher()->PopProcessedCommand())
    {
@@ -1341,6 +1354,12 @@ try {
 	 }
 	}
 	delete pcmd;
+   }
+   }
+   catch(...)
+   {
+	SetEvent(CommandQueueUnlockEvent);
+    throw;
    }
    SetEvent(CommandQueueUnlockEvent);
   }
@@ -1390,6 +1409,8 @@ try {
     break;
    }
    ResetEvent(CommandQueueUnlockEvent);
+   try
+   {
 
    std::list<pair<std::string,RDK::UEPtr<RDK::URpcCommand> > >::iterator I=ProcessedCommandQueue.begin();
    RDK::UEPtr<RDK::URpcCommandInternal> pcmd_int=RDK::dynamic_pointer_cast<RDK::URpcCommandInternal>(pcmd);
@@ -1408,6 +1429,12 @@ try {
 	 break;
 	}
    }
+   }
+   catch(...)
+   {
+	SetEvent(CommandQueueUnlockEvent);
+    throw;
+   }
    SetEvent(CommandQueueUnlockEvent);
 
    delete pcmd;
@@ -1416,8 +1443,8 @@ try {
 }
 catch (...)
 {
- SetEvent(CommandQueueUnlockEvent);
- throw;
+ Engine_LogMessage(RDK_EX_WARNING, "TUServerControlForm::CommandTimerTimer Global catcher error");
+// throw;
 }
 // SetEvent(CommandQueueUnlockEvent);
 }
@@ -1598,6 +1625,7 @@ void __fastcall TUServerControlForm::FormClose(TObject *Sender, TCloseAction &Ac
 // Sleep(100);
 }
 //---------------------------------------------------------------------------
+
 
 
 
