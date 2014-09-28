@@ -555,10 +555,10 @@ void TUServerControlForm::SendCommandResponse(const std::string &client_binding,
 	{
 	 context->Connection->IOHandler->Write(arr, arr.get_length());
 	 context->Connection->IOHandler->WriteBufferFlush();
-/*	 std::string str;
+	 std::string str;
 	str.resize(packet.GetParamSize(0));
 	memcpy(&str[0],&(packet.operator ()((0),0)), packet.GetParamSize(0));
-	Engine_LogMessage(RDK_EX_DEBUG,(string("Response Sent: ")+str).c_str());*/
+	Engine_LogMessage(RDK_EX_DEBUG,(string("Response Sent: ")+str+string(" To: ")+current_bind).c_str());
 	 break;
 	}
    }
@@ -1291,7 +1291,7 @@ try {
 
   BinaryResponse.resize(0);
   bool is_processed=ProcessControlCommand(CurrentProcessedCommand, ResponseType, Response, BinaryResponse);
- /*
+
   if(is_processed)
   {
    if(CommandResponseEncoder)
@@ -1313,10 +1313,7 @@ try {
 
    RdkApplication.GetRpcDispatcher()->PushCommand(pcmd);
   }
-	  */
 
-	  /*
-/// Тест
   // Обработка очереди выполненных команд диспетчера
   RDK::UEPtr<RDK::URpcCommand> pcmd;
 
@@ -1346,10 +1343,10 @@ try {
 	delete pcmd;
    }
    SetEvent(CommandQueueUnlockEvent);
-  }   */
+  }
 
 
-
+		 /*
   if(!is_processed)
    is_processed=ProcessRPCCommand(CurrentProcessedCommand, ResponseType, Response);
 
@@ -1368,7 +1365,7 @@ try {
   {
 //   SendCommandErrorResponse(CurrentProcessedCommand,0);
   }
-
+       */
 
   if(WaitForSingleObject(CommandQueueUnlockEvent,10) != WAIT_TIMEOUT)
   {
@@ -1380,7 +1377,7 @@ try {
 
  if(!is_breaked)
   SetEvent(CommandQueueUnlockEvent);
-		  /*
+
   // Обработка очереди выполненных команд диспетчера
   RDK::UEPtr<RDK::URpcCommand> pcmd;
 
@@ -1414,7 +1411,7 @@ try {
    SetEvent(CommandQueueUnlockEvent);
 
    delete pcmd;
-  }     */
+  }
 
 }
 catch (...)
