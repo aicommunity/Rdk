@@ -1301,8 +1301,8 @@ void TVideoOutputFrame::AAfterCalculate(void)
  }
  else
  {
-  if(Mode == 4)
-   if(CaptureThread)
+  if(CaptureThread)
+   if(CaptureThread->GetSourceMode() == 4)
     SetEvent(CaptureThread->GetCalcCompleteEvent());
  }
 }

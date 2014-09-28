@@ -165,6 +165,10 @@ MDMatrix<T>& Normalize(void);
 
 // Ортогонализация квадратной матрицы
 bool Orthogonolize(MDMatrix<T> &res);
+
+/// Поиск минимального и максимального значения элемента
+T FindMinValue(void) const;
+T FindMaxValue(void) const;
 // --------------------------
 
 // --------------------------
@@ -986,6 +990,38 @@ bool MDMatrix<T>::Orthogonolize(MDMatrix<T> &res)
  }
 
  return true;
+}
+
+
+/// Поиск минимального и максимального значения элемента
+template<class T>
+T MDMatrix<T>::FindMinValue(void) const
+{
+ T res(0);
+ if(Rows<=0 || Cols<=0)
+  return res;
+
+ T *pdata=Data;
+ res=*pdata++;
+ for(int i=1;i<Rows*Cols;i++,pdata++)
+  if(res>*pdata)
+   res=*pdata;
+ return res;
+}
+
+template<class T>
+T MDMatrix<T>::FindMaxValue(void) const
+{
+ T res(0);
+ if(Rows<=0 || Cols<=0)
+  return res;
+
+ T *pdata=Data;
+ res=*pdata++;
+ for(int i=1;i<Rows*Cols;i++,pdata++)
+  if(res<*pdata)
+   res=*pdata;
+ return res;
 }
 // --------------------------
 
