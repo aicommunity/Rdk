@@ -989,6 +989,10 @@ RDK_LIB_TYPE int RDK_CALL MEngine_LogMessage(int engine_index, int log_level, co
 RDK_LIB_TYPE int RDK_CALL Engine_GetNumUnreadLogLines(void);
 RDK_LIB_TYPE int RDK_CALL MEngine_GetNumUnreadLogLines(int engine_index);
 
+/// Возвращает число строк лога
+RDK_LIB_TYPE int RDK_CALL Engine_GetNumLogLines(void);
+RDK_LIB_TYPE int RDK_CALL MEngine_GetNumLogLines(int engine_index);
+
 /// Очищает лог прочитанных сообщений
 RDK_LIB_TYPE void RDK_CALL Engine_ClearReadLog(void);
 RDK_LIB_TYPE void RDK_CALL MEngine_ClearReadLog(int engine_index);

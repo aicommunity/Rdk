@@ -2170,6 +2170,20 @@ int RDK_CALL MEngine_GetNumUnreadLogLines(int engine_index)
  return DllManager.GetEngineLock(engine_index)->GetNumUnreadLogLines();
 }
 
+/// Возвращает число строк лога
+int RDK_CALL Engine_GetNumLogLines(void)
+{
+ return DllManager.GetEngineLock()->GetNumLogLines();
+}
+
+int RDK_CALL MEngine_GetNumLogLines(int engine_index)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 0;
+ return DllManager.GetEngineLock(engine_index)->GetNumLogLines();
+}
+
+
 /// Очищает лог прочитанных сообщений
 void RDK_CALL Engine_ClearReadLog(void)
 {

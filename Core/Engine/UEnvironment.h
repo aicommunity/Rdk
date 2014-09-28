@@ -81,7 +81,7 @@ mutable int CurrentExceptionsLogSize;
 int MaxExceptionsLogSize;
 
 // Индекс последнего считанного символа лога исключений
-int LastReadExceptionLogIndex;
+unsigned LastReadExceptionLogIndex;
 
 // Максимальный уровень непрочитанных сообщений в логе
 mutable int LastErrorLevel;
@@ -117,7 +117,10 @@ unsigned long long /*StartProcTime,*/CurrentTime,LastDuration/*,LastSentTime*/, 
 // Временное хранилище строк
 mutable string TempString;
 
-mutable std::vector<pair<std::string, int> > LogList;
+mutable std::map<unsigned, pair<std::string, int> > LogList;
+
+/// Индекс последней строки лога
+mutable unsigned LogIndex;
 
 UGenericMutex* LogMutex;
 

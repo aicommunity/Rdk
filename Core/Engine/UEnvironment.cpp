@@ -54,13 +54,15 @@ UEnvironment::UEnvironment(void)
  CurrentExceptionsLogSize=0;
  ExceptionHandler=0;
 
- LastReadExceptionLogIndex=-1;
+ LastReadExceptionLogIndex=0;
  MaxExceptionsLogSize=1000;
 
  LastErrorLevel=INT_MAX;
  DebugMode=false;
  ChannelIndex=0;
  LastStepStartTime=0;
+
+ LogIndex=1;
 }
 
 UEnvironment::~UEnvironment(void)
@@ -566,7 +568,10 @@ void UEnvironment::ProcessException(UException &exception) const
  {
   int erase_size=CurrentExceptionsLogSize - MaxExceptionsLogSize-1;
   if(LogList.size()>erase_size)
-   LogList.erase(LogList.begin(),LogList.begin()+erase_size);
+  {
+   for(int i=0;i<erase_size;i++)
+    LogList.erase(LogList.begin());
+  }
   else
    LogList.clear();
  }
@@ -574,7 +579,7 @@ void UEnvironment::ProcessException(UException &exception) const
  pair<std::string, int> log;
  log.first=sntoa(ChannelIndex)+std::string("> ")+exception.CreateLogMessage();
  log.second=exception.GetType();
- LogList.push_back(log);
+ LogList[LogIndex++]=log;
 
  if(ExceptionHandler)
   ExceptionHandler(ChannelIndex);
@@ -585,9 +590,11 @@ const char* UEnvironment::GetLog(int &error_level) const
 {
  UGenericMutexLocker lock(LogMutex);
  TempString.clear();
- for(size_t i=0;i<LogList.size();i++)
+ std::map<unsigned, pair<std::string, int> >::const_iterator I,J;
+ I=LogList.begin(); J=LogList.end();
+ for(;I != J;++I)
  {
-  TempString+=LogList[i].first;
+  TempString+=I->second.first;
   TempString+="/r/n";
  }
  error_level=LastErrorLevel;
@@ -606,13 +613,15 @@ int UEnvironment::GetNumLogLines(void) const
 const char* UEnvironment::GetLogLine(int i) const
 {
  UGenericMutexLocker lock(LogMutex);
- if(i<0 || i >= int(LogList.size()))
+ std::map<unsigned, pair<std::string, int> >::const_iterator I=LogList.find(i);
+
+ if(I == LogList.end())
  {
   TempString.clear();
   return TempString.c_str();
  }
 
- TempString=LogList[i].first;
+ TempString=I->second.first;
  return TempString.c_str();
 }
 
@@ -620,11 +629,16 @@ const char* UEnvironment::GetLogLine(int i) const
 int UEnvironment::GetNumUnreadLogLines(void) const
 {
  UGenericMutexLocker lock(LogMutex);
- if(LastReadExceptionLogIndex<=0)
+
+ std::map<unsigned, pair<std::string, int> >::const_iterator I=LogList.find(LastReadExceptionLogIndex);
+ if(I == LogList.end())
   return int(LogList.size());
 
- int size=int(LogList.size())-LastReadExceptionLogIndex-1;
- return (size>0)?size:0;
+ int size=0;
+ //int(LogList.size())-LastReadExceptionLogIndex-1;
+ for(;I!=LogList.end();++I)
+  ++size;
+ return size;
 }
 
 // Возвращает частичный массив строк лога с момента последнего считывания лога
@@ -632,35 +646,35 @@ int UEnvironment::GetNumUnreadLogLines(void) const
 const char* UEnvironment::GetUnreadLog(int &error_level)
 {
  UGenericMutexLocker lock(LogMutex);
- int line_index=-1;
  TempString.clear();
  error_level=INT_MAX;
 
  if(LogList.empty())
   return TempString.c_str();
 
- if(LastReadExceptionLogIndex<0)
+ if(LastReadExceptionLogIndex == 0)
  {
-  line_index=0;
-  LastReadExceptionLogIndex=0;
+  LastReadExceptionLogIndex=LogList.begin()->first;
  }
  else
  {
-  line_index=++LastReadExceptionLogIndex;
+  std::map<unsigned, pair<std::string, int> >::const_iterator I=LogList.find(LastReadExceptionLogIndex);
+  if(I != LogList.end())
+  {
+   ++I;
+   if(I != LogList.end())
+   {
+	LastReadExceptionLogIndex=I->first;
+	TempString=I->second.first;
+	error_level=I->second.second;
+	return TempString.c_str();
+   }
+  }
+  else
+   LastReadExceptionLogIndex=LogList.begin()->first;
+ }
 
- }
-// TempString=sntoa(ChannelIndex)+std::string("> ")+LogList[line_index].CreateLogMessage();
- size_t log_size=LogList.size();
- if(int(LogList.size())>line_index)
- {
-  TempString=LogList[line_index].first;
-  error_level=LogList[line_index].second;
- }
- else
- {
-  error_level=RDK_EX_UNKNOWN;
- }
-// error_level=LogList[line_index].GetType();
+ error_level=RDK_EX_UNKNOWN;
  return TempString.c_str();
 }
 
@@ -705,7 +719,7 @@ void UEnvironment::SetMaxExceptionsLogSize(int value)
 void UEnvironment::ClearLog(void)
 {
  UGenericMutexLocker lock(LogMutex);
- LastReadExceptionLogIndex=-1;
+ LastReadExceptionLogIndex=0;
  CurrentExceptionsLogSize=0;
  LastErrorLevel=INT_MAX;
  LogList.clear();
@@ -715,11 +729,19 @@ void UEnvironment::ClearLog(void)
 void UEnvironment::ClearReadLog(void)
 {
  UGenericMutexLocker lock(LogMutex);
- if(LastReadExceptionLogIndex >=0 && LastReadExceptionLogIndex<int(LogList.size()))
+ std::map<unsigned, pair<std::string, int> >::iterator I=LogList.find(LastReadExceptionLogIndex);
+ if(I != LogList.end())
  {
-  LogList.erase(LogList.begin(),LogList.begin()+LastReadExceptionLogIndex);
+  ++I;
+  std::map<unsigned, pair<std::string, int> >::iterator J=LogList.begin(),K;
+  while(J != I)
+  {
+   K=J; ++K;
+   LogList.erase(J);
+   J=K;
+  }
  }
- LastReadExceptionLogIndex=-1;
+ LastReadExceptionLogIndex=0;
  CurrentExceptionsLogSize=0;
  LastErrorLevel=INT_MAX;
 // TempLogString.clear();
