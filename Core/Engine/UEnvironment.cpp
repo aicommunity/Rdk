@@ -655,6 +655,8 @@ const char* UEnvironment::GetUnreadLog(int &error_level)
  if(LastReadExceptionLogIndex == 0)
  {
   LastReadExceptionLogIndex=LogList.begin()->first;
+  TempString=LogList.begin()->second.first;
+  error_level=LogList.begin()->second.second;
  }
  else
  {
