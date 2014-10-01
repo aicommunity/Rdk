@@ -45,6 +45,25 @@ RDK_LIB_TYPE RDK::UELockPtr<RDK::UContainer> RDK_CALL GetModelLock(int engine_in
 
 namespace RDK {
 
+// Возвращает указатель на текущую модель
+template<class T>
+RDK::UELockPtr<T> GetModelLock(void)
+{
+ RDK::UEPtr<T> p=dynamic_pointer_cast<T>(GetModel());
+ if(!p)
+  return RDK::UELockPtr<T>();
+ return RDK::UELockPtr<T>((UGenericMutex*)Engine_GetMutex(),p);
+}
+
+template<class T>
+RDK::UELockPtr<T> GetModelLock(int engine_index)
+{
+ RDK::UEPtr<T> p=dynamic_pointer_cast<T>(GetModel(engine_index));
+ if(!p)
+  return RDK::UELockPtr<T>();
+ return RDK::UELockPtr<T>((UGenericMutex*)MEngine_GetMutex(engine_index),p);
+}
+
 // Декодирует содержимое свойства/переменной состояния компонента
 template<typename T>
 T& DecodePropertyValue(const std::string &param_value, T &res)

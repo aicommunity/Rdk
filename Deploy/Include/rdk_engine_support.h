@@ -116,6 +116,10 @@ RDK::UEPtr<RDK::UContainer> GetModel(int engine_index);
 // --------------------------
 // Методы доступа к каналам с блокировкой
 // --------------------------
+/// Метод доступ к мьютексу
+UGenericMutex* GetEngineMutex(void);
+UGenericMutex* GetEngineMutex(int index);
+
 // Возвращает ссылку на указатель управляющего ядра
 RDK::UELockPtr<RDK::UEngine> GetEngineLock(void);
 RDK::UELockPtr<RDK::UEngine> GetEngineLock(int engine_index);

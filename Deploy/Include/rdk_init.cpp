@@ -399,6 +399,17 @@ int RDK_CALL MEngine_GetNumBufStrings(int engine_index)
   return -1;
  return DllManager.GetEngineLock()->GetNumTempStrings();
 }
+
+/// Доступ к мьютексу
+void* RDK_CALL Engine_GetMutex(void)
+{
+ return DllManager.GetEngineMutex();
+}
+
+void* RDK_CALL MEngine_GetMutex(int index)
+{
+ return DllManager.GetEngineMutex(index);
+}
 // ----------------------------
 
 // --------------------------
