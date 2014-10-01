@@ -154,7 +154,14 @@ void __fastcall TUEngineMonitorForm::LogTimerTimer(TObject *Sender)
   /// Сохраняем лог в файл если это необходимо
   if(UGEngineControlForm->EventsLogEnabled && UGEngineControlForm->ProjectPath.Length()>0)
   {
-   ForceDirectories(UGEngineControlForm->ProjectPath+"EventsLog");
+   try
+   {
+	ForceDirectories(UGEngineControlForm->ProjectPath+"EventsLog");
+   }
+   catch(EInOutError &exception)
+   {
+    UGEngineControlForm->EventsLogEnabled=false;
+   }
    EventsLogFilePath=AnsiString(UGEngineControlForm->ProjectPath+"EventsLog/").c_str();
   }
 
