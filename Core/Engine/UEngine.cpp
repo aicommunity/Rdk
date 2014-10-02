@@ -5067,6 +5067,12 @@ int UEngine::GetNumUnreadLogLines(void) const
  return Environment->GetNumUnreadLogLines();
 }
 
+/// Возвращает число строк лога
+int UEngine::GetNumLogLines(void) const
+{
+ return Environment->GetNumLogLines();
+}
+
 /// Очищает лог прочитанных сообщений
 void UEngine::ClearReadLog(void)
 {

@@ -640,6 +640,9 @@ void TUEngineMonitorFrame::AUpdateInterface(void)
 
  StatusBar->SimpleText=StatusBar->SimpleText
 				+String(" NumBfs=")+IntToStr(Engine_GetNumBufStrings());
+
+ StatusBar->SimpleText=StatusBar->SimpleText
+				+String(" Log[")+IntToStr(Engine_GetNumUnreadLogLines())+String(":")+IntToStr(Engine_GetNumLogLines())+String("]");
  StatusBar->Repaint();
  StatusBar->Update();
 

@@ -63,6 +63,7 @@ protected:
 /// Метод должен вызываться в своем потоке
 virtual void DispatchCommand(const UEPtr<URpcCommand> &command);
 
+public:
 /// Приводит в соответствие список декодеров и число каналов
 virtual void UpdateDecoders(void);
 // --------------------------

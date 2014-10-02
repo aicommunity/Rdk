@@ -458,7 +458,8 @@ void TUComponentsListFrame::UpdateNiceParamsList(TEnchancedSG *frame)
   return;
  UpdateInterfaceFlag=true;
 
-
+ if(!Model_Check())
+  return;
 
  std::string xml_data;
 

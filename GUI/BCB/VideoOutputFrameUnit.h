@@ -133,6 +133,7 @@ __published:    // IDE-managed Components
 	void __fastcall PropertyMatrix1Click(TObject *Sender);
 	void __fastcall SaveImage1Click(TObject *Sender);
 	void __fastcall SourceControl21Click(TObject *Sender);
+	void __fastcall SourceControlModal();
 	void __fastcall StartRecordingToolButtonClick(TObject *Sender);
 	void __fastcall SelectFile1Click(TObject *Sender);
 	void __fastcall CaptureStartToolButtonClick(TObject *Sender);

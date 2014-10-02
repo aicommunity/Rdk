@@ -63,7 +63,7 @@ void URpcDispatcher::Dispatch(void)
 
    boost::mutex::scoped_lock lock(DispatchMutex);
 
-   UpdateDecoders();
+//   UpdateDecoders();
    DispatchCommand(command);
   }
   catch(std::exception &std_ex)
@@ -109,6 +109,7 @@ bool URpcDispatcher::SyncDispatchCommand(const UEPtr<URpcCommand> &command, unsi
   else
    return true;
  }
+ MEngine_LogMessage(0, RDK_EX_WARNING, (std::string("RPC Dispatcher: SyncDispatchCommand - Processing Wait Timeout")+RDK::sntoa(cmd_id)).c_str());
  return false;
 }
 // --------------------------
@@ -146,13 +147,14 @@ void URpcDispatcher::DispatchCommand(const UEPtr<URpcCommand> &command)
   if(!Decoders[channel_index]->PushCommand(command,cmd_id))
   {
    // Ошибка постановки команды в очередь на обработку
+   MEngine_LogMessage(0, RDK_EX_WARNING, (std::string("RPC Dispatcher: DispatchCommand - PushCommand Failed")+RDK::sntoa(cmd_id)).c_str());
   }
 }
 
 /// Приводит в соответствие список декодеров и число каналов
 void URpcDispatcher::UpdateDecoders(void)
 {
- int num_channels=GetNumEngines();
+ int num_channels=GetNumEngines(); //TODO необходимо убрать!
  if(num_channels == int(Decoders.size()))
   return;
 

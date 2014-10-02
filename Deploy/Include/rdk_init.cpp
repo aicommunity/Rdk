@@ -1016,7 +1016,8 @@ int RDK_CALL MModel_Clear(int engine_index)
 // Проверяет, существует ли модель
 bool RDK_CALL Model_Check(void)
 {
-//
+ if(!DllManager.GetEngine())
+  return false;
  return DllManager.GetEngine()->Model_Check();
 }
 
@@ -1025,6 +1026,8 @@ bool RDK_CALL MModel_Check(int engine_index)
  if(engine_index<0 || engine_index>=GetNumEngines())
   return false;
 // UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
+ if(!DllManager.GetEngine(engine_index))
+  return false;
  return DllManager.GetEngine(engine_index)->Model_Check();
 }
 
@@ -2182,6 +2185,20 @@ int RDK_CALL MEngine_GetNumUnreadLogLines(int engine_index)
   return 0;
  return DllManager.GetEngineLock(engine_index)->GetNumUnreadLogLines();
 }
+
+/// Возвращает число строк лога
+int RDK_CALL Engine_GetNumLogLines(void)
+{
+ return DllManager.GetEngineLock()->GetNumLogLines();
+}
+
+int RDK_CALL MEngine_GetNumLogLines(int engine_index)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 0;
+ return DllManager.GetEngineLock(engine_index)->GetNumLogLines();
+}
+
 
 /// Очищает лог прочитанных сообщений
 void RDK_CALL Engine_ClearReadLog(void)

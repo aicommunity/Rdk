@@ -61,6 +61,16 @@ bool ApplicationInitialized=false;
 
 HANDLE RdkLockStartapMutex;
 
+String Lang_SaveProjectTitle("Saving Project...");
+String Lang_LoadProjectTitle("Loading Project...");
+String Lang_LoadingData("Loading data...");
+String Lang_SavingData("Saving data...");
+String Lang_Total("Total");
+String Lang_SaveInterface("Saving Interface...");
+String Lang_UpdateInterface("Update Interface...");
+String Lang_Starting("Starting...");
+String Lang_Stopping("Stopping...");
+
 TUVisualControllerForm *RdkMainForm=0;
 
 bool RdkIsApplicationRunning(void)
@@ -251,20 +261,36 @@ void TUGEngineControlForm::AUpdateInterface(void)
    VideoCaptureStates=monitor->ReadVideoCaptureStates();
   }
 
-  ChannelsStringGrid->ColWidths[1]=20;
-  ChannelsStringGrid->ColWidths[2]=20;
-  for(int i=0;i<ChannelsStringGrid->RowCount;i++)
+  if(ProjectShowChannelsStates)
   {
-   ChannelsStringGrid->Cells[0][i]=IntToStr(i);
-   if(CalcThreadStates.size()>i)
-	ChannelsStringGrid->Cells[1][i]=CalcThreadStates[i];
-   else
-	ChannelsStringGrid->Cells[1][i]="n/a";
+   ChannelsStringGrid->ColCount=3;
+   ChannelsStringGrid->ColWidths[1]=20;
+   ChannelsStringGrid->ColWidths[2]=20;
+   ChannelsStringGrid->Width=ChannelsStringGrid->ColWidths[0]+
+						ChannelsStringGrid->ColWidths[1]+
+						ChannelsStringGrid->ColWidths[2]+20;
+   for(int i=0;i<ChannelsStringGrid->RowCount;i++)
+   {
+	ChannelsStringGrid->Cells[0][i]=IntToStr(i);
+	if(CalcThreadStates.size()>i)
+	 ChannelsStringGrid->Cells[1][i]=CalcThreadStates[i];
+	else
+	 ChannelsStringGrid->Cells[1][i]="n/a";
 
-   if(VideoCaptureStates.size()>i)
-	ChannelsStringGrid->Cells[2][i]=VideoCaptureStates[i];
-   else
-	ChannelsStringGrid->Cells[2][i]="n/a";
+	if(VideoCaptureStates.size()>i)
+	 ChannelsStringGrid->Cells[2][i]=VideoCaptureStates[i];
+	else
+	 ChannelsStringGrid->Cells[2][i]="n/a";
+   }
+  }
+  else
+  {
+   ChannelsStringGrid->ColCount=1;
+   ChannelsStringGrid->Width=ChannelsStringGrid->ColWidths[0]+20;
+   for(int i=0;i<ChannelsStringGrid->RowCount;i++)
+   {
+	ChannelsStringGrid->Cells[0][i]=IntToStr(i);
+   }
   }
 
   ChannelsStringGrid->Row=GetSelectedEngineIndex();
@@ -506,7 +532,7 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
 {
  CloseProject();
 
- UShowProgressBarForm->SetWinTitle("Loading Project...");
+ UShowProgressBarForm->SetWinTitle(Lang_LoadProjectTitle);
 
  ProjectXml.LoadFromFile(AnsiString(FileName).c_str(),"");
  ProjectPath=ExtractFilePath(FileName);
@@ -520,13 +546,14 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
  UEngineMonitorForm->EngineMonitorFrame->SetCalculationTimeSourceMode(calc_time_mode);
 
  EventsLogEnabled=ProjectXml.ReadBool("EventsLogEnabled",true);
+ ProjectShowChannelsStates=ProjectXml.ReadBool("ProjectShowChannelsStates",true);
 
  int num_engines=ProjectXml.ReadInteger("NumEngines",1);
  if(num_engines<=0)
   num_engines=1;
 
- UShowProgressBarForm->SetBarHeader(1,"Loading data...");
- UShowProgressBarForm->SetBarHeader(2,"Total");
+ UShowProgressBarForm->SetBarHeader(1,Lang_LoadingData);
+ UShowProgressBarForm->SetBarHeader(2,Lang_Total);
  UShowProgressBarForm->ResetBarStatus(1, 1, num_engines-1);
  UShowProgressBarForm->ResetBarStatus(2, 1, 2);
 
@@ -736,7 +763,7 @@ try{
  UShowProgressBarForm->Update();
  Sleep(0);
  UShowProgressBarForm->IncBarStatus(2);
- UShowProgressBarForm->SetBarHeader(1,"Update Interface...");
+ UShowProgressBarForm->SetBarHeader(1,Lang_UpdateInterface);
  UShowProgressBarForm->ResetBarStatus(1, 1, 1);
  UShowProgressBarForm->Update();
  Sleep(0);
@@ -934,9 +961,9 @@ void TUGEngineControlForm::SaveProject(void)
  if(!ProjectOpenFlag)
   return;
 
- UShowProgressBarForm->SetWinTitle("Saving Project...");
- UShowProgressBarForm->SetBarHeader(1,"Saving interface...");
- UShowProgressBarForm->SetBarHeader(2,"Total");
+ UShowProgressBarForm->SetWinTitle(Lang_SaveProjectTitle);
+ UShowProgressBarForm->SetBarHeader(1,Lang_SaveInterface);
+ UShowProgressBarForm->SetBarHeader(2,Lang_Total);
  UShowProgressBarForm->ResetBarStatus(1, 1, 1);
  UShowProgressBarForm->ResetBarStatus(2, 1, 2);
  if(AppWinState)
@@ -995,7 +1022,7 @@ try{
  ProjectXml.WriteInteger("ProjectAutoSaveStateFlag",ProjectAutoSaveStateFlag);
 
  UShowProgressBarForm->IncBarStatus(2);
- UShowProgressBarForm->SetBarHeader(1,"Saving data...");
+ UShowProgressBarForm->SetBarHeader(1,Lang_SavingData);
  UShowProgressBarForm->ResetBarStatus(1, 1, GetNumEngines()-1);
  UShowProgressBarForm->Update();
  Sleep(0);
@@ -1152,6 +1179,9 @@ try{
 
  ProjectXml.WriteInteger("NumEngines",GetNumEngines());
  ProjectXml.WriteInteger("SelectedEngineIndex",GetSelectedEngineIndex());
+
+ ProjectXml.WriteBool("ProjectShowChannelsStates",ProjectShowChannelsStates);
+
 
  ProjectXml.SaveToFile(AnsiString(ProjectPath+ProjectFileName).c_str());
 }
@@ -1565,9 +1595,9 @@ void TUGEngineControlForm::StartChannel(int channel_index)
  if(!ProjectOpenFlag)
   return;
 
- UShowProgressBarForm->SetWinTitle("Starting...");
+ UShowProgressBarForm->SetWinTitle(Lang_Starting);
  UShowProgressBarForm->SetBarHeader(1,"");
- UShowProgressBarForm->SetBarHeader(2,"Total");
+ UShowProgressBarForm->SetBarHeader(2,Lang_Total);
  UShowProgressBarForm->ResetBarStatus(1, 1, 1);
  UShowProgressBarForm->ResetBarStatus(2, 1, 2);
  if(AppWinState)
@@ -1589,9 +1619,9 @@ void TUGEngineControlForm::PauseChannel(int channel_index)
  if(!ProjectOpenFlag)
   return;
 
- UShowProgressBarForm->SetWinTitle("Stopping...");
+ UShowProgressBarForm->SetWinTitle(Lang_Stopping);
  UShowProgressBarForm->SetBarHeader(1,"");
- UShowProgressBarForm->SetBarHeader(2,"Total");
+ UShowProgressBarForm->SetBarHeader(2,Lang_Total);
  UShowProgressBarForm->ResetBarStatus(1, 1, 1);
  UShowProgressBarForm->ResetBarStatus(2, 1, 2);
  if(AppWinState)
@@ -1840,15 +1870,15 @@ void __fastcall TUGEngineControlForm::CreateProjectItemClick(TObject *Sender)
 
   GlobalTimeStep=DefaultTimeStep;
 
-  NumEnvInputs=StrToInt(UCreateProjectWizardForm->NumInputsLabeledEdit->Text);
-  NumEnvOutputs=StrToInt(UCreateProjectWizardForm->NumOutputsLabeledEdit->Text);
-  InputEnvImageWidth=StrToInt(UCreateProjectWizardForm->ImageWidthLabeledEdit->Text);
-  InputEnvImageHeight=StrToInt(UCreateProjectWizardForm->ImageHeightLabeledEdit->Text);
-  ReflectionFlag=UCreateProjectWizardForm->UpendInputImageCheckBox->Checked;
+//  NumEnvInputs=StrToInt(UCreateProjectWizardForm->NumInputsLabeledEdit->Text);
+//  NumEnvOutputs=StrToInt(UCreateProjectWizardForm->NumOutputsLabeledEdit->Text);
+//  InputEnvImageWidth=StrToInt(UCreateProjectWizardForm->ImageWidthLabeledEdit->Text);
+//  InputEnvImageHeight=StrToInt(UCreateProjectWizardForm->ImageHeightLabeledEdit->Text);
+//  ReflectionFlag=UCreateProjectWizardForm->UpendInputImageCheckBox->Checked;
 
 
   CalculationMode.resize(1);
-  CalculationMode[0]=UCreateProjectWizardForm->ProjectCalculationModeRadioGroup->ItemIndex;
+//  CalculationMode[0]=UCreateProjectWizardForm->ProjectCalculationModeRadioGroup->ItemIndex;
 
   MinInterstepsInterval.resize(1);
   MinInterstepsInterval[0]=20;
@@ -1943,30 +1973,30 @@ void __fastcall TUGEngineControlForm::ProjectOptions1Click(TObject *Sender)
  UCreateProjectWizardForm->ProjectTypeRadioGroup->ItemIndex=1;
  UCreateProjectWizardForm->ProjectAutoSaveFlagCheckBox->Checked=ProjectAutoSaveFlag;
  UCreateProjectWizardForm->ProjectTimeStepEdit->Text=IntToStr(DefaultTimeStep[GetSelectedEngineIndex()]);
- UCreateProjectWizardForm->ProjectCalculationModeRadioGroup->ItemIndex=CalculationMode[GetSelectedEngineIndex()];
+// UCreateProjectWizardForm->ProjectCalculationModeRadioGroup->ItemIndex=CalculationMode[GetSelectedEngineIndex()];
  UCreateProjectWizardForm->CalculationSourceTimeModeRadioGroup->ItemIndex=UEngineMonitorForm->EngineMonitorFrame->GetCalculationTimeSourceMode();
 
  UCreateProjectWizardForm->PredefinedStructure=PredefinedStructure[GetSelectedEngineIndex()];
  if(PredefinedStructure[GetSelectedEngineIndex()])
  {
-  UCreateProjectWizardForm->PredefinedModelRadioButton->Checked=true;
-  UCreateProjectWizardForm->ModelFileNameRadioButton->Checked=false;
+//  UCreateProjectWizardForm->PredefinedModelRadioButton->Checked=true;
+//  UCreateProjectWizardForm->ModelFileNameRadioButton->Checked=false;
  }
  else
  {
-  UCreateProjectWizardForm->PredefinedModelRadioButton->Checked=false;
-  UCreateProjectWizardForm->ModelFileNameRadioButton->Checked=true;
+//  UCreateProjectWizardForm->PredefinedModelRadioButton->Checked=false;
+//  UCreateProjectWizardForm->ModelFileNameRadioButton->Checked=true;
   if(GetSelectedEngineIndex() == 0)
    UCreateProjectWizardForm->ProjectModelFileNameLabeledEdit->Text=ProjectXml.ReadString("ModelFileName","").c_str();
   else
    UCreateProjectWizardForm->ProjectModelFileNameLabeledEdit->Text=ProjectXml.ReadString(std::string("ModelFileName_")+RDK::sntoa(GetSelectedEngineIndex()),"").c_str();
  }
 
-  UCreateProjectWizardForm->NumInputsLabeledEdit->Text=IntToStr(NumEnvInputs);
-  UCreateProjectWizardForm->NumOutputsLabeledEdit->Text=IntToStr(NumEnvOutputs);
-  UCreateProjectWizardForm->ImageWidthLabeledEdit->Text=IntToStr(InputEnvImageWidth);
-  UCreateProjectWizardForm->ImageHeightLabeledEdit->Text=IntToStr(InputEnvImageHeight);
-  UCreateProjectWizardForm->UpendInputImageCheckBox->Checked=ReflectionFlag;
+//  UCreateProjectWizardForm->NumInputsLabeledEdit->Text=IntToStr(NumEnvInputs);
+//  UCreateProjectWizardForm->NumOutputsLabeledEdit->Text=IntToStr(NumEnvOutputs);
+//  UCreateProjectWizardForm->ImageWidthLabeledEdit->Text=IntToStr(InputEnvImageWidth);
+//  UCreateProjectWizardForm->ImageHeightLabeledEdit->Text=IntToStr(InputEnvImageHeight);
+//  UCreateProjectWizardForm->UpendInputImageCheckBox->Checked=ReflectionFlag;
 
  UCreateProjectWizardForm->Caption="Update Project Wizard";
  if(UCreateProjectWizardForm->ShowProjectOptions() == mrOk)
@@ -1976,7 +2006,7 @@ void __fastcall TUGEngineControlForm::ProjectOptions1Click(TObject *Sender)
   ProjectAutoSaveFlag=UCreateProjectWizardForm->ProjectAutoSaveFlagCheckBox->Checked;
   DefaultTimeStep[GetSelectedEngineIndex()]=StrToInt(UCreateProjectWizardForm->ProjectTimeStepEdit->Text);
   GlobalTimeStep[GetSelectedEngineIndex()]=DefaultTimeStep[GetSelectedEngineIndex()];
-  CalculationMode[GetSelectedEngineIndex()]=UCreateProjectWizardForm->ProjectCalculationModeRadioGroup->ItemIndex;
+//  CalculationMode[GetSelectedEngineIndex()]=UCreateProjectWizardForm->ProjectCalculationModeRadioGroup->ItemIndex;
 
 //  CreateProject(UCreateProjectWizardForm->ProjectDirectoryLabeledEdit->Text+String("\\Project.ini"),UCreateProjectWizardForm->UClassesListFrame1->GetSelectedName(),UCreateProjectWizardForm->ProjectModelFileNameLabeledEdit->Text);
 

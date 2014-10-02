@@ -69,11 +69,15 @@ __fastcall TUServerControlForm::TUServerControlForm(TComponent* Owner)
  Bitmap=0;
  PerformancePushIndex=0;
  CommandQueueUnlockEvent=0;
+
+ ServerReceivingNotInProgress=CreateEvent(0,TRUE,TRUE,0);
 }
 
 __fastcall TUServerControlForm::~TUServerControlForm(void)
 {
  delete CriticalSection;
+
+ CloseHandle(ServerReceivingNotInProgress);
 /* if(Clients)
  {
 
@@ -417,6 +421,9 @@ bool TUServerControlForm::ProcessControlCommand(const UServerCommand &args, std:
  if(response_status == 2001)
   return false;
 
+ if(response_status == 2000)
+  return false;
+
  if(response)
   ConvertStringToVector(response, response_data);
  else
@@ -550,6 +557,11 @@ void TUServerControlForm::SendCommandResponse(const std::string &client_binding,
 	if(current_bind == client_binding)
 	{
 	 context->Connection->IOHandler->Write(arr, arr.get_length());
+	 context->Connection->IOHandler->WriteBufferFlush();
+	 std::string str;
+	str.resize(packet.GetParamSize(0));
+	memcpy(&str[0],&(packet.operator ()((0),0)), packet.GetParamSize(0));
+	Engine_LogMessage(RDK_EX_DEBUG,(string("Response Sent: ")+str+string(" To: ")+current_bind).c_str());
 	 break;
 	}
    }
@@ -785,6 +797,8 @@ int TUServerControlForm::SetNumChannels(int value)
 
  if(value<=0)
   return 1;
+
+ RdkApplication.GetRpcDispatcher()->UpdateDecoders();
 
 // int selected=GetSelectedEngineIndex();
  for(int i=0;i<value;i++)
@@ -1274,10 +1288,18 @@ try {
  bool is_breaked=false;
  while(!CommandQueue.empty())
  {
-  CurrentProcessedCommand=CommandQueue.back();
-  CommandQueue.pop_back();
-  SetEvent(CommandQueueUnlockEvent);
+  CurrentProcessedCommand=CommandQueue.front();
+  CommandQueue.pop_front();
 
+  if(CurrentProcessedCommand.second.empty())
+  {
+   Sleep(1);
+   CommandQueue.clear();
+   SetEvent(CommandQueueUnlockEvent);
+   return;
+  }
+
+  SetEvent(CommandQueueUnlockEvent);
   BinaryResponse.resize(0);
   bool is_processed=ProcessControlCommand(CurrentProcessedCommand, ResponseType, Response, BinaryResponse);
 
@@ -1301,19 +1323,16 @@ try {
    ProcessedCommandQueue.push_back(cmd_pair);
 
    RdkApplication.GetRpcDispatcher()->PushCommand(pcmd);
-
- //  while(!RdkApplication.GetRpcDispatcher()->CheckProcessedCommand())
- //   Sleep(10);
-
   }
 
-/// Тест
   // Обработка очереди выполненных команд диспетчера
   RDK::UEPtr<RDK::URpcCommand> pcmd;
 
   if(WaitForSingleObject(CommandQueueUnlockEvent,10) != WAIT_TIMEOUT)
   {
    ResetEvent(CommandQueueUnlockEvent);
+   try
+   {
 
    if(pcmd=RdkApplication.GetRpcDispatcher()->PopProcessedCommand())
    {
@@ -1336,11 +1355,17 @@ try {
 	}
 	delete pcmd;
    }
+   }
+   catch(...)
+   {
+	SetEvent(CommandQueueUnlockEvent);
+    throw;
+   }
    SetEvent(CommandQueueUnlockEvent);
   }
 
 
- /*
+		 /*
   if(!is_processed)
    is_processed=ProcessRPCCommand(CurrentProcessedCommand, ResponseType, Response);
 
@@ -1359,14 +1384,16 @@ try {
   {
 //   SendCommandErrorResponse(CurrentProcessedCommand,0);
   }
-			   */
-  if(WaitForSingleObject(CommandQueueUnlockEvent,10) == WAIT_TIMEOUT)
+       */
+
+  if(WaitForSingleObject(CommandQueueUnlockEvent,10) != WAIT_TIMEOUT)
   {
    is_breaked=true;
    break;
   }
   ResetEvent(CommandQueueUnlockEvent);
  }
+
  if(!is_breaked)
   SetEvent(CommandQueueUnlockEvent);
 
@@ -1382,6 +1409,8 @@ try {
     break;
    }
    ResetEvent(CommandQueueUnlockEvent);
+   try
+   {
 
    std::list<pair<std::string,RDK::UEPtr<RDK::URpcCommand> > >::iterator I=ProcessedCommandQueue.begin();
    RDK::UEPtr<RDK::URpcCommandInternal> pcmd_int=RDK::dynamic_pointer_cast<RDK::URpcCommandInternal>(pcmd);
@@ -1400,6 +1429,12 @@ try {
 	 break;
 	}
    }
+   }
+   catch(...)
+   {
+	SetEvent(CommandQueueUnlockEvent);
+    throw;
+   }
    SetEvent(CommandQueueUnlockEvent);
 
    delete pcmd;
@@ -1408,8 +1443,8 @@ try {
 }
 catch (...)
 {
- SetEvent(CommandQueueUnlockEvent);
- throw;
+ Engine_LogMessage(RDK_EX_WARNING, "TUServerControlForm::CommandTimerTimer Global catcher error");
+// throw;
 }
 // SetEvent(CommandQueueUnlockEvent);
 }
@@ -1487,6 +1522,10 @@ void __fastcall TUServerControlForm::IdTCPServerDisconnect(TIdContext *AContext)
 
 void __fastcall TUServerControlForm::IdTCPServerExecute(TIdContext *AContext)
 {
+ if(WaitForSingleObject(ServerReceivingNotInProgress, 10000) == WAIT_TIMEOUT)
+  return;
+ ResetEvent(ServerReceivingNotInProgress);
+
  vector<unsigned char> client_buffer;
  TIdBytes VBuffer;
  int length=AContext->Connection->IOHandler->InputBuffer->Size;
@@ -1509,6 +1548,7 @@ void __fastcall TUServerControlForm::IdTCPServerExecute(TIdContext *AContext)
 	if(I == PacketReaders.end())
 	{
 //	 SetEvent(CommandQueueUnlockEvent);
+	 SetEvent(ServerReceivingNotInProgress);
 	 return;
 	}
 	I->second.ProcessDataPart2(client_buffer);
@@ -1550,6 +1590,7 @@ void __fastcall TUServerControlForm::IdTCPServerExecute(TIdContext *AContext)
 //  Memo1.Lines.Add(LLine);
 //  AContext.Connection.IOHandler.WriteLn('OK');
 //  TIdNotify.NotifyMethod( StopStartServerdMessage );
+ SetEvent(ServerReceivingNotInProgress);
 }
 //---------------------------------------------------------------------------
 
@@ -1584,6 +1625,7 @@ void __fastcall TUServerControlForm::FormClose(TObject *Sender, TCloseAction &Ac
 // Sleep(100);
 }
 //---------------------------------------------------------------------------
+
 
 
 

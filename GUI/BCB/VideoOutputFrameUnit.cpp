@@ -1301,8 +1301,8 @@ void TVideoOutputFrame::AAfterCalculate(void)
  }
  else
  {
-  if(Mode == 4)
-   if(CaptureThread)
+  if(CaptureThread)
+   if(CaptureThread->GetSourceMode() == 4)
     SetEvent(CaptureThread->GetCalcCompleteEvent());
  }
 }
@@ -2049,7 +2049,15 @@ void __fastcall TVideoOutputFrame::SourceControl21Click(TObject *Sender)
  VideoCaptureOptionsForm->Show();
 }
 //---------------------------------------------------------------------------
-
+void __fastcall TVideoOutputFrame::SourceControlModal()
+{
+ if(CaptureThread)
+ {
+  CaptureThread->SaveParameters(VideoSourceOptions[CaptureThread->GetSourceMode()]);
+  VideoCaptureOptionsForm->SelectVideoSourcePage(CaptureThread->GetSourceMode());
+ }
+ VideoCaptureOptionsForm->ShowModal();
+}
 
 void __fastcall TVideoOutputFrame::StartRecordingToolButtonClick(TObject *Sender)
 {

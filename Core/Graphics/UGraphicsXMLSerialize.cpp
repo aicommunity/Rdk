@@ -309,14 +309,14 @@ USerStorageXML& operator << (USerStorageXML& storage, const UBitmap &data)
 
  storage.SetNodeAttribute("Size",sntoa(data.GetByteLength()));
  storage.AddNode("Data");
- std::stringstream stream;
+/* std::stringstream stream;
  UBColor *pdata=data.GetData();
  stream.setf(ios::hex);
  for(int i=0;i<data.GetByteLength();i++)
   stream<<*pdata++;
 
  std::string str=stream.str();
- storage.SetNodeText(str);
+ storage.SetNodeText(str);   */
  storage.SelectUp();
 
  return storage;
@@ -341,7 +341,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, UBitmap &data)
  storage.SelectUp();
 
  data.SetRes(width,height,(RDK::UBMColorModel)colormodel);
-
+   /*
  if(atoi(storage.GetNodeAttribute("Size")) <= data.GetByteLength())
  {
   if(!storage.SelectNode("Data"))
@@ -353,7 +353,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, UBitmap &data)
    stream>>*pdata++;
   storage.SelectUp();
  }
-
+            */
  return storage;
 }
 

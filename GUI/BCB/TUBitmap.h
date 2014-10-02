@@ -38,6 +38,11 @@ bool SaveBitmapToFile(String FileName, UBitmap *target);
 // Отображает гистограмму на TChart на серию series_index
 // Если серия не задана (series_index <0) то создает новую
 bool ShowHistogram(const UBHistogram& Histogram, TChart *chart, int series_index=-1);
+
+/// Вычисляет положение в TBitmap по координатам в TImage
+TPoint CalcBitmapCoords(TImage *image, int x, int y);
+TPoint CalcBitmapCoords(TImage *image, const TPoint &point);
+
 }
 #endif
 

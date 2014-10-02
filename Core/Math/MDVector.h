@@ -156,7 +156,10 @@ template<class T>
 MDVector<T>& MDVector<T>::operator = (const MDMatrix<T> &copy)
 {
  Resize(copy.GetRows());
- memcpy(MDMatrix<T>::Data1D,copy.Data1D,sizeof(T)*this->GetRows());
+ if(copy.GetCols() > 0)
+  memcpy(MDMatrix<T>::Data1D,copy.Data1D,sizeof(T)*this->GetRows());
+ else
+  memset(MDMatrix<T>::Data1D,0,sizeof(T)*this->GetRows());
  return *this;
 }
 

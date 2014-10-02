@@ -916,6 +916,9 @@ void ClearLog(void);
 /// ¬озвращает число непрочитанных строк лога
 int GetNumUnreadLogLines(void) const;
 
+/// ¬озвращает число строк лога
+int GetNumLogLines(void) const;
+
 // ¬озвращает строку лога с индексом i из частичного массива строк лога с
 // момента последнего считывани€ лога этой функцией
 const char* GetUnreadLogLine(int &error_level);
@@ -1167,7 +1170,8 @@ const T& UEngine::Model_GetComponentPropertyData(const char *stringid, const cha
   ProcessException(exception);
  }
 
- return 0;
+ static T dummy;
+ return dummy;
 }
 
 //  опирует данные 'data' в заданное свойство компонента
