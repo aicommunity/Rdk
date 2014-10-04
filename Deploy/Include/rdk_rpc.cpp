@@ -877,6 +877,48 @@ const char* PtzRemoteCall(const char *request, int &return_value, int &channel_i
   return_value=Ptz_SetZoomNative(engine_index,camera.c_str(),value,speed);
  }
  else
+ if(cmd == "Ptz_SetFocus")
+ {
+  double speed=xml.ReadFloat("Speed",0.0);
+  double value=xml.ReadFloat("Value",0.0);
+  return_value=Ptz_SetFocus(engine_index,camera.c_str(),value,speed);
+ }
+ else
+ if(cmd == "Ptz_SetFocusNative")
+ {
+  double speed=xml.ReadFloat("Speed",0.0);
+  double value=xml.ReadFloat("Value",0.0);
+  return_value=Ptz_SetFocusNative(engine_index,camera.c_str(),value,speed);
+ }
+ else
+ if(cmd == "Ptz_SetIris")
+ {
+  double speed=xml.ReadFloat("Speed",0.0);
+  double value=xml.ReadFloat("Value",0.0);
+  return_value=Ptz_SetIris(engine_index,camera.c_str(),value,speed);
+ }
+ else
+ if(cmd == "Ptz_SetIrisNative")
+ {
+  double speed=xml.ReadFloat("Speed",0.0);
+  double value=xml.ReadFloat("Value",0.0);
+  return_value=Ptz_SetIrisNative(engine_index,camera.c_str(),value,speed);
+ }
+ else
+ if(cmd == "Ptz_SetBrightness")
+ {
+  double speed=xml.ReadFloat("Speed",0.0);
+  double value=xml.ReadFloat("Value",0.0);
+  return_value=Ptz_SetBrightness(engine_index,camera.c_str(),value,speed);
+ }
+ else
+ if(cmd == "Ptz_SetBrightnessNative")
+ {
+  double speed=xml.ReadFloat("Speed",0.0);
+  double value=xml.ReadFloat("Value",0.0);
+  return_value=Ptz_SetBrightnessNative(engine_index,camera.c_str(),value,speed);
+ }
+ else
  if(cmd == "Ptz_SyncPanAbsolutePosition")
  {
   return_value=Ptz_SyncPanAbsolutePosition(engine_index,camera.c_str());
