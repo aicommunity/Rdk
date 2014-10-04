@@ -863,6 +863,20 @@ const char* PtzRemoteCall(const char *request, int &return_value, int &channel_i
   return_value=Ptz_SetTiltNative(engine_index,camera.c_str(),value,speed);
  }
  else
+ if(cmd == "Ptz_SetZoom")
+ {
+  double speed=xml.ReadFloat("Speed",0.0);
+  double value=xml.ReadFloat("Value",0.0);
+  return_value=Ptz_SetZoom(engine_index,camera.c_str(),value,speed);
+ }
+ else
+ if(cmd == "Ptz_SetZoomNative")
+ {
+  double speed=xml.ReadFloat("Speed",0.0);
+  double value=xml.ReadFloat("Value",0.0);
+  return_value=Ptz_SetZoomNative(engine_index,camera.c_str(),value,speed);
+ }
+ else
  if(cmd == "Ptz_SyncPanAbsolutePosition")
  {
   return_value=Ptz_SyncPanAbsolutePosition(engine_index,camera.c_str());
