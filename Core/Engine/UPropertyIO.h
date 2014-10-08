@@ -403,6 +403,11 @@ T& operator * (void)
  return this->v;
 };
 
+const T& operator * (void) const
+{
+ return this->v;
+};
+
 operator T* (void)
 {
  return &this->v;
