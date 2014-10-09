@@ -835,6 +835,26 @@ const char* PtzRemoteCall(const char *request, int &return_value, int &channel_i
   return_value=Ptz_SetFocusSpeed(engine_index,camera.c_str(),speed);
  }
  else
+ if(cmd == "Ptz_SetPTZ")
+ {
+  double pan=xml.ReadFloat("Pan",0.0);
+  double pan_speed=xml.ReadFloat("PanSpeed",0.0);
+  double tilt=xml.ReadFloat("Tilt",0.0);
+  double tilt_speed=xml.ReadFloat("TiltSpeed",0.0);
+  double zoom=xml.ReadFloat("Zoom",0.0);
+  double zoom_speed=xml.ReadFloat("ZoomSpeed",0.0);
+  return_value=Ptz_SetPTZ(engine_index,camera.c_str(),pan,tilt,zoom,pan_speed,tilt_speed,zoom_speed);
+ }
+ else
+ if(cmd == "Ptz_SetPT")
+ {
+  double pan=xml.ReadFloat("Pan",0.0);
+  double pan_speed=xml.ReadFloat("PanSpeed",0.0);
+  double tilt=xml.ReadFloat("Tilt",0.0);
+  double tilt_speed=xml.ReadFloat("TiltSpeed",0.0);
+  return_value=Ptz_SetPT(engine_index,camera.c_str(),pan,tilt,pan_speed,tilt_speed);
+ }
+ else
  if(cmd == "Ptz_SetPan")
  {
   double speed=xml.ReadFloat("Speed",0.0);
@@ -847,6 +867,26 @@ const char* PtzRemoteCall(const char *request, int &return_value, int &channel_i
   double speed=xml.ReadFloat("Speed",0.0);
   double value=xml.ReadFloat("Value",0.0);
   return_value=Ptz_SetTilt(engine_index,camera.c_str(),value,speed);
+ }
+ else
+ if(cmd == "Ptz_SetPTZNative")
+ {
+  double pan=xml.ReadFloat("Pan",0.0);
+  double pan_speed=xml.ReadFloat("PanSpeed",0.0);
+  double tilt=xml.ReadFloat("Tilt",0.0);
+  double tilt_speed=xml.ReadFloat("TiltSpeed",0.0);
+  double zoom=xml.ReadFloat("Zoom",0.0);
+  double zoom_speed=xml.ReadFloat("ZoomSpeed",0.0);
+  return_value=Ptz_SetPTZNative(engine_index,camera.c_str(),pan,tilt,zoom,pan_speed,tilt_speed,zoom_speed);
+ }
+ else
+ if(cmd == "Ptz_SetPTNative")
+ {
+  double pan=xml.ReadFloat("Pan",0.0);
+  double pan_speed=xml.ReadFloat("PanSpeed",0.0);
+  double tilt=xml.ReadFloat("Tilt",0.0);
+  double tilt_speed=xml.ReadFloat("TiltSpeed",0.0);
+  return_value=Ptz_SetPTNative(engine_index,camera.c_str(),pan,tilt,pan_speed,tilt_speed);
  }
  else
  if(cmd == "Ptz_SetPanNative")
