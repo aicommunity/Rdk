@@ -124,11 +124,29 @@ T& ReadPropertyValue(const std::string &comp_name, const std::string &property_n
  return RDK::DecodePropertyValue(param_value,res);
 }
 
+// —читывает и декодирует содержимое свойства компонента
+template<typename T>
+T& MReadPropertyValue(int engine_index, const std::string &comp_name, const std::string &property_name, T &res)
+{
+ const char *param_value=MModel_GetComponentPropertyValue(engine_index, comp_name.c_str(),property_name.c_str());
+ if(!param_value)
+  throw EEnginePropertyNotFound(comp_name, property_name);
+
+ return RDK::DecodePropertyValue(param_value,res);
+}
+
 template<typename T>
 T ReadPropertyValue(const std::string &comp_name, const std::string &property_name)
 {
  T res;
  return ReadPropertyValue(comp_name, property_name,res);
+}
+
+template<typename T>
+T MReadPropertyValue(int engine_index, const std::string &comp_name, const std::string &property_name)
+{
+ T res;
+ return MReadPropertyValue(engine_index, comp_name, property_name,res);
 }
 
 // —читывает и декодирует содержимое параметра компонента
