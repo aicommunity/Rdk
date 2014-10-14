@@ -23,7 +23,7 @@ See file license.txt for more information
 
 namespace RDK {
 
-extern std::string LineBuffer;
+//extern std::string LineBuffer;
 
 // Переопределение методов потокового ввода вывода для переменных и контейнеров
 

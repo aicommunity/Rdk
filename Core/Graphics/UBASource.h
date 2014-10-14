@@ -19,7 +19,7 @@ See file license.txt for more information
 namespace RDK {
 
 /// Простой класс-источник изображений
-class UBASource: public UNet
+class RDK_LIB_TYPE UBASource: public UNet
 {
 protected:
 UPropertyOutputData<UBitmap, UBASource> Output;

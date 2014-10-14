@@ -21,7 +21,7 @@ See file license.txt for more information
 namespace RDK {
 
 // Класс описания особенностей отображения заданного объекта
-class MGeometryDescription
+class RDK_LIB_TYPE MGeometryDescription
 {
 public: // Данные
 // Цвет

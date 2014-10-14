@@ -46,7 +46,7 @@ struct UBYCrCb { UBColor y,cr,cb; }; // YCrCb
 // HSV тип
 struct UBHsv { double h,s,b; }; // HSV
 
-union UColorT
+union RDK_LIB_TYPE UColorT
 {
 unsigned int c; // Целое, ч/б для вычислений формата 000C
 float f; // Вещественное для вычислений

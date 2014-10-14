@@ -23,48 +23,48 @@ struct UBVSObject;
 //struct UBVSObject3D;
 
 // UBMColorModel
-USerStorageXML& operator << (USerStorageXML& storage, const UBMColorModel &data);
-USerStorageXML& operator >> (USerStorageXML& storage, UBMColorModel &data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, const UBMColorModel &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, UBMColorModel &data);
 
 // UColorT
-USerStorageXML& operator << (USerStorageXML& storage, const UColorT &data);
-USerStorageXML& operator >> (USerStorageXML& storage, UColorT &data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, const UColorT &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, UColorT &data);
 
 //struct UBPoint;
-USerStorageXML& operator << (USerStorageXML& storage, const UBPoint &data);
-USerStorageXML& operator >> (USerStorageXML& storage, UBPoint &data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, const UBPoint &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, UBPoint &data);
 
 //struct UBColorPoint;
-USerStorageXML& operator << (USerStorageXML& storage, const UBColorPoint &data);
-USerStorageXML& operator >> (USerStorageXML& storage, UBColorPoint &data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, const UBColorPoint &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, UBColorPoint &data);
 
 //struct UBRect;
-USerStorageXML& operator << (USerStorageXML& storage, const UBRect &data);
-USerStorageXML& operator >> (USerStorageXML& storage, UBRect &data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, const UBRect &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, UBRect &data);
 
 //struct UBHistogramElement;
-USerStorageXML& operator << (USerStorageXML& storage, const UBHistogramElement &data);
-USerStorageXML& operator >> (USerStorageXML& storage, UBHistogramElement &data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, const UBHistogramElement &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, UBHistogramElement &data);
 
 //class UBHistogram;
-USerStorageXML& operator << (USerStorageXML& storage, const UBHistogram &data);
-USerStorageXML& operator >> (USerStorageXML& storage, UBHistogram &data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, const UBHistogram &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, UBHistogram &data);
 
 //class UBitmapParam
-USerStorageXML& operator << (USerStorageXML& storage, const UBitmapParam &data);
-USerStorageXML& operator >> (USerStorageXML& storage, UBitmapParam &data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, const UBitmapParam &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, UBitmapParam &data);
 
 //class UBitmap
-USerStorageXML& operator << (USerStorageXML& storage, const UBitmap &data);
-USerStorageXML& operator >> (USerStorageXML& storage, UBitmap &data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, const UBitmap &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, UBitmap &data);
 
 //class UBitmapVector
-USerStorageXML& operator << (USerStorageXML& storage, const UBitmapVector &data);
-USerStorageXML& operator >> (USerStorageXML& storage, UBitmapVector &data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, const UBitmapVector &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, UBitmapVector &data);
 
 // struct UBVSObject
-USerStorageXML& operator << (USerStorageXML& storage, const UBVSObject &data);
-USerStorageXML& operator >> (USerStorageXML& storage, UBVSObject &data);
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, const UBVSObject &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, UBVSObject &data);
 
 //class UBPtzCameraInfo
 //USerStorageXML& operator << (USerStorageXML& storage, const UBPtzCameraInfo &data);

@@ -9,7 +9,7 @@ namespace RDK {
 
 //class UComponent;
 
-class UComponentDescription
+class RDK_LIB_TYPE UComponentDescription
 {
 protected: // Данные
 // Имя класса

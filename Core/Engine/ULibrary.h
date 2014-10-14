@@ -18,7 +18,7 @@ See file license.txt for more information
 
 namespace RDK {
 
-class ULibrary//: public ULibrary
+class RDK_LIB_TYPE ULibrary//: public ULibrary
 {
 protected: // Данные единой коллекции библиотек
 /// Список статически загруженных библиотек
@@ -153,7 +153,7 @@ virtual void CreateClassSamples(UStorage *storage)=0;
 // --------------------------
 };
 
-class URuntimeLibrary: public ULibrary
+class RDK_LIB_TYPE URuntimeLibrary: public ULibrary
 {
 protected: // Данные единой коллекции библиотек
 

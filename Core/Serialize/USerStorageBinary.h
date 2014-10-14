@@ -17,7 +17,7 @@ See file license.txt for more information
 
 namespace RDK {
 
-class USerStorageBinary: public USerStorage
+class RDK_LIB_TYPE USerStorageBinary: public USerStorage
 {
 private:
 // Ќачальный максимальный размер очереди

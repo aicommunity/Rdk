@@ -27,7 +27,7 @@ class UAReceiver: public UASimpleNet
 
 };*/
 
-class UAModel: public UNet
+class RDK_LIB_TYPE UAModel: public UNet
 {
 protected: // Основные свойства
 
