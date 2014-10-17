@@ -63,6 +63,9 @@ MMatrix<T,Rows,Cols>& operator = (T value);
 MMatrix<T,Rows,Cols>& operator = (const T data[Rows][Cols]);
 MMatrix<T,Rows,Cols>& operator = (const T* data);
 
+void Assign(const T *data);
+void Assign(T value);
+
 // Получение размерности матриц
 unsigned GetCols(void) const;
 unsigned GetRows(void) const;
@@ -269,6 +272,17 @@ MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::operator = (const T* data)
  return *this;
 }
 
+template<class T, unsigned Rows, unsigned Cols>
+void MMatrix<T,Rows,Cols>::Assign(const T *data)
+{
+ *this=data;
+}
+
+template<class T, unsigned Rows, unsigned Cols>
+void MMatrix<T,Rows,Cols>::Assign(T value)
+{
+ *this=value;
+}
 
 // Получение размерности матриц
 template<class T, unsigned Rows, unsigned Cols>
