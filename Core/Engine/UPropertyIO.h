@@ -5,10 +5,7 @@
 #include "UPropertyInput.h"
 
 namespace RDK {
-const T& operator * (void) const
-{
- return this->v;
-};
+
 
 
 }
