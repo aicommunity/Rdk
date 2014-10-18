@@ -97,6 +97,21 @@ using namespace std;
  Значение буфера изменяется при следующем вызове функции библиотеки
 */
 
+/// Проверка на NaN
+template<typename NumT>
+bool is_nan(NumT n)
+{
+ return n != n;
+}
+
+/// Проверка на Inf
+template<typename NumT>
+bool is_inf(NumT n)
+{
+ return ((n==std::numeric_limits<NumT>::infinity()) || (n==-std::numeric_limits<NumT>::infinity()));
+}
+
+
 // Функция, преобразующая число в строку
 template<typename CharT, typename NumT>
 basic_string<CharT>& ntoa(NumT n, basic_string<CharT> &buf)
