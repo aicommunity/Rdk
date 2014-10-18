@@ -7,7 +7,7 @@
 namespace RDK {
 
 // Класс описания свойства компонента
-class UPropertyDescription
+class RDK_LIB_TYPE UPropertyDescription
 {
 public: // Данные
 // Заголовок свойства
@@ -41,7 +41,7 @@ UPropertyDescription(void);
 
 };
 
-class UContainerDescription: public UComponentDescription
+class RDK_LIB_TYPE UContainerDescription: public UComponentDescription
 {
 protected: // Данные
 // Описания свойств

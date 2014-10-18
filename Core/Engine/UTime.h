@@ -8,7 +8,7 @@ typedef unsigned long long ULongTime;
 
 extern UTime DefaultTimeStep;
 
-class UTimeControl
+class RDK_LIB_TYPE UTimeControl
 {
 private: // Временные метки в процссе работы в днях от начала времен
 /// Время начала расчета в днях

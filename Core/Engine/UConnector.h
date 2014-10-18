@@ -335,7 +335,7 @@ virtual void Init(void)=0;
 // --------------------------
 };     */
 
-class UIPropertyInput
+class RDK_LIB_TYPE UIPropertyInput
 {
 protected: // Данные
 /// Указатель на компонент-источник данных
@@ -352,7 +352,7 @@ UEPtr<UItem> GetItem(void);
 const std::string& GetItemOutputName(void);
 };
 
-class UIPropertyOutput
+class RDK_LIB_TYPE UIPropertyOutput
 {
 protected: // Данные
 /// Указатели на компоненты-приемники данных

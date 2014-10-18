@@ -26,7 +26,7 @@ namespace RDK {
 /*
     Структура, описывающая объект UContainer как визуальный элемент
 */
-struct UGEDescription
+struct RDK_LIB_TYPE UGEDescription
 {
 // ------------------------
 // Идентификационные параметры
@@ -100,7 +100,7 @@ UGEDescription& operator = (const UGEDescription &copy);
 /*
     Класс графического отображения НС
 */
-class UDrawEngine
+class RDK_LIB_TYPE UDrawEngine
 {
 public: // Типы данных
 typedef map<string,UGEDescription> DescriptionsTableT;

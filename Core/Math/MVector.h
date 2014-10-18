@@ -44,6 +44,9 @@ MVector<T,Rows>& operator = (const MMatrix<T,Rows,1> &copy);
 //MVector<T,Rows>& operator = (const T* data);
 MVector<T,Rows>& operator = (T value);
 
+//void Assign(const T *data);
+void Assign(T value);
+
 // Доступ к элементу
 T& operator () (int i);
 const T& operator () (int i) const;
@@ -136,6 +139,18 @@ MVector<T,Rows>& MVector<T,Rows>::operator = (T value)
   *pm1++ = value;
  return *this;
 };
+/*
+template<class T, unsigned Rows>
+void MVector<T,Rows>::Assign(const T *data)
+{
+
+} */
+
+template<class T, unsigned Rows>
+void MVector<T,Rows>::Assign(T value)
+{
+ *this=value;
+}
 
 // Доступ к элементу
 template<class T, unsigned Rows>

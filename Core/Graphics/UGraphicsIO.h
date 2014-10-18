@@ -24,7 +24,7 @@ namespace RDK {
 
 using namespace std;
 
-struct UBmpHeader
+struct RDK_LIB_TYPE UBmpHeader
 {
 // short type;
  int filesize;

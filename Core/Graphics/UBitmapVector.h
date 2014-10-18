@@ -17,7 +17,7 @@ See file license.txt for more information
 namespace RDK {
 
 // Одномерный массив указателей на изображения
-class UPBitmapVector
+class RDK_LIB_TYPE UPBitmapVector
 {
 protected: // Параметры
 // Размер массива изображений
@@ -70,7 +70,7 @@ const UBitmap& operator () (int index) const;
 };
 
 // Одномерный массив изображений
-class UBitmapVector: public UPBitmapVector
+class RDK_LIB_TYPE UBitmapVector: public UPBitmapVector
 {
 protected: // Параметры
 

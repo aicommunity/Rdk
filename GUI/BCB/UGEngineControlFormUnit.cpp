@@ -272,12 +272,12 @@ void TUGEngineControlForm::AUpdateInterface(void)
    for(int i=0;i<ChannelsStringGrid->RowCount;i++)
    {
 	ChannelsStringGrid->Cells[0][i]=IntToStr(i);
-	if(CalcThreadStates.size()>i)
+	if(int(CalcThreadStates.size())>i)
 	 ChannelsStringGrid->Cells[1][i]=CalcThreadStates[i];
 	else
 	 ChannelsStringGrid->Cells[1][i]="n/a";
 
-	if(VideoCaptureStates.size()>i)
+	if(int(VideoCaptureStates.size())>i)
 	 ChannelsStringGrid->Cells[2][i]=VideoCaptureStates[i];
 	else
 	 ChannelsStringGrid->Cells[2][i]="n/a";

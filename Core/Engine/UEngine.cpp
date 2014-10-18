@@ -166,7 +166,7 @@ void UEngine::DestroyTempString(const char *str_data) const
  J=TempStrings.end();
  for(;I!=J;++I)
  {
-  if((*I)->c_str() == str_data)
+  if(*I && (*I)->c_str() == str_data)
   {
    delete *I;
    TempStrings.erase(I);

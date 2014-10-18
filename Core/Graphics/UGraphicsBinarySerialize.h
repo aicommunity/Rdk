@@ -23,48 +23,48 @@ namespace RDK {
 struct UBVSObject;
 
 // UBMColorModel
-USerStorageBinary& operator << (USerStorageBinary& storage, UBMColorModel data);
-USerStorageBinary& operator >> (USerStorageBinary& storage, UBMColorModel &data);
+RDK_LIB_TYPE USerStorageBinary& operator << (USerStorageBinary& storage, UBMColorModel data);
+RDK_LIB_TYPE USerStorageBinary& operator >> (USerStorageBinary& storage, UBMColorModel &data);
 
 // UColorT
-USerStorageBinary& operator << (USerStorageBinary& storage, const UColorT &data);
-USerStorageBinary& operator >> (USerStorageBinary& storage, UColorT &data);
+RDK_LIB_TYPE USerStorageBinary& operator << (USerStorageBinary& storage, const UColorT &data);
+RDK_LIB_TYPE USerStorageBinary& operator >> (USerStorageBinary& storage, UColorT &data);
 
 //struct UBPoint;
-USerStorageBinary& operator << (USerStorageBinary& storage, const UBPoint &data);
-USerStorageBinary& operator >> (USerStorageBinary& storage, UBPoint &data);
+RDK_LIB_TYPE USerStorageBinary& operator << (USerStorageBinary& storage, const UBPoint &data);
+RDK_LIB_TYPE USerStorageBinary& operator >> (USerStorageBinary& storage, UBPoint &data);
 
 //struct UBColorPoint;
-USerStorageBinary& operator << (USerStorageBinary& storage, const UBColorPoint &data);
-USerStorageBinary& operator >> (USerStorageBinary& storage, UBColorPoint &data);
+RDK_LIB_TYPE USerStorageBinary& operator << (USerStorageBinary& storage, const UBColorPoint &data);
+RDK_LIB_TYPE USerStorageBinary& operator >> (USerStorageBinary& storage, UBColorPoint &data);
 
 //struct UBRect;
-USerStorageBinary& operator << (USerStorageBinary& storage, const UBRect &data);
-USerStorageBinary& operator >> (USerStorageBinary& storage, UBRect &data);
+RDK_LIB_TYPE USerStorageBinary& operator << (USerStorageBinary& storage, const UBRect &data);
+RDK_LIB_TYPE USerStorageBinary& operator >> (USerStorageBinary& storage, UBRect &data);
 
 //struct UBHistogramElement;
-USerStorageBinary& operator << (USerStorageBinary& storage, const UBHistogramElement &data);
-USerStorageBinary& operator >> (USerStorageBinary& storage, UBHistogramElement &data);
+RDK_LIB_TYPE USerStorageBinary& operator << (USerStorageBinary& storage, const UBHistogramElement &data);
+RDK_LIB_TYPE USerStorageBinary& operator >> (USerStorageBinary& storage, UBHistogramElement &data);
 
 //class UBHistogram;
-USerStorageBinary& operator << (USerStorageBinary& storage, const UBHistogram &data);
-USerStorageBinary& operator >> (USerStorageBinary& storage, UBHistogram &data);
+RDK_LIB_TYPE USerStorageBinary& operator << (USerStorageBinary& storage, const UBHistogram &data);
+RDK_LIB_TYPE USerStorageBinary& operator >> (USerStorageBinary& storage, UBHistogram &data);
 
 //class UBitmapParam
-USerStorageBinary& operator << (USerStorageBinary& storage, const UBitmapParam &data);
-USerStorageBinary& operator >> (USerStorageBinary& storage, UBitmapParam &data);
+RDK_LIB_TYPE USerStorageBinary& operator << (USerStorageBinary& storage, const UBitmapParam &data);
+RDK_LIB_TYPE USerStorageBinary& operator >> (USerStorageBinary& storage, UBitmapParam &data);
 
 //class UBitmap
-USerStorageBinary& operator << (USerStorageBinary& storage, const UBitmap &data);
-USerStorageBinary& operator >> (USerStorageBinary& storage, UBitmap &data);
+RDK_LIB_TYPE USerStorageBinary& operator << (USerStorageBinary& storage, const UBitmap &data);
+RDK_LIB_TYPE USerStorageBinary& operator >> (USerStorageBinary& storage, UBitmap &data);
 
 //class UBitmapVector
-USerStorageBinary& operator << (USerStorageBinary& storage, const UBitmapVector &data);
-USerStorageBinary& operator >> (USerStorageBinary& storage, UBitmapVector &data);
+RDK_LIB_TYPE USerStorageBinary& operator << (USerStorageBinary& storage, const UBitmapVector &data);
+RDK_LIB_TYPE USerStorageBinary& operator >> (USerStorageBinary& storage, UBitmapVector &data);
 
 // struct UBVSObject
-USerStorageBinary& operator << (USerStorageBinary& storage, const UBVSObject &data);
-USerStorageBinary& operator >> (USerStorageBinary& storage, UBVSObject &data);
+RDK_LIB_TYPE USerStorageBinary& operator << (USerStorageBinary& storage, const UBVSObject &data);
+RDK_LIB_TYPE USerStorageBinary& operator >> (USerStorageBinary& storage, UBVSObject &data);
 
 // struct UBVSObject3D
 //USerStorageBinary& operator << (USerStorageBinary& storage, const UBVSObject3D &data);

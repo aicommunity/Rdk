@@ -291,7 +291,7 @@ void __fastcall TVideoGetBitmapFrameFromVideoThread::Calculate(void)
 
   else
   {
-   TempBitmap.SetRes(640, 480, 3);
+   TempBitmap.SetRes(640, 480, RDK::ubmRGB24);
    TempBitmap.Fill(0);
    WriteSourceSafe(TempBitmap, true);
   }
@@ -379,7 +379,7 @@ void __fastcall TVideoGetBitmapFrameFromComponentThread::Calculate(void)
   }
   else
   {
-   TempBitmap.SetRes(640, 480, 3);
+   TempBitmap.SetRes(640, 480, RDK::ubmRGB24);
    TempBitmap.Fill(0);
    WriteSourceSafe(TempBitmap, true);
   }
@@ -520,6 +520,7 @@ int TTVideoRegistratorFrame::InitStreamingSettings(void)
  VideoGrabber->FrameRate = StrToIntDef(FrameRateLabeledEdit->Text, 30);
  VideoGrabber->ASFVideoFrameRate = StrToIntDef(FrameRateLabeledEdit->Text, 30);
  VideoGrabber->ASFNetworkMaxUsers = StrToIntDef(MaxUsersLabeledEdit->Text, 4);
+ return 0;
 }
 //---------------------------------------------------------------------------
 // Инициализирует настройки записи в файл TVideoGrabber
@@ -583,6 +584,7 @@ int TTVideoRegistratorFrame::InitRecordingSettings(void)
   VideoGrabber->PreallocCapFileSizeInMB=StrToIntDef(PreallocatedFileSizeLabeledEdit->Text, 100);
   VideoGrabber->PreallocCapFileName=RecordingFileNameLabeledEdit->Text;
  }
+ return 0;
 }
 //---------------------------------------------------------------------------
 int TTVideoRegistratorFrame::GetBitmapFrame(void)
@@ -591,6 +593,7 @@ int TTVideoRegistratorFrame::GetBitmapFrame(void)
   return 0;
 
  BitmapFrameThread->ReadSourceSafe(InputFrameBitmap, false);
+ return 0;
 }
 
 // Создание и подготовка TBitmap для хранения кадра с камеры

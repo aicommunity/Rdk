@@ -82,7 +82,7 @@ protected:
 
 
 // Класс параллельного конвеера
-class UBParallelPipeline: public UBPipeline
+class RDK_LIB_TYPE UBParallelPipeline: public UBPipeline
 {
 public: // Методы
 // --------------------------

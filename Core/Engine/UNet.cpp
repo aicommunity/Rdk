@@ -176,7 +176,7 @@ bool UNet::CreateLink(const ULinkT<T> &link)
   if(!CheckLongId(connector.Id))
    pconnector=this;
   else
-   pconnector=dynamic_pointer_cast<UConnector>(GetComponentL(connector.Id));
+   pconnector=dynamic_pointer_cast<UConnector>(GetComponentL(connector.Id,true));
 
   if(!pconnector)
   {
@@ -214,13 +214,19 @@ bool UNet::CreateLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
  if(!CheckLongId(item.Id))
   pitem=this;
  else
-  pitem=dynamic_pointer_cast<UADItem>(GetComponentL(item.Id));
+  pitem=dynamic_pointer_cast<UADItem>(GetComponentL(item.Id,true));
+
+ if(item.Index < 0)
+ {
+  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, "Item index < 0");
+  return false;
+ }
 
  UEPtr<UConnector> pconnector=0;
  if(!CheckLongId(connector.Id))
   pconnector=this;
  else
-  pconnector=dynamic_pointer_cast<UConnector>(GetComponentL(connector.Id));
+  pconnector=dynamic_pointer_cast<UConnector>(GetComponentL(connector.Id,true));
 
  if(!pitem)
  {
@@ -314,12 +320,12 @@ bool UNet::CreateLink(const NameT &item, const NameT &item_index,
  if(!item.size())
   pitem=this;
  else
-  pitem=dynamic_pointer_cast<UItem>(GetComponentL(item));
+  pitem=dynamic_pointer_cast<UItem>(GetComponentL(item,true));
 
  if(!connector.size())
   pconnector=this;
  else
-  pconnector=dynamic_pointer_cast<UConnector>(GetComponentL(connector));
+  pconnector=dynamic_pointer_cast<UConnector>(GetComponentL(connector,true));
 
  if(!pitem)
  {
@@ -357,12 +363,12 @@ bool UNet::CreateLink(const NameT &item, const NameT &item_property_name,
  if(!item.size())
   pitem=this;
  else
-  pitem=dynamic_pointer_cast<UItem>(GetComponentL(item));
+  pitem=dynamic_pointer_cast<UItem>(GetComponentL(item,true));
 
  if(!connector.size())
   pconnector=this;
  else
-  pconnector=dynamic_pointer_cast<UConnector>(GetComponentL(connector));
+  pconnector=dynamic_pointer_cast<UConnector>(GetComponentL(connector,true));
 
  if(!pitem)
   return false;
@@ -406,7 +412,7 @@ bool UNet::CreateLinks(const ULinksListT<T> &linkslist, UEPtr<UNet> owner_level)
 template<typename T>
 bool UNet::BreakLink(const ULinkSideT<T> &id)
 {
- UEPtr<UContainer> pointer=GetComponentL(id.Id);
+ UEPtr<UContainer> pointer=GetComponentL(id.Id,true);
 
  UEPtr<UConnector> connector=dynamic_pointer_cast<UConnector>(pointer);
  if(connector)
@@ -439,7 +445,7 @@ bool UNet::BreakLink(const ULinkT<T> &link)
  if(!CheckLongId(Id))
   pitem=this;
  else
-  pitem=dynamic_pointer_cast<UItem>(GetComponentL(link.Item.Id));
+  pitem=dynamic_pointer_cast<UItem>(GetComponentL(link.Item.Id,true));
 
  if(!pitem)
   return false;
@@ -452,7 +458,7 @@ bool UNet::BreakLink(const ULinkT<T> &link)
   if(!CheckLongId(connector.Id))
    pconnector=this;
   else
-   pconnector=dynamic_pointer_cast<UConnector>(GetComponentL(connector.Id));
+   pconnector=dynamic_pointer_cast<UConnector>(GetComponentL(connector.Id,true));
 
   if(!pitem)
   {
@@ -481,13 +487,13 @@ bool UNet::BreakLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
  if(!CheckLongId(item.Id))
   pitem=this;
  else
-  pitem=dynamic_pointer_cast<UADItem>(GetComponentL(item.Id));
+  pitem=dynamic_pointer_cast<UADItem>(GetComponentL(item.Id,true));
 
  UEPtr<UConnector> pconnector=0;
  if(!CheckLongId(connector.Id))
   pconnector=this;
  else
-  pconnector=dynamic_pointer_cast<UConnector>(GetComponentL(connector.Id));
+  pconnector=dynamic_pointer_cast<UConnector>(GetComponentL(connector.Id,true));
 
  if(!pitem)
  {
@@ -531,12 +537,12 @@ bool UNet::BreakLink(const NameT &itemname, int item_index,
  if(itemname.size() == 0)
   item=this;
  else
-  item=dynamic_pointer_cast<UItem>(GetComponentL(itemname));
+  item=dynamic_pointer_cast<UItem>(GetComponentL(itemname,true));
 
  if(connectorname.size() == 0)
   connector=this;
  else
-  connector=dynamic_pointer_cast<UConnector>(GetComponentL(connectorname));
+  connector=dynamic_pointer_cast<UConnector>(GetComponentL(connectorname,true));
 
  item->Disconnect(connector, item_index, connector_index);
 
@@ -552,12 +558,12 @@ bool UNet::BreakLink(const NameT &itemname, const NameT &connectorname)
  if(itemname.size() == 0)
   item=this;
  else
-  item=dynamic_pointer_cast<UItem>(GetComponentL(itemname));
+  item=dynamic_pointer_cast<UItem>(GetComponentL(itemname,true));
 
  if(connectorname.size() == 0)
   connector=this;
  else
-  connector=dynamic_pointer_cast<UConnector>(GetComponentL(connectorname));
+  connector=dynamic_pointer_cast<UConnector>(GetComponentL(connectorname,true));
 
  item->Disconnect(connector);
 
@@ -640,7 +646,7 @@ void UNet::BreakConnectorLink(const NameT &connectorname, int connector_index)
  if(connectorname.size() == 0)
   connector=this;
  else
-  connector=dynamic_pointer_cast<UADItem>(GetComponentL(connectorname));
+  connector=dynamic_pointer_cast<UADItem>(GetComponentL(connectorname,true));
 
  if(!connector)
  {
@@ -680,7 +686,7 @@ void UNet::BreakConnectorLink(const NameT &connectorname, const NameT &connector
  if(connectorname.size() == 0)
   connector=this;
  else
-  connector=dynamic_pointer_cast<UConnector>(GetComponentL(connectorname));
+  connector=dynamic_pointer_cast<UConnector>(GetComponentL(connectorname,true));
 
  if(!connector)
  {

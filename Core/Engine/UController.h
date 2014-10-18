@@ -19,7 +19,7 @@ namespace RDK {
 
 class UContainer;
 
-class UController: public RDK::UModule
+class RDK_LIB_TYPE UController: public RDK::UModule
 {
 protected: // Параметры
 // Флаг разрешения обновления интерфейса

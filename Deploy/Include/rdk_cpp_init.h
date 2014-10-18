@@ -45,6 +45,25 @@ RDK_LIB_TYPE RDK::UELockPtr<RDK::UContainer> RDK_CALL GetModelLock(int engine_in
 
 namespace RDK {
 
+// Возвращает указатель на текущую модель
+template<class T>
+RDK::UELockPtr<T> GetModelLock(void)
+{
+ RDK::UEPtr<T> p=dynamic_pointer_cast<T>(GetModel());
+ if(!p)
+  return RDK::UELockPtr<T>();
+ return RDK::UELockPtr<T>((UGenericMutex*)Engine_GetMutex(),p);
+}
+
+template<class T>
+RDK::UELockPtr<T> GetModelLock(int engine_index)
+{
+ RDK::UEPtr<T> p=dynamic_pointer_cast<T>(GetModel(engine_index));
+ if(!p)
+  return RDK::UELockPtr<T>();
+ return RDK::UELockPtr<T>((UGenericMutex*)MEngine_GetMutex(engine_index),p);
+}
+
 // Декодирует содержимое свойства/переменной состояния компонента
 template<typename T>
 T& DecodePropertyValue(const std::string &param_value, T &res)
@@ -105,11 +124,29 @@ T& ReadPropertyValue(const std::string &comp_name, const std::string &property_n
  return RDK::DecodePropertyValue(param_value,res);
 }
 
+// Считывает и декодирует содержимое свойства компонента
+template<typename T>
+T& MReadPropertyValue(int engine_index, const std::string &comp_name, const std::string &property_name, T &res)
+{
+ const char *param_value=MModel_GetComponentPropertyValue(engine_index, comp_name.c_str(),property_name.c_str());
+ if(!param_value)
+  throw EEnginePropertyNotFound(comp_name, property_name);
+
+ return RDK::DecodePropertyValue(param_value,res);
+}
+
 template<typename T>
 T ReadPropertyValue(const std::string &comp_name, const std::string &property_name)
 {
  T res;
  return ReadPropertyValue(comp_name, property_name,res);
+}
+
+template<typename T>
+T MReadPropertyValue(int engine_index, const std::string &comp_name, const std::string &property_name)
+{
+ T res;
+ return MReadPropertyValue(engine_index, comp_name, property_name,res);
 }
 
 // Считывает и декодирует содержимое параметра компонента

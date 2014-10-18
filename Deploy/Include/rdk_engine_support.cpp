@@ -378,6 +378,22 @@ RDK::UEPtr<RDK::UContainer> RDKDllManager::GetModel(int engine_index)
 // --------------------------
 // Методы доступа к каналам с блокировками
 // --------------------------
+/// Метод доступ к мьютексу
+UGenericMutex* RDKDllManager::GetEngineMutex(void)
+{
+ if(MutexList.empty())
+  return 0;
+ return MutexList[0];
+}
+
+UGenericMutex* RDKDllManager::GetEngineMutex(int index)
+{
+ if(index<0 || index>=int(MutexList.size()))
+  return 0;
+
+ return MutexList[index];
+}
+
 // Возвращает ссылку на указатель управляющего ядра
 RDK::UELockPtr<RDK::UEngine> RDKDllManager::GetEngineLock(void)
 {

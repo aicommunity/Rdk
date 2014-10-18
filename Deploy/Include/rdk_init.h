@@ -152,6 +152,10 @@ RDK_LIB_TYPE bool RDK_CALL Engine_SetBufObjectsMode(int mode);
 /// Возвращает число буферных строк движка
 RDK_LIB_TYPE int RDK_CALL Engine_GetNumBufStrings(void);
 RDK_LIB_TYPE int RDK_CALL MEngine_GetNumBufStrings(int engine_index);
+
+/// Доступ к мьютексу
+RDK_LIB_TYPE void* RDK_CALL Engine_GetMutex(void);
+RDK_LIB_TYPE void* RDK_CALL MEngine_GetMutex(int index);
 // ----------------------------
 
 // --------------------------

@@ -223,21 +223,21 @@ typedef enum XMLElementType
 } XMLElementType;
 
 /// Structure used to obtain error details if the parse fails.
-typedef struct XMLResults
+struct XMLDLLENTRY XMLResults
 {
-    enum XMLError error;
-    int  nLine,nColumn;
-} XMLResults;
+	enum XMLError error;
+	int  nLine,nColumn;
+};
 
 /// Structure for XML clear (unformatted) node (usually comments)
-typedef struct XMLClear {
-    XMLCSTR lpszValue; XMLCSTR lpszOpenTag; XMLCSTR lpszCloseTag;
-} XMLClear;
+struct XMLDLLENTRY XMLClear {
+	XMLCSTR lpszValue; XMLCSTR lpszOpenTag; XMLCSTR lpszCloseTag;
+};
 
 /// Structure for XML attribute.
-typedef struct XMLAttribute {
-    XMLCSTR lpszName; XMLCSTR lpszValue;
-} XMLAttribute;
+struct XMLDLLENTRY XMLAttribute {
+	XMLCSTR lpszName; XMLCSTR lpszValue;
+};
 
 /// XMLElementPosition are not interchangeable with simple indexes
 typedef int XMLElementPosition;
@@ -635,17 +635,17 @@ struct XMLDLLENTRY XMLNode
 };
 
 /// This structure is given by the function XMLNode::enumContents.
-typedef struct XMLNodeContents
+struct XMLDLLENTRY XMLNodeContents
 {
-    /// This dictates what's the content of the XMLNodeContent
-    enum XMLElementType etype;
-    /**< should be an union to access the appropriate data. Compiler does not allow union of object with constructor... too bad. */
-    XMLNode child;
-    XMLAttribute attrib;
-    XMLCSTR text;
-    XMLClear clear;
+	/// This dictates what's the content of the XMLNodeContent
+	enum XMLElementType etype;
+	/**< should be an union to access the appropriate data. Compiler does not allow union of object with constructor... too bad. */
+	XMLNode child;
+	XMLAttribute attrib;
+	XMLCSTR text;
+	XMLClear clear;
 
-} XMLNodeContents;
+};
 
 /** @defgroup StringAlloc String Allocation/Free functions
  * @ingroup xmlModify
@@ -691,7 +691,7 @@ XMLDLLENTRY XMLCHAR xmltoc(XMLCSTR xmlString,const XMLCHAR defautValue=_CXML('\0
  * \note If you are creating from scratch an XML file using the provided XMLNode class
  * you must not use the "ToXMLStringTool" class (because the "XMLNode" class does the
  * processing job for you during rendering).*/
-typedef struct XMLDLLENTRY ToXMLStringTool
+struct XMLDLLENTRY ToXMLStringTool
 {
 public:
     ToXMLStringTool(): buf(NULL),buflen(0){}
@@ -709,7 +709,7 @@ public:
 private:
     XMLSTR buf;
     int buflen;
-} ToXMLStringTool;
+};
 /** @} */
 
 /** @defgroup XMLParserBase64Tool Helper class to include binary data inside XML strings using "Base64 encoding".
@@ -724,7 +724,7 @@ private:
  * b64-encoded text included inside the XML file, use "decode". Alternatively, these
  * functions can also be used to "encrypt/decrypt" some critical data contained inside
  * the XML (it's not a strong encryption at all, but sometimes it can be useful). */
-typedef struct XMLDLLENTRY XMLParserBase64Tool
+struct XMLDLLENTRY XMLParserBase64Tool
 {
 public:
     XMLParserBase64Tool(): buf(NULL),buflen(0){}
@@ -762,7 +762,7 @@ private:
     void *buf;
     int buflen;
     void alloc(int newsize);
-}XMLParserBase64Tool;
+};
 /** @} */
 
 #undef XMLDLLENTRY

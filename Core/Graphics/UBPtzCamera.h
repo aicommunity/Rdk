@@ -11,7 +11,7 @@
 
 namespace RDK {
 
-class UBPtzCameraInfo
+class RDK_LIB_TYPE UBPtzCameraInfo
 {
 public:
 /// ћинимальное значение поворота по оси X в единицах камеры
@@ -113,7 +113,7 @@ bool operator != (const UBPtzCameraInfo &copy);
 
 };
 
-class UBPtzCameraData: public UBPtzCameraInfo
+class RDK_LIB_TYPE UBPtzCameraData: public UBPtzCameraInfo
 {
 protected:
 /// “екущее значение поворота по оси X

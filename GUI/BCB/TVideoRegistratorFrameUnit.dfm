@@ -33,6 +33,10 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
       ExplicitHeight = 622
       object NetworkStreamingTabSheet: TTabSheet
         Caption = 'Network Streaming'
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object StreamingSettingsGroupBox: TGroupBox
           Left = 0
           Top = 0
@@ -546,6 +550,10 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
       TabOrder = 1
       object SourceComponentTabSheet: TTabSheet
         Caption = 'Source Component'
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object ComponentSourceControlGroupBox: TGroupBox
           Left = 0
           Top = 0
@@ -593,6 +601,10 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
       object SourceFrameTabSheet: TTabSheet
         Caption = 'Source Frame'
         ImageIndex = 1
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object FrameSourceControlGroupBox: TGroupBox
           Left = 0
           Top = 0

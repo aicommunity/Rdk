@@ -24,7 +24,7 @@ namespace RDK {
 //using namespace Utilities;
 
 // Нормированная кросс-корреляция
-class NCC2D: public UModule
+class RDK_LIB_TYPE NCC2D: public UModule
 {
 protected: // Параметры
 // Размеры входного изображения

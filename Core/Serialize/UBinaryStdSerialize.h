@@ -49,61 +49,61 @@ USerStorageBinary& USimpleFromStorage (USerStorageBinary& storage, T &data)
  return storage;
 }
 
-USerStorageBinary& operator << (USerStorageBinary& storage, bool data);
+RDK_LIB_TYPE USerStorageBinary& operator << (USerStorageBinary& storage, bool data);
 
-USerStorageBinary& operator >> (USerStorageBinary& storage, bool &data);
+RDK_LIB_TYPE USerStorageBinary& operator >> (USerStorageBinary& storage, bool &data);
 
-USerStorageBinary& operator << (USerStorageBinary& storage, char data);
+RDK_LIB_TYPE USerStorageBinary& operator << (USerStorageBinary& storage, char data);
 
-USerStorageBinary& operator >> (USerStorageBinary& storage, char &data);
+RDK_LIB_TYPE USerStorageBinary& operator >> (USerStorageBinary& storage, char &data);
 
-USerStorageBinary& operator << (USerStorageBinary& storage, unsigned char data);
+RDK_LIB_TYPE USerStorageBinary& operator << (USerStorageBinary& storage, unsigned char data);
 
-USerStorageBinary& operator >> (USerStorageBinary& storage, unsigned char &data);
+RDK_LIB_TYPE USerStorageBinary& operator >> (USerStorageBinary& storage, unsigned char &data);
 
-USerStorageBinary& operator << (USerStorageBinary& storage, short data);
+RDK_LIB_TYPE USerStorageBinary& operator << (USerStorageBinary& storage, short data);
 
-USerStorageBinary& operator >> (USerStorageBinary& storage, short &data);
+RDK_LIB_TYPE USerStorageBinary& operator >> (USerStorageBinary& storage, short &data);
 
-USerStorageBinary& operator << (USerStorageBinary& storage, unsigned short data);
+RDK_LIB_TYPE USerStorageBinary& operator << (USerStorageBinary& storage, unsigned short data);
 
-USerStorageBinary& operator >> (USerStorageBinary& storage, unsigned short &data);
+RDK_LIB_TYPE USerStorageBinary& operator >> (USerStorageBinary& storage, unsigned short &data);
 
-USerStorageBinary& operator << (USerStorageBinary& storage, int data);
+RDK_LIB_TYPE USerStorageBinary& operator << (USerStorageBinary& storage, int data);
 
-USerStorageBinary& operator >> (USerStorageBinary& storage, int &data);
+RDK_LIB_TYPE USerStorageBinary& operator >> (USerStorageBinary& storage, int &data);
 
-USerStorageBinary& operator << (USerStorageBinary& storage, unsigned int data);
+RDK_LIB_TYPE USerStorageBinary& operator << (USerStorageBinary& storage, unsigned int data);
 
-USerStorageBinary& operator >> (USerStorageBinary& storage, unsigned int &data);
+RDK_LIB_TYPE USerStorageBinary& operator >> (USerStorageBinary& storage, unsigned int &data);
 
-USerStorageBinary& operator << (USerStorageBinary& storage, long data);
+RDK_LIB_TYPE USerStorageBinary& operator << (USerStorageBinary& storage, long data);
 
-USerStorageBinary& operator >> (USerStorageBinary& storage, long &data);
+RDK_LIB_TYPE USerStorageBinary& operator >> (USerStorageBinary& storage, long &data);
 
-USerStorageBinary& operator << (USerStorageBinary& storage, unsigned long data);
+RDK_LIB_TYPE USerStorageBinary& operator << (USerStorageBinary& storage, unsigned long data);
 
-USerStorageBinary& operator >> (USerStorageBinary& storage, unsigned long &data);
+RDK_LIB_TYPE USerStorageBinary& operator >> (USerStorageBinary& storage, unsigned long &data);
 
-USerStorageBinary& operator << (USerStorageBinary& storage, long long data);
+RDK_LIB_TYPE USerStorageBinary& operator << (USerStorageBinary& storage, long long data);
 
-USerStorageBinary& operator >> (USerStorageBinary& storage, long long &data);
+RDK_LIB_TYPE USerStorageBinary& operator >> (USerStorageBinary& storage, long long &data);
 
-USerStorageBinary& operator << (USerStorageBinary& storage, unsigned long long data);
+RDK_LIB_TYPE USerStorageBinary& operator << (USerStorageBinary& storage, unsigned long long data);
 
-USerStorageBinary& operator >> (USerStorageBinary& storage, unsigned long long &data);
+RDK_LIB_TYPE USerStorageBinary& operator >> (USerStorageBinary& storage, unsigned long long &data);
 
-USerStorageBinary& operator << (USerStorageBinary& storage, float data);
+RDK_LIB_TYPE USerStorageBinary& operator << (USerStorageBinary& storage, float data);
 
-USerStorageBinary& operator >> (USerStorageBinary& storage, float &data);
+RDK_LIB_TYPE USerStorageBinary& operator >> (USerStorageBinary& storage, float &data);
 
-USerStorageBinary& operator << (USerStorageBinary& storage, double data);
+RDK_LIB_TYPE USerStorageBinary& operator << (USerStorageBinary& storage, double data);
 
-USerStorageBinary& operator >> (USerStorageBinary& storage, double &data);
+RDK_LIB_TYPE USerStorageBinary& operator >> (USerStorageBinary& storage, double &data);
 
-USerStorageBinary& operator << (USerStorageBinary& storage, long double data);
+RDK_LIB_TYPE USerStorageBinary& operator << (USerStorageBinary& storage, long double data);
 
-USerStorageBinary& operator >> (USerStorageBinary& storage, long double &data);
+RDK_LIB_TYPE USerStorageBinary& operator >> (USerStorageBinary& storage, long double &data);
 
 // Указатели
 template<typename T>

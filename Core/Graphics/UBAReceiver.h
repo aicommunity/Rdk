@@ -21,7 +21,7 @@ namespace RDK {
 
 /// Простой класс-приемник изображений
 /// копирует входные изображения в выходные
-class UBAReceiver: public UNet
+class RDK_LIB_TYPE UBAReceiver: public UNet
 {
 protected: // Основные свойства
 UPropertyInputData<UBitmap, UBAReceiver> Input;

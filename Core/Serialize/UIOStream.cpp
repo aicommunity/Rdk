@@ -19,7 +19,7 @@ See file license.txt for more information
 
 namespace RDK {
 
-std::string LineBuffer;
+//std::string LineBuffer;
 
 }
 #endif

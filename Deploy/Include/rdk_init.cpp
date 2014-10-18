@@ -399,6 +399,17 @@ int RDK_CALL MEngine_GetNumBufStrings(int engine_index)
   return -1;
  return DllManager.GetEngineLock()->GetNumTempStrings();
 }
+
+/// Доступ к мьютексу
+void* RDK_CALL Engine_GetMutex(void)
+{
+ return DllManager.GetEngineMutex();
+}
+
+void* RDK_CALL MEngine_GetMutex(int index)
+{
+ return DllManager.GetEngineMutex(index);
+}
 // ----------------------------
 
 // --------------------------
@@ -771,7 +782,7 @@ void RDK_CALL MEnv_Destroy(int engine_index)
 // иначе вычисляет только указанный компонент модели
 int RDK_CALL Env_Calculate(const char* stringid)
 {
-#ifndef RDK_UNSAFE_CALCULATE
+#ifdef RDK_UNSAFE_CALCULATE
  return DllManager.GetEngine()->Env_Calculate(stringid);
 #endif
  return DllManager.GetEngineLock()->Env_Calculate(stringid);
@@ -781,7 +792,7 @@ int RDK_CALL MEnv_Calculate(int engine_index, const char* stringid)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 1000;
-#ifndef RDK_UNSAFE_CALCULATE
+#ifdef RDK_UNSAFE_CALCULATE
  return DllManager.GetEngine(engine_index)->Env_Calculate(stringid);
 #endif
  return DllManager.GetEngineLock(engine_index)->Env_Calculate(stringid);
@@ -1018,7 +1029,7 @@ bool RDK_CALL Model_Check(void)
 {
  if(!DllManager.GetEngine())
   return false;
- return DllManager.GetEngine()->Model_Check();
+ return DllManager.GetEngineLock()->Model_Check();
 }
 
 bool RDK_CALL MModel_Check(int engine_index)
@@ -1028,7 +1039,7 @@ bool RDK_CALL MModel_Check(int engine_index)
 // UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
  if(!DllManager.GetEngine(engine_index))
   return false;
- return DllManager.GetEngine(engine_index)->Model_Check();
+ return DllManager.GetEngineLock(engine_index)->Model_Check();
 }
 
 // Проверяет, существует ли в модели компонент с именем stringid)
