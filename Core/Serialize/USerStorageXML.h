@@ -27,7 +27,7 @@ See file license.txt for more information
 
 #ifdef RDK_UNICODE_RUN
 //#undef _UNICODE
-#undef RDK_UNICODE_RUN
+//#undef RDK_UNICODE_RUN
 #endif
 
 namespace RDK {
