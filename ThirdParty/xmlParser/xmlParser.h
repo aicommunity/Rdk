@@ -58,7 +58,7 @@
  * full-fledged HTML documentation using the DOXYGEN software: simply type: "doxygen doxy.cfg"
  *
  * By default, the XMLParser library uses (char*) for string representation.To use the (wchar_t*)
- * version of the library, you need to define the "_UNICODE" preprocessor definition variable
+ * version of the library, you need to define the "XML_UNICODE_RUN" preprocessor definition variable
  * (this is usually done inside your project definition file) (This is done automatically for you
  * when using Visual Studio).
  *
@@ -119,8 +119,8 @@
 
 #include <stdlib.h>
 
-#ifdef _UNICODE
-// If you comment the next "define" line then the library will never "switch to" _UNICODE (wchar_t*) mode (16/32 bits per characters).
+#ifdef XML_UNICODE_RUN
+// If you comment the next "define" line then the library will never "switch to" XML_UNICODE_RUN (wchar_t*) mode (16/32 bits per characters).
 // This is useful when you get error messages like:
 //    'XMLNode::openFileHelper' : cannot convert parameter 2 from 'const char [5]' to 'const wchar_t *'
 // The _XMLWIDECHAR preprocessor variable force the XMLParser library into either utf16/32-mode (the proprocessor variable

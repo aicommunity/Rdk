@@ -1,9 +1,13 @@
 #ifndef THIRD_PARTY_CPP
 #define THIRD_PARTY_CPP
 
-#ifndef _UNICODE
-#define RDK_UNICODE_RUN
-#define _UNICODE
+//#ifndef _UNICODE
+//#define RDK_UNICODE_RUN
+//#define _UNICODE
+//#endif
+
+#ifdef RDK_UNICODE_RUN
+#define XML_UNICODE_RUN
 #endif
 
 #define _USE_XMLPARSER_DLL
@@ -11,10 +15,10 @@
 #include "xmlParser/xmlParser.cpp"
 #undef _CRT_SECURE_NO_WARNINGS
 
-#ifdef RDK_UNICODE_RUN
-#undef _UNICODE
-#undef RDK_UNICODE_RUN
-#endif
+//#ifdef RDK_UNICODE_RUN
+//#undef _UNICODE
+//#undef RDK_UNICODE_RUN
+//#endif
 
 // Add curl
 #ifndef RDK_CURL

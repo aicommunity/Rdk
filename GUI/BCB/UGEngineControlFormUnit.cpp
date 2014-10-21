@@ -237,7 +237,7 @@ void TUGEngineControlForm::AUpdateInterface(void)
  OpenImage1->Caption=String("Open Image (")+IntToStr(VideoOutputForm->GetActiveSource())+")";
 #endif
 
- Caption="Engine Control";
+ Caption=ProgramName;
  if(ProjectOpenFlag)
  {
   Caption=Caption+String(" [")+ProjectName+": "+ProjectPath+ProjectFileName+"]";

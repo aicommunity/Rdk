@@ -53,32 +53,23 @@ float f; // Вещественное для вычислений
 UBRgb rgb; // 32,24 бит RGB
 UBYCrCb ycrcb; // YCrCb
 
-UColorT(void)
-{ };
+UColorT(void);
 
-UColorT(unsigned color)
-{ c=color; };
+UColorT(unsigned color);
 
-UColorT(UBColor bb, UBColor gg, UBColor rr, UBColor dd)
-{ rgb.r=rr; rgb.b=bb; rgb.g=gg; rgb.d=dd; };
+UColorT(UBColor bb, UBColor gg, UBColor rr, UBColor dd);
 
-UColorT(UBColor yy, UBColor crr, UBColor cbb)
-{ ycrcb.y=yy; ycrcb.cr=crr; ycrcb.cb=cbb; };
+UColorT(UBColor yy, UBColor crr, UBColor cbb);
 
-UColorT operator = (const UColorT &color)
-{ c=color.c; return *this; };
+UColorT operator = (const UColorT &color);
 
-UColorT operator = (const unsigned color)
-{ c=color; return *this; };
+UColorT operator = (const unsigned color);
 
-bool operator == (const UColorT color) const
-{ return (c==color.c)?true:false; };
+bool operator == (const UColorT color) const;
 
-bool operator != (const UColorT color) const
-{ return (c!=color.c)?true:false; };
+bool operator != (const UColorT color) const;
 
-UBColor& operator [] (int i)
-{ return *(&rgb.b+i); };
+UBColor& operator [] (int i);
 };
 
 // Координаты пикселя изображения

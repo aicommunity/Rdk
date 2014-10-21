@@ -22,6 +22,34 @@ See file license.txt for more information
 
 namespace RDK {
 
+UColorT::UColorT(void)
+{ };
+
+UColorT::UColorT(unsigned color)
+{ c=color; };
+
+UColorT::UColorT(UBColor bb, UBColor gg, UBColor rr, UBColor dd)
+{ rgb.r=rr; rgb.b=bb; rgb.g=gg; rgb.d=dd; };
+
+UColorT::UColorT(UBColor yy, UBColor crr, UBColor cbb)
+{ ycrcb.y=yy; ycrcb.cr=crr; ycrcb.cb=cbb; };
+
+UColorT UColorT::operator = (const UColorT &color)
+{ c=color.c; return *this; };
+
+UColorT UColorT::operator = (const unsigned color)
+{ c=color; return *this; };
+
+bool UColorT::operator == (const UColorT color) const
+{ return (c==color.c)?true:false; };
+
+bool UColorT::operator != (const UColorT color) const
+{ return (c!=color.c)?true:false; };
+
+UBColor& UColorT::operator [] (int i)
+{ return *(&rgb.b+i); };
+
+
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
