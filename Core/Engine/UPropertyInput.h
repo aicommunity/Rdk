@@ -402,7 +402,7 @@ class UPropertyInputCBase: public UCLProperty<std::vector<T*>,OwnerT,type>, /*pu
 {
 protected:
 /// Временная переменная, использующаяся, если нет реального подключения
-std::vector<T> Local;
+std::vector<T*> Local;
 
 public: // Методы
 // --------------------------
@@ -414,6 +414,12 @@ UPropertyInputCBase(const string &name, OwnerT * const owner, int input_type)
 {
  this->IoType=input_type;
 };
+
+~UPropertyInputCBase(void)
+{
+ for(size_t i=0;i<Local.size();i++)
+  delete Local[i];
+}
 // -----------------------------
 
 // --------------------------
@@ -438,7 +444,17 @@ void const * GetPointer(int index) const
 bool SetPointer(int index, void* value)
 {
  if(int(this->v.size())<=index)
-  this->v.resize(index+1);
+ {
+  size_t new_size=index+1;
+  this->v.resize(new_size);
+  size_t old_size=Local.size();
+  for(size_t i=new_size;i<old_size;i++)
+   delete Local[i];
+  Local.resize(new_size);
+
+  for(size_t i=old_size;i<new_size;i++)
+   Local[i]=new T;
+ }
  this->v[index]=reinterpret_cast<T*>(value);
  return true;
 }
@@ -456,7 +472,7 @@ T* operator [] (int i)
 // throw EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
 //	this->MinRange,int(this->v.size()+this->MinRange),i);
 
- return (this->v[i])?this->v[i]:&Local[i];
+ return (this->v[i])?this->v[i]:Local[i];
 }
 
 const T* operator [] (int i) const
@@ -471,7 +487,7 @@ const T* operator [] (int i) const
  #endif
 
 
- return (this->v[i])?this->v[i]:&Local[i];
+ return (this->v[i])?this->v[i]:Local[i];
 }
 // --------------------------
 };
