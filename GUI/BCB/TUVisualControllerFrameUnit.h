@@ -50,6 +50,10 @@ public:
 // -----------------------------
 // Методы управления визуальным интерфейсом
 // -----------------------------
+// Метод, вызываемый после загрузки проекта
+virtual void AfterLoadProject(void);
+virtual void AAfterLoadProject(void);
+
 // Метод, вызываемый перед сбросом модели
 virtual void BeforeReset(void);
 virtual void ABeforeReset(void);
