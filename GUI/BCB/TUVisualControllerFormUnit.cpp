@@ -42,6 +42,29 @@ __fastcall TUVisualControllerForm::~TUVisualControllerForm(void)
 // -----------------------------
 // Методы управления визуальным интерфейсом
 // -----------------------------
+// Метод, вызываемый после загрузки проекта
+void TUVisualControllerForm::AfterLoadProject(void)
+{
+ try
+ {
+  AAfterLoadProject();
+ }
+ catch (RDK::UException &exception)
+ {
+  Engine_LogMessage(exception.GetType(), (std::string("Core-AfterLoadProject Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.CreateLogMessage()).c_str());
+ }
+ catch(Exception &exception)
+ {
+  Engine_LogMessage(RDK_EX_ERROR, (std::string("GUI-AfterLoadProject Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
+ }
+}
+
+void TUVisualControllerForm::AAfterLoadProject(void)
+{
+
+}
+
+
 // Метод, вызываемый перед сбросом модели
 void TUVisualControllerForm::BeforeReset(void)
 {

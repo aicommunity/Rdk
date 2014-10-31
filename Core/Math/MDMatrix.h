@@ -29,6 +29,12 @@ public:
 EMatrixZeroDiv(void) : EMatrixError() {};
 };
 
+/// Domain error
+class EMatrixDomainError: public EMatrixError
+{
+public:
+EMatrixDomainError(void) : EMatrixError() {};
+};
 
 template<class T>
 class MDMatrix

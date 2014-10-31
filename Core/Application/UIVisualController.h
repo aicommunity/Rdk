@@ -22,6 +22,9 @@ RDK_LIB_TYPE bool AddGlobalFont(const std::string &font_file_name);
 class RDK_LIB_TYPE UIVisualController
 {
 public:
+// Метод, вызываемый после загрузки проекта
+virtual void AfterLoadProject(void)=0;
+
 // Метод, вызываемый перед сбросом модели
 virtual void BeforeReset(void)=0;
 
@@ -79,6 +82,9 @@ static void AddInterface(RDK::UIVisualController *value);
 
 // Удаляет обработчик из списка
 static void DelInterface(RDK::UIVisualController *value);
+
+// Метод, вызываемый после загрузки проекта
+static void AfterLoadProject(void);
 
 // Метод, вызываемый перед сбросом модели
 static void BeforeReset(void);

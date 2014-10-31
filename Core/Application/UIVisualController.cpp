@@ -62,6 +62,15 @@ void UIVisualControllerStorage::DelInterface(RDK::UIVisualController *value)
   InterfaceUpdaters.erase(I);
 }
 
+// Метод, вызываемый после загрузки проекта
+void UIVisualControllerStorage::AfterLoadProject(void)
+{
+ for(size_t i=0;i<InterfaceUpdaters.size();i++)
+  if(InterfaceUpdaters[i])
+   InterfaceUpdaters[i]->AfterLoadProject();
+}
+
+
 // Метод, вызываемый перед сбросом модели
 void UIVisualControllerStorage::BeforeReset(void)
 {

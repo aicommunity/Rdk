@@ -796,7 +796,9 @@ try{
   UEngineMonitorForm->EngineMonitorFrame->SetCalculateMode(i, CalculationMode[i]);
  ProjectOpenFlag=true;
  UEngineMonitorForm->EngineMonitorFrame->StartEngineMonitorThread();
+
  RDK::UIVisualControllerStorage::UpdateInterface();
+ RDK::UIVisualControllerStorage::AfterLoadProject();
  UServerControlForm->ServerRestartTimer->Enabled=true;
 }
 catch(RDK::UException &exception)

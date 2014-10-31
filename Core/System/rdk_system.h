@@ -9,6 +9,8 @@
 
 namespace RDK {
 
+extern "C++" {
+
 /// Возвращает текущее время в миллисекундах от некоторого фиксированного момента
 /// (зависит от реализации)
 RDK_LIB_TYPE unsigned long long GetCurrentStartupTime(void);
@@ -30,12 +32,13 @@ RDK_LIB_TYPE int CreateNewDirectory(const char* path);
 RDK_LIB_TYPE int FindFilesList(const std::string &path, const std::string &mask, bool isfile, std::vector<std::string> &results);
 
 /// Копирует файл
-RDK_LIB_TYPE int CopyFile(const std::string &source_file, const std::string &dest_file);
+RDK_LIB_TYPE int RdkCopyFile(const std::string &source_file, const std::string &dest_file);
 
 /// Копирует каталог с содержимым
 RDK_LIB_TYPE int CopyDir(const std::string &source_dir, const std::string &dest_dir, const std::string &mask);
 
 
+}
 
 }
 

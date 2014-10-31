@@ -177,6 +177,8 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
 	{
 	case 2:
 	{
+	 if(fabs(ExtMat(0,1))>1)
+	  throw EMatrixDomainError();
 		anglesANDshifts(5) = -asin( ExtMat(0,1));        // Вычисления угла вращения вокруг оси Z
 		C = cos( anglesANDshifts(5) );
 
@@ -214,6 +216,8 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
 	}
 	case 3:
 	{
+	 if(fabs(ExtMat(1,2))>1)
+	  throw EMatrixDomainError();
 		anglesANDshifts(3) = -asin( ExtMat(1,2));
 		C = cos( anglesANDshifts(3) );
 
@@ -251,6 +255,8 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
 	}
 	case 4:
 	{
+	 if(fabs(ExtMat(1,0))>1)
+	  throw EMatrixDomainError();
 		anglesANDshifts(5) = asin( ExtMat(1,0));
 		C = cos( anglesANDshifts(5) );
 
@@ -288,6 +294,8 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
 	}
 	case 5:
 	{
+	 if(fabs(ExtMat(2,1))>1)
+	  throw EMatrixDomainError();
 		anglesANDshifts(3) = asin( ExtMat(2,1));
 		C = cos( anglesANDshifts(3) );
 
@@ -325,6 +333,8 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
 	}
 	case 6:
 	{
+	 if(fabs(ExtMat(2,0))>1)
+	  throw EMatrixDomainError();
 		anglesANDshifts(4) = -asin( ExtMat(2,0));
 		C = cos( anglesANDshifts(4) );
 
@@ -362,6 +372,8 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
 	}
 	default:
 	{
+	 if(fabs(ExtMat(0,2))>1)
+	  throw EMatrixDomainError();
 		anglesANDshifts(4) = asin( ExtMat(0,2));        // Вычисления угла вращения вокруг оси Y
 		C = cos( anglesANDshifts(4) );
 
