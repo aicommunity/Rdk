@@ -2063,7 +2063,7 @@ void __fastcall TUGEngineControlForm::AppRestore(TObject *Sender)
 void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
 {
  LastProjectsListMaxSize=10;
- DecimalSeparator = '.';
+ FormatSettings.DecimalSeparator = '.';
  Saved8087CW = Default8087CW;
  System::Set8087CW(0x133f);
 
