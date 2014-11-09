@@ -82,7 +82,8 @@ void TUHttpServerFrame::Init(void)
 void TUHttpServerFrame::UnInit(void)
 {
  try{
- IdHTTPServer->SessionList->Clear();
+ if(IdHTTPServer && IdHTTPServer->SessionList)
+  IdHTTPServer->SessionList->Clear();
  ServerListenOff();
  }
  catch(EIdNotConnected &ex)
