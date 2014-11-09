@@ -823,6 +823,25 @@ const char* PtzRemoteCall(const char *request, int &return_value, int &channel_i
   return_value=Ptz_AutoBrightness(engine_index,camera.c_str(),state);
  }
  else
+ if(cmd == "Ptz_SetRelayState")
+ {
+  int id=xml.ReadInteger("Index",0);
+  int value=xml.ReadInteger("Value",0);
+  return_value=Ptz_SetRelayState(engine_index,camera.c_str(),id,value);
+ }
+ else
+ if(cmd == "Ptz_SetPowerOn")
+ {
+  int value=xml.ReadInteger("Value",0);
+  return_value=Ptz_SetPowerOn(engine_index,camera.c_str(),value);
+ }
+ else
+ if(cmd == "Ptz_SetPowerOff")
+ {
+  int value=xml.ReadInteger("Value",0);
+  return_value=Ptz_SetPowerOff(engine_index,camera.c_str(),value);
+ }
+ else
  if(cmd == "Ptz_SetZoomSpeed")
  {
   double speed=xml.ReadFloat("Speed",0.0);
