@@ -825,7 +825,7 @@ const char* PtzRemoteCall(const char *request, int &return_value, int &channel_i
  else
  if(cmd == "Ptz_SetRelayState")
  {
-  int id=xml.ReadInteger("Id",0);
+  int id=xml.ReadInteger("Index",0);
   int value=xml.ReadInteger("Value",0);
   return_value=Ptz_SetRelayState(engine_index,camera.c_str(),id,value);
  }
