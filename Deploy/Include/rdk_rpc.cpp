@@ -1029,18 +1029,18 @@ const char* PtzRemoteCall(const char *request, int &return_value, int &channel_i
   response.WriteFloat("TiltTimeStamp",tilt_time_stamp);
  }
  else
- if(cmd == "Ptz_SetStabiliationState")
+ if(cmd == "Ptz_SetStabilizationState")
  {
   double value=xml.ReadFloat("Value",0.0);
-  return_value=Ptz_SetStabiliationState(engine_index,camera.c_str(),value);
+  return_value=Ptz_SetStabilizationState(engine_index,camera.c_str(),value);
  }
  else
- if(cmd == "Ptz_ReadStabiliationState")
+ if(cmd == "Ptz_ReadStabilizationState")
  {
   double value;
   unsigned long long time_stamp=0;
   int async_mode=xml.ReadInteger("AsyncMode",0);
-  return_value=Ptz_ReadStabiliationState(engine_index,camera.c_str(), value, time_stamp, async_mode);
+  return_value=Ptz_ReadStabilizationState(engine_index,camera.c_str(), value, time_stamp, async_mode);
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Value",value);
   response.WriteFloat("TimeStamp",time_stamp);
