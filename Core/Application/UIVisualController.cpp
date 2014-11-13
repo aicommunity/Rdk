@@ -1,8 +1,11 @@
 #ifndef UIVisualController_CPP
 #define UIVisualController_CPP
 
+#include <algorithm>
 #include "UIVisualController.h"
-                 
+#include "../../Core/Utilities/USupport.h"
+#include "../../Core/System/rdk_system.h"
+
 namespace RDK {
 
 // Глобальная коллекция шрифтов
@@ -57,7 +60,7 @@ void UIVisualControllerStorage::AddInterface(RDK::UIVisualController *value)
 // Удаляет обработчик из списка
 void UIVisualControllerStorage::DelInterface(RDK::UIVisualController *value)
 {
- std::vector<RDK::UIVisualController*>::iterator I=find(InterfaceUpdaters.begin(),InterfaceUpdaters.end(),value);
+ std::vector<RDK::UIVisualController*>::iterator I=std::find(InterfaceUpdaters.begin(),InterfaceUpdaters.end(),value);
  if(I != InterfaceUpdaters.end())
   InterfaceUpdaters.erase(I);
 }

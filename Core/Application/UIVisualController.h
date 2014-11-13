@@ -6,7 +6,8 @@
 #include "../../Core/Graphics/UGraphicsIO.h"
 #include "../../Core/Graphics/UGraphics.h"
 #include "../../Core/Graphics/UFont.h"
-  
+#include "../../Core/Serialize/USerStorageXML.h"
+
 namespace RDK {
 
 // Глобальная коллекция шрифтов

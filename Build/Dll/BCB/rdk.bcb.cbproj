@@ -2,7 +2,7 @@
 		<PropertyGroup>
 			<ProjectGuid>{4107A26C-F552-45B0-84B0-81120BC12AD2}</ProjectGuid>
 			<ProjectVersion>13.4</ProjectVersion>
-			<FrameworkType>None</FrameworkType>
+			<FrameworkType>VCL</FrameworkType>
 			<Base>True</Base>
 			<Config Condition="'$(Config)'==''">Debug</Config>
 			<Platform Condition="'$(Platform)'==''">Win32</Platform>
@@ -40,20 +40,22 @@
 			<Base>true</Base>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base)'!=''">
+			<Defines>RDK_UNICODE_RUN;LIBRDK_LIBRARY_EXPORT;$(Defines)</Defines>
 			<UsingDelphiRTL>true</UsingDelphiRTL>
-			<AllPackageLibs>vcl.lib;rtl.lib</AllPackageLibs>
+			<DynamicRTL>true</DynamicRTL>
+			<AllPackageLibs>vcl.lib;rtl.lib;IndyCore.lib;IndySystem.lib;inet.lib;IndyProtocols.lib</AllPackageLibs>
 			<VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
 			<Manifest_File>None</Manifest_File>
 			<PostBuildEvent><![CDATA[copy $(OUTPUTDIR)\rdk.bcb.dll $(OUTPUTDIR)..\..\..\Deploy\Platform\Win\rdk.bcb.dll /Y
 copy $(OUTPUTDIR)\rdk.bcb.lib $(OUTPUTDIR)..\..\..\Deploy\Platform\Win\rdk.bcb.lib /Y
 $(PostBuildEvent)]]></PostBuildEvent>
 			<VerInfo_Locale>1049</VerInfo_Locale>
-			<ILINK_LibraryPath>..\..\..\Core\Engine\Libraries\;..\..\..\GUI\BCB\;..\..\..\Deploy\Include\;$(ILINK_LibraryPath)</ILINK_LibraryPath>
+			<ILINK_LibraryPath>..\..\..\Deploy\PtzLib\;..\..\..\Core\Application\;..\..\..\Core\Engine\;..\..\..\Core\Graphics\Libraries\Detection\;..\..\..\Core\Graphics\Libraries\Hardware\;..\..\..\Core\Graphics\Libraries\;..\..\..\Core\Engine\Libraries\;..\..\..\GUI\BCB\;..\..\..\Deploy\Include\;$(ILINK_LibraryPath)</ILINK_LibraryPath>
 			<_TCHARMapping>char</_TCHARMapping>
-			<PackageImports>IPIndyImpl;bindcompfmx;fmx;rtl;dbrtl;IndySystem;DbxClientDriver;bindcomp;inetdb;DBXInterBaseDriver;DataSnapCommon;DataSnapClient;DataSnapServer;DataSnapProviderClient;xmlrtl;DbxCommonDriver;IndyProtocols;DBXMySQLDriver;dbxcds;bindengine;soaprtl;DBXOracleDriver;dsnap;DBXInformixDriver;IndyCore;fmxase;DBXFirebirdDriver;inet;fmxobj;inetdbxpress;DBXSybaseASADriver;fmxdae;dbexpress;DataSnapIndy10ServerTransport;$(PackageImports)</PackageImports>
+			<PackageImports>IPIndyImpl;bindcompfmx;fmx;rtl;dbrtl;IndySystem;DbxClientDriver;bindcomp;inetdb;DBXInterBaseDriver;DataSnapCommon;DataSnapClient;DataSnapServer;DataSnapProviderClient;xmlrtl;DbxCommonDriver;IndyProtocols;DBXMySQLDriver;dbxcds;bindengine;soaprtl;DBXOracleDriver;dsnap;DBXInformixDriver;IndyCore;fmxase;DBXFirebirdDriver;inet;fmxobj;inetdbxpress;DBXSybaseASADriver;fmxdae;dbexpress;DataSnapIndy10ServerTransport;IndyCore.bpi;IndySystem.bpi;IndyProtocols.bpi;$(PackageImports)</PackageImports>
 			<Multithreaded>true</Multithreaded>
-			<IncludePath>..\..\..\Core\Engine\Libraries\;..\..\..\GUI\BCB\;..\..\..\Deploy\Include\;$(IncludePath)</IncludePath>
-			<DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;$(DCC_Namespace)</DCC_Namespace>
+			<IncludePath>..\..\..\Deploy\PtzLib\;..\..\..\Core\Application\;..\..\..\Core\Engine\;..\..\..\Core\Graphics\Libraries\Detection\;..\..\..\Core\Graphics\Libraries\Hardware\;..\..\..\Core\Graphics\Libraries\;..\..\..\Core\Engine\Libraries\;..\..\..\GUI\BCB\;..\..\..\Deploy\Include\;$(IncludePath)</IncludePath>
+			<DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;$(DCC_Namespace)</DCC_Namespace>
 			<ProjectType>CppDynamicLibrary</ProjectType>
 			<ILINK_GenerateImportLibrary>true</ILINK_GenerateImportLibrary>
 			<DCC_CBuilderOutput>JPHNE</DCC_CBuilderOutput>
@@ -64,13 +66,18 @@ $(PostBuildEvent)]]></PostBuildEvent>
 			<BCC_ExtendedErrorInfo>true</BCC_ExtendedErrorInfo>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base_Win32)'!=''">
+			<IncludePath>$(BDSINCLUDE)\windows\vcl;$(IncludePath)</IncludePath>
+			<ILINK_LibraryPath>E:\SDK\RDK\Bin\Platform\Win\;$(ILINK_LibraryPath)</ILINK_LibraryPath>
+			<UsingDelphiRTL>false</UsingDelphiRTL>
+			<DynamicRTL>true</DynamicRTL>
 			<PackageImports>vcldbx;frx16;TeeDB;Rave100VCL;vclib;Tee;inetdbbde;DBXOdbcDriver;DBXSybaseASEDriver;ibxpress;vclimg;frxDB16;intrawebdb_120_160;fs16;TeeUI;FMXTee;vclactnband;vcldb;vcldsnap;bindcompvcl;vclie;vcltouch;Intraweb_120_160;DBXDb2Driver;bcbsmp;websnap;vclribbon;frxe16;VclSmp;fsDB16;vcl;DataSnapConnectors;CloudService;DBXMSSQLDriver;CodeSiteExpressPkg;FmxTeeUI;dsnapcon;vclx;TVidGrab;webdsnap;bdertl;adortl;bcbie;$(PackageImports)</PackageImports>
 			<DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
 			<VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
 			<VerInfo_Locale>1033</VerInfo_Locale>
-			<VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_1)'!=''">
+			<DynamicRTL>true</DynamicRTL>
+			<UsingDelphiRTL>false</UsingDelphiRTL>
 			<BCC_OptimizeForSpeed>false</BCC_OptimizeForSpeed>
 			<BCC_DisableOptimizations>true</BCC_DisableOptimizations>
 			<DCC_Optimize>false</DCC_Optimize>
@@ -88,24 +95,45 @@ $(PostBuildEvent)]]></PostBuildEvent>
 			<ILINK_LibraryPath>$(BDSLIB)\$(PLATFORM)\debug;$(ILINK_LibraryPath)</ILINK_LibraryPath>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
-			<LinkPackageStatics>vcl.lib;rtl.lib</LinkPackageStatics>
-			<DynamicRTL>false</DynamicRTL>
+			<UsingDelphiRTL>false</UsingDelphiRTL>
+			<LinkPackageStatics>vcl.lib;rtl.lib;IndyCore.lib;IndySystem.lib;inet.lib;IndyProtocols.lib</LinkPackageStatics>
+			<DynamicRTL>true</DynamicRTL>
 			<VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
 			<VerInfo_Locale>1033</VerInfo_Locale>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_2)'!=''">
+			<UsingDelphiRTL>false</UsingDelphiRTL>
+			<DynamicRTL>true</DynamicRTL>
 			<Defines>NDEBUG;$(Defines)</Defines>
 			<TASM_Debugging>None</TASM_Debugging>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
+			<UsingDelphiRTL>false</UsingDelphiRTL>
+			<DynamicRTL>true</DynamicRTL>
 			<VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
 			<VerInfo_Locale>1033</VerInfo_Locale>
 		</PropertyGroup>
 		<ItemGroup>
+			<LibFiles Condition="'$(Platform)'=='Win32'" Include="..\..\..\Bin\Platform\Win\libcurl.bcb.lib">
+				<BuildOrder>9</BuildOrder>
+				<IgnorePath>true</IgnorePath>
+			</LibFiles>
 			<CppCompile Include="rdkdll.cpp">
 				<BuildOrder>0</BuildOrder>
 			</CppCompile>
+			<CppCompile Include="..\..\..\Core\Application\UApplication.cpp">
+				<BuildOrder>10</BuildOrder>
+			</CppCompile>
 			<CppCompile Include="..\..\..\Core\Engine\Libraries\UELibraries.cpp">
+				<BuildOrder>7</BuildOrder>
+			</CppCompile>
+			<CppCompile Include="..\..\..\Core\Graphics\Libraries\Detection\Detection.cpp">
+				<BuildOrder>10</BuildOrder>
+			</CppCompile>
+			<CppCompile Include="..\..\..\Core\Graphics\Libraries\Hardware\Hardware.cpp">
+				<BuildOrder>8</BuildOrder>
+			</CppCompile>
+			<CppCompile Include="..\..\..\Core\Graphics\Libraries\Libraries.cpp">
 				<BuildOrder>7</BuildOrder>
 			</CppCompile>
 			<CppCompile Include="..\..\..\Deploy\Include\myrdk.bcb.cpp">
@@ -118,15 +146,11 @@ $(PostBuildEvent)]]></PostBuildEvent>
 				<DependentOn>..\..\..\Deploy\Include\rdk_cpp_initdll.h</DependentOn>
 				<BuildOrder>3</BuildOrder>
 			</CppCompile>
-			<CppCompile Include="..\..\..\Deploy\Include\rdk_exceptions.bcb.cpp">
-				<BuildOrder>4</BuildOrder>
-			</CppCompile>
 			<CppCompile Include="..\..\..\Deploy\Include\rdk_new.cpp">
 				<BuildOrder>3</BuildOrder>
 			</CppCompile>
-			<CppCompile Include="..\..\..\GUI\BCB\TUFileSystem.cpp">
-				<DependentOn>..\..\..\GUI\BCB\TUFileSystem.h</DependentOn>
-				<BuildOrder>5</BuildOrder>
+			<CppCompile Include="..\..\..\Deploy\PtzLib\ptzlib_initdll.cpp">
+				<BuildOrder>11</BuildOrder>
 			</CppCompile>
 			<BuildConfiguration Include="Release">
 				<Key>Cfg_2</Key>
@@ -173,6 +197,11 @@ $(PostBuildEvent)]]></PostBuildEvent>
 						<VersionInfoKeys Name="Comments"/>
 					</VersionInfoKeys>
 					<Excluded_Packages>
+						<Excluded_Packages Name="C:\Program Files (x86)\FastReports\LibD16\dclfs16.bpl">File C:\Program Files (x86)\FastReports\LibD16\dclfs16.bpl not found</Excluded_Packages>
+						<Excluded_Packages Name="C:\Program Files (x86)\FastReports\LibD16\dclfrx16.bpl">File C:\Program Files (x86)\FastReports\LibD16\dclfrx16.bpl not found</Excluded_Packages>
+						<Excluded_Packages Name="C:\Program Files (x86)\FastReports\LibD16\dclfsDB16.bpl">File C:\Program Files (x86)\FastReports\LibD16\dclfsDB16.bpl not found</Excluded_Packages>
+						<Excluded_Packages Name="C:\Program Files (x86)\FastReports\LibD16\dclfrxDB16.bpl">File C:\Program Files (x86)\FastReports\LibD16\dclfrxDB16.bpl not found</Excluded_Packages>
+						<Excluded_Packages Name="C:\Program Files (x86)\FastReports\LibD16\dclfrxe16.bpl">File C:\Program Files (x86)\FastReports\LibD16\dclfrxe16.bpl not found</Excluded_Packages>
 						<Excluded_Packages Name="$(BDSBIN)\bcboffice2k160.bpl">Embarcadero C++Builder Office 2000 Servers Package</Excluded_Packages>
 						<Excluded_Packages Name="$(BDSBIN)\bcbofficexp160.bpl">Embarcadero C++Builder Office XP Servers Package</Excluded_Packages>
 						<Excluded_Packages Name="$(BDSBIN)\dcloffice2k160.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>

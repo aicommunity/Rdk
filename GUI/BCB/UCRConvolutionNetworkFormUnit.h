@@ -13,7 +13,7 @@
 #include <Vcl.Grids.hpp>
 #include "rdk_cpp_initdll.h"
 
-#include "UCRTeacherCVNetworkBP.cpp"
+#include "UCRConvolutionNetworkFormUnit.h"
 //---------------------------------------------------------------------------
 class TUCRConvolutionNetworkForm : public TUVisualControllerForm
 {
