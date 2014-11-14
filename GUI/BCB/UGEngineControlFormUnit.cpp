@@ -2094,7 +2094,7 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  Engine_SetBufObjectsMode(1);
 
  // Грузим шрифты
- std::vector<std::string> font_names;
+/* std::vector<std::string> font_names;
  std::string font_path=AnsiString(ExtractFilePath(Application->ExeName)+"Fonts\\").c_str();
  RDK::FindFilesList(font_path, "*.fnt", true, font_names);
 
@@ -2104,8 +2104,8 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  {
   RDK::AddGlobalFont(font_path+font_names[i]);
  }
-
- font_path=AnsiString(ExtractFilePath(Application->ExeName)).c_str();
+  */
+ std::string font_path=AnsiString(ExtractFilePath(Application->ExeName)).c_str();
  SetSystemDir(font_path.c_str());
  GraphicalEngineInit(0,1,1,320,240,1,ExceptionHandler);
  Engine_LoadFonts();
