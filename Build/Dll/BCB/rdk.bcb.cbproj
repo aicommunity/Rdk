@@ -40,6 +40,8 @@
 			<Base>true</Base>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base)'!=''">
+			<RunBCCOutOfProcess>true</RunBCCOutOfProcess>
+			<BCC_Defines>LIBRDK_LIBRARY;$(BCC_Defines)</BCC_Defines>
 			<Defines>RDK_UNICODE_RUN;LIBRDK_LIBRARY_EXPORT;$(Defines)</Defines>
 			<UsingDelphiRTL>true</UsingDelphiRTL>
 			<DynamicRTL>true</DynamicRTL>
@@ -120,9 +122,6 @@ $(PostBuildEvent)]]></PostBuildEvent>
 			</LibFiles>
 			<CppCompile Include="rdkdll.cpp">
 				<BuildOrder>0</BuildOrder>
-			</CppCompile>
-			<CppCompile Include="..\..\..\Core\Application\UApplication.cpp">
-				<BuildOrder>10</BuildOrder>
 			</CppCompile>
 			<CppCompile Include="..\..\..\Core\Engine\Libraries\UELibraries.cpp">
 				<BuildOrder>7</BuildOrder>
