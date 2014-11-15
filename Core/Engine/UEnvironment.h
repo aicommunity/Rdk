@@ -15,6 +15,7 @@ See file license.txt for more information
 
 #include "UStorage.h"
 #include "ULibrary.h"
+#include "../System/rdk_system.h"
 
 namespace RDK {
 

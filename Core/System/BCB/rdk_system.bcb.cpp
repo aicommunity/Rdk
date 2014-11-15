@@ -69,7 +69,7 @@ int FindFilesList(const std::string &path, const std::string &mask, bool isfile,
 {
    results.clear();
    HANDLE findhandle;
- std::string filemask=path+mask;
+ std::string filemask=path+std::string("/")+mask;
  WIN32_FIND_DATA finddata;
  std::string samplefilename;
 

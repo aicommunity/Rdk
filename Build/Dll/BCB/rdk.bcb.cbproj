@@ -97,6 +97,9 @@ $(PostBuildEvent)]]></PostBuildEvent>
 			<ILINK_LibraryPath>$(BDSLIB)\$(PLATFORM)\debug;$(ILINK_LibraryPath)</ILINK_LibraryPath>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
+			<BCC_MonitorInlinePtrAccess>true</BCC_MonitorInlinePtrAccess>
+			<BCC_MonitorThis>true</BCC_MonitorThis>
+			<BCC_MonitorGlobalAndStackData>true</BCC_MonitorGlobalAndStackData>
 			<UsingDelphiRTL>false</UsingDelphiRTL>
 			<LinkPackageStatics>vcl.lib;rtl.lib;IndyCore.lib;IndySystem.lib;inet.lib;IndyProtocols.lib</LinkPackageStatics>
 			<DynamicRTL>true</DynamicRTL>
