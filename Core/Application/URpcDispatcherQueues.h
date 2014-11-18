@@ -3,6 +3,7 @@
 
 #include "UProject.h"
 #include "URpcCommand.h"
+#include "../Engine/UEPtr.h"
 
 #define BOOST_THREAD_USE_LIB
 #include <boost/thread.hpp>

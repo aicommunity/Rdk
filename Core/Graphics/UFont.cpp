@@ -656,7 +656,15 @@ void UBitmapFontCollection::DelAllFonts(void)
 // Возвращает текущий шрифт
 UAFont* UBitmapFontCollection::GetFont(const string &name, int size)
 {
- return &Fonts[name][size];
+ map<string,FontSizeContainerT>::iterator I=Fonts.find(name);
+ if(I == Fonts.end())
+  return 0;
+
+ map<int,UBitmapFont>::iterator J=I->second.find(size);
+ if(J == I->second.end())
+  return 0;
+
+ return &J->second;
 }
 
 

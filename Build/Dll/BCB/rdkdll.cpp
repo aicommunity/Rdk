@@ -18,10 +18,20 @@
 //   explicitly add MEMMGR.LIB as this will be done implicitly for you
 
 #pragma hdrstop
+
+#include <vcl.h>
+#include <windows.h>
+#include <rdk.h>
+
+WORD Saved8087CW;
+
 #pragma argsused
+
 
 extern "C" int _libmain(unsigned long reason)
 {
+ Saved8087CW = Default8087CW;
+ System::Set8087CW(0x133f);
 	return 1;
 }
 

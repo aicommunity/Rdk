@@ -88,7 +88,7 @@ object EnchancedSG: TEnchancedSG
     Left = 216
     Top = 159
     Width = 145
-    Height = 21
+    Height = 24
     TabOrder = 7
     Visible = False
     OnKeyPress = cmbListEditKeyPress
