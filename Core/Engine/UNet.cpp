@@ -215,13 +215,13 @@ bool UNet::CreateLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
   pitem=this;
  else
   pitem=dynamic_pointer_cast<UADItem>(GetComponentL(item.Id,true));
-
+/*
  if(item.Index < 0)
  {
   LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, "Item index < 0");
   return false;
  }
-
+  */
  UEPtr<UConnector> pconnector=0;
  if(!CheckLongId(connector.Id))
   pconnector=this;
