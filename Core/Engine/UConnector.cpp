@@ -753,7 +753,7 @@ bool UConnector::CheckItem(UEPtr<UItem> item, const NameT &item_property_name, c
 bool UConnector::CheckLink(const UEPtr<UItem> &item) const
 {
  UCLink link=GetCLink(item);
- if(link.Output>=0 && link.Input >=0)
+ if((link.Output>=0 && link.Input >=0) || (!link.InputName.empty() && !link.OutputName.empty()))
   return true;
 
  return false;
