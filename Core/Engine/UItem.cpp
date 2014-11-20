@@ -668,7 +668,7 @@ UEPtr<UConnector> UItem::GetAConnectorByIndex(int output, int index) const
 bool UItem::CheckLink(const UEPtr<UConnector> &connector) const
 {
  UCLink link=connector->GetCLink(this);
- if(link.Output>=0 && link.Input >=0)
+ if((link.Output>=0 && link.Input >=0) || (!link.InputName.empty() && !link.OutputName.empty()))
   return true;
 
  return false;
