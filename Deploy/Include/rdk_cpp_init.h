@@ -121,7 +121,10 @@ T& ReadPropertyValue(const std::string &comp_name, const std::string &property_n
  if(!param_value)
   throw EEnginePropertyNotFound(comp_name, property_name);
 
- return RDK::DecodePropertyValue(param_value,res);
+
+ RDK::DecodePropertyValue(param_value,res);
+ Engine_FreeBufString(param_value);
+ return res;
 }
 
 // —читывает и декодирует содержимое свойства компонента
@@ -132,7 +135,9 @@ T& MReadPropertyValue(int engine_index, const std::string &comp_name, const std:
  if(!param_value)
   throw EEnginePropertyNotFound(comp_name, property_name);
 
- return RDK::DecodePropertyValue(param_value,res);
+ RDK::DecodePropertyValue(param_value,res);
+ MEngine_FreeBufString(engine_index, param_value);
+ return res;
 }
 
 template<typename T>
