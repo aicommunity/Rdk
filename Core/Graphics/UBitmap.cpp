@@ -2663,7 +2663,7 @@ void UBitmap::Binarization(UColorT threshold, UColorT minval, UColorT maxval,
    break;
 
    case ubmY8:
-    for(int i=0;i<ByteLength;i++)
+	for(int i=0;i<ByteLength;i++)
      *out++=(*data++ >= threshold.ycrcb.y)?maxval.ycrcb.y:minval.ycrcb.y;
    break;
 
@@ -2711,19 +2711,96 @@ void UBitmap::Inverse(UBitmap *target)
  switch(ColorModel)
   {
    case ubmRGB24:
-    for(int i=0;i<ByteLength;i++)
-     *out++=255-*data++;
+	for(int i=0;i<ByteLength;i++)
+	 *out++=255-*data++;
    break;
 
    case ubmY8:
-    for(int i=0;i<ByteLength;i++)
-     *out++=255-*data++;
+	for(int i=0;i<ByteLength;i++)
+	 *out++=255-*data++;
    break;
 
    case ubmY32:
-    for(int i=0;i<ByteLength;++i,out+=4,data+=4)
-     *reinterpret_cast<unsigned*>(out)=255-*reinterpret_cast<unsigned*>(data);
+	for(int i=0;i<ByteLength;++i,out+=4,data+=4)
+	 *reinterpret_cast<unsigned*>(out)=255-*reinterpret_cast<unsigned*>(data);
    break;
+  }
+}
+
+/// Меняет местами RGB каналы из RGB в BGR и наоборот.
+/// Поддерживает режимы ubmY8, ubmRGB24, ubmY32
+void UBitmap::SwapRGBChannels(UBitmap *target)
+{
+ UBColor *out,*data;
+
+ if(target)
+  {
+   target->SetRes(Width,Height,ColorModel);
+   out=target->Data;
+   data=Data;
+
+   UBColor temp;
+   UBColor *data1=Data+1;
+   UBColor *data2=Data+2;
+   UBColor *out1=out+1;
+   UBColor *out2=out+2;
+   switch(ColorModel)
+   {
+   case ubmRGB24:
+	for(int i=0;i<ByteLength;i+=3)
+	{
+	 *out=*data2;
+	 *out1=*data1;
+	 *out2=*data;
+	 out+=3; data2+=3;
+	 out1+=3; data+=3;
+	 out2+=3; data1+=3;
+	}
+   break;
+
+   case ubmRGB32:
+	for(int i=0;i<ByteLength;i+=4)
+	{
+	 *out++=*data2++;
+	 *out1++=*data1++;
+	 *out2++=*data++;
+	 out+=4; data2+=4;
+	 out1+=4; data+=4;
+	 out2+=4; data1+=4;
+	}
+   break;
+   }
+  }
+ else
+  {
+   out=Data;
+
+   UBColor temp;
+   UBColor *data2=Data+2;
+   switch(ColorModel)
+   {
+   case ubmRGB24:
+	for(int i=0;i<ByteLength;i+=3)
+	{
+	 temp=*out;
+	 *out=*data2;
+	 *data2=temp;
+	 out+=3;
+	 data2+=3;
+	}
+   break;
+
+   case ubmRGB32:
+	for(int i=0;i<ByteLength;i+=4)
+	{
+	 temp=*out;
+	 *out=*data2;
+	 *data2=temp;
+	 out+=4;
+	 data2+=4;
+	}
+   break;
+   }
   }
 }
 // -------------------------
@@ -2753,7 +2830,7 @@ UBitmap& UBitmap::operator = (const UBitmap &bitmap)
    if(MemoryLength<bitmap.MemoryLength)
    {
     if(Data)
-    {
+	{
      delete[] Data;
      Data=0;
     }
