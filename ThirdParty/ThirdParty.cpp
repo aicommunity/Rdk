@@ -34,6 +34,9 @@
 #pragma comment( lib, "Ws2_32.lib" )
 #endif
 
+#include "jpeg/JpegIntegration.cpp"
+
+
 		 /*
 #define CURL_STATICLIB
 #define BUILDING_LIBCURL
