@@ -77,6 +77,12 @@ void SaveStatesToFile(const String &filename);
 // «агружает состо€ние выбранной модели
 // ≈сли filename == "", то открывает окно запроса диалога
 void LoadStatesFromFile(const String &filename);
+
+/// «агружает общее описание классов
+void LoadCommonClassesDescriptionFromFile(const String &filename);
+
+/// «агружает детальное описание классов
+void LoadClassesDescriptionFromFile(const String &filename);
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TUComponentsControlFrame *UComponentsControlFrame;

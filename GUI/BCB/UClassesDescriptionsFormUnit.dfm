@@ -26,7 +26,7 @@ object UClassesDescriptionsForm: TUClassesDescriptionsForm
     Font.Style = []
     ParentFont = False
     TabOrder = 0
-    ExplicitLeft = -490
+    ExplicitLeft = -97
     ExplicitTop = -112
     inherited Panel1: TPanel
       Width = 1334
@@ -35,22 +35,9 @@ object UClassesDescriptionsForm: TUClassesDescriptionsForm
         Height = 502
         inherited PageControl: TPageControl
           Height = 502
-          ExplicitWidth = 272
           inherited LibsTabSheet: TTabSheet
-            ExplicitWidth = 264
-            ExplicitHeight = 586
             inherited TreeView: TTreeView
               Height = 474
-              ExplicitWidth = 264
-              ExplicitHeight = 586
-            end
-          end
-          inherited LibsControlTabSheet: TTabSheet
-            inherited Splitter1: TSplitter
-              ExplicitTop = 296
-            end
-            inherited Panel1: TPanel
-              ExplicitTop = 463
             end
           end
         end
@@ -58,42 +45,22 @@ object UClassesDescriptionsForm: TUClassesDescriptionsForm
       inherited Panel3: TPanel
         Width = 486
         Height = 502
-        ExplicitLeft = 273
-        ExplicitWidth = 583
         inherited ClassNameLabeledEdit: TLabeledEdit
           Width = 474
-          EditLabel.ExplicitLeft = 0
-          EditLabel.ExplicitTop = -16
-          EditLabel.ExplicitWidth = 107
-          ExplicitWidth = 571
         end
         inherited ClassFullNameLabeledEdit: TLabeledEdit
           Width = 474
-          EditLabel.ExplicitLeft = 0
-          EditLabel.ExplicitTop = -16
-          EditLabel.ExplicitWidth = 123
-          ExplicitWidth = 571
         end
         inherited ClassDescriptionGroupBox: TGroupBox
           Width = 474
-          ExplicitWidth = 571
           inherited ClassDescriptionRichEdit: TRichEdit
             Width = 470
-            ExplicitLeft = 2
-            ExplicitTop = 15
-            ExplicitWidth = 567
-            ExplicitHeight = 117
           end
         end
         inherited GroupBox1: TGroupBox
           Width = 474
-          ExplicitWidth = 571
           inherited StringGrid1: TStringGrid
             Width = 470
-            ExplicitLeft = 2
-            ExplicitTop = 15
-            ExplicitWidth = 567
-            ExplicitHeight = 353
           end
         end
       end
@@ -101,16 +68,22 @@ object UClassesDescriptionsForm: TUClassesDescriptionsForm
         Left = 759
         Height = 502
         inherited GroupBox2: TGroupBox
-          Height = 500
-          ExplicitLeft = 1
-          ExplicitTop = 1
+          Height = 262
+          inherited PropertyDescriptionRichEdit: TRichEdit
+            Height = 245
+          end
         end
       end
     end
     inherited Panel2: TPanel
       Top = 504
       Width = 1334
-      ExplicitWidth = 1431
+      inherited ApplyButton: TButton
+        Left = 1166
+      end
+      inherited RestoreButton: TButton
+        Left = 1247
+      end
     end
   end
 end

@@ -692,6 +692,12 @@ try{
   else
    Env_SetPredefinedStructure(PredefinedStructure[i]);
 
+  // Загрузка описаний классов
+  UComponentsControlForm->ComponentsControlFrame->LoadCommonClassesDescriptionFromFile("CommonClassesDescription.xml");
+  UComponentsControlForm->ComponentsControlFrame->LoadClassesDescriptionFromFile("ClassesDescription.xml");
+//  MStorage_LoadCommonClassesDescription(i,"CommonClassesDescription.xml");
+//  MStorage_LoadClassesDescription(i,"ClassesDescription.xml");
+
   Model_SetDefaultTimeStep(DefaultTimeStep[i]);
   Env_SetCurrentDataDir(AnsiString(ProjectPath).c_str());
 

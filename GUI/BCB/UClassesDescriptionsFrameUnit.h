@@ -30,12 +30,41 @@ __published:	// IDE-managed Components
 	TGroupBox *GroupBox2;
 	TGroupBox *GroupBox3;
 	TRichEdit *RichEdit1;
-	TRichEdit *RichEdit2;
-	TButton *Button1;
-	TButton *Button2;
+	TRichEdit *PropertyDescriptionRichEdit;
+	TButton *ApplyButton;
+	TButton *RestoreButton;
+	TButton *SaveDescriptionsButton;
+	void __fastcall ClassesListFrameTreeViewClick(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
 	__fastcall TUClassesDescriptionsFrame(TComponent* Owner);
+
+/// Флаг, выставляемый, если описание текущего класса было изменено
+bool IsDescrModified;
+
+/// Имя класса текущего редактируемого описания
+String CurrentClassName;
+
+// -----------------------------
+// Методы управления визуальным интерфейсом
+// -----------------------------
+// Метод, вызываемый после сброса модели
+virtual void AAfterReset(void);
+
+// Обновление интерфейса
+virtual void AUpdateInterface(void);
+
+// Сохраняет параметры интерфейса в xml
+virtual void ASaveParameters(RDK::USerStorageXML &xml);
+
+// Загружает параметры интерфейса из xml
+virtual void ALoadParameters(RDK::USerStorageXML &xml);
+
+// Создание копии этого компонента
+virtual TUClassesDescriptionsFrame* New(TComponent *owner=0);
+
+/// Сохраняет
+// -----------------------------
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TUClassesDescriptionsFrame *UClassesDescriptionsFrame;

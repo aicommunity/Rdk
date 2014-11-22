@@ -42,13 +42,12 @@ inherited UClassesDescriptionsFrame: TUClassesDescriptionsFrame
           ExplicitHeight = 515
         end
         inherited LibsTabSheet: TTabSheet
-          ExplicitLeft = 4
-          ExplicitTop = 24
           ExplicitWidth = 264
           ExplicitHeight = 586
           inherited TreeView: TTreeView
             Width = 264
             Height = 586
+            OnClick = ClassesListFrameTreeViewClick
             ExplicitWidth = 264
             ExplicitHeight = 586
           end
@@ -135,6 +134,7 @@ inherited UClassesDescriptionsFrame: TUClassesDescriptionsFrame
           Font.Name = 'Tahoma'
           Font.Style = []
           ParentFont = False
+          ScrollBars = ssBoth
           TabOrder = 0
         end
       end
@@ -171,7 +171,7 @@ inherited UClassesDescriptionsFrame: TUClassesDescriptionsFrame
         Align = alClient
         Caption = ' Property Description '
         TabOrder = 0
-        object RichEdit2: TRichEdit
+        object PropertyDescriptionRichEdit: TRichEdit
           Left = 2
           Top = 15
           Width = 568
@@ -183,11 +183,9 @@ inherited UClassesDescriptionsFrame: TUClassesDescriptionsFrame
           Font.Name = 'Tahoma'
           Font.Style = []
           ParentFont = False
+          PlainText = True
+          ScrollBars = ssBoth
           TabOrder = 0
-          ExplicitLeft = 136
-          ExplicitTop = 72
-          ExplicitWidth = 185
-          ExplicitHeight = 89
         end
       end
       object GroupBox3: TGroupBox
@@ -210,11 +208,8 @@ inherited UClassesDescriptionsFrame: TUClassesDescriptionsFrame
           Font.Name = 'Tahoma'
           Font.Style = []
           ParentFont = False
+          ScrollBars = ssBoth
           TabOrder = 0
-          ExplicitLeft = 136
-          ExplicitTop = 72
-          ExplicitWidth = 185
-          ExplicitHeight = 89
         end
       end
     end
@@ -229,7 +224,7 @@ inherited UClassesDescriptionsFrame: TUClassesDescriptionsFrame
     DesignSize = (
       1431
       55)
-    object Button1: TButton
+    object ApplyButton: TButton
       Left = 1263
       Top = 16
       Width = 75
@@ -238,7 +233,7 @@ inherited UClassesDescriptionsFrame: TUClassesDescriptionsFrame
       Caption = 'Apply'
       TabOrder = 0
     end
-    object Button2: TButton
+    object RestoreButton: TButton
       Left = 1344
       Top = 16
       Width = 75
@@ -246,6 +241,14 @@ inherited UClassesDescriptionsFrame: TUClassesDescriptionsFrame
       Anchors = [akTop, akRight]
       Caption = 'Restore'
       TabOrder = 1
+    end
+    object SaveDescriptionsButton: TButton
+      Left = 16
+      Top = 16
+      Width = 105
+      Height = 25
+      Caption = 'Save Descriptions'
+      TabOrder = 2
     end
   end
 end

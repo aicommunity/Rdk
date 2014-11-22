@@ -500,9 +500,22 @@ const char* RDK_CALL Storage_SaveClassesDescription(void)
 }
 
 // Загружает описание всех классов из xml
-bool RDK_CALL Storage_LoadClassesDescription(const char* xmltext)
+int RDK_CALL Storage_LoadClassesDescription(const char* xmltext)
 {
- return DllManager.GetEngineLock()->Storage_LoadClassesDescription(xmltext);
+ if(!DllManager.GetEngineLock()->Storage_LoadClassesDescription(xmltext))
+  return 10;
+ return 0;
+}
+
+int RDK_CALL MStorage_LoadClassesDescription(int engine_index, const char* xmltext)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+
+ if(!DllManager.GetEngineLock(engine_index)->Storage_LoadClassesDescription(xmltext))
+  return 10;
+
+ return 0;
 }
 
 // Сохраняет общее описание всех классов в xml
@@ -512,10 +525,24 @@ const char* RDK_CALL Storage_SaveCommonClassesDescription(void)
 }
 
 // Загружает общее описание всех классов из xml
-bool RDK_CALL Storage_LoadCommonClassesDescription(const char* xmltext)
+int RDK_CALL Storage_LoadCommonClassesDescription(const char* xmltext)
 {
- return DllManager.GetEngineLock()->Storage_LoadCommonClassesDescription(xmltext);
+ if(!DllManager.GetEngineLock()->Storage_LoadCommonClassesDescription(xmltext))
+  return 10;
+ return 0;
 }
+
+int RDK_CALL MStorage_LoadCommonClassesDescription(int engine_index, const char* xmltext)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+
+ if(!DllManager.GetEngineLock(engine_index)->Storage_LoadCommonClassesDescription(xmltext))
+  return 10;
+
+ return 0;
+}
+
 
 // Сохраняет описание всех классов в xml включая общее описание
 const char* RDK_CALL Storage_SaveAllClassesDescription(void)

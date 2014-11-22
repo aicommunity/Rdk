@@ -18,6 +18,25 @@ __published:	// IDE-managed Components
 private:	// User declarations
 public:		// User declarations
 	__fastcall TUClassesDescriptionsForm(TComponent* Owner);
+
+// -----------------------------
+// Методы управления визуальным интерфейсом
+// -----------------------------
+// Метод, вызываемый после сброса модели
+virtual void AAfterReset(void);
+
+// Обновление интерфейса
+virtual void AUpdateInterface(void);
+
+// Сохраняет параметры интерфейса в xml
+virtual void ASaveParameters(RDK::USerStorageXML &xml);
+
+// Загружает параметры интерфейса из xml
+virtual void ALoadParameters(RDK::USerStorageXML &xml);
+
+// Создание копии этого компонента
+virtual TUClassesDescriptionsForm* New(TComponent *owner=0);
+// -----------------------------
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TUClassesDescriptionsForm *UClassesDescriptionsForm;
