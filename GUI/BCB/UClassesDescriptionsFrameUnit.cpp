@@ -4,7 +4,7 @@
 #pragma hdrstop
 
 #include "UClassesDescriptionsFrameUnit.h"
-#include "rtv_initdll.h"
+#include "rdk_initdll.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "UClassesListFrameUnit"

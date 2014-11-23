@@ -42,6 +42,8 @@ inherited UClassesDescriptionsFrame: TUClassesDescriptionsFrame
           ExplicitHeight = 515
         end
         inherited LibsTabSheet: TTabSheet
+          ExplicitLeft = 4
+          ExplicitTop = 24
           ExplicitWidth = 264
           ExplicitHeight = 586
           inherited TreeView: TTreeView
