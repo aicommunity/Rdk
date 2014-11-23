@@ -16,10 +16,6 @@ inherited UClassesListFrame: TUClassesListFrame
     OnChange = PageControlChange
     object NameTabSheet: TTabSheet
       Caption = 'By Name'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object StringGrid: TStringGrid
         Left = 0
         Top = 0
@@ -37,10 +33,6 @@ inherited UClassesListFrame: TUClassesListFrame
     object LibsTabSheet: TTabSheet
       Caption = 'By Libs'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object TreeView: TTreeView
         Left = 0
         Top = 0
@@ -59,10 +51,6 @@ inherited UClassesListFrame: TUClassesListFrame
     object LibsControlTabSheet: TTabSheet
       Caption = 'Libs Control'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Splitter1: TSplitter
         Left = 0
         Top = 225
@@ -125,8 +113,6 @@ inherited UClassesListFrame: TUClassesListFrame
           Caption = 'Create New Class'
           TabOrder = 4
           OnClick = AddClassButtonClick
-          ExplicitLeft = 2
-          ExplicitTop = 108
         end
       end
       object GroupBox1: TGroupBox
@@ -137,7 +123,6 @@ inherited UClassesListFrame: TUClassesListFrame
         Align = alClient
         Caption = ' Library list '
         TabOrder = 1
-        ExplicitHeight = 304
         object LibsListStringGrid: TStringGrid
           Left = 2
           Top = 15
@@ -151,7 +136,6 @@ inherited UClassesListFrame: TUClassesListFrame
           TabOrder = 0
           OnMouseEnter = LibsListStringGridMouseEnter
           OnSelectCell = LibsListStringGridSelectCell
-          ExplicitHeight = 242
         end
       end
       object GroupBox2: TGroupBox
@@ -162,7 +146,6 @@ inherited UClassesListFrame: TUClassesListFrame
         Align = alBottom
         Caption = ' Selected Library Components'
         TabOrder = 2
-        ExplicitTop = 256
         object LibComponentListStringGrid: TStringGrid
           Left = 2
           Top = 15
@@ -175,7 +158,6 @@ inherited UClassesListFrame: TUClassesListFrame
           Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRowSelect]
           TabOrder = 0
           OnMouseEnter = LibComponentListStringGridMouseEnter
-          ExplicitHeight = 88
         end
       end
     end

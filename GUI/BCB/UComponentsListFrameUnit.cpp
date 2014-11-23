@@ -478,6 +478,13 @@ void TUComponentsListFrame::UpdateNiceParamsList(TEnchancedSG *frame)
 	frame->BasicStringGrid->RowCount=2;
 
  frame->BasicStringGrid->ColCount=1+2;
+
+ if(frame->BasicStringGrid->RowCount>1)
+  frame->BasicStringGrid->FixedRows=1;
+
+ if(frame->BasicStringGrid->ColCount>1)
+  frame->BasicStringGrid->FixedCols=1;
+
  for(int i=0;i<num;i++)
  {
 	frame->BasicStringGrid->Cells[2][i+1]="";

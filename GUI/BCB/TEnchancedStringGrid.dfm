@@ -17,17 +17,20 @@ object EnchancedSG: TEnchancedSG
     RowCount = 1
     FixedRows = 0
     Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing]
+    ParentShowHint = False
+    ShowHint = True
     TabOrder = 1
     OnDblClick = BasicStringGridDblClick
     OnDrawCell = BasicStringGridDrawCell
     OnKeyPress = BasicStringGridKeyPress
+    OnMouseMove = BasicStringGridMouseMove
     OnSelectCell = BasicStringGridSelectCell
   end
   object txtStringEdit: TEdit
     Left = 16
     Top = 16
     Width = 121
-    Height = 21
+    Height = 24
     TabOrder = 0
     Text = '0'
     Visible = False
@@ -57,7 +60,7 @@ object EnchancedSG: TEnchancedSG
     Left = 246
     Top = 16
     Width = 121
-    Height = 21
+    Height = 24
     TabOrder = 2
     Text = 'txtDoubleEdit'
     Visible = False
@@ -67,7 +70,7 @@ object EnchancedSG: TEnchancedSG
     Left = 224
     Top = 43
     Width = 121
-    Height = 21
+    Height = 24
     TabOrder = 5
     Text = 'txtIntEdit'
     Visible = False
@@ -77,7 +80,7 @@ object EnchancedSG: TEnchancedSG
     Left = 224
     Top = 132
     Width = 121
-    Height = 21
+    Height = 24
     ReadOnly = True
     TabOrder = 6
     Text = 'txtBorderedIntEdit'

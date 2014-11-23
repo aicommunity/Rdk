@@ -611,6 +611,7 @@ void __fastcall TEnchancedSG::BasicStringGridSelectCell(TObject *Sender, int ACo
 			}
 
 		}
+		cmbListEdit->Hint=p.GetDesc();
 		BasicStringGrid->SetFocus();
 		m_storage.SetPropertyByIndex(m_editingRow-1, p);
 		Refresh();
@@ -984,6 +985,30 @@ void TEnchancedSG::ResizeFrame()
 void __fastcall TEnchancedSG::FrameResize(TObject *Sender)
 {
 	ResizeFrame();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TEnchancedSG::BasicStringGridMouseMove(TObject *Sender, TShiftState Shift,
+          int X, int Y)
+{
+ int C,R;
+ BasicStringGrid->MouseToCell(X, Y, C, R);
+
+ if(C >= BasicStringGrid->ColCount || R >= BasicStringGrid->RowCount || C <0 || R<1)
+  return;
+
+ if ((BasicStringGrid->Row != R) || (BasicStringGrid->Col != C))
+ {
+  BasicStringGrid->Row = R;
+  BasicStringGrid->Col = C;
+  Application->CancelHint();
+  TProperty p;
+  m_storage.GetPropertyByIndex(R-1, &p);
+  BasicStringGrid->Hint =p.GetDesc();
+ }
+
+//  cmbListEdit->Hint=p.GetDesc();
+
 }
 //---------------------------------------------------------------------------
 
