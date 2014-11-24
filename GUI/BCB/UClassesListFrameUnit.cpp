@@ -5,7 +5,7 @@
 #pragma hdrstop
 
 #include "UClassesListFrameUnit.h"
-#include "rdk_initdll.h"
+#include "rdk_cpp_initdll.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "TUVisualControllerFrameUnit"
@@ -303,6 +303,126 @@ void __fastcall TUClassesListFrame::AddClassButtonClick(TObject *Sender)
  NewClassName.clear();
  NewComponentName.clear();
  UpdateInterface();
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TUClassesListFrame::StringGridMouseMove(TObject *Sender, TShiftState Shift,
+		  int X, int Y)
+{
+ int C,R;
+ StringGrid->MouseToCell(X, Y, C, R);
+
+ if(C >= StringGrid->ColCount || R >= StringGrid->RowCount || C <0 || R<1)
+  return;
+
+ if ((StringGrid->Row != R) || (StringGrid->Col != C))
+ {
+  StringGrid->Row = R;
+  StringGrid->Col = C;
+//  Application->CancelHint();
+
+  std::string class_name=AnsiString(StringGrid->Cells[C][R]).c_str();
+  RDK::UELockPtr<RDK::UStorage> storage=GetStorageLock();
+
+  try
+  {
+   const UEPtr<UContainerDescription> descr=storage->GetClassDescription(class_name);
+
+   if(!descr)
+	return;
+
+   StringGrid->Hint = descr->GetHeader().c_str();
+   if(!descr->GetDescription().empty())
+   {
+	StringGrid->Hint = StringGrid->Hint + "\r\n";
+	StringGrid->Hint = StringGrid->Hint + descr->GetDescription().c_str();
+   }
+  }
+  catch(RDK::UStorage::EClassNameNotExist &ex)
+  {
+
+  }
+ }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUClassesListFrame::LibComponentListStringGridMouseMove(TObject *Sender,
+		  TShiftState Shift, int X, int Y)
+{
+ int C,R;
+ LibComponentListStringGrid->MouseToCell(X, Y, C, R);
+
+ if(C >= LibComponentListStringGrid->ColCount || R >= LibComponentListStringGrid->RowCount || C <0 || R<1)
+  return;
+
+ if ((LibComponentListStringGrid->Row != R) || (LibComponentListStringGrid->Col != C))
+ {
+  LibComponentListStringGrid->Row = R;
+  LibComponentListStringGrid->Col = C;
+//  Application->CancelHint();
+
+  std::string class_name=AnsiString(LibComponentListStringGrid->Cells[1][R]).c_str();
+  RDK::UELockPtr<RDK::UStorage> storage=GetStorageLock();
+
+  try
+  {
+   const UEPtr<UContainerDescription> descr=storage->GetClassDescription(class_name);
+
+   if(!descr)
+	return;
+
+   LibComponentListStringGrid->Hint = descr->GetHeader().c_str();
+   if(!descr->GetDescription().empty())
+   {
+	LibComponentListStringGrid->Hint = LibComponentListStringGrid->Hint + "\r\n";
+	LibComponentListStringGrid->Hint = LibComponentListStringGrid->Hint + descr->GetDescription().c_str();
+/*
+	TPoint aPoint(X,Y);
+	aPoint = ClientToScreen(aPoint);
+	Application->ActivateHint(aPoint);*/
+   }
+  }
+  catch(RDK::UStorage::EClassNameNotExist &ex)
+  {
+
+  }
+ }
+
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUClassesListFrame::TreeViewMouseMove(TObject *Sender, TShiftState Shift,
+          int X, int Y)
+{
+ int C,R;
+ TTreeNode* node = TreeView->GetNodeAt(X, Y);
+
+ if(!node)
+  return;
+
+ //Application->CancelHint();
+
+ std::string class_name=AnsiString(node->Text).c_str();
+  RDK::UELockPtr<RDK::UStorage> storage=GetStorageLock();
+
+ try
+ {
+  const UEPtr<UContainerDescription> descr=storage->GetClassDescription(class_name);
+  if(!descr)
+   return;
+
+  TreeView->Hint = descr->GetHeader().c_str();
+  if(!descr->GetDescription().empty())
+  {
+   TreeView->Hint = TreeView->Hint + "\r\n";
+   TreeView->Hint = TreeView->Hint + descr->GetDescription().c_str();
+  }
+ }
+ catch(RDK::UStorage::EClassNameNotExist &ex)
+ {
+
+ }
 }
 //---------------------------------------------------------------------------
 

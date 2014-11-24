@@ -70,7 +70,7 @@ bool UContainerDescription::CheckCommonProperty(const std::string &name)
 // Методы управления данными
 // --------------------------
 // Описание свойства
-const UPropertyDescription& UContainerDescription::GetDescription(const std::string &name)
+const UPropertyDescription& UContainerDescription::GetPropertyDescription(const std::string &name)
 {
  std::map<std::string, UPropertyDescription>::const_iterator I=Properties.find(name);
 
@@ -87,7 +87,7 @@ const UPropertyDescription& UContainerDescription::GetDescription(const std::str
  return I->second;
 }
 
-bool UContainerDescription::SetDescription(const std::string &name, const UPropertyDescription& value, bool force)
+bool UContainerDescription::SetPropertyDescription(const std::string &name, const UPropertyDescription& value, bool force)
 {
 // if(CheckCommonProperty(name) && !force)
 //  return true;

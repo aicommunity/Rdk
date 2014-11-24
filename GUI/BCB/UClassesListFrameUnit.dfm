@@ -10,7 +10,7 @@ inherited UClassesListFrame: TUClassesListFrame
     Top = 0
     Width = 507
     Height = 543
-    ActivePage = LibsControlTabSheet
+    ActivePage = LibsTabSheet
     Align = alClient
     TabOrder = 0
     OnChange = PageControlChange
@@ -26,8 +26,11 @@ inherited UClassesListFrame: TUClassesListFrame
         DefaultRowHeight = 18
         FixedCols = 0
         Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRowSelect]
+        ParentShowHint = False
+        ShowHint = True
         TabOrder = 0
         OnMouseEnter = StringGridMouseEnter
+        OnMouseMove = StringGridMouseMove
       end
     end
     object LibsTabSheet: TTabSheet
@@ -40,12 +43,15 @@ inherited UClassesListFrame: TUClassesListFrame
         Height = 515
         Align = alClient
         Indent = 19
+        ParentShowHint = False
         ReadOnly = True
         RightClickSelect = True
         RowSelect = True
+        ShowHint = True
         ShowLines = False
         TabOrder = 0
         OnMouseEnter = TreeViewMouseEnter
+        OnMouseMove = TreeViewMouseMove
       end
     end
     object LibsControlTabSheet: TTabSheet
@@ -156,8 +162,11 @@ inherited UClassesListFrame: TUClassesListFrame
           DefaultRowHeight = 18
           FixedCols = 0
           Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRowSelect]
+          ParentShowHint = False
+          ShowHint = True
           TabOrder = 0
           OnMouseEnter = LibComponentListStringGridMouseEnter
+          OnMouseMove = LibComponentListStringGridMouseMove
         end
       end
     end

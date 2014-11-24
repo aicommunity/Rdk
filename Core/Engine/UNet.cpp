@@ -761,7 +761,7 @@ bool UNet::GetComponentPropertiesEx(UEPtr<RDK::UContainer> cont, RDK::USerStorag
 	 serstorage->SetNodeAttribute("PType",sntoa(I->second.Type));
 	 if(descr)
 	 {
-	  serstorage->SetNodeAttribute("Header",descr->GetDescription(paramname).Header);
+	  serstorage->SetNodeAttribute("Header",descr->GetPropertyDescription(paramname).Header);
 	 }
 	 serstorage->SelectUp();
 	}

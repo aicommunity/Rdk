@@ -42,31 +42,32 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
       inherited PageControl: TPageControl
         Width = 227
         Height = 422
+        ActivePage = UClassesListFrame.LibsControlTabSheet
         ExplicitWidth = 227
         ExplicitHeight = 422
         inherited NameTabSheet: TTabSheet
-          ExplicitLeft = 4
-          ExplicitTop = 24
-          ExplicitWidth = 499
-          ExplicitHeight = 515
+          ExplicitWidth = 219
+          ExplicitHeight = 394
           inherited StringGrid: TStringGrid
+            Width = 219
+            Height = 394
             OnMouseMove = UClassesListFrameStringGridMouseMove
             OnMouseUp = UClassesListFrameStringGridMouseUp
           end
         end
         inherited LibsTabSheet: TTabSheet
-          ExplicitLeft = 4
-          ExplicitTop = 24
-          ExplicitWidth = 499
-          ExplicitHeight = 515
+          ExplicitWidth = 219
+          ExplicitHeight = 394
           inherited TreeView: TTreeView
+            Width = 219
+            Height = 394
             OnMouseMove = UClassesListFrameTreeViewMouseMove
             OnMouseUp = UClassesListFrameTreeViewMouseUp
+            ExplicitWidth = 219
+            ExplicitHeight = 394
           end
         end
         inherited LibsControlTabSheet: TTabSheet
-          ExplicitLeft = 4
-          ExplicitTop = 24
           ExplicitWidth = 219
           ExplicitHeight = 394
           inherited Splitter1: TSplitter
@@ -99,8 +100,6 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
             inherited AddClassButton: TButton
               Width = 217
               OnClick = UClassesListFrameAddClassButtonClick
-              ExplicitLeft = 1
-              ExplicitTop = 101
               ExplicitWidth = 217
             end
           end
@@ -126,7 +125,6 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
               OnMouseMove = UClassesListFrameLibComponentListStringGridMouseMove
               OnMouseUp = UClassesListFrameLibComponentListStringGridMouseUp
               ExplicitWidth = 215
-              ExplicitHeight = 143
             end
           end
         end

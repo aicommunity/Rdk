@@ -284,7 +284,7 @@ UContainerDescription* UComponent::ANewDescription(UComponentDescription* descri
  {
   UEPtr<UIProperty> prop(I->second.Property);
   dummydescr.Type=prop->GetLanguageType().name();
-  result->SetDescription(I->first,dummydescr);
+  result->SetPropertyDescription(I->first,dummydescr);
   ++I;
  }
 
