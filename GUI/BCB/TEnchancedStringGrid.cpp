@@ -999,8 +999,8 @@ void __fastcall TEnchancedSG::BasicStringGridMouseMove(TObject *Sender, TShiftSt
 
  if ((BasicStringGrid->Row != R) || (BasicStringGrid->Col != C))
  {
-  BasicStringGrid->Row = R;
-  BasicStringGrid->Col = C;
+//  BasicStringGrid->Row = R;
+//  BasicStringGrid->Col = C;
   Application->CancelHint();
   TProperty p;
   m_storage.GetPropertyByIndex(R-1, &p);
