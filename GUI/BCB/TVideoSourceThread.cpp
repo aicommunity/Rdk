@@ -2019,7 +2019,7 @@ void __fastcall TVideoCaptureThreadVideoGrabberIpCamera::ARunCapture(void)
  if(VideoGrabber)
  {
   VideoGrabber->StartPreview();
-  VideoGrabber->StartSynchronized();
+//  VideoGrabber->StartSynchronized();
  }
 }
 
