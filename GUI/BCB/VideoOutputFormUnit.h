@@ -37,6 +37,12 @@ __published:	// IDE-managed Components
 	TToolButton *ToolButton1;
 	TToolButton *ToolButton2;
 	TToolButton *ToolButton3;
+	TToolButton *ToolButton4;
+	TToolButton *ToolButton5;
+	TToolButton *ToolButton6;
+	TMenuItem *N1;
+	TMenuItem *StartAll1;
+	TMenuItem *StopAll1;
 	void __fastcall PageControlChange(TObject *Sender);
 	void __fastcall AddSource1Click(TObject *Sender);
 	void __fastcall DelSource1Click(TObject *Sender);
@@ -46,6 +52,10 @@ __published:	// IDE-managed Components
 	void __fastcall ClearSource1Click(TObject *Sender);
 	void __fastcall FormCreate(TObject *Sender);
 	void __fastcall FormDestroy(TObject *Sender);
+	void __fastcall StartAll1Click(TObject *Sender);
+	void __fastcall StopAll1Click(TObject *Sender);
+	void __fastcall ToolButton4Click(TObject *Sender);
+	void __fastcall ToolButton6Click(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
 	__fastcall TVideoOutputForm(TComponent* Owner);

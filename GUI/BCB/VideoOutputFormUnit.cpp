@@ -335,3 +335,27 @@ void __fastcall TVideoOutputForm::FormDestroy(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+void __fastcall TVideoOutputForm::StartAll1Click(TObject *Sender)
+{
+ Start();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoOutputForm::StopAll1Click(TObject *Sender)
+{
+ Stop();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoOutputForm::ToolButton4Click(TObject *Sender)
+{
+ StartAll1Click(Sender);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoOutputForm::ToolButton6Click(TObject *Sender)
+{
+ StopAll1Click(Sender);
+}
+//---------------------------------------------------------------------------
+

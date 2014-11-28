@@ -839,11 +839,19 @@ object UGEngineControlForm: TUGEngineControlForm
                   Margins.Top = 4
                   Margins.Right = 4
                   Margins.Bottom = 4
+                  ExplicitLeft = 4
+                  ExplicitTop = 24
+                  ExplicitWidth = 499
+                  ExplicitHeight = 515
                   inherited StringGrid: TStringGrid
+                    Width = 499
+                    Height = 515
                     Margins.Left = 4
                     Margins.Top = 4
                     Margins.Right = 4
                     Margins.Bottom = 4
+                    ExplicitWidth = 499
+                    ExplicitHeight = 515
                   end
                 end
                 inherited LibsTabSheet: TTabSheet
@@ -870,6 +878,8 @@ object UGEngineControlForm: TUGEngineControlForm
                   Margins.Top = 4
                   Margins.Right = 4
                   Margins.Bottom = 4
+                  ExplicitLeft = 4
+                  ExplicitTop = 24
                   inherited Splitter1: TSplitter
                     Top = 15
                     Height = 9
@@ -1529,7 +1539,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 360
     Top = 65528
     Bitmap = {
-      494C01011B006000080310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B0060000C0310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -2561,6 +2571,21 @@ object UGEngineControlForm: TUGEngineControlForm
     object DeleteSelectedChannel1: TMenuItem
       Caption = 'Delete Selected Channel'
       OnClick = DeleteSelectedChannel1Click
+    end
+    object N10: TMenuItem
+      Caption = '-'
+    end
+    object StartChannel1: TMenuItem
+      Caption = 'Start Channel'
+      OnClick = StartChannel1Click
+    end
+    object PauseChannel1: TMenuItem
+      Caption = 'Pause Channel'
+      OnClick = PauseChannel1Click
+    end
+    object ResetChannel1: TMenuItem
+      Caption = 'Reset Channel'
+      OnClick = ResetChannel1Click
     end
   end
 end

@@ -2594,3 +2594,24 @@ void __fastcall TUGEngineControlForm::ClassesDescription1Click(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+void __fastcall TUGEngineControlForm::StartChannel1Click(TObject *Sender)
+{
+ StartChannel(GetSelectedEngineIndex());
+ RDK::UIVisualControllerStorage::UpdateInterface();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::PauseChannel1Click(TObject *Sender)
+{
+ PauseChannel(GetSelectedEngineIndex());
+ RDK::UIVisualControllerStorage::UpdateInterface();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::ResetChannel1Click(TObject *Sender)
+{
+ ResetChannel(GetSelectedEngineIndex());
+ RDK::UIVisualControllerStorage::UpdateInterface();
+}
+//---------------------------------------------------------------------------
+
