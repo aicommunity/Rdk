@@ -1042,9 +1042,9 @@ try{
   SelectEngine(i);
   String modelfilename;
   if(i == 0)
-   String modelfilename=ProjectXml.ReadString("ModelFileName","").c_str();
+   modelfilename=ProjectXml.ReadString("ModelFileName","").c_str();
   else
-   String modelfilename=ProjectXml.ReadString(std::string("ModelFileName_")+RDK::sntoa(i),"").c_str();
+   modelfilename=ProjectXml.ReadString(std::string("ModelFileName_")+RDK::sntoa(i),"").c_str();
   if(modelfilename.Length() != 0)
   {
    if(ExtractFilePath(modelfilename).Length() == 0)
@@ -1374,8 +1374,6 @@ TTabSheet* TUGEngineControlForm::AddComponentControlFormPage(const string &compo
  {
   TTabSheet* tab=new TTabSheet(PageControl1);
   tab->PageControl=PageControl1;
-  if(!tab)
-   return 0;
 
   TUVisualControllerForm *form=I->second->New(tab);
   if(!form)

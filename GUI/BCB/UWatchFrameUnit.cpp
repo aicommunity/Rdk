@@ -1382,7 +1382,6 @@ void TUWatchFrame::ASaveParameters(RDK::USerStorageXML &xml)
 void TUWatchFrame::ALoadParameters(RDK::USerStorageXML &xml)
 {
  map<string,TUWatchInfo*>::iterator I;
- TUWatchInfo *wd;
  TFastLineSeries *grseries;
  string xs,ys;
  double x,y;
@@ -1401,13 +1400,14 @@ void TUWatchFrame::ALoadParameters(RDK::USerStorageXML &xml)
    xml.SelectNode(i);
    if(xml.GetNodeName() == "UpdateInterval" || xml.GetNodeName() == "WatchInterval" || xml.GetNodeName() == "ComponentControlName" || xml.GetNodeName() == "AlwaysUpdateFlag")
    {
-    xml.SelectUp();
+	xml.SelectUp();
 	UShowProgressBarForm->IncBarStatus(1);
 	continue;
    }
    UShowProgressBarForm->SetBarHeader(1,s+String(" - ")+String(xml.GetNodeName().c_str())+":");
 
    {
+    TUWatchInfo *wd;
 	TUWatchInfo wd_data;
 	wd=&wd_data;
 	wd->Legend=xml.ReadString("Legend","");

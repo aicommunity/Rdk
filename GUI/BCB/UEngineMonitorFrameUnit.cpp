@@ -147,7 +147,7 @@ void __fastcall TEngineMonitorThread::Execute(void)
 #ifdef RDK_VIDEO
   std::vector<int> video_capture_states;
 
-  int num_captures=VideoOutputForm->GetNumSources();
+  int num_captures=(VideoOutputForm)?VideoOutputForm->GetNumSources():0;
   video_capture_states.assign(num_captures,1);
   VideoCaptureStateTime.resize(num_captures,0);
   VideoCaptureSuccessTime.resize(num_captures,0);

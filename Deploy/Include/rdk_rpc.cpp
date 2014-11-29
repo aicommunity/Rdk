@@ -357,7 +357,7 @@ const char* PtzRemoteCall(const char *request, int &return_value, int &channel_i
  if(cmd == "Ptz_SetMoveParamImplemented")
  {
   std::string param_name=xml.ReadString("ParamName","");
-  bool param_value=xml.ReadBool("ParamValue","");
+  bool param_value=xml.ReadBool("ParamValue",false);
   if(Ptz_SetMoveParamImplemented(engine_index,camera.c_str(),param_name.c_str(),param_value))
    return_value=0;
   else
@@ -1154,7 +1154,7 @@ const char* PtzRemoteCall(const char *request, int &return_value, int &channel_i
   response.WriteFloat("DataSize",data_size);
   response.WriteFloat("TimeStamp",time_stamp);
  }
- else
+/* else
  if(cmd == "Ptz_ReadPanGyroDriftState")
  {
   double value;
@@ -1164,7 +1164,7 @@ const char* PtzRemoteCall(const char *request, int &return_value, int &channel_i
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Value",value);
   response.WriteFloat("TimeStamp",time_stamp);
- }
+ }*/
  else
  if(cmd == "Ptz_ReadPanErrorState")
  {

@@ -152,9 +152,9 @@ void TVideoOutputFrame::Init(int mode)
 
   UnInit();
   CaptureThread=TakeVideoCapureThread(mode,this,false);
-  CaptureThread->Priority=RDK_DEFAULT_THREAD_PRIORITY;
   if(!CaptureThread)
    return;
+  CaptureThread->Priority=RDK_DEFAULT_THREAD_PRIORITY;
   CaptureThread->SetChannelIndex(FrameIndex);
 
   TVideoCaptureThreadVideoGrabber *thread=dynamic_cast<TVideoCaptureThreadVideoGrabber*>(CaptureThread);
@@ -184,9 +184,9 @@ void TVideoOutputFrame::Init(int mode, RDK::USerStorageXML &raw_xml_data)
 
   UnInit();
   CaptureThread=TakeVideoCapureThread(mode,this,false);
-  CaptureThread->Priority=RDK_DEFAULT_THREAD_PRIORITY;
   if(!CaptureThread)
    return;
+  CaptureThread->Priority=RDK_DEFAULT_THREAD_PRIORITY;
   CaptureThread->SetChannelIndex(FrameIndex);
 
   TVideoCaptureThreadVideoGrabber *thread=dynamic_cast<TVideoCaptureThreadVideoGrabber*>(CaptureThread);

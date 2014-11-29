@@ -270,8 +270,9 @@ inherited VideoOutputFrame: TVideoOutputFrame
                 Height = 491
                 ExplicitHeight = 491
                 inherited GroupBox1: TGroupBox
+                  ExplicitWidth = 345
                   inherited RecordingSettingsGroupBox: TGroupBox
-                    ExplicitWidth = 345
+                    ExplicitWidth = 341
                     inherited RecordingTimerGroupBox: TGroupBox
                       ExplicitWidth = 339
                     end
@@ -387,13 +388,14 @@ inherited VideoOutputFrame: TVideoOutputFrame
                   Top = -54
                   Height = 550
                   ExplicitTop = -54
+                  ExplicitWidth = 345
                   ExplicitHeight = 550
                   inherited RecordingControlGroupBox: TGroupBox
                     Height = 43
                     ExplicitHeight = 93
                   end
                   inherited RecordingSettingsGroupBox: TGroupBox
-                    ExplicitWidth = 345
+                    ExplicitWidth = 341
                     inherited RecordingTimerGroupBox: TGroupBox
                       ExplicitWidth = 339
                     end
@@ -630,7 +632,7 @@ inherited VideoOutputFrame: TVideoOutputFrame
     Left = 688
     Top = 456
     Bitmap = {
-      494C010120006000AC0010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010120006000B00010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000009000000001002000000000000090
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

@@ -292,7 +292,7 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
  if(cmd == "UnRegisterMetadataReceiver")
  {
   string address=xml.ReadString("Address","");
-  int port=xml.ReadInteger("Port",port);
+  int port=xml.ReadInteger("Port",1000);
   return_value=UnRegisterMetadataReceiver(address, port);
  }
  else

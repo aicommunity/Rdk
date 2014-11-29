@@ -50,7 +50,7 @@ int TUComponentsListForm::ShowStateSelect(void)
 // Метод открытия диалога для выбора входа или выхода
 int TUComponentsListForm::ShowIOSelect(void)
 {
- Panel1->Visible;
+ Panel1->Visible=true;
  Position=poScreenCenter;
  Mode=3;
  ComponentsListFrame1->PageControl1->ActivePageIndex=2;
