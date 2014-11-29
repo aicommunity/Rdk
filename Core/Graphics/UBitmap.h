@@ -997,6 +997,7 @@ void Sort(UBHistogram *output);
 // --------------------------
 UBHistogramElement& operator [] (int index) const;
 UBHistogram& operator = (const UBHistogram &value);
+friend UBHistogram operator - (const UBHistogram &value1, const UBHistogram &value2);
 // --------------------------
 };
 

@@ -5415,7 +5415,7 @@ void UBHistogram::Calc(const UBitmap &bmp, int x, int y, int width, int height, 
   {
    for(int i=x,l=0;i<=x2;i++,l++)
    {
-    if(*p<Size)
+	if(*p<Size)
 	 ++Data[*p].Number.Int;
     p+=bmp.GetPixelByteLength();
    }
@@ -5637,7 +5637,7 @@ void UBHistogram::CalcZeroSmoothHistogram(UBHistogram &result, UBColor min, UBCo
    }
    // Ќашли левую и правую ненулевые границы дырки
    for(j=left+1;j<=right-1;j++)
-    result[j].Number.Int=abs(right_value-left_value)/2;
+	result[j].Number.Int=abs(right_value-left_value)/2;
 
    min=right;
   }
@@ -5732,6 +5732,52 @@ UBHistogram& UBHistogram::operator = (const UBHistogram &value)
 
  return *this;
 }
+
+UBHistogram operator - (const UBHistogram &value1, const UBHistogram &value2)
+{
+ UBHistogram res;
+
+ res.Prepare(ubmY8);
+ res.Normalize(value1.NormalizeFlag);
+
+ if(value1.GetSize() != value2.GetSize() || value1.GetSize() != res.GetSize())
+  return res;
+
+ float h_min(1e10), h_max(0);
+ for(int i=0;i<res.Size;i++)
+ {
+  if(res.IsNormalized())
+  {
+   res.Data[i].Number.Float=fabs(value1.Data[i].Number.Float-value2.Data[i].Number.Float);
+   if(res.Data[i].Number.Float<h_min)
+	h_min=res.Data[i].Number.Float;
+   if(res.Data[i].Number.Float>h_max)
+	h_max=res.Data[i].Number.Float;
+  }
+  else
+  {
+   res.Data[i].Number.Int=abs(int(value1.Data[i].Number.Int-value2.Data[i].Number.Int));
+   if(res.Data[i].Number.Int<h_min)
+	h_min=res.Data[i].Number.Int;
+   if(res.Data[i].Number.Int>h_max)
+	h_max=res.Data[i].Number.Int;
+  }
+ }
+
+ if(res.IsNormalized())
+ {
+  res.Min.Number.Float=h_min;
+  res.Max.Number.Float=h_max;
+ }
+ else
+ {
+  res.Min.Number.Int=h_min;
+  res.Max.Number.Int=h_max;
+ }
+
+ return res;
+}
+
 // --------------------------
 
 }
