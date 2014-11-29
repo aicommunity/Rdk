@@ -1385,7 +1385,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberPlayerEndOfStream(T
 	}
 	else
 	{
-     MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, std::string("VideoGrabber stopped by end of frame").c_str());
+     MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, std::string("VideoGrabber stopped by end of frames").c_str());
 	 Stop();
 	}
 }
@@ -1888,7 +1888,7 @@ void __fastcall TVideoCaptureThreadVideoGrabberCamera::ARunCapture(void)
  if(VideoGrabber)
  {
   VideoGrabber->StartPreview();
-  VideoGrabber->StartSynchronized();
+//  VideoGrabber->StartSynchronized();
  }
 }
 

@@ -315,12 +315,12 @@ virtual bool BuildStorage(void);
 virtual void DelAbandonedClasses(void);
 
 /// ¬озвращает указатель на библиотеку класса по имени класса
-virtual UEPtr<ULibrary> FindCollection(const std::string class_name);
+virtual UEPtr<ULibrary> FindCollection(const std::string &class_name);
 virtual UEPtr<ULibrary> FindCollection(const UId &classid);
 
 /// ‘ормирует список зависимостей класса компонента от библиотек
 /// ћетод не очищает переданный список библиотек, а только пополн€ет его
-virtual void FindComponentDependencies(const std::string class_name, std::vector<std::pair<std::string,std::string> > &dependencies);
+virtual void FindComponentDependencies(const std::string &class_name, std::vector<std::pair<std::string,std::string> > &dependencies);
 // --------------------------
 
 // --------------------------
