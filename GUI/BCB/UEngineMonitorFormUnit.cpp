@@ -137,16 +137,16 @@ void __fastcall TUEngineMonitorForm::LogTimerTimer(TObject *Sender)
  {
   if(global_error_level>=0 && global_error_level<3)
   {
-   UEngineMonitorForm->EngineMonitorFrame->Pause1Click(UEngineMonitorForm);
-   TTabSheet *tab=dynamic_cast<TTabSheet*>(UEngineMonitorForm->Parent);
+   EngineMonitorFrame->Pause1Click(this);
+   TTabSheet *tab=dynamic_cast<TTabSheet*>(Parent);
    if(tab)
    {
 	tab->PageControl->ActivePage=tab;
    }
    else
    {
-	UEngineMonitorForm->Show();
-	UEngineMonitorForm->WindowState=wsNormal;
+	Show();
+	WindowState=wsNormal;
    }
   }
 
@@ -160,13 +160,15 @@ void __fastcall TUEngineMonitorForm::LogTimerTimer(TObject *Sender)
    }
    catch(EInOutError &exception)
    {
-    UGEngineControlForm->EventsLogEnabled=false;
+	UGEngineControlForm->EventsLogEnabled=false;
    }
    EventsLogFilePath=AnsiString(UGEngineControlForm->ProjectPath+"EventsLog/").c_str();
   }
 
+  bool is_logged=false;
   while(!UnsentLog.empty())
   {
+   is_logged=true;
    if(UGEngineControlForm->EventsLogEnabled)
    {
 	if(!EventsLogFile)
@@ -181,16 +183,22 @@ void __fastcall TUEngineMonitorForm::LogTimerTimer(TObject *Sender)
 	if(*EventsLogFile)
 	{
 	 *EventsLogFile<<UnsentLog.front()<<std::endl;
-	 EventsLogFile->flush();
 	}
    }
 
-   UEngineMonitorForm->EngineMonitorFrame->RichEdit->Lines->Add(UnsentLog.front().c_str());
-   UEngineMonitorForm->EngineMonitorFrame->RichEdit->SelStart =
-	UEngineMonitorForm->EngineMonitorFrame->RichEdit->Perform(EM_LINEINDEX, UEngineMonitorForm->EngineMonitorFrame->RichEdit->Lines->Count-1, 0);
-   UEngineMonitorForm->EngineMonitorFrame->RichEdit->Update();
-   UEngineMonitorForm->EngineMonitorFrame->RichEdit->Repaint();
+   EngineMonitorFrame->RichEdit->Lines->Add(UnsentLog.front().c_str());
    UnsentLog.pop_front();
+  }
+
+  if(is_logged)
+  {
+   if(UGEngineControlForm->EventsLogEnabled && EventsLogFile && *EventsLogFile)
+	EventsLogFile->flush();
+
+   EngineMonitorFrame->RichEdit->SelStart =
+	EngineMonitorFrame->RichEdit->Perform(EM_LINEINDEX, EngineMonitorFrame->RichEdit->Lines->Count-1, 0);
+   EngineMonitorFrame->RichEdit->Update();
+   EngineMonitorFrame->RichEdit->Repaint();
   }
  }
  catch(...)

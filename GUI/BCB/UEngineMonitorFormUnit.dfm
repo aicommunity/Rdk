@@ -53,7 +53,7 @@ object UEngineMonitorForm: TUEngineMonitorForm
     end
   end
   object LogTimer: TTimer
-    Interval = 100
+    Interval = 500
     OnTimer = LogTimerTimer
     Left = 128
     Top = 16
