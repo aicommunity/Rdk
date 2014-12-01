@@ -11,6 +11,8 @@ class RDK_LIB_TYPE UGenericMutexWin: public UGenericMutex
 private:
 void* m_UnlockEvent;
 
+DWORD Pid;
+
 public:
 UGenericMutexWin();
 virtual ~UGenericMutexWin();
@@ -27,6 +29,7 @@ UGenericMutexWin& operator = (const UGenericMutexWin &copy);
 
 
 UGenericMutexWin::UGenericMutexWin()
+ : Pid(0)
 {
  m_UnlockEvent = CreateEvent(0, TRUE, TRUE, 0);
 }
@@ -40,10 +43,17 @@ bool UGenericMutexWin::lock(int lock_id)
 {
  if(!m_UnlockEvent)
   return false;
+ if (WaitForSingleObject(m_UnlockEvent, 0) != WAIT_TIMEOUT)
+ {
+  if(Pid == GetCurrentProcessId())
+   return true;
+ }
+
  if (WaitForSingleObject(m_UnlockEvent, INFINITE) != WAIT_TIMEOUT)
  {
   ResetEvent(m_UnlockEvent);
   LockId=lock_id;
+  Pid=GetCurrentProcessId();
   return true;
  }
  return false;
@@ -73,6 +83,7 @@ bool UGenericMutexWin::unlock()
   return true;
  if (WaitForSingleObject(m_UnlockEvent, 0) != WAIT_TIMEOUT)
   return true;
+ Pid=0;
  SetEvent(m_UnlockEvent);
  LockId=-1;
  return true;
