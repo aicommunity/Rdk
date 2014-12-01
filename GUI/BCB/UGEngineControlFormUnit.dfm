@@ -649,10 +649,6 @@ object UGEngineControlForm: TUGEngineControlForm
           Margins.Right = 4
           Margins.Bottom = 4
           Caption = 'Logs'
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
         end
         object TabSheet2: TTabSheet
           Margins.Left = 4
@@ -1543,7 +1539,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 360
     Top = 65528
     Bitmap = {
-      494C01011B006000100310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B006000140310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

@@ -2305,12 +2305,13 @@ void __fastcall TUGEngineControlForm::Servercontrol1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::ChannelsStringGridClick(TObject *Sender)
 {
- if(UpdateInterfaceFlag)
+/* if(UpdateInterfaceFlag)
   return;
 
  SelectEngine(ChannelsStringGrid->Row);
  UDrawEngineFrame1->ReloadNet();
  RDK::UIVisualControllerStorage::UpdateInterface(true);
+ */
 }
 //---------------------------------------------------------------------------
 
@@ -2320,9 +2321,12 @@ void __fastcall TUGEngineControlForm::ChannelsStringGridSelectCell(TObject *Send
  if(UpdateInterfaceFlag)
   return;
 
- SelectEngine(ChannelsStringGrid->Row);
- UDrawEngineFrame1->ReloadNet();
- RDK::UIVisualControllerStorage::UpdateInterface(true);
+ if(ChannelsStringGrid->Row != ARow)
+ {
+  SelectEngine(ARow);
+  UDrawEngineFrame1->ReloadNet();
+  RDK::UIVisualControllerStorage::UpdateInterface(true);
+ }
 }
 //---------------------------------------------------------------------------
 
