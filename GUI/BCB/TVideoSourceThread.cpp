@@ -916,7 +916,7 @@ bool TVideoCaptureThreadBmpSequence::SetFps(double fps)
 void __fastcall TVideoCaptureThreadBmpSequence::AStart(void)
 {
  CurrentTimeStamp=0;
- SetSyncMode(true);
+ SetSyncMode(1);
 // TVideoCaptureThread::Start();
 }
 
