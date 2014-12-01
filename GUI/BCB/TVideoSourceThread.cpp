@@ -1554,6 +1554,7 @@ int TVideoCaptureThreadVideoGrabber::CheckConnection(void) const
 
 void __fastcall TVideoCaptureThreadVideoGrabber::ARecreateCapture(void)
 {
+ return;
  delete VideoGrabber;
  VideoGrabber=new TVideoGrabber(GetFrame());
  VideoGrabber->OnFrameBitmap=VideoGrabberFrameBitmap;
