@@ -337,7 +337,7 @@ void TVideoOutputFrame::InitPrimarySettings(void)
  if(currentRMethod)
   currentRMethod->Checked=true;
 
- if( currentRMethod->MenuIndex==0 || currentRMethod->MenuIndex==8)
+ if(currentRMethod && (currentRMethod->MenuIndex==0 || currentRMethod->MenuIndex==8))
   parentItem1->Enabled=false;
 }
 
