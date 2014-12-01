@@ -45,7 +45,7 @@ bool UGenericMutexWin::lock(int lock_id)
   return false;
  if (WaitForSingleObject(m_UnlockEvent, 0) != WAIT_TIMEOUT)
  {
-  if(Pid == GetCurrentProcessId())
+  if(Pid == GetCurrentThreadId())
    return true;
  }
 
@@ -53,7 +53,7 @@ bool UGenericMutexWin::lock(int lock_id)
  {
   ResetEvent(m_UnlockEvent);
   LockId=lock_id;
-  Pid=GetCurrentProcessId();
+  Pid=GetCurrentThreadId();
   return true;
  }
  return false;
