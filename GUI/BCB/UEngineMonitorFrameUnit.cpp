@@ -61,13 +61,27 @@ __fastcall TEngineMonitorThread::~TEngineMonitorThread(void)
 /// ¬озвращает вектор состо€ний тредов
 std::vector<int> TEngineMonitorThread::ReadCalcThreadStates(void) const
 {
- return CalcThreadStates;
+ std::vector<int> res;
+ if(WaitForSingleObject(CalculationNotInProgress,1000) == WAIT_TIMEOUT)
+  return res;
+
+ ResetEvent(CalculationNotInProgress);
+ res=CalcThreadStates;
+ SetEvent(CalculationNotInProgress);
+ return res;
 }
 
 /// ¬озвращает вектор состо€ний источников видеозахвата
 std::vector<int> TEngineMonitorThread::ReadVideoCaptureStates(void) const
 {
- return VideoCaptureStates;
+ std::vector<int> res;
+ if(WaitForSingleObject(CalculationNotInProgress,1000) == WAIT_TIMEOUT)
+  return res;
+
+ ResetEvent(CalculationNotInProgress);
+ res=VideoCaptureStates;
+ SetEvent(CalculationNotInProgress);
+ return res;
 }
 // --------------------------
 
@@ -195,9 +209,8 @@ void __fastcall TEngineMonitorThread::Execute(void)
   VideoCaptureStates=video_capture_states;
 #endif
 
-  Sleep(1);
-
   SetEvent(CalculationNotInProgress);
+  Sleep(100);
  }
 }
 // --------------------------
