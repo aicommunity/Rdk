@@ -1441,7 +1441,8 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberFrameBitmap(TObject
 
  bool bmp_res=WriteSourceSafe(ConvertUBitmap, double(FrameInfo->FrameTime)/(10000000.0*86400), false);
 
-  if(GetNumEngines() > ChannelIndex && bmp_res)
+//  if(GetNumEngines() > ChannelIndex && bmp_res)
+  if(bmp_res)
    UEngineMonitorForm->EngineMonitorFrame->SetServerTimeStamp(ChannelIndex,GetLastTimeStampSafe()*86400.0*1000.0);
 
   SetEvent(VideoGrabberCompleted);

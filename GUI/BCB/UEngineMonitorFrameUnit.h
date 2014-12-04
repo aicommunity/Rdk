@@ -54,6 +54,20 @@ std::vector<double> VideoCaptureStateTime;
 /// ѕоследние моменты времени успешного расчета
 std::vector<double> VideoCaptureSuccessTime;
 
+/// ƒлина очереди дл€ расчета среднего времени обработки канала
+/// (число итераций дл€ усреднени€)
+int NumAvgIterations;
+
+/// „исло раз, в которое врем€ расчета должно превысить среднее врем€ расчета
+/// чтобы считать, что произошел останов
+double AvgThreshold;
+
+/// »стори€ последних моментов времени успешного расчета
+std::vector<std::vector<double> > AvgIterations;
+
+/// »стори€ последних моментов времени успешного захвата
+std::vector<std::vector<double> > AvgCaptureIterations;
+
 public:
 // —обытие состо€ни€ расчета. ¬ыставлено на врем€ активности расчета. —брасываетс€ по стопу
 HANDLE CalcState;
@@ -63,6 +77,8 @@ HANDLE CalcEnable;
 HANDLE CalcStarted;
 
 HANDLE CalculationNotInProgress;
+
+protected: // ¬ременные переменные
 
 
 public: // ћетоды
@@ -201,43 +217,43 @@ public:		// User declarations
 /// –ежим работы
 /// 0 - однопоточный (одноканальный) режим
 /// 1 - многопоточный режим
-int ChannelsMode;
+RDK::UELockVar<int> ChannelsMode;
 
 /// –ежим использовани€ времени дл€ расчета
 /// 0 - системное врем€
 /// 1 - врем€ источника данных
-int CalculationTimeSourceMode;
+RDK::UELockVar<int> CalculationTimeSourceMode;
 
 // –ежим расчетов
 // 0 - простой расчет
 // 1 - расчет в реальном времени
 // 2 - простой расчет по сигналу
-std::vector<int> CalculateMode;
+std::vector<RDK::UELockVar<int> > CalculateMode;
 
 // ¬ременна€ метка последнего расчета
-std::vector<RDK::ULongTime> LastCalculatedServerTimeStamp;
+std::vector<RDK::UELockVar<RDK::ULongTime> > LastCalculatedServerTimeStamp;
 
 /// ћинимальный интервал времени между итераци€ми расчета в режиме 0 и 2, мс
-std::vector<int> MinInterstepsInterval;
+std::vector<RDK::UELockVar<int> > MinInterstepsInterval;
 
 protected:
 
 // —игнал, выставл€емый при необходимости расчета
 // сбрасываетс€ при итерации счета
-std::vector<bool> CalculateSignal;
+std::vector<RDK::UELockVar<bool> > CalculateSignal;
 
 // —игнал активности расчета
 // сбрасываетс€ по стопу
-std::vector<bool> CalculateState;
+std::vector<RDK::UELockVar<bool> > CalculateState;
 
 // ¬ременна€ метка сервера
-std::vector<RDK::ULongTime> ServerTimeStamp;
+std::vector<RDK::UELockVar<RDK::ULongTime> > ServerTimeStamp;
 
 /// ѕотоки запуска многоканальной аналитики
 std::vector<TEngineThread*> ThreadChannels;
 
 /// ћетка реального времени окончани€ последнего расчета в однопоточном режиме
-std::vector<RDK::ULongTime> RealLastCalculationTime;
+std::vector<RDK::UELockVar<RDK::ULongTime> > RealLastCalculationTime;
 
 std::vector<RDK::UEPtr<TBroadcasterForm> > BroadcastersList;
 

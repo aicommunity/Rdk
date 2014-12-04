@@ -143,7 +143,7 @@ RDK::UELockPtr<RDK::UContainer> GetModelLock(int engine_index);
 //extern RDK::UEPtr<RDK::UEnvironment> PEnvironment;
 //extern RDK::UEPtr<RDK::UStorage> PStorage;
 
-extern int SelectedEngineIndex;
+//extern int SelectedEngineIndex;
 
 extern std::string RdkSystemDir;
 

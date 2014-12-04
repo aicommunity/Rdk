@@ -33,6 +33,8 @@ __fastcall TEngineMonitorThread::TEngineMonitorThread(TUEngineMonitorFrame *engi
  CalcEnable=CreateEvent(0,TRUE,0,0);
  CalcStarted=CreateEvent(0,TRUE,0,0);
  CalculationNotInProgress=CreateEvent(0,TRUE,TRUE,0);
+ NumAvgIterations=5;
+ AvgThreshold=5.0;
 }
 
 __fastcall TEngineMonitorThread::~TEngineMonitorThread(void)
@@ -61,19 +63,21 @@ __fastcall TEngineMonitorThread::~TEngineMonitorThread(void)
 /// ¬озвращает вектор состо€ний тредов
 std::vector<int> TEngineMonitorThread::ReadCalcThreadStates(void) const
 {
- std::vector<int> res;
+/* std::vector<int> res;
  if(WaitForSingleObject(CalculationNotInProgress,1000) == WAIT_TIMEOUT)
   return res;
 
  ResetEvent(CalculationNotInProgress);
  res=CalcThreadStates;
  SetEvent(CalculationNotInProgress);
- return res;
+ return res;*/
+ return CalcThreadStates;
 }
 
 /// ¬озвращает вектор состо€ний источников видеозахвата
 std::vector<int> TEngineMonitorThread::ReadVideoCaptureStates(void) const
 {
+/*
  std::vector<int> res;
  if(WaitForSingleObject(CalculationNotInProgress,1000) == WAIT_TIMEOUT)
   return res;
@@ -81,7 +85,8 @@ std::vector<int> TEngineMonitorThread::ReadVideoCaptureStates(void) const
  ResetEvent(CalculationNotInProgress);
  res=VideoCaptureStates;
  SetEvent(CalculationNotInProgress);
- return res;
+ return res;  */
+ return VideoCaptureStates;
 }
 // --------------------------
 
@@ -119,6 +124,7 @@ void __fastcall TEngineMonitorThread::Execute(void)
   calc_thread_states.assign(num_channels,1);
   CalcThreadStateTime.resize(num_channels,0);
   CalcThreadSuccessTime.resize(num_channels,0);
+  AvgIterations.resize(num_channels);
 
   for(int i=0;i<num_channels;i++)
   {
@@ -135,6 +141,9 @@ void __fastcall TEngineMonitorThread::Execute(void)
 	if(CalcThreadSuccessTime[i] != last_calc_time)
 	{
 	 CalcThreadSuccessTime[i]=last_calc_time;
+	 AvgIterations[i].push_back(last_calc_time);
+	 if(AvgIterations[i].size()>NumAvgIterations)
+	  AvgIterations[i].erase(AvgIterations[i].begin());
 
 	 TDateTime dt=TDateTime::CurrentDateTime();
 	 CalcThreadStateTime[i]=dt.operator double();
@@ -143,7 +152,16 @@ void __fastcall TEngineMonitorThread::Execute(void)
 	else
 	{
 	 TDateTime dt=TDateTime::CurrentDateTime();
-	 if((dt.operator double()-CalcThreadStateTime[i])*86400.0>2.0)
+
+	 double avg_diff(0.0);
+	 for(size_t j=1;j<AvgIterations[i].size();j++)
+	 {
+	  avg_diff+=AvgIterations[i][j]-AvgIterations[i][j-1];
+	 }
+	 avg_diff/=(AvgIterations[i].empty())?1:AvgIterations[i].size();
+	 avg_diff/=1000;
+
+	 if(fabs(avg_diff) < 1e-8 || (dt.operator double()-CalcThreadStateTime[i])*86400.0>AvgThreshold*avg_diff)
 	  calc_thread_states[i]=2;
 	 else
 	  calc_thread_states[i]=0;
@@ -165,6 +183,7 @@ void __fastcall TEngineMonitorThread::Execute(void)
   video_capture_states.assign(num_captures,1);
   VideoCaptureStateTime.resize(num_captures,0);
   VideoCaptureSuccessTime.resize(num_captures,0);
+  AvgCaptureIterations.resize(num_channels);
 
   for(int i=0;i<num_captures;i++)
   {
@@ -185,6 +204,9 @@ void __fastcall TEngineMonitorThread::Execute(void)
 	if(VideoCaptureSuccessTime[i] != last_calc_time)
 	{
 	 VideoCaptureSuccessTime[i]=last_calc_time;
+	 AvgCaptureIterations[i].push_back(last_calc_time);
+	 if(AvgCaptureIterations[i].size()>NumAvgIterations)
+	  AvgCaptureIterations[i].erase(AvgCaptureIterations[i].begin());
 
 	 TDateTime dt=TDateTime::CurrentDateTime();
 	 VideoCaptureStateTime[i]=dt.operator double();
@@ -193,7 +215,16 @@ void __fastcall TEngineMonitorThread::Execute(void)
 	else
 	{
 	 TDateTime dt=TDateTime::CurrentDateTime();
-	 if((dt.operator double()-VideoCaptureStateTime[i])*86400.0>2.0)
+
+	 double avg_diff(0.0);
+	 for(size_t j=1;j<AvgCaptureIterations[i].size();j++)
+	 {
+	  avg_diff+=AvgCaptureIterations[i][j]-AvgCaptureIterations[i][j-1];
+	 }
+	 avg_diff/=(AvgCaptureIterations[i].empty())?1:AvgCaptureIterations[i].size();
+
+	 if(fabs(avg_diff)<1e-8 || (dt.operator double()-VideoCaptureStateTime[i])>AvgThreshold*avg_diff)
+//	 if((dt.operator double()-VideoCaptureStateTime[i])*86400.0>2.0)
 	  video_capture_states[i]=2;
 	 else
 	  video_capture_states[i]=0;
@@ -357,8 +388,14 @@ void __fastcall TEngineThread::Execute(void)
 	MModel_SetDoubleSourceTime(ChannelIndex,UEngineMonitorForm->EngineMonitorFrame->GetServerTimeStamp(ChannelIndex)/(86400.0*1000.0)/*dt.operator double()*/);
    #ifdef RDK_VIDEO
    TVideoOutputFrame* video=VideoOutputForm->GetVideoOutputFrame(ChannelIndex);
-   if(video)
+   if(video /*&& video->CaptureThread*/)
+   {
+//	double time_stamp;
+//	bool res=video->CaptureThread->ReadSourceSafe(Source,time_stamp,false);
+//	MModel_SetComponentBitmapOutput(ChannelIndex, "", "Output", &Source,true);
+
 	video->BeforeCalculate();
+   }
    #endif
    MEnv_Calculate(ChannelIndex,0);
   }

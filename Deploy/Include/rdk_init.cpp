@@ -137,7 +137,7 @@ int RDK_CALL Engine_Del(int index)
 // Возвращает индекс текущего выбранного движка
 int RDK_CALL GetSelectedEngineIndex(void)
 {
- return SelectedEngineIndex;
+ return DllManager.GetSelectedChannelIndex();
 }
 
 
@@ -148,10 +148,10 @@ int RDK_CALL SelectEngine(int index)
  if(index<0 || index>=GetNumEngines())
   return 1000;
 
- if(SelectedEngineIndex == index)
+ if(DllManager.GetSelectedChannelIndex() == index)
   return 0;
 
- RDK::UELockPtr<RDK::UEngine> ptr1(DllManager.GetEngineLock(SelectedEngineIndex));
+ RDK::UELockPtr<RDK::UEngine> ptr1(DllManager.GetEngineLock(DllManager.GetSelectedChannelIndex()));
  RDK::UELockPtr<RDK::UEngine> ptr2(DllManager.GetEngineLock(index));
 
  DllManager.SetSelectedChannelIndex(index);
@@ -162,7 +162,7 @@ int RDK_CALL SelectEngine(int index)
 /// Блокирует канал до вызова функции UnlockEngine
 int RDK_CALL LockEngine(void)
 {
- return MLockEngine(SelectedEngineIndex);
+ return MLockEngine(DllManager.GetSelectedChannelIndex());
 }
 
 int RDK_CALL MLockEngine(int index)
@@ -181,7 +181,7 @@ int RDK_CALL MLockEngine(int index)
 /// Разблокирует канал
 int RDK_CALL UnLockEngine(void)
 {
- return MUnLockEngine(SelectedEngineIndex);
+ return MUnLockEngine(DllManager.GetSelectedChannelIndex());
 }
 
 int RDK_CALL MUnLockEngine(int index)
@@ -201,13 +201,13 @@ int RDK_CALL MUnLockEngine(int index)
 int RDK_CALL EngineInit(int predefined_structure, void* exception_handler)
 {
  int res=0;
- if(GetNumEngines()<=SelectedEngineIndex)
-  res=SetNumEngines(SelectedEngineIndex+1);
+ if(GetNumEngines()<=DllManager.GetSelectedChannelIndex())
+  res=SetNumEngines(DllManager.GetSelectedChannelIndex()+1);
 
  if(res != 0)
   return res;
 
- res=MEngineInit(SelectedEngineIndex, predefined_structure, exception_handler);
+ res=MEngineInit(DllManager.GetSelectedChannelIndex(), predefined_structure, exception_handler);
 
  if(res != 0)
   return res;
@@ -245,13 +245,13 @@ int RDK_CALL GraphicalEngineInit(int predefined_structure, int num_inputs,
 		void* exception_handler)
 {
  int res=0;
- if(GetNumEngines()<=SelectedEngineIndex)
-  res=SetNumEngines(SelectedEngineIndex+1);
+ if(GetNumEngines()<=DllManager.GetSelectedChannelIndex())
+  res=SetNumEngines(DllManager.GetSelectedChannelIndex()+1);
 
  if(res != 0)
   return res;
 
- res=MGraphicalEngineInit(SelectedEngineIndex, predefined_structure, num_inputs,
+ res=MGraphicalEngineInit(DllManager.GetSelectedChannelIndex(), predefined_structure, num_inputs,
 		num_outputs, input_width, input_height, reflectionx, exception_handler);
  if(res != 0)
   return res;
@@ -304,7 +304,7 @@ int RDK_CALL EngineUnInit(void)
   if(!Env_UnInit())
    return 1;
 
- return DllManager.EngineDestroy(SelectedEngineIndex);
+ return DllManager.EngineDestroy(DllManager.GetSelectedChannelIndex());
 }
 
 int RDK_CALL MEngineUnInit(int engine_index)
