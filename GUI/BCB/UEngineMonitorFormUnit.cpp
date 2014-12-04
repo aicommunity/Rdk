@@ -100,11 +100,15 @@ void __fastcall TUEngineMonitorForm::LogTimerTimer(TObject *Sender)
   return;
  ResetEvent(RdkExceptionHandlerEvent);
 
+ std::list<int> ch_indexes=UnsentLogChannelIndexes;
+ UnsentLogChannelIndexes.clear();
+ SetEvent(RdkExceptionHandlerEvent);
+
  int global_error_level=-1;
  try
  {
-  std::list<int>::iterator I=UnsentLogChannelIndexes.begin();
-  for(;I!=UnsentLogChannelIndexes.end();++I)
+  std::list<int>::iterator I=ch_indexes.begin();
+  for(;I!=ch_indexes.end();++I)
   {
    int error_level=-1;
    int num_log_lines=MEngine_GetNumUnreadLogLines(*I);
@@ -121,17 +125,13 @@ void __fastcall TUEngineMonitorForm::LogTimerTimer(TObject *Sender)
 	if(!new_log_data.empty())
 	 UnsentLog.push_back(new_log_data);
    }
+   MEngine_ClearReadLog(*I);
   }
-  MEngine_ClearReadLog(*I);
  }
  catch(...)
  {
-  UnsentLogChannelIndexes.clear();
-  SetEvent(RdkExceptionHandlerEvent);
   throw;
  }
- UnsentLogChannelIndexes.clear();
- SetEvent(RdkExceptionHandlerEvent);
 
  try
  {
@@ -152,7 +152,7 @@ void __fastcall TUEngineMonitorForm::LogTimerTimer(TObject *Sender)
 
 
   /// Сохраняем лог в файл если это необходимо
-  if(UGEngineControlForm->EventsLogEnabled && UGEngineControlForm->ProjectPath.Length()>0)
+  if(!UnsentLog.empty() && UGEngineControlForm->EventsLogEnabled && UGEngineControlForm->ProjectPath.Length()>0)
   {
    try
    {

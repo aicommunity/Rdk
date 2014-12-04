@@ -1396,21 +1396,31 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberFrameBitmap(TObject
  if(GetThreadState())
   ConnectionState=2;
 
- if(Fps > 0)
- {
-  double diffTime=double(FrameInfo->FrameTime)/(10000000.0*86400)-GetLastTimeStampSafe();
-  if(diffTime<(1.0/Fps)/86400.0)
-  {
-	return;
-  }
- }
+ ConvertTimeStamp=FrameInfo->FrameTime;
 
  unsigned int BitmapLinePtr = (unsigned int) BitmapInfo->BitmapDataPtr;
  int bmp_width=BitmapInfo->BitmapWidth;
  int bmp_height=BitmapInfo->BitmapHeight;
- ConvertUBitmap.SetRes(bmp_width, bmp_height, RDK::ubmRGB24);
- int conv_line_bl=ConvertUBitmap.GetLineByteLength();
 
+ if (BitmapInfo->BitmapBitsPerPixel == 24)
+ {   // case where FrameGrabberRGBFormat is set to fgf_RGB24 (you can select it in the "frame grabber" tab)
+  ConvertUBitmap.SetRes(bmp_width, bmp_height, RDK::ubmRGB24);
+ }
+ else
+ if (BitmapInfo->BitmapBitsPerPixel == 32)
+ {
+  ConvertUBitmap.SetRes(bmp_width, bmp_height, RDK::ubmRGB32);
+ }
+
+ int conv_line_bl=ConvertUBitmap.GetLineByteLength();
+  unsigned char *p=ConvertUBitmap.GetData();
+  for (int i = 0 ; i < bmp_height ; i++)
+  {
+   memcpy(p,(void*)BitmapLinePtr,conv_line_bl);
+   p+=conv_line_bl;
+   BitmapLinePtr += BitmapInfo->BitmapLineSize;
+  }
+/*
  if (BitmapInfo->BitmapBitsPerPixel == 24)
  {   // case where FrameGrabberRGBFormat is set to fgf_RGB24 (you can select it in the "frame grabber" tab)
   unsigned char *p=ConvertUBitmap.GetData();
@@ -1437,13 +1447,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberFrameBitmap(TObject
    }
    BitmapLinePtr += BitmapInfo->BitmapLineSize;
   }
- }
-
- bool bmp_res=WriteSourceSafe(ConvertUBitmap, double(FrameInfo->FrameTime)/(10000000.0*86400), false);
-
-//  if(GetNumEngines() > ChannelIndex && bmp_res)
-  if(bmp_res)
-   UEngineMonitorForm->EngineMonitorFrame->SetServerTimeStamp(ChannelIndex,GetLastTimeStampSafe()*86400.0*1000.0);
+ }  */
 
   SetEvent(VideoGrabberCompleted);
 }
@@ -1492,14 +1496,35 @@ void __fastcall TVideoCaptureThreadVideoGrabber::Calculate(void)
 
  GetFrame()->UpdateInterval=wait_time;
  //Sleep(1);
- if(WaitForSingleObject(VideoGrabberCompleted, wait_time) == WAIT_TIMEOUT)
+ if(WaitForSingleObject(VideoGrabberCompleted, 1000) == WAIT_TIMEOUT)
  {
+//  Sleep(10);
   return;
  }
  else
-  Sleep(0);
+ {
+  ResetEvent(VideoGrabberCompleted);
 
- ResetEvent(VideoGrabberCompleted);
+  if(Fps > 0)
+  {
+   double diffTime=ConvertTimeStamp/double(10000000.0*86400)-GetLastTimeStampSafe();
+   if(diffTime<(1.0/Fps)/86400.0)
+   {
+	return;
+   }
+  }
+
+  ConvertResult.SetRes(ConvertUBitmap.GetWidth(),ConvertUBitmap.GetHeight(),RDK::ubmRGB24);
+  ConvertUBitmap.ConvertTo(ConvertResult);
+
+  bool bmp_res=WriteSourceSafe(ConvertResult, ConvertTimeStamp/double(10000000.0*86400), false);
+
+  if(bmp_res)
+   UEngineMonitorForm->EngineMonitorFrame->SetServerTimeStamp(ChannelIndex,GetLastTimeStampSafe()*86400.0*1000.0);
+
+  Sleep(0);
+ }
+
 }
 
 

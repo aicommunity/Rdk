@@ -551,7 +551,9 @@ TVideoGrabber* VideoGrabber;
 
 Graphics::TBitmap* ConvertBitmap;
 
-RDK::UBitmap ConvertUBitmap;
+RDK::UBitmap ConvertUBitmap,ConvertResult;
+
+RDK::UELockVar<unsigned long long> ConvertTimeStamp;
 
 protected: // События
 /// Выставляется при получении очередного кадра

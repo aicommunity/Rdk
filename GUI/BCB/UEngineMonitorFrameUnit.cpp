@@ -33,7 +33,7 @@ __fastcall TEngineMonitorThread::TEngineMonitorThread(TUEngineMonitorFrame *engi
  CalcEnable=CreateEvent(0,TRUE,0,0);
  CalcStarted=CreateEvent(0,TRUE,0,0);
  CalculationNotInProgress=CreateEvent(0,TRUE,TRUE,0);
- NumAvgIterations=5;
+ NumAvgIterations=20;
  AvgThreshold=5.0;
 }
 
@@ -117,6 +117,8 @@ void __fastcall TEngineMonitorThread::Execute(void)
   }
   ResetEvent(CalculationNotInProgress);
 
+try
+{
   // Определяем состояние тредов расчета
   std::vector<int> calc_thread_states;
 
@@ -201,6 +203,7 @@ void __fastcall TEngineMonitorThread::Execute(void)
 	}
 
 	double last_calc_time=thread->GetLastTimeStampSafe();
+	TDateTime dt=TDateTime::CurrentDateTime();
 	if(VideoCaptureSuccessTime[i] != last_calc_time)
 	{
 	 VideoCaptureSuccessTime[i]=last_calc_time;
@@ -208,7 +211,6 @@ void __fastcall TEngineMonitorThread::Execute(void)
 	 if(AvgCaptureIterations[i].size()>NumAvgIterations)
 	  AvgCaptureIterations[i].erase(AvgCaptureIterations[i].begin());
 
-	 TDateTime dt=TDateTime::CurrentDateTime();
 	 VideoCaptureStateTime[i]=dt.operator double();
 	 video_capture_states[i]=0;
 	}
@@ -242,6 +244,13 @@ void __fastcall TEngineMonitorThread::Execute(void)
 
   SetEvent(CalculationNotInProgress);
   Sleep(100);
+}
+catch(Exception &ex)
+{
+ SetEvent(CalculationNotInProgress);
+ Engine_LogMessage(RDK_EX_DEBUG, (string("TEngineThread Exception: ")+AnsiString(ex.Message).c_str()).c_str());
+}
+
  }
 }
 // --------------------------
