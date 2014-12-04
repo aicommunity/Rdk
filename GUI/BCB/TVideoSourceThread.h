@@ -553,7 +553,7 @@ Graphics::TBitmap* ConvertBitmap;
 
 RDK::UBitmap ConvertUBitmap,ConvertResult;
 
-RDK::UELockVar<unsigned long long> ConvertTimeStamp;
+RDK::UELockVar<double> ConvertTimeStamp;
 
 protected: // События
 /// Выставляется при получении очередного кадра

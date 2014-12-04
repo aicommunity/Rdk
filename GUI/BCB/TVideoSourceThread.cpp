@@ -1263,8 +1263,8 @@ void __fastcall TVideoCaptureThreadHttpServer::ARecreateCapture(void)
 __fastcall TVideoCaptureThreadVideoGrabber::TVideoCaptureThreadVideoGrabber(TVideoOutputFrame *frame, bool CreateSuspended)
  : VideoGrabber(new TVideoGrabber(frame)), TVideoCaptureThread(frame,CreateSuspended)
 {
-// VideoGrabber->OnFrameCaptureCompleted=OnFrameCaptureCompleted;
- VideoGrabber->OnFrameBitmap=VideoGrabberFrameBitmap;
+ VideoGrabber->OnFrameCaptureCompleted=OnFrameCaptureCompleted;
+// VideoGrabber->OnFrameBitmap=VideoGrabberFrameBitmap;
  VideoGrabber->OnLog=VideoGrabberLog;
  VideoGrabber->OnDeviceLost=VideoGrabberDeviceLost;
   VideoGrabber->OnPlayerEndOfStream = VideoGrabberPlayerEndOfStream;
@@ -1333,7 +1333,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::OnFrameCaptureCompleted(System:
 {
  if(GetThreadState())
   ConnectionState=2;
-
+	  /*
  if(Fps > 0)
  {
   double diffTime=double(FrameTime)/(10000000.0*86400)-GetLastTimeStampSafe();
@@ -1341,12 +1341,15 @@ void __fastcall TVideoCaptureThreadVideoGrabber::OnFrameCaptureCompleted(System:
   {
 	return;
   }
- }
+ }   */
 
  Graphics::TBitmap *Frame_Bitmap;
 
  Frame_Bitmap = (Graphics::TBitmap*) FrameBitmap;
+ ConvertUBitmap<<Frame_Bitmap;
+ ConvertTimeStamp=double(FrameTime);
 
+/*
  switch (DestType)
  {
  case fc_TBitmap:
@@ -1359,13 +1362,13 @@ void __fastcall TVideoCaptureThreadVideoGrabber::OnFrameCaptureCompleted(System:
    ConvertBitmap->Assign(Frame_Bitmap);
    ConvertBitmap->PixelFormat=pf24bit;
    WriteSourceSafe(ConvertBitmap, double(FrameTime)/(10000000.0*86400), false);
-  }
-  if(GetNumEngines() > ChannelIndex)
-   UEngineMonitorForm->EngineMonitorFrame->SetServerTimeStamp(ChannelIndex,GetLastTimeStampSafe()*86400.0*1000.0);
+  }   */
+//  if(GetNumEngines() > ChannelIndex)
+//   UEngineMonitorForm->EngineMonitorFrame->SetServerTimeStamp(ChannelIndex,GetLastTimeStampSafe()*86400.0*1000.0);
 
   SetEvent(VideoGrabberCompleted);
- break;
- }
+// break;
+// }
 }
 
 void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberPlayerEndOfStream(TObject *Sender)
