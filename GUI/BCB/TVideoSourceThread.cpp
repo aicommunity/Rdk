@@ -1583,6 +1583,8 @@ int TVideoCaptureThreadVideoGrabber::CheckConnection(void) const
 
 void __fastcall TVideoCaptureThreadVideoGrabber::ARecreateCapture(void)
 {
+ MEngine_LogMessage(ChannelIndex, RDK_EX_DEBUG, (std::string("TVideoCaptureThreadVideoGrabberIpCamera::ARecreateCapture ")).c_str());
+
  return;
  delete VideoGrabber;
  VideoGrabber=new TVideoGrabber(GetFrame());
@@ -2051,12 +2053,15 @@ void __fastcall TVideoCaptureThreadVideoGrabberIpCamera::ARunCapture(void)
   VideoGrabber->StartPreview();
 //  VideoGrabber->StartSynchronized();
  }
+ MEngine_LogMessage(ChannelIndex, RDK_EX_DEBUG, (std::string("TVideoCaptureThreadVideoGrabberIpCamera::ARunCapture ")+AnsiString(Url).c_str()).c_str());
 }
 
 void __fastcall TVideoCaptureThreadVideoGrabberIpCamera::APauseCapture(void)
 {
  if(VideoGrabber)
   VideoGrabber->PausePreview();
+
+ MEngine_LogMessage(ChannelIndex, RDK_EX_DEBUG, (std::string("TVideoCaptureThreadVideoGrabberIpCamera::APauseCapture ")+AnsiString(Url).c_str()).c_str());
 }
 // --------------------------
 

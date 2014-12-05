@@ -33,7 +33,7 @@ __fastcall TEngineMonitorThread::TEngineMonitorThread(TUEngineMonitorFrame *engi
  CalcEnable=CreateEvent(0,TRUE,0,0);
  CalcStarted=CreateEvent(0,TRUE,0,0);
  CalculationNotInProgress=CreateEvent(0,TRUE,TRUE,0);
- NumAvgIterations=20;
+ NumAvgIterations=200;
  AvgThreshold=5.0;
 }
 
@@ -158,9 +158,10 @@ try
 	 double avg_diff(0.0);
 	 for(size_t j=1;j<AvgIterations[i].size();j++)
 	 {
-	  avg_diff+=AvgIterations[i][j]-AvgIterations[i][j-1];
+	  if(AvgIterations[i][j]-AvgIterations[i][j-1]>avg_diff)
+ 	   avg_diff=AvgIterations[i][j]-AvgIterations[i][j-1];
 	 }
-	 avg_diff/=(AvgIterations[i].empty())?1:AvgIterations[i].size();
+ //	 avg_diff/=(AvgIterations[i].empty())?1:AvgIterations[i].size();
 	 avg_diff/=1000;
 
 	 if(fabs(avg_diff) < 1e-8 || (dt.operator double()-CalcThreadStateTime[i])*86400.0>AvgThreshold*avg_diff)
@@ -221,9 +222,10 @@ try
 	 double avg_diff(0.0);
 	 for(size_t j=1;j<AvgCaptureIterations[i].size();j++)
 	 {
-	  avg_diff+=AvgCaptureIterations[i][j]-AvgCaptureIterations[i][j-1];
+	  if(AvgCaptureIterations[i][j]-AvgCaptureIterations[i][j-1]>avg_diff)
+	   avg_diff=AvgCaptureIterations[i][j]-AvgCaptureIterations[i][j-1];
 	 }
-	 avg_diff/=(AvgCaptureIterations[i].empty())?1:AvgCaptureIterations[i].size();
+ //	 avg_diff/=(AvgCaptureIterations[i].empty())?1:AvgCaptureIterations[i].size();
 
 	 if(fabs(avg_diff)<1e-8 || (dt.operator double()-VideoCaptureStateTime[i])>AvgThreshold*avg_diff)
 //	 if((dt.operator double()-VideoCaptureStateTime[i])*86400.0>2.0)
