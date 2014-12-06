@@ -22,10 +22,10 @@ class TVideoCaptureThread: public TThread
 private:
 /// Очередь команд управления тредом
 /// <временная метка команды, ID команды>
-std::map<double,TVideoCaptureThreadCommands> CommandQueue;
+std::list<std::pair<double,TVideoCaptureThreadCommands> > CommandQueue;
 
 /// Мьютекс для разделения доступа к командам
-TMutex* CommandMutex;
+//TMutex* CommandMutex;
 
 protected: // Параметры
 /// Желаемый FPS
@@ -116,6 +116,9 @@ HANDLE CaptureEnabled;
 
 /// Сбрасывается на время ожидания расчета
 HANDLE CalcCompleteEvent;
+
+/// Событие блокировки очереди
+HANDLE CommandUnlockEvent;
 
 
 public:

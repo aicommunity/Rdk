@@ -26,6 +26,7 @@ __fastcall TVideoCaptureThread::TVideoCaptureThread(TVideoOutputFrame *frame, bo
  FrameNotInProgress=CreateEvent(0,TRUE,TRUE,0);
  CalcCompleteEvent=CreateEvent(0,TRUE,TRUE,0);
  SourceStoppedEvent=CreateEvent(0,FALSE,FALSE,0);
+ CommandUnlockEvent=CreateEvent(0,TRUE,TRUE,0);
  ReadSource=&Source[0];
  WriteSource=&Source[1];
  RepeatFlag=false;
@@ -33,7 +34,7 @@ __fastcall TVideoCaptureThread::TVideoCaptureThread(TVideoOutputFrame *frame, bo
 
  FreeOnTerminate=false;
  ConnectionState=0;
- CommandMutex=new TMutex(false);
+// CommandMutex=new TMutex(false);
  ThreadState=0;
  RestartInterval=10000;
  LastStartTime=0;
@@ -49,14 +50,15 @@ __fastcall TVideoCaptureThread::~TVideoCaptureThread(void)
   Sleep(1);
  }
   */
- delete CommandMutex;
- CommandMutex=0;
+// delete CommandMutex;
+// CommandMutex=0;
  CloseHandle(CaptureEnabled);
  CloseHandle(SourceUnlock);
  CloseHandle(SourceWriteUnlock);
  CloseHandle(FrameNotInProgress);
  CloseHandle(CalcCompleteEvent);
  CloseHandle(SourceStoppedEvent);
+ CloseHandle(CommandUnlockEvent);
 }
 // --------------------------
 
@@ -66,17 +68,21 @@ __fastcall TVideoCaptureThread::~TVideoCaptureThread(void)
 /// Добавляет команду в очередь
 void TVideoCaptureThread::AddCommand(TVideoCaptureThreadCommands value)
 {
- CommandMutex->Acquire();
- CommandQueue[TDateTime::CurrentDateTime().operator double()]=value;
- CommandMutex->Release();
+ WaitForSingleObject(CommandUnlockEvent,INFINITE);
+ ResetEvent(CommandUnlockEvent);
+ std::pair<double,TVideoCaptureThreadCommands> cmd(TDateTime::CurrentDateTime().operator double(),value);
+ CommandQueue.push_back(cmd);
+// CommandQueue[TDateTime::CurrentDateTime().operator double()]=value;
+ SetEvent(CommandUnlockEvent);
 }
 
 /// Очищает очередь
 void TVideoCaptureThread::ClearCommandQueue(void)
 {
- CommandMutex->Acquire();
+ WaitForSingleObject(CommandUnlockEvent,INFINITE);
+ ResetEvent(CommandUnlockEvent);
  CommandQueue.clear();
- CommandMutex->Release();
+ SetEvent(CommandUnlockEvent);
 }
 
 /// Осуществляет обработку очередной команды из очереди
@@ -84,15 +90,16 @@ void TVideoCaptureThread::ProcessCommandQueue(void)
 {
  double cmd_time=0;
  TVideoCaptureThreadCommands cmd=tvcNone;
- CommandMutex->Acquire();
- std::map<double,TVideoCaptureThreadCommands>::iterator I=CommandQueue.begin();
+ WaitForSingleObject(CommandUnlockEvent,INFINITE);
+ ResetEvent(CommandUnlockEvent);
+ std::list<std::pair<double,TVideoCaptureThreadCommands> >::iterator I=CommandQueue.begin();
  if(I != CommandQueue.end())
  {
   cmd_time=I->first;
   cmd=I->second;
   CommandQueue.erase(I);
  }
- CommandMutex->Release();
+ SetEvent(CommandUnlockEvent);
 
  switch(cmd)
  {
@@ -382,7 +389,7 @@ void __fastcall TVideoCaptureThread::Execute(void)
    continue;
   }
   ProcessCommandQueue();
-/*
+
   double curr_time=TDateTime::CurrentDateTime().operator double();
   if(curr_time-RealLastTimeStamp>double(MaxInterstepInterval)/(86400.0*1000.0))
   {
@@ -437,7 +444,7 @@ void __fastcall TVideoCaptureThread::Execute(void)
    SetEvent(FrameNotInProgress);
    continue;
   }
-    */
+
   if(SyncMode == 1)
   {
    if(WaitForSingleObject(CalcCompleteEvent,10) == WAIT_TIMEOUT)
@@ -1583,9 +1590,8 @@ int TVideoCaptureThreadVideoGrabber::CheckConnection(void) const
 
 void __fastcall TVideoCaptureThreadVideoGrabber::ARecreateCapture(void)
 {
- MEngine_LogMessage(ChannelIndex, RDK_EX_DEBUG, (std::string("TVideoCaptureThreadVideoGrabberIpCamera::ARecreateCapture ")).c_str());
 
- return;
+// return;
  delete VideoGrabber;
  VideoGrabber=new TVideoGrabber(GetFrame());
  VideoGrabber->OnFrameBitmap=VideoGrabberFrameBitmap;
@@ -1605,6 +1611,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::ARecreateCapture(void)
  VideoGrabber->FrameGrabberRGBFormat=fgf_RGB24;
 
  ConnectionState=0;
+ MEngine_LogMessage(ChannelIndex, RDK_EX_DEBUG, (std::string("TVideoCaptureThreadVideoGrabberIpCamera::ARecreateCapture ")).c_str());
 }
 // --------------------------
 
