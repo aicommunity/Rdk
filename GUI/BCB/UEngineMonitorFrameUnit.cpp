@@ -197,7 +197,26 @@ try
 
    if(thread)
    {
-	if(WaitForSingleObject(thread->GetCaptureEnabled(),0) == WAIT_TIMEOUT)
+	int connection_state=thread->CheckConnection();
+	switch(connection_state)
+	{
+	case 0:
+	 video_capture_states[i]=1;
+	break;
+
+	case 1:
+	 video_capture_states[i]=1;
+	break;
+
+	case 2:
+	 video_capture_states[i]=0;
+	break;
+
+	case 10:
+	 video_capture_states[i]=2;
+	break;
+	}
+/*	if(WaitForSingleObject(thread->GetCaptureEnabled(),0) == WAIT_TIMEOUT)
 	{
 	 video_capture_states[i]=1;
 	 continue;
@@ -232,7 +251,7 @@ try
 	  video_capture_states[i]=2;
 	 else
 	  video_capture_states[i]=0;
-	}
+	} */
    }
    else
    {
