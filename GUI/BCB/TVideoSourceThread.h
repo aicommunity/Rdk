@@ -6,7 +6,7 @@
 #include "TUHttpServerUnit.h"
 #include "myrdk.h"
 
-enum TVideoCaptureThreadCommands { tvcNone=0, tvcStart=1, tvcStop=2, tvcTerminate=3, tvcRecreate=4 };
+enum TVideoCaptureThreadCommands { tvcNone=0, tvcStart=1, tvcStop=2, tvcTerminate=3, tvcRecreate=4, tvcHalt=5 };
 
 class TSourceStarterBase
 {
@@ -70,7 +70,7 @@ protected: // Данные
 /// Флаг состояния треда
 /// 0 - остановлен
 /// 1 - Запущен
-RDK::UELockVar<int> ThreadState;
+//RDK::UELockVar<int> ThreadState;
 
 /// Реальное состояние соединения с источником видео
 /// 0 - состояние неизвестно
@@ -189,7 +189,7 @@ virtual bool SetRestartInterval(int value);
 /// Флаг состояния треда
 /// 0 - остановлен
 /// 1 - Запущен
-int GetThreadState(void) const;
+//int GetThreadState(void) const;
 
 /// Указатель на владельца
 TVideoOutputFrame *GetFrame(void) const;
@@ -275,13 +275,16 @@ protected:
 virtual bool __fastcall RunCapture(void);
 virtual void __fastcall ARunCapture(void)=0;
 
-virtual bool __fastcall PauseCapture(void);
-virtual void __fastcall APauseCapture(void)=0;
+virtual bool __fastcall StopCapture(void);
+virtual void __fastcall AStopCapture(void)=0;
+
+/// Останавливает фактический захват не меняя статуса треда
+virtual bool __fastcall HaltCapture(void);
 
 virtual bool __fastcall RecreateCapture(void);
 virtual void __fastcall ARecreateCapture(void);
 
-bool SetThreadState(int value);
+//bool SetThreadState(int value);
 // --------------------------
 
 
@@ -362,7 +365,7 @@ virtual void __fastcall Calculate(void);
 protected:
 virtual void __fastcall ARunCapture(void);
 
-virtual void __fastcall APauseCapture(void);
+virtual void __fastcall AStopCapture(void);
 
 virtual void __fastcall ARecreateCapture(void);
 // --------------------------
@@ -456,7 +459,7 @@ virtual bool SetLastTimeStampSafe(double time_stamp);
 protected:
 virtual void __fastcall ARunCapture(void);
 
-virtual void __fastcall APauseCapture(void);
+virtual void __fastcall AStopCapture(void);
 
 virtual void __fastcall ARecreateCapture(void);
 // --------------------------
@@ -537,7 +540,7 @@ void __fastcall IdHTTPServerCommandGet(TIdContext *AContext, TIdHTTPRequestInfo 
 protected:
 virtual void __fastcall ARunCapture(void);
 
-virtual void __fastcall APauseCapture(void);
+virtual void __fastcall AStopCapture(void);
 
 virtual void __fastcall ARecreateCapture(void);
 // --------------------------
@@ -686,7 +689,7 @@ void __fastcall AfterCalculate(void);
 protected:
 virtual void __fastcall ARunCapture(void);
 
-virtual void __fastcall APauseCapture(void);
+virtual void __fastcall AStopCapture(void);
 // --------------------------
 
 };
@@ -749,7 +752,7 @@ virtual void __fastcall AStop(void);
 protected:
 virtual void __fastcall ARunCapture(void);
 
-virtual void __fastcall APauseCapture(void);
+virtual void __fastcall AStopCapture(void);
 // --------------------------
 
 };
@@ -817,7 +820,7 @@ virtual void __fastcall AStop(void);
 protected:
 virtual void __fastcall ARunCapture(void);
 
-virtual void __fastcall APauseCapture(void);
+virtual void __fastcall AStopCapture(void);
 // --------------------------
 
 };
@@ -904,7 +907,7 @@ virtual void __fastcall UnsafeInit(void);
 protected:
 virtual void __fastcall ARunCapture(void);
 
-virtual void __fastcall APauseCapture(void);
+virtual void __fastcall AStopCapture(void);
 // --------------------------
 
 };

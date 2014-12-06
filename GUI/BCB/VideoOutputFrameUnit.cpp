@@ -1231,7 +1231,7 @@ void TVideoOutputFrame::ABeforeCalculate(void)
 
   if(!res)
    return;
-  if(SendBmpSource.GetLength() == 0 && CaptureThread->GetThreadState() == 1)
+  if(SendBmpSource.GetLength() == 0 && CaptureThread->CheckCaptureThreadState() == 1)
   {
    if(FrameIndex<num_channels)
 	MEngine_LogMessage(FrameIndex, RDK_EX_INFO, std::string("TVideoOutputFrame::ABeforeCalculate: Frame have zero size!").c_str());
@@ -2206,7 +2206,7 @@ void __fastcall TVideoOutputFrame::OnClickVideoCodec(TObject *Sender)
 
  for(int i=0; i<parentMenu->Count; i++)
  {
-  if(parentMenu->Items[i]->Checked);
+  if(parentMenu->Items[i]->Checked)
    parentMenu->Items[i]->Checked=false;
  }
 
@@ -2223,7 +2223,7 @@ void __fastcall TVideoOutputFrame::OnClickRecordingMethod(TObject *Sender)
 
  for(int i=0; i<parentMenu->Count; i++)
  {
-  if(parentMenu->Items[i]->Checked);
+  if(parentMenu->Items[i]->Checked)
    parentMenu->Items[i]->Checked=false;
  }
 
@@ -2253,7 +2253,7 @@ void __fastcall TVideoOutputFrame::RecordingFrameVideoCompressorComboBoxChange(T
 
  for(int i=0; i<videoCodec->Count; i++)
  {
-  if(videoCodec->Items[i]->Checked);
+  if(videoCodec->Items[i]->Checked)
    videoCodec->Items[i]->Checked=false;
  }
 
@@ -2297,7 +2297,7 @@ void __fastcall TVideoOutputFrame::RecordingFrameRecordingMethodComboBoxChange(T
 
  for(int i=0; i<recMethod->Count; i++)
  {
-  if(recMethod->Items[i]->Checked);
+  if(recMethod->Items[i]->Checked)
    recMethod->Items[i]->Checked=false;
  }
 
