@@ -1,4 +1,7 @@
 inherited ServerOptionsFrame: TServerOptionsFrame
+  DesignSize = (
+    320
+    240)
   object BindAddressLabeledEdit: TLabeledEdit
     Left = 3
     Top = 24

@@ -91,6 +91,10 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
       Margins.Right = 4
       Margins.Bottom = 4
       Caption = 'Name'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         754
         815)
@@ -251,6 +255,10 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
       Margins.Bottom = 4
       Caption = 'Type'
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object TitlePanel2: TPanel
         Left = 0
         Top = 0
@@ -349,6 +357,10 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
       Margins.Bottom = 4
       Caption = 'Model'
       ImageIndex = 2
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         754
         815)
@@ -643,6 +655,10 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                 Margins.Bottom = 4
                 Caption = 'Don'#39't Change'
                 ImageIndex = 3
+                ExplicitLeft = 0
+                ExplicitTop = 0
+                ExplicitWidth = 0
+                ExplicitHeight = 0
                 object RichEdit1: TRichEdit
                   Left = 0
                   Top = 0
@@ -686,6 +702,10 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                 Margins.Right = 4
                 Margins.Bottom = 4
                 Caption = 'Predefined Model'
+                ExplicitLeft = 0
+                ExplicitTop = 0
+                ExplicitWidth = 0
+                ExplicitHeight = 0
                 DesignSize = (
                   677
                   445)
@@ -711,6 +731,10 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                 Margins.Bottom = 4
                 Caption = 'From File'
                 ImageIndex = 1
+                ExplicitLeft = 0
+                ExplicitTop = 0
+                ExplicitWidth = 0
+                ExplicitHeight = 0
                 DesignSize = (
                   677
                   445)
@@ -755,6 +779,10 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                 Margins.Bottom = 4
                 Caption = 'From Component'
                 ImageIndex = 2
+                ExplicitLeft = 0
+                ExplicitTop = 0
+                ExplicitWidth = 0
+                ExplicitHeight = 0
                 object GroupBox2: TGroupBox
                   Left = 0
                   Top = 0
@@ -822,9 +850,11 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                         Margins.Right = 4
                         Margins.Bottom = 4
                         TabVisible = False
+                        ExplicitLeft = 4
+                        ExplicitTop = 24
+                        ExplicitWidth = 499
+                        ExplicitHeight = 515
                         inherited TreeView: TTreeView
-                          Width = 665
-                          Height = 391
                           Margins.Left = 4
                           Margins.Top = 4
                           Margins.Right = 4

@@ -3,7 +3,7 @@ object UGEngineControlForm: TUGEngineControlForm
   Top = 0
   Caption = 'Engine Control'
   ClientHeight = 675
-  ClientWidth = 1037
+  ClientWidth = 1097
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -22,7 +22,7 @@ object UGEngineControlForm: TUGEngineControlForm
   object Panel1: TPanel
     Left = 119
     Top = 48
-    Width = 918
+    Width = 978
     Height = 608
     Margins.Left = 4
     Margins.Top = 4
@@ -30,6 +30,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Margins.Bottom = 4
     Align = alClient
     TabOrder = 0
+    ExplicitWidth = 918
     object Splitter2: TSplitter
       Left = 327
       Top = 1
@@ -44,7 +45,7 @@ object UGEngineControlForm: TUGEngineControlForm
     object Splitter3: TSplitter
       Left = 1
       Top = 397
-      Width = 916
+      Width = 976
       Height = 10
       Cursor = crVSplit
       Margins.Left = 4
@@ -53,6 +54,7 @@ object UGEngineControlForm: TUGEngineControlForm
       Margins.Bottom = 4
       Align = alBottom
       ExplicitTop = 381
+      ExplicitWidth = 916
     end
     object Panel2: TPanel
       Left = 1
@@ -621,7 +623,7 @@ object UGEngineControlForm: TUGEngineControlForm
     object Panel4: TPanel
       Left = 1
       Top = 407
-      Width = 916
+      Width = 976
       Height = 200
       Margins.Left = 4
       Margins.Top = 4
@@ -629,10 +631,11 @@ object UGEngineControlForm: TUGEngineControlForm
       Margins.Bottom = 4
       Align = alBottom
       TabOrder = 1
+      ExplicitWidth = 916
       object PageControl2: TPageControl
         Left = 1
         Top = 1
-        Width = 914
+        Width = 974
         Height = 198
         Margins.Left = 4
         Margins.Top = 4
@@ -643,12 +646,14 @@ object UGEngineControlForm: TUGEngineControlForm
         MultiLine = True
         TabOrder = 0
         TabPosition = tpRight
+        ExplicitWidth = 914
         object LogsTabSheet: TTabSheet
           Margins.Left = 4
           Margins.Top = 4
           Margins.Right = 4
           Margins.Bottom = 4
           Caption = 'Logs'
+          ExplicitWidth = 882
         end
         object TabSheet2: TTabSheet
           Margins.Left = 4
@@ -657,10 +662,11 @@ object UGEngineControlForm: TUGEngineControlForm
           Margins.Bottom = 4
           Caption = 'Performance'
           ImageIndex = 1
+          ExplicitWidth = 882
           inline UComponentsPerformanceFrame1: TUComponentsPerformanceFrame
             Left = 0
             Top = 0
-            Width = 882
+            Width = 942
             Height = 190
             Margins.Left = 4
             Margins.Top = 4
@@ -677,7 +683,7 @@ object UGEngineControlForm: TUGEngineControlForm
             ExplicitWidth = 882
             ExplicitHeight = 190
             inherited Chart: TChart
-              Width = 700
+              Width = 760
               Height = 190
               Margins.Left = 4
               Margins.Top = 4
@@ -692,7 +698,7 @@ object UGEngineControlForm: TUGEngineControlForm
               end
             end
             inherited Panel1: TPanel
-              Left = 700
+              Left = 760
               Top = 0
               Width = 182
               Height = 190
@@ -752,7 +758,7 @@ object UGEngineControlForm: TUGEngineControlForm
     object PageControl1: TPageControl
       Left = 336
       Top = 1
-      Width = 581
+      Width = 641
       Height = 396
       Margins.Left = 4
       Margins.Top = 4
@@ -765,6 +771,7 @@ object UGEngineControlForm: TUGEngineControlForm
       PopupMenu = PageControlPopupMenu
       TabOrder = 2
       OnChange = PageControl1Change
+      ExplicitWidth = 581
       object Draw: TTabSheet
         Margins.Left = 4
         Margins.Top = 4
@@ -772,10 +779,11 @@ object UGEngineControlForm: TUGEngineControlForm
         Margins.Bottom = 4
         Caption = 'Draw'
         OnShow = DrawShow
+        ExplicitWidth = 573
         inline UDrawEngineFrame1: TUDrawEngineFrame
           Left = 0
           Top = 0
-          Width = 573
+          Width = 633
           Height = 364
           Margins.Left = 4
           Margins.Top = 4
@@ -792,7 +800,7 @@ object UGEngineControlForm: TUGEngineControlForm
           ExplicitWidth = 573
           ExplicitHeight = 364
           inherited Splitter1: TSplitter
-            Left = 259
+            Left = 319
             Width = 15
             Height = 300
             Margins.Left = 4
@@ -804,7 +812,7 @@ object UGEngineControlForm: TUGEngineControlForm
             ExplicitHeight = 273
           end
           inherited Panel1: TPanel
-            Left = 274
+            Left = 334
             Width = 299
             Height = 300
             Margins.Left = 4
@@ -839,17 +847,11 @@ object UGEngineControlForm: TUGEngineControlForm
                   Margins.Top = 4
                   Margins.Right = 4
                   Margins.Bottom = 4
-                  ExplicitWidth = 499
-                  ExplicitHeight = 515
                   inherited StringGrid: TStringGrid
-                    Width = 499
-                    Height = 515
                     Margins.Left = 4
                     Margins.Top = 4
                     Margins.Right = 4
                     Margins.Bottom = 4
-                    ExplicitWidth = 499
-                    ExplicitHeight = 515
                   end
                 end
                 inherited LibsTabSheet: TTabSheet
@@ -988,7 +990,7 @@ object UGEngineControlForm: TUGEngineControlForm
             end
           end
           inherited Panel2: TPanel
-            Width = 259
+            Width = 319
             Height = 300
             Margins.Left = 4
             Margins.Top = 4
@@ -997,7 +999,7 @@ object UGEngineControlForm: TUGEngineControlForm
             ExplicitWidth = 259
             ExplicitHeight = 300
             inherited ScrollBox: TScrollBox
-              Width = 257
+              Width = 317
               Height = 298
               Margins.Left = 4
               Margins.Top = 4
@@ -1023,7 +1025,7 @@ object UGEngineControlForm: TUGEngineControlForm
           end
           inherited Panel3: TPanel
             Top = 300
-            Width = 573
+            Width = 633
             Height = 64
             Margins.Left = 4
             Margins.Top = 4
@@ -1137,7 +1139,7 @@ object UGEngineControlForm: TUGEngineControlForm
               ExplicitHeight = 26
             end
             inherited ApplyButton: TButton
-              Left = 353
+              Left = 413
               Top = 16
               Width = 98
               Height = 32
@@ -1151,7 +1153,7 @@ object UGEngineControlForm: TUGEngineControlForm
               ExplicitHeight = 32
             end
             inherited RestoreButton: TButton
-              Left = 459
+              Left = 519
               Top = 16
               Width = 98
               Height = 32
@@ -1177,7 +1179,7 @@ object UGEngineControlForm: TUGEngineControlForm
   object StatusBar: TStatusBar
     Left = 0
     Top = 656
-    Width = 1037
+    Width = 1097
     Height = 19
     Margins.Left = 4
     Margins.Top = 4
@@ -1185,6 +1187,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Margins.Bottom = 4
     Panels = <>
     SimplePanel = True
+    ExplicitWidth = 1037
   end
   object ChannelsStringGrid: TStringGrid
     Left = 0
@@ -1211,7 +1214,7 @@ object UGEngineControlForm: TUGEngineControlForm
   object ToolBar: TToolBar
     Left = 0
     Top = 0
-    Width = 1037
+    Width = 1097
     Height = 48
     AutoSize = True
     ButtonHeight = 48
@@ -1222,6 +1225,7 @@ object UGEngineControlForm: TUGEngineControlForm
     ParentColor = False
     ShowCaptions = True
     TabOrder = 3
+    ExplicitWidth = 1037
     object ToolButton17: TToolButton
       Left = 0
       Top = 0
@@ -1536,7 +1540,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 360
     Top = 65528
     Bitmap = {
-      494C01011B006000240310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B006000280310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

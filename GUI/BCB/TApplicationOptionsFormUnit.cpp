@@ -29,11 +29,7 @@ void __fastcall TApplicationOptionsForm::RestoreButtonClick(TObject *Sender)
 void __fastcall TApplicationOptionsForm::OKButtonClick(TObject *Sender)
 {
  ApplicationOptionsFrame->ApplyOptions();
- if(UServerControlForm && UGEngineControlForm)
- {
-  UServerControlForm->SetServerBinding(UGEngineControlForm->ServerInterfaceAddress,UGEngineControlForm->ServerInterfacePort);
-  UServerControlForm->UpdateInterface();
- }
+ ServerOptionsFrame->ApplyOptions();
 
  ModalResult=mrOk;
 }

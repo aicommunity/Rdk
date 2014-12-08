@@ -2,124 +2,372 @@ object ApplicationOptionsForm: TApplicationOptionsForm
   Left = 0
   Top = 0
   Caption = 'Application Options'
-  ClientHeight = 321
-  ClientWidth = 527
+  ClientHeight = 420
+  ClientWidth = 689
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
-  Font.Height = -11
+  Font.Height = -14
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
   OnShow = FormShow
-  PixelsPerInch = 96
-  TextHeight = 13
+  PixelsPerInch = 120
+  TextHeight = 17
   object PageControl1: TPageControl
     Left = 0
     Top = 0
-    Width = 527
-    Height = 280
+    Width = 689
+    Height = 366
+    Margins.Left = 4
+    Margins.Top = 4
+    Margins.Right = 4
+    Margins.Bottom = 4
     ActivePage = GeneralTabSheet
     Align = alClient
     TabOrder = 0
     object GeneralTabSheet: TTabSheet
+      Margins.Left = 4
+      Margins.Top = 4
+      Margins.Right = 4
+      Margins.Bottom = 4
       Caption = 'General'
+      ExplicitWidth = 519
+      ExplicitHeight = 248
       inline ApplicationOptionsFrame: TApplicationOptionsFrame
         Left = 0
         Top = 0
-        Width = 519
-        Height = 252
+        Width = 681
+        Height = 334
+        Margins.Left = 4
+        Margins.Top = 4
+        Margins.Right = 4
+        Margins.Bottom = 4
         Align = alClient
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
-        Font.Height = -11
+        Font.Height = -15
         Font.Name = 'Tahoma'
         Font.Style = []
         ParentFont = False
         TabOrder = 0
-        ExplicitWidth = 519
-        ExplicitHeight = 252
+        ExplicitWidth = 679
+        ExplicitHeight = 330
+        inherited Label1: TLabel
+          Left = 4
+          Top = 294
+          Width = 169
+          Height = 18
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
+          ExplicitLeft = 4
+          ExplicitTop = 294
+          ExplicitWidth = 169
+          ExplicitHeight = 18
+        end
+        inherited AutoStartProjectCheckBox: TCheckBox
+          Left = 4
+          Top = 204
+          Width = 460
+          Height = 22
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
+          ExplicitLeft = 4
+          ExplicitTop = 204
+          ExplicitWidth = 460
+          ExplicitHeight = 22
+        end
         inherited ApplicationNameLabeledEdit: TLabeledEdit
-          Width = 513
-          ExplicitWidth = 513
+          Left = 4
+          Top = 30
+          Width = 671
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
+          EditLabel.Width = 111
+          EditLabel.Height = 18
+          EditLabel.Margins.Left = 4
+          EditLabel.Margins.Top = 4
+          EditLabel.Margins.Right = 4
+          EditLabel.Margins.Bottom = 4
+          EditLabel.ExplicitLeft = 4
+          EditLabel.ExplicitTop = 9
+          EditLabel.ExplicitWidth = 111
+          EditLabel.ExplicitHeight = 18
+          ExplicitLeft = 4
+          ExplicitTop = 30
+          ExplicitWidth = 671
         end
         inherited MainFormInternalNameLabeledEdit: TLabeledEdit
-          Width = 432
-          ExplicitWidth = 432
+          Left = 4
+          Top = 88
+          Width = 565
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
+          EditLabel.Width = 168
+          EditLabel.Height = 18
+          EditLabel.Margins.Left = 4
+          EditLabel.Margins.Top = 4
+          EditLabel.Margins.Right = 4
+          EditLabel.Margins.Bottom = 4
+          EditLabel.ExplicitLeft = 4
+          EditLabel.ExplicitTop = 67
+          EditLabel.ExplicitWidth = 168
+          EditLabel.ExplicitHeight = 18
+          ExplicitLeft = 4
+          ExplicitTop = 88
+          ExplicitWidth = 565
         end
         inherited AutoStartProjectNameLabeledEdit: TLabeledEdit
-          Width = 432
-          ExplicitWidth = 432
+          Left = 4
+          Top = 174
+          Width = 565
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
+          EditLabel.Width = 178
+          EditLabel.Height = 18
+          EditLabel.Margins.Left = 4
+          EditLabel.Margins.Top = 4
+          EditLabel.Margins.Right = 4
+          EditLabel.Margins.Bottom = 4
+          EditLabel.ExplicitLeft = 4
+          EditLabel.ExplicitTop = 153
+          EditLabel.ExplicitWidth = 178
+          EditLabel.ExplicitHeight = 18
+          ExplicitLeft = 4
+          ExplicitTop = 174
+          ExplicitWidth = 565
         end
         inherited BrowseAutoLoadingProjectNameButton: TButton
-          Left = 441
-          ExplicitLeft = 441
+          Left = 577
+          Top = 171
+          Width = 98
+          Height = 33
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
+          ExplicitLeft = 577
+          ExplicitTop = 171
+          ExplicitWidth = 98
+          ExplicitHeight = 33
         end
         inherited BrowseMainFormNameButton: TButton
-          Left = 441
-          ExplicitLeft = 441
+          Left = 577
+          Top = 85
+          Width = 98
+          Height = 33
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
+          ExplicitLeft = 577
+          ExplicitTop = 85
+          ExplicitWidth = 98
+          ExplicitHeight = 33
         end
         inherited HideAdminFormCheckBox: TCheckBox
+          Left = 4
+          Top = 119
+          Width = 133
+          Height = 22
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
           Anchors = [akLeft, akTop, akRight]
+          ExplicitLeft = 4
+          ExplicitTop = 119
+          ExplicitWidth = 133
+          ExplicitHeight = 22
         end
         inherited DisableAdminFormCheckBox: TCheckBox
-          Width = 405
-          ExplicitWidth = 405
+          Left = 145
+          Top = 119
+          Width = 530
+          Height = 22
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
+          ExplicitLeft = 145
+          ExplicitTop = 119
+          ExplicitWidth = 530
+          ExplicitHeight = 22
+        end
+        inherited MinimizeToTrayCheckBox: TCheckBox
+          Left = 4
+          Top = 234
+          Width = 460
+          Height = 22
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
+          ExplicitLeft = 4
+          ExplicitTop = 234
+          ExplicitWidth = 460
+          ExplicitHeight = 22
+        end
+        inherited StartMinimizedCheckBox: TCheckBox
+          Left = 4
+          Top = 264
+          Width = 460
+          Height = 22
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
+          ExplicitLeft = 4
+          ExplicitTop = 264
+          ExplicitWidth = 460
+          ExplicitHeight = 22
+        end
+        inherited ProjectHistorySpinEdit: TSpinEdit
+          Left = 174
+          Top = 290
+          Width = 54
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
+          ExplicitLeft = 174
+          ExplicitTop = 290
+          ExplicitWidth = 54
         end
       end
     end
     object ServerTabSheet: TTabSheet
+      Margins.Left = 4
+      Margins.Top = 4
+      Margins.Right = 4
+      Margins.Bottom = 4
       Caption = 'Server'
       ImageIndex = 1
+      ExplicitWidth = 519
+      ExplicitHeight = 248
       inline ServerOptionsFrame: TServerOptionsFrame
         Left = 0
         Top = 0
-        Width = 519
-        Height = 252
+        Width = 681
+        Height = 334
+        Margins.Left = 4
+        Margins.Top = 4
+        Margins.Right = 4
+        Margins.Bottom = 4
         Align = alClient
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
-        Font.Height = -11
+        Font.Height = -15
         Font.Name = 'Tahoma'
         Font.Style = []
         ParentFont = False
         TabOrder = 0
-        ExplicitWidth = 519
-        ExplicitHeight = 252
+        ExplicitWidth = 679
+        ExplicitHeight = 330
+        inherited BindAddressLabeledEdit: TLabeledEdit
+          Left = 4
+          Top = 31
+          Width = 411
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
+          EditLabel.Width = 131
+          EditLabel.Height = 18
+          EditLabel.Margins.Left = 4
+          EditLabel.Margins.Top = 4
+          EditLabel.Margins.Right = 4
+          EditLabel.Margins.Bottom = 4
+          EditLabel.ExplicitLeft = 4
+          EditLabel.ExplicitTop = 10
+          EditLabel.ExplicitWidth = 131
+          EditLabel.ExplicitHeight = 18
+          ExplicitLeft = 4
+          ExplicitTop = 31
+          ExplicitWidth = 411
+        end
+        inherited BindPortLabeledEdit: TLabeledEdit
+          Left = 4
+          Top = 94
+          Width = 411
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
+          EditLabel.Width = 105
+          EditLabel.Height = 18
+          EditLabel.Margins.Left = 4
+          EditLabel.Margins.Top = 4
+          EditLabel.Margins.Right = 4
+          EditLabel.Margins.Bottom = 4
+          EditLabel.ExplicitLeft = 4
+          EditLabel.ExplicitTop = 73
+          EditLabel.ExplicitWidth = 105
+          EditLabel.ExplicitHeight = 18
+          ExplicitLeft = 4
+          ExplicitTop = 94
+          ExplicitWidth = 411
+        end
       end
     end
   end
   object Panel1: TPanel
     Left = 0
-    Top = 280
-    Width = 527
-    Height = 41
+    Top = 366
+    Width = 689
+    Height = 54
+    Margins.Left = 4
+    Margins.Top = 4
+    Margins.Right = 4
+    Margins.Bottom = 4
     Align = alBottom
     TabOrder = 1
     object OKButton: TButton
-      Left = 284
-      Top = 6
-      Width = 75
-      Height = 25
+      Left = 371
+      Top = 8
+      Width = 98
+      Height = 33
+      Margins.Left = 4
+      Margins.Top = 4
+      Margins.Right = 4
+      Margins.Bottom = 4
       Caption = 'OK'
       Default = True
       TabOrder = 0
       OnClick = OKButtonClick
     end
     object CancelButton: TButton
-      Left = 365
-      Top = 6
-      Width = 75
-      Height = 25
+      Left = 477
+      Top = 8
+      Width = 98
+      Height = 33
+      Margins.Left = 4
+      Margins.Top = 4
+      Margins.Right = 4
+      Margins.Bottom = 4
       Caption = 'Cancel'
       TabOrder = 1
       OnClick = CancelButtonClick
     end
     object RestoreButton: TButton
-      Left = 446
-      Top = 6
-      Width = 75
-      Height = 25
+      Left = 583
+      Top = 8
+      Width = 98
+      Height = 33
+      Margins.Left = 4
+      Margins.Top = 4
+      Margins.Right = 4
+      Margins.Bottom = 4
       Caption = 'Restore'
       TabOrder = 2
       OnClick = RestoreButtonClick

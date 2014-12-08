@@ -54,7 +54,7 @@ RDK::URpcDecoderInternal RdkRpcDecoder;
 /// Ёкзепл€р класса диспетчера команд
 RDK::URpcDispatcher RdkRpcDispatcher;
 
-/// Ёкзепл€р класса пр	иложени€
+/// Ёкзепл€р класса приложени€
 RDK::UApplication RdkApplication;
 
 /// √лобальна€ переменна€ сигнализирующа€ о завершении инициализации приложени€
@@ -2161,7 +2161,7 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  if(opt_name.Length()>4)
  opt_name=opt_name.SubString(0,opt_name.Length()-4);
  TMemIniFile *app_ini=new TMemIniFile(opt_name+".ini");
- MainFormName=app_ini->ReadString("General", "MainFormName", "");
+ MainFormName=app_ini->ReadString("General", "MainFormName", Name);
  HideAdminFormFlag=app_ini->ReadBool("General", "HideAdminForm", false);
  AutoexecProjectFileName=app_ini->ReadString("General", "AutoexecProjectFileName", "");
  AutoStartProjectFlag=app_ini->ReadBool("General", "AutoStartProjectFlag", false);
@@ -2668,7 +2668,30 @@ void __fastcall TUGEngineControlForm::DeleteSelectedChannel1Click(TObject *Sende
 
 void __fastcall TUGEngineControlForm::ApplicationOptions1Click(TObject *Sender)
 {
- ApplicationOptionsForm->ShowModal();
+ if(ApplicationOptionsForm->ShowModal() == mrOk)
+ {
+  // —охран€ем настройки приложени€
+  String opt_name=ExtractFileName(Application->ExeName);
+  if(opt_name.Length()>4)
+   opt_name=opt_name.SubString(0,opt_name.Length()-4);
+  TMemIniFile *app_ini=new TMemIniFile(opt_name+".ini");
+
+  app_ini->WriteString("General", "MainFormName", MainFormName);
+  app_ini->WriteBool("General", "HideAdminForm", HideAdminFormFlag);
+  app_ini->WriteString("General", "AutoexecProjectFileName", AutoexecProjectFileName);
+  app_ini->WriteBool("General", "AutoStartProjectFlag", AutoStartProjectFlag);
+//  VideoGrabberLicenseString=app_ini->ReadString("General","VideoGrabberLicenseString","");
+  app_ini->WriteBool("General","MinimizeToTray",MinimizeToTray);
+  app_ini->WriteBool("General","StartMinimized",StartMinimized);
+  app_ini->WriteString("General","ProgramName",ProgramName);
+  app_ini->WriteInteger("General","LastProjectsListMaxSize",LastProjectsListMaxSize);
+
+  app_ini->WriteString("Server","BindAddress",ServerInterfaceAddress.c_str());
+  app_ini->WriteInteger("Server","BindPort",ServerInterfacePort);
+
+  app_ini->WriteBool("General","DisableAdminForm",DisableAdminForm);
+  app_ini->UpdateFile();
+ }
 }
 //---------------------------------------------------------------------------
 

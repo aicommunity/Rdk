@@ -205,6 +205,10 @@ void TUCreateProjectWizardForm::ApplyWizardMode(int wizard_mode)
   ProjectConfig.ProjectType=1;
   ProjectConfig.MultiThreadingMode=1;
   ProjectConfig.ShowChannelsStateFlag=true;
+   ProjectConfig.ChannelsConfig[0].ClassName="Model";
+   ProjectConfig.ChannelsConfig[0].GlobalTimeStep=30;
+   ProjectConfig.ChannelsConfig[0].DefaultTimeStep=30;
+   ProjectConfig.ChannelsConfig[0].CalculationMode=2;
  break;
 
  case 2:
@@ -212,6 +216,10 @@ void TUCreateProjectWizardForm::ApplyWizardMode(int wizard_mode)
   ProjectConfig.ProjectType=1;
   ProjectConfig.MultiThreadingMode=1;
   ProjectConfig.ShowChannelsStateFlag=false;
+   ProjectConfig.ChannelsConfig[0].ClassName="Model";
+   ProjectConfig.ChannelsConfig[0].GlobalTimeStep=30;
+   ProjectConfig.ChannelsConfig[0].DefaultTimeStep=30;
+   ProjectConfig.ChannelsConfig[0].CalculationMode=0;
  break;
 
  case 3:
@@ -219,6 +227,10 @@ void TUCreateProjectWizardForm::ApplyWizardMode(int wizard_mode)
   ProjectConfig.ProjectType=0;
   ProjectConfig.MultiThreadingMode=0;
   ProjectConfig.ShowChannelsStateFlag=false;
+   ProjectConfig.ChannelsConfig[0].ClassName="Model";
+   ProjectConfig.ChannelsConfig[0].GlobalTimeStep=2000;
+   ProjectConfig.ChannelsConfig[0].DefaultTimeStep=2000;
+   ProjectConfig.ChannelsConfig[0].CalculationMode=1;
  break;
  }
 
