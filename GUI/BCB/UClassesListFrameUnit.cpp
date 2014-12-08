@@ -362,8 +362,8 @@ void __fastcall TUClassesListFrame::StringGridMouseMove(TObject *Sender, TShiftS
 
  if ((StringGrid->Row != R) || (StringGrid->Col != C))
  {
-  StringGrid->Row = R;
-  StringGrid->Col = C;
+//  StringGrid->Row = R;
+//  StringGrid->Col = C;
 //  Application->CancelHint();
 
   std::string class_name=AnsiString(StringGrid->Cells[C][R]).c_str();
@@ -402,8 +402,8 @@ void __fastcall TUClassesListFrame::LibComponentListStringGridMouseMove(TObject 
 
  if ((LibComponentListStringGrid->Row != R) || (LibComponentListStringGrid->Col != C))
  {
-  LibComponentListStringGrid->Row = R;
-  LibComponentListStringGrid->Col = C;
+//  LibComponentListStringGrid->Row = R;
+//  LibComponentListStringGrid->Col = C;
 //  Application->CancelHint();
 
   std::string class_name=AnsiString(LibComponentListStringGrid->Cells[1][R]).c_str();

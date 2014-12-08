@@ -18,6 +18,7 @@ __fastcall TUCreateProjectWizardForm::TUCreateProjectWizardForm(TComponent* Owne
 	: TForm(Owner)
 {
  UpdateInterfaceFlag=false;
+ WizardMode=0;
 
  ClearPredefinedModels();
 }
@@ -144,19 +145,8 @@ void TUCreateProjectWizardForm::UpdateInterface(void)
 // Очистка визарда
 void TUCreateProjectWizardForm::ClearWizard(void)
 {
- ProjectDirectoryLabeledEdit->Text="";
- ProjectNameLabeledEdit->Text="";
- ProjectDescriptionRichEdit->Text="";
- ProjectTypeRadioGroup->ItemIndex=0;
- ProjectTimeStepEdit->Text="30";
- ProjectTypeRadioGroupClick(this);
-// ProjectCalculationModeRadioGroup->ItemIndex=2;
-// PredefinedModelRadioButton->Checked=true;
-// PredefinedModelRadioButtonClick(this);
-// PredefinedModelComboBox->ItemIndex=0;
- PageControl->ActivePage = TabSheet1;
- ProjectConfig.NumChannels=1;
- ProjectConfig.ChannelsConfig.resize(1);
+ RDK::TProjectConfig clean_config;
+ ProjectConfig=clean_config;
  UpdateInterface();
 }
 
@@ -175,12 +165,16 @@ void TUCreateProjectWizardForm::AddPredefinedModel(const std::string &name, int 
 
 
 // Отображает визард для создания проекта
-int TUCreateProjectWizardForm::ShowCreateProject(void)
+int TUCreateProjectWizardForm::ShowCreateProject(int wizard_mode)
 {
  ProjectDirectoryLabeledEdit->Enabled=true;
+ Button1->Enabled=true;
 // PredefinedModelRadioButton->Enabled=true;
  PredefinedModelComboBox->Enabled=true;
  TabSheet3->Enabled=true;
+
+ WizardMode=wizard_mode;
+ ApplyWizardMode(WizardMode);
 
  return ShowModal();
 }
@@ -189,12 +183,47 @@ int TUCreateProjectWizardForm::ShowCreateProject(void)
 int TUCreateProjectWizardForm::ShowProjectOptions(void)
 {
  ProjectDirectoryLabeledEdit->Enabled=false;
+ Button1->Enabled=false;
 // PredefinedModelRadioButton->Enabled=false;
  PredefinedModelComboBox->Enabled=false;
  TabSheet3->Enabled=false;
 
  return ShowModal();
 }
+
+
+/// Переключает параметры проекта в состояние wizard_mode
+void TUCreateProjectWizardForm::ApplyWizardMode(int wizard_mode)
+{
+ switch(wizard_mode)
+ {
+ case 0:
+ break;
+
+ case 1:
+  ProjectConfig.ProjectMode=1;
+  ProjectConfig.ProjectType=1;
+  ProjectConfig.MultiThreadingMode=1;
+  ProjectConfig.ShowChannelsStateFlag=true;
+ break;
+
+ case 2:
+  ProjectConfig.ProjectMode=1;
+  ProjectConfig.ProjectType=1;
+  ProjectConfig.MultiThreadingMode=1;
+  ProjectConfig.ShowChannelsStateFlag=false;
+ break;
+
+ case 3:
+  ProjectConfig.ProjectMode=0;
+  ProjectConfig.ProjectType=0;
+  ProjectConfig.MultiThreadingMode=0;
+  ProjectConfig.ShowChannelsStateFlag=false;
+ break;
+ }
+
+}
+
 //---------------------------------------------------------------------------
 void __fastcall TUCreateProjectWizardForm::FinishButtonClick(TObject *Sender)
 {
@@ -368,8 +397,40 @@ void __fastcall TUCreateProjectWizardForm::ChannelsNumberLabeledEditChange(TObje
  if(num_channels == ProjectConfig.NumChannels)
   return;
 
+ int old_channels=ProjectConfig.NumChannels;
  ProjectConfig.NumChannels=num_channels;
  ProjectConfig.ChannelsConfig.resize(ProjectConfig.NumChannels);
+ for(size_t i=old_channels;i<num_channels;i++)
+ {
+  switch(WizardMode)
+  {
+  case 0:
+  break;
+
+  case 1:
+   ProjectConfig.ChannelsConfig[i].ClassName="Model";
+   ProjectConfig.ChannelsConfig[i].GlobalTimeStep=30;
+   ProjectConfig.ChannelsConfig[i].DefaultTimeStep=30;
+   ProjectConfig.ChannelsConfig[i].CalculationMode=2;
+  break;
+
+  case 2:
+   ProjectConfig.ChannelsConfig[i].ClassName="Model";
+   ProjectConfig.ChannelsConfig[i].GlobalTimeStep=30;
+   ProjectConfig.ChannelsConfig[i].DefaultTimeStep=30;
+   ProjectConfig.ChannelsConfig[i].CalculationMode=0;
+  break;
+
+  case 3:
+   ProjectConfig.ChannelsConfig[i].ClassName="Model";
+   ProjectConfig.ChannelsConfig[i].GlobalTimeStep=2000;
+   ProjectConfig.ChannelsConfig[i].DefaultTimeStep=2000;
+   ProjectConfig.ChannelsConfig[i].CalculationMode=1;
+  break;
+
+  }
+ }
+
  UpdateInterface();
 }
 //---------------------------------------------------------------------------

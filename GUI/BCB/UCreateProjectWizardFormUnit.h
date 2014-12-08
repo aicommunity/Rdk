@@ -118,6 +118,13 @@ public:		// User declarations
 
 bool UpdateInterfaceFlag;
 
+/// Режим визарда по умолчанию
+/// 0 - общий
+/// 1 - Видеоаналитика
+/// 2 - Управление поворотками
+/// 3 - Нейронные сети
+int WizardMode;
+
 // Число шагов визарда
 int NumSteps;
 
@@ -151,10 +158,13 @@ void ClearPredefinedModels(void);
 void AddPredefinedModel(const std::string &name, int index);
 
 // Отображает визард для создания проекта
-int ShowCreateProject(void);
+int ShowCreateProject(int wizard_mode);
 
 // Отображает визард для модификации проекта
 int ShowProjectOptions(void);
+
+/// Переключает параметры проекта в состояние wizard_mode
+void ApplyWizardMode(int wizard_mode);
 // ----------------------
 
 };

@@ -60,6 +60,10 @@ RDK::UApplication RdkApplication;
 /// Глобальная переменная сигнализирующая о завершении инициализации приложения
 bool ApplicationInitialized=false;
 
+/// Режим работы визарда нового проекта
+int CreateWizardMode=0;
+
+
 HANDLE RdkLockStartapMutex;
 
 String Lang_SaveProjectTitle("Saving Project...");
@@ -1936,9 +1940,11 @@ void __fastcall TUGEngineControlForm::SaveProjectItemClick(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::CreateProjectItemClick(TObject *Sender)
 {
+ TProjectConfig clean_project;
+ UCreateProjectWizardForm->ProjectConfig=clean_project;
  UCreateProjectWizardForm->ClearWizard();
  UCreateProjectWizardForm->Caption="Create Project Wizard";
- if(UCreateProjectWizardForm->ShowCreateProject() == mrOk)
+ if(UCreateProjectWizardForm->ShowCreateProject(CreateWizardMode) == mrOk)
  {
   CloseProject();
   PredefinedStructure.resize(1);

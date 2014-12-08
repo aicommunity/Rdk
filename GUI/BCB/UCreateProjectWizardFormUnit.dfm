@@ -365,7 +365,6 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
         Alignment = taLeftJustify
         Caption = 'Channels configuration'
         TabOrder = 0
-        ExplicitTop = -8
         DesignSize = (
           754
           54)
@@ -391,7 +390,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
           OnChange = ChannelsNumberLabeledEditChange
         end
         object UpDown1: TUpDown
-          Left = 725
+          Left = 726
           Top = 18
           Width = 21
           Height = 25
@@ -632,13 +631,11 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
               Margins.Top = 4
               Margins.Right = 4
               Margins.Bottom = 4
-              ActivePage = PredefinedModelTabSheet
+              ActivePage = ModelFromComponentTabSheet
               Align = alClient
               MultiLine = True
               TabOrder = 0
               OnChange = ModelPageControlChange
-              ExplicitLeft = 7
-              ExplicitTop = -5
               object DontChangeTabSheet: TTabSheet
                 Margins.Left = 4
                 Margins.Top = 4
@@ -681,10 +678,6 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                   ParentFont = False
                   PlainText = True
                   TabOrder = 1
-                  ExplicitLeft = 248
-                  ExplicitTop = 104
-                  ExplicitWidth = 185
-                  ExplicitHeight = 89
                 end
               end
               object PredefinedModelTabSheet: TTabSheet
@@ -811,9 +804,6 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                         Margins.Top = 4
                         Margins.Right = 4
                         Margins.Bottom = 4
-                        ExplicitTop = 29
-                        ExplicitWidth = 665
-                        ExplicitHeight = 391
                         inherited StringGrid: TStringGrid
                           Width = 665
                           Height = 391
@@ -831,7 +821,10 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                         Margins.Top = 4
                         Margins.Right = 4
                         Margins.Bottom = 4
+                        TabVisible = False
                         inherited TreeView: TTreeView
+                          Width = 665
+                          Height = 391
                           Margins.Left = 4
                           Margins.Top = 4
                           Margins.Right = 4
@@ -844,7 +837,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                         Margins.Right = 4
                         Margins.Bottom = 4
                         inherited Splitter1: TSplitter
-                          Top = 12
+                          Top = 111
                           Width = 665
                           Height = 9
                           Margins.Left = 4
@@ -863,7 +856,9 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                           Margins.Top = 4
                           Margins.Right = 4
                           Margins.Bottom = 4
-                          ExplicitTop = 354
+                          Visible = False
+                          ExplicitTop = 230
+                          ExplicitWidth = 665
                           ExplicitHeight = 161
                           inherited LoadLibraryButton: TButton
                             Width = 663
@@ -872,6 +867,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                             Margins.Top = 4
                             Margins.Right = 4
                             Margins.Bottom = 4
+                            ExplicitWidth = 663
                             ExplicitHeight = 33
                           end
                           inherited CreateRuntimeLibraryButton: TButton
@@ -883,6 +879,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                             Margins.Right = 4
                             Margins.Bottom = 4
                             ExplicitTop = 34
+                            ExplicitWidth = 663
                             ExplicitHeight = 33
                           end
                           inherited DeleteLibraryButton: TButton
@@ -894,6 +891,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                             Margins.Right = 4
                             Margins.Bottom = 4
                             ExplicitTop = 67
+                            ExplicitWidth = 663
                             ExplicitHeight = 32
                           end
                           inherited RenameRuntimeLibraryButton: TButton
@@ -905,6 +903,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                             Margins.Right = 4
                             Margins.Bottom = 4
                             ExplicitTop = 99
+                            ExplicitWidth = 663
                             ExplicitHeight = 33
                           end
                           inherited AddClassButton: TButton
@@ -916,49 +915,54 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                             Margins.Right = 4
                             Margins.Bottom = 4
                             ExplicitTop = 132
+                            ExplicitWidth = 663
                             ExplicitHeight = 33
                           end
                         end
                         inherited GroupBox1: TGroupBox
                           Width = 665
-                          Height = 12
+                          Height = 111
                           Margins.Left = 4
                           Margins.Top = 4
                           Margins.Right = 4
                           Margins.Bottom = 4
-                          ExplicitHeight = 136
+                          ExplicitWidth = 665
+                          ExplicitHeight = 12
                           inherited LibsListStringGrid: TStringGrid
                             Top = 20
                             Width = 661
-                            Height = 114
+                            Height = 89
                             Margins.Left = 4
                             Margins.Top = 4
                             Margins.Right = 4
                             Margins.Bottom = 4
                             ExplicitTop = 20
+                            ExplicitWidth = 661
                             ExplicitHeight = 114
                           end
                         end
                         inherited GroupBox2: TGroupBox
-                          Top = 21
+                          Top = 120
                           Width = 665
-                          Height = 209
+                          Height = 110
                           Margins.Left = 4
                           Margins.Top = 4
                           Margins.Right = 4
                           Margins.Bottom = 4
-                          ExplicitTop = 145
-                          ExplicitHeight = 209
+                          ExplicitTop = 120
+                          ExplicitWidth = 665
+                          ExplicitHeight = 110
                           inherited LibComponentListStringGrid: TStringGrid
                             Top = 20
                             Width = 661
-                            Height = 187
+                            Height = 88
                             Margins.Left = 4
                             Margins.Top = 4
                             Margins.Right = 4
                             Margins.Bottom = 4
                             OnClick = UClassesListFrame1LibComponentListStringGridClick
                             ExplicitTop = 20
+                            ExplicitWidth = 661
                             ExplicitHeight = 187
                           end
                         end
