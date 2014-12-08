@@ -83,7 +83,10 @@ virtual void AClearInterface(void);
 // ¬озвращает им€ выбранного класса
 String GetSelectedName(void);
 
-// ¬озвращает им€ выбранного класса
+/// ”станавливает им€ выбранного класса
+void SetSelectedName(const String &name);
+
+// ¬озвращает им€ выбранной библиотеки
 String GetSelectedLibraryName(void);
 
 /// ќтрисовывает список классов в выбранной библиотеке

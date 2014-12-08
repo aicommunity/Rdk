@@ -373,7 +373,7 @@ void ASaveParameters(RDK::USerStorageXML &xml);
 void ALoadParameters(RDK::USerStorageXML &xml);
 
 // Создает новый проект
-void CreateProject(const String &FileName, const String &model_comp_name="", const String &model_file_name="");
+void CreateProject(TProjectConfig &project_config);
 
 // Закрывает существущий проект
 void CloseProject(void);

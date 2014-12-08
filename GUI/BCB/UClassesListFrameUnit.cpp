@@ -207,7 +207,51 @@ String TUClassesListFrame::GetSelectedName(void)
  return String("");
 }
 
-// Возвращает имя выбранного класса
+/// Устанавливает имя выбранного класса
+void TUClassesListFrame::SetSelectedName(const String &name)
+{
+ std::string sname=AnsiString(name).c_str();
+
+ if(PageControl->ActivePage == LibsTabSheet)
+ {
+/*  TTreeNode* sel=TreeView->Selected;
+  if(sel && sel->Parent)
+   return sel->Text; */
+  // TODO: Реализовать!
+ }
+ else
+ if(PageControl->ActivePage == NameTabSheet)
+ {
+//std::map<std::string, std::vector<std::string> > LibraryClassNames;
+  for(size_t i=0;i<ClassNames.size();i++)
+   if(ClassNames[i] == sname)
+   {
+	StringGrid->Row=i+1;
+	break;
+   }
+ }
+ else
+ if(PageControl->ActivePage == LibsControlTabSheet)
+ {
+  bool found=false;
+  for(size_t j=0;j<LibraryClassNames.size();j++)
+  {
+   for(size_t i=0;i<ClassNames.size();i++)
+	if(ClassNames[i] == sname)
+	{
+	 LibComponentListStringGrid->Row=i+1;
+	 found=true;
+	 break;
+	}
+   if(found)
+	break;
+  }
+ }
+
+ UpdateInterface();
+}
+
+// Возвращает имя выбранной библиотеки
 String TUClassesListFrame::GetSelectedLibraryName(void)
 {
  if(PageControl->ActivePage == LibsTabSheet)

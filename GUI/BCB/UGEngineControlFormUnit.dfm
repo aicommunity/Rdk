@@ -649,10 +649,6 @@ object UGEngineControlForm: TUGEngineControlForm
           Margins.Right = 4
           Margins.Bottom = 4
           Caption = 'Logs'
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
         end
         object TabSheet2: TTabSheet
           Margins.Left = 4
@@ -843,8 +839,6 @@ object UGEngineControlForm: TUGEngineControlForm
                   Margins.Top = 4
                   Margins.Right = 4
                   Margins.Bottom = 4
-                  ExplicitLeft = 4
-                  ExplicitTop = 24
                   ExplicitWidth = 499
                   ExplicitHeight = 515
                   inherited StringGrid: TStringGrid
@@ -882,8 +876,6 @@ object UGEngineControlForm: TUGEngineControlForm
                   Margins.Top = 4
                   Margins.Right = 4
                   Margins.Bottom = 4
-                  ExplicitLeft = 4
-                  ExplicitTop = 24
                   inherited Splitter1: TSplitter
                     Top = 15
                     Height = 9
@@ -1543,7 +1535,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 360
     Top = 65528
     Bitmap = {
-      494C01011B0060001C0310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B006000200310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

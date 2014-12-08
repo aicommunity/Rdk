@@ -10,7 +10,7 @@ inherited UClassesListFrame: TUClassesListFrame
     Top = 0
     Width = 507
     Height = 543
-    ActivePage = LibsTabSheet
+    ActivePage = LibsControlTabSheet
     Align = alClient
     TabOrder = 0
     OnChange = PageControlChange

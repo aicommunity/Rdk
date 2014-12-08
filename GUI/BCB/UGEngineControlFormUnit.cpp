@@ -433,69 +433,142 @@ void TUGEngineControlForm::ALoadParameters(RDK::USerStorageXML &xml)
 }
 
 // Создает новый проект
-void TUGEngineControlForm::CreateProject(const String &FileName, const String &model_comp_name, const String &model_file_name)
+void TUGEngineControlForm::CreateProject(TProjectConfig &project_config)
 {
  CloseProject();
- ProjectXml.Destroy();
- ProjectXml.SelectNodeRoot("Project/General");
- ProjectXml.WriteInteger("PredefinedStructure",PredefinedStructure[GetSelectedEngineIndex()]);
- ProjectXml.WriteInteger("ProjectAutoSaveFlag",ProjectAutoSaveFlag);
 
+ std::string FileName=project_config.ProjectDirectory+"\\Project.ini";
+
+ ProjectXml.Destroy();
+
+ ProjectXml.SelectNodeRoot("Project/MultiGeneral");
+ ProjectXml.WriteInteger("EnginesMode",project_config.MultiThreadingMode);
+
+ ProjectXml.WriteInteger("CalculationTimeSourceMode",project_config.CalcSourceTimeMode);
+
+ ProjectXml.WriteBool("EventsLogEnabled",project_config.EventsLogFlag);
+ ProjectXml.WriteBool("ProjectShowChannelsStates",project_config.ShowChannelsStateFlag);
+
+ ProjectXml.WriteInteger("NumEngines",project_config.NumChannels);
+
+ ProjectXml.WriteInteger("SelectedEngineIndex",0);
+
+ ProjectXml.SelectNodeRoot("Project/General");
  // Число входов среды
- ProjectXml.WriteInteger("NumEnvInputs",NumEnvInputs);
+ ProjectXml.WriteInteger("NumEnvInputs",1);
 
  // Число выходов среды
- ProjectXml.WriteInteger("NumEnvOutputs",NumEnvOutputs);
+ ProjectXml.WriteInteger("NumEnvOutputs",1);
 
- ProjectXml.WriteInteger("InputEnvImageWidth",InputEnvImageWidth);
- ProjectXml.WriteInteger("InputEnvImageHeight",InputEnvImageHeight);
+ ProjectXml.WriteInteger("InputEnvImageWidth",640);
+ ProjectXml.WriteInteger("InputEnvImageHeight",480);
 
- // Шаг счета по умолчанию
- ProjectXml.WriteInteger("DefaultTimeStep",DefaultTimeStep[GetSelectedEngineIndex()]);
+ ProjectXml.WriteString("ProjectDescriptionFileName","Description.rtf");
 
- // Глобальный шаг счета модели
- ProjectXml.WriteInteger("GlobalTimeStep",GlobalTimeStep[GetSelectedEngineIndex()]);
+ ProjectXml.WriteString("ProjectName",project_config.ProjectName);
 
- ProjectXml.WriteBool("ReflectionFlag",ReflectionFlag);
+ ProjectXml.WriteInteger("ProjectAutoSaveFlag",project_config.ProjectAutoSaveFlag);
+ ProjectXml.WriteInteger("ProjectAutoSaveStateFlag",project_config.ProjectAutoSaveStatesFlag);
 
- ProjectXml.WriteInteger("CalculationMode",CalculationMode[GetSelectedEngineIndex()]);
+ ProjectXml.WriteInteger("ProjectMode",project_config.ProjectMode);
 
- ProjectXml.WriteBool("InitAfterLoadFlag",InitAfterLoadFlag[GetSelectedEngineIndex()]);
- ProjectXml.WriteBool("ResetAfterLoadFlag",ResetAfterLoadFlag[GetSelectedEngineIndex()]);
- ProjectXml.WriteBool("DebugModeFlag",DebugModeFlag[GetSelectedEngineIndex()]);
+ ProjectXml.WriteBool(std::string("ReflectionFlag"),project_config.ReflectionFlag);
 
- if(PredefinedStructure[GetSelectedEngineIndex()] == 0 && model_file_name.Length()>0)
+
+ UEngineMonitorForm->EngineMonitorFrame->SetNumChannels(project_config.NumChannels);
+ try
  {
-  if(GetSelectedEngineIndex() == 0)
-   ProjectXml.WriteString("ModelFileName",AnsiString(model_file_name).c_str());
+  TRichEdit* RichEdit=new TRichEdit(this);
+  RichEdit->Parent=this;
+  RichEdit->PlainText=true;
+  RichEdit->Visible=false;
+  RichEdit->Text=project_config.ProjectDescription.c_str();
+
+  RichEdit->Lines->SaveToFile((project_config.ProjectDirectory+string("\\Description.rtf")).c_str());
+  delete RichEdit;
+ }
+ catch(Exception &exception)
+ {
+  MEngine_LogMessage(GetSelectedEngineIndex(), RDK_EX_ERROR, (std::string("Save model Fail: ")+AnsiString(exception.Message).c_str()).c_str());
+ }
+
+ for(size_t i=0;i<project_config.NumChannels;i++)
+ {
+  TProjectChannelConfig &channel=project_config.ChannelsConfig[i];
+
+  std::string suffix;
+  if(i>0)
+   suffix=std::string("_")+sntoa(i);
+
+  ProjectXml.WriteInteger(std::string("PredefinedStructure")+suffix,channel.PredefinedStructure);
+
+  // Шаг счета по умолчанию
+  ProjectXml.WriteInteger(std::string("DefaultTimeStep")+suffix,channel.DefaultTimeStep);
+
+  // Глобальный шаг счета модели
+  ProjectXml.WriteInteger(std::string("GlobalTimeStep")+suffix,channel.GlobalTimeStep);
+
+  ProjectXml.WriteInteger(std::string("CalculationMode")+suffix,channel.CalculationMode);
+
+  ProjectXml.WriteBool(std::string("InitAfterLoadFlag")+suffix,channel.InitAfterLoad);
+  ProjectXml.WriteBool(std::string("ResetAfterLoadFlag")+suffix,channel.ResetAfterLoad);
+  ProjectXml.WriteBool(std::string("DebugModeFlag")+suffix,channel.DebugMode);
+
+  string model_file_name=string("Model")+suffix+".xml";
+  if(!channel.ModelFileName.empty())
+   model_file_name=channel.ModelFileName;
+  ProjectXml.WriteString(std::string("ModelFileName")+suffix,model_file_name);
+
+  if(!MIsEngineInit(i))
+   MGraphicalEngineInit(i,channel.PredefinedStructure,1,1,640, 480 ,project_config.ReflectionFlag,ExceptionHandler);
   else
-   ProjectXml.WriteString(std::string("ModelFileName_")+RDK::sntoa(GetSelectedEngineIndex()),AnsiString(model_file_name).c_str());
- }
+   MEnv_SetPredefinedStructure(i,channel.PredefinedStructure);
 
- if(GetSelectedEngineIndex() == 0)
- {
-  ProjectXml.WriteString("InterfaceFileName","Interface.xml");
-  ProjectXml.WriteString("ParametersFileName","Parameters.xml");
-  ProjectXml.WriteString("StatesFileName","States.xml");
- }
- else
- {
-  std::string suffix=RDK::sntoa(GetSelectedEngineIndex());
-  ProjectXml.WriteString(std::string("InterfaceFileName_")+suffix,std::string("Interface_")+suffix+".xml");
-  ProjectXml.WriteString(std::string("ParametersFileName_")+suffix,std::string("Parameters_")+suffix+".xml");
-  ProjectXml.WriteString(std::string("StatesFileName_")+suffix,std::string("States_")+suffix+".xml");
- }
-
- ProjectXml.SaveToFile(AnsiString(FileName).c_str());
- OpenProject(FileName);
-
- if(ProjectOpenFlag)
- {
-  if(PredefinedStructure[GetSelectedEngineIndex()] == 0 && model_comp_name.Length()>0)
+  if(channel.PredefinedStructure == 0 && !channel.ClassName.empty())
   {
-   Model_Create(AnsiString(model_comp_name).c_str());
+   MModel_Create(i,channel.ClassName.c_str());
+  }
+
+//  if(!channel.ClassName.empty())
+
+  ProjectXml.WriteString(std::string("ParametersFileName")+suffix,string("Parameters")+suffix+".xml");
+  ProjectXml.WriteString(std::string("StatesFileName")+suffix,string("States")+suffix+".xml");
+
+//  UComponentsControlForm->ComponentsControlFrame->SaveModelToFile((project_config.ProjectDirectory+string("Model")+suffix+string(".xml")).c_str());
+//  UComponentsControlForm->ComponentsControlFrame->SaveParametersToFile((project_config.ProjectDirectory+string("Parameters")+suffix+string(".xml")).c_str());
+
+  try
+  {
+   if(channel.ModelFileName.empty())
+   {
+	TRichEdit* RichEdit=new TRichEdit(this);
+	RichEdit->Visible=false;
+	RichEdit->Parent=this;
+
+	RichEdit->PlainText=true;
+	const char *p_buf=MModel_SaveComponent(i,"");
+	if(p_buf)
+	 RichEdit->Text=p_buf;
+	Engine_FreeBufString(p_buf);
+	RichEdit->Lines->SaveToFile((project_config.ProjectDirectory+string("\\")+model_file_name).c_str());
+
+	p_buf=MModel_SaveComponentParameters(i,"");
+	if(p_buf)
+	 RichEdit->Text=p_buf;
+	Engine_FreeBufString(p_buf);
+	RichEdit->Lines->SaveToFile((project_config.ProjectDirectory+string("\\Parameters")+suffix+string(".xml")).c_str());
+
+    delete RichEdit;
+   }
+  }
+  catch(Exception &exception)
+  {
+   MEngine_LogMessage(i, RDK_EX_ERROR, (std::string("Create Project: Save model or parameters Fail: ")+AnsiString(exception.Message).c_str()).c_str());
   }
  }
+
+ ProjectXml.SaveToFile(FileName);
+ OpenProject(FileName.c_str());
 }
 
 // Закрывает существущий проект
@@ -1869,7 +1942,7 @@ void __fastcall TUGEngineControlForm::CreateProjectItemClick(TObject *Sender)
  {
   CloseProject();
   PredefinedStructure.resize(1);
-  PredefinedStructure[0]=UCreateProjectWizardForm->PredefinedStructure;
+  PredefinedStructure[0]=UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].PredefinedStructure;
   ProjectAutoSaveFlag=UCreateProjectWizardForm->ProjectAutoSaveFlagCheckBox->Checked;
 
   DefaultTimeStep.resize(1);
@@ -1884,13 +1957,16 @@ void __fastcall TUGEngineControlForm::CreateProjectItemClick(TObject *Sender)
 //  ReflectionFlag=UCreateProjectWizardForm->UpendInputImageCheckBox->Checked;
 
 
-  CalculationMode.resize(1);
+  CalculationMode.resize(1,2);
+  InitAfterLoadFlag.resize(1,1);
+  ResetAfterLoadFlag.resize(1,1);
+  DebugModeFlag.resize(1,false);
 //  CalculationMode[0]=UCreateProjectWizardForm->ProjectCalculationModeRadioGroup->ItemIndex;
 
   MinInterstepsInterval.resize(1);
   MinInterstepsInterval[0]=20;
 
-  CreateProject(UCreateProjectWizardForm->ProjectDirectoryLabeledEdit->Text+String("\\Project.ini"),UCreateProjectWizardForm->UClassesListFrame1->GetSelectedName(),UCreateProjectWizardForm->ProjectModelFileNameLabeledEdit->Text);
+  CreateProject(UCreateProjectWizardForm->ProjectConfig);
 
   ProjectName=UCreateProjectWizardForm->ProjectNameLabeledEdit->Text;
   ProjectDescription=UCreateProjectWizardForm->ProjectDescriptionRichEdit->Text;
@@ -1983,7 +2059,7 @@ void __fastcall TUGEngineControlForm::ProjectOptions1Click(TObject *Sender)
 // UCreateProjectWizardForm->ProjectCalculationModeRadioGroup->ItemIndex=CalculationMode[GetSelectedEngineIndex()];
  UCreateProjectWizardForm->CalculationSourceTimeModeRadioGroup->ItemIndex=UEngineMonitorForm->EngineMonitorFrame->GetCalculationTimeSourceMode();
 
- UCreateProjectWizardForm->PredefinedStructure=PredefinedStructure[GetSelectedEngineIndex()];
+ UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].PredefinedStructure=PredefinedStructure[GetSelectedEngineIndex()];
  if(PredefinedStructure[GetSelectedEngineIndex()])
  {
 //  UCreateProjectWizardForm->PredefinedModelRadioButton->Checked=true;
@@ -2009,7 +2085,7 @@ void __fastcall TUGEngineControlForm::ProjectOptions1Click(TObject *Sender)
  if(UCreateProjectWizardForm->ShowProjectOptions() == mrOk)
  {
 //  CloseProject();
-  PredefinedStructure[GetSelectedEngineIndex()]=UCreateProjectWizardForm->PredefinedStructure;
+  PredefinedStructure[GetSelectedEngineIndex()]=UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].PredefinedStructure;
   ProjectAutoSaveFlag=UCreateProjectWizardForm->ProjectAutoSaveFlagCheckBox->Checked;
   DefaultTimeStep[GetSelectedEngineIndex()]=StrToInt(UCreateProjectWizardForm->ProjectTimeStepEdit->Text);
   GlobalTimeStep[GetSelectedEngineIndex()]=DefaultTimeStep[GetSelectedEngineIndex()];
