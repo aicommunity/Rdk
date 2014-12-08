@@ -35,7 +35,7 @@ __fastcall TVideoCaptureThread::TVideoCaptureThread(TVideoOutputFrame *frame, bo
  FreeOnTerminate=false;
  ConnectionState=0;
 // CommandMutex=new TMutex(false);
- ThreadState=0;
+// ThreadState=0;
  RestartInterval=10000;
  LastStartTime=0;
  MaxInterstepInterval=20000;
@@ -108,15 +108,15 @@ void TVideoCaptureThread::ProcessCommandQueue(void)
 
  case tvcStart:
   RunCapture();
-  SetThreadState(1);
+//  SetThreadState(1);
   SetEvent(CaptureEnabled);
  break;
 
  case tvcStop:
   ResetEvent(CaptureEnabled);
-  SetThreadState(0);
-  ConnectionState=1;
-  PauseCapture();
+//  SetThreadState(0);
+//  ConnectionState=1;
+  StopCapture();
  break;
 
  case tvcTerminate:
@@ -124,10 +124,15 @@ void TVideoCaptureThread::ProcessCommandQueue(void)
 
  case tvcRecreate:
   ResetEvent(CaptureEnabled);
-  SetThreadState(0);
+//  SetThreadState(0);
   ConnectionState=0;
   RecreateCapture();
  break;
+
+ case tvcHalt:
+  HaltCapture();
+ break;
+
 
  default:
   ;
@@ -216,13 +221,14 @@ bool TVideoCaptureThread::SetRestartInterval(int value)
 /// Флаг состояния треда
 /// 0 - остановлен
 /// 1 - Запущен
+/*
 int TVideoCaptureThread::GetThreadState(void) const
 {
 // ThreadStateMutex->Acquire();
 // int res=ThreadState;
 // ThreadStateMutex->Release();
  return ThreadState;
-}
+}     */
 
 /// Указатель на владельца
 TVideoOutputFrame* TVideoCaptureThread::GetFrame(void) const
@@ -391,19 +397,19 @@ void __fastcall TVideoCaptureThread::Execute(void)
   ProcessCommandQueue();
 
   double curr_time=TDateTime::CurrentDateTime().operator double();
-  if(curr_time-RealLastTimeStamp>double(MaxInterstepInterval)/(86400.0*1000.0))
+  if(CheckConnection() == 2 && curr_time-RealLastTimeStamp>double(MaxInterstepInterval)/(86400.0*1000.0))
   {
-   if(CheckConnection() == 10)
+   ConnectionState=10;
+//   if(CheckConnection() == 10)
    {
 	LastStartTime=TDateTime::CurrentDateTime().operator double();
 	SetEvent(FrameNotInProgress);
 	Sleep(30);
 	continue;
    }
-   ConnectionState=1;
   }
 
-  if(CheckConnection() != 2 && GetThreadState() == 1)
+  if(CheckConnection() != 2 && CheckCaptureThreadState() == 1)
   {
   switch(RestartMode)
    {
@@ -420,12 +426,12 @@ void __fastcall TVideoCaptureThread::Execute(void)
 	  SetEvent(FrameNotInProgress);
 	  continue;
 	 }
-	 AddCommand(tvcStop);
+	 AddCommand(tvcHalt);
 	 AddCommand(tvcRecreate);
 	 AddCommand(tvcStart);
 	 SetEvent(FrameNotInProgress);
 	 continue;
- //	 PauseCapture();
+ //	 StopCapture();
 //	 RunCapture();
 	 break;
 	}
@@ -435,7 +441,7 @@ void __fastcall TVideoCaptureThread::Execute(void)
 	 AddCommand(tvcStop);
 	 SetEvent(FrameNotInProgress);
 	 continue;
-//	 PauseCapture();
+//	 StopCapture();
 	 break;
 	}
    };
@@ -584,31 +590,39 @@ bool __fastcall TVideoCaptureThread::RunCapture(void)
 {
  double curr_time=TDateTime::CurrentDateTime().operator double();
  LastStartTime=curr_time;
- RealLastTimeStamp=TDateTime::CurrentDateTime().operator double();
+ RealLastTimeStamp=curr_time;
  ConnectionState=10;
  Synchronize(ARunCapture);
  Sleep(100);
  return true;
 }
 
-bool __fastcall TVideoCaptureThread::PauseCapture(void)
+bool __fastcall TVideoCaptureThread::StopCapture(void)
 {
  LastStartTime=0;
- Synchronize(APauseCapture);
+ HaltCapture();
  ConnectionState=1;
  Sleep(100);
  return true;
 }
 
+/// Останавливает фактический захват не меняя статуса треда
+bool __fastcall TVideoCaptureThread::HaltCapture(void)
+{
+ Synchronize(AStopCapture);
+ return true;
+}
+
+
 bool __fastcall TVideoCaptureThread::RecreateCapture(void)
 {
-// PauseCapture();
+// StopCapture();
 
  RDK::USerStorageXML xml;
  SaveParameters(xml);
  Synchronize(ARecreateCapture);
  LoadParameters(xml);
- ConnectionState=1;
+// ConnectionState=1;
  Sleep(100);
  return true;
 }
@@ -618,12 +632,12 @@ void __fastcall TVideoCaptureThread::ARecreateCapture(void)
 
 }
 
-
+   /*
 bool TVideoCaptureThread::SetThreadState(int value)
 {
  ThreadState=value;
  return true;
-}
+}            */
 // --------------------------
 
 //---------------------------------------------------------------------------
@@ -802,7 +816,7 @@ void __fastcall TVideoCaptureThreadBmp::ARunCapture(void)
 {
 }
 
-void __fastcall TVideoCaptureThreadBmp::APauseCapture(void)
+void __fastcall TVideoCaptureThreadBmp::AStopCapture(void)
 {
 }
 
@@ -1066,7 +1080,7 @@ void __fastcall TVideoCaptureThreadBmpSequence::ARunCapture(void)
 {
 }
 
-void __fastcall TVideoCaptureThreadBmpSequence::APauseCapture(void)
+void __fastcall TVideoCaptureThreadBmpSequence::AStopCapture(void)
 {
 }
 
@@ -1251,7 +1265,7 @@ void __fastcall TVideoCaptureThreadHttpServer::ARunCapture(void)
  UHttpServerFrame->IdHTTPServer->Active=true;
 }
 
-void __fastcall TVideoCaptureThreadHttpServer::APauseCapture(void)
+void __fastcall TVideoCaptureThreadHttpServer::AStopCapture(void)
 {
  UHttpServerFrame->IdHTTPServer->Active=false;
 }
@@ -1338,7 +1352,7 @@ TVideoGrabber* TVideoCaptureThreadVideoGrabber::GetVideoGrabber(void)
 
 void __fastcall TVideoCaptureThreadVideoGrabber::OnFrameCaptureCompleted(System::TObject* Sender, void * FrameBitmap, int BitmapWidth, int BitmapHeight, unsigned FrameNumber, __int64 FrameTime, TFrameCaptureDest DestType, System::UnicodeString FileName, bool Success, int FrameId)
 {
- if(GetThreadState())
+ if(CheckCaptureThreadState())
   ConnectionState=2;
 	  /*
  if(Fps > 0)
@@ -1403,7 +1417,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberPlayerEndOfStream(T
 void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberFrameBitmap(TObject *Sender,
 	  pFrameInfo FrameInfo, pFrameBitmapInfo BitmapInfo)
 {
- if(GetThreadState())
+ if(CheckCaptureThreadState())
   ConnectionState=2;
 
  ConvertTimeStamp=FrameInfo->FrameTime;
@@ -1467,13 +1481,13 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberLog(TObject *Sender
 {
  MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, (std::string("VideoGrabber [")+std::string(AnsiString(Severity).c_str())+std::string("] ")+AnsiString(InfoMsg).c_str() ).c_str());
  if(Severity == "ERROR")
-  ConnectionState=1;
+  ConnectionState=10;
 }
 
 void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberDeviceLost(TObject *Sender)
 {
  MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, "VideoGrabber Device lost");
- ConnectionState=1;
+ ConnectionState=10;
 /* if(RestartMode == 1)
  {
   Start();
@@ -1610,7 +1624,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::ARecreateCapture(void)
  VideoGrabber->SetIPCameraSetting(ips_ReceiveTimeout, 20000);
  VideoGrabber->FrameGrabberRGBFormat=fgf_RGB24;
 
- ConnectionState=0;
+// ConnectionState=0;
  MEngine_LogMessage(ChannelIndex, RDK_EX_DEBUG, (std::string("TVideoCaptureThreadVideoGrabberIpCamera::ARecreateCapture ")).c_str());
 }
 // --------------------------
@@ -1789,7 +1803,7 @@ void __fastcall TVideoCaptureThreadVideoGrabberAvi::ARunCapture(void)
  }
 }
 
-void __fastcall TVideoCaptureThreadVideoGrabberAvi::APauseCapture(void)
+void __fastcall TVideoCaptureThreadVideoGrabberAvi::AStopCapture(void)
 {
  if(VideoGrabber)
   VideoGrabber->PausePlayer();
@@ -1931,7 +1945,7 @@ void __fastcall TVideoCaptureThreadVideoGrabberCamera::ARunCapture(void)
  }
 }
 
-void __fastcall TVideoCaptureThreadVideoGrabberCamera::APauseCapture(void)
+void __fastcall TVideoCaptureThreadVideoGrabberCamera::AStopCapture(void)
 {
  if(VideoGrabber)
   VideoGrabber->PausePreview();
@@ -1980,7 +1994,8 @@ String TVideoCaptureThreadVideoGrabberIpCamera::GetPassword(void) const
 
 bool TVideoCaptureThreadVideoGrabberIpCamera::Init(const String camera_url, const String user_name, const String user_password)
 {
- Stop();
+ if(CheckConnection() == 2)
+  Stop();
  if(WaitForSingleObject(FrameNotInProgress,1000) == WAIT_TIMEOUT)
   return false;
 
@@ -2063,12 +2078,12 @@ void __fastcall TVideoCaptureThreadVideoGrabberIpCamera::ARunCapture(void)
  MEngine_LogMessage(ChannelIndex, RDK_EX_DEBUG, (std::string("TVideoCaptureThreadVideoGrabberIpCamera::ARunCapture ")+AnsiString(Url).c_str()).c_str());
 }
 
-void __fastcall TVideoCaptureThreadVideoGrabberIpCamera::APauseCapture(void)
+void __fastcall TVideoCaptureThreadVideoGrabberIpCamera::AStopCapture(void)
 {
  if(VideoGrabber)
   VideoGrabber->PausePreview();
 
- MEngine_LogMessage(ChannelIndex, RDK_EX_DEBUG, (std::string("TVideoCaptureThreadVideoGrabberIpCamera::APauseCapture ")+AnsiString(Url).c_str()).c_str());
+ MEngine_LogMessage(ChannelIndex, RDK_EX_DEBUG, (std::string("TVideoCaptureThreadVideoGrabberIpCamera::AStopCapture ")+AnsiString(Url).c_str()).c_str());
 }
 // --------------------------
 
@@ -2296,7 +2311,7 @@ void __fastcall TVideoCaptureThreadSharedMemory::ARunCapture(void)
 {
 }
 
-void __fastcall TVideoCaptureThreadSharedMemory::APauseCapture(void)
+void __fastcall TVideoCaptureThreadSharedMemory::AStopCapture(void)
 {
 }
 // --------------------------
