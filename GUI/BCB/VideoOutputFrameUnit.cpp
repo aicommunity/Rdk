@@ -158,7 +158,7 @@ void TVideoOutputFrame::Init(int mode)
   CaptureThread->SetChannelIndex(FrameIndex);
 
   TVideoCaptureThreadVideoGrabber *thread=dynamic_cast<TVideoCaptureThreadVideoGrabber*>(CaptureThread);
-  if(thread)
+  if(thread && thread->GetVideoGrabber())
    thread->GetVideoGrabber()->LicenseString=TVGrabberLicenseString;
 
   CaptureThread->LoadParameters(VideoSourceOptions[mode]);
@@ -355,6 +355,7 @@ bool TVideoOutputFrame::DestroyCaptureThread(void)
  {
   CaptureThread->Stop();
   CaptureThread->Terminate();
+  CaptureThread->WaitFor();
   if(WaitForSingleObject(CaptureThread->GetFrameNotInProgress(),1000) != WAIT_TIMEOUT)
   {
    CaptureThread=0;

@@ -11,6 +11,8 @@
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 
+extern String TVGrabberLicenseString;
+
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
@@ -36,9 +38,10 @@ __fastcall TVideoCaptureThread::TVideoCaptureThread(TVideoOutputFrame *frame, bo
  ConnectionState=0;
 // CommandMutex=new TMutex(false);
 // ThreadState=0;
- RestartInterval=10000;
+ RestartInterval=20000;
  LastStartTime=0;
  MaxInterstepInterval=20000;
+ Priority = tpLower;
 }
 
 __fastcall TVideoCaptureThread::~TVideoCaptureThread(void)
@@ -357,6 +360,7 @@ HANDLE TVideoCaptureThread::GetCalcCompleteEvent(void) const
 // --------------------------
 void __fastcall TVideoCaptureThread::Start(void)
 {
+ AddCommand(tvcRecreate);
  AddCommand(tvcStart);
  AStart();
 }
@@ -386,6 +390,7 @@ void __fastcall TVideoCaptureThread::AfterCalculate(void)
 
 void __fastcall TVideoCaptureThread::Execute(void)
 {
+ ExecuteCaptureInit();
  while(!Terminated)
  {
   if(WaitForSingleObject(CaptureEnabled,30) == WAIT_TIMEOUT)
@@ -466,7 +471,19 @@ void __fastcall TVideoCaptureThread::Execute(void)
   ResetEvent(CalcCompleteEvent);
   SetEvent(FrameNotInProgress);
  }
+ Synchronize(ExecuteCaptureUnInit);
 }
+
+void __fastcall TVideoCaptureThread::ExecuteCaptureInit(void)
+{
+
+}
+
+void __fastcall TVideoCaptureThread::ExecuteCaptureUnInit(void)
+{
+
+}
+
 
 /// Возвращает копию изображения с блокировкой
 bool TVideoCaptureThread::ReadSourceSafe(RDK::UBitmap& dest, double &time_stamp, bool reflect)
@@ -593,6 +610,7 @@ bool __fastcall TVideoCaptureThread::RunCapture(void)
  RealLastTimeStamp=curr_time;
  ConnectionState=10;
  Synchronize(ARunCapture);
+// ARunCapture();
  Sleep(100);
  return true;
 }
@@ -610,6 +628,7 @@ bool __fastcall TVideoCaptureThread::StopCapture(void)
 bool __fastcall TVideoCaptureThread::HaltCapture(void)
 {
  Synchronize(AStopCapture);
+// AStopCapture();
  return true;
 }
 
@@ -621,6 +640,7 @@ bool __fastcall TVideoCaptureThread::RecreateCapture(void)
  RDK::USerStorageXML xml;
  SaveParameters(xml);
  Synchronize(ARecreateCapture);
+// ARecreateCapture();
  LoadParameters(xml);
 // ConnectionState=1;
  Sleep(100);
@@ -1282,26 +1302,8 @@ void __fastcall TVideoCaptureThreadHttpServer::ARecreateCapture(void)
 // Конструкторы и деструкторы
 // --------------------------
 __fastcall TVideoCaptureThreadVideoGrabber::TVideoCaptureThreadVideoGrabber(TVideoOutputFrame *frame, bool CreateSuspended)
- : VideoGrabber(new TVideoGrabber(frame)), TVideoCaptureThread(frame,CreateSuspended)
+ : VideoGrabber(0), TVideoCaptureThread(frame,CreateSuspended)
 {
- VideoGrabber->OnFrameCaptureCompleted=OnFrameCaptureCompleted;
-// VideoGrabber->OnFrameBitmap=VideoGrabberFrameBitmap;
- VideoGrabber->OnLog=VideoGrabberLog;
- VideoGrabber->OnDeviceLost=VideoGrabberDeviceLost;
-  VideoGrabber->OnPlayerEndOfStream = VideoGrabberPlayerEndOfStream;
-
- VideoGrabber->Display_AutoSize = false;
- VideoGrabber->PlayerRefreshPausedDisplay = false;
- VideoGrabber->AutoStartPlayer = false;
- VideoGrabber->BurstCount = 0;
- VideoGrabber->BurstInterval = 0;
- VideoGrabber->BurstMode = true;
- VideoGrabber->BurstType = fc_TBitmap;
- VideoGrabber->Synchronized=false;
- VideoGrabber->SetIPCameraSetting(ips_ConnectionTimeout, 1000);
- VideoGrabber->SetIPCameraSetting(ips_ReceiveTimeout, 20000);
- VideoGrabber->FrameGrabberRGBFormat=fgf_RGB24;
-
  ConvertBitmap=new Graphics::TBitmap;
 
  VideoGrabberCompleted=CreateEvent(0,TRUE,0,0);
@@ -1312,12 +1314,13 @@ __fastcall TVideoCaptureThreadVideoGrabber::TVideoCaptureThreadVideoGrabber(TVid
 
 __fastcall TVideoCaptureThreadVideoGrabber::~TVideoCaptureThreadVideoGrabber(void)
 {
- if(VideoGrabber)
+ if(!Terminated)
  {
   Terminate();
-  WaitForSingleObject(GetFrameNotInProgress(),INFINITE);
-  delete VideoGrabber;
-  VideoGrabber=0;
+  WaitFor();
+  WaitForSingleObject(GetFrameNotInProgress(),10000);
+//  delete VideoGrabber;
+//  VideoGrabber=0;
  }
 
  if(ConvertBitmap)
@@ -1345,6 +1348,43 @@ bool TVideoCaptureThreadVideoGrabber::SetFps(double fps)
 // --------------------------
 // Управление потоком
 // --------------------------
+void __fastcall TVideoCaptureThreadVideoGrabber::ExecuteCaptureInit(void)
+{
+ VideoGrabber=new TVideoGrabber(GetFrame());//(TComponent*) NULL);
+// VideoGrabber->Parent=GetFrame();
+ VideoGrabber->OnFrameCaptureCompleted=OnFrameCaptureCompleted;
+// VideoGrabber->OnFrameBitmap=VideoGrabberFrameBitmap;
+ VideoGrabber->OnLog=VideoGrabberLog;
+ VideoGrabber->OnDeviceLost=VideoGrabberDeviceLost;
+  VideoGrabber->OnPlayerEndOfStream = VideoGrabberPlayerEndOfStream;
+//  VideoGrabber->OnThreadSync=VideoGrabberOnThreadSync;
+
+ VideoGrabber->Display_AutoSize = false;
+ VideoGrabber->PlayerRefreshPausedDisplay = false;
+ VideoGrabber->AutoStartPlayer = false;
+ VideoGrabber->BurstCount = 0;
+ VideoGrabber->BurstInterval = 0;
+ VideoGrabber->BurstMode = true;
+ VideoGrabber->BurstType = fc_TBitmap;
+ VideoGrabber->Synchronized=false;
+ VideoGrabber->SetIPCameraSetting(ips_ConnectionTimeout, 20000);
+ VideoGrabber->SetIPCameraSetting(ips_ReceiveTimeout, 20000);
+ VideoGrabber->FrameGrabberRGBFormat=fgf_RGB24;
+ VideoGrabber->LicenseString=TVGrabberLicenseString;
+// VideoGrabber->EnableThreadMode();
+}
+
+void __fastcall TVideoCaptureThreadVideoGrabber::ExecuteCaptureUnInit(void)
+{
+ if(VideoGrabber)
+ {
+  VideoGrabber->Parent=0;
+  delete VideoGrabber;
+  VideoGrabber=0;
+ }
+}
+
+
 TVideoGrabber* TVideoCaptureThreadVideoGrabber::GetVideoGrabber(void)
 {
  return VideoGrabber;
@@ -1369,6 +1409,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::OnFrameCaptureCompleted(System:
  Frame_Bitmap = (Graphics::TBitmap*) FrameBitmap;
  ConvertUBitmap<<Frame_Bitmap;
  ConvertTimeStamp=double(FrameTime);
+ SetLastTimeStampSafe(double(FrameTime)/(10000000.0*86400));
 
 /*
  switch (DestType)
@@ -1413,6 +1454,12 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberPlayerEndOfStream(T
 	 Stop();
 	}
 }
+
+void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberOnThreadSync(System::TObject* Sender, TThreadSyncPoint ThreadSyncPoint)
+{
+
+}
+
 
 void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberFrameBitmap(TObject *Sender,
 	  pFrameInfo FrameInfo, pFrameBitmapInfo BitmapInfo)
@@ -1505,6 +1552,9 @@ void __fastcall TVideoCaptureThreadVideoGrabber::Calculate(void)
  if(Terminated)
   return;
 
+ if(!VideoGrabber)
+  return;
+
  int wait_time=30;
  double fps=1;
  if(VideoGrabber->FrameRate>0)
@@ -1559,7 +1609,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::BeforeCalculate(void)
 
 void __fastcall TVideoCaptureThreadVideoGrabber::AfterCalculate(void)
 {
-
+// Application->HandleMessage();
 }
 
 /// Возвращает число изображений в последовательности
@@ -1604,13 +1654,15 @@ int TVideoCaptureThreadVideoGrabber::CheckConnection(void) const
 
 void __fastcall TVideoCaptureThreadVideoGrabber::ARecreateCapture(void)
 {
-
-// return;
+ return;
  delete VideoGrabber;
  VideoGrabber=new TVideoGrabber(GetFrame());
- VideoGrabber->OnFrameBitmap=VideoGrabberFrameBitmap;
+ VideoGrabber->OnFrameCaptureCompleted=OnFrameCaptureCompleted;
+// VideoGrabber->OnFrameBitmap=VideoGrabberFrameBitmap;
  VideoGrabber->OnLog=VideoGrabberLog;
  VideoGrabber->OnDeviceLost=VideoGrabberDeviceLost;
+ VideoGrabber->OnPlayerEndOfStream = VideoGrabberPlayerEndOfStream;
+// VideoGrabber->OnThreadSync=VideoGrabberOnThreadSync;
 
  VideoGrabber->Display_AutoSize = false;
  VideoGrabber->PlayerRefreshPausedDisplay = false;
@@ -1620,9 +1672,12 @@ void __fastcall TVideoCaptureThreadVideoGrabber::ARecreateCapture(void)
  VideoGrabber->BurstMode = true;
  VideoGrabber->BurstType = fc_TBitmap;
  VideoGrabber->Synchronized=false;
- VideoGrabber->SetIPCameraSetting(ips_ConnectionTimeout, 1000);
- VideoGrabber->SetIPCameraSetting(ips_ReceiveTimeout, 20000);
+ VideoGrabber->SetIPCameraSetting(ips_ConnectionTimeout, 100000);
+ VideoGrabber->SetIPCameraSetting(ips_ReceiveTimeout, 100000);
  VideoGrabber->FrameGrabberRGBFormat=fgf_RGB24;
+ VideoGrabber->LicenseString=TVGrabberLicenseString;
+
+// VideoGrabber->EnableThreadMode();
 
 // ConnectionState=0;
  MEngine_LogMessage(ChannelIndex, RDK_EX_DEBUG, (std::string("TVideoCaptureThreadVideoGrabberIpCamera::ARecreateCapture ")).c_str());
@@ -1684,6 +1739,11 @@ std::string TVideoCaptureThreadVideoGrabberAvi::GetFileName(void) const
 
 bool TVideoCaptureThreadVideoGrabberAvi::SetFileName(const std::string& value)
 {
+ if(!VideoGrabber)
+ {
+  FileName=value;
+  return true;
+ }
  Stop();
  if(WaitForSingleObject(FrameNotInProgress,1000) == WAIT_TIMEOUT)
   return false;
@@ -1717,7 +1777,8 @@ bool TVideoCaptureThreadVideoGrabberAvi::SetLastTimeStampSafe(double time_stamp)
  TVideoCaptureThread::SetLastTimeStampSafe(time_stamp);
  if(WaitForSingleObject(FrameNotInProgress,1000) == WAIT_TIMEOUT)
   return false;
- VideoGrabber->PlayerTimePosition=time_stamp*10000000.0*86400.0;
+ if(VideoGrabber)
+  VideoGrabber->PlayerTimePosition=time_stamp*10000000.0*86400.0;
  return true;
 }
 
@@ -1733,6 +1794,9 @@ void __fastcall TVideoCaptureThreadVideoGrabberAvi::AStop(void)
 
 void __fastcall TVideoCaptureThreadVideoGrabberAvi::AfterCalculate(void)
 {
+ if(!VideoGrabber)
+  return;
+
  if(GetProcessAllFramesFlag())
  {
   VideoGrabber->BurstCount=1;
@@ -1859,6 +1923,11 @@ int TVideoCaptureThreadVideoGrabberCamera::GetAnalogIndex(void) const
 
 bool TVideoCaptureThreadVideoGrabberCamera::Init(int camera_index, int input_index, int size_index, int subtype_index, int analog_index)
 {
+ if(!VideoGrabber)
+ {
+  return true;
+ }
+
  Stop();
  if(WaitForSingleObject(FrameNotInProgress,1000) == WAIT_TIMEOUT)
   return false;
@@ -1994,6 +2063,15 @@ String TVideoCaptureThreadVideoGrabberIpCamera::GetPassword(void) const
 
 bool TVideoCaptureThreadVideoGrabberIpCamera::Init(const String camera_url, const String user_name, const String user_password)
 {
+ if(!VideoGrabber)
+ {
+  Url=camera_url;
+  UserName=user_name;
+  Password=user_password;
+
+  return true;
+ }
+
  if(CheckConnection() == 2)
   Stop();
  if(WaitForSingleObject(FrameNotInProgress,1000) == WAIT_TIMEOUT)
@@ -2008,6 +2086,7 @@ bool TVideoCaptureThreadVideoGrabberIpCamera::Init(const String camera_url, cons
  VideoGrabber->BurstMode = True;
  VideoGrabber->BurstCount = 0;
  VideoGrabber->IPCameraURL=camera_url.c_str();
+ VideoGrabber->FrameGrabberRGBFormat=fgf_RGB24;
 
  VideoGrabber->SetAuthentication(at_IPCamera,user_name,user_password);
  return true;

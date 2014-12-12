@@ -245,6 +245,8 @@ virtual void __fastcall AfterCalculate(void);
 virtual void __fastcall Calculate(void)=0;
 
 virtual void __fastcall Execute(void);
+virtual void __fastcall ExecuteCaptureInit(void);
+virtual void __fastcall ExecuteCaptureUnInit(void);
 
 /// Возвращает копию изображения с блокировкой
 bool ReadSourceSafe(RDK::UBitmap& dest, double &time_stamp, bool reflect);
@@ -594,6 +596,8 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 // Управление потоком
 // --------------------------
+virtual void __fastcall ExecuteCaptureInit(void);
+virtual void __fastcall ExecuteCaptureUnInit(void);
 TVideoGrabber* GetVideoGrabber(void);
 
 void __fastcall OnFrameCaptureCompleted(System::TObject* Sender, void * FrameBitmap, int BitmapWidth, int BitmapHeight, unsigned FrameNumber, __int64 FrameTime, TFrameCaptureDest DestType, System::UnicodeString FileName, bool Success, int FrameId);
@@ -606,6 +610,8 @@ void __fastcall VideoGrabberFrameBitmap(TObject *Sender,
 	  pFrameInfo FrameInfo, pFrameBitmapInfo BitmapInfo);
 
 void __fastcall VideoGrabberPlayerEndOfStream(TObject *Sender);
+
+void __fastcall VideoGrabberOnThreadSync(System::TObject* Sender, TThreadSyncPoint ThreadSyncPoint);
 
 virtual void __fastcall Calculate(void);
 
