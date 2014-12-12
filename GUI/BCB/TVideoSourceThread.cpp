@@ -8,6 +8,7 @@
 #include "TUBitmap.h"
 #include "rdk_initdll.h"
 //#include "TMultiStartFormUnit.h"
+#include <Jpeg.hpp>
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 
@@ -400,7 +401,7 @@ void __fastcall TVideoCaptureThread::Execute(void)
    continue;
   }
   ProcessCommandQueue();
-
+	 /*
   double curr_time=TDateTime::CurrentDateTime().operator double();
   if(CheckConnection() == 2 && curr_time-RealLastTimeStamp>double(MaxInterstepInterval)/(86400.0*1000.0))
   {
@@ -455,7 +456,7 @@ void __fastcall TVideoCaptureThread::Execute(void)
    SetEvent(FrameNotInProgress);
    continue;
   }
-
+       */
   if(SyncMode == 1)
   {
    if(WaitForSingleObject(CalcCompleteEvent,10) == WAIT_TIMEOUT)
@@ -1314,7 +1315,7 @@ __fastcall TVideoCaptureThreadVideoGrabber::TVideoCaptureThreadVideoGrabber(TVid
 
 __fastcall TVideoCaptureThreadVideoGrabber::~TVideoCaptureThreadVideoGrabber(void)
 {
- if(!Terminated)
+ if(!Terminated && !Suspended)
  {
   Terminate();
   WaitFor();
