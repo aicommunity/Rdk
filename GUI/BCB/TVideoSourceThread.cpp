@@ -401,7 +401,7 @@ void __fastcall TVideoCaptureThread::Execute(void)
    continue;
   }
   ProcessCommandQueue();
-	 /*
+
   double curr_time=TDateTime::CurrentDateTime().operator double();
   if(CheckConnection() == 2 && curr_time-RealLastTimeStamp>double(MaxInterstepInterval)/(86400.0*1000.0))
   {
@@ -432,7 +432,7 @@ void __fastcall TVideoCaptureThread::Execute(void)
 	  SetEvent(FrameNotInProgress);
 	  continue;
 	 }
-	 AddCommand(tvcHalt);
+//	 AddCommand(tvcHalt);
 	 AddCommand(tvcRecreate);
 	 AddCommand(tvcStart);
 	 SetEvent(FrameNotInProgress);
@@ -456,7 +456,7 @@ void __fastcall TVideoCaptureThread::Execute(void)
    SetEvent(FrameNotInProgress);
    continue;
   }
-       */
+
   if(SyncMode == 1)
   {
    if(WaitForSingleObject(CalcCompleteEvent,10) == WAIT_TIMEOUT)
