@@ -1408,9 +1408,12 @@ void __fastcall TVideoCaptureThreadVideoGrabber::OnFrameCaptureCompleted(System:
  Graphics::TBitmap *Frame_Bitmap;
 
  Frame_Bitmap = (Graphics::TBitmap*) FrameBitmap;
+// if(Frame_Bitmap)
+// Engine_LogMessage(exception.GetType(), (std::string("Core-OpenProject Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.CreateLogMessage()).c_str());
+
  ConvertUBitmap<<Frame_Bitmap;
  ConvertTimeStamp=double(FrameTime);
- SetLastTimeStampSafe(double(FrameTime)/(10000000.0*86400));
+// SetLastTimeStampSafe(double(FrameTime)/(10000000.0*86400));
 
 /*
  switch (DestType)
