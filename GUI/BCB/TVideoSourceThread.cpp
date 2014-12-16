@@ -1394,7 +1394,10 @@ TVideoGrabber* TVideoCaptureThreadVideoGrabber::GetVideoGrabber(void)
 void __fastcall TVideoCaptureThreadVideoGrabber::OnFrameCaptureCompleted(System::TObject* Sender, void * FrameBitmap, int BitmapWidth, int BitmapHeight, unsigned FrameNumber, __int64 FrameTime, TFrameCaptureDest DestType, System::UnicodeString FileName, bool Success, int FrameId)
 {
  if(CheckCaptureThreadState())
+ {
   ConnectionState=2;
+  RealLastTimeStamp=TDateTime::CurrentDateTime().operator double();
+ }
 	  /*
  if(Fps > 0)
  {
@@ -1469,7 +1472,10 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberFrameBitmap(TObject
 	  pFrameInfo FrameInfo, pFrameBitmapInfo BitmapInfo)
 {
  if(CheckCaptureThreadState())
+ {
   ConnectionState=2;
+  RealLastTimeStamp=TDateTime::CurrentDateTime().operator double();
+ }
 
  ConvertTimeStamp=FrameInfo->FrameTime;
 
@@ -1574,7 +1580,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::Calculate(void)
 
  GetFrame()->UpdateInterval=wait_time;
  //Sleep(1);
- if(WaitForSingleObject(VideoGrabberCompleted, 1000) == WAIT_TIMEOUT)
+ if(WaitForSingleObject(VideoGrabberCompleted, 10) == WAIT_TIMEOUT)
  {
 //  Sleep(10);
   return;
@@ -1582,7 +1588,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::Calculate(void)
  else
  {
   ResetEvent(VideoGrabberCompleted);
-
+/*
   if(Fps > 0)
   {
    double diffTime=ConvertTimeStamp/double(10000000.0*86400)-GetLastTimeStampSafe();
@@ -1591,7 +1597,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::Calculate(void)
 	return;
    }
   }
-
+*/
   ConvertResult.SetRes(ConvertUBitmap.GetWidth(),ConvertUBitmap.GetHeight(),RDK::ubmRGB24);
   ConvertUBitmap.ConvertTo(ConvertResult);
 
@@ -1659,31 +1665,13 @@ int TVideoCaptureThreadVideoGrabber::CheckConnection(void) const
 void __fastcall TVideoCaptureThreadVideoGrabber::ARecreateCapture(void)
 {
  return;
- delete VideoGrabber;
- VideoGrabber=new TVideoGrabber(GetFrame());
- VideoGrabber->OnFrameCaptureCompleted=OnFrameCaptureCompleted;
-// VideoGrabber->OnFrameBitmap=VideoGrabberFrameBitmap;
- VideoGrabber->OnLog=VideoGrabberLog;
- VideoGrabber->OnDeviceLost=VideoGrabberDeviceLost;
- VideoGrabber->OnPlayerEndOfStream = VideoGrabberPlayerEndOfStream;
-// VideoGrabber->OnThreadSync=VideoGrabberOnThreadSync;
-
- VideoGrabber->Display_AutoSize = false;
- VideoGrabber->PlayerRefreshPausedDisplay = false;
- VideoGrabber->AutoStartPlayer = false;
- VideoGrabber->BurstCount = 0;
- VideoGrabber->BurstInterval = 0;
- VideoGrabber->BurstMode = true;
- VideoGrabber->BurstType = fc_TBitmap;
- VideoGrabber->Synchronized=false;
- VideoGrabber->SetIPCameraSetting(ips_ConnectionTimeout, 100000);
- VideoGrabber->SetIPCameraSetting(ips_ReceiveTimeout, 100000);
- VideoGrabber->FrameGrabberRGBFormat=fgf_RGB24;
- VideoGrabber->LicenseString=TVGrabberLicenseString;
-
-// VideoGrabber->EnableThreadMode();
-
-// ConnectionState=0;
+ if(VideoGrabber)
+ {
+//  VideoGrabber->StopPreview();
+//  VideoGrabber->StopPlayer();
+  delete VideoGrabber;
+ }
+ ExecuteCaptureInit();
  MEngine_LogMessage(ChannelIndex, RDK_EX_DEBUG, (std::string("TVideoCaptureThreadVideoGrabberIpCamera::ARecreateCapture ")).c_str());
 }
 // --------------------------
