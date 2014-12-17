@@ -3,6 +3,7 @@
 #ifndef TVideoSourceThreadH
 #define TVideoSourceThreadH
 #include "VidGrab.hpp"
+#include <jpeg.hpp>
 #include "TUHttpServerUnit.h"
 #include "myrdk.h"
 
