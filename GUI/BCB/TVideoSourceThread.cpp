@@ -885,7 +885,10 @@ std::string TVideoCaptureThreadBmpSequence::GetPathName(void) const
 
 bool TVideoCaptureThreadBmpSequence::SetPathName(const std::string& value)
 {
- PathName=value+"\\";
+ if(!value.empty() && (value[value.size()-1] != '\\' && value[value.size()-1] != '/'))
+  PathName=value+"\\";
+ else
+  PathName=value;
 
  RDK::FindFilesList(PathName, "*.bmp", true, BmpSequenceNames);
  if(BmpSequenceNames.size() == 0)
@@ -1357,7 +1360,8 @@ void __fastcall TVideoCaptureThreadVideoGrabber::ExecuteCaptureInit(void)
 // VideoGrabber->OnFrameBitmap=VideoGrabberFrameBitmap;
  VideoGrabber->OnLog=VideoGrabberLog;
  VideoGrabber->OnDeviceLost=VideoGrabberDeviceLost;
-  VideoGrabber->OnPlayerEndOfStream = VideoGrabberPlayerEndOfStream;
+ VideoGrabber->OnPlayerEndOfStream = VideoGrabberPlayerEndOfStream;
+ VideoGrabber->OnPlayerOpened=VideoGrabberOnPlayerOpened;
 //  VideoGrabber->OnThreadSync=VideoGrabberOnThreadSync;
 
  VideoGrabber->Display_AutoSize = false;
@@ -1460,6 +1464,11 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberPlayerEndOfStream(T
      MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, std::string("VideoGrabber stopped by end of frames").c_str());
 	 Stop();
 	}
+}
+
+void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberOnPlayerOpened(System::TObject* Sender)
+{
+ MEngine_LogMessage(ChannelIndex, RDK_EX_DEBUG, std::string("VideoGrabber player opened").c_str());
 }
 
 void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberOnThreadSync(System::TObject* Sender, TThreadSyncPoint ThreadSyncPoint)
@@ -1710,8 +1719,6 @@ __fastcall TVideoCaptureThreadVideoGrabberAvi::TVideoCaptureThreadVideoGrabberAv
  : TVideoCaptureThreadVideoGrabber(frame, CreateSuspended)
 {
  SourceMode=1;
- if(VideoGrabber)
-  VideoGrabber->VideoSource=vs_VideoFileOrURL;
 }
 
 __fastcall TVideoCaptureThreadVideoGrabberAvi::~TVideoCaptureThreadVideoGrabberAvi(void)
@@ -1736,7 +1743,8 @@ bool TVideoCaptureThreadVideoGrabberAvi::SetFileName(const std::string& value)
   FileName=value;
   return true;
  }
- Stop();
+ if(CheckConnection() == 2)
+  Stop();
  if(WaitForSingleObject(FrameNotInProgress,1000) == WAIT_TIMEOUT)
   return false;
 
@@ -1763,6 +1771,13 @@ bool TVideoCaptureThreadVideoGrabberAvi::SetProcessAllFramesFlag(bool value)
 // --------------------------
 // Управление потоком
 // --------------------------
+void __fastcall TVideoCaptureThreadVideoGrabberAvi::ExecuteCaptureInit(void)
+{
+ TVideoCaptureThreadVideoGrabber::ExecuteCaptureInit();
+ if(VideoGrabber)
+  VideoGrabber->VideoSource=vs_VideoFileOrURL;
+}
+
 // Меняет временную метку с блокировкой
 bool TVideoCaptureThreadVideoGrabberAvi::SetLastTimeStampSafe(double time_stamp)
 {
@@ -1848,12 +1863,22 @@ bool TVideoCaptureThreadVideoGrabberAvi::ALoadParameters(RDK::USerStorageXML &xm
 // --------------------------
 // Скрытые методы управления потоком
 // --------------------------
+bool __fastcall TVideoCaptureThreadVideoGrabberAvi::RecreateCapture(void)
+{
+ return true;
+}
+
 void __fastcall TVideoCaptureThreadVideoGrabberAvi::ARunCapture(void)
 {
  if(VideoGrabber)
  {
-//  VideoGrabber->StartSynchronized();
-  VideoGrabber->FrameGrabberRGBFormat=fgf_RGB24;
+  if(VideoGrabber->IsPlayerVideoStreamAvailable == ts_Undefined)
+  {
+   VideoGrabber->ClosePlayer();
+   VideoGrabber->PlayerFileName=FileName.Get().c_str();
+   VideoGrabber->FrameGrabberRGBFormat=fgf_RGB24;
+   VideoGrabber->OpenPlayer();
+  }
   VideoGrabber->RunPlayer();
   VideoGrabber->FrameGrabberRGBFormat=fgf_RGB24;
  }
@@ -1875,8 +1900,6 @@ __fastcall TVideoCaptureThreadVideoGrabberCamera::TVideoCaptureThreadVideoGrabbe
  : TVideoCaptureThreadVideoGrabber(frame, CreateSuspended)
 {
  SourceMode=2;
- if(VideoGrabber)
-  VideoGrabber->VideoSource=vs_VideoCaptureDevice;
 }
 
 __fastcall TVideoCaptureThreadVideoGrabberCamera::~TVideoCaptureThreadVideoGrabberCamera(void)
@@ -1920,7 +1943,8 @@ bool TVideoCaptureThreadVideoGrabberCamera::Init(int camera_index, int input_ind
   return true;
  }
 
- Stop();
+ if(CheckConnection() == 2)
+  Stop();
  if(WaitForSingleObject(FrameNotInProgress,1000) == WAIT_TIMEOUT)
   return false;
 
@@ -1940,6 +1964,13 @@ bool TVideoCaptureThreadVideoGrabberCamera::Init(int camera_index, int input_ind
 // --------------------------
 // Управление потоком
 // --------------------------
+void __fastcall TVideoCaptureThreadVideoGrabberCamera::ExecuteCaptureInit(void)
+{
+ TVideoCaptureThreadVideoGrabber::ExecuteCaptureInit();
+ if(VideoGrabber)
+  VideoGrabber->VideoSource=vs_VideoCaptureDevice;
+}
+
 void __fastcall TVideoCaptureThreadVideoGrabberCamera::AStart(void)
 {
 // TVideoCaptureThreadVideoGrabber::Start();

@@ -612,6 +612,8 @@ void __fastcall VideoGrabberFrameBitmap(TObject *Sender,
 
 void __fastcall VideoGrabberPlayerEndOfStream(TObject *Sender);
 
+void __fastcall VideoGrabberOnPlayerOpened(System::TObject* Sender);
+
 void __fastcall VideoGrabberOnThreadSync(System::TObject* Sender, TThreadSyncPoint ThreadSyncPoint);
 
 virtual void __fastcall Calculate(void);
@@ -679,6 +681,8 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 // ”правление потоком
 // --------------------------
+virtual void __fastcall ExecuteCaptureInit(void);
+
 virtual void __fastcall AStart(void);
 
 virtual void __fastcall AStop(void);
@@ -694,6 +698,8 @@ void __fastcall AfterCalculate(void);
 // —крытые методы управлени€ потоком
 // --------------------------
 protected:
+virtual bool __fastcall RecreateCapture(void);
+
 virtual void __fastcall ARunCapture(void);
 
 virtual void __fastcall AStopCapture(void);
@@ -747,6 +753,8 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 // ”правление потоком
 // --------------------------
+virtual void __fastcall ExecuteCaptureInit(void);
+
 virtual void __fastcall AStart(void);
 
 virtual void __fastcall AStop(void);

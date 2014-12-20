@@ -46,7 +46,12 @@ bool TVideoCaptureOptionsDeviceForm::ReadParametersToGui(RDK::USerStorageXML &xm
  {
   TVideoGrabber* VideoGrabber=thread->GetVideoGrabber();
   if(!VideoGrabber)
-   return false;
+  {
+   thread->ExecuteCaptureInit();
+   VideoGrabber=thread->GetVideoGrabber();
+   if(!VideoGrabber)
+    return false;
+  }
   AssignListToComboBox (DeviceComboBox, VideoGrabber->VideoDevices, VideoGrabber->VideoDevice);
 
   DeviceComboBox->ItemIndex=xml.ReadInteger("CameraIndex",DeviceComboBox->ItemIndex);

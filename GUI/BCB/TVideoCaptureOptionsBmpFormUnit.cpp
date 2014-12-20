@@ -37,7 +37,6 @@ bool TVideoCaptureOptionsBmpForm::ReadParametersToGui(RDK::USerStorageXML &xml)
  }
  catch(EConvertError &exception)
  {
-  return false;
  }
 
  return true;
@@ -54,7 +53,6 @@ bool TVideoCaptureOptionsBmpForm::WriteParametersToXml(RDK::USerStorageXML &xml)
  }
  catch(EConvertError &exception)
  {
-  return false;
  }
 
  return true;
