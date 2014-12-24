@@ -252,7 +252,12 @@ void TUComponentsPerformanceFrame::AddAllComponents(const std::string &component
 
  for(size_t i=0;i<ids.size();i++)
  {
-  const char *pname=Model_GetComponentLongName((componentid+std::string(".")+AnsiString(ids[i]).c_str()).c_str());
+  const char *pname=0;
+  if(!componentid.empty())
+   pname=Model_GetComponentLongName((componentid+std::string(".")+AnsiString(ids[i]).c_str()).c_str());
+  else
+   pname=Model_GetComponentLongName(AnsiString(ids[i]).c_str());
+
   if(pname)
    names[i]=pname;
   Engine_FreeBufString(pname);
@@ -324,6 +329,19 @@ void __fastcall TUComponentsPerformanceFrame::ShowModeRadioGroupClick(TObject *S
   return;
 
  UpdateInterface();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsPerformanceFrame::SelectAll1Click(TObject *Sender)
+{
+ if(MyComponentsListForm->ShowComponentSelect() != mrOk)
+  return;
+
+ ClearAll1Click(Sender);
+ AddAllComponents(MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName());
+ ComponentData.clear();
+
+// ((ScrollPager*)Chart->Tools[0])->SubChartTool->Charts[0].ITool = ((ScrollPager)Chart->Tools[0])->SubChartTool;
 }
 //---------------------------------------------------------------------------
 

@@ -37,10 +37,12 @@ __published:	// IDE-managed Components
 	TRadioGroup *ShowModeRadioGroup;
 	TGroupBox *GroupBox1;
 	TSpinEdit *AverageIntervalSpinEdit;
+	TMenuItem *SelectAll1;
 	void __fastcall SelectSource1Click(TObject *Sender);
 	void __fastcall ClearAll1Click(TObject *Sender);
 	void __fastcall AverageIntervalSpinEditChange(TObject *Sender);
 	void __fastcall ShowModeRadioGroupClick(TObject *Sender);
+	void __fastcall SelectAll1Click(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
 	__fastcall TUComponentsPerformanceFrame(TComponent* Owner);
