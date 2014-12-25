@@ -64,6 +64,11 @@ public:		// User declarations
 // Источники видео
 std::vector<TVideoOutputFrame*> Sources;
 
+/// Интервал задержки запуска каналов видеозахвата
+/// при одновременном пуске множества каналов, ms
+int MassiveStartChannelsDelay;
+
+
 // Метод, вызываемый перед шагом расчета
 void ABeforeCalculate(void);
 

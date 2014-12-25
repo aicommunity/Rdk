@@ -14,6 +14,19 @@
 
 extern String TVGrabberLicenseString;
 
+TVideoCaptureThreadCmdDescr::TVideoCaptureThreadCmdDescr(void)
+ : Id(tvcNone), ExecTime(0.0)
+{
+
+}
+
+TVideoCaptureThreadCmdDescr::TVideoCaptureThreadCmdDescr(TVideoCaptureThreadCommands id, double exec_time)
+ : Id(id), ExecTime(exec_time)
+{
+
+}
+
+
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
@@ -39,9 +52,9 @@ __fastcall TVideoCaptureThread::TVideoCaptureThread(TVideoOutputFrame *frame, bo
  ConnectionState=0;
 // CommandMutex=new TMutex(false);
 // ThreadState=0;
- RestartInterval=20000;
+ RestartInterval=200000;
  LastStartTime=0;
- MaxInterstepInterval=20000;
+ MaxInterstepInterval=30000;
  Priority = tpLower;
 }
 
@@ -70,11 +83,11 @@ __fastcall TVideoCaptureThread::~TVideoCaptureThread(void)
 // Управление командами
 // --------------------------
 /// Добавляет команду в очередь
-void TVideoCaptureThread::AddCommand(TVideoCaptureThreadCommands value)
+void TVideoCaptureThread::AddCommand(TVideoCaptureThreadCmdDescr value)
 {
  WaitForSingleObject(CommandUnlockEvent,INFINITE);
  ResetEvent(CommandUnlockEvent);
- std::pair<double,TVideoCaptureThreadCommands> cmd(TDateTime::CurrentDateTime().operator double(),value);
+ std::pair<double,TVideoCaptureThreadCmdDescr> cmd(TDateTime::CurrentDateTime().operator double(),value);
  CommandQueue.push_back(cmd);
 // CommandQueue[TDateTime::CurrentDateTime().operator double()]=value;
  SetEvent(CommandUnlockEvent);
@@ -93,19 +106,24 @@ void TVideoCaptureThread::ClearCommandQueue(void)
 void TVideoCaptureThread::ProcessCommandQueue(void)
 {
  double cmd_time=0;
- TVideoCaptureThreadCommands cmd=tvcNone;
+ TVideoCaptureThreadCmdDescr cmd;
+ double curr_time=TDateTime::CurrentDateTime().operator double();
  WaitForSingleObject(CommandUnlockEvent,INFINITE);
  ResetEvent(CommandUnlockEvent);
- std::list<std::pair<double,TVideoCaptureThreadCommands> >::iterator I=CommandQueue.begin();
- if(I != CommandQueue.end())
+ std::list<std::pair<double,TVideoCaptureThreadCmdDescr> >::iterator I=CommandQueue.begin();
+ for(;I != CommandQueue.end();++I)
  {
-  cmd_time=I->first;
-  cmd=I->second;
-  CommandQueue.erase(I);
+  if(I->second.ExecTime<=curr_time)
+  {
+   cmd_time=I->first;
+   cmd=I->second;
+   CommandQueue.erase(I);
+   break;
+  }
  }
  SetEvent(CommandUnlockEvent);
 
- switch(cmd)
+ switch(cmd.Id)
  {
  case tvcNone:
  break;
@@ -359,17 +377,17 @@ HANDLE TVideoCaptureThread::GetCalcCompleteEvent(void) const
 // --------------------------
 // Управление потоком
 // --------------------------
-void __fastcall TVideoCaptureThread::Start(void)
+void __fastcall TVideoCaptureThread::Start(double time)
 {
- AddCommand(tvcRecreate);
- AddCommand(tvcStart);
- AStart();
+ AddCommand(TVideoCaptureThreadCmdDescr(tvcRecreate,time));
+ AddCommand(TVideoCaptureThreadCmdDescr(tvcStart,time));
+ AStart(time);
 }
 
-void __fastcall TVideoCaptureThread::Stop(void)
+void __fastcall TVideoCaptureThread::Stop(double time)
 {
- AStop();
- AddCommand(tvcStop);
+ AStop(time);
+ AddCommand(TVideoCaptureThreadCmdDescr(tvcStop,time));
 }
 
 void __fastcall TVideoCaptureThread::BeforeCalculate(void)
@@ -410,12 +428,12 @@ void __fastcall TVideoCaptureThread::Execute(void)
    {
 	LastStartTime=TDateTime::CurrentDateTime().operator double();
 	SetEvent(FrameNotInProgress);
-	Sleep(30);
+	Sleep(5);
 	continue;
    }
   }
 
-  if(CheckConnection() != 2 && CheckCaptureThreadState() == 1)
+  if(CheckConnection() == 10 && CheckCaptureThreadState() == 1)
   {
   switch(RestartMode)
    {
@@ -428,13 +446,13 @@ void __fastcall TVideoCaptureThread::Execute(void)
 	{
 	 if(curr_time-LastStartTime<double(RestartInterval)/(86400.0*1000.0))
 	 {
-	  Sleep(30);
+	  Sleep(5);
 	  SetEvent(FrameNotInProgress);
 	  continue;
 	 }
-//	 AddCommand(tvcHalt);
-	 AddCommand(tvcRecreate);
-	 AddCommand(tvcStart);
+	 AddCommand(TVideoCaptureThreadCmdDescr(tvcHalt,0));
+	 AddCommand(TVideoCaptureThreadCmdDescr(tvcRecreate,0));
+	 AddCommand(TVideoCaptureThreadCmdDescr(tvcStart,curr_time+(100+Random(3000))/(86400.0*1000.0)));
 	 SetEvent(FrameNotInProgress);
 	 continue;
  //	 StopCapture();
@@ -444,7 +462,7 @@ void __fastcall TVideoCaptureThread::Execute(void)
 
 	case 2:
 	{
-	 AddCommand(tvcStop);
+	 AddCommand(TVideoCaptureThreadCmdDescr(tvcStop,0));
 	 SetEvent(FrameNotInProgress);
 	 continue;
 //	 StopCapture();
@@ -452,7 +470,7 @@ void __fastcall TVideoCaptureThread::Execute(void)
 	}
    };
 
-   Sleep(30);
+   Sleep(10);
    SetEvent(FrameNotInProgress);
    continue;
   }
@@ -763,12 +781,12 @@ bool TVideoCaptureThreadBmp::SetFps(double fps)
 // --------------------------
 // Управление потоком
 // --------------------------
-void __fastcall TVideoCaptureThreadBmp::AStart(void)
+void __fastcall TVideoCaptureThreadBmp::AStart(double time)
 {
  CurrentTimeStamp=0;
 }
 
-void __fastcall TVideoCaptureThreadBmp::AStop(void)
+void __fastcall TVideoCaptureThreadBmp::AStop(double time)
 {
 }
 
@@ -958,14 +976,14 @@ bool TVideoCaptureThreadBmpSequence::SetFps(double fps)
 // --------------------------
 // Управление потоком
 // --------------------------
-void __fastcall TVideoCaptureThreadBmpSequence::AStart(void)
+void __fastcall TVideoCaptureThreadBmpSequence::AStart(double time)
 {
  CurrentTimeStamp=0;
  SetSyncMode(1);
 // TVideoCaptureThread::Start();
 }
 
-void __fastcall TVideoCaptureThreadBmpSequence::AStop(void)
+void __fastcall TVideoCaptureThreadBmpSequence::AStop(double time)
 {
 // TVideoCaptureThread::Stop();
 }
@@ -988,7 +1006,7 @@ void __fastcall TVideoCaptureThreadBmpSequence::AfterCalculate(void)
   else
   {
    --CurrentBmpSequenceIndex;
-   Stop();
+   Stop(0);
   }
  }
 
@@ -1196,12 +1214,12 @@ bool TVideoCaptureThreadHttpServer::SetPosition(long long index)
 // --------------------------
 // Управление потоком
 // --------------------------
-void __fastcall TVideoCaptureThreadHttpServer::AStart(void)
+void __fastcall TVideoCaptureThreadHttpServer::AStart(double time)
 {
 // TVideoCaptureThread::Start();
 }
 
-void __fastcall TVideoCaptureThreadHttpServer::AStop(void)
+void __fastcall TVideoCaptureThreadHttpServer::AStop(double time)
 {
 // TVideoCaptureThread::Stop();
 }
@@ -1372,10 +1390,12 @@ void __fastcall TVideoCaptureThreadVideoGrabber::ExecuteCaptureInit(void)
  VideoGrabber->BurstMode = true;
  VideoGrabber->BurstType = fc_TBitmap;
  VideoGrabber->Synchronized=false;
- VideoGrabber->SetIPCameraSetting(ips_ConnectionTimeout, 20000);
- VideoGrabber->SetIPCameraSetting(ips_ReceiveTimeout, 20000);
+ VideoGrabber->SetIPCameraSetting(ips_ConnectionTimeout, 5000);
+ VideoGrabber->SetIPCameraSetting(ips_ReceiveTimeout, 5000);
  VideoGrabber->FrameGrabberRGBFormat=fgf_RGB24;
  VideoGrabber->LicenseString=TVGrabberLicenseString;
+// VideoGrabber->OpenURLAsync=false;
+
 // VideoGrabber->EnableThreadMode();
 }
 
@@ -1462,7 +1482,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberPlayerEndOfStream(T
 	else
 	{
      MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, std::string("VideoGrabber stopped by end of frames").c_str());
-	 Stop();
+	 Stop(0);
 	}
 }
 
@@ -1547,12 +1567,16 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberLog(TObject *Sender
 {
  MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, (std::string("VideoGrabber [")+std::string(AnsiString(Severity).c_str())+std::string("] ")+AnsiString(InfoMsg).c_str() ).c_str());
  if(Severity == "ERROR")
+ {
+  LastStartTime=TDateTime::CurrentDateTime().operator double();
   ConnectionState=10;
+ }
 }
 
 void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberDeviceLost(TObject *Sender)
 {
  MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, "VideoGrabber Device lost");
+ LastStartTime=TDateTime::CurrentDateTime().operator double();
  ConnectionState=10;
 /* if(RestartMode == 1)
  {
@@ -1673,7 +1697,7 @@ int TVideoCaptureThreadVideoGrabber::CheckConnection(void) const
 
 void __fastcall TVideoCaptureThreadVideoGrabber::ARecreateCapture(void)
 {
- return;
+// return;
  if(VideoGrabber)
  {
 //  VideoGrabber->StopPreview();
@@ -1744,7 +1768,7 @@ bool TVideoCaptureThreadVideoGrabberAvi::SetFileName(const std::string& value)
   return true;
  }
  if(CheckConnection() == 2)
-  Stop();
+  Stop(0);
  if(WaitForSingleObject(FrameNotInProgress,1000) == WAIT_TIMEOUT)
   return false;
 
@@ -1789,12 +1813,12 @@ bool TVideoCaptureThreadVideoGrabberAvi::SetLastTimeStampSafe(double time_stamp)
  return true;
 }
 
-void __fastcall TVideoCaptureThreadVideoGrabberAvi::AStart(void)
+void __fastcall TVideoCaptureThreadVideoGrabberAvi::AStart(double time)
 {
 // TVideoCaptureThreadVideoGrabber::Start();
 }
 
-void __fastcall TVideoCaptureThreadVideoGrabberAvi::AStop(void)
+void __fastcall TVideoCaptureThreadVideoGrabberAvi::AStop(double time)
 {
 // TVideoCaptureThreadVideoGrabber::Stop();
 }
@@ -1944,7 +1968,7 @@ bool TVideoCaptureThreadVideoGrabberCamera::Init(int camera_index, int input_ind
  }
 
  if(CheckConnection() == 2)
-  Stop();
+  Stop(0);
  if(WaitForSingleObject(FrameNotInProgress,1000) == WAIT_TIMEOUT)
   return false;
 
@@ -1971,12 +1995,12 @@ void __fastcall TVideoCaptureThreadVideoGrabberCamera::ExecuteCaptureInit(void)
   VideoGrabber->VideoSource=vs_VideoCaptureDevice;
 }
 
-void __fastcall TVideoCaptureThreadVideoGrabberCamera::AStart(void)
+void __fastcall TVideoCaptureThreadVideoGrabberCamera::AStart(double time)
 {
 // TVideoCaptureThreadVideoGrabber::Start();
 }
 
-void __fastcall TVideoCaptureThreadVideoGrabberCamera::AStop(void)
+void __fastcall TVideoCaptureThreadVideoGrabberCamera::AStop(double time)
 {
 // TVideoCaptureThreadVideoGrabber::Stop();
 }
@@ -2096,7 +2120,7 @@ bool TVideoCaptureThreadVideoGrabberIpCamera::Init(const String camera_url, cons
  }
 
  if(CheckConnection() == 2)
-  Stop();
+  Stop(0);
  if(WaitForSingleObject(FrameNotInProgress,1000) == WAIT_TIMEOUT)
   return false;
 
@@ -2110,6 +2134,7 @@ bool TVideoCaptureThreadVideoGrabberIpCamera::Init(const String camera_url, cons
  VideoGrabber->BurstCount = 0;
  VideoGrabber->IPCameraURL=camera_url.c_str();
  VideoGrabber->FrameGrabberRGBFormat=fgf_RGB24;
+// VideoGrabber->OpenURLAsync=false;
 
  VideoGrabber->SetAuthentication(at_IPCamera,user_name,user_password);
  return true;
@@ -2119,12 +2144,12 @@ bool TVideoCaptureThreadVideoGrabberIpCamera::Init(const String camera_url, cons
 // --------------------------
 // Управление потоком
 // --------------------------
-void __fastcall TVideoCaptureThreadVideoGrabberIpCamera::AStart(void)
+void __fastcall TVideoCaptureThreadVideoGrabberIpCamera::AStart(double time)
 {
 // TVideoCaptureThreadVideoGrabber::Start();
 }
 
-void __fastcall TVideoCaptureThreadVideoGrabberIpCamera::AStop(void)
+void __fastcall TVideoCaptureThreadVideoGrabberIpCamera::AStop(double time)
 {
 // TVideoCaptureThreadVideoGrabber::Stop();
 }
@@ -2273,12 +2298,12 @@ bool TVideoCaptureThreadSharedMemory::SetPosition(long long index)
 // --------------------------
 // Управление потоком
 // --------------------------
-void __fastcall TVideoCaptureThreadSharedMemory::AStart(void)
+void __fastcall TVideoCaptureThreadSharedMemory::AStart(double time)
 {
 
 }
 
-void __fastcall TVideoCaptureThreadSharedMemory::AStop(void)
+void __fastcall TVideoCaptureThreadSharedMemory::AStop(double time)
 {
 
 }

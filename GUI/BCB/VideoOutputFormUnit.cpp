@@ -20,6 +20,7 @@ TVideoOutputForm *VideoOutputForm;
 __fastcall TVideoOutputForm::TVideoOutputForm(TComponent* Owner)
 	: TUVisualControllerForm(Owner)
 {
+ MassiveStartChannelsDelay=5000;
 }
 
 __fastcall TVideoOutputForm::~TVideoOutputForm(void)
@@ -70,12 +71,14 @@ void TVideoOutputForm::AClearInterface(void)
 void TVideoOutputForm::ASaveParameters(RDK::USerStorageXML &xml)
 {
  xml.WriteInteger("NumSources",GetNumSources());
+ xml.WriteInteger("MassiveStartChannelsDelay",MassiveStartChannelsDelay);
 }
 
 // Загружает параметры интерфейса из xml
 void TVideoOutputForm::ALoadParameters(RDK::USerStorageXML &xml)
 {
  int num=xml.ReadInteger("NumSources",1);
+ MassiveStartChannelsDelay=xml.ReadInteger("MassiveStartChannelsDelay",5000);
  ClearSources();
  for(int i=0;i<num;i++)
   AddSource();
@@ -212,14 +215,15 @@ void TVideoOutputForm::Start(int index)
  UShowProgressBarForm->ResetBarStatus(1, 1, GetNumSources());
 
  if(index>=0 && index<GetNumSources())
-  Sources[index]->StartButtonClick(this);
+  Sources[index]->Start();
  else
  {
 //  if(GetNumSources()>0)
 //   Sources[i]->
+  double curr_time=TDateTime::CurrentDateTime().operator double();
   for(int i=0;i<GetNumSources();i++)
   {
-   Sources[i]->StartButtonClick(this);
+   Sources[i]->Start(curr_time+double(i*MassiveStartChannelsDelay)/(86400*1000.0));
    UShowProgressBarForm->IncBarStatus(1);
    UShowProgressBarForm->Update();
   }
@@ -233,14 +237,17 @@ void TVideoOutputForm::Stop(int index)
  UShowProgressBarForm->ResetBarStatus(1, 1, GetNumSources());
 
  if(index>=0 && index<GetNumSources())
-  Sources[index]->StopButtonClick(this);
+  Sources[index]->Pause(0);
  else
+ {
+  double curr_time=TDateTime::CurrentDateTime().operator double();
   for(int i=0;i<GetNumSources();i++)
   {
-   Sources[i]->StopButtonClick(this);
+   Sources[i]->Pause(curr_time);
    UShowProgressBarForm->IncBarStatus(1);
    UShowProgressBarForm->Update();
   }
+ }
 }
 
 // Останавливает выбранный источник видео, или все если index == -1
@@ -253,13 +260,13 @@ void TVideoOutputForm::StopOffline(int index)
  if(index>=0 && index<GetNumSources())
  {
   if(Sources[index]->Mode != 2 && Sources[index]->Mode != 3)
-   Sources[index]->StopButtonClick(this);
+   Sources[index]->Pause();
  }
  else
   for(int i=0;i<GetNumSources();i++)
   {
    if(Sources[i]->Mode != 2 && Sources[i]->Mode != 3)
-	Sources[i]->StopButtonClick(this);
+	Sources[i]->Pause();
 
    UShowProgressBarForm->IncBarStatus(1);
    UShowProgressBarForm->Update();

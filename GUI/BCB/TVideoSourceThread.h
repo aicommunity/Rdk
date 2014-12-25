@@ -9,6 +9,19 @@
 
 enum TVideoCaptureThreadCommands { tvcNone=0, tvcStart=1, tvcStop=2, tvcTerminate=3, tvcRecreate=4, tvcHalt=5 };
 
+/// Описание команды
+struct TVideoCaptureThreadCmdDescr
+{
+/// Идентификатор команды
+TVideoCaptureThreadCommands Id;
+
+/// Ожидаемое время исполнения команды
+double ExecTime;
+
+TVideoCaptureThreadCmdDescr(void);
+TVideoCaptureThreadCmdDescr(TVideoCaptureThreadCommands id, double exec_time);
+};
+
 class TSourceStarterBase
 {
 	virtual void NextSource()=0;
@@ -23,7 +36,7 @@ class TVideoCaptureThread: public TThread
 private:
 /// Очередь команд управления тредом
 /// <временная метка команды, ID команды>
-std::list<std::pair<double,TVideoCaptureThreadCommands> > CommandQueue;
+std::list<std::pair<double,TVideoCaptureThreadCmdDescr> > CommandQueue;
 
 /// Мьютекс для разделения доступа к командам
 //TMutex* CommandMutex;
@@ -140,7 +153,7 @@ virtual __fastcall ~TVideoCaptureThread(void);
 // --------------------------
 protected:
 /// Добавляет команду в очередь
-void AddCommand(TVideoCaptureThreadCommands value);
+void AddCommand(TVideoCaptureThreadCmdDescr value);
 
 /// Очищает очередь
 void ClearCommandQueue(void);
@@ -233,11 +246,11 @@ HANDLE GetCalcCompleteEvent(void) const;
 // --------------------------
 // Управление потоком
 // --------------------------
-virtual void __fastcall Start(void);
-virtual void __fastcall AStart(void)=0;
+virtual void __fastcall Start(double time);
+virtual void __fastcall AStart(double time)=0;
 
-virtual void __fastcall Stop(void);
-virtual void __fastcall AStop(void)=0;
+virtual void __fastcall Stop(double time);
+virtual void __fastcall AStop(double time)=0;
 
 virtual void __fastcall BeforeCalculate(void);
 
@@ -351,9 +364,9 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 // Управление потоком
 // --------------------------
-virtual void __fastcall AStart(void);
+virtual void __fastcall AStart(double time);
 
-virtual void __fastcall AStop(void);
+virtual void __fastcall AStop(double time);
 
 virtual void __fastcall BeforeCalculate(void);
 
@@ -441,9 +454,9 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 // Управление потоком
 // --------------------------
-virtual void __fastcall AStart(void);
+virtual void __fastcall AStart(double time);
 
-virtual void __fastcall AStop(void);
+virtual void __fastcall AStop(double time);
 
 virtual void __fastcall AfterCalculate(void);
 
@@ -523,9 +536,9 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 // Управление потоком
 // --------------------------
-virtual void __fastcall AStart(void);
+virtual void __fastcall AStart(double time);
 
-virtual void __fastcall AStop(void);
+virtual void __fastcall AStop(double time);
 
 virtual void __fastcall BeforeCalculate(void);
 
@@ -683,9 +696,9 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 virtual void __fastcall ExecuteCaptureInit(void);
 
-virtual void __fastcall AStart(void);
+virtual void __fastcall AStart(double time);
 
-virtual void __fastcall AStop(void);
+virtual void __fastcall AStop(double time);
 
 
 // Меняет временную метку с блокировкой
@@ -755,9 +768,9 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 virtual void __fastcall ExecuteCaptureInit(void);
 
-virtual void __fastcall AStart(void);
+virtual void __fastcall AStart(double time);
 
-virtual void __fastcall AStop(void);
+virtual void __fastcall AStop(double time);
 // --------------------------
 
 
@@ -823,9 +836,9 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 // Управление потоком
 // --------------------------
-virtual void __fastcall AStart(void);
+virtual void __fastcall AStart(double time);
 
-virtual void __fastcall AStop(void);
+virtual void __fastcall AStop(double time);
 // --------------------------
 
 
@@ -903,9 +916,9 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 // Управление потоком
 // --------------------------
-virtual void __fastcall AStart(void);
+virtual void __fastcall AStart(double time);
 
-virtual void __fastcall AStop(void);
+virtual void __fastcall AStop(double time);
 
 virtual void __fastcall BeforeCalculate(void);
 

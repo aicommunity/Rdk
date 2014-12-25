@@ -350,10 +350,10 @@ void Init(std::string raw_xml_data);
 void UnInit(void);
 
 /// Запуск захвата
-void Start(void);
+void Start(double time=0.0);
 
 /// Останов захвата
-void Pause(void);
+void Pause(double time=0.0);
 
 /// Чтение текущего изображения в bmp
 bool ReadSourceSafe(RDK::UBitmap &bmp, double &time_stamp, bool reflect);

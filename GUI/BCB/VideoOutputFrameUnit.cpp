@@ -223,11 +223,11 @@ void TVideoOutputFrame::UnInit(void)
 }
 
 /// Запуск захвата
-void TVideoOutputFrame::Start(void)
+void TVideoOutputFrame::Start(double time)
 {
  if(CaptureThread)
  {
-  CaptureThread->Start();
+  CaptureThread->Start(time);
   WaitForSingleObject(CaptureThread->GetFrameNotInProgress(),30);
  }
  Timer->Enabled=true;
@@ -236,14 +236,14 @@ void TVideoOutputFrame::Start(void)
 }
 
 /// Останов захвата
-void TVideoOutputFrame::Pause(void)
+void TVideoOutputFrame::Pause(double time)
 {
  IsStarted=false;
  Timer->Enabled=false;
 
  if(CaptureThread)
  {
-  CaptureThread->Stop();
+  CaptureThread->Stop(time);
   WaitForSingleObject(CaptureThread->GetFrameNotInProgress(),30);
  }
 }
@@ -353,7 +353,7 @@ bool TVideoOutputFrame::DestroyCaptureThread(void)
 {
  if(CaptureThread)
  {
-  CaptureThread->Stop();
+  CaptureThread->Stop(0);
   CaptureThread->Terminate();
   CaptureThread->WaitFor();
   if(WaitForSingleObject(CaptureThread->GetFrameNotInProgress(),1000) != WAIT_TIMEOUT)
