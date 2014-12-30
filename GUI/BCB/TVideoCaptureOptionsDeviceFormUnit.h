@@ -27,6 +27,9 @@ __published:	// IDE-managed Components
 	TComboBox *AnalogVideoStandardComboBox;
 	TButton *StreamButton;
 	TLabeledEdit *FpsLabeledEdit;
+	TCheckBox *DesiredResFlagCheckBox;
+	TLabeledEdit *DesiredWidthLabeledEdit;
+	TLabeledEdit *DesiredHeightLabeledEdit;
 	void __fastcall FormCreate(TObject *Sender);
 	void __fastcall DeviceComboBoxSelect(TObject *Sender);
 private:	// User declarations

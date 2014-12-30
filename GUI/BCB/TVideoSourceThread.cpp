@@ -56,6 +56,9 @@ __fastcall TVideoCaptureThread::TVideoCaptureThread(TVideoOutputFrame *frame, bo
  LastStartTime=0;
  MaxInterstepInterval=30000;
  Priority = tpLower;
+ DesiredWidth=640;
+ DesiredHeight=480;
+ DesiredResolutionFlag=false;
 }
 
 __fastcall TVideoCaptureThread::~TVideoCaptureThread(void)
@@ -235,6 +238,51 @@ bool TVideoCaptureThread::SetRestartInterval(int value)
  RestartInterval=value;
  return true;
 }
+
+/// Желаемое разрешение захвата
+int TVideoCaptureThread::GetDesiredWidth(void) const
+{
+ return DesiredWidth;
+}
+
+bool TVideoCaptureThread::SetDesiredWidth(int value)
+{
+ if(DesiredWidth == value)
+  return true;
+ Stop(0);
+ DesiredWidth=value;
+ return true;
+}
+
+int TVideoCaptureThread::GetDesiredHeight(void) const
+{
+ return DesiredHeight;
+}
+
+bool TVideoCaptureThread::SetDesiredHeight(int value)
+{
+ if(DesiredHeight == value)
+  return true;
+ Stop(0);
+ DesiredHeight=value;
+ return true;
+}
+
+/// Флаг включения выбора желаемого разрешения захвата
+bool TVideoCaptureThread::GetDesiredResolutionFlag(void) const
+{
+ return DesiredResolutionFlag;
+}
+
+bool TVideoCaptureThread::SetDesiredResolutionFlag(bool value)
+{
+ if(DesiredResolutionFlag == value)
+  return true;
+
+ Stop(0);
+ DesiredResolutionFlag=value;
+ return true;
+}
 // --------------------------
 
 // --------------------------
@@ -306,6 +354,11 @@ bool TVideoCaptureThread::SaveParametersEx(RDK::USerStorageXML &xml)
  xml.WriteInteger("SourceMode",SourceMode);
  xml.WriteInteger("SyncMode",SyncMode);
  xml.WriteBool("RepeatFlag",RepeatFlag);
+
+ xml.WriteInteger("DesiredWidth",DesiredWidth);
+ xml.WriteInteger("DesiredHeight",DesiredHeight);
+ xml.WriteBool("DesiredResolutionFlag",DesiredResolutionFlag);
+
  if(!ASaveParameters(xml))
   return false;
  return true;
@@ -323,6 +376,9 @@ bool TVideoCaptureThread::LoadParametersEx(RDK::USerStorageXML &xml)
 {
  SyncMode=xml.ReadInteger("SyncMode",SyncMode);
  RepeatFlag=xml.ReadBool("RepeatFlag",RepeatFlag);
+ DesiredWidth=xml.ReadInteger("DesiredWidth",DesiredWidth);
+ DesiredHeight=xml.ReadInteger("DesiredHeight",DesiredHeight);
+ DesiredResolutionFlag=xml.ReadBool("DesiredResolutionFlag",DesiredResolutionFlag);
 
  if(!ALoadParameters(xml))
   return false;
@@ -1394,6 +1450,17 @@ void __fastcall TVideoCaptureThreadVideoGrabber::ExecuteCaptureInit(void)
  VideoGrabber->SetIPCameraSetting(ips_ReceiveTimeout, 5000);
  VideoGrabber->FrameGrabberRGBFormat=fgf_RGB24;
  VideoGrabber->LicenseString=TVGrabberLicenseString;
+ if(DesiredResolutionFlag)
+ {
+  VideoGrabber->FrameCaptureWidth=DesiredWidth;
+  VideoGrabber->FrameCaptureHeight=DesiredHeight;
+ }
+ else
+ {
+  VideoGrabber->FrameCaptureWidth=-1;
+  VideoGrabber->FrameCaptureHeight=-1;
+ }
+
 // VideoGrabber->OpenURLAsync=false;
 
 // VideoGrabber->EnableThreadMode();

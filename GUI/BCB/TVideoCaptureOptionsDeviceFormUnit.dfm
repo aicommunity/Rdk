@@ -1,7 +1,7 @@
 object VideoCaptureOptionsDeviceForm: TVideoCaptureOptionsDeviceForm
   Left = 0
   Top = 0
-  ClientHeight = 401
+  ClientHeight = 444
   ClientWidth = 566
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -18,16 +18,17 @@ object VideoCaptureOptionsDeviceForm: TVideoCaptureOptionsDeviceForm
     Left = 0
     Top = 0
     Width = 566
-    Height = 401
+    Height = 444
     Margins.Left = 4
     Margins.Top = 4
     Margins.Right = 4
     Margins.Bottom = 4
     Align = alClient
     TabOrder = 0
+    ExplicitHeight = 401
     DesignSize = (
       566
-      401)
+      444)
     object ModeLabel: TLabel
       Left = 10
       Top = 116
@@ -69,7 +70,7 @@ object VideoCaptureOptionsDeviceForm: TVideoCaptureOptionsDeviceForm
     end
     object Label1: TLabel
       Left = 10
-      Top = 179
+      Top = 222
       Width = 546
       Height = 17
       Margins.Left = 4
@@ -82,7 +83,7 @@ object VideoCaptureOptionsDeviceForm: TVideoCaptureOptionsDeviceForm
     end
     object Label2: TLabel
       Left = 10
-      Top = 285
+      Top = 328
       Width = 546
       Height = 17
       Margins.Left = 4
@@ -97,7 +98,7 @@ object VideoCaptureOptionsDeviceForm: TVideoCaptureOptionsDeviceForm
       Left = 10
       Top = 136
       Width = 546
-      Height = 21
+      Height = 25
       Margins.Left = 4
       Margins.Top = 4
       Margins.Right = 4
@@ -110,7 +111,7 @@ object VideoCaptureOptionsDeviceForm: TVideoCaptureOptionsDeviceForm
       Left = 10
       Top = 81
       Width = 546
-      Height = 21
+      Height = 25
       Margins.Left = 4
       Margins.Top = 4
       Margins.Right = 4
@@ -123,7 +124,7 @@ object VideoCaptureOptionsDeviceForm: TVideoCaptureOptionsDeviceForm
       Left = 10
       Top = 25
       Width = 546
-      Height = 21
+      Height = 25
       Margins.Left = 4
       Margins.Top = 4
       Margins.Right = 4
@@ -135,9 +136,9 @@ object VideoCaptureOptionsDeviceForm: TVideoCaptureOptionsDeviceForm
     end
     object VideoSubTypeComboBox: TComboBox
       Left = 10
-      Top = 199
+      Top = 242
       Width = 546
-      Height = 21
+      Height = 25
       Margins.Left = 4
       Margins.Top = 4
       Margins.Right = 4
@@ -148,9 +149,9 @@ object VideoCaptureOptionsDeviceForm: TVideoCaptureOptionsDeviceForm
     end
     object AnalogVideoStandardComboBox: TComboBox
       Left = 10
-      Top = 310
+      Top = 353
       Width = 546
-      Height = 21
+      Height = 25
       Margins.Left = 4
       Margins.Top = 4
       Margins.Right = 4
@@ -161,7 +162,7 @@ object VideoCaptureOptionsDeviceForm: TVideoCaptureOptionsDeviceForm
     end
     object StreamButton: TButton
       Left = 10
-      Top = 350
+      Top = 393
       Width = 99
       Height = 33
       Margins.Left = 4
@@ -173,9 +174,9 @@ object VideoCaptureOptionsDeviceForm: TVideoCaptureOptionsDeviceForm
     end
     object FpsLabeledEdit: TLabeledEdit
       Left = 10
-      Top = 250
+      Top = 293
       Width = 546
-      Height = 21
+      Height = 25
       Margins.Left = 4
       Margins.Top = 4
       Margins.Right = 4
@@ -189,6 +190,36 @@ object VideoCaptureOptionsDeviceForm: TVideoCaptureOptionsDeviceForm
       EditLabel.Margins.Bottom = 4
       EditLabel.Caption = 'Fps'
       TabOrder = 6
+    end
+    object DesiredResFlagCheckBox: TCheckBox
+      Left = 10
+      Top = 168
+      Width = 148
+      Height = 17
+      Caption = 'Use user resolution'
+      TabOrder = 7
+    end
+    object DesiredWidthLabeledEdit: TLabeledEdit
+      Left = 164
+      Top = 189
+      Width = 47
+      Height = 25
+      EditLabel.Width = 37
+      EditLabel.Height = 17
+      EditLabel.Caption = 'Width'
+      TabOrder = 8
+      Text = '640'
+    end
+    object DesiredHeightLabeledEdit: TLabeledEdit
+      Left = 217
+      Top = 189
+      Width = 48
+      Height = 25
+      EditLabel.Width = 39
+      EditLabel.Height = 17
+      EditLabel.Caption = 'Height'
+      TabOrder = 9
+      Text = '480'
     end
   end
 end

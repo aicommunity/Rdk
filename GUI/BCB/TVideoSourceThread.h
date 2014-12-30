@@ -80,6 +80,13 @@ RDK::UELockVar<int> RestartInterval;
 /// после которого мы считаем, что произошла потеря соединения, мс
 RDK::UELockVar<int> MaxInterstepInterval;
 
+/// Желаемое разрешение захвата
+RDK::UELockVar<int> DesiredWidth;
+RDK::UELockVar<int> DesiredHeight;
+
+/// Флаг включения выбора желаемого разрешения захвата
+RDK::UELockVar<bool> DesiredResolutionFlag;
+
 protected: // Данные
 /// Флаг состояния треда
 /// 0 - остановлен
@@ -195,6 +202,16 @@ virtual bool SetFps(double fps);
 /// Интервал между последним стартом и рестартом, мс
 virtual int GetRestartInterval(void) const;
 virtual bool SetRestartInterval(int value);
+
+/// Желаемое разрешение захвата
+virtual int GetDesiredWidth(void) const;
+virtual bool SetDesiredWidth(int value);
+virtual int GetDesiredHeight(void) const;
+virtual bool SetDesiredHeight(int value);
+
+/// Флаг включения выбора желаемого разрешения захвата
+virtual bool GetDesiredResolutionFlag(void) const;
+virtual bool SetDesiredResolutionFlag(bool value);
 // --------------------------
 
 // --------------------------

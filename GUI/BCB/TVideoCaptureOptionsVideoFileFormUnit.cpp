@@ -35,6 +35,10 @@ bool TVideoCaptureOptionsVideoFileForm::ReadParametersToGui(RDK::USerStorageXML 
  FpsLabeledEdit->Text=xml.ReadString("Fps", "0").c_str();
  RepeatVideoCheckBox->Checked=xml.ReadBool("RepeatFlag", false);
 
+ DesiredWidthLabeledEdit->Text=xml.ReadString("DesiredWidth",AnsiString(DesiredWidthLabeledEdit->Text).c_str()).c_str();
+ DesiredHeightLabeledEdit->Text=xml.ReadString("DesiredHeight",AnsiString(DesiredHeightLabeledEdit->Text).c_str()).c_str();
+ DesiredResFlagCheckBox->Checked=xml.ReadBool("DesiredResolutionFlag",false);
+
  return true;
 }
 
@@ -46,6 +50,10 @@ bool TVideoCaptureOptionsVideoFileForm::WriteParametersToXml(RDK::USerStorageXML
  xml.WriteBool("ProcessAllFramesFlag",ProcessAllFramesVideoCheckBox->Checked);
  xml.WriteString("Fps", AnsiString(FpsLabeledEdit->Text).c_str());
  xml.WriteBool("RepeatFlag", RepeatVideoCheckBox->Checked);
+
+ xml.WriteString("DesiredWidth",AnsiString(DesiredWidthLabeledEdit->Text).c_str());
+ xml.WriteString("DesiredHeight",AnsiString(DesiredHeightLabeledEdit->Text).c_str());
+ xml.WriteBool("DesiredResolutionFlag",DesiredResFlagCheckBox->Checked);
 
  return true;
 }

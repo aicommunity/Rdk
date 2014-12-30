@@ -34,6 +34,11 @@ bool TVideoCaptureOptionsIPCameraForm::ReadParametersToGui(RDK::USerStorageXML &
  IPCameraUserNameEdit->Text=xml.ReadString("UserName", AnsiString(IPCameraUserNameEdit->Text).c_str()).c_str();
  IPCameraUserPasswordEdit->Text=xml.ReadString("Password", AnsiString(IPCameraUserPasswordEdit->Text).c_str()).c_str();
  FpsLabeledEdit->Text=xml.ReadString("Fps", "0").c_str();
+ DesiredWidthLabeledEdit->Text=xml.ReadString("DesiredWidth",AnsiString(DesiredWidthLabeledEdit->Text).c_str()).c_str();
+ DesiredHeightLabeledEdit->Text=xml.ReadString("DesiredHeight",AnsiString(DesiredHeightLabeledEdit->Text).c_str()).c_str();
+ DesiredResFlagCheckBox->Checked=xml.ReadBool("DesiredResolutionFlag",false);
+
+
  return true;
 }
 
@@ -45,6 +50,9 @@ bool TVideoCaptureOptionsIPCameraForm::WriteParametersToXml(RDK::USerStorageXML 
  xml.WriteString("UserName", AnsiString(IPCameraUserNameEdit->Text).c_str());
  xml.WriteString("Password", AnsiString(IPCameraUserPasswordEdit->Text).c_str());
  xml.WriteString("Fps", AnsiString(FpsLabeledEdit->Text).c_str());
+ xml.WriteString("DesiredWidth",AnsiString(DesiredWidthLabeledEdit->Text).c_str());
+ xml.WriteString("DesiredHeight",AnsiString(DesiredHeightLabeledEdit->Text).c_str());
+ xml.WriteBool("DesiredResolutionFlag",DesiredResFlagCheckBox->Checked);
  return true;
 }
 /// -------------------------------------

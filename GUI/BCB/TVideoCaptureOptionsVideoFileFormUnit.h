@@ -25,6 +25,9 @@ __published:	// IDE-managed Components
 	TCheckBox *ProcessAllFramesVideoCheckBox;
 	TOpenDialog *VideoOpenDialog;
 	TLabeledEdit *FpsLabeledEdit;
+	TLabeledEdit *DesiredWidthLabeledEdit;
+	TLabeledEdit *DesiredHeightLabeledEdit;
+	TCheckBox *DesiredResFlagCheckBox;
 	void __fastcall FormCreate(TObject *Sender);
 	void __fastcall VFBrowseButtonClick(TObject *Sender);
 private:	// User declarations

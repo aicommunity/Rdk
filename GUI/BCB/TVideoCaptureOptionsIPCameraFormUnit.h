@@ -32,6 +32,9 @@ __published:	// IDE-managed Components
 	TButton *ResetButton;
 	TEdit *IPCameraControlPostfixEdit;
 	TLabeledEdit *FpsLabeledEdit;
+	TCheckBox *DesiredResFlagCheckBox;
+	TLabeledEdit *DesiredWidthLabeledEdit;
+	TLabeledEdit *DesiredHeightLabeledEdit;
 	void __fastcall FormCreate(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
