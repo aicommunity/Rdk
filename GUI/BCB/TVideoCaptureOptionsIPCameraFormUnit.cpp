@@ -38,6 +38,8 @@ bool TVideoCaptureOptionsIPCameraForm::ReadParametersToGui(RDK::USerStorageXML &
  DesiredHeightLabeledEdit->Text=xml.ReadString("DesiredHeight",AnsiString(DesiredHeightLabeledEdit->Text).c_str()).c_str();
  DesiredResFlagCheckBox->Checked=xml.ReadBool("DesiredResolutionFlag",false);
 
+ ConnectionTimeoutLabeledEdit->Text=xml.ReadString("ConnectionTimeout",AnsiString(ConnectionTimeoutLabeledEdit->Text).c_str()).c_str();
+ CaptureTimeoutLabeledEdit->Text=xml.ReadString("CaptureTimeout",AnsiString(CaptureTimeoutLabeledEdit->Text).c_str()).c_str();
 
  return true;
 }
@@ -53,6 +55,9 @@ bool TVideoCaptureOptionsIPCameraForm::WriteParametersToXml(RDK::USerStorageXML 
  xml.WriteString("DesiredWidth",AnsiString(DesiredWidthLabeledEdit->Text).c_str());
  xml.WriteString("DesiredHeight",AnsiString(DesiredHeightLabeledEdit->Text).c_str());
  xml.WriteBool("DesiredResolutionFlag",DesiredResFlagCheckBox->Checked);
+
+ xml.WriteString("ConnectionTimeout",AnsiString(ConnectionTimeoutLabeledEdit->Text).c_str());
+ xml.WriteString("CaptureTimeout",AnsiString(CaptureTimeoutLabeledEdit->Text).c_str());
  return true;
 }
 /// -------------------------------------

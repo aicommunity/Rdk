@@ -1388,6 +1388,9 @@ __fastcall TVideoCaptureThreadVideoGrabber::TVideoCaptureThreadVideoGrabber(TVid
 
  RestartMode=1;
  ConnectionState=0;
+
+ CaptureTimeout=5000;
+ ConnectionTimeout=5000;
 }
 
 __fastcall TVideoCaptureThreadVideoGrabber::~TVideoCaptureThreadVideoGrabber(void)
@@ -1423,6 +1426,36 @@ bool TVideoCaptureThreadVideoGrabber::SetFps(double fps)
  Fps=fps;
  return true;
 }
+
+/// Таймаут соединения с камерой
+int TVideoCaptureThreadVideoGrabber::GetConnectionTimeout(void) const
+{
+ return ConnectionTimeout;
+}
+
+bool TVideoCaptureThreadVideoGrabber::SetConnectionTimeout(int value)
+{
+ if(ConnectionTimeout == value)
+  return true;
+
+ ConnectionTimeout=value;
+ return true;
+}
+
+/// Таймаут захвата
+int TVideoCaptureThreadVideoGrabber::GetCaptureTimeout(void) const
+{
+ return CaptureTimeout;
+}
+
+bool TVideoCaptureThreadVideoGrabber::SetCaptureTimeout(int value)
+{
+ if(CaptureTimeout == value)
+  return true;
+
+ CaptureTimeout=value;
+ return true;
+}
 // --------------------------
 // Управление потоком
 // --------------------------
@@ -1446,8 +1479,8 @@ void __fastcall TVideoCaptureThreadVideoGrabber::ExecuteCaptureInit(void)
  VideoGrabber->BurstMode = true;
  VideoGrabber->BurstType = fc_TBitmap;
  VideoGrabber->Synchronized=false;
- VideoGrabber->SetIPCameraSetting(ips_ConnectionTimeout, 5000);
- VideoGrabber->SetIPCameraSetting(ips_ReceiveTimeout, 5000);
+ VideoGrabber->SetIPCameraSetting(ips_ConnectionTimeout, ConnectionTimeout);
+ VideoGrabber->SetIPCameraSetting(ips_ReceiveTimeout, CaptureTimeout);
  VideoGrabber->FrameGrabberRGBFormat=fgf_RGB24;
  VideoGrabber->LicenseString=TVGrabberLicenseString;
  if(DesiredResolutionFlag)
@@ -1786,6 +1819,8 @@ bool TVideoCaptureThreadVideoGrabber::ASaveParameters(RDK::USerStorageXML &xml)
   return false;
 
  xml.WriteString("Fps", AnsiString(FloatToStr(Fps)).c_str());
+ xml.WriteString("CaptureTimeout", AnsiString(IntToStr(CaptureTimeout)).c_str());
+ xml.WriteString("ConnectionTimeout", AnsiString(IntToStr(ConnectionTimeout)).c_str());
 
  return true;
 }
@@ -1797,6 +1832,8 @@ bool TVideoCaptureThreadVideoGrabber::ALoadParameters(RDK::USerStorageXML &xml)
   return false;
 
  Fps=StrToFloatDef(xml.ReadString("Fps", "").c_str(), 0.0);
+ SetCaptureTimeout(xml.ReadInteger("CaptureTimeout", 5000));
+ SetConnectionTimeout(xml.ReadInteger("ConnectionTimeout", 5000));
 
  return true;
 }

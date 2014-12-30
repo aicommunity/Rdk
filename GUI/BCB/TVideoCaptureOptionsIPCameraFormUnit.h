@@ -35,6 +35,8 @@ __published:	// IDE-managed Components
 	TCheckBox *DesiredResFlagCheckBox;
 	TLabeledEdit *DesiredWidthLabeledEdit;
 	TLabeledEdit *DesiredHeightLabeledEdit;
+	TLabeledEdit *ConnectionTimeoutLabeledEdit;
+	TLabeledEdit *CaptureTimeoutLabeledEdit;
 	void __fastcall FormCreate(TObject *Sender);
 private:	// User declarations
 public:		// User declarations

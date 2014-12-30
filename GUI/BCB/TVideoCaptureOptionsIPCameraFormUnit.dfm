@@ -119,8 +119,8 @@ object VideoCaptureOptionsIPCameraForm: TVideoCaptureOptionsIPCameraForm
       TabOrder = 2
     end
     object IpMoveUpButton: TButton
-      Left = 342
-      Top = 254
+      Left = 430
+      Top = 253
       Width = 98
       Height = 33
       Margins.Left = 4
@@ -132,8 +132,8 @@ object VideoCaptureOptionsIPCameraForm: TVideoCaptureOptionsIPCameraForm
       Visible = False
     end
     object IpMoveLeftButton: TButton
-      Left = 247
-      Top = 294
+      Left = 330
+      Top = 295
       Width = 98
       Height = 33
       Margins.Left = 4
@@ -158,8 +158,8 @@ object VideoCaptureOptionsIPCameraForm: TVideoCaptureOptionsIPCameraForm
       Visible = False
     end
     object IpMoveDownButton: TButton
-      Left = 342
-      Top = 335
+      Left = 430
+      Top = 343
       Width = 98
       Height = 33
       Margins.Left = 4
@@ -271,6 +271,44 @@ object VideoCaptureOptionsIPCameraForm: TVideoCaptureOptionsIPCameraForm
       EditLabel.Caption = 'Height'
       TabOrder = 14
       Text = '480'
+    end
+    object ConnectionTimeoutLabeledEdit: TLabeledEdit
+      Left = 10
+      Top = 302
+      Width = 148
+      Height = 25
+      Margins.Left = 4
+      Margins.Top = 4
+      Margins.Right = 4
+      Margins.Bottom = 4
+      Anchors = [akLeft, akTop, akRight]
+      EditLabel.Width = 147
+      EditLabel.Height = 17
+      EditLabel.Margins.Left = 4
+      EditLabel.Margins.Top = 4
+      EditLabel.Margins.Right = 4
+      EditLabel.Margins.Bottom = 4
+      EditLabel.Caption = 'Connection timeout, ms'
+      TabOrder = 15
+    end
+    object CaptureTimeoutLabeledEdit: TLabeledEdit
+      Left = 174
+      Top = 302
+      Width = 148
+      Height = 25
+      Margins.Left = 4
+      Margins.Top = 4
+      Margins.Right = 4
+      Margins.Bottom = 4
+      Anchors = [akLeft, akTop, akRight]
+      EditLabel.Width = 126
+      EditLabel.Height = 17
+      EditLabel.Margins.Left = 4
+      EditLabel.Margins.Top = 4
+      EditLabel.Margins.Right = 4
+      EditLabel.Margins.Bottom = 4
+      EditLabel.Caption = 'Capture timeout, ms'
+      TabOrder = 16
     end
   end
 end

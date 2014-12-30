@@ -583,7 +583,11 @@ virtual void __fastcall ARecreateCapture(void);
 class TVideoCaptureThreadVideoGrabber: public TVideoCaptureThread
 {
 protected: // Параметры
-//double Fps;
+/// Таймаут соединения с камерой
+RDK::UELockVar<int> ConnectionTimeout;
+
+/// Таймаут захвата
+RDK::UELockVar<int> CaptureTimeout;
 
 protected: // Данные
 TVideoGrabber* VideoGrabber;
@@ -614,6 +618,14 @@ virtual __fastcall ~TVideoCaptureThreadVideoGrabber(void);
 /// Устанавливает значение FPS
 double GetFps(void) const;
 bool SetFps(double fps);
+
+/// Таймаут соединения с камерой
+int GetConnectionTimeout(void) const;
+bool SetConnectionTimeout(int value);
+
+/// Таймаут захвата
+int GetCaptureTimeout(void) const;
+bool SetCaptureTimeout(int value);
 // --------------------------
 // Управление данными
 // --------------------------
