@@ -27,7 +27,7 @@ TVideoCaptureThreadCmdDescr::TVideoCaptureThreadCmdDescr(TVideoCaptureThreadComm
 }
 
 
-HANDLE TVideoCaptureThread::GlobalStartUnlockEvent=NULL;
+HANDLE TVideoCaptureThread::GlobalStartUnlockMutex=NULL;
 
 // --------------------------
 // Конструкторы и деструкторы
@@ -63,8 +63,8 @@ __fastcall TVideoCaptureThread::TVideoCaptureThread(TVideoOutputFrame *frame, bo
  DesiredHeight=480;
  DesiredResolutionFlag=false;
 
- if(!GlobalStartUnlockEvent)
-  TVideoCaptureThread::GlobalStartUnlockEvent=CreateEvent(0,TRUE,TRUE,0);
+ if(!GlobalStartUnlockMutex)
+  TVideoCaptureThread::GlobalStartUnlockMutex=CreateMutex(0,FALSE,0);
 }
 
 __fastcall TVideoCaptureThread::~TVideoCaptureThread(void)
@@ -125,10 +125,13 @@ void TVideoCaptureThread::ProcessCommandQueue(void)
  {
   if(I->second.Id == tvcStart && I->second.ExecTime<=curr_time)
   {
-   if(WaitForSingleObject(GlobalStartUnlockEvent, 10) == WAIT_TIMEOUT)
-	continue;
+   if(WaitForSingleObject(GlobalStartUnlockMutex, 10) != WAIT_OBJECT_0)
+   {
+	CommandQueue.erase(I);
+	break;
+   }
 
-   ResetEvent(GlobalStartUnlockEvent);
+//   ResetEvent(GlobalStartUnlockEvent);
   }
 
   if(I->second.ExecTime<=curr_time)
@@ -447,7 +450,7 @@ HANDLE TVideoCaptureThread::GetCalcCompleteEvent(void) const
 void __fastcall TVideoCaptureThread::Start(double time)
 {
  ClearCommandQueue();
- AddCommand(TVideoCaptureThreadCmdDescr(tvcRecreate,time));
+// AddCommand(TVideoCaptureThreadCmdDescr(tvcRecreate,time));
  AddCommand(TVideoCaptureThreadCmdDescr(tvcStart,time));
  AStart(time);
 }
@@ -519,8 +522,9 @@ void __fastcall TVideoCaptureThread::Execute(void)
 	  SetEvent(FrameNotInProgress);
 	  continue;
 	 }
-	 AddCommand(TVideoCaptureThreadCmdDescr(tvcHalt,0));
-	 AddCommand(TVideoCaptureThreadCmdDescr(tvcRecreate,0));
+//	 AddCommand(TVideoCaptureThreadCmdDescr(tvcHalt,0));
+//	 AddCommand(TVideoCaptureThreadCmdDescr(tvcRecreate,0));
+	 LastStartTime=TDateTime::CurrentDateTime().operator double();
 	 AddCommand(TVideoCaptureThreadCmdDescr(tvcStart,curr_time+(100+Random(3000))/(86400.0*1000.0)));
 	 SetEvent(FrameNotInProgress);
 	 continue;
@@ -1700,13 +1704,23 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberLog(TObject *Sender
 
  if(LogType == e_failed_to_start_preview)
  {
-  SetEvent(GlobalStartUnlockEvent);
-  ResetEvent(StartInProgressEvent);
+  if(WaitForSingleObject(StartInProgressEvent,0) != WAIT_TIMEOUT)
+  {
+   //SetEvent(GlobalStartUnlockEvent);
+   ReleaseMutex(GlobalStartUnlockMutex);
+   ResetEvent(StartInProgressEvent);
+  }
  }
 }
 
 void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberDeviceLost(TObject *Sender)
 {
+ if(WaitForSingleObject(StartInProgressEvent,0) != WAIT_TIMEOUT)
+ {
+  //SetEvent(GlobalStartUnlockEvent);
+  ReleaseMutex(GlobalStartUnlockMutex);
+  ResetEvent(StartInProgressEvent);
+ }
  MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, "VideoGrabber Device lost");
  LastStartTime=TDateTime::CurrentDateTime().operator double();
  ConnectionState=10;
@@ -1723,9 +1737,12 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberDeviceLost(TObject 
 
 void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberOnPreviewStarted(TObject *Sender)
 {
-// if(WaitForSingleObject(GlobalStartUnlockEvent,0) == WAIT_TIMEOUT)
- SetEvent(GlobalStartUnlockEvent);
- ResetEvent(StartInProgressEvent);
+// if(WaitForSingleObject(StartInProgressEvent,0) != WAIT_TIMEOUT)
+ {
+  //SetEvent(GlobalStartUnlockEvent);
+  ReleaseMutex(GlobalStartUnlockMutex);
+  ResetEvent(StartInProgressEvent);
+ }
 }
 
 

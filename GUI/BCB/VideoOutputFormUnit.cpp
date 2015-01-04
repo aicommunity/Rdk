@@ -21,16 +21,16 @@ __fastcall TVideoOutputForm::TVideoOutputForm(TComponent* Owner)
 	: TUVisualControllerForm(Owner)
 {
  MassiveStartChannelsDelay=5000;
- if(!TVideoCaptureThread::GlobalStartUnlockEvent)
-  TVideoCaptureThread::GlobalStartUnlockEvent=CreateEvent(0,TRUE,TRUE,0);
+ if(!TVideoCaptureThread::GlobalStartUnlockMutex)
+  TVideoCaptureThread::GlobalStartUnlockMutex=CreateMutex(NULL,FALSE,NULL);//CreateEvent(0,TRUE,TRUE,0);
 }
 
 __fastcall TVideoOutputForm::~TVideoOutputForm(void)
 {
- if(TVideoCaptureThread::GlobalStartUnlockEvent)
+ if(TVideoCaptureThread::GlobalStartUnlockMutex)
  {
-  CloseHandle(TVideoCaptureThread::GlobalStartUnlockEvent);
-  TVideoCaptureThread::GlobalStartUnlockEvent=0;
+  CloseHandle(TVideoCaptureThread::GlobalStartUnlockMutex);
+  TVideoCaptureThread::GlobalStartUnlockMutex=0;
  }
 }
 

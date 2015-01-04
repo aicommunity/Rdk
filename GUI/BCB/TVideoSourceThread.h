@@ -143,7 +143,7 @@ HANDLE CommandUnlockEvent;
 
 public:
 /// Глобальное событие блокировки запуска видеозахвата
-static HANDLE GlobalStartUnlockEvent;
+static HANDLE GlobalStartUnlockMutex;
 
 /// Локальное событие информаирования о запуске видеозахвата
 HANDLE StartInProgressEvent;
