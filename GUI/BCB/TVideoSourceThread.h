@@ -323,6 +323,8 @@ virtual bool __fastcall HaltCapture(void);
 virtual bool __fastcall RecreateCapture(void);
 virtual void __fastcall ARecreateCapture(void);
 
+virtual void __fastcall ReloadParameters(void);
+
 //bool SetThreadState(int value);
 // --------------------------
 

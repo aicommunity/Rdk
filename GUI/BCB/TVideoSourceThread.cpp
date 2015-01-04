@@ -478,7 +478,7 @@ void __fastcall TVideoCaptureThread::AfterCalculate(void)
 
 void __fastcall TVideoCaptureThread::Execute(void)
 {
- ExecuteCaptureInit();
+ Synchronize(ExecuteCaptureInit);
  while(!Terminated)
  {
   if(WaitForSingleObject(CaptureEnabled,30) == WAIT_TIMEOUT)
@@ -729,17 +729,15 @@ bool __fastcall TVideoCaptureThread::HaltCapture(void)
 
 bool __fastcall TVideoCaptureThread::RecreateCapture(void)
 {
+ return true;
 // ResetEvent(CaptureEnabled);
 // ConnectionState=0;
-
-// StopCapture();
 
  RDK::USerStorageXML xml;
  SaveParameters(xml);
  Synchronize(ARecreateCapture);
 // ARecreateCapture();
  LoadParameters(xml);
-// ConnectionState=1;
  Sleep(100);
  return true;
 }
@@ -749,6 +747,10 @@ void __fastcall TVideoCaptureThread::ARecreateCapture(void)
 
 }
 
+void __fastcall TVideoCaptureThread::ReloadParameters(void)
+{
+
+}
    /*
 bool TVideoCaptureThread::SetThreadState(int value)
 {
@@ -1483,7 +1485,8 @@ bool TVideoCaptureThreadVideoGrabber::SetCaptureTimeout(int value)
 // --------------------------
 void __fastcall TVideoCaptureThreadVideoGrabber::ExecuteCaptureInit(void)
 {
- VideoGrabber=new TVideoGrabber(GetFrame());//(TComponent*) NULL);
+ if(!VideoGrabber)
+  VideoGrabber=new TVideoGrabber(GetFrame());//(TComponent*) NULL);
 // VideoGrabber->Parent=GetFrame();
  VideoGrabber->OnFrameCaptureCompleted=OnFrameCaptureCompleted;
 // VideoGrabber->OnFrameBitmap=VideoGrabberFrameBitmap;
@@ -2250,6 +2253,7 @@ String TVideoCaptureThreadVideoGrabberIpCamera::GetPassword(void) const
 
 bool TVideoCaptureThreadVideoGrabberIpCamera::Init(const String camera_url, const String user_name, const String user_password)
 {
+ ExecuteCaptureInit();
  if(!VideoGrabber)
  {
   Url=camera_url;
