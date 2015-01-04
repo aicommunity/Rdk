@@ -27,7 +27,7 @@ TVideoCaptureThreadCmdDescr::TVideoCaptureThreadCmdDescr(TVideoCaptureThreadComm
 }
 
 
-HANDLE TVideoCaptureThread::StartUnlockEvent=NULL;
+HANDLE TVideoCaptureThread::GlobalStartUnlockEvent=NULL;
 
 // --------------------------
 // Конструкторы и деструкторы
@@ -45,6 +45,7 @@ __fastcall TVideoCaptureThread::TVideoCaptureThread(TVideoOutputFrame *frame, bo
  CalcCompleteEvent=CreateEvent(0,TRUE,TRUE,0);
  SourceStoppedEvent=CreateEvent(0,FALSE,FALSE,0);
  CommandUnlockEvent=CreateEvent(0,TRUE,TRUE,0);
+ StartInProgressEvent=CreateEvent(0,TRUE,0,0);
  ReadSource=&Source[0];
  WriteSource=&Source[1];
  RepeatFlag=false;
@@ -62,8 +63,8 @@ __fastcall TVideoCaptureThread::TVideoCaptureThread(TVideoOutputFrame *frame, bo
  DesiredHeight=480;
  DesiredResolutionFlag=false;
 
- if(!StartUnlockEvent)
-  TVideoCaptureThread::StartUnlockEvent=CreateEvent(0,TRUE,TRUE,0);
+ if(!GlobalStartUnlockEvent)
+  TVideoCaptureThread::GlobalStartUnlockEvent=CreateEvent(0,TRUE,TRUE,0);
 }
 
 __fastcall TVideoCaptureThread::~TVideoCaptureThread(void)
@@ -84,6 +85,7 @@ __fastcall TVideoCaptureThread::~TVideoCaptureThread(void)
  CloseHandle(CalcCompleteEvent);
  CloseHandle(SourceStoppedEvent);
  CloseHandle(CommandUnlockEvent);
+ CloseHandle(StartInProgressEvent);
 }
 // --------------------------
 
@@ -121,12 +123,12 @@ void TVideoCaptureThread::ProcessCommandQueue(void)
  std::list<std::pair<double,TVideoCaptureThreadCmdDescr> >::iterator I=CommandQueue.begin();
  for(;I != CommandQueue.end();++I)
  {
-  if(I->second.Id == tvcStart)
+  if(I->second.Id == tvcStart && I->second.ExecTime<=curr_time)
   {
-   if(WaitForSingleObject(StartUnlockEvent, 1000) == WAIT_TIMEOUT)
-	break;
+   if(WaitForSingleObject(GlobalStartUnlockEvent, 10) == WAIT_TIMEOUT)
+	continue;
 
-   ResetEvent(StartUnlockEvent);
+   ResetEvent(GlobalStartUnlockEvent);
   }
 
   if(I->second.ExecTime<=curr_time)
@@ -146,14 +148,11 @@ void TVideoCaptureThread::ProcessCommandQueue(void)
 
  case tvcStart:
   RunCapture();
-//  SetThreadState(1);
   SetEvent(CaptureEnabled);
  break;
 
  case tvcStop:
   ResetEvent(CaptureEnabled);
-//  SetThreadState(0);
-//  ConnectionState=1;
   StopCapture();
  break;
 
@@ -162,7 +161,6 @@ void TVideoCaptureThread::ProcessCommandQueue(void)
 
  case tvcRecreate:
   ResetEvent(CaptureEnabled);
-//  SetThreadState(0);
   ConnectionState=0;
   RecreateCapture();
  break;
@@ -448,6 +446,7 @@ HANDLE TVideoCaptureThread::GetCalcCompleteEvent(void) const
 // --------------------------
 void __fastcall TVideoCaptureThread::Start(double time)
 {
+ ClearCommandQueue();
  AddCommand(TVideoCaptureThreadCmdDescr(tvcRecreate,time));
  AddCommand(TVideoCaptureThreadCmdDescr(tvcStart,time));
  AStart(time);
@@ -456,6 +455,7 @@ void __fastcall TVideoCaptureThread::Start(double time)
 void __fastcall TVideoCaptureThread::Stop(double time)
 {
  AStop(time);
+ ClearCommandQueue();
  AddCommand(TVideoCaptureThreadCmdDescr(tvcStop,time));
 }
 
@@ -693,6 +693,10 @@ double TVideoCaptureThread::GetLastTimeStampSafe(void) const
 // --------------------------
 bool __fastcall TVideoCaptureThread::RunCapture(void)
 {
+ if(WaitForSingleObject(StartInProgressEvent,0) != WAIT_TIMEOUT)
+  return true;
+ SetEvent(StartInProgressEvent);
+
  double curr_time=TDateTime::CurrentDateTime().operator double();
  LastStartTime=curr_time;
  RealLastTimeStamp=curr_time;
@@ -700,11 +704,13 @@ bool __fastcall TVideoCaptureThread::RunCapture(void)
  Synchronize(ARunCapture);
 // ARunCapture();
  Sleep(100);
+// SetEvent(CaptureEnabled);
  return true;
 }
 
 bool __fastcall TVideoCaptureThread::StopCapture(void)
 {
+// ResetEvent(CaptureEnabled);
  LastStartTime=0;
  HaltCapture();
  ConnectionState=1;
@@ -723,6 +729,9 @@ bool __fastcall TVideoCaptureThread::HaltCapture(void)
 
 bool __fastcall TVideoCaptureThread::RecreateCapture(void)
 {
+// ResetEvent(CaptureEnabled);
+// ConnectionState=0;
+
 // StopCapture();
 
  RDK::USerStorageXML xml;
@@ -1688,7 +1697,8 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberLog(TObject *Sender
 
  if(LogType == e_failed_to_start_preview)
  {
-  SetEvent(StartUnlockEvent);
+  SetEvent(GlobalStartUnlockEvent);
+  ResetEvent(StartInProgressEvent);
  }
 }
 
@@ -1710,8 +1720,9 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberDeviceLost(TObject 
 
 void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberOnPreviewStarted(TObject *Sender)
 {
-// if(WaitForSingleObject(StartUnlockEvent,0) == WAIT_TIMEOUT)
- SetEvent(StartUnlockEvent);
+// if(WaitForSingleObject(GlobalStartUnlockEvent,0) == WAIT_TIMEOUT)
+ SetEvent(GlobalStartUnlockEvent);
+ ResetEvent(StartInProgressEvent);
 }
 
 
@@ -1825,8 +1836,8 @@ void __fastcall TVideoCaptureThreadVideoGrabber::ARecreateCapture(void)
 // return;
  if(VideoGrabber)
  {
-//  VideoGrabber->StopPreview();
-//  VideoGrabber->StopPlayer();
+  VideoGrabber->Stop();
+  WaitForSingleObject(GetFrameNotInProgress(),10000);
   delete VideoGrabber;
  }
  ExecuteCaptureInit();

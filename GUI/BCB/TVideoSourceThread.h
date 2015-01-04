@@ -142,9 +142,11 @@ HANDLE CalcCompleteEvent;
 HANDLE CommandUnlockEvent;
 
 public:
-/// Событие блокировки запуска видеозахвата
-static HANDLE StartUnlockEvent;
+/// Глобальное событие блокировки запуска видеозахвата
+static HANDLE GlobalStartUnlockEvent;
 
+/// Локальное событие информаирования о запуске видеозахвата
+HANDLE StartInProgressEvent;
 
 public:
 
