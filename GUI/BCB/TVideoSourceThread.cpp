@@ -27,6 +27,8 @@ TVideoCaptureThreadCmdDescr::TVideoCaptureThreadCmdDescr(TVideoCaptureThreadComm
 }
 
 
+HANDLE TVideoCaptureThread::StartUnlockEvent=NULL;
+
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
@@ -59,6 +61,9 @@ __fastcall TVideoCaptureThread::TVideoCaptureThread(TVideoOutputFrame *frame, bo
  DesiredWidth=640;
  DesiredHeight=480;
  DesiredResolutionFlag=false;
+
+ if(!StartUnlockEvent)
+  TVideoCaptureThread::StartUnlockEvent=CreateEvent(0,TRUE,TRUE,0);
 }
 
 __fastcall TVideoCaptureThread::~TVideoCaptureThread(void)
@@ -116,6 +121,14 @@ void TVideoCaptureThread::ProcessCommandQueue(void)
  std::list<std::pair<double,TVideoCaptureThreadCmdDescr> >::iterator I=CommandQueue.begin();
  for(;I != CommandQueue.end();++I)
  {
+  if(I->second.Id == tvcStart)
+  {
+   if(WaitForSingleObject(StartUnlockEvent, 1000) == WAIT_TIMEOUT)
+	break;
+
+   ResetEvent(StartUnlockEvent);
+  }
+
   if(I->second.ExecTime<=curr_time)
   {
    cmd_time=I->first;
@@ -1469,6 +1482,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::ExecuteCaptureInit(void)
  VideoGrabber->OnDeviceLost=VideoGrabberDeviceLost;
  VideoGrabber->OnPlayerEndOfStream = VideoGrabberPlayerEndOfStream;
  VideoGrabber->OnPlayerOpened=VideoGrabberOnPlayerOpened;
+ VideoGrabber->OnPreviewStarted=VideoGrabberOnPreviewStarted;
 //  VideoGrabber->OnThreadSync=VideoGrabberOnThreadSync;
 
  VideoGrabber->Display_AutoSize = false;
@@ -1671,6 +1685,11 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberLog(TObject *Sender
   LastStartTime=TDateTime::CurrentDateTime().operator double();
   ConnectionState=10;
  }
+
+ if(LogType == e_failed_to_start_preview)
+ {
+  SetEvent(StartUnlockEvent);
+ }
 }
 
 void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberDeviceLost(TObject *Sender)
@@ -1687,6 +1706,12 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberDeviceLost(TObject 
  {
   Stop();
  }*/
+}
+
+void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberOnPreviewStarted(TObject *Sender)
+{
+// if(WaitForSingleObject(StartUnlockEvent,0) == WAIT_TIMEOUT)
+ SetEvent(StartUnlockEvent);
 }
 
 

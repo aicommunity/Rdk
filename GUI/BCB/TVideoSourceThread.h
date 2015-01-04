@@ -141,6 +141,10 @@ HANDLE CalcCompleteEvent;
 /// Событие блокировки очереди
 HANDLE CommandUnlockEvent;
 
+public:
+/// Событие блокировки запуска видеозахвата
+static HANDLE StartUnlockEvent;
+
 
 public:
 
@@ -657,6 +661,8 @@ void __fastcall VideoGrabberPlayerEndOfStream(TObject *Sender);
 void __fastcall VideoGrabberOnPlayerOpened(System::TObject* Sender);
 
 void __fastcall VideoGrabberOnThreadSync(System::TObject* Sender, TThreadSyncPoint ThreadSyncPoint);
+
+void __fastcall VideoGrabberOnPreviewStarted(TObject *Sender);
 
 virtual void __fastcall Calculate(void);
 

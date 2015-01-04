@@ -21,11 +21,17 @@ __fastcall TVideoOutputForm::TVideoOutputForm(TComponent* Owner)
 	: TUVisualControllerForm(Owner)
 {
  MassiveStartChannelsDelay=5000;
+ if(!TVideoCaptureThread::StartUnlockEvent)
+  TVideoCaptureThread::StartUnlockEvent=CreateEvent(0,TRUE,TRUE,0);
 }
 
 __fastcall TVideoOutputForm::~TVideoOutputForm(void)
 {
-
+ if(TVideoCaptureThread::StartUnlockEvent)
+ {
+  CloseHandle(TVideoCaptureThread::StartUnlockEvent);
+  TVideoCaptureThread::StartUnlockEvent=0;
+ }
 }
 
 
