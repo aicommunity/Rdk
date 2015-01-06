@@ -127,7 +127,7 @@ void TVideoCaptureThread::ProcessCommandQueue(void)
   {
    if(WaitForSingleObject(GlobalStartUnlockMutex, 10) != WAIT_OBJECT_0)
    {
-	CommandQueue.erase(I);
+//	CommandQueue.erase(I);
 	break;
    }
 
@@ -484,6 +484,9 @@ void __fastcall TVideoCaptureThread::Execute(void)
  Synchronize(ExecuteCaptureInit);
  while(!Terminated)
  {
+  if(WaitForSingleObject(StartInProgressEvent,0) == WAIT_TIMEOUT)
+   ReleaseMutex(GlobalStartUnlockMutex);
+
   if(WaitForSingleObject(CaptureEnabled,30) == WAIT_TIMEOUT)
   {
    ProcessCommandQueue();
@@ -1707,7 +1710,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberLog(TObject *Sender
   if(WaitForSingleObject(StartInProgressEvent,0) != WAIT_TIMEOUT)
   {
    //SetEvent(GlobalStartUnlockEvent);
-   ReleaseMutex(GlobalStartUnlockMutex);
+//   ReleaseMutex(GlobalStartUnlockMutex);
    ResetEvent(StartInProgressEvent);
   }
  }
@@ -1718,7 +1721,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberDeviceLost(TObject 
  if(WaitForSingleObject(StartInProgressEvent,0) != WAIT_TIMEOUT)
  {
   //SetEvent(GlobalStartUnlockEvent);
-  ReleaseMutex(GlobalStartUnlockMutex);
+//  ReleaseMutex(GlobalStartUnlockMutex);
   ResetEvent(StartInProgressEvent);
  }
  MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, "VideoGrabber Device lost");
@@ -1740,7 +1743,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberOnPreviewStarted(TO
 // if(WaitForSingleObject(StartInProgressEvent,0) != WAIT_TIMEOUT)
  {
   //SetEvent(GlobalStartUnlockEvent);
-  ReleaseMutex(GlobalStartUnlockMutex);
+//  ReleaseMutex(GlobalStartUnlockMutex);
   ResetEvent(StartInProgressEvent);
  }
 }
