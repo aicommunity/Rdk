@@ -479,8 +479,8 @@ void __fastcall TVideoCaptureThread::AfterCalculate(void)
 
 void __fastcall TVideoCaptureThread::Execute(void)
 {
-// Synchronize(ExecuteCaptureInit);
- ExecuteCaptureInit();
+ Synchronize(ExecuteCaptureInit);
+// ExecuteCaptureInit();
  while(!Terminated)
  {
   if(WaitForSingleObject(StartInProgressEvent,0) == WAIT_TIMEOUT)
@@ -617,7 +617,6 @@ bool TVideoCaptureThread::WriteSourceSafe(const RDK::UBitmap& src, double time_s
  else
   *WriteSource=src;
 // SetEvent(SourceWriteUnlock);
- ReleaseMutex(SourceWriteUnlock);
 
  if(WaitForSingleObject(SourceUnlock,30000) != WAIT_OBJECT_0)
  {
@@ -632,6 +631,7 @@ bool TVideoCaptureThread::WriteSourceSafe(const RDK::UBitmap& src, double time_s
  ReadSource=WriteSource;
  WriteSource=old_read_source;
  ReleaseMutex(SourceUnlock);
+ ReleaseMutex(SourceWriteUnlock);
 // SetEvent(SourceUnlock);
  return true;
 }
