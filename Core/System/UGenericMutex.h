@@ -17,7 +17,7 @@ virtual ~UGenericMutex() {};
 
 virtual bool lock(int lock_id=-1)=0;
 virtual bool unlock()=0;
-virtual bool wait(int timeout)=0;
+//virtual bool wait(int timeout)=0;
 };
 
 RDK_LIB_TYPE UGenericMutex* UCreateMutex(void);

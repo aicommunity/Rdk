@@ -39,12 +39,12 @@ __fastcall TVideoCaptureThread::TVideoCaptureThread(TVideoOutputFrame *frame, bo
  LastTimeStamp=0;
  RealLastTimeStamp=0;
  CaptureEnabled=CreateEvent(0,TRUE,0,0);
- SourceUnlock=CreateEvent(0,TRUE,TRUE,0);
- SourceWriteUnlock=CreateEvent(0,TRUE,TRUE,0);
+ SourceUnlock=CreateMutex(0,FALSE,0);//CreateEvent(0,TRUE,TRUE,0);
+ SourceWriteUnlock=CreateMutex(0,FALSE,0);//CreateEvent(0,TRUE,TRUE,0);
  FrameNotInProgress=CreateEvent(0,TRUE,TRUE,0);
  CalcCompleteEvent=CreateEvent(0,TRUE,TRUE,0);
  SourceStoppedEvent=CreateEvent(0,FALSE,FALSE,0);
- CommandUnlockEvent=CreateEvent(0,TRUE,TRUE,0);
+ CommandUnlockMutex=CreateMutex(0,FALSE,0);//CreateEvent(0,TRUE,TRUE,0);
  StartInProgressEvent=CreateEvent(0,TRUE,0,0);
  ReadSource=&Source[0];
  WriteSource=&Source[1];
@@ -84,7 +84,7 @@ __fastcall TVideoCaptureThread::~TVideoCaptureThread(void)
  CloseHandle(FrameNotInProgress);
  CloseHandle(CalcCompleteEvent);
  CloseHandle(SourceStoppedEvent);
- CloseHandle(CommandUnlockEvent);
+ CloseHandle(CommandUnlockMutex);
  CloseHandle(StartInProgressEvent);
 }
 // --------------------------
@@ -95,21 +95,19 @@ __fastcall TVideoCaptureThread::~TVideoCaptureThread(void)
 /// ƒобавл€ет команду в очередь
 void TVideoCaptureThread::AddCommand(TVideoCaptureThreadCmdDescr value)
 {
- WaitForSingleObject(CommandUnlockEvent,INFINITE);
- ResetEvent(CommandUnlockEvent);
+ WaitForSingleObject(CommandUnlockMutex,INFINITE);
  std::pair<double,TVideoCaptureThreadCmdDescr> cmd(TDateTime::CurrentDateTime().operator double(),value);
  CommandQueue.push_back(cmd);
 // CommandQueue[TDateTime::CurrentDateTime().operator double()]=value;
- SetEvent(CommandUnlockEvent);
+ ReleaseMutex(CommandUnlockMutex);
 }
 
 /// ќчищает очередь
 void TVideoCaptureThread::ClearCommandQueue(void)
 {
- WaitForSingleObject(CommandUnlockEvent,INFINITE);
- ResetEvent(CommandUnlockEvent);
+ WaitForSingleObject(CommandUnlockMutex,INFINITE);
  CommandQueue.clear();
- SetEvent(CommandUnlockEvent);
+ ReleaseMutex(CommandUnlockMutex);
 }
 
 /// ќсуществл€ет обработку очередной команды из очереди
@@ -118,8 +116,7 @@ void TVideoCaptureThread::ProcessCommandQueue(void)
  double cmd_time=0;
  TVideoCaptureThreadCmdDescr cmd;
  double curr_time=TDateTime::CurrentDateTime().operator double();
- WaitForSingleObject(CommandUnlockEvent,INFINITE);
- ResetEvent(CommandUnlockEvent);
+ WaitForSingleObject(CommandUnlockMutex,INFINITE);
  std::list<std::pair<double,TVideoCaptureThreadCmdDescr> >::iterator I=CommandQueue.begin();
  for(;I != CommandQueue.end();++I)
  {
@@ -142,7 +139,7 @@ void TVideoCaptureThread::ProcessCommandQueue(void)
    break;
   }
  }
- SetEvent(CommandUnlockEvent);
+ ReleaseMutex(CommandUnlockMutex);
 
  switch(cmd.Id)
  {
@@ -332,26 +329,27 @@ bool TVideoCaptureThread::SetFrame(TVideoOutputFrame * frame)
 /// ¬озвращает разрешение потока
 int TVideoCaptureThread::GetWidth(void)
 {
- if(WaitForSingleObject(SourceUnlock,30) == WAIT_TIMEOUT)
+ if(WaitForSingleObject(SourceUnlock,30) != WAIT_OBJECT_0)
   return -1;
- ResetEvent(SourceUnlock);
+// ResetEvent(SourceUnlock);
  int res=0;
  if(ReadSource)
   res=ReadSource->GetWidth();
- SetEvent(SourceUnlock);
+// SetEvent(SourceUnlock);
+ ReleaseMutex(SourceUnlock);
 
  return res;
 }
 
 int TVideoCaptureThread::GetHeight(void)
 {
- if(WaitForSingleObject(SourceUnlock,30) == WAIT_TIMEOUT)
+ if(WaitForSingleObject(SourceUnlock,30) != WAIT_OBJECT_0)
   return -1;
- ResetEvent(SourceUnlock);
+// ResetEvent(SourceUnlock);
  int res=0;
  if(ReadSource)
   res=ReadSource->GetHeight();
- SetEvent(SourceUnlock);
+ ReleaseMutex(SourceUnlock);
 
  return res;
 }
@@ -424,10 +422,10 @@ HANDLE TVideoCaptureThread::GetFrameNotInProgress(void) const
 }
 
 /// ¬ыставлено всегда. —брасываетс€ на врем€ доступа к изображению
-HANDLE TVideoCaptureThread::GetSourceUnlock(void) const
+/*HANDLE TVideoCaptureThread::GetSourceUnlock(void) const
 {
  return SourceUnlock;
-}
+} */
 
 /// ¬ыставл€етс€ на врем€ работы видеозахвата
 HANDLE TVideoCaptureThread::GetCaptureEnabled(void) const
@@ -481,7 +479,8 @@ void __fastcall TVideoCaptureThread::AfterCalculate(void)
 
 void __fastcall TVideoCaptureThread::Execute(void)
 {
- Synchronize(ExecuteCaptureInit);
+// Synchronize(ExecuteCaptureInit);
+ ExecuteCaptureInit();
  while(!Terminated)
  {
   if(WaitForSingleObject(StartInProgressEvent,0) == WAIT_TIMEOUT)
@@ -583,12 +582,12 @@ void __fastcall TVideoCaptureThread::ExecuteCaptureUnInit(void)
 /// ¬озвращает копию изображени€ с блокировкой
 bool TVideoCaptureThread::ReadSourceSafe(RDK::UBitmap& dest, double &time_stamp, bool reflect)
 {
- if(WaitForSingleObject(SourceUnlock,30000) == WAIT_TIMEOUT)
+ if(WaitForSingleObject(SourceUnlock,30000) != WAIT_OBJECT_0)
  {
   MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, std::string("TVideoCaptureThread::ReadSourceSafe: SourceUnlock timeout!").c_str());
   return false;
  }
- ResetEvent(SourceUnlock);
+// ResetEvent(SourceUnlock);
  time_stamp=LastTimeStamp;
  RDK::UBitmap* source=ReadSource;
 
@@ -596,7 +595,8 @@ bool TVideoCaptureThread::ReadSourceSafe(RDK::UBitmap& dest, double &time_stamp,
   source->ReflectionX(&dest);
  else
   dest=*source;
- SetEvent(SourceUnlock);
+ ReleaseMutex(SourceUnlock);
+// SetEvent(SourceUnlock);
 
 // SetEvent(SourceUnlock);
  return true;
@@ -605,92 +605,98 @@ bool TVideoCaptureThread::ReadSourceSafe(RDK::UBitmap& dest, double &time_stamp,
 /// «аписывает изображение в тред с блокировкой
 bool TVideoCaptureThread::WriteSourceSafe(const RDK::UBitmap& src, double time_stamp, bool reflect)
 {
- if(WaitForSingleObject(SourceWriteUnlock,10000) == WAIT_TIMEOUT)
+ if(WaitForSingleObject(SourceWriteUnlock,10000) != WAIT_OBJECT_0)
  {
   MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, std::string("TVideoCaptureThread::WriteSourceSafe: SourceWriteUnlock timeout!").c_str());
   return false;
  }
 
- ResetEvent(SourceWriteUnlock);
+// ResetEvent(SourceWriteUnlock);
  if(reflect)
   const_cast<RDK::UBitmap&>(src).ReflectionX(WriteSource);
  else
   *WriteSource=src;
- SetEvent(SourceWriteUnlock);
+// SetEvent(SourceWriteUnlock);
+ ReleaseMutex(SourceWriteUnlock);
 
- if(WaitForSingleObject(SourceUnlock,30000) == WAIT_TIMEOUT)
+ if(WaitForSingleObject(SourceUnlock,30000) != WAIT_OBJECT_0)
  {
   MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, std::string("TVideoCaptureThread::WriteSourceSafe: SourceUnlock timeout!").c_str());
   return false;
  }
- ResetEvent(SourceUnlock);
+// ResetEvent(SourceUnlock);
 
  LastTimeStamp=time_stamp;
  RealLastTimeStamp=TDateTime::CurrentDateTime().operator double();
  RDK::UBitmap* old_read_source=ReadSource;
  ReadSource=WriteSource;
  WriteSource=old_read_source;
- SetEvent(SourceUnlock);
+ ReleaseMutex(SourceUnlock);
+// SetEvent(SourceUnlock);
  return true;
 }
 
 bool TVideoCaptureThread::WriteSourceSafe(Graphics::TBitmap *src, double time_stamp, bool reflect)
 {
- if(WaitForSingleObject(SourceWriteUnlock,10000) == WAIT_TIMEOUT)
+ if(WaitForSingleObject(SourceWriteUnlock,10000) != WAIT_OBJECT_0)
  {
   MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, std::string("TVideoCaptureThread::WriteSourceSafe: SourceWriteUnlock timeout!").c_str());
   return false;
  }
 
- ResetEvent(SourceWriteUnlock);
+// ResetEvent(SourceWriteUnlock);
  TBitmapToUBitmap(*WriteSource, src, reflect);
- SetEvent(SourceWriteUnlock);
+// SetEvent(SourceWriteUnlock);
+ ReleaseMutex(SourceWriteUnlock);
 
- if(WaitForSingleObject(SourceUnlock,30000) == WAIT_TIMEOUT)
+ if(WaitForSingleObject(SourceUnlock,30000) != WAIT_OBJECT_0)
  {
   MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, std::string("TVideoCaptureThread::WriteSourceSafe: SourceUnlock timeout!").c_str());
   return false;
  }
- ResetEvent(SourceUnlock);
+// ResetEvent(SourceUnlock);
 
  LastTimeStamp=time_stamp;
  RealLastTimeStamp=TDateTime::CurrentDateTime().operator double();
  RDK::UBitmap* old_read_source=ReadSource;
  ReadSource=WriteSource;
  WriteSource=old_read_source;
- SetEvent(SourceUnlock);
+// SetEvent(SourceUnlock);
+ ReleaseMutex(SourceUnlock);
  return true;
 }
 
 // ћен€ет временную метку с блокировкой
 bool TVideoCaptureThread::SetLastTimeStampSafe(double time_stamp)
 {
- if(WaitForSingleObject(SourceUnlock,30000) == WAIT_TIMEOUT)
+ if(WaitForSingleObject(SourceUnlock,30000) != WAIT_OBJECT_0)
  {
   MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, std::string("TVideoCaptureThread::SetLastTimeStampSafe: SourceUnlock timeout!").c_str());
   return false;
  }
- ResetEvent(SourceUnlock);
+// ResetEvent(SourceUnlock);
 
  LastTimeStamp=time_stamp;
  RealLastTimeStamp=TDateTime::CurrentDateTime().operator double();
 
- SetEvent(SourceUnlock);
+ ReleaseMutex(SourceUnlock);
+// SetEvent(SourceUnlock);
  return true;
 }
 
 // —читывает временную метку с блокировкой
 double TVideoCaptureThread::GetLastTimeStampSafe(void) const
 {
- if(WaitForSingleObject(SourceUnlock,30000) == WAIT_TIMEOUT)
+ if(WaitForSingleObject(SourceUnlock,30000) != WAIT_OBJECT_0)
  {
   MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, std::string("TVideoCaptureThread::GetLastTimeStampSafe: SourceUnlock timeout!").c_str());
   return 0.0;
  }
- ResetEvent(SourceUnlock);
+// ResetEvent(SourceUnlock);
 
  double res=LastTimeStamp;
- SetEvent(SourceUnlock);
+// SetEvent(SourceUnlock);
+ ReleaseMutex(SourceUnlock);
  return res;
 }
 // --------------------------
@@ -1516,6 +1522,8 @@ void __fastcall TVideoCaptureThreadVideoGrabber::ExecuteCaptureInit(void)
  VideoGrabber->SetIPCameraSetting(ips_ReceiveTimeout, CaptureTimeout);
  VideoGrabber->FrameGrabberRGBFormat=fgf_RGB24;
  VideoGrabber->LicenseString=TVGrabberLicenseString;
+ VideoGrabber->SyncCommands=false;
+ VideoGrabber->EventNotificationSynchrone=false;
  if(DesiredResolutionFlag)
  {
   VideoGrabber->FrameCaptureWidth=DesiredWidth;
@@ -1718,12 +1726,6 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberLog(TObject *Sender
 
 void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberDeviceLost(TObject *Sender)
 {
- if(WaitForSingleObject(StartInProgressEvent,0) != WAIT_TIMEOUT)
- {
-  //SetEvent(GlobalStartUnlockEvent);
-//  ReleaseMutex(GlobalStartUnlockMutex);
-  ResetEvent(StartInProgressEvent);
- }
  MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, "VideoGrabber Device lost");
  LastStartTime=TDateTime::CurrentDateTime().operator double();
  ConnectionState=10;
@@ -1736,6 +1738,12 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberDeviceLost(TObject 
  {
   Stop();
  }*/
+ if(WaitForSingleObject(StartInProgressEvent,0) != WAIT_TIMEOUT)
+ {
+  //SetEvent(GlobalStartUnlockEvent);
+//  ReleaseMutex(GlobalStartUnlockMutex);
+  ResetEvent(StartInProgressEvent);
+ }
 }
 
 void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberOnPreviewStarted(TObject *Sender)

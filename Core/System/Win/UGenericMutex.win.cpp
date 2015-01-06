@@ -19,7 +19,7 @@ virtual ~UGenericMutexWin();
 
 virtual bool lock(int lock_id=-1);
 virtual bool unlock();
-virtual bool wait(int timeout);
+//virtual bool wait(int timeout);
 
 private:
 UGenericMutexWin(const UGenericMutexWin &copy);
@@ -31,27 +31,37 @@ UGenericMutexWin& operator = (const UGenericMutexWin &copy);
 UGenericMutexWin::UGenericMutexWin()
  : Pid(0)
 {
- m_UnlockEvent = CreateEvent(0, TRUE, TRUE, 0);
+ m_UnlockEvent = CreateMutex(0, FALSE, 0);
 }
 
 UGenericMutexWin::~UGenericMutexWin()
 {
- CloseHandle(m_UnlockEvent);
+ BOOL res=CloseHandle(m_UnlockEvent);
+ if(!res)
+  throw 1;
 }
 
 bool UGenericMutexWin::lock(int lock_id)
 {
  if(!m_UnlockEvent)
   return false;
- if (WaitForSingleObject(m_UnlockEvent, 0) != WAIT_TIMEOUT)
+ DWORD wait_res=WaitForSingleObject(m_UnlockEvent, 0);
+ if (wait_res != WAIT_OBJECT_0)
  {
   if(Pid == GetCurrentThreadId())
    return true;
  }
-
- if (WaitForSingleObject(m_UnlockEvent, INFINITE) != WAIT_TIMEOUT)
+ else
+ if(wait_res == WAIT_OBJECT_0)
  {
-  ResetEvent(m_UnlockEvent);
+  LockId=lock_id;
+  Pid=GetCurrentThreadId();
+  return true;
+ }
+
+ if (WaitForSingleObject(m_UnlockEvent, INFINITE) == WAIT_OBJECT_0)
+ {
+//  ResetEvent(m_UnlockEvent);
   LockId=lock_id;
   Pid=GetCurrentThreadId();
   return true;
@@ -81,15 +91,18 @@ bool UGenericMutexWin::unlock()
 {
  if(!m_UnlockEvent)
   return true;
- if (WaitForSingleObject(m_UnlockEvent, 0) != WAIT_TIMEOUT)
-  return true;
+// if (WaitForSingleObject(m_UnlockEvent, 0) != WAIT_TIMEOUT)
+//  return true;
  Pid=0;
- SetEvent(m_UnlockEvent);
+// SetEvent(m_UnlockEvent);
+ BOOL res=ReleaseMutex(m_UnlockEvent);
+ if(res != TRUE)
+  throw 2;
  LockId=-1;
  return true;
 }
 
-bool UGenericMutexWin::wait(int timeout)
+/*bool UGenericMutexWin::wait(int timeout)
 {
  if(!m_UnlockEvent)
   return false;
@@ -99,7 +112,7 @@ bool UGenericMutexWin::wait(int timeout)
   return true;
  }
  return false;
-}
+} */
 
 UGenericMutexWin::UGenericMutexWin(const UGenericMutexWin &copy)
 {
@@ -127,8 +140,8 @@ UGenericMutexLocker::UGenericMutexLocker(UGenericMutex *m)
 {
  if(m)
  {
+  m->lock();
   m_mutex = m;
-  m_mutex->lock();
  }
  else
   m_mutex = 0;
@@ -138,8 +151,8 @@ UGenericMutexLocker::UGenericMutexLocker(UGenericMutex *m, int lock_id)
 {
  if(m)
  {
+  m->lock(lock_id);
   m_mutex = m;
-  m_mutex->lock(lock_id);
  }
  else
   m_mutex = 0;

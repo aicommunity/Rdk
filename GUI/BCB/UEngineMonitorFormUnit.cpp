@@ -16,7 +16,7 @@
 #pragma resource "*.dfm"
 TUEngineMonitorForm *UEngineMonitorForm;
 
-HANDLE RdkExceptionHandlerEvent=0;
+HANDLE RdkExceptionHandlerMutex=0;
 
 std::list<int> UnsentLogChannelIndexes;
 
@@ -25,16 +25,17 @@ std::list<std::string> UnsentLog;
 //---------------------------------------------------------------------------
 void ExceptionHandler(int channel_index)
 {
- if(!RdkExceptionHandlerEvent)
+ if(!RdkExceptionHandlerMutex)
   return;
 
- if(WaitForSingleObject(RdkExceptionHandlerEvent,1000) == WAIT_TIMEOUT)
+ if(WaitForSingleObject(RdkExceptionHandlerMutex,1000) != WAIT_OBJECT_0)
   return;
- ResetEvent(RdkExceptionHandlerEvent);
+// ResetEvent(RdkExceptionHandlerEvent);
 
  UnsentLogChannelIndexes.push_back(channel_index);
 
- SetEvent(RdkExceptionHandlerEvent);
+ ReleaseMutex(RdkExceptionHandlerMutex);
+// SetEvent(RdkExceptionHandlerEvent);
 }
 //---------------------------------------------------------------------------
 __fastcall TUEngineMonitorForm::TUEngineMonitorForm(TComponent* Owner)
@@ -72,10 +73,10 @@ void TUEngineMonitorForm::RecreateEventsLogFile(void)
 //---------------------------------------------------------------------------
 void __fastcall TUEngineMonitorForm::FormDestroy(TObject *Sender)
 {
- if(RdkExceptionHandlerEvent)
+ if(RdkExceptionHandlerMutex)
  {
-  CloseHandle(RdkExceptionHandlerEvent);
-  RdkExceptionHandlerEvent=0;
+  CloseHandle(RdkExceptionHandlerMutex);
+  RdkExceptionHandlerMutex=0;
  }
 // EngineMonitorFrame->Timer->Enabled=false;
 }
@@ -84,8 +85,8 @@ void __fastcall TUEngineMonitorForm::FormDestroy(TObject *Sender)
 
 void __fastcall TUEngineMonitorForm::FormCreate(TObject *Sender)
 {
- if(!RdkExceptionHandlerEvent)
-  RdkExceptionHandlerEvent=CreateEvent(0,TRUE,TRUE,0);
+ if(!RdkExceptionHandlerMutex)
+  RdkExceptionHandlerMutex=CreateMutex(0,FALSE,0);//CreateEvent(0,TRUE,TRUE,0);
 }
 //---------------------------------------------------------------------------
 
@@ -93,16 +94,17 @@ void __fastcall TUEngineMonitorForm::FormCreate(TObject *Sender)
 
 void __fastcall TUEngineMonitorForm::LogTimerTimer(TObject *Sender)
 {
- if(!RdkExceptionHandlerEvent)
+ if(!RdkExceptionHandlerMutex)
   return;
 
- if(WaitForSingleObject(RdkExceptionHandlerEvent,10) == WAIT_TIMEOUT)
+ if(WaitForSingleObject(RdkExceptionHandlerMutex,10) != WAIT_OBJECT_0)
   return;
- ResetEvent(RdkExceptionHandlerEvent);
+// ResetEvent(RdkExceptionHandlerEvent);
 
  std::list<int> ch_indexes=UnsentLogChannelIndexes;
  UnsentLogChannelIndexes.clear();
- SetEvent(RdkExceptionHandlerEvent);
+ ReleaseMutex(RdkExceptionHandlerMutex);
+// SetEvent(RdkExceptionHandlerEvent);
 
  int global_error_level=-1;
  try

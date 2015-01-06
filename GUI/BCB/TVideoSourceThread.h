@@ -139,7 +139,7 @@ HANDLE CaptureEnabled;
 HANDLE CalcCompleteEvent;
 
 /// —обытие блокировки очереди
-HANDLE CommandUnlockEvent;
+HANDLE CommandUnlockMutex;
 
 public:
 /// √лобальное событие блокировки запуска видеозахвата
@@ -257,7 +257,7 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 HANDLE GetFrameNotInProgress(void) const;
 
 /// ¬ыставлено всегда. —брасываетс€ на врем€ доступа к изображению
-HANDLE GetSourceUnlock(void) const;
+//HANDLE GetSourceUnlock(void) const;
 
 /// ¬ыставл€етс€ на врем€ работы видеозахвата
 HANDLE GetCaptureEnabled(void) const;
