@@ -27,6 +27,9 @@ UGenericMutex* GlobalMutex;
 /// Текущий выбраный канал
 int SelectedChannelIndex;
 
+/// Текущее число каналов
+int NumEngines;
+
 /// Данные текущего выбранного канала
 RDK::UEPtr<RDK::UEngine> Engine;
 RDK::UEPtr<RDK::UEnvironment> Environment;

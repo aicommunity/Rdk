@@ -89,8 +89,9 @@ bool RDKDllManager::Init(PCreateNewStorage fCreateNewStorage,
 /// Возвращает число движков
 int RDKDllManager::GetNumEngines(void) const
 {
- UGenericMutexLocker lock(GlobalMutex);
- return int(EngineList.size());
+// UGenericMutexLocker lock(GlobalMutex);
+// return int(EngineList.size());
+ return NumEngines;
 }
 
 /// Создает требуемое число пустых движков
@@ -121,6 +122,7 @@ int RDKDllManager::SetNumEngines(int num)
 
  if(SelectedChannelIndex>=num)
   SetSelectedChannelIndex(num-1);
+ NumEngines=int(EngineList.size());
 
  return 0;
 }
@@ -163,6 +165,7 @@ int RDKDllManager::Add(int index)
  MutexList[index]=UCreateMutex();
 
  SetSelectedChannelIndex(SelectedChannelIndex);
+ NumEngines=int(EngineList.size());
  return 0;
 }
 
@@ -202,6 +205,7 @@ int RDKDllManager::Del(int index)
   SetSelectedChannelIndex(SelectedChannelIndex-1);
  else
   SetSelectedChannelIndex(SelectedChannelIndex);
+ NumEngines=int(EngineList.size());
  return 0;
 }
 
