@@ -104,7 +104,8 @@ void __fastcall TVideoCaptureOptionsDeviceForm::FormCreate(TObject *Sender)
  descr.Name="Device";
  descr.Position=0;
  VideoCaptureOptionsForm->AddVideoSourceOptionsFrame(VideoSourceType,descr);
- VideoCaptureOptionsForm->AddVideoSourcePrototypes(VideoSourceType,new TVideoCaptureThreadVideoGrabberCamera(0,true));
+ if(!VideoCaptureOptionsForm->CheckVideoSourcePrototypes(VideoSourceType))
+  VideoCaptureOptionsForm->AddVideoSourcePrototypes(VideoSourceType,new TVideoCaptureThreadVideoGrabberCamera(0,true));
 }
 //---------------------------------------------------------------------------
 
