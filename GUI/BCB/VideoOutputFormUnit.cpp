@@ -230,6 +230,7 @@ void TVideoOutputForm::Start(int index)
   for(int i=0;i<GetNumSources();i++)
   {
    Sources[i]->Start(curr_time+double(i*MassiveStartChannelsDelay)/(86400*1000.0));
+//   Sources[i]->Start(curr_time);
    UShowProgressBarForm->IncBarStatus(1);
    UShowProgressBarForm->Update();
   }

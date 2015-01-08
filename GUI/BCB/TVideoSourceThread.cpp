@@ -127,7 +127,6 @@ void TVideoCaptureThread::ProcessCommandQueue(void)
 //	CommandQueue.erase(I);
 	break;
    }
-
 //   ResetEvent(GlobalStartUnlockEvent);
   }
 
@@ -493,6 +492,8 @@ void __fastcall TVideoCaptureThread::Execute(void)
    continue;
   }
   ProcessCommandQueue();
+//  Application->HandleMessage();
+ // Application->ProcessMessages();
 
   double curr_time=TDateTime::CurrentDateTime().operator double();
   if(CheckConnection() == 2 && curr_time-RealLastTimeStamp>double(MaxInterstepInterval)/(86400.0*1000.0))
@@ -527,6 +528,7 @@ void __fastcall TVideoCaptureThread::Execute(void)
 //	 AddCommand(TVideoCaptureThreadCmdDescr(tvcHalt,0));
 //	 AddCommand(TVideoCaptureThreadCmdDescr(tvcRecreate,0));
 	 LastStartTime=TDateTime::CurrentDateTime().operator double();
+//	 AddCommand(TVideoCaptureThreadCmdDescr(tvcStart,curr_time));
 	 AddCommand(TVideoCaptureThreadCmdDescr(tvcStart,curr_time+(100+Random(3000))/(86400.0*1000.0)));
 	 SetEvent(FrameNotInProgress);
 	 continue;
@@ -566,6 +568,7 @@ void __fastcall TVideoCaptureThread::Execute(void)
   SetEvent(FrameNotInProgress);
  }
  Synchronize(ExecuteCaptureUnInit);
+// ExecuteCaptureUnInit();
 }
 
 void __fastcall TVideoCaptureThread::ExecuteCaptureInit(void)
@@ -1422,6 +1425,7 @@ __fastcall TVideoCaptureThreadVideoGrabber::TVideoCaptureThreadVideoGrabber(TVid
  ConvertBitmap=new Graphics::TBitmap;
 
  VideoGrabberCompleted=CreateEvent(0,TRUE,0,0);
+ ConvertMutex=CreateMutex(0,FALSE,0);
 
  RestartMode=1;
  ConnectionState=0;
@@ -1448,6 +1452,7 @@ __fastcall TVideoCaptureThreadVideoGrabber::~TVideoCaptureThreadVideoGrabber(voi
  }
 
  CloseHandle(VideoGrabberCompleted);
+ CloseHandle(ConvertMutex);
 }
 // --------------------------
 // Управление параметрами
@@ -1499,7 +1504,12 @@ bool TVideoCaptureThreadVideoGrabber::SetCaptureTimeout(int value)
 void __fastcall TVideoCaptureThreadVideoGrabber::ExecuteCaptureInit(void)
 {
  if(!VideoGrabber)
-  VideoGrabber=new TVideoGrabber(GetFrame());//(TComponent*) NULL);
+ {
+//  VideoGrabber=new TVideoGrabber(GetFrame());//(TComponent*) NULL);
+  VideoGrabber=new TVideoGrabber((TComponent*) NULL);
+ // VideoGrabber->Parent=GetFrame();
+  VideoGrabber->Visible=false;
+ }
 // VideoGrabber->Parent=GetFrame();
  VideoGrabber->OnFrameCaptureCompleted=OnFrameCaptureCompleted;
 // VideoGrabber->OnFrameBitmap=VideoGrabberFrameBitmap;
@@ -1520,10 +1530,14 @@ void __fastcall TVideoCaptureThreadVideoGrabber::ExecuteCaptureInit(void)
  VideoGrabber->Synchronized=false;
  VideoGrabber->SetIPCameraSetting(ips_ConnectionTimeout, ConnectionTimeout);
  VideoGrabber->SetIPCameraSetting(ips_ReceiveTimeout, CaptureTimeout);
+ VideoGrabber->FrameGrabber=fg_CaptureStream;
+ VideoGrabber->FrameCaptureWithoutOverlay=true;
  VideoGrabber->FrameGrabberRGBFormat=fgf_RGB24;
  VideoGrabber->LicenseString=TVGrabberLicenseString;
- VideoGrabber->SyncCommands=false;
- VideoGrabber->EventNotificationSynchrone=false;
+ VideoGrabber->SyncCommands=true;
+ VideoGrabber->EventNotificationSynchrone=true;
+// VideoGrabber->OnFrameBitmapEventSynchrone=true;
+ VideoGrabber->OpenURLAsync=true;
  if(DesiredResolutionFlag)
  {
   VideoGrabber->FrameCaptureWidth=DesiredWidth;
@@ -1579,7 +1593,11 @@ void __fastcall TVideoCaptureThreadVideoGrabber::OnFrameCaptureCompleted(System:
 // if(Frame_Bitmap)
 // Engine_LogMessage(exception.GetType(), (std::string("Core-OpenProject Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.CreateLogMessage()).c_str());
 
- ConvertUBitmap<<Frame_Bitmap;
+ if(WaitForSingleObject(ConvertMutex,10000) == WAIT_OBJECT_0)
+ {
+  ConvertUBitmap<<Frame_Bitmap;
+  ReleaseMutex(ConvertMutex);
+ }
  ConvertTimeStamp=double(FrameTime);
 // SetLastTimeStampSafe(double(FrameTime)/(10000000.0*86400));
 
@@ -1653,6 +1671,8 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberFrameBitmap(TObject
  int bmp_width=BitmapInfo->BitmapWidth;
  int bmp_height=BitmapInfo->BitmapHeight;
 
+ if(WaitForSingleObject(ConvertMutex,10000) == WAIT_OBJECT_0)
+ {
  if (BitmapInfo->BitmapBitsPerPixel == 24)
  {   // case where FrameGrabberRGBFormat is set to fgf_RGB24 (you can select it in the "frame grabber" tab)
   ConvertUBitmap.SetRes(bmp_width, bmp_height, RDK::ubmRGB24);
@@ -1671,6 +1691,9 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberFrameBitmap(TObject
    p+=conv_line_bl;
    BitmapLinePtr += BitmapInfo->BitmapLineSize;
   }
+
+  ReleaseMutex(ConvertMutex);
+ }
 /*
  if (BitmapInfo->BitmapBitsPerPixel == 24)
  {   // case where FrameGrabberRGBFormat is set to fgf_RGB24 (you can select it in the "frame grabber" tab)
@@ -1711,10 +1734,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberLog(TObject *Sender
  {
   LastStartTime=TDateTime::CurrentDateTime().operator double();
   ConnectionState=10;
- }
 
- if(LogType == e_failed_to_start_preview)
- {
   if(WaitForSingleObject(StartInProgressEvent,0) != WAIT_TIMEOUT)
   {
    //SetEvent(GlobalStartUnlockEvent);
@@ -1722,6 +1742,16 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberLog(TObject *Sender
    ResetEvent(StartInProgressEvent);
   }
  }
+
+/* if(LogType == e_failed_to_start_preview)
+ {
+  if(WaitForSingleObject(StartInProgressEvent,0) != WAIT_TIMEOUT)
+  {
+   //SetEvent(GlobalStartUnlockEvent);
+   ReleaseMutex(GlobalStartUnlockMutex);
+   ResetEvent(StartInProgressEvent);
+  }
+ }*/
 }
 
 void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberDeviceLost(TObject *Sender)
@@ -1743,6 +1773,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberDeviceLost(TObject 
   //SetEvent(GlobalStartUnlockEvent);
 //  ReleaseMutex(GlobalStartUnlockMutex);
   ResetEvent(StartInProgressEvent);
+//  ReleaseMutex(GlobalStartUnlockMutex);
  }
 }
 
@@ -1753,6 +1784,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberOnPreviewStarted(TO
   //SetEvent(GlobalStartUnlockEvent);
 //  ReleaseMutex(GlobalStartUnlockMutex);
   ResetEvent(StartInProgressEvent);
+//  ReleaseMutex(GlobalStartUnlockMutex);
  }
 }
 
@@ -1798,8 +1830,12 @@ void __fastcall TVideoCaptureThreadVideoGrabber::Calculate(void)
    }
   }
 */
+ if(WaitForSingleObject(ConvertMutex,10000) == WAIT_OBJECT_0)
+ {
   ConvertResult.SetRes(ConvertUBitmap.GetWidth(),ConvertUBitmap.GetHeight(),RDK::ubmRGB24);
   ConvertUBitmap.ConvertTo(ConvertResult);
+  ReleaseMutex(ConvertMutex);
+ }
 
   bool bmp_res=WriteSourceSafe(ConvertResult, ConvertTimeStamp/double(10000000.0*86400), false);
 

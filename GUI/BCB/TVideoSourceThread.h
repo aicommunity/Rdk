@@ -610,6 +610,9 @@ protected: // События
 /// Выставляется при получении очередного кадра
 HANDLE VideoGrabberCompleted;
 
+/// Событие блокировки изображения для конвертации
+HANDLE ConvertMutex;
+
 protected: // Временные переменные
 
 
@@ -650,7 +653,6 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 virtual void __fastcall ExecuteCaptureInit(void);
 virtual void __fastcall ExecuteCaptureUnInit(void);
 TVideoGrabber* GetVideoGrabber(void);
-
 void __fastcall OnFrameCaptureCompleted(System::TObject* Sender, void * FrameBitmap, int BitmapWidth, int BitmapHeight, unsigned FrameNumber, __int64 FrameTime, TFrameCaptureDest DestType, System::UnicodeString FileName, bool Success, int FrameId);
 
 void __fastcall VideoGrabberLog(TObject *Sender,
