@@ -45,7 +45,7 @@ bool UGenericMutexWin::lock(int lock_id)
 {
  if(!m_UnlockEvent)
   return false;
- DWORD wait_res=WaitForSingleObject(m_UnlockEvent, 0);
+/* DWORD wait_res=WaitForSingleObject(m_UnlockEvent, 0);
  if (wait_res != WAIT_OBJECT_0)
  {
   if(Pid == GetCurrentThreadId())
@@ -58,12 +58,12 @@ bool UGenericMutexWin::lock(int lock_id)
   Pid=GetCurrentThreadId();
   return true;
  }
-
+  */
  if (WaitForSingleObject(m_UnlockEvent, INFINITE) == WAIT_OBJECT_0)
  {
 //  ResetEvent(m_UnlockEvent);
-  LockId=lock_id;
-  Pid=GetCurrentThreadId();
+//  LockId=lock_id;
+//  Pid=GetCurrentThreadId();
   return true;
  }
  return false;
@@ -93,12 +93,12 @@ bool UGenericMutexWin::unlock()
   return true;
 // if (WaitForSingleObject(m_UnlockEvent, 0) != WAIT_TIMEOUT)
 //  return true;
- Pid=0;
+// Pid=0;
 // SetEvent(m_UnlockEvent);
  BOOL res=ReleaseMutex(m_UnlockEvent);
  if(res != TRUE)
   throw 2;
- LockId=-1;
+// LockId=-1;
  return true;
 }
 
