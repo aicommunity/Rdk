@@ -174,7 +174,7 @@ int RDK_CALL MLockEngine(int index)
   return 0;
 
  if(!DllManager.LockerList[index])
-  DllManager.LockerList[index]=new UGenericMutexLocker(DllManager.MutexList[index]);
+  DllManager.LockerList[index]=new UGenericMutexExclusiveLocker(DllManager.MutexList[index]);
  return 0;
 }
 

@@ -559,7 +559,7 @@ void UEnvironment::RTCalculate(void)
 // Обрабатывает возникшее исключение
 void UEnvironment::ProcessException(UException &exception) const
 {
- UGenericMutexLocker lock(LogMutex);
+ UGenericMutexExclusiveLocker lock(LogMutex);
 
  if(LastErrorLevel>exception.GetType())
   LastErrorLevel=exception.GetType();
@@ -588,7 +588,7 @@ void UEnvironment::ProcessException(UException &exception) const
 // Возвращает массив строк лога
 const char* UEnvironment::GetLog(int &error_level) const
 {
- UGenericMutexLocker lock(LogMutex);
+ UGenericMutexSharedLocker lock(LogMutex);
  TempString.clear();
  std::map<unsigned, pair<std::string, int> >::const_iterator I,J;
  I=LogList.begin(); J=LogList.end();
@@ -605,14 +605,14 @@ const char* UEnvironment::GetLog(int &error_level) const
 /// Возвращает число строк лога
 int UEnvironment::GetNumLogLines(void) const
 {
- UGenericMutexLocker lock(LogMutex);
+ UGenericMutexSharedLocker lock(LogMutex);
  return int(LogList.size());
 }
 
 /// Возвращает строку лога с индексом i
 const char* UEnvironment::GetLogLine(int i) const
 {
- UGenericMutexLocker lock(LogMutex);
+ UGenericMutexSharedLocker lock(LogMutex);
  std::map<unsigned, pair<std::string, int> >::const_iterator I=LogList.find(i);
 
  if(I == LogList.end())
@@ -628,7 +628,7 @@ const char* UEnvironment::GetLogLine(int i) const
 /// Возвращает число непрочитанных строк лога
 int UEnvironment::GetNumUnreadLogLines(void) const
 {
- UGenericMutexLocker lock(LogMutex);
+ UGenericMutexSharedLocker lock(LogMutex);
 
  std::map<unsigned, pair<std::string, int> >::const_iterator I=LogList.find(LastReadExceptionLogIndex);
  if(I == LogList.end())
@@ -645,7 +645,7 @@ int UEnvironment::GetNumUnreadLogLines(void) const
 // этой функцией
 const char* UEnvironment::GetUnreadLog(int &error_level)
 {
- UGenericMutexLocker lock(LogMutex);
+ UGenericMutexSharedLocker lock(LogMutex);
  TempString.clear();
  error_level=INT_MAX;
 
@@ -699,13 +699,13 @@ bool UEnvironment::SetExceptionHandler(PExceptionHandler value)
 // Если 0, то неограниченно
 int UEnvironment::GetMaxExceptionsLogSize(void) const
 {
- UGenericMutexLocker lock(LogMutex);
+ UGenericMutexSharedLocker lock(LogMutex);
  return MaxExceptionsLogSize;
 }
 
 void UEnvironment::SetMaxExceptionsLogSize(int value)
 {
- UGenericMutexLocker lock(LogMutex);
+ UGenericMutexExclusiveLocker lock(LogMutex);
  if(MaxExceptionsLogSize == value)
   return;
 
@@ -720,7 +720,7 @@ void UEnvironment::SetMaxExceptionsLogSize(int value)
 /// Очищает лог
 void UEnvironment::ClearLog(void)
 {
- UGenericMutexLocker lock(LogMutex);
+ UGenericMutexExclusiveLocker lock(LogMutex);
  LastReadExceptionLogIndex=0;
  CurrentExceptionsLogSize=0;
  LastErrorLevel=INT_MAX;
@@ -730,7 +730,7 @@ void UEnvironment::ClearLog(void)
 /// Очищает лог прочитанных сообщений
 void UEnvironment::ClearReadLog(void)
 {
- UGenericMutexLocker lock(LogMutex);
+ UGenericMutexExclusiveLocker lock(LogMutex);
  std::map<unsigned, pair<std::string, int> >::iterator I=LogList.find(LastReadExceptionLogIndex);
  if(I != LogList.end())
  {

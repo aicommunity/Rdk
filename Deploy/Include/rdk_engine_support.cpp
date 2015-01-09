@@ -89,7 +89,7 @@ bool RDKDllManager::Init(PCreateNewStorage fCreateNewStorage,
 /// Возвращает число движков
 int RDKDllManager::GetNumEngines(void) const
 {
-// UGenericMutexLocker lock(GlobalMutex);
+ UGenericMutexSharedLocker lock(GlobalMutex);
 // return int(EngineList.size());
  return NumEngines;
 }
@@ -97,7 +97,7 @@ int RDKDllManager::GetNumEngines(void) const
 /// Создает требуемое число пустых движков
 int RDKDllManager::SetNumEngines(int num)
 {
- UGenericMutexLocker lock(GlobalMutex);
+ UGenericMutexExclusiveLocker lock(GlobalMutex);
 
  if(num<0)
   return 1;
@@ -139,7 +139,7 @@ int RDKDllManager::Add(int index)
  int num=GetNumEngines()+1;
 
  {
-  UGenericMutexLocker lock(GlobalMutex);
+  UGenericMutexExclusiveLocker lock(GlobalMutex);
   EngineList.resize(num,0);
   StorageList.resize(num,0);
   EnvironmentList.resize(num,0);
@@ -149,7 +149,7 @@ int RDKDllManager::Add(int index)
 
  for(int i=int(EngineList.size())-1;i>index;i--)
  {
-  UGenericMutexLocker lock1(MutexList[i-1]);
+  UGenericMutexExclusiveLocker lock1(MutexList[i-1]);
   EngineList[i]=EngineList[i-1];
   StorageList[i]=StorageList[i-1];
   EnvironmentList[i]=EnvironmentList[i-1];
@@ -179,14 +179,14 @@ int RDKDllManager::Del(int index)
   return 748366;
 
  {
-  UGenericMutexLocker lock(MutexList[index]);
+  UGenericMutexExclusiveLocker lock(MutexList[index]);
   EngineDestroy(index);
  }
  UDestroyMutex(MutexList[index]);
  for(int i=index+1;i<int(EngineList.size());i++)
  {
 //  UGenericMutexLocker lock1(MutexList[i-1]);
-  UGenericMutexLocker lock2(MutexList[i]);
+  UGenericMutexExclusiveLocker lock2(MutexList[i]);
   EngineList[i-1]=EngineList[i];
   StorageList[i-1]=StorageList[i];
   EnvironmentList[i-1]=EnvironmentList[i];
@@ -194,7 +194,7 @@ int RDKDllManager::Del(int index)
   LockerList[i-1]=LockerList[i];
  }
 
- UGenericMutexLocker lock(GlobalMutex);
+ UGenericMutexExclusiveLocker lock(GlobalMutex);
  EngineList.resize(EngineList.size()-1);
  StorageList.resize(StorageList.size()-1);
  EnvironmentList.resize(EnvironmentList.size()-1);
@@ -253,7 +253,7 @@ int RDKDllManager::EngineCreate(int index)
 
 //  if(index == SelectedChannelIndex)
   {
-   UGenericMutexLocker lock(GlobalMutex);
+   UGenericMutexExclusiveLocker lock(GlobalMutex);
    /// Данные текущего выбранного канала
    Engine=EngineList[SelectedChannelIndex];
    Environment=EnvironmentList[SelectedChannelIndex];
@@ -307,13 +307,13 @@ int RDKDllManager::EngineDestroy(int index)
 /// Текущий выбраный канал
 int RDKDllManager::GetSelectedChannelIndex(void) const
 {
- UGenericMutexLocker lock(GlobalMutex);
+ UGenericMutexSharedLocker lock(GlobalMutex);
  return SelectedChannelIndex;
 }
 
 bool RDKDllManager::SetSelectedChannelIndex(int channel_index)
 {
- UGenericMutexLocker lock(GlobalMutex);
+ UGenericMutexExclusiveLocker lock(GlobalMutex);
  if(channel_index<0 || channel_index>=int(EngineList.size()))
   return false;
 
@@ -408,7 +408,7 @@ RDK::UELockPtr<RDK::UEngine> RDKDllManager::GetEngineLock(void)
 #ifdef RDK_ENGINE_UNLOCKED
  return UELockPtr<RDK::UEngine>(0,GetEngine());
 #else
- UGenericMutexLocker lock(GlobalMutex);
+ UGenericMutexSharedLocker lock(GlobalMutex);
  return UELockPtr<RDK::UEngine>(MutexList[SelectedChannelIndex],GetEngine());
 #endif
 }
@@ -428,7 +428,7 @@ RDK::UELockPtr<RDK::UEnvironment> RDKDllManager::GetEnvironmentLock(void)
 #ifdef RDK_ENGINE_UNLOCKED
  return UELockPtr<RDK::UEnvironment>(0,GetEnvironment());
 #else
- UGenericMutexLocker lock(GlobalMutex);
+ UGenericMutexSharedLocker lock(GlobalMutex);
  return UELockPtr<RDK::UEnvironment>(MutexList[SelectedChannelIndex],GetEnvironment());
 #endif
 }
@@ -448,7 +448,7 @@ RDK::UELockPtr<RDK::UStorage> RDKDllManager::GetStorageLock(void)
 #ifdef RDK_ENGINE_UNLOCKED
  return UELockPtr<RDK::UStorage>(0,GetStorage());
 #else
- UGenericMutexLocker lock(GlobalMutex);
+ UGenericMutexSharedLocker lock(GlobalMutex);
  return UELockPtr<RDK::UStorage>(MutexList[SelectedChannelIndex],GetStorage());
 #endif
 }
@@ -468,7 +468,7 @@ RDK::UELockPtr<RDK::UContainer> RDKDllManager::GetModelLock(void)
 #ifdef RDK_ENGINE_UNLOCKED
  return UELockPtr<RDK::UContainer>(0,GetModel());
 #else
- UGenericMutexLocker lock(GlobalMutex);
+ UGenericMutexSharedLocker lock(GlobalMutex);
  return UELockPtr<RDK::UContainer>(MutexList[SelectedChannelIndex],GetModel());
 #endif
 }

@@ -94,7 +94,7 @@ UELockVar<T>::~UELockVar(void)
 template<typename T>
 T UELockVar<T>::Get(void) const
 {
- UGenericMutexLocker Locker(Mutex);
+ UGenericMutexSharedLocker Locker(Mutex);
  return Data;
 }
 // --------------------------
@@ -105,14 +105,14 @@ T UELockVar<T>::Get(void) const
 template<typename T>
 UELockVar<T>::operator T (void) const
 {
- UGenericMutexLocker Locker(Mutex);
+ UGenericMutexSharedLocker Locker(Mutex);
  return Data;
 }
 
 template<typename T>
 UELockVar<T>& UELockVar<T>::operator = (const UELockVar<T> &p)
 {
- UGenericMutexLocker Locker(Mutex);
+ UGenericMutexExclusiveLocker Locker(Mutex);
  Data=p.Get();
 
  return *this;
@@ -121,7 +121,7 @@ UELockVar<T>& UELockVar<T>::operator = (const UELockVar<T> &p)
 template<typename T>
 UELockVar<T>& UELockVar<T>::operator = (const T &p)
 {
- UGenericMutexLocker Locker(Mutex);
+ UGenericMutexExclusiveLocker Locker(Mutex);
  Data=p;
 
  return *this;
@@ -131,7 +131,7 @@ UELockVar<T>& UELockVar<T>::operator = (const T &p)
 template<typename T>
 UELockVar<T>& UELockVar<T>::operator += (const T &p)
 {
- UGenericMutexLocker Locker(Mutex);
+ UGenericMutexExclusiveLocker Locker(Mutex);
  Data+=p;
 
  return *this;
@@ -140,7 +140,7 @@ UELockVar<T>& UELockVar<T>::operator += (const T &p)
 template<typename T>
 UELockVar<T>& UELockVar<T>::operator ++ (int i)
 {
- UGenericMutexLocker Locker(Mutex);
+ UGenericMutexExclusiveLocker Locker(Mutex);
  Data++;
  return *this;
 }
@@ -148,7 +148,7 @@ UELockVar<T>& UELockVar<T>::operator ++ (int i)
 template<typename T>
 UELockVar<T>& UELockVar<T>::operator -- (int i)
 {
- UGenericMutexLocker Locker(Mutex);
+ UGenericMutexExclusiveLocker Locker(Mutex);
  Data--;
  return *this;
 }
@@ -156,7 +156,7 @@ UELockVar<T>& UELockVar<T>::operator -- (int i)
 template<typename T>
 UELockVar<T>& UELockVar<T>::operator ++ (void)
 {
- UGenericMutexLocker Locker(Mutex);
+ UGenericMutexExclusiveLocker Locker(Mutex);
  Data++;
  return *this;
 }
@@ -164,7 +164,7 @@ UELockVar<T>& UELockVar<T>::operator ++ (void)
 template<typename T>
 UELockVar<T>& UELockVar<T>::operator -- (void)
 {
- UGenericMutexLocker Locker(Mutex);
+ UGenericMutexExclusiveLocker Locker(Mutex);
  Data--;
  return *this;
 }
@@ -172,7 +172,7 @@ UELockVar<T>& UELockVar<T>::operator -- (void)
 template<typename T>
 bool UELockVar<T>::operator == (const T &p) const
 {
- UGenericMutexLocker Locker(Mutex);
+ UGenericMutexSharedLocker Locker(Mutex);
  if(Data == p)
   return true;
  return false;
@@ -181,7 +181,7 @@ bool UELockVar<T>::operator == (const T &p) const
 template<typename T>
 bool UELockVar<T>::operator != (const T &p) const
 {
- UGenericMutexLocker Locker(Mutex);
+ UGenericMutexSharedLocker Locker(Mutex);
  if(Data != p)
   return true;
  return false;

@@ -20,7 +20,7 @@ std::vector<RDK::UEngine*> EngineList;
 std::vector<UGenericMutex*> MutexList;
 
 // Массив локеров
-std::vector<UGenericMutexLocker*> LockerList;
+std::vector<UGenericMutexExclusiveLocker*> LockerList;
 
 UGenericMutex* GlobalMutex;
 

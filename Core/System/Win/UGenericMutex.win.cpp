@@ -17,9 +17,11 @@ public:
 UGenericMutexWin();
 virtual ~UGenericMutexWin();
 
-virtual bool lock(int lock_id=-1);
-virtual bool unlock();
-//virtual bool wait(int timeout);
+virtual bool shared_lock(void);
+virtual bool shared_unlock(void);
+
+virtual bool exclusive_lock(void);
+virtual bool exclusive_unlock(void);
 
 private:
 UGenericMutexWin(const UGenericMutexWin &copy);
@@ -41,7 +43,7 @@ UGenericMutexWin::~UGenericMutexWin()
   throw 1;
 }
 
-bool UGenericMutexWin::lock(int lock_id)
+bool UGenericMutexWin::shared_lock(void)
 {
  if(!m_UnlockEvent)
   return false;
@@ -87,7 +89,7 @@ bool UGenericMutexWin::lock(int lock_id)
 */
 }
 
-bool UGenericMutexWin::unlock()
+bool UGenericMutexWin::shared_unlock(void)
 {
  if(!m_UnlockEvent)
   return true;
@@ -114,6 +116,16 @@ bool UGenericMutexWin::unlock()
  return false;
 } */
 
+bool UGenericMutexWin::exclusive_lock(void)
+{
+ return shared_lock();
+}
+
+bool UGenericMutexWin::exclusive_unlock(void)
+{
+ return shared_unlock();
+}
+
 UGenericMutexWin::UGenericMutexWin(const UGenericMutexWin &copy)
 {
 
@@ -136,31 +148,4 @@ void UDestroyMutex(UGenericMutex* mutex)
   delete mutex;
 }
 
-UGenericMutexLocker::UGenericMutexLocker(UGenericMutex *m)
-{
- if(m)
- {
-  m->lock();
-  m_mutex = m;
- }
- else
-  m_mutex = 0;
-}
-
-UGenericMutexLocker::UGenericMutexLocker(UGenericMutex *m, int lock_id)
-{
- if(m)
- {
-  m->lock(lock_id);
-  m_mutex = m;
- }
- else
-  m_mutex = 0;
-}
-
-UGenericMutexLocker::~UGenericMutexLocker()
-{
- if(m_mutex)
-  m_mutex->unlock();
-}
 #endif

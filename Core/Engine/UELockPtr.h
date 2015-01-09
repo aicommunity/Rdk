@@ -13,7 +13,7 @@ class UELockPtr: public UEPtr<T>
 UGenericMutex* Mutex;
 
 /// Блокировщик
-UGenericMutexLocker* Locker;
+UGenericMutexExclusiveLocker* Locker;
 
 // Счетчик ссылок
 long* Counter;
@@ -52,21 +52,21 @@ UELockPtr<T>::UELockPtr(void)
 
 template<typename T>
 UELockPtr<T>::UELockPtr(UGenericMutex* mutex)
- : Mutex(mutex), Locker(new UGenericMutexLocker(mutex)), Counter(new long(1))
+ : Mutex(mutex), Locker(new UGenericMutexExclusiveLocker(mutex)), Counter(new long(1))
 {
 
 }
 
 template<typename T>
 UELockPtr<T>::UELockPtr(UGenericMutex* mutex, T* pdata)
- : UEPtr<T>(pdata), Mutex(mutex), Locker(new UGenericMutexLocker(mutex)), Counter(new long(1))
+ : UEPtr<T>(pdata), Mutex(mutex), Locker(new UGenericMutexExclusiveLocker(mutex)), Counter(new long(1))
 {
 
 }
 
 template<typename T>
 UELockPtr<T>::UELockPtr(UGenericMutex* mutex, const UEPtr<T> &pdata)
- : UEPtr<T>(pdata.Get()), Mutex(mutex), Locker(new UGenericMutexLocker(mutex)), Counter(new long(1))
+ : UEPtr<T>(pdata.Get()), Mutex(mutex), Locker(new UGenericMutexExclusiveLocker(mutex)), Counter(new long(1))
 {
 
 }

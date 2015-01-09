@@ -3,20 +3,38 @@
 // ---------------------------------------------------------------------------
 
 #include "../UGenericMutex.h"
-//#include <windows.h>
+#define BOOST_THREAD_USE_LIB
+#include <boost/thread.hpp>
+//#include <boost/thread/thread_id.hpp>
+//#include <boost/bind.hpp>
+#include <boost/thread/shared_mutex.hpp>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/locks.hpp>
+#include <windows.h>
 
-class UGenericMutexAnsi: public UGenericMutex
+class RDK_LIB_TYPE UGenericMutexAnsi: public UGenericMutex
 {
 private:
-void* m_UnlockEvent;
+boost::shared_mutex Mutex;
+
+boost::thread::id Id;
+
+DWORD Pid;
+
+//boost::unique_lock< boost::shared_mutex > * UniqueLock;
+
+//boost::shared_lock< boost::shared_mutex > * SharedLock;
 
 public:
 UGenericMutexAnsi();
 virtual ~UGenericMutexAnsi();
 
-virtual bool lock();
-virtual bool unlock();
-virtual bool wait(int timeout);
+virtual bool shared_lock(void);
+virtual bool shared_unlock(void);
+
+virtual bool exclusive_lock(void);
+virtual bool exclusive_unlock(void);
+
 };
 
 
@@ -27,33 +45,55 @@ UGenericMutexAnsi::UGenericMutexAnsi()
 
 UGenericMutexAnsi::~UGenericMutexAnsi()
 {
- //CloseHandle(m_UnlockEvent);
-}
-
-bool UGenericMutexAnsi::lock()
-{
- /*if (WaitForSingleObject(m_UnlockEvent, INFINITE) == WAIT_TIMEOUT)
-  return false;
- ResetEvent(m_UnlockEvent);*/
- return true;
-}
-
-bool UGenericMutexAnsi::unlock()
-{
- /*if (WaitForSingleObject(m_UnlockEvent, INFINITE) == WAIT_TIMEOUT)
-  return false;
- SetEvent(m_UnlockEvent);*/
- return true;
-}
-
-bool UGenericMutexAnsi::wait(int timeout)
-{
- /*if (WaitForSingleObject(m_UnlockEvent, timeout) != WAIT_TIMEOUT)
+/* if(SharedLock)
  {
-  return true;
- } */
- return false;
+  delete SharedLock;
+  SharedLock=0;
+ }
+
+ if(UniqueLock)
+ {
+  delete UniqueLock;
+  UniqueLock=0;
+ }  */
 }
+
+bool UGenericMutexAnsi::shared_lock(void)
+{
+ Mutex.lock_shared();
+ return true;
+}
+
+bool UGenericMutexAnsi::shared_unlock(void)
+{
+ Mutex.unlock_shared();
+ return true;
+}
+
+bool UGenericMutexAnsi::exclusive_lock(void)
+{
+// boost::thread::id self = boost::this_thread::get_id();
+ if(Mutex.try_lock())
+ {
+//  Id = self;
+  return true;
+ }
+
+// if(Id == self)
+//  return true;
+
+ Mutex.lock();
+// Id = self;
+ return true;
+}
+
+bool UGenericMutexAnsi::exclusive_unlock(void)
+{
+ Mutex.unlock();
+// Id=boost::thread::id();
+ return true;
+}
+
 // ---------------------------------------------------------------------------
 UGenericMutex* UCreateMutex(void)
 {
@@ -66,20 +106,4 @@ void UDestroyMutex(UGenericMutex* mutex)
   delete mutex;
 }
 
-UGenericMutexLocker::UGenericMutexLocker(UGenericMutex *m)
-{
- if(m)
- {
-  m_mutex = m;
-  m_mutex->lock();
- }
- else
-  m_mutex = 0;
-}
-
-UGenericMutexLocker::~UGenericMutexLocker()
-{
- if(m_mutex)
-  m_mutex->unlock();
-}
 #endif
