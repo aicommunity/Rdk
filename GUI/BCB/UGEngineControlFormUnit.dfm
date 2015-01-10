@@ -30,7 +30,6 @@ object UGEngineControlForm: TUGEngineControlForm
     Margins.Bottom = 4
     Align = alClient
     TabOrder = 0
-    ExplicitWidth = 918
     object Splitter2: TSplitter
       Left = 327
       Top = 1
@@ -631,7 +630,6 @@ object UGEngineControlForm: TUGEngineControlForm
       Margins.Bottom = 4
       Align = alBottom
       TabOrder = 1
-      ExplicitWidth = 916
       object PageControl2: TPageControl
         Left = 1
         Top = 1
@@ -646,14 +644,16 @@ object UGEngineControlForm: TUGEngineControlForm
         MultiLine = True
         TabOrder = 0
         TabPosition = tpRight
-        ExplicitWidth = 914
         object LogsTabSheet: TTabSheet
           Margins.Left = 4
           Margins.Top = 4
           Margins.Right = 4
           Margins.Bottom = 4
           Caption = 'Logs'
+          ExplicitLeft = 0
+          ExplicitTop = 0
           ExplicitWidth = 882
+          ExplicitHeight = 0
         end
         object TabSheet2: TTabSheet
           Margins.Left = 4
@@ -662,7 +662,6 @@ object UGEngineControlForm: TUGEngineControlForm
           Margins.Bottom = 4
           Caption = 'Performance'
           ImageIndex = 1
-          ExplicitWidth = 882
           inline UComponentsPerformanceFrame1: TUComponentsPerformanceFrame
             Left = 0
             Top = 0
@@ -680,7 +679,7 @@ object UGEngineControlForm: TUGEngineControlForm
             Font.Style = []
             ParentFont = False
             TabOrder = 0
-            ExplicitWidth = 882
+            ExplicitWidth = 942
             ExplicitHeight = 190
             inherited Chart: TChart
               Width = 760
@@ -691,6 +690,11 @@ object UGEngineControlForm: TUGEngineControlForm
               Margins.Bottom = 4
               ExplicitWidth = 700
               ExplicitHeight = 190
+              PrintMargins = (
+                15
+                19
+                15
+                19)
               inherited Series1: TBarSeries
                 Data = {
                   00060000000000000000C87E400000000000187A400000000000F07940000000
@@ -771,7 +775,6 @@ object UGEngineControlForm: TUGEngineControlForm
       PopupMenu = PageControlPopupMenu
       TabOrder = 2
       OnChange = PageControl1Change
-      ExplicitWidth = 581
       object Draw: TTabSheet
         Margins.Left = 4
         Margins.Top = 4
@@ -779,7 +782,6 @@ object UGEngineControlForm: TUGEngineControlForm
         Margins.Bottom = 4
         Caption = 'Draw'
         OnShow = DrawShow
-        ExplicitWidth = 573
         inline UDrawEngineFrame1: TUDrawEngineFrame
           Left = 0
           Top = 0
@@ -797,7 +799,7 @@ object UGEngineControlForm: TUGEngineControlForm
           Font.Style = []
           ParentFont = False
           TabOrder = 0
-          ExplicitWidth = 573
+          ExplicitWidth = 633
           ExplicitHeight = 364
           inherited Splitter1: TSplitter
             Left = 319
@@ -819,7 +821,7 @@ object UGEngineControlForm: TUGEngineControlForm
             Margins.Top = 4
             Margins.Right = 4
             Margins.Bottom = 4
-            ExplicitLeft = 274
+            ExplicitLeft = 334
             ExplicitWidth = 299
             ExplicitHeight = 300
             inherited UClassesListFrame: TUClassesListFrame
@@ -1032,7 +1034,7 @@ object UGEngineControlForm: TUGEngineControlForm
             Margins.Right = 4
             Margins.Bottom = 4
             ExplicitTop = 300
-            ExplicitWidth = 573
+            ExplicitWidth = 633
             ExplicitHeight = 64
             inherited Label1: TLabel
               Left = 4
@@ -1540,7 +1542,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 360
     Top = 65528
     Bitmap = {
-      494C01011B006000280310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B0060002C0310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

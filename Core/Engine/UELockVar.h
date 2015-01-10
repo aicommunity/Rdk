@@ -35,6 +35,8 @@ T Get(void) const;
 // --------------------------
 operator T (void) const;
 
+T* operator -> (void) const;
+
 UELockVar<T>& operator = (const UELockVar<T> &p);
 
 UELockVar<T>& operator = (const T &p);
@@ -97,6 +99,7 @@ T UELockVar<T>::Get(void) const
  UGenericMutexSharedLocker Locker(Mutex);
  return Data;
 }
+
 // --------------------------
 
 // --------------------------

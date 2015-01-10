@@ -351,6 +351,18 @@ bool UEnvironment::SetChannelIndex(int value)
  ChannelIndex=value;
  return true;
 }
+
+/// ״נטפעû
+RDK::UBitmapFontCollection& UEnvironment::GetFonts(void)
+{
+ return Fonts;
+}
+
+bool UEnvironment::SetFonts(const RDK::UBitmapFontCollection& value)
+{
+ Fonts=value;
+ return true;
+}
 // --------------------------
 
 
@@ -429,6 +441,7 @@ void UEnvironment::Init(void)
  if(IsInit())
   return;
 
+ SetFonts(RDK::GlobalFonts);
  AInit();
 
  ModelCalculationComponent.Resize(0);

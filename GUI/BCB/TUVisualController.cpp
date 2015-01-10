@@ -182,10 +182,6 @@ void TUFormsSerialize::LoadForm(RDK::USerStorageXML &xml, TForm *form)
 // --------------------------
 
 //---------------------------------------------------------------------------
-static inline void ValidCtrCheck(TUVisualControllerFrame*)
-{
-  new TUVisualControllerFrame(NULL);
-}
 
 namespace TUVisualController
 {

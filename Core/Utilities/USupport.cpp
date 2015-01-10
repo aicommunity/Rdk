@@ -121,15 +121,6 @@ std::string& narrow(const std::wstring& wstr, const std::locale& loc, std::strin
   return result;
 }
 
-//std::locale my_locale("");
-				 /*
-std::string narrow2(const std::wstring& wstr)
-{
-// static std::locale my_locale("");
-// std::locale cp866(std::locale(), new codecvt_cp866);
- return narrow(wstr,my_locale);
-}       */
-
 //@brief Расширяет строку, используя локализацию loc
 //   @return Возвращает расширенную строку или пустую расширенную строку, в
 //   случае, если возникла ошибка.
@@ -158,12 +149,7 @@ std::wstring& widen(const std::string& str, const std::locale& loc, std::wstring
    result.resize(0); //return std::wstring();
   return result;
 }
-				/*
-std::wstring widen2(const std::string& str)
-{
-// static std::locale my_locale("");
- return widen(str,my_locale);
-}                 */
+
 
 
 }
