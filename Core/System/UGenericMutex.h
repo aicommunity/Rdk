@@ -10,8 +10,8 @@ class RDK_LIB_TYPE UGenericMutex
 protected:
 
 public:
-UGenericMutex() {};
-virtual ~UGenericMutex() {};
+UGenericMutex();
+virtual ~UGenericMutex();
 
 virtual bool shared_lock(void)=0;
 virtual bool shared_unlock(void)=0;
@@ -34,11 +34,9 @@ UGenericMutexExclusiveLocker(UGenericMutex *m);
 ~UGenericMutexExclusiveLocker();
 
 private:
-UGenericMutexExclusiveLocker(const UGenericMutexExclusiveLocker &m)
-{};
+UGenericMutexExclusiveLocker(const UGenericMutexExclusiveLocker &m);
 
-UGenericMutexExclusiveLocker& operator = (const UGenericMutexExclusiveLocker &m)
-{ return *this; };
+UGenericMutexExclusiveLocker& operator = (const UGenericMutexExclusiveLocker &m);
 };
 
 class RDK_LIB_TYPE UGenericMutexSharedLocker
@@ -51,11 +49,8 @@ UGenericMutexSharedLocker(UGenericMutex *m);
 ~UGenericMutexSharedLocker();
 
 private:
-UGenericMutexSharedLocker(const UGenericMutexSharedLocker &m)
-{};
-
-UGenericMutexSharedLocker& operator = (const UGenericMutexSharedLocker &m)
-{ return *this; };
+UGenericMutexSharedLocker(const UGenericMutexSharedLocker &m);
+UGenericMutexSharedLocker& operator = (const UGenericMutexSharedLocker &m);
 };
 // ---------------------------------------------------------------------------
 
