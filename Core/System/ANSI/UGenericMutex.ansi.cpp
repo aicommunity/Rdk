@@ -60,7 +60,12 @@ UGenericMutexAnsi::~UGenericMutexAnsi()
 
 bool UGenericMutexAnsi::shared_lock(void)
 {
- Mutex.lock_shared();
+// Mutex.lock_shared();
+ boost::system_time pt(boost::get_system_time());
+ if(!Mutex.timed_lock_shared(pt + boost::posix_time::milliseconds(10000)))
+ {
+  return false;
+ }
  return true;
 }
 
@@ -82,8 +87,13 @@ bool UGenericMutexAnsi::exclusive_lock(void)
 // if(Id == self)
 //  return true;
 
- Mutex.lock();
-// Id = self;
+// Mutex.lock();
+ boost::system_time pt(boost::get_system_time());
+ if(!Mutex.timed_lock(pt + boost::posix_time::milliseconds(10000)))
+ {
+  return false;
+ }
+ // Id = self;
  return true;
 }
 

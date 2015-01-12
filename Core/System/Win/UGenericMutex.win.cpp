@@ -61,13 +61,16 @@ bool UGenericMutexWin::shared_lock(void)
   return true;
  }
   */
- if (WaitForSingleObject(m_UnlockEvent, INFINITE) == WAIT_OBJECT_0)
+// if (WaitForSingleObject(m_UnlockEvent, INFINITE) == WAIT_OBJECT_0)
+ if (WaitForSingleObject(m_UnlockEvent, 10000) == WAIT_OBJECT_0)
  {
 //  ResetEvent(m_UnlockEvent);
 //  LockId=lock_id;
 //  Pid=GetCurrentThreadId();
   return true;
  }
+ else
+  return false;
  return false;
 
 /*

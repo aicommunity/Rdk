@@ -25,7 +25,7 @@ std::vector<UGenericMutexExclusiveLocker*> LockerList;
 UGenericMutex* GlobalMutex;
 
 /// Текущий выбраный канал
-int SelectedChannelIndex;
+UELockVar<int> SelectedChannelIndex;
 
 /// Текущее число каналов
 int NumEngines;

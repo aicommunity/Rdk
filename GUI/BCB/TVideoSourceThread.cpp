@@ -650,7 +650,6 @@ bool TVideoCaptureThread::WriteSourceSafe(Graphics::TBitmap *src, double time_st
 // ResetEvent(SourceWriteUnlock);
  TBitmapToUBitmap(*WriteSource, src, reflect);
 // SetEvent(SourceWriteUnlock);
- ReleaseMutex(SourceWriteUnlock);
 
  if(WaitForSingleObject(SourceUnlock,30000) != WAIT_OBJECT_0)
  {
@@ -665,6 +664,7 @@ bool TVideoCaptureThread::WriteSourceSafe(Graphics::TBitmap *src, double time_st
  ReadSource=WriteSource;
  WriteSource=old_read_source;
 // SetEvent(SourceUnlock);
+ ReleaseMutex(SourceWriteUnlock);
  ReleaseMutex(SourceUnlock);
  return true;
 }
