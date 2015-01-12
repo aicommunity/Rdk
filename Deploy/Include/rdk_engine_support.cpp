@@ -89,7 +89,7 @@ bool RDKDllManager::Init(PCreateNewStorage fCreateNewStorage,
 /// Возвращает число движков
 int RDKDllManager::GetNumEngines(void) const
 {
- UGenericMutexSharedLocker lock(GlobalMutex);
+// UGenericMutexSharedLocker lock(GlobalMutex);
 // return int(EngineList.size());
  return NumEngines;
 }
@@ -317,14 +317,14 @@ int RDKDllManager::EngineDestroy(int index)
 /// Текущий выбраный канал
 int RDKDllManager::GetSelectedChannelIndex(void) const
 {
- UGenericMutexSharedLocker lock(GlobalMutex);
+// UGenericMutexSharedLocker lock(GlobalMutex);
  return SelectedChannelIndex;
 }
 
 bool RDKDllManager::SetSelectedChannelIndex(int channel_index)
 {
- UGenericMutexExclusiveLocker lock(GlobalMutex);
- if(channel_index<0 || channel_index>=int(EngineList.size()))
+// UGenericMutexExclusiveLocker lock(GlobalMutex);
+ if(channel_index<0 || channel_index>=GetNumEngines())
   return false;
 
  SelectedChannelIndex=channel_index;

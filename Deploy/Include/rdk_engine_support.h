@@ -28,7 +28,7 @@ UGenericMutex* GlobalMutex;
 UELockVar<int> SelectedChannelIndex;
 
 /// Текущее число каналов
-int NumEngines;
+UELockVar<int> NumEngines;
 
 /// Данные текущего выбранного канала
 RDK::UEPtr<RDK::UEngine> Engine;

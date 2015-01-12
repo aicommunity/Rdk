@@ -62,7 +62,7 @@ bool UGenericMutexAnsi::shared_lock(void)
 {
 // Mutex.lock_shared();
  boost::system_time pt(boost::get_system_time());
- if(!Mutex.timed_lock_shared(pt + boost::posix_time::milliseconds(10000)))
+ if(!Mutex.timed_lock_shared(pt + boost::posix_time::milliseconds(60000)))
  {
   return false;
  }
@@ -89,7 +89,7 @@ bool UGenericMutexAnsi::exclusive_lock(void)
 
 // Mutex.lock();
  boost::system_time pt(boost::get_system_time());
- if(!Mutex.timed_lock(pt + boost::posix_time::milliseconds(10000)))
+ if(!Mutex.timed_lock(pt + boost::posix_time::milliseconds(60000)))
  {
   return false;
  }
