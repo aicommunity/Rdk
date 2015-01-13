@@ -4,6 +4,7 @@
 #include "UGenericMutex.h"
 
 UGenericMutex::UGenericMutex()
+: DebugId(-1)
 {}
 
 UGenericMutex::~UGenericMutex()

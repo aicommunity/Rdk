@@ -119,6 +119,7 @@ int RDKDllManager::SetNumEngines(int num)
   for(int i=old_num;i<num;i++)
   {
    MutexList[i]=UCreateMutex();
+   MutexList[i]->DebugId=i;
   }
   NumEngines=int(EngineList.size());
  }
@@ -164,6 +165,7 @@ int RDKDllManager::Add(int index)
  MutexList[index]=0;
  LockerList[index]=0;
  MutexList[index]=UCreateMutex();
+ MutexList[index]->DebugId=index;
 
  SetSelectedChannelIndex(SelectedChannelIndex);
  {

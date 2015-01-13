@@ -5,6 +5,8 @@
 #include <windows.h>
 #include "../UGenericMutex.h"
 #include "../../Deploy/Include/initdll_defs.h"
+#include "../../Core/Utilities/USupport.h"
+#include <fstream>
 
 class RDK_LIB_TYPE UGenericMutexWin: public UGenericMutex
 {
@@ -45,6 +47,7 @@ UGenericMutexWin::~UGenericMutexWin()
 
 bool UGenericMutexWin::shared_lock(void)
 {
+using namespace std;
  if(!m_UnlockEvent)
   return false;
 /* DWORD wait_res=WaitForSingleObject(m_UnlockEvent, 0);
@@ -66,11 +69,32 @@ bool UGenericMutexWin::shared_lock(void)
  {
 //  ResetEvent(m_UnlockEvent);
 //  LockId=lock_id;
-//  Pid=GetCurrentThreadId();
+  Pid=GetCurrentThreadId();
+  if(DebugId>=0)
+  {
+   fstream file((RDK::sntoa(DebugId)+".lock.txt").c_str(),ios::out | ios::app);
+   if(file)
+   {
+	file<<Pid<<": lock"<<endl;
+	file.flush();
+   }
+  }
   return true;
  }
  else
+ {
+  Pid=GetCurrentThreadId();
+  if(DebugId>=0)
+  {
+   fstream file((RDK::sntoa(DebugId)+".lock.txt").c_str(),ios::out | ios::app);
+   if(file)
+   {
+	file<<Pid<<": deadlock"<<endl;
+	file.flush();
+   }
+  }
   return false;
+ }
  return false;
 
 /*
@@ -94,11 +118,22 @@ bool UGenericMutexWin::shared_lock(void)
 
 bool UGenericMutexWin::shared_unlock(void)
 {
+using namespace std;
  if(!m_UnlockEvent)
   return true;
 // if (WaitForSingleObject(m_UnlockEvent, 0) != WAIT_TIMEOUT)
 //  return true;
-// Pid=0;
+
+  if(DebugId>=0)
+  {
+   fstream file((RDK::sntoa(DebugId)+".lock.txt").c_str(),ios::out | ios::app);
+   if(file)
+   {
+	file<<Pid<<": unlock"<<endl;
+	file.flush();
+   }
+  }
+ Pid=0;
 // SetEvent(m_UnlockEvent);
  BOOL res=ReleaseMutex(m_UnlockEvent);
  if(res != TRUE)

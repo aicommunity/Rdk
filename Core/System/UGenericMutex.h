@@ -7,7 +7,11 @@
 
 class RDK_LIB_TYPE UGenericMutex
 {
+public:
+int DebugId;
+
 protected:
+
 
 public:
 UGenericMutex();
