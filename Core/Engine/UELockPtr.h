@@ -26,15 +26,15 @@ UELockPtr(void);
 UELockPtr(UGenericMutex* mutex);
 UELockPtr(UGenericMutex* mutex, T* pdata);
 UELockPtr(UGenericMutex* mutex, const UEPtr<T> &pdata);
-UELockPtr(const UELockPtr<T> &p);
+//UELockPtr(const UELockPtr<T> &p);
 virtual ~UELockPtr(void);
 // --------------------------
 
 // --------------------------
 // Операторы
 // --------------------------
+private:
 UELockPtr<T>& operator = (const UELockPtr<T> &p);
-
 //UELockPtr<T>& operator = (T *p);
 // --------------------------
 
@@ -70,27 +70,31 @@ UELockPtr<T>::UELockPtr(UGenericMutex* mutex, const UEPtr<T> &pdata)
 {
 
 }
-
+   /*
 template<typename T>
 UELockPtr<T>::UELockPtr(const UELockPtr<T> &p)
  : UEPtr<T>(p), Mutex(p.Mutex), Locker(p.Locker), Counter(p.Counter)
 {
  if(Counter)
   ++(*Counter);
-}
+}  */
 
 template<typename T>
 UELockPtr<T>::~UELockPtr(void)
 {
  Mutex=0;
- if(Counter && --(*Counter) == 0)
+ if(Counter)
  {
-  delete Counter;
-  Counter=0;
-  if(Locker)
+  --(*Counter);
+  if(*Counter == 0)
   {
-   delete Locker;
-   Locker=0;
+   delete Counter;
+   Counter=0;
+   if(Locker)
+   {
+	delete Locker;
+	Locker=0;
+   }
   }
  }
 }
@@ -102,6 +106,7 @@ UELockPtr<T>::~UELockPtr(void)
 template<typename T>
 UELockPtr<T>& UELockPtr<T>::operator = (const UELockPtr<T> &p)
 {
+/*
  if(Counter)
  {
   if(--(*Counter) == 0)
@@ -121,7 +126,7 @@ UELockPtr<T>& UELockPtr<T>::operator = (const UELockPtr<T> &p)
   Counter=p.Counter;
   ++(*Counter);
  }
-
+  */
  return *this;
 };
 /*
