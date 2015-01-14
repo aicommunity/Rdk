@@ -3,8 +3,14 @@
 
 #include "UGenericMutex.h"
 
+#ifdef RDK_MUTEX_DEADLOCK_DEBUG
+RDK_LIB_TYPE std::map<int,TUThreadInfo> GlobalThreadInfoMap;
+#endif
+
 UGenericMutex::UGenericMutex()
+#ifdef RDK_MUTEX_DEADLOCK_DEBUG
 : DebugId(-1)
+#endif
 {}
 
 UGenericMutex::~UGenericMutex()

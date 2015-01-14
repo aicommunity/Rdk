@@ -157,6 +157,13 @@ void TVideoOutputFrame::Init(int mode)
   CaptureThread->Priority=RDK_DEFAULT_THREAD_PRIORITY;
   CaptureThread->SetChannelIndex(FrameIndex);
 
+  #ifdef RDK_MUTEX_DEADLOCK_DEBUG
+  TUThreadInfo info;
+  info.Pid=CaptureThread->ThreadID;
+  info.Name=string("CaptureThread ")+RDK::sntoa(FrameIndex);
+  GlobalThreadInfoMap[info.Pid]=info;
+  #endif
+
 //  TVideoCaptureThreadVideoGrabber *thread=dynamic_cast<TVideoCaptureThreadVideoGrabber*>(CaptureThread);
 //  if(thread && thread->GetVideoGrabber())
 //   thread->GetVideoGrabber()->LicenseString=TVGrabberLicenseString;
@@ -190,6 +197,12 @@ void TVideoOutputFrame::Init(int mode, RDK::USerStorageXML &raw_xml_data)
   CaptureThread->Priority=RDK_DEFAULT_THREAD_PRIORITY;
   CaptureThread->SetChannelIndex(FrameIndex);
 
+  #ifdef RDK_MUTEX_DEADLOCK_DEBUG
+  TUThreadInfo info;
+  info.Pid=CaptureThread->ThreadID;
+  info.Name=string("CaptureThread ")+RDK::sntoa(FrameIndex);
+  GlobalThreadInfoMap[info.Pid]=info;
+  #endif
 //  TVideoCaptureThreadVideoGrabber *thread=dynamic_cast<TVideoCaptureThreadVideoGrabber*>(CaptureThread);
 //  if(thread)
 //   thread->GetVideoGrabber()->LicenseString=TVGrabberLicenseString;

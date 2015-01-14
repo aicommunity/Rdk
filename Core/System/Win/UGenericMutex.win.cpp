@@ -50,70 +50,54 @@ bool UGenericMutexWin::shared_lock(void)
 using namespace std;
  if(!m_UnlockEvent)
   return false;
-/* DWORD wait_res=WaitForSingleObject(m_UnlockEvent, 0);
- if (wait_res != WAIT_OBJECT_0)
+
+#ifdef RDK_MUTEX_DEADLOCK_DEBUG
+ DWORD res=WaitForSingleObject(m_UnlockEvent, 60000);
+#else
+ DWORD res=WaitForSingleObject(m_UnlockEvent, INFINITE);
+#endif
+ if (res == WAIT_OBJECT_0)
  {
-  if(Pid == GetCurrentThreadId())
-   return true;
- }
- else
- if(wait_res == WAIT_OBJECT_0)
- {
-  LockId=lock_id;
-  Pid=GetCurrentThreadId();
-  return true;
- }
-  */
-// if (WaitForSingleObject(m_UnlockEvent, INFINITE) == WAIT_OBJECT_0)
- if (WaitForSingleObject(m_UnlockEvent, 60000) == WAIT_OBJECT_0)
- {
-//  ResetEvent(m_UnlockEvent);
-//  LockId=lock_id;
+  #ifdef RDK_MUTEX_DEADLOCK_DEBUG
   Pid=GetCurrentThreadId();
   if(DebugId>=0)
   {
-   fstream file((RDK::sntoa(DebugId)+".lock.txt").c_str(),ios::out | ios::app);
+   fstream file((RDK::sntoa(DebugId,2)+".lock.txt").c_str(),ios::out | ios::app);
    if(file)
    {
-	file<<Pid<<": lock"<<endl;
+	std::map<int,TUThreadInfo>::const_iterator I=GlobalThreadInfoMap.find(Pid);
+	string name;
+	if(I != GlobalThreadInfoMap.end())
+	 name=I->second.Name;
+	file<<Pid<<" "<<name<<": lock"<<endl;
 	file.flush();
    }
   }
+  #endif
   return true;
  }
  else
  {
+  #ifdef RDK_MUTEX_DEADLOCK_DEBUG
   Pid=GetCurrentThreadId();
   if(DebugId>=0)
   {
-   fstream file((RDK::sntoa(DebugId)+".lock.txt").c_str(),ios::out | ios::app);
+   fstream file((RDK::sntoa(DebugId,2)+".lock.txt").c_str(),ios::out | ios::app);
    if(file)
    {
-	file<<Pid<<": deadlock"<<endl;
+	std::map<int,TUThreadInfo>::const_iterator I=GlobalThreadInfoMap.find(Pid);
+	string name;
+	if(I != GlobalThreadInfoMap.end())
+	 name=I->second.Name;
+	file<<Pid<<" "<<name<<": deadlock. res="<<RDK::sntoa(res)<<endl;
 	file.flush();
+	file.close();
    }
   }
+  #endif
   return false;
  }
  return false;
-
-/*
- if(!m_UnlockEvent)
-  return false;
- if (WaitForSingleObject(m_UnlockEvent, 0) == WAIT_TIMEOUT)
- {
-  if(lock_id>=0 && lock_id == LockId)
-   return true;
- }
- else
- {
-  if (WaitForSingleObject(m_UnlockEvent, INFINITE) == WAIT_TIMEOUT)
-   return false;
-  ResetEvent(m_UnlockEvent);
-  LockId=lock_id;
- }
- return true;
-*/
 }
 
 bool UGenericMutexWin::shared_unlock(void)
@@ -121,38 +105,59 @@ bool UGenericMutexWin::shared_unlock(void)
 using namespace std;
  if(!m_UnlockEvent)
   return true;
-// if (WaitForSingleObject(m_UnlockEvent, 0) != WAIT_TIMEOUT)
-//  return true;
 
+ #ifdef RDK_MUTEX_DEADLOCK_DEBUG
   if(DebugId>=0)
   {
-   fstream file((RDK::sntoa(DebugId)+".lock.txt").c_str(),ios::out | ios::app);
+   fstream file((RDK::sntoa(DebugId,2)+".lock.txt").c_str(),ios::out | ios::app);
    if(file)
    {
-	file<<Pid<<": unlock"<<endl;
+	std::map<int,TUThreadInfo>::const_iterator I=GlobalThreadInfoMap.find(Pid);
+	string name;
+	if(I != GlobalThreadInfoMap.end())
+	 name=I->second.Name;
+	file<<Pid<<" "<<name<<": unlock"<<endl;
 	file.flush();
    }
   }
- Pid=0;
-// SetEvent(m_UnlockEvent);
+ #endif
  BOOL res=ReleaseMutex(m_UnlockEvent);
+
+ #ifdef RDK_MUTEX_DEADLOCK_DEBUG
+ DWORD error=GetLastError();
+ #endif
  if(res != TRUE)
-  throw 2;
-// LockId=-1;
+ {
+  #ifdef RDK_MUTEX_DEADLOCK_DEBUG
+  if(DebugId>=0)
+  {
+   fstream file((RDK::sntoa(DebugId,2)+".lock.txt").c_str(),ios::out | ios::app);
+   if(file)
+   {
+	std::map<int,TUThreadInfo>::const_iterator I=GlobalThreadInfoMap.find(Pid);
+	string old_name, new_name;
+	if(I != GlobalThreadInfoMap.end())
+	 old_name=I->second.Name;
+
+	int new_id=GetCurrentThreadId();
+	I=GlobalThreadInfoMap.find(new_id);
+	if(I != GlobalThreadInfoMap.end())
+	 new_name=I->second.Name;
+
+	file<<"fail unlock old PID="<<RDK::sntoa(Pid)<<" "<<old_name<<" curr Pid="<<RDK::sntoa(new_id)<<" "<<new_name<<" Error="<<RDK::sntoa(error)<<endl;
+	file.flush();
+	file.close();
+   }
+  }
+  #endif
+  return false;
+ }
+ #ifdef RDK_MUTEX_DEADLOCK_DEBUG
+ Pid=0;
+ #endif
+
  return true;
 }
-
-/*bool UGenericMutexWin::wait(int timeout)
-{
- if(!m_UnlockEvent)
-  return false;
-
- if (WaitForSingleObject(m_UnlockEvent, timeout) != WAIT_TIMEOUT)
- {
-  return true;
- }
- return false;
-} */
 
 bool UGenericMutexWin::exclusive_lock(void)
 {

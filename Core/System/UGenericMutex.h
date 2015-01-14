@@ -4,11 +4,26 @@
 #define GenericMutexH
 
 #include "../../Deploy/Include/initdll_defs.h"
+#include <map>
+#include <string>
+
+#ifdef RDK_MUTEX_DEADLOCK_DEBUG
+struct RDK_LIB_TYPE TUThreadInfo
+{
+std::string Name;
+
+int Pid;
+};
+
+extern RDK_LIB_TYPE std::map<int,TUThreadInfo> GlobalThreadInfoMap;
+#endif
 
 class RDK_LIB_TYPE UGenericMutex
 {
+#ifdef RDK_MUTEX_DEADLOCK_DEBUG
 public:
 int DebugId;
+#endif
 
 protected:
 

@@ -407,8 +407,8 @@ void __fastcall TEngineThread::Execute(void)
 	MModel_SetDoubleSourceTime(ChannelIndex,UEngineMonitorForm->EngineMonitorFrame->GetServerTimeStamp(ChannelIndex)/(86400.0*1000.0)/*dt.operator double()*/);
 
    #ifdef RDK_VIDEO
-   Synchronize(BeforeCalculate);
-//   BeforeCalculate();
+ //  Synchronize(BeforeCalculate);
+   BeforeCalculate();
 //   Source.SetRes(640,480,RDK::ubmRGB24);
 //   MModel_SetComponentBitmapOutput(ChannelIndex, "", "Output", &Source,true);
    #endif
@@ -582,6 +582,12 @@ bool TUEngineMonitorFrame::SetNumChannels(int num)
  for(int i=old_size;i<num;i++)
  {
   ThreadChannels[i]=new TEngineThread(i,CalculateMode[i],MinInterstepsInterval[i],false);
+  #ifdef RDK_MUTEX_DEADLOCK_DEBUG
+  TUThreadInfo info;
+  info.Pid=ThreadChannels[i]->ThreadID;
+  info.Name=string("ThreadChannels ")+RDK::sntoa(i);
+  GlobalThreadInfoMap[info.Pid]=info;
+  #endif
   ThreadChannels[i]->Priority=RDK_DEFAULT_THREAD_PRIORITY;
 
   ThreadChannels[i]->FreeOnTerminate=false;

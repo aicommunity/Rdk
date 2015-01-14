@@ -1534,8 +1534,8 @@ void __fastcall TVideoCaptureThreadVideoGrabber::ExecuteCaptureInit(void)
  VideoGrabber->FrameCaptureWithoutOverlay=true;
  VideoGrabber->FrameGrabberRGBFormat=fgf_RGB24;
  VideoGrabber->LicenseString=TVGrabberLicenseString;
- VideoGrabber->SyncCommands=true;
- VideoGrabber->EventNotificationSynchrone=true;
+ VideoGrabber->SyncCommands=false;
+ VideoGrabber->EventNotificationSynchrone=false;
 // VideoGrabber->OnFrameBitmapEventSynchrone=true;
  VideoGrabber->OpenURLAsync=true;
  if(DesiredResolutionFlag)
