@@ -25,10 +25,10 @@ std::vector<UGenericMutexExclusiveLocker*> LockerList;
 UGenericMutex* GlobalMutex;
 
 /// Текущий выбраный канал
-UELockVar<int> SelectedChannelIndex;
+RDK::UELockVar<int> SelectedChannelIndex;
 
 /// Текущее число каналов
-UELockVar<int> NumEngines;
+RDK::UELockVar<int> NumEngines;
 
 /// Данные текущего выбранного канала
 RDK::UEPtr<RDK::UEngine> Engine;
