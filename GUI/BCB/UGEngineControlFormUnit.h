@@ -373,7 +373,7 @@ void ASaveParameters(RDK::USerStorageXML &xml);
 void ALoadParameters(RDK::USerStorageXML &xml);
 
 // Создает новый проект
-void CreateProject(TProjectConfig &project_config);
+void CreateProject(RDK::TProjectConfig &project_config);
 
 // Закрывает существущий проект
 void CloseProject(void);

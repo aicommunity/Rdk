@@ -102,11 +102,9 @@ inherited UComponentsListFrame: TUComponentsListFrame
           inherited cmbListEdit: TComboBox
             Left = 32
             Top = 287
-            Height = 21
             OnKeyPress = EnchancedSG1cmbListEditKeyPress
             ExplicitLeft = 32
             ExplicitTop = 287
-            ExplicitHeight = 21
           end
         end
         object HeaderControl2: THeaderControl
@@ -308,11 +306,9 @@ inherited UComponentsListFrame: TUComponentsListFrame
           inherited cmbListEdit: TComboBox
             Left = 32
             Top = 287
-            Height = 21
             OnKeyPress = EnchancedSG2cmbListEditKeyPress
             ExplicitLeft = 32
             ExplicitTop = 287
-            ExplicitHeight = 21
           end
         end
       end

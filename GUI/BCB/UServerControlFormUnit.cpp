@@ -29,6 +29,9 @@
 #pragma link "TUHttpServerUnit"
 #pragma link "TUVisualControllerFrameUnit"
 #pragma resource "*.dfm"
+
+using namespace RDK;
+
 TUServerControlForm *UServerControlForm;
 
 /// Ёкзепл€р класса приложени€

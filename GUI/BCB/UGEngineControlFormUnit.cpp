@@ -48,6 +48,8 @@
 #pragma resource "*.dfm"
 TUGEngineControlForm *UGEngineControlForm;
 
+using namespace RDK;
+
 /// Ёкзепл€р прототипа декодера команд
 RDK::URpcDecoderInternal RdkRpcDecoder;
 
@@ -429,7 +431,7 @@ void TUGEngineControlForm::ALoadParameters(RDK::USerStorageXML &xml)
 }
 
 // —оздает новый проект
-void TUGEngineControlForm::CreateProject(TProjectConfig &project_config)
+void TUGEngineControlForm::CreateProject(RDK::TProjectConfig &project_config)
 {
  CloseProject();
 
@@ -490,7 +492,7 @@ void TUGEngineControlForm::CreateProject(TProjectConfig &project_config)
 
  for(size_t i=0;i<project_config.NumChannels;i++)
  {
-  TProjectChannelConfig &channel=project_config.ChannelsConfig[i];
+  RDK::TProjectChannelConfig &channel=project_config.ChannelsConfig[i];
 
   std::string suffix;
   if(i>0)

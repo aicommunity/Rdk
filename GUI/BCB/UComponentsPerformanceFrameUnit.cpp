@@ -53,7 +53,7 @@ void TUComponentsPerformanceFrame::AUpdateInterface(void)
  unsigned long long model_time=Model_GetFullStepDuration("");
  unsigned long long sum=0;
  unsigned long long ext_gui=Model_GetInterstepsInterval("");
- unsigned long long gui_update=UIVisualControllerStorage::GetUpdateTime();
+ unsigned long long gui_update=RDK::UIVisualControllerStorage::GetUpdateTime();
 
  std::vector<long long> comp_time;
  size_t last_comps_index=ComponentNames.size();
