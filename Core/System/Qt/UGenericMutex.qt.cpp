@@ -5,7 +5,7 @@
 #include "../UGenericMutex.h"
 #include <QMutex>
 
-class UGenericMutexQt: public UGenericMutex
+class RDK_LIB_TYPE UGenericMutexQt: public UGenericMutex
 {
 private:
 QMutex m_mutex;
