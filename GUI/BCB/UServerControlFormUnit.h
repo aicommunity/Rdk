@@ -27,7 +27,7 @@
 #include <IdCustomTCPServer.hpp>
 #include <IdTCPServer.hpp>
 
-typedef std::pair<std::string, RDK::UParamT> UServerCommand;
+//typedef std::pair<std::string, RDK::UParamT> UServerCommand;
 
 /// Стандартная функция, осуществляющую декодирование параметров запроса
 //int StandardCommandRequestDecoder(UServerCommand &source, UServerCommand &dest);
@@ -183,7 +183,7 @@ int PerformancePushIndex;
 HANDLE CommandQueueUnlockEvent;
 
 // Очередь команд
-std::list<UServerCommand > CommandQueue;
+std::list<RDK::URpcCommandInternal > CommandQueue;
 
 // Очередь обработанных команд
 std::list<std::pair<std::string,RDK::UEPtr<RDK::URpcCommand> > > ProcessedCommandQueue;
@@ -193,7 +193,7 @@ std::map<std::string, RDK::UTransferReader> PacketReaders;
 //RDK::UTransferPacket Packet;
 std::string PacketXml;
 
-UServerCommand CurrentProcessedCommand;
+RDK::URpcCommandInternal CurrentProcessedCommand;
 
 TThreadList *Clients;
 
@@ -209,15 +209,15 @@ const char* ControlRemoteCall(const char *request, int &return_value, std::vecto
 // Функция, обрабатывающая команды управления сервером
 // Возвращает true если команда была найдена и обработана
 //bool ProcessControlCommand(const std::string &cmd_name, UServerCommand &args, std::string &response_type, UParamT &response_data);
-bool ProcessControlCommand(const UServerCommand &args, std::string &response_type, RDK::UParamT &response_data, std::vector<RDK::UParamT> &binary_data);
+bool ProcessControlCommand(const RDK::URpcCommandInternal &args, std::string &response_type, RDK::UParamT &response_data, std::vector<RDK::UParamT> &binary_data);
 
 // Функция, обрабатывающая команды удаленного вызова процедур
 // Возвращает true если команда была найдена и обработана
 //bool ProcessRPCCommand(int channel, const std::string &cmd_name, UServerCommand &args, std::string &response_type, UParamT &response_data);
-bool ProcessRPCCommand(const UServerCommand &args, std::string &response_type, RDK::UParamT &response_data);
+bool ProcessRPCCommand(const RDK::URpcCommandInternal &args, std::string &response_type, RDK::UParamT &response_data);
 
 // Метод, обрабатывающий команды управления PTZ камерами
-bool ProcessPtzCommand(const UServerCommand &args, std::string &response_type, RDK::UParamT &response_data);
+bool ProcessPtzCommand(const RDK::URpcCommandInternal &args, std::string &response_type, RDK::UParamT &response_data);
 
 /// Кодирует строку в вектор
 void ConvertStringToVector(const std::string &source, RDK::UParamT &dest);

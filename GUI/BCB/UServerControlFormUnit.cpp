@@ -403,7 +403,7 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
 }
 
 // Функция, обрабатывающая команды управления сервером
-bool TUServerControlForm::ProcessControlCommand(const UServerCommand &args, std::string &response_type, UParamT &response_data, std::vector<RDK::UParamT> &binary_data)
+bool TUServerControlForm::ProcessControlCommand(const RDK::URpcCommandInternal &args, std::string &response_type, UParamT &response_data, std::vector<RDK::UParamT> &binary_data)
 {
 // UServerCommand::const_iterator I;
  std::string request;
@@ -417,9 +417,9 @@ bool TUServerControlForm::ProcessControlCommand(const UServerCommand &args, std:
   return true;
  }
   */
- ConvertVectorToString(args.second, request);
+// ConvertVectorToString(args.second, request);
  int response_status=0;
- const char* response=ControlRemoteCall(request.c_str(), response_status, binary_data);
+ const char* response=ControlRemoteCall(args.Request.c_str(), response_status, binary_data);
 
  if(response_status == 2001)
   return false;
@@ -435,16 +435,16 @@ bool TUServerControlForm::ProcessControlCommand(const UServerCommand &args, std:
  return true;
 }
 
-bool TUServerControlForm::ProcessRPCCommand(const UServerCommand &args, std::string &response_type, UParamT &response_data)
+bool TUServerControlForm::ProcessRPCCommand(const RDK::URpcCommandInternal &args, std::string &response_type, UParamT &response_data)
 {
  std::string request;
 
  response_type="text/plain";
 
- ConvertVectorToString(args.second, request);
+// ConvertVectorToString(args.second, request);
  int response_status=0;
  int channel_index=0;
- const char* response=RemoteCall(request.c_str(), response_status,channel_index);
+ const char* response=RemoteCall(args.Request.c_str(), response_status,channel_index);
 
  if(response_status == 2001)
   return false;
@@ -457,7 +457,7 @@ bool TUServerControlForm::ProcessRPCCommand(const UServerCommand &args, std::str
  return true;
 }
 
-bool TUServerControlForm::ProcessPtzCommand(const UServerCommand &args, std::string &response_type, UParamT &response_data)
+bool TUServerControlForm::ProcessPtzCommand(const RDK::URpcCommandInternal &args, std::string &response_type, UParamT &response_data)
 {
 // UServerCommand::const_iterator I;
  std::string request;
@@ -472,10 +472,10 @@ bool TUServerControlForm::ProcessPtzCommand(const UServerCommand &args, std::str
  }
 
  ConvertVectorToString(I->second, request);*/
- ConvertVectorToString(args.second, request);
+// ConvertVectorToString(args.second, request);
  int response_status=0;
  int channel_index=0;
- const char* response=PtzRemoteCall(request.c_str(), response_status, channel_index);
+ const char* response=PtzRemoteCall(args.Request.c_str(), response_status, channel_index);
 
  if(response_status == 2001)
   return false;
@@ -1294,7 +1294,7 @@ try {
   CurrentProcessedCommand=CommandQueue.front();
   CommandQueue.pop_front();
 
-  if(CurrentProcessedCommand.second.empty())
+  if(CurrentProcessedCommand.Request.empty())
   {
    Sleep(1);
    CommandQueue.clear();
@@ -1311,18 +1311,18 @@ try {
 //   if(CommandResponseEncoder)
 //   {
 //	CommandResponseEncoder(ResponseType, Response, EncodedResponse);
-	SendCommandResponse(CurrentProcessedCommand.first, Response, BinaryResponse);
+	SendCommandResponse(CurrentProcessedCommand.RecepientId, Response, BinaryResponse);
 //   }
   }
   else
   {
-   std::string request;
-   ConvertVectorToString(CurrentProcessedCommand.second, request);
+//   std::string request;
+//   ConvertVectorToString(CurrentProcessedCommand.second, request);
 
-   RDK::UEPtr<RDK::URpcCommand> pcmd= new RDK::URpcCommandInternal(request);
-   pcmd->RecepientId=CurrentProcessedCommand.first;
+   RDK::UEPtr<RDK::URpcCommand> pcmd= new RDK::URpcCommandInternal(CurrentProcessedCommand);
+//   pcmd->RecepientId=CurrentProcessedCommand.first;
    std::pair<std::string,RDK::UEPtr<RDK::URpcCommand> > cmd_pair;
-   cmd_pair.first=CurrentProcessedCommand.first;
+   cmd_pair.first=CurrentProcessedCommand.RecepientId;
    cmd_pair.second=pcmd;
    ProcessedCommandQueue.push_back(cmd_pair);
 
@@ -1566,13 +1566,15 @@ try
 	 if(packet.GetNumParams()>0)
 	 {
 //	  PacketXml.resize(Packet.GetParamSize(0));
-	  UServerCommand args;
+//	  RDK::URpcCommandInternal args;
 //	  args.resize(Packet.GetParamSize(0));
 //	  if(Packet.GetParamSize(0)>0)
 //	   memcpy(&args[0],&Packet(0)[0],Packet.GetParamSize(0));
-	  UServerCommand cmd;
-	  cmd.first=bind;
-	  cmd.second=packet(0);
+	  RDK::URpcCommandInternal cmd;
+	  cmd.RecepientId=bind;
+	  std::string req;
+	  ConvertVectorToString(packet(0),req);
+	  cmd.Request=req;
 	  if(WaitForSingleObject(CommandQueueUnlockEvent,3500) == WAIT_TIMEOUT)
 	  {
 	   Engine_LogMessage(RDK_EX_DEBUG, (std::string("Command unlock event timeout: ")+bind).c_str());
@@ -1582,9 +1584,7 @@ try
 	   ResetEvent(CommandQueueUnlockEvent);
 	   CommandQueue.push_back(cmd);
 	   SetEvent(CommandQueueUnlockEvent);
-	   std::string str;
-	   ConvertVectorToString(cmd.second,str);
-	   Engine_LogMessage(RDK_EX_DEBUG, (std::string("Command pushed to queue: \n")+str).c_str());
+	   Engine_LogMessage(RDK_EX_DEBUG, (std::string("Command pushed to queue: \n")+cmd.Request).c_str());
 	  }
 	 }
 	}
