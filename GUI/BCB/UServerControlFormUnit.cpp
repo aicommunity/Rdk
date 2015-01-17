@@ -39,7 +39,7 @@ extern RDK::UApplication RdkApplication;
 
 
 /// Стандартная функция, осуществляющую декодирование параметров запроса
-int StandardCommandRequestDecoder(UServerCommand &source, UServerCommand &dest)
+/*int StandardCommandRequestDecoder(UServerCommand &source, UServerCommand &dest)
 {
  dest=source;
  return 0;
@@ -50,7 +50,7 @@ int StandardCommandResponseEncoder(const std::string &response_type, UParamT &so
 {
  dest=source;
  return 0;
-}
+} */
 
 
 //---------------------------------------------------------------------------
@@ -58,8 +58,8 @@ __fastcall TUServerControlForm::TUServerControlForm(TComponent* Owner)
 	: TUVisualControllerForm(Owner)
 {
  MemStream=0;
- CommandRequestDecoder=StandardCommandRequestDecoder;
- CommandResponseEncoder=StandardCommandResponseEncoder;
+// CommandRequestDecoder=StandardCommandRequestDecoder;
+// CommandResponseEncoder=StandardCommandResponseEncoder;
  AverageIterations=4;
 
  Clients=0;
@@ -1308,11 +1308,11 @@ try {
 
   if(is_processed)
   {
-   if(CommandResponseEncoder)
-   {
-	CommandResponseEncoder(ResponseType, Response, EncodedResponse);
-	SendCommandResponse(CurrentProcessedCommand.first, EncodedResponse, BinaryResponse);
-   }
+//   if(CommandResponseEncoder)
+//   {
+//	CommandResponseEncoder(ResponseType, Response, EncodedResponse);
+	SendCommandResponse(CurrentProcessedCommand.first, Response, BinaryResponse);
+//   }
   }
   else
   {
@@ -1320,6 +1320,7 @@ try {
    ConvertVectorToString(CurrentProcessedCommand.second, request);
 
    RDK::UEPtr<RDK::URpcCommand> pcmd= new RDK::URpcCommandInternal(request);
+   pcmd->RecepientId=CurrentProcessedCommand.first;
    std::pair<std::string,RDK::UEPtr<RDK::URpcCommand> > cmd_pair;
    cmd_pair.first=CurrentProcessedCommand.first;
    cmd_pair.second=pcmd;
@@ -1339,23 +1340,23 @@ try {
 
    if(pcmd=RdkApplication.GetRpcDispatcher()->PopProcessedCommand())
    {
-	std::list<pair<std::string,RDK::UEPtr<RDK::URpcCommand> > >::iterator I=ProcessedCommandQueue.begin();
+//	std::list<pair<std::string,RDK::UEPtr<RDK::URpcCommand> > >::iterator I=ProcessedCommandQueue.begin();
 	RDK::UEPtr<RDK::URpcCommandInternal> pcmd_int=RDK::dynamic_pointer_cast<RDK::URpcCommandInternal>(pcmd);
-	for(; I != ProcessedCommandQueue.end();++I)
+/*	for(; I != ProcessedCommandQueue.end();++I)
 	{
 	 if(I->second == pcmd)
 	 {
-
-	  if(CommandResponseEncoder)
-	  {
+*/
+//	  if(CommandResponseEncoder)
+//	  {
 	   ConvertStringToVector(pcmd_int->Response, Response);
-	   CommandResponseEncoder(ResponseType, Response, EncodedResponse);
-	   SendCommandResponse(I->first, EncodedResponse, BinaryResponse);
-	  }
-	  ProcessedCommandQueue.erase(I);
+//	   CommandResponseEncoder(ResponseType, Response, EncodedResponse);
+	   SendCommandResponse(pcmd->RecepientId, Response, BinaryResponse);
+//	  }
+/*	  ProcessedCommandQueue.erase(I);
 	  break;
 	 }
-	}
+	} */
 	delete pcmd;
    }
    }
@@ -1422,12 +1423,12 @@ try {
 	if(I->second == pcmd)
 	{
 
-	 if(CommandResponseEncoder)
-	 {
+//	 if(CommandResponseEncoder)
+//	 {
 	  ConvertStringToVector(pcmd_int->Response, Response);
-	  CommandResponseEncoder(ResponseType, Response, EncodedResponse);
-	  SendCommandResponse(I->first, EncodedResponse, BinaryResponse);
-	 }
+//	  CommandResponseEncoder(ResponseType, Response, EncodedResponse);
+	  SendCommandResponse(I->first, Response, BinaryResponse);
+//	 }
 	 ProcessedCommandQueue.erase(I);
 	 break;
 	}
@@ -1529,6 +1530,8 @@ void __fastcall TUServerControlForm::IdTCPServerExecute(TIdContext *AContext)
   return;
  ResetEvent(ServerReceivingNotInProgress);
 
+try
+{
  vector<unsigned char> client_buffer;
  TIdBytes VBuffer;
  int length=AContext->Connection->IOHandler->InputBuffer->Size;
@@ -1590,6 +1593,17 @@ void __fastcall TUServerControlForm::IdTCPServerExecute(TIdContext *AContext)
  }
  else
   Sleep(10);
+}
+catch(Exception &ex)
+{
+ SetEvent(ServerReceivingNotInProgress);
+ Engine_LogMessage(RDK_EX_DEBUG, (std::string("Server Tcp command receiver error: ")+AnsiString(ex.Message).c_str()).c_str());
+}
+catch(...)
+{
+ SetEvent(ServerReceivingNotInProgress);
+ throw;
+}
 //  Memo1.Lines.Add(LLine);
 //  AContext.Connection.IOHandler.WriteLn('OK');
 //  TIdNotify.NotifyMethod( StopStartServerdMessage );

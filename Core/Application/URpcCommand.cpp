@@ -23,6 +23,12 @@ URpcCommand::~URpcCommand(void)
 // --------------------------
 // Методы доступа к данным
 // --------------------------
+/// Идентификатор получателя ответа
+const std::string& URpcCommand::GetRecepientId(void) const
+{
+ return RecepientId;
+}
+
 /// Идентификатор команды
 unsigned URpcCommand::GetCmdId(void) const
 {

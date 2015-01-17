@@ -27,14 +27,13 @@
 #include <IdCustomTCPServer.hpp>
 #include <IdTCPServer.hpp>
 
-//typedef std::map<std::string,std::vector<char> > UServerCommand;
 typedef std::pair<std::string, RDK::UParamT> UServerCommand;
 
 /// —тандартна€ функци€, осуществл€ющую декодирование параметров запроса
-int StandardCommandRequestDecoder(UServerCommand &source, UServerCommand &dest);
+//int StandardCommandRequestDecoder(UServerCommand &source, UServerCommand &dest);
 
 /// —тандартна€ функци€, осуществл€ющую кодирование параметров ответа
-int StandardCommandResponseEncoder(const std::string &response_type, RDK::UParamT &source, RDK::UParamT &dest);
+//int StandardCommandResponseEncoder(const std::string &response_type, RDK::UParamT &source, RDK::UParamT &dest);
 
 //---------------------------------------------------------------------------
 class TUServerControlForm : public TUVisualControllerForm
@@ -132,10 +131,10 @@ int AverageIterations;
 // -----------------
 
 /// ”казатель на функцию, осуществл€ющую декодирование параметров запроса
-int (*CommandRequestDecoder)(UServerCommand &source, UServerCommand &dest);
+//int (*CommandRequestDecoder)(UServerCommand &source, UServerCommand &dest);
 
 /// ”казатель на функцию, осуществл€ющую кодирование параметров ответа
-int (*CommandResponseEncoder)(const std::string &response_type, RDK::UParamT &source, RDK::UParamT &dest);
+//int (*CommandResponseEncoder)(const std::string &response_type, RDK::UParamT &source, RDK::UParamT &dest);
 
 /// –ежим (тип) запроса
 /// 0 - обращение к системе управлени€ свервером (Control)
@@ -148,7 +147,7 @@ int (*CommandResponseEncoder)(const std::string &response_type, RDK::UParamT &so
 int Mode;
 
 /// ќбработанный список команды запроса
-UServerCommand DecodedRequest;
+//UServerCommand DecodedRequest;
 
 /// ќтвет
 RDK::UParamT Response;
