@@ -150,17 +150,17 @@ int Mode;
 //UServerCommand DecodedRequest;
 
 /// Ответ
-RDK::UParamT Response;
+//RDK::UParamT Response;
 
 /// Дополнительные бинарные данные ответа
-std::vector<RDK::UParamT> BinaryResponse;
+//std::vector<RDK::UParamT> BinaryResponse;
 
 
 /// Упакованный для отправки ответ
-RDK::UParamT EncodedResponse;
+//RDK::UParamT EncodedResponse;
 
 /// Тип ответа
-std::string ResponseType;
+//std::string ResponseType;
 
 /// Команда запроса
 std::string Command;

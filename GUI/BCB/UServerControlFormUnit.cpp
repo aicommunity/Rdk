@@ -405,8 +405,13 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
 // Функция, обрабатывающая команды управления сервером
 void __fastcall TUServerControlForm::ProcessControlCommand(void)
 {
- if(ProcessControlCommand(CurrentProcessedCommand, ResponseType, Response, BinaryResponse))
-  SendCommandResponse(CurrentProcessedCommand.RecepientId, Response, BinaryResponse);
+ RDK::UParamT response;
+ std::vector<RDK::UParamT> binary_response;
+ RDK::UParamT encoded_response;
+ std::string response_type;
+
+ if(ProcessControlCommand(CurrentProcessedCommand, response_type, response, binary_response))
+  SendCommandResponse(CurrentProcessedCommand.RecepientId, response, binary_response);
 }
 
 bool TUServerControlForm::ProcessControlCommand(const RDK::URpcCommandInternal &args, std::string &response_type, UParamT &response_data, std::vector<RDK::UParamT> &binary_data)
@@ -552,7 +557,7 @@ void TUServerControlForm::SendCommandResponse(TIdContext *context, UParamT &dest
   memcpy(&arr[0],&buffer[0],buffer.size());
 
 	 context->Connection->IOHandler->Write(arr, arr.get_length());
-	 context->Connection->IOHandler->WriteBufferFlush();
+//	 context->Connection->IOHandler->WriteBufferFlush();
 	 std::string str;
 	str.resize(packet.GetParamSize(0));
 	memcpy(&str[0],&(packet.operator ()((0),0)), packet.GetParamSize(0));
@@ -605,8 +610,10 @@ void TUServerControlForm::SendCommandError(const std::string &client_binding, in
  result.WriteString("Error",sntoa(error_code));
  result.Save(ControlResponseString);
  UParamT error_response;
+ std::vector<RDK::UParamT> binary_response;
+
  ConvertStringToVector(ControlResponseString, error_response);
- SendCommandResponse(client_binding, error_response, BinaryResponse);
+ SendCommandResponse(client_binding, error_response, binary_response);
 }
 
 /// Устанавливает параметры сервера
@@ -1297,152 +1304,20 @@ void __fastcall TUServerControlForm::PageControlChange(TObject *Sender)
 
 void __fastcall TUServerControlForm::CommandTimerTimer(TObject *Sender)
 {
- if(WaitForSingleObject(CommandQueueUnlockEvent,10) == WAIT_TIMEOUT)
-  return;
-
-try {
- ResetEvent(CommandQueueUnlockEvent);
- bool is_breaked=false;
- while(!CommandQueue.empty())
- {
-  CurrentProcessedCommand=CommandQueue.front();
-  CommandQueue.pop_front();
-
-  if(CurrentProcessedCommand.Request.empty())
-  {
-   Sleep(1);
-   CommandQueue.clear();
-   SetEvent(CommandQueueUnlockEvent);
-   return;
-  }
-
-  SetEvent(CommandQueueUnlockEvent);
-  BinaryResponse.resize(0);
-
-   RDK::UEPtr<RDK::URpcCommand> pcmd= new RDK::URpcCommandInternal(CurrentProcessedCommand);
-//   pcmd->RecepientId=CurrentProcessedCommand.first;
-   std::pair<std::string,RDK::UEPtr<RDK::URpcCommand> > cmd_pair;
-   cmd_pair.first=CurrentProcessedCommand.RecepientId;
-   cmd_pair.second=pcmd;
-   ProcessedCommandQueue.push_back(cmd_pair);
-
-   RdkApplication.GetRpcDispatcher()->PushCommand(pcmd);
-
-  // Обработка очереди выполненных команд диспетчера
-//  RDK::UEPtr<RDK::URpcCommand> pcmd;
-
-  if(WaitForSingleObject(CommandQueueUnlockEvent,10) != WAIT_TIMEOUT)
-  {
-   ResetEvent(CommandQueueUnlockEvent);
-   try
-   {
-
-   if(pcmd=RdkApplication.GetRpcDispatcher()->PopProcessedCommand())
-   {
-//	std::list<pair<std::string,RDK::UEPtr<RDK::URpcCommand> > >::iterator I=ProcessedCommandQueue.begin();
-	RDK::UEPtr<RDK::URpcCommandInternal> pcmd_int=RDK::dynamic_pointer_cast<RDK::URpcCommandInternal>(pcmd);
-/*	for(; I != ProcessedCommandQueue.end();++I)
-	{
-	 if(I->second == pcmd)
-	 {
-*/
-//	  if(CommandResponseEncoder)
-//	  {
-	   ConvertStringToVector(pcmd_int->Response, Response);
-//	   CommandResponseEncoder(ResponseType, Response, EncodedResponse);
-	   SendCommandResponse(pcmd->RecepientId, Response, BinaryResponse);
-//	  }
-/*	  ProcessedCommandQueue.erase(I);
-	  break;
-	 }
-	} */
-	delete pcmd;
-   }
-   }
-   catch(...)
-   {
-	SetEvent(CommandQueueUnlockEvent);
-    throw;
-   }
-   SetEvent(CommandQueueUnlockEvent);
-  }
-
-
-		 /*
-  if(!is_processed)
-   is_processed=ProcessRPCCommand(CurrentProcessedCommand, ResponseType, Response);
-
-  if(!is_processed)
-   is_processed=ProcessPtzCommand(CurrentProcessedCommand, ResponseType, Response);
-
-  if(!is_processed)
-  {
-  }
-  if(CommandResponseEncoder)
-  {
-   CommandResponseEncoder(ResponseType, Response, EncodedResponse);
-   SendCommandResponse(CurrentProcessedCommand.first, EncodedResponse, BinaryResponse);
-  }
-  else
-  {
-//   SendCommandErrorResponse(CurrentProcessedCommand,0);
-  }
-       */
-
-  if(WaitForSingleObject(CommandQueueUnlockEvent,10) != WAIT_TIMEOUT)
-  {
-   is_breaked=true;
-   break;
-  }
-  ResetEvent(CommandQueueUnlockEvent);
- }
-
- if(!is_breaked)
-  SetEvent(CommandQueueUnlockEvent);
-
+try
+{
   // Обработка очереди выполненных команд диспетчера
   RDK::UEPtr<RDK::URpcCommand> pcmd;
+  RDK::UParamT response;
+  std::vector<RDK::UParamT> binary_response;
+
 
   while(pcmd=RdkApplication.GetRpcDispatcher()->PopProcessedCommand())
   {
-   if(WaitForSingleObject(CommandQueueUnlockEvent,1000) == WAIT_TIMEOUT)
-   {
-	Engine_LogMessage(RDK_EX_DEBUG, "CommandQueueUnlockEvent timeout");
-	delete pcmd;
-    break;
-   }
-   ResetEvent(CommandQueueUnlockEvent);
-   try
-   {
-
-   std::list<pair<std::string,RDK::UEPtr<RDK::URpcCommand> > >::iterator I=ProcessedCommandQueue.begin();
    RDK::UEPtr<RDK::URpcCommandInternal> pcmd_int=RDK::dynamic_pointer_cast<RDK::URpcCommandInternal>(pcmd);
-   for(; I != ProcessedCommandQueue.end();++I)
-   {
-	if(I->second == pcmd)
-	{
-
-//	 if(CommandResponseEncoder)
-//	 {
-	  ConvertStringToVector(pcmd_int->Response, Response);
-//	  CommandResponseEncoder(ResponseType, Response, EncodedResponse);
-	  SendCommandResponse(I->first, Response, BinaryResponse);
-//	 }
-	 ProcessedCommandQueue.erase(I);
-	 break;
-	}
-   }
-   }
-   catch(...)
-   {
-	SetEvent(CommandQueueUnlockEvent);
-    throw;
-   }
-   SetEvent(CommandQueueUnlockEvent);
-
-   delete pcmd;
+   ConvertStringToVector(pcmd_int->Response, response);
+   SendCommandResponse(pcmd_int->RecepientId, response, binary_response);
   }
-
 }
 catch (...)
 {
@@ -1525,8 +1400,8 @@ void __fastcall TUServerControlForm::IdTCPServerDisconnect(TIdContext *AContext)
 
 void __fastcall TUServerControlForm::IdTCPServerExecute(TIdContext *AContext)
 {
- if(WaitForSingleObject(ServerReceivingNotInProgress, 10000) == WAIT_TIMEOUT)
-  return;
+// if(WaitForSingleObject(ServerReceivingNotInProgress, 10000) == WAIT_TIMEOUT)
+//  return;
  ResetEvent(ServerReceivingNotInProgress);
 
 try
@@ -1578,11 +1453,19 @@ try
 
 	  if(!RdkApplication.GetRpcDispatcher()->IsCmdSupported(&CurrentProcessedCommand))
 	  {
-	   if(ProcessControlCommand(CurrentProcessedCommand, ResponseType, Response, BinaryResponse))
-		SendCommandResponse(AContext, Response, BinaryResponse);
+	   ProcessControlCommand();
+//	   if(ProcessControlCommand(CurrentProcessedCommand, ResponseType, Response, BinaryResponse))
+//		SendCommandResponse(AContext, Response, BinaryResponse);
 	  }
 	  else
 	  {
+	   RDK::UEPtr<RDK::URpcCommand> pcmd= new RDK::URpcCommandInternal(CurrentProcessedCommand);
+	   std::pair<std::string,RDK::UEPtr<RDK::URpcCommand> > cmd_pair;
+	   cmd_pair.first=CurrentProcessedCommand.RecepientId;
+	   cmd_pair.second=pcmd;
+	   RdkApplication.GetRpcDispatcher()->PushCommand(pcmd);
+	   Engine_LogMessage(RDK_EX_DEBUG, (std::string("Command pushed to queue: \n")+CurrentProcessedCommand.Request).c_str());
+/*
 	   if(WaitForSingleObject(CommandQueueUnlockEvent,3500) == WAIT_TIMEOUT)
 	   {
 		Engine_LogMessage(RDK_EX_DEBUG, (std::string("Command unlock event timeout: ")+bind).c_str());
@@ -1590,10 +1473,9 @@ try
 	   else
 	   {
 		ResetEvent(CommandQueueUnlockEvent);
-		CommandQueue.push_back(CurrentProcessedCommand);
+		ProcessedCommandQueue.push_back(cmd_pair);
 		SetEvent(CommandQueueUnlockEvent);
-		Engine_LogMessage(RDK_EX_DEBUG, (std::string("Command pushed to queue: \n")+CurrentProcessedCommand.Request).c_str());
-	   }
+	   }  */
 	  }
 	 }
 	}

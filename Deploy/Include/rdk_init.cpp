@@ -2156,7 +2156,8 @@ const char* RDK_CALL MEngine_GetLog(int engine_index, int &error_level)
 // Записывает в лог новое сообщение
 int RDK_CALL Engine_LogMessage(int log_level, const char *message)
 {
-
+// if(log_level == RDK_EX_DEBUG && !DllManager.GetEngine()->Env_GetDebugMode())
+//  return 0;
  return DllManager.GetEngineLock()->Engine_LogMessage(log_level, message);
 }
 
@@ -2165,6 +2166,8 @@ int RDK_CALL MEngine_LogMessage(int engine_index, int log_level, const char *mes
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 0;
 
+// if(log_level == RDK_EX_DEBUG && !DllManager.GetEngine(engine_index)->Env_GetDebugMode())
+//  return 0;
  return DllManager.GetEngineLock(engine_index)->Engine_LogMessage(log_level, message);
 }
 

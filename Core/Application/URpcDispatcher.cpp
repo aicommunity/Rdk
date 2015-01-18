@@ -75,7 +75,7 @@ void URpcDispatcher::Dispatch(void)
 
    if(!command)
    {
-	boost::this_thread::sleep(boost::posix_time::milliseconds(10));
+	boost::this_thread::sleep(boost::posix_time::milliseconds(1));
 	continue;
    }
 
@@ -121,7 +121,7 @@ bool URpcDispatcher::SyncDispatchCommand(const UEPtr<URpcCommand> &command, unsi
  {
   if(!PopProcessedCommand(cmd_id))
   {
-   boost::this_thread::sleep(boost::posix_time::milliseconds(10));
+   boost::this_thread::sleep(boost::posix_time::milliseconds(1));
    continue;
   }
   else
