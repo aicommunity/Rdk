@@ -44,6 +44,10 @@ virtual ~URpcDispatcher(void);
 // --------------------------
 // Методы управления
 // --------------------------
+/// Проверяет, поддерживается ли заданная команда диспетчером
+/// ожидает декодированную команду, иначе вернет false
+virtual bool IsCmdSupported(const UEPtr<URpcCommand> &command) const;
+
 /// Устанавливает прототип декодера
 /// Вызывает смену всех текущих прототипов
 virtual void SetDecoderPrototype(const UEPtr<URpcDecoder> &decoder);

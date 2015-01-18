@@ -209,6 +209,7 @@ const char* ControlRemoteCall(const char *request, int &return_value, std::vecto
 // Функция, обрабатывающая команды управления сервером
 // Возвращает true если команда была найдена и обработана
 //bool ProcessControlCommand(const std::string &cmd_name, UServerCommand &args, std::string &response_type, UParamT &response_data);
+void __fastcall ProcessControlCommand(void);
 bool ProcessControlCommand(const RDK::URpcCommandInternal &args, std::string &response_type, RDK::UParamT &response_data, std::vector<RDK::UParamT> &binary_data);
 
 // Функция, обрабатывающая команды удаленного вызова процедур
@@ -231,6 +232,7 @@ void ConvertVectorToString(const RDK::UParamT &source, std::string &dest);
 //int DecodeParamAsInteger(const std::string &param_name, const UServerCommand &args, int &value);
 
 /// Отправляет ответ на команду
+void SendCommandResponse(TIdContext *context, RDK::UParamT &dest, std::vector<RDK::UParamT> &binary_data);
 void SendCommandResponse(const std::string &client_binding, RDK::UParamT &dest, std::vector<RDK::UParamT> &binary_data);
 
 /// Отправляет сообщение об ошибке в ответ на команду

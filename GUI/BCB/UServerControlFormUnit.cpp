@@ -403,6 +403,12 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
 }
 
 // Функция, обрабатывающая команды управления сервером
+void __fastcall TUServerControlForm::ProcessControlCommand(void)
+{
+ if(ProcessControlCommand(CurrentProcessedCommand, ResponseType, Response, BinaryResponse))
+  SendCommandResponse(CurrentProcessedCommand.RecepientId, Response, BinaryResponse);
+}
+
 bool TUServerControlForm::ProcessControlCommand(const RDK::URpcCommandInternal &args, std::string &response_type, UParamT &response_data, std::vector<RDK::UParamT> &binary_data)
 {
 // UServerCommand::const_iterator I;
@@ -526,7 +532,7 @@ void TUServerControlForm::ConvertVectorToString(const UParamT &source, std::stri
 
 
 /// Отправляет ответ на команду
-void TUServerControlForm::SendCommandResponse(const std::string &client_binding, UParamT &dest, std::vector<RDK::UParamT> &binary_data)
+void TUServerControlForm::SendCommandResponse(TIdContext *context, UParamT &dest, std::vector<RDK::UParamT> &binary_data)
 {
  UTransferPacket packet;
 
@@ -541,11 +547,23 @@ void TUServerControlForm::SendCommandResponse(const std::string &client_binding,
  RDK::UParamT buffer;
  packet.Save(buffer);
 
- if(IdTCPServer->Active && !dest.empty())
- {
   TByteDynArray arr;
   arr.set_length(buffer.size());
   memcpy(&arr[0],&buffer[0],buffer.size());
+
+	 context->Connection->IOHandler->Write(arr, arr.get_length());
+	 context->Connection->IOHandler->WriteBufferFlush();
+	 std::string str;
+	str.resize(packet.GetParamSize(0));
+	memcpy(&str[0],&(packet.operator ()((0),0)), packet.GetParamSize(0));
+	Engine_LogMessage(RDK_EX_DEBUG,(string("Response Sent: ")+str).c_str());
+}
+
+
+void TUServerControlForm::SendCommandResponse(const std::string &client_binding, UParamT &dest, std::vector<RDK::UParamT> &binary_data)
+{
+ if(IdTCPServer->Active && !dest.empty())
+ {
   try
   {
    TList *list=IdTCPServer->Contexts->LockList();
@@ -559,12 +577,8 @@ void TUServerControlForm::SendCommandResponse(const std::string &client_binding,
 
 	if(current_bind == client_binding)
 	{
-	 context->Connection->IOHandler->Write(arr, arr.get_length());
-	 context->Connection->IOHandler->WriteBufferFlush();
-	 std::string str;
-	str.resize(packet.GetParamSize(0));
-	memcpy(&str[0],&(packet.operator ()((0),0)), packet.GetParamSize(0));
-	Engine_LogMessage(RDK_EX_DEBUG,(string("Response Sent: ")+str+string(" To: ")+current_bind).c_str());
+	 SendCommandResponse(context, dest, binary_data);
+	 Engine_LogMessage(RDK_EX_DEBUG,(string("Response Sent: ")+string(" To: ")+current_bind).c_str());
 	 break;
 	}
    }
@@ -1304,20 +1318,6 @@ try {
 
   SetEvent(CommandQueueUnlockEvent);
   BinaryResponse.resize(0);
-  bool is_processed=ProcessControlCommand(CurrentProcessedCommand, ResponseType, Response, BinaryResponse);
-
-  if(is_processed)
-  {
-//   if(CommandResponseEncoder)
-//   {
-//	CommandResponseEncoder(ResponseType, Response, EncodedResponse);
-	SendCommandResponse(CurrentProcessedCommand.RecepientId, Response, BinaryResponse);
-//   }
-  }
-  else
-  {
-//   std::string request;
-//   ConvertVectorToString(CurrentProcessedCommand.second, request);
 
    RDK::UEPtr<RDK::URpcCommand> pcmd= new RDK::URpcCommandInternal(CurrentProcessedCommand);
 //   pcmd->RecepientId=CurrentProcessedCommand.first;
@@ -1327,10 +1327,9 @@ try {
    ProcessedCommandQueue.push_back(cmd_pair);
 
    RdkApplication.GetRpcDispatcher()->PushCommand(pcmd);
-  }
 
   // Обработка очереди выполненных команд диспетчера
-  RDK::UEPtr<RDK::URpcCommand> pcmd;
+//  RDK::UEPtr<RDK::URpcCommand> pcmd;
 
   if(WaitForSingleObject(CommandQueueUnlockEvent,10) != WAIT_TIMEOUT)
   {
@@ -1565,26 +1564,36 @@ try
 	 I->second.DelFirstPacket();
 	 if(packet.GetNumParams()>0)
 	 {
-//	  PacketXml.resize(Packet.GetParamSize(0));
-//	  RDK::URpcCommandInternal args;
-//	  args.resize(Packet.GetParamSize(0));
-//	  if(Packet.GetParamSize(0)>0)
-//	   memcpy(&args[0],&Packet(0)[0],Packet.GetParamSize(0));
-	  RDK::URpcCommandInternal cmd;
-	  cmd.RecepientId=bind;
+//	  RDK::URpcCommandInternal cmd;
+
+	  CurrentProcessedCommand.RecepientId=bind;
 	  std::string req;
 	  ConvertVectorToString(packet(0),req);
-	  cmd.Request=req;
-	  if(WaitForSingleObject(CommandQueueUnlockEvent,3500) == WAIT_TIMEOUT)
+	  CurrentProcessedCommand.Request=req;
+	  CurrentProcessedCommand.IsDecoded=false;
+	  if(!CurrentProcessedCommand.DecodeBasicData())
 	  {
-	   Engine_LogMessage(RDK_EX_DEBUG, (std::string("Command unlock event timeout: ")+bind).c_str());
+	   // TODO: пишем в лог ошибку декодирования
+	  }
+
+	  if(!RdkApplication.GetRpcDispatcher()->IsCmdSupported(&CurrentProcessedCommand))
+	  {
+	   if(ProcessControlCommand(CurrentProcessedCommand, ResponseType, Response, BinaryResponse))
+		SendCommandResponse(AContext, Response, BinaryResponse);
 	  }
 	  else
 	  {
-	   ResetEvent(CommandQueueUnlockEvent);
-	   CommandQueue.push_back(cmd);
-	   SetEvent(CommandQueueUnlockEvent);
-	   Engine_LogMessage(RDK_EX_DEBUG, (std::string("Command pushed to queue: \n")+cmd.Request).c_str());
+	   if(WaitForSingleObject(CommandQueueUnlockEvent,3500) == WAIT_TIMEOUT)
+	   {
+		Engine_LogMessage(RDK_EX_DEBUG, (std::string("Command unlock event timeout: ")+bind).c_str());
+	   }
+	   else
+	   {
+		ResetEvent(CommandQueueUnlockEvent);
+		CommandQueue.push_back(CurrentProcessedCommand);
+		SetEvent(CommandQueueUnlockEvent);
+		Engine_LogMessage(RDK_EX_DEBUG, (std::string("Command pushed to queue: \n")+CurrentProcessedCommand.Request).c_str());
+	   }
 	  }
 	 }
 	}

@@ -43,6 +43,10 @@ virtual void SetDispatcher(URpcDispatcher* dispatcher);
 /// Создает копию этого декодера
 virtual URpcDecoder* New(void)=0;
 
+/// Проверяет, поддерживается ли команда диспетчером
+/// ожидает, что команда уже декодирована иначе всегда возвращает false
+virtual bool IsCmdSupported(const UEPtr<URpcCommand> &command) const=0;
+
 /// Метод треда
 virtual void Process(void);
 
