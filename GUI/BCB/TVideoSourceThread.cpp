@@ -730,6 +730,7 @@ bool __fastcall TVideoCaptureThread::StopCapture(void)
  LastStartTime=0;
  HaltCapture();
  ConnectionState=1;
+ ResetEvent(StartInProgressEvent);
  Sleep(100);
  return true;
 }
@@ -1625,24 +1626,18 @@ void __fastcall TVideoCaptureThreadVideoGrabber::OnFrameCaptureCompleted(System:
 
 void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberPlayerEndOfStream(TObject *Sender)
 {
-	//ShowMessage("Stream ended");
-	/*if(restarter)
-	{
-        restarter->RestartSource();
-	} */
 	PulseEvent(SourceStoppedEvent);
 	if(RepeatFlag)
 	{
-	   /*	VideoGrabber->PlayerFramePosition=1;
-		VideoGrabber->StartPreview() */
 		VideoGrabber->RunPlayer();
 		SetLastTimeStampSafe(0);
 	}
 	else
 	{
-     MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, std::string("VideoGrabber stopped by end of frames").c_str());
+	 MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, std::string("VideoGrabber stopped by end of frames").c_str());
 	 Stop(0);
 	}
+
 }
 
 void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberOnPlayerOpened(System::TObject* Sender)
@@ -1906,6 +1901,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::ARecreateCapture(void)
   VideoGrabber->Stop();
   WaitForSingleObject(GetFrameNotInProgress(),10000);
   delete VideoGrabber;
+  VideoGrabber=0;
  }
  ExecuteCaptureInit();
  MEngine_LogMessage(ChannelIndex, RDK_EX_DEBUG, (std::string("TVideoCaptureThreadVideoGrabberIpCamera::ARecreateCapture ")).c_str());
