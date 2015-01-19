@@ -390,7 +390,7 @@ RDK::UEPtr<RDK::UContainer> RDKDllManager::GetModel(int engine_index)
  if(engine_index<0 || engine_index>=int(EnvironmentList.size()))
   return 0;
 
- UEPtr<UEnvironment> environment=EnvironmentList[engine_index];
+ RDK::UEPtr<RDK::UEnvironment> environment=EnvironmentList[engine_index];
  if(environment)
   return environment->GetModel();
 
@@ -422,19 +422,19 @@ UGenericMutex* RDKDllManager::GetEngineMutex(int index)
 RDK::UELockPtr<RDK::UEngine> RDKDllManager::GetEngineLock(void)
 {
 #ifdef RDK_ENGINE_UNLOCKED
- return UELockPtr<RDK::UEngine>(0,GetEngine());
+ return RDK::UELockPtr<RDK::UEngine>(0,GetEngine());
 #else
 // UGenericMutexSharedLocker lock(GlobalMutex);
- return UELockPtr<RDK::UEngine>(MutexList[SelectedChannelIndex],GetEngine());
+ return RDK::UELockPtr<RDK::UEngine>(MutexList[SelectedChannelIndex],GetEngine());
 #endif
 }
 
 RDK::UELockPtr<RDK::UEngine> RDKDllManager::GetEngineLock(int engine_index)
 {
 #ifdef RDK_ENGINE_UNLOCKED
- return UELockPtr<RDK::UEngine>(0,GetEngine(engine_index));
+ return RDK::UELockPtr<RDK::UEngine>(0,GetEngine(engine_index));
 #else
- return UELockPtr<RDK::UEngine>(MutexList[engine_index],GetEngine(engine_index));
+ return RDK::UELockPtr<RDK::UEngine>(MutexList[engine_index],GetEngine(engine_index));
 #endif
 }
 
@@ -442,19 +442,19 @@ RDK::UELockPtr<RDK::UEngine> RDKDllManager::GetEngineLock(int engine_index)
 RDK::UELockPtr<RDK::UEnvironment> RDKDllManager::GetEnvironmentLock(void)
 {
 #ifdef RDK_ENGINE_UNLOCKED
- return UELockPtr<RDK::UEnvironment>(0,GetEnvironment());
+ return RDK::UELockPtr<RDK::UEnvironment>(0,GetEnvironment());
 #else
 // UGenericMutexSharedLocker lock(GlobalMutex);
- return UELockPtr<RDK::UEnvironment>(MutexList[SelectedChannelIndex],GetEnvironment());
+ return RDK::UELockPtr<RDK::UEnvironment>(MutexList[SelectedChannelIndex],GetEnvironment());
 #endif
 }
 
 RDK::UELockPtr<RDK::UEnvironment> RDKDllManager::GetEnvironmentLock(int engine_index)
 {
 #ifdef RDK_ENGINE_UNLOCKED
- return UELockPtr<RDK::UEnvironment>(0,GetEnvironment(engine_index));
+ return RDK::UELockPtr<RDK::UEnvironment>(0,GetEnvironment(engine_index));
 #else
- return UELockPtr<RDK::UEnvironment>(MutexList[engine_index],GetEnvironment(engine_index));
+ return RDK::UELockPtr<RDK::UEnvironment>(MutexList[engine_index],GetEnvironment(engine_index));
 #endif
 }
 
@@ -462,19 +462,19 @@ RDK::UELockPtr<RDK::UEnvironment> RDKDllManager::GetEnvironmentLock(int engine_i
 RDK::UELockPtr<RDK::UStorage> RDKDllManager::GetStorageLock(void)
 {
 #ifdef RDK_ENGINE_UNLOCKED
- return UELockPtr<RDK::UStorage>(0,GetStorage());
+ return RDK::UELockPtr<RDK::UStorage>(0,GetStorage());
 #else
 // UGenericMutexSharedLocker lock(GlobalMutex);
- return UELockPtr<RDK::UStorage>(MutexList[SelectedChannelIndex],GetStorage());
+ return RDK::UELockPtr<RDK::UStorage>(MutexList[SelectedChannelIndex],GetStorage());
 #endif
 }
 
 RDK::UELockPtr<RDK::UStorage> RDKDllManager::GetStorageLock(int engine_index)
 {
 #ifdef RDK_ENGINE_UNLOCKED
- return UELockPtr<RDK::UStorage>(0,GetStorage(engine_index));
+ return RDK::UELockPtr<RDK::UStorage>(0,GetStorage(engine_index));
 #else
- return UELockPtr<RDK::UStorage>(MutexList[engine_index],GetStorage(engine_index));
+ return RDK::UELockPtr<RDK::UStorage>(MutexList[engine_index],GetStorage(engine_index));
 #endif
 }
 
@@ -482,19 +482,19 @@ RDK::UELockPtr<RDK::UStorage> RDKDllManager::GetStorageLock(int engine_index)
 RDK::UELockPtr<RDK::UContainer> RDKDllManager::GetModelLock(void)
 {
 #ifdef RDK_ENGINE_UNLOCKED
- return UELockPtr<RDK::UContainer>(0,GetModel());
+ return RDK::UELockPtr<RDK::UContainer>(0,GetModel());
 #else
 // UGenericMutexSharedLocker lock(GlobalMutex);
- return UELockPtr<RDK::UContainer>(MutexList[SelectedChannelIndex],GetModel());
+ return RDK::UELockPtr<RDK::UContainer>(MutexList[SelectedChannelIndex],GetModel());
 #endif
 }
 
 RDK::UELockPtr<RDK::UContainer> RDKDllManager::GetModelLock(int engine_index)
 {
 #ifdef RDK_ENGINE_UNLOCKED
- return UELockPtr<RDK::UContainer>(0,GetModel(engine_index));
+ return RDK::UELockPtr<RDK::UContainer>(0,GetModel(engine_index));
 #else
- return UELockPtr<RDK::UContainer>(MutexList[engine_index],GetModel(engine_index));
+ return RDK::UELockPtr<RDK::UContainer>(MutexList[engine_index],GetModel(engine_index));
 #endif
 }
 // --------------------------

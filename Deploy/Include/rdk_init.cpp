@@ -65,7 +65,7 @@ int RDK_CALL Engine_LoadFonts(void)
   // Грузим шрифты
   std::vector<std::string> font_names;
   std::string font_path=RdkSystemDir+"Fonts/";
-  FindFilesList(font_path, "*.fnt", true, font_names);
+  RDK::FindFilesList(font_path, "*.fnt", true, font_names);
   if(DllManager.GetEnvironment())
    DllManager.GetEnvironment()->LogMessage(RDK_EX_DEBUG, std::string("Loading fonts form ")+font_path+"\n");
 
@@ -78,7 +78,7 @@ int RDK_CALL Engine_LoadFonts(void)
 	DllManager.GetEnvironment()->LogMessage(RDK_EX_DEBUG, std::string("Loaded font ")+font_names[i]+"\n");
   }
  }
- catch (UException &exception)
+ catch (RDK::UException &exception)
  {
   if(DllManager.GetEngine())
    DllManager.GetEngine()->ProcessException(exception);
