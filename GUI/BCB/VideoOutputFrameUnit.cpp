@@ -151,16 +151,24 @@ void TVideoOutputFrame::Init(int mode)
    return;
 
   UnInit();
-  CaptureThread=TakeVideoCapureThread(mode,this,false);
+  CaptureThread=TakeVideoCapureThread(mode,this,true);
   if(!CaptureThread)
    return;
   CaptureThread->Priority=RDK_DEFAULT_THREAD_PRIORITY;
   CaptureThread->SetChannelIndex(FrameIndex);
 
-  TVideoCaptureThreadVideoGrabber *thread=dynamic_cast<TVideoCaptureThreadVideoGrabber*>(CaptureThread);
-  if(thread && thread->GetVideoGrabber())
-   thread->GetVideoGrabber()->LicenseString=TVGrabberLicenseString;
+  #ifdef RDK_MUTEX_DEADLOCK_DEBUG
+  TUThreadInfo info;
+  info.Pid=CaptureThread->ThreadID;
+  info.Name=string("CaptureThread ")+RDK::sntoa(FrameIndex);
+  GlobalThreadInfoMap[info.Pid]=info;
+  #endif
 
+//  TVideoCaptureThreadVideoGrabber *thread=dynamic_cast<TVideoCaptureThreadVideoGrabber*>(CaptureThread);
+//  if(thread && thread->GetVideoGrabber())
+//   thread->GetVideoGrabber()->LicenseString=TVGrabberLicenseString;
+
+  CaptureThread->Resume();
   CaptureThread->LoadParameters(VideoSourceOptions[mode]);
  }
  UpdateInterface();
@@ -183,16 +191,23 @@ void TVideoOutputFrame::Init(int mode, RDK::USerStorageXML &raw_xml_data)
    return;
 
   UnInit();
-  CaptureThread=TakeVideoCapureThread(mode,this,false);
+  CaptureThread=TakeVideoCapureThread(mode,this,true);
   if(!CaptureThread)
    return;
   CaptureThread->Priority=RDK_DEFAULT_THREAD_PRIORITY;
   CaptureThread->SetChannelIndex(FrameIndex);
 
-  TVideoCaptureThreadVideoGrabber *thread=dynamic_cast<TVideoCaptureThreadVideoGrabber*>(CaptureThread);
-  if(thread)
-   thread->GetVideoGrabber()->LicenseString=TVGrabberLicenseString;
+  #ifdef RDK_MUTEX_DEADLOCK_DEBUG
+  TUThreadInfo info;
+  info.Pid=CaptureThread->ThreadID;
+  info.Name=string("CaptureThread ")+RDK::sntoa(FrameIndex);
+  GlobalThreadInfoMap[info.Pid]=info;
+  #endif
+//  TVideoCaptureThreadVideoGrabber *thread=dynamic_cast<TVideoCaptureThreadVideoGrabber*>(CaptureThread);
+//  if(thread)
+//   thread->GetVideoGrabber()->LicenseString=TVGrabberLicenseString;
 
+  CaptureThread->Resume();
   CaptureThread->LoadParametersEx(raw_xml_data);
   CaptureThread->SaveParameters(VideoSourceOptions[mode]);
  }
@@ -1242,7 +1257,7 @@ void TVideoOutputFrame::ABeforeCalculate(void)
  }
 
  {
-  SendToComponentIO();
+/*  SendToComponentIO();
   if(SendPointsByStepCheckBox->Checked)
   {
    SendAsMatrixButtonClick(this);
@@ -1252,7 +1267,7 @@ void TVideoOutputFrame::ABeforeCalculate(void)
   {
    MyVideoOutputToolsForm->DelAllPointsButtonClick(this);
   }
-
+  */
   if(num_channels == 1)
   {
    if(Model_Check() && SendBmpSource.GetByteLength()>0)

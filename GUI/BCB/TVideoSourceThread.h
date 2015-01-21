@@ -139,8 +139,14 @@ HANDLE CaptureEnabled;
 HANDLE CalcCompleteEvent;
 
 /// Событие блокировки очереди
-HANDLE CommandUnlockEvent;
+HANDLE CommandUnlockMutex;
 
+public:
+/// Глобальное событие блокировки запуска видеозахвата
+static HANDLE GlobalStartUnlockMutex;
+
+/// Локальное событие информаирования о запуске видеозахвата
+HANDLE StartInProgressEvent;
 
 public:
 
@@ -251,7 +257,7 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 HANDLE GetFrameNotInProgress(void) const;
 
 /// Выставлено всегда. Сбрасывается на время доступа к изображению
-HANDLE GetSourceUnlock(void) const;
+//HANDLE GetSourceUnlock(void) const;
 
 /// Выставляется на время работы видеозахвата
 HANDLE GetCaptureEnabled(void) const;
@@ -316,6 +322,8 @@ virtual bool __fastcall HaltCapture(void);
 
 virtual bool __fastcall RecreateCapture(void);
 virtual void __fastcall ARecreateCapture(void);
+
+virtual void __fastcall ReloadParameters(void);
 
 //bool SetThreadState(int value);
 // --------------------------
@@ -602,6 +610,9 @@ protected: // События
 /// Выставляется при получении очередного кадра
 HANDLE VideoGrabberCompleted;
 
+/// Событие блокировки изображения для конвертации
+HANDLE ConvertMutex;
+
 protected: // Временные переменные
 
 
@@ -642,7 +653,6 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 virtual void __fastcall ExecuteCaptureInit(void);
 virtual void __fastcall ExecuteCaptureUnInit(void);
 TVideoGrabber* GetVideoGrabber(void);
-
 void __fastcall OnFrameCaptureCompleted(System::TObject* Sender, void * FrameBitmap, int BitmapWidth, int BitmapHeight, unsigned FrameNumber, __int64 FrameTime, TFrameCaptureDest DestType, System::UnicodeString FileName, bool Success, int FrameId);
 
 void __fastcall VideoGrabberLog(TObject *Sender,
@@ -657,6 +667,8 @@ void __fastcall VideoGrabberPlayerEndOfStream(TObject *Sender);
 void __fastcall VideoGrabberOnPlayerOpened(System::TObject* Sender);
 
 void __fastcall VideoGrabberOnThreadSync(System::TObject* Sender, TThreadSyncPoint ThreadSyncPoint);
+
+void __fastcall VideoGrabberOnPreviewStarted(TObject *Sender);
 
 virtual void __fastcall Calculate(void);
 

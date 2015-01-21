@@ -26,6 +26,24 @@ URpcDispatcher::~URpcDispatcher(void)
 // --------------------------
 // Методы управления
 // --------------------------
+/// Проверяет, поддерживается ли заданная команда диспетчером
+/// ожидает декодированную команду, иначе вернет false
+bool URpcDispatcher::IsCmdSupported(const UEPtr<URpcCommand> &command) const
+{
+ if(!command || !command->IsDecoded)
+  return false;
+
+ int channel_index=command->GetChannelIndex();
+ if(channel_index<-1 || channel_index>=int(Decoders.size()))
+  return false;
+
+ // Заглушка
+ if(channel_index<0)
+  channel_index=0;
+
+ return Decoders[channel_index]->IsCmdSupported(command);
+}
+
 /// Устанавливает декодер
 /// Вызывает смену всех текущих прототипов
 void URpcDispatcher::SetDecoderPrototype(const UEPtr<URpcDecoder> &decoder)
@@ -57,7 +75,7 @@ void URpcDispatcher::Dispatch(void)
 
    if(!command)
    {
-	boost::this_thread::sleep(boost::posix_time::milliseconds(10));
+	boost::this_thread::sleep(boost::posix_time::milliseconds(1));
 	continue;
    }
 
@@ -103,7 +121,7 @@ bool URpcDispatcher::SyncDispatchCommand(const UEPtr<URpcCommand> &command, unsi
  {
   if(!PopProcessedCommand(cmd_id))
   {
-   boost::this_thread::sleep(boost::posix_time::milliseconds(10));
+   boost::this_thread::sleep(boost::posix_time::milliseconds(1));
    continue;
   }
   else

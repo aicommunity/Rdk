@@ -7,10 +7,10 @@
 #include "UComponentsListFrameUnit.h"
 #include "rdk_initdll.h"
 #include "myrdk.h"
-#include "UCRPerseptronFormUnit.h"
-#include "UCRSampleFormUnit.h"
-#include "UCRTeacherPerseptronDLFormUnit.h"
-#include "UCRTeacherPerseptronBPFormUnit.h"
+//#include "UCRPerseptronFormUnit.h"
+//#include "UCRSampleFormUnit.h"
+//#include "UCRTeacherPerseptronDLFormUnit.h"
+//#include "UCRTeacherPerseptronBPFormUnit.h"
 #include "UComponentsListFormUnit.h"
 #include "UListInputFormUnit.h"
 #include "UDrawEngineFrameUnit.h"
@@ -25,6 +25,7 @@ TUComponentsListFrame *UComponentsListFrame;
 // Собственно список форм
 std::map<std::string, TUVisualControllerForm*> TUComponentsListFrame::ComponentControllers;
 
+using namespace RDK;
 //---------------------------------------------------------------------------
 __fastcall TUComponentsListFrame::TUComponentsListFrame(TComponent* Owner)
 	: TUVisualControllerFrame(Owner)

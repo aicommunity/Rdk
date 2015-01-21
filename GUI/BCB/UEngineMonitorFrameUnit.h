@@ -13,6 +13,7 @@
 #include <IniFiles.hpp>
 #include "TUVisualControllerFrameUnit.h"
 #include <vector>
+#include <map>
 #include "myrdk.h"
 #include "TUVisualController.h"
 #include "TServerBroadcasterCommonUnit.h"

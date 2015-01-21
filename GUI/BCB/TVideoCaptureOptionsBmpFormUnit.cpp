@@ -67,7 +67,8 @@ void __fastcall TVideoCaptureOptionsBmpForm::FormCreate(TObject *Sender)
  descr.Name="Picture File";
  descr.Position=3;
  VideoCaptureOptionsForm->AddVideoSourceOptionsFrame(VideoSourceType,descr);
- VideoCaptureOptionsForm->AddVideoSourcePrototypes(VideoSourceType,new TVideoCaptureThreadBmp(0,true));
+ if(!VideoCaptureOptionsForm->CheckVideoSourcePrototypes(VideoSourceType))
+  VideoCaptureOptionsForm->AddVideoSourcePrototypes(VideoSourceType,new TVideoCaptureThreadBmp(0,true));
 }
 //---------------------------------------------------------------------------
 void __fastcall TVideoCaptureOptionsBmpForm::OpenImageFileButtonClick(TObject *Sender)

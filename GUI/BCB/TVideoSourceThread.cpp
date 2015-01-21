@@ -27,6 +27,8 @@ TVideoCaptureThreadCmdDescr::TVideoCaptureThreadCmdDescr(TVideoCaptureThreadComm
 }
 
 
+HANDLE TVideoCaptureThread::GlobalStartUnlockMutex=NULL;
+
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
@@ -37,12 +39,13 @@ __fastcall TVideoCaptureThread::TVideoCaptureThread(TVideoOutputFrame *frame, bo
  LastTimeStamp=0;
  RealLastTimeStamp=0;
  CaptureEnabled=CreateEvent(0,TRUE,0,0);
- SourceUnlock=CreateEvent(0,TRUE,TRUE,0);
- SourceWriteUnlock=CreateEvent(0,TRUE,TRUE,0);
+ SourceUnlock=CreateMutex(0,FALSE,0);//CreateEvent(0,TRUE,TRUE,0);
+ SourceWriteUnlock=CreateMutex(0,FALSE,0);//CreateEvent(0,TRUE,TRUE,0);
  FrameNotInProgress=CreateEvent(0,TRUE,TRUE,0);
  CalcCompleteEvent=CreateEvent(0,TRUE,TRUE,0);
  SourceStoppedEvent=CreateEvent(0,FALSE,FALSE,0);
- CommandUnlockEvent=CreateEvent(0,TRUE,TRUE,0);
+ CommandUnlockMutex=CreateMutex(0,FALSE,0);//CreateEvent(0,TRUE,TRUE,0);
+ StartInProgressEvent=CreateEvent(0,TRUE,0,0);
  ReadSource=&Source[0];
  WriteSource=&Source[1];
  RepeatFlag=false;
@@ -59,6 +62,9 @@ __fastcall TVideoCaptureThread::TVideoCaptureThread(TVideoOutputFrame *frame, bo
  DesiredWidth=640;
  DesiredHeight=480;
  DesiredResolutionFlag=false;
+
+ if(!GlobalStartUnlockMutex)
+  TVideoCaptureThread::GlobalStartUnlockMutex=CreateMutex(0,FALSE,0);
 }
 
 __fastcall TVideoCaptureThread::~TVideoCaptureThread(void)
@@ -78,7 +84,8 @@ __fastcall TVideoCaptureThread::~TVideoCaptureThread(void)
  CloseHandle(FrameNotInProgress);
  CloseHandle(CalcCompleteEvent);
  CloseHandle(SourceStoppedEvent);
- CloseHandle(CommandUnlockEvent);
+ CloseHandle(CommandUnlockMutex);
+ CloseHandle(StartInProgressEvent);
 }
 // --------------------------
 
@@ -88,21 +95,19 @@ __fastcall TVideoCaptureThread::~TVideoCaptureThread(void)
 /// Добавляет команду в очередь
 void TVideoCaptureThread::AddCommand(TVideoCaptureThreadCmdDescr value)
 {
- WaitForSingleObject(CommandUnlockEvent,INFINITE);
- ResetEvent(CommandUnlockEvent);
+ WaitForSingleObject(CommandUnlockMutex,INFINITE);
  std::pair<double,TVideoCaptureThreadCmdDescr> cmd(TDateTime::CurrentDateTime().operator double(),value);
  CommandQueue.push_back(cmd);
 // CommandQueue[TDateTime::CurrentDateTime().operator double()]=value;
- SetEvent(CommandUnlockEvent);
+ ReleaseMutex(CommandUnlockMutex);
 }
 
 /// Очищает очередь
 void TVideoCaptureThread::ClearCommandQueue(void)
 {
- WaitForSingleObject(CommandUnlockEvent,INFINITE);
- ResetEvent(CommandUnlockEvent);
+ WaitForSingleObject(CommandUnlockMutex,INFINITE);
  CommandQueue.clear();
- SetEvent(CommandUnlockEvent);
+ ReleaseMutex(CommandUnlockMutex);
 }
 
 /// Осуществляет обработку очередной команды из очереди
@@ -111,11 +116,20 @@ void TVideoCaptureThread::ProcessCommandQueue(void)
  double cmd_time=0;
  TVideoCaptureThreadCmdDescr cmd;
  double curr_time=TDateTime::CurrentDateTime().operator double();
- WaitForSingleObject(CommandUnlockEvent,INFINITE);
- ResetEvent(CommandUnlockEvent);
+ WaitForSingleObject(CommandUnlockMutex,INFINITE);
  std::list<std::pair<double,TVideoCaptureThreadCmdDescr> >::iterator I=CommandQueue.begin();
  for(;I != CommandQueue.end();++I)
  {
+  if(I->second.Id == tvcStart && I->second.ExecTime<=curr_time)
+  {
+   if(WaitForSingleObject(GlobalStartUnlockMutex, 10) != WAIT_OBJECT_0)
+   {
+//	CommandQueue.erase(I);
+	break;
+   }
+//   ResetEvent(GlobalStartUnlockEvent);
+  }
+
   if(I->second.ExecTime<=curr_time)
   {
    cmd_time=I->first;
@@ -124,7 +138,7 @@ void TVideoCaptureThread::ProcessCommandQueue(void)
    break;
   }
  }
- SetEvent(CommandUnlockEvent);
+ ReleaseMutex(CommandUnlockMutex);
 
  switch(cmd.Id)
  {
@@ -133,14 +147,11 @@ void TVideoCaptureThread::ProcessCommandQueue(void)
 
  case tvcStart:
   RunCapture();
-//  SetThreadState(1);
   SetEvent(CaptureEnabled);
  break;
 
  case tvcStop:
   ResetEvent(CaptureEnabled);
-//  SetThreadState(0);
-//  ConnectionState=1;
   StopCapture();
  break;
 
@@ -149,7 +160,6 @@ void TVideoCaptureThread::ProcessCommandQueue(void)
 
  case tvcRecreate:
   ResetEvent(CaptureEnabled);
-//  SetThreadState(0);
   ConnectionState=0;
   RecreateCapture();
  break;
@@ -318,26 +328,27 @@ bool TVideoCaptureThread::SetFrame(TVideoOutputFrame * frame)
 /// Возвращает разрешение потока
 int TVideoCaptureThread::GetWidth(void)
 {
- if(WaitForSingleObject(SourceUnlock,30) == WAIT_TIMEOUT)
+ if(WaitForSingleObject(SourceUnlock,30) != WAIT_OBJECT_0)
   return -1;
- ResetEvent(SourceUnlock);
+// ResetEvent(SourceUnlock);
  int res=0;
  if(ReadSource)
   res=ReadSource->GetWidth();
- SetEvent(SourceUnlock);
+// SetEvent(SourceUnlock);
+ ReleaseMutex(SourceUnlock);
 
  return res;
 }
 
 int TVideoCaptureThread::GetHeight(void)
 {
- if(WaitForSingleObject(SourceUnlock,30) == WAIT_TIMEOUT)
+ if(WaitForSingleObject(SourceUnlock,30) != WAIT_OBJECT_0)
   return -1;
- ResetEvent(SourceUnlock);
+// ResetEvent(SourceUnlock);
  int res=0;
  if(ReadSource)
   res=ReadSource->GetHeight();
- SetEvent(SourceUnlock);
+ ReleaseMutex(SourceUnlock);
 
  return res;
 }
@@ -410,10 +421,10 @@ HANDLE TVideoCaptureThread::GetFrameNotInProgress(void) const
 }
 
 /// Выставлено всегда. Сбрасывается на время доступа к изображению
-HANDLE TVideoCaptureThread::GetSourceUnlock(void) const
+/*HANDLE TVideoCaptureThread::GetSourceUnlock(void) const
 {
  return SourceUnlock;
-}
+} */
 
 /// Выставляется на время работы видеозахвата
 HANDLE TVideoCaptureThread::GetCaptureEnabled(void) const
@@ -435,7 +446,8 @@ HANDLE TVideoCaptureThread::GetCalcCompleteEvent(void) const
 // --------------------------
 void __fastcall TVideoCaptureThread::Start(double time)
 {
- AddCommand(TVideoCaptureThreadCmdDescr(tvcRecreate,time));
+ ClearCommandQueue();
+// AddCommand(TVideoCaptureThreadCmdDescr(tvcRecreate,time));
  AddCommand(TVideoCaptureThreadCmdDescr(tvcStart,time));
  AStart(time);
 }
@@ -443,6 +455,7 @@ void __fastcall TVideoCaptureThread::Start(double time)
 void __fastcall TVideoCaptureThread::Stop(double time)
 {
  AStop(time);
+ ClearCommandQueue();
  AddCommand(TVideoCaptureThreadCmdDescr(tvcStop,time));
 }
 
@@ -465,9 +478,13 @@ void __fastcall TVideoCaptureThread::AfterCalculate(void)
 
 void __fastcall TVideoCaptureThread::Execute(void)
 {
- ExecuteCaptureInit();
+ Synchronize(ExecuteCaptureInit);
+// ExecuteCaptureInit();
  while(!Terminated)
  {
+  if(WaitForSingleObject(StartInProgressEvent,0) == WAIT_TIMEOUT)
+   ReleaseMutex(GlobalStartUnlockMutex);
+
   if(WaitForSingleObject(CaptureEnabled,30) == WAIT_TIMEOUT)
   {
    ProcessCommandQueue();
@@ -475,6 +492,8 @@ void __fastcall TVideoCaptureThread::Execute(void)
    continue;
   }
   ProcessCommandQueue();
+//  Application->HandleMessage();
+ // Application->ProcessMessages();
 
   double curr_time=TDateTime::CurrentDateTime().operator double();
   if(CheckConnection() == 2 && curr_time-RealLastTimeStamp>double(MaxInterstepInterval)/(86400.0*1000.0))
@@ -506,8 +525,10 @@ void __fastcall TVideoCaptureThread::Execute(void)
 	  SetEvent(FrameNotInProgress);
 	  continue;
 	 }
-	 AddCommand(TVideoCaptureThreadCmdDescr(tvcHalt,0));
-	 AddCommand(TVideoCaptureThreadCmdDescr(tvcRecreate,0));
+//	 AddCommand(TVideoCaptureThreadCmdDescr(tvcHalt,0));
+//	 AddCommand(TVideoCaptureThreadCmdDescr(tvcRecreate,0));
+	 LastStartTime=TDateTime::CurrentDateTime().operator double();
+//	 AddCommand(TVideoCaptureThreadCmdDescr(tvcStart,curr_time));
 	 AddCommand(TVideoCaptureThreadCmdDescr(tvcStart,curr_time+(100+Random(3000))/(86400.0*1000.0)));
 	 SetEvent(FrameNotInProgress);
 	 continue;
@@ -547,6 +568,7 @@ void __fastcall TVideoCaptureThread::Execute(void)
   SetEvent(FrameNotInProgress);
  }
  Synchronize(ExecuteCaptureUnInit);
+// ExecuteCaptureUnInit();
 }
 
 void __fastcall TVideoCaptureThread::ExecuteCaptureInit(void)
@@ -563,12 +585,12 @@ void __fastcall TVideoCaptureThread::ExecuteCaptureUnInit(void)
 /// Возвращает копию изображения с блокировкой
 bool TVideoCaptureThread::ReadSourceSafe(RDK::UBitmap& dest, double &time_stamp, bool reflect)
 {
- if(WaitForSingleObject(SourceUnlock,30000) == WAIT_TIMEOUT)
+ if(WaitForSingleObject(SourceUnlock,30000) != WAIT_OBJECT_0)
  {
   MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, std::string("TVideoCaptureThread::ReadSourceSafe: SourceUnlock timeout!").c_str());
   return false;
  }
- ResetEvent(SourceUnlock);
+// ResetEvent(SourceUnlock);
  time_stamp=LastTimeStamp;
  RDK::UBitmap* source=ReadSource;
 
@@ -576,7 +598,8 @@ bool TVideoCaptureThread::ReadSourceSafe(RDK::UBitmap& dest, double &time_stamp,
   source->ReflectionX(&dest);
  else
   dest=*source;
- SetEvent(SourceUnlock);
+ ReleaseMutex(SourceUnlock);
+// SetEvent(SourceUnlock);
 
 // SetEvent(SourceUnlock);
  return true;
@@ -585,92 +608,98 @@ bool TVideoCaptureThread::ReadSourceSafe(RDK::UBitmap& dest, double &time_stamp,
 /// Записывает изображение в тред с блокировкой
 bool TVideoCaptureThread::WriteSourceSafe(const RDK::UBitmap& src, double time_stamp, bool reflect)
 {
- if(WaitForSingleObject(SourceWriteUnlock,10000) == WAIT_TIMEOUT)
+ if(WaitForSingleObject(SourceWriteUnlock,10000) != WAIT_OBJECT_0)
  {
   MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, std::string("TVideoCaptureThread::WriteSourceSafe: SourceWriteUnlock timeout!").c_str());
   return false;
  }
 
- ResetEvent(SourceWriteUnlock);
+// ResetEvent(SourceWriteUnlock);
  if(reflect)
   const_cast<RDK::UBitmap&>(src).ReflectionX(WriteSource);
  else
   *WriteSource=src;
- SetEvent(SourceWriteUnlock);
+// SetEvent(SourceWriteUnlock);
 
- if(WaitForSingleObject(SourceUnlock,30000) == WAIT_TIMEOUT)
+ if(WaitForSingleObject(SourceUnlock,30000) != WAIT_OBJECT_0)
  {
   MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, std::string("TVideoCaptureThread::WriteSourceSafe: SourceUnlock timeout!").c_str());
   return false;
  }
- ResetEvent(SourceUnlock);
+// ResetEvent(SourceUnlock);
 
  LastTimeStamp=time_stamp;
  RealLastTimeStamp=TDateTime::CurrentDateTime().operator double();
  RDK::UBitmap* old_read_source=ReadSource;
  ReadSource=WriteSource;
  WriteSource=old_read_source;
- SetEvent(SourceUnlock);
+ ReleaseMutex(SourceUnlock);
+ ReleaseMutex(SourceWriteUnlock);
+// SetEvent(SourceUnlock);
  return true;
 }
 
 bool TVideoCaptureThread::WriteSourceSafe(Graphics::TBitmap *src, double time_stamp, bool reflect)
 {
- if(WaitForSingleObject(SourceWriteUnlock,10000) == WAIT_TIMEOUT)
+ if(WaitForSingleObject(SourceWriteUnlock,10000) != WAIT_OBJECT_0)
  {
   MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, std::string("TVideoCaptureThread::WriteSourceSafe: SourceWriteUnlock timeout!").c_str());
   return false;
  }
 
- ResetEvent(SourceWriteUnlock);
+// ResetEvent(SourceWriteUnlock);
  TBitmapToUBitmap(*WriteSource, src, reflect);
- SetEvent(SourceWriteUnlock);
+// SetEvent(SourceWriteUnlock);
 
- if(WaitForSingleObject(SourceUnlock,30000) == WAIT_TIMEOUT)
+ if(WaitForSingleObject(SourceUnlock,30000) != WAIT_OBJECT_0)
  {
   MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, std::string("TVideoCaptureThread::WriteSourceSafe: SourceUnlock timeout!").c_str());
   return false;
  }
- ResetEvent(SourceUnlock);
+// ResetEvent(SourceUnlock);
 
  LastTimeStamp=time_stamp;
  RealLastTimeStamp=TDateTime::CurrentDateTime().operator double();
  RDK::UBitmap* old_read_source=ReadSource;
  ReadSource=WriteSource;
  WriteSource=old_read_source;
- SetEvent(SourceUnlock);
+// SetEvent(SourceUnlock);
+ ReleaseMutex(SourceWriteUnlock);
+ ReleaseMutex(SourceUnlock);
  return true;
 }
 
 // Меняет временную метку с блокировкой
 bool TVideoCaptureThread::SetLastTimeStampSafe(double time_stamp)
 {
- if(WaitForSingleObject(SourceUnlock,30000) == WAIT_TIMEOUT)
+ if(WaitForSingleObject(SourceUnlock,30000) != WAIT_OBJECT_0)
  {
   MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, std::string("TVideoCaptureThread::SetLastTimeStampSafe: SourceUnlock timeout!").c_str());
   return false;
  }
- ResetEvent(SourceUnlock);
+// ResetEvent(SourceUnlock);
 
  LastTimeStamp=time_stamp;
  RealLastTimeStamp=TDateTime::CurrentDateTime().operator double();
 
- SetEvent(SourceUnlock);
+ ReleaseMutex(SourceUnlock);
+// SetEvent(SourceUnlock);
  return true;
 }
 
 // Считывает временную метку с блокировкой
 double TVideoCaptureThread::GetLastTimeStampSafe(void) const
 {
- if(WaitForSingleObject(SourceUnlock,30000) == WAIT_TIMEOUT)
+ if(WaitForSingleObject(SourceUnlock,30000) != WAIT_OBJECT_0)
  {
   MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, std::string("TVideoCaptureThread::GetLastTimeStampSafe: SourceUnlock timeout!").c_str());
   return 0.0;
  }
- ResetEvent(SourceUnlock);
+// ResetEvent(SourceUnlock);
 
  double res=LastTimeStamp;
- SetEvent(SourceUnlock);
+// SetEvent(SourceUnlock);
+ ReleaseMutex(SourceUnlock);
  return res;
 }
 // --------------------------
@@ -680,6 +709,10 @@ double TVideoCaptureThread::GetLastTimeStampSafe(void) const
 // --------------------------
 bool __fastcall TVideoCaptureThread::RunCapture(void)
 {
+ if(WaitForSingleObject(StartInProgressEvent,0) != WAIT_TIMEOUT)
+  return true;
+ SetEvent(StartInProgressEvent);
+
  double curr_time=TDateTime::CurrentDateTime().operator double();
  LastStartTime=curr_time;
  RealLastTimeStamp=curr_time;
@@ -687,14 +720,17 @@ bool __fastcall TVideoCaptureThread::RunCapture(void)
  Synchronize(ARunCapture);
 // ARunCapture();
  Sleep(100);
+// SetEvent(CaptureEnabled);
  return true;
 }
 
 bool __fastcall TVideoCaptureThread::StopCapture(void)
 {
+// ResetEvent(CaptureEnabled);
  LastStartTime=0;
  HaltCapture();
  ConnectionState=1;
+ ResetEvent(StartInProgressEvent);
  Sleep(100);
  return true;
 }
@@ -710,14 +746,15 @@ bool __fastcall TVideoCaptureThread::HaltCapture(void)
 
 bool __fastcall TVideoCaptureThread::RecreateCapture(void)
 {
-// StopCapture();
+ return true;
+// ResetEvent(CaptureEnabled);
+// ConnectionState=0;
 
  RDK::USerStorageXML xml;
  SaveParameters(xml);
  Synchronize(ARecreateCapture);
 // ARecreateCapture();
  LoadParameters(xml);
-// ConnectionState=1;
  Sleep(100);
  return true;
 }
@@ -727,6 +764,10 @@ void __fastcall TVideoCaptureThread::ARecreateCapture(void)
 
 }
 
+void __fastcall TVideoCaptureThread::ReloadParameters(void)
+{
+
+}
    /*
 bool TVideoCaptureThread::SetThreadState(int value)
 {
@@ -1385,6 +1426,7 @@ __fastcall TVideoCaptureThreadVideoGrabber::TVideoCaptureThreadVideoGrabber(TVid
  ConvertBitmap=new Graphics::TBitmap;
 
  VideoGrabberCompleted=CreateEvent(0,TRUE,0,0);
+ ConvertMutex=CreateMutex(0,FALSE,0);
 
  RestartMode=1;
  ConnectionState=0;
@@ -1411,6 +1453,7 @@ __fastcall TVideoCaptureThreadVideoGrabber::~TVideoCaptureThreadVideoGrabber(voi
  }
 
  CloseHandle(VideoGrabberCompleted);
+ CloseHandle(ConvertMutex);
 }
 // --------------------------
 // Управление параметрами
@@ -1461,14 +1504,18 @@ bool TVideoCaptureThreadVideoGrabber::SetCaptureTimeout(int value)
 // --------------------------
 void __fastcall TVideoCaptureThreadVideoGrabber::ExecuteCaptureInit(void)
 {
- VideoGrabber=new TVideoGrabber(GetFrame());//(TComponent*) NULL);
-// VideoGrabber->Parent=GetFrame();
+ if(!VideoGrabber)
+ {
+  VideoGrabber=new TVideoGrabber((TComponent*) NULL);
+  VideoGrabber->Visible=false;
+ }
  VideoGrabber->OnFrameCaptureCompleted=OnFrameCaptureCompleted;
 // VideoGrabber->OnFrameBitmap=VideoGrabberFrameBitmap;
  VideoGrabber->OnLog=VideoGrabberLog;
  VideoGrabber->OnDeviceLost=VideoGrabberDeviceLost;
  VideoGrabber->OnPlayerEndOfStream = VideoGrabberPlayerEndOfStream;
  VideoGrabber->OnPlayerOpened=VideoGrabberOnPlayerOpened;
+ VideoGrabber->OnPreviewStarted=VideoGrabberOnPreviewStarted;
 //  VideoGrabber->OnThreadSync=VideoGrabberOnThreadSync;
 
  VideoGrabber->Display_AutoSize = false;
@@ -1481,8 +1528,14 @@ void __fastcall TVideoCaptureThreadVideoGrabber::ExecuteCaptureInit(void)
  VideoGrabber->Synchronized=false;
  VideoGrabber->SetIPCameraSetting(ips_ConnectionTimeout, ConnectionTimeout);
  VideoGrabber->SetIPCameraSetting(ips_ReceiveTimeout, CaptureTimeout);
+ VideoGrabber->FrameGrabber=fg_CaptureStream;
+ VideoGrabber->FrameCaptureWithoutOverlay=true;
  VideoGrabber->FrameGrabberRGBFormat=fgf_RGB24;
  VideoGrabber->LicenseString=TVGrabberLicenseString;
+ VideoGrabber->SyncCommands=false;
+ VideoGrabber->EventNotificationSynchrone=false;
+// VideoGrabber->OnFrameBitmapEventSynchrone=true;
+ VideoGrabber->OpenURLAsync=true;
  if(DesiredResolutionFlag)
  {
   VideoGrabber->FrameCaptureWidth=DesiredWidth;
@@ -1538,7 +1591,11 @@ void __fastcall TVideoCaptureThreadVideoGrabber::OnFrameCaptureCompleted(System:
 // if(Frame_Bitmap)
 // Engine_LogMessage(exception.GetType(), (std::string("Core-OpenProject Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.CreateLogMessage()).c_str());
 
- ConvertUBitmap<<Frame_Bitmap;
+ if(WaitForSingleObject(ConvertMutex,10000) == WAIT_OBJECT_0)
+ {
+  ConvertUBitmap<<Frame_Bitmap;
+  ReleaseMutex(ConvertMutex);
+ }
  ConvertTimeStamp=double(FrameTime);
 // SetLastTimeStampSafe(double(FrameTime)/(10000000.0*86400));
 
@@ -1566,24 +1623,18 @@ void __fastcall TVideoCaptureThreadVideoGrabber::OnFrameCaptureCompleted(System:
 
 void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberPlayerEndOfStream(TObject *Sender)
 {
-	//ShowMessage("Stream ended");
-	/*if(restarter)
-	{
-        restarter->RestartSource();
-	} */
 	PulseEvent(SourceStoppedEvent);
 	if(RepeatFlag)
 	{
-	   /*	VideoGrabber->PlayerFramePosition=1;
-		VideoGrabber->StartPreview() */
 		VideoGrabber->RunPlayer();
 		SetLastTimeStampSafe(0);
 	}
 	else
 	{
-     MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, std::string("VideoGrabber stopped by end of frames").c_str());
+	 MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, std::string("VideoGrabber stopped by end of frames").c_str());
 	 Stop(0);
 	}
+
 }
 
 void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberOnPlayerOpened(System::TObject* Sender)
@@ -1612,6 +1663,8 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberFrameBitmap(TObject
  int bmp_width=BitmapInfo->BitmapWidth;
  int bmp_height=BitmapInfo->BitmapHeight;
 
+ if(WaitForSingleObject(ConvertMutex,10000) == WAIT_OBJECT_0)
+ {
  if (BitmapInfo->BitmapBitsPerPixel == 24)
  {   // case where FrameGrabberRGBFormat is set to fgf_RGB24 (you can select it in the "frame grabber" tab)
   ConvertUBitmap.SetRes(bmp_width, bmp_height, RDK::ubmRGB24);
@@ -1630,6 +1683,9 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberFrameBitmap(TObject
    p+=conv_line_bl;
    BitmapLinePtr += BitmapInfo->BitmapLineSize;
   }
+
+  ReleaseMutex(ConvertMutex);
+ }
 /*
  if (BitmapInfo->BitmapBitsPerPixel == 24)
  {   // case where FrameGrabberRGBFormat is set to fgf_RGB24 (you can select it in the "frame grabber" tab)
@@ -1670,7 +1726,24 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberLog(TObject *Sender
  {
   LastStartTime=TDateTime::CurrentDateTime().operator double();
   ConnectionState=10;
+
+  if(WaitForSingleObject(StartInProgressEvent,0) != WAIT_TIMEOUT)
+  {
+   //SetEvent(GlobalStartUnlockEvent);
+//   ReleaseMutex(GlobalStartUnlockMutex);
+   ResetEvent(StartInProgressEvent);
+  }
  }
+
+/* if(LogType == e_failed_to_start_preview)
+ {
+  if(WaitForSingleObject(StartInProgressEvent,0) != WAIT_TIMEOUT)
+  {
+   //SetEvent(GlobalStartUnlockEvent);
+   ReleaseMutex(GlobalStartUnlockMutex);
+   ResetEvent(StartInProgressEvent);
+  }
+ }*/
 }
 
 void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberDeviceLost(TObject *Sender)
@@ -1687,6 +1760,24 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberDeviceLost(TObject 
  {
   Stop();
  }*/
+ if(WaitForSingleObject(StartInProgressEvent,0) != WAIT_TIMEOUT)
+ {
+  //SetEvent(GlobalStartUnlockEvent);
+//  ReleaseMutex(GlobalStartUnlockMutex);
+  ResetEvent(StartInProgressEvent);
+//  ReleaseMutex(GlobalStartUnlockMutex);
+ }
+}
+
+void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberOnPreviewStarted(TObject *Sender)
+{
+// if(WaitForSingleObject(StartInProgressEvent,0) != WAIT_TIMEOUT)
+ {
+  //SetEvent(GlobalStartUnlockEvent);
+//  ReleaseMutex(GlobalStartUnlockMutex);
+  ResetEvent(StartInProgressEvent);
+//  ReleaseMutex(GlobalStartUnlockMutex);
+ }
 }
 
 
@@ -1731,8 +1822,12 @@ void __fastcall TVideoCaptureThreadVideoGrabber::Calculate(void)
    }
   }
 */
+ if(WaitForSingleObject(ConvertMutex,10000) == WAIT_OBJECT_0)
+ {
   ConvertResult.SetRes(ConvertUBitmap.GetWidth(),ConvertUBitmap.GetHeight(),RDK::ubmRGB24);
   ConvertUBitmap.ConvertTo(ConvertResult);
+  ReleaseMutex(ConvertMutex);
+ }
 
   bool bmp_res=WriteSourceSafe(ConvertResult, ConvertTimeStamp/double(10000000.0*86400), false);
 
@@ -1800,9 +1895,10 @@ void __fastcall TVideoCaptureThreadVideoGrabber::ARecreateCapture(void)
 // return;
  if(VideoGrabber)
  {
-//  VideoGrabber->StopPreview();
-//  VideoGrabber->StopPlayer();
+  VideoGrabber->Stop();
+  WaitForSingleObject(GetFrameNotInProgress(),10000);
   delete VideoGrabber;
+  VideoGrabber=0;
  }
  ExecuteCaptureInit();
  MEngine_LogMessage(ChannelIndex, RDK_EX_DEBUG, (std::string("TVideoCaptureThreadVideoGrabberIpCamera::ARecreateCapture ")).c_str());
@@ -1903,7 +1999,14 @@ void __fastcall TVideoCaptureThreadVideoGrabberAvi::ExecuteCaptureInit(void)
 {
  TVideoCaptureThreadVideoGrabber::ExecuteCaptureInit();
  if(VideoGrabber)
+ {
+  VideoGrabber->FrameGrabber=fg_BothStreams;
   VideoGrabber->VideoSource=vs_VideoFileOrURL;
+  VideoGrabber->ClosePlayer();
+  VideoGrabber->PlayerFileName=FileName.Get().c_str();
+  VideoGrabber->FrameGrabberRGBFormat=fgf_RGB24;
+  VideoGrabber->OpenPlayer();
+ }
 }
 
 // Меняет временную метку с блокировкой
@@ -2214,6 +2317,7 @@ String TVideoCaptureThreadVideoGrabberIpCamera::GetPassword(void) const
 
 bool TVideoCaptureThreadVideoGrabberIpCamera::Init(const String camera_url, const String user_name, const String user_password)
 {
+ ExecuteCaptureInit();
  if(!VideoGrabber)
  {
   Url=camera_url;

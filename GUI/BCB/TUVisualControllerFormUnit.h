@@ -40,7 +40,7 @@ DWORD LastUpdateTime;
 
 public:
 // Флаг, сообщающий что идет расчет
-static bool CalculationModeFlag;
+static RDK::UELockVar<bool> CalculationModeFlag;
 
 bool CalculationStepUpdatedFlag;
 

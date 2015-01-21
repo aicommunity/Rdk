@@ -21,11 +21,17 @@ __fastcall TVideoOutputForm::TVideoOutputForm(TComponent* Owner)
 	: TUVisualControllerForm(Owner)
 {
  MassiveStartChannelsDelay=5000;
+ if(!TVideoCaptureThread::GlobalStartUnlockMutex)
+  TVideoCaptureThread::GlobalStartUnlockMutex=CreateMutex(NULL,FALSE,NULL);//CreateEvent(0,TRUE,TRUE,0);
 }
 
 __fastcall TVideoOutputForm::~TVideoOutputForm(void)
 {
-
+ if(TVideoCaptureThread::GlobalStartUnlockMutex)
+ {
+  CloseHandle(TVideoCaptureThread::GlobalStartUnlockMutex);
+  TVideoCaptureThread::GlobalStartUnlockMutex=0;
+ }
 }
 
 
@@ -224,6 +230,7 @@ void TVideoOutputForm::Start(int index)
   for(int i=0;i<GetNumSources();i++)
   {
    Sources[i]->Start(curr_time+double(i*MassiveStartChannelsDelay)/(86400*1000.0));
+//   Sources[i]->Start(curr_time);
    UShowProgressBarForm->IncBarStatus(1);
    UShowProgressBarForm->Update();
   }

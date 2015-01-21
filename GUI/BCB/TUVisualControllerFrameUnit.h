@@ -44,7 +44,7 @@ unsigned long long UpdateTime;
 
 public:
 // Флаг, сообщающий что идет расчет
-static bool CalculationModeFlag;
+static RDK::UELockVar<bool> CalculationModeFlag;
 
 public:
 // -----------------------------

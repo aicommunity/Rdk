@@ -13,7 +13,7 @@ TUVisualControllerFrame *UVisualControllerFrame;
 // Конструкторы и деструкторы
 // --------------------------
 // Флаг, сообщающий что идет расчет
-bool TUVisualControllerFrame::CalculationModeFlag=false;
+RDK::UELockVar<bool> TUVisualControllerFrame::CalculationModeFlag=false;
 
 __fastcall TUVisualControllerFrame::TUVisualControllerFrame(TComponent* Owner)
  : TFrame(Owner)

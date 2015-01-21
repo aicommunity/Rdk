@@ -14,7 +14,7 @@ TUVisualControllerForm *UVisualControllerForm;
 // Конструкторы и деструкторы
 // --------------------------
 // Флаг, сообщающий что идет расчет
-bool TUVisualControllerForm::CalculationModeFlag=false;
+RDK::UELockVar<bool> TUVisualControllerForm::CalculationModeFlag=false;
 
 extern TUVisualControllerForm *RdkMainForm;
 

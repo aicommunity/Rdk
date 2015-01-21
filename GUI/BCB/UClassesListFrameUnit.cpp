@@ -11,6 +11,8 @@
 #pragma link "TUVisualControllerFrameUnit"
 #pragma resource "*.dfm"
 TUClassesListFrame *UClassesListFrame;
+
+using namespace RDK;
 //---------------------------------------------------------------------------
 __fastcall TUClassesListFrame::TUClassesListFrame(TComponent* Owner)
 	: TUVisualControllerFrame(Owner)

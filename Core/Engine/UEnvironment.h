@@ -26,7 +26,7 @@ public:
 typedef void (*PExceptionHandler)(int channel_index);
 
 protected: // Параметры
-// Индекс предарительно заданной модели обработки
+// Индекс предварительно заданной модели обработки
 // 0 - Структура определяется извне
 int PredefinedStructure;
 
@@ -66,6 +66,9 @@ UEPtr<UContainer> Model;
 
 /// Время среды
 UTimeControl Time;
+
+/// Шрифты
+RDK::UBitmapFontCollection Fonts;
 
 // Максимальный интеревал времени, который систем пытается "догнать" в режиме
 // расчета реального времени (мс)
@@ -207,6 +210,10 @@ UTimeControl& GetTime(void);
 /// Индекс текущего канала в многоканальной библиотеке
 int GetChannelIndex(void) const;
 bool SetChannelIndex(int value);
+
+/// Шрифты
+RDK::UBitmapFontCollection& GetFonts(void);
+bool SetFonts(const RDK::UBitmapFontCollection& value);
 // --------------------------
 
 // --------------------------

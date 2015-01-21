@@ -24,6 +24,8 @@
 #include "../../Core/Engine/UModule.cpp"
 #include "../../Core/Engine/UItemData.cpp"
 
+#include "../../Core/System/UGenericMutex.cpp"
+
 #endif
 
 

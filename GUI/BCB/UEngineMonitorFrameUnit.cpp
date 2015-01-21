@@ -351,23 +351,13 @@ bool TEngineThread::SetMinInterstepsInterval(RDK::UTime value)
 // --------------------------
 void __fastcall TEngineThread::BeforeCalculate(void)
 {
-#ifdef RDK_VIDEO
-#ifdef RDK_VIDEO
-/* TVideoOutputFrame* video=VideoOutputForm->GetVideoOutputFrame(ChannelIndex);
- if(video)
- {
-  if(video->CaptureThread)
-  {
-   double time_stamp=0;
-   video->CaptureThread->ReadSourceSafe(Source,time_stamp,true);
-  }
- }
- else
-  Source.Clear();
-   */
-#endif
-
-#endif
+   #ifdef RDK_VIDEO
+   TVideoOutputFrame* video=VideoOutputForm->GetVideoOutputFrame(ChannelIndex);
+   if(video)
+   {
+	video->BeforeCalculate();
+   }
+   #endif
 }
 
 void __fastcall TEngineThread::AfterCalculate(void)
@@ -405,7 +395,6 @@ void __fastcall TEngineThread::Execute(void)
   }
 
   ResetEvent(CalculationNotInProgress);
-  BeforeCalculate();
   if(GetNumEngines()>ChannelIndex)
   {
    if(UEngineMonitorForm->EngineMonitorFrame->GetCalculationTimeSourceMode() == 0)
@@ -416,19 +405,15 @@ void __fastcall TEngineThread::Execute(void)
    else
    if(UEngineMonitorForm->EngineMonitorFrame->GetCalculationTimeSourceMode() == 1)
 	MModel_SetDoubleSourceTime(ChannelIndex,UEngineMonitorForm->EngineMonitorFrame->GetServerTimeStamp(ChannelIndex)/(86400.0*1000.0)/*dt.operator double()*/);
-   #ifdef RDK_VIDEO
-   TVideoOutputFrame* video=VideoOutputForm->GetVideoOutputFrame(ChannelIndex);
-   if(video /*&& video->CaptureThread*/)
-   {
-//	double time_stamp;
-//	bool res=video->CaptureThread->ReadSourceSafe(Source,time_stamp,false);
-//	MModel_SetComponentBitmapOutput(ChannelIndex, "", "Output", &Source,true);
 
-	video->BeforeCalculate();
-   }
+   #ifdef RDK_VIDEO
+ //  Synchronize(BeforeCalculate);
+   BeforeCalculate();
+//   Source.SetRes(640,480,RDK::ubmRGB24);
+//   MModel_SetComponentBitmapOutput(ChannelIndex, "", "Output", &Source,true);
    #endif
    MEnv_Calculate(ChannelIndex,0);
-  }
+   }
   AfterCalculate();
   RealLastCalculationTime=RDK::GetCurrentStartupTime();
   SetEvent(CalculationNotInProgress);
@@ -597,6 +582,12 @@ bool TUEngineMonitorFrame::SetNumChannels(int num)
  for(int i=old_size;i<num;i++)
  {
   ThreadChannels[i]=new TEngineThread(i,CalculateMode[i],MinInterstepsInterval[i],false);
+  #ifdef RDK_MUTEX_DEADLOCK_DEBUG
+  TUThreadInfo info;
+  info.Pid=ThreadChannels[i]->ThreadID;
+  info.Name=string("ThreadChannels ")+RDK::sntoa(i);
+  GlobalThreadInfoMap[info.Pid]=info;
+  #endif
   ThreadChannels[i]->Priority=RDK_DEFAULT_THREAD_PRIORITY;
 
   ThreadChannels[i]->FreeOnTerminate=false;
@@ -1102,7 +1093,7 @@ void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
    AddMetadata(i, ServerTimeStamp[i]);
    RealLastCalculationTime[i]=RDK::GetCurrentStartupTime();
   }
-//  IdTcpResultBroadcasterForm->SendMetadata();
+
   SendMetadata();
   RDK::UIVisualControllerStorage::AfterCalculate();
   RDK::UIVisualControllerStorage::UpdateInterface();

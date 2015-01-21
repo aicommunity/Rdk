@@ -48,6 +48,8 @@
 #pragma resource "*.dfm"
 TUGEngineControlForm *UGEngineControlForm;
 
+using namespace RDK;
+
 /// Ёкзепл€р прототипа декодера команд
 RDK::URpcDecoderInternal RdkRpcDecoder;
 
@@ -174,14 +176,6 @@ switch (sys_code)
 
 void __fastcall TUGEngineControlForm::WMServerPing(TMessage &Msg)
 {
-/* static int ping_msg_index=0;
- std::string ping_msg="Ping Received from HWND=";
- ping_msg+=AnsiString(IntToHex(int(Msg.WParam),8)).c_str();
- ping_msg+=" Send message id=";
- ping_msg+=RDK::sntoa(WM_SERVER_PONG);
- ping_msg+=" Count=";
- ping_msg+=RDK::sntoa(++ping_msg_index);
- Engine_LogMessage(RDK_EX_INFO,ping_msg.c_str());*/
  PostMessage((HWND)Msg.WParam, WM_SERVER_PONG, 0, 0);
 }
 
@@ -437,7 +431,7 @@ void TUGEngineControlForm::ALoadParameters(RDK::USerStorageXML &xml)
 }
 
 // —оздает новый проект
-void TUGEngineControlForm::CreateProject(TProjectConfig &project_config)
+void TUGEngineControlForm::CreateProject(RDK::TProjectConfig &project_config)
 {
  CloseProject();
 
@@ -498,7 +492,7 @@ void TUGEngineControlForm::CreateProject(TProjectConfig &project_config)
 
  for(size_t i=0;i<project_config.NumChannels;i++)
  {
-  TProjectChannelConfig &channel=project_config.ChannelsConfig[i];
+  RDK::TProjectChannelConfig &channel=project_config.ChannelsConfig[i];
 
   std::string suffix;
   if(i>0)

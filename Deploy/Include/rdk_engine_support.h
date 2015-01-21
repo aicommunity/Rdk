@@ -20,12 +20,15 @@ std::vector<RDK::UEngine*> EngineList;
 std::vector<UGenericMutex*> MutexList;
 
 // Массив локеров
-std::vector<UGenericMutexLocker*> LockerList;
+std::vector<UGenericMutexExclusiveLocker*> LockerList;
 
 UGenericMutex* GlobalMutex;
 
 /// Текущий выбраный канал
-int SelectedChannelIndex;
+RDK::UELockVar<int> SelectedChannelIndex;
+
+/// Текущее число каналов
+RDK::UELockVar<int> NumEngines;
 
 /// Данные текущего выбранного канала
 RDK::UEPtr<RDK::UEngine> Engine;

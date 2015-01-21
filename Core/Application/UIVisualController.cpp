@@ -10,6 +10,7 @@ namespace RDK {
 
 // Глобальная коллекция шрифтов
 RDK::UBitmapFontCollection GlobalFonts;
+//RDK::UELockVar<RDK::UBitmapFontCollection> GlobalFonts;
 
 // Очищает коллекцию глобальных шрифтов
 void ClearClobalFonts(void)

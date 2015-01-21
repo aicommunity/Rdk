@@ -65,7 +65,7 @@ int RDK_CALL Engine_LoadFonts(void)
   // Грузим шрифты
   std::vector<std::string> font_names;
   std::string font_path=RdkSystemDir+"Fonts/";
-  FindFilesList(font_path, "*.fnt", true, font_names);
+  RDK::FindFilesList(font_path, "*.fnt", true, font_names);
   if(DllManager.GetEnvironment())
    DllManager.GetEnvironment()->LogMessage(RDK_EX_DEBUG, std::string("Loading fonts form ")+font_path+"\n");
 
@@ -78,7 +78,7 @@ int RDK_CALL Engine_LoadFonts(void)
 	DllManager.GetEnvironment()->LogMessage(RDK_EX_DEBUG, std::string("Loaded font ")+font_names[i]+"\n");
   }
  }
- catch (UException &exception)
+ catch (RDK::UException &exception)
  {
   if(DllManager.GetEngine())
    DllManager.GetEngine()->ProcessException(exception);
@@ -174,7 +174,7 @@ int RDK_CALL MLockEngine(int index)
   return 0;
 
  if(!DllManager.LockerList[index])
-  DllManager.LockerList[index]=new UGenericMutexLocker(DllManager.MutexList[index]);
+  DllManager.LockerList[index]=new UGenericMutexExclusiveLocker(DllManager.MutexList[index]);
  return 0;
 }
 
@@ -2156,7 +2156,8 @@ const char* RDK_CALL MEngine_GetLog(int engine_index, int &error_level)
 // Записывает в лог новое сообщение
 int RDK_CALL Engine_LogMessage(int log_level, const char *message)
 {
-
+// if(log_level == RDK_EX_DEBUG && !DllManager.GetEngine()->Env_GetDebugMode())
+//  return 0;
  return DllManager.GetEngineLock()->Engine_LogMessage(log_level, message);
 }
 
@@ -2165,6 +2166,8 @@ int RDK_CALL MEngine_LogMessage(int engine_index, int log_level, const char *mes
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 0;
 
+// if(log_level == RDK_EX_DEBUG && !DllManager.GetEngine(engine_index)->Env_GetDebugMode())
+//  return 0;
  return DllManager.GetEngineLock(engine_index)->Engine_LogMessage(log_level, message);
 }
 
