@@ -168,8 +168,8 @@ void TVideoOutputFrame::Init(int mode)
 //  if(thread && thread->GetVideoGrabber())
 //   thread->GetVideoGrabber()->LicenseString=TVGrabberLicenseString;
 
-  CaptureThread->LoadParameters(VideoSourceOptions[mode]);
   CaptureThread->Resume();
+  CaptureThread->LoadParameters(VideoSourceOptions[mode]);
  }
  UpdateInterface();
 }
@@ -207,9 +207,9 @@ void TVideoOutputFrame::Init(int mode, RDK::USerStorageXML &raw_xml_data)
 //  if(thread)
 //   thread->GetVideoGrabber()->LicenseString=TVGrabberLicenseString;
 
+  CaptureThread->Resume();
   CaptureThread->LoadParametersEx(raw_xml_data);
   CaptureThread->SaveParameters(VideoSourceOptions[mode]);
-  CaptureThread->Resume();
  }
  UpdateInterface();
 }

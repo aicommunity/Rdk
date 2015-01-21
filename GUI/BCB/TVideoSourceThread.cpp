@@ -1506,12 +1506,9 @@ void __fastcall TVideoCaptureThreadVideoGrabber::ExecuteCaptureInit(void)
 {
  if(!VideoGrabber)
  {
-//  VideoGrabber=new TVideoGrabber(GetFrame());//(TComponent*) NULL);
   VideoGrabber=new TVideoGrabber((TComponent*) NULL);
- // VideoGrabber->Parent=GetFrame();
   VideoGrabber->Visible=false;
  }
-// VideoGrabber->Parent=GetFrame();
  VideoGrabber->OnFrameCaptureCompleted=OnFrameCaptureCompleted;
 // VideoGrabber->OnFrameBitmap=VideoGrabberFrameBitmap;
  VideoGrabber->OnLog=VideoGrabberLog;
@@ -2002,7 +1999,14 @@ void __fastcall TVideoCaptureThreadVideoGrabberAvi::ExecuteCaptureInit(void)
 {
  TVideoCaptureThreadVideoGrabber::ExecuteCaptureInit();
  if(VideoGrabber)
+ {
+  VideoGrabber->FrameGrabber=fg_BothStreams;
   VideoGrabber->VideoSource=vs_VideoFileOrURL;
+  VideoGrabber->ClosePlayer();
+  VideoGrabber->PlayerFileName=FileName.Get().c_str();
+  VideoGrabber->FrameGrabberRGBFormat=fgf_RGB24;
+  VideoGrabber->OpenPlayer();
+ }
 }
 
 // Меняет временную метку с блокировкой
