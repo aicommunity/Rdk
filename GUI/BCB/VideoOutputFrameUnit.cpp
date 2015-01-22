@@ -1257,7 +1257,7 @@ void TVideoOutputFrame::ABeforeCalculate(void)
  }
 
  {
-/*  SendToComponentIO();
+  SendToComponentIO();
   if(SendPointsByStepCheckBox->Checked)
   {
    SendAsMatrixButtonClick(this);
@@ -1267,7 +1267,7 @@ void TVideoOutputFrame::ABeforeCalculate(void)
   {
    MyVideoOutputToolsForm->DelAllPointsButtonClick(this);
   }
-  */
+
   if(num_channels == 1)
   {
    if(Model_Check() && SendBmpSource.GetByteLength()>0)
