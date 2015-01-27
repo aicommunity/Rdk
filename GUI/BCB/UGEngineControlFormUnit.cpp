@@ -2716,3 +2716,9 @@ void __fastcall TUGEngineControlForm::ResetChannel1Click(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+void __fastcall TUGEngineControlForm::ToolButton15Click(TObject *Sender)
+{
+ ToolButton15->CheckMenuDropdown();
+}
+//---------------------------------------------------------------------------
+

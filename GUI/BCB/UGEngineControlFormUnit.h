@@ -227,6 +227,7 @@ __published:	// IDE-managed Components
 	void __fastcall StartChannel1Click(TObject *Sender);
 	void __fastcall PauseChannel1Click(TObject *Sender);
 	void __fastcall ResetChannel1Click(TObject *Sender);
+	void __fastcall ToolButton15Click(TObject *Sender);
 
 
 
