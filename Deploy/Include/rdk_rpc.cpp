@@ -1198,10 +1198,11 @@ const char* PtzRemoteCall(const char *request, int &return_value, int &channel_i
   MEngine_FreeBufString(engine_index, ReturnString);
  }
 
- MLockEngine(engine_index);
- std::string &buffer=GetEngine(engine_index)->CreateTempString();
+// MLockEngine(engine_index);
+ UELockPtr<UEngine> eng=GetEngineLock(engine_index);
+ std::string &buffer=eng->CreateTempString();
  response.Save(buffer);
- MUnLockEngine(engine_index);
+// MUnLockEngine(engine_index);
 
  return buffer.c_str();
 }
