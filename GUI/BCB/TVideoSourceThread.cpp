@@ -1535,7 +1535,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::ExecuteCaptureInit(void)
  VideoGrabber->SyncCommands=false;
  VideoGrabber->EventNotificationSynchrone=false;
 // VideoGrabber->OnFrameBitmapEventSynchrone=true;
- VideoGrabber->OpenURLAsync=true;
+// VideoGrabber->OpenURLAsync=true;
  if(DesiredResolutionFlag)
  {
   VideoGrabber->FrameCaptureWidth=DesiredWidth;

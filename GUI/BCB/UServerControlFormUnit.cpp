@@ -410,8 +410,9 @@ void __fastcall TUServerControlForm::ProcessControlCommand(void)
  RDK::UParamT encoded_response;
  std::string response_type;
 
- if(ProcessControlCommand(CurrentProcessedCommand, response_type, response, binary_response))
-  SendCommandResponse(CurrentProcessedCommand.RecepientId, response, binary_response);
+ RDK::URpcCommandInternal cmd=CurrentProcessedMainThreadCommand;
+ if(ProcessControlCommand(cmd, response_type, response, binary_response))
+  SendCommandResponse(cmd.RecepientId, response, binary_response);
 }
 
 bool TUServerControlForm::ProcessControlCommand(const RDK::URpcCommandInternal &args, std::string &response_type, UParamT &response_data, std::vector<RDK::UParamT> &binary_data)
@@ -1441,6 +1442,7 @@ try
 	 {
 //	  RDK::URpcCommandInternal cmd;
 
+	  RDK::URpcCommandInternal CurrentProcessedCommand;
 	  CurrentProcessedCommand.RecepientId=bind;
 	  std::string req;
 	  ConvertVectorToString(packet(0),req);
@@ -1453,6 +1455,7 @@ try
 
 	  if(!RdkApplication.GetRpcDispatcher()->IsCmdSupported(&CurrentProcessedCommand))
 	  {
+	   CurrentProcessedMainThreadCommand=CurrentProcessedCommand;
 	   ProcessControlCommand();
 //	   if(ProcessControlCommand(CurrentProcessedCommand, ResponseType, Response, BinaryResponse))
 //		SendCommandResponse(AContext, Response, BinaryResponse);

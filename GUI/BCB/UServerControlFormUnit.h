@@ -191,9 +191,9 @@ std::list<std::pair<std::string,RDK::UEPtr<RDK::URpcCommand> > > ProcessedComman
 std::map<std::string, RDK::UTransferReader> PacketReaders;
 
 //RDK::UTransferPacket Packet;
-std::string PacketXml;
+//std::string PacketXml;
 
-RDK::URpcCommandInternal CurrentProcessedCommand;
+RDK::UELockVar<RDK::URpcCommandInternal> CurrentProcessedMainThreadCommand;
 
 TThreadList *Clients;
 
