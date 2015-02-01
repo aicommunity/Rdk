@@ -1318,6 +1318,7 @@ try
    RDK::UEPtr<RDK::URpcCommandInternal> pcmd_int=RDK::dynamic_pointer_cast<RDK::URpcCommandInternal>(pcmd);
    ConvertStringToVector(pcmd_int->Response, response);
    SendCommandResponse(pcmd_int->RecepientId, response, binary_response);
+   delete pcmd_int;
   }
 }
 catch (...)
@@ -1466,19 +1467,12 @@ try
 	   std::pair<std::string,RDK::UEPtr<RDK::URpcCommand> > cmd_pair;
 	   cmd_pair.first=CurrentProcessedCommand.RecepientId;
 	   cmd_pair.second=pcmd;
-	   RdkApplication.GetRpcDispatcher()->PushCommand(pcmd);
+//	   if(CurrentProcessedCommand.FunctionName != "Ptz_SetCameraParameter")
+		RdkApplication.GetRpcDispatcher()->PushCommand(pcmd);
+//	   else
+//	    delete pcmd;
 	   Engine_LogMessage(RDK_EX_DEBUG, (std::string("Command pushed to queue: \n")+CurrentProcessedCommand.Request).c_str());
-/*
-	   if(WaitForSingleObject(CommandQueueUnlockEvent,3500) == WAIT_TIMEOUT)
-	   {
-		Engine_LogMessage(RDK_EX_DEBUG, (std::string("Command unlock event timeout: ")+bind).c_str());
-	   }
-	   else
-	   {
-		ResetEvent(CommandQueueUnlockEvent);
-		ProcessedCommandQueue.push_back(cmd_pair);
-		SetEvent(CommandQueueUnlockEvent);
-	   }  */
+
 	  }
 	 }
 	}

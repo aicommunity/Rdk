@@ -183,10 +183,10 @@ int PerformancePushIndex;
 HANDLE CommandQueueUnlockEvent;
 
 // Очередь команд
-std::list<RDK::URpcCommandInternal > CommandQueue;
+//std::list<RDK::URpcCommandInternal > CommandQueue;
 
 // Очередь обработанных команд
-std::list<std::pair<std::string,RDK::UEPtr<RDK::URpcCommand> > > ProcessedCommandQueue;
+//std::list<std::pair<std::string,RDK::UEPtr<RDK::URpcCommand> > > ProcessedCommandQueue;
 
 std::map<std::string, RDK::UTransferReader> PacketReaders;
 
