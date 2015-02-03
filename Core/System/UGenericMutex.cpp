@@ -16,6 +16,16 @@ UGenericMutex::UGenericMutex()
 UGenericMutex::~UGenericMutex()
 {}
 
+UGenericEvent::UGenericEvent()
+{
+
+}
+
+UGenericEvent::~UGenericEvent()
+{
+
+}
+
 UGenericMutexExclusiveLocker::UGenericMutexExclusiveLocker(UGenericMutex *m)
 {
  if(m)

@@ -39,8 +39,24 @@ virtual bool exclusive_lock(void)=0;
 virtual bool exclusive_unlock(void)=0;
 };
 
+class RDK_LIB_TYPE UGenericEvent
+{
+protected:
+
+public:
+UGenericEvent();
+virtual ~UGenericEvent();
+
+virtual bool set(void)=0;
+virtual bool reset(void)=0;
+virtual bool wait(unsigned wait_time)=0;
+};
+
 RDK_LIB_TYPE UGenericMutex* UCreateMutex(void);
 RDK_LIB_TYPE void UDestroyMutex(UGenericMutex* mutex);
+
+RDK_LIB_TYPE UGenericEvent* UCreateEvent(void);
+RDK_LIB_TYPE void UDestroyEvent(UGenericEvent* event);
 
 // ---------------------------------------------------------------------------
 class RDK_LIB_TYPE UGenericMutexExclusiveLocker

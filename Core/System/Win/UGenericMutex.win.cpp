@@ -31,6 +31,24 @@ UGenericMutexWin& operator = (const UGenericMutexWin &copy);
 
 };
 
+class RDK_LIB_TYPE UGenericEventWin: public UGenericEvent
+{
+protected:
+HANDLE Event;
+
+public:
+UGenericEventWin();
+virtual ~UGenericEventWin();
+
+virtual bool set(void);
+virtual bool reset(void);
+virtual bool wait(unsigned wait_time);
+
+
+private:
+UGenericEventWin(const UGenericEventWin &copy);
+UGenericEventWin& operator = (const UGenericEventWin &copy);
+};
 
 UGenericMutexWin::UGenericMutexWin()
  : Pid(0)
@@ -179,6 +197,48 @@ UGenericMutexWin& UGenericMutexWin::operator = (const UGenericMutexWin &copy)
  return *this;
 }
 
+
+// ---------------------------------------------------------------------------
+UGenericEventWin::UGenericEventWin()
+{
+ Event=CreateEvent(0,FALSE,TRUE,0);
+}
+
+UGenericEventWin::~UGenericEventWin()
+{
+ if(Event)
+  CloseHandle(Event);
+}
+
+bool UGenericEventWin::set(void)
+{
+ SetEvent(Event);
+ return true;
+}
+
+bool UGenericEventWin::reset(void)
+{
+ ResetEvent(Event);
+ return true;
+}
+
+bool UGenericEventWin::wait(unsigned wait_time)
+{
+ if(WaitForSingleObject(Event,wait_time) == WAIT_TIMEOUT)
+  return false;
+ return true;
+}
+
+UGenericEventWin::UGenericEventWin(const UGenericEventWin &copy)
+{
+
+}
+
+UGenericEventWin& UGenericEventWin::operator = (const UGenericEventWin &copy)
+{
+ return *this;
+}
+
 // ---------------------------------------------------------------------------
 UGenericMutex* UCreateMutex(void)
 {
@@ -190,5 +250,17 @@ void UDestroyMutex(UGenericMutex* mutex)
  if(mutex)
   delete mutex;
 }
+
+UGenericEvent* UCreateEvent(void)
+{
+ return new UGenericEventWin;
+}
+
+void UDestroyEvent(UGenericEvent* event)
+{
+ if(event)
+  delete event;
+}
+
 
 #endif
