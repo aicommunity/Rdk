@@ -111,6 +111,7 @@ __fastcall TUGEngineControlForm::TUGEngineControlForm(TComponent* Owner)
  DisableAdminForm=false;
 
  EventsLogEnabled=true;
+ DisableStopVideoSources=false;
 }
 
 void __fastcall TUGEngineControlForm::WMSysCommand(TMessage &Msg)
@@ -1708,7 +1709,8 @@ void TUGEngineControlForm::PauseChannel(int channel_index)
  UEngineMonitorForm->EngineMonitorFrame->PauseChannel(channel_index);
  UShowProgressBarForm->IncBarStatus(2);
 #ifdef RDK_VIDEO
- VideoOutputForm->StopOffline(channel_index);
+ if(!DisableStopVideoSources)
+  VideoOutputForm->StopOffline(channel_index);
 #endif
  UShowProgressBarForm->Hide();
 }
@@ -1722,7 +1724,8 @@ void TUGEngineControlForm::ResetChannel(int channel_index)
 
  UEngineMonitorForm->EngineMonitorFrame->ResetChannel(channel_index);
 #ifdef RDK_VIDEO
- VideoOutputForm->StopOffline(channel_index);
+ if(!DisableStopVideoSources)
+  VideoOutputForm->StopOffline(channel_index);
 #endif
 }
 

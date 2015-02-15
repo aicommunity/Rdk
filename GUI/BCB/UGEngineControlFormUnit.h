@@ -333,6 +333,9 @@ int ServerInterfacePort;
 /// Флаг запрета на запуск главной формы по Ctrl+F1
 bool DisableAdminForm;
 
+/// Флаг, запрещающий остановку видеоисточников при остановке расчета
+bool DisableStopVideoSources;
+
 // Список специальных форм (не имеющих компонента управления в модели)
 std::map<std::string, TUVisualControllerForm*> SpecialForms;
 
