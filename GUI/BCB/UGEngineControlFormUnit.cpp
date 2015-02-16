@@ -573,6 +573,7 @@ void TUGEngineControlForm::CreateProject(RDK::TProjectConfig &project_config)
 // Закрывает существущий проект
 void TUGEngineControlForm::CloseProject(void)
 {
+ DisableStopVideoSources=false;
  Pause1Click(this);
 
  if(ProjectAutoSaveFlag)
@@ -2282,6 +2283,7 @@ void __fastcall TUGEngineControlForm::FormCloseQuery(TObject *Sender, bool &CanC
 
  if(RdkMainForm == this)
  {
+  DisableStopVideoSources=false;
   Pause1Click(Sender);
   Sleep(1000);
   CloseProject();
@@ -2483,6 +2485,7 @@ void __fastcall TUGEngineControlForm::Hide1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::Close1Click(TObject *Sender)
 {
+ DisableStopVideoSources=false;
  Pause1Click(Sender);
  Sleep(1000);
  CloseProject();
