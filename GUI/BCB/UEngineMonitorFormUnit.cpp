@@ -87,7 +87,7 @@ void __fastcall TUEngineMonitorForm::FormCreate(TObject *Sender)
 {
  if(!RdkExceptionHandlerMutex)
   RdkExceptionHandlerMutex=CreateMutex(0,FALSE,0);//CreateEvent(0,TRUE,TRUE,0);
-
+ LogTimer->Enabled=true;
  #ifdef RDK_MUTEX_DEADLOCK_DEBUG
  TUThreadInfo info;
  info.Pid=EngineMonitorFrame->GetEngineMonitorThread()->ThreadID;

@@ -2210,6 +2210,7 @@ void __fastcall TUGEngineControlForm::HideTimerTimer(TObject *Sender)
  if(!ApplicationInitialized)
   return;
  HideTimer->Enabled=false;
+// UEngineMonitorForm->LogTimer->Enabled=true;
 
  UServerControlForm->SetServerBinding(ServerInterfaceAddress, ServerInterfacePort);
 
