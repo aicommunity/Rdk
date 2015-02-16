@@ -2199,7 +2199,17 @@ void __fastcall TVideoCaptureThreadVideoGrabberCamera::ExecuteCaptureInit(void)
 {
  TVideoCaptureThreadVideoGrabber::ExecuteCaptureInit();
  if(VideoGrabber)
+ {
   VideoGrabber->VideoSource=vs_VideoCaptureDevice;
+  VideoGrabber->BurstType = fc_TBitmap;
+  VideoGrabber->BurstMode = True;
+  VideoGrabber->BurstCount = 0;
+  VideoGrabber->VideoDevice=CameraIndex;
+  VideoGrabber->VideoInput=InputIndex;
+  VideoGrabber->VideoSize=SizeIndex;
+  VideoGrabber->VideoSubtype=SubtypeIndex;
+  VideoGrabber->AnalogVideoStandard=AnalogIndex;
+ }
 }
 
 void __fastcall TVideoCaptureThreadVideoGrabberCamera::AStart(double time)
