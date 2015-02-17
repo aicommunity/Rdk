@@ -2257,17 +2257,7 @@ void __fastcall TUGEngineControlForm::HideTimerTimer(TObject *Sender)
   OpenProject(AutoexecProjectFileName);
   AutoexecProjectFileName="";
  }
-/*
- bool hide_flag=HideAdminFormFlag;
- HideTimer->Enabled=false;
- if(HideAdminFormFlag)
- {
-  HideAdminFormFlag=false;
-  Hide();
- }
 
- UpdateInterface();
-  */
  if(AutoStartProjectFlag)
  {
   AutoStartProjectFlag=false;

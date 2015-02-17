@@ -232,8 +232,8 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, std::list<T> &data)
 
 // Вектора
 
-USerStorageBinary& operator << (USerStorageBinary& storage, const std::vector<bool> &data);
-USerStorageBinary& operator >> (USerStorageBinary& storage, std::vector<bool> &data);
+RDK_LIB_TYPE USerStorageBinary& operator << (USerStorageBinary& storage, const std::vector<bool> &data);
+RDK_LIB_TYPE USerStorageBinary& operator >> (USerStorageBinary& storage, std::vector<bool> &data);
 
 template<typename T>
 USerStorageBinary& operator << (USerStorageBinary& storage, const std::vector<T> &data)
@@ -269,9 +269,9 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, std::vector<T> &data
 }
 
 // Строки
-USerStorageBinary& operator << (USerStorageBinary& storage, const std::string &data);
+RDK_LIB_TYPE USerStorageBinary& operator << (USerStorageBinary& storage, const std::string &data);
 
-USerStorageBinary& operator >> (USerStorageBinary& storage, std::string &data);
+RDK_LIB_TYPE USerStorageBinary& operator >> (USerStorageBinary& storage, std::string &data);
 
 
 // Деревья

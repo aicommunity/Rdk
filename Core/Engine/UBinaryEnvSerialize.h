@@ -24,8 +24,8 @@ namespace RDK {
 //USerStorageBinary& operator >> (USerStorageBinary& storage, UBMColorModel &data);
 
 // UItemData
-USerStorageBinary& operator << (USerStorageBinary& storage, const UItemData &data);
-USerStorageBinary& operator >> (USerStorageBinary& storage, UItemData &data);
+RDK_LIB_TYPE USerStorageBinary& operator << (USerStorageBinary& storage, const UItemData &data);
+RDK_LIB_TYPE USerStorageBinary& operator >> (USerStorageBinary& storage, UItemData &data);
 
 
 // UELockVar

@@ -29,13 +29,15 @@ void ExceptionHandler(int channel_index)
   return;
 
  if(WaitForSingleObject(RdkExceptionHandlerMutex,1000) != WAIT_OBJECT_0)
+// if(WaitForSingleObject(RdkExceptionHandlerMutex,1000) == WAIT_TIMEOUT)
   return;
-// ResetEvent(RdkExceptionHandlerEvent);
+// ResetEvent(RdkExceptionHandlerMutex);
 
- UnsentLogChannelIndexes.push_back(channel_index);
+ if(find(UnsentLogChannelIndexes.begin(), UnsentLogChannelIndexes.end(),channel_index) == UnsentLogChannelIndexes.end())
+  UnsentLogChannelIndexes.push_back(channel_index);
 
  ReleaseMutex(RdkExceptionHandlerMutex);
-// SetEvent(RdkExceptionHandlerEvent);
+// SetEvent(RdkExceptionHandlerMutex);
 }
 //---------------------------------------------------------------------------
 __fastcall TUEngineMonitorForm::TUEngineMonitorForm(TComponent* Owner)
@@ -86,8 +88,8 @@ void __fastcall TUEngineMonitorForm::FormDestroy(TObject *Sender)
 void __fastcall TUEngineMonitorForm::FormCreate(TObject *Sender)
 {
  if(!RdkExceptionHandlerMutex)
-  RdkExceptionHandlerMutex=CreateMutex(0,FALSE,0);//CreateEvent(0,TRUE,TRUE,0);
-// LogTimer->Enabled=true;
+  RdkExceptionHandlerMutex=CreateMutex(0,FALSE,0);//CreateEvent(0,TRUE,TRUE,0);////
+ LogTimer->Enabled=true;
  #ifdef RDK_MUTEX_DEADLOCK_DEBUG
  TUThreadInfo info;
  info.Pid=EngineMonitorFrame->GetEngineMonitorThread()->ThreadID;
@@ -105,13 +107,14 @@ void __fastcall TUEngineMonitorForm::LogTimerTimer(TObject *Sender)
   return;
 
  if(WaitForSingleObject(RdkExceptionHandlerMutex,10) != WAIT_OBJECT_0)
+// if(WaitForSingleObject(RdkExceptionHandlerMutex,10) == WAIT_TIMEOUT)
   return;
-// ResetEvent(RdkExceptionHandlerEvent);
+// ResetEvent(RdkExceptionHandlerMutex);
 
  std::list<int> ch_indexes=UnsentLogChannelIndexes;
  UnsentLogChannelIndexes.clear();
  ReleaseMutex(RdkExceptionHandlerMutex);
-// SetEvent(RdkExceptionHandlerEvent);
+// SetEvent(RdkExceptionHandlerMutex);
 
  int global_error_level=-1;
  try
@@ -225,4 +228,5 @@ void __fastcall TUEngineMonitorForm::EngineMonitorFrameRichEditMouseEnter(TObjec
   EngineMonitorFrame->RichEditMouseEnter(Sender);
 }
 //---------------------------------------------------------------------------
+
 
