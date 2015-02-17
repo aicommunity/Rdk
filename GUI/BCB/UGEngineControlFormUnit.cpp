@@ -573,7 +573,6 @@ void TUGEngineControlForm::CreateProject(RDK::TProjectConfig &project_config)
 // Закрывает существущий проект
 void TUGEngineControlForm::CloseProject(void)
 {
- DisableStopVideoSources=false;
  Pause1Click(this);
 
  if(ProjectAutoSaveFlag)
