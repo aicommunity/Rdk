@@ -38,7 +38,7 @@ bool TVideoCaptureOptionsBmpSequenceForm::ReadParametersToGui(RDK::USerStorageXM
  }
  catch(EConvertError &exception)
  {
-  return false;
+//  return false;
  }
  return true;
 }
@@ -54,7 +54,7 @@ bool TVideoCaptureOptionsBmpSequenceForm::WriteParametersToXml(RDK::USerStorageX
  }
  catch(EConvertError &exception)
  {
-  return false;
+//  return false;
  }
 
  return true;
@@ -69,7 +69,8 @@ void __fastcall TVideoCaptureOptionsBmpSequenceForm::FormCreate(TObject *Sender)
  descr.Position=4;
  VideoCaptureOptionsForm->AddVideoSourceOptionsFrame(VideoSourceType,descr);
 // VideoCaptureOptionsForm->AddVideoSourceOptionsFrame(VideoSourceType,this);
- VideoCaptureOptionsForm->AddVideoSourcePrototypes(VideoSourceType,new TVideoCaptureThreadBmpSequence(0,true));
+ if(!VideoCaptureOptionsForm->CheckVideoSourcePrototypes(VideoSourceType))
+  VideoCaptureOptionsForm->AddVideoSourcePrototypes(VideoSourceType,new TVideoCaptureThreadBmpSequence(0,true));
 }
 //---------------------------------------------------------------------------
 void __fastcall TVideoCaptureOptionsBmpSequenceForm::ImageSequencePathBrowseButtonClick(TObject *Sender)

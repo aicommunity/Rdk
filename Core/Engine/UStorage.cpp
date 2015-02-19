@@ -873,7 +873,7 @@ void UStorage::DelAbandonedClasses(void)
 }
 
 /// ¬озвращает указатель на библиотеку класса по имени класса
-UEPtr<ULibrary> UStorage::FindCollection(const std::string class_name)
+UEPtr<ULibrary> UStorage::FindCollection(const std::string &class_name)
 {
  for(size_t i=0;i<CollectionList.size();i++)
  {
@@ -892,7 +892,7 @@ UEPtr<ULibrary> UStorage::FindCollection(const UId &classid)
 
 /// ‘ормирует список зависимостей класса компонента от библиотек
 /// ћетод не очищает переданный список библиотек, а только пополн€ет его
-void UStorage::FindComponentDependencies(const std::string class_name, std::vector<std::pair<std::string,std::string> > &dependencies)
+void UStorage::FindComponentDependencies(const std::string &class_name, std::vector<std::pair<std::string,std::string> > &dependencies)
 {
  UEPtr<UContainer> class_data=dynamic_pointer_cast<UContainer>(GetClass(class_name));
  if(!class_data)

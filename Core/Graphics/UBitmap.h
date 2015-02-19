@@ -463,6 +463,10 @@ void Binarization(UColorT minval, UColorT maxval, UBitmap *target=0);
 // т.о. модель ubmY32 необходим нормировать в [0:255] перед инверсией
 // Поддерживает режимы ubmY8, ubmRGB24, ubmY32
 void Inverse(UBitmap *target=0);
+
+/// Меняет местами RGB каналы из RGB в BGR и наоборот.
+/// Поддерживает режимы ubmY8, ubmRGB24, ubmY32
+void SwapRGBChannels(UBitmap *target=0);
 // -------------------------
 
 // -----------------------
@@ -993,6 +997,7 @@ void Sort(UBHistogram *output);
 // --------------------------
 UBHistogramElement& operator [] (int index) const;
 UBHistogram& operator = (const UBHistogram &value);
+friend UBHistogram operator - (const UBHistogram &value1, const UBHistogram &value2);
 // --------------------------
 };
 

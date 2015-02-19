@@ -60,8 +60,8 @@ virtual ~UContainerDescription(void);
 // Методы управления данными
 // --------------------------
 // Описание свойства
-const UPropertyDescription& GetDescription(const std::string &name);
-bool SetDescription(const std::string &name, const UPropertyDescription& value, bool force=false);
+const UPropertyDescription& GetPropertyDescription(const std::string &name);
+bool SetPropertyDescription(const std::string &name, const UPropertyDescription& value, bool force=false);
 
 // Удаляет свойство из этого описания, если он есть в общих описаниях
 bool RemoveCommonDuplicatesDescription(const std::map<std::string, UPropertyDescription> &common_descriptions, const std::string &name);

@@ -29,6 +29,9 @@
 #pragma link "TUHttpServerUnit"
 #pragma link "TUVisualControllerFrameUnit"
 #pragma resource "*.dfm"
+
+using namespace RDK;
+
 TUServerControlForm *UServerControlForm;
 
 /// Ёкзепл€р класса приложени€
@@ -36,7 +39,7 @@ extern RDK::UApplication RdkApplication;
 
 
 /// —тандартна€ функци€, осуществл€ющую декодирование параметров запроса
-int StandardCommandRequestDecoder(UServerCommand &source, UServerCommand &dest)
+/*int StandardCommandRequestDecoder(UServerCommand &source, UServerCommand &dest)
 {
  dest=source;
  return 0;
@@ -47,7 +50,7 @@ int StandardCommandResponseEncoder(const std::string &response_type, UParamT &so
 {
  dest=source;
  return 0;
-}
+} */
 
 
 //---------------------------------------------------------------------------
@@ -55,8 +58,8 @@ __fastcall TUServerControlForm::TUServerControlForm(TComponent* Owner)
 	: TUVisualControllerForm(Owner)
 {
  MemStream=0;
- CommandRequestDecoder=StandardCommandRequestDecoder;
- CommandResponseEncoder=StandardCommandResponseEncoder;
+// CommandRequestDecoder=StandardCommandRequestDecoder;
+// CommandResponseEncoder=StandardCommandResponseEncoder;
  AverageIterations=4;
 
  Clients=0;
@@ -292,7 +295,7 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
  if(cmd == "UnRegisterMetadataReceiver")
  {
   string address=xml.ReadString("Address","");
-  int port=xml.ReadInteger("Port",port);
+  int port=xml.ReadInteger("Port",1000);
   return_value=UnRegisterMetadataReceiver(address, port);
  }
  else
@@ -400,7 +403,19 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
 }
 
 // ‘ункци€, обрабатывающа€ команды управлени€ сервером
-bool TUServerControlForm::ProcessControlCommand(const UServerCommand &args, std::string &response_type, UParamT &response_data, std::vector<RDK::UParamT> &binary_data)
+void __fastcall TUServerControlForm::ProcessControlCommand(void)
+{
+ RDK::UParamT response;
+ std::vector<RDK::UParamT> binary_response;
+ RDK::UParamT encoded_response;
+ std::string response_type;
+
+ RDK::URpcCommandInternal cmd=CurrentProcessedMainThreadCommand;
+ if(ProcessControlCommand(cmd, response_type, response, binary_response))
+  SendCommandResponse(cmd.RecepientId, response, binary_response);
+}
+
+bool TUServerControlForm::ProcessControlCommand(const RDK::URpcCommandInternal &args, std::string &response_type, UParamT &response_data, std::vector<RDK::UParamT> &binary_data)
 {
 // UServerCommand::const_iterator I;
  std::string request;
@@ -414,9 +429,9 @@ bool TUServerControlForm::ProcessControlCommand(const UServerCommand &args, std:
   return true;
  }
   */
- ConvertVectorToString(args.second, request);
+// ConvertVectorToString(args.second, request);
  int response_status=0;
- const char* response=ControlRemoteCall(request.c_str(), response_status, binary_data);
+ const char* response=ControlRemoteCall(args.Request.c_str(), response_status, binary_data);
 
  if(response_status == 2001)
   return false;
@@ -432,16 +447,16 @@ bool TUServerControlForm::ProcessControlCommand(const UServerCommand &args, std:
  return true;
 }
 
-bool TUServerControlForm::ProcessRPCCommand(const UServerCommand &args, std::string &response_type, UParamT &response_data)
+bool TUServerControlForm::ProcessRPCCommand(const RDK::URpcCommandInternal &args, std::string &response_type, UParamT &response_data)
 {
  std::string request;
 
  response_type="text/plain";
 
- ConvertVectorToString(args.second, request);
+// ConvertVectorToString(args.second, request);
  int response_status=0;
  int channel_index=0;
- const char* response=RemoteCall(request.c_str(), response_status,channel_index);
+ const char* response=RemoteCall(args.Request.c_str(), response_status,channel_index);
 
  if(response_status == 2001)
   return false;
@@ -454,7 +469,7 @@ bool TUServerControlForm::ProcessRPCCommand(const UServerCommand &args, std::str
  return true;
 }
 
-bool TUServerControlForm::ProcessPtzCommand(const UServerCommand &args, std::string &response_type, UParamT &response_data)
+bool TUServerControlForm::ProcessPtzCommand(const RDK::URpcCommandInternal &args, std::string &response_type, UParamT &response_data)
 {
 // UServerCommand::const_iterator I;
  std::string request;
@@ -469,10 +484,10 @@ bool TUServerControlForm::ProcessPtzCommand(const UServerCommand &args, std::str
  }
 
  ConvertVectorToString(I->second, request);*/
- ConvertVectorToString(args.second, request);
+// ConvertVectorToString(args.second, request);
  int response_status=0;
  int channel_index=0;
- const char* response=PtzRemoteCall(request.c_str(), response_status, channel_index);
+ const char* response=PtzRemoteCall(args.Request.c_str(), response_status, channel_index);
 
  if(response_status == 2001)
   return false;
@@ -523,7 +538,7 @@ void TUServerControlForm::ConvertVectorToString(const UParamT &source, std::stri
 
 
 /// ќтправл€ет ответ на команду
-void TUServerControlForm::SendCommandResponse(const std::string &client_binding, UParamT &dest, std::vector<RDK::UParamT> &binary_data)
+void TUServerControlForm::SendCommandResponse(TIdContext *context, UParamT &dest, std::vector<RDK::UParamT> &binary_data)
 {
  UTransferPacket packet;
 
@@ -538,11 +553,23 @@ void TUServerControlForm::SendCommandResponse(const std::string &client_binding,
  RDK::UParamT buffer;
  packet.Save(buffer);
 
- if(IdTCPServer->Active && !dest.empty())
- {
   TByteDynArray arr;
   arr.set_length(buffer.size());
   memcpy(&arr[0],&buffer[0],buffer.size());
+
+	 context->Connection->IOHandler->Write(arr, arr.get_length());
+//	 context->Connection->IOHandler->WriteBufferFlush();
+	 std::string str;
+	str.resize(packet.GetParamSize(0));
+	memcpy(&str[0],&(packet.operator ()((0),0)), packet.GetParamSize(0));
+	Engine_LogMessage(RDK_EX_DEBUG,(string("Response Sent: ")+str).c_str());
+}
+
+
+void TUServerControlForm::SendCommandResponse(const std::string &client_binding, UParamT &dest, std::vector<RDK::UParamT> &binary_data)
+{
+ if(IdTCPServer->Active && !dest.empty())
+ {
   try
   {
    TList *list=IdTCPServer->Contexts->LockList();
@@ -556,12 +583,8 @@ void TUServerControlForm::SendCommandResponse(const std::string &client_binding,
 
 	if(current_bind == client_binding)
 	{
-	 context->Connection->IOHandler->Write(arr, arr.get_length());
-	 context->Connection->IOHandler->WriteBufferFlush();
-	 std::string str;
-	str.resize(packet.GetParamSize(0));
-	memcpy(&str[0],&(packet.operator ()((0),0)), packet.GetParamSize(0));
-	Engine_LogMessage(RDK_EX_DEBUG,(string("Response Sent: ")+str+string(" To: ")+current_bind).c_str());
+	 SendCommandResponse(context, dest, binary_data);
+	 Engine_LogMessage(RDK_EX_DEBUG,(string("Response Sent: ")+string(" To: ")+current_bind).c_str());
 	 break;
 	}
    }
@@ -588,8 +611,10 @@ void TUServerControlForm::SendCommandError(const std::string &client_binding, in
  result.WriteString("Error",sntoa(error_code));
  result.Save(ControlResponseString);
  UParamT error_response;
+ std::vector<RDK::UParamT> binary_response;
+
  ConvertStringToVector(ControlResponseString, error_response);
- SendCommandResponse(client_binding, error_response, BinaryResponse);
+ SendCommandResponse(client_binding, error_response, binary_response);
 }
 
 /// ”станавливает параметры сервера
@@ -1280,166 +1305,21 @@ void __fastcall TUServerControlForm::PageControlChange(TObject *Sender)
 
 void __fastcall TUServerControlForm::CommandTimerTimer(TObject *Sender)
 {
- if(WaitForSingleObject(CommandQueueUnlockEvent,10) == WAIT_TIMEOUT)
-  return;
-
-try {
- ResetEvent(CommandQueueUnlockEvent);
- bool is_breaked=false;
- while(!CommandQueue.empty())
- {
-  CurrentProcessedCommand=CommandQueue.front();
-  CommandQueue.pop_front();
-
-  if(CurrentProcessedCommand.second.empty())
-  {
-   Sleep(1);
-   CommandQueue.clear();
-   SetEvent(CommandQueueUnlockEvent);
-   return;
-  }
-
-  SetEvent(CommandQueueUnlockEvent);
-  BinaryResponse.resize(0);
-  bool is_processed=ProcessControlCommand(CurrentProcessedCommand, ResponseType, Response, BinaryResponse);
-
-  if(is_processed)
-  {
-   if(CommandResponseEncoder)
-   {
-	CommandResponseEncoder(ResponseType, Response, EncodedResponse);
-	SendCommandResponse(CurrentProcessedCommand.first, EncodedResponse, BinaryResponse);
-   }
-  }
-  else
-  {
-   std::string request;
-   ConvertVectorToString(CurrentProcessedCommand.second, request);
-
-   RDK::UEPtr<RDK::URpcCommand> pcmd= new RDK::URpcCommandInternal(request);
-   std::pair<std::string,RDK::UEPtr<RDK::URpcCommand> > cmd_pair;
-   cmd_pair.first=CurrentProcessedCommand.first;
-   cmd_pair.second=pcmd;
-   ProcessedCommandQueue.push_back(cmd_pair);
-
-   RdkApplication.GetRpcDispatcher()->PushCommand(pcmd);
-  }
-
+try
+{
   // ќбработка очереди выполненных команд диспетчера
   RDK::UEPtr<RDK::URpcCommand> pcmd;
+  RDK::UParamT response;
+  std::vector<RDK::UParamT> binary_response;
 
-  if(WaitForSingleObject(CommandQueueUnlockEvent,10) != WAIT_TIMEOUT)
-  {
-   ResetEvent(CommandQueueUnlockEvent);
-   try
-   {
-
-   if(pcmd=RdkApplication.GetRpcDispatcher()->PopProcessedCommand())
-   {
-	std::list<pair<std::string,RDK::UEPtr<RDK::URpcCommand> > >::iterator I=ProcessedCommandQueue.begin();
-	RDK::UEPtr<RDK::URpcCommandInternal> pcmd_int=RDK::dynamic_pointer_cast<RDK::URpcCommandInternal>(pcmd);
-	for(; I != ProcessedCommandQueue.end();++I)
-	{
-	 if(I->second == pcmd)
-	 {
-
-	  if(CommandResponseEncoder)
-	  {
-	   ConvertStringToVector(pcmd_int->Response, Response);
-	   CommandResponseEncoder(ResponseType, Response, EncodedResponse);
-	   SendCommandResponse(I->first, EncodedResponse, BinaryResponse);
-	  }
-	  ProcessedCommandQueue.erase(I);
-	  break;
-	 }
-	}
-	delete pcmd;
-   }
-   }
-   catch(...)
-   {
-	SetEvent(CommandQueueUnlockEvent);
-    throw;
-   }
-   SetEvent(CommandQueueUnlockEvent);
-  }
-
-
-		 /*
-  if(!is_processed)
-   is_processed=ProcessRPCCommand(CurrentProcessedCommand, ResponseType, Response);
-
-  if(!is_processed)
-   is_processed=ProcessPtzCommand(CurrentProcessedCommand, ResponseType, Response);
-
-  if(!is_processed)
-  {
-  }
-  if(CommandResponseEncoder)
-  {
-   CommandResponseEncoder(ResponseType, Response, EncodedResponse);
-   SendCommandResponse(CurrentProcessedCommand.first, EncodedResponse, BinaryResponse);
-  }
-  else
-  {
-//   SendCommandErrorResponse(CurrentProcessedCommand,0);
-  }
-       */
-
-  if(WaitForSingleObject(CommandQueueUnlockEvent,10) != WAIT_TIMEOUT)
-  {
-   is_breaked=true;
-   break;
-  }
-  ResetEvent(CommandQueueUnlockEvent);
- }
-
- if(!is_breaked)
-  SetEvent(CommandQueueUnlockEvent);
-
-  // ќбработка очереди выполненных команд диспетчера
-  RDK::UEPtr<RDK::URpcCommand> pcmd;
 
   while(pcmd=RdkApplication.GetRpcDispatcher()->PopProcessedCommand())
   {
-   if(WaitForSingleObject(CommandQueueUnlockEvent,1000) == WAIT_TIMEOUT)
-   {
-	Engine_LogMessage(RDK_EX_DEBUG, "CommandQueueUnlockEvent timeout");
-	delete pcmd;
-    break;
-   }
-   ResetEvent(CommandQueueUnlockEvent);
-   try
-   {
-
-   std::list<pair<std::string,RDK::UEPtr<RDK::URpcCommand> > >::iterator I=ProcessedCommandQueue.begin();
    RDK::UEPtr<RDK::URpcCommandInternal> pcmd_int=RDK::dynamic_pointer_cast<RDK::URpcCommandInternal>(pcmd);
-   for(; I != ProcessedCommandQueue.end();++I)
-   {
-	if(I->second == pcmd)
-	{
-
-	 if(CommandResponseEncoder)
-	 {
-	  ConvertStringToVector(pcmd_int->Response, Response);
-	  CommandResponseEncoder(ResponseType, Response, EncodedResponse);
-	  SendCommandResponse(I->first, EncodedResponse, BinaryResponse);
-	 }
-	 ProcessedCommandQueue.erase(I);
-	 break;
-	}
-   }
-   }
-   catch(...)
-   {
-	SetEvent(CommandQueueUnlockEvent);
-    throw;
-   }
-   SetEvent(CommandQueueUnlockEvent);
-
-   delete pcmd;
+   ConvertStringToVector(pcmd_int->Response, response);
+   SendCommandResponse(pcmd_int->RecepientId, response, binary_response);
+   delete pcmd_int;
   }
-
 }
 catch (...)
 {
@@ -1522,10 +1402,12 @@ void __fastcall TUServerControlForm::IdTCPServerDisconnect(TIdContext *AContext)
 
 void __fastcall TUServerControlForm::IdTCPServerExecute(TIdContext *AContext)
 {
- if(WaitForSingleObject(ServerReceivingNotInProgress, 10000) == WAIT_TIMEOUT)
-  return;
+// if(WaitForSingleObject(ServerReceivingNotInProgress, 10000) == WAIT_TIMEOUT)
+//  return;
  ResetEvent(ServerReceivingNotInProgress);
 
+try
+{
  vector<unsigned char> client_buffer;
  TIdBytes VBuffer;
  int length=AContext->Connection->IOHandler->InputBuffer->Size;
@@ -1559,26 +1441,38 @@ void __fastcall TUServerControlForm::IdTCPServerExecute(TIdContext *AContext)
 	 I->second.DelFirstPacket();
 	 if(packet.GetNumParams()>0)
 	 {
-//	  PacketXml.resize(Packet.GetParamSize(0));
-	  UServerCommand args;
-//	  args.resize(Packet.GetParamSize(0));
-//	  if(Packet.GetParamSize(0)>0)
-//	   memcpy(&args[0],&Packet(0)[0],Packet.GetParamSize(0));
-	  UServerCommand cmd;
-	  cmd.first=bind;
-	  cmd.second=packet(0);
-	  if(WaitForSingleObject(CommandQueueUnlockEvent,3500) == WAIT_TIMEOUT)
+//	  RDK::URpcCommandInternal cmd;
+
+	  RDK::URpcCommandInternal CurrentProcessedCommand;
+	  CurrentProcessedCommand.RecepientId=bind;
+	  std::string req;
+	  ConvertVectorToString(packet(0),req);
+	  CurrentProcessedCommand.Request=req;
+	  CurrentProcessedCommand.IsDecoded=false;
+	  if(!CurrentProcessedCommand.DecodeBasicData())
 	  {
-	   Engine_LogMessage(RDK_EX_DEBUG, (std::string("Command unlock event timeout: ")+bind).c_str());
+	   // TODO: пишем в лог ошибку декодировани€
+	  }
+
+	  if(!RdkApplication.GetRpcDispatcher()->IsCmdSupported(&CurrentProcessedCommand))
+	  {
+	   CurrentProcessedMainThreadCommand=CurrentProcessedCommand;
+	   ProcessControlCommand();
+//	   if(ProcessControlCommand(CurrentProcessedCommand, ResponseType, Response, BinaryResponse))
+//		SendCommandResponse(AContext, Response, BinaryResponse);
 	  }
 	  else
 	  {
-	   ResetEvent(CommandQueueUnlockEvent);
-	   CommandQueue.push_back(cmd);
-	   SetEvent(CommandQueueUnlockEvent);
-	   std::string str;
-	   ConvertVectorToString(cmd.second,str);
-	   Engine_LogMessage(RDK_EX_DEBUG, (std::string("Command pushed to queue: \n")+str).c_str());
+	   RDK::UEPtr<RDK::URpcCommand> pcmd= new RDK::URpcCommandInternal(CurrentProcessedCommand);
+	   std::pair<std::string,RDK::UEPtr<RDK::URpcCommand> > cmd_pair;
+	   cmd_pair.first=CurrentProcessedCommand.RecepientId;
+	   cmd_pair.second=pcmd;
+//	   if(CurrentProcessedCommand.FunctionName != "Ptz_SetCameraParameter")
+		RdkApplication.GetRpcDispatcher()->PushCommand(pcmd);
+//	   else
+//	    delete pcmd;
+	   Engine_LogMessage(RDK_EX_DEBUG, (std::string("Command pushed to queue: \n")+CurrentProcessedCommand.Request).c_str());
+
 	  }
 	 }
 	}
@@ -1587,6 +1481,17 @@ void __fastcall TUServerControlForm::IdTCPServerExecute(TIdContext *AContext)
  }
  else
   Sleep(10);
+}
+catch(Exception &ex)
+{
+ SetEvent(ServerReceivingNotInProgress);
+ Engine_LogMessage(RDK_EX_DEBUG, (std::string("Server Tcp command receiver error: ")+AnsiString(ex.Message).c_str()).c_str());
+}
+catch(...)
+{
+ SetEvent(ServerReceivingNotInProgress);
+ throw;
+}
 //  Memo1.Lines.Add(LLine);
 //  AContext.Connection.IOHandler.WriteLn('OK');
 //  TIdNotify.NotifyMethod( StopStartServerdMessage );

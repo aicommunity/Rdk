@@ -151,16 +151,24 @@ void TVideoOutputFrame::Init(int mode)
    return;
 
   UnInit();
-  CaptureThread=TakeVideoCapureThread(mode,this,false);
-  CaptureThread->Priority=RDK_DEFAULT_THREAD_PRIORITY;
+  CaptureThread=TakeVideoCapureThread(mode,this,true);
   if(!CaptureThread)
    return;
+  CaptureThread->Priority=RDK_DEFAULT_THREAD_PRIORITY;
   CaptureThread->SetChannelIndex(FrameIndex);
 
-  TVideoCaptureThreadVideoGrabber *thread=dynamic_cast<TVideoCaptureThreadVideoGrabber*>(CaptureThread);
-  if(thread)
-   thread->GetVideoGrabber()->LicenseString=TVGrabberLicenseString;
+  #ifdef RDK_MUTEX_DEADLOCK_DEBUG
+  TUThreadInfo info;
+  info.Pid=CaptureThread->ThreadID;
+  info.Name=string("CaptureThread ")+RDK::sntoa(FrameIndex);
+  GlobalThreadInfoMap[info.Pid]=info;
+  #endif
 
+//  TVideoCaptureThreadVideoGrabber *thread=dynamic_cast<TVideoCaptureThreadVideoGrabber*>(CaptureThread);
+//  if(thread && thread->GetVideoGrabber())
+//   thread->GetVideoGrabber()->LicenseString=TVGrabberLicenseString;
+
+  CaptureThread->Resume();
   CaptureThread->LoadParameters(VideoSourceOptions[mode]);
  }
  UpdateInterface();
@@ -183,16 +191,23 @@ void TVideoOutputFrame::Init(int mode, RDK::USerStorageXML &raw_xml_data)
    return;
 
   UnInit();
-  CaptureThread=TakeVideoCapureThread(mode,this,false);
-  CaptureThread->Priority=RDK_DEFAULT_THREAD_PRIORITY;
+  CaptureThread=TakeVideoCapureThread(mode,this,true);
   if(!CaptureThread)
    return;
+  CaptureThread->Priority=RDK_DEFAULT_THREAD_PRIORITY;
   CaptureThread->SetChannelIndex(FrameIndex);
 
-  TVideoCaptureThreadVideoGrabber *thread=dynamic_cast<TVideoCaptureThreadVideoGrabber*>(CaptureThread);
-  if(thread)
-   thread->GetVideoGrabber()->LicenseString=TVGrabberLicenseString;
+  #ifdef RDK_MUTEX_DEADLOCK_DEBUG
+  TUThreadInfo info;
+  info.Pid=CaptureThread->ThreadID;
+  info.Name=string("CaptureThread ")+RDK::sntoa(FrameIndex);
+  GlobalThreadInfoMap[info.Pid]=info;
+  #endif
+//  TVideoCaptureThreadVideoGrabber *thread=dynamic_cast<TVideoCaptureThreadVideoGrabber*>(CaptureThread);
+//  if(thread)
+//   thread->GetVideoGrabber()->LicenseString=TVGrabberLicenseString;
 
+  CaptureThread->Resume();
   CaptureThread->LoadParametersEx(raw_xml_data);
   CaptureThread->SaveParameters(VideoSourceOptions[mode]);
  }
@@ -223,11 +238,11 @@ void TVideoOutputFrame::UnInit(void)
 }
 
 /// Запуск захвата
-void TVideoOutputFrame::Start(void)
+void TVideoOutputFrame::Start(double time)
 {
  if(CaptureThread)
  {
-  CaptureThread->Start();
+  CaptureThread->Start(time);
   WaitForSingleObject(CaptureThread->GetFrameNotInProgress(),30);
  }
  Timer->Enabled=true;
@@ -236,14 +251,14 @@ void TVideoOutputFrame::Start(void)
 }
 
 /// Останов захвата
-void TVideoOutputFrame::Pause(void)
+void TVideoOutputFrame::Pause(double time)
 {
  IsStarted=false;
  Timer->Enabled=false;
 
  if(CaptureThread)
  {
-  CaptureThread->Stop();
+  CaptureThread->Stop(time);
   WaitForSingleObject(CaptureThread->GetFrameNotInProgress(),30);
  }
 }
@@ -337,7 +352,7 @@ void TVideoOutputFrame::InitPrimarySettings(void)
  if(currentRMethod)
   currentRMethod->Checked=true;
 
- if( currentRMethod->MenuIndex==0 || currentRMethod->MenuIndex==8)
+ if(currentRMethod && (currentRMethod->MenuIndex==0 || currentRMethod->MenuIndex==8))
   parentItem1->Enabled=false;
 }
 
@@ -353,8 +368,9 @@ bool TVideoOutputFrame::DestroyCaptureThread(void)
 {
  if(CaptureThread)
  {
-  CaptureThread->Stop();
+  CaptureThread->Stop(0);
   CaptureThread->Terminate();
+  CaptureThread->WaitFor();
   if(WaitForSingleObject(CaptureThread->GetFrameNotInProgress(),1000) != WAIT_TIMEOUT)
   {
    CaptureThread=0;
@@ -1231,7 +1247,7 @@ void TVideoOutputFrame::ABeforeCalculate(void)
 
   if(!res)
    return;
-  if(SendBmpSource.GetLength() == 0 && CaptureThread->GetThreadState() == 1)
+  if(SendBmpSource.GetLength() == 0 && CaptureThread->CheckCaptureThreadState() == 1)
   {
    if(FrameIndex<num_channels)
 	MEngine_LogMessage(FrameIndex, RDK_EX_INFO, std::string("TVideoOutputFrame::ABeforeCalculate: Frame have zero size!").c_str());
@@ -2206,7 +2222,7 @@ void __fastcall TVideoOutputFrame::OnClickVideoCodec(TObject *Sender)
 
  for(int i=0; i<parentMenu->Count; i++)
  {
-  if(parentMenu->Items[i]->Checked);
+  if(parentMenu->Items[i]->Checked)
    parentMenu->Items[i]->Checked=false;
  }
 
@@ -2223,7 +2239,7 @@ void __fastcall TVideoOutputFrame::OnClickRecordingMethod(TObject *Sender)
 
  for(int i=0; i<parentMenu->Count; i++)
  {
-  if(parentMenu->Items[i]->Checked);
+  if(parentMenu->Items[i]->Checked)
    parentMenu->Items[i]->Checked=false;
  }
 
@@ -2253,7 +2269,7 @@ void __fastcall TVideoOutputFrame::RecordingFrameVideoCompressorComboBoxChange(T
 
  for(int i=0; i<videoCodec->Count; i++)
  {
-  if(videoCodec->Items[i]->Checked);
+  if(videoCodec->Items[i]->Checked)
    videoCodec->Items[i]->Checked=false;
  }
 
@@ -2297,7 +2313,7 @@ void __fastcall TVideoOutputFrame::RecordingFrameRecordingMethodComboBoxChange(T
 
  for(int i=0; i<recMethod->Count; i++)
  {
-  if(recMethod->Items[i]->Checked);
+  if(recMethod->Items[i]->Checked)
    recMethod->Items[i]->Checked=false;
  }
 

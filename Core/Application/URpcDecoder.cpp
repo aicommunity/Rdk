@@ -47,7 +47,7 @@ void URpcDecoder::Process(void)
    UEPtr<URpcCommand> command=PopFromCommandQueue();
    if(!command)
    {
-	boost::this_thread::sleep(boost::posix_time::milliseconds(10));
+	boost::this_thread::sleep(boost::posix_time::milliseconds(1));
 	continue;
    }
 
@@ -62,7 +62,7 @@ void URpcDecoder::Process(void)
 
    if(Dispatcher)
 	Dispatcher->PushToProcessedQueue(command);
-   boost::this_thread::sleep(boost::posix_time::milliseconds(3));
+//   boost::this_thread::sleep(boost::posix_time::milliseconds(3));
   }
   catch(std::exception &std_ex)
   {

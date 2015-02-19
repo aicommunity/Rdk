@@ -25,7 +25,6 @@ object VideoCaptureOptionsBmpForm: TVideoCaptureOptionsBmpForm
     Anchors = [akLeft, akTop, akRight]
     AutoSize = False
     Caption = 'Image file name:'
-    ExplicitWidth = 369
   end
   object PictureTruncPathCheckBox: TCheckBox
     Left = 8

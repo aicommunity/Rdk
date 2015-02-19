@@ -35,6 +35,10 @@ bool TVideoCaptureOptionsVideoFileForm::ReadParametersToGui(RDK::USerStorageXML 
  FpsLabeledEdit->Text=xml.ReadString("Fps", "0").c_str();
  RepeatVideoCheckBox->Checked=xml.ReadBool("RepeatFlag", false);
 
+ DesiredWidthLabeledEdit->Text=xml.ReadString("DesiredWidth",AnsiString(DesiredWidthLabeledEdit->Text).c_str()).c_str();
+ DesiredHeightLabeledEdit->Text=xml.ReadString("DesiredHeight",AnsiString(DesiredHeightLabeledEdit->Text).c_str()).c_str();
+ DesiredResFlagCheckBox->Checked=xml.ReadBool("DesiredResolutionFlag",false);
+
  return true;
 }
 
@@ -47,6 +51,10 @@ bool TVideoCaptureOptionsVideoFileForm::WriteParametersToXml(RDK::USerStorageXML
  xml.WriteString("Fps", AnsiString(FpsLabeledEdit->Text).c_str());
  xml.WriteBool("RepeatFlag", RepeatVideoCheckBox->Checked);
 
+ xml.WriteString("DesiredWidth",AnsiString(DesiredWidthLabeledEdit->Text).c_str());
+ xml.WriteString("DesiredHeight",AnsiString(DesiredHeightLabeledEdit->Text).c_str());
+ xml.WriteBool("DesiredResolutionFlag",DesiredResFlagCheckBox->Checked);
+
  return true;
 }
 /// -------------------------------------
@@ -58,8 +66,9 @@ void __fastcall TVideoCaptureOptionsVideoFileForm::FormCreate(TObject *Sender)
  descr.Name="Video File";
  descr.Position=2;
  VideoCaptureOptionsForm->AddVideoSourceOptionsFrame(VideoSourceType,descr);
+ if(!VideoCaptureOptionsForm->CheckVideoSourcePrototypes(VideoSourceType))
 // VideoCaptureOptionsForm->AddVideoSourceOptionsFrame(VideoSourceType,this);
- VideoCaptureOptionsForm->AddVideoSourcePrototypes(VideoSourceType,new TVideoCaptureThreadVideoGrabberAvi(0,true));
+  VideoCaptureOptionsForm->AddVideoSourcePrototypes(VideoSourceType,new TVideoCaptureThreadVideoGrabberAvi(0,true));
 }
 //---------------------------------------------------------------------------
 void __fastcall TVideoCaptureOptionsVideoFileForm::VFBrowseButtonClick(TObject *Sender)

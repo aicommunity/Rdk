@@ -5,6 +5,7 @@
 
 #include "TServerOptionsFrameUnit.h"
 #include "UGEngineControlFormUnit.h"
+#include "UServerControlFormUnit.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
@@ -65,8 +66,14 @@ void TServerOptionsFrame::ApplyOptions(void)
  if(!UGEngineControlForm)
   return;
 
- UGEngineControlForm->ServerInterfaceAddress=AnsiString(BindAddressLabeledEdit->Text).c_str();
- UGEngineControlForm->ServerInterfacePort=StrToInt(BindPortLabeledEdit->Text);
+ if(UServerControlForm && UGEngineControlForm)
+ {
+  UGEngineControlForm->ServerInterfaceAddress=AnsiString(BindAddressLabeledEdit->Text).c_str();
+  UGEngineControlForm->ServerInterfacePort=StrToInt(BindPortLabeledEdit->Text);
+
+  UServerControlForm->SetServerBinding(UGEngineControlForm->ServerInterfaceAddress,UGEngineControlForm->ServerInterfacePort);
+  UServerControlForm->UpdateInterface();
+ }
 }
 // -----------------------------
 //---------------------------------------------------------------------------

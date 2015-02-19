@@ -30,6 +30,7 @@
 #include "UShowProgressBarUnit.h"
 #include "TLoaderFormUnit.h"
 #include "TApplicationOptionsFormUnit.h"
+#include "UClassesDescriptionsFormUnit.h"
 
 #include "rdk_cpp_initdll.h"
 #include "myrdk.h"
@@ -47,17 +48,23 @@
 #pragma resource "*.dfm"
 TUGEngineControlForm *UGEngineControlForm;
 
+using namespace RDK;
+
 /// Ёкзепл€р прототипа декодера команд
 RDK::URpcDecoderInternal RdkRpcDecoder;
 
 /// Ёкзепл€р класса диспетчера команд
 RDK::URpcDispatcher RdkRpcDispatcher;
 
-/// Ёкзепл€р класса пр	иложени€
+/// Ёкзепл€р класса приложени€
 RDK::UApplication RdkApplication;
 
 /// √лобальна€ переменна€ сигнализирующа€ о завершении инициализации приложени€
 bool ApplicationInitialized=false;
+
+/// –ежим работы визарда нового проекта
+int CreateWizardMode=0;
+
 
 HANDLE RdkLockStartapMutex;
 
@@ -104,6 +111,7 @@ __fastcall TUGEngineControlForm::TUGEngineControlForm(TComponent* Owner)
  DisableAdminForm=false;
 
  EventsLogEnabled=true;
+ DisableStopVideoSources=false;
 }
 
 void __fastcall TUGEngineControlForm::WMSysCommand(TMessage &Msg)
@@ -169,14 +177,6 @@ switch (sys_code)
 
 void __fastcall TUGEngineControlForm::WMServerPing(TMessage &Msg)
 {
-/* static int ping_msg_index=0;
- std::string ping_msg="Ping Received from HWND=";
- ping_msg+=AnsiString(IntToHex(int(Msg.WParam),8)).c_str();
- ping_msg+=" Send message id=";
- ping_msg+=RDK::sntoa(WM_SERVER_PONG);
- ping_msg+=" Count=";
- ping_msg+=RDK::sntoa(++ping_msg_index);
- Engine_LogMessage(RDK_EX_INFO,ping_msg.c_str());*/
  PostMessage((HWND)Msg.WParam, WM_SERVER_PONG, 0, 0);
 }
 
@@ -432,69 +432,145 @@ void TUGEngineControlForm::ALoadParameters(RDK::USerStorageXML &xml)
 }
 
 // —оздает новый проект
-void TUGEngineControlForm::CreateProject(const String &FileName, const String &model_comp_name, const String &model_file_name)
+void TUGEngineControlForm::CreateProject(RDK::TProjectConfig &project_config)
 {
  CloseProject();
- ProjectXml.Destroy();
- ProjectXml.SelectNodeRoot("Project/General");
- ProjectXml.WriteInteger("PredefinedStructure",PredefinedStructure[GetSelectedEngineIndex()]);
- ProjectXml.WriteInteger("ProjectAutoSaveFlag",ProjectAutoSaveFlag);
 
+ std::string FileName=project_config.ProjectDirectory+"\\Project.ini";
+
+ ProjectXml.Destroy();
+
+ ProjectXml.SelectNodeRoot("Project/MultiGeneral");
+ ProjectXml.WriteInteger("EnginesMode",project_config.MultiThreadingMode);
+
+ ProjectXml.WriteInteger("CalculationTimeSourceMode",project_config.CalcSourceTimeMode);
+
+ ProjectXml.WriteBool("EventsLogEnabled",project_config.EventsLogFlag);
+ ProjectXml.WriteBool("ProjectShowChannelsStates",project_config.ShowChannelsStateFlag);
+
+ ProjectXml.WriteInteger("NumEngines",project_config.NumChannels);
+
+ ProjectXml.WriteInteger("SelectedEngineIndex",0);
+
+ ProjectXml.WriteBool("DisableStopVideoSources",project_config.DisableStopVideoSources);
+
+
+ ProjectXml.SelectNodeRoot("Project/General");
  // „исло входов среды
- ProjectXml.WriteInteger("NumEnvInputs",NumEnvInputs);
+ ProjectXml.WriteInteger("NumEnvInputs",1);
 
  // „исло выходов среды
- ProjectXml.WriteInteger("NumEnvOutputs",NumEnvOutputs);
+ ProjectXml.WriteInteger("NumEnvOutputs",1);
 
- ProjectXml.WriteInteger("InputEnvImageWidth",InputEnvImageWidth);
- ProjectXml.WriteInteger("InputEnvImageHeight",InputEnvImageHeight);
+ ProjectXml.WriteInteger("InputEnvImageWidth",640);
+ ProjectXml.WriteInteger("InputEnvImageHeight",480);
 
- // Ўаг счета по умолчанию
- ProjectXml.WriteInteger("DefaultTimeStep",DefaultTimeStep[GetSelectedEngineIndex()]);
+ ProjectXml.WriteString("ProjectDescriptionFileName","Description.rtf");
 
- // √лобальный шаг счета модели
- ProjectXml.WriteInteger("GlobalTimeStep",GlobalTimeStep[GetSelectedEngineIndex()]);
+ ProjectXml.WriteString("ProjectName",project_config.ProjectName);
 
- ProjectXml.WriteBool("ReflectionFlag",ReflectionFlag);
+ ProjectXml.WriteInteger("ProjectAutoSaveFlag",project_config.ProjectAutoSaveFlag);
+ ProjectXml.WriteInteger("ProjectAutoSaveStateFlag",project_config.ProjectAutoSaveStatesFlag);
 
- ProjectXml.WriteInteger("CalculationMode",CalculationMode[GetSelectedEngineIndex()]);
+ ProjectXml.WriteInteger("ProjectMode",project_config.ProjectMode);
 
- ProjectXml.WriteBool("InitAfterLoadFlag",InitAfterLoadFlag[GetSelectedEngineIndex()]);
- ProjectXml.WriteBool("ResetAfterLoadFlag",ResetAfterLoadFlag[GetSelectedEngineIndex()]);
- ProjectXml.WriteBool("DebugModeFlag",DebugModeFlag[GetSelectedEngineIndex()]);
+ ProjectXml.WriteBool(std::string("ReflectionFlag"),project_config.ReflectionFlag);
 
- if(PredefinedStructure[GetSelectedEngineIndex()] == 0 && model_file_name.Length()>0)
+
+ UEngineMonitorForm->EngineMonitorFrame->SetNumChannels(project_config.NumChannels);
+ try
  {
-  if(GetSelectedEngineIndex() == 0)
-   ProjectXml.WriteString("ModelFileName",AnsiString(model_file_name).c_str());
+  TRichEdit* RichEdit=new TRichEdit(this);
+  RichEdit->Parent=this;
+  RichEdit->PlainText=true;
+  RichEdit->Visible=false;
+  RichEdit->Text=project_config.ProjectDescription.c_str();
+
+  RichEdit->Lines->SaveToFile((project_config.ProjectDirectory+string("\\Description.rtf")).c_str());
+  delete RichEdit;
+ }
+ catch(Exception &exception)
+ {
+  MEngine_LogMessage(GetSelectedEngineIndex(), RDK_EX_ERROR, (std::string("Save model Fail: ")+AnsiString(exception.Message).c_str()).c_str());
+ }
+
+ for(size_t i=0;i<project_config.NumChannels;i++)
+ {
+  RDK::TProjectChannelConfig &channel=project_config.ChannelsConfig[i];
+
+  std::string suffix;
+  if(i>0)
+   suffix=std::string("_")+sntoa(i);
+
+  ProjectXml.WriteInteger(std::string("PredefinedStructure")+suffix,channel.PredefinedStructure);
+
+  // Ўаг счета по умолчанию
+  ProjectXml.WriteInteger(std::string("DefaultTimeStep")+suffix,channel.DefaultTimeStep);
+
+  // √лобальный шаг счета модели
+  ProjectXml.WriteInteger(std::string("GlobalTimeStep")+suffix,channel.GlobalTimeStep);
+
+  ProjectXml.WriteInteger(std::string("CalculationMode")+suffix,channel.CalculationMode);
+
+  ProjectXml.WriteBool(std::string("InitAfterLoadFlag")+suffix,channel.InitAfterLoad);
+  ProjectXml.WriteBool(std::string("ResetAfterLoadFlag")+suffix,channel.ResetAfterLoad);
+  ProjectXml.WriteBool(std::string("DebugModeFlag")+suffix,channel.DebugMode);
+
+  string model_file_name=string("Model")+suffix+".xml";
+  if(!channel.ModelFileName.empty())
+   model_file_name=channel.ModelFileName;
+  ProjectXml.WriteString(std::string("ModelFileName")+suffix,model_file_name);
+
+  if(!MIsEngineInit(i))
+   MGraphicalEngineInit(i,channel.PredefinedStructure,1,1,640, 480 ,project_config.ReflectionFlag,ExceptionHandler);
   else
-   ProjectXml.WriteString(std::string("ModelFileName_")+RDK::sntoa(GetSelectedEngineIndex()),AnsiString(model_file_name).c_str());
- }
+   MEnv_SetPredefinedStructure(i,channel.PredefinedStructure);
 
- if(GetSelectedEngineIndex() == 0)
- {
-  ProjectXml.WriteString("InterfaceFileName","Interface.xml");
-  ProjectXml.WriteString("ParametersFileName","Parameters.xml");
-  ProjectXml.WriteString("StatesFileName","States.xml");
- }
- else
- {
-  std::string suffix=RDK::sntoa(GetSelectedEngineIndex());
-  ProjectXml.WriteString(std::string("InterfaceFileName_")+suffix,std::string("Interface_")+suffix+".xml");
-  ProjectXml.WriteString(std::string("ParametersFileName_")+suffix,std::string("Parameters_")+suffix+".xml");
-  ProjectXml.WriteString(std::string("StatesFileName_")+suffix,std::string("States_")+suffix+".xml");
- }
-
- ProjectXml.SaveToFile(AnsiString(FileName).c_str());
- OpenProject(FileName);
-
- if(ProjectOpenFlag)
- {
-  if(PredefinedStructure[GetSelectedEngineIndex()] == 0 && model_comp_name.Length()>0)
+  if(channel.PredefinedStructure == 0 && !channel.ClassName.empty())
   {
-   Model_Create(AnsiString(model_comp_name).c_str());
+   MModel_Create(i,channel.ClassName.c_str());
+  }
+
+//  if(!channel.ClassName.empty())
+
+  ProjectXml.WriteString(std::string("ParametersFileName")+suffix,string("Parameters")+suffix+".xml");
+  ProjectXml.WriteString(std::string("StatesFileName")+suffix,string("States")+suffix+".xml");
+
+//  UComponentsControlForm->ComponentsControlFrame->SaveModelToFile((project_config.ProjectDirectory+string("Model")+suffix+string(".xml")).c_str());
+//  UComponentsControlForm->ComponentsControlFrame->SaveParametersToFile((project_config.ProjectDirectory+string("Parameters")+suffix+string(".xml")).c_str());
+
+  try
+  {
+   if(channel.ModelFileName.empty())
+   {
+	TRichEdit* RichEdit=new TRichEdit(this);
+	RichEdit->Visible=false;
+	RichEdit->Parent=this;
+
+	RichEdit->PlainText=true;
+	const char *p_buf=MModel_SaveComponent(i,"");
+	if(p_buf)
+	 RichEdit->Text=p_buf;
+	Engine_FreeBufString(p_buf);
+	RichEdit->Lines->SaveToFile((project_config.ProjectDirectory+string("\\")+model_file_name).c_str());
+
+	p_buf=MModel_SaveComponentParameters(i,"");
+	if(p_buf)
+	 RichEdit->Text=p_buf;
+	Engine_FreeBufString(p_buf);
+	RichEdit->Lines->SaveToFile((project_config.ProjectDirectory+string("\\Parameters")+suffix+string(".xml")).c_str());
+
+    delete RichEdit;
+   }
+  }
+  catch(Exception &exception)
+  {
+   MEngine_LogMessage(i, RDK_EX_ERROR, (std::string("Create Project: Save model or parameters Fail: ")+AnsiString(exception.Message).c_str()).c_str());
   }
  }
+
+ ProjectXml.SaveToFile(FileName);
+ OpenProject(FileName.c_str());
 }
 
 // «акрывает существущий проект
@@ -551,6 +627,8 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
  int num_engines=ProjectXml.ReadInteger("NumEngines",1);
  if(num_engines<=0)
   num_engines=1;
+
+ DisableStopVideoSources=ProjectXml.ReadBool("DisableStopVideoSources",false);
 
  UShowProgressBarForm->SetBarHeader(1,Lang_LoadingData);
  UShowProgressBarForm->SetBarHeader(2,Lang_Total);
@@ -690,6 +768,12 @@ try{
    GraphicalEngineInit(PredefinedStructure[i],NumEnvInputs,NumEnvOutputs,InputEnvImageWidth, InputEnvImageHeight ,ReflectionFlag,ExceptionHandler);
   else
    Env_SetPredefinedStructure(PredefinedStructure[i]);
+
+  // «агрузка описаний классов
+  UComponentsControlForm->ComponentsControlFrame->LoadCommonClassesDescriptionFromFile("CommonClassesDescription.xml");
+  UComponentsControlForm->ComponentsControlFrame->LoadClassesDescriptionFromFile("ClassesDescription.xml");
+//  MStorage_LoadCommonClassesDescription(i,"CommonClassesDescription.xml");
+//  MStorage_LoadClassesDescription(i,"ClassesDescription.xml");
 
   Model_SetDefaultTimeStep(DefaultTimeStep[i]);
   Env_SetCurrentDataDir(AnsiString(ProjectPath).c_str());
@@ -1035,9 +1119,9 @@ try{
   SelectEngine(i);
   String modelfilename;
   if(i == 0)
-   String modelfilename=ProjectXml.ReadString("ModelFileName","").c_str();
+   modelfilename=ProjectXml.ReadString("ModelFileName","").c_str();
   else
-   String modelfilename=ProjectXml.ReadString(std::string("ModelFileName_")+RDK::sntoa(i),"").c_str();
+   modelfilename=ProjectXml.ReadString(std::string("ModelFileName_")+RDK::sntoa(i),"").c_str();
   if(modelfilename.Length() != 0)
   {
    if(ExtractFilePath(modelfilename).Length() == 0)
@@ -1184,6 +1268,7 @@ try{
 
  ProjectXml.WriteBool("ProjectShowChannelsStates",ProjectShowChannelsStates);
 
+ ProjectXml.WriteBool("DisableStopVideoSources",DisableStopVideoSources);
 
  ProjectXml.SaveToFile(AnsiString(ProjectPath+ProjectFileName).c_str());
 }
@@ -1367,8 +1452,6 @@ TTabSheet* TUGEngineControlForm::AddComponentControlFormPage(const string &compo
  {
   TTabSheet* tab=new TTabSheet(PageControl1);
   tab->PageControl=PageControl1;
-  if(!tab)
-   return 0;
 
   TUVisualControllerForm *form=I->second->New(tab);
   if(!form)
@@ -1632,7 +1715,8 @@ void TUGEngineControlForm::PauseChannel(int channel_index)
  UEngineMonitorForm->EngineMonitorFrame->PauseChannel(channel_index);
  UShowProgressBarForm->IncBarStatus(2);
 #ifdef RDK_VIDEO
- VideoOutputForm->StopOffline(channel_index);
+ if(!DisableStopVideoSources)
+  VideoOutputForm->StopOffline(channel_index);
 #endif
  UShowProgressBarForm->Hide();
 }
@@ -1646,7 +1730,8 @@ void TUGEngineControlForm::ResetChannel(int channel_index)
 
  UEngineMonitorForm->EngineMonitorFrame->ResetChannel(channel_index);
 #ifdef RDK_VIDEO
- VideoOutputForm->StopOffline(channel_index);
+ if(!DisableStopVideoSources)
+  VideoOutputForm->StopOffline(channel_index);
 #endif
 }
 
@@ -1858,13 +1943,15 @@ void __fastcall TUGEngineControlForm::SaveProjectItemClick(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::CreateProjectItemClick(TObject *Sender)
 {
+ TProjectConfig clean_project;
+ UCreateProjectWizardForm->ProjectConfig=clean_project;
  UCreateProjectWizardForm->ClearWizard();
  UCreateProjectWizardForm->Caption="Create Project Wizard";
- if(UCreateProjectWizardForm->ShowCreateProject() == mrOk)
+ if(UCreateProjectWizardForm->ShowCreateProject(CreateWizardMode) == mrOk)
  {
   CloseProject();
   PredefinedStructure.resize(1);
-  PredefinedStructure[0]=UCreateProjectWizardForm->PredefinedStructure;
+  PredefinedStructure[0]=UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].PredefinedStructure;
   ProjectAutoSaveFlag=UCreateProjectWizardForm->ProjectAutoSaveFlagCheckBox->Checked;
 
   DefaultTimeStep.resize(1);
@@ -1879,13 +1966,16 @@ void __fastcall TUGEngineControlForm::CreateProjectItemClick(TObject *Sender)
 //  ReflectionFlag=UCreateProjectWizardForm->UpendInputImageCheckBox->Checked;
 
 
-  CalculationMode.resize(1);
+  CalculationMode.resize(1,2);
+  InitAfterLoadFlag.resize(1,1);
+  ResetAfterLoadFlag.resize(1,1);
+  DebugModeFlag.resize(1,false);
 //  CalculationMode[0]=UCreateProjectWizardForm->ProjectCalculationModeRadioGroup->ItemIndex;
 
   MinInterstepsInterval.resize(1);
   MinInterstepsInterval[0]=20;
 
-  CreateProject(UCreateProjectWizardForm->ProjectDirectoryLabeledEdit->Text+String("\\Project.ini"),UCreateProjectWizardForm->UClassesListFrame1->GetSelectedName(),UCreateProjectWizardForm->ProjectModelFileNameLabeledEdit->Text);
+  CreateProject(UCreateProjectWizardForm->ProjectConfig);
 
   ProjectName=UCreateProjectWizardForm->ProjectNameLabeledEdit->Text;
   ProjectDescription=UCreateProjectWizardForm->ProjectDescriptionRichEdit->Text;
@@ -1978,7 +2068,7 @@ void __fastcall TUGEngineControlForm::ProjectOptions1Click(TObject *Sender)
 // UCreateProjectWizardForm->ProjectCalculationModeRadioGroup->ItemIndex=CalculationMode[GetSelectedEngineIndex()];
  UCreateProjectWizardForm->CalculationSourceTimeModeRadioGroup->ItemIndex=UEngineMonitorForm->EngineMonitorFrame->GetCalculationTimeSourceMode();
 
- UCreateProjectWizardForm->PredefinedStructure=PredefinedStructure[GetSelectedEngineIndex()];
+ UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].PredefinedStructure=PredefinedStructure[GetSelectedEngineIndex()];
  if(PredefinedStructure[GetSelectedEngineIndex()])
  {
 //  UCreateProjectWizardForm->PredefinedModelRadioButton->Checked=true;
@@ -2004,7 +2094,7 @@ void __fastcall TUGEngineControlForm::ProjectOptions1Click(TObject *Sender)
  if(UCreateProjectWizardForm->ShowProjectOptions() == mrOk)
  {
 //  CloseProject();
-  PredefinedStructure[GetSelectedEngineIndex()]=UCreateProjectWizardForm->PredefinedStructure;
+  PredefinedStructure[GetSelectedEngineIndex()]=UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].PredefinedStructure;
   ProjectAutoSaveFlag=UCreateProjectWizardForm->ProjectAutoSaveFlagCheckBox->Checked;
   DefaultTimeStep[GetSelectedEngineIndex()]=StrToInt(UCreateProjectWizardForm->ProjectTimeStepEdit->Text);
   GlobalTimeStep[GetSelectedEngineIndex()]=DefaultTimeStep[GetSelectedEngineIndex()];
@@ -2074,7 +2164,7 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  if(opt_name.Length()>4)
  opt_name=opt_name.SubString(0,opt_name.Length()-4);
  TMemIniFile *app_ini=new TMemIniFile(opt_name+".ini");
- MainFormName=app_ini->ReadString("General", "MainFormName", "");
+ MainFormName=app_ini->ReadString("General", "MainFormName", Name);
  HideAdminFormFlag=app_ini->ReadBool("General", "HideAdminForm", false);
  AutoexecProjectFileName=app_ini->ReadString("General", "AutoexecProjectFileName", "");
  AutoStartProjectFlag=app_ini->ReadBool("General", "AutoStartProjectFlag", false);
@@ -2125,6 +2215,7 @@ void __fastcall TUGEngineControlForm::HideTimerTimer(TObject *Sender)
  if(!ApplicationInitialized)
   return;
  HideTimer->Enabled=false;
+// UEngineMonitorForm->LogTimer->Enabled=true;
 
  UServerControlForm->SetServerBinding(ServerInterfaceAddress, ServerInterfacePort);
 
@@ -2171,17 +2262,7 @@ void __fastcall TUGEngineControlForm::HideTimerTimer(TObject *Sender)
   OpenProject(AutoexecProjectFileName);
   AutoexecProjectFileName="";
  }
-/*
- bool hide_flag=HideAdminFormFlag;
- HideTimer->Enabled=false;
- if(HideAdminFormFlag)
- {
-  HideAdminFormFlag=false;
-  Hide();
- }
 
- UpdateInterface();
-  */
  if(AutoStartProjectFlag)
  {
   AutoStartProjectFlag=false;
@@ -2198,6 +2279,7 @@ void __fastcall TUGEngineControlForm::FormCloseQuery(TObject *Sender, bool &CanC
 
  if(RdkMainForm == this)
  {
+  DisableStopVideoSources=false;
   Pause1Click(Sender);
   Sleep(1000);
   CloseProject();
@@ -2300,12 +2382,13 @@ void __fastcall TUGEngineControlForm::Servercontrol1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::ChannelsStringGridClick(TObject *Sender)
 {
- if(UpdateInterfaceFlag)
+/* if(UpdateInterfaceFlag)
   return;
 
  SelectEngine(ChannelsStringGrid->Row);
  UDrawEngineFrame1->ReloadNet();
  RDK::UIVisualControllerStorage::UpdateInterface(true);
+ */
 }
 //---------------------------------------------------------------------------
 
@@ -2315,9 +2398,12 @@ void __fastcall TUGEngineControlForm::ChannelsStringGridSelectCell(TObject *Send
  if(UpdateInterfaceFlag)
   return;
 
- SelectEngine(ChannelsStringGrid->Row);
- UDrawEngineFrame1->ReloadNet();
- RDK::UIVisualControllerStorage::UpdateInterface(true);
+ if(ChannelsStringGrid->Row != ARow)
+ {
+  SelectEngine(ARow);
+  UDrawEngineFrame1->ReloadNet();
+  RDK::UIVisualControllerStorage::UpdateInterface(true);
+ }
 }
 //---------------------------------------------------------------------------
 
@@ -2395,6 +2481,7 @@ void __fastcall TUGEngineControlForm::Hide1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::Close1Click(TObject *Sender)
 {
+ DisableStopVideoSources=false;
  Pause1Click(Sender);
  Sleep(1000);
  CloseProject();
@@ -2577,7 +2664,63 @@ void __fastcall TUGEngineControlForm::DeleteSelectedChannel1Click(TObject *Sende
 
 void __fastcall TUGEngineControlForm::ApplicationOptions1Click(TObject *Sender)
 {
- ApplicationOptionsForm->ShowModal();
+ if(ApplicationOptionsForm->ShowModal() == mrOk)
+ {
+  // —охран€ем настройки приложени€
+  String opt_name=ExtractFileName(Application->ExeName);
+  if(opt_name.Length()>4)
+   opt_name=opt_name.SubString(0,opt_name.Length()-4);
+  TMemIniFile *app_ini=new TMemIniFile(opt_name+".ini");
+
+  app_ini->WriteString("General", "MainFormName", MainFormName);
+  app_ini->WriteBool("General", "HideAdminForm", HideAdminFormFlag);
+  app_ini->WriteString("General", "AutoexecProjectFileName", AutoexecProjectFileName);
+  app_ini->WriteBool("General", "AutoStartProjectFlag", AutoStartProjectFlag);
+//  VideoGrabberLicenseString=app_ini->ReadString("General","VideoGrabberLicenseString","");
+  app_ini->WriteBool("General","MinimizeToTray",MinimizeToTray);
+  app_ini->WriteBool("General","StartMinimized",StartMinimized);
+  app_ini->WriteString("General","ProgramName",ProgramName);
+  app_ini->WriteInteger("General","LastProjectsListMaxSize",LastProjectsListMaxSize);
+
+  app_ini->WriteString("Server","BindAddress",ServerInterfaceAddress.c_str());
+  app_ini->WriteInteger("Server","BindPort",ServerInterfacePort);
+
+  app_ini->WriteBool("General","DisableAdminForm",DisableAdminForm);
+  app_ini->UpdateFile();
+ }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::ClassesDescription1Click(TObject *Sender)
+{
+ UClassesDescriptionsForm->Show();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::StartChannel1Click(TObject *Sender)
+{
+ StartChannel(GetSelectedEngineIndex());
+ RDK::UIVisualControllerStorage::UpdateInterface();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::PauseChannel1Click(TObject *Sender)
+{
+ PauseChannel(GetSelectedEngineIndex());
+ RDK::UIVisualControllerStorage::UpdateInterface();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::ResetChannel1Click(TObject *Sender)
+{
+ ResetChannel(GetSelectedEngineIndex());
+ RDK::UIVisualControllerStorage::UpdateInterface();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::ToolButton15Click(TObject *Sender)
+{
+ ToolButton15->CheckMenuDropdown();
 }
 //---------------------------------------------------------------------------
 

@@ -66,21 +66,5 @@ void UDestroyMutex(UGenericMutex* mutex)
   delete mutex;
 }
 
-UGenericMutexLocker::UGenericMutexLocker(UGenericMutex *m)
-{
- if(m)
- {
-  m_mutex = m;
-  m_mutex->lock();
- }
- else
-  m_mutex = 0;
-}
-
-UGenericMutexLocker::~UGenericMutexLocker()
-{
- if(m_mutex)
-  m_mutex->unlock();
-}
 #endif
 

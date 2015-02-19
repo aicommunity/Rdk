@@ -367,6 +367,7 @@ void __fastcall TUDrawEngineFrame::ScrollBoxResize(TObject *Sender)
 void __fastcall TUDrawEngineFrame::UClassesListFrameStringGridMouseMove(TObject *Sender,
           TShiftState Shift, int X, int Y)
 {
+ UClassesListFrame->StringGridMouseMove(Sender, Shift, X, Y);
  if(Shift.Contains(ssLeft))
  {
   UClassesListFrame->StringGrid->BeginDrag(true);
@@ -597,6 +598,7 @@ void __fastcall TUDrawEngineFrame::Delete1Click(TObject *Sender)
 void __fastcall TUDrawEngineFrame::UClassesListFrameTreeViewMouseMove(TObject *Sender,
           TShiftState Shift, int X, int Y)
 {
+ UClassesListFrame->TreeViewMouseMove(Sender, Shift, X, Y);
  if(Shift.Contains(ssLeft))
  {
   UClassesListFrame->StringGrid->BeginDrag(true);
@@ -615,8 +617,9 @@ void __fastcall TUDrawEngineFrame::UClassesListFrameTreeViewMouseUp(TObject *Sen
 
 
 void __fastcall TUDrawEngineFrame::UClassesListFrameLibComponentListStringGridMouseMove(TObject *Sender,
-          TShiftState Shift, int X, int Y)
+		  TShiftState Shift, int X, int Y)
 {
+ UClassesListFrame->LibComponentListStringGridMouseMove(Sender, Shift, X, Y);
  if(Shift.Contains(ssLeft))
  {
   UClassesListFrame->LibComponentListStringGrid->BeginDrag(true);

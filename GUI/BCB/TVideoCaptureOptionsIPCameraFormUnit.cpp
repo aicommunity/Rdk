@@ -34,6 +34,13 @@ bool TVideoCaptureOptionsIPCameraForm::ReadParametersToGui(RDK::USerStorageXML &
  IPCameraUserNameEdit->Text=xml.ReadString("UserName", AnsiString(IPCameraUserNameEdit->Text).c_str()).c_str();
  IPCameraUserPasswordEdit->Text=xml.ReadString("Password", AnsiString(IPCameraUserPasswordEdit->Text).c_str()).c_str();
  FpsLabeledEdit->Text=xml.ReadString("Fps", "0").c_str();
+ DesiredWidthLabeledEdit->Text=xml.ReadString("DesiredWidth",AnsiString(DesiredWidthLabeledEdit->Text).c_str()).c_str();
+ DesiredHeightLabeledEdit->Text=xml.ReadString("DesiredHeight",AnsiString(DesiredHeightLabeledEdit->Text).c_str()).c_str();
+ DesiredResFlagCheckBox->Checked=xml.ReadBool("DesiredResolutionFlag",false);
+
+ ConnectionTimeoutLabeledEdit->Text=xml.ReadString("ConnectionTimeout",AnsiString(ConnectionTimeoutLabeledEdit->Text).c_str()).c_str();
+ CaptureTimeoutLabeledEdit->Text=xml.ReadString("CaptureTimeout",AnsiString(CaptureTimeoutLabeledEdit->Text).c_str()).c_str();
+
  return true;
 }
 
@@ -45,6 +52,12 @@ bool TVideoCaptureOptionsIPCameraForm::WriteParametersToXml(RDK::USerStorageXML 
  xml.WriteString("UserName", AnsiString(IPCameraUserNameEdit->Text).c_str());
  xml.WriteString("Password", AnsiString(IPCameraUserPasswordEdit->Text).c_str());
  xml.WriteString("Fps", AnsiString(FpsLabeledEdit->Text).c_str());
+ xml.WriteString("DesiredWidth",AnsiString(DesiredWidthLabeledEdit->Text).c_str());
+ xml.WriteString("DesiredHeight",AnsiString(DesiredHeightLabeledEdit->Text).c_str());
+ xml.WriteBool("DesiredResolutionFlag",DesiredResFlagCheckBox->Checked);
+
+ xml.WriteString("ConnectionTimeout",AnsiString(ConnectionTimeoutLabeledEdit->Text).c_str());
+ xml.WriteString("CaptureTimeout",AnsiString(CaptureTimeoutLabeledEdit->Text).c_str());
  return true;
 }
 /// -------------------------------------
@@ -57,6 +70,7 @@ void __fastcall TVideoCaptureOptionsIPCameraForm::FormCreate(TObject *Sender)
  descr.Position=1;
  VideoCaptureOptionsForm->AddVideoSourceOptionsFrame(VideoSourceType,descr);
 // VideoCaptureOptionsForm->AddVideoSourceOptionsFrame(VideoSourceType,this);
- VideoCaptureOptionsForm->AddVideoSourcePrototypes(VideoSourceType,new TVideoCaptureThreadVideoGrabberIpCamera(0,true));
+ if(!VideoCaptureOptionsForm->CheckVideoSourcePrototypes(VideoSourceType))
+  VideoCaptureOptionsForm->AddVideoSourcePrototypes(VideoSourceType,new TVideoCaptureThreadVideoGrabberIpCamera(0,true));
 }
 //---------------------------------------------------------------------------

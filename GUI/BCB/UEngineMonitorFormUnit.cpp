@@ -16,7 +16,7 @@
 #pragma resource "*.dfm"
 TUEngineMonitorForm *UEngineMonitorForm;
 
-HANDLE RdkExceptionHandlerEvent=0;
+HANDLE RdkExceptionHandlerMutex=0;
 
 std::list<int> UnsentLogChannelIndexes;
 
@@ -25,16 +25,19 @@ std::list<std::string> UnsentLog;
 //---------------------------------------------------------------------------
 void ExceptionHandler(int channel_index)
 {
- if(!RdkExceptionHandlerEvent)
+ if(!RdkExceptionHandlerMutex)
   return;
 
- if(WaitForSingleObject(RdkExceptionHandlerEvent,1000) == WAIT_TIMEOUT)
+ if(WaitForSingleObject(RdkExceptionHandlerMutex,1000) != WAIT_OBJECT_0)
+// if(WaitForSingleObject(RdkExceptionHandlerMutex,1000) == WAIT_TIMEOUT)
   return;
- ResetEvent(RdkExceptionHandlerEvent);
+// ResetEvent(RdkExceptionHandlerMutex);
 
- UnsentLogChannelIndexes.push_back(channel_index);
+ if(find(UnsentLogChannelIndexes.begin(), UnsentLogChannelIndexes.end(),channel_index) == UnsentLogChannelIndexes.end())
+  UnsentLogChannelIndexes.push_back(channel_index);
 
- SetEvent(RdkExceptionHandlerEvent);
+ ReleaseMutex(RdkExceptionHandlerMutex);
+// SetEvent(RdkExceptionHandlerMutex);
 }
 //---------------------------------------------------------------------------
 __fastcall TUEngineMonitorForm::TUEngineMonitorForm(TComponent* Owner)
@@ -72,10 +75,10 @@ void TUEngineMonitorForm::RecreateEventsLogFile(void)
 //---------------------------------------------------------------------------
 void __fastcall TUEngineMonitorForm::FormDestroy(TObject *Sender)
 {
- if(RdkExceptionHandlerEvent)
+ if(RdkExceptionHandlerMutex)
  {
-  CloseHandle(RdkExceptionHandlerEvent);
-  RdkExceptionHandlerEvent=0;
+  CloseHandle(RdkExceptionHandlerMutex);
+  RdkExceptionHandlerMutex=0;
  }
 // EngineMonitorFrame->Timer->Enabled=false;
 }
@@ -84,8 +87,15 @@ void __fastcall TUEngineMonitorForm::FormDestroy(TObject *Sender)
 
 void __fastcall TUEngineMonitorForm::FormCreate(TObject *Sender)
 {
- if(!RdkExceptionHandlerEvent)
-  RdkExceptionHandlerEvent=CreateEvent(0,TRUE,TRUE,0);
+ if(!RdkExceptionHandlerMutex)
+  RdkExceptionHandlerMutex=CreateMutex(0,FALSE,0);//CreateEvent(0,TRUE,TRUE,0);////
+ LogTimer->Enabled=true;
+ #ifdef RDK_MUTEX_DEADLOCK_DEBUG
+ TUThreadInfo info;
+ info.Pid=EngineMonitorFrame->GetEngineMonitorThread()->ThreadID;
+ info.Name="EngineMonitorThread";
+ GlobalThreadInfoMap[info.Pid]=info;
+ #endif
 }
 //---------------------------------------------------------------------------
 
@@ -93,18 +103,24 @@ void __fastcall TUEngineMonitorForm::FormCreate(TObject *Sender)
 
 void __fastcall TUEngineMonitorForm::LogTimerTimer(TObject *Sender)
 {
- if(!RdkExceptionHandlerEvent)
+ if(!RdkExceptionHandlerMutex)
   return;
 
- if(WaitForSingleObject(RdkExceptionHandlerEvent,10) == WAIT_TIMEOUT)
+ if(WaitForSingleObject(RdkExceptionHandlerMutex,10) != WAIT_OBJECT_0)
+// if(WaitForSingleObject(RdkExceptionHandlerMutex,10) == WAIT_TIMEOUT)
   return;
- ResetEvent(RdkExceptionHandlerEvent);
+// ResetEvent(RdkExceptionHandlerMutex);
+
+ std::list<int> ch_indexes=UnsentLogChannelIndexes;
+ UnsentLogChannelIndexes.clear();
+ ReleaseMutex(RdkExceptionHandlerMutex);
+// SetEvent(RdkExceptionHandlerMutex);
 
  int global_error_level=-1;
  try
  {
-  std::list<int>::iterator I=UnsentLogChannelIndexes.begin();
-  for(;I!=UnsentLogChannelIndexes.end();++I)
+  std::list<int>::iterator I=ch_indexes.begin();
+  for(;I!=ch_indexes.end();++I)
   {
    int error_level=-1;
    int num_log_lines=MEngine_GetNumUnreadLogLines(*I);
@@ -121,38 +137,34 @@ void __fastcall TUEngineMonitorForm::LogTimerTimer(TObject *Sender)
 	if(!new_log_data.empty())
 	 UnsentLog.push_back(new_log_data);
    }
+   MEngine_ClearReadLog(*I);
   }
-  MEngine_ClearReadLog(*I);
  }
  catch(...)
  {
-  UnsentLogChannelIndexes.clear();
-  SetEvent(RdkExceptionHandlerEvent);
   throw;
  }
- UnsentLogChannelIndexes.clear();
- SetEvent(RdkExceptionHandlerEvent);
 
  try
  {
   if(global_error_level>=0 && global_error_level<3)
   {
-   UEngineMonitorForm->EngineMonitorFrame->Pause1Click(UEngineMonitorForm);
-   TTabSheet *tab=dynamic_cast<TTabSheet*>(UEngineMonitorForm->Parent);
+   EngineMonitorFrame->Pause1Click(this);
+   TTabSheet *tab=dynamic_cast<TTabSheet*>(Parent);
    if(tab)
    {
 	tab->PageControl->ActivePage=tab;
    }
    else
    {
-	UEngineMonitorForm->Show();
-	UEngineMonitorForm->WindowState=wsNormal;
+	Show();
+	WindowState=wsNormal;
    }
   }
 
 
   /// Сохраняем лог в файл если это необходимо
-  if(UGEngineControlForm->EventsLogEnabled && UGEngineControlForm->ProjectPath.Length()>0)
+  if(!UnsentLog.empty() && UGEngineControlForm->EventsLogEnabled && UGEngineControlForm->ProjectPath.Length()>0)
   {
    try
    {
@@ -160,13 +172,15 @@ void __fastcall TUEngineMonitorForm::LogTimerTimer(TObject *Sender)
    }
    catch(EInOutError &exception)
    {
-    UGEngineControlForm->EventsLogEnabled=false;
+	UGEngineControlForm->EventsLogEnabled=false;
    }
    EventsLogFilePath=AnsiString(UGEngineControlForm->ProjectPath+"EventsLog/").c_str();
   }
 
+  bool is_logged=false;
   while(!UnsentLog.empty())
   {
+   is_logged=true;
    if(UGEngineControlForm->EventsLogEnabled)
    {
 	if(!EventsLogFile)
@@ -181,16 +195,22 @@ void __fastcall TUEngineMonitorForm::LogTimerTimer(TObject *Sender)
 	if(*EventsLogFile)
 	{
 	 *EventsLogFile<<UnsentLog.front()<<std::endl;
-	 EventsLogFile->flush();
 	}
    }
 
-   UEngineMonitorForm->EngineMonitorFrame->RichEdit->Lines->Add(UnsentLog.front().c_str());
-   UEngineMonitorForm->EngineMonitorFrame->RichEdit->SelStart =
-	UEngineMonitorForm->EngineMonitorFrame->RichEdit->Perform(EM_LINEINDEX, UEngineMonitorForm->EngineMonitorFrame->RichEdit->Lines->Count-1, 0);
-   UEngineMonitorForm->EngineMonitorFrame->RichEdit->Update();
-   UEngineMonitorForm->EngineMonitorFrame->RichEdit->Repaint();
+   EngineMonitorFrame->RichEdit->Lines->Add(UnsentLog.front().c_str());
    UnsentLog.pop_front();
+  }
+
+  if(is_logged)
+  {
+   if(UGEngineControlForm->EventsLogEnabled && EventsLogFile && *EventsLogFile)
+	EventsLogFile->flush();
+
+   EngineMonitorFrame->RichEdit->SelStart =
+	EngineMonitorFrame->RichEdit->Perform(EM_LINEINDEX, EngineMonitorFrame->RichEdit->Lines->Count-1, 0);
+   EngineMonitorFrame->RichEdit->Update();
+   EngineMonitorFrame->RichEdit->Repaint();
   }
  }
  catch(...)
@@ -208,4 +228,5 @@ void __fastcall TUEngineMonitorForm::EngineMonitorFrameRichEditMouseEnter(TObjec
   EngineMonitorFrame->RichEditMouseEnter(Sender);
 }
 //---------------------------------------------------------------------------
+
 

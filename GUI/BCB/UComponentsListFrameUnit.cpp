@@ -7,10 +7,10 @@
 #include "UComponentsListFrameUnit.h"
 #include "rdk_initdll.h"
 #include "myrdk.h"
-#include "UCRPerseptronFormUnit.h"
-#include "UCRSampleFormUnit.h"
-#include "UCRTeacherPerseptronDLFormUnit.h"
-#include "UCRTeacherPerseptronBPFormUnit.h"
+//#include "UCRPerseptronFormUnit.h"
+//#include "UCRSampleFormUnit.h"
+//#include "UCRTeacherPerseptronDLFormUnit.h"
+//#include "UCRTeacherPerseptronBPFormUnit.h"
 #include "UComponentsListFormUnit.h"
 #include "UListInputFormUnit.h"
 #include "UDrawEngineFrameUnit.h"
@@ -25,6 +25,7 @@ TUComponentsListFrame *UComponentsListFrame;
 // Собственно список форм
 std::map<std::string, TUVisualControllerForm*> TUComponentsListFrame::ComponentControllers;
 
+using namespace RDK;
 //---------------------------------------------------------------------------
 __fastcall TUComponentsListFrame::TUComponentsListFrame(TComponent* Owner)
 	: TUVisualControllerFrame(Owner)
@@ -478,6 +479,13 @@ void TUComponentsListFrame::UpdateNiceParamsList(TEnchancedSG *frame)
 	frame->BasicStringGrid->RowCount=2;
 
  frame->BasicStringGrid->ColCount=1+2;
+
+ if(frame->BasicStringGrid->RowCount>1)
+  frame->BasicStringGrid->FixedRows=1;
+
+ if(frame->BasicStringGrid->ColCount>1)
+  frame->BasicStringGrid->FixedCols=1;
+
  for(int i=0;i<num;i++)
  {
 	frame->BasicStringGrid->Cells[2][i+1]="";

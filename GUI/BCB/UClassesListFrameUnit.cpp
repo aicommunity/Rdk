@@ -5,12 +5,14 @@
 #pragma hdrstop
 
 #include "UClassesListFrameUnit.h"
-#include "rdk_initdll.h"
+#include "rdk_cpp_initdll.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "TUVisualControllerFrameUnit"
 #pragma resource "*.dfm"
 TUClassesListFrame *UClassesListFrame;
+
+using namespace RDK;
 //---------------------------------------------------------------------------
 __fastcall TUClassesListFrame::TUClassesListFrame(TComponent* Owner)
 	: TUVisualControllerFrame(Owner)
@@ -207,7 +209,51 @@ String TUClassesListFrame::GetSelectedName(void)
  return String("");
 }
 
-// Возвращает имя выбранного класса
+/// Устанавливает имя выбранного класса
+void TUClassesListFrame::SetSelectedName(const String &name)
+{
+ std::string sname=AnsiString(name).c_str();
+
+ if(PageControl->ActivePage == LibsTabSheet)
+ {
+/*  TTreeNode* sel=TreeView->Selected;
+  if(sel && sel->Parent)
+   return sel->Text; */
+  // TODO: Реализовать!
+ }
+ else
+ if(PageControl->ActivePage == NameTabSheet)
+ {
+//std::map<std::string, std::vector<std::string> > LibraryClassNames;
+  for(size_t i=0;i<ClassNames.size();i++)
+   if(ClassNames[i] == sname)
+   {
+	StringGrid->Row=i+1;
+	break;
+   }
+ }
+ else
+ if(PageControl->ActivePage == LibsControlTabSheet)
+ {
+  bool found=false;
+  for(size_t j=0;j<LibraryClassNames.size();j++)
+  {
+   for(size_t i=0;i<ClassNames.size();i++)
+	if(ClassNames[i] == sname)
+	{
+	 LibComponentListStringGrid->Row=i+1;
+	 found=true;
+	 break;
+	}
+   if(found)
+	break;
+  }
+ }
+
+ UpdateInterface();
+}
+
+// Возвращает имя выбранной библиотеки
 String TUClassesListFrame::GetSelectedLibraryName(void)
 {
  if(PageControl->ActivePage == LibsTabSheet)
@@ -303,6 +349,126 @@ void __fastcall TUClassesListFrame::AddClassButtonClick(TObject *Sender)
  NewClassName.clear();
  NewComponentName.clear();
  UpdateInterface();
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TUClassesListFrame::StringGridMouseMove(TObject *Sender, TShiftState Shift,
+		  int X, int Y)
+{
+ int C,R;
+ StringGrid->MouseToCell(X, Y, C, R);
+
+ if(C >= StringGrid->ColCount || R >= StringGrid->RowCount || C <0 || R<1)
+  return;
+
+ if ((StringGrid->Row != R) || (StringGrid->Col != C))
+ {
+//  StringGrid->Row = R;
+//  StringGrid->Col = C;
+//  Application->CancelHint();
+
+  std::string class_name=AnsiString(StringGrid->Cells[C][R]).c_str();
+  RDK::UELockPtr<RDK::UStorage> storage=GetStorageLock();
+
+  try
+  {
+   const UEPtr<UContainerDescription> descr=storage->GetClassDescription(class_name);
+
+   if(!descr)
+	return;
+
+   StringGrid->Hint = descr->GetHeader().c_str();
+   if(!descr->GetDescription().empty())
+   {
+	StringGrid->Hint = StringGrid->Hint + "\r\n";
+	StringGrid->Hint = StringGrid->Hint + descr->GetDescription().c_str();
+   }
+  }
+  catch(RDK::UStorage::EClassNameNotExist &ex)
+  {
+
+  }
+ }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUClassesListFrame::LibComponentListStringGridMouseMove(TObject *Sender,
+		  TShiftState Shift, int X, int Y)
+{
+ int C,R;
+ LibComponentListStringGrid->MouseToCell(X, Y, C, R);
+
+ if(C >= LibComponentListStringGrid->ColCount || R >= LibComponentListStringGrid->RowCount || C <0 || R<1)
+  return;
+
+ if ((LibComponentListStringGrid->Row != R) || (LibComponentListStringGrid->Col != C))
+ {
+//  LibComponentListStringGrid->Row = R;
+//  LibComponentListStringGrid->Col = C;
+//  Application->CancelHint();
+
+  std::string class_name=AnsiString(LibComponentListStringGrid->Cells[1][R]).c_str();
+  RDK::UELockPtr<RDK::UStorage> storage=GetStorageLock();
+
+  try
+  {
+   const UEPtr<UContainerDescription> descr=storage->GetClassDescription(class_name);
+
+   if(!descr)
+	return;
+
+   LibComponentListStringGrid->Hint = descr->GetHeader().c_str();
+   if(!descr->GetDescription().empty())
+   {
+	LibComponentListStringGrid->Hint = LibComponentListStringGrid->Hint + "\r\n";
+	LibComponentListStringGrid->Hint = LibComponentListStringGrid->Hint + descr->GetDescription().c_str();
+/*
+	TPoint aPoint(X,Y);
+	aPoint = ClientToScreen(aPoint);
+	Application->ActivateHint(aPoint);*/
+   }
+  }
+  catch(RDK::UStorage::EClassNameNotExist &ex)
+  {
+
+  }
+ }
+
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUClassesListFrame::TreeViewMouseMove(TObject *Sender, TShiftState Shift,
+          int X, int Y)
+{
+ int C,R;
+ TTreeNode* node = TreeView->GetNodeAt(X, Y);
+
+ if(!node)
+  return;
+
+ //Application->CancelHint();
+
+ std::string class_name=AnsiString(node->Text).c_str();
+  RDK::UELockPtr<RDK::UStorage> storage=GetStorageLock();
+
+ try
+ {
+  const UEPtr<UContainerDescription> descr=storage->GetClassDescription(class_name);
+  if(!descr)
+   return;
+
+  TreeView->Hint = descr->GetHeader().c_str();
+  if(!descr->GetDescription().empty())
+  {
+   TreeView->Hint = TreeView->Hint + "\r\n";
+   TreeView->Hint = TreeView->Hint + descr->GetDescription().c_str();
+  }
+ }
+ catch(RDK::UStorage::EClassNameNotExist &ex)
+ {
+
+ }
 }
 //---------------------------------------------------------------------------
 

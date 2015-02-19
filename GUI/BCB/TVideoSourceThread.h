@@ -3,10 +3,24 @@
 #ifndef TVideoSourceThreadH
 #define TVideoSourceThreadH
 #include "VidGrab.hpp"
+#include <jpeg.hpp>
 #include "TUHttpServerUnit.h"
 #include "myrdk.h"
 
-enum TVideoCaptureThreadCommands { tvcNone=0, tvcStart=1, tvcStop=2, tvcTerminate=3, tvcRecreate=4 };
+enum TVideoCaptureThreadCommands { tvcNone=0, tvcStart=1, tvcStop=2, tvcTerminate=3, tvcRecreate=4, tvcHalt=5 };
+
+/// Описание команды
+struct TVideoCaptureThreadCmdDescr
+{
+/// Идентификатор команды
+TVideoCaptureThreadCommands Id;
+
+/// Ожидаемое время исполнения команды
+double ExecTime;
+
+TVideoCaptureThreadCmdDescr(void);
+TVideoCaptureThreadCmdDescr(TVideoCaptureThreadCommands id, double exec_time);
+};
 
 class TSourceStarterBase
 {
@@ -22,10 +36,10 @@ class TVideoCaptureThread: public TThread
 private:
 /// Очередь команд управления тредом
 /// <временная метка команды, ID команды>
-std::map<double,TVideoCaptureThreadCommands> CommandQueue;
+std::list<std::pair<double,TVideoCaptureThreadCmdDescr> > CommandQueue;
 
 /// Мьютекс для разделения доступа к командам
-TMutex* CommandMutex;
+//TMutex* CommandMutex;
 
 protected: // Параметры
 /// Желаемый FPS
@@ -66,11 +80,18 @@ RDK::UELockVar<int> RestartInterval;
 /// после которого мы считаем, что произошла потеря соединения, мс
 RDK::UELockVar<int> MaxInterstepInterval;
 
+/// Желаемое разрешение захвата
+RDK::UELockVar<int> DesiredWidth;
+RDK::UELockVar<int> DesiredHeight;
+
+/// Флаг включения выбора желаемого разрешения захвата
+RDK::UELockVar<bool> DesiredResolutionFlag;
+
 protected: // Данные
 /// Флаг состояния треда
 /// 0 - остановлен
 /// 1 - Запущен
-RDK::UELockVar<int> ThreadState;
+//RDK::UELockVar<int> ThreadState;
 
 /// Реальное состояние соединения с источником видео
 /// 0 - состояние неизвестно
@@ -117,6 +138,15 @@ HANDLE CaptureEnabled;
 /// Сбрасывается на время ожидания расчета
 HANDLE CalcCompleteEvent;
 
+/// Событие блокировки очереди
+HANDLE CommandUnlockMutex;
+
+public:
+/// Глобальное событие блокировки запуска видеозахвата
+static HANDLE GlobalStartUnlockMutex;
+
+/// Локальное событие информаирования о запуске видеозахвата
+HANDLE StartInProgressEvent;
 
 public:
 
@@ -136,7 +166,7 @@ virtual __fastcall ~TVideoCaptureThread(void);
 // --------------------------
 protected:
 /// Добавляет команду в очередь
-void AddCommand(TVideoCaptureThreadCommands value);
+void AddCommand(TVideoCaptureThreadCmdDescr value);
 
 /// Очищает очередь
 void ClearCommandQueue(void);
@@ -178,6 +208,16 @@ virtual bool SetFps(double fps);
 /// Интервал между последним стартом и рестартом, мс
 virtual int GetRestartInterval(void) const;
 virtual bool SetRestartInterval(int value);
+
+/// Желаемое разрешение захвата
+virtual int GetDesiredWidth(void) const;
+virtual bool SetDesiredWidth(int value);
+virtual int GetDesiredHeight(void) const;
+virtual bool SetDesiredHeight(int value);
+
+/// Флаг включения выбора желаемого разрешения захвата
+virtual bool GetDesiredResolutionFlag(void) const;
+virtual bool SetDesiredResolutionFlag(bool value);
 // --------------------------
 
 // --------------------------
@@ -186,7 +226,7 @@ virtual bool SetRestartInterval(int value);
 /// Флаг состояния треда
 /// 0 - остановлен
 /// 1 - Запущен
-int GetThreadState(void) const;
+//int GetThreadState(void) const;
 
 /// Указатель на владельца
 TVideoOutputFrame *GetFrame(void) const;
@@ -217,7 +257,7 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 HANDLE GetFrameNotInProgress(void) const;
 
 /// Выставлено всегда. Сбрасывается на время доступа к изображению
-HANDLE GetSourceUnlock(void) const;
+//HANDLE GetSourceUnlock(void) const;
 
 /// Выставляется на время работы видеозахвата
 HANDLE GetCaptureEnabled(void) const;
@@ -229,11 +269,11 @@ HANDLE GetCalcCompleteEvent(void) const;
 // --------------------------
 // Управление потоком
 // --------------------------
-virtual void __fastcall Start(void);
-virtual void __fastcall AStart(void)=0;
+virtual void __fastcall Start(double time);
+virtual void __fastcall AStart(double time)=0;
 
-virtual void __fastcall Stop(void);
-virtual void __fastcall AStop(void)=0;
+virtual void __fastcall Stop(double time);
+virtual void __fastcall AStop(double time)=0;
 
 virtual void __fastcall BeforeCalculate(void);
 
@@ -242,6 +282,8 @@ virtual void __fastcall AfterCalculate(void);
 virtual void __fastcall Calculate(void)=0;
 
 virtual void __fastcall Execute(void);
+virtual void __fastcall ExecuteCaptureInit(void);
+virtual void __fastcall ExecuteCaptureUnInit(void);
 
 /// Возвращает копию изображения с блокировкой
 bool ReadSourceSafe(RDK::UBitmap& dest, double &time_stamp, bool reflect);
@@ -272,13 +314,18 @@ protected:
 virtual bool __fastcall RunCapture(void);
 virtual void __fastcall ARunCapture(void)=0;
 
-virtual bool __fastcall PauseCapture(void);
-virtual void __fastcall APauseCapture(void)=0;
+virtual bool __fastcall StopCapture(void);
+virtual void __fastcall AStopCapture(void)=0;
+
+/// Останавливает фактический захват не меняя статуса треда
+virtual bool __fastcall HaltCapture(void);
 
 virtual bool __fastcall RecreateCapture(void);
 virtual void __fastcall ARecreateCapture(void);
 
-bool SetThreadState(int value);
+virtual void __fastcall ReloadParameters(void);
+
+//bool SetThreadState(int value);
 // --------------------------
 
 
@@ -342,9 +389,9 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 // Управление потоком
 // --------------------------
-virtual void __fastcall AStart(void);
+virtual void __fastcall AStart(double time);
 
-virtual void __fastcall AStop(void);
+virtual void __fastcall AStop(double time);
 
 virtual void __fastcall BeforeCalculate(void);
 
@@ -359,7 +406,7 @@ virtual void __fastcall Calculate(void);
 protected:
 virtual void __fastcall ARunCapture(void);
 
-virtual void __fastcall APauseCapture(void);
+virtual void __fastcall AStopCapture(void);
 
 virtual void __fastcall ARecreateCapture(void);
 // --------------------------
@@ -432,9 +479,9 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 // Управление потоком
 // --------------------------
-virtual void __fastcall AStart(void);
+virtual void __fastcall AStart(double time);
 
-virtual void __fastcall AStop(void);
+virtual void __fastcall AStop(double time);
 
 virtual void __fastcall AfterCalculate(void);
 
@@ -453,7 +500,7 @@ virtual bool SetLastTimeStampSafe(double time_stamp);
 protected:
 virtual void __fastcall ARunCapture(void);
 
-virtual void __fastcall APauseCapture(void);
+virtual void __fastcall AStopCapture(void);
 
 virtual void __fastcall ARecreateCapture(void);
 // --------------------------
@@ -514,9 +561,9 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 // Управление потоком
 // --------------------------
-virtual void __fastcall AStart(void);
+virtual void __fastcall AStart(double time);
 
-virtual void __fastcall AStop(void);
+virtual void __fastcall AStop(double time);
 
 virtual void __fastcall BeforeCalculate(void);
 
@@ -534,7 +581,7 @@ void __fastcall IdHTTPServerCommandGet(TIdContext *AContext, TIdHTTPRequestInfo 
 protected:
 virtual void __fastcall ARunCapture(void);
 
-virtual void __fastcall APauseCapture(void);
+virtual void __fastcall AStopCapture(void);
 
 virtual void __fastcall ARecreateCapture(void);
 // --------------------------
@@ -544,18 +591,27 @@ virtual void __fastcall ARecreateCapture(void);
 class TVideoCaptureThreadVideoGrabber: public TVideoCaptureThread
 {
 protected: // Параметры
-//double Fps;
+/// Таймаут соединения с камерой
+RDK::UELockVar<int> ConnectionTimeout;
+
+/// Таймаут захвата
+RDK::UELockVar<int> CaptureTimeout;
 
 protected: // Данные
 TVideoGrabber* VideoGrabber;
 
 Graphics::TBitmap* ConvertBitmap;
 
-RDK::UBitmap ConvertUBitmap;
+RDK::UBitmap ConvertUBitmap,ConvertResult;
+
+RDK::UELockVar<double> ConvertTimeStamp;
 
 protected: // События
 /// Выставляется при получении очередного кадра
 HANDLE VideoGrabberCompleted;
+
+/// Событие блокировки изображения для конвертации
+HANDLE ConvertMutex;
 
 protected: // Временные переменные
 
@@ -573,6 +629,14 @@ virtual __fastcall ~TVideoCaptureThreadVideoGrabber(void);
 /// Устанавливает значение FPS
 double GetFps(void) const;
 bool SetFps(double fps);
+
+/// Таймаут соединения с камерой
+int GetConnectionTimeout(void) const;
+bool SetConnectionTimeout(int value);
+
+/// Таймаут захвата
+int GetCaptureTimeout(void) const;
+bool SetCaptureTimeout(int value);
 // --------------------------
 // Управление данными
 // --------------------------
@@ -586,8 +650,9 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 // Управление потоком
 // --------------------------
+virtual void __fastcall ExecuteCaptureInit(void);
+virtual void __fastcall ExecuteCaptureUnInit(void);
 TVideoGrabber* GetVideoGrabber(void);
-
 void __fastcall OnFrameCaptureCompleted(System::TObject* Sender, void * FrameBitmap, int BitmapWidth, int BitmapHeight, unsigned FrameNumber, __int64 FrameTime, TFrameCaptureDest DestType, System::UnicodeString FileName, bool Success, int FrameId);
 
 void __fastcall VideoGrabberLog(TObject *Sender,
@@ -598,6 +663,12 @@ void __fastcall VideoGrabberFrameBitmap(TObject *Sender,
 	  pFrameInfo FrameInfo, pFrameBitmapInfo BitmapInfo);
 
 void __fastcall VideoGrabberPlayerEndOfStream(TObject *Sender);
+
+void __fastcall VideoGrabberOnPlayerOpened(System::TObject* Sender);
+
+void __fastcall VideoGrabberOnThreadSync(System::TObject* Sender, TThreadSyncPoint ThreadSyncPoint);
+
+void __fastcall VideoGrabberOnPreviewStarted(TObject *Sender);
 
 virtual void __fastcall Calculate(void);
 
@@ -664,9 +735,11 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 // Управление потоком
 // --------------------------
-virtual void __fastcall AStart(void);
+virtual void __fastcall ExecuteCaptureInit(void);
 
-virtual void __fastcall AStop(void);
+virtual void __fastcall AStart(double time);
+
+virtual void __fastcall AStop(double time);
 
 
 // Меняет временную метку с блокировкой
@@ -679,9 +752,11 @@ void __fastcall AfterCalculate(void);
 // Скрытые методы управления потоком
 // --------------------------
 protected:
+virtual bool __fastcall RecreateCapture(void);
+
 virtual void __fastcall ARunCapture(void);
 
-virtual void __fastcall APauseCapture(void);
+virtual void __fastcall AStopCapture(void);
 // --------------------------
 
 };
@@ -732,9 +807,11 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 // Управление потоком
 // --------------------------
-virtual void __fastcall AStart(void);
+virtual void __fastcall ExecuteCaptureInit(void);
 
-virtual void __fastcall AStop(void);
+virtual void __fastcall AStart(double time);
+
+virtual void __fastcall AStop(double time);
 // --------------------------
 
 
@@ -744,7 +821,7 @@ virtual void __fastcall AStop(void);
 protected:
 virtual void __fastcall ARunCapture(void);
 
-virtual void __fastcall APauseCapture(void);
+virtual void __fastcall AStopCapture(void);
 // --------------------------
 
 };
@@ -800,9 +877,9 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 // Управление потоком
 // --------------------------
-virtual void __fastcall AStart(void);
+virtual void __fastcall AStart(double time);
 
-virtual void __fastcall AStop(void);
+virtual void __fastcall AStop(double time);
 // --------------------------
 
 
@@ -812,7 +889,7 @@ virtual void __fastcall AStop(void);
 protected:
 virtual void __fastcall ARunCapture(void);
 
-virtual void __fastcall APauseCapture(void);
+virtual void __fastcall AStopCapture(void);
 // --------------------------
 
 };
@@ -880,9 +957,9 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 // Управление потоком
 // --------------------------
-virtual void __fastcall AStart(void);
+virtual void __fastcall AStart(double time);
 
-virtual void __fastcall AStop(void);
+virtual void __fastcall AStop(double time);
 
 virtual void __fastcall BeforeCalculate(void);
 
@@ -899,7 +976,7 @@ virtual void __fastcall UnsafeInit(void);
 protected:
 virtual void __fastcall ARunCapture(void);
 
-virtual void __fastcall APauseCapture(void);
+virtual void __fastcall AStopCapture(void);
 // --------------------------
 
 };

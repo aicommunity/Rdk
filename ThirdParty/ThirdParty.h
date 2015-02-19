@@ -19,3 +19,5 @@
 
 #define CURL_STATICLIB
 #include "curl/include/curl/curl.h"
+
+#include "jpeg/JpegIntegration.h"

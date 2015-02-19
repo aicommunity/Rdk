@@ -223,6 +223,65 @@ void TUComponentsControlFrame::LoadStatesFromFile(const String &filename)
  delete RichEdit;
  ComponentsListFrame->UpdateInterface();
 }
+
+
+/// «агружает общее описание классов
+void TUComponentsControlFrame::LoadCommonClassesDescriptionFromFile(const String &filename)
+{
+ if(!IsEngineInit())
+  return;
+
+ String FileName=filename;
+ if(filename == "")
+ {
+  if(!OpenTextFileDialog->Execute())
+   return;
+  FileName=OpenTextFileDialog->FileName;
+ }
+
+ if(!FileExists(FileName))
+  return;
+
+ TRichEdit* RichEdit=new TRichEdit(this);
+ RichEdit->Parent=this;
+ RichEdit->PlainText=true;
+ RichEdit->Visible=false;
+ RichEdit->Lines->LoadFromFile(FileName);
+
+ Storage_LoadCommonClassesDescription(AnsiString(RichEdit->Text).c_str());
+
+ delete RichEdit;
+ ComponentsListFrame->UpdateInterface();
+}
+
+/// «агружает детальное описание классов
+void TUComponentsControlFrame::LoadClassesDescriptionFromFile(const String &filename)
+{
+ if(!IsEngineInit())
+  return;
+
+ String FileName=filename;
+ if(filename == "")
+ {
+  if(!OpenTextFileDialog->Execute())
+   return;
+  FileName=OpenTextFileDialog->FileName;
+ }
+
+ if(!FileExists(FileName))
+  return;
+
+ TRichEdit* RichEdit=new TRichEdit(this);
+ RichEdit->Parent=this;
+ RichEdit->PlainText=true;
+ RichEdit->Visible=false;
+ RichEdit->Lines->LoadFromFile(FileName);
+
+ Storage_LoadClassesDescription(AnsiString(RichEdit->Text).c_str());
+
+ delete RichEdit;
+ ComponentsListFrame->UpdateInterface();
+}
 //---------------------------------------------------------------------------
 
 void __fastcall TUComponentsControlFrame::TakeObjectButtonClick(TObject *Sender)

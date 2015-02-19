@@ -18,8 +18,6 @@ namespace RDK {
 class RDK_LIB_TYPE UException
 {
 protected: // Общие данные
-// Последний порядковый номер исключения
-//static long long LastNumber;
 
 protected: // Данные исключения
 // Порядковый номер исключения
@@ -50,8 +48,6 @@ virtual ~UException(void);
 // --------------------------
 // Методы управления общими данными
 // --------------------------
-// Последний порядковый номер исключения
-//static long long GetLastNumber(void);
 // --------------------------
 
 // --------------------------
@@ -263,7 +259,7 @@ EInvalidIndex(int index) : EIndexError(index) {};
 };
 
 
-struct ESystemException: public EFatal
+struct RDK_LIB_TYPE ESystemException: public EFatal
 {
 // Дополнительная информация об исключении
 std::string Info;

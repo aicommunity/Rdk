@@ -7,11 +7,13 @@
 #include "../../Core/Graphics/UGraphics.h"
 #include "../../Core/Graphics/UFont.h"
 #include "../../Core/Serialize/USerStorageXML.h"
+#include "../../Core/Engine/UELockVar.h"
 
 namespace RDK {
 
 // Глобальная коллекция шрифтов
 extern RDK_LIB_TYPE RDK::UBitmapFontCollection GlobalFonts;
+//extern RDK_LIB_TYPE RDK::UELockVar<RDK::UBitmapFontCollection> GlobalFonts;
 
 // Очищает коллекцию глобальных шрифтов
 RDK_LIB_TYPE void ClearClobalFonts(void);

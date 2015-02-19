@@ -33,6 +33,8 @@ __fastcall TEngineMonitorThread::TEngineMonitorThread(TUEngineMonitorFrame *engi
  CalcEnable=CreateEvent(0,TRUE,0,0);
  CalcStarted=CreateEvent(0,TRUE,0,0);
  CalculationNotInProgress=CreateEvent(0,TRUE,TRUE,0);
+ NumAvgIterations=200;
+ AvgThreshold=5.0;
 }
 
 __fastcall TEngineMonitorThread::~TEngineMonitorThread(void)
@@ -61,12 +63,29 @@ __fastcall TEngineMonitorThread::~TEngineMonitorThread(void)
 /// ¬озвращает вектор состо€ний тредов
 std::vector<int> TEngineMonitorThread::ReadCalcThreadStates(void) const
 {
+/* std::vector<int> res;
+ if(WaitForSingleObject(CalculationNotInProgress,1000) == WAIT_TIMEOUT)
+  return res;
+
+ ResetEvent(CalculationNotInProgress);
+ res=CalcThreadStates;
+ SetEvent(CalculationNotInProgress);
+ return res;*/
  return CalcThreadStates;
 }
 
 /// ¬озвращает вектор состо€ний источников видеозахвата
 std::vector<int> TEngineMonitorThread::ReadVideoCaptureStates(void) const
 {
+/*
+ std::vector<int> res;
+ if(WaitForSingleObject(CalculationNotInProgress,1000) == WAIT_TIMEOUT)
+  return res;
+
+ ResetEvent(CalculationNotInProgress);
+ res=VideoCaptureStates;
+ SetEvent(CalculationNotInProgress);
+ return res;  */
  return VideoCaptureStates;
 }
 // --------------------------
@@ -98,6 +117,8 @@ void __fastcall TEngineMonitorThread::Execute(void)
   }
   ResetEvent(CalculationNotInProgress);
 
+try
+{
   // ќпредел€ем состо€ние тредов расчета
   std::vector<int> calc_thread_states;
 
@@ -105,6 +126,7 @@ void __fastcall TEngineMonitorThread::Execute(void)
   calc_thread_states.assign(num_channels,1);
   CalcThreadStateTime.resize(num_channels,0);
   CalcThreadSuccessTime.resize(num_channels,0);
+  AvgIterations.resize(num_channels);
 
   for(int i=0;i<num_channels;i++)
   {
@@ -121,6 +143,9 @@ void __fastcall TEngineMonitorThread::Execute(void)
 	if(CalcThreadSuccessTime[i] != last_calc_time)
 	{
 	 CalcThreadSuccessTime[i]=last_calc_time;
+	 AvgIterations[i].push_back(last_calc_time);
+	 if(AvgIterations[i].size()>NumAvgIterations)
+	  AvgIterations[i].erase(AvgIterations[i].begin());
 
 	 TDateTime dt=TDateTime::CurrentDateTime();
 	 CalcThreadStateTime[i]=dt.operator double();
@@ -129,7 +154,17 @@ void __fastcall TEngineMonitorThread::Execute(void)
 	else
 	{
 	 TDateTime dt=TDateTime::CurrentDateTime();
-	 if((dt.operator double()-CalcThreadStateTime[i])*86400.0>2.0)
+
+	 double avg_diff(0.0);
+	 for(size_t j=1;j<AvgIterations[i].size();j++)
+	 {
+	  if(AvgIterations[i][j]-AvgIterations[i][j-1]>avg_diff)
+ 	   avg_diff=AvgIterations[i][j]-AvgIterations[i][j-1];
+	 }
+ //	 avg_diff/=(AvgIterations[i].empty())?1:AvgIterations[i].size();
+	 avg_diff/=1000;
+
+	 if(fabs(avg_diff) < 1e-8 || (dt.operator double()-CalcThreadStateTime[i])*86400.0>AvgThreshold*avg_diff)
 	  calc_thread_states[i]=2;
 	 else
 	  calc_thread_states[i]=0;
@@ -147,10 +182,11 @@ void __fastcall TEngineMonitorThread::Execute(void)
 #ifdef RDK_VIDEO
   std::vector<int> video_capture_states;
 
-  int num_captures=VideoOutputForm->GetNumSources();
+  int num_captures=(VideoOutputForm)?VideoOutputForm->GetNumSources():0;
   video_capture_states.assign(num_captures,1);
   VideoCaptureStateTime.resize(num_captures,0);
   VideoCaptureSuccessTime.resize(num_captures,0);
+  AvgCaptureIterations.resize(num_channels);
 
   for(int i=0;i<num_captures;i++)
   {
@@ -161,29 +197,61 @@ void __fastcall TEngineMonitorThread::Execute(void)
 
    if(thread)
    {
-	if(WaitForSingleObject(thread->GetCaptureEnabled(),0) == WAIT_TIMEOUT)
+	int connection_state=thread->CheckConnection();
+	switch(connection_state)
+	{
+	case 0:
+	 video_capture_states[i]=1;
+	break;
+
+	case 1:
+	 video_capture_states[i]=1;
+	break;
+
+	case 2:
+	 video_capture_states[i]=0;
+	break;
+
+	case 10:
+	 video_capture_states[i]=2;
+	break;
+	}
+/*	if(WaitForSingleObject(thread->GetCaptureEnabled(),0) == WAIT_TIMEOUT)
 	{
 	 video_capture_states[i]=1;
 	 continue;
 	}
 
 	double last_calc_time=thread->GetLastTimeStampSafe();
+	TDateTime dt=TDateTime::CurrentDateTime();
 	if(VideoCaptureSuccessTime[i] != last_calc_time)
 	{
 	 VideoCaptureSuccessTime[i]=last_calc_time;
+	 AvgCaptureIterations[i].push_back(last_calc_time);
+	 if(AvgCaptureIterations[i].size()>NumAvgIterations)
+	  AvgCaptureIterations[i].erase(AvgCaptureIterations[i].begin());
 
-	 TDateTime dt=TDateTime::CurrentDateTime();
 	 VideoCaptureStateTime[i]=dt.operator double();
 	 video_capture_states[i]=0;
 	}
 	else
 	{
 	 TDateTime dt=TDateTime::CurrentDateTime();
-	 if((dt.operator double()-VideoCaptureStateTime[i])*86400.0>2.0)
+
+	 double avg_diff(0.0);
+	 for(size_t j=1;j<AvgCaptureIterations[i].size();j++)
+	 {
+	  if(AvgCaptureIterations[i][j]-AvgCaptureIterations[i][j-1]>avg_diff)
+	   avg_diff=AvgCaptureIterations[i][j]-AvgCaptureIterations[i][j-1];
+	 }
+ //	 avg_diff/=(AvgCaptureIterations[i].empty())?1:AvgCaptureIterations[i].size();
+
+	 if(fabs(avg_diff)<1e-8 || (dt.operator double()-VideoCaptureStateTime[i])>AvgThreshold*avg_diff)
+//	 if((dt.operator double()-VideoCaptureStateTime[i])*86400.0>2.0)
 	  video_capture_states[i]=2;
 	 else
 	  video_capture_states[i]=0;
-	}
+	} */
    }
    else
    {
@@ -195,9 +263,15 @@ void __fastcall TEngineMonitorThread::Execute(void)
   VideoCaptureStates=video_capture_states;
 #endif
 
-  Sleep(1);
-
   SetEvent(CalculationNotInProgress);
+  Sleep(100);
+}
+catch(Exception &ex)
+{
+ SetEvent(CalculationNotInProgress);
+ Engine_LogMessage(RDK_EX_DEBUG, (string("TEngineThread Exception: ")+AnsiString(ex.Message).c_str()).c_str());
+}
+
  }
 }
 // --------------------------
@@ -277,23 +351,13 @@ bool TEngineThread::SetMinInterstepsInterval(RDK::UTime value)
 // --------------------------
 void __fastcall TEngineThread::BeforeCalculate(void)
 {
-#ifdef RDK_VIDEO
-#ifdef RDK_VIDEO
-/* TVideoOutputFrame* video=VideoOutputForm->GetVideoOutputFrame(ChannelIndex);
- if(video)
- {
-  if(video->CaptureThread)
-  {
-   double time_stamp=0;
-   video->CaptureThread->ReadSourceSafe(Source,time_stamp,true);
-  }
- }
- else
-  Source.Clear();
-   */
-#endif
-
-#endif
+   #ifdef RDK_VIDEO
+   TVideoOutputFrame* video=VideoOutputForm->GetVideoOutputFrame(ChannelIndex);
+   if(video)
+   {
+	video->BeforeCalculate();
+   }
+   #endif
 }
 
 void __fastcall TEngineThread::AfterCalculate(void)
@@ -331,7 +395,6 @@ void __fastcall TEngineThread::Execute(void)
   }
 
   ResetEvent(CalculationNotInProgress);
-  BeforeCalculate();
   if(GetNumEngines()>ChannelIndex)
   {
    if(UEngineMonitorForm->EngineMonitorFrame->GetCalculationTimeSourceMode() == 0)
@@ -342,13 +405,15 @@ void __fastcall TEngineThread::Execute(void)
    else
    if(UEngineMonitorForm->EngineMonitorFrame->GetCalculationTimeSourceMode() == 1)
 	MModel_SetDoubleSourceTime(ChannelIndex,UEngineMonitorForm->EngineMonitorFrame->GetServerTimeStamp(ChannelIndex)/(86400.0*1000.0)/*dt.operator double()*/);
+
    #ifdef RDK_VIDEO
-   TVideoOutputFrame* video=VideoOutputForm->GetVideoOutputFrame(ChannelIndex);
-   if(video)
-	video->BeforeCalculate();
+ //  Synchronize(BeforeCalculate);
+   BeforeCalculate();
+//   Source.SetRes(640,480,RDK::ubmRGB24);
+//   MModel_SetComponentBitmapOutput(ChannelIndex, "", "Output", &Source,true);
    #endif
    MEnv_Calculate(ChannelIndex,0);
-  }
+   }
   AfterCalculate();
   RealLastCalculationTime=RDK::GetCurrentStartupTime();
   SetEvent(CalculationNotInProgress);
@@ -517,6 +582,12 @@ bool TUEngineMonitorFrame::SetNumChannels(int num)
  for(int i=old_size;i<num;i++)
  {
   ThreadChannels[i]=new TEngineThread(i,CalculateMode[i],MinInterstepsInterval[i],false);
+  #ifdef RDK_MUTEX_DEADLOCK_DEBUG
+  TUThreadInfo info;
+  info.Pid=ThreadChannels[i]->ThreadID;
+  info.Name=string("ThreadChannels ")+RDK::sntoa(i);
+  GlobalThreadInfoMap[info.Pid]=info;
+  #endif
   ThreadChannels[i]->Priority=RDK_DEFAULT_THREAD_PRIORITY;
 
   ThreadChannels[i]->FreeOnTerminate=false;
@@ -1022,7 +1093,7 @@ void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
    AddMetadata(i, ServerTimeStamp[i]);
    RealLastCalculationTime[i]=RDK::GetCurrentStartupTime();
   }
-//  IdTcpResultBroadcasterForm->SendMetadata();
+
   SendMetadata();
   RDK::UIVisualControllerStorage::AfterCalculate();
   RDK::UIVisualControllerStorage::UpdateInterface();

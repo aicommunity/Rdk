@@ -20,8 +20,6 @@ object VideoCaptureOptionsVideoFileForm: TVideoCaptureOptionsVideoFileForm
     Height = 221
     Align = alClient
     TabOrder = 0
-    ExplicitWidth = 539
-    ExplicitHeight = 203
     DesignSize = (
       554
       221)
@@ -33,16 +31,14 @@ object VideoCaptureOptionsVideoFileForm: TVideoCaptureOptionsVideoFileForm
       Anchors = [akLeft, akTop, akRight]
       AutoSize = False
       Caption = 'Video file name:'
-      ExplicitWidth = 369
     end
     object VFNameEdit: TEdit
       Left = 8
       Top = 22
       Width = 453
-      Height = 21
+      Height = 25
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 0
-      ExplicitWidth = 438
     end
     object VFBrowseButton: TButton
       Left = 467
@@ -53,7 +49,6 @@ object VideoCaptureOptionsVideoFileForm: TVideoCaptureOptionsVideoFileForm
       Caption = 'Browse'
       TabOrder = 1
       OnClick = VFBrowseButtonClick
-      ExplicitLeft = 452
     end
     object VideoTruncPathCheckBox: TCheckBox
       Left = 8
@@ -83,13 +78,62 @@ object VideoCaptureOptionsVideoFileForm: TVideoCaptureOptionsVideoFileForm
       Left = 8
       Top = 62
       Width = 538
-      Height = 21
+      Height = 25
       Anchors = [akLeft, akTop, akRight]
       EditLabel.Width = 17
       EditLabel.Height = 13
       EditLabel.Caption = 'Fps'
       TabOrder = 5
-      ExplicitWidth = 523
+    end
+    object DesiredWidthLabeledEdit: TLabeledEdit
+      Left = 125
+      Top = 173
+      Width = 36
+      Height = 25
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      EditLabel.Width = 28
+      EditLabel.Height = 13
+      EditLabel.Margins.Left = 2
+      EditLabel.Margins.Top = 2
+      EditLabel.Margins.Right = 2
+      EditLabel.Margins.Bottom = 2
+      EditLabel.Caption = 'Width'
+      TabOrder = 6
+      Text = '640'
+    end
+    object DesiredHeightLabeledEdit: TLabeledEdit
+      Left = 166
+      Top = 173
+      Width = 37
+      Height = 25
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      EditLabel.Width = 31
+      EditLabel.Height = 13
+      EditLabel.Margins.Left = 2
+      EditLabel.Margins.Top = 2
+      EditLabel.Margins.Right = 2
+      EditLabel.Margins.Bottom = 2
+      EditLabel.Caption = 'Height'
+      TabOrder = 7
+      Text = '480'
+    end
+    object DesiredResFlagCheckBox: TCheckBox
+      Left = 8
+      Top = 158
+      Width = 113
+      Height = 13
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Caption = 'Use user resolution'
+      TabOrder = 8
     end
   end
   object VideoOpenDialog: TOpenDialog

@@ -24,7 +24,6 @@ object VideoCaptureOptionsBmpSequenceForm: TVideoCaptureOptionsBmpSequenceForm
     Anchors = [akLeft, akTop, akRight]
     AutoSize = False
     Caption = 'Image file name:'
-    ExplicitWidth = 369
   end
   object ImageSequencePathEdit: TEdit
     Left = 8

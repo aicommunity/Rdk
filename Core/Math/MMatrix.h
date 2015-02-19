@@ -49,6 +49,7 @@ MMatrix(void);
 MMatrix(T defvalue);
 MMatrix(const MDMatrix<T> &copy);
 MMatrix(const MMatrix<T,Rows,Cols> &copy);
+MMatrix(const T data[Rows][Cols]);
 MMatrix(const T* data);
 ~MMatrix(void);
 // --------------------------
@@ -204,6 +205,12 @@ MMatrix<T,Rows,Cols>::MMatrix(const MMatrix<T,Rows,Cols> &copy)
 {
  *this=copy;
 };
+
+template<class T, unsigned Rows, unsigned Cols>
+MMatrix<T,Rows,Cols>::MMatrix(const T data[Rows][Cols])
+{
+ *this=copy;
+}
 
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>::MMatrix(const MDMatrix<T> &copy)
@@ -711,8 +718,9 @@ T MMatrix<T,Rows,Cols>::Det(void) const
  unsigned numcombos=Temp.TriangleBareis();
 
  T det = Temp.Data[Rows-1][Cols-1];
-// for(unsigned i=0;i<Rows;i++)
-//  det*=Temp.Data[i][i];
+ for(unsigned i=0;i<Rows;i++)
+  if(fabs(Temp.Data[i][i])<1e-15)
+   return T(0.0);
 
  return (numcombos%2)?-det:det;
 

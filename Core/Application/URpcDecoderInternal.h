@@ -20,6 +20,10 @@ virtual ~URpcDecoderInternal(void);
 // --------------------------
 // Методы управления командами
 // --------------------------
+/// Проверяет, поддерживается ли команда диспетчером
+/// ожидает, что команда уже декодирована иначе всегда возвращает false
+virtual bool IsCmdSupported(const UEPtr<URpcCommand> &command) const;
+
 /// Создает копию этого декодера
 virtual URpcDecoderInternal* New(void);
 

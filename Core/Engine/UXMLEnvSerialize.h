@@ -20,6 +20,7 @@ See file license.txt for more information
 #include <sstream>
 #include "../Serialize/USerStorageXML.h"
 #include "UEnvSupport.h"
+#include "UELockVar.h"
 
 namespace RDK {
 
@@ -147,6 +148,25 @@ USerStorageXML& operator >> (USerStorageXML& storage, ULinksListT<T> &data)
   operator >>(storage,*(pdata+i));
   storage.SelectUp();
  }
+
+ return storage;
+}
+
+// UELockVar
+template<typename T>
+USerStorageXML& operator << (USerStorageXML& storage, const UELockVar<T> &data)
+{
+ storage<<data.operator T();
+
+ return storage;
+}
+
+template<typename T>
+USerStorageXML& operator >> (USerStorageXML& storage, UELockVar<T> &data)
+{
+ T temp;
+ storage>>temp;
+ data=temp;
 
  return storage;
 }

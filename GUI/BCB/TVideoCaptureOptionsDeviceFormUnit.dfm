@@ -1,7 +1,7 @@
 object VideoCaptureOptionsDeviceForm: TVideoCaptureOptionsDeviceForm
   Left = 0
   Top = 0
-  ClientHeight = 307
+  ClientHeight = 340
   ClientWidth = 433
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -18,12 +18,12 @@ object VideoCaptureOptionsDeviceForm: TVideoCaptureOptionsDeviceForm
     Left = 0
     Top = 0
     Width = 433
-    Height = 307
+    Height = 340
     Align = alClient
     TabOrder = 0
     DesignSize = (
       433
-      307)
+      340)
     object ModeLabel: TLabel
       Left = 8
       Top = 89
@@ -32,7 +32,6 @@ object VideoCaptureOptionsDeviceForm: TVideoCaptureOptionsDeviceForm
       Anchors = [akLeft, akTop, akRight]
       AutoSize = False
       Caption = 'Video Size:'
-      ExplicitWidth = 390
     end
     object InputLabel: TLabel
       Left = 8
@@ -42,7 +41,6 @@ object VideoCaptureOptionsDeviceForm: TVideoCaptureOptionsDeviceForm
       Anchors = [akLeft, akTop, akRight]
       AutoSize = False
       Caption = 'Video Input:'
-      ExplicitWidth = 390
     end
     object DeviceLabel: TLabel
       Left = 8
@@ -52,33 +50,30 @@ object VideoCaptureOptionsDeviceForm: TVideoCaptureOptionsDeviceForm
       Anchors = [akLeft, akTop, akRight]
       AutoSize = False
       Caption = 'Video device:'
-      ExplicitWidth = 429
     end
     object Label1: TLabel
       Left = 8
-      Top = 137
+      Top = 170
       Width = 417
       Height = 13
       Anchors = [akLeft, akTop, akRight]
       AutoSize = False
       Caption = 'Subtype:'
-      ExplicitWidth = 429
     end
     object Label2: TLabel
       Left = 8
-      Top = 218
+      Top = 251
       Width = 417
       Height = 13
       Anchors = [akLeft, akTop, akRight]
       AutoSize = False
       Caption = 'Analog video standard:'
-      ExplicitWidth = 428
     end
     object VideoSizeComboBox: TComboBox
       Left = 8
       Top = 104
       Width = 417
-      Height = 21
+      Height = 25
       Style = csDropDownList
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 2
@@ -87,7 +82,7 @@ object VideoCaptureOptionsDeviceForm: TVideoCaptureOptionsDeviceForm
       Left = 8
       Top = 62
       Width = 417
-      Height = 21
+      Height = 25
       Style = csDropDownList
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 1
@@ -96,7 +91,7 @@ object VideoCaptureOptionsDeviceForm: TVideoCaptureOptionsDeviceForm
       Left = 8
       Top = 19
       Width = 417
-      Height = 21
+      Height = 25
       Style = csDropDownList
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 0
@@ -104,25 +99,25 @@ object VideoCaptureOptionsDeviceForm: TVideoCaptureOptionsDeviceForm
     end
     object VideoSubTypeComboBox: TComboBox
       Left = 8
-      Top = 152
+      Top = 185
       Width = 417
-      Height = 21
+      Height = 25
       Style = csDropDownList
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 3
     end
     object AnalogVideoStandardComboBox: TComboBox
       Left = 8
-      Top = 237
+      Top = 270
       Width = 417
-      Height = 21
+      Height = 25
       Style = csDropDownList
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 4
     end
     object StreamButton: TButton
       Left = 8
-      Top = 268
+      Top = 301
       Width = 75
       Height = 25
       Caption = 'Stream'
@@ -130,14 +125,64 @@ object VideoCaptureOptionsDeviceForm: TVideoCaptureOptionsDeviceForm
     end
     object FpsLabeledEdit: TLabeledEdit
       Left = 8
-      Top = 191
+      Top = 224
       Width = 417
-      Height = 21
+      Height = 25
       Anchors = [akLeft, akTop, akRight]
       EditLabel.Width = 17
       EditLabel.Height = 13
       EditLabel.Caption = 'Fps'
       TabOrder = 6
+    end
+    object DesiredResFlagCheckBox: TCheckBox
+      Left = 8
+      Top = 128
+      Width = 113
+      Height = 13
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Caption = 'Use user resolution'
+      TabOrder = 7
+    end
+    object DesiredWidthLabeledEdit: TLabeledEdit
+      Left = 125
+      Top = 145
+      Width = 36
+      Height = 25
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      EditLabel.Width = 28
+      EditLabel.Height = 13
+      EditLabel.Margins.Left = 2
+      EditLabel.Margins.Top = 2
+      EditLabel.Margins.Right = 2
+      EditLabel.Margins.Bottom = 2
+      EditLabel.Caption = 'Width'
+      TabOrder = 8
+      Text = '640'
+    end
+    object DesiredHeightLabeledEdit: TLabeledEdit
+      Left = 166
+      Top = 145
+      Width = 37
+      Height = 25
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      EditLabel.Width = 31
+      EditLabel.Height = 13
+      EditLabel.Margins.Left = 2
+      EditLabel.Margins.Top = 2
+      EditLabel.Margins.Right = 2
+      EditLabel.Margins.Bottom = 2
+      EditLabel.Caption = 'Height'
+      TabOrder = 9
+      Text = '480'
     end
   end
 end

@@ -694,28 +694,28 @@ MMatrix<T,4,4> CalcObjectPositionMatrixFromQuatern(const MVector<T,7> &anglesAND
 template<class T>
 void CalcObjectQuatern(const MMatrix<T,4,4> &ExtMat, MVector<T,7> &anglesANDshifts, bool vect=true)
 {
-	Quaternion<T> *quatex;
+	Quaternion<T> quatex;
 
-	MatrixToQuaternion<T>(quatex, ExtMat.Data);
+	MatrixToQuaternion<T>(&quatex, ExtMat.Data);
 
     if(vect)
     {
-     double cos_angle  = quatex -> w;
-     quatex -> w       = acos( cos_angle ) * 2;
-     double sin_angle  = sqrt( 1.0 - cos_angle * cos_angle );
+	 double cos_angle  = quatex . w;
+	 quatex . w       = acos( cos_angle ) * 2;
+	 double sin_angle  = sqrt( 1.0 - cos_angle * cos_angle );
 
-     if ( fabs( sin_angle ) < 0.0005 )
-       sin_angle = 1;
+	 if ( fabs( sin_angle ) < 0.0005 )
+	   sin_angle = 1;
 
-     quatex -> x = quatex -> x / sin_angle;
-     quatex -> y = quatex -> y / sin_angle;
-     quatex -> z = quatex -> z / sin_angle;
+	 quatex . x = quatex . x / sin_angle;
+	 quatex . y = quatex . y / sin_angle;
+	 quatex . z = quatex . z / sin_angle;
     }
 
-	anglesANDshifts(3)=quatex->x;
-	anglesANDshifts(4)=quatex->y;
-	anglesANDshifts(5)=quatex->z;
-	anglesANDshifts(6)=quatex->w;
+	anglesANDshifts(3)=quatex.x;
+	anglesANDshifts(4)=quatex.y;
+	anglesANDshifts(5)=quatex.z;
+	anglesANDshifts(6)=quatex.w;
 
 	anglesANDshifts(0)=ExtMat(0,3);
 	anglesANDshifts(1)=ExtMat(1,3);

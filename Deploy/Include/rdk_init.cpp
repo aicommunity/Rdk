@@ -65,7 +65,7 @@ int RDK_CALL Engine_LoadFonts(void)
   // Грузим шрифты
   std::vector<std::string> font_names;
   std::string font_path=RdkSystemDir+"Fonts/";
-  FindFilesList(font_path, "*.fnt", true, font_names);
+  RDK::FindFilesList(font_path, "*.fnt", true, font_names);
   if(DllManager.GetEnvironment())
    DllManager.GetEnvironment()->LogMessage(RDK_EX_DEBUG, std::string("Loading fonts form ")+font_path+"\n");
 
@@ -78,7 +78,7 @@ int RDK_CALL Engine_LoadFonts(void)
 	DllManager.GetEnvironment()->LogMessage(RDK_EX_DEBUG, std::string("Loaded font ")+font_names[i]+"\n");
   }
  }
- catch (UException &exception)
+ catch (RDK::UException &exception)
  {
   if(DllManager.GetEngine())
    DllManager.GetEngine()->ProcessException(exception);
@@ -137,7 +137,7 @@ int RDK_CALL Engine_Del(int index)
 // Возвращает индекс текущего выбранного движка
 int RDK_CALL GetSelectedEngineIndex(void)
 {
- return SelectedEngineIndex;
+ return DllManager.GetSelectedChannelIndex();
 }
 
 
@@ -148,10 +148,10 @@ int RDK_CALL SelectEngine(int index)
  if(index<0 || index>=GetNumEngines())
   return 1000;
 
- if(SelectedEngineIndex == index)
+ if(DllManager.GetSelectedChannelIndex() == index)
   return 0;
 
- RDK::UELockPtr<RDK::UEngine> ptr1(DllManager.GetEngineLock(SelectedEngineIndex));
+ RDK::UELockPtr<RDK::UEngine> ptr1(DllManager.GetEngineLock(DllManager.GetSelectedChannelIndex()));
  RDK::UELockPtr<RDK::UEngine> ptr2(DllManager.GetEngineLock(index));
 
  DllManager.SetSelectedChannelIndex(index);
@@ -162,7 +162,7 @@ int RDK_CALL SelectEngine(int index)
 /// Блокирует канал до вызова функции UnlockEngine
 int RDK_CALL LockEngine(void)
 {
- return MLockEngine(SelectedEngineIndex);
+ return MLockEngine(DllManager.GetSelectedChannelIndex());
 }
 
 int RDK_CALL MLockEngine(int index)
@@ -174,14 +174,14 @@ int RDK_CALL MLockEngine(int index)
   return 0;
 
  if(!DllManager.LockerList[index])
-  DllManager.LockerList[index]=new UGenericMutexLocker(DllManager.MutexList[index]);
+  DllManager.LockerList[index]=new UGenericMutexExclusiveLocker(DllManager.MutexList[index]);
  return 0;
 }
 
 /// Разблокирует канал
 int RDK_CALL UnLockEngine(void)
 {
- return MUnLockEngine(SelectedEngineIndex);
+ return MUnLockEngine(DllManager.GetSelectedChannelIndex());
 }
 
 int RDK_CALL MUnLockEngine(int index)
@@ -201,13 +201,13 @@ int RDK_CALL MUnLockEngine(int index)
 int RDK_CALL EngineInit(int predefined_structure, void* exception_handler)
 {
  int res=0;
- if(GetNumEngines()<=SelectedEngineIndex)
-  res=SetNumEngines(SelectedEngineIndex+1);
+ if(GetNumEngines()<=DllManager.GetSelectedChannelIndex())
+  res=SetNumEngines(DllManager.GetSelectedChannelIndex()+1);
 
  if(res != 0)
   return res;
 
- res=MEngineInit(SelectedEngineIndex, predefined_structure, exception_handler);
+ res=MEngineInit(DllManager.GetSelectedChannelIndex(), predefined_structure, exception_handler);
 
  if(res != 0)
   return res;
@@ -245,13 +245,13 @@ int RDK_CALL GraphicalEngineInit(int predefined_structure, int num_inputs,
 		void* exception_handler)
 {
  int res=0;
- if(GetNumEngines()<=SelectedEngineIndex)
-  res=SetNumEngines(SelectedEngineIndex+1);
+ if(GetNumEngines()<=DllManager.GetSelectedChannelIndex())
+  res=SetNumEngines(DllManager.GetSelectedChannelIndex()+1);
 
  if(res != 0)
   return res;
 
- res=MGraphicalEngineInit(SelectedEngineIndex, predefined_structure, num_inputs,
+ res=MGraphicalEngineInit(DllManager.GetSelectedChannelIndex(), predefined_structure, num_inputs,
 		num_outputs, input_width, input_height, reflectionx, exception_handler);
  if(res != 0)
   return res;
@@ -304,7 +304,7 @@ int RDK_CALL EngineUnInit(void)
   if(!Env_UnInit())
    return 1;
 
- return DllManager.EngineDestroy(SelectedEngineIndex);
+ return DllManager.EngineDestroy(DllManager.GetSelectedChannelIndex());
 }
 
 int RDK_CALL MEngineUnInit(int engine_index)
@@ -500,9 +500,22 @@ const char* RDK_CALL Storage_SaveClassesDescription(void)
 }
 
 // Загружает описание всех классов из xml
-bool RDK_CALL Storage_LoadClassesDescription(const char* xmltext)
+int RDK_CALL Storage_LoadClassesDescription(const char* xmltext)
 {
- return DllManager.GetEngineLock()->Storage_LoadClassesDescription(xmltext);
+ if(!DllManager.GetEngineLock()->Storage_LoadClassesDescription(xmltext))
+  return 10;
+ return 0;
+}
+
+int RDK_CALL MStorage_LoadClassesDescription(int engine_index, const char* xmltext)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+
+ if(!DllManager.GetEngineLock(engine_index)->Storage_LoadClassesDescription(xmltext))
+  return 10;
+
+ return 0;
 }
 
 // Сохраняет общее описание всех классов в xml
@@ -512,10 +525,24 @@ const char* RDK_CALL Storage_SaveCommonClassesDescription(void)
 }
 
 // Загружает общее описание всех классов из xml
-bool RDK_CALL Storage_LoadCommonClassesDescription(const char* xmltext)
+int RDK_CALL Storage_LoadCommonClassesDescription(const char* xmltext)
 {
- return DllManager.GetEngineLock()->Storage_LoadCommonClassesDescription(xmltext);
+ if(!DllManager.GetEngineLock()->Storage_LoadCommonClassesDescription(xmltext))
+  return 10;
+ return 0;
 }
+
+int RDK_CALL MStorage_LoadCommonClassesDescription(int engine_index, const char* xmltext)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+
+ if(!DllManager.GetEngineLock(engine_index)->Storage_LoadCommonClassesDescription(xmltext))
+  return 10;
+
+ return 0;
+}
+
 
 // Сохраняет описание всех классов в xml включая общее описание
 const char* RDK_CALL Storage_SaveAllClassesDescription(void)
@@ -2145,7 +2172,8 @@ const char* RDK_CALL MEngine_GetLog(int engine_index, int &error_level)
 // Записывает в лог новое сообщение
 int RDK_CALL Engine_LogMessage(int log_level, const char *message)
 {
-
+// if(log_level == RDK_EX_DEBUG && !DllManager.GetEngine()->Env_GetDebugMode())
+//  return 0;
  return DllManager.GetEngineLock()->Engine_LogMessage(log_level, message);
 }
 
@@ -2154,6 +2182,8 @@ int RDK_CALL MEngine_LogMessage(int engine_index, int log_level, const char *mes
  if(engine_index<0 || engine_index>=GetNumEngines())
   return 0;
 
+// if(log_level == RDK_EX_DEBUG && !DllManager.GetEngine(engine_index)->Env_GetDebugMode())
+//  return 0;
  return DllManager.GetEngineLock(engine_index)->Engine_LogMessage(log_level, message);
 }
 

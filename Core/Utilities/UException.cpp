@@ -2,6 +2,7 @@
 #define UEXCEPTION_CPP
 
 #include "UException.h"
+#include "USupport.h"
 //#include "ExceptionDispatcher.h"
 
 namespace RDK {

@@ -1169,9 +1169,7 @@ const T& UEngine::Model_GetComponentPropertyData(const char *stringid, const cha
  {
   ProcessException(exception);
  }
-
- static T dummy;
- return dummy;
+ throw 1;// TODO: Здесь какое-то решение
 }
 
 // Копирует данные 'data' в заданное свойство компонента

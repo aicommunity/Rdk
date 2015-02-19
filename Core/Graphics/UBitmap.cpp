@@ -2663,7 +2663,7 @@ void UBitmap::Binarization(UColorT threshold, UColorT minval, UColorT maxval,
    break;
 
    case ubmY8:
-    for(int i=0;i<ByteLength;i++)
+	for(int i=0;i<ByteLength;i++)
      *out++=(*data++ >= threshold.ycrcb.y)?maxval.ycrcb.y:minval.ycrcb.y;
    break;
 
@@ -2711,19 +2711,96 @@ void UBitmap::Inverse(UBitmap *target)
  switch(ColorModel)
   {
    case ubmRGB24:
-    for(int i=0;i<ByteLength;i++)
-     *out++=255-*data++;
+	for(int i=0;i<ByteLength;i++)
+	 *out++=255-*data++;
    break;
 
    case ubmY8:
-    for(int i=0;i<ByteLength;i++)
-     *out++=255-*data++;
+	for(int i=0;i<ByteLength;i++)
+	 *out++=255-*data++;
    break;
 
    case ubmY32:
-    for(int i=0;i<ByteLength;++i,out+=4,data+=4)
-     *reinterpret_cast<unsigned*>(out)=255-*reinterpret_cast<unsigned*>(data);
+	for(int i=0;i<ByteLength;++i,out+=4,data+=4)
+	 *reinterpret_cast<unsigned*>(out)=255-*reinterpret_cast<unsigned*>(data);
    break;
+  }
+}
+
+/// Меняет местами RGB каналы из RGB в BGR и наоборот.
+/// Поддерживает режимы ubmY8, ubmRGB24, ubmY32
+void UBitmap::SwapRGBChannels(UBitmap *target)
+{
+ UBColor *out,*data;
+
+ if(target)
+  {
+   target->SetRes(Width,Height,ColorModel);
+   out=target->Data;
+   data=Data;
+
+   UBColor temp;
+   UBColor *data1=Data+1;
+   UBColor *data2=Data+2;
+   UBColor *out1=out+1;
+   UBColor *out2=out+2;
+   switch(ColorModel)
+   {
+   case ubmRGB24:
+	for(int i=0;i<ByteLength;i+=3)
+	{
+	 *out=*data2;
+	 *out1=*data1;
+	 *out2=*data;
+	 out+=3; data2+=3;
+	 out1+=3; data+=3;
+	 out2+=3; data1+=3;
+	}
+   break;
+
+   case ubmRGB32:
+	for(int i=0;i<ByteLength;i+=4)
+	{
+	 *out++=*data2++;
+	 *out1++=*data1++;
+	 *out2++=*data++;
+	 out+=4; data2+=4;
+	 out1+=4; data+=4;
+	 out2+=4; data1+=4;
+	}
+   break;
+   }
+  }
+ else
+  {
+   out=Data;
+
+   UBColor temp;
+   UBColor *data2=Data+2;
+   switch(ColorModel)
+   {
+   case ubmRGB24:
+	for(int i=0;i<ByteLength;i+=3)
+	{
+	 temp=*out;
+	 *out=*data2;
+	 *data2=temp;
+	 out+=3;
+	 data2+=3;
+	}
+   break;
+
+   case ubmRGB32:
+	for(int i=0;i<ByteLength;i+=4)
+	{
+	 temp=*out;
+	 *out=*data2;
+	 *data2=temp;
+	 out+=4;
+	 data2+=4;
+	}
+   break;
+   }
   }
 }
 // -------------------------
@@ -2753,7 +2830,7 @@ UBitmap& UBitmap::operator = (const UBitmap &bitmap)
    if(MemoryLength<bitmap.MemoryLength)
    {
     if(Data)
-    {
+	{
      delete[] Data;
      Data=0;
     }
@@ -5338,7 +5415,7 @@ void UBHistogram::Calc(const UBitmap &bmp, int x, int y, int width, int height, 
   {
    for(int i=x,l=0;i<=x2;i++,l++)
    {
-    if(*p<Size)
+	if(*p<Size)
 	 ++Data[*p].Number.Int;
     p+=bmp.GetPixelByteLength();
    }
@@ -5560,7 +5637,7 @@ void UBHistogram::CalcZeroSmoothHistogram(UBHistogram &result, UBColor min, UBCo
    }
    // Нашли левую и правую ненулевые границы дырки
    for(j=left+1;j<=right-1;j++)
-    result[j].Number.Int=abs(right_value-left_value)/2;
+	result[j].Number.Int=abs(right_value-left_value)/2;
 
    min=right;
   }
@@ -5655,6 +5732,52 @@ UBHistogram& UBHistogram::operator = (const UBHistogram &value)
 
  return *this;
 }
+
+UBHistogram operator - (const UBHistogram &value1, const UBHistogram &value2)
+{
+ UBHistogram res;
+
+ res.Prepare(ubmY8);
+ res.Normalize(value1.NormalizeFlag);
+
+ if(value1.GetSize() != value2.GetSize() || value1.GetSize() != res.GetSize())
+  return res;
+
+ float h_min(1e10), h_max(0);
+ for(int i=0;i<res.Size;i++)
+ {
+  if(res.IsNormalized())
+  {
+   res.Data[i].Number.Float=fabs(value1.Data[i].Number.Float-value2.Data[i].Number.Float);
+   if(res.Data[i].Number.Float<h_min)
+	h_min=res.Data[i].Number.Float;
+   if(res.Data[i].Number.Float>h_max)
+	h_max=res.Data[i].Number.Float;
+  }
+  else
+  {
+   res.Data[i].Number.Int=abs(int(value1.Data[i].Number.Int-value2.Data[i].Number.Int));
+   if(res.Data[i].Number.Int<h_min)
+	h_min=res.Data[i].Number.Int;
+   if(res.Data[i].Number.Int>h_max)
+	h_max=res.Data[i].Number.Int;
+  }
+ }
+
+ if(res.IsNormalized())
+ {
+  res.Min.Number.Float=h_min;
+  res.Max.Number.Float=h_max;
+ }
+ else
+ {
+  res.Min.Number.Int=h_min;
+  res.Max.Number.Int=h_max;
+ }
+
+ return res;
+}
+
 // --------------------------
 
 }

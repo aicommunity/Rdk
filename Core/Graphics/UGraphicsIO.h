@@ -51,6 +51,7 @@ template <typename CharT>
 basic_ostream<CharT>& operator << (basic_ostream<CharT> &stream, const UBitmap &bmp)
 {
  const UBitmap *pbmp=&bmp;
+ UBitmap BmpIOBuffer;
 
  UBmpHeader header;
  short type=0x4D42;
@@ -67,7 +68,6 @@ basic_ostream<CharT>& operator << (basic_ostream<CharT> &stream, const UBitmap &
 
  default:
  {
-  UBitmap BmpIOBuffer;
   BmpIOBuffer.SetRes(bmp.GetWidth(),bmp.GetHeight(),ubmRGB24);
   bmp.ConvertTo(BmpIOBuffer);
   pbmp=&BmpIOBuffer;

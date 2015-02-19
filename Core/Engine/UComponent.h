@@ -20,6 +20,7 @@ See file license.txt for more information
 #include "UContainerDescription.h"
 #include "UTime.h"
 #include "../Serialize/Serialize.h"
+#include "../Graphics/UFont.h"
 
 #ifndef RDK_PROPERTY_TYPES
 #define RDK_PROPERTY_TYPES
@@ -158,8 +159,6 @@ ShareMapT ShareLookupTable;
 
 
 protected: // Временные переменные
-/// Заглушка, возвращаемая в случае остутствия доступа к Environment::Time
-static UTimeControl DummyTime;
 
 public: // Методы
 // --------------------------
@@ -197,6 +196,12 @@ virtual bool SetEnvironment(UEPtr<UEnvironment> environment);
 /// Если Environment отсутствует то возвращает указатель на заглушку
 /// DummyTime
 const UTimeControl& GetTime(void) const;
+
+/// Возвращает указатель на шрифт по умолчанию
+UAFont* GetDefaultFont(void);
+
+/// Возвращает заданный шрифт
+UAFont* GetFont(const string &name, int size);
 // --------------------------
 
 // --------------------------
@@ -295,6 +300,10 @@ UId AddLookupShare(const NameT &name, UEPtr<UIShare> property);
 // --------------------------
 
 public: // Исключения
+struct EEnvironmentNotExist: public EError
+{
+};
+
 // Id свойства не найден
 /*struct EPropertyIdNotExist: public EIdNotExist
 {

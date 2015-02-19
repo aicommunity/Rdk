@@ -461,6 +461,7 @@ const char* UEngine::Storage_GetClassesNameList(void) const
  {
   ProcessException(exception);
  }
+ DestroyTempString(TempString);
  return 0;
 }
 
@@ -1470,14 +1471,17 @@ const char* UEngine::Env_GetCurrentComponentId(void) const
 // Возвращает имя текущего каталога для хранения данных
 const char* UEngine::Env_GetCurrentDataDir(void) const
 {
+ std::string& TempString=CreateTempString();
  try
  {
-  return Environment->GetCurrentDataDir().c_str();
+  TempString=Environment->GetCurrentDataDir();
+  return TempString.c_str();
  }
  catch (RDK::UException &exception)
  {
   ProcessException(exception);
  }
+ DestroyTempString(TempString);
  return 0;
 }
 
@@ -1498,14 +1502,17 @@ int UEngine::Env_SetCurrentDataDir(const char *dir)
 // Возвращает имя каталога бинарных файлов
 const char* UEngine::Env_GetSystemDir(void) const
 {
+ std::string& TempString=CreateTempString();
  try
  {
-  return Environment->GetSystemDir().c_str();
+  TempString=Environment->GetSystemDir().c_str();
+  return TempString.c_str();
  }
  catch (RDK::UException &exception)
  {
   ProcessException(exception);
  }
+ DestroyTempString(TempString);
  return 0;
 }
 
@@ -1932,6 +1939,7 @@ const char* UEngine::Model_GetComponentsNameList(const char* stringid)
   ProcessException(exception);
  }
 
+ DestroyTempString(TempString);
  return 0;
 }
 
@@ -3485,7 +3493,10 @@ const char * UEngine::Model_SaveComponentProperties(const char *stringid, unsign
   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
 
   if(!cont)
+  {
+   DestroyTempString(TempString);
    return 0;
+  }
 
   XmlStorage.DelNode();
   XmlStorage.Create("SaveProperties");
@@ -4979,7 +4990,9 @@ void UEngine::ProcessException(UException &exception) const
 // Возвращает массив строк лога
 const char* UEngine::GetLog(int &error_level) const
 {
- return Environment->GetLog(error_level);
+ std::string& TempString=CreateTempString();
+ TempString=Environment->GetLog(error_level);
+ return TempString.c_str();
 // return TempLogString.c_str();
 }
 
@@ -5003,7 +5016,9 @@ const char* UEngine::GetUnreadLog(int &error_level)
 
  TempString="";
  return TempString.c_str();  */
- return Environment->GetUnreadLog(error_level);
+ std::string& TempString=CreateTempString();
+ TempString=Environment->GetUnreadLog(error_level);
+ return TempString.c_str();
 }
 
 /// Записывает в лог новое сообщение

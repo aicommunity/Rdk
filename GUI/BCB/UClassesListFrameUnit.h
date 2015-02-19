@@ -43,6 +43,12 @@ __published:	// IDE-managed Components
 	void __fastcall LibComponentListStringGridMouseEnter(TObject *Sender);
 	void __fastcall CreateRuntimeLibraryButtonClick(TObject *Sender);
 	void __fastcall AddClassButtonClick(TObject *Sender);
+	void __fastcall StringGridMouseMove(TObject *Sender, TShiftState Shift, int X, int Y);
+	void __fastcall LibComponentListStringGridMouseMove(TObject *Sender, TShiftState Shift,
+          int X, int Y);
+	void __fastcall TreeViewMouseMove(TObject *Sender, TShiftState Shift, int X, int Y);
+
+
 private:	// User declarations
 public:		// User declarations
 	__fastcall TUClassesListFrame(TComponent* Owner);
@@ -77,7 +83,10 @@ virtual void AClearInterface(void);
 // ¬озвращает им€ выбранного класса
 String GetSelectedName(void);
 
-// ¬озвращает им€ выбранного класса
+/// ”станавливает им€ выбранного класса
+void SetSelectedName(const String &name);
+
+// ¬озвращает им€ выбранной библиотеки
 String GetSelectedLibraryName(void);
 
 /// ќтрисовывает список классов в выбранной библиотеке

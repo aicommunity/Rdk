@@ -45,6 +45,13 @@ bool TVideoCaptureOptionsDeviceForm::ReadParametersToGui(RDK::USerStorageXML &xm
  if(thread)
  {
   TVideoGrabber* VideoGrabber=thread->GetVideoGrabber();
+  if(!VideoGrabber)
+  {
+   thread->ExecuteCaptureInit();
+   VideoGrabber=thread->GetVideoGrabber();
+   if(!VideoGrabber)
+    return false;
+  }
   AssignListToComboBox (DeviceComboBox, VideoGrabber->VideoDevices, VideoGrabber->VideoDevice);
 
   DeviceComboBox->ItemIndex=xml.ReadInteger("CameraIndex",DeviceComboBox->ItemIndex);
@@ -53,6 +60,10 @@ bool TVideoCaptureOptionsDeviceForm::ReadParametersToGui(RDK::USerStorageXML &xm
   VideoSubTypeComboBox->ItemIndex=xml.ReadInteger("SubtypeIndex",VideoSubTypeComboBox->ItemIndex);
   AnalogVideoStandardComboBox->ItemIndex=xml.ReadInteger("AnalogIndex",AnalogVideoStandardComboBox->ItemIndex);
   FpsLabeledEdit->Text=xml.ReadString("Fps", "0").c_str();
+
+  DesiredWidthLabeledEdit->Text=xml.ReadString("DesiredWidth",AnsiString(DesiredWidthLabeledEdit->Text).c_str()).c_str();
+  DesiredHeightLabeledEdit->Text=xml.ReadString("DesiredHeight",AnsiString(DesiredHeightLabeledEdit->Text).c_str()).c_str();
+  DesiredResFlagCheckBox->Checked=xml.ReadBool("DesiredResolutionFlag",false);
 
   VideoGrabber->VideoDevice=DeviceComboBox->ItemIndex;
 //  thread->Init(DeviceComboBox->ItemIndex, InputComboBox->ItemIndex, VideoSizeComboBox->ItemIndex, VideoSubTypeComboBox->ItemIndex, AnalogVideoStandardComboBox->ItemIndex);
@@ -78,6 +89,9 @@ bool TVideoCaptureOptionsDeviceForm::WriteParametersToXml(RDK::USerStorageXML &x
  xml.WriteInteger("SubtypeIndex",VideoSubTypeComboBox->ItemIndex);
  xml.WriteInteger("AnalogIndex",AnalogVideoStandardComboBox->ItemIndex);
  xml.WriteString("Fps", AnsiString(FpsLabeledEdit->Text).c_str());
+ xml.WriteString("DesiredWidth",AnsiString(DesiredWidthLabeledEdit->Text).c_str());
+ xml.WriteString("DesiredHeight",AnsiString(DesiredHeightLabeledEdit->Text).c_str());
+ xml.WriteBool("DesiredResolutionFlag",DesiredResFlagCheckBox->Checked);
 
  return true;
 }
@@ -90,7 +104,8 @@ void __fastcall TVideoCaptureOptionsDeviceForm::FormCreate(TObject *Sender)
  descr.Name="Device";
  descr.Position=0;
  VideoCaptureOptionsForm->AddVideoSourceOptionsFrame(VideoSourceType,descr);
- VideoCaptureOptionsForm->AddVideoSourcePrototypes(VideoSourceType,new TVideoCaptureThreadVideoGrabberCamera(0,true));
+ if(!VideoCaptureOptionsForm->CheckVideoSourcePrototypes(VideoSourceType))
+  VideoCaptureOptionsForm->AddVideoSourcePrototypes(VideoSourceType,new TVideoCaptureThreadVideoGrabberCamera(0,true));
 }
 //---------------------------------------------------------------------------
 

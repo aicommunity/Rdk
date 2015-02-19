@@ -20,7 +20,7 @@ See file license.txt for more information
 namespace RDK {
 
 /// Заглушка, возвращаемая в случае остутствия доступа к Environment::Time
-UTimeControl UComponent::DummyTime;
+//UELockVar<UTimeControl> UComponent::DummyTime;
 
 // --------------------------
 // Конструкторы и деструкторы
@@ -226,10 +226,29 @@ bool UComponent::SetEnvironment(UEPtr<UEnvironment> environment)
 /// DummyTime
 const UTimeControl& UComponent::GetTime(void) const
 {
- if(Environment)
-  return Environment->GetTime();
- else
-  return DummyTime;
+ if(!Environment)
+  throw new EEnvironmentNotExist;
+
+ return Environment->GetTime();
+}
+
+
+/// Возвращает указатель на шрифт по умолчанию
+UAFont* UComponent::GetDefaultFont(void)
+{
+ if(!Environment)
+  throw new EEnvironmentNotExist;
+
+ return Environment->GetFonts().GetDefaultFont();
+}
+
+/// Возвращает заданный шрифт
+UAFont* UComponent::GetFont(const string &name, int size)
+{
+ if(!Environment)
+  throw new EEnvironmentNotExist;
+
+ return Environment->GetFonts().GetFont(name,size);
 }
 // --------------------------
 
@@ -284,7 +303,7 @@ UContainerDescription* UComponent::ANewDescription(UComponentDescription* descri
  {
   UEPtr<UIProperty> prop(I->second.Property);
   dummydescr.Type=prop->GetLanguageType().name();
-  result->SetDescription(I->first,dummydescr);
+  result->SetPropertyDescription(I->first,dummydescr);
   ++I;
  }
 

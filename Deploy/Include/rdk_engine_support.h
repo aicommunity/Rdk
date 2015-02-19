@@ -4,7 +4,7 @@
 #include "../../Core/Engine/UELockPtr.h"
 
 // Менеджер DLL
-class RDKDllManager
+class RDK_LIB_TYPE RDKDllManager
 {
 public:
 // Массив хранилищ
@@ -20,12 +20,15 @@ std::vector<RDK::UEngine*> EngineList;
 std::vector<UGenericMutex*> MutexList;
 
 // Массив локеров
-std::vector<UGenericMutexLocker*> LockerList;
+std::vector<UGenericMutexExclusiveLocker*> LockerList;
 
 UGenericMutex* GlobalMutex;
 
 /// Текущий выбраный канал
-int SelectedChannelIndex;
+RDK::UELockVar<int> SelectedChannelIndex;
+
+/// Текущее число каналов
+RDK::UELockVar<int> NumEngines;
 
 /// Данные текущего выбранного канала
 RDK::UEPtr<RDK::UEngine> Engine;
@@ -143,13 +146,13 @@ RDK::UELockPtr<RDK::UContainer> GetModelLock(int engine_index);
 //extern RDK::UEPtr<RDK::UEnvironment> PEnvironment;
 //extern RDK::UEPtr<RDK::UStorage> PStorage;
 
-extern int SelectedEngineIndex;
+//extern int SelectedEngineIndex;
 
-extern std::string RdkSystemDir;
+extern RDK_LIB_TYPE std::string RdkSystemDir;
 
 // Экземпляр менеджера
-extern RDKDllManager DllManager;
+extern RDK_LIB_TYPE RDKDllManager DllManager;
 
-extern int BufObjectsMode;
+extern RDK_LIB_TYPE int BufObjectsMode;
 
 #endif

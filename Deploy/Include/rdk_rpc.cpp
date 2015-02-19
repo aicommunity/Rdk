@@ -14,7 +14,7 @@ namespace RDK{
 /// Если определен параметр "CC"
 /// Содержимое параметра представляет собой
 /// текст вида: индекс_канала@Имя компонента
-bool ExtractCC(USerStorageXML &xml, int &channel_index, std::string &component_name)
+bool RDK_CALL ExtractCC(USerStorageXML &xml, int &channel_index, std::string &component_name)
 {
  if(!xml.SelectNode("Component"))
   return false;
@@ -31,7 +31,7 @@ bool ExtractCC(USerStorageXML &xml, int &channel_index, std::string &component_n
 
 /// Возвращает имя компонента
 /// Если определен параметр "Component"
-bool ExtractComponent(USerStorageXML &xml, std::string &component_name)
+bool RDK_CALL ExtractComponent(USerStorageXML &xml, std::string &component_name)
 {
  if(!xml.SelectNode("Component"))
   return false;
@@ -42,7 +42,7 @@ bool ExtractComponent(USerStorageXML &xml, std::string &component_name)
 
 /// Возвращает индекса канала
 /// Если определен параметр "Channel"
-bool ExtractChannel(USerStorageXML &xml, int &channel_index)
+bool RDK_CALL ExtractChannel(USerStorageXML &xml, int &channel_index)
 {
  if(!xml.SelectNode("Channel"))
   return false;
@@ -53,7 +53,7 @@ bool ExtractChannel(USerStorageXML &xml, int &channel_index)
 
 /// Возвращает имя команды
 /// Если определен параметр "Cmd"
-bool ExtractCmd(USerStorageXML &xml, std::string &cmd_name)
+bool RDK_CALL ExtractCmd(USerStorageXML &xml, std::string &cmd_name)
 {
  if(!xml.SelectNode("Cmd"))
   return false;
@@ -69,7 +69,7 @@ bool ExtractCmd(USerStorageXML &xml, std::string &cmd_name)
 ///     <Class>имя класса</Class>
 ///     <Data>xml-описание данных функции, например xml с параметрами компонента</Data>
 /// </RPC_Request>
-const char* RemoteCallInternal(const char *request, int &return_value, int &channel_index)
+const char* RDK_CALL RemoteCallInternal(const char *request, int &return_value, int &channel_index)
 {
  const char* ReturnString=0;
  return_value=INT_MAX;
@@ -103,6 +103,8 @@ const char* RemoteCallInternal(const char *request, int &return_value, int &chan
   return 0;
  }
 
+// if(engine_index>=0)
+//  MEngine_LogMessage(engine_index, RDK_EX_INFO, (std::string("Rec cmd id: ")+xml.ReadString("Id","")+std::string(" Cmd=")+cmd).c_str());
  channel_index=engine_index;
  std::string response,temp;
  std::string name;
@@ -231,7 +233,7 @@ const char* RemoteCallInternal(const char *request, int &return_value, int &chan
  return buffer.c_str();
 }
 
-const char* PtzRemoteCall(const char *request, int &return_value, int &channel_index)
+const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &channel_index)
 {
  const char* ReturnString=0;
  return_value=2001;
@@ -357,7 +359,7 @@ const char* PtzRemoteCall(const char *request, int &return_value, int &channel_i
  if(cmd == "Ptz_SetMoveParamImplemented")
  {
   std::string param_name=xml.ReadString("ParamName","");
-  bool param_value=xml.ReadBool("ParamValue","");
+  bool param_value=xml.ReadBool("ParamValue",false);
   if(Ptz_SetMoveParamImplemented(engine_index,camera.c_str(),param_name.c_str(),param_value))
    return_value=0;
   else
@@ -1154,7 +1156,7 @@ const char* PtzRemoteCall(const char *request, int &return_value, int &channel_i
   response.WriteFloat("DataSize",data_size);
   response.WriteFloat("TimeStamp",time_stamp);
  }
- else
+/* else
  if(cmd == "Ptz_ReadPanGyroDriftState")
  {
   double value;
@@ -1164,7 +1166,7 @@ const char* PtzRemoteCall(const char *request, int &return_value, int &channel_i
   response.SelectNodeRoot("RpcResponse/Data/Position");
   response.WriteFloat("Value",value);
   response.WriteFloat("TimeStamp",time_stamp);
- }
+ }*/
  else
  if(cmd == "Ptz_ReadPanErrorState")
  {
@@ -1198,10 +1200,11 @@ const char* PtzRemoteCall(const char *request, int &return_value, int &channel_i
   MEngine_FreeBufString(engine_index, ReturnString);
  }
 
- MLockEngine(engine_index);
- std::string &buffer=GetEngine(engine_index)->CreateTempString();
+// MLockEngine(engine_index);
+ UELockPtr<UEngine> eng=GetEngineLock(engine_index);
+ std::string &buffer=eng->CreateTempString();
  response.Save(buffer);
- MUnLockEngine(engine_index);
+// MUnLockEngine(engine_index);
 
  return buffer.c_str();
 }

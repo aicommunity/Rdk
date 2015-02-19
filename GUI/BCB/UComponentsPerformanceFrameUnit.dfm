@@ -22,6 +22,7 @@ inherited UComponentsPerformanceFrame: TUComponentsPerformanceFrame
     LeftWall.Color = 14745599
     Legend.Alignment = laTop
     Legend.Font.Name = 'Verdana'
+    Legend.Visible = False
     RightWall.Color = 14745599
     SubFoot.Font.Name = 'Verdana'
     SubTitle.Font.Name = 'Verdana'
@@ -34,7 +35,9 @@ inherited UComponentsPerformanceFrame: TUComponentsPerformanceFrame
     BottomAxis.LabelsAlternate = True
     BottomAxis.LabelsFont.Name = 'Verdana'
     BottomAxis.LabelsMultiLine = True
-    BottomAxis.LabelsSeparation = 0
+    BottomAxis.LabelsOnAxis = False
+    BottomAxis.LabelsBehind = True
+    BottomAxis.RoundFirstLabel = False
     BottomAxis.TicksInner.Color = 11119017
     BottomAxis.Title.Font.Name = 'Verdana'
     DepthAxis.Axis.Color = 4210752
@@ -62,23 +65,35 @@ inherited UComponentsPerformanceFrame: TUComponentsPerformanceFrame
     TopAxis.LabelsAlternate = True
     TopAxis.LabelsFont.Name = 'Verdana'
     TopAxis.LabelsMultiLine = True
+    TopAxis.LabelStyle = talText
     TopAxis.TicksInner.Color = 11119017
     TopAxis.Title.Font.Name = 'Verdana'
     View3D = False
     Align = alClient
     PopupMenu = PopupMenu
     TabOrder = 0
-    ExplicitHeight = 326
+    ExplicitLeft = 1
+    ExplicitTop = -5
+    PrintMargins = (
+      15
+      19
+      15
+      19)
     ColorPaletteIndex = 13
     object Series1: TBarSeries
       Marks.Arrow.Visible = True
       Marks.Callout.Brush.Color = clBlack
       Marks.Callout.Arrow.Visible = True
+      Marks.Emboss.Color = 8618883
+      Marks.Shadow.Color = 8618883
+      Marks.Shadow.Visible = False
       Marks.Style = smsValue
+      Marks.TextAlign = taLeftJustify
       Marks.Visible = True
       Title = 'Time, ms'
-      Emboss.Color = 8553090
-      Shadow.Color = 8553090
+      Emboss.Color = 8750469
+      MultiBar = mbNone
+      Shadow.Color = 8750469
       XValues.Name = 'X'
       XValues.Order = loAscending
       YValues.Name = 'Bar'
@@ -97,6 +112,7 @@ inherited UComponentsPerformanceFrame: TUComponentsPerformanceFrame
       Marks.Visible = True
       Title = 'Percent'
       Emboss.Color = 8553090
+      MultiBar = mbNone
       Shadow.Color = 8553090
       XValues.Name = 'X'
       XValues.Order = loAscending
@@ -125,7 +141,6 @@ inherited UComponentsPerformanceFrame: TUComponentsPerformanceFrame
         'Percent')
       TabOrder = 0
       OnClick = ShowModeRadioGroupClick
-      ExplicitHeight = 36
     end
     object GroupBox1: TGroupBox
       Left = 137
@@ -135,10 +150,6 @@ inherited UComponentsPerformanceFrame: TUComponentsPerformanceFrame
       Align = alClient
       Caption = ' Average interval (counts) '
       TabOrder = 1
-      ExplicitLeft = 224
-      ExplicitTop = 16
-      ExplicitWidth = 185
-      ExplicitHeight = 105
       object AverageIntervalSpinEdit: TSpinEdit
         Left = 6
         Top = 16
@@ -158,6 +169,10 @@ inherited UComponentsPerformanceFrame: TUComponentsPerformanceFrame
     object SelectSource1: TMenuItem
       Caption = 'Select Source'
       OnClick = SelectSource1Click
+    end
+    object SelectAll1: TMenuItem
+      Caption = 'Select All'
+      OnClick = SelectAll1Click
     end
     object N1: TMenuItem
       Caption = '-'

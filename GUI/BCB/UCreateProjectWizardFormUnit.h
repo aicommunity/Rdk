@@ -14,6 +14,8 @@
 #include <Vcl.Dialogs.hpp>
 #include <Vcl.ExtDlgs.hpp>
 #include <Vcl.Grids.hpp>
+#include "myrdk.h"
+
 //---------------------------------------------------------------------------
 class TUCreateProjectWizardForm : public TForm
 {
@@ -43,14 +45,14 @@ __published:	// IDE-managed Components
 	TLabeledEdit *ChannelsNumberLabeledEdit;
 	TUpDown *UpDown1;
 	TGroupBox *GroupBox4;
-	TStringGrid *StringGrid1;
+	TStringGrid *ChannelsStringGrid;
 	TPanel *Panel2;
 	TPanel *Panel3;
 	TCheckBox *ShowChannelsStateCheckBox;
 	TGroupBox *ProjectTimeStepGroupBox;
 	TLabel *Label2;
 	TEdit *ProjectTimeStepEdit;
-	TEdit *Edit1;
+	TEdit *GlobalTimeStepEdit;
 	TLabel *Label3;
 	TCheckBox *EventsLogFlagCheckBox;
 	TRadioGroup *CalculationModeRadioGroup;
@@ -72,6 +74,8 @@ __published:	// IDE-managed Components
 	TPanel *Panel4;
 	TTabSheet *DontChangeTabSheet;
 	TRichEdit *RichEdit1;
+	TRichEdit *ModelInfoRichEdit;
+	TCheckBox *DisableStopVideoSourcesCheckBox;
 	void __fastcall FinishButtonClick(TObject *Sender);
 	void __fastcall Button1Click(TObject *Sender);
 	void __fastcall ProjectTypeRadioGroupClick(TObject *Sender);
@@ -83,11 +87,45 @@ __published:	// IDE-managed Components
 	void __fastcall OpenModelButtonClick(TObject *Sender);
 	void __fastcall ModelFileNameRadioButtonClick(TObject *Sender);
 	void __fastcall FormShow(TObject *Sender);
+	void __fastcall ChannelsNumberLabeledEditChange(TObject *Sender);
+	void __fastcall ModelPageControlChange(TObject *Sender);
+	void __fastcall ChannelsStringGridClick(TObject *Sender);
+	void __fastcall PredefinedModelComboBoxChange(TObject *Sender);
+	void __fastcall UClassesListFrame1StringGridClick(TObject *Sender);
+	void __fastcall UClassesListFrame1LibComponentListStringGridClick(TObject *Sender);
+	void __fastcall ProjectTimeStepEditKeyPress(TObject *Sender, System::WideChar &Key);
+	void __fastcall GlobalTimeStepEditKeyPress(TObject *Sender, System::WideChar &Key);
+	void __fastcall CalculationModeRadioGroupClick(TObject *Sender);
+	void __fastcall MinInterstepsIntervalEditKeyPress(TObject *Sender, System::WideChar &Key);
+	void __fastcall InitAfterLoadCheckBoxClick(TObject *Sender);
+	void __fastcall ResetAfterLoadCheckBoxClick(TObject *Sender);
+	void __fastcall DebugModeCheckBoxClick(TObject *Sender);
+	void __fastcall ProjectDirectoryLabeledEditChange(TObject *Sender);
+	void __fastcall ProjectNameLabeledEditChange(TObject *Sender);
+	void __fastcall ProjectDescriptionRichEditChange(TObject *Sender);
+	void __fastcall ProjectAutoSaveFlagCheckBoxClick(TObject *Sender);
+	void __fastcall ProjectAutoSaveStatesFlagCheckBoxClick(TObject *Sender);
+	void __fastcall EventsLogFlagCheckBoxClick(TObject *Sender);
+	void __fastcall ProjectModeRadioGroupClick(TObject *Sender);
+	void __fastcall MultiThreadingModeRadioGroupClick(TObject *Sender);
+	void __fastcall CalculationSourceTimeModeRadioGroupClick(TObject *Sender);
+	void __fastcall DisableStopVideoSourcesCheckBoxClick(TObject *Sender);
+
+
+
+
 private:	// User declarations
 public:		// User declarations
 	__fastcall TUCreateProjectWizardForm(TComponent* Owner);
 
 bool UpdateInterfaceFlag;
+
+/// Режим визарда по умолчанию
+/// 0 - общий
+/// 1 - Видеоаналитика
+/// 2 - Управление поворотками
+/// 3 - Нейронные сети
+int WizardMode;
 
 // Число шагов визарда
 int NumSteps;
@@ -102,7 +140,9 @@ std::vector<String> StepDescriptions;
 std::map<std::string, int> PredefinedModels;
 
 public: // Выходные данные
-int PredefinedStructure;
+
+/// Конфигурация сервера
+RDK::TProjectConfig ProjectConfig;
 
 // ----------------------
 // Методы
@@ -120,10 +160,13 @@ void ClearPredefinedModels(void);
 void AddPredefinedModel(const std::string &name, int index);
 
 // Отображает визард для создания проекта
-int ShowCreateProject(void);
+int ShowCreateProject(int wizard_mode);
 
 // Отображает визард для модификации проекта
 int ShowProjectOptions(void);
+
+/// Переключает параметры проекта в состояние wizard_mode
+void ApplyWizardMode(int wizard_mode);
 // ----------------------
 
 };

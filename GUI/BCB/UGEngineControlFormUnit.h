@@ -150,6 +150,11 @@ __published:	// IDE-managed Components
 	TMenuItem *InsertChannel1;
 	TMenuItem *DeleteSelectedChannel1;
 	TMenuItem *ApplicationOptions1;
+	TMenuItem *ClassesDescription1;
+	TMenuItem *N10;
+	TMenuItem *StartChannel1;
+	TMenuItem *PauseChannel1;
+	TMenuItem *ResetChannel1;
 	void __fastcall FormShow(TObject *Sender);
 	void __fastcall Start1Click(TObject *Sender);
 	void __fastcall Pause1Click(TObject *Sender);
@@ -218,6 +223,11 @@ __published:	// IDE-managed Components
 	void __fastcall InsertChannel1Click(TObject *Sender);
 	void __fastcall DeleteSelectedChannel1Click(TObject *Sender);
 	void __fastcall ApplicationOptions1Click(TObject *Sender);
+	void __fastcall ClassesDescription1Click(TObject *Sender);
+	void __fastcall StartChannel1Click(TObject *Sender);
+	void __fastcall PauseChannel1Click(TObject *Sender);
+	void __fastcall ResetChannel1Click(TObject *Sender);
+	void __fastcall ToolButton15Click(TObject *Sender);
 
 
 
@@ -323,6 +333,9 @@ int ServerInterfacePort;
 /// Флаг запрета на запуск главной формы по Ctrl+F1
 bool DisableAdminForm;
 
+/// Флаг, запрещающий остановку видеоисточников при остановке расчета
+bool DisableStopVideoSources;
+
 // Список специальных форм (не имеющих компонента управления в модели)
 std::map<std::string, TUVisualControllerForm*> SpecialForms;
 
@@ -364,7 +377,7 @@ void ASaveParameters(RDK::USerStorageXML &xml);
 void ALoadParameters(RDK::USerStorageXML &xml);
 
 // Создает новый проект
-void CreateProject(const String &FileName, const String &model_comp_name="", const String &model_file_name="");
+void CreateProject(RDK::TProjectConfig &project_config);
 
 // Закрывает существущий проект
 void CloseProject(void);

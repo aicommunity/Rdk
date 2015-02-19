@@ -8,6 +8,9 @@ namespace RDK {
 class RDK_LIB_TYPE URpcCommand
 {
 public: // Данные
+/// Идентификатор получателя ответа
+std::string RecepientId;
+
 /// Идентификатор команды
 unsigned CmdId;
 
@@ -40,6 +43,9 @@ virtual ~URpcCommand(void);
 // --------------------------
 // Методы доступа к данным
 // --------------------------
+/// Идентификатор получателя ответа
+const std::string& GetRecepientId(void) const;
+
 /// Идентификатор команды
 unsigned GetCmdId(void) const;
 

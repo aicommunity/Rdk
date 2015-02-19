@@ -67,7 +67,6 @@ public:
 	String GetDesc();
 
 	PropertyType GetType();
-
 };
 //---------------------------------------------------------------------------
 class TPropertyStorage
@@ -109,6 +108,8 @@ __published:	// IDE-managed Components
 	void __fastcall BasicStringGridDblClick(TObject *Sender);
 	void __fastcall chbBoolEditClick(TObject *Sender);
 	void __fastcall FrameResize(TObject *Sender);
+	void __fastcall BasicStringGridMouseMove(TObject *Sender, TShiftState Shift, int X,
+          int Y);
 
 
 

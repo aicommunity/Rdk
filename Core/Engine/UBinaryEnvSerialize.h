@@ -15,6 +15,7 @@ See file license.txt for more information
 
 #include "UItemData.h"
 #include "../Serialize/USerStorageBinary.h"
+#include "UELockVar.h"
 
 namespace RDK {
 
@@ -23,8 +24,29 @@ namespace RDK {
 //USerStorageBinary& operator >> (USerStorageBinary& storage, UBMColorModel &data);
 
 // UItemData
-USerStorageBinary& operator << (USerStorageBinary& storage, const UItemData &data);
-USerStorageBinary& operator >> (USerStorageBinary& storage, UItemData &data);
+RDK_LIB_TYPE USerStorageBinary& operator << (USerStorageBinary& storage, const UItemData &data);
+RDK_LIB_TYPE USerStorageBinary& operator >> (USerStorageBinary& storage, UItemData &data);
+
+
+// UELockVar
+template<typename T>
+USerStorageBinary& operator << (USerStorageBinary& storage, const UELockVar<T> &data)
+{
+ storage<<data.operator T();
+
+ return storage;
+}
+
+template<typename T>
+USerStorageBinary& operator >> (USerStorageBinary& storage, UELockVar<T> &data)
+{
+ T temp;
+ storage>>temp;
+ data=temp;
+
+ return storage;
+}
+
 
 }
 #endif

@@ -3,6 +3,9 @@ inherited ApplicationOptionsFrame: TApplicationOptionsFrame
   Height = 301
   ExplicitWidth = 367
   ExplicitHeight = 301
+  DesignSize = (
+    367
+    301)
   object Label1: TLabel
     Left = 3
     Top = 225
@@ -59,6 +62,7 @@ inherited ApplicationOptionsFrame: TApplicationOptionsFrame
     Height = 25
     Anchors = [akTop, akRight]
     Caption = 'Browse'
+    Enabled = False
     TabOrder = 4
   end
   object BrowseMainFormNameButton: TButton
@@ -68,6 +72,7 @@ inherited ApplicationOptionsFrame: TApplicationOptionsFrame
     Height = 25
     Anchors = [akTop, akRight]
     Caption = 'Select'
+    Enabled = False
     TabOrder = 5
   end
   object HideAdminFormCheckBox: TCheckBox

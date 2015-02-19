@@ -20,8 +20,6 @@ object VideoCaptureOptionsIPCameraForm: TVideoCaptureOptionsIPCameraForm
     Height = 310
     Align = alClient
     TabOrder = 0
-    ExplicitWidth = 558
-    ExplicitHeight = 218
     DesignSize = (
       592
       310)
@@ -33,7 +31,6 @@ object VideoCaptureOptionsIPCameraForm: TVideoCaptureOptionsIPCameraForm
       Anchors = [akLeft, akTop, akRight]
       AutoSize = False
       Caption = 'IP Camera URL:'
-      ExplicitWidth = 177
     end
     object Label5: TLabel
       Left = 8
@@ -43,7 +40,6 @@ object VideoCaptureOptionsIPCameraForm: TVideoCaptureOptionsIPCameraForm
       Anchors = [akLeft, akTop, akRight]
       AutoSize = False
       Caption = 'User Name:'
-      ExplicitWidth = 390
     end
     object Label6: TLabel
       Left = 8
@@ -53,7 +49,6 @@ object VideoCaptureOptionsIPCameraForm: TVideoCaptureOptionsIPCameraForm
       Anchors = [akLeft, akTop, akRight]
       AutoSize = False
       Caption = 'User Password:'
-      ExplicitWidth = 390
     end
     object Label8: TLabel
       Left = 216
@@ -64,49 +59,45 @@ object VideoCaptureOptionsIPCameraForm: TVideoCaptureOptionsIPCameraForm
       AutoSize = False
       Caption = 'Camera control URL:'
       Visible = False
-      ExplicitWidth = 152
     end
     object IPCameraUrlEdit: TEdit
       Left = 8
       Top = 20
       Width = 576
-      Height = 21
+      Height = 25
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 0
       Text = 'http://127.0.0.1/video/mjpg.cgi'
-      ExplicitWidth = 542
     end
     object IPCameraUserNameEdit: TEdit
       Left = 8
       Top = 62
       Width = 576
-      Height = 21
+      Height = 25
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 1
       Text = 'Admin'
-      ExplicitWidth = 542
     end
     object IPCameraUserPasswordEdit: TEdit
       Left = 8
       Top = 108
       Width = 576
-      Height = 21
+      Height = 25
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 2
-      ExplicitWidth = 542
     end
     object IpMoveUpButton: TButton
-      Left = 96
-      Top = 188
+      Left = 329
+      Top = 193
       Width = 75
-      Height = 25
+      Height = 26
       Caption = 'Up'
       TabOrder = 3
       Visible = False
     end
     object IpMoveLeftButton: TButton
-      Left = 24
-      Top = 219
+      Left = 252
+      Top = 226
       Width = 75
       Height = 25
       Caption = 'Left'
@@ -114,8 +105,8 @@ object VideoCaptureOptionsIPCameraForm: TVideoCaptureOptionsIPCameraForm
       Visible = False
     end
     object IpMoveRightButton: TButton
-      Left = 168
-      Top = 219
+      Left = 333
+      Top = 225
       Width = 75
       Height = 25
       Caption = 'Right'
@@ -123,17 +114,17 @@ object VideoCaptureOptionsIPCameraForm: TVideoCaptureOptionsIPCameraForm
       Visible = False
     end
     object IpMoveDownButton: TButton
-      Left = 96
-      Top = 250
+      Left = 329
+      Top = 262
       Width = 75
-      Height = 25
+      Height = 26
       Caption = 'Down'
       TabOrder = 6
       Visible = False
     end
     object ZoomInButton: TButton
-      Left = 249
-      Top = 188
+      Left = 414
+      Top = 194
       Width = 75
       Height = 25
       Caption = 'Zoom Im'
@@ -141,8 +132,8 @@ object VideoCaptureOptionsIPCameraForm: TVideoCaptureOptionsIPCameraForm
       Visible = False
     end
     object ZoomOutButton: TButton
-      Left = 249
-      Top = 250
+      Left = 414
+      Top = 256
       Width = 75
       Height = 25
       Caption = 'Zoom Out'
@@ -150,8 +141,8 @@ object VideoCaptureOptionsIPCameraForm: TVideoCaptureOptionsIPCameraForm
       Visible = False
     end
     object ResetButton: TButton
-      Left = 344
-      Top = 219
+      Left = 509
+      Top = 225
       Width = 75
       Height = 25
       Caption = 'Reset'
@@ -162,24 +153,94 @@ object VideoCaptureOptionsIPCameraForm: TVideoCaptureOptionsIPCameraForm
       Left = 216
       Top = 20
       Width = 368
-      Height = 21
+      Height = 25
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 10
       Text = 'http://127.0.0.1/video/mjpg.cgi'
       Visible = False
-      ExplicitWidth = 334
     end
     object FpsLabeledEdit: TLabeledEdit
       Left = 8
       Top = 151
       Width = 576
-      Height = 21
+      Height = 25
       Anchors = [akLeft, akTop, akRight]
       EditLabel.Width = 17
       EditLabel.Height = 13
       EditLabel.Caption = 'Fps'
       TabOrder = 11
-      ExplicitWidth = 550
+    end
+    object DesiredResFlagCheckBox: TCheckBox
+      Left = 8
+      Top = 177
+      Width = 113
+      Height = 13
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Caption = 'Use user resolution'
+      TabOrder = 12
+    end
+    object DesiredWidthLabeledEdit: TLabeledEdit
+      Left = 125
+      Top = 193
+      Width = 36
+      Height = 25
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      EditLabel.Width = 28
+      EditLabel.Height = 13
+      EditLabel.Margins.Left = 2
+      EditLabel.Margins.Top = 2
+      EditLabel.Margins.Right = 2
+      EditLabel.Margins.Bottom = 2
+      EditLabel.Caption = 'Width'
+      TabOrder = 13
+      Text = '640'
+    end
+    object DesiredHeightLabeledEdit: TLabeledEdit
+      Left = 166
+      Top = 193
+      Width = 37
+      Height = 25
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      EditLabel.Width = 31
+      EditLabel.Height = 13
+      EditLabel.Margins.Left = 2
+      EditLabel.Margins.Top = 2
+      EditLabel.Margins.Right = 2
+      EditLabel.Margins.Bottom = 2
+      EditLabel.Caption = 'Height'
+      TabOrder = 14
+      Text = '480'
+    end
+    object ConnectionTimeoutLabeledEdit: TLabeledEdit
+      Left = 8
+      Top = 231
+      Width = 113
+      Height = 25
+      Anchors = [akLeft, akTop, akRight]
+      EditLabel.Width = 113
+      EditLabel.Height = 13
+      EditLabel.Caption = 'Connection timeout, ms'
+      TabOrder = 15
+    end
+    object CaptureTimeoutLabeledEdit: TLabeledEdit
+      Left = 133
+      Top = 231
+      Width = 113
+      Height = 25
+      Anchors = [akLeft, akTop, akRight]
+      EditLabel.Width = 98
+      EditLabel.Height = 13
+      EditLabel.Caption = 'Capture timeout, ms'
+      TabOrder = 16
     end
   end
 end

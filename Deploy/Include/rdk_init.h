@@ -202,13 +202,15 @@ RDK_LIB_TYPE bool RDK_CALL Storage_SetClassDescription(const char* classname, co
 RDK_LIB_TYPE const char* RDK_CALL Storage_SaveClassesDescription(void);
 
 // Загружает описание всех классов из xml
-RDK_LIB_TYPE bool RDK_CALL Storage_LoadClassesDescription(const char* xmltext);
+RDK_LIB_TYPE int RDK_CALL Storage_LoadClassesDescription(const char* xmltext);
+RDK_LIB_TYPE int RDK_CALL MStorage_LoadClassesDescription(int engine_index, const char* xmltext);
 
 // Сохраняет общее описание всех классов в xml
 RDK_LIB_TYPE const char* RDK_CALL Storage_SaveCommonClassesDescription(void);
 
 // Загружает общее описание всех классов из xml
-RDK_LIB_TYPE bool RDK_CALL Storage_LoadCommonClassesDescription(const char* xmltext);
+RDK_LIB_TYPE int RDK_CALL Storage_LoadCommonClassesDescription(const char* xmltext);
+RDK_LIB_TYPE int RDK_CALL MStorage_LoadCommonClassesDescription(int engine_index, const char* xmltext);
 
 // Сохраняет описание всех классов в xml включая общее описание
 RDK_LIB_TYPE const char* RDK_CALL Storage_SaveAllClassesDescription(void);
