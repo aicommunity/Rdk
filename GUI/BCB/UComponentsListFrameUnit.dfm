@@ -22,7 +22,7 @@ inherited UComponentsListFrame: TUComponentsListFrame
       Top = 1
       Width = 384
       Height = 565
-      ActivePage = TabSheet6
+      ActivePage = TabSheet7
       Align = alClient
       TabOrder = 0
       TabPosition = tpBottom
@@ -36,14 +36,14 @@ inherited UComponentsListFrame: TUComponentsListFrame
           Width = 376
           Height = 10
           Cursor = crVSplit
-          Align = alBottom
+          Align = alTop
         end
         inline EnchancedSG1: TEnchancedSG
           Left = 0
           Top = 0
           Width = 376
           Height = 462
-          Align = alClient
+          Align = alTop
           TabOrder = 0
           TabStop = True
           ExplicitWidth = 376
@@ -62,9 +62,11 @@ inherited UComponentsListFrame: TUComponentsListFrame
           inherited txtStringEdit: TEdit
             Left = 32
             Top = 248
+            Height = 21
             OnKeyPress = EnchancedSG1txtStringEditKeyPress
             ExplicitLeft = 32
             ExplicitTop = 248
+            ExplicitHeight = 21
           end
           inherited chbBoolEdit: TCheckBox
             Left = 35
@@ -81,23 +83,29 @@ inherited UComponentsListFrame: TUComponentsListFrame
           inherited txtDoubleEdit: TEdit
             Left = 30
             Top = 208
+            Height = 21
             OnKeyPress = EnchancedSG1txtDoubleEditKeyPress
             ExplicitLeft = 30
             ExplicitTop = 208
+            ExplicitHeight = 21
           end
           inherited txtIntEdit: TEdit
             Left = 32
             Top = 389
+            Height = 21
             OnKeyPress = EnchancedSG1txtIntEditKeyPress
             ExplicitLeft = 32
             ExplicitTop = 389
+            ExplicitHeight = 21
           end
           inherited txtBorderedIntEdit: TEdit
             Left = 32
             Top = 324
+            Height = 21
             OnKeyPress = EnchancedSG1txtBorderedIntEditKeyPress
             ExplicitLeft = 32
             ExplicitTop = 324
+            ExplicitHeight = 21
           end
           inherited cmbListEdit: TComboBox
             Left = 32
@@ -157,7 +165,7 @@ inherited UComponentsListFrame: TUComponentsListFrame
           Top = 472
           Width = 376
           Height = 33
-          Align = alBottom
+          Align = alClient
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
           Font.Height = -11
@@ -169,6 +177,8 @@ inherited UComponentsListFrame: TUComponentsListFrame
           TabOrder = 2
           OnChange = NiceParamValRichEditChange
           OnMouseEnter = NiceParamValRichEditMouseEnter
+          ExplicitLeft = 1
+          ExplicitTop = 478
         end
       end
       object TabSheet7: TTabSheet
@@ -180,7 +190,7 @@ inherited UComponentsListFrame: TUComponentsListFrame
           Width = 376
           Height = 10
           Cursor = crVSplit
-          Align = alBottom
+          Align = alTop
           ExplicitTop = 456
         end
         object HeaderControl4: THeaderControl
@@ -228,7 +238,7 @@ inherited UComponentsListFrame: TUComponentsListFrame
           Top = 472
           Width = 376
           Height = 33
-          Align = alBottom
+          Align = alClient
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
           Font.Height = -11
@@ -240,13 +250,15 @@ inherited UComponentsListFrame: TUComponentsListFrame
           TabOrder = 1
           OnChange = NiceStateValRichEditChange
           OnMouseEnter = NiceStateValRichEditMouseEnter
+          ExplicitLeft = 1
+          ExplicitTop = 468
         end
         inline EnchancedSG2: TEnchancedSG
           Left = 0
           Top = 0
           Width = 376
           Height = 462
-          Align = alClient
+          Align = alTop
           TabOrder = 2
           TabStop = True
           OnMouseEnter = EnchancedSG2MouseEnter
@@ -266,9 +278,11 @@ inherited UComponentsListFrame: TUComponentsListFrame
           inherited txtStringEdit: TEdit
             Left = 32
             Top = 248
+            Height = 21
             OnKeyPress = EnchancedSG2txtStringEditKeyPress
             ExplicitLeft = 32
             ExplicitTop = 248
+            ExplicitHeight = 21
           end
           inherited chbBoolEdit: TCheckBox
             Left = 35
@@ -285,23 +299,29 @@ inherited UComponentsListFrame: TUComponentsListFrame
           inherited txtDoubleEdit: TEdit
             Left = 30
             Top = 208
+            Height = 21
             OnKeyPress = EnchancedSG2txtDoubleEditKeyPress
             ExplicitLeft = 30
             ExplicitTop = 208
+            ExplicitHeight = 21
           end
           inherited txtIntEdit: TEdit
             Left = 32
             Top = 389
+            Height = 21
             OnKeyPress = EnchancedSG2txtIntEditKeyPress
             ExplicitLeft = 32
             ExplicitTop = 389
+            ExplicitHeight = 21
           end
           inherited txtBorderedIntEdit: TEdit
             Left = 32
             Top = 324
+            Height = 21
             OnKeyPress = EnchancedSG2txtBorderedIntEditKeyPress
             ExplicitLeft = 32
             ExplicitTop = 324
+            ExplicitHeight = 21
           end
           inherited cmbListEdit: TComboBox
             Left = 32
@@ -315,10 +335,6 @@ inherited UComponentsListFrame: TUComponentsListFrame
       object TabSheet3: TTabSheet
         Caption = 'I/O'
         ImageIndex = 2
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object Splitter2: TSplitter
           Left = 0
           Top = 239
