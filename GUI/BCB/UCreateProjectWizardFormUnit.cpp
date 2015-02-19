@@ -59,6 +59,8 @@ void TUCreateProjectWizardForm::UpdateInterface(void)
  CalculationSourceTimeModeRadioGroup->ItemIndex=ProjectConfig.CalcSourceTimeMode;
  ShowChannelsStateCheckBox->Checked=ProjectConfig.ShowChannelsStateFlag;
 
+ DisableStopVideoSourcesCheckBox->Checked=ProjectConfig.DisableStopVideoSources;
+
  // Настраиваем список каналов
  int num_channels=ProjectConfig.NumChannels;
  ChannelsNumberLabeledEdit->Text=IntToStr(num_channels);
@@ -744,6 +746,16 @@ void __fastcall TUCreateProjectWizardForm::CalculationSourceTimeModeRadioGroupCl
   return;
 
  ProjectConfig.CalcSourceTimeMode=CalculationSourceTimeModeRadioGroup->ItemIndex;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUCreateProjectWizardForm::DisableStopVideoSourcesCheckBoxClick(TObject *Sender)
+
+{
+ if(UpdateInterfaceFlag)
+  return;
+
+ ProjectConfig.DisableStopVideoSources=DisableStopVideoSourcesCheckBox->Checked;
 }
 //---------------------------------------------------------------------------
 

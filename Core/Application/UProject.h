@@ -103,6 +103,9 @@ bool ReflectionFlag;
 /// Число каналов
 int NumChannels;
 
+/// Флаг запрета останова источников видео-сигнала при остановке проекта
+bool DisableStopVideoSources;
+
 /// Массив конфигураций каналов
 std::vector<TProjectChannelConfig> ChannelsConfig;
 

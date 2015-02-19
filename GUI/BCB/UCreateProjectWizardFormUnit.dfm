@@ -91,10 +91,6 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
       Margins.Right = 4
       Margins.Bottom = 4
       Caption = 'Name'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         754
         815)
@@ -247,6 +243,22 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
         TabOrder = 7
         OnClick = EventsLogFlagCheckBoxClick
       end
+      object DisableStopVideoSourcesCheckBox: TCheckBox
+        Left = 338
+        Top = 787
+        Width = 255
+        Height = 22
+        Margins.Left = 4
+        Margins.Top = 4
+        Margins.Right = 4
+        Margins.Bottom = 4
+        Anchors = [akLeft, akBottom]
+        Caption = 'Disable Stop Video Sources'
+        Checked = True
+        State = cbChecked
+        TabOrder = 8
+        OnClick = DisableStopVideoSourcesCheckBoxClick
+      end
     end
     object TabSheet2: TTabSheet
       Margins.Left = 4
@@ -255,10 +267,6 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
       Margins.Bottom = 4
       Caption = 'Type'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object TitlePanel2: TPanel
         Left = 0
         Top = 0
@@ -357,10 +365,6 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
       Margins.Bottom = 4
       Caption = 'Model'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         754
         815)
@@ -655,10 +659,6 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                 Margins.Bottom = 4
                 Caption = 'Don'#39't Change'
                 ImageIndex = 3
-                ExplicitLeft = 0
-                ExplicitTop = 0
-                ExplicitWidth = 0
-                ExplicitHeight = 0
                 object RichEdit1: TRichEdit
                   Left = 0
                   Top = 0
@@ -702,10 +702,6 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                 Margins.Right = 4
                 Margins.Bottom = 4
                 Caption = 'Predefined Model'
-                ExplicitLeft = 0
-                ExplicitTop = 0
-                ExplicitWidth = 0
-                ExplicitHeight = 0
                 DesignSize = (
                   677
                   445)
@@ -731,10 +727,6 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                 Margins.Bottom = 4
                 Caption = 'From File'
                 ImageIndex = 1
-                ExplicitLeft = 0
-                ExplicitTop = 0
-                ExplicitWidth = 0
-                ExplicitHeight = 0
                 DesignSize = (
                   677
                   445)
@@ -779,10 +771,6 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                 Margins.Bottom = 4
                 Caption = 'From Component'
                 ImageIndex = 2
-                ExplicitLeft = 0
-                ExplicitTop = 0
-                ExplicitWidth = 0
-                ExplicitHeight = 0
                 object GroupBox2: TGroupBox
                   Left = 0
                   Top = 0
@@ -832,6 +820,10 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                         Margins.Top = 4
                         Margins.Right = 4
                         Margins.Bottom = 4
+                        ExplicitLeft = 4
+                        ExplicitTop = 29
+                        ExplicitWidth = 665
+                        ExplicitHeight = 391
                         inherited StringGrid: TStringGrid
                           Width = 665
                           Height = 391
@@ -866,9 +858,12 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                         Margins.Top = 4
                         Margins.Right = 4
                         Margins.Bottom = 4
+                        ExplicitLeft = 4
+                        ExplicitTop = 24
+                        ExplicitWidth = 499
+                        ExplicitHeight = 515
                         inherited Splitter1: TSplitter
-                          Top = 111
-                          Width = 665
+                          Top = 235
                           Height = 9
                           Margins.Left = 4
                           Margins.Top = 4
@@ -879,112 +874,93 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                           ExplicitHeight = 9
                         end
                         inherited Panel1: TPanel
-                          Top = 230
-                          Width = 665
+                          Top = 354
                           Height = 161
                           Margins.Left = 4
                           Margins.Top = 4
                           Margins.Right = 4
                           Margins.Bottom = 4
                           Visible = False
-                          ExplicitTop = 230
-                          ExplicitWidth = 665
+                          ExplicitTop = 354
                           ExplicitHeight = 161
                           inherited LoadLibraryButton: TButton
-                            Width = 663
                             Height = 33
                             Margins.Left = 4
                             Margins.Top = 4
                             Margins.Right = 4
                             Margins.Bottom = 4
-                            ExplicitWidth = 663
                             ExplicitHeight = 33
                           end
                           inherited CreateRuntimeLibraryButton: TButton
                             Top = 34
-                            Width = 663
                             Height = 33
                             Margins.Left = 4
                             Margins.Top = 4
                             Margins.Right = 4
                             Margins.Bottom = 4
                             ExplicitTop = 34
-                            ExplicitWidth = 663
                             ExplicitHeight = 33
                           end
                           inherited DeleteLibraryButton: TButton
                             Top = 67
-                            Width = 663
                             Height = 32
                             Margins.Left = 4
                             Margins.Top = 4
                             Margins.Right = 4
                             Margins.Bottom = 4
                             ExplicitTop = 67
-                            ExplicitWidth = 663
                             ExplicitHeight = 32
                           end
                           inherited RenameRuntimeLibraryButton: TButton
                             Top = 99
-                            Width = 663
                             Height = 33
                             Margins.Left = 4
                             Margins.Top = 4
                             Margins.Right = 4
                             Margins.Bottom = 4
                             ExplicitTop = 99
-                            ExplicitWidth = 663
                             ExplicitHeight = 33
                           end
                           inherited AddClassButton: TButton
                             Top = 132
-                            Width = 663
                             Height = 33
                             Margins.Left = 4
                             Margins.Top = 4
                             Margins.Right = 4
                             Margins.Bottom = 4
                             ExplicitTop = 132
-                            ExplicitWidth = 663
                             ExplicitHeight = 33
                           end
                         end
                         inherited GroupBox1: TGroupBox
-                          Width = 665
-                          Height = 111
+                          Height = 235
                           Margins.Left = 4
                           Margins.Top = 4
                           Margins.Right = 4
                           Margins.Bottom = 4
-                          ExplicitWidth = 665
-                          ExplicitHeight = 12
+                          ExplicitHeight = 235
                           inherited LibsListStringGrid: TStringGrid
                             Top = 20
-                            Width = 661
-                            Height = 89
+                            Height = 213
                             Margins.Left = 4
                             Margins.Top = 4
                             Margins.Right = 4
                             Margins.Bottom = 4
                             ExplicitTop = 20
-                            ExplicitWidth = 661
-                            ExplicitHeight = 114
+                            ExplicitHeight = 213
                           end
                         end
                         inherited GroupBox2: TGroupBox
-                          Top = 120
-                          Width = 665
+                          Top = 244
                           Height = 110
                           Margins.Left = 4
                           Margins.Top = 4
                           Margins.Right = 4
                           Margins.Bottom = 4
-                          ExplicitTop = 120
-                          ExplicitWidth = 665
+                          ExplicitTop = 244
                           ExplicitHeight = 110
                           inherited LibComponentListStringGrid: TStringGrid
                             Top = 20
-                            Width = 661
                             Height = 88
                             Margins.Left = 4
                             Margins.Top = 4
@@ -992,8 +968,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                             Margins.Bottom = 4
                             OnClick = UClassesListFrame1LibComponentListStringGridClick
                             ExplicitTop = 20
-                            ExplicitWidth = 661
-                            ExplicitHeight = 187
+                            ExplicitHeight = 88
                           end
                         end
                       end

@@ -74,6 +74,8 @@ TProjectConfig::TProjectConfig(void)
 
  ReflectionFlag=true;
 
+ DisableStopVideoSources=false;
+
  NumChannels=1;
  ChannelsConfig.resize(1);
 }
@@ -99,6 +101,8 @@ TProjectConfig::TProjectConfig(const TProjectConfig& copy)
  ShowChannelsStateFlag=copy.ShowChannelsStateFlag;
 
  ReflectionFlag=copy.ReflectionFlag;
+
+ DisableStopVideoSources=copy.DisableStopVideoSources;
 
  NumChannels=copy.NumChannels;
  ChannelsConfig=copy.ChannelsConfig;

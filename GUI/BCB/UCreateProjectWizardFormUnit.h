@@ -75,6 +75,7 @@ __published:	// IDE-managed Components
 	TTabSheet *DontChangeTabSheet;
 	TRichEdit *RichEdit1;
 	TRichEdit *ModelInfoRichEdit;
+	TCheckBox *DisableStopVideoSourcesCheckBox;
 	void __fastcall FinishButtonClick(TObject *Sender);
 	void __fastcall Button1Click(TObject *Sender);
 	void __fastcall ProjectTypeRadioGroupClick(TObject *Sender);
@@ -108,6 +109,7 @@ __published:	// IDE-managed Components
 	void __fastcall ProjectModeRadioGroupClick(TObject *Sender);
 	void __fastcall MultiThreadingModeRadioGroupClick(TObject *Sender);
 	void __fastcall CalculationSourceTimeModeRadioGroupClick(TObject *Sender);
+	void __fastcall DisableStopVideoSourcesCheckBoxClick(TObject *Sender);
 
 
 

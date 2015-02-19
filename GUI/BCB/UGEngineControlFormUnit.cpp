@@ -452,6 +452,9 @@ void TUGEngineControlForm::CreateProject(RDK::TProjectConfig &project_config)
 
  ProjectXml.WriteInteger("SelectedEngineIndex",0);
 
+ ProjectXml.WriteBool("DisableStopVideoSources",project_config.DisableStopVideoSources);
+
+
  ProjectXml.SelectNodeRoot("Project/General");
  // Число входов среды
  ProjectXml.WriteInteger("NumEnvInputs",1);
@@ -624,6 +627,8 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
  int num_engines=ProjectXml.ReadInteger("NumEngines",1);
  if(num_engines<=0)
   num_engines=1;
+
+ DisableStopVideoSources=ProjectXml.ReadBool("DisableStopVideoSources",false);
 
  UShowProgressBarForm->SetBarHeader(1,Lang_LoadingData);
  UShowProgressBarForm->SetBarHeader(2,Lang_Total);
@@ -1263,6 +1268,7 @@ try{
 
  ProjectXml.WriteBool("ProjectShowChannelsStates",ProjectShowChannelsStates);
 
+ ProjectXml.WriteBool("DisableStopVideoSources",DisableStopVideoSources);
 
  ProjectXml.SaveToFile(AnsiString(ProjectPath+ProjectFileName).c_str());
 }
