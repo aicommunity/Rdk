@@ -320,6 +320,18 @@ RDK_LIB_TYPE int RDK_CALL MEnv_SetMinInterstepsInterval(int engine_index, unsign
 RDK_LIB_TYPE unsigned long long RDK_CALL Env_GetMinInterstepsInterval(void);
 RDK_LIB_TYPE unsigned long long RDK_CALL MEnv_GetMinInterstepsInterval(int engine_index);
 
+// Время, потраченное на последний RT-расчет
+RDK_LIB_TYPE double RDK_CALL Env_GetRTLastDuration(void);
+RDK_LIB_TYPE double RDK_CALL MEnv_GetRTLastDuration(int engine_index);
+
+/// Время, расчитанное в модели за один вызов RTCalculate;
+RDK_LIB_TYPE double RDK_CALL Env_GetRTModelCalcTime(void);
+RDK_LIB_TYPE double RDK_CALL MEnv_GetRTModelCalcTime(int engine_index);
+
+/// Производительность RT расчета (отношение RTModelCalcTime/RTLastDuration)
+RDK_LIB_TYPE double RDK_CALL Env_CalcRTPerformance(void);
+RDK_LIB_TYPE double RDK_CALL MEnv_CalcRTPerformance(int engine_index);
+
 // Возвращает имя текущего каталога для хранения данных
 RDK_LIB_TYPE const char* RDK_CALL Env_GetCurrentDataDir(void);
 

@@ -407,6 +407,15 @@ virtual int Env_SetMinInterstepsInterval(unsigned long long value);
 /// последней итерации не станет больше чем эта величина
 virtual unsigned long long Env_GetMinInterstepsInterval(void) const;
 
+// Время, потраченное на последний RT-расчет, с
+double Env_GetRTLastDuration(void) const;
+
+/// Время, расчитанное в модели за один вызов RTCalculate, c
+double Env_GetRTModelCalcTime(void) const;
+
+/// Производительность RT расчета (отношение RTModelCalcTime/RTLastDuration)
+double Env_CalcRTPerformance(void) const;
+
 // !!! Следующие методы управления текущим компонентом влияют на все
 // методы, обращающиеся к компонентам по строковому id !!!
 // Устанавливает текущий компонент (адресация относительно корня - модели)
