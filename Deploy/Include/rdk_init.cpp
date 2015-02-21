@@ -910,6 +910,49 @@ unsigned long long RDK_CALL Env_GetMinInterstepsInterval(int engine_index)
  return DllManager.GetEngineLock(engine_index)->Env_GetMinInterstepsInterval();
 }
 
+
+// Время, потраченное на последний RT-расчет
+double RDK_CALL Env_GetRTLastDuration(void)
+{
+ return DllManager.GetEngineLock()->Env_GetRTLastDuration();
+}
+
+double RDK_CALL MEnv_GetRTLastDuration(int engine_index)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+
+ return DllManager.GetEngineLock(engine_index)->Env_GetRTLastDuration();
+}
+
+/// Время, расчитанное в модели за один вызов RTCalculate;
+double RDK_CALL Env_GetRTModelCalcTime(void)
+{
+ return DllManager.GetEngineLock()->Env_GetRTModelCalcTime();
+}
+
+double RDK_CALL MEnv_GetRTModelCalcTime(int engine_index)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+
+ return DllManager.GetEngineLock(engine_index)->Env_GetRTModelCalcTime();
+}
+
+/// Производительность RT расчета (отношение RTModelCalcTime/RTLastDuration)
+double RDK_CALL Env_CalcRTPerformance(void)
+{
+ return DllManager.GetEngineLock()->Env_CalcRTPerformance();
+}
+
+double RDK_CALL MEnv_CalcRTPerformance(int engine_index)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 1000;
+
+ return DllManager.GetEngineLock(engine_index)->Env_CalcRTPerformance();
+}
+
 // Возвращает имя текущего каталога для хранения данных
 const char* RDK_CALL Env_GetCurrentDataDir(void)
 {

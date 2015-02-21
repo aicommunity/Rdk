@@ -115,6 +115,9 @@ unsigned long long StartupTime;
 
 unsigned long long /*StartProcTime,*/CurrentTime,LastDuration/*,LastSentTime*/, ProcEndTime, LastStepStartTime;
 
+/// Время, расчитанное в модели за один вызов RTCalculate;
+double RTModelCalcTime;
+
 // Временное хранилище буфера для лога
 //mutable string TempLogString;
 
@@ -177,6 +180,15 @@ bool IsStoragePresent(void) const;
 
 // Признак наличия сформированной структуры
 virtual bool IsStructured(void) const;
+
+/// Возвращает время, потраченное на последний RT расчет
+double GetRTLastDuration(void) const;
+
+/// Время, расчитанное в модели за один вызов RTCalculate;
+double GetRTModelCalcTime(void) const;
+
+/// Производительность RT расчета (отношение RTModelCalcTime/RTLastDuration)
+double CalcRTPerformance(void) const;
 // --------------------------
 
 // --------------------------

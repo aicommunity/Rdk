@@ -700,9 +700,22 @@ void TUEngineMonitorFrame::AUpdateInterface(void)
  if(fabs(instperf)>0.0001)
   fps=Model_GetTimeStep("")/instperf;
 
+ double rt_calc_duration(0.0);
+ double rt_model_duration(0.0), rt_performance(0.0);
+
+ if(CalculateMode[0] == 1)
+ {
+  rt_calc_duration=Env_GetRTLastDuration();
+  rt_model_duration=Env_GetRTModelCalcTime();
+  rt_performance=Env_CalcRTPerformance();
+ }
+
  StatusBar->SimpleText=String("Model Time=")+FloatToStrF(Model_GetDoubleTime(),ffFixed,3,3)
 				+String("; Real Time=")+FloatToStrF(Model_GetDoubleRealTime(),ffFixed,3,3)
 				+String("; Model Duration Time=")+FloatToStrF(Model_GetFullStepDuration("")/1000.0,ffFixed,3,3);
+ if(CalculateMode[0] == 1)
+  StatusBar->SimpleText=StatusBar->SimpleText+String("; RT Performance [")+FloatToStrF(rt_performance,ffFixed,3,3)+String("=")+FloatToStrF(rt_model_duration,ffFixed,3,3)+String("/")+FloatToStrF(rt_calc_duration,ffFixed,3,3)+"]";
+
  if(instperf)
   StatusBar->SimpleText=StatusBar->SimpleText+
 				String("; Model Performance=")+FloatToStrF(instperf,ffFixed,3,3)+
