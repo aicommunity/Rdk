@@ -22,7 +22,7 @@ inherited UComponentsListFrame: TUComponentsListFrame
       Top = 1
       Width = 384
       Height = 565
-      ActivePage = TabSheet7
+      ActivePage = TabSheet6
       Align = alClient
       TabOrder = 0
       TabPosition = tpBottom
@@ -36,14 +36,14 @@ inherited UComponentsListFrame: TUComponentsListFrame
           Width = 376
           Height = 10
           Cursor = crVSplit
-          Align = alTop
+          Align = alBottom
         end
         inline EnchancedSG1: TEnchancedSG
           Left = 0
           Top = 0
           Width = 376
           Height = 462
-          Align = alTop
+          Align = alClient
           TabOrder = 0
           TabStop = True
           ExplicitWidth = 376
@@ -110,9 +110,11 @@ inherited UComponentsListFrame: TUComponentsListFrame
           inherited cmbListEdit: TComboBox
             Left = 32
             Top = 287
+            Height = 21
             OnKeyPress = EnchancedSG1cmbListEditKeyPress
             ExplicitLeft = 32
             ExplicitTop = 287
+            ExplicitHeight = 21
           end
         end
         object HeaderControl2: THeaderControl
@@ -165,20 +167,19 @@ inherited UComponentsListFrame: TUComponentsListFrame
           Top = 472
           Width = 376
           Height = 33
-          Align = alClient
+          Align = alBottom
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
           Font.Height = -11
           Font.Name = 'Tahoma'
           Font.Style = []
+          Constraints.MinHeight = 25
           ParentFont = False
           PlainText = True
           ScrollBars = ssBoth
           TabOrder = 2
           OnChange = NiceParamValRichEditChange
           OnMouseEnter = NiceParamValRichEditMouseEnter
-          ExplicitLeft = 1
-          ExplicitTop = 478
         end
       end
       object TabSheet7: TTabSheet
@@ -190,7 +191,7 @@ inherited UComponentsListFrame: TUComponentsListFrame
           Width = 376
           Height = 10
           Cursor = crVSplit
-          Align = alTop
+          Align = alBottom
           ExplicitTop = 456
         end
         object HeaderControl4: THeaderControl
@@ -238,27 +239,26 @@ inherited UComponentsListFrame: TUComponentsListFrame
           Top = 472
           Width = 376
           Height = 33
-          Align = alClient
+          Align = alBottom
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
           Font.Height = -11
           Font.Name = 'Tahoma'
           Font.Style = []
+          Constraints.MinHeight = 25
           ParentFont = False
           PlainText = True
           ScrollBars = ssBoth
           TabOrder = 1
           OnChange = NiceStateValRichEditChange
           OnMouseEnter = NiceStateValRichEditMouseEnter
-          ExplicitLeft = 1
-          ExplicitTop = 468
         end
         inline EnchancedSG2: TEnchancedSG
           Left = 0
           Top = 0
           Width = 376
           Height = 462
-          Align = alTop
+          Align = alClient
           TabOrder = 2
           TabStop = True
           OnMouseEnter = EnchancedSG2MouseEnter
@@ -326,9 +326,11 @@ inherited UComponentsListFrame: TUComponentsListFrame
           inherited cmbListEdit: TComboBox
             Left = 32
             Top = 287
+            Height = 21
             OnKeyPress = EnchancedSG2cmbListEditKeyPress
             ExplicitLeft = 32
             ExplicitTop = 287
+            ExplicitHeight = 21
           end
         end
       end

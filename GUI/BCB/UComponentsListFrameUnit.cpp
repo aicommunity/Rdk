@@ -563,38 +563,6 @@ void TUComponentsListFrame::UpdateNiceParamsList(TEnchancedSG *frame)
  }
 
  frame->Refresh();
- /*
- for(int i=0; i<num;i++)
- {
-  frame->BasicStringGrid->ColWidths[0] = frame->BasicStringGrid->Canvas->TextWidth(frame->BasicStringGrid->Cells[0][0])+10;
-
-  int global_width=frame->BasicStringGrid->ColWidths[0];
-  int width=frame->BasicStringGrid->Canvas->TextWidth(frame->BasicStringGrid->Cells[1][i+1])+10;
-  if(width>frame->BasicStringGrid->Width/2)
-   width=frame->BasicStringGrid->Width/2;
-  if(frame->BasicStringGrid->ColWidths[1]<width)
-   frame->BasicStringGrid->ColWidths[1]=width;
-  global_width+=frame->BasicStringGrid->ColWidths[1];
-
-  width=80;//frame->BasicStringGrid->Canvas->TextWidth(frame->BasicStringGrid->Cells[2][i+1])+10;
-  if(width>frame->BasicStringGrid->Width/2)
-   width=frame->BasicStringGrid->Width/2;
-  if(frame->BasicStringGrid->ColWidths[2]<width)
-   frame->BasicStringGrid->ColWidths[2]=width;
-  global_width+=frame->BasicStringGrid->ColWidths[2];
-
-  width=frame->BasicStringGrid->Canvas->TextWidth(frame->BasicStringGrid->Cells[3][i+1])+10;
-  if(width < frame->BasicStringGrid->Width-global_width)
-   width=frame->BasicStringGrid->Width-global_width; */
-
-//if(frame->BasicStringGrid->ColWidths[3]<width)
-//   frame->BasicStringGrid->ColWidths[3]=width;
-// }
-
- /*if(frame->BasicStringGrid->ColCount>2)
-  frame->BasicStringGrid->FixedCols=2;
- SelectedComponentParameterName=AnsiString(ParametersListStringGrid->Cells[1][1]).c_str();
- ParameterValueRichEdit->Text=ParametersListStringGrid->Cells[2][ParametersListStringGrid->Row];   */
  UpdateInterfaceFlag=false;
 }
 
