@@ -49,6 +49,15 @@ virtual void ClearInterface(void)=0;
 // Возвращает уникальное имя интерфейса
 virtual std::string GetName(void)=0;
 
+// Возвращает имя класса интерфейса
+virtual std::string GetClassName(void)=0;
+
+// Возвращает интервал обновления интерфейса
+virtual long GetUpdateInterval(void)=0;
+
+// Возвращает флаг разрешения обновления интерфейса даже если он не виден
+virtual bool GetAlwaysUpdateFlag(void)=0;
+
 // Сохраняет параметры интерфейса в xml
 virtual void SaveParameters(RDK::USerStorageXML &xml)=0;
 

@@ -50,6 +50,9 @@ void TUComponentsPerformanceFrame::AUpdateInterface(void)
  if(int(ComponentData.size())>=AverageIterations && AverageIterations>0)
   ComponentData.erase(ComponentData.begin());
 
+ if(int(InterfaceData.size())>=AverageIterations && AverageIterations>0)
+  InterfaceData.erase(InterfaceData.begin());
+
  unsigned long long model_time=Model_GetFullStepDuration("");
  unsigned long long sum=0;
  unsigned long long ext_gui=Model_GetInterstepsInterval("");
@@ -158,6 +161,60 @@ void TUComponentsPerformanceFrame::AUpdateInterface(void)
   Chart->Series[0]->AddY(average[last_comps_index+2],"GUI Upd");
   Chart->Series[0]->AddY(average[last_comps_index+3],"Ext. GUI");
   Chart->Series[0]->AddY(average[last_comps_index+4],"Full step");
+
+ std::vector<long long> interface_time;
+ long long sum_average(0);
+ interface_time.resize(RDK::UIVisualControllerStorage::InterfaceUpdaters.size());
+ std::vector<RDK::UIVisualController*> &interfaces=RDK::UIVisualControllerStorage::InterfaceUpdaters;
+  for(size_t i=0;i<interfaces.size();i++)
+  {
+   interface_time[i]=interfaces[i]->GetUpdateTime();
+  }
+ InterfaceData.push_back(interface_time);
+ average.assign(interfaces.size(),0);
+ for(size_t i=0;i<average.size();i++)
+ {
+  for(size_t j=0;j<InterfaceData.size();j++)
+  {
+   if(InterfaceData[j].size() > i)
+	average[i]+=InterfaceData[j][i];
+  }
+  if(InterfaceData.size()>0)
+   average[i]/=InterfaceData.size();
+  sum_average+=average[i];
+ }
+
+ if(PageControl1->ActivePage == TabSheet2)
+ {
+  InterfacesStringGrid->RowCount=int(RDK::UIVisualControllerStorage::InterfaceUpdaters.size())+1;
+  InterfacesStringGrid->ColCount=6;
+  InterfacesStringGrid->Cells[0][0]="#";
+  InterfacesStringGrid->Cells[1][0]="GUI Name";
+  InterfacesStringGrid->Cells[2][0]="GUI Class Name";
+  InterfacesStringGrid->Cells[3][0]="Int., ms";
+  InterfacesStringGrid->Cells[4][0]="Time, ms";
+  InterfacesStringGrid->Cells[5][0]="Shared, %";
+  InterfacesStringGrid->ColWidths[0]=20;
+  InterfacesStringGrid->ColWidths[3]=90;
+  InterfacesStringGrid->ColWidths[4]=90;
+  InterfacesStringGrid->ColWidths[5]=90;
+  int width=InterfacesStringGrid->ClientWidth-(InterfacesStringGrid->ColWidths[0]+InterfacesStringGrid->ColWidths[3]+InterfacesStringGrid->ColWidths[4]+InterfacesStringGrid->ColWidths[5]+20);
+  InterfacesStringGrid->ColWidths[1]=width/2;
+  InterfacesStringGrid->ColWidths[2]=width/2;
+
+  for(size_t i=0;i<interfaces.size();i++)
+  {
+   InterfacesStringGrid->Cells[0][i+1]=IntToStr(int(i));
+   InterfacesStringGrid->Cells[1][i+1]=interfaces[i]->GetName().c_str();
+   InterfacesStringGrid->Cells[2][i+1]=interfaces[i]->GetClassName().c_str();
+   InterfacesStringGrid->Cells[3][i+1]=IntToStr(int(interfaces[i]->GetUpdateInterval()));
+   InterfacesStringGrid->Cells[4][i+1]=IntToStr(int(average[i]));//IntToStr(int(interfaces[i]->GetUpdateTime()));
+   if(sum_average>0)
+	InterfacesStringGrid->Cells[5][i+1]=FloatToStrF(average[i]*100.0/sum_average,ffFixed, 3,1);
+   else
+	InterfacesStringGrid->Cells[5][i+1]="";
+  }
+ }
 }
 
 // Возврат интерфейса в исходное состояние
