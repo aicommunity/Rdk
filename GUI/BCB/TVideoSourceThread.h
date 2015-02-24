@@ -606,6 +606,9 @@ RDK::UBitmap ConvertUBitmap,ConvertResult;
 
 RDK::UELockVar<double> ConvertTimeStamp;
 
+/// Хендл окна в которое необходимо выводить данные захвата
+TWinControl* OverlayHandle;
+
 protected: // События
 /// Выставляется при получении очередного кадра
 HANDLE VideoGrabberCompleted;
@@ -645,6 +648,10 @@ virtual bool ASaveParameters(RDK::USerStorageXML &xml);
 
 /// Загрузка и применение настроек из xml
 virtual bool ALoadParameters(RDK::USerStorageXML &xml);
+
+/// Хендл окна в которое необходимо выводить данные захвата
+virtual TWinControl* GetOverlayHandle(void) const;
+virtual bool SetOverlayHandle(TWinControl* value);
 // --------------------------
 
 // --------------------------

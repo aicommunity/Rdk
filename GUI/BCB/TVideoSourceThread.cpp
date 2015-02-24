@@ -1433,6 +1433,7 @@ __fastcall TVideoCaptureThreadVideoGrabber::TVideoCaptureThreadVideoGrabber(TVid
 
  CaptureTimeout=5000;
  ConnectionTimeout=5000;
+ OverlayHandle=0;
 }
 
 __fastcall TVideoCaptureThreadVideoGrabber::~TVideoCaptureThreadVideoGrabber(void)
@@ -1507,7 +1508,17 @@ void __fastcall TVideoCaptureThreadVideoGrabber::ExecuteCaptureInit(void)
  if(!VideoGrabber)
  {
   VideoGrabber=new TVideoGrabber((TComponent*) NULL);
-  VideoGrabber->Visible=false;
+  if(OverlayHandle)
+  {
+   VideoGrabber->Parent=OverlayHandle;
+   VideoGrabber->Visible=true;
+   VideoGrabber->Display_AutoSize = true;
+  }
+  else
+  {
+   VideoGrabber->Visible=false;
+   VideoGrabber->Display_AutoSize = false;
+  }
  }
  VideoGrabber->OnFrameCaptureCompleted=OnFrameCaptureCompleted;
 // VideoGrabber->OnFrameBitmap=VideoGrabberFrameBitmap;
@@ -1518,7 +1529,6 @@ void __fastcall TVideoCaptureThreadVideoGrabber::ExecuteCaptureInit(void)
  VideoGrabber->OnPreviewStarted=VideoGrabberOnPreviewStarted;
 //  VideoGrabber->OnThreadSync=VideoGrabberOnThreadSync;
 
- VideoGrabber->Display_AutoSize = false;
  VideoGrabber->PlayerRefreshPausedDisplay = false;
  VideoGrabber->AutoStartPlayer = false;
  VideoGrabber->BurstCount = 0;
@@ -1931,6 +1941,28 @@ bool TVideoCaptureThreadVideoGrabber::ALoadParameters(RDK::USerStorageXML &xml)
  SetCaptureTimeout(xml.ReadInteger("CaptureTimeout", 5000));
  SetConnectionTimeout(xml.ReadInteger("ConnectionTimeout", 5000));
 
+ return true;
+}
+
+/// Хендл окна в которое необходимо выводить данные захвата
+TWinControl* TVideoCaptureThreadVideoGrabber::GetOverlayHandle(void) const
+{
+ return OverlayHandle;
+}
+
+bool TVideoCaptureThreadVideoGrabber::SetOverlayHandle(TWinControl* value)
+{
+ if(OverlayHandle == value)
+  return true;
+
+ if(VideoGrabber)
+ {
+  VideoGrabber->Parent=OverlayHandle;
+  VideoGrabber->Visible=true;
+
+ }
+
+ OverlayHandle = value;
  return true;
 }
 // --------------------------
