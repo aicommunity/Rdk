@@ -38,8 +38,14 @@ inherited UClassesDescriptionsFrame: TUClassesDescriptionsFrame
         inherited NameTabSheet: TTabSheet
           ExplicitLeft = 4
           ExplicitTop = 24
-          ExplicitWidth = 499
-          ExplicitHeight = 515
+          ExplicitWidth = 264
+          ExplicitHeight = 586
+          inherited StringGrid: TStringGrid
+            Width = 264
+            Height = 586
+            ExplicitWidth = 264
+            ExplicitHeight = 586
+          end
         end
         inherited LibsTabSheet: TTabSheet
           ExplicitLeft = 4
@@ -62,24 +68,6 @@ inherited UClassesDescriptionsFrame: TUClassesDescriptionsFrame
           ExplicitHeight = 515
           inherited Splitter1: TSplitter
             ExplicitTop = 296
-          end
-          inherited Panel1: TPanel
-            inherited AddClassButton: TButton
-              ExplicitLeft = 1
-              ExplicitTop = 101
-            end
-          end
-          inherited GroupBox1: TGroupBox
-            ExplicitHeight = 225
-            inherited LibsListStringGrid: TStringGrid
-              ExplicitHeight = 208
-            end
-          end
-          inherited GroupBox2: TGroupBox
-            ExplicitTop = 232
-            inherited LibComponentListStringGrid: TStringGrid
-              ExplicitHeight = 143
-            end
           end
         end
       end
@@ -117,17 +105,20 @@ inherited UClassesDescriptionsFrame: TUClassesDescriptionsFrame
         TabOrder = 1
       end
       object ClassDescriptionGroupBox: TGroupBox
-        Left = 6
-        Top = 99
-        Width = 571
+        Left = 1
+        Top = 109
+        Width = 581
         Height = 134
-        Anchors = [akLeft, akTop, akRight]
+        Align = alBottom
         Caption = 'Class Description'
         TabOrder = 2
+        ExplicitLeft = 6
+        ExplicitTop = 99
+        ExplicitWidth = 571
         object ClassDescriptionRichEdit: TRichEdit
           Left = 2
           Top = 15
-          Width = 567
+          Width = 577
           Height = 117
           Align = alClient
           Font.Charset = RUSSIAN_CHARSET
@@ -136,25 +127,31 @@ inherited UClassesDescriptionsFrame: TUClassesDescriptionsFrame
           Font.Name = 'Tahoma'
           Font.Style = []
           ParentFont = False
+          PlainText = True
           ScrollBars = ssBoth
           TabOrder = 0
+          ExplicitWidth = 567
         end
       end
       object GroupBox1: TGroupBox
-        Left = 6
-        Top = 239
-        Width = 571
+        Left = 1
+        Top = 243
+        Width = 581
         Height = 370
-        Anchors = [akLeft, akTop, akRight]
+        Align = alBottom
         Caption = ' Properties List '
         TabOrder = 3
-        object StringGrid1: TStringGrid
+        ExplicitLeft = 6
+        ExplicitTop = 239
+        ExplicitWidth = 571
+        object PropertiesListStringGrid: TStringGrid
           Left = 2
           Top = 15
-          Width = 567
+          Width = 577
           Height = 353
           Align = alClient
           TabOrder = 0
+          ExplicitWidth = 567
         end
       end
     end

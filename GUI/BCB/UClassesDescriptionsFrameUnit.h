@@ -25,7 +25,7 @@ __published:	// IDE-managed Components
 	TGroupBox *ClassDescriptionGroupBox;
 	TRichEdit *ClassDescriptionRichEdit;
 	TGroupBox *GroupBox1;
-	TStringGrid *StringGrid1;
+	TStringGrid *PropertiesListStringGrid;
 	TPanel *Panel4;
 	TGroupBox *GroupBox2;
 	TGroupBox *GroupBox3;
