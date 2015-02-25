@@ -1545,7 +1545,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::ExecuteCaptureInit(void)
  VideoGrabber->SyncCommands=false;
  VideoGrabber->EventNotificationSynchrone=false;
 // VideoGrabber->OnFrameBitmapEventSynchrone=true;
-// VideoGrabber->OpenURLAsync=true;
+ VideoGrabber->OpenURLAsync=true;
  if(DesiredResolutionFlag)
  {
   VideoGrabber->FrameCaptureWidth=DesiredWidth;
@@ -1598,6 +1598,32 @@ void __fastcall TVideoCaptureThreadVideoGrabber::OnFrameCaptureCompleted(System:
  Graphics::TBitmap *Frame_Bitmap;
 
  Frame_Bitmap = (Graphics::TBitmap*) FrameBitmap;
+
+//   if (chkDrawGridOverFrames->Checked) {
+
+	  int xStep = 40;
+      int yStep = 30;
+
+      int xLocation = xStep;
+      int yLocation = yStep;
+
+	  TCanvas *Canvas = Frame_Bitmap->Canvas;
+	  Canvas->Brush->Color = clBlue;
+	  Canvas->Brush->Style = bsSolid;
+//	  Canvas->Handle = Frame_Bitmap->BitmapDC;
+
+	  while (xLocation < Frame_Bitmap->Width) {
+         Canvas->FillRect(Rect(xLocation, 0, xLocation + 1, Frame_Bitmap->Height));
+         xLocation += xStep;
+      }
+
+      while (yLocation < Frame_Bitmap->Height) {
+		 Canvas->FillRect(Rect(0, yLocation, Frame_Bitmap->Width, yLocation + 1));
+         yLocation += yStep;
+      }
+
+  //    Canvas->Free();
+  // }
 // if(Frame_Bitmap)
 // Engine_LogMessage(exception.GetType(), (std::string("Core-OpenProject Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.CreateLogMessage()).c_str());
 
