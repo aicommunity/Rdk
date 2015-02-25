@@ -602,6 +602,9 @@ TVideoGrabber* VideoGrabber;
 
 Graphics::TBitmap* ConvertBitmap;
 
+/// Маска для OSD
+Graphics::TBitmap* OverlayMaskBitmap;
+
 RDK::UBitmap ConvertUBitmap,ConvertResult;
 
 RDK::UELockVar<double> ConvertTimeStamp;
@@ -615,6 +618,10 @@ HANDLE VideoGrabberCompleted;
 
 /// Событие блокировки изображения для конвертации
 HANDLE ConvertMutex;
+
+/// Событие блокировки OSD изображения
+HANDLE OSDMutex;
+
 
 protected: // Временные переменные
 
@@ -652,6 +659,10 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 /// Хендл окна в которое необходимо выводить данные захвата
 virtual TWinControl* GetOverlayHandle(void) const;
 virtual bool SetOverlayHandle(TWinControl* value);
+
+/// Управление маской для OSD
+virtual Graphics::TBitmap* GetOverlayMaskBitmap(void);
+virtual bool SetOverlayMaskBitmap(Graphics::TBitmap* value);
 // --------------------------
 
 // --------------------------

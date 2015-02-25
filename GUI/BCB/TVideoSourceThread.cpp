@@ -1424,9 +1424,11 @@ __fastcall TVideoCaptureThreadVideoGrabber::TVideoCaptureThreadVideoGrabber(TVid
  : VideoGrabber(0), TVideoCaptureThread(frame,CreateSuspended)
 {
  ConvertBitmap=new Graphics::TBitmap;
+ OverlayMaskBitmap=new Graphics::TBitmap;
 
  VideoGrabberCompleted=CreateEvent(0,TRUE,0,0);
  ConvertMutex=CreateMutex(0,FALSE,0);
+ OSDMutex=CreateMutex(0,FALSE,0);
 
  RestartMode=1;
  ConnectionState=0;
@@ -1453,8 +1455,15 @@ __fastcall TVideoCaptureThreadVideoGrabber::~TVideoCaptureThreadVideoGrabber(voi
   ConvertBitmap=0;
  }
 
+ if(OverlayMaskBitmap)
+ {
+  delete OverlayMaskBitmap;
+  OverlayMaskBitmap=0;
+ }
+
  CloseHandle(VideoGrabberCompleted);
  CloseHandle(ConvertMutex);
+ CloseHandle(OSDMutex);
 }
 // --------------------------
 // Управление параметрами
@@ -1702,8 +1711,8 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberFrameBitmap(TObject
 
   SetEvent(VideoGrabberCompleted);
   */
-//   if (chkDrawGridOverFrames->Checked) {
 
+	/*
 	  int xStep = 40;
 	  int yStep = 30;
 
@@ -1714,7 +1723,6 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberFrameBitmap(TObject
 	  Canvas->Brush->Color = clBlue;
 	  Canvas->Brush->Style = bsSolid;
 	  Canvas->Handle = BitmapInfo->BitmapDC;
-
 	  while (xLocation < BitmapInfo->BitmapWidth) {
 		 Canvas->FillRect(Rect(xLocation, 0, xLocation + 1, BitmapInfo->BitmapHeight));
 		 xLocation += xStep;
@@ -1726,7 +1734,64 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberFrameBitmap(TObject
 	  }
 
 	  Canvas->Free();
-  // }
+         */
+if(WaitForSingleObject(OSDMutex,10) == WAIT_OBJECT_0)
+ {
+	  if(OverlayMaskBitmap->Width == BitmapInfo->BitmapWidth && OverlayMaskBitmap->Height == BitmapInfo->BitmapHeight)
+	  {
+  unsigned char* dest = (unsigned char*) BitmapInfo->BitmapDataPtr;
+	   unsigned char* source = (unsigned char*) OverlayMaskBitmap->ScanLine[OverlayMaskBitmap->Height-1];
+	   for(int i=0;i<BitmapInfo->BitmapSize;i++)
+	   {
+		if(*source>0)
+		 *dest=*source;
+		++dest;
+		++source;
+	   }
+	  }
+  ReleaseMutex(OSDMutex);
+ }
+/*
+	   if (BitmapInfo->BitmapBitsPerPixel == 24)
+	   {
+		 for (int i = 0 ; i < BitmapInfo->BitmapHeight ; i++)
+		 {
+			TRGBTriple *RGB24Line = (TRGBTriple*) BitmapLinePtr;
+			for (int iCol = 0 ; iCol < BitmapInfo->BitmapWidth ; iCol ++)
+			{
+			   RGB24Line[iCol].rgbGreen = 0;
+            }
+            BitmapLinePtr += BitmapInfo->BitmapLineSize;
+         }
+	   }
+	   else if (BitmapInfo->BitmapBitsPerPixel == 32)
+	   {
+		 for (int i = 0 ; i < BitmapInfo->BitmapHeight ; i++)
+		 {
+			TRGBQuad *RGB32Line = (TRGBQuad*) BitmapLinePtr;
+			for (int iCol = 0 ; iCol < BitmapInfo->BitmapWidth ; iCol ++)
+			{
+			   RGB32Line[iCol].rgbBlue = 0;
+			}
+			BitmapLinePtr += BitmapInfo->BitmapLineSize;
+		 }
+	   }     */
+
+// OverlayMaskBitmap->PixelFormat=pf32bit;
+/* if(WaitForSingleObject(OSDMutex,10) == WAIT_OBJECT_0)
+ {
+  if(OverlayMaskBitmap->Width >0 && OverlayMaskBitmap->Height >0)
+  {
+   TransparentBlt(BitmapInfo->BitmapDC, 0, 0, BitmapInfo->BitmapWidth, BitmapInfo->BitmapHeight, OverlayMaskBitmap->Canvas->Handle,
+	   0, 0, OverlayMaskBitmap->Width, OverlayMaskBitmap->Height, 0);
+  }
+  ReleaseMutex(OSDMutex);
+ }
+ else
+ {
+  int a=0;
+  return;
+ } */
 }
 
 void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberLog(TObject *Sender,
@@ -1964,6 +2029,34 @@ bool TVideoCaptureThreadVideoGrabber::SetOverlayHandle(TWinControl* value)
  }
 
  OverlayHandle = value;
+ return true;
+}
+
+/// Управление маской для OSD
+Graphics::TBitmap* TVideoCaptureThreadVideoGrabber::GetOverlayMaskBitmap(void)
+{
+ return OverlayMaskBitmap;
+}
+
+bool TVideoCaptureThreadVideoGrabber::SetOverlayMaskBitmap(Graphics::TBitmap* value)
+{
+ if(WaitForSingleObject(OSDMutex,10) != WAIT_OBJECT_0)
+  return false;
+/* TRect Rect;
+ Rect.Top=0;
+ Rect.Left=0;
+ Rect.Right=OverlayMaskBitmap->Width-1;
+ Rect.Bottom=OverlayMaskBitmap->Height-1;
+ if(!value && Rect.Right>0 && Rect.Bottom>0)
+ {
+  OverlayMaskBitmap->Canvas->Brush->Color=clBlack;
+  OverlayMaskBitmap->Canvas->Brush->Style=bsSolid;
+  OverlayMaskBitmap->Canvas->FillRect(Rect);
+  return true;
+ }                 */
+ OverlayMaskBitmap->Assign(value);
+// OverlayMaskBitmap->PixelFormat=pf32bit;
+ ReleaseMutex(OSDMutex);
  return true;
 }
 // --------------------------
