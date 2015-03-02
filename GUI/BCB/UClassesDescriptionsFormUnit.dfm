@@ -11,6 +11,7 @@ object UClassesDescriptionsForm: TUClassesDescriptionsForm
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  OnShow = FormShow
   PixelsPerInch = 120
   TextHeight = 16
   inline ClassesDescriptionsFrame: TUClassesDescriptionsFrame
@@ -26,8 +27,6 @@ object UClassesDescriptionsForm: TUClassesDescriptionsForm
     Font.Style = []
     ParentFont = False
     TabOrder = 0
-    ExplicitLeft = -97
-    ExplicitTop = -112
     ExplicitWidth = 1334
     ExplicitHeight = 559
     inherited Panel1: TPanel
@@ -41,7 +40,13 @@ object UClassesDescriptionsForm: TUClassesDescriptionsForm
         inherited PageControl: TPageControl
           Height = 502
           ExplicitHeight = 502
+          inherited NameTabSheet: TTabSheet
+            inherited StringGrid: TStringGrid
+              Height = 474
+            end
+          end
           inherited LibsTabSheet: TTabSheet
+            ExplicitHeight = 474
             inherited TreeView: TTreeView
               Height = 474
               ExplicitHeight = 474
@@ -58,26 +63,28 @@ object UClassesDescriptionsForm: TUClassesDescriptionsForm
           Width = 474
           ExplicitWidth = 474
         end
-        inherited ClassFullNameLabeledEdit: TLabeledEdit
+        inherited ClassHeaderLabeledEdit: TLabeledEdit
           Width = 474
           ExplicitWidth = 474
         end
         inherited ClassDescriptionGroupBox: TGroupBox
           Top = -3
           Width = 484
-          ExplicitWidth = 474
+          ExplicitTop = -3
+          ExplicitWidth = 484
           inherited ClassDescriptionRichEdit: TRichEdit
             Width = 480
-            ExplicitWidth = 470
+            ExplicitWidth = 480
           end
         end
         inherited GroupBox1: TGroupBox
           Top = 131
           Width = 484
-          ExplicitWidth = 474
+          ExplicitTop = 131
+          ExplicitWidth = 484
           inherited PropertiesListStringGrid: TStringGrid
-            Width = 470
-            ExplicitWidth = 470
+            Width = 480
+            ExplicitWidth = 480
           end
         end
       end

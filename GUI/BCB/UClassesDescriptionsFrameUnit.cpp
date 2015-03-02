@@ -41,12 +41,12 @@ void TUClassesDescriptionsFrame::AUpdateInterface(void)
  RDK::USerStorageXML xml;
  xml.Load(str,AnsiString(CurrentClassName).c_str());
 
- PropertyDescriptionRichEdit->Lines->Clear();
- PropertyDescriptionRichEdit->Lines->Add(str);
+ ClassesAdditionalInfoRichEdit->Lines->Clear();
+ ClassesAdditionalInfoRichEdit->Lines->Add(str);
  Engine_FreeBufString(str);
 
  ClassNameLabeledEdit->Text=xml.ReadString("ClassName","").c_str();
- ClassFullNameLabeledEdit->Text=xml.ReadString("Header","").c_str();
+ ClassHeaderLabeledEdit->Text=xml.ReadString("Header","").c_str();
  ClassDescriptionRichEdit->Text=xml.ReadString("Description","").c_str();
 
  if(xml.SelectNode("Properties"))
@@ -105,7 +105,6 @@ void __fastcall TUClassesDescriptionsFrame::ClassesListFrameTreeViewClick(TObjec
 
 {
  String str=ClassesListFrame->GetSelectedName();
-// if(IsDescrModified)
 
  CurrentClassName=str;
  UpdateInterface();

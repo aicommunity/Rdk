@@ -21,7 +21,7 @@ __published:	// IDE-managed Components
 	TUClassesListFrame *ClassesListFrame;
 	TPanel *Panel3;
 	TLabeledEdit *ClassNameLabeledEdit;
-	TLabeledEdit *ClassFullNameLabeledEdit;
+	TLabeledEdit *ClassHeaderLabeledEdit;
 	TGroupBox *ClassDescriptionGroupBox;
 	TRichEdit *ClassDescriptionRichEdit;
 	TGroupBox *GroupBox1;
@@ -29,7 +29,7 @@ __published:	// IDE-managed Components
 	TPanel *Panel4;
 	TGroupBox *GroupBox2;
 	TGroupBox *GroupBox3;
-	TRichEdit *RichEdit1;
+	TRichEdit *ClassesAdditionalInfoRichEdit;
 	TRichEdit *PropertyDescriptionRichEdit;
 	TButton *ApplyButton;
 	TButton *RestoreButton;
