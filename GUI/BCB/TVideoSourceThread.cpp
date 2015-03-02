@@ -1529,6 +1529,9 @@ void __fastcall TVideoCaptureThreadVideoGrabber::ExecuteCaptureInit(void)
    VideoGrabber->Display_AutoSize = false;
   }
  }
+ VideoGrabber->OnMouseDown=VideoGrabberOnVideoMouseDown;
+ VideoGrabber->OnMouseUp=VideoGrabberOnVideoMouseUp;
+ VideoGrabber->OnMouseMove=VideoGrabberOnVideoMouseMove;
  VideoGrabber->OnFrameCaptureCompleted=OnFrameCaptureCompleted;
  VideoGrabber->OnFrameBitmap=VideoGrabberFrameBitmap;
  VideoGrabber->OnLog=VideoGrabberLog;
@@ -1855,6 +1858,57 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberOnPreviewStarted(TO
 //  ReleaseMutex(GlobalStartUnlockMutex);
  }
 }
+
+void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberOnVideoMouseUp(System::TObject* Sender, int VideoWindow, System::Uitypes::TMouseButton Button, System::Classes::TShiftState Shift, int X, int Y)
+{
+ if(VideoWindow == -1)
+  return;
+
+ if(!OverlayHandle)
+  return;
+
+ TScrollBox *overlay=dynamic_cast<TScrollBox *>(OverlayHandle);
+
+ if(!overlay)
+  return;
+
+ overlay->OnMouseUp(Sender, Button, Shift, X, Y);
+}
+
+void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberOnVideoMouseDown(System::TObject* Sender, int VideoWindow, System::Uitypes::TMouseButton Button, System::Classes::TShiftState Shift, int X, int Y)
+{
+ if(VideoWindow == -1)
+  return;
+
+ if(!OverlayHandle)
+  return;
+
+ TScrollBox *overlay=dynamic_cast<TScrollBox *>(OverlayHandle);
+
+ if(!overlay)
+  return;
+
+
+
+ overlay->OnMouseDown(Sender, Button, Shift, X, Y);
+}
+
+void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberOnVideoMouseMove(System::TObject* Sender, int VideoWindow, System::Classes::TShiftState Shift, int X, int Y)
+{
+ if(VideoWindow == -1)
+  return;
+
+ if(!OverlayHandle)
+  return;
+
+ TScrollBox *overlay=dynamic_cast<TScrollBox *>(OverlayHandle);
+
+ if(!overlay)
+  return;
+
+ overlay->OnMouseMove(Sender, Shift, X, Y);
+}
+
 
 
 void __fastcall TVideoCaptureThreadVideoGrabber::Calculate(void)

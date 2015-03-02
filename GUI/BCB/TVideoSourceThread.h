@@ -688,6 +688,12 @@ void __fastcall VideoGrabberOnThreadSync(System::TObject* Sender, TThreadSyncPoi
 
 void __fastcall VideoGrabberOnPreviewStarted(TObject *Sender);
 
+void __fastcall VideoGrabberOnVideoMouseUp(System::TObject* Sender, int VideoWindow, System::Uitypes::TMouseButton Button, System::Classes::TShiftState Shift, int X, int Y);
+
+void __fastcall VideoGrabberOnVideoMouseDown(System::TObject* Sender, int VideoWindow, System::Uitypes::TMouseButton Button, System::Classes::TShiftState Shift, int X, int Y);
+
+void __fastcall VideoGrabberOnVideoMouseMove(System::TObject* Sender, int VideoWindow, System::Classes::TShiftState Shift, int X, int Y);
+
 virtual void __fastcall Calculate(void);
 
 virtual void __fastcall BeforeCalculate(void);
