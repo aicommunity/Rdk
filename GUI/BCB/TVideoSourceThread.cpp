@@ -2075,14 +2075,23 @@ bool TVideoCaptureThreadVideoGrabber::SetOverlayHandle(TWinControl* value)
  if(OverlayHandle == value)
   return true;
 
+ OverlayHandle = value;
  if(VideoGrabber)
  {
   VideoGrabber->Parent=OverlayHandle;
-  VideoGrabber->Visible=true;
 
+  if(OverlayHandle)
+  {
+   VideoGrabber->Visible=true;
+   VideoGrabber->Display_AutoSize = true;
+  }
+  else
+  {
+   VideoGrabber->Visible=false;
+   VideoGrabber->Display_AutoSize = false;
+  }
  }
 
- OverlayHandle = value;
  return true;
 }
 
