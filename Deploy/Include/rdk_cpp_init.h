@@ -64,6 +64,52 @@ RDK::UELockPtr<T> GetModelLock(int engine_index)
  return RDK::UELockPtr<T>((UGenericMutex*)MEngine_GetMutex(engine_index),p);
 }
 
+// Исключения
+/// Исключение - свойство не найдено
+struct RDK_LIB_TYPE EEnginePropertyNotFound: public EError
+{
+/// Имя компонента
+std::string ComponentName;
+
+/// Имя свойства
+std::string PropertyName;
+
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EEnginePropertyNotFound(const std::string &component_name, const std::string &property_name);
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+virtual std::string CreateLogMessage(void) const;
+// --------------------------
+};
+
+struct RDK_LIB_TYPE EEnginePropertyDecodeLoadFail: public EError
+{
+/// Имя компонента
+std::string XmlData;
+
+/// Имя свойства
+std::string VariableType;
+
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+EEnginePropertyDecodeLoadFail(const std::string &xml_data, const std::string &variable_type);
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+virtual std::string CreateLogMessage(void) const;
+// --------------------------
+};
+
 // Декодирует содержимое свойства/переменной состояния компонента
 template<typename T>
 T& DecodePropertyValue(const std::string &param_value, T &res)
@@ -177,6 +223,7 @@ T& ReadStateValue(const std::string &comp_name, const std::string &state_name, T
 template<typename T>
 T ReadStateValue(const std::string &comp_name, const std::string &state_name)
 {
+ T res;
  return ReadPropertyValue(comp_name,state_name,res);
 }
 
@@ -203,52 +250,6 @@ void WriteStateValue(const std::string &comp_name, const std::string &param_name
 {
  WritePropertyValue(comp_name.c_str(),param_name.c_str(),res);
 }
-
-// Исключения
-/// Исключение - свойство не найдено
-struct RDK_LIB_TYPE EEnginePropertyNotFound: public EError
-{
-/// Имя компонента
-std::string ComponentName;
-
-/// Имя свойства
-std::string PropertyName;
-
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-EEnginePropertyNotFound(const std::string &component_name, const std::string &property_name);
-// --------------------------
-
-// --------------------------
-// Методы формирования лога
-// --------------------------
-// Формирует строку лога об исключении
-virtual std::string CreateLogMessage(void) const;
-// --------------------------
-};
-
-struct RDK_LIB_TYPE EEnginePropertyDecodeLoadFail: public EError
-{
-/// Имя компонента
-std::string XmlData;
-
-/// Имя свойства
-std::string VariableType;
-
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-EEnginePropertyDecodeLoadFail(const std::string &xml_data, const std::string &variable_type);
-// --------------------------
-
-// --------------------------
-// Методы формирования лога
-// --------------------------
-// Формирует строку лога об исключении
-virtual std::string CreateLogMessage(void) const;
-// --------------------------
-};
 
 
 }

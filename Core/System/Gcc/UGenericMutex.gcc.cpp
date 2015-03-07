@@ -14,8 +14,12 @@ public:
 UGenericMutexGcc();
 virtual ~UGenericMutexGcc();
 
-virtual bool lock(int lock_id=-1);
-virtual bool unlock();
+virtual bool shared_lock(void);
+virtual bool shared_unlock(void);
+
+virtual bool exclusive_lock(void);
+virtual bool exclusive_unlock(void);
+
 virtual bool wait(int timeout);
 };
 
@@ -30,21 +34,26 @@ UGenericMutexGcc::~UGenericMutexGcc()
  //CloseHandle(m_UnlockEvent);
 }
 
-bool UGenericMutexGcc::lock(int lock_id)
+bool UGenericMutexGcc::shared_lock(void)
 {
- /*if (WaitForSingleObject(m_UnlockEvent, INFINITE) == WAIT_TIMEOUT)
-  return false;
- ResetEvent(m_UnlockEvent);*/
  return true;
 }
 
-bool UGenericMutexGcc::unlock()
+bool UGenericMutexGcc::shared_unlock(void)
 {
- /*if (WaitForSingleObject(m_UnlockEvent, INFINITE) == WAIT_TIMEOUT)
-  return false;
- SetEvent(m_UnlockEvent);*/
  return true;
 }
+
+bool UGenericMutexGcc::exclusive_lock(void)
+{
+ return true;
+}
+
+bool UGenericMutexGcc::exclusive_unlock(void)
+{
+ return true;
+}
+
 
 bool UGenericMutexGcc::wait(int timeout)
 {

@@ -209,7 +209,7 @@ MMatrix<T,Rows,Cols>::MMatrix(const MMatrix<T,Rows,Cols> &copy)
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>::MMatrix(const T data[Rows][Cols])
 {
- *this=copy;
+ *this=data;
 }
 
 template<class T, unsigned Rows, unsigned Cols>
