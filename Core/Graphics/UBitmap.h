@@ -78,19 +78,19 @@ struct RDK_LIB_TYPE UBPoint;
 
 // Координаты и цвет пикселя изображения
 // (Описание в конце файла)
-struct UBColorPoint;
+struct RDK_LIB_TYPE UBColorPoint;
 
 // Прямоугольный элемент изображения
 // (Описание в конце файла)
-struct UBRect;
+struct RDK_LIB_TYPE UBRect;
 
 // Элемент гистограммы
 // (Описание в конце файла)
-struct UBHistogramElement;
+struct RDK_LIB_TYPE UBHistogramElement;
 
 // Гистограмма
 // (Описание в конце файла)
-class UBHistogram;
+class RDK_LIB_TYPE UBHistogram;
 
 
 class RDK_LIB_TYPE UBitmapParam
