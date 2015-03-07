@@ -183,6 +183,27 @@ bool UEnvironment::IsStructured(void) const
 {
  return Structured;
 }
+
+/// Возвращает время, потраченное на последний RT расчет
+double UEnvironment::GetRTLastDuration(void) const
+{
+ return double(LastDuration)/1000.0;
+}
+
+/// Время, расчитанное в модели за один вызов RTCalculate;
+double UEnvironment::GetRTModelCalcTime(void) const
+{
+ return RTModelCalcTime;
+}
+
+/// Производительность RT расчета (отношение RTModelCalcTime/RTLastDuration)
+double UEnvironment::CalcRTPerformance(void) const
+{
+ if(LastDuration>0)
+  return RTModelCalcTime/(double(LastDuration)/1000.0);
+
+ return 1000000; // TODO:
+}
 // --------------------------
 
 // --------------------------
@@ -530,6 +551,7 @@ void UEnvironment::RTCalculate(void)
  if(LastDuration < timer_interval)
   LastDuration=timer_interval;
  double model_duration=(Time.GetRealTime()-Time.GetDoubleTime()*1e6)/1000.0;
+ double model_start_calc_time=Time.GetDoubleTime();
 
  if(model_duration>MaxModelDuration)
   model_duration=MaxModelDuration;
@@ -561,6 +583,8 @@ void UEnvironment::RTCalculate(void)
 
  LastDuration=CalcDiffTime(GetCurrentStartupTime(),CurrentTime);
  ProcEndTime=GetCurrentStartupTime();
+ double model_stop_calc_time=Time.GetDoubleTime();
+ RTModelCalcTime=model_stop_calc_time-model_start_calc_time;
 
  return;
 }
@@ -911,6 +935,7 @@ bool UEnvironment::AReset(void)
  LastDuration=1;
  LastStepStartTime=0;
  LastErrorLevel=INT_MAX;
+ RTModelCalcTime=0;
 
  if(!Model)
   return true;

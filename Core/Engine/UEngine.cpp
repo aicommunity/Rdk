@@ -1354,6 +1354,24 @@ unsigned long long UEngine::Env_GetMinInterstepsInterval(void) const
  return 0;
 }
 
+// Время, потраченное на последний RT-расчет
+double UEngine::Env_GetRTLastDuration(void) const
+{
+ return Environment->GetRTLastDuration();
+}
+
+/// Время, расчитанное в модели за один вызов RTCalculate;
+double UEngine::Env_GetRTModelCalcTime(void) const
+{
+ return Environment->GetRTModelCalcTime();
+}
+
+/// Производительность RT расчета (отношение RTModelCalcTime/RTLastDuration)
+double UEngine::Env_CalcRTPerformance(void) const
+{
+ return Environment->CalcRTPerformance();
+}
+
 // !!! Следующие методы управления текущим компонентом влияют на все
 // методы, обращающиеся к компонентам по строковому id !!!
 // Устанавливает текущий компонент (адресация относительно корня - модели)
