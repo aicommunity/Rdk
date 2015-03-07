@@ -98,7 +98,7 @@ std::list<ULibrary*> LibrariesList;
 // Список загруженных образцов классов
 std::list<UContainer*> ClassesList;
 
-RDK::USerStorageXML XmlStorage;
+//RDK::USerStorageXML XmlStorage;
 
 // Временное хранилище строк
 mutable std::list<UEPtr<string> > TempStrings;

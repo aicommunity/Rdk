@@ -146,6 +146,7 @@ bool UContainerDescription::Save(USerStorageXML &xml)
   xml.WriteString("Type",I->second.Type);
   xml.WriteInteger("DataSelectionType",I->second.DataSelectionType);
   xml.WriteData("ValueList",I->second.ValueList);
+  xml.WriteData("PropertyType",I->second.PropertyType);
   if(I->second.DataSelectionType == 4)
    xml.WriteString("Step",I->second.Step);
 
@@ -181,6 +182,7 @@ bool UContainerDescription::Load(USerStorageXML &xml)
   Properties[nodename].Header=xml.ReadString("Header",Properties[nodename].Header);
   Properties[nodename].Type=xml.ReadString("Type",Properties[nodename].Type);
   Properties[nodename].DataSelectionType=xml.ReadInteger("DataSelectionType",Properties[nodename].DataSelectionType);
+  Properties[nodename].PropertyType=xml.ReadData("PropertyType",Properties[nodename].PropertyType);
   xml.ReadData("ValueList",Properties[nodename].ValueList);
   if(Properties[nodename].DataSelectionType == 4)
    Properties[nodename].Step=xml.ReadString("Step",Properties[nodename].Step);

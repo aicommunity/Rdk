@@ -602,6 +602,9 @@ TVideoGrabber* VideoGrabber;
 
 Graphics::TBitmap* ConvertBitmap;
 
+/// Маска для OSD
+Graphics::TBitmap* OverlayMaskBitmap;
+
 RDK::UBitmap ConvertUBitmap,ConvertResult;
 
 RDK::UELockVar<double> ConvertTimeStamp;
@@ -615,6 +618,10 @@ HANDLE VideoGrabberCompleted;
 
 /// Событие блокировки изображения для конвертации
 HANDLE ConvertMutex;
+
+/// Событие блокировки OSD изображения
+HANDLE OSDMutex;
+
 
 protected: // Временные переменные
 
@@ -652,6 +659,10 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 /// Хендл окна в которое необходимо выводить данные захвата
 virtual TWinControl* GetOverlayHandle(void) const;
 virtual bool SetOverlayHandle(TWinControl* value);
+
+/// Управление маской для OSD
+virtual Graphics::TBitmap* GetOverlayMaskBitmap(void);
+virtual bool SetOverlayMaskBitmap(Graphics::TBitmap* value);
 // --------------------------
 
 // --------------------------
@@ -676,6 +687,12 @@ void __fastcall VideoGrabberOnPlayerOpened(System::TObject* Sender);
 void __fastcall VideoGrabberOnThreadSync(System::TObject* Sender, TThreadSyncPoint ThreadSyncPoint);
 
 void __fastcall VideoGrabberOnPreviewStarted(TObject *Sender);
+
+void __fastcall VideoGrabberOnVideoMouseUp(System::TObject* Sender, int VideoWindow, System::Uitypes::TMouseButton Button, System::Classes::TShiftState Shift, int X, int Y);
+
+void __fastcall VideoGrabberOnVideoMouseDown(System::TObject* Sender, int VideoWindow, System::Uitypes::TMouseButton Button, System::Classes::TShiftState Shift, int X, int Y);
+
+void __fastcall VideoGrabberOnVideoMouseMove(System::TObject* Sender, int VideoWindow, System::Classes::TShiftState Shift, int X, int Y);
 
 virtual void __fastcall Calculate(void);
 

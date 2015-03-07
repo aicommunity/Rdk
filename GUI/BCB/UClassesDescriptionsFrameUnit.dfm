@@ -93,15 +93,15 @@ inherited UClassesDescriptionsFrame: TUClassesDescriptionsFrame
         EditLabel.Caption = 'Class Name'
         TabOrder = 0
       end
-      object ClassFullNameLabeledEdit: TLabeledEdit
+      object ClassHeaderLabeledEdit: TLabeledEdit
         Left = 6
         Top = 72
         Width = 571
         Height = 21
         Anchors = [akLeft, akTop, akRight]
-        EditLabel.Width = 74
+        EditLabel.Width = 63
         EditLabel.Height = 13
-        EditLabel.Caption = 'Class Full Name'
+        EditLabel.Caption = 'Class Header'
         TabOrder = 1
       end
       object ClassDescriptionGroupBox: TGroupBox
@@ -112,9 +112,6 @@ inherited UClassesDescriptionsFrame: TUClassesDescriptionsFrame
         Align = alBottom
         Caption = 'Class Description'
         TabOrder = 2
-        ExplicitLeft = 6
-        ExplicitTop = 99
-        ExplicitWidth = 571
         object ClassDescriptionRichEdit: TRichEdit
           Left = 2
           Top = 15
@@ -130,7 +127,6 @@ inherited UClassesDescriptionsFrame: TUClassesDescriptionsFrame
           PlainText = True
           ScrollBars = ssBoth
           TabOrder = 0
-          ExplicitWidth = 567
         end
       end
       object GroupBox1: TGroupBox
@@ -141,9 +137,6 @@ inherited UClassesDescriptionsFrame: TUClassesDescriptionsFrame
         Align = alBottom
         Caption = ' Properties List '
         TabOrder = 3
-        ExplicitLeft = 6
-        ExplicitTop = 239
-        ExplicitWidth = 571
         object PropertiesListStringGrid: TStringGrid
           Left = 2
           Top = 15
@@ -151,7 +144,6 @@ inherited UClassesDescriptionsFrame: TUClassesDescriptionsFrame
           Height = 353
           Align = alClient
           TabOrder = 0
-          ExplicitWidth = 567
         end
       end
     end
@@ -195,7 +187,7 @@ inherited UClassesDescriptionsFrame: TUClassesDescriptionsFrame
         Align = alTop
         Caption = ' Classes Additional info  '
         TabOrder = 1
-        object RichEdit1: TRichEdit
+        object ClassesAdditionalInfoRichEdit: TRichEdit
           Left = 2
           Top = 15
           Width = 568

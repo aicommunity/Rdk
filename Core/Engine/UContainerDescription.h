@@ -10,7 +10,7 @@ namespace RDK {
 class RDK_LIB_TYPE UPropertyDescription
 {
 public: // Данные
-// Заголовок свойства
+// Краткое описание (заголовок) свойства
 std::string Header;
 
 // Описание свойства
@@ -34,6 +34,9 @@ std::vector<std::string> ValueList;
 
 /// Шаг по диапазону
 std::string Step;
+
+/// Тип свойства
+unsigned int PropertyType;
 
 
 public: // Методы
