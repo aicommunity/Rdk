@@ -597,6 +597,12 @@ RDK::UELockVar<int> ConnectionTimeout;
 /// Таймаут захвата
 RDK::UELockVar<int> CaptureTimeout;
 
+/// Режим масштабирования отображения на экране
+/// 0 - Изображение выводится оригинального размера
+/// 1 - Изображение масштабируется пропорционально, по границам окна
+/// 2 - Изображение масштабиуется с растяжением по всем сторонам
+RDK::UELockVar<int> AutoScaleMode;
+
 protected: // Данные
 TVideoGrabber* VideoGrabber;
 
@@ -711,6 +717,13 @@ virtual bool SetPosition(long long index);
 /// Возвращает 1 если если нет подключения к источнику
 /// Возвращает 2 если если есть подключение к источнику
 virtual int CheckConnection(void) const;
+
+/// Режим масштабирования отображения на экране
+/// 0 - Изображение выводится оригинального размера
+/// 1 - Изображение масштабируется пропорционально, по границам окна
+/// 2 - Изображение масштабиуется с растяжением по всем сторонам
+virtual int GetAutoScaleMode(void) const;
+virtual bool SetAutoScaleMode(int value);
 
 virtual void __fastcall ARecreateCapture(void);
 // --------------------------

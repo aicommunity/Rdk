@@ -1521,7 +1521,26 @@ void __fastcall TVideoCaptureThreadVideoGrabber::ExecuteCaptureInit(void)
   {
    VideoGrabber->Parent=OverlayHandle;
    VideoGrabber->Visible=true;
-   VideoGrabber->Display_AutoSize = true;
+   switch(AutoScaleMode)
+   {
+   case 0:
+	VideoGrabber->Display_AutoSize = true;
+	VideoGrabber->Align=alNone;
+	VideoGrabber->Display_AspectRatio=ar_NoResize;
+   break;
+
+   case 1:
+	VideoGrabber->Display_AutoSize = true;
+	VideoGrabber->Align=alClient;
+	VideoGrabber->Display_AspectRatio=ar_Box;
+   break;
+
+   case 2:
+	VideoGrabber->Display_AutoSize = true;
+	VideoGrabber->Align=alClient;
+	VideoGrabber->Display_AspectRatio=ar_NoResize;
+   break;
+   }
   }
   else
   {
@@ -2020,6 +2039,48 @@ int TVideoCaptureThreadVideoGrabber::CheckConnection(void) const
  return ConnectionState;
 }
 
+/// Режим масштабирования отображения на экране
+/// 0 - Изображение выводится оригинального размера
+/// 1 - Изображение масштабируется пропорционально, по границам окна
+/// 2 - Изображение масштабиуется с растяжением по всем сторонам
+int TVideoCaptureThreadVideoGrabber::GetAutoScaleMode(void) const
+{
+ return AutoScaleMode;
+}
+
+bool TVideoCaptureThreadVideoGrabber::SetAutoScaleMode(int value)
+{
+ AutoScaleMode=value;
+ if(VideoGrabber)
+ {
+  if(OverlayHandle)
+  {
+   switch(AutoScaleMode)
+   {
+   case 0:
+	VideoGrabber->Display_AutoSize = true;
+	VideoGrabber->Align=alNone;
+	VideoGrabber->Display_AspectRatio=ar_NoResize;
+   break;
+
+   case 1:
+	VideoGrabber->Display_AutoSize = true;
+	VideoGrabber->Align=alClient;
+	VideoGrabber->Display_AspectRatio=ar_Box;
+   break;
+
+   case 2:
+	VideoGrabber->Display_AutoSize = true;
+	VideoGrabber->Align=alClient;
+	VideoGrabber->Display_AspectRatio=ar_NoResize;
+   break;
+   }
+  }
+ }
+ return true;
+}
+
+
 void __fastcall TVideoCaptureThreadVideoGrabber::ARecreateCapture(void)
 {
 // return;
@@ -2084,6 +2145,26 @@ bool TVideoCaptureThreadVideoGrabber::SetOverlayHandle(TWinControl* value)
   {
    VideoGrabber->Visible=true;
    VideoGrabber->Display_AutoSize = true;
+   switch(AutoScaleMode)
+   {
+   case 0:
+	VideoGrabber->Display_AutoSize = true;
+	VideoGrabber->Align=alNone;
+	VideoGrabber->Display_AspectRatio=ar_NoResize;
+   break;
+
+   case 1:
+	VideoGrabber->Display_AutoSize = true;
+	VideoGrabber->Align=alClient;
+	VideoGrabber->Display_AspectRatio=ar_Box;
+   break;
+
+   case 2:
+	VideoGrabber->Display_AutoSize = true;
+	VideoGrabber->Align=alClient;
+	VideoGrabber->Display_AspectRatio=ar_NoResize;
+   break;
+   }
   }
   else
   {
