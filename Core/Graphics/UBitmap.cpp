@@ -575,10 +575,17 @@ void UBitmap::MaskTo(int x, int y, UBitmap &target, UColorT transp, UColorT colo
    {
 	tardata=target.Data+(j+y)*target.Width*3+x*3;
 	data=Data+j*Width*3;
-	for(int k=0;k<xsize;++k,tardata+=3,data+=3)
+	for(int k=0;k<xsize;++k,data+=3)
 	{
 	 if(memcmp(data,&transp,3))
-	  memcpy(tardata,&color,3);
+	 {
+//	  memcpy(tardata,&color.c,3);
+	  *tardata++=color.rgb.b;
+	  *tardata++=color.rgb.g;
+	  *tardata++=color.rgb.r;
+	 }
+	 else
+	  tardata+=3;
 	}
    }
  break;
