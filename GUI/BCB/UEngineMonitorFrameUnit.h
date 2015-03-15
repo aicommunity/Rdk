@@ -339,6 +339,12 @@ void StartEngineMonitorThread(void);
 void StopEngineMonitorThread(void);
 
 TEngineThread* GetThreadChannel(int i);
+
+/// ¬озвращает текущее врем€ источника данных
+double GetSourceTime(int i) const;
+
+/// ѕримен€ет текущее врем€ источников данных к каналам
+void ApplySourceTime(void);
 };
 #pragma warn .8130
 //---------------------------------------------------------------------------
