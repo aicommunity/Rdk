@@ -21,15 +21,15 @@ __published:	// IDE-managed Components
 	TUClassesListFrame *ClassesListFrame;
 	TPanel *Panel3;
 	TLabeledEdit *ClassNameLabeledEdit;
-	TLabeledEdit *ClassFullNameLabeledEdit;
+	TLabeledEdit *ClassHeaderLabeledEdit;
 	TGroupBox *ClassDescriptionGroupBox;
 	TRichEdit *ClassDescriptionRichEdit;
 	TGroupBox *GroupBox1;
-	TStringGrid *StringGrid1;
+	TStringGrid *PropertiesListStringGrid;
 	TPanel *Panel4;
 	TGroupBox *GroupBox2;
 	TGroupBox *GroupBox3;
-	TRichEdit *RichEdit1;
+	TRichEdit *ClassesAdditionalInfoRichEdit;
 	TRichEdit *PropertyDescriptionRichEdit;
 	TButton *ApplyButton;
 	TButton *RestoreButton;

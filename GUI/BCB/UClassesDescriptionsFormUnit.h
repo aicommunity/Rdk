@@ -15,6 +15,7 @@ class TUClassesDescriptionsForm : public TUVisualControllerForm
 {
 __published:	// IDE-managed Components
 	TUClassesDescriptionsFrame *ClassesDescriptionsFrame;
+	void __fastcall FormShow(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
 	__fastcall TUClassesDescriptionsForm(TComponent* Owner);

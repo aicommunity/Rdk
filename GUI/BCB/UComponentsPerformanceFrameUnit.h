@@ -16,6 +16,8 @@
 #include <IniFiles.hpp>
 #include "TUVisualControllerFrameUnit.h"
 #include <Vcl.Samples.Spin.hpp>
+#include <Vcl.ComCtrls.hpp>
+#include <Vcl.Grids.hpp>
 #include <vector>
 #include <string>
 #include "UComponentsListFormUnit.h"
@@ -26,18 +28,26 @@
 class TUComponentsPerformanceFrame : public TUVisualControllerFrame
 {
 __published:	// IDE-managed Components
-	TChart *Chart;
-	TBarSeries *Series1;
-	TBarSeries *Series2;
 	TPopupMenu *PopupMenu;
 	TMenuItem *SelectSource1;
 	TMenuItem *N1;
 	TMenuItem *ClearAll1;
+	TMenuItem *SelectAll1;
+	TPageControl *PageControl1;
+	TTabSheet *TabSheet1;
+	TTabSheet *TabSheet2;
+	TChart *Chart;
+	TBarSeries *Series1;
+	TBarSeries *Series2;
 	TPanel *Panel1;
 	TRadioGroup *ShowModeRadioGroup;
 	TGroupBox *GroupBox1;
 	TSpinEdit *AverageIntervalSpinEdit;
-	TMenuItem *SelectAll1;
+	TGroupBox *GroupBox3;
+	TStringGrid *InterfacesStringGrid;
+	TTabSheet *TabSheet3;
+	TGroupBox *GroupBox2;
+	TStringGrid *ComponentsStringGrid;
 	void __fastcall SelectSource1Click(TObject *Sender);
 	void __fastcall ClearAll1Click(TObject *Sender);
 	void __fastcall AverageIntervalSpinEditChange(TObject *Sender);
@@ -54,6 +64,8 @@ std::vector<std::string> ComponentNames;
 // Результаты измерений
 std::vector<std::vector<long long> > ComponentData;
 
+// Результаты измерений производительности интерфейса
+std::vector<std::vector<long long> > InterfaceData;
 // Указатель на форму выбора компоненты-источника
 TUComponentsListForm *MyComponentsListForm;
 

@@ -1031,6 +1031,35 @@ TEngineThread* TUEngineMonitorFrame::GetThreadChannel(int i)
  return ThreadChannels[i];
 }
 
+
+/// ¬озвращает текущее врем€ источника данных
+double TUEngineMonitorFrame::GetSourceTime(int i) const
+{
+   if(CalculationTimeSourceMode == 0)
+   {
+	TDateTime dt=TDateTime::CurrentDateTime();
+	return dt.operator double();
+   }
+   else
+   if(CalculationTimeSourceMode == 1 && i<ServerTimeStamp.size())
+   {
+	return ServerTimeStamp[i]/(86400.0*1000.0);
+   }
+ return 0.0;
+}
+
+
+/// ѕримен€ет текущее врем€ источников данных к каналам
+void TUEngineMonitorFrame::ApplySourceTime(void)
+{
+ for(int i=0;i<GetNumEngines();i++)
+ {
+  MModel_SetDoubleSourceTime(i,GetSourceTime(i));
+ }
+
+}
+
+
 //---------------------------------------------------------------------------
 
 void __fastcall TUEngineMonitorFrame::Start1Click(TObject *Sender)

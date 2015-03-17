@@ -46,6 +46,7 @@ std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, std::
   return stream;
 
  stream>>data.first;
+ std::string LineBuffer;
  stream.getline(&LineBuffer[0],LineBuffer.size()-1,',');
  stream>>data.second;
  ch=stream.get(); // —читали завершающий '}'
@@ -227,6 +228,7 @@ std::basic_ostream<CharT>& operator << (std::basic_ostream<CharT>& stream, const
 template<typename CharT>
 std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, std::basic_string<CharT> &data)
 {
+ std::string LineBuffer;
  LineBuffer.resize(4096);
  stream.getline(&LineBuffer[0],4095);
  data.resize(stream.gcount());

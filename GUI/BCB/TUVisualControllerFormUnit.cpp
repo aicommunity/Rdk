@@ -94,6 +94,7 @@ void TUVisualControllerForm::AfterReset(void)
  try
  {
   LastUpdateTime=0;
+  UpdateTime=0;
 
   AAfterReset();
  }
@@ -157,21 +158,22 @@ void TUVisualControllerForm::AAfterCalculate(void)
 // Обновление интерфейса
 void TUVisualControllerForm::UpdateInterface(bool force_update)
 {
+ unsigned long long current_time=0;
  try
  {
-  UpdateTime=RDK::GetCurrentStartupTime();
+//  UpdateTime=RDK::GetCurrentStartupTime();
  if(!force_update)
  {
   if((!AlwaysUpdateFlag && (!Visible || (Parent && !Parent->Visible))) || (UpdateInterval<0 && CalculationModeFlag))
   {
-   UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),UpdateTime);
+//   UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),current_time);
    return;
   }
 
   UpdateControlState();
   if(!Showing && !AlwaysUpdateFlag)
   {
-   UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),UpdateTime);
+//   UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),current_time);
    return;
   }
 
@@ -180,13 +182,13 @@ void TUVisualControllerForm::UpdateInterface(bool force_update)
    DWORD curr_time=GetTickCount();
    if(curr_time-LastUpdateTime<DWORD(UpdateInterval))
    {
-	UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),UpdateTime);
+//	UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),current_time);
 	return;
    }
 
    if(GetCalculationStepUpdatedFlag() == true)
    {
-	UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),UpdateTime);
+//	UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),current_time);
 	return;
    }
    else
@@ -203,16 +205,17 @@ void TUVisualControllerForm::UpdateInterface(bool force_update)
 
  if(!IsEngineInit())
  {
-   UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),UpdateTime);
+//   UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),current_time);
    return;
  }
 
  if(CheckModelFlag && !Model_Check())
  {
-   UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),UpdateTime);
+//   UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),current_time);
    return;
  }
- UpdateInterfaceFlag=true;
+  UpdateInterfaceFlag=true;
+  current_time=RDK::GetCurrentStartupTime();
   AUpdateInterface();
  }
  catch (RDK::UException &exception)
@@ -227,11 +230,11 @@ void TUVisualControllerForm::UpdateInterface(bool force_update)
  }
  catch(...)
  {
-  UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),UpdateTime);
+  UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),current_time);
   UpdateInterfaceFlag=false;
   throw;
  }
- UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),UpdateTime);
+ UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),current_time);
  UpdateInterfaceFlag=false;
 }
 
@@ -268,6 +271,24 @@ void TUVisualControllerForm::AClearInterface(void)
 std::string TUVisualControllerForm::GetName(void)
 {
  return AnsiString(Name).c_str();
+}
+
+// Возвращает имя класса интерфейса
+std::string TUVisualControllerForm::GetClassName(void)
+{
+ return AnsiString(ClassName()).c_str();
+}
+
+// Возвращает интервал обновления интерфейса
+long TUVisualControllerForm::GetUpdateInterval(void)
+{
+ return UpdateInterval;
+}
+
+// Возвращает флаг разрешения обновления интерфейса даже если он не виден
+bool TUVisualControllerForm::GetAlwaysUpdateFlag(void)
+{
+ return AlwaysUpdateFlag;
 }
 
 // Сохраняет параметры интерфейса в xml

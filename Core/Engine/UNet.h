@@ -13,6 +13,8 @@ See file license.txt for more information
 #define UANetH
 
 #include "UADItem.h"
+#include "UStorage.h"
+
 
 namespace RDK {
 

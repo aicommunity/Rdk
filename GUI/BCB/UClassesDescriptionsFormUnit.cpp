@@ -50,3 +50,10 @@ TUClassesDescriptionsForm* TUClassesDescriptionsForm::New(TComponent *owner)
 }
 // -----------------------------
 //---------------------------------------------------------------------------
+void __fastcall TUClassesDescriptionsForm::FormShow(TObject *Sender)
+{
+ ClassesDescriptionsFrame->ClassesListFrame->UpdateInterface(true);
+ ClassesDescriptionsFrame->ClassesListFrameTreeViewClick(Sender);
+}
+//---------------------------------------------------------------------------
+

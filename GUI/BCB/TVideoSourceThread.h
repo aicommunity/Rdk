@@ -597,14 +597,26 @@ RDK::UELockVar<int> ConnectionTimeout;
 /// Таймаут захвата
 RDK::UELockVar<int> CaptureTimeout;
 
+/// Режим масштабирования отображения на экране
+/// 0 - Изображение выводится оригинального размера
+/// 1 - Изображение масштабируется пропорционально, по границам окна
+/// 2 - Изображение масштабиуется с растяжением по всем сторонам
+RDK::UELockVar<int> AutoScaleMode;
+
 protected: // Данные
 TVideoGrabber* VideoGrabber;
 
 Graphics::TBitmap* ConvertBitmap;
 
+/// Маска для OSD
+Graphics::TBitmap* OverlayMaskBitmap;
+
 RDK::UBitmap ConvertUBitmap,ConvertResult;
 
 RDK::UELockVar<double> ConvertTimeStamp;
+
+/// Хендл окна в которое необходимо выводить данные захвата
+TWinControl* OverlayHandle;
 
 protected: // События
 /// Выставляется при получении очередного кадра
@@ -612,6 +624,10 @@ HANDLE VideoGrabberCompleted;
 
 /// Событие блокировки изображения для конвертации
 HANDLE ConvertMutex;
+
+/// Событие блокировки OSD изображения
+HANDLE OSDMutex;
+
 
 protected: // Временные переменные
 
@@ -645,6 +661,14 @@ virtual bool ASaveParameters(RDK::USerStorageXML &xml);
 
 /// Загрузка и применение настроек из xml
 virtual bool ALoadParameters(RDK::USerStorageXML &xml);
+
+/// Хендл окна в которое необходимо выводить данные захвата
+virtual TWinControl* GetOverlayHandle(void) const;
+virtual bool SetOverlayHandle(TWinControl* value);
+
+/// Управление маской для OSD
+virtual Graphics::TBitmap* GetOverlayMaskBitmap(void);
+virtual bool SetOverlayMaskBitmap(Graphics::TBitmap* value);
 // --------------------------
 
 // --------------------------
@@ -670,6 +694,12 @@ void __fastcall VideoGrabberOnThreadSync(System::TObject* Sender, TThreadSyncPoi
 
 void __fastcall VideoGrabberOnPreviewStarted(TObject *Sender);
 
+void __fastcall VideoGrabberOnVideoMouseUp(System::TObject* Sender, int VideoWindow, System::Uitypes::TMouseButton Button, System::Classes::TShiftState Shift, int X, int Y);
+
+void __fastcall VideoGrabberOnVideoMouseDown(System::TObject* Sender, int VideoWindow, System::Uitypes::TMouseButton Button, System::Classes::TShiftState Shift, int X, int Y);
+
+void __fastcall VideoGrabberOnVideoMouseMove(System::TObject* Sender, int VideoWindow, System::Classes::TShiftState Shift, int X, int Y);
+
 virtual void __fastcall Calculate(void);
 
 virtual void __fastcall BeforeCalculate(void);
@@ -687,6 +717,13 @@ virtual bool SetPosition(long long index);
 /// Возвращает 1 если если нет подключения к источнику
 /// Возвращает 2 если если есть подключение к источнику
 virtual int CheckConnection(void) const;
+
+/// Режим масштабирования отображения на экране
+/// 0 - Изображение выводится оригинального размера
+/// 1 - Изображение масштабируется пропорционально, по границам окна
+/// 2 - Изображение масштабиуется с растяжением по всем сторонам
+virtual int GetAutoScaleMode(void) const;
+virtual bool SetAutoScaleMode(int value);
 
 virtual void __fastcall ARecreateCapture(void);
 // --------------------------

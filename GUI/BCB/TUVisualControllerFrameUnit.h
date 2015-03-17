@@ -83,6 +83,15 @@ virtual void AClearInterface(void);
 // Возвращает уникальное имя интерфейса
 virtual std::string GetName(void);
 
+// Возвращает имя класса интерфейса
+virtual std::string GetClassName(void);
+
+// Возвращает интервал обновления интерфейса
+virtual long GetUpdateInterval(void);
+
+// Возвращает флаг разрешения обновления интерфейса даже если он не виден
+virtual bool GetAlwaysUpdateFlag(void);
+
 // Сохраняет параметры интерфейса в xml
 virtual void SaveParameters(RDK::USerStorageXML &xml);
 virtual void ASaveParameters(RDK::USerStorageXML &xml);
