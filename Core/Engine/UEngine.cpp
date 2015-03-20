@@ -2369,7 +2369,7 @@ const char* UEngine::Model_GetComponentPropertiesLookupList(const char* stringid
      TempString+=",";
     TempString+=I->first;
     TempString+=":";
-    TempString+=sntoa(I->second.Property->GetMinRange());
+    TempString+=sntoa(0);
    }
    ++I;
   }
@@ -2662,6 +2662,49 @@ int UEngine::Model_CreateLink(const char* stringid1, int output_number, const ch
  return 0;
 }
 
+int UEngine::Model_CreateLink(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name)
+{
+ try
+ {
+  if(!stringid1)
+   return -10;
+
+  if(!stringid2)
+   return -11;
+
+  UEPtr<RDK::UNet> model=dynamic_pointer_cast<RDK::UNet>(Environment->GetCurrentComponent());
+
+  if(!model)
+   return -2;
+/*
+  std::string longid1, longid2;
+  if(stringid1[0]>=0x30 && stringid1[0]<=0x39)
+   longid1.DecodeFromString(stringid1);
+  else
+  {
+   UEPtr<UContainer> cont=FindComponent(stringid1);
+   longid1=cont->GetLongName(model);
+  }
+
+  if(stringid2[0]>=0x30 && stringid2[0]<=0x39)
+   longid2.DecodeFromString(stringid2);
+  else
+  {
+   UEPtr<UContainer> cont=FindComponent(stringid2);
+   longid2=cont->GetLongName(model);
+  } */
+  bool res=model->CreateLink(stringid1,item_property_name,stringid2,connector_property_name);
+  if(!res)
+   return -3;
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return 0;
+}
+
+
 // Связывает все компоненты выбранного компонента по возрастанию id в формате: 0 выход к 0 входу
 int UEngine::Model_ChainLinking(const char* stringid)
 {
@@ -2797,6 +2840,50 @@ int UEngine::Model_BreakLink(const char* stringid1, int output_number, const cha
  return 0;
 }
 
+int UEngine::Model_BreakLink(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name)
+{
+ try
+ {
+  if(!stringid1)
+   return -10;
+
+  if(!stringid2)
+   return -11;
+
+  UEPtr<RDK::UNet> model=dynamic_pointer_cast<RDK::UNet>(Environment->GetCurrentComponent());
+
+  if(!model)
+   return -2;
+  /*
+  RDK::ULongId longid1, longid2;
+  if(stringid1[0]>=0x30 && stringid1[0]<=0x39)
+   longid1.DecodeFromString(stringid1);
+  else
+  {
+   UEPtr<UContainer> cont=FindComponent(stringid1);
+   longid1=cont->GetLongId(model);
+  }
+
+  if(stringid2[0]>=0x30 && stringid2[0]<=0x39)
+   longid2.DecodeFromString(stringid2);
+  else
+  {
+   UEPtr<UContainer> cont=FindComponent(stringid2);
+   longid2=cont->GetLongId(model);
+  }
+*/
+  bool res=model->BreakLink(stringid1,item_property_name,stringid2,connector_property_name);
+  if(!res)
+   return -3;
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+
+ return 0;
+}
+
 // Разрывает все связи
 int UEngine::Model_BreakAllLinks(void)
 {
@@ -2896,11 +2983,11 @@ bool UEngine::Model_CheckLink(const char* stringid1, int output_number, const ch
 {
  try
  {
-  UEPtr<RDK::UItem> cont1;
+  UEPtr<RDK::UADItem> cont1;
   UEPtr<RDK::UConnector> cont2;
   try
   {
-   cont1=dynamic_pointer_cast<RDK::UItem>(FindComponent(stringid1));
+   cont1=dynamic_pointer_cast<RDK::UADItem>(FindComponent(stringid1));
    cont2=dynamic_pointer_cast<RDK::UConnector>(FindComponent(stringid2));
   }
   catch (UException &exception)// Заглушка!! здесь другое исключение
@@ -2919,7 +3006,32 @@ bool UEngine::Model_CheckLink(const char* stringid1, int output_number, const ch
  return false;
 }
 
+bool UEngine::Model_CheckLink(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name)
+{
+ try
+ {
+  UEPtr<RDK::UItem> cont1;
+  UEPtr<RDK::UConnector> cont2;
+  try
+  {
+   cont1=dynamic_pointer_cast<RDK::UItem>(FindComponent(stringid1));
+   cont2=dynamic_pointer_cast<RDK::UConnector>(FindComponent(stringid2));
+  }
+  catch (UException &exception)// Заглушка!! здесь другое исключение
+  {
+   return false;
+  }
+  if(!cont1 || !cont2)
+   return false;
 
+  return cont1->CheckLink(cont2,item_property_name,connector_property_name);
+ }
+ catch (UException &exception)
+ {
+  ProcessException(exception);
+ }
+ return false;
+}
 
 // Возращает все связи внутри компонента stringid в виде xml в буфер buffer
 // Имена формируются до уровня компонента owner_level_stringid
@@ -3103,7 +3215,7 @@ int UEngine::Model_GetComponentNumInputs(const char *stringid)
 {
  try
  {
-  UEPtr<RDK::UItem> cont=dynamic_pointer_cast<RDK::UItem>(FindComponent(stringid));
+  UEPtr<RDK::UADItem> cont=dynamic_pointer_cast<RDK::UADItem>(FindComponent(stringid));
 
   if(!cont)
    return 0;
@@ -3184,7 +3296,7 @@ int UEngine::Model_GetComponentNumOutputs(const char *stringid)
 {
  try
  {
-  UEPtr<RDK::UItem> cont=dynamic_pointer_cast<RDK::UItem>(FindComponent(stringid));
+  UEPtr<RDK::UADItem> cont=dynamic_pointer_cast<RDK::UADItem>(FindComponent(stringid));
 
   if(!cont)
    return 0;

@@ -1525,6 +1525,12 @@ int RDK_CALL Model_CreateLink(const char* stringid1, int output_number, const ch
  return DllManager.GetEngineLock()->Model_CreateLink(stringid1, output_number, stringid2, input_number);
 }
 
+int RDK_CALL Model_CreateLinkByName(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name)
+{
+ return DllManager.GetEngineLock()->Model_CreateLink(stringid1, item_property_name, stringid2, connector_property_name);
+}
+
+
 // Связывает все компоненты выбранного компонента по возрастанию id в формате: 0 выход к 0 входу
 int RDK_CALL Model_ChainLinking(const char* stringid)
 {
@@ -1542,6 +1548,11 @@ int RDK_CALL Model_ParallelLinking(const char* stringid)
 int RDK_CALL Model_BreakLink(const char* stringid1, int output_number, const char* stringid2, int input_number)
 {
  return DllManager.GetEngineLock()->Model_BreakLink(stringid1, output_number, stringid2, input_number);
+}
+
+int RDK_CALL Model_BreakLinkByName(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name)
+{
+ return DllManager.GetEngineLock()->Model_BreakLink(stringid1, item_property_name, stringid2, connector_property_name);
 }
 
 // Разрывает все связи
@@ -1580,6 +1591,11 @@ bool RDK_CALL Model_CheckLink(const char* stringid1, int output_number, const ch
 {
 
  return DllManager.GetEngineLock()->Model_CheckLink(stringid1, output_number, stringid2, input_number);
+}
+
+bool RDK_CALL Model_CheckLinkByName(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name)
+{
+ return DllManager.GetEngineLock()->Model_CheckLink(stringid1, item_property_name, stringid2, connector_property_name);
 }
 
 // Возращает все связи внутри компонента stringid в виде xml в буфер buffer

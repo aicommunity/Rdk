@@ -264,8 +264,10 @@ void CopyTo(int x, int y, UBitmap &target, UColorT transp);
 // Элементы изображения источника с цветом 'transp' не переносятся
 // (эффект прозрачности)
 // Все остальные элементы заменяются в итоговом изображении на цвет 'color'
+// Или переносятся как есть
 // Поддерживает режимы ubmY8, ubmRGB24, ubmY32
 void MaskTo(int x, int y, UBitmap &target, UColorT transp, UColorT color);
+void MaskTo(int x, int y, UBitmap &target, UColorT transp);
 
 // Возвращает участок изображения с координатами
 // левого верхнего угла x,y и шириной и длиной

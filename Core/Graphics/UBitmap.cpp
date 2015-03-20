@@ -562,35 +562,94 @@ void UBitmap::MaskTo(int x, int y, UBitmap &target, UColorT transp, UColorT colo
  case ubmY8:
   for(int j=0;j<ysize;j++)
    {
-    tardata=target.Data+(j+y)*target.Width+x;
-    data=Data+j*Width;
-    for(int k=0;k<xsize;++k,++tardata,++data)
-     if(*data != transp.ycrcb.y)
-      *tardata=color.rgb.b;
+	tardata=target.Data+(j+y)*target.Width+x;
+	data=Data+j*Width;
+	for(int k=0;k<xsize;++k,++tardata,++data)
+	 if(*data != transp.ycrcb.y)
+	  *tardata=color.rgb.b;
    }
  break;
 
  case ubmRGB24:
   for(int j=0;j<ysize;j++)
    {
-    tardata=target.Data+(j+y)*target.Width*3+x*3;
-    data=Data+j*Width*3;
-    for(int k=0;k<xsize;++k,tardata+=3,data+=3)
-    {
-     if(memcmp(data,&transp,3))
-      memcpy(tardata,&color,3);
-    }
+	tardata=target.Data+(j+y)*target.Width*3+x*3;
+	data=Data+j*Width*3;
+	for(int k=0;k<xsize;++k,data+=3)
+	{
+	 if(memcmp(data,&transp,3))
+	 {
+//	  memcpy(tardata,&color.c,3);
+	  *tardata++=color.rgb.b;
+	  *tardata++=color.rgb.g;
+	  *tardata++=color.rgb.r;
+	 }
+	 else
+	  tardata+=3;
+	}
    }
  break;
 
  case ubmY32:
   for(int j=0;j<ysize;j++)
    {
-    tardata=target.Data+(j+y)*target.Width*4+x*4;
-    data=Data+j*Width*4;
-    for(int k=0;k<xsize;++k,tardata+=4,data+=4)
-     if(memcmp(data,&transp,4))
-      memcpy(tardata,&color,4);
+	tardata=target.Data+(j+y)*target.Width*4+x*4;
+	data=Data+j*Width*4;
+	for(int k=0;k<xsize;++k,tardata+=4,data+=4)
+	 if(memcmp(data,&transp,4))
+	  memcpy(tardata,&color,4);
+   }
+ break;
+ }
+}
+
+void UBitmap::MaskTo(int x, int y, UBitmap &target, UColorT transp)
+{
+ int xsize,ysize;
+ UBColor *data,*tardata;
+
+ if(x < 0 || y < 0 || x >= target.Width || y >= target.Height)
+  return;
+
+ xsize=(Width<target.Width-x)?Width:target.Width-x;
+ ysize=(Height<target.Height-y)?Height:target.Height-y;
+
+ target.SetColorModel(ColorModel);
+
+ switch(ColorModel)
+ {
+ case ubmY8:
+  for(int j=0;j<ysize;j++)
+   {
+	tardata=target.Data+(j+y)*target.Width+x;
+	data=Data+j*Width;
+	for(int k=0;k<xsize;++k,++tardata,++data)
+	 if(*data != transp.ycrcb.y)
+	  *tardata=*data;
+   }
+ break;
+
+ case ubmRGB24:
+  for(int j=0;j<ysize;j++)
+   {
+	tardata=target.Data+(j+y)*target.Width*3+x*3;
+	data=Data+j*Width*3;
+	for(int k=0;k<xsize;++k,tardata+=3,data+=3)
+	{
+	 if(memcmp(data,&transp,3))
+	  memcpy(tardata,data,3);
+	}
+   }
+ break;
+
+ case ubmY32:
+  for(int j=0;j<ysize;j++)
+   {
+	tardata=target.Data+(j+y)*target.Width*4+x*4;
+	data=Data+j*Width*4;
+	for(int k=0;k<xsize;++k,tardata+=4,data+=4)
+	 if(memcmp(data,&transp,4))
+	  memcpy(tardata,data,4);
    }
  break;
  }

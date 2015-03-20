@@ -691,6 +691,7 @@ RDK_LIB_TYPE void RDK_CALL Model_SetComponentStateValue(const char *stringid, co
 
 // Связывает выбранные компоненты друг с другом
 RDK_LIB_TYPE int RDK_CALL Model_CreateLink(const char* stringid1, int output_number, const char* stringid2, int input_number);
+RDK_LIB_TYPE int RDK_CALL Model_CreateLinkByName(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name);
 
 // Связывает все компоненты выбранного компонента по возрастанию id в формате: 0 выход к 0 входу
 RDK_LIB_TYPE int RDK_CALL Model_ChainLinking(const char* stringid);
@@ -701,6 +702,7 @@ RDK_LIB_TYPE int RDK_CALL Model_ParallelLinking(const char* stringid);
 
 // Разрывает выбранную связь
 RDK_LIB_TYPE int RDK_CALL Model_BreakLink(const char* stringid1, int output_number, const char* stringid2, int input_number);
+RDK_LIB_TYPE int RDK_CALL Model_BreakLinkByName(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name);
 
 // Разрывает все связи
 RDK_LIB_TYPE int RDK_CALL Model_BreakAllLinks(void);
@@ -719,6 +721,7 @@ RDK_LIB_TYPE int RDK_CALL Model_BreakAllComponentOutputLinks(const char* stringi
 
 // Проверяет, существует ли заданна связь
 RDK_LIB_TYPE bool RDK_CALL Model_CheckLink(const char* stringid1, int output_number, const char* stringid2, int input_number);
+RDK_LIB_TYPE bool RDK_CALL Model_CheckLinkByName(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name);
 
 // Возращает все связи внутри компонента stringid в виде xml в буфер buffer
 // Имена формируются до уровня компонента owner_level_stringid

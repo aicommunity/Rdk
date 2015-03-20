@@ -22,7 +22,7 @@ namespace RDK {
 // Конструкторы и деструкторы
 // --------------------------
 UBAModel::UBAModel(void)
- : Output("Output",this,0),
+ : Output("Output",this),
    WorkWidth("WorkWidth",this),
    WorkHeight("WorkHeight",this)
 {

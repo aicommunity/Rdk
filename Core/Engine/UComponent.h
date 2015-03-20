@@ -394,6 +394,9 @@ virtual const type_info& GetLanguageType(void) const=0;
 // Метод сравнивает тип этого свойства с другим свойством
 virtual bool CompareLanguageType(const UIProperty &dt) const=0;
 
+/// Обновляет указатель PData
+virtual void UpdatePData(void* data)=0;
+
 // --------------------------
 // Методы управления данными
 // --------------------------
@@ -401,12 +404,12 @@ virtual bool CompareLanguageType(const UIProperty &dt) const=0;
 virtual int GetIoType(void) const=0;
 
 /// Возвращает диапазон индексов входа/выхода
-virtual bool CheckRange(int index)=0;
+//virtual bool CheckRange(int index)=0;
 
 // Диапазон индексов входов
-virtual int GetMinRange(void)=0;
+//virtual int GetMinRange(void)=0;
 
-virtual int GetMaxRange(void)=0;
+//virtual int GetMaxRange(void)=0;
 // --------------------------
 
 // --------------------------

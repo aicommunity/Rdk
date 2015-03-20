@@ -47,7 +47,7 @@ mutable T* PData;
 int IoType;
 
 // Диапазон индексов входов
-int MinRange, MaxRange;
+//int MinRange, MaxRange;
 
 public: // Методы
 // --------------------------
@@ -55,12 +55,12 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 UVBaseDataProperty(void)
- : PData(0),IoType(0),MinRange(0), MaxRange(-1)
+ : PData(0),IoType(ipSingle | ipData)//,MinRange(0), MaxRange(-1)
 {
 }
 
 UVBaseDataProperty(T * const pdata)
- : PData(pdata),IoType(0),MinRange(0), MaxRange(-1)
+ : PData(pdata),IoType(ipSingle | ipData)//,MinRange(0), MaxRange(-1)
 {
 }
 // -----------------------------
@@ -184,6 +184,12 @@ bool ReadFromMemory(const void *buffer)
  SetData(*temp);
  return true;
 }
+
+/// Обновляет указатель PData
+virtual void UpdatePData(void* data)
+{
+ PData=(T*)data;
+}
 // -----------------------------
 
 // --------------------------
@@ -194,7 +200,7 @@ virtual int GetIoType(void) const
 {
  return IoType;
 }
-
+/*
 virtual bool CheckRange(int index)
 {
  if(IoType & ipSingle)
@@ -212,6 +218,7 @@ virtual int GetMinRange(void)
 
 virtual int GetMaxRange(void)
 { return UVBaseDataProperty<T>::MaxRange; };
+*/
 // --------------------------
 
 // --------------------------
@@ -366,6 +373,52 @@ virtual void SetData(const T &value)
   if(this->PData)
    *this->PData=value;
  }
+};
+// -----------------------------
+
+// -----------------------------
+// Методы управления
+// -----------------------------
+operator T (void) const
+{
+ return this->GetData();
+};
+
+const T& operator () (void) const
+{
+ return this->GetData();
+};
+
+T* operator -> (void)
+{ return const_cast<T*>(&this->GetData()); };
+
+const T* operator -> (void) const
+{ return &this->GetData(); };
+
+T& operator * (void)
+{ return const_cast<T&>(this->GetData()); };
+
+const T& operator * (void) const
+{ return this->GetData(); };
+
+bool operator ! (void) const
+{
+ return (&this->GetData())?true:false;
+};
+
+
+
+// Оператор присваивания
+UVProperty<T,OwnerT>& operator = (const T &value)
+{
+ this->SetData(value);
+ return *this;
+};
+
+UVProperty<T,OwnerT>& operator = (const UVProperty<T,OwnerT> &v)
+{
+ this->SetData(v.GetData());
+ return *this;
 };
 // -----------------------------
 };

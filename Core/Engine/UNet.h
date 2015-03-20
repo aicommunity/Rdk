@@ -106,6 +106,8 @@ virtual bool CreateLink(const NameT &item, int item_index,
 						const NameT &connector, int connector_index=-1);
 virtual bool CreateLink(const NameT &item, const NameT &item_index,
 						const NameT &connector, const NameT &connector_index);
+//virtual bool CreateLink(const NameT &item, const NameT &item_property_name,
+//						const NameT &connector, const NameT &connector_property_name);
 
 // Устанавливает все связи из массива 'linkslist'
 template<typename T>
@@ -132,6 +134,8 @@ virtual bool BreakLink(const ULongId &item_id, int item_index, const ULongId &co
 // и коннектором 'connectorid'
 virtual bool BreakLink(const NameT &itemname, int item_index,
 						const NameT &connectorname, int connector_index);
+virtual bool BreakLink(const NameT &item, const NameT &item_property_name,
+						const NameT &connector, const NameT &connector_property_name);
 
 // Разрывает все связи между выходом элемента сети, 'itemid'
 // и коннектором 'connectorid'
@@ -150,15 +154,18 @@ virtual void BreakLinks(void);
 
 // Разрывает связь ко входу connector_index коннектора 'connectorid'
 virtual void BreakConnectorLink(const NameT &connectorname, int connector_index);
+virtual void BreakConnectorLink(const NameT &connectorname, const NameT &connector_index);
 
 // Проверяет, существует ли заданная связь
 template<typename T>
 bool CheckLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector);
 
-virtual bool CheckLink(const ULongId &item_id, int item_index, const ULongId &conn_id, int conn_index);
-virtual bool CheckLink(const NameT &itemname, int item_index,
+bool CheckLink(const ULongId &item_id, int item_index, const ULongId &conn_id, int conn_index);
+bool CheckLink(const NameT &itemname, int item_index,
 						const NameT &connectorname, int connector_index);
-virtual bool CheckLink(const NameT &itemname,
+bool CheckLink(const NameT &itemname, const NameT &item_property_name,
+						const NameT &connectorname, const NameT &connector_property_name);
+bool CheckLink(const NameT &itemname,
 						const NameT &connectorname);
 // ----------------------
 
