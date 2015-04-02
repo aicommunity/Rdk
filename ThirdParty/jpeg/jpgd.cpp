@@ -3046,8 +3046,8 @@ int jpeg_decoder_mem_stream::read(uint8 *pBuf, int max_bytes_to_read, bool *pEOF
   uint bytes_remaining = m_size - m_ofs;
   if ((uint)max_bytes_to_read > bytes_remaining)
   {
-    max_bytes_to_read = bytes_remaining;
-    *pEOF_flag = true;
+	max_bytes_to_read = bytes_remaining;
+	*pEOF_flag = true;
   }
 
   memcpy(pBuf, m_pSrc_data + m_ofs, max_bytes_to_read);
@@ -3056,21 +3056,21 @@ int jpeg_decoder_mem_stream::read(uint8 *pBuf, int max_bytes_to_read, bool *pEOF
   return max_bytes_to_read;
 }
 
-unsigned char *decompress_jpeg_image_from_stream(jpeg_decoder_stream *pStream, int *width, int *height, int *actual_comps, int req_comps)
+unsigned char *new_decompress_stream(unsigned char *out_img, jpeg_decoder_stream *pStream, int *width, int *height, int *actual_comps, int req_comps)
 {
   if (!actual_comps)
-    return NULL;
+	return NULL;
   *actual_comps = 0;
 
   if ((!pStream) || (!width) || (!height) || (!req_comps))
-    return NULL;
+	return NULL;
 
   if ((req_comps != 1) && (req_comps != 3) && (req_comps != 4))
-    return NULL;
+	return NULL;
 
   jpeg_decoder decoder(pStream);
   if (decoder.get_error_code() != JPGD_SUCCESS)
-    return NULL;
+	return NULL;
 
   const int image_width = decoder.get_width(), image_height = decoder.get_height();
   *width = image_width;
@@ -3078,83 +3078,187 @@ unsigned char *decompress_jpeg_image_from_stream(jpeg_decoder_stream *pStream, i
   *actual_comps = decoder.get_num_components();
 
   if (decoder.begin_decoding() != JPGD_SUCCESS)
-    return NULL;
+	return NULL;
 
   const int dst_bpl = image_width * req_comps;
 
-  uint8 *pImage_data = (uint8*)jpgd_malloc(dst_bpl * image_height);
+ // uint8 *pImage_data = (uint8*)jpgd_malloc(dst_bpl * image_height);
+ uint8 *pImage_data = out_img;
   if (!pImage_data)
-    return NULL;
+	return NULL;
 
   for (int y = 0; y < image_height; y++)
   {
-    const uint8* pScan_line;
+	const uint8* pScan_line;
     uint scan_line_len;
     if (decoder.decode((const void**)&pScan_line, &scan_line_len) != JPGD_SUCCESS)
-    {
+	{
       jpgd_free(pImage_data);
-      return NULL;
-    }
+	  return NULL;
+	}
 
-    uint8 *pDst = pImage_data + y * dst_bpl;
+	uint8 *pDst = pImage_data + y * dst_bpl;
 
-    if (((req_comps == 1) && (decoder.get_num_components() == 1)) || ((req_comps == 4) && (decoder.get_num_components() == 3)))
+	if (((req_comps == 1) && (decoder.get_num_components() == 1)) || ((req_comps == 4) && (decoder.get_num_components() == 3)))
       memcpy(pDst, pScan_line, dst_bpl);
-    else if (decoder.get_num_components() == 1)
+	else if (decoder.get_num_components() == 1)
     {
       if (req_comps == 3)
       {
-        for (int x = 0; x < image_width; x++)
-        {
+		for (int x = 0; x < image_width; x++)
+		{
           uint8 luma = pScan_line[x];
           pDst[0] = luma;
           pDst[1] = luma;
-          pDst[2] = luma;
-          pDst += 3;
+		  pDst[2] = luma;
+		  pDst += 3;
         }
       }
       else
-      {
-        for (int x = 0; x < image_width; x++)
+	  {
+		for (int x = 0; x < image_width; x++)
         {
           uint8 luma = pScan_line[x];
-          pDst[0] = luma;
+		  pDst[0] = luma;
           pDst[1] = luma;
-          pDst[2] = luma;
+		  pDst[2] = luma;
           pDst[3] = 255;
-          pDst += 4;
+		  pDst += 4;
         }
       }
-    }
-    else if (decoder.get_num_components() == 3)
-    {
-      if (req_comps == 1)
-      {
-        const int YR = 19595, YG = 38470, YB = 7471;
-        for (int x = 0; x < image_width; x++)
-        {
-          int r = pScan_line[x*4+0];
-          int g = pScan_line[x*4+1];
-          int b = pScan_line[x*4+2];
-          *pDst++ = static_cast<uint8>((r * YR + g * YG + b * YB + 32768) >> 16);
-        }
-      }
-      else
-      {
-        for (int x = 0; x < image_width; x++)
-        {
-          pDst[0] = pScan_line[x*4+0];
-          pDst[1] = pScan_line[x*4+1];
-          pDst[2] = pScan_line[x*4+2];
-          pDst += 3;
-        }
-      }
-    }
+	}
+	else if (decoder.get_num_components() == 3)
+	{
+	  if (req_comps == 1)
+	  {
+		const int YR = 19595, YG = 38470, YB = 7471;
+		for (int x = 0; x < image_width; x++)
+		{
+		  int r = pScan_line[x*4+0];
+		  int g = pScan_line[x*4+1];
+		  int b = pScan_line[x*4+2];
+		  *pDst++ = static_cast<uint8>((r * YR + g * YG + b * YB + 32768) >> 16);
+		}
+	  }
+	  else
+	  {
+		for (int x = 0; x < image_width; x++)
+		{
+		  pDst[0] = pScan_line[x*4+0];
+		  pDst[1] = pScan_line[x*4+1];
+		  pDst[2] = pScan_line[x*4+2];
+		  pDst += 3;
+		}
+	  }
+	}
   }
 
   return pImage_data;
 }
 
+unsigned char *decompress_jpeg_image_from_stream(jpeg_decoder_stream *pStream, int *width, int *height, int *actual_comps, int req_comps)
+{
+  if (!actual_comps)
+	return NULL;
+  *actual_comps = 0;
+
+  if ((!pStream) || (!width) || (!height) || (!req_comps))
+	return NULL;
+
+  if ((req_comps != 1) && (req_comps != 3) && (req_comps != 4))
+	return NULL;
+
+  jpeg_decoder decoder(pStream);
+  if (decoder.get_error_code() != JPGD_SUCCESS)
+	return NULL;
+
+  const int image_width = decoder.get_width(), image_height = decoder.get_height();
+  *width = image_width;
+  *height = image_height;
+  *actual_comps = decoder.get_num_components();
+
+  if (decoder.begin_decoding() != JPGD_SUCCESS)
+	return NULL;
+
+  const int dst_bpl = image_width * req_comps;
+
+  uint8 *pImage_data = (uint8*)jpgd_malloc(dst_bpl * image_height);
+  if (!pImage_data)
+	return NULL;
+
+  for (int y = 0; y < image_height; y++)
+  {
+	const uint8* pScan_line;
+    uint scan_line_len;
+    if (decoder.decode((const void**)&pScan_line, &scan_line_len) != JPGD_SUCCESS)
+	{
+      jpgd_free(pImage_data);
+	  return NULL;
+	}
+
+	uint8 *pDst = pImage_data + y * dst_bpl;
+
+	if (((req_comps == 1) && (decoder.get_num_components() == 1)) || ((req_comps == 4) && (decoder.get_num_components() == 3)))
+      memcpy(pDst, pScan_line, dst_bpl);
+	else if (decoder.get_num_components() == 1)
+    {
+      if (req_comps == 3)
+      {
+		for (int x = 0; x < image_width; x++)
+		{
+          uint8 luma = pScan_line[x];
+          pDst[0] = luma;
+          pDst[1] = luma;
+		  pDst[2] = luma;
+		  pDst += 3;
+        }
+      }
+      else
+	  {
+		for (int x = 0; x < image_width; x++)
+        {
+          uint8 luma = pScan_line[x];
+		  pDst[0] = luma;
+          pDst[1] = luma;
+		  pDst[2] = luma;
+          pDst[3] = 255;
+		  pDst += 4;
+        }
+      }
+	}
+	else if (decoder.get_num_components() == 3)
+	{
+	  if (req_comps == 1)
+	  {
+		const int YR = 19595, YG = 38470, YB = 7471;
+		for (int x = 0; x < image_width; x++)
+		{
+		  int r = pScan_line[x*4+0];
+		  int g = pScan_line[x*4+1];
+		  int b = pScan_line[x*4+2];
+		  *pDst++ = static_cast<uint8>((r * YR + g * YG + b * YB + 32768) >> 16);
+		}
+	  }
+	  else
+	  {
+		for (int x = 0; x < image_width; x++)
+		{
+		  pDst[0] = pScan_line[x*4+0];
+		  pDst[1] = pScan_line[x*4+1];
+		  pDst[2] = pScan_line[x*4+2];
+		  pDst += 3;
+		}
+	  }
+	}
+  }
+
+  return pImage_data;
+}
+unsigned char *new_decompress(unsigned char *out_img, const unsigned char *pSrc_data, int src_data_size, int *width, int *height, int *actual_comps, int req_comps)
+{
+  jpgd::jpeg_decoder_mem_stream mem_stream(pSrc_data, src_data_size);
+  return new_decompress_stream(out_img,&mem_stream, width, height, actual_comps, req_comps);
+}
 unsigned char *decompress_jpeg_image_from_memory(const unsigned char *pSrc_data, int src_data_size, int *width, int *height, int *actual_comps, int req_comps)
 {
   jpgd::jpeg_decoder_mem_stream mem_stream(pSrc_data, src_data_size);
