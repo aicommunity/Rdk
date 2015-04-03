@@ -31,6 +31,7 @@ namespace jpgd
   unsigned char *decompress_jpeg_image_from_memory(const unsigned char *pSrc_data, int src_data_size, int *width, int *height, int *actual_comps, int req_comps);
   unsigned char *decompress_jpeg_image_from_file(const char *pSrc_filename, int *width, int *height, int *actual_comps, int req_comps);
   unsigned char *new_decompress(unsigned char *out_img, const unsigned char *pSrc_data, int src_data_size, int *width, int *height, int *actual_comps, int req_comps);
+  unsigned char *param_image(const unsigned char *pSrc_data, int src_data_size, int *width, int *height);
   // Success/failure error codes.
   enum jpgd_status
   {
@@ -106,6 +107,7 @@ namespace jpgd
   // Loads JPEG file from a jpeg_decoder_stream.
   unsigned char *decompress_jpeg_image_from_stream(jpeg_decoder_stream *pStream, int *width, int *height, int *actual_comps, int req_comps);
   unsigned char *new_decompress_stream(unsigned char *out_img, jpeg_decoder_stream *pStream, int *width, int *height, int *actual_comps, int req_comps);
+  unsigned char *image_param_stream(jpeg_decoder_stream *pStream, int *width, int *height);
   enum
   { 
     JPGD_IN_BUF_SIZE = 8192, JPGD_MAX_BLOCKS_PER_MCU = 10, JPGD_MAX_HUFF_TABLES = 8, JPGD_MAX_QUANT_TABLES = 4, 

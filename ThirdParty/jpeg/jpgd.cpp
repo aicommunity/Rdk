@@ -3134,9 +3134,9 @@ unsigned char *new_decompress_stream(unsigned char *out_img, jpeg_decoder_stream
 		const int YR = 19595, YG = 38470, YB = 7471;
 		for (int x = 0; x < image_width; x++)
 		{
-		  int r = pScan_line[x*4+0];
+		  int r = pScan_line[x*4+2];    // r и b поменяны местами
 		  int g = pScan_line[x*4+1];
-		  int b = pScan_line[x*4+2];
+		  int b = pScan_line[x*4+0];
 		  *pDst++ = static_cast<uint8>((r * YR + g * YG + b * YB + 32768) >> 16);
 		}
 	  }
@@ -3144,9 +3144,9 @@ unsigned char *new_decompress_stream(unsigned char *out_img, jpeg_decoder_stream
 	  {
 		for (int x = 0; x < image_width; x++)
 		{
-		  pDst[0] = pScan_line[x*4+0];
+		  pDst[0] = pScan_line[x*4+2];  // r и b поменяны местами
 		  pDst[1] = pScan_line[x*4+1];
-		  pDst[2] = pScan_line[x*4+2];
+		  pDst[2] = pScan_line[x*4+0];
 		  pDst += 3;
 		}
 	  }
@@ -3154,6 +3154,22 @@ unsigned char *new_decompress_stream(unsigned char *out_img, jpeg_decoder_stream
   }
 
   return pImage_data;
+}
+
+unsigned char *image_param_stream(jpeg_decoder_stream *pStream, int *width, int *height)
+{
+
+  if ((!pStream) || (!width) || (!height))
+	return NULL;
+
+  jpeg_decoder decoder(pStream);
+  if (decoder.get_error_code() != JPGD_SUCCESS)
+	return NULL;
+
+  const int image_width = decoder.get_width(), image_height = decoder.get_height();
+  *width = image_width;
+  *height = image_height;
+  return 0;
 }
 
 unsigned char *decompress_jpeg_image_from_stream(jpeg_decoder_stream *pStream, int *width, int *height, int *actual_comps, int req_comps)
@@ -3253,6 +3269,11 @@ unsigned char *decompress_jpeg_image_from_stream(jpeg_decoder_stream *pStream, i
   }
 
   return pImage_data;
+}
+unsigned char *param_image(const unsigned char *pSrc_data, int src_data_size, int *width, int *height)
+{
+ jpgd::jpeg_decoder_mem_stream mem_stream(pSrc_data, src_data_size);
+ return image_param_stream(&mem_stream, width, height);
 }
 unsigned char *new_decompress(unsigned char *out_img, const unsigned char *pSrc_data, int src_data_size, int *width, int *height, int *actual_comps, int req_comps)
 {
