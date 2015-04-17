@@ -30,6 +30,7 @@ __published:	// IDE-managed Components
 	TCheckBox *DesiredResFlagCheckBox;
 	TLabeledEdit *DesiredWidthLabeledEdit;
 	TLabeledEdit *DesiredHeightLabeledEdit;
+	TLabeledEdit *TVTunerChannelLabeledEdit;
 	void __fastcall FormCreate(TObject *Sender);
 	void __fastcall DeviceComboBoxSelect(TObject *Sender);
 private:	// User declarations

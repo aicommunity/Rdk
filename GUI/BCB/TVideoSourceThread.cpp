@@ -2437,7 +2437,13 @@ int TVideoCaptureThreadVideoGrabberCamera::GetAnalogIndex(void) const
  return AnalogIndex;
 }
 
-bool TVideoCaptureThreadVideoGrabberCamera::Init(int camera_index, int input_index, int size_index, int subtype_index, int analog_index)
+int TVideoCaptureThreadVideoGrabberCamera::GetTVTunerChannel(void) const
+{
+ return TVTunerChannel;
+}
+
+
+bool TVideoCaptureThreadVideoGrabberCamera::Init(int camera_index, int input_index, int size_index, int subtype_index, int analog_index, int tv_tuner_channel)
 {
  if(!VideoGrabber)
  {
@@ -2458,6 +2464,7 @@ bool TVideoCaptureThreadVideoGrabberCamera::Init(int camera_index, int input_ind
  VideoGrabber->VideoSize=size_index;
  VideoGrabber->VideoSubtype=subtype_index;
  VideoGrabber->AnalogVideoStandard=analog_index;
+ VideoGrabber->TVChannel=tv_tuner_channel;
  return true;
 }
 // --------------------------
@@ -2479,6 +2486,7 @@ void __fastcall TVideoCaptureThreadVideoGrabberCamera::ExecuteCaptureInit(void)
   VideoGrabber->VideoSize=SizeIndex;
   VideoGrabber->VideoSubtype=SubtypeIndex;
   VideoGrabber->AnalogVideoStandard=AnalogIndex;
+  VideoGrabber->TVChannel=TVTunerChannel;
  }
 }
 
@@ -2513,6 +2521,8 @@ bool TVideoCaptureThreadVideoGrabberCamera::ASaveParameters(RDK::USerStorageXML 
  xml.WriteInteger("SizeIndex",SizeIndex);
  xml.WriteInteger("SubtypeIndex",SubtypeIndex);
  xml.WriteInteger("AnalogIndex",AnalogIndex);
+ xml.WriteInteger("TVTunerChannel",TVTunerChannel);
+
 
  return true;
 }
@@ -2528,8 +2538,9 @@ bool TVideoCaptureThreadVideoGrabberCamera::ALoadParameters(RDK::USerStorageXML 
  SizeIndex=xml.ReadInteger("SizeIndex",SizeIndex);
  SubtypeIndex=xml.ReadInteger("SubtypeIndex",SubtypeIndex);
  AnalogIndex=xml.ReadInteger("AnalogIndex",AnalogIndex);
+ TVTunerChannel=xml.ReadInteger("TVTunerChannel",TVTunerChannel);
 
- Init(CameraIndex, InputIndex, SizeIndex, SubtypeIndex, AnalogIndex);
+ Init(CameraIndex, InputIndex, SizeIndex, SubtypeIndex, AnalogIndex,TVTunerChannel);
 
  return true;
 }

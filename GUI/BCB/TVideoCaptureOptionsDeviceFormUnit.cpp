@@ -53,8 +53,15 @@ bool TVideoCaptureOptionsDeviceForm::ReadParametersToGui(RDK::USerStorageXML &xm
     return false;
   }
   AssignListToComboBox (DeviceComboBox, VideoGrabber->VideoDevices, VideoGrabber->VideoDevice);
-
   DeviceComboBox->ItemIndex=xml.ReadInteger("CameraIndex",DeviceComboBox->ItemIndex);
+  VideoGrabber->VideoDevice=DeviceComboBox->ItemIndex;
+//  thread->Init(DeviceComboBox->ItemIndex, InputComboBox->ItemIndex, VideoSizeComboBox->ItemIndex, VideoSubTypeComboBox->ItemIndex, AnalogVideoStandardComboBox->ItemIndex);
+  VideoGrabber->Update();
+  AssignListToComboBox (VideoSizeComboBox, VideoGrabber->VideoSizes, VideoGrabber->VideoSize);
+  AssignListToComboBox (VideoSubTypeComboBox, VideoGrabber->VideoSubtypes, VideoGrabber->VideoSubtype);
+  AssignListToComboBox (AnalogVideoStandardComboBox, VideoGrabber->AnalogVideoStandards, VideoGrabber->AnalogVideoStandard);
+  AssignListToComboBox (InputComboBox, VideoGrabber->VideoInputs, VideoGrabber->VideoInput);
+
   InputComboBox->ItemIndex=xml.ReadInteger("InputIndex",InputComboBox->ItemIndex);
   VideoSizeComboBox->ItemIndex=xml.ReadInteger("SizeIndex",VideoSizeComboBox->ItemIndex);
   VideoSubTypeComboBox->ItemIndex=xml.ReadInteger("SubtypeIndex",VideoSubTypeComboBox->ItemIndex);
@@ -65,14 +72,7 @@ bool TVideoCaptureOptionsDeviceForm::ReadParametersToGui(RDK::USerStorageXML &xm
   DesiredHeightLabeledEdit->Text=xml.ReadString("DesiredHeight",AnsiString(DesiredHeightLabeledEdit->Text).c_str()).c_str();
   DesiredResFlagCheckBox->Checked=xml.ReadBool("DesiredResolutionFlag",false);
 
-  VideoGrabber->VideoDevice=DeviceComboBox->ItemIndex;
-//  thread->Init(DeviceComboBox->ItemIndex, InputComboBox->ItemIndex, VideoSizeComboBox->ItemIndex, VideoSubTypeComboBox->ItemIndex, AnalogVideoStandardComboBox->ItemIndex);
-  VideoGrabber->Update();
-
-  AssignListToComboBox (VideoSizeComboBox, VideoGrabber->VideoSizes, VideoGrabber->VideoSize);
-  AssignListToComboBox (VideoSubTypeComboBox, VideoGrabber->VideoSubtypes, VideoGrabber->VideoSubtype);
-  AssignListToComboBox (AnalogVideoStandardComboBox, VideoGrabber->AnalogVideoStandards, VideoGrabber->AnalogVideoStandard);
-  AssignListToComboBox (InputComboBox, VideoGrabber->VideoInputs, VideoGrabber->VideoInput);
+  TVTunerChannelLabeledEdit->Text=xml.ReadString("TVTunerChannel",AnsiString(TVTunerChannelLabeledEdit->Text).c_str()).c_str();
  }
 
  return true;
