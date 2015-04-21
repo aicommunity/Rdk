@@ -463,8 +463,8 @@ int __fastcall TUWatchFrame::Add(TUWatchInfo& wd)
    (I->XDataSourceName == wd.XDataSourceName && I->XOutputIndexOld == wd.XOutputIndexOld &&
 	I->XOutputElementIndex == wd.XOutputElementIndex &&
 	I->YDataSourceName == wd.YDataSourceName && I->YOutputIndexOld == wd.YOutputIndexOld &&
-	I->YOutputElementIndex == wd.YOutputElementIndex))) ||
-	(wd.Type == 0x200 && I->YDataSourceName == wd.YDataSourceName && wd.MRow == I->MRow && wd.MCol == I->MCol && wd.Y == I->Y))
+	I->YOutputElementIndex == wd.YOutputElementIndex)))/* ||
+	(wd.Type == 0x200 && I->YDataSourceName == wd.YDataSourceName && wd.MRow == I->MRow && wd.MCol == I->MCol && wd.Y == I->Y)*/)
 	return i;
 
    if(wd.Type == 0x400 && I->YDataSourceName == wd.YDataSourceName && wd.MVectorName == I->MVectorName && wd.MVectorIndexX == I->MVectorIndexX && wd.MVectorIndexY == I->MVectorIndexY)
@@ -887,7 +887,7 @@ void __fastcall TUWatchFrame::StepUpdate(void)
 	 xdata=Model_GetDoubleTime();
 	 x=&xdata;
 
-	 ym=(const RDK::MDMatrix<double>*)(Model_GetComponentOutputAsMatrixByIndex(wd->YDataSourceName.c_str(), wd->YOutputIndexOld));
+	 ym=(const RDK::MDMatrix<double>*)(Model_GetComponentOutputAsMatrix(wd->YDataSourceName.c_str(), wd->YOutputIndex.c_str()));
 	 if(!ym)
 	 {
 	  y=(double*)Model_GetComponentOutputData(wd->YDataSourceName.c_str(), wd->YOutputIndexOld);
