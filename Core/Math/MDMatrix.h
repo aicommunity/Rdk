@@ -775,6 +775,15 @@ int MDMatrix<T>::TriangleBareis(void)
 template<class T>
 MDMatrix<T>& MDMatrix<T>::Inverse(MDMatrix<T> &res) const
 {
+ if(Rows == 1 && Cols == 1)
+ {
+  T det=(*this)(0,0);
+  if(fabs(det)<std::numeric_limits<T>::epsilon())
+   throw EMatrixZeroDet();
+  res(0,0)=1.0/det;
+  return res;
+ }
+ else
  if(Rows == 2 && Cols == 2)
  {
   T det=(*this)(0,0)*(*this)(1,1)-(*this)(0,1)*(*this)(1,0);
@@ -825,8 +834,16 @@ MDMatrix<T> MDMatrix<T>::Inverse(void) const
 template<class T>
 T MDMatrix<T>::Det(void) const
 {
- MDMatrix<T> Temp(*this);
 
+ if(Rows == 0 || Cols == 0)
+  return T(0.0);
+
+ if(Rows == 1 && Cols == 1)
+ {
+  return (*this)(0,0);
+ }
+
+ MDMatrix<T> Temp(*this);
  Temp.TriangleGauss();
 
  T det=*Temp.Data;
