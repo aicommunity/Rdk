@@ -1614,7 +1614,7 @@ bool UContainer::Build(void)
 
  ABuild();
  Ready=true;
- Reset();
+// Reset();
 
  AfterBuild();
  return true;
@@ -1660,12 +1660,12 @@ RDK_SYS_TRY {
   if(!IsInit())
    return false;
 
-  Build();
-  BeforeCalculate();
-
   unsigned long long tempstepduration=StartCalcTime=GetCurrentStartupTime();
   InterstepsInterval=(LastCalcTime>0)?CalcDiffTime(tempstepduration,LastCalcTime):0;
   LastCalcTime=tempstepduration;
+
+  Build();
+  BeforeCalculate();
 
   UEPtr<UContainer> *comps=PComponents;
   while((i<NumComponents) && !SkipComponentCalculation)
