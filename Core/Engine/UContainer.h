@@ -410,9 +410,21 @@ virtual bool CheckComponentType(UEPtr<UContainer> comp) const;
 // Если nothrow == true то возвращает 0 и не кидает исключение
 virtual UEPtr<UContainer> GetComponent(const UId &id, bool nothrow=false) const;
 
+template<class T>
+UEPtr<T> GetComponent(const UId &id, bool nothrow=false) const
+{
+ return dynamic_pointer_cast<T>(GetComponent(id,nothrow));
+}
+
 // Возвращает указатель на дочерний компонент, хранимый в этом
 // объекте по короткому имени 'name'
 virtual UEPtr<UContainer> GetComponent(const NameT &name, bool nothrow=false) const;
+
+template<class T>
+UEPtr<T> GetComponent(const NameT &name, bool nothrow=false) const
+{
+ return dynamic_pointer_cast<T>(GetComponent(name,nothrow));
+}
 
 // Возвращает указатель на дочерний компонент, хранимый в этом
 // объекте по ДЛИННОМУ Id 'id'
@@ -420,14 +432,32 @@ virtual UEPtr<UContainer> GetComponent(const NameT &name, bool nothrow=false) co
 // то возвращает указатель на этот компонент
 UEPtr<UContainer> GetComponentL(const ULongId &id, bool nothrow=false) const;
 
+template<class T>
+UEPtr<T> GetComponentL(const ULongId &id, bool nothrow=false) const
+{
+ return dynamic_pointer_cast<T>(GetComponentL(id,nothrow));
+}
+
 // Возвращает указатель на дочерний компонент, хранимый в этом
 // объекте по ДЛИННОМУ имени 'name'
 virtual UEPtr<UContainer> GetComponentL(const NameT &name, bool nothrow=false) const;
+
+template<class T>
+UEPtr<T> GetComponentL(const NameT &name, bool nothrow=false) const
+{
+ return dynamic_pointer_cast<T>(GetComponentL(name,nothrow));
+}
 
 // Возвращает указатель на дочерний компонент, хранимый в этом
 // объекте по порядковому индеку в списке компонент
 // Метод возвращает 0, если индекс выходит за границы массива
 UEPtr<UContainer> GetComponentByIndex(int index) const;
+
+template<class T>
+UEPtr<T> GetComponentByIndex(int index) const
+{
+ return dynamic_pointer_cast<T>(GetComponentByIndex(index));
+}
 
 // Добавляет дочерний компонент в этот объект
 // Возвращает его Id или ForbiddenId если добавление неудачно
