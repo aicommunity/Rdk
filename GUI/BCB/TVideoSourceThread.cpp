@@ -1530,14 +1530,39 @@ void __fastcall TVideoCaptureThreadVideoGrabber::ExecuteCaptureInit(void)
    break;
 
    case 1:
-	VideoGrabber->Display_AutoSize = true;
-	VideoGrabber->Align=alClient;
-	VideoGrabber->Display_AspectRatio=ar_Box;
+   {
+	VideoGrabber->Display_AutoSize = false;
+	VideoGrabber->Align=alNone;
+	VideoGrabber->Display_AspectRatio=ar_Stretch;
+	double stretch=1;
+
+	if(VideoGrabber->VideoHeight>0)
+	 stretch=(VideoGrabber->VideoWidth)/double(VideoGrabber->VideoHeight);
+
+	if(OverlayHandle->ClientHeight/VideoGrabber->VideoHeight<OverlayHandle->ClientWidth/VideoGrabber->VideoWidth || VideoGrabber->VideoHeight>OverlayHandle->ClientHeight)
+	{
+	 VideoGrabber->Height=OverlayHandle->ClientHeight;
+	 VideoGrabber->Width=ceil((OverlayHandle->ClientHeight)*stretch);
+	}
+	else
+	if(OverlayHandle->ClientWidth/VideoGrabber->VideoWidth<+OverlayHandle->ClientHeight/VideoGrabber->VideoHeight || VideoGrabber->VideoWidth>OverlayHandle->ClientWidth)
+	{
+	 VideoGrabber->Width=OverlayHandle->ClientWidth;
+	 VideoGrabber->Height=ceil((OverlayHandle->ClientWidth)/stretch);
+	}
+	else
+	{
+	 VideoGrabber->Height=VideoGrabber->VideoHeight;
+	 VideoGrabber->Width=VideoGrabber->VideoWidth;
+	}
+   }
+   break;
+
    break;
 
    case 2:
-	VideoGrabber->Display_AutoSize = true;
-	VideoGrabber->Align=alClient;
+	VideoGrabber->Display_AutoSize = false;
+	VideoGrabber->Align=alNone;
 	VideoGrabber->Display_AspectRatio=ar_NoResize;
    break;
    }
@@ -1958,19 +1983,47 @@ bool TVideoCaptureThreadVideoGrabber::SetAutoScaleMode(int value)
 	VideoGrabber->Display_AutoSize = true;
 	VideoGrabber->Align=alNone;
 	VideoGrabber->Display_AspectRatio=ar_NoResize;
+	if(VideoGrabber->Width != VideoGrabber->VideoWidth+4)
+	 VideoGrabber->Width=VideoGrabber->VideoWidth+4;
+	if(VideoGrabber->Height != VideoGrabber->VideoHeight+4)
+	 VideoGrabber->Height=VideoGrabber->VideoHeight+4;
    break;
 
    case 1:
-	VideoGrabber->Display_AutoSize = true;
-	VideoGrabber->Align=alClient;
-	VideoGrabber->Display_AspectRatio=ar_Box;
+   {
+	VideoGrabber->Display_AutoSize = false;
+	VideoGrabber->Align=alNone;
+	VideoGrabber->Display_AspectRatio=ar_Stretch;
+	double stretch=1;
+
+	if(VideoGrabber->VideoHeight>0)
+	 stretch=(VideoGrabber->VideoWidth)/double(VideoGrabber->VideoHeight);
+
+	if(OverlayHandle->ClientHeight/VideoGrabber->VideoHeight<OverlayHandle->ClientWidth/VideoGrabber->VideoWidth || VideoGrabber->VideoHeight>OverlayHandle->ClientHeight)
+	{
+	 VideoGrabber->Height=OverlayHandle->ClientHeight;
+	 VideoGrabber->Width=ceil((OverlayHandle->ClientHeight)*stretch);
+	}
+	else
+	if(OverlayHandle->ClientWidth/VideoGrabber->VideoWidth<+OverlayHandle->ClientHeight/VideoGrabber->VideoHeight || VideoGrabber->VideoWidth>OverlayHandle->ClientWidth)
+	{
+	 VideoGrabber->Width=OverlayHandle->ClientWidth;
+	 VideoGrabber->Height=ceil((OverlayHandle->ClientWidth)/stretch);
+	}
+	else
+	{
+	 VideoGrabber->Height=VideoGrabber->VideoHeight;
+	 VideoGrabber->Width=VideoGrabber->VideoWidth;
+	}
+   }
    break;
 
    case 2:
 	VideoGrabber->Display_AutoSize = true;
 	VideoGrabber->Align=alClient;
-	VideoGrabber->Display_AspectRatio=ar_NoResize;
+	VideoGrabber->Display_AspectRatio=ar_Box;
    break;
+
    }
   }
  }
@@ -2051,9 +2104,32 @@ bool TVideoCaptureThreadVideoGrabber::SetOverlayHandle(TWinControl* value)
    break;
 
    case 1:
-	VideoGrabber->Display_AutoSize = true;
-	VideoGrabber->Align=alClient;
-	VideoGrabber->Display_AspectRatio=ar_Box;
+   {
+	VideoGrabber->Display_AutoSize = false;
+	VideoGrabber->Align=alNone;
+	VideoGrabber->Display_AspectRatio=ar_Stretch;
+	double stretch=1;
+
+	if(VideoGrabber->VideoHeight>0)
+	 stretch=(VideoGrabber->VideoWidth)/double(VideoGrabber->VideoHeight);
+
+	if(OverlayHandle->ClientHeight/VideoGrabber->VideoHeight<OverlayHandle->ClientWidth/VideoGrabber->VideoWidth || VideoGrabber->VideoHeight>OverlayHandle->ClientHeight)
+	{
+	 VideoGrabber->Height=OverlayHandle->ClientHeight;
+	 VideoGrabber->Width=ceil((OverlayHandle->ClientHeight)*stretch);
+	}
+	else
+	if(OverlayHandle->ClientWidth/VideoGrabber->VideoWidth<+OverlayHandle->ClientHeight/VideoGrabber->VideoHeight || VideoGrabber->VideoWidth>OverlayHandle->ClientWidth)
+	{
+	 VideoGrabber->Width=OverlayHandle->ClientWidth;
+	 VideoGrabber->Height=ceil((OverlayHandle->ClientWidth)/stretch);
+	}
+	else
+	{
+	 VideoGrabber->Height=VideoGrabber->VideoHeight;
+	 VideoGrabber->Width=VideoGrabber->VideoWidth;
+	}
+   }
    break;
 
    case 2:
