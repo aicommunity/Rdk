@@ -1577,8 +1577,10 @@ void __fastcall TVideoCaptureThreadVideoGrabber::ExecuteCaptureInit(void)
  VideoGrabber->EventNotificationSynchrone=false;
 // VideoGrabber->OnFrameBitmapEventSynchrone=true;
  VideoGrabber->OpenURLAsync=true;
+
  if(DesiredResolutionFlag)
  {
+  VideoGrabber->FrameCaptureZoomSize=100;
   VideoGrabber->FrameCaptureWidth=DesiredWidth;
   VideoGrabber->FrameCaptureHeight=DesiredHeight;
  }
@@ -1693,127 +1695,22 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberOnThreadSync(System
 void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberFrameBitmap(TObject *Sender,
 	  pFrameInfo FrameInfo, pFrameBitmapInfo BitmapInfo)
 {
-/*
- if(CheckCaptureThreadState())
+ if(WaitForSingleObject(OSDMutex,10) == WAIT_OBJECT_0)
  {
-  ConnectionState=2;
-  RealLastTimeStamp=TDateTime::CurrentDateTime().operator double();
- }
-
- ConvertTimeStamp=FrameInfo->FrameTime;
-
- unsigned int BitmapLinePtr = (unsigned int) BitmapInfo->BitmapDataPtr;
- int bmp_width=BitmapInfo->BitmapWidth;
- int bmp_height=BitmapInfo->BitmapHeight;
-
- if(WaitForSingleObject(ConvertMutex,10000) == WAIT_OBJECT_0)
- {
- if (BitmapInfo->BitmapBitsPerPixel == 24)
- {   // case where FrameGrabberRGBFormat is set to fgf_RGB24 (you can select it in the "frame grabber" tab)
-  ConvertUBitmap.SetRes(bmp_width, bmp_height, RDK::ubmRGB24);
- }
- else
- if (BitmapInfo->BitmapBitsPerPixel == 32)
- {
-  ConvertUBitmap.SetRes(bmp_width, bmp_height, RDK::ubmRGB32);
- }
-
- int conv_line_bl=ConvertUBitmap.GetLineByteLength();
-  unsigned char *p=ConvertUBitmap.GetData();
-  for (int i = 0 ; i < bmp_height ; i++)
+  if(OverlayMaskBitmap->Width == BitmapInfo->BitmapWidth && OverlayMaskBitmap->Height == BitmapInfo->BitmapHeight)
   {
-   memcpy(p,(void*)BitmapLinePtr,conv_line_bl);
-   p+=conv_line_bl;
-   BitmapLinePtr += BitmapInfo->BitmapLineSize;
-  }
-
-  ReleaseMutex(ConvertMutex);
- }
-
-
-  SetEvent(VideoGrabberCompleted);
-  */
-
-	/*
-	  int xStep = 40;
-	  int yStep = 30;
-
-	  int xLocation = xStep;
-	  int yLocation = yStep;
-
-	  TCanvas *Canvas = new TCanvas;//Frame_Bitmap->Canvas;
-	  Canvas->Brush->Color = clBlue;
-	  Canvas->Brush->Style = bsSolid;
-	  Canvas->Handle = BitmapInfo->BitmapDC;
-	  while (xLocation < BitmapInfo->BitmapWidth) {
-		 Canvas->FillRect(Rect(xLocation, 0, xLocation + 1, BitmapInfo->BitmapHeight));
-		 xLocation += xStep;
-	  }
-
-	  while (yLocation < BitmapInfo->BitmapHeight) {
-		 Canvas->FillRect(Rect(0, yLocation, BitmapInfo->BitmapWidth, yLocation + 1));
-		 yLocation += yStep;
-	  }
-
-	  Canvas->Free();
-         */
-if(WaitForSingleObject(OSDMutex,10) == WAIT_OBJECT_0)
- {
-	  if(OverlayMaskBitmap->Width == BitmapInfo->BitmapWidth && OverlayMaskBitmap->Height == BitmapInfo->BitmapHeight)
-	  {
-  unsigned char* dest = (unsigned char*) BitmapInfo->BitmapDataPtr;
-	   unsigned char* source = (unsigned char*) OverlayMaskBitmap->ScanLine[OverlayMaskBitmap->Height-1];
-	   for(int i=0;i<BitmapInfo->BitmapSize;i++)
-	   {
-		if(*source>0)
-		 *dest=*source;
-		++dest;
-		++source;
-	   }
-	  }
-  ReleaseMutex(OSDMutex);
- }
-/*
-	   if (BitmapInfo->BitmapBitsPerPixel == 24)
-	   {
-		 for (int i = 0 ; i < BitmapInfo->BitmapHeight ; i++)
-		 {
-			TRGBTriple *RGB24Line = (TRGBTriple*) BitmapLinePtr;
-			for (int iCol = 0 ; iCol < BitmapInfo->BitmapWidth ; iCol ++)
-			{
-			   RGB24Line[iCol].rgbGreen = 0;
-            }
-            BitmapLinePtr += BitmapInfo->BitmapLineSize;
-         }
-	   }
-	   else if (BitmapInfo->BitmapBitsPerPixel == 32)
-	   {
-		 for (int i = 0 ; i < BitmapInfo->BitmapHeight ; i++)
-		 {
-			TRGBQuad *RGB32Line = (TRGBQuad*) BitmapLinePtr;
-			for (int iCol = 0 ; iCol < BitmapInfo->BitmapWidth ; iCol ++)
-			{
-			   RGB32Line[iCol].rgbBlue = 0;
-			}
-			BitmapLinePtr += BitmapInfo->BitmapLineSize;
-		 }
-	   }     */
-
-// OverlayMaskBitmap->PixelFormat=pf32bit;
-/* if(WaitForSingleObject(OSDMutex,10) == WAIT_OBJECT_0)
- {
-  if(OverlayMaskBitmap->Width >0 && OverlayMaskBitmap->Height >0)
-  {
-   TransparentBlt(BitmapInfo->BitmapDC, 0, 0, BitmapInfo->BitmapWidth, BitmapInfo->BitmapHeight, OverlayMaskBitmap->Canvas->Handle,
-	   0, 0, OverlayMaskBitmap->Width, OverlayMaskBitmap->Height, 0);
+   unsigned char* dest = (unsigned char*) BitmapInfo->BitmapDataPtr;
+   unsigned char* source = (unsigned char*) OverlayMaskBitmap->ScanLine[OverlayMaskBitmap->Height-1];
+   for(int i=0;i<BitmapInfo->BitmapSize;i++)
+   {
+	if(*source>0)
+	 *dest=*source;
+	++dest;
+	++source;
+   }
   }
   ReleaseMutex(OSDMutex);
  }
- else
- {
-  int a=0;
-  return;
- } */
 }
 
 void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberLog(TObject *Sender,
