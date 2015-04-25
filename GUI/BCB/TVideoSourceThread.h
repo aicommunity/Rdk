@@ -808,6 +808,9 @@ RDK::UELockVar<int> SizeIndex;
 RDK::UELockVar<int> SubtypeIndex;
 RDK::UELockVar<int> AnalogIndex;
 RDK::UELockVar<int> TVTunerChannel;
+RDK::UELockVar<int> TVTunerCountryCode;
+RDK::UELockVar<int> TVTunerMode;
+RDK::UELockVar<int> TVTunerInputType;
 
 public: // Ìועמהû
 // --------------------------
@@ -826,8 +829,11 @@ int GetSizeIndex(void) const;
 int GetSubtypeIndex(void) const;
 int GetAnalogIndex(void) const;
 int GetTVTunerChannel(void) const;
-
-bool Init(int camera_index, int input_index, int size_index, int subtype_index, int analog_index, int tv_tuner_channel);
+int GetTVTunerCountryCode(void) const;
+int GetTVTunerMode(void) const;
+int GetTVTunerInputType(void) const;
+bool Init(int camera_index, int input_index, int size_index, int subtype_index, int analog_index,
+			int tv_tuner_channel, int tv_tuner_country_code, int tv_tuner_mode, int tv_tuner_input_type);
 // --------------------------
 
 // --------------------------

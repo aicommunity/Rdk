@@ -2374,6 +2374,9 @@ __fastcall TVideoCaptureThreadVideoGrabberCamera::TVideoCaptureThreadVideoGrabbe
  : TVideoCaptureThreadVideoGrabber(frame, CreateSuspended)
 {
  SourceMode=2;
+ TVTunerMode=-1;
+ TVTunerInputType=-1;
+ TVTunerChannel=1;
 }
 
 __fastcall TVideoCaptureThreadVideoGrabberCamera::~TVideoCaptureThreadVideoGrabberCamera(void)
@@ -2415,8 +2418,24 @@ int TVideoCaptureThreadVideoGrabberCamera::GetTVTunerChannel(void) const
  return TVTunerChannel;
 }
 
+int TVideoCaptureThreadVideoGrabberCamera::GetTVTunerCountryCode(void) const
+{
+ return TVTunerCountryCode;
+}
 
-bool TVideoCaptureThreadVideoGrabberCamera::Init(int camera_index, int input_index, int size_index, int subtype_index, int analog_index, int tv_tuner_channel)
+int TVideoCaptureThreadVideoGrabberCamera::GetTVTunerMode(void) const
+{
+ return TVTunerMode;
+}
+
+int TVideoCaptureThreadVideoGrabberCamera::GetTVTunerInputType(void) const
+{
+ return TVTunerInputType;
+}
+
+
+bool TVideoCaptureThreadVideoGrabberCamera::Init(int camera_index, int input_index, int size_index, int subtype_index, int analog_index,
+			int tv_tuner_channel, int tv_tuner_country_code, int tv_tuner_mode, int tv_tuner_input_type)
 {
  if(!VideoGrabber)
  {
@@ -2437,6 +2456,9 @@ bool TVideoCaptureThreadVideoGrabberCamera::Init(int camera_index, int input_ind
  VideoGrabber->VideoSize=size_index;
  VideoGrabber->VideoSubtype=subtype_index;
  VideoGrabber->AnalogVideoStandard=analog_index;
+ VideoGrabber->TunerMode=TTunerMode(tv_tuner_mode);
+ VideoGrabber->TVTunerInputType=TTunerInput(tv_tuner_input_type);
+ VideoGrabber->TVCountryCode=tv_tuner_country_code;
  VideoGrabber->TVChannel=tv_tuner_channel;
  return true;
 }
@@ -2459,6 +2481,9 @@ void __fastcall TVideoCaptureThreadVideoGrabberCamera::ExecuteCaptureInit(void)
   VideoGrabber->VideoSize=SizeIndex;
   VideoGrabber->VideoSubtype=SubtypeIndex;
   VideoGrabber->AnalogVideoStandard=AnalogIndex;
+  VideoGrabber->TunerMode=TTunerMode(GetTVTunerMode());
+  VideoGrabber->TVTunerInputType=TTunerInput(GetTVTunerInputType());
+  VideoGrabber->TVCountryCode=TVTunerCountryCode;
   VideoGrabber->TVChannel=TVTunerChannel;
  }
 }
@@ -2494,8 +2519,10 @@ bool TVideoCaptureThreadVideoGrabberCamera::ASaveParameters(RDK::USerStorageXML 
  xml.WriteInteger("SizeIndex",SizeIndex);
  xml.WriteInteger("SubtypeIndex",SubtypeIndex);
  xml.WriteInteger("AnalogIndex",AnalogIndex);
+ xml.WriteInteger("TVTunerMode",TVTunerMode);
+ xml.WriteInteger("TVTunerInputType",TVTunerInputType);
+ xml.WriteInteger("TVTunerCountryCode",TVTunerCountryCode);
  xml.WriteInteger("TVTunerChannel",TVTunerChannel);
-
 
  return true;
 }
@@ -2512,8 +2539,13 @@ bool TVideoCaptureThreadVideoGrabberCamera::ALoadParameters(RDK::USerStorageXML 
  SubtypeIndex=xml.ReadInteger("SubtypeIndex",SubtypeIndex);
  AnalogIndex=xml.ReadInteger("AnalogIndex",AnalogIndex);
  TVTunerChannel=xml.ReadInteger("TVTunerChannel",TVTunerChannel);
+ TVTunerMode=xml.ReadInteger("TVTunerMode",TVTunerMode);
+ TVTunerInputType=xml.ReadInteger("TVTunerInputType",TVTunerInputType);
+ TVTunerCountryCode=xml.ReadInteger("TVTunerCountryCode",TVTunerCountryCode);
+ TVTunerChannel=xml.ReadInteger("TVTunerChannel",TVTunerChannel);
 
- Init(CameraIndex, InputIndex, SizeIndex, SubtypeIndex, AnalogIndex,TVTunerChannel);
+ Init(CameraIndex, InputIndex, SizeIndex, SubtypeIndex, AnalogIndex,
+		TVTunerChannel, TVTunerCountryCode, TVTunerMode, TVTunerInputType);
 
  return true;
 }
