@@ -2560,6 +2560,7 @@ void __fastcall TVideoCaptureThreadVideoGrabberCamera::ARunCapture(void)
  if(VideoGrabber)
  {
   VideoGrabber->StartPreview();
+  VideoGrabber->TVChannel=TVTunerChannel;
 //  VideoGrabber->StartSynchronized();
  }
 }
