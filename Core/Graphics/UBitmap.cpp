@@ -433,7 +433,7 @@ void UBitmap::ConvertTo(UBitmap &target) const
 
  if(!Width && !Height)
  {
-  target.Clear();
+  target.SetRes(0,0,ColorModel);
   return;
  }
 
