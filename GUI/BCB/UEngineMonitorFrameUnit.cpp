@@ -433,8 +433,8 @@ __fastcall TUEngineMonitorFrame::TUEngineMonitorFrame(TComponent* Owner)
 	: TUVisualControllerFrame(Owner)
 {
  CalculateMode.assign(GetNumEngines(),0);
- CalculateSignal.assign(GetNumEngines(),false);
- CalculateState.assign(GetNumEngines(),false);
+ CalculateSignal.assign(GetNumEngines(),false); //-V601
+ CalculateState.assign(GetNumEngines(),false); //-V601
  MinInterstepsInterval.assign(GetNumEngines(),20);
  AlwaysUpdateFlag=true;
  UpdateInterval=100;
@@ -563,8 +563,8 @@ bool TUEngineMonitorFrame::SetNumChannels(int num)
   MinInterstepsInterval.resize(num,0);
  }
 
- CalculateSignal.resize(num,false);
- CalculateState.resize(num,false);
+ CalculateSignal.resize(num,false); //-V601
+ CalculateState.resize(num,false); //-V601
  ServerTimeStamp.resize(num,0);
  LastCalculatedServerTimeStamp.resize(num,0);
  RealLastCalculationTime.resize(num,0);
@@ -613,8 +613,8 @@ bool TUEngineMonitorFrame::InsertChannel(int index)
   MinInterstepsInterval.resize(new_num,0);
  }
 
- CalculateSignal.resize(new_num,false);
- CalculateState.resize(new_num,false);
+ CalculateSignal.resize(new_num,false); //-V601
+ CalculateState.resize(new_num,false); //-V601
  ServerTimeStamp.resize(new_num,0);
  LastCalculatedServerTimeStamp.resize(new_num,0);
  RealLastCalculationTime.resize(new_num,0);

@@ -1548,7 +1548,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::ExecuteCaptureInit(void)
 	if(OverlayHandle->ClientWidth/VideoGrabber->VideoWidth<+OverlayHandle->ClientHeight/VideoGrabber->VideoHeight || VideoGrabber->VideoWidth>OverlayHandle->ClientWidth)
 	{
 	 VideoGrabber->Width=OverlayHandle->ClientWidth;
-	 VideoGrabber->Height=ceil((OverlayHandle->ClientWidth)/stretch);
+	 VideoGrabber->Height=ceil((OverlayHandle->ClientWidth)/stretch); //-V537
 	}
 	else
 	{
@@ -2008,7 +2008,7 @@ bool TVideoCaptureThreadVideoGrabber::SetAutoScaleMode(int value)
 	if(OverlayHandle->ClientWidth/VideoGrabber->VideoWidth<+OverlayHandle->ClientHeight/VideoGrabber->VideoHeight || VideoGrabber->VideoWidth>OverlayHandle->ClientWidth)
 	{
 	 VideoGrabber->Width=OverlayHandle->ClientWidth;
-	 VideoGrabber->Height=ceil((OverlayHandle->ClientWidth)/stretch);
+	 VideoGrabber->Height=ceil((OverlayHandle->ClientWidth)/stretch); //-V537
 	}
 	else
 	{
@@ -2122,7 +2122,7 @@ bool TVideoCaptureThreadVideoGrabber::SetOverlayHandle(TWinControl* value)
 	if(OverlayHandle->ClientWidth/VideoGrabber->VideoWidth<+OverlayHandle->ClientHeight/VideoGrabber->VideoHeight || VideoGrabber->VideoWidth>OverlayHandle->ClientWidth)
 	{
 	 VideoGrabber->Width=OverlayHandle->ClientWidth;
-	 VideoGrabber->Height=ceil((OverlayHandle->ClientWidth)/stretch);
+	 VideoGrabber->Height=ceil((OverlayHandle->ClientWidth)/stretch); //-V537
 	}
 	else
 	{

@@ -53,6 +53,8 @@ public:		// User declarations
 	std::vector<TUParameterDescription> ParametersList;
 	std::vector<TUParameterDescription> ResultParametersList;
 
+	std::string DummyString;
+
 /// Число параметров
 int GetNumParameters(void);
 bool SetNumParameters(int value);

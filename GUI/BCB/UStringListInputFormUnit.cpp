@@ -74,7 +74,7 @@ bool TUStringListInputForm::SetParameterName(int index, const std::string &value
 const std::string& TUStringListInputForm::GetParameterValue(int index)
 {
  if(index <0 || index >=int(ParametersList.size()))
-  return false;
+  return DummyString;
 
  return ResultParametersList[index].Value;
 }
