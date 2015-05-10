@@ -43,7 +43,13 @@ UAConnectorVector::UAConnectorVector(const UAConnectorVector &copy)
 
 UAConnectorVector::~UAConnectorVector(void)
 {
- Clear();
+ if(Data)
+ {
+  delete []Data;
+  Data=0;
+ }
+ Size=RealSize=0;
+// Clear();
 }
 // --------------------------
 
@@ -53,12 +59,13 @@ UAConnectorVector::~UAConnectorVector(void)
 // Очищает контейнер
 void UAConnectorVector::Clear(void)
 {
- if(Data)
+/* if(Data)
  {
   delete []Data;
   Data=0;
  }
- Size=RealSize=0;
+ Size=RealSize=0;     */
+ Size=0;
 }
 
 // Меняет размер контейнера с сохранением элементов

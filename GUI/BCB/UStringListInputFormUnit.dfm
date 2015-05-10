@@ -3,39 +3,51 @@ object UStringListInputForm: TUStringListInputForm
   Top = 0
   BorderStyle = bsDialog
   Caption = 'Input Parameters Values'
-  ClientHeight = 253
-  ClientWidth = 537
+  ClientHeight = 331
+  ClientWidth = 702
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
-  Font.Height = -11
+  Font.Height = -14
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
   OnShow = FormShow
-  PixelsPerInch = 96
-  TextHeight = 13
+  PixelsPerInch = 120
+  TextHeight = 17
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 537
-    Height = 212
+    Width = 702
+    Height = 277
+    Margins.Left = 4
+    Margins.Top = 4
+    Margins.Right = 4
+    Margins.Bottom = 4
     Align = alClient
     TabOrder = 0
     object GroupBox1: TGroupBox
       Left = 1
       Top = 1
-      Width = 535
-      Height = 210
+      Width = 700
+      Height = 275
+      Margins.Left = 4
+      Margins.Top = 4
+      Margins.Right = 4
+      Margins.Bottom = 4
       Align = alClient
       Caption = ' Parameters list '
       TabOrder = 0
       object StringGrid: TStringGrid
         Left = 2
-        Top = 15
-        Width = 531
-        Height = 172
+        Top = 19
+        Width = 696
+        Height = 229
+        Margins.Left = 4
+        Margins.Top = 4
+        Margins.Right = 4
+        Margins.Bottom = 4
         Align = alClient
         ColCount = 2
         DefaultColWidth = 250
@@ -45,53 +57,75 @@ object UStringListInputForm: TUStringListInputForm
         OnClick = StringGridClick
         OnDblClick = StringGridDblClick
         OnSelectCell = StringGridSelectCell
+        ExplicitHeight = 233
       end
       object Edit: TEdit
         Left = 2
-        Top = 187
-        Width = 531
-        Height = 21
+        Top = 248
+        Width = 696
+        Height = 25
+        Margins.Left = 4
+        Margins.Top = 4
+        Margins.Right = 4
+        Margins.Bottom = 4
         Align = alBottom
         TabOrder = 1
         OnKeyPress = EditKeyPress
+        ExplicitTop = 252
       end
     end
   end
   object Panel2: TPanel
     Left = 0
-    Top = 212
-    Width = 537
-    Height = 41
+    Top = 277
+    Width = 702
+    Height = 54
+    Margins.Left = 4
+    Margins.Top = 4
+    Margins.Right = 4
+    Margins.Bottom = 4
     Align = alBottom
     TabOrder = 1
     DesignSize = (
-      537
-      41)
+      702
+      54)
     object OkButton: TButton
-      Left = 291
-      Top = 7
-      Width = 75
-      Height = 25
+      Left = 381
+      Top = 9
+      Width = 98
+      Height = 33
+      Margins.Left = 4
+      Margins.Top = 4
+      Margins.Right = 4
+      Margins.Bottom = 4
       Anchors = [akTop, akRight]
       Caption = 'OK'
       TabOrder = 0
       OnClick = OkButtonClick
     end
     object CancelButton: TButton
-      Left = 372
-      Top = 7
-      Width = 75
-      Height = 25
+      Left = 486
+      Top = 9
+      Width = 99
+      Height = 33
+      Margins.Left = 4
+      Margins.Top = 4
+      Margins.Right = 4
+      Margins.Bottom = 4
       Anchors = [akTop, akRight]
       Caption = 'Cancel'
       TabOrder = 1
       OnClick = CancelButtonClick
     end
     object RestoreButton: TButton
-      Left = 453
-      Top = 7
-      Width = 75
-      Height = 25
+      Left = 592
+      Top = 9
+      Width = 98
+      Height = 33
+      Margins.Left = 4
+      Margins.Top = 4
+      Margins.Right = 4
+      Margins.Bottom = 4
       Anchors = [akTop, akRight]
       Caption = 'Restore'
       TabOrder = 2

@@ -139,7 +139,7 @@ void TUComponentsPerformanceFrame::AUpdateInterface(void)
 	}
   }
   Chart->Series[0]->AddY(average[i],legend.c_str());
-  if(model_time && average[last_comps_index+1]>10e-8)
+  if(model_time && average[last_comps_index+1]>0)
    Chart->Series[1]->AddY((average[i]*100.0)/average[last_comps_index+1],legend.c_str());
   else
    Chart->Series[1]->AddY(0,legend.c_str());
@@ -149,7 +149,7 @@ void TUComponentsPerformanceFrame::AUpdateInterface(void)
  if(ComponentNames.size()>0)
  {
   Chart->Series[0]->AddY(average[last_comps_index],"Others");
-  if(model_time && average[last_comps_index+1]>10e-8)
+  if(model_time && average[last_comps_index+1]>0)
    Chart->Series[1]->AddY(((average[last_comps_index])*100.0)/average[last_comps_index+1],"Others");
   else
    Chart->Series[1]->AddY(0,"Others");

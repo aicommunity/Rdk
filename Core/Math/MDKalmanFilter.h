@@ -17,8 +17,11 @@ public:
 
 
 protected: // Параметры
-// Размерность матриц
-int Size;
+// Число состояний системы
+int NumStates;
+
+/// Число измеряемых величин
+int NumMeasurements;
 
 // Счетчик итераций
 int CalcCount;
@@ -43,7 +46,7 @@ public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-MDKalmanFilter(void) : Size(1), CalcCount(0), FM(Size, Size, 0.0),BM(Size, Size, 0.0),QM(Size, Size, 0.0),HM(Size, Size, 0.0),RM(Size, Size, 0.0),Pk1(Size, Size, 0.0),Xk1(Size, 1, 0.0),Uk1(Size, 1, 0.0),Z(Size, 1, 0.0) {};
+MDKalmanFilter(void) : NumStates(1), NumMeasurements(1), CalcCount(0), FM(NumStates, NumStates, 0.0),BM(NumStates, NumMeasurements, 0.0),QM(NumStates, NumStates, 0.0),HM(NumMeasurements, NumStates, 0.0),RM(NumMeasurements, NumMeasurements, 0.0),Pk1(NumStates, NumStates, 0.0),Xk1(NumStates, 1, 0.0),Uk1(NumStates, 1, 0.0),Z(NumMeasurements, 1, 0.0) {};
 virtual ~MDKalmanFilter(void) {};
 // --------------------------
 
@@ -51,21 +54,28 @@ virtual ~MDKalmanFilter(void) {};
 // Методы управления параметрами
 // --------------------------
 // Задаем размерность матриц Калмана(кол-во прогнозируемых параметров)
-bool SetKalmanSize(int value)
+bool SetKalmanSize(int num_states, int num_measurements)
 {
- if(Size==value)
+ if(NumStates == num_states && NumMeasurements == num_measurements)
   return true;
 
- KalmanResize(value);
- Size=value;
+ KalmanResize(num_states, num_measurements);
+ NumMeasurements=num_measurements;
+ NumStates=num_states;
 
  return true;
 }
 
-int GetKalmanSize(void) const
+int GetNumStates(void) const
 {
- return Size;
+ return NumStates;
 }
+
+int GetNumMeasurements(void) const
+{
+ return NumMeasurements;
+}
+
 // Методы доступа к счетчику итераций
 bool SetCalcCount(int value)
 {
@@ -197,24 +207,25 @@ bool SetZ(const MDMatrix<double> &matrix)
 // Методы счета
 // --------------------------
 // Изменение размера матриц
-bool KalmanResize(int value)
+bool KalmanResize(int num_states, int num_measurements)
 {
- if(value==Size)
+ if(NumStates == num_states && NumMeasurements == num_measurements)
   return true;
 
- FM.Resize(value, value);
- BM.Resize(value, value);
- QM.Resize(value, value);
- HM.Resize(value, value);
- RM.Resize(value, value);
+ FM.Resize(num_states, num_states);
+ BM.Resize(num_states, num_measurements);
+ QM.Resize(num_states, num_states);
+ HM.Resize(num_measurements, num_states);
+ RM.Resize(num_measurements, num_measurements);
 
- Pk1.Resize(value, value);
+ Pk1.Resize(num_states, num_states);
 
- Xk1.Resize(value, 1);
- Uk1.Resize(value, 1);
- Z.Resize(value, 1);
+ Xk1.Resize(num_states, 1);
+ Uk1.Resize(num_states, 1);
+ Z.Resize(num_measurements, 1);
 
- Size=value;
+ NumMeasurements=num_measurements;
+ NumStates=num_states;
  return true;
 }
 
@@ -284,8 +295,8 @@ MDMatrix<T> EstimationUpdate(const MDMatrix<T> &xkL, const MDMatrix<T> &Kk,
 MDMatrix<T> CovariationErrorUpdate(const MDMatrix<T> &Kk, const MDMatrix<T> &H,
 					 const MDMatrix<T> &PkL)
 {
- MDMatrix<T> eye_matrix(Size, Size);
- eye_matrix.Eye();
+ MDMatrix<T> eye_matrix(NumStates, NumStates);
+ eye_matrix=eye_matrix.Eye();
 
  return (eye_matrix-Kk*H)*PkL; // Pk
 }
@@ -293,7 +304,10 @@ MDMatrix<T> CovariationErrorUpdate(const MDMatrix<T> &Kk, const MDMatrix<T> &H,
 //Калман предсказание без корректировки
 void KalmanPredict(int i)
 {
- MDMatrix<T> xkL=StatePrediction(FM,BM,Xk1,Uk1);
+ // prediction
+ Xk1 = FM * Xk1 + Uk1;
+ Pk1 = FM * Pk1 * FM.Transpose();
+/* MDMatrix<T> xkL=StatePrediction(FM,BM,Xk1,Uk1);
  MDMatrix<T> PkL;
 
  if (i>0)
@@ -303,24 +317,42 @@ void KalmanPredict(int i)
 
  Xk1=xkL;
  Pk1=PkL;
-
- //MDMatrix<T> Kk=KalmanGain(PkL,HM,RM);
+  */
  CalcCount++;
 }
 // Калман
 void KalmanCalculate(int i)
 {
- MDMatrix<T> xkL=StatePrediction(FM,BM,Xk1,Uk1);
- MDMatrix<T> PkL;
+ try
+ {
 
- if (i>0)
-  PkL=CovariationError(FM,Pk1,QM);
- else
-  PkL=Pk1;
+ MDMatrix<double> y(Z - (HM * Xk1));
+ MDMatrix<double> S(HM * Pk1 * HM.Transpose() + RM);
+  for(int i=0;i<S.GetCols()*S.GetRows();i++)
+   if(fabs(S.Data[i])>1e20)
+	throw EKalmanGainOverflow();
+ MDMatrix<double> K(Pk1 * HM.Transpose() * S.Inverse());
+ Xk1 = Xk1 + (K * y);
+ MDMatrix<double> eye(2,2);
+ eye=eye.Eye();
+ Pk1 = (eye - (K * HM)) * Pk1;
 
- MDMatrix<T> Kk=KalmanGain(PkL,HM,RM);
- Xk1=EstimationUpdate(xkL,Kk,Z,HM);
- Pk1=CovariationErrorUpdate(Kk,HM,PkL);
+ // prediction
+ Xk1 = FM * Xk1 + Uk1;
+ Pk1 = FM * Pk1 * FM.Transpose();
+ }
+ catch(EMatrixZeroDet &exception)
+ {
+   throw EKalmanGainOverflow();
+ }
+
+	/*
+ MDMatrix<T> Kk=KalmanGain(Pk1,HM,RM);
+ Xk1=EstimationUpdate(Xk1,Kk,Z,HM);
+ Pk1=CovariationErrorUpdate(Kk,HM,Pk1);
+ Xk1=StatePrediction(FM,BM,Xk1,Uk1);
+ Pk1=CovariationError(FM,Pk1,QM);
+	  */
  CalcCount++;
 }
 // --------------------------

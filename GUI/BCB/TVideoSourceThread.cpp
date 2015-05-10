@@ -1530,14 +1530,39 @@ void __fastcall TVideoCaptureThreadVideoGrabber::ExecuteCaptureInit(void)
    break;
 
    case 1:
-	VideoGrabber->Display_AutoSize = true;
-	VideoGrabber->Align=alClient;
-	VideoGrabber->Display_AspectRatio=ar_Box;
+   {
+	VideoGrabber->Display_AutoSize = false;
+	VideoGrabber->Align=alNone;
+	VideoGrabber->Display_AspectRatio=ar_Stretch;
+	double stretch=1;
+
+	if(VideoGrabber->VideoHeight>0)
+	 stretch=(VideoGrabber->VideoWidth)/double(VideoGrabber->VideoHeight);
+
+	if(OverlayHandle->ClientHeight/VideoGrabber->VideoHeight<OverlayHandle->ClientWidth/VideoGrabber->VideoWidth || VideoGrabber->VideoHeight>OverlayHandle->ClientHeight)
+	{
+	 VideoGrabber->Height=OverlayHandle->ClientHeight;
+	 VideoGrabber->Width=ceil((OverlayHandle->ClientHeight)*stretch);
+	}
+	else
+	if(OverlayHandle->ClientWidth/VideoGrabber->VideoWidth<+OverlayHandle->ClientHeight/VideoGrabber->VideoHeight || VideoGrabber->VideoWidth>OverlayHandle->ClientWidth)
+	{
+	 VideoGrabber->Width=OverlayHandle->ClientWidth;
+	 VideoGrabber->Height=ceil((OverlayHandle->ClientWidth)/stretch); //-V537
+	}
+	else
+	{
+	 VideoGrabber->Height=VideoGrabber->VideoHeight;
+	 VideoGrabber->Width=VideoGrabber->VideoWidth;
+	}
+   }
+   break;
+
    break;
 
    case 2:
-	VideoGrabber->Display_AutoSize = true;
-	VideoGrabber->Align=alClient;
+	VideoGrabber->Display_AutoSize = false;
+	VideoGrabber->Align=alNone;
 	VideoGrabber->Display_AspectRatio=ar_NoResize;
    break;
    }
@@ -1577,8 +1602,10 @@ void __fastcall TVideoCaptureThreadVideoGrabber::ExecuteCaptureInit(void)
  VideoGrabber->EventNotificationSynchrone=false;
 // VideoGrabber->OnFrameBitmapEventSynchrone=true;
  VideoGrabber->OpenURLAsync=true;
+
  if(DesiredResolutionFlag)
  {
+  VideoGrabber->FrameCaptureZoomSize=100;
   VideoGrabber->FrameCaptureWidth=DesiredWidth;
   VideoGrabber->FrameCaptureHeight=DesiredHeight;
  }
@@ -1693,127 +1720,22 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberOnThreadSync(System
 void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberFrameBitmap(TObject *Sender,
 	  pFrameInfo FrameInfo, pFrameBitmapInfo BitmapInfo)
 {
-/*
- if(CheckCaptureThreadState())
+ if(WaitForSingleObject(OSDMutex,10) == WAIT_OBJECT_0)
  {
-  ConnectionState=2;
-  RealLastTimeStamp=TDateTime::CurrentDateTime().operator double();
- }
-
- ConvertTimeStamp=FrameInfo->FrameTime;
-
- unsigned int BitmapLinePtr = (unsigned int) BitmapInfo->BitmapDataPtr;
- int bmp_width=BitmapInfo->BitmapWidth;
- int bmp_height=BitmapInfo->BitmapHeight;
-
- if(WaitForSingleObject(ConvertMutex,10000) == WAIT_OBJECT_0)
- {
- if (BitmapInfo->BitmapBitsPerPixel == 24)
- {   // case where FrameGrabberRGBFormat is set to fgf_RGB24 (you can select it in the "frame grabber" tab)
-  ConvertUBitmap.SetRes(bmp_width, bmp_height, RDK::ubmRGB24);
- }
- else
- if (BitmapInfo->BitmapBitsPerPixel == 32)
- {
-  ConvertUBitmap.SetRes(bmp_width, bmp_height, RDK::ubmRGB32);
- }
-
- int conv_line_bl=ConvertUBitmap.GetLineByteLength();
-  unsigned char *p=ConvertUBitmap.GetData();
-  for (int i = 0 ; i < bmp_height ; i++)
+  if(OverlayMaskBitmap->Width == BitmapInfo->BitmapWidth && OverlayMaskBitmap->Height == BitmapInfo->BitmapHeight)
   {
-   memcpy(p,(void*)BitmapLinePtr,conv_line_bl);
-   p+=conv_line_bl;
-   BitmapLinePtr += BitmapInfo->BitmapLineSize;
-  }
-
-  ReleaseMutex(ConvertMutex);
- }
-
-
-  SetEvent(VideoGrabberCompleted);
-  */
-
-	/*
-	  int xStep = 40;
-	  int yStep = 30;
-
-	  int xLocation = xStep;
-	  int yLocation = yStep;
-
-	  TCanvas *Canvas = new TCanvas;//Frame_Bitmap->Canvas;
-	  Canvas->Brush->Color = clBlue;
-	  Canvas->Brush->Style = bsSolid;
-	  Canvas->Handle = BitmapInfo->BitmapDC;
-	  while (xLocation < BitmapInfo->BitmapWidth) {
-		 Canvas->FillRect(Rect(xLocation, 0, xLocation + 1, BitmapInfo->BitmapHeight));
-		 xLocation += xStep;
-	  }
-
-	  while (yLocation < BitmapInfo->BitmapHeight) {
-		 Canvas->FillRect(Rect(0, yLocation, BitmapInfo->BitmapWidth, yLocation + 1));
-		 yLocation += yStep;
-	  }
-
-	  Canvas->Free();
-         */
-if(WaitForSingleObject(OSDMutex,10) == WAIT_OBJECT_0)
- {
-	  if(OverlayMaskBitmap->Width == BitmapInfo->BitmapWidth && OverlayMaskBitmap->Height == BitmapInfo->BitmapHeight)
-	  {
-  unsigned char* dest = (unsigned char*) BitmapInfo->BitmapDataPtr;
-	   unsigned char* source = (unsigned char*) OverlayMaskBitmap->ScanLine[OverlayMaskBitmap->Height-1];
-	   for(int i=0;i<BitmapInfo->BitmapSize;i++)
-	   {
-		if(*source>0)
-		 *dest=*source;
-		++dest;
-		++source;
-	   }
-	  }
-  ReleaseMutex(OSDMutex);
- }
-/*
-	   if (BitmapInfo->BitmapBitsPerPixel == 24)
-	   {
-		 for (int i = 0 ; i < BitmapInfo->BitmapHeight ; i++)
-		 {
-			TRGBTriple *RGB24Line = (TRGBTriple*) BitmapLinePtr;
-			for (int iCol = 0 ; iCol < BitmapInfo->BitmapWidth ; iCol ++)
-			{
-			   RGB24Line[iCol].rgbGreen = 0;
-            }
-            BitmapLinePtr += BitmapInfo->BitmapLineSize;
-         }
-	   }
-	   else if (BitmapInfo->BitmapBitsPerPixel == 32)
-	   {
-		 for (int i = 0 ; i < BitmapInfo->BitmapHeight ; i++)
-		 {
-			TRGBQuad *RGB32Line = (TRGBQuad*) BitmapLinePtr;
-			for (int iCol = 0 ; iCol < BitmapInfo->BitmapWidth ; iCol ++)
-			{
-			   RGB32Line[iCol].rgbBlue = 0;
-			}
-			BitmapLinePtr += BitmapInfo->BitmapLineSize;
-		 }
-	   }     */
-
-// OverlayMaskBitmap->PixelFormat=pf32bit;
-/* if(WaitForSingleObject(OSDMutex,10) == WAIT_OBJECT_0)
- {
-  if(OverlayMaskBitmap->Width >0 && OverlayMaskBitmap->Height >0)
-  {
-   TransparentBlt(BitmapInfo->BitmapDC, 0, 0, BitmapInfo->BitmapWidth, BitmapInfo->BitmapHeight, OverlayMaskBitmap->Canvas->Handle,
-	   0, 0, OverlayMaskBitmap->Width, OverlayMaskBitmap->Height, 0);
+   unsigned char* dest = (unsigned char*) BitmapInfo->BitmapDataPtr;
+   unsigned char* source = (unsigned char*) OverlayMaskBitmap->ScanLine[OverlayMaskBitmap->Height-1];
+   for(int i=0;i<BitmapInfo->BitmapSize;i++)
+   {
+	if(*source>0)
+	 *dest=*source;
+	++dest;
+	++source;
+   }
   }
   ReleaseMutex(OSDMutex);
  }
- else
- {
-  int a=0;
-  return;
- } */
 }
 
 void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberLog(TObject *Sender,
@@ -2061,19 +1983,47 @@ bool TVideoCaptureThreadVideoGrabber::SetAutoScaleMode(int value)
 	VideoGrabber->Display_AutoSize = true;
 	VideoGrabber->Align=alNone;
 	VideoGrabber->Display_AspectRatio=ar_NoResize;
+	if(VideoGrabber->Width != VideoGrabber->VideoWidth+4)
+	 VideoGrabber->Width=VideoGrabber->VideoWidth+4;
+	if(VideoGrabber->Height != VideoGrabber->VideoHeight+4)
+	 VideoGrabber->Height=VideoGrabber->VideoHeight+4;
    break;
 
    case 1:
-	VideoGrabber->Display_AutoSize = true;
-	VideoGrabber->Align=alClient;
-	VideoGrabber->Display_AspectRatio=ar_Box;
+   {
+	VideoGrabber->Display_AutoSize = false;
+	VideoGrabber->Align=alNone;
+	VideoGrabber->Display_AspectRatio=ar_Stretch;
+	double stretch=1;
+
+	if(VideoGrabber->VideoHeight>0)
+	 stretch=(VideoGrabber->VideoWidth)/double(VideoGrabber->VideoHeight);
+
+	if(OverlayHandle->ClientHeight/VideoGrabber->VideoHeight<OverlayHandle->ClientWidth/VideoGrabber->VideoWidth || VideoGrabber->VideoHeight>OverlayHandle->ClientHeight)
+	{
+	 VideoGrabber->Height=OverlayHandle->ClientHeight;
+	 VideoGrabber->Width=ceil((OverlayHandle->ClientHeight)*stretch);
+	}
+	else
+	if(OverlayHandle->ClientWidth/VideoGrabber->VideoWidth<+OverlayHandle->ClientHeight/VideoGrabber->VideoHeight || VideoGrabber->VideoWidth>OverlayHandle->ClientWidth)
+	{
+	 VideoGrabber->Width=OverlayHandle->ClientWidth;
+	 VideoGrabber->Height=ceil((OverlayHandle->ClientWidth)/stretch); //-V537
+	}
+	else
+	{
+	 VideoGrabber->Height=VideoGrabber->VideoHeight;
+	 VideoGrabber->Width=VideoGrabber->VideoWidth;
+	}
+   }
    break;
 
    case 2:
 	VideoGrabber->Display_AutoSize = true;
 	VideoGrabber->Align=alClient;
-	VideoGrabber->Display_AspectRatio=ar_NoResize;
+	VideoGrabber->Display_AspectRatio=ar_Box;
    break;
+
    }
   }
  }
@@ -2154,9 +2104,32 @@ bool TVideoCaptureThreadVideoGrabber::SetOverlayHandle(TWinControl* value)
    break;
 
    case 1:
-	VideoGrabber->Display_AutoSize = true;
-	VideoGrabber->Align=alClient;
-	VideoGrabber->Display_AspectRatio=ar_Box;
+   {
+	VideoGrabber->Display_AutoSize = false;
+	VideoGrabber->Align=alNone;
+	VideoGrabber->Display_AspectRatio=ar_Stretch;
+	double stretch=1;
+
+	if(VideoGrabber->VideoHeight>0)
+	 stretch=(VideoGrabber->VideoWidth)/double(VideoGrabber->VideoHeight);
+
+	if(OverlayHandle->ClientHeight/VideoGrabber->VideoHeight<OverlayHandle->ClientWidth/VideoGrabber->VideoWidth || VideoGrabber->VideoHeight>OverlayHandle->ClientHeight)
+	{
+	 VideoGrabber->Height=OverlayHandle->ClientHeight;
+	 VideoGrabber->Width=ceil((OverlayHandle->ClientHeight)*stretch);
+	}
+	else
+	if(OverlayHandle->ClientWidth/VideoGrabber->VideoWidth<+OverlayHandle->ClientHeight/VideoGrabber->VideoHeight || VideoGrabber->VideoWidth>OverlayHandle->ClientWidth)
+	{
+	 VideoGrabber->Width=OverlayHandle->ClientWidth;
+	 VideoGrabber->Height=ceil((OverlayHandle->ClientWidth)/stretch); //-V537
+	}
+	else
+	{
+	 VideoGrabber->Height=VideoGrabber->VideoHeight;
+	 VideoGrabber->Width=VideoGrabber->VideoWidth;
+	}
+   }
    break;
 
    case 2:
@@ -2401,6 +2374,9 @@ __fastcall TVideoCaptureThreadVideoGrabberCamera::TVideoCaptureThreadVideoGrabbe
  : TVideoCaptureThreadVideoGrabber(frame, CreateSuspended)
 {
  SourceMode=2;
+ TVTunerMode=-1;
+ TVTunerInputType=-1;
+ TVTunerChannel=1;
 }
 
 __fastcall TVideoCaptureThreadVideoGrabberCamera::~TVideoCaptureThreadVideoGrabberCamera(void)
@@ -2437,7 +2413,29 @@ int TVideoCaptureThreadVideoGrabberCamera::GetAnalogIndex(void) const
  return AnalogIndex;
 }
 
-bool TVideoCaptureThreadVideoGrabberCamera::Init(int camera_index, int input_index, int size_index, int subtype_index, int analog_index)
+int TVideoCaptureThreadVideoGrabberCamera::GetTVTunerChannel(void) const
+{
+ return TVTunerChannel;
+}
+
+int TVideoCaptureThreadVideoGrabberCamera::GetTVTunerCountryCode(void) const
+{
+ return TVTunerCountryCode;
+}
+
+int TVideoCaptureThreadVideoGrabberCamera::GetTVTunerMode(void) const
+{
+ return TVTunerMode;
+}
+
+int TVideoCaptureThreadVideoGrabberCamera::GetTVTunerInputType(void) const
+{
+ return TVTunerInputType;
+}
+
+
+bool TVideoCaptureThreadVideoGrabberCamera::Init(int camera_index, int input_index, int size_index, int subtype_index, int analog_index,
+			int tv_tuner_channel, int tv_tuner_country_code, int tv_tuner_mode, int tv_tuner_input_type)
 {
  if(!VideoGrabber)
  {
@@ -2458,6 +2456,10 @@ bool TVideoCaptureThreadVideoGrabberCamera::Init(int camera_index, int input_ind
  VideoGrabber->VideoSize=size_index;
  VideoGrabber->VideoSubtype=subtype_index;
  VideoGrabber->AnalogVideoStandard=analog_index;
+ VideoGrabber->TunerMode=TTunerMode(tv_tuner_mode);
+ VideoGrabber->TVTunerInputType=TTunerInput(tv_tuner_input_type);
+ VideoGrabber->TVCountryCode=tv_tuner_country_code;
+ VideoGrabber->TVChannel=tv_tuner_channel;
  return true;
 }
 // --------------------------
@@ -2479,6 +2481,10 @@ void __fastcall TVideoCaptureThreadVideoGrabberCamera::ExecuteCaptureInit(void)
   VideoGrabber->VideoSize=SizeIndex;
   VideoGrabber->VideoSubtype=SubtypeIndex;
   VideoGrabber->AnalogVideoStandard=AnalogIndex;
+  VideoGrabber->TunerMode=TTunerMode(GetTVTunerMode());
+  VideoGrabber->TVTunerInputType=TTunerInput(GetTVTunerInputType());
+  VideoGrabber->TVCountryCode=TVTunerCountryCode;
+  VideoGrabber->TVChannel=TVTunerChannel;
  }
 }
 
@@ -2513,6 +2519,10 @@ bool TVideoCaptureThreadVideoGrabberCamera::ASaveParameters(RDK::USerStorageXML 
  xml.WriteInteger("SizeIndex",SizeIndex);
  xml.WriteInteger("SubtypeIndex",SubtypeIndex);
  xml.WriteInteger("AnalogIndex",AnalogIndex);
+ xml.WriteInteger("TVTunerMode",TVTunerMode);
+ xml.WriteInteger("TVTunerInputType",TVTunerInputType);
+ xml.WriteInteger("TVTunerCountryCode",TVTunerCountryCode);
+ xml.WriteInteger("TVTunerChannel",TVTunerChannel);
 
  return true;
 }
@@ -2528,8 +2538,14 @@ bool TVideoCaptureThreadVideoGrabberCamera::ALoadParameters(RDK::USerStorageXML 
  SizeIndex=xml.ReadInteger("SizeIndex",SizeIndex);
  SubtypeIndex=xml.ReadInteger("SubtypeIndex",SubtypeIndex);
  AnalogIndex=xml.ReadInteger("AnalogIndex",AnalogIndex);
+ TVTunerChannel=xml.ReadInteger("TVTunerChannel",TVTunerChannel);
+ TVTunerMode=xml.ReadInteger("TVTunerMode",TVTunerMode);
+ TVTunerInputType=xml.ReadInteger("TVTunerInputType",TVTunerInputType);
+ TVTunerCountryCode=xml.ReadInteger("TVTunerCountryCode",TVTunerCountryCode);
+ TVTunerChannel=xml.ReadInteger("TVTunerChannel",TVTunerChannel);
 
- Init(CameraIndex, InputIndex, SizeIndex, SubtypeIndex, AnalogIndex);
+ Init(CameraIndex, InputIndex, SizeIndex, SubtypeIndex, AnalogIndex,
+		TVTunerChannel, TVTunerCountryCode, TVTunerMode, TVTunerInputType);
 
  return true;
 }
@@ -2544,6 +2560,7 @@ void __fastcall TVideoCaptureThreadVideoGrabberCamera::ARunCapture(void)
  if(VideoGrabber)
  {
   VideoGrabber->StartPreview();
+  VideoGrabber->TVChannel=TVTunerChannel;
 //  VideoGrabber->StartSynchronized();
  }
 }

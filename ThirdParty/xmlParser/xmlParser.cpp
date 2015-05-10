@@ -3005,7 +3005,12 @@ void XMLParserBase64Tool::alloc(int newsize)
 unsigned char *XMLParserBase64Tool::decode(XMLCSTR data, int *outlen, XMLError *xe)
 {
     if (xe) *xe=eXMLErrorNone;
-    if (!data) { *outlen=0; return (unsigned char*)""; }
+    if (!data) 
+	{ 
+	 if(outlen)
+	  *outlen=0; 
+	 return (unsigned char*)""; 
+	}
     unsigned int len=decodeSize(data,xe);
     if (outlen) *outlen=len;
     if (!len) return NULL;

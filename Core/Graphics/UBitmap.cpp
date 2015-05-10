@@ -433,7 +433,7 @@ void UBitmap::ConvertTo(UBitmap &target) const
 
  if(!Width && !Height)
  {
-  target.Clear();
+  target.SetRes(0,0,ColorModel);
   return;
  }
 
@@ -1251,7 +1251,8 @@ void UBitmap::CalcBrightness(unsigned *x_result, unsigned *y_result,
    for(int i=x1,l=0;i<=x2;i++,l++)
    {
     y_result[k]+=*p + *(p+1) + *(p+2);
-    x_result[l]+=((*p) + (*p) + (*p++))/3;
+    x_result[l]+=((*p) + (*p) + (*p))/3;
+	++p;
    }
    p+=(Width-x2+x1-1)*3;
    y_result[k]/=3;
