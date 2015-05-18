@@ -81,6 +81,11 @@ public: // Методы
 UPropertyInput(const string &name, OwnerT * const owner)
  : UPropertyInputBase<T,OwnerT,type>(name, owner, ipSingle | ipComp)
 { };
+
+/// Deprecated
+UPropertyInput(const string &name, OwnerT * const owner, int index)
+ : UPropertyInputBase<T,OwnerT,type>(name, owner, ipSingle | ipComp)
+{ };
 // -----------------------------
 
 // --------------------------
@@ -137,6 +142,11 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 UPropertyInputData(const string &name, OwnerT * const owner)
+ : UPropertyInputBase<T,OwnerT,type>(name, owner, ipSingle | ipData)
+{ };
+
+/// Deprecated
+UPropertyInputData(const string &name, OwnerT * const owner, int index)
  : UPropertyInputBase<T,OwnerT,type>(name, owner, ipSingle | ipData)
 { };
 // -----------------------------
@@ -281,6 +291,12 @@ public: // Методы
 UVPropertyInputData(OwnerT * const owner, T **data)
  : UVPropertyInputBase<T,OwnerT>(owner, data, ipSingle | ipData)
 { };
+
+/// Deprecated
+UVPropertyInputData(OwnerT * const owner, int index)
+ : UVPropertyInputBase<T,OwnerT>(owner, data, ipSingle | ipData)
+{ };
+
 // -----------------------------
 
 
@@ -505,6 +521,11 @@ public: // Методы
 UPropertyInputC(const string &name, OwnerT * const owner)
  : UPropertyInputCBase<T,OwnerT,type>(name, owner, ipRange | ipComp)
 { };
+
+/// Deprecated
+UPropertyInputC(const string &name, OwnerT * const owner, int index)
+ : UPropertyInputCBase<T,OwnerT,type>(name, owner, ipRange | ipComp)
+{ };
 // -----------------------------
 
 // Метод записывает значение свойства в поток
@@ -542,6 +563,12 @@ public: // Методы
 UPropertyInputCData(const string &name, OwnerT * const owner)
  : UPropertyInputCBase<T,OwnerT,type>(name, owner, ipRange | ipData)
 { };
+
+/// Deprecated
+UPropertyInputCData(const string &name, OwnerT * const owner, int index)
+ : UPropertyInputCBase<T,OwnerT,type>(name, owner, ipRange | ipData)
+{ };
+
 // -----------------------------
 };
 

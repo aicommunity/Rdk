@@ -107,6 +107,13 @@ UPropertyOutputData(const string &name, OwnerT * const owner)
 {
 
 };
+
+/// Deprecated
+UPropertyOutputData(const string &name, OwnerT * const owner, int index)
+ : UPropertyOutputBase<T,OwnerT,type>(name, owner, ipSingle | ipData)
+{
+
+};
 // -----------------------------
 };
 
@@ -204,6 +211,14 @@ UPropertyOutputCData(const string &name, OwnerT * const owner)
 {
 
 };
+
+
+/// Deprecated
+UPropertyOutputCData(const string &name, OwnerT * const owner, int index)
+ : UPropertyOutputCBase<T,OwnerT,type>(name, owner, ipRange | ipData)
+{
+
+};
 // -----------------------------
 };
 
@@ -260,6 +275,13 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 UVPropertyOutputData(OwnerT * const owner, T* data)
+ : UVPropertyOutputBase<T,OwnerT>(owner, data, ipSingle | ipData)
+{
+
+};
+
+/// Deprecated
+UVPropertyOutputData(OwnerT * const owner, T* data, int index)
  : UVPropertyOutputBase<T,OwnerT>(owner, data, ipSingle | ipData)
 {
 
