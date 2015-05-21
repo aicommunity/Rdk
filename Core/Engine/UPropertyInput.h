@@ -7,11 +7,14 @@
 namespace RDK {
 
 template<typename T, typename OwnerT, unsigned int type=ptPubInput>
-class UPropertyInputBase: protected ULProperty<T*,OwnerT,type>, /*public UPropertyIOBase, */public UIPropertyInput
+class UPropertyInputBase: protected UVProperty<T,OwnerT>, /*public UPropertyIOBase, */public UIPropertyInput
 {
 protected:
 /// Временная переменная, использующаяся, если нет реального подключения
 mutable T Local;
+
+/// Флаг наличия подключения
+bool IsConnectedFlag;
 
 public: // Методы
 // --------------------------
@@ -19,9 +22,12 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 UPropertyInputBase(const string &name, OwnerT * const owner, int input_type)
- : ULProperty<T*,OwnerT,type>(name, owner)
+ : UVProperty<T,OwnerT>(owner, (T*)0)
 {
- UVBaseDataProperty<T*>::IoType=input_type;
+ IsConnectedFlag=false;
+ this->PData=&Local;
+ reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false);
+ UVBaseDataProperty<T>::IoType=input_type;
 // UVBaseDataProperty<T*>::MinRange=min_range;
 // UVBaseDataProperty<T*>::MaxRange=max_range;
 };
@@ -38,21 +44,26 @@ virtual const type_info& GetLanguageType(void) const
 };
 
 template<typename T, typename OwnerT>
-class UVPropertyInputBase: public UVProperty<T*,OwnerT>, /*public UPropertyIOBase, */public UIPropertyInput
+class UVPropertyInputBase: public UVProperty<T,OwnerT>, /*public UPropertyIOBase, */public UIPropertyInput
 {
 protected:
 /// Временная переменная, использующаяся, если нет реального подключения
 mutable T Local;
+
+/// Флаг наличия подключения
+bool IsConnectedFlag;
 
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UVPropertyInputBase(OwnerT * const owner, T** data, int input_type)
- : UVProperty<T*,OwnerT>(owner, data)
+UVPropertyInputBase(OwnerT * const owner, T* data, int input_type)
+ : UVProperty<T,OwnerT>(owner, data)
 {
- UVBaseDataProperty<T*>::IoType=input_type;
+ UVBaseDataProperty<T>::IoType=input_type;
+ IsConnectedFlag=false;
+ this->PData=&Local;
 };
 // -----------------------------
 
@@ -68,10 +79,10 @@ virtual const type_info& GetLanguageType(void) const
 };
 
 template<typename T, typename OwnerT, unsigned int type=ptPubInput>
-class UPropertyInput: public UPropertyInputBase<T,OwnerT,type>
+class UPropertyInput: public UPropertyInputBase<T*,OwnerT,type>
 {
 protected:
-//mutable T Local;
+mutable T LocalValue;
 
 public: // Методы
 // --------------------------
@@ -79,13 +90,19 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 UPropertyInput(const string &name, OwnerT * const owner)
- : UPropertyInputBase<T,OwnerT,type>(name, owner, ipSingle | ipComp)
-{ };
+ : UPropertyInputBase<T*,OwnerT,type>(name, owner, ipSingle | ipComp)
+{
+ Local=&LocalValue;
+ this->PData=&Local;
+};
 
 /// Deprecated
 UPropertyInput(const string &name, OwnerT * const owner, int index)
- : UPropertyInputBase<T,OwnerT,type>(name, owner, ipSingle | ipComp)
-{ };
+ : UPropertyInputBase<T*,OwnerT,type>(name, owner, ipSingle | ipComp)
+{
+ Local=&LocalValue;
+ this->PData=&Local;
+};
 // -----------------------------
 
 // --------------------------
@@ -94,38 +111,51 @@ UPropertyInput(const string &name, OwnerT * const owner, int index)
 // Возвращает true если вход имеет подключение
 bool IsConnected(void) const
 {
- return (this->v)?true:false;
+ return IsConnectedFlag;
+// return (this->PData)?true:false;
 }
 
 // Возвращает указатель на данные входа
 void const * GetPointer(int index) const
 {
- return this->v;
+ if(IsConnectedFlag)
+  return *this->PData;
+
+ return 0;
 }
 
 // Устанавливает указатель на данные входа
 bool SetPointer(int index, void* value)
 {
- this->v=reinterpret_cast<T*>(value);
+ if(value)
+ {
+  *this->PData=reinterpret_cast<T*>(value);
+  IsConnectedFlag=true;
+ }
+ else
+ {
+  *this->PData=Local;
+  IsConnectedFlag=false;
+ }
  return true;
 }
 
 bool operator ! (void) const
-{ return (this->v)?false:true; };
+{ return (IsConnectedFlag)?false:true; };
 
 T* operator -> (void) const
 {
- return (this->v)?this->v:&Local;
+ return (IsConnectedFlag)?*this->PData:Local;
 };
 
 T& operator * (void)
 {
- return (this->v)?*this->v:Local;
+ return (IsConnectedFlag)?**this->PData:*Local;
 };
 
 operator T* (void) const
 {
- return (this->v)?this->v:&Local;
+ return (IsConnectedFlag)?*this->PData:Local;
 }
 // --------------------------
 };
@@ -143,12 +173,16 @@ public: // Методы
 //Конструктор инициализации.
 UPropertyInputData(const string &name, OwnerT * const owner)
  : UPropertyInputBase<T,OwnerT,type>(name, owner, ipSingle | ipData)
-{ };
+{
+ this->PData=&Local;
+};
 
 /// Deprecated
 UPropertyInputData(const string &name, OwnerT * const owner, int index)
  : UPropertyInputBase<T,OwnerT,type>(name, owner, ipSingle | ipData)
-{ };
+{
+ this->PData=&Local;
+};
 // -----------------------------
 
 // --------------------------
@@ -157,38 +191,49 @@ UPropertyInputData(const string &name, OwnerT * const owner, int index)
 // Возвращает true если вход имеет подключение
 bool IsConnected(void) const
 {
- return (this->v)?true:false;
+ return IsConnectedFlag;//(this->PData)?true:false;
 }
 
 // Возвращает указатель на данные входа
 void const * GetPointer(int index) const
 {
- return this->v;
+ if(IsConnectedFlag)
+  return this->PData;
+ return 0;
 }
 
 // Устанавливает указатель на данные входа
 bool SetPointer(int index, void* value)
 {
- this->v=reinterpret_cast<T*>(value);
+ if(value)
+ {
+  this->PData=reinterpret_cast<T*>(value);
+  IsConnectedFlag=true;
+ }
+ else
+ {
+  this->PData=&Local;
+  IsConnectedFlag=false;
+ }
  return true;
 }
 
 bool operator ! (void) const
-{ return (this->v)?false:true; };
+{ return (IsConnectedFlag)?false:true; };
 
 T* operator -> (void) const
 {
- return (this->v)?this->v:&Local;
+ return (IsConnectedFlag)?this->PData:&Local;
 };
 
 T& operator * (void)
 {
- return (this->v)?*this->v:Local;
+ return (IsConnectedFlag)?*this->PData:Local;
 };
 
 operator T* (void) const
 {
- return (this->v)?this->v:&Local;
+ return (IsConnectedFlag)?this->PData:&Local;
 }
 // --------------------------
 /*
@@ -288,14 +333,18 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UVPropertyInputData(OwnerT * const owner, T **data)
+UVPropertyInputData(OwnerT * const owner, T *data)
  : UVPropertyInputBase<T,OwnerT>(owner, data, ipSingle | ipData)
-{ };
+{
+ this->PData=&Local;
+};
 
 /// Deprecated
 UVPropertyInputData(OwnerT * const owner, int index)
  : UVPropertyInputBase<T,OwnerT>(owner, data, ipSingle | ipData)
-{ };
+{
+ this->PData=&Local;
+};
 
 // -----------------------------
 
@@ -306,38 +355,49 @@ UVPropertyInputData(OwnerT * const owner, int index)
 // Возвращает true если вход имеет подключение
 bool IsConnected(void) const
 {
- return (*this->PData)?true:false;
+ return (IsConnectedFlag)?true:false;
 }
 
 // Возвращает указатель на данные входа
 void const * GetPointer(int index) const
 {
- return *this->PData;
+ if(IsConnectedFlag)
+  return this->PData;
+ return 0;
 }
 
 // Устанавливает указатель на данные входа
 bool SetPointer(int index, void* value)
 {
- *this->PData=reinterpret_cast<T*>(value);
+ if(value)
+ {
+  this->PData=reinterpret_cast<T*>(value);
+  IsConnectedFlag=true;
+ }
+ else
+ {
+  this->PData=&Local;
+  IsConnectedFlag=false;
+ }
  return true;
 }
 
 bool operator ! (void) const
-{ return (*this->PData)?false:true; };
+{ return (IsConnectedFlag)?false:true; };
 
 T* operator -> (void) const
 {
- return (*this->PData)?*this->PData:&Local;
+ return (IsConnectedFlag)?this->PData:&Local;
 };
 
 T& operator * (void)
 {
- return (*this->PData)?**this->PData:Local;
+ return (IsConnectedFlag)?*this->PData:Local;
 };
 
 operator T* (void) const
 {
- return (*this->PData)?*this->PData:&Local;
+ return (IsConnectedFlag)?this->PData:&Local;
 }
 // --------------------------
 /*
