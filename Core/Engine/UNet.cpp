@@ -240,7 +240,7 @@ bool UNet::CreateLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
   return false;
  }
 
- if(!item.Name.empty()/* && !connector.Name.empty()*/)
+ if(!item.Name.empty() || !connector.Name.empty())
  {
   int c_index=-1;
   if(!(pitem->Connect(pconnector,item.Name,connector.Name,c_index)))

@@ -503,7 +503,7 @@ bool UConnector::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name,
  UIProperty* i_item_property=na->FindProperty(item_property_name);
  UIProperty* i_conn_property=FindProperty(connector_property_name);
 
- if(!i_item_property)
+ if(!i_item_property && !(i_conn_property->GetIoType() & ipComp))
  {
   LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Item not found: ")+item_property_name);
   return false;
@@ -515,7 +515,7 @@ bool UConnector::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name,
   return false;
  }
 
- if(!CheckItem(na, item_property_name, connector_property_name))
+ if(!(i_conn_property->GetIoType() & ipComp) && !CheckItem(na, item_property_name, connector_property_name))
  {
   LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Checking fail"));
   return false;

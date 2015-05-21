@@ -519,6 +519,23 @@ void const * GetPointer(int index) const
 // Устанавливает указатель на данные входа
 bool SetPointer(int index, void* value)
 {
+ int new_index=index;
+ if(value)
+ {
+  size_t new_size=this->v.size()+1;
+  new_index=new_size-1;
+  this->v.resize(new_size);
+  size_t old_size=Local.size();
+  for(size_t i=new_size;i<old_size;i++)
+   delete Local[i];
+  Local.resize(new_size);
+
+  for(size_t i=old_size;i<new_size;i++)
+   Local[i]=new T;
+ }
+ this->v[new_index]=reinterpret_cast<T*>(value);
+
+/*
  if(int(this->v.size())<=index)
  {
   size_t new_size=index+1;
@@ -532,6 +549,7 @@ bool SetPointer(int index, void* value)
    Local[i]=new T;
  }
  this->v[index]=reinterpret_cast<T*>(value);
+*/
  return true;
 }
 
