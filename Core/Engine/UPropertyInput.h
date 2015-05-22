@@ -25,7 +25,6 @@ UPropertyInputBase(const string &name, OwnerT * const owner, int input_type)
  : UVProperty<T,OwnerT>(owner, (T*)0)
 {
  IsConnectedFlag=false;
- this->PData=&Local;
  reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false);
  UVBaseDataProperty<T>::IoType=input_type;
 // UVBaseDataProperty<T*>::MinRange=min_range;
@@ -127,17 +126,31 @@ void const * GetPointer(int index) const
 // ”станавливает указатель на данные входа
 bool SetPointer(int index, void* value)
 {
+ if(*this->PData != Local)
+  return false;
+
  if(value)
  {
   *this->PData=reinterpret_cast<T*>(value);
   IsConnectedFlag=true;
+  return true;
  }
- else
+
+ return false;
+}
+
+
+/// —брасывает указатель на данные
+bool ResetPointer(int index, void* value)
+{
+ if(*this->PData == value)
  {
   *this->PData=Local;
   IsConnectedFlag=false;
+  return true;
  }
- return true;
+
+ return false;
 }
 
 bool operator ! (void) const
@@ -150,7 +163,7 @@ T* operator -> (void) const
 
 T& operator * (void)
 {
- return (IsConnectedFlag)?**this->PData:*Local;
+ return (IsConnectedFlag)?**this->PData:LocalValue;
 };
 
 operator T* (void) const
@@ -209,13 +222,21 @@ bool SetPointer(int index, void* value)
  {
   this->PData=reinterpret_cast<T*>(value);
   IsConnectedFlag=true;
+  return true;
  }
- else
+ return false;
+}
+
+/// —брасывает указатель на данные
+bool ResetPointer(int index, void* value)
+{
+ if(this->PData == value)
  {
   this->PData=&Local;
   IsConnectedFlag=false;
+  return true;
  }
- return true;
+ return false;
 }
 
 bool operator ! (void) const
@@ -373,13 +394,21 @@ bool SetPointer(int index, void* value)
  {
   this->PData=reinterpret_cast<T*>(value);
   IsConnectedFlag=true;
+  return true;
  }
- else
+ return false;
+}
+
+/// —брасывает указатель на данные
+bool ResetPointer(int index, void* value)
+{
+ if(this->PData==value)
  {
   this->PData=&Local;
   IsConnectedFlag=false;
+  return true;
  }
- return true;
+ return false;
 }
 
 bool operator ! (void) const
@@ -532,8 +561,9 @@ bool SetPointer(int index, void* value)
 
   for(size_t i=old_size;i<new_size;i++)
    Local[i]=new T;
+  this->v[new_index]=reinterpret_cast<T*>(value);
+  return true;
  }
- this->v[new_index]=reinterpret_cast<T*>(value);
 
 /*
  if(int(this->v.size())<=index)
@@ -550,7 +580,25 @@ bool SetPointer(int index, void* value)
  }
  this->v[index]=reinterpret_cast<T*>(value);
 */
- return true;
+ return false;
+}
+
+/// —брасывает указатель на данные
+bool ResetPointer(int index, void* value)
+{
+ if(value)
+ {
+  for(size_t i=0;i<this->v.size();i++)
+   if(this->v[i] == value)
+   {
+	delete Local[i];
+	Local.erase(Local.begin()+i);
+	this->v.erase(this->v.begin()+i);
+	return true;
+   }
+  return false;
+ }
+ return false;
 }
 
 T* operator [] (int i)

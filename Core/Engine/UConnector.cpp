@@ -637,7 +637,16 @@ void UConnector::DisconnectFromIndex(const NameT &connector_property_name, const
 	UIProperty* i_conn_property=0;
 	FindInputProperty(connector_property_name,i_conn_property);
 //	if(i_conn_property->CheckRange(index)) // TODO тут возможно что-то другое
-	 i_conn_property->SetPointer(index,0);
+	UIProperty* output_property=I->second[index].Item->FindProperty(item_property_name);
+	if(output_property)
+	{
+	 if(!i_conn_property->ResetPointer(index,const_cast<void*>(output_property->GetPointer(0))))
+	 {
+	  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("ResetPointer fail"));
+	 }
+	}
+	else
+	 LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Disconnected property not found"));
 
 	ADisconnectFromItem(I->second[index].Item,I->second[index].Name,connector_property_name);
 	I->second.erase(I->second.begin()+index);
@@ -657,7 +666,17 @@ void UConnector::DisconnectFromIndex(const NameT &connector_property_name)
 	UIProperty* i_conn_property=0;
 	FindInputProperty(connector_property_name,i_conn_property);
 //	if(i_conn_property->CheckRange(i)) // TODO воозможно тут что то другое
-	 i_conn_property->SetPointer(i,0);
+
+	UIProperty* output_property=I->second[i].Item->FindProperty(I->second[i].Name);
+	if(output_property)
+	{
+	 if(!i_conn_property->ResetPointer(i,const_cast<void*>(output_property->GetPointer(0))))
+	 {
+	  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("ResetPointer fail"));
+	 }
+	}
+	else
+	 LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Disconnected property not found"));
 
 	ADisconnectFromItem(I->second[i].Item,I->second[i].Name,connector_property_name);
 	I->second.erase(I->second.begin()+i);

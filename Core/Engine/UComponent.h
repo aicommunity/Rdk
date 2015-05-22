@@ -420,6 +420,9 @@ virtual void const* GetPointer(int index) const=0;
 
 /// Устанавливает указатель на данные
 virtual bool SetPointer(int index, void* value)=0;
+
+/// Сбрасывает указатель на данные
+virtual bool ResetPointer(int index, void* value)=0;
 // --------------------------
 
 public: // Исключения

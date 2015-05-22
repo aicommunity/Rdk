@@ -235,6 +235,12 @@ virtual bool SetPointer(int index, void* value)
 {
  return false;
 }
+
+/// —брасывает указатель на данные
+virtual bool ResetPointer(int index, void* value)
+{
+ return false;
+}
 // --------------------------
 
 };
