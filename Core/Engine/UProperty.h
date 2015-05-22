@@ -407,12 +407,6 @@ T& operator * (void)
 const T& operator * (void) const
 { return this->GetData(); };
 
-bool operator ! (void) const
-{
- return (&this->GetData())?true:false;
-};
-
-
 
 // Оператор присваивания
 UVProperty<T,OwnerT>& operator = (const T &value)

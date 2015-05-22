@@ -33,7 +33,12 @@ operator T* (void)
 {
  return this->PData;
 }
-
+/*
+bool operator ! (void) const
+{
+ return (&this->GetData())?true:false;
+};
+  */
 /*bool operator ! (void) const
 {
  return (GetPointer(0))?true:false;

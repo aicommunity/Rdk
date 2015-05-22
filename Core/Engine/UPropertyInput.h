@@ -530,6 +530,12 @@ UPropertyInputCBase(const string &name, OwnerT * const owner, int input_type)
 // --------------------------
 // Методы управления указателем
 // --------------------------
+// Число указателей на данные
+int GetNumPointers(void) const
+{
+ return int(this->v.size());
+}
+
 // Возвращает указатель на данные входа
 void const * GetPointer(int index) const
 {
@@ -551,6 +557,9 @@ bool SetPointer(int index, void* value)
  int new_index=index;
  if(value)
  {
+//  for(size_t i=0;i<this->v.size();i++)
+//   if(this->v[i] == value)
+//    return true;
   size_t new_size=this->v.size()+1;
   new_index=new_size-1;
   this->v.resize(new_size);
@@ -599,6 +608,20 @@ bool ResetPointer(int index, void* value)
   return false;
  }
  return false;
+}
+
+/// Удаляет все указатели
+void ClearAllPointers(void)
+{
+ if(this->v.empty())
+  return;
+
+ for(size_t i=0;i<this->v.size();i++)
+ {
+  delete Local[i];
+ }
+ Local.clear();
+ this->v.clear();
 }
 
 T* operator [] (int i)
