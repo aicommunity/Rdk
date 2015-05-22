@@ -3024,7 +3024,7 @@ bool UEngine::Model_CheckLink(const char* stringid1, const char* item_property_n
   if(!cont1 || !cont2)
    return false;
 
-  return cont1->CheckLink(cont2,item_property_name,connector_property_name);
+  return cont1->CheckLink(cont2,item_property_name,connector_property_name, -1); // TODO: -1 заменить на параметр
  }
  catch (UException &exception)
  {

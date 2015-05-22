@@ -531,7 +531,7 @@ void UItem::Disconnect(UEPtr<UConnector> c)
 }
 
 // Разрывает связь выхода этого объекта с коннектором 'c' по индексу
-void UItem::Disconnect(UEPtr<UConnector> c, const NameT &item_property_name, const NameT &connector_property_name)
+void UItem::Disconnect(UEPtr<UConnector> c, const NameT &item_property_name, const NameT &connector_property_name, int connected_c_index)
 {
  if(!c)
   return;
@@ -543,8 +543,7 @@ void UItem::Disconnect(UEPtr<UConnector> c, const NameT &item_property_name, con
  if(I == RelatedConnectors.end())
   return;
 
- int index=-1;
- UCItem citem=c->GetCItem(connector_property_name,this,index);
+ UCItem citem=c->GetCItem(connector_property_name,this,connected_c_index);
  int i=0;
  while(i<int(I->second.size()))
  {
@@ -553,7 +552,7 @@ void UItem::Disconnect(UEPtr<UConnector> c, const NameT &item_property_name, con
    if(citem.Name == item_property_name && citem.Item == this)
    {
 	I->second.erase(I->second.begin()+i);
-    c->DisconnectFromItem(this, item_property_name, connector_property_name);
+    c->DisconnectFromItem(this, item_property_name, connector_property_name, connected_c_index);
    }
    else
     ++i;
@@ -669,7 +668,7 @@ void UItem::BuildLinks(void)
    if(!I->second[i])
 	continue;
    UCLink indexes=I->second[i]->GetCLink(this);
-   int c_index;
+   int c_index(-1);
    I->second[i]->ConnectToItem(this,indexes.OutputName,indexes.InputName,c_index);
   }
 
@@ -708,10 +707,11 @@ UEPtr<UConnector> UItem::GetAConnectorByIndex(const NameT &item_property_name, i
 }
 
 // Проверяет, существует ли связь с заданным коннектором
-bool UItem::CheckLink(const UEPtr<UConnector> &connector) const
+bool UItem::CheckLink(const UEPtr<UConnector> &connector, int connected_c_index) const
 {
  UCLink link=connector->GetCLink(this);
- if((link.Output>=0 && link.Input >=0) || (!link.InputName.empty() && !link.OutputName.empty()))
+ if((link.Output>=0 && link.Input >=0) || (!link.InputName.empty() && !link.OutputName.empty()
+   && (connected_c_index<0 || connected_c_index == link.Input) ))
   return true;
 
  return false;
@@ -755,12 +755,12 @@ bool UItem::CheckLink(const UEPtr<UConnector> &connector, int item_index, int co
  return false;
 }   */
 
-bool UItem::CheckLink(const UEPtr<UConnector> &connector, const NameT &item_property_name, const NameT &connector_property_name) const
+bool UItem::CheckLink(const UEPtr<UConnector> &connector, const NameT &item_property_name, const NameT &connector_property_name, int connected_c_index) const
 {
  UCLink link=connector->GetCLink(this);
  if(!link.OutputName.empty())
  {
-  if(link.InputName == connector_property_name)
+  if(link.InputName == connector_property_name && (connected_c_index < 0 || connected_c_index == link.Input))
    return true;
  }
  return false;

@@ -503,7 +503,7 @@ bool UConnector::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name,
  UIProperty* i_item_property=na->FindProperty(item_property_name);
  UIProperty* i_conn_property=FindProperty(connector_property_name);
 
- if(!i_item_property && !(i_conn_property->GetIoType() & ipComp))
+ if(!i_item_property && !(i_conn_property && (i_conn_property->GetIoType() & ipComp)))
  {
   LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Item not found: ")+item_property_name);
   return false;
@@ -524,32 +524,43 @@ bool UConnector::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name,
  std::map<std::string, std::vector<UCItem> >::iterator I=ConnectedItemList.find(connector_property_name);
  if(I != ConnectedItemList.end())
  {
-  for(size_t i=0;i<I->second.size();i++)
+  if(c_index == -1)
   {
-   if(I->second[i].Item == na)
+   for(size_t i=0;i<I->second.size();i++)
    {
-	if(I->second[i].Name == item_property_name)
+	if(I->second[i].Item == na)
 	{
-	 c_index=i;
-	 return true;
+	 if(I->second[i].Name == item_property_name)
+	 {
+	  c_index=i;
+	  return true;
+	 }
+	 else
+	 {
+	  I->second[i].Name = item_property_name;
+	  c_index=i;
+	  return true;
+	 }
 	}
-	else
-	{
-	 I->second[i].Name = item_property_name;
-	 c_index=i;
-	 return true;
-	}
+   }
+  }
+  else
+  {
+   if(I->second.size()>c_index && I->second[c_index].Item == na)
+   {
+	return true;
    }
   }
  }
 
-
+ // TODO: Этот код не будет работать в случае, если c_index будет подаваться на
+ // вход не по возрастанию
  UCItem item;
  item.Item=na;
  item.Index=-1;
  item.Name=item_property_name;
  ConnectedItemList[connector_property_name].push_back(item);
- c_index=int(ConnectedItemList[connector_property_name].size()-1);
+ c_index=int(ConnectedItemList[connector_property_name].size())-1;
 
  return AConnectToItem(na, item_property_name, connector_property_name);
 }
@@ -595,7 +606,7 @@ void UConnector::DisconnectFromItem(UEPtr<UItem> na, const NameT &item_property_
 }
 
 /// Разрывает связь с элементом сети 'na', подключенную от i_index к c_index
-void UConnector::DisconnectFromItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name)
+void UConnector::DisconnectFromItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int connected_c_index)
 {
  if(!na)
   return;
@@ -606,14 +617,15 @@ void UConnector::DisconnectFromItem(UEPtr<UItem> na, const NameT &item_property_
   return;
 
  int i=0;
+/*
  while(i<int(I->second.size()))
  {
-// for(size_t i=0;i<I->second.size();i++)
   if(I->second[i].Item == na && I->second[i].Name == item_property_name)
-   DisconnectFromIndex(connector_property_name,I->second[i].Name,i); // TODO индекс не определен
+   DisconnectFromIndex(connector_property_name,I->second[i].Name,i); // TODO: индекс не определен
   else
    ++i;
- }
+ }*/
+ DisconnectFromIndex(connector_property_name,I->second[connected_c_index].Name,connected_c_index); // TODO индекс не определен
 }
 
 // Разрывает связь с элементом сети подключенным ко входу 'index'

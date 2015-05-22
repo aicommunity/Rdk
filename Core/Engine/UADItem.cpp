@@ -759,9 +759,9 @@ void UADItem::DisconnectFromItem(UEPtr<UItem> na, const NameT &item_property_nam
 }
 
 /// Разрывает связь с элементом сети 'na', подключенную от i_index к c_index
-void UADItem::DisconnectFromItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name)
+void UADItem::DisconnectFromItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int connected_c_index)
 {
- UItem::DisconnectFromItem(na, item_property_name, connector_property_name);
+ UItem::DisconnectFromItem(na, item_property_name, connector_property_name,connected_c_index);
 }
 
 
@@ -817,7 +817,7 @@ bool UADItem::CheckLink(const UEPtr<UConnector> &connector, int item_index, int 
 {
  std::string connector_property_name=std::string("DataInput")+sntoa(conn_index);
  std::string item_property_name=std::string("DataOutput")+sntoa(item_index);
- return UItem::CheckLink(connector, item_property_name, connector_property_name);
+ return UItem::CheckLink(connector, item_property_name, connector_property_name, conn_index);
 /*
  UCLink link=GetCLink(item);
  if(link.Output>=0)
@@ -830,9 +830,9 @@ bool UADItem::CheckLink(const UEPtr<UConnector> &connector, int item_index, int 
  */
 }
 
-bool UADItem::CheckLink(const UEPtr<UConnector> &connector, const NameT &item_property_name, const NameT &connector_property_name) const
+bool UADItem::CheckLink(const UEPtr<UConnector> &connector, const NameT &item_property_name, const NameT &connector_property_name, int connected_c_index) const
 {
- return UItem::CheckLink(connector, item_property_name, connector_property_name);
+ return UItem::CheckLink(connector, item_property_name, connector_property_name, connected_c_index);
 }
 
 
@@ -1017,7 +1017,7 @@ void UADItem::Disconnect(UEPtr<UConnector> c, int i_index, int c_index)
  if(!i_item_property || !i_conn_property)
   return;
 
- return Disconnect(ad_c, i_item_property->GetName(), i_conn_property->GetName());
+ return Disconnect(ad_c, i_item_property->GetName(), i_conn_property->GetName(), c_index);
 }
 
 /// Разрывает все связи выхода этого объекта с коннектором 'c'.
@@ -1027,9 +1027,9 @@ void UADItem::Disconnect(UEPtr<UConnector> c)
 }
 
 // Разрывает связь выхода этого объекта с коннектором 'c' по индексу
-void UADItem::Disconnect(UEPtr<UConnector> c, const NameT &item_property_name, const NameT &connector_property_name)
+void UADItem::Disconnect(UEPtr<UConnector> c, const NameT &item_property_name, const NameT &connector_property_name, int connected_c_index)
 {
- UItem::Disconnect(c, item_property_name, connector_property_name);
+ UItem::Disconnect(c, item_property_name, connector_property_name, connected_c_index);
 }
 
 // Разрывает связь выхода этого объекта с коннектором по Id 'id'.

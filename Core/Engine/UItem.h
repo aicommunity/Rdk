@@ -231,7 +231,7 @@ virtual bool Connect(UEPtr<UConnector> c, const NameT &item_property_name, const
 virtual void Disconnect(UEPtr<UConnector> c);
 
 // Разрывает связь выхода этого объекта с коннектором 'c' по индексу
-virtual void Disconnect(UEPtr<UConnector> c, const NameT &item_property_name, const NameT &connector_property_name);
+virtual void Disconnect(UEPtr<UConnector> c, const NameT &item_property_name, const NameT &connector_property_name, int connected_c_index);
 
 // Возвращает текущее число соединений для заданного выхода.
 virtual int GetNumAConnectors(const NameT &item_property_name) const;
@@ -261,7 +261,7 @@ virtual UEPtr<UConnector> GetAConnector(const UId &id, int index) const;
 virtual UEPtr<UConnector> GetAConnectorByIndex(const NameT &item_property_name, int index) const;
 
 // Проверяет, существует ли связь с заданным коннектором
-bool CheckLink(const UEPtr<UConnector> &connector) const;
+bool CheckLink(const UEPtr<UConnector> &connector, int connected_c_index) const;
 
 // Проверяет, существует ли связь с заданным коннектором и конкретным входом
 //bool CheckLink(const UEPtr<UConnector> &connector, int item_index) const;
@@ -269,7 +269,7 @@ bool CheckLink(const UEPtr<UConnector> &connector, const NameT &item_property_na
 
 // Проверяет, существует ли связь с заданным коннектором и конкретным входом
 //bool CheckLink(const UEPtr<UConnector> &connector, int item_index, int conn_index) const;
-bool CheckLink(const UEPtr<UConnector> &connector, const NameT &item_property_name, const NameT &connector_property_name) const;
+bool CheckLink(const UEPtr<UConnector> &connector, const NameT &item_property_name, const NameT &connector_property_name, int connected_c_index) const;
 
 // Возвращает список подключений
 template<typename T>

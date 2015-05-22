@@ -217,7 +217,7 @@ virtual void DisconnectFromItem(UEPtr<UItem> na);
 virtual void DisconnectFromItem(UEPtr<UItem> na, const NameT &item_property_name);
 
 /// Разрывает связь с элементом сети 'na', подключенную от i_index к c_index
-virtual void DisconnectFromItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name);
+virtual void DisconnectFromItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int connected_c_index);
 
 // Выполняет действия после физически установленой связи
 //virtual bool AConnectToItem(UEPtr<UItem> na, int i_index, int c_index);
@@ -240,7 +240,7 @@ bool CheckLink(const UEPtr<UConnector> &connector, const NameT &item_property_na
 
 // Проверяет, существует ли связь с заданным коннектором и конкретным входом
 bool CheckLink(const UEPtr<UConnector> &connector, int item_index, int conn_index) const;
-bool CheckLink(const UEPtr<UConnector> &connector, const NameT &item_property_name, const NameT &connector_property_name) const;
+bool CheckLink(const UEPtr<UConnector> &connector, const NameT &item_property_name, const NameT &connector_property_name, int connected_c_index) const;
 
 /// Ищет первый свободный вход
 virtual NameT FindFreeInputName(void);
@@ -256,7 +256,7 @@ virtual void Disconnect(UEPtr<UConnector> c, int i_index, int c_index);
 virtual void Disconnect(UEPtr<UConnector> c);
 
 // Разрывает связь выхода этого объекта с коннектором 'c' по индексу
-virtual void Disconnect(UEPtr<UConnector> c, const NameT &item_property_name, const NameT &connector_property_name);
+virtual void Disconnect(UEPtr<UConnector> c, const NameT &item_property_name, const NameT &connector_property_name, int connected_c_index);
 
 // Разрывает связь выхода этого объекта с коннектором по Id 'id'.
 virtual bool Disconnect(const UId &id);
