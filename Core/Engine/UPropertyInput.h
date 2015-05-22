@@ -139,7 +139,6 @@ bool SetPointer(int index, void* value)
  return false;
 }
 
-
 /// —брасывает указатель на данные
 bool ResetPointer(int index, void* value)
 {
@@ -554,6 +553,7 @@ void const * GetPointer(int index) const
 // ”станавливает указатель на данные входа
 bool SetPointer(int index, void* value)
 {
+/*
  int new_index=index;
  if(value)
  {
@@ -573,8 +573,12 @@ bool SetPointer(int index, void* value)
   this->v[new_index]=reinterpret_cast<T*>(value);
   return true;
  }
+ return false;
+   */
 
-/*
+ if(index<0)
+  return false;
+
  if(int(this->v.size())<=index)
  {
   size_t new_size=index+1;
@@ -588,13 +592,23 @@ bool SetPointer(int index, void* value)
    Local[i]=new T;
  }
  this->v[index]=reinterpret_cast<T*>(value);
-*/
- return false;
+
+ return true;
 }
 
 /// —брасывает указатель на данные
 bool ResetPointer(int index, void* value)
 {
+ if(int(this->v.size())>index && index >=0)
+ {
+  delete Local[index];
+  Local.erase(Local.begin()+index);
+  this->v.erase(this->v.begin()+index);
+  return true;
+ }
+ return false;
+
+/*
  if(value)
  {
   for(size_t i=0;i<this->v.size();i++)
@@ -607,7 +621,7 @@ bool ResetPointer(int index, void* value)
    }
   return false;
  }
- return false;
+ return false;  */
 }
 
 /// ”дал€ет все указатели

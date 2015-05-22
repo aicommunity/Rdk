@@ -105,7 +105,7 @@ virtual bool CreateLink(const ULongId &item_id, int item_index, const ULongId &c
 virtual bool CreateLink(const NameT &item, int item_index,
 						const NameT &connector, int connector_index=-1);
 virtual bool CreateLink(const NameT &item, const NameT &item_index,
-						const NameT &connector, const NameT &connector_index);
+						const NameT &connector, const NameT &connector_index, int connector_c_index=-1);
 //virtual bool CreateLink(const NameT &item, const NameT &item_property_name,
 //						const NameT &connector, const NameT &connector_property_name);
 
@@ -135,7 +135,7 @@ virtual bool BreakLink(const ULongId &item_id, int item_index, const ULongId &co
 virtual bool BreakLink(const NameT &itemname, int item_index,
 						const NameT &connectorname, int connector_index);
 virtual bool BreakLink(const NameT &item, const NameT &item_property_name,
-						const NameT &connector, const NameT &connector_property_name);
+						const NameT &connector, const NameT &connector_property_name, int connector_c_index=-1);
 
 // Разрывает все связи между выходом элемента сети, 'itemid'
 // и коннектором 'connectorid'
@@ -154,7 +154,7 @@ virtual void BreakLinks(void);
 
 // Разрывает связь ко входу connector_index коннектора 'connectorid'
 virtual void BreakConnectorLink(const NameT &connectorname, int connector_index);
-virtual void BreakConnectorLink(const NameT &connectorname, const NameT &connector_index);
+virtual void BreakConnectorLink(const NameT &connectorname, const NameT &connector_index, int connector_c_index=-1);
 
 // Проверяет, существует ли заданная связь
 template<typename T>
@@ -164,9 +164,9 @@ bool CheckLink(const ULongId &item_id, int item_index, const ULongId &conn_id, i
 bool CheckLink(const NameT &itemname, int item_index,
 						const NameT &connectorname, int connector_index);
 bool CheckLink(const NameT &itemname, const NameT &item_property_name,
-						const NameT &connectorname, const NameT &connector_property_name);
+						const NameT &connectorname, const NameT &connector_property_name, int connector_c_index=-1);
 bool CheckLink(const NameT &itemname,
-						const NameT &connectorname);
+						const NameT &connectorname, int connector_c_index=-1);
 // ----------------------
 
 // --------------------------
