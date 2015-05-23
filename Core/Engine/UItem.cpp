@@ -378,25 +378,41 @@ void UItem::FindOutputProperty(const NameT &item_property_name, UIProperty* &pro
   property=I->second.Property.Get();
  }
 }
-   /*
+
 /// Возвращает индекс входа с заданным именем
 int UItem::FindOutputIndex(const NameT &output_name) const
 {
- // Ищем указатель на выходные данные
+ // Ищем указатель на входные данные
  UIProperty* property=0;
- VariableMapCIteratorT I=PropertiesLookupTable.find(output_name);
- if(I == PropertiesLookupTable.end())
-  return ForbiddenId;
 
- if(!(I->second.Type & ptOutput))
-  return ForbiddenId;
+ if(output_name.empty())
+  return -1;
 
- property=I->second.Property.Get();
- if(!property)
-  return ForbiddenId;
+ if(output_name.find("DataOutput") == 0)
+ {
+  std::string sindex=output_name.substr(10);
+  return atoi(sindex);
+ }
 
- return property->GetMinRange();
-}    */
+ VariableMapCIteratorT I=PropertiesLookupTable.begin(), J=PropertiesLookupTable.end();
+ int index=-1;
+ for(;I!=J;++I)
+ {
+  if(!(I->second.Type & ptOutput))
+   continue;
+
+  if(I->first.find("DataOutput") == 0)
+   continue;
+
+  ++index;
+  if(I->first == output_name)
+  {
+   return index;
+  }
+ }
+
+ return -1;
+}
 
 // --------------------------
 
@@ -796,9 +812,9 @@ ULinksListT<T>& UItem::GetLinks(ULinksListT<T> &linkslist, UEPtr<UContainer> net
    if(connector.Id.size() != 0)
    {
 	UCLink indexes=I->second[i]->GetCLink(UEPtr<UItem>(const_cast<UItem*>(this)));
-	link.Item.Index=indexes.Output;
+	link.Item.Index=FindOutputIndex(indexes.OutputName);//indexes.Output;
 	link.Item.Name=indexes.OutputName;
-	connector.Index=indexes.Input;
+	connector.Index=FindInputIndex(indexes.InputName);//indexes.Input;
 	connector.Name=indexes.InputName;
 
 	link.Connector.push_back(connector);

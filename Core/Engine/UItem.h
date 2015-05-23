@@ -199,7 +199,7 @@ virtual int GetNumActiveOutputs(const NameT &item_property_name) const;
 virtual void FindOutputProperty(const NameT &item_property_name, UIProperty* &property) const;
 
 /// Возвращает индекс входа с заданным именем
-//virtual int FindOutputIndex(const NameT &output_name) const;
+virtual int FindOutputIndex(const NameT &output_name) const;
 
 /// Ищет свойство-вход по заданному индексу
 //void FindInputProperty(int index, UIProperty* &property);

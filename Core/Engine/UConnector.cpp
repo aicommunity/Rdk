@@ -465,27 +465,42 @@ void UConnector::FindInputProperty(const NameT &connector_property_name, UIPrope
   property=I->second.Property.Get();
  }
 }
-	 /*
+
 /// Возвращает индекс входа с заданным именем
 int UConnector::FindInputIndex(const NameT &input_name) const
 {
  // Ищем указатель на входные данные
  UIProperty* property=0;
 
- VariableMapCIteratorT I=PropertiesLookupTable.find(input_name);
- if(I == PropertiesLookupTable.end())
-  return ForbiddenId;
+ if(input_name.empty())
+  return -1;
 
- if(!(I->second.Type & ptInput))
-  return ForbiddenId;
+ if(input_name.find("DataInput") == 0)
+ {
+  std::string sindex=input_name.substr(9);
+  return atoi(sindex);
+ }
 
- property=I->second.Property.Get();
- if(!property)
-  return ForbiddenId;
+ VariableMapCIteratorT I=PropertiesLookupTable.begin(), J=PropertiesLookupTable.end();
+ int index=-1;
+ for(;I!=J;++I)
+ {
+  if(!(I->second.Type & ptInput))
+   continue;
 
- return property->GetMinRange();
+  if(I->first.find("DataInput") == 0)
+   continue;
+
+  ++index;
+  if(I->first == input_name)
+  {
+   return index;
+  }
+ }
+
+ return -1;
 }
-			   */
+
 // --------------------------
 
 // ----------------------
@@ -891,12 +906,12 @@ ULinksListT<T>& UConnector::GetLinks(ULinksListT<T> &linkslist, UEPtr<UContainer
    UIProperty* property=0;
    FindInputProperty(I->first, property);
    if(property)
-	connector.Index=-1;//property->GetMinRange();
+	connector.Index=FindInputIndex(I->first);//-1;//property->GetMinRange();
    else
-    connector.Index=-1;//i;
+    connector.Index=i;
    connector.Name=I->first;
 
-   item.Index=-1;//CItemList[i].Index;
+   item.Index=I->second[i].Item->FindOutputIndex(I->second[i].Name);//-1;//CItemList[i].Index;
    item.Name=I->second[i].Name;//CItemList[i].Name;
    if(connector.Id.size() != 0)
    {
