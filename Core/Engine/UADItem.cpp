@@ -102,7 +102,7 @@ bool UADItem::SetNumInputs(const int &value)
   std::string name=std::string("DataInput")+sntoa(i);
   UEPtr<UIProperty> property=FindProperty(name);
   if(!property)
-   AddLookupProperty(name,ptPubInput,new UVPropertyInputData<UItemData,UADItem>(this,InputData[i]));
+   AddLookupProperty(name,ptPubInput,new UVPropertyInputData<UItemData,UADItem>(this,&InputData[i]));
   else
    property->UpdatePData(&InputData[i]);
  }

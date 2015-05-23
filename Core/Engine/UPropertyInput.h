@@ -49,6 +49,12 @@ protected:
 /// Временная переменная, использующаяся, если нет реального подключения
 mutable T Local;
 
+/// Внешний указатель, передаваемый в виртуальный вход
+mutable T** ExternalPData;
+
+/// Временная переменная, использующаяся если нет реального подключения
+mutable T* LocalExternalPData;
+
 /// Флаг наличия подключения
 bool IsConnectedFlag;
 
@@ -57,12 +63,16 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UVPropertyInputBase(OwnerT * const owner, T* data, int input_type)
- : UVProperty<T,OwnerT>(owner, data)
+UVPropertyInputBase(OwnerT * const owner, T** data, int input_type)
+ : UVProperty<T,OwnerT>(owner, (T*)0), ExternalPData(0), LocalExternalPData(0)
 {
  UVBaseDataProperty<T>::IoType=input_type;
  IsConnectedFlag=false;
  this->PData=&Local;
+ if(data)
+  ExternalPData=data;
+ else
+  ExternalPData=&LocalExternalPData;
 };
 // -----------------------------
 
@@ -74,7 +84,16 @@ UVPropertyInputBase(OwnerT * const owner, T* data, int input_type)
 virtual const type_info& GetLanguageType(void) const
 {
  return typeid(T);
-}// --------------------------
+}
+
+/// Обновляет указатель PData
+virtual void UpdatePData(void* data)
+{
+ if(data)
+  this->PData=*reinterpret_cast<T**>(data);
+ ExternalPData=reinterpret_cast<T**>(data);
+}
+// --------------------------
 };
 
 template<typename T, typename OwnerT, unsigned int type=ptPubInput>
@@ -353,14 +372,14 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
-UVPropertyInputData(OwnerT * const owner, T *data)
+UVPropertyInputData(OwnerT * const owner, T **data)
  : UVPropertyInputBase<T,OwnerT>(owner, data, ipSingle | ipData)
 {
  this->PData=&Local;
 };
 
 /// Deprecated
-UVPropertyInputData(OwnerT * const owner, int index)
+UVPropertyInputData(OwnerT * const owner, T **data, int index)
  : UVPropertyInputBase<T,OwnerT>(owner, data, ipSingle | ipData)
 {
  this->PData=&Local;
@@ -392,6 +411,7 @@ bool SetPointer(int index, void* value)
  if(value)
  {
   this->PData=reinterpret_cast<T*>(value);
+  *ExternalPData=this->PData;
   IsConnectedFlag=true;
   return true;
  }
@@ -404,6 +424,7 @@ bool ResetPointer(int index, void* value)
  if(this->PData==value)
  {
   this->PData=&Local;
+  *ExternalPData=this->PData;
   IsConnectedFlag=false;
   return true;
  }
