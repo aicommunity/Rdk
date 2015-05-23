@@ -654,6 +654,13 @@ bool UItem::CheckLink(const UEPtr<UConnector> &connector, int connected_c_index)
 
  return false;
 }
+/*
+// Проверяет, существует ли связь с заданным коннектором и конкретным входом
+bool UItem::CheckLink(const UEPtr<UConnector> &connector, int item_index) const
+{
+ std::string item_property_name=(item_index<0)?std::string(""):(std::string("DataOutput")+sntoa(item_index));
+ return CheckLink(connector, item_property_name);
+} */
 
 bool UItem::CheckLink(const UEPtr<UConnector> &connector, const NameT &item_property_name) const
 {
@@ -667,6 +674,7 @@ bool UItem::CheckLink(const UEPtr<UConnector> &connector, const NameT &item_prop
  return false;
 }
 
+// Проверяет, существует ли связь с заданным коннектором и конкретным входом
 bool UItem::CheckLink(const UEPtr<UConnector> &connector, const NameT &item_property_name, const NameT &connector_property_name, int connected_c_index) const
 {
  UCLink link=connector->GetCLink(this);
@@ -677,6 +685,15 @@ bool UItem::CheckLink(const UEPtr<UConnector> &connector, const NameT &item_prop
  }
  return false;
 }
+
+bool UItem::CheckLink(const UEPtr<UConnector> &connector, int item_index, int conn_index) const
+{
+ std::string connector_property_name=(conn_index<0)?std::string(""):(std::string("DataInput")+sntoa(conn_index));
+ std::string item_property_name=(item_index<0)?std::string(""):(std::string("DataOutput")+sntoa(item_index));
+ return UItem::CheckLink(connector, item_property_name, connector_property_name, conn_index);
+}
+
+
 
 // Возвращает список подключений
 // Имена формируются до уровня компонента owner_level

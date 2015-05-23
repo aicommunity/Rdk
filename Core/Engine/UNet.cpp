@@ -235,11 +235,8 @@ bool UNet::CreateLinks(const ULinksListT<T> &linkslist, UEPtr<UNet> owner_level)
 
  return res;
 }
-
-// Разрывает все связи с выходом элемента сети, если
-// 'id' - есть Id элемента сети.
-// Иначе, если 'id' - Id коннектора, то метод разрывает
-// связи этого коннектора.
+ /*
+// Разрывает все связи со входом
 template<typename T>
 bool UNet::BreakLink(const ULinkSideT<T> &id)
 {
@@ -251,17 +248,10 @@ bool UNet::BreakLink(const ULinkSideT<T> &id)
    connector->DisconnectAllItems();
    return true;
   }
-// !!! Переделать! Сейчас никогда не доходит до кода ниже, т.к. каждый Item
-// является еще и коннектором
- UEPtr<UItem> item=dynamic_pointer_cast<UItem>(pointer);
- if(item)
-  {
-   item->DisconnectAll();
-   return true;
-  }
+
  return false;
 }
-
+   */
 // Разрывает связь 'link'
 template<typename T>
 bool UNet::BreakLink(const ULinkT<T> &link)

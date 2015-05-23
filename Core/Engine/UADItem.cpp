@@ -678,7 +678,7 @@ void UADItem::DisconnectFromItem(UEPtr<UItem> na, const NameT &item_property_nam
 {
  UItem::DisconnectFromItem(na, item_property_name, connector_property_name,connected_c_index);
 }
-
+		   /*
 // Проверяет, допустимо ли подключение заданного item к этому коннектору
 bool UADItem::CheckItem(UEPtr<UItem> item, int item_index, int conn_index)
 {
@@ -689,8 +689,8 @@ bool UADItem::CheckItem(UEPtr<UItem> item, int item_index, int conn_index)
 bool UADItem::CheckItem(UEPtr<UItem> item, const NameT &item_property_name, const NameT &connector_property_name)
 {
  return UItem::CheckItem(item, item_property_name, connector_property_name);
-}
-
+}        */
+	 /*
 // Проверяет, существует ли связь с заданным коннектором и конкретным входом
 bool UADItem::CheckLink(const UEPtr<UConnector> &connector, int item_index) const
 {
@@ -702,19 +702,19 @@ bool UADItem::CheckLink(const UEPtr<UConnector> &connector, const NameT &item_pr
 {
  return UItem::CheckLink(connector, item_property_name);
 }
-
+   /*
 // Проверяет, существует ли связь с заданным коннектором и конкретным входом
 bool UADItem::CheckLink(const UEPtr<UConnector> &connector, int item_index, int conn_index) const
 {
  std::string connector_property_name=(conn_index<0)?std::string(""):(std::string("DataInput")+sntoa(conn_index));
  std::string item_property_name=(item_index<0)?std::string(""):(std::string("DataOutput")+sntoa(item_index));
  return UItem::CheckLink(connector, item_property_name, connector_property_name, conn_index);
-}
-
+}      */
+	/*
 bool UADItem::CheckLink(const UEPtr<UConnector> &connector, const NameT &item_property_name, const NameT &connector_property_name, int connected_c_index) const
 {
  return UItem::CheckLink(connector, item_property_name, connector_property_name, connected_c_index);
-}
+}     */
 
 
 /// Ищет первый свободный вход

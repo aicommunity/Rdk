@@ -113,12 +113,9 @@ virtual bool CreateLink(const NameT &item, const NameT &item_index,
 template<typename T>
 bool CreateLinks(const ULinksListT<T> &linkslist, UEPtr<UNet> owner_level=0);
 
-// Разрывает все связи с выходом элемента сети, если
-// 'id' - есть Id элемента сети.
-// Иначе, если 'id' - Id коннектора, то метод разрывает
-// связи этого коннектора
-template<typename T>
-bool BreakLink(const ULinkSideT<T> &id);
+// Разрывает все связи со входом
+//template<typename T>
+//bool BreakLink(const ULinkSideT<T> &id);
 
 // Разрывает связь 'link'
 template<typename T>

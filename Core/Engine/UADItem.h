@@ -222,18 +222,18 @@ virtual void DisconnectFromItem(UEPtr<UItem> na, const NameT &item_property_name
 virtual void DisconnectFromIndex(int c_index);
 
 // Проверяет, допустимо ли подключение заданного item к этому коннектору
-bool CheckItem(UEPtr<UItem> item, int item_index, int conn_index);
+//bool CheckItem(UEPtr<UItem> item, int item_index, int conn_index);
 
 // Проверяет, допустимо ли подключение заданного item к этому коннектору
-bool CheckItem(UEPtr<UItem> item, const NameT &item_property_name, const NameT &connector_property_name);
+//bool CheckItem(UEPtr<UItem> item, const NameT &item_property_name, const NameT &connector_property_name);
 
 // Проверяет, существует ли связь с заданным коннектором и конкретным входом
-bool CheckLink(const UEPtr<UConnector> &connector, int item_index) const;
-bool CheckLink(const UEPtr<UConnector> &connector, const NameT &item_property_name) const;
+//bool CheckLink(const UEPtr<UConnector> &connector, int item_index) const;
+//bool CheckLink(const UEPtr<UConnector> &connector, const NameT &item_property_name) const;
 
 // Проверяет, существует ли связь с заданным коннектором и конкретным входом
-bool CheckLink(const UEPtr<UConnector> &connector, int item_index, int conn_index) const;
-bool CheckLink(const UEPtr<UConnector> &connector, const NameT &item_property_name, const NameT &connector_property_name, int connected_c_index) const;
+//bool CheckLink(const UEPtr<UConnector> &connector, int item_index, int conn_index) const;
+//bool CheckLink(const UEPtr<UConnector> &connector, const NameT &item_property_name, const NameT &connector_property_name, int connected_c_index) const;
 
 /// Ищет первый свободный вход
 virtual NameT FindFreeInputName(void);
