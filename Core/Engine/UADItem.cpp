@@ -795,7 +795,7 @@ bool UADItem::CheckItem(UEPtr<UItem> item, const NameT &item_property_name, cons
 // Проверяет, существует ли связь с заданным коннектором и конкретным входом
 bool UADItem::CheckLink(const UEPtr<UConnector> &connector, int item_index) const
 {
- std::string item_property_name=std::string("DataOutput")+sntoa(item_index);
+ std::string item_property_name=(item_index<0)?std::string(""):(std::string("DataOutput")+sntoa(item_index));
  return UItem::CheckLink(connector, item_property_name);
 /*
  UCLink link=GetCLink(item);
@@ -815,8 +815,8 @@ bool UADItem::CheckLink(const UEPtr<UConnector> &connector, const NameT &item_pr
 // Проверяет, существует ли связь с заданным коннектором и конкретным входом
 bool UADItem::CheckLink(const UEPtr<UConnector> &connector, int item_index, int conn_index) const
 {
- std::string connector_property_name=std::string("DataInput")+sntoa(conn_index);
- std::string item_property_name=std::string("DataOutput")+sntoa(item_index);
+ std::string connector_property_name=(conn_index<0)?std::string(""):(std::string("DataInput")+sntoa(conn_index));
+ std::string item_property_name=(item_index<0)?std::string(""):(std::string("DataOutput")+sntoa(item_index));
  return UItem::CheckLink(connector, item_property_name, connector_property_name, conn_index);
 /*
  UCLink link=GetCLink(item);

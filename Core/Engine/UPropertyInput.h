@@ -424,7 +424,7 @@ bool ResetPointer(int index, void* value)
  if(this->PData==value)
  {
   this->PData=&Local;
-  *ExternalPData=this->PData;
+  *ExternalPData=0;
   IsConnectedFlag=false;
   return true;
  }

@@ -760,7 +760,7 @@ bool UItem::CheckLink(const UEPtr<UConnector> &connector, const NameT &item_prop
  UCLink link=connector->GetCLink(this);
  if(!link.OutputName.empty())
  {
-  if(link.InputName == connector_property_name && (connected_c_index < 0 || connected_c_index == link.Input))
+  if((connector_property_name.empty() || link.InputName == connector_property_name) && ((connected_c_index < 0 || connected_c_index == link.Input) || link.Input<0))
    return true;
  }
  return false;
