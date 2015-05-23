@@ -208,9 +208,6 @@ virtual UCLink GetCLink(const UItem* const item) const;
 // --------------------------
 /// Ищет свойство-вход по заданному индексу
 virtual void FindInputProperty(const NameT &connector_property_name, UIProperty* &property) const;
-
-/// Возвращает индекс входа с заданным именем
-//virtual int FindInputIndex(const NameT &input_name) const;
 // --------------------------
 
 // ----------------------
@@ -252,12 +249,6 @@ virtual void DisconnectAllItems(void);
 virtual void DisconnectByObject(UEPtr<UContainer> brklevel);
 
 public:
-// Возвращает интерфейс входа
-//virtual UEInterface* GetInputInterface(int c_index);
-
-// Возвращает интерфейс входа
-//NameT GetInputInterfaceTypeName(int c_index);
-
 // Проверяет, допустимо ли подключение заданного item к этому коннектору
 bool CheckItem(UEPtr<UItem> item, const NameT &item_property_name, const NameT &connector_property_name);
 
@@ -306,34 +297,6 @@ struct EInputIndexNotExist: public EInvalidIndex
 EInputIndexNotExist(int index) : EInvalidIndex(index) {};
 };
 };
-
-	   /*
-class UIPropertyIO
-{
-public:
-// --------------------------
-// Методы управления данными
-// --------------------------
-/// Возвращает тип свойства ввода-вывода
-virtual int GetIoType(void) const=0;
-
-/// Возвращает диапазон индексов входа/выхода
-virtual bool CheckRange(int index)=0;
-// --------------------------
-
-// --------------------------
-// Методы управления указателем
-// --------------------------
-/// Возвращает указатель на данные
-virtual void const* GetPointer(int index) const=0;
-
-/// Устанавливает указатель на данные
-virtual bool SetPointer(int index, void* value)=0;
-
-/// Первичная инициализация указателя
-virtual void Init(void)=0;
-// --------------------------
-};     */
 
 class RDK_LIB_TYPE UIPropertyInput
 {

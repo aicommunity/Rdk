@@ -49,18 +49,7 @@ template<typename T>
 ULinksListT<T>& UNet::GetPersonalLinks(UEPtr<RDK::UNet> cont, ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel, int sublevel)
 {
  GetPersonalLinks(const_cast<UNet*>(this), cont, linkslist, netlevel);
-/*
- for(int i=0;i<linkslist.GetSize();i++)
- {
-  ULinkT<T> &link=linkslist[i];
-  ULinkSideT<T> &item=link.item;
-  ULinkSideT<T> &connector=link.connector;
 
-  if()
- }
- // Прореживаем
-// linkslist.
-  */
  return linkslist;
 }
 
@@ -155,54 +144,6 @@ bool UNet::CreateLink(const ULinkT<T> &link)
  }
 
  return res;
-/*
- UEPtr<UItem> pitem;
- bool res=true;
- if(!CheckLongId(link.Item.Id))
-  pitem=this;
- else
-  pitem=dynamic_pointer_cast<UItem>(GetComponentL(link.Item.Id));
-
- if(!pitem)
- {
-  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Item not found: ")+link.Item.Name);
-  return false;
- }
-
- for(size_t i=0;i<link.Connector.size();i++)
- {
-  UEPtr<UConnector> pconnector=0;
-  const ULinkSideT<T> &connector=link.Connector[i];
-  if(!CheckLongId(connector.Id))
-   pconnector=this;
-  else
-   pconnector=dynamic_pointer_cast<UConnector>(GetComponentL(connector.Id,true));
-
-  if(!pconnector)
-  {
-   LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Connector not found: ")+connector.Name);
-   res=false;
-  }
-
-  if(!link.Item.Name.empty() && !connector.Name.empty())
-  {
-   int c_index;
-   if(!(pitem->Connect(pconnector,link.Item.Name,connector.Name,c_index)))
-	res=false;
-  }
-  else
-  {
-   if(link.Item.Index < 0)
-   {
-	LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, "Item index < 0");
-	return false;
-   }
-
-   if(!(pitem->Connect(pconnector,link.Item.Index,connector.Index)))
-	res=false;
-  }
- }
- return res;  */
 }
 
 // Устанавливает новую связь между выходом элемента сети
@@ -215,13 +156,7 @@ bool UNet::CreateLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
   pitem=this;
  else
   pitem=dynamic_pointer_cast<UADItem>(GetComponentL(item.Id,true));
-/*
- if(item.Index < 0)
- {
-  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, "Item index < 0");
-  return false;
- }
-  */
+
  UEPtr<UConnector> pconnector=0;
  if(!CheckLongId(connector.Id))
   pconnector=this;
@@ -272,117 +207,13 @@ bool UNet::CreateLink(const NameT &item, int item_index,
 						const NameT &connector, int connector_index)
 {
  return CreateLink(UStringLinkSide(item,item_index),UStringLinkSide(connector,connector_index));
-
-/*
- UEPtr<UItem> pitem=0;
- UEPtr<UConnector> pconnector=0;
- if(!item.size())
-  pitem=this;
- else
-  pitem=dynamic_pointer_cast<UItem>(GetComponentL(item));
-
- if(!connector.size())
-  pconnector=this;
- else
-  pconnector=dynamic_pointer_cast<UConnector>(GetComponentL(connector));
-
- if(!pitem)
- {
-  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Item not found: ")+item);
-  return false;
- }
-
- if(!pconnector)
- {
-  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Connector not found: ")+connector);
-  return false;
- }
-
- if(item_index < 0)
- {
-  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, "Item index < 0");
-  return false;
- }
-
- if(!(pitem->Connect(pconnector,item_index,connector_index)))
-  return false;
-
- return true;    */
 }
 
 bool UNet::CreateLink(const NameT &item, const NameT &item_index,
 						const NameT &connector, const NameT &connector_index, int connector_c_index)
 {
  return CreateLink(UStringLinkSide(item,item_index),UStringLinkSide(connector,connector_index, connector_c_index));
-
-/* UEPtr<UItem> pitem=0;
- UEPtr<UConnector> pconnector=0;
- if(!item.size())
-  pitem=this;
- else
-  pitem=dynamic_pointer_cast<UItem>(GetComponentL(item,true));
-
- if(!connector.size())
-  pconnector=this;
- else
-  pconnector=dynamic_pointer_cast<UConnector>(GetComponentL(connector,true));
-
- if(!pitem)
- {
-  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Item not found: ")+item);
-  return false;
- }
-
- if(!pconnector)
- {
-  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Connector not found: ")+connector);
-  return false;
- }
-
-
- int i_item_index=pitem->FindOutputIndex(item_index);
- int i_connector_index=pconnector->FindInputIndex(connector_index);
-
- if(i_item_index < 0)
- {
-  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, "Item index < 0");
-  return false;
- }
-
- if(!(pitem->Connect(pconnector,i_item_index,i_connector_index)))
-  return false;
-
- return true;   */
 }
-/*
-bool UNet::CreateLink(const NameT &item, const NameT &item_property_name,
-						const NameT &connector, const NameT &connector_property_name)
-{
- UEPtr<UItem> pitem=0;
- UEPtr<UConnector> pconnector=0;
- if(!item.size())
-  pitem=this;
- else
-  pitem=dynamic_pointer_cast<UItem>(GetComponentL(item,true));
-
- if(!connector.size())
-  pconnector=this;
- else
-  pconnector=dynamic_pointer_cast<UConnector>(GetComponentL(connector,true));
-
- if(!pitem)
-  return false;
-
- if(!pconnector)
-  return false;
-
- int c_index;
- if(!(pitem->Connect(pconnector,item_property_name,connector_property_name, c_index)))
-  return false;
-
- return true;
-}            */
-
 
 // Устанавливает все связи из массива 'linkslist'.
 template<typename T>
@@ -440,42 +271,6 @@ bool UNet::BreakLink(const ULinkT<T> &link)
   res&=BreakLink(link.Item,link.Connector[i]);
 
  return res;
-/*
- UEPtr<UItem> pitem=0;
- if(!CheckLongId(Id))
-  pitem=this;
- else
-  pitem=dynamic_pointer_cast<UItem>(GetComponentL(link.Item.Id,true));
-
- if(!pitem)
-  return false;
-
- for(size_t i=0;i<link.Connector.size();i++)
- {
-  UEPtr<UConnector> pconnector=0;
-  const ULinkSide &connector=link.Connector[i];
-
-  if(!CheckLongId(connector.Id))
-   pconnector=this;
-  else
-   pconnector=dynamic_pointer_cast<UConnector>(GetComponentL(connector.Id,true));
-
-  if(!pitem)
-  {
-   LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Item not found: ")+link.Item.Name);
-   return false;
-  }
-
-  if(!pconnector)
-  {
-   LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Connector not found: ")+connector.Name);
-   return false;
-  }
-
-  pitem->Disconnect(pconnector, link.Item.Index,connector.Index);
- }
-
- return true;  */
 }
 
 // Разрывает связь между выходом элемента сети, 'itemid'
@@ -531,22 +326,6 @@ bool UNet::BreakLink(const NameT &itemname, int item_index,
 						const NameT &connectorname, int connector_index)
 {
  return BreakLink(UStringLinkSide(itemname,item_index),UStringLinkSide(connectorname,connector_index));
-/*
- UEPtr<UItem> item;
- UEPtr<UConnector> connector;
- if(itemname.size() == 0)
-  item=this;
- else
-  item=dynamic_pointer_cast<UItem>(GetComponentL(itemname,true));
-
- if(connectorname.size() == 0)
-  connector=this;
- else
-  connector=dynamic_pointer_cast<UConnector>(GetComponentL(connectorname,true));
-
- item->Disconnect(connector, item_index, connector_index);
-
- return true;  */
 }
 
 // Разрывает все связи между выходом элемента сети, 'itemid'
@@ -575,22 +354,6 @@ bool UNet::BreakLink(const NameT &itemname, const NameT &item_property_name,
 						const NameT &connectorname, const NameT &connector_property_name, int connector_c_index)
 {
  return BreakLink(UStringLinkSide(itemname,item_property_name), UStringLinkSide(connectorname,connector_property_name, connector_c_index));
-
-/* UEPtr<UItem> item;
- UEPtr<UConnector> connector;
- if(itemname.size() == 0)
-  item=this;
- else
-  item=dynamic_pointer_cast<UItem>(GetComponentL(itemname));
-
- if(connectorname.size() == 0)
-  connector=this;
- else
-  connector=dynamic_pointer_cast<UConnector>(GetComponentL(connectorname));
-
- item->Disconnect(connector);
-
- return true;      */
 }
 
 // Разрывает все связи сети
@@ -658,10 +421,7 @@ void UNet::BreakConnectorLink(const NameT &connectorname, int connector_index)
   return;
 
  const UCItem &item = connector->GetCItem(connector_index);
-// item.Item->Disconnect(connector);
-// std::string item_name;
-// item.Item->GetLongName(this,item_name);
-// BreakLink(
+
   if(!item.Item)
   {
    LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Item not found: ")+item.Name);
@@ -677,7 +437,6 @@ void UNet::BreakConnectorLink(const NameT &connectorname, int connector_index)
   }
 
   ad_item->Disconnect(connector,item.Index, connector_index);
-// connector->DisconnectFromIndex(connector_index);
 }
 
 void UNet::BreakConnectorLink(const NameT &connectorname, const NameT &connector_index, int connector_c_index)
@@ -693,9 +452,6 @@ void UNet::BreakConnectorLink(const NameT &connectorname, const NameT &connector
   LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Connector not found: ")+connectorname);
   return;
  }
-
-// if(connector->GetNumInputs() <= connector_index)
-//  return;
 
  std::vector<UCItem> buffer;
  connector->GetCItem(connector_index, buffer);
@@ -762,33 +518,12 @@ bool UNet::CheckLink(const NameT &itemname, int item_index,
 						const NameT &connectorname, int connector_index)
 {
  return CheckLink(UStringLinkSide(itemname,item_index),UStringLinkSide(connectorname,connector_index));
-/*
- UEPtr<UItem> item=dynamic_pointer_cast<UItem>(GetComponentL(itemname,true));
- UEPtr<UConnector> connector=dynamic_pointer_cast<UConnector>(GetComponentL(connectorname,true));
- if(!item || !connector)
-  return false;
-
- if(item->CheckLink(connector,item_index, connector_index))
-  return true;
-
- return true;*/
 }
 
 bool UNet::CheckLink(const NameT &itemname, const NameT &item_property_name,
 						const NameT &connectorname, const NameT &connector_property_name, int connector_c_index)
 {
  return CheckLink(UStringLinkSide(itemname,item_property_name),UStringLinkSide(connectorname,connector_property_name, connector_c_index));
-
-/*
- UEPtr<UItem> item=dynamic_pointer_cast<UItem>(GetComponentL(itemname));
- UEPtr<UConnector> connector=dynamic_pointer_cast<UConnector>(GetComponentL(connectorname));
- if(!item || !connector)
-  return false;
-
- if(item->CheckLink(connector,item_property_name, connector_property_name))
-  return true;
-
- return false;*/
 }
 
 bool UNet::CheckLink(const NameT &itemname,const NameT &connectorname, int connector_c_index)
@@ -1326,7 +1061,6 @@ bool UNet::SaveComponentDrawInfo(RDK::UNet* cont, RDK::USerStorageXML *serstorag
   serstorage->AddNode("Links");
 
   UStringLinksList linkslist;
-//  cont->GetLinks(linkslist, cont);
 
   for(int i=0;i<cont->GetNumComponents();i++)
   {
@@ -1347,8 +1081,6 @@ bool UNet::SaveComponentDrawInfo(RDK::UNet* cont, RDK::USerStorageXML *serstorag
    {
 	if(!cont->GetComponentProperties(sub_cont,serstorage,ptPubParameter))
 	 return false;
-//	if(!cont->GetComponentProperties(sub_cont,serstorage,ptParameter|pgAny))
-//	 return false;
    }
    catch (UException &exception)
    {

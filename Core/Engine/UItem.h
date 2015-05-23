@@ -126,15 +126,8 @@ void Resize(int newsize);
 // Добавляет в конец контейнера элемент
 void Add(const UAConnectorVector &item);
 
-// Добавляет в конец контейнера элемент только если таких элементов еще нет
-// Возвращает true в случае успешного добавления
-//bool AddUnique(const UAConnectorVector &item);
-
 // Удаляет элемент по индексу
 void Del(int index);
-
-// Удаляет элемент по указателю
-//void Del(UAConnectorVector *item);
 // --------------------------
 
 // --------------------------
@@ -163,15 +156,8 @@ protected: // Основные свойства
 std::map<std::string, std::vector<PUAConnector> > RelatedConnectors;
 
 protected: // Временные переменные. Read Only!
-// Указатель на первый элемент списка подключенных коннекторов
-//vector<UConnector**> PAssociatedConnectors;
-
-// Число элементов списка подключенных коннекторов
-//vector<size_t> NumAConnectors;
 
 protected: // Переменные быстрого доступа к даннным выходов. Read only!
-// Число выходов
-//size_t CNumOutputs;
 
 public: // Методы
 // --------------------------
@@ -197,12 +183,6 @@ virtual int GetNumActiveOutputs(const NameT &item_property_name) const;
 // --------------------------
 /// Ищет свойство-выход по заданному индексу
 virtual void FindOutputProperty(const NameT &item_property_name, UIProperty* &property) const;
-
-/// Возвращает индекс входа с заданным именем
-//virtual int FindOutputIndex(const NameT &output_name) const;
-
-/// Ищет свойство-вход по заданному индексу
-//void FindInputProperty(int index, UIProperty* &property);
 // --------------------------
 
 
@@ -264,11 +244,9 @@ virtual UEPtr<UConnector> GetAConnectorByIndex(const NameT &item_property_name, 
 bool CheckLink(const UEPtr<UConnector> &connector, int connected_c_index) const;
 
 // Проверяет, существует ли связь с заданным коннектором и конкретным входом
-//bool CheckLink(const UEPtr<UConnector> &connector, int item_index) const;
 bool CheckLink(const UEPtr<UConnector> &connector, const NameT &item_property_name) const;
 
 // Проверяет, существует ли связь с заданным коннектором и конкретным входом
-//bool CheckLink(const UEPtr<UConnector> &connector, int item_index, int conn_index) const;
 bool CheckLink(const UEPtr<UConnector> &connector, const NameT &item_property_name, const NameT &connector_property_name, int connected_c_index) const;
 
 // Возвращает список подключений
@@ -298,9 +276,6 @@ virtual bool Default(void);
 // Автоматически вызывает метод Reset() и выставляет Ready в true
 // в случае успешной сборки
 virtual bool Build(void);
-
-// Активирует все коннекторы, подключенные к выходу этого объекта.
-//virtual void ActivateAll(void);
 // --------------------------
 
 };

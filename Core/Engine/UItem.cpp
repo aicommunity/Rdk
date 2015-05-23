@@ -49,7 +49,6 @@ UAConnectorVector::~UAConnectorVector(void)
   Data=0;
  }
  Size=RealSize=0;
-// Clear();
 }
 // --------------------------
 
@@ -59,12 +58,6 @@ UAConnectorVector::~UAConnectorVector(void)
 // Очищает контейнер
 void UAConnectorVector::Clear(void)
 {
-/* if(Data)
- {
-  delete []Data;
-  Data=0;
- }
- Size=RealSize=0;     */
  Size=0;
 }
 
@@ -250,36 +243,12 @@ void UAConnector2DVector::Resize(int newsize)
  }
 }
 
-// Ищет в контейнере первый заданный элемент начиная с индекса index
-// и возвращает его индекс или -1 если элемент не найден
-/*int UAConnector2DVector::Find(const UAConnectorVector &item, int index) const
-{
- UAConnectorVector *pdata=Data;
-
- for(int i=index;i<Size;i++,pdata++)
-  if(*pdata == item)
-   return i;
-
- return -1;
-} */
-
 // Добавляет в конец контейнера элемент
 void UAConnector2DVector::Add(const UAConnectorVector &item)
 {
  Resize(Size+1);
  Data[Size-1]=item;
 }
-
-// Добавляет в конец контейнера элемент только если таких элементов еще нет
-// Возвращает true в случае успешного добавления
-/*bool UAConnector2DVector::AddUnique(const UAConnectorVector &item)
-{
- if(Find(item)>=0)
-  return false;
-
- Add(item);
- return true;
-} */
 
 // Удаляет элемент по индексу
 void UAConnector2DVector::Del(int index)
@@ -289,16 +258,8 @@ void UAConnector2DVector::Del(int index)
 
  for(int i=index;i<Size-1;i++)
   Data[i]=Data[i+1];
-// memcpy(Data+index,Data+index+1,(Size-1)*sizeof(UAConnectorVector));
  Resize(Size-1);
 }
-/*
-// Удаляет элемент по указателю
-void UAConnector2DVector::Del(UAConnectorVector *item)
-{
- int index=Find(*item);
- Del(index);
-}  */
 // --------------------------
 
 // --------------------------
@@ -378,26 +339,6 @@ void UItem::FindOutputProperty(const NameT &item_property_name, UIProperty* &pro
   property=I->second.Property.Get();
  }
 }
-   /*
-/// Возвращает индекс входа с заданным именем
-int UItem::FindOutputIndex(const NameT &output_name) const
-{
- // Ищем указатель на выходные данные
- UIProperty* property=0;
- VariableMapCIteratorT I=PropertiesLookupTable.find(output_name);
- if(I == PropertiesLookupTable.end())
-  return ForbiddenId;
-
- if(!(I->second.Type & ptOutput))
-  return ForbiddenId;
-
- property=I->second.Property.Get();
- if(!property)
-  return ForbiddenId;
-
- return property->GetMinRange();
-}    */
-
 // --------------------------
 
 
@@ -424,7 +365,6 @@ bool UItem::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, cons
 
  // Ищем указатель на выходные данные
  UIProperty* output_property=na->FindProperty(item_property_name);
-// na->FindOutputProperty(i_index, output_property);
 
  if(output_property)
  {
@@ -437,7 +377,6 @@ bool UItem::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, cons
 
  // Ищем указатель на входные данные
  UIProperty* input_property=FindProperty(connector_property_name);
-// FindInputProperty(c_index, input_property);
  if(input_property)
  {
   if(input_property->GetIoType() & ipData)
@@ -676,7 +615,6 @@ void UItem::BuildLinks(void)
 
 // Возвращает указатель на коннектор из списка подключений
 // по имени 'name'.
-
 UEPtr<UConnector> UItem::GetAConnector(const UId &id, int index) const
 {
  std::map<std::string, std::vector<PUAConnector> >::const_iterator I=RelatedConnectors.begin();
@@ -716,19 +654,7 @@ bool UItem::CheckLink(const UEPtr<UConnector> &connector, int connected_c_index)
 
  return false;
 }
-/*
-// Проверяет, существует ли связь с заданным коннектором и конкретным входом
-bool UItem::CheckLink(const UEPtr<UConnector> &connector, int item_index) const
-{
- UCLink link=connector->GetCLink(this);
- if(link.Input >=0)
- {
-  if(link.Output == item_index || item_index <0)
-   return true;
- }
- return false;
-}
-             */
+
 bool UItem::CheckLink(const UEPtr<UConnector> &connector, const NameT &item_property_name) const
 {
  UCLink link=connector->GetCLink(this);
@@ -740,20 +666,6 @@ bool UItem::CheckLink(const UEPtr<UConnector> &connector, const NameT &item_prop
 
  return false;
 }
-
-/*
-// Проверяет, существует ли связь с заданным коннектором и конкретным входом
-bool UItem::CheckLink(const UEPtr<UConnector> &connector, int item_index, int conn_index) const
-{
- UCLink link=connector->GetCLink(this);
- if(link.Output>=0)
- {
-  if(link.Input == conn_index || conn_index<0)
-   return true;
- }
-
- return false;
-}   */
 
 bool UItem::CheckLink(const UEPtr<UConnector> &connector, const NameT &item_property_name, const NameT &connector_property_name, int connected_c_index) const
 {

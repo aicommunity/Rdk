@@ -27,7 +27,6 @@ vector<UItemData> OutputData;
 
 private: // Хранилище входных связей
 // Массив указателей на вектора входов
-//vector<UEPtr<const UItemData> > InputData;
 vector<UItemData*> InputData;
 
 protected: // Общедоступные свойства
@@ -219,12 +218,6 @@ virtual void DisconnectFromItem(UEPtr<UItem> na, const NameT &item_property_name
 /// Разрывает связь с элементом сети 'na', подключенную от i_index к c_index
 virtual void DisconnectFromItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int connected_c_index);
 
-// Выполняет действия после физически установленой связи
-//virtual bool AConnectToItem(UEPtr<UItem> na, int i_index, int c_index);
-
-// Выполняет действия после физически разорваной связи
-//virtual void ADisconnectFromItem(UEPtr<UItem> na, int i_index, int c_index);
-
 // Разрывает связь с элементом сети подключенным ко входу 'index'
 virtual void DisconnectFromIndex(int c_index);
 
@@ -291,9 +284,6 @@ virtual bool Reset(void);
 // Вспомогательные методы
 // ----------------------
 private:
-// Обновляет входной массив по данным подключенного ко входу компонента
-//void UpdateInputData(int index);
-
 // Обновляет указатели на массивы входов и выходов
 void UpdatePointers(void);
 

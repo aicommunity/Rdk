@@ -24,8 +24,6 @@ namespace RDK {
 // Конструкторы и деструкторы
 // --------------------------
 UADItem::UADItem(void)
-// : OutputSize("OutputSize",this,&UADItem::SetOutputDataSize,&UADItem::GetOutputDataSize),
-//   DataOutputSize("DataOutputSize",this,&UADItem::SetDataOutputSize,&UADItem::GetDataOutputSize)
 {
  NumInputs=0;
  AddLookupProperty("NumInputs",ptParameter & pgSystem,new UVProperty<int,UADItem>(this,&UADItem::SetNumInputs,&UADItem::GetNumInputs));
@@ -36,12 +34,6 @@ UADItem::UADItem(void)
 
  // Указатель на первый элемент массива указателей на вектора входов
  POutputData=0;
-
- // Указатель на первый элемент массива указателей на вектора входов
-// PInputData=0;
-
- // Указатель на первый элемент массива размеров векторов входов
-// PInputDataSize=0;
 
  // Суммарное число всех входов
  FullInputDataSize=0;
@@ -55,14 +47,6 @@ UADItem::UADItem(void)
 
 UADItem::~UADItem(void)
 {
-/* for(size_t i=0;i<InputDataInfo.size();i++)
-  if(InputDataInfo[i])
-   delete InputDataInfo[i].Get();
-
- for(size_t i=0;i<OutputDataInfo.size();i++)
-  if(OutputDataInfo[i])
-   delete OutputDataInfo[i].Get();
-   */
 }                       
 // --------------------------
 
@@ -131,7 +115,7 @@ bool UADItem::SetAutoNumInputs(const bool &value)
 // Возвращает число подключенных элементов item
 const int& UADItem::GetNumOutputs(void) const
 {
- return NumOutputs;//AssociatedConnectors.GetSize();
+ return NumOutputs;
 }
 
 // Устанавливает число подключенных элементов item
@@ -207,12 +191,6 @@ int UItem::GetNumActiveOutputs(const NameT &item_property_name) const
 // --------------------------
 // Методы доступа к свойствам
 // --------------------------
-// Возвращает вектор выходных данных
-/*inline const UItemData& UADItem::GetOutputData(int index) const
-{
- return POutputData[index];
-} */
-
 // Возвращает указатель на вектор входов InputData по указателю на item
 // Возвращает 0 если citem == 0 или не найден в списке подключений
 const UEPtr<const UItemData>& UADItem::GetInputData(const UEPtr<UItem> &citem) const
@@ -247,15 +225,6 @@ size_t UADItem::GetInputDataSize(size_t index) const
   return 0;
 
  return InputData[index]->GetSize();
-/*
- try
- {
-  return InputData[index]->GetSize();
- }
- catch (UEPtr<const RDK::UItemData>::EUsingZeroPtr *exception)
- {
-  return 0;
- }*/
 }
 
 // Возвращает суммарный размер всех векторов входов
@@ -483,10 +452,6 @@ bool UADItem::SetOutputDataElementSize(const vector<size_t> &value)
 // Возвращает подключенный к этому коннектору объект по индексу
 const UCItem& UADItem::GetCItem(int c_index) const
 {
-// if(c_index>=CItemList.GetSize())
-//  throw EInputIndexNotExist(c_index);
-// return CItemList[c_index];
-
  UIProperty* i_conn_property=0;
 
  FindInputProperty(c_index, i_conn_property);
@@ -568,50 +533,6 @@ void UADItem::FindOutputProperty(const NameT &item_property_name, UIProperty* &p
  return UItem::FindOutputProperty(item_property_name, property);
 }
 
-
-	  /*
-
-// Устанавливает связь с элементом сети 'na' со входом по индексу index.
-// Переназначает связь если na уже подключен.
-bool UItem::ConnectToItem(UEPtr<UItem> na, int i_index, int &c_index)
-{
- if(!UConnector::ConnectToItem(na, i_index, c_index))
-  return false;
-
- // Ищем указатель на выходные данные
- UIProperty* output_property=0;
- na->FindOutputProperty(i_index, output_property);
-
-// if(output_property)
-//  CItemList[c_index].Name=output_property->GetName();
-
- // Ищем указатель на входные данные
- UIProperty* input_property=0;
- FindInputProperty(c_index, input_property);
- if(input_property)
- {
-  if(input_property->GetIoType() & ipData)
-  {
-   if(input_property->GetIoType() & ipSingle)
-   {
-	if(output_property && output_property->CompareLanguageType(*input_property))
-	 input_property->SetPointer(c_index,const_cast<void*>(output_property->GetPointer(i_index)));
-   }
-   else
-   if(input_property->GetIoType() & ipRange)
-   {
-	if(output_property)
-	 input_property->SetPointer(c_index,const_cast<void*>(output_property->GetPointer(i_index)));
-   }
-  }
-  else
-  if(input_property->GetIoType() & ipComp)
-   input_property->SetPointer(c_index,na);
- }
-
- return true;
-}
-        */
 // Устанавливает связь с элементом сети 'na' со входом по индексу index.
 // Переназначает связь если na уже подключен.
 bool UADItem::ConnectToItem(UEPtr<UItem> na, int i_index, int &c_index)
@@ -624,9 +545,6 @@ bool UADItem::ConnectToItem(UEPtr<UItem> na, int i_index, int &c_index)
  {
   if(AutoNumInputs)
   {
-//   if(c_index<0)
-//	c_index=NumInputs;
-
    if(!SetNumInputs(c_index+1))
 	return false;
    if(!Build())
@@ -634,9 +552,6 @@ bool UADItem::ConnectToItem(UEPtr<UItem> na, int i_index, int &c_index)
   }
   else
    return false;
-
-//  if(c_index<0)
-//   c_index=NumInputs-1;
  }
  else
  if(c_index<0)
@@ -764,25 +679,9 @@ void UADItem::DisconnectFromItem(UEPtr<UItem> na, const NameT &item_property_nam
  UItem::DisconnectFromItem(na, item_property_name, connector_property_name,connected_c_index);
 }
 
-
- /*
-// Выполняет действия после физически установленой связи
-bool UADItem::AConnectToItem(UEPtr<UItem> na, int i_index, int c_index)
-{
- return true;
-}
-
-// Выполняет действия после физически разорваной связи
-void UADItem::ADisconnectFromItem(UEPtr<UItem> na, int i_index, int c_index)
-{
-}    */
-
 // Проверяет, допустимо ли подключение заданного item к этому коннектору
 bool UADItem::CheckItem(UEPtr<UItem> item, int item_index, int conn_index)
 {
-/* if(item->GetOutputType(item_index) == GetInputType(conn_index))
-  return true;
- return false;*/
  return true;
 }
 
@@ -797,14 +696,6 @@ bool UADItem::CheckLink(const UEPtr<UConnector> &connector, int item_index) cons
 {
  std::string item_property_name=(item_index<0)?std::string(""):(std::string("DataOutput")+sntoa(item_index));
  return UItem::CheckLink(connector, item_property_name);
-/*
- UCLink link=GetCLink(item);
- if(link.Input >=0)
- {
-  if(link.Output == item_index || item_index <0)
-   return true;
- }
- return false;*/
 }
 
 bool UADItem::CheckLink(const UEPtr<UConnector> &connector, const NameT &item_property_name) const
@@ -818,16 +709,6 @@ bool UADItem::CheckLink(const UEPtr<UConnector> &connector, int item_index, int 
  std::string connector_property_name=(conn_index<0)?std::string(""):(std::string("DataInput")+sntoa(conn_index));
  std::string item_property_name=(item_index<0)?std::string(""):(std::string("DataOutput")+sntoa(item_index));
  return UItem::CheckLink(connector, item_property_name, connector_property_name, conn_index);
-/*
- UCLink link=GetCLink(item);
- if(link.Output>=0)
- {
-  if(link.Input == conn_index || conn_index<0)
-   return true;
- }
-
- return false;
- */
 }
 
 bool UADItem::CheckLink(const UEPtr<UConnector> &connector, const NameT &item_property_name, const NameT &connector_property_name, int connected_c_index) const
@@ -872,7 +753,6 @@ void UADItem::DisconnectFromIndex(int c_index)
 
  DisconnectFromIndex(i_conn_property->GetName(), "", -1);
 
-// InputDataSize[c_index]=0;
  InputData[c_index]=0;
 
  UpdatePointers();
@@ -883,9 +763,6 @@ void UADItem::DisconnectFromIndex(const NameT &connector_property_name, const Na
 {
  UItem::DisconnectFromIndex(connector_property_name, item_property_name, index);
 
- // TODO тут чтото другое вместо этого:
-// InputData[c_index]=0;
-
  UpdatePointers();
  CalcMinMaxInputDataSize();
 }
@@ -893,9 +770,6 @@ void UADItem::DisconnectFromIndex(const NameT &connector_property_name, const Na
 void UADItem::DisconnectFromIndex(const NameT &connector_property_name)
 {
  UItem::DisconnectFromIndex(connector_property_name);
-
- // TODO тут чтото другое вместо этого:
-// InputData[c_index]=0;
 
  UpdatePointers();
  CalcMinMaxInputDataSize();
@@ -916,19 +790,8 @@ bool UADItem::Connect(UEPtr<UConnector> c, int i_index, int c_index)
  if(!Build())
   return false;
 
-// UIProperty *i_item_property=0;
-// UIProperty *i_conn_property=0;
-// FindOutputProperty(i_index,i_item_property);
-// c->FindInputProperty(c_index,i_conn_property);
-
  std::string item_property_name=std::string("DataOutput")+sntoa(i_index),
 	conn_property_name;
-/*
- if(i_item_property)
-  item_property_name=i_item_property->GetName();
- else
-  item_property_name=std::string("DataOutput")+sntoa(i_index);
-  */
 
   if(!FindProperty(item_property_name))
    return false;
@@ -954,10 +817,6 @@ bool UADItem::Connect(UEPtr<UConnector> c, int i_index, int c_index)
 	conn_property_name=std::string("DataInput")+sntoa(c_index);
    }
   }
-
-
-// if(!i_item_property || !i_conn_property)
-//  return true;
 
  int cc_index=-1;
  return Connect(c, item_property_name, conn_property_name, cc_index);
@@ -1053,7 +912,6 @@ int UADItem::GetNumAConnectors(int index) const
   return 0;
 
  return int(I->second.size());
-// return AssociatedConnectors[index].GetSize();//NumAConnectors[index];
 }
 
 int UADItem::GetNumAConnectors(const NameT &item_property_name) const
@@ -1104,7 +962,6 @@ bool UADItem::Default(void)
  SetAutoNumInputs(true);
  SetNumOutputs(1);
  SetAutoNumOutputs(true);
-// SetOutputDataElementSize(0,sizeof(void*));
  SetOutputDataSize(0,1);
 
  return UItem::Default();
@@ -1132,12 +989,6 @@ bool UADItem::Build(void)
    if(!property)
 	continue;
 
-/*   if(property->GetMinRange()+1>min_num_inputs)
-	min_num_inputs=property->GetMinRange()+1;
-
-   if(property->GetMaxRange()+1>min_num_inputs)
-	min_num_inputs=property->GetMaxRange()+1;
-  */
    min_num_inputs++;
   }
 
@@ -1146,13 +997,8 @@ bool UADItem::Build(void)
    UIProperty* property=dynamic_cast<UIProperty*>(I->second.Property.Get());
    if(!property)
 	continue;
-					/*
-   if(property->GetMinRange()+1>min_num_outputs)
-	min_num_outputs=property->GetMinRange()+1;
 
-   if(property->GetMaxRange()+1>min_num_outputs)
-	min_num_outputs=property->GetMaxRange()+1;*/
-	min_num_outputs++;
+   min_num_outputs++;
   }
  }
 
@@ -1176,7 +1022,6 @@ bool UADItem::Reset(void)
 {
  if(!UContainer::Reset())
   return false;
-// FillOutputData();
 
  return true;
 }
@@ -1185,17 +1030,6 @@ bool UADItem::Reset(void)
 // ----------------------
 // Вспомогательные методы
 // ----------------------
-// Обновляет входной массив по данным подключенного ко входу компонента
-/*void UADItem::UpdateInputData(int index)
-{
- if(index>=NumInputs)
-  return;
-
- UEPtr<UADItem> nad=GetCItem(index);
- InputDataSize[index]=nad->POutputData[i_index].Size;
- InputData[index]=&nad->POutputData[i_index];
-} */
-
 // Обновляет указатели на массивы входов и выходов
 void UADItem::UpdatePointers(void)
 {
@@ -1207,28 +1041,10 @@ void UADItem::UpdatePointers(void)
  {
   POutputData=0;
  }
-	   /*
- if(NumInputs>0)
- {
-  // Указатель на первый элемент массива указателей на вектора входов
-//  PInputData=&InputData[0];
 
-  // Указатель на первый элемент массива размеров векторов входов
-//  PInputDataSize=&InputDataSize[0];
- }
- else
- {
-  // Указатель на первый элемент массива указателей на вектора входов
-//  PInputData=0;
-
-  // Указатель на первый элемент массива размеров векторов входов
-//  PInputDataSize=0;
- }
-         */
  // Суммарное число всех входов
  FullInputDataSize=0;
  for(int i=0;i<NumInputs;i++)
-//  FullInputDataSize+=PInputDataSize[i];
   if(InputData[i])
    FullInputDataSize+=InputData[i]->GetSize();
 }
@@ -1237,23 +1053,6 @@ void UADItem::UpdatePointers(void)
 // Вычисляет минимальный и максимальный размер векторов входов
 void UADItem::CalcMinMaxInputDataSize(void)
 {
-/*
- vector<size_t>::const_iterator I;
-
- I=min_element(InputDataSize.begin(),InputDataSize.end());
-
- if(I != InputDataSize.end())
-  MinInputDataSize=*I;
- else
-  MinInputDataSize=0;
-
- I=max_element(InputDataSize.begin(),InputDataSize.end());
-
- if(I != InputDataSize.end())
-  MaxInputDataSize=*I;
- else
-  MaxInputDataSize=0;
-  */
  if(!InputData.size())
  {
   MinInputDataSize=0;
