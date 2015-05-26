@@ -6,6 +6,9 @@
 #include <unistd.h>
 #include <sys/sendfile.h>
 #include <sys/time.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
 #include "../rdk_system.h"
 #include "USharedMemoryLoader.gcc.cpp"
 #include "UGenericMutex.gcc.cpp"
