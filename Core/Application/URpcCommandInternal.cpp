@@ -55,7 +55,7 @@ int URpcCommandInternal::GetResponseStatus(void) const
 /// Инициализирует процесс обработки новой команды
 void URpcCommandInternal::APrepareProcess(void)
 {
- ResponseStatus == 2001;
+ ResponseStatus = 2001;
  Response.clear();
 }
 

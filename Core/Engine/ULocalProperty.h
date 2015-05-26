@@ -106,7 +106,7 @@ ULProperty(const string &name, OwnerT * const owner, typename UVProperty<T,Owner
 // -----------------------------
 
 // Оператор присваивания
-ULProperty<T,OwnerT>& operator = (const T &value)
+ULProperty<T,OwnerT, type>& operator = (const T &value)
 {
  this->SetData(value);
  return *this;
