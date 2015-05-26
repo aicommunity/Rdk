@@ -111,7 +111,7 @@ UPropertyInput(const string &name, OwnerT * const owner)
  : UPropertyInputBase<T*,OwnerT,type>(name, owner, ipSingle | ipComp)
 {
  UPropertyInputBase<T*,OwnerT,type>::Local=&LocalValue;
- this->PData=&(UPropertyInputBase<T*,OwnerT,type>::Local);
+ this->PData=&(this->Local);
 };
 
 /// Deprecated
@@ -119,7 +119,7 @@ UPropertyInput(const string &name, OwnerT * const owner, int index)
  : UPropertyInputBase<T*,OwnerT,type>(name, owner, ipSingle | ipComp)
 {
  UPropertyInputBase<T*,OwnerT,type>::Local=&LocalValue;
- this->PData=&(UPropertyInputBase<T*,OwnerT,type>::Local);
+ this->PData=&(this->Local);
 };
 // -----------------------------
 
@@ -205,14 +205,14 @@ public: // Ìועמהû
 UPropertyInputData(const string &name, OwnerT * const owner)
  : UPropertyInputBase<T,OwnerT,type>(name, owner, ipSingle | ipData)
 {
- this->PData=&(UPropertyInputBase<T,OwnerT,type>::Local);
+ this->PData=&(this->Local);
 };
 
 /// Deprecated
 UPropertyInputData(const string &name, OwnerT * const owner, int index)
  : UPropertyInputBase<T,OwnerT,type>(name, owner, ipSingle | ipData)
 {
- this->PData=&(UPropertyInputBase<T,OwnerT,type>::Local);
+ this->PData=&(this->Local);
 };
 // -----------------------------
 
@@ -250,7 +250,7 @@ bool ResetPointer(int index, void* value)
 {
  if(this->PData == value)
  {
-  this->PData=&(UPropertyInputBase<T,OwnerT,type>::Local);
+  this->PData=&(this->Local);
   UPropertyInputBase<T,OwnerT,type>::IsConnectedFlag=false;
   return true;
  }
@@ -262,7 +262,7 @@ bool operator ! (void) const
 
 T* operator -> (void) const
 {
- return (UPropertyInputBase<T,OwnerT,type>::IsConnectedFlag)?this->PData:&(UPropertyInputBase<T,OwnerT,type>::Local);
+ return (UPropertyInputBase<T,OwnerT,type>::IsConnectedFlag)?this->PData:&(this->Local);
 };
 
 T& operator * (void)
@@ -272,7 +272,7 @@ T& operator * (void)
 
 operator T* (void) const
 {
- return (UPropertyInputBase<T,OwnerT,type>::IsConnectedFlag)?this->PData:&(UPropertyInputBase<T,OwnerT,type>::Local);
+ return (UPropertyInputBase<T,OwnerT,type>::IsConnectedFlag)?this->PData:&(this->Local);
 }
 // --------------------------
 /*
@@ -375,14 +375,14 @@ public: // Ìועמהû
 UVPropertyInputData(OwnerT * const owner, T **data)
  : UVPropertyInputBase<T,OwnerT>(owner, data, ipSingle | ipData)
 {
- this->PData=&(UVPropertyInputBase<T,OwnerT>::Local);
+ this->PData=&(this->Local);
 };
 
 /// Deprecated
 UVPropertyInputData(OwnerT * const owner, T **data, int index)
  : UVPropertyInputBase<T,OwnerT>(owner, data, ipSingle | ipData)
 {
- this->PData=&(UVPropertyInputBase<T,OwnerT>::Local);
+ this->PData=&(this->Local);
 };
 
 // -----------------------------
@@ -423,7 +423,7 @@ bool ResetPointer(int index, void* value)
 {
  if(this->PData==value)
  {
-  this->PData=&(UVPropertyInputBase<T,OwnerT>::Local);
+  this->PData=&(this->Local);
   *UVPropertyInputBase<T,OwnerT>::ExternalPData=0;
   UVPropertyInputBase<T,OwnerT>::IsConnectedFlag=false;
   return true;
@@ -436,7 +436,7 @@ bool operator ! (void) const
 
 T* operator -> (void) const
 {
- return (UVPropertyInputBase<T,OwnerT>::IsConnectedFlag)?this->PData:&(UVPropertyInputBase<T,OwnerT>::Local);
+ return (UVPropertyInputBase<T,OwnerT>::IsConnectedFlag)?this->PData:&(this->Local);
 };
 
 T& operator * (void)
@@ -446,7 +446,7 @@ T& operator * (void)
 
 operator T* (void) const
 {
- return (UVPropertyInputBase<T,OwnerT>::IsConnectedFlag)?this->PData:&(UVPropertyInputBase<T,OwnerT>::Local);
+ return (UVPropertyInputBase<T,OwnerT>::IsConnectedFlag)?this->PData:&(this->Local);
 }
 // --------------------------
 /*
