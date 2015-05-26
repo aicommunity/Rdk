@@ -792,7 +792,7 @@ ULinksListT<T>& UConnector::GetPersonalLinks(UEPtr<UContainer> cont, ULinksListT
 	UIProperty* property=0;
 	FindInputProperty(I->first, property);
 	if(property)
-	 connector.Index=property->GetMinRange();
+	 connector.Index=-1;//property->GetMinRange();
 	else
 	 connector.Index=-1;//i; // TODO тут неопределенность
 	connector.Name=I->first;
