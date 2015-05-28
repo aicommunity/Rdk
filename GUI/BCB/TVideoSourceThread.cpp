@@ -1597,7 +1597,11 @@ void __fastcall TVideoCaptureThreadVideoGrabber::ExecuteCaptureInit(void)
  VideoGrabber->FrameGrabber=fg_CaptureStream;
  VideoGrabber->FrameCaptureWithoutOverlay=true;
  VideoGrabber->FrameGrabberRGBFormat=fgf_RGB24;
- VideoGrabber->LicenseString=TVGrabberLicenseString;
+ std::string lic_string=AnsiString(TVGrabberLicenseString).c_str();
+ std::vector<std::string> licenses;
+ RDK::separatestring(lic_string,licenses,'|');
+ for(size_t i=0;i<licenses.size();i++)
+  VideoGrabber->LicenseString=licenses[i].c_str();//TVGrabberLicenseString;
  VideoGrabber->SyncCommands=false;
  VideoGrabber->EventNotificationSynchrone=false;
 // VideoGrabber->OnFrameBitmapEventSynchrone=true;
