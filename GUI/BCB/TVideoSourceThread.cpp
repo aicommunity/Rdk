@@ -55,7 +55,7 @@ __fastcall TVideoCaptureThread::TVideoCaptureThread(TVideoOutputFrame *frame, bo
  ConnectionState=0;
 // CommandMutex=new TMutex(false);
 // ThreadState=0;
- RestartInterval=200000;
+ RestartInterval=20000;
  LastStartTime=0;
  MaxInterstepInterval=30000;
  Priority = tpLower;
@@ -527,6 +527,7 @@ void __fastcall TVideoCaptureThread::Execute(void)
 	 }
 //	 AddCommand(TVideoCaptureThreadCmdDescr(tvcHalt,0));
 //	 AddCommand(TVideoCaptureThreadCmdDescr(tvcRecreate,0));
+//	 AddCommand(TVideoCaptureThreadCmdDescr(tvcStop,0));
 	 LastStartTime=TDateTime::CurrentDateTime().operator double();
 //	 AddCommand(TVideoCaptureThreadCmdDescr(tvcStart,curr_time));
 	 AddCommand(TVideoCaptureThreadCmdDescr(tvcStart,curr_time+(100+Random(3000))/(86400.0*1000.0)));
@@ -1569,6 +1570,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::ExecuteCaptureInit(void)
   }
   else
   {
+   VideoGrabber->Parent=0;//GetFrame();
    VideoGrabber->Visible=false;
    VideoGrabber->Display_AutoSize = false;
   }
@@ -1597,7 +1599,11 @@ void __fastcall TVideoCaptureThreadVideoGrabber::ExecuteCaptureInit(void)
  VideoGrabber->FrameGrabber=fg_CaptureStream;
  VideoGrabber->FrameCaptureWithoutOverlay=true;
  VideoGrabber->FrameGrabberRGBFormat=fgf_RGB24;
- VideoGrabber->LicenseString=TVGrabberLicenseString;
+ std::string lic_string=AnsiString(TVGrabberLicenseString).c_str();
+ std::vector<std::string> licenses;
+ RDK::separatestring(lic_string,licenses,'|');
+ for(size_t i=0;i<licenses.size();i++)
+  VideoGrabber->LicenseString=licenses[i].c_str();//TVGrabberLicenseString;
  VideoGrabber->SyncCommands=false;
  VideoGrabber->EventNotificationSynchrone=false;
 // VideoGrabber->OnFrameBitmapEventSynchrone=true;
@@ -1744,6 +1750,8 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberLog(TObject *Sender
  MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, (std::string("VideoGrabber [")+std::string(AnsiString(Severity).c_str())+std::string("] ")+AnsiString(InfoMsg).c_str() ).c_str());
  if(Severity == "ERROR")
  {
+  if(LogType == 82)
+   return;
   LastStartTime=TDateTime::CurrentDateTime().operator double();
   ConnectionState=10;
 
@@ -2568,7 +2576,7 @@ void __fastcall TVideoCaptureThreadVideoGrabberCamera::ARunCapture(void)
 void __fastcall TVideoCaptureThreadVideoGrabberCamera::AStopCapture(void)
 {
  if(VideoGrabber)
-  VideoGrabber->PausePreview();
+  VideoGrabber->Stop();
 }
 // --------------------------
 
@@ -2713,7 +2721,7 @@ void __fastcall TVideoCaptureThreadVideoGrabberIpCamera::ARunCapture(void)
 void __fastcall TVideoCaptureThreadVideoGrabberIpCamera::AStopCapture(void)
 {
  if(VideoGrabber)
-  VideoGrabber->PausePreview();
+  VideoGrabber->Stop();
 
  MEngine_LogMessage(ChannelIndex, RDK_EX_DEBUG, (std::string("TVideoCaptureThreadVideoGrabberIpCamera::AStopCapture ")+AnsiString(Url).c_str()).c_str());
 }
