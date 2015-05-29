@@ -17,7 +17,6 @@ See file license.txt for more information
 //#include "UBEngine.h"
 #include "UGraphicsBinarySerialize.h"
 #include "UGraphicsXMLSerialize.h"
-#include "UBAModel.h"
 //#include "UBPtzCamera.h"
 
 #endif

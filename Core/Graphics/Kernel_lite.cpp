@@ -12,14 +12,6 @@ See file license.txt for more information
 #ifndef UBGRAPHIC_KERNEL_LITE_CPP
 #define UBGRAPHIC_KERNEL_LITE_CPP
 
-//#include "UBAEnvironment.cpp"
-//#include "UBAStorage.cpp"
-//#include "UBAbstract.cpp"
-//#include "UBitmap.cpp"
-//#include "UBitmapVector.cpp"
-#include "UBPipeline.cpp"
-#include "UBASource.cpp"
-#include "UBAReceiver.cpp"
 
 
 #endif
