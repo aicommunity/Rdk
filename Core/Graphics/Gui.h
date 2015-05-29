@@ -12,7 +12,8 @@ See file license.txt for more information
 #ifndef UBGRAPHICS_LIBRARIES_GUI_H
 #define UBGRAPHICS_LIBRARIES_GUI_H
 
-#include "Gui_lite.h"
+#include "UAGraphics.h"
+#include "UGraphics.h"
 #include "UFont.h"
 #include "UDrawEngine.h"
 

@@ -12,11 +12,10 @@ See file license.txt for more information
 #ifndef UBGRAPHIC_KERNEL_H
 #define UBGRAPHIC_KERNEL_H
 
-#include "Kernel_lite.h"
+#include "UBitmap.h"
+#include "UBitmapVector.h"
 #include "UGraphicsIO.h"
-//#include "UBEngine.h"
 #include "UGraphicsBinarySerialize.h"
 #include "UGraphicsXMLSerialize.h"
-//#include "UBPtzCamera.h"
 
 #endif

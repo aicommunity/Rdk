@@ -12,13 +12,5 @@ See file license.txt for more information
 #ifndef UBGRAPHIC_KERNEL_CPP
 #define UBGRAPHIC_KERNEL_CPP
 
-#include "Kernel_lite.cpp"
-//#include "UGraphicsIO.cpp"
-//#include "UBEngine.cpp"
-//#include "UGraphicsBinarySerialize.cpp"
-//#include "UGraphicsXMLSerialize.cpp"
-//#include "UBPtzCamera.cpp"
-
-
 #endif
 

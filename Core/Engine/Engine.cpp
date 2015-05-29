@@ -12,24 +12,23 @@ See file license.txt for more information
 #ifndef ENGINE_CPP
 #define ENGINE_CPP
 
-#include "Engine_lite.cpp"
-//#include "UTime.cpp"
+#include "UStorage.cpp"
+#include "ULibrary.cpp"
+#include "UEnvironment.cpp"
+#include "UContainer.cpp"
+#include "UStorage.cpp"
+#include "UConnector.cpp"
+#include "UItem.cpp"
+#include "UADItem.cpp"
+#include "UAModel.cpp"
+#include "UNet.cpp"
+#include "UComponent.cpp"
+#include "UController.cpp"
 #include "UStorage.cpp"
 #include "UEnvironment.cpp"
 #include "UEngine.cpp"
-//#include "UProperty.cpp"
-//#include "UEnvSupport.cpp"
-//#include "UItemData.cpp"
-//#include "UXMLEnvSerialize.cpp"
-//#include "UThreadEnvironment.cpp"
-//#include "UContException.cpp"
-//#include "UEnvException.cpp"
 #include "UComponentDescription.cpp"
-#include "UContainerDescription.cpp"     
-//#include "UDataComponent.cpp"
-
-//#include "Libraries/UELibraries.cpp"
-
+#include "UContainerDescription.cpp"
 
 #endif
 
