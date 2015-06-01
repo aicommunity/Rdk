@@ -232,7 +232,7 @@ const char* RDK_CALL RemoteCallInternal(const char *request, int &return_value, 
 
  return buffer.c_str();
 }
-
+  /*
 const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &channel_index)
 {
  const char* ReturnString=0;
@@ -1156,17 +1156,6 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
   response.WriteFloat("DataSize",data_size);
   response.WriteFloat("TimeStamp",time_stamp);
  }
-/* else
- if(cmd == "Ptz_ReadPanGyroDriftState")
- {
-  double value;
-  unsigned long long time_stamp=0;
-  int async_mode=xml.ReadInteger("AsyncMode",0);
-  return_value=Ptz_ReadPanGyroDriftState(engine_index,camera.c_str(), value, time_stamp, async_mode);
-  response.SelectNodeRoot("RpcResponse/Data/Position");
-  response.WriteFloat("Value",value);
-  response.WriteFloat("TimeStamp",time_stamp);
- }*/
  else
  if(cmd == "Ptz_ReadPanErrorState")
  {
@@ -1209,7 +1198,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
  return buffer.c_str();
 }
 
-
+   */
 
 }
 

@@ -67,7 +67,6 @@ object UGEngineControlForm: TUGEngineControlForm
       DoubleBuffered = True
       ParentDoubleBuffered = False
       TabOrder = 0
-      ExplicitHeight = 397
       inline UComponentsListFrame1: TUComponentsListFrame
         Left = 1
         Top = 1
@@ -88,7 +87,7 @@ object UGEngineControlForm: TUGEngineControlForm
         ExplicitLeft = 1
         ExplicitTop = 1
         ExplicitWidth = 324
-        ExplicitHeight = 395
+        ExplicitHeight = 428
         inherited Splitter1: TSplitter
           Left = 0
           Top = 284
@@ -117,7 +116,7 @@ object UGEngineControlForm: TUGEngineControlForm
           ExplicitLeft = 0
           ExplicitTop = 294
           ExplicitWidth = 324
-          ExplicitHeight = 101
+          ExplicitHeight = 134
           inherited PageControl1: TPageControl
             Width = 322
             Height = 132
@@ -126,14 +125,14 @@ object UGEngineControlForm: TUGEngineControlForm
             Margins.Right = 4
             Margins.Bottom = 4
             ExplicitWidth = 322
-            ExplicitHeight = 99
+            ExplicitHeight = 132
             inherited TabSheet6: TTabSheet
               Margins.Left = 4
               Margins.Top = 4
               Margins.Right = 4
               Margins.Bottom = 4
               ExplicitWidth = 314
-              ExplicitHeight = 68
+              ExplicitHeight = 101
               inherited Splitter5: TSplitter
                 Top = 0
                 Width = 314
@@ -154,7 +153,7 @@ object UGEngineControlForm: TUGEngineControlForm
                 Margins.Right = 4
                 Margins.Bottom = 4
                 ExplicitWidth = 314
-                ExplicitHeight = 438
+                ExplicitHeight = 0
                 inherited BasicStringGrid: TStringGrid
                   Left = 21
                   Top = 73
@@ -292,7 +291,7 @@ object UGEngineControlForm: TUGEngineControlForm
                 Margins.Bottom = 4
                 Font.Height = -15
                 OnMouseEnter = UComponentsListFrame1NiceParamValRichEditMouseEnter
-                ExplicitTop = 25
+                ExplicitTop = 13
                 ExplicitWidth = 314
                 ExplicitHeight = 43
               end
@@ -302,11 +301,8 @@ object UGEngineControlForm: TUGEngineControlForm
               Margins.Top = 4
               Margins.Right = 4
               Margins.Bottom = 4
-              ExplicitWidth = 314
-              ExplicitHeight = 68
               inherited Splitter6: TSplitter
-                Top = 0
-                Width = 314
+                Top = 438
                 Height = 13
                 Margins.Left = 4
                 Margins.Top = 4
@@ -317,8 +313,7 @@ object UGEngineControlForm: TUGEngineControlForm
                 ExplicitHeight = 13
               end
               inherited HeaderControl4: THeaderControl
-                Top = 56
-                Width = 314
+                Top = 494
                 Height = 45
                 Margins.Left = 4
                 Margins.Top = 4
@@ -330,8 +325,7 @@ object UGEngineControlForm: TUGEngineControlForm
                 ExplicitHeight = 45
               end
               inherited NiceStateValRichEdit: TRichEdit
-                Top = 13
-                Width = 314
+                Top = 451
                 Height = 43
                 Margins.Left = 4
                 Margins.Top = 4
@@ -339,19 +333,16 @@ object UGEngineControlForm: TUGEngineControlForm
                 Margins.Bottom = 4
                 Font.Height = -15
                 OnMouseEnter = UComponentsListFrame1NiceStateValRichEditMouseEnter
-                ExplicitTop = 25
-                ExplicitWidth = 314
+                ExplicitTop = 451
                 ExplicitHeight = 43
               end
               inherited EnchancedSG2: TEnchancedSG
-                Width = 314
-                Height = 0
+                Height = 438
                 Margins.Left = 4
                 Margins.Top = 4
                 Margins.Right = 4
                 Margins.Bottom = 4
-                ExplicitWidth = 314
-                ExplicitHeight = 20
+                ExplicitHeight = 438
                 inherited BasicStringGrid: TStringGrid
                   Left = 21
                   Top = 73
@@ -662,6 +653,9 @@ object UGEngineControlForm: TUGEngineControlForm
           Margins.Right = 4
           Margins.Bottom = 4
           Caption = 'Logs'
+          ExplicitLeft = 0
+          ExplicitTop = 0
+          ExplicitWidth = 0
           ExplicitHeight = 190
         end
         object TabSheet2: TTabSheet
@@ -671,7 +665,6 @@ object UGEngineControlForm: TUGEngineControlForm
           Margins.Bottom = 4
           Caption = 'Performance'
           ImageIndex = 1
-          ExplicitHeight = 190
           inline UComponentsPerformanceFrame1: TUComponentsPerformanceFrame
             Left = 0
             Top = 0
@@ -690,27 +683,33 @@ object UGEngineControlForm: TUGEngineControlForm
             ParentFont = False
             TabOrder = 0
             ExplicitWidth = 942
-            ExplicitHeight = 190
-            inherited Chart: TChart
+            ExplicitHeight = 157
+            inherited PageControl1: TPageControl
               Width = 761
               Height = 157
-              Margins.Left = 4
-              Margins.Top = 4
-              Margins.Right = 4
-              Margins.Bottom = 4
-              ExplicitLeft = 0
-              ExplicitTop = 0
               ExplicitWidth = 761
-              ExplicitHeight = 190
-              PrintMargins = (
-                15
-                19
-                15
-                19)
-              inherited Series1: TBarSeries
-                Data = {
-                  00060000000000000000C87E400000000000187A400000000000F07940000000
-                  0000A0794000000000000074400000000000807140}
+              ExplicitHeight = 157
+              inherited TabSheet1: TTabSheet
+                inherited Chart: TChart
+                  Width = 761
+                  Height = 157
+                  Margins.Left = 4
+                  Margins.Top = 4
+                  Margins.Right = 4
+                  Margins.Bottom = 4
+                  ExplicitWidth = 761
+                  ExplicitHeight = 190
+                  PrintMargins = (
+                    15
+                    19
+                    15
+                    19)
+                  inherited Series1: TBarSeries
+                    Data = {
+                      00060000000000000000C87E400000000000187A400000000000F07940000000
+                      0000A0794000000000000074400000000000807140}
+                  end
+                end
               end
             end
             inherited Panel1: TPanel
@@ -795,7 +794,6 @@ object UGEngineControlForm: TUGEngineControlForm
         Margins.Bottom = 4
         Caption = 'Draw'
         OnShow = DrawShow
-        ExplicitHeight = 365
         inline UDrawEngineFrame1: TUDrawEngineFrame
           Left = 0
           Top = 0
@@ -814,7 +812,7 @@ object UGEngineControlForm: TUGEngineControlForm
           ParentFont = False
           TabOrder = 0
           ExplicitWidth = 633
-          ExplicitHeight = 365
+          ExplicitHeight = 398
           inherited Splitter1: TSplitter
             Left = 319
             Width = 15
@@ -837,7 +835,7 @@ object UGEngineControlForm: TUGEngineControlForm
             Margins.Bottom = 4
             ExplicitLeft = 334
             ExplicitWidth = 299
-            ExplicitHeight = 301
+            ExplicitHeight = 334
             inherited UClassesListFrame: TUClassesListFrame
               Width = 297
               Height = 332
@@ -847,7 +845,7 @@ object UGEngineControlForm: TUGEngineControlForm
               Margins.Bottom = 4
               Font.Height = -15
               ExplicitWidth = 297
-              ExplicitHeight = 299
+              ExplicitHeight = 332
               inherited PageControl: TPageControl
                 Width = 297
                 Height = 332
@@ -857,7 +855,7 @@ object UGEngineControlForm: TUGEngineControlForm
                 Margins.Bottom = 4
                 ActivePage = UDrawEngineFrame1.UClassesListFrame.LibsTabSheet
                 ExplicitWidth = 297
-                ExplicitHeight = 299
+                ExplicitHeight = 332
                 inherited NameTabSheet: TTabSheet
                   Margins.Left = 4
                   Margins.Top = 4
@@ -885,7 +883,7 @@ object UGEngineControlForm: TUGEngineControlForm
                   Margins.Bottom = 4
                   ExplicitTop = 29
                   ExplicitWidth = 289
-                  ExplicitHeight = 266
+                  ExplicitHeight = 299
                   inherited TreeView: TTreeView
                     Width = 289
                     Height = 299
@@ -894,7 +892,7 @@ object UGEngineControlForm: TUGEngineControlForm
                     Margins.Right = 4
                     Margins.Bottom = 4
                     ExplicitWidth = 289
-                    ExplicitHeight = 266
+                    ExplicitHeight = 299
                   end
                 end
                 inherited LibsControlTabSheet: TTabSheet
@@ -1057,7 +1055,7 @@ object UGEngineControlForm: TUGEngineControlForm
             Margins.Top = 4
             Margins.Right = 4
             Margins.Bottom = 4
-            ExplicitTop = 301
+            ExplicitTop = 334
             ExplicitWidth = 633
             ExplicitHeight = 64
             inherited Label1: TLabel
@@ -1569,7 +1567,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 360
     Top = 65528
     Bitmap = {
-      494C01011B003003440310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B0030034C0310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

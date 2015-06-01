@@ -3,7 +3,7 @@
 
 #include "URpcDispatcher.h"
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
-#include "../../Deploy/PtzLib/ptzlib_initdll.h"
+//#include "../../Deploy/PtzLib/ptzlib_initdll.h"
 #include "../../Deploy/Include/rdk_rpc.h"
 
 namespace RDK {

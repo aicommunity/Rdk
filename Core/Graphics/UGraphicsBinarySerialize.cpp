@@ -13,7 +13,7 @@ See file license.txt for more information
 #define UGRAPHICS_BINARY_SERIALIZE_CPP
 
 #include "UGraphicsBinarySerialize.h"
-#include "Libraries/Simulator/UBAVideoSimulator.h"
+//#include "Libraries/Simulator/UBAVideoSimulator.h"
 //#include "Libraries/Simulator/UBAVideo3DSimulator.h"
 
 namespace RDK {
@@ -128,7 +128,7 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, UBitmapVector &data)
 {
  return USimpleFromStorage(storage,data);
 }
-
+	/*
 // struct UBVSObject
 USerStorageBinary& operator << (USerStorageBinary& storage, const UBVSObject &data)
 {
@@ -165,7 +165,7 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, UBVSObject &data)
 
  return storage;
 }
-
+      */
                /*
 //class UBPtzCameraInfo
 USerStorageBinary& operator << (USerStorageBinary& storage, const UBPtzCameraInfo &data)

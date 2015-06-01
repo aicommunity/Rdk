@@ -1,6 +1,11 @@
 #ifndef MYRDK_H
 #define MYRDK_H
 
+#ifndef INIT_DLL_DEFS_H
+#include "initdll_defs.h"
+#endif
+
+
 #ifdef _MSC_VER
 #pragma warning(disable : 4100)
 #pragma warning(disable : 4355)

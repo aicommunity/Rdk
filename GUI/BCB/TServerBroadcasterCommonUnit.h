@@ -9,7 +9,7 @@
 #include <string>
 #include <list>
 #include "TUVisualControllerFormUnit.h"
-#include "myrdk.h"
+#include "../../Deploy/Include/rdk_cpp_initdll.h"
 
 struct TServerMetadata
 {

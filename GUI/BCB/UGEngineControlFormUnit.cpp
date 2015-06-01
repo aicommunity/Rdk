@@ -32,9 +32,6 @@
 #include "TApplicationOptionsFormUnit.h"
 #include "UClassesDescriptionsFormUnit.h"
 
-#include "rdk_cpp_initdll.h"
-#include "myrdk.h"
-
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "TUVisualControllerFormUnit"
@@ -2217,7 +2214,8 @@ void __fastcall TUGEngineControlForm::HideTimerTimer(TObject *Sender)
  HideTimer->Enabled=false;
 // UEngineMonitorForm->LogTimer->Enabled=true;
 
- UServerControlForm->SetServerBinding(ServerInterfaceAddress, ServerInterfacePort);
+ if(UServerControlForm)
+  UServerControlForm->SetServerBinding(ServerInterfaceAddress, ServerInterfacePort);
 
  UDrawEngineFrame1->ComponentsListFrame=UComponentsListFrame1;
  UComponentsListFrame1->DrawEngineFrame=UDrawEngineFrame1;

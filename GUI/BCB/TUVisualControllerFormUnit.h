@@ -7,7 +7,7 @@
 #include <Vcl.Controls.hpp>
 #include <Vcl.StdCtrls.hpp>
 #include <Vcl.Forms.hpp>
-#include "myrdk.h"
+#include "../../Deploy/Include/myrdk.h"
 
 //---------------------------------------------------------------------------
 #pragma warn -8130

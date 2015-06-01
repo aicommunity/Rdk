@@ -857,6 +857,7 @@ void UEnvironment::AUnInit(void)
 // Формирует предварительно заданную модель обработки
 bool UEnvironment::ACreateStructure(void)
 {
+ RdkCreatePredefinedStructure(this, PredefinedStructure);
  return true;
 }
 

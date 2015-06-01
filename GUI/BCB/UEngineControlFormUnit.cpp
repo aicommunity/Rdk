@@ -7,7 +7,6 @@
 #include <Vcl.FileCtrl.hpp>
 #include <System.IOUtils.hpp>
 #include "UEngineControlFormUnit.h"
-#include "rdk_initdll.h"
 #include "UComponentsControlFormUnit.h"
 #include "UComponentLinksFormUnit.h"
 #include "UEngineMonitorFormUnit.h"
@@ -17,7 +16,6 @@
 #include "UFavoriteComponentInfoFormUnit.h"
 #include "UDrawEngineFormUnit.h"
 #include "UCreateProjectWizardFormUnit.h"
-#include "myrdk.h"
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)

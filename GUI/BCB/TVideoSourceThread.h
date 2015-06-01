@@ -5,7 +5,7 @@
 #include "VidGrab.hpp"
 #include <jpeg.hpp>
 #include "TUHttpServerUnit.h"
-#include "myrdk.h"
+#include "../../Deploy/Include/rdk_cpp_initdll.h"
 
 enum TVideoCaptureThreadCommands { tvcNone=0, tvcStart=1, tvcStop=2, tvcTerminate=3, tvcRecreate=4, tvcHalt=5 };
 

@@ -4,7 +4,7 @@
 #pragma hdrstop
 
 #include "TUVisualControllerFormUnit.h"
-#include "rdk_cpp_initdll.h"
+#include "../../Deploy/Include/rdk_cpp_initdll.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"

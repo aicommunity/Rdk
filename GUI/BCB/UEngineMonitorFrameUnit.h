@@ -14,7 +14,7 @@
 #include "TUVisualControllerFrameUnit.h"
 #include <vector>
 #include <map>
-#include "myrdk.h"
+#include "../../Deploy/Include/rdk_cpp_initdll.h"
 #include "TUVisualController.h"
 #include "TServerBroadcasterCommonUnit.h"
 

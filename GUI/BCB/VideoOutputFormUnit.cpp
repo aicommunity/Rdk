@@ -6,7 +6,6 @@
 #include "VideoOutputFormUnit.h"
 #include "VideoOutputToolsFormUnit.h"
 //#include "TVideoGrabberControlFormUnit.h"
-#include "rdk_initdll.h"
 #include "UGEngineControlFormUnit.h"
 #include "UShowProgressBarUnit.h"
 #include "TVideoCaptureOptionsFormUnit.h"

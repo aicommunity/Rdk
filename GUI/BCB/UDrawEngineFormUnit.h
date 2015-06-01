@@ -9,8 +9,6 @@
 #include <Vcl.Forms.hpp>
 #include "TUVisualControllerFormUnit.h"
 #include <Vcl.ExtCtrls.hpp>
-#include "rdk_initdll.h"
-#include "myrdk.h"
 #include <Vcl.ComCtrls.hpp>
 #include "TUVisualControllerFrameUnit.h"
 #include "UClassesListFrameUnit.h"

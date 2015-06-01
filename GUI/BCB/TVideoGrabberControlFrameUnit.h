@@ -10,7 +10,6 @@
 #include <Controls.hpp>
 #include <StdCtrls.hpp>
 #include <Forms.hpp>
-#include "myrdk.h"
 #include <ExtCtrls.hpp>
 #include <ComCtrls.hpp>
 #include <Dialogs.hpp>

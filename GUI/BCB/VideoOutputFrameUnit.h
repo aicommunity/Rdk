@@ -29,7 +29,7 @@
 #include "UComponentsListFormUnit.h"
 #include "TVideoSourceThread.h"
 #include "TUHttpServerUnit.h"
-#include "myrdk.h"
+#include "../../Deploy/Include/rdk_cpp_initdll.h"
 #include "TVideoRegistratorFrameUnit.h"
 #include <Vcl.ImgList.hpp>
 #include <Vcl.ToolWin.hpp>

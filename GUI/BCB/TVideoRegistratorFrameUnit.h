@@ -17,7 +17,7 @@
 #include "TUVisualControllerFrameUnit.h"
 #include "UComponentsListFormUnit.h"
 
-#include "myrdk.h"
+#include "../../Deploy/Include/rdk_cpp_initdll.h"
 
 #include <Vcl.ComCtrls.hpp>
 #include <Vcl.Dialogs.hpp>

@@ -8,8 +8,6 @@
 #include "USeriesControlUnit.h"
 #include "UShowProgressBarUnit.h"
 #include "UComponentsListFormUnit.h"
-#include "rdk_initdll.h"
-#include "myrdk.h"
 //---------------------------------------------------------------------------
 #define ISNAN(x) ((x) != (x))
 //---------------------------------------------------------------------------

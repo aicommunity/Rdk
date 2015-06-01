@@ -28,7 +28,7 @@
 #include <string>
 #include <map>
 #include <vector>
-#include "myrdk.h"
+#include "../../Deploy/Include/rdk_cpp_initdll.h"
 #include "TUVisualController.h"
 
 using namespace std;

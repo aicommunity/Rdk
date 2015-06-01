@@ -8,7 +8,7 @@
 #include <Vcl.StdCtrls.hpp>
 #include <Vcl.Forms.hpp>
 #include <string>
-#include "myrdk.h"
+#include "../../Deploy/Include/rdk_cpp_initdll.h"
 //---------------------------------------------------------------------------
 #pragma warn -8130
 class TUVisualControllerFrame : public TFrame, public RDK::UIVisualController

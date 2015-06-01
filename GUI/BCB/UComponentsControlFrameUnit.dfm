@@ -215,6 +215,12 @@ inherited UComponentsControlFrame: TUComponentsControlFrame
               ExplicitHeight = 469
             end
           end
+          inherited LibsTabSheet: TTabSheet
+            ExplicitLeft = 4
+            ExplicitTop = 24
+            ExplicitWidth = 499
+            ExplicitHeight = 515
+          end
           inherited LibsControlTabSheet: TTabSheet
             ExplicitLeft = 4
             ExplicitTop = 24
@@ -249,8 +255,6 @@ inherited UComponentsControlFrame: TUComponentsControlFrame
               end
               inherited AddClassButton: TButton
                 Width = 290
-                ExplicitLeft = 1
-                ExplicitTop = 101
                 ExplicitWidth = 290
               end
             end
@@ -274,7 +278,6 @@ inherited UComponentsControlFrame: TUComponentsControlFrame
               inherited LibComponentListStringGrid: TStringGrid
                 Width = 288
                 ExplicitWidth = 288
-                ExplicitHeight = 143
               end
             end
           end

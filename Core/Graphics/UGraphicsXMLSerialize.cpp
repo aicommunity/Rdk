@@ -12,13 +12,11 @@ See file license.txt for more information
 #ifndef UGraphics_XML_SERIALIZE_CPP
 #define UGraphics_XML_SERIALIZE_CPP
 
-//#include <strstream>
 #include <sstream>
 #include <iomanip>
 #include "UGraphicsXMLSerialize.h"
 #include "../Serialize/UXMLStdSerialize.h"
-#include "Libraries/Simulator/UBAVideoSimulator.h"
-//#include "Libraries/Simulator/UBAVideo3DSimulator.h"
+//#include "Libraries/Simulator/UBAVideoSimulator.h"
 
 namespace RDK {
 
@@ -385,7 +383,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, UBitmapVector &data)
  }
  return storage;
 }
-
+	/*
 // struct UBVSObject
 USerStorageXML& operator << (USerStorageXML& storage, const UBVSObject &data)
 {
@@ -512,7 +510,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, UBVSObject &data)
  storage.SelectUp();
 
  return storage;
-}
+}    */
    /*
 //class UBPtzCameraInfo
 USerStorageXML& operator << (USerStorageXML& storage, const UBPtzCameraInfo &data)

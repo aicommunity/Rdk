@@ -34,7 +34,7 @@
 #include <map>
 #include <vector>
 #include "TUVisualControllerFrameUnit.h"
-#include "myrdk.h"
+#include "../../Deploy/Include/rdk_cpp_initdll.h"
 
 // Формирует из xml описания и временной метки пакет метаданных
 void EncodeMetaPackage(const std::string &xml_description, long long time_stamp, int channel_index, std::string &metadata);

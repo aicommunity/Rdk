@@ -2,7 +2,7 @@
 #define URpcDecoderInternal_CPP
 
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
-#include "../../Deploy/PtzLib/ptzlib_initdll.h"
+//#include "../../Deploy/PtzLib/ptzlib_initdll.h"
 #include "../../Deploy/Include/rdk_rpc.h"
 #include "../../Deploy/Include/myrdk.h"
 #include "URpcDecoderInternal.h"
@@ -171,13 +171,13 @@ bool URpcDecoderInternal::AProcessCommand(const UEPtr<URpcCommand> &command)
  }
 
  const char* response=RemoteCall(cmd->Request.c_str(), cmd->ResponseStatus, cmd->ChannelIndex);
-
+/*
  if(cmd->ResponseStatus == 2001)
  {
   cmd->ResponseStatus=0;
   MEngine_FreeBufString(cmd->ChannelIndex, response);
   response=PtzRemoteCall(cmd->Request.c_str(), cmd->ResponseStatus, cmd->ChannelIndex);
- }
+ }*/
 
  if(response)
   cmd->Response=response;

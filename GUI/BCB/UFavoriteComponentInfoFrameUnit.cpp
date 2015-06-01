@@ -6,7 +6,6 @@
 #include "UFavoriteComponentInfoFrameUnit.h"
 #include "UListInputFormUnit.h"
 #include "UComponentsListFormUnit.h"
-#include "rdk_initdll.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"

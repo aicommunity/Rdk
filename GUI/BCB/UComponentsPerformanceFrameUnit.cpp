@@ -5,7 +5,6 @@
 
 #include <algorithm>
 #include "UComponentsPerformanceFrameUnit.h"
-#include "rdk_cpp_initdll.h"
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)

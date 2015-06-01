@@ -2,13 +2,13 @@ object VideoOutputForm: TVideoOutputForm
   Left = 0
   Top = 257
   Caption = 'Video Sources'
-  ClientHeight = 537
-  ClientWidth = 661
+  ClientHeight = 702
+  ClientWidth = 864
   Color = clBtnFace
   DockSite = True
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
-  Font.Height = -11
+  Font.Height = -14
   Font.Name = 'Tahoma'
   Font.Style = []
   Menu = MainMenu
@@ -16,24 +16,28 @@ object VideoOutputForm: TVideoOutputForm
   Position = poDesigned
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  PixelsPerInch = 96
-  TextHeight = 13
+  PixelsPerInch = 120
+  TextHeight = 17
   object PageControl: TPageControl
     Left = 0
     Top = 41
-    Width = 661
-    Height = 496
+    Width = 864
+    Height = 661
+    Margins.Left = 4
+    Margins.Top = 4
+    Margins.Right = 4
+    Margins.Bottom = 4
     Align = alClient
     PopupMenu = PopupMenu
     TabOrder = 0
     OnChange = PageControlChange
-    ExplicitTop = 31
-    ExplicitHeight = 506
+    ExplicitTop = 54
+    ExplicitHeight = 648
   end
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
-    Width = 661
+    Width = 864
     Height = 41
     ButtonHeight = 40
     ButtonWidth = 84
@@ -41,7 +45,6 @@ object VideoOutputForm: TVideoOutputForm
     Images = ImageList
     ShowCaptions = True
     TabOrder = 1
-    ExplicitWidth = 864
     object ToolButton1: TToolButton
       Left = 0
       Top = 0
@@ -124,7 +127,7 @@ object VideoOutputForm: TVideoOutputForm
     Left = 152
     Top = 40
     Bitmap = {
-      494C0101050060006C0010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010105006000700010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000002000000001002000000000000020
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

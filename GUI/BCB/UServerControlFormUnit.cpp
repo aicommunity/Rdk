@@ -3,7 +3,6 @@
 #include <vcl.h>
 #pragma hdrstop
 
-#include "../../Deploy/PtzLib/ptzlib_initdll.h"
 #include "UServerControlFormUnit.h"
 #include "UGEngineControlFormUnit.h"
 //#ifdef RDK_VIDEO
@@ -17,13 +16,12 @@
 #include "VideoOutputFormUnit.h"
 #endif
 #include "TIdTcpResultBroadcasterFormUnit.h"
-#include "rdk_initdll.h"
-#include "rdk_rpc.cpp"
 #include "TUBitmap.h"
-//#include "../../Core/Graphics/Libraries/Hardware/PtzRpc.cpp"
 #ifdef DVA_GEVISCOPE
 #include "TGeViScopeResultBroadcasterFormUnit.h"
 #endif
+#include "../../Deploy/Include/rdk_cpp_initdll.h"
+
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "TUHttpServerUnit"
@@ -471,20 +469,11 @@ bool TUServerControlForm::ProcessRPCCommand(const RDK::URpcCommandInternal &args
 
 bool TUServerControlForm::ProcessPtzCommand(const RDK::URpcCommandInternal &args, std::string &response_type, UParamT &response_data)
 {
-// UServerCommand::const_iterator I;
+/*
  std::string request;
 
  response_type="text/plain";
-				/*
- I=args.find("Request");
- if(I == args.end())
- {
-  ConvertStringToVector("RPC: Request not found", response_data);
-  return true;
- }
 
- ConvertVectorToString(I->second, request);*/
-// ConvertVectorToString(args.second, request);
  int response_status=0;
  int channel_index=0;
  const char* response=PtzRemoteCall(args.Request.c_str(), response_status, channel_index);
@@ -497,7 +486,7 @@ bool TUServerControlForm::ProcessPtzCommand(const RDK::URpcCommandInternal &args
  else
   ConvertStringToVector(RDK::sntoa(response_status), response_data);
  MEngine_FreeBufString(channel_index, response);
-
+    */
  return true;
 }
 

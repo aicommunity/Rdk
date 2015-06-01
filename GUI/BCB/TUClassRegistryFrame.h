@@ -13,7 +13,7 @@
 #include <Grids.hpp>
 #include <ValEdit.hpp>
 #include <ToolWin.hpp>
-#include "rdk.h"
+#include "../../Deploy/Include/rdk_cpp_initdll.h"
 //---------------------------------------------------------------------------
 class TUClassRegistryFrame : public TFrame
 {

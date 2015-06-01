@@ -5,7 +5,6 @@
 #pragma hdrstop
 
 #include "UClassesListFrameUnit.h"
-#include "rdk_cpp_initdll.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "TUVisualControllerFrameUnit"

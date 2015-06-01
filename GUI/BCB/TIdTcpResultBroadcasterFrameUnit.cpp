@@ -5,8 +5,7 @@
 
 #include "TIdTcpResultBroadcasterFrameUnit.h"
 #include "UEngineMonitorFormUnit.h"
-#include "myrdk.h"
-#include "rdk_initdll.h"
+#include "../../Deploy/Include/rdk_cpp_initdll.h"
 #include "TUBitmap.h"
 #include "TUHttpServerUnit.h"
 //---------------------------------------------------------------------------

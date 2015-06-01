@@ -11,7 +11,6 @@
 #include <Vcl.ComCtrls.hpp>
 #include <Vcl.ExtCtrls.hpp>
 #include <Vcl.Grids.hpp>
-#include "rdk_cpp_initdll.h"
 
 #include "UCRConvolutionNetworkFormUnit.h"
 //---------------------------------------------------------------------------

@@ -19,7 +19,7 @@ See file license.txt for more information
 
 namespace RDK {
 
-struct UBVSObject;
+//struct UBVSObject;
 //struct UBVSObject3D;
 
 // UBMColorModel
@@ -63,8 +63,8 @@ RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, const UBitmap
 RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, UBitmapVector &data);
 
 // struct UBVSObject
-RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, const UBVSObject &data);
-RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, UBVSObject &data);
+//RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, const UBVSObject &data);
+//RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, UBVSObject &data);
 
 //class UBPtzCameraInfo
 //USerStorageXML& operator << (USerStorageXML& storage, const UBPtzCameraInfo &data);

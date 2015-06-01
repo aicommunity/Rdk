@@ -5,9 +5,7 @@
 
 #include "UImagesFrameUnit.h"
 #include "UComponentsListFormUnit.h"
-#include "rdk_initdll.h"
 #include "TUBitmap.h"
-#include "myrdk.h"
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)

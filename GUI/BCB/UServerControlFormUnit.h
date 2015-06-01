@@ -19,7 +19,7 @@
 #include "TUHttpServerUnit.h"
 #include "TUVisualControllerFrameUnit.h"
 
-#include "myrdk.h"
+#include "../../Deploy/Include/rdk_cpp_initdll.h"
 #include <Web.Win.Sockets.hpp>
 #include <IdBaseComponent.hpp>
 #include <IdComponent.hpp>

@@ -3,7 +3,7 @@
 #ifndef TVideoCaptureOptionsInterfaceH
 #define TVideoCaptureOptionsInterfaceH
 
-#include "myrdk.h"
+#include "../../Deploy/Include/rdk_cpp_initdll.h"
 #include "TUVisualControllerFormUnit.h"
 
 class TVideoCaptureOptionsInterface: public TUVisualControllerForm

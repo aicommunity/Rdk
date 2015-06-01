@@ -20,7 +20,7 @@ See file license.txt for more information
 
 namespace RDK {
 
-struct UBVSObject;
+//struct UBVSObject;
 
 // UBMColorModel
 RDK_LIB_TYPE USerStorageBinary& operator << (USerStorageBinary& storage, UBMColorModel data);
@@ -63,8 +63,8 @@ RDK_LIB_TYPE USerStorageBinary& operator << (USerStorageBinary& storage, const U
 RDK_LIB_TYPE USerStorageBinary& operator >> (USerStorageBinary& storage, UBitmapVector &data);
 
 // struct UBVSObject
-RDK_LIB_TYPE USerStorageBinary& operator << (USerStorageBinary& storage, const UBVSObject &data);
-RDK_LIB_TYPE USerStorageBinary& operator >> (USerStorageBinary& storage, UBVSObject &data);
+//RDK_LIB_TYPE USerStorageBinary& operator << (USerStorageBinary& storage, const UBVSObject &data);
+//RDK_LIB_TYPE USerStorageBinary& operator >> (USerStorageBinary& storage, UBVSObject &data);
 
 // struct UBVSObject3D
 //USerStorageBinary& operator << (USerStorageBinary& storage, const UBVSObject3D &data);

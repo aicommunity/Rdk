@@ -4,7 +4,7 @@
 #pragma hdrstop
 
 #include "TUHttpServerUnit.h"
-#include "myrdk.h"
+#include "../../Deploy/Include/rdk_cpp_initdll.h"
 #include "TUBitmap.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)

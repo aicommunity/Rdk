@@ -4,7 +4,6 @@
 #pragma hdrstop
 
 #include "UEngineMonitorFormUnit.h"
-#include "rdk_initdll.h"
 #include "TUVisualController.h"
 #include "UGEngineControlFormUnit.h"
 

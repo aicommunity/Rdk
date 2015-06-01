@@ -16,7 +16,7 @@
 #include <Vcl.ImgList.hpp>
 #include <Vcl.Menus.hpp>
 #include <Vcl.ToolWin.hpp>
-#include "myrdk.h"
+#include "../../Deploy/Include/rdk_cpp_initdll.h"
 #include "TUVisualController.h"
 #include "TUVisualControllerFormUnit.h"
 #include "TUVisualControllerFrameUnit.h"

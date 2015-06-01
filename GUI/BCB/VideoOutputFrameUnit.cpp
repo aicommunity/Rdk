@@ -7,8 +7,6 @@
 #include "TUBitmap.h"
 //#include "TVideoGrabberControlFormUnit.h"
 #include "UEngineMonitorFormUnit.h"
-#include "myrdk.h"
-#include "rdk_initdll.h"
 #include "UGEngineControlFormUnit.h"
 #include "TVideoCaptureOptionsFormUnit.h"
 #include "TBcbSupport.h"

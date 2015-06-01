@@ -2,7 +2,7 @@
 #define rdk_rpcH
 
 #include "rdk_init.h"
-#include "../PtzLib/ptzlib_init.h"
+//#include "../PtzLib/ptzlib_init.h"
 #include "myrdk.h"
 
 namespace RDK{
@@ -11,7 +11,7 @@ namespace RDK{
 
 RDK_LIB_TYPE const char* RDK_CALL RemoteCallInternal(const char *request, int &return_value, int &channel_index);
 
-RDK_LIB_TYPE const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &channel_index);
+//RDK_LIB_TYPE const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &channel_index);
 
 
 /// Возвращает набор из имени компонента и индекса канала

@@ -6,7 +6,7 @@
 #include "UServerControlFormUnit.h"
 #include "UEngineMonitorFormUnit.h"
 #include "TBcbSupport.h"
-#include "rdk_initdll.h"
+#include "../../Deploy/Include/rdk_cpp_initdll.h"
 //---------------------------------------------------------------------------
 
 

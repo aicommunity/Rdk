@@ -9,7 +9,6 @@
 #include "TIdTcpResultBroadcasterFormUnit.h"
 #include "TIdHttpResultBroadcasterFormUnit.h"
 #include "UServerControlFormUnit.h"
-#include "rdk_initdll.h"
 #ifdef RDK_VIDEO
 #include "VideoOutputFormUnit.h"
 #endif

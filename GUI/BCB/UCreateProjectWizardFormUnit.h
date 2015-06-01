@@ -14,7 +14,6 @@
 #include <Vcl.Dialogs.hpp>
 #include <Vcl.ExtDlgs.hpp>
 #include <Vcl.Grids.hpp>
-#include "myrdk.h"
 
 //---------------------------------------------------------------------------
 class TUCreateProjectWizardForm : public TForm

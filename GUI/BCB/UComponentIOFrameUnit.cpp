@@ -4,8 +4,7 @@
 #pragma hdrstop
 
 #include "UComponentIOFrameUnit.h"
-#include "rdk_initdll.h"
-#include "myrdk.h"
+#include "../../Deploy/Include/rdk_cpp_initdll.h"
 #include <vector>
 //---------------------------------------------------------------------------
 #pragma package(smart_init)

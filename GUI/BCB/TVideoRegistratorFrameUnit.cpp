@@ -4,7 +4,6 @@
 #pragma hdrstop
 
 #include "TVideoRegistratorFrameUnit.h"
-#include "rdk_initdll.h"
 #include "UGEngineControlFormUnit.h"
 #include "TUBitmap.h"
 #include "VideoOutputFormUnit.h"

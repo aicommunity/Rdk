@@ -9,7 +9,7 @@
 #include <Vcl.Forms.hpp>
 #include "TUVisualControllerFormUnit.h"
 #include <Vcl.ExtCtrls.hpp>
-#include "rdk_cpp_initdll.h"
+#include "../../Deploy/Include/rdk_cpp_initdll.h"
 //#include "myrdk.h"
 #include <Vcl.ComCtrls.hpp>
 #include "TUVisualControllerFrameUnit.h"

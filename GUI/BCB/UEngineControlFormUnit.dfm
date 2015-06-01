@@ -2,12 +2,12 @@ object UEngineControlForm: TUEngineControlForm
   Left = 0
   Top = 0
   Caption = 'UEngineControlForm'
-  ClientHeight = 64
-  ClientWidth = 811
+  ClientHeight = 84
+  ClientWidth = 1061
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
-  Font.Height = -11
+  Font.Height = -14
   Font.Name = 'Tahoma'
   Font.Style = []
   Menu = MainMenu
@@ -15,20 +15,26 @@ object UEngineControlForm: TUEngineControlForm
   Position = poDesigned
   OnClose = FormClose
   OnShow = FormShow
-  PixelsPerInch = 96
-  TextHeight = 13
+  PixelsPerInch = 120
+  TextHeight = 17
   object Panel1: TPanel
     Left = 0
     Top = 44
-    Width = 811
-    Height = 1
+    Width = 1061
+    Height = 21
+    Margins.Left = 4
+    Margins.Top = 4
+    Margins.Right = 4
+    Margins.Bottom = 4
     Align = alClient
     TabOrder = 0
+    ExplicitTop = 58
+    ExplicitHeight = 1
   end
   object ToolBar: TToolBar
     Left = 0
     Top = 0
-    Width = 811
+    Width = 1061
     Height = 44
     AutoSize = True
     ButtonHeight = 44
@@ -37,6 +43,7 @@ object UEngineControlForm: TUEngineControlForm
     Images = ImageList
     ShowCaptions = True
     TabOrder = 1
+    ExplicitWidth = 811
     object ToolButton8: TToolButton
       Left = 0
       Top = 0
@@ -169,11 +176,17 @@ object UEngineControlForm: TUEngineControlForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 45
-    Width = 811
+    Top = 65
+    Width = 1061
     Height = 19
+    Margins.Left = 4
+    Margins.Top = 4
+    Margins.Right = 4
+    Margins.Bottom = 4
     Panels = <>
     SimplePanel = True
+    ExplicitTop = 59
+    ExplicitWidth = 811
   end
   object MainMenu: TMainMenu
     Images = ImageList
@@ -297,7 +310,7 @@ object UEngineControlForm: TUEngineControlForm
     Left = 384
     Top = 32
     Bitmap = {
-      494C01011B006000C00010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B006000C40010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

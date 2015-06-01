@@ -21,7 +21,7 @@
 #include <vector>
 #include <string>
 #include "UComponentsListFormUnit.h"
-#include "myrdk.h"
+#include "../../Deploy/Include/rdk_cpp_initdll.h"
 #include "TUVisualController.h"
 //---------------------------------------------------------------------------
 #pragma warn -8130

@@ -34,7 +34,7 @@ See file license.txt for more information
 #include "UXMLEnvSerialize.h"
 #include "UComponentDescription.h"
 #include "UContainerDescription.h"  
-#include "Libraries/UELibraries.h"
+//#include "Libraries/UELibraries.h"
 
 #endif
 

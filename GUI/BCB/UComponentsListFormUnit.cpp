@@ -4,7 +4,7 @@
 #pragma hdrstop
 
 #include "UComponentsListFormUnit.h"
-#include "rdk_initdll.h"
+#include "../../Deploy/Include/rdk_cpp_initdll.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "UComponentsListFrameUnit"

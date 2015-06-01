@@ -10,7 +10,6 @@
 #include <ExtCtrls.hpp>
 #include <Grids.hpp>
 #include "UImagesFrameUnit.h"
-#include "myrdk.h"
 #include "TUVisualController.h"
 #include "TUVisualControllerFormUnit.h"
 #include "TUVisualControllerFrameUnit.h"

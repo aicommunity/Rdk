@@ -20,7 +20,8 @@ See file license.txt for more information
 
 namespace RDK{
 
-//using namespace RDK;
+/// Функция должна быть реализована в конечном проекте и загружать требуемые библиотеки
+extern RDK_LIB_TYPE void RDK_CALL RdkLoadPredefinedLibraries(std::list<ULibrary*> &libs_list);
 
 
 class RDK_LIB_TYPE UEngine: public UModule

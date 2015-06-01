@@ -6,7 +6,7 @@
 #include "VideoOutputFrameUnit.h"
 #include "UEngineMonitorFormUnit.h"
 #include "TUBitmap.h"
-#include "rdk_initdll.h"
+#include "../../Deploy/Include/rdk_cpp_initdll.h"
 //#include "TMultiStartFormUnit.h"
 #include <Jpeg.hpp>
 //---------------------------------------------------------------------------

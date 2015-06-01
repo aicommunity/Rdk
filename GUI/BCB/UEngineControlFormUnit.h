@@ -16,7 +16,6 @@
 #include <Vcl.ImgList.hpp>
 #include <Vcl.Menus.hpp>
 #include <Vcl.ToolWin.hpp>
-#include "myrdk.h"
 #include "TUVisualController.h"
 #include "TUVisualControllerFormUnit.h"
 //---------------------------------------------------------------------------

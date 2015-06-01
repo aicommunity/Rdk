@@ -15,7 +15,7 @@ See file license.txt for more information
 #include "UEngine.h"
 //#include "UEnvException.h"
 #include "UXMLEnvSerialize.h"
-#include "Libraries/IO/UFileIO.h"
+//#include "Libraries/IO/UFileIO.h"
 #include "../Application/UIVisualController.h"
 
 // --------------------------------------
@@ -323,7 +323,7 @@ bool UEngine::Init(UEPtr<UStorage> storage, UEPtr<UEnvironment> env)
  {
   return false;
  }
-
+/*
  UFileIO FileIO;
  FileIO.Default();
  FileIO.SetDirection(0);
@@ -334,7 +334,7 @@ bool UEngine::Init(UEPtr<UStorage> storage, UEPtr<UEnvironment> env)
   Storage_LoadCommonClassesDescription(FileIO.GetDataString().c_str());
   Storage_LoadClassesDescription(FileIO.GetDataString().c_str());
  }
-
+  */
 
  return true;
 }
@@ -3418,7 +3418,7 @@ const char *  UEngine::Model_SaveComponent(const char *stringid, unsigned int pa
 // Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния в xml
 int UEngine::Model_SaveComponentToFile(const char *stringid, const char* file_name, unsigned int params_type_mask)
-{
+{ /*
  const char* save_data=Model_SaveComponent(stringid,params_type_mask);
 
  try
@@ -3438,7 +3438,7 @@ int UEngine::Model_SaveComponentToFile(const char *stringid, const char* file_na
  {
   ProcessException(exception);
  }
- return 0;
+ return 0;   */
 }
 
 
@@ -3495,7 +3495,7 @@ int UEngine::Model_LoadComponent(const char *stringid, const char* buffer)
 // Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния из xml
 int UEngine::Model_LoadComponentFromFile(const char *stringid, const char* file_name)
-{
+{    /*
  try
  {
   UFileIO file;
@@ -3512,7 +3512,7 @@ int UEngine::Model_LoadComponentFromFile(const char *stringid, const char* file_
  {
   ProcessException(exception);
  }
- return 0;
+ return 0;     */
 }
 
 // Сохраняет все свойства компонента и его дочерних компонент в xml
@@ -3552,7 +3552,7 @@ const char * UEngine::Model_SaveComponentProperties(const char *stringid, unsign
 
 // Сохраняет все свойства компонента и его дочерних компонент в xml
 int UEngine::Model_SaveComponentPropertiesToFile(const char *stringid, const char* file_name, unsigned int type_mask)
-{
+{  /*
  const char* save_data=Model_SaveComponentProperties(stringid,type_mask);
 
  try
@@ -3572,7 +3572,7 @@ int UEngine::Model_SaveComponentPropertiesToFile(const char *stringid, const cha
  {
   ProcessException(exception);
  }
- return 0;
+ return 0;       */
 }
 
 // Загружает все свойства компонента и его дочерних компонент из xml
@@ -3606,7 +3606,7 @@ int UEngine::Model_LoadComponentProperties(const char *stringid, const char* buf
 // Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния из xml
 int UEngine::Model_LoadComponentPropertiesFromFile(const char *stringid, const char* file_name)
-{
+{/*
  try
  {
   UFileIO file;
@@ -3623,7 +3623,7 @@ int UEngine::Model_LoadComponentPropertiesFromFile(const char *stringid, const c
  {
   ProcessException(exception);
  }
- return 0;
+ return 0;   */
 }
 
 // Сохраняет внутренние данные компонента, и его _непосредственных_ дочерних компонент, исключая
@@ -5186,26 +5186,7 @@ void UEngine::CreateEnvironment(bool isinit, list<UContainer*>* external_classes
 // Загружает набор предустановленных библиотек
 int UEngine::LoadPredefinedLibraries(void)
 {
- LibrariesList.push_back(&BCLLibrary);
- LibrariesList.push_back(&IOLibrary);
- LibrariesList.push_back(&CRLibrary);
- LibrariesList.push_back(&StatisticLibrary);
- LibrariesList.push_back(&PredictionLibrary);
- LibrariesList.push_back(&SourceLibrary);
- LibrariesList.push_back(&NoiseLibrary);
- LibrariesList.push_back(&AriphmeticLibrary);
- LibrariesList.push_back(&BasicLibrary);
- LibrariesList.push_back(&DetectionLibrary);
- LibrariesList.push_back(&FilteringLibrary);
- LibrariesList.push_back(&GUILibrary);
- LibrariesList.push_back(&HardwareLibrary);
- LibrariesList.push_back(&UPtzCameraLibrary);
-// LibrariesList.push_back(&ObjectSearchLibrary);
- LibrariesList.push_back(&ObjectTrackingLibrary);
- LibrariesList.push_back(&QualifierLibrary);
- LibrariesList.push_back(&SimulatorLibrary);
-// LibrariesList.push_back(&SpatialGeometryLibrary);
- LibrariesList.push_back(&BStatisticLibrary);
+ RdkLoadPredefinedLibraries(LibrariesList);
 
  return 0;
 }

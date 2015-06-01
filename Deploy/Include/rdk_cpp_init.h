@@ -3,6 +3,7 @@
 
 #include "rdk_init.h"
 #include "rdk.h"
+#include "rdk_rpc.h"
 
 extern "C++"  {
 

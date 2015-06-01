@@ -19,6 +19,11 @@ See file license.txt for more information
 
 namespace RDK {
 
+class UEnvironment;
+
+/// Функция должна быть реализована в конечном проекте
+extern RDK_LIB_TYPE void RDK_CALL RdkCreatePredefinedStructure(UEnvironment* env, int predefined_structure);
+
 class RDK_LIB_TYPE UEnvironment: virtual public UModule
 {
 public:

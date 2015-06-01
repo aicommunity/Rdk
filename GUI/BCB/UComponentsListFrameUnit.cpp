@@ -5,8 +5,7 @@
 
 #include <vector>
 #include "UComponentsListFrameUnit.h"
-#include "rdk_initdll.h"
-#include "myrdk.h"
+#include "../../Deploy/Include/rdk_cpp_initdll.h"
 //#include "UCRPerseptronFormUnit.h"
 //#include "UCRSampleFormUnit.h"
 //#include "UCRTeacherPerseptronDLFormUnit.h"
