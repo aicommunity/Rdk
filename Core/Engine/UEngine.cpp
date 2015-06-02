@@ -3437,8 +3437,8 @@ int UEngine::Model_SaveComponentToFile(const char *stringid, const char* file_na
  catch (UException &exception)
  {
   ProcessException(exception);
- }
- return 0;   */
+ }*/
+ return 0;   
 }
 
 
@@ -3511,8 +3511,8 @@ int UEngine::Model_LoadComponentFromFile(const char *stringid, const char* file_
  catch (UException &exception)
  {
   ProcessException(exception);
- }
- return 0;     */
+ }*/
+ return 0;     
 }
 
 // Сохраняет все свойства компонента и его дочерних компонент в xml
@@ -3571,8 +3571,8 @@ int UEngine::Model_SaveComponentPropertiesToFile(const char *stringid, const cha
  catch (UException &exception)
  {
   ProcessException(exception);
- }
- return 0;       */
+ }*/
+ return 0;       
 }
 
 // Загружает все свойства компонента и его дочерних компонент из xml
@@ -3622,8 +3622,8 @@ int UEngine::Model_LoadComponentPropertiesFromFile(const char *stringid, const c
  catch (UException &exception)
  {
   ProcessException(exception);
- }
- return 0;   */
+ }*/
+ return 0;   
 }
 
 // Сохраняет внутренние данные компонента, и его _непосредственных_ дочерних компонент, исключая
