@@ -28,6 +28,8 @@
 			<Base>true</Base>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base)'!=''">
+			<DynamicRTL>true</DynamicRTL>
+			<BCC_UserSuppliedOptions>-tWM</BCC_UserSuppliedOptions>
 			<VerInfo_AutoGenVersion>true</VerInfo_AutoGenVersion>
 			<VerInfo_Build>34</VerInfo_Build>
 			<VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=4.0.1.34;InternalName=;LegalCopyright=Alexandr Bakhshiev, 2005;LegalTrademarks=;OriginalFilename=;ProductName=MySDK;ProductVersion=4.0.0.0;Comments=http://ailab.ru</VerInfo_Keys>
@@ -43,7 +45,7 @@
 			<OutputExt>lib</OutputExt>
 			<AllPackageLibs>rtl.lib;vcl.lib</AllPackageLibs>
 			<DCC_CBuilderOutput>JPHNE</DCC_CBuilderOutput>
-			<Defines>NO_STRICT;$(Defines)</Defines>
+			<Defines>NO_STRICT;LIBRDK_LIBRARY_EXPORT;RDK_UNICODE_RUN;$(Defines)</Defines>
 			<UsePackages>true</UsePackages>
 			<IncludePath>..\..\..\GUI\BCB\;..\..\..\Deploy\Include\;..\..\..\Deploy\Include;$(BDS)\include;$(BDS)\include\dinkumware;$(IncludePath)</IncludePath>
 			<ILINK_LibraryPath>$(BDS)\lib;$(ILINK_LibraryPath)</ILINK_LibraryPath>
@@ -51,6 +53,7 @@
 			<BCC_OptimizeForSpeed>true</BCC_OptimizeForSpeed>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base_Win32)'!=''">
+			<ILINK_LibraryPath>E:\Work\RTC\14\Rtv-Debug\Rdk\Bin\Platform\Win\;$(ILINK_LibraryPath)</ILINK_LibraryPath>
 			<DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_1)'!=''">
@@ -79,6 +82,9 @@
 			<TASM_Debugging>None</TASM_Debugging>
 		</PropertyGroup>
 		<ItemGroup>
+			<LibFiles Condition="'$(Platform)'=='Win32'" Include="..\..\..\Bin\Platform\Win\libcurl.bcb.lib">
+				<BuildOrder>6</BuildOrder>
+			</LibFiles>
 			<ResFiles Include="rdk.bcb.res">
 				<BuildOrder>5</BuildOrder>
 			</ResFiles>
@@ -97,10 +103,6 @@
 			</CppCompile>
 			<CppCompile Include="..\..\..\Deploy\Include\rdk_new.cpp">
 				<BuildOrder>3</BuildOrder>
-			</CppCompile>
-			<CppCompile Include="..\..\..\GUI\BCB\TUFileSystem.cpp">
-				<DependentOn>..\..\..\GUI\BCB\TUFileSystem.h</DependentOn>
-				<BuildOrder>5</BuildOrder>
 			</CppCompile>
 			<BuildConfiguration Include="Release">
 				<Key>Cfg_2</Key>
@@ -127,7 +129,7 @@
 						<VersionInfo Name="MajorVer">4</VersionInfo>
 						<VersionInfo Name="MinorVer">0</VersionInfo>
 						<VersionInfo Name="Release">1</VersionInfo>
-						<VersionInfo Name="Build">34</VersionInfo>
+						<VersionInfo Name="Build">37</VersionInfo>
 						<VersionInfo Name="Debug">False</VersionInfo>
 						<VersionInfo Name="PreRelease">False</VersionInfo>
 						<VersionInfo Name="Special">False</VersionInfo>
@@ -139,7 +141,7 @@
 					<VersionInfoKeys>
 						<VersionInfoKeys Name="CompanyName"/>
 						<VersionInfoKeys Name="FileDescription"/>
-						<VersionInfoKeys Name="FileVersion">4.0.1.34</VersionInfoKeys>
+						<VersionInfoKeys Name="FileVersion">4.0.1.37</VersionInfoKeys>
 						<VersionInfoKeys Name="InternalName"/>
 						<VersionInfoKeys Name="LegalCopyright">Alexandr Bakhshiev, 2005</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalTrademarks"/>
