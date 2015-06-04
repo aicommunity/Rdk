@@ -82,9 +82,6 @@
 			<TASM_Debugging>None</TASM_Debugging>
 		</PropertyGroup>
 		<ItemGroup>
-			<LibFiles Condition="'$(Platform)'=='Win32'" Include="..\..\..\Bin\Platform\Win\libcurl.bcb.lib">
-				<BuildOrder>6</BuildOrder>
-			</LibFiles>
 			<ResFiles Include="rdk.bcb.res">
 				<BuildOrder>5</BuildOrder>
 			</ResFiles>
@@ -129,7 +126,7 @@
 						<VersionInfo Name="MajorVer">4</VersionInfo>
 						<VersionInfo Name="MinorVer">0</VersionInfo>
 						<VersionInfo Name="Release">1</VersionInfo>
-						<VersionInfo Name="Build">37</VersionInfo>
+						<VersionInfo Name="Build">40</VersionInfo>
 						<VersionInfo Name="Debug">False</VersionInfo>
 						<VersionInfo Name="PreRelease">False</VersionInfo>
 						<VersionInfo Name="Special">False</VersionInfo>
@@ -141,7 +138,7 @@
 					<VersionInfoKeys>
 						<VersionInfoKeys Name="CompanyName"/>
 						<VersionInfoKeys Name="FileDescription"/>
-						<VersionInfoKeys Name="FileVersion">4.0.1.37</VersionInfoKeys>
+						<VersionInfoKeys Name="FileVersion">4.0.1.40</VersionInfoKeys>
 						<VersionInfoKeys Name="InternalName"/>
 						<VersionInfoKeys Name="LegalCopyright">Alexandr Bakhshiev, 2005</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalTrademarks"/>
