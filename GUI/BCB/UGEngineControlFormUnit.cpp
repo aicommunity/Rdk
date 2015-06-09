@@ -578,7 +578,8 @@ void TUGEngineControlForm::CloseProject(void)
  if(ProjectAutoSaveFlag)
   SaveProject();
 
- UServerControlForm->ServerRestartTimer->Enabled=false;
+ if(UServerControlForm)
+  UServerControlForm->ServerRestartTimer->Enabled=false;
 
  if(ProjectOpenFlag)
  {
