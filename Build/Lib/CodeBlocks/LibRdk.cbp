@@ -2,12 +2,12 @@
 <CodeBlocks_project_file>
 	<FileVersion major="1" minor="6" />
 	<Project>
-		<Option title="RDKLib" />
+		<Option title="LibRdk" />
 		<Option pch_mode="2" />
 		<Option compiler="gcc" />
 		<Build>
 			<Target title="Debug">
-				<Option output="libRDKLib" prefix_auto="1" extension_auto="1" />
+				<Option output="RDKLib" prefix_auto="1" extension_auto="1" />
 				<Option working_dir="" />
 				<Option object_output="obj/Debug/" />
 				<Option type="2" />
@@ -18,7 +18,7 @@
 				</Compiler>
 			</Target>
 			<Target title="Release">
-				<Option output="libRDKLib" prefix_auto="1" extension_auto="1" />
+				<Option output="RDKLib" prefix_auto="1" extension_auto="1" />
 				<Option working_dir="" />
 				<Option object_output="obj/Release/" />
 				<Option type="2" />
@@ -32,14 +32,13 @@
 				</Linker>
 			</Target>
 		</Build>
-		<Unit filename="main.c">
-			<Option compilerVar="CC" />
-		</Unit>
 		<Unit filename="../../../Deploy/Include/myrdk.gcc.cpp" />
 		<Unit filename="../../../Deploy/Include/rdk.gcc.cpp" />
 		<Unit filename="../../../Deploy/Include/rdk_cpp_initlib.cpp" />
-		<Unit filename="../../../Deploy/Include/rdk_libraries.cpp" />
 		<Unit filename="../../../Deploy/Include/rdk_new.cpp" />
+		<Unit filename="main.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Extensions>
 			<code_completion />
 			<debugger />
