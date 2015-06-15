@@ -18,6 +18,7 @@
 #include <Vcl.Samples.Spin.hpp>
 #include <Vcl.ComCtrls.hpp>
 #include <Vcl.Grids.hpp>
+#include <VclTee.TeeGDIPlus.hpp>
 #include <vector>
 #include <string>
 #include "UComponentsListFormUnit.h"
