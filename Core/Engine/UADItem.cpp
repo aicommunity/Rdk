@@ -13,6 +13,7 @@ See file license.txt for more information
 #define UADITEM_CPP
 
 #include <algorithm>
+#include "UXMLEnvSerialize.h"
 #include "UADItem.h"
 #include "UPropertyIO.h"
 #include "UStorage.h"
@@ -48,7 +49,7 @@ UADItem::UADItem(void)
 
 UADItem::~UADItem(void)
 {
-}                       
+}
 // --------------------------
 
 // --------------------------
@@ -221,7 +222,7 @@ size_t UADItem::GetInputDataSize(size_t index) const
 {
  if(index >= InputData.size())
   return 0;
- 
+
  if(!InputData[index])
   return 0;
 

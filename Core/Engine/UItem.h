@@ -417,6 +417,116 @@ ULinksListT<T>& UItem::GetFullItemLinks(ULinksListT<T> &linkslist, UEPtr<UItem> 
  return linkslist;
 }
 
+// Template methods UConnector
+// Возвращает список подключений
+template<typename T>
+ULinksListT<T>& UConnector::GetLinks(ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel, bool exclude_internals, UEPtr<UContainer> internal_level) const
+{
+ ULinkT<T> link;
+ ULinkSideT<T> connector;
+ ULinkSideT<T> item;
+ GetLongId(netlevel,connector.Id);
+ if(connector.Id.size()==0)
+  return linkslist;
+
+
+ std::map<std::string, std::vector<UCItem> >::const_iterator I=ConnectedItemList.begin();
+ for(;I != ConnectedItemList.end();++I)
+  for(size_t i=0;i<I->second.size();i++)
+  {
+   if(I->second[i].Item)
+   {
+	if(exclude_internals)
+	{
+	 if(I->second[i].Item->CheckOwner(internal_level))
+	  continue;
+	}
+   I->second[i].Item->GetLongId(netlevel,item.Id);
+   UIProperty* property=0;
+   FindInputProperty(I->first, property);
+   if(property)
+	connector.Index=-1;//property->GetMinRange();
+   else
+    connector.Index=-1;//i;
+   connector.Name=I->first;
+
+   item.Index=-1;//CItemList[i].Index;
+   item.Name=I->second[i].Name;//CItemList[i].Name;
+   if(connector.Id.size() != 0)
+   {
+	int item_id=linkslist.FindItem(item);
+	if(item_id >= 0)
+	{
+	 if(linkslist[item_id].FindConnector(connector) >= 0)
+	  continue;
+	 linkslist[item_id].Connector.push_back(connector);
+	}
+	else
+	{
+	 link.Item=item;
+	 link.Connector.clear();
+	 link.Connector.push_back(connector);
+	 linkslist.Add(link);
+	}
+   }
+  }
+ }
+
+ return linkslist;
+}
+
+// Возвращает список подключений непосредственно коннектора cont
+template<typename T>
+ULinksListT<T>& UConnector::GetPersonalLinks(UEPtr<UContainer> cont, ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel) const
+{
+ ULinkT<T> link;
+ ULinkSideT<T> connector;
+ ULinkSideT<T> item;
+ GetLongId(netlevel,connector.Id);
+ if(connector.Id.size()==0)
+  return linkslist;
+
+ std::map<std::string, std::vector<UCItem> >::const_iterator I=ConnectedItemList.begin();
+ for(;I != ConnectedItemList.end();++I)
+  for(size_t i=0;i<I->second.size();i++)
+  {
+   if(I->second[i].Item == cont)
+   {
+	I->second[i].Item->GetLongId(netlevel,item.Id);
+	UIProperty* property=0;
+	FindInputProperty(I->first, property);
+	if(property)
+	 connector.Index=-1;//property->GetMinRange();
+	else
+	 connector.Index=-1;//i; // TODO тут неопределенность
+	connector.Name=I->first;
+	item.Index=-1;//CItemList[i].Index;
+	item.Name=I->second[i].Name;
+	if(connector.Id.size() != 0)
+	{
+	 int item_id=linkslist.FindItem(item);
+	 if(item_id >= 0)
+	 {
+	  if(linkslist[item_id].FindConnector(connector) >= 0)
+	   continue;
+	 linkslist[item_id].Connector.push_back(connector);
+	}
+	else
+	{
+	 link.Item=item;
+	 link.Connector.clear();
+	 link.Connector.push_back(connector);
+	 linkslist.Add(link);
+	}
+   }
+  }
+ }
+
+ return linkslist;
+}
+
+
+
 }
 #endif
 

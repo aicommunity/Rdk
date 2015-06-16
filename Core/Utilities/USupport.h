@@ -17,6 +17,7 @@ See file license.txt for more information
 #include <sstream>
 #include <iomanip>
 #include <locale>
+#include <limits>
 #include "UPtr.h"
 
 #ifndef u_min
@@ -271,7 +272,7 @@ int separatestring(const basic_string<CharT> &str, vector<basic_string<CharT> > 
    output[size-1]=str.substr(j);
   else
    output[size-1]=str.substr(j,i-j);
-  j=i+1; 
+  j=i+1;
   if(j >= str.size())
    break;
  }

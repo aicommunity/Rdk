@@ -4,6 +4,7 @@
 #define MDKALMAN_FILTER_H
 //---------------------------------------------------------------------------
 
+#include <cmath>
 #include "MDMatrix.h"
 
 namespace RDK {

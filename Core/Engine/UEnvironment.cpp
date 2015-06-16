@@ -13,9 +13,11 @@ See file license.txt for more information
 #define UAENVIRONMENT_CPP
 
 #include <string.h>
+#include "limits.h"
 #include "UEnvironment.h"
 #include "../System/rdk_system.h"
 #include "../Application/UIVisualController.h"
+
 
 namespace RDK {
 

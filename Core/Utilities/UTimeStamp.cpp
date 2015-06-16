@@ -11,7 +11,7 @@ Project License:	BSD License
 See file license.txt for more information
 *********************************************************** */
 
-
+#include <cmath>
 #include "UTimeStamp.h"
 #include "USupport.h"
 

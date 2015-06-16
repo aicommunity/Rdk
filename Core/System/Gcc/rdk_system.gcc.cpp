@@ -8,6 +8,8 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <cerrno>
+#include <stdlib.h>
 
 #include "../rdk_system.h"
 #include "USharedMemoryLoader.gcc.cpp"

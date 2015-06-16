@@ -15,6 +15,7 @@ See file license.txt for more information
 #ifndef UDRAW_ENGINE_GRAPHICS_CPP
 #define UDRAW_ENGINE_GRAPHICS_CPP
 
+#include <cmath>
 #include "UDrawEngine.h"
 #include "../Math/MUXMLSerialize.h"
 #include "../Application/UIVisualController.h"

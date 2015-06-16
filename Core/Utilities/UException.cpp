@@ -1,6 +1,7 @@
 #ifndef UEXCEPTION_CPP
 #define UEXCEPTION_CPP
 
+#include <typeinfo>
 #include "UException.h"
 #include "USupport.h"
 //#include "ExceptionDispatcher.h"

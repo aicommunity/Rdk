@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <list>
+#include <string>
 #include "../../Deploy/Include/initdll_defs.h"
 
 #define MAX_PACKET_SIZE 152400000
@@ -35,7 +36,7 @@ class RDK_LIB_TYPE UTransferPacket
 
         // Контрольная сумма
         unsigned int Checksum;
-        
+
         int Temp;
 
        public: // Методы
@@ -90,7 +91,7 @@ class RDK_LIB_TYPE UTransferPacket
 		bool SetParam(int i, const std::vector<char> &value);
 
 		// Устанавливает значение i-го параметра
-        // декодируя буфер 'value' и возвращает индекс на следующий 
+        // декодируя буфер 'value' и возвращает индекс на следующий
         // за последним байтом параметра байт буфера
         // или возвращает -1 в случае ошибки
         int DecodeParam(int i, const UParamT &value, int istart=0);
@@ -102,7 +103,7 @@ class RDK_LIB_TYPE UTransferPacket
         unsigned int IntCompose(const UParamT &value, int istart);
 
         // Вычисляет участок вектора по значению int
-        // и возвращает 
+        // и возвращает
         const UParamT& IntDivide(unsigned int value, UParamT &buffer, int istart) const;
         // -------------------------
 
@@ -145,7 +146,7 @@ class RDK_LIB_TYPE UTransferPacket
         inline unsigned char& operator () (int i, int j)
          { return Params[i][j]; };
 
-        // Возвращает данные i-го параметра в виде массива 
+        // Возвращает данные i-го параметра в виде массива
         UParamT& operator () (int i, UParamT &buffer, int istart);
         // -------------------------
 	   };

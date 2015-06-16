@@ -15,6 +15,7 @@ See file license.txt for more information
 
 #include <cmath>
 #include <cstdlib>
+#include <string.h>
 //#include <list>
 #include "UGraphics.h"
 #include "UFont.h"
