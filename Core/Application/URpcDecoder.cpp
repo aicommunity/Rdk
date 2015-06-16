@@ -3,6 +3,7 @@
 
 #include "URpcDecoder.h"
 #include "URpcDispatcher.h"
+#include "../../Deploy/Include/rdk_cpp_initdll.h"
 
 
 namespace RDK {

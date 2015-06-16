@@ -23,6 +23,8 @@ See file license.txt for more information
 #include "../Serialize/UBinaryStdSerialize.h"
 #include "../Graphics/UGraphicsBinarySerialize.h"
 #include "../Graphics/UGraphicsXMLSerialize.h"
+#include "../Engine/UBinaryEnvSerialize.h"
+#include "../Engine/UXMLEnvSerialize.h"
 #include "../Math/MUXMLSerialize.h"
 #include "../Math/MUBinarySerialize.h"
 #include "UComponent.h"

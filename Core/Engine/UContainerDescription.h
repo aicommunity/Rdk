@@ -2,6 +2,7 @@
 #define UCONTAINER_DESCRIPTION_H
 
 #include <map>
+#include <vector>
 #include "UComponentDescription.h"
 
 namespace RDK {

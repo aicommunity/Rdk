@@ -12,10 +12,10 @@ See file license.txt for more information
 #ifndef UBGRAPHICS_LIBRARIES_GUI_CPP
 #define UBGRAPHICS_LIBRARIES_GUI_CPP
 
-#include "UAGraphics.cpp"
-#include "UGraphics.cpp"
-#include "UFont.cpp"
-#include "UDrawEngine.cpp"
-                        
+//#include "UAGraphics.cpp"
+//#include "UGraphics.cpp"
+//#include "UFont.cpp"
+//#include "UDrawEngine.cpp"
+
 #endif
 

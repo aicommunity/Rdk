@@ -1,19 +1,21 @@
 #ifndef UApplication_CPP
 #define UApplication_CPP
 
-#include "UAppCore.cpp"
-#include "UProject.cpp"
-#include "UIVisualController.cpp"
-#include "URpcDispatcherQueues.cpp"
-#include "URpcDispatcher.cpp"
-#include "URpcDecoder.cpp"
-#include "URpcDecoderInternal.cpp"
-#include "URpcCommand.cpp"
-#include "URpcCommandInternal.cpp"
+#include "UApplication.h"
+
+//#include "UAppCore.cpp"
+//#include "UProject.cpp"
+//#include "UIVisualController.cpp"
+//#include "URpcDispatcherQueues.cpp"
+//#include "URpcDispatcher.cpp"
+//#include "URpcDecoder.cpp"
+//#include "URpcDecoderInternal.cpp"
+//#include "URpcCommand.cpp"
+//#include "URpcCommandInternal.cpp"
 
               
 #ifdef __BORLANDC__
-#include "Bcb/Application.bcb.cpp"
+//#include "Bcb/Application.bcb.cpp"
 #endif
 
 namespace RDK {

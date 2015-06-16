@@ -2,6 +2,8 @@
 #define UTRANSFERPACKET_H
 
 #include <vector>
+#include <list>
+#include "../../Deploy/Include/initdll_defs.h"
 
 #define MAX_PACKET_SIZE 152400000
 #define MAX_NUM_PARAMS 20

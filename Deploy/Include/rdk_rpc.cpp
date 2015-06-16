@@ -3,7 +3,7 @@
 
 #include "rdk_rpc.h"
 #include "rdk.h"
-#include "rdk_cpp_init.h"
+#include "rdk_cpp_initdll.h"
 
 
 namespace RDK{

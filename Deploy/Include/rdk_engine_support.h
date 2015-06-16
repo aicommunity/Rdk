@@ -1,7 +1,12 @@
 #ifndef RDK_ENGINE_SUPPORT_H
 #define RDK_ENGINE_SUPPORT_H
 
+#include <vector>
 #include "../../Core/Engine/UELockPtr.h"
+#include "../../Core/Engine/UELockVar.h"
+#include "../../Core/Engine/UStorage.h"
+#include "../../Core/Engine/UEngine.h"
+#include "../../Core/Engine/UEnvironment.h"
 
 // Менеджер DLL
 class RDK_LIB_TYPE RDKDllManager

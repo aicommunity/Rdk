@@ -25,6 +25,8 @@ See file license.txt for more information
 #include "../Math/MUXMLSerialize.h"
 #include "UStorage.h"
 #include "UContainerDescription.h"
+#include "UEnvironment.h"
+#include "../../Deploy/Include/rdk_exceptions.h"
 
 namespace RDK {
 

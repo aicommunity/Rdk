@@ -4,8 +4,8 @@
 #include <exception>
 #include "rdk_init.h"
 #include "rdk.h"
-#include "rdk_rpc.cpp"
-#include "rdk_engine_support.cpp"
+//#include "rdk_rpc.cpp"
+#include "rdk_engine_support.h"
 
 // --------------------------------------
 // ќбъ€влени€ дополнительных функций

@@ -1,6 +1,8 @@
 #ifndef UCONTAINER_DESCRIPTION_CPP
 #define UCONTAINER_DESCRIPTION_CPP
 
+#include <map>
+#include <string>
 #include "UContainerDescription.h"
 
 namespace RDK {
@@ -80,7 +82,7 @@ const UPropertyDescription& UContainerDescription::GetPropertyDescription(const 
 //  if(I == CommonProperties.end())
   {
    UPropertyDescription descr;
-   I=Properties.insert(Properties.end(),pair<std::string, UPropertyDescription>(name,descr));
+   I=Properties.insert(Properties.end(),std::pair<std::string, UPropertyDescription>(name,descr));
   }
  }
 

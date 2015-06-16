@@ -13,6 +13,7 @@ See file license.txt for more information
 #define UGRAPHICS_BINARY_SERIALIZE_CPP
 
 #include "UGraphicsBinarySerialize.h"
+#include "../Serialize/UBinaryStdSerialize.h"
 //#include "Libraries/Simulator/UBAVideoSimulator.h"
 //#include "Libraries/Simulator/UBAVideo3DSimulator.h"
 

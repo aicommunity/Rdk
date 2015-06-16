@@ -1,7 +1,8 @@
 #ifndef UShareH
 #define UShareH
 
-#include "UComponent.h"
+//#include "UComponent.h"
+#include "UProperty.h"
 
 namespace RDK {
 

@@ -16,6 +16,8 @@ See file license.txt for more information
 #define UDRAW_ENGINE_GRAPHICS_CPP
 
 #include "UDrawEngine.h"
+#include "../Math/MUXMLSerialize.h"
+#include "../Application/UIVisualController.h"
 
 namespace RDK {
 

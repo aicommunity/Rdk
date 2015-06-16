@@ -492,9 +492,5 @@ public:
 
 }
 
-#include "UProperty.h"
-#include "ULocalProperty.h"
-#include "UShare.h"
-
 #endif
 

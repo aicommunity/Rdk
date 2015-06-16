@@ -12,13 +12,13 @@ See file license.txt for more information
 #ifndef USERIALIZE_CPP
 #define USERIALIZE_CPP
 
-#include "Serialize_lite.cpp"
-#include "UBinaryStdSerialize.cpp"
-#include "UXMLStdSerialize.cpp"
-#include "USerStorage.cpp"
-#include "USerStorageBinary.cpp"
-#include "USerStorageXML.cpp"
-#include "UIOStream.cpp"
+//#include "Serialize_lite.cpp"
+//#include "UBinaryStdSerialize.cpp"
+//#include "UXMLStdSerialize.cpp"
+//#include "USerStorage.cpp"
+//#include "USerStorageBinary.cpp"
+//#include "USerStorageXML.cpp"
+//#include "UIOStream.cpp"
 
 #endif
 

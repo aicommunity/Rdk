@@ -2,7 +2,7 @@
 #define RDK_ENGINE_SUPPORT_CPP
 
 #include "rdk_engine_support.h"
-
+#include "rdk_cpp_initdll.h"
 
 // Экземпляр менеджера
 RDKDllManager DllManager;

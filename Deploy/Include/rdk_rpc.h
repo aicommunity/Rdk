@@ -1,7 +1,7 @@
 #ifndef rdk_rpcH
 #define rdk_rpcH
 
-#include "rdk_init.h"
+#include "rdk_initdll.h"
 //#include "../PtzLib/ptzlib_init.h"
 #include "myrdk.h"
 

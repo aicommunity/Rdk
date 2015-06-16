@@ -112,6 +112,11 @@
  * work.has been done.
  *
  ****************************************************************************/
+#include "../../Deploy/Include/initdll_defs.h"
+#ifdef RDK_UNICODE_RUN
+#define XML_UNICODE_RUN
+#endif
+
 #define RDK_XML_DEBUG_STATIC
 
 #ifndef __INCLUDE_XML_NODE__

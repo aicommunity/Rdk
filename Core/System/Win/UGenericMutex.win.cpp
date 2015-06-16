@@ -4,8 +4,8 @@
 
 #include <windows.h>
 #include "../UGenericMutex.h"
-#include "../../Deploy/Include/initdll_defs.h"
-#include "../../Core/Utilities/USupport.h"
+#include "../../../Deploy/Include/initdll_defs.h"
+#include "../../Utilities/USupport.h"
 #include <fstream>
 
 class RDK_LIB_TYPE UGenericMutexWin: public UGenericMutex

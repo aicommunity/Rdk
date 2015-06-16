@@ -19,6 +19,7 @@ See file license.txt for more information
 #include "../Serialize/USerStorageXML.h"
 #include "../Utilities/USupport.h"
 #include "../Engine/UEPtr.h"
+#include "../Math/MVector.h"
 #include "UAGraphics.h"
 
 namespace RDK {

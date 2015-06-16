@@ -15,6 +15,7 @@ See file license.txt for more information
 #include <algorithm>
 #include "UADItem.h"
 #include "UPropertyIO.h"
+#include "UStorage.h"
 
 namespace RDK {
 
@@ -193,7 +194,7 @@ int UItem::GetNumActiveOutputs(const NameT &item_property_name) const
 // --------------------------
 // Возвращает указатель на вектор входов InputData по указателю на item
 // Возвращает 0 если citem == 0 или не найден в списке подключений
-const UEPtr<const UItemData>& UADItem::GetInputData(const UEPtr<UItem> &citem) const
+const UEPtr<const UItemData> UADItem::GetInputData(const UEPtr<UItem> &citem) const
 {
  UItemData result;
 
@@ -209,7 +210,7 @@ const UEPtr<const UItemData>& UADItem::GetInputData(const UEPtr<UItem> &citem) c
 
 // Возвращает указатель на вектор входов InputData по индексу
 // Проверяет индекс на корректность и возвращает 0, если такого входа нет фактически
-const UEPtr<const UItemData>& UADItem::GetInputData(size_t index) const
+const UEPtr<const UItemData> UADItem::GetInputData(size_t index) const
 {
  return InputData.at(index);
 }

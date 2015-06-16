@@ -15,6 +15,7 @@ See file license.txt for more information
 #include <string.h>
 #include <stdlib.h>
 #include "UEnvSupport.h"
+#include "../Utilities/USupport.h"
 
 namespace RDK {
 
@@ -170,20 +171,20 @@ UIdVector& UIdVector::DecodeFromString(const std::string &str)
 
  std::size_t start=str.find_first_not_of("0123456789. ");
  std::size_t stop;
- if(start != string::npos)
+ if(start != std::string::npos)
   throw EDecodeFail(str,0);
 
  start=stop=0;
- while(start != string::npos)
+ while(start != std::string::npos)
  {
   start=str.find_first_of("0123456789",stop);
-  if(start == string::npos)
+  if(start == std::string::npos)
    break;
 
   stop=str.find_first_of(".",start);
   try
   {
-   if(stop == string::npos)
+   if(stop == std::string::npos)
 	Add(atoi(str.substr(start)));
    else
 	Add(atoi(str.substr(start,stop-start)));

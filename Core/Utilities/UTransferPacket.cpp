@@ -2,6 +2,7 @@
 #define UTRANSFERPACKET_CPP
 
 #include "UTransferPacket.h"
+#include "../Serialize/USerStorageXML.h"
 #include <string.h>
 //#include <mem.h>
 

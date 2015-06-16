@@ -2,6 +2,7 @@
 #define URpcCommandInternal_CPP
 
 #include "URpcCommandInternal.h"
+#include "../../Deploy/Include/rdk_rpc.h"
 
 namespace RDK {
 
