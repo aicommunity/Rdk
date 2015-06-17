@@ -173,16 +173,19 @@ bool USerStorageXML::SaveFromNode(std::string &str)
 bool USerStorageXML::LoadFromFile(const std::string &file_name, const std::string &root)
 {
  fstream file(file_name.c_str(), ios::in);
- char buffer[4096];
+// char buffer[4096];
 
  string result;
 
- if(!file)
+ if(!file || !file.is_open())
   return false;
 
- while(!file.eof())
+ while(!file.eof() && !file.fail())
   {
-   file.getline(buffer,4096);
+   std::string buffer;
+   if(!std::getline(file,buffer))
+    break;
+//   file.getline(buffer,4096);
    result+=buffer;
   }
 
@@ -197,7 +200,7 @@ bool USerStorageXML::SaveToFile(const std::string &file_name)
 {
  fstream file(file_name.c_str(), ios::out | ios::trunc);
 
- if(!file)
+ if(!file || !file.is_open())
   return false;
 
  std::string result;

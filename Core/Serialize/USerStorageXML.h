@@ -194,7 +194,7 @@ void WriteBool(const std::string &name, bool value);
 protected:
 // --------------------------
 };
-
+	 /*
 template<typename T>
 USerStorageXML& operator << (USerStorageXML& storage, T &data)
 {
@@ -206,7 +206,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, T &data)
 {
  return storage;
 }
-
+         */
 
 template<typename T>
 bool USerStorageXML::ReadData(const std::string &name, T &data)

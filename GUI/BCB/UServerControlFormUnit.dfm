@@ -83,41 +83,46 @@ object UServerControlForm: TUServerControlForm
           Title.Visible = False
           BottomAxis.Axis.Color = 4210752
           BottomAxis.Grid.Color = 11119017
-          BottomAxis.LabelsFont.Name = 'Verdana'
+          BottomAxis.LabelsFormat.Font.Name = 'Verdana'
+          BottomAxis.LabelsFormat.TextAlignment = taCenter
           BottomAxis.TicksInner.Color = 11119017
           BottomAxis.Title.Font.Name = 'Verdana'
           DepthAxis.Axis.Color = 4210752
           DepthAxis.Grid.Color = 11119017
-          DepthAxis.LabelsFont.Name = 'Verdana'
+          DepthAxis.LabelsFormat.Font.Name = 'Verdana'
+          DepthAxis.LabelsFormat.TextAlignment = taCenter
           DepthAxis.TicksInner.Color = 11119017
           DepthAxis.Title.Font.Name = 'Verdana'
           DepthTopAxis.Axis.Color = 4210752
           DepthTopAxis.Grid.Color = 11119017
-          DepthTopAxis.LabelsFont.Name = 'Verdana'
+          DepthTopAxis.LabelsFormat.Font.Name = 'Verdana'
+          DepthTopAxis.LabelsFormat.TextAlignment = taCenter
           DepthTopAxis.TicksInner.Color = 11119017
           DepthTopAxis.Title.Font.Name = 'Verdana'
           LeftAxis.Axis.Color = 4210752
           LeftAxis.Grid.Color = 11119017
-          LeftAxis.LabelsFont.Name = 'Verdana'
+          LeftAxis.LabelsFormat.Font.Name = 'Verdana'
+          LeftAxis.LabelsFormat.TextAlignment = taCenter
           LeftAxis.TicksInner.Color = 11119017
           LeftAxis.Title.Font.Name = 'Verdana'
           RightAxis.Axis.Color = 4210752
           RightAxis.Grid.Color = 11119017
-          RightAxis.LabelsFont.Name = 'Verdana'
+          RightAxis.LabelsFormat.Font.Name = 'Verdana'
+          RightAxis.LabelsFormat.TextAlignment = taCenter
           RightAxis.TicksInner.Color = 11119017
           RightAxis.Title.Font.Name = 'Verdana'
           TopAxis.Axis.Color = 4210752
           TopAxis.Grid.Color = 11119017
-          TopAxis.LabelsFont.Name = 'Verdana'
+          TopAxis.LabelsFormat.Font.Name = 'Verdana'
+          TopAxis.LabelsFormat.TextAlignment = taCenter
           TopAxis.TicksInner.Color = 11119017
           TopAxis.Title.Font.Name = 'Verdana'
+          Zoom.Pen.Mode = pmNotXor
           Align = alClient
           TabOrder = 0
+          DefaultCanvas = 'TGDIPlusCanvas'
           ColorPaletteIndex = 13
           object Series1: TBarSeries
-            Marks.Arrow.Visible = True
-            Marks.Callout.Brush.Color = clBlack
-            Marks.Callout.Arrow.Visible = True
             Marks.Visible = True
             Title = 'Model'
             XValues.Name = 'X'
@@ -126,9 +131,6 @@ object UServerControlForm: TUServerControlForm
             YValues.Order = loNone
           end
           object Series2: TBarSeries
-            Marks.Arrow.Visible = True
-            Marks.Callout.Brush.Color = clBlack
-            Marks.Callout.Arrow.Visible = True
             Marks.Visible = True
             Title = 'Transport+Standby'
             XValues.Name = 'X'
@@ -137,9 +139,6 @@ object UServerControlForm: TUServerControlForm
             YValues.Order = loNone
           end
           object Series3: TBarSeries
-            Marks.Arrow.Visible = True
-            Marks.Callout.Brush.Color = clBlack
-            Marks.Callout.Arrow.Visible = True
             Marks.Visible = True
             Title = 'Total'
             XValues.Name = 'X'

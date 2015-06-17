@@ -1,7 +1,7 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <ProjectGuid>{D2FBC0DE-35D4-4730-BA7C-F4D975105786}</ProjectGuid>
-        <ProjectVersion>15.3</ProjectVersion>
+        <ProjectVersion>17.2</ProjectVersion>
         <Config Condition="'$(Config)'==''">Debug</Config>
         <Base>True</Base>
         <AppType>StaticLibrary</AppType>
@@ -57,6 +57,7 @@
         <Base>true</Base>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
+        <SanitizedProjectName>rdk_bcb_static</SanitizedProjectName>
         <DynamicRTL>true</DynamicRTL>
         <VerInfo_AutoGenVersion>true</VerInfo_AutoGenVersion>
         <VerInfo_Build>34</VerInfo_Build>
@@ -70,7 +71,6 @@
         <Manifest_File>None</Manifest_File>
         <PackageImports>vclx.bpi;vcl.bpi;dbrtl.bpi;Rave76VCL.bpi;bdertl.bpi;rtl.bpi;bcbie.bpi;vclactnband.bpi;xmlrtl.bpi;bcbsmp.bpi;vcldb.bpi;vcldbx.bpi;dsnap.bpi;dsnapcon.bpi;TeeUI.bpi;TeeDB.bpi;Tee.bpi;adortl.bpi;vclib.bpi;ibxpress.bpi;IndyCore.bpi;IndySystem.bpi;IndyProtocols.bpi;inet.bpi;intrawebdb_100_120.bpi;Intraweb_100_120.bpi;VclSmp.bpi;vclie.bpi;websnap.bpi;webdsnap.bpi;inetdbbde.bpi;inetdbxpress.bpi;soaprtl.bpi;vclribbon.bpi;dbexpress.bpi;DbxCommonDriver.bpi;DataSnapIndy10ServerTransport.bpi;DataSnapProviderClient.bpi;DataSnapServer.bpi;DbxClientDriver.bpi;DBXInterBaseDriver.bpi;DBXMySQLDriver.bpi;dbxcds.bpi;DBXSybaseASEDriver.bpi;DBXSybaseASADriver.bpi;DBXOracleDriver.bpi;DBXMSSQLDriver.bpi;DBXInformixDriver.bpi;DBXDb2Driver.bpi;$(PackageImports)</PackageImports>
         <ProjectType>CppStaticLibrary</ProjectType>
-        <OutputExt>lib</OutputExt>
         <AllPackageLibs>rtl.lib;vcl.lib</AllPackageLibs>
         <DCC_CBuilderOutput>JPHNE</DCC_CBuilderOutput>
         <UsePackages>true</UsePackages>
@@ -107,6 +107,9 @@
         <BCC_SourceDebuggingOn>true</BCC_SourceDebuggingOn>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
+        <BCC_MonitorGlobalAndStackData>true</BCC_MonitorGlobalAndStackData>
+        <BCC_MonitorThis>true</BCC_MonitorThis>
+        <BCC_MonitorInlinePtrAccess>true</BCC_MonitorInlinePtrAccess>
         <Defines>_DEBUG;$(Defines)</Defines>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win64)'!=''">
@@ -492,7 +495,7 @@
                     <VersionInfo Name="MajorVer">4</VersionInfo>
                     <VersionInfo Name="MinorVer">0</VersionInfo>
                     <VersionInfo Name="Release">1</VersionInfo>
-                    <VersionInfo Name="Build">40</VersionInfo>
+                    <VersionInfo Name="Build">42</VersionInfo>
                     <VersionInfo Name="Debug">False</VersionInfo>
                     <VersionInfo Name="PreRelease">False</VersionInfo>
                     <VersionInfo Name="Special">False</VersionInfo>
@@ -504,7 +507,7 @@
                 <VersionInfoKeys>
                     <VersionInfoKeys Name="CompanyName"/>
                     <VersionInfoKeys Name="FileDescription"/>
-                    <VersionInfoKeys Name="FileVersion">4.0.1.40</VersionInfoKeys>
+                    <VersionInfoKeys Name="FileVersion">4.0.1.42</VersionInfoKeys>
                     <VersionInfoKeys Name="InternalName"/>
                     <VersionInfoKeys Name="LegalCopyright">Alexandr Bakhshiev, 2005</VersionInfoKeys>
                     <VersionInfoKeys Name="LegalTrademarks"/>
@@ -535,10 +538,10 @@
                     <ProjectProperties Name="AutoShowDeps">False</ProjectProperties>
                     <ProjectProperties Name="ManagePaths">True</ProjectProperties>
                     <ProjectProperties Name="VerifyPackages">True</ProjectProperties>
+                    <ProjectProperties Name="IndexFiles">False</ProjectProperties>
                 </ProjectProperties>
             </CPlusPlusBuilder.Personality>
             <Platforms>
-                <Platform value="iOSDevice">False</Platform>
                 <Platform value="OSX32">False</Platform>
                 <Platform value="Win32">True</Platform>
                 <Platform value="Win64">False</Platform>

@@ -32,7 +32,7 @@ bool AddGlobalFont(const std::string &font_file_name)
  std::size_t _pos2=font_name.find_first_not_of("0123456789",_pos+1);
  if(_pos != std::string::npos)
  {
-  std::string font_string_size=font_name.substr(_pos+1,_pos2);
+  std::string font_string_size=font_name.substr(_pos+1,_pos2-_pos-1);
   int size=RDK::atoi(font_string_size);
   if(!font.LoadFromFile(font_name.substr(0,_pos),font_file_name,size))
    return false;

@@ -13,6 +13,7 @@ See file license.txt for more information
 #define UANET_CPP
 
 #include "UNet.h"
+#include "UXMLEnvSerialize.h"
 
 namespace RDK {
 

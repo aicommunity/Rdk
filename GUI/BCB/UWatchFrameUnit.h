@@ -23,6 +23,7 @@
 #include <VCLTee.TeeProcs.hpp>
 #include <Menus.hpp>
 #include "TUVisualControllerFrameUnit.h"
+#include <VclTee.TeeGDIPlus.hpp>
 
 
 #include <string>

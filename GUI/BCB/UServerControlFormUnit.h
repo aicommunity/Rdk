@@ -26,6 +26,7 @@
 #include <IdContext.hpp>
 #include <IdCustomTCPServer.hpp>
 #include <IdTCPServer.hpp>
+#include <VclTee.TeeGDIPlus.hpp>
 
 //typedef std::pair<std::string, RDK::UParamT> UServerCommand;
 

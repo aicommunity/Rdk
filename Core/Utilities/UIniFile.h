@@ -406,10 +406,10 @@ bool LoadFromFile(const StringT &FileName)
 
  Lines.clear();
 
- if(!file)
+ if(!file || !file.is_open())
   return false;
 
- while(!file.eof())
+ while(!file.eof() && !file.fail())
   {
    file.getline(buffer,4096);
    Lines.push_back(buffer);
@@ -425,7 +425,7 @@ bool SaveToFile(const StringT &FileName)
 {
  basic_fstream<CharT> file(FileName.c_str(), ios::out | ios::trunc);
 
- if(!file)
+ if(!file || !file.is_open())
   return false;
 
  StringListIteratorT I,J;
@@ -434,6 +434,8 @@ bool SaveToFile(const StringT &FileName)
 
  while(I != J)
  {
+  if(file.fail())
+   break;
   file.write(I->c_str(),I->size());
   ++I;
   if(I != J)
