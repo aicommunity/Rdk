@@ -202,11 +202,17 @@ const UEPtr<const UItemData> UADItem::GetInputData(const UEPtr<UItem> &citem) co
  if(!citem)
   throw new EInputIndexNotExist(-1);
 
- UCLink indexes=GetCLink(citem);
- if(indexes.Input < 0)
-  throw new EInputIndexNotExist(-1);
+ std::vector<UCLink> buffer;
+ GetCLink(citem,buffer);
+ for(size_t i=0;i<buffer.size();i++)
+ {
+  UCLink &indexes=buffer[i];
+  if(indexes.Input < 0)
+   throw new EInputIndexNotExist(-1);
 
- return InputData[indexes.Input];
+  return InputData[indexes.Input];
+ }
+ return UEPtr<const UItemData>();
 }
 
 // Возвращает указатель на вектор входов InputData по индексу

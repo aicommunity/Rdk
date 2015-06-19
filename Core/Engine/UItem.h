@@ -306,22 +306,30 @@ ULinksListT<T>& UItem::GetLinks(ULinksListT<T> &linkslist, UEPtr<UContainer> net
   link.Connector.clear();
   for(size_t i=0;i<I->second.size();i++)
   {
+   UConnector* curr_conn=I->second[i];
    if(exclude_internals)
    {
-	if(I->second[i]->CheckOwner(internal_level))
+	if(curr_conn->CheckOwner(internal_level))
 	 continue;
    }
-   I->second[i]->GetLongId(netlevel,connector.Id);
+   curr_conn->GetLongId(netlevel,connector.Id);
    if(connector.Id.size() != 0)
    {
-	UCLink indexes=I->second[i]->GetCLink(UEPtr<UItem>(const_cast<UItem*>(this)));
-	link.Item.Index=indexes.Output;
-	link.Item.Name=indexes.OutputName;
-	connector.Index=indexes.Input;
-	connector.Name=indexes.InputName;
+	std::vector<UCLink> buffer;
+	curr_conn->GetCLink(UEPtr<UItem>(const_cast<UItem*>(this)),buffer);
+	for(size_t k=0;k<buffer.size();k++)
+	{
+	 if(buffer[k].OutputName == I->first)
+	 {
+	  link.Item.Index=buffer[k].Output;
+	  link.Item.Name=buffer[k].OutputName;
+	  connector.Index=buffer[k].Input;
+	  connector.Name=buffer[k].InputName;
 
-	link.Connector.push_back(connector);
-	linkslist.Set(link);
+	  link.Connector.push_back(connector);
+	  linkslist.Set(link);
+	 }
+	}
    }
   }
  }
@@ -354,14 +362,21 @@ ULinksListT<T>& UItem::GetPersonalLinks(UEPtr<UContainer> cont, ULinksListT<T> &
    I->second[i]->GetLongId(netlevel,connector.Id);
    if(connector.Id.size() != 0)
    {
-	UCLink indexes=I->second[i]->GetCLink(UEPtr<UItem>(const_cast<UItem*>(this)));
-	link.Item.Index=indexes.Output;
-	link.Item.Name=indexes.OutputName;
-	connector.Index=indexes.Input;
-	connector.Name=indexes.InputName;
+	std::vector<UCLink> buffer;
+	curr_conn->GetCLink(UEPtr<UItem>(const_cast<UItem*>(this)),buffer);
+	for(size_t k=0;k<buffer.size();k++)
+	{
+	 if(buffer[k].OutputName == I->first)
+	 {
+	  link.Item.Index=buffer[k].Output;
+	  link.Item.Name=buffer[k].OutputName;
+	  connector.Index=buffer[k].Input;
+	  connector.Name=buffer[k].InputName;
 
-	link.Connector.push_back(connector);
-	linkslist.Set(link);
+	  link.Connector.push_back(connector);
+	  linkslist.Set(link);
+	 }
+	}
    }
   }
  }
@@ -397,14 +412,21 @@ ULinksListT<T>& UItem::GetFullItemLinks(ULinksListT<T> &linkslist, UEPtr<UItem> 
    I->second[i]->GetLongId(netlevel,connector.Id);
    if(connector.Id.GetSize() != 0)
    {
-	UCLink indexes=I->second[i]->GetCLink(UEPtr<UItem>(const_cast<UItem*>(this)));
-	link.Item.Index=indexes.Output;
-	link.Item.Name=indexes.OutputName;
-	connector.Index=indexes.Input;
-	connector.Name=indexes.InputName;
+	std::vector<UCLink> buffer;
+	curr_conn->GetCLink(UEPtr<UItem>(const_cast<UItem*>(this)),buffer);
+	for(size_t k=0;k<buffer.size();k++)
+	{
+	 if(buffer[k].OutputName == I->first)
+	 {
+	  link.Item.Index=buffer[k].Output;
+	  link.Item.Name=buffer[k].OutputName;
+	  connector.Index=buffer[k].Input;
+	  connector.Name=buffer[k].InputName;
 
-	link.Connector.push_back(connector);
-	linkslist.Set(link);
+	  link.Connector.push_back(connector);
+	  linkslist.Set(link);
+	 }
+	}
    }
   }
 

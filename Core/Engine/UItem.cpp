@@ -606,9 +606,17 @@ void UItem::BuildLinks(void)
   {
    if(!I->second[i])
 	continue;
-   UCLink indexes=I->second[i]->GetCLink(this);
-   int c_index(-1);
-   I->second[i]->ConnectToItem(this,indexes.OutputName,indexes.InputName,c_index);
+   std::vector<UCLink> buffer;
+   I->second[i]->GetCLink(this,buffer);
+   for(size_t k=0;k<buffer.size();k++)
+   {
+	UCLink &indexes=buffer[k];
+	if(I->first == indexes.OutputName)
+	{
+	 int c_index(-1);
+	 I->second[i]->ConnectToItem(this,indexes.OutputName,indexes.InputName,c_index);
+	}
+   }
   }
 
 }
@@ -647,10 +655,15 @@ UEPtr<UConnector> UItem::GetAConnectorByIndex(const NameT &item_property_name, i
 // Проверяет, существует ли связь с заданным коннектором
 bool UItem::CheckLink(const UEPtr<UConnector> &connector, int connected_c_index) const
 {
- UCLink link=connector->GetCLink(this);
- if((link.Output>=0 && link.Input >=0) || (!link.InputName.empty() && !link.OutputName.empty()
-   && (connected_c_index<0 || connected_c_index == link.Input) ))
-  return true;
+ std::vector<UCLink> buffer;
+ connector->GetCLink(this,buffer);
+ for(size_t k=0;k<buffer.size();k++)
+ {
+  UCLink &link=buffer[k];
+  if((link.Output>=0 && link.Input >=0) || (!link.InputName.empty() && !link.OutputName.empty()
+    && (connected_c_index<0 || connected_c_index == link.Input) ))
+   return true;
+  }
 
  return false;
 }
@@ -664,11 +677,16 @@ bool UItem::CheckLink(const UEPtr<UConnector> &connector, int item_index) const
 
 bool UItem::CheckLink(const UEPtr<UConnector> &connector, const NameT &item_property_name) const
 {
- UCLink link=connector->GetCLink(this);
- if(!link.InputName.empty())
+ std::vector<UCLink> buffer;
+ connector->GetCLink(this,buffer);
+ for(size_t k=0;k<buffer.size();k++)
  {
-  if(link.OutputName == item_property_name)
-   return true;
+  UCLink &link=buffer[k];
+  if(!link.InputName.empty())
+  {
+   if(link.OutputName == item_property_name)
+	return true;
+  }
  }
 
  return false;
@@ -677,11 +695,16 @@ bool UItem::CheckLink(const UEPtr<UConnector> &connector, const NameT &item_prop
 // Проверяет, существует ли связь с заданным коннектором и конкретным входом
 bool UItem::CheckLink(const UEPtr<UConnector> &connector, const NameT &item_property_name, const NameT &connector_property_name, int connected_c_index) const
 {
- UCLink link=connector->GetCLink(this);
- if(!link.OutputName.empty())
+ std::vector<UCLink> buffer;
+ connector->GetCLink(this,buffer);
+ for(size_t k=0;k<buffer.size();k++)
  {
-  if((connector_property_name.empty() || link.InputName == connector_property_name) && ((connected_c_index < 0 || connected_c_index == link.Input) || link.Input<0))
-   return true;
+  UCLink &link=buffer[k];
+  if(!link.OutputName.empty())
+  {
+   if((connector_property_name.empty() || link.InputName == connector_property_name) && ((connected_c_index < 0 || connected_c_index == link.Input) || link.Input<0))
+	return true;
+  }
  }
  return false;
 }

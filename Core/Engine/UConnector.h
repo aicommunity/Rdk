@@ -199,8 +199,8 @@ void GetCItem(const NameT &connector_property_name, std::vector<UCItem> &buffer)
 
 // Возвращает информацию об индексах связей с этим item или -1, -1
 // если такая связь отсутствует
-virtual UCLink GetCLink(const UEPtr<UItem> &item) const;
-virtual UCLink GetCLink(const UItem* const item) const;
+virtual void GetCLink(const UEPtr<UItem> &item, std::vector<UCLink> &buffer) const;
+virtual void GetCLink(const UItem* const item, std::vector<UCLink> &buffer) const;
 // --------------------------
 
 // --------------------------
