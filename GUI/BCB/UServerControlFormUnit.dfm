@@ -104,9 +104,11 @@ object UServerControlForm: TUServerControlForm
           Zoom.Pen.Mode = pmNotXor
           Align = alClient
           TabOrder = 0
-          DefaultCanvas = 'TGDIPlusCanvas'
           ColorPaletteIndex = 13
           object Series1: TBarSeries
+            Marks.Arrow.Visible = True
+            Marks.Callout.Brush.Color = clBlack
+            Marks.Callout.Arrow.Visible = True
             Title = 'Model'
             XValues.Name = 'X'
             XValues.Order = loAscending
@@ -114,6 +116,9 @@ object UServerControlForm: TUServerControlForm
             YValues.Order = loNone
           end
           object Series2: TBarSeries
+            Marks.Arrow.Visible = True
+            Marks.Callout.Brush.Color = clBlack
+            Marks.Callout.Arrow.Visible = True
             Title = 'Transport+Standby'
             XValues.Name = 'X'
             XValues.Order = loAscending
@@ -121,6 +126,9 @@ object UServerControlForm: TUServerControlForm
             YValues.Order = loNone
           end
           object Series3: TBarSeries
+            Marks.Arrow.Visible = True
+            Marks.Callout.Brush.Color = clBlack
+            Marks.Callout.Arrow.Visible = True
             Title = 'Total'
             XValues.Name = 'X'
             XValues.Order = loAscending
