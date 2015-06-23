@@ -28,6 +28,7 @@
 #include "UDrawEngineFrameUnit.h"
 #include <Vcl.AppEvnts.hpp>
 #include <Web.Win.Sockets.hpp>
+#include <System.ImageList.hpp>
 
 #define WM_SERVER_PING (WM_USER + 261)
 #define WM_SERVER_PONG (WM_USER + 262)
