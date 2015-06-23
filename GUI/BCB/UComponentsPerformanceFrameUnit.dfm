@@ -47,43 +47,31 @@ inherited UComponentsPerformanceFrame: TUComponentsPerformanceFrame
         BottomAxis.Axis.Color = 4210752
         BottomAxis.Grid.Color = 11119017
         BottomAxis.LabelsAlternate = True
-        BottomAxis.LabelsBehind = True
-        BottomAxis.LabelsFormat.Font.Name = 'Verdana'
-        BottomAxis.LabelsFormat.TextAlignment = taCenter
         BottomAxis.LabelsMultiLine = True
         BottomAxis.LabelsOnAxis = False
+        BottomAxis.LabelsBehind = True
         BottomAxis.RoundFirstLabel = False
         BottomAxis.TicksInner.Color = 11119017
         BottomAxis.Title.Font.Name = 'Verdana'
         DepthAxis.Axis.Color = 4210752
         DepthAxis.Grid.Color = 11119017
-        DepthAxis.LabelsFormat.Font.Name = 'Verdana'
-        DepthAxis.LabelsFormat.TextAlignment = taCenter
         DepthAxis.TicksInner.Color = 11119017
         DepthAxis.Title.Font.Name = 'Verdana'
         DepthTopAxis.Axis.Color = 4210752
         DepthTopAxis.Grid.Color = 11119017
-        DepthTopAxis.LabelsFormat.Font.Name = 'Verdana'
-        DepthTopAxis.LabelsFormat.TextAlignment = taCenter
         DepthTopAxis.TicksInner.Color = 11119017
         DepthTopAxis.Title.Font.Name = 'Verdana'
         LeftAxis.Axis.Color = 4210752
         LeftAxis.Grid.Color = 11119017
-        LeftAxis.LabelsFormat.Font.Name = 'Verdana'
-        LeftAxis.LabelsFormat.TextAlignment = taCenter
         LeftAxis.TicksInner.Color = 11119017
         LeftAxis.Title.Font.Name = 'Verdana'
         RightAxis.Axis.Color = 4210752
         RightAxis.Grid.Color = 11119017
-        RightAxis.LabelsFormat.Font.Name = 'Verdana'
-        RightAxis.LabelsFormat.TextAlignment = taCenter
         RightAxis.TicksInner.Color = 11119017
         RightAxis.Title.Font.Name = 'Verdana'
         TopAxis.Axis.Color = 4210752
         TopAxis.Grid.Color = 11119017
         TopAxis.LabelsAlternate = True
-        TopAxis.LabelsFormat.Font.Name = 'Verdana'
-        TopAxis.LabelsFormat.TextAlignment = taCenter
         TopAxis.LabelsMultiLine = True
         TopAxis.LabelStyle = talText
         TopAxis.TicksInner.Color = 11119017
@@ -93,7 +81,6 @@ inherited UComponentsPerformanceFrame: TUComponentsPerformanceFrame
         Align = alClient
         PopupMenu = PopupMenu
         TabOrder = 0
-        DefaultCanvas = 'TGDIPlusCanvas'
         PrintMargins = (
           15
           19
@@ -101,12 +88,15 @@ inherited UComponentsPerformanceFrame: TUComponentsPerformanceFrame
           19)
         ColorPaletteIndex = 13
         object Series1: TBarSeries
+          Marks.Arrow.Visible = True
+          Marks.Callout.Brush.Color = clBlack
+          Marks.Callout.Arrow.Visible = True
           Marks.Emboss.Color = 8618883
           Marks.Shadow.Color = 8618883
           Marks.Shadow.Visible = False
-          Marks.Visible = True
           Marks.Style = smsValue
           Marks.TextAlign = taLeftJustify
+          Marks.Visible = True
           Title = 'Time, ms'
           Emboss.Color = 8750469
           MultiBar = mbNone
@@ -120,10 +110,13 @@ inherited UComponentsPerformanceFrame: TUComponentsPerformanceFrame
             0000A0794000000000000074400000000000807140}
         end
         object Series2: TBarSeries
+          Marks.Arrow.Visible = True
+          Marks.Callout.Brush.Color = clBlack
+          Marks.Callout.Arrow.Visible = True
           Marks.Emboss.Color = 8487297
           Marks.Shadow.Color = 8553090
-          Marks.Visible = True
           Marks.Style = smsValue
+          Marks.Visible = True
           Title = 'Percent'
           Emboss.Color = 8553090
           MultiBar = mbNone
