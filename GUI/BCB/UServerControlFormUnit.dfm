@@ -35,10 +35,6 @@ object UServerControlForm: TUServerControlForm
       Margins.Right = 4
       Margins.Bottom = 4
       Caption = 'Control'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object GroupBox3: TGroupBox
         Left = 0
         Top = 0
@@ -113,7 +109,6 @@ object UServerControlForm: TUServerControlForm
             Marks.Arrow.Visible = True
             Marks.Callout.Brush.Color = clBlack
             Marks.Callout.Arrow.Visible = True
-            Marks.Visible = True
             Title = 'Model'
             XValues.Name = 'X'
             XValues.Order = loAscending
@@ -124,7 +119,6 @@ object UServerControlForm: TUServerControlForm
             Marks.Arrow.Visible = True
             Marks.Callout.Brush.Color = clBlack
             Marks.Callout.Arrow.Visible = True
-            Marks.Visible = True
             Title = 'Transport+Standby'
             XValues.Name = 'X'
             XValues.Order = loAscending
@@ -135,7 +129,6 @@ object UServerControlForm: TUServerControlForm
             Marks.Arrow.Visible = True
             Marks.Callout.Brush.Color = clBlack
             Marks.Callout.Arrow.Visible = True
-            Marks.Visible = True
             Title = 'Total'
             XValues.Name = 'X'
             XValues.Order = loAscending

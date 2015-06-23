@@ -29,6 +29,7 @@
 #include <IdMessageCoder.hpp>
 #include <IdMessageCoderMIME.hpp>
 #include "TUVisualControllerFrameUnit.h"
+#include <IdContext.hpp>
 
 #include <string>
 #include <map>
