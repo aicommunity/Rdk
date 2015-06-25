@@ -1039,8 +1039,8 @@ RDK::UBitmap TempSource;
 Graphics::TBitmap* TempBitmap;
 
 //TVideoGrabberFrame *VideoGrabberFrame;
-//TGrabberThread *VideoGrabberThread;
-TImageFrame* ImageFrame;
+TGrabberThread *GrabberThread;
+//TImageFrame* ImageFrame;
 
 String UserName, Password;
 
