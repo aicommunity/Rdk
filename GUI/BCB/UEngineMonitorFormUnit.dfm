@@ -2,12 +2,12 @@ object UEngineMonitorForm: TUEngineMonitorForm
   Left = 686
   Top = 386
   Caption = 'Engine Monitor'
-  ClientHeight = 292
-  ClientWidth = 689
+  ClientHeight = 234
+  ClientWidth = 551
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
-  Font.Height = -14
+  Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
   Menu = EngineMonitorFrame.MainMenu
@@ -15,60 +15,44 @@ object UEngineMonitorForm: TUEngineMonitorForm
   Position = poDesigned
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  PixelsPerInch = 120
-  TextHeight = 17
+  PixelsPerInch = 96
+  TextHeight = 13
   inline EngineMonitorFrame: TUEngineMonitorFrame
     Left = 0
     Top = 0
-    Width = 689
-    Height = 292
-    Margins.Left = 4
-    Margins.Top = 4
-    Margins.Right = 4
-    Margins.Bottom = 4
+    Width = 551
+    Height = 234
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
-    Font.Height = -15
+    Font.Height = -12
     Font.Name = 'Tahoma'
     Font.Style = []
     ParentFont = False
     TabOrder = 0
-    ExplicitWidth = 689
-    ExplicitHeight = 292
+    ExplicitWidth = 551
+    ExplicitHeight = 234
     inherited RichEdit: TRichEdit
-      Width = 689
-      Height = 250
-      Margins.Left = 4
-      Margins.Top = 4
-      Margins.Right = 4
-      Margins.Bottom = 4
-      Font.Height = -15
+      Width = 551
+      Height = 196
+      Font.Height = -12
       OnMouseEnter = EngineMonitorFrameRichEditMouseEnter
-      ExplicitWidth = 689
-      ExplicitHeight = 250
+      ExplicitWidth = 551
+      ExplicitHeight = 200
     end
     inherited StatusBar: TStatusBar
-      Top = 250
-      Width = 689
-      Margins.Left = 4
-      Margins.Top = 4
-      Margins.Right = 4
-      Margins.Bottom = 4
-      ExplicitTop = 250
+      Top = 196
+      Width = 551
+      ExplicitTop = 200
       ExplicitWidth = 689
     end
     inherited ShowDebugMessagesCheckBox: TCheckBox
-      Top = 269
-      Width = 689
-      Height = 23
-      Margins.Left = 4
-      Margins.Top = 4
-      Margins.Right = 4
-      Margins.Bottom = 4
-      ExplicitTop = 269
-      ExplicitWidth = 689
-      ExplicitHeight = 23
+      Top = 215
+      Width = 551
+      Height = 19
+      ExplicitTop = 215
+      ExplicitWidth = 551
+      ExplicitHeight = 19
     end
   end
   object LogTimer: TTimer

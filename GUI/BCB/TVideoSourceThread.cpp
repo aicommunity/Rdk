@@ -123,17 +123,6 @@ void TVideoCaptureThread::ProcessCommandQueue(void)
  std::list<std::pair<double,TVideoCaptureThreadCmdDescr> >::iterator I=CommandQueue.begin();
  for(;I != CommandQueue.end();++I)
  {
-   /*
-  if(I->second.Id == tvcStart && I->second.ExecTime<=curr_time)
-  {
-   if(WaitForSingleObject(GlobalStartUnlockMutex, 10) != WAIT_OBJECT_0)
-   {
-//	CommandQueue.erase(I);
-	break;
-   }
-//   ResetEvent(GlobalStartUnlockEvent);
-  }           */
-
   if(I->second.ExecTime<=curr_time)
   {
    cmd_time=I->first;
@@ -496,7 +485,7 @@ void __fastcall TVideoCaptureThread::Execute(void)
    continue;
   }
   ProcessCommandQueue();
-  Sleep(10);
+//  Sleep(10);
 //  Application->HandleMessage();
  // Application->ProcessMessages();
 
@@ -512,7 +501,7 @@ void __fastcall TVideoCaptureThread::Execute(void)
 	continue;
    }
   }
-
+ /*
   if(CheckConnection() == 10 && CheckCaptureThreadState() == 1)
   {
   switch(RestartMode)
@@ -557,7 +546,7 @@ void __fastcall TVideoCaptureThread::Execute(void)
    SetEvent(FrameNotInProgress);
    continue;
   }
-
+   */
   if(SyncMode == 1)
   {
    if(WaitForSingleObject(CalcCompleteEvent,10) == WAIT_TIMEOUT)
@@ -715,7 +704,7 @@ double TVideoCaptureThread::GetLastTimeStampSafe(void) const
 // --------------------------
 bool __fastcall TVideoCaptureThread::RunCapture(void)
 {
-/*
+
  if(WaitForSingleObject(StartInProgressEvent,0) != WAIT_TIMEOUT)
   return true;
  SetEvent(StartInProgressEvent);
@@ -725,7 +714,7 @@ bool __fastcall TVideoCaptureThread::RunCapture(void)
  RealLastTimeStamp=curr_time;
  ConnectionState=10;
 // Synchronize(ARunCapture);
-*/
+
  ARunCapture();
 /* Sleep(100);
 // SetEvent(CaptureEnabled);
@@ -740,7 +729,7 @@ bool __fastcall TVideoCaptureThread::StopCapture(void)
  HaltCapture();
  ConnectionState=1;
  ResetEvent(StartInProgressEvent);
- Sleep(100);
+// Sleep(100);
  return true;
 }
 
@@ -3101,6 +3090,8 @@ void __fastcall TVideoCaptureThreadNewVideoGrabber::AfterCalculate(void)
 
 void __fastcall TVideoCaptureThreadNewVideoGrabber::Calculate(void)
 {
+Sleep(1);
+return;
  if(Terminated)
   return;
 
@@ -3264,7 +3255,7 @@ void __fastcall TVideoCaptureThreadNewVideoGrabber::OnFrameCaptureCompleted(Syst
   ConnectionState=2;
   RealLastTimeStamp=TDateTime::CurrentDateTime().operator double();
  }
-
+  /*
  Graphics::TBitmap *Frame_Bitmap;
 
  Frame_Bitmap = (Graphics::TBitmap*) FrameBitmap;
@@ -3275,7 +3266,7 @@ void __fastcall TVideoCaptureThreadNewVideoGrabber::OnFrameCaptureCompleted(Syst
   ReleaseMutex(ConvertMutex);
  }
  ConvertTimeStamp=double(FrameTime);
-
+                */
  SetEvent(VideoGrabberCompleted);
 }
 
@@ -3289,7 +3280,7 @@ void __fastcall TVideoCaptureThreadNewVideoGrabber::VideoGrabberPlayerEndOfStrea
 	}
 	else
 	{
-	 MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, std::string("VideoGrabber stopped by end of frames").c_str());
+//	 MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, std::string("VideoGrabber stopped by end of frames").c_str());
 	 Stop(0);
 	}
 
@@ -3297,7 +3288,7 @@ void __fastcall TVideoCaptureThreadNewVideoGrabber::VideoGrabberPlayerEndOfStrea
 
 void __fastcall TVideoCaptureThreadNewVideoGrabber::VideoGrabberOnPlayerOpened(System::TObject* Sender)
 {
- MEngine_LogMessage(ChannelIndex, RDK_EX_DEBUG, std::string("VideoGrabber player opened").c_str());
+ //MEngine_LogMessage(ChannelIndex, RDK_EX_DEBUG, std::string("VideoGrabber player opened").c_str());
 }
 
 void __fastcall TVideoCaptureThreadNewVideoGrabber::VideoGrabberOnThreadSync(System::TObject* Sender, TThreadSyncPoint ThreadSyncPoint)
@@ -3309,7 +3300,7 @@ void __fastcall TVideoCaptureThreadNewVideoGrabber::VideoGrabberOnThreadSync(Sys
 void __fastcall TVideoCaptureThreadNewVideoGrabber::VideoGrabberFrameBitmap(TObject *Sender,
 	  pFrameInfo FrameInfo, pFrameBitmapInfo BitmapInfo)
 {
- if(WaitForSingleObject(OSDMutex,10) == WAIT_OBJECT_0)
+/* if(WaitForSingleObject(OSDMutex,10) == WAIT_OBJECT_0)
  {
   if(OverlayMaskBitmap->Width == BitmapInfo->BitmapWidth && OverlayMaskBitmap->Height == BitmapInfo->BitmapHeight)
   {
@@ -3324,13 +3315,13 @@ void __fastcall TVideoCaptureThreadNewVideoGrabber::VideoGrabberFrameBitmap(TObj
    }
   }
   ReleaseMutex(OSDMutex);
- }
+ } */
 }
 
 void __fastcall TVideoCaptureThreadNewVideoGrabber::VideoGrabberLog(TObject *Sender,
 	  TLogType LogType, String Severity, String InfoMsg)
 {
- MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, (std::string("VideoGrabber [")+std::string(AnsiString(Severity).c_str())+std::string("] ")+AnsiString(InfoMsg).c_str() ).c_str());
+// MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, (std::string("VideoGrabber [")+std::string(AnsiString(Severity).c_str())+std::string("] ")+AnsiString(InfoMsg).c_str() ).c_str());
  if(Severity == "ERROR")
  {
   if(LogType == 82)
@@ -3347,7 +3338,7 @@ void __fastcall TVideoCaptureThreadNewVideoGrabber::VideoGrabberLog(TObject *Sen
 
 void __fastcall TVideoCaptureThreadNewVideoGrabber::VideoGrabberDeviceLost(TObject *Sender)
 {
- MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, "VideoGrabber Device lost");
+// MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, "VideoGrabber Device lost");
  LastStartTime=TDateTime::CurrentDateTime().operator double();
  ConnectionState=10;
 

@@ -5,6 +5,7 @@
 
 #include "TVideoGrabberFrame.h"
 #include "TVideoSourceThread.h"
+#include "UEngineMonitorFormUnit.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "VidGrab"
@@ -26,8 +27,13 @@ __fastcall TVideoGrabberFrame::TVideoGrabberFrame(TComponent* Owner)
 	 VideoGrabber1->LicenseString=licenses[i].c_str();//TVGrabberLicenseString;
 
 	CallbackThread=0;
-
+ VideoGrabber1->Synchronized=false;
+ VideoGrabber1->FrameCaptureWithoutOverlay=true;
+ VideoGrabber1->SyncCommands=false;
+ VideoGrabber1->EventNotificationSynchrone=false;
+ VideoGrabber1->OnFrameBitmapEventSynchrone=false;
 	InitByAvi("");
+
 	Start();
 	Stop();
 }
@@ -134,17 +140,22 @@ void __fastcall TVideoGrabberFrame::VideoGrabber1FrameCaptureCompleted(TObject *
 		  FrameBitmap, BitmapWidth, BitmapHeight, FrameNumber,
 		  FrameTime, DestType, FileName,
 		  Success, FrameId);
-/*
+
    if(DestType != fc_TBitmap)
 	return;
 
-   mutex->Acquire();
+//   mutex->Acquire();
    Graphics::TBitmap *Frame_Bitmap;
    Frame_Bitmap = (Graphics::TBitmap*) FrameBitmap;
-   Image1->Picture->Assign(Frame_Bitmap);
+//   Image1->Picture->Assign(Frame_Bitmap);
    if(CallbackThread)
-	CallbackThread->WriteSourceSafe(Frame_Bitmap,TDateTime::CurrentDateTime().operator double(),false);
-   mutex->Release(); */
+   {
+	bool bmp_res=CallbackThread->WriteSourceSafe(Frame_Bitmap,TDateTime::CurrentDateTime().operator double(),false);
+	if(bmp_res)
+     UEngineMonitorForm->EngineMonitorFrame->SetServerTimeStamp(CallbackThread->GetChannelIndex(),CallbackThread->GetLastTimeStampSafe()*86400.0*1000.0);
+   }
+
+   //   mutex->Release();
 }
 //---------------------------------------------------------------------------
 void TVideoGrabberFrame::GetImage(TImage *img)
