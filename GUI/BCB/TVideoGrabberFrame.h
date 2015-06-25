@@ -21,6 +21,20 @@ __published:	// IDE-managed Components
           int BitmapWidth, int BitmapHeight, DWORD FrameNumber, __int64 FrameTime,
           TFrameCaptureDest DestType, UnicodeString FileName, bool Success,
           int FrameId);
+	void __fastcall VideoGrabber1DeviceLost(TObject *Sender);
+	void __fastcall VideoGrabber1FrameBitmap(TObject *Sender, pFrameInfo FrameInfo,
+          pFrameBitmapInfo BitmapInfo);
+	void __fastcall VideoGrabber1Log(TObject *Sender, TLogType LogType, UnicodeString Severity,
+          UnicodeString InfoMsg);
+	void __fastcall VideoGrabber1PlayerEndOfStream(TObject *Sender);
+	void __fastcall VideoGrabber1PlayerOpened(TObject *Sender);
+	void __fastcall VideoGrabber1PreviewStarted(TObject *Sender);
+	void __fastcall VideoGrabber1MouseDown(TObject *Sender, int VideoWindow, TMouseButton Button,
+          TShiftState Shift, int X, int Y);
+	void __fastcall VideoGrabber1MouseUp(TObject *Sender, int VideoWindow, TMouseButton Button,
+          TShiftState Shift, int X, int Y);
+	void __fastcall VideoGrabber1MouseMove(TObject *Sender, int VideoWindow, TShiftState Shift,
+          int X, int Y);
 private:	// User declarations
 	/// Capture mode
 	int m_mode;

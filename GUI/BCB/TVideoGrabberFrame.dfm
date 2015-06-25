@@ -83,6 +83,15 @@ object VideoGrabberFrame: TVideoGrabberFrame
     VideoDelay = 0
     VideoFromImages_TemporaryFile = 'SetOfBitmaps01.dat'
     VideoProcessing_RotationCustomAngle = 45.500000000000000000
+    OnDeviceLost = VideoGrabber1DeviceLost
+    OnFrameBitmap = VideoGrabber1FrameBitmap
     OnFrameCaptureCompleted = VideoGrabber1FrameCaptureCompleted
+    OnLog = VideoGrabber1Log
+    OnMouseDown = VideoGrabber1MouseDown
+    OnMouseMove = VideoGrabber1MouseMove
+    OnMouseUp = VideoGrabber1MouseUp
+    OnPlayerEndOfStream = VideoGrabber1PlayerEndOfStream
+    OnPlayerOpened = VideoGrabber1PlayerOpened
+    OnPreviewStarted = VideoGrabber1PreviewStarted
   end
 end

@@ -1046,6 +1046,28 @@ String UserName, Password;
 
 RDK::UELockVar<double> CurrentTimeStamp;
 
+Graphics::TBitmap* ConvertBitmap;
+
+/// Маска для OSD
+Graphics::TBitmap* OverlayMaskBitmap;
+
+RDK::UBitmap ConvertUBitmap,ConvertResult;
+
+RDK::UELockVar<double> ConvertTimeStamp;
+
+/// Хендл окна в которое необходимо выводить данные захвата
+TWinControl* OverlayHandle;
+
+protected: // События
+/// Выставляется при получении очередного кадра
+HANDLE VideoGrabberCompleted;
+
+/// Событие блокировки изображения для конвертации
+HANDLE ConvertMutex;
+
+/// Событие блокировки OSD изображения
+HANDLE OSDMutex;
+
 
 public: // Методы
 // --------------------------
@@ -1112,6 +1134,31 @@ virtual void __fastcall AStopCapture(void);
 
 virtual void __fastcall ARecreateCapture(void);
 // --------------------------
+
+public:
+void __fastcall OnFrameCaptureCompleted(System::TObject* Sender, void * FrameBitmap, int BitmapWidth, int BitmapHeight, unsigned FrameNumber, __int64 FrameTime, TFrameCaptureDest DestType, System::UnicodeString FileName, bool Success, int FrameId);
+
+void __fastcall VideoGrabberLog(TObject *Sender,
+	  TLogType LogType, String Severity, String InfoMsg);
+void __fastcall VideoGrabberDeviceLost(TObject *Sender);
+
+void __fastcall VideoGrabberFrameBitmap(TObject *Sender,
+	  pFrameInfo FrameInfo, pFrameBitmapInfo BitmapInfo);
+
+void __fastcall VideoGrabberPlayerEndOfStream(TObject *Sender);
+
+void __fastcall VideoGrabberOnPlayerOpened(System::TObject* Sender);
+
+void __fastcall VideoGrabberOnThreadSync(System::TObject* Sender, TThreadSyncPoint ThreadSyncPoint);
+
+void __fastcall VideoGrabberOnPreviewStarted(TObject *Sender);
+
+void __fastcall VideoGrabberOnVideoMouseUp(System::TObject* Sender, int VideoWindow, System::Uitypes::TMouseButton Button, System::Classes::TShiftState Shift, int X, int Y);
+
+void __fastcall VideoGrabberOnVideoMouseDown(System::TObject* Sender, int VideoWindow, System::Uitypes::TMouseButton Button, System::Classes::TShiftState Shift, int X, int Y);
+
+void __fastcall VideoGrabberOnVideoMouseMove(System::TObject* Sender, int VideoWindow, System::Classes::TShiftState Shift, int X, int Y);
+
 };
 
 

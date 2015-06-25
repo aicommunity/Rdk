@@ -241,11 +241,11 @@ void TVideoOutputFrame::Start(double time)
  if(CaptureThread)
  {
   CaptureThread->Start(time);
-//  WaitForSingleObject(CaptureThread->GetFrameNotInProgress(),30);
+  WaitForSingleObject(CaptureThread->GetFrameNotInProgress(),30);
  }
-// Timer->Enabled=true;
+ Timer->Enabled=true;
 
-// IsStarted=true;
+ IsStarted=true;
 }
 
 /// Останов захвата

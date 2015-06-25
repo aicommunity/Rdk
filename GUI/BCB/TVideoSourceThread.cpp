@@ -8,8 +8,8 @@
 #include "TUBitmap.h"
 #include "TVideoGrabberFrame.h"
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
-#include "TGrabberThread.h"
-#include "TImageFrame.h"
+//#include "TGrabberThread.h"
+//#include "TImageFrame.h"
 //#include "TMultiStartFormUnit.h"
 #include <Jpeg.hpp>
 //---------------------------------------------------------------------------
@@ -123,7 +123,7 @@ void TVideoCaptureThread::ProcessCommandQueue(void)
  std::list<std::pair<double,TVideoCaptureThreadCmdDescr> >::iterator I=CommandQueue.begin();
  for(;I != CommandQueue.end();++I)
  {
-/*
+   /*
   if(I->second.Id == tvcStart && I->second.ExecTime<=curr_time)
   {
    if(WaitForSingleObject(GlobalStartUnlockMutex, 10) != WAIT_OBJECT_0)
@@ -132,9 +132,9 @@ void TVideoCaptureThread::ProcessCommandQueue(void)
 	break;
    }
 //   ResetEvent(GlobalStartUnlockEvent);
-  }
+  }           */
 
-  if(I->second.ExecTime<=curr_time)*/
+  if(I->second.ExecTime<=curr_time)
   {
    cmd_time=I->first;
    cmd=I->second;
@@ -499,7 +499,7 @@ void __fastcall TVideoCaptureThread::Execute(void)
   Sleep(10);
 //  Application->HandleMessage();
  // Application->ProcessMessages();
-	  /*
+
   double curr_time=TDateTime::CurrentDateTime().operator double();
   if(CheckConnection() == 2 && curr_time-RealLastTimeStamp>double(MaxInterstepInterval)/(86400.0*1000.0))
   {
@@ -557,7 +557,7 @@ void __fastcall TVideoCaptureThread::Execute(void)
    SetEvent(FrameNotInProgress);
    continue;
   }
-       */
+
   if(SyncMode == 1)
   {
    if(WaitForSingleObject(CalcCompleteEvent,10) == WAIT_TIMEOUT)
@@ -1657,22 +1657,10 @@ void __fastcall TVideoCaptureThreadVideoGrabber::OnFrameCaptureCompleted(System:
   ConnectionState=2;
   RealLastTimeStamp=TDateTime::CurrentDateTime().operator double();
  }
-	  /*
- if(Fps > 0)
- {
-  double diffTime=double(FrameTime)/(10000000.0*86400)-GetLastTimeStampSafe();
-  if(diffTime<(1.0/Fps)/86400.0)
-  {
-	return;
-  }
- }   */
 
  Graphics::TBitmap *Frame_Bitmap;
 
  Frame_Bitmap = (Graphics::TBitmap*) FrameBitmap;
-
-// if(Frame_Bitmap)
-// Engine_LogMessage(exception.GetType(), (std::string("Core-OpenProject Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.CreateLogMessage()).c_str());
 
  if(WaitForSingleObject(ConvertMutex,10000) == WAIT_OBJECT_0)
  {
@@ -1680,28 +1668,8 @@ void __fastcall TVideoCaptureThreadVideoGrabber::OnFrameCaptureCompleted(System:
   ReleaseMutex(ConvertMutex);
  }
  ConvertTimeStamp=double(FrameTime);
-// SetLastTimeStampSafe(double(FrameTime)/(10000000.0*86400));
 
-/*
- switch (DestType)
- {
- case fc_TBitmap:
-  if(Frame_Bitmap->PixelFormat == pf24bit)
-  {
-   WriteSourceSafe(Frame_Bitmap, double(FrameTime)/(10000000.0*86400), false);
-  }
-  else
-  {
-   ConvertBitmap->Assign(Frame_Bitmap);
-   ConvertBitmap->PixelFormat=pf24bit;
-   WriteSourceSafe(ConvertBitmap, double(FrameTime)/(10000000.0*86400), false);
-  }   */
-//  if(GetNumEngines() > ChannelIndex)
-//   UEngineMonitorForm->EngineMonitorFrame->SetServerTimeStamp(ChannelIndex,GetLastTimeStampSafe()*86400.0*1000.0);
-
-  SetEvent(VideoGrabberCompleted);
-// break;
-// }
+ SetEvent(VideoGrabberCompleted);
 }
 
 void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberPlayerEndOfStream(TObject *Sender)
@@ -1765,21 +1733,9 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberLog(TObject *Sender
 
   if(WaitForSingleObject(StartInProgressEvent,0) != WAIT_TIMEOUT)
   {
-   //SetEvent(GlobalStartUnlockEvent);
-//   ReleaseMutex(GlobalStartUnlockMutex);
    ResetEvent(StartInProgressEvent);
   }
  }
-
-/* if(LogType == e_failed_to_start_preview)
- {
-  if(WaitForSingleObject(StartInProgressEvent,0) != WAIT_TIMEOUT)
-  {
-   //SetEvent(GlobalStartUnlockEvent);
-   ReleaseMutex(GlobalStartUnlockMutex);
-   ResetEvent(StartInProgressEvent);
-  }
- }*/
 }
 
 void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberDeviceLost(TObject *Sender)
@@ -1787,33 +1743,16 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberDeviceLost(TObject 
  MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, "VideoGrabber Device lost");
  LastStartTime=TDateTime::CurrentDateTime().operator double();
  ConnectionState=10;
-/* if(RestartMode == 1)
- {
-  Start();
- }
- else
- if(RestartMode == 2)
- {
-  Stop();
- }*/
+
  if(WaitForSingleObject(StartInProgressEvent,0) != WAIT_TIMEOUT)
  {
-  //SetEvent(GlobalStartUnlockEvent);
-//  ReleaseMutex(GlobalStartUnlockMutex);
   ResetEvent(StartInProgressEvent);
-//  ReleaseMutex(GlobalStartUnlockMutex);
  }
 }
 
 void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberOnPreviewStarted(TObject *Sender)
 {
-// if(WaitForSingleObject(StartInProgressEvent,0) != WAIT_TIMEOUT)
- {
-  //SetEvent(GlobalStartUnlockEvent);
-//  ReleaseMutex(GlobalStartUnlockMutex);
-  ResetEvent(StartInProgressEvent);
-//  ReleaseMutex(GlobalStartUnlockMutex);
- }
+ ResetEvent(StartInProgressEvent);
 }
 
 void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberOnVideoMouseUp(System::TObject* Sender, int VideoWindow, System::Uitypes::TMouseButton Button, System::Classes::TShiftState Shift, int X, int Y)
@@ -1890,31 +1829,20 @@ void __fastcall TVideoCaptureThreadVideoGrabber::Calculate(void)
  }
 
  GetFrame()->UpdateInterval=wait_time;
- //Sleep(1);
  if(WaitForSingleObject(VideoGrabberCompleted, 10) == WAIT_TIMEOUT)
  {
-//  Sleep(10);
   return;
  }
  else
  {
   ResetEvent(VideoGrabberCompleted);
-/*
-  if(Fps > 0)
+
+  if(WaitForSingleObject(ConvertMutex,10000) == WAIT_OBJECT_0)
   {
-   double diffTime=ConvertTimeStamp/double(10000000.0*86400)-GetLastTimeStampSafe();
-   if(diffTime<(1.0/Fps)/86400.0)
-   {
-	return;
-   }
+   ConvertResult.SetRes(ConvertUBitmap.GetWidth(),ConvertUBitmap.GetHeight(),RDK::ubmRGB24);
+   ConvertUBitmap.ConvertTo(ConvertResult);
+   ReleaseMutex(ConvertMutex);
   }
-*/
- if(WaitForSingleObject(ConvertMutex,10000) == WAIT_OBJECT_0)
- {
-  ConvertResult.SetRes(ConvertUBitmap.GetWidth(),ConvertUBitmap.GetHeight(),RDK::ubmRGB24);
-  ConvertUBitmap.ConvertTo(ConvertResult);
-  ReleaseMutex(ConvertMutex);
- }
 
   bool bmp_res=WriteSourceSafe(ConvertResult, ConvertTimeStamp/double(10000000.0*86400), false);
 
@@ -2983,6 +2911,20 @@ __fastcall TVideoCaptureThreadNewVideoGrabber::TVideoCaptureThreadNewVideoGrabbe
  Fps=25.0;
  CurrentTimeStamp=0;
  SourceMode=0;
+
+ ConvertBitmap=new Graphics::TBitmap;
+ OverlayMaskBitmap=new Graphics::TBitmap;
+
+ VideoGrabberCompleted=CreateEvent(0,TRUE,0,0);
+ ConvertMutex=CreateMutex(0,FALSE,0);
+ OSDMutex=CreateMutex(0,FALSE,0);
+
+ RestartMode=1;
+ ConnectionState=0;
+
+// CaptureTimeout=5000;
+// ConnectionTimeout=5000;
+ OverlayHandle=0;
 }
 
 __fastcall TVideoCaptureThreadNewVideoGrabber::~TVideoCaptureThreadNewVideoGrabber(void)
@@ -2999,6 +2941,29 @@ __fastcall TVideoCaptureThreadNewVideoGrabber::~TVideoCaptureThreadNewVideoGrabb
   delete VideoGrabberFrame;
   VideoGrabberFrame=0;
  }
+
+ if(!Terminated && !Suspended)
+ {
+  Terminate();
+  WaitFor();
+  WaitForSingleObject(GetFrameNotInProgress(),10000);
+ }
+
+ if(ConvertBitmap)
+ {
+  delete ConvertBitmap;
+  ConvertBitmap=0;
+ }
+
+ if(OverlayMaskBitmap)
+ {
+  delete OverlayMaskBitmap;
+  OverlayMaskBitmap=0;
+ }
+
+ CloseHandle(VideoGrabberCompleted);
+ CloseHandle(ConvertMutex);
+ CloseHandle(OSDMutex);
 /*
  if(GrabberThread)
  {
@@ -3122,7 +3087,7 @@ void __fastcall TVideoCaptureThreadNewVideoGrabber::BeforeCalculate(void)
 
 void __fastcall TVideoCaptureThreadNewVideoGrabber::AfterCalculate(void)
 {
- if(Fps>0)
+/* if(Fps>0)
  {
   CurrentTimeStamp+=(1.0/Fps)/86400.0;
  }
@@ -3131,16 +3096,56 @@ void __fastcall TVideoCaptureThreadNewVideoGrabber::AfterCalculate(void)
   CurrentTimeStamp+=1.0/86400.0;
  }
  TVideoCaptureThread::AfterCalculate();
-/* if(Fps>0)
-  Sleep(1000.0/Fps);
- else*/
-  Sleep(30);
+  Sleep(30); */
 }
 
 void __fastcall TVideoCaptureThreadNewVideoGrabber::Calculate(void)
 {
-// double time_stamp=CurrentTimeStamp;//TDateTime::CurrentDateTime().operator double();
-// SetLastTimeStampSafe(time_stamp);
+ if(Terminated)
+  return;
+
+ if(!VideoGrabberFrame)
+  return;
+
+ int wait_time=30;
+ double fps=1;
+
+ TVideoGrabber *VideoGrabber=VideoGrabberFrame->VideoGrabber1;
+
+ if(VideoGrabber->FrameRate>0)
+ {
+  wait_time=1000.0/VideoGrabber->FrameRate;
+  fps=VideoGrabber->FrameRate;
+ }
+ if(VideoGrabber->PlayerFrameRate>0)
+ {
+  wait_time=1000.0/VideoGrabber->PlayerFrameRate;
+  fps=VideoGrabber->PlayerFrameRate;
+ }
+
+ GetFrame()->UpdateInterval=wait_time;
+ if(WaitForSingleObject(VideoGrabberCompleted, 10) == WAIT_TIMEOUT)
+ {
+  return;
+ }
+ else
+ {
+  ResetEvent(VideoGrabberCompleted);
+
+ if(WaitForSingleObject(ConvertMutex,10000) == WAIT_OBJECT_0)
+ {
+  ConvertResult.SetRes(ConvertUBitmap.GetWidth(),ConvertUBitmap.GetHeight(),RDK::ubmRGB24);
+  ConvertUBitmap.ConvertTo(ConvertResult);
+  ReleaseMutex(ConvertMutex);
+ }
+
+  bool bmp_res=WriteSourceSafe(ConvertResult, ConvertTimeStamp/double(10000000.0*86400), false);
+
+  if(bmp_res)
+   UEngineMonitorForm->EngineMonitorFrame->SetServerTimeStamp(ChannelIndex,GetLastTimeStampSafe()*86400.0*1000.0);
+
+  Sleep(0);
+ }
 }
 // --------------------------
 
@@ -3251,6 +3256,163 @@ void __fastcall TVideoCaptureThreadNewVideoGrabber::ARecreateCapture(void)
 
 }
 // --------------------------
+
+void __fastcall TVideoCaptureThreadNewVideoGrabber::OnFrameCaptureCompleted(System::TObject* Sender, void * FrameBitmap, int BitmapWidth, int BitmapHeight, unsigned FrameNumber, __int64 FrameTime, TFrameCaptureDest DestType, System::UnicodeString FileName, bool Success, int FrameId)
+{
+ if(CheckCaptureThreadState())
+ {
+  ConnectionState=2;
+  RealLastTimeStamp=TDateTime::CurrentDateTime().operator double();
+ }
+
+ Graphics::TBitmap *Frame_Bitmap;
+
+ Frame_Bitmap = (Graphics::TBitmap*) FrameBitmap;
+
+ if(WaitForSingleObject(ConvertMutex,10000) == WAIT_OBJECT_0)
+ {
+  ConvertUBitmap<<Frame_Bitmap;
+  ReleaseMutex(ConvertMutex);
+ }
+ ConvertTimeStamp=double(FrameTime);
+
+ SetEvent(VideoGrabberCompleted);
+}
+
+void __fastcall TVideoCaptureThreadNewVideoGrabber::VideoGrabberPlayerEndOfStream(TObject *Sender)
+{
+	PulseEvent(SourceStoppedEvent);
+	if(RepeatFlag)
+	{
+//		VideoGrabber->RunPlayer();
+//		SetLastTimeStampSafe(0);
+	}
+	else
+	{
+	 MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, std::string("VideoGrabber stopped by end of frames").c_str());
+	 Stop(0);
+	}
+
+}
+
+void __fastcall TVideoCaptureThreadNewVideoGrabber::VideoGrabberOnPlayerOpened(System::TObject* Sender)
+{
+ MEngine_LogMessage(ChannelIndex, RDK_EX_DEBUG, std::string("VideoGrabber player opened").c_str());
+}
+
+void __fastcall TVideoCaptureThreadNewVideoGrabber::VideoGrabberOnThreadSync(System::TObject* Sender, TThreadSyncPoint ThreadSyncPoint)
+{
+
+}
+
+
+void __fastcall TVideoCaptureThreadNewVideoGrabber::VideoGrabberFrameBitmap(TObject *Sender,
+	  pFrameInfo FrameInfo, pFrameBitmapInfo BitmapInfo)
+{
+ if(WaitForSingleObject(OSDMutex,10) == WAIT_OBJECT_0)
+ {
+  if(OverlayMaskBitmap->Width == BitmapInfo->BitmapWidth && OverlayMaskBitmap->Height == BitmapInfo->BitmapHeight)
+  {
+   unsigned char* dest = (unsigned char*) BitmapInfo->BitmapDataPtr;
+   unsigned char* source = (unsigned char*) OverlayMaskBitmap->ScanLine[OverlayMaskBitmap->Height-1];
+   for(int i=0;i<BitmapInfo->BitmapSize;i++)
+   {
+	if(*source>0)
+	 *dest=*source;
+	++dest;
+	++source;
+   }
+  }
+  ReleaseMutex(OSDMutex);
+ }
+}
+
+void __fastcall TVideoCaptureThreadNewVideoGrabber::VideoGrabberLog(TObject *Sender,
+	  TLogType LogType, String Severity, String InfoMsg)
+{
+ MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, (std::string("VideoGrabber [")+std::string(AnsiString(Severity).c_str())+std::string("] ")+AnsiString(InfoMsg).c_str() ).c_str());
+ if(Severity == "ERROR")
+ {
+  if(LogType == 82)
+   return;
+  LastStartTime=TDateTime::CurrentDateTime().operator double();
+  ConnectionState=10;
+
+  if(WaitForSingleObject(StartInProgressEvent,0) != WAIT_TIMEOUT)
+  {
+   ResetEvent(StartInProgressEvent);
+  }
+ }
+}
+
+void __fastcall TVideoCaptureThreadNewVideoGrabber::VideoGrabberDeviceLost(TObject *Sender)
+{
+ MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, "VideoGrabber Device lost");
+ LastStartTime=TDateTime::CurrentDateTime().operator double();
+ ConnectionState=10;
+
+ if(WaitForSingleObject(StartInProgressEvent,0) != WAIT_TIMEOUT)
+ {
+  ResetEvent(StartInProgressEvent);
+ }
+}
+
+void __fastcall TVideoCaptureThreadNewVideoGrabber::VideoGrabberOnPreviewStarted(TObject *Sender)
+{
+ ResetEvent(StartInProgressEvent);
+}
+
+void __fastcall TVideoCaptureThreadNewVideoGrabber::VideoGrabberOnVideoMouseUp(System::TObject* Sender, int VideoWindow, System::Uitypes::TMouseButton Button, System::Classes::TShiftState Shift, int X, int Y)
+{
+ if(VideoWindow == -1)
+  return;
+
+ if(!OverlayHandle)
+  return;
+
+ TScrollBox *overlay=dynamic_cast<TScrollBox *>(OverlayHandle);
+
+ if(!overlay)
+  return;
+
+ overlay->OnMouseUp(Sender, Button, Shift, X, Y);
+}
+
+void __fastcall TVideoCaptureThreadNewVideoGrabber::VideoGrabberOnVideoMouseDown(System::TObject* Sender, int VideoWindow, System::Uitypes::TMouseButton Button, System::Classes::TShiftState Shift, int X, int Y)
+{
+ if(VideoWindow == -1)
+  return;
+
+ if(!OverlayHandle)
+  return;
+
+ TScrollBox *overlay=dynamic_cast<TScrollBox *>(OverlayHandle);
+
+ if(!overlay)
+  return;
+
+
+
+ overlay->OnMouseDown(Sender, Button, Shift, X, Y);
+}
+
+void __fastcall TVideoCaptureThreadNewVideoGrabber::VideoGrabberOnVideoMouseMove(System::TObject* Sender, int VideoWindow, System::Classes::TShiftState Shift, int X, int Y)
+{
+ if(VideoWindow == -1)
+  return;
+
+ if(!OverlayHandle)
+  return;
+
+ TScrollBox *overlay=dynamic_cast<TScrollBox *>(OverlayHandle);
+
+ if(!overlay)
+  return;
+
+ overlay->OnMouseMove(Sender, Shift, X, Y);
+}
+
+
 
 
 

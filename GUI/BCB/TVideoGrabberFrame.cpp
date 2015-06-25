@@ -129,16 +129,22 @@ void __fastcall TVideoGrabberFrame::VideoGrabber1FrameCaptureCompleted(TObject *
 		  __int64 FrameTime, TFrameCaptureDest DestType, UnicodeString FileName,
 		  bool Success, int FrameId)
 {
+ if(CallbackThread)
+  CallbackThread->OnFrameCaptureCompleted(Sender,
+		  FrameBitmap, BitmapWidth, BitmapHeight, FrameNumber,
+		  FrameTime, DestType, FileName,
+		  Success, FrameId);
+/*
    if(DestType != fc_TBitmap)
-   	return;
+	return;
 
    mutex->Acquire();
    Graphics::TBitmap *Frame_Bitmap;
    Frame_Bitmap = (Graphics::TBitmap*) FrameBitmap;
    Image1->Picture->Assign(Frame_Bitmap);
    if(CallbackThread)
-    CallbackThread->WriteSourceSafe(Frame_Bitmap,TDateTime::CurrentDateTime().operator double(),false);
-   mutex->Release();
+	CallbackThread->WriteSourceSafe(Frame_Bitmap,TDateTime::CurrentDateTime().operator double(),false);
+   mutex->Release(); */
 }
 //---------------------------------------------------------------------------
 void TVideoGrabberFrame::GetImage(TImage *img)
@@ -161,6 +167,76 @@ void TVideoGrabberFrame::LockImageAccess(void)
 void TVideoGrabberFrame::UnLockImageAccess(void)
 {
 	mutex->Release();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoGrabberFrame::VideoGrabber1DeviceLost(TObject *Sender)
+{
+ if(CallbackThread)
+  CallbackThread->VideoGrabberDeviceLost(Sender);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoGrabberFrame::VideoGrabber1FrameBitmap(TObject *Sender, pFrameInfo FrameInfo,
+		  pFrameBitmapInfo BitmapInfo)
+{
+ if(CallbackThread)
+  CallbackThread->VideoGrabberFrameBitmap(Sender, FrameInfo, BitmapInfo);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoGrabberFrame::VideoGrabber1Log(TObject *Sender, TLogType LogType,
+		  UnicodeString Severity, UnicodeString InfoMsg)
+{
+ if(CallbackThread)
+  CallbackThread->VideoGrabberLog(Sender, LogType,
+		  Severity, InfoMsg);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoGrabberFrame::VideoGrabber1PlayerEndOfStream(TObject *Sender)
+
+{
+ if(CallbackThread)
+  CallbackThread->VideoGrabberPlayerEndOfStream(Sender);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoGrabberFrame::VideoGrabber1PlayerOpened(TObject *Sender)
+{
+ if(CallbackThread)
+  CallbackThread->VideoGrabberOnPlayerOpened(Sender);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoGrabberFrame::VideoGrabber1PreviewStarted(TObject *Sender)
+{
+ if(CallbackThread)
+  CallbackThread->VideoGrabberOnPreviewStarted(Sender);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoGrabberFrame::VideoGrabber1MouseDown(TObject *Sender, int VideoWindow,
+		  TMouseButton Button, TShiftState Shift, int X, int Y)
+{
+ if(CallbackThread)
+  CallbackThread->VideoGrabberOnVideoMouseDown(Sender, VideoWindow, Button, Shift, X, Y);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoGrabberFrame::VideoGrabber1MouseUp(TObject *Sender, int VideoWindow,
+		  TMouseButton Button, TShiftState Shift, int X, int Y)
+{
+ if(CallbackThread)
+  CallbackThread->VideoGrabberOnVideoMouseUp(Sender, VideoWindow, Button, Shift, X, Y);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoGrabberFrame::VideoGrabber1MouseMove(TObject *Sender, int VideoWindow,
+		  TShiftState Shift, int X, int Y)
+{
+ if(CallbackThread)
+  CallbackThread->VideoGrabberOnVideoMouseMove(Sender, VideoWindow, Shift, X, Y);
 }
 //---------------------------------------------------------------------------
 
