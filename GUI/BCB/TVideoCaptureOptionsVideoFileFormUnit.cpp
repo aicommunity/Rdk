@@ -67,8 +67,13 @@ void __fastcall TVideoCaptureOptionsVideoFileForm::FormCreate(TObject *Sender)
  descr.Position=2;
  VideoCaptureOptionsForm->AddVideoSourceOptionsFrame(VideoSourceType,descr);
  if(!VideoCaptureOptionsForm->CheckVideoSourcePrototypes(VideoSourceType))
-// VideoCaptureOptionsForm->AddVideoSourceOptionsFrame(VideoSourceType,this);
-  VideoCaptureOptionsForm->AddVideoSourcePrototypes(VideoSourceType,new TVideoCaptureThreadVideoGrabberAvi(0,true));
+ {
+  TVideoCaptureThreadNewVideoGrabber* tvg=new TVideoCaptureThreadNewVideoGrabber(0,true);
+  tvg->SetSourceMode(1);
+  VideoCaptureOptionsForm->AddVideoSourcePrototypes(VideoSourceType,tvg);
+ }
+
+//  VideoCaptureOptionsForm->AddVideoSourcePrototypes(VideoSourceType,new TVideoCaptureThreadVideoGrabberAvi(0,true));
 }
 //---------------------------------------------------------------------------
 void __fastcall TVideoCaptureOptionsVideoFileForm::VFBrowseButtonClick(TObject *Sender)

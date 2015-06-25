@@ -6,7 +6,10 @@
 #include "VideoOutputFrameUnit.h"
 #include "UEngineMonitorFormUnit.h"
 #include "TUBitmap.h"
+#include "TVideoGrabberFrame.h"
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
+#include "TGrabberThread.h"
+#include "TImageFrame.h"
 //#include "TMultiStartFormUnit.h"
 #include <Jpeg.hpp>
 //---------------------------------------------------------------------------
@@ -120,6 +123,7 @@ void TVideoCaptureThread::ProcessCommandQueue(void)
  std::list<std::pair<double,TVideoCaptureThreadCmdDescr> >::iterator I=CommandQueue.begin();
  for(;I != CommandQueue.end();++I)
  {
+/*
   if(I->second.Id == tvcStart && I->second.ExecTime<=curr_time)
   {
    if(WaitForSingleObject(GlobalStartUnlockMutex, 10) != WAIT_OBJECT_0)
@@ -130,7 +134,7 @@ void TVideoCaptureThread::ProcessCommandQueue(void)
 //   ResetEvent(GlobalStartUnlockEvent);
   }
 
-  if(I->second.ExecTime<=curr_time)
+  if(I->second.ExecTime<=curr_time)*/
   {
    cmd_time=I->first;
    cmd=I->second;
@@ -478,12 +482,12 @@ void __fastcall TVideoCaptureThread::AfterCalculate(void)
 
 void __fastcall TVideoCaptureThread::Execute(void)
 {
- Synchronize(ExecuteCaptureInit);
-// ExecuteCaptureInit();
+// Synchronize(ExecuteCaptureInit);
+ ExecuteCaptureInit();
  while(!Terminated)
  {
-  if(WaitForSingleObject(StartInProgressEvent,0) == WAIT_TIMEOUT)
-   ReleaseMutex(GlobalStartUnlockMutex);
+//  if(WaitForSingleObject(StartInProgressEvent,0) == WAIT_TIMEOUT)
+//   ReleaseMutex(GlobalStartUnlockMutex);
 
   if(WaitForSingleObject(CaptureEnabled,30) == WAIT_TIMEOUT)
   {
@@ -492,9 +496,10 @@ void __fastcall TVideoCaptureThread::Execute(void)
    continue;
   }
   ProcessCommandQueue();
+  Sleep(10);
 //  Application->HandleMessage();
  // Application->ProcessMessages();
-
+	  /*
   double curr_time=TDateTime::CurrentDateTime().operator double();
   if(CheckConnection() == 2 && curr_time-RealLastTimeStamp>double(MaxInterstepInterval)/(86400.0*1000.0))
   {
@@ -552,7 +557,7 @@ void __fastcall TVideoCaptureThread::Execute(void)
    SetEvent(FrameNotInProgress);
    continue;
   }
-
+       */
   if(SyncMode == 1)
   {
    if(WaitForSingleObject(CalcCompleteEvent,10) == WAIT_TIMEOUT)
@@ -568,8 +573,8 @@ void __fastcall TVideoCaptureThread::Execute(void)
   ResetEvent(CalcCompleteEvent);
   SetEvent(FrameNotInProgress);
  }
- Synchronize(ExecuteCaptureUnInit);
-// ExecuteCaptureUnInit();
+// Synchronize(ExecuteCaptureUnInit);
+ ExecuteCaptureUnInit();
 }
 
 void __fastcall TVideoCaptureThread::ExecuteCaptureInit(void)
@@ -710,6 +715,7 @@ double TVideoCaptureThread::GetLastTimeStampSafe(void) const
 // --------------------------
 bool __fastcall TVideoCaptureThread::RunCapture(void)
 {
+/*
  if(WaitForSingleObject(StartInProgressEvent,0) != WAIT_TIMEOUT)
   return true;
  SetEvent(StartInProgressEvent);
@@ -718,10 +724,12 @@ bool __fastcall TVideoCaptureThread::RunCapture(void)
  LastStartTime=curr_time;
  RealLastTimeStamp=curr_time;
  ConnectionState=10;
- Synchronize(ARunCapture);
-// ARunCapture();
- Sleep(100);
+// Synchronize(ARunCapture);
+*/
+ ARunCapture();
+/* Sleep(100);
 // SetEvent(CaptureEnabled);
+*/
  return true;
 }
 
@@ -739,8 +747,8 @@ bool __fastcall TVideoCaptureThread::StopCapture(void)
 /// Останавливает фактический захват не меняя статуса треда
 bool __fastcall TVideoCaptureThread::HaltCapture(void)
 {
- Synchronize(AStopCapture);
-// AStopCapture();
+// Synchronize(AStopCapture);
+ AStopCapture();
  return true;
 }
 
@@ -753,8 +761,8 @@ bool __fastcall TVideoCaptureThread::RecreateCapture(void)
 
  RDK::USerStorageXML xml;
  SaveParameters(xml);
- Synchronize(ARecreateCapture);
-// ARecreateCapture();
+// Synchronize(ARecreateCapture);
+ ARecreateCapture();
  LoadParameters(xml);
  Sleep(100);
  return true;
@@ -2955,3 +2963,283 @@ void __fastcall TVideoCaptureThreadSharedMemory::AStopCapture(void)
 {
 }
 // --------------------------
+
+
+//---------------------------------------------------------------------------
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+__fastcall TVideoCaptureThreadNewVideoGrabber::TVideoCaptureThreadNewVideoGrabber(TVideoOutputFrame *frame, bool CreateSuspended)
+ : TVideoCaptureThread(frame, CreateSuspended)
+{
+ TempBitmap=new Graphics::TBitmap;
+// VideoGrabberFrame= new TVideoGrabberFrame(0);
+// VideoGrabberThread = new TGrabberThread(0,"");
+ ImageFrame = 0;
+// ImageFrame->Parent=frame;
+// ImageFrame->GetGrabberThread()->GetVideoGrabberFrame()->SetCallbackThread(this);
+ Fps=25.0;
+ CurrentTimeStamp=0;
+ SourceMode=0;
+}
+
+__fastcall TVideoCaptureThreadNewVideoGrabber::~TVideoCaptureThreadNewVideoGrabber(void)
+{
+ if(TempBitmap)
+ {
+  delete TempBitmap;
+  TempBitmap=0;
+ }
+
+ /*
+ if(VideoGrabberFrame)
+ {
+  delete VideoGrabberFrame;
+  VideoGrabberFrame=0;
+ } */
+				/*
+ if(VideoGrabberThread)
+ {
+  VideoGrabberThread->Terminate();
+  VideoGrabberThread->WaitFor();
+  delete VideoGrabberThread;
+  VideoGrabberThread=0;
+ }                */
+ if(ImageFrame)
+ {
+  delete ImageFrame;
+  ImageFrame=0;
+ }
+}
+// --------------------------
+
+// --------------------------
+// Управление параметрами
+// --------------------------
+bool TVideoCaptureThreadNewVideoGrabber::SetSourceMode(int mode)
+{
+ if(SourceMode == mode)
+  return true;
+
+ SourceMode = mode;
+ return true;
+}
+
+/*
+/// Имя файла изображения
+std::string TVideoCaptureThreadNewVideoGrabber::GetFileName(void) const
+{
+ return FileName;
+}
+
+bool TVideoCaptureThreadNewVideoGrabber::SetFileName(const std::string& value)
+{
+ try
+ {
+  FileName=value;
+  String filename=value.c_str();
+  if(filename.Pos(".jpg") || filename.Pos(".jpeg") )
+  {
+   TJPEGImage* JpegIm=new TJPEGImage;
+   JpegIm->LoadFromFile(filename);
+   TempBitmap->Assign(JpegIm);
+   TempBitmap->PixelFormat=pf24bit;
+   TempSource<<TempBitmap;
+   delete JpegIm;
+  }
+  else
+  if(filename.Pos(".bmp"))
+  {
+   LoadBitmapFromFile(AnsiString(filename).c_str(),&TempSource);
+  }
+  else
+   TempSource.Fill(0);
+ }
+ catch (EFOpenError &exception)
+ {
+  TempSource.SetRes(0,0);
+ }
+ TempSource.SetColorModel(RDK::ubmRGB24);
+ double time_stamp=0;
+ WriteSourceSafe(TempSource,time_stamp,false);
+ return true;
+}
+          */
+/// Возвращает число изображений в последовательности
+long long TVideoCaptureThreadNewVideoGrabber::GetNumBitmaps(void) const
+{
+ return 1;
+}
+
+/// Устанавливает текущую позицию в последовательности
+long long TVideoCaptureThreadNewVideoGrabber::GetPosition(void) const
+{
+ return 0;
+}
+
+bool TVideoCaptureThreadNewVideoGrabber::SetPosition(long long index)
+{
+ return true;
+}
+
+
+/// Устанавливает значение FPS
+double TVideoCaptureThreadNewVideoGrabber::GetFps(void) const
+{
+ return Fps;
+}
+
+bool TVideoCaptureThreadNewVideoGrabber::SetFps(double fps)
+{
+ if(Fps == fps)
+  return true;
+
+ Fps=fps;
+ return true;
+}
+// --------------------------
+
+// --------------------------
+// Управление потоком
+// --------------------------
+void __fastcall TVideoCaptureThreadNewVideoGrabber::AStart(double time)
+{
+ CurrentTimeStamp=0;
+}
+
+void __fastcall TVideoCaptureThreadNewVideoGrabber::AStop(double time)
+{
+}
+
+
+void __fastcall TVideoCaptureThreadNewVideoGrabber::BeforeCalculate(void)
+{
+
+}
+
+void __fastcall TVideoCaptureThreadNewVideoGrabber::AfterCalculate(void)
+{
+ if(Fps>0)
+ {
+  CurrentTimeStamp+=(1.0/Fps)/86400.0;
+ }
+ else
+ {
+  CurrentTimeStamp+=1.0/86400.0;
+ }
+ TVideoCaptureThread::AfterCalculate();
+/* if(Fps>0)
+  Sleep(1000.0/Fps);
+ else*/
+  Sleep(30);
+}
+
+void __fastcall TVideoCaptureThreadNewVideoGrabber::Calculate(void)
+{
+// double time_stamp=CurrentTimeStamp;//TDateTime::CurrentDateTime().operator double();
+// SetLastTimeStampSafe(time_stamp);
+}
+// --------------------------
+
+// --------------------------
+// Управление данными
+// --------------------------
+/// Создает копию этого потока
+RDK::UEPtr<TVideoCaptureThread> TVideoCaptureThreadNewVideoGrabber::New(TVideoOutputFrame *frame, bool create_suspended)
+{
+ TVideoCaptureThreadNewVideoGrabber* thread=new TVideoCaptureThreadNewVideoGrabber(frame,create_suspended);
+ thread->ImageFrame = new TImageFrame(0);
+ thread->ImageFrame->Parent=frame;
+ return thread;
+}
+
+/// Сохранение настроек в xml
+bool TVideoCaptureThreadNewVideoGrabber::ASaveParameters(RDK::USerStorageXML &xml)
+{
+ xml.WriteInteger("SourceMode",SourceMode);
+
+/// 1 - avi
+/// 2 - camera
+/// 3 - ip camera
+ switch(SourceMode)
+ {
+ case 1:
+ {
+  xml.WriteString("FileName", AnsiString(ImageFrame->GetGrabberThread()->GetVideoGrabberFrame()->VideoGrabber1->PlayerFileName).c_str());
+  xml.WriteBool("ProcessAllFramesFlag",false);
+ }
+ break;
+
+ case 2:
+ break;
+
+ case 3:
+  xml.WriteString("Url",AnsiString(ImageFrame->GetGrabberThread()->GetVideoGrabberFrame()->VideoGrabber1->IPCameraURL).c_str());
+  xml.WriteString("UserName", AnsiString(UserName).c_str());
+  xml.WriteString("Password", AnsiString(Password).c_str());
+ break;
+ }
+
+ return true;
+}
+
+/// Загрузка и применение настроек из xml
+bool TVideoCaptureThreadNewVideoGrabber::ALoadParameters(RDK::USerStorageXML &xml)
+{
+ int mode=xml.ReadInteger("SourceMode",SourceMode);
+ SetSourceMode(mode);
+ switch(SourceMode)
+ {
+ case 1:
+ {
+  String file_name=xml.ReadString("FileName", "").c_str();
+  bool proc_all_frame=xml.ReadBool("ProcessAllFramesFlag",false);
+  ImageFrame->Init();//SetData(0,file_name);
+  ImageFrame->GetGrabberThread()->GetVideoGrabberFrame()->InitByAvi(file_name);
+  ImageFrame->GetGrabberThread()->GetVideoGrabberFrame()->SetCallbackThread(this);
+ }
+ break;
+
+ case 2:
+ break;
+
+ case 3:
+  String url=xml.ReadString("Url","").c_str();
+  UserName=xml.ReadString("UserName", AnsiString(UserName).c_str()).c_str();
+  Password=xml.ReadString("Password", AnsiString(Password).c_str()).c_str();
+  ImageFrame->Init();//SetData(1,url);
+  ImageFrame->GetGrabberThread()->GetVideoGrabberFrame()->InitByIpCamera(url, UserName, Password);
+  ImageFrame->GetGrabberThread()->GetVideoGrabberFrame()->SetCallbackThread(this);
+break;
+
+ }
+
+ return true;
+}
+// --------------------------
+
+// --------------------------
+// Скрытые методы управления потоком
+// --------------------------
+void __fastcall TVideoCaptureThreadNewVideoGrabber::ARunCapture(void)
+{
+// VideoGrabberFrame->Start();
+ ImageFrame->StartCaptureThread();
+}
+
+void __fastcall TVideoCaptureThreadNewVideoGrabber::AStopCapture(void)
+{
+// VideoGrabberFrame->Stop();
+ ImageFrame->StopCaptureThread();
+}
+
+void __fastcall TVideoCaptureThreadNewVideoGrabber::ARecreateCapture(void)
+{
+
+}
+// --------------------------
+
+
+
+//---------------------------------------------------------------------------
+

@@ -7,6 +7,10 @@
 #include "TUHttpServerUnit.h"
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
 
+class TVideoGrabberFrame;
+class TGrabberThread;
+class TImageFrame;
+
 enum TVideoCaptureThreadCommands { tvcNone=0, tvcStart=1, tvcStop=2, tvcTerminate=3, tvcRecreate=4, tvcHalt=5 };
 
 /// Описание команды
@@ -1025,5 +1029,90 @@ virtual void __fastcall AStopCapture(void);
 // --------------------------
 
 };
+
+class TVideoCaptureThreadNewVideoGrabber: public TVideoCaptureThread
+{
+protected: // Параметры
+
+protected: // Временные изображения
+RDK::UBitmap TempSource;
+Graphics::TBitmap* TempBitmap;
+
+//TVideoGrabberFrame *VideoGrabberFrame;
+//TGrabberThread *VideoGrabberThread;
+TImageFrame* ImageFrame;
+
+String UserName, Password;
+
+RDK::UELockVar<double> CurrentTimeStamp;
+
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+__fastcall TVideoCaptureThreadNewVideoGrabber(TVideoOutputFrame *frame, bool CreateSuspended);
+virtual __fastcall ~TVideoCaptureThreadNewVideoGrabber(void);
+// --------------------------
+
+// --------------------------
+// Управление параметрами
+// --------------------------
+virtual bool SetSourceMode(int mode);
+/// Имя файла изображения
+//std::string GetFileName(void) const;
+//bool SetFileName(const std::string& value);
+
+/// Возвращает число изображений в последовательности
+virtual long long GetNumBitmaps(void) const;
+
+/// Устанавливает текущую позицию в последовательности
+virtual long long GetPosition(void) const;
+virtual bool SetPosition(long long index);
+
+/// Устанавливает значение FPS
+double GetFps(void) const;
+bool SetFps(double fps);
+// --------------------------
+
+// --------------------------
+// Управление данными
+// --------------------------
+/// Создает копию этого потока
+RDK::UEPtr<TVideoCaptureThread> New(TVideoOutputFrame *frame, bool create_suspended);
+
+/// Сохранение настроек в xml
+virtual bool ASaveParameters(RDK::USerStorageXML &xml);
+
+/// Загрузка и применение настроек из xml
+virtual bool ALoadParameters(RDK::USerStorageXML &xml);
+// --------------------------
+
+// --------------------------
+// Управление потоком
+// --------------------------
+virtual void __fastcall AStart(double time);
+
+virtual void __fastcall AStop(double time);
+
+virtual void __fastcall BeforeCalculate(void);
+
+virtual void __fastcall AfterCalculate(void);
+
+virtual void __fastcall Calculate(void);
+// --------------------------
+
+// --------------------------
+// Скрытые методы управления потоком
+// --------------------------
+protected:
+virtual void __fastcall ARunCapture(void);
+
+virtual void __fastcall AStopCapture(void);
+
+virtual void __fastcall ARecreateCapture(void);
+// --------------------------
+};
+
 
 #endif

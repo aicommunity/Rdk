@@ -18,6 +18,7 @@
 #include "TUVisualControllerFormUnit.h"
 #include <Vcl.ImgList.hpp>
 #include <Vcl.ToolWin.hpp>
+#include <System.ImageList.hpp>
 //---------------------------------------------------------------------------
 class TVideoOutputForm : public TUVisualControllerForm
 {
