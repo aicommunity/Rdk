@@ -1038,8 +1038,8 @@ protected: // Временные изображения
 RDK::UBitmap TempSource;
 Graphics::TBitmap* TempBitmap;
 
-TVideoGrabberFrame *VideoGrabberFrame;
-//TGrabberThread *GrabberThread;
+//TVideoGrabberFrame *VideoGrabberFrame;
+TGrabberThread *GrabberThread;
 //TImageFrame* ImageFrame;
 
 String UserName, Password;

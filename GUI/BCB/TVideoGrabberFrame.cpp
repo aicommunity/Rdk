@@ -26,12 +26,12 @@ __fastcall TVideoGrabberFrame::TVideoGrabberFrame(TComponent* Owner)
 	for(size_t i=0;i<licenses.size();i++)
 	 VideoGrabber1->LicenseString=licenses[i].c_str();//TVGrabberLicenseString;
 
-	CallbackThread=0;
+	CallbackThread=0; /*
  VideoGrabber1->Synchronized=false;
  VideoGrabber1->FrameCaptureWithoutOverlay=true;
  VideoGrabber1->SyncCommands=false;
  VideoGrabber1->EventNotificationSynchrone=false;
- VideoGrabber1->OnFrameBitmapEventSynchrone=false;
+ VideoGrabber1->OnFrameBitmapEventSynchrone=false;*/
 	InitByAvi("");
 
 	Start();

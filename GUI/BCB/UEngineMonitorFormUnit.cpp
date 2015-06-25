@@ -24,7 +24,6 @@ std::list<std::string> UnsentLog;
 //---------------------------------------------------------------------------
 void ExceptionHandler(int channel_index)
 {
-return;
  if(!RdkExceptionHandlerMutex)
   return;
 

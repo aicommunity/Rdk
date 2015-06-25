@@ -8,7 +8,7 @@
 #include "TUBitmap.h"
 #include "TVideoGrabberFrame.h"
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
-//#include "TGrabberThread.h"
+#include "TGrabberThread.h"
 //#include "TImageFrame.h"
 //#include "TMultiStartFormUnit.h"
 #include <Jpeg.hpp>
@@ -2890,10 +2890,9 @@ __fastcall TVideoCaptureThreadNewVideoGrabber::TVideoCaptureThreadNewVideoGrabbe
  : TVideoCaptureThread(frame, CreateSuspended)
 {
  TempBitmap=new Graphics::TBitmap;
- VideoGrabberFrame= new TVideoGrabberFrame(0);
- VideoGrabberFrame->SetCallbackThread(this);
-// GrabberThread = new TGrabberThread(0,"");
-// GrabberThread->GetVideoGrabberFrame()->SetCallbackThread(this);
+// VideoGrabberFrame= new TVideoGrabberFrame(0);
+// VideoGrabberFrame->SetCallbackThread(this);
+ GrabberThread = new TGrabberThread(0,"");
 // ImageFrame = 0;
 // ImageFrame->Parent=frame;
 // ImageFrame->GetGrabberThread()->GetVideoGrabberFrame()->SetCallbackThread(this);
@@ -2924,12 +2923,12 @@ __fastcall TVideoCaptureThreadNewVideoGrabber::~TVideoCaptureThreadNewVideoGrabb
   TempBitmap=0;
  }
 
-
+	   /*
  if(VideoGrabberFrame)
  {
   delete VideoGrabberFrame;
   VideoGrabberFrame=0;
- }
+ }       */
 
  if(!Terminated && !Suspended)
  {
@@ -2953,14 +2952,14 @@ __fastcall TVideoCaptureThreadNewVideoGrabber::~TVideoCaptureThreadNewVideoGrabb
  CloseHandle(VideoGrabberCompleted);
  CloseHandle(ConvertMutex);
  CloseHandle(OSDMutex);
-/*
+
  if(GrabberThread)
  {
   GrabberThread->Terminate();
   GrabberThread->WaitFor();
   delete GrabberThread;
   GrabberThread=0;
- }*/
+ }
  /*
  if(ImageFrame)
  {
@@ -3165,8 +3164,8 @@ bool TVideoCaptureThreadNewVideoGrabber::ASaveParameters(RDK::USerStorageXML &xm
  case 1:
  {
 //  xml.WriteString("FileName", AnsiString(ImageFrame->GetGrabberThread()->GetVideoGrabberFrame()->VideoGrabber1->PlayerFileName).c_str());
-//  xml.WriteString("FileName", AnsiString(GrabberThread->GetVideoGrabberFrame()->VideoGrabber1->PlayerFileName).c_str());
-  xml.WriteString("FileName", AnsiString(VideoGrabberFrame->VideoGrabber1->PlayerFileName).c_str());
+  xml.WriteString("FileName", AnsiString(GrabberThread->GetVideoGrabberFrame()->VideoGrabber1->PlayerFileName).c_str());
+//  xml.WriteString("FileName", AnsiString(VideoGrabberFrame->VideoGrabber1->PlayerFileName).c_str());
   xml.WriteBool("ProcessAllFramesFlag",false);
  }
  break;
@@ -3176,8 +3175,8 @@ bool TVideoCaptureThreadNewVideoGrabber::ASaveParameters(RDK::USerStorageXML &xm
 
  case 3:
 //  xml.WriteString("Url",AnsiString(ImageFrame->GetGrabberThread()->GetVideoGrabberFrame()->VideoGrabber1->IPCameraURL).c_str());
-//  xml.WriteString("Url",AnsiString(GrabberThread->GetVideoGrabberFrame()->VideoGrabber1->IPCameraURL).c_str());
-  xml.WriteString("Url",AnsiString(VideoGrabberFrame->VideoGrabber1->IPCameraURL).c_str());
+  xml.WriteString("Url",AnsiString(GrabberThread->GetVideoGrabberFrame()->VideoGrabber1->IPCameraURL).c_str());
+//  xml.WriteString("Url",AnsiString(VideoGrabberFrame->VideoGrabber1->IPCameraURL).c_str());
   xml.WriteString("UserName", AnsiString(UserName).c_str());
   xml.WriteString("Password", AnsiString(Password).c_str());
  break;
@@ -3197,8 +3196,9 @@ bool TVideoCaptureThreadNewVideoGrabber::ALoadParameters(RDK::USerStorageXML &xm
  {
   String file_name=xml.ReadString("FileName", "").c_str();
   bool proc_all_frame=xml.ReadBool("ProcessAllFramesFlag",false);
-  VideoGrabberFrame->InitByAvi(file_name);
-//  GrabberThread->GetVideoGrabberFrame()->InitByAvi(file_name);
+//  VideoGrabberFrame->InitByAvi(file_name);
+  GrabberThread->GetVideoGrabberFrame()->SetCallbackThread(this);
+  GrabberThread->GetVideoGrabberFrame()->InitByAvi(file_name);
 //  ImageFrame->Init();//SetData(0,file_name);
 //  ImageFrame->GetGrabberThread()->GetVideoGrabberFrame()->InitByAvi(file_name);
 //  ImageFrame->GetGrabberThread()->GetVideoGrabberFrame()->SetCallbackThread(this);
@@ -3212,8 +3212,9 @@ bool TVideoCaptureThreadNewVideoGrabber::ALoadParameters(RDK::USerStorageXML &xm
   String url=xml.ReadString("Url","").c_str();
   UserName=xml.ReadString("UserName", AnsiString(UserName).c_str()).c_str();
   Password=xml.ReadString("Password", AnsiString(Password).c_str()).c_str();
-  VideoGrabberFrame->InitByIpCamera(url, UserName, Password);
-//  GrabberThread->GetVideoGrabberFrame()->InitByIpCamera(url, UserName, Password);
+//  VideoGrabberFrame->InitByIpCamera(url, UserName, Password);
+  GrabberThread->GetVideoGrabberFrame()->SetCallbackThread(this);
+  GrabberThread->GetVideoGrabberFrame()->InitByIpCamera(url, UserName, Password);
 //  ImageFrame->Init();//SetData(1,url);
 //  ImageFrame->GetGrabberThread()->GetVideoGrabberFrame()->InitByIpCamera(url, UserName, Password);
 //  ImageFrame->GetGrabberThread()->GetVideoGrabberFrame()->SetCallbackThread(this);
@@ -3230,16 +3231,16 @@ break;
 // --------------------------
 void __fastcall TVideoCaptureThreadNewVideoGrabber::ARunCapture(void)
 {
- VideoGrabberFrame->Start();
+// VideoGrabberFrame->Start();
 // ImageFrame->StartCaptureThread();
-// GrabberThread->StartCaptureThread();
+ GrabberThread->StartCaptureThread();
 }
 
 void __fastcall TVideoCaptureThreadNewVideoGrabber::AStopCapture(void)
 {
- VideoGrabberFrame->Stop();
+// VideoGrabberFrame->Stop();
 // ImageFrame->StopCaptureThread();
-// GrabberThread->StopCaptureThread();
+ GrabberThread->StopCaptureThread();
 }
 
 void __fastcall TVideoCaptureThreadNewVideoGrabber::ARecreateCapture(void)
