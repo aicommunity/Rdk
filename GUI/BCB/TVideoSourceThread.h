@@ -115,7 +115,6 @@ private:
 /// Временная метка последнего кадра
 double LastTimeStamp;
 
-
 /// Данные изображения
 RDK::UBitmap Source[2];
 
@@ -274,10 +273,8 @@ HANDLE GetCalcCompleteEvent(void) const;
 // Управление потоком
 // --------------------------
 virtual void __fastcall Start(double time);
-virtual void __fastcall AStart(double time)=0;
 
 virtual void __fastcall Stop(double time);
-virtual void __fastcall AStop(double time)=0;
 
 virtual void __fastcall BeforeCalculate(void);
 
@@ -326,10 +323,6 @@ virtual bool __fastcall HaltCapture(void);
 
 virtual bool __fastcall RecreateCapture(void);
 virtual void __fastcall ARecreateCapture(void);
-
-virtual void __fastcall ReloadParameters(void);
-
-//bool SetThreadState(int value);
 // --------------------------
 
 
@@ -393,10 +386,6 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 // Управление потоком
 // --------------------------
-virtual void __fastcall AStart(double time);
-
-virtual void __fastcall AStop(double time);
-
 virtual void __fastcall BeforeCalculate(void);
 
 virtual void __fastcall AfterCalculate(void);
@@ -483,10 +472,6 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 // Управление потоком
 // --------------------------
-virtual void __fastcall AStart(double time);
-
-virtual void __fastcall AStop(double time);
-
 virtual void __fastcall AfterCalculate(void);
 
 virtual void __fastcall Calculate(void);
@@ -495,7 +480,7 @@ virtual void __fastcall Calculate(void);
 bool LoadImageFromSequence(int index, RDK::UBitmap &bmp);
 
 // Меняет временную метку с блокировкой
-virtual bool SetLastTimeStampSafe(double time_stamp);
+//virtual bool SetLastTimeStampSafe(double time_stamp);
 // --------------------------
 
 // --------------------------
@@ -565,10 +550,6 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 // Управление потоком
 // --------------------------
-virtual void __fastcall AStart(double time);
-
-virtual void __fastcall AStop(double time);
-
 virtual void __fastcall BeforeCalculate(void);
 
 virtual void __fastcall AfterCalculate(void);
@@ -668,7 +649,7 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 
 /// Хендл окна в которое необходимо выводить данные захвата
 virtual TWinControl* GetOverlayHandle(void) const;
-virtual bool SetOverlayHandle(TWinControl* value);
+virtual bool SetOverlayHandle(TWinControl* value, bool forced=false);
 
 /// Управление маской для OSD
 virtual Graphics::TBitmap* GetOverlayMaskBitmap(void);
@@ -678,8 +659,8 @@ virtual bool SetOverlayMaskBitmap(Graphics::TBitmap* value);
 // --------------------------
 // Управление потоком
 // --------------------------
-virtual void __fastcall ExecuteCaptureInit(void);
-virtual void __fastcall ExecuteCaptureUnInit(void);
+virtual void __fastcall TvgExecuteCaptureInit(void);
+virtual void __fastcall TvgExecuteCaptureUnInit(void);
 TVideoGrabber* GetVideoGrabber(void);
 void __fastcall OnFrameCaptureCompleted(System::TObject* Sender, void * FrameBitmap, int BitmapWidth, int BitmapHeight, unsigned FrameNumber, __int64 FrameTime, TFrameCaptureDest DestType, System::UnicodeString FileName, bool Success, int FrameId);
 
@@ -727,9 +708,7 @@ virtual int CheckConnection(void) const;
 /// 1 - Изображение масштабируется пропорционально, по границам окна
 /// 2 - Изображение масштабиуется с растяжением по всем сторонам
 virtual int GetAutoScaleMode(void) const;
-virtual bool SetAutoScaleMode(int value);
-
-virtual void __fastcall ARecreateCapture(void);
+virtual bool SetAutoScaleMode(int value, bool forced=true);
 // --------------------------
 };
 
@@ -776,11 +755,7 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 // Управление потоком
 // --------------------------
-virtual void __fastcall ExecuteCaptureInit(void);
-
-virtual void __fastcall AStart(double time);
-
-virtual void __fastcall AStop(double time);
+virtual void __fastcall TvgExecuteCaptureInit(void);
 
 
 // Меняет временную метку с блокировкой
@@ -856,11 +831,7 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 // Управление потоком
 // --------------------------
-virtual void __fastcall ExecuteCaptureInit(void);
-
-virtual void __fastcall AStart(double time);
-
-virtual void __fastcall AStop(double time);
+virtual void __fastcall TvgExecuteCaptureInit(void);
 // --------------------------
 
 
@@ -926,9 +897,7 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 // Управление потоком
 // --------------------------
-virtual void __fastcall AStart(double time);
-
-virtual void __fastcall AStop(double time);
+virtual void __fastcall TvgExecuteCaptureInit(void);
 // --------------------------
 
 
@@ -1006,10 +975,6 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 // Управление потоком
 // --------------------------
-virtual void __fastcall AStart(double time);
-
-virtual void __fastcall AStop(double time);
-
 virtual void __fastcall BeforeCalculate(void);
 
 virtual void __fastcall AfterCalculate(void);
@@ -1113,10 +1078,6 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 // Управление потоком
 // --------------------------
-virtual void __fastcall AStart(double time);
-
-virtual void __fastcall AStop(double time);
-
 virtual void __fastcall BeforeCalculate(void);
 
 virtual void __fastcall AfterCalculate(void);

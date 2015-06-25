@@ -71,11 +71,6 @@ void __fastcall TVideoCaptureOptionsIPCameraForm::FormCreate(TObject *Sender)
  VideoCaptureOptionsForm->AddVideoSourceOptionsFrame(VideoSourceType,descr);
 // VideoCaptureOptionsForm->AddVideoSourceOptionsFrame(VideoSourceType,this);
  if(!VideoCaptureOptionsForm->CheckVideoSourcePrototypes(VideoSourceType))
- {
-  TVideoCaptureThreadNewVideoGrabber* tvg=new TVideoCaptureThreadNewVideoGrabber(0,true);
-  tvg->SetSourceMode(3);
-  VideoCaptureOptionsForm->AddVideoSourcePrototypes(VideoSourceType,tvg);
- }
-//  VideoCaptureOptionsForm->AddVideoSourcePrototypes(VideoSourceType,new TVideoCaptureThreadVideoGrabberIpCamera(0,true));
+  VideoCaptureOptionsForm->AddVideoSourcePrototypes(VideoSourceType,new TVideoCaptureThreadVideoGrabberIpCamera(0,true));
 }
 //---------------------------------------------------------------------------
