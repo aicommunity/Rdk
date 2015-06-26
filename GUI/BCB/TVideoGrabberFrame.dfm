@@ -16,8 +16,8 @@ object VideoGrabberFrame: TVideoGrabberFrame
     ExplicitHeight = 105
   end
   object VideoGrabber1: TVideoGrabber
-    Left = 88
-    Top = 48
+    Left = 0
+    Top = 0
     Width = 57
     Height = 33
     Align = alCustom
