@@ -40,8 +40,11 @@ __fastcall TVideoGrabberFrame::TVideoGrabberFrame(TComponent* Owner)
 
 __fastcall TVideoGrabberFrame::~TVideoGrabberFrame(void)
 {
+ CallbackThread=0;
+ VideoGrabber1->Stop();
 	//mutex->Acquire();
-	delete mutex;
+ delete mutex;
+ mutex=0;
 }
 
 void TVideoGrabberFrame::SetCallbackThread(TVideoCaptureThreadVideoGrabber *callback)
