@@ -11,6 +11,7 @@
 #include <Vcl.ExtCtrls.hpp>
 
 class TVideoCaptureThreadNewVideoGrabber;
+class TVideoCaptureThreadVideoGrabber;
 //---------------------------------------------------------------------------
 class TVideoGrabberFrame : public TFrame
 {
@@ -43,13 +44,16 @@ private:	// User declarations
 	/// Captured image access mutex
 	TMutex *mutex;
 
-	TVideoCaptureThreadNewVideoGrabber *CallbackThread;
+	TVideoCaptureThreadNewVideoGrabber *NewCallbackThread;
+	TVideoCaptureThreadVideoGrabber *CallbackThread;
 public:		// User declarations
 	__fastcall TVideoGrabberFrame(TComponent* Owner);
 	__fastcall ~TVideoGrabberFrame(void);
 
-	void SetCallbackThread(TVideoCaptureThreadNewVideoGrabber *callback);
-	TVideoCaptureThreadNewVideoGrabber* GetCallbackThread(void);
+	void SetNewCallbackThread(TVideoCaptureThreadNewVideoGrabber *callback);
+	void SetCallbackThread(TVideoCaptureThreadVideoGrabber *callback);
+	TVideoCaptureThreadNewVideoGrabber* GetNewCallbackThread(void);
+	TVideoCaptureThreadVideoGrabber* GetCallbackThread(void);
 
 	void GetImage(TImage *img);
 	TBitmap* GetDirectBitmapAccess(void);

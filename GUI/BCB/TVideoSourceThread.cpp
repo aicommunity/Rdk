@@ -1298,10 +1298,13 @@ void __fastcall TVideoCaptureThreadHttpServer::ARecreateCapture(void)
 __fastcall TVideoCaptureThreadVideoGrabber::TVideoCaptureThreadVideoGrabber(TVideoOutputFrame *frame, bool CreateSuspended)
  : VideoGrabber(0), TVideoCaptureThread(frame,CreateSuspended)
 {
- VideoGrabber=new TVideoGrabber(frame);
- //VideoGrabber->Name="Tvg";
- VideoGrabber->Parent=frame;
- VideoGrabber->Visible=false;
+// VideoGrabber=new TVideoGrabber(frame);
+// VideoGrabber->Parent=frame;
+// VideoGrabber->Visible=false;
+ VideoGrabberFrame= new TVideoGrabberFrame(0);
+ VideoGrabberFrame->SetCallbackThread(this);
+ VideoGrabber=VideoGrabberFrame->VideoGrabber1;
+
  ConvertBitmap=new Graphics::TBitmap;
  OverlayMaskBitmap=new Graphics::TBitmap;
 
@@ -1343,10 +1346,17 @@ __fastcall TVideoCaptureThreadVideoGrabber::~TVideoCaptureThreadVideoGrabber(voi
  CloseHandle(VideoGrabberCompleted);
  CloseHandle(ConvertMutex);
  CloseHandle(OSDMutex);
+ /*
  if(VideoGrabber)
  {
   VideoGrabber->Parent=0;
   delete VideoGrabber;
+  VideoGrabber=0;
+ } */
+ if(VideoGrabberFrame)
+ {
+  delete VideoGrabberFrame;
+  VideoGrabberFrame=0;
   VideoGrabber=0;
  }
 }
@@ -1407,7 +1417,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::TvgExecuteCaptureInit(void)
  RDK::separatestring(lic_string,licenses,'|');
  for(size_t i=0;i<licenses.size();i++)
   VideoGrabber->LicenseString=licenses[i].c_str();//TVGrabberLicenseString;
-
+	 /*
  // TODO:
  VideoGrabber->AutoStartPlayer = false;
  VideoGrabber->PlayerFileName = "";
@@ -1416,7 +1426,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::TvgExecuteCaptureInit(void)
  VideoGrabber->BurstCount = 0;
  VideoGrabber->OpenPlayer();
  // End TODO:
-
+       */
 
  SetOverlayHandle(OverlayHandle,true);
  VideoGrabber->OnMouseDown=VideoGrabberOnVideoMouseDown;
@@ -1430,7 +1440,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::TvgExecuteCaptureInit(void)
  VideoGrabber->OnPlayerOpened=VideoGrabberOnPlayerOpened;
  VideoGrabber->OnPreviewStarted=VideoGrabberOnPreviewStarted;
 //  VideoGrabber->OnThreadSync=VideoGrabberOnThreadSync;
-
+/*
  VideoGrabber->PlayerRefreshPausedDisplay = false;
  VideoGrabber->AutoStartPlayer = false;
  VideoGrabber->BurstCount = 0;
@@ -1446,6 +1456,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::TvgExecuteCaptureInit(void)
 // VideoGrabber->SyncCommands=false;
 // VideoGrabber->EventNotificationSynchrone=false;
 // VideoGrabber->OnFrameBitmapEventSynchrone=true;
+*/
  VideoGrabber->OpenURLAsync=true;
 
  if(DesiredResolutionFlag)
@@ -1459,10 +1470,6 @@ void __fastcall TVideoCaptureThreadVideoGrabber::TvgExecuteCaptureInit(void)
   VideoGrabber->FrameCaptureWidth=-1;
   VideoGrabber->FrameCaptureHeight=-1;
  }
-
-// VideoGrabber->OpenURLAsync=false;
-
-// VideoGrabber->EnableThreadMode();
 }
 
 void __fastcall TVideoCaptureThreadVideoGrabber::TvgExecuteCaptureUnInit(void)
@@ -1568,11 +1575,13 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberFrameBitmap(TObject
 void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberLog(TObject *Sender,
 	  TLogType LogType, String Severity, String InfoMsg)
 {
- MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, (std::string("VideoGrabber [")+std::string(AnsiString(Severity).c_str())+std::string("] ")+AnsiString(InfoMsg).c_str() ).c_str());
+ if(LogType != 82 || Severity != "ERROR")
+  MEngine_LogMessage(ChannelIndex, RDK_EX_INFO, (std::string("VideoGrabber [")+std::string(AnsiString(Severity).c_str())+std::string("] ")+AnsiString(InfoMsg).c_str() ).c_str());
+ else
+  return;
+
  if(Severity == "ERROR")
  {
-  if(LogType == 82)
-   return;
   LastStartTime=TDateTime::CurrentDateTime().operator double();
   ConnectionState=10;
 
@@ -1822,19 +1831,19 @@ bool TVideoCaptureThreadVideoGrabber::SetOverlayHandle(TWinControl* value, bool 
  OverlayHandle = value;
  if(VideoGrabber)
  {
-  VideoGrabber->Parent=OverlayHandle;
-
   if(OverlayHandle)
   {
+   VideoGrabber->Parent=OverlayHandle;
    VideoGrabber->Visible=true;
    VideoGrabber->Display_AutoSize = true;
    SetAutoScaleMode(AutoScaleMode,true);
   }
   else
   {
-   VideoGrabber->Parent=GetFrame(); // Switch parent to default Frame
-   VideoGrabber->Visible=false;
-   VideoGrabber->Display_AutoSize = false;
+   if(VideoGrabber->Parent != VideoGrabberFrame)
+    VideoGrabber->Parent=VideoGrabberFrame; // Switch parent to default Frame
+//   VideoGrabber->Visible=true;
+//   VideoGrabber->Display_AutoSize = false;
   }
  }
 
@@ -2704,46 +2713,6 @@ bool TVideoCaptureThreadNewVideoGrabber::SetSourceMode(int mode)
  return true;
 }
 
-/*
-/// Имя файла изображения
-std::string TVideoCaptureThreadNewVideoGrabber::GetFileName(void) const
-{
- return FileName;
-}
-
-bool TVideoCaptureThreadNewVideoGrabber::SetFileName(const std::string& value)
-{
- try
- {
-  FileName=value;
-  String filename=value.c_str();
-  if(filename.Pos(".jpg") || filename.Pos(".jpeg") )
-  {
-   TJPEGImage* JpegIm=new TJPEGImage;
-   JpegIm->LoadFromFile(filename);
-   TempBitmap->Assign(JpegIm);
-   TempBitmap->PixelFormat=pf24bit;
-   TempSource<<TempBitmap;
-   delete JpegIm;
-  }
-  else
-  if(filename.Pos(".bmp"))
-  {
-   LoadBitmapFromFile(AnsiString(filename).c_str(),&TempSource);
-  }
-  else
-   TempSource.Fill(0);
- }
- catch (EFOpenError &exception)
- {
-  TempSource.SetRes(0,0);
- }
- TempSource.SetColorModel(RDK::ubmRGB24);
- double time_stamp=0;
- WriteSourceSafe(TempSource,time_stamp,false);
- return true;
-}
-          */
 /// Возвращает число изображений в последовательности
 long long TVideoCaptureThreadNewVideoGrabber::GetNumBitmaps(void) const
 {
@@ -2788,16 +2757,6 @@ void __fastcall TVideoCaptureThreadNewVideoGrabber::BeforeCalculate(void)
 
 void __fastcall TVideoCaptureThreadNewVideoGrabber::AfterCalculate(void)
 {
-/* if(Fps>0)
- {
-  CurrentTimeStamp+=(1.0/Fps)/86400.0;
- }
- else
- {
-  CurrentTimeStamp+=1.0/86400.0;
- }
- TVideoCaptureThread::AfterCalculate();
-  Sleep(30); */
 }
 
 void __fastcall TVideoCaptureThreadNewVideoGrabber::Calculate(void)
@@ -2910,7 +2869,7 @@ bool TVideoCaptureThreadNewVideoGrabber::ALoadParameters(RDK::USerStorageXML &xm
   String file_name=xml.ReadString("FileName", "").c_str();
   bool proc_all_frame=xml.ReadBool("ProcessAllFramesFlag",false);
 //  VideoGrabberFrame->InitByAvi(file_name);
-  GrabberThread->GetVideoGrabberFrame()->SetCallbackThread(this);
+  GrabberThread->GetVideoGrabberFrame()->SetNewCallbackThread(this);
   GrabberThread->GetVideoGrabberFrame()->InitByAvi(file_name);
 //  ImageFrame->Init();//SetData(0,file_name);
 //  ImageFrame->GetGrabberThread()->GetVideoGrabberFrame()->InitByAvi(file_name);
@@ -2926,7 +2885,7 @@ bool TVideoCaptureThreadNewVideoGrabber::ALoadParameters(RDK::USerStorageXML &xm
   UserName=xml.ReadString("UserName", AnsiString(UserName).c_str()).c_str();
   Password=xml.ReadString("Password", AnsiString(Password).c_str()).c_str();
 //  VideoGrabberFrame->InitByIpCamera(url, UserName, Password);
-  GrabberThread->GetVideoGrabberFrame()->SetCallbackThread(this);
+  GrabberThread->GetVideoGrabberFrame()->SetNewCallbackThread(this);
   GrabberThread->GetVideoGrabberFrame()->InitByIpCamera(url, UserName, Password);
 //  ImageFrame->Init();//SetData(1,url);
 //  ImageFrame->GetGrabberThread()->GetVideoGrabberFrame()->InitByIpCamera(url, UserName, Password);

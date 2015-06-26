@@ -44,16 +44,25 @@ __fastcall TVideoGrabberFrame::~TVideoGrabberFrame(void)
 	delete mutex;
 }
 
-void TVideoGrabberFrame::SetCallbackThread(TVideoCaptureThreadNewVideoGrabber *callback)
+void TVideoGrabberFrame::SetCallbackThread(TVideoCaptureThreadVideoGrabber *callback)
 {
  CallbackThread=callback;
 }
 
-TVideoCaptureThreadNewVideoGrabber* TVideoGrabberFrame::GetCallbackThread(void)
+TVideoCaptureThreadVideoGrabber* TVideoGrabberFrame::GetCallbackThread(void)
 {
  return CallbackThread;
 }
 
+void TVideoGrabberFrame::SetNewCallbackThread(TVideoCaptureThreadNewVideoGrabber *callback)
+{
+ NewCallbackThread=callback;
+}
+
+TVideoCaptureThreadNewVideoGrabber* TVideoGrabberFrame::GetNewCallbackThread(void)
+{
+ return NewCallbackThread;
+}
 
 
 //---------------------------------------------------------------------------
@@ -140,7 +149,7 @@ void __fastcall TVideoGrabberFrame::VideoGrabber1FrameCaptureCompleted(TObject *
 		  FrameBitmap, BitmapWidth, BitmapHeight, FrameNumber,
 		  FrameTime, DestType, FileName,
 		  Success, FrameId);
-
+  /*
    if(DestType != fc_TBitmap)
 	return;
 
@@ -154,7 +163,7 @@ void __fastcall TVideoGrabberFrame::VideoGrabber1FrameCaptureCompleted(TObject *
 	if(bmp_res)
      UEngineMonitorForm->EngineMonitorFrame->SetServerTimeStamp(CallbackThread->GetChannelIndex(),CallbackThread->GetLastTimeStampSafe()*86400.0*1000.0);
    }
-
+                           */
    //   mutex->Release();
 }
 //---------------------------------------------------------------------------

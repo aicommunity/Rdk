@@ -589,6 +589,7 @@ RDK::UELockVar<int> CaptureTimeout;
 RDK::UELockVar<int> AutoScaleMode;
 
 protected: // Данные
+TVideoGrabberFrame *VideoGrabberFrame;
 TVideoGrabber* VideoGrabber;
 
 Graphics::TBitmap* ConvertBitmap;
