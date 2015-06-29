@@ -341,6 +341,14 @@ void KalmanCalculate(int i)
 {
  try
  {
+  MDMatrix<double> test;
+
+  // prediction
+  Xk1 = FM * Xk1 + BM*Uk1;
+  Pk1 = FM * Pk1 * FM.Transpose()+QM;
+
+  test=Pk1;
+
   MDMatrix<double> y(Z - (HM * Xk1));
   MDMatrix<double> S(HM * Pk1 * HM.Transpose() + RM);
   for(int i=0;i<S.GetCols()*S.GetRows();i++)
@@ -350,14 +358,8 @@ void KalmanCalculate(int i)
   Xk1 = Xk1 + (K * y);
   MDMatrix<double> eye(Pk1.GetRows(),Pk1.GetCols());
   eye=eye.Eye();
-  MDMatrix<double> test=Pk1;
-  Pk1 = (eye - (K * HM)) * Pk1;
-
   test=Pk1;
-
-  // prediction
-  Xk1 = FM * Xk1 + BM*Uk1;
-  Pk1 = FM * Pk1 * FM.Transpose()+QM;
+  Pk1 = (eye - (K * HM)) * Pk1;
 
   test=Pk1;
  }
