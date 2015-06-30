@@ -1439,6 +1439,9 @@ void __fastcall TVideoCaptureThreadVideoGrabber::TvgExecuteCaptureInit(void)
  VideoGrabber->OnPlayerEndOfStream = VideoGrabberPlayerEndOfStream;
  VideoGrabber->OnPlayerOpened=VideoGrabberOnPlayerOpened;
  VideoGrabber->OnPreviewStarted=VideoGrabberOnPreviewStarted;
+ VideoGrabber->FrameGrabber=fg_CaptureStream;
+ VideoGrabber->FrameCaptureWithoutOverlay=true;
+ VideoGrabber->FrameGrabberRGBFormat=fgf_RGB24;
 //  VideoGrabber->OnThreadSync=VideoGrabberOnThreadSync;
 /*
  VideoGrabber->PlayerRefreshPausedDisplay = false;
@@ -1450,9 +1453,6 @@ void __fastcall TVideoCaptureThreadVideoGrabber::TvgExecuteCaptureInit(void)
 // VideoGrabber->Synchronized=false;
  VideoGrabber->SetIPCameraSetting(ips_ConnectionTimeout, ConnectionTimeout);
  VideoGrabber->SetIPCameraSetting(ips_ReceiveTimeout, CaptureTimeout);
- VideoGrabber->FrameGrabber=fg_CaptureStream;
- VideoGrabber->FrameCaptureWithoutOverlay=true;
- VideoGrabber->FrameGrabberRGBFormat=fgf_RGB24;
 // VideoGrabber->SyncCommands=false;
 // VideoGrabber->EventNotificationSynchrone=false;
 // VideoGrabber->OnFrameBitmapEventSynchrone=true;
@@ -1556,7 +1556,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberFrameBitmap(TObject
 {
  if(WaitForSingleObject(OSDMutex,10) == WAIT_OBJECT_0)
  {
-  if(OverlayMaskBitmap->Width == BitmapInfo->BitmapWidth && OverlayMaskBitmap->Height == BitmapInfo->BitmapHeight)
+  if(OverlayMaskBitmap && (OverlayMaskBitmap->Width == BitmapInfo->BitmapWidth && OverlayMaskBitmap->Height == BitmapInfo->BitmapHeight))
   {
    unsigned char* dest = (unsigned char*) BitmapInfo->BitmapDataPtr;
    unsigned char* source = (unsigned char*) OverlayMaskBitmap->ScanLine[OverlayMaskBitmap->Height-1];
