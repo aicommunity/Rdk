@@ -245,7 +245,9 @@ bool KalmanReset(const MDMatrix<T> &xk1, const MDMatrix<T> &pk1)
 {
  CalcCount=0;
 
- Z=Xk1=xk1;
+ Xk1=xk1;
+ for(int i=0;i<NumMeasurements;i++)
+  Z(i,0)=xk1(i,0);
  Pk1=pk1;
 
  return true;
