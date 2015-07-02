@@ -1,22 +1,22 @@
 # glob syntax.
 syntax: glob
 .hg
-.svn           
-__history 
-*.obj       
+.svn
+__history
+*.obj
 *.ilk
 *.manifest
 *.idb
 *.pdb
-*.ncb             
-*.pch        
+*.ncb
+*.pch
 *.dsk
 *.tds
 *.~dsk
-*.map           
+*.map
 *.~*
 *.local
-_UpgradeReport_Files  
+_UpgradeReport_Files
 *.tlog
 *.log
 *.old
@@ -69,13 +69,14 @@ UpgradeLog.XML
 *.?0W
 *.?0X
 *.?0Y
-*.?0Z   
+*.?0Z
 Log
 Log0328
 Release
 Debug
 *.dcu
 *.identcache
-*.local          
+*.local
 ipch
 *.ipch
+.metadata
