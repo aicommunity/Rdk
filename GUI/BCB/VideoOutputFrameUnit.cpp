@@ -371,6 +371,7 @@ bool TVideoOutputFrame::DestroyCaptureThread(void)
   CaptureThread->WaitFor();
   if(WaitForSingleObject(CaptureThread->GetFrameNotInProgress(),1000) != WAIT_TIMEOUT)
   {
+   delete CaptureThread;
    CaptureThread=0;
   }
   else
