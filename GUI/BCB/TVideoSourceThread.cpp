@@ -1331,6 +1331,14 @@ __fastcall TVideoCaptureThreadVideoGrabber::~TVideoCaptureThreadVideoGrabber(voi
 //  VideoGrabber=0;
  }
 
+ if(VideoGrabberFrame)
+ {
+  VideoGrabber->Parent=VideoGrabberFrame;
+  delete VideoGrabberFrame;
+  VideoGrabberFrame=0;
+  VideoGrabber=0;
+ }
+
  if(ConvertBitmap)
  {
   delete ConvertBitmap;
@@ -1353,12 +1361,6 @@ __fastcall TVideoCaptureThreadVideoGrabber::~TVideoCaptureThreadVideoGrabber(voi
   delete VideoGrabber;
   VideoGrabber=0;
  } */
- if(VideoGrabberFrame)
- {
-  delete VideoGrabberFrame;
-  VideoGrabberFrame=0;
-  VideoGrabber=0;
- }
 }
 // --------------------------
 // Управление параметрами
