@@ -82,7 +82,8 @@ MMatrix<T,4,4> CalcObjectPositionMatrix(const MVector<T,3> &angles, const MVecto
 //    5:
 //    M=Mz*Mx*My;
 //    6:
-//    M=Mz*My*Mx;
+//    7:
+//    углы Вартанова: fi, psi, omega
 template<class T>
 MMatrix<T,4,4> CalcObjectPositionMatrix(const MVector<T,6> &anglesANDshifts, int seqmat=3)
 {
@@ -122,6 +123,23 @@ MMatrix<T,4,4> CalcObjectPositionMatrix(const MVector<T,6> &anglesANDshifts, int
 	M=Mz*Mx*My; break;
 	case 6:
 	M=Mz*My*Mx; break;
+	case 7: // углы Вартанова: fi, psi, omega
+	{
+		T Cfi,Sfi,Cpsi,Spsi,Comega,Somega;
+		Cfi=cos_gamma;  Sfi=sin_gamma;
+		Cpsi=cos_beta;  Spsi=sin_beta;
+		Comega=cos_alpha;  Somega=sin_alpha;
+		M(0,0)=Cfi*Cpsi;
+		M(0,1)=-Sfi*Comega-Cfi*Spsi*Somega;
+		M(0,2)=Sfi*Somega-Cfi*Spsi*Comega;
+		M(1,0)=Sfi*Cpsi;
+		M(1,1)=Cfi*Comega-Sfi*Spsi*Somega;
+		M(1,2)=-Cfi*Somega-Sfi*Spsi*Comega;
+		M(2,0)=Spsi;
+		M(2,1)=Cpsi*Somega;
+		M(2,2)=Cpsi*Comega;
+	break;
+	}
 	default: M=Mx*My*Mz;
 	}
 	//!!!!!!
@@ -167,6 +185,8 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,3> &angle
 //    M=Mz*Mx*My;
 //    6:
 //    M=Mz*My*Mx;
+//    7:
+//    углы Вартанова: fi, psi, omega
 template<class T>
 void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &anglesANDshifts, int seqmat=3)
 {
@@ -368,6 +388,44 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
 		  throw EMatrixZeroDiv();
 	  anglesANDshifts(3)  = atan2( trY, trX );
 	  }
+	break;
+	}
+	case 7: // углы Вартанова fi, psi, omega
+	{
+		T Xb[3],Yb[3],Zb[3]; //орты осей СК2 в СК1
+		T Ob[3]; //радиус-вектор начала СК2 в СК1
+		T Xx,Xy,Xz,Rxy,fiMod,Cpsi,Somega,Comega,omegaMod;
+		T fi,psi,omega;
+		//-------------
+		for(int i=0; i<3; i++)
+		{
+			Xb[i]=ExtMat(i,0);
+			Yb[i]=ExtMat(i,1);
+			Zb[i]=ExtMat(i,2);
+			Ob[i]=ExtMat(i,3);
+		}
+		//~~~~~~~ Углы ориентации СК2 отн. СК1 ~~~~~~~
+		Xx=Xb[0]; Xy=Xb[1]; Xz=Xb[2];
+		psi=asin(Xz);
+		//,,,,,,,,,,,,,,,,,,
+		Rxy=sqrt(Xx*Xx+Xy*Xy);
+		if (fabs(Rxy)<std::numeric_limits<T>::epsilon()) fiMod=0;
+		else fiMod=acos(Xx/Rxy);
+		if (Xy>=0) fi=fiMod;
+		else fi=-fiMod;
+		//,,,,,,,,,,,,,,,,,,
+		Cpsi=cos(psi);
+		if(fabs(Cpsi)<std::numeric_limits<T>::epsilon()) throw EMatrixZeroDiv();
+		Somega=Yb[2]/Cpsi;
+		Comega=Zb[2]/Cpsi;
+		if (fabs(Comega)>1) Comega= (Comega>=0.0) ? 1 : -1;//sign(Comega);  //VVV
+		omegaMod=acos(Comega);
+		if (Somega>=0) omega=omegaMod;
+		else omega=-omegaMod;
+		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		anglesANDshifts(3)=fi;
+		anglesANDshifts(4)=psi;
+		anglesANDshifts(5)=omega;
 	break;
 	}
 	default:
