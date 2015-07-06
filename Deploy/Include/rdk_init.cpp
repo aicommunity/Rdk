@@ -840,6 +840,9 @@ void RDK_CALL Env_RTCalculate(void)
 
 void RDK_CALL MEnv_RTCalculate(int engine_index)
 {
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return;
+
  DllManager.GetEngineLock(engine_index)->Env_RTCalculate();
 }
 
