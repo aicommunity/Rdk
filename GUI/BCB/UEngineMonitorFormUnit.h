@@ -27,6 +27,7 @@ __published:	// IDE-managed Components
 	void __fastcall FormCreate(TObject *Sender);
 	void __fastcall LogTimerTimer(TObject *Sender);
 	void __fastcall EngineMonitorFrameRichEditMouseEnter(TObject *Sender);
+
 private:	// User declarations
 public:		// User declarations
 	__fastcall TUEngineMonitorForm(TComponent* Owner);
