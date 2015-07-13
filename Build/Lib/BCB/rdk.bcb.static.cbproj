@@ -82,7 +82,6 @@
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
         <BCC_UserSuppliedOptions>-tWM</BCC_UserSuppliedOptions>
         <Defines>LIBRDK_LIBRARY_EXPORT;RDK_UNICODE_RUN;$(Defines)</Defines>
-        <ILINK_LibraryPath>E:\Work\RTC\14\Rtv-Debug\Rdk\Bin\Platform\Win\;$(ILINK_LibraryPath)</ILINK_LibraryPath>
         <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win64)'!=''">

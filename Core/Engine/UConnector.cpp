@@ -576,10 +576,24 @@ void UConnector::DisconnectFromIndex(const NameT &connector_property_name, const
 	UIProperty* output_property=I->second[index].Item->FindProperty(item_property_name);
 	if(output_property)
 	{
-	 if(!i_conn_property->ResetPointer(index,const_cast<void*>(output_property->GetPointer(0))))
+	 if(i_conn_property->GetIoType() & ipData)
 	 {
-	  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("ResetPointer fail"));
+	  if(!i_conn_property->ResetPointer(index,const_cast<void*>(output_property->GetPointer(0))))
+	  {
+	   LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Data ResetPointer fail"));
+	  }
 	 }
+	 else
+	 if(i_conn_property->GetIoType() & ipComp)
+	 {
+	  if(!i_conn_property->ResetPointer(index,reinterpret_cast<void*>(I->second[index].Item)))
+	  {
+	   LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Comp ResetPointer fail"));
+	  }
+
+	 }
+	 else
+	  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("ResetPointer fail"));
 	}
 	else
 	 LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Disconnected property not found"));

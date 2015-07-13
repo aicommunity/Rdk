@@ -41,6 +41,8 @@ __fastcall TVideoGrabberFrame::TVideoGrabberFrame(TComponent* Owner)
 __fastcall TVideoGrabberFrame::~TVideoGrabberFrame(void)
 {
  CallbackThread=0;
+ if(VideoGrabber1->Parent != this)
+  VideoGrabber1->Parent=this;
  VideoGrabber1->Stop();
 	//mutex->Acquire();
  delete mutex;

@@ -12,11 +12,6 @@ namespace RDK {
 template<class T>
 class MDKalmanFilter
 {
-public:
-//typedef MMatrix<T,Size,Size> KMatrix;
-//typedef MMatrix<T,Size,1> KVector;
-
-
 protected: // Параметры
 // Число состояний системы
 int NumStates;
@@ -35,6 +30,7 @@ MDMatrix<T> QM;  // Матрица ковариации шума процесса
 MDMatrix<T> HM;  // Матрица отношения измерений и состояний ?
 MDMatrix<T> RM;  // Матрица ковариации шума измерений
 
+protected:
 MDMatrix<T> Pk1; // Матрица ошибки в прошлый момент времени
 MDMatrix<T> Xk1; // Вектор состояния системы в прошлый момент времени
 MDMatrix<T> Uk1; // Вектор управляющего воздействия в прошлый момент времени
@@ -168,6 +164,20 @@ const MDMatrix<double>& GetPk1(void) const
  return Pk1;
 }
 
+const MDMatrix<T>& GetXk1(void) const
+{
+ return Xk1;
+}
+
+bool SetXk1(const MDMatrix<double> &matrix)
+{
+ if(matrix==Xk1)
+  return true;
+
+ Xk1=matrix;
+ return true;
+}
+
 bool SetPk1(const MDMatrix<double> &matrix)
 {
  if(matrix==Pk1)
@@ -231,9 +241,14 @@ bool KalmanResize(int num_states, int num_measurements)
 }
 
 // Сброс всех матриц в нулевые значения
-bool KalmanReset(void)
+bool KalmanReset(const MDMatrix<T> &xk1, const MDMatrix<T> &pk1)
 {
  CalcCount=0;
+
+ Xk1=xk1;
+ for(int i=0;i<NumMeasurements;i++)
+  Z(i,0)=xk1(i,0);
+ Pk1=pk1;
 
  return true;
 }
@@ -306,9 +321,11 @@ MDMatrix<T> CovariationErrorUpdate(const MDMatrix<T> &Kk, const MDMatrix<T> &H,
 void KalmanPredict(int i)
 {
  // prediction
- Xk1 = FM * Xk1 + Uk1;
- Pk1 = FM * Pk1 * FM.Transpose();
-/* MDMatrix<T> xkL=StatePrediction(FM,BM,Xk1,Uk1);
+ Xk1 = FM * Xk1 + BM*Uk1;
+ Pk1 = FM * Pk1 * FM.Transpose()+QM;
+
+ /*
+  MDMatrix<T> xkL=StatePrediction(FM,BM,Xk1,Uk1);
  MDMatrix<T> PkL;
 
  if (i>0)
@@ -318,7 +335,7 @@ void KalmanPredict(int i)
 
  Xk1=xkL;
  Pk1=PkL;
-  */
+   */
  CalcCount++;
 }
 // Калман
@@ -326,21 +343,27 @@ void KalmanCalculate(int i)
 {
  try
  {
+  MDMatrix<double> test;
 
- MDMatrix<double> y(Z - (HM * Xk1));
- MDMatrix<double> S(HM * Pk1 * HM.Transpose() + RM);
+  // prediction
+  Xk1 = FM * Xk1 + BM*Uk1;
+  Pk1 = FM * Pk1 * FM.Transpose()+QM;
+
+  test=Pk1;
+
+  MDMatrix<double> y(Z - (HM * Xk1));
+  MDMatrix<double> S(HM * Pk1 * HM.Transpose() + RM);
   for(int i=0;i<S.GetCols()*S.GetRows();i++)
    if(fabs(S.Data[i])>1e20)
 	throw EKalmanGainOverflow();
- MDMatrix<double> K(Pk1 * HM.Transpose() * S.Inverse());
- Xk1 = Xk1 + (K * y);
- MDMatrix<double> eye(2,2);
- eye=eye.Eye();
- Pk1 = (eye - (K * HM)) * Pk1;
+  MDMatrix<double> K(Pk1 * HM.Transpose() * S.Inverse());
+  Xk1 = Xk1 + (K * y);
+  MDMatrix<double> eye(Pk1.GetRows(),Pk1.GetCols());
+  eye=eye.Eye();
+  test=Pk1;
+  Pk1 = (eye - (K * HM)) * Pk1;
 
- // prediction
- Xk1 = FM * Xk1 + Uk1;
- Pk1 = FM * Pk1 * FM.Transpose();
+  test=Pk1;
  }
  catch(EMatrixZeroDet &exception)
  {

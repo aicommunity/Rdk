@@ -742,12 +742,15 @@ void TUEngineMonitorFrame::AClearInterface(void)
 // Сохраняет параметры интерфейса в xml
 void TUEngineMonitorFrame::ASaveParameters(RDK::USerStorageXML &xml)
 {
+ xml.WriteBool("AutoupdateProperties",AutoupdatePropertiesCheckBox->Checked);
 // xml.WriteInteger("CalculateMode",GetCalculateMode());
 }
 
 // Загружает параметры интерфейса из xml
 void TUEngineMonitorFrame::ALoadParameters(RDK::USerStorageXML &xml)
 {
+ AutoupdatePropertiesCheckBox->Checked=xml.ReadBool("AutoupdateProperties",AutoupdatePropertiesCheckBox->Checked);
+ AutoupdatePropertiesCheckBoxClick(this);
 // SetCalculateMode(xml.ReadInteger("CalculateMode",0));
 }
 
@@ -1212,6 +1215,19 @@ void __fastcall TUEngineMonitorFrame::ShowDebugMessagesCheckBoxClick(TObject *Se
  {
   UGEngineControlForm->DebugModeFlag[i]=ShowDebugMessagesCheckBox->Checked;
   MEnv_SetDebugMode(i,UGEngineControlForm->DebugModeFlag[i]);
+ }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUEngineMonitorFrame::AutoupdatePropertiesCheckBoxClick(TObject *Sender)
+
+{
+ if(UGEngineControlForm)
+ {
+  if(AutoupdatePropertiesCheckBox->Checked == true)
+   UGEngineControlForm->UComponentsListFrame1->UpdateInterval=100;
+  else
+   UGEngineControlForm->UComponentsListFrame1->UpdateInterval=-1;
  }
 }
 //---------------------------------------------------------------------------
