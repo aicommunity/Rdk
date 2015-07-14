@@ -89,6 +89,10 @@ void UItemData::Resize(int size)
  if(size == Size)
   return;
 
+ int old_size=Size;
+
+ char* old_char=Char;
+
  if(!size && Char)
  {
   delete []Char;
