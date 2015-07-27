@@ -2105,6 +2105,21 @@ int TVideoCaptureThreadVideoGrabberCamera::GetTVTunerChannel(void) const
  return TVTunerChannel;
 }
 
+bool TVideoCaptureThreadVideoGrabberCamera::SetTVTunerChannel(int channel, int tuner_input_type)
+{
+ if(TVTunerChannel == channel && TVTunerInputType == tuner_input_type)
+  return true;
+
+ TVTunerChannel=channel;
+ TVTunerInputType=tuner_input_type;
+ if(VideoGrabber)
+ {
+  VideoGrabber->TVTunerInputType=TTunerInput(tuner_input_type);
+  VideoGrabber->TVChannel=channel;
+ }
+ return true;
+}
+
 int TVideoCaptureThreadVideoGrabberCamera::GetTVTunerCountryCode(void) const
 {
  return TVTunerCountryCode;

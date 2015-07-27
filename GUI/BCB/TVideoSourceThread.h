@@ -809,6 +809,7 @@ int GetSizeIndex(void) const;
 int GetSubtypeIndex(void) const;
 int GetAnalogIndex(void) const;
 int GetTVTunerChannel(void) const;
+bool SetTVTunerChannel(int channel, int tuner_input_type);
 int GetTVTunerCountryCode(void) const;
 int GetTVTunerMode(void) const;
 int GetTVTunerInputType(void) const;

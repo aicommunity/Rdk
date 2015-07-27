@@ -263,7 +263,16 @@ void MDMatrix<T>::Resize(int rows, int cols, T defvalue)
  {
   new_data = new T[rows*cols];
   if(!Data)
-   memset(new_data,0,rows*cols*sizeof(T));
+  {
+   if(!defvalue)
+	memset(new_data,0,rows*cols*sizeof(T));
+   else
+   {
+	for(int i=0; i<rows; i++)
+	 for(int j=0;j<cols; j++)
+	  new_data[i*cols+j]=defvalue;
+   }
+  }
   else
   {
    int c_rows=(Rows<rows)?Rows:rows;
