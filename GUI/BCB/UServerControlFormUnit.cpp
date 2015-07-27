@@ -28,6 +28,8 @@
 #pragma link "TUVisualControllerFrameUnit"
 #pragma resource "*.dfm"
 
+#include <fstream>
+
 using namespace RDK;
 
 TUServerControlForm *UServerControlForm;
@@ -683,6 +685,7 @@ void TUServerControlForm::AUpdateInterface(void)
  model_avg.assign(GetNumChannels(),0);
  transport_avg.assign(GetNumChannels(),0);
  int sum_number=0;
+
  for(size_t i=0;i<ModelPerformanceResults.size();i++)
  {
   for(size_t j=0;j<ModelPerformanceResults[i].size();j++)
@@ -701,9 +704,92 @@ void TUServerControlForm::AUpdateInterface(void)
    transport_avg[j]/=sum_number;
   }
 
+ perf_data.resize(model_avg.size());
+ aver_perf_data.resize(model_avg.size());
+ for(size_t j=0;j<model_avg.size();j++)
+ {
+  perf_data[j].push_back(model_avg[j]);
+ }
+
+ ///Количество отсчетов для усреднения
+ const int average_size = 20;
+
+ for(unsigned int k=0; k<model_avg.size(); k++)
+ {
+	 unsigned long long current_perf=0;
+	 if(perf_data[k].size()<=average_size)
+	 {
+		unsigned long long sum=0;
+		for(unsigned int i=0; i<perf_data[k].size(); i++)
+		{
+			sum+=perf_data[k][i];
+		}
+		current_perf = sum/perf_data[k].size();
+	 }
+	 else
+	 {
+		unsigned long long sum=0;
+		for(unsigned int i=perf_data[k].size()-average_size; i<perf_data[k].size(); i++)
+		{
+			sum+=perf_data[k][i];
+		}
+		current_perf = sum/average_size;
+	 }
+	 aver_perf_data[k].push_back(current_perf);
+ }
+
+ std::ofstream f;
+ //Сформировать строку названия
+	if(DebugOutputPath.empty())
+	{
+	 time_t t = time(NULL);
+	 std::string st = ctime(&t);
+	 st[st.size()-1]='-';
+	 for(int i=0; i<st.size(); i++)
+	 {
+		 if(st[i]==' ')
+			st[i]='_';
+		 if(st[i]==':')
+			st[i]='.';
+	 }
+	 if(!DebugFolder.empty()>0)
+	 {
+		std::string s = DebugFolder+st;
+		CreateDirectory(s.c_str(), NULL);
+		DebugOutputPath = DebugFolder+st+"\\";//"D:\\ML2\\";
+	 }
+	}
+
+ f.open((DebugOutputPath+"performance.m").c_str());//String("D:\\Output\\performance.m").c_str());
+ for(unsigned int k=0; k<aver_perf_data.size(); k++)
+ {
+	 f<<"P_"<<k<<" = [";
+	 for(unsigned int i=0; i<aver_perf_data[k].size(); i++)
+	 {
+		 f<<aver_perf_data[k][i]<<"; ";
+	 }
+	 f<<"];\n\n";
+ }
+ f<<"Idx = [";
+ for(unsigned int k=0; k<aver_perf_data[0].size(); k++)
+ {
+	f<<k<<"; ";
+ }
+ f<<"];\n\n";
+ f<<"plot(";
+ for(unsigned int k=0; k<aver_perf_data.size(); k++)
+ {
+	 f<<"Idx, P_"<<k<<",'k-'";
+	 if(k<aver_perf_data.size()-1)
+		f<<",";
+ }
+ f<<")";
+ f.close();
+
  PerformanceChart->Series[0]->Clear();
  PerformanceChart->Series[1]->Clear();
  PerformanceChart->Series[2]->Clear();
+
  for(size_t i=0;i<model_avg.size();i++)
  {
   PerformanceChart->Series[0]->AddY(model_avg[i]);
@@ -1168,6 +1254,7 @@ void __fastcall TUServerControlForm::FormCreate(TObject *Sender)
  MemStream=new TMemoryStream;
  Bitmap=new Graphics::TBitmap;
  UGEngineControlForm->SpecialForms["TUServerControlForm"]=this;
+ DebugFolder = "D:\\Output\\";
 }
 //---------------------------------------------------------------------------
 void __fastcall TUServerControlForm::FormDestroy(TObject *Sender)
