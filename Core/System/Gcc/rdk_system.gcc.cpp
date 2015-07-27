@@ -70,7 +70,7 @@ int CreateNewDirectory(const char* path)
  }
  else
  {
-  if(!mkdirat(AT_FDCWD /*current working directory*/, path, S_IRWXU | S_IRWXG | S_IRWXO ))
+  if(mkdirat(AT_FDCWD /*current working directory*/, path, S_IRWXU | S_IRWXG | S_IRGRP | S_IXGRP) != 0)
   {
    if(errno == ENOENT)
     return 2; // No such file or directory
