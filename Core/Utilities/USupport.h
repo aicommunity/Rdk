@@ -304,6 +304,25 @@ RDK_LIB_TYPE std::wstring& widen(const std::string& str, const std::locale& loc,
 
 //std::wstring widen2(const std::string& str);
 
+/// From http://stackoverflow.com/questions/1903954/is-there-a-standard-sign-function-signum-sgn-in-c-c
+template <typename T>
+inline int signum(T x, std::false_type is_signed)
+{
+ return T(0) < x;
+}
+
+template <typename T>
+inline int signum(T x, std::true_type is_signed)
+{
+ return (T(0) < x) - (x < T(0));
+}
+
+template <typename T>
+inline int signum(T x)
+{
+ return signum(x, std::is_signed<T>());
+}
+
 }
 #endif
 
