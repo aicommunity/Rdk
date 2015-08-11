@@ -720,7 +720,7 @@ bool TVideoCaptureThreadBmp::SetFileName(const std::string& value)
  {
   FileName=value;
   String filename=value.c_str();
-  if(filename.Pos(".jpg") || filename.Pos(".jpeg") )
+  if(filename.Pos(".jpg") || filename.Pos(".jpeg") || filename.Pos(".JPG") || filename.Pos(".JPEG"))
   {
    TJPEGImage* JpegIm=new TJPEGImage;
    JpegIm->LoadFromFile(filename);
@@ -730,7 +730,7 @@ bool TVideoCaptureThreadBmp::SetFileName(const std::string& value)
    delete JpegIm;
   }
   else
-  if(filename.Pos(".bmp"))
+  if(filename.Pos(".bmp") || filename.Pos(".BMP"))
   {
    LoadBitmapFromFile(AnsiString(filename).c_str(),&TempSource);
   }

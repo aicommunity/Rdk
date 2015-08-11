@@ -2,44 +2,64 @@ object UServerControlForm: TUServerControlForm
   Left = 0
   Top = 0
   Caption = 'Server Control'
-  ClientHeight = 513
-  ClientWidth = 754
+  ClientHeight = 641
+  ClientWidth = 943
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
-  Font.Height = -11
+  Font.Height = -14
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  PixelsPerInch = 96
-  TextHeight = 13
+  PixelsPerInch = 120
+  TextHeight = 17
   object PageControl: TPageControl
     Left = 0
     Top = 0
-    Width = 754
-    Height = 513
+    Width = 943
+    Height = 641
+    Margins.Left = 4
+    Margins.Top = 4
+    Margins.Right = 4
+    Margins.Bottom = 4
     ActivePage = ControlTabSheet
     Align = alClient
     TabOrder = 0
     OnChange = PageControlChange
     object ControlTabSheet: TTabSheet
+      Margins.Left = 4
+      Margins.Top = 4
+      Margins.Right = 4
+      Margins.Bottom = 4
       Caption = 'Control'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object GroupBox3: TGroupBox
         Left = 0
         Top = 0
-        Width = 746
-        Height = 443
+        Width = 933
+        Height = 554
+        Margins.Left = 4
+        Margins.Top = 4
+        Margins.Right = 4
+        Margins.Bottom = 4
         Align = alClient
         Caption = ' Channels performance '
         TabOrder = 0
         object PerformanceChart: TChart
-          Left = 2
-          Top = 15
-          Width = 742
-          Height = 393
+          Left = 3
+          Top = 19
+          Width = 927
+          Height = 491
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
           BackWall.Brush.Gradient.Direction = gdBottomTop
           BackWall.Brush.Gradient.EndColor = clWhite
           BackWall.Brush.Gradient.StartColor = 15395562
@@ -113,28 +133,40 @@ object UServerControlForm: TUServerControlForm
           end
         end
         object Panel: TPanel
-          Left = 2
-          Top = 408
-          Width = 742
-          Height = 33
+          Left = 3
+          Top = 510
+          Width = 927
+          Height = 41
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
           Align = alBottom
           TabOrder = 1
           Visible = False
           object FpsRadioButton: TRadioButton
-            Left = 8
-            Top = 6
-            Width = 60
-            Height = 18
+            Left = 10
+            Top = 8
+            Width = 75
+            Height = 22
+            Margins.Left = 4
+            Margins.Top = 4
+            Margins.Right = 4
+            Margins.Bottom = 4
             Caption = 'Fps'
             Checked = True
             TabOrder = 0
             TabStop = True
           end
           object RadioButton2: TRadioButton
-            Left = 126
-            Top = 6
-            Width = 118
-            Height = 18
+            Left = 158
+            Top = 8
+            Width = 147
+            Height = 22
+            Margins.Left = 4
+            Margins.Top = 4
+            Margins.Right = 4
+            Margins.Bottom = 4
             Caption = 'Frame duration (ms)'
             TabOrder = 1
           end
@@ -142,25 +174,37 @@ object UServerControlForm: TUServerControlForm
       end
       object Panel4: TPanel
         Left = 0
-        Top = 443
-        Width = 746
-        Height = 42
+        Top = 554
+        Width = 933
+        Height = 52
+        Margins.Left = 4
+        Margins.Top = 4
+        Margins.Right = 4
+        Margins.Bottom = 4
         Align = alBottom
         TabOrder = 1
         object ServerStartButton: TButton
-          Left = 10
-          Top = 6
-          Width = 79
-          Height = 28
+          Left = 13
+          Top = 8
+          Width = 98
+          Height = 35
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
           Caption = 'Start'
           TabOrder = 0
           OnClick = ServerStartButtonClick
         end
         object ServerStopButton: TButton
-          Left = 95
-          Top = 8
-          Width = 79
-          Height = 26
+          Left = 119
+          Top = 10
+          Width = 99
+          Height = 33
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
           Caption = 'Stop'
           TabOrder = 1
           OnClick = ServerStopButtonClick
@@ -168,82 +212,136 @@ object UServerControlForm: TUServerControlForm
       end
     end
     object OptionsTabSheet: TTabSheet
+      Margins.Left = 4
+      Margins.Top = 4
+      Margins.Right = 4
+      Margins.Bottom = 4
       Caption = 'Options'
       ImageIndex = 1
+      ExplicitWidth = 746
+      ExplicitHeight = 481
       object Panel1: TPanel
         Left = 0
         Top = 0
-        Width = 332
-        Height = 443
+        Width = 415
+        Height = 557
+        Margins.Left = 4
+        Margins.Top = 4
+        Margins.Right = 4
+        Margins.Bottom = 4
         Align = alLeft
         TabOrder = 0
         object GroupBox1: TGroupBox
           Left = 1
           Top = 1
-          Width = 330
-          Height = 201
+          Width = 413
+          Height = 252
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
           Align = alTop
           Caption = ' Main options '
           TabOrder = 0
           DesignSize = (
-            330
-            201)
+            413
+            252)
           object ServerControlPortLabeledEdit: TLabeledEdit
-            Left = 210
-            Top = 122
-            Width = 110
+            Left = 263
+            Top = 153
+            Width = 137
             Height = 21
+            Margins.Left = 4
+            Margins.Top = 4
+            Margins.Right = 4
+            Margins.Bottom = 4
             Anchors = [akLeft, akTop, akRight]
-            EditLabel.Width = 57
-            EditLabel.Height = 13
+            EditLabel.Width = 74
+            EditLabel.Height = 17
+            EditLabel.Margins.Left = 4
+            EditLabel.Margins.Top = 4
+            EditLabel.Margins.Right = 4
+            EditLabel.Margins.Bottom = 4
             EditLabel.Caption = 'Binding port'
             TabOrder = 0
             Text = '45045'
           end
           object NumberOfChannelsLabeledEdit: TLabeledEdit
-            Left = 6
-            Top = 171
-            Width = 314
+            Left = 8
+            Top = 214
+            Width = 392
             Height = 21
+            Margins.Left = 4
+            Margins.Top = 4
+            Margins.Right = 4
+            Margins.Bottom = 4
             Anchors = [akLeft, akTop, akRight]
-            EditLabel.Width = 83
-            EditLabel.Height = 13
+            EditLabel.Width = 107
+            EditLabel.Height = 17
+            EditLabel.Margins.Left = 4
+            EditLabel.Margins.Top = 4
+            EditLabel.Margins.Right = 4
+            EditLabel.Margins.Bottom = 4
             EditLabel.Caption = 'Channels number'
             TabOrder = 1
             Text = '1'
           end
           object ServerNameLabeledEdit: TLabeledEdit
-            Left = 6
-            Top = 35
-            Width = 314
+            Left = 8
+            Top = 44
+            Width = 392
             Height = 21
+            Margins.Left = 4
+            Margins.Top = 4
+            Margins.Right = 4
+            Margins.Bottom = 4
             Anchors = [akLeft, akTop, akRight]
-            EditLabel.Width = 62
-            EditLabel.Height = 13
+            EditLabel.Width = 79
+            EditLabel.Height = 17
+            EditLabel.Margins.Left = 4
+            EditLabel.Margins.Top = 4
+            EditLabel.Margins.Right = 4
+            EditLabel.Margins.Bottom = 4
             EditLabel.Caption = 'Server Name'
             TabOrder = 2
             Text = 'Server'
           end
           object ServerIdLabeledEdit: TLabeledEdit
-            Left = 6
-            Top = 76
-            Width = 314
+            Left = 8
+            Top = 95
+            Width = 392
             Height = 21
+            Margins.Left = 4
+            Margins.Top = 4
+            Margins.Right = 4
+            Margins.Bottom = 4
             Anchors = [akLeft, akTop, akRight]
-            EditLabel.Width = 45
-            EditLabel.Height = 13
+            EditLabel.Width = 56
+            EditLabel.Height = 17
+            EditLabel.Margins.Left = 4
+            EditLabel.Margins.Top = 4
+            EditLabel.Margins.Right = 4
+            EditLabel.Margins.Bottom = 4
             EditLabel.Caption = 'Server Id'
             TabOrder = 3
             Text = 'Server'
           end
           object BindingAddressLabeledEdit: TLabeledEdit
-            Left = 6
-            Top = 122
-            Width = 198
+            Left = 8
+            Top = 153
+            Width = 247
             Height = 21
+            Margins.Left = 4
+            Margins.Top = 4
+            Margins.Right = 4
+            Margins.Bottom = 4
             Anchors = [akLeft, akTop, akRight]
-            EditLabel.Width = 75
-            EditLabel.Height = 13
+            EditLabel.Width = 95
+            EditLabel.Height = 17
+            EditLabel.Margins.Left = 4
+            EditLabel.Margins.Top = 4
+            EditLabel.Margins.Right = 4
+            EditLabel.Margins.Bottom = 4
             EditLabel.Caption = 'Binging address'
             TabOrder = 4
             Text = '127.0.0.1'
@@ -251,17 +349,26 @@ object UServerControlForm: TUServerControlForm
         end
         object GroupBox2: TGroupBox
           Left = 1
-          Top = 202
-          Width = 330
-          Height = 240
+          Top = 253
+          Width = 413
+          Height = 303
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
           Align = alClient
           Caption = ' Channel names '
           TabOrder = 1
+          ExplicitHeight = 300
           object ChannelNamesStringGrid: TStringGrid
-            Left = 2
-            Top = 15
-            Width = 326
-            Height = 223
+            Left = 3
+            Top = 19
+            Width = 407
+            Height = 279
+            Margins.Left = 4
+            Margins.Top = 4
+            Margins.Right = 4
+            Margins.Bottom = 4
             Align = alClient
             ColCount = 2
             DefaultRowHeight = 20
@@ -273,36 +380,50 @@ object UServerControlForm: TUServerControlForm
         end
       end
       object Panel2: TPanel
-        Left = 332
+        Left = 415
         Top = 0
-        Width = 414
-        Height = 443
+        Width = 520
+        Height = 557
+        Margins.Left = 4
+        Margins.Top = 4
+        Margins.Right = 4
+        Margins.Bottom = 4
         Align = alClient
         TabOrder = 1
+        ExplicitWidth = 518
+        ExplicitHeight = 554
         inline UHttpServerFrame: TUHttpServerFrame
           Left = 1
-          Top = 388
-          Width = 412
-          Height = 54
+          Top = 488
+          Width = 518
+          Height = 68
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
           Align = alBottom
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
-          Font.Height = -12
+          Font.Height = -15
           Font.Name = 'Tahoma'
           Font.Style = []
           ParentFont = False
           TabOrder = 0
           ExplicitLeft = 1
-          ExplicitTop = 388
-          ExplicitWidth = 412
-          ExplicitHeight = 54
+          ExplicitTop = 485
+          ExplicitWidth = 515
+          ExplicitHeight = 68
           inherited Image1: TImage
-            Width = 412
-            Height = 54
+            Width = 518
+            Height = 68
+            Margins.Left = 4
+            Margins.Top = 4
+            Margins.Right = 4
+            Margins.Bottom = 4
             ExplicitLeft = 0
             ExplicitTop = 0
-            ExplicitWidth = 414
-            ExplicitHeight = 54
+            ExplicitWidth = 515
+            ExplicitHeight = 68
           end
           inherited IdHTTPServer: TIdHTTPServer
             OnCommandGet = UHttpServerFrameIdHTTPServerCommandGet
@@ -311,33 +432,53 @@ object UServerControlForm: TUServerControlForm
         object GroupBox4: TGroupBox
           Left = 1
           Top = 1
-          Width = 412
-          Height = 110
+          Width = 518
+          Height = 138
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
           Align = alTop
           Caption = ' Metadata options '
           TabOrder = 1
           DesignSize = (
-            412
-            110)
+            518
+            138)
           object MetadataComponentNameLabeledEdit: TLabeledEdit
-            Left = 4
-            Top = 35
-            Width = 404
+            Left = 5
+            Top = 44
+            Width = 505
             Height = 21
+            Margins.Left = 4
+            Margins.Top = 4
+            Margins.Right = 4
+            Margins.Bottom = 4
             Anchors = [akLeft, akTop, akRight]
-            EditLabel.Width = 85
-            EditLabel.Height = 13
+            EditLabel.Width = 112
+            EditLabel.Height = 17
+            EditLabel.Margins.Left = 4
+            EditLabel.Margins.Top = 4
+            EditLabel.Margins.Right = 4
+            EditLabel.Margins.Bottom = 4
             EditLabel.Caption = 'Component Name'
             TabOrder = 0
           end
           object MetadataComponentStateNameLabeledEdit: TLabeledEdit
-            Left = 6
-            Top = 76
-            Width = 403
+            Left = 8
+            Top = 95
+            Width = 503
             Height = 21
+            Margins.Left = 4
+            Margins.Top = 4
+            Margins.Right = 4
+            Margins.Bottom = 4
             Anchors = [akLeft, akTop, akRight]
-            EditLabel.Width = 114
-            EditLabel.Height = 13
+            EditLabel.Width = 148
+            EditLabel.Height = 17
+            EditLabel.Margins.Left = 4
+            EditLabel.Margins.Top = 4
+            EditLabel.Margins.Right = 4
+            EditLabel.Margins.Bottom = 4
             EditLabel.Caption = 'Component State Name'
             TabOrder = 1
           end
@@ -345,25 +486,39 @@ object UServerControlForm: TUServerControlForm
       end
       object Panel3: TPanel
         Left = 0
-        Top = 443
-        Width = 746
-        Height = 42
+        Top = 557
+        Width = 935
+        Height = 52
+        Margins.Left = 4
+        Margins.Top = 4
+        Margins.Right = 4
+        Margins.Bottom = 4
         Align = alBottom
         TabOrder = 2
+        ExplicitTop = 554
+        ExplicitWidth = 933
         object ApplyOptionsButton: TButton
-          Left = 7
-          Top = 6
-          Width = 79
-          Height = 28
+          Left = 9
+          Top = 8
+          Width = 99
+          Height = 35
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
           Caption = 'Apply'
           TabOrder = 0
           OnClick = ApplyOptionsButtonClick
         end
         object ReturnOptionsButton: TButton
-          Left = 92
-          Top = 6
-          Width = 78
-          Height = 28
+          Left = 115
+          Top = 8
+          Width = 98
+          Height = 35
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
           Caption = 'Return'
           TabOrder = 1
           OnClick = ReturnOptionsButtonClick

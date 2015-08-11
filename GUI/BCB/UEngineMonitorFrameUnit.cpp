@@ -351,10 +351,25 @@ bool TEngineThread::SetMinInterstepsInterval(RDK::UTime value)
 void __fastcall TEngineThread::BeforeCalculate(void)
 {
    #ifdef RDK_VIDEO
-   TVideoOutputFrame* video=VideoOutputForm->GetVideoOutputFrame(ChannelIndex);
-   if(video)
+   if(GetNumEngines() == 1)
    {
-	video->BeforeCalculate();
+	for(int i=0;i<VideoOutputForm->GetNumSources();i++)
+	{
+	 TVideoOutputFrame* video=VideoOutputForm->GetVideoOutputFrame(i);
+	 if(video)
+	 {
+	  video->BeforeCalculate();
+	 }
+    }
+   }
+   else
+   if(ChannelIndex<VideoOutputForm->GetNumSources())
+   {
+	TVideoOutputFrame* video=VideoOutputForm->GetVideoOutputFrame(ChannelIndex);
+	if(video)
+	{
+	 video->BeforeCalculate();
+	}
    }
    #endif
 }

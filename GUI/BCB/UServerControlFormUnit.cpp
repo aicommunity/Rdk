@@ -859,7 +859,8 @@ void TUServerControlForm::ALoadParameters(RDK::USerStorageXML &xml)
  MetaComponentName=xml.ReadString("MetadataComponentName","");
  MetaComponentStateName=xml.ReadString("MetadataComponentStateName","");
 
- SetNumChannels(GetNumEngines());
+ int source_num_channels=xml.ReadInteger("NumberOfChannels",GetNumChannels());
+ SetNumChannels(source_num_channels);
  for(size_t i=0;i<ChannelNames.size();i++)
  {
   SetChannelName(i,xml.ReadString(std::string("ChannelName_")+RDK::sntoa(i),RDK::sntoa(i)));
@@ -883,7 +884,7 @@ void TUServerControlForm::ALoadParameters(RDK::USerStorageXML &xml)
 /// Возвращает число каналов
 int TUServerControlForm::GetNumChannels(void) const
 {
- return GetNumEngines();
+ return VideoOutputForm->GetNumSources();
 }
 
 /// Устанавливает число каналов

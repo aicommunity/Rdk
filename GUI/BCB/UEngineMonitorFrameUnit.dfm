@@ -20,7 +20,6 @@ inherited UEngineMonitorFrame: TUEngineMonitorFrame
     TabOrder = 0
     Zoom = 100
     OnMouseEnter = RichEditMouseEnter
-    ExplicitHeight = 371
   end
   object StatusBar: TStatusBar
     Left = 0
