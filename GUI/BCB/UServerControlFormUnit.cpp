@@ -771,6 +771,7 @@ void TUServerControlForm::AUpdateInterface(void)
 	 f<<"];\n\n";
  }
  f<<"Idx = [";
+ if(!aver_perf_data.empty())
  for(unsigned int k=0; k<aver_perf_data[0].size(); k++)
  {
 	f<<k<<"; ";

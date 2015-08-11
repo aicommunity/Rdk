@@ -32,6 +32,7 @@ TVideoCaptureOptionsBmpSequenceForm* TVideoCaptureOptionsBmpSequenceForm::New(TC
 bool TVideoCaptureOptionsBmpSequenceForm::ReadParametersToGui(RDK::USerStorageXML &xml)
 {
  ImageSequencePathEdit->Text=xml.ReadString("PathName",AnsiString(ImageSequencePathEdit->Text).c_str()).c_str();
+ RepeatSequenceCheckBox->Checked=xml.ReadBool("RepeatFlag",RepeatSequenceCheckBox->Checked);
  try
  {
   ImageSequenceFpsLabeledEdit->Text=xml.ReadFloat("Fps",StrToFloat(ImageSequenceFpsLabeledEdit->Text));
@@ -48,6 +49,7 @@ bool TVideoCaptureOptionsBmpSequenceForm::WriteParametersToXml(RDK::USerStorageX
 {
  xml.SelectNodeRoot("VideoSourceThread");
  xml.WriteString("PathName",AnsiString(ImageSequencePathEdit->Text).c_str());
+ xml.WriteBool("RepeatFlag",RepeatSequenceCheckBox->Checked);
  try
  {
   xml.WriteFloat("Fps",StrToFloat(ImageSequenceFpsLabeledEdit->Text));
