@@ -22,6 +22,15 @@ unsigned long long GetCurrentStartupTime(void)
  return GetTickCount();
 }
 
+// «аписывает в seconds и useconds текущие значени€ секунд и микросекунд,
+// прошедших с некоторого фиксированного момента
+void GetTimeOfDayInMicroseconds(unsigned long long &seconds, unsigned long long &useconds)
+{
+ unsigned long long currentTime = GetCurrentStartupTime();
+ seconds = currentTime/1000;
+ useconds = (currentTime % 1000) * 1000;
+}
+
 // ¬ычисл€ет разницу во времени в миллисекундах
 unsigned long long CalcDiffTime(unsigned long long time1, unsigned long long time2)
 {

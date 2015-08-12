@@ -15,28 +15,32 @@
 
 namespace RDK {
 
-// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
-// (пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ)
+// Возвращает текущее время в миллисекундах от некоторого фиксированного момента
+// (зависит от реализации)
 unsigned long long GetCurrentStartupTime(void)
 {
-/*
- time_t timedata;
- time(&timedata);
- return timedata*1000;
- */
- struct timespec tp;
- clock_gettime (CLOCK_REALTIME, &tp);
+ // Фиксированный момент - 1970-01-01 00:00:00 +0000 (UTC).
 
- unsigned long long result;
- unsigned long temp = tp.tv_sec/1000000;
- unsigned long temp_sec = tp.tv_sec - temp*1000000;
- unsigned long temp_msec = tp.tv_nsec/1000000;
- result = temp_sec*1000 + temp_msec;
+ timeval currentTime;
+ gettimeofday(&currentTime, NULL);
+ unsigned long long result = currentTime.tv_sec*1000 + currentTime.tv_usec/1000;
 
  return result;
 }
 
-// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// Записывает в seconds и useconds текущие значения секунд и микросекунд,
+// прошедших с некоторого фиксированного момента
+void GetTimeOfDayInMicroseconds(unsigned long long &seconds, unsigned long long &useconds)
+{
+ // Фиксированный момент - 1970-01-01 00:00:00 +0000 (UTC).
+
+ timeval currentTime;
+ gettimeofday(&currentTime, NULL);
+ seconds = static_cast<unsigned long long>(currentTime.tv_sec);
+ useconds = static_cast<unsigned long long>(currentTime.tv_usec);
+}
+
+// Вычисляет разницу во времени в миллисекундах
 unsigned long long CalcDiffTime(unsigned long long time1, unsigned long long time2)
 {
  if(time1>time2)
@@ -44,18 +48,17 @@ unsigned long long CalcDiffTime(unsigned long long time1, unsigned long long tim
  return time2-time1;
 }
 
-
-// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+// Усыпляет процесс на заданное число миллисекунд
 void Sleep(int value)
 {
  usleep(value*1000);
 }
 
-// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
-// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ 0 пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
-// 1 - пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
-// 2 - пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
-// 3 - пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+// Создает каталог
+// Возвращает 0 в случае успеха или если каталог уже существует
+// 1 - если уже существует файл с таким именем
+// 2 - если такой путь не существует
+// 3 - если произошла другая ошибка
 int CreateNewDirectory(const char* path)
 {
  struct stat dirStat;
@@ -86,7 +89,7 @@ int CreateNewDirectory(const char* path)
  return 3;
 }
 
-// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+// Получает список файлов или каталогов по заданному пути
 int FindFilesList(const std::string &path, const std::string &mask, bool isfile, std::vector<std::string> &results)
 {
  results.clear();

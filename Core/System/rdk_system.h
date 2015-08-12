@@ -15,6 +15,10 @@ extern "C++" {
 /// (зависит от реализации)
 RDK_LIB_TYPE unsigned long long GetCurrentStartupTime(void);
 
+// «аписывает в seconds и useconds текущие значени€ секунд и микросекунд,
+// прошедших с некоторого фиксированного момента
+RDK_LIB_TYPE void GetTimeOfDayInMicroseconds(unsigned long long &seconds, unsigned long long &useconds);
+
 /// ¬ычисл€ет разницу во времени в миллисекундах
 RDK_LIB_TYPE unsigned long long CalcDiffTime(unsigned long long time1, unsigned long long time2);
 
