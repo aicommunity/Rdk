@@ -885,7 +885,11 @@ void TUServerControlForm::ALoadParameters(RDK::USerStorageXML &xml)
 /// Возвращает число каналов
 int TUServerControlForm::GetNumChannels(void) const
 {
+#ifdef RDK_VIDEO
  return VideoOutputForm->GetNumSources();
+#else
+ return GetNumEngines();
+#endif
 }
 
 /// Устанавливает число каналов
