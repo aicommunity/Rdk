@@ -357,9 +357,10 @@ ULinksListT<T>& UItem::GetPersonalLinks(UEPtr<UContainer> cont, ULinksListT<T> &
   link.Connector.clear();
   for(size_t i=0;i<I->second.size();i++)
   {
-   if(I->second[i] != cont)
+   UConnector* curr_conn=I->second[i];
+   if(curr_conn != cont)
 	continue;
-   I->second[i]->GetLongId(netlevel,connector.Id);
+   curr_conn->GetLongId(netlevel,connector.Id);
    if(connector.Id.size() != 0)
    {
 	std::vector<UCLink> buffer;
@@ -407,9 +408,10 @@ ULinksListT<T>& UItem::GetFullItemLinks(ULinksListT<T> &linkslist, UEPtr<UItem> 
  for(;I != RelatedConnectors.end();++I)
   for(size_t i=0;i<I->second.size();i++)
   {
-   if(!I->second[i]->CheckOwner(static_pointer_cast<UContainer>(comp)) && I->second[i] != comp)
+   UConnector* curr_conn=I->second[i];
+   if(!curr_conn->CheckOwner(static_pointer_cast<UContainer>(comp)) && curr_conn != comp)
 	continue;
-   I->second[i]->GetLongId(netlevel,connector.Id);
+   curr_conn->GetLongId(netlevel,connector.Id);
    if(connector.Id.GetSize() != 0)
    {
 	std::vector<UCLink> buffer;

@@ -356,10 +356,10 @@ ULinksListT<T>& UConnector::GetLinks(ULinksListT<T> &linkslist, UEPtr<UContainer
    {
 	if(exclude_internals)
 	{
-	 if(I->second[i].Item->CheckOwner(internal_level))
+	 if(reinterpret_cast<UContainer*>(I->second[i].Item)->CheckOwner(internal_level))
 	  continue;
 	}
-   I->second[i].Item->GetLongId(netlevel,item.Id);
+   reinterpret_cast<UContainer*>(I->second[i].Item)->GetLongId(netlevel,item.Id);
    UIProperty* property=0;
    FindInputProperty(I->first, property);
    if(property)
@@ -408,9 +408,9 @@ ULinksListT<T>& UConnector::GetPersonalLinks(UEPtr<UContainer> cont, ULinksListT
  for(;I != ConnectedItemList.end();++I)
   for(size_t i=0;i<I->second.size();i++)
   {
-   if(I->second[i].Item == cont)
+   if(reinterpret_cast<UContainer*>(I->second[i].Item) == cont)
    {
-	I->second[i].Item->GetLongId(netlevel,item.Id);
+	reinterpret_cast<UContainer*>(I->second[i].Item)->GetLongId(netlevel,item.Id);
 	UIProperty* property=0;
 	FindInputProperty(I->first, property);
 	if(property)
