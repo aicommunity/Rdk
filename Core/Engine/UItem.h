@@ -282,6 +282,166 @@ virtual bool Build(void);
 
 };
 
+
+
+
+// Возвращает список подключений
+// Имена формируются до уровня компонента owner_level
+// Если owner_level не задан, то имена формируются до уровня текущего компонента
+template<typename T>
+ULinksListT<T>& UItem::GetLinks(ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel, bool exclude_internals, UEPtr<UContainer> internal_level) const
+{
+ ULinkT<T> link;
+ ULinkSideT<T> item;
+ ULinkSideT<T> connector;
+
+ GetLongId(netlevel,item.Id);
+ if(item.Id.size() == 0)
+  return linkslist;
+ link.Item=item;
+
+ std::map<std::string, std::vector<PUAConnector> >::const_iterator I=RelatedConnectors.begin();
+ for(;I != RelatedConnectors.end();++I)
+ {
+  link.Connector.clear();
+  for(size_t i=0;i<I->second.size();i++)
+  {
+   UConnector* curr_conn=I->second[i];
+   if(exclude_internals)
+   {
+	if(curr_conn->CheckOwner(internal_level))
+	 continue;
+   }
+   curr_conn->GetLongId(netlevel,connector.Id);
+   if(connector.Id.size() != 0)
+   {
+	std::vector<UCLink> buffer;
+	curr_conn->GetCLink(UEPtr<UItem>(const_cast<UItem*>(this)),buffer);
+	for(size_t k=0;k<buffer.size();k++)
+	{
+	 if(buffer[k].OutputName == I->first)
+	 {
+	  link.Item.Index=buffer[k].Output;
+	  link.Item.Name=buffer[k].OutputName;
+	  connector.Index=buffer[k].Input;
+	  connector.Name=buffer[k].InputName;
+
+	  link.Connector.push_back(connector);
+	  linkslist.Set(link);
+	 }
+	}
+   }
+  }
+ }
+
+ return linkslist;
+
+}
+
+// Возвращает список подключений непосредственно коннектора cont
+template<typename T>
+ULinksListT<T>& UItem::GetPersonalLinks(UEPtr<UContainer> cont, ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel) const
+{
+ ULinkT<T> link;
+ ULinkSideT<T> item;
+ ULinkSideT<T> connector;
+
+ GetLongId(netlevel,item.Id);
+ if(item.Id.size() == 0)
+  return linkslist;
+ link.Item=item;
+
+ std::map<std::string, std::vector<PUAConnector> >::const_iterator I=RelatedConnectors.begin();
+ for(;I != RelatedConnectors.end();++I)
+ {
+  link.Connector.clear();
+  for(size_t i=0;i<I->second.size();i++)
+  {
+   UConnector* curr_conn=I->second[i];
+   if(curr_conn != cont)
+	continue;
+   curr_conn->GetLongId(netlevel,connector.Id);
+   if(connector.Id.size() != 0)
+   {
+	std::vector<UCLink> buffer;
+	curr_conn->GetCLink(UEPtr<UItem>(const_cast<UItem*>(this)),buffer);
+	for(size_t k=0;k<buffer.size();k++)
+	{
+	 if(buffer[k].OutputName == I->first)
+	 {
+	  link.Item.Index=buffer[k].Output;
+	  link.Item.Name=buffer[k].OutputName;
+	  connector.Index=buffer[k].Input;
+	  connector.Name=buffer[k].InputName;
+
+	  link.Connector.push_back(connector);
+	  linkslist.Set(link);
+	 }
+	}
+   }
+  }
+ }
+
+ return linkslist;
+}
+
+// Возвращает список подключений этого компонента и всех дочерних компонент
+// к заданному компоненту comp и всем его дочерним компонентам
+template<typename T>
+ULinksListT<T>& UItem::GetFullItemLinks(ULinksListT<T> &linkslist, UEPtr<UItem> comp,
+                                     UEPtr<UContainer> netlevel) const
+{
+ ULinkT<T> link;
+ ULinkSideT<T> item;
+ ULinkSideT<T> connector;
+
+ if(!comp)
+  return linkslist;
+
+ GetLongId(netlevel,item.Id);
+ if(link.Item.Id.GetSize() == 0)
+  return linkslist;
+ link.Item=item;
+
+
+ std::map<std::string, std::vector<PUAConnector> >::const_iterator I=RelatedConnectors.begin();
+ for(;I != RelatedConnectors.end();++I)
+  for(size_t i=0;i<I->second.size();i++)
+  {
+   UConnector* curr_conn=I->second[i];
+   if(!curr_conn->CheckOwner(static_pointer_cast<UContainer>(comp)) && curr_conn != comp)
+	continue;
+   curr_conn->GetLongId(netlevel,connector.Id);
+   if(connector.Id.GetSize() != 0)
+   {
+	std::vector<UCLink> buffer;
+	curr_conn->GetCLink(UEPtr<UItem>(const_cast<UItem*>(this)),buffer);
+	for(size_t k=0;k<buffer.size();k++)
+	{
+	 if(buffer[k].OutputName == I->first)
+	 {
+	  link.Item.Index=buffer[k].Output;
+	  link.Item.Name=buffer[k].OutputName;
+	  connector.Index=buffer[k].Input;
+	  connector.Name=buffer[k].InputName;
+
+	  link.Connector.push_back(connector);
+	  linkslist.Set(link);
+	 }
+	}
+   }
+  }
+
+ for(int i=0;i<NumComponents;i++)
+ {
+  UEPtr<UItem> item=dynamic_cast<UItem*>(PComponents[i].operator->());
+  item->GetFullItemLinks(linkslist, comp, netlevel);
+ }
+
+ return linkslist;
+}
+
+
 }
 #endif
 

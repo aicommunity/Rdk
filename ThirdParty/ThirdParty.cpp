@@ -1,6 +1,7 @@
 #ifndef THIRD_PARTY_CPP
 #define THIRD_PARTY_CPP
 
+#include "../Deploy/Include/initdll_defs.h"
 //#ifndef _UNICODE
 //#define RDK_UNICODE_RUN
 //#define _UNICODE
@@ -12,7 +13,7 @@
 
 #define _USE_XMLPARSER_DLL
 #define _CRT_SECURE_NO_WARNINGS
-#include "xmlParser/xmlParser.cpp"
+//#include "xmlParser/xmlParser.cpp"
 #undef _CRT_SECURE_NO_WARNINGS
 
 //#ifdef RDK_UNICODE_RUN
@@ -34,7 +35,7 @@
 #pragma comment( lib, "Ws2_32.lib" )
 #endif
 
-#include "jpeg/JpegIntegration.cpp"
+//#include "jpeg/JpegIntegration.cpp"
 
 
 		 /*

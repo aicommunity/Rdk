@@ -2,6 +2,8 @@
 #define URpcCommandInternal_CPP
 
 #include "URpcCommandInternal.h"
+#include "../../Deploy/Include/rdk_rpc.h"
+#include "../../Core/Serialize/UXMLStdSerialize.h"
 
 namespace RDK {
 
@@ -80,7 +82,7 @@ bool URpcCommandInternal::ADecodeBasicData(void)
   ExtractComponent(xml,ComponentName);
  }
 
- xml.ReadData("Id",CmdId);
+ xml.ReadInteger("Id",CmdId);
 
  return true;
 }

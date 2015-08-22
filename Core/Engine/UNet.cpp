@@ -13,6 +13,7 @@ See file license.txt for more information
 #define UANET_CPP
 
 #include "UNet.h"
+#include "UXMLEnvSerialize.h"
 
 namespace RDK {
 
@@ -175,6 +176,8 @@ bool UNet::CreateLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector)
   return false;
  }
 
+ bool res=(item.Name == "DcOrientation");
+ bool res2=(connector.Name == "InputReliability");
  if(!item.Name.empty() || !connector.Name.empty())
  {
   int c_index=connector.Index;

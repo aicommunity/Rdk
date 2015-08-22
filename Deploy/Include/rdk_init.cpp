@@ -4,8 +4,8 @@
 #include <exception>
 #include "rdk_init.h"
 #include "rdk.h"
-#include "rdk_rpc.cpp"
-#include "rdk_engine_support.cpp"
+//#include "rdk_rpc.cpp"
+#include "rdk_engine_support.h"
 
 // --------------------------------------
 // ќбъ€влени€ дополнительных функций
@@ -840,6 +840,9 @@ void RDK_CALL Env_RTCalculate(void)
 
 void RDK_CALL MEnv_RTCalculate(int engine_index)
 {
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return;
+
  DllManager.GetEngineLock(engine_index)->Env_RTCalculate();
 }
 

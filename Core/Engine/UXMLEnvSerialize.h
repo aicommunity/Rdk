@@ -18,7 +18,7 @@ See file license.txt for more information
 #include <map>
 //#include <strstream>
 #include <sstream>
-#include "../Serialize/USerStorageXML.h"
+#include "../Serialize/UXMLStdSerialize.h"
 #include "UEnvSupport.h"
 #include "UELockVar.h"
 

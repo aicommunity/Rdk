@@ -161,24 +161,10 @@ const std::string GetNodeText(void) const;
 // Дополнительные методы управления данными текущего элемента как ini-файлом
 // --------------------------
 template<typename T>
-bool ReadData(const std::string &name, T &data)
-{
- if(!SelectNode(name))
-  return false;
- (*this)>>data;
- SelectUp();
- return true;
-}
+bool ReadData(const std::string &name, T &data);
 
 template<typename T>
-bool WriteData(const std::string &name, const T &data)
-{
- if(!AddNode(name))
-  return false;
- (*this)<<data;
- SelectUp();
- return true;
-}
+bool WriteData(const std::string &name, const T &data);
 
 // Считывает данные как соответствующий тип, если данное не найдено или не приводимо в
 // ожидаемый тип - оно инициализируется значением по умолчанию
@@ -208,6 +194,42 @@ void WriteBool(const std::string &name, bool value);
 protected:
 // --------------------------
 };
+	 /*
+template<typename T>
+USerStorageXML& operator << (USerStorageXML& storage, T &data)
+{
+ return storage;
+}
+
+template<typename T>
+USerStorageXML& operator >> (USerStorageXML& storage, T &data)
+{
+ return storage;
+}
+         */
+
+template<typename T>
+bool USerStorageXML::ReadData(const std::string &name, T &data)
+{
+ if(!SelectNode(name))
+  return false;
+ operator >> (*this,data);
+ //(*this)>>data;
+ SelectUp();
+ return true;
+}
+
+template<typename T>
+bool USerStorageXML::WriteData(const std::string &name, const T &data)
+{
+ if(!AddNode(name))
+  return false;
+
+ operator << (*this,data);
+ //(*this)<<data;
+ SelectUp();
+ return true;
+}
 
 }
 #endif

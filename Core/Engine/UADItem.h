@@ -101,11 +101,11 @@ inline const UItemData& GetOutputData(int index) const
 
 // Возвращает указатель на вектор входов InputData по указателю на item
 // Возвращает 0 если citem == 0 или не найден в списке подключений
-const UEPtr<const UItemData>& GetInputData(const UEPtr<UItem> &citem) const;
+const UEPtr<const UItemData> GetInputData(const UEPtr<UItem> &citem) const;
 
 // Возвращает указатель на вектор входов InputData по индексу
 // Проверяет индекс на корректность и возвращает 0, если такого входа нет фактически
-const UEPtr<const UItemData>& GetInputData(size_t index) const;
+const UEPtr<const UItemData> GetInputData(size_t index) const;
 
 // Возвращает размер вектора входов InputData по индексу
 // Проверяет индекс на корректность и возвращает 0, если такого входа нет фактически

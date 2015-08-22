@@ -12,13 +12,13 @@ See file license.txt for more information
 #ifndef UTILITIES_CPP
 #define UTILITIES_CPP
 
-#include "Utilities_lite.cpp"
-#include "UIniFile.cpp"
-#include "URegistry.cpp"
-#include "USupport.cpp"
-#include "UTree.cpp"
-#include "UException.cpp"
-#include "UTimeStamp.cpp"
-#include "UTransferPacket.cpp"
+//#include "Utilities_lite.cpp"
+//#include "UIniFile.cpp"
+//#include "URegistry.cpp"
+//#include "USupport.cpp"
+//#include "UTree.cpp"
+//#include "UException.cpp"
+//#include "UTimeStamp.cpp"
+//#include "UTransferPacket.cpp"
 
 #endif

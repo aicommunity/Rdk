@@ -110,11 +110,9 @@ inherited UComponentsListFrame: TUComponentsListFrame
           inherited cmbListEdit: TComboBox
             Left = 32
             Top = 287
-            Height = 21
             OnKeyPress = EnchancedSG1cmbListEditKeyPress
             ExplicitLeft = 32
             ExplicitTop = 287
-            ExplicitHeight = 21
           end
         end
         object HeaderControl2: THeaderControl
@@ -178,6 +176,7 @@ inherited UComponentsListFrame: TUComponentsListFrame
           PlainText = True
           ScrollBars = ssBoth
           TabOrder = 2
+          Zoom = 100
           OnChange = NiceParamValRichEditChange
           OnMouseEnter = NiceParamValRichEditMouseEnter
         end
@@ -250,6 +249,7 @@ inherited UComponentsListFrame: TUComponentsListFrame
           PlainText = True
           ScrollBars = ssBoth
           TabOrder = 1
+          Zoom = 100
           OnChange = NiceStateValRichEditChange
           OnMouseEnter = NiceStateValRichEditMouseEnter
         end
@@ -326,21 +326,15 @@ inherited UComponentsListFrame: TUComponentsListFrame
           inherited cmbListEdit: TComboBox
             Left = 32
             Top = 287
-            Height = 21
             OnKeyPress = EnchancedSG2cmbListEditKeyPress
             ExplicitLeft = 32
             ExplicitTop = 287
-            ExplicitHeight = 21
           end
         end
       end
       object TabSheet3: TTabSheet
         Caption = 'I/O'
         ImageIndex = 2
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object Splitter2: TSplitter
           Left = 0
           Top = 239
@@ -449,6 +443,7 @@ inherited UComponentsListFrame: TUComponentsListFrame
           ParentFont = False
           ScrollBars = ssBoth
           TabOrder = 1
+          Zoom = 100
           OnChange = ParametersRichEditChange
         end
       end
@@ -498,6 +493,7 @@ inherited UComponentsListFrame: TUComponentsListFrame
           ParentFont = False
           ScrollBars = ssBoth
           TabOrder = 1
+          Zoom = 100
           OnChange = StateRichEditChange
         end
       end

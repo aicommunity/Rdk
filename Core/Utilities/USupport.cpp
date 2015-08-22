@@ -17,6 +17,7 @@ See file license.txt for more information
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
 //#include <mem.h>
 
 #include "USupport.h"

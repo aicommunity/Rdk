@@ -12,7 +12,7 @@ See file license.txt for more information
 #ifndef UBGRAPHICS_CPP
 #define UBGRAPHICS_CPP
 
-#include "Kernel.cpp"
+//#include "Kernel.cpp"
 
 #endif
 

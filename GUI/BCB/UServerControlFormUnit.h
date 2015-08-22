@@ -26,6 +26,7 @@
 #include <IdContext.hpp>
 #include <IdCustomTCPServer.hpp>
 #include <IdTCPServer.hpp>
+#include <VclTee.TeeGDIPlus.hpp>
 
 //typedef std::pair<std::string, RDK::UParamT> UServerCommand;
 
@@ -101,6 +102,21 @@ __published:	// IDE-managed Components
 
 
 private:	// User declarations
+// -----------------
+// Данные для сохранения отладочной информации
+// -----------------
+
+///Данные производительности по каждому из каналов
+std::vector< std::vector< RDK::ULongTime > > perf_data;
+
+///Усредненная производительность для построения графика
+std::vector< std::vector< RDK::ULongTime > > aver_perf_data;
+
+///Папка для сохранения отладочных данных
+std::string DebugFolder;
+///Полный путь на одну сессию
+std::string DebugOutputPath;
+
 public:		// User declarations
 	__fastcall TUServerControlForm(TComponent* Owner);
 	virtual __fastcall ~TUServerControlForm(void);

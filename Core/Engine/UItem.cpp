@@ -606,9 +606,17 @@ void UItem::BuildLinks(void)
   {
    if(!I->second[i])
 	continue;
-   UCLink indexes=I->second[i]->GetCLink(this);
-   int c_index(-1);
-   I->second[i]->ConnectToItem(this,indexes.OutputName,indexes.InputName,c_index);
+   std::vector<UCLink> buffer;
+   I->second[i]->GetCLink(this,buffer);
+   for(size_t k=0;k<buffer.size();k++)
+   {
+	UCLink &indexes=buffer[k];
+	if(I->first == indexes.OutputName)
+	{
+	 int c_index(-1);
+	 I->second[i]->ConnectToItem(this,indexes.OutputName,indexes.InputName,c_index);
+	}
+   }
   }
 
 }
@@ -647,10 +655,15 @@ UEPtr<UConnector> UItem::GetAConnectorByIndex(const NameT &item_property_name, i
 // Проверяет, существует ли связь с заданным коннектором
 bool UItem::CheckLink(const UEPtr<UConnector> &connector, int connected_c_index) const
 {
- UCLink link=connector->GetCLink(this);
- if((link.Output>=0 && link.Input >=0) || (!link.InputName.empty() && !link.OutputName.empty()
-   && (connected_c_index<0 || connected_c_index == link.Input) ))
-  return true;
+ std::vector<UCLink> buffer;
+ connector->GetCLink(this,buffer);
+ for(size_t k=0;k<buffer.size();k++)
+ {
+  UCLink &link=buffer[k];
+  if((link.Output>=0 && link.Input >=0) || (!link.InputName.empty() && !link.OutputName.empty()
+    && (connected_c_index<0 || connected_c_index == link.Input) ))
+   return true;
+  }
 
  return false;
 }
@@ -664,11 +677,16 @@ bool UItem::CheckLink(const UEPtr<UConnector> &connector, int item_index) const
 
 bool UItem::CheckLink(const UEPtr<UConnector> &connector, const NameT &item_property_name) const
 {
- UCLink link=connector->GetCLink(this);
- if(!link.InputName.empty())
+ std::vector<UCLink> buffer;
+ connector->GetCLink(this,buffer);
+ for(size_t k=0;k<buffer.size();k++)
  {
-  if(link.OutputName == item_property_name)
-   return true;
+  UCLink &link=buffer[k];
+  if(!link.InputName.empty())
+  {
+   if(link.OutputName == item_property_name)
+	return true;
+  }
  }
 
  return false;
@@ -677,11 +695,16 @@ bool UItem::CheckLink(const UEPtr<UConnector> &connector, const NameT &item_prop
 // Проверяет, существует ли связь с заданным коннектором и конкретным входом
 bool UItem::CheckLink(const UEPtr<UConnector> &connector, const NameT &item_property_name, const NameT &connector_property_name, int connected_c_index) const
 {
- UCLink link=connector->GetCLink(this);
- if(!link.OutputName.empty())
+ std::vector<UCLink> buffer;
+ connector->GetCLink(this,buffer);
+ for(size_t k=0;k<buffer.size();k++)
  {
-  if((connector_property_name.empty() || link.InputName == connector_property_name) && ((connected_c_index < 0 || connected_c_index == link.Input) || link.Input<0))
-   return true;
+  UCLink &link=buffer[k];
+  if(!link.OutputName.empty())
+  {
+   if((connector_property_name.empty() || link.InputName == connector_property_name) && ((connected_c_index < 0 || connected_c_index == link.Input) || link.Input<0))
+	return true;
+  }
  }
  return false;
 }
@@ -691,141 +714,6 @@ bool UItem::CheckLink(const UEPtr<UConnector> &connector, int item_index, int co
  std::string connector_property_name=(conn_index<0)?std::string(""):(std::string("DataInput")+sntoa(conn_index));
  std::string item_property_name=(item_index<0)?std::string(""):(std::string("DataOutput")+sntoa(item_index));
  return UItem::CheckLink(connector, item_property_name, connector_property_name, conn_index);
-}
-
-
-
-// Возвращает список подключений
-// Имена формируются до уровня компонента owner_level
-// Если owner_level не задан, то имена формируются до уровня текущего компонента
-template<typename T>
-ULinksListT<T>& UItem::GetLinks(ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel, bool exclude_internals, UEPtr<UContainer> internal_level) const
-{
- ULinkT<T> link;
- ULinkSideT<T> item;
- ULinkSideT<T> connector;
-
- GetLongId(netlevel,item.Id);
- if(item.Id.size() == 0)
-  return linkslist;
- link.Item=item;
-
- std::map<std::string, std::vector<PUAConnector> >::const_iterator I=RelatedConnectors.begin();
- for(;I != RelatedConnectors.end();++I)
- {
-  link.Connector.clear();
-  for(size_t i=0;i<I->second.size();i++)
-  {
-   if(exclude_internals)
-   {
-	if(I->second[i]->CheckOwner(internal_level))
-	 continue;
-   }
-   I->second[i]->GetLongId(netlevel,connector.Id);
-   if(connector.Id.size() != 0)
-   {
-	UCLink indexes=I->second[i]->GetCLink(UEPtr<UItem>(const_cast<UItem*>(this)));
-	link.Item.Index=indexes.Output;
-	link.Item.Name=indexes.OutputName;
-	connector.Index=indexes.Input;
-	connector.Name=indexes.InputName;
-
-	link.Connector.push_back(connector);
-	linkslist.Set(link);
-   }
-  }
- }
-
- return linkslist;
-
-}
-
-// Возвращает список подключений непосредственно коннектора cont
-template<typename T>
-ULinksListT<T>& UItem::GetPersonalLinks(UEPtr<UContainer> cont, ULinksListT<T> &linkslist, UEPtr<UContainer> netlevel) const
-{
- ULinkT<T> link;
- ULinkSideT<T> item;
- ULinkSideT<T> connector;
-
- GetLongId(netlevel,item.Id);
- if(item.Id.size() == 0)
-  return linkslist;
- link.Item=item;
-
- std::map<std::string, std::vector<PUAConnector> >::const_iterator I=RelatedConnectors.begin();
- for(;I != RelatedConnectors.end();++I)
- {
-  link.Connector.clear();
-  for(size_t i=0;i<I->second.size();i++)
-  {
-   if(I->second[i] != cont)
-	continue;
-   I->second[i]->GetLongId(netlevel,connector.Id);
-   if(connector.Id.size() != 0)
-   {
-	UCLink indexes=I->second[i]->GetCLink(UEPtr<UItem>(const_cast<UItem*>(this)));
-	link.Item.Index=indexes.Output;
-	link.Item.Name=indexes.OutputName;
-	connector.Index=indexes.Input;
-	connector.Name=indexes.InputName;
-
-	link.Connector.push_back(connector);
-	linkslist.Set(link);
-   }
-  }
- }
-
- return linkslist;
-}
-
-// Возвращает список подключений этого компонента и всех дочерних компонент
-// к заданному компоненту comp и всем его дочерним компонентам
-template<typename T>
-ULinksListT<T>& UItem::GetFullItemLinks(ULinksListT<T> &linkslist, UEPtr<UItem> comp,
-                                     UEPtr<UContainer> netlevel) const
-{
- ULinkT<T> link;
- ULinkSideT<T> item;
- ULinkSideT<T> connector;
-
- if(!comp)
-  return linkslist;
-
- GetLongId(netlevel,item.Id);
- if(link.Item.Id.GetSize() == 0)
-  return linkslist;
- link.Item=item;
-
-
- std::map<std::string, std::vector<PUAConnector> >::const_iterator I=RelatedConnectors.begin();
- for(;I != RelatedConnectors.end();++I)
-  for(size_t i=0;i<I->second.size();i++)
-  {
-   if(!I->second[i]->CheckOwner(static_pointer_cast<UContainer>(comp)) && I->second[i] != comp)
-	continue;
-   I->second[i]->GetLongId(netlevel,connector.Id);
-   if(connector.Id.GetSize() != 0)
-   {
-	UCLink indexes=I->second[i]->GetCLink(UEPtr<UItem>(const_cast<UItem*>(this)));
-	link.Item.Index=indexes.Output;
-	link.Item.Name=indexes.OutputName;
-	connector.Index=indexes.Input;
-	connector.Name=indexes.InputName;
-
-	link.Connector.push_back(connector);
-	linkslist.Set(link);
-   }
-  }
-
- for(int i=0;i<NumComponents;i++)
- {
-  UEPtr<UItem> item=dynamic_cast<UItem*>(PComponents[i].operator->());
-  item->GetFullItemLinks(linkslist, comp, netlevel);
- }
-
- return linkslist;
-
 }
 // ----------------------
 

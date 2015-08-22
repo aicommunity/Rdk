@@ -308,7 +308,6 @@ void TUGEngineControlForm::AClearInterface(void)
 void __fastcall TUGEngineControlForm::FormShow(TObject *Sender)
 {
 // HideTimer->Enabled=true;
-
 }
 
 // Сохраняет параметры интерфейса в xml

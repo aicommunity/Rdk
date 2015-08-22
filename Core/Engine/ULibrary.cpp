@@ -14,6 +14,7 @@ See file license.txt for more information
 #define UALIBRARY_CPP
 
 #include "ULibrary.h"
+#include "UNet.h"
 
 namespace RDK {
 

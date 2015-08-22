@@ -3,9 +3,17 @@
 
 #include "rdk.h"
 
+#ifdef __GNUC__
+namespace RDK {
+void RdkDummyFunc(void);
+}
+#endif
 /*****************************************************************************/
 extern RDK::UStorage* CreateNewStorage(void)
 {
+#ifdef __GNUC__
+ RDK::RdkDummyFunc();
+#endif
  return new RDK::UStorage;
 }
 

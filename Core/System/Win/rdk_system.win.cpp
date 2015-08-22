@@ -4,8 +4,8 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include "../rdk_system.h"
-#include "USharedMemoryLoader.win.cpp"
-#include "UGenericMutex.win.cpp"
+//#include "USharedMemoryLoader.win.cpp"
+//#include "UGenericMutex.win.cpp"
 
 namespace RDK {
 

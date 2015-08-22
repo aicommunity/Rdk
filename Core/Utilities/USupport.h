@@ -17,6 +17,7 @@ See file license.txt for more information
 #include <sstream>
 #include <iomanip>
 #include <locale>
+#include <limits>
 #include "UPtr.h"
 
 #ifndef u_min
@@ -271,7 +272,7 @@ int separatestring(const basic_string<CharT> &str, vector<basic_string<CharT> > 
    output[size-1]=str.substr(j);
   else
    output[size-1]=str.substr(j,i-j);
-  j=i+1; 
+  j=i+1;
   if(j >= str.size())
    break;
  }
@@ -302,6 +303,35 @@ RDK_LIB_TYPE std::string& narrow(const std::wstring& wstr, const std::locale& lo
 RDK_LIB_TYPE std::wstring& widen(const std::string& str, const std::locale& loc, std::wstring &result);
 
 //std::wstring widen2(const std::string& str);
+
+/// From http://stackoverflow.com/questions/1903954/is-there-a-standard-sign-function-signum-sgn-in-c-c
+#if __cplusplus >= 201103L
+#include <type_traits>
+
+template <typename T>
+inline int signum(T x, std::false_type is_signed)
+{
+ return T(0) < x;
+}
+
+template <typename T>
+inline int signum(T x, std::true_type is_signed)
+{
+ return (T(0) < x) - (x < T(0));
+}
+
+template <typename T>
+inline int signum(T x)
+{
+ return signum(x, std::is_signed<T>());
+}
+#else
+template <typename T>
+inline int signum(T x)
+{
+ return (x>0)?1:((x<0)?-1:0);
+}
+#endif
 
 }
 #endif

@@ -131,6 +131,42 @@ void TVideoOutputForm::AddSource(void)
   */
 }
 
+// ƒобавл€ет новый источник видео c данными как у выбранного
+void TVideoOutputForm::CopySource(void)
+{
+ TTabSheet *sheet=new TTabSheet(PageControl);
+ sheet->PageControl=PageControl;
+ sheet->PageIndex=PageControl->PageCount-1;
+ Sources.resize(PageControl->PageCount);
+
+ size_t index=Sources.size()-1;
+
+ Sources[index]=new TVideoOutputFrame(0);
+ Sources[index]->LicenseString=UGEngineControlForm->VideoGrabberLicenseString;
+ Sources[index]->FrameIndex=index;
+ Sources[index]->Name=Sources[index]->Name+String("_")+PageControl->PageCount;
+// Sources[index]->MyVideoGrabberControlForm->Name=Sources[index]->Name+"_VideoGrabberControlForm";
+
+ InsertComponent(Sources[index]);
+ Sources[index]->Parent=sheet;
+ Sources[index]->Align=alClient;
+ PageControl->Pages[index]->Caption=IntToStr(int(index));
+
+ size_t curr_id = PageControl->ActivePageIndex;
+ RDK::USerStorageXML xml;
+ //xml.Create("root");
+ if(Sources[curr_id]->CaptureThread)
+  Sources[curr_id]->CaptureThread->SaveParameters(xml);
+
+ Sources[index]->InitPrimarySettings();
+ Sources[index]->Init(xml);
+/* if(index == 0)
+  Sources[index]->VideoGrabber->SynchronizationRole=sr_Master;
+ else
+  Sources[index]->VideoGrabber->SynchronizationRole=sr_Slave;
+  */
+}
+
 // ”дал€ет источник видео
 void TVideoOutputForm::DelSource(int index)
 {
@@ -371,4 +407,18 @@ void __fastcall TVideoOutputForm::ToolButton6Click(TObject *Sender)
  StopAll1Click(Sender);
 }
 //---------------------------------------------------------------------------
+
+
+void __fastcall TVideoOutputForm::CopySource1Click(TObject *Sender)
+{
+    CopySource();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoOutputForm::CopySource2Click(TObject *Sender)
+{
+	CopySource1Click(Sender);
+}
+//---------------------------------------------------------------------------
+
 

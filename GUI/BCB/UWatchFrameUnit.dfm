@@ -34,6 +34,7 @@ inherited UWatchFrame: TUWatchFrame
     DepthAxis.Minimum = -1.700000000000001000
     LeftAxis.Title.Angle = 0
     View3D = False
+    Zoom.Pen.Mode = pmNotXor
     Align = alClient
     Color = clWhite
     PopupMenu = PopupMenu

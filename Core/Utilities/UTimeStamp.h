@@ -16,6 +16,8 @@ See file license.txt for more information
 
 
 #include <string>
+#include "../../Deploy/Include/initdll_defs.h"
+
 
 namespace RDK {
 

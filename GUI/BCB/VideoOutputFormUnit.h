@@ -18,6 +18,7 @@
 #include "TUVisualControllerFormUnit.h"
 #include <Vcl.ImgList.hpp>
 #include <Vcl.ToolWin.hpp>
+#include <System.ImageList.hpp>
 //---------------------------------------------------------------------------
 class TVideoOutputForm : public TUVisualControllerForm
 {
@@ -43,6 +44,9 @@ __published:	// IDE-managed Components
 	TMenuItem *N1;
 	TMenuItem *StartAll1;
 	TMenuItem *StopAll1;
+	TToolButton *ToolButton7;
+	TMenuItem *CopySource1;
+	TMenuItem *CopySource2;
 	void __fastcall PageControlChange(TObject *Sender);
 	void __fastcall AddSource1Click(TObject *Sender);
 	void __fastcall DelSource1Click(TObject *Sender);
@@ -56,6 +60,8 @@ __published:	// IDE-managed Components
 	void __fastcall StopAll1Click(TObject *Sender);
 	void __fastcall ToolButton4Click(TObject *Sender);
 	void __fastcall ToolButton6Click(TObject *Sender);
+	void __fastcall CopySource1Click(TObject *Sender);
+	void __fastcall CopySource2Click(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
 	__fastcall TVideoOutputForm(TComponent* Owner);
@@ -92,6 +98,9 @@ int GetNumSources(void) const;
 
 // ƒобавл€ет новый источник видео
 void AddSource(void);
+
+// ƒобавл€ет новый источник видео c данными как у выбранного
+void CopySource(void);
 
 // ”дал€ет источник видео
 void DelSource(int index);

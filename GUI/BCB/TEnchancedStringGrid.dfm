@@ -31,6 +31,7 @@ object EnchancedSG: TEnchancedSG
     Top = 16
     Width = 121
     Height = 24
+    BorderStyle = bsNone
     TabOrder = 0
     Text = '0'
     Visible = False
@@ -61,6 +62,7 @@ object EnchancedSG: TEnchancedSG
     Top = 16
     Width = 121
     Height = 24
+    BorderStyle = bsNone
     TabOrder = 2
     Text = 'txtDoubleEdit'
     Visible = False
@@ -71,6 +73,7 @@ object EnchancedSG: TEnchancedSG
     Top = 43
     Width = 121
     Height = 24
+    BorderStyle = bsNone
     TabOrder = 5
     Text = 'txtIntEdit'
     Visible = False
@@ -81,6 +84,7 @@ object EnchancedSG: TEnchancedSG
     Top = 132
     Width = 121
     Height = 24
+    BorderStyle = bsNone
     ReadOnly = True
     TabOrder = 6
     Text = 'txtBorderedIntEdit'
@@ -91,7 +95,13 @@ object EnchancedSG: TEnchancedSG
     Left = 216
     Top = 159
     Width = 145
-    Height = 24
+    Height = 22
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -12
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
     TabOrder = 7
     Visible = False
     OnKeyPress = cmbListEditKeyPress

@@ -10,30 +10,32 @@ inherited VideoOutputFrame: TVideoOutputFrame
   object PageControl: TPageControl
     Left = 0
     Top = 0
-    Width = 779
+    Width = 775
     Height = 714
     ActivePage = VideoSourceTabSheet
     Align = alClient
     TabOrder = 0
+    ExplicitWidth = 779
     object VideoSourceTabSheet: TTabSheet
       Caption = 'Video Source'
       ExplicitLeft = 0
       ExplicitTop = 0
-      ExplicitWidth = 0
+      ExplicitWidth = 771
       ExplicitHeight = 0
       object GroupBox: TGroupBox
         Left = 0
         Top = 0
-        Width = 771
+        Width = 767
         Height = 570
         Align = alClient
         DoubleBuffered = True
         ParentDoubleBuffered = False
         TabOrder = 0
+        ExplicitWidth = 771
         object Image: TImage
           Left = 2
           Top = 15
-          Width = 767
+          Width = 763
           Height = 553
           Cursor = crCross
           Align = alClient
@@ -48,26 +50,28 @@ inherited VideoOutputFrame: TVideoOutputFrame
         object GroupBox1: TGroupBox
           Left = 2
           Top = 15
-          Width = 767
+          Width = 763
           Height = 553
           Align = alClient
           Caption = 'GroupBox1'
           TabOrder = 0
           Visible = False
+          ExplicitWidth = 767
         end
       end
       object Panel1: TPanel
         Left = 0
         Top = 570
-        Width = 771
+        Width = 767
         Height = 35
         Align = alBottom
         TabOrder = 1
+        ExplicitWidth = 771
         DesignSize = (
-          771
+          767
           35)
         object StopButton: TButton
-          Left = 734
+          Left = 730
           Top = 6
           Width = 30
           Height = 25
@@ -75,9 +79,10 @@ inherited VideoOutputFrame: TVideoOutputFrame
           Caption = 'Stop'
           TabOrder = 0
           OnClick = StopButtonClick
+          ExplicitLeft = 734
         end
         object StartButton: TButton
-          Left = 698
+          Left = 694
           Top = 6
           Width = 30
           Height = 25
@@ -85,9 +90,10 @@ inherited VideoOutputFrame: TVideoOutputFrame
           Caption = 'Start'
           TabOrder = 1
           OnClick = StartButtonClick
+          ExplicitLeft = 698
         end
         object TimeEdit: TMaskEdit
-          Left = 613
+          Left = 609
           Top = 8
           Width = 79
           Height = 21
@@ -97,11 +103,12 @@ inherited VideoOutputFrame: TVideoOutputFrame
           TabOrder = 2
           Text = '000:00:00:00'
           OnChange = TimeEditChange
+          ExplicitLeft = 613
         end
         object TrackBar: TTrackBar
           Left = 2
           Top = 9
-          Width = 605
+          Width = 601
           Height = 22
           Anchors = [akLeft, akTop, akRight]
           Max = 1
@@ -110,30 +117,33 @@ inherited VideoOutputFrame: TVideoOutputFrame
           Position = 1
           TabOrder = 3
           OnChange = TrackBarChange
+          ExplicitWidth = 605
         end
       end
       object Panel2: TPanel
         Left = 0
         Top = 605
-        Width = 771
+        Width = 767
         Height = 46
         Align = alBottom
         TabOrder = 2
+        ExplicitWidth = 771
         DesignSize = (
-          771
+          767
           46)
         object SendToEdit: TEdit
           Left = 5
           Top = 4
-          Width = 517
+          Width = 513
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           Color = clBtnFace
           ReadOnly = True
           TabOrder = 0
+          ExplicitWidth = 517
         end
         object Button1: TButton
-          Left = 613
+          Left = 609
           Top = 2
           Width = 79
           Height = 25
@@ -141,9 +151,10 @@ inherited VideoOutputFrame: TVideoOutputFrame
           Caption = 'Send points'
           TabOrder = 1
           OnClick = Button1Click
+          ExplicitLeft = 613
         end
         object SelectSendToButton: TButton
-          Left = 698
+          Left = 694
           Top = 2
           Width = 66
           Height = 25
@@ -152,9 +163,10 @@ inherited VideoOutputFrame: TVideoOutputFrame
           DropDownMenu = SelectPopupMenu
           Style = bsSplitButton
           TabOrder = 2
+          ExplicitLeft = 698
         end
         object SendAsMatrixButton: TButton
-          Left = 528
+          Left = 524
           Top = 2
           Width = 79
           Height = 25
@@ -162,6 +174,7 @@ inherited VideoOutputFrame: TVideoOutputFrame
           Caption = 'Send as Matrix'
           TabOrder = 3
           OnClick = SendAsMatrixButtonClick
+          ExplicitLeft = 528
         end
         object SendPointsByStepCheckBox: TCheckBox
           Left = 5
@@ -183,10 +196,11 @@ inherited VideoOutputFrame: TVideoOutputFrame
       object Panel3: TPanel
         Left = 0
         Top = 651
-        Width = 771
+        Width = 767
         Height = 35
         Align = alBottom
         TabOrder = 3
+        ExplicitWidth = 771
         object ShowCentralPointCheckBox: TCheckBox
           Left = 1
           Top = 1
@@ -254,12 +268,8 @@ inherited VideoOutputFrame: TVideoOutputFrame
               ExplicitLeft = 0
               ExplicitTop = 0
               ExplicitWidth = 0
-              ExplicitHeight = 594
-              inherited StreamingSettingsGroupBox: TGroupBox
-                ExplicitHeight = 539
-              end
+              ExplicitHeight = 0
               inherited NetworkStreamingControlGroupBox: TGroupBox
-                ExplicitTop = 436
                 inherited NetworkStreamingButton: TButton
                   OnClick = NetworkStreamingFrameNetworkStreamingButtonClick
                 end
@@ -275,10 +285,52 @@ inherited VideoOutputFrame: TVideoOutputFrame
                 ExplicitHeight = 491
                 inherited GroupBox1: TGroupBox
                   ExplicitWidth = 345
+                  inherited RecordingControlGroupBox: TGroupBox
+                    ExplicitWidth = 341
+                    ExplicitHeight = 58
+                  end
                   inherited RecordingSettingsGroupBox: TGroupBox
                     ExplicitWidth = 341
+                    inherited RecordingFrameRateLabeledEdit: TLabeledEdit
+                      ExplicitWidth = 149
+                    end
+                    inherited RecordingFileNameLabeledEdit: TLabeledEdit
+                      ExplicitLeft = 158
+                    end
+                    inherited RecordHeightLabeledEdit: TLabeledEdit
+                      ExplicitLeft = 158
+                    end
+                    inherited RecordWidthLabeledEdit: TLabeledEdit
+                      ExplicitWidth = 149
+                    end
+                    inherited BrowseFileNameButton: TButton
+                      ExplicitLeft = 158
+                    end
+                    inherited VideoCompressorSettingsButton: TButton
+                      ExplicitWidth = 149
+                    end
                     inherited RecordingTimerGroupBox: TGroupBox
                       ExplicitWidth = 339
+                      inherited RecordingTimerLabeledEdit: TLabeledEdit
+                        ExplicitLeft = 155
+                      end
+                    end
+                    inherited PreAllocatedRecordingGroupBox: TGroupBox
+                      inherited PreallocatedFileSizeLabeledEdit: TLabeledEdit
+                        ExplicitWidth = 146
+                      end
+                      inherited PreallocatedFileCreateButton: TButton
+                        ExplicitLeft = 155
+                      end
+                    end
+                    inherited StoragePathRadioGroup: TRadioGroup
+                      ExplicitWidth = 149
+                    end
+                    inherited StoragePathLabeledEdit: TLabeledEdit
+                      ExplicitLeft = 158
+                    end
+                    inherited BrowseStoragePathButton: TButton
+                      ExplicitLeft = 158
                     end
                   end
                 end
@@ -399,12 +451,51 @@ inherited VideoOutputFrame: TVideoOutputFrame
                   ExplicitHeight = 550
                   inherited RecordingControlGroupBox: TGroupBox
                     Height = 43
-                    ExplicitHeight = 93
+                    ExplicitWidth = 341
+                    ExplicitHeight = 43
                   end
                   inherited RecordingSettingsGroupBox: TGroupBox
                     ExplicitWidth = 341
+                    inherited RecordingFrameRateLabeledEdit: TLabeledEdit
+                      ExplicitWidth = 149
+                    end
+                    inherited RecordingFileNameLabeledEdit: TLabeledEdit
+                      ExplicitLeft = 158
+                    end
+                    inherited RecordHeightLabeledEdit: TLabeledEdit
+                      ExplicitLeft = 158
+                    end
+                    inherited RecordWidthLabeledEdit: TLabeledEdit
+                      ExplicitWidth = 149
+                    end
+                    inherited BrowseFileNameButton: TButton
+                      ExplicitLeft = 158
+                    end
+                    inherited VideoCompressorSettingsButton: TButton
+                      ExplicitWidth = 149
+                    end
                     inherited RecordingTimerGroupBox: TGroupBox
                       ExplicitWidth = 339
+                      inherited RecordingTimerLabeledEdit: TLabeledEdit
+                        ExplicitLeft = 155
+                      end
+                    end
+                    inherited PreAllocatedRecordingGroupBox: TGroupBox
+                      inherited PreallocatedFileSizeLabeledEdit: TLabeledEdit
+                        ExplicitWidth = 146
+                      end
+                      inherited PreallocatedFileCreateButton: TButton
+                        ExplicitLeft = 155
+                      end
+                    end
+                    inherited StoragePathRadioGroup: TRadioGroup
+                      ExplicitWidth = 149
+                    end
+                    inherited StoragePathLabeledEdit: TLabeledEdit
+                      ExplicitLeft = 158
+                    end
+                    inherited BrowseStoragePathButton: TButton
+                      ExplicitLeft = 158
                     end
                   end
                 end
@@ -457,9 +548,9 @@ inherited VideoOutputFrame: TVideoOutputFrame
     end
   end
   object ToolBar: TToolBar
-    Left = 779
+    Left = 775
     Top = 0
-    Width = 137
+    Width = 141
     Height = 714
     Align = alRight
     AutoSize = True
@@ -472,6 +563,7 @@ inherited VideoOutputFrame: TVideoOutputFrame
     ParentDoubleBuffered = False
     ShowCaptions = True
     TabOrder = 1
+    ExplicitLeft = 779
     object CaptureStartToolButton: TToolButton
       Left = 0
       Top = 0
@@ -639,7 +731,7 @@ inherited VideoOutputFrame: TVideoOutputFrame
     Left = 688
     Top = 456
     Bitmap = {
-      494C010120006000CC0010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010120006000D80010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000009000000001002000000000000090
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

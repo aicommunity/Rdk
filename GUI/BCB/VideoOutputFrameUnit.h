@@ -34,6 +34,8 @@
 #include <Vcl.ImgList.hpp>
 #include <Vcl.ToolWin.hpp>
 #include <Vcl.ActnList.hpp>
+#include <System.Actions.hpp>
+#include <System.ImageList.hpp>
 
 class TVideoCaptureOptionsForm;
 

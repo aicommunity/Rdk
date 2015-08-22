@@ -4,6 +4,7 @@
 #include "MVector.h"
 #include "MDVector.h"
 #include "MGeometry.h"
+#include "../Graphics/UBitmap.h"
 
 namespace RDK {
 

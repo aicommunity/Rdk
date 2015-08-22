@@ -1,6 +1,8 @@
 #ifndef UTIME_H
 #define UTIME_H
 
+#include "../../Deploy/Include/initdll_defs.h"
+
 namespace RDK {
 
 typedef unsigned int UTime;

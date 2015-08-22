@@ -7,6 +7,10 @@
 #include "TUHttpServerUnit.h"
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
 
+class TVideoGrabberFrame;
+class TGrabberThread;
+class TImageFrame;
+
 enum TVideoCaptureThreadCommands { tvcNone=0, tvcStart=1, tvcStop=2, tvcTerminate=3, tvcRecreate=4, tvcHalt=5 };
 
 /// Описание команды
@@ -110,7 +114,6 @@ RDK::UELockVar<double> RealLastTimeStamp;
 private:
 /// Временная метка последнего кадра
 double LastTimeStamp;
-
 
 /// Данные изображения
 RDK::UBitmap Source[2];
@@ -270,10 +273,8 @@ HANDLE GetCalcCompleteEvent(void) const;
 // Управление потоком
 // --------------------------
 virtual void __fastcall Start(double time);
-virtual void __fastcall AStart(double time)=0;
 
 virtual void __fastcall Stop(double time);
-virtual void __fastcall AStop(double time)=0;
 
 virtual void __fastcall BeforeCalculate(void);
 
@@ -322,10 +323,6 @@ virtual bool __fastcall HaltCapture(void);
 
 virtual bool __fastcall RecreateCapture(void);
 virtual void __fastcall ARecreateCapture(void);
-
-virtual void __fastcall ReloadParameters(void);
-
-//bool SetThreadState(int value);
 // --------------------------
 
 
@@ -389,10 +386,6 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 // Управление потоком
 // --------------------------
-virtual void __fastcall AStart(double time);
-
-virtual void __fastcall AStop(double time);
-
 virtual void __fastcall BeforeCalculate(void);
 
 virtual void __fastcall AfterCalculate(void);
@@ -479,10 +472,6 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 // Управление потоком
 // --------------------------
-virtual void __fastcall AStart(double time);
-
-virtual void __fastcall AStop(double time);
-
 virtual void __fastcall AfterCalculate(void);
 
 virtual void __fastcall Calculate(void);
@@ -491,7 +480,7 @@ virtual void __fastcall Calculate(void);
 bool LoadImageFromSequence(int index, RDK::UBitmap &bmp);
 
 // Меняет временную метку с блокировкой
-virtual bool SetLastTimeStampSafe(double time_stamp);
+//virtual bool SetLastTimeStampSafe(double time_stamp);
 // --------------------------
 
 // --------------------------
@@ -561,10 +550,6 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 // Управление потоком
 // --------------------------
-virtual void __fastcall AStart(double time);
-
-virtual void __fastcall AStop(double time);
-
 virtual void __fastcall BeforeCalculate(void);
 
 virtual void __fastcall AfterCalculate(void);
@@ -604,6 +589,7 @@ RDK::UELockVar<int> CaptureTimeout;
 RDK::UELockVar<int> AutoScaleMode;
 
 protected: // Данные
+TVideoGrabberFrame *VideoGrabberFrame;
 TVideoGrabber* VideoGrabber;
 
 Graphics::TBitmap* ConvertBitmap;
@@ -664,7 +650,7 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 
 /// Хендл окна в которое необходимо выводить данные захвата
 virtual TWinControl* GetOverlayHandle(void) const;
-virtual bool SetOverlayHandle(TWinControl* value);
+virtual bool SetOverlayHandle(TWinControl* value, bool forced=false);
 
 /// Управление маской для OSD
 virtual Graphics::TBitmap* GetOverlayMaskBitmap(void);
@@ -674,8 +660,8 @@ virtual bool SetOverlayMaskBitmap(Graphics::TBitmap* value);
 // --------------------------
 // Управление потоком
 // --------------------------
-virtual void __fastcall ExecuteCaptureInit(void);
-virtual void __fastcall ExecuteCaptureUnInit(void);
+virtual void __fastcall TvgExecuteCaptureInit(void);
+virtual void __fastcall TvgExecuteCaptureUnInit(void);
 TVideoGrabber* GetVideoGrabber(void);
 void __fastcall OnFrameCaptureCompleted(System::TObject* Sender, void * FrameBitmap, int BitmapWidth, int BitmapHeight, unsigned FrameNumber, __int64 FrameTime, TFrameCaptureDest DestType, System::UnicodeString FileName, bool Success, int FrameId);
 
@@ -723,9 +709,7 @@ virtual int CheckConnection(void) const;
 /// 1 - Изображение масштабируется пропорционально, по границам окна
 /// 2 - Изображение масштабиуется с растяжением по всем сторонам
 virtual int GetAutoScaleMode(void) const;
-virtual bool SetAutoScaleMode(int value);
-
-virtual void __fastcall ARecreateCapture(void);
+virtual bool SetAutoScaleMode(int value, bool forced=true);
 // --------------------------
 };
 
@@ -772,11 +756,7 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 // Управление потоком
 // --------------------------
-virtual void __fastcall ExecuteCaptureInit(void);
-
-virtual void __fastcall AStart(double time);
-
-virtual void __fastcall AStop(double time);
+virtual void __fastcall TvgExecuteCaptureInit(void);
 
 
 // Меняет временную метку с блокировкой
@@ -829,6 +809,7 @@ int GetSizeIndex(void) const;
 int GetSubtypeIndex(void) const;
 int GetAnalogIndex(void) const;
 int GetTVTunerChannel(void) const;
+bool SetTVTunerChannel(int channel, int tuner_input_type);
 int GetTVTunerCountryCode(void) const;
 int GetTVTunerMode(void) const;
 int GetTVTunerInputType(void) const;
@@ -852,11 +833,7 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 // Управление потоком
 // --------------------------
-virtual void __fastcall ExecuteCaptureInit(void);
-
-virtual void __fastcall AStart(double time);
-
-virtual void __fastcall AStop(double time);
+virtual void __fastcall TvgExecuteCaptureInit(void);
 // --------------------------
 
 
@@ -922,9 +899,7 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 // Управление потоком
 // --------------------------
-virtual void __fastcall AStart(double time);
-
-virtual void __fastcall AStop(double time);
+virtual void __fastcall TvgExecuteCaptureInit(void);
 // --------------------------
 
 
@@ -1002,10 +977,6 @@ virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 // Управление потоком
 // --------------------------
-virtual void __fastcall AStart(double time);
-
-virtual void __fastcall AStop(double time);
-
 virtual void __fastcall BeforeCalculate(void);
 
 virtual void __fastcall AfterCalculate(void);
@@ -1025,5 +996,133 @@ virtual void __fastcall AStopCapture(void);
 // --------------------------
 
 };
+
+class TVideoCaptureThreadNewVideoGrabber: public TVideoCaptureThread
+{
+protected: // Параметры
+
+protected: // Временные изображения
+RDK::UBitmap TempSource;
+Graphics::TBitmap* TempBitmap;
+
+//TVideoGrabberFrame *VideoGrabberFrame;
+TGrabberThread *GrabberThread;
+//TImageFrame* ImageFrame;
+
+String UserName, Password;
+
+RDK::UELockVar<double> CurrentTimeStamp;
+
+Graphics::TBitmap* ConvertBitmap;
+
+/// Маска для OSD
+Graphics::TBitmap* OverlayMaskBitmap;
+
+RDK::UBitmap ConvertUBitmap,ConvertResult;
+
+RDK::UELockVar<double> ConvertTimeStamp;
+
+/// Хендл окна в которое необходимо выводить данные захвата
+TWinControl* OverlayHandle;
+
+protected: // События
+/// Выставляется при получении очередного кадра
+HANDLE VideoGrabberCompleted;
+
+/// Событие блокировки изображения для конвертации
+HANDLE ConvertMutex;
+
+/// Событие блокировки OSD изображения
+HANDLE OSDMutex;
+
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+__fastcall TVideoCaptureThreadNewVideoGrabber(TVideoOutputFrame *frame, bool CreateSuspended);
+virtual __fastcall ~TVideoCaptureThreadNewVideoGrabber(void);
+// --------------------------
+
+// --------------------------
+// Управление параметрами
+// --------------------------
+virtual bool SetSourceMode(int mode);
+/// Имя файла изображения
+//std::string GetFileName(void) const;
+//bool SetFileName(const std::string& value);
+
+/// Возвращает число изображений в последовательности
+virtual long long GetNumBitmaps(void) const;
+
+/// Устанавливает текущую позицию в последовательности
+virtual long long GetPosition(void) const;
+virtual bool SetPosition(long long index);
+
+/// Устанавливает значение FPS
+double GetFps(void) const;
+bool SetFps(double fps);
+// --------------------------
+
+// --------------------------
+// Управление данными
+// --------------------------
+/// Создает копию этого потока
+RDK::UEPtr<TVideoCaptureThread> New(TVideoOutputFrame *frame, bool create_suspended);
+
+/// Сохранение настроек в xml
+virtual bool ASaveParameters(RDK::USerStorageXML &xml);
+
+/// Загрузка и применение настроек из xml
+virtual bool ALoadParameters(RDK::USerStorageXML &xml);
+// --------------------------
+
+// --------------------------
+// Управление потоком
+// --------------------------
+virtual void __fastcall BeforeCalculate(void);
+
+virtual void __fastcall AfterCalculate(void);
+
+virtual void __fastcall Calculate(void);
+// --------------------------
+
+// --------------------------
+// Скрытые методы управления потоком
+// --------------------------
+protected:
+virtual void __fastcall ARunCapture(void);
+
+virtual void __fastcall AStopCapture(void);
+
+virtual void __fastcall ARecreateCapture(void);
+// --------------------------
+
+public:
+void __fastcall OnFrameCaptureCompleted(System::TObject* Sender, void * FrameBitmap, int BitmapWidth, int BitmapHeight, unsigned FrameNumber, __int64 FrameTime, TFrameCaptureDest DestType, System::UnicodeString FileName, bool Success, int FrameId);
+
+void __fastcall VideoGrabberLog(TObject *Sender,
+	  TLogType LogType, String Severity, String InfoMsg);
+void __fastcall VideoGrabberDeviceLost(TObject *Sender);
+
+void __fastcall VideoGrabberFrameBitmap(TObject *Sender,
+	  pFrameInfo FrameInfo, pFrameBitmapInfo BitmapInfo);
+
+void __fastcall VideoGrabberPlayerEndOfStream(TObject *Sender);
+
+void __fastcall VideoGrabberOnPlayerOpened(System::TObject* Sender);
+
+void __fastcall VideoGrabberOnThreadSync(System::TObject* Sender, TThreadSyncPoint ThreadSyncPoint);
+
+void __fastcall VideoGrabberOnPreviewStarted(TObject *Sender);
+
+void __fastcall VideoGrabberOnVideoMouseUp(System::TObject* Sender, int VideoWindow, System::Uitypes::TMouseButton Button, System::Classes::TShiftState Shift, int X, int Y);
+
+void __fastcall VideoGrabberOnVideoMouseDown(System::TObject* Sender, int VideoWindow, System::Uitypes::TMouseButton Button, System::Classes::TShiftState Shift, int X, int Y);
+
+void __fastcall VideoGrabberOnVideoMouseMove(System::TObject* Sender, int VideoWindow, System::Classes::TShiftState Shift, int X, int Y);
+
+};
+
 
 #endif

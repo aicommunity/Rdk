@@ -13,8 +13,10 @@ See file license.txt for more information
 #define UADITEM_CPP
 
 #include <algorithm>
+#include "UXMLEnvSerialize.h"
 #include "UADItem.h"
 #include "UPropertyIO.h"
+#include "UStorage.h"
 
 namespace RDK {
 
@@ -47,7 +49,7 @@ UADItem::UADItem(void)
 
 UADItem::~UADItem(void)
 {
-}                       
+}
 // --------------------------
 
 // --------------------------
@@ -193,23 +195,29 @@ int UItem::GetNumActiveOutputs(const NameT &item_property_name) const
 // --------------------------
 // Возвращает указатель на вектор входов InputData по указателю на item
 // Возвращает 0 если citem == 0 или не найден в списке подключений
-const UEPtr<const UItemData>& UADItem::GetInputData(const UEPtr<UItem> &citem) const
+const UEPtr<const UItemData> UADItem::GetInputData(const UEPtr<UItem> &citem) const
 {
  UItemData result;
 
  if(!citem)
   throw new EInputIndexNotExist(-1);
 
- UCLink indexes=GetCLink(citem);
- if(indexes.Input < 0)
-  throw new EInputIndexNotExist(-1);
+ std::vector<UCLink> buffer;
+ GetCLink(citem,buffer);
+ for(size_t i=0;i<buffer.size();i++)
+ {
+  UCLink &indexes=buffer[i];
+  if(indexes.Input < 0)
+   throw new EInputIndexNotExist(-1);
 
- return InputData[indexes.Input];
+  return InputData[indexes.Input];
+ }
+ return UEPtr<const UItemData>();
 }
 
 // Возвращает указатель на вектор входов InputData по индексу
 // Проверяет индекс на корректность и возвращает 0, если такого входа нет фактически
-const UEPtr<const UItemData>& UADItem::GetInputData(size_t index) const
+const UEPtr<const UItemData> UADItem::GetInputData(size_t index) const
 {
  return InputData.at(index);
 }
@@ -220,7 +228,7 @@ size_t UADItem::GetInputDataSize(size_t index) const
 {
  if(index >= InputData.size())
   return 0;
- 
+
  if(!InputData[index])
   return 0;
 

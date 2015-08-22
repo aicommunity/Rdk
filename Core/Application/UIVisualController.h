@@ -1,6 +1,6 @@
 #ifndef UIVisualController_H
 #define UIVisualController_H
-  
+
 #include "../../Core/Graphics/UBitmap.h"
 #include "../../Core/Graphics/UAGraphics.h"
 #include "../../Core/Graphics/UGraphicsIO.h"

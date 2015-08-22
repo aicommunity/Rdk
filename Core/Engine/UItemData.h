@@ -14,6 +14,8 @@ See file license.txt for more information
 #ifndef UITEM_DATA_H
 #define UITEM_DATA_H
 
+#include "../../Deploy/Include/initdll_defs.h"
+#include "../Serialize/Serialize.h"
 
 // Отключение предупреждений в VS
 //#pragma warning( disable : 4355)

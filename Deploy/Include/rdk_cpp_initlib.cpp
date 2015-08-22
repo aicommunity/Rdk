@@ -2,7 +2,7 @@
 #define RDK_CPP_INITLIB_CPP
 
 #include "rdk_cpp_initlib.h"
-#include "rdk_cpp_init.cpp"
+//#include "rdk_cpp_init.cpp"
 
 #endif
 
