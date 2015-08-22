@@ -17,6 +17,7 @@ See file license.txt for more information
 #include <ostream>
 #include <istream>
 #include <fstream>
+#include <vector>
 
 namespace RDK {
 
@@ -176,7 +177,7 @@ bool LoadBitmapFromFile(const CharT *filename, UBitmap &bmp)
 
  if(file.eof())
   return false;
- 
+
  file>>bmp;
  file.close();
  return true;

@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 #include "UContainerDescription.h"
+#include "UXMLEnvSerialize.h"
 
 namespace RDK {
 

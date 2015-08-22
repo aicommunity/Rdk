@@ -213,7 +213,7 @@ bool USerStorageXML::ReadData(const std::string &name, T &data)
 {
  if(!SelectNode(name))
   return false;
- RDK::operator >> (*this,data);
+ operator >> (*this,data);
  //(*this)>>data;
  SelectUp();
  return true;
@@ -225,7 +225,7 @@ bool USerStorageXML::WriteData(const std::string &name, const T &data)
  if(!AddNode(name))
   return false;
 
- RDK::operator << (*this,data);
+ operator << (*this,data);
  //(*this)<<data;
  SelectUp();
  return true;
