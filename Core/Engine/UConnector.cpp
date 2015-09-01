@@ -461,9 +461,9 @@ bool UConnector::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name,
 	 }
 	 else
 	 {
-	  I->second[i].Name = item_property_name;
-	  c_index=i;
-	  return true;
+//	  I->second[i].Name = item_property_name;
+//	  c_index=i;
+//	  return true;
 	 }
 	}
    }
