@@ -1921,6 +1921,17 @@ bool TVideoCaptureThreadVideoGrabberAvi::SetFileName(const std::string& value)
  VideoGrabber->ClosePlayer();
  VideoGrabber->PlayerFileName=FileName.Get().c_str();
  VideoGrabber->FrameGrabberRGBFormat=fgf_RGB24;
+ if(DesiredResolutionFlag)
+ {
+  VideoGrabber->FrameCaptureZoomSize=100;
+  VideoGrabber->FrameCaptureWidth=DesiredWidth;
+  VideoGrabber->FrameCaptureHeight=DesiredHeight;
+ }
+ else
+ {
+  VideoGrabber->FrameCaptureWidth=-1;
+  VideoGrabber->FrameCaptureHeight=-1;
+ }
  VideoGrabber->OpenPlayer();
  return true;
 }
@@ -2162,6 +2173,18 @@ bool TVideoCaptureThreadVideoGrabberCamera::Init(int camera_index, int input_ind
  VideoGrabber->TVTunerInputType=TTunerInput(tv_tuner_input_type);
  VideoGrabber->TVCountryCode=tv_tuner_country_code;
  VideoGrabber->TVChannel=tv_tuner_channel;
+ if(DesiredResolutionFlag)
+ {
+  VideoGrabber->FrameCaptureZoomSize=100;
+  VideoGrabber->FrameCaptureWidth=DesiredWidth;
+  VideoGrabber->FrameCaptureHeight=DesiredHeight;
+ }
+ else
+ {
+  VideoGrabber->FrameCaptureWidth=-1;
+  VideoGrabber->FrameCaptureHeight=-1;
+ }
+
  return true;
 }
 // --------------------------
@@ -2334,6 +2357,17 @@ bool TVideoCaptureThreadVideoGrabberIpCamera::Init(const String camera_url, cons
  VideoGrabber->IPCameraURL=camera_url.c_str();
  VideoGrabber->FrameGrabberRGBFormat=fgf_RGB24;
 // VideoGrabber->OpenURLAsync=false;
+ if(DesiredResolutionFlag)
+ {
+  VideoGrabber->FrameCaptureZoomSize=100;
+  VideoGrabber->FrameCaptureWidth=DesiredWidth;
+  VideoGrabber->FrameCaptureHeight=DesiredHeight;
+ }
+ else
+ {
+  VideoGrabber->FrameCaptureWidth=-1;
+  VideoGrabber->FrameCaptureHeight=-1;
+ }
 
  VideoGrabber->SetAuthentication(at_IPCamera,user_name,user_password);
  return true;

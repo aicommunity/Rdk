@@ -41,6 +41,7 @@ int GetSize(void) const;
 
 // Меняет длину вектора
 void Resize(int size);
+void Resize(int size, T def_value);
 
 void Assign(int size, const T *data);
 void Assign(int size, T data);
@@ -128,6 +129,12 @@ template<class T>
 void MDVector<T>::Resize(int size)
 {
  MDMatrix<T>::Resize(size,1);
+}
+
+template<class T>
+void MDVector<T>::Resize(int size, T def_value)
+{
+ MDMatrix<T>::Resize(size,1,def_value);
 }
 
 template<class T>
