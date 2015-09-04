@@ -318,6 +318,11 @@ void TUComponentsListFrame::UpdateIO(void)
  RDK::separatestring(output_names,outputs,',');
  RDK::separatestring(input_names,inputs,',');
 
+ InputsStringGrid->Perform(WM_SETREDRAW, 0, 0);
+ OutputsStringGrid->Perform(WM_SETREDRAW, 0, 0);
+try
+{
+
  if(outputs.size()>0)
  {
 // int num=Model_GetComponentNumOutputs(GetSelectedComponentLongName().c_str());
@@ -333,7 +338,7 @@ void TUComponentsListFrame::UpdateIO(void)
    OutputsStringGrid->Cells[1][i+1]="";
   }
 
-  OutputsStringGrid->ColWidths[0]=OutputsStringGrid->Width-OutputsStringGrid->ColWidths[0]-24;
+  OutputsStringGrid->ColWidths[0]=OutputsStringGrid->Width-OutputsStringGrid->ColWidths[0]-25;
  }
  else
  {
@@ -352,7 +357,7 @@ void TUComponentsListFrame::UpdateIO(void)
 	OutputsStringGrid->Cells[1][i+1]="";
    }
 
-   OutputsStringGrid->ColWidths[0]=OutputsStringGrid->Width-OutputsStringGrid->ColWidths[0]-24;
+   OutputsStringGrid->ColWidths[0]=OutputsStringGrid->Width-OutputsStringGrid->ColWidths[0]-25;
   }
  }
 
@@ -371,11 +376,19 @@ void TUComponentsListFrame::UpdateIO(void)
   InputsStringGrid->Cells[1][i+1]="";
  }
 
- InputsStringGrid->ColWidths[0]=InputsStringGrid->Width-InputsStringGrid->ColWidths[0]-24;
+ InputsStringGrid->ColWidths[0]=InputsStringGrid->Width-InputsStringGrid->ColWidths[0]-25;
 
  if(InputsStringGrid->RowCount>1)
   InputsStringGrid->FixedRows=1;
 
+}
+__finally
+{
+  InputsStringGrid->Perform(WM_SETREDRAW, 1, 0);
+  InputsStringGrid->Invalidate();
+  OutputsStringGrid->Perform(WM_SETREDRAW, 1, 0);
+  OutputsStringGrid->Invalidate();
+}
  UpdateInterfaceFlag=false;
 }
 
@@ -472,6 +485,9 @@ void TUComponentsListFrame::UpdateNiceParamsList(TEnchancedSG *frame)
  xml.SelectNode("Parameters");
  int num=xml.GetNumNodes();
 
+ frame->BasicStringGrid->Perform(WM_SETREDRAW, 0, 0);
+try
+{
  if(num>0)
 	frame->BasicStringGrid->RowCount=1+num;
  else
@@ -562,6 +578,13 @@ void TUComponentsListFrame::UpdateNiceParamsList(TEnchancedSG *frame)
  }
 
  frame->Refresh();
+}
+__finally
+{
+  frame->BasicStringGrid->Perform(WM_SETREDRAW, 1, 0);
+  frame->BasicStringGrid->Invalidate();
+}
+
  UpdateInterfaceFlag=false;
 }
 
@@ -584,6 +607,9 @@ void TUComponentsListFrame::UpdateNiceStatesList(TEnchancedSG *frame)
  xml.SelectNode("State");
  int num=xml.GetNumNodes();
 
+ frame->BasicStringGrid->Perform(WM_SETREDRAW, 0, 0);
+try
+{
 if(num>0)
 	frame->BasicStringGrid->RowCount=1+num;
  else
@@ -666,6 +692,14 @@ if(num>0)
   xml.SelectUp();
  }
  frame->Refresh();
+
+}
+__finally
+{
+  frame->BasicStringGrid->Perform(WM_SETREDRAW, 1, 0);
+  frame->BasicStringGrid->Invalidate();
+}
+
  UpdateInterfaceFlag=false;
 }
 
