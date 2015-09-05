@@ -164,8 +164,6 @@ inherited UComponentsListFrame: TUComponentsListFrame
           OnSectionClick = HeaderControl2SectionClick
           ShowHint = False
           ParentShowHint = False
-          ExplicitLeft = -3
-          ExplicitTop = 511
         end
         object NiceParamValRichEdit: TRichEdit
           Left = 0
@@ -444,7 +442,6 @@ inherited UComponentsListFrame: TUComponentsListFrame
           OnSectionClick = ParametersHeaderControlSectionClick
           ShowHint = False
           ParentShowHint = False
-          ExplicitTop = 0
         end
         object ParametersRichEdit: TRichEdit
           Left = 0
@@ -462,7 +459,6 @@ inherited UComponentsListFrame: TUComponentsListFrame
           TabOrder = 1
           Zoom = 100
           OnChange = ParametersRichEditChange
-          ExplicitTop = 34
         end
       end
       object TabSheet2: TTabSheet
@@ -497,7 +493,6 @@ inherited UComponentsListFrame: TUComponentsListFrame
           OnSectionClick = StateHeaderControlSectionClick
           ShowHint = False
           ParentShowHint = False
-          ExplicitTop = 0
         end
         object StateRichEdit: TRichEdit
           Left = 0
@@ -515,7 +510,6 @@ inherited UComponentsListFrame: TUComponentsListFrame
           TabOrder = 1
           Zoom = 100
           OnChange = StateRichEditChange
-          ExplicitTop = 34
         end
       end
     end
@@ -562,11 +556,12 @@ inherited UComponentsListFrame: TUComponentsListFrame
       Top = 544
       Width = 359
       Height = 22
+      Hint = 'Component class name'
       Align = alBottom
       Alignment = taLeftJustify
+      ParentShowHint = False
+      ShowHint = True
       TabOrder = 2
-      ExplicitLeft = 5
-      ExplicitTop = 550
     end
   end
   object PopupMenu: TPopupMenu

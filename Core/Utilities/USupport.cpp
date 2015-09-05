@@ -61,6 +61,55 @@ std::string get_text_time(time_t time_data, char date_sep, char time_sep)
  result+=sntoa(time_stuct->tm_sec,2);
  return result;
 }
+
+/// ¬озвращает врем€ в виде пон€тной строки вида YYYYy MMm DDd HHh MMm SS:MSMSs из времени в секундах
+/// отображает только те элементы времени, которые необходимы
+std::string get_text_time_from_seconds(double time_data, char date_sep, char time_sep)
+{
+ std::string result;
+
+ int secs(0),mins(0),hours(0),days(0),mons(0),years(0),msecs(0);
+ if(time_data<1e-6)
+  return "0:000s";
+
+ years=time_data/(365*86400.0);
+ time_data-=years*(365*86400.0);
+ mons=time_data/(30*86400.0);
+ time_data-=mons*(30*86400.0);
+ days=time_data/86400.0;
+ time_data-=days*86400.0;
+ hours=time_data/3600.0;
+ time_data-=hours*3600.0;
+ mins=time_data/60.0;
+ time_data-=mins*60.0;
+ secs=time_data;
+ time_data-=secs;
+ msecs=time_data*1000;
+
+ if(years)
+  result+=sntoa(years)+date_sep;
+
+ if(mons || years)
+  result+=sntoa(mons,2)+date_sep;
+
+ if(days || mons || years)
+  result+=sntoa(days,2);
+
+ if(!result.empty())
+  result+=" ";
+
+ if(days || mons || years || hours)
+  result+=sntoa(hours,2)+time_sep;
+
+ if(days || mons || years || mins || hours)
+  result+=sntoa(mins,2)+time_sep;
+
+ if(days || mons || years || secs || mins || hours)
+  result+=sntoa(secs,2)+"."+sntoa(msecs,3);
+ return result;
+}
+
+
 /*
 // ¬озвращает врем€ в виде пон€тной строки вида YYYY/MM/DD HH:MM:SS,MS
 std::string get_text_current_time(char date_sep, char time_sep, char m_sec_sep, std::string additional_line)

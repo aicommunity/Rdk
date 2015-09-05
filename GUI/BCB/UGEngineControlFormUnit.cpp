@@ -239,7 +239,12 @@ void TUGEngineControlForm::AUpdateInterface(void)
  {
   Caption=Caption+String(" [")+ProjectName+": "+ProjectPath+ProjectFileName+"]";
  }
- StatusBar->SimpleText=UEngineMonitorForm->EngineMonitorFrame->StatusBar->SimpleText;
+
+ for(int i=0;i<StatusBar->Panels->Count;i++)
+ {
+  StatusBar->Panels->Items[i]->Text=UEngineMonitorForm->EngineMonitorFrame->StatusBar->Panels->Items[i]->Text;
+  StatusBar->Panels->Items[i]->Width=UEngineMonitorForm->EngineMonitorFrame->StatusBar->Panels->Items[i]->Width;
+ }
  StatusBar->Repaint();
  StatusBar->Update();
 

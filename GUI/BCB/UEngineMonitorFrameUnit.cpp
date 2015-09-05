@@ -724,23 +724,54 @@ void TUEngineMonitorFrame::AUpdateInterface(void)
   rt_performance=Env_CalcRTPerformance();
  }
 
- StatusBar->SimpleText=String("Model Time=")+FloatToStrF(Model_GetDoubleTime(),ffFixed,3,3)
-				+String("; Real Time=")+FloatToStrF(Model_GetDoubleRealTime(),ffFixed,3,3)
-				+String("; Model Duration Time=")+FloatToStrF(Model_GetFullStepDuration("")/1000.0,ffFixed,3,3);
+ double model_time=Model_GetDoubleTime();
+ double real_time=Model_GetDoubleRealTime();
+ double diff=real_time-model_time;
  if(CalculateMode[0] == 1)
-  StatusBar->SimpleText=StatusBar->SimpleText+String("; RT Performance [")+FloatToStrF(rt_performance,ffFixed,3,3)+String("=")+FloatToStrF(rt_model_duration,ffFixed,3,3)+String("/")+FloatToStrF(rt_calc_duration,ffFixed,3,3)+"]";
+ {
+  string str_model_time=RDK::get_text_time_from_seconds(model_time);
+  string str_diff_time=RDK::get_text_time_from_seconds(diff);
+  StatusBar->Panels->Items[0]->Text=String("Time: ")+str_model_time.c_str();
+  if(diff>0)
+   StatusBar->Panels->Items[0]->Text=StatusBar->Panels->Items[0]->Text+String(" (")+String(str_diff_time.c_str())+String(")");
+  int width=StatusBar->Canvas->TextWidth(StatusBar->Panels->Items[0]->Text)+15;
+  if(width<150)
+   width=150;
+  StatusBar->Panels->Items[0]->Width=width;
+ }
+ else
+ {
+  string str_real_time=RDK::get_text_time_from_seconds(real_time);
+  StatusBar->Panels->Items[0]->Text=str_real_time.c_str();
+ }
 
- if(instperf)
-  StatusBar->SimpleText=StatusBar->SimpleText+
-				String("; Model Performance=")+FloatToStrF(instperf,ffFixed,3,3)+
-				StatusBar->SimpleText=StatusBar->SimpleText+String(" (")+
-				FloatToStrF(fps,ffFixed,3,3)+String(" FPS)");
+ if(CalculateMode[0] == 1)
+  StatusBar->Panels->Items[1]->Text=String("RT: ")+FloatToStrF(rt_performance,ffFixed,3,3)+String("=")+FloatToStrF(rt_model_duration,ffFixed,3,3)+String("/")+FloatToStrF(rt_calc_duration,ffFixed,3,3);
+ else
+  StatusBar->Panels->Items[1]->Text=String("Step: ")+FloatToStrF(Model_GetFullStepDuration("")/1000.0,ffFixed,3,3)+"s";
 
- StatusBar->SimpleText=StatusBar->SimpleText
-				+String(" NumBfs=")+IntToStr(Engine_GetNumBufStrings());
+ if(CalculateMode[0] != 1)
+ {
+  if(instperf)
+  {
+   StatusBar->Panels->Items[2]->Text=String("Perf: ")+
+				FloatToStrF(instperf,ffFixed,3,1)+String(" (")+
+				FloatToStrF(fps,ffFixed,3,1)+String(" Fps)");
+  }
+  else
+  {
+   StatusBar->Panels->Items[2]->Text="";
+  }
+ }
+ else
+ {
+  StatusBar->Panels->Items[2]->Text="";
+ }
+ StatusBar->Panels->Items[3]->Text=
+				String("Bufs: ")+IntToStr(Engine_GetNumBufStrings());
 
- StatusBar->SimpleText=StatusBar->SimpleText
-				+String(" Log[")+IntToStr(Engine_GetNumUnreadLogLines())+String(":")+IntToStr(Engine_GetNumLogLines())+String("]");
+ StatusBar->Panels->Items[4]->Text=
+				String("Logs: [")+IntToStr(Engine_GetNumUnreadLogLines())+String(":")+IntToStr(Engine_GetNumLogLines())+String("]");
  StatusBar->Repaint();
  StatusBar->Update();
 

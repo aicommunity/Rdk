@@ -26,8 +26,22 @@ inherited UEngineMonitorFrame: TUEngineMonitorFrame
     Top = 388
     Width = 568
     Height = 19
-    Panels = <>
-    SimplePanel = True
+    Panels = <
+      item
+        Width = 160
+      end
+      item
+        Width = 160
+      end
+      item
+        Width = 150
+      end
+      item
+        Width = 70
+      end
+      item
+        Width = 70
+      end>
   end
   object Panel1: TPanel
     Left = 0
@@ -36,7 +50,6 @@ inherited UEngineMonitorFrame: TUEngineMonitorFrame
     Height = 19
     Align = alBottom
     TabOrder = 2
-    ExplicitTop = 352
     object ShowDebugMessagesCheckBox: TCheckBox
       Left = 1
       Top = 1

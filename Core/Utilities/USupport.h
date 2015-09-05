@@ -282,8 +282,12 @@ int separatestring(const basic_string<CharT> &str, vector<basic_string<CharT> > 
  return size;
 }
 
-// ¬озвращает врем€ в виде пон€тной строки вида YYYY.MM.DD HH:MM:SS
+/// ¬озвращает врем€ в виде пон€тной строки вида YYYY.MM.DD HH:MM:SS
 RDK_LIB_TYPE std::string get_text_time(time_t time_data, char date_sep='.', char time_sep=':');
+
+/// ¬озвращает врем€ в виде пон€тной строки вида YYYYy MMm DDd HHh MMm SS:MSMSs из времени в секундах
+/// отображает только те элементы времени, которые необходимы
+RDK_LIB_TYPE std::string get_text_time_from_seconds(double time_data, char date_sep='.', char time_sep=':');
 
 // ¬озвращает врем€ в виде пон€тной строки вида YYYY/MM/DD HH:MM:SS,MS + добавочна€ строка additional_line
 //std::string get_text_current_time(char date_sep='/', char time_sep=':', char m_sec_sep=',', std::string additional_line="GMT+04:00");
