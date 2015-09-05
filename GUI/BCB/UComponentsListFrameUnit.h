@@ -63,6 +63,10 @@ __published:	// IDE-managed Components
 	TEnchancedSG *EnchancedSG2;
 	TSplitter *Splitter6;
 	TMenuItem *Calculate1;
+	TMenuItem *N4;
+	TMenuItem *CopynametoClipboard1;
+	TMenuItem *CopyclasstoClipboard2;
+	TMenuItem *CopylongnametoClipboard1;
 	void __fastcall FrameResize(TObject *Sender);
 	void __fastcall StringGridDblClick(TObject *Sender);
 	void __fastcall StringGridSelectCell(TObject *Sender, int ACol, int ARow, bool &CanSelect);
@@ -139,6 +143,9 @@ __published:	// IDE-managed Components
 	void __fastcall EnchancedSG1PastevaluefromClipboard1Click(TObject *Sender);
 	void __fastcall EnchancedSG2PastevaluefromClipboard1Click(TObject *Sender);
 	void __fastcall Calculate1Click(TObject *Sender);
+	void __fastcall CopynametoClipboard1Click(TObject *Sender);
+	void __fastcall CopyclasstoClipboard2Click(TObject *Sender);
+	void __fastcall CopylongnametoClipboard1Click(TObject *Sender);
 
 
 

@@ -730,3 +730,25 @@ void __fastcall TUDrawEngineFrame::Cancelmoving1Click(TObject *Sender)
 //---------------------------------------------------------------------------
 
 
+void __fastcall TUDrawEngineFrame::CopynametoClipboard1Click(TObject *Sender)
+{
+ if(ComponentsListFrame)
+  ComponentsListFrame->CopynametoClipboard1Click(Sender);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUDrawEngineFrame::CopylongnametoClipboard1Click(TObject *Sender)
+
+{
+ if(ComponentsListFrame)
+  ComponentsListFrame->CopylongnametoClipboard1Click(Sender);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUDrawEngineFrame::CopyclasstoClipboard1Click(TObject *Sender)
+{
+ if(ComponentsListFrame)
+  ComponentsListFrame->CopyclasstoClipboard2Click(Sender);
+}
+//---------------------------------------------------------------------------
+

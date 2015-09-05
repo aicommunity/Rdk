@@ -2085,3 +2085,33 @@ void __fastcall TUComponentsListFrame::Calculate1Click(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+void __fastcall TUComponentsListFrame::CopynametoClipboard1Click(TObject *Sender)
+
+{
+ std::string stringcompid=GetSelectedComponentName();
+ if(stringcompid == "..")
+  return;
+
+ Clipboard()->AsText=stringcompid.c_str();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::CopyclasstoClipboard2Click(TObject *Sender)
+
+{
+ std::string stringcompid=GetSelectedComponentName();
+ if(stringcompid == "..")
+  return;
+
+ Clipboard()->AsText=ClassNamePanel->Caption;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::CopylongnametoClipboard1Click(TObject *Sender)
+
+{
+ std::string stringcompid=GetSelectedComponentLongName();
+ Clipboard()->AsText=stringcompid.c_str();
+}
+//---------------------------------------------------------------------------
+

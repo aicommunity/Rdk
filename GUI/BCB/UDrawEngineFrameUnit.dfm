@@ -147,8 +147,8 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
       TabOrder = 0
       OnResize = ScrollBoxResize
       object Image: TImage
-        Left = 0
-        Top = 0
+        Left = 20
+        Top = 14
         Width = 305
         Height = 241
         OnDragDrop = ImageDragDrop
@@ -227,7 +227,7 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
       Top = 12
       Width = 75
       Height = 25
-      Anchors = [akRight, akBottom]
+      Anchors = [akTop, akRight]
       Caption = 'Apply'
       Default = True
       TabOrder = 4
@@ -295,6 +295,21 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
     object Delete1: TMenuItem
       Caption = 'Delete'
       OnClick = Delete1Click
+    end
+    object N6: TMenuItem
+      Caption = '-'
+    end
+    object CopynametoClipboard1: TMenuItem
+      Caption = 'Copy name to Clipboard'
+      OnClick = CopynametoClipboard1Click
+    end
+    object CopylongnametoClipboard1: TMenuItem
+      Caption = 'Copy long name to Clipboard'
+      OnClick = CopylongnametoClipboard1Click
+    end
+    object CopyclasstoClipboard1: TMenuItem
+      Caption = 'Copy class to Clipboard'
+      OnClick = CopyclasstoClipboard1Click
     end
     object N5: TMenuItem
       Caption = '-'

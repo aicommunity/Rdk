@@ -54,6 +54,10 @@ __published:    // IDE-managed Components
 	TMenuItem *N5;
 	TMenuItem *Reset1;
 	TMenuItem *Calculate1;
+	TMenuItem *N6;
+	TMenuItem *CopynametoClipboard1;
+	TMenuItem *CopylongnametoClipboard1;
+	TMenuItem *CopyclasstoClipboard1;
     void __fastcall ImageMouseDown(TObject *Sender, TMouseButton Button, TShiftState Shift,
           int X, int Y);
     void __fastcall ImageMouseMove(TObject *Sender, TShiftState Shift, int X, int Y);
@@ -89,6 +93,9 @@ __published:    // IDE-managed Components
 	void __fastcall StartMoving1Click(TObject *Sender);
 	void __fastcall Finishmoving1Click(TObject *Sender);
 	void __fastcall Cancelmoving1Click(TObject *Sender);
+	void __fastcall CopynametoClipboard1Click(TObject *Sender);
+	void __fastcall CopylongnametoClipboard1Click(TObject *Sender);
+	void __fastcall CopyclasstoClipboard1Click(TObject *Sender);
 
 
 private:    // User declarations

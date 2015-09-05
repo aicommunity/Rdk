@@ -164,6 +164,8 @@ inherited UComponentsListFrame: TUComponentsListFrame
           OnSectionClick = HeaderControl2SectionClick
           ShowHint = False
           ParentShowHint = False
+          ExplicitLeft = -3
+          ExplicitTop = 511
         end
         object NiceParamValRichEdit: TRichEdit
           Left = 0
@@ -410,9 +412,10 @@ inherited UComponentsListFrame: TUComponentsListFrame
         Caption = 'Parameters'
         object ParametersHeaderControl: THeaderControl
           Left = 0
-          Top = 0
+          Top = 505
           Width = 376
           Height = 34
+          Align = alBottom
           HotTrack = True
           Sections = <
             item
@@ -441,10 +444,11 @@ inherited UComponentsListFrame: TUComponentsListFrame
           OnSectionClick = ParametersHeaderControlSectionClick
           ShowHint = False
           ParentShowHint = False
+          ExplicitTop = 0
         end
         object ParametersRichEdit: TRichEdit
           Left = 0
-          Top = 34
+          Top = 0
           Width = 376
           Height = 505
           Align = alClient
@@ -458,6 +462,7 @@ inherited UComponentsListFrame: TUComponentsListFrame
           TabOrder = 1
           Zoom = 100
           OnChange = ParametersRichEditChange
+          ExplicitTop = 34
         end
       end
       object TabSheet2: TTabSheet
@@ -465,9 +470,10 @@ inherited UComponentsListFrame: TUComponentsListFrame
         ImageIndex = 1
         object StateHeaderControl: THeaderControl
           Left = 0
-          Top = 0
+          Top = 505
           Width = 376
           Height = 34
+          Align = alBottom
           HotTrack = True
           Sections = <
             item
@@ -491,10 +497,11 @@ inherited UComponentsListFrame: TUComponentsListFrame
           OnSectionClick = StateHeaderControlSectionClick
           ShowHint = False
           ParentShowHint = False
+          ExplicitTop = 0
         end
         object StateRichEdit: TRichEdit
           Left = 0
-          Top = 34
+          Top = 0
           Width = 376
           Height = 505
           Align = alClient
@@ -508,6 +515,7 @@ inherited UComponentsListFrame: TUComponentsListFrame
           TabOrder = 1
           Zoom = 100
           OnChange = StateRichEditChange
+          ExplicitTop = 34
         end
       end
     end
@@ -557,6 +565,8 @@ inherited UComponentsListFrame: TUComponentsListFrame
       Align = alBottom
       Alignment = taLeftJustify
       TabOrder = 2
+      ExplicitLeft = 5
+      ExplicitTop = 550
     end
   end
   object PopupMenu: TPopupMenu
@@ -596,6 +606,21 @@ inherited UComponentsListFrame: TUComponentsListFrame
       Caption = 'Calculate'
       Hint = 'Calls component Calculate'
       OnClick = Calculate1Click
+    end
+    object N4: TMenuItem
+      Caption = '-'
+    end
+    object CopynametoClipboard1: TMenuItem
+      Caption = 'Copy name to Clipboard'
+      OnClick = CopynametoClipboard1Click
+    end
+    object CopylongnametoClipboard1: TMenuItem
+      Caption = 'Copy long name to Clipboard'
+      OnClick = CopylongnametoClipboard1Click
+    end
+    object CopyclasstoClipboard2: TMenuItem
+      Caption = 'Copy class to Clipboard'
+      OnClick = CopyclasstoClipboard2Click
     end
     object N1: TMenuItem
       Caption = '-'
