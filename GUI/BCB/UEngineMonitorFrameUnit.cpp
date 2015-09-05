@@ -734,21 +734,31 @@ void TUEngineMonitorFrame::AUpdateInterface(void)
   StatusBar->Panels->Items[0]->Text=String("Time: ")+str_model_time.c_str();
   if(diff>0)
    StatusBar->Panels->Items[0]->Text=StatusBar->Panels->Items[0]->Text+String(" (")+String(str_diff_time.c_str())+String(")");
-  int width=StatusBar->Canvas->TextWidth(StatusBar->Panels->Items[0]->Text)+15;
-  if(width<150)
-   width=150;
+  int width=StatusBar->Canvas->TextWidth(StatusBar->Panels->Items[0]->Text)+25;
+  if(width<100)
+   width=100;
   StatusBar->Panels->Items[0]->Width=width;
  }
  else
  {
   string str_real_time=RDK::get_text_time_from_seconds(real_time);
-  StatusBar->Panels->Items[0]->Text=str_real_time.c_str();
+  StatusBar->Panels->Items[0]->Text=String("Time: ")+str_real_time.c_str();
+  int width=StatusBar->Canvas->TextWidth(StatusBar->Panels->Items[0]->Text)+25;
+  StatusBar->Panels->Items[0]->Width=width;
  }
 
  if(CalculateMode[0] == 1)
+ {
   StatusBar->Panels->Items[1]->Text=String("RT: ")+FloatToStrF(rt_performance,ffFixed,3,3)+String("=")+FloatToStrF(rt_model_duration,ffFixed,3,3)+String("/")+FloatToStrF(rt_calc_duration,ffFixed,3,3);
+ }
  else
-  StatusBar->Panels->Items[1]->Text=String("Step: ")+FloatToStrF(Model_GetFullStepDuration("")/1000.0,ffFixed,3,3)+"s";
+ {
+  double full_step=Model_GetFullStepDuration("")/1000.0;
+  double interstep=Model_GetInterstepsInterval("")/1000.0;
+  StatusBar->Panels->Items[1]->Text=String("Step: ")+FloatToStrF(full_step,ffFixed,3,3)+"/"+FloatToStrF(full_step+interstep,ffFixed,3,3)+"s";
+ }
+ int width=StatusBar->Canvas->TextWidth(StatusBar->Panels->Items[1]->Text)+25;
+ StatusBar->Panels->Items[1]->Width=width;
 
  if(CalculateMode[0] != 1)
  {
@@ -757,6 +767,8 @@ void TUEngineMonitorFrame::AUpdateInterface(void)
    StatusBar->Panels->Items[2]->Text=String("Perf: ")+
 				FloatToStrF(instperf,ffFixed,3,1)+String(" (")+
 				FloatToStrF(fps,ffFixed,3,1)+String(" Fps)");
+   width=StatusBar->Canvas->TextWidth(StatusBar->Panels->Items[2]->Text)+25;
+   StatusBar->Panels->Items[2]->Width=width;
   }
   else
   {
@@ -766,12 +778,17 @@ void TUEngineMonitorFrame::AUpdateInterface(void)
  else
  {
   StatusBar->Panels->Items[2]->Text="";
+  StatusBar->Panels->Items[2]->Width=0;
  }
  StatusBar->Panels->Items[3]->Text=
 				String("Bufs: ")+IntToStr(Engine_GetNumBufStrings());
+ width=StatusBar->Canvas->TextWidth(StatusBar->Panels->Items[3]->Text)+25;
+ StatusBar->Panels->Items[3]->Width=width;
 
  StatusBar->Panels->Items[4]->Text=
 				String("Logs: [")+IntToStr(Engine_GetNumUnreadLogLines())+String(":")+IntToStr(Engine_GetNumLogLines())+String("]");
+ width=StatusBar->Canvas->TextWidth(StatusBar->Panels->Items[4]->Text)+25;
+ StatusBar->Panels->Items[4]->Width=width;
  StatusBar->Repaint();
  StatusBar->Update();
 
