@@ -2722,3 +2722,20 @@ void __fastcall TUGEngineControlForm::ToolButton15Click(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+
+void __fastcall TUGEngineControlForm::UDrawEngineFrame1Reset1Click(TObject *Sender)
+
+{
+  UComponentsListFrame1->Reset1Click(Sender);
+}
+//---------------------------------------------------------------------------
+
+
+
+void __fastcall TUGEngineControlForm::UDrawEngineFrame1Calculate1Click(TObject *Sender)
+
+{
+  UComponentsListFrame1->Calculate1Click(Sender);
+}
+//---------------------------------------------------------------------------
+

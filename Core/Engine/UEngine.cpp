@@ -1869,8 +1869,11 @@ int UEngine::Model_MoveComponent(const char* component, const char* target)
   if(!comp->GetOwner())
    return -6;
 
-  if(!comp->GetOwner()->MoveComponent(comp,target_comp))
+  if(comp == target_comp)
    return -7;
+
+  if(!comp->GetOwner()->MoveComponent(comp,target_comp))
+   return -8;
 
   AccessCache.clear();
  }

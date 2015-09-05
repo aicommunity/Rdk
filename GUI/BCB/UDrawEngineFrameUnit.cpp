@@ -694,14 +694,14 @@ void __fastcall TUDrawEngineFrame::Finishmoving1Click(TObject *Sender)
 
  if(StartName.empty())
  {
-  // TODO тут собощение об ошибке -нельзя двигать модель
+  Application->MessageBox(L"You can't move a model",L"Error",MB_OK);
   Cancelmoving1Click(Sender);
   return;
  }
 
  if(Model_MoveComponent(StartName.c_str(),StopName.c_str()) != 0)
  {
-  // TODO тут собощение об ошибке перемещения
+  Application->MessageBox(L"Component move error",L"Error",MB_OK);
   Cancelmoving1Click(Sender);
   return;
  }
@@ -726,6 +726,29 @@ void __fastcall TUDrawEngineFrame::Cancelmoving1Click(TObject *Sender)
  Createlonglink1->Enabled=true;
  Image->Cursor=crDefault;
  LongLinkFlag=false;
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TUDrawEngineFrame::CopynametoClipboard1Click(TObject *Sender)
+{
+ if(ComponentsListFrame)
+  ComponentsListFrame->CopynametoClipboard1Click(Sender);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUDrawEngineFrame::CopylongnametoClipboard1Click(TObject *Sender)
+
+{
+ if(ComponentsListFrame)
+  ComponentsListFrame->CopylongnametoClipboard1Click(Sender);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUDrawEngineFrame::CopyclasstoClipboard1Click(TObject *Sender)
+{
+ if(ComponentsListFrame)
+  ComponentsListFrame->CopyclasstoClipboard2Click(Sender);
 }
 //---------------------------------------------------------------------------
 

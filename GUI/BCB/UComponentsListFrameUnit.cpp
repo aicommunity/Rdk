@@ -13,6 +13,7 @@
 #include "UComponentsListFormUnit.h"
 #include "UListInputFormUnit.h"
 #include "UDrawEngineFrameUnit.h"
+#include <ClipBrd.hpp>
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -318,6 +319,11 @@ void TUComponentsListFrame::UpdateIO(void)
  RDK::separatestring(output_names,outputs,',');
  RDK::separatestring(input_names,inputs,',');
 
+ InputsStringGrid->Perform(WM_SETREDRAW, 0, 0);
+ OutputsStringGrid->Perform(WM_SETREDRAW, 0, 0);
+try
+{
+
  if(outputs.size()>0)
  {
 // int num=Model_GetComponentNumOutputs(GetSelectedComponentLongName().c_str());
@@ -333,7 +339,7 @@ void TUComponentsListFrame::UpdateIO(void)
    OutputsStringGrid->Cells[1][i+1]="";
   }
 
-  OutputsStringGrid->ColWidths[0]=OutputsStringGrid->Width-OutputsStringGrid->ColWidths[0]-24;
+  OutputsStringGrid->ColWidths[0]=OutputsStringGrid->Width-OutputsStringGrid->ColWidths[0]-25;
  }
  else
  {
@@ -352,7 +358,7 @@ void TUComponentsListFrame::UpdateIO(void)
 	OutputsStringGrid->Cells[1][i+1]="";
    }
 
-   OutputsStringGrid->ColWidths[0]=OutputsStringGrid->Width-OutputsStringGrid->ColWidths[0]-24;
+   OutputsStringGrid->ColWidths[0]=OutputsStringGrid->Width-OutputsStringGrid->ColWidths[0]-25;
   }
  }
 
@@ -371,11 +377,19 @@ void TUComponentsListFrame::UpdateIO(void)
   InputsStringGrid->Cells[1][i+1]="";
  }
 
- InputsStringGrid->ColWidths[0]=InputsStringGrid->Width-InputsStringGrid->ColWidths[0]-24;
+ InputsStringGrid->ColWidths[0]=InputsStringGrid->Width-InputsStringGrid->ColWidths[0]-25;
 
  if(InputsStringGrid->RowCount>1)
   InputsStringGrid->FixedRows=1;
 
+}
+__finally
+{
+  InputsStringGrid->Perform(WM_SETREDRAW, 1, 0);
+  InputsStringGrid->Invalidate();
+  OutputsStringGrid->Perform(WM_SETREDRAW, 1, 0);
+  OutputsStringGrid->Invalidate();
+}
  UpdateInterfaceFlag=false;
 }
 
@@ -472,6 +486,9 @@ void TUComponentsListFrame::UpdateNiceParamsList(TEnchancedSG *frame)
  xml.SelectNode("Parameters");
  int num=xml.GetNumNodes();
 
+ frame->BasicStringGrid->Perform(WM_SETREDRAW, 0, 0);
+try
+{
  if(num>0)
 	frame->BasicStringGrid->RowCount=1+num;
  else
@@ -562,6 +579,13 @@ void TUComponentsListFrame::UpdateNiceParamsList(TEnchancedSG *frame)
  }
 
  frame->Refresh();
+}
+__finally
+{
+  frame->BasicStringGrid->Perform(WM_SETREDRAW, 1, 0);
+  frame->BasicStringGrid->Invalidate();
+}
+
  UpdateInterfaceFlag=false;
 }
 
@@ -584,6 +608,9 @@ void TUComponentsListFrame::UpdateNiceStatesList(TEnchancedSG *frame)
  xml.SelectNode("State");
  int num=xml.GetNumNodes();
 
+ frame->BasicStringGrid->Perform(WM_SETREDRAW, 0, 0);
+try
+{
 if(num>0)
 	frame->BasicStringGrid->RowCount=1+num;
  else
@@ -666,6 +693,14 @@ if(num>0)
   xml.SelectUp();
  }
  frame->Refresh();
+
+}
+__finally
+{
+  frame->BasicStringGrid->Perform(WM_SETREDRAW, 1, 0);
+  frame->BasicStringGrid->Invalidate();
+}
+
  UpdateInterfaceFlag=false;
 }
 
@@ -1361,14 +1396,11 @@ void __fastcall TUComponentsListFrame::Movedown1Click(TObject *Sender)
 
 void __fastcall TUComponentsListFrame::Rename1Click(TObject *Sender)
 {
- vector<string> listvals;
- UListInputForm->PresentSelect=false;
- UListInputForm->MustInput=true;
- UListInputForm->Init("Select new name",listvals,SelectedComponentName);
- if(UListInputForm->ShowModal() != mrOk)
+ String value = InputBox("Rename component", "Please enter new component name", SelectedComponentName.c_str());
+ if(value.Length()==0)
   return;
- // std::string name=Model_GetComponentClassName(SelectedComponentName.c_str());
- std::string new_name=AnsiString(UListInputForm->Edit->Text).c_str();
+
+ std::string new_name=AnsiString(value).c_str();
  if(new_name == SelectedComponentName)
   return;
 
@@ -1384,6 +1416,13 @@ void __fastcall TUComponentsListFrame::Delete1Click(TObject *Sender)
  std::string stringcompid=GetSelectedComponentName();
  if(stringcompid == "..")
   return;
+
+ TKeyboardState State;
+ GetKeyboardState(State);
+ bool result = ((State[VK_SHIFT] & 128) != 0);
+ if(!result)
+  if(Application->MessageBox(L"Are you sure you want to delete this component?",L"Warning",MB_YESNO) != ID_YES)
+   return;
 
  std::string stringid=GetCurrentComponentId();
  Model_DelComponent(stringid.c_str(), stringcompid.c_str());
@@ -1965,6 +2004,114 @@ void __fastcall TUComponentsListFrame::EnchancedSG2BasicStringGridDrawCell(TObje
 	 String v = EnchancedSG2->BasicStringGrid->Cells[2][ARow];
 	 Model_SetComponentStateValue(AnsiString(n).c_str(),AnsiString(sn).c_str(), AnsiString(v).c_str());
   }
+}
+//---------------------------------------------------------------------------
+/*
+void __fastcall TUComponentsListFrame::CopyNametoClipboard1Click(TObject *Sender)
+
+{
+ Clipboard()->AsText=GetSelectedComponentParameterName().c_str();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::CopyValuetoClipboard1Click(TObject *Sender)
+
+{
+	  TProperty p;
+	  EnchancedSG1->m_storage.GetPropertyByIndex(EnchancedSG1->BasicStringGrid->Row-1,&p);
+	  NiceParamValRichEdit->Text = p.GetString();
+	  String n = GetSelectedComponentLongName().c_str();
+	  String sn = EnchancedSG1->BasicStringGrid->Cells[1][EnchancedSG1->BasicStringGrid->Row];
+	  Clipboard()->AsText=p.GetString();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::PasteValuefromClipboard1Click(TObject *Sender)
+
+{
+	  TProperty p;
+	  EnchancedSG1->m_storage.GetPropertyByIndex(EnchancedSG1->BasicStringGrid->Row-1,&p);
+	  NiceParamValRichEdit->Text = p.GetString();
+	  String n = GetSelectedComponentLongName().c_str();
+	  String sn = EnchancedSG1->BasicStringGrid->Cells[1][EnchancedSG1->BasicStringGrid->Row];
+	  String v = Clipboard()->AsText;//p.GetString();
+	  Model_SetComponentParameterValue(AnsiString(n).c_str(),AnsiString(sn).c_str(), AnsiString(v).c_str());
+} */
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::EnchancedSG1PastevaluefromClipboard1Click(TObject *Sender)
+
+{
+  EnchancedSG1->PastevaluefromClipboard1Click(Sender);
+	  TProperty p;
+	  EnchancedSG1->m_storage.GetPropertyByIndex(EnchancedSG1->BasicStringGrid->Row-1,&p);
+	  NiceParamValRichEdit->Text = p.GetString();
+	  String n = GetSelectedComponentLongName().c_str();
+	  String sn = EnchancedSG1->BasicStringGrid->Cells[1][EnchancedSG1->BasicStringGrid->Row];
+	  String v = p.GetString();
+	  Model_SetComponentParameterValue(AnsiString(n).c_str(),AnsiString(sn).c_str(), AnsiString(v).c_str());
+
+  UpdateNiceParamsList(EnchancedSG1);
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TUComponentsListFrame::EnchancedSG2PastevaluefromClipboard1Click(TObject *Sender)
+
+{
+	  TProperty p;
+	  EnchancedSG2->m_storage.GetPropertyByIndex(EnchancedSG2->BasicStringGrid->Row-1,&p);
+	  NiceStateValRichEdit->Text = p.GetString();
+
+	  String n = GetSelectedComponentLongName().c_str();
+	  String sn = EnchancedSG2->BasicStringGrid->Cells[1][EnchancedSG2->BasicStringGrid->Row];
+	  String v = p.GetString();
+	  Model_SetComponentStateValue(AnsiString(n).c_str(),AnsiString(sn).c_str(), AnsiString(v).c_str());
+  EnchancedSG2->PastevaluefromClipboard1Click(Sender);
+  UpdateNiceStatesList(EnchancedSG2);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::Calculate1Click(TObject *Sender)
+{
+ std::string stringcompid=GetSelectedComponentName();
+ if(stringcompid == "..")
+  return;
+
+ std::string stringid=GetCurrentComponentId();
+ Env_Calculate(stringid.c_str());
+
+ RDK::UIVisualControllerStorage::UpdateInterface();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::CopynametoClipboard1Click(TObject *Sender)
+
+{
+ std::string stringcompid=GetSelectedComponentName();
+ if(stringcompid == "..")
+  return;
+
+ Clipboard()->AsText=stringcompid.c_str();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::CopyclasstoClipboard2Click(TObject *Sender)
+
+{
+ std::string stringcompid=GetSelectedComponentName();
+ if(stringcompid == "..")
+  return;
+
+ Clipboard()->AsText=ClassNamePanel->Caption;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::CopylongnametoClipboard1Click(TObject *Sender)
+
+{
+ std::string stringcompid=GetSelectedComponentLongName();
+ Clipboard()->AsText=stringcompid.c_str();
 }
 //---------------------------------------------------------------------------
 

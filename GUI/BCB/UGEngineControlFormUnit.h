@@ -229,6 +229,8 @@ __published:	// IDE-managed Components
 	void __fastcall PauseChannel1Click(TObject *Sender);
 	void __fastcall ResetChannel1Click(TObject *Sender);
 	void __fastcall ToolButton15Click(TObject *Sender);
+	void __fastcall UDrawEngineFrame1Reset1Click(TObject *Sender);
+	void __fastcall UDrawEngineFrame1Calculate1Click(TObject *Sender);
 
 
 
