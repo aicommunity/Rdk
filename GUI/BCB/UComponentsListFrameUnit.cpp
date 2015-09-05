@@ -2072,3 +2072,16 @@ void __fastcall TUComponentsListFrame::EnchancedSG2PastevaluefromClipboard1Click
 }
 //---------------------------------------------------------------------------
 
+void __fastcall TUComponentsListFrame::Calculate1Click(TObject *Sender)
+{
+ std::string stringcompid=GetSelectedComponentName();
+ if(stringcompid == "..")
+  return;
+
+ std::string stringid=GetCurrentComponentId();
+ Env_Calculate(stringid.c_str());
+
+ RDK::UIVisualControllerStorage::UpdateInterface();
+}
+//---------------------------------------------------------------------------
+

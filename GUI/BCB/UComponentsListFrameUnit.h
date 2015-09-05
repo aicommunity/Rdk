@@ -138,6 +138,7 @@ __published:	// IDE-managed Components
           TRect &Rect, TGridDrawState State);
 	void __fastcall EnchancedSG1PastevaluefromClipboard1Click(TObject *Sender);
 	void __fastcall EnchancedSG2PastevaluefromClipboard1Click(TObject *Sender);
+	void __fastcall Calculate1Click(TObject *Sender);
 
 
 

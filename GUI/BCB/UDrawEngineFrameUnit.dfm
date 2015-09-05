@@ -46,28 +46,28 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
         ExplicitWidth = 227
         ExplicitHeight = 422
         inherited NameTabSheet: TTabSheet
-          ExplicitWidth = 219
-          ExplicitHeight = 394
+          ExplicitLeft = 4
+          ExplicitTop = 24
+          ExplicitWidth = 499
+          ExplicitHeight = 515
           inherited StringGrid: TStringGrid
-            Width = 219
-            Height = 394
             OnMouseMove = UClassesListFrameStringGridMouseMove
             OnMouseUp = UClassesListFrameStringGridMouseUp
           end
         end
         inherited LibsTabSheet: TTabSheet
-          ExplicitWidth = 219
-          ExplicitHeight = 394
+          ExplicitLeft = 4
+          ExplicitTop = 24
+          ExplicitWidth = 499
+          ExplicitHeight = 515
           inherited TreeView: TTreeView
-            Width = 219
-            Height = 394
             OnMouseMove = UClassesListFrameTreeViewMouseMove
             OnMouseUp = UClassesListFrameTreeViewMouseUp
-            ExplicitWidth = 219
-            ExplicitHeight = 394
           end
         end
         inherited LibsControlTabSheet: TTabSheet
+          ExplicitLeft = 4
+          ExplicitTop = 24
           ExplicitWidth = 219
           ExplicitHeight = 394
           inherited Splitter1: TSplitter
@@ -271,13 +271,6 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
     object N1: TMenuItem
       Caption = '-'
     end
-    object Rename1: TMenuItem
-      Caption = 'Rename'
-      OnClick = Rename1Click
-    end
-    object N5: TMenuItem
-      Caption = '-'
-    end
     object StartMoving1: TMenuItem
       Caption = 'Start moving'
       OnClick = StartMoving1Click
@@ -295,9 +288,22 @@ inherited UDrawEngineFrame: TUDrawEngineFrame
     object N4: TMenuItem
       Caption = '-'
     end
+    object Rename1: TMenuItem
+      Caption = 'Rename'
+      OnClick = Rename1Click
+    end
     object Delete1: TMenuItem
       Caption = 'Delete'
       OnClick = Delete1Click
+    end
+    object N5: TMenuItem
+      Caption = '-'
+    end
+    object Reset1: TMenuItem
+      Caption = 'Reset'
+    end
+    object Calculate1: TMenuItem
+      Caption = 'Calculate'
     end
     object N3: TMenuItem
       Caption = '-'

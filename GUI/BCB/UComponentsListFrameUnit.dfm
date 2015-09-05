@@ -562,14 +562,6 @@ inherited UComponentsListFrame: TUComponentsListFrame
   object PopupMenu: TPopupMenu
     Left = 288
     Top = 288
-    object GUI1: TMenuItem
-      Caption = 'GUI'
-      Hint = 'Open component GUI if possible'
-      OnClick = GUI1Click
-    end
-    object N1: TMenuItem
-      Caption = '-'
-    end
     object Moveup1: TMenuItem
       Caption = 'Move up'
       Hint = 'Changing component calculation order'
@@ -603,6 +595,15 @@ inherited UComponentsListFrame: TUComponentsListFrame
     object Calculate1: TMenuItem
       Caption = 'Calculate'
       Hint = 'Calls component Calculate'
+      OnClick = Calculate1Click
+    end
+    object N1: TMenuItem
+      Caption = '-'
+    end
+    object GUI1: TMenuItem
+      Caption = 'GUI'
+      Hint = 'Open component GUI if possible'
+      OnClick = GUI1Click
     end
   end
 end

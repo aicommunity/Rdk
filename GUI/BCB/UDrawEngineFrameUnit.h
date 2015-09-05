@@ -48,10 +48,12 @@ __published:    // IDE-managed Components
 	TMenuItem *Rename1;
 	TMenuItem *N4;
 	TMenuItem *Delete1;
-	TMenuItem *N5;
 	TMenuItem *StartMoving1;
 	TMenuItem *Finishmoving1;
 	TMenuItem *Cancelmoving1;
+	TMenuItem *N5;
+	TMenuItem *Reset1;
+	TMenuItem *Calculate1;
     void __fastcall ImageMouseDown(TObject *Sender, TMouseButton Button, TShiftState Shift,
           int X, int Y);
     void __fastcall ImageMouseMove(TObject *Sender, TShiftState Shift, int X, int Y);
