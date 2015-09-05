@@ -18,6 +18,7 @@ object EnchancedSG: TEnchancedSG
     FixedRows = 0
     Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing]
     ParentShowHint = False
+    PopupMenu = PopupMenu1
     ShowHint = True
     TabOrder = 1
     OnDblClick = BasicStringGridDblClick
@@ -105,5 +106,24 @@ object EnchancedSG: TEnchancedSG
     TabOrder = 7
     Visible = False
     OnKeyPress = cmbListEditKeyPress
+  end
+  object PopupMenu1: TPopupMenu
+    Left = 72
+    Top = 232
+    object CopynametoClipboard1: TMenuItem
+      Caption = 'Copy name to Clipboard'
+      OnClick = CopynametoClipboard1Click
+    end
+    object CopyvaluetoClipboard1: TMenuItem
+      Caption = 'Copy value to Clipboard'
+      OnClick = CopyvaluetoClipboard1Click
+    end
+    object N1: TMenuItem
+      Caption = '-'
+    end
+    object PastevaluefromClipboard1: TMenuItem
+      Caption = 'Paste value from Clipboard'
+      OnClick = PastevaluefromClipboard1Click
+    end
   end
 end

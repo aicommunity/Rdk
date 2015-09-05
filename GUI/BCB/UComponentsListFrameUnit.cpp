@@ -13,6 +13,7 @@
 #include "UComponentsListFormUnit.h"
 #include "UListInputFormUnit.h"
 #include "UDrawEngineFrameUnit.h"
+#include <ClipBrd.hpp>
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -1395,14 +1396,11 @@ void __fastcall TUComponentsListFrame::Movedown1Click(TObject *Sender)
 
 void __fastcall TUComponentsListFrame::Rename1Click(TObject *Sender)
 {
- vector<string> listvals;
- UListInputForm->PresentSelect=false;
- UListInputForm->MustInput=true;
- UListInputForm->Init("Select new name",listvals,SelectedComponentName);
- if(UListInputForm->ShowModal() != mrOk)
+ String value = InputBox("Rename component", "Please enter new component name", SelectedComponentName.c_str());
+ if(value.Length()==0)
   return;
- // std::string name=Model_GetComponentClassName(SelectedComponentName.c_str());
- std::string new_name=AnsiString(UListInputForm->Edit->Text).c_str();
+
+ std::string new_name=AnsiString(value).c_str();
  if(new_name == SelectedComponentName)
   return;
 
@@ -1418,6 +1416,13 @@ void __fastcall TUComponentsListFrame::Delete1Click(TObject *Sender)
  std::string stringcompid=GetSelectedComponentName();
  if(stringcompid == "..")
   return;
+
+ TKeyboardState State;
+ GetKeyboardState(State);
+ bool result = ((State[VK_SHIFT] & 128) != 0);
+ if(!result)
+  if(Application->MessageBox(L"Are you sure you want to delete this component?",L"Warning",MB_YESNO) != ID_YES)
+   return;
 
  std::string stringid=GetCurrentComponentId();
  Model_DelComponent(stringid.c_str(), stringcompid.c_str());
@@ -1999,6 +2004,71 @@ void __fastcall TUComponentsListFrame::EnchancedSG2BasicStringGridDrawCell(TObje
 	 String v = EnchancedSG2->BasicStringGrid->Cells[2][ARow];
 	 Model_SetComponentStateValue(AnsiString(n).c_str(),AnsiString(sn).c_str(), AnsiString(v).c_str());
   }
+}
+//---------------------------------------------------------------------------
+/*
+void __fastcall TUComponentsListFrame::CopyNametoClipboard1Click(TObject *Sender)
+
+{
+ Clipboard()->AsText=GetSelectedComponentParameterName().c_str();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::CopyValuetoClipboard1Click(TObject *Sender)
+
+{
+	  TProperty p;
+	  EnchancedSG1->m_storage.GetPropertyByIndex(EnchancedSG1->BasicStringGrid->Row-1,&p);
+	  NiceParamValRichEdit->Text = p.GetString();
+	  String n = GetSelectedComponentLongName().c_str();
+	  String sn = EnchancedSG1->BasicStringGrid->Cells[1][EnchancedSG1->BasicStringGrid->Row];
+	  Clipboard()->AsText=p.GetString();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::PasteValuefromClipboard1Click(TObject *Sender)
+
+{
+	  TProperty p;
+	  EnchancedSG1->m_storage.GetPropertyByIndex(EnchancedSG1->BasicStringGrid->Row-1,&p);
+	  NiceParamValRichEdit->Text = p.GetString();
+	  String n = GetSelectedComponentLongName().c_str();
+	  String sn = EnchancedSG1->BasicStringGrid->Cells[1][EnchancedSG1->BasicStringGrid->Row];
+	  String v = Clipboard()->AsText;//p.GetString();
+	  Model_SetComponentParameterValue(AnsiString(n).c_str(),AnsiString(sn).c_str(), AnsiString(v).c_str());
+} */
+//---------------------------------------------------------------------------
+
+void __fastcall TUComponentsListFrame::EnchancedSG1PastevaluefromClipboard1Click(TObject *Sender)
+
+{
+  EnchancedSG1->PastevaluefromClipboard1Click(Sender);
+	  TProperty p;
+	  EnchancedSG1->m_storage.GetPropertyByIndex(EnchancedSG1->BasicStringGrid->Row-1,&p);
+	  NiceParamValRichEdit->Text = p.GetString();
+	  String n = GetSelectedComponentLongName().c_str();
+	  String sn = EnchancedSG1->BasicStringGrid->Cells[1][EnchancedSG1->BasicStringGrid->Row];
+	  String v = p.GetString();
+	  Model_SetComponentParameterValue(AnsiString(n).c_str(),AnsiString(sn).c_str(), AnsiString(v).c_str());
+
+  UpdateNiceParamsList(EnchancedSG1);
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TUComponentsListFrame::EnchancedSG2PastevaluefromClipboard1Click(TObject *Sender)
+
+{
+	  TProperty p;
+	  EnchancedSG2->m_storage.GetPropertyByIndex(EnchancedSG2->BasicStringGrid->Row-1,&p);
+	  NiceStateValRichEdit->Text = p.GetString();
+
+	  String n = GetSelectedComponentLongName().c_str();
+	  String sn = EnchancedSG2->BasicStringGrid->Cells[1][EnchancedSG2->BasicStringGrid->Row];
+	  String v = p.GetString();
+	  Model_SetComponentStateValue(AnsiString(n).c_str(),AnsiString(sn).c_str(), AnsiString(v).c_str());
+  EnchancedSG2->PastevaluefromClipboard1Click(Sender);
+  UpdateNiceStatesList(EnchancedSG2);
 }
 //---------------------------------------------------------------------------
 

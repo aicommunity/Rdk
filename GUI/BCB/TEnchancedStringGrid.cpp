@@ -5,6 +5,7 @@
 
 #define EDIT_COL 2
 
+#include <ClipBrd.hpp>
 #include "TEnchancedStringGrid.h"
 // ---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -1009,6 +1010,32 @@ void __fastcall TEnchancedSG::BasicStringGridMouseMove(TObject *Sender, TShiftSt
 
 //  cmbListEdit->Hint=p.GetDesc();
 
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TEnchancedSG::CopynametoClipboard1Click(TObject *Sender)
+{
+	  TProperty p;
+	  m_storage.GetPropertyByIndex(BasicStringGrid->Row-1,&p);
+	  Clipboard()->AsText=p.GetName();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TEnchancedSG::CopyvaluetoClipboard1Click(TObject *Sender)
+{
+	  TProperty p;
+	  m_storage.GetPropertyByIndex(BasicStringGrid->Row-1,&p);
+	  Clipboard()->AsText=p.GetString();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TEnchancedSG::PastevaluefromClipboard1Click(TObject *Sender)
+{
+	  TProperty p;
+	  m_storage.GetPropertyByIndex(BasicStringGrid->Row-1,&p);
+	  p.SetString(Clipboard()->AsText);
+	  m_storage.SetPropertyByIndex(BasicStringGrid->Row-1,p);
 }
 //---------------------------------------------------------------------------
 

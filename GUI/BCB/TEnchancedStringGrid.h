@@ -9,6 +9,7 @@
 #include <Vcl.Forms.hpp>
 #include <Vcl.Grids.hpp>
 #include <Vcl.ComCtrls.hpp>
+#include <Vcl.Menus.hpp>
 //---------------------------------------------------------------------------
 #include <vector>
 //---------------------------------------------------------------------------
@@ -95,6 +96,11 @@ __published:	// IDE-managed Components
 	TEdit *txtIntEdit;
 	TEdit *txtBorderedIntEdit;
 	TComboBox *cmbListEdit;
+	TPopupMenu *PopupMenu1;
+	TMenuItem *CopynametoClipboard1;
+	TMenuItem *CopyvaluetoClipboard1;
+	TMenuItem *N1;
+	TMenuItem *PastevaluefromClipboard1;
 	void __fastcall BasicStringGridDrawCell(TObject *Sender, int ACol, int ARow, TRect &Rect,
           TGridDrawState State);
 	void __fastcall BasicStringGridSelectCell(TObject *Sender, int ACol, int ARow, bool &CanSelect);
@@ -110,6 +116,9 @@ __published:	// IDE-managed Components
 	void __fastcall FrameResize(TObject *Sender);
 	void __fastcall BasicStringGridMouseMove(TObject *Sender, TShiftState Shift, int X,
           int Y);
+	void __fastcall CopynametoClipboard1Click(TObject *Sender);
+	void __fastcall CopyvaluetoClipboard1Click(TObject *Sender);
+	void __fastcall PastevaluefromClipboard1Click(TObject *Sender);
 
 
 

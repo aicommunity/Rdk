@@ -114,6 +114,11 @@ inherited UComponentsListFrame: TUComponentsListFrame
             ExplicitLeft = 32
             ExplicitTop = 287
           end
+          inherited PopupMenu1: TPopupMenu
+            inherited PastevaluefromClipboard1: TMenuItem
+              OnClick = EnchancedSG1PastevaluefromClipboard1Click
+            end
+          end
         end
         object HeaderControl2: THeaderControl
           Left = 0
@@ -274,6 +279,9 @@ inherited UComponentsListFrame: TUComponentsListFrame
             OnKeyPress = EnchancedSG2BasicStringGridKeyPress
             OnMouseEnter = EnchancedSG2BasicStringGridMouseEnter
             OnSelectCell = EnchancedSG2BasicStringGridSelectCell
+            RowHeights = (
+              18
+              18)
           end
           inherited txtStringEdit: TEdit
             Left = 32
@@ -329,6 +337,11 @@ inherited UComponentsListFrame: TUComponentsListFrame
             OnKeyPress = EnchancedSG2cmbListEditKeyPress
             ExplicitLeft = 32
             ExplicitTop = 287
+          end
+          inherited PopupMenu1: TPopupMenu
+            inherited PastevaluefromClipboard1: TMenuItem
+              OnClick = EnchancedSG2PastevaluefromClipboard1Click
+            end
           end
         end
       end
@@ -551,6 +564,7 @@ inherited UComponentsListFrame: TUComponentsListFrame
     Top = 288
     object GUI1: TMenuItem
       Caption = 'GUI'
+      Hint = 'Open component GUI if possible'
       OnClick = GUI1Click
     end
     object N1: TMenuItem
@@ -558,10 +572,12 @@ inherited UComponentsListFrame: TUComponentsListFrame
     end
     object Moveup1: TMenuItem
       Caption = 'Move up'
+      Hint = 'Changing component calculation order'
       OnClick = Moveup1Click
     end
     object Movedown1: TMenuItem
       Caption = 'Move down'
+      Hint = 'Changing component calculation order'
       OnClick = Movedown1Click
     end
     object N2: TMenuItem
@@ -571,19 +587,22 @@ inherited UComponentsListFrame: TUComponentsListFrame
       Caption = 'Rename'
       OnClick = Rename1Click
     end
-    object N3: TMenuItem
-      Caption = '-'
-    end
     object Delete1: TMenuItem
       Caption = 'Delete'
+      Hint = 'Press '#39'Shift'#39' to delete without prompt'
       OnClick = Delete1Click
     end
-    object N4: TMenuItem
+    object N3: TMenuItem
       Caption = '-'
     end
     object Reset1: TMenuItem
       Caption = 'Reset'
+      Hint = 'Calls component Reset'
       OnClick = Reset1Click
+    end
+    object Calculate1: TMenuItem
+      Caption = 'Calculate'
+      Hint = 'Calls component Calculate'
     end
   end
 end

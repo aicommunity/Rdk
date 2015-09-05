@@ -51,7 +51,6 @@ __published:	// IDE-managed Components
 	TMenuItem *N2;
 	TMenuItem *N3;
 	TMenuItem *Delete1;
-	TMenuItem *N4;
 	TMenuItem *Reset1;
 	TTabSheet *TabSheet6;
 	TEnchancedSG *EnchancedSG1;
@@ -63,6 +62,7 @@ __published:	// IDE-managed Components
 	TRichEdit *NiceStateValRichEdit;
 	TEnchancedSG *EnchancedSG2;
 	TSplitter *Splitter6;
+	TMenuItem *Calculate1;
 	void __fastcall FrameResize(TObject *Sender);
 	void __fastcall StringGridDblClick(TObject *Sender);
 	void __fastcall StringGridSelectCell(TObject *Sender, int ACol, int ARow, bool &CanSelect);
@@ -136,6 +136,9 @@ __published:	// IDE-managed Components
 	void __fastcall EnchancedSG1txtIntEditKeyPress(TObject *Sender, System::WideChar &Key);
 	void __fastcall EnchancedSG2BasicStringGridDrawCell(TObject *Sender, int ACol, int ARow,
           TRect &Rect, TGridDrawState State);
+	void __fastcall EnchancedSG1PastevaluefromClipboard1Click(TObject *Sender);
+	void __fastcall EnchancedSG2PastevaluefromClipboard1Click(TObject *Sender);
+
 
 
 
