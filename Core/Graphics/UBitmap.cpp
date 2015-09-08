@@ -477,6 +477,49 @@ void UBitmap::CopyTo(int x, int y, UBitmap &target)
  }
 }
 
+// Ширина и высота копируемого источника copy_width, copy_height
+// Поддерживает режимы ubmY8, ubmRGB24, ubmY32
+void UBitmap::CopyTo(int x, int y, int x_from, int y_from, int copy_width, int copy_height, UBitmap &target)
+{
+ int xsize,ysize;
+
+ if(copy_width<0 || copy_height<0)
+  return;
+
+ if(copy_width+x_from>Width)
+  copy_width=Width-x_from;
+
+ if(copy_height+y_from>Height)
+  copy_height=Height-y_from;
+
+ if(x < 0 || y < 0 || x >= target.Width || y >= target.Height
+	|| x_from<0 || y_from<0 || x_from>=copy_width || y_from>=copy_height)
+  return;
+
+ xsize=(copy_width<target.Width-x)?copy_width:target.Width-x;
+ ysize=(copy_height<target.Height-y)?copy_height:target.Height-y;
+
+ target.SetColorModel(ColorModel,false);
+
+ switch(ColorModel)
+ {
+ case ubmY8:
+  for(int j=0;j<ysize;j++)
+   memcpy(target.Data+(j+y)*target.Width+x,Data+(j+y_from)*Width+x_from,xsize*sizeof(UBColor));
+ break;
+
+ case ubmRGB24:
+  for(int j=0;j<ysize;j++)
+   memcpy(target.Data+(j+y)*target.Width*3+x*3,Data+(j+y_from)*Width*3+x_from*3,xsize*3);
+ break;
+
+ case ubmY32:
+  for(int j=0;j<ysize;j++)
+   memcpy(target.Data+(j+y)*target.Width*4+x*4,Data+(j+y_from)*Width*4+x_from*4,xsize*4);
+ break;
+ }
+}
+
 // Копирует изображение в 'target' в позицию,
 // начинающуюся как x,y
 // Если изображение не вмещается целиком, то оно усекается

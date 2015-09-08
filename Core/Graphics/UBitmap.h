@@ -249,6 +249,13 @@ void ConvertTo(UBitmap &target) const;
 void CopyTo(int x, int y, UBitmap &target);
 
 // Копирует изображение в 'target' в позицию,
+// начинающуюся как x,y, начиная с позиции в исходном изображении x_from, y_from
+// Если изображение не вмещается целиком, то оно усекается
+// Ширина и высота копируемого источника copy_width, copy_height
+// Поддерживает режимы ubmY8, ubmRGB24, ubmY32
+void CopyTo(int x, int y, int x_from, int y_from, int copy_width, int copy_height, UBitmap &target);
+
+// Копирует изображение в 'target' в позицию,
 // начинающуюся как x,y
 // Если изображение не вмещается целиком, то оно усекается
 // Изображение всегда преобразуется в цветовую модель цели 'target'
