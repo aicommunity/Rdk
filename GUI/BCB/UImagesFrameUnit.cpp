@@ -21,6 +21,7 @@ __fastcall TUImagesFrame::TUImagesFrame(TComponent* Owner)
  UpdateInterval=100;
  SetNumCells(2, 2);
  SizeMode=0;
+ ShowMode=0;
 }
 
 __fastcall TUImagesFrame::~TUImagesFrame(void)
@@ -375,6 +376,24 @@ void TUImagesFrame::AAfterCalculate(void)
 
 void TUImagesFrame::AUpdateInterface(void)
 {
+ if(ShowMode == 0)
+ {
+  if(DrawGrid->Visible != true)
+   DrawGrid->Visible=true;
+
+  if(ScrollBox1->Visible != false)
+   ScrollBox1->Visible=false;
+ }
+ else
+ if(ShowMode == 1)
+ {
+  if(DrawGrid->Visible != false)
+   DrawGrid->Visible=false;
+
+  if(ScrollBox1->Visible != true)
+   ScrollBox1->Visible=true;
+ }
+
  if(DrawGrid->Visible)
  {
   for(size_t i=0;i<Images.size();i++)
@@ -433,23 +452,45 @@ void TUImagesFrame::AUpdateInterface(void)
   {
    TiledSizeRadioButton->Checked=false;
    OriginalSizeRadioButton->Checked=true;
+   ProportionalSizeRadioButton->Checked=false;
   }
   else
   if(SizeMode == 1)
   {
    TiledSizeRadioButton->Checked=true;
    OriginalSizeRadioButton->Checked=false;
+   ProportionalSizeRadioButton->Checked=false;
   }
+  else
+  if(SizeMode == 2)
+  {
+   ProportionalSizeRadioButton->Checked=true;
+   TiledSizeRadioButton->Checked=false;
+   OriginalSizeRadioButton->Checked=false;
+  }
+
 
   if(Images.size()>0 && Images[0].size()>0)
   {
    if(SizeMode == 0)
    {
-	DrawGrid->DefaultColWidth=Images[0][0]->Picture->Bitmap->Width;
-	DrawGrid->DefaultRowHeight=Images[0][0]->Picture->Bitmap->Height;
+	for(size_t i=0;i<Images.size();i++)
+	 for(size_t j=0;j<Images.size();j++)
+	  if(Images[i][j]->Picture->Bitmap->Width>0 && Images[i][j]->Picture->Bitmap->Height>0)
+	  {
+	   DrawGrid->DefaultColWidth=Images[i][j]->Picture->Bitmap->Width;
+	   DrawGrid->DefaultRowHeight=Images[i][j]->Picture->Bitmap->Height;
+       break;
+	  }
    }
    else
    if(SizeMode == 1)
+   {
+	DrawGrid->DefaultColWidth=DrawGrid->ClientWidth/Images.size()-1;
+	DrawGrid->DefaultRowHeight=DrawGrid->ClientHeight/Images[0].size()-1;
+   }
+   else
+   if(SizeMode == 2)
    {
 	DrawGrid->DefaultColWidth=DrawGrid->ClientWidth/Images.size()-1;
 	DrawGrid->DefaultRowHeight=DrawGrid->ClientHeight/Images[0].size()-1;
@@ -496,6 +537,7 @@ void TUImagesFrame::AUpdateInterface(void)
 	FullImage->Height=tbmp->Height;
 	FullImage->Stretch=false;
 	FullImage->AutoSize=false;
+	FullImage->Center=false;
    }
    else
    if(SizeMode == 1)
@@ -503,7 +545,19 @@ void TUImagesFrame::AUpdateInterface(void)
 	FullImage->Width=ScrollBox1->ClientWidth;
 	FullImage->Height=ScrollBox1->ClientHeight;
 	FullImage->Stretch=true;
-//	FullImage->AutoSize=true;
+	FullImage->Proportional=false;
+	FullImage->AutoSize=false;
+	FullImage->Center=false;
+   }
+   else
+   if(SizeMode == 2)
+   {
+	FullImage->Width=ScrollBox1->ClientWidth;
+	FullImage->Height=ScrollBox1->ClientHeight;
+	FullImage->Stretch=true;
+	FullImage->Proportional=true;
+	FullImage->AutoSize=false;
+	FullImage->Center=CenterImageCheckBox->Checked;
    }
 
   FullImage->Picture->Bitmap->Assign(tbmp);
@@ -547,8 +601,15 @@ void TUImagesFrame::ASaveParameters(RDK::USerStorageXML &xml)
  xml.WriteBool("ShowHistogramCheckBox",ShowHistogramCheckBox->Checked);
  xml.WriteBool("ShowInfoCheckBox",ShowInfoCheckBox->Checked);
  xml.WriteBool("IndChannelsCheckBox",IndChannelsCheckBox->Checked);
+ xml.WriteBool("CenterImageCheckBox",CenterImageCheckBox->Checked);
+
 
  xml.WriteInteger("SizeMode",SizeMode);
+ xml.WriteInteger("ShowMode",ShowMode);
+
+ xml.WriteInteger("DrawGridRow",DrawGrid->Row);
+ xml.WriteInteger("DrawGridCol",DrawGrid->Col);
+
 }
 
 // Загружает параметры интерфейса из xml
@@ -599,10 +660,17 @@ void TUImagesFrame::ALoadParameters(RDK::USerStorageXML &xml)
  ShowHistogramCheckBox->Checked=xml.ReadBool("ShowHistogramCheckBox",false);
  ShowInfoCheckBox->Checked=xml.ReadBool("ShowInfoCheckBox",false);
  IndChannelsCheckBox->Checked=xml.ReadBool("IndChannelsCheckBox",false);
+ CenterImageCheckBox->Checked=xml.ReadBool("CenterImageCheckBox",false);
 
  SizeMode=xml.ReadInteger("SizeMode",0);
+ ShowMode=xml.ReadInteger("ShowMode",0);
 
  UpdateInterface();
+
+ if(DrawGrid->RowCount>0)
+  DrawGrid->Row=xml.ReadInteger("DrawGridRow",0);
+ if(DrawGrid->ColCount>0)
+  DrawGrid->Col=xml.ReadInteger("DrawGridCol",0);
 }
 //---------------------------------------------------------------------------
 void __fastcall TUImagesFrame::DrawGridDrawCell(TObject *Sender, int ACol, int ARow,
@@ -731,6 +799,8 @@ void __fastcall TUImagesFrame::DrawGridDblClick(TObject *Sender)
    return;
   DrawGrid->Visible=false;
   ScrollBox1->Visible=true;
+  ShowMode=1;
+
  // FullImage->Align=alClient;
   FullImage->Width=bmp->Width;
   FullImage->Height=bmp->Height;
@@ -757,6 +827,7 @@ void __fastcall TUImagesFrame::FullImageDblClick(TObject *Sender)
 {
   DrawGrid->Visible=true;
   ScrollBox1->Visible=false;
+  ShowMode=0;
   UpdateInterface(true);
 }
 //---------------------------------------------------------------------------
@@ -826,6 +897,7 @@ void __fastcall TUImagesFrame::OriginalSizeRadioButtonClick(TObject *Sender)
  if(UpdateInterfaceFlag)
   return;
  TiledSizeRadioButton->Checked=false;
+ ProportionalSizeRadioButton->Checked=false;
  SizeMode=0;
  UpdateInterface();
 }
@@ -836,6 +908,7 @@ void __fastcall TUImagesFrame::TiledSizeRadioButtonClick(TObject *Sender)
  if(UpdateInterfaceFlag)
   return;
  OriginalSizeRadioButton->Checked=false;
+ ProportionalSizeRadioButton->Checked=false;
  SizeMode=1;
  UpdateInterface();
 }
@@ -855,6 +928,17 @@ void __fastcall TUImagesFrame::ShowHistogramCheckBoxClick(TObject *Sender)
 
 void __fastcall TUImagesFrame::ShowInfoCheckBoxClick(TObject *Sender)
 {
+ UpdateInterface();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUImagesFrame::ProportionalSizeRadioButtonClick(TObject *Sender)
+{
+ if(UpdateInterfaceFlag)
+  return;
+ TiledSizeRadioButton->Checked=false;
+ OriginalSizeRadioButton->Checked=false;
+ SizeMode=2;
  UpdateInterface();
 }
 //---------------------------------------------------------------------------

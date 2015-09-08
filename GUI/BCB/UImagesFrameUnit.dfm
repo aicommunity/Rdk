@@ -1,12 +1,12 @@
 inherited UImagesFrame: TUImagesFrame
-  Width = 729
+  Width = 730
   Height = 505
-  ExplicitWidth = 729
+  ExplicitWidth = 730
   ExplicitHeight = 505
   object DrawGrid: TDrawGrid
     Left = 0
     Top = 0
-    Width = 729
+    Width = 730
     Height = 488
     Align = alClient
     ColCount = 2
@@ -23,17 +23,19 @@ inherited UImagesFrame: TUImagesFrame
     OnClick = DrawGridClick
     OnDblClick = DrawGridDblClick
     OnDrawCell = DrawGridDrawCell
+    ExplicitWidth = 729
   end
   object ScrollBox1: TScrollBox
     Left = 0
     Top = 0
-    Width = 729
+    Width = 730
     Height = 488
     Align = alClient
     DoubleBuffered = True
     ParentDoubleBuffered = False
     TabOrder = 1
     Visible = False
+    ExplicitWidth = 729
     object FullImage: TImage
       Left = 237
       Top = 172
@@ -50,10 +52,11 @@ inherited UImagesFrame: TUImagesFrame
   object Panel1: TPanel
     Left = 0
     Top = 488
-    Width = 729
+    Width = 730
     Height = 17
     Align = alBottom
     TabOrder = 2
+    ExplicitWidth = 729
     object ShowLegendCheckBox: TCheckBox
       Left = 1
       Top = 1
@@ -81,7 +84,7 @@ inherited UImagesFrame: TUImagesFrame
       OnClick = ShowHistogramCheckBoxClick
     end
     object TiledSizeRadioButton: TRadioButton
-      Left = 656
+      Left = 582
       Top = 1
       Width = 72
       Height = 15
@@ -91,9 +94,10 @@ inherited UImagesFrame: TUImagesFrame
       TabOrder = 2
       TabStop = True
       OnClick = TiledSizeRadioButtonClick
+      ExplicitLeft = 656
     end
     object OriginalSizeRadioButton: TRadioButton
-      Left = 568
+      Left = 494
       Top = 1
       Width = 88
       Height = 15
@@ -101,6 +105,7 @@ inherited UImagesFrame: TUImagesFrame
       Caption = 'Original size'
       TabOrder = 3
       OnClick = OriginalSizeRadioButtonClick
+      ExplicitLeft = 568
     end
     object ShowInfoCheckBox: TCheckBox
       Left = 193
@@ -122,6 +127,27 @@ inherited UImagesFrame: TUImagesFrame
       Align = alLeft
       Caption = 'Ind. channels'
       TabOrder = 5
+    end
+    object ProportionalSizeRadioButton: TRadioButton
+      Left = 654
+      Top = 1
+      Width = 75
+      Height = 15
+      Align = alRight
+      Caption = 'Prop. size'
+      TabOrder = 6
+      OnClick = ProportionalSizeRadioButtonClick
+      ExplicitLeft = 646
+    end
+    object CenterImageCheckBox: TCheckBox
+      Left = 435
+      Top = 1
+      Width = 59
+      Height = 15
+      Align = alRight
+      Caption = 'Center'
+      TabOrder = 7
+      ExplicitLeft = 422
     end
   end
   object PopupMenu: TPopupMenu

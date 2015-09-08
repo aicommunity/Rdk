@@ -51,6 +51,8 @@ __published:    // IDE-managed Components
 	TRadioButton *OriginalSizeRadioButton;
 	TCheckBox *ShowInfoCheckBox;
 	TCheckBox *IndChannelsCheckBox;
+	TRadioButton *ProportionalSizeRadioButton;
+	TCheckBox *CenterImageCheckBox;
     void __fastcall DrawGridDrawCell(TObject *Sender, int ACol, int ARow, TRect &Rect,
           TGridDrawState State);
 	void __fastcall SaveToBmpClick(TObject *Sender);
@@ -72,6 +74,7 @@ __published:    // IDE-managed Components
 	void __fastcall ShowLegendCheckBoxClick(TObject *Sender);
 	void __fastcall ShowHistogramCheckBoxClick(TObject *Sender);
 	void __fastcall ShowInfoCheckBoxClick(TObject *Sender);
+	void __fastcall ProportionalSizeRadioButtonClick(TObject *Sender);
 
 
 
@@ -116,7 +119,13 @@ TUComponentsListForm *MyComponentsListForm;
 /// Режим масштабирования
 /// 0 - оригинальный размер
 /// 1 - Масштабирование чтобы вся сетка влезала в экран
+/// 2 - Масштабирование с сохранением пропорций каждого изображения
 int SizeMode;
+
+/// Режим отображения
+/// 0 - сетка из изображений
+/// 1 - одно выделенное изображение
+int ShowMode;
 
 // --------------------------
 // Методы управления параметрами
