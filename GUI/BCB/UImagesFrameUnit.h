@@ -110,6 +110,9 @@ std::vector<std::vector<std::pair<std::string,std::string> > > MouseClickCompone
 // Массив легенд
 std::vector<std::vector<std::string> > Legends;
 
+/// Цвет фона для отдельной картинки
+TColor SingleBackgroundColor;
+
 // Флаг отражения вокруг оси X изображений при выводе
 bool ReflectionXFlag;
 

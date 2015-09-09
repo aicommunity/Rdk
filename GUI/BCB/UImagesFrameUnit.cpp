@@ -22,6 +22,7 @@ __fastcall TUImagesFrame::TUImagesFrame(TComponent* Owner)
  SetNumCells(2, 2);
  SizeMode=0;
  ShowMode=0;
+ SingleBackgroundColor=clBtnFace;
 }
 
 __fastcall TUImagesFrame::~TUImagesFrame(void)
@@ -505,6 +506,8 @@ void TUImagesFrame::AUpdateInterface(void)
  {
   if(DrawGrid->Col < 0 || DrawGrid->Row <0)
    return;
+
+  ScrollBox1->Color=SingleBackgroundColor;
 
 //  LockEngine();
   RDK::UBitmapParam bmp_param;

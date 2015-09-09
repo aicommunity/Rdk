@@ -23,7 +23,6 @@ inherited UImagesFrame: TUImagesFrame
     OnClick = DrawGridClick
     OnDblClick = DrawGridDblClick
     OnDrawCell = DrawGridDrawCell
-    ExplicitWidth = 729
   end
   object ScrollBox1: TScrollBox
     Left = 0
@@ -32,10 +31,11 @@ inherited UImagesFrame: TUImagesFrame
     Height = 488
     Align = alClient
     DoubleBuffered = True
+    Color = clBtnFace
+    ParentColor = False
     ParentDoubleBuffered = False
     TabOrder = 1
     Visible = False
-    ExplicitWidth = 729
     object FullImage: TImage
       Left = 237
       Top = 172
@@ -56,7 +56,6 @@ inherited UImagesFrame: TUImagesFrame
     Height = 17
     Align = alBottom
     TabOrder = 2
-    ExplicitWidth = 729
     object ShowLegendCheckBox: TCheckBox
       Left = 1
       Top = 1
@@ -94,7 +93,6 @@ inherited UImagesFrame: TUImagesFrame
       TabOrder = 2
       TabStop = True
       OnClick = TiledSizeRadioButtonClick
-      ExplicitLeft = 656
     end
     object OriginalSizeRadioButton: TRadioButton
       Left = 494
@@ -105,7 +103,6 @@ inherited UImagesFrame: TUImagesFrame
       Caption = 'Original size'
       TabOrder = 3
       OnClick = OriginalSizeRadioButtonClick
-      ExplicitLeft = 568
     end
     object ShowInfoCheckBox: TCheckBox
       Left = 193
@@ -137,7 +134,6 @@ inherited UImagesFrame: TUImagesFrame
       Caption = 'Prop. size'
       TabOrder = 6
       OnClick = ProportionalSizeRadioButtonClick
-      ExplicitLeft = 646
     end
     object CenterImageCheckBox: TCheckBox
       Left = 435
@@ -147,7 +143,6 @@ inherited UImagesFrame: TUImagesFrame
       Align = alRight
       Caption = 'Center'
       TabOrder = 7
-      ExplicitLeft = 422
     end
   end
   object PopupMenu: TPopupMenu
