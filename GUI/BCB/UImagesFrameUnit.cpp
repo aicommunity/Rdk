@@ -476,7 +476,7 @@ void TUImagesFrame::AUpdateInterface(void)
    if(SizeMode == 0)
    {
 	for(size_t i=0;i<Images.size();i++)
-	 for(size_t j=0;j<Images.size();j++)
+	 for(size_t j=0;j<Images[i].size();j++)
 	  if(Images[i][j]->Picture->Bitmap->Width>0 && Images[i][j]->Picture->Bitmap->Height>0)
 	  {
 	   DrawGrid->DefaultColWidth=Images[i][j]->Picture->Bitmap->Width;
