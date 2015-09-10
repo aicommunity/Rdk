@@ -740,6 +740,38 @@ void __fastcall TUImagesFrame::SelectSourceClick(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+void TUImagesFrame::SetSource( int channel_ind, const std::string &component,const std::string &output, int col, int row)
+{
+ if(col < 0 || row <0)
+  return;
+
+ if(col>DrawGrid->ColCount-1 || row>DrawGrid->RowCount-1)
+  return;
+
+ //MyComponentsListForm->UpdateInterface(true);
+ //if(MyComponentsListForm->ShowIOSelect() != mrOk)
+  //return;
+
+ StringIds[col][row] = component;//MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentLongName();
+ ComponentIndexes[col][row] = output;//MyComponentsListForm->ComponentsListFrame1->GetSelectedComponentOutput();
+ ComponentChannelIndexes[col][row] = channel_ind;//GetSelectedEngineIndex();
+
+ if(ComponentIndexes[col][row].empty())
+ {
+  const char *p=Model_GetComponentLongName(StringIds[col][row].c_str());
+  if(p)
+   Legends[col][row]=std::string(p)+std::string("[")+RDK::sntoa(ComponentIndexesOld[col][row])+"]";
+  Engine_FreeBufString(p);
+ }
+ else
+ {
+  const char *p=Model_GetComponentLongName(StringIds[col][row].c_str());
+  if(p)
+   Legends[col][row]=std::string(p)+std::string("[")+ComponentIndexes[col][row]+"]";
+  Engine_FreeBufString(p);
+ }
+}
+
 void __fastcall TUImagesFrame::AddColumnClick(TObject *Sender)
 {
  SetNumCells(GetNumCellWidth()+1, GetNumCellHeight());

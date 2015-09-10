@@ -163,6 +163,7 @@ bool SetImage(int i, int j, int width, int height, int colormodel, unsigned char
 //bool SetBitmap(RDK::UBitmap &bitmap);
 bool SetImage(const TImage *image);
 //bool SetImage(int width, int height, int colormodel, const unsigned char *buffer);
+void SetSource(int channel_index, const std::string &component, const std::string &output, int col, int row);
 
 // Возвращает координаты текущей ячейки
 int GetX(void);
