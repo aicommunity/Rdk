@@ -5,6 +5,7 @@ object UImagesForm: TUImagesForm
   ClientHeight = 609
   ClientWidth = 910
   Color = clBtnFace
+  DefaultMonitor = dmDesktop
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -14
@@ -109,7 +110,7 @@ object UImagesForm: TUImagesForm
         Margins.Top = 4
         Margins.Right = 4
         Margins.Bottom = 4
-        ExplicitLeft = 726
+        ExplicitLeft = 734
         ExplicitWidth = 82
         ExplicitHeight = 19
       end
@@ -121,7 +122,7 @@ object UImagesForm: TUImagesForm
         Margins.Top = 4
         Margins.Right = 4
         Margins.Bottom = 4
-        ExplicitLeft = 616
+        ExplicitLeft = 632
         ExplicitWidth = 102
         ExplicitHeight = 19
       end
@@ -165,7 +166,7 @@ object UImagesForm: TUImagesForm
         Left = 564
         Width = 68
         Height = 19
-        ExplicitLeft = 557
+        ExplicitLeft = 564
         ExplicitWidth = 68
         ExplicitHeight = 19
       end
