@@ -103,6 +103,8 @@ inherited UImagesFrame: TUImagesFrame
       Caption = 'Original size'
       TabOrder = 3
       OnClick = OriginalSizeRadioButtonClick
+      ExplicitLeft = 488
+      ExplicitTop = 6
     end
     object ShowInfoCheckBox: TCheckBox
       Left = 193

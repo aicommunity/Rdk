@@ -931,8 +931,8 @@ void __fastcall TUImagesFrame::OriginalSizeRadioButtonClick(TObject *Sender)
 {
  if(UpdateInterfaceFlag)
   return;
- TiledSizeRadioButton->Checked=false;
- ProportionalSizeRadioButton->Checked=false;
+// TiledSizeRadioButton->Checked=false;
+// ProportionalSizeRadioButton->Checked=false;
  SizeMode=0;
  UpdateInterface();
 }
@@ -942,8 +942,8 @@ void __fastcall TUImagesFrame::TiledSizeRadioButtonClick(TObject *Sender)
 {
  if(UpdateInterfaceFlag)
   return;
- OriginalSizeRadioButton->Checked=false;
- ProportionalSizeRadioButton->Checked=false;
+// OriginalSizeRadioButton->Checked=false;
+// ProportionalSizeRadioButton->Checked=false;
  SizeMode=1;
  UpdateInterface();
 }
@@ -971,8 +971,8 @@ void __fastcall TUImagesFrame::ProportionalSizeRadioButtonClick(TObject *Sender)
 {
  if(UpdateInterfaceFlag)
   return;
- TiledSizeRadioButton->Checked=false;
- OriginalSizeRadioButton->Checked=false;
+// TiledSizeRadioButton->Checked=false;
+// OriginalSizeRadioButton->Checked=false;
  SizeMode=2;
  UpdateInterface();
 }
