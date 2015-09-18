@@ -526,11 +526,6 @@
 			<locationURI>PARENT-4-PROJECT_LOC/Deploy/Include/myrdk.cpp</locationURI>
 		</link>
 		<link>
-			<name>Deploy/Include/myrdk.gcc.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-4-PROJECT_LOC/Deploy/Include/myrdk.gcc.cpp</locationURI>
-		</link>
-		<link>
 			<name>Deploy/Include/rdk.cpp</name>
 			<type>1</type>
 			<locationURI>PARENT-4-PROJECT_LOC/Deploy/Include/rdk.cpp</locationURI>
