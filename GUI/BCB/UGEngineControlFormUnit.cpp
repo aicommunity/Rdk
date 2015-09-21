@@ -2518,10 +2518,22 @@ void __fastcall TUGEngineControlForm::FormDestroy(TObject *Sender)
  opt_name=opt_name.SubString(0,opt_name.Length()-4);
  TMemIniFile *app_ini=new TMemIniFile(opt_name+".ini");
 
- app_ini->WriteString("Server","BindAddress",ServerInterfaceAddress.c_str());
- app_ini->WriteInteger("Server","BindPort",ServerInterfacePort);
+ bool need_update=false;
 
- app_ini->UpdateFile();
+ if(app_ini->ReadString("Server","BindAddress","") != ServerInterfaceAddress.c_str())
+ {
+  app_ini->WriteString("Server","BindAddress",ServerInterfaceAddress.c_str());
+  need_update=true;
+ }
+
+ if(app_ini->ReadString("Server","BindPort","") != ServerInterfacePort)
+ {
+  app_ini->WriteInteger("Server","BindPort",ServerInterfacePort);
+  need_update=true;
+ }
+
+ if(need_update)
+  app_ini->UpdateFile();
  delete app_ini;
 
  System::Set8087CW(Saved8087CW);
