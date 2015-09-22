@@ -451,7 +451,16 @@ void __fastcall TUDrawEngineFrame::Breakinputlink1Click(TObject *Sender)
 void __fastcall TUDrawEngineFrame::ApplyButtonClick(TObject *Sender)
 {
  FontType=AnsiString(FontTypeComboBox->Text).c_str();
- FontSize=StrToInt(FontSizeComboBox->Text);
+
+ try
+ {
+  FontSize=StrToInt(FontSizeComboBox->Text);
+ }
+ catch(EConvertError &err)
+ {
+  UpdateInterface();
+  return;
+ }
 
  RDK::UBitmapFont* font=dynamic_cast<RDK::UBitmapFont*>(RDK::GlobalFonts.GetFont(FontType,FontSize));
  if(font)

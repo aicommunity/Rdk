@@ -1274,6 +1274,11 @@ void __fastcall TUEngineMonitorFrame::ShowDebugMessagesCheckBoxClick(TObject *Se
  if(UpdateInterfaceFlag)
   return;
  int size=GetNumEngines();
+ if(UGEngineControlForm->DebugModeFlag.size() != size)
+ {
+  ShowDebugMessagesCheckBox->Checked=false;
+  return;
+ }
  for(int i=0;i<size;i++)
  {
   UGEngineControlForm->DebugModeFlag[i]=ShowDebugMessagesCheckBox->Checked;
