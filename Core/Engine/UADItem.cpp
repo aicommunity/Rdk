@@ -252,13 +252,13 @@ bool UADItem::SetOutputDataSize(int index, int size, bool nobuild)
 
  if(OutputData.size() > size_t(index))
  {
-  if(OutputData[index].Size == size)
+  if(OutputData[index].GetSize() == size)
    return true;
  }
  else
   OutputData.resize(index+1);
 
- OutputData[index].Resize(size);
+ OutputData[index].Resize(1,size);
 
  std::map<std::string, std::vector<PUAConnector> >::const_iterator I=RelatedConnectors.begin();
  for(;I != RelatedConnectors.end();++I)
@@ -272,7 +272,7 @@ bool UADItem::SetOutputDataSize(int index, int size, bool nobuild)
   Ready=false;
  return true;
 }
-
+				   /*
 bool UADItem::SetOutputDataElementSize(int index, int size)
 {
 // if(!Build())
@@ -300,7 +300,7 @@ bool UADItem::SetOutputDataElementSize(int index, int size)
 
  Ready=false;
  return true;
-}
+}                    */
 
 // «аполн€ет заданный выходной вектор данными
 void UADItem::FillOutputData(int index, const void *data)
@@ -314,9 +314,9 @@ void UADItem::FillOutputData(int index, const void *data)
  UItemData &dest=OutputData[index];
 
  if(!data)
-  memset(dest.Void,0,dest.ByteSize);
+  dest.ToZero();
  else
-  dest.Assign(dest.Size,data);
+  dest.Assign(1, dest.GetSize(),(const double*)data);
 }
 
 // «аполн€ет все выходные вектора заданными данными
@@ -333,11 +333,11 @@ void UADItem::FillOutputData(const void *data)
  for(size_t i=0;i<size;++i,++dest)
   if(!data)
   {
-   if(dest->ByteSize && dest->Void)
-    memset(dest->Void,0,dest->ByteSize);
+   if(dest->GetByteSize() && dest->Void)
+    dest->ToZero();
   }
   else
-   dest->Assign(dest->Size,data);
+   dest->Assign(1, dest->GetSize(),(const double*)data);
 }
 // ----------------------
 
@@ -349,7 +349,7 @@ bool UADItem::SetOutputDataAsPointer(int index, void *pointer)
 {
  if(index<NumOutputs)
  {
-  SetOutputDataElementSize(index,sizeof(void*));
+//  SetOutputDataElementSize(index,sizeof(void*));
   SetOutputDataSize(index,1);
   OutputData[index].PVoid[0]=pointer;
   return true;
@@ -400,7 +400,7 @@ vector<size_t> UADItem::GetOutputDataSize(void) const
  size_t size=OutputData.size();
  result.resize(size);
  for(size_t i=0;i<size;i++)
-  result[i]=OutputData[i].Size;
+  result[i]=OutputData[i].GetSize();
 
  return result;
 }
@@ -432,11 +432,11 @@ vector<size_t> UADItem::GetOutputDataElementSize(void) const
  size_t size=OutputData.size();
  result.resize(size);
  for(size_t i=0;i<size;i++)
-  result[i]=OutputData[i].DataSize;
+  result[i]=OutputData[i].GetDataSize();
 
  return result;
 }
-
+/*
 bool UADItem::SetOutputDataElementSize(const vector<size_t> &value)
 {
 // if(OutputData.size() != value.size())
@@ -451,7 +451,7 @@ bool UADItem::SetOutputDataElementSize(const vector<size_t> &value)
    return false;
 
  return true;
-}
+} */
 // ----------------------
 
 // ----------------------

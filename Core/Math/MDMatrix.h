@@ -48,6 +48,12 @@ union
  {
   T x,y,z,d;
  };
+ double *Double;
+ int *Int;
+ unsigned char *UChar;
+ char* Char;
+ void* Void;
+ void **PVoid;
 };
 
 protected:
@@ -93,6 +99,15 @@ MDMatrix<T>& operator = (const T* data);
 // Получение размерности матриц
 int GetCols(void) const;
 int GetRows(void) const;
+
+/// Возвращает размер данных матрицы в байтах
+int GetByteSize(void) const;
+
+/// Возвращает число всех элементов матрицы
+int GetSize(void) const;
+
+/// Возвращает длину в байтах одного элемента даных
+int GetDataSize(void) const;
 
 // Доступ к элементу
 T& operator [] (int i);
@@ -412,6 +427,29 @@ int MDMatrix<T>::GetRows(void) const
 {
  return Rows;
 }
+
+/// Возвращает размер данных матрицы в байтах
+template<class T>
+int MDMatrix<T>::GetByteSize(void) const
+{
+ return Rows*Cols*sizeof(T);
+}
+
+/// Возвращает число всех элементов матрицы
+template<class T>
+int MDMatrix<T>::GetSize(void) const
+{
+ return Rows*Cols;
+}
+
+/// Возвращает длину в байтах одного элемента даных
+template<class T>
+int MDMatrix<T>::GetDataSize(void) const
+{
+ return sizeof(T);
+}
+
+
 
 // --------------------------
 // Доступ к элементу

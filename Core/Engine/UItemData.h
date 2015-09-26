@@ -16,6 +16,7 @@ See file license.txt for more information
 
 #include "../../Deploy/Include/initdll_defs.h"
 #include "../Serialize/Serialize.h"
+#include "../Math/MDMatrix.h"
 
 // Отключение предупреждений в VS
 //#pragma warning( disable : 4355)
@@ -25,6 +26,9 @@ See file license.txt for more information
 
 namespace RDK {
 
+typedef MDMatrix<double> UItemData;
+
+/*
 // Данные
 class RDK_LIB_TYPE UItemData
 {
@@ -132,7 +136,7 @@ RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, UItemData &da
 //RDK_LIB_TYPE USerStorageBinary& operator << (USerStorageBinary& storage, const UItemData &data);
 //RDK_LIB_TYPE USerStorageBinary& operator >> (USerStorageBinary& storage, UItemData &data);
 
-
+  */
 }
 
 #endif

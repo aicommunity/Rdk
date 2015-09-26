@@ -120,17 +120,17 @@ size_t GetFullInputDataSize(void) const;
 // ----------------------
 // –азмер вектора выходных данных
 inline size_t GetOutputDataSize(int index) const
-{ return OutputData[index].Size; };
+{ return OutputData[index].GetRows()*OutputData[index].GetCols(); };
 virtual bool SetOutputDataSize(int index, int size, bool nobuild=false);
 
 // ¬озвращает размер вектора выходных данных в байтах
 inline size_t GetByteOutputDataSize(int index) const
-{ return OutputData[index].ByteSize; };
+{ return OutputData[index].GetRows()*OutputData[index].GetCols()*sizeof(double); };
 
 // –азмер единичного данного вектора выходных данных в байтах
 size_t GetOutputDataElementSize(int index) const
-{ return OutputData[index].DataSize; };
-bool SetOutputDataElementSize(int index, int size);
+{ return sizeof(double); };
+//bool SetOutputDataElementSize(int index, int size);
 
 // «аполн€ет заданный выходной вектор данными
 void FillOutputData(int index, const void *data=0);
@@ -169,7 +169,7 @@ bool SetOutputDataSize(const vector<size_t> &value);
 
 // –азмер единичного данного вектора выходов в байтах
 vector<size_t> GetOutputDataElementSize(void) const;
-bool SetOutputDataElementSize(const vector<size_t> &value);
+//bool SetOutputDataElementSize(const vector<size_t> &value);
 // ----------------------
 
 // ----------------------
