@@ -128,8 +128,8 @@ inline size_t GetByteOutputDataSize(int index) const
 { return OutputData[index].GetRows()*OutputData[index].GetCols()*sizeof(double); };
 
 // Размер единичного данного вектора выходных данных в байтах
-size_t GetOutputDataElementSize(int index) const
-{ return sizeof(double); };
+//size_t GetOutputDataElementSize(int index) const
+//{ return sizeof(double); };
 //bool SetOutputDataElementSize(int index, int size);
 
 // Заполняет заданный выходной вектор данными
@@ -168,7 +168,7 @@ vector<size_t> GetOutputDataSize(void) const;
 bool SetOutputDataSize(const vector<size_t> &value);
 
 // Размер единичного данного вектора выходов в байтах
-vector<size_t> GetOutputDataElementSize(void) const;
+//vector<size_t> GetOutputDataElementSize(void) const;
 //bool SetOutputDataElementSize(const vector<size_t> &value);
 // ----------------------
 

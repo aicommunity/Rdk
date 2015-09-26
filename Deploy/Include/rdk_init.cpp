@@ -1772,11 +1772,11 @@ int RDK_CALL Model_GetComponentOutputDataSize(const char *stringid, int index)
 }
 
 // Возвращает размер элемента выхода в байтах
-int RDK_CALL Model_GetComponentOutputElementSize(const char *stringid, int index)
-{
-
- return DllManager.GetEngineLock()->Model_GetComponentOutputElementSize(stringid, index);
-}
+//int RDK_CALL Model_GetComponentOutputElementSize(const char *stringid, int index)
+//{
+//
+// return DllManager.GetEngineLock()->Model_GetComponentOutputElementSize(stringid, index);
+//}
 
 // Возвращает размер выхода компонента в байтах элементов
 int RDK_CALL Model_GetComponentOutputByteSize(const char *stringid, int index)

@@ -759,7 +759,7 @@ virtual int Model_GetComponentNumOutputs(const char *stringid);
 virtual int Model_GetComponentOutputDataSize(const char *stringid, int index);
 
 // Возвращает размер элемента выхода в байтах
-virtual int Model_GetComponentOutputElementSize(const char *stringid, int index);
+//virtual int Model_GetComponentOutputElementSize(const char *stringid, int index);
 
 // Возвращает размер выхода компонента в байтах элементов
 virtual int Model_GetComponentOutputByteSize(const char *stringid, int index);

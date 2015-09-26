@@ -3333,7 +3333,7 @@ int UEngine::Model_GetComponentOutputDataSize(const char *stringid, int index)
 }
 
 // Возвращает размер элемента выхода в байтах
-int UEngine::Model_GetComponentOutputElementSize(const char *stringid, int index)
+/*int UEngine::Model_GetComponentOutputElementSize(const char *stringid, int index)
 {
  try
  {
@@ -3349,7 +3349,7 @@ int UEngine::Model_GetComponentOutputElementSize(const char *stringid, int index
   ProcessException(exception);
  }
  return 0;
-}
+} */
 
 // Возвращает размер выхода компонента в байтах элементов
 int UEngine::Model_GetComponentOutputByteSize(const char *stringid, int index)

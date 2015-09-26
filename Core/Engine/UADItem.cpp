@@ -360,7 +360,7 @@ bool UADItem::SetOutputDataAsPointer(int index, void *pointer)
 // Возвращает данные выхода как указателя на объект
 void* UADItem::GetOutputDataAsPointer(int index)
 {
- if(index<NumOutputs && GetOutputDataSize(index)>0 && GetOutputDataElementSize(index) == sizeof(void*))
+ if(index<NumOutputs && GetOutputDataSize(index)>0 && POutputData[index].GetElementByteSize() >= sizeof(void*))
  {
   return POutputData[index].PVoid[0];
  }
@@ -370,7 +370,7 @@ void* UADItem::GetOutputDataAsPointer(int index)
 // Возвращает данные входа как указателя на объект
 void* UADItem::GetInputDataAsPointer(int index)
 {
- if(index<NumInputs && InputData[index] && InputData[index]->GetSize()>0 && InputData[index]->GetDataSize() == int(sizeof(void*)))
+ if(index<NumInputs && InputData[index] && InputData[index]->GetSize()>0 && InputData[index]->GetElementByteSize() >= int(sizeof(void*)))
  {
   void *pointer=InputData[index]->PVoid[0];
   return pointer;
@@ -423,7 +423,7 @@ bool UADItem::SetOutputDataSize(const vector<size_t> &value)
 
  return true;
 }
-
+  /*
 // Размер единичного данного вектора выходов в байтах
 vector<size_t> UADItem::GetOutputDataElementSize(void) const
 {

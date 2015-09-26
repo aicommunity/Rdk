@@ -2,42 +2,12 @@
 #define MDMatrixH
 
 #include <limits>
-#include "../Utilities/UException.h"
+#include "MMatrixBase.h"
 
 namespace RDK{
 
-
-// Исключения
-/// Общее исключение матричных операций
-class EMatrixError: public EError
-{
-public:
-EMatrixError(void) : EError() {};
-};
-
-/// Нулевой определитель. Исключение генерируется при обращении матриц и т.п.
-class EMatrixZeroDet: public EMatrixError
-{
-public:
-EMatrixZeroDet(void) : EMatrixError() {};
-};
-
-/// Попытка деления на ноль
-class EMatrixZeroDiv: public EMatrixError
-{
-public:
-EMatrixZeroDiv(void) : EMatrixError() {};
-};
-
-/// Domain error
-class EMatrixDomainError: public EMatrixError
-{
-public:
-EMatrixDomainError(void) : EMatrixError() {};
-};
-
 template<class T>
-class MDMatrix
+class MDMatrix: public MMatrixBase
 {
 public:
 union
@@ -87,6 +57,37 @@ void DeleteRows(int index, int num_rows=1);
 void DeleteCols(int index, int num_cols=1);
 // --------------------------
 
+// -----------------------------------
+// Общие методы доступа к параметрам матрицы
+// -----------------------------------
+/// Возвращает размерность матрицы
+virtual int GetDimensions(void) const;
+
+/// Возвращает число элементов по стороне матрицы
+virtual int GetSize(int i) const;
+
+/// Возвращает суммраное число всех элементов
+virtual int GetSize(void) const;
+
+/// Возвращает число элементов по всем размерностям
+virtual MMatrixSize GetMatrixSize(void) const;
+
+/// Устанавливает число элементов по всем размерностям
+virtual bool SetMatrixSize(const MMatrixSize &size);
+
+/// Возвращает суммарный размер данных матрицы в байтах
+virtual int GetByteSize(void) const;
+
+/// Возвращает длину в байтах одного элемента даных
+virtual int GetElementByteSize(void) const;
+
+/// Методы доступа к данным
+virtual const void* GetVoid(void) const;
+virtual void* GetVoid(void);
+
+// Возвращает языковой тип элемента матрицы
+//virtual const type_info& GetLanguageType(void) const;
+// -----------------------------------
 
 // --------------------------
 // Операторы управления данными
@@ -99,15 +100,6 @@ MDMatrix<T>& operator = (const T* data);
 // Получение размерности матриц
 int GetCols(void) const;
 int GetRows(void) const;
-
-/// Возвращает размер данных матрицы в байтах
-int GetByteSize(void) const;
-
-/// Возвращает число всех элементов матрицы
-int GetSize(void) const;
-
-/// Возвращает длину в байтах одного элемента даных
-int GetDataSize(void) const;
 
 // Доступ к элементу
 T& operator [] (int i);
@@ -386,6 +378,84 @@ void MDMatrix<T>::DeleteCols(int index, int num_cols)
 }
 // --------------------------
 
+// -----------------------------------
+// Общие методы доступа к параметрам матрицы
+// -----------------------------------
+/// Возвращает размерность матрицы
+template<class T>
+int MDMatrix<T>::GetDimensions(void) const
+{
+ return 2;
+}
+
+/// Возвращает число элементов по стороне матрицы
+template<class T>
+int MDMatrix<T>::GetSize(int i) const
+{
+ return (i==0)?Rows:((i==1)?Cols:0);
+}
+
+/// Возвращает суммраное число всех элементов
+template<class T>
+int MDMatrix<T>::GetSize(void) const
+{
+ return Rows*Cols;
+}
+
+/// Возвращает число элементов по всем размерностям
+template<class T>
+MMatrixSize MDMatrix<T>::GetMatrixSize(void) const
+{
+ MMatrixSize size(Rows,Cols);
+ return size;
+}
+
+/// Устанавливает число элементов по всем размерностям
+template<class T>
+bool MDMatrix<T>::SetMatrixSize(const MMatrixSize &size)
+{
+ if(size.GetDimensions() != 2)
+  return false;
+
+ Resize(size[0],size[1]);
+ return true;
+}
+
+/// Возвращает суммарный размер данных матрицы в байтах
+template<class T>
+int MDMatrix<T>::GetByteSize(void) const
+{
+ return Rows*Cols*sizeof(T);
+}
+
+/// Возвращает длину в байтах одного элемента даных
+template<class T>
+int MDMatrix<T>::GetElementByteSize(void) const
+{
+ return sizeof(T);
+}
+   /*
+// Возвращает языковой тип элемента матрицы
+template<class T>
+const type_info& MDMatrix<T>::GetLanguageType(void) const
+{
+ return typeid(T);
+}  */
+
+/// Методы доступа к данным
+template<class T>
+const void* MDMatrix<T>::GetVoid(void) const
+{
+ return Void;
+}
+
+template<class T>
+void* MDMatrix<T>::GetVoid(void)
+{
+ return Void;
+}
+// -----------------------------------
+
 // --------------------------
 // Операторы управления данными
 // --------------------------
@@ -427,28 +497,6 @@ int MDMatrix<T>::GetRows(void) const
 {
  return Rows;
 }
-
-/// Возвращает размер данных матрицы в байтах
-template<class T>
-int MDMatrix<T>::GetByteSize(void) const
-{
- return Rows*Cols*sizeof(T);
-}
-
-/// Возвращает число всех элементов матрицы
-template<class T>
-int MDMatrix<T>::GetSize(void) const
-{
- return Rows*Cols;
-}
-
-/// Возвращает длину в байтах одного элемента даных
-template<class T>
-int MDMatrix<T>::GetDataSize(void) const
-{
- return sizeof(T);
-}
-
 
 
 // --------------------------
