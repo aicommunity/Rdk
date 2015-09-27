@@ -3242,7 +3242,7 @@ int UEngine::Model_GetComponentInputDataSize(const char *stringid, int index)
   if(!cont)
    return 0;
 
-  return cont->GetInputDataSize(index);
+  return cont->GetInputDataSize(index)[1]; // TODO: Ќужно возвращать массив размерностей
  }
  catch (UException &exception)
  {
@@ -3323,7 +3323,7 @@ int UEngine::Model_GetComponentOutputDataSize(const char *stringid, int index)
   if(!cont)
    return 0;
 
-  return cont->GetOutputDataSize(index);
+  return cont->GetOutputDataSize(index)[1]; // TODO: тут надо передавать полноценную матрицу размеров
  }
  catch (UException &exception)
  {

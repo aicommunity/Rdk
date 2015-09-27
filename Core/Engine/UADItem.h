@@ -109,7 +109,7 @@ const UEPtr<const UItemData> GetInputData(size_t index) const;
 
 // Возвращает размер вектора входов InputData по индексу
 // Проверяет индекс на корректность и возвращает 0, если такого входа нет фактически
-size_t GetInputDataSize(size_t index) const;
+MMatrixSize GetInputDataSize(size_t index) const;
 
 // Возвращает суммарный размер всех векторов входов
 size_t GetFullInputDataSize(void) const;
@@ -119,9 +119,9 @@ size_t GetFullInputDataSize(void) const;
 // Методы управления выходными данными
 // ----------------------
 // Размер вектора выходных данных
-inline size_t GetOutputDataSize(int index) const
-{ return OutputData[index].GetRows()*OutputData[index].GetCols(); };
-virtual bool SetOutputDataSize(int index, int size, bool nobuild=false);
+inline MMatrixSize GetOutputDataSize(int index) const
+{ return OutputData[index].GetMatrixSize(); };
+virtual bool SetOutputDataSize(int index, const MMatrixSize &size, bool nobuild=false);
 
 // Возвращает размер вектора выходных данных в байтах
 inline size_t GetByteOutputDataSize(int index) const
@@ -164,8 +164,8 @@ virtual UContainerDescription* ANewDescription(UComponentDescription* descriptio
 // ----------------------
 protected:
 // Размер выходных векторов
-vector<size_t> GetOutputDataSize(void) const;
-bool SetOutputDataSize(const vector<size_t> &value);
+//vector<size_t> GetOutputDataSize(void) const;
+//bool SetOutputDataSize(const vector<size_t> &value);
 
 // Размер единичного данного вектора выходов в байтах
 //vector<size_t> GetOutputDataElementSize(void) const;

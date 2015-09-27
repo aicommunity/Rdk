@@ -45,7 +45,7 @@ public: // Методы
 // Конструкторы и деструкторы
 // --------------------------
 MMatrixSize(void);
-MMatrixSize(int rows);
+//MMatrixSize(int rows);
 MMatrixSize(int rows, int cols);
 MMatrixSize(const MMatrixSize &copy);
 MMatrixSize(const std::vector<int> &dims);
@@ -58,6 +58,13 @@ MMatrixSize& operator = (const MMatrixSize &copy);
 
 int operator [] (int i) const;
 int& operator [] (int i);
+
+bool operator == (const MMatrixSize &copy) const;
+bool operator != (const MMatrixSize &copy) const;
+bool operator > (const MMatrixSize &copy) const;
+bool operator < (const MMatrixSize &copy) const;
+bool operator >= (const MMatrixSize &copy) const;
+bool operator <= (const MMatrixSize &copy) const;
 
 // Возвращает размерность
 int GetDimensions(void) const;
@@ -85,7 +92,7 @@ virtual int GetSize(void) const=0;
 virtual MMatrixSize GetMatrixSize(void) const=0;
 
 /// Устанавливает число элементов по всем размерностям
-virtual bool SetMatrixSize(const MMatrixSize &size)=0;
+virtual bool Resize(const MMatrixSize &size)=0;
 
 /// Возвращает суммарный размер данных матрицы в байтах
 virtual int GetByteSize(void) const=0;

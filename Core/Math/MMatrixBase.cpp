@@ -13,10 +13,10 @@ MMatrixSize::MMatrixSize(void)
 
 }
 
-MMatrixSize::MMatrixSize(int rows)
+/*MMatrixSize::MMatrixSize(int rows)
 {
  Dims.assign(1,rows);
-}
+} */
 
 MMatrixSize::MMatrixSize(int rows, int cols)
 {
@@ -55,6 +55,88 @@ int& MMatrixSize::operator [] (int i)
  return Dims[i];
 }
 
+bool MMatrixSize::operator == (const MMatrixSize &copy) const
+{
+ return Dims == copy.Dims;
+}
+
+bool MMatrixSize::operator != (const MMatrixSize &copy) const
+{
+ return !((*this) == copy);
+}
+
+bool MMatrixSize::operator > (const MMatrixSize &copy) const
+{
+ if(Dims.size()>copy.Dims.size())
+  return true;
+
+ if(Dims.size()<copy.Dims.size())
+  return false;
+
+ int res1=1;
+ int res2=1;
+ for(size_t i=0;i<Dims.size();i++)
+  res1*=Dims[i];
+ for(size_t i=0;i<copy.Dims.size();i++)
+  res2*=copy.Dims[i];
+
+ return (res1>res2)?true:false;
+}
+
+bool MMatrixSize::operator < (const MMatrixSize &copy) const
+{
+ if(Dims.size()<copy.Dims.size())
+  return true;
+
+ if(Dims.size()>copy.Dims.size())
+  return false;
+
+ int res1=1;
+ int res2=1;
+ for(size_t i=0;i<Dims.size();i++)
+  res1*=Dims[i];
+ for(size_t i=0;i<copy.Dims.size();i++)
+  res2*=copy.Dims[i];
+
+ return (res1<res2)?true:false;}
+
+bool MMatrixSize::operator >= (const MMatrixSize &copy) const
+{
+ if(Dims.size()>copy.Dims.size())
+  return true;
+
+ if(Dims.size()<copy.Dims.size())
+  return false;
+
+ int res1=1;
+ int res2=1;
+ for(size_t i=0;i<Dims.size();i++)
+  res1*=Dims[i];
+ for(size_t i=0;i<copy.Dims.size();i++)
+  res2*=copy.Dims[i];
+
+ return (res1>=res2)?true:false;
+}
+
+bool MMatrixSize::operator <= (const MMatrixSize &copy) const
+{
+ if(Dims.size()<copy.Dims.size())
+  return true;
+
+ if(Dims.size()>copy.Dims.size())
+  return false;
+
+ int res1=1;
+ int res2=1;
+ for(size_t i=0;i<Dims.size();i++)
+  res1*=Dims[i];
+ for(size_t i=0;i<copy.Dims.size();i++)
+  res2*=copy.Dims[i];
+
+ return (res1<=res2)?true:false;
+}
+
+
 // Возвращает размерность
 int MMatrixSize::GetDimensions(void) const
 {
@@ -76,7 +158,7 @@ bool MMatrixBase::CopyTo(MMatrixBase &dest) const
  if(GetElementByteSize() != dest.GetElementByteSize())
   return false;
 
- if(!dest.SetMatrixSize(GetMatrixSize()))
+ if(!dest.Resize(GetMatrixSize()))
   return false;
 
  if(GetSize()>0)

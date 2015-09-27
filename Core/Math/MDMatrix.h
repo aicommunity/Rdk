@@ -73,7 +73,7 @@ virtual int GetSize(void) const;
 virtual MMatrixSize GetMatrixSize(void) const;
 
 /// Устанавливает число элементов по всем размерностям
-virtual bool SetMatrixSize(const MMatrixSize &size);
+virtual bool Resize(const MMatrixSize &size);
 
 /// Возвращает суммарный размер данных матрицы в байтах
 virtual int GetByteSize(void) const;
@@ -427,7 +427,7 @@ MMatrixSize MDMatrix<T>::GetMatrixSize(void) const
 
 /// Устанавливает число элементов по всем размерностям
 template<class T>
-bool MDMatrix<T>::SetMatrixSize(const MMatrixSize &size)
+bool MDMatrix<T>::Resize(const MMatrixSize &size)
 {
  if(size.GetDimensions() != 2)
   return false;

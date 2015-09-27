@@ -43,7 +43,7 @@ virtual int GetDimensions(void) const;
 virtual MMatrixSize GetMatrixSize(void) const;
 
 /// Устанавливает число элементов по всем размерностям
-virtual bool SetMatrixSize(const MMatrixSize &size);
+virtual bool Resize(const MMatrixSize &size);
 // -----------------------------------
 
 // --------------------------
@@ -138,13 +138,16 @@ int MDVector<T>::GetDimensions(void) const
 template<class T>
 MMatrixSize MDVector<T>::GetMatrixSize(void) const
 {
- MMatrixSize size(Rows);
+ std::vector<int> dims;
+ dims.assign(1,Rows);
+ MMatrixSize size(dims);
+
  return size;
 }
 
 /// Устанавливает число элементов по всем размерностям
 template<class T>
-bool MDVector<T>::SetMatrixSize(const MMatrixSize &size)
+bool MDVector<T>::Resize(const MMatrixSize &size)
 {
  if(size.GetDimensions() != 1)
   return false;
