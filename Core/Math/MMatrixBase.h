@@ -105,6 +105,22 @@ virtual void* GetVoid(void)=0;
 
 ///  опирует данные в другую матрицу
 virtual bool CopyTo(MMatrixBase &dest) const;
+
+
+/// ѕредоставл€ет доступ к данным матрицы как к одномерному массиву выбранного
+/// типа. Ќебезопасно!
+template<typename U>
+U& As(int i)
+{
+ return reinterpret_cast<U*>(GetVoid())[i];
+};
+
+
+template<typename U>
+const U& As(int i) const
+{
+ return reinterpret_cast<U*>(GetVoid())[i];
+};
 // -----------------------------------
 };
 

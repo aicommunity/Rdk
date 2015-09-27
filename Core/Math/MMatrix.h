@@ -121,6 +121,21 @@ MMatrix<T,Cols,1> GetRow(int i) const;
 
 // Возвращает заданный столбец матрицы
 MMatrix<T,Rows,1> GetCol(int i) const;
+
+/// Предоставляет доступ к данным матрицы как к одномерному массиву выбранного
+/// типа. Небезопасно!
+template<typename U>
+U& As(int i)
+{
+ return reinterpret_cast<U*>(Data)[i];
+};
+
+
+template<typename U>
+const U& As(int i) const
+{
+ return reinterpret_cast<U*>(Data)[i];
+};
 // --------------------------
 
 // --------------------------

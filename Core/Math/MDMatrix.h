@@ -113,6 +113,21 @@ MDMatrix<T> GetRow(int i) const;
 
 // Возвращает заданный столбец матрицы
 MDMatrix<T> GetCol(int i) const;
+
+/// Предоставляет доступ к данным матрицы как к одномерному массиву выбранного
+/// типа. Небезопасно!
+template<typename U>
+U& As(int i)
+{
+ return reinterpret_cast<U*>(Data)[i];
+};
+
+
+template<typename U>
+const U& As(int i) const
+{
+ return reinterpret_cast<U*>(Data)[i];
+};
 // --------------------------
 
 // --------------------------
@@ -545,8 +560,6 @@ MDMatrix<T> MDMatrix<T>::GetCol(int i) const
   res.Data[j]=Data[j*Cols+i];
  return res;
 };
-
-
 
 // -------------------------------------------------------------------------
 // Матричные операторы
