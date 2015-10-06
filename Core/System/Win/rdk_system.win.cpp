@@ -34,6 +34,17 @@ unsigned long long CalcDiffTime(unsigned long long time1, unsigned long long tim
   return time2-time1;
 }
 
+/// ¬озвращает локальное врем€ в дн€х (с точностью до миллисекунд) от начала времен
+double GetVariantLocalTime(void)
+{
+ SYSTEMTIME loc_time;
+ GetLocalTime(&loc_time);
+ double res=0;
+ SystemTimeToVariantTime(loc_time,res);
+ return res +  ((ONETHOUSANDMILLISECONDS/1000.0) * loc_time.wMilliSeconds);
+}
+
+
 // ”сыпл€ет процесс на заданное число миллисекунд
 void Sleep(int value)
 {

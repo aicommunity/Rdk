@@ -10,6 +10,7 @@
 #include "URpcDecoderInternal.h"
 #include "URpcCommand.h"
 #include "URpcCommandInternal.h"
+#include "UEngineControl.h"
 
 #ifdef __BORLANDC__
 #include "Bcb/Application.bcb.h"

@@ -74,5 +74,16 @@ UGenericMutexSharedLocker::UGenericMutexSharedLocker(const UGenericMutexSharedLo
 UGenericMutexSharedLocker& UGenericMutexSharedLocker::operator = (const UGenericMutexSharedLocker &m)
 { return *this; };
 
+
+UGenericEvent* UCreateEvent(bool initial_state)
+{
+ if(initial_state)
+  return UCreateEvent();
+
+ UGenericEvent* event=UCreateEvent();
+ event->reset();
+ return event;
+}
+
 #endif
 
