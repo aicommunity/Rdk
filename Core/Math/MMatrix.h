@@ -109,6 +109,10 @@ void Assign(T value);
 void CopyTo(T data[Rows][Cols]);
 ///  опирует данные в одномерный массив
 bool CopyTo(T* data);
+///  опирует данные из двумерного массива
+void CopyFrom(T data[Rows][Cols]);
+///  опирует данные из одномерного массива
+bool CopyFrom(T* data);
 
 // ѕолучение размерности матриц
 unsigned GetCols(void) const;
@@ -440,6 +444,22 @@ bool MMatrix<T,Rows,Cols>::CopyTo(T* data)
  if(!data)
   return false;
  memcpy(data,Data,sizeof(Data));
+ return true;
+}
+///  опирует данные из двумерного массива
+template<class T, unsigned Rows, unsigned Cols>
+void MMatrix<T,Rows,Cols>::CopyFrom(T data[Rows][Cols])
+{
+ memcpy(Data,data,sizeof(Data));
+}
+
+///  опирует данные из одномерного массива
+template<class T, unsigned Rows, unsigned Cols>
+bool MMatrix<T,Rows,Cols>::CopyFrom(T* data)
+{
+ if(!data)
+  return false;
+ memcpy(Data,data,sizeof(Data));
  return true;
 }
 
