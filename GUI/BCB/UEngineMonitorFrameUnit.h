@@ -23,17 +23,9 @@
 class TUEngineMonitorFrame;
 
 ///  ласс мониторинга за состо€нием модулей приложени€
-class TEngineMonitorThread: public TThread
+class TEngineMonitorThread: public RDK::UEngineStateThread
 {
-protected: // ѕараметры
-
 protected: // ƒанные состо€ни€ модулей
-/// —осто€ние тредов расчета
-/// 0 - запущен
-/// 1 - расчет остановлен
-/// 2 - расчет запущен, но не выполн€етс€
-RDK::UELockVar<std::vector<int> > CalcThreadStates;
-
 /// —осто€ние источников видеозахвата
 /// 0 - остановлен
 /// 1 - захват остановлен
@@ -41,43 +33,16 @@ RDK::UELockVar<std::vector<int> > CalcThreadStates;
 RDK::UELockVar<std::vector<int> > VideoCaptureStates;
 
 protected: // ¬нутренние данные
-TUEngineMonitorFrame *EngineMonitorFrame;
-
-/// ѕоследние моменты времени опроса состо€ни€ тредов расчета
-std::vector<double> CalcThreadStateTime;
-
-/// ѕоследние моменты времени успешного расчета
-std::vector<RDK::ULongTime> CalcThreadSuccessTime;
-
 /// ѕоследние моменты времени опроса состо€ни€ тредов расчета
 std::vector<double> VideoCaptureStateTime;
 
 /// ѕоследние моменты времени успешного расчета
 std::vector<double> VideoCaptureSuccessTime;
 
-/// ƒлина очереди дл€ расчета среднего времени обработки канала
-/// (число итераций дл€ усреднени€)
-int NumAvgIterations;
-
-/// „исло раз, в которое врем€ расчета должно превысить среднее врем€ расчета
-/// чтобы считать, что произошел останов
-double AvgThreshold;
-
-/// »стори€ последних моментов времени успешного расчета
-std::vector<std::vector<double> > AvgIterations;
-
 /// »стори€ последних моментов времени успешного захвата
 std::vector<std::vector<double> > AvgCaptureIterations;
 
 public:
-// —обытие состо€ни€ расчета. ¬ыставлено на врем€ активности расчета. —брасываетс€ по стопу
-HANDLE CalcState;
-
-HANDLE CalcEnable;
-
-HANDLE CalcStarted;
-
-HANDLE CalculationNotInProgress;
 
 protected: // ¬ременные переменные
 
@@ -86,8 +51,8 @@ public: // ћетоды
 // --------------------------
 //  онструкторы и деструкторы
 // --------------------------
-__fastcall TEngineMonitorThread(TUEngineMonitorFrame *engine_monitor_frame, bool CreateSuspended);
-virtual __fastcall ~TEngineMonitorThread(void);
+TEngineMonitorThread(void);
+virtual ~TEngineMonitorThread(void);
 // --------------------------
 
 // --------------------------
@@ -98,9 +63,6 @@ virtual __fastcall ~TEngineMonitorThread(void);
 // --------------------------
 // ћетоды доступа к данным состо€ни€ модулей
 // --------------------------
-/// ¬озвращает вектор состо€ний тредов
-std::vector<int> ReadCalcThreadStates(void) const;
-
 /// ¬озвращает вектор состо€ний источников видеозахвата
 std::vector<int> ReadVideoCaptureStates(void) const;
 // --------------------------
@@ -108,11 +70,7 @@ std::vector<int> ReadVideoCaptureStates(void) const;
 // --------------------------
 // ”правление потоком
 // --------------------------
-virtual void __fastcall BeforeCalculate(void);
-
-virtual void __fastcall AfterCalculate(void);
-
-virtual void __fastcall Execute(void);
+virtual void AdditionExecute(void);
 // --------------------------
 };
 

@@ -25,28 +25,12 @@ TUEngineMonitorFrame *UEngineMonitorFrame;
 // --------------------------
 //  онструкторы и деструкторы
 // --------------------------
-__fastcall TEngineMonitorThread::TEngineMonitorThread(TUEngineMonitorFrame *engine_monitor_frame, bool CreateSuspended)
-: EngineMonitorFrame(engine_monitor_frame), TThread(CreateSuspended)
+TEngineMonitorThread::TEngineMonitorThread(void)
 {
- CalcState=CreateEvent(0,TRUE,0,0);
- CalcEnable=CreateEvent(0,TRUE,0,0);
- CalcStarted=CreateEvent(0,TRUE,0,0);
- CalculationNotInProgress=CreateEvent(0,TRUE,TRUE,0);
- NumAvgIterations=200;
- AvgThreshold=5.0;
 }
 
-__fastcall TEngineMonitorThread::~TEngineMonitorThread(void)
+TEngineMonitorThread::~TEngineMonitorThread(void)
 {
- ResetEvent(CalcStarted);
- ResetEvent(CalcState);
- Terminate();
- WaitForSingleObject(CalculationNotInProgress,INFINITE);
- WaitFor();
- CloseHandle(CalcState);
- CloseHandle(CalcStarted);
- CloseHandle(CalcEnable);
- CloseHandle(CalculationNotInProgress);
 }
 // --------------------------
 
@@ -59,32 +43,9 @@ __fastcall TEngineMonitorThread::~TEngineMonitorThread(void)
 // --------------------------
 // ћетоды доступа к данным состо€ни€ модулей
 // --------------------------
-/// ¬озвращает вектор состо€ний тредов
-std::vector<int> TEngineMonitorThread::ReadCalcThreadStates(void) const
-{
-/* std::vector<int> res;
- if(WaitForSingleObject(CalculationNotInProgress,1000) == WAIT_TIMEOUT)
-  return res;
-
- ResetEvent(CalculationNotInProgress);
- res=CalcThreadStates;
- SetEvent(CalculationNotInProgress);
- return res;*/
- return CalcThreadStates;
-}
-
 /// ¬озвращает вектор состо€ний источников видеозахвата
 std::vector<int> TEngineMonitorThread::ReadVideoCaptureStates(void) const
 {
-/*
- std::vector<int> res;
- if(WaitForSingleObject(CalculationNotInProgress,1000) == WAIT_TIMEOUT)
-  return res;
-
- ResetEvent(CalculationNotInProgress);
- res=VideoCaptureStates;
- SetEvent(CalculationNotInProgress);
- return res;  */
  return VideoCaptureStates;
 }
 // --------------------------
@@ -93,90 +54,8 @@ std::vector<int> TEngineMonitorThread::ReadVideoCaptureStates(void) const
 // --------------------------
 // ”правление потоком
 // --------------------------
-void __fastcall TEngineMonitorThread::BeforeCalculate(void)
+void TEngineMonitorThread::AdditionExecute(void)
 {
-}
-
-void __fastcall TEngineMonitorThread::AfterCalculate(void)
-{
-}
-
-
-
-void __fastcall TEngineMonitorThread::Execute(void)
-{
- while(!Terminated)
- {
-  if(WaitForSingleObject(CalcStarted,30) == WAIT_TIMEOUT)
-   continue;
-
-  if(WaitForSingleObject(CalculationNotInProgress,30) == WAIT_TIMEOUT)
-  {
-   continue;
-  }
-  ResetEvent(CalculationNotInProgress);
-
-try
-{
-  // ќпредел€ем состо€ние тредов расчета
-  std::vector<int> calc_thread_states;
-
-  int num_channels=EngineMonitorFrame->GetNumChannels();
-  calc_thread_states.assign(num_channels,1);
-  CalcThreadStateTime.resize(num_channels,0);
-  CalcThreadSuccessTime.resize(num_channels,0);
-  AvgIterations.resize(num_channels);
-
-  for(int i=0;i<num_channels;i++)
-  {
-   TEngineThread *thread=EngineMonitorFrame->GetThreadChannel(i);
-   if(thread)
-   {
-	if(!thread->IsCalcStarted())
-	{
-	 calc_thread_states[i]=1;
-	 continue;
-	}
-
-	RDK::ULongTime last_calc_time=thread->GetRealLastCalculationTime();
-	if(CalcThreadSuccessTime[i] != last_calc_time)
-	{
-	 CalcThreadSuccessTime[i]=last_calc_time;
-	 AvgIterations[i].push_back(last_calc_time);
-	 if(AvgIterations[i].size()>NumAvgIterations)
-	  AvgIterations[i].erase(AvgIterations[i].begin());
-
-	 TDateTime dt=TDateTime::CurrentDateTime();
-	 CalcThreadStateTime[i]=dt.operator double();
-	 calc_thread_states[i]=0;
-	}
-	else
-	{
-	 TDateTime dt=TDateTime::CurrentDateTime();
-
-	 double avg_diff(0.0);
-	 for(size_t j=1;j<AvgIterations[i].size();j++)
-	 {
-	  if(AvgIterations[i][j]-AvgIterations[i][j-1]>avg_diff)
- 	   avg_diff=AvgIterations[i][j]-AvgIterations[i][j-1];
-	 }
- //	 avg_diff/=(AvgIterations[i].empty())?1:AvgIterations[i].size();
-	 avg_diff/=1000;
-
-	 if(fabs(avg_diff) < 1e-8 || (dt.operator double()-CalcThreadStateTime[i])*86400.0>AvgThreshold*avg_diff)
-	  calc_thread_states[i]=2;
-	 else
-	  calc_thread_states[i]=0;
-	}
-   }
-   else
-   {
-	calc_thread_states[i]=1;
-   }
-  }
-
-  CalcThreadStates=calc_thread_states;
-
   // ќпредел€ем состо€ние тредов захвата видео
 #ifdef RDK_VIDEO
   std::vector<int> video_capture_states;
@@ -185,7 +64,7 @@ try
   video_capture_states.assign(num_captures,1);
   VideoCaptureStateTime.resize(num_captures,0);
   VideoCaptureSuccessTime.resize(num_captures,0);
-  AvgCaptureIterations.resize(num_channels);
+  AvgCaptureIterations.resize(num_captures);
 
   for(int i=0;i<num_captures;i++)
   {
@@ -215,42 +94,6 @@ try
 	 video_capture_states[i]=2;
 	break;
 	}
-/*	if(WaitForSingleObject(thread->GetCaptureEnabled(),0) == WAIT_TIMEOUT)
-	{
-	 video_capture_states[i]=1;
-	 continue;
-	}
-
-	double last_calc_time=thread->GetLastTimeStampSafe();
-	TDateTime dt=TDateTime::CurrentDateTime();
-	if(VideoCaptureSuccessTime[i] != last_calc_time)
-	{
-	 VideoCaptureSuccessTime[i]=last_calc_time;
-	 AvgCaptureIterations[i].push_back(last_calc_time);
-	 if(AvgCaptureIterations[i].size()>NumAvgIterations)
-	  AvgCaptureIterations[i].erase(AvgCaptureIterations[i].begin());
-
-	 VideoCaptureStateTime[i]=dt.operator double();
-	 video_capture_states[i]=0;
-	}
-	else
-	{
-	 TDateTime dt=TDateTime::CurrentDateTime();
-
-	 double avg_diff(0.0);
-	 for(size_t j=1;j<AvgCaptureIterations[i].size();j++)
-	 {
-	  if(AvgCaptureIterations[i][j]-AvgCaptureIterations[i][j-1]>avg_diff)
-	   avg_diff=AvgCaptureIterations[i][j]-AvgCaptureIterations[i][j-1];
-	 }
- //	 avg_diff/=(AvgCaptureIterations[i].empty())?1:AvgCaptureIterations[i].size();
-
-	 if(fabs(avg_diff)<1e-8 || (dt.operator double()-VideoCaptureStateTime[i])>AvgThreshold*avg_diff)
-//	 if((dt.operator double()-VideoCaptureStateTime[i])*86400.0>2.0)
-	  video_capture_states[i]=2;
-	 else
-	  video_capture_states[i]=0;
-	} */
    }
    else
    {
@@ -262,16 +105,6 @@ try
   VideoCaptureStates=video_capture_states;
 #endif
 
-  SetEvent(CalculationNotInProgress);
-  Sleep(100);
-}
-catch(Exception &ex)
-{
- SetEvent(CalculationNotInProgress);
- Engine_LogMessage(RDK_EX_DEBUG, (string("TEngineThread Exception: ")+AnsiString(ex.Message).c_str()).c_str());
-}
-
- }
 }
 // --------------------------
 
@@ -352,7 +185,7 @@ __fastcall TUEngineMonitorFrame::TUEngineMonitorFrame(TComponent* Owner)
  CalculationTimeSourceMode=0;
  ThreadCalcCompleteEvent=CreateEvent(0,TRUE,FALSE,0);
 
- EngineMonitorThread=new TEngineMonitorThread(this,false);
+ EngineMonitorThread=new TEngineMonitorThread();
 }
 
 __fastcall TUEngineMonitorFrame::~TUEngineMonitorFrame(void)
@@ -364,8 +197,8 @@ __fastcall TUEngineMonitorFrame::~TUEngineMonitorFrame(void)
  {
   ResetEvent(EngineMonitorThread->CalcStarted);
   WaitForSingleObject(EngineMonitorThread->CalculationNotInProgress,INFINITE);
-  EngineMonitorThread->Terminate();
-  EngineMonitorThread->WaitFor();
+//  EngineMonitorThread->Terminate();
+//  EngineMonitorThread->WaitFor();
   delete EngineMonitorThread;
   EngineMonitorThread=0;
  }

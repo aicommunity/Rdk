@@ -53,14 +53,7 @@ std::vector<int> UEngineStateThread::ReadCalcThreadStates(void) const
 {
  return CalcThreadStates;
 }
-
-/// Возвращает вектор состояний источников видеозахвата
-std::vector<int> UEngineStateThread::ReadVideoCaptureStates(void) const
-{
- return VideoCaptureStates;
-}
 // --------------------------
-
 
 // --------------------------
 // Управление потоком
@@ -85,16 +78,6 @@ void UEngineStateThread::UnRegisterCalcThread(int index)
 
  CalcThreads[index]=0;
 }
-
-void UEngineStateThread::BeforeCalculate(void)
-{
-}
-
-void UEngineStateThread::AfterCalculate(void)
-{
-}
-
-
 
 void UEngineStateThread::Execute(void)
 {
@@ -168,55 +151,7 @@ void UEngineStateThread::Execute(void)
 
    CalcThreadStates=calc_thread_states;
 
-   // Определяем состояние тредов захвата видео
-#ifdef RDK_VIDEO
-/*
-   std::vector<int> video_capture_states;
-
-   int num_captures=(VideoOutputForm)?VideoOutputForm->GetNumSources():0;
-   video_capture_states.assign(num_captures,1);
-   VideoCaptureStateTime.resize(num_captures,0);
-   VideoCaptureSuccessTime.resize(num_captures,0);
-   AvgCaptureIterations.resize(num_channels);
-
-   for(int i=0;i<num_captures;i++)
-   {
-	TVideoCaptureThread *thread=0;
-
-	if(VideoOutputForm && VideoOutputForm->GetVideoOutputFrame(i) && VideoOutputForm->GetVideoOutputFrame(i)->CaptureThread)
-	 thread=VideoOutputForm->GetVideoOutputFrame(i)->CaptureThread;
-
-	if(thread)
-	{
-	 int connection_state=thread->CheckConnection();
-	 switch(connection_state)
-	 {
-	 case 0:
-	  video_capture_states[i]=1;
-	 break;
-
-	 case 1:
-	  video_capture_states[i]=1;
-	 break;
-
-	 case 2:
-	  video_capture_states[i]=0;
-	 break;
-
-	 case 10:
-	  video_capture_states[i]=2;
-	 break;
-	 }
-	}
-	else
-	{
-	 video_capture_states[i]=1;
-	}
-   }
-
-   VideoCaptureStates=video_capture_states;
-   */
-#endif
+   AdditionExecute();
 
    CalculationNotInProgress->set();
    Sleep(100);
@@ -240,6 +175,12 @@ void UEngineStateThread::Execute(void)
 
  }
 }
+
+void UEngineStateThread::AdditionExecute(void)
+{
+
+}
+
 // --------------------------
 
 }
