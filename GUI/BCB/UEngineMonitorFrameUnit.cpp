@@ -132,7 +132,7 @@ try
    TEngineThread *thread=EngineMonitorFrame->GetThreadChannel(i);
    if(thread)
    {
-	if(WaitForSingleObject(thread->CalcStarted,0) == WAIT_TIMEOUT)
+	if(!thread->IsCalcStarted())
 	{
 	 calc_thread_states[i]=1;
 	 continue;
@@ -279,27 +279,15 @@ catch(Exception &ex)
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-__fastcall TEngineThread::TEngineThread(int channel_index, int calculate_mode, RDK::UTime min_inerval, bool CreateSuspended)
-: ChannelIndex(channel_index), CalculateMode(calculate_mode), MinInterstepsInterval(min_inerval), TThread(CreateSuspended)
+TEngineThread::TEngineThread(int channel_index, int calculate_mode, RDK::UTime min_inerval)
+ : RDK::UEngineControlThread(channel_index)
 {
- CalcState=CreateEvent(0,TRUE,0,0);
- CalcEnable=CreateEvent(0,TRUE,0,0);
- CalcStarted=CreateEvent(0,TRUE,0,0);
- CalculationNotInProgress=CreateEvent(0,TRUE,TRUE,0);
- RealLastCalculationTime=0;
+ SetCalculateMode(calculate_mode);
+ SetMinInterstepsInterval(min_inerval);
 }
 
-__fastcall TEngineThread::~TEngineThread(void)
+TEngineThread::~TEngineThread(void)
 {
- ResetEvent(CalcStarted);
- ResetEvent(CalcState);
- Terminate();
- WaitForSingleObject(CalculationNotInProgress,INFINITE);
- WaitFor();
- CloseHandle(CalcState);
- CloseHandle(CalcStarted);
- CloseHandle(CalcEnable);
- CloseHandle(CalculationNotInProgress);
 }
 // --------------------------
 
@@ -307,48 +295,12 @@ __fastcall TEngineThread::~TEngineThread(void)
 // --------------------------
 // Управление параметрами
 // --------------------------
-/// Режим счета
-int TEngineThread::GetCalculateMode(void) const
-{
- return CalculateMode;
-}
-
-bool TEngineThread::SetCalculateMode(int value)
-{
- if(CalculateMode == value)
-  return true;
-
- if(WaitForSingleObject(CalculationNotInProgress,1000) == WAIT_TIMEOUT)
-  return false;
-
- CalculateMode=value;
-
- return true;
-}
-
-/// Минимальный интервал времени между итерациями расчета в режиме 0 и 2, мс
-int TEngineThread::GetMinInterstepsInterval(void) const
-{
- return MinInterstepsInterval;
-}
-
-bool TEngineThread::SetMinInterstepsInterval(RDK::UTime value)
-{
- if(MinInterstepsInterval == value)
-  return true;
-
- if(WaitForSingleObject(CalculationNotInProgress,1000) == WAIT_TIMEOUT)
-  return false;
-
- MinInterstepsInterval=value;
- return true;
-}
 // --------------------------
 
 // --------------------------
 // Управление потоком
 // --------------------------
-void __fastcall TEngineThread::BeforeCalculate(void)
+void TEngineThread::ABeforeCalculate(void)
 {
    #ifdef RDK_VIDEO
    if(GetNumEngines() == 1)
@@ -363,9 +315,9 @@ void __fastcall TEngineThread::BeforeCalculate(void)
     }
    }
    else
-   if(ChannelIndex<VideoOutputForm->GetNumSources())
+   if(EngineIndex<VideoOutputForm->GetNumSources())
    {
-	TVideoOutputFrame* video=VideoOutputForm->GetVideoOutputFrame(ChannelIndex);
+	TVideoOutputFrame* video=VideoOutputForm->GetVideoOutputFrame(EngineIndex);
 	if(video)
 	{
 	 video->BeforeCalculate();
@@ -374,70 +326,14 @@ void __fastcall TEngineThread::BeforeCalculate(void)
    #endif
 }
 
-void __fastcall TEngineThread::AfterCalculate(void)
+void TEngineThread::AAfterCalculate(void)
 {
- UEngineMonitorForm->EngineMonitorFrame->LastCalculatedServerTimeStamp[ChannelIndex]=
-  UEngineMonitorForm->EngineMonitorFrame->GetServerTimeStamp(ChannelIndex);
+ UEngineMonitorForm->EngineMonitorFrame->LastCalculatedServerTimeStamp[EngineIndex]=
+  UEngineMonitorForm->EngineMonitorFrame->GetServerTimeStamp(EngineIndex);
 
- UEngineMonitorForm->EngineMonitorFrame->AddMetadata(ChannelIndex, UEngineMonitorForm->EngineMonitorFrame->LastCalculatedServerTimeStamp[ChannelIndex]);
+ UEngineMonitorForm->EngineMonitorFrame->AddMetadata(EngineIndex, UEngineMonitorForm->EngineMonitorFrame->LastCalculatedServerTimeStamp[EngineIndex]);
 }
 
-
-
-void __fastcall TEngineThread::Execute(void)
-{
- while(!Terminated)
- {
-  if(WaitForSingleObject(CalcStarted,30) == WAIT_TIMEOUT)
-   continue;
-  if(CalculateMode == 2)
-  {
-   if(WaitForSingleObject(CalcEnable,30) == WAIT_TIMEOUT)
-	continue;
-  }
-  ResetEvent(CalcEnable);
-  if(WaitForSingleObject(CalculationNotInProgress,30) == WAIT_TIMEOUT)
-  {
-   continue;
-  }
-
-  RDK::ULongTime diff=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),RealLastCalculationTime);
-  if(diff<MinInterstepsInterval)
-  {
-   Sleep(MinInterstepsInterval-diff);
-   continue;
-  }
-
-  ResetEvent(CalculationNotInProgress);
-  if(GetNumEngines()>ChannelIndex)
-  {
-   if(UEngineMonitorForm->EngineMonitorFrame->GetCalculationTimeSourceMode() == 0)
-   {
-    TDateTime dt=TDateTime::CurrentDateTime();
-	MModel_SetDoubleSourceTime(ChannelIndex,dt.operator double());
-   }
-   else
-   if(UEngineMonitorForm->EngineMonitorFrame->GetCalculationTimeSourceMode() == 1)
-	MModel_SetDoubleSourceTime(ChannelIndex,UEngineMonitorForm->EngineMonitorFrame->GetServerTimeStamp(ChannelIndex)/(86400.0*1000.0)/*dt.operator double()*/);
-
-   #ifdef RDK_VIDEO
- //  Synchronize(BeforeCalculate);
-   BeforeCalculate();
-//   Source.SetRes(640,480,RDK::ubmRGB24);
-//   MModel_SetComponentBitmapOutput(ChannelIndex, "", "Output", &Source,true);
-   #endif
-   MEnv_Calculate(ChannelIndex,0);
-   }
-  AfterCalculate();
-  RealLastCalculationTime=RDK::GetCurrentStartupTime();
-  SetEvent(CalculationNotInProgress);
- }
-}
-
-RDK::ULongTime TEngineThread::GetRealLastCalculationTime(void) const
-{
- return RealLastCalculationTime;
-}
 
 // --------------------------
 
@@ -549,7 +445,7 @@ void TUEngineMonitorFrame::SetServerTimeStamp(int channel_index, RDK::ULongTime 
  ServerTimeStamp[channel_index]=stamp;
  CalculateSignal[channel_index]=true;
  if(ChannelsMode == 1)
-  SetEvent(ThreadChannels[channel_index]->CalcEnable);
+  ThreadChannels[channel_index]->EnableCalculation();
 }
 
 
@@ -586,25 +482,23 @@ bool TUEngineMonitorFrame::SetNumChannels(int num)
  int old_size=int(ThreadChannels.size());
  for(int i=num;i<old_size;i++)
  {
-//  ThreadChannels[i]->Suspend();
-//  ThreadChannels[i]->WaitFor();
-  ThreadChannels[i]->Terminate();
+//  ThreadChannels[i]->Terminate();
   delete ThreadChannels[i];
  }
 
  ThreadChannels.resize(num);
  for(int i=old_size;i<num;i++)
  {
-  ThreadChannels[i]=new TEngineThread(i,CalculateMode[i],MinInterstepsInterval[i],false);
+  ThreadChannels[i]=new TEngineThread(i,CalculateMode[i],MinInterstepsInterval[i]);
   #ifdef RDK_MUTEX_DEADLOCK_DEBUG
   TUThreadInfo info;
   info.Pid=ThreadChannels[i]->ThreadID;
   info.Name=string("ThreadChannels ")+RDK::sntoa(i);
   GlobalThreadInfoMap[info.Pid]=info;
   #endif
-  ThreadChannels[i]->Priority=RDK_DEFAULT_THREAD_PRIORITY;
+  ThreadChannels[i]->SetPriority(RDK_DEFAULT_THREAD_PRIORITY);
 
-  ThreadChannels[i]->FreeOnTerminate=false;
+//  ThreadChannels[i]->FreeOnTerminate=false;
  }
 
  return true;
@@ -646,9 +540,9 @@ bool TUEngineMonitorFrame::InsertChannel(int index)
   MinInterstepsInterval[i]=MinInterstepsInterval[i-1];
  }
 
- ThreadChannels[index]=new TEngineThread(index,CalculateMode[index],MinInterstepsInterval[index],false);
- ThreadChannels[index]->Priority=RDK_DEFAULT_THREAD_PRIORITY;
- ThreadChannels[index]->FreeOnTerminate=false;
+ ThreadChannels[index]=new TEngineThread(index,CalculateMode[index],MinInterstepsInterval[index]);
+ ThreadChannels[index]->SetPriority(RDK_DEFAULT_THREAD_PRIORITY);
+// ThreadChannels[index]->FreeOnTerminate=false;
  return true;
 }
 
@@ -661,7 +555,7 @@ bool TUEngineMonitorFrame::DeleteChannel(int index)
 
  if(ThreadChannels[index])
  {
-  ThreadChannels[index]->Terminate();
+//  ThreadChannels[index]->Terminate();
   delete ThreadChannels[index];
   ThreadChannels[index]=0;
  }
@@ -900,9 +794,7 @@ void TUEngineMonitorFrame::StartChannel(int channel_index)
    {
 	if(ThreadChannels[i])
 	{
-		SetEvent(ThreadChannels[i]->CalcStarted);
-		SetEvent(ThreadChannels[i]->CalcState);
-//		WaitForSingleObject(ThreadChannels[i]->CalculationNotInProgress,1000);
+	 ThreadChannels[i]->Start();
 	}
 	UShowProgressBarForm->IncBarStatus(1);
    }
@@ -911,9 +803,7 @@ void TUEngineMonitorFrame::StartChannel(int channel_index)
   {
 	if(ThreadChannels[channel_index])
 	{
-		SetEvent(ThreadChannels[channel_index]->CalcStarted);
-		SetEvent(ThreadChannels[channel_index]->CalcState);
-//		WaitForSingleObject(ThreadChannels[channel_index]->CalculationNotInProgress,1000);
+	 ThreadChannels[channel_index]->Start();
 	}
 	UShowProgressBarForm->IncBarStatus(1);
   }
@@ -955,9 +845,7 @@ void TUEngineMonitorFrame::PauseChannel(int channel_index)
    {
 	if(ThreadChannels[i])
 	{
-	 ResetEvent(ThreadChannels[i]->CalcStarted);
-	 ResetEvent(ThreadChannels[i]->CalcState);
-//	 WaitForSingleObject(ThreadChannels[i]->CalculationNotInProgress,1000);
+	 ThreadChannels[i]->Pause();
 	}
 	UShowProgressBarForm->IncBarStatus(1);
    }
@@ -966,9 +854,7 @@ void TUEngineMonitorFrame::PauseChannel(int channel_index)
   {
 	if(ThreadChannels[channel_index])
 	{
-	 ResetEvent(ThreadChannels[channel_index]->CalcStarted);
-	 ResetEvent(ThreadChannels[channel_index]->CalcState);
-//	 WaitForSingleObject(ThreadChannels[channel_index]->CalculationNotInProgress,1000);
+	 ThreadChannels[channel_index]->Pause();
 	}
 	UShowProgressBarForm->IncBarStatus(1);
 
@@ -977,7 +863,7 @@ void TUEngineMonitorFrame::PauseChannel(int channel_index)
    {
 	if(ThreadChannels[i])
 	{
-	 if(WaitForSingleObject(ThreadChannels[i]->CalcStarted,0) == WAIT_TIMEOUT)
+	 if(!ThreadChannels[i]->IsCalcStarted())
 	  all_stopped&=true;
 	 else
 	  all_stopped&=false;
@@ -1045,24 +931,7 @@ int TUEngineMonitorFrame::CheckCalcState(int channel_id) const
  if(channel_id<0 || channel_id>GetNumEngines())
   return 0;
 
- switch(ChannelsMode)
- {
-  case 0:
-  {
-   if(CalculateState[channel_id])
-	return 1;
-
-   return 0;
-  }
-  case 1:
-  {
-   if(WaitForSingleObject(ThreadChannels[channel_id]->CalcState, 0) != WAIT_TIMEOUT)
-	return 1;
-
-   return 0;
-  }
- }
- return 0;
+ return ThreadChannels[channel_id]->CheckCalcState();
 }
 
 /// Доступ к треду мониторинга состояния модулей сервера

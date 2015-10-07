@@ -201,7 +201,7 @@ UGenericMutexWin& UGenericMutexWin::operator = (const UGenericMutexWin &copy)
 // ---------------------------------------------------------------------------
 UGenericEventWin::UGenericEventWin()
 {
- Event=CreateEvent(0,FALSE,TRUE,0);
+ Event=CreateEvent(0,TRUE,TRUE,0);
 }
 
 UGenericEventWin::~UGenericEventWin()

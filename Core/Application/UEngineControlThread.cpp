@@ -3,6 +3,9 @@
 
 #include "UEngineControlThread.h"
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
+#ifdef WIN32
+#include <windows.h>
+#endif
 
 namespace RDK {
 
@@ -21,6 +24,7 @@ UEngineControlThread::UEngineControlThread(int engine_index)
  CalculationNotInProgress=UCreateEvent(true);
 
  RealLastCalculationTime=0.0;
+ ExternalCurrentTime=0.0;
  Thread=boost::thread(boost::bind(&UEngineControlThread::Execute, boost::ref(*this)));
 }
 
@@ -75,6 +79,44 @@ bool UEngineControlThread::SetMinInterstepsInterval(RDK::UTime value)
  MinInterstepsInterval=value;
  return true;
 }
+
+/// Источник времени для модели
+/// 0 - часы
+/// 1 - время внешнего видеоисточника
+int UEngineControlThread::GetCalculationTimeSource(void) const
+{
+ return CalculationTimeSource;
+}
+
+bool UEngineControlThread::SetCalculationTimeSource(int value)
+{
+ if(CalculationTimeSource == value)
+  return true;
+
+ CalculationTimeSource=value;
+ return true;
+}
+// --------------------------
+
+// --------------------------
+// Управление данными
+// --------------------------
+/// Внешний источник времени
+double UEngineControlThread::GetExternalCurrentTime(void) const
+{
+ return ExternalCurrentTime;
+}
+
+bool UEngineControlThread::SetExternalCurrentTime(double value)
+{
+ ExternalCurrentTime=value;
+ return true;
+}
+
+double UEngineControlThread::GetRealLastCalculationTime(void) const
+{
+ return RealLastCalculationTime;
+}
 // --------------------------
 
 // --------------------------
@@ -82,17 +124,21 @@ bool UEngineControlThread::SetMinInterstepsInterval(RDK::UTime value)
 // --------------------------
 void UEngineControlThread::BeforeCalculate(void)
 {
+ ABeforeCalculate();
+}
+
+void UEngineControlThread::ABeforeCalculate(void)
+{
 }
 
 void UEngineControlThread::AfterCalculate(void)
 {
-/* UEngineMonitorForm->EngineMonitorFrame->LastCalculatedServerTimeStamp[ChannelIndex]=
-  UEngineMonitorForm->EngineMonitorFrame->GetServerTimeStamp(ChannelIndex);
-
- UEngineMonitorForm->EngineMonitorFrame->AddMetadata(ChannelIndex, UEngineMonitorForm->EngineMonitorFrame->LastCalculatedServerTimeStamp[ChannelIndex]);
-*/
+ AAfterCalculate();
 }
 
+void UEngineControlThread::AAfterCalculate(void)
+{
+}
 
 void UEngineControlThread::Execute(void)
 {
@@ -100,6 +146,13 @@ void UEngineControlThread::Execute(void)
  {
   if(CalcStarted->wait(30) == false)
    continue;
+
+  if(CalculateMode == 2)
+  {
+   if(CalcEnable->wait(30) == false)
+	continue;
+  }
+  CalcEnable->reset();
 
   if(CalculationNotInProgress->wait(30) == false)
   {
@@ -114,14 +167,22 @@ void UEngineControlThread::Execute(void)
   }
 
   CalculationNotInProgress->reset();
-  if(EngineIndex<GetNumEngines())
+  if(EngineIndex>=GetNumEngines())
   {
    CalculationNotInProgress->set();
    continue;
   }
 
   BeforeCalculate();
-  MModel_SetDoubleSourceTime(EngineIndex,GetVariantLocalTime());
+  if(CalculationTimeSource == 0)
+  {
+   MModel_SetDoubleSourceTime(EngineIndex,GetVariantLocalTime());
+  }
+  else
+  if(CalculationTimeSource == 1)
+  {
+   MModel_SetDoubleSourceTime(EngineIndex,ExternalCurrentTime);
+  }
   MEnv_Calculate(EngineIndex,0);
   AfterCalculate();
   RealLastCalculationTime=GetVariantLocalTime();
@@ -129,11 +190,97 @@ void UEngineControlThread::Execute(void)
  }
 }
 
-double UEngineControlThread::GetRealLastCalculationTime(void) const
+/// Проверяет состояние расчета по id канала
+/// 0 - Не считает
+/// 1 - Идет расчет
+int UEngineControlThread::CheckCalcState(void) const
 {
- return RealLastCalculationTime;
+ if(CalcState->wait(0))
+  return 1;
+
+ return 0;
 }
 
+/// Возвращает состояния запуска треда
+int UEngineControlThread::IsCalcStarted(void) const
+{
+ if(CalcStarted->wait(0))
+  return 1;
+
+ return 0;
+}
+
+/// Взводит флаг разрешения расчета
+bool UEngineControlThread::EnableCalculation(void)
+{
+ CalcEnable->set();
+ return true;
+}
+
+/// Запускает аналитику канала
+void UEngineControlThread::Start(void)
+{
+ if(EngineIndex<0 || EngineIndex>GetNumEngines())
+  return;
+
+ CalcStarted->set();
+ CalcState->set();
+}
+
+/// Останавливает аналитику канала
+void UEngineControlThread::Pause(void)
+{
+ if(EngineIndex<0 || EngineIndex>GetNumEngines())
+  return;
+
+ CalcStarted->reset();
+ CalcState->reset();
+}
+
+/// Сбрасывает аналитику канала
+void UEngineControlThread::Reset(void)
+{
+ if(EngineIndex<0 || EngineIndex>GetNumEngines())
+  return;
+
+ MEnv_Reset(EngineIndex,0);
+ RealLastCalculationTime=0;
+}
+
+/// Устанавливает приоритет потока
+bool UEngineControlThread::SetPriority(int priority_id)
+{
+#ifdef WIN32
+ BOOL res;
+ HANDLE th = Thread.native_handle();
+
+ switch (priority_id)
+	{
+	case RDK_THREAD_PRIORITY_REALTIME:
+	 res = SetThreadPriority(th, THREAD_PRIORITY_TIME_CRITICAL);
+	break;
+	case RDK_THREAD_PRIORITY_HIGH:
+	 res = SetThreadPriority(th, THREAD_PRIORITY_HIGHEST);
+	break;
+	case RDK_THREAD_PRIORITY_ABOVE_NORMAL:
+	 res = SetThreadPriority(th, THREAD_PRIORITY_ABOVE_NORMAL);
+	break;
+	case RDK_THREAD_PRIORITY_NORMAL:
+	 res = SetThreadPriority(th, THREAD_PRIORITY_NORMAL);
+	break;
+	case RDK_THREAD_PRIORITY_BELOW_NORMAL:
+	 res = SetThreadPriority(th, THREAD_PRIORITY_BELOW_NORMAL);
+	break;
+	case RDK_THREAD_PRIORITY_IDLE:
+	 res = SetThreadPriority(th, THREAD_PRIORITY_LOWEST);
+	break;
+	}
+
+ return res;
+#else
+ return false;
+#endif
+}
 // --------------------------
 
 

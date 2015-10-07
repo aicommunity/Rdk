@@ -152,7 +152,7 @@ void TVideoOutputFrame::Init(int mode)
   CaptureThread=TakeVideoCapureThread(mode,this,true);
   if(!CaptureThread)
    return;
-  CaptureThread->Priority=RDK_DEFAULT_THREAD_PRIORITY;
+  CaptureThread->Priority=tpLower;//RDK_DEFAULT_THREAD_PRIORITY;
   CaptureThread->SetChannelIndex(FrameIndex);
 
   #ifdef RDK_MUTEX_DEADLOCK_DEBUG
@@ -192,7 +192,7 @@ void TVideoOutputFrame::Init(int mode, RDK::USerStorageXML &raw_xml_data)
   CaptureThread=TakeVideoCapureThread(mode,this,true);
   if(!CaptureThread)
    return;
-  CaptureThread->Priority=RDK_DEFAULT_THREAD_PRIORITY;
+  CaptureThread->Priority=tpLower;//RDK_DEFAULT_THREAD_PRIORITY;
   CaptureThread->SetChannelIndex(FrameIndex);
 
   #ifdef RDK_MUTEX_DEADLOCK_DEBUG
@@ -475,7 +475,7 @@ bool TVideoOutputFrame::InitByBmp(const RDK::UBitmap &bmp, double fps)
   if(!CaptureThread)
   {
    CaptureThread=new TVideoCaptureThreadBmp(this,false);
-   CaptureThread->Priority=RDK_DEFAULT_THREAD_PRIORITY;
+   CaptureThread->Priority=tpLower;//RDK_DEFAULT_THREAD_PRIORITY;
    CaptureThread->SetChannelIndex(FrameIndex);
    TVideoCaptureThreadBmp* thread=dynamic_cast<TVideoCaptureThreadBmp*>(CaptureThread);
    if(thread)

@@ -118,68 +118,29 @@ virtual void __fastcall Execute(void);
 
 
 
-class TEngineThread: public TThread
+class TEngineThread: public RDK::UEngineControlThread
 {
-protected: // Параметры
-/// Индекс канала в библиотеке аналитики, управляемый тредом
-int ChannelIndex;
-
-/// Режим счета
-RDK::UELockVar<int> CalculateMode;
-
-/// Минимальный интервал времени между итерациями расчета в режиме 0 и 2, мс
-RDK::UELockVar<RDK::UTime> MinInterstepsInterval;
-
-/// Метка реального времени окончания последнего расчета
-RDK::UELockVar<RDK::ULongTime> RealLastCalculationTime;
-
-public:
-// Событие состояния расчета. Выставлено на время активности расчета. Сбрасывается по стопу
-HANDLE CalcState;
-
-HANDLE CalcEnable;
-
-HANDLE CalcStarted;
-
-HANDLE CalculationNotInProgress;
-
-RDK::UBitmap Source;
-
-
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-__fastcall TEngineThread(int channel_index, int calculate_mode, RDK::UTime min_inerval, bool CreateSuspended);
-virtual __fastcall ~TEngineThread(void);
+TEngineThread(int channel_index, int calculate_mode, RDK::UTime min_inerval);
+virtual ~TEngineThread(void);
 // --------------------------
 
 // --------------------------
 // Управление параметрами
 // --------------------------
-/// Режим счета
-int GetCalculateMode(void) const;
-bool SetCalculateMode(int value);
-
-/// Минимальный интервал времени между итерациями расчета в режиме 0 и 2, мс
-int GetMinInterstepsInterval(void) const;
-bool SetMinInterstepsInterval(RDK::UTime value);
 // --------------------------
 
 
 // --------------------------
 // Управление потоком
 // --------------------------
-virtual void __fastcall BeforeCalculate(void);
+virtual void ABeforeCalculate(void);
 
-virtual void __fastcall AfterCalculate(void);
-
-virtual void __fastcall Execute(void);
-
-RDK::ULongTime GetRealLastCalculationTime(void) const;
+virtual void AAfterCalculate(void);
 // --------------------------
-
-
 };
 
 //---------------------------------------------------------------------------

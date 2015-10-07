@@ -2,176 +2,885 @@ object UComponentsControlForm: TUComponentsControlForm
   Left = 0
   Top = 0
   Caption = 'UComponentsControlForm'
-  ClientHeight = 436
-  ClientWidth = 1009
+  ClientHeight = 545
+  ClientWidth = 1261
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
-  Font.Height = -11
+  Font.Height = -14
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
   OnShow = FormShow
-  PixelsPerInch = 96
-  TextHeight = 13
+  PixelsPerInch = 120
+  TextHeight = 17
   inline ComponentsControlFrame: TUComponentsControlFrame
     Left = 0
     Top = 0
-    Width = 1009
-    Height = 436
+    Width = 1261
+    Height = 545
+    Margins.Left = 4
+    Margins.Top = 4
+    Margins.Right = 4
+    Margins.Bottom = 4
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
-    Font.Height = -11
+    Font.Height = -14
     Font.Name = 'Tahoma'
     Font.Style = []
     ParentFont = False
     TabOrder = 0
-    ExplicitWidth = 1009
-    ExplicitHeight = 436
+    ExplicitWidth = 1261
+    ExplicitHeight = 545
     inherited Panel1: TPanel
-      Top = 398
-      Width = 1009
-      ExplicitTop = 398
-      ExplicitWidth = 1009
+      Top = 498
+      Width = 1261
+      Height = 47
+      Margins.Left = 4
+      Margins.Top = 4
+      Margins.Right = 4
+      Margins.Bottom = 4
+      ExplicitTop = 498
+      ExplicitWidth = 1261
+      ExplicitHeight = 47
       inherited HeaderControl: THeaderControl
-        Width = 1007
-        ExplicitWidth = 1007
+        Width = 1259
+        Height = 45
+        Margins.Left = 4
+        Margins.Top = 4
+        Margins.Right = 4
+        Margins.Bottom = 4
+        ExplicitWidth = 1259
+        ExplicitHeight = 45
       end
     end
     inherited Panel2: TPanel
-      Width = 1009
-      Height = 398
-      ExplicitWidth = 1009
-      ExplicitHeight = 398
+      Width = 1261
+      Height = 498
+      Margins.Left = 4
+      Margins.Top = 4
+      Margins.Right = 4
+      Margins.Bottom = 4
+      ExplicitWidth = 1261
+      ExplicitHeight = 498
       inherited Splitter1: TSplitter
-        Height = 396
-        ExplicitHeight = 396
+        Left = 381
+        Width = 9
+        Height = 496
+        Margins.Left = 4
+        Margins.Top = 4
+        Margins.Right = 4
+        Margins.Bottom = 4
+        ExplicitLeft = 381
+        ExplicitTop = 1
+        ExplicitWidth = 9
+        ExplicitHeight = 495
       end
       inherited GroupBox1: TGroupBox
-        Width = 632
-        Height = 396
-        ExplicitWidth = 632
-        ExplicitHeight = 396
+        Left = 470
+        Width = 790
+        Height = 496
+        Margins.Left = 4
+        Margins.Top = 4
+        Margins.Right = 4
+        Margins.Bottom = 4
+        ExplicitLeft = 470
+        ExplicitWidth = 790
+        ExplicitHeight = 495
         inherited ComponentsListFrame: TUComponentsListFrame
-          Width = 628
-          Height = 379
-          ExplicitWidth = 628
-          ExplicitHeight = 379
+          Width = 786
+          Height = 479
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
+          Font.Height = -14
+          ExplicitLeft = 3
+          ExplicitTop = 19
+          ExplicitWidth = 785
+          ExplicitHeight = 474
           inherited Splitter1: TSplitter
-            Height = 379
-            ExplicitHeight = 379
+            Left = 451
+            Width = 10
+            Height = 479
+            Margins.Left = 4
+            Margins.Top = 4
+            Margins.Right = 4
+            Margins.Bottom = 4
+            ExplicitLeft = 451
+            ExplicitWidth = 10
+            ExplicitHeight = 474
           end
           inherited Panel1: TPanel
-            Width = 259
-            Height = 379
-            ExplicitWidth = 259
-            ExplicitHeight = 379
+            Left = 461
+            Width = 325
+            Height = 479
+            Margins.Left = 4
+            Margins.Top = 4
+            Margins.Right = 4
+            Margins.Bottom = 4
+            ExplicitLeft = 461
+            ExplicitWidth = 324
+            ExplicitHeight = 474
             inherited PageControl1: TPageControl
-              Width = 257
-              Height = 377
-              ExplicitWidth = 257
-              ExplicitHeight = 377
+              Width = 323
+              Height = 477
+              Margins.Left = 4
+              Margins.Top = 4
+              Margins.Right = 4
+              Margins.Bottom = 4
+              ExplicitWidth = 322
+              ExplicitHeight = 472
               inherited TabSheet6: TTabSheet
+                Margins.Left = 4
+                Margins.Top = 4
+                Margins.Right = 4
+                Margins.Bottom = 4
                 ExplicitWidth = 249
                 ExplicitHeight = 351
                 inherited Splitter5: TSplitter
-                  Top = 274
-                  Width = 249
+                  Top = 351
+                  Width = 315
+                  Height = 12
+                  Margins.Left = 4
+                  Margins.Top = 4
+                  Margins.Right = 4
+                  Margins.Bottom = 4
+                  ExplicitTop = 343
+                  ExplicitWidth = 311
+                  ExplicitHeight = 12
                 end
                 inherited EnchancedSG1: TEnchancedSG
-                  Width = 249
-                  Height = 274
-                  ExplicitWidth = 249
-                  ExplicitHeight = 274
+                  Width = 315
+                  Height = 351
+                  Margins.Left = 4
+                  Margins.Top = 4
+                  Margins.Right = 4
+                  Margins.Bottom = 4
+                  ExplicitWidth = 311
+                  ExplicitHeight = 343
+                  inherited BasicStringGrid: TStringGrid
+                    Left = 20
+                    Top = 70
+                    Width = 201
+                    Height = 121
+                    Margins.Left = 4
+                    Margins.Top = 4
+                    Margins.Right = 4
+                    Margins.Bottom = 4
+                    ExplicitLeft = 20
+                    ExplicitTop = 70
+                    ExplicitWidth = 201
+                    ExplicitHeight = 121
+                  end
+                  inherited txtStringEdit: TEdit
+                    Left = 40
+                    Top = 310
+                    Width = 151
+                    Height = 26
+                    Margins.Left = 4
+                    Margins.Top = 4
+                    Margins.Right = 4
+                    Margins.Bottom = 4
+                    ExplicitLeft = 40
+                    ExplicitTop = 310
+                    ExplicitWidth = 151
+                    ExplicitHeight = 26
+                  end
+                  inherited chbBoolEdit: TCheckBox
+                    Left = 44
+                    Top = 458
+                    Width = 121
+                    Height = 21
+                    Margins.Left = 4
+                    Margins.Top = 4
+                    Margins.Right = 4
+                    Margins.Bottom = 4
+                    ExplicitLeft = 44
+                    ExplicitTop = 458
+                    ExplicitWidth = 121
+                    ExplicitHeight = 21
+                  end
+                  inherited udBorderedInt: TUpDown
+                    Left = 190
+                    Top = 405
+                    Width = 21
+                    Height = 26
+                    Margins.Left = 4
+                    Margins.Top = 4
+                    Margins.Right = 4
+                    Margins.Bottom = 4
+                    ExplicitLeft = 190
+                    ExplicitTop = 405
+                    ExplicitWidth = 21
+                    ExplicitHeight = 26
+                  end
+                  inherited txtDoubleEdit: TEdit
+                    Left = 38
+                    Top = 260
+                    Width = 151
+                    Height = 26
+                    Margins.Left = 4
+                    Margins.Top = 4
+                    Margins.Right = 4
+                    Margins.Bottom = 4
+                    ExplicitLeft = 38
+                    ExplicitTop = 260
+                    ExplicitWidth = 151
+                    ExplicitHeight = 26
+                  end
+                  inherited txtIntEdit: TEdit
+                    Left = 40
+                    Top = 486
+                    Width = 151
+                    Height = 27
+                    Margins.Left = 4
+                    Margins.Top = 4
+                    Margins.Right = 4
+                    Margins.Bottom = 4
+                    ExplicitLeft = 40
+                    ExplicitTop = 486
+                    ExplicitWidth = 151
+                    ExplicitHeight = 27
+                  end
+                  inherited txtBorderedIntEdit: TEdit
+                    Left = 40
+                    Top = 405
+                    Width = 151
+                    Height = 26
+                    Margins.Left = 4
+                    Margins.Top = 4
+                    Margins.Right = 4
+                    Margins.Bottom = 4
+                    ExplicitLeft = 40
+                    ExplicitTop = 405
+                    ExplicitWidth = 151
+                    ExplicitHeight = 26
+                  end
+                  inherited cmbListEdit: TComboBox
+                    Left = 40
+                    Top = 359
+                    Width = 181
+                    Height = 26
+                    Margins.Left = 4
+                    Margins.Top = 4
+                    Margins.Right = 4
+                    Margins.Bottom = 4
+                    Font.Height = -15
+                    ExplicitLeft = 40
+                    ExplicitTop = 359
+                    ExplicitWidth = 181
+                    ExplicitHeight = 26
+                  end
                 end
                 inherited HeaderControl2: THeaderControl
-                  Top = 317
-                  Width = 249
-                  ExplicitTop = 317
-                  ExplicitWidth = 249
+                  Top = 404
+                  Width = 315
+                  Height = 43
+                  Margins.Left = 4
+                  Margins.Top = 4
+                  Margins.Right = 4
+                  Margins.Bottom = 4
+                  ExplicitTop = 396
+                  ExplicitWidth = 311
+                  ExplicitHeight = 43
                 end
                 inherited NiceParamValRichEdit: TRichEdit
-                  Top = 284
-                  Width = 249
-                  ExplicitTop = 284
-                  ExplicitWidth = 249
+                  Top = 363
+                  Width = 315
+                  Height = 41
+                  Margins.Left = 4
+                  Margins.Top = 4
+                  Margins.Right = 4
+                  Margins.Bottom = 4
+                  Font.Height = -14
+                  Constraints.MinHeight = 31
+                  ExplicitTop = 355
+                  ExplicitWidth = 311
+                  ExplicitHeight = 41
+                end
+              end
+              inherited TabSheet7: TTabSheet
+                Margins.Left = 4
+                Margins.Top = 4
+                Margins.Right = 4
+                Margins.Bottom = 4
+                inherited Splitter6: TSplitter
+                  Top = 443
+                  Height = 12
+                  Margins.Left = 4
+                  Margins.Top = 4
+                  Margins.Right = 4
+                  Margins.Bottom = 4
+                  ExplicitTop = 578
+                  ExplicitWidth = 470
+                  ExplicitHeight = 12
+                end
+                inherited HeaderControl4: THeaderControl
+                  Top = 496
+                  Height = 43
+                  Margins.Left = 4
+                  Margins.Top = 4
+                  Margins.Right = 4
+                  Margins.Bottom = 4
+                  ExplicitTop = 631
+                  ExplicitWidth = 470
+                  ExplicitHeight = 43
+                end
+                inherited NiceStateValRichEdit: TRichEdit
+                  Top = 455
+                  Height = 41
+                  Margins.Left = 4
+                  Margins.Top = 4
+                  Margins.Right = 4
+                  Margins.Bottom = 4
+                  Font.Height = -14
+                  Constraints.MinHeight = 31
+                  ExplicitTop = 590
+                  ExplicitWidth = 470
+                  ExplicitHeight = 41
+                end
+                inherited EnchancedSG2: TEnchancedSG
+                  Height = 443
+                  Margins.Left = 4
+                  Margins.Top = 4
+                  Margins.Right = 4
+                  Margins.Bottom = 4
+                  ExplicitWidth = 470
+                  ExplicitHeight = 578
+                  inherited BasicStringGrid: TStringGrid
+                    Left = 20
+                    Top = 70
+                    Width = 201
+                    Height = 121
+                    Margins.Left = 4
+                    Margins.Top = 4
+                    Margins.Right = 4
+                    Margins.Bottom = 4
+                    ExplicitLeft = 20
+                    ExplicitTop = 70
+                    ExplicitWidth = 201
+                    ExplicitHeight = 121
+                  end
+                  inherited txtStringEdit: TEdit
+                    Left = 40
+                    Top = 310
+                    Width = 151
+                    Height = 26
+                    Margins.Left = 4
+                    Margins.Top = 4
+                    Margins.Right = 4
+                    Margins.Bottom = 4
+                    ExplicitLeft = 40
+                    ExplicitTop = 310
+                    ExplicitWidth = 151
+                    ExplicitHeight = 26
+                  end
+                  inherited chbBoolEdit: TCheckBox
+                    Left = 44
+                    Top = 458
+                    Width = 121
+                    Height = 21
+                    Margins.Left = 4
+                    Margins.Top = 4
+                    Margins.Right = 4
+                    Margins.Bottom = 4
+                    ExplicitLeft = 44
+                    ExplicitTop = 458
+                    ExplicitWidth = 121
+                    ExplicitHeight = 21
+                  end
+                  inherited udBorderedInt: TUpDown
+                    Left = 190
+                    Top = 405
+                    Width = 21
+                    Height = 26
+                    Margins.Left = 4
+                    Margins.Top = 4
+                    Margins.Right = 4
+                    Margins.Bottom = 4
+                    ExplicitLeft = 190
+                    ExplicitTop = 405
+                    ExplicitWidth = 21
+                    ExplicitHeight = 26
+                  end
+                  inherited txtDoubleEdit: TEdit
+                    Left = 38
+                    Top = 260
+                    Width = 151
+                    Height = 26
+                    Margins.Left = 4
+                    Margins.Top = 4
+                    Margins.Right = 4
+                    Margins.Bottom = 4
+                    ExplicitLeft = 38
+                    ExplicitTop = 260
+                    ExplicitWidth = 151
+                    ExplicitHeight = 26
+                  end
+                  inherited txtIntEdit: TEdit
+                    Left = 40
+                    Top = 486
+                    Width = 151
+                    Height = 27
+                    Margins.Left = 4
+                    Margins.Top = 4
+                    Margins.Right = 4
+                    Margins.Bottom = 4
+                    ExplicitLeft = 40
+                    ExplicitTop = 486
+                    ExplicitWidth = 151
+                    ExplicitHeight = 27
+                  end
+                  inherited txtBorderedIntEdit: TEdit
+                    Left = 40
+                    Top = 405
+                    Width = 151
+                    Height = 26
+                    Margins.Left = 4
+                    Margins.Top = 4
+                    Margins.Right = 4
+                    Margins.Bottom = 4
+                    ExplicitLeft = 40
+                    ExplicitTop = 405
+                    ExplicitWidth = 151
+                    ExplicitHeight = 26
+                  end
+                  inherited cmbListEdit: TComboBox
+                    Left = 40
+                    Top = 359
+                    Width = 181
+                    Height = 26
+                    Margins.Left = 4
+                    Margins.Top = 4
+                    Margins.Right = 4
+                    Margins.Bottom = 4
+                    Font.Height = -15
+                    ExplicitLeft = 40
+                    ExplicitTop = 359
+                    ExplicitWidth = 181
+                    ExplicitHeight = 26
+                  end
+                end
+              end
+              inherited TabSheet3: TTabSheet
+                Margins.Left = 4
+                Margins.Top = 4
+                Margins.Right = 4
+                Margins.Bottom = 4
+                inherited Splitter2: TSplitter
+                  Top = 299
+                  Width = 470
+                  Height = 10
+                  Margins.Left = 4
+                  Margins.Top = 4
+                  Margins.Right = 4
+                  Margins.Bottom = 4
+                  ExplicitTop = 299
+                  ExplicitWidth = 470
+                  ExplicitHeight = 10
+                end
+                inherited GroupBox: TGroupBox
+                  Width = 470
+                  Height = 299
+                  Margins.Left = 4
+                  Margins.Top = 4
+                  Margins.Right = 4
+                  Margins.Bottom = 4
+                  ExplicitWidth = 470
+                  ExplicitHeight = 299
+                  inherited OutputsStringGrid: TStringGrid
+                    Left = 3
+                    Top = 19
+                    Width = 465
+                    Height = 277
+                    Margins.Left = 4
+                    Margins.Top = 4
+                    Margins.Right = 4
+                    Margins.Bottom = 4
+                    ExplicitLeft = 3
+                    ExplicitTop = 19
+                    ExplicitWidth = 465
+                    ExplicitHeight = 277
+                  end
+                end
+                inherited GroupBox2: TGroupBox
+                  Top = 309
+                  Width = 470
+                  Height = 365
+                  Margins.Left = 4
+                  Margins.Top = 4
+                  Margins.Right = 4
+                  Margins.Bottom = 4
+                  ExplicitTop = 309
+                  ExplicitWidth = 470
+                  ExplicitHeight = 365
+                  inherited InputsStringGrid: TStringGrid
+                    Left = 3
+                    Top = 19
+                    Width = 465
+                    Height = 344
+                    Margins.Left = 4
+                    Margins.Top = 4
+                    Margins.Right = 4
+                    Margins.Bottom = 4
+                    ExplicitLeft = 3
+                    ExplicitTop = 19
+                    ExplicitWidth = 465
+                    ExplicitHeight = 344
+                  end
                 end
               end
               inherited TabSheet1: TTabSheet
+                Margins.Left = 4
+                Margins.Top = 4
+                Margins.Right = 4
+                Margins.Bottom = 4
                 inherited ParametersHeaderControl: THeaderControl
-                  ExplicitWidth = 376
+                  Top = 496
+                  Height = 43
+                  Margins.Left = 4
+                  Margins.Top = 4
+                  Margins.Right = 4
+                  Margins.Bottom = 4
+                  ExplicitTop = 631
+                  ExplicitWidth = 470
+                  ExplicitHeight = 43
+                end
+                inherited ParametersRichEdit: TRichEdit
+                  Height = 496
+                  Margins.Left = 4
+                  Margins.Top = 4
+                  Margins.Right = 4
+                  Margins.Bottom = 4
+                  Font.Height = -14
+                  ExplicitWidth = 470
+                  ExplicitHeight = 631
+                end
+              end
+              inherited TabSheet2: TTabSheet
+                Margins.Left = 4
+                Margins.Top = 4
+                Margins.Right = 4
+                Margins.Bottom = 4
+                inherited StateHeaderControl: THeaderControl
+                  Top = 496
+                  Height = 43
+                  Margins.Left = 4
+                  Margins.Top = 4
+                  Margins.Right = 4
+                  Margins.Bottom = 4
+                  ExplicitTop = 631
+                  ExplicitWidth = 470
+                  ExplicitHeight = 43
+                end
+                inherited StateRichEdit: TRichEdit
+                  Height = 496
+                  Margins.Left = 4
+                  Margins.Top = 4
+                  Margins.Right = 4
+                  Margins.Bottom = 4
+                  Font.Height = -14
+                  ExplicitWidth = 470
+                  ExplicitHeight = 631
                 end
               end
             end
           end
           inherited Panel2: TPanel
-            Height = 379
-            ExplicitHeight = 379
+            Width = 451
+            Height = 479
+            Margins.Left = 4
+            Margins.Top = 4
+            Margins.Right = 4
+            Margins.Bottom = 4
+            ExplicitWidth = 451
+            ExplicitHeight = 474
             inherited StringGrid: TStringGrid
-              Height = 321
+              Top = 44
+              Width = 449
+              Height = 401
+              Margins.Left = 4
+              Margins.Top = 4
+              Margins.Right = 4
+              Margins.Bottom = 4
               OnClick = ComponentsListFrameStringGridClick
               OnDblClick = ComponentsListFrameStringGridDblClick
               OnKeyDown = ComponentsListFrameStringGridKeyDown
               OnSelectCell = ComponentsListFrameStringGridSelectCell
-              ExplicitHeight = 321
+              ExplicitTop = 44
+              ExplicitWidth = 449
+              ExplicitHeight = 401
+            end
+            inherited HeaderControl: THeaderControl
+              Width = 449
+              Height = 43
+              Margins.Left = 4
+              Margins.Top = 4
+              Margins.Right = 4
+              Margins.Bottom = 4
+              ExplicitWidth = 449
+              ExplicitHeight = 43
             end
             inherited ClassNamePanel: TPanel
-              Top = 356
-              ExplicitTop = 356
+              Top = 445
+              Width = 449
+              Height = 28
+              Margins.Left = 4
+              Margins.Top = 4
+              Margins.Right = 4
+              Margins.Bottom = 4
+              ExplicitTop = 445
+              ExplicitWidth = 449
+              ExplicitHeight = 28
             end
           end
         end
       end
       inherited GroupBox2: TGroupBox
-        Height = 396
-        ExplicitHeight = 396
+        Width = 380
+        Height = 496
+        Margins.Left = 4
+        Margins.Top = 4
+        Margins.Right = 4
+        Margins.Bottom = 4
+        ExplicitWidth = 380
+        ExplicitHeight = 495
         inherited ClassesListFrame: TUClassesListFrame
-          Height = 379
-          ExplicitHeight = 379
+          Width = 376
+          Height = 479
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
+          Font.Height = -14
+          ExplicitLeft = 3
+          ExplicitTop = 19
+          ExplicitWidth = 375
+          ExplicitHeight = 474
           inherited PageControl: TPageControl
-            Height = 379
-            ExplicitHeight = 379
+            Width = 376
+            Height = 479
+            Margins.Left = 4
+            Margins.Top = 4
+            Margins.Right = 4
+            Margins.Bottom = 4
+            ExplicitWidth = 375
+            ExplicitHeight = 474
             inherited NameTabSheet: TTabSheet
+              Margins.Left = 4
+              Margins.Top = 4
+              Margins.Right = 4
+              Margins.Bottom = 4
               inherited StringGrid: TStringGrid
-                Height = 379
+                Width = 375
+                Height = 474
+                Margins.Left = 4
+                Margins.Top = 4
+                Margins.Right = 4
+                Margins.Bottom = 4
                 OnDblClick = ClassesListFrameStringGridDblClick
-                ExplicitHeight = 379
+                ExplicitWidth = 375
+                ExplicitHeight = 474
+              end
+            end
+            inherited LibsTabSheet: TTabSheet
+              Margins.Left = 4
+              Margins.Top = 4
+              Margins.Right = 4
+              Margins.Bottom = 4
+              inherited TreeView: TTreeView
+                Margins.Left = 4
+                Margins.Top = 4
+                Margins.Right = 4
+                Margins.Bottom = 4
+                ExplicitWidth = 624
+                ExplicitHeight = 644
               end
             end
             inherited LibsControlTabSheet: TTabSheet
+              Margins.Left = 4
+              Margins.Top = 4
+              Margins.Right = 4
+              Margins.Bottom = 4
               ExplicitHeight = 351
               inherited Splitter1: TSplitter
-                Top = 61
+                Top = 76
+                Width = 365
+                Height = 9
+                Margins.Left = 4
+                Margins.Top = 4
+                Margins.Right = 4
+                Margins.Bottom = 4
+                ExplicitTop = 76
+                ExplicitWidth = 365
+                ExplicitHeight = 9
               end
               inherited Panel1: TPanel
-                Top = 228
-                ExplicitTop = 228
+                Top = 285
+                Width = 365
+                Height = 154
+                Margins.Left = 4
+                Margins.Top = 4
+                Margins.Right = 4
+                Margins.Bottom = 4
+                ExplicitTop = 285
+                ExplicitWidth = 365
+                ExplicitHeight = 154
+                inherited LoadLibraryButton: TButton
+                  Width = 363
+                  Height = 32
+                  Margins.Left = 4
+                  Margins.Top = 4
+                  Margins.Right = 4
+                  Margins.Bottom = 4
+                  ExplicitWidth = 363
+                  ExplicitHeight = 32
+                end
+                inherited CreateRuntimeLibraryButton: TButton
+                  Top = 33
+                  Width = 363
+                  Height = 31
+                  Margins.Left = 4
+                  Margins.Top = 4
+                  Margins.Right = 4
+                  Margins.Bottom = 4
+                  ExplicitTop = 33
+                  ExplicitWidth = 363
+                  ExplicitHeight = 31
+                end
+                inherited DeleteLibraryButton: TButton
+                  Top = 64
+                  Width = 363
+                  Height = 31
+                  Margins.Left = 4
+                  Margins.Top = 4
+                  Margins.Right = 4
+                  Margins.Bottom = 4
+                  ExplicitTop = 64
+                  ExplicitWidth = 363
+                  ExplicitHeight = 31
+                end
+                inherited RenameRuntimeLibraryButton: TButton
+                  Top = 95
+                  Width = 363
+                  Height = 31
+                  Margins.Left = 4
+                  Margins.Top = 4
+                  Margins.Right = 4
+                  Margins.Bottom = 4
+                  ExplicitTop = 95
+                  ExplicitWidth = 363
+                  ExplicitHeight = 31
+                end
+                inherited AddClassButton: TButton
+                  Top = 126
+                  Width = 363
+                  Height = 32
+                  Margins.Left = 4
+                  Margins.Top = 4
+                  Margins.Right = 4
+                  Margins.Bottom = 4
+                  ExplicitTop = 126
+                  ExplicitWidth = 363
+                  ExplicitHeight = 32
+                end
               end
               inherited GroupBox1: TGroupBox
-                Height = 61
-                ExplicitHeight = 61
+                Width = 365
+                Height = 76
+                Margins.Left = 4
+                Margins.Top = 4
+                Margins.Right = 4
+                Margins.Bottom = 4
+                ExplicitWidth = 365
+                ExplicitHeight = 76
                 inherited LibsListStringGrid: TStringGrid
-                  Height = 44
-                  ExplicitHeight = 44
+                  Left = 3
+                  Top = 19
+                  Width = 360
+                  Height = 55
+                  Margins.Left = 4
+                  Margins.Top = 4
+                  Margins.Right = 4
+                  Margins.Bottom = 4
+                  ExplicitLeft = 3
+                  ExplicitTop = 19
+                  ExplicitWidth = 360
+                  ExplicitHeight = 55
                 end
               end
               inherited GroupBox2: TGroupBox
-                Top = 68
-                ExplicitTop = 68
+                Top = 85
+                Width = 365
+                Height = 200
+                Margins.Left = 4
+                Margins.Top = 4
+                Margins.Right = 4
+                Margins.Bottom = 4
+                ExplicitTop = 85
+                ExplicitWidth = 365
+                ExplicitHeight = 200
+                inherited LibComponentListStringGrid: TStringGrid
+                  Left = 3
+                  Top = 19
+                  Width = 360
+                  Height = 179
+                  Margins.Left = 4
+                  Margins.Top = 4
+                  Margins.Right = 4
+                  Margins.Bottom = 4
+                  ExplicitLeft = 3
+                  ExplicitTop = 19
+                  ExplicitWidth = 360
+                  ExplicitHeight = 179
+                end
               end
             end
           end
         end
       end
       inherited Panel3: TPanel
-        Height = 396
-        ExplicitHeight = 396
+        Left = 390
+        Width = 80
+        Height = 496
+        Margins.Left = 4
+        Margins.Top = 4
+        Margins.Right = 4
+        Margins.Bottom = 4
+        ExplicitLeft = 390
+        ExplicitWidth = 80
+        ExplicitHeight = 495
         inherited TakeObjectButton: TButton
+          Left = 8
+          Top = 230
+          Width = 63
+          Height = 31
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
           OnClick = ComponentsControlFrameTakeObjectButtonClick
+          ExplicitLeft = 8
+          ExplicitTop = 230
+          ExplicitWidth = 63
+          ExplicitHeight = 31
         end
         inherited ReturnObjectButton: TButton
+          Left = 8
+          Top = 269
+          Width = 63
+          Height = 31
+          Margins.Left = 4
+          Margins.Top = 4
+          Margins.Right = 4
+          Margins.Bottom = 4
           OnClick = ComponentsControlFrameReturnObjectButtonClick
+          ExplicitLeft = 8
+          ExplicitTop = 269
+          ExplicitWidth = 63
+          ExplicitHeight = 31
         end
       end
     end
