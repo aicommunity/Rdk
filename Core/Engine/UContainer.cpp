@@ -58,7 +58,7 @@ UPVariable::~UPVariable(void)
 // Конструкторы и деструкторы
 // --------------------------
 UContainer::UContainer(void)
- : Id(0), Coord(0), PComponents(0), NumComponents(0), LastId(0)
+ : Id(0), Activity(false), Coord(0), PComponents(0), NumComponents(0), LastId(0)
 {
  AddLookupProperty("Id",ptParameter | pgSystem,new UVProperty<UId,UContainer>(this,&UContainer::SetId,&UContainer::GetId));
  AddLookupProperty("Name",ptParameter | pgSystem,new UVProperty<NameT,UContainer>(this,&UContainer::SetName,&UContainer::GetName));
@@ -68,6 +68,8 @@ UContainer::UContainer(void)
  AddLookupProperty("MaxCalculationDuration",ptParameter | pgPublic,new UVProperty<long long,UContainer>(this,&UContainer::SetMaxCalculationDuration,&UContainer::GetMaxCalculationDuration));
 
  InitFlag=false;
+
+ MaxCalculationDuration = -1;
 }
 
 UContainer::~UContainer(void)
@@ -1185,7 +1187,7 @@ bool UContainer::ChangeComponentPosition(int index, int step)
  else
  {
   for(int i=index;i>=result;i--)
-   PComponents[i]=PComponents[i-1];
+   PComponents[i]=PComponents[i-1]; // TODO: при result==0 происходит обращение по индексу -1
   PComponents[result]=comp;
  }
 
