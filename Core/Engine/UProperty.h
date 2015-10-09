@@ -99,13 +99,14 @@ virtual bool CompareLanguageType(const UIProperty &dt) const
 // Метод записывает значение свойства в поток
 virtual bool Save(UEPtr<USerStorage>  storage, bool simplemode=false)
 {
+/*
  UEPtr<USerStorageBinary> binary=dynamic_pointer_cast<USerStorageBinary>(storage);
  if(binary)
  {
   *binary<<GetData();
   return true;
  }
-
+ */
  UEPtr<USerStorageXML> xml=dynamic_pointer_cast<USerStorageXML>(storage);
  if(xml)
  {
@@ -132,14 +133,14 @@ virtual bool Save(UEPtr<USerStorage>  storage, bool simplemode=false)
 virtual bool Load(UEPtr<USerStorage>  storage, bool simplemode=false)
 {
  T temp;
-
+/*
  UEPtr<USerStorageBinary> binary=dynamic_pointer_cast<USerStorageBinary>(storage);
  if(binary)
  {
   operator >> (*binary,temp);
   SetData(temp);
   return true;
- }
+ }*/
 
  UEPtr<USerStorageXML> xml=dynamic_pointer_cast<USerStorageXML>(storage);
  if(xml)

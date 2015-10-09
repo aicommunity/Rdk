@@ -18,7 +18,7 @@ See file license.txt for more information
 #include "UItemData.h"
 
 namespace RDK {
-
+  /*
 // Размер единичного элемента данных по умолчанию
 int UItemData::DefaultDataSize=sizeof(void*);
 
@@ -210,13 +210,6 @@ UItemData& UItemData::operator += (const UItemData &data)
 
  return *this;
 }
-
-/*
-// Оператор доступа
-inline char UItemData::operator [] (int i)
-{
- return Char[i];
-}      */
 // --------------------------
 
 
@@ -226,20 +219,7 @@ USerStorageXML& operator << (USerStorageXML& storage, const UItemData &data)
  unsigned int size=data.GetSize();
  storage.SetNodeAttribute("Size",sntoa(size));
  storage.SetNodeAttribute("DataSize",sntoa(data.GetDataSize()));
-/*
- if(size <= 0)
-  return storage;
 
- std::stringstream stream;
-
- for(unsigned i=0;i<size;i++)
- {
-  stream<<int(data[i]);
-  if(i<size-1)
-   stream<<" ";
- }
-
- storage.SetNodeText(stream.str());*/
  return storage;
 }
 
@@ -249,33 +229,10 @@ USerStorageXML& operator >> (USerStorageXML& storage, UItemData &data)
   data.Resize(size);
   unsigned int data_size=RDK::atoi(storage.GetNodeAttribute("DataSize"));
   data.SetDataSize(data_size);
-/*
-  if(size>0)
-  {
-   std::string rvalue=storage.GetNodeText();
-   std::stringstream stream(storage.GetNodeText().c_str());
 
-   for(unsigned i=0;i<size;i++)
-   {
-	int temp;
-	stream>>temp;
-	data[i]=temp;
-   }
-  }
-              */
  return storage;
 }
-	  /*
-USerStorageBinary& operator << (USerStorageBinary& storage, const UItemData &data)
-{
- return storage;
-}
-
-USerStorageBinary& operator >> (USerStorageBinary& storage, UItemData &data)
-{
- return storage;
-}
-        */
+*/
 }
 
 #endif

@@ -227,15 +227,15 @@ const UEPtr<const UItemData> UADItem::GetInputData(size_t index) const
 
 // Возвращает размер вектора входов InputData по индексу
 // Проверяет индекс на корректность и возвращает 0, если такого входа нет фактически
-size_t UADItem::GetInputDataSize(size_t index) const
+MMatrixSize UADItem::GetInputDataSize(size_t index) const
 {
  if(index >= InputData.size())
-  return 0;
+  return MMatrixSize(0,0);
 
  if(!InputData[index])
-  return 0;
+  return MMatrixSize(0,0);
 
- return InputData[index]->GetSize();
+ return InputData[index]->GetMatrixSize();
 }
 
 // Возвращает суммарный размер всех векторов входов
@@ -248,14 +248,15 @@ size_t UADItem::GetFullInputDataSize(void) const
 // ----------------------
 // Методы управления выходными данными
 // ----------------------
-bool UADItem::SetOutputDataSize(int index, int size, bool nobuild)
+//bool UADItem::SetOutputDataSize(int index, int size, bool nobuild)
+bool UADItem::SetOutputDataSize(int index, const MMatrixSize &size, bool nobuild)
 {
  if(index < 0)
   return false;
 
  if(OutputData.size() > size_t(index))
  {
-  if(OutputData[index].Size == size)
+  if(OutputData[index].GetMatrixSize() == size)
    return true;
  }
  else
@@ -275,7 +276,7 @@ bool UADItem::SetOutputDataSize(int index, int size, bool nobuild)
   Ready=false;
  return true;
 }
-
+				   /*
 bool UADItem::SetOutputDataElementSize(int index, int size)
 {
 // if(!Build())
@@ -303,7 +304,7 @@ bool UADItem::SetOutputDataElementSize(int index, int size)
 
  Ready=false;
  return true;
-}
+}                    */
 
 // Заполняет заданный выходной вектор данными
 void UADItem::FillOutputData(int index, const void *data)
@@ -317,9 +318,9 @@ void UADItem::FillOutputData(int index, const void *data)
  UItemData &dest=OutputData[index];
 
  if(!data)
-  memset(dest.Void,0,dest.ByteSize);
+  dest.ToZero();
  else
-  dest.Assign(dest.Size,data);
+  dest.Assign(1, dest.GetSize(),(const double*)data);
 }
 
 // Заполняет все выходные вектора заданными данными
@@ -336,11 +337,11 @@ void UADItem::FillOutputData(const void *data)
  for(size_t i=0;i<size;++i,++dest)
   if(!data)
   {
-   if(dest->ByteSize && dest->Void)
-    memset(dest->Void,0,dest->ByteSize);
+   if(dest->GetByteSize() && dest->Void)
+    dest->ToZero();
   }
   else
-   dest->Assign(dest->Size,data);
+   dest->Assign(1, dest->GetSize(),(const double*)data);
 }
 // ----------------------
 
@@ -352,8 +353,8 @@ bool UADItem::SetOutputDataAsPointer(int index, void *pointer)
 {
  if(index<NumOutputs)
  {
-  SetOutputDataElementSize(index,sizeof(void*));
-  SetOutputDataSize(index,1);
+//  SetOutputDataElementSize(index,sizeof(void*));
+  SetOutputDataSize(index,MMatrixSize(1,1));
   OutputData[index].PVoid[0]=pointer;
   return true;
  }
@@ -363,7 +364,7 @@ bool UADItem::SetOutputDataAsPointer(int index, void *pointer)
 // Возвращает данные выхода как указателя на объект
 void* UADItem::GetOutputDataAsPointer(int index)
 {
- if(index<NumOutputs && GetOutputDataSize(index)>0 && GetOutputDataElementSize(index) == sizeof(void*))
+ if(index<NumOutputs && GetOutputDataSize(index)[1]>0 && POutputData[index].GetElementByteSize() >= sizeof(void*))
  {
   return POutputData[index].PVoid[0];
  }
@@ -373,7 +374,7 @@ void* UADItem::GetOutputDataAsPointer(int index)
 // Возвращает данные входа как указателя на объект
 void* UADItem::GetInputDataAsPointer(int index)
 {
- if(index<NumInputs && InputData[index] && InputData[index]->GetSize()>0 && InputData[index]->GetDataSize() == int(sizeof(void*)))
+ if(index<NumInputs && InputData[index] && InputData[index]->GetSize()>0 && InputData[index]->GetElementByteSize() >= int(sizeof(void*)))
  {
   void *pointer=InputData[index]->PVoid[0];
   return pointer;
@@ -396,14 +397,14 @@ UContainerDescription* UADItem::ANewDescription(UComponentDescription* descripti
 // Методы доступа к системным свойствам
 // ----------------------
 // Размер выходных векторов
-vector<size_t> UADItem::GetOutputDataSize(void) const
+/*vector<size_t> UADItem::GetOutputDataSize(void) const
 {
  vector<size_t> result;
 
  size_t size=OutputData.size();
  result.resize(size);
  for(size_t i=0;i<size;i++)
-  result[i]=OutputData[i].Size;
+  result[i]=OutputData[i].GetSize();
 
  return result;
 }
@@ -425,8 +426,8 @@ bool UADItem::SetOutputDataSize(const vector<size_t> &value)
    return false;
 
  return true;
-}
-
+}      */
+  /*
 // Размер единичного данного вектора выходов в байтах
 vector<size_t> UADItem::GetOutputDataElementSize(void) const
 {
@@ -435,11 +436,11 @@ vector<size_t> UADItem::GetOutputDataElementSize(void) const
  size_t size=OutputData.size();
  result.resize(size);
  for(size_t i=0;i<size;i++)
-  result[i]=OutputData[i].DataSize;
+  result[i]=OutputData[i].GetDataSize();
 
  return result;
 }
-
+/*
 bool UADItem::SetOutputDataElementSize(const vector<size_t> &value)
 {
 // if(OutputData.size() != value.size())
@@ -454,7 +455,7 @@ bool UADItem::SetOutputDataElementSize(const vector<size_t> &value)
    return false;
 
  return true;
-}
+} */
 // ----------------------
 
 // ----------------------
@@ -973,7 +974,7 @@ bool UADItem::Default(void)
  SetAutoNumInputs(true);
  SetNumOutputs(1);
  SetAutoNumOutputs(true);
- SetOutputDataSize(0,1);
+ SetOutputDataSize(0,MMatrixSize(1,1));
 
  return UItem::Default();
 }

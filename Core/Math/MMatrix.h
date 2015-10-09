@@ -22,7 +22,7 @@ http://iproc.ru/parallel-programming/lection-4/
 namespace RDK{
 
 template<class T, unsigned Rows, unsigned Cols=Rows>
-class MMatrix
+class MMatrix: public MMatrixBase
 {
 public:
 // Данные матрицы
@@ -34,6 +34,12 @@ union
  {
   T x,y,z,d;
  };
+ double *Double;
+ int *Int;
+ unsigned char *UChar;
+ char* Char;
+ void* Void;
+ void **PVoid;
 };
 
 protected:
@@ -54,6 +60,38 @@ MMatrix(const T* data);
 ~MMatrix(void);
 // --------------------------
 
+// -----------------------------------
+// Общие методы доступа к параметрам матрицы
+// -----------------------------------
+/// Возвращает размерность матрицы
+virtual int GetDimensions(void) const;
+
+/// Возвращает число элементов по стороне матрицы
+virtual int GetSize(int i) const;
+
+/// Возвращает суммраное число всех элементов
+virtual int GetSize(void) const;
+
+/// Возвращает число элементов по всем размерностям
+virtual MMatrixSize GetMatrixSize(void) const;
+
+/// Устанавливает число элементов по всем размерностям
+virtual bool Resize(const MMatrixSize &size);
+
+/// Возвращает суммарный размер данных матрицы в байтах
+virtual int GetByteSize(void) const;
+
+/// Возвращает длину в байтах одного элемента даных
+virtual int GetElementByteSize(void) const;
+
+/// Методы доступа к данным
+virtual const void* GetVoid(void) const;
+virtual void* GetVoid(void);
+
+// Возвращает языковой тип элемента матрицы
+//virtual const type_info& GetLanguageType(void) const;
+// -----------------------------------
+
 // --------------------------
 // Операторы управления данными
 // --------------------------
@@ -66,6 +104,19 @@ MMatrix<T,Rows,Cols>& operator = (const T* data);
 
 void Assign(const T *data);
 void Assign(T value);
+
+/// Копирует данные в двумерный массив
+void CopyTo(T data[Rows][Cols]);
+
+/// Копирует данные в одномерный массив
+bool CopyTo(T* data);
+/// Копирует данные из двумерного массива
+void CopyFrom(T data[Rows][Cols]);
+/// Копирует данные из одномерного массива
+bool CopyFrom(T* data);
+
+/// Копирует данные в другую матрицу
+virtual bool CopyTo(MMatrixBase &dest) const;
 
 // Получение размерности матриц
 unsigned GetCols(void) const;
@@ -83,6 +134,21 @@ MMatrix<T,Cols,1> GetRow(int i) const;
 
 // Возвращает заданный столбец матрицы
 MMatrix<T,Rows,1> GetCol(int i) const;
+
+/// Предоставляет доступ к данным матрицы как к одномерному массиву выбранного
+/// типа. Небезопасно!
+template<typename U>
+U& As(int i)
+{
+ return reinterpret_cast<U*>(Data)[i];
+};
+
+
+template<typename U>
+const U& As(int i) const
+{
+ return reinterpret_cast<U*>(Data)[i];
+};
 // --------------------------
 
 // --------------------------
@@ -227,6 +293,84 @@ template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>::~MMatrix(void) {};
 // --------------------------
 
+
+// -----------------------------------
+// Общие методы доступа к параметрам матрицы
+// -----------------------------------
+/// Возвращает размерность матрицы
+template<class T, unsigned Rows, unsigned Cols>
+int MMatrix<T,Rows,Cols>::GetDimensions(void) const
+{
+ return 2;
+}
+
+/// Возвращает число элементов по стороне матрицы
+template<class T, unsigned Rows, unsigned Cols>
+int MMatrix<T,Rows,Cols>::GetSize(int i) const
+{
+ return (i==0)?Rows:((i==1)?Cols:0);
+}
+
+/// Возвращает суммраное число всех элементов
+template<class T, unsigned Rows, unsigned Cols>
+int MMatrix<T,Rows,Cols>::GetSize(void) const
+{
+ return Rows*Cols;
+}
+
+/// Возвращает число элементов по всем размерностям
+template<class T, unsigned Rows, unsigned Cols>
+MMatrixSize MMatrix<T,Rows,Cols>::GetMatrixSize(void) const
+{
+ MMatrixSize size(Rows,Cols);
+ return size;
+}
+
+/// Устанавливает число элементов по всем размерностям
+template<class T, unsigned Rows, unsigned Cols>
+bool MMatrix<T,Rows,Cols>::Resize(const MMatrixSize &size)
+{
+ if(size.GetDimensions() != 2)
+  return false;
+
+ return (size[0] == Rows) && (size[1] == Cols);
+}
+
+/// Возвращает суммарный размер данных матрицы в байтах
+template<class T, unsigned Rows, unsigned Cols>
+int MMatrix<T,Rows,Cols>::GetByteSize(void) const
+{
+ return Rows*Cols*sizeof(T);
+}
+
+/// Возвращает длину в байтах одного элемента даных
+template<class T, unsigned Rows, unsigned Cols>
+int MMatrix<T,Rows,Cols>::GetElementByteSize(void) const
+{
+ return sizeof(T);
+}
+   /*
+// Возвращает языковой тип элемента матрицы
+template<class T>
+const type_info& MDMatrix<T>::GetLanguageType(void) const
+{
+ return typeid(T);
+}  */
+
+/// Методы доступа к данным
+template<class T, unsigned Rows, unsigned Cols>
+const void* MMatrix<T,Rows,Cols>::GetVoid(void) const
+{
+ return Void;
+}
+
+template<class T, unsigned Rows, unsigned Cols>
+void* MMatrix<T,Rows,Cols>::GetVoid(void)
+{
+ return Void;
+}
+// -----------------------------------
+
 // --------------------------
 // Операторы управления данными
 // --------------------------
@@ -292,6 +436,45 @@ template<class T, unsigned Rows, unsigned Cols>
 void MMatrix<T,Rows,Cols>::Assign(T value)
 {
  *this=value;
+}
+/// Копирует данные в двумерный массив
+template<class T, unsigned Rows, unsigned Cols>
+void MMatrix<T,Rows,Cols>::CopyTo(T data[Rows][Cols])
+{
+ memcpy(data,Data,sizeof(Data));
+}
+
+/// Копирует данные в одномерный массив
+template<class T, unsigned Rows, unsigned Cols>
+bool MMatrix<T,Rows,Cols>::CopyTo(T* data)
+{
+ if(!data)
+  return false;
+ memcpy(data,Data,sizeof(Data));
+ return true;
+}
+/// Копирует данные из двумерного массива
+template<class T, unsigned Rows, unsigned Cols>
+void MMatrix<T,Rows,Cols>::CopyFrom(T data[Rows][Cols])
+{
+ memcpy(Data,data,sizeof(Data));
+}
+
+/// Копирует данные из одномерного массива
+template<class T, unsigned Rows, unsigned Cols>
+bool MMatrix<T,Rows,Cols>::CopyFrom(T* data)
+{
+ if(!data)
+  return false;
+ memcpy(Data,data,sizeof(Data));
+ return true;
+}
+
+/// Копирует данные в другую матрицу
+template<class T, unsigned Rows, unsigned Cols>
+bool MMatrix<T,Rows,Cols>::CopyTo(MMatrixBase &dest) const
+{
+ return MMatrixBase::CopyTo(dest);
 }
 
 // Получение размерности матриц

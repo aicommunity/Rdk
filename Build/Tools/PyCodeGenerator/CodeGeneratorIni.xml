@@ -1,0 +1,9 @@
+<Config>
+        <Libraries>
+                   <Path>../../../../Libraries/</Path>
+        </Libraries>
+        <Namespace>
+                   <RDK>RDK</RDK>
+                   <NMSDK>NMSDK</NMSDK>
+        </Namespace>
+</Config>

@@ -782,7 +782,7 @@ RDK_LIB_TYPE int RDK_CALL Model_GetComponentNumOutputs(const char *stringid);
 RDK_LIB_TYPE int RDK_CALL Model_GetComponentOutputDataSize(const char *stringid, int index);
 
 // Возвращает размер элемента выхода в байтах
-RDK_LIB_TYPE int RDK_CALL Model_GetComponentOutputElementSize(const char *stringid, int index);
+//RDK_LIB_TYPE int RDK_CALL Model_GetComponentOutputElementSize(const char *stringid, int index);
 
 // Возвращает размер выхода компонента в байтах
 RDK_LIB_TYPE int RDK_CALL Model_GetComponentOutputByteSize(const char *stringid, int index);

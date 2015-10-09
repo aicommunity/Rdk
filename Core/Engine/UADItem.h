@@ -109,7 +109,7 @@ const UEPtr<const UItemData> GetInputData(size_t index) const;
 
 // Возвращает размер вектора входов InputData по индексу
 // Проверяет индекс на корректность и возвращает 0, если такого входа нет фактически
-size_t GetInputDataSize(size_t index) const;
+MMatrixSize GetInputDataSize(size_t index) const;
 
 // Возвращает суммарный размер всех векторов входов
 size_t GetFullInputDataSize(void) const;
@@ -119,18 +119,18 @@ size_t GetFullInputDataSize(void) const;
 // Методы управления выходными данными
 // ----------------------
 // Размер вектора выходных данных
-inline size_t GetOutputDataSize(int index) const
-{ return OutputData[index].Size; };
-virtual bool SetOutputDataSize(int index, int size, bool nobuild=false);
+inline MMatrixSize GetOutputDataSize(int index) const
+{ return OutputData[index].GetMatrixSize(); };
+virtual bool SetOutputDataSize(int index, const MMatrixSize &size, bool nobuild=false);
 
 // Возвращает размер вектора выходных данных в байтах
 inline size_t GetByteOutputDataSize(int index) const
-{ return OutputData[index].ByteSize; };
+{ return OutputData[index].GetRows()*OutputData[index].GetCols()*sizeof(double); };
 
 // Размер единичного данного вектора выходных данных в байтах
-size_t GetOutputDataElementSize(int index) const
-{ return OutputData[index].DataSize; };
-bool SetOutputDataElementSize(int index, int size);
+//size_t GetOutputDataElementSize(int index) const
+//{ return sizeof(double); };
+//bool SetOutputDataElementSize(int index, int size);
 
 // Заполняет заданный выходной вектор данными
 void FillOutputData(int index, const void *data=0);
@@ -164,12 +164,12 @@ virtual UContainerDescription* ANewDescription(UComponentDescription* descriptio
 // ----------------------
 protected:
 // Размер выходных векторов
-vector<size_t> GetOutputDataSize(void) const;
-bool SetOutputDataSize(const vector<size_t> &value);
+//vector<size_t> GetOutputDataSize(void) const;
+//bool SetOutputDataSize(const vector<size_t> &value);
 
 // Размер единичного данного вектора выходов в байтах
-vector<size_t> GetOutputDataElementSize(void) const;
-bool SetOutputDataElementSize(const vector<size_t> &value);
+//vector<size_t> GetOutputDataElementSize(void) const;
+//bool SetOutputDataElementSize(const vector<size_t> &value);
 // ----------------------
 
 // ----------------------

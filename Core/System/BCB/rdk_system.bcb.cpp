@@ -40,6 +40,14 @@ unsigned long long CalcDiffTime(unsigned long long time1, unsigned long long tim
   return time2-time1;
 }
 
+/// ¬озвращает локальное врем€ в дн€х (с точностью до миллисекунд) от начала времен
+double GetVariantLocalTime(void)
+{
+ return TDateTime::CurrentDateTime().operator double();;
+}
+
+
+
 // ”сыпл€ет процесс на заданное число миллисекунд
 void Sleep(int value)
 {

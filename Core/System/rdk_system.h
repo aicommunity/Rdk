@@ -6,6 +6,7 @@
 #include "USharedMemoryLoader.h"
 #include "UGenericMutex.h"
 
+#define ONETHOUSANDMILLISECONDS  .0000115740740740
 
 namespace RDK {
 
@@ -21,6 +22,9 @@ RDK_LIB_TYPE void GetTimeOfDayInMicroseconds(unsigned long long &seconds, unsign
 
 /// ¬ычисл€ет разницу во времени в миллисекундах
 RDK_LIB_TYPE unsigned long long CalcDiffTime(unsigned long long time1, unsigned long long time2);
+
+/// ¬озвращает локальное врем€ в дн€х (с точностью до миллисекунд) от начала времен
+RDK_LIB_TYPE double GetVariantLocalTime(void);
 
 /// ”сыпл€ет процесс на заданное число миллисекунд
 RDK_LIB_TYPE void Sleep(int value);

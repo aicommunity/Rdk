@@ -35,6 +35,19 @@ MVector(const MMatrix<T,Rows,1> &copy);
 ~MVector(void);
 // --------------------------
 
+// -----------------------------------
+// Общие методы доступа к параметрам матрицы
+// -----------------------------------
+/// Возвращает размерность матрицы
+virtual int GetDimensions(void) const;
+
+/// Возвращает число элементов по всем размерностям
+virtual MMatrixSize GetMatrixSize(void) const;
+
+/// Устанавливает число элементов по всем размерностям
+virtual bool Resize(const MMatrixSize &size);
+// -----------------------------------
+
 // --------------------------
 // Операторы управления данными
 // --------------------------
@@ -104,6 +117,39 @@ MVector<T,Rows>::MVector(const T* data)
 template<class T, unsigned Rows>
 MVector<T,Rows>::~MVector(void) {};
 // --------------------------
+
+
+// -----------------------------------
+// Общие методы доступа к параметрам матрицы
+// -----------------------------------
+/// Возвращает размерность матрицы
+template<class T, unsigned Rows>
+int MVector<T,Rows>::GetDimensions(void) const
+{
+ return 1;
+}
+
+/// Возвращает число элементов по всем размерностям
+template<class T, unsigned Rows>
+MMatrixSize MVector<T,Rows>::GetMatrixSize(void) const
+{
+ std::vector<int> dims;
+ dims.assign(1,Rows);
+ MMatrixSize size(dims);
+
+ return size;
+}
+
+/// Устанавливает число элементов по всем размерностям
+template<class T, unsigned Rows>
+bool MVector<T,Rows>::Resize(const MMatrixSize &size)
+{
+ if(size.GetDimensions() != 1)
+  return false;
+
+ return (size[0] == Rows);
+}
+// -----------------------------------
 
 // --------------------------
 // Операторы управления данными

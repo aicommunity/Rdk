@@ -65,7 +65,7 @@ void TUFavoriteData::ReadData(void)
    Data=value;
   Engine_FreeBufString(value);
  break;
-
+ /*
  case 3:
   index=RDK::atoi(DataName);
   value=Model_GetComponentOutputData(ComponentName.c_str(), index);
@@ -97,7 +97,7 @@ void TUFavoriteData::ReadData(void)
    Data="<Unrecognized>";
   }
  break;
-
+     */
  default:
   Data="<Not parsed>";
   return;

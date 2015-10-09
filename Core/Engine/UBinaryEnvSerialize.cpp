@@ -27,7 +27,7 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, UBMColorModel &data)
 {
  return USimpleFromStorage(storage,data);
 } */
-
+	   /*
 // UItemData
 USerStorageBinary& operator << (USerStorageBinary& storage, const UItemData &data)
 {
@@ -51,7 +51,7 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, UItemData &data)
 
  return storage;
 }
-
+         */
 }
 
 #endif

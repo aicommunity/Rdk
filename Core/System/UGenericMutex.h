@@ -56,6 +56,7 @@ RDK_LIB_TYPE UGenericMutex* UCreateMutex(void);
 RDK_LIB_TYPE void UDestroyMutex(UGenericMutex* mutex);
 
 RDK_LIB_TYPE UGenericEvent* UCreateEvent(void);
+RDK_LIB_TYPE UGenericEvent* UCreateEvent(bool initial_state);
 RDK_LIB_TYPE void UDestroyEvent(UGenericEvent* event);
 
 // ---------------------------------------------------------------------------

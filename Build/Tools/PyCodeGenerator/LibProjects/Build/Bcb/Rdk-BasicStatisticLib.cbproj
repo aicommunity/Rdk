@@ -1,13 +1,13 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
-        <ProjectGuid>{D2FBC0DE-35D4-4730-BA7C-F4D975105786}</ProjectGuid>
+        <ProjectGuid>{5A4A0F50-A18B-4C76-BD34-A23C8B9B7101}</ProjectGuid>
         <ProjectVersion>17.2</ProjectVersion>
-        <Config Condition="'$(Config)'==''">Debug</Config>
-        <Base>True</Base>
-        <AppType>StaticLibrary</AppType>
         <FrameworkType>None</FrameworkType>
+        <Base>True</Base>
+        <Config Condition="'$(Config)'==''">Debug</Config>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
         <TargetedPlatforms>1</TargetedPlatforms>
+        <AppType>StaticLibrary</AppType>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
         <Base>true</Base>
@@ -57,34 +57,34 @@
         <Base>true</Base>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
-        <SanitizedProjectName>rdk_bcb_static</SanitizedProjectName>
-        <DynamicRTL>true</DynamicRTL>
-        <VerInfo_AutoGenVersion>true</VerInfo_AutoGenVersion>
-        <VerInfo_Build>34</VerInfo_Build>
-        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=4.0.1.34;InternalName=;LegalCopyright=Alexandr Bakhshiev, 2005;LegalTrademarks=;OriginalFilename=;ProductName=MySDK;ProductVersion=4.0.0.0;Comments=http://ailab.ru</VerInfo_Keys>
-        <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;$(DCC_Namespace)</DCC_Namespace>
-        <VerInfo_MajorVer>4</VerInfo_MajorVer>
-        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-        <VerInfo_Locale>1049</VerInfo_Locale>
-        <FinalOutputDir>..\..\..\Bin\Platform\Win</FinalOutputDir>
-        <VerInfo_Release>1</VerInfo_Release>
-        <Manifest_File>None</Manifest_File>
-        <PackageImports>vclx.bpi;vcl.bpi;dbrtl.bpi;Rave76VCL.bpi;bdertl.bpi;rtl.bpi;bcbie.bpi;vclactnband.bpi;xmlrtl.bpi;bcbsmp.bpi;vcldb.bpi;vcldbx.bpi;dsnap.bpi;dsnapcon.bpi;TeeUI.bpi;TeeDB.bpi;Tee.bpi;adortl.bpi;vclib.bpi;ibxpress.bpi;IndyCore.bpi;IndySystem.bpi;IndyProtocols.bpi;inet.bpi;intrawebdb_100_120.bpi;Intraweb_100_120.bpi;VclSmp.bpi;vclie.bpi;websnap.bpi;webdsnap.bpi;inetdbbde.bpi;inetdbxpress.bpi;soaprtl.bpi;vclribbon.bpi;dbexpress.bpi;DbxCommonDriver.bpi;DataSnapIndy10ServerTransport.bpi;DataSnapProviderClient.bpi;DataSnapServer.bpi;DbxClientDriver.bpi;DBXInterBaseDriver.bpi;DBXMySQLDriver.bpi;dbxcds.bpi;DBXSybaseASEDriver.bpi;DBXSybaseASADriver.bpi;DBXOracleDriver.bpi;DBXMSSQLDriver.bpi;DBXInformixDriver.bpi;DBXDb2Driver.bpi;$(PackageImports)</PackageImports>
+        <SanitizedProjectName>Rdk-BasicStatisticLib</SanitizedProjectName>
+        <UsingDelphiRTL>true</UsingDelphiRTL>
+        <AllPackageLibs>rtl.lib</AllPackageLibs>
         <ProjectType>CppStaticLibrary</ProjectType>
-        <AllPackageLibs>rtl.lib;vcl.lib</AllPackageLibs>
+        <PackageImports>DataSnapIndy10ServerTransport;bindcompfmx;fmx;rtl;dbrtl;IndySystem;DbxClientDriver;bindcomp;inetdb;DBXInterBaseDriver;DataSnapCommon;DataSnapClient;DataSnapServer;DataSnapProviderClient;xmlrtl;ibxpress;DbxCommonDriver;IndyProtocols;DBXMySQLDriver;dbxcds;soaprtl;bindengine;DBXOracleDriver;CustomIPTransport;dsnap;DBXInformixDriver;fmxase;IndyCore;DBXFirebirdDriver;inet;fmxobj;inetdbxpress;DBXSybaseASADriver;fmxdae;IPIndyImpl;dbexpress;$(PackageImports)</PackageImports>
+        <_TCHARMapping>char</_TCHARMapping>
+        <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;$(DCC_Namespace)</DCC_Namespace>
+        <IncludePath>..\..\Core\;..\..\..\..\Rdk\Deploy\Include\;$(IncludePath)</IncludePath>
+        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0</VerInfo_Keys>
+        <Manifest_File>None</Manifest_File>
+        <VerInfo_Locale>1049</VerInfo_Locale>
         <DCC_CBuilderOutput>JPHNE</DCC_CBuilderOutput>
+        <DynamicRTL>true</DynamicRTL>
         <UsePackages>true</UsePackages>
-        <IncludePath>..\..\..\ThirdParty\jpeg\;..\..\..\ThirdParty\xmlParser\;..\..\..\Core\System\Win\;..\..\..\Core\Application\Bcb\;..\..\..\Core\Application\;..\..\..\Core\Engine\;..\..\..\Core\Graphics\;..\..\..\Core\Math\;..\..\..\Core\Serialize\;..\..\..\Core\System\BCB\;..\..\..\Core\System\;..\..\..\Core\Utilities\;..\..\..\ThirdParty\;..\..\..\GUI\BCB\;..\..\..\Deploy\Include\;..\..\..\Deploy\Include;$(BDS)\include;$(IncludePath)</IncludePath>
-        <ILINK_LibraryPath>$(BDS)\lib;$(ILINK_LibraryPath)</ILINK_LibraryPath>
+        <IntermediateOutputDir>.\$(Platform)\$(Config)</IntermediateOutputDir>
+        <FinalOutputDir>.\..\..\Bin\Bcb\</FinalOutputDir>
         <BCC_wpar>false</BCC_wpar>
         <BCC_OptimizeForSpeed>true</BCC_OptimizeForSpeed>
+        <BCC_ExtendedErrorInfo>true</BCC_ExtendedErrorInfo>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
         <BCC_UserSuppliedOptions>-tWM</BCC_UserSuppliedOptions>
         <Defines>LIBRDK_LIBRARY_EXPORT;RDK_UNICODE_RUN;$(Defines)</Defines>
         <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
+        <PackageImports>ItriumGrassyEditor4;vcldbx;TeeDB;Rave100VCL;vclib;inetdbbde;DBXOdbcDriver;Tee;DBXSybaseASEDriver;vclimg;intrawebdb_120_160;vclactnband;FMXTee;vcldb;vcldsnap;bindcompvcl;TeeUI;vclie;vcltouch;Intraweb_120_160;DBXDb2Driver;bcbsmp;websnap;vclribbon;VclSmp;vcl;DataSnapConnectors;CloudService;DBXMSSQLDriver;CodeSiteExpressPkg;FmxTeeUI;dsnapcon;vclx;TVidGrab;webdsnap;bdertl;adortl;bcbie;$(PackageImports)</PackageImports>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win64)'!=''">
+        <PackageImports>ItriumGrassyEditor4;vcldbx;TeeDB;Rave100VCL;vclib;inetdbbde;DBXOdbcDriver;Tee;DBXSybaseASEDriver;vclimg;intrawebdb_120_160;vclactnband;FMXTee;vcldb;vcldsnap;bindcompvcl;TeeUI;vclie;vcltouch;Intraweb_120_160;DBXDb2Driver;bcbsmp;websnap;vclribbon;VclSmp;vcl;DataSnapConnectors;CloudService;DBXMSSQLDriver;CodeSiteExpressPkg;FmxTeeUI;dsnapcon;vclx;TVidGrab;webdsnap;bdertl;adortl;bcbie;$(PackageImports)</PackageImports>
         <Defines>LIBRDK_LIBRARY_EXPORT;RDK_UNICODE_RUN;$(Defines)</Defines>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1)'!=''">
@@ -93,30 +93,23 @@
         <DCC_Optimize>false</DCC_Optimize>
         <DCC_DebugInfoInExe>true</DCC_DebugInfoInExe>
         <BCC_InlineFunctionExpansion>false</BCC_InlineFunctionExpansion>
-        <IntermediateOutputDir>Debug</IntermediateOutputDir>
-        <ILINK_DisableIncrementalLinking>true</ILINK_DisableIncrementalLinking>
         <BCC_UseRegisterVariables>None</BCC_UseRegisterVariables>
         <DCC_Define>DEBUG</DCC_Define>
         <BCC_DebugLineNumbers>true</BCC_DebugLineNumbers>
         <TASM_DisplaySourceLines>true</TASM_DisplaySourceLines>
         <BCC_StackFrames>true</BCC_StackFrames>
-        <ILINK_LibraryPath>$(BDS)\lib\debug;$(ILINK_LibraryPath)</ILINK_LibraryPath>
         <ILINK_FullDebugInfo>true</ILINK_FullDebugInfo>
         <TASM_Debugging>Full</TASM_Debugging>
         <BCC_SourceDebuggingOn>true</BCC_SourceDebuggingOn>
+        <ILINK_LibraryPath>$(BDSLIB)\$(PLATFORM)\debug;$(ILINK_LibraryPath)</ILINK_LibraryPath>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
-        <BCC_MonitorGlobalAndStackData>true</BCC_MonitorGlobalAndStackData>
-        <BCC_MonitorThis>true</BCC_MonitorThis>
-        <BCC_MonitorInlinePtrAccess>true</BCC_MonitorInlinePtrAccess>
         <Defines>_DEBUG;$(Defines)</Defines>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win64)'!=''">
         <Defines>_DEBUG;$(Defines)</Defines>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
-        <IntermediateOutputDir>Release</IntermediateOutputDir>
-        <ILINK_LibraryPath>$(BDS)\lib\release;$(ILINK_LibraryPath)</ILINK_LibraryPath>
         <TASM_Debugging>None</TASM_Debugging>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
@@ -126,361 +119,12 @@
         <Defines>NDEBUG;$(Defines)</Defines>
     </PropertyGroup>
     <ItemGroup>
-        <ResFiles Include="rdk.bcb.res">
-            <BuildOrder>5</BuildOrder>
-        </ResFiles>
-        <ResFiles Include="rdk.bcb.static.res">
-            <BuildOrder>6</BuildOrder>
-        </ResFiles>
-        <CppCompile Include="..\..\..\Core\Application\Bcb\Application.bcb.cpp">
-            <BuildOrder>101</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Application\Bcb\URpcDispatcherVcl.cpp">
-            <BuildOrder>102</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Application\UAppCore.cpp">
-            <BuildOrder>91</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Application\UApplication.cpp">
-            <BuildOrder>92</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Application\UEngineControl.cpp">
-            <BuildOrder>108</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Application\UEngineControlThread.cpp">
-            <BuildOrder>109</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Application\UEngineStateThread.cpp">
-            <BuildOrder>110</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Application\UIVisualController.cpp">
-            <BuildOrder>93</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Application\UProject.cpp">
-            <BuildOrder>94</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Application\URpcCommand.cpp">
-            <BuildOrder>95</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Application\URpcCommandInternal.cpp">
-            <BuildOrder>96</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Application\URpcDecoder.cpp">
-            <BuildOrder>97</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Application\URpcDecoderInternal.cpp">
-            <BuildOrder>98</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Application\URpcDispatcher.cpp">
-            <BuildOrder>99</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Application\URpcDispatcherQueues.cpp">
-            <BuildOrder>100</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Engine\Engine.cpp">
-            <BuildOrder>60</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Engine\UADItem.cpp">
-            <BuildOrder>61</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Engine\UAModel.cpp">
-            <BuildOrder>62</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Engine\UBinaryEnvSerialize.cpp">
-            <DependentOn>..\..\..\Core\Engine\UBinaryEnvSerialize.h</DependentOn>
-            <BuildOrder>63</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Engine\UComponent.cpp">
-            <BuildOrder>64</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Engine\UComponentDescription.cpp">
-            <BuildOrder>65</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Engine\UConnector.cpp">
-            <BuildOrder>66</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Engine\UContainer.cpp">
-            <BuildOrder>67</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Engine\UContainerDescription.cpp">
-            <BuildOrder>68</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Engine\UController.cpp">
-            <DependentOn>..\..\..\Core\Engine\UController.h</DependentOn>
-            <BuildOrder>69</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Engine\UELockPtr.cpp">
-            <DependentOn>..\..\..\Core\Engine\UELockPtr.h</DependentOn>
-            <BuildOrder>70</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Engine\UELockVar.cpp">
-            <DependentOn>..\..\..\Core\Engine\UELockVar.h</DependentOn>
-            <BuildOrder>71</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Engine\UEngine.cpp">
-            <BuildOrder>72</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Engine\UEnvironment.cpp">
-            <BuildOrder>73</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Engine\UEnvSupport.cpp">
-            <DependentOn>..\..\..\Core\Engine\UEnvSupport.h</DependentOn>
-            <BuildOrder>74</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Engine\UEPtr.cpp">
-            <BuildOrder>75</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Engine\UItem.cpp">
-            <BuildOrder>76</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Engine\UItemData.cpp">
-            <BuildOrder>77</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Engine\ULibrary.cpp">
-            <BuildOrder>78</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Engine\ULocalProperty.cpp">
-            <BuildOrder>79</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Engine\UModule.cpp">
-            <BuildOrder>80</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Engine\UNet.cpp">
-            <BuildOrder>81</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Engine\UPointer.cpp">
-            <DependentOn>..\..\..\Core\Engine\UPointer.h</DependentOn>
-            <BuildOrder>82</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Engine\UProperty.cpp">
-            <BuildOrder>83</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Engine\UPropertyInput.cpp">
-            <BuildOrder>84</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Engine\UPropertyIO.cpp">
-            <BuildOrder>85</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Engine\UPropertyOutput.cpp">
-            <BuildOrder>86</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Engine\UShare.cpp">
-            <DependentOn>..\..\..\Core\Engine\UShare.h</DependentOn>
-            <BuildOrder>87</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Engine\UStorage.cpp">
-            <BuildOrder>88</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Engine\UTime.cpp">
-            <BuildOrder>89</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Engine\UXMLEnvSerialize.cpp">
-            <BuildOrder>90</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Graphics\Graphics.cpp">
-            <BuildOrder>48</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Graphics\Gui.cpp">
-            <BuildOrder>49</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Graphics\Kernel.cpp">
-            <BuildOrder>50</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Graphics\UAGraphics.cpp">
-            <BuildOrder>51</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Graphics\UBitmap.cpp">
-            <BuildOrder>52</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Graphics\UBitmapVector.cpp">
-            <BuildOrder>53</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Graphics\UDrawEngine.cpp">
-            <BuildOrder>54</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Graphics\UFont.cpp">
-            <DependentOn>..\..\..\Core\Graphics\UFont.h</DependentOn>
-            <BuildOrder>55</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Graphics\UGraphics.cpp">
-            <BuildOrder>56</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Graphics\UGraphicsBinarySerialize.cpp">
-            <DependentOn>..\..\..\Core\Graphics\UGraphicsBinarySerialize.h</DependentOn>
-            <BuildOrder>57</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Graphics\UGraphicsIO.cpp">
-            <BuildOrder>58</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Graphics\UGraphicsXMLSerialize.cpp">
-            <DependentOn>..\..\..\Core\Graphics\UGraphicsXMLSerialize.h</DependentOn>
-            <BuildOrder>59</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Math\MCamera.cpp">
-            <DependentOn>..\..\..\Core\Math\MCamera.h</DependentOn>
-            <BuildOrder>35</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Math\MCorrelation.cpp">
-            <DependentOn>..\..\..\Core\Math\MCorrelation.h</DependentOn>
-            <BuildOrder>36</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Math\MDKalmanFilter.cpp">
-            <BuildOrder>37</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Math\MGeometry.cpp">
-            <DependentOn>..\..\..\Core\Math\MGeometry.h</DependentOn>
-            <BuildOrder>38</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Math\MGraphics.cpp">
-            <DependentOn>..\..\..\Core\Math\MGraphics.h</DependentOn>
-            <BuildOrder>39</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Math\MKalmanFilter.cpp">
-            <DependentOn>..\..\..\Core\Math\MKalmanFilter.h</DependentOn>
-            <BuildOrder>40</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Math\MMatrix.cpp">
-            <DependentOn>..\..\..\Core\Math\MMatrix.h</DependentOn>
-            <BuildOrder>41</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Math\MMatrixBase.cpp">
-            <DependentOn>..\..\..\Core\Math\MMatrixBase.h</DependentOn>
-            <BuildOrder>107</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Math\MUBinarySerialize.cpp">
-            <BuildOrder>42</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Math\MUIOStream.cpp">
-            <DependentOn>..\..\..\Core\Math\MUIOStream.h</DependentOn>
-            <BuildOrder>43</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Math\MUXMLSerialize.cpp">
-            <BuildOrder>44</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Math\MVector.cpp">
-            <BuildOrder>45</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Math\UMath.cpp">
-            <BuildOrder>46</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Math\UMath_lite.cpp">
-            <BuildOrder>47</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Serialize\Serialize.cpp">
-            <BuildOrder>27</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Serialize\Serialize_lite.cpp">
-            <BuildOrder>28</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Serialize\UBinaryStdSerialize.cpp">
-            <BuildOrder>29</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Serialize\UIOStream.cpp">
-            <BuildOrder>30</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Serialize\USerStorage.cpp">
-            <DependentOn>..\..\..\Core\Serialize\USerStorage.h</DependentOn>
-            <BuildOrder>31</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Serialize\USerStorageBinary.cpp">
-            <BuildOrder>32</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Serialize\USerStorageXML.cpp">
-            <BuildOrder>33</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Serialize\UXMLStdSerialize.cpp">
-            <BuildOrder>34</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\System\BCB\rdk_system.bcb.cpp">
-            <BuildOrder>25</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\System\BCB\UGenericMutex.bcb.cpp">
-            <BuildOrder>26</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\System\UGenericMutex.cpp">
-            <BuildOrder>24</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\System\Win\UGenericMutex.win.cpp">
-            <BuildOrder>104</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\System\Win\USharedMemoryLoader.win.cpp">
-            <BuildOrder>103</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Utilities\UException.cpp">
-            <BuildOrder>14</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Utilities\UIniFile.cpp">
-            <BuildOrder>15</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Utilities\UPtr.cpp">
-            <BuildOrder>16</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Utilities\URegistry.cpp">
-            <BuildOrder>17</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Utilities\USupport.cpp">
-            <BuildOrder>18</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Utilities\Utilities.cpp">
-            <BuildOrder>19</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Utilities\Utilities_lite.cpp">
-            <BuildOrder>20</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Utilities\UTimeStamp.cpp">
-            <DependentOn>..\..\..\Core\Utilities\UTimeStamp.h</DependentOn>
-            <BuildOrder>21</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Utilities\UTransferPacket.cpp">
-            <BuildOrder>22</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Utilities\UTree.cpp">
-            <BuildOrder>23</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Deploy\Include\myrdk.bcb.cpp">
-            <BuildOrder>4</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Deploy\Include\myrdk.cpp">
-            <BuildOrder>6</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Deploy\Include\rdk.bcb.cpp">
-            <BuildOrder>7</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Deploy\Include\rdk.cpp">
-            <BuildOrder>8</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Deploy\Include\rdk_cpp_initdll.cpp">
-            <DependentOn>..\..\..\Deploy\Include\rdk_cpp_initdll.h</DependentOn>
-            <BuildOrder>107</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Deploy\Include\rdk_engine_support.cpp">
-            <BuildOrder>9</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Deploy\Include\rdk_exceptions.bcb.cpp">
-            <BuildOrder>10</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Deploy\Include\rdk_initdll.cpp">
-            <DependentOn>..\..\..\Deploy\Include\rdk_initdll.h</DependentOn>
-            <BuildOrder>11</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Deploy\Include\rdk_new.cpp">
-            <BuildOrder>3</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Deploy\Include\rdk_rpc.cpp">
-            <DependentOn>..\..\..\Deploy\Include\rdk_rpc.h</DependentOn>
-            <BuildOrder>12</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\GUI\BCB\TUBitmap.cpp">
-            <BuildOrder>13</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\ThirdParty\jpeg\JpegIntegration.cpp">
-            <BuildOrder>107</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\ThirdParty\ThirdParty.cpp">
-            <BuildOrder>6</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\ThirdParty\xmlParser\xmlParser.cpp">
-            <BuildOrder>106</BuildOrder>
+        <CppCompile Include="..\..\Core\UStatistic.cpp">
+            <DependentOn>..\..\Core\UStatistic.h</DependentOn>
+            <BuildOrder>0</BuildOrder>
+        </CppCompile>
+        <CppCompile Include="..\..\Core\UStatisticLibrary.cpp">
+            <BuildOrder>1</BuildOrder>
         </CppCompile>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
@@ -494,20 +138,18 @@
             <CfgParent>Base</CfgParent>
         </BuildConfiguration>
     </ItemGroup>
-    <Import Condition="Exists('$(BDS)\Bin\CodeGear.Cpp.Targets')" Project="$(BDS)\Bin\CodeGear.Cpp.Targets"/>
-    <Import Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')" Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj"/>
     <ProjectExtensions>
         <Borland.Personality>CPlusPlusBuilder.Personality.12</Borland.Personality>
         <Borland.ProjectType>CppStaticLibrary</Borland.ProjectType>
         <BorlandProject>
             <CPlusPlusBuilder.Personality>
                 <VersionInfo>
-                    <VersionInfo Name="IncludeVerInfo">True</VersionInfo>
-                    <VersionInfo Name="AutoIncBuild">True</VersionInfo>
-                    <VersionInfo Name="MajorVer">4</VersionInfo>
+                    <VersionInfo Name="IncludeVerInfo">False</VersionInfo>
+                    <VersionInfo Name="AutoIncBuild">False</VersionInfo>
+                    <VersionInfo Name="MajorVer">1</VersionInfo>
                     <VersionInfo Name="MinorVer">0</VersionInfo>
-                    <VersionInfo Name="Release">1</VersionInfo>
-                    <VersionInfo Name="Build">42</VersionInfo>
+                    <VersionInfo Name="Release">0</VersionInfo>
+                    <VersionInfo Name="Build">0</VersionInfo>
                     <VersionInfo Name="Debug">False</VersionInfo>
                     <VersionInfo Name="PreRelease">False</VersionInfo>
                     <VersionInfo Name="Special">False</VersionInfo>
@@ -519,32 +161,20 @@
                 <VersionInfoKeys>
                     <VersionInfoKeys Name="CompanyName"/>
                     <VersionInfoKeys Name="FileDescription"/>
-                    <VersionInfoKeys Name="FileVersion">4.0.1.42</VersionInfoKeys>
+                    <VersionInfoKeys Name="FileVersion">1.0.0.0</VersionInfoKeys>
                     <VersionInfoKeys Name="InternalName"/>
-                    <VersionInfoKeys Name="LegalCopyright">Alexandr Bakhshiev, 2005</VersionInfoKeys>
+                    <VersionInfoKeys Name="LegalCopyright"/>
                     <VersionInfoKeys Name="LegalTrademarks"/>
                     <VersionInfoKeys Name="OriginalFilename"/>
-                    <VersionInfoKeys Name="ProductName">MySDK</VersionInfoKeys>
-                    <VersionInfoKeys Name="ProductVersion">4.0.0.0</VersionInfoKeys>
-                    <VersionInfoKeys Name="Comments">http://ailab.ru</VersionInfoKeys>
+                    <VersionInfoKeys Name="ProductName"/>
+                    <VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
+                    <VersionInfoKeys Name="Comments"/>
                 </VersionInfoKeys>
-                <Debugging>
-                    <Debugging Name="DebugSourceDirs"/>
-                </Debugging>
-                <Parameters>
-                    <Parameters Name="RemoteHost"/>
-                    <Parameters Name="RemotePath"/>
-                    <Parameters Name="RemoteParams"/>
-                    <Parameters Name="RemoteLauncher"/>
-                    <Parameters Name="UseRemoteLauncher">False</Parameters>
-                    <Parameters Name="RemoteCWD"/>
-                    <Parameters Name="RemoteDebug">False</Parameters>
-                </Parameters>
                 <Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\bcboffice2k120.bpl">CodeGear C++Builder Office 2000 Servers Package</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\bcbofficexp120.bpl">CodeGear C++Builder Office XP Servers Package</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k120.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp120.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\bcboffice2k160.bpl">Embarcadero C++Builder Office 2000 Servers Package</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\bcbofficexp160.bpl">Embarcadero C++Builder Office XP Servers Package</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k160.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp160.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
                 </Excluded_Packages>
                 <ProjectProperties>
                     <ProjectProperties Name="AutoShowDeps">False</ProjectProperties>
@@ -553,11 +183,6 @@
                     <ProjectProperties Name="IndexFiles">False</ProjectProperties>
                 </ProjectProperties>
             </CPlusPlusBuilder.Personality>
-            <Platforms>
-                <Platform value="OSX32">False</Platform>
-                <Platform value="Win32">True</Platform>
-                <Platform value="Win64">False</Platform>
-            </Platforms>
             <Deployment Version="1">
                 <DeployFile Condition="'$(UsingDelphiRTL)'=='true'" LocalName="$(BDS)\bin64\borlndmm.dll" Class="DependencyModule">
                     <Platform Name="Win64">
@@ -606,18 +231,6 @@
                 </DeployFile>
                 <DeployFile Condition="'$(UsingDelphiRTL)'=='true'" LocalName="$(BDS)\bin\borlndmm.dll" Class="DependencyModule">
                     <Platform Name="Win32">
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
-                <DeployFile LocalName="..\..\..\Bin\Platform\Win\rdk.bcb.static.lib" Configuration="Debug" Class="ProjectOutput">
-                    <Platform Name="Win32">
-                        <RemoteName>rdk_bcb_static.lib</RemoteName>
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
-                <DeployFile LocalName="..\..\..\Bin\Platform\Win\rdk.bcb.static.tds" Configuration="Debug" Class="DebugSymbols">
-                    <Platform Name="Win32">
-                        <RemoteName>rdk_bcb_static.tds</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
@@ -939,16 +552,23 @@
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
-                <ProjectRoot Platform="iOSDevice32" Name="$(PROJECTNAME).app"/>
+                <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="Android" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="Win32" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="iOSDevice64" Name="$(PROJECTNAME).app"/>
-                <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="OSX32" Name="$(PROJECTNAME)"/>
-                <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"/>
+                <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
+                <ProjectRoot Platform="iOSDevice32" Name="$(PROJECTNAME).app"/>
             </Deployment>
+            <Platforms>
+                <Platform value="OSX32">False</Platform>
+                <Platform value="Win32">True</Platform>
+                <Platform value="Win64">False</Platform>
+            </Platforms>
         </BorlandProject>
         <ProjectFileVersion>12</ProjectFileVersion>
     </ProjectExtensions>
+    <Import Condition="Exists('$(BDS)\Bin\CodeGear.Cpp.Targets')" Project="$(BDS)\Bin\CodeGear.Cpp.Targets"/>
+    <Import Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')" Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj"/>
     <Import Project="$(MSBuildProjectName).deployproj" Condition="Exists('$(MSBuildProjectName).deployproj')"/>
 </Project>
