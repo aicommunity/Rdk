@@ -139,7 +139,7 @@ template<class T>
 MMatrixSize MDVector<T>::GetMatrixSize(void) const
 {
  std::vector<int> dims;
- dims.assign(1,Rows);
+ dims.assign(1,this->Rows);
  MMatrixSize size(dims);
 
  return size;

@@ -106,6 +106,21 @@
 			<locationURI>PARENT-4-PROJECT_LOC/Core/Application/UApplication.cpp</locationURI>
 		</link>
 		<link>
+			<name>Core/Application/UEngineControl.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-ECLIPSE_HOME/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Application/UEngineControl.cpp</locationURI>
+		</link>
+		<link>
+			<name>Core/Application/UEngineControlThread.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-ECLIPSE_HOME/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Application/UEngineControlThread.cpp</locationURI>
+		</link>
+		<link>
+			<name>Core/Application/UEngineStateThread.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-ECLIPSE_HOME/workspace/tops-klavesin/Klavesin-STZ/Rdk/Core/Application/UEngineStateThread.cpp</locationURI>
+		</link>
+		<link>
 			<name>Core/Application/UIVisualController.cpp</name>
 			<type>1</type>
 			<locationURI>PARENT-4-PROJECT_LOC/Core/Application/UIVisualController.cpp</locationURI>
@@ -389,6 +404,11 @@
 			<name>Core/Math/MMatrix.cpp</name>
 			<type>1</type>
 			<locationURI>PARENT-4-PROJECT_LOC/Core/Math/MMatrix.cpp</locationURI>
+		</link>
+		<link>
+			<name>Core/Math/MMatrixBase.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-4-PROJECT_LOC/Core/Math/MMatrixBase.cpp</locationURI>
 		</link>
 		<link>
 			<name>Core/Math/MUBinarySerialize.cpp</name>
