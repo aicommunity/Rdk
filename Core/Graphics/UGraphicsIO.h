@@ -182,6 +182,8 @@ bool LoadBitmapFromFile(const CharT *filename, UBitmap &bmp)
  file.close();
  return true;
 };
+
+RDK_LIB_TYPE bool LoadJpegFromFile(const char* filename, UBitmap &bmp);
 // -----------------------
 
 }
