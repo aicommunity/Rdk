@@ -3,6 +3,7 @@
 #include <vcl.h>
 #pragma hdrstop
 
+#include <jpeg.hpp>
 #include "UImagesFrameUnit.h"
 #include "UComponentsListFormUnit.h"
 #include "TUBitmap.h"
@@ -355,10 +356,41 @@ Graphics::TBitmap* TUImagesFrame::GetImage(int i, int j)
 Graphics::TBitmap* TUImagesFrame::GetImage(void)
 {
  if(DrawGrid->Col>=0 && DrawGrid->Col<int(Images.size())
-    && DrawGrid->Row>=0 && DrawGrid->Row<int(Images[DrawGrid->Col].size()))
+	&& DrawGrid->Row>=0 && DrawGrid->Row<int(Images[DrawGrid->Col].size()))
   return Images[DrawGrid->Col][DrawGrid->Row]->Picture->Bitmap;
 
  return 0;
+}
+
+// Сохраняет изображение в файл
+bool TUImagesFrame::SaveToBitmap(int i, int j)
+{
+ if(DrawGrid->Col < 0 || DrawGrid->Row <0)
+  return false;
+
+ SavePictureDialog->DefaultExt="bmp";
+ SavePictureDialog->FilterIndex=1;
+ if(!SavePictureDialog->Execute())
+  return false;
+ Images[DrawGrid->Col][DrawGrid->Row]->Picture->SaveToFile(SavePictureDialog->FileName);
+ return true;
+}
+
+bool TUImagesFrame::SaveToJpg(int i, int j)
+{
+ if(DrawGrid->Col < 0 || DrawGrid->Row <0)
+  return false;
+
+ SavePictureDialog->DefaultExt="jpg";
+ SavePictureDialog->FilterIndex=0;
+ if(!SavePictureDialog->Execute())
+  return false;
+
+ TJPEGImage *jpeg=new TJPEGImage;
+ jpeg->Assign(Images[DrawGrid->Col][DrawGrid->Row]->Picture->Bitmap);
+ jpeg->SaveToFile(SavePictureDialog->FileName);
+ delete jpeg;
+ return true;
 }
 // --------------------------
 
@@ -699,13 +731,7 @@ void __fastcall TUImagesFrame::DrawGridDrawCell(TObject *Sender, int ACol, int A
 
 void __fastcall TUImagesFrame::SaveToBmpClick(TObject *Sender)
 {
- if(DrawGrid->Col < 0 || DrawGrid->Row <0)
-  return;
-
- if(!SavePictureDialog->Execute())
-  return;
-
- Images[DrawGrid->Col][DrawGrid->Row]->Picture->SaveToFile(SavePictureDialog->FileName);
+ SaveToBitmap(DrawGrid->Col, DrawGrid->Row);
 }
 //---------------------------------------------------------------------------
 
@@ -975,6 +1001,13 @@ void __fastcall TUImagesFrame::ProportionalSizeRadioButtonClick(TObject *Sender)
 // OriginalSizeRadioButton->Checked=false;
  SizeMode=2;
  UpdateInterface();
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TUImagesFrame::SaveToJpegClick(TObject *Sender)
+{
+ SaveToJpg(DrawGrid->Col, DrawGrid->Row);
 }
 //---------------------------------------------------------------------------
 

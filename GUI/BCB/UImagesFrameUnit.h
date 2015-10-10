@@ -75,6 +75,7 @@ __published:    // IDE-managed Components
 	void __fastcall ShowHistogramCheckBoxClick(TObject *Sender);
 	void __fastcall ShowInfoCheckBoxClick(TObject *Sender);
 	void __fastcall ProportionalSizeRadioButtonClick(TObject *Sender);
+	void __fastcall SaveToJpegClick(TObject *Sender);
 
 
 
@@ -174,6 +175,10 @@ Graphics::TBitmap* GetImage(int i, int j);
 
 // Возвращает изображение в текущей ячейке
 Graphics::TBitmap* GetImage(void);
+
+// Сохраняет изображение в файл
+bool SaveToBitmap(int i, int j);
+bool SaveToJpg(int i, int j);
 // --------------------------
 
 // --------------------------
