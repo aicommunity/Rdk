@@ -218,8 +218,6 @@ object UServerControlForm: TUServerControlForm
       Margins.Bottom = 4
       Caption = 'Options'
       ImageIndex = 1
-      ExplicitWidth = 746
-      ExplicitHeight = 481
       object Panel1: TPanel
         Left = 0
         Top = 0
@@ -231,7 +229,6 @@ object UServerControlForm: TUServerControlForm
         Margins.Bottom = 4
         Align = alLeft
         TabOrder = 0
-        ExplicitHeight = 555
         object GroupBox1: TGroupBox
           Left = 1
           Top = 1
@@ -391,8 +388,6 @@ object UServerControlForm: TUServerControlForm
         Margins.Bottom = 4
         Align = alClient
         TabOrder = 1
-        ExplicitWidth = 518
-        ExplicitHeight = 555
         inline UHttpServerFrame: TUHttpServerFrame
           Left = 1
           Top = 488
@@ -411,8 +406,8 @@ object UServerControlForm: TUServerControlForm
           ParentFont = False
           TabOrder = 0
           ExplicitLeft = 1
-          ExplicitTop = 485
-          ExplicitWidth = 515
+          ExplicitTop = 488
+          ExplicitWidth = 518
           ExplicitHeight = 69
           inherited Image1: TImage
             Width = 518
@@ -442,7 +437,6 @@ object UServerControlForm: TUServerControlForm
           Align = alTop
           Caption = ' Metadata options '
           TabOrder = 1
-          ExplicitWidth = 515
           DesignSize = (
             518
             138)

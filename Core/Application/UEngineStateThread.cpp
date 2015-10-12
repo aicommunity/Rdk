@@ -10,7 +10,8 @@ namespace RDK {
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UEngineStateThread::UEngineStateThread(void)
+UEngineStateThread::UEngineStateThread(UEngineControl* engine_control)
+: EngineControl(engine_control)
 {
  CalcState=UCreateEvent(false);
 
@@ -58,6 +59,13 @@ std::vector<int> UEngineStateThread::ReadCalcThreadStates(void) const
 // --------------------------
 // Управление потоком
 // --------------------------
+/// Возвращает класс-владелец потока
+UEngineControl* UEngineStateThread::GetEngineControl(void)
+{
+ return EngineControl;
+}
+
+
 /// Регистрация потока расчета
 void UEngineStateThread::RegisterCalcThread(int index, UEngineControlThread *calc_thread)
 {

@@ -21,6 +21,8 @@
 
 namespace RDK {
 
+class UEngineControl;
+
 class RDK_LIB_TYPE UEngineControlThread
 {
 protected: // Параметры
@@ -45,8 +47,14 @@ protected: // Данные
 /// Внешний источник времени
 UELockVar<double> ExternalCurrentTime;
 
+/// Метка внешнего источника времени когда был произведен последний расчет
+UELockVar<double> LastCalculationExternalTime;
+
 /// Метка реального времени окончания последнего расчета
 UELockVar<double> RealLastCalculationTime;
+
+/// Класс-владелец потоков
+UEngineControl* EngineControl;
 
 protected: // События
 // Событие состояния расчета. Выставлено на время активности расчета. Сбрасывается по стопу
@@ -68,7 +76,7 @@ public:
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UEngineControlThread(int engine_index);
+UEngineControlThread(UEngineControl* engine_control, int engine_index);
 virtual ~UEngineControlThread(void);
 // --------------------------
 
@@ -97,7 +105,13 @@ bool SetCalculationTimeSource(int value);
 double GetExternalCurrentTime(void) const;
 bool SetExternalCurrentTime(double value);
 
+/// Метка внешнего источника времени когда был произведен последний расчет
+double GetLastCalculationExternalTime(void) const;
+
 double GetRealLastCalculationTime(void) const;
+
+/// Возвращает класс-владелец потока
+virtual UEngineControl* GetEngineControl(void);
 // --------------------------
 
 // -------------------------

@@ -23,6 +23,7 @@ TVideoOutputFrame *VideoOutputFrame;
 
 String TVGrabberLicenseString;
 
+extern UEngineControlVcl RdkEngineControl;
 //---------------------------------------------------------------------------
 __fastcall TVideoOutputFrame::TVideoOutputFrame(TComponent* Owner)
 	: TUVisualControllerFrame(Owner)
@@ -1309,7 +1310,7 @@ void TVideoOutputFrame::ABeforeReset(void)
 // Метод, вызываемый после шага расчета
 void TVideoOutputFrame::AAfterCalculate(void)
 {
- if(UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode() == 0)
+ if(RdkEngineControl.GetThreadMode() == 0)
  {
   if(CaptureThread)
    SetEvent(CaptureThread->GetCalcCompleteEvent());

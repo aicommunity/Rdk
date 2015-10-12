@@ -56,6 +56,9 @@ RDK::URpcDispatcher RdkRpcDispatcher;
 /// Ёкзепл€р класса приложени€
 RDK::UApplication RdkApplication;
 
+/// Ёкземпл€р класса контроллера расчета
+UEngineControlVcl RdkEngineControl;
+
 /// √лобальна€ переменна€ сигнализирующа€ о завершении инициализации приложени€
 bool ApplicationInitialized=false;
 
@@ -477,8 +480,7 @@ void TUGEngineControlForm::CreateProject(RDK::TProjectConfig &project_config)
 
  ProjectXml.WriteBool(std::string("ReflectionFlag"),project_config.ReflectionFlag);
 
-
- UEngineMonitorForm->EngineMonitorFrame->SetNumChannels(project_config.NumChannels);
+ RdkEngineControl.SetNumEngines(project_config.NumChannels);
  try
  {
   TRichEdit* RichEdit=new TRichEdit(this);
@@ -602,7 +604,8 @@ void TUGEngineControlForm::CloseProject(void)
   }
  }
  RDK::UIVisualControllerStorage::ClearInterface();
- UEngineMonitorForm->EngineMonitorFrame->StopEngineMonitorThread();
+ RdkEngineControl.StartEngineStateThread();
+// UEngineMonitorForm->EngineMonitorFrame->StopEngineMonitorThread();
 }
 
 // ќткрывает проект
@@ -618,13 +621,12 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
 
  ProjectXml.SelectNodeRoot("Project/MultiGeneral");
  int engines_mode=ProjectXml.ReadInteger("EnginesMode",0);
- UEngineMonitorForm->EngineMonitorFrame->SetChannelsMode(engines_mode);
-
- int calc_time_mode=ProjectXml.ReadInteger("CalculationTimeSourceMode",0);
- UEngineMonitorForm->EngineMonitorFrame->SetCalculationTimeSourceMode(calc_time_mode);
+ RdkEngineControl.SetThreadMode(engines_mode);
 
  EventsLogEnabled=ProjectXml.ReadBool("EventsLogEnabled",true);
  ProjectShowChannelsStates=ProjectXml.ReadBool("ProjectShowChannelsStates",true);
+
+ int calc_time_mode=ProjectXml.ReadInteger("CalculationTimeSourceMode",0);
 
  int num_engines=ProjectXml.ReadInteger("NumEngines",1);
  if(num_engines<=0)
@@ -643,7 +645,7 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
 
 try{
 
- UEngineMonitorForm->EngineMonitorFrame->SetNumChannels(num_engines);
+ RdkEngineControl.SetNumEngines(num_engines);
 
  int selected_engine_index=ProjectXml.ReadInteger("SelectedEngineIndex",0);
 
@@ -664,8 +666,12 @@ try{
 
  PredefinedStructure.resize(GetNumEngines());
  PredefinedStructure[0]=ProjectXml.ReadInteger("PredefinedStructure",0);
+
+ RdkEngineControl.SetCalculationTimeSource(0, calc_time_mode);
  for(int i=1;i<GetNumEngines();i++)
  {
+  RdkEngineControl.SetCalculationTimeSource(i, calc_time_mode);
+
   PredefinedStructure[i]=ProjectXml.ReadInteger(std::string("PredefinedStructure_")+RDK::sntoa(i),0);
  }
 
@@ -723,11 +729,11 @@ try{
 
  MinInterstepsInterval.resize(GetNumEngines());
  MinInterstepsInterval[0]=ProjectXml.ReadInteger("MinInterstepsInterval",20);
- UEngineMonitorForm->EngineMonitorFrame->SetMinInterstepsInterval(0,MinInterstepsInterval[0]);
+ RdkEngineControl.SetMinInterstepsInterval(0,MinInterstepsInterval[0]);
  for(int i=1;i<GetNumEngines();i++)
  {
   MinInterstepsInterval[i]=ProjectXml.ReadInteger(std::string("MinInterstepsInterval_")+RDK::sntoa(i),20);
-  UEngineMonitorForm->EngineMonitorFrame->SetMinInterstepsInterval(i,MinInterstepsInterval[i]);
+  RdkEngineControl.SetMinInterstepsInterval(i,MinInterstepsInterval[i]);
  }
 
 
@@ -879,9 +885,9 @@ try{
  RDK::UIVisualControllerStorage::LoadParameters(InterfaceXml);
 
  for(size_t i=0;i<CalculationMode.size();i++)
-  UEngineMonitorForm->EngineMonitorFrame->SetCalculateMode(i, CalculationMode[i]);
+  RdkEngineControl.SetCalculateMode(i, CalculationMode[i]);
  ProjectOpenFlag=true;
- UEngineMonitorForm->EngineMonitorFrame->StartEngineMonitorThread();
+ RdkEngineControl.StartEngineStateThread();
 
  RDK::UIVisualControllerStorage::UpdateInterface();
  RDK::UIVisualControllerStorage::AfterLoadProject();
@@ -1262,8 +1268,8 @@ try{
  ProjectXml.WriteString("ProjectName",AnsiString(ProjectName).c_str());
 
  ProjectXml.SelectNodeRoot("Project/MultiGeneral");
- ProjectXml.WriteInteger("EnginesMode",UEngineMonitorForm->EngineMonitorFrame->GetChannelsMode());
- ProjectXml.WriteInteger("CalculationTimeSourceMode",UEngineMonitorForm->EngineMonitorFrame->GetCalculationTimeSourceMode());
+ ProjectXml.WriteInteger("EnginesMode",RdkEngineControl.GetThreadMode());
+ ProjectXml.WriteInteger("CalculationTimeSourceMode",RdkEngineControl.GetCalculationTimeSource(0));
 
  ProjectXml.WriteInteger("NumEngines",GetNumEngines());
  ProjectXml.WriteInteger("SelectedEngineIndex",GetSelectedEngineIndex());
@@ -1751,7 +1757,7 @@ int TUGEngineControlForm::GetNumChannels(void) const
 int TUGEngineControlForm::SetNumChannels(int value)
 {
  Pause1Click(this);
- UEngineMonitorForm->EngineMonitorFrame->SetNumChannels(value);
+ RdkEngineControl.SetNumEngines(value);
  UServerControlForm->SetNumChannels(value);
  return 0;
 }
@@ -1762,7 +1768,7 @@ int TUGEngineControlForm::SetNumChannels(int value)
 int TUGEngineControlForm::AddChannel(int index)
 {
  Pause1Click(this);
- UEngineMonitorForm->EngineMonitorFrame->InsertChannel(index);
+ RdkEngineControl.InsertEngine(index);
  UServerControlForm->SetNumChannels(GetNumChannels());
  return 0;
 }
@@ -1771,7 +1777,7 @@ int TUGEngineControlForm::AddChannel(int index)
 int TUGEngineControlForm::DelChannel(int index)
 {
  Pause1Click(this);
- UEngineMonitorForm->EngineMonitorFrame->DeleteChannel(index);
+ RdkEngineControl.DeleteEngine(index);
  UServerControlForm->SetNumChannels(GetNumChannels());
  return 0;
 }
@@ -1982,7 +1988,7 @@ void __fastcall TUGEngineControlForm::CreateProjectItemClick(TObject *Sender)
   ProjectName=UCreateProjectWizardForm->ProjectNameLabeledEdit->Text;
   ProjectDescription=UCreateProjectWizardForm->ProjectDescriptionRichEdit->Text;
 
-  UEngineMonitorForm->EngineMonitorFrame->SetCalculationTimeSourceMode(UCreateProjectWizardForm->CalculationSourceTimeModeRadioGroup->ItemIndex);
+  RdkEngineControl.SetCalculationTimeSource(0,UCreateProjectWizardForm->CalculationSourceTimeModeRadioGroup->ItemIndex);
  }
 }
 //---------------------------------------------------------------------------
@@ -2068,7 +2074,7 @@ void __fastcall TUGEngineControlForm::ProjectOptions1Click(TObject *Sender)
  UCreateProjectWizardForm->ProjectAutoSaveFlagCheckBox->Checked=ProjectAutoSaveFlag;
  UCreateProjectWizardForm->ProjectTimeStepEdit->Text=IntToStr(DefaultTimeStep[GetSelectedEngineIndex()]);
 // UCreateProjectWizardForm->ProjectCalculationModeRadioGroup->ItemIndex=CalculationMode[GetSelectedEngineIndex()];
- UCreateProjectWizardForm->CalculationSourceTimeModeRadioGroup->ItemIndex=UEngineMonitorForm->EngineMonitorFrame->GetCalculationTimeSourceMode();
+ UCreateProjectWizardForm->CalculationSourceTimeModeRadioGroup->ItemIndex=RdkEngineControl.GetCalculationTimeSource(0);
 
  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].PredefinedStructure=PredefinedStructure[GetSelectedEngineIndex()];
  if(PredefinedStructure[GetSelectedEngineIndex()])
@@ -2106,7 +2112,7 @@ void __fastcall TUGEngineControlForm::ProjectOptions1Click(TObject *Sender)
 
   ProjectName=UCreateProjectWizardForm->ProjectNameLabeledEdit->Text;
   ProjectDescription=UCreateProjectWizardForm->ProjectDescriptionRichEdit->Text;
-  UEngineMonitorForm->EngineMonitorFrame->SetCalculationTimeSourceMode(UCreateProjectWizardForm->CalculationSourceTimeModeRadioGroup->ItemIndex);
+  RdkEngineControl.SetCalculationTimeSource(0,UCreateProjectWizardForm->CalculationSourceTimeModeRadioGroup->ItemIndex);
   UpdateInterface(true);
  }
 }
@@ -2207,6 +2213,8 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
 
  RdkRpcDispatcher.SetDecoderPrototype(&RdkRpcDecoder);
  RdkApplication.SetRpcDispatcher(&RdkRpcDispatcher);
+ RdkEngineControl.Init();
+ RdkApplication.SetEngineControl(&RdkEngineControl);
  RdkApplication.SetWorkDirectory(font_path);
  RdkApplication.Init();
 }

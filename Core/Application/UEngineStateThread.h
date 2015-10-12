@@ -14,6 +14,7 @@
 namespace RDK {
 
 class UEngineControlThread;
+class UEngineControl;
 
 class RDK_LIB_TYPE UEngineStateThread
 {
@@ -44,6 +45,9 @@ double AvgThreshold;
 /// История последних моментов времени успешного расчета
 std::vector<std::vector<double> > AvgIterations;
 
+/// Владелец потока
+UEngineControl* EngineControl;
+
 public:
 // Событие состояния расчета. Выставлено на время активности расчета. Сбрасывается по стопу
 UGenericEvent* CalcState;
@@ -68,7 +72,7 @@ public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UEngineStateThread(void);
+UEngineStateThread(UEngineControl* engine_control);
 virtual ~UEngineStateThread(void);
 // --------------------------
 
@@ -87,6 +91,9 @@ std::vector<int> ReadCalcThreadStates(void) const;
 // --------------------------
 // Управление потоком
 // --------------------------
+/// Возвращает класс-владелец потока
+virtual UEngineControl* GetEngineControl(void);
+
 /// Регистрация потока расчета
 void RegisterCalcThread(int index, UEngineControlThread *calc_thread);
 void UnRegisterCalcThread(int index);

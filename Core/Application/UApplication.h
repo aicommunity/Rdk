@@ -20,6 +20,8 @@
 
 namespace RDK {
 
+class UEngineControl;
+
 class RDK_LIB_TYPE UApplication
 {
 protected: // Данные приложения

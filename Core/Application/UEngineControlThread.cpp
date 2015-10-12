@@ -12,8 +12,8 @@ namespace RDK {
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-UEngineControlThread::UEngineControlThread(int engine_index)
-: EngineIndex(engine_index), Terminated(false)
+UEngineControlThread::UEngineControlThread(UEngineControl* engine_control, int engine_index)
+: EngineControl(engine_control), EngineIndex(engine_index), Terminated(false)
 {
  CalcState=UCreateEvent(false);
 
@@ -25,6 +25,9 @@ UEngineControlThread::UEngineControlThread(int engine_index)
 
  RealLastCalculationTime=0.0;
  ExternalCurrentTime=0.0;
+ CalculationTimeSource=0;
+ CalculateMode=0;
+ MinInterstepsInterval=0;
  Thread=boost::thread(boost::bind(&UEngineControlThread::Execute, boost::ref(*this)));
 }
 
@@ -113,9 +116,21 @@ bool UEngineControlThread::SetExternalCurrentTime(double value)
  return true;
 }
 
+/// Метка внешнего источника времени когда был произведен последний расчет
+double UEngineControlThread::GetLastCalculationExternalTime(void) const
+{
+ return LastCalculationExternalTime;
+}
+
 double UEngineControlThread::GetRealLastCalculationTime(void) const
 {
  return RealLastCalculationTime;
+}
+
+/// Возвращает класс-владелец потока
+UEngineControl* UEngineControlThread::GetEngineControl(void)
+{
+ return EngineControl;
 }
 // --------------------------
 
@@ -175,6 +190,7 @@ void UEngineControlThread::Calculate(void)
   MModel_SetDoubleSourceTime(EngineIndex,current_time);
   MEnv_Calculate(EngineIndex,0);
   AfterCalculate();
+  LastCalculationExternalTime=ExternalCurrentTime; // TODO: Возможно тут current_time?
   RealLastCalculationTime=GetVariantLocalTime();
 //  ServerLastCalculationTime=current_time;
   CalculationNotInProgress->set();

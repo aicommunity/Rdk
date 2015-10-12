@@ -78,7 +78,7 @@ UEPtr<UEngineControl> UApplication::GetEngineControl(void)
 bool UApplication::SetEngineControl(const UEPtr<UEngineControl> &value)
 {
  if(EngineControl)
-  EngineControl->Pause(-1);
+  EngineControl->PauseEngine(-1);
  EngineControl=value;
  return true;
 }
@@ -93,7 +93,7 @@ bool UApplication::Init(void)
 bool UApplication::UnInit(void)
 {
  if(EngineControl)
-  EngineControl->Pause(-1);
+  EngineControl->PauseEngine(-1);
  return true;
 }
 // --------------------------

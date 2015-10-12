@@ -37,6 +37,8 @@ TUServerControlForm *UServerControlForm;
 /// Ёкзепл€р класса приложени€
 extern RDK::UApplication RdkApplication;
 
+/// Ёкземпл€р класса контроллера расчета
+extern UEngineControlVcl RdkEngineControl;
 
 /// —тандартна€ функци€, осуществл€ющую декодирование параметров запроса
 /*int StandardCommandRequestDecoder(UServerCommand &source, UServerCommand &dest)
@@ -120,7 +122,7 @@ const char* TUServerControlForm::ControlRemoteCall(const char *request, int &ret
  if(cmd == "SetNumChannels")
  {
   int num_engines=xml.ReadInteger("NumChannels",GetNumEngines());
-  UEngineMonitorForm->EngineMonitorFrame->SetNumChannels(num_engines);
+  RdkEngineControl.SetNumEngines(num_engines);
   return_value=SetNumChannels(num_engines);
  }
  else
@@ -1333,7 +1335,7 @@ void __fastcall TUServerControlForm::ApplyOptionsButtonClick(TObject *Sender)
  {
   UGEngineControlForm->Pause1Click(Sender);
 
-  UEngineMonitorForm->EngineMonitorFrame->SetNumChannels(new_num_channels);
+  RdkEngineControl.SetNumEngines(new_num_channels);
   SetNumChannels(GetNumEngines());
  }
 

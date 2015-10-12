@@ -12,6 +12,9 @@
 #pragma package(smart_init)
 #pragma resource "*.dfm"
 TIdHttpResultBroadcasterFrame *IdHttpResultBroadcasterFrame;
+
+/// Ёкземпл€р класса контроллера расчета
+extern UEngineControlVcl RdkEngineControl;
 //---------------------------------------------------------------------------
 __fastcall TIdHttpResultBroadcasterFrame::TIdHttpResultBroadcasterFrame(TComponent* Owner)
 	: TUVisualControllerFrame(Owner)
@@ -54,9 +57,9 @@ void TIdHttpResultBroadcasterFrame::AAfterCalculate(void)
  if(channel_index>GetNumEngines())
   return;
 
- if(LastSentTimeStamp == UEngineMonitorForm->EngineMonitorFrame->LastCalculatedServerTimeStamp[channel_index])
+ if(LastSentTimeStamp == RdkEngineControl.GetEngineThread(channel_index)->GetLastCalculationExternalTime()*86400.0*1000.0)
   return;
- LastSentTimeStamp=UEngineMonitorForm->EngineMonitorFrame->LastCalculatedServerTimeStamp[channel_index];
+ LastSentTimeStamp=RdkEngineControl.GetEngineThread(channel_index)->GetLastCalculationExternalTime()*86400.0*1000.0;
 
  String AUrl=ServerAddressLabeledEdit->Text;
 

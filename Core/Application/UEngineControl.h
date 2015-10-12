@@ -28,6 +28,9 @@ UEngineStateThread *EngineStateThread;
 //boost::asio::io_service io;
 //boost::asio::deadline_timer Timer(io);
 
+/// Флаг состояния инцициализации
+bool InitFlag;
+
 protected:
 UGenericEvent* ThreadCalcCompleteEvent;
 
@@ -67,7 +70,7 @@ bool SetMinInterstepsInterval(int engine_index, RDK::UTime value);
 // Методы доступа к данным
 // --------------------------
 /// Доступ к треду мониторинга состояния модулей сервера
-const UEngineStateThread* GetEngineStateThread(void) const;
+UEngineStateThread* GetEngineStateThread(void);
 
 /// Возвращает заданный поток расчета
 UEngineControlThread* GetEngineThread(int i);
@@ -76,6 +79,21 @@ UEngineControlThread* GetEngineThread(int i);
 // --------------------------
 // Методы управления
 // --------------------------
+/// Инициализация (выполняется первой)
+virtual void Init(void);
+
+/// Деинициализация (выполняется последней)
+virtual void UnInit(void);
+
+/// Проверка состояния инициализации
+bool IsInit(void) const;
+
+/// Создание нового треда расчета
+virtual UEngineControlThread* CreateEngineThread(UEngineControl* engine_control, int engine_index);
+
+/// Создание нового треда расчета
+virtual UEngineStateThread* CreateEngineStateThread(UEngineControl* engine_control);
+
 /// Управление числом каналов
 int GetNumEngines(void) const;
 bool SetNumEngines(int num);

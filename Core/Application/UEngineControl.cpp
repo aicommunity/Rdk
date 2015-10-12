@@ -12,24 +12,16 @@ namespace RDK {
 // --------------------------
 UEngineControl::UEngineControl(void)
 {
- int num_engines=GetNumEngines();
- ThreadCalcCompleteEvent=UCreateEvent(false);
+ ThreadCalcCompleteEvent=0;//UCreateEvent(false);
 
- EngineStateThread=new UEngineStateThread;
+ EngineStateThread=0;
 
+ InitFlag=false;
 }
 
 UEngineControl::~UEngineControl(void)
 {
- UDestroyEvent(ThreadCalcCompleteEvent);
-
- if(EngineStateThread)
- {
-  EngineStateThread->CalcStarted->reset();
-  EngineStateThread->CalculationNotInProgress->wait(100000);
-  delete EngineStateThread;
-  EngineStateThread=0;
- }
+ UnInit();
 }
 // --------------------------
 
@@ -73,14 +65,14 @@ void UEngineControl::SetCalculateMode(int engine_index,int value)
 /// 1 - время источника данных
 int UEngineControl::GetCalculationTimeSource(int engine_index) const
 {
- if(engine_index<=int(EngineControlThreads.size()))
+ if(engine_index>=int(EngineControlThreads.size()))
   return 0; // TODO: тут исключение
  return EngineControlThreads[engine_index]->GetCalculationTimeSource();
 }
 
 bool UEngineControl::SetCalculationTimeSource(int engine_index, int value)
 {
- if(engine_index<=int(EngineControlThreads.size()))
+ if(engine_index>=int(EngineControlThreads.size()))
   return false; // TODO: тут исключение
 
  EngineControlThreads[engine_index]->SetCalculationTimeSource(value);
@@ -89,7 +81,7 @@ bool UEngineControl::SetCalculationTimeSource(int engine_index, int value)
 
 RDK::UTime UEngineControl::GetMinInterstepsInterval(int engine_index) const
 {
- if(engine_index<=int(EngineControlThreads.size()))
+ if(engine_index>=int(EngineControlThreads.size()))
   return 0; // TODO: тут исключение
  return EngineControlThreads[engine_index]->GetMinInterstepsInterval();
 }
@@ -115,7 +107,7 @@ UEngineControlThread* UEngineControl::GetEngineThread(int i)
 }
 
 /// Доступ к треду мониторинга состояния модулей сервера
-const UEngineStateThread* UEngineControl::GetEngineStateThread(void) const
+UEngineStateThread* UEngineControl::GetEngineStateThread(void)
 {
  return EngineStateThread;
 }
@@ -124,6 +116,57 @@ const UEngineStateThread* UEngineControl::GetEngineStateThread(void) const
 // --------------------------
 // Методы управления
 // --------------------------
+/// Инициализация (выполняется первой)
+void UEngineControl::Init(void)
+{
+ if(IsInit())
+  return;
+
+ ThreadCalcCompleteEvent=UCreateEvent(false);
+
+ EngineStateThread=0;
+
+ EngineStateThread=CreateEngineStateThread(this);
+ InitFlag=true;
+}
+
+/// Деинициализация (выполняется последней)
+void UEngineControl::UnInit(void)
+{
+ if(!IsInit())
+  return;
+
+ UDestroyEvent(ThreadCalcCompleteEvent);
+ ThreadCalcCompleteEvent=0;
+
+ if(EngineStateThread)
+ {
+  EngineStateThread->CalcStarted->reset();
+  EngineStateThread->CalculationNotInProgress->wait(100000);
+  delete EngineStateThread;
+  EngineStateThread=0;
+ }
+ InitFlag=false;
+}
+
+/// Проверка состояния инициализации
+bool UEngineControl::IsInit(void) const
+{
+ return InitFlag;
+}
+
+/// Создание нового треда расчета
+UEngineControlThread* UEngineControl::CreateEngineThread(UEngineControl* engine_control, int engine_index)
+{
+ return new UEngineControlThread(engine_control, engine_index);
+}
+
+/// Создание нового треда расчета
+UEngineStateThread* UEngineControl::CreateEngineStateThread(UEngineControl* engine_control)
+{
+ return new UEngineStateThread(engine_control);
+}
+
 /// Управление числом каналов
 int UEngineControl::GetNumEngines(void) const
 {
@@ -146,7 +189,7 @@ bool UEngineControl::SetNumEngines(int num)
  EngineControlThreads.resize(num);
  for(int i=old_size;i<num;i++)
  {
-  EngineControlThreads[i]=new UEngineControlThread(i);
+  EngineControlThreads[i]=CreateEngineThread(this, i);
   #ifdef RDK_MUTEX_DEADLOCK_DEBUG
   TUThreadInfo info;
   info.Pid=ThreadChannels[i]->ThreadID;
@@ -173,7 +216,7 @@ bool UEngineControl::InsertEngine(int index)
   EngineControlThreads[i]=EngineControlThreads[i-1];
  }
 
- EngineControlThreads[index]=new UEngineControlThread(index);
+ EngineControlThreads[index]=CreateEngineThread(this, index);
  EngineControlThreads[index]->SetPriority(RDK_DEFAULT_THREAD_PRIORITY);
  return true;
 }
@@ -342,8 +385,7 @@ void UEngineControl::ResetEngine(int engine_index)
   }
 
   RDK::UIVisualControllerStorage::BeforeReset();
-  MEnv_Reset(engine_index,0);
-//  RealLastCalculationTime[engine_index]=0;
+  EngineControlThreads[engine_index]->Reset();
   RDK::UIVisualControllerStorage::AfterReset();
   RDK::UIVisualControllerStorage::UpdateInterface();
  }
@@ -352,7 +394,39 @@ void UEngineControl::ResetEngine(int engine_index)
 /// Делает шаг расчета выбранного канала, или всех, если engine_index == -1
 void UEngineControl::StepEngine(int engine_index)
 {
+ if(engine_index>=GetNumEngines())
+  return;
 
+ if(engine_index == -1)
+ {
+  if(!Model_Check())
+  {
+   RDK::UIVisualControllerStorage::UpdateInterface();
+   return;
+  }
+
+  RDK::UIVisualControllerStorage::BeforeReset();
+  for(int i=0;i<GetNumEngines();i++)
+  {
+   EngineControlThreads[i]->Calculate();
+  }
+  RDK::UIVisualControllerStorage::AfterReset();
+  RDK::UIVisualControllerStorage::UpdateInterface();
+ }
+ else
+ {
+  if(!MModel_Check(engine_index))
+  {
+   RDK::UIVisualControllerStorage::UpdateInterface();
+   return;
+  }
+
+  RDK::UIVisualControllerStorage::BeforeReset();
+  EngineControlThreads[engine_index]->Calculate();
+//  RealLastCalculationTime[engine_index]=0;
+  RDK::UIVisualControllerStorage::AfterReset();
+  RDK::UIVisualControllerStorage::UpdateInterface();
+ }
 }
 
 

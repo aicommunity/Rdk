@@ -22,10 +22,15 @@
 #pragma resource "*.dfm"
 TUEngineMonitorFrame *UEngineMonitorFrame;
 
+/// Экземпляр класса контроллера расчета
+extern UEngineControlVcl RdkEngineControl;
+
+
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-TEngineMonitorThread::TEngineMonitorThread(void)
+TEngineMonitorThread::TEngineMonitorThread(RDK::UEngineControl* engine_control)
+ : RDK::UEngineStateThread(engine_control)
 {
 }
 
@@ -54,6 +59,12 @@ std::vector<int> TEngineMonitorThread::ReadVideoCaptureStates(void) const
 // --------------------------
 // Управление потоком
 // --------------------------
+/// Возвращает класс-владелец потока
+UEngineControlVcl* TEngineMonitorThread::GetEngineControl(void)
+{
+ return dynamic_cast<UEngineControlVcl*>(EngineControl);
+}
+
 void TEngineMonitorThread::AdditionExecute(void)
 {
   // Определяем состояние тредов захвата видео
@@ -112,11 +123,9 @@ void TEngineMonitorThread::AdditionExecute(void)
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
-TEngineThread::TEngineThread(int channel_index, int calculate_mode, RDK::UTime min_inerval)
- : RDK::UEngineControlThread(channel_index)
+TEngineThread::TEngineThread(RDK::UEngineControl* engine_control, int channel_index)
+ : RDK::UEngineControlThread(engine_control, channel_index)
 {
- SetCalculateMode(calculate_mode);
- SetMinInterstepsInterval(min_inerval);
 }
 
 TEngineThread::~TEngineThread(void)
@@ -133,6 +142,12 @@ TEngineThread::~TEngineThread(void)
 // --------------------------
 // Управление потоком
 // --------------------------
+/// Возвращает класс-владелец потока
+UEngineControlVcl* TEngineThread::GetEngineControl(void)
+{
+ return dynamic_cast<UEngineControlVcl*>(EngineControl);
+}
+
 void TEngineThread::ABeforeCalculate(void)
 {
    #ifdef RDK_VIDEO
@@ -161,270 +176,114 @@ void TEngineThread::ABeforeCalculate(void)
 
 void TEngineThread::AAfterCalculate(void)
 {
- UEngineMonitorForm->EngineMonitorFrame->LastCalculatedServerTimeStamp[EngineIndex]=
-  UEngineMonitorForm->EngineMonitorFrame->GetServerTimeStamp(EngineIndex);
-
- UEngineMonitorForm->EngineMonitorFrame->AddMetadata(EngineIndex, UEngineMonitorForm->EngineMonitorFrame->LastCalculatedServerTimeStamp[EngineIndex]);
+ GetEngineControl()->AddMetadata(EngineIndex, GetEngineControl()->GetEngineThread(EngineIndex)->GetLastCalculationExternalTime()*86400.0*1000.0);
 }
+// --------------------------
 
 
 // --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+UEngineControlVcl::UEngineControlVcl(void)
+{
+
+}
+
+UEngineControlVcl::~UEngineControlVcl(void)
+{
+
+}
+// --------------------------
+
+// --------------------------
+// Методы управления
+// --------------------------
+/// Создание нового треда расчета
+RDK::UEngineControlThread* UEngineControlVcl::CreateEngineThread(RDK::UEngineControl* engine_control, int engine_index)
+{
+ return new TEngineThread(engine_control, engine_index);
+}
+
+/// Создание нового треда расчета
+RDK::UEngineStateThread* UEngineControlVcl::CreateEngineStateThread(RDK::UEngineControl* engine_control)
+{
+ return new TEngineMonitorThread(engine_control);
+}
+/// Регистрирует вещатель метаданных
+void UEngineControlVcl::RegisterMetadataBroadcaster(TBroadcasterForm *broadcaster)
+{
+ for(size_t i=0;i<BroadcastersList.size();i++)
+ {
+  if(BroadcastersList[i] == broadcaster)
+   return;
+ }
+ BroadcastersList.push_back(broadcaster);
+}
+
+/// Снимает регистрацию вещателя метаданных
+void UEngineControlVcl::UnRegisterMetadataBroadcaster(TBroadcasterForm *broadcaster)
+{
+ for(size_t i=0;i<BroadcastersList.size();i++)
+ {
+  if(BroadcastersList[i] == broadcaster)
+  {
+   BroadcastersList.erase(BroadcastersList.begin()+i);
+   return;
+  }
+ }
+}
+
+/// Отправляет метаданные во все зарегистрированные вещатели
+bool UEngineControlVcl::AddMetadata(int channel_index, RDK::ULongTime time_stamp)
+{
+ bool res=true;
+ for(size_t i=0;i<BroadcastersList.size();i++)
+ {
+  if(BroadcastersList[i])
+   res&=BroadcastersList[i]->AddMetadata(channel_index,time_stamp);
+ }
+ return res;
+}
+
+/// Инициирует процедуру отправки метаданных всеми зарегистрированными вещателями
+bool UEngineControlVcl::SendMetadata(void)
+{
+ bool res=true;
+ for(size_t i=0;i<BroadcastersList.size();i++)
+ {
+  if(BroadcastersList[i])
+   res&=BroadcastersList[i]->SendMetadata();
+ }
+ return res;
+}
+
+// Управление временной меткой сервера
+double UEngineControlVcl::GetServerTimeStamp(int channel_index) const
+{
+ return EngineControlThreads[channel_index]->GetExternalCurrentTime();
+}
+
+void UEngineControlVcl::SetServerTimeStamp(int channel_index, double stamp)
+{
+ EngineControlThreads[channel_index]->SetExternalCurrentTime(stamp);
+
+ EngineControlThreads[channel_index]->EnableCalculation();
+}
+// --------------------------
+
 
 
 //---------------------------------------------------------------------------
 __fastcall TUEngineMonitorFrame::TUEngineMonitorFrame(TComponent* Owner)
 	: TUVisualControllerFrame(Owner)
 {
- CalculateMode.assign(GetNumEngines(),0);
- CalculateSignal.assign(GetNumEngines(),false); //-V601
- CalculateState.assign(GetNumEngines(),false); //-V601
- MinInterstepsInterval.assign(GetNumEngines(),20);
  AlwaysUpdateFlag=true;
  UpdateInterval=100;
- ChannelsMode=0;
- CalculationTimeSourceMode=0;
- ThreadCalcCompleteEvent=CreateEvent(0,TRUE,FALSE,0);
-
- EngineMonitorThread=new TEngineMonitorThread();
 }
 
 __fastcall TUEngineMonitorFrame::~TUEngineMonitorFrame(void)
 {
-// SetNumChannels(0);
- CloseHandle(ThreadCalcCompleteEvent);
-
- if(EngineMonitorThread)
- {
-  ResetEvent(EngineMonitorThread->CalcStarted);
-  WaitForSingleObject(EngineMonitorThread->CalculationNotInProgress,INFINITE);
-//  EngineMonitorThread->Terminate();
-//  EngineMonitorThread->WaitFor();
-  delete EngineMonitorThread;
-  EngineMonitorThread=0;
- }
 }
-
-
-/// Управление режимом работы
-/// 0 - однопоточный (одноканальный) режим
-/// 1 - многопоточный режим
-int TUEngineMonitorFrame::GetChannelsMode(void) const
-{
- return ChannelsMode;
-}
-
-void TUEngineMonitorFrame::SetChannelsMode(int mode)
-{
- if(ChannelsMode == mode)
-  return;
-
- Pause1Click(this);
- ChannelsMode=mode;
-}
-
-
-// Управление режимом расчетов
-int TUEngineMonitorFrame::GetCalculateMode(int channel_index) const
-{
- return CalculateMode[channel_index];
-}
-
-void TUEngineMonitorFrame::SetCalculateMode(int channel_index,int value)
-{
- CalculateMode[channel_index]=value;
- if(int(ThreadChannels.size())>channel_index)
-  ThreadChannels[channel_index]->SetCalculateMode(value);
-}
-
-/// Режим использования времени для расчета
-/// 0 - системное время
-/// 1 - время источника данных
-int TUEngineMonitorFrame::GetCalculationTimeSourceMode(void) const
-{
- return CalculationTimeSourceMode;
-}
-
-bool TUEngineMonitorFrame::SetCalculationTimeSourceMode(int value)
-{
- if(CalculationTimeSourceMode == value)
-  return true;
-
- CalculationTimeSourceMode=value;
- return true;
-}
-
-
-void TUEngineMonitorFrame::SetMinInterstepsInterval(int channel_index, RDK::UTime value)
-{
- MinInterstepsInterval[channel_index]=value;
- if(int(ThreadChannels.size())>channel_index)
-  ThreadChannels[channel_index]->SetMinInterstepsInterval(value);
-}
-
-// Управление временной меткой сервера
-RDK::ULongTime TUEngineMonitorFrame::GetServerTimeStamp(int channel_index) const
-{
- return ServerTimeStamp[channel_index];
-}
-
-void TUEngineMonitorFrame::SetServerTimeStamp(int channel_index, RDK::ULongTime stamp)
-{
- if(int(ServerTimeStamp.size()) <= channel_index)
-  return;
-
- if(ServerTimeStamp[channel_index] == stamp)
-  return;
-
- ServerTimeStamp[channel_index]=stamp;
- CalculateSignal[channel_index]=true;
- if(ChannelsMode == 1)
-  ThreadChannels[channel_index]->EnableCalculation();
-}
-
-
-
-/// Управление числом каналов
-int TUEngineMonitorFrame::GetNumChannels(void) const
-{
- return GetNumEngines();
-}
-
-bool TUEngineMonitorFrame::SetNumChannels(int num)
-{
- if(num == int(ThreadChannels.size()))
-  return true;
- int old_num=GetNumEngines();
- SetNumEngines(num);
- if(old_num>0)
- {
-  CalculateMode.resize(num,CalculateMode[old_num-1]);
-  MinInterstepsInterval.resize(num,MinInterstepsInterval[old_num-1]);
- }
- else
- {
-  CalculateMode.resize(num,0);
-  MinInterstepsInterval.resize(num,0);
- }
-
- CalculateSignal.resize(num,false); //-V601
- CalculateState.resize(num,false); //-V601
- ServerTimeStamp.resize(num,0);
- LastCalculatedServerTimeStamp.resize(num,0);
- RealLastCalculationTime.resize(num,0);
-
- int old_size=int(ThreadChannels.size());
- for(int i=num;i<old_size;i++)
- {
-//  ThreadChannels[i]->Terminate();
-  delete ThreadChannels[i];
- }
-
- ThreadChannels.resize(num);
- for(int i=old_size;i<num;i++)
- {
-  ThreadChannels[i]=new TEngineThread(i,CalculateMode[i],MinInterstepsInterval[i]);
-  #ifdef RDK_MUTEX_DEADLOCK_DEBUG
-  TUThreadInfo info;
-  info.Pid=ThreadChannels[i]->ThreadID;
-  info.Name=string("ThreadChannels ")+RDK::sntoa(i);
-  GlobalThreadInfoMap[info.Pid]=info;
-  #endif
-  ThreadChannels[i]->SetPriority(RDK_DEFAULT_THREAD_PRIORITY);
-
-//  ThreadChannels[i]->FreeOnTerminate=false;
- }
-
- return true;
-}
-
-bool TUEngineMonitorFrame::InsertChannel(int index)
-{
- int old_num=GetNumEngines();
- Engine_Add(index);
- int new_num=GetNumEngines();
-
- if(old_num>0)
- {
-  CalculateMode.resize(new_num,CalculateMode[old_num-1]);
-  MinInterstepsInterval.resize(new_num,MinInterstepsInterval[old_num-1]);
- }
- else
- {
-  CalculateMode.resize(new_num,0);
-  MinInterstepsInterval.resize(new_num,0);
- }
-
- CalculateSignal.resize(new_num,false); //-V601
- CalculateState.resize(new_num,false); //-V601
- ServerTimeStamp.resize(new_num,0);
- LastCalculatedServerTimeStamp.resize(new_num,0);
- RealLastCalculationTime.resize(new_num,0);
-
- ThreadChannels.resize(new_num);
- for(int i=new_num-1;i>index;i--)
- {
-  ThreadChannels[i]=ThreadChannels[i-1];
-  CalculateSignal[i]=CalculateSignal[i-1];
-  CalculateState[i]=CalculateState[i-1];
-  ServerTimeStamp[i]=ServerTimeStamp[i-1];
-  LastCalculatedServerTimeStamp[i]=LastCalculatedServerTimeStamp[i-1];
-  RealLastCalculationTime[i]=RealLastCalculationTime[i-1];
-  CalculateMode[i]=CalculateMode[i-1];
-  MinInterstepsInterval[i]=MinInterstepsInterval[i-1];
- }
-
- ThreadChannels[index]=new TEngineThread(index,CalculateMode[index],MinInterstepsInterval[index]);
- ThreadChannels[index]->SetPriority(RDK_DEFAULT_THREAD_PRIORITY);
-// ThreadChannels[index]->FreeOnTerminate=false;
- return true;
-}
-
-bool TUEngineMonitorFrame::DeleteChannel(int index)
-{
- int old_num=GetNumEngines();
-
-// if(index<0 || index>=int(ThreadChannels.size()))
-//  return true;
-
- if(ThreadChannels[index])
- {
-//  ThreadChannels[index]->Terminate();
-  delete ThreadChannels[index];
-  ThreadChannels[index]=0;
- }
-
- int del_res=Engine_Del(index);
- int new_num=GetNumEngines();
-
- if(new_num == old_num)
-  return true;
-
- for(int i=index;i<new_num;i++)
- {
-  ThreadChannels[i]=ThreadChannels[i+1];
-  CalculateSignal[i]=CalculateSignal[i+1];
-  CalculateState[i]=CalculateState[i+1];
-  ServerTimeStamp[i]=ServerTimeStamp[i+1];
-  LastCalculatedServerTimeStamp[i]=LastCalculatedServerTimeStamp[i+1];
-  RealLastCalculationTime[i]=RealLastCalculationTime[i+1];
-  CalculateMode[i]=CalculateMode[i+1];
-  MinInterstepsInterval[i]=MinInterstepsInterval[i+1];
- }
-
-
- CalculateMode.resize(new_num);
- MinInterstepsInterval.resize(new_num);
-
- CalculateSignal.resize(new_num);
- CalculateState.resize(new_num);
- ServerTimeStamp.resize(new_num);
- LastCalculatedServerTimeStamp.resize(new_num);
- RealLastCalculationTime.resize(new_num);
- ThreadChannels.resize(new_num);
-
- return true;
-}
-
 
 void TUEngineMonitorFrame::AUpdateInterface(void)
 {
@@ -444,7 +303,7 @@ void TUEngineMonitorFrame::AUpdateInterface(void)
  double rt_calc_duration(0.0);
  double rt_model_duration(0.0), rt_performance(0.0);
 
- if(CalculateMode[0] == 1)
+ if(RdkEngineControl.GetThreadMode() == 1)
  {
   rt_calc_duration=Env_GetRTLastDuration();
   rt_model_duration=Env_GetRTModelCalcTime();
@@ -454,7 +313,7 @@ void TUEngineMonitorFrame::AUpdateInterface(void)
  double model_time=Model_GetDoubleTime();
  double real_time=Model_GetDoubleRealTime();
  double diff=real_time-model_time;
- if(CalculateMode[0] == 1)
+ if(RdkEngineControl.GetThreadMode() == 1)
  {
   string str_model_time=RDK::get_text_time_from_seconds(model_time);
   string str_diff_time=RDK::get_text_time_from_seconds(diff);
@@ -474,7 +333,7 @@ void TUEngineMonitorFrame::AUpdateInterface(void)
   StatusBar->Panels->Items[0]->Width=width;
  }
 
- if(CalculateMode[0] == 1)
+ if(RdkEngineControl.GetThreadMode() == 1)
  {
   StatusBar->Panels->Items[1]->Text=String("RT: ")+FloatToStrF(rt_performance,ffFixed,3,3)+String("=")+FloatToStrF(rt_model_duration,ffFixed,3,3)+String("/")+FloatToStrF(rt_calc_duration,ffFixed,3,3);
  }
@@ -487,7 +346,7 @@ void TUEngineMonitorFrame::AUpdateInterface(void)
  int width=StatusBar->Canvas->TextWidth(StatusBar->Panels->Items[1]->Text)+25;
  StatusBar->Panels->Items[1]->Width=width;
 
- if(CalculateMode[0] != 1)
+ if(RdkEngineControl.GetThreadMode() != 1)
  {
   if(instperf)
   {
@@ -544,102 +403,25 @@ void TUEngineMonitorFrame::ALoadParameters(RDK::USerStorageXML &xml)
 // SetCalculateMode(xml.ReadInteger("CalculateMode",0));
 }
 
-/// Регистрирует вещатель метаданных
-void TUEngineMonitorFrame::RegisterMetadataBroadcaster(TBroadcasterForm *broadcaster)
-{
- for(size_t i=0;i<BroadcastersList.size();i++)
- {
-  if(BroadcastersList[i] == broadcaster)
-   return;
- }
- BroadcastersList.push_back(broadcaster);
-}
-
-/// Снимает регистрацию вещателя метаданных
-void TUEngineMonitorFrame::UnRegisterMetadataBroadcaster(TBroadcasterForm *broadcaster)
-{
- for(size_t i=0;i<BroadcastersList.size();i++)
- {
-  if(BroadcastersList[i] == broadcaster)
-  {
-   BroadcastersList.erase(BroadcastersList.begin()+i);
-   return;
-  }
- }
-}
-
-/// Отправляет метаданные во все зарегистрированные вещатели
-bool TUEngineMonitorFrame::AddMetadata(int channel_index, RDK::ULongTime time_stamp)
-{
- bool res=true;
- for(size_t i=0;i<BroadcastersList.size();i++)
- {
-  if(BroadcastersList[i])
-   res&=BroadcastersList[i]->AddMetadata(channel_index,time_stamp);
- }
- return res;
-}
-
-/// Инициирует процедуру отправки метаданных всеми зарегистрированными вещателями
-bool TUEngineMonitorFrame::SendMetadata(void)
-{
- bool res=true;
- for(size_t i=0;i<BroadcastersList.size();i++)
- {
-  if(BroadcastersList[i])
-   res&=BroadcastersList[i]->SendMetadata();
- }
- return res;
-}
-
 
 /// Запускает аналитику выбранного канала, или всех, если channel_index == -1
 void TUEngineMonitorFrame::StartChannel(int channel_index)
 {
- if(channel_index>=GetNumChannels())
-  return;
- UShowProgressBarForm->SetBarHeader(1,"Starting Channel Calculation...");
- UShowProgressBarForm->ResetBarStatus(1, 1, (channel_index<0)?int(ThreadChannels.size()):1);
-
- switch(ChannelsMode)
+ RdkEngineControl.StartEngine(channel_index);
+ switch(RdkEngineControl.GetThreadMode())
  {
  case 0:
-  if(CalculateMode[GetSelectedEngineIndex()] == 1)
-   Reset1Click(this);
   TUVisualControllerFrame::CalculationModeFlag=true;
   TUVisualControllerForm::CalculationModeFlag=true;
   Timer->Interval=1;
   Timer->Enabled=true;
-  for(size_t i=0; i<ThreadChannels.size(); i++)
-   CalculateState[i]=true;
  break;
 
  case 1:
-//  for(int i=0;i<GetNumChannels();i++)
-//   ThreadChannels[i]->Start();//Resume();
   TUVisualControllerFrame::CalculationModeFlag=true;
   TUVisualControllerForm::CalculationModeFlag=true;
   Timer->Interval=30;
   Timer->Enabled=true;
-  if(channel_index<0)
-  {
-   for(size_t i=0;i<ThreadChannels.size();i++)
-   {
-	if(ThreadChannels[i])
-	{
-	 ThreadChannels[i]->Start();
-	}
-	UShowProgressBarForm->IncBarStatus(1);
-   }
-  }
-  else
-  {
-	if(ThreadChannels[channel_index])
-	{
-	 ThreadChannels[channel_index]->Start();
-	}
-	UShowProgressBarForm->IncBarStatus(1);
-  }
  break;
  }
 
@@ -648,111 +430,27 @@ void TUEngineMonitorFrame::StartChannel(int channel_index)
 /// Останавливает аналитику выбранного канала, или всех, если channel_index == -1
 void TUEngineMonitorFrame::PauseChannel(int channel_index)
 {
- if(channel_index>=GetNumChannels())
-  return;
-
- if(Timer->Enabled == false)
-  return;
-
- UShowProgressBarForm->SetBarHeader(1,"Stopping Channel Calculation...");
- UShowProgressBarForm->ResetBarStatus(1, 1, (channel_index<0)?int(ThreadChannels.size()):1);
-
- switch(ChannelsMode)
+ RdkEngineControl.PauseEngine(channel_index);
+ switch(RdkEngineControl.GetThreadMode())
  {
  case 0:
-  Timer->Enabled=false;
   TUVisualControllerFrame::CalculationModeFlag=false;
   TUVisualControllerForm::CalculationModeFlag=false;
-  for(size_t i=0; i<ThreadChannels.size(); i++)
-   CalculateState[i]=false;
+  Timer->Enabled=false;
  break;
 
  case 1:
-  if(channel_index == -1)
-  {
-   Timer->Enabled=false;
-   TUVisualControllerFrame::CalculationModeFlag=false;
-   TUVisualControllerForm::CalculationModeFlag=false;
-
-   for(size_t i=0;i<ThreadChannels.size();i++)
-   {
-	if(ThreadChannels[i])
-	{
-	 ThreadChannels[i]->Pause();
-	}
-	UShowProgressBarForm->IncBarStatus(1);
-   }
-  }
-  else
-  {
-	if(ThreadChannels[channel_index])
-	{
-	 ThreadChannels[channel_index]->Pause();
-	}
-	UShowProgressBarForm->IncBarStatus(1);
-
-   bool all_stopped=true;
-   for(size_t i=0;i<ThreadChannels.size();i++)
-   {
-	if(ThreadChannels[i])
-	{
-	 if(!ThreadChannels[i]->IsCalcStarted())
-	  all_stopped&=true;
-	 else
-	  all_stopped&=false;
-	}
-   }
-
-   if(all_stopped)
-   {
-	Timer->Enabled=false;
-	TUVisualControllerFrame::CalculationModeFlag=false;
-	TUVisualControllerForm::CalculationModeFlag=false;
-   }
-  }
+  TUVisualControllerFrame::CalculationModeFlag=false;
+  TUVisualControllerForm::CalculationModeFlag=false;
+  Timer->Enabled=false;
  break;
  }
-
-
 }
 
 /// Сбрасывает аналитику выбранного канала, или всех, если channel_index == -1
 void TUEngineMonitorFrame::ResetChannel(int channel_index)
 {
- if(channel_index>=GetNumChannels())
-  return;
-
- if(channel_index == -1)
- {
-  if(!Model_Check())
-  {
-   RDK::UIVisualControllerStorage::UpdateInterface();
-   return;
-  }
-
-  RDK::UIVisualControllerStorage::BeforeReset();
-  for(int i=0;i<GetNumEngines();i++)
-  {
-   MEnv_Reset(i,0);
-   RealLastCalculationTime[i]=0;
-  }
-  RDK::UIVisualControllerStorage::AfterReset();
-  RDK::UIVisualControllerStorage::UpdateInterface();
- }
- else
- {
-  if(!MModel_Check(channel_index))
-  {
-   RDK::UIVisualControllerStorage::UpdateInterface();
-   return;
-  }
-
-  RDK::UIVisualControllerStorage::BeforeReset();
-  MEnv_Reset(channel_index,0);
-  RealLastCalculationTime[channel_index]=0;
-  RDK::UIVisualControllerStorage::AfterReset();
-  RDK::UIVisualControllerStorage::UpdateInterface();
- }
+ RdkEngineControl.ResetEngine(channel_index);
 }
 
 //---------------------------------------------------------------------------
@@ -761,72 +459,19 @@ void TUEngineMonitorFrame::ResetChannel(int channel_index)
 /// 1 - Идет расчет
 int TUEngineMonitorFrame::CheckCalcState(int channel_id) const
 {
- if(channel_id<0 || channel_id>GetNumEngines())
-  return 0;
-
- return ThreadChannels[channel_id]->CheckCalcState();
+ return RdkEngineControl.CheckCalcState(channel_id);
 }
 
 /// Доступ к треду мониторинга состояния модулей сервера
 const TEngineMonitorThread* TUEngineMonitorFrame::GetEngineMonitorThread(void) const
 {
- return EngineMonitorThread;
-}
-
-/// Вклчает мониторинг сервера
-void TUEngineMonitorFrame::StartEngineMonitorThread(void)
-{
- if(EngineMonitorThread)
-  SetEvent(EngineMonitorThread->CalcStarted);
-}
-
-/// Останавливает мониторинг сервера
-void TUEngineMonitorFrame::StopEngineMonitorThread(void)
-{
- if(EngineMonitorThread)
- {
-  ResetEvent(EngineMonitorThread->CalcStarted);
-  WaitForSingleObject(EngineMonitorThread->CalculationNotInProgress,INFINITE);
- }
+ return dynamic_cast<TEngineMonitorThread*>(RdkEngineControl.GetEngineStateThread());
 }
 
 TEngineThread* TUEngineMonitorFrame::GetThreadChannel(int i)
 {
- if(i<0 || i>= int(ThreadChannels.size()))
-  return 0;
-
- return ThreadChannels[i];
+ return dynamic_cast<TEngineThread*>(RdkEngineControl.GetEngineThread(i));
 }
-
-
-/// Возвращает текущее время источника данных
-double TUEngineMonitorFrame::GetSourceTime(int i) const
-{
-   if(CalculationTimeSourceMode == 0)
-   {
-	TDateTime dt=TDateTime::CurrentDateTime();
-	return dt.operator double();
-   }
-   else
-   if(CalculationTimeSourceMode == 1 && i<ServerTimeStamp.size())
-   {
-	return ServerTimeStamp[i]/(86400.0*1000.0);
-   }
- return 0.0;
-}
-
-
-/// Применяет текущее время источников данных к каналам
-void TUEngineMonitorFrame::ApplySourceTime(void)
-{
- for(int i=0;i<GetNumEngines();i++)
- {
-  MModel_SetDoubleSourceTime(i,GetSourceTime(i));
- }
-
-}
-
-
 //---------------------------------------------------------------------------
 
 void __fastcall TUEngineMonitorFrame::Start1Click(TObject *Sender)
@@ -849,7 +494,7 @@ void __fastcall TUEngineMonitorFrame::Reset1Click(TObject *Sender)
 
 void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
 {
- switch(ChannelsMode)
+ switch(RdkEngineControl.GetThreadMode())
  {
  case 0:
  {
@@ -857,53 +502,9 @@ void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
 
   for(int i=0;i<GetNumEngines();i++)
   {
-   if(!MIsEngineInit(i) || !MModel_Check(i))
-   {
-	continue;
-   }
-
-   if(CalculateMode[i] == 2)
-   {
-	if(!CalculateSignal[i])
-	 continue;
-   }
-   else
-   if(CalculateMode[i] == 0)
-   {
-	if(RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),RealLastCalculationTime[i])<MinInterstepsInterval[i])
-	 continue;
-   }
-   CalculateSignal[i]=false;
-
-   if(CalculationTimeSourceMode == 0)
-   {
-	TDateTime dt=TDateTime::CurrentDateTime();
-	MModel_SetDoubleSourceTime(i,dt.operator double());
-   }
-   else
-   if(CalculationTimeSourceMode == 1)
-	MModel_SetDoubleSourceTime(i,ServerTimeStamp[i]/(86400.0*1000.0));
-   switch(CalculateMode[i])
-   {
-   case 0:
-	MEnv_Calculate(i,0);
-   break;
-
-   case 1:
-	MEnv_RTCalculate(i);
-   break;
-
-   case 2:
-	MEnv_Calculate(i,0);
-   break;
-   }
-   LastCalculatedServerTimeStamp[i]=ServerTimeStamp[i];
-//   IdTcpResultBroadcasterForm->AddMetadata(i, ServerTimeStamp[i]);
-   AddMetadata(i, ServerTimeStamp[i]);
-   RealLastCalculationTime[i]=RDK::GetCurrentStartupTime();
+   RdkEngineControl.GetEngineThread(i)->Calculate();
   }
-
-  SendMetadata();
+  RdkEngineControl.SendMetadata();
   RDK::UIVisualControllerStorage::AfterCalculate();
   RDK::UIVisualControllerStorage::UpdateInterface();
  }
@@ -911,20 +512,21 @@ void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
 
  case 1:
  {
-  SendMetadata();
+  RdkEngineControl.SendMetadata();
   RDK::UIVisualControllerStorage::AfterCalculate();
   RDK::UIVisualControllerStorage::ResetCalculationStepUpdatedFlag();
   RDK::UIVisualControllerStorage::UpdateInterface();
  }
  break;
  }
+
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUEngineMonitorFrame::Step1Click(TObject *Sender)
 {
- for(int i=0;i<GetNumChannels();i++)
-  SetServerTimeStamp(i,RDK::GetCurrentStartupTime());
+ for(int i=0;i<GetNumEngines();i++)
+  RdkEngineControl.SetServerTimeStamp(i,RDK::GetCurrentStartupTime());
  TimerTimer(Sender);
 }
 //---------------------------------------------------------------------------

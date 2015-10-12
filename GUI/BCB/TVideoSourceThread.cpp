@@ -17,6 +17,9 @@
 
 extern String TVGrabberLicenseString;
 
+/// Ёкземпл€р класса контроллера расчета
+extern UEngineControlVcl RdkEngineControl;
+
 TVideoCaptureThreadCmdDescr::TVideoCaptureThreadCmdDescr(void)
  : Id(tvcNone), ExecTime(0.0)
 {
@@ -427,7 +430,7 @@ void __fastcall TVideoCaptureThread::AfterCalculate(void)
  if(!UEngineMonitorForm || !UEngineMonitorForm->EngineMonitorFrame)
   return;
  if(GetNumEngines() > ChannelIndex)
-  UEngineMonitorForm->EngineMonitorFrame->SetServerTimeStamp(ChannelIndex,GetLastTimeStampSafe()*86400.0*1000.0);
+ RdkEngineControl.SetServerTimeStamp(ChannelIndex,GetLastTimeStampSafe());
 }
 
 
@@ -1523,7 +1526,7 @@ void __fastcall TVideoCaptureThreadVideoGrabber::OnFrameCaptureCompleted(System:
  bool bmp_res=WriteSourceSafe(ConvertResult, ConvertTimeStamp/double(10000000.0*86400), false);
 
  if(bmp_res)
-  UEngineMonitorForm->EngineMonitorFrame->SetServerTimeStamp(ChannelIndex,GetLastTimeStampSafe()*86400.0*1000.0);
+  RdkEngineControl.SetServerTimeStamp(ChannelIndex,GetLastTimeStampSafe());
 }
 
 void __fastcall TVideoCaptureThreadVideoGrabber::VideoGrabberPlayerEndOfStream(TObject *Sender)
@@ -2855,7 +2858,7 @@ return;
   bool bmp_res=WriteSourceSafe(ConvertResult, ConvertTimeStamp/double(10000000.0*86400), false);
 
   if(bmp_res)
-   UEngineMonitorForm->EngineMonitorFrame->SetServerTimeStamp(ChannelIndex,GetLastTimeStampSafe()*86400.0*1000.0);
+   RdkEngineControl.SetServerTimeStamp(ChannelIndex,GetLastTimeStampSafe());
 
   Sleep(0);
  }

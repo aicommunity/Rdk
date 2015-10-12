@@ -9,6 +9,8 @@
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
 //---------------------------------------------------------------------------
 
+/// Ёкземпл€р класса контроллера расчета
+extern UEngineControlVcl RdkEngineControl;
 
 // --------------------------
 //  онструкторы и деструкторы
@@ -264,7 +266,7 @@ bool TBroadcasterForm::RegisterToEngineMonitor(void)
  {
   if(UEngineMonitorForm->EngineMonitorFrame)
   {
-   UEngineMonitorForm->EngineMonitorFrame->RegisterMetadataBroadcaster(this);
+   RdkEngineControl.RegisterMetadataBroadcaster(this);
    return true;
   }
  }
@@ -277,7 +279,7 @@ bool TBroadcasterForm::UnRegisterFromEngineMonitor(void)
  {
   if(UEngineMonitorForm->EngineMonitorFrame)
   {
-   UEngineMonitorForm->EngineMonitorFrame->UnRegisterMetadataBroadcaster(this);
+   RdkEngineControl.UnRegisterMetadataBroadcaster(this);
    return true;
   }
  }
