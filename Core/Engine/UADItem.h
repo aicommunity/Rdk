@@ -20,7 +20,7 @@ namespace RDK {
 
 class RDK_LIB_TYPE UADItem: public UItem
 {
-friend class UItemData;
+//friend class UItemData;
 private: // Хранилище выходных данных
 // Вектор выходных данных
 vector<UItemData> OutputData;

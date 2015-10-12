@@ -1,6 +1,7 @@
 #ifndef MMatrixBaseCPP
 #define MMatrixBaseCPP
 
+#include <cstring>
 #include "MMatrixBase.h"
 
 namespace RDK {

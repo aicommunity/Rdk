@@ -45,6 +45,9 @@ UADItem::UADItem(void)
 
  // Максимальный размер вектора входов
  MaxInputDataSize=0;
+
+ AutoNumInputs=true;
+ AutoNumOutputs=true;
 }
 
 UADItem::~UADItem(void)

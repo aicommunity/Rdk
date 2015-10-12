@@ -378,6 +378,9 @@ void* MMatrix<T,Rows,Cols>::GetVoid(void)
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>& MMatrix<T,Rows,Cols>::operator = (const MMatrix<T,Rows,Cols> &copy)
 {
+ if (&copy == this)
+  return *this;
+
  VRows=copy.VRows;
  VCols=copy.VCols;
  memcpy(Data1D,copy.Data1D,sizeof(T)*Cols*Rows);

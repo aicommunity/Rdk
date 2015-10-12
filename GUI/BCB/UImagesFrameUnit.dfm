@@ -103,8 +103,6 @@ inherited UImagesFrame: TUImagesFrame
       Caption = 'Original size'
       TabOrder = 3
       OnClick = OriginalSizeRadioButtonClick
-      ExplicitLeft = 488
-      ExplicitTop = 6
     end
     object ShowInfoCheckBox: TCheckBox
       Left = 193
@@ -156,7 +154,7 @@ inherited UImagesFrame: TUImagesFrame
     end
     object SaveToJpeg: TMenuItem
       Caption = 'Save to Jpeg'
-      Enabled = False
+      OnClick = SaveToJpegClick
     end
     object N2: TMenuItem
       Caption = '-'
