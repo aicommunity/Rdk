@@ -80,6 +80,7 @@ bool SetSendEnableFlag(bool value);
 // --------------------------
 };
 
+#pragma warn -8130
 class TBroadcasterForm: public TUVisualControllerForm, public RDK::UBroadcasterInterface
 {
 protected: // Параметры
@@ -124,7 +125,7 @@ void ALoadParameters(RDK::USerStorageXML &xml);
 virtual void AALoadParameters(RDK::USerStorageXML &xml)=0;
 // ---------------------------
 };
-
+#pragma warn .8130
 
 //---------------------------------------------------------------------------
 #endif

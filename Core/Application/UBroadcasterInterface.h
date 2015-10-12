@@ -10,9 +10,6 @@ namespace RDK {
 
 class UEngineControl;
 
-#ifdef __BORLANDC__
-#pragma warn -8130
-#endif
 class RDK_LIB_TYPE UBroadcasterInterface
 {
 public:
@@ -42,9 +39,6 @@ virtual bool RegisterToEngineControl(void)=0;
 virtual bool UnRegisterFromEngineControl(void)=0;
 // ---------------------------
 };
-#ifdef __BORLANDC__
-#pragma warn .8130
-#endif
 
 }
 #endif

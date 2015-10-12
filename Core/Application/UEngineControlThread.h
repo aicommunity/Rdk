@@ -47,6 +47,9 @@ protected: // Данные
 /// Временная метка сервера, устанавливаемая перед очередной итерацией расчета
 UELockVar<double> ServerTimeStamp;
 
+/// Временная метка расчета, переданная в модель последний раз
+UELockVar<double> CalculationTime;
+
 /// Временная метка сервера, когда был произведен последний расчет
 UELockVar<double> LastCalculationServerTimeStamp;
 
@@ -101,6 +104,10 @@ bool SetCalculationTimeSource(int value);
 // --------------------------
 // Управление данными
 // --------------------------
+/// Возвращает время расчета, переданное в модель последний раз
+/// в соответствии с режимом CalculationTimeSource
+double GetCalculationTime(void) const;
+
 /// Временная метка сервера, когда был произведен последний расчет
 double GetServerTimeStamp(void) const;
 bool SetServerTimeStamp(double value);

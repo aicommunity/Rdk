@@ -24,6 +24,7 @@ UEngineControlThread::UEngineControlThread(UEngineControl* engine_control, int e
  CalculationNotInProgress=UCreateEvent(true);
 
  RealLastCalculationTime=0.0;
+ CalculationTime=0.0;
  ServerTimeStamp=0.0;
  CalculationTimeSource=0;
  CalculateMode=0;
@@ -104,6 +105,13 @@ bool UEngineControlThread::SetCalculationTimeSource(int value)
 // --------------------------
 // Управление данными
 // --------------------------
+/// Возвращает время расчета, переданное в модель последний раз
+/// в соответствии с режимом CalculationTimeSource
+double UEngineControlThread::GetCalculationTime(void) const
+{
+ return CalculationTime;
+}
+
 /// Внешний источник времени
 double UEngineControlThread::GetServerTimeStamp(void) const
 {
@@ -187,6 +195,7 @@ void UEngineControlThread::Calculate(void)
   {
    current_time=ServerTimeStamp;
   }
+  CalculationTime=current_time;
   MModel_SetDoubleSourceTime(EngineIndex,current_time);
   MEnv_Calculate(EngineIndex,0);
   AfterCalculate();
@@ -269,6 +278,8 @@ void UEngineControlThread::Reset(void)
 
  MEnv_Reset(EngineIndex,0);
  RealLastCalculationTime=0;
+ CalculationTime=0.0;
+ ServerTimeStamp=0.0;
 }
 
 /// Устанавливает приоритет потока
