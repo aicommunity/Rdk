@@ -2,32 +2,38 @@ object IdTcpResultBroadcasterForm: TIdTcpResultBroadcasterForm
   Left = 0
   Top = 0
   Caption = 'Tcp Broadcaster'
-  ClientHeight = 243
-  ClientWidth = 527
+  ClientHeight = 304
+  ClientWidth = 659
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
-  Font.Height = -11
+  Font.Height = -14
   Font.Name = 'Tahoma'
   Font.Style = []
   Menu = MainMenu
   OldCreateOrder = False
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  PixelsPerInch = 96
-  TextHeight = 13
+  PixelsPerInch = 120
+  TextHeight = 17
   object PageControl: TPageControl
     Left = 0
     Top = 19
-    Width = 527
-    Height = 207
+    Width = 659
+    Height = 264
+    Margins.Left = 4
+    Margins.Top = 4
+    Margins.Right = 4
+    Margins.Bottom = 4
     Align = alClient
     TabOrder = 0
+    ExplicitTop = 24
+    ExplicitHeight = 259
   end
   object ToolBar: TToolBar
     Left = 0
     Top = 0
-    Width = 527
+    Width = 659
     Height = 19
     ButtonHeight = 0
     ButtonWidth = 0
@@ -35,12 +41,17 @@ object IdTcpResultBroadcasterForm: TIdTcpResultBroadcasterForm
     Menu = MainMenu
     ShowCaptions = True
     TabOrder = 1
+    ExplicitWidth = 527
   end
   object BroadcastEnabledCheckBox: TCheckBox
     Left = 0
-    Top = 226
-    Width = 527
-    Height = 17
+    Top = 283
+    Width = 659
+    Height = 21
+    Margins.Left = 4
+    Margins.Top = 4
+    Margins.Right = 4
+    Margins.Bottom = 4
     Align = alBottom
     Caption = 'Broadcast enabled'
     TabOrder = 2

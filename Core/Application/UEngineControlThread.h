@@ -44,11 +44,11 @@ UELockVar<UTime> MinInterstepsInterval;
 UELockVar<int> CalculationTimeSource;
 
 protected: // Данные
-/// Внешний источник времени
-UELockVar<double> ExternalCurrentTime;
+/// Временная метка сервера, устанавливаемая перед очередной итерацией расчета
+UELockVar<double> ServerTimeStamp;
 
-/// Метка внешнего источника времени когда был произведен последний расчет
-UELockVar<double> LastCalculationExternalTime;
+/// Временная метка сервера, когда был произведен последний расчет
+UELockVar<double> LastCalculationServerTimeStamp;
 
 /// Метка реального времени окончания последнего расчета
 UELockVar<double> RealLastCalculationTime;
@@ -101,12 +101,12 @@ bool SetCalculationTimeSource(int value);
 // --------------------------
 // Управление данными
 // --------------------------
-/// Внешний источник времени
-double GetExternalCurrentTime(void) const;
-bool SetExternalCurrentTime(double value);
+/// Временная метка сервера, когда был произведен последний расчет
+double GetServerTimeStamp(void) const;
+bool SetServerTimeStamp(double value);
 
 /// Метка внешнего источника времени когда был произведен последний расчет
-double GetLastCalculationExternalTime(void) const;
+double GetLastCalculationServerTimeStamp(void) const;
 
 double GetRealLastCalculationTime(void) const;
 

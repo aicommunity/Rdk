@@ -144,6 +144,10 @@
         <CppCompile Include="..\..\..\Core\Application\UApplication.cpp">
             <BuildOrder>92</BuildOrder>
         </CppCompile>
+        <CppCompile Include="..\..\..\Core\Application\UBroadcasterInterface.cpp">
+            <DependentOn>..\..\..\Core\Application\UBroadcasterInterface.h</DependentOn>
+            <BuildOrder>111</BuildOrder>
+        </CppCompile>
         <CppCompile Include="..\..\..\Core\Application\UEngineControl.cpp">
             <BuildOrder>108</BuildOrder>
         </CppCompile>
@@ -939,13 +943,13 @@
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
-                <ProjectRoot Platform="iOSDevice32" Name="$(PROJECTNAME).app"/>
+                <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="Android" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="Win32" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="iOSDevice64" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="OSX32" Name="$(PROJECTNAME)"/>
-                <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"/>
+                <ProjectRoot Platform="iOSDevice32" Name="$(PROJECTNAME).app"/>
             </Deployment>
         </BorlandProject>
         <ProjectFileVersion>12</ProjectFileVersion>

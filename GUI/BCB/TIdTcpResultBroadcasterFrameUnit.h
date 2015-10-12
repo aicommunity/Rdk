@@ -108,7 +108,7 @@ bool Init(void);
 bool UnInit(void);
 
 /// Функция добавления метаданных в очередь на отправку в соответствии с настройками
-bool AddMetadata(int channel_index, RDK::ULongTime time_stamp);
+bool AddMetadata(int channel_index, double time_stamp);
 
 void ABeforeCalculate(void);
 void AAfterCalculate(void);

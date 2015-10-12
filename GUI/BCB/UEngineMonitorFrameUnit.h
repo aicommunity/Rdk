@@ -33,7 +33,6 @@ public:
 // Временная метка последнего расчета
 //std::vector<RDK::UELockVar<RDK::ULongTime> > LastCalculatedServerTimeStamp;
 
-std::vector<RDK::UEPtr<TBroadcasterForm> > BroadcastersList;
 
 
 public: // Методы
@@ -52,22 +51,6 @@ virtual RDK::UEngineControlThread* CreateEngineThread(RDK::UEngineControl* engin
 
 /// Создание нового треда расчета
 virtual RDK::UEngineStateThread* CreateEngineStateThread(RDK::UEngineControl* engine_control);
-
-// Управление временной меткой сервера
-double GetServerTimeStamp(int channel_index) const;
-void SetServerTimeStamp(int channel_index, double stamp);
-
-/// Регистрирует вещатель метаданных
-void RegisterMetadataBroadcaster(TBroadcasterForm *broadcaster);
-
-/// Снимает регистрацию вещателя метаданных
-void UnRegisterMetadataBroadcaster(TBroadcasterForm *broadcaster);
-
-/// Отправляет метаданные во все зарегистрированные вещатели
-virtual bool AddMetadata(int channel_index, RDK::ULongTime time_stamp);
-
-/// Инициирует процедуру отправки метаданных всеми зарегистрированными вещателями
-virtual bool SendMetadata(void);
 // --------------------------
 };
 

@@ -176,7 +176,7 @@ void TEngineThread::ABeforeCalculate(void)
 
 void TEngineThread::AAfterCalculate(void)
 {
- GetEngineControl()->AddMetadata(EngineIndex, GetEngineControl()->GetEngineThread(EngineIndex)->GetLastCalculationExternalTime()*86400.0*1000.0);
+ GetEngineControl()->AddMetadata(EngineIndex, GetEngineControl()->GetEngineThread(EngineIndex)->GetLastCalculationServerTimeStamp());
 }
 // --------------------------
 
@@ -208,66 +208,6 @@ RDK::UEngineControlThread* UEngineControlVcl::CreateEngineThread(RDK::UEngineCon
 RDK::UEngineStateThread* UEngineControlVcl::CreateEngineStateThread(RDK::UEngineControl* engine_control)
 {
  return new TEngineMonitorThread(engine_control);
-}
-/// Регистрирует вещатель метаданных
-void UEngineControlVcl::RegisterMetadataBroadcaster(TBroadcasterForm *broadcaster)
-{
- for(size_t i=0;i<BroadcastersList.size();i++)
- {
-  if(BroadcastersList[i] == broadcaster)
-   return;
- }
- BroadcastersList.push_back(broadcaster);
-}
-
-/// Снимает регистрацию вещателя метаданных
-void UEngineControlVcl::UnRegisterMetadataBroadcaster(TBroadcasterForm *broadcaster)
-{
- for(size_t i=0;i<BroadcastersList.size();i++)
- {
-  if(BroadcastersList[i] == broadcaster)
-  {
-   BroadcastersList.erase(BroadcastersList.begin()+i);
-   return;
-  }
- }
-}
-
-/// Отправляет метаданные во все зарегистрированные вещатели
-bool UEngineControlVcl::AddMetadata(int channel_index, RDK::ULongTime time_stamp)
-{
- bool res=true;
- for(size_t i=0;i<BroadcastersList.size();i++)
- {
-  if(BroadcastersList[i])
-   res&=BroadcastersList[i]->AddMetadata(channel_index,time_stamp);
- }
- return res;
-}
-
-/// Инициирует процедуру отправки метаданных всеми зарегистрированными вещателями
-bool UEngineControlVcl::SendMetadata(void)
-{
- bool res=true;
- for(size_t i=0;i<BroadcastersList.size();i++)
- {
-  if(BroadcastersList[i])
-   res&=BroadcastersList[i]->SendMetadata();
- }
- return res;
-}
-
-// Управление временной меткой сервера
-double UEngineControlVcl::GetServerTimeStamp(int channel_index) const
-{
- return EngineControlThreads[channel_index]->GetExternalCurrentTime();
-}
-
-void UEngineControlVcl::SetServerTimeStamp(int channel_index, double stamp)
-{
- EngineControlThreads[channel_index]->SetExternalCurrentTime(stamp);
-
- EngineControlThreads[channel_index]->EnableCalculation();
 }
 // --------------------------
 

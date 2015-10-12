@@ -57,9 +57,9 @@ void TIdHttpResultBroadcasterFrame::AAfterCalculate(void)
  if(channel_index>GetNumEngines())
   return;
 
- if(LastSentTimeStamp == RdkEngineControl.GetEngineThread(channel_index)->GetLastCalculationExternalTime()*86400.0*1000.0)
+ if(LastSentTimeStamp == RdkEngineControl.GetEngineThread(channel_index)->GetLastCalculationServerTimeStamp()*86400.0*1000.0)
   return;
- LastSentTimeStamp=RdkEngineControl.GetEngineThread(channel_index)->GetLastCalculationExternalTime()*86400.0*1000.0;
+ LastSentTimeStamp=RdkEngineControl.GetEngineThread(channel_index)->GetLastCalculationServerTimeStamp()*86400.0*1000.0;
 
  String AUrl=ServerAddressLabeledEdit->Text;
 

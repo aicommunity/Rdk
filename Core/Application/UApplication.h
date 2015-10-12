@@ -13,6 +13,7 @@
 #include "UEngineControl.h"
 #include "UEngineControlThread.h"
 #include "UEngineStateThread.h"
+#include "UBroadcasterInterface.h"
 
 #ifdef __BORLANDC__
 #include "Bcb/Application.bcb.h"

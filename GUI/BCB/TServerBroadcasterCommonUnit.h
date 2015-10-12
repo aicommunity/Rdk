@@ -72,7 +72,7 @@ virtual bool __fastcall PeriodicallyActions(void);
 virtual void __fastcall Execute(void);
 
 /// Добавляет метаданные в очередь
-virtual bool __fastcall AddMetadataSafe(int channel_index, RDK::ULongTime time_stamp, const std::string &component_name, const std::string &property_name);
+virtual bool __fastcall AddMetadataSafe(int channel_index, double time_stamp, const std::string &component_name, const std::string &property_name);
 
 /// Флаг разрешения отправки
 bool GetSendEnableFlag(void) const;
@@ -80,11 +80,15 @@ bool SetSendEnableFlag(bool value);
 // --------------------------
 };
 
-class TBroadcasterForm: public TUVisualControllerForm
+class TBroadcasterForm: public TUVisualControllerForm, public RDK::UBroadcasterInterface
 {
 protected: // Параметры
 /// Флаг, определяющий разрешение на использование этого вещателя
 bool BroadcastEnableFlag;
+
+protected: // Данные
+/// Указатель на контроллер движка
+RDK::UEngineControl *EngineControl;
 
 public:
 // ---------------------------
@@ -101,18 +105,15 @@ bool SetBroadcastEnableFlag(bool value);
 // ---------------------------
 
 // ---------------------------
+// Методы управления
 // ---------------------------
-/// Функция добавления метаданных в очередь на отправку в соответствии с настройками
-virtual bool AddMetadata(int channel_index, RDK::ULongTime time_stamp)=0;
+/// Управление контроллером движка
+/// Движок должен быть задан до регистрации или включения вещателя
+RDK::UEngineControl *GetEngineControl(void);
+bool SetEngineControl(RDK::UEngineControl *engine_control);
 
-/// Инициирует процедуру отправки метаданных
-virtual bool SendMetadata(void)=0;
-
-virtual bool RegisterToEngineMonitor(void);
-
-virtual bool UnRegisterFromEngineMonitor(void);
-// ---------------------------
-
+bool RegisterToEngineControl(void);
+bool UnRegisterFromEngineControl(void);
 
 // Сохраняет параметры интерфейса в xml
 void ASaveParameters(RDK::USerStorageXML &xml);
@@ -121,7 +122,7 @@ virtual void AASaveParameters(RDK::USerStorageXML &xml)=0;
 // Загружает параметры интерфейса из xml
 void ALoadParameters(RDK::USerStorageXML &xml);
 virtual void AALoadParameters(RDK::USerStorageXML &xml)=0;
-
+// ---------------------------
 };
 
 

@@ -173,6 +173,24 @@ int UEngineControl::GetNumEngines(void) const
  return ::GetNumEngines();
 }
 
+
+// Управление временной меткой сервера
+double UEngineControl::GetServerTimeStamp(int engine_index) const
+{
+ if(engine_index>=GetNumEngines())
+  return 0.0;
+
+ return EngineControlThreads[engine_index]->GetServerTimeStamp();
+}
+
+void UEngineControl::SetServerTimeStamp(int engine_index, double stamp)
+{
+ if(engine_index>=GetNumEngines())
+  return;
+ EngineControlThreads[engine_index]->SetServerTimeStamp(stamp);
+ EngineControlThreads[engine_index]->EnableCalculation();
+}
+
 bool UEngineControl::SetNumEngines(int num)
 {
  if(num == int(EngineControlThreads.size()))
@@ -549,6 +567,55 @@ void __fastcall UEngineControl::TimerTimer(TObject *Sender)
  break;
  }
 }                               */
+
+/// Регистрирует вещатель метаданных
+void UEngineControl::RegisterMetadataBroadcaster(UBroadcasterInterface *broadcaster)
+{
+ for(size_t i=0;i<BroadcastersList.size();i++)
+ {
+  if(BroadcastersList[i] == broadcaster)
+   return;
+ }
+ BroadcastersList.push_back(broadcaster);
+}
+
+/// Снимает регистрацию вещателя метаданных
+void UEngineControl::UnRegisterMetadataBroadcaster(UBroadcasterInterface *broadcaster)
+{
+ for(size_t i=0;i<BroadcastersList.size();i++)
+ {
+  if(BroadcastersList[i] == broadcaster)
+  {
+   BroadcastersList.erase(BroadcastersList.begin()+i);
+   return;
+  }
+ }
+}
+
+/// Отправляет метаданные во все зарегистрированные вещатели
+bool UEngineControl::AddMetadata(int channel_index, double time_stamp)
+{
+ bool res=true;
+ for(size_t i=0;i<BroadcastersList.size();i++)
+ {
+  if(BroadcastersList[i])
+   res&=BroadcastersList[i]->AddMetadata(channel_index,time_stamp);
+ }
+ return res;
+}
+
+/// Инициирует процедуру отправки метаданных всеми зарегистрированными вещателями
+bool UEngineControl::SendMetadata(void)
+{
+ bool res=true;
+ for(size_t i=0;i<BroadcastersList.size();i++)
+ {
+  if(BroadcastersList[i])
+   res&=BroadcastersList[i]->SendMetadata();
+ }
+ return res;
+}
+
 //---------------------------------------------------------------------------
 
 }

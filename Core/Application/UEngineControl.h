@@ -9,6 +9,7 @@ namespace RDK {
 
 class UEngineStateThread;
 class UEngineControlThread;
+class UBroadcasterInterface;
 
 class RDK_LIB_TYPE UEngineControl
 {
@@ -24,6 +25,8 @@ std::vector<UEngineControlThread*> EngineControlThreads;
 
 /// Поток мониторинга состояния расчета
 UEngineStateThread *EngineStateThread;
+
+std::vector<RDK::UEPtr<UBroadcasterInterface> > BroadcastersList;
 
 //boost::asio::io_service io;
 //boost::asio::deadline_timer Timer(io);
@@ -94,6 +97,10 @@ virtual UEngineControlThread* CreateEngineThread(UEngineControl* engine_control,
 /// Создание нового треда расчета
 virtual UEngineStateThread* CreateEngineStateThread(UEngineControl* engine_control);
 
+// Управление временной меткой сервера
+double GetServerTimeStamp(int engine_index) const;
+void SetServerTimeStamp(int engine_index, double stamp);
+
 /// Управление числом каналов
 int GetNumEngines(void) const;
 bool SetNumEngines(int num);
@@ -123,7 +130,19 @@ void StartEngineStateThread(void);
 /// Останавливает мониторинг сервера
 void StopEngineStateThread(void);
 
-void TimerExecture(void);
+void TimerExectue(void);
+
+/// Регистрирует вещатель метаданных
+void RegisterMetadataBroadcaster(UBroadcasterInterface *broadcaster);
+
+/// Снимает регистрацию вещателя метаданных
+void UnRegisterMetadataBroadcaster(UBroadcasterInterface *broadcaster);
+
+/// Отправляет метаданные во все зарегистрированные вещатели
+virtual bool AddMetadata(int channel_index, double time_stamp);
+
+/// Инициирует процедуру отправки метаданных всеми зарегистрированными вещателями
+virtual bool SendMetadata(void);
 // --------------------------
 };
 

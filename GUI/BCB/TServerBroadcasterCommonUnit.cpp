@@ -146,7 +146,7 @@ void __fastcall TResultBroadcasterThread::Execute(void)
 }
 
 /// Добавляет метаданные в очередь
-bool __fastcall TResultBroadcasterThread::AddMetadataSafe(int channel_index, RDK::ULongTime time_stamp, const std::string &component_name, const std::string &property_name)
+bool __fastcall TResultBroadcasterThread::AddMetadataSafe(int channel_index, double time_stamp, const std::string &component_name, const std::string &property_name)
 {
  if(!SendEnableFlag)
   return true;
@@ -168,7 +168,7 @@ bool __fastcall TResultBroadcasterThread::AddMetadataSafe(int channel_index, RDK
 
  TServerMetadata meta;
 
- meta.TimeStamp=time_stamp;
+ meta.TimeStamp=time_stamp*86400.0*1000.0; // TODO: Тут надо переделать ответную часть на variant-время и потом домножение можно будет убрать
 
  meta.ServerId="";
 
@@ -207,13 +207,15 @@ __fastcall TBroadcasterForm::TBroadcasterForm(TComponent* Owner)
  : TUVisualControllerForm(Owner)
 {
  BroadcastEnableFlag=false;
+ EngineControl=0;
 }
 
 __fastcall TBroadcasterForm::~TBroadcasterForm(void)
 {
- UnRegisterFromEngineMonitor();
+ UnRegisterFromEngineControl();
 }
 // --------------------------
+
 
 // ---------------------------
 // Методы доступа к параметрам
@@ -230,15 +232,49 @@ bool TBroadcasterForm::SetBroadcastEnableFlag(bool value)
 
  BroadcastEnableFlag=value;
  if(BroadcastEnableFlag)
-  return RegisterToEngineMonitor();
+  return RegisterToEngineControl();
  else
-  return UnRegisterFromEngineMonitor();
+  return UnRegisterFromEngineControl();
 
  return true;
 }
 // ---------------------------
 
 // --------------------------
+/// Управление контроллером движка
+// --------------------------
+RDK::UEngineControl* TBroadcasterForm::GetEngineControl(void)
+{
+ return EngineControl;
+}
+
+bool TBroadcasterForm::SetEngineControl(RDK::UEngineControl *engine_control)
+{
+ if(!engine_control)
+  return false;
+
+ if(EngineControl)
+  EngineControl->UnRegisterMetadataBroadcaster(this);
+ EngineControl=engine_control;
+ return true;
+}
+
+bool TBroadcasterForm::RegisterToEngineControl(void)
+{
+ if(!EngineControl)
+  return false;
+
+ EngineControl->RegisterMetadataBroadcaster(this);
+ return true;
+}
+
+bool TBroadcasterForm::UnRegisterFromEngineControl(void)
+{
+ if(!EngineControl)
+  return true;
+ EngineControl->UnRegisterMetadataBroadcaster(this);
+ return true;
+}
 
 // Сохраняет параметры интерфейса в xml
 void TBroadcasterForm::ASaveParameters(RDK::USerStorageXML &xml)
@@ -256,37 +292,6 @@ void TBroadcasterForm::ALoadParameters(RDK::USerStorageXML &xml)
  SetBroadcastEnableFlag(value);
 }
 // --------------------------
-
-
-
-// --------------------------
-bool TBroadcasterForm::RegisterToEngineMonitor(void)
-{
- if(UEngineMonitorForm)
- {
-  if(UEngineMonitorForm->EngineMonitorFrame)
-  {
-   RdkEngineControl.RegisterMetadataBroadcaster(this);
-   return true;
-  }
- }
- return false;
-}
-
-bool TBroadcasterForm::UnRegisterFromEngineMonitor(void)
-{
- if(UEngineMonitorForm)
- {
-  if(UEngineMonitorForm->EngineMonitorFrame)
-  {
-   RdkEngineControl.UnRegisterMetadataBroadcaster(this);
-   return true;
-  }
- }
- return false;
-}
-// --------------------------
-
 
 
 #pragma package(smart_init)

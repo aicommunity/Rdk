@@ -16,7 +16,7 @@ __fastcall TIdHttpResultBroadcasterForm::TIdHttpResultBroadcasterForm(TComponent
 }
 
 /// Функция добавления метаданных в очередь на отправку в соответствии с настройками
-bool TIdHttpResultBroadcasterForm::AddMetadata(int channel_index, RDK::ULongTime time_stamp)
+bool TIdHttpResultBroadcasterForm::AddMetadata(int channel_index, double time_stamp)
 {
  return false;
 }

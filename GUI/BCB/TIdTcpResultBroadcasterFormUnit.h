@@ -47,7 +47,7 @@ public:		// User declarations
 std::vector<TIdTcpResultBroadcasterFrame*> Broadcasters;
 
 /// Функция добавления метаданных в очередь на отправку в соответствии с настройками
-bool AddMetadata(int channel_index, RDK::ULongTime time_stamp);
+bool AddMetadata(int channel_index, double time_stamp);
 
 /// Инициирует процедуру отправки метаданных
 bool SendMetadata(void);

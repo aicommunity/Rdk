@@ -24,7 +24,7 @@ UEngineControlThread::UEngineControlThread(UEngineControl* engine_control, int e
  CalculationNotInProgress=UCreateEvent(true);
 
  RealLastCalculationTime=0.0;
- ExternalCurrentTime=0.0;
+ ServerTimeStamp=0.0;
  CalculationTimeSource=0;
  CalculateMode=0;
  MinInterstepsInterval=0;
@@ -105,21 +105,21 @@ bool UEngineControlThread::SetCalculationTimeSource(int value)
 // Управление данными
 // --------------------------
 /// Внешний источник времени
-double UEngineControlThread::GetExternalCurrentTime(void) const
+double UEngineControlThread::GetServerTimeStamp(void) const
 {
- return ExternalCurrentTime;
+ return ServerTimeStamp;
 }
 
-bool UEngineControlThread::SetExternalCurrentTime(double value)
+bool UEngineControlThread::SetServerTimeStamp(double value)
 {
- ExternalCurrentTime=value;
+ ServerTimeStamp=value;
  return true;
 }
 
 /// Метка внешнего источника времени когда был произведен последний расчет
-double UEngineControlThread::GetLastCalculationExternalTime(void) const
+double UEngineControlThread::GetLastCalculationServerTimeStamp(void) const
 {
- return LastCalculationExternalTime;
+ return LastCalculationServerTimeStamp;
 }
 
 double UEngineControlThread::GetRealLastCalculationTime(void) const
@@ -185,12 +185,12 @@ void UEngineControlThread::Calculate(void)
   else
   if(CalculationTimeSource == 1)
   {
-   current_time=ExternalCurrentTime;
+   current_time=ServerTimeStamp;
   }
   MModel_SetDoubleSourceTime(EngineIndex,current_time);
   MEnv_Calculate(EngineIndex,0);
   AfterCalculate();
-  LastCalculationExternalTime=ExternalCurrentTime; // TODO: Возможно тут current_time?
+  LastCalculationServerTimeStamp=ServerTimeStamp; // TODO: Возможно тут current_time?
   RealLastCalculationTime=GetVariantLocalTime();
 //  ServerLastCalculationTime=current_time;
   CalculationNotInProgress->set();

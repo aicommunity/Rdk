@@ -2,41 +2,45 @@ object IdHttpResultBroadcasterForm: TIdHttpResultBroadcasterForm
   Left = 0
   Top = 0
   Caption = 'Http Broadcaster'
-  ClientHeight = 243
-  ClientWidth = 527
+  ClientHeight = 304
+  ClientWidth = 659
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
-  Font.Height = -11
+  Font.Height = -14
   Font.Name = 'Tahoma'
   Font.Style = []
   Menu = MainMenu
   OldCreateOrder = False
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  PixelsPerInch = 96
-  TextHeight = 13
+  PixelsPerInch = 120
+  TextHeight = 17
   object PageControl: TPageControl
     Left = 0
     Top = 0
-    Width = 527
-    Height = 226
+    Width = 659
+    Height = 283
+    Margins.Left = 4
+    Margins.Top = 4
+    Margins.Right = 4
+    Margins.Bottom = 4
     Align = alClient
     TabOrder = 0
-    ExplicitHeight = 243
   end
   object BroadcastEnabledCheckBox: TCheckBox
     Left = 0
-    Top = 226
-    Width = 527
-    Height = 17
+    Top = 283
+    Width = 659
+    Height = 21
+    Margins.Left = 4
+    Margins.Top = 4
+    Margins.Right = 4
+    Margins.Bottom = 4
     Align = alBottom
     Caption = 'Broadcast enabled'
     TabOrder = 1
     OnClick = BroadcastEnabledCheckBoxClick
-    ExplicitLeft = 160
-    ExplicitTop = 200
-    ExplicitWidth = 97
   end
   object MainMenu: TMainMenu
     Left = 144

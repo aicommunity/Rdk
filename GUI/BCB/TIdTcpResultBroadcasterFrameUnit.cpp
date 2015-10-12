@@ -244,7 +244,7 @@ bool TIdTcpResultBroadcasterFrame::UnInit(void)
 
 
 /// Функция добавления метаданных в очередь на отправку в соответствии с настройками
-bool TIdTcpResultBroadcasterFrame::AddMetadata(int channel_index, RDK::ULongTime time_stamp)
+bool TIdTcpResultBroadcasterFrame::AddMetadata(int channel_index, double time_stamp)
 {
  if(!EnableXmlTranslationCheckBox->Checked)
   return true;
