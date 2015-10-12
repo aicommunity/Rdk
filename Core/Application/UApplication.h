@@ -11,6 +11,8 @@
 #include "URpcCommand.h"
 #include "URpcCommandInternal.h"
 #include "UEngineControl.h"
+#include "UEngineControlThread.h"
+#include "UEngineStateThread.h"
 
 #ifdef __BORLANDC__
 #include "Bcb/Application.bcb.h"
@@ -30,6 +32,9 @@ UEPtr<URpcDispatcher> RpcDispatcher;
 
 /// Активный проект
 UEPtr<UProject> Project;
+
+/// Контроллер движка
+UEPtr<UEngineControl> EngineControl;
 
 public:
 // --------------------------
@@ -56,6 +61,13 @@ virtual UEPtr<URpcDispatcher> GetRpcDispatcher(void);
 /// Устанавливает новый диспетчер команд
 /// Ответственность за освобождение памяти диспетчера лежит на вызывающей стороне
 virtual bool SetRpcDispatcher(const UEPtr<URpcDispatcher> &value);
+
+/// Предоставляет доступ к контроллеру движка
+virtual UEPtr<UEngineControl> GetEngineControl(void);
+
+/// Устанавливает новый контроллер движка
+/// Ответственность за освобождение памяти контроллера лежит на вызывающей стороне
+virtual bool SetEngineControl(const UEPtr<UEngineControl> &value);
 
 /// Инициализирует приложение
 virtual bool Init(void);

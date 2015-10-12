@@ -17,6 +17,8 @@
 #define RDK_THREAD_PRIORITY_BELOW_NORMAL 4
 #define RDK_THREAD_PRIORITY_IDLE 5
 
+#define RDK_DEFAULT_THREAD_PRIORITY RDK_THREAD_PRIORITY_BELOW_NORMAL
+
 namespace RDK {
 
 class RDK_LIB_TYPE UEngineControlThread
@@ -56,19 +58,11 @@ UGenericEvent* CalcStarted;
 
 UGenericEvent* CalculationNotInProgress;
 
-
-
 protected: // Потоки
 /// Поток расчета
 boost::thread Thread;
 
 bool Terminated;
-
-/// Мьютекс дня блокировки данных класса
-//UGenericMutex* SendMutex;
-
-/// Мьютекс дня блокировки доступа к очереди команд
-//mutable boost::mutex CommandMutex;
 
 public:
 // --------------------------
@@ -114,6 +108,8 @@ virtual void ABeforeCalculate(void);
 
 virtual void AfterCalculate(void);
 virtual void AAfterCalculate(void);
+
+virtual void Calculate(void);
 
 /// Метод, вызываемый потоком
 virtual void Execute(void);

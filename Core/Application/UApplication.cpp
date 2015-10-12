@@ -67,6 +67,22 @@ bool UApplication::SetRpcDispatcher(const UEPtr<URpcDispatcher> &value)
  return true;
 }
 
+/// Предоставляет доступ к контроллеру движка
+UEPtr<UEngineControl> UApplication::GetEngineControl(void)
+{
+ return EngineControl;
+}
+
+/// Устанавливает новый контроллер движка
+/// Ответственность за освобождение памяти контроллера лежит на вызывающей стороне
+bool UApplication::SetEngineControl(const UEPtr<UEngineControl> &value)
+{
+ if(EngineControl)
+  EngineControl->Pause(-1);
+ EngineControl=value;
+ return true;
+}
+
 /// Инициализирует приложение
 bool UApplication::Init(void)
 {
@@ -76,6 +92,8 @@ bool UApplication::Init(void)
 /// Деинициализирует приложение
 bool UApplication::UnInit(void)
 {
+ if(EngineControl)
+  EngineControl->Pause(-1);
  return true;
 }
 // --------------------------

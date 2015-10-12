@@ -140,6 +140,47 @@ void UEngineControlThread::AAfterCalculate(void)
 {
 }
 
+void UEngineControlThread::Calculate(void)
+{
+  if(CalculationNotInProgress->wait(30) == false)
+  {
+   return;
+  }
+
+  RDK::ULongTime diff=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),RealLastCalculationTime);
+  if(diff<MinInterstepsInterval)
+  {
+   Sleep(MinInterstepsInterval-diff);
+   return;
+  }
+
+  CalculationNotInProgress->reset();
+  if(EngineIndex>=GetNumEngines())
+  {
+   CalculationNotInProgress->set();
+   return;
+  }
+
+  BeforeCalculate();
+  double current_time(0.0);
+  if(CalculationTimeSource == 0)
+  {
+   current_time=GetVariantLocalTime();
+  }
+  else
+  if(CalculationTimeSource == 1)
+  {
+   current_time=ExternalCurrentTime;
+  }
+  MModel_SetDoubleSourceTime(EngineIndex,current_time);
+  MEnv_Calculate(EngineIndex,0);
+  AfterCalculate();
+  RealLastCalculationTime=GetVariantLocalTime();
+//  ServerLastCalculationTime=current_time;
+  CalculationNotInProgress->set();
+}
+
+
 void UEngineControlThread::Execute(void)
 {
  while(!Terminated)
@@ -153,40 +194,7 @@ void UEngineControlThread::Execute(void)
 	continue;
   }
   CalcEnable->reset();
-
-  if(CalculationNotInProgress->wait(30) == false)
-  {
-   continue;
-  }
-
-  RDK::ULongTime diff=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),RealLastCalculationTime);
-  if(diff<MinInterstepsInterval)
-  {
-   Sleep(MinInterstepsInterval-diff);
-   continue;
-  }
-
-  CalculationNotInProgress->reset();
-  if(EngineIndex>=GetNumEngines())
-  {
-   CalculationNotInProgress->set();
-   continue;
-  }
-
-  BeforeCalculate();
-  if(CalculationTimeSource == 0)
-  {
-   MModel_SetDoubleSourceTime(EngineIndex,GetVariantLocalTime());
-  }
-  else
-  if(CalculationTimeSource == 1)
-  {
-   MModel_SetDoubleSourceTime(EngineIndex,ExternalCurrentTime);
-  }
-  MEnv_Calculate(EngineIndex,0);
-  AfterCalculate();
-  RealLastCalculationTime=GetVariantLocalTime();
-  CalculationNotInProgress->set();
+  Calculate();
  }
 }
 
