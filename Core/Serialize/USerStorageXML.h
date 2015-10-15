@@ -166,6 +166,9 @@ bool ReadData(const std::string &name, T &data);
 template<typename T>
 bool WriteData(const std::string &name, const T &data);
 
+template<typename T>
+bool WriteDataOnce(const std::string &name, const T &data);
+
 // Считывает данные как соответствующий тип, если данное не найдено или не приводимо в
 // ожидаемый тип - оно инициализируется значением по умолчанию
 const std::string ReadString(const std::string &name, const std::string &default_value);
@@ -224,6 +227,19 @@ bool USerStorageXML::WriteData(const std::string &name, const T &data)
 {
  if(!AddNode(name))
   return false;
+
+ operator << (*this,data);
+ //(*this)<<data;
+ SelectUp();
+ return true;
+}
+
+template<typename T>
+bool USerStorageXML::WriteDataOnce(const std::string &name, const T &data)
+{
+ if(!SelectNode(name))
+  if(!AddNode(name))
+   return false;
 
  operator << (*this,data);
  //(*this)<<data;
