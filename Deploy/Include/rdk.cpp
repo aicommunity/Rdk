@@ -36,6 +36,8 @@ void RdkDummyFunc(void)
  jpge::params jpegparams;
  jpge::compress_image_to_jpeg_file("", 0, 0, 3,
 								   0,jpegparams);
+
+ LoadJpegFromFile("", bmp);
 }
 #endif
 
