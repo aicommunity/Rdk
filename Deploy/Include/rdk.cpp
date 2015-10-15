@@ -24,6 +24,11 @@ void RdkDummyFunc(void)
  bin_storage>>bmp;
  xml_storage<<bmp;
  xml_storage>>bmp;
+
+ int a = 0;
+ bin_storage << a;
+ bin_storage >> a;
+
  UGraphics gr;
 
  NCC2D ncc;
