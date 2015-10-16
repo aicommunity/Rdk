@@ -102,8 +102,6 @@ void URpcDispatcher::Dispatch(void)
  std::string ex_info;
  while (!ThreadTerminated)
  {
-	boost::this_thread::sleep(boost::posix_time::milliseconds(1));
-	continue;
   try
   {
    UEPtr<URpcCommand> command=PopFromCommandQueue();
