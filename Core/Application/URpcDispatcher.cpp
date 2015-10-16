@@ -62,6 +62,39 @@ void URpcDispatcher::SetDecoderPrototype(const UEPtr<URpcDecoder> &decoder)
   }
 }
 
+/// Возвращает и устанавливает главный декодер сервера
+UEPtr<URpcDecoder> URpcDispatcher::GetCommonDecoder(void)
+{
+ return CommonDecoder;
+}
+
+bool URpcDispatcher::SetCommonDecoder(const UEPtr<URpcDecoder> &decoder)
+{
+ if(CommonDecoder == decoder)
+  return true;
+ if(CommonDecoder)
+  CommonDecoder->SetDispatcher(0);
+
+ CommonDecoder=decoder;
+ CommonDecoder->SetDispatcher(this);
+ return true;
+}
+
+/// Экземпляр приложения
+UEPtr<UApplication> URpcDispatcher::GetApplication(void)
+{
+ return Application;
+}
+
+bool URpcDispatcher::SetApplication(UEPtr<UApplication> application)
+{
+ if(Application == application)
+  return true;
+
+ Application=application;
+ return true;
+}
+
 /// Осуществляет диспетчеризацию текущей очереди команд
 void URpcDispatcher::Dispatch(void)
 {
@@ -157,9 +190,29 @@ void URpcDispatcher::DispatchCommand(const UEPtr<URpcCommand> &command)
    return;
   }
 
-  // Заглушка
+  // TODO: Ниже неэффективный код с двойной проверкой IsCmdSupported
   if(channel_index<0)
-   channel_index=0;
+  {
+   if(!CommonDecoder)
+   {
+	// Ошибка - не задан главный декодер сервера
+	MEngine_LogMessage(0, RDK_EX_WARNING, (std::string("RPC Dispatcher: Common decored don't set")).c_str());
+	return;
+   }
+
+   unsigned common_cmd_id=0;
+   if(CommonDecoder->IsCmdSupported(command))
+   {
+	if(!CommonDecoder->PushCommand(command,common_cmd_id))
+	{
+	 // Ошибка постановки команды в очередь на обработку
+	 MEngine_LogMessage(0, RDK_EX_WARNING, (std::string("RPC Dispatcher: DispatchCommand - PushCommand to common decoder failed")+RDK::sntoa(common_cmd_id)).c_str());
+	}
+   return;
+   }
+   else
+    channel_index=0; // TODO: Заглушка. Не понятно нужно ли это
+  }
 
   unsigned cmd_id=0;
   if(!Decoders[channel_index]->PushCommand(command,cmd_id))

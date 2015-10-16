@@ -27,13 +27,6 @@ class TEngineThread;
 class RDK_LIB_TYPE UEngineControlVcl: public RDK::UEngineControl
 {
 public:
-// Временная метка сервера
-//std::vector<RDK::UELockVar<RDK::ULongTime> > ServerTimeStamp;
-
-// Временная метка последнего расчета
-//std::vector<RDK::UELockVar<RDK::ULongTime> > LastCalculatedServerTimeStamp;
-
-
 
 public: // Методы
 // --------------------------
@@ -51,6 +44,12 @@ virtual RDK::UEngineControlThread* CreateEngineThread(RDK::UEngineControl* engin
 
 /// Создание нового треда расчета
 virtual RDK::UEngineStateThread* CreateEngineStateThread(RDK::UEngineControl* engine_control);
+
+/// Запускает аналитику выбранного канала, или всех, если channel_index == -1
+virtual void StartEngine(int channel_index);
+
+/// Останавливает аналитику выбранного канала, или всех, если channel_index == -1
+virtual void PauseEngine(int channel_index);
 // --------------------------
 };
 
@@ -134,8 +133,6 @@ virtual ~TEngineThread(void);
 virtual UEngineControlVcl* GetEngineControl(void);
 
 virtual void ABeforeCalculate(void);
-
-virtual void AAfterCalculate(void);
 // --------------------------
 };
 
@@ -149,23 +146,14 @@ __published:	// IDE-managed Components
 	TStatusBar *StatusBar;
 	TMainMenu *MainMenu;
 	TMenuItem *Control1;
-	TMenuItem *Calculate1;
-	TMenuItem *Start1;
-	TMenuItem *Pause1;
-	TMenuItem *Reset1;
 	TTimer *Timer;
-	TMenuItem *Step1;
 	TMenuItem *ools1;
 	TMenuItem *SaveClassesDescriptions1;
 	TMenuItem *LoadAllClassesDescriptions1;
 	TPanel *Panel1;
 	TCheckBox *ShowDebugMessagesCheckBox;
 	TCheckBox *AutoupdatePropertiesCheckBox;
-	void __fastcall Start1Click(TObject *Sender);
-	void __fastcall Pause1Click(TObject *Sender);
-	void __fastcall Reset1Click(TObject *Sender);
 	void __fastcall TimerTimer(TObject *Sender);
-	void __fastcall Step1Click(TObject *Sender);
 	void __fastcall SaveClassesDescriptions1Click(TObject *Sender);
 	void __fastcall LoadAllClassesDescriptions1Click(TObject *Sender);
 	void __fastcall RichEditMouseEnter(TObject *Sender);
@@ -176,71 +164,9 @@ public:		// User declarations
 	__fastcall TUEngineMonitorFrame(TComponent* Owner);
 	virtual __fastcall ~TUEngineMonitorFrame(void);
 
-/// Режим работы
-/// 0 - однопоточный (одноканальный) режим
-/// 1 - многопоточный режим
-//RDK::UELockVar<int> ChannelsMode;
-
-/// Режим использования времени для расчета
-/// 0 - системное время
-/// 1 - время источника данных
-//RDK::UELockVar<int> CalculationTimeSourceMode;
-
-// Режим расчетов
-// 0 - простой расчет
-// 1 - расчет в реальном времени
-// 2 - простой расчет по сигналу
-//std::vector<RDK::UELockVar<int> > CalculateMode;
-
-/// Минимальный интервал времени между итерациями расчета в режиме 0 и 2, мс
-//std::vector<RDK::UELockVar<int> > MinInterstepsInterval;
-
 protected:
 
-// Сигнал, выставляемый при необходимости расчета
-// сбрасывается при итерации счета
-//std::vector<RDK::UELockVar<bool> > CalculateSignal;
-
-// Сигнал активности расчета
-// сбрасывается по стопу
-//std::vector<RDK::UELockVar<bool> > CalculateState;
-
-/// Потоки запуска многоканальной аналитики
-//std::vector<TEngineThread*> ThreadChannels;
-
-/// Метка реального времени окончания последнего расчета в однопоточном режиме
-//std::vector<RDK::UELockVar<RDK::ULongTime> > RealLastCalculationTime;
-
-//HANDLE ThreadCalcCompleteEvent;
-
-/// Поток мониторинга состояния сервера
-//TEngineMonitorThread *EngineMonitorThread;
-
 public:
-/// Управление режимом работы
-/// 0 - однопоточный режим
-/// 1 - многопоточный режим
-//int GetChannelsMode(void) const;
-//void SetChannelsMode(int mode);
-
-// Управление режимом расчетов
-//int GetCalculateMode(int channel_index) const;
-//void SetCalculateMode(int channel_index, int value);
-
-/// Режим использования времени для расчета
-/// 0 - системное время
-/// 1 - время источника данных
-//int GetCalculationTimeSourceMode(void) const;
-//bool SetCalculationTimeSourceMode(int value);
-
-//void SetMinInterstepsInterval(int channel_index, RDK::UTime value);
-
-/// Управление числом каналов
-//int GetNumChannels(void) const;
-//bool SetNumChannels(int num);
-//bool InsertChannel(int index);
-//bool DeleteChannel(int index);
-
 void AUpdateInterface(void);
 
 // Возврат интерфейса в исходное состояние
@@ -252,36 +178,10 @@ virtual void ASaveParameters(RDK::USerStorageXML &xml);
 // Загружает параметры интерфейса из xml
 virtual void ALoadParameters(RDK::USerStorageXML &xml);
 
-/// Запускает аналитику выбранного канала, или всех, если channel_index == -1
-virtual void StartChannel(int channel_index);
-
-/// Останавливает аналитику выбранного канала, или всех, если channel_index == -1
-virtual void PauseChannel(int channel_index);
-
-/// Сбрасывает аналитику выбранного канала, или всех, если channel_index == -1
-virtual void ResetChannel(int channel_index);
-
-/// Проверяет состояние расчета по id канала
-/// 0 - Не считает
-/// 1 - Идет расчет
-virtual int CheckCalcState(int channel_id) const;
-
 /// Доступ к треду мониторинга состояния модулей сервера
 const TEngineMonitorThread* GetEngineMonitorThread(void) const;
 
-/// Вклчает мониторинг сервера
-//void StartEngineMonitorThread(void);
-
-/// Останавливает мониторинг сервера
-//void StopEngineMonitorThread(void);
-
 TEngineThread* GetThreadChannel(int i);
-
-/// Возвращает текущее время источника данных
-//double GetSourceTime(int i) const;
-
-/// Применяет текущее время источников данных к каналам
-//void ApplySourceTime(void);
 };
 #pragma warn .8130
 //---------------------------------------------------------------------------

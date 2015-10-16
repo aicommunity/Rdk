@@ -16,7 +16,11 @@ UEngineControl::UEngineControl(void)
 
  EngineStateThread=0;
 
+ UseControllersMode=0;
+
  InitFlag=false;
+
+ Name="EngineControl";
 }
 
 UEngineControl::~UEngineControl(void)
@@ -45,6 +49,23 @@ void UEngineControl::SetThreadMode(int mode)
  ThreadMode=mode;
 }
 
+/// Режим вызова контроллеров
+/// 0 - при обновлении интерфейса
+/// 1 - индивидуально для каждого канала во время каждого расчета канала
+int UEngineControl::GetUseControllersMode(void) const
+{
+ return UseControllersMode;
+}
+
+void UEngineControl::SetUseControllersMode(int value)
+{
+ if(UseControllersMode == value)
+  return;
+
+ PauseEngine(-1);
+ UseControllersMode=value;
+ return;
+}
 
 // Управление режимом расчетов
 int UEngineControl::GetCalculateMode(int engine_index) const
@@ -167,13 +188,6 @@ UEngineStateThread* UEngineControl::CreateEngineStateThread(UEngineControl* engi
  return new UEngineStateThread(engine_control);
 }
 
-/// Управление числом каналов
-int UEngineControl::GetNumEngines(void) const
-{
- return ::GetNumEngines();
-}
-
-
 // Управление временной меткой сервера
 double UEngineControl::GetServerTimeStamp(int engine_index) const
 {
@@ -189,85 +203,6 @@ void UEngineControl::SetServerTimeStamp(int engine_index, double stamp)
   return;
  EngineControlThreads[engine_index]->SetServerTimeStamp(stamp);
  EngineControlThreads[engine_index]->EnableCalculation();
-}
-
-bool UEngineControl::SetNumEngines(int num)
-{
- if(num == int(EngineControlThreads.size()))
-  return true;
- int old_num=GetNumEngines();
- ::SetNumEngines(num);
-
- int old_size=int(EngineControlThreads.size());
- for(int i=num;i<old_size;i++)
- {
-  delete EngineControlThreads[i];
- }
-
- EngineControlThreads.resize(num);
- for(int i=old_size;i<num;i++)
- {
-  EngineControlThreads[i]=CreateEngineThread(this, i);
-  #ifdef RDK_MUTEX_DEADLOCK_DEBUG
-  TUThreadInfo info;
-  info.Pid=ThreadChannels[i]->ThreadID;
-  info.Name=string("ThreadChannels ")+RDK::sntoa(i);
-  GlobalThreadInfoMap[info.Pid]=info;
-  #endif
-  EngineControlThreads[i]->SetPriority(RDK_DEFAULT_THREAD_PRIORITY);
-
-//  ThreadChannels[i]->FreeOnTerminate=false;
- }
-
- return true;
-}
-
-bool UEngineControl::InsertEngine(int index)
-{
- int old_num=GetNumEngines();
- Engine_Add(index);
- int new_num=GetNumEngines();
-
- EngineControlThreads.resize(new_num);
- for(int i=new_num-1;i>index;i--)
- {
-  EngineControlThreads[i]=EngineControlThreads[i-1];
- }
-
- EngineControlThreads[index]=CreateEngineThread(this, index);
- EngineControlThreads[index]->SetPriority(RDK_DEFAULT_THREAD_PRIORITY);
- return true;
-}
-
-bool UEngineControl::DeleteEngine(int index)
-{
- int old_num=GetNumEngines();
-
-// if(index<0 || index>=int(ThreadChannels.size()))
-//  return true;
-
- if(EngineControlThreads[index])
- {
-//  ThreadChannels[index]->Terminate();
-  delete EngineControlThreads[index];
-  EngineControlThreads[index]=0;
- }
-
- int del_res=Engine_Del(index);
- int new_num=GetNumEngines();
-
- if(new_num == old_num)
-  return true;
-
- for(int i=index;i<new_num;i++)
- {
-  EngineControlThreads[i]=EngineControlThreads[i+1];
- }
-
-
- EngineControlThreads.resize(new_num);
-
- return true;
 }
 
 /// Запускает аналитику выбранного канала, или всех, если engine_index == -1
@@ -389,7 +324,9 @@ void UEngineControl::ResetEngine(int engine_index)
   RDK::UIVisualControllerStorage::BeforeReset();
   for(int i=0;i<GetNumEngines();i++)
   {
+   RDK::UIControllerStorage::BeforeReset(i);
    EngineControlThreads[i]->Reset();
+   RDK::UIControllerStorage::AfterReset(i);
   }
   RDK::UIVisualControllerStorage::AfterReset();
   RDK::UIVisualControllerStorage::UpdateInterface();
@@ -403,7 +340,9 @@ void UEngineControl::ResetEngine(int engine_index)
   }
 
   RDK::UIVisualControllerStorage::BeforeReset();
+  RDK::UIControllerStorage::BeforeReset(engine_index);
   EngineControlThreads[engine_index]->Reset();
+  RDK::UIControllerStorage::AfterReset(engine_index);
   RDK::UIVisualControllerStorage::AfterReset();
   RDK::UIVisualControllerStorage::UpdateInterface();
  }
@@ -415,39 +354,62 @@ void UEngineControl::StepEngine(int engine_index)
  if(engine_index>=GetNumEngines())
   return;
 
- if(engine_index == -1)
- {
-  if(!Model_Check())
-  {
-   RDK::UIVisualControllerStorage::UpdateInterface();
-   return;
-  }
+ RDK::UIVisualControllerStorage::BeforeCalculate();
+ int use_controllers_mode=UseControllersMode;
+ if(use_controllers_mode == 0)
+  RDK::UIControllerStorage::BeforeCalculate(engine_index);
 
-  RDK::UIVisualControllerStorage::BeforeReset();
+ if(engine_index <0)
+ {
   for(int i=0;i<GetNumEngines();i++)
   {
-   EngineControlThreads[i]->Calculate();
+   if(MIsEngineInit(i) && MModel_Check(i))
+   {
+	EngineControlThreads[i]->EnableCalculation();
+	EngineControlThreads[i]->Calculate();
+   }
   }
-  RDK::UIVisualControllerStorage::AfterReset();
-  RDK::UIVisualControllerStorage::UpdateInterface();
  }
  else
  {
-  if(!MModel_Check(engine_index))
+  if(MIsEngineInit(engine_index) && MModel_Check(engine_index))
   {
-   RDK::UIVisualControllerStorage::UpdateInterface();
-   return;
+   EngineControlThreads[engine_index]->EnableCalculation();
+   EngineControlThreads[engine_index]->Calculate();
   }
-
-  RDK::UIVisualControllerStorage::BeforeReset();
-  EngineControlThreads[engine_index]->Calculate();
-//  RealLastCalculationTime[engine_index]=0;
-  RDK::UIVisualControllerStorage::AfterReset();
-  RDK::UIVisualControllerStorage::UpdateInterface();
  }
+
+ if(use_controllers_mode == 0)
+  RDK::UIControllerStorage::AfterCalculate(engine_index);
+ SendMetadata();
+ RDK::UIVisualControllerStorage::AfterCalculate();
+ RDK::UIVisualControllerStorage::ResetCalculationStepUpdatedFlag();
+ RDK::UIVisualControllerStorage::UpdateInterface();
 }
 
 
+void UEngineControl::TimerExecute(void)
+{
+ switch(ThreadMode)
+ {
+ case 0:
+ {
+  StepEngine(-1);
+ }
+ break;
+
+ case 1:
+ {
+  if(UseControllersMode == 0)
+   RDK::UIControllerStorage::AfterCalculate(-1);
+  SendMetadata();
+  RDK::UIVisualControllerStorage::AfterCalculate();
+  RDK::UIVisualControllerStorage::ResetCalculationStepUpdatedFlag();
+  RDK::UIVisualControllerStorage::UpdateInterface();
+ }
+ break;
+ }
+}
 
 /// Проверяет состояние расчета
 /// 0 - Не считает
@@ -476,97 +438,6 @@ void UEngineControl::StopEngineStateThread(void)
   EngineStateThread->CalculationNotInProgress->wait(10000);
  }
 }
-
- /*
-/// Возвращает текущее время источника данных
-double TUEngineMonitorFrame::GetSourceTime(int i) const
-{
-   if(CalculationTimeSourceMode == 0)
-   {
-	TDateTime dt=TDateTime::CurrentDateTime();
-	return dt.operator double();
-   }
-   else
-   if(CalculationTimeSourceMode == 1 && i<ServerTimeStamp.size())
-   {
-	return ServerTimeStamp[i]/(86400.0*1000.0);
-   }
- return 0.0;
-}    */
-//---------------------------------------------------------------------------
-					 /*
-void __fastcall UEngineControl::TimerTimer(TObject *Sender)
-{
- switch(ChannelsMode)
- {
- case 0:
- {
-  RDK::UIVisualControllerStorage::BeforeCalculate();
-
-  for(int i=0;i<GetNumEngines();i++)
-  {
-   if(!MIsEngineInit(i) || !MModel_Check(i))
-   {
-	continue;
-   }
-
-   if(CalculateMode[i] == 2)
-   {
-	if(!CalculateSignal[i])
-	 continue;
-   }
-   else
-   if(CalculateMode[i] == 0)
-   {
-	if(RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),RealLastCalculationTime[i])<MinInterstepsInterval[i])
-	 continue;
-   }
-   CalculateSignal[i]=false;
-
-   if(CalculationTimeSourceMode == 0)
-   {
-	TDateTime dt=TDateTime::CurrentDateTime();
-	MModel_SetDoubleSourceTime(i,dt.operator double());
-   }
-   else
-   if(CalculationTimeSourceMode == 1)
-	MModel_SetDoubleSourceTime(i,ServerTimeStamp[i]/(86400.0*1000.0));
-   switch(CalculateMode[i])
-   {
-   case 0:
-	MEnv_Calculate(i,0);
-   break;
-
-   case 1:
-	MEnv_RTCalculate(i);
-   break;
-
-   case 2:
-	MEnv_Calculate(i,0);
-   break;
-   }
-   LastCalculatedServerTimeStamp[i]=ServerTimeStamp[i];
-//   IdTcpResultBroadcasterForm->AddMetadata(i, ServerTimeStamp[i]);
-   AddMetadata(i, ServerTimeStamp[i]);
-   RealLastCalculationTime[i]=RDK::GetCurrentStartupTime();
-  }
-
-  SendMetadata();
-  RDK::UIVisualControllerStorage::AfterCalculate();
-  RDK::UIVisualControllerStorage::UpdateInterface();
- }
- break;
-
- case 1:
- {
-  SendMetadata();
-  RDK::UIVisualControllerStorage::AfterCalculate();
-  RDK::UIVisualControllerStorage::ResetCalculationStepUpdatedFlag();
-  RDK::UIVisualControllerStorage::UpdateInterface();
- }
- break;
- }
-}                               */
 
 /// Регистрирует вещатель метаданных
 void UEngineControl::RegisterMetadataBroadcaster(UBroadcasterInterface *broadcaster)
@@ -615,8 +486,114 @@ bool UEngineControl::SendMetadata(void)
  }
  return res;
 }
-
 //---------------------------------------------------------------------------
+
+// --------------------------
+// Общие методы управления контроллером
+// --------------------------
+// Сохраняет параметры интерфейса в xml
+void UEngineControl::SaveParameters(RDK::USerStorageXML &xml)
+{
+ xml.WriteInteger("ThreadMode",ThreadMode);
+ xml.WriteInteger("UseControllersMode",UseControllersMode);
+}
+
+// Загружает параметры интерфейса из xml
+void UEngineControl::LoadParameters(RDK::USerStorageXML &xml)
+{
+ SetThreadMode(xml.ReadInteger("ThreadMode",ThreadMode));
+ SetUseControllersMode(xml.ReadInteger("UseControllersMode",UseControllersMode));
+}
+// --------------------------
+
+// --------------------------
+/// Управление числом каналов
+// --------------------------
+/// Управление числом каналов
+int UEngineControl::GetNumEngines(void) const
+{
+ return ::GetNumEngines();
+}
+
+bool UEngineControl::SetNumEngines(int num)
+{
+ if(num == int(EngineControlThreads.size()))
+  return true;
+ int old_num=GetNumEngines();
+ ::SetNumEngines(num);
+
+ int old_size=int(EngineControlThreads.size());
+ for(int i=num;i<old_size;i++)
+ {
+  delete EngineControlThreads[i];
+ }
+
+ EngineControlThreads.resize(num);
+ for(int i=old_size;i<num;i++)
+ {
+  EngineControlThreads[i]=CreateEngineThread(this, i);
+  #ifdef RDK_MUTEX_DEADLOCK_DEBUG
+  TUThreadInfo info;
+  info.Pid=ThreadChannels[i]->ThreadID;
+  info.Name=string("ThreadChannels ")+RDK::sntoa(i);
+  GlobalThreadInfoMap[info.Pid]=info;
+  #endif
+  EngineControlThreads[i]->SetPriority(RDK_DEFAULT_THREAD_PRIORITY);
+
+//  ThreadChannels[i]->FreeOnTerminate=false;
+ }
+
+ return true;
+}
+
+bool UEngineControl::InsertEngine(int index)
+{
+ int old_num=GetNumEngines();
+ Engine_Add(index);
+ int new_num=GetNumEngines();
+
+ EngineControlThreads.resize(new_num);
+ for(int i=new_num-1;i>index;i--)
+ {
+  EngineControlThreads[i]=EngineControlThreads[i-1];
+ }
+
+ EngineControlThreads[index]=CreateEngineThread(this, index);
+ EngineControlThreads[index]->SetPriority(RDK_DEFAULT_THREAD_PRIORITY);
+ return true;
+}
+
+bool UEngineControl::DeleteEngine(int index)
+{
+ int old_num=GetNumEngines();
+
+// if(index<0 || index>=int(ThreadChannels.size()))
+//  return true;
+
+ if(EngineControlThreads[index])
+ {
+//  ThreadChannels[index]->Terminate();
+  delete EngineControlThreads[index];
+  EngineControlThreads[index]=0;
+ }
+
+ int del_res=Engine_Del(index);
+ int new_num=GetNumEngines();
+
+ if(new_num == old_num)
+  return true;
+
+ for(int i=index;i<new_num;i++)
+ {
+  EngineControlThreads[i]=EngineControlThreads[i+1];
+ }
+
+
+ EngineControlThreads.resize(new_num);
+
+ return true;
+}
+// --------------------------
 
 }
 

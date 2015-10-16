@@ -6,11 +6,6 @@
 namespace RDK
 {
 
-class RDK_LIB_TYPE UProject
-{
-
-};
-
 struct RDK_LIB_TYPE TProjectChannelConfig
 {
 /// Вариант источника модели для канала
@@ -50,8 +45,14 @@ bool ResetAfterLoad;
 /// Использовать отладочный режим
 bool DebugMode;
 
+/// Имя канала
+std::string ChannelName;
+
 TProjectChannelConfig(void);
 TProjectChannelConfig(const TProjectChannelConfig& copy);
+
+bool operator != (const TProjectChannelConfig& copy) const;
+bool operator == (const TProjectChannelConfig& copy) const;
 };
 
 
@@ -112,6 +113,52 @@ std::vector<TProjectChannelConfig> ChannelsConfig;
 
 TProjectConfig(void);
 TProjectConfig(const TProjectConfig& copy);
+
+bool operator != (const TProjectConfig& copy) const;
+bool operator == (const TProjectConfig& copy) const;
+};
+
+class RDK_LIB_TYPE UProject
+{
+protected: // Данные
+/// Данные проекта
+TProjectConfig Config;
+
+/// Флаг наличия модификации в проекте
+bool ModifiedFlag;
+
+public: // Данные
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+UProject(void);
+virtual ~UProject(void);
+// --------------------------
+
+// --------------------------
+// Методы доступа к данным
+// --------------------------
+/// Данные проекта
+const TProjectConfig& GetConfig(void) const;
+bool SetConfig(const TProjectConfig& value);
+// --------------------------
+
+// --------------------------
+// Методы управления проектом
+// --------------------------
+/// Проверяет наличие изменений в конфигурации проекта
+bool IsModified(void) const;
+
+/// Выставляет признак наличия изменений в конфигурации проекта
+bool SetModified(void);
+
+/// Сбрасывает признак наличия изменений в конфигурации проекта
+bool ResetModified(void);
+
+/// Сбрасывает конфигурацию проекта в состояние по умолчанию
+/// Метод также сбрасывает ModifiedFlag
+void ResetToDefault(void);
+// --------------------------
 };
 
 

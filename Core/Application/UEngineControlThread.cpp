@@ -156,6 +156,7 @@ void UEngineControlThread::ABeforeCalculate(void)
 
 void UEngineControlThread::AfterCalculate(void)
 {
+ GetEngineControl()->AddMetadata(EngineIndex, GetEngineControl()->GetEngineThread(EngineIndex)->GetLastCalculationServerTimeStamp());
  AAfterCalculate();
 }
 
@@ -165,6 +166,13 @@ void UEngineControlThread::AAfterCalculate(void)
 
 void UEngineControlThread::Calculate(void)
 {
+  if(CalculateMode == 2)
+  {
+   if(CalcEnable->wait(30) == false)
+	return;
+  }
+  CalcEnable->reset();
+
   if(CalculationNotInProgress->wait(30) == false)
   {
    return;
@@ -184,6 +192,9 @@ void UEngineControlThread::Calculate(void)
    return;
   }
 
+  int use_controllers_mode=EngineControl->GetUseControllersMode();
+  if(use_controllers_mode == 1)
+   RDK::UIControllerStorage::BeforeCalculate(EngineIndex);
   BeforeCalculate();
   double current_time(0.0);
   if(CalculationTimeSource == 0)
@@ -197,14 +208,23 @@ void UEngineControlThread::Calculate(void)
   }
   CalculationTime=current_time;
   MModel_SetDoubleSourceTime(EngineIndex,current_time);
-  MEnv_Calculate(EngineIndex,0);
+
+  if(CalculateMode == 1)
+  {
+   MEnv_RTCalculate(EngineIndex);
+  }
+  else
+  {
+   MEnv_Calculate(EngineIndex,0);
+  }
   AfterCalculate();
   LastCalculationServerTimeStamp=ServerTimeStamp; // TODO: Возможно тут current_time?
   RealLastCalculationTime=GetVariantLocalTime();
 //  ServerLastCalculationTime=current_time;
+  if(use_controllers_mode == 1)
+   RDK::UIControllerStorage::AfterCalculate(EngineIndex);
   CalculationNotInProgress->set();
 }
-
 
 void UEngineControlThread::Execute(void)
 {
@@ -213,12 +233,6 @@ void UEngineControlThread::Execute(void)
   if(CalcStarted->wait(30) == false)
    continue;
 
-  if(CalculateMode == 2)
-  {
-   if(CalcEnable->wait(30) == false)
-	continue;
-  }
-  CalcEnable->reset();
   Calculate();
  }
 }

@@ -21,6 +21,9 @@ std::list<int> UnsentLogChannelIndexes;
 
 std::list<std::string> UnsentLog;
 
+/// Ёкзепл€р класса приложени€
+extern RDK::UApplication RdkApplication;
+
 //---------------------------------------------------------------------------
 void ExceptionHandler(int channel_index)
 {
@@ -121,6 +124,8 @@ void __fastcall TUEngineMonitorForm::LogTimerTimer(TObject *Sender)
   std::list<int>::iterator I=ch_indexes.begin();
   for(;I!=ch_indexes.end();++I)
   {
+   if(!MIsEngineInit(*I))
+    continue;
    int error_level=-1;
    int num_log_lines=MEngine_GetNumUnreadLogLines(*I);
    for(int k=0;k<num_log_lines;k++)
@@ -148,7 +153,7 @@ void __fastcall TUEngineMonitorForm::LogTimerTimer(TObject *Sender)
  {
   if(global_error_level>=0 && global_error_level<3)
   {
-   EngineMonitorFrame->Pause1Click(this);
+   RdkApplication.PauseEngine(-1);
    TTabSheet *tab=dynamic_cast<TTabSheet*>(Parent);
    if(tab)
    {

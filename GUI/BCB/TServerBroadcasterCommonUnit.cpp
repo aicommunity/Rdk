@@ -12,6 +12,9 @@
 /// Ёкземпл€р класса контроллера расчета
 extern UEngineControlVcl RdkEngineControl;
 
+/// Ёкзепл€р класса приложени€
+extern RDK::UApplication RdkApplication;
+
 // --------------------------
 //  онструкторы и деструкторы
 // --------------------------
@@ -50,7 +53,7 @@ bool __fastcall TResultBroadcasterThread::GenerateSendString(void)
 
  SendString=std::string("<Meta Size=")+RDK::sntoa(MetaList.size())+">\r\n";
   SendString+="<Server>";
-  SendString+=UServerControlForm->ServerId;
+  SendString+=RdkApplication.GetServerControl()->GetServerId();
   SendString+="</Server>\r\n";
  int i=0;
  std::list<TServerMetadata>::iterator I=MetaList.begin();

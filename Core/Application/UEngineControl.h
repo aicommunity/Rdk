@@ -11,13 +11,19 @@ class UEngineStateThread;
 class UEngineControlThread;
 class UBroadcasterInterface;
 
-class RDK_LIB_TYPE UEngineControl
+class RDK_LIB_TYPE UEngineControl: public UAppController
 {
+friend class UApplication;
 protected: // Параметры
 /// Режим работы
 /// 0 - однопоточный (одноканальный) режим
 /// 1 - многопоточный режим
 RDK::UELockVar<int> ThreadMode;
+
+/// Режим вызова контроллеров
+/// 0 - при обновлении интерфейса
+/// 1 - индивидуально для каждого канала во время каждого расчета канала
+RDK::UELockVar<int> UseControllersMode;
 
 protected: // Данные
 /// Потоки запуска многоканальной аналитики
@@ -53,6 +59,12 @@ virtual ~UEngineControl(void);
 /// 1 - многопоточный режим
 int GetThreadMode(void) const;
 void SetThreadMode(int mode);
+
+/// Режим вызова контроллеров
+/// 0 - при обновлении интерфейса
+/// 1 - индивидуально для каждого канала во время каждого расчета канала
+int GetUseControllersMode(void) const;
+void SetUseControllersMode(int value);
 
 // Управление режимом расчетов
 int GetCalculateMode(int engine_index) const;
@@ -101,12 +113,6 @@ virtual UEngineStateThread* CreateEngineStateThread(UEngineControl* engine_contr
 double GetServerTimeStamp(int engine_index) const;
 void SetServerTimeStamp(int engine_index, double stamp);
 
-/// Управление числом каналов
-int GetNumEngines(void) const;
-bool SetNumEngines(int num);
-bool InsertEngine(int index);
-bool DeleteEngine(int index);
-
 /// Запускает аналитику выбранного канала, или всех, если engine_index == -1
 virtual void StartEngine(int engine_index);
 
@@ -130,7 +136,7 @@ void StartEngineStateThread(void);
 /// Останавливает мониторинг сервера
 void StopEngineStateThread(void);
 
-void TimerExectue(void);
+void TimerExecute(void);
 
 /// Регистрирует вещатель метаданных
 void RegisterMetadataBroadcaster(UBroadcasterInterface *broadcaster);
@@ -144,6 +150,28 @@ virtual bool AddMetadata(int channel_index, double time_stamp);
 /// Инициирует процедуру отправки метаданных всеми зарегистрированными вещателями
 virtual bool SendMetadata(void);
 // --------------------------
+
+// --------------------------
+// Общие методы управления контроллером
+// --------------------------
+// Сохраняет параметры интерфейса в xml
+virtual void SaveParameters(RDK::USerStorageXML &xml);
+
+// Загружает параметры интерфейса из xml
+virtual void LoadParameters(RDK::USerStorageXML &xml);
+// --------------------------
+
+private: // Вспомогательные методы
+// --------------------------
+/// Управление числом каналов
+// --------------------------
+virtual int GetNumEngines(void) const;
+virtual bool SetNumEngines(int num);
+virtual bool InsertEngine(int index);
+virtual bool DeleteEngine(int index);
+// --------------------------
+
+
 };
 
 }

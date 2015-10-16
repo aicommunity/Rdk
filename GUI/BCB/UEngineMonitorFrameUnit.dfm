@@ -77,25 +77,6 @@ inherited UEngineMonitorFrame: TUEngineMonitorFrame
     object Control1: TMenuItem
       Caption = 'Control'
     end
-    object Calculate1: TMenuItem
-      Caption = 'Calculate'
-      object Start1: TMenuItem
-        Caption = 'Start'
-        OnClick = Start1Click
-      end
-      object Pause1: TMenuItem
-        Caption = 'Pause'
-        OnClick = Pause1Click
-      end
-      object Reset1: TMenuItem
-        Caption = 'Reset'
-        OnClick = Reset1Click
-      end
-      object Step1: TMenuItem
-        Caption = 'Step'
-        OnClick = Step1Click
-      end
-    end
     object ools1: TMenuItem
       Caption = 'Tools'
       object SaveClassesDescriptions1: TMenuItem

@@ -9,6 +9,10 @@
 #include "../../Core/Serialize/USerStorageXML.h"
 #include "../../Core/Engine/UELockVar.h"
 
+#ifdef WIN32
+#undef GetClassName
+#endif
+
 namespace RDK {
 
 // Глобальная коллекция шрифтов
@@ -21,8 +25,8 @@ RDK_LIB_TYPE void ClearClobalFonts(void);
 // Загружает новый глобальный шрифт
 RDK_LIB_TYPE bool AddGlobalFont(const std::string &font_file_name);
 
-// Класс прототип-визуальных интерфейсов
-class RDK_LIB_TYPE UIVisualController
+// Класс прототип интерфейсов
+class RDK_LIB_TYPE UIController
 {
 public:
 // Метод, вызываемый после загрузки проекта
@@ -40,29 +44,35 @@ virtual void BeforeCalculate(void)=0;
 // Метод, вызываемый после шага расчета
 virtual void AfterCalculate(void)=0;
 
-// Обновление интерфейса
-virtual void UpdateInterface(bool force_update=false)=0;
-
-// Возврат интерфейса в исходное состояние
-virtual void ClearInterface(void)=0;
-
 // Возвращает уникальное имя интерфейса
 virtual std::string GetName(void)=0;
 
 // Возвращает имя класса интерфейса
 virtual std::string GetClassName(void)=0;
 
-// Возвращает интервал обновления интерфейса
-virtual long GetUpdateInterval(void)=0;
-
-// Возвращает флаг разрешения обновления интерфейса даже если он не виден
-virtual bool GetAlwaysUpdateFlag(void)=0;
-
 // Сохраняет параметры интерфейса в xml
 virtual void SaveParameters(RDK::USerStorageXML &xml)=0;
 
 // Загружает параметры интерфейса из xml
 virtual void LoadParameters(RDK::USerStorageXML &xml)=0;
+};
+
+
+// Класс прототип-визуальных интерфейсов
+class RDK_LIB_TYPE UIVisualController: public UIController
+{
+public:
+// Обновление интерфейса
+virtual void UpdateInterface(bool force_update=false)=0;
+
+// Возврат интерфейса в исходное состояние
+virtual void ClearInterface(void)=0;
+
+// Возвращает интервал обновления интерфейса
+virtual long GetUpdateInterval(void)=0;
+
+// Возвращает флаг разрешения обновления интерфейса даже если он не виден
+virtual bool GetAlwaysUpdateFlag(void)=0;
 
 // Служебные методы управления интерфейсом
 /// Сбрасывает флаг прошедшей перерисовки в этой итерации счета
@@ -76,6 +86,43 @@ virtual bool GetCalculationStepUpdatedFlag(void)=0;
 
 /// Возвращает время обновления интерфейса (мс)
 virtual unsigned long long GetUpdateTime(void)=0;
+};
+
+// Класс-хранилище внутренних модулей
+class RDK_LIB_TYPE UIControllerStorage
+{
+public:
+// Список обработчиков, которые должны быть вызваны после расчета
+//static std::vector<RDK::UIController*> Controllers;
+static std::vector<RDK::UIController*>& GetControllers(void);
+
+public:
+// Добавляет обработчик в список
+static void AddController(RDK::UIController *value);
+
+// Удаляет обработчик из списка
+static void DelController(RDK::UIController *value);
+
+// Метод, вызываемый после загрузки проекта
+static void AfterLoadProject(int channel_index);
+
+// Метод, вызываемый перед сбросом модели
+static void BeforeReset(int channel_index);
+
+// Метод, вызываемый после сброса модели
+static void AfterReset(int channel_index);
+
+// Метод, вызываемый перед шагом расчета
+static void BeforeCalculate(int channel_index);
+
+// Метод, вызываемый после шага расчета
+static void AfterCalculate(int channel_index);
+
+// Сохраняет параметры интерфейса в xml
+static void SaveParameters(RDK::USerStorageXML &xml);
+
+// Загружает параметры интерфейса из xml
+static void LoadParameters(RDK::USerStorageXML &xml);
 };
 
 // Класс хранилище-визуальных интерфейсов
@@ -131,8 +178,47 @@ static void SetCalculationStepUpdatedFlag(void);
 
 /// Возвращает время обновления интерфейса (мс)
 static unsigned long long GetUpdateTime(void);
-
 };
+
+// Класс дефолтный прототип интерфейсов
+class RDK_LIB_TYPE UAppController: public UIController
+{
+protected:
+/// Имя контроллера
+std::string Name;
+
+public:
+UAppController(void);
+virtual ~UAppController(void);
+
+// Метод, вызываемый после загрузки проекта
+virtual void AfterLoadProject(void);
+
+// Метод, вызываемый перед сбросом модели
+virtual void BeforeReset(void);
+
+// Метод, вызываемый после сброса модели
+virtual void AfterReset(void);
+
+// Метод, вызываемый перед шагом расчета
+virtual void BeforeCalculate(void);
+
+// Метод, вызываемый после шага расчета
+virtual void AfterCalculate(void);
+
+// Возвращает уникальное имя интерфейса
+virtual std::string GetName(void);
+
+// Возвращает имя класса интерфейса
+virtual std::string GetClassName(void);
+
+// Сохраняет параметры интерфейса в xml
+virtual void SaveParameters(RDK::USerStorageXML &xml);
+
+// Загружает параметры интерфейса из xml
+virtual void LoadParameters(RDK::USerStorageXML &xml);
+};
+
 
 }
 

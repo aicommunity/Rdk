@@ -21,6 +21,12 @@ protected:
 /// Массив декодеров, соответствующих каналам
 std::vector<UEPtr<URpcDecoder> > Decoders;
 
+/// Главный декодер сервера
+UEPtr<URpcDecoder> CommonDecoder;
+
+/// Экземпляр приложения
+UEPtr<UApplication> Application;
+
 protected:
 /// Прототип декодера
 UEPtr<URpcDecoder> DecoderPrototype;
@@ -51,6 +57,14 @@ virtual bool IsCmdSupported(const UEPtr<URpcCommand> &command) const;
 /// Устанавливает прототип декодера
 /// Вызывает смену всех текущих прототипов
 virtual void SetDecoderPrototype(const UEPtr<URpcDecoder> &decoder);
+
+/// Возвращает и устанавливает главный декодер сервера
+UEPtr<URpcDecoder> GetCommonDecoder(void);
+bool SetCommonDecoder(const UEPtr<URpcDecoder> &decoder);
+
+/// Экземпляр приложения
+UEPtr<UApplication> GetApplication(void);
+bool SetApplication(UEPtr<UApplication> application);
 
 /// Осуществляет диспетчеризацию текущей очереди команд
 virtual void Dispatch(void);

@@ -421,9 +421,6 @@ object UServerControlForm: TUServerControlForm
             ExplicitWidth = 515
             ExplicitHeight = 69
           end
-          inherited IdHTTPServer: TIdHTTPServer
-            OnCommandGet = UHttpServerFrameIdHTTPServerCommandGet
-          end
         end
         object GroupBox4: TGroupBox
           Left = 1
@@ -531,9 +528,6 @@ object UServerControlForm: TUServerControlForm
   object TcpServer: TTcpServer
     LocalHost = '127.0.0.1'
     LocalPort = '45050'
-    OnAccept = TcpServerAccept
-    OnGetThread = TcpServerGetThread
-    OnListening = TcpServerListening
     Left = 144
     Top = 40
   end

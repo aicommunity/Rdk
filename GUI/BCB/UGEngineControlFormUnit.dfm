@@ -30,7 +30,6 @@ object UGEngineControlForm: TUGEngineControlForm
     Margins.Bottom = 4
     Align = alClient
     TabOrder = 0
-    ExplicitHeight = 702
     object Splitter2: TSplitter
       Left = 328
       Top = 1
@@ -632,7 +631,6 @@ object UGEngineControlForm: TUGEngineControlForm
       DoubleBuffered = True
       ParentDoubleBuffered = False
       TabOrder = 1
-      ExplicitTop = 533
       object PageControl2: TPageControl
         Left = 1
         Top = 1
@@ -821,7 +819,6 @@ object UGEngineControlForm: TUGEngineControlForm
       PopupMenu = PageControlPopupMenu
       TabOrder = 2
       OnChange = PageControl1Change
-      ExplicitHeight = 524
       object Draw: TTabSheet
         Margins.Left = 4
         Margins.Top = 4
@@ -1610,7 +1607,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 360
     Top = 65528
     Bitmap = {
-      494C01011B005C037C0310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B005C03880310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

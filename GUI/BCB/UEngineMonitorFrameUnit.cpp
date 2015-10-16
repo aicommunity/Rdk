@@ -173,11 +173,6 @@ void TEngineThread::ABeforeCalculate(void)
    }
    #endif
 }
-
-void TEngineThread::AAfterCalculate(void)
-{
- GetEngineControl()->AddMetadata(EngineIndex, GetEngineControl()->GetEngineThread(EngineIndex)->GetLastCalculationServerTimeStamp());
-}
 // --------------------------
 
 
@@ -186,7 +181,7 @@ void TEngineThread::AAfterCalculate(void)
 // --------------------------
 UEngineControlVcl::UEngineControlVcl(void)
 {
-
+ Name="EngineControlVcl";
 }
 
 UEngineControlVcl::~UEngineControlVcl(void)
@@ -208,6 +203,49 @@ RDK::UEngineControlThread* UEngineControlVcl::CreateEngineThread(RDK::UEngineCon
 RDK::UEngineStateThread* UEngineControlVcl::CreateEngineStateThread(RDK::UEngineControl* engine_control)
 {
  return new TEngineMonitorThread(engine_control);
+}
+
+/// «апускает аналитику выбранного канала, или всех, если channel_index == -1
+void UEngineControlVcl::StartEngine(int channel_index)
+{
+ RDK::UEngineControl::StartEngine(channel_index);
+ switch(RdkEngineControl.GetThreadMode())
+ {
+ case 0:
+  TUVisualControllerFrame::CalculationModeFlag=true;
+  TUVisualControllerForm::CalculationModeFlag=true;
+  UEngineMonitorForm->EngineMonitorFrame->Timer->Interval=1;
+  UEngineMonitorForm->EngineMonitorFrame->Timer->Enabled=true;
+ break;
+
+ case 1:
+  TUVisualControllerFrame::CalculationModeFlag=true;
+  TUVisualControllerForm::CalculationModeFlag=true;
+  UEngineMonitorForm->EngineMonitorFrame->Timer->Interval=30;
+  UEngineMonitorForm->EngineMonitorFrame->Timer->Enabled=true;
+ break;
+ }
+
+}
+
+/// ќстанавливает аналитику выбранного канала, или всех, если channel_index == -1
+void UEngineControlVcl::PauseEngine(int channel_index)
+{
+ RDK::UEngineControl::PauseEngine(channel_index);
+ switch(RdkEngineControl.GetThreadMode())
+ {
+ case 0:
+  TUVisualControllerFrame::CalculationModeFlag=false;
+  TUVisualControllerForm::CalculationModeFlag=false;
+  UEngineMonitorForm->EngineMonitorFrame->Timer->Enabled=false;
+ break;
+
+ case 1:
+  TUVisualControllerFrame::CalculationModeFlag=false;
+  TUVisualControllerForm::CalculationModeFlag=false;
+  UEngineMonitorForm->EngineMonitorFrame->Timer->Enabled=false;
+ break;
+ }
 }
 // --------------------------
 
@@ -344,64 +382,8 @@ void TUEngineMonitorFrame::ALoadParameters(RDK::USerStorageXML &xml)
 }
 
 
-/// «апускает аналитику выбранного канала, или всех, если channel_index == -1
-void TUEngineMonitorFrame::StartChannel(int channel_index)
-{
- RdkEngineControl.StartEngine(channel_index);
- switch(RdkEngineControl.GetThreadMode())
- {
- case 0:
-  TUVisualControllerFrame::CalculationModeFlag=true;
-  TUVisualControllerForm::CalculationModeFlag=true;
-  Timer->Interval=1;
-  Timer->Enabled=true;
- break;
-
- case 1:
-  TUVisualControllerFrame::CalculationModeFlag=true;
-  TUVisualControllerForm::CalculationModeFlag=true;
-  Timer->Interval=30;
-  Timer->Enabled=true;
- break;
- }
-
-}
-
-/// ќстанавливает аналитику выбранного канала, или всех, если channel_index == -1
-void TUEngineMonitorFrame::PauseChannel(int channel_index)
-{
- RdkEngineControl.PauseEngine(channel_index);
- switch(RdkEngineControl.GetThreadMode())
- {
- case 0:
-  TUVisualControllerFrame::CalculationModeFlag=false;
-  TUVisualControllerForm::CalculationModeFlag=false;
-  Timer->Enabled=false;
- break;
-
- case 1:
-  TUVisualControllerFrame::CalculationModeFlag=false;
-  TUVisualControllerForm::CalculationModeFlag=false;
-  Timer->Enabled=false;
- break;
- }
-}
-
-/// —брасывает аналитику выбранного канала, или всех, если channel_index == -1
-void TUEngineMonitorFrame::ResetChannel(int channel_index)
-{
- RdkEngineControl.ResetEngine(channel_index);
-}
 
 //---------------------------------------------------------------------------
-/// ѕровер€ет состо€ние расчета
-/// 0 - Ќе считает
-/// 1 - »дет расчет
-int TUEngineMonitorFrame::CheckCalcState(int channel_id) const
-{
- return RdkEngineControl.CheckCalcState(channel_id);
-}
-
 /// ƒоступ к треду мониторинга состо€ни€ модулей сервера
 const TEngineMonitorThread* TUEngineMonitorFrame::GetEngineMonitorThread(void) const
 {
@@ -412,62 +394,12 @@ TEngineThread* TUEngineMonitorFrame::GetThreadChannel(int i)
 {
  return dynamic_cast<TEngineThread*>(RdkEngineControl.GetEngineThread(i));
 }
-//---------------------------------------------------------------------------
 
-void __fastcall TUEngineMonitorFrame::Start1Click(TObject *Sender)
-{
- StartChannel(-1);
-}
-//---------------------------------------------------------------------------
-
-void __fastcall TUEngineMonitorFrame::Pause1Click(TObject *Sender)
-{
- PauseChannel(-1);
-}
-//---------------------------------------------------------------------------
-
-void __fastcall TUEngineMonitorFrame::Reset1Click(TObject *Sender)
-{
- ResetChannel(-1);
-}
 //---------------------------------------------------------------------------
 
 void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
 {
- switch(RdkEngineControl.GetThreadMode())
- {
- case 0:
- {
-  RDK::UIVisualControllerStorage::BeforeCalculate();
-
-  for(int i=0;i<GetNumEngines();i++)
-  {
-   RdkEngineControl.GetEngineThread(i)->Calculate();
-  }
-  RdkEngineControl.SendMetadata();
-  RDK::UIVisualControllerStorage::AfterCalculate();
-  RDK::UIVisualControllerStorage::UpdateInterface();
- }
- break;
-
- case 1:
- {
-  RdkEngineControl.SendMetadata();
-  RDK::UIVisualControllerStorage::AfterCalculate();
-  RDK::UIVisualControllerStorage::ResetCalculationStepUpdatedFlag();
-  RDK::UIVisualControllerStorage::UpdateInterface();
- }
- break;
- }
-
-}
-//---------------------------------------------------------------------------
-
-void __fastcall TUEngineMonitorFrame::Step1Click(TObject *Sender)
-{
- for(int i=0;i<GetNumEngines();i++)
-  RdkEngineControl.SetServerTimeStamp(i,RDK::GetCurrentStartupTime());
- TimerTimer(Sender);
+ RdkEngineControl.TimerExecute();
 }
 //---------------------------------------------------------------------------
 

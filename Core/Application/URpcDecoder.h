@@ -8,6 +8,7 @@
 namespace RDK {
 
 class URpcDispatcher;
+class UApplication;
 
 /// Осуществляет декодирование входных данных вызова RPC и одновременно
 /// реализует соответствующе вызов
@@ -54,6 +55,9 @@ virtual void Process(void);
 /// Возвращает false если команда не поддерживается
 virtual bool ProcessCommand(const UEPtr<URpcCommand> &command);
 virtual bool AProcessCommand(const UEPtr<URpcCommand> &command)=0;
+
+/// Возвращает указатель на экземпляр приложения
+UEPtr<UApplication> GetApplication(void);
 // --------------------------
 };
 

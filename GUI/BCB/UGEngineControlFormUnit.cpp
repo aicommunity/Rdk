@@ -56,8 +56,15 @@ RDK::URpcDispatcher RdkRpcDispatcher;
 /// Ёкзепл€р класса приложени€
 RDK::UApplication RdkApplication;
 
+/// Ёкземпл€р класса контроллера сервера
+UServerControlVcl RdkServerControl;
+URpcDecoderCommonVcl RdkRpcDecoderCommon;
+
 /// Ёкземпл€р класса контроллера расчета
 UEngineControlVcl RdkEngineControl;
+
+/// Ёкзепл€р класса проекта
+RDK::UProject RdkProject;
 
 /// √лобальна€ переменна€ сигнализирующа€ о завершении инициализации приложени€
 bool ApplicationInitialized=false;
@@ -480,7 +487,7 @@ void TUGEngineControlForm::CreateProject(RDK::TProjectConfig &project_config)
 
  ProjectXml.WriteBool(std::string("ReflectionFlag"),project_config.ReflectionFlag);
 
- RdkEngineControl.SetNumEngines(project_config.NumChannels);
+ RdkApplication.SetNumEngines(project_config.NumChannels);
  try
  {
   TRichEdit* RichEdit=new TRichEdit(this);
@@ -645,7 +652,7 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
 
 try{
 
- RdkEngineControl.SetNumEngines(num_engines);
+ RdkApplication.SetNumEngines(num_engines);
 
  int selected_engine_index=ProjectXml.ReadInteger("SelectedEngineIndex",0);
 
@@ -881,7 +888,7 @@ try{
 
   InterfaceXml.SelectNodeRoot(std::string("Interfaces"));
  }
- UServerControlForm->SetNumChannels(num_engines);
+// UServerControlForm->SetNumChannels(num_engines);
  RDK::UIVisualControllerStorage::LoadParameters(InterfaceXml);
 
  for(size_t i=0;i<CalculationMode.size();i++)
@@ -1696,7 +1703,8 @@ void TUGEngineControlForm::StartChannel(int channel_index)
  if(AppWinState)
   UShowProgressBarForm->Show();
 
- UEngineMonitorForm->EngineMonitorFrame->StartChannel(channel_index);
+ RdkApplication.StartEngine(channel_index);
+// UEngineMonitorForm->EngineMonitorFrame->StartChannel(channel_index);
 #ifdef RDK_VIDEO
  VideoOutputForm->Start(channel_index);
 #endif
@@ -1720,7 +1728,8 @@ void TUGEngineControlForm::PauseChannel(int channel_index)
  if(AppWinState)
   UShowProgressBarForm->Show();
 
- UEngineMonitorForm->EngineMonitorFrame->PauseChannel(channel_index);
+ RdkApplication.PauseEngine(channel_index);
+// UEngineMonitorForm->EngineMonitorFrame->PauseChannel(channel_index);
  UShowProgressBarForm->IncBarStatus(2);
 #ifdef RDK_VIDEO
  if(!DisableStopVideoSources)
@@ -1736,7 +1745,8 @@ void TUGEngineControlForm::ResetChannel(int channel_index)
  if(!ProjectOpenFlag)
   return;
 
- UEngineMonitorForm->EngineMonitorFrame->ResetChannel(channel_index);
+ RdkApplication.ResetEngine(channel_index);
+// UEngineMonitorForm->EngineMonitorFrame->ResetChannel(channel_index);
 #ifdef RDK_VIDEO
  if(!DisableStopVideoSources)
   VideoOutputForm->StopOffline(channel_index);
@@ -1757,8 +1767,9 @@ int TUGEngineControlForm::GetNumChannels(void) const
 int TUGEngineControlForm::SetNumChannels(int value)
 {
  Pause1Click(this);
- RdkEngineControl.SetNumEngines(value);
- UServerControlForm->SetNumChannels(value);
+ RdkApplication.SetNumEngines(value);
+// RdkEngineControl.SetNumEngines(value);
+// UServerControlForm->SetNumChannels(value);
  return 0;
 }
 
@@ -1768,8 +1779,8 @@ int TUGEngineControlForm::SetNumChannels(int value)
 int TUGEngineControlForm::AddChannel(int index)
 {
  Pause1Click(this);
- RdkEngineControl.InsertEngine(index);
- UServerControlForm->SetNumChannels(GetNumChannels());
+ RdkApplication.InsertEngine(index);
+// UServerControlForm->SetNumChannels(GetNumChannels());
  return 0;
 }
 
@@ -1777,8 +1788,8 @@ int TUGEngineControlForm::AddChannel(int index)
 int TUGEngineControlForm::DelChannel(int index)
 {
  Pause1Click(this);
- RdkEngineControl.DeleteEngine(index);
- UServerControlForm->SetNumChannels(GetNumChannels());
+ RdkApplication.DeleteEngine(index);
+// UServerControlForm->SetNumChannels(GetNumChannels());
  return 0;
 }
 
@@ -1835,7 +1846,7 @@ void __fastcall TUGEngineControlForm::Step1Click(TObject *Sender)
  if(!ProjectOpenFlag)
   return;
 
- UEngineMonitorForm->EngineMonitorFrame->Step1Click(Sender);
+ RdkApplication.StepEngine(-1);
  RDK::UIVisualControllerStorage::UpdateInterface();
 }
 //---------------------------------------------------------------------------
@@ -2212,9 +2223,12 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  LoadProjectsHistory();
 
  RdkRpcDispatcher.SetDecoderPrototype(&RdkRpcDecoder);
+ RdkRpcDispatcher.SetCommonDecoder(&RdkRpcDecoderCommon);
  RdkApplication.SetRpcDispatcher(&RdkRpcDispatcher);
+ RdkApplication.SetServerControl(&RdkServerControl);
  RdkEngineControl.Init();
  RdkApplication.SetEngineControl(&RdkEngineControl);
+ RdkApplication.SetProject(&RdkProject);
  RdkApplication.SetWorkDirectory(font_path);
  RdkApplication.Init();
 }

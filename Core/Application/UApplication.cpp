@@ -25,7 +25,7 @@ namespace RDK {
 // --------------------------
 UApplication::UApplication(void)
 {
-
+ Name="Application";
 }
 
 UApplication::~UApplication(void)
@@ -48,6 +48,18 @@ bool UApplication::SetWorkDirectory(const std::string& value)
  WorkDirectory=value;
  return true;
 }
+
+// ѕризнак наличи€ открытого проекта
+bool UApplication::GetProjectOpenFlag(void) const
+{
+ return ProjectOpenFlag;
+}
+
+bool UApplication::SetProjectOpenFlag(bool value)
+{
+ ProjectOpenFlag=value;
+ return true;
+}
 // --------------------------
 
 // --------------------------
@@ -63,7 +75,13 @@ UEPtr<URpcDispatcher> UApplication::GetRpcDispatcher(void)
 /// ќтветственность за освобождение пам€ти диспетчера лежит на вызывающей стороне
 bool UApplication::SetRpcDispatcher(const UEPtr<URpcDispatcher> &value)
 {
+ if(RpcDispatcher == value)
+  return true;
+
+ if(RpcDispatcher)
+  RpcDispatcher->SetApplication(0);
  RpcDispatcher=value;
+ RpcDispatcher->SetApplication(this);
  return true;
 }
 
@@ -77,9 +95,51 @@ UEPtr<UEngineControl> UApplication::GetEngineControl(void)
 /// ќтветственность за освобождение пам€ти контроллера лежит на вызывающей стороне
 bool UApplication::SetEngineControl(const UEPtr<UEngineControl> &value)
 {
+ if(EngineControl == value)
+  return true;
+
  if(EngineControl)
   EngineControl->PauseEngine(-1);
  EngineControl=value;
+ return true;
+}
+
+/// ѕредоставл€ет доступ к проекту
+UEPtr<UProject> UApplication::GetProject(void)
+{
+ return Project;
+}
+
+/// ”станавливает новый проект
+/// ќтветственность за освобождение пам€ти контроллера лежит на вызывающей стороне
+bool UApplication::SetProject(const UEPtr<UProject> &value)
+{
+ if(Project == value)
+  return true;
+
+ // TODO: «десь какие-то завершающие действи€ со старым проектом.
+ Project=value;
+ return true;
+}
+
+/// ѕредоставл€ет доступ к контроллеру серверной части
+UEPtr<UServerControl> UApplication::GetServerControl(void) const
+{
+ return ServerControl;
+}
+
+/// ”станавливает новый контроллер сервера
+/// ќтветственность за освобождение пам€ти контроллера лежит на вызывающей стороне
+bool UApplication::SetServerControl(const UEPtr<UServerControl> &value)
+{
+ if(ServerControl == value)
+  return true;
+
+ // TODO: «десь какие-то завершающие действи€ со старым сервером
+ if(ServerControl)
+  ServerControl->SetApplication(0);
+ ServerControl=value;
+ ServerControl->SetApplication(this);
  return true;
 }
 
@@ -136,6 +196,79 @@ bool UApplication::CloneProject(const std::string &filename)
  return true;
 }
 // --------------------------
+
+
+// --------------------------
+// ћетоды управлени€ движком
+// --------------------------
+/// ”правление числом каналов
+int UApplication::GetNumEngines(void) const
+{
+ return EngineControl->GetNumEngines();
+}
+
+bool UApplication::SetNumEngines(int num)
+{
+ if(!EngineControl->SetNumEngines(num))
+  return false;
+
+ if(!ServerControl->SetNumEngines(num))
+  return false;
+
+ return true;
+}
+
+bool UApplication::InsertEngine(int index)
+{
+ if(!EngineControl->InsertEngine(index))
+  return false;
+
+ if(!ServerControl->InsertEngine(index))
+  return false;
+
+ return true;
+}
+
+bool UApplication::DeleteEngine(int index)
+{
+ if(!EngineControl->DeleteEngine(index))
+  return false;
+
+ if(!ServerControl->DeleteEngine(index))
+  return false;
+
+ return true;
+}
+// --------------------------
+
+// --------------------------
+// ћетоды управлени€ счетом
+// --------------------------
+/// «апускает аналитику выбранного канала, или всех, если engine_index == -1
+void UApplication::StartEngine(int engine_index)
+{
+ EngineControl->StartEngine(engine_index);
+}
+
+/// ќстанавливает аналитику выбранного канала, или всех, если engine_index == -1
+void UApplication::PauseEngine(int engine_index)
+{
+ EngineControl->PauseEngine(engine_index);
+}
+
+/// —брасывает аналитику выбранного канала, или всех, если engine_index == -1
+void UApplication::ResetEngine(int engine_index)
+{
+ EngineControl->ResetEngine(engine_index);
+}
+
+/// ƒелает шаг расчета выбранного канала, или всех, если engine_index == -1
+void UApplication::StepEngine(int engine_index)
+{
+ EngineControl->StepEngine(engine_index);
+}
+// --------------------------
+
 
 }
 

@@ -130,6 +130,8 @@ virtual void ABeforeCalculate(void);
 virtual void AfterCalculate(void);
 virtual void AAfterCalculate(void);
 
+/// Метод обеспечивает собственно расчет со всеми предварительными и заверщающими
+/// действиями
 virtual void Calculate(void);
 
 /// Метод, вызываемый потоком

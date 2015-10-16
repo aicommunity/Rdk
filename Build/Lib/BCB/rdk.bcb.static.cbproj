@@ -172,6 +172,10 @@
         <CppCompile Include="..\..\..\Core\Application\URpcDecoder.cpp">
             <BuildOrder>97</BuildOrder>
         </CppCompile>
+        <CppCompile Include="..\..\..\Core\Application\URpcDecoderCommon.cpp">
+            <DependentOn>..\..\..\Core\Application\URpcDecoderCommon.h</DependentOn>
+            <BuildOrder>115</BuildOrder>
+        </CppCompile>
         <CppCompile Include="..\..\..\Core\Application\URpcDecoderInternal.cpp">
             <BuildOrder>98</BuildOrder>
         </CppCompile>
@@ -180,6 +184,18 @@
         </CppCompile>
         <CppCompile Include="..\..\..\Core\Application\URpcDispatcherQueues.cpp">
             <BuildOrder>100</BuildOrder>
+        </CppCompile>
+        <CppCompile Include="..\..\..\Core\Application\UServerControl.cpp">
+            <DependentOn>..\..\..\Core\Application\UServerControl.h</DependentOn>
+            <BuildOrder>112</BuildOrder>
+        </CppCompile>
+        <CppCompile Include="..\..\..\Core\Application\UServerTransport.cpp">
+            <DependentOn>..\..\..\Core\Application\UServerTransport.h</DependentOn>
+            <BuildOrder>113</BuildOrder>
+        </CppCompile>
+        <CppCompile Include="..\..\..\Core\Application\UServerTransportTcp.cpp">
+            <DependentOn>..\..\..\Core\Application\UServerTransportTcp.h</DependentOn>
+            <BuildOrder>114</BuildOrder>
         </CppCompile>
         <CppCompile Include="..\..\..\Core\Engine\Engine.cpp">
             <BuildOrder>60</BuildOrder>
@@ -943,12 +959,12 @@
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
-                <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"/>
+                <ProjectRoot Platform="OSX32" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="Android" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="Win32" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="iOSDevice64" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
-                <ProjectRoot Platform="OSX32" Name="$(PROJECTNAME)"/>
+                <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="iOSDevice32" Name="$(PROJECTNAME).app"/>
             </Deployment>
         </BorlandProject>

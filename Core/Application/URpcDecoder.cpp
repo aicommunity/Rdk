@@ -97,6 +97,17 @@ bool URpcDecoder::ProcessCommand(const UEPtr<URpcCommand> &command)
 {
  return AProcessCommand(command);
 }
+
+
+/// Возвращает указатель на экземпляр приложения
+UEPtr<UApplication> URpcDecoder::GetApplication(void)
+{
+ if(!Dispatcher)
+  return 0;
+
+ return Dispatcher->GetApplication();
+}
+
 // --------------------------
 
 
