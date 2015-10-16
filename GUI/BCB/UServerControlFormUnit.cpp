@@ -101,14 +101,15 @@ int UServerControlVcl::UnRegisterMetadataReceiver(const std::string &address, in
 /// Выполнение вспомогательных методов
 /// Вызывается из UApplication
 // --------------------------
-bool UServerControlVcl::ASetNumEngines(int num)
+bool UServerControlVcl::ASetNumEngines(int old_num)
 {
+ int num=GetNumEngines();
  if(num<=0)
   return false;
 
  RdkApplication.GetRpcDispatcher()->UpdateDecoders();
 
- for(int i=0;i<num;i++)
+ for(int i=old_num;i<num;i++)
  {
   if(GetNumEngines()<=i)
    break;

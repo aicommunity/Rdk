@@ -209,10 +209,11 @@ int UApplication::GetNumEngines(void) const
 
 bool UApplication::SetNumEngines(int num)
 {
+ int old_num=GetNumEngines();
  if(!EngineControl->SetNumEngines(num))
   return false;
 
- if(!ServerControl->SetNumEngines(num))
+ if(!ServerControl->SetNumEngines(old_num))
   return false;
 
  return true;

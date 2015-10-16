@@ -47,7 +47,7 @@ private:
 /// Выполнение вспомогательных методов
 /// Вызывается из UApplication
 // --------------------------
-virtual bool ASetNumEngines(int num);
+virtual bool ASetNumEngines(int old_num);
 virtual bool AInsertEngine(int index);
 virtual bool ADeleteEngine(int index);
 // --------------------------
