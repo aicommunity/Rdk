@@ -21,6 +21,12 @@ int PredefinedStructure;
 /// Имя файла модели
 std::string ModelFileName;
 
+/// Имя файла параметров
+std::string ParametersFileName;
+
+/// Имя файла состояний
+std::string StatesFileName;
+
 /// Имя класса компонента модели
 std::string ClassName;
 
@@ -58,14 +64,14 @@ bool operator == (const TProjectChannelConfig& copy) const;
 
 struct RDK_LIB_TYPE TProjectConfig
 {
-/// Папка проекта
-std::string ProjectDirectory;
-
 /// Имя проекта
 std::string ProjectName;
 
 /// Описание проекта
 std::string ProjectDescription;
+
+/// Имя файла описания проекта
+std::string DescriptionFileName;
 
 /// Флаг автоматического сохранения проекта при закрытии
 bool ProjectAutoSaveFlag;
@@ -107,6 +113,18 @@ int NumChannels;
 /// Флаг запрета останова источников видео-сигнала при остановке проекта
 bool DisableStopVideoSources;
 
+/// Адрес интерфейса управления сервером
+std::string ServerInterfaceAddress;
+
+/// Порт интерфейса управления сервером
+int ServerInterfacePort;
+
+// Флаг отображения состояний каналов
+bool ProjectShowChannelsStates;
+
+/// Имя файла настроек интерфейса
+std::string InterfaceFileName;
+
 /// Массив конфигураций каналов
 std::vector<TProjectChannelConfig> ChannelsConfig;
 
@@ -123,6 +141,9 @@ class RDK_LIB_TYPE UProject
 protected: // Данные
 /// Данные проекта
 TProjectConfig Config;
+
+/// Папка проекта
+std::string ProjectPath;
 
 /// Флаг наличия модификации в проекте
 bool ModifiedFlag;
@@ -158,6 +179,16 @@ bool ResetModified(void);
 /// Сбрасывает конфигурацию проекта в состояние по умолчанию
 /// Метод также сбрасывает ModifiedFlag
 void ResetToDefault(void);
+
+/// Доступ к пути до проекта
+const std::string& GetProjectPath(void) const;
+bool SetProjectPath(const std::string& value);
+
+/// Считывает конфигурацию проекта из xml
+bool ReadFromXml(USerStorageXML &xml);
+
+/// Сохраняет конфигурацию проекта в xml
+bool WriteToXml(USerStorageXML &xml);
 // --------------------------
 };
 

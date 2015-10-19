@@ -20,8 +20,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
     Constraints.MinHeight = 480
     Constraints.MinWidth = 380
     TabOrder = 0
-    ExplicitLeft = 623
-    ExplicitHeight = 789
     object ModePageControl: TPageControl
       Left = 1
       Top = 166
@@ -30,13 +28,8 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
       ActivePage = RecordingTabSheet
       Align = alClient
       TabOrder = 0
-      ExplicitHeight = 622
       object NetworkStreamingTabSheet: TTabSheet
         Caption = 'Network Streaming'
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object StreamingSettingsGroupBox: TGroupBox
           Left = 0
           Top = 0
@@ -190,10 +183,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
       object RecordingTabSheet: TTabSheet
         Caption = 'RecordingTabSheet'
         ImageIndex = 1
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 594
         object RecordingSettingsScrollBox: TScrollBox
           Left = 0
           Top = 0
@@ -202,7 +191,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
           VertScrollBar.Position = 69
           Align = alClient
           TabOrder = 0
-          ExplicitHeight = 594
           object GroupBox1: TGroupBox
             Left = 0
             Top = -69
@@ -210,7 +198,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
             Height = 565
             Align = alTop
             TabOrder = 0
-            ExplicitWidth = 349
             object RecordingControlGroupBox: TGroupBox
               Left = 2
               Top = 505
@@ -248,7 +235,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
               Align = alTop
               Caption = 'Recording Settings'
               TabOrder = 1
-              ExplicitWidth = 362
               DesignSize = (
                 341
                 490)
@@ -403,7 +389,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
                 Anchors = [akLeft, akTop, akRight]
                 Caption = 'Recording Timer'
                 TabOrder = 9
-                ExplicitWidth = 356
                 DesignSize = (
                   339
                   53)
@@ -551,10 +536,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
       TabOrder = 1
       object SourceComponentTabSheet: TTabSheet
         Caption = 'Source Component'
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object ComponentSourceControlGroupBox: TGroupBox
           Left = 0
           Top = 0
@@ -602,10 +583,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
       object SourceFrameTabSheet: TTabSheet
         Caption = 'Source Frame'
         ImageIndex = 1
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object FrameSourceControlGroupBox: TGroupBox
           Left = 0
           Top = 0
@@ -693,6 +670,7 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
       ImageOverlay_ChromaKeyRGBColor = 0
       ImageOverlay_Height = -1
       ImageOverlay_LeftLocation = 10
+      ImageOverlay_VideoAlignment = oa_LeftTop
       ImageOverlay_StretchToVideoSize = False
       ImageOverlay_TopLocation = 10
       ImageOverlay_Transparent = False
@@ -706,10 +684,6 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
         '5 5555555555 5555555555 5555555555 5555555555'
       NetworkStreamingType = nst_VideoStreaming
       PlayerSpeedRatio = 1.000000000000000000
-      Reencoding_StartTime = -1
-      Reencoding_StartFrame = -1
-      Reencoding_StopTime = -1
-      Reencoding_StopFrame = -1
       Reencoding_Method = rm_AVI
       Reencoding_UseVideoCompressor = True
       TextOverlay_Enabled = False
@@ -731,6 +705,7 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
       TextOverlay_Align = tf_Left
       TextOverlay_GradientMode = gm_Disabled
       TextOverlay_GradientColor = clNavy
+      TextOverlay_VideoAlignment = oa_LeftTop
       TextOverlay_String = 
         'Note: the date/time formats '#13#10'can be easily modified.'#13#10#13#10'system ' +
         'date/time: %sys_time[dd/mm/yy hh:nn:ss]%'#13#10'DV time code: %time_co' +
@@ -741,11 +716,10 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
       TextOverlay_Transparent = True
       VideoCompression_Quality = 1.000000000000000000
       VideoCompressor = 0
+      VideoDelay = 0
       VideoFromImages_TemporaryFile = 'SetOfBitmaps01.dat'
       VideoProcessing_RotationCustomAngle = 45.500000000000000000
       VideoSource = vs_JPEGsOrBitmaps
-      VideoSource_FileOrURL_StartTime = -1
-      VideoSource_FileOrURL_StopTime = -1
       OnAVIDurationUpdated = VideoGrabberAVIDurationUpdated
       OnFrameCaptureCompleted = VideoGrabberFrameCaptureCompleted
       OnVideoFromBitmapsNextFrameNeeded = VideoGrabberVideoFromBitmapsNextFrameNeeded

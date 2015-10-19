@@ -45,6 +45,7 @@ void ExceptionHandler(int channel_index)
 __fastcall TUEngineMonitorForm::TUEngineMonitorForm(TComponent* Owner)
 	: TUVisualControllerForm(Owner)
 {
+ EventsLogFlag=true;
 }
 
 // Сохраняет параметры интерфейса в xml
@@ -55,6 +56,7 @@ void TUEngineMonitorForm::ASaveParameters(RDK::USerStorageXML &xml)
 // Загружает параметры интерфейса из xml
 void TUEngineMonitorForm::ALoadParameters(RDK::USerStorageXML &xml)
 {
+ EventsLogFlag=true;
 }
 
 // Создание копии этого компонента
@@ -166,26 +168,32 @@ void __fastcall TUEngineMonitorForm::LogTimerTimer(TObject *Sender)
    }
   }
 
-
   /// Сохраняем лог в файл если это необходимо
-  if(!UnsentLog.empty() && UGEngineControlForm->EventsLogEnabled && UGEngineControlForm->ProjectPath.Length()>0)
+  RDK::TProjectConfig config=RdkApplication.GetProject()->GetConfig();
+
+  if(EventsLogFlag)
+   EventsLogFlag=config.EventsLogFlag;
+
+  if(!UnsentLog.empty() && EventsLogFlag && !RdkApplication.GetProjectPath().empty())
   {
    try
    {
-	ForceDirectories(UGEngineControlForm->ProjectPath+"EventsLog");
+	ForceDirectories((RdkApplication.GetProjectPath()+"EventsLog").c_str());
    }
    catch(EInOutError &exception)
    {
-	UGEngineControlForm->EventsLogEnabled=false;
+	EventsLogFlag=false;
+//	UGEngineControlForm->EventsLogEnabled=false;
    }
-   EventsLogFilePath=AnsiString(UGEngineControlForm->ProjectPath+"EventsLog/").c_str();
+
+   EventsLogFilePath=RdkApplication.GetProjectPath()+"EventsLog/";
   }
 
   bool is_logged=false;
   while(!UnsentLog.empty())
   {
    is_logged=true;
-   if(UGEngineControlForm->EventsLogEnabled)
+   if(EventsLogFlag)
    {
 	if(!EventsLogFile)
 	{
@@ -208,7 +216,7 @@ void __fastcall TUEngineMonitorForm::LogTimerTimer(TObject *Sender)
 
   if(is_logged)
   {
-   if(UGEngineControlForm->EventsLogEnabled && EventsLogFile && *EventsLogFile)
+   if(EventsLogFlag && EventsLogFile && *EventsLogFile)
 	EventsLogFile->flush();
 
    EngineMonitorFrame->RichEdit->SelStart =

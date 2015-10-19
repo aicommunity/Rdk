@@ -10,6 +10,9 @@
 #pragma package(smart_init)
 #pragma resource "*.dfm"
 TServerOptionsFrame *ServerOptionsFrame;
+
+/// Ёкзепл€р класса приложени€
+extern RDK::UApplication RdkApplication;
 //---------------------------------------------------------------------------
 __fastcall TServerOptionsFrame::TServerOptionsFrame(TComponent* Owner)
 	: TUVisualControllerFrame(Owner)
@@ -32,10 +35,10 @@ void TServerOptionsFrame::AUpdateInterface(void)
  if(!UGEngineControlForm)
   return;
 
- BindAddressLabeledEdit->Text=UGEngineControlForm->ServerInterfaceAddress.c_str();
+ BindAddressLabeledEdit->Text=RdkApplication.GetProjectConfig().ServerInterfaceAddress.c_str();
  try
  {
-  BindPortLabeledEdit->Text=IntToStr(UGEngineControlForm->ServerInterfacePort);
+  BindPortLabeledEdit->Text=IntToStr(RdkApplication.GetProjectConfig().ServerInterfacePort);
  }
  catch(EConvertError &exception)
  {
@@ -68,10 +71,12 @@ void TServerOptionsFrame::ApplyOptions(void)
 
  if(UServerControlForm && UGEngineControlForm)
  {
-  UGEngineControlForm->ServerInterfaceAddress=AnsiString(BindAddressLabeledEdit->Text).c_str();
-  UGEngineControlForm->ServerInterfacePort=StrToInt(BindPortLabeledEdit->Text);
+  RDK::TProjectConfig config=RdkApplication.GetProjectConfig();
+  config.ServerInterfaceAddress=AnsiString(BindAddressLabeledEdit->Text).c_str();
+  config.ServerInterfacePort=StrToInt(BindPortLabeledEdit->Text);
+  RdkApplication.SetProjectConfig(config);
 
-  UServerControlForm->SetServerBinding(UGEngineControlForm->ServerInterfaceAddress,UGEngineControlForm->ServerInterfacePort);
+  UServerControlForm->SetServerBinding(config.ServerInterfaceAddress,config.ServerInterfacePort);
   UServerControlForm->UpdateInterface();
  }
 }

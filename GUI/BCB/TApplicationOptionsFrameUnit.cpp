@@ -9,6 +9,10 @@
 #pragma package(smart_init)
 #pragma resource "*.dfm"
 TApplicationOptionsFrame *ApplicationOptionsFrame;
+
+/// Ёкзепл€р класса приложени€
+extern RDK::UApplication RdkApplication;
+
 //---------------------------------------------------------------------------
 __fastcall TApplicationOptionsFrame::TApplicationOptionsFrame(TComponent* Owner)
 	: TUVisualControllerFrame(Owner)
@@ -38,7 +42,7 @@ void TApplicationOptionsFrame::AUpdateInterface(void)
  DisableAdminFormCheckBox->Checked=UGEngineControlForm->DisableAdminForm;
  MinimizeToTrayCheckBox->Checked=UGEngineControlForm->MinimizeToTray;
  StartMinimizedCheckBox->Checked=UGEngineControlForm->StartMinimized;
- ProjectHistorySpinEdit->Value=UGEngineControlForm->LastProjectsListMaxSize;
+ ProjectHistorySpinEdit->Value=RdkApplication.GetLastProjectsListMaxSize();
 }
 
 // ¬озврат интерфейса в исходное состо€ние
@@ -71,7 +75,7 @@ void TApplicationOptionsFrame::ApplyOptions(void)
  UGEngineControlForm->DisableAdminForm=DisableAdminFormCheckBox->Checked;
  UGEngineControlForm->MinimizeToTray=MinimizeToTrayCheckBox->Checked;
  UGEngineControlForm->StartMinimized=StartMinimizedCheckBox->Checked;
- UGEngineControlForm->LastProjectsListMaxSize=ProjectHistorySpinEdit->Value;
+ RdkApplication.SetLastProjectsListMaxSize(ProjectHistorySpinEdit->Value);
 }
 // -----------------------------
 //---------------------------------------------------------------------------

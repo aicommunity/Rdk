@@ -496,6 +496,19 @@ void UEngineControl::SaveParameters(RDK::USerStorageXML &xml)
 {
  xml.WriteInteger("ThreadMode",ThreadMode);
  xml.WriteInteger("UseControllersMode",UseControllersMode);
+
+ if(!xml.SelectNode("EngineControlThreads"))
+  xml.AddNode("EngineControlThreads");
+ for(size_t i=0;i<EngineControlThreads.size();i++)
+ {
+  if(!xml.SelectNode(sntoa(i)))
+   xml.AddNode(sntoa(i));
+  xml.WriteInteger("CalculateMode",EngineControlThreads[i]->GetCalculateMode());
+  xml.WriteInteger("MinInterstepsInterval",EngineControlThreads[i]->GetMinInterstepsInterval());
+  xml.WriteInteger("CalculationTimeSource",EngineControlThreads[i]->GetCalculationTimeSource());
+  xml.SelectUp();
+ }
+ xml.SelectUp();
 }
 
 // Загружает параметры интерфейса из xml
@@ -503,6 +516,21 @@ void UEngineControl::LoadParameters(RDK::USerStorageXML &xml)
 {
  SetThreadMode(xml.ReadInteger("ThreadMode",ThreadMode));
  SetUseControllersMode(xml.ReadInteger("UseControllersMode",UseControllersMode));
+
+ if(xml.SelectNode("EngineControlThreads"))
+ {
+  for(size_t i=0;i<EngineControlThreads.size();i++)
+  {
+   if(xml.SelectNode(sntoa(i)))
+   {
+	EngineControlThreads[i]->SetCalculateMode(xml.ReadInteger("CalculateMode",EngineControlThreads[i]->GetCalculateMode()));
+	EngineControlThreads[i]->SetMinInterstepsInterval(xml.ReadInteger("MinInterstepsInterval",EngineControlThreads[i]->GetMinInterstepsInterval()));
+	EngineControlThreads[i]->SetCalculationTimeSource(xml.ReadInteger("CalculationTimeSource",EngineControlThreads[i]->GetCalculationTimeSource()));
+    xml.SelectUp();
+   }
+  }
+  xml.SelectUp();
+ }
 }
 // --------------------------
 

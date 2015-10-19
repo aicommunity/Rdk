@@ -122,7 +122,7 @@ bool UServerControlVcl::ASetNumEngines(int old_num)
  }
 
 #ifdef RDK_VIDEO
- if(UGEngineControlForm->ProjectMode == 1)
+ if(RdkApplication.GetProjectConfig().ProjectMode == 1)
  {
   if(VideoOutputForm->GetNumSources()<num)
   {
@@ -894,9 +894,13 @@ void __fastcall TUServerControlForm::ApplyOptionsButtonClick(TObject *Sender)
 
  int new_port=StrToInt(ServerControlPortLabeledEdit->Text);
  String new_address=BindingAddressLabeledEdit->Text;
- UGEngineControlForm->ServerInterfaceAddress=AnsiString(new_address).c_str();
- UGEngineControlForm->ServerInterfacePort=new_port;
- SetServerBinding(UGEngineControlForm->ServerInterfaceAddress,UGEngineControlForm->ServerInterfacePort);
+
+ RDK::TProjectConfig config=RdkApplication.GetProjectConfig();
+
+ config.ServerInterfaceAddress=AnsiString(new_address).c_str();
+ config.ServerInterfacePort=new_port;
+ RdkApplication.SetProjectConfig(config);
+ SetServerBinding(config.ServerInterfaceAddress,config.ServerInterfacePort);
 
  RdkApplication.GetServerControl()->SetServerName(AnsiString(ServerNameLabeledEdit->Text).c_str());
  RdkApplication.GetServerControl()->SetServerId(AnsiString(ServerIdLabeledEdit->Text).c_str());

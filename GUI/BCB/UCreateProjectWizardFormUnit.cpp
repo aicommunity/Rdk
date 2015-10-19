@@ -12,6 +12,9 @@
 #pragma resource "*.dfm"
 TUCreateProjectWizardForm *UCreateProjectWizardForm;
 
+/// Ёкзепл€р класса приложени€
+extern RDK::UApplication RdkApplication;
+
 
 //---------------------------------------------------------------------------
 __fastcall TUCreateProjectWizardForm::TUCreateProjectWizardForm(TComponent* Owner)
@@ -45,7 +48,7 @@ void TUCreateProjectWizardForm::UpdateInterface(void)
   NextButton->Enabled=false;
  }
 
- ProjectDirectoryLabeledEdit->Text=ProjectConfig.ProjectDirectory.c_str();
+ ProjectDirectoryLabeledEdit->Text=RdkApplication.GetProjectPath().c_str();
  ProjectNameLabeledEdit->Text=ProjectConfig.ProjectName.c_str();
  ProjectDescriptionRichEdit->Clear();
  ProjectDescriptionRichEdit->Lines->Add(ProjectConfig.ProjectDescription.c_str());
@@ -656,7 +659,7 @@ void __fastcall TUCreateProjectWizardForm::ProjectDirectoryLabeledEditChange(TOb
  if(UpdateInterfaceFlag)
   return;
 
- ProjectConfig.ProjectDirectory=AnsiString(ProjectDirectoryLabeledEdit->Text).c_str();
+// ProjectConfig.ProjectPath=AnsiString(ProjectDirectoryLabeledEdit->Text).c_str();
 }
 //---------------------------------------------------------------------------
 

@@ -24,6 +24,9 @@ TVideoOutputFrame *VideoOutputFrame;
 String TVGrabberLicenseString;
 
 extern UEngineControlVcl RdkEngineControl;
+
+/// Ёкзепл€р класса приложени€
+extern RDK::UApplication RdkApplication;
 //---------------------------------------------------------------------------
 __fastcall TVideoOutputFrame::TVideoOutputFrame(TComponent* Owner)
 	: TUVisualControllerFrame(Owner)
@@ -2143,8 +2146,8 @@ void __fastcall TVideoOutputFrame::SelectSourceToolButtonClick(TObject *Sender)
 void __fastcall TVideoOutputFrame::SavePictureActionExecute(TObject *Sender)
 {
  String dir;
- if(UGEngineControlForm->ProjectOpenFlag)
-  dir=UGEngineControlForm->ProjectPath;
+ if(RdkApplication.GetProjectOpenFlag())
+  dir=RdkApplication.GetProjectPath().c_str();
  else
   dir=ExtractFilePath(Application->ExeName);
 

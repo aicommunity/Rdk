@@ -25,6 +25,9 @@ TUEngineMonitorFrame *UEngineMonitorFrame;
 /// Ёкземпл€р класса контроллера расчета
 extern UEngineControlVcl RdkEngineControl;
 
+/// Ёкзепл€р класса приложени€
+extern RDK::UApplication RdkApplication;
+
 
 // --------------------------
 //  онструкторы и деструкторы
@@ -450,16 +453,20 @@ void __fastcall TUEngineMonitorFrame::ShowDebugMessagesCheckBoxClick(TObject *Se
  if(UpdateInterfaceFlag)
   return;
  int size=GetNumEngines();
- if(UGEngineControlForm->DebugModeFlag.size() != size)
+
+ RDK::TProjectConfig config=RdkApplication.GetProject()->GetConfig();
+
+ if(config.ChannelsConfig.size() != size)
  {
   ShowDebugMessagesCheckBox->Checked=false;
   return;
  }
  for(int i=0;i<size;i++)
  {
-  UGEngineControlForm->DebugModeFlag[i]=ShowDebugMessagesCheckBox->Checked;
-  MEnv_SetDebugMode(i,UGEngineControlForm->DebugModeFlag[i]);
+  config.ChannelsConfig[i].DebugMode=ShowDebugMessagesCheckBox->Checked;
+  MEnv_SetDebugMode(i,config.ChannelsConfig[i].DebugMode);
  }
+ RdkApplication.GetProject()->SetConfig(config);
 }
 //---------------------------------------------------------------------------
 

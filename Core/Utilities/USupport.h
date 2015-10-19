@@ -337,6 +337,13 @@ inline int signum(T x)
 }
 #endif
 
+/// Извлекает путь из полного имени файла
+RDK_LIB_TYPE std::string extract_file_path(const std::string& full_name);
+
+/// Извлекает имя файла из полного имени файла
+RDK_LIB_TYPE std::string extract_file_name(const std::string& full_name);
+
+
 }
 #endif
 

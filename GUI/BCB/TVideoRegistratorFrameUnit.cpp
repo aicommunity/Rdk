@@ -17,6 +17,9 @@
 #pragma resource "*.dfm"
 TTVideoRegistratorFrame *TVideoRegistratorFrame;
 
+/// Ёкзепл€р класса приложени€
+extern RDK::UApplication RdkApplication;
+
 // --------------------------
 //  онструкторы и деструкторы
 // --------------------------
@@ -533,7 +536,7 @@ int TTVideoRegistratorFrame::InitRecordingSettings(void)
  VideoGrabber->RecordingMethod = RecordingMethodComboBox->ItemIndex;
  if(StoragePathRadioGroup->ItemIndex == 0 || StoragePathLabeledEdit->Text=="")
  {
-  VideoGrabber->StoragePath=UGEngineControlForm->ProjectPath;
+  VideoGrabber->StoragePath=RdkApplication.GetProject()->GetProjectPath().c_str();
  }
  else
  {

@@ -254,84 +254,84 @@ bool StartMinimized;
 String ProgramName;
 
 // Файл настроек проекта
-RDK::USerStorageXML ProjectXml;
+//RDK::USerStorageXML ProjectXml;
 
 // Файл настроек интефрейса
-RDK::USerStorageXML InterfaceXml;
+//RDK::USerStorageXML InterfaceXml;
 
 // Признак наличия открытого проекта
-bool ProjectOpenFlag;
+//bool ProjectOpenFlag;
 
 // Путь до папки проекта
-String ProjectPath;
+//String ProjectPath;
 
 // Имя файла проекта
-String ProjectFileName;
+//String ProjectFileName;
 
 // Имя проекта
-String ProjectName;
+//String ProjectName;
 
 // Описание проекта
-String ProjectDescription;
+//String ProjectDescription;
 
 // Тип проекта
 // 0 - Обычный проект
 // 1 - Серверный проект
-int ProjectMode;
+//int ProjectMode;
 
 // Флаг автоматического сохранения проекта
-bool ProjectAutoSaveFlag;
+//bool ProjectAutoSaveFlag;
 
 // Флаг автоматического сохранения состояния модели
-bool ProjectAutoSaveStateFlag;
+//bool ProjectAutoSaveStateFlag;
 
 // Флаг отображения состояний каналов справа от их индексов
-bool ProjectShowChannelsStates;
+//bool ProjectShowChannelsStates;
 
 // Число входов среды
-int NumEnvInputs;
+//int NumEnvInputs;
 
 // Число выходов среды
-int NumEnvOutputs;
+//int NumEnvOutputs;
 
 /// Флаг разрешения логгирования событий сервера
-bool EventsLogEnabled;
+//bool EventsLogEnabled;
 
 // Разрешение изображений
-int InputEnvImageWidth, InputEnvImageHeight;
+//int InputEnvImageWidth, InputEnvImageHeight;
 
 // Индекс предварительно заданной модели
-std::vector<int> PredefinedStructure;
+//std::vector<int> PredefinedStructure;
 
 // Шаг счета по умолчанию
-std::vector<int> DefaultTimeStep;
+//std::vector<int> DefaultTimeStep;
 
 // Глобальный шаг счета модели
-std::vector<int> GlobalTimeStep;
+//std::vector<int> GlobalTimeStep;
 
 // Флаг необходимости вызова инициализации после загрузки
-std::vector<int> InitAfterLoadFlag;
+//std::vector<int> InitAfterLoadFlag;
 
 // Флаг необходимости вызова сброса после загрузки
-std::vector<int> ResetAfterLoadFlag;
+//std::vector<int> ResetAfterLoadFlag;
 
 // Флаг включения отладочного режима
-std::vector<bool> DebugModeFlag;
+//std::vector<bool> DebugModeFlag;
 
 // Флаг необходимости переворачивать входные изображения
-bool ReflectionFlag;
+//bool ReflectionFlag;
 
 // Режим счета
-std::vector<int> CalculationMode;
+//std::vector<int> CalculationMode;
 
 /// Минимальный интервал между итерациями счета, мс
-std::vector<long long> MinInterstepsInterval;
+//std::vector<long long> MinInterstepsInterval;
 
 /// Адрес интерфейса управления сервером
-std::string ServerInterfaceAddress;
+//std::string ServerInterfaceAddress;
 
 /// Порт интерфейса управления сервером
-int ServerInterfacePort;
+//int ServerInterfacePort;
 
 /// Флаг запрета на запуск главной формы по Ctrl+F1
 bool DisableAdminForm;
@@ -346,10 +346,10 @@ std::map<std::string, TUVisualControllerForm*> SpecialForms;
 String VideoGrabberLicenseString;
 
 /// Список последних открытых проектов
-std::list<std::string> LastProjectsList;
+//std::list<std::string> LastProjectsList;
 
 /// Размер истории последних открытых проектов
-int LastProjectsListMaxSize;
+//int LastProjectsListMaxSize;
 
 Word Saved8087CW;
 
@@ -380,7 +380,7 @@ void ASaveParameters(RDK::USerStorageXML &xml);
 void ALoadParameters(RDK::USerStorageXML &xml);
 
 // Создает новый проект
-void CreateProject(RDK::TProjectConfig &project_config);
+void CreateProject(const std::string &file_name, RDK::TProjectConfig &project_config);
 
 // Закрывает существущий проект
 void CloseProject(void);
@@ -453,12 +453,6 @@ void AddBroadcasterMenu(TMenuItem *item, TMenu *owner);
 
 /// Добавляет новый (глобальный) пункт в меню Window
 void AddGlobalWindowMenu(TMenuItem *item, TMenu *owner);
-
-/// Загружает историю проектов из файла
-void LoadProjectsHistory(void);
-
-/// Сохраняет историю проектов в файл
-void SaveProjectsHistory(void);
 
 /// Запуск отдельного канала
 /// если channel_index == -1 то запускает все каналы

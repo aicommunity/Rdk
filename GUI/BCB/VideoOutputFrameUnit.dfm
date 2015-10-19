@@ -15,7 +15,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
     ActivePage = VideoSourceTabSheet
     Align = alClient
     TabOrder = 0
-    ExplicitWidth = 779
     object VideoSourceTabSheet: TTabSheet
       Caption = 'Video Source'
       ExplicitLeft = 0
@@ -231,14 +230,10 @@ inherited VideoOutputFrame: TVideoOutputFrame
     object NetworkStreamingTabSheet: TTabSheet
       Caption = 'Network Streaming'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       inline NetworkStreamingFrame: TTVideoRegistratorFrame
         Left = 0
         Top = 0
-        Width = 771
+        Width = 767
         Height = 686
         Align = alClient
         Font.Charset = DEFAULT_CHARSET
@@ -248,18 +243,18 @@ inherited VideoOutputFrame: TVideoOutputFrame
         Font.Style = []
         ParentFont = False
         TabOrder = 0
-        ExplicitWidth = 771
+        ExplicitWidth = 767
         ExplicitHeight = 686
         inherited Splitter1: TSplitter
-          Left = 388
+          Left = 384
           Height = 686
           ExplicitLeft = 525
           ExplicitHeight = 659
         end
         inherited ControlPanel: TPanel
-          Left = 391
+          Left = 387
           Height = 686
-          ExplicitLeft = 391
+          ExplicitLeft = 387
           ExplicitHeight = 686
           inherited ModePageControl: TPageControl
             Height = 519
@@ -276,21 +271,16 @@ inherited VideoOutputFrame: TVideoOutputFrame
               end
             end
             inherited RecordingTabSheet: TTabSheet
-              ExplicitLeft = 4
-              ExplicitTop = 24
-              ExplicitWidth = 370
               ExplicitHeight = 491
               inherited RecordingSettingsScrollBox: TScrollBox
                 Height = 491
                 ExplicitHeight = 491
                 inherited GroupBox1: TGroupBox
-                  ExplicitWidth = 345
                   inherited RecordingControlGroupBox: TGroupBox
                     ExplicitWidth = 341
                     ExplicitHeight = 58
                   end
                   inherited RecordingSettingsGroupBox: TGroupBox
-                    ExplicitWidth = 341
                     inherited RecordingFrameRateLabeledEdit: TLabeledEdit
                       ExplicitWidth = 149
                     end
@@ -310,7 +300,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
                       ExplicitWidth = 149
                     end
                     inherited RecordingTimerGroupBox: TGroupBox
-                      ExplicitWidth = 339
                       inherited RecordingTimerLabeledEdit: TLabeledEdit
                         ExplicitLeft = 155
                       end
@@ -355,7 +344,7 @@ inherited VideoOutputFrame: TVideoOutputFrame
           end
         end
         inherited VideoPanel: TPanel
-          Width = 388
+          Width = 384
           Height = 686
           Constraints.MinWidth = 388
           ExplicitWidth = 388
@@ -384,14 +373,10 @@ inherited VideoOutputFrame: TVideoOutputFrame
     object RecordingTabSheet: TTabSheet
       Caption = 'Recording'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       inline RecordingFrame: TTVideoRegistratorFrame
         Left = 0
         Top = 0
-        Width = 771
+        Width = 767
         Height = 686
         Align = alClient
         Font.Charset = DEFAULT_CHARSET
@@ -401,18 +386,18 @@ inherited VideoOutputFrame: TVideoOutputFrame
         Font.Style = []
         ParentFont = False
         TabOrder = 0
-        ExplicitWidth = 771
+        ExplicitWidth = 767
         ExplicitHeight = 686
         inherited Splitter1: TSplitter
-          Left = 388
+          Left = 384
           Height = 686
           ExplicitLeft = 525
           ExplicitHeight = 659
         end
         inherited ControlPanel: TPanel
-          Left = 391
+          Left = 387
           Height = 686
-          ExplicitLeft = 391
+          ExplicitLeft = 387
           ExplicitHeight = 686
           inherited ModePageControl: TPageControl
             Height = 519
@@ -436,18 +421,12 @@ inherited VideoOutputFrame: TVideoOutputFrame
               end
             end
             inherited RecordingTabSheet: TTabSheet
-              ExplicitLeft = 4
-              ExplicitTop = 24
-              ExplicitWidth = 370
-              ExplicitHeight = 500
               inherited RecordingSettingsScrollBox: TScrollBox
                 VertScrollBar.Position = 54
-                ExplicitHeight = 500
                 inherited GroupBox1: TGroupBox
                   Top = -54
                   Height = 550
                   ExplicitTop = -54
-                  ExplicitWidth = 345
                   ExplicitHeight = 550
                   inherited RecordingControlGroupBox: TGroupBox
                     Height = 43
@@ -455,7 +434,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
                     ExplicitHeight = 43
                   end
                   inherited RecordingSettingsGroupBox: TGroupBox
-                    ExplicitWidth = 341
                     inherited RecordingFrameRateLabeledEdit: TLabeledEdit
                       ExplicitWidth = 149
                     end
@@ -475,7 +453,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
                       ExplicitWidth = 149
                     end
                     inherited RecordingTimerGroupBox: TGroupBox
-                      ExplicitWidth = 339
                       inherited RecordingTimerLabeledEdit: TLabeledEdit
                         ExplicitLeft = 155
                       end
@@ -520,7 +497,7 @@ inherited VideoOutputFrame: TVideoOutputFrame
           end
         end
         inherited VideoPanel: TPanel
-          Width = 388
+          Width = 384
           Height = 686
           Constraints.MinWidth = 388
           ExplicitWidth = 388
@@ -731,7 +708,7 @@ inherited VideoOutputFrame: TVideoOutputFrame
     Left = 688
     Top = 456
     Bitmap = {
-      494C010120006000DC0010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010120006000E40010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000009000000001002000000000000090
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

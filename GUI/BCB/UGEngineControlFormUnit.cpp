@@ -106,18 +106,18 @@ bool RdkIsApplicationRunning(void)
 __fastcall TUGEngineControlForm::TUGEngineControlForm(TComponent* Owner)
 	: TUVisualControllerForm(Owner)
 {
- ProjectAutoSaveFlag=true;
-
- // Признак наличия открытого проекта
- ProjectOpenFlag=false;
-
+// ProjectAutoSaveFlag=true;
+//
+// // Признак наличия открытого проекта
+// ProjectOpenFlag=false;
+//
  AppWinState=true;
-
- ProjectAutoSaveStateFlag=false;
-
+//
+// ProjectAutoSaveStateFlag=false;
+// EventsLogEnabled=true;
+//
  DisableAdminForm=false;
 
- EventsLogEnabled=true;
  DisableStopVideoSources=false;
 }
 
@@ -245,9 +245,9 @@ void TUGEngineControlForm::AUpdateInterface(void)
 #endif
 
  Caption=ProgramName;
- if(ProjectOpenFlag)
+ if(RdkApplication.GetProjectOpenFlag())
  {
-  Caption=Caption+String(" [")+ProjectName+": "+ProjectPath+ProjectFileName+"]";
+  Caption=Caption+String(" ")+RdkApplication.GetAppCaption().c_str();
  }
 
  for(int i=0;i<StatusBar->Panels->Count;i++)
@@ -273,7 +273,7 @@ void TUGEngineControlForm::AUpdateInterface(void)
    VideoCaptureStates=monitor->ReadVideoCaptureStates();
   }
 
-  if(ProjectShowChannelsStates)
+  if(RdkApplication.GetProjectConfig().ProjectShowChannelsStates)
   {
    ChannelsStringGrid->ColCount=3;
    ChannelsStringGrid->ColWidths[1]=20;
@@ -443,11 +443,13 @@ void TUGEngineControlForm::ALoadParameters(RDK::USerStorageXML &xml)
 }
 
 // Создает новый проект
-void TUGEngineControlForm::CreateProject(RDK::TProjectConfig &project_config)
+void TUGEngineControlForm::CreateProject(const std::string &file_name, RDK::TProjectConfig &project_config)
 {
+ RdkApplication.CreateProject(file_name, project_config);
+/*
  CloseProject();
 
- std::string FileName=project_config.ProjectDirectory+"\\Project.ini";
+ std::string FileName=RdkApplication.GetProjectPath()+"\\Project.ini";
 
  ProjectXml.Destroy();
 
@@ -581,25 +583,34 @@ void TUGEngineControlForm::CreateProject(RDK::TProjectConfig &project_config)
 
  ProjectXml.SaveToFile(FileName);
  OpenProject(FileName.c_str());
+ */
 }
 
 // Закрывает существущий проект
 void TUGEngineControlForm::CloseProject(void)
 {
+ if(UServerControlForm)
+  UServerControlForm->ServerRestartTimer->Enabled=false;
+ RdkApplication.CloseProject();
+
+
+/*
  Pause1Click(this);
 
- if(ProjectAutoSaveFlag)
+ RDK::TProjectConfig config=RdkApplication.GetProjectConfig();
+
+ if(config.ProjectAutoSaveFlag)
   SaveProject();
 
  if(UServerControlForm)
   UServerControlForm->ServerRestartTimer->Enabled=false;
 
- if(ProjectOpenFlag)
+ if(RdkApplication.GetProjectOpenFlag())
  {
-  ProjectFileName="";
-  ProjectPath="";
+  RdkApplication.SetProjectFileName("");
+  RdkApplication.SetProjectPath("");
  }
- ProjectOpenFlag=false;
+ RdkApplication.SetProjectOpenFlag(false);
  for(int i=GetNumEngines();i>=0;i--)
  {
   SelectEngine(i);
@@ -613,11 +624,29 @@ void TUGEngineControlForm::CloseProject(void)
  RDK::UIVisualControllerStorage::ClearInterface();
  RdkEngineControl.StartEngineStateThread();
 // UEngineMonitorForm->EngineMonitorFrame->StopEngineMonitorThread();
+*/
 }
 
 // Открывает проект
 void TUGEngineControlForm::OpenProject(const String &FileName)
 {
+ try
+ {
+  RdkApplication.OpenProject(AnsiString(FileName).c_str());
+  UServerControlForm->ServerRestartTimer->Enabled=true;
+ }
+ catch(Exception &exception)
+ {
+  // UShowProgressBarForm->Hide();
+  MEngine_LogMessage(GetSelectedEngineIndex(), RDK_EX_ERROR, (std::string("Open project Fail: ")+AnsiString(exception.Message).c_str()).c_str());
+ }
+ catch(...)
+ {
+  // UShowProgressBarForm->Hide();
+  throw;
+ }
+
+/*
  CloseProject();
 
  UShowProgressBarForm->SetWinTitle(Lang_LoadProjectTitle);
@@ -920,12 +949,15 @@ catch(...)
  UShowProgressBarForm->Update();
  Sleep(0);
  UShowProgressBarForm->Hide();
+*/
 }
 
 
 // Загружает проект с индексом source_id, в движок с индексом cloned_id
 void TUGEngineControlForm::CloneProject(int source_id, int cloned_id)
 {
+ RdkApplication.CloneProject(source_id, cloned_id);
+/*
  if(source_id>=GetNumEngines() || cloned_id >= GetNumEngines())
   return;
 
@@ -1052,13 +1084,38 @@ catch(...)
  UShowProgressBarForm->Hide();
  throw;
 }
-
+*/
 }
 
 
 // Сохраняет проект
 void TUGEngineControlForm::SaveProject(void)
 {
+ UShowProgressBarForm->SetWinTitle(Lang_SaveProjectTitle);
+ UShowProgressBarForm->SetBarHeader(1,Lang_SaveInterface);
+ UShowProgressBarForm->SetBarHeader(2,Lang_Total);
+ UShowProgressBarForm->ResetBarStatus(1, 1, 1);
+ UShowProgressBarForm->ResetBarStatus(2, 1, 2);
+ if(AppWinState)
+  UShowProgressBarForm->Show();
+ UShowProgressBarForm->Update();
+
+try
+{
+ RdkApplication.SaveProject();
+}
+catch(Exception &exception)
+{
+ UShowProgressBarForm->Hide();
+ MEngine_LogMessage(GetSelectedEngineIndex(), RDK_EX_ERROR, (std::string("GUI-SaveProject Exception: ")+AnsiString(exception.Message).c_str()).c_str());
+}
+catch(...)
+{
+ UShowProgressBarForm->Hide();
+ throw;
+}
+
+/*
  if(!ProjectOpenFlag)
   return;
 
@@ -1307,6 +1364,7 @@ catch(...)
  UShowProgressBarForm->Update();
  Sleep(0);
  UShowProgressBarForm->Hide();
+*/
 }
 
 
@@ -1647,52 +1705,11 @@ void TUGEngineControlForm::AddGlobalWindowMenu(TMenuItem *item, TMenu *owner)
  Window1->Insert(10, item);
 }
 
-/// Загружает историю проектов из файла
-void TUGEngineControlForm::LoadProjectsHistory(void)
-{
- String opt_name=ExtractFileName(Application->ExeName);
- if(opt_name.Length()>4)
- opt_name=opt_name.SubString(0,opt_name.Length()-4);
- opt_name=opt_name+".projecthist";
- RDK::UIniFile<char> history_ini;
- history_ini.LoadFromFile(AnsiString(opt_name).c_str());
- std::vector<std::string> history;
- history_ini.GetVariableList("General",history);
- sort(history.begin(),history.end());
-
- LastProjectsList.clear();
- for(size_t i=0;i<history.size();i++)
- {
-  LastProjectsList.push_back(history_ini("General",history[i],""));
-  if(int(i)>=LastProjectsListMaxSize)
-   break;
- }
-}
-
-/// Сохраняет историю проектов в файл
-void TUGEngineControlForm::SaveProjectsHistory(void)
-{
- RDK::UIniFile<char> history_ini;
-
- std::list<std::string>::iterator I=LastProjectsList.begin();
- int i=0;
- for(;I != LastProjectsList.end();I++)
- {
-  history_ini("General",std::string("Hist")+RDK::sntoa(i++),*I);
- }
-
- String opt_name=ExtractFileName(Application->ExeName);
- if(opt_name.Length()>4)
- opt_name=opt_name.SubString(0,opt_name.Length()-4);
- opt_name=opt_name+".projecthist";
- history_ini.SaveToFile(AnsiString(opt_name).c_str());
-}
-
 /// Запуск отдельного канала
 /// если channel_index == -1 то запускает все каналы
 void TUGEngineControlForm::StartChannel(int channel_index)
 {
- if(!ProjectOpenFlag)
+ if(!RdkApplication.GetProjectOpenFlag())
   return;
 
  UShowProgressBarForm->SetWinTitle(Lang_Starting);
@@ -1717,7 +1734,7 @@ void TUGEngineControlForm::StartChannel(int channel_index)
 /// если channel_index == -1 то останавливает все каналы
 void TUGEngineControlForm::PauseChannel(int channel_index)
 {
- if(!ProjectOpenFlag)
+ if(!RdkApplication.GetProjectOpenFlag())
   return;
 
  UShowProgressBarForm->SetWinTitle(Lang_Stopping);
@@ -1742,7 +1759,7 @@ void TUGEngineControlForm::PauseChannel(int channel_index)
 /// если channel_index == -1 то сбрасывает все каналы
 void TUGEngineControlForm::ResetChannel(int channel_index)
 {
- if(!ProjectOpenFlag)
+ if(!RdkApplication.GetProjectOpenFlag())
   return;
 
  RdkApplication.ResetEngine(channel_index);
@@ -1824,7 +1841,7 @@ void __fastcall TUGEngineControlForm::EngineMonitor1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::Images1Click(TObject *Sender)
 {
- if(!ProjectOpenFlag)
+ if(!RdkApplication.GetProjectOpenFlag())
   return;
 
  UImagesForm->Show();
@@ -1843,7 +1860,7 @@ void __fastcall TUGEngineControlForm::VideoSource1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::Step1Click(TObject *Sender)
 {
- if(!ProjectOpenFlag)
+ if(!RdkApplication.GetProjectOpenFlag())
   return;
 
  RdkApplication.StepEngine(-1);
@@ -1853,7 +1870,7 @@ void __fastcall TUGEngineControlForm::Step1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::ComponentsControl1Click(TObject *Sender)
 {
- if(!ProjectOpenFlag)
+ if(!RdkApplication.GetProjectOpenFlag())
   return;
 
  UComponentsControlForm->Show();
@@ -1862,7 +1879,7 @@ void __fastcall TUGEngineControlForm::ComponentsControl1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::ComponentsLinks1Click(TObject *Sender)
 {
- if(!ProjectOpenFlag)
+ if(!RdkApplication.GetProjectOpenFlag())
   return;
 
  UComponentLinksForm->Show();
@@ -1871,7 +1888,7 @@ void __fastcall TUGEngineControlForm::ComponentsLinks1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::LoadModel1Click(TObject *Sender)
 {
- if(!ProjectOpenFlag)
+ if(!RdkApplication.GetProjectOpenFlag())
   return;
 
  UComponentsControlForm->ComponentsControlFrame->LoadModelFromFile("");
@@ -1880,7 +1897,7 @@ void __fastcall TUGEngineControlForm::LoadModel1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::SaveModel1Click(TObject *Sender)
 {
- if(!ProjectOpenFlag)
+ if(!RdkApplication.GetProjectOpenFlag())
   return;
 
  UComponentsControlForm->ComponentsControlFrame->SaveModelToFile("");
@@ -1936,21 +1953,13 @@ void __fastcall TUGEngineControlForm::Performance1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::LoadProjectItemClick(TObject *Sender)
 {
- if(!LastProjectsList.empty())
-  OpenDialog->InitialDir=ExtractFilePath(LastProjectsList.front().c_str());
+ if(!RdkApplication.GetLastProjectsList().empty())
+  OpenDialog->InitialDir=ExtractFilePath(RdkApplication.GetLastProjectsList().front().c_str());
 
  if(!OpenDialog->Execute())
   return;
 
  OpenProject(OpenDialog->FileName);
- LastProjectsList.push_front(AnsiString(OpenDialog->FileName).c_str());
- while(int(LastProjectsList.size())>LastProjectsListMaxSize && !LastProjectsList.empty())
- {
-  LastProjectsList.pop_back();
- }
-
-
- SaveProjectsHistory();
 }
 //---------------------------------------------------------------------------
 
@@ -1969,44 +1978,34 @@ void __fastcall TUGEngineControlForm::CreateProjectItemClick(TObject *Sender)
  if(UCreateProjectWizardForm->ShowCreateProject(CreateWizardMode) == mrOk)
  {
   CloseProject();
-  PredefinedStructure.resize(1);
-  PredefinedStructure[0]=UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].PredefinedStructure;
-  ProjectAutoSaveFlag=UCreateProjectWizardForm->ProjectAutoSaveFlagCheckBox->Checked;
+  UCreateProjectWizardForm->ProjectConfig.ProjectAutoSaveFlag=UCreateProjectWizardForm->ProjectAutoSaveFlagCheckBox->Checked;
 
-  DefaultTimeStep.resize(1);
-  DefaultTimeStep[0]=StrToInt(UCreateProjectWizardForm->ProjectTimeStepEdit->Text);
+  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].DefaultTimeStep=StrToInt(UCreateProjectWizardForm->ProjectTimeStepEdit->Text);
 
-  GlobalTimeStep=DefaultTimeStep;
+  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].GlobalTimeStep=UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].DefaultTimeStep;
 
-//  NumEnvInputs=StrToInt(UCreateProjectWizardForm->NumInputsLabeledEdit->Text);
-//  NumEnvOutputs=StrToInt(UCreateProjectWizardForm->NumOutputsLabeledEdit->Text);
-//  InputEnvImageWidth=StrToInt(UCreateProjectWizardForm->ImageWidthLabeledEdit->Text);
-//  InputEnvImageHeight=StrToInt(UCreateProjectWizardForm->ImageHeightLabeledEdit->Text);
-//  ReflectionFlag=UCreateProjectWizardForm->UpendInputImageCheckBox->Checked;
+  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].CalculationMode=2;
+  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].InitAfterLoad=1;
+  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].ResetAfterLoad=1;
+  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].DebugMode=false;
 
+  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].MinInterstepsInterval=20;
 
-  CalculationMode.resize(1,2);
-  InitAfterLoadFlag.resize(1,1);
-  ResetAfterLoadFlag.resize(1,1);
-  DebugModeFlag.resize(1,false);
-//  CalculationMode[0]=UCreateProjectWizardForm->ProjectCalculationModeRadioGroup->ItemIndex;
+  UCreateProjectWizardForm->ProjectConfig.ProjectName=AnsiString(UCreateProjectWizardForm->ProjectNameLabeledEdit->Text).c_str();
+  UCreateProjectWizardForm->ProjectConfig.ProjectDescription=AnsiString(UCreateProjectWizardForm->ProjectDescriptionRichEdit->Text).c_str();
 
-  MinInterstepsInterval.resize(1);
-  MinInterstepsInterval[0]=20;
+  std::string project_file_name=AnsiString(UCreateProjectWizardForm->ProjectDirectoryLabeledEdit->Text+"\\project.ini").c_str();
 
-  CreateProject(UCreateProjectWizardForm->ProjectConfig);
+  CreateProject(project_file_name, UCreateProjectWizardForm->ProjectConfig);
 
-  ProjectName=UCreateProjectWizardForm->ProjectNameLabeledEdit->Text;
-  ProjectDescription=UCreateProjectWizardForm->ProjectDescriptionRichEdit->Text;
-
-  RdkEngineControl.SetCalculationTimeSource(0,UCreateProjectWizardForm->CalculationSourceTimeModeRadioGroup->ItemIndex);
+//  RdkEngineControl.SetCalculationTimeSource(0,UCreateProjectWizardForm->CalculationSourceTimeModeRadioGroup->ItemIndex);
  }
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUGEngineControlForm::CreateModelClick(TObject *Sender)
 {
- if(!ProjectOpenFlag)
+ if(!RdkApplication.GetProjectOpenFlag())
   return;
 
  if(UClassesListForm->ShowModal() != mrOk)
@@ -2025,7 +2024,7 @@ void __fastcall TUGEngineControlForm::FavoriteInformation1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::DrawEngine1Click(TObject *Sender)
 {
- if(!ProjectOpenFlag)
+ if(!RdkApplication.GetProjectOpenFlag())
   return;
 
 // UDrawEngineForm->Show();
@@ -2035,23 +2034,10 @@ void __fastcall TUGEngineControlForm::DrawEngine1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::ReloadParameters1Click(TObject *Sender)
 {
- if(!ProjectOpenFlag)
+ if(!RdkApplication.GetProjectOpenFlag())
   return;
 
- String paramsfilename=ProjectXml.ReadString("ParametersFileName","").c_str();
- if(paramsfilename.Length() == 0)
- {
-  paramsfilename="Parameters.xml";
-  ProjectXml.WriteString("ParametersFileName",AnsiString(paramsfilename).c_str());
- }
-
- if(paramsfilename.Length() != 0)
- {
-  if(ExtractFilePath(paramsfilename).Length() == 0)
-   UComponentsControlForm->ComponentsControlFrame->LoadParametersFromFile(ProjectPath+paramsfilename);
-  else
-   UComponentsControlForm->ComponentsControlFrame->LoadParametersFromFile(paramsfilename);
- }
+ RdkApplication.ReloadParameters();
 }
 //---------------------------------------------------------------------------
 
@@ -2059,7 +2045,7 @@ void __fastcall TUGEngineControlForm::ReloadParameters1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::CopyProject1Click(TObject *Sender)
 {
- if(!ProjectOpenFlag)
+ if(!RdkApplication.GetProjectOpenFlag())
   return;
 
 // const SELDIRHELP = 1000;
@@ -2067,28 +2053,29 @@ void __fastcall TUGEngineControlForm::CopyProject1Click(TObject *Sender)
 
  if(SelectDirectory("Select project directory", ExtractFilePath(Application->ExeName), chosenDir,TSelectDirExtOpts() << sdNewFolder << sdNewUI))
  {
-  SaveProject();
-  RDK::CopyDir(AnsiString(ProjectPath).c_str(), AnsiString(chosenDir+"\\").c_str(), "*.*");
+  RdkApplication.CopyProject(AnsiString(chosenDir+"\\").c_str());
  }
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUGEngineControlForm::ProjectOptions1Click(TObject *Sender)
 {
- if(!ProjectOpenFlag)
+ if(!RdkApplication.GetProjectOpenFlag())
   return;
 
- UCreateProjectWizardForm->ProjectDirectoryLabeledEdit->Text=ProjectPath;
- UCreateProjectWizardForm->ProjectNameLabeledEdit->Text=ProjectName;
- UCreateProjectWizardForm->ProjectDescriptionRichEdit->Text=ProjectDescription;
+ int channel_index=GetSelectedEngineIndex();
+ RDK::TProjectConfig config=RdkApplication.GetProjectConfig();
+ UCreateProjectWizardForm->ProjectDirectoryLabeledEdit->Text=RdkApplication.GetProject()->GetProjectPath().c_str();
+ UCreateProjectWizardForm->ProjectNameLabeledEdit->Text=config.ProjectName.c_str();
+ UCreateProjectWizardForm->ProjectDescriptionRichEdit->Text=config.ProjectDescription.c_str();
  UCreateProjectWizardForm->ProjectTypeRadioGroup->ItemIndex=1;
- UCreateProjectWizardForm->ProjectAutoSaveFlagCheckBox->Checked=ProjectAutoSaveFlag;
- UCreateProjectWizardForm->ProjectTimeStepEdit->Text=IntToStr(DefaultTimeStep[GetSelectedEngineIndex()]);
+ UCreateProjectWizardForm->ProjectAutoSaveFlagCheckBox->Checked=config.ProjectAutoSaveFlag;
+ UCreateProjectWizardForm->ProjectTimeStepEdit->Text=IntToStr(config.ChannelsConfig[channel_index].DefaultTimeStep);
 // UCreateProjectWizardForm->ProjectCalculationModeRadioGroup->ItemIndex=CalculationMode[GetSelectedEngineIndex()];
- UCreateProjectWizardForm->CalculationSourceTimeModeRadioGroup->ItemIndex=RdkEngineControl.GetCalculationTimeSource(0);
+ UCreateProjectWizardForm->CalculationSourceTimeModeRadioGroup->ItemIndex=config.CalcSourceTimeMode;
 
- UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].PredefinedStructure=PredefinedStructure[GetSelectedEngineIndex()];
- if(PredefinedStructure[GetSelectedEngineIndex()])
+ config.ChannelsConfig[channel_index].PredefinedStructure=config.ChannelsConfig[channel_index].PredefinedStructure;
+ if(config.ChannelsConfig[channel_index].PredefinedStructure)
  {
 //  UCreateProjectWizardForm->PredefinedModelRadioButton->Checked=true;
 //  UCreateProjectWizardForm->ModelFileNameRadioButton->Checked=false;
@@ -2097,10 +2084,7 @@ void __fastcall TUGEngineControlForm::ProjectOptions1Click(TObject *Sender)
  {
 //  UCreateProjectWizardForm->PredefinedModelRadioButton->Checked=false;
 //  UCreateProjectWizardForm->ModelFileNameRadioButton->Checked=true;
-  if(GetSelectedEngineIndex() == 0)
-   UCreateProjectWizardForm->ProjectModelFileNameLabeledEdit->Text=ProjectXml.ReadString("ModelFileName","").c_str();
-  else
-   UCreateProjectWizardForm->ProjectModelFileNameLabeledEdit->Text=ProjectXml.ReadString(std::string("ModelFileName_")+RDK::sntoa(GetSelectedEngineIndex()),"").c_str();
+  UCreateProjectWizardForm->ProjectModelFileNameLabeledEdit->Text=config.ChannelsConfig[channel_index].ModelFileName.c_str();
  }
 
 //  UCreateProjectWizardForm->NumInputsLabeledEdit->Text=IntToStr(NumEnvInputs);
@@ -2110,20 +2094,17 @@ void __fastcall TUGEngineControlForm::ProjectOptions1Click(TObject *Sender)
 //  UCreateProjectWizardForm->UpendInputImageCheckBox->Checked=ReflectionFlag;
 
  UCreateProjectWizardForm->Caption="Update Project Wizard";
+ UCreateProjectWizardForm->ProjectConfig=config;
  if(UCreateProjectWizardForm->ShowProjectOptions() == mrOk)
  {
-//  CloseProject();
-  PredefinedStructure[GetSelectedEngineIndex()]=UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[0].PredefinedStructure;
-  ProjectAutoSaveFlag=UCreateProjectWizardForm->ProjectAutoSaveFlagCheckBox->Checked;
-  DefaultTimeStep[GetSelectedEngineIndex()]=StrToInt(UCreateProjectWizardForm->ProjectTimeStepEdit->Text);
-  GlobalTimeStep[GetSelectedEngineIndex()]=DefaultTimeStep[GetSelectedEngineIndex()];
-//  CalculationMode[GetSelectedEngineIndex()]=UCreateProjectWizardForm->ProjectCalculationModeRadioGroup->ItemIndex;
+  UCreateProjectWizardForm->ProjectConfig.ProjectAutoSaveFlag=UCreateProjectWizardForm->ProjectAutoSaveFlagCheckBox->Checked;
+  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[channel_index].DefaultTimeStep=StrToInt(UCreateProjectWizardForm->ProjectTimeStepEdit->Text);
+  UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[channel_index].GlobalTimeStep=UCreateProjectWizardForm->ProjectConfig.ChannelsConfig[channel_index].DefaultTimeStep;
 
-//  CreateProject(UCreateProjectWizardForm->ProjectDirectoryLabeledEdit->Text+String("\\Project.ini"),UCreateProjectWizardForm->UClassesListFrame1->GetSelectedName(),UCreateProjectWizardForm->ProjectModelFileNameLabeledEdit->Text);
-
-  ProjectName=UCreateProjectWizardForm->ProjectNameLabeledEdit->Text;
-  ProjectDescription=UCreateProjectWizardForm->ProjectDescriptionRichEdit->Text;
-  RdkEngineControl.SetCalculationTimeSource(0,UCreateProjectWizardForm->CalculationSourceTimeModeRadioGroup->ItemIndex);
+  UCreateProjectWizardForm->ProjectConfig.ProjectName=AnsiString(UCreateProjectWizardForm->ProjectNameLabeledEdit->Text).c_str();
+  UCreateProjectWizardForm->ProjectConfig.ProjectDescription=AnsiString(UCreateProjectWizardForm->ProjectDescriptionRichEdit->Text).c_str();
+  //RdkEngineControl.SetCalculationTimeSource(0,UCreateProjectWizardForm->CalculationSourceTimeModeRadioGroup->ItemIndex);
+  RdkApplication.SetProjectConfig(UCreateProjectWizardForm->ProjectConfig);
   UpdateInterface(true);
  }
 }
@@ -2131,7 +2112,7 @@ void __fastcall TUGEngineControlForm::ProjectOptions1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::WatchWindow1Click(TObject *Sender)
 {
- if(!ProjectOpenFlag)
+ if(!RdkApplication.GetProjectOpenFlag())
   return;
 
  UWatchForm->WindowState=wsNormal;
@@ -2171,7 +2152,6 @@ void __fastcall TUGEngineControlForm::AppRestore(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
 {
- LastProjectsListMaxSize=10;
  FormatSettings.DecimalSeparator = '.';
  Saved8087CW = Default8087CW;
  System::Set8087CW(0x133f);
@@ -2191,10 +2171,10 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  MinimizeToTray=app_ini->ReadBool("General","MinimizeToTray",false);
  StartMinimized=app_ini->ReadBool("General","StartMinimized",false);
  ProgramName=app_ini->ReadString("General","ProgramName","Server");
- LastProjectsListMaxSize=app_ini->ReadInteger("General","LastProjectsListMaxSize",10);
+// LastProjectsListMaxSize=app_ini->ReadInteger("General","LastProjectsListMaxSize",10);
 
- ServerInterfaceAddress=AnsiString(app_ini->ReadString("Server","BindAddress","127.0.0.1")).c_str();
- ServerInterfacePort=app_ini->ReadInteger("Server","BindPort",45045);
+// ServerInterfaceAddress=AnsiString(app_ini->ReadString("Server","BindAddress","127.0.0.1")).c_str();
+// ServerInterfacePort=app_ini->ReadInteger("Server","BindPort",45045);
 
  DisableAdminForm=app_ini->ReadBool("General","DisableAdminForm",false);
 
@@ -2219,9 +2199,7 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  GraphicalEngineInit(0,1,1,320,240,1,ExceptionHandler);
  Engine_LoadFonts();
 
- // Грузим историю проектов
- LoadProjectsHistory();
-
+ RdkApplication.SetApplicationFileName(AnsiString(Application->ExeName).c_str());
  RdkRpcDispatcher.SetDecoderPrototype(&RdkRpcDecoder);
  RdkRpcDispatcher.SetCommonDecoder(&RdkRpcDecoderCommon);
  RdkApplication.SetRpcDispatcher(&RdkRpcDispatcher);
@@ -2242,7 +2220,7 @@ void __fastcall TUGEngineControlForm::HideTimerTimer(TObject *Sender)
 // UEngineMonitorForm->LogTimer->Enabled=true;
 
  if(UServerControlForm)
-  UServerControlForm->SetServerBinding(ServerInterfaceAddress, ServerInterfacePort);
+  UServerControlForm->SetServerBinding(RdkApplication.GetProjectConfig().ServerInterfaceAddress, RdkApplication.GetProjectConfig().ServerInterfacePort);
 
  UDrawEngineFrame1->ComponentsListFrame=UComponentsListFrame1;
  UComponentsListFrame1->DrawEngineFrame=UDrawEngineFrame1;
@@ -2315,7 +2293,7 @@ void __fastcall TUGEngineControlForm::FormCloseQuery(TObject *Sender, bool &CanC
 
 void __fastcall TUGEngineControlForm::Images2Click(TObject *Sender)
 {
- if(!ProjectOpenFlag)
+ if(!RdkApplication.GetProjectOpenFlag())
   return;
 
  AddSpecialFramePage("TUImagesFrame", "Images");
@@ -2324,7 +2302,7 @@ void __fastcall TUGEngineControlForm::Images2Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::Watches1Click(TObject *Sender)
 {
- if(!ProjectOpenFlag)
+ if(!RdkApplication.GetProjectOpenFlag())
   return;
 
  AddSpecialFramePage("TUWatchFrame", "Watches");
@@ -2394,7 +2372,7 @@ void __fastcall TUGEngineControlForm::DrawShow(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::Servercontrol1Click(TObject *Sender)
 {
- if(!ProjectOpenFlag)
+ if(!RdkApplication.GetProjectOpenFlag())
   return;
 
  AddSpecialFormPage("TUServerControlForm");
@@ -2434,7 +2412,7 @@ void __fastcall TUGEngineControlForm::ChannelsStringGridSelectCell(TObject *Send
 
 void __fastcall TUGEngineControlForm::AddNew1Click(TObject *Sender)
 {
- if(!ProjectOpenFlag)
+ if(!RdkApplication.GetProjectOpenFlag())
   return;
 
  SetNumChannels(GetNumEngines()+1);
@@ -2444,7 +2422,7 @@ void __fastcall TUGEngineControlForm::AddNew1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::DeleteLast1Click(TObject *Sender)
 {
- if(!ProjectOpenFlag)
+ if(!RdkApplication.GetProjectOpenFlag())
   return;
 
  SetNumChannels(GetNumEngines()-1);
@@ -2454,7 +2432,7 @@ void __fastcall TUGEngineControlForm::DeleteLast1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::DeleteAll1Click(TObject *Sender)
 {
- if(!ProjectOpenFlag)
+ if(!RdkApplication.GetProjectOpenFlag())
   return;
 
  SetNumChannels(1);
@@ -2542,15 +2520,15 @@ void __fastcall TUGEngineControlForm::FormDestroy(TObject *Sender)
 
  bool need_update=false;
 
- if(app_ini->ReadString("Server","BindAddress","") != ServerInterfaceAddress.c_str())
+ if(app_ini->ReadString("Server","BindAddress","") != RdkApplication.GetProjectConfig().ServerInterfaceAddress.c_str())
  {
-  app_ini->WriteString("Server","BindAddress",ServerInterfaceAddress.c_str());
+  app_ini->WriteString("Server","BindAddress",RdkApplication.GetProjectConfig().ServerInterfaceAddress.c_str());
   need_update=true;
  }
 
- if(app_ini->ReadString("Server","BindPort","") != ServerInterfacePort)
+ if(app_ini->ReadString("Server","BindPort","") != RdkApplication.GetProjectConfig().ServerInterfacePort)
  {
-  app_ini->WriteInteger("Server","BindPort",ServerInterfacePort);
+  app_ini->WriteInteger("Server","BindPort",RdkApplication.GetProjectConfig().ServerInterfacePort);
   need_update=true;
  }
 
@@ -2667,7 +2645,7 @@ void __fastcall TUGEngineControlForm::UComponentsListFrame1NiceStateValRichEditM
 
 void __fastcall TUGEngineControlForm::Insert1Click(TObject *Sender)
 {
- if(!ProjectOpenFlag)
+ if(!RdkApplication.GetProjectOpenFlag())
   return;
 
  AddChannel(ChannelsStringGrid->Row);
@@ -2677,7 +2655,7 @@ void __fastcall TUGEngineControlForm::Insert1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::DeleteSelected1Click(TObject *Sender)
 {
- if(!ProjectOpenFlag)
+ if(!RdkApplication.GetProjectOpenFlag())
   return;
 
  DelChannel(ChannelsStringGrid->Row);
@@ -2717,10 +2695,10 @@ void __fastcall TUGEngineControlForm::ApplicationOptions1Click(TObject *Sender)
   app_ini->WriteBool("General","MinimizeToTray",MinimizeToTray);
   app_ini->WriteBool("General","StartMinimized",StartMinimized);
   app_ini->WriteString("General","ProgramName",ProgramName);
-  app_ini->WriteInteger("General","LastProjectsListMaxSize",LastProjectsListMaxSize);
+  app_ini->WriteInteger("General","LastProjectsListMaxSize",RdkApplication.GetLastProjectsListMaxSize());
 
-  app_ini->WriteString("Server","BindAddress",ServerInterfaceAddress.c_str());
-  app_ini->WriteInteger("Server","BindPort",ServerInterfacePort);
+  app_ini->WriteString("Server","BindAddress",RdkApplication.GetProjectConfig().ServerInterfaceAddress.c_str());
+  app_ini->WriteInteger("Server","BindPort",RdkApplication.GetProjectConfig().ServerInterfacePort);
 
   app_ini->WriteBool("General","DisableAdminForm",DisableAdminForm);
   app_ini->UpdateFile();

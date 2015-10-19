@@ -193,6 +193,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
         ParentFont = False
         PlainText = True
         TabOrder = 3
+        Zoom = 100
         OnChange = ProjectDescriptionRichEditChange
       end
       object ProjectAutoSaveFlagCheckBox: TCheckBox
@@ -678,6 +679,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                   ParentFont = False
                   ReadOnly = True
                   TabOrder = 0
+                  Zoom = 100
                 end
                 object ModelInfoRichEdit: TRichEdit
                   Left = 0
@@ -694,6 +696,7 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                   ParentFont = False
                   PlainText = True
                   TabOrder = 1
+                  Zoom = 100
                 end
               end
               object PredefinedModelTabSheet: TTabSheet
@@ -842,10 +845,6 @@ object UCreateProjectWizardForm: TUCreateProjectWizardForm
                         Margins.Right = 4
                         Margins.Bottom = 4
                         TabVisible = False
-                        ExplicitLeft = 4
-                        ExplicitTop = 24
-                        ExplicitWidth = 499
-                        ExplicitHeight = 515
                         inherited TreeView: TTreeView
                           Margins.Left = 4
                           Margins.Top = 4

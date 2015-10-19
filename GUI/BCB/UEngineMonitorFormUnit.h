@@ -47,6 +47,9 @@ RDK::UEPtr<std::ofstream> EventsLogFile;
 /// Путь до файла логов
 std::string EventsLogFilePath;
 
+/// Флаг сохранения в лог данных
+bool EventsLogFlag;
+
 /// Функция обеспечивает закрытие текущего файла логов и создание нового
 void RecreateEventsLogFile(void);
 };
