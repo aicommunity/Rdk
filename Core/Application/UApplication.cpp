@@ -456,7 +456,7 @@ catch(RDK::UException &exception)
 
  std::list<std::string> last_list=LastProjectsList;
  last_list.push_front(filename);
- while(int(LastProjectsList.size())>LastProjectsListMaxSize
+ while(int(last_list.size())>LastProjectsListMaxSize
   && !LastProjectsList.empty())
  {
   last_list.pop_back();
