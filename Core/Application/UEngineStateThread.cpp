@@ -32,7 +32,7 @@ namespace RDK {
 UEngineStateThread::UEngineStateThread(UEngineControl* engine_control)
 : EngineControl(engine_control)
 {
- ProcessLogMutex=UCreateMutex();
+// ProcessLogMutex=UCreateMutex();
  if(!GetRdkExceptionHandlerMutex())
   GetRdkExceptionHandlerMutex()=UCreateMutex();
 // LogTimer->Enabled=true;
@@ -77,8 +77,8 @@ UEngineStateThread::~UEngineStateThread(void)
   GetRdkExceptionHandlerMutex()=0;
  }
 
- UDestroyMutex(ProcessLogMutex);
- ProcessLogMutex=0;
+// UDestroyMutex(ProcessLogMutex);
+// ProcessLogMutex=0;
 }
 // --------------------------
 
@@ -201,8 +201,6 @@ void UEngineStateThread::Execute(void)
    CalcThreadStates=calc_thread_states;
 
    AdditionExecute();
-
-   CalculationNotInProgress->set();
   }
   catch(UException &ex)
   {
@@ -221,6 +219,7 @@ void UEngineStateThread::Execute(void)
   }
 
   ProcessLog();
+  CalculationNotInProgress->set();
   Sleep(100);
  }
 }
@@ -233,9 +232,11 @@ void UEngineStateThread::AdditionExecute(void)
 /// Функция обеспечивает закрытие текущего файла логов и создание нового
 void UEngineStateThread::RecreateEventsLogFile(void)
 {
- if(!ProcessLogMutex)
+ if(!CalculationNotInProgress)
   return;
- UGenericMutexExclusiveLocker log_locker(ProcessLogMutex);
+ if(!CalculationNotInProgress->wait(100))
+  return;
+ CalculationNotInProgress->reset();
 
  if(EventsLogFile)
  {
@@ -243,17 +244,22 @@ void UEngineStateThread::RecreateEventsLogFile(void)
   EventsLogFile=0;
  }
  EventsLogFlag=true;
+ CalculationNotInProgress->set();
 }
 
 /// Временная переменная в которой хранится весь еще не отображенный в интерфейсе лог
 /// Очищается каждый раз при запросе этой переменной
 std::list<std::string> UEngineStateThread::ReadGuiUnsentLog(void)
 {
- if(!ProcessLogMutex)
+ if(!CalculationNotInProgress)
   return std::list<std::string>();
- UGenericMutexExclusiveLocker log_locker(ProcessLogMutex);
+ if(!CalculationNotInProgress->wait(100))
+  return std::list<std::string>();
+ CalculationNotInProgress->reset();
+
  std::list<std::string> buffer=GuiUnsentLog;
  GuiUnsentLog.clear();
+ CalculationNotInProgress->set();
  return buffer;
 }
 
@@ -285,7 +291,6 @@ void UEngineStateThread::ProcessLog(void)
   GetUnsentLogChannelIndexes().clear();
  }
 
- UGenericMutexExclusiveLocker log_locker(ProcessLogMutex);
  int global_error_level=-1;
  try
  {
