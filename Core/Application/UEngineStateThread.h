@@ -48,6 +48,22 @@ std::vector<std::vector<double> > AvgIterations;
 /// Владелец потока
 UEngineControl* EngineControl;
 
+protected: // Данные логгирования
+/// Файл для сохранения логов
+RDK::UEPtr<std::ofstream> EventsLogFile;
+
+/// Путь до файла логов
+std::string EventsLogFilePath;
+
+/// Флаг сохранения в лог данных
+bool EventsLogFlag;
+
+std::list<std::string> UnsentLog;
+
+/// Временная переменная в которой хранится весь еще не отображенный в интерфейсе лог
+/// Очищается каждый раз при запросе этой переменной
+std::list<std::string> GuiUnsentLog;
+
 public:
 // Событие состояния расчета. Выставлено на время активности расчета. Сбрасывается по стопу
 UGenericEvent* CalcState;
@@ -57,6 +73,8 @@ UGenericEvent* CalcEnable;
 UGenericEvent* CalcStarted;
 
 UGenericEvent* CalculationNotInProgress;
+
+UGenericMutex* ProcessLogMutex;
 
 protected: // Потоки
 /// Потоки расчета
@@ -100,7 +118,25 @@ void UnRegisterCalcThread(int index);
 
 virtual void Execute(void);
 virtual void AdditionExecute(void);
+
+/// Функция обеспечивает закрытие текущего файла логов и создание нового
+void RecreateEventsLogFile(void);
+
+/// Временная переменная в которой хранится весь еще не отображенный в интерфейсе лог
+/// Очищается каждый раз при запросе этой переменной
+std::list<std::string> ReadGuiUnsentLog(void);
+
+// Общедоступные данные логгирования
+static UGenericMutex*& GetRdkExceptionHandlerMutex(void);
+static std::list<int>& GetUnsentLogChannelIndexes(void);
 // --------------------------
+
+// --------------------------
+// Вспомогательные методы
+// --------------------------
+void ProcessLog(void);
+// --------------------------
+
 };
 
 }

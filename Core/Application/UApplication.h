@@ -218,19 +218,9 @@ virtual void ResetEngine(int engine_index);
 virtual void StepEngine(int engine_index);
 // --------------------------
 
-protected:
 // --------------------------
-// Вспомогательные методы управления счетом
+// Методы загрузки сохранения данных в файл
 // --------------------------
-/// Вычисляет заголовок приложения
-void CalcAppCaption(void);
-
-/// Загружает файл в строку
-bool LoadFile(const std::string file_name, std::string &buffer) const;
-
-/// Сохраняет файл из строки
-bool SaveFile(const std::string file_name, const std::string &buffer) const;
-
 bool LoadModelFromFile(int channel_index, const std::string file_name);
 bool SaveModelToFile(int channel_index, const std::string file_name);
 
@@ -254,6 +244,20 @@ void LoadProjectsHistory(void);
 
 /// Сохраняет историю проектов в файл
 void SaveProjectsHistory(void);
+// --------------------------
+
+protected:
+// --------------------------
+// Вспомогательные методы управления счетом
+// --------------------------
+/// Вычисляет заголовок приложения
+void CalcAppCaption(void);
+
+/// Загружает файл в строку
+bool LoadFile(const std::string file_name, std::string &buffer) const;
+
+/// Сохраняет файл из строки
+bool SaveFile(const std::string file_name, const std::string &buffer) const;
 // --------------------------
 };
 

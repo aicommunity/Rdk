@@ -34,7 +34,7 @@ object UEngineMonitorForm: TUEngineMonitorForm
     Font.Style = []
     ParentFont = False
     TabOrder = 0
-    ExplicitWidth = 689
+    ExplicitWidth = 750
     ExplicitHeight = 293
     inherited RichEdit: TRichEdit
       Width = 750
@@ -45,7 +45,7 @@ object UEngineMonitorForm: TUEngineMonitorForm
       Margins.Bottom = 4
       Font.Height = -15
       OnMouseEnter = EngineMonitorFrameRichEditMouseEnter
-      ExplicitWidth = 689
+      ExplicitWidth = 750
       ExplicitHeight = 250
     end
     inherited StatusBar: TStatusBar
@@ -56,7 +56,7 @@ object UEngineMonitorForm: TUEngineMonitorForm
       Margins.Right = 4
       Margins.Bottom = 4
       ExplicitTop = 250
-      ExplicitWidth = 689
+      ExplicitWidth = 750
     end
     inherited Panel1: TPanel
       Top = 269
@@ -67,7 +67,7 @@ object UEngineMonitorForm: TUEngineMonitorForm
       Margins.Right = 4
       Margins.Bottom = 4
       ExplicitTop = 269
-      ExplicitWidth = 689
+      ExplicitWidth = 750
       ExplicitHeight = 24
       inherited ShowDebugMessagesCheckBox: TCheckBox
         Width = 184
@@ -87,7 +87,7 @@ object UEngineMonitorForm: TUEngineMonitorForm
         Margins.Top = 4
         Margins.Right = 4
         Margins.Bottom = 4
-        ExplicitLeft = 690
+        ExplicitLeft = 185
         ExplicitWidth = 180
         ExplicitHeight = 22
       end

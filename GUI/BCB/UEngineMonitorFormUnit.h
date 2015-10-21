@@ -23,10 +23,10 @@ class TUEngineMonitorForm : public TUVisualControllerForm
 __published:	// IDE-managed Components
 	TUEngineMonitorFrame *EngineMonitorFrame;
 	TTimer *LogTimer;
-	void __fastcall FormDestroy(TObject *Sender);
-	void __fastcall FormCreate(TObject *Sender);
 	void __fastcall LogTimerTimer(TObject *Sender);
 	void __fastcall EngineMonitorFrameRichEditMouseEnter(TObject *Sender);
+	void __fastcall FormDestroy(TObject *Sender);
+	void __fastcall FormCreate(TObject *Sender);
 
 private:	// User declarations
 public:		// User declarations
@@ -42,16 +42,16 @@ virtual void ALoadParameters(RDK::USerStorageXML &xml);
 virtual TUEngineMonitorForm* New(TComponent *owner=0);
 
 /// Файл для сохранения логов
-RDK::UEPtr<std::ofstream> EventsLogFile;
+//RDK::UEPtr<std::ofstream> EventsLogFile;
 
 /// Путь до файла логов
-std::string EventsLogFilePath;
+//std::string EventsLogFilePath;
 
 /// Флаг сохранения в лог данных
-bool EventsLogFlag;
+//bool EventsLogFlag;
 
 /// Функция обеспечивает закрытие текущего файла логов и создание нового
-void RecreateEventsLogFile(void);
+//void RecreateEventsLogFile(void);
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TUEngineMonitorForm *UEngineMonitorForm;

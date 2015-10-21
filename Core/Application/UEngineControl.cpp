@@ -119,6 +119,21 @@ bool UEngineControl::SetMinInterstepsInterval(int engine_index, RDK::UTime value
 // --------------------------
 // Методы доступа к данным
 // --------------------------
+/// Возвращает указатель на экземпляр приложения
+UEPtr<UApplication> UEngineControl::GetApplication(void)
+{
+ return Application;
+}
+
+bool UEngineControl::SetApplication(UEPtr<UApplication> value)
+{
+ if(Application == value)
+  return true;
+
+ Application=value;
+ return true;
+}
+
 UEngineControlThread* UEngineControl::GetEngineThread(int i)
 {
  if(i<0 || i>= int(EngineControlThreads.size()))
@@ -211,6 +226,7 @@ void UEngineControl::StartEngine(int engine_index)
  if(engine_index>=GetNumEngines())
   return;
 
+ EngineStateThread->RecreateEventsLogFile();
  switch(ThreadMode)
  {
  case 0:
@@ -304,7 +320,7 @@ void UEngineControl::PauseEngine(int engine_index)
  break;
  }
 
-
+ EngineStateThread->RecreateEventsLogFile();
 }
 
 /// Сбрасывает аналитику выбранного канала, или всех, если engine_index == -1

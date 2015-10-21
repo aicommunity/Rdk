@@ -15,37 +15,21 @@
 #pragma resource "*.dfm"
 TUEngineMonitorForm *UEngineMonitorForm;
 
-HANDLE RdkExceptionHandlerMutex=0;
+//HANDLE RdkExceptionHandlerMutex=0;
 
-std::list<int> UnsentLogChannelIndexes;
+//std::list<int> UnsentLogChannelIndexes;
 
-std::list<std::string> UnsentLog;
+//std::list<std::string> UnsentLog;
 
 /// Экзепляр класса приложения
 extern RDK::UApplication RdkApplication;
 
 //---------------------------------------------------------------------------
-void ExceptionHandler(int channel_index)
-{
- if(!RdkExceptionHandlerMutex)
-  return;
 
- if(WaitForSingleObject(RdkExceptionHandlerMutex,1000) != WAIT_OBJECT_0)
-// if(WaitForSingleObject(RdkExceptionHandlerMutex,1000) == WAIT_TIMEOUT)
-  return;
-// ResetEvent(RdkExceptionHandlerMutex);
-
- if(find(UnsentLogChannelIndexes.begin(), UnsentLogChannelIndexes.end(),channel_index) == UnsentLogChannelIndexes.end())
-  UnsentLogChannelIndexes.push_back(channel_index);
-
- ReleaseMutex(RdkExceptionHandlerMutex);
-// SetEvent(RdkExceptionHandlerMutex);
-}
 //---------------------------------------------------------------------------
 __fastcall TUEngineMonitorForm::TUEngineMonitorForm(TComponent* Owner)
 	: TUVisualControllerForm(Owner)
 {
- EventsLogFlag=true;
 }
 
 // Сохраняет параметры интерфейса в xml
@@ -56,7 +40,7 @@ void TUEngineMonitorForm::ASaveParameters(RDK::USerStorageXML &xml)
 // Загружает параметры интерфейса из xml
 void TUEngineMonitorForm::ALoadParameters(RDK::USerStorageXML &xml)
 {
- EventsLogFlag=true;
+// EventsLogFlag=true;
 }
 
 // Создание копии этого компонента
@@ -65,48 +49,15 @@ TUEngineMonitorForm* TUEngineMonitorForm::New(TComponent *owner)
  return new TUEngineMonitorForm(owner);
 }
 
-/// Функция обеспечивает закрытие текущего файла логов и создание нового
-void TUEngineMonitorForm::RecreateEventsLogFile(void)
-{
- if(EventsLogFile)
- {
-  delete EventsLogFile;
-  EventsLogFile=0;
- }
-}
-
-
-//---------------------------------------------------------------------------
-void __fastcall TUEngineMonitorForm::FormDestroy(TObject *Sender)
-{
- if(RdkExceptionHandlerMutex)
- {
-  CloseHandle(RdkExceptionHandlerMutex);
-  RdkExceptionHandlerMutex=0;
- }
-// EngineMonitorFrame->Timer->Enabled=false;
-}
 //---------------------------------------------------------------------------
 
 
-void __fastcall TUEngineMonitorForm::FormCreate(TObject *Sender)
-{
- if(!RdkExceptionHandlerMutex)
-  RdkExceptionHandlerMutex=CreateMutex(0,FALSE,0);//CreateEvent(0,TRUE,TRUE,0);////
- LogTimer->Enabled=true;
- #ifdef RDK_MUTEX_DEADLOCK_DEBUG
- TUThreadInfo info;
- info.Pid=EngineMonitorFrame->GetEngineMonitorThread()->ThreadID;
- info.Name="EngineMonitorThread";
- GlobalThreadInfoMap[info.Pid]=info;
- #endif
-}
-//---------------------------------------------------------------------------
 
 
 
 void __fastcall TUEngineMonitorForm::LogTimerTimer(TObject *Sender)
 {
+/*
  if(!RdkExceptionHandlerMutex)
   return;
 
@@ -229,7 +180,20 @@ void __fastcall TUEngineMonitorForm::LogTimerTimer(TObject *Sender)
  {
   throw;
  }
+	  */
+ std::list<std::string> log=RdkApplication.GetEngineControl()->GetEngineStateThread()->ReadGuiUnsentLog();
 
+ for(std::list<std::string>::iterator I=log.begin(); I != log.end();++I)
+ {
+  EngineMonitorFrame->RichEdit->Lines->Add(I->c_str());
+ }
+ if(!log.empty())
+ {
+   EngineMonitorFrame->RichEdit->SelStart =
+	EngineMonitorFrame->RichEdit->Perform(EM_LINEINDEX, EngineMonitorFrame->RichEdit->Lines->Count-1, 0);
+   EngineMonitorFrame->RichEdit->Update();
+   EngineMonitorFrame->RichEdit->Repaint();
+ }
 }
 //---------------------------------------------------------------------------
 
@@ -241,5 +205,15 @@ void __fastcall TUEngineMonitorForm::EngineMonitorFrameRichEditMouseEnter(TObjec
 }
 //---------------------------------------------------------------------------
 
+void __fastcall TUEngineMonitorForm::FormDestroy(TObject *Sender)
+{
+ LogTimer->Enabled=false;
+}
+//---------------------------------------------------------------------------
 
+void __fastcall TUEngineMonitorForm::FormCreate(TObject *Sender)
+{
+ LogTimer->Enabled=true;
+}
+//---------------------------------------------------------------------------
 

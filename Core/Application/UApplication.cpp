@@ -195,8 +195,13 @@ bool UApplication::SetEngineControl(const UEPtr<UEngineControl> &value)
   return true;
 
  if(EngineControl)
+ {
   EngineControl->PauseEngine(-1);
+  EngineControl->SetApplication(0);
+ }
+
  EngineControl=value;
+ EngineControl->SetApplication(this);
  return true;
 }
 
@@ -256,6 +261,16 @@ bool UApplication::SetServerControl(const UEPtr<UServerControl> &value)
 /// Инициализирует приложение
 bool UApplication::Init(void)
 {
+ Engine_SetBufObjectsMode(1);
+
+ std::string font_path=extract_file_path(ApplicationFileName);
+ GraphicalEngineInit(0,1,1,320,240,1,ExceptionHandler);
+ Engine_LoadFonts();
+ SetSystemDir(font_path.c_str());
+
+ SetWorkDirectory(font_path);
+ EngineControl->Init();
+
  LoadProjectsHistory();
  return true;
 }
@@ -265,6 +280,8 @@ bool UApplication::UnInit(void)
 {
  if(EngineControl)
   EngineControl->PauseEngine(-1);
+ Sleep(10);
+ CloseProject();
  return true;
 }
 // --------------------------
@@ -772,6 +789,7 @@ bool UApplication::CopyProject(const std::string &new_path)
 
  SaveProject();
  RDK::CopyDir(ProjectPath, new_path, "*.*");
+ return true;
 }
 // --------------------------
 
@@ -848,50 +866,9 @@ void UApplication::StepEngine(int engine_index)
 }
 // --------------------------
 
-
 // --------------------------
-// Вспомогательные методы управления счетом
+// Методы загрузки сохранения данных в файл
 // --------------------------
-/// Вычисляет заголовок приложения
-void UApplication::CalcAppCaption(void)
-{
- AppCaption=std::string("[")+Project->GetConfig().ProjectName+std::string(": ")+ProjectPath+ProjectFileName+"]";
-}
-
-/// Загружает файл в строку
-bool UApplication::LoadFile(const std::string file_name, std::string &buffer) const
-{
- std::ifstream t(file_name.c_str(), ios::in);
-
- if(!t)
- {
-  buffer.clear();
-  return false;
- }
-
- t.seekg(0, std::ios::end);
- buffer.reserve(t.tellg());
- t.seekg(0, std::ios::beg);
-
- buffer.assign((std::istreambuf_iterator<char>(t)),
-			std::istreambuf_iterator<char>());
- return true;
-}
-
-/// Сохраняет файл из строки
-bool UApplication::SaveFile(const std::string file_name, const std::string &buffer) const
-{
- std::ofstream t(file_name.c_str(), ios::trunc);
-
- if(!t)
- {
-  return false;
- }
-
- t<<buffer;
- return true;
-}
-
 bool UApplication::LoadModelFromFile(int channel_index, const std::string file_name)
 {
  if(!IsEngineInit())
@@ -997,12 +974,12 @@ bool UApplication::SaveStatesToFile(int channel_index, const std::string file_na
 
 bool UApplication::LoadDescriptionFromFile(int channel_index, const std::string file_name)
 {
-
+ return false;
 }
 
 bool UApplication::SaveDescriptionToFile(int channel_index, const std::string file_name)
 {
-
+ return false;
 }
 
 bool UApplication::LoadClassesDescriptionsFromFile(const std::string file_name)
@@ -1024,7 +1001,14 @@ bool UApplication::LoadClassesDescriptionsFromFile(const std::string file_name)
 
 bool UApplication::SaveClassesDescriptionsToFile(const std::string file_name)
 {
-
+ const char *p=Storage_SaveClassesDescription();
+ bool res=true;
+ if(p)
+ {
+  res=SaveFile(file_name,p);
+  Engine_FreeBufString(p);
+ }
+ return res;
 }
 
 bool UApplication::LoadCommonClassesDescriptionsFromFile(const std::string file_name)
@@ -1046,7 +1030,15 @@ bool UApplication::LoadCommonClassesDescriptionsFromFile(const std::string file_
 
 bool UApplication::SaveCommonClassesDescriptionsToFile(const std::string file_name)
 {
+ const char *p=Storage_SaveCommonClassesDescription();
+ bool res=true;
+ if(p)
+ {
+  res=SaveFile(file_name,p);
+  Engine_FreeBufString(p);
+ }
 
+ return res;
 }
 
 /// Загружает историю проектов из файла
@@ -1088,6 +1080,50 @@ void UApplication::SaveProjectsHistory(void)
  opt_name=opt_name.substr(0,opt_name.size()-4);
  opt_name=opt_name+".projecthist";
  history_ini.SaveToFile(opt_name);
+}
+// --------------------------
+
+// --------------------------
+// Вспомогательные методы управления счетом
+// --------------------------
+/// Вычисляет заголовок приложения
+void UApplication::CalcAppCaption(void)
+{
+ AppCaption=std::string("[")+Project->GetConfig().ProjectName+std::string(": ")+ProjectPath+ProjectFileName+"]";
+}
+
+/// Загружает файл в строку
+bool UApplication::LoadFile(const std::string file_name, std::string &buffer) const
+{
+ std::ifstream t(file_name.c_str(), ios::in);
+
+ if(!t)
+ {
+  buffer.clear();
+  return false;
+ }
+
+ t.seekg(0, std::ios::end);
+ buffer.reserve(t.tellg());
+ t.seekg(0, std::ios::beg);
+
+ buffer.assign((std::istreambuf_iterator<char>(t)),
+			std::istreambuf_iterator<char>());
+ return true;
+}
+
+/// Сохраняет файл из строки
+bool UApplication::SaveFile(const std::string file_name, const std::string &buffer) const
+{
+ std::ofstream t(file_name.c_str(), ios::trunc);
+
+ if(!t)
+ {
+  return false;
+ }
+
+ t<<buffer;
+ return true;
 }
 // --------------------------
 

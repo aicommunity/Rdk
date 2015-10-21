@@ -1818,7 +1818,6 @@ int TUGEngineControlForm::DelChannel(int index)
 
 void __fastcall TUGEngineControlForm::Start1Click(TObject *Sender)
 {
- UEngineMonitorForm->RecreateEventsLogFile();
  StartChannel(-1);
  RDK::UIVisualControllerStorage::UpdateInterface();
 }
@@ -1828,7 +1827,6 @@ void __fastcall TUGEngineControlForm::Pause1Click(TObject *Sender)
 {
  PauseChannel(-1);
  RDK::UIVisualControllerStorage::UpdateInterface();
- UEngineMonitorForm->RecreateEventsLogFile();
 }
 //---------------------------------------------------------------------------
 
@@ -2158,6 +2156,7 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
 
  TrayIcon->Icon->Assign(Application->Icon);
 
+ RdkApplication.SetApplicationFileName(AnsiString(Application->ExeName).c_str());
  // Грузим настройки приложения
  String opt_name=ExtractFileName(Application->ExeName);
  if(opt_name.Length()>4)
@@ -2180,34 +2179,12 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
 
  TrayIcon->Hint=ProgramName;
 
- Engine_SetBufObjectsMode(1);
-
- // Грузим шрифты
-/* std::vector<std::string> font_names;
- std::string font_path=AnsiString(ExtractFilePath(Application->ExeName)+"Fonts\\").c_str();
- RDK::FindFilesList(font_path, "*.fnt", true, font_names);
-
- RDK::ClearClobalFonts();
- RDK::UBitmapFont font;
- for(size_t i=0;i<font_names.size();i++)
- {
-  RDK::AddGlobalFont(font_path+font_names[i]);
- }
-  */
- std::string font_path=AnsiString(ExtractFilePath(Application->ExeName)).c_str();
- SetSystemDir(font_path.c_str());
- GraphicalEngineInit(0,1,1,320,240,1,ExceptionHandler);
- Engine_LoadFonts();
-
- RdkApplication.SetApplicationFileName(AnsiString(Application->ExeName).c_str());
  RdkRpcDispatcher.SetDecoderPrototype(&RdkRpcDecoder);
  RdkRpcDispatcher.SetCommonDecoder(&RdkRpcDecoderCommon);
  RdkApplication.SetRpcDispatcher(&RdkRpcDispatcher);
  RdkApplication.SetServerControl(&RdkServerControl);
- RdkEngineControl.Init();
  RdkApplication.SetEngineControl(&RdkEngineControl);
  RdkApplication.SetProject(&RdkProject);
- RdkApplication.SetWorkDirectory(font_path);
  RdkApplication.Init();
 }
 //---------------------------------------------------------------------------
@@ -2283,9 +2260,8 @@ void __fastcall TUGEngineControlForm::FormCloseQuery(TObject *Sender, bool &CanC
  if(RdkMainForm == this)
  {
   DisableStopVideoSources=false;
-  Pause1Click(Sender);
-  Sleep(1000);
-  CloseProject();
+  VideoOutputForm->Stop(-1);
+  RdkApplication.UnInit();
   CanClose=true;
  }
 }
@@ -2485,9 +2461,7 @@ void __fastcall TUGEngineControlForm::Hide1Click(TObject *Sender)
 void __fastcall TUGEngineControlForm::Close1Click(TObject *Sender)
 {
  DisableStopVideoSources=false;
- Pause1Click(Sender);
- Sleep(1000);
- CloseProject();
+ RdkApplication.UnInit();
  Application->Terminate();
 }
 //---------------------------------------------------------------------------
@@ -2569,36 +2543,14 @@ void __fastcall TUGEngineControlForm::VideoRegistration1Click(TObject *Sender)
 
 void __fastcall TUGEngineControlForm::SaveCommonDescriptions1Click(TObject *Sender)
 {
- TRichEdit* RichEdit=new TRichEdit(this);
- RichEdit->Visible=false;
- RichEdit->Parent=this;
-
- RichEdit->PlainText=true;
- const char *p=Storage_SaveCommonClassesDescription();
- if(p)
-  RichEdit->Text=p;
- Engine_FreeBufString(p);
- RichEdit->Lines->SaveToFile("CommonClassesDescription.xml");
-
- delete RichEdit;
+ RdkApplication.SaveCommonClassesDescriptionsToFile("CommonClassesDescription.xml");
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TUGEngineControlForm::SaveClassesDescriptions1Click(TObject *Sender)
 
 {
- TRichEdit* RichEdit=new TRichEdit(this);
- RichEdit->Visible=false;
- RichEdit->Parent=this;
-
- RichEdit->PlainText=true;
- const char *p=Storage_SaveClassesDescription();
- if(p)
-  RichEdit->Text=p;
- Engine_FreeBufString(p);
- RichEdit->Lines->SaveToFile("ClassesDescription.xml");
-
- delete RichEdit;
+ RdkApplication.SaveClassesDescriptionsToFile("ClassesDescription.xml");
 }
 //---------------------------------------------------------------------------
 

@@ -26,6 +26,9 @@ RDK::UELockVar<int> ThreadMode;
 RDK::UELockVar<int> UseControllersMode;
 
 protected: // Данные
+/// Указатель на экземпляр приложения
+UEPtr<UApplication> Application;
+
 /// Потоки запуска многоканальной аналитики
 std::vector<UEngineControlThread*> EngineControlThreads;
 
@@ -84,6 +87,10 @@ bool SetMinInterstepsInterval(int engine_index, RDK::UTime value);
 // --------------------------
 // Методы доступа к данным
 // --------------------------
+/// Возвращает указатель на экземпляр приложения
+UEPtr<UApplication> GetApplication(void);
+bool SetApplication(UEPtr<UApplication> value);
+
 /// Доступ к треду мониторинга состояния модулей сервера
 UEngineStateThread* GetEngineStateThread(void);
 
