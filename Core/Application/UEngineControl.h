@@ -2,6 +2,7 @@
 #define UENGINE_CONTROL_H
 
 #include "UEngineControlThread.h"
+#include "UEnginePerformance.h"
 //#include <boost/asio.hpp>
 //#include <boost/chrono.hpp>
 
