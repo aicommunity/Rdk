@@ -141,7 +141,7 @@ virtual UEPtr<UEngineControl> GetEngineControl(void);
 virtual bool SetEngineControl(const UEPtr<UEngineControl> &value);
 
 /// ѕредоставл€ет доступ к проекту
-virtual UEPtr<UProject> GetProject(void);
+//virtual UEPtr<UProject> GetProject(void);
 
 /// ”станавливает новый проект
 /// ќтветственность за освобождение пам€ти контроллера лежит на вызывающей стороне

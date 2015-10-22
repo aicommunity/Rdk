@@ -1115,6 +1115,7 @@ catch(...)
  throw;
 }
 
+ UShowProgressBarForm->Hide();
 /*
  if(!ProjectOpenFlag)
   return;
@@ -2063,7 +2064,7 @@ void __fastcall TUGEngineControlForm::ProjectOptions1Click(TObject *Sender)
 
  int channel_index=GetSelectedEngineIndex();
  RDK::TProjectConfig config=RdkApplication.GetProjectConfig();
- UCreateProjectWizardForm->ProjectDirectoryLabeledEdit->Text=RdkApplication.GetProject()->GetProjectPath().c_str();
+ UCreateProjectWizardForm->ProjectDirectoryLabeledEdit->Text=RdkApplication.GetProjectPath().c_str();
  UCreateProjectWizardForm->ProjectNameLabeledEdit->Text=config.ProjectName.c_str();
  UCreateProjectWizardForm->ProjectDescriptionRichEdit->Text=config.ProjectDescription.c_str();
  UCreateProjectWizardForm->ProjectTypeRadioGroup->ItemIndex=1;

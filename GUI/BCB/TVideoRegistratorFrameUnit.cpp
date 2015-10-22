@@ -536,7 +536,7 @@ int TTVideoRegistratorFrame::InitRecordingSettings(void)
  VideoGrabber->RecordingMethod = RecordingMethodComboBox->ItemIndex;
  if(StoragePathRadioGroup->ItemIndex == 0 || StoragePathLabeledEdit->Text=="")
  {
-  VideoGrabber->StoragePath=RdkApplication.GetProject()->GetProjectPath().c_str();
+  VideoGrabber->StoragePath=RdkApplication.GetProjectPath().c_str();
  }
  else
  {

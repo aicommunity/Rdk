@@ -277,7 +277,7 @@ object UGEngineControlForm: TUGEngineControlForm
                 Margins.Top = 4
                 Margins.Right = 4
                 Margins.Bottom = 4
-                ExplicitTop = 150
+                ExplicitTop = 144
                 ExplicitWidth = 315
                 ExplicitHeight = 45
               end
@@ -651,10 +651,6 @@ object UGEngineControlForm: TUGEngineControlForm
           Margins.Right = 4
           Margins.Bottom = 4
           Caption = 'Logs'
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
         end
         object TabSheet2: TTabSheet
           Margins.Left = 4
@@ -1042,7 +1038,7 @@ object UGEngineControlForm: TUGEngineControlForm
             Margins.Right = 4
             Margins.Bottom = 4
             ExplicitWidth = 566
-            ExplicitHeight = 427
+            ExplicitHeight = 421
             inherited ScrollBox: TScrollBox
               Width = 564
               Height = 419
@@ -1051,7 +1047,7 @@ object UGEngineControlForm: TUGEngineControlForm
               Margins.Right = 4
               Margins.Bottom = 4
               ExplicitWidth = 564
-              ExplicitHeight = 425
+              ExplicitHeight = 419
               inherited Image: TImage
                 Left = -1
                 Top = -3
@@ -1276,7 +1272,6 @@ object UGEngineControlForm: TUGEngineControlForm
     Visible = False
     OnClick = ChannelsStringGridClick
     OnSelectCell = ChannelsStringGridSelectCell
-    ExplicitHeight = 702
   end
   object ToolBar: TToolBar
     Left = 0
@@ -1607,7 +1602,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 360
     Top = 65528
     Bitmap = {
-      494C01011B005C03880310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B005C03940310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

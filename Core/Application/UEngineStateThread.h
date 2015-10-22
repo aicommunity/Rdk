@@ -19,6 +19,11 @@ class UEngineControl;
 class RDK_LIB_TYPE UEngineStateThread
 {
 protected: // Параметры
+/// Путь до папки с логами
+RDK::UELockVar<std::string> LogPath;
+
+/// Флаг разрешения логгирования
+RDK::UELockVar<bool> LogFlag;
 
 protected: // Данные состояния модулей
 /// Состояние тредов расчета
@@ -53,7 +58,7 @@ protected: // Данные логгирования
 RDK::UEPtr<std::ofstream> EventsLogFile;
 
 /// Путь до файла логов
-std::string EventsLogFilePath;
+RDK::UELockVar<std::string> EventsLogFilePath;
 
 /// Флаг сохранения в лог данных
 bool EventsLogFlag;
@@ -97,6 +102,13 @@ virtual ~UEngineStateThread(void);
 // --------------------------
 // Управление параметрами
 // --------------------------
+/// Путь до папки с логами
+std::string GetLogPath(void) const;
+bool SetLogPath(const std::string& value);
+
+/// Флаг разрешения логгирования
+bool GetLogFlag(void) const;
+bool SetLogFlag(bool value);
 // --------------------------
 
 // --------------------------

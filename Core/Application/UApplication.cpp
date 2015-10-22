@@ -91,6 +91,7 @@ bool UApplication::SetProjectPath(const std::string& value)
  if(ProjectPath == value)
   return true;
  ProjectPath=value;
+ EngineControl->GetEngineStateThread()->SetLogPath(ProjectPath);
  CalcAppCaption();
  return true;
 }
@@ -206,10 +207,10 @@ bool UApplication::SetEngineControl(const UEPtr<UEngineControl> &value)
 }
 
 /// ѕредоставл€ет доступ к проекту
-UEPtr<UProject> UApplication::GetProject(void)
+/*UEPtr<UProject> UApplication::GetProject(void)
 {
  return Project;
-}
+} */
 
 /// ”станавливает новый проект
 /// ќтветственность за освобождение пам€ти контроллера лежит на вызывающей стороне
@@ -234,7 +235,11 @@ bool UApplication::SetProjectConfig(const TProjectConfig& value)
 {
  if(!Project)
   return false;
- return Project->SetConfig(value);
+ if(!Project->SetConfig(value))
+  return false;
+
+ EngineControl->GetEngineStateThread()->SetLogFlag(value.EventsLogFlag);
+ return true;
 }
 
 /// ѕредоставл€ет доступ к контроллеру серверной части
@@ -341,11 +346,13 @@ bool UApplication::OpenProject(const std::string &filename)
  Project->ReadFromXml(ProjectXml);
 
  TProjectConfig config=Project->GetConfig();
+ EngineControl->GetEngineStateThread()->SetLogFlag(config.EventsLogFlag);
+ EngineControl->GetEngineStateThread()->SetLogPath(ProjectPath);
 
 // ProjectXml.SelectNodeRoot("Project/MultiGeneral");
 // int engines_mode=ProjectXml.ReadInteger("EnginesMode",0);
  EngineControl->SetThreadMode(config.MultiThreadingMode);
-
+ CalcAppCaption();
  /*
  UShowProgressBarForm->SetBarHeader(1,Lang_LoadingData);
  UShowProgressBarForm->SetBarHeader(2,Lang_Total);

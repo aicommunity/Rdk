@@ -22,9 +22,6 @@
 #pragma resource "*.dfm"
 TUEngineMonitorFrame *UEngineMonitorFrame;
 
-/// Ёкземпл€р класса контроллера расчета
-extern UEngineControlVcl RdkEngineControl;
-
 /// Ёкзепл€р класса приложени€
 extern RDK::UApplication RdkApplication;
 
@@ -212,7 +209,7 @@ RDK::UEngineStateThread* UEngineControlVcl::CreateEngineStateThread(RDK::UEngine
 void UEngineControlVcl::StartEngine(int channel_index)
 {
  RDK::UEngineControl::StartEngine(channel_index);
- switch(RdkEngineControl.GetThreadMode())
+ switch(GetThreadMode())
  {
  case 0:
   TUVisualControllerFrame::CalculationModeFlag=true;
@@ -235,7 +232,7 @@ void UEngineControlVcl::StartEngine(int channel_index)
 void UEngineControlVcl::PauseEngine(int channel_index)
 {
  RDK::UEngineControl::PauseEngine(channel_index);
- switch(RdkEngineControl.GetThreadMode())
+ switch(GetThreadMode())
  {
  case 0:
   TUVisualControllerFrame::CalculationModeFlag=false;
@@ -284,7 +281,7 @@ void TUEngineMonitorFrame::AUpdateInterface(void)
  double rt_calc_duration(0.0);
  double rt_model_duration(0.0), rt_performance(0.0);
 
- if(RdkEngineControl.GetThreadMode() == 1)
+ if(RdkApplication.GetEngineControl()->GetThreadMode() == 1)
  {
   rt_calc_duration=Env_GetRTLastDuration();
   rt_model_duration=Env_GetRTModelCalcTime();
@@ -294,7 +291,7 @@ void TUEngineMonitorFrame::AUpdateInterface(void)
  double model_time=Model_GetDoubleTime();
  double real_time=Model_GetDoubleRealTime();
  double diff=real_time-model_time;
- if(RdkEngineControl.GetThreadMode() == 1)
+ if(RdkApplication.GetEngineControl()->GetThreadMode() == 1)
  {
   string str_model_time=RDK::get_text_time_from_seconds(model_time);
   string str_diff_time=RDK::get_text_time_from_seconds(diff);
@@ -314,7 +311,7 @@ void TUEngineMonitorFrame::AUpdateInterface(void)
   StatusBar->Panels->Items[0]->Width=width;
  }
 
- if(RdkEngineControl.GetThreadMode() == 1)
+ if(RdkApplication.GetEngineControl()->GetThreadMode() == 1)
  {
   StatusBar->Panels->Items[1]->Text=String("RT: ")+FloatToStrF(rt_performance,ffFixed,3,3)+String("=")+FloatToStrF(rt_model_duration,ffFixed,3,3)+String("/")+FloatToStrF(rt_calc_duration,ffFixed,3,3);
  }
@@ -327,7 +324,7 @@ void TUEngineMonitorFrame::AUpdateInterface(void)
  int width=StatusBar->Canvas->TextWidth(StatusBar->Panels->Items[1]->Text)+25;
  StatusBar->Panels->Items[1]->Width=width;
 
- if(RdkEngineControl.GetThreadMode() != 1)
+ if(RdkApplication.GetEngineControl()->GetThreadMode() != 1)
  {
   if(instperf)
   {
@@ -390,19 +387,19 @@ void TUEngineMonitorFrame::ALoadParameters(RDK::USerStorageXML &xml)
 /// ƒоступ к треду мониторинга состо€ни€ модулей сервера
 const TEngineMonitorThread* TUEngineMonitorFrame::GetEngineMonitorThread(void) const
 {
- return dynamic_cast<TEngineMonitorThread*>(RdkEngineControl.GetEngineStateThread());
+ return dynamic_cast<TEngineMonitorThread*>(RdkApplication.GetEngineControl()->GetEngineStateThread());
 }
 
 TEngineThread* TUEngineMonitorFrame::GetThreadChannel(int i)
 {
- return dynamic_cast<TEngineThread*>(RdkEngineControl.GetEngineThread(i));
+ return dynamic_cast<TEngineThread*>(RdkApplication.GetEngineControl()->GetEngineThread(i));
 }
 
 //---------------------------------------------------------------------------
 
 void __fastcall TUEngineMonitorFrame::TimerTimer(TObject *Sender)
 {
- RdkEngineControl.TimerExecute();
+ RdkApplication.GetEngineControl()->TimerExecute();
 }
 //---------------------------------------------------------------------------
 
@@ -454,7 +451,7 @@ void __fastcall TUEngineMonitorFrame::ShowDebugMessagesCheckBoxClick(TObject *Se
   return;
  int size=GetNumEngines();
 
- RDK::TProjectConfig config=RdkApplication.GetProject()->GetConfig();
+ RDK::TProjectConfig config=RdkApplication.GetProjectConfig();
 
  if(config.ChannelsConfig.size() != size)
  {
@@ -466,7 +463,7 @@ void __fastcall TUEngineMonitorFrame::ShowDebugMessagesCheckBoxClick(TObject *Se
   config.ChannelsConfig[i].DebugMode=ShowDebugMessagesCheckBox->Checked;
   MEnv_SetDebugMode(i,config.ChannelsConfig[i].DebugMode);
  }
- RdkApplication.GetProject()->SetConfig(config);
+ RdkApplication.SetProjectConfig(config);
 }
 //---------------------------------------------------------------------------
 

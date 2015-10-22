@@ -241,12 +241,12 @@ void UServerControl::LoadParameters(RDK::USerStorageXML &xml)
 
  int source_num_channels=xml.ReadInteger("NumberOfChannels",GetNumEngines());
 // SetNumEngines(source_num_channels);
- TProjectConfig config=GetApplication()->GetProject()->GetConfig();
- for(size_t i=0;i<GetApplication()->GetProject()->GetConfig().ChannelsConfig.size();i++)
+ TProjectConfig config=GetApplication()->GetProjectConfig();
+ for(size_t i=0;i<GetApplication()->GetProjectConfig().ChannelsConfig.size();i++)
  {
   config.ChannelsConfig[i].ChannelName=xml.ReadString(std::string("ChannelName_")+RDK::sntoa(i),RDK::sntoa(i));
  }
- GetApplication()->GetProject()->SetConfig(config);
+ GetApplication()->SetProjectConfig(config);
 
  SetAutoStartFlag(xml.ReadInteger("AutoStartFlag",true));
  SetServerName(xml.ReadString("ServerName","Server"));

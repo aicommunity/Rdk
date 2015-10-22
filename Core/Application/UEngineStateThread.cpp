@@ -57,6 +57,7 @@ UEngineStateThread::UEngineStateThread(UEngineControl* engine_control)
  NumAvgIterations=200;
  AvgThreshold=5.0;
  EventsLogFlag=true;
+ LogFlag=true;
 }
 
 UEngineStateThread::~UEngineStateThread(void)
@@ -85,6 +86,37 @@ UEngineStateThread::~UEngineStateThread(void)
 // --------------------------
 // Управление параметрами
 // --------------------------
+/// Путь до папки с логами
+std::string UEngineStateThread::GetLogPath(void) const
+{
+ return LogPath;
+}
+
+bool UEngineStateThread::SetLogPath(const std::string& value)
+{
+ if(LogPath == value)
+  return true;
+
+ LogPath=value;
+ RecreateEventsLogFile();
+ return true;
+}
+
+/// Флаг разрешения логгирования
+bool UEngineStateThread::GetLogFlag(void) const
+{
+ return LogFlag;
+}
+
+bool UEngineStateThread::SetLogFlag(bool value)
+{
+ if(LogFlag == value)
+  return true;
+
+ LogFlag=value;
+ RecreateEventsLogFile();
+ return true;
+}
 // --------------------------
 
 // --------------------------
@@ -243,7 +275,21 @@ void UEngineStateThread::RecreateEventsLogFile(void)
   delete EventsLogFile;
   EventsLogFile=0;
  }
- EventsLogFlag=true;
+
+ /// Сохраняем лог в файл если это необходимо
+ if(!LogFlag)
+  EventsLogFlag=false;
+ else
+  EventsLogFlag=true;
+
+ if(LogFlag && !LogPath.Get().empty())
+ {
+  if(CreateNewDirectory((LogPath.Get()+"EventsLog").c_str()) != 0)
+   EventsLogFlag=false;
+
+  EventsLogFilePath=LogPath.Get()+"EventsLog/";
+ }
+
  CalculationNotInProgress->set();
 }
 
@@ -327,38 +373,11 @@ void UEngineStateThread::ProcessLog(void)
 
  try
  {
-  if(global_error_level>=0 && global_error_level<3)
+/*  if(global_error_level>=0 && global_error_level<3)
   {
    EngineControl->GetApplication()->PauseEngine(-1);
-/*   TTabSheet *tab=dynamic_cast<TTabSheet*>(Parent);
-   if(tab)
-   {
-	tab->PageControl->ActivePage=tab;
-   }
-   else
-   {
-	Show();
-	WindowState=wsNormal;
-   } */
   }
-
-  if(EngineControl->GetApplication())
-  {
-   /// Сохраняем лог в файл если это необходимо
-   RDK::TProjectConfig config=EngineControl->GetApplication()->GetProject()->GetConfig();
-
-   if(EventsLogFlag)
-	EventsLogFlag=config.EventsLogFlag;
-
-   if(!UnsentLog.empty() && EventsLogFlag && !EngineControl->GetApplication()->GetProjectPath().empty())
-   {
-	if(CreateNewDirectory((EngineControl->GetApplication()->GetProjectPath()+"EventsLog").c_str()) != 0)
-	 EventsLogFlag=false;
-
-	EventsLogFilePath=EngineControl->GetApplication()->GetProjectPath()+"EventsLog/";
-   }
-  }
-
+*/
   bool is_logged=false;
   while(!UnsentLog.empty())
   {
@@ -371,7 +390,7 @@ void UEngineStateThread::ProcessLog(void)
 	 time_t time_data;
 	 time(&time_data);
 	 file_name=RDK::get_text_time(time_data, '.', '_');
-	 EventsLogFile= new std::ofstream((EventsLogFilePath+file_name+".txt").c_str(),std::ios_base::out | std::ios_base::app);
+	 EventsLogFile= new std::ofstream((EventsLogFilePath.Get()+file_name+".txt").c_str(),std::ios_base::out | std::ios_base::app);
 	}
 
 	if(*EventsLogFile)
@@ -380,7 +399,6 @@ void UEngineStateThread::ProcessLog(void)
 	}
    }
 
-//   EngineMonitorFrame->RichEdit->Lines->Add(UnsentLog.front().c_str());
    UnsentLog.pop_front();
   }
 
@@ -388,12 +406,6 @@ void UEngineStateThread::ProcessLog(void)
   {
    if(EventsLogFlag && EventsLogFile && *EventsLogFile)
 	EventsLogFile->flush();
-  /*
-   EngineMonitorFrame->RichEdit->SelStart =
-	EngineMonitorFrame->RichEdit->Perform(EM_LINEINDEX, EngineMonitorFrame->RichEdit->Lines->Count-1, 0);
-   EngineMonitorFrame->RichEdit->Update();
-   EngineMonitorFrame->RichEdit->Repaint();
-   */
   }
  }
  catch(...)

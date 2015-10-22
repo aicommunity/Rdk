@@ -270,7 +270,7 @@ const char* RDK_CALL URpcDecoderCommon::RemoteCall(const char *request, int &ret
   else
   if(cmd == "GetChannelName")
   {
-   response=GetApplication()->GetProject()->GetConfig().ChannelsConfig[engine_index].ChannelName;
+   response=GetApplication()->GetProjectConfig().ChannelsConfig[engine_index].ChannelName;
    return_value=0;
   }
   else
@@ -279,9 +279,9 @@ const char* RDK_CALL URpcDecoderCommon::RemoteCall(const char *request, int &ret
    std::string ch_name=xml.ReadString("Name","");
    if(!ch_name.empty())
    {
-	TProjectConfig config=GetApplication()->GetProject()->GetConfig();
+	TProjectConfig config=GetApplication()->GetProjectConfig();
 	config.ChannelsConfig[engine_index].ChannelName=ch_name;
-	GetApplication()->GetProject()->SetConfig(config);
+	GetApplication()->SetProjectConfig(config);
    }
    return_value=0;
   }

@@ -206,13 +206,13 @@ bool UServerControlVcl::ASetNumEngines(int old_num)
 #endif
 
 // ChannelNames.resize(value);
- TProjectConfig config=RdkApplication.GetProject()->GetConfig();
+ TProjectConfig config=RdkApplication.GetProjectConfig();
  for(size_t i=0;i<config.ChannelsConfig.size();i++)
  {
   if(config.ChannelsConfig[i].ChannelName.empty())
    config.ChannelsConfig[i].ChannelName=RDK::sntoa(i);
  }
- RdkApplication.GetProject()->SetConfig(config);
+ RdkApplication.SetProjectConfig(config);
 
  //UEngineMonitorForm->EngineMonitorFrame->SetNumChannels(value);
 
@@ -639,7 +639,7 @@ const std::vector<RDK::ULongTime> &model_avg=RdkApplication.GetServerControl()->
  }
 
 
- ChannelNamesStringGrid->RowCount=RdkApplication.GetProject()->GetConfig().ChannelsConfig.size()+1;
+ ChannelNamesStringGrid->RowCount=RdkApplication.GetProjectConfig().ChannelsConfig.size()+1;
  if(ChannelNamesStringGrid->RowCount>1)
   ChannelNamesStringGrid->FixedRows=1;
 
@@ -647,10 +647,10 @@ const std::vector<RDK::ULongTime> &model_avg=RdkApplication.GetServerControl()->
  ChannelNamesStringGrid->Cells[1][0]="Channel Name";
  ChannelNamesStringGrid->ColWidths[0]=25;
  ChannelNamesStringGrid->ColWidths[1]=ChannelNamesStringGrid->Width-ChannelNamesStringGrid->ColWidths[0]-25;
- for(int i=0;i<int(RdkApplication.GetProject()->GetConfig().ChannelsConfig.size());i++)
+ for(int i=0;i<int(RdkApplication.GetProjectConfig().ChannelsConfig.size());i++)
  {
   ChannelNamesStringGrid->Cells[0][i+1]=StrToInt(i);
-  ChannelNamesStringGrid->Cells[1][i+1]=RdkApplication.GetProject()->GetConfig().ChannelsConfig[i].ChannelName.c_str();
+  ChannelNamesStringGrid->Cells[1][i+1]=RdkApplication.GetProjectConfig().ChannelsConfig[i].ChannelName.c_str();
  }
 
  NumberOfChannelsLabeledEdit->Text=IntToStr(GetNumEngines());
@@ -686,9 +686,9 @@ void TUServerControlForm::ASaveParameters(RDK::USerStorageXML &xml)
  xml.WriteString("MetadataComponentName",RdkApplication.GetServerControl()->GetMetaComponentName());
  xml.WriteString("MetadataComponentStateName",RdkApplication.GetServerControl()->GetMetaComponentStateName());
                       */
- for(size_t i=0;i<RdkApplication.GetProject()->GetConfig().ChannelsConfig.size();i++)
+ for(size_t i=0;i<RdkApplication.GetProjectConfig().ChannelsConfig.size();i++)
  {
-  xml.WriteString(std::string("ChannelName_")+RDK::sntoa(i),RdkApplication.GetProject()->GetConfig().ChannelsConfig[i].ChannelName);
+  xml.WriteString(std::string("ChannelName_")+RDK::sntoa(i),RdkApplication.GetProjectConfig().ChannelsConfig[i].ChannelName);
  }
 }
 
@@ -703,12 +703,12 @@ void TUServerControlForm::ALoadParameters(RDK::USerStorageXML &xml)
 
  int source_num_channels=xml.ReadInteger("NumberOfChannels",RdkApplication.GetNumEngines());
  RdkApplication.SetNumEngines(source_num_channels);
- TProjectConfig config=RdkApplication.GetProject()->GetConfig();
- for(size_t i=0;i<RdkApplication.GetProject()->GetConfig().ChannelsConfig.size();i++)
+ TProjectConfig config=RdkApplication.GetProjectConfig();
+ for(size_t i=0;i<RdkApplication.GetProjectConfig().ChannelsConfig.size();i++)
  {
   config.ChannelsConfig[i].ChannelName=xml.ReadString(std::string("ChannelName_")+RDK::sntoa(i),RDK::sntoa(i));
  }
- RdkApplication.GetProject()->SetConfig(config);
+ RdkApplication.SetProjectConfig(config);
 
  RdkApplication.GetServerControl()->SetAutoStartFlag(xml.ReadInteger("AutoStartFlag",true));
  RdkApplication.GetServerControl()->SetServerName(xml.ReadString("ServerName","Server"));
@@ -918,9 +918,9 @@ void __fastcall TUServerControlForm::ChannelNamesStringGridKeyDown(TObject *Send
 
  if(Key == VK_RETURN)
  {
-  TProjectConfig config=RdkApplication.GetProject()->GetConfig();
+  TProjectConfig config=RdkApplication.GetProjectConfig();
   config.ChannelsConfig[ChannelNamesStringGrid->Row-1].ChannelName=AnsiString(ChannelNamesStringGrid->Cells[1][ChannelNamesStringGrid->Row]).c_str();
-  RdkApplication.GetProject()->SetConfig(config);
+  RdkApplication.SetProjectConfig(config);
   UpdateInterface(true);
  }
 }
@@ -931,7 +931,7 @@ void __fastcall TUServerControlForm::PageControlChange(TObject *Sender)
  ServerControlPortLabeledEdit->Text=IdTCPServer->Bindings->Items[0]->Port;//TcpServer->LocalPort;
  NumberOfChannelsLabeledEdit->Text=IntToStr(RdkApplication.GetNumEngines());
 
- TProjectConfig config=RdkApplication.GetProject()->GetConfig();
+ TProjectConfig config=RdkApplication.GetProjectConfig();
  ChannelNamesStringGrid->RowCount=config.ChannelsConfig.size()+1;
  ChannelNamesStringGrid->ColWidths[0]=20;
  ChannelNamesStringGrid->ColWidths[1]=ChannelNamesStringGrid->Width-ChannelNamesStringGrid->ColWidths[0]-20;
