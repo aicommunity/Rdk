@@ -732,14 +732,10 @@ object UGEngineControlForm: TUGEngineControlForm
                 ExplicitWidth = 446
                 ExplicitHeight = 252
                 inherited GroupBox3: TGroupBox
-                  ExplicitLeft = 0
-                  ExplicitWidth = 446
-                  ExplicitHeight = 252
                   inherited InterfacesStringGrid: TStringGrid
                     Top = 20
                     Height = 230
                     ExplicitTop = 20
-                    ExplicitWidth = 442
                     ExplicitHeight = 230
                   end
                 end
@@ -1606,7 +1602,7 @@ object UGEngineControlForm: TUGEngineControlForm
     Left = 360
     Top = 65528
     Bitmap = {
-      494C01011B005C03980310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B005C039C0310001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

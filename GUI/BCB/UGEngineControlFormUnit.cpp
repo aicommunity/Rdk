@@ -2262,7 +2262,9 @@ void __fastcall TUGEngineControlForm::FormCloseQuery(TObject *Sender, bool &CanC
  if(RdkMainForm == this)
  {
   DisableStopVideoSources=false;
+#ifdef RDK_VIDEO
   VideoOutputForm->Stop(-1);
+#endif
   RdkApplication.UnInit();
   CanClose=true;
  }
