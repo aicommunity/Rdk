@@ -148,15 +148,15 @@
             <DependentOn>..\..\..\Core\Application\UBroadcasterInterface.h</DependentOn>
             <BuildOrder>111</BuildOrder>
         </CppCompile>
+        <CppCompile Include="..\..\..\Core\Application\UChannelProfiler.cpp">
+            <DependentOn>..\..\..\Core\Application\UChannelProfiler.h</DependentOn>
+            <BuildOrder>116</BuildOrder>
+        </CppCompile>
         <CppCompile Include="..\..\..\Core\Application\UEngineControl.cpp">
             <BuildOrder>108</BuildOrder>
         </CppCompile>
         <CppCompile Include="..\..\..\Core\Application\UEngineControlThread.cpp">
             <BuildOrder>109</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="..\..\..\Core\Application\UEnginePerformance.cpp">
-            <DependentOn>..\..\..\Core\Application\UEnginePerformance.h</DependentOn>
-            <BuildOrder>116</BuildOrder>
         </CppCompile>
         <CppCompile Include="..\..\..\Core\Application\UEngineStateThread.cpp">
             <BuildOrder>110</BuildOrder>
@@ -963,13 +963,13 @@
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
-                <ProjectRoot Platform="iOSDevice32" Name="$(PROJECTNAME).app"/>
+                <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="Android" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="Win32" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="iOSDevice64" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="OSX32" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
-                <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"/>
+                <ProjectRoot Platform="iOSDevice32" Name="$(PROJECTNAME).app"/>
             </Deployment>
         </BorlandProject>
         <ProjectFileVersion>12</ProjectFileVersion>

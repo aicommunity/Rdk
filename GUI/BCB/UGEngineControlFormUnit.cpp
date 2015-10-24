@@ -252,6 +252,7 @@ void TUGEngineControlForm::AUpdateInterface(void)
 
  for(int i=0;i<StatusBar->Panels->Count;i++)
  {
+  UEngineMonitorForm->EngineMonitorFrame->UpdateInterface(true);
   StatusBar->Panels->Items[i]->Text=UEngineMonitorForm->EngineMonitorFrame->StatusBar->Panels->Items[i]->Text;
   StatusBar->Panels->Items[i]->Width=UEngineMonitorForm->EngineMonitorFrame->StatusBar->Panels->Items[i]->Width;
  }

@@ -1294,6 +1294,13 @@ const char* RDK_CALL Model_GetComponentLongName(const char* stringid, const char
  return DllManager.GetEngineLock()->Model_GetComponentLongName(stringid,owner_level_stringid);
 }
 
+const char* RDK_CALL MModel_GetComponentLongName(int engine_index, const char* stringid, const char* owner_level_stringid)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return 0;
+
+ return DllManager.GetEngineLock(engine_index)->Model_GetComponentLongName(stringid,owner_level_stringid);
+}
 
 // ¬озвращает длинный id компонента по заданному 'stringid'
 // если stringid - пуста€ строка, то возвращает им€ модели

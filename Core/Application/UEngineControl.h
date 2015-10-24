@@ -2,7 +2,6 @@
 #define UENGINE_CONTROL_H
 
 #include "UEngineControlThread.h"
-#include "UEnginePerformance.h"
 //#include <boost/asio.hpp>
 //#include <boost/chrono.hpp>
 
@@ -11,6 +10,7 @@ namespace RDK {
 class UEngineStateThread;
 class UEngineControlThread;
 class UBroadcasterInterface;
+class UChannelProfiler;
 
 class RDK_LIB_TYPE UEngineControl: public UAppController
 {
@@ -97,6 +97,9 @@ UEngineStateThread* GetEngineStateThread(void);
 
 /// Возвращает заданный поток расчета
 UEngineControlThread* GetEngineThread(int i);
+
+/// Возвращает данные о производительности канала
+UChannelProfiler* GetChannelProfiler(int i);
 // --------------------------
 
 // --------------------------

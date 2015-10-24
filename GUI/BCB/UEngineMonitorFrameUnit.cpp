@@ -273,71 +273,39 @@ void TUEngineMonitorFrame::AUpdateInterface(void)
   return;
  }
 
- double fps=0;
- double instperf=Model_GetInstantPerformance("");
- if(fabs(instperf)>0.0001)
-  fps=Model_GetTimeStep("")/instperf;
-
- double rt_calc_duration(0.0);
- double rt_model_duration(0.0), rt_performance(0.0);
+ int sel_index=GetSelectedEngineIndex();
+ RDK::UChannelProfiler * profiler=RdkApplication.GetEngineControl()->GetChannelProfiler(sel_index);
+ if(!profiler)
+  return;
 
  if(RdkApplication.GetEngineControl()->GetThreadMode() == 1)
  {
-  rt_calc_duration=Env_GetRTLastDuration();
-  rt_model_duration=Env_GetRTModelCalcTime();
-  rt_performance=Env_CalcRTPerformance();
- }
-
- double model_time=Model_GetDoubleTime();
- double real_time=Model_GetDoubleRealTime();
- double diff=real_time-model_time;
- if(RdkApplication.GetEngineControl()->GetThreadMode() == 1)
- {
-  string str_model_time=RDK::get_text_time_from_seconds(model_time);
-  string str_diff_time=RDK::get_text_time_from_seconds(diff);
-  StatusBar->Panels->Items[0]->Text=String("Time: ")+str_model_time.c_str();
-  if(diff>0)
-   StatusBar->Panels->Items[0]->Text=StatusBar->Panels->Items[0]->Text+String(" (")+String(str_diff_time.c_str())+String(")");
+  StatusBar->Panels->Items[0]->Text=profiler->CalcRtTimeText().c_str();
   int width=StatusBar->Canvas->TextWidth(StatusBar->Panels->Items[0]->Text)+25;
   if(width<100)
    width=100;
   StatusBar->Panels->Items[0]->Width=width;
+
+  StatusBar->Panels->Items[1]->Text=profiler->CalcRtPerfomanceText().c_str();
  }
  else
  {
-  string str_real_time=RDK::get_text_time_from_seconds(real_time);
-  StatusBar->Panels->Items[0]->Text=String("Time: ")+str_real_time.c_str();
+  StatusBar->Panels->Items[0]->Text=profiler->CalcNormalTimeText().c_str();
   int width=StatusBar->Canvas->TextWidth(StatusBar->Panels->Items[0]->Text)+25;
   StatusBar->Panels->Items[0]->Width=width;
+
+  StatusBar->Panels->Items[1]->Text=profiler->CalcNormalStepDurationText().c_str();
  }
 
- if(RdkApplication.GetEngineControl()->GetThreadMode() == 1)
- {
-  StatusBar->Panels->Items[1]->Text=String("RT: ")+FloatToStrF(rt_performance,ffFixed,3,3)+String("=")+FloatToStrF(rt_model_duration,ffFixed,3,3)+String("/")+FloatToStrF(rt_calc_duration,ffFixed,3,3);
- }
- else
- {
-  double full_step=Model_GetFullStepDuration("")/1000.0;
-  double interstep=Model_GetInterstepsInterval("")/1000.0;
-  StatusBar->Panels->Items[1]->Text=String("Step: ")+FloatToStrF(full_step,ffFixed,3,3)+"/"+FloatToStrF(full_step+interstep,ffFixed,3,3)+"s";
- }
  int width=StatusBar->Canvas->TextWidth(StatusBar->Panels->Items[1]->Text)+25;
  StatusBar->Panels->Items[1]->Width=width;
 
+
  if(RdkApplication.GetEngineControl()->GetThreadMode() != 1)
  {
-  if(instperf)
-  {
-   StatusBar->Panels->Items[2]->Text=String("Perf: ")+
-				FloatToStrF(instperf,ffFixed,3,1)+String(" (")+
-				FloatToStrF(fps,ffFixed,3,1)+String(" Fps)");
+   StatusBar->Panels->Items[2]->Text=profiler->CalcNormalFpsText().c_str();
    width=StatusBar->Canvas->TextWidth(StatusBar->Panels->Items[2]->Text)+25;
    StatusBar->Panels->Items[2]->Width=width;
-  }
-  else
-  {
-   StatusBar->Panels->Items[2]->Text="";
-  }
  }
  else
  {

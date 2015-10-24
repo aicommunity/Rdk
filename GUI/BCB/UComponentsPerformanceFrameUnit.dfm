@@ -47,9 +47,9 @@ inherited UComponentsPerformanceFrame: TUComponentsPerformanceFrame
         BottomAxis.Axis.Color = 4210752
         BottomAxis.Grid.Color = 11119017
         BottomAxis.LabelsAlternate = True
+        BottomAxis.LabelsBehind = True
         BottomAxis.LabelsMultiLine = True
         BottomAxis.LabelsOnAxis = False
-        BottomAxis.LabelsBehind = True
         BottomAxis.RoundFirstLabel = False
         BottomAxis.TicksInner.Color = 11119017
         BottomAxis.Title.Font.Name = 'Verdana'
@@ -81,6 +81,7 @@ inherited UComponentsPerformanceFrame: TUComponentsPerformanceFrame
         Align = alClient
         PopupMenu = PopupMenu
         TabOrder = 0
+        DefaultCanvas = 'TGDIPlusCanvas'
         PrintMargins = (
           15
           19
@@ -88,15 +89,11 @@ inherited UComponentsPerformanceFrame: TUComponentsPerformanceFrame
           19)
         ColorPaletteIndex = 13
         object Series1: TBarSeries
-          Marks.Arrow.Visible = True
-          Marks.Callout.Brush.Color = clBlack
-          Marks.Callout.Arrow.Visible = True
           Marks.Emboss.Color = 8618883
           Marks.Shadow.Color = 8618883
           Marks.Shadow.Visible = False
           Marks.Style = smsValue
           Marks.TextAlign = taLeftJustify
-          Marks.Visible = True
           Title = 'Time, ms'
           Emboss.Color = 8750469
           MultiBar = mbNone
@@ -110,13 +107,9 @@ inherited UComponentsPerformanceFrame: TUComponentsPerformanceFrame
             0000A0794000000000000074400000000000807140}
         end
         object Series2: TBarSeries
-          Marks.Arrow.Visible = True
-          Marks.Callout.Brush.Color = clBlack
-          Marks.Callout.Arrow.Visible = True
           Marks.Emboss.Color = 8487297
           Marks.Shadow.Color = 8553090
           Marks.Style = smsValue
-          Marks.Visible = True
           Title = 'Percent'
           Emboss.Color = 8553090
           MultiBar = mbNone
@@ -160,10 +153,6 @@ inherited UComponentsPerformanceFrame: TUComponentsPerformanceFrame
     object TabSheet2: TTabSheet
       Caption = 'Interface Details'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 298
       object GroupBox3: TGroupBox
         Left = 0
         Top = 0
@@ -172,9 +161,6 @@ inherited UComponentsPerformanceFrame: TUComponentsPerformanceFrame
         Align = alClient
         Caption = ' Interfaces '
         TabOrder = 0
-        ExplicitLeft = 219
-        ExplicitWidth = 227
-        ExplicitHeight = 298
         object InterfacesStringGrid: TStringGrid
           Left = 2
           Top = 15
@@ -184,8 +170,6 @@ inherited UComponentsPerformanceFrame: TUComponentsPerformanceFrame
           DefaultRowHeight = 20
           Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRowSelect]
           TabOrder = 0
-          ExplicitWidth = 223
-          ExplicitHeight = 281
         end
       end
     end
@@ -197,8 +181,6 @@ inherited UComponentsPerformanceFrame: TUComponentsPerformanceFrame
     Height = 46
     Align = alBottom
     TabOrder = 1
-    ExplicitTop = 252
-    ExplicitWidth = 446
     object ShowModeRadioGroup: TRadioGroup
       Left = 1
       Top = 1
@@ -222,7 +204,6 @@ inherited UComponentsPerformanceFrame: TUComponentsPerformanceFrame
       Align = alClient
       Caption = ' Average interval (counts) '
       TabOrder = 1
-      ExplicitWidth = 308
       object AverageIntervalSpinEdit: TSpinEdit
         Left = 6
         Top = 16

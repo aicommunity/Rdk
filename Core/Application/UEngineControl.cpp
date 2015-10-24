@@ -147,6 +147,15 @@ UEngineStateThread* UEngineControl::GetEngineStateThread(void)
 {
  return EngineStateThread;
 }
+
+/// Возвращает данные о производительности канала
+UChannelProfiler* UEngineControl::GetChannelProfiler(int i)
+{
+ if(i<0 || i>= int(EngineControlThreads.size()))
+  return 0;
+
+ return EngineControlThreads[i]->GetProfiler();
+}
 // --------------------------
 
 // --------------------------
@@ -401,6 +410,18 @@ void UEngineControl::StepEngine(int engine_index)
  RDK::UIVisualControllerStorage::AfterCalculate();
  RDK::UIVisualControllerStorage::ResetCalculationStepUpdatedFlag();
  RDK::UIVisualControllerStorage::UpdateInterface();
+
+ if(engine_index <0)
+ {
+  for(int i=0;i<GetNumEngines();i++)
+  {
+   EngineControlThreads[i]->GetProfiler()->Calculate();
+  }
+ }
+ else
+ {
+  EngineControlThreads[engine_index]->GetProfiler()->Calculate();
+ }
 }
 
 
@@ -422,6 +443,11 @@ void UEngineControl::TimerExecute(void)
   RDK::UIVisualControllerStorage::AfterCalculate();
   RDK::UIVisualControllerStorage::ResetCalculationStepUpdatedFlag();
   RDK::UIVisualControllerStorage::UpdateInterface();
+
+  for(int i=0;i<GetNumEngines();i++)
+  {
+   EngineControlThreads[i]->GetProfiler()->Calculate();
+  }
  }
  break;
  }
@@ -522,9 +548,19 @@ void UEngineControl::SaveParameters(RDK::USerStorageXML &xml)
   xml.WriteInteger("CalculateMode",EngineControlThreads[i]->GetCalculateMode());
   xml.WriteInteger("MinInterstepsInterval",EngineControlThreads[i]->GetMinInterstepsInterval());
   xml.WriteInteger("CalculationTimeSource",EngineControlThreads[i]->GetCalculationTimeSource());
+
+  // Данные профилирования
+  if(!xml.SelectNode("Profiling"))
+   xml.AddNode("Profiling");
+  EngineControlThreads[i]->GetProfiler()->SaveParameters(xml);
+  xml.SelectUp();
+  // Конец данных профилирования
+
   xml.SelectUp();
  }
  xml.SelectUp();
+
+
 }
 
 // Загружает параметры интерфейса из xml
@@ -542,6 +578,13 @@ void UEngineControl::LoadParameters(RDK::USerStorageXML &xml)
 	EngineControlThreads[i]->SetCalculateMode(xml.ReadInteger("CalculateMode",EngineControlThreads[i]->GetCalculateMode()));
 	EngineControlThreads[i]->SetMinInterstepsInterval(xml.ReadInteger("MinInterstepsInterval",EngineControlThreads[i]->GetMinInterstepsInterval()));
 	EngineControlThreads[i]->SetCalculationTimeSource(xml.ReadInteger("CalculationTimeSource",EngineControlThreads[i]->GetCalculationTimeSource()));
+
+	if(xml.SelectNode("Profiling"))
+	{
+	 EngineControlThreads[i]->GetProfiler()->LoadParameters(xml);
+	 xml.SelectUp();
+	}
+
     xml.SelectUp();
    }
   }

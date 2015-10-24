@@ -60,18 +60,18 @@ public:		// User declarations
 	__fastcall ~TUComponentsPerformanceFrame(void);
 
 // Массив длинных имен наблюдаемых компонент
-std::vector<std::string> ComponentNames;
+//std::vector<std::string> ComponentNames;
 
 // Результаты измерений
-std::vector<std::vector<long long> > ComponentData;
+//std::vector<std::vector<long long> > ComponentData;
 
 // Результаты измерений производительности интерфейса
-std::vector<std::vector<long long> > InterfaceData;
+//std::vector<std::vector<long long> > InterfaceData;
 // Указатель на форму выбора компоненты-источника
 TUComponentsListForm *MyComponentsListForm;
 
 // Число итераций усреднения
-int AverageIterations;
+//int AverageIterations;
 
 // --------------------------
 // Методы управления фреймом
@@ -93,7 +93,7 @@ void ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 
 // Возвращает число наблюдаемых компонент
-std::size_t GetNumComponents(void) const;
+//std::size_t GetNumComponents(void) const;
 
 // Добавляет компонент для мониторинга
 void AddComponent(const std::string &componentname);

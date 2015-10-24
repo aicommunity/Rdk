@@ -22,6 +22,8 @@
 namespace RDK {
 
 class UEngineControl;
+class UChannelProfiler;
+
 
 class RDK_LIB_TYPE UEngineControlThread
 {
@@ -58,6 +60,9 @@ UELockVar<double> RealLastCalculationTime;
 
 /// Класс-владелец потоков
 UEngineControl* EngineControl;
+
+/// Экземпляр обработчика данных производительности
+UChannelProfiler* Profiler;
 
 protected: // События
 // Событие состояния расчета. Выставлено на время активности расчета. Сбрасывается по стопу
@@ -119,6 +124,9 @@ double GetRealLastCalculationTime(void) const;
 
 /// Возвращает класс-владелец потока
 virtual UEngineControl* GetEngineControl(void);
+
+/// Экземпляр обработчика данных производительности
+UChannelProfiler* GetProfiler(void);
 // --------------------------
 
 // -------------------------

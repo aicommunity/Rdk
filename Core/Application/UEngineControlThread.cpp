@@ -2,6 +2,7 @@
 #define UENGINE_CONTROL_THREAD_CPP
 
 #include "UEngineControlThread.h"
+
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
 #ifdef WIN32
 #include <windows.h>
@@ -30,6 +31,9 @@ UEngineControlThread::UEngineControlThread(UEngineControl* engine_control, int e
  CalculateMode=0;
  MinInterstepsInterval=0;
  Thread=boost::thread(boost::bind(&UEngineControlThread::Execute, boost::ref(*this)));
+ Profiler=new UChannelProfiler;
+ Profiler->SetChannelIndex(engine_index);
+ Profiler->AddAllGui();
 }
 
 UEngineControlThread::~UEngineControlThread(void)
@@ -41,6 +45,12 @@ UEngineControlThread::~UEngineControlThread(void)
  UDestroyEvent(CalcEnable);
  UDestroyEvent(CalcStarted);
  UDestroyEvent(CalculationNotInProgress);
+
+ if(Profiler)
+ {
+  delete Profiler;
+  Profiler=0;
+ }
 }
 // --------------------------
 
@@ -139,6 +149,12 @@ double UEngineControlThread::GetRealLastCalculationTime(void) const
 UEngineControl* UEngineControlThread::GetEngineControl(void)
 {
  return EngineControl;
+}
+
+/// Экземпляр обработчика данных производительности
+UChannelProfiler* UEngineControlThread::GetProfiler(void)
+{
+ return Profiler;
 }
 // --------------------------
 

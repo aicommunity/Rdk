@@ -16,6 +16,7 @@
 #include "UEngineStateThread.h"
 #include "UBroadcasterInterface.h"
 #include "UServerControl.h"
+#include "UChannelProfiler.h"
 
 #ifdef __BORLANDC__
 #include "Bcb/Application.bcb.h"

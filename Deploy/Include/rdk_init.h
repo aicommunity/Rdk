@@ -582,6 +582,7 @@ RDK_LIB_TYPE const char* RDK_CALL Model_GetComponentName(const char* stringid);
 // Имя формируется до уровня компонента owner_level_stringid
 // Если owner_level_stringid не задан, то имя формируется до уровня текущего компонента
 RDK_LIB_TYPE const char* RDK_CALL Model_GetComponentLongName(const char* stringid, const char* owner_level_stringid=0);
+RDK_LIB_TYPE const char* RDK_CALL MModel_GetComponentLongName(int engine_index, const char* stringid, const char* owner_level_stringid=0);
 
 // Возвращает длинный id компонента по заданному 'stringid'
 // если stringid - пустая строка, то возвращает имя модели
