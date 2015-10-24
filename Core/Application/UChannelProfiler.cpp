@@ -425,8 +425,8 @@ void UChannelProfiler::CalcProfilerOutputData(void)
  perf.second=SummaryGuiPerfomance;
  ComponentsProfilerOutputData.push_back(perf);
  perf.first="Overhead";
- perf.second.AvgDuration=OtherPerfomance.AvgDuration+ModelPerfomance.AvgDuration-SummaryGuiPerfomance.AvgDuration;
- perf.second.Percentage=OtherPerfomance.Percentage+ModelPerfomance.Percentage-SummaryGuiPerfomance.Percentage;
+ perf.second.AvgDuration=OtherPerfomance.AvgDuration-SummaryGuiPerfomance.AvgDuration;
+ perf.second.Percentage=OtherPerfomance.Percentage-SummaryGuiPerfomance.Percentage;
  ComponentsProfilerOutputData.push_back(perf);
 
  perf.first="Full Step";
