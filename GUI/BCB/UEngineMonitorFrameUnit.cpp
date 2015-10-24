@@ -278,7 +278,7 @@ void TUEngineMonitorFrame::AUpdateInterface(void)
  if(!profiler)
   return;
 
- if(RdkApplication.GetEngineControl()->GetThreadMode() == 1)
+ if(RdkApplication.GetEngineControl()->GetCalculateMode(sel_index) == 1)
  {
   StatusBar->Panels->Items[0]->Text=profiler->CalcRtTimeText().c_str();
   int width=StatusBar->Canvas->TextWidth(StatusBar->Panels->Items[0]->Text)+25;
@@ -301,7 +301,7 @@ void TUEngineMonitorFrame::AUpdateInterface(void)
  StatusBar->Panels->Items[1]->Width=width;
 
 
- if(RdkApplication.GetEngineControl()->GetThreadMode() != 1)
+ if(RdkApplication.GetEngineControl()->GetCalculateMode(sel_index) != 1)
  {
    StatusBar->Panels->Items[2]->Text=profiler->CalcNormalFpsText().c_str();
    width=StatusBar->Canvas->TextWidth(StatusBar->Panels->Items[2]->Text)+25;
