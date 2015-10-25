@@ -6,6 +6,7 @@
 #include "../../Deploy/Include/myrdk.h"
 #include "URpcDecoderCommon.h"
 #include "URpcCommandInternal.h"
+#include "UApplication.h"
 
 namespace RDK {
 

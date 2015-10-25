@@ -2,6 +2,9 @@
 #define UENGINE_CONTROL_THREAD_CPP
 
 #include "UEngineControlThread.h"
+#include "UEngineControl.h"
+#include "UChannelProfiler.h"
+#include "UBroadcasterInterface.h"
 
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
 #ifdef WIN32

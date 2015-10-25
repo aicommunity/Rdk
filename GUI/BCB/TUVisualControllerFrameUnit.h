@@ -8,10 +8,10 @@
 #include <Vcl.StdCtrls.hpp>
 #include <Vcl.Forms.hpp>
 #include <string>
-#include "../../Deploy/Include/rdk_cpp_initdll.h"
+#include "../../Deploy/Include/rdk_application.h"
 //---------------------------------------------------------------------------
 #pragma warn -8130
-class TUVisualControllerFrame : public TFrame, public RDK::UIVisualController
+class TUVisualControllerFrame: public TFrame, public RDK::UIVisualController
 {
 __published:	// IDE-managed Components
 private:	// User declarations

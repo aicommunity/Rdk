@@ -1,5 +1,6 @@
 #include "UChannelProfiler.h"
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
+#include "UIVisualController.h"
 
 namespace RDK {
 

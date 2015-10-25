@@ -1,6 +1,8 @@
 #include "UServerControl.h"
 
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
+#include "UProject.h"
+#include "UApplication.h"
 
 namespace RDK {
 

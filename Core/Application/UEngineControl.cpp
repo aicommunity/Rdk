@@ -3,6 +3,9 @@
 
 #include "UEngineControl.h"
 #include "UEngineStateThread.h"
+#include "UEngineControlThread.h"
+#include "UChannelProfiler.h"
+#include "UBroadcasterInterface.h"
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
 
 namespace RDK {

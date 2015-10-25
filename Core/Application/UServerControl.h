@@ -2,6 +2,7 @@
 #define UServerControlH
 
 #include "../../Deploy/Include/rdk.h"
+#include "UIVisualController.h"
 
 namespace RDK {
 
