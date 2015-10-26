@@ -138,6 +138,9 @@ void RecreateEventsLogFile(void);
 /// Очищается каждый раз при запросе этой переменной
 std::list<std::string> ReadGuiUnsentLog(void);
 
+/// Прерывает исполнение потока
+virtual void Terminate(void);
+
 // Общедоступные данные логгирования
 static UGenericMutex*& GetRdkExceptionHandlerMutex(void);
 static std::list<int>& GetUnsentLogChannelIndexes(void);

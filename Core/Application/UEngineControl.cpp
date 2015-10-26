@@ -189,8 +189,7 @@ void UEngineControl::UnInit(void)
 
  if(EngineStateThread)
  {
-  EngineStateThread->CalcStarted->reset();
-  EngineStateThread->CalculationNotInProgress->wait(100000);
+  EngineStateThread->Terminate();
   delete EngineStateThread;
   EngineStateThread=0;
  }

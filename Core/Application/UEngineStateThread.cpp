@@ -62,10 +62,7 @@ UEngineStateThread::UEngineStateThread(UEngineControl* engine_control)
 
 UEngineStateThread::~UEngineStateThread(void)
 {
- CalcStarted->reset();
- CalcState->reset();
- Terminated=true;
- Thread.join();
+ Terminate();
 
  UDestroyEvent(CalcState);
  UDestroyEvent(CalcEnable);
@@ -307,6 +304,19 @@ std::list<std::string> UEngineStateThread::ReadGuiUnsentLog(void)
  GuiUnsentLog.clear();
  CalculationNotInProgress->set();
  return buffer;
+}
+
+/// Прерывает исполнение потока
+void UEngineStateThread::Terminate(void)
+{
+ CalcStarted->reset();
+
+ if(!CalculationNotInProgress->wait(0) || !CalculationNotInProgress->wait(10000))
+  return;
+ CalculationNotInProgress->reset();
+ CalcState->reset();
+ Terminated=true;
+ Thread.join();
 }
 
 // Общедоступные данные логгирования
