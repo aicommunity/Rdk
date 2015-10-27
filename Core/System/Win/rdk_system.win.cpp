@@ -3,6 +3,7 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <OleAuto.h>
 #include "../rdk_system.h"
 //#include "USharedMemoryLoader.win.cpp"
 //#include "UGenericMutex.win.cpp"
@@ -40,8 +41,8 @@ double GetVariantLocalTime(void)
  SYSTEMTIME loc_time;
  GetLocalTime(&loc_time);
  double res=0;
- SystemTimeToVariantTime(loc_time,res);
- return res +  ((ONETHOUSANDMILLISECONDS/1000.0) * loc_time.wMilliSeconds);
+ SystemTimeToVariantTime(&loc_time,&res);
+ return res +  ((ONETHOUSANDMILLISECONDS/1000.0) * loc_time.wMilliseconds);
 }
 
 
