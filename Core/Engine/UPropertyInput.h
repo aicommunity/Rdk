@@ -560,7 +560,7 @@ int GetNumPointers(void) const
 void const * GetPointer(int index) const
 {
  if(int(this->v.size())<=index)
- #ifdef __BORLANDC__
+ #if defined(__BORLANDC__) && !defined(__clang__)
 //  return 0;
   throw UCLProperty<std::vector<T*>,OwnerT>::EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
 	0,int(this->v.size()),index);
@@ -662,7 +662,7 @@ void ClearAllPointers(void)
 T* operator [] (int i)
 {
  if(int(this->v.size())<=i)
- #ifdef __BORLANDC__
+ #if defined(__BORLANDC__) && !defined(__clang__)
   throw UCLProperty<std::vector<T*>,OwnerT>::EPropertyRangeError(this->GetOwnerName(),this->GetName(),
 	0,int(this->v.size()),i);
  #else

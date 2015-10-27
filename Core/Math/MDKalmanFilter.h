@@ -354,7 +354,7 @@ void KalmanCalculate(int i)
   MDMatrix<double> y(Z - (HM * Xk1));
   MDMatrix<double> S(HM * Pk1 * HM.Transpose() + RM);
   for(int i=0;i<S.GetCols()*S.GetRows();i++)
-   if(fabs(S.Data[i])>1e20)
+   if(std::fabs(S.Data[i])>1e20)
 	throw EKalmanGainOverflow();
   MDMatrix<double> K(Pk1 * HM.Transpose() * S.Inverse());
   Xk1 = Xk1 + (K * y);

@@ -112,7 +112,7 @@ ULProperty<T,OwnerT, type>& operator = (const T &value)
  return *this;
 };
 
-ULProperty<T,OwnerT>& operator = (const ULProperty<T,OwnerT> &v)
+ULProperty<T,OwnerT, type>& operator = (const ULProperty<T,OwnerT> &v)
 {
  this->SetData(v.GetData());
  return *this;

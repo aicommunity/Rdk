@@ -12,6 +12,7 @@ class UEngineStateThread;
 class UEngineControlThread;
 class UBroadcasterInterface;
 class UChannelProfiler;
+class UApplication;
 
 class RDK_LIB_TYPE UEngineControl: public UAppController
 {

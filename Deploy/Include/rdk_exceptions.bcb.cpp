@@ -53,7 +53,11 @@ std::string GetSystemExceptionData(void)
 // Формирует строку с описанием возникшего системного исключения
 std::string GetSystemExceptionData(System::Sysutils::Exception &exception)
 {
+#if !defined(_WIN64)
  return AnsiString(String("[")+exception.Message+exception.StackTrace+String(" see ")+__ThrowFileName()+String(":")+__ThrowLineNumber()+String("] ")).c_str();
+#else
+ return AnsiString(String("[")+exception.Message+exception.StackTrace).c_str();
+#endif}
 }
 
 }

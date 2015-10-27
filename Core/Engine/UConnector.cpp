@@ -759,7 +759,7 @@ bool UConnector::Build(void)
 
 //class UIPropertyInput: public UIPropertyIO
 // Возвращает указатель на компонент-источник
-UEPtr<UItem> UIPropertyInput::GetItem(void)
+UItem* UIPropertyInput::GetItem(void)
 {
  return Item;
 }

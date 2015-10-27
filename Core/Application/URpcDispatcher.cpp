@@ -2,6 +2,7 @@
 #define URpcDispatcher_CPP
 
 #include "URpcDispatcher.h"
+#include "UApplication.h"
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
 //#include "../../Deploy/PtzLib/ptzlib_initdll.h"
 #include "../../Deploy/Include/rdk_rpc.h"

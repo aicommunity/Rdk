@@ -302,14 +302,14 @@ class RDK_LIB_TYPE UIPropertyInput
 {
 protected: // Данные
 /// Указатель на компонент-источник данных
-UEPtr<UItem> Item;
+UItem* Item;
 
 /// Имя выхода компнента-источника данных
 std::string ItemOutputName;
 
 public:
 /// Возвращает указатель на компонент-источник
-UEPtr<UItem> GetItem(void);
+UItem* GetItem(void);
 
 /// Возвращает имя подключенного выхода
 const std::string& GetItemOutputName(void);
@@ -319,7 +319,7 @@ class RDK_LIB_TYPE UIPropertyOutput
 {
 protected: // Данные
 /// Указатели на компоненты-приемники данных
-std::vector<UEPtr<UItem> > Connectors;
+std::vector<UItem*> Connectors;
 
 /// Имя выхода компнента-источника данных
 std::vector<std::string> ConnectorInputNames;
