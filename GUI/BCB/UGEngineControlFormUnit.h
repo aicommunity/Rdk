@@ -27,7 +27,7 @@
 #include "UWatchFrameUnit.h"
 #include "UDrawEngineFrameUnit.h"
 #include <Vcl.AppEvnts.hpp>
-#include <Web.Win.Sockets.hpp>
+// #include <Web.Win.Sockets.hpp>
 #include <System.ImageList.hpp>
 
 #define WM_SERVER_PING (WM_USER + 261)

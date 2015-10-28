@@ -319,8 +319,8 @@ void TUComponentsListFrame::UpdateIO(void)
  RDK::separatestring(output_names,outputs,',');
  RDK::separatestring(input_names,inputs,',');
 
- InputsStringGrid->Perform(WM_SETREDRAW, 0, 0);
- OutputsStringGrid->Perform(WM_SETREDRAW, 0, 0);
+ InputsStringGrid->Perform(WM_SETREDRAW, 0, (NativeInt)0);
+ OutputsStringGrid->Perform(WM_SETREDRAW, 0, (NativeInt)0);
 try
 {
 
@@ -385,9 +385,9 @@ try
 }
 __finally
 {
-  InputsStringGrid->Perform(WM_SETREDRAW, 1, 0);
+  InputsStringGrid->Perform(WM_SETREDRAW, 1, (NativeInt)0);
   InputsStringGrid->Invalidate();
-  OutputsStringGrid->Perform(WM_SETREDRAW, 1, 0);
+  OutputsStringGrid->Perform(WM_SETREDRAW, 1, (NativeInt)0);
   OutputsStringGrid->Invalidate();
 }
  UpdateInterfaceFlag=false;
@@ -486,7 +486,7 @@ void TUComponentsListFrame::UpdateNiceParamsList(TEnchancedSG *frame)
  xml.SelectNode("Parameters");
  int num=xml.GetNumNodes();
 
- frame->BasicStringGrid->Perform(WM_SETREDRAW, 0, 0);
+ frame->BasicStringGrid->Perform(WM_SETREDRAW, 0, (NativeInt)0);
 try
 {
  if(num>0)
@@ -582,7 +582,7 @@ try
 }
 __finally
 {
-  frame->BasicStringGrid->Perform(WM_SETREDRAW, 1, 0);
+  frame->BasicStringGrid->Perform(WM_SETREDRAW, 1, (NativeInt)0);
   frame->BasicStringGrid->Invalidate();
 }
 
@@ -608,7 +608,7 @@ void TUComponentsListFrame::UpdateNiceStatesList(TEnchancedSG *frame)
  xml.SelectNode("State");
  int num=xml.GetNumNodes();
 
- frame->BasicStringGrid->Perform(WM_SETREDRAW, 0, 0);
+ frame->BasicStringGrid->Perform(WM_SETREDRAW, 0, (NativeInt)0);
 try
 {
 if(num>0)
@@ -697,7 +697,7 @@ if(num>0)
 }
 __finally
 {
-  frame->BasicStringGrid->Perform(WM_SETREDRAW, 1, 0);
+  frame->BasicStringGrid->Perform(WM_SETREDRAW, 1, (NativeInt)0);
   frame->BasicStringGrid->Invalidate();
 }
 

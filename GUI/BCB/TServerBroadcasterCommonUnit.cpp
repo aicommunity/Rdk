@@ -22,7 +22,7 @@ __fastcall TResultBroadcasterThread::TResultBroadcasterThread(bool CreateSuspend
 : TThread(CreateSuspended)
 {
  SendEnableFlag=false;
- Priority=RDK_DEFAULT_THREAD_PRIORITY;
+ Priority=(TThreadPriority)RDK_DEFAULT_THREAD_PRIORITY;
  SendEnable=CreateEvent(0,TRUE,0,0);
  MetaUnlockEvent=CreateEvent(0,TRUE,TRUE,0);
  SendNotInProgressEvent=CreateEvent(0,TRUE,TRUE,0);

@@ -198,14 +198,15 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
           object GroupBox1: TGroupBox
             Left = 0
             Top = -69
-            Width = 345
+            Width = 349
             Height = 565
             Align = alTop
             TabOrder = 0
+            ExplicitWidth = 345
             object RecordingControlGroupBox: TGroupBox
               Left = 2
               Top = 505
-              Width = 341
+              Width = 345
               Height = 58
               Align = alClient
               Caption = 'Recording Control'
@@ -234,13 +235,14 @@ inherited TVideoRegistratorFrame: TTVideoRegistratorFrame
             object RecordingSettingsGroupBox: TGroupBox
               Left = 2
               Top = 15
-              Width = 341
+              Width = 345
               Height = 490
               Align = alTop
               Caption = 'Recording Settings'
               TabOrder = 1
+              ExplicitWidth = 341
               DesignSize = (
-                341
+                345
                 490)
               object RecordingMethodLabel: TLabel
                 Left = 3

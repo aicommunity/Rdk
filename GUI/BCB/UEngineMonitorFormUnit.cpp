@@ -190,7 +190,7 @@ void __fastcall TUEngineMonitorForm::LogTimerTimer(TObject *Sender)
  if(!log.empty())
  {
    EngineMonitorFrame->RichEdit->SelStart =
-	EngineMonitorFrame->RichEdit->Perform(EM_LINEINDEX, EngineMonitorFrame->RichEdit->Lines->Count-1, 0);
+	EngineMonitorFrame->RichEdit->Perform(EM_LINEINDEX, EngineMonitorFrame->RichEdit->Lines->Count-1, (NativeInt)0);
    EngineMonitorFrame->RichEdit->Update();
    EngineMonitorFrame->RichEdit->Repaint();
  }
