@@ -533,7 +533,7 @@ int TTVideoRegistratorFrame::InitRecordingSettings(void)
  VideoGrabber->ASFVideoFrameRate = StrToIntDef(RecordingFrameRateLabeledEdit->Text, 30);
  VideoGrabber->FrameRate = StrToIntDef(RecordingFrameRateLabeledEdit->Text, 30);
  VideoGrabber->RecordingFileName = RecordingFileNameLabeledEdit->Text;
- VideoGrabber->RecordingMethod = RecordingMethodComboBox->ItemIndex;
+ VideoGrabber->RecordingMethod = (TRecordingMethod)RecordingMethodComboBox->ItemIndex;
  if(StoragePathRadioGroup->ItemIndex == 0 || StoragePathLabeledEdit->Text=="")
  {
   VideoGrabber->StoragePath=RdkApplication.GetProjectPath().c_str();
@@ -547,19 +547,19 @@ int TTVideoRegistratorFrame::InitRecordingSettings(void)
  if((RecordingMethodComboBox->ItemIndex != 0) && (RecordingMethodComboBox->ItemIndex != 8))
  {
   VideoGrabber->VideoCompressor = VideoCompressorComboBox->ItemIndex;
-  VideoGrabber->CompressionMode = VideoCompressionModeComboBox->ItemIndex;
+  VideoGrabber->CompressionMode = (TCompressionMode)VideoCompressionModeComboBox->ItemIndex;
  }
  else
  {
   VideoCompressionModeComboBox->ItemIndex=0;
-  VideoGrabber->CompressionMode = 0;
+  VideoGrabber->CompressionMode = (TCompressionMode)0;
  }
 
  // Запись по таймеру
  if(RecordingModeComboBox->ItemIndex != 0)
  {
   int recTimerMode=RecordingModeComboBox->ItemIndex;
-  VideoGrabber->RecordingTimer=recTimerMode;
+  VideoGrabber->RecordingTimer= (TRecordingTimer)recTimerMode;
 
   switch(recTimerMode)
   {
@@ -857,7 +857,7 @@ void __fastcall TTVideoRegistratorFrame::StartPreviewButtonClick(TObject *Sender
  }
 
  VideoGrabber->FrameRate = StrToIntDef(FrameRateLabeledEdit->Text, 30);
- if(VideoGrabber->StartPreview());
+ if(VideoGrabber->StartPreview())
   Engine_LogMessage(RDK_EX_INFO, (std::string("Preview started").c_str()));
 }
 //---------------------------------------------------------------------------

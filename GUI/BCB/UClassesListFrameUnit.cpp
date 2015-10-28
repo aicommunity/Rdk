@@ -59,7 +59,7 @@ void TUClassesListFrame::AUpdateInterface(void)
   if(sel)
    SelectedName=sel->Text;
 
-  TreeView->Perform(WM_SETREDRAW, 0, 0);
+  TreeView->Perform(WM_SETREDRAW, 0, (NativeInt)0);
   TreeView->Items->Clear();
   for(size_t i=0;i<LibraryNames.size();i++)
   {
@@ -76,7 +76,7 @@ void TUClassesListFrame::AUpdateInterface(void)
 
    tn->Expand(true);
   }
-  TreeView->Perform(WM_SETREDRAW, 1, 0);
+  TreeView->Perform(WM_SETREDRAW, 1, (NativeInt)0);
   TreeView->Update();
  }
  else

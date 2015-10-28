@@ -417,7 +417,7 @@ void TUVisualControllerForm::SaveFormPosition(RDK::USerStorageXML &xml)
  xml.WriteInteger("Width",Width);
  xml.WriteInteger("Height",Height);
  xml.WriteBool("Visible",Visible);
- xml.WriteInteger("WindowState",WindowState);
+ xml.WriteInteger("WindowState",(int)WindowState);
  xml.SelectUp();
 }
 
@@ -442,7 +442,7 @@ void TUVisualControllerForm::LoadFormPosition(RDK::USerStorageXML &xml)
  if(!RdkMainForm || RdkMainForm != this)
  {
   Visible=xml.ReadBool("Visible",Visible);
-  WindowState=xml.ReadInteger("WindowState",(int)WindowState);
+  WindowState=(TWindowState)xml.ReadInteger("WindowState",(int)WindowState);
  }
 
  xml.SelectUp();

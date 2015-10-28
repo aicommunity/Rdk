@@ -860,9 +860,8 @@ void TVideoOutputFrame::UpdateGeometryList(TCheckListBox *GeometryCheckListBox, 
  {
   std::stringstream stream;
   stream<<GeometryGraphics.Geometry(GeometryCheckListBox->ItemIndex).VertexName(i)<<" ";
-  stream<<GeometryGraphics.Geometry(GeometryCheckListBox->ItemIndex).Vertex(i);
+//  RDK::operator <<(stream,GeometryGraphics.Geometry(GeometryCheckListBox->ItemIndex).Vertex(i));
   PointsCheckListBox->Items->Strings[i]=stream.str().c_str();// Add(stream.str().c_str());
-//  PointsCheckListBox->Items->Add(stream.str().c_str());
    if(GeometryGraphics.Geometry(GeometryCheckListBox->ItemIndex).Vertex(i).z>=0)
    {
     PointsCheckListBox->Checked[i]=true;

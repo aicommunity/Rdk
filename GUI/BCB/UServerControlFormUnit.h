@@ -20,7 +20,7 @@
 #include "TUVisualControllerFrameUnit.h"
 
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
-#include <Web.Win.Sockets.hpp>
+//#include <Web.Win.Sockets.hpp>
 #include <IdBaseComponent.hpp>
 #include <IdComponent.hpp>
 #include <IdContext.hpp>
@@ -125,7 +125,6 @@ __published:	// IDE-managed Components
 	TBarSeries *Series2;
 	TBarSeries *Series3;
 	TTimer *CommandTimer;
-	TTcpServer *TcpServer;
 	TIdTCPServer *IdTCPServer;
 	TTimer *ServerRestartTimer;
 	TLabeledEdit *ServerNameLabeledEdit;

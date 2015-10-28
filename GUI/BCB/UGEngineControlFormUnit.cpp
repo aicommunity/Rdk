@@ -2221,7 +2221,12 @@ void __fastcall TUGEngineControlForm::HideTimerTimer(TObject *Sender)
  if(RdkMainForm)
  {
   SetWindowLong(RdkMainForm->Handle, GWL_EXSTYLE, GetWindowLong(RdkMainForm->Handle, GWL_EXSTYLE) | WS_EX_APPWINDOW);
-  SetWindowLong(RdkMainForm->Handle, GWL_HWNDPARENT, 0);
+#ifdef WIN32
+  ::SetParent(RdkMainForm->Handle, 0);
+//  SetWindowLong(RdkMainForm->Handle, GWL_HWNDPARENT, 0);
+#else
+  SetParent(RdkMainForm->Handle, 0);
+#endif
  }
 
  if(StartMinimized)

@@ -17,8 +17,10 @@ __fastcall TLoaderForm::TLoaderForm(TComponent* Owner)
 void __fastcall TLoaderForm::FormCreate(TObject *Sender)
 {
  Application->ShowMainForm = false;
- SetWindowLong(Handle, GWL_HWNDPARENT, 0);
- SetWindowLong(Application->Handle, GWL_HWNDPARENT, (long)Handle);
+ //SetWindowLong(Handle, GWL_HWNDPARENT, 0);
+ //SetWindowLong(Application->Handle, GWL_HWNDPARENT, (long)Handle);
+ ::SetParent(Handle, 0);
+ ::SetParent(Application->Handle, (HWND)Handle);
 }
 //---------------------------------------------------------------------------
 void __fastcall TLoaderForm::FormClose(TObject *Sender, TCloseAction &Action)
