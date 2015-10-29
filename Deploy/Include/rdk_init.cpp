@@ -2919,6 +2919,8 @@ void DelEngine(RDK::UEngine* engine)
 }                    */
 // ----------------------------
 
+namespace boost {
+
 void tss_cleanup_implemented(void)
 {
 	/*
@@ -2944,6 +2946,7 @@ solution is no
 }
 
 
+}
 
 
 

@@ -222,7 +222,7 @@ void DrawSymbol(wchar_t ch, UAGraphics *graphics);
 void DrawSymbol(char ch, UAGraphics *graphics);
 // --------------------------
 };
-
+			   /*
 class RDK_LIB_TYPE UVectorFont: public UAFont
 {
 protected: // Параметры
@@ -274,7 +274,7 @@ void DrawSymbol(wchar_t ch, UAGraphics *graphics);
 void DrawSymbol(char ch, UAGraphics *graphics);
 // --------------------------
 };
-
+                  */
 class RDK_LIB_TYPE UFontCollection
 {
 public:
