@@ -279,7 +279,10 @@ bool UApplication::Init(void)
 bool UApplication::UnInit(void)
 {
  if(EngineControl)
+ {
   EngineControl->PauseEngine(-1);
+  EngineControl->StopEngineStateThread();
+ }
  Sleep(10);
  CloseProject();
  return true;
@@ -609,7 +612,7 @@ bool UApplication::CloseProject(void)
   }
  }
  RDK::UIVisualControllerStorage::ClearInterface();
- EngineControl->StartEngineStateThread();
+ EngineControl->StopEngineStateThread();
  return true;
 }
 
