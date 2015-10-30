@@ -106,7 +106,7 @@ int FindFilesList(const std::string &path, const std::string &mask, bool isfile,
  return 0;
 }
 
-int CopyFile(const std::string &source_file, const std::string &dest_file)
+int RdkCopyFile(const std::string &source_file, const std::string &dest_file)
 {
  int input_fd, output_fd;
 
@@ -128,7 +128,7 @@ int CopyFile(const std::string &source_file, const std::string &dest_file)
   return 1;
  }
 
- output_fd = open(dest_file.c_str(), O_WRONLY | O_CREAT, st.st_mode);
+ output_fd = open(dest_file.c_str(), O_WRONLY | O_CREAT | O_TRUNC, st.st_mode);
  if (output_fd == -1)
   return 1;
 

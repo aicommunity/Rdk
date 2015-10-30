@@ -5,7 +5,7 @@
 #include "../UGenericMutex.h"
 //#include <windows.h>
 
-class UGenericMutexGcc: public UGenericMutex
+class RDK_LIB_TYPE UGenericMutexGcc: public UGenericMutex
 {
 private:
 void* m_UnlockEvent;
