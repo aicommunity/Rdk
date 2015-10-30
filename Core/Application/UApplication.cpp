@@ -14,7 +14,7 @@
 //#include "URpcCommand.cpp"
 //#include "URpcCommandInternal.cpp"
 
-              
+
 #ifdef __BORLANDC__
 //#include "Bcb/Application.bcb.cpp"
 #endif
@@ -269,7 +269,7 @@ bool UApplication::Init(void)
  Engine_SetBufObjectsMode(1);
 
  std::string font_path=extract_file_path(ApplicationFileName);
- GraphicalEngineInit(0,1,1,320,240,1,ExceptionHandler);
+ GraphicalEngineInit(0,1,1,320,240,1,(void*)ExceptionHandler);
  Engine_LoadFonts();
  SetSystemDir(font_path.c_str());
 
@@ -315,7 +315,7 @@ bool UApplication::CreateProject(const std::string &file_name, RDK::TProjectConf
   RDK::TProjectChannelConfig &channel=project_config.ChannelsConfig[i];
 
   if(!MIsEngineInit(i))
-   MGraphicalEngineInit(i,channel.PredefinedStructure,1,1,640, 480 ,project_config.ReflectionFlag,ExceptionHandler);
+   MGraphicalEngineInit(i,channel.PredefinedStructure,1,1,640, 480 ,project_config.ReflectionFlag,(void*)ExceptionHandler);
   else
    MEnv_SetPredefinedStructure(i,channel.PredefinedStructure);
 
@@ -385,7 +385,7 @@ try{
 
    SelectEngine(i);
    if(!IsEngineInit())
-	GraphicalEngineInit(channel_config.PredefinedStructure,1,1,640, 480 ,true,ExceptionHandler);
+	GraphicalEngineInit(channel_config.PredefinedStructure,1,1,640, 480 ,true,(void*)ExceptionHandler);
    else
 	Env_SetPredefinedStructure(channel_config.PredefinedStructure);
 

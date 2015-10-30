@@ -2,6 +2,7 @@
 #define UIVisualController_CPP
 
 #include <algorithm>
+#include <typeinfo>
 #include "UIVisualController.h"
 #include "../../Core/Utilities/USupport.h"
 #include "../../Core/System/rdk_system.h"
