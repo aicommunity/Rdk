@@ -24,6 +24,11 @@ void RdkDummyFunc(void)
  bin_storage>>bmp;
  xml_storage<<bmp;
  xml_storage>>bmp;
+
+ int a = 0;
+ bin_storage << a;
+ bin_storage >> a;
+
  UGraphics gr;
 
  NCC2D ncc;
@@ -31,6 +36,8 @@ void RdkDummyFunc(void)
  jpge::params jpegparams;
  jpge::compress_image_to_jpeg_file("", 0, 0, 3,
 								   0,jpegparams);
+
+ LoadJpegFromFile("", bmp);
 }
 #endif
 

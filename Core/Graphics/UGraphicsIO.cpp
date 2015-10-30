@@ -16,6 +16,8 @@ See file license.txt for more information
 #include "UGraphicsIO.h"
 #include "../../ThirdParty/ThirdParty.h"
 
+#include <string.h>
+
 
 namespace RDK {
 
