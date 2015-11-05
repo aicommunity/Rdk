@@ -3,85 +3,109 @@
 // ---------------------------------------------------------------------------
 
 #include "../UGenericMutex.h"
-//#include <windows.h>
+#include <pthread.h>
 
 class RDK_LIB_TYPE UGenericMutexGcc: public UGenericMutex
 {
 private:
-void* m_UnlockEvent;
+ pthread_mutex_t mutex;
 
 public:
-UGenericMutexGcc();
-virtual ~UGenericMutexGcc();
+ UGenericMutexGcc();
+ virtual ~UGenericMutexGcc();
 
-virtual bool shared_lock(void);
-virtual bool shared_unlock(void);
+ virtual bool shared_lock(void);
+ virtual bool shared_unlock(void);
 
-virtual bool exclusive_lock(void);
-virtual bool exclusive_unlock(void);
-
-virtual bool wait(int timeout);
+ virtual bool exclusive_lock(void);
+ virtual bool exclusive_unlock(void);
 };
 
 class RDK_LIB_TYPE UGenericEventGcc: public UGenericEvent
 {
 protected:
-//HANDLE Event;
+ //HANDLE Event;
 
 public:
-UGenericEventGcc();
-virtual ~UGenericEventGcc();
+ UGenericEventGcc();
+ virtual ~UGenericEventGcc();
 
-virtual bool set(void);
-virtual bool reset(void);
-virtual bool wait(unsigned wait_time);
+ virtual bool set(void);
+ virtual bool reset(void);
+ virtual bool wait(unsigned wait_time);
 
 
 private:
-UGenericEventGcc(const UGenericEventGcc &copy);
-UGenericEventGcc& operator = (const UGenericEventGcc &copy);
+ UGenericEventGcc(const UGenericEventGcc &copy);
+ UGenericEventGcc& operator = (const UGenericEventGcc &copy);
 };
 
 
 UGenericMutexGcc::UGenericMutexGcc()
 {
- //m_UnlockEvent = CreateEvent(0, TRUE, TRUE, 0);
+ pthread_mutexattr_t attr;
+ pthread_mutexattr_init(&attr);
+ pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_ERRORCHECK);
+ if(pthread_mutex_init(&mutex, &attr) != 0)
+  throw 1;
 }
 
 UGenericMutexGcc::~UGenericMutexGcc()
 {
- //CloseHandle(m_UnlockEvent);
+ int res = pthread_mutex_destroy(&mutex);
+ switch (res)
+ {
+  case 0:
+   // Success
+   break;
+
+  case EBUSY:
+   // Attempting to destroy a locked mutex results in undefined behavior.
+   // If we are here, then the behavior has already happened.
+   break;
+
+  case EINVAL:
+   break;
+
+  default:
+   break;
+ }
 }
 
 bool UGenericMutexGcc::shared_lock(void)
 {
- return true;
+ return exclusive_lock();
 }
 
 bool UGenericMutexGcc::shared_unlock(void)
 {
- return true;
+ return exclusive_unlock();
 }
 
 bool UGenericMutexGcc::exclusive_lock(void)
 {
- return true;
+ if (pthread_mutex_lock(&mutex) == 0)
+ {
+  return true;
+ }
+ else
+ {
+  return false;
+ }
+ return false;
 }
 
 bool UGenericMutexGcc::exclusive_unlock(void)
 {
+ if (pthread_mutex_unlock(&mutex) != 0)
+ {
+  return false;
+ }
+
  return true;
 }
 
 
-bool UGenericMutexGcc::wait(int timeout)
-{
- /*if (WaitForSingleObject(m_UnlockEvent, timeout) != WAIT_TIMEOUT)
- {
-  return true;
- } */
- return false;
-}
 
 UGenericEventGcc::UGenericEventGcc()
 {

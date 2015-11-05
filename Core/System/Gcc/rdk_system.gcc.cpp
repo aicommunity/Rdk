@@ -1,10 +1,7 @@
 #ifndef RDK_SYSTEM_LINUX_CPP
 #define RDK_SYSTEM_LINUX_CPP
 
-#include <ctime>
-#include <dirent.h>
 #include <unistd.h>
-#include <sys/sendfile.h>
 #include <sys/time.h>
 #include <sys/stat.h>
 #include <fcntl.h>
