@@ -4,6 +4,7 @@
 
 #include "../UGenericMutex.h"
 #include <pthread.h>
+#include <iostream>
 
 class RDK_LIB_TYPE UGenericMutexGcc: public UGenericMutex
 {
@@ -45,7 +46,7 @@ UGenericMutexGcc::UGenericMutexGcc()
 {
  pthread_mutexattr_t attr;
  pthread_mutexattr_init(&attr);
- pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_ERRORCHECK);
+ pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
  if(pthread_mutex_init(&mutex, &attr) != 0)
   throw 1;
 }
@@ -84,12 +85,36 @@ bool UGenericMutexGcc::shared_unlock(void)
 
 bool UGenericMutexGcc::exclusive_lock(void)
 {
- if (pthread_mutex_lock(&mutex) == 0)
+ int res = pthread_mutex_lock(&mutex);
+ if (res == 0)
  {
   return true;
  }
  else
  {
+  switch (res)
+  {
+   case EINVAL:
+    std::cout << "Mutex locking failed, error: " << res << " (EINVAL)\n";
+    break;
+
+   case EBUSY:
+    std::cout << "Mutex locking failed, error: " << res << " (EBUSY)\n";
+    break;
+
+   case EAGAIN:
+    std::cout << "Mutex locking failed, error: " << res << " (EAGAIN)\n";
+    break;
+
+   case EDEADLK:
+    std::cout << "Mutex locking failed, error: " << res << " (EDEADLK)\n";
+    break;
+
+   default:
+    std::cout << "Mutex locking failed, error: " << res << "\n";
+    break;
+  }
+
   return false;
  }
  return false;
@@ -97,8 +122,20 @@ bool UGenericMutexGcc::exclusive_lock(void)
 
 bool UGenericMutexGcc::exclusive_unlock(void)
 {
- if (pthread_mutex_unlock(&mutex) != 0)
+ int res = pthread_mutex_unlock(&mutex);
+ if (res != 0)
  {
+  switch (res)
+  {
+  case EPERM:
+   std::cout << "Mutex unlocking failed, error: " << res << " (EPERM)\n";
+   break;
+
+  default:
+   std::cout << "Mutex unlocking failed, error: " << res << " \n";
+   break;
+  }
+
   return false;
  }
 

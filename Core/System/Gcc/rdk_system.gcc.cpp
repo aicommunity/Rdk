@@ -50,6 +50,7 @@ unsigned long long CalcDiffTime(unsigned long long time1, unsigned long long tim
 /// Возвращает локальное время в днях (с точностью до миллисекунд) от начала времен
 double GetVariantLocalTime(void)
 {
+ return 0;
 // TODO:
 }
 
