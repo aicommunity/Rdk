@@ -1,7 +1,7 @@
-#ifndef @NAMESPACE_NAME@_@HEADER_FILE_NAME@
-#define @NAMESPACE_NAME@_@HEADER_FILE_NAME@
+#ifndef @NAMESPACE_NAME@_@CLASS_NAME@_H
+#define @NAMESPACE_NAME@_@CLASS_NAME@_H
 
-#include "../../Rdk/Deploy/Include/rdk.h"
+#include "../../../Rdk/Deploy/Include/rdk.h"
 
 namespace @NAMESPACE_NAME@ {
 
@@ -19,7 +19,7 @@ public: // Методы
 // --------------------------
 // Заполняет массив ClassSamples готовыми экземплярами образцов и их именами.
 // Не требуется предварительная очистка массива и уборка памяти.
-virtual void CreateClassSamples(UStorage *storage);
+virtual void CreateClassSamples(RDK::UStorage *storage);
 // --------------------------
 };
 
