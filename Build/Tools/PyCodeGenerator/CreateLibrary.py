@@ -62,15 +62,15 @@ shutil.copytree('LibProjects/Build', new_path+'/Build')
 # Модифицируем шаблоны библиотеки
 template_data = ['@NAMESPACE_NAME@', '@HEADER_FILE_NAME@','@CPP_FILE_NAME@', '@CLASS_NAME@', '@LIBRARY_NAME@']
 dest_data = [namespace_name, 'U'+lib_name+'.h', 'U'+lib_name+'.cpp', 'U'+lib_name, lib_name]
-createMapFile(template_data,dest_data,'CodeTemplates/ULibraryTemplate.h',new_path+'/Core/U'+lib_name+'.h')
-createMapFile(template_data,dest_data,'CodeTemplates/ULibraryTemplate.cpp',new_path+'/Core/U'+lib_name+'.cpp')
+createMapFile(template_data,dest_data,'CodeTemplates/ULibraryTemplate.h',new_path+'/Core/Lib.h')
+createMapFile(template_data,dest_data,'CodeTemplates/ULibraryTemplate.cpp',new_path+'/Core/Lib.cpp')
 
 #shutil.copyfile('CodeTemplates/ULibraryTemplate.h', new_path+'/Core/U'+lib_name='.h')
 #shutil.copyfile('CodeTemplates/ULibraryTemplate.cpp', new_path+'/Core/U'+lib_name='.cpp')
 
 # Модифицируем файлы для сборки
-os.rename(new_path+'/Build/Bcb/Rdk-BasicStatisticLib.cbproj', new_path+'/Build/Bcb/'+namespace_name+'-'+lib_name+'.cbproj')
+os.rename(new_path+'/Build/Bcb/Rdk-BasicLib.cbproj', new_path+'/Build/Bcb/'+namespace_name+'-'+lib_name+'.cbproj')
 os.rename(new_path+'/Build/CodeBlocks/Rdk-BasicLib.cbp', new_path+'/Build/CodeBlocks/'+namespace_name+'-'+lib_name+'.cbp')
-os.rename(new_path+'/Build/Vs/Rdk-BasicStatisticLib.vcxproj', new_path+'/Build/Vs/'+namespace_name+'-'+lib_name+'.vcxproj')
+os.rename(new_path+'/Build/Vs/Rdk-BasicLib.vcxproj', new_path+'/Build/Vs/'+namespace_name+'-'+lib_name+'.vcxproj')
 
 
