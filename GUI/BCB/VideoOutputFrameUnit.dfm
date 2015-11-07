@@ -10,27 +10,29 @@ inherited VideoOutputFrame: TVideoOutputFrame
   object PageControl: TPageControl
     Left = 0
     Top = 0
-    Width = 775
+    Width = 779
     Height = 714
     ActivePage = VideoSourceTabSheet
     Align = alClient
     TabOrder = 0
+    ExplicitWidth = 775
     object VideoSourceTabSheet: TTabSheet
       Caption = 'Video Source'
+      ExplicitWidth = 767
       object GroupBox: TGroupBox
         Left = 0
         Top = 0
-        Width = 767
+        Width = 771
         Height = 570
         Align = alClient
         DoubleBuffered = True
         ParentDoubleBuffered = False
         TabOrder = 0
-        ExplicitWidth = 771
+        ExplicitWidth = 767
         object Image: TImage
           Left = 2
           Top = 15
-          Width = 763
+          Width = 767
           Height = 553
           Cursor = crCross
           Align = alClient
@@ -45,27 +47,28 @@ inherited VideoOutputFrame: TVideoOutputFrame
         object GroupBox1: TGroupBox
           Left = 2
           Top = 15
-          Width = 763
+          Width = 767
           Height = 553
           Align = alClient
           Caption = 'GroupBox1'
           TabOrder = 0
           Visible = False
-          ExplicitWidth = 767
+          ExplicitWidth = 763
         end
       end
       object Panel1: TPanel
         Left = 0
         Top = 570
-        Width = 767
+        Width = 771
         Height = 35
         Align = alBottom
         TabOrder = 1
+        ExplicitWidth = 767
         DesignSize = (
-          767
+          771
           35)
         object StopButton: TButton
-          Left = 730
+          Left = 662
           Top = 6
           Width = 30
           Height = 25
@@ -73,10 +76,9 @@ inherited VideoOutputFrame: TVideoOutputFrame
           Caption = 'Stop'
           TabOrder = 0
           OnClick = StopButtonClick
-          ExplicitLeft = 734
         end
         object StartButton: TButton
-          Left = 694
+          Left = 626
           Top = 6
           Width = 30
           Height = 25
@@ -84,10 +86,9 @@ inherited VideoOutputFrame: TVideoOutputFrame
           Caption = 'Start'
           TabOrder = 1
           OnClick = StartButtonClick
-          ExplicitLeft = 698
         end
         object TimeEdit: TMaskEdit
-          Left = 609
+          Left = 541
           Top = 8
           Width = 79
           Height = 21
@@ -97,12 +98,11 @@ inherited VideoOutputFrame: TVideoOutputFrame
           TabOrder = 2
           Text = '000:00:00:00'
           OnChange = TimeEditChange
-          ExplicitLeft = 613
         end
         object TrackBar: TTrackBar
-          Left = 2
+          Left = 5
           Top = 9
-          Width = 601
+          Width = 530
           Height = 22
           Anchors = [akLeft, akTop, akRight]
           Max = 1
@@ -111,43 +111,63 @@ inherited VideoOutputFrame: TVideoOutputFrame
           Position = 1
           TabOrder = 3
           OnChange = TrackBarChange
-          ExplicitWidth = 605
+        end
+        object FrameLeftButton: TButton
+          Left = 698
+          Top = 6
+          Width = 30
+          Height = 25
+          Anchors = [akTop, akRight]
+          Caption = '<'
+          Enabled = False
+          TabOrder = 4
+          OnClick = FrameLeftButtonClick
+        end
+        object FrameRightButton: TButton
+          Left = 734
+          Top = 6
+          Width = 30
+          Height = 25
+          Anchors = [akTop, akRight]
+          Caption = '>'
+          Enabled = False
+          TabOrder = 5
+          OnClick = FrameRightButtonClick
         end
       end
       object Panel2: TPanel
         Left = 0
         Top = 605
-        Width = 767
+        Width = 771
         Height = 46
         Align = alBottom
         TabOrder = 2
+        ExplicitWidth = 767
         DesignSize = (
-          767
+          771
           46)
         object SendToEdit: TEdit
           Left = 5
           Top = 4
-          Width = 513
+          Width = 530
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           Color = clBtnFace
           ReadOnly = True
           TabOrder = 0
-          ExplicitWidth = 517
         end
         object Button1: TButton
-          Left = 609
+          Left = 626
           Top = 2
-          Width = 79
+          Width = 66
           Height = 25
           Anchors = [akTop, akRight]
           Caption = 'Send points'
           TabOrder = 1
           OnClick = Button1Click
-          ExplicitLeft = 613
         end
         object SelectSendToButton: TButton
-          Left = 694
+          Left = 698
           Top = 2
           Width = 66
           Height = 25
@@ -156,10 +176,10 @@ inherited VideoOutputFrame: TVideoOutputFrame
           DropDownMenu = SelectPopupMenu
           Style = bsSplitButton
           TabOrder = 2
-          ExplicitLeft = 698
+          ExplicitLeft = 694
         end
         object SendAsMatrixButton: TButton
-          Left = 524
+          Left = 541
           Top = 2
           Width = 79
           Height = 25
@@ -167,7 +187,6 @@ inherited VideoOutputFrame: TVideoOutputFrame
           Caption = 'Send as Matrix'
           TabOrder = 3
           OnClick = SendAsMatrixButtonClick
-          ExplicitLeft = 528
         end
         object SendPointsByStepCheckBox: TCheckBox
           Left = 5
@@ -189,11 +208,11 @@ inherited VideoOutputFrame: TVideoOutputFrame
       object Panel3: TPanel
         Left = 0
         Top = 651
-        Width = 767
+        Width = 771
         Height = 35
         Align = alBottom
         TabOrder = 3
-        ExplicitWidth = 771
+        ExplicitWidth = 767
         object ShowCentralPointCheckBox: TCheckBox
           Left = 1
           Top = 1
@@ -224,10 +243,11 @@ inherited VideoOutputFrame: TVideoOutputFrame
     object NetworkStreamingTabSheet: TTabSheet
       Caption = 'Network Streaming'
       ImageIndex = 1
+      ExplicitWidth = 767
       inline NetworkStreamingFrame: TTVideoRegistratorFrame
         Left = 0
         Top = 0
-        Width = 767
+        Width = 771
         Height = 686
         Align = alClient
         Font.Charset = DEFAULT_CHARSET
@@ -240,24 +260,20 @@ inherited VideoOutputFrame: TVideoOutputFrame
         ExplicitWidth = 767
         ExplicitHeight = 686
         inherited Splitter1: TSplitter
-          Left = 384
+          Left = 388
           Height = 686
           ExplicitLeft = 525
           ExplicitHeight = 659
         end
         inherited ControlPanel: TPanel
-          Left = 387
+          Left = 391
           Height = 686
-          ExplicitLeft = 387
+          ExplicitLeft = 391
           ExplicitHeight = 686
           inherited ModePageControl: TPageControl
             Height = 519
             ExplicitHeight = 519
             inherited NetworkStreamingTabSheet: TTabSheet
-              ExplicitLeft = 0
-              ExplicitTop = 0
-              ExplicitWidth = 0
-              ExplicitHeight = 0
               inherited NetworkStreamingControlGroupBox: TGroupBox
                 inherited NetworkStreamingButton: TButton
                   OnClick = NetworkStreamingFrameNetworkStreamingButtonClick
@@ -265,16 +281,21 @@ inherited VideoOutputFrame: TVideoOutputFrame
               end
             end
             inherited RecordingTabSheet: TTabSheet
+              ExplicitLeft = 4
+              ExplicitTop = 24
+              ExplicitWidth = 370
               ExplicitHeight = 491
               inherited RecordingSettingsScrollBox: TScrollBox
                 Height = 491
                 ExplicitHeight = 491
                 inherited GroupBox1: TGroupBox
+                  ExplicitWidth = 349
                   inherited RecordingControlGroupBox: TGroupBox
-                    ExplicitWidth = 341
+                    ExplicitWidth = 345
                     ExplicitHeight = 58
                   end
                   inherited RecordingSettingsGroupBox: TGroupBox
+                    ExplicitWidth = 345
                     inherited RecordingFrameRateLabeledEdit: TLabeledEdit
                       ExplicitWidth = 149
                     end
@@ -324,21 +345,11 @@ inherited VideoOutputFrame: TVideoOutputFrame
             ActivePage = NetworkStreamingFrame.SourceFrameTabSheet
             inherited SourceComponentTabSheet: TTabSheet
               TabVisible = False
-              ExplicitLeft = 0
-              ExplicitTop = 0
-              ExplicitWidth = 0
-              ExplicitHeight = 0
-            end
-            inherited SourceFrameTabSheet: TTabSheet
-              ExplicitLeft = 0
-              ExplicitTop = 0
-              ExplicitWidth = 0
-              ExplicitHeight = 0
             end
           end
         end
         inherited VideoPanel: TPanel
-          Width = 384
+          Width = 388
           Height = 686
           Constraints.MinWidth = 388
           ExplicitWidth = 388
@@ -367,10 +378,11 @@ inherited VideoOutputFrame: TVideoOutputFrame
     object RecordingTabSheet: TTabSheet
       Caption = 'Recording'
       ImageIndex = 2
+      ExplicitWidth = 767
       inline RecordingFrame: TTVideoRegistratorFrame
         Left = 0
         Top = 0
-        Width = 767
+        Width = 771
         Height = 686
         Align = alClient
         Font.Charset = DEFAULT_CHARSET
@@ -383,15 +395,15 @@ inherited VideoOutputFrame: TVideoOutputFrame
         ExplicitWidth = 767
         ExplicitHeight = 686
         inherited Splitter1: TSplitter
-          Left = 384
+          Left = 388
           Height = 686
           ExplicitLeft = 525
           ExplicitHeight = 659
         end
         inherited ControlPanel: TPanel
-          Left = 387
+          Left = 391
           Height = 686
-          ExplicitLeft = 387
+          ExplicitLeft = 391
           ExplicitHeight = 686
           inherited ModePageControl: TPageControl
             Height = 519
@@ -412,19 +424,25 @@ inherited VideoOutputFrame: TVideoOutputFrame
               end
             end
             inherited RecordingTabSheet: TTabSheet
+              ExplicitLeft = 4
+              ExplicitTop = 24
+              ExplicitWidth = 370
+              ExplicitHeight = 500
               inherited RecordingSettingsScrollBox: TScrollBox
                 VertScrollBar.Position = 54
                 inherited GroupBox1: TGroupBox
                   Top = -54
                   Height = 550
                   ExplicitTop = -54
+                  ExplicitWidth = 349
                   ExplicitHeight = 550
                   inherited RecordingControlGroupBox: TGroupBox
                     Height = 43
-                    ExplicitWidth = 341
+                    ExplicitWidth = 345
                     ExplicitHeight = 43
                   end
                   inherited RecordingSettingsGroupBox: TGroupBox
+                    ExplicitWidth = 345
                     inherited RecordingFrameRateLabeledEdit: TLabeledEdit
                       ExplicitWidth = 149
                     end
@@ -474,21 +492,11 @@ inherited VideoOutputFrame: TVideoOutputFrame
             ActivePage = RecordingFrame.SourceFrameTabSheet
             inherited SourceComponentTabSheet: TTabSheet
               TabVisible = False
-              ExplicitLeft = 0
-              ExplicitTop = 0
-              ExplicitWidth = 0
-              ExplicitHeight = 0
-            end
-            inherited SourceFrameTabSheet: TTabSheet
-              ExplicitLeft = 0
-              ExplicitTop = 0
-              ExplicitWidth = 0
-              ExplicitHeight = 0
             end
           end
         end
         inherited VideoPanel: TPanel
-          Width = 384
+          Width = 388
           Height = 686
           Constraints.MinWidth = 388
           ExplicitWidth = 388
@@ -516,9 +524,9 @@ inherited VideoOutputFrame: TVideoOutputFrame
     end
   end
   object ToolBar: TToolBar
-    Left = 775
+    Left = 779
     Top = 0
-    Width = 141
+    Width = 137
     Height = 714
     Align = alRight
     AutoSize = True
@@ -531,7 +539,7 @@ inherited VideoOutputFrame: TVideoOutputFrame
     ParentDoubleBuffered = False
     ShowCaptions = True
     TabOrder = 1
-    ExplicitLeft = 779
+    ExplicitLeft = 775
     object CaptureStartToolButton: TToolButton
       Left = 0
       Top = 0
@@ -699,7 +707,7 @@ inherited VideoOutputFrame: TVideoOutputFrame
     Left = 688
     Top = 456
     Bitmap = {
-      494C010120006000E80010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010120006000EC0010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000009000000001002000000000000090
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

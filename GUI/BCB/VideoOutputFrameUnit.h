@@ -106,6 +106,8 @@ __published:    // IDE-managed Components
 	TAction *SavePictureAction;
 	TMenuItem *VideoCodec;
 	TMenuItem *RecordingMethod;
+	TButton *FrameLeftButton;
+	TButton *FrameRightButton;
     void __fastcall TimerTimer(TObject *Sender);
 	void __fastcall StartButtonClick(TObject *Sender);
     void __fastcall StopButtonClick(TObject *Sender);
@@ -158,6 +160,8 @@ __published:    // IDE-managed Components
 	void __fastcall RecordingFrameVideoCompressorComboBoxChange(TObject *Sender);
 	void __fastcall StartStreamingToolButtonClick(TObject *Sender);
 	void __fastcall RecordingFrameRecordingMethodComboBoxChange(TObject *Sender);
+	void __fastcall FrameLeftButtonClick(TObject *Sender);
+	void __fastcall FrameRightButtonClick(TObject *Sender);
 
 private:    // User declarations
 public:        // User declarations

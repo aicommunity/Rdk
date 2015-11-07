@@ -1405,6 +1405,20 @@ void TVideoOutputFrame::AUpdateInterface(void)
  }
  else
   SendToEdit->Text="";
+
+ if(CaptureThread)
+ {
+  if(CaptureThread->GetSourceMode() == 1 || CaptureThread->GetSourceMode() == 4)
+  {
+   FrameLeftButton->Enabled=true;
+   FrameRightButton->Enabled=true;
+  }
+  else
+  {
+   FrameLeftButton->Enabled=false;
+   FrameRightButton->Enabled=false;
+  }
+ }
 }
 
 // Сохраняет параметры интерфейса в xml
@@ -2332,4 +2346,62 @@ void __fastcall TVideoOutputFrame::RecordingFrameRecordingMethodComboBoxChange(T
 }
 //---------------------------------------------------------------------------
 
+
+void __fastcall TVideoOutputFrame::FrameLeftButtonClick(TObject *Sender)
+{
+ if(!CaptureThread)
+  return;
+
+ if(CaptureThread->GetSourceMode() == 1) // avi
+ {
+  TVideoCaptureThreadVideoGrabber* cap=dynamic_cast<TVideoCaptureThreadVideoGrabber*>(CaptureThread);
+  if(!cap)
+   return;
+  __int64 pos=cap->GetVideoGrabber()->PlayerFramePosition;
+  if(pos>1)
+   cap->GetVideoGrabber()->PlayerFramePosition=pos-1;
+ }
+ else
+ if(CaptureThread->GetSourceMode() == 4) // bmp seq
+ {
+  TVideoCaptureThreadBmpSequence* cap=dynamic_cast<TVideoCaptureThreadBmpSequence*>(CaptureThread);
+  if(!cap)
+   return;
+
+  long long pos=cap->GetPosition();
+  if(pos>0)
+   cap->SetPosition(pos-1);
+ }
+ CaptureThread->Calculate();
+ UpdateInterface();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TVideoOutputFrame::FrameRightButtonClick(TObject *Sender)
+{
+ if(!CaptureThread)
+  return;
+
+ if(CaptureThread->GetSourceMode() == 1) // avi
+ {
+  TVideoCaptureThreadVideoGrabber* cap=dynamic_cast<TVideoCaptureThreadVideoGrabber*>(CaptureThread);
+  if(!cap)
+   return;
+  __int64 pos=cap->GetVideoGrabber()->PlayerFramePosition;
+  cap->GetVideoGrabber()->PlayerFramePosition=pos+1;
+ }
+ else
+ if(CaptureThread->GetSourceMode() == 4) // bmp seq
+ {
+  TVideoCaptureThreadBmpSequence* cap=dynamic_cast<TVideoCaptureThreadBmpSequence*>(CaptureThread);
+  if(!cap)
+   return;
+
+  long long pos=cap->GetPosition();
+  cap->SetPosition(pos+1);
+ }
+ CaptureThread->Calculate();
+ UpdateInterface();
+}
+//---------------------------------------------------------------------------
 
