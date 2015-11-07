@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{0795589C-6F80-4461-85EC-6594167B4AD7}</ProjectGuid>
+    <ProjectGuid>{149112E9-B343-4E81-A5F5-B4853AE7E8FB}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>RdkBasicLib</RootNamespace>
   </PropertyGroup>
@@ -38,11 +38,11 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>.\..\..\Bin\Vs\</OutDir>
+    <OutDir>.\..\..\..\..\Bin\Platform\Win\Lib.Vs\</OutDir>
     <IncludePath>..\..\Core\;..\..\..\..\Rdk\Deploy\Include\;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>.\..\..\Bin\Vs\</OutDir>
+    <OutDir>.\..\..\..\..\Bin\Platform\Win\Lib.Vs\</OutDir>
     <IncludePath>..\..\Core\;..\..\..\..\Rdk\Deploy\Include\;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -75,7 +75,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions);RDK_UNICODE_RUN</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions);LIBRDK_LIBRARY_EXPORT;RDK_UNICODE_RUN;</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <AdditionalIncludeDirectories>
       </AdditionalIncludeDirectories>
@@ -97,8 +97,8 @@
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Core\UStatistic.cpp" />
-    <ClCompile Include="..\..\Core\UStatisticLibrary.cpp" />
+    <ClCompile Include="..\..\Core\UBCLLibrary.cpp" />
+    <ClCompile Include="..\..\Core\UModel.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

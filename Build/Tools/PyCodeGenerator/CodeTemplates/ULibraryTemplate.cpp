@@ -13,7 +13,7 @@ namespace @NAMESPACE_NAME@ {
 // Конструкторы и деструкторы
 // --------------------------
 @CLASS_NAME@::@CLASS_NAME@(void)
- : ULibrary("@LIBRARY_NAME@","1.0")
+ : RDK::ULibrary("@LIBRARY_NAME@","1.0")
 {
 }
 // --------------------------
