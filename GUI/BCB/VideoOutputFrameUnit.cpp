@@ -33,6 +33,7 @@ __fastcall TVideoOutputFrame::TVideoOutputFrame(TComponent* Owner)
 {
  CaptureThread=0;
  FrameIndex=0;
+ StartTimerCounter=-1;
 // Capture=0;
 
  // Модуль графики
@@ -1525,6 +1526,15 @@ void TVideoOutputFrame::ALoadParameters(RDK::USerStorageXML &xml)
 //---------------------------------------------------------------------------
 void __fastcall TVideoOutputFrame::TimerTimer(TObject *Sender)
 {
+ if(StartTimerCounter>0)
+  --StartTimerCounter;
+
+ if(StartTimerCounter == 0)
+ {
+  StartTimerCounter=-1;
+  Timer->Enabled=false;
+ }
+
  UpdateInterface();
 }
 //---------------------------------------------------------------------------
@@ -2357,9 +2367,14 @@ void __fastcall TVideoOutputFrame::FrameLeftButtonClick(TObject *Sender)
   TVideoCaptureThreadVideoGrabber* cap=dynamic_cast<TVideoCaptureThreadVideoGrabber*>(CaptureThread);
   if(!cap)
    return;
+//  ResetEvent(cap->VideoGrabberCompleted);
   __int64 pos=cap->GetVideoGrabber()->PlayerFramePosition;
-  if(pos>1)
-   cap->GetVideoGrabber()->PlayerFramePosition=pos-1;
+  if(pos<=1)
+   return;
+  cap->GetVideoGrabber()->PlayerFramePosition=pos-1;
+//  WaitForSingleObject(cap->VideoGrabberCompleted,10000);
+  StartTimerCounter=20;
+  Timer->Enabled=true;
  }
  else
  if(CaptureThread->GetSourceMode() == 4) // bmp seq
@@ -2372,7 +2387,7 @@ void __fastcall TVideoOutputFrame::FrameLeftButtonClick(TObject *Sender)
   if(pos>0)
    cap->SetPosition(pos-1);
  }
- CaptureThread->Calculate();
+
  UpdateInterface();
 }
 //---------------------------------------------------------------------------
@@ -2387,8 +2402,14 @@ void __fastcall TVideoOutputFrame::FrameRightButtonClick(TObject *Sender)
   TVideoCaptureThreadVideoGrabber* cap=dynamic_cast<TVideoCaptureThreadVideoGrabber*>(CaptureThread);
   if(!cap)
    return;
+//  ResetEvent(cap->VideoGrabberCompleted);
   __int64 pos=cap->GetVideoGrabber()->PlayerFramePosition;
+  if(pos>=cap->GetVideoGrabber()->PlayerFrameCount)
+   return;
   cap->GetVideoGrabber()->PlayerFramePosition=pos+1;
+//  WaitForSingleObject(cap->VideoGrabberCompleted,10000);
+  StartTimerCounter=20;
+  Timer->Enabled=true;
  }
  else
  if(CaptureThread->GetSourceMode() == 4) // bmp seq
@@ -2400,7 +2421,7 @@ void __fastcall TVideoOutputFrame::FrameRightButtonClick(TObject *Sender)
   long long pos=cap->GetPosition();
   cap->SetPosition(pos+1);
  }
- CaptureThread->Calculate();
+
  UpdateInterface();
 }
 //---------------------------------------------------------------------------

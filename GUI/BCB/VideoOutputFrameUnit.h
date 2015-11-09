@@ -326,6 +326,8 @@ bool ProcessAllFramesFlag;
 
 int SavePictureIndex;
 
+int StartTimerCounter;
+
 public:
 // ============================================================
 

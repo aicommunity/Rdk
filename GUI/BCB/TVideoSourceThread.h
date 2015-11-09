@@ -604,7 +604,7 @@ RDK::UELockVar<double> ConvertTimeStamp;
 /// Хендл окна в которое необходимо выводить данные захвата
 TWinControl* OverlayHandle;
 
-protected: // События
+public: // События
 /// Выставляется при получении очередного кадра
 HANDLE VideoGrabberCompleted;
 
