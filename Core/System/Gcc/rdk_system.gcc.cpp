@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <cerrno>
 #include <stdlib.h>
+#include <cstdio>
 
 #include "../rdk_system.h"
 #include "USharedMemoryLoader.gcc.cpp"
@@ -50,8 +51,19 @@ unsigned long long CalcDiffTime(unsigned long long time1, unsigned long long tim
 /// Возвращает локальное время в днях (с точностью до миллисекунд) от начала времен
 double GetVariantLocalTime(void)
 {
- return 0;
-// TODO:
+ timespec currentime;
+ clock_gettime(CLOCK_REALTIME, &currentime);
+
+ // Initialize 'timezone' variable from the info from environment.
+ // But 'timezone' is the number of seconds that the local time zone is earlier than UTC
+ // so to get local time we have to subtract the offset from the UTC time.
+ tzset();
+ currentime.tv_sec = currentime.tv_sec - timezone;
+
+ int numberOfDays = currentime.tv_sec/(24*60*60);
+ return numberOfDays +
+        static_cast<double>(currentime.tv_sec-numberOfDays*(24*60*60)) / (24*60*60)  +      // part of days in seconds
+        static_cast<double>(currentime.tv_nsec)/(static_cast<double>(24*60*60)*1000000000); // part of day in nanoseconds
 }
 
 
