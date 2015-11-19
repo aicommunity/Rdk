@@ -269,9 +269,9 @@ bool UApplication::Init(void)
  Engine_SetBufObjectsMode(1);
 
  std::string font_path=extract_file_path(ApplicationFileName);
+ SetSystemDir(font_path.c_str());
  GraphicalEngineInit(0,1,1,320,240,1,(void*)ExceptionHandler);
  Engine_LoadFonts();
- SetSystemDir(font_path.c_str());
 
  SetWorkDirectory(font_path);
  EngineControl->Init();
