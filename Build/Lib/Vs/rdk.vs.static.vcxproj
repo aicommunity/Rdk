@@ -38,9 +38,9 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)\..\..\..\..\..\Bin\Platform\Win\Lib.Vs\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\..\..\..\..\Bin\Platform\Win\Lib.Vs\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</IntDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)\..\..\..\..\..\Bin\Platform\Win\Lib.Vs\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\..\..\..\..\Bin\Platform\Win\Lib.Vs\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</IntDir>
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
@@ -63,7 +63,8 @@
       <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Lib>
-      <OutputFile>$(ProjectDir)\..\..\..\..\Bin\Platform\Win\rdk.vs.static.lib</OutputFile>
+      <OutputFile>$(ProjectDir)\..\..\..\..\Bin\Platform\Win\Lib.Vs\rdk.vs.static.lib</OutputFile>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -80,7 +81,8 @@
       <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Lib>
-      <OutputFile>$(ProjectDir)\..\..\..\..\Bin\Platform\Win\rdk.vs.static.lib</OutputFile>
+      <OutputFile>$(ProjectDir)\..\..\..\..\Bin\Platform\Win\Lib.Vs\rdk.vs.static.lib</OutputFile>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -144,6 +146,7 @@
     <ClCompile Include="..\..\..\Core\Math\MGraphics.cpp" />
     <ClCompile Include="..\..\..\Core\Math\MKalmanFilter.cpp" />
     <ClCompile Include="..\..\..\Core\Math\MMatrix.cpp" />
+    <ClCompile Include="..\..\..\Core\Math\MMatrixBase.cpp" />
     <ClCompile Include="..\..\..\Core\Math\MUBinarySerialize.cpp" />
     <ClCompile Include="..\..\..\Core\Math\MUIOStream.cpp" />
     <ClCompile Include="..\..\..\Core\Math\MUXMLSerialize.cpp" />
@@ -253,6 +256,7 @@
     <ClInclude Include="..\..\..\Core\Math\MGraphics.h" />
     <ClInclude Include="..\..\..\Core\Math\MKalmanFilter.h" />
     <ClInclude Include="..\..\..\Core\Math\MMatrix.h" />
+    <ClInclude Include="..\..\..\Core\Math\MMatrixBase.h" />
     <ClInclude Include="..\..\..\Core\Math\MUBinarySerialize.h" />
     <ClInclude Include="..\..\..\Core\Math\MUIOStream.h" />
     <ClInclude Include="..\..\..\Core\Math\MUXMLSerialize.h" />
