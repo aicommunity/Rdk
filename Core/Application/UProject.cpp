@@ -274,6 +274,8 @@ bool UProject::ReadFromXml(USerStorageXML &xml)
 
  int calc_time_mode=xml.ReadInteger("CalculationTimeSourceMode",0);
 
+ Config.ProjectMode=xml.ReadInteger("ProjectMode",1);
+
  int num_engines=xml.ReadInteger("NumEngines",1);
  if(num_engines<=0)
   num_engines=1;
@@ -307,8 +309,6 @@ bool UProject::ReadFromXml(USerStorageXML &xml)
 
  //InputEnvImageWidth=xml.ReadInteger("InputEnvImageWidth",360);
  //InputEnvImageHeight=xml.ReadInteger("InputEnvImageHeight",240);
-
- Config.ProjectMode=xml.ReadInteger("ProjectMode",1);
 
  // Флаг автоматического сохранения проекта
  Config.ProjectAutoSaveFlag=xml.ReadInteger("ProjectAutoSaveFlag",1);
