@@ -693,16 +693,16 @@ void TUServerControlForm::ASaveParameters(RDK::USerStorageXML &xml)
 }
 
 // «агружает параметры интерфейса из xml
+/// TODO: Ётот код должен частично мигрировать RdkApplication.GetServerControl()
 void TUServerControlForm::ALoadParameters(RDK::USerStorageXML &xml)
 {
  RdkApplication.GetServerControl()->SetAverageIterations(xml.ReadInteger("AverageIterations",RdkApplication.GetServerControl()->GetAverageIterations()));
-// SetServerBinding(xml.ReadString("ServerControlAddress", "127.0.0.1"),xml.ReadInteger("ServerControlPort",80));
 
  RdkApplication.GetServerControl()->SetMetaComponentName(xml.ReadString("MetadataComponentName",""));
  RdkApplication.GetServerControl()->SetMetaComponentStateName(xml.ReadString("MetadataComponentStateName",""));
 
- int source_num_channels=xml.ReadInteger("NumberOfChannels",RdkApplication.GetNumEngines());
- RdkApplication.SetNumEngines(source_num_channels);
+ int source_num_channels=RdkApplication.GetNumEngines();//xml.ReadInteger("NumberOfChannels",RdkApplication.GetNumEngines());
+// RdkApplication.SetNumEngines(source_num_channels);
  TProjectConfig config=RdkApplication.GetProjectConfig();
  for(size_t i=0;i<RdkApplication.GetProjectConfig().ChannelsConfig.size();i++)
  {

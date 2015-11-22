@@ -448,8 +448,6 @@ try{
   Sleep(0);
  }
 
- SelectEngine(selected_engine_index);
-
  if(selected_engine_index>=GetNumEngines())
   selected_engine_index=0;
 
