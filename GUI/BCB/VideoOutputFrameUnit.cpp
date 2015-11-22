@@ -1250,13 +1250,13 @@ void TVideoOutputFrame::ABeforeCalculate(void)
 
   if(!res)
    return;
-  if(SendBmpSource.GetLength() == 0 && CaptureThread->CheckCaptureThreadState() == 1)
+/*  if(SendBmpSource.GetLength() == 0 && CaptureThread->CheckCaptureThreadState() == 1)
   {
    if(FrameIndex<num_channels)
 	MEngine_LogMessage(FrameIndex, RDK_EX_INFO, std::string("TVideoOutputFrame::ABeforeCalculate: Frame have zero size!").c_str());
    else
 	Engine_LogMessage(RDK_EX_INFO, std::string("TVideoOutputFrame::ABeforeCalculate: Frame have zero size!").c_str());
-  }
+  } */
  }
 
  {
