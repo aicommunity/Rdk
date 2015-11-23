@@ -366,7 +366,7 @@ MVector<T,3> MCameraStandard<T>::CalcPixelPositionFromNormalPosition(const MVect
    res.z=1;
 
    res.x+=2*DistortionCoeff[2]*point.x*point.y+DistortionCoeff[3]*(r2+2*point.x*point.x);
-   res.y+=DistortionCoeff[2]*(r+2*point.y*point.y)+2*DistortionCoeff[3]*point.x*point.y;
+   res.y+=DistortionCoeff[2]*(r2+2*point.y*point.y)+2*DistortionCoeff[3]*point.x*point.y;
   }
   else
   if(DistortionCoeff.GetSize() == 10)
@@ -382,7 +382,7 @@ MVector<T,3> MCameraStandard<T>::CalcPixelPositionFromNormalPosition(const MVect
    res.z=1;
 
    res.x+=2*DistortionCoeff[2]*point.x*point.y+DistortionCoeff[3]*(r2+2*point.x*point.x);
-   res.y+=DistortionCoeff[2]*(r+2*point.y*point.y)+2*DistortionCoeff[3]*point.x*point.y;
+   res.y+=DistortionCoeff[2]*(r2+2*point.y*point.y)+2*DistortionCoeff[3]*point.x*point.y;
 
    res.x+=DistortionCoeff[8]*r2+DistortionCoeff[9]*r4;
    res.y+=DistortionCoeff[8]*r2+DistortionCoeff[9]*r4;
@@ -401,7 +401,7 @@ MVector<T,3> MCameraStandard<T>::CalcPixelPositionFromNormalPosition(const MVect
    res.z=1;
 
    res.x+=2*DistortionCoeff[2]*point.x*point.y+DistortionCoeff[3]*(r2+2*point.x*point.x);
-   res.y+=DistortionCoeff[2]*(r+2*point.y*point.y)+2*DistortionCoeff[3]*point.x*point.y;
+   res.y+=DistortionCoeff[2]*(r2+2*point.y*point.y)+2*DistortionCoeff[3]*point.x*point.y;
 
    res.x+=DistortionCoeff[8]*r2+DistortionCoeff[9]*r4;
    res.y+=DistortionCoeff[8]*r2+DistortionCoeff[9]*r4;
