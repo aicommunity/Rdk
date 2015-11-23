@@ -341,7 +341,7 @@ MVector<T,3> MCameraStandard<T>::CalcPixelPositionFromNormalPosition(const MVect
    res.z=1;
   }
   else
-  if(DistortionCoeff.GetSize() >= 5)
+  if(DistortionCoeff.GetSize() == 5)
   {
    T r=point.x*point.x+point.y*point.y;
    T m1=(1.0+DistortionCoeff[0]*r+DistortionCoeff[1]*r*r+DistortionCoeff[4]*r*r*r);
@@ -351,6 +351,60 @@ MVector<T,3> MCameraStandard<T>::CalcPixelPositionFromNormalPosition(const MVect
 
    res.x+=2*DistortionCoeff[2]*point.x*point.y+DistortionCoeff[3]*(r+2*point.x*point.x);
    res.y+=DistortionCoeff[2]*(r+2*point.y*point.y)+2*DistortionCoeff[3]*point.x*point.y;
+  }
+  else
+  if(DistortionCoeff.GetSize() == 8)
+  {
+   T r2=point.x*point.x+point.y*point.y;
+   T r4=r2*r2;
+   T r6=r4*r2;
+   T dividend=1.0+DistortionCoeff[0]*r2+DistortionCoeff[1]*r4+DistortionCoeff[4]*r6;
+   T divider=1.0+DistortionCoeff[5]*r2+DistortionCoeff[6]*r4+DistortionCoeff[7]*r6;
+   T m1=dividend/divider;
+   res.x=m1*point.x;
+   res.y=m1*point.y;
+   res.z=1;
+
+   res.x+=2*DistortionCoeff[2]*point.x*point.y+DistortionCoeff[3]*(r+2*point.x*point.x);
+   res.y+=DistortionCoeff[2]*(r+2*point.y*point.y)+2*DistortionCoeff[3]*point.x*point.y;
+  }
+  else
+  if(DistortionCoeff.GetSize() == 10)
+  {
+   T r2=point.x*point.x+point.y*point.y;
+   T r4=r2*r2;
+   T r6=r4*r2;
+   T dividend=1.0+DistortionCoeff[0]*r2+DistortionCoeff[1]*r4+DistortionCoeff[4]*r6;
+   T divider=1.0+DistortionCoeff[5]*r2+DistortionCoeff[6]*r4+DistortionCoeff[7]*r6;
+   T m1=dividend/divider;
+   res.x=m1*point.x;
+   res.y=m1*point.y;
+   res.z=1;
+
+   res.x+=2*DistortionCoeff[2]*point.x*point.y+DistortionCoeff[3]*(r+2*point.x*point.x);
+   res.y+=DistortionCoeff[2]*(r+2*point.y*point.y)+2*DistortionCoeff[3]*point.x*point.y;
+
+   res.x+=DistortionCoeff[8]*r2+DistortionCoeff[9]*r4;
+   res.y+=DistortionCoeff[8]*r2+DistortionCoeff[9]*r4;
+  }
+  else
+  if(DistortionCoeff.GetSize() == 12)
+  {
+   T r2=point.x*point.x+point.y*point.y;
+   T r4=r2*r2;
+   T r6=r4*r2;
+   T dividend=1.0+DistortionCoeff[0]*r2+DistortionCoeff[1]*r4+DistortionCoeff[4]*r6;
+   T divider=1.0+DistortionCoeff[5]*r2+DistortionCoeff[6]*r4+DistortionCoeff[7]*r6;
+   T m1=dividend/divider;
+   res.x=m1*point.x;
+   res.y=m1*point.y;
+   res.z=1;
+
+   res.x+=2*DistortionCoeff[2]*point.x*point.y+DistortionCoeff[3]*(r+2*point.x*point.x);
+   res.y+=DistortionCoeff[2]*(r+2*point.y*point.y)+2*DistortionCoeff[3]*point.x*point.y;
+
+   res.x+=DistortionCoeff[8]*r2+DistortionCoeff[9]*r4;
+   res.y+=DistortionCoeff[8]*r2+DistortionCoeff[9]*r4;
   }
   return res;
  }
