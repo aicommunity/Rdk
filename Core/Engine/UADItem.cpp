@@ -203,7 +203,7 @@ const UEPtr<const UItemData> UADItem::GetInputData(const UEPtr<UItem> &citem) co
  UItemData result;
 
  if(!citem)
-  throw new EInputIndexNotExist(-1);
+  throw EInputIndexNotExist(-1);
 
  std::vector<UCLink> buffer;
  GetCLink(citem,buffer);
@@ -211,7 +211,7 @@ const UEPtr<const UItemData> UADItem::GetInputData(const UEPtr<UItem> &citem) co
  {
   UCLink &indexes=buffer[i];
   if(indexes.Input < 0)
-   throw new EInputIndexNotExist(-1);
+   throw EInputIndexNotExist(-1);
 
   return InputData[indexes.Input];
  }

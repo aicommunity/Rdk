@@ -133,7 +133,7 @@ const UId& UStorage::FindClassId(const NameT &name) const
 {
  map<NameT,UId>::const_iterator I=ClassesLookupTable.find(name);
  if(I == ClassesLookupTable.end())
-  throw new EClassNameNotExist(name);
+  throw EClassNameNotExist(name);
  return I->second;
 }
 
@@ -146,7 +146,7 @@ const NameT UStorage::FindClassName(const UId &id) const
   if(I->second == id)
    return I->first;
  }
- throw new EClassIdNotExist(id);
+ throw EClassIdNotExist(id);
 }
 // --------------------------
 
@@ -167,7 +167,7 @@ UId UStorage::AddClass(UEPtr<UComponent> classtemplate, const UId &classid)
   id=LastClassId+1;
 
  if(ClassesStorage.find(id) != ClassesStorage.end())
-  throw new EClassIdAlreadyExist(id);
+  throw EClassIdAlreadyExist(id);
 
  if(!classtemplate->Build())
   return ForbiddenId;
@@ -186,7 +186,7 @@ UId UStorage::AddClass(UEPtr<UComponent> classtemplate, const UId &classid)
 UId UStorage::AddClass(UEPtr<UComponent> classtemplate, const string &classname, const UId &classid)
 {
  if(ClassesLookupTable.find(classname) != ClassesLookupTable.end())
-  throw new EClassNameAlreadyExist(classname);
+  throw EClassNameAlreadyExist(classname);
 
  UId id=AddClass(classtemplate,classid);
  ClassesLookupTable[classname]=id;
@@ -205,7 +205,7 @@ void UStorage::DelClass(const UId &classid, bool force)
  if(!force)
  {
   if(temp != ObjectsStorage.end() && temp->second.size() > 0)
-   throw new EObjectStorageNotEmpty(classid);
+   throw EObjectStorageNotEmpty(classid);
  }
  else
  {
@@ -218,7 +218,7 @@ void UStorage::DelClass(const UId &classid, bool force)
  if(I != ClassesStorage.end())
   ClassesStorage.erase(I);
  else
-  throw new EClassIdNotExist(classid);
+  throw EClassIdNotExist(classid);
 
  UClassStorageElement element=I->second;
  if(element)
@@ -937,7 +937,7 @@ UId UStorage::PopObject(UEPtr<UContainer> object)
 {
  UObjectsStorageIterator instances=ObjectsStorage.find(object->GetClass());
  if(instances == ObjectsStorage.end())
-  throw new EClassIdNotExist(object->GetClass());
+  throw EClassIdNotExist(object->GetClass());
 
  for(list<UInstancesStorageElement>::iterator I=instances->second.begin(),
 						J=instances->second.end(); I!=J; ++I)
