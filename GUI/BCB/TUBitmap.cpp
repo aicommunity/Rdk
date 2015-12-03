@@ -15,6 +15,7 @@ See file license.txt for more information
 #define TUBITMAP_CPP
 
 #include "TUBitmap.h"
+#include "../../Core/Graphics/UGraphicsIO.h"
 #include <VCLTee.Series.hpp>
 
 namespace RDK {
@@ -119,6 +120,12 @@ void UBitmapToTBitmap(const UBitmap &source, Graphics::TBitmap *target, bool ref
    target->HandleType=bmDIB;
   if(target->PixelFormat != pf24bit)
    target->PixelFormat=pf24bit;
+{
+  DIBSECTION dib_section;
+ GetObject(target->Handle, sizeof(dib_section), &dib_section);
+ BITMAPINFOHEADER &header=dib_section.dsBmih;
+ bool scan_line_normal_order=(header.biHeight>=0)?true:false;
+ }
 
   if(!reflect)
   {
@@ -243,16 +250,25 @@ void TBitmapToUBitmap(UBitmap &target, Graphics::TBitmap *source, bool reflect)
   if(!source->Width || !source->Height)
    return;
 
-   if(!(target.GetWidth() % 4))
+   if(!(target.GetWidth() % 4) && !reflect)
     memcpy(target.GetData(),source->ScanLine[target.GetHeight()-1],
           target.GetByteLength()*sizeof(UBColor));
    else
+   if(!reflect)
    {
-    linebytelength=target.GetLineByteLength();
-    target=0;
-    for(int i=target.GetHeight()-1;i>=0;--i,target+=linebytelength)
-     memcpy(&target(), source->ScanLine[i],
-          linebytelength*sizeof(UBColor));
+	linebytelength=target.GetLineByteLength();
+	target=0;
+	for(int i=target.GetHeight()-1;i>=0;--i,target+=linebytelength)
+	 memcpy(&target(), source->ScanLine[i],
+		  linebytelength*sizeof(UBColor));
+   }
+   else
+   {
+	linebytelength=target.GetLineByteLength();
+	target=0;
+	for(int i=0;i<target.GetHeight()-1;++i,target+=linebytelength)
+	 memcpy(&target(), source->ScanLine[i],
+		  linebytelength*sizeof(UBColor));
    }
  break;
 
@@ -262,16 +278,25 @@ void TBitmapToUBitmap(UBitmap &target, Graphics::TBitmap *source, bool reflect)
   if(!source->Width || !source->Height)
    return;
 
-   if(!(target.GetWidth() % 4))
-    memcpy(target.GetData(),source->ScanLine[target.GetHeight()-1],
-          target.GetByteLength()*sizeof(UBColor));
+   if(!(target.GetWidth() % 4) && !reflect)
+	memcpy(target.GetData(),source->ScanLine[target.GetHeight()-1],
+		  target.GetByteLength()*sizeof(UBColor));
+   else
+   if(!reflect)
+   {
+	linebytelength=target.GetLineByteLength();
+	target=0;
+	for(int i=target.GetHeight()-1;i>=0;--i,target+=linebytelength)
+	 memcpy(&target(), source->ScanLine[i],
+		  linebytelength*sizeof(UBColor));
+   }
    else
    {
-    linebytelength=target.GetLineByteLength();
-    target=0;
-    for(int i=target.GetHeight()-1;i>=0;--i,target+=linebytelength)
-     memcpy(&target(), source->ScanLine[i],
-          linebytelength*sizeof(UBColor));
+	linebytelength=target.GetLineByteLength();
+	target=0;
+	for(int i=0;i<target.GetHeight()-1;++i,target+=linebytelength)
+	 memcpy(&target(), source->ScanLine[i],
+		  linebytelength*sizeof(UBColor));
    }
  break;
 
@@ -281,16 +306,25 @@ void TBitmapToUBitmap(UBitmap &target, Graphics::TBitmap *source, bool reflect)
   if(!source->Width || !source->Height)
    return;
 
-  if(!(target.GetWidth() % 4))
+  if(!(target.GetWidth() % 4) && !reflect)
    memcpy(target.GetData(),source->ScanLine[target.GetHeight()-1],
           target.GetByteLength());
    else
+   if(!reflect)
    {
-    linebytelength=target.GetLineByteLength();
-    target=0;
-    for(int i=target.GetHeight()-1;i>=0;--i,target+=linebytelength)
-     memcpy(&target(),source->ScanLine[i],
-          linebytelength);
+	linebytelength=target.GetLineByteLength();
+	target=0;
+	for(int i=target.GetHeight()-1;i>=0;--i,target+=linebytelength)
+	 memcpy(&target(),source->ScanLine[i],
+		  linebytelength);
+   }
+   else
+   {
+	linebytelength=target.GetLineByteLength();
+	target=0;
+	for(int i=0;i<target.GetHeight()-1;++i,target+=linebytelength)
+	 memcpy(&target(), source->ScanLine[i],
+		  linebytelength*sizeof(UBColor));
    }
  break;
  }
@@ -307,8 +341,26 @@ bool LoadBitmapFromFile(String FileName, UBitmap *target)
 {
  Graphics::TBitmap *source=new Graphics::TBitmap;
 
+ UBmpHeader header;
+ short type=0;
+
+ ifstream stream(AnsiString(FileName).c_str(),ios::in);
+ if(!stream)
+  return false;
+ stream.read(reinterpret_cast<char*>(&type),sizeof(type)/sizeof(char));
+ stream.read(reinterpret_cast<char*>(&header),sizeof(header)/sizeof(char));
+ stream.close();
+
+ bool default_order=true;
+ if(header.height<0)
+ {
+  header.height=-header.height;
+  default_order=false;
+ }
+// RDK::LoadBitmapFromFile(AnsiString(FileName).c_str(),*target);
  source->LoadFromFile(FileName);
- *target<<source;
+
+ TBitmapToUBitmap(*target, source, !default_order);
  delete source;
 
  return true;
