@@ -230,7 +230,7 @@ bool UComponent::SetEnvironment(UEPtr<UEnvironment> environment)
 const UTimeControl& UComponent::GetTime(void) const
 {
  if(!Environment)
-  throw EEnvironmentNotExist;
+  throw EEnvironmentNotExist();
 
  return Environment->GetTime();
 }
@@ -240,7 +240,7 @@ const UTimeControl& UComponent::GetTime(void) const
 UAFont* UComponent::GetDefaultFont(void)
 {
  if(!Environment)
-  throw EEnvironmentNotExist;
+  throw EEnvironmentNotExist();
 
  return Environment->GetFonts().GetDefaultFont();
 }
@@ -249,7 +249,7 @@ UAFont* UComponent::GetDefaultFont(void)
 UAFont* UComponent::GetFont(const string &name, int size)
 {
  if(!Environment)
-  throw EEnvironmentNotExist;
+  throw EEnvironmentNotExist();
 
  return Environment->GetFonts().GetFont(name,size);
 }
