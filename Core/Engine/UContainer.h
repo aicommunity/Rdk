@@ -310,12 +310,14 @@ bool SetName(const NameT &name);
 // Возвращает полное имя объекта
 // (включая имена всех владельцев)
 NameT& GetFullName(NameT &buffer) const;
+NameT GetFullName(void) const;
 
 // Возвращает  'длинное' имя объекта
 // (исключая имя владельца 'mainowner').
 // Метод возвращает пустую строку, если 'mainowner' - не является
 // владельцем объекта ни на каком уровне иерархии
 NameT& GetLongName(const UEPtr<UContainer> &mainowner, NameT &buffer) const;
+NameT GetLongName(const UEPtr<UContainer> &mainowner) const;
 
 /// Максимально допустимое время расчета компонента вместе с дочерними компонентами
 /// в миллисекундах.
