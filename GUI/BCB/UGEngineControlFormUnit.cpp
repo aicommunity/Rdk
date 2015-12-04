@@ -2730,7 +2730,7 @@ void __fastcall TUGEngineControlForm::ApplicationEventsException(TObject *Sender
   MEngine_LogMessage(0, RDK_EX_ERROR, message.c_str());
  }
  else
-  ShowMessage(message.c_str());
+  ShowMessage(E->Message);
 }
 //---------------------------------------------------------------------------
 
