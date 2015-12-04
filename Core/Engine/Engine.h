@@ -33,7 +33,8 @@ See file license.txt for more information
 #include "UItemData.h"
 #include "UXMLEnvSerialize.h"
 #include "UComponentDescription.h"
-#include "UContainerDescription.h"  
+#include "UContainerDescription.h"
+#include "UEnvException.h"
 //#include "Libraries/UELibraries.h"
 
 #endif

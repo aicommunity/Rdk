@@ -10,6 +10,7 @@
 #include <boost/thread/shared_mutex.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/locks.hpp>
+#include <boost/exception.hpp>
 #include <windows.h>
 
 class RDK_LIB_TYPE UGenericMutexAnsi: public UGenericMutex
@@ -18,6 +19,7 @@ private:
 boost::shared_mutex Mutex;
 
 boost::thread::id Id;
+boost::exception ex;
 
 DWORD Pid;
 

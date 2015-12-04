@@ -27,6 +27,7 @@ See file license.txt for more information
 #include "UContainerDescription.h"
 #include "UEnvironment.h"
 #include "../../Deploy/Include/rdk_exceptions.h"
+#include "UEnvException.h"
 
 namespace RDK {
 
@@ -445,7 +446,7 @@ bool UContainer::SetName(const NameT &name)
   if(GetOwner() != 0)
   {
    if(!GetOwner()->CheckName(name))
-    throw EComponentNameAlreadyExist(name);
+	throw EComponentNameAlreadyExist(name);
 
    GetOwner()->ModifyLookupComponent(Name, name);
   }
@@ -468,6 +469,12 @@ NameT& UContainer::GetFullName(NameT &buffer) const
  buffer+=Name;
 
  return buffer;
+}
+
+NameT UContainer::GetFullName(void) const
+{
+ std::string buf;
+ return GetFullName(buf);
 }
 
 // Возвращает  'длинное' имени объекта
@@ -498,6 +505,12 @@ NameT& UContainer::GetLongName(const UEPtr<UContainer> &mainowner, NameT &buffer
  buffer+=Name;
 
  return buffer;
+}
+
+NameT UContainer::GetLongName(const UEPtr<UContainer> &mainowner) const
+{
+ std::string buf;
+ return GetLongName(mainowner,buf);
 }
 // --------------------------
 

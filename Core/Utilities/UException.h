@@ -35,6 +35,16 @@ int Type;
 // Время возникновения исключения
 std::time_t Time;
 
+/// Имя файла в котором произошло исключение
+mutable std::string ExFileName;
+
+/// Строка на которой произошло исключение
+mutable int ExLineNumber;
+
+/// Имя объекта сгенерировавшего искючение
+mutable std::string ObjectName;
+
+
 
 public: // Методы
 // --------------------------
@@ -62,6 +72,18 @@ int GetType(void) const;
 // Время возникновения (обработки) исключения
 std::time_t GetTime(void) const;
 void SetTime(std::time_t ex_time);
+
+/// Имя файла в котором произошло исключение
+std::string GetExFileName(void) const;
+void SetExFileName(const std::string &value);
+
+/// Строка на которой произошло исключение
+int GetExLineNumber(void) const;
+void SetExLineNumber(int value);
+
+/// Имя объекта сгенерировавшего искючение
+std::string GetObjectName(void) const;
+void SetObjectName(const std::string &value);
 // --------------------------
 
 // --------------------------

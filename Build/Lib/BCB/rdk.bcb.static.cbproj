@@ -246,6 +246,9 @@
         <CppCompile Include="..\..\..\Core\Engine\UEngine.cpp">
             <BuildOrder>72</BuildOrder>
         </CppCompile>
+        <CppCompile Include="..\..\..\Core\Engine\UEnvException.cpp">
+            <BuildOrder>117</BuildOrder>
+        </CppCompile>
         <CppCompile Include="..\..\..\Core\Engine\UEnvironment.cpp">
             <BuildOrder>73</BuildOrder>
         </CppCompile>
@@ -615,13 +618,13 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="..\..\..\Bin\Platform\Win\rdk.bcb.static.lib" Configuration="Debug" Class="ProjectOutput">
+                <DeployFile LocalName=".\..\..\..\..\Bin\Platform\Win\Lib.Bcb\rdk.bcb.static.lib" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win32">
                         <RemoteName>rdk_bcb_static.lib</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="..\..\..\Bin\Platform\Win\rdk.bcb.static.tds" Configuration="Debug" Class="DebugSymbols">
+                <DeployFile LocalName=".\..\..\..\..\Bin\Platform\Win\Lib.Bcb\rdk.bcb.static.tds" Configuration="Debug" Class="DebugSymbols">
                     <Platform Name="Win32">
                         <RemoteName>rdk_bcb_static.tds</RemoteName>
                         <Overwrite>true</Overwrite>
@@ -975,13 +978,13 @@
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
-                <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"/>
+                <ProjectRoot Platform="iOSDevice32" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="Android" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="Win32" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="iOSDevice64" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="OSX32" Name="$(PROJECTNAME)"/>
+                <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
-                <ProjectRoot Platform="iOSDevice32" Name="$(PROJECTNAME).app"/>
             </Deployment>
         </BorlandProject>
         <ProjectFileVersion>12</ProjectFileVersion>

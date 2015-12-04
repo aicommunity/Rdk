@@ -44,14 +44,15 @@ bool UException::SetDispatcher(ExceptionDispatcher* value)
 // Конструкторы и деструкторы
 // --------------------------
 UException::UException(void)
-: Type(0)
+: Type(0), ExLineNumber(-1)
 {
 //Number=++LastNumber;
  std::time(&Time);
 }
 
 UException::UException(const UException &copy)
-: Type(copy.Type)
+: Type(copy.Type), ExFileName(copy.ExFileName), ExLineNumber(copy.ExLineNumber),
+  ObjectName(copy.ObjectName)
 {
 // Number=copy.Number;
  Time=copy.Time;
@@ -90,6 +91,39 @@ void UException::SetTime(std::time_t ex_time)
 {
  Time=ex_time;
 }
+
+/// Имя файла в котором произошло исключение
+std::string UException::GetExFileName(void) const
+{
+ return ExFileName;
+}
+
+void UException::SetExFileName(const std::string &value)
+{
+ ExFileName=value;
+}
+
+/// Строка на которой произошло исключение
+int UException::GetExLineNumber(void) const
+{
+ return ExLineNumber;
+}
+
+void UException::SetExLineNumber(int value)
+{
+ ExLineNumber=value;
+}
+
+/// Имя объекта сгенерировавшего искючение
+std::string UException::GetObjectName(void) const
+{
+ return ObjectName;
+}
+
+void UException::SetObjectName(const std::string &value)
+{
+ ObjectName=value;
+}
 // --------------------------
 
 // --------------------------
@@ -122,6 +156,21 @@ std::string UException::CreateLogMessage(void) const
  result+=sntoa(GetType());
  result+="> ";
  result+=typeid(*this).name();
+
+ if(!ExFileName.empty())
+ {
+  result+="> ";
+  result+=ExFileName;
+  result+=":";
+  result+=sntoa(ExLineNumber);
+  result+="> ";
+ }
+
+ if(!ObjectName.empty())
+ {
+  result+=ObjectName;
+  result+="> ";
+ }
 
  return result;
 };
