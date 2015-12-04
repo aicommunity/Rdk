@@ -15,21 +15,19 @@
 namespace RDK {
 
 /* Базовый класс исключений */
-class RDK_LIB_TYPE UException
+class RDK_LIB_TYPE UException: public std::exception
 {
-protected: // Общие данные
-
 protected: // Данные исключения
 // Порядковый номер исключения
 //long long Number;
 
-// Тип исключения
-// 0 - неопределено
-// 1 - фатальное
-// 2 - ошибка, требующая вмешательства
-// 3 - предупреждение
-// 4 - информация
-// 5 - отладка
+/// Тип исключения
+/// 0 - неопределено
+/// 1 - фатальное
+/// 2 - ошибка, требующая вмешательства
+/// 3 - предупреждение
+/// 4 - информация
+/// 5 - отладка
 int Type;
 
 // Время возникновения исключения
@@ -44,7 +42,8 @@ mutable int ExLineNumber;
 /// Имя объекта сгенерировавшего искючение
 mutable std::string ObjectName;
 
-
+/// Сообщение исключения
+mutable std::string Message;
 
 public: // Методы
 // --------------------------
@@ -52,7 +51,7 @@ public: // Методы
 // --------------------------
 UException(void);
 UException(const UException &copy);
-virtual ~UException(void);
+virtual ~UException(void) throw();
 // --------------------------
 
 // --------------------------
@@ -89,7 +88,11 @@ void SetObjectName(const std::string &value);
 // --------------------------
 // Методы формирования лога
 // --------------------------
-// Формирует строку лога об исключении
+/// Возвращает строку лога об исключении
+virtual char const * what() const throw();
+
+protected:
+/// Формирует строку лога об исключении
 virtual std::string CreateLogMessage(void) const;
 // --------------------------
 };
@@ -103,7 +106,7 @@ struct RDK_LIB_TYPE EFatal: public UException
 // --------------------------
 EFatal(void);
 EFatal(const EFatal &copy);
-virtual ~EFatal(void);
+virtual ~EFatal(void) throw();
 // --------------------------
 
 };
@@ -116,7 +119,7 @@ struct RDK_LIB_TYPE EError: public UException
 // --------------------------
 EError(void);
 EError(const EError &copy);
-virtual ~EError(void);
+virtual ~EError(void) throw();
 // --------------------------
 
 };
@@ -129,7 +132,7 @@ struct RDK_LIB_TYPE EWarning: public UException
 // --------------------------
 EWarning(void);
 EWarning(const EWarning &copy);
-virtual ~EWarning(void);
+virtual ~EWarning(void) throw();
 // --------------------------
 
 };
@@ -142,7 +145,7 @@ struct RDK_LIB_TYPE EInfo: public UException
 // --------------------------
 EInfo(void);
 EInfo(const EInfo &copy);
-virtual ~EInfo(void);
+virtual ~EInfo(void) throw();
 // --------------------------
 };
 
@@ -154,7 +157,7 @@ struct RDK_LIB_TYPE EDebug: public UException
 // --------------------------
 EDebug(void);
 EDebug(const EDebug &copy);
-virtual ~EDebug(void);
+virtual ~EDebug(void) throw();
 // --------------------------
 };
 
@@ -292,7 +295,7 @@ std::string Info;
 ESystemException(void);
 ESystemException(const std::string &info);
 ESystemException(const ESystemException &copy);
-virtual ~ESystemException(void);
+virtual ~ESystemException(void) throw();
 // --------------------------
 
 

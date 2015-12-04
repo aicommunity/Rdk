@@ -617,7 +617,7 @@ void UEnvironment::ProcessException(UException &exception) const
  }
 
  pair<std::string, int> log;
- log.first=sntoa(ChannelIndex)+std::string("> ")+exception.CreateLogMessage();
+ log.first=sntoa(ChannelIndex)+std::string("> ")+exception.what();
  log.second=exception.GetType();
  LogList[LogIndex++]=log;
 

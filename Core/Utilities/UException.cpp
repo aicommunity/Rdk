@@ -59,7 +59,7 @@ UException::UException(const UException &copy)
 }
 
 
-UException::~UException(void)
+UException::~UException(void) throw()
 {
 
 }
@@ -129,6 +129,13 @@ void UException::SetObjectName(const std::string &value)
 // --------------------------
 // Методы формирования лога
 // --------------------------
+/// Возвращает строку лога об исключении
+char const * UException::what() const throw()
+{
+ Message=CreateLogMessage();
+ return Message.c_str();
+}
+
 std::string UException::CreateLogMessage(void) const
 {
  std::string result;
@@ -197,7 +204,7 @@ EFatal::EFatal(const EFatal &copy)
 
 }
 
-EFatal::~EFatal(void)
+EFatal::~EFatal(void) throw()
 {
 
 }
@@ -221,7 +228,7 @@ EError::EError(const EError &copy)
 
 }
 
-EError::~EError(void)
+EError::~EError(void) throw()
 {
 
 }
@@ -245,7 +252,7 @@ EWarning::EWarning(const EWarning &copy)
 
 }
 
-EWarning::~EWarning(void)
+EWarning::~EWarning(void) throw()
 {
 
 }
@@ -269,7 +276,7 @@ EInfo::EInfo(const EInfo &copy)
 
 }
 
-EInfo::~EInfo(void)
+EInfo::~EInfo(void) throw()
 {
 
 }
@@ -290,7 +297,7 @@ EDebug::EDebug(const EDebug &copy)
 
 }
 
-EDebug::~EDebug(void)
+EDebug::~EDebug(void) throw()
 {
 
 }
@@ -397,7 +404,7 @@ ESystemException::ESystemException(const ESystemException &copy)
 
 }
 
-ESystemException::~ESystemException(void)
+ESystemException::~ESystemException(void) throw()
 {
 
 }

@@ -44,7 +44,11 @@ void TUVisualControllerFrame::AfterLoadProject(void)
  }
  catch (RDK::UException &exception)
  {
-  Engine_LogMessage(exception.GetType(), (std::string("Core-AfterLoadProject Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.CreateLogMessage()).c_str());
+  Engine_LogMessage(exception.GetType(), (std::string("Core-AfterLoadProject Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
+ }
+ catch (std::exception &exception)
+ {
+  Engine_LogMessage(RDK_EX_ERROR, (std::string("Core-AfterLoadProject Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
  }
  catch(Exception &exception)
  {
@@ -66,7 +70,11 @@ void TUVisualControllerFrame::BeforeReset(void)
  }
  catch (RDK::UException &exception)
  {
-  Engine_LogMessage(exception.GetType(), (std::string("Core-BeforeReset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.CreateLogMessage()).c_str());
+  Engine_LogMessage(exception.GetType(), (std::string("Core-BeforeReset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
+ }
+ catch (std::exception &exception)
+ {
+  Engine_LogMessage(RDK_EX_ERROR, (std::string("Core-BeforeReset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
  }
  catch(Exception &exception)
  {
@@ -90,7 +98,11 @@ void TUVisualControllerFrame::AfterReset(void)
  }
  catch (RDK::UException &exception)
  {
-  Engine_LogMessage(exception.GetType(), (std::string("Core-BeforeReset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.CreateLogMessage()).c_str());
+  Engine_LogMessage(exception.GetType(), (std::string("Core-BeforeReset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
+ }
+ catch (std::exception &exception)
+ {
+  Engine_LogMessage(RDK_EX_ERROR, (std::string("Core-BeforeReset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
  }
  catch(Exception &exception)
  {
@@ -113,7 +125,11 @@ void TUVisualControllerFrame::BeforeCalculate(void)
  }
  catch (RDK::UException &exception)
  {
-  Engine_LogMessage(exception.GetType(), (std::string("Core-BeforeReset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.CreateLogMessage()).c_str());
+  Engine_LogMessage(exception.GetType(), (std::string("Core-BeforeReset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
+ }
+ catch (std::exception &exception)
+ {
+  Engine_LogMessage(RDK_EX_ERROR, (std::string("Core-BeforeReset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
  }
  catch(Exception &exception)
  {
@@ -134,7 +150,11 @@ void TUVisualControllerFrame::AfterCalculate(void)
  }
  catch (RDK::UException &exception)
  {
-  Engine_LogMessage(exception.GetType(), (std::string("Core-BeforeReset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.CreateLogMessage()).c_str());
+  Engine_LogMessage(exception.GetType(), (std::string("Core-BeforeReset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
+ }
+ catch (std::exception &exception)
+ {
+  Engine_LogMessage(RDK_EX_ERROR, (std::string("Core-BeforeReset Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
  }
  catch(Exception &exception)
  {
@@ -205,7 +225,12 @@ void TUVisualControllerFrame::UpdateInterface(bool force_update)
  catch (RDK::UException &exception)
  {
   UpdateInterfaceFlag=false;
-  Engine_LogMessage(exception.GetType(), (std::string("Core-UpdateInterface Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.CreateLogMessage()).c_str());
+  Engine_LogMessage(exception.GetType(), (std::string("Core-UpdateInterface Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
+ }
+ catch (std::exception &exception)
+ {
+  UpdateInterfaceFlag=false;
+  Engine_LogMessage(RDK_EX_ERROR, (std::string("Core-UpdateInterface Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
  }
  catch(Exception &exception)
  {
@@ -237,7 +262,11 @@ void TUVisualControllerFrame::ClearInterface(void)
  }
  catch (RDK::UException &exception)
  {
-  Engine_LogMessage(exception.GetType(), (std::string("Core-ClearInterface Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.CreateLogMessage()).c_str());
+  Engine_LogMessage(exception.GetType(), (std::string("Core-ClearInterface Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
+ }
+ catch (std::exception &exception)
+ {
+  Engine_LogMessage(RDK_EX_ERROR, (std::string("Core-ClearInterface Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
  }
  catch(Exception &exception)
  {
@@ -294,7 +323,11 @@ void TUVisualControllerFrame::SaveParameters(RDK::USerStorageXML &xml)
  }
  catch (RDK::UException &exception)
  {
-  Engine_LogMessage(exception.GetType(), (std::string("Core-SaveParameters Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.CreateLogMessage()).c_str());
+  Engine_LogMessage(exception.GetType(), (std::string("Core-SaveParameters Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
+ }
+ catch (std::exception &exception)
+ {
+  Engine_LogMessage(RDK_EX_ERROR, (std::string("Core-SaveParameters Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
  }
  catch(Exception &exception)
  {
@@ -325,7 +358,11 @@ void TUVisualControllerFrame::LoadParameters(RDK::USerStorageXML &xml)
  }
  catch (RDK::UException &exception)
  {
-  Engine_LogMessage(exception.GetType(), (std::string("Core-LoadParameters Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.CreateLogMessage()).c_str());
+  Engine_LogMessage(exception.GetType(), (std::string("Core-LoadParameters Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
+ }
+ catch (std::exception &exception)
+ {
+  Engine_LogMessage(RDK_EX_ERROR, (std::string("Core-LoadParameters Exception: (Name=")+std::string(AnsiString(Name).c_str())+std::string(") ")+exception.what()).c_str());
  }
  catch(Exception &exception)
  {

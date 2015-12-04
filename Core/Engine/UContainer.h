@@ -927,7 +927,7 @@ public:
  EComponentCalculate(void);
  EComponentCalculate(const UContainer *cont, const UContainer *subcont);
  EComponentCalculate(const EComponentCalculate &copy);
- virtual ~EComponentCalculate(void);
+ virtual ~EComponentCalculate(void) throw();
  // --------------------------
 
 // --------------------------
@@ -949,7 +949,7 @@ class EComponentSystemException: public ESystemException, public EICalculateCont
  EComponentSystemException(void);
  EComponentSystemException(const UContainer *cont, const UContainer *subcont, const std::string &info);
  EComponentSystemException(const EComponentSystemException &copy);
- virtual ~EComponentSystemException(void);
+ virtual ~EComponentSystemException(void) throw();
  // --------------------------
 
 // --------------------------

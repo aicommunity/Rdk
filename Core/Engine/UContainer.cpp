@@ -2525,7 +2525,7 @@ UContainer::EComponentSystemException::EComponentSystemException(const EComponen
 {
 }
 
-UContainer::EComponentSystemException::~EComponentSystemException(void)
+UContainer::EComponentSystemException::~EComponentSystemException(void) throw()
 {
 
 }

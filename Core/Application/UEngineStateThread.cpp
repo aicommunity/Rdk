@@ -234,12 +234,12 @@ void UEngineStateThread::Execute(void)
   catch(UException &ex)
   {
    CalculationNotInProgress->set();
-   Engine_LogMessage(RDK_EX_DEBUG, (string("UEngineStateThread Rdk exception: ")+ex.CreateLogMessage()).c_str());
+   Engine_LogMessage(RDK_EX_DEBUG, (string("UEngineStateThread Rdk exception: ")+ex.what()).c_str());
   }
   catch(std::exception &ex)
   {
    CalculationNotInProgress->set();
-   Engine_LogMessage(RDK_EX_DEBUG, (string("UEngineStateThread std exception: ")).c_str());
+   Engine_LogMessage(RDK_EX_DEBUG, (string("UEngineStateThread std exception: ")+ex.what()).c_str());
   }
   catch(...)
   {
