@@ -446,7 +446,7 @@ bool UContainer::SetName(const NameT &name)
   if(GetOwner() != 0)
   {
    if(!GetOwner()->CheckName(name))
-	throw EComponentNameAlreadyExist(name);
+	RDK_THROW(EComponentNameAlreadyExist(name));
 
    GetOwner()->ModifyLookupComponent(Name, name);
   }
@@ -526,7 +526,7 @@ const NameT& UContainer::GetComponentName(const UId &id) const
   if(I->second == id)
    return I->first;
  }
- throw EComponentIdNotExist(id);
+ RDK_THROW(EComponentIdNotExist(id));
 }
 
 // Возвращает Id дочернего компонента по его имени
@@ -537,7 +537,7 @@ const UId& UContainer::GetComponentId(const NameT &name, bool nothrow) const
  {
   if(nothrow)
    return ForbiddenId;
-  throw EComponentNameNotExist(name);
+  RDK_THROW(EComponentNameNotExist(name));
  }
 
  return I->second;
@@ -552,7 +552,7 @@ const NameT& UContainer::GetPointerName(const UId &id) const
   if(I->second.Id == id)
    return I->first;
  }
- throw EPointerIdNotExist(id);
+ RDK_THROW(EPointerIdNotExist(id));
 }
 
 // Возвращает Id локального указателя по его имени
@@ -560,7 +560,7 @@ const UId& UContainer::GetPointerId(const NameT &name) const
 {
  PointerMapCIteratorT I=PointerLookupTable.find(name);
  if(I == PointerLookupTable.end())
-  throw EPointerNameNotExist(name);
+  RDK_THROW(EPointerNameNotExist(name));
 
  return I->second.Id;
 }
@@ -714,13 +714,13 @@ bool UContainer::SetId(const UId &id)
   return true;// Заглушка!! Это хак! throwEForbiddenId(id);
 
  if(id < 0)
-  throw EInvalidId(id);
+  RDK_THROW(EInvalidId(id));
 
 
  if(Owner != 0)
   {
    if(!GetOwner()->CheckId(id))
-    throw EComponentIdAlreadyExist(id);
+    RDK_THROW(EComponentIdAlreadyExist(id));
 
    GetOwner()->SetLookupComponent(Name, id);
   }
@@ -856,7 +856,7 @@ UEPtr<UContainer> UContainer::GetComponent(const UId &id, bool nothrow) const
  {
   if(nothrow)
    return 0;
-  throw EComponentIdNotExist(id);
+  RDK_THROW(EComponentIdNotExist(id));
  }
 
  UEPtr<UContainer>* comps=PComponents;
@@ -866,7 +866,7 @@ UEPtr<UContainer> UContainer::GetComponent(const UId &id, bool nothrow) const
 
  if(nothrow)
   return 0;
- throw EComponentIdNotExist(id);
+ RDK_THROW(EComponentIdNotExist(id));
 }
 
 // Возвращает указатель на дочерний компонент, хранимый в этом
@@ -950,10 +950,10 @@ UId UContainer::AddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer)
   return comp->Id;
 
  if(comp->GetOwner())
-  throw EAddComponentAlreadyHaveOwner(comp->Id);
+  RDK_THROW(EAddComponentAlreadyHaveOwner(comp->Id));
 
  if(!CheckComponentType(comp))
-  throw EAddComponentHaveInvalidType(comp->Id);
+  RDK_THROW(EAddComponentHaveInvalidType(comp->Id));
 
  BeforeAddComponent(comp,pointer);
 
@@ -973,7 +973,7 @@ UId UContainer::AddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer)
   }
 
  if(!res)
-  throw EComponentIdAlreadyExist(id);
+  RDK_THROW(EComponentIdAlreadyExist(id));
 
  comp->SetId(id);
  comp->SetOwner(this);
@@ -1567,32 +1567,50 @@ void UContainer::SharesUnInit(void)
 // Восстановление настроек по умолчанию и сброс процесса счета
 bool UContainer::Default(void)
 {
- BeforeDefault();
- Ready=false;
- for(int i=0;i<NumComponents;i++)
-  PComponents[i]->Default();
-
- // Если существует прообраз в хранилище, то берем настройки параметров
- // из прообраза
- UEPtr<UContainer> original;
- if(Storage)
-  original=dynamic_pointer_cast<UContainer>(GetStorage()->GetClass(Class));
-
- SetTimeStep(2000);
- SetMaxCalculationDuration(-1);
-
- if(original && original != this)
+ RDK_SYS_TRY
  {
-  NameT name=Name;
-  bool activity=Activity;
-  original->CopyProperties(this,ptParameter);
-  SetName(name);
-  SetActivity(activity);
- }
+  try
+  {
+   BeforeDefault();
+   Ready=false;
+   for(int i=0;i<NumComponents;i++)
+	PComponents[i]->Default();
 
- if(!ADefault())
-  return false;
- AfterDefault();
+   // Если существует прообраз в хранилище, то берем настройки параметров
+   // из прообраза
+   UEPtr<UContainer> original;
+   if(Storage)
+	original=dynamic_pointer_cast<UContainer>(GetStorage()->GetClass(Class));
+
+   SetTimeStep(2000);
+   SetMaxCalculationDuration(-1);
+
+   if(original && original != this)
+   {
+	NameT name=Name;
+	bool activity=Activity;
+	original->CopyProperties(this,ptParameter);
+	SetName(name);
+	SetActivity(activity);
+   }
+
+   if(!ADefault())
+	return false;
+   AfterDefault();
+  }
+  catch(UException &exception)
+  {
+   throw;
+  }
+  catch(std::exception &exception)
+  {
+   RDK_THROW(UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  RDK_THROW(UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
  return true;
 }
 
@@ -1603,16 +1621,34 @@ bool UContainer::DefaultAll(UContainer* cont, bool subcomps)
  if(!cont)
   return false;
 
- if(!cont->Default())
-  return false;
-
- bool res=true;
- if(subcomps)
+ RDK_SYS_TRY
  {
-  for(int i=0;i<cont->GetNumComponents();i++)
-   res &= DefaultAll(cont->GetComponentByIndex(i),subcomps);
+  try
+  {
+   if(!cont->Default())
+	return false;
+
+   bool res=true;
+   if(subcomps)
+   {
+	for(int i=0;i<cont->GetNumComponents();i++)
+	 res &= DefaultAll(cont->GetComponentByIndex(i),subcomps);
+   }
+  }
+  catch(UException &exception)
+  {
+   throw;
+  }
+  catch(std::exception &exception)
+  {
+   RDK_THROW(UExceptionWrapperStd(exception));
+  }
  }
- return res;
+ RDK_SYS_CATCH
+ {
+  RDK_THROW(UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return true;
 }
 
 // Обеспечивает сборку внутренней структуры объекта
@@ -1624,42 +1660,78 @@ bool UContainer::Build(void)
  if(Ready)
   return true;
 
- BeforeBuild();
+ RDK_SYS_TRY
+ {
+  try
+  {
+   BeforeBuild();
 
- for(int i=0;i<NumComponents;i++)
-  PComponents[i]->Build();
+   for(int i=0;i<NumComponents;i++)
+	PComponents[i]->Build();
 
- ABuild();
- Ready=true;
+   ABuild();
+   Ready=true;
 // Reset();
 
- AfterBuild();
+   AfterBuild();
+  }
+  catch(UException &exception)
+  {
+   throw;
+  }
+  catch(std::exception &exception)
+  {
+   RDK_THROW(UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  RDK_THROW(UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
  return true;
 }
 
 // Сброс процесса счета.
 bool UContainer::Reset(void)
 {
- Build();
+ RDK_SYS_TRY
+ {
+  try
+  {
+   Build();
 
-// Init(); // Заглушка
- BeforeReset();
+   // Init(); // Заглушка
+   BeforeReset();
 
- if(!IsInit())
-  return true; // TODO //false;
+   if(!IsInit())
+	return true; // TODO //false;
 
- for(int i=0;i<NumComponents;i++)
-  PComponents[i]->Reset();
+   for(int i=0;i<NumComponents;i++)
+	PComponents[i]->Reset();
 
- AReset();
+   AReset();
 
- CalcCounter=0;
- SkipComponentCalculation=false;
- ComponentReCalculation=false;
- LastCalcTime=0;
- InterstepsInterval=0;
- StepDuration=0;
- AfterReset();
+   CalcCounter=0;
+   SkipComponentCalculation=false;
+   ComponentReCalculation=false;
+   LastCalcTime=0;
+   InterstepsInterval=0;
+   StepDuration=0;
+   AfterReset();
+  }
+  catch(UException &exception)
+  {
+   throw;
+  }
+  catch(std::exception &exception)
+  {
+   RDK_THROW(UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  RDK_THROW(UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
  return true;
 }
 
@@ -1668,111 +1740,113 @@ bool UContainer::Calculate(void)
 {
  if(!Activity)
   return true;
-  int i=0;
-RDK_SYS_TRY {
- try
+ int i=0;
+ RDK_SYS_TRY
  {
-  Init(); // Заглушка
-
-  if(!IsInit())
-   return false;
-
-  unsigned long long tempstepduration=StartCalcTime=GetCurrentStartupTime();
-  InterstepsInterval=(LastCalcTime>0)?CalcDiffTime(tempstepduration,LastCalcTime):0;
-  LastCalcTime=tempstepduration;
-
-  Build();
-  BeforeCalculate();
-
-  UEPtr<UContainer> *comps=PComponents;
-  while((i<NumComponents) && !SkipComponentCalculation)
+  try
   {
-   if((*comps)->GetStaticFlag())
+   Init(); // Заглушка
+
+   if(!IsInit())
+	return false;
+
+   unsigned long long tempstepduration=StartCalcTime=GetCurrentStartupTime();
+   InterstepsInterval=(LastCalcTime>0)?CalcDiffTime(tempstepduration,LastCalcTime):0;
+   LastCalcTime=tempstepduration;
+
+   Build();
+   BeforeCalculate();
+
+   UEPtr<UContainer> *comps=PComponents;
+   while((i<NumComponents) && !SkipComponentCalculation)
    {
-	++i,++comps;
-	continue;
+	if((*comps)->GetStaticFlag())
+	{
+	 ++i,++comps;
+	 continue;
+	}
+	(*comps)->Calculate();
+	if(ComponentReCalculation)
+	{
+	 ComponentReCalculation=false;
+	 i=0; comps=PComponents;
+	}
+	else
+	{
+	 CheckDurationAndSkipComponentCalculation();
+	 ++i,++comps;
+	}
    }
-   (*comps)->Calculate();
-   if(ComponentReCalculation)
+
+   SkipComponentCalculation=false;
+   ComponentReCalculation=false;
+
+   if(!Owner)
    {
-	ComponentReCalculation=false;
-	i=0; comps=PComponents;
+	ACalculate();
    }
    else
+   if(TimeStep == OwnerTimeStep)
    {
-	CheckDurationAndSkipComponentCalculation();
-	++i,++comps;
+	ACalculate();
    }
-  }
-
-  SkipComponentCalculation=false;
-  ComponentReCalculation=false;
-
-  if(!Owner)
-  {
-   ACalculate();
-  }
-  else
-  if(TimeStep == OwnerTimeStep)
-  {
-   ACalculate();
-  }
-  else
-  if(TimeStep < OwnerTimeStep)
-  {
-   --CalcCounter;
-   if(CalcCounter <= 0)
+   else
+   if(TimeStep < OwnerTimeStep)
+   {
+	--CalcCounter;
+	if(CalcCounter <= 0)
 	{
 	 CalcCounter=OwnerTimeStep/TimeStep;
 	 ACalculate();
 	}
-  }
-  else
-  if(TimeStep > OwnerTimeStep)
-  {
-   for(int i=int(TimeStep/OwnerTimeStep);i>=0;--i)
-	ACalculate();
-  }
-
-  UpdateMainOwner();
-  InterstepsInterval-=StepDuration;
-
-  if((MaxCalculationDuration >= 0) && (CalcDiffTime(GetCurrentStartupTime(),tempstepduration) > ULongTime(MaxCalculationDuration)))
-  {
-   if(Owner)
-   {
-	GetOwner()->ForceSkipComponentCalculation();
-	std::string temp;
-    LogMessage(RDK_EX_DEBUG, string("CalcTime>MaxCalculationDuration after ")+GetFullName(temp));
    }
-  }
-
-  StepDuration=CalcDiffTime(GetCurrentStartupTime(),tempstepduration);
-  // Обрабатываем контроллеры
-  int numcontrollers=Controllers.size();
-
-  if(numcontrollers)
-  {
-   UEPtr<UController>* controllers=&Controllers[0];
-   for(int i=0;i<numcontrollers;i++,controllers++)
+   else
+   if(TimeStep > OwnerTimeStep)
    {
-	(*controllers)->Update();
+	for(int i=int(TimeStep/OwnerTimeStep);i>=0;--i)
+	 ACalculate();
    }
+
+   UpdateMainOwner();
+   InterstepsInterval-=StepDuration;
+
+   if((MaxCalculationDuration >= 0) && (CalcDiffTime(GetCurrentStartupTime(),tempstepduration) > ULongTime(MaxCalculationDuration)))
+   {
+	if(Owner)
+	{
+	 GetOwner()->ForceSkipComponentCalculation();
+	 std::string temp;
+	 LogMessage(RDK_EX_DEBUG, string("CalcTime>MaxCalculationDuration after ")+GetFullName(temp));
+	}
+   }
+
+   StepDuration=CalcDiffTime(GetCurrentStartupTime(),tempstepduration);
+   // Обрабатываем контроллеры
+   int numcontrollers=Controllers.size();
+
+   if(numcontrollers)
+   {
+	UEPtr<UController>* controllers=&Controllers[0];
+	for(int i=0;i<numcontrollers;i++,controllers++)
+	{
+	 (*controllers)->Update();
+	}
+   }
+   AfterCalculate();
   }
-  AfterCalculate();
+  catch(UException &exception)
+  {
+   throw;
+  }
+  catch(std::exception &exception)
+  {
+   RDK_THROW(UExceptionWrapperStd(exception));
+  }
  }
- catch(UException &exception)
+ RDK_SYS_CATCH
  {
-  throw;
+  RDK_THROW(UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
-}
-RDK_SYS_CATCH
-{
- if(PComponents && i<NumComponents)
-  throw EComponentSystemException(this,PComponents[i],GET_SYSTEM_EXCEPTION_DATA);
- else
-  throw EComponentSystemException(this,0,GET_SYSTEM_EXCEPTION_DATA);
-}
 
  return true;
 }
@@ -1784,15 +1858,33 @@ void UContainer::Init(void)
  if(!Activity)
   return;
 
- if(IsInit())
-  return;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   if(IsInit())
+	return;
 
- for(int i=0;i<NumComponents;i++)
-  PComponents[i]->Init();
+   for(int i=0;i<NumComponents;i++)
+	PComponents[i]->Init();
 
- AInit();
- InitFlag=true;
- Reset();
+   AInit();
+   InitFlag=true;
+   Reset();
+  }
+  catch(UException &exception)
+  {
+   throw;
+  }
+  catch(std::exception &exception)
+  {
+   RDK_THROW(UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  RDK_THROW(UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
 }
 
 // Выполняет деинициализацию этого объекта
@@ -1801,11 +1893,28 @@ void UContainer::UnInit(void)
  if(!IsInit())
   return;
 
- AUnInit();
+ RDK_SYS_TRY
+ {
+  try
+  {
+   AUnInit();
 
- for(int i=0;i<NumComponents;i++)
-  PComponents[i]->UnInit();
-
+   for(int i=0;i<NumComponents;i++)
+	PComponents[i]->UnInit();
+  }
+  catch(UException &exception)
+  {
+   throw;
+  }
+  catch(std::exception &exception)
+  {
+   RDK_THROW(UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  RDK_THROW(UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
  InitFlag=false;
 }
 // Обновляет состояние MainOwner после расчета этого объекта
@@ -1869,7 +1978,7 @@ void UContainer::ModifyLookupComponent(const NameT &oldname,
 
  std::map<NameT,UId>::iterator I=CompsLookupTable.find(oldname);
  if(I == CompsLookupTable.end())
-  throw EComponentNameNotExist(oldname);
+  RDK_THROW(EComponentNameNotExist(oldname));
 
  id=I->second;
  CompsLookupTable.erase(I);
@@ -1892,7 +2001,7 @@ void UContainer::DelLookupComponent(const NameT &name)
  std::map<NameT,UId>::iterator I=CompsLookupTable.find(name);
 
  if(I == CompsLookupTable.end())
-  throw EComponentNameNotExist(name);
+  RDK_THROW(EComponentNameNotExist(name));
  CompsLookupTable.erase(name);
 }
 // --------------------------
@@ -1990,7 +2099,7 @@ UId UContainer::AddLookupPointer(const NameT &name, UEPtr<UIPointer> pointer)
  UPVariable P(1,pointer);
 
  if(PointerLookupTable.find(name) != PointerLookupTable.end())
-  throw EPointerNameAlreadyExist(name);
+  RDK_THROW(EPointerNameAlreadyExist(name));
 
  for(PointerMapIteratorT I=PointerLookupTable.begin(),
                       J=PointerLookupTable.end(); I!=J; ++I)
@@ -2009,7 +2118,7 @@ void UContainer::DelLookupPointer(const NameT &name)
  PointerMapIteratorT I=PointerLookupTable.find(name);
 
  if(I == PointerLookupTable.end())
-  throw EPointerNameNotExist(name);
+  RDK_THROW(EPointerNameNotExist(name));
 
  delete I->second.Pointer;
  PointerLookupTable.erase(I);

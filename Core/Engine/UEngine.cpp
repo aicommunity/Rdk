@@ -17,6 +17,7 @@ See file license.txt for more information
 #include "UXMLEnvSerialize.h"
 //#include "Libraries/IO/UFileIO.h"
 #include "../Application/UIVisualController.h"
+#include "UEnvException.h"
 
 // --------------------------------------
 // ќбъ€влени€ дополнительных функций
@@ -3476,7 +3477,7 @@ int UEngine::Model_LoadComponent(const char *stringid, const char* buffer)
   else
   {
    if(XmlStorage.GetNodeAttribute("ModelName") != Environment->GetModel()->GetName())
-	throw EErrorEngineModelNameDontMatch(XmlStorage.GetNodeAttribute("ModelName"), Environment->GetModel()->GetName());
+	RDK_RAW_THROW(EErrorEngineModelNameDontMatch(XmlStorage.GetNodeAttribute("ModelName"), Environment->GetModel()->GetName()));
 	//return -10;
 
    UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
@@ -3591,7 +3592,7 @@ int UEngine::Model_LoadComponentProperties(const char *stringid, const char* buf
 
   XmlStorage.Load(buffer,"SaveProperties");
   if(XmlStorage.GetNodeAttribute("ModelName") != Environment->GetModel()->GetName())
-	throw EErrorEngineModelNameDontMatch(XmlStorage.GetNodeAttribute("ModelName"), Environment->GetModel()->GetName());
+	RDK_RAW_THROW(EErrorEngineModelNameDontMatch(XmlStorage.GetNodeAttribute("ModelName"), Environment->GetModel()->GetName()));
 //   return -10;
 
   XmlStorage.SelectNode(0);

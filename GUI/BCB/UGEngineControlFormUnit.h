@@ -156,6 +156,7 @@ __published:	// IDE-managed Components
 	TMenuItem *StartChannel1;
 	TMenuItem *PauseChannel1;
 	TMenuItem *ResetChannel1;
+	TApplicationEvents *ApplicationEvents;
 	void __fastcall FormShow(TObject *Sender);
 	void __fastcall Start1Click(TObject *Sender);
 	void __fastcall Pause1Click(TObject *Sender);
@@ -231,6 +232,7 @@ __published:	// IDE-managed Components
 	void __fastcall ToolButton15Click(TObject *Sender);
 	void __fastcall UDrawEngineFrame1Reset1Click(TObject *Sender);
 	void __fastcall UDrawEngineFrame1Calculate1Click(TObject *Sender);
+	void __fastcall ApplicationEventsException(TObject *Sender, Exception *E);
 
 
 

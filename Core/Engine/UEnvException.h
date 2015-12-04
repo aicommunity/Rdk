@@ -6,22 +6,30 @@
 
 namespace RDK {
 
-class UContExceptionWrapper: public UException
+class UExceptionWrapperStd: public UException
 {
-public:
+protected:
 std::string LogMessage;
 
-std::string FileName;
+public:
+UExceptionWrapperStd(const std::exception &exception);
 
-int LineNumber;
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+std::string CreateLogMessage(void) const;
+// --------------------------
+};
 
-UContExceptionWrapper(const UException &exception, UContainer* cont, const std::string &file_name, int line_number);
-UContExceptionWrapper(const std::exception &exception, UContainer* cont, const std::string &file_name, int line_number);
-/*
-#ifdef BOOST_VERSION
-UContExceptionWrapper(const boost::exception &exception, UContainer* cont, const std::string &file_name, int line_number);
-#endif
-*/
+class UExceptionWrapperSEH: public UException
+{
+protected:
+std::string LogMessage;
+
+public:
+UExceptionWrapperSEH(const std::string &seh_info);
+
 // --------------------------
 // Методы формирования лога
 // --------------------------
@@ -53,6 +61,7 @@ void rdk_throw(T exception, const char* file_name, int line_number, const char* 
 }
 
 #define RDK_THROW(e) rdk_throw(e,__FILE__,__LINE__,this->GetFullName().c_str())
+#define RDK_RAW_THROW(e) rdk_throw(e,__FILE__,__LINE__)
 
 
 }

@@ -19,6 +19,7 @@ See file license.txt for more information
 #include "UStorage.h"
 #include "UEnvironment.h"
 #include "UComponentDescription.h"
+#include "UEnvException.h"
 
 namespace RDK {
 
@@ -230,7 +231,7 @@ bool UComponent::SetEnvironment(UEPtr<UEnvironment> environment)
 const UTimeControl& UComponent::GetTime(void) const
 {
  if(!Environment)
-  throw EEnvironmentNotExist();
+  RDK_RAW_THROW(EEnvironmentNotExist());
 
  return Environment->GetTime();
 }
@@ -240,7 +241,7 @@ const UTimeControl& UComponent::GetTime(void) const
 UAFont* UComponent::GetDefaultFont(void)
 {
  if(!Environment)
-  throw EEnvironmentNotExist();
+  RDK_RAW_THROW(EEnvironmentNotExist());
 
  return Environment->GetFonts().GetDefaultFont();
 }
@@ -249,7 +250,7 @@ UAFont* UComponent::GetDefaultFont(void)
 UAFont* UComponent::GetFont(const string &name, int size)
 {
  if(!Environment)
-  throw EEnvironmentNotExist();
+  RDK_RAW_THROW(EEnvironmentNotExist());
 
  return Environment->GetFonts().GetFont(name,size);
 }
@@ -474,7 +475,7 @@ unsigned int UComponent::FindPropertyType(UEPtr<const UIProperty> prop) const
 void UComponent::AddLookupProperty(const NameT &name, unsigned int type, UEPtr<UIProperty> property, bool delenable)
 {
  if(PropertiesLookupTable.find(name) != PropertiesLookupTable.end())
-  throw EPropertyNameAlreadyExist(name);
+  RDK_RAW_THROW(EPropertyNameAlreadyExist(name));
 
  UVariable P(property);
  P.DelEnable=delenable;
@@ -503,7 +504,7 @@ void UComponent::DelLookupProperty(const NameT &name)
  VariableMapIteratorT I=PropertiesLookupTable.find(name);
 
  if(I == PropertiesLookupTable.end())
-  throw EPropertyNameNotExist(name);
+  RDK_RAW_THROW(EPropertyNameNotExist(name));
 
  UIProperty *prop=I->second.Property;
  bool del_enable=I->second.DelEnable;
