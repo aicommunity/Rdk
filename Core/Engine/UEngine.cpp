@@ -52,7 +52,7 @@ namespace RDK{
 UEngine::UEngine(void)
  : Storage(0), Environment(0)
 {
- Runned=-1;
+// Runned=-1;
  ChannelIndex=0;
  BufObjectsMode=0;
 // CurrentExceptionsLogSize=0;
@@ -64,7 +64,7 @@ UEngine::UEngine(void)
 
 UEngine::~UEngine(void)
 {
- Stop();
+// Stop();
 }
 // --------------------------
 
@@ -226,11 +226,11 @@ int UEngine::GetNumTempStrings(void) const
 // --------------------------
 // Методы доступа к переменным состояния
 // --------------------------
-// Флаг работы системы
+/*// Флаг работы системы
 int UEngine::IsRunned(void)
 {
  return Runned;
-}
+} */
 
 /// Индекс текущего канала в многоканальной библиотеке
 int UEngine::GetChannelIndex(void) const
@@ -345,9 +345,9 @@ bool UEngine::Init(UEPtr<UStorage> storage, UEPtr<UEnvironment> env)
 void UEngine::UnInit(void)
 {
  AccessCache.clear();
- if(!Stop())
+/* if(!Stop())
   return;
-
+  */
 /* Options("General","StorageIndex",sntoa(StorageIndex));
  Options("General","EnvironmentIndex",sntoa(EnvironmentIndex));
 
@@ -355,7 +355,7 @@ void UEngine::UnInit(void)
   return false;
   */
 }
-
+   /*
 // Запускает систему
 bool UEngine::Start(void)
 {
@@ -403,7 +403,7 @@ bool UEngine::Stop(void)
 
  Runned=-1;
  return true;
-}
+}                  */
 // --------------------------
 
 // --------------------------

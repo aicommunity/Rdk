@@ -63,7 +63,7 @@ protected: // Переменные состояния
 // 1 - система запущена
 // 0 - система приостановлена
 // -1 - система отключена
-int Runned;
+//int Runned;
 
 /// Индекс текущего канала в многоканальной библиотеке
 int ChannelIndex;
@@ -185,7 +185,7 @@ int GetNumTempStrings(void) const;
 // Методы доступа к переменным состояния
 // --------------------------
 // Флаг работы системы
-int IsRunned(void);
+//int IsRunned(void);
 
 /// Индекс текущего канала в многоканальной библиотеке
 int GetChannelIndex(void) const;
@@ -213,7 +213,7 @@ virtual bool Init(UEPtr<UStorage> storage, UEPtr<UEnvironment> env);
 // Деинициализирует данные движка
 // и сохраняет текущие настройки
 virtual void UnInit(void);
-
+/*
 // Запускает систему
 virtual bool Start(void);
 
@@ -221,7 +221,7 @@ virtual bool Start(void);
 virtual bool Pause(void);
 
 // Останавливает систему
-virtual bool Stop(void);
+virtual bool Stop(void);    */
 // --------------------------
 
 // --------------------------
