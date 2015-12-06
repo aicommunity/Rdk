@@ -8,6 +8,7 @@
 #include "rdk_engine_support.h"
 #include "rdk_exceptions.h"
 #include "UEnvException.h"
+#include "rdk_error_codes.h"
 #include "../../System/UGenericMutex.h"
 namespace RDK {
 
@@ -787,16 +788,16 @@ int RDK_CALL MEngine_FreeBufString(int engine_index,const char *pointer)
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(0,exception);
+   res=ProcessException(engine_index,exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(0,RDK::UExceptionWrapperStd(exception));
+   res=ProcessException(engine_index,RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(0,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  res=ProcessException(engine_index,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return res;
 }
@@ -841,16 +842,16 @@ int RDK_CALL MEngine_FreeBufStringUnsafe(int engine_index,const char *pointer)
   }
   catch (RDK::UException &exception)
   {
-   res=ProcessException(0,exception);
+   res=ProcessException(engine_index,exception);
   }
   catch (std::exception &exception)
   {
-   res=ProcessException(0,RDK::UExceptionWrapperStd(exception));
+   res=ProcessException(engine_index,RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  res=ProcessException(0,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  res=ProcessException(engine_index,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return res;
 }
@@ -890,9 +891,9 @@ int RDK_CALL Storage_GetNumClasses(void)
 }
 
 // Возвращает id классов в хранилище. Память должна быть выделена
-void RDK_CALL Storage_GetClassesList(int *buffer)
+int RDK_CALL Storage_GetClassesList(int *buffer)
 {
- DllManager.GetEngineLock()->Storage_GetClassesList(buffer);
+ return DllManager.GetEngineLock()->Storage_GetClassesList(buffer);
 }
 
 // Возвращает имена классов в хранилище в виде строки разделенной запятыми
@@ -916,21 +917,21 @@ int RDK_CALL Storage_GetClassId(const char *name)
 // Удаляет образец класса объекта из хранилища
 // Возвращает false если classid не найден,
 // или присутствуют объекты этого класса
-bool RDK_CALL Storage_DelClass(int classid)
+int RDK_CALL Storage_DelClass(int classid)
 {
  return DllManager.GetEngineLock()->Storage_DelClass(classid);
 }
 
 // Удалаяет все свободные объекты из хранилища
-void RDK_CALL Storage_FreeObjectsStorage(void)
+int RDK_CALL Storage_FreeObjectsStorage(void)
 {
- DllManager.GetEngineLock()->Storage_FreeObjectsStorage();
+ return DllManager.GetEngineLock()->Storage_FreeObjectsStorage();
 }
 
 // Удаляет все объекты из хранилища
-void RDK_CALL Storage_ClearObjectsStorage(void)
+int RDK_CALL Storage_ClearObjectsStorage(void)
 {
- DllManager.GetEngineLock()->Storage_ClearObjectsStorage();
+ return DllManager.GetEngineLock()->Storage_ClearObjectsStorage();
 }
 
 // Вычисляет суммарное число объектов в хранилище

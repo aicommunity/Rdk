@@ -233,7 +233,7 @@ virtual bool Stop(void);    */
 virtual int Storage_GetNumClasses(void);
 
 // Возвращает id классов в хранилище. Память должна быть выделена
-virtual void Storage_GetClassesList(int *buffer) const;
+virtual int Storage_GetClassesList(int *buffer) const;
 
 // Возвращает имена классов в хранилище в виде строки, разделенной запятыми
 virtual const char* Storage_GetClassesNameList(void) const;
@@ -245,15 +245,15 @@ virtual const char * Storage_GetClassName(int id) const;
 virtual int Storage_GetClassId(const char *name) const;
 
 // Удаляет образец класса объекта из хранилища
-// Возвращает false если classid не найден,
-// или присутствуют объекты этого класса
-virtual bool Storage_DelClass(int classid);
+// Если 'force' == true то принудительно удаляет из хранилища
+// все объекты этого класса
+virtual int Storage_DelClass(int classid);
 
 // Удалаяет все свободные объекты из хранилища
-virtual void Storage_FreeObjectsStorage(void);
+virtual int Storage_FreeObjectsStorage(void);
 
 // Удаляет все объекты из хранилища
-virtual void Storage_ClearObjectsStorage(void);
+virtual int Storage_ClearObjectsStorage(void);
 
 // Вычисляет суммарное число объектов в хранилище
 virtual int Storage_CalcNumObjects(void) const;
@@ -264,25 +264,25 @@ virtual int Storage_CalcNumObjectsByName(const char* classname) const;
 virtual const char* Storage_GetClassDescription(const char* classname);
 
 // Устанавливает описание класса по его id, считывая его из формата xml
-virtual bool Storage_SetClassDescription(const char* classname, const char* description);
+virtual int Storage_SetClassDescription(const char* classname, const char* description);
 
 // Сохраняет описание всех классов в xml
 virtual const char* Storage_SaveClassesDescription(void);
 
 // Загружает описание всех классов из xml
-virtual bool Storage_LoadClassesDescription(const char* xmltext);
+virtual int Storage_LoadClassesDescription(const char* xmltext);
 
 // Сохраняет общее описание всех классов в xml
 virtual const char* Storage_SaveCommonClassesDescription(void);
 
 // Загружает общее описание всех классов из xml
-virtual bool Storage_LoadCommonClassesDescription(const char* xmltext);
+virtual int Storage_LoadCommonClassesDescription(const char* xmltext);
 
 // Сохраняет описание всех классов в xml включая общее описание
 virtual const char* Storage_SaveAllClassesDescription(void);
 
 // Загружает описание всех классов из xml включая общее описание
-virtual bool Storage_LoadAllClassesDescription(const char* xmltext);
+virtual int Storage_LoadAllClassesDescription(const char* xmltext);
 // ----------------------------
 
 // ----------------------------
@@ -328,20 +328,20 @@ virtual int Storage_CreateClass(const char* stringid, const char *class_name, co
 
 // Удаляет подключенную библиотеку из списка по индексу
 // Ответственность за освобождение памяти лежит на вызывающей стороне.
-virtual bool Storage_DelClassLibraryByIndex(int index);
+virtual int Storage_DelClassLibraryByIndex(int index);
 
 // Удаляет подключенную библиотеку из списка по имени
 // Ответственность за освобождение памяти лежит на вызывающей стороне.
-virtual bool Storage_DelClassLibraryByName(const char *name);
+virtual int Storage_DelClassLibraryByName(const char *name);
 
 // Удаляет из списка все библиотеки
 // Ответственность за освобождение памяти лежит на вызывающей стороне.
-virtual bool Storage_DelAllClassLibraries(void);
+virtual int Storage_DelAllClassLibraries(void);
 
 
 // Заполняет хранилище данными библиотек
 // Операция предварительно уничтожает модель и очищает хранилище
-virtual bool Storage_BuildStorage(void);
+virtual int Storage_BuildStorage(void);
 // ----------------------------
 
 // Методы управления средой
@@ -893,7 +893,9 @@ virtual void Model_SetComponentBitmapInput(const char *stringid, int index, cons
 // Методы управления исключениями
 // --------------------------
 // Обрабатывает возникшее исключение
-virtual void ProcessException(UException &exception) const;
+/// Возвращает RDK_UNHANDLED_EXCEPTION если не удалось записать данные исключения
+/// иначе возвращает RDK_EXCEPTION_CATCHED
+virtual int ProcessException(UException &exception) const;
 
 // Формирует строку лога об исключении
 //virtual string CreateLogMessage(UException &exception) const;

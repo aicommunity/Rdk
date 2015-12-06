@@ -16,28 +16,6 @@ typedef int bool;
 #define RDK_EX_DEBUG 5
 #endif
 
-#ifndef RDK_ERROR_CODES
-#define RDK_ERROR_CODES
-
-#define RDK_UNHANDLED_EXCEPTION 0x01000000 // Не удалось записать исключение в лог
-#define RDK_EXCEPTION_CATCHED 0x01000001 // Произошло исключение и информация о нем была записана в лог
-
-/// Core errors
-#define RDK_SUCCESS 0
-#define RDK_E_CORE_INIT_FAIL 100
-#define RDK_E_CORE_INCORRECT_CHANNELS_NUMBER 101
-#define RDK_E_CORE_CHANNEL_NOT_FOUND 102
-#define RDK_E_CORE_ZERO_CHANNEL_MUST_EXIST 103
-#define RDK_E_CORE_ENGINE_CREATE_FAIL 104
-#define RDK_E_CORE_STORAGE_CREATE_FAIL 105
-#define RDK_E_CORE_ENVIRONMENT_CREATE_FAIL 106
-#define RDK_E_CORE_ENGINE_INIT_FAIL 107
-#define RDK_E_CORE_ENVIRONMENT_UNINIT_FAIL 108
-
-
-#endif
-
-
 #ifndef RDK_PROPERTY_TYPES
 #define RDK_PROPERTY_TYPES
 // Варианты типа свойства (битовая маска) pt - Property Type
@@ -205,7 +183,7 @@ RDK_LIB_TYPE void* RDK_CALL MEngine_GetMutex(int index);
 RDK_LIB_TYPE int RDK_CALL Storage_GetNumClasses(void);
 
 // Возвращает id классов в хранилище. Память должна быть выделена
-RDK_LIB_TYPE void RDK_CALL Storage_GetClassesList(int *buffer);
+RDK_LIB_TYPE int RDK_CALL Storage_GetClassesList(int *buffer);
 
 // Возвращает имена классов в хранилище в виде строки разделенной запятыми
 RDK_LIB_TYPE const char * RDK_CALL Storage_GetClassesNameList(void);
@@ -217,15 +195,15 @@ RDK_LIB_TYPE const char * RDK_CALL Storage_GetClassName(int id);
 RDK_LIB_TYPE int RDK_CALL Storage_GetClassId(const char *name);
 
 // Удаляет образец класса объекта из хранилища
-// Возвращает false если classid не найден,
+// Возвращает ошибку если classid не найден,
 // или присутствуют объекты этого класса
-RDK_LIB_TYPE bool RDK_CALL Storage_DelClass(int classid);
+RDK_LIB_TYPE int RDK_CALL Storage_DelClass(int classid);
 
 // Удаляет все свободные объекты из хранилища
-RDK_LIB_TYPE void RDK_CALL Storage_FreeObjectsStorage(void);
+RDK_LIB_TYPE int RDK_CALL Storage_FreeObjectsStorage(void);
 
 // Удаляет все объекты из хранилища
-RDK_LIB_TYPE void RDK_CALL Storage_ClearObjectsStorage(void);
+RDK_LIB_TYPE int RDK_CALL Storage_ClearObjectsStorage(void);
 
 // Вычисляет суммарное число объектов в хранилище
 RDK_LIB_TYPE int RDK_CALL Storage_CalcNumObjects(void);

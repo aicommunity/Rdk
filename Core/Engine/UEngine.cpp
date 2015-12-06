@@ -19,6 +19,7 @@ See file license.txt for more information
 #include "../Application/UIVisualController.h"
 #include "../../Deploy/Include/rdk_exceptions.h"
 #include "UEnvException.h"
+#include "../../Deploy/Include/rdk_error_codes.h"
 
 // --------------------------------------
 // Объявления дополнительных функций
@@ -415,31 +416,33 @@ bool UEngine::Stop(void)
 // Возвращает число классов в хранилище
 int UEngine::Storage_GetNumClasses(void)
 {
+ int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
   {
    return Storage->GetNumClasses();
   }
-  catch (UException &exception)
+  catch (RDK::UException &exception)
   {
-   ProcessException(exception);
+   res=ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   ProcessException(UExceptionWrapperStd(exception));
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  ProcessException(UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
 
 // Возвращает id классов в хранилище. Память должна быть выделена
-void UEngine::Storage_GetClassesList(int *buffer) const
+int UEngine::Storage_GetClassesList(int *buffer) const
 {
+ int res=RDK_UNHANDLED_EXCEPTION;
  RDK_SYS_TRY
  {
   try
@@ -448,26 +451,29 @@ void UEngine::Storage_GetClassesList(int *buffer) const
    Storage->GetClassIdList(temp);
    if(temp.size())
 	memcpy(buffer,&temp[0],temp.size()*sizeof(UId));
+   res=RDK_SUCCESS;
   }
-  catch (UException &exception)
+  catch (RDK::UException &exception)
   {
-   ProcessException(exception);
+   res=ProcessException(exception);
   }
   catch (std::exception &exception)
   {
-   ProcessException(UExceptionWrapperStd(exception));
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
  RDK_SYS_CATCH
  {
-  ProcessException(UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
+ return res;
 }
 
 
 // Возвращает имена классов в хранилище в виде строки, разделенной запятыми
 const char* UEngine::Storage_GetClassesNameList(void) const
 {
+ int res=RDK_UNHANDLED_EXCEPTION;
  std::string& TempString=CreateTempString();
  RDK_SYS_TRY
  {
@@ -481,141 +487,243 @@ const char* UEngine::Storage_GetClassesNameList(void) const
 	if(i<temp.size()-1)
 	 TempString+=",";
    }
+
    return TempString.c_str();
   }
-  catch (UException &exception)
+  catch (RDK::UException &exception)
   {
-   ProcessException(exception);
+   res=ProcessException(exception);
+   DestroyTempString(TempString);
   }
   catch (std::exception &exception)
   {
-   ProcessException(UExceptionWrapperStd(exception));
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   DestroyTempString(TempString);
   }
-//  catch(...)
-//  {
-//   ProcessException(UExceptionUnhandled(__FILE__,__LINE__,__FUNC__));
-//   throw;
-//  }
  }
  RDK_SYS_CATCH
  {
-  ProcessException(UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  DestroyTempString(TempString);
  }
- DestroyTempString(TempString);
  return 0;
 }
-
 
  // Возвращает имя класса по его id.
 const char * UEngine::Storage_GetClassName(int id) const
 {
+ int res=RDK_UNHANDLED_EXCEPTION;
  std::string& TempString=CreateTempString();
- try
+ RDK_SYS_TRY
  {
-  TempString=Storage->FindClassName(id);
+  try
+  {
+   TempString=Storage->FindClassName(id);
+   return TempString.c_str();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+   DestroyTempString(TempString);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+   DestroyTempString(TempString);
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+  DestroyTempString(TempString);
  }
- return TempString.c_str();
+ return 0;
 }
 
 // Возвращает Id класса по его имени
 int UEngine::Storage_GetClassId(const char *name) const
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  return Storage->FindClassId(name);
+  try
+  {
+   return Storage->FindClassId(name);
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return 0;
+ return ForbiddenId;
 }
 
 // Удаляет образец класса объекта из хранилища
-// Возвращает false если classid не найден,
-// или присутствуют объекты этого класса
-bool UEngine::Storage_DelClass(int classid)
+// Если 'force' == true то принудительно удаляет из хранилища
+// все объекты этого класса
+int UEngine::Storage_DelClass(int classid)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  AccessCache.clear();
-  Storage->DelClass(classid);
+  try
+  {
+   AccessCache.clear();
+   Storage->DelClass(classid);
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return true;
+ return res;
 }
 
 // Удалаяет все свободные объекты из хранилища
-void UEngine::Storage_FreeObjectsStorage(void)
+int UEngine::Storage_FreeObjectsStorage(void)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  AccessCache.clear();
-  Storage->FreeObjectsStorage();
+  try
+  {
+   AccessCache.clear();
+   Storage->FreeObjectsStorage();
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
+ return res;
 }
 
 // Удаляет все объекты из хранилища
-void UEngine::Storage_ClearObjectsStorage(void)
+int UEngine::Storage_ClearObjectsStorage(void)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  AccessCache.clear();
-  Storage->ClearObjectsStorage();
+  try
+  {
+   AccessCache.clear();
+   Storage->ClearObjectsStorage();
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
+ return res;
 }
 
 // Вычисляет суммарное число объектов в хранилище
 int UEngine::Storage_CalcNumObjects(void) const
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  return Storage->CalcNumObjects();
+  try
+  {
+   return Storage->CalcNumObjects();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
 
 int UEngine::Storage_CalcNumObjectsById(int classid) const
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  return Storage->CalcNumObjects(classid);
+  try
+  {
+   return Storage->CalcNumObjects(classid);
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
 
 int UEngine::Storage_CalcNumObjectsByName(const char* classname) const
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  return Storage->CalcNumObjects(classname);
+  try
+  {
+   return Storage->CalcNumObjects(classname);
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -624,158 +732,276 @@ int UEngine::Storage_CalcNumObjectsByName(const char* classname) const
 const char* UEngine::Storage_GetClassDescription(const char* classname)
 {
  std::string& TempString=CreateTempString();
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  USerStorageXML xml;
-  xml.Create(classname);
-  Storage->SaveClassDescription(classname,xml);
-  xml.SelectUp();
-  xml.Save(TempString);
+  try
+  {
+   USerStorageXML xml;
+   xml.Create(classname);
+   Storage->SaveClassDescription(classname,xml);
+   xml.SelectUp();
+   xml.Save(TempString);
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
 
 // Устанавливает описание класса по его id, считывая его из формата xml
-bool UEngine::Storage_SetClassDescription(const char* classname, const char* description)
+int UEngine::Storage_SetClassDescription(const char* classname, const char* description)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  USerStorageXML xml;
-  xml.Load(description, classname);
-  Storage->LoadClassDescription(classname,xml);
+  try
+  {
+   USerStorageXML xml;
+   xml.Load(description, classname);
+   Storage->LoadClassDescription(classname,xml); // TODO: Нет проверки на ошибочное чтение
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return true;
+ return res;
 }
 
 // Сохраняет описание всех классов в xml
 const char* UEngine::Storage_SaveClassesDescription(void)
 {
  std::string& TempString=CreateTempString();
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  USerStorageXML xml;
-  xml.Create("Root");
-  xml.AddNode("ClassesDescription");
-  Storage->SaveClassesDescription(xml);
-  xml.SelectRoot();
-  xml.Save(TempString);
+  try
+  {
+   USerStorageXML xml;
+   xml.Create("Root");
+   xml.AddNode("ClassesDescription");
+   Storage->SaveClassesDescription(xml);
+   xml.SelectRoot();
+   xml.Save(TempString);
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
+;
 }
 
 // Загружает описание всех классов из xml
-bool UEngine::Storage_LoadClassesDescription(const char* xmltext)
+int UEngine::Storage_LoadClassesDescription(const char* xmltext)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  USerStorageXML xml;
-  xml.Load(xmltext, "Root");
-  if(!xml.SelectNode("ClassesDescription"))
-   return false;
-  Storage->LoadClassesDescription(xml);
+  try
+  {
+   USerStorageXML xml;
+   xml.Load(xmltext, "Root");
+   if(!xml.SelectNode("ClassesDescription"))
+   {
+	res=RDK_E_XML_TARGET_NODE_NOT_FOUND;
+    return res;
+   }
+   Storage->LoadClassesDescription(xml);
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return true;
+ return res;
 }
 
 // Сохраняет общее описание всех классов в xml
 const char* UEngine::Storage_SaveCommonClassesDescription(void)
 {
  std::string& TempString=CreateTempString();
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  USerStorageXML xml;
-  xml.Create("Root");
-  xml.AddNode("CommonClassesDescription");
-  Storage->SaveCommonClassesDescription(xml);
-  xml.SelectRoot();
-  xml.Save(TempString);
+  try
+  {
+   USerStorageXML xml;
+   xml.Create("Root");
+   xml.AddNode("CommonClassesDescription");
+   Storage->SaveCommonClassesDescription(xml);
+   xml.SelectRoot();
+   xml.Save(TempString);
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
 
 // Загружает общее описание всех классов из xml
-bool UEngine::Storage_LoadCommonClassesDescription(const char* xmltext)
+int UEngine::Storage_LoadCommonClassesDescription(const char* xmltext)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  USerStorageXML xml;
-  xml.Load(xmltext, "Root");
-  if(!xml.SelectNode("CommonClassesDescription"))
-   return false;
-  return Storage->LoadCommonClassesDescription(xml);
+  try
+  {
+   USerStorageXML xml;
+   xml.Load(xmltext, "Root");
+   if(!xml.SelectNode("CommonClassesDescription"))
+   {
+	res=RDK_E_XML_TARGET_NODE_NOT_FOUND;
+    return res;
+   }
+   if(!Storage->LoadCommonClassesDescription(xml))
+	res=RDK_E_STORAGE_LOAD_COMMON_CLASSES_DESCR_FAIL;
+   else
+    res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return false;
+ return res;
 }
 
 // Сохраняет описание всех классов в xml включая общее описание
 const char* UEngine::Storage_SaveAllClassesDescription(void)
 {
  std::string& TempString=CreateTempString();
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  USerStorageXML xml;
-  xml.Create("Root");
-  xml.AddNode("CommonClassesDescription");
-  Storage->SaveCommonClassesDescription(xml);
-  xml.SelectUp();
-  xml.AddNode("ClassesDescription");
-  Storage->SaveClassesDescription(xml);
-  xml.SelectRoot();
-  xml.Save(TempString);
+  try
+  {
+   USerStorageXML xml;
+   xml.Create("Root");
+   xml.AddNode("CommonClassesDescription");
+   Storage->SaveCommonClassesDescription(xml);
+   xml.SelectUp();
+   xml.AddNode("ClassesDescription");
+   Storage->SaveClassesDescription(xml);
+   xml.SelectRoot();
+   xml.Save(TempString);
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
 
 // Загружает описание всех классов из xml включая общее описание
-bool UEngine::Storage_LoadAllClassesDescription(const char* xmltext)
+int UEngine::Storage_LoadAllClassesDescription(const char* xmltext)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  USerStorageXML xml;
-  xml.Load(xmltext, "Root");
-  if(!xml.SelectNode("CommonClassesDescription"))
-   return false;
-  if(!Storage->LoadCommonClassesDescription(xml))
-   return false;
-  xml.SelectUp();
-  if(!xml.SelectNode("ClassesDescription"))
-   return false;
-  Storage->LoadClassesDescription(xml);
-  return true;
+  try
+  {
+   USerStorageXML xml;
+   xml.Load(xmltext, "Root");
+   if(!xml.SelectNode("CommonClassesDescription"))
+   {
+	res=RDK_E_XML_TARGET_NODE_NOT_FOUND;
+    return res;
+   }
+   if(!Storage->LoadCommonClassesDescription(xml))
+   {
+	res=RDK_E_STORAGE_LOAD_COMMON_CLASSES_DESCR_FAIL;
+	return res;
+   }
+   xml.SelectUp();
+   if(!xml.SelectNode("ClassesDescription"))
+   {
+	res=RDK_E_XML_TARGET_NODE_NOT_FOUND;
+    return res;
+   }
+   Storage->LoadClassesDescription(xml);
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return false;
+ return res;
 }
 // ----------------------------
 
@@ -785,13 +1011,25 @@ bool UEngine::Storage_LoadAllClassesDescription(const char* xmltext)
 // Возвращает число библиотек
 int UEngine::Storage_GetNumClassLibraries(void) const
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  return Storage->GetNumCollections();
+  try
+  {
+   return Storage->GetNumCollections();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -801,19 +1039,31 @@ int UEngine::Storage_GetNumClassLibraries(void) const
 const char * UEngine::Storage_GetClassLibrariesList(void) const
 {
  std::string& TempString=CreateTempString();
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  TempString.clear();
-  for(int i=0;i<Storage->GetNumCollections();i++)
+  try
   {
-   TempString+=Storage->GetCollectionName(i);
-   if(i<Storage->GetNumCollections()-1)
-    TempString+=",";
+   TempString.clear();
+   for(int i=0;i<Storage->GetNumCollections();i++)
+   {
+	TempString+=Storage->GetCollectionName(i);
+	if(i<Storage->GetNumCollections()-1)
+	 TempString+=",";
+   }
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -823,24 +1073,36 @@ const char * UEngine::Storage_GetClassLibrariesList(void) const
 const char * UEngine::Storage_GetLibraryClassNames(const char *library_name) const
 {
  std::string& TempString=CreateTempString();
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  TempString.clear();
-  UEPtr<ULibrary> lib=Storage->GetCollection(library_name);
-  if(lib)
+  try
   {
-   const vector<string> &classes=lib->GetComplete();
-   for(int i=0;i<int(classes.size());i++)
+   TempString.clear();
+   UEPtr<ULibrary> lib=Storage->GetCollection(library_name);
+   if(lib)
    {
-	TempString+=classes[i];
-    if(i<int(classes.size())-1)
-     TempString+=",";
+	const vector<string> &classes=lib->GetComplete();
+	for(int i=0;i<int(classes.size());i++)
+	{
+	 TempString+=classes[i];
+	 if(i<int(classes.size())-1)
+	  TempString+=",";
+	}
    }
   }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -850,24 +1112,36 @@ const char * UEngine::Storage_GetLibraryClassNames(const char *library_name) con
 const char * UEngine::Storage_GetLibraryClassNamesByIndex(int index) const
 {
  std::string& TempString=CreateTempString();
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  TempString.clear();
-  UEPtr<ULibrary> lib=Storage->GetCollection(index);
-  if(lib)
+  try
   {
-   const vector<string> &classes=lib->GetComplete();
-   for(int i=0;i<int(classes.size());i++)
+   TempString.clear();
+   UEPtr<ULibrary> lib=Storage->GetCollection(index);
+   if(lib)
    {
-    TempString+=classes[i];
-    if(i<int(classes.size())-1)
-     TempString+=",";
+	const vector<string> &classes=lib->GetComplete();
+	for(int i=0;i<int(classes.size());i++)
+	{
+	 TempString+=classes[i];
+	 if(i<int(classes.size())-1)
+	  TempString+=",";
+	}
    }
   }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -877,13 +1151,25 @@ const char * UEngine::Storage_GetLibraryClassNamesByIndex(int index) const
 const char * UEngine::Storage_GetClassLibraryNameByIndex(int index)
 {
  std::string& TempString=CreateTempString();
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  TempString=Storage->GetCollectionName(index);
+  try
+  {
+   TempString=Storage->GetCollectionName(index);
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -892,191 +1178,357 @@ const char * UEngine::Storage_GetClassLibraryNameByIndex(int index)
 const char * UEngine::Storage_GetClassLibraryVersionByIndex(int index)
 {
  std::string& TempString=CreateTempString();
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  TempString=Storage->GetCollectionVersion(index);
+  try
+  {
+   TempString=Storage->GetCollectionVersion(index);
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
 
 // Удаляет подключенную библиотеку из списка по индексу
 // Ответственность за освобождение памяти лежит на вызывающей стороне.
-bool UEngine::Storage_DelClassLibraryByIndex(int index)
+int UEngine::Storage_DelClassLibraryByIndex(int index)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  AccessCache.clear();
-  return Storage->DelCollection(index);
+  try
+  {
+   AccessCache.clear();
+   if(Storage->DelCollection(index))
+   {
+	res=RDK_E_STORAGE_DEL_COLLECTION_FAIL;
+	return res;
+   }
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return false;
+ return res;
 }
 
 // Удаляет подключенную библиотеку из списка по имени
 // Ответственность за освобождение памяти лежит на вызывающей стороне.
-bool UEngine::Storage_DelClassLibraryByName(const char *name)
+int UEngine::Storage_DelClassLibraryByName(const char *name)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  AccessCache.clear();
-  return Storage->DelCollection(name);
+  try
+  {
+   AccessCache.clear();
+   if(!Storage->DelCollection(name))
+   {
+	res=RDK_E_STORAGE_DEL_COLLECTION_FAIL;
+	return res;
+   }
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return false;
+ return res;
 }
 
 // Удаляет из списка все библиотеки
 // Ответственность за освобождение памяти лежит на вызывающей стороне.
-bool UEngine::Storage_DelAllClassLibraries(void)
+int UEngine::Storage_DelAllClassLibraries(void)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  AccessCache.clear();
-  return Storage->DelAllCollections();
+  try
+  {
+   AccessCache.clear();
+   if(Storage->DelAllCollections())
+   {
+	res=RDK_E_STORAGE_DEL_COLLECTION_FAIL;
+	return res;
+   }
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return false;
+ return res;
 }
 
 // Загружает коллекцию по имени dll-файла
 int UEngine::Storage_LoadBinaryCollectionFromFile(const char *filename)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  return 0;
+  try
+  {
+    res=RDK_NOT_IMPLEMENTED;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return 0;
+ return res;
 }
 
 // Загружает runtime-коллекцию
 int UEngine::Storage_LoadRuntimeCollectionFromFile(const char *filename)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  return 0;
+  try
+  {
+    res=RDK_NOT_IMPLEMENTED;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return 0;
+ return res;
 }
 
 int UEngine::Storage_LoadRuntimeCollectionFromString(const char *buffer)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  return 0;
+  try
+  {
+   res=RDK_NOT_IMPLEMENTED;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return 0;
+ return res;
 }
 
 // Сохраняет runtime-коллекцию
 int UEngine::Storage_SaveRuntimeCollectionToFile(const char *filename)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  return 0;
+  try
+  {
+   res=RDK_NOT_IMPLEMENTED;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return 0;
+ return res;
 }
 
 int UEngine::Storage_SaveRuntimeCollectionToString(const char *buffer)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  return 0;
+  try
+  {
+   res=RDK_NOT_IMPLEMENTED;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return 0;
+ return res;
 }
 
 /// Создает новую runtime-библиотеку
 int UEngine::Storage_CreateRuntimeCollection(const char *collection_name)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  if(Storage->CreateRuntimeCollection(collection_name))
-   return 0;
-  return 74615;
+  try
+  {
+   if(Storage->CreateRuntimeCollection(collection_name))
+	res=RDK_SUCCESS;
+   else
+    res=RDK_E_STORAGE_RT_COLLECTION_CREATION_FAIL;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return 0;
+ return res;
 }
 
 // Перемещает объект в Storage как образец классов.
 // Объект удаляется из модели
 int UEngine::Storage_CreateClass(const char* stringid, const char *class_name, const char *collection_name)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<UContainer> sample=FindComponent(stringid);
-  UEPtr<URuntimeLibrary> library=dynamic_pointer_cast<URuntimeLibrary>(Storage->GetCollection(collection_name));
+  try
+  {
+   UEPtr<UContainer> sample=FindComponent(stringid);
+   UEPtr<URuntimeLibrary> library=dynamic_pointer_cast<URuntimeLibrary>(Storage->GetCollection(collection_name));
 
-  if(!sample)
-   return 74616;
+   if(!sample)
+	return RDK_E_MODEL_COMPONENT_NOT_FOUND;
 
-  if(!library)
-   return 74617;
+   if(!library)
+	return RDK_E_STORAGE_COLLECTION_NOT_FOUND;
 
-  if(!Storage->AddClassToCollection(class_name, sample,library))
-   return 74618;
+   if(!Storage->AddClassToCollection(class_name, sample,library))
+	return RDK_E_STORAGE_ADD_COLLECTION_FAIL;
 
-  AccessCache.clear();
-  return 0;
+   AccessCache.clear();
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return 0;
+ return res;
 }
 
 // Заполняет хранилище данными библиотек
 // Операция предварительно уничтожает модель и очищает хранилище
-bool UEngine::Storage_BuildStorage(void)
+int UEngine::Storage_BuildStorage(void)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  AccessCache.clear();
-  return Storage->BuildStorage();
+  try
+  {
+   AccessCache.clear();
+   if(!Storage->BuildStorage())
+   {
+	res=RDK_E_STORAGE_BUILD_FAIL;
+    return res;
+   }
+
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return false;
+ return res;
 }
 // ----------------------------
 
@@ -5026,42 +5478,17 @@ void UEngine::Model_SetComponentBitmapInput(const char *stringid, int index, con
 // Методы управления исключениями
 // --------------------------
 // Обрабатывает возникшее исключение
-void UEngine::ProcessException(UException &exception) const
+/// Возвращает RDK_UNHANDLED_EXCEPTION если не удалось записать данные исключения
+/// иначе возвращает RDK_EXCEPTION_CATCHED
+int UEngine::ProcessException(UException &exception) const
 {
-/*
-// if(!exception)
-//  throw exception;
-
-// USharedPtr<UException> ptr=exception;
-// ExceptionsLog.push_back(ptr);
-
- ++CurrentExceptionsLogSize;
- if(CurrentExceptionsLogSize > MaxExceptionsLogSize)
- {
-//  ExceptionsLog.erase(ExceptionsLog.begin());
-  size_t i=TempLogString.find_first_of("\n");
-  if(i != string::npos)
-  {
-   TempLogString.erase(0,i);
-  }
- }
- TempLogString+=exception.CreateLogMessage();
- TempLogString+="\r\n";
-
- if(ExceptionHandler)
-  ExceptionHandler();
-  */
  if(Environment)
   Environment->ProcessException(exception);
+ else
+  return RDK_UNHANDLED_EXCEPTION;
+
+ return RDK_EXCEPTION_CATCHED;
 }
-
-
-// Возвращает массив зарегистрированных исключений
-/*const vector<USharedPtr<UException> > UEngine::GetExceptionsLog(void) const
-{
- return ExceptionsLog;
-}*/
-
 
 // Возвращает массив строк лога
 const char* UEngine::GetLog(int &error_level) const
@@ -5069,7 +5496,6 @@ const char* UEngine::GetLog(int &error_level) const
  std::string& TempString=CreateTempString();
  TempString=Environment->GetLog(error_level);
  return TempString.c_str();
-// return TempLogString.c_str();
 }
 
 // Возвращает частичный массив строк лога с момента последнего считывания лога
