@@ -562,6 +562,30 @@ std::string EStringDebug::CreateLogMessage(void) const
  return EDebug::CreateLogMessage()+std::string(" ")+Str;
 }
 // --------------------------
+
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+UExceptionUnhandled::UExceptionUnhandled(const std::string &file_name, int line, const std::string &function_name)
+ : FileName(file_name), FunctionName(function_name), Line(line)
+{
+
+}
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+std::string UExceptionUnhandled::CreateLogMessage(void) const
+{
+ return EFatal::CreateLogMessage()+std::string(" File=")+FileName+
+			std::string(":")+sntoa(Line)+
+			std::string(" Func=")+FunctionName;
+}
+// --------------------------
+
+
 }
 #endif
 

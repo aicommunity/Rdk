@@ -17,6 +17,7 @@ See file license.txt for more information
 #include "UXMLEnvSerialize.h"
 //#include "Libraries/IO/UFileIO.h"
 #include "../Application/UIVisualController.h"
+#include "../../Deploy/Include/rdk_exceptions.h"
 #include "UEnvException.h"
 
 // --------------------------------------
@@ -414,13 +415,24 @@ bool UEngine::Stop(void)
 // Возвращает число классов в хранилище
 int UEngine::Storage_GetNumClasses(void)
 {
- try
+ RDK_SYS_TRY
  {
-  return Storage->GetNumClasses();
+  try
+  {
+   return Storage->GetNumClasses();
+  }
+  catch (UException &exception)
+  {
+   ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   ProcessException(UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  ProcessException(UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -428,16 +440,27 @@ int UEngine::Storage_GetNumClasses(void)
 // Возвращает id классов в хранилище. Память должна быть выделена
 void UEngine::Storage_GetClassesList(int *buffer) const
 {
- try
+ RDK_SYS_TRY
  {
-  std::vector<UId> temp;
-  Storage->GetClassIdList(temp);
-  if(temp.size())
-   memcpy(buffer,&temp[0],temp.size()*sizeof(UId));
+  try
+  {
+   std::vector<UId> temp;
+   Storage->GetClassIdList(temp);
+   if(temp.size())
+	memcpy(buffer,&temp[0],temp.size()*sizeof(UId));
+  }
+  catch (UException &exception)
+  {
+   ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   ProcessException(UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  ProcessException(UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
 }
 
@@ -446,21 +469,37 @@ void UEngine::Storage_GetClassesList(int *buffer) const
 const char* UEngine::Storage_GetClassesNameList(void) const
 {
  std::string& TempString=CreateTempString();
- try
+ RDK_SYS_TRY
  {
-  std::vector<std::string> temp;
-  Storage->GetClassNameList(temp);
-  for(size_t i=0;i<temp.size();i++)
+  try
   {
-   TempString+=temp[i];
-   if(i<temp.size()-1)
-    TempString+=",";
+   std::vector<std::string> temp;
+   Storage->GetClassNameList(temp);
+   for(size_t i=0;i<temp.size();i++)
+   {
+	TempString+=temp[i];
+	if(i<temp.size()-1)
+	 TempString+=",";
+   }
+   return TempString.c_str();
   }
-  return TempString.c_str();
+  catch (UException &exception)
+  {
+   ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   ProcessException(UExceptionWrapperStd(exception));
+  }
+//  catch(...)
+//  {
+//   ProcessException(UExceptionUnhandled(__FILE__,__LINE__,__FUNC__));
+//   throw;
+//  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  ProcessException(UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  DestroyTempString(TempString);
  return 0;
@@ -5331,32 +5370,18 @@ bool UEngine::ADefault(void)
 // в случае успешной сборки
 bool UEngine::ABuild(void)
 {
-/* if(!Environment)
-  return false;
-
- return Environment->Build();
-*/
  return true;
 }
 
 // Сброс процесса счета.
 bool UEngine::AReset(void)
 {
-/* if(!Environment)
-  return false;
-
- return Environment->Reset(); */
-
  return true;
 }
 
 // Выполняет расчет этого объекта
 bool UEngine::ACalculate(void)
 {
-/* if(!Environment)
-  return false;
-
- return Environment->Calculate();*/
  return true;
 }
 // --------------------------

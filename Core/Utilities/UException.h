@@ -458,6 +458,32 @@ virtual std::string CreateLogMessage(void) const;
 // --------------------------
 };
 
+// Исключение, которое невозможно обработать
+struct RDK_LIB_TYPE UExceptionUnhandled: public EFatal
+{
+// Имя файла
+std::string FileName;
+
+// Имя функции в которой произошла ошибка
+std::string FunctionName;
+
+// Строка в исходнике
+int Line;
+
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+UExceptionUnhandled(const std::string &file_name, int line, const std::string &function_name);
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+virtual std::string CreateLogMessage(void) const;
+// --------------------------
+};
+
 
 }
 
