@@ -16,6 +16,27 @@ typedef int bool;
 #define RDK_EX_DEBUG 5
 #endif
 
+#ifndef RDK_ERROR_CODES
+#define RDK_ERROR_CODES
+
+#define RDK_UNHANDLED_EXCEPTION 0x01000000 // Не удалось записать исключение в лог
+#define RDK_EXCEPTION_CATCHED 0x01000001 // Произошло исключение и информация о нем была записана в лог
+
+/// Core errors
+#define RDK_SUCCESS 0
+#define RDK_E_CORE_INIT_FAIL 100
+#define RDK_E_CORE_INCORRECT_CHANNELS_NUMBER 101
+#define RDK_E_CORE_CHANNEL_NOT_FOUND 102
+#define RDK_E_CORE_ZERO_CHANNEL_MUST_EXIST 103
+#define RDK_E_CORE_ENGINE_CREATE_FAIL 104
+#define RDK_E_CORE_STORAGE_CREATE_FAIL 105
+#define RDK_E_CORE_ENVIRONMENT_CREATE_FAIL 106
+#define RDK_E_CORE_ENGINE_INIT_FAIL 107
+#define RDK_E_CORE_ENVIRONMENT_UNINIT_FAIL 108
+
+
+#endif
+
 
 #ifndef RDK_PROPERTY_TYPES
 #define RDK_PROPERTY_TYPES
@@ -76,65 +97,84 @@ RDK_LIB_TYPE const char* RDK_CALL RemoteCall(const char *request, int &return_va
 // Функции инициализации
 // ----------------------------
 // Возвращает имя каталога бинарных файлов
-RDK_LIB_TYPE const char* RDK_CALL GetSystemDir(void);
+RDK_LIB_TYPE const char* RDK_CALL Core_GetSystemDir(void);
+RDK_LIB_TYPE const char* RDK_CALL GetSystemDir(void); // deprecated
 
 // Устанавливает имя каталога бинарных файлов
-RDK_LIB_TYPE int RDK_CALL SetSystemDir(const char *dir);
+RDK_LIB_TYPE int RDK_CALL Coe_SetSystemDir(const char *dir);
+RDK_LIB_TYPE int RDK_CALL SetSystemDir(const char *dir); // deprecated
 
 // Загружает глобальные шрифты
-RDK_LIB_TYPE int RDK_CALL Engine_LoadFonts(void);
+RDK_LIB_TYPE int RDK_CALL Core_LoadFonts(void);
+RDK_LIB_TYPE int RDK_CALL Engine_LoadFonts(void); // deprecated
 
 // Возвращает число дивжков
-RDK_LIB_TYPE int RDK_CALL GetNumEngines(void);
+RDK_LIB_TYPE int RDK_CALL Core_GetNumChannels(void);
+RDK_LIB_TYPE int RDK_CALL GetNumEngines(void); // deprecated
 
 // Создает требуемое число движков
 // num > 0
-RDK_LIB_TYPE int RDK_CALL SetNumEngines(int num);
+RDK_LIB_TYPE int RDK_CALL Core_SetNumChannels(int num);
+RDK_LIB_TYPE int RDK_CALL SetNumEngines(int num); // deprecated
 
 // Добавляет движок в позицию заданного индекса
 // Если позиция лежит вне пределов диапазона то
 // добавляет в конец
-RDK_LIB_TYPE int RDK_CALL Engine_Add(int index);
+RDK_LIB_TYPE int RDK_CALL Core_AddChannel(int index);
+RDK_LIB_TYPE int RDK_CALL Engine_Add(int index); // deprecated
 
 // Удаляет движок по индексу
-RDK_LIB_TYPE int RDK_CALL Engine_Del(int index);
+RDK_LIB_TYPE int RDK_CALL Core_DelChannel(int index);
+RDK_LIB_TYPE int RDK_CALL Engine_Del(int index); // deprecated
 
 // Возвращает индекс текущего выбранного движка
-RDK_LIB_TYPE int RDK_CALL GetSelectedEngineIndex(void);
+RDK_LIB_TYPE int RDK_CALL Core_GetSelectedChannelIndex(void);
+RDK_LIB_TYPE int RDK_CALL GetSelectedEngineIndex(void); // deprecated
 
 // Настраивает обычный интерфейс на работу с заданным движком
 // В случае удаления движка, интерфейс автоматически перенастраивается на 0 движок
-RDK_LIB_TYPE int RDK_CALL SelectEngine(int index);
+RDK_LIB_TYPE int RDK_CALL Core_SelectChannel(int index);
+RDK_LIB_TYPE int RDK_CALL SelectEngine(int index); // deprecated
 
-/// Блокирует канал до вызова функции UnlockEngine
-RDK_LIB_TYPE int RDK_CALL LockEngine(void);
-RDK_LIB_TYPE int RDK_CALL MLockEngine(int index);
+/// Блокирует канал до вызова функции UnlockEngine, Core_UnlockChannel
+RDK_LIB_TYPE int RDK_CALL Core_LockChannel(void);
+RDK_LIB_TYPE int RDK_CALL LockEngine(void); // deprecated
+RDK_LIB_TYPE int RDK_CALL MCore_LockChannel(int index);
+RDK_LIB_TYPE int RDK_CALL MLockEngine(int index); // deprecated
 
 /// Разблокирует канал
-RDK_LIB_TYPE int RDK_CALL UnLockEngine(void);
-RDK_LIB_TYPE int RDK_CALL MUnLockEngine(int index);
+RDK_LIB_TYPE int RDK_CALL Core_UnLockChannel(void);
+RDK_LIB_TYPE int RDK_CALL UnLockEngine(void); // deprecated
+RDK_LIB_TYPE int RDK_CALL MCore_UnLockChannel(int index);
+RDK_LIB_TYPE int RDK_CALL MUnLockEngine(int index); // deprecated
 
 // Инициализирует движок (функция должна быть вызвана первой!)
 // Upd: Функция может быть вызвана после SetNumEngines и SelectEngine
-RDK_LIB_TYPE int RDK_CALL EngineInit(int predefined_structure, void* exception_handler=0);
-RDK_LIB_TYPE int RDK_CALL MEngineInit(int engine_index, int predefined_structure, void* exception_handler=0);
+RDK_LIB_TYPE int RDK_CALL Core_ChannelInit(int predefined_structure, void* exception_handler=0);
+RDK_LIB_TYPE int RDK_CALL EngineInit(int predefined_structure, void* exception_handler=0); // deprecated
+RDK_LIB_TYPE int RDK_CALL MCore_ChannelInit(int engine_index, int predefined_structure, void* exception_handler=0);
+RDK_LIB_TYPE int RDK_CALL MEngineInit(int engine_index, int predefined_structure, void* exception_handler=0); // deprecated
 
 // Инициализирует графический движок (функция должна быть вызвана первой!)
 // Upd: Функция может быть вызвана после SetNumEngines и SelectEngine
 RDK_LIB_TYPE int RDK_CALL GraphicalEngineInit(int predefined_structure, int num_inputs,
 		int num_outputs, int input_width, int input_height, bool reflectionx=false,
-		void* exception_handler=0);
+		void* exception_handler=0); // deprecated
 RDK_LIB_TYPE int RDK_CALL MGraphicalEngineInit(int engine_index, int predefined_structure, int num_inputs,
 		int num_outputs, int input_width, int input_height, bool reflectionx=false,
-		void* exception_handler=0);
+		void* exception_handler=0); // deprecated
 
 // Деинициализирует движок (функция автоматически вызывается при вызове инициализации)
-RDK_LIB_TYPE int RDK_CALL EngineUnInit(void);
-RDK_LIB_TYPE int RDK_CALL MEngineUnInit(int engine_index);
+RDK_LIB_TYPE int RDK_CALL Core_ChannelUnInit(void);
+RDK_LIB_TYPE int RDK_CALL EngineUnInit(void); // deprecated
+RDK_LIB_TYPE int RDK_CALL MCore_ChannelUnInit(int engine_index);
+RDK_LIB_TYPE int RDK_CALL MEngineUnInit(int engine_index); // deprecated
 
 /// Проверяет инициализирован ли движок
-RDK_LIB_TYPE bool RDK_CALL IsEngineInit(void);
-RDK_LIB_TYPE bool RDK_CALL MIsEngineInit(int engine_index);
+RDK_LIB_TYPE bool RDK_CALL Core_IsChannelInit(void);
+RDK_LIB_TYPE bool RDK_CALL IsEngineInit(void); // deprecated
+RDK_LIB_TYPE bool RDK_CALL MCore_IsChannelInit(int engine_index);
+RDK_LIB_TYPE bool RDK_CALL MIsEngineInit(int engine_index); // deprecated
 
 /// Высвобождает буферную строку движка, по заданному указателю
 RDK_LIB_TYPE void RDK_CALL Engine_FreeBufString(const char *pointer);
