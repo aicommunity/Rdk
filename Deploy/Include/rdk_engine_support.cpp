@@ -242,8 +242,8 @@ int RDKDllManager::EngineCreate(int index)
   return RDK_E_CORE_ENGINE_CREATE_FAIL;
  }
 
- try
- {
+// try
+// {
   StorageList[index]=FuncCreateNewStorage();
   if(!StorageList[index])
   {
@@ -275,11 +275,11 @@ int RDKDllManager::EngineCreate(int index)
    Environment=EnvironmentList[SelectedChannelIndex];
    Storage=StorageList[SelectedChannelIndex];
   }
- }
- catch (RDK::UException &exception)
- {
-  EngineList[index]->ProcessException(exception);
- }
+// }
+// catch (RDK::UException &exception)
+// {
+//  EngineList[index]->ProcessException(exception);
+// }
  return RDK_SUCCESS;
 }
 

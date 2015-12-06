@@ -8,7 +8,7 @@
 #include "rdk_engine_support.h"
 #include "rdk_exceptions.h"
 #include "UEnvException.h"
-
+#include "../../System/UGenericMutex.h"
 namespace RDK {
 
 // Глобальная коллекция шрифтов
@@ -708,50 +708,151 @@ bool RDK_CALL MIsEngineInit(int engine_index)
 /// 1 - уникальные переменные с необходимостью вызвова функции очистки
 int RDK_CALL Engine_GetBufObjectsMode(void)
 {
+ UGenericMutexExclusiveLocker lock(DllManager.GlobalMutex);
  return BufObjectsMode;
 }
 
-bool RDK_CALL Engine_SetBufObjectsMode(int mode)
+int RDK_CALL Engine_SetBufObjectsMode(int mode)
 {
- if(BufObjectsMode == mode)
-  return true;
-
- for(size_t i=0;i<DllManager.EngineList.size();i++)
+ UGenericMutexExclusiveLocker lock(DllManager.GlobalMutex);
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  DllManager.GetEngineLock(i)->SetBufObjectsMode(mode);
- }
- BufObjectsMode=mode;
+  try
+  {
+   if(BufObjectsMode == mode)
+	return RDK_SUCCESS;
 
- return true;
+   for(size_t i=0;i<DllManager.EngineList.size();i++)
+   {
+	DllManager.GetEngineLock(i)->SetBufObjectsMode(mode);
+   }
+   BufObjectsMode=mode;
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(0,exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(0,RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(0,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return res;
 }
 
 /// Высвобождает буферную строку движка, по заданному указателю
-void RDK_CALL Engine_FreeBufString(const char *pointer)
+int RDK_CALL Engine_FreeBufString(const char *pointer)
 {
- DllManager.GetEngineLock()->DestroyTempString(pointer);
-// UGenericMutexLocker locker(DllManager.MutexList[SelectedEngineIndex]);
-// PEngine->DestroyTempString(pointer);
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   DllManager.GetEngineLock()->DestroyTempString(pointer);
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(0,exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(0,RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(0,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return res;
 }
 
-void RDK_CALL MEngine_FreeBufString(int engine_index,const char *pointer)
+int RDK_CALL MEngine_FreeBufString(int engine_index,const char *pointer)
+{
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   if(engine_index<0 || engine_index>=GetNumEngines())
+	return RDK_E_CORE_CHANNEL_NOT_FOUND;
+   DllManager.GetEngineLock(engine_index)->DestroyTempString(pointer);
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(0,exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(0,RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(0,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return res;
+}
+
+int RDK_CALL Engine_FreeBufStringUnsafe(const char *pointer)
+{
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   DllManager.GetEngine()->DestroyTempString(pointer);
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(0,exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(0,RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(0,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return res;
+}
+
+int RDK_CALL MEngine_FreeBufStringUnsafe(int engine_index,const char *pointer)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
-  return;
- DllManager.GetEngineLock(engine_index)->DestroyTempString(pointer);
-// UGenericMutexLocker locker(DllManager.MutexList[engine_index]);
-// DllManager.EngineList[engine_index]->DestroyTempString(pointer);
-}
-
-void RDK_CALL Engine_FreeBufStringUnsafe(const char *pointer)
-{
- DllManager.GetEngine()->DestroyTempString(pointer);
-}
-
-void RDK_CALL MEngine_FreeBufStringUnsafe(int engine_index,const char *pointer)
-{
- if(engine_index<0 || engine_index>=GetNumEngines())
-  return;
- return DllManager.GetEngineLock(engine_index)->DestroyTempString(pointer);
+  return RDK_E_CORE_CHANNEL_NOT_FOUND;
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   DllManager.GetEngineLock(engine_index)->DestroyTempString(pointer);
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(0,exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(0,RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(0,RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return res;
 }
 
 /// Возвращает число буферных строк движка
@@ -763,7 +864,7 @@ int RDK_CALL Engine_GetNumBufStrings(void)
 int RDK_CALL MEngine_GetNumBufStrings(int engine_index)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
-  return -1;
+  return RDK_E_CORE_CHANNEL_NOT_FOUND;
  return DllManager.GetEngineLock()->GetNumTempStrings();
 }
 
