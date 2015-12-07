@@ -83,7 +83,7 @@ MMatrix<T,4,4> CalcObjectPositionMatrix(const MVector<T,3> &angles, const MVecto
 //    M=Mz*Mx*My;
 //    6:
 //    7:
-//    углы Вартанова: fi, psi, omega
+//    углы Вартанова: fi, psi, omega = (1: fi=-Az, psi=Ay, omega=Ax)
 template<class T>
 MMatrix<T,4,4> CalcObjectPositionMatrix(const MVector<T,6> &anglesANDshifts, int seqmat=3)
 {
@@ -186,7 +186,7 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,3> &angle
 //    6:
 //    M=Mz*My*Mx;
 //    7:
-//    углы Вартанова: fi, psi, omega
+//    углы Вартанова: fi, psi, omega = (1: fi=-Az, psi=Ay, omega=Ax)
 template<class T>
 void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &anglesANDshifts, int seqmat=3)
 {
