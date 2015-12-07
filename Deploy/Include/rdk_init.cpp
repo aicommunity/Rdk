@@ -7,9 +7,9 @@
 //#include "rdk_rpc.cpp"
 #include "rdk_engine_support.h"
 #include "rdk_exceptions.h"
-#include "UEnvException.h"
+#include "../../Core/Engine/UEnvException.h"
 #include "rdk_error_codes.h"
-#include "../../System/UGenericMutex.h"
+#include "../../Core/System/UGenericMutex.h"
 namespace RDK {
 
 // Глобальная коллекция шрифтов
@@ -46,7 +46,7 @@ bool AddGlobalFont(const std::string &font_file_name)
 
 /// Возвращает RDK_UNHANDLED_EXCEPTION если не удалось записать данные исключения
 /// иначе возвращает RDK_EXCEPTION_CATCHED
-bool ProcessException(int channel_index, UException &ex)
+int ProcessException(int channel_index, UException &ex)
 {
  UELockPtr<UEngine> engine=DllManager.GetEngineLock(channel_index);
  if(!engine)
@@ -1167,7 +1167,7 @@ bool RDK_CALL Env_IsStoragePresent(void)
 bool RDK_CALL MEnv_IsStoragePresent(int engine_index)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
-  return RDK_E_CORE_CHANNEL_NOT_FOUND;
+  return false;
  return DllManager.GetEngineLock(engine_index)->Env_IsStoragePresent();
 }
 
@@ -1180,7 +1180,7 @@ bool RDK_CALL Env_IsInit(void)
 bool RDK_CALL MEnv_IsInit(int engine_index)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
-  return RDK_E_CORE_CHANNEL_NOT_FOUND;
+  return false;
  return DllManager.GetEngineLock(engine_index)->Env_IsInit();
 }
 
@@ -1194,7 +1194,7 @@ bool RDK_CALL Env_IsStructured(void)
 bool RDK_CALL MEnv_IsStructured(int engine_index)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
-  return RDK_E_CORE_CHANNEL_NOT_FOUND;
+  return false;
  return DllManager.GetEngineLock(engine_index)->Env_IsStructured();
 }
 
@@ -2444,7 +2444,7 @@ unsigned long long RDK_CALL Model_GetTime(void)
 unsigned long long RDK_CALL MModel_GetTime(int engine_index)
 {
  if(engine_index<0 || engine_index>=GetNumEngines())
-  return 0.0;
+  return 0;
 
  return DllManager.GetEngineLock(engine_index)->Model_GetTime();
 }
@@ -2549,12 +2549,14 @@ int RDK_CALL MModel_SetDoubleSourceTime(int engine_index, double value)
 
 int RDK_CALL Model_SetDoubleSourceTimeAll(double value)
 {
- bool res=true;
+ int res=RDK_SUCCESS;
  for(int i=0;i<GetNumEngines();i++)
  {
-  res&=DllManager.GetEngineLock(i)->Model_SetDoubleSourceTime(value);
+  int temp_res=DllManager.GetEngineLock(i)->Model_SetDoubleSourceTime(value);
+  if(temp_res != RDK_SUCCESS)
+   res=temp_res;
  }
- return true;
+ return res;
 }
 
 // Возвращает время расчета компонента без времени расчета дочерних компонент (мс)

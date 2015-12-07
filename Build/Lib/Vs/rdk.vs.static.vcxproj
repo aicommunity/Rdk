@@ -109,6 +109,7 @@
     <ClCompile Include="..\..\..\Core\Engine\UELockPtr.cpp" />
     <ClCompile Include="..\..\..\Core\Engine\UELockVar.cpp" />
     <ClCompile Include="..\..\..\Core\Engine\UEngine.cpp" />
+    <ClCompile Include="..\..\..\Core\Engine\UEnvException.cpp" />
     <ClCompile Include="..\..\..\Core\Engine\UEnvironment.cpp" />
     <ClCompile Include="..\..\..\Core\Engine\UEnvSupport.cpp" />
     <ClCompile Include="..\..\..\Core\Engine\UEPtr.cpp" />
@@ -217,6 +218,7 @@
     <ClInclude Include="..\..\..\Core\Engine\UELockPtr.h" />
     <ClInclude Include="..\..\..\Core\Engine\UELockVar.h" />
     <ClInclude Include="..\..\..\Core\Engine\UEngine.h" />
+    <ClInclude Include="..\..\..\Core\Engine\UEnvException.h" />
     <ClInclude Include="..\..\..\Core\Engine\UEnvironment.h" />
     <ClInclude Include="..\..\..\Core\Engine\UEnvSupport.h" />
     <ClInclude Include="..\..\..\Core\Engine\UEPtr.h" />
@@ -287,6 +289,7 @@
     <ClInclude Include="..\..\..\Core\Utilities\UTree.h" />
     <ClInclude Include="..\..\..\Deploy\Include\rdk.h" />
     <ClInclude Include="..\..\..\Deploy\Include\rdk_cpp_initlib.h" />
+    <ClInclude Include="..\..\..\Deploy\Include\rdk_error_codes.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
