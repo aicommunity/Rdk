@@ -527,12 +527,12 @@ UProperty(OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmetho
 /// Флаг проверки значения свойства на равенство присваевому значению
 bool IsCheckEquals(void) const
 {
- return CheckEquals;
+ return CheckEqualsFlag;
 }
 
 void SetCheckEquals(bool value)
 {
- CheckEquals=value;
+ CheckEqualsFlag=value;
 }
 // -----------------------------
 
@@ -547,7 +547,7 @@ virtual const T& GetData(void) const
 
 virtual void SetData(const T &value)
 {
- if(CheckEquals && v == value)
+ if(CheckEqualsFlag && v == value)
   return;
 
  if(this->Owner)
@@ -605,12 +605,12 @@ UCProperty(OwnerT * const owner, VSetterRT setmethod)
 /// Флаг проверки значения свойства на равенство присваевому значению
 bool IsCheckEquals(void) const
 {
- return CheckEquals;
+ return CheckEqualsFlag;
 }
 
 void SetCheckEquals(bool value)
 {
- CheckEquals=value;
+ CheckEqualsFlag=value;
 }
 // -----------------------------
 
