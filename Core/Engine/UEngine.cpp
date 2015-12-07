@@ -1539,29 +1539,58 @@ int UEngine::Storage_BuildStorage(void)
 // Индекс предарительно заданной модели обработки
 int UEngine::Env_GetPredefinedStructure(void) const
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  return Environment->GetPredefinedStructure();
+  try
+  {
+   return Environment->GetPredefinedStructure();
+  }
+  catch (RDK::UException &exception)
+  {
+   ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
 
-bool UEngine::Env_SetPredefinedStructure(int value)
+int UEngine::Env_SetPredefinedStructure(int value)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  AccessCache.clear();
-  return Environment->SetPredefinedStructure(value);
+  try
+  {
+   AccessCache.clear();
+   if(!Environment->SetPredefinedStructure(value))
+   {
+	res=RDK_E_ENGINE_SET_PREDEFINED_STRUCTURE_FAIL;
+    return res;
+   }
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return false;
+ return res;
 }
 
 // Флаг состояния инициализации
@@ -1569,13 +1598,25 @@ bool UEngine::Env_SetPredefinedStructure(int value)
 // false - хранилище не готово
 bool UEngine::Env_IsStoragePresent(void) const
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  return Environment->IsStoragePresent();
+  try
+  {
+   return Environment->IsStoragePresent();
+  }
+  catch (RDK::UException &exception)
+  {
+   ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return false;
 }
@@ -1583,13 +1624,25 @@ bool UEngine::Env_IsStoragePresent(void) const
 // Возвращает состояние инициализации
 bool UEngine::Env_IsInit(void) const
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  return Environment->IsInit();
+  try
+  {
+   return Environment->IsInit();
+  }
+  catch (RDK::UException &exception)
+  {
+   ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return false;
 }
@@ -1597,94 +1650,178 @@ bool UEngine::Env_IsInit(void) const
 // Признак наличия сформированной структуры
 bool UEngine::Env_IsStructured(void) const
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  return Environment->IsStructured();
+  try
+  {
+   return Environment->IsStructured();
+  }
+  catch (RDK::UException &exception)
+  {
+   ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return false;
 }
 
 // Инициализация среды
-bool UEngine::Env_Init(void)
+int UEngine::Env_Init(void)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  AccessCache.clear();
-  Environment->Init();
-   return true;
+  try
+  {
+   AccessCache.clear();
+   Environment->Init();
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return false;
+ return res;
 }
 
 // Деинициализация среды
-bool UEngine::Env_UnInit(void)
+int UEngine::Env_UnInit(void)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  AccessCache.clear();
-  Environment->UnInit();
-  return true;
+  try
+  {
+   AccessCache.clear();
+   Environment->UnInit();
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return false;
+ return res;
 }
 
 // Формирует предварительно заданную модель обработки
-bool UEngine::Env_CreateStructure(void)
+int UEngine::Env_CreateStructure(void)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  AccessCache.clear();
-  return Environment->CreateStructure();
+  try
+  {
+   AccessCache.clear();
+   if(!Environment->CreateStructure())
+   {
+	res=RDK_E_ENGINE_CREATE_STRUCTURE_FAIL;
+    return res;
+   }
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return false;
+ return res;
 }
 
 // Уничтожает текущую модель обработки
-bool UEngine::Env_DestroyStructure(void)
+int UEngine::Env_DestroyStructure(void)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  AccessCache.clear();
-  return Environment->DestroyStructure();
+  try
+  {
+   AccessCache.clear();
+   if(Environment->DestroyStructure())
+   {
+	res=RDK_E_ENGINE_DESTROY_STRUCTURE_FAIL;
+    return res;
+   }
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return false;
+ return res;
 }
 
 // Удаляет модель и все библиотеки, очищает хранилище, приводя среду в исходное состояние
-void UEngine::Env_Destroy(void)
+int UEngine::Env_Destroy(void)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  AccessCache.clear();
-  Environment->DestroyModel();
-  Storage->ClearObjectsStorage();
-  Storage->ClearClassesStorage();
-  Storage->DelAllCollections();
+  try
+  {
+   AccessCache.clear();
+   Environment->DestroyModel();
+   Storage->ClearObjectsStorage();
+   Storage->ClearClassesStorage();
+   Storage->DelAllCollections();
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
+ return res;
 }
 
 // Метод счета
@@ -1692,45 +1829,71 @@ void UEngine::Env_Destroy(void)
 // иначе вычисляет только указанный компонент модели
 int UEngine::Env_Calculate(const char* stringid)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  RDK::ULongId id;
-  if(!stringid)
+  try
   {
-   Environment->SetModelCalculationComponent(id);
-  }
-  else
-  {
-   RDK::UContainer* destcont=FindComponent(stringid);
-   if(destcont)
-    destcont->GetLongId(Environment->GetModel(),id);
-//   id.DecodeFromString(stringid);
-    Environment->SetModelCalculationComponent(id);
-  }
+   RDK::ULongId id;
+   if(!stringid)
+   {
+	Environment->SetModelCalculationComponent(id);
+   }
+   else
+   {
+	RDK::UContainer* destcont=FindComponent(stringid);
+	if(destcont)
+	 destcont->GetLongId(Environment->GetModel(),id);
+	else
+	 return RDK_E_MODEL_COMPONENT_NOT_FOUND;
+	Environment->SetModelCalculationComponent(id);
+   }
 
-  if(!Environment->Calculate())
-   throw EFunctionReturnFalse(__FILE__,__FUNCTION__,__LINE__);
-   // return 1;
+   if(!Environment->Calculate())
+	throw EFunctionReturnFalse(__FILE__,__FUNCTION__,__LINE__);
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (RDK::UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
-
- return 0;
+ return res;
 }
 
 // Расчет всей модели в реальном времени
-void UEngine::Env_RTCalculate(void)
+int UEngine::Env_RTCalculate(void)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  Environment->RTCalculate();
+  try
+  {
+   Environment->RTCalculate();
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (RDK::UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
+ return res;
 }
 
 
@@ -1739,33 +1902,45 @@ void UEngine::Env_RTCalculate(void)
 // иначе - только указанный компонент модели
 int UEngine::Env_Reset(const char* stringid)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  RDK::ULongId id;
-  if(!stringid)
+  try
   {
-   Environment->SetModelCalculationComponent(id);
-   if(!Environment->Reset())
-	throw EFunctionReturnFalse(__FILE__,__FUNCTION__,__LINE__);
-  }
-  else
-  {
-   RDK::UContainer* destcont=FindComponent(stringid);
-   if(destcont)
+   RDK::ULongId id;
+   if(!stringid)
    {
-	if(!destcont->Reset())
+	Environment->SetModelCalculationComponent(id);
+	if(!Environment->Reset())
 	 throw EFunctionReturnFalse(__FILE__,__FUNCTION__,__LINE__);
    }
    else
-	return 100000;
+   {
+	RDK::UContainer* destcont=FindComponent(stringid);
+	if(destcont)
+	{
+	 if(!destcont->Reset())
+	  throw EFunctionReturnFalse(__FILE__,__FUNCTION__,__LINE__);
+	}
+	else
+	 return RDK_E_MODEL_COMPONENT_NOT_FOUND;
+   }
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
- catch (RDK::UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
-
- return 0;
+ return res;
 }
 
 /// Метод сброса параметров на значения по умолчанию
@@ -1774,42 +1949,68 @@ int UEngine::Env_Reset(const char* stringid)
 /// Если subcomps == true то также сбрасывает параметры всех дочерних компонент
 int UEngine::Env_Default(const char* stringid, bool subcomps)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  RDK::UContainer* destcont;
-  if(!stringid)
+  try
   {
-   destcont=GetModel();
-  }
-  else
-  {
-   destcont=FindComponent(stringid);
-  }
+   RDK::UContainer* destcont;
+   if(!stringid)
+   {
+	destcont=GetModel();
+   }
+   else
+   {
+	destcont=FindComponent(stringid);
+   }
 
-  if(!destcont->DefaultAll(destcont,subcomps))
-   throw EFunctionReturnFalse(__FILE__,__FUNCTION__,__LINE__);
+   if(!destcont->DefaultAll(destcont,subcomps))
+	throw EFunctionReturnFalse(__FILE__,__FUNCTION__,__LINE__);
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (RDK::UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
-
- return 0;
+ return res;
 }
 
 
 
 // Производит увеличение времени модели на требуемую величину
-void UEngine::Env_IncreaseModelTimeByStep(void)
+int UEngine::Env_IncreaseModelTimeByStep(void)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  Environment->IncreaseModelTimeByStep();
+  try
+  {
+   Environment->IncreaseModelTimeByStep();
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (RDK::UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
+ return res;
 }
 
 /// Устанавливает минимальный интервал времени между шагами расчета (мс)
@@ -1817,17 +2018,29 @@ void UEngine::Env_IncreaseModelTimeByStep(void)
 /// последней итерации не станет больше чем эта величина
 int UEngine::Env_SetMinInterstepsInterval(unsigned long long value)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  if(!Environment->SetMinInterstepsInterval(value))
-   throw EFunctionReturnFalse(__FILE__,__FUNCTION__,__LINE__);
-//   return -2000;
+  try
+  {
+   if(!Environment->SetMinInterstepsInterval(value))
+    throw EFunctionReturnFalse(__FILE__,__FUNCTION__,__LINE__);
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (RDK::UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return 0;
+ return res;
 }
 
 /// Возвращает минимальный интервал времени между шагами расчета (мс)
@@ -1835,13 +2048,25 @@ int UEngine::Env_SetMinInterstepsInterval(unsigned long long value)
 /// последней итерации не станет больше чем эта величина
 unsigned long long UEngine::Env_GetMinInterstepsInterval(void) const
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  return Environment->GetMinInterstepsInterval();
+  try
+  {
+   return Environment->GetMinInterstepsInterval();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (RDK::UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -1849,19 +2074,79 @@ unsigned long long UEngine::Env_GetMinInterstepsInterval(void) const
 // Время, потраченное на последний RT-расчет
 double UEngine::Env_GetRTLastDuration(void) const
 {
- return Environment->GetRTLastDuration();
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   return Environment->GetRTLastDuration();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return 0.0;
 }
 
 /// Время, расчитанное в модели за один вызов RTCalculate;
 double UEngine::Env_GetRTModelCalcTime(void) const
 {
- return Environment->GetRTModelCalcTime();
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   return Environment->GetRTModelCalcTime();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return 0.0;
 }
 
 /// Производительность RT расчета (отношение RTModelCalcTime/RTLastDuration)
 double UEngine::Env_CalcRTPerformance(void) const
 {
- return Environment->CalcRTPerformance();
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   return Environment->CalcRTPerformance();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return 0.0;
 }
 
 // !!! Следующие методы управления текущим компонентом влияют на все
@@ -1869,94 +2154,159 @@ double UEngine::Env_CalcRTPerformance(void) const
 // Устанавливает текущий компонент (адресация относительно корня - модели)
 int UEngine::Env_SelectCurrentComponent(const char *stringid)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  Environment->ResetCurrentComponent();
+  try
+  {
+   Environment->ResetCurrentComponent();
 
-  // Если первый символ - цифра, то декодруем как строковой id
-  if(stringid[0]>=0x30 && stringid[0]<=0x39)
-  {
-   ULongId longid;
-   longid.DecodeFromString(stringid);
-   Environment->SelectCurrentComponent(longid);
+   // Если первый символ - цифра, то декодруем как строковой id
+   if(stringid[0]>=0x30 && stringid[0]<=0x39)
+   {
+	ULongId longid;
+	longid.DecodeFromString(stringid);
+	Environment->SelectCurrentComponent(longid);
+   }
+   else // ...иначе декодируем как строковое имя
+   {
+	Environment->SelectCurrentComponent(stringid);
+   }
+   res=RDK_SUCCESS;
   }
-  else // ...иначе декодируем как строковое имя
+  catch (RDK::UException &exception)
   {
-   Environment->SelectCurrentComponent(stringid);
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
- catch (RDK::UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return 0;
+ return res;
 }
 
 // Сбрасывает текущий компонент в состояние по умолчению (модель)
 int UEngine::Env_ResetCurrentComponent(const char *stringid)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  Environment->ResetCurrentComponent();
+  try
+  {
+   Environment->ResetCurrentComponent();
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (RDK::UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return 0;
+ return res;
 }
 
 // Меняет текущий компонент на его родителя (подъем на уровень вверх)
 // Если уже на верхнем уровне, то не делает ничего
 int UEngine::Env_UpCurrentComponent(void)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  Environment->UpCurrentComponent();
+  try
+  {
+   Environment->UpCurrentComponent();
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (RDK::UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return 0;
+ return res;
 }
 
 // Меняет текущий компонент на его дочерний на произвольном уровне вложенности
 // (спуск на N уровней вниз относительно текущего компонента)
 int UEngine::Env_DownCurrentComponent(const char *stringid)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  // Если первый символ - цифра, то декодруем как строковой id
-  if(stringid[0]>=0x30 && stringid[0]<=0x39)
+  try
   {
-   ULongId longid;
-   longid.DecodeFromString(stringid);
-   Environment->DownCurrentComponent(longid);
+   // Если первый символ - цифра, то декодруем как строковой id
+   if(stringid[0]>=0x30 && stringid[0]<=0x39)
+   {
+	ULongId longid;
+	longid.DecodeFromString(stringid);
+	Environment->DownCurrentComponent(longid);
+   }
+   else // ...иначе декодируем как строковое имя
+   {
+	Environment->DownCurrentComponent(stringid);
+   }
+   res=RDK_SUCCESS;
   }
-  else // ...иначе декодируем как строковое имя
+  catch (RDK::UException &exception)
   {
-   Environment->DownCurrentComponent(stringid);
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
- catch (RDK::UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return 0;
+ return res;
 }
 
 // Возвращает длинное имя текущего компонента
 const char* UEngine::Env_GetCurrentComponentName(void) const
 {
  std::string& TempString=CreateTempString();
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  Environment->GetCurrentComponent()->GetLongName(Environment->GetModel(),TempString);
+  try
+  {
+   Environment->GetCurrentComponent()->GetLongName(Environment->GetModel(),TempString);
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (RDK::UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -1965,15 +2315,28 @@ const char* UEngine::Env_GetCurrentComponentName(void) const
 const char* UEngine::Env_GetCurrentComponentId(void) const
 {
  std::string& TempString=CreateTempString();
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  ULongId longid;
-  Environment->GetCurrentComponent()->GetLongId(Environment->GetModel(),longid);
-  longid.EncodeToString(TempString);
+  try
+  {
+   ULongId longid;
+   Environment->GetCurrentComponent()->GetLongId(Environment->GetModel(),longid);
+   longid.EncodeToString(TempString);
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (RDK::UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -1982,14 +2345,26 @@ const char* UEngine::Env_GetCurrentComponentId(void) const
 const char* UEngine::Env_GetCurrentDataDir(void) const
 {
  std::string& TempString=CreateTempString();
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  TempString=Environment->GetCurrentDataDir();
-  return TempString.c_str();
+  try
+  {
+   TempString=Environment->GetCurrentDataDir();
+   return TempString.c_str();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (RDK::UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  DestroyTempString(TempString);
  return 0;
@@ -1998,29 +2373,54 @@ const char* UEngine::Env_GetCurrentDataDir(void) const
 // Устанавливает имя текущего каталога для хранения данных
 int UEngine::Env_SetCurrentDataDir(const char *dir)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  Environment->SetCurrentDataDir(dir);
+  try
+  {
+   Environment->SetCurrentDataDir(dir);
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (RDK::UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return 0;
+ return res;
 }
 
 // Возвращает имя каталога бинарных файлов
 const char* UEngine::Env_GetSystemDir(void) const
 {
  std::string& TempString=CreateTempString();
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  TempString=Environment->GetSystemDir().c_str();
-  return TempString.c_str();
+  try
+  {
+   TempString=Environment->GetSystemDir().c_str();
+   return TempString.c_str();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (RDK::UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  DestroyTempString(TempString);
  return 0;
@@ -2029,43 +2429,83 @@ const char* UEngine::Env_GetSystemDir(void) const
 // Устанавливает имя каталога бинарных файлов
 int UEngine::Env_SetSystemDir(const char *dir)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  Environment->SetSystemDir(dir);
+  try
+  {
+   Environment->SetSystemDir(dir);
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (RDK::UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return 0;
+ return res;
 }
 
 /// Возвращает состояние флага отладочного режима среды
-int UEngine::Env_GetDebugMode(void) const
+bool UEngine::Env_GetDebugMode(void) const
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  return Environment->GetDebugMode();
+  try
+  {
+   return Environment->GetDebugMode();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (RDK::UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return 0;
+ return false;
 }
 
 /// Устанавливает состояние флага отладочного режима среды
 int UEngine::Env_SetDebugMode(bool value)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  return Environment->SetDebugMode(value);
+  try
+  {
+   if(!Environment->SetDebugMode(value))
+   {
+    return RDK_E_ENV_SET_FLAG_FAIL;
+   }
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (RDK::UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return -1;
+ return res;
 }
 
 // Задает число входов среды
@@ -2163,20 +2603,33 @@ unsigned char* UEngine::Env_GetOutputImageY8(int index)
 
 
 /// Инициирует извещение о сбое в работе источника данных
-bool UEngine::Env_CallSourceController(void)
+int UEngine::Env_CallSourceController(void)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  if(!Environment)
-   return false;
-  return Environment->CallSourceController();
+  try
+  {
+   if(!Environment)
+	return RDK_E_ENV_NOT_FOUND;
+   if(!Environment->CallSourceController())
+	return RDK_E_ENV_SOURCE_CONTROLLER_CALL_FAIL;
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
-
- return 0;
+ return res;
 }
 
 
@@ -2185,75 +2638,122 @@ bool UEngine::Env_CallSourceController(void)
 // Удаляет модель
 int UEngine::Model_Destroy(void)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  AccessCache.clear();
-  if(!Environment->DestroyModel())
-   throw EFunctionReturnFalse(__FILE__,__FUNCTION__,__LINE__);
-//   return -1;
+  try
+  {
+   AccessCache.clear();
+   if(!Environment->DestroyModel())
+    throw EFunctionReturnFalse(__FILE__,__FUNCTION__,__LINE__);
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
-
- return 0;
+ return res;
 }
 
 // Создает новую модель по имени класса в хранилище
 // Предварительно удаляет существующую модель
 int UEngine::Model_Create(const char *classname)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  AccessCache.clear();
-  if(!Environment->CreateModel(classname))
-   throw EFunctionReturnFalse(__FILE__,__FUNCTION__,__LINE__);
-//   return -1;
+  try
+  {
+   AccessCache.clear();
+   if(!Environment->CreateModel(classname))
+    throw EFunctionReturnFalse(__FILE__,__FUNCTION__,__LINE__);
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
-
- return 0;
+ return res;
 }
 
 // Очищает модель
 int UEngine::Model_Clear(void)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  AccessCache.clear();
-  UEPtr<RDK::UContainer> model=dynamic_pointer_cast<RDK::UContainer>(Environment->GetModel());
+  try
+  {
+   AccessCache.clear();
+   UEPtr<RDK::UContainer> model=dynamic_pointer_cast<RDK::UContainer>(Environment->GetModel());
 
-  if(!model)
-   return -2;
+   if(!model)
+	return RDK_E_MODEL_NOT_FOUND;
 
-  model->DelAllComponents();
+   model->DelAllComponents();
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return 0;
+ return res;
 }
 
 // Проверяет, существует ли модель
 bool UEngine::Model_Check(void)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<RDK::UContainer> model=dynamic_pointer_cast<RDK::UContainer>(Environment->GetModel());
+  try
+  {
+   UEPtr<RDK::UContainer> model=dynamic_pointer_cast<RDK::UContainer>(Environment->GetModel());
 
-  if(!model)
-   return false;
+   if(!model)
+	return false;
 
-  return true;
+   return true;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return false;
 }
@@ -2261,19 +2761,31 @@ bool UEngine::Model_Check(void)
 // Проверяет, существует ли в модели компонент с именем stringid)
 bool UEngine::Model_CheckComponent(const char* stringid) const
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<RDK::UContainer> destcont=FindComponent(stringid);
-  if(destcont)
-   return true;
+  try
+  {
+   UEPtr<RDK::UContainer> destcont=FindComponent(stringid);
+   if(destcont)
+	return true;
+  }
+  catch (UContainer::EComponentNameNotExist &exception)
+  {
+   return false;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UContainer::EComponentNameNotExist &exception)
+ RDK_SYS_CATCH
  {
-  return false;
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return false;
 }
@@ -2285,34 +2797,45 @@ bool UEngine::Model_CheckComponent(const char* stringid) const
 const char* UEngine::Model_AddComponent(const char* stringid, const char *classname)
 {
  std::string& TempString=CreateTempString();
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<RDK::UContainer> destcont=FindComponent(stringid);
-
-  UEPtr<RDK::UContainer> cont=dynamic_pointer_cast<RDK::UContainer>(Storage->TakeObject(classname));
-
-  if(!cont)
+  try
   {
-   DestroyTempString(TempString);
-   return 0;
-  }
+   UEPtr<RDK::UContainer> destcont=FindComponent(stringid);
+   UEPtr<RDK::UContainer> cont=dynamic_pointer_cast<RDK::UContainer>(Storage->TakeObject(classname));
 
-  if(!destcont)
-  {
-   DestroyTempString(TempString);
-   return 0;
-  }
+   if(!cont)
+   {
+	DestroyTempString(TempString);
+	return 0;
+   }
 
-  if(destcont->AddComponent(cont))
-  {
-   TempString=cont->GetName();
+   if(!destcont)
+   {
+	DestroyTempString(TempString);
+	return 0;
+   }
+
+   if(destcont->AddComponent(cont))
+   {
+	TempString=cont->GetName();
+   }
+   else
+	TempString.clear();
   }
-  else
-   TempString.clear();
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -2322,22 +2845,34 @@ const char* UEngine::Model_AddComponent(const char* stringid, const char *classn
 // если stringid - пустая строка, то удаляет из самой модели
 int UEngine::Model_DelComponent(const char* stringid, const char *name)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  RDK::UContainer* destcont=FindComponent(stringid);
+  try
+  {
+   RDK::UContainer* destcont=FindComponent(stringid);
 
-  if(!destcont)
-   return -4;
+   if(!destcont)
+	return RDK_E_MODEL_COMPONENT_NOT_FOUND;
 
-  destcont->DelComponent(name);
-  AccessCache.clear();
+   destcont->DelComponent(name);
+   AccessCache.clear();
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
-
- return 0;
+ return res;
 }
 
 
@@ -2347,34 +2882,46 @@ int UEngine::Model_DelComponent(const char* stringid, const char *name)
 /// то возвращает false и не делает ничего
 int UEngine::Model_MoveComponent(const char* component, const char* target)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
+  try
+  {
   RDK::UContainer* comp=FindComponent(component);
   RDK::UContainer* target_comp=FindComponent(target);
 
   if(!comp)
-   return -4;
+   return RDK_E_MODEL_COMPONENT_NOT_FOUND;
 
   if(!target_comp)
-   return -5;
+   return RDK_E_MODEL_TARGET_COMPONENT_NOT_FOUND;
 
   if(!comp->GetOwner())
-   return -6;
+   return RDK_E_MODEL_COMPONENT_OWNER_NOT_FOUND;
 
   if(comp == target_comp)
-   return -7;
+   return RDK_E_MODEL_COMPONENTS_DONT_HAVE_TO_MATCH;
 
   if(!comp->GetOwner()->MoveComponent(comp,target_comp))
-   return -8;
+   return RDK_E_MODEL_MOVE_COMPONENTS_FAIL;
 
-  AccessCache.clear();
+   AccessCache.clear();
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
-
- return 0;
+ return res;
 }
 
 
@@ -2382,18 +2929,30 @@ int UEngine::Model_MoveComponent(const char* component, const char* target)
 // если stringid - пустая строка, то возвращает число всех компонент модели
 int UEngine::Model_GetNumComponents(const char* stringid)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  RDK::UContainer* destcont=FindComponent(stringid);
+  try
+  {
+   RDK::UContainer* destcont=FindComponent(stringid);
 
-  if(!destcont)
-   return 0;
+   if(!destcont)
+	return 0;
 
-  return destcont->GetNumComponents();
+   return destcont->GetNumComponents();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -2402,25 +2961,37 @@ int UEngine::Model_GetNumComponents(const char* stringid)
 // если stringid - пустая строка, то возвращает массив всех id модели
 int UEngine::Model_GetComponentsList(const char* stringid, int *buffer)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  RDK::UContainer* destcont=FindComponent(stringid);
+  try
+  {
+   RDK::UContainer* destcont=FindComponent(stringid);
 
-  if(!destcont)
-   return -4;
+   if(!destcont)
+	return -4;
 
-  std::vector<int> tempbuffer;
+   std::vector<int> tempbuffer;
 
-  destcont->GetComponentsList(tempbuffer);
-  if(tempbuffer.size())
-   memcpy(buffer,&tempbuffer[0],tempbuffer.size()*sizeof(int));
+   destcont->GetComponentsList(tempbuffer);
+   if(tempbuffer.size())
+	memcpy(buffer,&tempbuffer[0],tempbuffer.size()*sizeof(int));
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
-
- return 0;
+ return res;
 }
 
 // Возвращает строку, содержащую список имен всех компонент заданного компонента 'stringid'
@@ -2428,28 +2999,40 @@ int UEngine::Model_GetComponentsList(const char* stringid, int *buffer)
 const char* UEngine::Model_GetComponentsNameList(const char* stringid)
 {
  std::string& TempString=CreateTempString();
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  TempString.clear();
-  RDK::UContainer* destcont=FindComponent(stringid);
-
-  if(!destcont)
-   return TempString.c_str();
-
-  std::vector<std::string> tempbuffer;
-
-  destcont->GetComponentsList(tempbuffer);
-  for(int i=0;i<int(tempbuffer.size());i++)
+  try
   {
-   TempString+=tempbuffer[i];
-   if(i<int(tempbuffer.size())-1)
-    TempString+=",";
+   TempString.clear();
+   RDK::UContainer* destcont=FindComponent(stringid);
+
+   if(!destcont)
+	return TempString.c_str();
+
+   std::vector<std::string> tempbuffer;
+
+   destcont->GetComponentsList(tempbuffer);
+   for(int i=0;i<int(tempbuffer.size());i++)
+   {
+	TempString+=tempbuffer[i];
+	if(i<int(tempbuffer.size())-1)
+	 TempString+=",";
+   }
+   return TempString.c_str();
   }
-  return TempString.c_str();
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
 
  DestroyTempString(TempString);
@@ -2462,87 +3045,55 @@ const char* UEngine::Model_GetComponentsNameList(const char* stringid)
 const char* UEngine::Model_FindComponentsByClassName(const char* stringid, const char* class_name, bool find_all)
 {
  std::string& TempString=CreateTempString();
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  TempString.clear();
-
-  if(!class_name || !strlen(class_name))
-   return TempString.c_str();
-
-  RDK::UContainer* destcont=FindComponent(stringid);
-
-  if(!destcont)
-   return TempString.c_str();
-
-  int class_id=Storage->FindClassId(class_name);
-
-  if(class_id == ForbiddenId)
-   return TempString.c_str();
-
-  std::vector<std::string> tempbuffer;
-  destcont->GetComponentsNameByClassName(class_name, tempbuffer, find_all);
-  size_t numComp=tempbuffer.size();
-
-  for(size_t i=0; i<numComp; i++)
+  try
   {
-   TempString+=tempbuffer[i];
-   if( int(i) < int(tempbuffer.size())-1 )
-	 TempString+=",";
-  }
+   TempString.clear();
 
-  return TempString.c_str();
+   if(!class_name || !strlen(class_name))
+	return TempString.c_str();
+
+   RDK::UContainer* destcont=FindComponent(stringid);
+
+   if(!destcont)
+	return TempString.c_str();
+
+   int class_id=Storage->FindClassId(class_name);
+
+   if(class_id == ForbiddenId)
+	return TempString.c_str();
+
+   std::vector<std::string> tempbuffer;
+   destcont->GetComponentsNameByClassName(class_name, tempbuffer, find_all);
+   size_t numComp=tempbuffer.size();
+
+   for(size_t i=0; i<numComp; i++)
+   {
+	TempString+=tempbuffer[i];
+	if( int(i) < int(tempbuffer.size())-1 )
+	 TempString+=",";
+   }
+
+   return TempString.c_str();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  DestroyTempString(TempString);
  return 0;
 }
-
-/* Старый вариант, не работает поиск в субкомпанентах
-const char* UEngine::Model_FindComponentsByClassName(const char* stringid, const char* class_name, bool find_all)
-{
- try
- {
-  TempString.clear();
-
-  if(!class_name || !strlen(class_name))
-   return TempString.c_str();
-
-  RDK::UContainer* destcont=FindComponent(stringid);
-
-  std::vector<std::string> tempbuffer;
-
-  if(!destcont)
-   return TempString.c_str();
-
-  destcont->GetComponentsList(tempbuffer);
-  std::string name;
-  int class_id=Storage->FindClassId(class_name);
-
-  if(class_id == ForbiddenId)
-   return TempString.c_str();
-
-  for(int i=0;i<destcont->GetNumComponents();i++)
-  {
-   if(destcont->GetComponentByIndex(i)->GetClass() == class_id)
-   {
-	TempString+=destcont->GetComponentByIndex(i)->GetLongName(destcont,name);
-	if(i<int(tempbuffer.size())-1)
-	 TempString+=",";
-   }
-  }
-  return TempString.c_str();
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
-
- return 0;
-}
-*/
 
 // Перемещает компонент с текущим индексом index или именем 'name' вверх или
 // вниз по списку на заданное число элементов
@@ -2551,28 +3102,42 @@ const char* UEngine::Model_FindComponentsByClassName(const char* stringid, const
 // на эту границу
 int UEngine::Model_ChangeComponentPosition(const char* stringid, int step)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  RDK::UContainer* destcont=FindComponent(stringid);
+  try
+  {
+   RDK::UContainer* destcont=FindComponent(stringid);
 
-  if(destcont == Environment->GetModel())
-   return 0;
+   if(destcont == Environment->GetModel())
+	return RDK_SUCCESS;
 
-  if(!destcont)
-   return 1;
+   if(!destcont)
+    return RDK_E_MODEL_COMPONENT_NOT_FOUND;
 
-  if(!destcont->GetOwner())
-   return 2;
+   if(!destcont->GetOwner())
+    return RDK_E_MODEL_COMPONENT_OWNER_NOT_FOUND;
 
-  if(destcont->GetOwner()->ChangeComponentPosition(destcont->GetName(),step))
-   return 0;
+   if(destcont->GetOwner()->ChangeComponentPosition(destcont->GetName(),step))
+	res=RDK_SUCCESS;
+   else
+	res=RDK_E_MODEL_CHANGE_COMPONENT_POSITION_FAIL;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
 
- return 3;
+ return res;
 }
 
 
@@ -2590,28 +3155,40 @@ const char* UEngine::Model_GetConnectorsList(const char* stringid,
 {
  RDK::USerStorageXML XmlStorage;
  std::string& TempString=CreateTempString();
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
-  UEPtr<RDK::UContainer> owner_level=FindComponent(owner_level_stringid);
+  try
+  {
+   UEPtr<RDK::UContainer> cont=FindComponent(stringid);
+   UEPtr<RDK::UContainer> owner_level=FindComponent(owner_level_stringid);
 
-  TempString="";
-  if(!cont)
-   return TempString.c_str();
+   TempString="";
+   if(!cont)
+	return TempString.c_str();
 
 
-  ULongIdVector buffer;
-  cont->GetConnectorsList(buffer,sublevel,owner_level);
+   ULongIdVector buffer;
+   cont->GetConnectorsList(buffer,sublevel,owner_level);
 
-  XmlStorage.Create("Connectors");
-  XmlStorage<<buffer;
-  XmlStorage.SelectRoot();
+   XmlStorage.Create("Connectors");
+   XmlStorage<<buffer;
+   XmlStorage.SelectRoot();
 
-  XmlStorage.Save(TempString);
+   XmlStorage.Save(TempString);
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -2630,27 +3207,39 @@ const char* UEngine::Model_GetItemsList(const char* stringid,
 {
  RDK::USerStorageXML XmlStorage;
  std::string& TempString=CreateTempString();
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
-  UEPtr<RDK::UContainer> owner_level=FindComponent(owner_level_stringid);
+  try
+  {
+   UEPtr<RDK::UContainer> cont=FindComponent(stringid);
+   UEPtr<RDK::UContainer> owner_level=FindComponent(owner_level_stringid);
 
-  TempString="";
-  if(!cont)
-   return TempString.c_str();
+   TempString="";
+   if(!cont)
+	return TempString.c_str();
 
 
-  ULongIdVector buffer;
-  cont->GetItemsList(buffer,sublevel,owner_level);
+   ULongIdVector buffer;
+   cont->GetItemsList(buffer,sublevel,owner_level);
 
-  XmlStorage.Create("Items");
-  XmlStorage<<buffer;
+   XmlStorage.Create("Items");
+   XmlStorage<<buffer;
 
-  XmlStorage.Save(TempString);
+   XmlStorage.Save(TempString);
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -2669,29 +3258,40 @@ const char* UEngine::Model_GetNetsList(const char* stringid,
 {
  RDK::USerStorageXML XmlStorage;
  std::string& TempString=CreateTempString();
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
-  UEPtr<RDK::UContainer> owner_level=FindComponent(owner_level_stringid);
+  try
+  {
+   UEPtr<RDK::UContainer> cont=FindComponent(stringid);
+   UEPtr<RDK::UContainer> owner_level=FindComponent(owner_level_stringid);
 
-  TempString="";
-  if(!cont)
-   return TempString.c_str();
+   TempString="";
+   if(!cont)
+	return TempString.c_str();
 
-  ULongIdVector buffer;
-  cont->GetNetsList(buffer,sublevel,owner_level);
+   ULongIdVector buffer;
+   cont->GetNetsList(buffer,sublevel,owner_level);
 
-  XmlStorage.Create("Nets");
-  XmlStorage<<buffer;
+   XmlStorage.Create("Nets");
+   XmlStorage<<buffer;
 
-  XmlStorage.Save(TempString);
+   XmlStorage.Save(TempString);
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
-
 }
 
 
@@ -2701,19 +3301,31 @@ const char* UEngine::Model_GetNetsList(const char* stringid,
 const char* UEngine::Model_GetComponentName(const char* stringid)
 {
  std::string& TempString=CreateTempString();
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  TempString="";
-  UEPtr<RDK::UContainer> destcont=FindComponent(stringid);
+  try
+  {
+   TempString="";
+   UEPtr<RDK::UContainer> destcont=FindComponent(stringid);
 
-  if(!destcont)
-   return TempString.c_str();
+   if(!destcont)
+	return TempString.c_str();
 
-  TempString=destcont->GetName();
+   TempString=destcont->GetName();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -2727,20 +3339,31 @@ const char* UEngine::Model_GetComponentName(const char* stringid)
 const char* UEngine::Model_GetComponentLongName(const char* stringid, const char* owner_level_stringid)
 {
  std::string& TempString=CreateTempString();
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  TempString="";
-  UEPtr<RDK::UContainer> destcont=FindComponent(stringid);
-  UEPtr<RDK::UContainer> owner_level=FindComponent(owner_level_stringid);
+  try
+  {
+   UEPtr<RDK::UContainer> destcont=FindComponent(stringid);
+   UEPtr<RDK::UContainer> owner_level=FindComponent(owner_level_stringid);
 
-  if(!destcont)
-   return TempString.c_str();
+   if(!destcont)
+	return TempString.c_str();
 
-  return destcont->GetLongName(owner_level,TempString).c_str();
+   return destcont->GetLongName(owner_level,TempString).c_str();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -2753,24 +3376,35 @@ const char* UEngine::Model_GetComponentLongName(const char* stringid, const char
 const char* UEngine::Model_GetComponentLongId(const char* stringid, const char* owner_level_stringid)
 {
  std::string& TempString=CreateTempString();
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  TempString="";
-  UEPtr<RDK::UContainer> destcont=FindComponent(stringid);
-  UEPtr<RDK::UContainer> owner_level=FindComponent(owner_level_stringid);
+  try
+  {
+   UEPtr<RDK::UContainer> destcont=FindComponent(stringid);
+   UEPtr<RDK::UContainer> owner_level=FindComponent(owner_level_stringid);
 
-  if(!destcont)
+   if(!destcont)
+	return TempString.c_str();
+
+   ULongId id;
+
+   destcont->GetLongId(owner_level,id);
+   id.EncodeToString(TempString);
    return TempString.c_str();
-
-  ULongId id;
-
-  destcont->GetLongId(owner_level,id);
-  id.EncodeToString(TempString);
-  return TempString.c_str();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -2780,20 +3414,32 @@ const char* UEngine::Model_GetComponentLongId(const char* stringid, const char* 
 const char* UEngine::Model_GetComponentClassName(const char* stringid)
 {
  std::string& TempString=CreateTempString();
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  TempString="";
-  UEPtr<RDK::UContainer> destcont=FindComponent(stringid);
+  try
+  {
+   TempString="";
+   UEPtr<RDK::UContainer> destcont=FindComponent(stringid);
 
-  if(!destcont)
+   if(!destcont)
+	return TempString.c_str();
+
+   TempString=Storage->FindClassName(destcont->GetClass());
    return TempString.c_str();
-
-  TempString=Storage->FindClassName(destcont->GetClass());
-  return TempString.c_str();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -2802,38 +3448,47 @@ const char* UEngine::Model_GetComponentClassName(const char* stringid)
 const char* UEngine::Model_GetComponentPropertiesList(const char* stringid, unsigned int type_mask)
 {
  std::string& TempString=CreateTempString();
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  TempString="";
-  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
-
-  if(!cont)
-   return TempString.c_str();
-
-  RDK::UContainer::VariableMapT props=cont->GetPropertiesList();
-
-  RDK::UContainer::VariableMapCIteratorT I,J;
-
-  I=props.begin();
-  J=props.end();
-  while(I != J)
+  try
   {
-   if(I->second.CheckMask(type_mask))
-   {
-    if(TempString.size()>0)
-     TempString+=",";
-	TempString+=I->first;
-//    TempString+=":";
-//    TempString+=sntoa(I->second.Property->GetMinRange());
-   }
-   ++I;
-  }
+   UEPtr<RDK::UContainer> cont=FindComponent(stringid);
 
-  return TempString.c_str();
+   if(!cont)
+	return TempString.c_str();
+
+   RDK::UContainer::VariableMapT props=cont->GetPropertiesList();
+
+   RDK::UContainer::VariableMapCIteratorT I,J;
+
+   I=props.begin();
+   J=props.end();
+   while(I != J)
+   {
+	if(I->second.CheckMask(type_mask))
+	{
+	 if(TempString.size()>0)
+	  TempString+=",";
+	 TempString+=I->first;
+	}
+	++I;
+   }
+
+   return TempString.c_str();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  DestroyTempString(TempString);
  return 0;
@@ -2842,38 +3497,49 @@ const char* UEngine::Model_GetComponentPropertiesList(const char* stringid, unsi
 const char* UEngine::Model_GetComponentPropertiesLookupList(const char* stringid, unsigned int type_mask)
 {
  std::string& TempString=CreateTempString();
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  TempString="";
-  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
-
-  if(!cont)
-   return TempString.c_str();
-
-  RDK::UContainer::VariableMapT props=cont->GetPropertiesList();
-
-  RDK::UContainer::VariableMapCIteratorT I,J;
-
-  I=props.begin();
-  J=props.end();
-  while(I != J)
+  try
   {
-   if(I->second.CheckMask(type_mask))
-   {
-    if(TempString.size()>0)
-     TempString+=",";
-    TempString+=I->first;
-    TempString+=":";
-    TempString+=sntoa(0);
-   }
-   ++I;
-  }
+   UEPtr<RDK::UContainer> cont=FindComponent(stringid);
 
-  return TempString.c_str();
+   if(!cont)
+	return TempString.c_str();
+
+   RDK::UContainer::VariableMapT props=cont->GetPropertiesList();
+
+   RDK::UContainer::VariableMapCIteratorT I,J;
+
+   I=props.begin();
+   J=props.end();
+   while(I != J)
+   {
+	if(I->second.CheckMask(type_mask))
+	{
+	 if(TempString.size()>0)
+	  TempString+=",";
+	 TempString+=I->first;
+	 TempString+=":";
+	 TempString+=sntoa(0);
+	}
+	++I;
+   }
+
+   return TempString.c_str();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  DestroyTempString(TempString);
  return 0;
@@ -2885,30 +3551,41 @@ const char* UEngine::Model_GetComponentProperties(const char *stringid, unsigned
 {
  RDK::USerStorageXML XmlStorage;
  std::string& TempString=CreateTempString();
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  TempString="";
-  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
-
-  if(!cont)
-   return TempString.c_str();
-
-  XmlStorage.Create(cont->GetLongName(Environment->GetCurrentComponent(),CompName));
-  XmlStorage.AddNode(UVariable::GetPropertyTypeNameByType(type_mask));
-
-  if(!cont->GetComponentProperties(cont,&XmlStorage, type_mask))
+  try
   {
-   DestroyTempString(TempString);
-   return 0;
-  }
+   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
 
-  XmlStorage.SelectUp();
-  XmlStorage.Save(TempString);
-  return TempString.c_str();
+   if(!cont)
+	return TempString.c_str();
+
+   XmlStorage.Create(cont->GetLongName(Environment->GetCurrentComponent(),CompName));
+   XmlStorage.AddNode(UVariable::GetPropertyTypeNameByType(type_mask));
+
+   if(!cont->GetComponentProperties(cont,&XmlStorage, type_mask))
+   {
+	DestroyTempString(TempString);
+	return 0;
+   }
+
+   XmlStorage.SelectUp();
+   XmlStorage.Save(TempString);
+   return TempString.c_str();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  DestroyTempString(TempString);
  return 0;
@@ -2918,14 +3595,26 @@ const char* UEngine::Model_GetComponentProperties(const char *stringid, unsigned
 const char* UEngine::Model_GetComponentSelectedProperties(const char *stringid)
 {
  std::string& TempString=CreateTempString();
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  DestroyTempString(TempString);
-  return 0;
+  try
+  {
+   DestroyTempString(TempString);
+   return 0;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  DestroyTempString(TempString);
  return 0;
@@ -2935,30 +3624,41 @@ const char* UEngine::Model_GetComponentSelectedProperties(const char *stringid)
 const char* UEngine::Model_GetComponentPropertiesEx(const char *stringid, unsigned int type_mask)
 {
  std::string& TempString=CreateTempString();
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  TempString="";
-  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
-  if(!cont)
-   return TempString.c_str();
-  std::string comp_name;
-  USerStorageXML xml;
-  xml.Create(cont->GetLongName(Environment->GetCurrentComponent(),comp_name));
-  xml.AddNode(UVariable::GetPropertyTypeNameByType(type_mask));
-
-  if(!cont->GetComponentPropertiesEx(cont,&xml, type_mask))
+  try
   {
-   DestroyTempString(TempString);
-   return 0;
-  }
+   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+   if(!cont)
+	return TempString.c_str();
+   std::string comp_name;
+   USerStorageXML xml;
+   xml.Create(cont->GetLongName(Environment->GetCurrentComponent(),comp_name));
+   xml.AddNode(UVariable::GetPropertyTypeNameByType(type_mask));
 
-  xml.SelectUp();
-  xml.Save(TempString);
-  return TempString.c_str();
+   if(!cont->GetComponentPropertiesEx(cont,&xml, type_mask))
+   {
+	DestroyTempString(TempString);
+	return 0;
+   }
+
+   xml.SelectUp();
+   xml.Save(TempString);
+   return TempString.c_str();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  DestroyTempString(TempString);
  return 0;
@@ -2968,19 +3668,31 @@ const char* UEngine::Model_GetComponentPropertiesEx(const char *stringid, unsign
 const char * UEngine::Model_GetComponentPropertyValue(const char *stringid, const char *paramname)
 {
  std::string& TempString=CreateTempString();
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  TempString="";
-  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
-  if(!cont)
-   return TempString.c_str();
+  try
+  {
+   TempString="";
+   UEPtr<RDK::UContainer> cont=FindComponent(stringid);
+   if(!cont)
+	return TempString.c_str();
 
-  cont->GetPropertyValue(paramname,TempString);
-  return TempString.c_str();
+   cont->GetPropertyValue(paramname,TempString);
+   return TempString.c_str();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  DestroyTempString(TempString);
  return 0;
@@ -2990,107 +3702,175 @@ const char * UEngine::Model_GetComponentPropertyValue(const char *stringid, cons
 int UEngine::Model_SetComponentProperties(const char *stringid, const char* buffer)
 {
  RDK::USerStorageXML XmlStorage;
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
-  if(!cont)
-   return 1;
-
-  XmlStorage.Load(buffer, cont->GetLongName(Environment->GetCurrentComponent(),CompName));
-  for(unsigned int i=0, mask=1;i<7;i++, mask<<=1)
+  try
   {
-   if(XmlStorage.SelectNode(UVariable::GetPropertyTypeNameByType(mask)))
-   {
-    if(cont->SetComponentProperties(cont,&XmlStorage))
-     return 2;
+   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+   if(!cont)
+	return RDK_E_MODEL_COMPONENT_NOT_FOUND;
 
-    XmlStorage.SelectUp();
+   XmlStorage.Load(buffer, cont->GetLongName(Environment->GetCurrentComponent(),CompName));
+   for(unsigned int i=0, mask=1;i<7;i++, mask<<=1)
+   {
+	if(XmlStorage.SelectNode(UVariable::GetPropertyTypeNameByType(mask)))
+	{
+	 int prop_res=cont->SetComponentProperties(cont,&XmlStorage);
+	 if(prop_res != RDK_SUCCESS)
+	  res=RDK_E_MODEL_NOT_ALL_PROPERTIES_SET;
+
+	 XmlStorage.SelectUp();
+	}
    }
+   if(res == RDK_UNHANDLED_EXCEPTION)
+    res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
-
- return 0;
+ return res;
 }
 
 // Устанавливает значение свойства компонента по идентификатору компонента и имени свойства
-void UEngine::Model_SetComponentPropertyValue(const char *stringid, const char *paramname, const char *buffer)
+int UEngine::Model_SetComponentPropertyValue(const char *stringid, const char *paramname, const char *buffer)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
-  if(!cont)
-   return;
+  try
+  {
+   UEPtr<RDK::UContainer> cont=FindComponent(stringid);
+   if(!cont)
+	return RDK_E_MODEL_COMPONENT_NOT_FOUND;
 
-  cont->SetPropertyValue(paramname,buffer);
+   cont->SetPropertyValue(paramname,buffer);
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
+ return res;
 }
 
 
 // Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
 // включая этот компонент
-void UEngine::Model_SetGlobalComponentPropertyValue(const char *stringid, const char* class_stringid, const char *paramname, const char *buffer)
+int UEngine::Model_SetGlobalComponentPropertyValue(const char *stringid, const char* class_stringid, const char *paramname, const char *buffer)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<UNet>(FindComponent(stringid));
-  if(!cont)
-   return;
+  try
+  {
+   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<UNet>(FindComponent(stringid));
+   if(!cont)
+	return RDK_E_MODEL_COMPONENT_NOT_FOUND;
 
-  UId classid=Storage->FindClassId(class_stringid);
-  if(classid == ForbiddenId)
-   return;
+   UId classid=Storage->FindClassId(class_stringid);
+   if(classid == ForbiddenId)
+	return RDK_E_STORAGE_CLASS_NOT_FOUND;
 
-  cont->SetGlobalComponentPropertyValue(cont, classid, paramname, buffer);
+   cont->SetGlobalComponentPropertyValue(cont, classid, paramname, buffer);
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
+ return res;
 }
 
 // Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
 // и владельцем, производным от класса 'class_owner_stringid' включая этот компонент
-void UEngine::Model_SetGlobalOwnerComponentPropertyValue(const char *stringid, const char* class_stringid, const char* class_owner_stringid, const char *paramname, const char *buffer)
+int UEngine::Model_SetGlobalOwnerComponentPropertyValue(const char *stringid, const char* class_stringid, const char* class_owner_stringid, const char *paramname, const char *buffer)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<UNet>(FindComponent(stringid));
-  if(!cont)
-   return;
+  try
+  {
+   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<UNet>(FindComponent(stringid));
+   if(!cont)
+	return RDK_E_MODEL_COMPONENT_NOT_FOUND;
 
-  UId classid=Storage->FindClassId(class_stringid);
-  UId owner_classid=Storage->FindClassId(class_owner_stringid);
-  if(classid == ForbiddenId || owner_classid == ForbiddenId)
-   return;
+   UId classid=Storage->FindClassId(class_stringid);
+   UId owner_classid=Storage->FindClassId(class_owner_stringid);
+   if(classid == ForbiddenId || owner_classid == ForbiddenId)
+	return RDK_E_STORAGE_CLASS_NOT_FOUND;
 
-  cont->SetGlobalOwnerComponentPropertyValue(cont, classid, owner_classid, paramname, buffer);
+   cont->SetGlobalOwnerComponentPropertyValue(cont, classid, owner_classid, paramname, buffer);
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
+ return res;
 }
 
 // Возвращает указатель void* на данные свойства компонента
 const void* UEngine::Model_GetComponentPropertyData(const char *stringid, const char *property_name)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
-  UEPtr<UIProperty> iproperty=cont->FindProperty(property_name);
-  return iproperty->GetMemoryArea();
+  try
+  {
+   UEPtr<RDK::UContainer> cont=FindComponent(stringid);
+   UEPtr<UIProperty> iproperty=cont->FindProperty(property_name);
+   return iproperty->GetMemoryArea();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
 
  return 0;
@@ -3099,431 +3879,562 @@ const void* UEngine::Model_GetComponentPropertyData(const char *stringid, const 
 // Копирует данные 'data' в заданное свойство компонента
 int UEngine::Model_SetComponentPropertyData(const char *stringid, const char *property_name, const void *data)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
-  UEPtr<UIProperty> iproperty=cont->FindProperty(property_name);
-  if(!iproperty->ReadFromMemory(data))
-   return 1;
+  try
+  {
+   UEPtr<RDK::UContainer> cont=FindComponent(stringid);
+   UEPtr<UIProperty> iproperty=cont->FindProperty(property_name);
+   if(!iproperty->ReadFromMemory(data))
+    return RDK_E_MODEL_READ_PROPERTY_MEMORY_FAIL;
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
-
- return 0;
+ return res;
 }
 
 // Связывает выбранные контейнеры друг с другом
 int UEngine::Model_CreateLink(const char* stringid1, int output_number, const char* stringid2, int input_number)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  if(!stringid1)
-   return -10;
-
-  if(!stringid2)
-   return -11;
-
-  UEPtr<RDK::UNet> model=dynamic_pointer_cast<RDK::UNet>(Environment->GetCurrentComponent());
-
-  if(!model)
-   return -2;
-
-  RDK::ULongId longid1, longid2;
-  if(stringid1[0]>=0x30 && stringid1[0]<=0x39)
-   longid1.DecodeFromString(stringid1);
-  else
+  try
   {
-   UEPtr<UContainer> cont=FindComponent(stringid1);
-   longid1=cont->GetLongId(model);
-  }
+   if(!stringid1)
+	return RDK_E_MODEL_COMPONENT_NOT_FOUND;
 
-  if(stringid2[0]>=0x30 && stringid2[0]<=0x39)
-   longid2.DecodeFromString(stringid2);
-  else
-  {
-   UEPtr<UContainer> cont=FindComponent(stringid2);
-   longid2=cont->GetLongId(model);
+   if(!stringid2)
+	return RDK_E_MODEL_COMPONENT_NOT_FOUND;
+
+   UEPtr<RDK::UNet> model=dynamic_pointer_cast<RDK::UNet>(Environment->GetCurrentComponent());
+
+   if(!model)
+	return RDK_E_MODEL_NOT_FOUND;
+
+   RDK::ULongId longid1, longid2;
+   if(stringid1[0]>=0x30 && stringid1[0]<=0x39)
+	longid1.DecodeFromString(stringid1);
+   else
+   {
+	UEPtr<UContainer> cont=FindComponent(stringid1);
+	longid1=cont->GetLongId(model);
+   }
+
+   if(stringid2[0]>=0x30 && stringid2[0]<=0x39)
+	longid2.DecodeFromString(stringid2);
+   else
+   {
+	UEPtr<UContainer> cont=FindComponent(stringid2);
+	longid2=cont->GetLongId(model);
+   }
+   bool temp_res=model->CreateLink(longid1,output_number,longid2,input_number);
+   if(!temp_res)
+	return RDK_E_MODEL_CREATE_LINK_FAIL;
+   res=RDK_SUCCESS;
   }
-  bool res=model->CreateLink(longid1,output_number,longid2,input_number);
-  if(!res)
-   return -3;
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return 0;
+ return res;
 }
 
 int UEngine::Model_CreateLink(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  if(!stringid1)
-   return -10;
-
-  if(!stringid2)
-   return -11;
-
-  UEPtr<RDK::UNet> model=dynamic_pointer_cast<RDK::UNet>(Environment->GetCurrentComponent());
-
-  if(!model)
-   return -2;
-/*
-  std::string longid1, longid2;
-  if(stringid1[0]>=0x30 && stringid1[0]<=0x39)
-   longid1.DecodeFromString(stringid1);
-  else
+  try
   {
-   UEPtr<UContainer> cont=FindComponent(stringid1);
-   longid1=cont->GetLongName(model);
+   if(!stringid1)
+	return RDK_E_MODEL_COMPONENT_NOT_FOUND;
+
+   if(!stringid2)
+	return RDK_E_MODEL_COMPONENT_NOT_FOUND;
+
+   UEPtr<RDK::UNet> model=dynamic_pointer_cast<RDK::UNet>(Environment->GetCurrentComponent());
+
+   if(!model)
+	return RDK_E_MODEL_NOT_FOUND;
+
+   bool res=model->CreateLink(stringid1,item_property_name,stringid2,connector_property_name);
+   if(!res)
+    return RDK_E_MODEL_CREATE_LINK_FAIL;
+   res=RDK_SUCCESS;
   }
-
-  if(stringid2[0]>=0x30 && stringid2[0]<=0x39)
-   longid2.DecodeFromString(stringid2);
-  else
+  catch (RDK::UException &exception)
   {
-   UEPtr<UContainer> cont=FindComponent(stringid2);
-   longid2=cont->GetLongName(model);
-  } */
-  bool res=model->CreateLink(stringid1,item_property_name,stringid2,connector_property_name);
-  if(!res)
-   return -3;
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return 0;
+ return res;
 }
 
 
 // Связывает все компоненты выбранного компонента по возрастанию id в формате: 0 выход к 0 входу
 int UEngine::Model_ChainLinking(const char* stringid)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<UNet> cont=dynamic_pointer_cast<UNet>(FindComponent(stringid));
-
-  cont->BreakLinks(cont);
-
-  if(cont->GetNumComponents() == 0)
-   return 0;
-
-  ULongId id1,id2;
-
-
-  UEPtr<UNet> item=dynamic_pointer_cast<UNet>(cont->GetComponentByIndex(0));
-  item->GetLongId(cont,id1);
-
-  // Подключаем выходы модели
-  int minsize=cont->GetNumOutputs();
-  if(minsize>item->GetNumInputs())
-   minsize=item->GetNumInputs();
-  for(int j=0;j<minsize;j++)
-   cont->CreateLink(ForbiddenId,j,id1,j);
-
-  for(int i=1;i<cont->GetNumComponents();i++)
+  try
   {
-   UEPtr<UNet> connector=dynamic_pointer_cast<UNet>(cont->GetComponentByIndex(i));
-   connector->GetLongId(cont,id2);
-   minsize=item->GetNumOutputs();
-   if(minsize>connector->GetNumInputs())
-    minsize=connector->GetNumInputs();
+   UEPtr<UNet> cont=dynamic_pointer_cast<UNet>(FindComponent(stringid));
+
+   cont->BreakLinks(cont);
+
+   if(cont->GetNumComponents() == 0)
+	return RDK_SUCCESS;
+
+   ULongId id1,id2;
+
+   UEPtr<UNet> item=dynamic_pointer_cast<UNet>(cont->GetComponentByIndex(0));
+   item->GetLongId(cont,id1);
+
+   // Подключаем выходы модели
+   int minsize=cont->GetNumOutputs();
+   if(minsize>item->GetNumInputs())
+	minsize=item->GetNumInputs();
    for(int j=0;j<minsize;j++)
-    cont->CreateLink(id1,j,id2,j);
-   id1=id2;
-   item=connector;
+	cont->CreateLink(ForbiddenId,j,id1,j);
+
+   for(int i=1;i<cont->GetNumComponents();i++)
+   {
+	UEPtr<UNet> connector=dynamic_pointer_cast<UNet>(cont->GetComponentByIndex(i));
+	connector->GetLongId(cont,id2);
+	minsize=item->GetNumOutputs();
+	if(minsize>connector->GetNumInputs())
+	 minsize=connector->GetNumInputs();
+	for(int j=0;j<minsize;j++)
+	 cont->CreateLink(id1,j,id2,j);
+	id1=id2;
+	item=connector;
+   }
+
+   res=RDK_SUCCESS;
   }
- /*   // Заглушка! Непонятно, будет ли это нужно когда-нибудь
-  // Подключаем входы модели
-  minsize=cont->GetNumInputs();
-  if(minsize>item->GetNumOutputs())
-   minsize=item->GetNumOutputs();
-  for(int j=0;j<minsize;j++)
-   cont->CreateLink(id1,j,ForbiddenId,j);
-   */
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return 0;
+ return res;
 }
 
 // Связывает все компоненты выбранного компонента параллельно, подключая их к необходимому числу выходов модели
 // Используется для тестирования производительности
 int UEngine::Model_ParallelLinking(const char* stringid)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<UNet> cont=dynamic_pointer_cast<UNet>(FindComponent(stringid));
-
-  cont->BreakLinks(cont);
-
-  if(cont->GetNumComponents() == 0)
-   return 0;
-
-  ULongId id1,id2;
-
-
-  UEPtr<UNet> item=cont;//dynamic_pointer_cast<UNet>(cont->GetComponentByIndex(0));
-  //item->GetLongId(cont,id1);
-
-  for(int i=0;i<cont->GetNumComponents();i++)
+  try
   {
-   UEPtr<UNet> connector=dynamic_pointer_cast<UNet>(cont->GetComponentByIndex(i));
-   connector->GetLongId(cont,id2);
-   int minsize=item->GetNumOutputs();
-   if(minsize>connector->GetNumInputs())
-    minsize=connector->GetNumInputs();
-   for(int j=0;j<minsize;j++)
-    cont->CreateLink(id1,j,id2,j);
+   UEPtr<UNet> cont=dynamic_pointer_cast<UNet>(FindComponent(stringid));
+
+   cont->BreakLinks(cont);
+
+   if(cont->GetNumComponents() == 0)
+	return RDK_SUCCESS;
+
+   ULongId id1,id2;
+
+   UEPtr<UNet> item=cont;
+
+   for(int i=0;i<cont->GetNumComponents();i++)
+   {
+	UEPtr<UNet> connector=dynamic_pointer_cast<UNet>(cont->GetComponentByIndex(i));
+	connector->GetLongId(cont,id2);
+	int minsize=item->GetNumOutputs();
+	if(minsize>connector->GetNumInputs())
+	 minsize=connector->GetNumInputs();
+	for(int j=0;j<minsize;j++)
+	 cont->CreateLink(id1,j,id2,j);
+   }
+
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return 0;
+ return res;
 }
 
 // Разрывает выбранную связь
 int UEngine::Model_BreakLink(const char* stringid1, int output_number, const char* stringid2, int input_number)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  if(!stringid1)
-   return -10;
-
-  if(!stringid2)
-   return -11;
-
-  UEPtr<RDK::UNet> model=dynamic_pointer_cast<RDK::UNet>(Environment->GetCurrentComponent());
-
-  if(!model)
-   return -2;
-
-  RDK::ULongId longid1, longid2;
-  if(stringid1[0]>=0x30 && stringid1[0]<=0x39)
-   longid1.DecodeFromString(stringid1);
-  else
+  try
   {
-   UEPtr<UContainer> cont=FindComponent(stringid1);
-   longid1=cont->GetLongId(model);
-  }
+   if(!stringid1)
+	return RDK_E_MODEL_COMPONENT_NOT_FOUND;
 
-  if(stringid2[0]>=0x30 && stringid2[0]<=0x39)
-   longid2.DecodeFromString(stringid2);
-  else
+   if(!stringid2)
+	return RDK_E_MODEL_COMPONENT_NOT_FOUND;
+
+   UEPtr<RDK::UNet> model=dynamic_pointer_cast<RDK::UNet>(Environment->GetCurrentComponent());
+
+   if(!model)
+	return RDK_E_MODEL_NOT_FOUND;
+
+   RDK::ULongId longid1, longid2;
+   if(stringid1[0]>=0x30 && stringid1[0]<=0x39)
+	longid1.DecodeFromString(stringid1);
+   else
+   {
+	UEPtr<UContainer> cont=FindComponent(stringid1);
+	longid1=cont->GetLongId(model);
+   }
+
+   if(stringid2[0]>=0x30 && stringid2[0]<=0x39)
+	longid2.DecodeFromString(stringid2);
+   else
+   {
+	UEPtr<UContainer> cont=FindComponent(stringid2);
+	longid2=cont->GetLongId(model);
+   }
+
+   bool temp_res=model->BreakLink(longid1,output_number,longid2,input_number);
+   if(!temp_res)
+	return RDK_E_MODEL_BREAK_LINK_FAIL;
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
   {
-   UEPtr<UContainer> cont=FindComponent(stringid2);
-   longid2=cont->GetLongId(model);
+   res=ProcessException(exception);
   }
-
-  bool res=model->BreakLink(longid1,output_number,longid2,input_number);
-  if(!res)
-   return -3;
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
-
- return 0;
+ return res;
 }
 
 int UEngine::Model_BreakLink(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  if(!stringid1)
-   return -10;
-
-  if(!stringid2)
-   return -11;
-
-  UEPtr<RDK::UNet> model=dynamic_pointer_cast<RDK::UNet>(Environment->GetCurrentComponent());
-
-  if(!model)
-   return -2;
-  /*
-  RDK::ULongId longid1, longid2;
-  if(stringid1[0]>=0x30 && stringid1[0]<=0x39)
-   longid1.DecodeFromString(stringid1);
-  else
+  try
   {
-   UEPtr<UContainer> cont=FindComponent(stringid1);
-   longid1=cont->GetLongId(model);
-  }
+   if(!stringid1)
+	return RDK_E_MODEL_COMPONENT_NOT_FOUND;
 
-  if(stringid2[0]>=0x30 && stringid2[0]<=0x39)
-   longid2.DecodeFromString(stringid2);
-  else
-  {
-   UEPtr<UContainer> cont=FindComponent(stringid2);
-   longid2=cont->GetLongId(model);
+   if(!stringid2)
+	return RDK_E_MODEL_COMPONENT_NOT_FOUND;
+
+   UEPtr<RDK::UNet> model=dynamic_pointer_cast<RDK::UNet>(Environment->GetCurrentComponent());
+
+   if(!model)
+	return RDK_E_MODEL_NOT_FOUND;
+
+   bool temp_res=model->BreakLink(stringid1,item_property_name,stringid2,connector_property_name);
+   if(!temp_res)
+    return RDK_E_MODEL_BREAK_LINK_FAIL;
+   res=RDK_SUCCESS;
   }
-*/
-  bool res=model->BreakLink(stringid1,item_property_name,stringid2,connector_property_name);
-  if(!res)
-   return -3;
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
-
- return 0;
+ return res;
 }
 
 // Разрывает все связи
 int UEngine::Model_BreakAllLinks(void)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<RDK::UNet> model=dynamic_pointer_cast<RDK::UNet>(Environment->GetCurrentComponent());
+  try
+  {
+   UEPtr<RDK::UNet> model=dynamic_pointer_cast<RDK::UNet>(Environment->GetCurrentComponent());
 
-  if(!model)
-   return -2;
+   if(!model)
+	return RDK_E_MODEL_NOT_FOUND;
 
-  model->BreakLinks();
+   model->BreakLinks();
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
-
- return 0;
+ return res;
 }
 
 // Разрывает связь ко входу connector_index коннектора 'connectorid'
 int UEngine::Model_BreakConnectorLink(const char* connectorname, int connector_index)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<RDK::UNet> model=dynamic_pointer_cast<RDK::UNet>(Environment->GetCurrentComponent());
+  try
+  {
+   UEPtr<RDK::UNet> model=dynamic_pointer_cast<RDK::UNet>(Environment->GetCurrentComponent());
 
-  if(!model)
-   return -2;
+   if(!model)
+	return RDK_E_MODEL_NOT_FOUND;
 
-  model->BreakConnectorLink(connectorname, connector_index);
+   model->BreakConnectorLink(connectorname, connector_index);
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
-
- return 0;
+ return res;
 }
 
 // Разрывает все входные и выходные связи выбранного контейнера
 int UEngine::Model_BreakAllComponentLinks(const char* stringid)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<RDK::UNet> model=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+  try
+  {
+   UEPtr<RDK::UNet> model=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
 
-  if(!model)
-   return -2;
+   if(!model)
+	return RDK_E_MODEL_NOT_FOUND;
 
-  model->BreakLinks();
+   model->BreakLinks();
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
-
- return 0;
+ return res;
 }
 
 // Разрывает все входные связи выбранного контейнера
 int UEngine::Model_BreakAllComponentInputLinks(const char* stringid)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<RDK::UNet> model=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+  try
+  {
+   UEPtr<RDK::UNet> model=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
 
-  if(!model)
-   return -2;
+   if(!model)
+	return RDK_E_MODEL_NOT_FOUND;
 
-  model->DisconnectAllItems();
-  return 0;
+   model->DisconnectAllItems();
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return 0;
+ return res;
 }
 
 // Разрывает все выходные связи выбранного контейнера
 int UEngine::Model_BreakAllComponentOutputLinks(const char* stringid)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  return 0;
+  try
+  {
+   return RDK_NOT_IMPLEMENTED;
+//   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return 0;
+ return res;
 }
 
 // Проверяет, существует ли заданна связь
 bool UEngine::Model_CheckLink(const char* stringid1, int output_number, const char* stringid2, int input_number)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<RDK::UADItem> cont1;
-  UEPtr<RDK::UConnector> cont2;
   try
   {
-   cont1=dynamic_pointer_cast<RDK::UADItem>(FindComponent(stringid1));
-   cont2=dynamic_pointer_cast<RDK::UConnector>(FindComponent(stringid2));
-  }
-  catch (UException &exception)// Заглушка!! здесь другое исключение
-  {
-   return false;
-  }
-  if(!cont1 || !cont2)
-   return false;
+   UEPtr<RDK::UADItem> cont1;
+   UEPtr<RDK::UConnector> cont2;
+   try
+   {
+	cont1=dynamic_pointer_cast<RDK::UADItem>(FindComponent(stringid1));
+	cont2=dynamic_pointer_cast<RDK::UConnector>(FindComponent(stringid2));
+   }
+   catch (UException &exception)// Заглушка!! здесь другое исключение
+   {
+	return false;
+   }
+   if(!cont1 || !cont2)
+	return false;
 
-  return cont1->CheckLink(cont2,output_number,input_number);
+   return cont1->CheckLink(cont2,output_number,input_number);
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return false;
 }
 
 bool UEngine::Model_CheckLink(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<RDK::UItem> cont1;
-  UEPtr<RDK::UConnector> cont2;
   try
   {
-   cont1=dynamic_pointer_cast<RDK::UItem>(FindComponent(stringid1));
-   cont2=dynamic_pointer_cast<RDK::UConnector>(FindComponent(stringid2));
-  }
-  catch (UException &exception)// Заглушка!! здесь другое исключение
-  {
-   return false;
-  }
-  if(!cont1 || !cont2)
-   return false;
+   UEPtr<RDK::UItem> cont1;
+   UEPtr<RDK::UConnector> cont2;
+   try
+   {
+	cont1=dynamic_pointer_cast<RDK::UItem>(FindComponent(stringid1));
+	cont2=dynamic_pointer_cast<RDK::UConnector>(FindComponent(stringid2));
+   }
+   catch (UException &exception)// Заглушка!! здесь другое исключение
+   {
+	return false;
+   }
+   if(!cont1 || !cont2)
+	return false;
 
-  return cont1->CheckLink(cont2,item_property_name,connector_property_name, -1); // TODO: -1 заменить на параметр
+   return cont1->CheckLink(cont2,item_property_name,connector_property_name, -1); // TODO: -1 заменить на параметр
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return false;
 }
@@ -3535,27 +4446,39 @@ const char* UEngine::Model_GetComponentInternalLinks(const char* stringid, const
 {
  RDK::USerStorageXML XmlStorage;
  std::string& TempString=CreateTempString();
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
-  UEPtr<RDK::UNet> owner;
-  if(owner_level_stringid)
-   dynamic_pointer_cast<RDK::UNet>(FindComponent(owner_level_stringid));
+  try
+  {
+   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+   UEPtr<RDK::UNet> owner;
+   if(owner_level_stringid)
+	dynamic_pointer_cast<RDK::UNet>(FindComponent(owner_level_stringid));
 
-  TempString="";
-  if(!cont)
-   return TempString.c_str();
+   TempString="";
+   if(!cont)
+	return TempString.c_str();
 
-  XmlStorage.Create("Links");
+   XmlStorage.Create("Links");
 
-  if(cont->GetComponentInternalLinks(cont,&XmlStorage,owner))
-   return TempString.c_str();
+   if(cont->GetComponentInternalLinks(cont,&XmlStorage,owner))
+	return TempString.c_str();
 
-  XmlStorage.Save(TempString);
+   XmlStorage.Save(TempString);
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -3566,27 +4489,39 @@ const char* UEngine::Model_GetComponentInternalLinks(const char* stringid, const
 int UEngine::Model_SetComponentInternalLinks(const char* stringid, const char* buffer, const char* owner_level_stringid)
 {
  RDK::USerStorageXML XmlStorage;
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
-  UEPtr<RDK::UNet> owner;
-  if(owner_level_stringid)
-   dynamic_pointer_cast<RDK::UNet>(FindComponent(owner_level_stringid));
+  try
+  {
+   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+   UEPtr<RDK::UNet> owner;
+   if(owner_level_stringid)
+	dynamic_pointer_cast<RDK::UNet>(FindComponent(owner_level_stringid));
 
-  if(!cont)
-   return -3;
+   if(!cont)
+	return RDK_E_MODEL_COMPONENT_NOT_FOUND;
 
-  XmlStorage.Load(buffer,"Links");
+   XmlStorage.Load(buffer,"Links");
 
-  if(!cont->SetComponentInternalLinks(cont,&XmlStorage,owner))
-   return -4;
+   if(!cont->SetComponentInternalLinks(cont,&XmlStorage,owner))
+	return RDK_E_MODEL_CREARE_INTERNAL_LINKS_FAIL;
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
-
- return 0;
+ return res;
 }
 
 // Возращает все входные связи к компоненту stringid в виде xml в буфер buffer
@@ -3601,31 +4536,43 @@ const char * UEngine::Model_GetComponentInputLinks(const char* stringid, const c
 {
  RDK::USerStorageXML XmlStorage;
  std::string& TempString=CreateTempString();
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
-  UEPtr<RDK::UNet> owner;
-  if(owner_level_stringid)
-   dynamic_pointer_cast<RDK::UNet>(FindComponent(owner_level_stringid));
-
-  TempString="";
-  if(!cont)
-   return TempString.c_str();
-
-  XmlStorage.Create("Links");
-
-  if(!cont->GetComponentInputLinks(cont,&XmlStorage,owner,sublevel))
+  try
   {
-   DestroyTempString(TempString);
-   return 0;
-  }
+   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+   UEPtr<RDK::UNet> owner;
+   if(owner_level_stringid)
+	dynamic_pointer_cast<RDK::UNet>(FindComponent(owner_level_stringid));
 
-  TempString="";
-  XmlStorage.Save(TempString);
+   TempString="";
+   if(!cont)
+	return TempString.c_str();
+
+   XmlStorage.Create("Links");
+
+   if(!cont->GetComponentInputLinks(cont,&XmlStorage,owner,sublevel))
+   {
+	DestroyTempString(TempString);
+	return 0;
+   }
+
+   TempString="";
+   XmlStorage.Save(TempString);
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -3642,31 +4589,43 @@ const char * UEngine::Model_GetComponentOutputLinks(const char* stringid, const 
 {
  RDK::USerStorageXML XmlStorage;
  std::string& TempString=CreateTempString();
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
-  UEPtr<RDK::UNet> owner;
-  if(owner_level_stringid)
-   dynamic_pointer_cast<RDK::UNet>(FindComponent(owner_level_stringid));
-
-  TempString="";
-  if(!cont)
-   return TempString.c_str();
-
-  XmlStorage.Create("Links");
-
-  if(!cont->GetComponentOutputLinks(cont,&XmlStorage,owner, sublevel))
+  try
   {
-   DestroyTempString(TempString);
-   return 0;
-  }
+   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+   UEPtr<RDK::UNet> owner;
+   if(owner_level_stringid)
+	dynamic_pointer_cast<RDK::UNet>(FindComponent(owner_level_stringid));
 
-  TempString="";
-  XmlStorage.Save(TempString);
+   TempString="";
+   if(!cont)
+	return TempString.c_str();
+
+   XmlStorage.Create("Links");
+
+   if(!cont->GetComponentOutputLinks(cont,&XmlStorage,owner, sublevel))
+   {
+	DestroyTempString(TempString);
+	return 0;
+   }
+
+   TempString="";
+   XmlStorage.Save(TempString);
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -3679,28 +4638,40 @@ const char* UEngine::Model_GetComponentPersonalLinks(const char* stringid, const
 {
  RDK::USerStorageXML XmlStorage;
  std::string& TempString=CreateTempString();
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
-  UEPtr<RDK::UNet> owner;
-  if(owner_level_stringid)
-   owner=dynamic_pointer_cast<RDK::UNet>(FindComponent(owner_level_stringid));
+  try
+  {
+   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+   UEPtr<RDK::UNet> owner;
+   if(owner_level_stringid)
+	owner=dynamic_pointer_cast<RDK::UNet>(FindComponent(owner_level_stringid));
 
-  TempString="";
-  if(!cont)
-   return TempString.c_str();
+   TempString="";
+   if(!cont)
+	return TempString.c_str();
 
-  XmlStorage.Create("Links");
+   XmlStorage.Create("Links");
 
-  if(cont->GetComponentPersonalLinks(cont,&XmlStorage,owner))
-   return TempString.c_str();
+   if(cont->GetComponentPersonalLinks(cont,&XmlStorage,owner))
+	return TempString.c_str();
 
-  TempString="";
-  XmlStorage.Save(TempString);
+   TempString="";
+   XmlStorage.Save(TempString);
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -3708,18 +4679,30 @@ const char* UEngine::Model_GetComponentPersonalLinks(const char* stringid, const
 // Возвращает число входов у компонента
 int UEngine::Model_GetComponentNumInputs(const char *stringid)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<RDK::UADItem> cont=dynamic_pointer_cast<RDK::UADItem>(FindComponent(stringid));
+  try
+  {
+   UEPtr<RDK::UADItem> cont=dynamic_pointer_cast<RDK::UADItem>(FindComponent(stringid));
 
-  if(!cont)
-   return 0;
+   if(!cont)
+	return 0;
 
-  return cont->GetNumInputs();
+   return cont->GetNumInputs();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -3727,18 +4710,30 @@ int UEngine::Model_GetComponentNumInputs(const char *stringid)
 // Возвращает размер входа компонента в числе элементов
 int UEngine::Model_GetComponentInputDataSize(const char *stringid, int index)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<RDK::UADItem> cont=dynamic_pointer_cast<RDK::UADItem>(FindComponent(stringid));
+  try
+  {
+   UEPtr<RDK::UADItem> cont=dynamic_pointer_cast<RDK::UADItem>(FindComponent(stringid));
 
-  if(!cont)
-   return 0;
+   if(!cont)
+	return 0;
 
-  return cont->GetInputDataSize(index)[1]; // TODO: Нужно возвращать массив размерностей
+   return cont->GetInputDataSize(index)[1]; // TODO: Нужно возвращать массив размерностей
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -3746,13 +4741,25 @@ int UEngine::Model_GetComponentInputDataSize(const char *stringid, int index)
 // Возвращает размер элемента входа в байтах
 int UEngine::Model_GetComponentInputElementSize(const char *stringid, int index)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  return 0;
+  try
+  {
+   return 0;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -3760,13 +4767,25 @@ int UEngine::Model_GetComponentInputElementSize(const char *stringid, int index)
 // Возвращает размер входа компонента в байтах элементов
 int UEngine::Model_GetComponentInputByteSize(const char *stringid, int index)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  return 0;
+  try
+  {
+   return 0;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -3775,13 +4794,25 @@ int UEngine::Model_GetComponentInputByteSize(const char *stringid, int index)
 // Только для чтения!
 unsigned char* UEngine::Model_GetComponentInputData(const char *stringid, int index)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  return 0;
+  try
+  {
+   return 0;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -3789,18 +4820,30 @@ unsigned char* UEngine::Model_GetComponentInputData(const char *stringid, int in
 // Возвращает число выходов у компонента
 int UEngine::Model_GetComponentNumOutputs(const char *stringid)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<RDK::UADItem> cont=dynamic_pointer_cast<RDK::UADItem>(FindComponent(stringid));
+  try
+  {
+   UEPtr<RDK::UADItem> cont=dynamic_pointer_cast<RDK::UADItem>(FindComponent(stringid));
 
-  if(!cont)
-   return 0;
+   if(!cont)
+	return 0;
 
-  return cont->GetNumOutputs();
+   return cont->GetNumOutputs();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -3808,51 +4851,56 @@ int UEngine::Model_GetComponentNumOutputs(const char *stringid)
 // Возвращает размер выхода компонента в числе элементов
 int UEngine::Model_GetComponentOutputDataSize(const char *stringid, int index)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<RDK::UADItem> cont=dynamic_pointer_cast<RDK::UADItem>(FindComponent(stringid));
+  try
+  {
+   UEPtr<RDK::UADItem> cont=dynamic_pointer_cast<RDK::UADItem>(FindComponent(stringid));
 
-  if(!cont)
-   return 0;
+   if(!cont)
+	return 0;
 
-  return cont->GetOutputDataSize(index)[1]; // TODO: тут надо передавать полноценную матрицу размеров
+   return cont->GetOutputDataSize(index)[1]; // TODO: тут надо передавать полноценную матрицу размеров
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
 
-// Возвращает размер элемента выхода в байтах
-/*int UEngine::Model_GetComponentOutputElementSize(const char *stringid, int index)
-{
- try
- {
-  UEPtr<RDK::UADItem> cont=dynamic_pointer_cast<RDK::UADItem>(FindComponent(stringid));
-
-  if(!cont)
-   return 0;
-
-  return cont->GetOutputDataElementSize(index);
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
- return 0;
-} */
-
 // Возвращает размер выхода компонента в байтах элементов
 int UEngine::Model_GetComponentOutputByteSize(const char *stringid, int index)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  return 0;
+  try
+  {
+   return 0;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -3861,18 +4909,30 @@ int UEngine::Model_GetComponentOutputByteSize(const char *stringid, int index)
 // Только для чтения!
 unsigned char* UEngine::Model_GetComponentOutputData(const char *stringid, int index)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+  try
+  {
+   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
 
-  if(!cont)
-   return 0;
+   if(!cont)
+	return 0;
 
-  return cont->GetOutputData(index).UChar;
+   return cont->GetOutputData(index).UChar;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -3883,29 +4943,40 @@ const char *  UEngine::Model_SaveComponent(const char *stringid, unsigned int pa
 {
  RDK::USerStorageXML XmlStorage;
  std::string& TempString=CreateTempString();
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
-
-  if(!cont)
-   return 0;
-
-  XmlStorage.DelNode();
-  XmlStorage.Create("Save");
-  XmlStorage.SetNodeAttribute("ModelName",Environment->GetModel()->GetName());
-
-  if(!cont->SaveComponent(cont,&XmlStorage, true, params_type_mask))
+  try
   {
-   DestroyTempString(TempString);
-   return 0;
-  }
+   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+
+   if(!cont)
+	return 0;
+
+   XmlStorage.DelNode();
+   XmlStorage.Create("Save");
+   XmlStorage.SetNodeAttribute("ModelName",Environment->GetModel()->GetName());
+
+   if(!cont->SaveComponent(cont,&XmlStorage, true, params_type_mask))
+   {
+	DestroyTempString(TempString);
+	return 0;
+   }
 
   XmlStorage.Save(TempString);
- // strcpy(buffer,str.c_str());
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -3913,26 +4984,7 @@ const char *  UEngine::Model_SaveComponent(const char *stringid, unsigned int pa
 // Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния в xml
 int UEngine::Model_SaveComponentToFile(const char *stringid, const char* file_name, unsigned int params_type_mask)
-{ /*
- const char* save_data=Model_SaveComponent(stringid,params_type_mask);
-
- try
- {
-  if(!save_data)
-   return 871121;
-
-  UFileIO file;
-  file.Default();
-  file.SetDirection(1);
-  file.SetFileName(file_name);
-  file.SetBinFlag(0);
-  file.SetDataString(save_data);
-  file.Calculate();
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }*/
+{
  return 0;   
 }
 
@@ -3942,49 +4994,61 @@ int UEngine::Model_SaveComponentToFile(const char *stringid, const char* file_na
 int UEngine::Model_LoadComponent(const char *stringid, const char* buffer)
 {
  RDK::USerStorageXML XmlStorage;
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  AccessCache.clear();
-  XmlStorage.Load(buffer,"Save");
-  XmlStorage.SelectNode(0);
-
-  Environment->Reset();
-
-  if(!Environment->GetModel())
+  try
   {
-   std::string name=XmlStorage.GetNodeAttribute("Class");
-   UId id=Storage->FindClassId(name);
-   UEPtr<UNet> cont=dynamic_pointer_cast<RDK::UNet>(Environment->GetModel()).Get();
-   if(!cont || cont->GetClass() != id)
+   AccessCache.clear();
+   XmlStorage.Load(buffer,"Save");
+   XmlStorage.SelectNode(0);
+
+   Environment->Reset();
+
+   if(!Environment->GetModel())
    {
-	Model_Destroy();
-	Model_Create(name.c_str());
-	cont=dynamic_pointer_cast<RDK::UNet>(Environment->GetModel()).Get();
+	std::string name=XmlStorage.GetNodeAttribute("Class");
+	UId id=Storage->FindClassId(name);
+	UEPtr<UNet> cont=dynamic_pointer_cast<RDK::UNet>(Environment->GetModel()).Get();
+	if(!cont || cont->GetClass() != id)
+	{
+	 Model_Destroy();
+	 Model_Create(name.c_str());
+	 cont=dynamic_pointer_cast<RDK::UNet>(Environment->GetModel()).Get();
+	}
+
+	if(!cont->LoadComponent(cont,&XmlStorage,true))
+	 return RDK_E_MODEL_LOAD_COMPONENT_FAIL;
    }
+   else
+   {
+	if(XmlStorage.GetNodeAttribute("ModelName") != Environment->GetModel()->GetName())
+	 RDK_RAW_THROW(EErrorEngineModelNameDontMatch(XmlStorage.GetNodeAttribute("ModelName"), Environment->GetModel()->GetName()));
 
-   if(!cont->LoadComponent(cont,&XmlStorage,true))
-	return -4;
+	UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+
+	if(!cont)
+	 return RDK_E_MODEL_COMPONENT_NOT_FOUND;
+
+	if(!cont->LoadComponent(cont,&XmlStorage,true))
+	 return RDK_E_MODEL_LOAD_COMPONENT_FAIL;
+   }
+   res=RDK_SUCCESS;
   }
-  else
+  catch (RDK::UException &exception)
   {
-   if(XmlStorage.GetNodeAttribute("ModelName") != Environment->GetModel()->GetName())
-	RDK_RAW_THROW(EErrorEngineModelNameDontMatch(XmlStorage.GetNodeAttribute("ModelName"), Environment->GetModel()->GetName()));
-	//return -10;
-
-   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
-
-   if(!cont)
-	return -3;
-
-   if(!cont->LoadComponent(cont,&XmlStorage,true))
-	return -4;
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
   }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return 0;
+ return res;
 }
 
 // Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
@@ -4015,32 +5079,45 @@ const char * UEngine::Model_SaveComponentProperties(const char *stringid, unsign
 {
  RDK::USerStorageXML XmlStorage;
  std::string& TempString=CreateTempString();
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
-
-  if(!cont)
+  try
   {
-   DestroyTempString(TempString);
-   return 0;
+   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+
+   if(!cont)
+   {
+	DestroyTempString(TempString);
+	return 0;
+   }
+
+   XmlStorage.DelNode();
+   XmlStorage.Create("SaveProperties");
+   XmlStorage.SetNodeAttribute("ModelName",Environment->GetModel()->GetName());
+
+   if(!cont->SaveComponentProperties(cont,&XmlStorage, type_mask))
+   {
+	DestroyTempString(TempString);
+	return 0;
+   }
+
+   TempString="";
+   XmlStorage.Save(TempString);
+   res=RDK_SUCCESS;
   }
-
-  XmlStorage.DelNode();
-  XmlStorage.Create("SaveProperties");
-  XmlStorage.SetNodeAttribute("ModelName",Environment->GetModel()->GetName());
-
-  if(!cont->SaveComponentProperties(cont,&XmlStorage, type_mask))
+  catch (RDK::UException &exception)
   {
-   DestroyTempString(TempString);
-   return 0;
+   res=ProcessException(exception);
   }
-
-  TempString="";
-  XmlStorage.Save(TempString);
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
@@ -4074,28 +5151,40 @@ int UEngine::Model_SaveComponentPropertiesToFile(const char *stringid, const cha
 int UEngine::Model_LoadComponentProperties(const char *stringid, const char* buffer)
 {
  RDK::USerStorageXML XmlStorage;
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+  try
+  {
+   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
 
-  if(!cont)
-   return -3;
+   if(!cont)
+	return RDK_E_MODEL_COMPONENT_NOT_FOUND;
 
-  XmlStorage.Load(buffer,"SaveProperties");
-  if(XmlStorage.GetNodeAttribute("ModelName") != Environment->GetModel()->GetName())
+   XmlStorage.Load(buffer,"SaveProperties");
+   if(XmlStorage.GetNodeAttribute("ModelName") != Environment->GetModel()->GetName())
 	RDK_RAW_THROW(EErrorEngineModelNameDontMatch(XmlStorage.GetNodeAttribute("ModelName"), Environment->GetModel()->GetName()));
-//   return -10;
 
-  XmlStorage.SelectNode(0);
+   XmlStorage.SelectNode(0);
 
-  if(!cont->LoadComponentProperties(cont,&XmlStorage))
-   return -4;
+   if(!cont->LoadComponentProperties(cont,&XmlStorage))
+    return RDK_E_MODEL_LOAD_COMPONENT_PROPERTIES_FAIL;
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return 0;
+ return res;
 }
 
 // Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
@@ -4126,37 +5215,46 @@ int UEngine::Model_LoadComponentPropertiesFromFile(const char *stringid, const c
 const char* UEngine::Model_SaveComponentDrawInfo(const char *stringid)
 {
  std::string& TempString=CreateTempString();
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
-
-  if(!cont)
+  try
   {
-   DestroyTempString(TempString);
-   return 0;
-  }
-  USerStorageXML xml;
-  xml.DelNode();
-  xml.Create("Save");
-  xml.SetNodeAttribute("ModelName",Environment->GetModel()->GetName());
+   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
 
-  if(!cont->SaveComponentDrawInfo(cont,&xml))
+   if(!cont)
+   {
+	DestroyTempString(TempString);
+	return 0;
+   }
+   USerStorageXML xml;
+   xml.DelNode();
+   xml.Create("Save");
+   xml.SetNodeAttribute("ModelName",Environment->GetModel()->GetName());
+
+   if(!cont->SaveComponentDrawInfo(cont,&xml))
+   {
+	DestroyTempString(TempString);
+	return 0;
+   }
+
+   xml.Save(TempString);
+  }
+  catch (RDK::UException &exception)
   {
-   DestroyTempString(TempString);
-   return 0;
+   res=ProcessException(exception);
   }
-
-  xml.Save(TempString);
- // strcpy(buffer,str.c_str());
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return TempString.c_str();
 }
-
-
 
 // Управляет шагом счета модели по умолчанию
 unsigned int UEngine::Model_GetDefaultTimeStep(void) const
@@ -4164,130 +5262,410 @@ unsigned int UEngine::Model_GetDefaultTimeStep(void) const
  return DefaultTimeStep;
 }
 
-void UEngine::Model_SetDefaultTimeStep(unsigned int value)
+int UEngine::Model_SetDefaultTimeStep(unsigned int value)
 {
  DefaultTimeStep=value;
+ return RDK_SUCCESS;
 }
 
 // Управляет шагом счета компонента
 unsigned int UEngine::Model_GetTimeStep(const char *stringid) const
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+  try
+  {
+   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
 
-  return cont->GetTimeStep();
+   return cont->GetTimeStep();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
 
-void UEngine::Model_SetTimeStep(const char *stringid, unsigned int value)
+int UEngine::Model_SetTimeStep(const char *stringid, unsigned int value)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+  try
+  {
+   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
 
-  cont->SetTimeStep(value);
+   cont->SetTimeStep(value);
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
+ return res;
 }
 
 // Устанавливает шаг счета компонента и всех его дочерних компонент
-void UEngine::Model_SetGlobalTimeStep(const char *stringid, unsigned int value)
+int UEngine::Model_SetGlobalTimeStep(const char *stringid, unsigned int value)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+  try
+  {
+   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
 
-  cont->SetGlobalTimeStep(value);
+   cont->SetGlobalTimeStep(value);
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
+ return res;
 }
 
 // Возвращает текущее время модели
 unsigned long long UEngine::Model_GetTime(void)
 {
- return Environment->GetTime().GetTime();
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   return Environment->GetTime().GetTime();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return 0;
 }
 
 double UEngine::Model_GetDoubleTime(void)
 {
- return Environment->GetTime().GetDoubleTime();
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   return Environment->GetTime().GetDoubleTime();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return 0;
 }
 
 // Устанавливает текущее время модели
-bool UEngine::Model_SetTime(unsigned long long value)
+int UEngine::Model_SetTime(unsigned long long value)
 {
- return Environment->GetTime().SetTime(value);
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   if(!Environment->GetTime().SetTime(value))
+	res=RDK_E_ENV_SET_TIME_FAIL;
+   else
+	res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return res;
 }
 
 // Возвращает реальное время
 unsigned long long UEngine::Model_GetRealTime(void)
 {
- return Environment->GetTime().GetRealTime();
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   return Environment->GetTime().GetRealTime();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return 0;
 }
 
 double UEngine::Model_GetDoubleRealTime(void)
 {
- return Environment->GetTime().GetDoubleRealTime();
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   return Environment->GetTime().GetDoubleRealTime();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return 0;
 }
 
 // Устанавливает реальное время
-bool UEngine::Model_SetRealTime(unsigned long long value)
+int UEngine::Model_SetRealTime(unsigned long long value)
 {
- return Environment->GetTime().SetRealTime(value);
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   if(!Environment->GetTime().SetRealTime(value))
+	return RDK_E_ENV_SET_TIME_FAIL;
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return 0;
 }
 
 // Увеличивает реальное время на заданную величину
-bool UEngine::Model_IncreaseRealTime(unsigned long long value)
+int UEngine::Model_IncreaseRealTime(unsigned long long value)
 {
- return Environment->GetTime().IncreaseRealTime(value);
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   if(!Environment->GetTime().IncreaseRealTime(value))
+	return RDK_E_ENV_SET_TIME_FAIL;
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return res;
 }
 
 // Возвращает мгновенный шаг в реальном времени
 unsigned long long UEngine::Model_GetRealTimeStep(void)
 {
- return Environment->GetTime().GetRealTimeStep();
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   return Environment->GetTime().GetRealTimeStep();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return 0;
 }
 
 double UEngine::Model_GetDoubleRealTimeStep(void)
 {
- return Environment->GetTime().GetDoubleRealTimeStep();
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   return Environment->GetTime().GetDoubleRealTimeStep();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return 0.0;
 }
 
 double UEngine::Model_GetDoubleSourceTime(void) const
 {
- return Environment->GetTime().GetSourceCurrentGlobalTime();
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   return Environment->GetTime().GetSourceCurrentGlobalTime();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return 0.0;
 }
 
 // Устанавливает время внешних источников данных в днях
-bool UEngine::Model_SetDoubleSourceTime(double value)
+int UEngine::Model_SetDoubleSourceTime(double value)
 {
- return Environment->GetTime().SetSourceCurrentGlobalTime(value);
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   return Environment->GetTime().SetSourceCurrentGlobalTime(value);
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return res;
 }
 
 // Возвращает время расчета компонента без времени расчета дочерних компонент (мс)
 unsigned long long UEngine::Model_GetStepDuration(const char *stringid) const
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+  try
+  {
+   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
 
-  return cont->GetStepDuration();
+   return cont->GetStepDuration();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -4296,15 +5674,27 @@ unsigned long long UEngine::Model_GetStepDuration(const char *stringid) const
 // (вместе со времени обсчета дочерних объектов) (мс)
 unsigned long long UEngine::Model_GetFullStepDuration(const char *stringid) const
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+  try
+  {
+   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
 
-  return cont->GetFullStepDuration();
+   return cont->GetFullStepDuration();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -4314,684 +5704,58 @@ unsigned long long UEngine::Model_GetFullStepDuration(const char *stringid) cons
 // полного затраченного времени к ожидаемому времени шага счета
 double UEngine::Model_GetInstantPerformance(const char *stringid) const
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+  try
+  {
+   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
 
-  return cont->GetInstantPerformance();
+   return cont->GetInstantPerformance();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return 0;
+ return 0.0;
 }
 
 // Время, прошедшее между двумя последними итерациями счета
 unsigned long long UEngine::Model_GetInterstepsInterval(const char *stringid) const
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+  try
+  {
+   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
 
-  return cont->GetInterstepsInterval();
+   return cont->GetInterstepsInterval();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
-// --------------------------
-
-// --------------------------
-// Скрытые методы управления средой
-// --------------------------
-/// Метод сброса параметров на значения по умолчанию
-/// Если subcomps == true то также сбрасывает параметры всех дочерних компонент
-/*
-bool UEngine::Env_Default(RDK::UContainer* cont, bool subcomps)
-{
- if(!cont)
-  return false;
-
- if(!cont->Default())
-  return false;
-
- bool res=true;
- if(subcomps)
- {
-  for(int i=0;i<cont->GetNumComponents();i++)
-   res &= Env_Default(cont->GetComponentByIndex(i),subcomps);
- }
- return res;
-} */
-         /*
-// Возвращает свойства компонента по идентификатору
-bool UEngine::Model_GetComponentProperties(RDK::UContainer* cont, RDK::USerStorageXML *serstorage, unsigned int type_mask)
-{
- try
- {
-  if(!cont || !serstorage)
-   return false;
-
-  RDK::UContainer::VariableMapT props=cont->GetPropertiesList();
-
-  RDK::UContainer::VariableMapCIteratorT I,J;
-
-  I=props.begin();
-  J=props.end();
-  while(I != J)
-  {
-   if(I->second.CheckMask(type_mask))
-   {
-	try
-	{
-	 cont->GetProperty(I->first,serstorage);
-	}
-	catch(UIProperty::EPropertyError &exception)
-	{
-	 ProcessException(exception);
-	}
-
-    std::string paramname=I->first;//I->second.Property->GetName();
-    if(serstorage->SelectNode(paramname))
-    {
-     serstorage->SetNodeAttribute("PType",sntoa(I->second.Type));
-     serstorage->SelectUp();
-    }
-   }
-   ++I;
-  }
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
-
- return true;
-}
-
-// Возвращает выборочные свойства компонента по идентификатору
-// Память для buffer должна быть выделена!
-bool UEngine::Model_GetComponentSelectedProperties(RDK::UContainer* cont, RDK::USerStorageXML *serstorage)
-{
- try
- {
-  if(!cont || !serstorage)
-   return false;
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
-
- return true;
-}
-
-// Возвращает свойства компонента по идентификатору с описаниями
-// Память для buffer должна быть выделена!
-bool UEngine::Model_GetComponentPropertiesEx(RDK::UContainer* cont, RDK::USerStorageXML *serstorage, unsigned int type_mask)
-{
- try
- {
-  if(!cont || !serstorage)
-   return false;
-
-  RDK::UContainer::VariableMapT props=cont->GetPropertiesList();
-
-  RDK::UContainer::VariableMapCIteratorT I,J;
-
-  UEPtr<UContainerDescription> descr=dynamic_pointer_cast<UContainerDescription>(Storage->GetClassDescription(Storage->FindClassName(cont->GetClass())));
-
-  I=props.begin();
-  J=props.end();
-  while(I != J)
-  {
-   if(I->second.CheckMask(type_mask))
-   {
-	try
-	{
-	 cont->GetProperty(I->first,serstorage);
-	}
-	catch(UIProperty::EPropertyError &exception)
-	{
-	 ProcessException(exception);
-	}
-
-	std::string paramname=I->first;//I->second.Property->GetName();
-    if(serstorage->SelectNode(paramname))
-    {
-     serstorage->SetNodeAttribute("PType",sntoa(I->second.Type));
-     if(descr)
-	 {
-	  serstorage->SetNodeAttribute("Header",descr->GetDescription(paramname).Header);
-     }
-	 serstorage->SelectUp();
-    }
-   }
-   ++I;
-  }
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
-
- return true;
-}
-
-
-// устанавливает свойства компонента по идентификатору
-int UEngine::Model_SetComponentProperties(RDK::UContainer* cont, RDK::USerStorageXML *serstorage)
-{
- try
- {
-  if(!cont || !serstorage)
-   return 1;
-
-  std::string name;
-
-  RDK::UContainer::VariableMapT props=cont->GetPropertiesList();
-
-  RDK::UContainer::VariableMapCIteratorT I,J;
-
-  I=props.begin();
-  J=props.end();
-  while(I != J)
-  {
-   try
-   {
-	cont->SetProperty(I->first,serstorage);
-   }
-   catch(UIProperty::EPropertyError &exception)
-   {
-	ProcessException(exception);
-   }
-   ++I;
-  }
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
- return 0;
-}
-		*/
-		/*
-// Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
-// включая этот компонент
-void UEngine::Model_SetGlobalComponentPropertyValue(RDK::UContainer* cont, UId classid, const char *paramname, const char *buffer)
-{
- try
- {
-  if(!cont || classid == ForbiddenId)
-   return;
-
-  if(cont->GetClass() == classid)
-  {
-   try
-   {
-	cont->SetPropertyValue(paramname,buffer);
-   }
-   catch(UIProperty::EPropertyError &exception)
-   {
-	ProcessException(exception);
-   }
-  }
-
-  for(int i=0;i<cont->GetNumComponents();i++)
-  {
-   Model_SetGlobalComponentPropertyValue(cont->GetComponentByIndex(i), classid, paramname, buffer);
-  }
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
-}
-
-// Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
-// и владельцем, производным от класса 'class_owner_stringid' включая этот компонент
-void UEngine::Model_SetGlobalOwnerComponentPropertyValue(RDK::UContainer* cont, UId classid, UId owner_classid, const char *paramname, const char *buffer)
-{
- try
- {
-  if(!cont || classid == ForbiddenId)
-   return;
-
-  if(cont->GetClass() == classid && cont->GetOwner() && cont->GetOwner()->GetClass() == owner_classid)
-  {
-  {
-   try
-   {
-    cont->SetPropertyValue(paramname,buffer);
-   }
-   catch(UIProperty::EPropertyError &exception)
-   {
-	ProcessException(exception);
-   }
-  }
-  }
-
-  for(int i=0;i<cont->GetNumComponents();i++)
-  {
-   Model_SetGlobalOwnerComponentPropertyValue(cont->GetComponentByIndex(i), classid, owner_classid, paramname, buffer);
-  }
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
-}
-	   /*
-// Возращает все связи внутри компонента stringid в виде xml в буфер buffer
-// Имена формируются до уровня компонента owner_level
-// Если owner_level не задан, то имена формируются до уровня текущего компонента
-int UEngine::Model_GetComponentInternalLinks(RDK::UNet* cont, RDK::USerStorageXML *serstorage, RDK::UNet* owner_level)
-{
- try
- {
-  if(!cont || !serstorage)
-   return 1;
-
-  UStringLinksList linkslist;
-  if(owner_level)
-   cont->GetLinks(linkslist, owner_level);
-  else
-   cont->GetLinks(linkslist, cont);
-
-
-  *serstorage<<linkslist;
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
- return 0;
-}
-
-// Устанавливает все связи внутри компонента stringid из строки xml в буфере buffer
-// Имена применяются до уровня компонента owner_level
-// Если owner_level не задан, то имена применяются до уровня текущего компонента
-int UEngine::Model_SetComponentInternalLinks(RDK::UNet* cont, RDK::USerStorageXML *serstorage, RDK::UNet* owner_level)
-{
- try
- {
-  if(!cont || !serstorage)
-   return 1;
-
-  UStringLinksList linkslist;
-  *serstorage>>linkslist;
-
-  cont->BreakLinks();
-  cont->CreateLinks(linkslist, owner_level);
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
-
- return true;
-}
-
-// Возращает все входные связи к компоненту stringid в виде xml в буфер buffer
-// если 'sublevel' == -2, то возвращает связи всех элементов включая
-// все вложенные сети и сам опрашиваемый компонент.
-// если 'sublevel' == -1, то возвращает связи всех подсетей включая
-// все вложенные сети.
-// если 'sublevel' == 0, то возвращает связи подсетей только этой сети
-// Имена формируются до уровня компонента owner_level
-// Если owner_level не задан, то имена формируются до уровня текущего компонента
-int UEngine::Model_GetComponentInputLinks(RDK::UNet* cont, RDK::USerStorageXML *serstorage, RDK::UNet* owner_level, int sublevel)
-{
- try
- {
-  if(!cont || !serstorage)
-   return 1;
-
-  UStringLinksList linkslist;
-//  cont->GetInputLinks(linkslist, cont);
-
-  *serstorage<<linkslist;
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
- return 0;
-}
-
-// Возращает все выходные связи из компонента stringid в виде xml в буфер buffer
-// если 'sublevel' == -2, то возвращает связи всех элементов включая
-// все вложенные сети и сам опрашиваемый компонент.
-// если 'sublevel' == -1, то возвращает связи всех подсетей включая
-// все вложенные сети.
-// если 'sublevel' == 0, то возвращает связи подсетей только этой сети
-// Имена формируются до уровня компонента owner_level
-// Если owner_level не задан, то имена формируются до уровня текущего компонента
-int UEngine::Model_GetComponentOutputLinks(RDK::UNet* cont, RDK::USerStorageXML *serstorage, RDK::UNet* owner_level, int sublevel)
-{
- try
- {
-  if(!cont || !serstorage)
-   return 1;
-
-  UStringLinksList linkslist;
-//  cont->GetOutputLinks(linkslist, cont);
-
-  *serstorage<<linkslist;
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
- return 0;
-}
-
-// Возращает все внешние связи c компонентом cont и его дочерними компонентами в виде xml в буфер buffer
-// Информация о связях формируется относительно владельца компонента cont!
-// Имена формируются до уровня компонента owner_level
-// Если owner_level не задан, то имена формируются до уровня текущего компонента
-int UEngine::Model_GetComponentPersonalLinks(RDK::UNet* cont, RDK::USerStorageXML *serstorage, RDK::UNet* owner_level)
-{
- try
- {
-  if(!cont || !serstorage)
-   return 1;
-
-  UStringLinksList linkslist;
-  if(owner_level)
-   cont->GetLinks(linkslist, owner_level, true, cont);
-  else
-   cont->GetLinks(linkslist, cont->GetOwner(), true, cont);
-
-  *serstorage<<linkslist;
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
- return 0;
-}
-
-// Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
-// переменные состояния в xml
-bool UEngine::Model_SaveComponent(RDK::UNet* cont, RDK::USerStorageXML *serstorage, bool links, unsigned int params_type_mask)
-{
- try
- {
-  if(!cont || !serstorage)
-   return false;
-
-  serstorage->AddNode(cont->GetName());
-  serstorage->SetNodeAttribute("Class",Storage->FindClassName(cont->GetClass()));
-  serstorage->AddNode(UVariable::GetPropertyTypeNameByType(ptParameter));
-  if(!Model_GetComponentProperties(cont, serstorage,params_type_mask))
-   return false;
-  serstorage->SelectUp();
-
-  if(links)
-  {
-   serstorage->AddNode("Links");
-   if(Model_GetComponentInternalLinks(cont,serstorage,0))
-    return false;
-   serstorage->SelectUp();
-  }
-
-  serstorage->AddNode("Components");
-  for(int i=0;i<cont->GetNumComponents();i++)
-  {
-   if(!Model_SaveComponent(dynamic_pointer_cast<RDK::UNet>(cont->GetComponentByIndex(i)),serstorage,false,params_type_mask))
-    return false;
-  }
-  serstorage->SelectUp();
-
-  serstorage->SelectUp();
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
-
- return true;
-}
-
-// Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
-// переменные состояния из xml
-bool UEngine::Model_LoadComponent(RDK::UNet* cont, RDK::USerStorageXML *serstorage, bool links)
-{
- try
- {
-  if(!serstorage)
-   return false;
-
-  std::string name=serstorage->GetNodeAttribute("Class");
-  UId id=Storage->FindClassId(name);
-
-  if(!cont) // Создаем модель
-  {
-   Model_Create(name.c_str());
-   cont=dynamic_pointer_cast<RDK::UNet>(Environment->GetModel()).Get();
-  }
-  else
-  if(cont->GetClass() != id)
-   return false;
-
-  cont->SetName(serstorage->GetNodeName());
-
-  for(unsigned int i=0, mask=1;i<7;i++, mask<<=1)
-  {
-   if(serstorage->SelectNode(UVariable::GetPropertyTypeNameByType(mask)))
-   {
-	try
-	{
-	 if(Model_SetComponentProperties(cont, serstorage))
-	  return false;
-	}
-	catch(UException &exception)
-	{
-	 ProcessException(exception);
-    }
-    serstorage->SelectUp();
-   }
-  }
-
-  cont->DelAllComponents();
-
-  if(!serstorage->SelectNode("Components"))
-   return false;
-  UStorage* storage=cont->GetStorage();
-  for(int i=0;i<serstorage->GetNumNodes();i++)
-  {
-   serstorage->SelectNode(i);
-   std::string nodename=serstorage->GetNodeName();
-   name=serstorage->GetNodeAttribute("Class");
-   try
-   {
-    id=Storage->FindClassId(name);
-	UEPtr<UNet> newcont=dynamic_pointer_cast<UNet>(storage->TakeObject(id));
-	if(!newcont)
-	 continue;
-	if(cont->AddComponent(static_pointer_cast<UContainer>(newcont)) == ForbiddenId)
-	 continue;
-
-//   if(!Model_LoadComponent(newcont,serstorage))
-	if(!Model_LoadComponent(newcont,serstorage,false))
-	 return false;
-   }
-   catch(UException &exception)
-   {
-	ProcessException(exception);
-   }
-   serstorage->SelectUp();
-  }
-  serstorage->SelectUp();
-
-  if(links)
-  {
-   serstorage->SelectNode("Links");
-   if(!Model_SetComponentInternalLinks(cont,serstorage,0))
-	return false;
-   serstorage->SelectUp();
-  }
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
-
- return true;
-}
-
-// Сохраняет все свойства компонента и его дочерних компонент в xml
-bool UEngine::Model_SaveComponentProperties(RDK::UNet* cont, RDK::USerStorageXML *serstorage, unsigned int type_mask)
-{
- try
- {
-  if(!cont || !serstorage)
-   return false;
-
-  serstorage->AddNode(cont->GetName());
-  serstorage->SetNodeAttribute("Class",Storage->FindClassName(cont->GetClass()));
-  serstorage->AddNode(UVariable::GetPropertyTypeNameByType(type_mask));
-  if(!Model_GetComponentProperties(cont, serstorage,type_mask))
-   return false;
-  serstorage->SelectUp();
-
-  serstorage->AddNode("Components");
-  for(int i=0;i<cont->GetNumComponents();i++)
-  {
-   try
-   {
-	if(!Model_SaveComponentProperties(dynamic_pointer_cast<RDK::UNet>(cont->GetComponentByIndex(i)),serstorage,type_mask))
-	 return false;
-   }
-   catch (UException &exception)
-   {
-	ProcessException(exception);
-   }
-  }
-  serstorage->SelectUp();
-
-  serstorage->SelectUp();
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
-
- return true;
-}
-
-// Загружает все свойства компонента и его дочерних компонент из xml
-bool UEngine::Model_LoadComponentProperties(RDK::UNet* cont, RDK::USerStorageXML *serstorage)
-{
- try
- {
-  if(!cont || !serstorage)
-   return false;
-
-  std::string name=serstorage->GetNodeAttribute("Class");
-  UId id=Storage->FindClassId(name);
-  if(cont->GetClass() != id)
-   return false;
-
-  for(unsigned int i=0, mask=1;i<7;i++, mask<<=1)
-  {
-   if(serstorage->SelectNode(UVariable::GetPropertyTypeNameByType(mask)))
-   {
-	try
-	{
-	 if(Model_SetComponentProperties(cont, serstorage))
-	  return false;
-	}
-	catch (UException &exception)
-	{
-	 ProcessException(exception);
-    }
-    serstorage->SelectUp();
-   }
-  }
-
-  serstorage->SelectNode("Components");
-  for(int i=0;i<cont->GetNumComponents();i++)
-  {
-   if(!serstorage->SelectNode(cont->GetComponentByIndex(i)->GetName()))
-	continue;
-   std::string nodename=serstorage->GetNodeName();
-   try
-   {
-	if(!Model_LoadComponentProperties(dynamic_pointer_cast<RDK::UNet>(cont->GetComponentByIndex(i)),serstorage))
-	 return false;
-   }
-   catch (UException &exception)
-   {
-	ProcessException(exception);
-   }
-   serstorage->SelectUp();
-  }
-  serstorage->SelectUp();
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
-
- return true;
-}
-   */    /*
-// Сохраняет внутренние данные компонента, и его _непосредственных_ дочерних компонент, исключая
-// переменные состояния в xml
-bool UEngine::Model_SaveComponentDrawInfo(RDK::UNet* cont, RDK::USerStorageXML *serstorage)
-{
- try
- {
-  if(!cont || !serstorage)
-   return false;
-
-  serstorage->AddNode(cont->GetName());
-  serstorage->SetNodeAttribute("Class",Storage->FindClassName(cont->GetClass()));
-
-  serstorage->AddNode("Links");
-
-  UStringLinksList linkslist;
-//  cont->GetLinks(linkslist, cont);
-
-  for(int i=0;i<cont->GetNumComponents();i++)
-   static_pointer_cast<UNet>(cont->GetComponentByIndex(i))->GetLinks(linkslist, cont,true,cont->GetComponentByIndex(i));
-  *serstorage<<linkslist;
-  serstorage->SelectUp();
-
-  serstorage->AddNode("Components");
-  for(int i=0;i<cont->GetNumComponents();i++)
-  {
-   XmlStorage.AddNode(cont->GetComponentByIndex(i)->GetName());
-   serstorage->SetNodeAttribute("Class",Storage->FindClassName(cont->GetComponentByIndex(i)->GetClass()));
-   XmlStorage.AddNode("Parameters");
-   try
-   {
-	if(!cont->GetComponentProperties(cont->GetComponentByIndex(i),serstorage,ptParameter|pgAny))
-	 return false;
-   }
-   catch (UException &exception)
-   {
-	ProcessException(exception);
-   }
-   XmlStorage.SelectUp();
-   XmlStorage.SelectUp();
-  }
-  serstorage->SelectUp();
-
-  serstorage->SelectUp();
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
-
- return true;
-} */
 // --------------------------
 
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
@@ -4999,61 +5763,84 @@ bool UEngine::Model_SaveComponentDrawInfo(RDK::UNet* cont, RDK::USerStorageXML *
 // если выход не содержит данных такого типа, то возвращает 0
 const /* RDK::MDMatrix* */void* UEngine::Model_GetComponentOutputAsMatrix(const char *stringid, const char *property_name)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<UNet> cont=dynamic_pointer_cast<UNet>(FindComponent(stringid));
-
-  if(!cont)
-   return 0;
-
-  // Ищем указатель на выходные данные
-  UIProperty* output_property=0;
-//  cont->FindOutputProperty(index, output_property);
-  output_property=cont->FindProperty(property_name);
-  if(!output_property)
-   return 0;
-
-  if(output_property->GetLanguageType() == typeid(MDMatrix<double>) ||
-     output_property->GetLanguageType() == typeid(MDVector<double>))
+  try
   {
-   return output_property->GetPointer(0);
-  }
+   UEPtr<UNet> cont=dynamic_pointer_cast<UNet>(FindComponent(stringid));
 
-  return 0;
+   if(!cont)
+	return 0;
+
+   // Ищем указатель на выходные данные
+   UIProperty* output_property=0;
+   output_property=cont->FindProperty(property_name);
+   if(!output_property)
+	return 0;
+
+   if(output_property->GetLanguageType() == typeid(MDMatrix<double>) ||
+	 output_property->GetLanguageType() == typeid(MDVector<double>))
+   {
+	return output_property->GetPointer(0);
+   }
+
+   return 0;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
 
 const /* RDK::MDMatrix* */void* UEngine::Model_GetComponentOutputAsMatrix(const char *stringid, int index)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  UEPtr<UNet> cont=dynamic_pointer_cast<UNet>(FindComponent(stringid));
-
-  if(!cont)
-   return 0;
-
-  // Ищем указатель на выходные данные
-  UIProperty* output_property=0;
-  cont->FindOutputProperty(index, output_property);
-  if(!output_property)
-   return 0;
-
-  if(output_property->GetLanguageType() == typeid(MDMatrix<double>) ||
-     output_property->GetLanguageType() == typeid(MDVector<double>))
+  try
   {
-   return output_property->GetPointer(0);
-  }
+   UEPtr<UNet> cont=dynamic_pointer_cast<UNet>(FindComponent(stringid));
+
+   if(!cont)
+	return 0;
+
+   // Ищем указатель на выходные данные
+   UIProperty* output_property=0;
+   cont->FindOutputProperty(index, output_property);
+   if(!output_property)
+	return 0;
+
+   if(output_property->GetLanguageType() == typeid(MDMatrix<double>) ||
+	 output_property->GetLanguageType() == typeid(MDVector<double>))
+   {
+	return output_property->GetPointer(0);
+   }
 
   return 0;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -5061,64 +5848,72 @@ const /* RDK::MDMatrix* */void* UEngine::Model_GetComponentOutputAsMatrix(const 
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
 const RDK::UBitmap* UEngine::Model_GetComponentOutput(const char *stringid, const char *property_name)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  if(!property_name)
-   return 0;
+  try
+  {
+   if(!property_name)
+	return 0;
 
-  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
-  UEPtr<UIProperty> iproperty=cont->FindProperty(property_name);
-  UEPtr<UVBaseDataProperty<UBitmap> > property=dynamic_pointer_cast<UVBaseDataProperty<UBitmap> >(iproperty);
-  if(!property)
-   return 0;
-  return (const RDK::UBitmap*)iproperty->GetMemoryArea();
+   UEPtr<RDK::UContainer> cont=FindComponent(stringid);
+   UEPtr<UIProperty> iproperty=cont->FindProperty(property_name);
+   UEPtr<UVBaseDataProperty<UBitmap> > property=dynamic_pointer_cast<UVBaseDataProperty<UBitmap> >(iproperty);
+   if(!property)
+	return 0;
+   return (const RDK::UBitmap*)iproperty->GetMemoryArea();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
 
  return 0;
-/*
- try {
-  UEPtr<RDK::UBAbstract> cont=dynamic_pointer_cast<RDK::UBAbstract>(FindComponent(stringid));
-
-  if(!cont)
-   return 0;
-
-  if(index<0 || index >= cont->GetNumOutputs())
-   return 0;
-
-  return cont->GetOutputs()[index];
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
- return 0;   */
 }
 
 const RDK::UBitmap* UEngine::Model_GetComponentOutput(const char *stringid, int index)
 {
- try {
-  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
-
-  if(!cont)
-   return 0;
-
-  if(index<0 || index >= cont->GetNumOutputs())
-   return 0;
-
-  UIProperty* iproperty=0;
-  cont->FindOutputProperty(index, iproperty);
-  UEPtr<UVBaseDataProperty<UBitmap> > property=dynamic_cast<UVBaseDataProperty<UBitmap>* >(iproperty);
-  if(!property)
-   return 0;
-  return (const RDK::UBitmap*)property->GetMemoryArea();
- }
- catch (UException &exception)
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  ProcessException(exception);
+  try
+  {
+   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+
+   if(!cont)
+	return 0;
+
+   if(index<0 || index >= cont->GetNumOutputs())
+	return 0;
+
+   UIProperty* iproperty=0;
+   cont->FindOutputProperty(index, iproperty);
+   UEPtr<UVBaseDataProperty<UBitmap> > property=dynamic_cast<UVBaseDataProperty<UBitmap>* >(iproperty);
+   if(!property)
+	return 0;
+   return (const RDK::UBitmap*)property->GetMemoryArea();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -5126,47 +5921,43 @@ const RDK::UBitmap* UEngine::Model_GetComponentOutput(const char *stringid, int 
 // Возвращает указатель на выход с индексом 'index' компонента 'id'
 const RDK::UBitmap* UEngine::Model_GetComponentBitmapOutput(const char *stringid, const char *property_name)
 {
-/*
- try {
-  UEPtr<RDK::UBAbstract> cont=dynamic_pointer_cast<RDK::UBAbstract>(FindComponent(stringid));
-
-  if(!cont)
-   return 0;
-
-  if(index<0 || index >= cont->GetNumOutputs())
-   return 0;
-
-  return cont->GetOutputs()[index];
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
- return 0;   */
  return Model_GetComponentOutput(stringid, property_name);
 }
 
 const RDK::UBitmap* UEngine::Model_GetComponentBitmapOutput(const char *stringid, int index)
 {
- try {
-  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
-
-  if(!cont)
-   return 0;
-
-  if(index<0 || index >= cont->GetNumOutputs())
-   return 0;
-
-  UIProperty* iproperty=0;
-  cont->FindOutputProperty(index, iproperty);
-  UEPtr<UVBaseDataProperty<UBitmap> > property=dynamic_cast<UVBaseDataProperty<UBitmap>* >(iproperty);
-  if(!property)
-   return 0;
-  return (const RDK::UBitmap*)property->GetMemoryArea();
- }
- catch (UException &exception)
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  ProcessException(exception);
+  try
+  {
+   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+
+   if(!cont)
+	return 0;
+
+   if(index<0 || index >= cont->GetNumOutputs())
+	return 0;
+
+   UIProperty* iproperty=0;
+   cont->FindOutputProperty(index, iproperty);
+   UEPtr<UVBaseDataProperty<UBitmap> > property=dynamic_cast<UVBaseDataProperty<UBitmap>* >(iproperty);
+   if(!property)
+	return 0;
+   return (const RDK::UBitmap*)property->GetMemoryArea();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
@@ -5175,70 +5966,148 @@ const RDK::UBitmap* UEngine::Model_GetComponentBitmapOutput(const char *stringid
 /// в стрктуру bmp_param
 int UEngine::Model_CopyComponentBitmapOutputHeader(const char *stringid, const char *property_name, RDK::UBitmapParam* bmp_param)
 {
- if(!bmp_param)
-  return 12011;
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   if(!bmp_param)
+	return RDK_E_NULL_POINTER_IN_ARGUMENT;
 
- const RDK::UBitmap *temp_bmp=Model_GetComponentBitmapOutput(stringid, property_name);
- if(!temp_bmp)
-  return 12012;
+   const RDK::UBitmap *temp_bmp=Model_GetComponentBitmapOutput(stringid, property_name);
+   if(!temp_bmp)
+	return RDK_E_MODEL_BITMAP_OUTPUT_NOT_FOUND;
 
- bmp_param->Width=temp_bmp->GetWidth();
- bmp_param->Height=temp_bmp->GetHeight();
- bmp_param->ColorModel=temp_bmp->GetColorModel();
-
- return 0;
+   bmp_param->Width=temp_bmp->GetWidth();
+   bmp_param->Height=temp_bmp->GetHeight();
+   bmp_param->ColorModel=temp_bmp->GetColorModel();
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return res;
 }
 
 int UEngine::Model_CopyComponentBitmapOutputHeaderByIndex(const char *stringid, int index, RDK::UBitmapParam* bmp_param)
 {
- if(!bmp_param)
-  return 12011;
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   if(!bmp_param)
+	return RDK_E_NULL_POINTER_IN_ARGUMENT;
 
- const RDK::UBitmap *temp_bmp=Model_GetComponentBitmapOutput(stringid, index);
- if(!temp_bmp)
-  return 12012;
+   const RDK::UBitmap *temp_bmp=Model_GetComponentBitmapOutput(stringid, index);
+   if(!temp_bmp)
+	return RDK_E_MODEL_BITMAP_OUTPUT_NOT_FOUND;
 
- bmp_param->Width=temp_bmp->GetWidth();
- bmp_param->Height=temp_bmp->GetHeight();
- bmp_param->ColorModel=temp_bmp->GetColorModel();
-
- return 0;
+   bmp_param->Width=temp_bmp->GetWidth();
+   bmp_param->Height=temp_bmp->GetHeight();
+   bmp_param->ColorModel=temp_bmp->GetColorModel();
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return res;
 }
 
 /// Копирует изображение выхода с индексом 'index' компонента 'id'
 /// метод предполагает, что bmp уже имеет выделенную память под изобржение требуемого размера
 int UEngine::Model_CopyComponentBitmapOutput(const char *stringid, const char *property_name, RDK::UBitmap* bmp)
 {
- if(!bmp)
-  return 12011;
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   if(!bmp)
+	return RDK_E_NULL_POINTER_IN_ARGUMENT;
 
- const RDK::UBitmap *temp_bmp=Model_GetComponentBitmapOutput(stringid, property_name);
- if(!temp_bmp)
-  return 12012;
+   const RDK::UBitmap *temp_bmp=Model_GetComponentBitmapOutput(stringid, property_name);
+   if(!temp_bmp)
+	return RDK_E_MODEL_BITMAP_OUTPUT_NOT_FOUND;
 
- if(temp_bmp->GetWidth() != bmp->GetWidth() || temp_bmp->GetHeight() != bmp->GetHeight() ||
+   if(temp_bmp->GetWidth() != bmp->GetWidth() || temp_bmp->GetHeight() != bmp->GetHeight() ||
 	temp_bmp->GetColorModel() != bmp->GetColorModel())
-  return 12013;
+	return RDK_E_MODEL_IMAGES_MUST_HAVE_SAME_SIZE;
 
- memcpy(bmp->GetData(),temp_bmp->GetData(),bmp->GetByteLength());
- return 0;
+   memcpy(bmp->GetData(),temp_bmp->GetData(),bmp->GetByteLength());
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return res;
 }
 
 int UEngine::Model_CopyComponentBitmapOutput(const char *stringid, int index, RDK::UBitmap* bmp)
 {
- if(!bmp)
-  return 12011;
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   if(!bmp)
+	return RDK_E_NULL_POINTER_IN_ARGUMENT;
 
- const RDK::UBitmap *temp_bmp=Model_GetComponentBitmapOutput(stringid, index);
- if(!temp_bmp)
-  return 12012;
+   const RDK::UBitmap *temp_bmp=Model_GetComponentBitmapOutput(stringid, index);
+   if(!temp_bmp)
+	return RDK_E_MODEL_BITMAP_OUTPUT_NOT_FOUND;
 
- if(temp_bmp->GetWidth() != bmp->GetWidth() || temp_bmp->GetHeight() != bmp->GetHeight() ||
+   if(temp_bmp->GetWidth() != bmp->GetWidth() || temp_bmp->GetHeight() != bmp->GetHeight() ||
 	temp_bmp->GetColorModel() != bmp->GetColorModel())
-  return 12013;
+	return RDK_E_MODEL_IMAGES_MUST_HAVE_SAME_SIZE;
 
- memcpy(bmp->GetData(),temp_bmp->GetData(),bmp->GetByteLength());
- return 0;
+   memcpy(bmp->GetData(),temp_bmp->GetData(),bmp->GetByteLength());
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return res;
 }
 
 
@@ -5246,236 +6115,551 @@ int UEngine::Model_CopyComponentBitmapOutput(const char *stringid, int index, RD
 // Возвращает указатель на вход с индексом 'index' компонента 'id'
 const RDK::UBitmap* UEngine::Model_GetComponentBitmapInput(const char *stringid, const char *property_name)
 {
- try
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  if(!property_name)
-   return 0;
+  try
+  {
+   if(!property_name)
+	return 0;
 
-  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
-  UEPtr<UIProperty> iproperty=cont->FindProperty(property_name);
-  UEPtr<UVBaseDataProperty<UBitmap> > property=dynamic_pointer_cast<UVBaseDataProperty<UBitmap> >(iproperty);
-  if(!property)
-   return 0;
-  return (const RDK::UBitmap*)property->GetMemoryArea();
+   UEPtr<RDK::UContainer> cont=FindComponent(stringid);
+   UEPtr<UIProperty> iproperty=cont->FindProperty(property_name);
+   UEPtr<UVBaseDataProperty<UBitmap> > property=dynamic_pointer_cast<UVBaseDataProperty<UBitmap> >(iproperty);
+   if(!property)
+	return 0;
+   return (const RDK::UBitmap*)property->GetMemoryArea();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
-
  return 0;
-/*
- try {
-  UEPtr<RDK::UBAbstract> cont=dynamic_pointer_cast<RDK::UBAbstract>(FindComponent(stringid));
-
-  if(!cont)
-   return 0;
-
-  if(index<0 || index >= cont->GetNumInputs())
-   return 0;
-
-  return cont->GetInputs()[index];
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }
- return 0;  */
 }
 
 const RDK::UBitmap* UEngine::Model_GetComponentBitmapInput(const char *stringid, int index)
 {
- try {
-  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
-
-  if(!cont)
-   return 0;
-
-  if(index<0 || index >= cont->GetNumInputs())
-   return 0;
-
-  UIProperty* iproperty=0;
-  cont->FindInputProperty(index, iproperty);
-  UEPtr<UVBaseDataProperty<UBitmap> > property=dynamic_cast<UVBaseDataProperty<UBitmap>* >(iproperty);
-  if(!property)
-   return 0;
-  return (const RDK::UBitmap*)property->GetMemoryArea();
- }
- catch (UException &exception)
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  ProcessException(exception);
+  try
+  {
+   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+
+   if(!cont)
+	return 0;
+
+   if(index<0 || index >= cont->GetNumInputs())
+	return 0;
+
+   UIProperty* iproperty=0;
+   cont->FindInputProperty(index, iproperty);
+   UEPtr<UVBaseDataProperty<UBitmap> > property=dynamic_cast<UVBaseDataProperty<UBitmap>* >(iproperty);
+   if(!property)
+	return 0;
+   return (const RDK::UBitmap*)property->GetMemoryArea();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
  return 0;
 }
 
 // Замещает изображение выхода с индексом 'index' компонента 'id'
-void UEngine::Model_SetComponentBitmapOutput(const char *stringid, const char *property_name, const RDK::UBitmap* bmp, bool reflect)
+int UEngine::Model_SetComponentBitmapOutput(const char *stringid, const char *property_name, const RDK::UBitmap* bmp, bool reflect)
 {
- try{
-  if(!bmp || !property_name)
-   return;
-  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
-  UEPtr<UIProperty> iproperty=cont->FindProperty(property_name);
-  UEPtr<UVBaseDataProperty<UBitmap> > property=dynamic_pointer_cast<UVBaseDataProperty<UBitmap> >(iproperty);
-  if(!property)
-   return;
-
-  if(reflect)
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
   {
-   const_cast<UBitmap*>(bmp)->ReflectionX(&TempBmp);
-   property->SetData(TempBmp);
+   if(!bmp || !property_name)
+	return RDK_E_NULL_POINTER_IN_ARGUMENT;
+   UEPtr<RDK::UContainer> cont=FindComponent(stringid);
+   UEPtr<UIProperty> iproperty=cont->FindProperty(property_name);
+   UEPtr<UVBaseDataProperty<UBitmap> > property=dynamic_pointer_cast<UVBaseDataProperty<UBitmap> >(iproperty);
+   if(!property)
+	return RDK_E_MODEL_PROPERTY_NOT_FOUND;
+
+   if(reflect)
+   {
+	const_cast<UBitmap*>(bmp)->ReflectionX(&TempBmp);
+	property->SetData(TempBmp);
+   }
+   else
+	property->SetData(*bmp);
+   res=RDK_SUCCESS;
   }
-  else
-   property->SetData(*bmp);
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
-
-// Model_SetComponentPropertyData(stringid, "Output", bmp);
-
-/*
- try{
-  UEPtr<RDK::UBAbstract> cont=dynamic_pointer_cast<RDK::UBAbstract>(FindComponent(stringid));
-
-  if(!cont)
-   return;
-
-  if(index<0 || index >= cont->GetNumOutputs())
-   return;
-
-  UBitmap *output=cont->GetOutputs()[index];
-
-  if(!output)
-   return;
-
-  if(reflect)
-   const_cast<UBitmap*>(bmp)->ReflectionX(output);
-  else
-   *output=*bmp;
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- } */
+ return res;
 }
 
-void UEngine::Model_SetComponentBitmapOutput(const char *stringid, int index, const RDK::UBitmap* bmp, bool reflect)
+int UEngine::Model_SetComponentBitmapOutput(const char *stringid, int index, const RDK::UBitmap* bmp, bool reflect)
 {
- try{
-  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
-
-  if(!cont)
-   return;
-
-  if(index<0 || index >= cont->GetNumOutputs())
-   return;
-
-  UIProperty* iproperty=0;
-  cont->FindOutputProperty(index, iproperty);
-  UEPtr<UVBaseDataProperty<UBitmap> > property=dynamic_cast<UVBaseDataProperty<UBitmap>* >(iproperty);
-  if(!property)
-   return;
-
-  if(reflect)
-  {
-   const_cast<UBitmap*>(bmp)->ReflectionX(&TempBmp);
-   property->SetData(TempBmp);
-  }
-  else
-   property->SetData(*bmp);
- }
- catch (UException &exception)
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  ProcessException(exception);
+  try
+  {
+   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+
+   if(!cont)
+	return RDK_E_MODEL_COMPONENT_NOT_FOUND;
+
+   if(index<0 || index >= cont->GetNumOutputs())
+	return RDK_E_MODEL_PROPERTY_INDEX_OUT_OF_RANGE;
+
+   UIProperty* iproperty=0;
+   cont->FindOutputProperty(index, iproperty);
+   UEPtr<UVBaseDataProperty<UBitmap> > property=dynamic_cast<UVBaseDataProperty<UBitmap>* >(iproperty);
+   if(!property)
+	return RDK_E_MODEL_PROPERTY_NOT_FOUND;
+
+   if(reflect)
+   {
+	const_cast<UBitmap*>(bmp)->ReflectionX(&TempBmp);
+	property->SetData(TempBmp);
+   }
+   else
+	property->SetData(*bmp);
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return res;
 }
 
 // Замещает изображение входа с индексом 'index' компонента 'id'
-void UEngine::Model_SetComponentBitmapInput(const char *stringid, const char *property_name, const RDK::UBitmap* const bmp, bool reflect)
+int UEngine::Model_SetComponentBitmapInput(const char *stringid, const char *property_name, const RDK::UBitmap* const bmp, bool reflect)
 {
- try{
-  if(!bmp || !property_name)
-   return;
-  UEPtr<RDK::UContainer> cont=FindComponent(stringid);
-  UEPtr<UIProperty> iproperty=cont->FindProperty(property_name);
-  UEPtr<UVBaseDataProperty<UBitmap> > property=dynamic_pointer_cast<UVBaseDataProperty<UBitmap> >(iproperty);
-  if(!property)
-   return;
-
-  if(reflect)
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
   {
-   const_cast<UBitmap*>(bmp)->ReflectionX(&TempBmp);
-   property->SetData(TempBmp);
+   if(!bmp || !property_name)
+	return RDK_E_NULL_POINTER_IN_ARGUMENT;
+   UEPtr<RDK::UContainer> cont=FindComponent(stringid);
+   UEPtr<UIProperty> iproperty=cont->FindProperty(property_name);
+   UEPtr<UVBaseDataProperty<UBitmap> > property=dynamic_pointer_cast<UVBaseDataProperty<UBitmap> >(iproperty);
+   if(!property)
+	return RDK_E_MODEL_PROPERTY_NOT_FOUND;
+
+   if(reflect)
+   {
+	const_cast<UBitmap*>(bmp)->ReflectionX(&TempBmp);
+	property->SetData(TempBmp);
+   }
+   else
+	property->SetData(*bmp);
+   res=RDK_SUCCESS;
   }
-  else
-   property->SetData(*bmp);
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
- catch (UException &exception)
+ RDK_SYS_CATCH
  {
-  ProcessException(exception);
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
-/*
- try {
-  UEPtr<RDK::UBAbstract> cont=dynamic_pointer_cast<RDK::UBAbstract>(FindComponent(stringid));
-
-  if(!cont)
-   return;
-
-  if(index<0 || index >= cont->GetNumInputs())
-   return;
-
-  UBitmap *input=cont->GetInputs()[index];
-
-  if(!input)
-   return;
-
-  if(reflect)
-   const_cast<UBitmap*>(bmp)->ReflectionX(input);
-  else
-   *input=*bmp;
- }
- catch (UException &exception)
- {
-  ProcessException(exception);
- }*/
+ return res;
 }
 
-void UEngine::Model_SetComponentBitmapInput(const char *stringid, int index, const RDK::UBitmap* const bmp, bool reflect)
+int UEngine::Model_SetComponentBitmapInput(const char *stringid, int index, const RDK::UBitmap* const bmp, bool reflect)
 {
- try {
-  UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
-
-  if(!cont)
-   return;
-
-  if(index<0 || index >= cont->GetNumInputs())
-   return;
-
-
-  UIProperty* iproperty=0;
-  cont->FindInputProperty(index, iproperty);
-  UEPtr<UVBaseDataProperty<UBitmap> > property=dynamic_cast<UVBaseDataProperty<UBitmap>* >(iproperty);
-  if(!property)
-   return;
-
-  if(reflect)
-  {
-   const_cast<UBitmap*>(bmp)->ReflectionX(&TempBmp);
-   property->SetData(TempBmp);
-  }
-  else
-   property->SetData(*bmp);
- }
- catch (UException &exception)
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
  {
-  ProcessException(exception);
+  try
+  {
+   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+
+   if(!cont)
+	return RDK_E_MODEL_COMPONENT_NOT_FOUND;
+
+   if(index<0 || index >= cont->GetNumInputs())
+	return RDK_E_MODEL_PROPERTY_INDEX_OUT_OF_RANGE;
+
+
+   UIProperty* iproperty=0;
+   cont->FindInputProperty(index, iproperty);
+   UEPtr<UVBaseDataProperty<UBitmap> > property=dynamic_cast<UVBaseDataProperty<UBitmap>* >(iproperty);
+   if(!property)
+	return RDK_E_MODEL_PROPERTY_NOT_FOUND;
+
+   if(reflect)
+   {
+	const_cast<UBitmap*>(bmp)->ReflectionX(&TempBmp);
+	property->SetData(TempBmp);
+   }
+   else
+	property->SetData(*bmp);
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
  }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return res;
 }
 
 // --------------------------
 // Методы управления исключениями
+// --------------------------
+// Возвращает массив строк лога
+const char* UEngine::GetLog(int &error_level) const
+{
+ std::string& TempString=CreateTempString();
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   TempString=Environment->GetLog(error_level);
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return TempString.c_str();
+}
+
+// Возвращает частичный массив строк лога с момента последнего считывания лога
+// этой функцией
+const char* UEngine::GetUnreadLog(int &error_level)
+{
+ std::string& TempString=CreateTempString();
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   TempString=Environment->GetUnreadLog(error_level);
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return TempString.c_str();
+}
+
+/// Записывает в лог новое сообщение
+int UEngine::Engine_LogMessage(int log_level, const char *message)
+{
+ if(!Environment)
+  return RDK_E_ENV_NOT_FOUND;
+
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   Environment->LogMessage(log_level,message);
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return res;
+}
+
+
+// Управление функцией-обработчиком исключений
+UEnvironment::PExceptionHandler UEngine::GetExceptionHandler(void) const
+{
+ if(!Environment)
+  return 0;
+
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   return Environment->GetExceptionHandler();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return 0;
+}
+
+int UEngine::SetExceptionHandler(UEnvironment::PExceptionHandler value)
+{
+ if(!Environment)
+  return RDK_E_ENV_NOT_FOUND;
+
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   if(!Environment->SetExceptionHandler(value))
+    res=RDK_E_ENV_SET_EXCEPTION_HANDLER_FAIL;
+   else
+	res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return res;
+}
+
+// Максимальное число хранимых исключений
+// Если 0, то неограниченно
+int UEngine::GetMaxExceptionsLogSize(void) const
+{
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   if(!Environment)
+    return 0;
+   return Environment->GetMaxExceptionsLogSize();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return 0;
+}
+
+int UEngine::SetMaxExceptionsLogSize(int value)
+{
+ if(!Environment)
+  return RDK_E_ENV_NOT_FOUND;
+
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   Environment->SetMaxExceptionsLogSize(value);
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return res;
+}
+
+
+/// Возвращает число непрочитанных строк лога
+int UEngine::GetNumUnreadLogLines(void) const
+{
+ if(!Environment)
+  return 0;
+
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   return Environment->GetNumUnreadLogLines();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return 0;
+}
+
+/// Возвращает число строк лога
+int UEngine::GetNumLogLines(void) const
+{
+ if(!Environment)
+  return 0;
+
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   return Environment->GetNumLogLines();
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return 0;
+}
+
+/// Очищает лог прочитанных сообщений
+int UEngine::ClearReadLog(void)
+{
+ if(!Environment)
+  return RDK_E_ENV_NOT_FOUND;
+
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   Environment->ClearReadLog();
+   res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return res;
+}
+// --------------------------
+
+
+
+// --------------------------
+// Методы внутреннего управления движком
 // --------------------------
 // Обрабатывает возникшее исключение
 /// Возвращает RDK_UNHANDLED_EXCEPTION если не удалось записать данные исключения
@@ -5489,119 +6673,6 @@ int UEngine::ProcessException(UException &exception) const
 
  return RDK_EXCEPTION_CATCHED;
 }
-
-// Возвращает массив строк лога
-const char* UEngine::GetLog(int &error_level) const
-{
- std::string& TempString=CreateTempString();
- TempString=Environment->GetLog(error_level);
- return TempString.c_str();
-}
-
-// Возвращает частичный массив строк лога с момента последнего считывания лога
-// этой функцией
-const char* UEngine::GetUnreadLog(int &error_level)
-{
-/*
- if(LastReadExceptionLogIndex<=0)
- {
-  LastReadExceptionLogIndex=TempLogString.size();
-  return TempLogString.c_str();
- }
-
- if(LastReadExceptionLogIndex<int(TempLogString.size()))
- {
-  TempString=TempLogString.substr(LastReadExceptionLogIndex);
-  LastReadExceptionLogIndex=TempLogString.size();
-  return TempString.c_str();
- }
-
- TempString="";
- return TempString.c_str();  */
- std::string& TempString=CreateTempString();
- TempString=Environment->GetUnreadLog(error_level);
- return TempString.c_str();
-}
-
-/// Записывает в лог новое сообщение
-int UEngine::Engine_LogMessage(int log_level, const char *message)
-{
- if(!Environment)
-  return 100001;
-
- Environment->LogMessage(log_level,message);
- return 0;
-}
-
-
-// Управление функцией-обработчиком исключений
-UEnvironment::PExceptionHandler UEngine::GetExceptionHandler(void) const
-{
- return Environment->GetExceptionHandler();
-// return ExceptionHandler;
-}
-
-bool UEngine::SetExceptionHandler(UEnvironment::PExceptionHandler value)
-{
-/*
- if(ExceptionHandler == value)
-  return true;
-
- ExceptionHandler=value;
- return true;
- */
- return Environment->SetExceptionHandler(value);
-}
-
-// Максимальное число хранимых исключений
-// Если 0, то неограниченно
-int UEngine::GetMaxExceptionsLogSize(void) const
-{
- return Environment->GetMaxExceptionsLogSize();
-// return MaxExceptionsLogSize;
-}
-
-void UEngine::SetMaxExceptionsLogSize(int value)
-{
-/*
- if(MaxExceptionsLogSize == value)
-  return;
-
- MaxExceptionsLogSize=value;
- if(MaxExceptionsLogSize>0 && CurrentExceptionsLogSize>MaxExceptionsLogSize)
- {
-  //ExceptionsLog.erase(ExceptionsLog.begin(), ExceptionsLog.begin()+int(ExceptionsLog.size())-MaxExceptionsLogSize);
-  CurrentExceptionsLogSize=MaxExceptionsLogSize;
- }
- */
- Environment->SetMaxExceptionsLogSize(value);
-}
-
-
-/// Возвращает число непрочитанных строк лога
-int UEngine::GetNumUnreadLogLines(void) const
-{
- return Environment->GetNumUnreadLogLines();
-}
-
-/// Возвращает число строк лога
-int UEngine::GetNumLogLines(void) const
-{
- return Environment->GetNumLogLines();
-}
-
-/// Очищает лог прочитанных сообщений
-void UEngine::ClearReadLog(void)
-{
- return Environment->ClearReadLog();
-}
-// --------------------------
-
-
-
-// --------------------------
-// Методы внутреннего управления движком
-// --------------------------
 
 // Создает пустое хранилище и возвращает указатель на него
 void UEngine::CreateStorage(void)
