@@ -504,6 +504,10 @@ virtual void SetData(const T &value)
 template<typename T,class OwnerT>
 class UProperty: public UVProperty<T,OwnerT>
 {
+protected:
+/// Флаг проверки значения свойства на равенство присваевому значению
+bool CheckEqualsFlag;
+
 public:
 //protected:
 // Данные
@@ -518,6 +522,21 @@ UProperty(OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmetho
 // -----------------------------
 
 // -----------------------------
+// Метод управления параметрами
+// -----------------------------
+/// Флаг проверки значения свойства на равенство присваевому значению
+bool IsCheckEquals(void) const
+{
+ return CheckEqualsFlag;
+}
+
+void SetCheckEquals(bool value)
+{
+ CheckEqualsFlag=value;
+}
+// -----------------------------
+
+// -----------------------------
 // Операторы доступа
 // -----------------------------
 // Возврат значения
@@ -528,7 +547,7 @@ virtual const T& GetData(void) const
 
 virtual void SetData(const T &value)
 {
- if(v == value)
+ if(CheckEqualsFlag && v == value)
   return;
 
  if(this->Owner)
@@ -561,6 +580,9 @@ protected: // Данные
 // Методы ввода-вывода
 VSetterRT VSetterR;
 
+/// Флаг проверки значения свойства на равенство присваевому значению
+bool CheckEqualsFlag;
+
 public:
 // Данные
 T v;
@@ -570,11 +592,26 @@ public:
 // Конструкторы и деструкторы
 // --------------------------
 UCProperty(OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod)
- : UVProperty<T,OwnerT>(owner, setmethod, 0), VSetterR(0), v() { this->PData=&v; };
+ : UVProperty<T,OwnerT>(owner, setmethod, 0), VSetterR(0), CheckEqualsFlag(true), v() { this->PData=&v; };
 
 UCProperty(OwnerT * const owner, VSetterRT setmethod)
- : UVProperty<T,OwnerT>(owner,(typename UVProperty<T,OwnerT>::SetterRT)0,0), v()
+ : UVProperty<T,OwnerT>(owner,(typename UVProperty<T,OwnerT>::SetterRT)0,0), CheckEqualsFlag(true), v()
 { VSetterR=setmethod; this->PData=&v; };
+// -----------------------------
+
+// -----------------------------
+// Метод управления параметрами
+// -----------------------------
+/// Флаг проверки значения свойства на равенство присваевому значению
+bool IsCheckEquals(void) const
+{
+ return CheckEqualsFlag;
+}
+
+void SetCheckEquals(bool value)
+{
+ CheckEqualsFlag=value;
+}
 // -----------------------------
 
 // -----------------------------
@@ -582,7 +619,7 @@ UCProperty(OwnerT * const owner, VSetterRT setmethod)
 // -----------------------------
 virtual void SetData(const T &value)
 {
- if(v == value)
+ if(CheckEqualsFlag && v == value)
   return;
 
  if(this->Owner)

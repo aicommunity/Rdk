@@ -284,11 +284,12 @@ MMatrix<T,Rows,Cols>::MMatrix(const MDMatrix<T> &copy)
  *this=copy;
 }
 
-/*
+
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>::MMatrix(const T* data)
-{ *copy=data; };
-  */
+{ *this=data; };
+
+
 template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,Cols>::~MMatrix(void) {};
 // --------------------------
