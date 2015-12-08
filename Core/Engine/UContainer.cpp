@@ -1618,6 +1618,12 @@ bool UContainer::Default(void)
    RDK_THROW(UExceptionWrapperBoost(exception.what()));
   }
   #endif
+  #ifdef CV_VERSION
+  catch(cv::exception &exception)
+  {
+   RDK_THROW(UExceptionWrapperOpenCv(exception.what()));
+  }
+  #endif
  }
  RDK_SYS_CATCH
  {
@@ -1665,6 +1671,12 @@ bool UContainer::DefaultAll(UContainer* cont, bool subcomps)
   catch(boost::exception &exception)
   {
    RDK_THROW(UExceptionWrapperBoost(exception.what()));
+  }
+  #endif
+  #ifdef CV_VERSION
+  catch(cv::exception &exception)
+  {
+   RDK_THROW(UExceptionWrapperOpenCv(exception.what()));
   }
   #endif
   }
@@ -1717,6 +1729,12 @@ bool UContainer::Build(void)
   catch(boost::exception &exception)
   {
    RDK_THROW(UExceptionWrapperBoost(exception.what()));
+  }
+  #endif
+  #ifdef CV_VERSION
+  catch(cv::exception &exception)
+  {
+   RDK_THROW(UExceptionWrapperOpenCv(exception.what()));
   }
   #endif
   }
@@ -1773,6 +1791,12 @@ bool UContainer::Reset(void)
   catch(boost::exception &exception)
   {
    RDK_THROW(UExceptionWrapperBoost(exception.what()));
+  }
+  #endif
+  #ifdef CV_VERSION
+  catch(cv::exception &exception)
+  {
+   RDK_THROW(UExceptionWrapperOpenCv(exception.what()));
   }
   #endif
  }
@@ -1902,6 +1926,12 @@ bool UContainer::Calculate(void)
    RDK_THROW(UExceptionWrapperBoost(exception.what()));
   }
   #endif
+  #ifdef CV_VERSION
+  catch(cv::exception &exception)
+  {
+   RDK_THROW(UExceptionWrapperOpenCv(exception.what()));
+  }
+  #endif
  }
  RDK_SYS_CATCH
  {
@@ -1952,6 +1982,12 @@ void UContainer::Init(void)
    RDK_THROW(UExceptionWrapperBoost(exception.what()));
   }
   #endif
+  #ifdef CV_VERSION
+  catch(cv::exception &exception)
+  {
+   RDK_THROW(UExceptionWrapperOpenCv(exception.what()));
+  }
+  #endif
  }
  RDK_SYS_CATCH
  {
@@ -1992,6 +2028,12 @@ void UContainer::UnInit(void)
   catch(boost::exception &exception)
   {
    RDK_THROW(UExceptionWrapperBoost(exception.what()));
+  }
+  #endif
+  #ifdef CV_VERSION
+  catch(cv::exception &exception)
+  {
+   RDK_THROW(UExceptionWrapperOpenCv(exception.what()));
   }
   #endif
  }

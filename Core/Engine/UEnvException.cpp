@@ -65,6 +65,22 @@ std::string UExceptionWrapperBoost::CreateLogMessage(void) const
  return UException::CreateLogMessage()+LogMessage;
 }
 // --------------------------
+
+UExceptionWrapperOpenCv::UExceptionWrapperOpenCv(const std::string &seh_info)
+{
+ Type=1;
+ LogMessage=seh_info;
+}
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+std::string UExceptionWrapperOpenCv::CreateLogMessage(void) const
+{
+ return UException::CreateLogMessage()+LogMessage;
+}
+// --------------------------
 			 /*
 #ifdef BOOST_VERSION
 UContExceptionWrapper::UContExceptionWrapper(const boost::exception &exception, UContainer* cont, const std::string &file_name, int line_number)

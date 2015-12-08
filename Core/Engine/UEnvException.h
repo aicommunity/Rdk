@@ -70,6 +70,22 @@ std::string CreateLogMessage(void) const;
 // --------------------------
 };
 
+class UExceptionWrapperOpenCv: public UException
+{
+protected:
+std::string LogMessage;
+
+public:
+UExceptionWrapperOpenCv(const std::string &seh_info);
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+std::string CreateLogMessage(void) const;
+// --------------------------
+};
+
 template<typename T>
 void rdk_throw(T exception, const char* file_name, int line_number)
 {
