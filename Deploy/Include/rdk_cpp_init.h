@@ -79,6 +79,7 @@ std::string PropertyName;
 // Конструкторы и деструкторы
 // --------------------------
 EEnginePropertyNotFound(const std::string &component_name, const std::string &property_name);
+virtual ~EEnginePropertyNotFound(void) throw();
 // --------------------------
 
 // --------------------------
@@ -101,6 +102,7 @@ std::string VariableType;
 // Конструкторы и деструкторы
 // --------------------------
 EEnginePropertyDecodeLoadFail(const std::string &xml_data, const std::string &variable_type);
+virtual ~EEnginePropertyDecodeLoadFail(void) throw();
 // --------------------------
 
 // --------------------------

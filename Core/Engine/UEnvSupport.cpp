@@ -280,6 +280,10 @@ UIdVector::EDecodeFail::EDecodeFail(const std::string &stringid, int position)
 {
 
 }
+
+UIdVector::EDecodeFail::~EDecodeFail(void) throw()
+{
+}
 // --------------------------
 
 // --------------------------

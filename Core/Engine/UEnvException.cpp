@@ -8,6 +8,10 @@ UExceptionWrapperStd::UExceptionWrapperStd(const std::exception &exception)
  LogMessage=typeid(exception).name()+std::string(" ")+exception.what();
 }
 
+UExceptionWrapperStd::~UExceptionWrapperStd(void) throw()
+{
+}
+
 // --------------------------
 // Методы формирования лога
 // --------------------------
@@ -22,6 +26,10 @@ UExceptionWrapperSEH::UExceptionWrapperSEH(const std::string &seh_info)
 {
  Type=1;
  LogMessage=seh_info;
+}
+
+UExceptionWrapperSEH::~UExceptionWrapperSEH(void) throw()
+{
 }
 
 // --------------------------
@@ -40,6 +48,11 @@ UExceptionWrapperBcb::UExceptionWrapperBcb(const std::string &seh_info)
  LogMessage=seh_info;
 }
 
+UExceptionWrapperBcb::~UExceptionWrapperBcb(void) throw()
+{
+}
+
+
 // --------------------------
 // Методы формирования лога
 // --------------------------
@@ -56,6 +69,11 @@ UExceptionWrapperBoost::UExceptionWrapperBoost(const std::string &seh_info)
  LogMessage=seh_info;
 }
 
+UExceptionWrapperBoost::~UExceptionWrapperBoost(void) throw()
+{
+}
+
+
 // --------------------------
 // Методы формирования лога
 // --------------------------
@@ -70,6 +88,10 @@ UExceptionWrapperOpenCv::UExceptionWrapperOpenCv(const std::string &seh_info)
 {
  Type=1;
  LogMessage=seh_info;
+}
+
+UExceptionWrapperOpenCv::~UExceptionWrapperOpenCv(void) throw()
+{
 }
 
 // --------------------------

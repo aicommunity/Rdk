@@ -55,6 +55,15 @@ int ProcessException(int channel_index, UException &ex)
  return RDK_EXCEPTION_CATCHED;
 }
 
+int ProcessException(int channel_index, const UException &ex)
+{
+ UELockPtr<UEngine> engine=DllManager.GetEngineLock(channel_index);
+ if(!engine)
+  return RDK_UNHANDLED_EXCEPTION;
+ engine->ProcessException(ex);
+ return RDK_EXCEPTION_CATCHED;
+}
+
 }
 
 // --------------------------------------

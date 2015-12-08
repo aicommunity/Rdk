@@ -108,6 +108,10 @@ EEnginePropertyNotFound::EEnginePropertyNotFound(const std::string &component_na
 {
 
 }
+
+EEnginePropertyNotFound::~EEnginePropertyNotFound(void) throw()
+{
+}
 // --------------------------
 
 // --------------------------
@@ -128,6 +132,10 @@ EEnginePropertyDecodeLoadFail::EEnginePropertyDecodeLoadFail(const std::string &
 : XmlData(xml_data), VariableType(variable_type)
 {
 
+}
+
+EEnginePropertyDecodeLoadFail::~EEnginePropertyDecodeLoadFail(void) throw()
+{
 }
 // --------------------------
 

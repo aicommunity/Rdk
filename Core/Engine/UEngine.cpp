@@ -4985,7 +4985,7 @@ const char *  UEngine::Model_SaveComponent(const char *stringid, unsigned int pa
 // переменные состояния в xml
 int UEngine::Model_SaveComponentToFile(const char *stringid, const char* file_name, unsigned int params_type_mask)
 {
- return 0;   
+ return 0;
 }
 
 
@@ -5071,7 +5071,7 @@ int UEngine::Model_LoadComponentFromFile(const char *stringid, const char* file_
  {
   ProcessException(exception);
  }*/
- return 0;     
+ return 0;
 }
 
 // Сохраняет все свойства компонента и его дочерних компонент в xml
@@ -5144,7 +5144,7 @@ int UEngine::Model_SaveComponentPropertiesToFile(const char *stringid, const cha
  {
   ProcessException(exception);
  }*/
- return 0;       
+ return 0;
 }
 
 // Загружает все свойства компонента и его дочерних компонент из xml
@@ -5207,7 +5207,7 @@ int UEngine::Model_LoadComponentPropertiesFromFile(const char *stringid, const c
  {
   ProcessException(exception);
  }*/
- return 0;   
+ return 0;
 }
 
 // Сохраняет внутренние данные компонента, и его _непосредственных_ дочерних компонент, исключая
@@ -6668,6 +6668,17 @@ int UEngine::ProcessException(UException &exception) const
 {
  if(Environment)
   Environment->ProcessException(exception);
+ else
+  return RDK_UNHANDLED_EXCEPTION;
+
+ return RDK_EXCEPTION_CATCHED;
+ //return ProcessException((const UException &)(exception));
+}
+
+int UEngine::ProcessException(const UException &exception) const
+{
+ if(Environment)
+  Environment->ProcessException(const_cast<UException &>(exception));
  else
   return RDK_UNHANDLED_EXCEPTION;
 

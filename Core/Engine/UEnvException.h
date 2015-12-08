@@ -13,6 +13,7 @@ std::string LogMessage;
 
 public:
 UExceptionWrapperStd(const std::exception &exception);
+virtual ~UExceptionWrapperStd(void) throw();
 
 // --------------------------
 // Методы формирования лога
@@ -29,6 +30,7 @@ std::string LogMessage;
 
 public:
 UExceptionWrapperSEH(const std::string &seh_info);
+virtual ~UExceptionWrapperSEH(void) throw();
 
 // --------------------------
 // Методы формирования лога
@@ -45,6 +47,7 @@ std::string LogMessage;
 
 public:
 UExceptionWrapperBcb(const std::string &seh_info);
+virtual ~UExceptionWrapperBcb(void) throw();
 
 // --------------------------
 // Методы формирования лога
@@ -61,6 +64,7 @@ std::string LogMessage;
 
 public:
 UExceptionWrapperBoost(const std::string &seh_info);
+virtual ~UExceptionWrapperBoost(void) throw();
 
 // --------------------------
 // Методы формирования лога
@@ -77,6 +81,7 @@ std::string LogMessage;
 
 public:
 UExceptionWrapperOpenCv(const std::string &seh_info);
+virtual ~UExceptionWrapperOpenCv(void) throw();
 
 // --------------------------
 // Методы формирования лога

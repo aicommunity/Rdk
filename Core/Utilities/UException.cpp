@@ -313,6 +313,10 @@ EStrToNumber::EStrToNumber(const std::string &str)
 {
 
 }
+
+EStrToNumber::~EStrToNumber(void) throw()
+{
+}
 // --------------------------
 
 // --------------------------
@@ -333,6 +337,10 @@ std::string EStrToNumber::CreateLogMessage(void) const
 EIdError::EIdError(int id) : Id(id)
 {
 }
+
+EIdError::~EIdError(void) throw()
+{
+}
 // --------------------------
 
 // --------------------------
@@ -351,6 +359,10 @@ std::string EIdError::CreateLogMessage(void) const
 // Конструкторы и деструкторы
 // --------------------------
 ENameError::ENameError(const std::string &name) : Name(name)
+{
+}
+
+ENameError::~ENameError(void) throw()
 {
 }
 // --------------------------
@@ -429,6 +441,10 @@ EFunctionReturnFalse::EFunctionReturnFalse(const std::string &file_name, const s
 {
 
 }
+
+EFunctionReturnFalse::~EFunctionReturnFalse(void) throw()
+{
+}
 // --------------------------
 
 // --------------------------
@@ -452,6 +468,10 @@ EFunctionReturnError::EFunctionReturnError(const std::string &file_name, const s
 {
 
 }
+
+EFunctionReturnError::~EFunctionReturnError(void) throw()
+{
+}
 // --------------------------
 
 // --------------------------
@@ -474,6 +494,10 @@ std::string EFunctionReturnError::CreateLogMessage(void) const
 EStringFatal::EStringFatal(const std::string &str) : Str(str)
 {
 }
+
+EStringFatal::~EStringFatal(void) throw()
+{
+}
 // --------------------------
 
 // --------------------------
@@ -493,6 +517,10 @@ std::string EStringFatal::CreateLogMessage(void) const
 EStringError::EStringError(const std::string &str) : Str(str)
 {
 }
+
+EStringError::~EStringError(void) throw()
+{
+}
 // --------------------------
 
 // --------------------------
@@ -510,6 +538,10 @@ std::string EStringError::CreateLogMessage(void) const
 // Конструкторы и деструкторы
 // --------------------------
 EStringWarning::EStringWarning(const std::string &str) : Str(str)
+{
+}
+
+EStringWarning::~EStringWarning(void) throw()
 {
 }
 // --------------------------
@@ -532,6 +564,10 @@ std::string EStringWarning::CreateLogMessage(void) const
 EStringInfo::EStringInfo(const std::string &str) : Str(str)
 {
 }
+
+EStringInfo::~EStringInfo(void) throw()
+{
+}
 // --------------------------
 
 // --------------------------
@@ -549,6 +585,10 @@ std::string EStringInfo::CreateLogMessage(void) const
 // Конструкторы и деструкторы
 // --------------------------
 EStringDebug::EStringDebug(const std::string &str) : Str(str)
+{
+}
+
+EStringDebug::~EStringDebug(void) throw()
 {
 }
 // --------------------------
@@ -570,6 +610,10 @@ UExceptionUnhandled::UExceptionUnhandled(const std::string &file_name, int line,
  : FileName(file_name), FunctionName(function_name), Line(line)
 {
 
+}
+
+UExceptionUnhandled::~UExceptionUnhandled(void) throw()
+{
 }
 // --------------------------
 

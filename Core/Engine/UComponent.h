@@ -439,6 +439,7 @@ std::string PropertyName;
 public:
 EPropertyError(const std::string &owner_name, const std::string &property_name)
 : EError(), OwnerName(owner_name), PropertyName(property_name) {};
+virtual ~EPropertyError(void) throw() {};
 
 // Формирует строку лога об исключении
 virtual std::string CreateLogMessage(void) const

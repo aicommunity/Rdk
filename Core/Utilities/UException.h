@@ -170,6 +170,7 @@ std::string Str; // Строка
 // Конструкторы и деструкторы
 // --------------------------
 EStrToNumber(const std::string &str);
+virtual ~EStrToNumber(void) throw();
 // --------------------------
 
 // --------------------------
@@ -190,6 +191,7 @@ int Id;
 // Конструкторы и деструкторы
 // --------------------------
 EIdError(int id);
+virtual ~EIdError(void) throw();
 // --------------------------
 
 // --------------------------
@@ -210,6 +212,7 @@ std::string Name;
 // Конструкторы и деструкторы
 // --------------------------
 ENameError(const std::string &name);
+virtual ~ENameError(void) throw();
 // --------------------------
 
 // --------------------------
@@ -324,6 +327,7 @@ int Line;
 // Конструкторы и деструкторы
 // --------------------------
 EFunctionReturnFalse(const std::string &file_name, const std::string &function_name, int line);
+virtual ~EFunctionReturnFalse(void) throw();
 // --------------------------
 
 // --------------------------
@@ -353,6 +357,7 @@ int Code;
 // Конструкторы и деструкторы
 // --------------------------
 EFunctionReturnError(const std::string &file_name, const std::string &function_name, int line, int code);
+virtual ~EFunctionReturnError(void) throw();
 // --------------------------
 
 // --------------------------
@@ -372,6 +377,7 @@ std::string Str;
 // Конструкторы и деструкторы
 // --------------------------
 EStringFatal(const std::string &str);
+virtual ~EStringFatal(void) throw();
 // --------------------------
 
 // --------------------------
@@ -391,6 +397,7 @@ std::string Str;
 // Конструкторы и деструкторы
 // --------------------------
 EStringError(const std::string &str);
+virtual ~EStringError(void) throw();
 // --------------------------
 
 // --------------------------
@@ -410,6 +417,7 @@ std::string Str;
 // Конструкторы и деструкторы
 // --------------------------
 EStringWarning(const std::string &str);
+virtual ~EStringWarning(void) throw();
 // --------------------------
 
 // --------------------------
@@ -429,6 +437,7 @@ std::string Str;
 // Конструкторы и деструкторы
 // --------------------------
 EStringInfo(const std::string &str);
+virtual ~EStringInfo(void) throw();
 // --------------------------
 
 // --------------------------
@@ -448,6 +457,7 @@ std::string Str;
 // Конструкторы и деструкторы
 // --------------------------
 EStringDebug(const std::string &str);
+virtual ~EStringDebug(void) throw();
 // --------------------------
 
 // --------------------------
@@ -474,6 +484,7 @@ int Line;
 // Конструкторы и деструкторы
 // --------------------------
 UExceptionUnhandled(const std::string &file_name, int line, const std::string &function_name);
+virtual ~UExceptionUnhandled(void) throw();
 // --------------------------
 
 // --------------------------

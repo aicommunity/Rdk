@@ -134,6 +134,7 @@ public: // Ìועמהû
 // --------------------------
 //EDecodeFail(void);
 EDecodeFail(const std::string &stringid, int position);
+virtual ~EDecodeFail(void) throw();
 // --------------------------
 
 // --------------------------

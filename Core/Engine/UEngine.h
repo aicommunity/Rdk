@@ -942,6 +942,7 @@ public:
 /// Возвращает RDK_UNHANDLED_EXCEPTION если не удалось записать данные исключения
 /// иначе возвращает RDK_EXCEPTION_CATCHED
 virtual int ProcessException(UException &exception) const;
+virtual int ProcessException(const UException &exception) const;
 
 // Инициализирует пустое хранилище
 void CreateStorage(void);
@@ -1107,6 +1108,7 @@ std::string ExpectedModelName;
 public:
 EErrorEngineModelNameDontMatch(const std::string &got_name, const std::string &expected_name)
 : EErrorEngine(), GotModelName(got_name), ExpectedModelName(expected_name) {};
+virtual ~EErrorEngineModelNameDontMatch(void) throw() {};
 
 // Формирует строку лога об исключении
 virtual std::string CreateLogMessage(void) const
