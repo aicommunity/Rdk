@@ -1606,6 +1606,18 @@ bool UContainer::Default(void)
   {
    RDK_THROW(UExceptionWrapperStd(exception));
   }
+  #ifdef __BORLANDC__
+  catch(System::Sysutils::Exception &exception)
+  {
+   RDK_THROW(UExceptionWrapperBcb(GET_BCB_SYSTEM_EXCEPTION_DATA));
+  }
+  #endif
+  #ifdef BOOST_VERSION
+  catch(boost::exception &exception)
+  {
+   RDK_THROW(UExceptionWrapperBoost(exception.what()));
+  }
+  #endif
  }
  RDK_SYS_CATCH
  {
@@ -1643,7 +1655,19 @@ bool UContainer::DefaultAll(UContainer* cont, bool subcomps)
   {
    RDK_THROW(UExceptionWrapperStd(exception));
   }
- }
+  #ifdef __BORLANDC__
+  catch(System::Sysutils::Exception &exception)
+  {
+   RDK_THROW(UExceptionWrapperBcb(GET_BCB_SYSTEM_EXCEPTION_DATA));
+  }
+  #endif
+  #ifdef BOOST_VERSION
+  catch(boost::exception &exception)
+  {
+   RDK_THROW(UExceptionWrapperBoost(exception.what()));
+  }
+  #endif
+  }
  RDK_SYS_CATCH
  {
   RDK_THROW(UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
@@ -1683,7 +1707,19 @@ bool UContainer::Build(void)
   {
    RDK_THROW(UExceptionWrapperStd(exception));
   }
- }
+  #ifdef __BORLANDC__
+  catch(System::Sysutils::Exception &exception)
+  {
+   RDK_THROW(UExceptionWrapperBcb(GET_BCB_SYSTEM_EXCEPTION_DATA));
+  }
+  #endif
+  #ifdef BOOST_VERSION
+  catch(boost::exception &exception)
+  {
+   RDK_THROW(UExceptionWrapperBoost(exception.what()));
+  }
+  #endif
+  }
  RDK_SYS_CATCH
  {
   RDK_THROW(UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
@@ -1727,6 +1763,18 @@ bool UContainer::Reset(void)
   {
    RDK_THROW(UExceptionWrapperStd(exception));
   }
+  #ifdef __BORLANDC__
+  catch(System::Sysutils::Exception &exception)
+  {
+   RDK_THROW(UExceptionWrapperBcb(GET_BCB_SYSTEM_EXCEPTION_DATA));
+  }
+  #endif
+  #ifdef BOOST_VERSION
+  catch(boost::exception &exception)
+  {
+   RDK_THROW(UExceptionWrapperBoost(exception.what()));
+  }
+  #endif
  }
  RDK_SYS_CATCH
  {
@@ -1842,6 +1890,18 @@ bool UContainer::Calculate(void)
   {
    RDK_THROW(UExceptionWrapperStd(exception));
   }
+  #ifdef __BORLANDC__
+  catch(System::Sysutils::Exception &exception)
+  {
+   RDK_THROW(UExceptionWrapperBcb(GET_BCB_SYSTEM_EXCEPTION_DATA));
+  }
+  #endif
+  #ifdef BOOST_VERSION
+  catch(boost::exception &exception)
+  {
+   RDK_THROW(UExceptionWrapperBoost(exception.what()));
+  }
+  #endif
  }
  RDK_SYS_CATCH
  {
@@ -1880,6 +1940,18 @@ void UContainer::Init(void)
   {
    RDK_THROW(UExceptionWrapperStd(exception));
   }
+  #ifdef __BORLANDC__
+  catch(System::Sysutils::Exception &exception)
+  {
+   RDK_THROW(UExceptionWrapperBcb(GET_BCB_SYSTEM_EXCEPTION_DATA));
+  }
+  #endif
+  #ifdef BOOST_VERSION
+  catch(boost::exception &exception)
+  {
+   RDK_THROW(UExceptionWrapperBoost(exception.what()));
+  }
+  #endif
  }
  RDK_SYS_CATCH
  {
@@ -1910,6 +1982,18 @@ void UContainer::UnInit(void)
   {
    RDK_THROW(UExceptionWrapperStd(exception));
   }
+  #ifdef __BORLANDC__
+  catch(System::Sysutils::Exception &exception)
+  {
+   RDK_THROW(UExceptionWrapperBcb(GET_BCB_SYSTEM_EXCEPTION_DATA));
+  }
+  #endif
+  #ifdef BOOST_VERSION
+  catch(boost::exception &exception)
+  {
+   RDK_THROW(UExceptionWrapperBoost(exception.what()));
+  }
+  #endif
  }
  RDK_SYS_CATCH
  {

@@ -34,6 +34,37 @@ std::string UExceptionWrapperSEH::CreateLogMessage(void) const
 }
 // --------------------------
 
+UExceptionWrapperBcb::UExceptionWrapperBcb(const std::string &seh_info)
+{
+ Type=1;
+ LogMessage=seh_info;
+}
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+std::string UExceptionWrapperBcb::CreateLogMessage(void) const
+{
+ return UException::CreateLogMessage()+LogMessage;
+}
+// --------------------------
+
+UExceptionWrapperBoost::UExceptionWrapperBoost(const std::string &seh_info)
+{
+ Type=1;
+ LogMessage=seh_info;
+}
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+std::string UExceptionWrapperBoost::CreateLogMessage(void) const
+{
+ return UException::CreateLogMessage()+LogMessage;
+}
+// --------------------------
 			 /*
 #ifdef BOOST_VERSION
 UContExceptionWrapper::UContExceptionWrapper(const boost::exception &exception, UContainer* cont, const std::string &file_name, int line_number)

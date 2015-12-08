@@ -38,6 +38,37 @@ std::string CreateLogMessage(void) const;
 // --------------------------
 };
 
+class UExceptionWrapperBcb: public UException
+{
+protected:
+std::string LogMessage;
+
+public:
+UExceptionWrapperBcb(const std::string &seh_info);
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+std::string CreateLogMessage(void) const;
+// --------------------------
+};
+
+class UExceptionWrapperBoost: public UException
+{
+protected:
+std::string LogMessage;
+
+public:
+UExceptionWrapperBoost(const std::string &seh_info);
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+std::string CreateLogMessage(void) const;
+// --------------------------
+};
 
 template<typename T>
 void rdk_throw(T exception, const char* file_name, int line_number)
