@@ -61,6 +61,12 @@ int ULogger::InitLog(void)
   }
  }
 
+ return RDK_SUCCESS;
+}
+
+/// Сохраняет строку в лог
+int ULogger::LogMessage(const std::string &str)
+{
  if(!EventsLogFile)
  {
   std::string file_name;
@@ -75,14 +81,6 @@ int ULogger::InitLog(void)
    return RDK_E_LOGGER_CANT_CREATE_LOG_FILE;
   }
  }
- return RDK_SUCCESS;
-}
-
-/// Сохраняет строку в лог
-int ULogger::LogMessage(const std::string &str)
-{
- if(!EventsLogFile || !EventsLogFile->is_open())
-  return RDK_E_LOGGER_LOG_FILE_NOT_OPEN;
 
  *EventsLogFile<<str<<std::endl;
  EventsLogFile->flush();

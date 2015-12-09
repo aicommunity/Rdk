@@ -16,6 +16,7 @@ See file license.txt for more information
 #include "UStorage.h"
 #include "ULibrary.h"
 #include "../System/rdk_system.h"
+#include "ULogger.h"
 
 namespace RDK {
 
@@ -139,6 +140,9 @@ mutable std::map<unsigned, pair<std::string, int> > LogList;
 mutable unsigned LogIndex;
 
 UGenericMutex* LogMutex;
+
+/// Ёкземпл€р класса дл€ логировани€
+mutable ULogger Logger;
 
 
 public: // Public methods

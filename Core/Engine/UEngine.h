@@ -361,6 +361,12 @@ virtual bool Env_IsInit(void) const;
 // Признак наличия сформированной структуры
 virtual bool Env_IsStructured(void) const;
 
+// Возвращает состояние внутренего логгирования
+virtual bool Env_GetEventsLogMode(void) const;
+
+// Включает/выключает внутренне логгирование
+virtual int Env_SetEventsLogMode(bool value);
+
 // Инициализация среды
 virtual int Env_Init(void);
 

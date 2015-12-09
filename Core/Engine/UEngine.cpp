@@ -1673,6 +1673,61 @@ bool UEngine::Env_IsStructured(void) const
  return false;
 }
 
+// Возвращает состояние внутренего логгирования
+bool UEngine::Env_GetEventsLogMode(void) const
+{
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   return Environment->GetEventsLogMode();
+  }
+  catch (RDK::UException &exception)
+  {
+   ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return false;
+}
+
+// Включает/выключает внутренне логгирование
+int UEngine::Env_SetEventsLogMode(bool value)
+{
+ int res=RDK_UNHANDLED_EXCEPTION;
+ RDK_SYS_TRY
+ {
+  try
+  {
+   if(!Environment->SetEventsLogMode(value))
+	res=RDK_E_ENV_SET_EVENTS_LOG_MODE_FAIL;
+   else
+    res=RDK_SUCCESS;
+  }
+  catch (RDK::UException &exception)
+  {
+   res=ProcessException(exception);
+  }
+  catch (std::exception &exception)
+  {
+   res=ProcessException(RDK::UExceptionWrapperStd(exception));
+  }
+ }
+ RDK_SYS_CATCH
+ {
+  res=ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
+ }
+ return res;
+}
+
 // Инициализация среды
 int UEngine::Env_Init(void)
 {

@@ -1207,6 +1207,34 @@ bool RDK_CALL MEnv_IsStructured(int engine_index)
  return DllManager.GetEngineLock(engine_index)->Env_IsStructured();
 }
 
+// Возвращает состояние внутренего логгирования
+bool RDK_CALL Env_GetEventsLogMode(void)
+{
+ return DllManager.GetEngineLock()->Env_GetEventsLogMode();
+}
+
+bool RDK_CALL MEnv_GetEventsLogMode(int engine_index)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return false;
+
+ return DllManager.GetEngineLock(engine_index)->Env_GetEventsLogMode();
+}
+
+// Включает/выключает внутренне логгирование
+int RDK_CALL Env_SetEventsLogMode(bool value)
+{
+ return DllManager.GetEngineLock()->Env_SetEventsLogMode(value);
+}
+
+int RDK_CALL MEnv_SetEventsLogMode(int engine_index, bool value)
+{
+ if(engine_index<0 || engine_index>=GetNumEngines())
+  return RDK_E_CORE_CHANNEL_NOT_FOUND;
+
+ return DllManager.GetEngineLock(engine_index)->Env_SetEventsLogMode(value);
+}
+
 // Инициализация среды
 int RDK_CALL Env_Init(void)
 {

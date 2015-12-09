@@ -395,7 +395,7 @@ try{
 //   UComponentsControlForm->ComponentsControlFrame->LoadClassesDescriptionFromFile("ClassesDescription.xml");
    Model_SetDefaultTimeStep(channel_config.DefaultTimeStep);
    Env_SetCurrentDataDir(ProjectPath.c_str());
-
+   Env_SetEventsLogMode(channel_config.EventsLogMode);
    Env_CreateStructure();
    Env_Init();
 

@@ -54,8 +54,10 @@ std::vector<std::vector<double> > AvgIterations;
 UEngineControl* EngineControl;
 
 protected: // Данные логгирования
+/// Экземпляр класса логирования
+ULogger Logger;
 /// Файл для сохранения логов
-RDK::UEPtr<std::ofstream> EventsLogFile;
+//RDK::UEPtr<std::ofstream> EventsLogFile;
 
 /// Путь до файла логов
 RDK::UELockVar<std::string> EventsLogFilePath;

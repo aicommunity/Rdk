@@ -1,6 +1,8 @@
 #ifndef RDK_INIT_H
 #define RDK_INIT_H
 
+#include "rdk_error_codes.h"
+
 #ifdef __cplusplus
 extern "C"  {
 #else
@@ -416,6 +418,14 @@ RDK_LIB_TYPE bool RDK_CALL MEnv_IsStructured(int engine_index);
 // Инициализация среды
 RDK_LIB_TYPE int RDK_CALL Env_Init(void);
 RDK_LIB_TYPE int RDK_CALL MEnv_Init(int engine_index);
+
+// Возвращает состояние внутренего логгирования
+RDK_LIB_TYPE bool RDK_CALL Env_GetEventsLogMode(void);
+RDK_LIB_TYPE bool RDK_CALL MEnv_GetEventsLogMode(int engine_index);
+
+// Включает/выключает внутренне логгирование
+RDK_LIB_TYPE int RDK_CALL Env_SetEventsLogMode(bool value);
+RDK_LIB_TYPE int RDK_CALL MEnv_SetEventsLogMode(int engine_index, bool value);
 
 // Деинициализация среды
 RDK_LIB_TYPE int RDK_CALL Env_UnInit(void);

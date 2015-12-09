@@ -127,6 +127,13 @@ void UEnvironment::SetCurrentDataDir(const std::string& dir)
 
  if(CurrentDataDir.size()>0 && CurrentDataDir[CurrentDataDir.size()-1] != '/')
   CurrentDataDir+='/';
+
+ if(EventsLogMode && IsInit())
+ {
+  Logger.Clear();
+  Logger.SetLogPath(CurrentDataDir+"EventsLog/");
+  Logger.InitLog();
+ }
 }
 
 // Имя каталога бинарных файлов
@@ -389,6 +396,14 @@ bool UEnvironment::SetChannelIndex(int value)
   return true;
 
  ChannelIndex=value;
+
+ if(EventsLogMode && IsInit())
+ {
+  Logger.Clear();
+  Logger.SetSuffix(std::string(" Ch")+sntoa(ChannelIndex,2));
+  Logger.InitLog();
+ }
+
  return true;
 }
 
@@ -480,6 +495,13 @@ void UEnvironment::Init(void)
 {
  if(IsInit())
   return;
+
+ if(EventsLogMode)
+ {
+  Logger.SetLogPath(CurrentDataDir+"EventsLog/");
+  Logger.SetSuffix(std::string(" Ch")+sntoa(ChannelIndex,2));
+  Logger.InitLog();
+ }
 
  SetFonts(RDK::GlobalFonts);
  AInit();
@@ -639,7 +661,7 @@ void UEnvironment::ProcessException(UException &exception) const
 
  if(EventsLogMode) // Если включено, то сохраняем события в файл
  {
-
+  Logger.LogMessage(log.first);  // TODO: Проверить на RDK_SUCCESS
  }
 
  if(ExceptionHandler)
@@ -900,6 +922,7 @@ bool UEnvironment::ADefault(void)
 
  MinInterstepsInterval=0;
  DebugMode=false;
+ EventsLogMode=false;
 
 // UComponent::SetTime(0);
  if(ModelCalculationComponent.GetSize() == 0)
@@ -961,6 +984,12 @@ bool UEnvironment::AReset(void)
  LastStepStartTime=0;
  LastErrorLevel=INT_MAX;
  RTModelCalcTime=0;
+
+ if(EventsLogMode)
+ {
+  Logger.Clear();
+  Logger.InitLog();
+ }
 
  if(!Model)
   return true;

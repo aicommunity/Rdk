@@ -51,6 +51,9 @@ bool ResetAfterLoad;
 /// Использовать отладочный режим
 bool DebugMode;
 
+/// Включить запись событий в отдельный лог-файл канала
+bool EventsLogMode;
+
 /// Имя канала
 std::string ChannelName;
 
