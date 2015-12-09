@@ -9,7 +9,7 @@ namespace RDK {
 // Конструкторы и деструкторы
 // --------------------------
 URpcCommand::URpcCommand(void)
- : ChannelIndex(-1), IsPrepared(false), IsDecoded(false), IsProcessed(false)
+ : CmdId(0), ChannelIndex(-1), IsPrepared(false), IsDecoded(false), IsProcessed(false)
 {
 
 }

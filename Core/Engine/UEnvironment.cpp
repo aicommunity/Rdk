@@ -66,6 +66,10 @@ UEnvironment::UEnvironment(void)
  LastStepStartTime=0;
 
  LogIndex=1;
+
+ EventsLogMode=false;
+ RTModelCalcTime=0.0;
+
 }
 
 UEnvironment::~UEnvironment(void)

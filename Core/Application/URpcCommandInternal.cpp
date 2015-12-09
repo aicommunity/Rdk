@@ -11,12 +11,13 @@ namespace RDK {
 // Конструкторы и деструкторы
 // --------------------------
 URpcCommandInternal::URpcCommandInternal(void)
+ : ResponseStatus(0)
 {
 
 }
 
 URpcCommandInternal::URpcCommandInternal(const std::string &request)
- : Request(request)
+ : ResponseStatus(0), Request(request)
 {
 }
 

@@ -30,6 +30,7 @@ UApplication::UApplication(void)
 {
  Name="Application";
  LastProjectsListMaxSize=10;
+ ProjectOpenFlag=false;
 }
 
 UApplication::~UApplication(void)

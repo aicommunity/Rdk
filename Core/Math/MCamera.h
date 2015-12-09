@@ -248,7 +248,7 @@ MCameraStandard<T>::MCameraStandard(void)
 
 template<class T>
 MCameraStandard<T>::MCameraStandard(const MCameraStandard& copy)
-: MCamera<T>(copy), DistortionMode(0)
+: MCamera<T>(copy), DistortionMode(0), DistortionCoeff(copy.DistortionCoeff)
 {
  SetIcc(copy.GetIcc());
 }

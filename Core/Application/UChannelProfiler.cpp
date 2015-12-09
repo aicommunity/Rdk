@@ -62,6 +62,7 @@ UChannelProfiler::UChannelProfiler(void)
 {
  Mutex=UCreateMutex();
  AverageIterations=10;
+ ChannelIndex=0;
 }
 
 UChannelProfiler::~UChannelProfiler(void)

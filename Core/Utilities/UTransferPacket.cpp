@@ -20,6 +20,8 @@ UTransferPacket::UTransferPacket(void)
  NumParams=0;
  Checksum=0;
  PacketSize=sizeof(int)*8;
+ Temp=0;
+ PacketSize=0;
 }
 
 UTransferPacket::UTransferPacket(const UTransferPacket &packet)
@@ -345,6 +347,8 @@ UTransferPacket& UTransferPacket::operator = (const UTransferPacket &packet)
  Checksum=packet.Checksum;
  Params=packet.Params;
  NumParams=packet.NumParams;
+ Temp=packet.Temp;
+ PacketSize=packet.PacketSize;
 
  return *this;
 }
@@ -376,6 +380,7 @@ UTransferReader::UTransferReader(void)
  LastSize=0;
  ReadIndex=0;
  PacketInProgress=false;
+ ClientError=0;
 }
 
 UTransferReader::~UTransferReader(void)
