@@ -175,6 +175,22 @@ bool UEnvironment::SetDebugMode(bool value)
  DebugMode=value;
  return true;
 }
+
+
+/// Флаг включения внутренней регистрации событий в лог-файл
+/// true - регистрация включена
+bool UEnvironment::GetEventsLogMode(void) const
+{
+ UGenericMutexExclusiveLocker lock(LogMutex);
+ return EventsLogMode;
+}
+
+bool UEnvironment::SetEventsLogMode(bool value)
+{
+ UGenericMutexExclusiveLocker lock(LogMutex);
+ EventsLogMode=value;
+ return true;
+}
 // --------------------------
 
 
@@ -620,6 +636,11 @@ void UEnvironment::ProcessException(UException &exception) const
  log.first=sntoa(ChannelIndex)+std::string("> ")+exception.what();
  log.second=exception.GetType();
  LogList[LogIndex++]=log;
+
+ if(EventsLogMode) // Если включено, то сохраняем события в файл
+ {
+
+ }
 
  if(ExceptionHandler)
   ExceptionHandler(ChannelIndex);

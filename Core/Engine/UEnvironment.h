@@ -47,6 +47,10 @@ ULongTime MinInterstepsInterval;
 /// Флаг включения режима отладки
 bool DebugMode;
 
+/// Флаг включения внутренней регистрации событий в лог-файл
+/// true - регистрация включена
+bool EventsLogMode;
+
 protected: // Состояния
 // Флаг состояния инициализации
 // true - хранилище готово к использованию
@@ -172,6 +176,11 @@ bool SetMinInterstepsInterval(long long value);
 /// Флаг включения режима отладки
 bool GetDebugMode(void) const;
 bool SetDebugMode(bool value);
+
+/// Флаг включения внутренней регистрации событий в лог-файл
+/// true - регистрация включена
+bool GetEventsLogMode(void) const;
+bool SetEventsLogMode(bool value);
 // --------------------------
 
 // --------------------------
