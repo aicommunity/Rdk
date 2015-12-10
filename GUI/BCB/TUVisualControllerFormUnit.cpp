@@ -181,6 +181,7 @@ void TUVisualControllerForm::UpdateInterface(bool force_update)
  unsigned long long current_time=0;
  try
  {
+ UpdateTime=0;
 //  UpdateTime=RDK::GetCurrentStartupTime();
  if(!force_update)
  {

@@ -143,7 +143,7 @@ int GetAverageIterations(void) const;
 bool SetAverageIterations(int num);
 
 /// Массив длинных имен наблюдаемых компонент
-const std::vector<std::string>& GetComponentsName(void) const;
+std::vector<std::string> GetComponentsName(void) const;
 bool SetComponentsName(const std::vector<std::string>& value);
 
 /// Добавляет новый компонент в список
@@ -160,7 +160,7 @@ bool DelComponent(int index);
 void DelAllComponents(void);
 
 /// Массив имен наблюдаемых интерфейсов
-const std::vector<std::string>& GetGuiNames(void) const;
+std::vector<std::string> GetGuiNames(void) const;
 bool SetGuiNames(const std::vector<std::string>& value);
 
 /// Добавляет все интерфейсы в список
