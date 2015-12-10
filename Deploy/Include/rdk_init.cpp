@@ -620,8 +620,9 @@ int RDK_CALL Core_ChannelUnInit(void)
   {
    if(DllManager.GetEngine())
    {
-	if(!Env_UnInit())
-     return RDK_E_CORE_ENVIRONMENT_UNINIT_FAIL;
+	res=Env_UnInit();
+	if(res != RDK_SUCCESS)
+     return res;
    }
 
    res=DllManager.EngineDestroy(DllManager.GetSelectedChannelIndex());
@@ -660,8 +661,9 @@ int RDK_CALL MCore_ChannelUnInit(int engine_index)
   {
    if(DllManager.EngineList[engine_index])
    {
-	if(!MEnv_UnInit(engine_index))
-     return RDK_E_CORE_ENVIRONMENT_UNINIT_FAIL;
+	res = MEnv_UnInit(engine_index);
+	if(res!=RDK_E_CORE_ENVIRONMENT_UNINIT_FAIL)
+	 return res;
    }
 
    res=DllManager.EngineDestroy(engine_index);
