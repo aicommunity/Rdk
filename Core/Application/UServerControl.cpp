@@ -16,7 +16,8 @@ UServerControl::UServerControl(void)
  ServerId="Server1";
  AverageIterations=4;
  PerformancePushIndex=0;
- DebugFolder = "D:/Output/";
+ DebugFolder = "";
+ InitFlag=false;
 
  Name="ServerControl";
 }

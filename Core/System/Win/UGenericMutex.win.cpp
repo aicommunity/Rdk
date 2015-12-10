@@ -60,7 +60,7 @@ UGenericMutexWin::~UGenericMutexWin()
 {
  BOOL res=CloseHandle(m_UnlockEvent);
  if(!res)
-  throw 1;
+  throw 1; // TODO: !!!
 }
 
 bool UGenericMutexWin::shared_lock(void)

@@ -117,6 +117,7 @@
     <ClCompile Include="..\..\..\Core\Engine\UItemData.cpp" />
     <ClCompile Include="..\..\..\Core\Engine\ULibrary.cpp" />
     <ClCompile Include="..\..\..\Core\Engine\ULocalProperty.cpp" />
+    <ClCompile Include="..\..\..\Core\Engine\ULogger.cpp" />
     <ClCompile Include="..\..\..\Core\Engine\UModule.cpp" />
     <ClCompile Include="..\..\..\Core\Engine\UNet.cpp" />
     <ClCompile Include="..\..\..\Core\Engine\UPointer.cpp" />
@@ -226,6 +227,7 @@
     <ClInclude Include="..\..\..\Core\Engine\UItemData.h" />
     <ClInclude Include="..\..\..\Core\Engine\ULibrary.h" />
     <ClInclude Include="..\..\..\Core\Engine\ULocalProperty.h" />
+    <ClInclude Include="..\..\..\Core\Engine\ULogger.h" />
     <ClInclude Include="..\..\..\Core\Engine\UModule.h" />
     <ClInclude Include="..\..\..\Core\Engine\UNet.h" />
     <ClInclude Include="..\..\..\Core\Engine\UPointer.h" />

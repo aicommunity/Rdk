@@ -6,6 +6,7 @@ namespace RDK {
 
 ULogger::ULogger(void)
 {
+ LogEnabledFlag=true;
 }
 
 
