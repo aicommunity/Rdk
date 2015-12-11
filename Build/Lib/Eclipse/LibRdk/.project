@@ -231,6 +231,11 @@
 			<locationURI>PARENT-4-PROJECT_LOC/Core/Engine/UEngine.cpp</locationURI>
 		</link>
 		<link>
+			<name>Core/Engine/UEnvException.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-4-PROJECT_LOC/Core/Engine/UEnvException.cpp</locationURI>
+		</link>
+		<link>
 			<name>Core/Engine/UEnvSupport.cpp</name>
 			<type>1</type>
 			<locationURI>PARENT-4-PROJECT_LOC/Core/Engine/UEnvSupport.cpp</locationURI>
@@ -259,6 +264,11 @@
 			<name>Core/Engine/ULocalProperty.cpp</name>
 			<type>1</type>
 			<locationURI>PARENT-4-PROJECT_LOC/Core/Engine/ULocalProperty.cpp</locationURI>
+		</link>
+		<link>
+			<name>Core/Engine/ULogger.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-4-PROJECT_LOC/Core/Engine/ULogger.cpp</locationURI>
 		</link>
 		<link>
 			<name>Core/Engine/UModule.cpp</name>
