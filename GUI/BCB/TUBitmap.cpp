@@ -120,12 +120,12 @@ void UBitmapToTBitmap(const UBitmap &source, Graphics::TBitmap *target, bool ref
    target->HandleType=bmDIB;
   if(target->PixelFormat != pf24bit)
    target->PixelFormat=pf24bit;
-{
-  DIBSECTION dib_section;
- GetObject(target->Handle, sizeof(dib_section), &dib_section);
- BITMAPINFOHEADER &header=dib_section.dsBmih;
- bool scan_line_normal_order=(header.biHeight>=0)?true:false;
- }
+//{
+//  DIBSECTION dib_section;
+// GetObject(target->Handle, sizeof(dib_section), &dib_section);
+// BITMAPINFOHEADER &header=dib_section.dsBmih;
+// bool scan_line_normal_order=(header.biHeight>=0)?true:false;
+// }
 
   if(!reflect)
   {
