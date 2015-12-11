@@ -52,6 +52,9 @@ int Type;
 
 // Число входов и выходов
 int NumInputs, NumOutputs;
+
+// Состояние флага Activity
+bool Activity;
 // ------------------------
 
 // ------------------------
@@ -69,8 +72,14 @@ int ContourWidth;
 // Цвет заливки элемента
 UColorT FillColor;
 
+// Цвет заливки неактивного элемента
+UColorT InactiveFillColor;
+
 // Цвет исходящих связей
 UColorT LinkColor;
+
+// Цвет текста неактивного элемента
+UColorT InactiveFontColor;
 
 // Толщина контура связи
 int LinkWidth;
@@ -159,6 +168,10 @@ int BackgroundLineStep;
 
 // Цвет выделяемого элемента
 UColorT SelectedColor;
+
+// Цвет выделяемого элемента
+UColorT InactiveSelectedColor;
+
 
 // Коэффициент зуммирования
 // Пиксельная координата X,Y=ZoomCoeff*Coord.X,Y

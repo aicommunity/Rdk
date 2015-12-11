@@ -635,6 +635,8 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
  {
   RdkApplication.OpenProject(AnsiString(FileName).c_str());
   UServerControlForm->ServerRestartTimer->Enabled=true;
+  UComponentsListFrame1->UpdateInterface(true);
+  UDrawEngineFrame1->UpdateInterface(true);
  }
  catch(Exception &exception)
  {
