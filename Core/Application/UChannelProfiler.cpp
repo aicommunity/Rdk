@@ -360,14 +360,15 @@ void UChannelProfiler::CalcCorePerfomance(void)
 void UChannelProfiler::CalcGuiPerfomance(void)
 {
  UGenericMutexExclusiveLocker locker(Mutex);
- for(size_t i=0;i<GuiPerfomance.size();i++)
- {
-  GuiPerfomance[i].CalcAverage();
-  GuiPerfomance[i].CalcPercentage(OtherPerfomance.AvgDuration);
- }
 
  SummaryGuiPerfomance.CalcAverage();
  SummaryGuiPerfomance.CalcPercentage(SummaryGuiPerfomance.AvgDuration);
+
+ for(size_t i=0;i<GuiPerfomance.size();i++)
+ {
+  GuiPerfomance[i].CalcAverage();
+  GuiPerfomance[i].CalcPercentage(SummaryGuiPerfomance.AvgDuration);
+ }
 }
 
 /// Производит расчет выходных данных профайлера

@@ -106,7 +106,7 @@ void TUComponentsPerformanceFrame::AUpdateInterface(void)
    InterfacesStringGrid->Cells[2][i+1]=interfaces[i]->GetClassName().c_str();
    InterfacesStringGrid->Cells[3][i+1]=IntToStr(int(interfaces[i]->GetUpdateInterval()));
    InterfacesStringGrid->Cells[4][i+1]=IntToStr(int(gI->second.AvgDuration*1000));//IntToStr(int(interfaces[i]->GetUpdateTime()));
-   InterfacesStringGrid->Cells[5][i+1]=FloatToStrF(gI->second.Percentage,ffFixed, 3,1);
+   InterfacesStringGrid->Cells[5][i+1]=FloatToStrF(gI->second.Percentage*100,ffFixed, 3,1);
   }
  }
 
