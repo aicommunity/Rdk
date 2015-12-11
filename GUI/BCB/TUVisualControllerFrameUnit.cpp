@@ -175,6 +175,7 @@ void TUVisualControllerFrame::UpdateInterface(bool force_update)
 //  UpdateTime=RDK::GetCurrentStartupTime();
  if(!force_update)
  {
+  UpdateTime=0;
   UpdateControlState();
   if(!Showing && !AlwaysUpdateFlag)
   {

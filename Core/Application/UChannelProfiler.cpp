@@ -110,7 +110,7 @@ bool UChannelProfiler::SetAverageIterations(int num)
 }
 
 /// Массив длинных имен наблюдаемых компонент
-const std::vector<std::string>& UChannelProfiler::GetComponentsName(void) const
+std::vector<std::string> UChannelProfiler::GetComponentsName(void) const
 {
  UGenericMutexExclusiveLocker locker(Mutex);
  return ComponentsName;
@@ -197,7 +197,7 @@ void UChannelProfiler::DelAllComponents(void)
 }
 
 /// Массив имен наблюдаемых интерфейсов
-const std::vector<std::string>& UChannelProfiler::GetGuiNames(void) const
+std::vector<std::string> UChannelProfiler::GetGuiNames(void) const
 {
  UGenericMutexExclusiveLocker locker(Mutex);
  return GuiNames;
