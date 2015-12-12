@@ -66,6 +66,10 @@ UEnvironment::UEnvironment(void)
  LastStepStartTime=0;
 
  LogIndex=1;
+
+ EventsLogMode=false;
+ RTModelCalcTime=0.0;
+
 }
 
 UEnvironment::~UEnvironment(void)
@@ -127,6 +131,13 @@ void UEnvironment::SetCurrentDataDir(const std::string& dir)
 
  if(CurrentDataDir.size()>0 && CurrentDataDir[CurrentDataDir.size()-1] != '/')
   CurrentDataDir+='/';
+
+ if(EventsLogMode && IsInit())
+ {
+  Logger.Clear();
+  Logger.SetLogPath(CurrentDataDir+"EventsLog/");
+  Logger.InitLog();
+ }
 }
 
 // Имя каталога бинарных файлов
@@ -173,6 +184,22 @@ bool UEnvironment::SetDebugMode(bool value)
   return true;
 
  DebugMode=value;
+ return true;
+}
+
+
+/// Флаг включения внутренней регистрации событий в лог-файл
+/// true - регистрация включена
+bool UEnvironment::GetEventsLogMode(void) const
+{
+ UGenericMutexExclusiveLocker lock(LogMutex);
+ return EventsLogMode;
+}
+
+bool UEnvironment::SetEventsLogMode(bool value)
+{
+ UGenericMutexExclusiveLocker lock(LogMutex);
+ EventsLogMode=value;
  return true;
 }
 // --------------------------
@@ -373,6 +400,14 @@ bool UEnvironment::SetChannelIndex(int value)
   return true;
 
  ChannelIndex=value;
+
+ if(EventsLogMode && IsInit())
+ {
+  Logger.Clear();
+  Logger.SetSuffix(std::string(" Ch")+sntoa(ChannelIndex,2));
+  Logger.InitLog();
+ }
+
  return true;
 }
 
@@ -464,6 +499,13 @@ void UEnvironment::Init(void)
 {
  if(IsInit())
   return;
+
+ if(EventsLogMode)
+ {
+  Logger.SetLogPath(CurrentDataDir+"EventsLog/");
+  Logger.SetSuffix(std::string(" Ch")+sntoa(ChannelIndex,2));
+  Logger.InitLog();
+ }
 
  SetFonts(RDK::GlobalFonts);
  AInit();
@@ -617,9 +659,14 @@ void UEnvironment::ProcessException(UException &exception) const
  }
 
  pair<std::string, int> log;
- log.first=sntoa(ChannelIndex)+std::string("> ")+exception.CreateLogMessage();
+ log.first=sntoa(ChannelIndex)+std::string("> ")+exception.what();
  log.second=exception.GetType();
  LogList[LogIndex++]=log;
+
+ if(EventsLogMode) // Если включено, то сохраняем события в файл
+ {
+  Logger.LogMessage(log.first);  // TODO: Проверить на RDK_SUCCESS
+ }
 
  if(ExceptionHandler)
   ExceptionHandler(ChannelIndex);
@@ -879,6 +926,7 @@ bool UEnvironment::ADefault(void)
 
  MinInterstepsInterval=0;
  DebugMode=false;
+ EventsLogMode=false;
 
 // UComponent::SetTime(0);
  if(ModelCalculationComponent.GetSize() == 0)
@@ -940,6 +988,12 @@ bool UEnvironment::AReset(void)
  LastStepStartTime=0;
  LastErrorLevel=INT_MAX;
  RTModelCalcTime=0;
+
+ if(EventsLogMode)
+ {
+  Logger.Clear();
+  Logger.InitLog();
+ }
 
  if(!Model)
   return true;

@@ -504,7 +504,8 @@ void ReceiveFromComponentState(const std::string &stringid, const std::string &s
 // Методы вывода изображений во входы-выходы компонент
 // -------------------------
 // Отправляет изображение в выбранный компонент
-void SendToComponentIO(void);
+/// Возвращает true если отправка была
+bool SendToComponentIO(void);
 // -------------------------
 // Динамически наполняет меню
 void DynamicMenuFilling(TMenuItem* target, std::vector<std::string> &itemsList);

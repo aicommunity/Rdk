@@ -635,6 +635,8 @@ void TUGEngineControlForm::OpenProject(const String &FileName)
  {
   RdkApplication.OpenProject(AnsiString(FileName).c_str());
   UServerControlForm->ServerRestartTimer->Enabled=true;
+  UComponentsListFrame1->UpdateInterface(true);
+  UDrawEngineFrame1->UpdateInterface(true);
  }
  catch(Exception &exception)
  {
@@ -2188,6 +2190,8 @@ void __fastcall TUGEngineControlForm::FormCreate(TObject *Sender)
  RdkApplication.SetEngineControl(&RdkEngineControl);
  RdkApplication.SetProject(&RdkProject);
  RdkApplication.Init();
+
+
 }
 //---------------------------------------------------------------------------
 
@@ -2714,6 +2718,21 @@ void __fastcall TUGEngineControlForm::UDrawEngineFrame1Calculate1Click(TObject *
 
 {
   UComponentsListFrame1->Calculate1Click(Sender);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TUGEngineControlForm::ApplicationEventsException(TObject *Sender,
+          Exception *E)
+{
+ if(GetNumEngines()>0 && MIsEngineInit(0))
+ {
+  std::string message=std::string("Unhandled exception: ")+AnsiString(E->Message).c_str();
+  message+=" in class ";
+  message+=AnsiString(Sender->ToString()).c_str();
+  MEngine_LogMessage(0, RDK_EX_ERROR, message.c_str());
+ }
+ else
+  ShowMessage(E->Message);
 }
 //---------------------------------------------------------------------------
 

@@ -44,21 +44,22 @@ bool UException::SetDispatcher(ExceptionDispatcher* value)
 // Конструкторы и деструкторы
 // --------------------------
 UException::UException(void)
-: Type(0)
+: Type(0), ExLineNumber(-1)
 {
 //Number=++LastNumber;
  std::time(&Time);
 }
 
 UException::UException(const UException &copy)
-: Type(copy.Type)
+: Type(copy.Type), ExFileName(copy.ExFileName), ExLineNumber(copy.ExLineNumber),
+  ObjectName(copy.ObjectName)
 {
 // Number=copy.Number;
  Time=copy.Time;
 }
 
 
-UException::~UException(void)
+UException::~UException(void) throw()
 {
 
 }
@@ -90,11 +91,51 @@ void UException::SetTime(std::time_t ex_time)
 {
  Time=ex_time;
 }
+
+/// Имя файла в котором произошло исключение
+std::string UException::GetExFileName(void) const
+{
+ return ExFileName;
+}
+
+void UException::SetExFileName(const std::string &value)
+{
+ ExFileName=value;
+}
+
+/// Строка на которой произошло исключение
+int UException::GetExLineNumber(void) const
+{
+ return ExLineNumber;
+}
+
+void UException::SetExLineNumber(int value)
+{
+ ExLineNumber=value;
+}
+
+/// Имя объекта сгенерировавшего искючение
+std::string UException::GetObjectName(void) const
+{
+ return ObjectName;
+}
+
+void UException::SetObjectName(const std::string &value)
+{
+ ObjectName=value;
+}
 // --------------------------
 
 // --------------------------
 // Методы формирования лога
 // --------------------------
+/// Возвращает строку лога об исключении
+char const * UException::what() const throw()
+{
+ Message=CreateLogMessage();
+ return Message.c_str();
+}
+
 std::string UException::CreateLogMessage(void) const
 {
  std::string result;
@@ -123,6 +164,21 @@ std::string UException::CreateLogMessage(void) const
  result+="> ";
  result+=typeid(*this).name();
 
+ if(!ExFileName.empty())
+ {
+  result+="> ";
+  result+=ExFileName;
+  result+=":";
+  result+=sntoa(ExLineNumber);
+  result+="> ";
+ }
+
+ if(!ObjectName.empty())
+ {
+  result+=ObjectName;
+  result+="> ";
+ }
+
  return result;
 };
 // --------------------------
@@ -148,7 +204,7 @@ EFatal::EFatal(const EFatal &copy)
 
 }
 
-EFatal::~EFatal(void)
+EFatal::~EFatal(void) throw()
 {
 
 }
@@ -172,7 +228,7 @@ EError::EError(const EError &copy)
 
 }
 
-EError::~EError(void)
+EError::~EError(void) throw()
 {
 
 }
@@ -196,7 +252,7 @@ EWarning::EWarning(const EWarning &copy)
 
 }
 
-EWarning::~EWarning(void)
+EWarning::~EWarning(void) throw()
 {
 
 }
@@ -220,7 +276,7 @@ EInfo::EInfo(const EInfo &copy)
 
 }
 
-EInfo::~EInfo(void)
+EInfo::~EInfo(void) throw()
 {
 
 }
@@ -241,7 +297,7 @@ EDebug::EDebug(const EDebug &copy)
 
 }
 
-EDebug::~EDebug(void)
+EDebug::~EDebug(void) throw()
 {
 
 }
@@ -256,6 +312,10 @@ EStrToNumber::EStrToNumber(const std::string &str)
  : Str(str)
 {
 
+}
+
+EStrToNumber::~EStrToNumber(void) throw()
+{
 }
 // --------------------------
 
@@ -277,6 +337,10 @@ std::string EStrToNumber::CreateLogMessage(void) const
 EIdError::EIdError(int id) : Id(id)
 {
 }
+
+EIdError::~EIdError(void) throw()
+{
+}
 // --------------------------
 
 // --------------------------
@@ -295,6 +359,10 @@ std::string EIdError::CreateLogMessage(void) const
 // Конструкторы и деструкторы
 // --------------------------
 ENameError::ENameError(const std::string &name) : Name(name)
+{
+}
+
+ENameError::~ENameError(void) throw()
 {
 }
 // --------------------------
@@ -348,7 +416,7 @@ ESystemException::ESystemException(const ESystemException &copy)
 
 }
 
-ESystemException::~ESystemException(void)
+ESystemException::~ESystemException(void) throw()
 {
 
 }
@@ -373,6 +441,10 @@ EFunctionReturnFalse::EFunctionReturnFalse(const std::string &file_name, const s
 {
 
 }
+
+EFunctionReturnFalse::~EFunctionReturnFalse(void) throw()
+{
+}
 // --------------------------
 
 // --------------------------
@@ -396,6 +468,10 @@ EFunctionReturnError::EFunctionReturnError(const std::string &file_name, const s
 {
 
 }
+
+EFunctionReturnError::~EFunctionReturnError(void) throw()
+{
+}
 // --------------------------
 
 // --------------------------
@@ -418,6 +494,10 @@ std::string EFunctionReturnError::CreateLogMessage(void) const
 EStringFatal::EStringFatal(const std::string &str) : Str(str)
 {
 }
+
+EStringFatal::~EStringFatal(void) throw()
+{
+}
 // --------------------------
 
 // --------------------------
@@ -437,6 +517,10 @@ std::string EStringFatal::CreateLogMessage(void) const
 EStringError::EStringError(const std::string &str) : Str(str)
 {
 }
+
+EStringError::~EStringError(void) throw()
+{
+}
 // --------------------------
 
 // --------------------------
@@ -454,6 +538,10 @@ std::string EStringError::CreateLogMessage(void) const
 // Конструкторы и деструкторы
 // --------------------------
 EStringWarning::EStringWarning(const std::string &str) : Str(str)
+{
+}
+
+EStringWarning::~EStringWarning(void) throw()
 {
 }
 // --------------------------
@@ -476,6 +564,10 @@ std::string EStringWarning::CreateLogMessage(void) const
 EStringInfo::EStringInfo(const std::string &str) : Str(str)
 {
 }
+
+EStringInfo::~EStringInfo(void) throw()
+{
+}
 // --------------------------
 
 // --------------------------
@@ -495,6 +587,10 @@ std::string EStringInfo::CreateLogMessage(void) const
 EStringDebug::EStringDebug(const std::string &str) : Str(str)
 {
 }
+
+EStringDebug::~EStringDebug(void) throw()
+{
+}
 // --------------------------
 
 // --------------------------
@@ -506,6 +602,34 @@ std::string EStringDebug::CreateLogMessage(void) const
  return EDebug::CreateLogMessage()+std::string(" ")+Str;
 }
 // --------------------------
+
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+UExceptionUnhandled::UExceptionUnhandled(const std::string &file_name, int line, const std::string &function_name)
+ : FileName(file_name), FunctionName(function_name), Line(line)
+{
+
+}
+
+UExceptionUnhandled::~UExceptionUnhandled(void) throw()
+{
+}
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+std::string UExceptionUnhandled::CreateLogMessage(void) const
+{
+ return EFatal::CreateLogMessage()+std::string(" File=")+FileName+
+			std::string(":")+sntoa(Line)+
+			std::string(" Func=")+FunctionName;
+}
+// --------------------------
+
+
 }
 #endif
 

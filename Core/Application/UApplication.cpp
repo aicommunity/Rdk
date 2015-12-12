@@ -30,6 +30,7 @@ UApplication::UApplication(void)
 {
  Name="Application";
  LastProjectsListMaxSize=10;
+ ProjectOpenFlag=false;
 }
 
 UApplication::~UApplication(void)
@@ -395,7 +396,7 @@ try{
 //   UComponentsControlForm->ComponentsControlFrame->LoadClassesDescriptionFromFile("ClassesDescription.xml");
    Model_SetDefaultTimeStep(channel_config.DefaultTimeStep);
    Env_SetCurrentDataDir(ProjectPath.c_str());
-
+   Env_SetEventsLogMode(channel_config.EventsLogMode);
    Env_CreateStructure();
    Env_Init();
 
@@ -443,7 +444,7 @@ try{
   }
   catch(RDK::UException &exception)
   {
-   Engine_LogMessage(exception.GetType(), (std::string("Core-OpenProject(Load Channel) Exception: (Name=")+std::string(Name.c_str())+std::string(") ")+exception.CreateLogMessage()).c_str());
+   Engine_LogMessage(exception.GetType(), (std::string("Core-OpenProject(Load Channel) Exception: (Name=")+std::string(Name.c_str())+std::string(") ")+exception.what()).c_str());
   }
   Sleep(0);
  }
@@ -476,7 +477,7 @@ try{
 catch(RDK::UException &exception)
 {
 // UShowProgressBarForm->Hide();
- Engine_LogMessage(exception.GetType(), (std::string("Core-OpenProject Exception: (Name=")+Name+std::string(") ")+exception.CreateLogMessage()).c_str());
+ Engine_LogMessage(exception.GetType(), (std::string("Core-OpenProject Exception: (Name=")+Name+std::string(") ")+exception.what()).c_str());
 }
 
  std::list<std::string> last_list=LastProjectsList;
@@ -577,7 +578,7 @@ try
 }
 catch(RDK::UException &exception)
 {
- Engine_LogMessage(exception.GetType(), (std::string("Core-SaveProject Exception: (Name=")+Name+std::string(") ")+exception.CreateLogMessage()).c_str());
+ Engine_LogMessage(exception.GetType(), (std::string("Core-SaveProject Exception: (Name=")+Name+std::string(") ")+exception.what()).c_str());
 }
 
  return true;

@@ -9,7 +9,7 @@
 namespace RDK {
 
 UPropertyDescription::UPropertyDescription(void)
-: DataSelectionType(0)
+: DataSelectionType(0), PropertyType(0)
 {
 
 }

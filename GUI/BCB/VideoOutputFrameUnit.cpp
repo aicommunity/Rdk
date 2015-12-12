@@ -1181,10 +1181,10 @@ void TVideoOutputFrame::ReceiveFromComponentState(const std::string &stringid, c
 // Методы вывода изображений во входы-выходы компонент
 // -------------------------
 // Отправляет изображение в выбранный компонент
-void TVideoOutputFrame::SendToComponentIO(void)
+bool TVideoOutputFrame::SendToComponentIO(void)
 {
  if(LinkedComponentName.empty())
-  return;
+  return false;
 
  SendBmpSource.ReflectionX(&SendReflectedBmpSource);
  int num_channels=GetNumEngines();
@@ -1210,7 +1210,10 @@ void TVideoOutputFrame::SendToComponentIO(void)
   else
    Model_SetComponentPropertyData(LinkedComponentName.c_str(), LinkedComponentPropertyName.c_str(), &SendReflectedBmpSource);
  break;
+ default:
+  return false;
  }
+ return true;
 }
 // -------------------------
 
@@ -1259,8 +1262,7 @@ void TVideoOutputFrame::ABeforeCalculate(void)
   } */
  }
 
- {
-  SendToComponentIO();
+  bool io_sent=SendToComponentIO();
   if(SendPointsByStepCheckBox->Checked)
   {
    SendAsMatrixButtonClick(this);
@@ -1271,21 +1273,23 @@ void TVideoOutputFrame::ABeforeCalculate(void)
    MyVideoOutputToolsForm->DelAllPointsButtonClick(this);
   }
 
-  if(num_channels == 1)
+  if(!io_sent)
   {
-   if(Model_Check() && SendBmpSource.GetByteLength()>0)
-	 Model_SetComponentBitmapOutput("", "Output", &SendBmpSource,true); // Заглушка!!
-  }
-  else
-  if(FrameIndex<num_channels && MModel_Check(FrameIndex))
-  {
-   if(SendBmpSource.GetByteLength()>0)
+   if(num_channels == 1 && FrameIndex==0)
    {
+	if(Model_Check() && SendBmpSource.GetByteLength()>0)
+	 Model_SetComponentBitmapOutput("", "Output", &SendBmpSource,true); // Заглушка!!
+   }
+   else
+   if(FrameIndex<num_channels && MModel_Check(FrameIndex))
+   {
+	if(SendBmpSource.GetByteLength()>0)
+	{
 	if(num_channels>FrameIndex)
 	 MModel_SetComponentBitmapOutput(FrameIndex, "", "Output", &SendBmpSource,true);
+	}
    }
   }
- }
 }
 
 // Метод, вызываемый перед сбросом

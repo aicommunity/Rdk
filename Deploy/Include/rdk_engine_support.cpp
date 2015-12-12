@@ -3,6 +3,7 @@
 
 #include "rdk_engine_support.h"
 #include "rdk_cpp_initdll.h"
+#include "rdk_error_codes.h"
 
 // Ёкземпл€р менеджера
 RDKDllManager DllManager;
@@ -101,7 +102,7 @@ int RDKDllManager::SetNumEngines(int num)
   UGenericMutexExclusiveLocker lock(GlobalMutex);
 
   if(num<0)
-   return 1;
+   return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
 
   for(int i=num;i<int(EngineList.size());i++)
   {
@@ -128,7 +129,7 @@ int RDKDllManager::SetNumEngines(int num)
 
  SetSelectedChannelIndex(num-1);
 
- return 0;
+ return RDK_SUCCESS;
 }
 
 
@@ -176,17 +177,17 @@ int RDKDllManager::Add(int index)
   UGenericMutexExclusiveLocker lock(GlobalMutex);
   NumEngines=int(EngineList.size());
  }
- return 0;
+ return RDK_SUCCESS;
 }
 
 /// ”дал€ет движок из позиции index
 int RDKDllManager::Del(int index)
 {
  if(index<0 || index >= GetNumEngines())
-  return 748361;
+  return RDK_E_CORE_CHANNEL_NOT_FOUND;
 
  if(GetNumEngines() == 1)
-  return 748366;
+  return RDK_E_CORE_ZERO_CHANNEL_MUST_EXIST;
 
  {
   UGenericMutexExclusiveLocker lock(MutexList[index]);
@@ -222,7 +223,7 @@ int RDKDllManager::Del(int index)
   SetSelectedChannelIndex(curr_selected_channel_index-1);
  else
   SetSelectedChannelIndex(curr_selected_channel_index);
- return 0;
+ return RDK_SUCCESS;
 }
 
 /// —оздаает требуемый движок
@@ -230,32 +231,32 @@ int RDKDllManager::Del(int index)
 int RDKDllManager::EngineCreate(int index)
 {
  if(index<0 || index>=GetNumEngines())
-  return 1;
+  return RDK_E_CORE_CHANNEL_NOT_FOUND;
 
  if(EngineList[index])
-  return 0;
+  return RDK_SUCCESS;
 
  EngineList[index]=FuncCreateNewEngine();
  if(!EngineList[index])
  {
   EngineDestroy(index);
-  return 2;
+  return RDK_E_CORE_ENGINE_CREATE_FAIL;
  }
 
- try
- {
+// try
+// {
   StorageList[index]=FuncCreateNewStorage();
   if(!StorageList[index])
   {
    EngineDestroy(index);
-   return 3;
+   return RDK_E_CORE_STORAGE_CREATE_FAIL;
   }
 
   EnvironmentList[index]=FuncCreateNewEnvironment();
   if(!EnvironmentList[index])
   {
    EngineDestroy(index);
-   return 4;
+   return RDK_E_CORE_ENVIRONMENT_CREATE_FAIL;
   }
 
   EngineList[index]->Default();
@@ -264,7 +265,7 @@ int RDKDllManager::EngineCreate(int index)
   if(!EngineList[index]->Init(StorageList[index],EnvironmentList[index]))
   {
    EngineDestroy(index);
-   return 5;
+   return RDK_E_CORE_ENGINE_INIT_FAIL;
   }
 
 //  if(index == SelectedChannelIndex)
@@ -275,12 +276,12 @@ int RDKDllManager::EngineCreate(int index)
    Environment=EnvironmentList[SelectedChannelIndex];
    Storage=StorageList[SelectedChannelIndex];
   }
- }
- catch (RDK::UException &exception)
- {
-  EngineList[index]->ProcessException(exception);
- }
- return 0;
+// }
+// catch (RDK::UException &exception)
+// {
+//  EngineList[index]->ProcessException(exception);
+// }
+ return RDK_SUCCESS;
 }
 
 /// ”ничтожает требуемый движок
@@ -288,7 +289,7 @@ int RDKDllManager::EngineCreate(int index)
 int RDKDllManager::EngineDestroy(int index)
 {
  if(index<0 || index>=GetNumEngines())
-  return 1;
+  return RDK_E_CORE_CHANNEL_NOT_FOUND;
 
  if(EngineList[index])
  {
@@ -313,7 +314,7 @@ int RDKDllManager::EngineDestroy(int index)
   delete StorageList[index];
   StorageList[index]=0;
  }
- return 0;
+ return RDK_SUCCESS;
 }
 // --------------------------
 

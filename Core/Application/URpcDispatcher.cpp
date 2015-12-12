@@ -118,14 +118,14 @@ void URpcDispatcher::Dispatch(void)
 //   UpdateDecoders();
    DispatchCommand(command);
   }
+  catch(UException &rdk_ex)
+  {
+   ex_info=rdk_ex.what();
+   ex_flag=1;
+  }
   catch(std::exception &std_ex)
   {
    ex_info=std_ex.what();
-   ex_flag=1;
-  }
-  catch(UException &rdk_ex)
-  {
-   ex_info=rdk_ex.CreateLogMessage();
    ex_flag=1;
   }
 

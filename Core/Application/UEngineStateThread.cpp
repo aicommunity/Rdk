@@ -234,12 +234,12 @@ void UEngineStateThread::Execute(void)
   catch(UException &ex)
   {
    CalculationNotInProgress->set();
-   Engine_LogMessage(RDK_EX_DEBUG, (string("UEngineStateThread Rdk exception: ")+ex.CreateLogMessage()).c_str());
+   Engine_LogMessage(RDK_EX_DEBUG, (string("UEngineStateThread Rdk exception: ")+ex.what()).c_str());
   }
   catch(std::exception &ex)
   {
    CalculationNotInProgress->set();
-   Engine_LogMessage(RDK_EX_DEBUG, (string("UEngineStateThread std exception: ")).c_str());
+   Engine_LogMessage(RDK_EX_DEBUG, (string("UEngineStateThread std exception: ")+ex.what()).c_str());
   }
   catch(...)
   {
@@ -267,10 +267,16 @@ void UEngineStateThread::RecreateEventsLogFile(void)
   return;
  CalculationNotInProgress->reset();
 
- if(EventsLogFile)
+ Logger.Clear();
+ Logger.SetLogPath(LogPath.Get()+"EventsLog/");
+ if(Logger.InitLog() != RDK_SUCCESS)
  {
-  delete EventsLogFile;
-  EventsLogFile=0;
+  EventsLogFlag=false;
+  return;
+ }
+ else
+ {
+  EventsLogFilePath=LogPath.Get()+"EventsLog/";
  }
 
  /// Сохраняем лог в файл если это необходимо
@@ -278,14 +284,6 @@ void UEngineStateThread::RecreateEventsLogFile(void)
   EventsLogFlag=false;
  else
   EventsLogFlag=true;
-
- if(LogFlag && !LogPath.Get().empty())
- {
-  if(CreateNewDirectory((LogPath.Get()+"EventsLog").c_str()) != 0)
-   EventsLogFlag=false;
-
-  EventsLogFilePath=LogPath.Get()+"EventsLog/";
- }
 
  CalculationNotInProgress->set();
 }
@@ -388,34 +386,14 @@ void UEngineStateThread::ProcessLog(void)
    EngineControl->GetApplication()->PauseEngine(-1);
   }
 */
-  bool is_logged=false;
   while(!UnsentLog.empty())
   {
-   is_logged=true;
    if(EventsLogFlag)
    {
-	if(!EventsLogFile)
-	{
-	 std::string file_name;
-	 time_t time_data;
-	 time(&time_data);
-	 file_name=RDK::get_text_time(time_data, '.', '_');
-	 EventsLogFile= new std::ofstream((EventsLogFilePath.Get()+file_name+".txt").c_str(),std::ios_base::out | std::ios_base::app);
-	}
-
-	if(*EventsLogFile)
-	{
-	 *EventsLogFile<<UnsentLog.front()<<std::endl;
-	}
+	Logger.LogMessage(UnsentLog.front());// TODO: Проверить на RDK_SUCCESS
    }
 
    UnsentLog.pop_front();
-  }
-
-  if(is_logged)
-  {
-   if(EventsLogFlag && EventsLogFile && *EventsLogFile)
-	EventsLogFile->flush();
   }
  }
  catch(...)

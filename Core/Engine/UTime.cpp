@@ -40,6 +40,8 @@ UTimeControl::UTimeControl(void)
  SourceCurrentGlobalTime=0;
  SourceStartLocalTime=0;
  SourceCurrentLocalTime=0;
+ ModelStartSecondTime=0.0;
+ StepStartSecondTime=0.0;
 }
 
 UTimeControl::~UTimeControl(void)

@@ -310,12 +310,14 @@ bool SetName(const NameT &name);
 // Возвращает полное имя объекта
 // (включая имена всех владельцев)
 NameT& GetFullName(NameT &buffer) const;
+NameT GetFullName(void) const;
 
 // Возвращает  'длинное' имя объекта
 // (исключая имя владельца 'mainowner').
 // Метод возвращает пустую строку, если 'mainowner' - не является
 // владельцем объекта ни на каком уровне иерархии
 NameT& GetLongName(const UEPtr<UContainer> &mainowner, NameT &buffer) const;
+NameT GetLongName(const UEPtr<UContainer> &mainowner) const;
 
 /// Максимально допустимое время расчета компонента вместе с дочерними компонентами
 /// в миллисекундах.
@@ -925,7 +927,7 @@ public:
  EComponentCalculate(void);
  EComponentCalculate(const UContainer *cont, const UContainer *subcont);
  EComponentCalculate(const EComponentCalculate &copy);
- virtual ~EComponentCalculate(void);
+ virtual ~EComponentCalculate(void) throw();
  // --------------------------
 
 // --------------------------
@@ -947,7 +949,7 @@ class EComponentSystemException: public ESystemException, public EICalculateCont
  EComponentSystemException(void);
  EComponentSystemException(const UContainer *cont, const UContainer *subcont, const std::string &info);
  EComponentSystemException(const EComponentSystemException &copy);
- virtual ~EComponentSystemException(void);
+ virtual ~EComponentSystemException(void) throw();
  // --------------------------
 
 // --------------------------

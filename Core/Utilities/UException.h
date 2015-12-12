@@ -15,26 +15,35 @@
 namespace RDK {
 
 /* Базовый класс исключений */
-class RDK_LIB_TYPE UException
+class RDK_LIB_TYPE UException: public std::exception
 {
-protected: // Общие данные
-
 protected: // Данные исключения
 // Порядковый номер исключения
 //long long Number;
 
-// Тип исключения
-// 0 - неопределено
-// 1 - фатальное
-// 2 - ошибка, требующая вмешательства
-// 3 - предупреждение
-// 4 - информация
-// 5 - отладка
+/// Тип исключения
+/// 0 - неопределено
+/// 1 - фатальное
+/// 2 - ошибка, требующая вмешательства
+/// 3 - предупреждение
+/// 4 - информация
+/// 5 - отладка
 int Type;
 
 // Время возникновения исключения
 std::time_t Time;
 
+/// Имя файла в котором произошло исключение
+mutable std::string ExFileName;
+
+/// Строка на которой произошло исключение
+mutable int ExLineNumber;
+
+/// Имя объекта сгенерировавшего искючение
+mutable std::string ObjectName;
+
+/// Сообщение исключения
+mutable std::string Message;
 
 public: // Методы
 // --------------------------
@@ -42,7 +51,7 @@ public: // Методы
 // --------------------------
 UException(void);
 UException(const UException &copy);
-virtual ~UException(void);
+virtual ~UException(void) throw();
 // --------------------------
 
 // --------------------------
@@ -62,12 +71,28 @@ int GetType(void) const;
 // Время возникновения (обработки) исключения
 std::time_t GetTime(void) const;
 void SetTime(std::time_t ex_time);
+
+/// Имя файла в котором произошло исключение
+std::string GetExFileName(void) const;
+void SetExFileName(const std::string &value);
+
+/// Строка на которой произошло исключение
+int GetExLineNumber(void) const;
+void SetExLineNumber(int value);
+
+/// Имя объекта сгенерировавшего искючение
+std::string GetObjectName(void) const;
+void SetObjectName(const std::string &value);
 // --------------------------
 
 // --------------------------
 // Методы формирования лога
 // --------------------------
-// Формирует строку лога об исключении
+/// Возвращает строку лога об исключении
+virtual char const * what() const throw();
+
+protected:
+/// Формирует строку лога об исключении
 virtual std::string CreateLogMessage(void) const;
 // --------------------------
 };
@@ -81,7 +106,7 @@ struct RDK_LIB_TYPE EFatal: public UException
 // --------------------------
 EFatal(void);
 EFatal(const EFatal &copy);
-virtual ~EFatal(void);
+virtual ~EFatal(void) throw();
 // --------------------------
 
 };
@@ -94,7 +119,7 @@ struct RDK_LIB_TYPE EError: public UException
 // --------------------------
 EError(void);
 EError(const EError &copy);
-virtual ~EError(void);
+virtual ~EError(void) throw();
 // --------------------------
 
 };
@@ -107,7 +132,7 @@ struct RDK_LIB_TYPE EWarning: public UException
 // --------------------------
 EWarning(void);
 EWarning(const EWarning &copy);
-virtual ~EWarning(void);
+virtual ~EWarning(void) throw();
 // --------------------------
 
 };
@@ -120,7 +145,7 @@ struct RDK_LIB_TYPE EInfo: public UException
 // --------------------------
 EInfo(void);
 EInfo(const EInfo &copy);
-virtual ~EInfo(void);
+virtual ~EInfo(void) throw();
 // --------------------------
 };
 
@@ -132,7 +157,7 @@ struct RDK_LIB_TYPE EDebug: public UException
 // --------------------------
 EDebug(void);
 EDebug(const EDebug &copy);
-virtual ~EDebug(void);
+virtual ~EDebug(void) throw();
 // --------------------------
 };
 
@@ -145,6 +170,7 @@ std::string Str; // Строка
 // Конструкторы и деструкторы
 // --------------------------
 EStrToNumber(const std::string &str);
+virtual ~EStrToNumber(void) throw();
 // --------------------------
 
 // --------------------------
@@ -165,6 +191,7 @@ int Id;
 // Конструкторы и деструкторы
 // --------------------------
 EIdError(int id);
+virtual ~EIdError(void) throw();
 // --------------------------
 
 // --------------------------
@@ -185,6 +212,7 @@ std::string Name;
 // Конструкторы и деструкторы
 // --------------------------
 ENameError(const std::string &name);
+virtual ~ENameError(void) throw();
 // --------------------------
 
 // --------------------------
@@ -270,7 +298,7 @@ std::string Info;
 ESystemException(void);
 ESystemException(const std::string &info);
 ESystemException(const ESystemException &copy);
-virtual ~ESystemException(void);
+virtual ~ESystemException(void) throw();
 // --------------------------
 
 
@@ -299,6 +327,7 @@ int Line;
 // Конструкторы и деструкторы
 // --------------------------
 EFunctionReturnFalse(const std::string &file_name, const std::string &function_name, int line);
+virtual ~EFunctionReturnFalse(void) throw();
 // --------------------------
 
 // --------------------------
@@ -328,6 +357,7 @@ int Code;
 // Конструкторы и деструкторы
 // --------------------------
 EFunctionReturnError(const std::string &file_name, const std::string &function_name, int line, int code);
+virtual ~EFunctionReturnError(void) throw();
 // --------------------------
 
 // --------------------------
@@ -347,6 +377,7 @@ std::string Str;
 // Конструкторы и деструкторы
 // --------------------------
 EStringFatal(const std::string &str);
+virtual ~EStringFatal(void) throw();
 // --------------------------
 
 // --------------------------
@@ -366,6 +397,7 @@ std::string Str;
 // Конструкторы и деструкторы
 // --------------------------
 EStringError(const std::string &str);
+virtual ~EStringError(void) throw();
 // --------------------------
 
 // --------------------------
@@ -385,6 +417,7 @@ std::string Str;
 // Конструкторы и деструкторы
 // --------------------------
 EStringWarning(const std::string &str);
+virtual ~EStringWarning(void) throw();
 // --------------------------
 
 // --------------------------
@@ -404,6 +437,7 @@ std::string Str;
 // Конструкторы и деструкторы
 // --------------------------
 EStringInfo(const std::string &str);
+virtual ~EStringInfo(void) throw();
 // --------------------------
 
 // --------------------------
@@ -423,6 +457,34 @@ std::string Str;
 // Конструкторы и деструкторы
 // --------------------------
 EStringDebug(const std::string &str);
+virtual ~EStringDebug(void) throw();
+// --------------------------
+
+// --------------------------
+// Методы формирования лога
+// --------------------------
+// Формирует строку лога об исключении
+virtual std::string CreateLogMessage(void) const;
+// --------------------------
+};
+
+// Исключение, которое невозможно обработать
+struct RDK_LIB_TYPE UExceptionUnhandled: public EFatal
+{
+// Имя файла
+std::string FileName;
+
+// Имя функции в которой произошла ошибка
+std::string FunctionName;
+
+// Строка в исходнике
+int Line;
+
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+UExceptionUnhandled(const std::string &file_name, int line, const std::string &function_name);
+virtual ~UExceptionUnhandled(void) throw();
 // --------------------------
 
 // --------------------------

@@ -17,6 +17,7 @@ See file license.txt for more information
 #include "UADItem.h"
 #include "UPropertyIO.h"
 #include "UStorage.h"
+#include "UEnvException.h"
 
 namespace RDK {
 
@@ -203,7 +204,7 @@ const UEPtr<const UItemData> UADItem::GetInputData(const UEPtr<UItem> &citem) co
  UItemData result;
 
  if(!citem)
-  throw EInputIndexNotExist(-1);
+  RDK_RAW_THROW(EInputIndexNotExist(-1));
 
  std::vector<UCLink> buffer;
  GetCLink(citem,buffer);
@@ -211,7 +212,7 @@ const UEPtr<const UItemData> UADItem::GetInputData(const UEPtr<UItem> &citem) co
  {
   UCLink &indexes=buffer[i];
   if(indexes.Input < 0)
-   throw EInputIndexNotExist(-1);
+   RDK_RAW_THROW(EInputIndexNotExist(-1));
 
   return InputData[indexes.Input];
  }

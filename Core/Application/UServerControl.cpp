@@ -16,7 +16,8 @@ UServerControl::UServerControl(void)
  ServerId="Server1";
  AverageIterations=4;
  PerformancePushIndex=0;
- DebugFolder = "D:/Output/";
+ DebugFolder = "";
+ InitFlag=false;
 
  Name="ServerControl";
 }
@@ -342,7 +343,7 @@ void UServerControl::CalculatePerformance(void)
 	 }
 	 aver_perf_data[k].push_back(current_perf);
  }
-
+ /*
  std::ofstream f;
  //Сформировать строку названия
 	if(DebugOutputPath.empty())
@@ -390,7 +391,7 @@ void UServerControl::CalculatePerformance(void)
 		f<<",";
  }
  f<<")";
- f.close();
+ f.close();  */
 }
 
 // Метод, вызываемый после сброса модели

@@ -2,11 +2,11 @@
 #define RDK_BCB_EXCEPTIONS_CPP
 #include "rdk_exceptions.bcb.h"
 #include <except.h>
-//#include "../../Core/Utilities/USupport.h"
+#include "../../Core/Utilities/USupport.h"
 
-namespace RDK {                                  
-/*
-LPEXCEPTION_POINTERS ExceptionsPointers;
+EXCEPTION_POINTERS * RdkExceptionsPointers;
+
+namespace RDK {
 
 char SysExceptionNames[][100]={"ACCESS_VIOLATION","ARRAY_BOUNDS_EXCEEDED","BREAKPOINT","DATATYPE_MISALIGNMENT",
 		"FLT_DENORMAL_OPERAND","FLT_DIVIDE_BY_ZERO","FLT_INEXACT_RESULT",
@@ -23,7 +23,7 @@ DWORD SysExceptionCodes[]={EXCEPTION_ACCESS_VIOLATION,EXCEPTION_ARRAY_BOUNDS_EXC
 // Формирует строку с описанием возникшего системного исключения
 std::string GetSystemExceptionData(void)
 {
- PEXCEPTION_RECORD pExceptionRecord=ExceptionsPointers->ExceptionRecord;
+ PEXCEPTION_RECORD pExceptionRecord=RdkExceptionsPointers->ExceptionRecord;
 
  int index=-1;
  for(size_t i=0;i<sizeof(SysExceptionCodes)/sizeof(DWORD);i++)
@@ -38,17 +38,17 @@ std::string GetSystemExceptionData(void)
  {
   // Access violation type - Write/Read.
   str = (pExceptionRecord->ExceptionInformation[0]) ? " Write address " : " Read address ";
-  str+=sntoa(pExceptionRecord->ExceptionInformation[1]);
+  str+=RDK::sntoa(pExceptionRecord->ExceptionInformation[1]);
  }
 
  if(index>=0)
   return std::string("[SysExName: ")+std::string(SysExceptionNames[index])
-		+std::string(" Address: ")+sntoa(pExceptionRecord->ExceptionAddress)+str+std::string("] ");
+		+std::string(" Address: ")+RDK::sntohex(pExceptionRecord->ExceptionAddress)+str+std::string("] ");
  else
-  return std::string("[SysExCode: ")+sntoa(pExceptionRecord->ExceptionCode)
-		+std::string(" Address: ")+sntoa(pExceptionRecord->ExceptionAddress)+str+std::string("] ");
+  return std::string("[SysExCode: ")+RDK::sntohex(pExceptionRecord->ExceptionCode)
+		+std::string(" Address: ")+RDK::sntohex(pExceptionRecord->ExceptionAddress)+str+std::string("] ");
 }
-  */
+
 
 // Формирует строку с описанием возникшего системного исключения
 std::string GetSystemExceptionData(System::Sysutils::Exception &exception)

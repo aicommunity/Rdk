@@ -80,6 +80,7 @@
         <BCC_OptimizeForSpeed>true</BCC_OptimizeForSpeed>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
+        <Debugger_DebugSourcePath>..\..\..\Gui\Bcb\;..\..\..\Deploy\Include\;$(BDS)\include;..\..\..\Core\Engine\;$(Debugger_DebugSourcePath)</Debugger_DebugSourcePath>
         <BCC_UserSuppliedOptions>-tWM</BCC_UserSuppliedOptions>
         <Defines>LIBRDK_LIBRARY_EXPORT;RDK_UNICODE_RUN;$(Defines)</Defines>
         <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
@@ -246,6 +247,9 @@
         <CppCompile Include="..\..\..\Core\Engine\UEngine.cpp">
             <BuildOrder>72</BuildOrder>
         </CppCompile>
+        <CppCompile Include="..\..\..\Core\Engine\UEnvException.cpp">
+            <BuildOrder>117</BuildOrder>
+        </CppCompile>
         <CppCompile Include="..\..\..\Core\Engine\UEnvironment.cpp">
             <BuildOrder>73</BuildOrder>
         </CppCompile>
@@ -267,6 +271,10 @@
         </CppCompile>
         <CppCompile Include="..\..\..\Core\Engine\ULocalProperty.cpp">
             <BuildOrder>79</BuildOrder>
+        </CppCompile>
+        <CppCompile Include="..\..\..\Core\Engine\ULogger.cpp">
+            <DependentOn>..\..\..\Core\Engine\ULogger.h</DependentOn>
+            <BuildOrder>118</BuildOrder>
         </CppCompile>
         <CppCompile Include="..\..\..\Core\Engine\UModule.cpp">
             <BuildOrder>80</BuildOrder>
@@ -615,15 +623,15 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="..\..\..\Bin\Platform\Win\rdk.bcb.static.lib" Configuration="Debug" Class="ProjectOutput">
+                <DeployFile LocalName=".\..\..\..\..\Bin\Platform\Win\Lib.Bcb\rdk.bcb.static.tds" Configuration="Debug" Class="DebugSymbols">
                     <Platform Name="Win32">
-                        <RemoteName>rdk_bcb_static.lib</RemoteName>
+                        <RemoteName>rdk_bcb_static.tds</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="..\..\..\Bin\Platform\Win\rdk.bcb.static.tds" Configuration="Debug" Class="DebugSymbols">
+                <DeployFile LocalName=".\..\..\..\..\Bin\Platform\Win\Lib.Bcb\rdk.bcb.static.lib" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win32">
-                        <RemoteName>rdk_bcb_static.tds</RemoteName>
+                        <RemoteName>rdk_bcb_static.lib</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
@@ -975,13 +983,13 @@
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
-                <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"/>
+                <ProjectRoot Platform="iOSDevice32" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="Android" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="Win32" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="iOSDevice64" Name="$(PROJECTNAME).app"/>
-                <ProjectRoot Platform="OSX32" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
-                <ProjectRoot Platform="iOSDevice32" Name="$(PROJECTNAME).app"/>
+                <ProjectRoot Platform="OSX32" Name="$(PROJECTNAME)"/>
+                <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"/>
             </Deployment>
         </BorlandProject>
         <ProjectFileVersion>12</ProjectFileVersion>

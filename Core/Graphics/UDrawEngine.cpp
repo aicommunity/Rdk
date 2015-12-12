@@ -27,34 +27,40 @@ namespace RDK {
 // ------------------------
 UGEDescription::UGEDescription(void)
 {
-// Координаты элемента в пикселях
-Position=0;
+ // Координаты элемента в пикселях
+ Position=0;
 
-// Радиус элемента
-Width = 80; Height=25;
+ // Радиус элемента
+ Width = 80; Height=25;
 
-// Цвет контура элемента
-ContourColor = UColorT(0, 0, 0, 0);
+ // Цвет контура элемента
+ ContourColor = UColorT(0, 0, 0, 0);
 
-// Толщина контура элемента в пикселях
-ContourWidth = 1;
+ // Толщина контура элемента в пикселях
+ ContourWidth = 1;
 
-// Цвет заливки элемента
-FillColor = UColorT(180, 180, 180, 0);
+ InactiveFontColor=UColorT(100,100,100,0);
 
-LinkColor = UColorT(0, 0, 255, 0);
+ // Цвет заливки элемента
+ FillColor = UColorT(180, 180, 180, 0);
 
-// Толщина контура связи
-LinkWidth = 1;
+ InactiveFillColor=UColorT(210,210,210,0);
 
-// Одномерный индекс i
-Index = 0;
+ LinkColor = UColorT(0, 0, 255, 0);
 
-// 3D индекс (i,j,k)
-Position=0;
+ // Толщина контура связи
+ LinkWidth = 1;
 
-// Тип элемента
-Type = 0;
+ // Одномерный индекс i
+ Index = 0;
+
+ // 3D индекс (i,j,k)
+ Position=0;
+
+ // Тип элемента
+ Type = 0;
+
+ Activity=true;
 
  NumInputs=0;
  NumOutputs=0;
@@ -75,22 +81,25 @@ UGEDescription::~UGEDescription(void)
 
 UGEDescription& UGEDescription::operator = (const UGEDescription &copy)
 {
-Index=copy.Index;
-Position=copy.Position;
-Header=copy.Header;
-ClassName=copy.ClassName;
-Type=copy.Type;
-NumInputs=copy.NumInputs;
-NumOutputs=copy.NumOutputs;
-Width=copy.Width;
-Height=copy.Height;
-ContourColor=copy.ContourColor;
-ContourWidth=copy.ContourWidth;
-FillColor=copy.FillColor;
-LinkColor=copy.LinkColor;
-LinkWidth=copy.LinkWidth;
-Highlight=copy.Highlight;
-Indicators=copy.Indicators;
+ Index=copy.Index;
+ Position=copy.Position;
+ Header=copy.Header;
+ ClassName=copy.ClassName;
+ Type=copy.Type;
+ Activity=copy.Activity;
+ NumInputs=copy.NumInputs;
+ NumOutputs=copy.NumOutputs;
+ Width=copy.Width;
+ Height=copy.Height;
+ ContourColor=copy.ContourColor;
+ ContourWidth=copy.ContourWidth;
+ InactiveFillColor=copy.InactiveFillColor;
+ FillColor=copy.FillColor;
+ LinkColor=copy.LinkColor;
+ LinkWidth=copy.LinkWidth;
+ Highlight=copy.Highlight;
+ Indicators=copy.Indicators;
+ InactiveFontColor=copy.InactiveFontColor;
 
  return *this;
 }
@@ -115,6 +124,8 @@ UDrawEngine::UDrawEngine(void)
 
  // Цвет выделяемого элемента
  SelectedColor = UColorT(128, 128, 128, 0);
+
+ InactiveSelectedColor=UColorT(128, 128, 128, 0);;
 
  BackgroundLineStep=10;
 
@@ -372,6 +383,8 @@ void UDrawEngine::UpdateDestinations(void)
 	  descr.Position=i*30.0;
 	}
 
+
+	descr.Activity=NetXml.ReadBool("Activity",true);
 	NetXml.SelectUp();
    }
 
@@ -556,7 +569,13 @@ void UDrawEngine::Paint(UGEDescription &ndescr)
 		(i<EmptyIndicatorColors.size())?EmptyIndicatorColors[i]:BackgroundColor);
 
  // Отрисовываем имя
- GEngine->SetPenColor(ndescr.ContourColor);
+ UColorT font_color;
+ if(ndescr.Activity)
+  font_color=ndescr.ContourColor;
+ else
+  font_color=ndescr.InactiveFontColor;
+
+ GEngine->SetPenColor(font_color);
 // GEngine->Text(ndescr.Header,int(ndescr.Position.x+ndescr.Radius*1.5),static_cast<int>(int(ndescr.Position.y)-ndescr.Radius/2));
  UBRect rect;
  rect.X=int(ndescr.Position.x)-(ndescr.Width-2);
@@ -589,22 +608,35 @@ void UDrawEngine::PaintItem(UGEDescription &ndescr)
  GEngine->SetPenWidth(ndescr.ContourWidth);
  if (ndescr.ContourColor == ndescr.FillColor)
  {
-        GEngine->SetPenColor(ndescr.ContourColor);
-		GEngine->Rect(int(int(ndescr.Position.x))-ndescr.Width, int(int(ndescr.Position.y))-ndescr.Height, int(int(ndescr.Position.x))+ndescr.Width, int(int(ndescr.Position.y))+ndescr.Height, true);
+  GEngine->SetPenColor(ndescr.ContourColor);
+  GEngine->Rect(int(int(ndescr.Position.x))-ndescr.Width, int(int(ndescr.Position.y))-ndescr.Height, int(int(ndescr.Position.x))+ndescr.Width, int(int(ndescr.Position.y))+ndescr.Height, true);
  }
  else
  {
+  UColorT common_color;
+  UColorT selected_color;
+  if(ndescr.Activity)
+  {
+   common_color=ndescr.FillColor;
+   selected_color=SelectedColor;
+  }
+  else
+  {
+   common_color=ndescr.InactiveFillColor;
+   selected_color=InactiveSelectedColor;
+  }
+
   if (ndescr.Highlight)
   {
    GEngine->Rect(int(int(ndescr.Position.x))-ndescr.Width, int(int(ndescr.Position.y))-ndescr.Height, int(int(ndescr.Position.x))+ndescr.Width, int(int(ndescr.Position.y))+ndescr.Height, false);
-   GEngine->SetPenColor(SelectedColor);
+   GEngine->SetPenColor(selected_color);
    GEngine->Rect(int(int(ndescr.Position.x))-ndescr.Width+shift, int(int(ndescr.Position.y))-ndescr.Height+shift, int(int(ndescr.Position.x))+ndescr.Width-ndescr.ContourWidth, int(int(ndescr.Position.y))+ndescr.Height-ndescr.ContourWidth, true);
   }
   else
   {
    GEngine->SetPenColor(ndescr.ContourColor);
    GEngine->Rect(int(int(ndescr.Position.x))-ndescr.Width, int(int(ndescr.Position.y))-ndescr.Height, int(int(ndescr.Position.x))+ndescr.Width, int(int(ndescr.Position.y))+ndescr.Height, false);
-   GEngine->SetPenColor(ndescr.FillColor);
+   GEngine->SetPenColor(common_color);
    GEngine->Rect(int(int(ndescr.Position.x))-ndescr.Width+shift, int(int(ndescr.Position.y))-ndescr.Height+shift, int(int(ndescr.Position.x))+ndescr.Width-ndescr.ContourWidth, int(ndescr.Position.y)+ndescr.Height-ndescr.ContourWidth, true);
   }
  }
@@ -628,6 +660,19 @@ void UDrawEngine::PaintNet(UGEDescription &ndescr)
  }
  else
  {
+  UColorT common_color;
+  UColorT selected_color;
+  if(ndescr.Activity)
+  {
+   common_color=ndescr.FillColor;
+   selected_color=SelectedColor;
+  }
+  else
+  {
+   common_color=ndescr.InactiveFillColor;
+   selected_color=InactiveSelectedColor;
+  }
+
   if (ndescr.Highlight)
   {
    GEngine->Rect(int(ndescr.Position.x)-ndescr.Width, int(ndescr.Position.y)-ndescr.Height, int(ndescr.Position.x)+ndescr.Width, int(ndescr.Position.y)+ndescr.Height, false);

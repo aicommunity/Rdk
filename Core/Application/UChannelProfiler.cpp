@@ -62,6 +62,7 @@ UChannelProfiler::UChannelProfiler(void)
 {
  Mutex=UCreateMutex();
  AverageIterations=10;
+ ChannelIndex=0;
 }
 
 UChannelProfiler::~UChannelProfiler(void)
@@ -109,7 +110,7 @@ bool UChannelProfiler::SetAverageIterations(int num)
 }
 
 /// Массив длинных имен наблюдаемых компонент
-const std::vector<std::string>& UChannelProfiler::GetComponentsName(void) const
+std::vector<std::string> UChannelProfiler::GetComponentsName(void) const
 {
  UGenericMutexExclusiveLocker locker(Mutex);
  return ComponentsName;
@@ -196,7 +197,7 @@ void UChannelProfiler::DelAllComponents(void)
 }
 
 /// Массив имен наблюдаемых интерфейсов
-const std::vector<std::string>& UChannelProfiler::GetGuiNames(void) const
+std::vector<std::string> UChannelProfiler::GetGuiNames(void) const
 {
  UGenericMutexExclusiveLocker locker(Mutex);
  return GuiNames;
@@ -359,14 +360,15 @@ void UChannelProfiler::CalcCorePerfomance(void)
 void UChannelProfiler::CalcGuiPerfomance(void)
 {
  UGenericMutexExclusiveLocker locker(Mutex);
- for(size_t i=0;i<GuiPerfomance.size();i++)
- {
-  GuiPerfomance[i].CalcAverage();
-  GuiPerfomance[i].CalcPercentage(OtherPerfomance.AvgDuration);
- }
 
  SummaryGuiPerfomance.CalcAverage();
  SummaryGuiPerfomance.CalcPercentage(SummaryGuiPerfomance.AvgDuration);
+
+ for(size_t i=0;i<GuiPerfomance.size();i++)
+ {
+  GuiPerfomance[i].CalcAverage();
+  GuiPerfomance[i].CalcPercentage(SummaryGuiPerfomance.AvgDuration);
+ }
 }
 
 /// Производит расчет выходных данных профайлера

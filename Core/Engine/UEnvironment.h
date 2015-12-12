@@ -16,6 +16,7 @@ See file license.txt for more information
 #include "UStorage.h"
 #include "ULibrary.h"
 #include "../System/rdk_system.h"
+#include "ULogger.h"
 
 namespace RDK {
 
@@ -46,6 +47,10 @@ ULongTime MinInterstepsInterval;
 
 /// Флаг включения режима отладки
 bool DebugMode;
+
+/// Флаг включения внутренней регистрации событий в лог-файл
+/// true - регистрация включена
+bool EventsLogMode;
 
 protected: // Состояния
 // Флаг состояния инициализации
@@ -136,6 +141,9 @@ mutable unsigned LogIndex;
 
 UGenericMutex* LogMutex;
 
+/// Экземпляр класса для логирования
+mutable ULogger Logger;
+
 
 public: // Public methods
 // --------------------------
@@ -172,6 +180,11 @@ bool SetMinInterstepsInterval(long long value);
 /// Флаг включения режима отладки
 bool GetDebugMode(void) const;
 bool SetDebugMode(bool value);
+
+/// Флаг включения внутренней регистрации событий в лог-файл
+/// true - регистрация включена
+bool GetEventsLogMode(void) const;
+bool SetEventsLogMode(bool value);
 // --------------------------
 
 // --------------------------

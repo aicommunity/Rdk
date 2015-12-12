@@ -30,6 +30,8 @@ TProjectChannelConfig::TProjectChannelConfig(void)
  ResetAfterLoad=true;
 
  DebugMode=true;
+
+ EventsLogMode=false;
 }
 
 TProjectChannelConfig::TProjectChannelConfig(const TProjectChannelConfig& copy)
@@ -54,6 +56,8 @@ TProjectChannelConfig::TProjectChannelConfig(const TProjectChannelConfig& copy)
  ResetAfterLoad=copy.ResetAfterLoad;
 
  DebugMode=copy.DebugMode;
+ EventsLogMode=copy.EventsLogMode;
+
 
  ChannelName=copy.ChannelName;
 }
@@ -73,6 +77,7 @@ bool TProjectChannelConfig::operator != (const TProjectChannelConfig& copy) cons
  (InitAfterLoad != copy.InitAfterLoad) |
  (ResetAfterLoad != copy.ResetAfterLoad) |
  (DebugMode != copy.DebugMode) |
+ (EventsLogMode != copy.EventsLogMode) |
  (ChannelName != copy.ChannelName);
 }
 
@@ -335,6 +340,7 @@ bool UProject::ReadFromXml(USerStorageXML &xml)
  Config.ChannelsConfig[0].ModelFileName=xml.ReadString("ModelFileName","");
  Config.ChannelsConfig[0].ParametersFileName=xml.ReadString("ParametersFileName","");
  Config.ChannelsConfig[0].StatesFileName=xml.ReadString("StatesFileName","");
+ Config.ChannelsConfig[0].EventsLogMode=xml.ReadBool("EventsLogMode",false);
 
  for(int i=1;i<num_engines;i++)
  {
@@ -346,6 +352,8 @@ bool UProject::ReadFromXml(USerStorageXML &xml)
   Config.ChannelsConfig[i].InitAfterLoad=xml.ReadBool(std::string("InitAfterLoadFlag_")+RDK::sntoa(i),1);
   Config.ChannelsConfig[i].ResetAfterLoad=xml.ReadBool(std::string("ResetAfterLoadFlag_")+RDK::sntoa(i),true);
   Config.ChannelsConfig[i].DebugMode=xml.ReadBool(std::string("DebugModeFlag_")+RDK::sntoa(i),false);
+  Config.ChannelsConfig[i].EventsLogMode=xml.ReadBool(std::string("EventsLogMode_")+RDK::sntoa(i),false);
+
   Config.ChannelsConfig[i].MinInterstepsInterval=xml.ReadInteger(std::string("MinInterstepsInterval_")+RDK::sntoa(i),20);
 
   Config.ChannelsConfig[i].ModelFileName=xml.ReadString(std::string("ModelFileName_")+RDK::sntoa(i),"");
@@ -490,6 +498,7 @@ bool UProject::WriteToXml(USerStorageXML &xml)
    xml.WriteBool("InitAfterLoadFlag",channel_config.InitAfterLoad);
    xml.WriteBool("ResetAfterLoadFlag",channel_config.ResetAfterLoad);
    xml.WriteBool("DebugModeFlag",channel_config.DebugMode);
+   xml.WriteBool("EventsLogMode",channel_config.EventsLogMode);
   }
   else
   {
@@ -507,6 +516,7 @@ bool UProject::WriteToXml(USerStorageXML &xml)
    xml.WriteBool(std::string("InitAfterLoadFlag_")+suffix,channel_config.InitAfterLoad);
    xml.WriteBool(std::string("ResetAfterLoadFlag_")+suffix,channel_config.ResetAfterLoad);
    xml.WriteBool(std::string("DebugModeFlag_")+suffix,channel_config.DebugMode);
+   xml.WriteBool(std::string("EventsLogMode_")+suffix,channel_config.EventsLogMode);
   }
  }
 

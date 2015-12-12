@@ -65,14 +65,14 @@ void URpcDecoder::Process(void)
 	Dispatcher->PushToProcessedQueue(command);
 //   boost::this_thread::sleep(boost::posix_time::milliseconds(3));
   }
+  catch(UException &rdk_ex)
+  {
+   ex_info=rdk_ex.what();
+   ex_flag=1;
+  }
   catch(std::exception &std_ex)
   {
    ex_info=std_ex.what();
-   ex_flag=1;
-  }
-  catch(UException &rdk_ex)
-  {
-   ex_info=rdk_ex.CreateLogMessage();
    ex_flag=1;
   }
 
