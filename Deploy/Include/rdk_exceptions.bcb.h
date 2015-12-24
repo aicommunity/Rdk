@@ -24,8 +24,12 @@ static int xfilter(EXCEPTION_POINTERS *xp) {
 	case EXCEPTION_BREAKPOINT:
 		// whoops, someone left an embedded breakpoint.
 		// just step over it (1 byte on x86)
+	#ifdef _WIN64
+		rc = EXCEPTION_CONTINUE_SEARCH;
+	#else
 		++xc->Eip;
 		rc = EXCEPTION_CONTINUE_EXECUTION;
+	#endif
 		break;
 //	case EXCEPTION_ACCESS_VIOLATION:
 //		rc = EXCEPTION_EXECUTE_HANDLER;
