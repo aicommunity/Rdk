@@ -6,6 +6,7 @@
         <Base>True</Base>
         <AppType>StaticLibrary</AppType>
         <FrameworkType>None</FrameworkType>
+        <Multithreaded>true</Multithreaded>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
         <TargetedPlatforms>3</TargetedPlatforms>
     </PropertyGroup>
@@ -57,6 +58,8 @@
         <Base>true</Base>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
+        <TLIB_PageSize>8192</TLIB_PageSize>
+        <_TCHARMapping>char</_TCHARMapping>
         <SanitizedProjectName>rdk_bcb_static</SanitizedProjectName>
         <DynamicRTL>true</DynamicRTL>
         <VerInfo_AutoGenVersion>true</VerInfo_AutoGenVersion>
@@ -86,7 +89,6 @@
         <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win64)'!=''">
-        <BCC_UserSuppliedOptions>-tWM</BCC_UserSuppliedOptions>
         <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;$(DCC_Namespace)</DCC_Namespace>
         <Defines>LIBRDK_LIBRARY_EXPORT;RDK_UNICODE_RUN;$(Defines)</Defines>
     </PropertyGroup>
@@ -126,6 +128,7 @@
         <Defines>NDEBUG;$(Defines)</Defines>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
+        <_TCHARMapping>char</_TCHARMapping>
         <Defines>NDEBUG;$(Defines)</Defines>
     </PropertyGroup>
     <ItemGroup>
@@ -987,8 +990,8 @@
                 <ProjectRoot Platform="Android" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="Win32" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="iOSDevice64" Name="$(PROJECTNAME).app"/>
-                <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="OSX32" Name="$(PROJECTNAME)"/>
+                <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"/>
             </Deployment>
         </BorlandProject>
