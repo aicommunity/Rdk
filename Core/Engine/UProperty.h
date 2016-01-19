@@ -28,6 +28,7 @@ See file license.txt for more information
 #include "../Math/MUXMLSerialize.h"
 #include "../Math/MUBinarySerialize.h"
 #include "UComponent.h"
+#include "../System/rdk_system.h"
 
 namespace RDK {
 
@@ -48,8 +49,12 @@ mutable T* PData;
 // Тип входа
 int IoType;
 
-// Диапазон индексов входов
-//int MinRange, MaxRange;
+protected: // Данные синхронизации
+/// Мьютекс этого свойства
+UGenericMutex *Mutex;
+
+/// Время обновления свойства
+double UpdateTime;
 
 public: // Методы
 // --------------------------
@@ -57,13 +62,19 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 UVBaseDataProperty(void)
- : PData(0),IoType(ipSingle | ipData)//,MinRange(0), MaxRange(-1)
+ : PData(0),IoType(ipSingle | ipData), Mutex(UCreateMutex()), UpdateTime(0.0)
 {
 }
 
 UVBaseDataProperty(T * const pdata)
- : PData(pdata),IoType(ipSingle | ipData)//,MinRange(0), MaxRange(-1)
+ : PData(pdata),IoType(ipSingle | ipData), Mutex(UCreateMutex()), UpdateTime(0.0)
 {
+}
+
+virtual ~UVBaseDataProperty(void)
+{
+ UDestroyMutex(Mutex);
+ Mutex=0;
 }
 // -----------------------------
 
@@ -82,6 +93,7 @@ virtual const T& GetData(void) const
 virtual void SetData(const T& data)
 {
  (PData)?*PData=data:throw EPropertyZeroPtr(GetOwnerName(),GetName());
+ RenewUpdateTime();
 };
 
 // Возвращает языковой тип хранимого свойства
@@ -203,25 +215,18 @@ virtual int GetIoType(void) const
 {
  return IoType;
 }
-/*
-virtual bool CheckRange(int index)
-{
- if(IoType & ipSingle)
-  return (MinRange == index && MaxRange<0) | (index>=MinRange && index<=MaxRange);
- else
- if(IoType & ipRange)
-  return (MinRange <= index && MaxRange<0) | (index>=MinRange && index<=MaxRange);
 
- return false;
+virtual double GetUpdateTime(void) const
+{
+// UGenericLocker locker(Mutex);
+ return UpdateTime;
 }
 
-// Диапазон индексов входов
-virtual int GetMinRange(void)
-{ return UVBaseDataProperty<T>::MinRange; };
-
-virtual int GetMaxRange(void)
-{ return UVBaseDataProperty<T>::MaxRange; };
-*/
+virtual void SetUpdateTime(double value)
+{
+// UGenericLocker locker(Mutex);
+ UpdateTime=value;
+}
 // --------------------------
 
 // --------------------------
@@ -246,6 +251,16 @@ virtual bool ResetPointer(int index, void* value)
 }
 // --------------------------
 
+protected:
+// --------------------------
+// Скрытые методы управления данными
+// --------------------------
+/// Обновляет время изменения данных свойства
+void RenewUpdateTime(void)
+{
+ UpdateTime=GetVariantLocalTime();
+}
+// --------------------------
 };
 
 
@@ -372,7 +387,10 @@ virtual const T& GetData(void) const
 virtual void SetData(const T &value)
 {
  if(this->PData && !SetterR)
+ {
   *this->PData=value;
+  RenewUpdateTime();
+ }
 
  if(this->Owner && SetterR)
  {
@@ -380,7 +398,10 @@ virtual void SetData(const T &value)
    throw UIProperty::EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
 
   if(this->PData)
+  {
    *this->PData=value;
+   RenewUpdateTime();
+  }
  }
 };
 // -----------------------------
@@ -484,7 +505,10 @@ virtual const T& GetData(void) const
 virtual void SetData(const T &value)
 {
  if(this->PData && !Setter)
+ {
   *this->PData=value;
+  RenewUpdateTime();
+ }
 
  if(this->Owner && Setter)
  {
@@ -492,7 +516,10 @@ virtual void SetData(const T &value)
    throw UIProperty::EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
 
   if(this->PData)
+  {
    *this->PData=value;
+   RenewUpdateTime();
+  }
  }
 };
 // -----------------------------
@@ -556,10 +583,12 @@ virtual void SetData(const T &value)
    throw UIProperty::EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
 
   v=value;
+  RenewUpdateTime();
   return;
  }
 
  v=value;
+ RenewUpdateTime();
  return;
 };
 // -----------------------------
@@ -644,6 +673,7 @@ virtual void SetData(const T &value)
  }
 
  v=value;
+ RenewUpdateTime();
 };
 // -----------------------------
 };

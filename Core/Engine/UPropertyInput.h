@@ -6,8 +6,8 @@
 
 namespace RDK {
 
-template<typename T, typename OwnerT, unsigned int type=ptPubInput>
-class UPropertyInputBase: protected UVProperty<T,OwnerT>, /*public UPropertyIOBase, */public UIPropertyInput
+template<typename T, typename OwnerT>
+class UPropertyInputPreBase: public UVProperty<T,OwnerT>
 {
 protected:
 /// Временная переменная, использующаяся, если нет реального подключения
@@ -16,19 +16,41 @@ mutable T Local;
 /// Флаг наличия подключения
 bool IsConnectedFlag;
 
+/// Указатель на подключенный выход
+UIProperty *ConnectedOutput;
+
+public: // Методы
+// --------------------------
+// Конструкторы и деструкторы
+// --------------------------
+//Конструктор инициализации.
+UPropertyInputPreBase(OwnerT * const owner, int input_type)
+ : UVProperty<T,OwnerT>(owner, (T*)0), ConnectedOutput(0)
+{
+ IsConnectedFlag=false;
+ UVBaseDataProperty<T>::IoType=input_type;
+};
+// -----------------------------
+
+// --------------------------
+// Методы управления указателем
+// --------------------------
+// --------------------------
+};
+
+template<typename T, typename OwnerT, unsigned int type=ptPubInput>
+class UPropertyInputBase: protected UPropertyInputPreBase<T,OwnerT>, public UIPropertyInput
+{
+protected:
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализации.
 UPropertyInputBase(const string &name, OwnerT * const owner, int input_type)
- : UVProperty<T,OwnerT>(owner, (T*)0)
+ : UPropertyInputPreBase<T,OwnerT>(owner, input_type)
 {
- IsConnectedFlag=false;
  reinterpret_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false);
- UVBaseDataProperty<T>::IoType=input_type;
-// UVBaseDataProperty<T*>::MinRange=min_range;
-// UVBaseDataProperty<T*>::MaxRange=max_range;
 };
 // -----------------------------
 
@@ -39,24 +61,19 @@ UPropertyInputBase(const string &name, OwnerT * const owner, int input_type)
 virtual const type_info& GetLanguageType(void) const
 {
  return typeid(T);
-}// --------------------------
+}
+// --------------------------
 };
 
 template<typename T, typename OwnerT>
-class UVPropertyInputBase: public UVProperty<T,OwnerT>, /*public UPropertyIOBase, */public UIPropertyInput
+class UVPropertyInputBase: public UPropertyInputPreBase<T,OwnerT>, public UIPropertyInput
 {
 protected:
-/// Временная переменная, использующаяся, если нет реального подключения
-mutable T Local;
-
 /// Внешний указатель, передаваемый в виртуальный вход
 mutable T** ExternalPData;
 
 /// Временная переменная, использующаяся если нет реального подключения
 mutable T* LocalExternalPData;
-
-/// Флаг наличия подключения
-bool IsConnectedFlag;
 
 public: // Методы
 // --------------------------
@@ -64,10 +81,8 @@ public: // Методы
 // --------------------------
 //Конструктор инициализации.
 UVPropertyInputBase(OwnerT * const owner, T** data, int input_type)
- : UVProperty<T,OwnerT>(owner, (T*)0), ExternalPData(0), LocalExternalPData(0)
+ : UPropertyInputPreBase<T,OwnerT>(owner, input_type), ExternalPData(0), LocalExternalPData(0)
 {
- UVBaseDataProperty<T>::IoType=input_type;
- IsConnectedFlag=false;
  this->PData=&Local;
  if(data)
   ExternalPData=data;
@@ -130,7 +145,6 @@ UPropertyInput(const string &name, OwnerT * const owner, int index)
 bool IsConnected(void) const
 {
  return UPropertyInputBase<T*,OwnerT,type>::IsConnectedFlag;
-// return (this->PData)?true:false;
 }
 
 // Возвращает указатель на данные входа
@@ -172,7 +186,9 @@ bool ResetPointer(int index, void* value)
 }
 
 bool operator ! (void) const
-{ return (UPropertyInputBase<T*,OwnerT,type>::IsConnectedFlag)?false:true; };
+{
+ return (UPropertyInputBase<T*,OwnerT,type>::IsConnectedFlag)?false:true;
+};
 
 T* operator -> (void) const
 {
@@ -275,89 +291,13 @@ operator T* (void) const
  return (UPropertyInputBase<T,OwnerT,type>::IsConnectedFlag)?this->PData:&(this->Local);
 }
 // --------------------------
-/*
-protected:
 
-public: // Методы
-
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-//Конструктор инициализации.
-UPropertyInputData(const string &name, OwnerT * const owner, int min_range, int input_type=ipSingle, int max_range=-1)
- : UPropertyInputBase<T,OwnerT,type>(name, owner, min_range, input_type | ipData, max_range)
-{ };
-// -----------------------------
-
-// --------------------------
-// Методы управления указателем
-// --------------------------
-// Возвращает true если вход имеет подключение
-bool IsConnected(void) const
+/// Возвращает true, если на подключенном выходе новые данные
+virtual bool IsNewData(void) const
 {
- return (this->PData)?true:false;
+ return (ConnectedOutput)?ConnectedOutput->GetUpdateTime()>UpdateTime:true;
 }
 
-// Возвращает указатель на данные входа
-void const * GetPointer(int index) const
-{
- return this->PData;
-}
-
-// Возврат значения
-virtual const T& GetData(void) const
-{
- return (this->PData)?*this->PData:this->v;
-};
-
-virtual void SetData(const T &value)
-{
- if(this->PData)
- {
-  if(*this->PData == value)
-   return;
-
-  if(this->Owner)
-  {
-   if(this->SetterR && !(this->Owner->*(this->SetterR))(value))
-	throw UIProperty::EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
-
-   *this->PData=value;
-   return;
-  }
-
-  *this->PData=value;
- }
- else
-  ULProperty<T,OwnerT,type>::SetData(value);
-};
-
-// Устанавливает указатель на данные входа
-bool SetPointer(int index, void* value)
-{
- this->PData=reinterpret_cast<T*>(value);
- return true;
-}
-
-bool operator ! (void) const
-{ return (this->PData)?false:true; };
-
-T* operator -> (void) const
-{
- return (this->PData)?this->PData:&this->v;
-};
-
-T& operator * (void)
-{
- return (this->PData)?*this->PData:this->v;
-};
-
-operator T* (void) const
-{
- return (this->PData)?this->PData:&this->v;
-}
-// --------------------------
-*/
 };
 
 
@@ -449,76 +389,6 @@ operator T* (void) const
  return (UVPropertyInputBase<T,OwnerT>::IsConnectedFlag)?this->PData:&(this->Local);
 }
 // --------------------------
-/*
-// --------------------------
-// Методы управления указателем
-// --------------------------
-// Возвращает true если вход имеет подключение
-bool IsConnected(void) const
-{
- return (this->PData)?true:false;
-}
-
-// Возвращает указатель на данные входа
-void const * GetPointer(int index) const
-{
- return this->PData;
-}
-
-// Возврат значения
-virtual const T& GetData(void) const
-{
- return (this->PData)?*this->PData:throw(1); // TODO
-};
-
-virtual void SetData(const T &value)
-{
- if(this->PData)
- {
-  if(*this->PData == value)
-   return;
-
-  if(this->Owner)
-  {
-   if(this->SetterR && !(this->Owner->*(this->SetterR))(value))
-	throw UIProperty::EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
-
-   *this->PData=value;
-   return;
-  }
-
-  *this->PData=value;
- }
- else
-  UVProperty<T,OwnerT>::SetData(value);
-};
-
-// Устанавливает указатель на данные входа
-bool SetPointer(int index, void* value)
-{
- this->PData=reinterpret_cast<T*>(value);
- return true;
-}
-
-bool operator ! (void) const
-{ return (this->PData)?false:true; };
-
-T* operator -> (void) const
-{
- return (this->PData)?this->PData:throw(1); // TODO
-};
-
-T& operator * (void)
-{
- return (this->PData)?*this->PData:throw(1); // TODO
-};
-
-operator T* (void) const
-{
- return (this->PData)?this->PData:throw(1); // TODO
-}
-// --------------------------
-*/
 };
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
@@ -574,29 +444,6 @@ void const * GetPointer(int index) const
 // Устанавливает указатель на данные входа
 bool SetPointer(int index, void* value)
 {
-/*
- int new_index=index;
- if(value)
- {
-//  for(size_t i=0;i<this->v.size();i++)
-//   if(this->v[i] == value)
-//    return true;
-  size_t new_size=this->v.size()+1;
-  new_index=new_size-1;
-  this->v.resize(new_size);
-  size_t old_size=Local.size();
-  for(size_t i=new_size;i<old_size;i++)
-   delete Local[i];
-  Local.resize(new_size);
-
-  for(size_t i=old_size;i<new_size;i++)
-   Local[i]=new T;
-  this->v[new_index]=reinterpret_cast<T*>(value);
-  return true;
- }
- return false;
-   */
-
  if(index<0)
   return false;
 
@@ -628,21 +475,6 @@ bool ResetPointer(int index, void* value)
   return true;
  }
  return false;
-
-/*
- if(value)
- {
-  for(size_t i=0;i<this->v.size();i++)
-   if(this->v[i] == value)
-   {
-	delete Local[i];
-	Local.erase(Local.begin()+i);
-	this->v.erase(this->v.begin()+i);
-	return true;
-   }
-  return false;
- }
- return false;  */
 }
 
 /// Удаляет все указатели
@@ -669,8 +501,6 @@ T* operator [] (int i)
   throw typename UCLProperty<std::vector<T*>,OwnerT>::EPropertyRangeError(this->GetOwnerName(),this->GetName(),
 	0,int(this->v.size()),i);
  #endif
-// throw EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
-//	this->MinRange,int(this->v.size()+this->MinRange),i);
 
  return (this->v[i])?this->v[i]:Local[i];
 }
@@ -685,7 +515,6 @@ const T* operator [] (int i) const
   throw typename UCLProperty<std::vector<T*>,OwnerT>::EPropertyRangeError(UVBaseProperty<std::vector<T*>,OwnerT>::GetOwnerName(),UVBaseProperty<std::vector<T*>,OwnerT>::GetName(),
 	0,int(this->v.size()),i);
  #endif
-
 
  return (this->v[i])?this->v[i]:Local[i];
 }

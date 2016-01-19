@@ -770,6 +770,13 @@ const std::string& UIPropertyInput::GetItemOutputName(void)
  return ItemOutputName;
 }
 
+
+/// Возвращает true, если на подключенном выходе новые данные
+bool UIPropertyInput::IsNewData(void) const
+{
+ return true;
+}
+
 //class UIPropertyOutput: public UIPropertyIO
 // Возвращает число подключенных входов
 size_t UIPropertyOutput::GetNumConnectors(void)
@@ -788,6 +795,7 @@ const std::string& UIPropertyOutput::GetConnectorInputName(int index)
 {
  return ConnectorInputNames[index];
 }
+
 
 }
 #endif

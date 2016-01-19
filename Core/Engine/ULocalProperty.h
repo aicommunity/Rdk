@@ -189,6 +189,7 @@ bool operator () (int i, const typename UCProperty<T,OwnerT>::TV &value)
 	0,int(this->v.size()),i);
 
  this->v[i]=value;
+ RenewUpdateTime();
 
  return true;
 };

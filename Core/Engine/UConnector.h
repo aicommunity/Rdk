@@ -313,6 +313,9 @@ UItem* GetItem(void);
 
 /// Возвращает имя подключенного выхода
 const std::string& GetItemOutputName(void);
+
+/// Возвращает true, если на подключенном выходе новые данные
+virtual bool IsNewData(void) const;
 };
 
 class RDK_LIB_TYPE UIPropertyOutput

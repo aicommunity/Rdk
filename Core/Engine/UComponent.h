@@ -403,6 +403,12 @@ virtual void UpdatePData(void* data)=0;
 /// Возвращает тип свойства ввода-вывода
 virtual int GetIoType(void) const=0;
 
+/// Возвращает время обновления данных свойства
+virtual double GetUpdateTime(void) const=0;
+
+/// Устанавливает время обновления данных свойства
+virtual void SetUpdateTime(double value)=0;
+
 /// Возвращает диапазон индексов входа/выхода
 //virtual bool CheckRange(int index)=0;
 
